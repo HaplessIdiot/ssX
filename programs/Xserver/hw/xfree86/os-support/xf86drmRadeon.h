@@ -27,7 +27,7 @@
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmRadeon.h,v 1.3 2001/03/21 18:08:53 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmRadeon.h,v 1.4 2001/03/25 05:32:13 tsi Exp $
  *
  */
 
@@ -43,7 +43,7 @@
 #define DRM_RADEON_DEPTH	0x4
 
 typedef struct {
-   int sarea_priv_offset;
+   unsigned long sarea_priv_offset;
    int is_pci;
    int cp_mode;
    int agp_size;
@@ -56,12 +56,12 @@ typedef struct {
    unsigned int depth_bpp;
    unsigned int depth_offset, depth_pitch;
 
-   unsigned int fb_offset;
-   unsigned int mmio_offset;
-   unsigned int ring_offset;
-   unsigned int ring_rptr_offset;
-   unsigned int buffers_offset;
-   unsigned int agp_textures_offset;
+   unsigned long fb_offset;
+   unsigned long mmio_offset;
+   unsigned long ring_offset;
+   unsigned long ring_rptr_offset;
+   unsigned long buffers_offset;
+   unsigned long agp_textures_offset;
 } drmRadeonInit;
 
 typedef struct {
@@ -90,9 +90,9 @@ extern int drmRadeonClear( int fd, unsigned int flags,
 			   unsigned int color_mask, unsigned int depth_mask,
 			   void *boxes, int nbox );
 
-extern int drmRadeonFlushVertexBuffer( int fd, int prim, int indx,
+extern int drmRadeonFlushVertexBuffer( int fd, int prim, int index,
 				       int count, int discard );
-extern int drmRadeonFlushIndices( int fd, int prim, int indx,
+extern int drmRadeonFlushIndices( int fd, int prim, int index,
 				  int start, int end, int discard );
 
 extern int drmRadeonLoadTexture( int fd, int offset, int pitch, int format,
@@ -101,7 +101,7 @@ extern int drmRadeonLoadTexture( int fd, int offset, int pitch, int format,
 
 extern int drmRadeonPolygonStipple( int fd, unsigned int *mask );
 
-extern int drmRadeonFlushIndirectBuffer( int fd, int indx,
+extern int drmRadeonFlushIndirectBuffer( int fd, int index,
 					 int start, int end, int discard );
 
 #endif

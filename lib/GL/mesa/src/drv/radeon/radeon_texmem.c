@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texmem.c,v 1.1 2001/03/21 16:14:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -323,12 +323,7 @@ static void radeonUploadSubImage( radeonContextPtr rmesa,
    GLint texelsPerDword = 0;
    GLint imageX, imageY, imageWidth, imageHeight;
    GLint blitX, blitY, blitWidth, blitHeight;
-   GLint imageRows, blitRows;
-   GLint remaining;
-   GLint format, dwords;
-   CARD32 pitch, offset;
-   drmBufPtr buffer;
-   CARD32 *dst;
+   GLuint format, pitch, offset;
    GLint ret;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE ) {

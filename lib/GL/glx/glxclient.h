@@ -30,9 +30,8 @@
 ** was created using the OpenGL(R) version 1.2.1 Sample Implementation
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
-**
 */
-/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.11 2000/12/07 20:26:03 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.12 2001/03/21 16:04:39 dawes Exp $ */
 
 /*
  * Direct rendering support added by Precision Insight, Inc.

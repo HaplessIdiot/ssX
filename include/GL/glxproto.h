@@ -1,7 +1,7 @@
 #ifndef _GLX_glxproto_h_
 #define _GLX_glxproto_h_
 
-/* $XFree86: xc/include/GL/glxproto.h,v 1.2 1999/06/14 07:23:29 dawes Exp $ */
+/* $XFree86: xc/include/GL/glxproto.h,v 1.3 2001/03/21 15:51:38 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -50,7 +50,7 @@
 #define GLXBadContextTag	4
 #define GLXBadCurrentWindow	5
 #define GLXBadRenderRequest	6
-#define GLXBadLargeRequest 	7
+#define GLXBadLargeRequest	7
 #define GLXUnsupportedPrivateRequest	8
 #define GLXBadFBConfig		9
 #define GLXBadPbuffer		10
@@ -65,7 +65,7 @@
 **  event - this helps initialization if the server supports the pbuffer
 **  extension and the client doesn't.
 */
-#define GLX_PbufferClobber     0
+#define GLX_PbufferClobber	0
 
 #define __GLX_NUMBER_EVENTS 17
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.48 2001/03/08 17:12:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.49 2001/04/05 21:29:18 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -700,15 +700,16 @@ readSparse8(pointer Base, register unsigned long Offset)
     mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     shift = (Offset & 0x3) << 3;
-      if (Offset >= (hae_thresh)) {
+    if (Offset >= (hae_thresh)) {
         msb = Offset & hae_mask;
         Offset -= msb;
 	if (msb_set != msb) {
-	sethae(msb);
-	msb_set = msb;
+	    sethae(msb);
+	    msb_set = msb;
 	}
-      }
+    }
 
+    mem_barrier();
     result = *(vuip) ((unsigned long)lnxSBase + (Offset << 5));
     result >>= shift;
     return 0xffUL & result;
@@ -723,14 +724,16 @@ readSparse16(pointer Base, register unsigned long Offset)
     mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     shift = (Offset & 0x2) << 3;
-      if (Offset >= hae_thresh) {
+    if (Offset >= hae_thresh) {
         msb = Offset & hae_mask;
         Offset -= msb;
-      if (msb_set != msb) {
-	sethae(msb);
-	msb_set = msb;
-      }
+	if (msb_set != msb) {
+	    sethae(msb);
+	    msb_set = msb;
+	}
     }
+
+    mem_barrier();
     result = *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2)));
     result >>= shift;
     return 0xffffUL & result;
@@ -752,13 +755,15 @@ writeSparse8(int Value, pointer Base, register unsigned long Offset)
     write_mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= hae_thresh) {
-      msb = Offset & hae_mask;
-      Offset -= msb;
-      if (msb_set != msb) {
-	sethae(msb); 
-	msb_set = msb;
-      }
+        msb = Offset & hae_mask;
+	Offset -= msb;
+	if (msb_set != msb) {
+	    sethae(msb); 
+	    msb_set = msb;
+	}
     }
+
+    write_mem_barrier();
     *(vuip) ((unsigned long)lnxSBase + (Offset << 5)) = b * 0x01010101;
 }
 
@@ -771,13 +776,15 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
     write_mem_barrier();
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= hae_thresh) {
-      msb = Offset & hae_mask;
-      Offset -= msb;
-      if (msb_set != msb) {
-	sethae(msb);
-	msb_set = msb;
-      }
+        msb = Offset & hae_mask;
+	Offset -= msb;
+	if (msb_set != msb) {
+	    sethae(msb);
+	    msb_set = msb;
+	}
     }
+
+    write_mem_barrier();
     *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2))) =
       w * 0x00010001;
 }
@@ -798,12 +805,12 @@ writeSparseNB8(int Value, pointer Base, register unsigned long Offset)
 
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= hae_thresh) {
-      msb = Offset & hae_mask;
-      Offset -= msb;
-      if (msb_set != msb) {
-	sethae(msb);
-	msb_set = msb;
-      }
+        msb = Offset & hae_mask;
+	Offset -= msb;
+	if (msb_set != msb) {
+	    sethae(msb);
+	    msb_set = msb;
+	}
     }
     *(vuip) ((unsigned long)lnxSBase + (Offset << 5)) = b * 0x01010101;
 }
@@ -816,12 +823,12 @@ writeSparseNB16(int Value, pointer Base, register unsigned long Offset)
 
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     if (Offset >= hae_thresh) {
-      msb = Offset & hae_mask;
-      Offset -= msb;
-      if (msb_set != msb) {
-	sethae(msb);
-	msb_set = msb;
-      }
+        msb = Offset & hae_mask;
+	Offset -= msb;
+	if (msb_set != msb) {
+	    sethae(msb);
+	    msb_set = msb;
+	}
     }
     *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2))) =
       w * 0x00010001;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.h,v 1.3 2000/12/12 17:17:08 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.h,v 1.4 2001/01/08 01:07:23 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -73,6 +73,23 @@ extern void r128DDInitTextureFuncs( GLcontext *ctx );
 
 #define R128PACKCOLOR4444( r, g, b, a )					\
    ((((a) & 0xf0) << 8) | (((r) & 0xf0) << 4) | ((g) & 0xf0) | ((b) >> 4))
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define R128PACKCOLORS565( r0, g0, b0, r1, g1, b1 )			\
+		((R128PACKCOLOR565( r0, g0, b0 )) |			\
+		 (R128PACKCOLOR565( r1, g1, b1 ) << 16))
+#define R128PACKCOLORS4444( r0, g0, b0, a0, r1, g1, b1, a1 )		\
+		((R128PACKCOLOR4444( r0, g0, b0, a0 )) |		\
+		 (R128PACKCOLOR4444( r1, g1, b1, a1 ) << 16))
+#else
+#define R128PACKCOLORS565( r0, g0, b0, r1, g1, b1 )			\
+		((R128PACKCOLOR565( r1, g1, b1 )) |			\
+		 (R128PACKCOLOR565( r0, g0, b0 ) << 16))
+#define R128PACKCOLORS4444( r0, g0, b0, a0, r1, g1, b1, a1 )		\
+		((R128PACKCOLOR4444( r1, g1, b1, a1 )) |		\
+		 (R128PACKCOLOR4444( r0, g0, b0, a0 ) << 16))
+
+#endif
 
 static __inline__ CARD32 r128PackColor( GLuint cpp,
 					GLubyte r, GLubyte g,

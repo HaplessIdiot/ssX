@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_dd.c,v 1.4 2001/03/21 16:14:24 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_dd.c,v 1.5 2001/03/25 05:32:00 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -46,7 +46,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "X86/common_x86_asm.h"
 #endif
 
-#define RADEON_DATE	"20010319"
+#define RADEON_DATE	"20010402"
 
 
 /* Return the width and height of the current color buffer.
@@ -79,18 +79,22 @@ static const GLubyte *radeonDDGetString( GLcontext *ctx, GLenum name )
       /* Append any chipset-specific information.  None yet.
        */
 
-      /* Append any AGP-specific information.
+      /* Append any AGP/PCI-specific information.
        */
-      switch ( rmesa->radeonScreen->AGPMode ) {
-      case 1:
-	 strncat( buffer, " AGP 1x", 7 );
-	 break;
-      case 2:
-	 strncat( buffer, " AGP 2x", 7 );
-	 break;
-      case 4:
-	 strncat( buffer, " AGP 4x", 7 );
-	 break;
+      if ( rmesa->radeonScreen->IsPCI ) {
+	 strncat( buffer, " PCI", 4 );
+      } else {
+	 switch ( rmesa->radeonScreen->AGPMode ) {
+	 case 1:
+	    strncat( buffer, " AGP 1x", 7 );
+	    break;
+	 case 2:
+	    strncat( buffer, " AGP 2x", 7 );
+	    break;
+	 case 4:
+	    strncat( buffer, " AGP 4x", 7 );
+	    break;
+	 }
       }
 
       /* Append any CPU-specific information.

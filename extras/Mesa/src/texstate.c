@@ -129,7 +129,7 @@ _mesa_TexEnvfv( GLenum target, GLenum pname, const GLfloat *param )
                         return;  /* no change */
                      texUnit->CombineModeRGB = mode;
                      ctx->NewState |= NEW_TEXTURE_ENV;
-		     break;
+                     break;
                   default:
                      gl_error( ctx, GL_INVALID_ENUM, "glTexEnv(param)" );
                      return;

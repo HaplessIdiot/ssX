@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.11 2001/03/03 22:08:01 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.12 2001/03/21 16:04:39 dawes Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -448,11 +448,14 @@ static Bool AllocAndFetchScreenConfigs(Display *dpy, __GLXdisplayPrivate *priv)
 
 #ifdef GLX_DIRECT_RENDERING
 	/* Initialize the direct rendering per screen data and functions */
-	if (priv->driDisplay.private)
+	if (priv->driDisplay.private &&
+		priv->driDisplay.createScreen &&
+		priv->driDisplay.createScreen[i]) {
 	    psc->driScreen.private =
-		(*priv->driDisplay.createScreen)(dpy, i, &psc->driScreen,
+		(*(priv->driDisplay.createScreen[i]))(dpy, i, &psc->driScreen,
 						 psc->numConfigs,
 						 psc->configs);
+	}
 #endif
     }
     SyncHandle();

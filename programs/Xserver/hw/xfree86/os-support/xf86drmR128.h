@@ -27,7 +27,7 @@
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.8 2001/03/21 18:08:53 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.9 2001/03/25 05:32:13 tsi Exp $
  *
  */
 
@@ -46,7 +46,7 @@
 #define DRM_R128_DEPTH		0x4
 
 typedef struct {
-   int sarea_priv_offset;
+   unsigned long sarea_priv_offset;
    int is_pci;
    int cce_mode;
    int cce_secure;		/* FIXME: Deprecated, we should remove this */
@@ -60,12 +60,12 @@ typedef struct {
    unsigned int depth_offset, depth_pitch;
    unsigned int span_offset;
 
-   unsigned int fb_offset;
-   unsigned int mmio_offset;
-   unsigned int ring_offset;
-   unsigned int ring_rptr_offset;
-   unsigned int buffers_offset;
-   unsigned int agp_textures_offset;
+   unsigned long fb_offset;
+   unsigned long mmio_offset;
+   unsigned long ring_offset;
+   unsigned long ring_rptr_offset;
+   unsigned long buffers_offset;
+   unsigned long agp_textures_offset;
 } drmR128Init;
 
 extern int drmR128InitCCE( int fd, drmR128Init *info );
@@ -90,7 +90,7 @@ extern int drmR128FlushVertexBuffer( int fd, int prim, int indx,
 extern int drmR128FlushIndices( int fd, int prim, int indx,
 				int start, int end, int discard );
 
-extern int drmR128TextureBlit( int fd, int indx,
+extern int drmR128TextureBlit( int fd, int index,
 			       int offset, int pitch, int format,
 			       int x, int y, int width, int height );
 
@@ -107,7 +107,7 @@ extern int drmR128ReadDepthPixels( int fd, int n,
 
 extern int drmR128PolygonStipple( int fd, unsigned int *mask );
 
-extern int drmR128FlushIndirectBuffer( int fd, int indx,
+extern int drmR128FlushIndirectBuffer( int fd, int index,
 				       int start, int end, int discard );
 
 #endif

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.43 2001/01/21 21:19:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.44 2001/03/02 02:45:38 dawes Exp $ */
 
 /*
  * Authors:
@@ -550,14 +550,6 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 
    if (!xf86SetDefaultVisual(pScrn, -1)) 
       return FALSE;
-
-   /* We don't currently support DirectColor at > 8bpp */
-   if ((pScrn->depth > 8) && (pScrn->defaultVisual != TrueColor)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		 " (%s) is not supported at depth %d\n",
-		 xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-      return FALSE;
-   }
 
    /* We use a programamble clock */
    pScrn->progClock = TRUE;
@@ -1383,6 +1375,9 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
       pVga->CRTC[0x13] = pScrn->displayWidth >> 2;
       i810Reg->ExtOffset      = pScrn->displayWidth >> 10;
       i810Reg->BitBLTControl = COLEXP_16BPP;
+
+      /* Enable Palette Programming for Direct Color visuals. -jens */
+      i810Reg->PixelPipeCfg2 = DISPLAY_GAMMA_ENABLE;
       break;
    case 24:
       pVga->CRTC[0x13]       = (pScrn->displayWidth * 3) >> 3;
@@ -1390,6 +1385,9 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
       i810Reg->PixelPipeCfg1 = DISPLAY_24BPP_MODE;
       i810Reg->BitBLTControl = COLEXP_24BPP;
+
+      /* Enable Palette Programming for Direct Color visuals. -jens */
+      i810Reg->PixelPipeCfg2 = DISPLAY_GAMMA_ENABLE;
       break;
    default:
       break;
@@ -1538,20 +1536,55 @@ I810LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 
    pI810 = I810PTR(pScrn);
    hwp = VGAHWPTR(pScrn);
+
+   /* Load all four entries in each of the 64 color ranges.  -jens */
    for (i=0; i<numColors; i++) {
       index=indices[i/2];
       r=colors[index].red;
       b=colors[index].blue;
       index=indices[i];
       g=colors[index].green;
+
       hwp->writeDacWriteAddr(hwp, index<<2);
       hwp->writeDacData(hwp, r);
       hwp->writeDacData(hwp, g);
       hwp->writeDacData(hwp, b);
+
+      hwp->writeDacWriteAddr(hwp, (index<<2)+1);
+      hwp->writeDacData(hwp, r);
+      hwp->writeDacData(hwp, g);
+      hwp->writeDacData(hwp, b);
+
+      hwp->writeDacWriteAddr(hwp, (index<<2)+2);
+      hwp->writeDacData(hwp, r);
+      hwp->writeDacData(hwp, g);
+      hwp->writeDacData(hwp, b);
+
+      hwp->writeDacWriteAddr(hwp, (index<<2)+3);
+      hwp->writeDacData(hwp, r);
+      hwp->writeDacData(hwp, g);
+      hwp->writeDacData(hwp, b);
+
       i++;
       index=indices[i];
       g=colors[index].green;
+
       hwp->writeDacWriteAddr(hwp, index<<2);
+      hwp->writeDacData(hwp, r);
+      hwp->writeDacData(hwp, g);
+      hwp->writeDacData(hwp, b);
+
+      hwp->writeDacWriteAddr(hwp, (index<<2)+1);
+      hwp->writeDacData(hwp, r);
+      hwp->writeDacData(hwp, g);
+      hwp->writeDacData(hwp, b);
+
+      hwp->writeDacWriteAddr(hwp, (index<<2)+2);
+      hwp->writeDacData(hwp, r);
+      hwp->writeDacData(hwp, g);
+      hwp->writeDacData(hwp, b);
+
+      hwp->writeDacWriteAddr(hwp, (index<<2)+3);
       hwp->writeDacData(hwp, r);
       hwp->writeDacData(hwp, g);
       hwp->writeDacData(hwp, b);
@@ -1568,12 +1601,12 @@ I810LoadPalette24(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 
    pI810 = I810PTR(pScrn);
    hwp = VGAHWPTR(pScrn);
+
    for (i=0; i<numColors; i++) {
       index=indices[i];
       r=colors[index].red;
-      b=colors[index].blue;
-      index=indices[i];
       g=colors[index].green;
+      b=colors[index].blue;
       hwp->writeDacWriteAddr(hwp, index);
       hwp->writeDacData(hwp, r);
       hwp->writeDacData(hwp, g);
@@ -1663,6 +1696,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    vgaHWPtr hwp;
    I810Ptr pI810;
    VisualPtr visual;
+   MessageType driFrom = X_DEFAULT;
 
    pScrn = xf86Screens[pScreen->myNum];
    pI810 = I810PTR(pScrn);
@@ -1672,18 +1706,10 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    miClearVisualTypes();
 
-#if 1   /* disable DirectColor */
-   if(pScrn->depth > 8) {
-      if (!miSetVisualTypes(pScrn->depth, TrueColorMask,
-                         pScrn->rgbBits, pScrn->defaultVisual))
-           return FALSE;
-   } else 
-#endif
-   {
-       if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth),
-			 pScrn->rgbBits, pScrn->defaultVisual))
-           return FALSE;
-   }
+   /* Re-implemented Direct Color support, -jens */
+   if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth),
+		     pScrn->rgbBits, pScrn->defaultVisual))
+       return FALSE;
    
    if (!miSetPixmapDepths ())
        return FALSE;
@@ -1709,11 +1735,12 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     * InitGLXVisuals call back.
     */
    
-   if (!xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE) &&
-       xf86ReturnOptValBool(I810Options, OPTION_DRI, TRUE)) {
-      pI810->directRenderingEnabled = I810DRIScreenInit(pScreen); 
-   } else {
+   if (xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE) ||
+       !xf86ReturnOptValBool(I810Options, OPTION_DRI, TRUE)) {
       pI810->directRenderingEnabled = FALSE;
+      driFrom = X_CONFIG;
+   } else {
+      pI810->directRenderingEnabled = I810DRIScreenInit(pScreen); 
    }
    
 #else
@@ -1767,7 +1794,8 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
 #ifdef XF86DRI
    if (pI810->LpRing.mem.Start == 0 && pI810->directRenderingEnabled) {
-      pI810->directRenderingEnabled = 0;
+      pI810->directRenderingEnabled = FALSE;
+      driFrom = X_PROBED;
       I810DRICloseScreen(pScreen);
    }
 
@@ -1814,7 +1842,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    if (!miCreateDefColormap(pScreen)) return FALSE;
 
-#if 0   /* palettes do not work */
+   /* Use driver specific palette load routines for Direct Color support. -jens */
    if (pScrn->bitsPerPixel==16) {
       if (!xf86HandleColormaps(pScreen, 256, 8, I810LoadPalette16, 0,
 			       CMAP_PALETTED_TRUECOLOR|
@@ -1826,10 +1854,6 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 			       CMAP_RELOAD_ON_MODE_SWITCH))
 	 return FALSE;
    }
-#else
-  if (!vgaHWHandleColormaps(pScreen))
-	return FALSE;
-#endif
 
    xf86DPMSInit(pScreen, I810DisplayPowerManagementSet, 0);
 
@@ -1845,15 +1869,9 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 #endif
    
    if (pI810->directRenderingEnabled) {
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering: Enabled\n");
+      xf86DrvMsg(pScrn->scrnIndex, driFrom, "Direct rendering enabled\n");
    } else {
-      if(pI810->agpAcquired2d == TRUE) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering: Disabled\n");
-      }
-      else {
-	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering: Failed\n");
-	 return FALSE;
-      }
+      xf86DrvMsg(pScrn->scrnIndex, driFrom, "Direct rendering disabled\n");
    }
 
    pScreen->SaveScreen = I810SaveScreen;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.74 2000/12/13 02:44:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.75 2001/01/06 20:19:08 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -87,9 +87,9 @@ typedef enum {
     MODE_VBLANK_WIDE,	/* vertical blanking too wide */
     MODE_PANEL,         /* exceeds panel dimensions */
     MODE_INTERLACE_WIDTH, /* width too large for interlaced mode */
-    MODE_ONE_WIDTH,    /* only one width is supported */
-    MODE_ONE_HEIGHT,   /* only one height is supported */
-    MODE_ONE_SIZE,     /* only one resolution is supported */
+    MODE_ONE_WIDTH,     /* only one width is supported */
+    MODE_ONE_HEIGHT,    /* only one height is supported */
+    MODE_ONE_SIZE,      /* only one resolution is supported */
     MODE_BAD = -2,	/* unspecified reason */
     MODE_ERROR	= -1	/* error condition */
 } ModeStatus;

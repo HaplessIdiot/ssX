@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.18 2001/03/08 17:12:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.19 2001/03/21 17:02:26 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -50,16 +50,16 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
   case 16:
     numConfigs = 16;
 
-    if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
+    if (!(pConfigs = (__GLXvisualConfig*)xcalloc(sizeof(__GLXvisualConfig),
 						   numConfigs))) {
       return FALSE;
     }
-    if (!(pTDFXConfigs = (TDFXConfigPrivPtr)xnfcalloc(sizeof(TDFXConfigPrivRec),
+    if (!(pTDFXConfigs = (TDFXConfigPrivPtr)xcalloc(sizeof(TDFXConfigPrivRec),
 						     numConfigs))) {
       xfree(pConfigs);
       return FALSE;
     }
-    if (!(pTDFXConfigPtrs = (TDFXConfigPrivPtr*)xnfcalloc(sizeof(TDFXConfigPrivPtr),
+    if (!(pTDFXConfigPtrs = (TDFXConfigPrivPtr*)xcalloc(sizeof(TDFXConfigPrivPtr),
 							 numConfigs))) {
       xfree(pConfigs);
       xfree(pTDFXConfigs);
@@ -141,17 +141,17 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
   case 32:
     numConfigs = 8;
 
-    pConfigs = (__GLXvisualConfig*) xnfcalloc(sizeof(__GLXvisualConfig), numConfigs);
+    pConfigs = (__GLXvisualConfig*) xcalloc(sizeof(__GLXvisualConfig), numConfigs);
     if (!pConfigs)
       return FALSE;
 
-    pTDFXConfigs = (TDFXConfigPrivPtr) xnfcalloc(sizeof(TDFXConfigPrivRec), numConfigs);
+    pTDFXConfigs = (TDFXConfigPrivPtr) xcalloc(sizeof(TDFXConfigPrivRec), numConfigs);
     if (!pTDFXConfigs) {
       xfree(pConfigs);
       return FALSE;
     }
 
-    pTDFXConfigPtrs = (TDFXConfigPrivPtr *) xnfcalloc(sizeof(TDFXConfigPrivPtr), numConfigs);
+    pTDFXConfigPtrs = (TDFXConfigPrivPtr *) xcalloc(sizeof(TDFXConfigPrivPtr), numConfigs);
     if (!pTDFXConfigPtrs) {
       xfree(pConfigs);
       xfree(pTDFXConfigs);
@@ -362,7 +362,7 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->SAREASize = SAREA_MAX;
 #endif
 
-  if (!(pTDFXDRI = (TDFXDRIPtr)xnfcalloc(sizeof(TDFXDRIRec),1))) {
+  if (!(pTDFXDRI = (TDFXDRIPtr)xcalloc(sizeof(TDFXDRIRec),1))) {
     xf86DrvMsg(pScreen->myNum, X_ERROR, "DRI memory allocation failed, disabling DRI.\n");
     DRIDestroyInfoRec(pTDFX->pDRIInfo);
     pTDFX->pDRIInfo=0;

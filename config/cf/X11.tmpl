@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.111 2001/04/05 02:43:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.112 2001/04/07 16:36:01 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2520,7 +2520,7 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 #define LdLibraryPath LD_LIBRARY_PATH
 #endif
 
-#ifdef BuildXKBlib
+#if BuildXKBlib
     XKBFILELIBSRC = $(LIBSRC)/xkbfile
 ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 #ifndef XkbClientDepLibs

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmMga.h,v 3.3 2000/09/26 15:57:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmMga.h,v 3.4 2001/03/21 18:08:53 dawes Exp $ */
 
 #ifndef __XF86DRI_MGA_H__
 #define __XF86DRI_MGA_H__
@@ -15,7 +15,7 @@ typedef struct {
 } drmMGAWarpIndex;
 
 typedef struct {
-   int sarea_priv_offset;
+   unsigned long sarea_priv_offset;
 
    int chipset;
    int sgram;
@@ -32,12 +32,12 @@ typedef struct {
    unsigned int texture_offset[2];
    unsigned int texture_size[2];
 
-   unsigned int fb_offset;
-   unsigned int mmio_offset;
-   unsigned int status_offset;
-   unsigned int warp_offset;
-   unsigned int primary_offset;
-   unsigned int buffers_offset;
+   unsigned long fb_offset;
+   unsigned long mmio_offset;
+   unsigned long status_offset;
+   unsigned long warp_offset;
+   unsigned long primary_offset;
+   unsigned long buffers_offset;
 } drmMGAInit;
 
 extern int drmMGAInitDMA( int fd, drmMGAInit *info );

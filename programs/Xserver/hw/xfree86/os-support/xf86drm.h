@@ -26,7 +26,7 @@
  *
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.12 2000/09/24 13:51:32 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.13 2001/03/21 18:08:53 dawes Exp $
  *
  */
 
@@ -93,7 +93,8 @@ typedef enum {
     DRM_FRAME_BUFFER    = 0,      /* WC, no caching, no core dump           */
     DRM_REGISTERS       = 1,      /* no caching, no core dump               */
     DRM_SHM             = 2,      /* shared, cached                         */
-    DRM_AGP             = 3	  /* AGP/GART                               */
+    DRM_AGP             = 3,	  /* AGP/GART                               */
+    DRM_SCATTER_GATHER  = 4	  /* PCI scatter/gather                     */
 } drmMapType;
 
 typedef enum {
@@ -125,7 +126,8 @@ typedef enum {			 /* These values *MUST* match drm.h         */
 
 typedef enum {
     DRM_PAGE_ALIGN       = 0x01,
-    DRM_AGP_BUFFER       = 0x02
+    DRM_AGP_BUFFER       = 0x02,
+    DRM_SG_BUFFER        = 0x04
 } drmBufDescFlags;
 
 typedef enum {
@@ -313,6 +315,25 @@ do {	register unsigned int __old __asm("o0");		\
 	} while (0)
 
 #endif
+
+#elif defined(__powerpc__)
+
+#define DRM_CAS(lock,old,new,__ret)			\
+	do {						\
+		__asm__ __volatile__(			\
+			"sync;"				\
+			"0:    lwarx %0,0,%1;"		\
+			"      xor. %0,%3,%0;"		\
+			"      bne 1f;"			\
+			"      stwcx. %2,0,%1;"		\
+			"      bne- 0b;"		\
+			"1:    "			\
+			"sync;"				\
+		: "=&r"(__ret)				\
+		: "r"(lock), "r"(new), "r"(old)		\
+		: "cr0", "memory");			\
+	} while (0)
+
 #endif /* architecture */
 #endif /* __GNUC__ >= 2 */
 
@@ -497,6 +518,11 @@ extern unsigned long drmAgpMemoryUsed(int fd);
 extern unsigned long drmAgpMemoryAvail(int fd);
 extern unsigned int  drmAgpVendorId(int fd);
 extern unsigned int  drmAgpDeviceId(int fd);
+
+/* PCI scatter/gather support: X server (root) only */
+extern int           drmScatterGatherAlloc(int fd, unsigned long size,
+					   unsigned long *handle);
+extern int           drmScatterGatherFree(int fd, unsigned long handle);
 
 /* Support routines */
 extern int           drmError(int err, const char *label);

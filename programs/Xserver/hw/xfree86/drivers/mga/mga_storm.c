@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.86 2001/03/21 17:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.87 2001/04/05 21:29:15 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -818,13 +818,13 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
        MGADRIServerPrivatePtr pMGADRIServer = pMga->DRIServerInfo;
        BoxRec MemBox;
        int cpp = pScrn->bitsPerPixel / 8;
-       int width_bytes = pScrn->displayWidth * cpp;
-       int bufferSize = ((pScrn->virtualY * width_bytes + MGA_BUFFER_ALIGN)
+       int widthBytes = pScrn->displayWidth * cpp;
+       int bufferSize = ((pScrn->virtualY * widthBytes + MGA_BUFFER_ALIGN)
 			 & ~MGA_BUFFER_ALIGN);
        int scanlines;
 
        pMGADRIServer->frontOffset = 0;
-       pMGADRIServer->frontPitch = width_bytes;
+       pMGADRIServer->frontPitch = widthBytes;
 
        /* Try for front, back, depth, and two framebuffers worth of
 	* pixmap cache.  Should be enough for a fullscreen background
@@ -844,10 +844,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
        /* Check to see if there is more room available after the maximum
 	* scanline for textures.
 	*/
-       if ( (int)pMga->FbMapSize - maxlines * width_bytes - bufferSize * 2
+       if ( (int)pMga->FbMapSize - maxlines * widthBytes - bufferSize * 2
 	    > pMGADRIServer->textureSize ) {
 	  pMGADRIServer->textureSize = (pMga->FbMapSize -
-					maxlines * width_bytes -
+					maxlines * widthBytes -
 					bufferSize * 2);
        }
 
@@ -868,14 +868,14 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
        pMGADRIServer->depthOffset = (pMGADRIServer->textureOffset -
 				     bufferSize +
 				     MGA_BUFFER_ALIGN) & ~MGA_BUFFER_ALIGN;
-       pMGADRIServer->depthPitch = width_bytes;
+       pMGADRIServer->depthPitch = widthBytes;
 
        /* Reserve space for the shared back buffer */
        pMGADRIServer->backOffset = (pMGADRIServer->depthOffset - bufferSize +
 				    MGA_BUFFER_ALIGN) & ~MGA_BUFFER_ALIGN;
-       pMGADRIServer->backPitch = width_bytes;
+       pMGADRIServer->backPitch = widthBytes;
 
-       scanlines = pMGADRIServer->backOffset / width_bytes - 1;
+       scanlines = pMGADRIServer->backOffset / widthBytes - 1;
        if ( scanlines > maxlines ) scanlines = maxlines;
 
        MemBox.x1 = 0;
@@ -1137,7 +1137,7 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
     pMga->PlaneMask = ~0;
     /* looks like this doesn't apply to mga g100 pci */
 
-    if ((pMga->Chipset != PCI_CHIP_MGAG100) 
+    if ((pMga->Chipset != PCI_CHIP_MGAG100)
 	&& (pMga->Chipset != PCI_CHIP_MGAG100_PCI))
         OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
 

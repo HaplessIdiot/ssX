@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.7 2001/01/08 01:07:21 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.8 2001/03/21 16:14:24 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -30,6 +30,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
+ *   Michel Dänzer <michdaen@iiic.ethz.ch>
  *
  */
 
@@ -572,8 +573,8 @@ static void r128ConvertTexture16bpp( CARD32 *dst,
       for ( i = 0 ; i < height ; i++ ) {
 	 src = (CARD8 *)image->Data + ((y + i) * pitch + x) * 4;
 	 for ( j = width >> 1 ; j ; j-- ) {
-	    *dst++ = ((R128PACKCOLOR4444( src[0], src[1], src[2], src[3] )) |
-		      (R128PACKCOLOR4444( src[4], src[5], src[6], src[7] ) << 16));
+	    *dst++ = R128PACKCOLORS4444( src[0], src[1], src[2], src[3],
+					 src[4], src[5], src[6], src[7] );
 	    src += 8;
 	 }
       }
@@ -583,8 +584,8 @@ static void r128ConvertTexture16bpp( CARD32 *dst,
       for ( i = 0 ; i < height ; i++ ) {
 	 src = (CARD8 *)image->Data + ((y + i) * pitch + x) * 3;
 	 for ( j = width >> 1 ; j ; j-- ) {
-	    *dst++ = ((R128PACKCOLOR565( src[0], src[1], src[2] )) |
-		      (R128PACKCOLOR565( src[3], src[4], src[5] ) << 16));
+	    *dst++ = R128PACKCOLORS565( src[0], src[1], src[2],
+					src[3], src[4], src[5] );
 	    src += 6;
 	 }
       }
@@ -594,8 +595,8 @@ static void r128ConvertTexture16bpp( CARD32 *dst,
       for ( i = 0 ; i < height ; i++ ) {
 	 src = (CARD8 *)image->Data + ((y + i) * pitch + x);
 	 for ( j = width >> 1 ; j ; j-- ) {
-	    *dst++ = ((R128PACKCOLOR4444( 0xff, 0xff, 0xff, src[0] )) |
-		      (R128PACKCOLOR4444( 0xff, 0xff, 0xff, src[1] ) << 16));
+	    *dst++ = R128PACKCOLORS4444( 0xff, 0xff, 0xff, src[0],
+					 0xff, 0xff, 0xff, src[1] );
 	    src += 2;
 	 }
       }
@@ -605,8 +606,8 @@ static void r128ConvertTexture16bpp( CARD32 *dst,
       for ( i = 0 ; i < height ; i++ ) {
 	 src = (CARD8 *)image->Data + ((y + i) * pitch + x) * 2;
 	 for ( j = width >> 1 ; j ; j-- ) {
-	    *dst++ = ((R128PACKCOLOR4444( src[0], src[0], src[0], src[1] )) |
-		      (R128PACKCOLOR4444( src[2], src[2], src[2], src[3] ) << 16));
+	    *dst++ = R128PACKCOLORS4444( src[0], src[0], src[0], src[1],
+					 src[2], src[2], src[2], src[3] );
 	    src += 4;
 	 }
       }
@@ -877,7 +878,8 @@ int r128UploadTexImages( r128ContextPtr rmesa, r128TexObjPtr t )
       t->memBlock = mmAllocMem( rmesa->texHeap[heap], t->totalSize, 12, 0 );
 
       /* Try AGP before kicking anything out of local mem */
-      if ( !t->memBlock && heap == R128_CARD_HEAP ) {
+      if ( !rmesa->r128Screen->IsPCI &&
+	   !t->memBlock && heap == R128_CARD_HEAP ) {
 	 t->memBlock = mmAllocMem( rmesa->texHeap[R128_AGP_HEAP],
 				   t->totalSize, 12, 0 );
 

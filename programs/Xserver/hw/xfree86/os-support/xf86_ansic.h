@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.44 2000/12/06 20:39:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.45 2001/03/03 22:53:02 tsi Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -318,6 +318,8 @@ extern void xf86longjmp(xf86jmp_buf env, int val);
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif
+#include <sys/stat.h>
+#define stat_t struct stat
 #endif /* XFree86LOADER || NEED_XF86_PROTOTYPES */
 
 /*

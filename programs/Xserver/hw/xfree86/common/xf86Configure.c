@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.51 2001/01/16 23:46:29 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.53 2001/02/15 20:31:49 eich Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -586,7 +586,9 @@ configureModuleSection (void)
     	    module = xf86confmalloc(sizeof(XF86LoadRec));
     	    memset((XF86LoadPtr)module,0,sizeof(XF86LoadRec));
     	    module->load_name = *el;
-	    ptr->mod_load_lst = (XF86LoadPtr)xf86addListItem(
+	    /* HACK, remove GLcore, glx, loads it as a submodule */
+	    if (strcmp(*el, "GLcore"))
+	    	ptr->mod_load_lst = (XF86LoadPtr)xf86addListItem(
 					(glp)ptr->mod_load_lst, (glp)module);
     	}
 	xfree(elist);

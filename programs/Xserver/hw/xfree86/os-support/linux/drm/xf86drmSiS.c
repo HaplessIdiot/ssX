@@ -1,14 +1,12 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.3 2000/10/10 19:35:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.4 2001/01/08 01:07:37 martin Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
 # include "xf86_ansic.h"
-# include "xf86Priv.h"
 # define _DRM_MALLOC xalloc
 # define _DRM_FREE   xfree
 # ifndef XFree86LOADER
-#  include <sys/stat.h>
 #  include <sys/mman.h>
 # endif
 #else
@@ -21,7 +19,6 @@
 # include <errno.h>
 # include <signal.h>
 # include <sys/types.h>
-# include <sys/stat.h>
 # include <sys/ioctl.h>
 # include <sys/mman.h>
 # include <sys/time.h>

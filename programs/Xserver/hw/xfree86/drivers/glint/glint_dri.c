@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.23 2001/03/21 17:18:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.25 2001/03/28 11:10:56 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -92,20 +92,20 @@ GLINTInitVisualConfigs(ScreenPtr pScreen)
 	   either alpha buffer or 3D rendering in Overlay */
 	numConfigs = 5;
 
-	if (!(pConfigs = (__GLXvisualConfig *)xnfcalloc(
+	if (!(pConfigs = (__GLXvisualConfig *)xcalloc(
 					    sizeof(__GLXvisualConfig),
 					    numConfigs))) {
 	    return FALSE;
 	}
 
-	if (!(pGlintConfigs = (GLINTConfigPrivPtr)xnfcalloc(
+	if (!(pGlintConfigs = (GLINTConfigPrivPtr)xcalloc(
 					    sizeof(GLINTConfigPrivRec),
 					    numConfigs))) {
 	    xfree(pConfigs);
 	    return FALSE;
 	}
 
-	if (!(pGlintConfigPtrs = (GLINTConfigPrivPtr *)xnfcalloc(
+	if (!(pGlintConfigPtrs = (GLINTConfigPrivPtr *)xcalloc(
 					    sizeof(GLINTConfigPrivPtr),
 					    numConfigs))) {
 	    xfree(pGlintConfigs);
@@ -412,7 +412,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->SAREASize = SAREA_MAX;
 #endif
 
-    if (!(pGlintDRI = (GLINTDRIPtr)xnfcalloc(sizeof(GLINTDRIRec),1))) {
+    if (!(pGlintDRI = (GLINTDRIPtr)xcalloc(sizeof(GLINTDRIRec),1))) {
 	DRIDestroyInfoRec(pGlint->pDRIInfo);
 	return FALSE;
     }

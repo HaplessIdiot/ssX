@@ -1,4 +1,3 @@
-/* $Id: texformat.c,v 1.1 2001/03/21 02:57:38 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library

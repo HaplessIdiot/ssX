@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.18 2001/03/21 17:18:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.19 2001/03/21 19:46:27 dawes Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -120,20 +120,20 @@ static Bool MGAInitVisualConfigs( ScreenPtr pScreen )
    case 16:
       numConfigs = 8;
 
-      pConfigs = (__GLXvisualConfig*)xnfcalloc( sizeof(__GLXvisualConfig),
+      pConfigs = (__GLXvisualConfig*)xcalloc( sizeof(__GLXvisualConfig),
 						numConfigs );
       if ( !pConfigs ) {
 	 return FALSE;
       }
 
-      pMGAConfigs = (MGAConfigPrivPtr)xnfcalloc( sizeof(MGAConfigPrivRec),
+      pMGAConfigs = (MGAConfigPrivPtr)xcalloc( sizeof(MGAConfigPrivRec),
 						 numConfigs );
       if ( !pMGAConfigs ) {
 	 xfree( pConfigs );
 	 return FALSE;
       }
 
-      pMGAConfigPtrs = (MGAConfigPrivPtr*)xnfcalloc( sizeof(MGAConfigPrivPtr),
+      pMGAConfigPtrs = (MGAConfigPrivPtr*)xcalloc( sizeof(MGAConfigPrivPtr),
 						     numConfigs );
       if ( !pMGAConfigPtrs ) {
 	 xfree( pConfigs );
@@ -216,20 +216,20 @@ static Bool MGAInitVisualConfigs( ScreenPtr pScreen )
    case 32:
       numConfigs = 8;
 
-      pConfigs = (__GLXvisualConfig*)xnfcalloc( sizeof(__GLXvisualConfig),
+      pConfigs = (__GLXvisualConfig*)xcalloc( sizeof(__GLXvisualConfig),
 						numConfigs );
       if ( !pConfigs ) {
 	 return FALSE;
       }
 
-      pMGAConfigs = (MGAConfigPrivPtr)xnfcalloc( sizeof(MGAConfigPrivRec),
+      pMGAConfigs = (MGAConfigPrivPtr)xcalloc( sizeof(MGAConfigPrivRec),
 						 numConfigs );
       if ( !pMGAConfigs ) {
 	 xfree( pConfigs );
 	 return FALSE;
       }
 
-      pMGAConfigPtrs = (MGAConfigPrivPtr*)xnfcalloc( sizeof(MGAConfigPrivPtr),
+      pMGAConfigPtrs = (MGAConfigPrivPtr*)xcalloc( sizeof(MGAConfigPrivPtr),
 						     numConfigs );
       if ( !pMGAConfigPtrs ) {
 	 xfree( pConfigs );
@@ -943,14 +943,17 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
 
    if ( (pScrn->bitsPerPixel / 8) != 2 &&
 	(pScrn->bitsPerPixel / 8) != 4 ) {
-      xf86DrvMsg( pScreen->myNum, X_INFO,
+      xf86DrvMsg( pScreen->myNum, X_ERROR,
 		  "[drm] Direct rendering only supported in 16 and 32 bpp modes\n" );
       return FALSE;
    }
 
    pDRIInfo = DRICreateInfoRec();
-   if ( !pDRIInfo )
+   if ( !pDRIInfo ) {
+      xf86DrvMsg( pScreen->myNum, X_ERROR,
+		  "[drm] DRICreateInfoRec() failed\n" );
       return FALSE;
+   }
    pMga->pDRIInfo = pDRIInfo;
 
    pDRIInfo->drmDriverName = MGAKernelDriverName;
@@ -998,7 +1001,7 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
 
    pDRIInfo->SAREASize = SAREA_MAX;
 
-   pMGADRI = (MGADRIPtr)xnfcalloc( sizeof(MGADRIRec), 1 );
+   pMGADRI = (MGADRIPtr)xcalloc( sizeof(MGADRIRec), 1 );
    if ( !pMGADRI ) {
       DRIDestroyInfoRec( pMga->pDRIInfo );
       pMga->pDRIInfo = 0;
@@ -1008,7 +1011,7 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
    }
 
    pMGADRIServer = (MGADRIServerPrivatePtr)
-      xnfcalloc( sizeof(MGADRIServerPrivateRec), 1 );
+      xcalloc( sizeof(MGADRIServerPrivateRec), 1 );
    if ( !pMGADRIServer ) {
       xfree( pMGADRI );
       DRIDestroyInfoRec( pMga->pDRIInfo );

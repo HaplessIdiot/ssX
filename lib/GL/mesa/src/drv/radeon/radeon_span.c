@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_span.c,v 1.2 2001/01/16 05:10:58 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_span.c,v 1.3 2001/03/21 16:14:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -260,6 +260,7 @@ do {									\
  * Stencil buffer
  */
 
+#if 0
 /* 24 bit depth, 8 bit stencil depthbuffer functions
  */
 #define WRITE_STENCIL( _x, _y, d )					\
@@ -281,7 +282,7 @@ do {									\
 
 #define TAG(x) radeon##x##_24_8
 #include "stenciltmp.h"
-
+#endif
 
 
 void radeonDDInitSpanFuncs( GLcontext *ctx )

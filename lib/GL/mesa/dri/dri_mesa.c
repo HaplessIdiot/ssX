@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.14 2001/01/16 05:10:57 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.15 2001/03/21 16:14:19 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -459,7 +459,7 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
 	if (try) {
 	    if (psp->fullscreen && !psp->pSAREA->frame.fullscreen) {
 				/* Server has closed fullscreen mode */
-		__driMesaMessage("server closed fullscreen mode\n");
+		__driMesaMessage("server closed fullscreen mode");
 		psp->fullscreen = NULL;
 	    }
 	    if (XF86DRIOpenFullScreen(dpy, scrn, draw)) {

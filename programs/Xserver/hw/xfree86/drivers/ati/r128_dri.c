@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.11 2001/03/21 17:18:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.12 2001/03/21 19:46:26 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -47,12 +47,20 @@
 				/* X and server generic header files */
 #include "xf86.h"
 #include "windowstr.h"
+#include "xf86PciInfo.h"
 
 				/* GLX/DRI/DRM definitions */
 #define _XF86DRI_SERVER_
 #include "GL/glxtokens.h"
 #include "sarea.h"
 
+/* ?? HACK - for now, put this here... */
+/* ?? Alpha - this may need to be a variable to handle UP1x00 vs TITAN */
+#if defined(__alpha__)
+# define DRM_PAGE_SIZE 8192
+#else
+# define DRM_PAGE_SIZE 4096
+#endif
 
 /* Initialize the visual configs that are supported by the hardware.
    These are combined with the visual configs that the indirect
@@ -72,6 +80,9 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
     case 8:  /* 8bpp mode is not support */
     case 15: /* FIXME */
     case 24: /* FIXME */
+	xf86DrvMsg(pScreen->myNum, X_WARNING,
+		   "R128DRIScreenInit failed (depth %d not supported).  "
+		   "Disabling DRI.\n", info->CurrentLayout.pixel_code);
 	return FALSE;
 
 #define R128_USE_ACCUM   1
@@ -83,18 +94,18 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	if (R128_USE_STENCIL) numConfigs *= 2;
 
 	if (!(pConfigs
-	      = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
+	      = (__GLXvisualConfig*)xcalloc(sizeof(__GLXvisualConfig),
 					      numConfigs))) {
 	    return FALSE;
 	}
 	if (!(pR128Configs
-	      = (R128ConfigPrivPtr)xnfcalloc(sizeof(R128ConfigPrivRec),
+	      = (R128ConfigPrivPtr)xcalloc(sizeof(R128ConfigPrivRec),
 					     numConfigs))) {
 	    xfree(pConfigs);
 	    return FALSE;
 	}
 	if (!(pR128ConfigPtrs
-	      = (R128ConfigPrivPtr*)xnfcalloc(sizeof(R128ConfigPrivPtr),
+	      = (R128ConfigPrivPtr*)xcalloc(sizeof(R128ConfigPrivPtr),
 					      numConfigs))) {
 	    xfree(pConfigs);
 	    xfree(pR128Configs);
@@ -160,18 +171,18 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	if (R128_USE_STENCIL) numConfigs *= 2;
 
 	if (!(pConfigs
-	      = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
+	      = (__GLXvisualConfig*)xcalloc(sizeof(__GLXvisualConfig),
 					      numConfigs))) {
 	    return FALSE;
 	}
 	if (!(pR128Configs
-	      = (R128ConfigPrivPtr)xnfcalloc(sizeof(R128ConfigPrivRec),
+	      = (R128ConfigPrivPtr)xcalloc(sizeof(R128ConfigPrivRec),
 					     numConfigs))) {
 	    xfree(pConfigs);
 	    return FALSE;
 	}
 	if (!(pR128ConfigPtrs
-	      = (R128ConfigPrivPtr*)xnfcalloc(sizeof(R128ConfigPrivPtr),
+	      = (R128ConfigPrivPtr*)xcalloc(sizeof(R128ConfigPrivPtr),
 					      numConfigs))) {
 	    xfree(pConfigs);
 	    xfree(pR128Configs);
@@ -399,12 +410,12 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
     unsigned long mode;
     unsigned int  vendor, device;
     int           ret;
-    unsigned long cntl;
+    unsigned long cntl, chunk;
     int           s, l;
     int           flags;
 
     if (drmAgpAcquire(info->drmFD) < 0) {
-	xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] AGP not available\n");
+	xf86DrvMsg(pScreen->myNum, X_WARNING, "[agp] AGP not available\n");
 	return FALSE;
     }
 
@@ -457,11 +468,11 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 
 				/* Initialize the CCE ring buffer data */
     info->ringStart       = info->agpOffset;
-    info->ringMapSize     = info->ringSize*1024*1024 + 4096;
+    info->ringMapSize     = info->ringSize*1024*1024 + DRM_PAGE_SIZE;
     info->ringSizeLog2QW  = R128MinBits(info->ringSize*1024*1024/8) - 1;
 
     info->ringReadOffset  = info->ringStart + info->ringMapSize;
-    info->ringReadMapSize = 4096;
+    info->ringReadMapSize = DRM_PAGE_SIZE;
 
 				/* Reserve space for vertex/indirect buffers */
     info->bufStart        = info->ringReadOffset + info->ringReadMapSize;
@@ -576,21 +587,147 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
     OUTREG(R128_AGP_BASE, info->ringHandle); /* Ring buf is at AGP offset 0 */
     OUTREG(R128_AGP_CNTL, cntl);
 
+				/* Disable Rage 128's PCIGART registers */
+    chunk = INREG(R128_BM_CHUNK_0_VAL);
+    chunk &= ~(R128_BM_PTR_FORCE_TO_PCI |
+	       R128_BM_PM4_RD_FORCE_TO_PCI |
+	       R128_BM_GLOBAL_FORCE_TO_PCI);
+    OUTREG(R128_BM_CHUNK_0_VAL, chunk);
+
+    OUTREG(R128_PCI_GART_PAGE, 1); /* Ensure AGP GART is used (for now) */
+
     xf86EnablePciBusMaster(info->PciInfo, TRUE);
 
     return TRUE;
 }
 
-#if 0
-/* Fake the vertex buffers for PCI cards. */
-static Bool R128DRIPciInit(R128InfoPtr info)
+static Bool R128DRIPciInit(R128InfoPtr info, ScreenPtr pScreen)
 {
-    info->bufStart   = 0;
-    info->bufMapSize = info->bufSize*1024*1024;
+    unsigned char *R128MMIO = info->MMIO;
+    CARD32 chunk;
+    int ret;
+    int flags;
+
+    info->agpOffset = 0;
+
+    ret = drmScatterGatherAlloc(info->drmFD, info->agpSize*1024*1024,
+				&info->pciMemHandle);
+    if (ret < 0) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR, "[pci] Out of memory (%d)\n", ret);
+	return FALSE;
+    }
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] %d kB allocated with handle 0x%08x\n",
+	       info->agpSize*1024, info->pciMemHandle);
+
+				/* Initialize the CCE ring buffer data */
+    info->ringStart       = info->agpOffset;
+    info->ringMapSize     = info->ringSize*1024*1024 + DRM_PAGE_SIZE;
+    info->ringSizeLog2QW  = R128MinBits(info->ringSize*1024*1024/8) - 1;
+
+    info->ringReadOffset  = info->ringStart + info->ringMapSize;
+    info->ringReadMapSize = DRM_PAGE_SIZE;
+
+				/* Reserve space for vertex/indirect buffers */
+    info->bufStart        = info->ringReadOffset + info->ringReadMapSize;
+    info->bufMapSize      = info->bufSize*1024*1024;
+
+    flags = DRM_READ_ONLY | DRM_LOCKED | DRM_KERNEL;
+
+    if (drmAddMap(info->drmFD, info->ringStart, info->ringMapSize,
+		  DRM_SCATTER_GATHER, flags, &info->ringHandle) < 0) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+		   "[pci] Could not add ring mapping\n");
+	return FALSE;
+    }
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] ring handle = 0x%08lx\n", info->ringHandle);
+
+    if (drmMap(info->drmFD, info->ringHandle, info->ringMapSize,
+	       (drmAddressPtr)&info->ring) < 0) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR, "[pci] Could not map ring\n");
+	return FALSE;
+    }
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] Ring mapped at 0x%08lx\n",
+	       (unsigned long)info->ring);
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] Ring contents 0x%08lx\n",
+	       *(unsigned long *)info->ring);
+
+    if (drmAddMap(info->drmFD, info->ringReadOffset, info->ringReadMapSize,
+		  DRM_SCATTER_GATHER, flags, &info->ringReadPtrHandle) < 0) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+		   "[pci] Could not add ring read ptr mapping\n");
+	return FALSE;
+    }
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] ring read ptr handle = 0x%08lx\n",
+	       info->ringReadPtrHandle);
+
+    if (drmMap(info->drmFD, info->ringReadPtrHandle, info->ringReadMapSize,
+	       (drmAddressPtr)&info->ringReadPtr) < 0) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+		   "[pci] Could not map ring read ptr\n");
+	return FALSE;
+    }
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] Ring read ptr mapped at 0x%08lx\n",
+	       (unsigned long)info->ringReadPtr);
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] Ring read ptr contents 0x%08lx\n",
+	       *(unsigned long *)info->ringReadPtr);
+
+    if (drmAddMap(info->drmFD, info->bufStart, info->bufMapSize,
+		  DRM_SCATTER_GATHER, 0, &info->bufHandle) < 0) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+		   "[pci] Could not add vertex/indirect buffers mapping\n");
+	return FALSE;
+    }
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] vertex/indirect buffers handle = 0x%08lx\n",
+	       info->bufHandle);
+
+    if (drmMap(info->drmFD, info->bufHandle, info->bufMapSize,
+	       (drmAddressPtr)&info->buf) < 0) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+		   "[pci] Could not map vertex/indirect buffers\n");
+	return FALSE;
+    }
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] Vertex/indirect buffers mapped at 0x%08lx\n",
+	       (unsigned long)info->buf);
+    xf86DrvMsg(pScreen->myNum, X_INFO,
+	       "[pci] Vertex/indirect buffers contents 0x%08lx\n",
+	       *(unsigned long *)info->buf);
+
+    switch (info->Chipset) {
+    case PCI_CHIP_RAGE128LE:
+    case PCI_CHIP_RAGE128RE:
+    case PCI_CHIP_RAGE128RK:
+	/* This is a PCI card, do nothing */
+	break;
+
+    case PCI_CHIP_RAGE128LF:
+    case PCI_CHIP_RAGE128MF:
+    case PCI_CHIP_RAGE128ML:
+    case PCI_CHIP_RAGE128RF:
+    case PCI_CHIP_RAGE128RG:
+    case PCI_CHIP_RAGE128RL:
+    case PCI_CHIP_RAGE128PF:
+    default:
+	/* This is really an AGP card, force PCI GART mode */
+        chunk = INREG(R128_BM_CHUNK_0_VAL);
+        chunk |= (R128_BM_PTR_FORCE_TO_PCI |
+		  R128_BM_PM4_RD_FORCE_TO_PCI |
+		  R128_BM_GLOBAL_FORCE_TO_PCI);
+        OUTREG(R128_BM_CHUNK_0_VAL, chunk);
+        OUTREG(R128_PCI_GART_PAGE, 0); /* Ensure PCI GART is used */
+        break;
+    }
 
     return TRUE;
 }
-#endif
 
 /* Add a map for the MMIO registers that will be accessed by any
    DRI-based clients. */
@@ -655,11 +792,20 @@ static int R128DRIKernelInit(R128InfoPtr info, ScreenPtr pScreen)
 static Bool R128DRIBufInit(R128InfoPtr info, ScreenPtr pScreen)
 {
 				/* Initialize vertex buffers */
-    if ((info->bufNumBufs = drmAddBufs(info->drmFD,
-				       info->bufMapSize / R128_BUFFER_SIZE,
-				       R128_BUFFER_SIZE,
-				       DRM_AGP_BUFFER,
-				       info->bufStart)) <= 0) {
+    if (info->IsPCI) {
+	info->bufNumBufs = drmAddBufs(info->drmFD,
+				      info->bufMapSize / R128_BUFFER_SIZE,
+				      R128_BUFFER_SIZE,
+				      DRM_SG_BUFFER,
+				      info->bufStart);
+    } else {
+	info->bufNumBufs = drmAddBufs(info->drmFD,
+				      info->bufMapSize / R128_BUFFER_SIZE,
+				      R128_BUFFER_SIZE,
+				      DRM_AGP_BUFFER,
+				      info->bufStart);
+    }
+    if (info->bufNumBufs <= 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
 		   "[drm] Could not create vertex/indirect buffers list\n");
 	return FALSE;
@@ -803,7 +949,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->SAREASize = SAREA_MAX;
 #endif
 
-    if (!(pR128DRI = (R128DRIPtr)xnfcalloc(sizeof(R128DRIRec),1))) {
+    if (!(pR128DRI = (R128DRIPtr)xcalloc(sizeof(R128DRIRec),1))) {
 	DRIDestroyInfoRec(info->pDRIInfo);
 	info->pDRIInfo = NULL;
 	return FALSE;
@@ -853,22 +999,18 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 
 				/* Initialize AGP */
     if (!info->IsPCI && !R128DRIAgpInit(info, pScreen)) {
-	R128DRICloseScreen(pScreen);
-	return FALSE;
+	info->IsPCI = TRUE;
+	xf86DrvMsg(pScreen->myNum, X_WARNING,
+		   "AGP failed to initialize -- falling back to PCI mode.\n");
+	xf86DrvMsg(pScreen->myNum, X_WARNING,
+		   "Make sure you have the agpgart kernel module loaded.\n");
     }
-#if 0
-				/* Initialize PCI */
+
+				/* Initialize PCIGART */
     if (info->IsPCI && !R128DRIPciInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
-#else
-    if (info->IsPCI) {
-	xf86DrvMsg(pScreen->myNum, X_ERROR, "PCI cards not yet supported\n");
-	R128DRICloseScreen(pScreen);
-	return FALSE;
-    }
-#endif
 
 				/* DRIScreenInit doesn't add all the
 				   common mappings.  Add additional
@@ -918,7 +1060,7 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
     }
 
     /* Initialize the vertex buffers list */
-    if (!info->IsPCI && !R128DRIBufInit(info, pScreen)) {
+    if (!R128DRIBufInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
@@ -929,36 +1071,36 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
     pSAREAPriv = (R128SAREAPrivPtr)DRIGetSAREAPrivate(pScreen);
     memset(pSAREAPriv, 0, sizeof(*pSAREAPriv));
 
-    pR128DRI                 = (R128DRIPtr)info->pDRIInfo->devPrivate;
+    pR128DRI                    = (R128DRIPtr)info->pDRIInfo->devPrivate;
 
-    pR128DRI->deviceID       = info->Chipset;
-    pR128DRI->width          = pScrn->virtualX;
-    pR128DRI->height         = pScrn->virtualY;
-    pR128DRI->depth          = pScrn->depth;
-    pR128DRI->bpp            = pScrn->bitsPerPixel;
+    pR128DRI->deviceID          = info->Chipset;
+    pR128DRI->width             = pScrn->virtualX;
+    pR128DRI->height            = pScrn->virtualY;
+    pR128DRI->depth             = pScrn->depth;
+    pR128DRI->bpp               = pScrn->bitsPerPixel;
 
-    pR128DRI->IsPCI          = info->IsPCI;
-    pR128DRI->AGPMode        = info->agpMode;
+    pR128DRI->IsPCI             = info->IsPCI;
+    pR128DRI->AGPMode           = info->agpMode;
 
-    pR128DRI->frontOffset    = info->frontOffset;
-    pR128DRI->frontPitch     = info->frontPitch;
-    pR128DRI->backOffset     = info->backOffset;
-    pR128DRI->backPitch      = info->backPitch;
-    pR128DRI->depthOffset    = info->depthOffset;
-    pR128DRI->depthPitch     = info->depthPitch;
-    pR128DRI->spanOffset     = info->spanOffset;
-    pR128DRI->textureOffset  = info->textureOffset;
-    pR128DRI->textureSize    = info->textureSize;
-    pR128DRI->log2TexGran    = info->log2TexGran;
+    pR128DRI->frontOffset       = info->frontOffset;
+    pR128DRI->frontPitch        = info->frontPitch;
+    pR128DRI->backOffset        = info->backOffset;
+    pR128DRI->backPitch         = info->backPitch;
+    pR128DRI->depthOffset       = info->depthOffset;
+    pR128DRI->depthPitch        = info->depthPitch;
+    pR128DRI->spanOffset        = info->spanOffset;
+    pR128DRI->textureOffset     = info->textureOffset;
+    pR128DRI->textureSize       = info->textureSize;
+    pR128DRI->log2TexGran       = info->log2TexGran;
 
-    pR128DRI->registerHandle = info->registerHandle;
-    pR128DRI->registerSize   = info->registerSize;
+    pR128DRI->registerHandle    = info->registerHandle;
+    pR128DRI->registerSize      = info->registerSize;
 
-    pR128DRI->agpTexHandle   = info->agpTexHandle;
-    pR128DRI->agpTexMapSize  = info->agpTexMapSize;
-    pR128DRI->log2AGPTexGran = info->log2AGPTexGran;
-    pR128DRI->agpTexOffset   = info->agpTexStart;
-    pR128DRI->sarea_priv_offset      = sizeof(XF86DRISAREARec);
+    pR128DRI->agpTexHandle      = info->agpTexHandle;
+    pR128DRI->agpTexMapSize     = info->agpTexMapSize;
+    pR128DRI->log2AGPTexGran    = info->log2AGPTexGran;
+    pR128DRI->agpTexOffset      = info->agpTexStart;
+    pR128DRI->sarea_priv_offset = sizeof(XF86DRISAREARec);
 
     return TRUE;
 }
@@ -1006,6 +1148,10 @@ void R128DRICloseScreen(ScreenPtr pScreen)
 	drmAgpFree(info->drmFD, info->agpMemHandle);
 	info->agpMemHandle = 0;
 	drmAgpRelease(info->drmFD);
+    }
+    if (info->pciMemHandle) {
+	drmScatterGatherFree(info->drmFD, info->pciMemHandle);
+	info->pciMemHandle = 0;
     }
 
 				/* De-allocate all DRI resources */

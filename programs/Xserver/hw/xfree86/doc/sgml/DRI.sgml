@@ -13,7 +13,7 @@
     <date>15 March 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.19 2001/03/27 23:21:44 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.20 2001/04/05 19:29:42 dawes Exp $
     </ident>
 
     <toc>
@@ -1046,6 +1046,31 @@
           The AGP mode may be set to 1, 2, or 4.  One is used by default.
           Higher AGP speeds may result in unreliable performance depending
           on your motherboard.
+
+<p>
+          Compaq has funded the implementation of AGP acclerated
+          ReadPixels and DrawPixels in this driver.  With this
+          implementation, on a G400 drawing directly from AGP memory
+          (exported to the client), throughput of up to 1 GB/sec has
+          been measured.
+
+<p>
+          Additionally Compaq's funding has produced several new
+          extensions in Mesa, including one (packed_depth_stencil_MESA)
+          which enables Read/DrawPixels functionality to operate
+          directly on the packed 24/8 depth/stencil buffers of this
+          hardware.
+
+<p>
+          In order to access this functionality, the application must
+          ensure that all pixel processing operations are disabled.
+          There are in addition a fairly complex set of rules regarding
+          which packing/unpacking modes must be used, and which data
+          formats are supported, and alignment constraints.  See the
+          files in lib/GL/mesa/src/drv/mga/DOCS for a summary of these.
+          The extension definitions are included in the Mesa 3.4 source
+          distribution.
+
 
         <sect2>IRQ Assignment
 <p>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.9 2000/12/21 12:22:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.10 2001/03/21 17:02:25 dawes Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -76,16 +76,16 @@ SISInitVisualConfigs(ScreenPtr pScreen)
   case 32:
     numConfigs = (useZ16)?8:16;
 
-    if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
+    if (!(pConfigs = (__GLXvisualConfig*)xcalloc(sizeof(__GLXvisualConfig),
 						   numConfigs))) {
       return FALSE;
     }
-    if (!(pSISConfigs = (SISConfigPrivPtr)xnfcalloc(sizeof(SISConfigPrivRec),
+    if (!(pSISConfigs = (SISConfigPrivPtr)xcalloc(sizeof(SISConfigPrivRec),
 						    numConfigs))) {
       xfree(pConfigs);
       return FALSE;
     }
-    if (!(pSISConfigPtrs = (SISConfigPrivPtr*)xnfcalloc(sizeof(SISConfigPrivPtr),
+    if (!(pSISConfigPtrs = (SISConfigPrivPtr*)xcalloc(sizeof(SISConfigPrivPtr),
 							  numConfigs))) {
       xfree(pConfigs);
       xfree(pSISConfigs);
@@ -246,7 +246,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->SAREASize = SAREA_MAX;
 #endif
 
-  if (!(pSISDRI = (SISDRIPtr)xnfcalloc(sizeof(SISDRIRec),1))) {
+  if (!(pSISDRI = (SISDRIPtr)xcalloc(sizeof(SISDRIRec),1))) {
     DRIDestroyInfoRec(pSIS->pDRIInfo);
     pSIS->pDRIInfo=0;
     return FALSE;
