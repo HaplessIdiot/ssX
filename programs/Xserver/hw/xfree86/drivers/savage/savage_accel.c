@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.3 2000/12/06 22:00:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.4 2000/12/07 20:26:22 dawes Exp $ */
 
 /*
  *
@@ -15,14 +15,10 @@
  *
  */
 
+#include <math.h>
 #include "Xarch.h"
-#include "xf86.h"
-#include "xf86_ansic.h"
-#include "xf86_OSproc.h"
-#include "compiler.h"
 #include "xaalocal.h"
 #include "xaarop.h"
-#include "xf86PciInfo.h"
 #include "miline.h"
 
 #include "savage_driver.h"
@@ -30,15 +26,9 @@
 #include "savage_bci.h"
 
 
-/* Globals used in driver */
-extern pointer s3savMmioMem;
-#ifdef __alpha__
-extern pointer s3savMmioMemSparse;
-#endif
+static unsigned int dwBCIWait2DIdle;
 
 /* Forward declaration of functions used in the driver */
-
-static void SavageAccelSync( ScrnInfoPtr );
 
 static void SavageSetupForScreenToScreenCopy(
     ScrnInfoPtr pScrn,
@@ -220,7 +210,7 @@ void SavageSetGBD( ScrnInfoPtr );
  * call from the debugger.
  */
 
-static ScrnInfoPtr gpScrn = 0;
+ScrnInfoPtr gpScrn = 0;
 
 
 
@@ -265,7 +255,7 @@ SavageInitialize2DEngine(ScrnInfoPtr pScrn)
 	OUTREG(0x48C18, INREG(0x48C18) & 0x3FF0);
 	/* Disable shadow status update */
 	OUTREG(0x48C0C, 0);
-	/* Enabel BCI without the COB */
+	/* Enable BCI without the COB */
 	OUTREG(0x48C18, INREG(0x48C18) | 0x08);
 	break;
 
@@ -294,6 +284,14 @@ SavageInitialize2DEngine(ScrnInfoPtr pScrn)
     BCI_BD_SET_STRIDE(psav->SavedGbd, pScrn->displayWidth);
 
     SavageSetGBD(pScrn);
+
+    if( psav->StatusHack )
+    {
+	if( psav->Chipset == S3_SAVAGE2000 )
+	    dwBCIWait2DIdle = 0xc0040000;
+	else
+	    dwBCIWait2DIdle = 0xc0020000;
+    }
 } 
 
 
@@ -335,8 +333,8 @@ SavageSetGBD( ScrnInfoPtr pScrn )
     OUTREG(0x8178,0);
     OUTREG(0x817C,psav->SavedGbd);
 
-    OUTREG(0x81C8, pScrn->displayWidth << 4);
-    OUTREG(0x81D8, pScrn->displayWidth << 4);
+    OUTREG(PRI_STREAM_STRIDE, pScrn->displayWidth * pScrn->bitsPerPixel >> 3);
+    OUTREG(SEC_STREAM_STRIDE, pScrn->displayWidth * pScrn->bitsPerPixel >> 3);
 }
 
 
@@ -352,18 +350,18 @@ SavageInitAccel(ScreenPtr pScreen)
 
     /* Set-up our GE command primitive */
     
-    if (pScrn->bitsPerPixel == 8) {
-      psav->PlaneMask = 0xFF;
-      }
-    else if (pScrn->bitsPerPixel == 16) {
-      psav->PlaneMask = 0xFFFF;
-      }
-    else if (pScrn->bitsPerPixel == 24) {
-      psav->PlaneMask = 0xFFFFFF;
-      }
-    else if (pScrn->bitsPerPixel == 32) {
-      psav->PlaneMask = 0xFFFFFFFF;
-      }
+    if (pScrn->depth == 8) {
+	psav->PlaneMask = 0xFF;
+    }
+    else if (pScrn->depth == 15) {
+	psav->PlaneMask = 0x7FFF;
+    }
+    else if (pScrn->depth == 16) {
+	psav->PlaneMask = 0xFFFF;
+    }
+    else if (pScrn->depth == 24) {
+	psav->PlaneMask = 0xFFFFFF;
+    }
 
     /* General acceleration flags */
 
@@ -504,7 +502,7 @@ SavageInitAccel(ScreenPtr pScreen)
 
     psav->Bpp = pScrn->bitsPerPixel / 8;
     psav->Bpl = pScrn->displayWidth * psav->Bpp;
-    psav->ScissB = psav->CursorKByte / psav->Bpl;
+    psav->ScissB = (psav->CursorKByte << 10) / psav->Bpl;
     if (psav->ScissB > 2047)
         psav->ScissB = 2047;
 
@@ -520,6 +518,9 @@ SavageInitAccel(ScreenPtr pScreen)
     AvailFBArea.x2 = pScrn->displayWidth;
     AvailFBArea.y2 = psav->ScissB;
     xf86InitFBManager(pScreen, &AvailFBArea);
+    xf86DrvMsg( pScrn->scrnIndex, X_INFO,
+    		"Using %d lines for offscreen memory.\n",
+		psav->ScissB - pScrn->virtualY );
 
     return XAAInit(pScreen, xaaptr);
 }
@@ -532,9 +533,44 @@ void
 SavageAccelSync(ScrnInfoPtr pScrn)
 {
     SavagePtr psav = SAVPTR(pScrn);
-    WaitIdleEmpty();
+
+    if( psav->StatusHack )
+    {
+	static int counter = 0;
+	int i;
+
+	/*
+	 * This is an attempt to work around the status register read hang
+	 * that affects about 4% of all Savage chips.  Instead of reading
+	 * the register through MMIO, we send a BCI command to wait for
+	 * engine idle (which does not hang), then another BCI command to
+	 * set an incrementing value into an innocuous register (the
+	 * Cr Base register used in YUV page flipping).  Then we loop
+	 * waiting for the MMIO value of that register to change.
+	 */
+
+	BCI_GET_PTR;
+	BCI_SEND(dwBCIWait2DIdle);	/* wait for 2D idle */
+	BCI_SEND(0x96010045);		/* update New Cr Base Address ... */
+	counter++;
+	BCI_SEND(counter);		/* ... to this value */
+	for(
+	    i = 0;
+	    (INREG(0x48914) != counter) && (i < 100000);
+	    i++
+	)
+	    ;
+    }
+    else
+    {
+	if( psav->StatusDelay )
+	    usleep( psav->StatusDelay );
+	WaitIdleEmpty();
+    }
 }
 
+#undef WaitQueue
+#define WaitQueue(x)	SavageAccelSync(pScrn)
 
 /*
  * The XAA ROP helper routines all assume that a solid color is a 
@@ -731,6 +767,9 @@ SavageSubsequentSolidFillRect(
 {
     SavagePtr psav = SAVPTR(pScrn);
     BCI_GET_PTR;
+    
+    if( !w || !h )
+	return;
 
     WaitQueue(5);
 

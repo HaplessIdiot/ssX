@@ -1,4 +1,33 @@
 XFree86 4.0.99.1 (?? February 2001)
+ 144. Fix the neomagic driver so that it saves/restores the palette (#4452,
+      Ken Hornstein).
+ 143. Fix a palette saving bug in the vgahw module (#4452, Ken Hornstein).
+ 142. Fix a typo in Xfbdev.man (#4446, Juliusz Chroboczek).
+ 141. Major updates to the savage driver, including:
+       - DDC support
+       - I2C support
+       - XVideo YUV overlay support for Savage/MX and Savage/IX
+       - DGA support
+       - yanks Ani Joshi's depth/bitsPerPixel patch for searching the BIOS
+       - fixes interactions with frame buffer and SVGATextMode consoles;
+         VT switching now seems quite reliable for almost everyone
+       - yanks unused options
+       - adds new options for hacks to deal with the status register hangs
+       - adds one special case memory configuration for Savage 4
+       - adds support for doublescan modes (320x240 works)
+       - adds LCD panel detection
+       - fixes a panning bug at depth 24 (panning must be to even pixels)
+       - adds a workaround for bugs in the latest ProSavage BIOSes
+      (#4445, 4448, Tim Roberts).
+ 140. Make 'X -configure' use the long monitor name when present in the
+      DDC info (#4444, Andrew C. Aitchison).
+ 139. Make glxinfo respect $DISPLAY (#4443, Meelis Roos).
+ 138. Fix TrueType font problems in 4.0.2 (#4439, Juliusz Chroboczek).
+ 137. Document the "DisplaySize" keyword in the XF86Config man page (#4438,
+      Andrew C. Aitchison).
+ 136. Update the i810 driver to set the UV vertical phase for the 4:2:0
+      planar formats to account for the spatial relationship between the
+      chroma and luma samples (#4436, Jonathan Bian).
  135. Updates for Cygwin support (#4433, Suhaib M. Siddiqi).
  134. Fix a bug in the fonts.sgml doc (#4432, Juliusz Chroboczek).
  133. Fix the xdpyinfo so that it will build when the XKB extension isn't
@@ -12422,4 +12451,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1576 2001/02/13 17:20:10 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1577 2001/02/13 19:19:12 dawes Exp $
