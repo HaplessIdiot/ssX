@@ -82,6 +82,92 @@ SiSXConvertMono2ARGB(SISPtr pSiS)
    }
 }
 
+static void
+SiSHideCursor(ScrnInfoPtr pScrn)
+{
+    SISPtr        pSiS = SISPTR(pScrn);
+    unsigned char sridx, cridx;
+
+    sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
+
+#ifdef UNLOCK_ALWAYS
+    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+#endif
+
+    andSISIDXREG(SISSR, 0x06, 0xBF);
+
+    outSISREG(SISSR, sridx); outSISREG(SISCR, cridx);
+}
+
+static void
+SiS300HideCursor(ScrnInfoPtr pScrn)
+{
+    SISPtr  pSiS = SISPTR(pScrn);
+
+#ifdef SISDUALHEAD
+    if(pSiS->DualHeadMode && (!pSiS->ForceCursorOff)) {
+	if(pSiS->SecondHead) {
+		/* TW: Head 2 is always CRT1 */
+		sis300DisableHWCursor()
+		sis300SetCursorPositionY(2000, 0)
+        } else {
+		/* TW: Head 1 is always CRT2 */
+		sis301DisableHWCursor()
+		sis301SetCursorPositionY(2000, 0)
+	}
+    } else {
+#endif
+    	sis300DisableHWCursor()
+	sis300SetCursorPositionY(2000, 0)
+    	if(pSiS->VBFlags & CRT2_ENABLE)  {
+        	sis301DisableHWCursor()
+		sis301SetCursorPositionY(2000, 0)
+    	}
+#ifdef SISDUALHEAD
+    }
+#endif
+}
+
+static void
+SiS310HideCursor(ScrnInfoPtr pScrn)
+{
+    SISPtr  pSiS = SISPTR(pScrn);
+
+    pSiS->HWCursorIsVisible = FALSE;
+
+#ifdef SISDUALHEAD
+    if(pSiS->DualHeadMode && (!pSiS->ForceCursorOff)) {
+	if(pSiS->SecondHead) {
+		/* TW: Head 2 is always CRT1 */
+		sis310DisableHWCursor()
+		sis310SetCursorPositionY(2000, 0)
+        } else {
+		/* TW: Head 1 is always CRT2 */
+		if(pSiS->ChipFlags & SiSCF_XabreCore) {
+		   sis301DisableHWCursor330()
+		   sis301SetCursorPositionY330(2000, 0)
+		} else {
+		   sis301DisableHWCursor310()
+		   sis301SetCursorPositionY310(2000, 0)
+		}
+	}
+    } else {
+#endif
+    	sis310DisableHWCursor()
+	sis310SetCursorPositionY(2000, 0)
+    	if(pSiS->VBFlags & CRT2_ENABLE) {
+	   if(pSiS->ChipFlags & SiSCF_XabreCore) {
+              sis301DisableHWCursor330()
+	      sis301SetCursorPositionY330(2000, 0)
+	   } else {
+	      sis301DisableHWCursor310()
+	      sis301SetCursorPositionY310(2000, 0)
+	   }
+    	}
+#ifdef SISDUALHEAD
+    }
+#endif
+}
 
 static void
 SiSShowCursor(ScrnInfoPtr pScrn)
@@ -164,6 +250,14 @@ SiS310ShowCursor(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
 
+    if(pSiS->HideHWCursor) {
+       SiS310HideCursor(pScrn);
+       pSiS->HWCursorIsVisible = TRUE;
+       return;
+    }
+
+    pSiS->HWCursorIsVisible = TRUE;
+
 #ifdef SISDUALHEAD
     if(pSiS->DualHeadMode) {
 	if(pSiS->SecondHead) {
@@ -209,91 +303,6 @@ SiS310ShowCursor(ScrnInfoPtr pScrn)
 	      }
       	   }
 	}
-#ifdef SISDUALHEAD
-    }
-#endif
-}
-
-static void
-SiSHideCursor(ScrnInfoPtr pScrn)
-{
-    SISPtr        pSiS = SISPTR(pScrn);
-    unsigned char sridx, cridx;
-
-    sridx = inSISREG(SISSR); cridx = inSISREG(SISCR);
-
-#ifdef UNLOCK_ALWAYS
-    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
-#endif
-
-    andSISIDXREG(SISSR, 0x06, 0xBF);
-
-    outSISREG(SISSR, sridx); outSISREG(SISCR, cridx);
-}
-
-static void
-SiS300HideCursor(ScrnInfoPtr pScrn)
-{
-    SISPtr  pSiS = SISPTR(pScrn);
-    
-#ifdef SISDUALHEAD
-    if(pSiS->DualHeadMode && (!pSiS->ForceCursorOff)) {
-	if(pSiS->SecondHead) {
-		/* TW: Head 2 is always CRT1 */
-		sis300DisableHWCursor()
-		sis300SetCursorPositionY(2000, 0)
-        } else {
-		/* TW: Head 1 is always CRT2 */
-		sis301DisableHWCursor()
-		sis301SetCursorPositionY(2000, 0)
-	}
-    } else {
-#endif
-    	sis300DisableHWCursor()
-	sis300SetCursorPositionY(2000, 0)
-    	if(pSiS->VBFlags & CRT2_ENABLE)  {
-        	sis301DisableHWCursor()
-		sis301SetCursorPositionY(2000, 0)
-    	}
-#ifdef SISDUALHEAD
-    }
-#endif
-}
-
-static void
-SiS310HideCursor(ScrnInfoPtr pScrn)
-{
-    SISPtr  pSiS = SISPTR(pScrn);
-
-#ifdef SISDUALHEAD
-    if(pSiS->DualHeadMode && (!pSiS->ForceCursorOff)) {
-	if(pSiS->SecondHead) {
-		/* TW: Head 2 is always CRT1 */
-		sis310DisableHWCursor()
-		sis310SetCursorPositionY(2000, 0)
-        } else {
-		/* TW: Head 1 is always CRT2 */
-		if(pSiS->ChipFlags & SiSCF_XabreCore) {
-		   sis301DisableHWCursor330()
-		   sis301SetCursorPositionY330(2000, 0)
-		} else {
-		   sis301DisableHWCursor310()
-		   sis301SetCursorPositionY310(2000, 0)
-		}
-	}
-    } else {
-#endif
-    	sis310DisableHWCursor()
-	sis310SetCursorPositionY(2000, 0)
-    	if(pSiS->VBFlags & CRT2_ENABLE) {
-	   if(pSiS->ChipFlags & SiSCF_XabreCore) {
-              sis301DisableHWCursor330()
-	      sis301SetCursorPositionY330(2000, 0)
-	   } else {
-	      sis301DisableHWCursor310()
-	      sis301SetCursorPositionY310(2000, 0)
-	   }
-    	}
 #ifdef SISDUALHEAD
     }
 #endif

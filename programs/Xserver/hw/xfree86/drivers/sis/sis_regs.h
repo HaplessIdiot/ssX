@@ -93,6 +93,7 @@
 #define CAPTUREOFFSET   0x00
 #define VIDEOOFFSET     0x02
 #define COLREGOFFSET    0x48
+#define PELMASKOFFSET   0x46
 
 #define SISAR       pSiS->RelIO + AROFFSET
 #define SISARR      pSiS->RelIO + ARROFFSET
@@ -113,7 +114,7 @@
 #define SISCOLDATA  pSiS->RelIO + COLREGOFFSET + 1
 #define SISCOL2IDX  SISPART5
 #define SISCOL2DATA SISPART5 + 1
-
+#define SISPEL      pSiS->RelIO + PELMASKOFFSET
 
 #define vc_index_offset    CAPTUREOFFSET  /* Video capture - unused */
 #define vc_data_offset     (CAPTUREOFFSET + 1)

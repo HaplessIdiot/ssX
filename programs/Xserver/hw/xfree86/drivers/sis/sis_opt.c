@@ -350,6 +350,8 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->XvChromaMax = 0x000101ff;
     pSiS->GammaBriR = pSiS->GammaBriG = pSiS->GammaBriB = 1000;
     pSiS->GammaPBriR = pSiS->GammaPBriG = pSiS->GammaPBriB = 1000;
+    pSiS->HideHWCursor = FALSE;
+    pSiS->HWCursorIsVisible = FALSE;
 #ifdef SISMERGED
     pSiS->MergedFB = FALSE;
     pSiS->CRT2Position = sisRightOf;
