@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.93 2001/04/05 19:29:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.94 2001/04/05 21:29:13 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -516,6 +516,9 @@
 #define PCI_CHIP_BANSHEE	0x0003
 #define PCI_CHIP_VOODOO3	0x0005
 #define PCI_CHIP_VOODOO5	0x0009
+
+#define PCI_CARD_VOODOO3_2000	0x0036
+#define PCI_CARD_VOODOO3_3000	0x003a
 
 /* Rendition */
 #define PCI_CHIP_V1000		0x0001
@@ -1641,6 +1644,10 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
 	{ PCI_VENDOR_APPIAN, {
                         { 0x3d32, "Jeronimo 2000",0, NF },
                         { 0x3db3, "Jeronimo Pro",0, NF },
+                        { 0x0000, (char *)NULL,0, NF } } },
+	{ PCI_VENDOR_3DFX, {
+                        { PCI_CARD_VOODOO3_2000, "Voodoo3 2000",0, NF },
+                        { PCI_CARD_VOODOO3_3000, "Voodoo3 3000",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_3DLABS, {
                         { 0x0096, "Permedia",0, NF },
