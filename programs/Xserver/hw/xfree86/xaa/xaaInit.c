@@ -640,6 +640,7 @@ XAASetDGAMode(int index, int num, DGADevicePtr devRet)
     }
 
     ret = (*pScreenPriv->SetDGAMode)(index, num, devRet);
+    if(ret != Success) return ret;
 
     if(num && devRet->pPix) {  /* accelerate this pixmap */
 	XAAPixmapPtr pixPriv = XAA_GET_PIXMAP_PRIVATE(devRet->pPix);
