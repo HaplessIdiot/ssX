@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
