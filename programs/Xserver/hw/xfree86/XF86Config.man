@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.29 2005/03/02 19:17:42 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.30 2005/03/03 03:30:41 dawes Exp $
 .\"
 .\" Copyright (c) 1994-2005 by The XFree86 Project, Inc.
 .\" All rights reserved.
@@ -1426,7 +1426,7 @@ Sets a preferred resolution to use for the default mode.  By default
 the preferred mode resolution is taken from the DDC/EDID data if it is
 available and if it is provides a default mode preference.  This is typically
 true for flat panel displays, which have a native/preferred resolution.
-This option is not used of the
+This option is not used if the
 .B UsePreferredMode
 option is false.
 .TP 7
