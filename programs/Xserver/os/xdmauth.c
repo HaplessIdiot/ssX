@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/xdmauth.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmauth.c,v 1.10tsi Exp $ */
 
 /*
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
@@ -97,7 +97,8 @@ XdmAuthenticationAddAuth (unsigned int name_len, char *name,
 			  unsigned int data_len, char *data)
 {
     Bool    ret;
-    XdmcpUnwrap (data, (unsigned char *)&privateKey, data, data_len);
+    XdmcpUnwrap ((unsigned char *)data, (unsigned char *)&privateKey,
+		 (unsigned char *)data, data_len);
     authFromXDMCP = TRUE;
     ret = AddAuthorization (name_len, name, data_len, data);
     authFromXDMCP = FALSE;
@@ -150,8 +151,7 @@ XdmAuthenticationInit (char *cookie, int cookie_len)
     }
     XdmcpGenerateKey (&rho);
     XdmcpRegisterAuthentication (XdmAuthenticationName, XdmAuthenticationNameLen,
-				 (unsigned char *)&rho,
-				 sizeof (rho),
+				 (void *)&rho, sizeof (rho),
 				 XdmAuthenticationValidator,
 				 XdmAuthenticationGenerator,
 				 XdmAuthenticationAddAuth);
@@ -385,8 +385,11 @@ XdmCheckCookie (unsigned short cookie_length, char *cookie,
     if (!plain)
 	return (XID) -1;
     for (auth = xdmAuth; auth; auth=auth->next) {
-	XdmcpUnwrap (cookie, (unsigned char *)&auth->key, plain, cookie_length);
-	if ((client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho, xclient, reason)) != NULL)
+	XdmcpUnwrap ((unsigned char *)cookie, (unsigned char *)&auth->key,
+		     plain, cookie_length);
+	client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho,
+					   xclient, reason);
+	if (client != NULL)
 	{
 	    client->next = xdmClients;
 	    xdmClients = client;
@@ -430,8 +433,11 @@ XdmToID (unsigned short cookie_length, char *cookie)
     if (!plain)
 	return (XID) -1;
     for (auth = xdmAuth; auth; auth=auth->next) {
-	XdmcpUnwrap (cookie, (unsigned char *)&auth->key, plain, cookie_length);
-	if ((client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho, NULL, NULL)) != NULL)
+	XdmcpUnwrap ((unsigned char *)cookie, (unsigned char *)&auth->key,
+		     plain, cookie_length);
+	client = XdmAuthorizationValidate (plain, cookie_length, &auth->rho,
+					   NULL, NULL);
+	if (client != NULL)
 	{
 	    xfree (client);
 	    xfree (cookie);

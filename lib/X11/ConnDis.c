@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.30 2004/04/10 13:57:35 herrb Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.31tsi Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -1157,8 +1157,8 @@ GetAuthorization(
 	    xdmcp_data[j++] = 0;
 	_XLockMutex(_Xglobal_lock);
 	/* this function might use static data, hence the lock around it */
-	XdmcpWrap (xdmcp_data, auth_data + 8,
-		      xdmcp_data, j);
+	XdmcpWrap ((unsigned char *)xdmcp_data, (unsigned char *)auth_data + 8,
+		   (unsigned char *)xdmcp_data, j);
 	_XUnlockMutex(_Xglobal_lock);
 	auth_data = xdmcp_data;
 	auth_datalen = j;

@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.31 2003/12/30 21:24:32 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.32tsi Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -976,7 +976,7 @@ int
 XdmcpCheckAuthentication (
     ARRAY8Ptr	Name,
     ARRAY8Ptr	Data,
-    int	packet_type)
+    xdmOpCode	packet_type)
 {
     return (XdmcpARRAY8Equal (Name, AuthenticationName) &&
 	    (AuthenticationName->length == 0 ||

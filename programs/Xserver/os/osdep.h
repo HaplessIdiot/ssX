@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.19tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -332,7 +332,8 @@ extern void XdmcpRegisterAuthentication (
     ValidatorFunc Validator,
     GeneratorFunc Generator,
     AddAuthorFunc AddAuth);
-extern int XdmcpCheckAuthentication (ARRAY8Ptr Name, ARRAY8Ptr Data, int packet_type);
+extern int XdmcpCheckAuthentication (ARRAY8Ptr Name, ARRAY8Ptr Data,
+				     xdmOpCode packet_type);
 extern int XdmcpAddAuthorization (ARRAY8Ptr name, ARRAY8Ptr data);
 
 struct sockaddr_in;

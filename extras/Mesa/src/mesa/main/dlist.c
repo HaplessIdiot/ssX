@@ -26,6 +26,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
 
 
 #include "glheader.h"
@@ -170,7 +171,7 @@ typedef enum {
 	OPCODE_BITMAP,
 	OPCODE_BLEND_COLOR,
 	OPCODE_BLEND_EQUATION,
-	OPCODE_BLEND_FUNC,
+	OPCODE_BLEND_EQUATION_SEPARATE,
 	OPCODE_BLEND_FUNC_SEPARATE,
         OPCODE_CALL_LIST,
         OPCODE_CALL_LIST_OFFSET,
@@ -334,7 +335,7 @@ typedef enum {
 	OPCODE_ERROR,	        /* raise compiled-in error */
 	OPCODE_CONTINUE,
 	OPCODE_END_OF_LIST,
-	OPCODE_DRV_0
+	OPCODE_EXT_0
 } OpCode;
 
 
@@ -421,10 +422,10 @@ void _mesa_destroy_list( GLcontext *ctx, GLuint list )
 
       /* check for extension opcodes first */
 
-      GLint i = (GLint) n[0].opcode - (GLint) OPCODE_DRV_0;
-      if (i >= 0 && i < (GLint) ctx->listext.nr_opcodes) {
-	 ctx->listext.opcode[i].destroy(ctx, &n[1]);
-	 n += ctx->listext.opcode[i].size;
+      GLint i = (GLint) n[0].opcode - (GLint) OPCODE_EXT_0;
+      if (i >= 0 && i < (GLint) ctx->ListExt.NumOpcodes) {
+	 ctx->ListExt.Opcode[i].Destroy(ctx, &n[1]);
+	 n += ctx->ListExt.Opcode[i].Size;
       }
       else {
 	 switch (n[0].opcode) {
@@ -629,7 +630,7 @@ void _mesa_init_lists( void )
       InstSize[OPCODE_BITMAP] = 8;
       InstSize[OPCODE_BLEND_COLOR] = 5;
       InstSize[OPCODE_BLEND_EQUATION] = 2;
-      InstSize[OPCODE_BLEND_FUNC] = 3;
+      InstSize[OPCODE_BLEND_EQUATION_SEPARATE] = 3;
       InstSize[OPCODE_BLEND_FUNC_SEPARATE] = 5;
       InstSize[OPCODE_CALL_LIST] = 2;
       InstSize[OPCODE_CALL_LIST_OFFSET] = 3;
@@ -803,7 +804,7 @@ _mesa_alloc_instruction( GLcontext *ctx, int opcode, GLint sz )
    GLuint count = 1 + (sz + sizeof(Node) - 1) / sizeof(Node);
 
 #ifdef DEBUG
-   if (opcode < (int) OPCODE_DRV_0) {
+   if (opcode < (int) OPCODE_EXT_0) {
       assert( count == InstSize[opcode] );
    }
 #endif
@@ -831,22 +832,30 @@ _mesa_alloc_instruction( GLcontext *ctx, int opcode, GLint sz )
 }
 
 
-/* Allow modules and drivers to get their own opcodes.
+/**
+ * This function allows modules and drivers to get their own opcodes
+ * for extending display list functionality.
+ * \param ctx  the rendering context
+ * \param size  number of bytes for storing the new display list command
+ * \param execute  function to execute the new display list command
+ * \param destroy  function to destroy the new display list command
+ * \param print  function to print the new display list command
+ * \return  the new opcode number or -1 if error
  */
-int
+GLint
 _mesa_alloc_opcode( GLcontext *ctx,
-		    GLuint sz,
+		    GLuint size,
 		    void (*execute)( GLcontext *, void * ),
 		    void (*destroy)( GLcontext *, void * ),
 		    void (*print)( GLcontext *, void * ) )
 {
-   if (ctx->listext.nr_opcodes < GL_MAX_EXT_OPCODES) {
-      GLuint i = ctx->listext.nr_opcodes++;
-      ctx->listext.opcode[i].size = 1 + (sz + sizeof(Node) - 1)/sizeof(Node);
-      ctx->listext.opcode[i].execute = execute;
-      ctx->listext.opcode[i].destroy = destroy;
-      ctx->listext.opcode[i].print = print;
-      return i + OPCODE_DRV_0;
+   if (ctx->ListExt.NumOpcodes < MAX_DLIST_EXT_OPCODES) {
+      const GLuint i = ctx->ListExt.NumOpcodes++;
+      ctx->ListExt.Opcode[i].Size = 1 + (size + sizeof(Node) - 1)/sizeof(Node);
+      ctx->ListExt.Opcode[i].Execute = execute;
+      ctx->ListExt.Opcode[i].Destroy = destroy;
+      ctx->ListExt.Opcode[i].Print = print;
+      return i + OPCODE_EXT_0;
    }
    return -1;
 }
@@ -958,18 +967,19 @@ static void GLAPIENTRY save_BlendEquation( GLenum mode )
 }
 
 
-static void GLAPIENTRY save_BlendFunc( GLenum sfactor, GLenum dfactor )
+static void GLAPIENTRY save_BlendEquationSeparateEXT( GLenum modeRGB,
+						      GLenum modeA )
 {
    GET_CURRENT_CONTEXT(ctx);
    Node *n;
    ASSERT_OUTSIDE_SAVE_BEGIN_END_AND_FLUSH(ctx);
-   n = ALLOC_INSTRUCTION( ctx, OPCODE_BLEND_FUNC, 2 );
+   n = ALLOC_INSTRUCTION( ctx, OPCODE_BLEND_EQUATION_SEPARATE, 2 );
    if (n) {
-      n[1].e = sfactor;
-      n[2].e = dfactor;
+      n[1].e = modeRGB;
+      n[2].e = modeA;
    }
    if (ctx->ExecuteFlag) {
-      (*ctx->Exec->BlendFunc)( sfactor, dfactor );
+      (*ctx->Exec->BlendEquationSeparateEXT)( modeRGB, modeA );
    }
 }
 
@@ -4127,7 +4137,7 @@ save_PixelTexGenParameterfvSGIS(GLenum target, const GLfloat *value)
 /*
  * GL_NV_vertex_program
  */
-#if FEATURE_NV_vertex_program
+#if FEATURE_NV_vertex_program || FEATURE_ARB_vertex_program || FEATURE_ARB_fragment_program
 static void GLAPIENTRY
 save_BindProgramNV(GLenum target, GLuint id)
 {
@@ -4143,7 +4153,9 @@ save_BindProgramNV(GLenum target, GLuint id)
       (*ctx->Exec->BindProgramNV)( target, id );
    }
 }
+#endif /* FEATURE_NV_vertex_program || FEATURE_ARB_vertex_program || FEATURE_ARB_fragment_program */
 
+#if FEATURE_NV_vertex_program
 static void GLAPIENTRY
 save_ExecuteProgramNV(GLenum target, GLuint id, const GLfloat *params)
 {
@@ -4850,7 +4862,7 @@ static void GLAPIENTRY save_Begin( GLenum mode )
    Node *n;
    GLboolean error = GL_FALSE;
 
-   if (mode < GL_POINTS || mode > GL_POLYGON) {
+   if (/* mode < GL_POINTS || */ mode > GL_POLYGON) {
       _mesa_compile_error( ctx, GL_INVALID_ENUM, "Begin (mode)");
       error = GL_TRUE;
    }
@@ -5093,7 +5105,7 @@ static void GLAPIENTRY save_MultiTexCoord4fv( GLenum target, const GLfloat *v )
 }
 
 
-static void enum_error() 
+static void enum_error( void )
 {
    GET_CURRENT_CONTEXT( ctx );
    _mesa_error( ctx, GL_INVALID_ENUM, "VertexAttribfNV" );
@@ -5249,11 +5261,12 @@ execute_list( GLcontext *ctx, GLuint list )
    done = GL_FALSE;
    while (!done) {
       OpCode opcode = n[0].opcode;
-      int i = (int)n[0].opcode - (int)OPCODE_DRV_0;
+      int i = (int)n[0].opcode - (int)OPCODE_EXT_0;
 
-      if (i >= 0 && i < (GLint) ctx->listext.nr_opcodes) {
-	 ctx->listext.opcode[i].execute(ctx, &n[1]);
-	 n += ctx->listext.opcode[i].size;
+      if (i >= 0 && i < (GLint) ctx->ListExt.NumOpcodes) {
+         /* this is a driver-extended opcode */
+	 ctx->ListExt.Opcode[i].Execute(ctx, &n[1]);
+	 n += ctx->ListExt.Opcode[i].Size;
       }
       else {
 	 switch (opcode) {
@@ -5284,8 +5297,8 @@ execute_list( GLcontext *ctx, GLuint list )
 	 case OPCODE_BLEND_EQUATION:
 	    (*ctx->Exec->BlendEquation)( n[1].e );
 	    break;
-	 case OPCODE_BLEND_FUNC:
-	    (*ctx->Exec->BlendFunc)( n[1].e, n[2].e );
+	 case OPCODE_BLEND_EQUATION_SEPARATE:
+	    (*ctx->Exec->BlendEquationSeparateEXT)( n[1].e, n[2].e );
 	    break;
 	 case OPCODE_BLEND_FUNC_SEPARATE:
 	    (*ctx->Exec->BlendFuncSeparateEXT)(n[1].e, n[2].e, n[3].e, n[4].e);
@@ -5873,10 +5886,12 @@ execute_list( GLcontext *ctx, GLuint list )
 	 case OPCODE_WINDOW_POS_ARB: /* GL_ARB_window_pos */
             (*ctx->Exec->WindowPos3fMESA)( n[1].f, n[2].f, n[3].f );
 	    break;
-#if FEATURE_NV_vertex_program
+#if FEATURE_NV_vertex_program || FEATURE_ARB_vertex_program || FEATURE_ARB_fragment_program
          case OPCODE_BIND_PROGRAM_NV: /* GL_NV_vertex_program */
             (*ctx->Exec->BindProgramNV)( n[1].e, n[2].ui );
             break;
+#endif
+#if FEATURE_NV_vertex_program
          case OPCODE_EXECUTE_PROGRAM_NV:
             {
                GLfloat v[4];
@@ -5936,16 +5951,42 @@ execute_list( GLcontext *ctx, GLuint list )
 	    (*ctx->Exec->VertexAttrib1fNV)(n[1].e, n[2].f);
 	    break;
 	 case OPCODE_ATTR_2F:
-	    (*ctx->Exec->VertexAttrib2fvNV)(n[1].e, &n[2].f);
+	    /* Really shouldn't have to do this - the Node structure
+	     * is convenient, but it would be better to store the data
+	     * packed appropriately so that it can be sent directly
+	     * on.  With x86_64 becoming common, this will start to
+	     * matter more.
+	     */
+	    if (sizeof(Node)==sizeof(GLfloat)) 
+	       (*ctx->Exec->VertexAttrib2fvNV)(n[1].e, &n[2].f);
+	    else
+	       (*ctx->Exec->VertexAttrib2fNV)(n[1].e, n[2].f, n[3].f);
 	    break;
 	 case OPCODE_ATTR_3F:
-	    (*ctx->Exec->VertexAttrib3fvNV)(n[1].e, &n[2].f);
+	    if (sizeof(Node)==sizeof(GLfloat)) 
+	       (*ctx->Exec->VertexAttrib3fvNV)(n[1].e, &n[2].f);
+	    else
+	       (*ctx->Exec->VertexAttrib3fNV)(n[1].e, n[2].f, n[3].f,
+					      n[4].f);
 	    break;
 	 case OPCODE_ATTR_4F:
-	    (*ctx->Exec->VertexAttrib4fvNV)(n[1].e, &n[2].f);
+	    if (sizeof(Node)==sizeof(GLfloat)) 
+	       (*ctx->Exec->VertexAttrib4fvNV)(n[1].e, &n[2].f);
+	    else
+	       (*ctx->Exec->VertexAttrib4fNV)(n[1].e, n[2].f, n[3].f,
+					      n[4].f, n[5].f);
 	    break;
 	 case OPCODE_MATERIAL:
-	    (*ctx->Exec->Materialfv)(n[1].e, n[2].e, &n[3].f);
+	    if (sizeof(Node)==sizeof(GLfloat)) 
+	       (*ctx->Exec->Materialfv)(n[1].e, n[2].e, &n[3].f);
+	    else {
+	       GLfloat f[4];
+	       f[0] = n[3].f;
+	       f[1] = n[4].f;
+	       f[2] = n[5].f;
+	       f[3] = n[6].f;
+	       (*ctx->Exec->Materialfv)(n[1].e, n[2].e, f);
+	    }
 	    break;
 	 case OPCODE_INDEX:
 	    (*ctx->Exec->Indexi)(n[1].i);
@@ -5966,7 +6007,7 @@ execute_list( GLcontext *ctx, GLuint list )
 	    (*ctx->Exec->EvalCoord1f)(n[1].f);
 	    break;
 	 case OPCODE_EVAL_C2:
-	    (*ctx->Exec->EvalCoord2fv)(&n[1].f);
+	    (*ctx->Exec->EvalCoord2f)(n[1].f, n[2].f);
 	    break;
 	 case OPCODE_EVAL_P1:
 	    (*ctx->Exec->EvalPoint1)(n[1].i);
@@ -6994,7 +7035,7 @@ _mesa_init_dlist_table( struct _glapi_table *table, GLuint tableSize )
    table->Accum = save_Accum;
    table->AlphaFunc = save_AlphaFunc;
    table->Bitmap = save_Bitmap;
-   table->BlendFunc = save_BlendFunc;
+   table->BlendFunc = _mesa_BlendFunc; /* loops-back to BlendFuncSeparate */
    table->CallList = _mesa_save_CallList;
    table->CallLists = _mesa_save_CallLists;
    table->Clear = save_Clear;
@@ -7448,7 +7489,7 @@ _mesa_init_dlist_table( struct _glapi_table *table, GLuint tableSize )
    table->EnableVertexAttribArrayARB = _mesa_EnableVertexAttribArrayARB;
    table->DisableVertexAttribArrayARB = _mesa_DisableVertexAttribArrayARB;
    table->ProgramStringARB = save_ProgramStringARB;
-   table->BindProgramNV = _mesa_BindProgram;
+   table->BindProgramNV = save_BindProgramNV;
    table->DeleteProgramsNV = _mesa_DeletePrograms;
    table->GenProgramsNV = _mesa_GenPrograms;
    table->IsProgramNV = _mesa_IsProgram;
@@ -7487,6 +7528,9 @@ _mesa_init_dlist_table( struct _glapi_table *table, GLuint tableSize )
    table->MapBufferARB = _mesa_MapBufferARB;
    table->UnmapBufferARB = _mesa_UnmapBufferARB;
 #endif
+
+   /* 299. GL_EXT_blend_equation_separate */
+   table->BlendEquationSeparateEXT = save_BlendEquationSeparateEXT;
 }
 
 
@@ -7521,11 +7565,12 @@ static void GLAPIENTRY print_list( GLcontext *ctx, GLuint list )
    done = n ? GL_FALSE : GL_TRUE;
    while (!done) {
       OpCode opcode = n[0].opcode;
-      GLint i = (GLint) n[0].opcode - (GLint) OPCODE_DRV_0;
+      GLint i = (GLint) n[0].opcode - (GLint) OPCODE_EXT_0;
 
-      if (i >= 0 && i < (GLint) ctx->listext.nr_opcodes) {
-	 ctx->listext.opcode[i].print(ctx, &n[1]);
-	 n += ctx->listext.opcode[i].size;
+      if (i >= 0 && i < (GLint) ctx->ListExt.NumOpcodes) {
+         /* this is a driver-extended opcode */
+	 ctx->ListExt.Opcode[i].Print(ctx, &n[1]);
+	 n += ctx->ListExt.Opcode[i].Size;
       }
       else {
 	 switch (opcode) {
