@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 95/01/23 15:34:43 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.2 1995/12/26 07:24:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.3 1996/01/10 05:42:00 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -75,7 +75,9 @@ LinuxDocTarget(DocIndex)
 /* Other docs */
 LinuxDocReadmeTarget(LinkKit)
 LinuxDocReadmeTarget(clkprog)
+#if 0
 LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
+#endif
 LinuxDocTargetLong(VGADriv.sgml,VGADriver.Doc,VGADriver)
 
 LinkSourceFile(Bsdi.sgml,$(XF86SRC)/doc/sgml)

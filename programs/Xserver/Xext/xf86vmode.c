@@ -1,5 +1,5 @@
 /* $XConsortium: xf86vmode.c /main/2 1995/11/14 18:18:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.16 1996/01/16 15:02:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.17 1996/01/17 12:46:14 dawes Exp $ */
 
 /*
 
@@ -402,6 +402,78 @@ ProcXF86VidModeGetModeLine(client)
 }
 
 static int
+ProcXF86VidModeGetAllModeLines(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeGetAllModeLinesReq);
+    xXF86VidModeGetAllModeLinesReply rep;
+    xXF86VidModeModeInfo mdinf;
+    register int n;
+    ScrnInfoPtr vptr;
+    DisplayModePtr mptr, curmptr;
+    int privsize, modecount=1;
+
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+    curmptr = mptr = vptr->modes;
+
+    while (mptr->next != curmptr) {
+	++modecount;
+	mptr = mptr->next;
+    }
+
+    REQUEST_SIZE_MATCH(xXF86VidModeGetAllModeLinesReq);
+    rep.type = X_Reply;
+    rep.length = (SIZEOF(xXF86VidModeGetAllModeLinesReply) - SIZEOF(xGenericReply) +
+		  modecount * sizeof(xXF86VidModeModeInfo)) >> 2;
+    rep.sequenceNumber = client->sequence;
+    rep.modecount = modecount;
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+	swapl(&rep.modecount, n);
+    }
+    WriteToClient(client, sizeof(xXF86VidModeGetAllModeLinesReply), (char *)&rep);
+    mptr = curmptr;
+    do {
+        if (!mptr->Private)
+	    privsize = 0;
+        else
+	    privsize = mptr->PrivSize;
+
+        mdinf.dotclock = vptr->clock[mptr->Clock];
+        mdinf.hdisplay = mptr->HDisplay;
+        mdinf.hsyncstart = mptr->HSyncStart;
+        mdinf.hsyncend = mptr->HSyncEnd;
+        mdinf.htotal = mptr->HTotal;
+        mdinf.vdisplay = mptr->VDisplay;
+        mdinf.vsyncstart = mptr->VSyncStart;
+        mdinf.vsyncend = mptr->VSyncEnd;
+        mdinf.vtotal = mptr->VTotal;
+        mdinf.flags = mptr->Flags;
+        mdinf.privsize = privsize;
+        if (client->swapped) {
+	    swapl(&mdinf.dotclock, n);
+    	    swaps(&mdinf.hdisplay, n);
+    	    swaps(&mdinf.hsyncstart, n);
+    	    swaps(&mdinf.hsyncend, n);
+    	    swaps(&mdinf.htotal, n);
+    	    swaps(&mdinf.vdisplay, n);
+    	    swaps(&mdinf.vsyncstart, n);
+    	    swaps(&mdinf.vsyncend, n);
+    	    swaps(&mdinf.vtotal, n);
+	    swapl(&mdinf.flags, n);
+	    swapl(&mdinf.privsize, n);
+        }
+        WriteToClient(client, sizeof(xXF86VidModeModeInfo), (char *)&mdinf);
+        mptr = mptr->next;
+    } while (mptr != curmptr);
+    return (client->noClientException);
+}
+
+static int
 ProcXF86VidModeModModeLine(client)
     register ClientPtr client;
 {
@@ -657,6 +729,8 @@ ProcXF86VidModeDispatch (client)
 	return ProcXF86VidModeQueryVersion(client);
     case X_XF86VidModeGetModeLine:
 	return ProcXF86VidModeGetModeLine(client);
+    case X_XF86VidModeGetAllModeLines:
+	return ProcXF86VidModeGetAllModeLines(client);
     case X_XF86VidModeGetMonitor:
 	return ProcXF86VidModeGetMonitor(client);
     default:
@@ -698,6 +772,18 @@ SProcXF86VidModeGetModeLine(client)
     REQUEST_SIZE_MATCH(xXF86VidModeGetModeLineReq);
     swaps(&stuff->screen, n);
     return ProcXF86VidModeGetModeLine(client);
+}
+
+static int
+SProcXF86VidModeGetAllModeLines(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86VidModeGetAllModeLinesReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86VidModeGetAllModeLinesReq);
+    swaps(&stuff->screen, n);
+    return ProcXF86VidModeGetAllModeLines(client);
 }
 
 static int
@@ -772,6 +858,8 @@ SProcXF86VidModeDispatch (client)
 	return SProcXF86VidModeQueryVersion(client);
     case X_XF86VidModeGetModeLine:
 	return SProcXF86VidModeGetModeLine(client);
+    case X_XF86VidModeGetAllModeLines:
+	return SProcXF86VidModeGetAllModeLines(client);
     case X_XF86VidModeGetMonitor:
 	return SProcXF86VidModeGetMonitor(client);
     default:

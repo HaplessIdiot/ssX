@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.4 1996/01/11 10:35:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.5 1996/01/16 15:03:21 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -664,7 +664,8 @@ int freq;
 
    switch (i128InfoRec.bitsPerPixel) {
 	case 8:
-		misc_ctrl = TI_MC_8_BPP | TI_MC_INT_6_8_CONTROL;
+		misc_ctrl = (i128DAC8Bit ? TI_MC_8_BPP : 0)
+			    | TI_MC_INT_6_8_CONTROL;
 		aux_ctrl  = TI_AUX_SELF_CLOCK | TI_AUX_W_CMPL;
    		oclk      = TI_OCLK_S | TI_OCLK_V4 | TI_OCLK_R8;
 		col_key   = TI_COLOR_KEY_CMPL;
