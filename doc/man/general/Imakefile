@@ -1,9 +1,16 @@
-MANDIR = $(LIBMANDIR)
-MANSUFFIX = $(LIBMANSUFFIX)
+XCOMM $TOG: Imakefile /main/6 1997/10/13 15:16:55 kaleb $
 
-all::
+MANDIR = $(MISCMANDIR)
+MANSUFFIX = $(MISCMANSUFFIX)
+
+all:: X.man Standards.man Consortium.man security.man
+
+CppFileTarget(X.man,X.cpp,-D__miscmansuffix__=$(MISCMANSUFFIX),)
+CppFileTarget(Standards.man,Standards.cpp,-D__miscmansuffix__=$(MISCMANSUFFIX),)
+CppFileTarget(Consortium.man,Consortium.cpp,-D__miscmansuffix__=$(MISCMANSUFFIX),)
+CppFileTarget(security.man,security.cpp,-D__miscmansuffix__=$(MISCMANSUFFIX),)
 
 InstallManPage(X,$(MANDIR))
-InstallManPageLong(Consortium,$(MANDIR),XConsortium)
 InstallManPageLong(Standards,$(MANDIR),XStandards)
+InstallManPageLong(Consortium,$(MANDIR),XConsortium)
 InstallManPageLong(security,$(MANDIR),Xsecurity)

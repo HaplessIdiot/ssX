@@ -1,4 +1,4 @@
-XCOMM platform:  $TOG: hp.cf /main/85 1997/04/17 14:11:34 barstow $
+XCOMM platform:  $TOG: hp.cf /main/87 1997/10/23 11:24:14 kaleb $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -77,6 +77,11 @@ XCOMM operating system:  OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 
 #define SystemV				YES
 #define Malloc0ReturnsNull		YES
+#if OSMajorVersion > 9
+# define AllocateLocalDefines		-DINCLUDE_ALLOCA_H
+#else
+# define AllocateLocalDefines		-DNO_ALLOCA
+#endif
 
 #ifdef __hp9000s800
 # ifndef OptimizedCDebugFlags
@@ -89,7 +94,7 @@ XCOMM operating system:  OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #  define SharedLibraryCCOptions	-Ae
 # endif
 # define StandardDefines		-Dhpux -DSYSV
-# define ServerExtraDefines		-DXOS -DBSTORE -DSOFTWARE_CURSOR -DNO_ALLOCA -DSCREEN_PIXMAPS -DMERGE_SAVE_UNDERS -DHAS_IFREQ -DFORCE_SEPARATE_PRIVATE
+# define ServerExtraDefines		-DXOS -DBSTORE -DSOFTWARE_CURSOR -DSCREEN_PIXMAPS -DMERGE_SAVE_UNDERS -DHAS_IFREQ -DFORCE_SEPARATE_PRIVATE AllocateLocalDefines
 
 # if OSMajorVersion > 9
 #  include <hpLib.rules>

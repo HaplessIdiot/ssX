@@ -1,4 +1,4 @@
-/* $TOG: lcPublic.c /main/8 1997/06/03 15:52:52 kaleb $ */
+/* $TOG: lcPublic.c /main/9 1997/11/13 09:43:43 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -120,7 +120,7 @@ load_public(lcd)
     } else
 	pub->mb_cur_max = 1;
 
-    _XlcGetResource(lcd, "XLC_XLOCALE", "state_dependent", &values, &num);
+    _XlcGetResource(lcd, "XLC_XLOCALE", "state_depend_encoding", &values, &num);
     if (num > 0 && !_XlcCompareISOLatin1(values[0], "True"))
 	pub->is_state_depend = True;
     else

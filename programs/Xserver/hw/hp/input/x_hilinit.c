@@ -1,4 +1,4 @@
-/* $TOG: x_hilinit.c /main/8 1997/09/08 13:19:43 kaleb $ */
+/* $TOG: x_hilinit.c /main/9 1997/10/25 07:30:09 kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -52,7 +52,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/hp/input/x_hilinit.c,v 3.0 1996/03/29 22:15:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/hp/input/x_hilinit.c,v 3.1 1997/10/26 13:24:57 dawes Exp $ */
 
 #define	NEED_EVENTS
 #define NITEMS(array) (sizeof(array)/sizeof(array[0]))
@@ -516,13 +516,19 @@ static Bool hpDeviceProc(pDev, onoff)
 			(KbdCtrlProcPtr) hpChangeKeyboardControl);
 #ifdef XKB
 		    } else {
-			static XkbComponentNamesRec names = { 
-			    NULL,
-			    "keycodes/hp",
-			    "types/complete",
-			    "compat/complete",
-			    "symbols/us(pc101)",
-			    "geometry/hp",
+			XkbComponentNamesRec names;
+
+			names.keymap = NULL;
+			names.types = "types/complete";
+			names.compat = "compat/complete";
+			if ((pHP->id_detail & PS2_KEYBD) == PS2_KEYBD) {
+			    names.keycodes = "keycodes/hp";
+			    names.symbols = "symbols/us(pc101)";
+			    names.geometry = "geometry/hp";
+			} else {
+			    names.keycodes = "keycodes/hp(hil)";
+			    names.symbols = "symbols/hp/us(hil)";
+			    names.geometry = "geometry/hp(hil)";
 			};
 			XkbInitKeyboardDeviceStruct((DeviceIntPtr) pDev, &names,
 				key_syms, the_modmap, (BellProcPtr) hpBell, 

@@ -1,4 +1,4 @@
-/* $XConsortium: Xpoll.h /main/6 1996/12/02 10:25:52 lehors $ */
+/* $TOG: Xpoll.h /main/7 1997/10/29 14:36:49 kaleb $ */
 
 /*
 
@@ -83,10 +83,14 @@ typedef struct fd_set {
 # endif
 #endif
 
-#ifdef hpux /* and perhaps old BSD ??? */
-#define Select(n,r,w,e,t) select(n,(int*)r,(int*)w,(int*)e,(struct timeval*)t)
+#ifndef hpux /* and perhaps old BSD ??? */
+# define Select(n,r,w,e,t) select(n,(fd_set*)r,(fd_set*)w,(fd_set*)e,(struct timeval*)t)
 #else
-#define Select(n,r,w,e,t) select(n,(fd_set*)r,(fd_set*)w,(fd_set*)e,(struct timeval*)t)
+# ifndef _XPG4_EXTENDED /* HPUX 9.x and earlier */
+#  define Select(n,r,w,e,t) select(n,(int*)r,(int*)w,(int*)e,(struct timeval*)t)
+# else
+#  define Select(n,r,w,e,t) select(n,(fd_set*)r,(fd_set*)w,(fd_set*)e,(struct timeval*)t)
+# endif
 #endif
 
 #ifndef FD_SET

@@ -1,11 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $TOG: Imake.tmpl /main/246 1997/08/05 08:50:57 kaleb $
+XCOMM $TOG: Imake.tmpl /main/249 1997/10/13 15:28:56 kaleb $
 XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.42 1997/07/06 05:30:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.43 1997/08/12 12:01:51 hohndel Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -239,6 +239,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #else
 #define HasVFork		YES
 #endif
+#endif
+#ifndef HasSetUserContext
+#define HasSetUserContext	NO
+#endif
+#ifndef HasLibCrypt
+#define HasLibCrypt		NO
 #endif
 #ifndef HasPutenv
 #define HasPutenv		NO	/* assume not */
@@ -503,6 +509,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef FileManDir
 #define FileManDir $(MANSOURCEPATH)$(FILEMANSUFFIX)
+#endif
+#ifndef MiscManDir
+#define MiscManDir $(MANSOURCEPATH)$(MISCMANSUFFIX)
 #endif
 #ifndef ConfigSrc
 #define ConfigSrc $(TOP)/config
@@ -1033,6 +1042,13 @@ TCLIBDIR = TclLibDir
 #define FileManSuffix	5		/* use just one tab or cpp will die */
 #endif
 #endif
+#ifndef MiscManSuffix
+#if SystemV || SystemV4 || defined(OSF1Architecture)
+#define MiscManSuffix	5		/* use just one tab or cpp will die */
+#else
+#define MiscManSuffix	7		/* use just one tab or cpp will die */
+#endif
+#endif
 #ifndef ExpandManNames
 #if SystemV
 #define ExpandManNames NO
@@ -1083,6 +1099,7 @@ TCLIBDIR = TclLibDir
            MANDIR = ManDir		/* man pages for commands */
         LIBMANDIR = LibmanDir		/* man pages for library routines */
        FILEMANDIR = FileManDir		/* man pages for config files */
+       MISCMANDIR = MiscManDir		/* man pages for miscellaneous files */
 
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */
@@ -1135,7 +1152,9 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
                RM = RmCmd
         MANSUFFIX = ManSuffix		/* suffix for command man pages */
      LIBMANSUFFIX = LibManSuffix	/* suffix for library man pages */
-    FILEMANSUFFIX = FileManSuffix	/* suffix for config file man pages */
+    FILEMANSUFFIX = FileManSuffix	/* suffix for file format man pages */
+    MISCMANSUFFIX = MiscManSuffix	/* suffix for misc man pages */
+
             TROFF = TroffCmd
             NROFF = NroffCmd
          MSMACROS = MsMacros

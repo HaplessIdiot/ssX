@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.13 1997/02/18 12:04:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.14 1997/05/11 01:50:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -27,7 +27,7 @@
  * Modified for the P9000 by Erik Nygren (nygren@mit.edu)
  *
  */
-/* $XConsortium: p9000cmap.c /main/9 1996/10/27 11:46:45 kaleb $ */
+/* $TOG: p9000cmap.c /main/11 1997/10/19 15:02:55 kaleb $ */
 
 /* Note that the outb's and inb's in here should be changed to use the
  * p9000OutBtReg, etc routines.  It's not needed yet because
@@ -153,9 +153,11 @@ p9000StoreColors(pmap, ndef, pdefs)
     }
 
     for (i = 0; i < ndef; i++) {
-        currentp9000dac[pdefs[i].pixel].r = pdefs[i].red >> 8;
-        currentp9000dac[pdefs[i].pixel].g = pdefs[i].green >> 8;
-        currentp9000dac[pdefs[i].pixel].b = pdefs[i].blue >> 8;
+	unsigned char red, green, blue;
+
+        red   = currentp9000dac[pdefs[i].pixel].r = pdefs[i].red >> 8;
+        green = currentp9000dac[pdefs[i].pixel].g = pdefs[i].green >> 8;
+        blue  = currentp9000dac[pdefs[i].pixel].b = pdefs[i].blue >> 8;
 	if (xf86VTSema
 #ifdef XFreeXDGA
 	    || ((p9000InfoRec.directMode & XF86DGADirectGraphics)
@@ -164,9 +166,9 @@ p9000StoreColors(pmap, ndef, pdefs)
 #endif
 	    ) {
 	    outb(BT_WRITE_ADDR, pdefs[i].pixel);
-	    outb(BT_RAMDAC_DATA, pdefs[i].red >> 8);
-	    outb(BT_RAMDAC_DATA, pdefs[i].green >> 8);
-	    outb(BT_RAMDAC_DATA, pdefs[i].blue >> 8);
+	    outb(BT_RAMDAC_DATA, red);
+	    outb(BT_RAMDAC_DATA, green);
+	    outb(BT_RAMDAC_DATA, blue);
 	}
     }
 
@@ -182,7 +184,7 @@ p9000InstallColormap(pmap)
   Pixel *     ppix;
   xrgb *      prgb;
   xColorItem *defs;
-  int         i;
+  int         i,j;
 
 
   if (pmap == oldmap)
@@ -206,15 +208,43 @@ p9000InstallColormap(pmap)
 
   for ( i=0; i<entries; i++) ppix[i] = i;
 
-  QueryColors( pmap, entries, ppix, prgb);
-
-  for ( i=0; i<entries; i++) /* convert xrgbs to xColorItems */
+  if (pmap->class == GrayScale || pmap->class == PseudoColor)
     {
-      defs[i].pixel = ppix[i];
-      defs[i].red = prgb[i].red;
-      defs[i].green = prgb[i].green;
-      defs[i].blue = prgb[i].blue;
-      defs[i].flags =  DoRed|DoGreen|DoBlue;
+      for ( i=j=0; i<entries; i++) 
+        {
+	  if (pmap->red[i].fShared || pmap->red[i].refcnt != 0)
+	    {
+	      defs[j].pixel = i;
+              defs[j].flags = DoRed|DoGreen|DoBlue;
+	      if (pmap->red[i].fShared)
+	        {
+	          defs[j].red = pmap->red[i].co.shco.red->color;
+	          defs[j].green = pmap->red[i].co.shco.green->color;
+	          defs[j].blue = pmap->red[i].co.shco.blue->color;
+	        }
+	        else if (pmap->red[i].refcnt != 0)
+	        {
+	          defs[j].red = pmap->red[i].co.local.red;
+	          defs[j].green = pmap->red[i].co.local.green;
+	          defs[j].blue = pmap->red[i].co.local.blue;
+	        }
+	      j++;
+	    }
+        }
+      entries = j;
+    }
+  else
+    {
+      QueryColors( pmap, entries, ppix, prgb);
+
+      for ( i=0; i<entries; i++) /* convert xrgbs to xColorItems */
+        {
+          defs[i].pixel = ppix[i];
+          defs[i].red = prgb[i].red;
+          defs[i].green = prgb[i].green;
+          defs[i].blue = prgb[i].blue;
+          defs[i].flags =  DoRed|DoGreen|DoBlue;
+        }
     }
 
   p9000StoreColors( pmap, entries, defs);

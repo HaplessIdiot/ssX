@@ -1,5 +1,4 @@
-/* $XConsortium: Xtranslcl.c /main/27 1996/09/28 16:50:14 rws $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.23 1997/07/19 05:43:05 dawes Exp $ */
+/* $TOG: Xtranslcl.c /main/30 1997/10/23 06:38:32 kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.24 1997/10/25 13:49:58 hohndel Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -220,14 +220,27 @@ int sig;
 {
 }
 
+#ifndef sun
 #define X_STREAMS_DIR	"/dev/X"
-#define DEV_PTMX	"/dev/ptmx"
 #define DEV_SPX		"/dev/spx"
+#else
+#ifndef X11_t
+#define X_STREAMS_DIR	"/dev/X"
+#else
+#define X_STREAMS_DIR	"/tmp/.X11-pipe"
+#endif
+#define DEV_SPX		"/dev/pm"
+#endif
+#define DEV_PTMX	"/dev/ptmx"
 
 #if defined(X11_t)
 
 #define PTSNODENAME "/dev/X/server."
+#ifndef sun
 #define NAMEDNODENAME "/dev/X/Nserver."
+#else
+#define NAMEDNODENAME "/tmp/.X11-pipe/X"
+#endif
 
 /*
  * ISC and SCO are only defined for X11 since they are there for

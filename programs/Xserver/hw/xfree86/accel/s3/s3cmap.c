@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.16 1996/10/23 13:09:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.17 1996/12/23 06:41:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -27,7 +27,7 @@
 /*
  * Modified by Amancio Hasty and Jon Tombs
  */
-/* $XConsortium: s3cmap.c /main/15 1996/10/28 05:12:13 kaleb $ */
+/* $TOG: s3cmap.c /main/17 1997/10/19 15:02:39 kaleb $ */
 
 
 #include "X.h"
@@ -196,7 +196,7 @@ s3InstallColormap(pmap)
    Pixel *ppix;
    xrgb *prgb;
    xColorItem *defs;
-   int   i;
+   int   i,j;
 
    if (pmap == oldmap)
       return;
@@ -220,15 +220,44 @@ s3InstallColormap(pmap)
    for (i = 0; i < entries; i++)
       ppix[i] = i;
 
-   QueryColors(pmap, entries, ppix, prgb);
+  if (pmap->class == GrayScale || pmap->class == PseudoColor)
+    {
+      for ( i=j=0; i<entries; i++) 
+        {
+	  if (pmap->red[i].fShared || pmap->red[i].refcnt != 0)
+	    {
+	      defs[j].pixel = i;
+              defs[j].flags = DoRed|DoGreen|DoBlue;
+	      if (pmap->red[i].fShared)
+	        {
+	          defs[j].red = pmap->red[i].co.shco.red->color;
+	          defs[j].green = pmap->red[i].co.shco.green->color;
+	          defs[j].blue = pmap->red[i].co.shco.blue->color;
+	        }
+	        else if (pmap->red[i].refcnt != 0)
+	        {
+	          defs[j].red = pmap->red[i].co.local.red;
+	          defs[j].green = pmap->red[i].co.local.green;
+	          defs[j].blue = pmap->red[i].co.local.blue;
+	        }
+	      j++;
+	    }
+        }
+      entries = j;
+    }
+  else
+    {
+      QueryColors( pmap, entries, ppix, prgb);
 
-   for (i = 0; i < entries; i++) {	/* convert xrgbs to xColorItems */
-      defs[i].pixel = ppix[i];
-      defs[i].red = prgb[i].red;
-      defs[i].green = prgb[i].green;
-      defs[i].blue = prgb[i].blue;
-      defs[i].flags = DoRed | DoGreen | DoBlue;
-   }
+      for ( i=0; i<entries; i++) /* convert xrgbs to xColorItems */
+        {
+          defs[i].pixel = ppix[i];
+          defs[i].red = prgb[i].red;
+          defs[i].green = prgb[i].green;
+          defs[i].blue = prgb[i].blue;
+          defs[i].flags =  DoRed|DoGreen|DoBlue;
+        }
+    }
 
    s3StoreColors(pmap, entries, defs);
 

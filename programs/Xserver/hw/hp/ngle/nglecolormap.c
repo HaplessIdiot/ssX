@@ -1,4 +1,4 @@
-/* $XConsortium: nglecolormap.c,v 1.1 93/08/08 12:56:41 rws Exp $ */
+/* $TOG: nglecolormap.c /main/3 1997/10/16 16:26:56 kaleb $ */
 
 /*************************************************************************
  * 
@@ -40,16 +40,27 @@ performance, or use of this material.
 
 #include "ngle.h"
 
+extern NgleLutBltCtl setNgleLutBltCtl(
+    Card32              deviceID,
+    Int32		devDepth,
+    Card32              offsetWithinLut,
+    Card32              length);            /* #entries to update */
+
+extern NgleLutBltCtl setHyperLutBltCtl(
+    Card32              deviceID,
+    Int32		devDepth,
+    Card32              offsetWithinLut,
+    Card32              length);            /* #entries to update */
 
 /* Gray Scale support: calculate intensity from rgb using NTSC weights */
-#define CALCULATE_GRAYSCALE_INTENSITY(intensity, red8, grn8, blu8)\
-{\
-    intensity   = (Card8)			    \
-		( (float) ((red8) & 0xff) * 0.30   \
-		+ (float) ((grn8) & 0xff) * 0.59   \
-		+ (float) ((blu8) & 0xff) * 0.11   \
-		);				    \
-    intensity   &= 0xff;			    \
+#define CALCULATE_GRAYSCALE_INTENSITY(intensity, red8, grn8, blu8)	\
+{									\
+    intensity   = (Card8)						\
+		( (float) ((red8) & 0xff) * 0.30			\
+		+ (float) ((grn8) & 0xff) * 0.59			\
+		+ (float) ((blu8) & 0xff) * 0.11			\
+		);							\
+    intensity   &= 0xff;						\
 }
 
 
@@ -356,11 +367,18 @@ void ngleInstallColormap(
 	        green = cmap->red[i].co.shco.green->color;
 	        blue  = cmap->red[i].co.shco.blue->color;
 	    }
-	    else
+	    else if (cmap->red[i].refcnt != 0)
 	    {
 	        red   = cmap->red[i].co.local.red;
 	        green = cmap->red[i].co.local.green;
 	        blue  = cmap->red[i].co.local.blue;
+	    }
+	    else
+	    {
+		/* take it apart, so it can be put together again */
+		red   = (pScreenPriv->hwColors[i] & 0xff0000) >> 8;
+		green = (pScreenPriv->hwColors[i] & 0x00ff00);
+		blue  = (pScreenPriv->hwColors[i] & 0x0000ff) << 8;
 	    }
 
 	    if (!pScreenPriv->isGrayScale)
@@ -385,9 +403,27 @@ void ngleInstallColormap(
         }
     }
 
-    /* cleanup colormap hardware */
-    FINISH_IMAGE_COLORMAP_ACCESS(pDregs,pScreenPriv->deviceID,
+    if (pScreenPriv->deviceID == S9000_ID_HCRX)
+    {
+	NgleLutBltCtl	lutBltCtl;
+
+	lutBltCtl   = setHyperLutBltCtl(pScreenPriv->deviceID,
+			pScreenPriv->devDepth,
+			0,      /* Offset w/i LUT */
+			256);   /* Load entire LUT */
+	NGLE_BINC_SET_SRCADDR((Card32)
+		NGLE_LONG_FB_ADDRESS(0, 0x100, 0)); /* 0x100 is same as used in
+						     * WRITE_IMAGE_COLOR() */
+	START_COLORMAPLOAD(lutBltCtl.all);
+	SETUP_FB(pDregs, pScreenPriv->deviceID, pScreenPriv->devDepth);
+    }
+    else
+    {
+	/* cleanup colormap hardware */
+	FINISH_IMAGE_COLORMAP_ACCESS(pDregs,pScreenPriv->deviceID,
 				   pScreenPriv->devDepth);
+    }
+
     pScreenPriv->installedMap = cmap;
     WalkTree(cmap->pScreen, TellGainedMap, (char *) &(cmap->mid));
 
@@ -524,9 +560,26 @@ ngleStoreColors(
         }
     }
 
-    /* cleanup colormap hardware */
-    FINISH_IMAGE_COLORMAP_ACCESS(pDregs,pScreenPriv->deviceID,
+    if (pScreenPriv->deviceID == S9000_ID_HCRX)
+    {
+	NgleLutBltCtl	lutBltCtl;
+
+	lutBltCtl   = setHyperLutBltCtl(pScreenPriv->deviceID,
+			pScreenPriv->devDepth,
+			0,      /* Offset w/i LUT */
+			256);   /* Load entire LUT */
+	NGLE_BINC_SET_SRCADDR((Card32)
+		NGLE_LONG_FB_ADDRESS(0, 0x100, 0)); /* 0x100 is same as used in
+						     * WRITE_IMAGE_COLOR() */
+	START_COLORMAPLOAD(lutBltCtl.all);
+	SETUP_FB(pDregs, pScreenPriv->deviceID, pScreenPriv->devDepth);
+    }
+    else
+    {
+	/* cleanup colormap hardware */
+	FINISH_IMAGE_COLORMAP_ACCESS(pDregs,pScreenPriv->deviceID,
 				   pScreenPriv->devDepth);
+    }
 
 }   /* ngleStoreColors() */
 
@@ -667,4 +720,76 @@ ngleResolvePseudoColor(
 
   return;
 
-}
+} /* ngleResolvePseudoColor() */
+
+
+NgleLutBltCtl setNgleLutBltCtl(
+    Card32              deviceID,
+    Int32		devDepth,
+    Card32              offsetWithinLut,
+    Card32              length)             /* #entries to update */
+{
+    NgleLutBltCtl       lutBltCtl;
+
+    /* set enable, zero reserved fields */
+    lutBltCtl.all           = 0x80000000;
+
+    lutBltCtl.fields.length = length;
+
+    if (deviceID == S9000_ID_A1439A) /* CRX24 */
+    {
+        if (devDepth == 8)
+        {
+            lutBltCtl.fields.lutType    = NGLE_CMAP_OVERLAY_TYPE;
+            lutBltCtl.fields.lutOffset  = 0;
+        }
+        else
+        {
+            lutBltCtl.fields.lutType    = NGLE_CMAP_INDEXED0_TYPE;
+            lutBltCtl.fields.lutOffset  = 0 * 256;
+        }
+    }
+    else if (deviceID == S9000_ID_ARTIST)
+    {
+        lutBltCtl.fields.lutType    = NGLE_CMAP_INDEXED0_TYPE;
+        lutBltCtl.fields.lutOffset  = 0 * 256;
+    }
+    else
+    {
+        lutBltCtl.fields.lutType   = NGLE_CMAP_INDEXED0_TYPE;
+        lutBltCtl.fields.lutOffset = 0;
+    }
+
+    /* Offset points to start of LUT.  Adjust for within LUT */
+    lutBltCtl.fields.lutOffset += offsetWithinLut;
+
+    return(lutBltCtl);
+
+}   /* setNgleLutBltCtl() */
+
+NgleLutBltCtl setHyperLutBltCtl(
+    Card32              deviceID,
+    Int32		devDepth,
+    Card32              offsetWithinLut,
+    Card32              length)             /* #entries to update */
+{
+    NgleLutBltCtl       lutBltCtl;
+
+    /* set enable, zero reserved fields */
+    lutBltCtl.all           = 0x80000000;
+
+    lutBltCtl.fields.length = length;
+    lutBltCtl.fields.lutType    = HYPER_CMAP_TYPE;
+
+    /* Expect lutIndex to be 0 or 1 for image cmaps, 2 or 3 for overlay cmaps*/
+    if (devDepth == 8)
+	lutBltCtl.fields.lutOffset  = 2 * 256;
+    else
+	lutBltCtl.fields.lutOffset  = 0 * 256;
+
+    /* Offset points to start of LUT.  Adjust for within LUT */
+    lutBltCtl.fields.lutOffset += offsetWithinLut;
+
+    return(lutBltCtl);
+
+}   /* setHyperLutBltCtl() */

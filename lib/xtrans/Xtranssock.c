@@ -1,5 +1,4 @@
-/* $TOG: Xtranssock.c /main/59 1997/08/06 18:47:23 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.31 1997/08/12 12:01:54 hohndel Exp $ */
+/* $TOG: Xtranssock.c /main/60 1997/10/16 13:03:18 barstow $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.32 1997/10/25 13:49:58 hohndel Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -230,6 +230,10 @@ static Sockettrans2dev Sockettrans2devtab[] = {
 #define UNIX_PATH "/usr/spool/sockets/xtrans_test/"
 #define UNIX_DIR "/usr/spool/sockets/xtrans_test"
 #endif
+#if defined(LBXPROXY_t)
+#define UNIX_PATH "/usr/spool/sockets/X11/"
+#define UNIX_DIR  "/usr/spool/sockets/X11"
+#endif
 
 #else /* !hpux */
 
@@ -252,6 +256,10 @@ static Sockettrans2dev Sockettrans2devtab[] = {
 #if defined(TEST_t)
 #define UNIX_PATH "/tmp/.Test-unix/test"
 #define UNIX_DIR "/tmp/.Test-unix"
+#endif
+#if defined(LBXPROXY_t)
+#define UNIX_PATH "/tmp/.X11-unix/X"
+#define UNIX_DIR  "/tmp/.X11-unix"
 #endif
 
 #endif /* hpux */

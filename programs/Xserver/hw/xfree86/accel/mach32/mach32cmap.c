@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32cmap.c,v 3.9 1996/10/17 15:42:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32cmap.c,v 3.10 1996/12/23 06:38:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -30,7 +30,7 @@
  *
  * Header: /proj/X11/mit/server/ddx/xf86/vga/RCS/vgaCmap.c,v 1.2 1991/06/27 00:03:01 root Exp
  */
-/* $XConsortium: mach32cmap.c /main/9 1996/10/27 11:46:38 kaleb $ */
+/* $TOG: mach32cmap.c /main/11 1997/10/19 15:02:31 kaleb $ */
 
 
 #include "X.h"
@@ -78,7 +78,7 @@ mach32StoreColors(pmap, ndef, pdefs)
      int		ndef;
      xColorItem	        *pdefs;
 {
-    int		i;
+    int		i,nshift;
     xColorItem	directDefs[256];
     extern LUTENTRY mach32savedLUT[256];
 
@@ -90,19 +90,17 @@ mach32StoreColors(pmap, ndef, pdefs)
 	pdefs = directDefs;
     }
 
+    nshift = ((mach32DAC8Bit) ? 8 : 10);
+
     for (i = 0; i < ndef; i++) {
+	unsigned char red, green, blue;
 	/* Return the n most significant bits from a 16-bit value.
 	 * For VGA, n = 6.  For 8-bit DACs, n = 8.
 	 */
-	if (mach32DAC8Bit) {
-	    mach32savedLUT[pdefs[i].pixel].r = pdefs[i].red >> 8;
-	    mach32savedLUT[pdefs[i].pixel].g = pdefs[i].green >> 8;
-	    mach32savedLUT[pdefs[i].pixel].b = pdefs[i].blue >> 8;
-	} else {
-	    mach32savedLUT[pdefs[i].pixel].r = pdefs[i].red >> 10;
-	    mach32savedLUT[pdefs[i].pixel].g = pdefs[i].green >> 10;
-	    mach32savedLUT[pdefs[i].pixel].b = pdefs[i].blue >> 10;
-	}
+	red   = mach32savedLUT[pdefs[i].pixel].r = pdefs[i].red >> nshift;
+	green = mach32savedLUT[pdefs[i].pixel].g = pdefs[i].green >> nshift;
+	blue  = mach32savedLUT[pdefs[i].pixel].b = pdefs[i].blue >> nshift;
+
 	if (xf86VTSema
 #ifdef XFreeXDGA
 	    || ((mach32InfoRec.directMode & XF86DGADirectGraphics)
@@ -111,15 +109,9 @@ mach32StoreColors(pmap, ndef, pdefs)
 #endif
 	    ) {
 	    outb(DAC_W_INDEX, pdefs[i].pixel);
-	    if (mach32DAC8Bit) {
-		outb(DAC_DATA, pdefs[i].red >> 8);
-		outb(DAC_DATA, pdefs[i].green >> 8);
-		outb(DAC_DATA, pdefs[i].blue >> 8);
-	    } else {
-		outb(DAC_DATA, pdefs[i].red >> 10);
-		outb(DAC_DATA, pdefs[i].green >> 10);
-		outb(DAC_DATA, pdefs[i].blue >> 10);
-	    }
+	    outb(DAC_DATA, red);
+	    outb(DAC_DATA, green);
+	    outb(DAC_DATA, blue);
 	}
     }
     checkCursorColor = TRUE;
@@ -135,7 +127,7 @@ mach32InstallColormap(pmap)
   Pixel *     ppix;
   xrgb *      prgb;
   xColorItem *defs;
-  int         i;
+  int         i,j;
 
 
   if (pmap == oldmap)
@@ -159,15 +151,43 @@ mach32InstallColormap(pmap)
 
   for ( i=0; i<entries; i++) ppix[i] = i;
 
-  QueryColors( pmap, entries, ppix, prgb);
-
-  for ( i=0; i<entries; i++) /* convert xrgbs to xColorItems */
+  if (pmap->class == GrayScale || pmap->class == PseudoColor)
     {
-      defs[i].pixel = ppix[i];
-      defs[i].red = prgb[i].red;
-      defs[i].green = prgb[i].green;
-      defs[i].blue = prgb[i].blue;
-      defs[i].flags =  DoRed|DoGreen|DoBlue;
+      for ( i=j=0; i<entries; i++) 
+        {
+	  if (pmap->red[i].fShared || pmap->red[i].refcnt != 0)
+	    {
+	      defs[j].pixel = i;
+              defs[j].flags = DoRed|DoGreen|DoBlue;
+	      if (pmap->red[i].fShared)
+	        {
+	          defs[j].red = pmap->red[i].co.shco.red->color;
+	          defs[j].green = pmap->red[i].co.shco.green->color;
+	          defs[j].blue = pmap->red[i].co.shco.blue->color;
+	        }
+	        else if (pmap->red[i].refcnt != 0)
+	        {
+	          defs[j].red = pmap->red[i].co.local.red;
+	          defs[j].green = pmap->red[i].co.local.green;
+	          defs[j].blue = pmap->red[i].co.local.blue;
+	        }
+	      j++;
+	    }
+        }
+      entries = j;
+    }
+  else
+    {
+      QueryColors( pmap, entries, ppix, prgb);
+
+      for ( i=0; i<entries; i++) /* convert xrgbs to xColorItems */
+        {
+          defs[i].pixel = ppix[i];
+          defs[i].red = prgb[i].red;
+          defs[i].green = prgb[i].green;
+          defs[i].blue = prgb[i].blue;
+          defs[i].flags =  DoRed|DoGreen|DoBlue;
+        }
     }
 
   mach32StoreColors( pmap, entries, defs);

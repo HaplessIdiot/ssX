@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8cmap.c,v 3.0 1996/11/18 13:09:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8cmap.c,v 3.1 1996/12/23 06:39:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,7 +26,7 @@
  * Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
  *
  */
-/* $XConsortium: mach8cmap.c /main/3 1996/02/21 17:29:56 kaleb $ */
+/* $TOG: mach8cmap.c /main/5 1997/10/19 15:02:35 kaleb $ */
 
 
 #include "X.h"
@@ -94,14 +94,16 @@ mach8StoreColors(pmap, ndef, pdefs)
     }
 
     for (i = 0; i < ndef; i++) {
-        currentmach8dac[pdefs[i].pixel].r = pdefs[i].red >> 10;
-        currentmach8dac[pdefs[i].pixel].g = pdefs[i].green >> 10;
-        currentmach8dac[pdefs[i].pixel].b = pdefs[i].blue >> 10;
+	unsigned char red, green, blue;
+
+        red   = currentmach8dac[pdefs[i].pixel].r = pdefs[i].red >> 10;
+        green = currentmach8dac[pdefs[i].pixel].g = pdefs[i].green >> 10;
+        blue  = currentmach8dac[pdefs[i].pixel].b = pdefs[i].blue >> 10;
 	if (xf86VTSema) {
 	    outb(DAC_W_INDEX, pdefs[i].pixel);
-	    outb(DAC_DATA, pdefs[i].red >> 10);
-	    outb(DAC_DATA, pdefs[i].green >> 10);
-	    outb(DAC_DATA, pdefs[i].blue >> 10);
+	    outb(DAC_DATA, red);
+	    outb(DAC_DATA, green);
+	    outb(DAC_DATA, blue);
 	}
     }
 }
@@ -116,7 +118,7 @@ mach8InstallColormap(pmap)
   Pixel *     ppix;
   xrgb *      prgb;
   xColorItem *defs;
-  int         i;
+  int         i,j;
 
 
   if (pmap == oldmap)
@@ -140,15 +142,43 @@ mach8InstallColormap(pmap)
 
   for ( i=0; i<entries; i++) ppix[i] = i;
 
-  QueryColors( pmap, entries, ppix, prgb);
-
-  for ( i=0; i<entries; i++) /* convert xrgbs to xColorItems */
+  if (pmap->class == GrayScale || pmap->class == PseudoColor)
     {
-      defs[i].pixel = ppix[i];
-      defs[i].red = prgb[i].red;
-      defs[i].green = prgb[i].green;
-      defs[i].blue = prgb[i].blue;
-      defs[i].flags =  DoRed|DoGreen|DoBlue;
+      for ( i=j=0; i<entries; i++) 
+        {
+	  if (pmap->red[i].fShared || pmap->red[i].refcnt != 0)
+	    {
+	      defs[j].pixel = i;
+              defs[j].flags = DoRed|DoGreen|DoBlue;
+	      if (pmap->red[i].fShared)
+	        {
+	          defs[j].red = pmap->red[i].co.shco.red->color;
+	          defs[j].green = pmap->red[i].co.shco.green->color;
+	          defs[j].blue = pmap->red[i].co.shco.blue->color;
+	        }
+	        else if (pmap->red[i].refcnt != 0)
+	        {
+	          defs[j].red = pmap->red[i].co.local.red;
+	          defs[j].green = pmap->red[i].co.local.green;
+	          defs[j].blue = pmap->red[i].co.local.blue;
+	        }
+	      j++;
+	    }
+        }
+      entries = j;
+    }
+  else
+    {
+      QueryColors( pmap, entries, ppix, prgb);
+
+      for ( i=0; i<entries; i++) /* convert xrgbs to xColorItems */
+        {
+          defs[i].pixel = ppix[i];
+          defs[i].red = prgb[i].red;
+          defs[i].green = prgb[i].green;
+          defs[i].blue = prgb[i].blue;
+          defs[i].flags =  DoRed|DoGreen|DoBlue;
+        }
     }
 
   mach8StoreColors( pmap, entries, defs);

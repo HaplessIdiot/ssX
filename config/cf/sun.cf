@@ -1,9 +1,9 @@
-XCOMM platform:  $TOG: sun.cf /main/169 1997/08/15 17:02:23 samborn $
+XCOMM platform:  $TOG: sun.cf /main/174 1997/10/06 18:02:58 barstow $
 
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.37 1997/07/06 05:30:33 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.38 1997/08/26 10:00:41 hohndel Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -157,32 +157,34 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 
 #ifdef i386Architecture
 # if OSMajorVersion > 4
-#  define ServerExtraDefines AllocateLocalDefines XFree86ServerDefines
-#  define ServerOSDefines    XFree86ServerOSDefines
+#  define ServerExtraDefines	AllocateLocalDefines XFree86ServerDefines
+#  define ServerOSDefines	XFree86ServerOSDefines
 # else
-#  define ServerExtraDefines AllocateLocalDefines
-#  define ServerOSDefines   -DDDXOSINIT
+#  define ServerExtraDefines	AllocateLocalDefines
+#  define ServerOSDefines	-DDDXOSINIT
 # endif
 #else
-# define ServerExtraDefines AllocateLocalDefines
-# define ServerOSDefines   -DDDXOSINIT
+# define ServerExtraDefines	AllocateLocalDefines
+# define ServerOSDefines	-DDDXOSINIT
+# define HasPlugin		YES
 #endif
 
 #define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT
 
 #if OSMajorVersion > 4
+#define ConnectionFlags		-DTCPCONN -DUNIXCONN -DLOCALCONN
 #if HasSunC
 /* 
  * Assume /opt/SUNWspro/bin/ contains symlinks to the appropriate tools
  */
 #ifndef  CcCmd
-# define CcCmd		/opt/SUNWspro/bin/cc
+# define CcCmd			/opt/SUNWspro/bin/cc
 #endif
 #ifndef  CplusplusCmd
-# define CplusplusCmd	/opt/SUNWspro/bin/CC
+# define CplusplusCmd		/opt/SUNWspro/bin/CC
 #endif
 #ifndef  CplusplusFilt
-#  define CplusplusFilt  /opt/SUNWspro/bin/c++filt
+#  define CplusplusFilt  	/opt/SUNWspro/bin/c++filt
 #endif
 #ifndef  CplusplusDependIncludes
 #if CplusplusCompilerMajorVersion > 3
@@ -216,7 +218,6 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 # else
 #  define StandardDefines	  -Dsun -DSVR4
 #  define ToolkitStringsABIOptions	-sparcabi
-#  define HasPlugin         YES
 # endif
 # define ExtraLibraries    -lsocket -lnsl
 # if OSMinorVersion > 1

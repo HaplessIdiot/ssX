@@ -1,6 +1,5 @@
 /*
- * $XConsortium: Xthreads.h /main/35 1996/12/04 10:23:02 lehors $
- * $XFree86: xc/include/Xthreads.h,v 3.2 1996/12/09 11:48:46 dawes Exp $
+ * $TOG: Xthreads.h /main/36 1997/07/31 12:07:41 sekhar $
  *
  * 
 Copyright (c) 1993  X Consortium
@@ -27,6 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  * *
  */
+/* $XFree86: xc/include/Xthreads.h,v 3.3 1996/12/23 05:58:11 dawes Exp $ */
 
 #ifndef _XTHREADS_H_
 #define _XTHREADS_H_
@@ -67,9 +67,6 @@ typedef struct mutex xmutex_rec;
 #if defined(SVR4) && !defined(__sgi)
 #include <thread.h>
 #include <synch.h>
-#ifndef LINE_MAX
-#define LINE_MAX 2048
-#endif
 typedef thread_t xthread_t;
 typedef thread_key_t xthread_key_t;
 typedef cond_t xcondition_rec;
@@ -202,9 +199,6 @@ typedef pthread_mutex_t xmutex_rec;
 #define xcondition_broadcast(c) tis_cond_broadcast(c)
 #else
 #include <pthread.h>
-#ifndef LINE_MAX
-#define LINE_MAX 2048
-#endif
 typedef pthread_t xthread_t;
 typedef pthread_key_t xthread_key_t;
 typedef pthread_cond_t xcondition_rec;

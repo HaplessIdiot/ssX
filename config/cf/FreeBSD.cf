@@ -1,5 +1,8 @@
-XCOMM platform:  $TOG: FreeBSD.cf /main/18 1997/06/12 07:40:35 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.69 1997/06/29 07:54:16 dawes Exp $
+XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
+XCOMM
+XCOMM
+XCOMM
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.70 1997/07/06 05:30:30 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -48,6 +51,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define NeedVarargsPrototypes	YES
 #define NeedWidePrototypes	NO
 
+#define HasPlugin		YES
+#define VendorHasX11R6_3libXext	YES	/* XC or XFree86 >= 3.3.1 */
+
 #define MkdirHierCmd		mkdir -p
 
 #define CcCmd			cc
@@ -70,6 +76,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define UseGnuMalloc		NO
 #endif
 #endif
+/* 2.2.2 and later has setusercontext() */
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 2) || \
+     (OSMajorVersion == 2 && OSMinorVersion == 2 && OSTeenyVersion >= 2)
+#define HasSetUserContext	YES
+#endif
 
 /* 
  * This doesn't work the way it does on every other system. On FreeBSD it's
@@ -82,7 +93,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * e.g. in /usr/X11R6/lib, and you have added /usr/X11R6/lib to your 
  * ld.so.cache with ldconfig, then any programs linked with this "hint" will
  * find that ld.so ignores the "hint" at runtime and loads the libraries in 
- * the ld.so.cache, * i.e.the wrong ones, instead! Empirically we find that
+ * the ld.so.cache, i.e.the wrong ones, instead! Empirically we find that
  * the run-path is only used as a last resort to find the libraries, after
  * the LD_LIBRARY_PATH and ld.so.cache.
  *

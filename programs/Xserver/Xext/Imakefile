@@ -1,5 +1,5 @@
-XCOMM $TOG: Imakefile /main/57 1997/08/05 08:59:56 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.12 1997/05/06 09:45:04 dawes Exp $
+XCOMM $TOG: Imakefile /main/61 1997/11/11 12:43:23 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.13 1997/08/12 12:01:55 hohndel Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -47,6 +47,15 @@ XF86MISCOBJS = xf86misc.o
  SERVERCONFIGDIR = ServerConfigDir
    POLICYFILEDEF = -DDEFAULTPOLICYFILE=\"$(SERVERCONFIGDIR)/SecurityPolicy\"
 #endif
+#if BuildCup
+         CUPSRCS = cup.c
+         CUPOBJS = cup.o
+#endif
+#if BuildXinerama
+        PNRXSRCS = panoramiX.c panoramiXSwap.c panoramiXprocs.c
+        PNRXOBJS = panoramiX.o panoramiXSwap.o panoramiXprocs.o
+    PNRXINCLUDES = -I$(FONTINCSRC) -I../mi
+#endif
 
 #if DoLoadableServer
      MODINITSRCS = modinit.c 
@@ -58,7 +67,7 @@ XF86MISCOBJS = xf86misc.o
 	      bigreq.c sync.c $(SCRNSAVSRC) xcmisc.c $(VIDMODESRCS) \
 	      $(XF86MISCSRCS) $(XF86DGASRCS) $(SECURITYSRCS) \
 	      $(DPMSSRCS) \
-	      $(APPGROUPSRCS) xprint.c $(MODINITSRCS)
+	      $(APPGROUPSRCS) xprint.c $(MODINITSRCS) $(CUPSRCS) $(PNRXSRCS)
 
 #if !DoLoadableServer
        OBJS = shape.o $(SHMOBJS) $(MULTIBUFOBJ) \
@@ -66,10 +75,10 @@ XF86MISCOBJS = xf86misc.o
               bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o $(VIDMODEOBJS) \
 	      $(XF86MISCOBJS) $(XF86DGAOBJS) $(SECURITYOBJS) \
 	      $(DPMSOBJS) \
-	      $(APPGROUPOBJS) xprint.o
+	      $(APPGROUPOBJS) xprint.o $(CUPOBJS) $(PNRXSRCS)
 #else
       SOBJS = $(SHMOBJS) $(APPGROUPOBJS) $(SECURITYOBJS) xprint.o \
-	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o
+	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(CUPOBJS) $(PNRXSRCS)
       MOBJS = $(MODINITOBJS) shape.o $(MULTIBUFOBJ) mitmisc.o \
 	      bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o \
 	      $(VIDMODEOBJS) $(XF86MISCOBJS) $(XF86DGAOBJS) \
@@ -78,7 +87,8 @@ XF86MISCOBJS = xf86misc.o
 #endif
 
 XF86INCLUDES = -I../hw/xfree86/common -I../hw/xfree86/os-support
-    INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) $(XF86INCLUDES)
+    INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) $(PNRXINCLUDES) \
+		$(XF86INCLUDES)
     LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
 NormalLibraryObjectRule()

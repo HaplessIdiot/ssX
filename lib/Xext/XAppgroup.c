@@ -26,13 +26,13 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 */
 
-/* $TOG: XAppgroup.c /main/4 1997/07/17 21:38:05 kaleb $ */
+/* $TOG: XAppgroup.c /main/5 1997/09/22 11:58:07 kaleb $ */
 
 
 
 
 
-/* $XFree86: xc/lib/Xext/XAppgroup.c,v 1.2 1996/12/26 01:37:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XAppgroup.c,v 1.3 1997/07/19 05:43:03 dawes Exp $ */
 
 #ifdef WIN32
 #define BOOL wBOOL
@@ -179,7 +179,7 @@ StuffToWire (dpy, stuff, req)
 }
 
 Bool 
-#if NeedVarargsPrototypes
+#if NeedFunctionPrototypes
 XagCreateEmbeddedApplicationGroup(
     Display* dpy,
     VisualID root_visual,
@@ -196,7 +196,6 @@ XagCreateEmbeddedApplicationGroup(dpy, root_visual, default_colormap, black_pixe
     XAppGroup* app_group_return;
 #endif
 {
-    va_list var;
     XExtDisplayInfo *info = find_display (dpy);
     xXagCreateReq *req;
     struct xagstuff stuff;
@@ -230,7 +229,7 @@ XagCreateEmbeddedApplicationGroup(dpy, root_visual, default_colormap, black_pixe
 }
 
 Bool 
-#if NeedVarargsPrototypes
+#if NeedFunctionPrototypes
 XagCreateNonembeddedApplicationGroup(
     Display* dpy,
     XAppGroup* app_group_return)
@@ -240,7 +239,6 @@ XagCreateNonembeddedApplicationGroup(dpy, app_group_return)
     XAppGroup* app_group_return;
 #endif
 {
-    va_list var;
     XExtDisplayInfo *info = find_display (dpy);
     xXagCreateReq *req;
     struct xagstuff stuff;

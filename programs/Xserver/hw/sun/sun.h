@@ -1,6 +1,5 @@
 
-/* $XConsortium: sun.h /main/60 1996/10/31 14:23:48 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.4 1996/10/16 14:38:15 dawes Exp $ */
+/* $TOG: sun.h /main/61 1997/10/16 16:27:01 kaleb $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -13,6 +12,8 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  */
+
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.5 1996/12/23 06:30:13 dawes Exp $ */
 
 #ifndef _SUN_H_ 
 #define _SUN_H_
@@ -247,6 +248,7 @@ typedef struct {
     ColormapPtr	    installedMap;
     CloseScreenProcPtr CloseScreen;
     void	    (*UpdateColormap)();
+    void	    (*GetColormap)();
     sunCursorRec    hardwareCursor;
     Bool	    hasHardwareCursor;
 } sunScreenRec, *sunScreenPtr;

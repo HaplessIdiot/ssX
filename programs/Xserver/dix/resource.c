@@ -46,8 +46,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c /main/39 1996/10/30 11:17:56 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.0 1996/04/15 11:19:57 dawes Exp $ */
+/* $TOG: resource.c /main/40 1997/09/26 17:24:25 sekhar $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -71,6 +70,7 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.1 1996/12/23 06:29:51 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -793,7 +793,7 @@ SecurityLookupIDByClass(client, id, classes, mode)
 	    }
     }
     if (retval && client && client->CheckAccess)
-	retval = (* client->CheckAccess)(client, id, classes, mode, retval);
+	retval = (* client->CheckAccess)(client, id, res->type, mode, retval);
     return retval;
 }
 

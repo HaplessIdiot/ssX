@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.45 1997/06/03 14:11:14 hohndel Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.46 1997/07/29 12:07:20 hohndel Exp $ 
 .TH XF86_SVGA 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86_SVGA - SVGA X Window System servers for UNIX on 
@@ -462,4 +462,4 @@ to the address listed below.
 Refer to the
 .I XFree86(1)
 manual page.
-.\" $XConsortium: XF86_SVGA.man /main/20 1996/12/09 17:33:14 kaleb $
+.\" $TOG: XF86_SVGA.man /main/22 1997/11/04 21:20:08 kaleb $

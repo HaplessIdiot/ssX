@@ -1,8 +1,8 @@
-XCOMM $TOG: Imakefile /main/235 1997/05/25 15:12:21 kaleb $
+XCOMM $TOG: Imakefile /main/242 1997/11/11 08:57:43 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.116 1997/08/13 05:32:10 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.117 1997/09/19 09:01:09 hohndel Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -20,7 +20,11 @@ INSTPGMFLAGS =
 #define BarePostFbLibs $(MFB) $(XPFBLIBS) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
 #define NoMfbBarePostFbLibs $(XPFBLIBS) $(MI)
+#ifndef BuildXinerama
 #define NoMfbPostFbLibs NoMfbBarePostFbLibs $(EXTENSIONS)
+#else
+#define NoMfbPostFbLibs $(EXTENSIONS) NoMfbBarePostFbLibs $(EXTENSIONS)
+#endif
 
 #define MFBBareLibs PreFbLibs BarePostFbLibs
 #define NoMFBBareLibs PreFbLibs NoMfbBarePostFbLibs
@@ -174,9 +178,15 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
           CFB24 = cfb/LibraryTargetName(cfb) cfb24/LibraryTargetName(cfb)
           CFB32 = cfb/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb)
 #endif
+#if BuildXinerama
+             MI = panmi/LibraryTargetName(mi)
+   MIINITEXTOBJ = panmi/miinitext.o
+            DIX = pandix/LibraryTargetName(dix)
+#else
              MI = mi/LibraryTargetName(mi)
    MIINITEXTOBJ = mi/miinitext.o
             DIX = dix/LibraryTargetName(dix)
+#endif
            FONT = $(DEPFONTLIB)
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
@@ -187,7 +197,11 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
         SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
            CBRT = mi/LibraryTargetName(cbrt)
+#if BuildXinerama
+        STDDIRS = include pandix os panmi $(XPDDXDIR) $(EXTDIRS)
+#else
         STDDIRS = include dix os mi $(XPDDXDIR) $(EXTDIRS)
+#endif
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
@@ -382,28 +396,6 @@ ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
 #define ServerToInstall XsunMono
 #endif
 #endif /* XsunLynxMonoServer */
-
-
-#if XibmServer
-XCOMM
-XCOMM IBM server
-XCOMM
-#if SpecialMalloc
-IBMALLOCLIB = hw/ibm/common/LibraryTargetName(ibmalloc)
-#else
-IBMALLOCLIB = 
-#endif
-MFBDIR  = mfb
-CFB8DIR = cfb
-DDXDIR1 = hw/ibm
-IBMDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
-IBMOBJS = hw/ibm/common/ibmcomm.o hw/ibm/common/ibmDate.o
-IBMLIBS = hw/ibm/AIX/hft.o hw/ibm/LibraryTargetName(ibm) $(IBMALLOCLIB) CFB8Libs
-ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall Xibm
-#endif
-#endif /* XibmServer */
 
 
 #if XhpServer
@@ -1749,7 +1741,11 @@ CFB8DIR = cfb
 CFB32DIR = cfb32
 XPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DEPDIRS)
 #if PrintOnlyServer
+#if BuildXinerama
+XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o Xprint/panoramiXstubs.o
+#else
 XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o
+#endif
 XPLIBS = PreFbLibs $(XPDDXLIBS) $(XPDDXFBLIBS) PostFbLibs
 #else
 XPOBJS = Xprint/ddxInit.o
@@ -1851,9 +1847,13 @@ XVFBDDXDIR = hw
 #endif
 XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(XVFBDDXDIR) $(DEPDIRS)
 #if !defined(LynxOSArchitecture) && !defined(Win32Architecture)
-XVFBOBJS = hw/vfb/stubs.o
+#if BuildXinerama
+XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o hw/vfb/panoramiXstubs.o
 #else
-XVFBOBJS = hw/vfb/stubs.o dix/main.o
+XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o
+#endif
+#else
+XVFBOBJS = dix/main.o hw/vfb/stubs.o hw/vfb/miinitext.o
 #endif
 XVFB = hw/vfb/LibraryTargetName(vfb)
 XVFBLIBS = PreFbLibs $(XVFB) $(CFB) PostFbLibs

@@ -1,4 +1,4 @@
-/* $TOG: omGeneric.c /main/22 1997/07/17 21:49:06 kaleb $ */
+/* $TOG: omGeneric.c /main/24 1997/11/12 17:33:55 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.6 1997/06/22 10:16:52 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.7 1997/07/19 05:43:01 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XomGeneric.h"
@@ -640,37 +640,35 @@ parse_omit_name(oc, font_data, pattern)
     FontData	font_data;
     char	*pattern;
 {
-    char	*font_name = (char *) NULL;
-    char	*last = (char *) NULL;
-    char	*base_name;
-    char	buf[BUFSIZE];
+    char*	last = (char *) NULL;
+    char*	base_name;
+    char	buf[BUFSIZE]; /* no XLFD name should be this long */
+    char*	bufp;
     int		length = 0;
     int		num_fields;
 
     if(is_match_charset(font_data, pattern) == True) {
-	strcpy(buf, pattern);
-	length = strlen(pattern);
-	if (font_name = get_font_name(oc, buf)) {
-	    font_data->xlfd_name = (char *)Xmalloc(strlen(font_name) + 1);
-	    if(font_data->xlfd_name == NULL) {
-		Xfree(font_name);
-		return (-1);
-	    }
-	    strcpy(font_data->xlfd_name, font_name);
-	    Xfree(font_name);
+	if ((font_data->xlfd_name = get_font_name(oc, pattern)) != NULL) {
 	    return True;
 	}
     }
 
-    strcpy(buf, pattern);
+    /* 
+     * If an XLFD name is arbitrarily (too) long, allocate a buffer,
+     * and some extra space to tack stuff on the end.
+     */
     length = strlen(pattern);
-    last = buf + length - 1;
+    if (length > BUFSIZE/2) bufp = Xmalloc (length * 2);
+    else bufp = buf;
+
+    strcpy(bufp, pattern);
+    last = bufp + length - 1;
 
     /* 
      * Plug in the charset/encoding specified in the XLC_LOCALE file
      * into the *right* place in the XLFD name.
      */
-    for (num_fields = 0, base_name = buf; *base_name != '\0'; base_name++)
+    for (num_fields = 0, base_name = bufp; *base_name != '\0'; base_name++)
 	if (*base_name == '-') num_fields++;
 
     switch (num_fields) {
@@ -680,14 +678,14 @@ parse_omit_name(oc, font_data, pattern)
 	break;
     case 13:
 	/* got the charset, not the encoding, zap the charset */
-	last = strrchr (buf, '-');
+	last = strrchr (bufp, '-');
 	num_fields = 12;
 	break;
     case 14:
 	/* got the charset and the encoding, zap 'em */
-	last = strrchr (buf, '-');
+	last = strrchr (bufp, '-');
 	*last = '\0';
-	last = strrchr (buf, '-');
+	last = strrchr (bufp, '-');
 	num_fields = 12;
 	break;
     default:
@@ -705,14 +703,8 @@ parse_omit_name(oc, font_data, pattern)
     last++;
 
     strcpy(last, font_data->name);
-    if (font_name = get_font_name(oc, buf)) {
-	font_data->xlfd_name = (char *)Xmalloc(strlen(font_name) + 1);
-	if(font_data->xlfd_name == NULL) {
-	    Xfree(font_name);
-	    return (-1);
-	}
-	strcpy(font_data->xlfd_name, font_name);
-	Xfree(font_name);
+    if ((font_data->xlfd_name = get_font_name(oc, bufp)) != NULL) {
+	if (bufp != buf) Xfree (bufp);
 	return True;
     }
 
@@ -722,18 +714,13 @@ parse_omit_name(oc, font_data, pattern)
 	strcpy(last + 2, font_data->name);
 	num_fields++; 
 	last+=2;
-	if (font_name = get_font_name(oc, buf)) {
-	    font_data->xlfd_name = (char *)Xmalloc(strlen(font_name) + 1);
-	    if(font_data->xlfd_name == NULL) {
-		Xfree(font_name);
-		return (-1);
-	    }
-	    strcpy(font_data->xlfd_name, font_name);
-	    Xfree(font_name);
+	if ((font_data->xlfd_name = get_font_name(oc, bufp)) != NULL) {
+	    if (bufp != buf) Xfree (bufp);
 	    return True;
 	}
     }
 
+    if (bufp != buf) Xfree (bufp);
     return False;
 }
 
@@ -781,10 +768,8 @@ parse_fontdata(oc, font_data, font_data_count, name_list, name_list_count,
 	    if (strchr(pattern, '*') == NULL &&
 		(font_name = get_font_name(oc, pattern))) {
 
-
 		ret = parse_all_name(oc, font_data, font_name);
 		Xfree(font_name);
-
 
 		if(ret == -1)
 		    return ret;

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ws_color.c,v 1.6 94/04/17 20:29:57 keith Exp $ */
+/* $TOG: ws_color.c /main/7 1997/10/21 13:07:46 kaleb $ */
 
 /* 
  * ws_color.c - device specific color routines, stored in screen
@@ -107,7 +107,7 @@ wsStoreColors(pmap, ndef, pdefs)
     cd.start = 0;
     cd.ncells = ndef;
     /* 
-     * we will be evil, and note that the server and drive use the same
+     * we will be evil, and note that the server and driver use the same
      * structure.
      */
     cd.cells = (ws_color_cell *)pdefs;
@@ -129,7 +129,7 @@ wsInstallColormap(pcmap)
     Pixel *     ppix;
     xrgb *      prgb;
     xColorItem *defs;
-    int         i;
+    int         i,j;
     wsScreenPrivate *pPrivScreen = (wsScreenPrivate *) 
       pcmap->pScreen->devPrivates[wsScreenPrivateIndex].ptr;
 
@@ -163,15 +163,36 @@ wsInstallColormap(pcmap)
 	else
 	    for ( i=0; i<entries; i++)  ppix[i] = i;
 
-	QueryColors( pcmap, entries, ppix, prgb);
+	if (pcmap->class == GrayScale || pcmap->class == PseudoColor) {
+	    for ( i=j=0; i<entries; i++) {
+		if (pcmap->red[i].fShared || pcmap->red[i].refcnt != 0) {
+		    defs[j].pixel = i;
+		    defs[j].flags = DoRed|DoGreen|DoBlue;
+		    if (pcmap->red[i].fShared) {
+			defs[j].red = pcmap->red[i].co.shco.red->color;
+			defs[j].green = pcmap->red[i].co.shco.green->color;
+			defs[j].blue = pcmap->red[i].co.shco.blue->color;
+		    } else if (pcmap->red[i].refcnt != 0) {
+			defs[j].red = pcmap->red[i].co.local.red;
+			defs[j].green = pcmap->red[i].co.local.green;
+			defs[j].blue = pcmap->red[i].co.local.blue;
+		    }
+		    j++;
+		}
+	    }
+	    entries = j;
+	} else {
+	    QueryColors( pcmap, entries, ppix, prgb);
 
-	for ( i=0; i<entries; i++) { /* convert xrgbs to xColorItems */
-	    defs[i].pixel = ppix[i] & 0xff;  	/* change pixel to index */
-	    defs[i].red = prgb[i].red;
-	    defs[i].green = prgb[i].green;
-	    defs[i].blue = prgb[i].blue;
-	    defs[i].flags =  DoRed|DoGreen|DoBlue;
+	    for ( i=0; i<entries; i++) {
+		defs[i].pixel = ppix[i];
+		defs[i].red = prgb[i].red;
+		defs[i].green = prgb[i].green;
+		defs[i].blue = prgb[i].blue;
+		defs[i].flags =  DoRed|DoGreen|DoBlue;
+	    }
 	}
+
 	wsStoreColors( pcmap, entries, defs);
     
 	DEALLOCATE_LOCAL(ppix);

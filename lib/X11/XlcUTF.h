@@ -1,4 +1,4 @@
-/* $XConsortium: XlcUTF.h,v 1.5 94/03/31 21:59:49 rws Exp $ */
+/* $TOG: XlcUTF.h /main/8 1997/09/23 18:14:24 kaleb $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -59,51 +59,50 @@ typedef unsigned short Rune;		/* 16 bits */
 #define emit(x)    *r = (Rune)x;
 
 typedef enum {
-	N11n_none,		/* No need to normalize (1byte) */
-	N11n_ja,		/* Normalize for ja */
-	N11n_ko,		/* Normalize for ko */
-	N11n_zh			/* Normalize for zh */
+    N11n_none,		/* No need to normalize (1byte) */
+    N11n_ja,		/* Normalize for ja */
+    N11n_ko,		/* Normalize for ko */
+    N11n_zh		/* Normalize for zh */
 } NormalizeType;
 
 typedef struct  _UtfDataRec {
-	XlcCharSet		charset;
-	void			(*initialize)( /* Table Initializer */
+    XlcCharSet	charset;
+    void		(*initialize)( /* Table Initializer */
 #if NeedNestedPrototypes
-					      long *tbl,
-					      long fallback
+	int*,
+	wchar_t
 #endif
-						);
-	long			*fromtbl;	/* UTF -> CharSet */
-	NormalizeType		type;		/* Normalize type */
-	void			(*cstorune)(   /* CharSet -> UTF */
+    );
+    int*		fromtbl;	/* UTF -> CharSet */
+    NormalizeType	type;		/* Normalize type */
+    void		(*cstorune)(	/* CharSet -> UTF */
 #if NeedNestedPrototypes
-					    unsigned char c,
-					    Rune *r
+	unsigned char,
+	Rune*
 #endif
-					    );
-	Bool			already_init;
-        struct _UtfDataRec	*next;		/* next entry     */
+    );
+    Bool			already_init;
+    struct _UtfDataRec	*next;		/* next entry     */
 } UtfDataRec, *UtfData;
 
 typedef struct _XlcUTFDataRec {
     char	*name;
     XlcSide	side;
-    void	(*initialize)();
+    void	(*initialize)(
+#if NeedNestedPrototypes
+	int*,
+	wchar_t
+#endif
+    );
     void	(*cstorune)(
 #if NeedNestedPrototypes
-			    unsigned char c,
-			    Rune *r
+	unsigned char,
+	Rune*
 #endif
-			    );
+    );
     NormalizeType	type;
-    long		fallback_value;
+    wchar_t		fallback_value;
 } XlcUTFDataRec, *XlcUTFData;
-
-typedef struct _StateRec {
-    XlcCharSet charset;
-    XlcCharSet GL_charset;
-    XlcCharSet GR_charset;
-} StateRec, *State;
 
 #define MAX_UTF_CHARSET	(sizeof(default_utf_data)/sizeof(XlcUTFDataRec))
 

@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.85 95/06/16 19:25:22 kaleb Exp $ */
+/* $TOG: InitialI.h /main/86 1997/10/13 12:25:46 barstow $ */
 
 /***********************************************************
 
@@ -47,6 +47,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+#ifndef _XtinitialI_h
+#define _XtinitialI_h
 
 /****************************************************************
  *
@@ -343,6 +346,10 @@ typedef struct _XtPerDisplayStruct {
     ExtSelectRec* ext_select_list;
     int ext_select_count;
     Widget hook_object;
+#ifndef X_NO_RESOURCE_CONFIGURATION_MANAGEMENT
+    Atom rcm_init;			/* ResConfig - initialize */
+    Atom rcm_data;			/* ResConfig - data atom */
+#endif
 } XtPerDisplayStruct, *XtPerDisplay;
 
 typedef struct _PerDisplayTable {
@@ -450,3 +457,5 @@ extern void _XtFreeWWTable(
     XtPerDisplay pd
 #endif
 );
+
+#endif /* _XtinitialI_h */

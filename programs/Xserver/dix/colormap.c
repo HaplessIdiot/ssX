@@ -46,8 +46,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c /main/71 1996/06/17 11:01:33 mor $ */
-/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.0 1996/04/15 11:19:33 dawes Exp $ */
+/* $TOG: colormap.c /main/72 1997/10/16 16:26:49 kaleb $ */
+
+
+
+
+/* $XFree86: xc/programs/Xserver/dix/colormap.c,v 3.1 1996/12/23 06:29:34 dawes Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -200,6 +204,18 @@ static int   TellNoMap(
 #if NeedFunctionPrototypes
     WindowPtr	/*pwin*/,
     Colormap 	* /*pmid*/
+#endif
+);
+
+static void FindColorInRootCmap (
+#if NeedFunctionPrototypes
+    ColormapPtr	/* pmap */,
+    EntryPtr	/* pentFirst */,
+    int		/* size */,
+    xrgb*	/* prgb */,
+    Pixel*	/* pPixel */,
+    int		/* channel */,
+    ColorCompareProcPtr /* comp */
 #endif
 );
 
@@ -903,12 +919,45 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
 
     case GrayScale:
     case PseudoColor:
+	if (pmap->mid != pmap->pScreen->defColormap &&
+	    pmap->pVisual->vid == pmap->pScreen->rootVisual)
+	{
+	    ColormapPtr prootmap = (ColormapPtr)
+		SecurityLookupIDByType (clients[client], pmap->pScreen->defColormap,
+					 RT_COLORMAP, SecurityReadAccess);
+
+	    if (pmap->class == prootmap->class)
+		FindColorInRootCmap (prootmap, prootmap->red, entries, &rgb, 
+			pPix, PSEUDOMAP, AllComp);
+	}
 	if (FindColor(pmap, pmap->red, entries, &rgb, pPix, PSEUDOMAP,
 		      client, AllComp) != Success)
 	    return (BadAlloc);
         break;
 
     case DirectColor:
+	if (pmap->mid != pmap->pScreen->defColormap &&
+	    pmap->pVisual->vid == pmap->pScreen->rootVisual)
+	{
+	    ColormapPtr prootmap = (ColormapPtr)
+		SecurityLookupIDByType (clients[client], pmap->pScreen->defColormap,
+					 RT_COLORMAP, SecurityReadAccess);
+
+	    if (pmap->class == prootmap->class)
+	    {
+		pixR = (*pPix & pVisual->redMask) >> pVisual->offsetRed; 
+		FindColorInRootCmap (prootmap, prootmap->red, entries, &rgb, 
+			&pixR, REDMAP, RedComp);
+		pixG = (*pPix & pVisual->greenMask) >> pVisual->offsetGreen; 
+		FindColorInRootCmap (prootmap, prootmap->green, entries, &rgb, 
+			&pixG, GREENMAP, GreenComp);
+		pixB = (*pPix & pVisual->blueMask) >> pVisual->offsetBlue; 
+		FindColorInRootCmap (prootmap, prootmap->blue, entries, &rgb, 
+			&pixB, BLUEMAP, BlueComp);
+		*pPix = pixR | pixG | pixB;
+	    }
+	}
+
 	pixR = (*pPix & pVisual->redMask) >> pVisual->offsetRed; 
 	if (FindColor(pmap, pmap->red, NUMRED(pVisual), &rgb, &pixR, REDMAP,
 		      client, RedComp) != Success)
@@ -1152,6 +1201,45 @@ FindBestPixel(pentFirst, size, prgb, channel)
 	}
     }
     return(final);
+}
+
+static void
+FindColorInRootCmap (pmap, pentFirst, size, prgb, pPixel, channel, comp)
+    ColormapPtr	pmap;
+    EntryPtr	pentFirst;
+    int		size;
+    xrgb*	prgb;
+    Pixel*	pPixel;
+    int		channel;
+    ColorCompareProcPtr comp;
+{
+    EntryPtr    pent;
+    Pixel	pixel;
+    int         count;
+
+    if ((pixel = *pPixel) >= size)
+	pixel = 0;
+    for (pent = pentFirst + pixel, count = size; --count >= 0; pent++, pixel++)
+    {
+	if (pent->refcnt > 0 && (*comp) (pent, prgb))
+	{
+	    switch (channel)
+	    {
+	    case REDMAP:
+		pixel <<= pmap->pVisual->offsetRed;
+		break;
+	    case GREENMAP:
+		pixel <<= pmap->pVisual->offsetGreen;
+		break;
+	    case BLUEMAP:
+		pixel <<= pmap->pVisual->offsetBlue;
+		break;
+	    default: /* PSEUDOMAP */
+		break;
+	    }
+	    *pPixel = pixel;
+	}
+    }
 }
 
 /* Tries to find a color in pmap that exactly matches the one requested in prgb

@@ -1,9 +1,9 @@
-$TOG: README /main/67 1997/08/05 08:51:05 kaleb $
+$TOG: README /main/73 1997/11/11 08:53:28 kaleb $
 
 
 
 
-$XFree86: xc/config/cf/README,v 1.4 1997/05/21 15:16:57 dawes Exp $
+$XFree86: xc/config/cf/README,v 1.5 1997/08/12 12:01:51 hohndel Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -68,11 +68,13 @@ Imake.tmpl provides defaults for the following variables:
 	HasKrb5			system has Kerberos version 5 support?
 	HasLargeTmp		boolean for system has /tmp space
 	HasLatex		system has LaTeX document preparation software
+	HasLibCrypt		boolean for system has libcrypt
 	HasNdbm			boolean for system has ndbm routines
 	HasPoll			use poll() syscall?
 	HasPurify		boolean for system has Purify
 	HasPutenv		boolean for libc has putenv()
 	HasSecureRPC		boolean for Sun Secure RPC
+	HasSetUserContext	boolean for setusercontext()
 	HasSentinel		boolean for system has Sentinel available
 	HasSharedLibraries	boolean for system has shared libraries
 	HasShm			boolean for System V shared memory
@@ -84,7 +86,7 @@ Imake.tmpl provides defaults for the following variables:
 	HasVarDirectory		boolean for system has /var
 	HasVFork		boolean for system has vfork()
 	HasVoidSignalReturn	boolean for POSIX signal() procs
-	HasZlib			boolean for /usr/lib/libz.a
+	HasZlib			boolean for system has libz
 	IncRoot			parent of X11 include directory
 	InstBinFlags		install flags for binaries
 	InstDatFlags		install flags for data files
@@ -130,6 +132,8 @@ Imake.tmpl provides defaults for the following variables:
 	PreProcessCmd		command to run /lib/cpp on scripts
 	RanlibCmd		command to clean up libraries
 	RanlibInstFlags		flags to ranlib after copying
+	ResourceConfigurationManagement boolean for Xt's Resource Configuration
+					Management
 	RmCmd			command to delete files
 	ShLibDir		directory in which to install shared libraries
 	StandardCppDefines	-D's for running cpp
@@ -154,12 +158,14 @@ X11.tmpl provides defaults for the following variables:
 	BDFTOSNFFILT		command to run bdftosnf
 	BaseExtensionDefines	universal extensions to use
 	BinDir			directory in which to install programs
-	BuildAppgroup		build AppGroup extension
+	BuildAppgroup		build AppGroup extension in server
+	BuildCup		build Colormap Utilization extension in server
 	BuildFontServer		build font server
 	BuildFonts		build pcf fonts
 	BuildIncRoot		relative path to location of headers in build
 	BuildIncTop		path from build includes directory to top
 	BuildLBX		build LBX (aka X.fast) server extension
+	BuildXinerama		build Xinerama server extension
 	BuildPexExt		build PEX server extension and fonts
 	BuildPhigs		build Phigs (obsolete)
 	BuildServer		build X server
@@ -167,7 +173,7 @@ X11.tmpl provides defaults for the following variables:
 	BuildXAServer		build Audio server
 	BuildXIE		build X Image Extension
 	BuildDIS		build Document Imaging Subset of XIE
-	BuildXCSecurity		Build Security Extension
+	BuildXCSecurity		Build Security Extension in server
 	BuildXInputExt		build X Input extension (requires ddx support,
 					which exists only in Xhp)
 	BuildXInputLib		build X Input library
@@ -231,6 +237,7 @@ X11.tmpl provides defaults for the following variables:
 	ManPath			full path of parent directory
 	ManSourcePath		common prefix of man page directories
 	ManSuffix		man suffix for programs
+	MiscManSuffix		man suffix for miscellaneous pages
 	NeedDefaultDepLibs	boolean for enabling default DEPLIBS
 	NlsDir			directory in which to install nls files
 	NormalLibFS		build libFS.a
@@ -500,8 +507,9 @@ SUBDIRS			for an Imakefile in a directory containing
 			Such an Imakefile also needs to #define IHaveSubdirs
 			and call MakeSubdirs() and DependSubdirs().
 MANSUFFIX		suffix used by InstallManPage* rules.
-			May be set to $(LIBMANSUFFIX) or $(FILEMANSUFFIX) in
-			directories for libraries or data files.
+			May be set to $(LIBMANSUFFIX), $(FILEMANSUFFIX), or
+			$(MISCMANSUFFIX) in directories for libraries or data 
+			files.
 
 
 Rule-specific variables that may be set in an individual Imakefile.

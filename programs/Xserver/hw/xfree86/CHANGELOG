@@ -1,3 +1,66 @@
+XFree86 3.9w (16 November 1997)
+1434. Fix lcPublic state_depend_encoding test in Xlib (#1181, Kaleb Keithley).
+1433. Fix buffer overrun in lib/X11/omGeneric.c (#1180, Kaleb Keithley).
+1432. Add new XINERAMA extension (#1171-1178, Kaleb Keithley).
+1431. Update man pages for X11R6.4 (#1169, 1170, Kaleb Keithley).
+1430. Add new CUP (Colormap Utilization) extension code (#1167,
+      Kaleb Keithley).
+1429. Add resource configuration management code to libXt (#1165,
+      Arthur Barstow).
+1428. Xkb{Get,Set}PerClientControls not implemented in Xlib (#1164,
+      Kaleb Keithley).
+1427. Fix bug in lbxproxy's detection of synonymous server names (#1161,
+      Arthur Barstow).
+1426. Various xfwp fixes and cleanups (#1103-1107, 1109, 1110, 1140-1144,
+      1160, 1162, 1163, 1166, 1168, 1179, Arthur Barstow).
+1426. Fix select prototype for HP/UX 10.x (#1102, Kaleb Keithley).
+1425. Fix a 64-bit nit in MakeRootTile (#1080, Kaleb Keithley).
+1424. Export weak symbols in elistgen.sun (#1078, Kaleb Keithley).
+1423. Put back the reference to the xfree68 directory in
+      xkbcomp/symbols/Imakefile.
+1422. Add xkb support for some older HP keyboards (#1077, Kaleb Keithley).
+1421. Fix some typos in the iso8859-1 compose file (#1076,
+      Niels Kristian Bech Jensen).
+1420. Xlib UTF support uses longs, but should use wchar_t (#1068,
+      Kaleb Keithley).
+1419. HP/UX 10 config update (#1066, 1079, Kaleb Keithley).
+1418. Update lbxproxy to use the Xtrans library (#1060, Arthur Barstow).
+1417. Deal with gratuitous Xserver colormap flashing (#1059, Kaleb Keithley).
+1416. LBX-related updates to the Xserver (#1049, Kaleb Keithley).
+1415. Remove Xibm server from the source (#1048, Kaleb Keithley).
+1414. Remove xmh from the core tree (#1043, Kaleb Keithley).  Note, only
+      the entry for it in xc/programs/Imakefile is removed here so far, and
+      we may want to move it into our supported contrib.
+1413. Update sgi.cf (#1042, Kaleb Keithley).
+1412. Fix inconsistency with the naming of general man pages and the sections
+      they are installed in (#1040, Kaleb Keithley).
+1411. Fix xrx plug-in build problem on Solaris 2.6 (#1039, Kaleb Keithley).
+1410. Fix Xserver crash when using lbxproxy and xdm-auth-1 (#1038,
+      Kaleb Keithley).
+1409. Fix an infinite loop in CreateVisual() in lbxproxy (#1034,
+      Arthur Barstow).
+1408. locale.alias updates (#1032, Kaleb Keithley).
+1407. Misc very minor TOG updates (#1031, Kaleb Keithley).
+1406. Fix for MaxClients not being defined correctly in the Xserver
+      (#1030, Sekhar Makkapati).
+1405. Fix an Xserver problem related to FreeCursor() in
+      DisposeWindowOptional() (#1026, Kaleb Keithley).
+1404. Add setusercontext support to xdm for FreeBSD (#1025, Kaleb Keithley).
+1403. Use named pipes for local connections with Solaris 2.x (#1011, 1067
+      Kaleb Keithley).
+1402. Fix lost support for non-standard encodings in Xlib (#1005,
+      Kaleb Keithley).
+1401. Fix Xserver crash when colormap of copyfromparent given (#990,
+      Sekhar Makkapati).
+1400. Make lbxproxy try another port when bind fails (#988, Arthur Barstow).
+1399. Remove the Xserver '-config' flag for OSs that don't have tight command
+      line length restrictions (#987, Kaleb Keithley).
+1398. Remove some vararg cruft from the Appgroup library (#986,
+      Kaleb Keithley).
+1397. Fix SecurityLookupIDByClass in Xserver (#1186, Sekhar Makkapati).
+1396. Fix for sample site.def (#1184, Sekhar Makkapati).
+1395. Fix references to LINE_MAX in Xos_r.h (#1182, Sekhar Makkapati).
+
 XFree86 3.9v (9 November 1997)
 1394. Add unrolled text code for the 9 pixel width fonts (#1147, 
       Mark Vojkovich).
@@ -55,7 +118,7 @@ XFree86 3.9u (1 November 1997)
       setting (#1095, George Krajcsovits).
 1362. Changes to XAA hw cursor code to better support switching between hw
       and sw cursor (#1094, David Bateman).
-1361. Fix incorrect parenthesis placement caused by hand-aplying part of 
+1361. Fix incorrect parenthesis placement caused by hand-applying part of 
       change 1347 (#1092, Mark Vojkovich).
 1360. Resync PC98 Imakefiles (#1091, Takaaki Nomura).
 1359. Build fix for PANIX (#1090, Takaaki Nomura).
@@ -5574,4 +5637,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.544 1997/11/08 17:07:23 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.545 1997/11/09 08:03:41 hohndel Exp $

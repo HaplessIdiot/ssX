@@ -1,11 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $TOG: X11.tmpl /main/295 1997/08/27 15:20:30 kaleb $
+XCOMM $TOG: X11.tmpl /main/299 1997/11/11 08:53:18 kaleb $
 XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.18 1997/10/25 13:49:52 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.19 1997/10/26 13:24:38 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -16,7 +16,7 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.18 1997/10/25 13:49:52 hohndel Exp $
  *                                                                         *
  **************************************************************************/
 
-#define ProjectX		603	/* do *not* change this line */
+#define ProjectX		604	/* do *not* change this line */
 
 /* The following project-specific rules are defined at the end of this file:
  *
@@ -159,11 +159,17 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.18 1997/10/25 13:49:52 hohndel Exp $
 #ifndef BuildLBX
 #define BuildLBX		YES
 #endif
+#ifndef BuildXinerama
+#define BuildXinerama		NO
+#endif
 #ifndef BuildXCSecurity
 #define BuildXCSecurity		YES
 #endif
 #ifndef BuildAppgroup
 #define BuildAppgroup		YES
+#endif
+#ifndef BuildCup
+#define BuildCup		YES
 #endif
 #ifndef HasPlugin
 #define HasPlugin		NO
@@ -387,6 +393,13 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.18 1997/10/25 13:49:52 hohndel Exp $
 #define XInputDefines /**/
 #endif
 #endif
+#ifndef XineramaDefines
+#if BuildXinerama
+#define XineramaDefines -DPANORAMIX
+#else
+#define XineramaDefines /**/
+#endif
+#endif
 #ifndef XieDefines
 #if BuildXIE
 #define XieDefines -DXIE
@@ -514,15 +527,25 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.18 1997/10/25 13:49:52 hohndel Exp $
 #endif
 #endif
 
+#ifndef CupDefines
+#if BuildCup
+#define CupDefines -DTOGCUP
+#else
+#define CupDefines /**/
+#endif
+#endif
+
 #ifndef SitePervasiveExtensionDefines
 #define SitePervasiveExtensionDefines /**/
 #endif
 #ifndef PervasiveExtensionDefines
 #define PervasiveExtensionDefines ShapeDefines XInputDefines XkbDefines \
 				  LbxDefines AppgroupDefines \
-				  XCSecurityDefines PervasiveDBEDefines \
+				  XCSecurityDefines CupDefines \
+				  PervasiveDBEDefines \
 				  DPMSExtensionDefines \
-				  XprintDefines SitePervasiveExtensionDefines
+				  XprintDefines XineramaDefines \
+				  SitePervasiveExtensionDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/
@@ -784,6 +807,10 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.18 1997/10/25 13:49:52 hohndel Exp $
 #define ForceNormalLib (HasGcc && !HasGcc2)
 #endif
 
+#ifndef ResourceConfigurationManagement 
+#define ResourceConfigurationManagement YES
+#endif
+
 #ifndef XkbComp
 #define XkbComp xkbcomp
 #endif
@@ -1036,7 +1063,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
       XEXTLIBSRC = $(LIBSRC)/Xext
 #if SharedLibXext
 #ifndef SharedXextRev
-#define SharedXextRev 6.3
+#define SharedXextRev 6.4
 #endif
 SharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
 #else

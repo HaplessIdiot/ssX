@@ -1,4 +1,4 @@
-/* $XConsortium: Xos_r.h /main/5 1996/12/18 16:29:14 lehors $ */
+/* $TOG: Xos_r.h /main/6 1997/07/31 12:04:38 sekhar $ */
 /* 
 Copyright (c) 1996  X Consortium
 
@@ -23,7 +23,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-/* $XFree86$ */
+/* $XFree86: xc/include/Xos_r.h,v 1.3 1997/01/18 07:17:11 dawes Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -82,6 +82,11 @@ in this Software without prior written authorization from the X Consortium.
 #   define _POSIX_SOURCE
 #   include <limits.h>
 #   undef _POSIX_SOURCE
+#  endif
+#  ifndef LINE_MAX
+#   define X_LINE_MAX 2048
+#  else
+#   define X_LINE_MAX LINE_MAX
 #  endif
 # endif
 #endif /* _XOS_R_H */
@@ -272,12 +277,9 @@ typedef struct {
 
 #elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 /* SVR4 threads, AIX 4.2.0 and earlier and OSF/1 3.2 and earlier pthreads */
-# if defined(Lynx) && !defined(LINE_MAX)
-#  define LINE_MAX	2048		/* what Xthreads.h does */
-# endif
 typedef struct {
   struct passwd pws;
-  char pwbuf[LINE_MAX];
+  char pwbuf[X_LINE_MAX];
 } _Xgetpwparams;
 # if defined(_POSIX_REENTRANT_FUNCTIONS) || !defined(SVR4) || defined(Lynx)
 #  ifndef Lynx
@@ -307,7 +309,7 @@ extern int _Pgetpwnam_r(const char *, struct passwd *, char *, size_t, struct pa
 # endif
 typedef struct {
   struct passwd pws;
-  char pwbuf[LINE_MAX];
+  char pwbuf[X_LINE_MAX];
   struct passwd* pwp;
 } _Xgetpwparams;
 typedef int _Xgetpwret;
@@ -430,12 +432,12 @@ typedef struct {
 # ifndef X_POSIX_THREAD_SAFE_FUNCTIONS
 typedef struct {
     struct hostent      hent;
-    char                hbuf[LINE_MAX];
+    char                hbuf[X_LINE_MAX];
     int                 herr;
 } _Xgethostbynameparams;
 typedef struct {
     struct servent      sent;
-    char                sbuf[LINE_MAX];
+    char                sbuf[X_LINE_MAX];
 } _Xgetservbynameparams;
 #  define _XGethostbyname(h,hp) \
   gethostbyname_r((h),&(hp).hent,(hp).hbuf,sizeof((hp).hbuf),&(hp).herr)
@@ -993,11 +995,7 @@ typedef int _Xgetgrparams;	/* dummy */
 /* Systems with thread support but no _r API.  UnixWare 2.0. */
 typedef struct {
   struct group grp;
-#ifdef LINE_MAX
-  char buf[LINE_MAX];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
-#else
-  char buf[1024];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
-#endif
+  char buf[X_LINE_MAX];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
   struct group *pgrp;
   size_t len;
 } _Xgetgrparams;
@@ -1038,11 +1036,7 @@ typedef struct {
  */
 typedef struct {
   struct group grp;
-#ifdef LINE_MAX
-  char buf[LINE_MAX];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
-#else
-  char buf[1024];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
-#endif
+  char buf[X_LINE_MAX];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
 } _Xgetgrparams;
 #define _XGetgrgid(g,p)	getgrgid_r((g), &(p).grp, (p).buf, sizeof((p).buf))
 #define _XGetgrnam(n,p)	getgrnam_r((n), &(p).grp, (p).buf, sizeof((p).buf))
@@ -1055,11 +1049,7 @@ typedef struct {
  */
 typedef struct {
   struct group grp;
-#ifdef LINE_MAX
-  char buf[LINE_MAX];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
-#else
-  char buf[1024];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
-#endif
+  char buf[X_LINE_MAX];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
 } _Xgetgrparams;
 #define _XGetgrgid(g,p)	\
  ((getgrgid_r((g), &(p).grp, (p).buf, sizeof((p).buf)) ? NULL : &(p).grp))
@@ -1079,11 +1069,7 @@ extern int _Pgetgrnam_r(const char *, struct group *, char *, size_t, struct gro
 # endif
 typedef struct {
   struct group grp;
-#ifdef LINE_MAX
-  char buf[LINE_MAX];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
-#else
-  char buf[1024];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
-#endif
+  char buf[X_LINE_MAX];	/* Should be sysconf(_SC_GETGR_R_SIZE_MAX)? */
   struct group *result;
 } _Xgetgrparams;
 

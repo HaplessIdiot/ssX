@@ -1,6 +1,5 @@
 
-/* $XConsortium: sunCfb.c /main/20 1996/10/31 14:24:08 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.6 1997/08/26 10:00:48 hohndel Exp $ */
+/* $TOG: sunCfb.c /main/21 1997/10/16 16:27:05 kaleb $ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -56,6 +55,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.7 1997/10/25 13:50:00 hohndel Exp $ */
+
 /*
  * Copyright (c) 1987 by the Regents of the University of California
  * Copyright (c) 1987 by Adam de Boor, UC Berkeley
@@ -110,6 +111,25 @@ static void CGUpdateColormap(pScreen, dex, count, rmap, gmap, bmap)
     }
 }
 
+static void CGGetColormap(pScreen, dex, count, rmap, gmap, bmap)
+    ScreenPtr	pScreen;
+    int		dex, count;
+    u_char	*rmap, *gmap, *bmap;
+{
+    struct fbcmap sunCmap;
+
+    sunCmap.index = dex;
+    sunCmap.count = count;
+    sunCmap.red = &rmap[dex];
+    sunCmap.green = &gmap[dex];
+    sunCmap.blue = &bmap[dex];
+
+    if (ioctl(sunFbs[pScreen->myNum].fd, FBIOGETCMAP, &sunCmap) < 0) {
+	Error("CGGetColormap");
+	FatalError( "CGGetColormap: FBIOGETCMAP failed\n" );
+    }
+}
+
 void sunInstallColormap(cmap)
     ColormapPtr	cmap;
 {
@@ -144,6 +164,7 @@ void sunInstallColormap(cmap)
 	    bmap[i] = cmap->blue[(i & bMask) >> oBlue].co.local.blue >> 8;
 	}
     } else {
+	(*pPrivate->GetColormap) (cmap->pScreen, 0, 256, rmap, gmap, bmap);
 	for (i = 0, pent = cmap->red;
 	     i < pVisual->ColormapEntries;
 	     i++, pent++) {
@@ -152,7 +173,7 @@ void sunInstallColormap(cmap)
 		gmap[i] = pent->co.shco.green->color >> 8;
 		bmap[i] = pent->co.shco.blue->color >> 8;
 	    }
-	    else {
+	    else if (pent->refcnt != 0) {
 		rmap[i] = pent->co.local.red >> 8;
 		gmap[i] = pent->co.local.green >> 8;
 		bmap[i] = pent->co.local.blue >> 8;
@@ -228,6 +249,7 @@ static void CGScreenInit (pScreen)
     pScreen->ListInstalledColormaps = sunListInstalledColormaps;
     pScreen->StoreColors = CGStoreColors;
     pPrivate->UpdateColormap = CGUpdateColormap;
+    pPrivate->GetColormap = CGGetColormap;
     if (sunFlipPixels) {
 	Pixel pixel = pScreen->whitePixel;
 	pScreen->whitePixel = pScreen->blackPixel;
@@ -325,6 +347,22 @@ static void CG2UpdateColormap(pScreen, index, count, rmap, gmap,bmap)
     regp->update_cmap = 1;
 }
 
+static void CG2GetColormap(pScreen, index, count, rmap, gmap,bmap)
+    ScreenPtr	pScreen;
+    int		  index, count;
+    u_char	  *rmap, *gmap, *bmap;
+{
+    CG2Ptr	fb = (CG2Ptr) sunFbs[pScreen->myNum].fb;
+
+    /* I don't even know if this works */
+    while (count--) {
+	rmap[index] = fb->regs.redmap[index];
+	gmap[index] = fb->regs.greenmap[index];
+	bmap[index] = fb->regs.bluemap[index];
+	index++;
+    }
+}
+
 static Bool CG2SaveScreen (pScreen, on)
     ScreenPtr	  pScreen;
     int    	  on;
@@ -345,6 +383,7 @@ static void CG2ScreenInit (pScreen)
     SetupScreen (pScreen);
     CGScreenInit (pScreen);
     pPrivate->UpdateColormap = CG2UpdateColormap;
+    pPrivate->GetColormap = CG2GetColormap;
 }
 
 Bool sunCG2Init (screen, pScreen, argc, argv)

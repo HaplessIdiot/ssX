@@ -1,9 +1,9 @@
-XCOMM $TOG: Imakefile /main/3 1997/06/11 16:26:50 samborn $
+XCOMM $TOG: Imakefile /main/4 1997/10/30 15:51:35 kaleb $
 
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.7 1997/05/13 15:08:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xprint/Imakefile,v 1.8 1997/07/05 15:16:22 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef XpRasterDDX
@@ -40,8 +40,8 @@ XPEXT_DEFINES = PrintServerExtensions
 #else
 XPEXT_DEFINES = $(EXT_DEFINES)
 #endif
-SRCS3 = miinitext.c
-OBJS3 = miinitext.o
+SRCS3 = miinitext.c panoramiXstubs.c
+OBJS3 = miinitext.o panoramiXstubs.o
 #endif
 SRCS2 = ddxInit.c
 OBJS2 = ddxInit.o
@@ -104,6 +104,10 @@ SpecialCObjectRule(ddxInit,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(EXT_DEF
 #if XprtServer && (PrintOnlyServer || defined(PrintServerExtensions))
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(XPEXT_DEFINES) -DXPRINT -UGLXEXT)
+#if PrintOnlyServer
+LinkSourceFile(panoramiXstubs.c,$(SERVERSRC)/Xext)
+SpecialCObjectRule(panoramiXstubs,$(ICONFIGFILES),$(PO_DEFINES) $(OS_DEFINES) $(XPEXT_DEFINES) -DXPRINT)
+#endif
 #endif
 
 #ifdef OS2Architecture

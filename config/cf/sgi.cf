@@ -1,4 +1,4 @@
-XCOMM platform:  $TOG: sgi.cf /main/47 1997/08/07 16:53:32 kaleb $
+XCOMM platform:  $TOG: sgi.cf /main/48 1997/10/14 11:56:04 kaleb $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -226,7 +226,7 @@ man_keywords::								@@\
 dst::  src deplist							@@\
 	RemoveFile($@)							@@\
 	ClearmakeOSName \
-	$(CPP) CppNoLineInfoOption defs src | CppSedMagic >$@; 		@@\
+	$(CPP) CppNoLineInfoOption defs src 2>/dev/null | CppSedMagic >$@; @@\
 									@@\
 clean::									@@\
 	RemoveFiles(dst)

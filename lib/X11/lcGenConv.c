@@ -1,4 +1,4 @@
-/* $TOG: lcGenConv.c /main/15 1997/05/20 15:19:59 kaleb $ */
+/* $TOG: lcGenConv.c /main/16 1997/09/29 11:23:35 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -31,7 +31,7 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.6 1996/12/23 06:00:02 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.7 1997/05/21 15:16:59 dawes Exp $ */
 
 
 #include "Xlibint.h"
@@ -1322,6 +1322,11 @@ ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    else if (state->charset->side == XlcC1 || 
 		     state->charset->side == XlcGR)
 	      {
+		state->GR_charset = state->charset;
+	      }	
+	    else if (state->charset->side == XlcGLGR)
+	      {
+		state->GL_charset = state->charset;
 		state->GR_charset = state->charset;
 	      }	
 
