@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.3 1995/03/04 05:48:29 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.4 1995/05/07 11:34:15 dawes Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
@@ -59,6 +59,9 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.3 1995/03/04 05:48:29 dawes E
 #  define ExtraLibraries SocketLibraries LocalLibraries -lc_s PosixLibraries
 # endif
 #endif
+
+/* Don't know if this is necessary, but it avoids breaking the current setup */
+#define MallocLibraries		/**/
 
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
