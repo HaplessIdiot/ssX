@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.77 2001/10/01 13:44:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.78 2001/12/10 23:02:33 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -485,17 +485,17 @@ Bool MgaInitDma(ScrnInfoPtr pScrn, int prim_size);
 
 #endif
 
-void CRTC2Set(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo);
-void EnableSecondOutPut(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo);
-void CRTC2SetPitch(ScrnInfoPtr pSrcn, xMODEINFO *pModeInfo);
-void CRTC2SetDisplayStart(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo, CARD32 base, CARD32 ulX, CARD32 ulY);
+void MGACRTC2Set(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo);
+void MGAEnableSecondOutPut(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo);
+void MGACRTC2SetPitch(ScrnInfoPtr pSrcn, xMODEINFO *pModeInfo);
+void MGACRTC2SetDisplayStart(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo, CARD32 base, CARD32 ulX, CARD32 ulY);
 
-void CRTC2Get(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo);
-void CRTC2GetPitch(ScrnInfoPtr pSrcn, xMODEINFO *pModeInfo);
-void CRTC2GetDisplayStart(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo, CARD32 base, CARD32 ulX, CARD32 ulY);
+void MGACRTC2Get(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo);
+void MGACRTC2GetPitch(ScrnInfoPtr pSrcn, xMODEINFO *pModeInfo);
+void MGACRTC2GetDisplayStart(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo, CARD32 base, CARD32 ulX, CARD32 ulY);
  
-double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out);
-void printDac(ScrnInfoPtr pScrn);
+double MGAG450SetPLLFreq(ScrnInfoPtr pScrn, long f_out);
+void MGAprintDac(ScrnInfoPtr pScrn);
 
 #ifdef USEMGAHAL
 /************ ESC Call Definition ***************/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.3 2001/09/26 12:59:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.4 2002/01/07 21:09:14 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -291,7 +291,7 @@ static CARD32 G450IsPllLocked(ScrnInfoPtr pScrn, Bool *lpbLocked)
 }
 
 
-double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out) 
+double MGAG450SetPLLFreq(ScrnInfoPtr pScrn, long f_out) 
 {
    Bool bFoundValidPLL;
    Bool bLocked;
