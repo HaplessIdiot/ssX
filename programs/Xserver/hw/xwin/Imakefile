@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/12/02 10:20:33 lehors $
-XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.4 2001/04/05 20:13:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.5 2001/04/18 17:14:06 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -70,7 +70,7 @@ INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
 	   -I$(SERVERSRC)/include -I$(SERVERSRC)/os  \
            -I$(EXTINCSRC) -I$(XINCLUDESRC) -I$(SERVERSRC)/miext/shadow
 
-DEFINES = ServerOSDefines $(SHMDEF) $(MMAPDEF) -UXFree86LOADER -UXF86DRI
+DEFINES = $(OS_DEFINES) $(SHMDEF) $(MMAPDEF) -UXFree86LOADER -UXF86DRI
 
 #if BuildDPMS
 SRCSB =	dpmsstubs.c
