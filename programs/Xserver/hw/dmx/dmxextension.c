@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.3tsi Exp $ */
 /*
  * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -1060,7 +1060,9 @@ int dmxAttachScreen(int idx, DMXScreenAttributesPtr attr)
 {
     ScreenPtr      pScreen   = screenInfo.screens[idx];
     DMXScreenInfo *dmxScreen = &dmxScreens[idx];
+#ifdef PANORAMIX
     CARD32         scrnNum   = idx;
+#endif
     DMXScreenInfo  oldDMXScreen;
     int            i;
 
