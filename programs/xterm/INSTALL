@@ -50,3 +50,6 @@ The options (in alphabetic order):
   --with-Xaw3d            link with Xaw 3d library
   --with-neXtaw           link with neXT Athena library
   --with-terminal-id[=V]  set default decTerminalID (default: vt100)
+
+
+-- $XFree86: $
