@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.22 2001/05/31 18:39:05 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.23 2001/06/01 17:09:32 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -506,6 +506,19 @@ FindDistName()
 					Message="No Linux/ix86 binaries for this libc version"
 					;;
 				esac
+				;;
+			esac
+			;;
+		ppc)
+			case "$OsLibcMajor.$OsLibcMinor" in
+			6.1)
+				DistName="Linux-ppc-glibc21"
+				;;
+			6.*)
+				Message="No Linux/ppc binaries for glibc 2.$OsLibcMinor.  Try Linux-ppc-glibc21"
+				;;
+			*)
+				Message="No Linux/ppc binaries for this libc version"
 				;;
 			esac
 			;;
