@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.14 2003/11/11 01:22:32 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.15 2003/11/14 20:27:58 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -90,7 +90,7 @@
 - (void)sendShowHide:(BOOL)show;
 - (void)clientProcessDone:(int)clientStatus;
 - (void)activateX11:(BOOL)state;
-- (void)windowBecameKey:(NSWindow *)window;
+- (void)windowBecameKey:(NSNotification *)notification;
 - (void)setX11WindowList:(NSArray *)list;
 - (void)setX11WindowCheck:(NSNumber *)nn;
 
