@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.27 2000/03/01 16:01:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.28 2000/03/02 16:07:52 martin Exp $ */
 
 /*
  * Authors:
@@ -556,14 +556,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   TDFXTRACE("TDFXPreInit start\n");
   if (pScrn->numEntities != 1) return FALSE;
 
-  /* The vgahw module should be loaded here when needed */
-  if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
-
-  xf86LoaderReqSymLists(vgahwSymbols, NULL);
-
-  /* Allocate a vgaHWRec */
-  if (!vgaHWGetHWRec(pScrn)) return FALSE;
-
   /* Allocate driverPrivate */
   if (!TDFXGetRec(pScrn)) {
     return FALSE;
@@ -648,6 +640,14 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
       return FALSE;
     }
   }
+
+  /* The vgahw module should be loaded here when needed */
+  if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
+
+  xf86LoaderReqSymLists(vgahwSymbols, NULL);
+
+  /* Allocate a vgaHWRec */
+  if (!vgaHWGetHWRec(pScrn)) return FALSE;
 
   /* We use a programamble clock */
   pScrn->progClock = TRUE;
