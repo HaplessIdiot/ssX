@@ -1,3 +1,6 @@
+
+ 830. Add write-combine support for IA-64 (Mark Vojkovich).
+
 XFree86 4.0.1d (27 October 2000)
  829. Add code to the xf86config utility to get the list of XKB selections
       from the appropriate XKB files rather than having them hard-coded.
@@ -11356,4 +11359,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1358 2000/10/26 17:57:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1359 2000/10/27 18:30:57 dawes Exp $
