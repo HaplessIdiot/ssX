@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dga.c,v 1.2 2000/09/17 23:18:19 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dga.c,v 1.3 2001/10/04 18:28:21 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -152,7 +152,7 @@ I810_SetMode(
    MARKER();
 
    if(!pMode) { /* restore the original mode */
-	   DPRINTF ("Restoring original mode (from DGA mode)\n");
+	   DPRINTF (PFX,"Restoring original mode (from DGA mode)\n");
         if(pI810->DGAactive) {
 	    pScrn->currentMode = I810SavedDGAModes[index];
             pScrn->SwitchMode(index, pScrn->currentMode, 0);
@@ -161,7 +161,7 @@ I810_SetMode(
 	}
    } else {
 	if(!pI810->DGAactive) {
-	   DPRINTF ("Setting DGA mode\n");
+	   DPRINTF (PFX,"Setting DGA mode\n");
 	    I810SavedDGAModes[index] = pScrn->currentMode;
 	    pI810->DGAactive = TRUE;
 	}
@@ -292,7 +292,8 @@ I810_OpenFramebuffer(
     *offset = 0;
     *flags = DGA_NEED_ROOT;
 
-   DPRINTF (" mem == 0x%.8x (pI810->LinearAddr)\n"
+   DPRINTF (PFX,
+			" mem == 0x%.8x (pI810->LinearAddr)\n"
 			"size == %lu (pI810->FbMapSize)\n",
 			*mem,*size);
 

@@ -63,6 +63,19 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *          with/without agpgart module)
  *        - more agpgart fixes
  *        - got rid of incorrect GTT adjustments
+ *
+ *    09/10/2001
+ *        - Changed the DPRINTF() variadic macro to an ANSI C compatible
+ *          version
+ *
+ *    10/10/2001
+ *        - Fixed DPRINTF_stub(). I forgot the __...__ macros in there
+ *          instead of the function arguments :P
+ *        - Added a workaround for the 1600x1200 bug (Text mode corrupts
+ *          when you exit from any 1600x1200 mode and 1280x1024@85Hz. I
+ *          suspect this is a BIOS bug (hence the 1280x1024@85Hz case).
+ *          For now I'm switching to 800x600@60Hz then to 80x25 text mode
+ *          and then restoring the registers - very ugly indeed.
  */
 
 #include "xf86.h"
@@ -146,6 +159,26 @@ static Bool I830VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode);
 static void I830DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int PowerManagementMode,
 					  int flags);
+
+#ifdef I830DEBUG
+void DPRINTF_stub (const char *filename,int line,const char *function,const char *fmt, ...) {
+	va_list ap;
+	fprintf (stderr,
+			 "\n##############################################\n"
+			 "*** In function %s, on line %d, in file %s ***\n",
+			 function,line,filename);
+	va_start (ap,fmt);
+	vfprintf (stderr,fmt,ap);
+	va_end (ap);
+	fprintf (stderr,
+			 "##############################################\n\n");
+	fflush (stderr);
+}
+#else	/* #ifdef I830DEBUG */
+void DPRINTF_stub (const char *filename,int line,const char *function,const char *fmt, ...) {
+	/* do nothing */
+}
+#endif	/* #ifdef I830DEBUG */
 
 const OptionInfoRec *
 I830BIOSAvailableOptions(int chipid, int busid)
@@ -708,7 +741,8 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
    mem = I810CheckAvailableMemory (pScrn);
    pI810->StolenOnly = FALSE;
 
-   DPRINTF ("Available memory: %dk\n"
+   DPRINTF (PFX,
+			"Available memory: %dk\n"
 			"Requested memory: %dk (see XF86Config-4)\n",
 			mem,pScrn->videoRam);
 
@@ -996,7 +1030,8 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
 			 pMode->HSync = hsync;
 			 pMode->VRefresh = vrefresh;
 
-			 DPRINTF ("pMode->HSync == %.1f KHz\n"
+			 DPRINTF (PFX,
+					  "pMode->HSync == %.1f KHz\n"
 					  "pMode->VRefresh == %.1f Hz\n",
 					  pMode->HSync,
 					  pMode->VRefresh);
@@ -1012,7 +1047,8 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
 		while (pMode != pScrn->modes);
 	 }
 
-   DPRINTF ("data->block->HorizontalTotal = %lu\n"
+   DPRINTF (PFX,
+			"data->block->HorizontalTotal = %lu\n"
 			"data->block->HorizontalSyncStart = %lu\n"
 			"data->block->HorizontalSyncEnd = %lu\n"
 			"data->block->VerticalTotal = %lu\n"
@@ -1069,7 +1105,8 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
 			 pScrn->displayWidth = pScrn->virtualX;
 		  }
 
-		DPRINTF ("calc_pitch == %lu\n"
+		DPRINTF (PFX,
+				 "calc_pitch == %lu\n"
 				 "pScrn->displayWidth == %lu\n"
 				 "virtualX == %lu\n"
 				 "virtualY == %lu\n"
@@ -1456,6 +1493,8 @@ Bool I830VESASetVBEMode (ScrnInfoPtr pScrn,int mode,CRTCInfoBlock *block)
    pI810 = I810PTR (pScrn);
    pVesa = pI810->vesa;
 
+   DPRINTF(PFX,"Setting mode 0x%.8x\n",mode);
+
    pVesa->pInt->num = 0x10;
    switch (mode)
 	 {
@@ -1467,12 +1506,16 @@ Bool I830VESASetVBEMode (ScrnInfoPtr pScrn,int mode,CRTCInfoBlock *block)
 		pVesa->pInt->ax = 0x0049;
 		xf86ExecX86int10_wrapper (pVesa->pInt,pScrn);
 		return (TRUE);
+	  case 0x03:
+		pVesa->pInt->ax = 0x0003;
+		xf86ExecX86int10_wrapper (pVesa->pInt,pScrn);
+		return (TRUE);
 	  default:
 		pVesa->pInt->ax = 0x4f02;
 		pVesa->pInt->bx = mode & ~(1 << 11);
 /* This doesn't work. The BIOS is f**cked */
 #if 0
-		if (block)
+		if (block != NULL)
 		  {
 			 pVesa->pInt->bx |= 1 << 11;
 			 memcpy (pVesa->block,block,sizeof (CRTCInfoBlock));
@@ -1503,6 +1546,13 @@ Bool I830VESASaveRestore (ScrnInfoPtr pScrn,int function)
 		I810Sync (pScrn);
 	 }
 
+   /* FIXME: Workaround for 1600x1200 bug */
+#if 1
+   if (function == MODE_RESTORE) {
+	   I830VESASetVBEMode (pScrn,0xc052,NULL);
+   }
+#endif
+
 #if 1
    /* This is a workaround that is needed to avoid a bug in VESA Save/Restore,
     * I will remove it as soon as the problem is fixed in the BIOS.
@@ -1514,12 +1564,12 @@ Bool I830VESASaveRestore (ScrnInfoPtr pScrn,int function)
     * mode.)
     */
 
-   if(function == MODE_RESTORE)
-	 {
-		I830VESASetVBEMode (pScrn,pVesa->stateMode,NULL);
-		RestoreFonts (pScrn);
-		I830BIOSSetRegisters (pScrn,SET_SAVED_MODE);
-		return (TRUE);
+   if(function == MODE_RESTORE) {
+	   I830VESASetVBEMode (pScrn,pVesa->stateMode,NULL);
+	   RestoreFonts (pScrn);
+	   I830BIOSSetRegisters (pScrn,SET_SAVED_MODE);
+	   I830VESASetVBEMode (pScrn,pVesa->stateMode,NULL);
+	   return (TRUE);
    }
 #endif
 
@@ -1550,7 +1600,8 @@ Bool I830VESASaveRestore (ScrnInfoPtr pScrn,int function)
 				  xf86DrvMsg (pScrn->scrnIndex,X_ERROR,"Cannot allocate memory to save SVGA state.\n");
 				  return (FALSE);
 			   }
-			 DPRINTF ("BIOS returned bx == %d\n"
+			 DPRINTF (PFX,
+					  "BIOS returned bx == %d\n"
 					  "therefore I need npages == %d (4k pages)\n",
 					  pVesa->pInt->bx,npages);
 		  }
@@ -1687,7 +1738,7 @@ static Bool I830VESASetMode (ScrnInfoPtr pScrn,DisplayModePtr pMode)
 			I830VESASetVBEMode (pScrn,(mode & ~(1 << 11)),NULL) == TRUE)
 		  {
 			 xf86DrvMsg (pScrn->scrnIndex,X_WARNING,"Set VBE Mode rejected this modeline. Trying current mode instead!\n");
-			 DPRINTF ("OOPS!\n");
+			 DPRINTF (PFX,"OOPS!\n");
 			 xfree (data->block);
 			 data->block = NULL;
 			 data->mode &= ~(1 << 11);
@@ -1707,13 +1758,15 @@ static Bool I830VESASetMode (ScrnInfoPtr pScrn,DisplayModePtr pMode)
    /* is this a CRT? */
    if (pVesa->pInt->ax == 0x005f && pVesa->pInt->bx != 0x0002)
 	 {
-		DPRINTF ("data->data = {\n"
+		DPRINTF (PFX,
+				 "data->data = {\n"
 				 "   XResolution: %d\n"
 				 "   YResolution: %d\n"
 				 "}\n",
 				 data->data->XResolution,data->data->YResolution);
 		if (data->block != NULL)
-		  DPRINTF ("data->block = {\n"
+		  DPRINTF (PFX,
+				   "data->block = {\n"
 				   "       HorizontalTotal: %d\n"
 				   "   HorizontalSyncStart: %d\n"
 				   "     HorizontalSyncEnd: %d\n"
@@ -1742,7 +1795,8 @@ static Bool I830VESASetMode (ScrnInfoPtr pScrn,DisplayModePtr pMode)
 
 			 if (VesaRefresh[i] == data->block->RefreshRate / 100)
 			   {
-				  DPRINTF ("Setting refresh rate to %dHz for mode %d\n",
+				  DPRINTF (PFX,
+						   "Setting refresh rate to %dHz for mode %d\n",
 						   VesaRefresh[i],
 						   mode & 0xff);
 
@@ -2088,7 +2142,7 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       return FALSE;
 #endif
 
-	DPRINTF("assert( if(!I810MapMem(pScrn)) )\n");
+	DPRINTF(PFX,"assert( if(!I810MapMem(pScrn)) )\n");
    if(!I810MapMem(pScrn)) return FALSE;
 
    pScrn->memPhysBase = (unsigned long)pI810->FbBase;
@@ -2096,14 +2150,14 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
    vgaHWSetMmioFuncs(hwp, pI810->MMIOBase, 0);
    vgaHWGetIOBase(hwp);
-	DPRINTF("assert( if(!vgaHWMapMem(pScrn)) )\n");
+	DPRINTF(PFX,"assert( if(!vgaHWMapMem(pScrn)) )\n");
    if(!vgaHWMapMem(pScrn)) return FALSE;
 
    /* Handle Setup of the mode here */
-	DPRINTF("assert( if(!(I830BIOSInitializeFirstMode(scrnIndex))) )\n");
+	DPRINTF(PFX,"assert( if(!(I830BIOSInitializeFirstMode(scrnIndex))) )\n");
    if(!(I830BIOSInitializeFirstMode(scrnIndex))) return FALSE;
 
-	DPRINTF("assert( if(!fbScreenInit(pScreen, ...) )\n");
+	DPRINTF(PFX,"assert( if(!fbScreenInit(pScreen, ...) )\n");
    if(!fbScreenInit(pScreen, pI810->FbBase + pScrn->fbOffset,
 		        pScrn->virtualX, pScrn->virtualY,
                         pScrn->xDpi, pScrn->yDpi,
@@ -2135,10 +2189,10 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
    if(!pI810->directRenderingEnabled) {
       pI810->DoneFrontAlloc = FALSE;
-	   DPRINTF("assert( if(!I810AllocateGARTMemory( pScrn )) )\n");
+	   DPRINTF(PFX,"assert( if(!I810AllocateGARTMemory( pScrn )) )\n");
       if(!I810AllocateGARTMemory( pScrn ))
          return FALSE;
-	   DPRINTF("assert( if(!I810AllocateFront(pScrn)) )\n");
+	   DPRINTF(PFX,"assert( if(!I810AllocateFront(pScrn)) )\n");
       if(!I810AllocateFront(pScrn))
 	 return FALSE;
    }
@@ -2146,7 +2200,7 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
    I810DGAInit(pScreen);
 
-	DPRINTF("assert( if(!xf86InitFBManager(pScreen, &(pI810->FbMemBox))) )\n");
+	DPRINTF(PFX,"assert( if(!xf86InitFBManager(pScreen, &(pI810->FbMemBox))) )\n");
    if(!xf86InitFBManager(pScreen, &(pI810->FbMemBox))) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                  "Failed to init memory manager\n");
@@ -2177,10 +2231,10 @@ I830BIOSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 }
    else xf86DrvMsg (pScrn->scrnIndex,X_INFO,"Initializing SW Cursor!\n");
 
-	DPRINTF("assert( if(!miCreateDefColormap(pScreen)) )\n");
+	DPRINTF(PFX,"assert( if(!miCreateDefColormap(pScreen)) )\n");
    if(!miCreateDefColormap(pScreen)) return FALSE;
 
-	DPRINTF("assert( if(!vgaHWHandleColormaps(pScreen)) )\n");
+	DPRINTF(PFX,"assert( if(!vgaHWHandleColormaps(pScreen)) )\n");
    if(!vgaHWHandleColormaps(pScreen)) return FALSE;
 
 #ifdef DPMSExtension

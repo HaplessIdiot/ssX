@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.55 2001/10/01 13:44:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.56 2001/10/04 18:28:21 alanh Exp $ */
 
 /*
  * Authors:
@@ -1763,14 +1763,16 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
 		 X_WARNING, "Framebuffer allocation failed\n");
       return FALSE;
    } else
-		DPRINTF ("Frame buffer at 0x%.8x (%luk, %lu bytes)\n",
+		DPRINTF (PFX,
+				 "Frame buffer at 0x%.8x (%luk, %lu bytes)\n",
 				 pI810->FrontBuffer.Start,
 				 pI810->FrontBuffer.Size / 1024,
 				 pI810->FrontBuffer.Size);
    
    memset( &(pI810->LpRing), 0, sizeof( I810RingBuffer ) );
    if(I810AllocLow( &(pI810->LpRing.mem), &(pI810->SysMem), 16*4096 )) {
-	   DPRINTF ("Ring buffer at 0x%.8x (%luk, %lu bytes)\n",
+	   DPRINTF (PFX,
+				"Ring buffer at 0x%.8x (%luk, %lu bytes)\n",
 				pI810->LpRing.mem.Start,
 				pI810->LpRing.mem.Size / 1024,
 				pI810->LpRing.mem.Size);
@@ -1787,7 +1789,8 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
 
    if ( I810AllocLow( &pI810->Scratch, &(pI810->SysMem), 64*1024 ) || 
 	I810AllocLow( &pI810->Scratch, &(pI810->SysMem), 16*1024 ) ) {
-	   DPRINTF ("Scratch memory at 0x%.8x (%luk, %lu bytes)\n",
+	   DPRINTF (PFX,
+				"Scratch memory at 0x%.8x (%luk, %lu bytes)\n",
 				pI810->Scratch.Start,
 				pI810->Scratch.Size / 1024,
 				pI810->Scratch.Size);
