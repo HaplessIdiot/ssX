@@ -1,4 +1,9 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 363. Extract the CHANGELOG's commit date and include it in the XFree86
+      server log/version information (David Dawes).
+ 362. Change the way xf86Build.h is created so that it doesn't cause its
+      dependencies to be rebuilt when its contents are not changed
+      (David Dawes).
 
 XFree86 4.3.99.10 (10 August 2003)
  361. Fixes and updates for XKB keyboard maps:
@@ -17504,7 +17509,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2799 2003/08/09 14:31:55 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2800 2003/08/10 11:07:10 dawes Exp $
 
 
 
