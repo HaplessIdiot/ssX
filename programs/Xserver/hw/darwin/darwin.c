@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.47 2002/11/15 00:55:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.48 2002/12/10 00:00:38 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -532,6 +532,8 @@ void InitInput( int argc, char **argv )
 
     if (quartz) {
         QuartzInitInput(argc, argv);
+    } else {
+        XFIOKitInitInput(argc, argv);
     }
 }
 

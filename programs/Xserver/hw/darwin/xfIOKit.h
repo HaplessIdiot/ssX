@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.h,v 1.7 2002/03/28 02:21:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.h,v 1.8 2002/12/10 00:00:39 torrey Exp $ */
 
 #ifndef _XFIOKIT_H
 #define _XFIOKIT_H
@@ -54,6 +54,7 @@ Bool XFIOKitAddScreen(int index, ScreenPtr pScreen);
 Bool XFIOKitSetupScreen(int index, ScreenPtr pScreen);
 Bool XFIOKitInitCursor(ScreenPtr pScreen);
 void XFIOKitInitOutput(int argc, char **argv);
+void XFIOKitInitInput(int argc, char **argv);
 void XFIOKitGiveUp(void);
 void XFIOKitBell(int volume, DeviceIntPtr pDevice, pointer ctrl, int class);
 
