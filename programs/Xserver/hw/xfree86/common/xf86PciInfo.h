@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.22 1999/02/19 21:27:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.23 1999/02/28 11:19:33 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -116,6 +116,7 @@
 #define PCI_VENDOR_3DLABS	0x3D3D
 #define PCI_VENDOR_AVANCE_2	0x4005
 #define PCI_VENDOR_HERCULES	0x4843
+#define PCI_VENDOR_CREATIVE	0x4942
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_INTEL	0x8086
 #define PCI_VENDOR_ADAPTEC	0x9004
@@ -557,6 +558,7 @@ SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_TEKRAM_2, "Tekram"},
     {PCI_VENDOR_3DLABS, "3Dlabs"},
     {PCI_VENDOR_AVANCE_2, "Avance"},
+    {PCI_VENDOR_CREATIVE, "Creative Labs"},
     {PCI_VENDOR_S3,	"S3"},
     {PCI_VENDOR_INTEL,	"Intel"},
     {PCI_VENDOR_ADAPTEC, "Adaptec"},
@@ -1277,6 +1279,11 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
 	{ PCI_VENDOR_COMPAQ, {
                         { 0x0000, (char *)NULL, NF } } },
 #endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{ PCI_VENDOR_NCR_1, {
+	                { 0x1000, "SCSI HBA", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+#endif
 	{PCI_VENDOR_DIGITAL, {
 			{ 0x500A, "EtherWORKS 10/100", NF},
                         { 0x0000, (char *)NULL, NF } } },
@@ -1388,6 +1395,11 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x6306, "530 based motherboard", NF },
                         { 0x6326, "6326 based card", NF },
                         { 0x0000, (char *)NULL, NF } } },
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{ PCI_VENDOR_CREATIVE, {
+			{ 0x4c4c, "Sound Blaster PCI128", NF },
+                        { 0x0000, (char *)NULL, NF } } },
+#endif
 	{ PCI_VENDOR_S3, {
                         { 0x8904, "Trio3D", NF },
                         { 0x8a10, "ViRGE/GX2", NF },
@@ -1400,7 +1412,7 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x0000, (char *)NULL, NF } } },
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{ PCI_VENDOR_BUSLOGIC, {
-	                { 0x1040,	"BT958D", NF },
+	                { 0x1040,	"BT958", NF },
                         { 0x0000, (char *)NULL, NF } } },
 #endif
 	{0x0000, {

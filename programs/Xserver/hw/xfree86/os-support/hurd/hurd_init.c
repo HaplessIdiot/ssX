@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_init.c,v 1.1 1998/08/16 10:25:48 dawes Exp $ */
 
 #include "X.h"
 
@@ -51,6 +51,7 @@ xf86UseMsg()
     return;
 }
 
+
 void 
 xf86OpenConsole()
 {
@@ -72,7 +73,7 @@ xf86OpenConsole()
 	    fprintf( stderr , "Cannot open keyboard (%s)\n",strerror(errno) );
 	    exit(1);
 	}
-	xf86Info.kbdFd = fd;
+	xf86Info.consoleFd = fd;
     }
     return;
 }
@@ -80,6 +81,6 @@ xf86OpenConsole()
 void 
 xf86CloseConsole()
 {
-    close( xf86Info.kbdFd );
+    close( xf86Info.consoleFd );
     return;
 }

@@ -1,7 +1,7 @@
-XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.1 1998/08/16 10:24:02 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.2 1998/10/25 07:11:09 dawes Exp $
 
 #ifndef OSName
-#define OSName			DefaultOSName
+#define OSName			GNU
 #endif
 #ifndef OSVendor
 #define OSVendor		/**/
@@ -36,13 +36,13 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef LexLib
 #define LexLib			-lfl
 #endif
-#define ArCmd			/usr/local/bin/i586--gnu-ar clq
-#define AsCmd			/usr/local/bin/i586--gnu-as
-#define CcCmd			/usr/local/bin/i586--gnu-gcc
-#define CppCmd			/usr/local/lib/gcc-lib/i586--gnu/2.8.1/cpp
+#define ArCmd			ar clq
+#define AsCmd			as
+#define CcCmd			gcc
+#define CppCmd			/lib/gcc-lib/i586--gnu/egcs-2.91.60/cpp
 #define PreProcessCmd		CcCmd -EP -x c
-#define RanlibCmd		/usr/local/bin/i586--gnu-ranlib
-#define LdCmd			/usr/local/bin/i586--gnu-ld
+#define RanlibCmd		ranlib
+#define LdCmd			ld
 #if defined(UseInstalled)
 #define DefaultCCOptions	/**/
 #else
@@ -67,7 +67,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define ServerExtraDefines	GccGasOption
 #endif
 #define StandardCppDefines	-traditional StandardDefines 
-#define StandardDefines		-D_POSIX_SOURCE -D_BSD_SOURCE
+#define StandardDefines		-D_XOPEN_SOURCE -D_POSIX_SOURCE -D_BSD_SOURCE  -D__ELF__
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME
 #define ConnectionFlags		-DTCPCONN
 #define HasBSD44Sockets		YES
@@ -102,6 +102,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #define HasPoll			YES
 
+#define TermcapLibrary		-lncurses
+
 #ifndef GnuMallocLibrary
 #define GnuMallocLibrary	/* -lgnumalloc */
 #endif
@@ -116,6 +118,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef ExtraFilesToClean
 # define ExtraFilesToClean *.core
 #endif
+
+#define BuildXTrueType		NO
+#define BuildXTT		NO
 
 #ifdef i386Architecture
 # include <xfree86.cf>

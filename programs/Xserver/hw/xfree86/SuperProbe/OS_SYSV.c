@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.17 1997/03/12 11:19:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_SYSV.c,v 3.18 1997/03/17 11:22:40 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -78,7 +78,9 @@
 #  include <sys/seg.h>
 # endif
 #endif
-#include <sys/v86.h>
+#ifndef V86SC_IOPL
+#  include <sys/v86.h>
+#endif
 #if defined(sun)
 # include <sys/psw.h>
 #endif

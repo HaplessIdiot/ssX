@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.62 1999/03/02 11:49:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.63 1999/03/06 13:12:44 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -651,14 +651,10 @@ extern char* __XOS2RedirRoot(char*);
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <sys/stat.h>
-
-#define POSIX_TTY
-
-#define OSMOUSE_ONLY
-#define MOUSE_PROTOCOL_IN_KERNEL
-
 #include <assert.h>
 
+#define POSIX_TTY
+#define USE_OSMOUSE
 
 #endif /* __GNU__ */
 
