@@ -2,7 +2,7 @@
 
 
 
-# $XFree86: xc/Makefile,v 3.22 2001/12/19 21:37:26 dawes Exp $
+# $XFree86: xc/Makefile,v 3.23 2003/01/21 04:56:23 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -174,7 +174,7 @@ World.OS2:
 	$(MAKE) $(MFLAGS)  
 	@echo :
 	@echo :
-	@echo Full build of XFree86 complete.
+	@echo Full build of XFree86 on OS/2 complete.
 	@echo :
 
 # don't allow any default rules in this Makefile
