@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.35 2003/04/13 19:22:19 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.36tsi Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -1280,14 +1280,17 @@ void _XReadPad(
 
 	    if (bytes_read > 0) {
 		size -= bytes_read;
-	    	if ((iov[0].iov_len -= bytes_read) < 0) {
-		    iov[1].iov_len += iov[0].iov_len;
-		    iov[1].iov_base = (char *)iov[1].iov_base - iov[0].iov_len;
+		if (iov[0].iov_len < bytes_read) {
+		    iov[1].iov_len += iov[0].iov_len - bytes_read;
+		    iov[1].iov_base =
+			(char *)iov[1].iov_base + bytes_read - iov[0].iov_len;
 		    iov[0].iov_len = 0;
 		    }
-	    	else
+	    	else {
+		    iov[0].iov_len -= bytes_read;
 	    	    iov[0].iov_base = (char *)iov[0].iov_base + bytes_read;
 	    	}
+	    }
 	    else if (ETEST()) {
 		_XWaitForReadable(dpy);
 		ESET(0);
