@@ -214,7 +214,8 @@ README for XFree86[tm] 3.2A
       ATI
 	    18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
 	    68800-6, 68800AX, 68800LX, 88800GX-C, 88800GX-D, 88800GX-E,
-	    88800GX-F, 88800CX, 264CT, 264ET, 264VT, 264VT2, 264GT
+	    88800GX-F, 88800CX, 264CT, 264ET, 264VT, 264VT-B, 264VT3, 264GT,
+	    264GT-B, 264GT3
 
       NCR
 	    77C22, 77C22E, 77C22E+
@@ -255,7 +256,6 @@ README for XFree86[tm] 3.2A
 
       Alliance
 	    AP6422
-
 
 
 
@@ -746,7 +746,7 @@ README for XFree86[tm] 3.2A
 
 	       o Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
 
-	       o Rewritten by Marc La France <Marc.La-France@ualberta.ca>
+	       o Rewritten by Marc Aurele La France <tsi@ualberta.ca>
 
       WD90C24 support by:
 
@@ -1348,7 +1348,7 @@ Ensure that you are getting XFree86 3.2A - some of these sites may archive
 older releases as well.  Check the RELNOTES to find which files you need to
 take from the archive.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.84 1997/05/31 13:51:29 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.85 1997/06/15 07:12:29 dawes Exp $
 
 
 

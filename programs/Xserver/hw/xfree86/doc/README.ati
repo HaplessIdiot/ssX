@@ -11,7 +11,7 @@
 
 			     Marc Aurele La France
 
-				 23 March 1996
+				 11 June 1997
 
 
 
@@ -79,15 +79,17 @@ with this driver:
      VGA Wonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
 	 Mach32 series:  68800-3, 68800-6, 68800AX, 68800LX
 	 Mach64 series:  88800GX-C, 88800GX-D, 88800GX-E, 88800GX-F, 88800CX,
-			 264CT, 264ET, 264VT, 264VT2, 264GT
+			 264CT, 264ET, 264VT, 264VT-B, 264VT3, 264GT, 264GT-B,
+			 264GT3
 
 
-The 264xT series are integrated controllers, meaning that they include an
-internal RAMDAC and clock generator.  Some early Mach32 adapters will not work
-with this driver because they do not provide VGA functionality.  Also, early
-Mach8 adapters will not work for the same reason, unless the adapter also has a
-video controller from the VGA Wonder series (or is connected to one through the
-VGA passthrough connector).
+There is some support for the 264LT (ATI's entry into the laptop world), but it
+is untested.  The 264xT series are integrated controllers, meaning that they
+include an internal RAMDAC and clock generator.  Some early Mach32 adapters
+will not work with this driver because they do not provide VGA functionality.
+Also, early Mach8 adapters will not work for the same reason, unless the
+adapter also has a video controller from the VGA Wonder series (or is connected
+to one through the VGA passthrough connector).
 
 These adapters are available with a variety of clock generators and RAMDACs.
 See the XF86Config section below for details.  These adapters are available
@@ -104,6 +106,15 @@ The VGA Wonder series was also available through ATI's OEM channel under the
 name VGA1024.  Thus, the ATI VGA driver also supports VGA1024, VGA1024D,
 VGA1024XL, VGA1024DXL and VGA1024VLB adapters, among others.
 
+Other names that have been used for adapters supported by this driver are:
+
+     VGA Basic 16, VGA Edge, VGA Edge 16, VGA Integra, VGA 640, VGA 800, VGA 1024,
+     VGA Charger, VGAStereo F/X, Graphics Ultra, Graphics Vantage, VGAWonder GT,
+     Graphics Ultra, Graphics Ultra Pro, Grpahics Wonder, Graphics Ultra XLR,
+     Graphics Ultra AXO, mach32, Graphics Xpression, Graphics Pro Turbo, WinBoost,
+     WinTurbo, WinCharger, Graphics Pro Turbo 1600, Video Xpression, 3D Xpression,
+     All-In-Wonder. 3D Pro Turbo, ATI-TV, XPERT@Play, XPERT@Work, etc.
+
 
 4.  What should I put in my XF86Config file?
 
@@ -114,17 +125,6 @@ alent.	In some future version each name will have a different meaning to be
 documented at that time.
 
 The clocks line to be specified in your XF86Config depends on what the adapter
-uses to generate dot clocks.
-
-For all adapters, one of the following clocks specifications (or an initial
-subset thereof) can be used depending on what the adapter uses to generate dot
-clocks:
-
-     Crystals (VGA Wonder V3 and V4 adapters only):
-
-       Clocks  50.000  56.644	0.000  44.900  44.900  50.000	0.000  36.000
-	       25.000  28.322	0.000  22.450  22.450  25.000	0.000  18.000
-	       16.667  18.881	0.000  14.967  14.967  16.667	0.000  12.000
 
 
 
@@ -137,6 +137,17 @@ ATI adapters README
 
 
 
+uses to generate dot clocks.
+
+For all adapters, one of the following clocks specifications (or an initial
+subset thereof) can be used depending on what the adapter uses to generate dot
+clocks:
+
+     Crystals (VGA Wonder V3 and V4 adapters only):
+
+       Clocks  50.000  56.644	0.000  44.900  44.900  50.000	0.000  36.000
+	       25.000  28.322	0.000  22.450  22.450  25.000	0.000  18.000
+	       16.667  18.881	0.000  14.967  14.967  16.667	0.000  12.000
 	       12.500  14.161	0.000  11.225  11.225  12.500	0.000	9.000
 
 
@@ -181,17 +192,6 @@ ATI adapters README
 
 Mach32 and Mach64 owners should only specify up to the first 32 frequencies.
 
-The oldest Mach64 adapters use one of the clock generators described above.
-The possibilities for Mach64 adapters also include programmable clock genera-
-tors.  At bootup, video BIOS initialization programmes an initial set of fre-
-quencies.  Two of these are reserved to allow the setting of modes that do not
-use a frequency from this initial set.	One of these reserved slots is used by
-the BIOS mode set routine, the other by the particular driver used (MS-Windows,
-AutoCAD, X, etc.).  The clock numbers reserved in this way are dependent on the
-particular clock generator used on the adapter.
-
-If the driver does not support the adapter's clock generator, it will try to
-
 
 
 
@@ -203,6 +203,16 @@ ATI adapters README
 
 
 
+The oldest Mach64 adapters use one of the clock generators described above.
+The possibilities for Mach64 adapters also include programmable clock genera-
+tors.  At bootup, video BIOS initialization programmes an initial set of fre-
+quencies.  Two of these are reserved to allow the setting of modes that do not
+use a frequency from this initial set.	One of these reserved slots is used by
+the BIOS mode set routine, the other by the particular driver used (MS-Windows,
+AutoCAD, X, etc.).  The clock numbers reserved in this way are dependent on the
+particular clock generator used on the adapter.
+
+If the driver does not support the adapter's clock generator, it will try to
 match the clocks to one of the following specifications.  This matching will
 occur whether or not the user specifies the clocks in XF86Config.
 
@@ -248,16 +258,6 @@ If the driver detects a supported programmable clock generator, it will ignore
 any XF86Config clock specification and programme the generator as needed by the
 modes to be used during the X session.
 
-A clock probe, done with the command "X -probeonly", will help you decide which
-of the above to use for your particular adapter.  If the server consistently
-reports that it has detected an unknown clock generator, please e-mail me the
-stderr output.
-
-Modes can be derived from the information in XFree86's doc directory.  If you
-do not specify a "modes" line in the display subsection of the appropriate
-screen section of your XF86Config, the driver will generate a default mode and
-attempt to use it.  The timings for the default mode are derived from the
-
 
 
 
@@ -269,7 +269,16 @@ ATI adapters README
 
 
 
-timings of the mode (usually a text mode) in effect when the server is started.
+A clock probe, done with the command "X -probeonly", will help you decide which
+of the above to use for your particular adapter.  If the server consistently
+reports that it has detected an unknown clock generator, please e-mail me the
+stderr output.
+
+Modes can be derived from the information in XFree86's doc directory.  If you
+do not specify a "modes" line in the display subsection of the appropriate
+screen section of your XF86Config, the driver will generate a default mode and
+attempt to use it.  The timings for the default mode are derived from the tim-
+ings of the mode (usually a text mode) in effect when the server is started.
 
 
 5.  What is the history of the driver?
@@ -314,15 +323,6 @@ packages.  In the second case, xrefresh will usually cleanup the image.
 Video memory banking does not work in the 16-colour and monochrome servers on
 V3, V4 and V5 adapters (with 512kB of video memory).  This appears to be a
 hardware limitation.  The driver's default behaviour has been changed to take
-this into consideration by limiting video memory to 256kB.
-
-Interlaced modes do not work in the monochrome server on 28800-x adapters when
-using a virtual resolution that is 2048 pixels or wider.  This appears to be a
-hardware limitation.  The driver has been changed to prune modes accordingly.
-
-Support for virtual resolutions using more than 1MB of video memory is still
-incomplete.  Specifically, such support works on Mach32 adapters, and on 264xT
-adapters, but not on any other Mach64 adapters.  On 88800GX and 88800CX
 
 
 
@@ -335,6 +335,15 @@ ATI adapters README
 
 
 
+this into consideration by limiting video memory to 256kB.
+
+Interlaced modes do not work in the monochrome server on 28800-x adapters when
+using a virtual resolution that is 2048 pixels or wider.  This appears to be a
+hardware limitation.  The driver has been changed to prune modes accordingly.
+
+Support for virtual resolutions using more than 1MB of video memory is still
+incomplete.  Specifically, such support works on Mach32 adapters, and on 264xT
+adapters, but not on any other Mach64 adapters.  On 88800GX and 88800CX
 adapters, this appears to be a hardware limitation.  Consequently, the driver's
 default behaviour is to limit video memory to 1MB.
 
@@ -342,7 +351,8 @@ There is some controversy over whether or not clocks higher than 135MHz should
 be allowed on 264xT adapters.  For now, clocks will be limited to 135MHz by
 default.  This limit can only be increased (up to a driver-calculated absolute
 maximum) through the DACSpeed option in XF86Config.  Be aware however that
-doing this is untested and might damage the adapter.
+doing this is untested and might damage the adapter.  The default limit has
+been raised to 170MHz for VT-B, VT3, GT-B, GT3, LT and later adapters.
 
 The default mode does not work on the more recent Mach64 adapters.  This will
 be fixed in a future release by reading the programmable clock generator's reg-
@@ -354,23 +364,13 @@ erated functionality.
 Please e-mail any bug reports, comments, etc. to Marc Aurele La France,
 tsi@ualberta.ca
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.15 1997/01/24 09:32:43 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.16 1997/06/15 07:12:29 dawes Exp $
 
 
 
 
 
      $XConsortium: ati.sgml /main/9 1996/10/19 18:03:54 kaleb $
-
-
-
-
-
-
-
-
-
-
 
 
 
