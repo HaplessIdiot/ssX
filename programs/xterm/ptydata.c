@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/ptydata.c,v 1.2 1999/05/03 12:16:11 dawes Exp $
+ * $XFree86: xc/programs/xterm/ptydata.c,v 1.3 1999/05/15 06:25:05 dawes Exp $
  */
 
 /************************************************************
@@ -194,7 +194,7 @@ unsigned usedPtyData(PtyData *data)
 }
 
 #if OPT_WIDE_CHARS
-Char * convertToUTF8(Char *lp, int c)
+Char * convertToUTF8(Char *lp, unsigned c)
 {
     if (c < 0x80) {		/*  0*******  */
 	*lp++ = (c);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.23 1999/04/18 04:08:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.24 1999/04/27 12:05:13 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -107,9 +107,9 @@ static int pix24bpp = 0;
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "0.7.0"
+#define S3VIRGE_VERSION_NAME "0.8.0"
 #define S3VIRGE_VERSION_MAJOR   0
-#define S3VIRGE_VERSION_MINOR   6
+#define S3VIRGE_VERSION_MINOR   8
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -3046,102 +3046,62 @@ S3VPrintRegs(ScrnInfoPtr pScrn)
     unsigned char tmp1, tmp2;
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     S3VPtr ps3v = S3VPTR(pScrn);
-    int vgaCRIndex, vgaCRReg, vgaIOBase;
+    int vgaCRIndex, vgaCRReg, vgaIOBase, vgaIR;
     vgaIOBase = hwp->IOBase;
     vgaCRIndex = vgaIOBase + 4;
     vgaCRReg = vgaIOBase + 5;
+    vgaIR = vgaIOBase + 0xa;
        
 /* All registers */
-    VGAOUT8(0x3c4, 0x10);
-    tmp1 = VGAIN8(0x3c5);
-    VGAOUT8(0x3c4, 0x11);
-    tmp2 = VGAIN8(0x3c5);
-    ErrorF("SR10: %02x SR11: %02x\n", tmp1, tmp2);
+/* New formatted registers, matches s3rc (sort of) */
+    ErrorF("Misc Out[3CC]\n  ");
+    ErrorF("%02x\n",VGAIN8(0x3cc));
 
-    VGAOUT8(0x3c4, 0x12);
-    tmp1 = VGAIN8(0x3c5);
-    VGAOUT8(0x3c4, 0x13);
-    tmp2 = VGAIN8(0x3c5);
-    ErrorF("SR12: %02x SR13: %02x\n", tmp1, tmp2);
-
-    VGAOUT8(0x3c4, 0x0a);
-    tmp1 = VGAIN8(0x3c5);
-    VGAOUT8(0x3c4, 0x15);
-    tmp2 = VGAIN8(0x3c5);
-    ErrorF("SR0A: %02x SR15: %02x\n", tmp1, tmp2);
-
-    /* Now load and print a whole rnage of other regs */
-    for(tmp1=0x0;tmp1<=0x0f;tmp1++){
-	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
-    }
-    ErrorF("\n");
-    for(tmp1=0x10;tmp1<=0x1f;tmp1++){
-	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
-    }
-    ErrorF("\n");
-    for(tmp1=0x20;tmp1<=0x2f;tmp1++){
-	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
-    }
-    ErrorF("\n");
-    for(tmp1=0x30;tmp1<=0x3f;tmp1++){
-	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
-    }
-    ErrorF("\n");
-    for(tmp1=0x40;tmp1<=0x4f;tmp1++){
-	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
-    }
-    ErrorF("\n");
-    for(tmp1=0x50;tmp1<=0x59;tmp1++){
-	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
-    }
-    ErrorF("\n");
-    for(tmp1=0x5d;tmp1<=0x67;tmp1++){
-	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
-    }
-    ErrorF("\n");
-    for(tmp1=0x68;tmp1<=0x6f;tmp1++){
-	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
-    }
-
-    ErrorF("\n\n");
- #if 0
-/* New formatted registers, matches s3rc */
-    ErrorF("Misc Out\n");
-    ErrorF("  %02x\n",VGAIN8(0x3cc));
-
-    ErrorF("CR[00-2f]\n");
+    ErrorF("\nCR[00-2f]\n  ");
     for(tmp1=0x0;tmp1<=0x2f;tmp1++){
 	VGAOUT8(vgaCRIndex, tmp1);
 	ErrorF("%02x ",VGAIN8(vgaCRReg));
 	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
-	if((tmp1 & 0xf) == 0xf) ErrorF("\n");
+	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
     }
     
-    ErrorF("SR[00-0f]\n");
-    for(tmp1=0x0;tmp1<=0x0f;tmp1++){
+    ErrorF("\nSR[00-27]\n  ");
+    for(tmp1=0x0;tmp1<=0x27;tmp1++){
 	VGAOUT8(0x3c4, tmp1);
 	ErrorF("%02x ",VGAIN8(0x3c5));
 	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
-	if((tmp1 & 0xf) == 0xf) ErrorF("\n");
+	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
     }
+    ErrorF("\n"); /* odd hex number of digits... */
 
-    ErrorF("Gr Cont GR[00-0f]\n");
+    ErrorF("\nGr Cont GR[00-0f]\n  ");
     for(tmp1=0x0;tmp1<=0x0f;tmp1++){
 	VGAOUT8(0x3ce, tmp1);
 	ErrorF("%02x ",VGAIN8(0x3cf));
 	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
-	if((tmp1 & 0xf) == 0xf) ErrorF("\n");
+	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
     }
+
+    ErrorF("\nAtt Cont AR[00-1f]\n  ");
+    VGAIN8(vgaIR); /* preset AR flip-flop by reading 3DA, ignore return value */
+    tmp2=VGAIN8(0x3c0) & 0x20;
+    for(tmp1=0x0;tmp1<=0x1f;tmp1++){
+    VGAIN8(vgaIR); /* preset AR flip-flop by reading 3DA, ignore return value */
+	VGAOUT8(0x3c0, (tmp1 & ~0x20) | tmp2);
+	ErrorF("%02x ",VGAIN8(0x3c1));
+	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
+	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
+    }
+
+    ErrorF("\nCR[30-6f]\n  ");
+    for(tmp1=0x30;tmp1<=0x6f;tmp1++){
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("%02x ",VGAIN8(vgaCRReg));
+	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
+	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
+    }
+    
     ErrorF("\n\n");
- #endif
 }
 
 /* this is just a debugger hook */

@@ -1,4 +1,7 @@
 XFree86 3.9Pp (30 May 1999)
+2699. Xterm patch #104 (#2836, Thomas Dickey).
+2698. Doc updates for the s3virge driver, and cleanup register debugging
+      printouts (#2835, Kevin Brosius).
 2697. Rework the config file search algorithm, and allow "safe" relative
       paths to be specified by non-root users (David Dawes).
 2696. Close input devices while VT switched away (David Dawes).
@@ -8079,4 +8082,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.761 1999/05/30 07:18:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.762 1999/05/30 14:04:13 dawes Exp $
