@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.21 2001/08/07 07:04:45 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.22 2001/10/28 03:33:28 tsi Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -677,8 +677,8 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Found %s chip\n", pScrn->chipset);
     
-    if (pScrn->memPhysBase != 0) {
-	pCyrix->FbAddress = pScrn->memPhysBase;
+    if (pCyrix->pEnt->device->MemBase != 0) {
+	pCyrix->FbAddress = pCyrix->pEnt->device->MemBase;
 	from = X_CONFIG;
     } else {
 	from = X_PROBED;
@@ -688,8 +688,8 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pCyrix->FbAddress);
 
-    if (pScrn->ioBase != 0) {
-	pCyrix->IOAccelAddress = pScrn->ioBase;
+    if (pCyrix->pEnt->device->IOBase != 0) {
+	pCyrix->IOAccelAddress = pCyrix->pEnt->device->IOBase;
 	from = X_CONFIG;
     } else {
 	from = X_PROBED;
@@ -701,7 +701,7 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     /* HW bpp matches reported bpp */
     pCyrix->HwBpp = pScrn->bitsPerPixel;
 
-    if (pScrn->videoRam != 0) {
+    if (pCyrix->pEnt->device->videoRam != 0) {
 	pScrn->videoRam = pCyrix->pEnt->device->videoRam;
 	from = X_CONFIG;
     } else {
@@ -1253,7 +1253,6 @@ Bool enter;
     unsigned char temp;
 
     if (enter) {
-	/*VGAHW_UNLOCK(vgaIOBase);*/
     	GX_REG(DC_UNLOCK) = DC_UNLOCK_VALUE;
 
 	/* Unprotect CRTC[0-7] */
@@ -1273,7 +1272,6 @@ Bool enter;
 	/* Protect CRTC[0-7] */
 	outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
 	outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
-	/*VGAHW_LOCK(vgaIOBase);*/
     	GX_REG(DC_UNLOCK) = 0;
     }
 }

@@ -1,4 +1,9 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 492. Fix SlowBCopy for MIPS and PowerPCs (Marc La France).
+ 491. Fix XF86Config overrides for I/O base, framebuffer address and video
+      memory size in cyrix driver (Marc La France).
+ 490. Don't interfere with ATI panel support when using DDC information for
+      monitor tolerance defaults (Marc La France).
  489. Add Dutch localization of XDarwin help file (Paul Edens).
  488. Add stub functions needed by libGL to libXThrStubs. Link libGL against 
       libXthrStubs on systems that build it. (#4997, Matthieu Herrb).
@@ -14173,4 +14178,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2049 2001/11/18 21:13:26 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2050 2001/11/19 01:21:31 torrey Exp $
