@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.92 2003/09/09 03:20:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.93 2003/09/24 02:43:36 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -541,7 +541,7 @@ void UseMsg(void)
     ErrorF("-xinerama              Disable XINERAMA extension\n");
 #endif
 #ifdef SMART_SCHEDULE
-    ErrorF("-dumpSched             Disable smart scheduling, enable old behavior\n");
+    ErrorF("-dumbSched             Disable smart scheduling, enable old behavior\n");
     ErrorF("-schedInterval int     Set scheduler interval in msec\n");
 #endif
 #ifdef XDMCP
