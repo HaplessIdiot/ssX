@@ -282,7 +282,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->HWCursor = TRUE;
     pSiS->Rotate = FALSE;
     pSiS->ShadowFB = FALSE;
-    pSiS->loadDRI = TRUE;
+    pSiS->loadDRI = FALSE;
     pSiS->agpWantedPages = AGP_PAGES;
     pSiS->VESA = -1;
     pSiS->NoXvideo = FALSE;
@@ -394,11 +394,12 @@ SiSOptions(ScrnInfoPtr pScrn)
          pSiS->HWCursor = FALSE;
     }
 
-    /* DRI not supported on 315/330 series,
-     * so don't load DRI by default
+    /* DRI only supported on 300 series,
+     * so don't load DRI by default on
+     * others.
      */
-    if(pSiS->VGAEngine == SIS_315_VGA) {
-       pSiS->loadDRI = FALSE;
+    if(pSiS->VGAEngine == SIS_300_VGA) {
+       pSiS->loadDRI = TRUE;
     }
 
 #if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
@@ -412,6 +413,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     	pSiS->OptUseColorCursor = 1;
     }
 #endif
+
     if(pSiS->VGAEngine == SIS_300_VGA) {
        pSiS->AllowHotkey = 0;
     } else if(pSiS->VGAEngine == SIS_315_VGA) {
