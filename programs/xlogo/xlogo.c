@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.4 1999/03/02 10:42:36 dawes Exp $ */
+/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.5 2001/01/17 23:46:16 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -150,10 +150,3 @@ quit(Widget w, XEvent *event, String *params, Cardinal *num_params)
     }
 }
 
-#ifdef MINIX
-SmcCloseStatus 
-SmcCloseConnection(SmcConn smcConn, int count, char **reasonMsgs)
-{
-	return SmcClosedNow;
-}
-#endif

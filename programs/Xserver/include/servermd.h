@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.43 2001/01/17 22:36:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.44 2001/04/12 20:10:00 torrey Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -171,7 +171,6 @@ SOFTWARE.
 #endif /* PowerPC */
 
 #if (defined(sun) && !(defined(i386) && defined(SVR4))) || \
-    (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || \
     (defined(__uxp__) && (defined(sparc) || defined(mc68000))) || \
     defined(__sparc__) || defined(__mc68000__)
 
@@ -363,15 +362,12 @@ SOFTWARE.
 
 #endif /* luna */
 
-#if	(defined(AMOEBA) && defined(i80386)) || \
-	(defined(SVR4) && defined(i386)) || \
+#if	(defined(SVR4) && defined(i386)) || \
 	defined(__alpha__) || defined(__alpha) || \
 	defined(__i386__) || \
 	defined(__EMX__) || \
 	defined(__OS2ELF__) || \
-	defined(__QNX__) || \
-	defined(MACH386) || \
-	defined(MINIX)
+	defined(__QNX__)
 
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst

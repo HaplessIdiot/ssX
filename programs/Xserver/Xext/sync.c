@@ -46,7 +46,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.7 1999/03/06 13:12:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.8 2001/01/17 22:13:18 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -67,7 +67,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "xf86_ansic.h"
 #else
 #include <stdio.h>
-#if !defined(WIN32) && !defined(MINIX) && !defined(Lynx)
+#if !defined(WIN32) && !defined(Lynx)
 #include <sys/time.h>
 #endif
 #endif

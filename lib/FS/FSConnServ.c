@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.6 1998/10/03 08:41:06 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.7 2001/01/17 19:41:28 dawes Exp $ */
 
 #include	<stdio.h>
 #include	"FSlibint.h"
@@ -62,11 +62,6 @@ in this Software without prior written authorization from The Open Group.
 #else
 #define ECHECK(err) (errno == err)
 #endif
-#endif
-
-#ifdef MINIX
-#include <sys/nbio.h>
-#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 /*
@@ -165,20 +160,7 @@ void _FSWaitForWritable(svr)
 	FD_SET(svr->fd, &w_mask);
 
 	do {
-#ifndef AMOEBA
 	    nfound = Select(svr->fd + 1, &r_mask, &w_mask, NULL, NULL);
-#else /* AMOEBA */
-	    if (_FSTransAmSelect(svr->fd, 0) > 0) {
-		BITSET(r_mask, svr->fd);
-	    } else {
-		CLEARBITS(r_mask);
-	    }
-	    /* Always immediately writable because data is enqueued to be
-	     * written by separate virtual circuit threads.
-	     */
-	    nfound = 1;
-	    BITSET(w_mask, svr->fd);
-#endif /* AMOEBA */
 	    if (nfound < 0 && !ECHECK(EINTR))
 		(*_FSIOErrorFunction) (svr);
 	} while (nfound <= 0);
@@ -235,15 +217,7 @@ void _FSWaitForReadable(svr)
     FD_ZERO(&r_mask);
     do {
 	FD_SET(svr->fd, &r_mask);
-#ifndef AMOEBA
 	result = Select(svr->fd + 1, &r_mask, NULL, NULL, NULL);
-#else
-	if ((result = _FSTransAmSelect(svr->fd, 0)) > 0) {
-	    BITSET(r_mask, svr->fd);
-	} else {
-	    CLEARBITS(r_mask);
-	}
-#endif
 	if (result == -1 && !ECHECK(EINTR))
 	    (*_FSIOErrorFunction) (svr);
     } while (result <= 0);

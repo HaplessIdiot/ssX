@@ -45,7 +45,8 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.68 2001/01/17 22:37:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.69 2001/05/04 19:05:52 dawes Exp $ */
+
 #ifdef __CYGWIN__
 #include <stdlib.h>
 #include <signal.h>
@@ -73,7 +74,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 #endif
 #include <sys/wait.h>
-#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx) && !defined(QNX4)
+#if !defined(SYSV) && !defined(WIN32) && !defined(Lynx) && !defined(QNX4)
 #include <sys/resource.h>
 #endif
 #include <time.h>
@@ -88,23 +89,8 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include <netdb.h>
 #endif
 
-#ifdef AMOEBA
-#include "osdep.h"
-#include <amoeba.h>
-#include <module/mutex.h>
-
-static mutex print_lock;
-#endif
-
-#if defined(__STDC__) || defined(AMOEBA)
-/* DHD: SVR4.0 has a prototype for abs() in stdlib.h */
-/* DHD: might be better to move this include higher up? */
-#ifdef abs
-#undef abs
-#endif
 #ifndef NOSTDHDRS
 #include <stdlib.h>	/* for malloc() */
-#endif
 #endif
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
@@ -209,10 +195,6 @@ OsSignal(sig, handler)
 #include <sys/param.h>
 #endif
 
-#ifdef _MINIX
-#include <limits.h>	/* For PATH_MAX */
-#endif
-
 #ifdef __EMX__
 #define link rename
 #endif
@@ -245,7 +227,6 @@ static Bool nolock = FALSE;
 void
 LockServer()
 {
-#ifndef AMOEBA
   char tmp[PATH_MAX], pid_str[12];
   int lfd, i, haslock, l_pid, t;
   char *tmppath = NULL;
@@ -374,7 +355,6 @@ LockServer()
   if (!haslock)
     FatalError("Could not create server lock file: %s\n", LockFile);
   StillLocking = FALSE;
-#endif /* !AMOEBA */
 }
 
 /*
@@ -384,7 +364,6 @@ LockServer()
 void
 UnlockServer()
 {
-#ifndef AMOEBA
   if (nolock) return;
 
   if (!StillLocking){
@@ -394,8 +373,6 @@ UnlockServer()
 #endif /* __EMX__ */
   (void) unlink(LockFile);
   }
-#endif
-
 }
 #endif /* SERVER_LOCK */
 
@@ -415,9 +392,6 @@ AutoResetServer (sig)
 #if defined(SYSV) && defined(X_NOT_POSIX)
     OsSignal (SIGHUP, AutoResetServer);
 #endif
-#ifdef AMOEBA
-    WakeUpMainThread();
-#endif
 }
 
 /* Force connections to close and then exit on SIGTERM, SIGINT */
@@ -433,9 +407,6 @@ GiveUp(sig)
     if (sig)
 	OsSignal(sig, SIG_IGN);
 #endif
-#ifdef AMOEBA
-    WakeUpMainThread();
-#endif
 }
 
 #if __GNUC__
@@ -448,9 +419,6 @@ AbortServer()
     OsCleanup();
     AbortDDX();
     fflush(stderr);
-#ifdef AMOEBA
-    IOPCleanUp();
-#endif
     if (CoreDump)
 	abort();
     exit (1);
@@ -460,27 +428,17 @@ void
 Error(str)
     char *str;
 {
-#ifdef AMOEBA
-    mu_lock(&print_lock);
-#endif
     perror(str);
-#ifdef AMOEBA
-    mu_unlock(&print_lock);
-#endif
 }
 
 #ifndef DDXTIME
 CARD32
 GetTimeInMillis()
 {
-#ifndef AMOEBA
     struct timeval  tp;
 
     X_GETTIMEOFDAY(&tp);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
-#else
-    return sys_milli();
-#endif
 }
 #endif
 
@@ -513,11 +471,7 @@ AdjustWaitForDelay (waitTime, newdelay)
 void UseMsg()
 {
 #if !defined(AIXrt) && !defined(AIX386)
-#ifndef AMOEBA
     ErrorF("use: X [:<display>] [option]\n");
-#else
-    ErrorF("use: X [[<host>]:<display>] [option]\n");
-#endif
     ErrorF("-a #                   mouse acceleration (pixels)\n");
     ErrorF("-ac                    disable access control restrictions\n");
 #ifdef MEMBUG
@@ -576,9 +530,6 @@ void UseMsg()
 #endif
     ErrorF("-su                    disable any save under support\n");
     ErrorF("-t #                   mouse threshold (pixels)\n");
-#ifdef AMOEBA
-    ErrorF("-tcp capability        specify TCP/IP server capability\n");
-#endif
     ErrorF("-terminate             terminate at server reset\n");
     ErrorF("-to #                  connection time out\n");
     ErrorF("-tst                   disable testing extensions\n");
@@ -632,10 +583,6 @@ char	*argv[];
 {
     int i, skip;
 
-#ifdef AMOEBA
-    mu_init(&print_lock);
-#endif
-
     defaultKeyboardControl.autoRepeat = TRUE;
 
 #ifdef PART_NET
@@ -660,27 +607,6 @@ char	*argv[];
                 exit(1);
             }
 	}
-#ifdef AMOEBA
-        else if (strchr(argv[i], ':') != NULL) {
-            char *p;
-
-            XServerHostName = argv[i];
-            if ((p = strchr(argv[i], ':')) != NULL) {
-                *p++ = '\0';
-                display = p;
-                if( ! VerifyDisplayName( display ) ) {
-                    ErrorF("Bad display name: %s\n", display);
-                    UseMsg();
-                    exit(1);
-                }
-            }
-        } else if (strcmp( argv[i], "-tcp") == 0) {
-            if (++i < argc)
-                XTcpServerName = argv[i];
-            else
-                UseMsg();
-        }
-#endif /* AMOEBA */
 	else if ( strcmp( argv[i], "-a") == 0)
 	{
 	    if(++i < argc)
@@ -1208,9 +1134,6 @@ void *
 Xalloc (amount)
     unsigned long amount;
 {
-#if !defined(__STDC__) && !defined(AMOEBA)
-    char		*malloc();
-#endif
     register pointer  ptr;
 	
     if ((long)amount <= 0) {
@@ -1240,9 +1163,6 @@ void *
 XNFalloc (amount)
     unsigned long amount;
 {
-#if !defined(__STDC__) && !defined(AMOEBA)
-    char             *malloc();
-#endif
     register pointer ptr;
 
     if ((long)amount <= 0)
@@ -1302,11 +1222,6 @@ Xrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
 {
-#if !defined(__STDC__) && !defined(AMOEBA)
-    char *malloc();
-    char *realloc();
-#endif
-
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
@@ -1555,13 +1470,7 @@ ErrorF(
     if (SyncOn)
         sync();
 #else /* not AIXV3 */
-#ifdef AMOEBA
-    mu_lock(&print_lock);
-#endif
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#ifdef AMOEBA
-    mu_unlock(&print_lock);
-#endif
 #endif /* AIXV3 */
 #endif
 }

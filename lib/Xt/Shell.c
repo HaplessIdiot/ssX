@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.8 1998/10/03 09:06:58 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.9 2001/01/17 19:43:09 dawes Exp $ */
 
 /*
 
@@ -3050,10 +3050,6 @@ static void GetIceEvent(client_data, source, id)
     SessionShellWidget w = (SessionShellWidget) client_data;
     IceProcessMessagesStatus status;
 
-#ifdef MINIX
-    if (!MNX_IceMessagesAvailable(SmcGetIceConnection(w->session.connection)))
-    	return;
-#endif
     status = IceProcessMessages(SmcGetIceConnection(w->session.connection),
 				NULL, NULL);
 

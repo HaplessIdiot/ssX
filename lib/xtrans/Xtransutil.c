@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.16 2000/08/09 23:40:15 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.17 2001/01/17 19:43:49 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -96,7 +96,7 @@ TRANS(ConvertAddress)(int *familyp, int *addrlenp, Xtransaddr **addrp)
 
     switch( *familyp )
     {
-#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN)
     case AF_INET:
     {
 	/*
@@ -132,7 +132,7 @@ TRANS(ConvertAddress)(int *familyp, int *addrlenp, Xtransaddr **addrp)
 	}
 	break;
     }
-#endif /* defined(TCPCONN) || defined(STREAMSCONN) || MNX_TCPCONN */
+#endif /* defined(TCPCONN) || defined(STREAMSCONN) */
 
 #if defined(DNETCONN)
     case AF_DECnet:
@@ -157,20 +157,6 @@ TRANS(ConvertAddress)(int *familyp, int *addrlenp, Xtransaddr **addrp)
     }
 #endif /* defined(UNIXCONN) || defined(LOCALCONN) */
 
-#if defined(AMRPCCONN)
-    case AF_AMOEBA:
-    {
-	*familyp=FamilyAmoeba;
-	break;
-    }
-#endif
-#if defined(AMTCPCONN) && !(defined(TCPCONN) || defined(STREAMSCONN))
-    case AF_INET:
-    {
-	*familyp=FamilyInternet;
-	break;
-    }
-#endif
 
     default:
 	PRMSG(1,"ConvertAddress: Unknown family type %d\n",
@@ -251,7 +237,7 @@ TRANS(GetMyNetworkId) (XtransConnInfo ciptr)
     }
 #endif /* defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) */
 
-#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN)
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) addr;
@@ -263,7 +249,7 @@ TRANS(GetMyNetworkId) (XtransConnInfo ciptr)
 	sprintf (networkId, "%s/%s:%s", transName, hostnamebuf, portnumbuf);
 	break;
     }
-#endif /* defined(TCPCONN) || defined(STREAMSCONN) || MNX_TCPCONN */
+#endif /* defined(TCPCONN) || defined(STREAMSCONN) */
 
 #if defined(DNETCONN)
     case AF_DECnet:
@@ -331,7 +317,7 @@ TRANS(GetPeerNetworkId) (XtransConnInfo ciptr)
     }
 #endif /* defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) */
 
-#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN)
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) peer_addr;
@@ -367,7 +353,7 @@ TRANS(GetPeerNetworkId) (XtransConnInfo ciptr)
 	break;
     }
 
-#endif /* defined(TCPCONN) || defined(STREAMSCONN) || MNX_TCPCONN */
+#endif /* defined(TCPCONN) || defined(STREAMSCONN) */
 
 #if defined(DNETCONN)
     case AF_DECnet:
@@ -385,25 +371,6 @@ TRANS(GetPeerNetworkId) (XtransConnInfo ciptr)
 	break;
     }
 #endif /* defined(DNETCONN) */
-
-#if defined(AMRPCCONN)
-    case AF_AMOEBA:
-    {
-	addr = "Amoeba"; /* not really used */
-	break;
-    }
-#endif
-#if defined(AMTCPCONN) && !(defined(TCPCONN) || defined(STREAMSCONN))
-    case AF_INET:
-    {
-	if (gethostname (addrbuf, sizeof (addrbuf)) == 0) {
-	    addr = addrbuf;
-	} else {
-	    addr = "";
-	}
-	break;
-    }
-#endif
 
     default:
 	return (NULL);

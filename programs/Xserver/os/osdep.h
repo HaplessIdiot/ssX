@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.10 1999/12/27 00:39:58 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.11 2001/01/17 22:37:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,22 +45,6 @@ SOFTWARE.
 
 #ifndef _OSDEP_H_
 #define _OSDEP_H_ 1
-
-#ifdef AMOEBA
-#include <stddef.h>
-#define port am_port_t
-#include <amoeba.h>
-#include <stdio.h>
-#include <assert.h>
-#include <semaphore.h>
-#include <circbuf.h>
-#include <exception.h>
-#include <vc.h>
-#include <fault.h>
-#include <module/signals.h>
-#include <server/x11/Xamoeba.h>
-#undef  port
-#endif
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -134,18 +118,6 @@ SOFTWARE.
 #ifndef NULL
 #define NULL 0
 #endif
-
-#ifdef AMOEBA
-#include "X.h"
-#include "misc.h"
-
-#define FamilyAmoeba 33
-
-extern char             *XServerHostName;       /* X server host name */
-extern char             *XTcpServerName;        /* TCP/IP server name */
-extern int              maxClient;              /* Highest client# */
-extern int              nNewConns;              /* # of new clients */
-#endif /* AMOEBA */
 
 typedef Bool (*ValidatorFunc)(ARRAY8Ptr Auth, ARRAY8Ptr Data, int packet_type);
 typedef Bool (*GeneratorFunc)(ARRAY8Ptr Auth, ARRAY8Ptr Data, int packet_type);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.81 2001/04/23 16:17:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.82 2001/07/19 02:22:48 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1352,7 +1352,7 @@ extern void outl(unsigned int a, unsigned int l);
 #endif /* !PPCIO_DEBUG */
 
 #else /* !GNUC && !PPC */
-#if !defined(AMOEBA) && !defined(MINIX) && !defined(QNX4)
+#if !defined(QNX4)
 # if defined(__STDC__) && (__STDC__ == 1)
 #  ifndef asm
 #   define asm __asm

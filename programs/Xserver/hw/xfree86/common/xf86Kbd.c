@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.20 1999/12/27 00:39:43 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.21 2001/05/28 02:42:29 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,14 +39,14 @@
 #include "xf86Keymap.h"
 
 #if defined(KDGKBTYPE) && \
-	!defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && \
-	!defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && \
+	!defined(Lynx) && \
+	!defined(__EMX__) && !defined(__mips__) && \
 	!defined(__arm32__) && !defined(__GNU__) && !defined(__QNX__)
 #define HAS_GETKBTYPE
 #endif
 #if defined(GIO_KEYMAP) && \
-	!defined(Lynx) && !defined(AMOEBA) && !defined(MINIX) && \
-	!defined(__OSF__) && !defined(__EMX__) && !defined(__mips__) && \
+	!defined(Lynx) && \
+	!defined(__EMX__) && !defined(__mips__) && \
 	!defined(__arm32__) && !defined(__GNU__) && !defined(DGUX) && \
 	!defined(__QNX__)
 #define HAS_GETKEYMAP

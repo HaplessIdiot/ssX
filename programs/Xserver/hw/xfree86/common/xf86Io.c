@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.41 2000/11/06 19:24:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.42 2001/04/20 16:32:30 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -70,18 +70,6 @@ xf86KbdBell(percent, pKeyboard, ctrl, unused)
 {
   xf86SoundKbdBell(percent, xf86Info.bell_pitch, xf86Info.bell_duration);
 }
-
-#ifdef AMOEBA
-#define LED_CAP	IOP_LED_CAP
-#define LED_NUM	IOP_LED_NUM
-#define LED_SCR	IOP_LED_SCROLL
-#endif
-
-#ifdef MINIX
-#define LED_CAP KBD_LEDS_CAPS
-#define LED_NUM KBD_LEDS_NUM
-#define LED_SCR KBD_LEDS_SCROLL
-#endif
 
 void
 xf86KbdLeds ()
@@ -155,7 +143,6 @@ Bool init;
   KeyClassRec     *keyc = xf86Info.pKeyboard->key;
   KeySym          *map = keyc->curKeySyms.map;
 
-#ifndef MACH386
   kevent.u.keyButtonPointer.time = GetTimeInMillis();
   kevent.u.keyButtonPointer.rootX = 0;
   kevent.u.keyButtonPointer.rootY = 0;
@@ -189,7 +176,6 @@ Bool init;
 	  (* pKeyboard->public.processInputProc)(&kevent, pKeyboard, 1);
         }
       }
-#endif /* MACH386 */
   
   xf86Info.scanPrefix      = 0;
 

@@ -56,14 +56,11 @@ from The Open Group.
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.5 2000/10/24 22:45:15 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.h,v 3.6 2001/01/17 23:45:08 dawes Exp $ */
 
 #ifndef _TWM_
 #define _TWM_
 
-#ifdef MINIX
-#include <X11/Xos.h>
-#endif
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>

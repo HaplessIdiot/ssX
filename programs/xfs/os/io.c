@@ -42,13 +42,12 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/io.c,v 3.12 2001/01/17 23:45:32 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/io.c,v 3.13 2001/06/25 20:40:18 paulo Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdio.h>
 #include	<errno.h>
 #include	<sys/types.h>
-#ifndef MINIX
 #ifndef Lynx
 #include	<sys/param.h>
 #ifndef __EMX__
@@ -56,7 +55,6 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #else
 #include	<uio.h>
-#endif
 #endif
 
 #include	"FSproto.h"

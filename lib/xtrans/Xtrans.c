@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.23 2000/10/24 22:45:02 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.24 2001/01/17 19:43:45 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -74,9 +74,6 @@ from The Open Group.
 #define TRANS_LOCAL_NAMED_INDEX		11
 #define TRANS_LOCAL_ISC_INDEX		12
 #define TRANS_LOCAL_SCO_INDEX		13
-#define TRANS_AMOEBA_INDEX		14
-#define TRANS_MNX_INET_INDEX		15
-#define TRANS_MNX_TCP_INDEX		16
 
 
 static
@@ -115,13 +112,6 @@ Xtransport_table Xtransports[] = {
     { &TRANS(SCOFuncs),		TRANS_LOCAL_SCO_INDEX },
 #endif /* sun */
 #endif /* LOCALCONN */
-#if defined(AMRPCCONN) || defined(AMTCPCONN)
-    { &TRANS(AmConnFuncs),	TRANS_AMOEBA_INDEX },
-#endif /* AMRPCCONN || AMTCPCONN */
-#if defined(MNX_TCPCONN)
-    { &TRANS(MnxINETFuncs),	TRANS_MNX_INET_INDEX },
-    { &TRANS(MnxTCPFuncs),	TRANS_MNX_TCP_INDEX },
-#endif /* MNX_TCPCONN */
 };
 
 #define NUMTRANS	(sizeof(Xtransports)/sizeof(Xtransport_table))
@@ -667,10 +657,6 @@ TRANS(SetOption) (XtransConnInfo ciptr, int option, int arg)
      * ret = ciptr->transptr->SetOption (ciptr, option, arg);
      */
 
-#ifdef MINIX
-    return ciptr->transptr->SetOption(ciptr, option, arg);
-#else /* !MINIX */
-
     switch (option)
     {
     case TRANS_NONBLOCKING:
@@ -733,7 +719,6 @@ TRANS(SetOption) (XtransConnInfo ciptr, int option, int arg)
     }
     
     return ret;
-#endif /* MINIX */
 }
 
 #ifdef TRANS_SERVER

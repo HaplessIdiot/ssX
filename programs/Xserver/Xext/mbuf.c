@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.9 2000/01/18 16:35:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.10 2001/01/17 22:13:15 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
 #include "xf86_ansic.h"
 #else
 #include <stdio.h>
-#if !defined(WIN32) && !defined(MINIX) && !defined(Lynx)
+#if !defined(WIN32) && !defined(Lynx)
 #include <sys/time.h>
 #endif
 #endif

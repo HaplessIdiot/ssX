@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.20 1999/12/27 00:40:08 robin Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.21 2001/01/17 23:45:20 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -89,12 +89,7 @@ extern int errno;
 #include <netdb.h>
 #undef SIOCGIFCONF
 #else /* __GNU__ */
-#ifndef MINIX
 #include <net/if.h>
-#else
-#include <net/netlib.h>
-#include <net/gen/netdb.h>
-#endif /* !MINIX */
 #endif /* __GNU__ */
 
 #if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
@@ -1020,9 +1015,6 @@ static void
 writeLocalAuth (FILE *file, Xauth *auth, char *name)
 {
     int	fd;
-#ifdef MINIX
-    char *tcp_device;
-#endif
 
     Debug ("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
     setAuthNumber (auth, name);
@@ -1034,14 +1026,7 @@ writeLocalAuth (FILE *file, Xauth *auth, char *name)
     t_close (fd);
 #endif
 #ifdef TCPCONN
-#ifdef MINIX
-    tcp_device= getenv("TCP_DEVICE");
-    if (tcp_device == NULL)
-    	tcp_device= TCP_DEVICE;
-    fd = open(tcp_device, O_RDWR);
-#else
     fd = socket (AF_INET, SOCK_STREAM, 0);
-#endif
     DefineSelf (fd, file, auth);
     close (fd);
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.178 2001/05/25 02:44:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.179 2001/06/12 04:27:14 tsi Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -867,10 +867,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   xf86Resetting = FALSE;
   xf86Initialising = FALSE;
 
-#ifndef AMOEBA
   RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr)NoopDDA, xf86Wakeup,
 				 NULL);
-#endif
 }
 
 
@@ -890,9 +888,7 @@ MatchInput(IDevPtr pDev)
 
 /*
  * InitInput --
- *      Initialize all supported input devices...what else is there
- *      besides pointer and keyboard? Two DeviceRec's are allocated and
- *      registered as the system pointer and keyboard devices.
+ *      Initialize all supported input devices.
  */
 
 void
@@ -1605,7 +1601,6 @@ xf86PrintBanner()
 static void
 xf86RunVtInit(void)
 {
-#if !defined(AMOEBA) && !defined(MINIX)
     int i;
 
     /*
@@ -1635,7 +1630,6 @@ xf86RunVtInit(void)
           wait(NULL);
       }
     }
-#endif /* !AMOEBA && !MINIX */
 }
 
 #ifdef XFree86LOADER

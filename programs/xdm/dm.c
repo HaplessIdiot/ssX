@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.11 2001/01/17 23:45:20 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.12 2001/07/18 20:43:17 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -153,11 +153,7 @@ main (int argc, char **argv)
 
     if (nofork_session == 0) {
 	/* Clean up any old Authorization files */
-#ifndef MINIX
 	sprintf(cmdbuf, "/bin/rm -f %s/authdir/authfiles/A*", authDir);
-#else
-	sprintf(cmdbuf, "/usr/bin/rm -f %s/authdir/authfiles/A*", authDir);
-#endif
 	system(cmdbuf);
     }
 
@@ -745,16 +741,10 @@ CloseOnFork (void)
     for (fd = 0; fd <= max; fd++)
 	if (FD_ISSET (fd, &CloseMask))
 	{
-#ifdef MINIX
-	    nbio_unregister(fd);
-#endif
 	    close (fd);
         }
     FD_ZERO (&CloseMask);
     max = 0;
-#ifdef MINIX
-    { extern int chooserFd; nbio_unregister(chooserFd); }
-#endif
 }
 
 static int  pidFd;

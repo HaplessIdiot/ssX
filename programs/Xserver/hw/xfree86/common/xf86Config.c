@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.241 2001/03/28 17:58:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.242 2001/05/16 20:08:35 paulo Exp $ */
 
 
 /*
@@ -986,7 +986,7 @@ configInputKbd(IDevPtr inputp)
   s = xf86SetStrOption(inputp->commonOptions, "Protocol", "standard");
   if (xf86NameCmp(s, "standard") == 0) {
      xf86Info.kbdProc    = xf86KbdProc;
-#if defined(AMOEBA) || defined(__CYGWIN__)
+#if defined(__CYGWIN__)
      xf86Info.kbdEvents  = NULL;
 #else
      xf86Info.kbdEvents  = xf86KbdEvents;

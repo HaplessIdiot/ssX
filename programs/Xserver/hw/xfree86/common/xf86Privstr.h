@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.24 2001/04/20 16:32:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.25 2001/05/18 16:03:11 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -82,9 +82,6 @@ typedef struct {
     int			screenFd;	/* fd for memory mapped access to
 					 * vga card */
     int			consType;	/* Which console driver? */
-#endif
-#if defined(AMOEBA)
-    void *		screenPtr;
 #endif
 
 #ifdef XKB

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.74 2001/05/15 10:19:42 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.75 2001/05/18 20:22:30 tsi Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -133,7 +133,7 @@ typedef struct dirent DIRENTRY;
 #include <sys/wait.h>
 #undef _POSIX_SOURCE
 #else
-#if defined(MINIX) || defined(AMOEBA) || (defined(ISC) && defined(_POSIX_SOURCE)) || defined(Lynx) || (defined (__alpha__) && defined(linux))
+#if (defined(ISC) && defined(_POSIX_SOURCE)) || defined(Lynx) || (defined (__alpha__) && defined(linux))
 #include <sys/types.h>
 #endif
 #include <sys/wait.h>
@@ -1178,11 +1178,7 @@ xf86execl(const char *pathname, const char *arg, ...)
 #ifndef __EMX__
     int i;
     pid_t pid;
-#ifdef MACH386
-    union wait exit_status;
-#else
     int exit_status;
-#endif
     char *arglist[5];
     va_list args;
     va_start(args, arg);
@@ -1206,7 +1202,7 @@ xf86execl(const char *pathname, const char *arg, ...)
 	xf86DisableIO();
 #endif
         setuid(getuid());
-#if !defined(SELF_CONTAINED_WRAPPER) && !defined(AMOEBA) && !defined(MINIX)
+#if !defined(SELF_CONTAINED_WRAPPER)
         /* set stdin, stdout to the consoleFD, and leave stderr alone */
         for (i = 0; i < 2; i++)
         {

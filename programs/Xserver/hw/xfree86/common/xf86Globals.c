@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.31 2001/05/15 18:22:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.32 2001/05/18 16:03:11 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -108,9 +108,6 @@ xf86InfoRec xf86Info = {
 #ifdef CSRG_BASED
 	-1,		/* screenFd */
 	-1,		/* consType */
-#endif
-#ifdef AMOEBA
-	NULL,		/* screenPtr */
 #endif
 #ifdef XKB
 	NULL,		/* xkbkeymap */

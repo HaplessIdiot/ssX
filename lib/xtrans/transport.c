@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/transport.c,v 3.4 1998/10/03 09:07:37 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/transport.c,v 3.5 2001/01/17 19:43:49 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -75,12 +75,6 @@ from The Open Group.
 #endif
 #ifdef STREAMSCONN
 #include "Xtranstli.c"
-#endif
-#if defined(AMRPCCONN) || defined(AMTCPCONN)
-#include "Xtransam.c"
-#endif
-#if defined(MNX_TCPCONN)
-#include "Xtransmnx.c"
 #endif
 #include "Xtrans.c"
 #include "Xtransutil.c"

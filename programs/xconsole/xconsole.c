@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.24 2001/01/17 23:45:19 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.25 2001/04/23 21:41:46 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -62,12 +62,6 @@ extern char *_XawTextGetSTRING(TextWidget ctx, XawTextPosition left,
 extern char *malloc ();
 #else
 #include <stdlib.h>
-#endif
-
-#ifdef MINIX
-#define USE_FILE
-#define FILE_NAME "/dev/log"
-#define read(n,b,s) nbio_read(n,b,s)
 #endif
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
@@ -298,11 +292,6 @@ OpenConsole(void)
 
     if (input)
     {
-#ifdef MINIX
-	fcntl(fileno (input), F_SETFD,
-		fcntl(fileno (input), F_GETFD) | FD_ASYNCHIO);
-	nbio_register(fileno (input));
-#endif
 	input_id = XtAddInput (fileno (input), (XtPointer) XtInputReadMask,
 			       inputReady, (XtPointer) text);
     }
@@ -313,9 +302,6 @@ CloseConsole (void)
 {
     if (input) {
 	XtRemoveInput (input_id);
-#ifdef MINIX
-	nbio_unregister(fileno (input));
-#endif
 	fclose (input);
     }
 #ifdef USE_PTY
@@ -471,11 +457,6 @@ inputReady(XtPointer w, int *source, XtInputId *id)
 	    return;
 	}
 	    
-#ifdef MINIX
-	if (n == -1 && errno == EAGAIN)
-		return;
-	nbio_unregister(fileno (input));
-#endif
 	fclose (input);
 	XtRemoveInput (*id);
 

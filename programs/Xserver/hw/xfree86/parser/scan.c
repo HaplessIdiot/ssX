@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.17 2001/06/30 04:00:24 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.18 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -819,16 +819,8 @@ xf86openConfigFile (char *filename)
 		if (getuid () == 0 && xconfig)
 			strcat (configPaths[pcount], xconfig);
 		strcat (configPaths[pcount], ".");
-#ifdef AMOEBA
-		{
-			extern char *XServerHostName;
-
-			strcat (configPaths[pcount], XServerHostName);
-		}
-#else
 		gethostname (configPaths[pcount] + strlen (configPaths[pcount]),
 					 MAXHOSTNAMELEN);
-#endif
 		if ((configFile = fopen (configPaths[pcount], "r")) != 0)
 			break;
 #endif /* !__EMX__  */

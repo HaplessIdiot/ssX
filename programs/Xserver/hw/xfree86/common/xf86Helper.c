@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.112 2001/05/24 19:43:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.113 2001/06/13 23:10:40 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -31,7 +31,7 @@
 #include "xf86Bus.h"
 
 /* For xf86GetClocks */
-#if defined(CSRG_BASED) || defined(MACH386) || defined(__GNU__)
+#if defined(CSRG_BASED) || defined(__GNU__)
 #define HAS_SETPRIORITY
 #include <sys/resource.h>
 #endif

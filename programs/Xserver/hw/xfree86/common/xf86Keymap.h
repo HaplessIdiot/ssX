@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.16 2001/05/28 02:42:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.17 2001/06/30 22:41:48 tsi Exp $ */
 /*
  *
  * For Scancodes see notes in atKeynames.h  !!!!
@@ -283,9 +283,6 @@ static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = {
 };
 
 #if !defined(Lynx) && \
-    !defined(AMOEBA) && \
-    !defined(MINIX) && \
-    !defined(__OSF__) && \
     !defined(__EMX__) && \
     !defined(__mips__) && \
     !defined(linux) && \

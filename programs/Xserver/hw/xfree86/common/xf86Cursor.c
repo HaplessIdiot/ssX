@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.30 2001/05/25 02:44:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.31 2001/07/19 02:22:48 tsi Exp $ */
 /* $XConsortium: xf86Cursor.c /main/10 1996/10/19 17:58:23 kaleb $ */
 
 #define NEED_EVENTS
@@ -635,7 +635,7 @@ xf86InitOrigins(void)
 	  minY = dixScreenOrigins[i].y;
     }
 
-    if (minX | minY) {
+    if (minX || minY) {
 	for(i = 0; i < xf86NumScreens; i++) {
 	   dixScreenOrigins[i].x -= minX;
 	   dixScreenOrigins[i].y -= minY;

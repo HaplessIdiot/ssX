@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.13 2001/01/17 23:45:35 dawes Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.14 2001/01/30 22:06:21 tsi Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -61,7 +61,6 @@ typedef long sign32;
 #include <interlan/netdb.h>
 #include <interlan/in.h>
 #else
-#ifndef AMOEBA
 #ifndef Lynx
 #include <sys/socket.h>
 #else
@@ -69,13 +68,6 @@ typedef long sign32;
 #endif
 #include <netdb.h>
 #include <netinet/in.h>
-#else
-#include <server/ip/gen/socket.h>
-#include <server/ip/types.h>
-#include <server/ip/gen/in.h>
-#include <server/ip/gen/inet.h>
-#include <server/ip/gen/netdb.h>
-#endif
 #endif
 #endif /* NEEDSOCKETS */
 

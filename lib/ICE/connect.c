@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/connect.c,v 3.5 1999/03/21 07:34:27 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/connect.c,v 3.6 2001/01/17 19:41:29 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -427,9 +427,6 @@ char 	   *errorStringRet;
 
     if (iceConn && _IceWatchProcs)
     {
-#ifdef MINIX
-    _IceTransSetOption(iceConn->trans_conn, TRANS_NONBLOCKING, 1);
-#endif
 	/*
 	 * Notify the watch procedures that an iceConn was opened.
 	 */

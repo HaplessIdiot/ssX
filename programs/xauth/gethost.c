@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/gethost.c,v 3.12 1999/03/07 11:40:49 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/gethost.c,v 3.13 2001/01/17 23:45:14 dawes Exp $ */
 
 /* sorry, streams support does not really work yet */
 #if defined(STREAMSCONN) && defined(SVR4)
@@ -45,7 +45,6 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #ifndef WIN32
 #ifndef STREAMSCONN
-#ifndef MINIX
 #ifndef Lynx
 #include <sys/socket.h>
 #else
@@ -61,9 +60,6 @@ in this Software without prior written authorization from The Open Group.
 #endif /* !sco */
 #endif /* i386 */
 #endif /* SYSV */
-#else /* MINIX */
-#include <net/gen/netdb.h>
-#endif /* !MINIX */
 #endif /* !STREAMSCONN */
 #endif /* !WIN32 */
 #include <errno.h>
@@ -71,13 +67,6 @@ in this Software without prior written authorization from The Open Group.
 extern int errno;
 #endif
 #include "xauth.h"
-
-#ifdef MINIX
-#ifdef MNX_TCPCONN
-#define TCPCONN
-#endif
-#define EPROTOTYPE EGENERIC
-#endif
 
 #ifdef DNETCONN
 #include <netdnet/dn.h>

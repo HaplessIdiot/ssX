@@ -34,13 +34,10 @@ have been made in implementation.
 			at build time via Imakefile rules.  This is alway
 			preferable to reproducing functions in more than one
 			OS library.
-		amoeba/	OS support for the Amoeba operating system.
 		bsd/	OS support for the 386BSD/NetBSD/FreeBSD operating 
 			systems.
 		bsdi/	OS support for the BSD/386 operating system.
 		linux/	OS support for the Linux operating system.
-		mach/	OS support for the Mach and OSF/1 operating systems.
-		minix/	OS support for the Minix operating system.
 		os2/	OS support for OS/2 2.11 and OS/2 Warp
 		sco/	OS support for the SCO SVR3.x operating system.
 		solx86/	OS support for the Solaris x86 operating system.
@@ -500,7 +497,7 @@ xf86cos(double x)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.7 2000/12/09 03:31:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.8 2001/06/20 00:42:09 paulo Exp $
 
 
 

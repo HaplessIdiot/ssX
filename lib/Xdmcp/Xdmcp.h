@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/lib/Xdmcp/Xdmcp.h,v 3.3 1998/10/25 07:11:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/Xdmcp.h,v 3.4 2001/01/17 19:42:44 dawes Exp $ */
 
 #ifndef _XDMCP_H_
 #define _XDMCP_H_
@@ -121,11 +121,7 @@ extern int XdmcpReadCARD32(XdmcpBufferPtr buffer, CARD32Ptr valuep);
 extern int XdmcpReadCARD8(XdmcpBufferPtr buffer, CARD8Ptr valuep);
 extern int XdmcpReadHeader(XdmcpBufferPtr buffer, XdmcpHeaderPtr header);
 
-#ifndef MINIX
 extern int XdmcpFill(int fd, XdmcpBufferPtr buffer, XdmcpNetaddr from, int *fromlen);
-#else
-extern int MNX_XdmcpFill(int fd, XdmcpBufferPtr buffer, XdmcpNetaddr from, int *fromlen, char *data, int datalen);
-#endif
 
 extern int XdmcpReadRemaining(XdmcpBufferPtr buffer);
 

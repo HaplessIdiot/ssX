@@ -1,5 +1,5 @@
 /* $XConsortium: xload.c,v 1.37 94/04/17 20:43:44 converse Exp $ */
-/* $XFree86: xc/programs/xload/xload.c,v 1.1 2000/02/13 03:26:32 dawes Exp $ */
+/* $XFree86: xc/programs/xload/xload.c,v 1.2 2000/05/11 18:14:45 tsi Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -221,29 +221,7 @@ main(argc, argv)
       	  XtGetValues(label_wid, args, ONE);
       	  
       	  if ( strcmp("label", label) == 0 ) {
-#ifdef AMOEBA
-              char *s;
-              char *getenv();
-       
-              host[255] = '\0';
-              if ((s = getenv("XLOAD_HOST")) != NULL) {
-                   strncpy(host, s, 255);
-              } else if ((s = getenv("RUN_SERVER")) != NULL) {
-                  /* specific runserver specified; use its name */
-                  strncpy(host, s, 255);
-       
-                  {   /* if the last component is ".run", remove it */
-                      char *slash = strrchr(host, '/');
-                      if (slash != NULL && strcmp(slash + 1, ".run") == 0) {
-                          *slash = '\0';
-                      }
-                  }
-              } else {
-                  (void) XmuGetHostname (host, 255);  /* "amoeba" */
-              }
-#else
 	    (void) XmuGetHostname (host, 255);
-#endif
 	    XtSetArg (args[0], XtNlabel, host);
 	    XtSetValues (label_wid, args, ONE);
       	  }

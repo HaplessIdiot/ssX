@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbufbf.c,v 3.1 1998/10/04 09:36:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbufbf.c,v 3.2 2001/01/17 22:13:15 dawes Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
@@ -41,9 +41,7 @@ in this Software without prior written authorization from The Open Group.
 #include "gcstruct.h"
 #include "inputstr.h"
 #include "validate.h"
-#ifndef MINIX
 #include <sys/time.h>
-#endif
 
 #define _MULTIBUF_SERVER_	/* don't want Xlib structures */
 #define _MULTIBUF_BUFFER_

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.108 2001/04/20 16:32:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.109 2001/05/18 16:03:10 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -146,7 +146,7 @@ static IHPtr InputHandlers = NULL;
 
 /*
  * TimeSinceLastInputEvent --
- *      Function used for screensaver purposes by the os module. Retruns the
+ *      Function used for screensaver purposes by the os module. Returns the
  *      time in milliseconds since there last was any input.
  */
 
@@ -189,20 +189,6 @@ ProcessInputEvents ()
   static int generation = 0;
 #endif
 
-#ifdef AMOEBA
-#define MAXEVENTS	    32
-#define BUTTON_PRESS	    0x1000
-#define MAP_BUTTON(ev,but)  (((ev) == EV_ButtonPress) ? \
-			     ((but) | BUTTON_PRESS) : ((but) & ~BUTTON_PRESS))
-#define KEY_RELEASE	    0x80
-#define MAP_KEY(ev, key)    (((ev) == EV_KeyReleaseEvent) ? \
-			     ((key) | KEY_RELEASE) : ((key) & ~KEY_RELEASE))
-
-    register IOPEvent  *e, *elast;
-    IOPEvent		events[MAXEVENTS];
-    int			dx, dy, nevents;
-#endif
-
     /*
      * With INHERIT_LOCK_STATE defined, the initial state of CapsLock, NumLock
      * and ScrollLock will be set to match that of the VT the server is
@@ -235,37 +221,6 @@ ProcessInputEvents ()
         kevent.u.u.detail = xf86InitialScroll;
         (* pKeyboard->processInputProc)(&kevent, (DeviceIntPtr)pKeyboard, 1);
         xf86InitialScroll = 0;
-      }
-    }
-#endif
-
-#ifdef AMOEBA
-    /*
-     * Get all events from the IOP server
-     */
-    while ((nevents = AmoebaGetEvents(events, MAXEVENTS)) > 0) {
-      for (e = &events[0], elast = &events[nevents]; e < elast; e++) {
-          xf86Info.lastEventTime = e->time;
-          switch (e->type) {
-          case EV_PointerDelta:
-	      if (e->x != 0 || e->y != 0) {
-                  xf86PostMseEvent(&xf86Info.pMouse, 0, e->x, e->y);
-	      }
-              break;
-          case EV_ButtonPress:
-          case EV_ButtonRelease:
-              xf86PostMseEvent(&xf86Info.pMouse, MAP_BUTTON(e->type, e->keyorbut), 0, 0);
-              break;
-          case EV_KeyPressEvent:
-          case EV_KeyReleaseEvent:
-              xf86PostKbdEvent(MAP_KEY(e->type, e->keyorbut));
-              break;
-          default:
-              /* this shouldn't happen */
-              ErrorF("stray event %d (%d,%d) %x\n",
-                      e->type, e->x, e->y, e->keyorbut);
-              break;
-          }
       }
     }
 #endif
@@ -861,9 +816,6 @@ special:
      */
     if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
 #if !defined(CSRG_BASED) && \
-    !defined(MACH386) && \
-    !defined(MINIX) && \
-    !defined(__OSF__) && \
     !defined(__GNU__) && \
     !defined(__CYGWIN__) && \
      defined(KB_84)
@@ -877,7 +829,7 @@ special:
 	  UsePrefix = TRUE;
 	  Direction = TRUE;
 	}
-#endif /* !CSRG_BASED && !MACH386 && !MINIX && !__OSF__ */
+#endif /* !CSRG_BASED && ... */
     }
   }
   if (updateLeds) xf86KbdLeds();
@@ -922,8 +874,6 @@ special:
 #endif /* !__EMX__ */
 
 
-#ifndef AMOEBA
-
 /*
  * xf86Wakeup --
  *      Os wakeup handler.
@@ -934,10 +884,6 @@ void
 xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 {
 #if !defined(__EMX__) && !defined(__QNX__) && !defined(__CYGWIN__)
-#ifdef	__OSF__
-    fd_set kbdDevices;
-    fd_set mseDevices;
-#endif	/* __OSF__ */
     fd_set* LastSelectMask = (fd_set*)pReadmask;
     fd_set devicesWithInput;
     InputInfoPtr pInfo;
@@ -945,7 +891,6 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
     if (err >= 0) {
 
 	XFD_ANDSET(&devicesWithInput, LastSelectMask, &EnabledDevices);
-#ifndef __OSF__
 	if (XFD_ANYSET(&devicesWithInput)) {
 	    (xf86Info.kbdEvents)();
 	    pInfo = xf86InputDevs;
@@ -965,25 +910,6 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 		pInfo = pInfo->next;
 	    }
 	}
-#else /* __OSF__ */
-	/*
-	 * Until the two devices are made nonblock on read, we have to do this.
-	 */
-	MASKANDSETBITS(devicesWithInput, pReadmask, EnabledDevices);
-
-	CLEARBITS(kbdDevices);
-	BITSET(kbdDevices, xf86Info.consoleFd);
-	MASKANDSETBITS(kbdDevices, kbdDevices, devicesWithInput);
-
-	CLEARBITS(mseDevices);
-	BITSET(mseDevices, xf86Info.mouseDev->mseFd);
-	MASKANDSETBITS(mseDevices, mseDevices, devicesWithInput);
-
-	if (ANYSET(kbdDevices) || xf86Info.kbdRate)
-            (xf86Info.kbdEvents)(ANYSET(kbdDevices));
-	if (ANYSET(mseDevices))
-        (xf86Info.mouseDev->mseEvents)(1);
-#endif	/* __OSF__ */
     }
 #else   /* __EMX__ and __QNX__ */
 
@@ -1025,7 +951,6 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
     if (xf86Info.inputPending) ProcessInputEvents();
 }
 
-#endif /* AMOEBA */
 
 /*
  * xf86SigioReadInput --

@@ -48,7 +48,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.25 2001/04/01 14:00:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.26 2001/04/27 12:51:07 alanh Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -60,7 +60,7 @@ extern int errno;
 #endif
 #include "Xmd.h"
 #include <errno.h>
-#if !defined(AMOEBA) && !defined(MINIX) && !defined(__EMX__) && !defined(WIN32)
+#if !defined(__EMX__) && !defined(WIN32)
 #ifndef Lynx
 #include <sys/uio.h>
 #else
