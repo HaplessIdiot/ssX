@@ -1,5 +1,5 @@
 /* $XConsortium: ppcImg.c,v 1.1 94/03/28 21:37:03 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.0 1994/05/04 15:03:27 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -110,7 +110,7 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
 	    gcv[0] = GXcopy ;
 	    gcv[1] = planeMask ;
 	    DoChangeGC( pGC, GCPlaneMask | GCFunction, gcv, 0 ) ;
-	    ValidateGC( pPixmap, pGC ) ;
+	    ValidateGC( (DrawablePtr)pPixmap, pGC ) ;
 
 	    pbits = (char *)ALLOCATE_LOCAL(w);
 
@@ -123,8 +123,8 @@ ppcGetImage( pDraw, sx, sy, w, h, format, planeMask, pdstLine )
 		pt.y = i ;
 		width = w ;
 		if ( planeMask & ((1 << depth) - 1) ) /* GJA -- mfb bug */ 
-		  (* pGC->ops->SetSpans)( pPixmap, pGC, pbits, &pt, &width, 1, TRUE ) ;
-		(* pDraw->pScreen->GetSpans)( pPixmap, w, &pt, &width, 1, pDst ) ;
+		  (* pGC->ops->SetSpans)( (DrawablePtr)pPixmap, pGC, pbits, &pt, &width, 1, TRUE ) ;
+		(* pDraw->pScreen->GetSpans)( (DrawablePtr)pPixmap, w, &pt, &width, 1, pDst ) ;
 		pDst += linelength ;
 	    }
 

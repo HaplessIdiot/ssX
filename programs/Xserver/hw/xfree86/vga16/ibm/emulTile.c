@@ -1,5 +1,5 @@
 /* $XConsortium: emulTile.c,v 1.1 94/03/28 21:40:37 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulTile.c,v 3.0 1994/05/04 15:03:08 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -73,7 +73,7 @@ register int vtarget ;
 			vgaDrawColorImage( pWin,x, y,
 				 htarget,
 				 vtarget,
-				 (char *)pTile->devPrivate.ptr + yOffset + xOffset,
+				 (unsigned char *)pTile->devPrivate.ptr + yOffset + xOffset,
 				 pTile->devKind,
 				 alu, planes ) ;
 			if ( w > htarget ) {
@@ -83,13 +83,13 @@ register int vtarget ;
 					vgaDrawColorImage( pWin, x, y + vtarget,
 						 htarget,
 						 h - vtarget,
-						 (char *)pTile->devPrivate.ptr + xOffset,
+						 (unsigned char *)pTile->devPrivate.ptr + xOffset,
 						 pTile->devKind,
 						 alu, planes ) ;
 					vgaDrawColorImage( pWin, x + htarget, y,
 						 w - htarget,
 						 vtarget,
-						 (char *)pTile->devPrivate.ptr + yOffset,
+						 (unsigned char *)pTile->devPrivate.ptr + yOffset,
 						 pTile->devKind,
 						 alu, planes ) ;
 					vgaDrawColorImage( pWin, x + htarget,
@@ -104,7 +104,7 @@ register int vtarget ;
 					vgaDrawColorImage( pWin, x + htarget, y,
 						 w - htarget,
 						 vtarget,
-						 (char *)pTile->devPrivate.ptr + yOffset,
+						 (unsigned char *)pTile->devPrivate.ptr + yOffset,
 						 pTile->devKind,
 						 alu, planes ) ;
 				}
@@ -113,7 +113,7 @@ register int vtarget ;
 				vgaDrawColorImage( pWin, x, y + vtarget,
 					 htarget,
 					 MIN( h, pTile->drawable.height ) - vtarget,
-					 (char *)pTile->devPrivate.ptr + xOffset,
+					 (unsigned char *)pTile->devPrivate.ptr + xOffset,
 					 pTile->devKind,
 					 alu, planes ) ;
 				vtarget = pTile->drawable.height ;
@@ -123,7 +123,7 @@ register int vtarget ;
 			vgaDrawColorImage( pWin, x, y,
 				 htarget = MIN( pTile->drawable.width - xOffset, w ),
 				 vtarget = MIN( pTile->drawable.height, h ),
-				 (char *)pTile->devPrivate.ptr + xOffset,
+				 (unsigned char *)pTile->devPrivate.ptr + xOffset,
 				 pTile->devKind,
 				 alu, planes ) ;
 			if ( w > htarget ) {
@@ -140,7 +140,7 @@ register int vtarget ;
 		vgaDrawColorImage( pWin, x, y,
 			 htarget = MIN( pTile->drawable.width, w ),
 			 vtarget = MIN( pTile->drawable.height - yOffset, h ),
-			 (char *)pTile->devPrivate.ptr + ( yOffset * pTile->devKind ),
+			 (unsigned char *)pTile->devPrivate.ptr + ( yOffset * pTile->devKind ),
 			 pTile->devKind,
 			 alu, planes ) ;
 		if ( h > vtarget ) {
@@ -249,7 +249,7 @@ TRACE( ( "ppcTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xSrc=
 	case GXor:		/* 0x7 src OR dst */
 	default:
 		{
-		register char *data ;
+		register unsigned char *data ;
 		register int hcount, vcount ; /* Number of tiles in center */
 		int xcount, ycount;	/* Temporaries */
 		int x1, y1;	/* Left upper corner of center */
