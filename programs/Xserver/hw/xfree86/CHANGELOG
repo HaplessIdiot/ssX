@@ -1,4 +1,6 @@
 XFree86 4.4.99.10 (xx July 2004)
+ 146. Fix XDarwin's dynamic screen configuration change support so that it
+      works with Cocoa and Xplugin implementations (Torrey T. Lyons).
  145. Xterm patch #192 (Thomas Dickey).
 
 XFree86 4.4.99.9 (12 July 2004)
@@ -19028,7 +19030,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3291 2004/07/12 11:02:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3292 2004/07/13 00:41:20 dickey Exp $
 
 
 

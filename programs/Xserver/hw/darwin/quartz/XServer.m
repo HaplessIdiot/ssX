@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.22 2004/05/12 22:06:11 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.23 2004/06/08 22:58:10 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -529,12 +529,20 @@ static io_connect_t root_port;
     if (![self loadDisplayBundle])
         [NSApp terminate:nil];
 
-    // In rootless mode register to receive notification of key window changes
     if (quartzRootless) {
+        // We need to track whether the key window is an X11 window
         [[NSNotificationCenter defaultCenter]
                 addObserver:self
                 selector:@selector(windowBecameKey:)
                 name:NSWindowDidBecomeKeyNotification
+                object:nil];
+
+        // Request notification of screen layout changes even when this
+        // is not the active application
+        [[NSDistributedNotificationCenter defaultCenter]
+                addObserver:self
+                selector:@selector(applicationDidChangeScreenParameters:)
+                name:NSApplicationDidChangeScreenParametersNotification
                 object:nil];
     }
 
@@ -1336,6 +1344,12 @@ static io_connect_t root_port;
 /*
  * Application Delegate Methods
  */
+
+- (void)applicationDidChangeScreenParameters:(NSNotification *)aNotification
+{
+    if (quartzProcs->ScreenChanged)
+        quartzProcs->ScreenChanged();
+}
 
 - (void)applicationDidHide:(NSNotification *)aNotification
 {
