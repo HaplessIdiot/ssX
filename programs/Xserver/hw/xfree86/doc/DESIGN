@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                         Last modified 1 August 2001
+                          Last modified 18 May 2002
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -2109,8 +2109,8 @@ Next, the higher level functions that most drivers would use.
           of options that isn't marked as used.  This is intended
           to show options that the driver hasn't recognised.  It
           would normally be called near the end of the Chip-
-          ScreenInit() function, but only when serverGenera-
-          tion == 1.
+          ScreenInit() function, but only when
+          serverGeneration == 1.
 
      OptionInfoPtr xf86TokenToOptinfo(const OptionInfoRec *table, int
      token)
@@ -4826,9 +4826,9 @@ pixel clock values on older hardware.
 
      Bool xf86IsUnblank(int mode)
 
-          Returns FALSE when the screen saver mode specified by
-          mode requires the screen be unblanked, and TRUE other-
-          wise.  The screen saver modes that require blanking are
+          Returns TRUE when the screen saver mode specified by mode
+          requires the screen be unblanked, and FALSE otherwise.
+          The screen saver modes that require blanking are
           SCREEN_SAVER_ON and SCREEN_SAVER_CYCLE, and the screen
           saver modes that require unblanking are SCREEN_SAVER_OFF
           and SCREEN_SAVER_FORCER.  Drivers may call this helper
@@ -6351,7 +6351,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.48 2002/02/14 22:07:59 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.49 2002/05/18 20:52:22 herrb Exp $
 
 
 $XFree86: $
