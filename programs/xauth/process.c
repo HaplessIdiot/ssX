@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.11 2001/12/02 16:10:42 herrb Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.12 2001/12/14 20:01:15 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -859,7 +859,7 @@ auth_finalize(void)
 			 ProgramName, temp_name);
 	    } else {
 		(void) unlink (xauth_filename);
-#if defined(WIN32) || defined(__EMX__)
+#if defined(WIN32) || defined(__UNIXOS2__)
 		if (rename(temp_name, xauth_filename) == -1)
 #else
 		if (link (temp_name, xauth_filename) == -1)

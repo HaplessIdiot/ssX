@@ -1,4 +1,4 @@
-/* $XFree86: loader.c,v 1.56 2002/02/28 15:23:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.59 2002/05/22 21:38:28 herrb Exp $ */
 
 /*
  *
@@ -71,7 +71,7 @@ int check_unresolved_sema = 0;
 #define strerror(err) "strerror unsupported"
 #endif
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 void * os2ldcalloc(size_t,size_t);
 #endif
 
@@ -475,7 +475,7 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 	return NULL;
     }
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     if( (ptr=xf86loadercalloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
 #else

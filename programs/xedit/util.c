@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.17 2001/08/31 15:00:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.19 2002/02/10 02:50:05 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>		/* for realpath() */
@@ -429,7 +429,7 @@ ResolveName(char *filename)
     if (filename == NULL)
 	filename = GetString(filenamewindow);
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     return (realpath(filename, name));
 #else
     return filename;

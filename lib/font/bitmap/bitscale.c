@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.21 2001/11/06 17:18:41 alanh Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.22 2001/12/14 19:56:46 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -91,9 +91,6 @@ ScaleFunc scale[] =
 #ifdef X_GZIP_FONT_COMPRESSION
     BitmapScaleBitmaps,
 #endif
-#ifdef __EMX__
-    BitmapScaleBitmaps,
-#endif
 #endif
 #ifdef	SNFFORMAT
     BitmapScaleBitmaps,
@@ -141,9 +138,6 @@ FindToScale find_scale[] =
     FindBestToScale,
     FindBestToScale,
 #ifdef X_GZIP_FONT_COMPRESSION
-    FindBestToScale,
-#endif
-#ifdef __EMX__
     FindBestToScale,
 #endif
     FindBestToScale,

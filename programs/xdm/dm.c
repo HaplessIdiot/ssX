@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.18 2001/12/02 13:35:29 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.19 2001/12/14 20:01:21 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -409,7 +409,7 @@ WaitForChild (void)
     int		pid;
     struct display	*d;
     waitType	status;
-#if !defined(X_NOT_POSIX) && !defined(__EMX__)
+#if !defined(X_NOT_POSIX) && !defined(__UNIXOS2__)
     sigset_t mask, omask;
 #else
     int		omask;

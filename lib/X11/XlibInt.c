@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.29 2001/11/09 09:26:51 alanh Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.30 2001/12/14 19:54:09 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -104,7 +104,7 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define ECHECK(err) (WSAGetLastError() == err)
 #define ESET(val) WSASetLastError(val)
 #else
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define ECHECK(err) (errno == err)
 #define ESET(val)
 #else
@@ -129,7 +129,7 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #endif
 #endif
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define select(n,r,w,x,t) os2ClientSelect(n,r,w,x,t)
 #include <limits.h>
 #define MAX_PATH _POSIX_PATH_MAX
@@ -3300,7 +3300,7 @@ static int AccessFile (path, pathbuf, len_pathbuf, pathret)
 
     /* try the places set in the environment */
     drive = getenv ("_XBASEDRIVE");
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     if (!drive)
 	drive = getenv ("X11ROOT");
 #endif
@@ -3316,7 +3316,7 @@ static int AccessFile (path, pathbuf, len_pathbuf, pathret)
 	return 1;
     }
 
-#ifndef __EMX__ 
+#ifndef __UNIXOS2__ 
     /* one last place to look */
     drive = getenv ("HOMEDRIVE");
     if (drive) {

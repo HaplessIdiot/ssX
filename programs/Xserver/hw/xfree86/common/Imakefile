@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.140 2002/04/04 14:05:39 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.141 2002/05/05 18:53:59 herrb Exp $
 
 
 
@@ -237,9 +237,7 @@ clean::
 LinkFile(xf86DefModeSet.c,xf86DefModes.c)
 #endif
 
-#ifndef OS2Architecture
 DependTarget()
-#endif
 
 InstallDriverSDKNonExecFile(compiler.h,$(DRIVERSDKINCLUDEDIR))
 InstallDriverSDKNonExecFile(fourcc.h,$(DRIVERSDKINCLUDEDIR))

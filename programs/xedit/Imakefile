@@ -1,6 +1,7 @@
 XCOMM $XConsortium: Imakefile,v 1.17 93/08/17 20:49:32 rws Exp $
-XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.17 2002/01/04 19:24:10 paulo Exp $
+XCOMM $XFree86: xc/programs/xedit/Imakefile,v 1.19 2002/02/10 02:50:05 paulo Exp $
 
+#ifndef OS2Architecture
 #include "lisp/lisp.cf"
 
 #if BuildSharedLispModules
@@ -13,9 +14,13 @@ LOCAL_LDFLAGS	= -Xlinker -E
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
         SUBDIRS = lisp
+       LISPLIBS = -Llisp -llisp -Llisp/mp -lmp
+       LISP_SRC = lisp.c
+       LISP_OBJ = lisp.o
+#endif
 
         DEPLIBS = XawClientDepLibs $(SUBDIRS)
-LOCAL_LIBRARIES = XawClientLibs -Llisp -llisp -Llisp/mp -lmp $(DLLIB)
+LOCAL_LIBRARIES = XawClientLibs $(LISPLIBS) $(DLLIB)
   SYS_LIBRARIES = MathLibrary
 #if defined(LynxOSArchitecture) || defined(SVR3Architecture) || defined(LinuxArchitecture)
         RP_SRCS = realpath.c
@@ -33,9 +38,9 @@ STRCCMP_DEFINES = -DNEED_STRCASECMP
         DEFINES = $(SIGNAL_DEFINES) $(SYS_DEFINES)
 
            SRCS = xedit.c commands.c util.c $(SYS_SRCS) ispell.c options.c \
-		  hook.c c-mode.c lisp.c proto.c
+		  hook.c c-mode.c proto.c $(LISP_SRC)
            OBJS = xedit.o commands.o util.o $(SYS_OBJS) ispell.o options.o \
-		  hook.o c-mode.o lisp.o proto.o
+		  hook.o c-mode.o proto.o $(LISP_OBJ)
 
 #ifdef IHaveSubdirs
 ForceSubdirs($(SUBDIRS))

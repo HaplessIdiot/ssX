@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.12 2001/08/31 15:00:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.14 2002/02/10 02:50:05 paulo Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include "xedit.h"
@@ -52,10 +52,12 @@ static XtActionsRec actions[] = {
 {"xedit-focus", XeditFocus},
 {"other-window", OtherWindow},
 {"switch-source", SwitchSource},
-{"ispell", IspellAction},
+#ifndef __UNIXOS2__
 {"lisp-eval", XeditLispEval},
 {"xedit-print-lisp-eval", XeditPrintLispEval},
-{"xedit-keyboard-reset",XeditKeyboardReset}
+{"xedit-keyboard-reset",XeditKeyboardReset},
+#endif
+{"ispell", IspellAction}
 };
 
 #define DEF_HINT_INTERVAL	300	/* in seconds, 5 minutes */

@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbpath.c,v 3.4 2001/01/17 23:45:45 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbpath.c,v 3.5 2001/07/25 15:05:24 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
@@ -166,7 +166,7 @@ int	len;
 	XkbClearIncludePath();
 	return True;
     }
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     dir = (char*)__XOS2RedirRoot(dir);
 #endif
     len= strlen(dir);

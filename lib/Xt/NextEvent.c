@@ -58,13 +58,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.23 2001/12/14 19:56:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.24 2001/12/17 20:52:24 dawes Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
 #include <errno.h>
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #include <sys/time.h>
 #endif
 

@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.17 2001/01/17 22:12:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.18 2001/12/14 19:57:56 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -135,7 +135,7 @@ pex_get_font_directory_path()
 	       (char *)xalloc((unsigned long)(1+strlen(getenv("PEX_FONTPATH"))));
 	    strcpy(font_dir_path, getenv("PEX_FONTPATH"));
 	} else {
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 	    font_dir_path =
 		(char *)xalloc((unsigned long)(1+strlen(PEX_DEFAULT_FONTPATH)));
 	    strcpy(font_dir_path, PEX_DEFAULT_FONTPATH);

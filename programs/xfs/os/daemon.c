@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.7 2001/07/25 15:05:22 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.8 2001/11/16 16:47:58 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -123,7 +123,7 @@ BecomeDaemon ()
     close (1);
     close (2);
 
-#if !defined(__EMX__) && !defined(__CYGWIN__)
+#if !defined(__UNIXOS2__) && !defined(__CYGWIN__)
 #if !((defined(SYSV) || defined(SVR4)) && defined(i386))
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
 #if defined(USG) && defined(TCCLRCTTY)
@@ -140,7 +140,7 @@ BecomeDaemon ()
 	(void) close (i);
     }
 #endif /* !((SYSV || SVR4) && i386) */
-#endif /* !__EMX__ */
+#endif /* !__UNIXOS2__ */
 
     /*
      * Set up the standard file descriptors.

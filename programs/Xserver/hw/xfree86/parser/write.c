@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.14 2001/06/30 04:00:24 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.15 2001/07/25 15:05:08 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -51,7 +51,7 @@ extern int sys_nerr;
 #if defined(SVR4) || defined(__linux__) || defined(CSRG_BASED)
 #define HAS_SAVED_IDS_AND_SETEUID
 #endif
-#if defined(__EMX__) || defined(WIN32)
+#if defined(__UNIXOS2__) || defined(WIN32)
 #define HAS_NO_UIDS
 #endif
 

@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.17 2001/05/15 00:05:32 keithp Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.18 2001/12/14 19:56:51 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -109,7 +109,7 @@ FontFileMakeDir(char *dirName, int size)
 #endif
 
 #ifdef FONTDIRATTRIB
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     attrib = strchr(dirName, ':');
 #else
     /* OS/2 uses the colon in the drive letter descriptor, skip this */

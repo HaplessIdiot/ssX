@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os2funcs.c,v 1.4 1997/03/10 10:12:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os2funcs.c,v 1.5 2000/04/05 18:13:50 dawes Exp $ */
 /*
  * (c) Copyright 1997 by Sebastien Marineau
  *                      <marineau@genie.uottawa.ca>
@@ -34,6 +34,7 @@
  * the requests. We create a heap of 2 megs, hopefully enough for now.
  */
 
+#define I_NEED_OS2_H
 #define INCL_DOSMEMMGR
 #include <os2.h>
 #include <sys/types.h>

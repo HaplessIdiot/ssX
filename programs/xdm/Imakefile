@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.44 2001/08/26 16:21:29 herrb Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.45 2001/08/29 17:11:56 alanh Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -203,12 +203,12 @@ LOCAL_LIBRARIES = $(XPMLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) \
 		  mitauth.o \
 		  genauth.o access.o choose.o \
 		  $(XDMAUTHOBJS) $(RPCOBJS) $(KRB5OBJS) $(GREETSHADOWOBJS)
-     XDM_SHADOW = xdm-shadow
+     XDM_SHADOW = ProgramTargetName(xdm-shadow)
 #endif
 #if BuildChooser
-        CHOOSER = chooser
+        CHOOSER = ProgramTargetName(chooser)
 #endif
-       PROGRAMS = xdm xdmshell sessreg $(CHOOSER) $(XDM_SHADOW)
+       PROGRAMS = ProgramTargetName(xdm) ProgramTargetName(xdmshell) ProgramTargetName(sessreg) $(CHOOSER) $(XDM_SHADOW)
 
  OSMAJORVERSION = OSMajorVersion
  OSMINORVERSION = OSMinorVersion
@@ -235,7 +235,6 @@ DEF_SERVER = $(BINDIR)/X
 DEF_USER_PATH = DefaultUserPath		/* no leading spaces or imake will */
 DEF_SYSTEM_PATH = DefaultSystemPath	/* indent as rule */
 BOURNE_SHELL = DefaultSystemShell
-#ifndef OS2Architecture
 RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DXRDB_PROGRAM="$(BINDIR)/xrdb"' \
 		  '-DDEF_SESSION="$(BINDIR)/xterm -ls"' \
@@ -247,7 +246,6 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DDEF_CHOOSER="$(XDMDIR)/chooser"' \
 		  '-DDEF_AUTH_DIR="$(XDMDIR)"' \
 		  '-DDEF_GREETER_LIB="$(XDMDIR)/libXdmGreet.so"'
-#endif
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),NullParameter)
 LinkConfDirectory(xdm,.,xdm,.)

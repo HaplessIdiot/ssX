@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:08 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.7 2002/02/15 07:36:23 keithp Exp $
+XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.8 2002/05/13 05:27:37 keithp Exp $
 
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
@@ -48,7 +48,6 @@ LOCAL_LIBRARIES = $(XFTLIBS) $(XRENDERLIBS) $(XMUULIB) $(XLIB)
 EXTRA_LIBRARIES = -lcygipc
 #endif
 
-#ifndef OS2Architecture
 ComplexProgramTarget(x11perf)
 
 all:: x11perfcomp
@@ -62,7 +61,3 @@ InstallNamedProg(perfratio.sh,perfratio,$(PERFLIB))
 InstallNamedProg(Xmark.sh,Xmark,$(BINDIR))
 InstallManPage(Xmark,$(MANDIR))
 InstallManPageLong(x11pcomp,$(MANDIR),x11perfcomp)
-#else
-all::
-
-#endif

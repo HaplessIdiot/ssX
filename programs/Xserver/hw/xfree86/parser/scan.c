@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.18 2001/07/02 15:38:34 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.19 2001/07/23 13:15:49 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -74,7 +74,7 @@ static char *configSection = NULL;	/* name of current section being parsed */
 static int pushToken = LOCK_TOKEN;
 LexRec val;
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 extern char *__XOS2RedirRoot(char *path);
 #endif
 
@@ -186,7 +186,7 @@ again:
 			do
 			{
 				configRBuf[i++] = (c = configBuf[configPos++]);
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 			}
 			while ((c != '\n') && (c != '\0'));
 #else
@@ -253,7 +253,7 @@ again:
 			do
 			{
 				configRBuf[++i] = (c = configBuf[configPos++]);
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 			}
 			while ((c != '\"') && (c != '\n') && (c != '\0'));
 #else
@@ -277,7 +277,7 @@ again:
 			do
 			{
 				configRBuf[++i] = (c = configBuf[configPos++]);;
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 			}
 			while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\0'));
 #else
@@ -373,7 +373,7 @@ xf86pathIsAbsolute(const char *path)
 {
 	if (path && path[0] == '/')
 		return 1;
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 	if (path && (path[0] == '\\' || (path[1] == ':')))
 		return 0;
 #endif
@@ -421,7 +421,7 @@ xf86pathIsSafe(const char *path)
  *    %P    projroot
  *    %M    major version number
  *    %%    %
- *    %&    EMX only: prepend X11ROOT env var
+ *    %&    UNIXOS2 only: prepend X11ROOT env var
  */
 
 #ifndef XCONFIGFILE
@@ -474,7 +474,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 	static const char *env = NULL, *home = NULL;
 	static char *hostname = NULL;
 	static char majorvers[3] = "";
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 	static char *x11root = NULL;
 #endif
 
@@ -593,7 +593,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 				result[l++] = '%';
 				CHECK_LENGTH;
 				break;
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 			case '&':
 				if (!x11root)
 					x11root = getenv("X11ROOT");
@@ -764,7 +764,7 @@ xf86openConfigFile (char *filename)
 		/* 
 		 * Check if XF86CONFIG is set.
 		 */
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 		if (getuid () == 0
 			&& (xconfig = getenv ("XF86CONFIG")) != 0
 			&& strchr (xconfig, '/'))
@@ -782,7 +782,7 @@ xf86openConfigFile (char *filename)
 				return 0;
 		}
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 		/* 
 		 * ~/XF86Config ...
 		 */
@@ -823,13 +823,13 @@ xf86openConfigFile (char *filename)
 					 MAXHOSTNAMELEN);
 		if ((configFile = fopen (configPaths[pcount], "r")) != 0)
 			break;
-#endif /* !__EMX__  */
+#endif /* !__UNIXOS2__  */
 
 		/* 
 		 * $(XCONFIGDIR)/XF86Config
 		 */
 		configPaths[++pcount] = xf86confmalloc (PATH_MAX);
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 		if (getuid () == 0 && xwinhome)
 			sprintf (configPaths[pcount], "%s/lib/X11/" XCONFIGFILE, xwinhome);
 		else

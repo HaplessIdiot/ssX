@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.65 2001/06/15 21:23:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.66 2001/12/17 20:00:45 dawes Exp $ */
 
 /*
  *
@@ -120,7 +120,7 @@ InitPathList(const char *path)
 	elem = strtok(fullpath, ",");
 	while (elem) {
 		/* Only allow fully specified paths */
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 		if (*elem == '/')
 #else
 		if (*elem == '/' || (strlen(elem) > 2 && isalpha(elem[0]) &&
@@ -723,7 +723,7 @@ LoadSubModule(ModuleDescPtr parent, const char *module,
 	xf86MsgVerb(X_INFO, 3, "Loading sub module \"%s\"\n", module);
 
 	/* Absolute module paths are not allowed here */
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 	if (module[0] == '/')
 #else
 	if (isalpha (module[0]) && module[1] == ':' && module[2] == '/')
@@ -884,7 +884,7 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	 * if the module name is not a full pathname, we need to
 	 * check the elements in the path
 	 */
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 	if (module[0] == '/')
 		found = xstrdup(module);
 #else

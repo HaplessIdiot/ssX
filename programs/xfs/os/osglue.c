@@ -47,7 +47,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)osglue.c,v 4.6 1991/07/09 14:07:30 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.14 2001/07/25 15:05:22 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.15 2001/12/14 20:01:41 dawes Exp $ */
 
 /*
  * this is miscellaneous OS specific stuff.
@@ -61,7 +61,7 @@ in this Software without prior written authorization from The Open Group.
 #include <stdlib.h>
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define _NFILE 256
 #endif
 
@@ -294,7 +294,7 @@ CloneMyself(void)
     if (!CloneSelf)
 	return -1;
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     NoticeF("Cloning of font server not supported under OS/2!\n");
     return(-1);
 #endif
@@ -307,7 +307,7 @@ CloneMyself(void)
 #ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
-#if defined(hpux) || defined(__EMX__)
+#if defined(hpux) || defined(__UNIXOS2__)
     lastfdesc = _NFILE - 1;
 #else
     lastfdesc = getdtablesize() - 1;

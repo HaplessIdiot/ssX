@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.27 2001/01/17 22:37:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.29 2002/04/04 14:05:57 eich Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -128,7 +128,7 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
     OutputDirectory(xkm_output_dir);
 
     if (XkbBaseDirectory!=NULL) {
-#ifdef __EMX__
+#ifdef __UNIXOS2__
         char *tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
         int i;
 	if (strlen(tmpbase)*2+(xkbDebugFlags>9?2:1)
@@ -144,7 +144,7 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 								names->keymap);
 	    return False;
 	}
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:(int)xkbDebugFlags)),
@@ -224,7 +224,7 @@ char	buf[PATH_MAX],keymap[PATH_MAX],xkm_output_dir[PATH_MAX];
 #ifdef WIN32
 char tmpname[32];
 #endif    
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 char *tmpbase;
 int i;
 #endif
@@ -245,7 +245,7 @@ int i;
     strcpy(tmpname, "\\temp\\xkb_XXXXXX");
     (void) mktemp(tmpname);
 #endif
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
 #endif
     if (XkbBaseDirectory!=NULL) {
@@ -259,7 +259,7 @@ int i;
 	    return False;
 	}
 #ifndef WIN32
-#ifndef __EMX__
+#ifndef __UNIXOS2__
 	sprintf(buf,
 	   "%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		XkbBaseDirectory,

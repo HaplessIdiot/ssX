@@ -31,7 +31,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.8 2001/07/25 15:04:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.9 2001/10/28 03:32:34 tsi Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -729,7 +729,7 @@ LoadColornameDB()
     if ((pathname = getenv("XCMSDB")) == NULL) {
 	pathname = XCMSDB;
     }
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     pathname = __XOS2RedirRoot(pathname);
 #endif
 

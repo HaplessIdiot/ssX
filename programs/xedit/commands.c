@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.24 2001/08/31 15:00:11 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.26 2002/02/10 02:50:05 paulo Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -126,7 +126,9 @@ DoQuit(Widget w, XtPointer client_data, XtPointer call_data)
 	    }
     }
     if(!source_changed) {
+#ifndef __UNIXOS2__
 	XeditLispCleanUp();
+#endif
 	exit(0);
     }
 

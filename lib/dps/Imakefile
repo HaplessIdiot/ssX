@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.12 2000/05/23 19:32:52 dawes Exp $
+XCOMM $XFree86: xc/lib/dps/Imakefile,v 1.13 2001/04/07 19:41:50 alanh Exp $
 
 #define DoNormalLib NormalLibDps
 #define DoSharedLib SharedLibDps
@@ -191,9 +191,13 @@ PSOPSCFILES = \
     psXops.c\
     psl2ops.c
 
-all :: $(HEADERS)
+XCOMM hv: HEADERS must be here, otherwise IncSubdir-triggered BuildIncludes 
+XCOMM will fail on systems without ln cmd
+HEADERS = psops.h dpsops.h
 
-includes :: $(DPSOPSCFILES) $(PSOPSCFILES) $(HEADERS)
+all:: $(HEADERS)
+
+includes:: $(DPSOPSCFILES) $(PSOPSCFILES) $(HEADERS)
 
 $(DPSOPSCFILES) $(PSOPSCFILES): ProgramTargetName($(PSWRAP))
 
@@ -229,12 +233,9 @@ ProgramTargetName($(PSWRAP)):
 	cd $(PSWRAPSRC) && $(MAKE); \
 	echo "okay, continuing in $(CURRENT_DIR)"
 
-HEADERS = psops.h dpsops.h
-
 includes :: $(HEADERS)
 depend :: $(DPSOPSCFILES) $(PSOPSCFILES)
 
-#ifndef OS2Architecture
 psops.h : $(PSOPSHEADERFILES)
 	RemoveFile($@)
 	${CAT} $(PSOPSHEADERFILES) |\
@@ -259,25 +260,4 @@ clean ::
 	${RM} $(DERIVED_FILES) .sort .ttt .att psops.h dpsops.h *%
 
 DependTarget()
-#else
 
-BuildIncludes($(HEADERS),IncSubdir,..)
-
-psops.h : $(PSOPSHEADERFILES)
-	.\genheader
-	RemoveFile($@)
-	$(CAT) psops.h.os2 >psops.h
-
-dpsops.h : psops.h $(DPSOPSHEADERFILES)
-	.\genheader
-	RemoveFile($@)
-	$(CAT) dpsops.h.os2 >dpsops.h
-
-clean::
-	RemoveFiles($(DPSOPSHEADERFILES) $(PSOPSHEADERFILES))
-	RemoveFiles($(DPSOPSCFILES) $(PSOPSCFILES))
-	RemoveFiles(.sort .ttt .att psops.h dpsops.h)
-
-depend::
-
-#endif

@@ -60,8 +60,10 @@ EXPORTS
  toggleWidgetClass DATA
  treeClassRec DATA
  treeWidgetClass DATA
+#ifndef __UNIXOS2__
  vendorShellClassRec DATA
  vendorShellWidgetClass DATA
+#endif
  viewportClassRec DATA
  viewportWidgetClass DATA
  XawAsciiSave
@@ -131,4 +133,24 @@ EXPORTS
  XawViewportSetLocation
  XawWidgetArray
  XawWidgetCount
-/* $TOG: Xaw-def.cpp /main/1 1997/09/16 10:04:41 kaleb $ */
+#ifdef __UNIXOS2__ /* xconsole */
+ _XawTextGetSTRING
+ XawTextSourceAddEntity
+ XawTextSourceAnchorAndEntity
+ XawTextSourceNextAnchor
+ XawTextSourcePrevAnchor
+ XawTextSourceFindAnchor
+ _XawTextShowPosition
+ _XawTextSrcUndo
+ XawTextSinkConvertPropertyList
+ XawTextGetSink
+ _XawTextBuildLineTable
+ XawTextSourceClearEntities
+ _XawTextNeedsUpdating
+ XawTextSinkCopyProperty
+ XawTextSinkGetProperty
+ XawTextSinkCombineProperty
+ XawTextSinkAddProperty
+#endif
+/* $Xorg: Xaw-def.cpp,v 1.3 2000/08/17 19:45:44 cpqbld Exp $ */
+/* $XFree86$ */

@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX May 2002)
+ 148. Major OS/2 support update (#5119, Holger Veit).
  147. Fix mode setting in DGA on the Rage128 & Radeon drivers (Alan Hourihane).
  146. Build libXt as a flat namespace image on Darwin (Torrey T. Lyons).
  145. Install the bitmap file xc/programs/bitmap/Stipple as Stippler on file
@@ -14810,4 +14811,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2225 2002/05/29 22:02:47 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2226 2002/05/29 22:48:36 alanh Exp $

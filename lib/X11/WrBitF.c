@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/WrBitF.c,v 3.3 2001/01/17 19:41:47 dawes Exp $ */
+/* $XFree86: xc/lib/X11/WrBitF.c,v 3.4 2001/12/14 19:54:08 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -112,7 +112,7 @@ int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
   else
     name++;
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
   filename = (char*)__XOS2RedirRoot(filename);
 #endif
   if (!(stream = fopen(filename, "w")))

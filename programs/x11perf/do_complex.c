@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_complex.c,v 1.7 2001/05/09 09:12:22 alanh Exp $ */
+/* $XFree86: xc/programs/x11perf/do_complex.c,v 1.8 2001/07/25 15:05:16 dawes Exp $ */
 
 #include "x11perf.h"
 
@@ -31,7 +31,7 @@ static XPoint   *points;
 static GC       pgc;
 
 #include <math.h>
-#if defined(QNX4) || defined(__CYGWIN__)
+#if defined(QNX4) || defined(__CYGWIN__) || defined(__UNIXOS2__)
 #define PI 3.14159265358979323846
 #else
 #define PI M_PI

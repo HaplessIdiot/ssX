@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/RdBitF.c,v 3.3 2001/01/17 19:41:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/RdBitF.c,v 3.4 2001/12/14 19:54:05 dawes Exp $ */
 
 /*
  *	Code to read bitmaps from disk files. Interprets 
@@ -158,7 +158,7 @@ int XReadBitmapFileData (filename, width, height, data, x_hot, y_hot)
     /* first time initialization */
     if (initialized == False) initHexTable();
 
-#ifdef __EMX__
+#ifdef __UNIXOS2__
     filename = __XOS2RedirRoot(filename);
 #endif
     if (!(fstream = fopen(filename, "r")))

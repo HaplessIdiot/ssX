@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/programs/makepsres/makepsres.c,v 1.4 2000/04/05 18:14:03 dawes Exp $ */
+/* $XFree86: xc/programs/makepsres/makepsres.c,v 1.5 2001/08/01 00:45:01 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2189,7 +2189,7 @@ void CheckBackup(filename)
 
     (void) unlink (backupname); /* Ignore error */
 
-#ifndef __EMX__
+#ifndef __UNIXOS2__
     if (link (filename, backupname) != 0) {
 	if (errno != ENOENT) {
 	    fprintf(stderr, "%s:  Could not back up output file %s\n",

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.9 2001/11/30 12:12:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.10 2001/12/14 20:00:33 dawes Exp $ */
 
 /*
  * authorization hooks for the server
@@ -135,14 +135,14 @@ LoadAuthorization (void)
     Xauth   *auth;
     int	    i;
     int	    count = 0;
-#if !defined(WIN32) && !defined(__EMX__)
+#if !defined(WIN32) && !defined(__UNIXOS2__)
     char    *buf;
 #endif
 
     ShouldLoadAuth = FALSE;
     if (!authorization_file)
 	return 0;
-#if !defined(WIN32) && !defined(__EMX__)
+#if !defined(WIN32) && !defined(__UNIXOS2__)
     buf = xalloc (strlen(authorization_file) + 5);
     if (!buf)
 	return 0;
@@ -169,7 +169,7 @@ LoadAuthorization (void)
 	XauDisposeAuth (auth);
     }
 
-#if !defined(WIN32) && !defined(__EMX__)
+#if !defined(WIN32) && !defined(__UNIXOS2__)
     Pclose (f);
 #else
     fclose (f);
