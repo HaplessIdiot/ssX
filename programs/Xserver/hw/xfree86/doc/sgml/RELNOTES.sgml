@@ -9,7 +9,7 @@
 <date>23 November 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.84 2003/11/24 03:43:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.85 2003/11/29 01:10:02 dawes Exp $
 </ident>
 
 <abstract>
@@ -188,6 +188,37 @@ don't have enough space to cover them all here.
 	jamstudio (js_x), fpit, palmax, and ur98 (Linux only).
 
 </itemize>
+
+<sect1>IPv6 support
+<p>
+XFree86 4.4 supports IPv6, based on the code contributed by Sun
+Microsystems to X.Org. See 
+<url name="X.org's document" url="http://www.x.org/IPV6_Specific_Changes.html"> for a detailled list of the changes. 
+
+<sect2>Protocol names and aliases. 
+<p>
+<itemize>
+<item>tcp is an alias for both IPv6 and IPv4 transports.
+<item>inet specifies IPv4 only. 
+<item>inet6 specifies IPv6 only.
+</itemize>
+<p>
+You can force the X server to only listen to IPv4 connections with 
+the <tt>X -nolisten inet6 </tt> command.
+Or you can force a IPv6 connection by setting <bf>DISPLAY</bf> to 
+<tt>inet6/host:0</tt>.
+
+<sect2>XDM
+<p>
+The IPv6 XDMCP code is not enabled by default on platforms that don't 
+support binding a IPv6 socket to a IPv4 address. 
+<p>
+The XDM-AUTHORIZATION-1 authentification scheme does not support IPv6
+addresses. A new release of the protocol, XDM-AUTHORIZATION-2 has been
+designed, but is not implemented yet. 
+Note that  by default XFree86 builds do not enable the XDM-AUTHORIZATION-1
+code. 
+
 
 <sect1>X Server and Extension Updates
 
