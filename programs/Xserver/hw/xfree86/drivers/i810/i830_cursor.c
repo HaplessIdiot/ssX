@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_cursor.c,v 1.2 2002/09/12 22:25:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_cursor.c,v 1.3 2002/10/30 12:52:18 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -208,7 +208,7 @@ I830SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 
    if (hide)
       pI830->CursorInfoRec->HideCursor(pScrn);
-   else if (show)
+   else if (show && pI830->cursorOn)
       pI830->CursorInfoRec->ShowCursor(pScrn);
 }
 
@@ -224,6 +224,7 @@ I830ShowCursor(ScrnInfoPtr pScrn)
 	   " Value of CursorMem.Start is %x ",
 	   pI830->CursorMem.Physical, pI830->CursorMem.Start);
 
+   pI830->cursorOn = TRUE;
    if (IS_MOBILE(pI830)) {
       temp = INREG(CURSOR_A_CONTROL);
       temp &= ~CURSOR_MODE;
@@ -246,6 +247,7 @@ I830HideCursor(ScrnInfoPtr pScrn)
 
    DPRINTF(PFX, "I830HideCursor\n");
 
+   pI830->cursorOn = FALSE;
    if (IS_MOBILE(pI830)) {
       temp = INREG(CURSOR_A_CONTROL);
       temp &= ~CURSOR_MODE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.16 2002/09/14 19:15:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.17 2002/10/16 21:13:47 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2566,8 +2566,8 @@ I830BIOSSaveScreen(ScreenPtr pScreen, int mode)
       }
    }
 
-   if (pI830->CursorInfoRec) {
-      if (on)
+   if (pI830->CursorInfoRec && !pI830->SWCursor) {
+      if (on && pI830->cursorOn)
 	 pI830->CursorInfoRec->ShowCursor(pScrn);
       else
 	 pI830->CursorInfoRec->HideCursor(pScrn);
