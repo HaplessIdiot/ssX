@@ -27,7 +27,7 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified: 1 July 1999
+<date>Last modified 1 July 1999
 
 
 <abstract>
@@ -183,7 +183,8 @@ changes:
     The order of precedence is &k.display;, &k.screen;, &k.monitor;,
     &k.device;.  Options have been extended to allow an optional value
     to be specified in addition to the option name.  For more details
-    about options, see section <ref id="options" name="Options"> for details.
+    about options, see the <ref id="options" name="Options"> section
+    for details.
 
 <sect>Driver Interface
 <p>
@@ -263,7 +264,7 @@ the XFree86 common layer:
      configuration is present.
    </descrip>
 
-The VidMode extension will also require:
+The VidMode extension also requires:
 
    <descrip>
    <tag>ValidMode</tag>
@@ -361,10 +362,11 @@ mechanism for this.
 <sect>Control Flow in the Server and Mandatory Driver Functions
 <p>
 
-At the start of each server generation, &s.code;main()&e.code; (dix/main.c)
-calls the DDX function &s.code;InitOutput()&e.code;.  This is the first
-place that the DDX gets control.  &s.code;InitOutput()&e.code; is expected to
-fill in the global &s.code;screenInfo&e.code; struct, and one
+At the start of each server generation, &s.code;main()&e.code;
+(&s.code;dix/main.c&e.code;) calls the DDX function
+&s.code;InitOutput()&e.code;.  This is the first place that the DDX gets
+control.  &s.code;InitOutput()&e.code; is expected to fill in the global
+&s.code;screenInfo&e.code; struct, and one
 &s.code;screenInfo.screen[]&e.code; entry for each screen present.  Here
 is what &s.code;InitOutput()&e.code; does:
 
@@ -521,7 +523,7 @@ is what &s.code;InitOutput()&e.code; does:
     devices remain disabled for the next step.
 
 
-<sect1>Video Driver Probe
+<sect1>Video Driver Probe<label id="probe">
 <p>
     This is done at the start of the first server generation only.  The
     &s.code;ChipProbe()&e.code; function of each registered video driver
@@ -1030,8 +1032,10 @@ is what &s.code;InitOutput()&e.code; does:
     <quote><p>
     &s.code;Bool ChipSwitchMode(int index, DisplayModePtr mode, int flags)&e.code;
     <quote><p>
-      Initialises the new mode for the screen identified by index.
-      The viewport may need to be adjusted also.
+      Initialises the new mode for the screen identified by
+      &s.code;index;&e.code;.  The viewport may need to be adjusted
+      also.
+
     </quote>
     </quote>
 
@@ -1045,7 +1049,9 @@ is what &s.code;InitOutput()&e.code; does:
     <quote><p>
     &s.code;void ChipAdjustFrame(int index, int x, int y, int flags)&e.code;
     <quote><p>
-      Changes the viewport for the screen identified by index.
+      Changes the viewport for the screen identified by
+      &s.code;index;&e.code;.
+
     </quote>
     </quote>
 
@@ -1065,7 +1071,7 @@ is what &s.code;InitOutput()&e.code; does:
 
       <item>enter the SETUP server state
 
-      <item>calls ChipEnterVT() for each screen
+      <item>calls &s.code;ChipEnterVT()&e.code; for each screen
 
       <item>enter the OPERATING server state
 
@@ -1083,7 +1089,7 @@ is what &s.code;InitOutput()&e.code; does:
 
       <item>enter the SETUP server state
 
-      <item>calls ChipLeaveVT() for each screen
+      <item>calls &s.code;ChipLeaveVT()&e.code; for each screen
 
       <item>disable all input devices
 
@@ -4475,11 +4481,12 @@ strongly encouraged to improve the consistency of driver behaviour.
       of the &s.code;ScrnInfoRec&e.code;.  It also determines the defaults for display-wide
       attributes and pixmap formats the screen will support, and finds
       the Display subsection that matches the depth/bpp.  This function
-      should normally be called very early from the &s.code;ChipPreInit&e.code; function.
+      should normally be called very early from the
+      &s.code;ChipPreInit()&e.code; function.
 
       It requires that the &s.code;confScreen&e.code; field of the &s.code;ScrnInfoRec&e.code; be
       initialised prior to calling it.  This is done by the XFree86
-      common layer prior to calling &s.code;ChipPreInit&e.code;.
+      common layer prior to calling &s.code;ChipPreInit()&e.code;.
 
       The parameters passed are:
 
@@ -4568,7 +4575,7 @@ strongly encouraged to improve the consistency of driver behaviour.
       This function sets the &s.code;weight&e.code;, &s.code;mask&e.code;,
       &s.code;offset&e.code; and &s.code;rgbBits&e.code; fields of the
       &s.code;ScrnInfoRec&e.code;.  It would normally be called fairly
-      early in the &s.code;ChipPreInit&e.code; function for
+      early in the &s.code;ChipPreInit()&e.code; function for
       depths&nbsp;>&nbsp;8bpp.
 
       It requires that the &s.code;depth&e.code; and
@@ -4728,7 +4735,7 @@ be catered for the by the helpers.
       This function basically selects the set of modes to use based on
       those available and the various constraints.  It also sets some
       other related parameters.  It is normally called near the end of
-      the &s.code;ChipPreInit&e.code; function.
+      the &s.code;ChipPreInit()&e.code; function.
 
       The parameters passed to the function are:
 
@@ -4916,7 +4923,7 @@ be catered for the by the helpers.
       the driver can work within.
 
       If this function returns &s.code;-1&e.code;, the
-      &s.code;ChipPreInit&e.code; function should return
+      &s.code;ChipPreInit()&e.code; function should return
       &s.code;FALSE&e.code;.
 
       &s.code;clockRanges&e.code; is a linked list of clock ranges
@@ -5178,7 +5185,8 @@ typedef struct {
 
     These functions can be used to select the appropriate config file
     entries that match the detected hardware.  They are described above
-    in the <ref id="avail" name="Available Functions"> section.
+    in the <ref id="probe" name="Probe"> and
+    <ref id="avail" name="Available Functions"> sections.
 
 
 <sect1>Probing discrete clocks on old hardware
@@ -6848,7 +6856,7 @@ ZZZFreeScreen(int scrnIndex, int flags)
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.35 1999/06/27 14:07:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.1 1999/07/01 11:25:47 dawes Exp $
 </verb>
 
 </article>
