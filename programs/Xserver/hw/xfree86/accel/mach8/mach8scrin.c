@@ -1,4 +1,5 @@
 /* $XConsortium: mach8scrin.c,v 1.2 94/04/17 20:31:01 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 

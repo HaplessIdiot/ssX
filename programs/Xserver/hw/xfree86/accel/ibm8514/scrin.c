@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514scri.c,v 1.2 94/04/17 20:30:37 dpw Exp $ */
+/* $XFree86$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
