@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.44 2003/07/16 01:38:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.45 2004/06/02 22:42:55 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -212,12 +212,17 @@ SpecialCObjectRule(xf86bigfont,$(ICONFIGFILES),$(SHM_DEFINES))
 SpecialCObjectRule(security,$(ICONFIGFILES),$(POLICYFILEDEF))
 #endif
 
-LinkConfDirectory(xserver,.,xserver,.)
 
 LinkSourceFile(modinit.h,$(SERVERSRC)/Xext/extmod)
 
+#if !defined(LinkDirectory)
+
+LinkConfDirectory(xserver,.,xserver,.)
+
 #if BuildXCSecurity && InstallSecurityConfig
 InstallNonExecFile(SecurityPolicy,$(SERVERCONFIGDIR))
+#endif
+
 #endif
 
 DependTarget()
