@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/xlib.c,v 1.2 2002/09/05 07:29:55 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/xlib.c,v 1.3 2002/11/23 02:34:45 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -327,6 +327,14 @@ XcursorNoticePutBitmap (Display	    *dpy,
      * assume it's not going to be a cursor
      */
     if (bmi->has_image)
+    {
+	bmi->bitmap = 0;
+	return;
+    }
+    /*
+     * Make sure the image is valid
+     */
+    if (image->bytes_per_line & ((image->bitmap_unit >> 3) - 1))
     {
 	bmi->bitmap = 0;
 	return;
