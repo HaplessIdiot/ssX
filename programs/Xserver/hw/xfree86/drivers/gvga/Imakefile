@@ -1,0 +1,37 @@
+XCOMM $XFree86: $
+
+
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = gvg_driver.c gvg_bank.s
+
+OBJS = gvg_driver.o gvg_bank.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(gvga_drv,$(OBJS))
+
+ObjectFromSpecialAsmSource(gvg_bank,bank,NullParameter)
+
+InstallLinkKitNonExecFile(gvg_driver.c,$(LINKKITDIR)/drivers/gvga)
+InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/gvga)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/gvga)
+
+#if DoLoadableServer
+InstallDynamicModule(gvga_drv.o,$(MODULEDIR))
+#endif
+
+DependTarget()

@@ -1,0 +1,41 @@
+XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:29:38 rws $
+
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/vga/Imakefile,v 3.7 1997/02/25 14:22:20 hohndel Exp $
+
+
+
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = vga_driver.c
+
+OBJS = vga_driver.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+NormalLibraryObjectRule()
+
+NormalRelocatableTarget(vga_drv,$(OBJS))
+
+InstallLinkKitNonExecFile(vga_driver.c,$(LINKKITDIR)/drivers/vga)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga)
+
+#if DoLoadableServer
+InstallDynamicModule(vga_drv.o,$(MODULEDIR))
+#endif
+
+DependTarget()
+
