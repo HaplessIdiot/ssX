@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.68 2002/03/17 21:30:35 herrb Exp $
+XCOMM platform:  $XFree86: OpenBSD.cf,v 3.69 2002/04/03 20:12:33 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -808,7 +808,7 @@ install:: fonts.alias							@@\
 #endif
 
 #ifndef DlLibrary
-# if (OSMajorVersion < 3 || OSMajorVersion == 3 && OsMinorVersion == 0)\
+# if (OSMajorVersion < 3 || OSMajorVersion == 3 && OSMinorVersion == 0)\
     && UseElfFormat
 #  define DlLibrary -ldl
 # else
