@@ -56,7 +56,7 @@ from The Open Group.
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.2 1998/10/04 09:40:41 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.h,v 3.3 1999/02/19 21:27:32 hohndel Exp $ */
 
 #ifndef _TWM_
 #define _TWM_
@@ -401,10 +401,9 @@ extern int InfoLines;
 extern char Info[][INFO_SIZE];
 extern int Argc;
 extern char **Argv;
-extern char **Environ;
 extern void NewFontCursor ( Cursor *cp, char *str );
 extern void NewBitmapCursor ( Cursor *cp, char *source, char *mask );
-extern Pixmap CreateMenuIcon ( int height, int *widthp, int *heightp );
+extern Pixmap CreateMenuIcon ( int height, unsigned int *widthp, unsigned int *heightp );
 
 extern Bool ErrorOccurred;
 extern XErrorEvent LastErrorEvent;

@@ -55,7 +55,7 @@ in this Software without prior written authorization from The Open Group.
  * 12-Nov-87 Thomas E. LaStrange		File created
  *
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/lex.l,v 3.9 1998/10/04 09:40:38 dawes Exp $ */
+/* $XFree86: xc/programs/twm/lex.l,v 3.10 1999/02/19 21:27:28 hohndel Exp $ */
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "twm.h"
@@ -101,7 +101,7 @@ number				[0-9]+
 "-"				{ return MINUS; }
 "|"				{ return OR; }
 
-[a-zA-Z\.]+			{ int token = parse_keyword (yytext, 
+[a-zA-Z\.]+			{ int token = parse_keyword ((char *)yytext, 
 							     &yylval.num);
 				  if (token == ERRORTOKEN) {
 				      twmrc_error_prefix();

@@ -55,7 +55,7 @@ in this Software without prior written authorization from The Open Group.
  * 27-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.c,v 3.3 1998/10/04 09:40:41 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.c,v 3.4 1999/02/19 21:27:31 hohndel Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -132,7 +132,6 @@ unsigned int JunkWidth, JunkHeight, JunkBW, JunkDepth, JunkMask;
 char *ProgramName;
 int Argc;
 char **Argv;
-char **Environ;
 
 Bool RestartPreviousState = False;	/* try to restart in previous state */
 
@@ -164,7 +163,7 @@ static char* atom_names[11] = {
  */
 
 int
-main(int argc, char *argv[], char *environ[])
+main(int argc, char *argv[])
 {
     Window root, parent, *children;
     unsigned int nchildren;
@@ -180,7 +179,6 @@ main(int argc, char *argv[], char *environ[])
     ProgramName = argv[0];
     Argc = argc;
     Argv = argv;
-    Environ = environ;
 
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] == '-') {

@@ -24,9 +24,12 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.5 1999/01/11 05:13:37 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.6 1999/02/05 04:49:56 dawes Exp $ */
 
 #include <stdio.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>		/* for realpath() */
+#endif
 #include "xedit.h"
 
 #include <X11/Xfuncs.h>

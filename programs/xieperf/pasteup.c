@@ -1,16 +1,11 @@
-/* $XConsortium: pasteup.c,v 1.9 94/04/17 20:39:27 rws Exp $ */
+/* $TOG: pasteup.c /main/10 1998/02/09 14:01:15 kaleb $ */
 
 /**** module pasteup.c ****/
 /******************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -18,13 +13,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -93,6 +88,10 @@ static int monoflag = 0;
 
 static int pasteUpIdx;
 
+static void FreePasteUpStuff(XParms xp, Parms p);
+static void InitSegments(void);
+static void CloseSegments(XParms xp, Parms p);
+
 int InitPasteUp(xp, p, reps)
     XParms  xp;
     Parms   p;
@@ -155,7 +154,7 @@ int InitPasteUp(xp, p, reps)
 /* cut a photoflo into "size" little pieces. Assumption is that the values
    width and height are each congruent to 0 mod size. Caller allocates segvec */
 
-int
+static void
 InitSegments()
 {
 	int	i;
@@ -166,7 +165,7 @@ InitSegments()
 	}
 } 
 
-int
+void
 CloseSegments( xp, p )
 XParms	xp;
 Parms	p;
@@ -363,32 +362,7 @@ int	height;
 	return( 1 );
 }
 
-int
-BuildMeSomeTiles( tiles, split, width, height, method, overlap )
-XieTile tiles[];
-int	split;
-int	width;
-int	height;
-int	method;
-int	overlap;
-{
-	int i, j, idx;
-
-	SetTileXY( tiles, split, width, height, method, overlap );
-
-        idx = 0;
-        for ( i = 0; i < split; i++ )
-        {
-                for ( j = 0; j < split; j++ )
-                {
-                        tiles[ idx ].src = idx + 1;
-                        idx++;
-                }
-        }
-	return( 1 );
-}
-
-int
+static void
 SetTileXY( tiles, split, width, height, method, overlap )
 XieTile	tiles[];
 int	split;
@@ -442,6 +416,31 @@ int	overlap;
 	}
 }
 
+int
+BuildMeSomeTiles( tiles, split, width, height, method, overlap )
+XieTile tiles[];
+int	split;
+int	width;
+int	height;
+int	method;
+int	overlap;
+{
+	int i, j, idx;
+
+	SetTileXY( tiles, split, width, height, method, overlap );
+
+        idx = 0;
+        for ( i = 0; i < split; i++ )
+        {
+                for ( j = 0; j < split; j++ )
+                {
+                        tiles[ idx ].src = idx + 1;
+                        idx++;
+                }
+        }
+	return( 1 );
+}
+
 void DoPasteUp(xp, p, reps)
     XParms  xp;
     Parms   p;
@@ -482,7 +481,7 @@ void DoPasteUp(xp, p, reps)
     	}
 }
 
-int
+void
 EndPasteUp(xp, p)
     XParms  xp;
     Parms   p;
@@ -490,7 +489,7 @@ EndPasteUp(xp, p)
 	FreePasteUpStuff( xp, p );
 }
 
-int
+static void
 FreePasteUpStuff( xp, p )
 XParms	xp;
 Parms	p;

@@ -148,7 +148,7 @@ LBXDeltaMinDiffs(pcache, inmsg, inmsglen, maxdiff, pindex)
 /*
  * Delta compact a given message
  */
-int
+void
 LBXEncodeDelta(pcache, inmsg, ndiff, index, buf)
     LBXDeltasPtr	pcache;
     unsigned char	*inmsg;

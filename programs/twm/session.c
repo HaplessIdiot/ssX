@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/twm/session.c,v 3.4 1999/02/20 15:07:25 hohndel Exp $ */
 
 #include <X11/Xos.h>
 
@@ -133,11 +133,7 @@ Window window;
 
 
 int
-write_byte (file, b)
-
-FILE		*file;
-unsigned char   b;
-
+write_byte (FILE *file, unsigned char b)
 {
     if (fwrite ((char *) &b, 1, 1, file) != 1)
 	return 0;
@@ -146,11 +142,7 @@ unsigned char   b;
 
 
 int
-write_ushort (file, s)
-
-FILE		*file;
-unsigned short	s;
-
+write_ushort (FILE *file, unsigned short s)
 {
     unsigned char   file_short[2];
 
@@ -163,11 +155,7 @@ unsigned short	s;
 
 
 int
-write_short (file, s)
-
-FILE	*file;
-short	s;
-
+write_short (FILE *file, short s)
 {
     unsigned char   file_short[2];
 
@@ -421,12 +409,8 @@ char *windowRole;
 
 
 int
-ReadWinConfigEntry (configFile, version, pentry)
-
-FILE *configFile;
-unsigned short version;
-TWMWinConfigEntry **pentry;
-
+ReadWinConfigEntry (FILE *configFile, unsigned short version,
+		    TWMWinConfigEntry **pentry)
 {
     TWMWinConfigEntry *entry;
     unsigned char byte;

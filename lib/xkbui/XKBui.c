@@ -814,6 +814,7 @@ XkbUI_DrawChanged(view,viewport,changesnum_keys,keys)
 	XkbKeyNamePtr		keys;
 #endif
 {
+    return False;
 }
 
 Bool 
@@ -830,4 +831,5 @@ XkbUI_Select(view,coord,which,section)
 	XkbSectionPtr		section;
 #endif
 {
+    return False;
 }

@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/twm/util.c,v 1.3 1999/02/20 15:07:25 hohndel Exp $ */
 
 
 /***********************************************************************
@@ -890,7 +890,7 @@ CreateMenuPixmap (widthp, heightp)
 Pixmap 
 CreateMenuIcon (height, widthp, heightp)
     int	height;
-    int	*widthp, *heightp;
+    unsigned int *widthp, *heightp;
 {
     int h, w;
     int ih, iw;

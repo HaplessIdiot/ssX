@@ -34,7 +34,6 @@
      ((b) == PCI_CLASS_MULTIMEDIA && (s) == PCI_SUBCLASS_MULTIMEDIA_VIDEO))
 
 
-MODULESETUPPROTO(scanPciSetup);
 void xf86DisplayPCICardInfo(int);
 
 

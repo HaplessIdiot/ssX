@@ -1,4 +1,4 @@
-/* $XConsortium: FSSetCats.c,v 1.3 94/04/17 20:15:19 dpw Exp $ */
+/* $TOG: FSSetCats.c /main/5 1998/05/17 16:30:54 kaleb $ */
 
 /* @(#)FSFlush.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -27,14 +27,9 @@
 
 /*
 
-Copyright (c) 1987, 1994  X Consortium
+Copyright 1987, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -42,13 +37,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
@@ -60,26 +55,31 @@ FSSetCatalogues(svr, num, cats)
     int         num;
     char      **cats;
 {
-    unsigned char nbytes;
+    char        nbytes;
     fsSetCataloguesReq *req;
     char        buf[256];
     int         i;
-    int         len;
+    int         len, tlen, tnum;
 
-    for (i = 0, len = 0; i < num; i++) {
-	len += strlen(cats[i]);
+    for (i = 0, tnum = 0, len = 0; i < num; i++) {
+	if ((tlen = strlen(cats[i])) < 256) {
+	    len += tlen;
+	    tnum++;
+	}
     }
 
     GetReq(SetCatalogues, req);
-    req->num_catalogues = num;
+    req->num_catalogues = tnum;
     req->length += (len + 3) >> 2;
 
     for (i = 0; i < num; i++) {
 	nbytes = strlen(cats[i]);
-	buf[0] = (char) nbytes;
-	bcopy(cats[i], &buf[1], nbytes);
-	nbytes++;
-	_FSSend(svr, buf, (long) nbytes);
+	if (nbytes < 256) {
+	    buf[0] = nbytes;
+	    memcpy(&buf[1], cats[i], nbytes);
+	    nbytes++;
+	    _FSSend(svr, buf, (long) nbytes);
+	}
     }
     SyncHandle();
     return FSSuccess;

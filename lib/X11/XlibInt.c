@@ -22,9 +22,9 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.13 1998/06/28 08:41:34 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.14 1998/10/03 08:41:29 dawes Exp $ */
 
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.13 1998/06/28 08:41:34 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.14 1998/10/03 08:41:29 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -2881,7 +2881,8 @@ int _XError (dpy, rep)
 /*
  * _XIOError - call user connection error handler and exit
  */
-int _XIOError (dpy)
+int
+_XIOError (dpy)
     Display *dpy;
 {
     dpy->flags |= XlibDisplayIOError;
@@ -2894,6 +2895,7 @@ int _XIOError (dpy)
     else
 	_XDefaultIOError(dpy);
     exit (1);
+    return 0;
 }
 
 

@@ -44,6 +44,7 @@
 
 static unsigned long _XcmsGetElement();
 static int _XcmsGetProperty();
+static void RemoveSCCData(Display *dpy, Window root, int colorFlag);
 
 char *ProgramName;
 
@@ -716,7 +717,7 @@ IntensityTblError:
  *
  *      SYNOPSIS
  */
-int
+void
 RemoveSCCData(dpy, root, colorFlag)
     Display *dpy;
     Window  root;

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.6 1999/01/11 05:13:37 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.7 1999/02/05 04:49:56 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -43,7 +43,7 @@ void ResetSourceChanged(xedit_flist_item*);
 static void ResetDC(Widget, XtPointer, XtPointer);
 static void SourceChanged(Widget, XtPointer, XtPointer);
 
-static Bool AddDoubleClickCallback(Widget, Bool);
+static void AddDoubleClickCallback(Widget, Bool);
 static Bool ReallyDoLoad(char*, char*);
 static char *makeBackupName(String, String, unsigned);
 
@@ -64,7 +64,7 @@ static int dc_state;
  *                 state - If true add the callback, else remove it.
  *	Returns: none.
  */
-static Bool
+static void
 AddDoubleClickCallback(Widget w, Bool state)
 {
   Arg args[1];
