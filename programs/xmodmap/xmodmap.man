@@ -1,4 +1,4 @@
-.\" $XConsortium: xmodmap.man,v 1.24 94/04/17 20:24:25 dpw Exp $
+.\" $XConsortium: xmodmap.man /main/26 1996/12/09 17:10:13 kaleb $
 .\" Copyright (c) 1988, 1989, 1990  X Consortium
 .\" Copyright 1987 Sun Microsystems, Inc.
 .\" 
@@ -25,6 +25,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
+.\" $XFree86$
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -38,9 +39,9 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH XMODMAP 1 "Release 6" "X Version 11"
+.TH XMODMAP 1 "Release 6.3" "X Version 11"
 .SH NAME
-xmodmap - utility for modifying keymaps in X
+xmodmap - utility for modifying keymaps and pointer button mappings in X
 .SH SYNOPSIS
 .B xmodmap
 [-options ...] [filename]
