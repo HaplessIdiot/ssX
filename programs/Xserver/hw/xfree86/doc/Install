@@ -1,8 +1,8 @@
-                 Installation Details for XFree86[tm] 4.0.2
+                 Installation Details for XFree86[tm] 4.1.0
 
                           The XFree86 Project, Inc
 
-                              15 December 2000
+                                 1 June 2001
 
                                   Abstract
 
@@ -20,10 +20,10 @@ vide a customized version of the GNU tar utility called "extract" and an
 installation script.  We recommend that these be used to install the bina-
 ries.
 
-2.  Downloading the XFree86 4.0.2 binaries
+2.  Downloading the XFree86 4.1.0 binaries
 
-We provide XFree86 4.0.2 binaries for a range of operating systems at our ftp
-site <URL:ftp://ftp.xfree86.org/pub/XFree86/4.0.2/binaries/>.  Often during
+We provide XFree86 4.1.0 binaries for a range of operating systems at our ftp
+site <URL:ftp://ftp.xfree86.org/pub/XFree86/4.1.0/binaries/>.  Often during
 releases our ftp site is heavily loaded.  Instead of downloading directly
 from us we recommend that instead you use one of our mirror sites.  Another
 advantage of using our mirror sites is that some of them support http access
@@ -43,31 +43,46 @@ The output of this utility tells you which is the correct set of binaries for
 you to download.  If you are careful with this step you will save yourself a
 lot time and trouble from NOT downloading an incompatible distribution.
 
-NOTE: the Xinstall.sh script must be downloaded in binary mode, otherwise it
-won't run correctly.  If you get lots of "command not found" messages when
-you try to run it, then it is most likely because the script wasn't down-
-loaded in binary mode.  Some web browsers won't do this for files of that
-name, so we also have a copy of it called "Xinstall.bin", and most browsers
-should download that correctly.  When downloading it under this name, select
-"save as" on your browser, and save the file under the name "Xinstall.sh".
+NOTES:
+
+   o The Xinstall.sh script must be downloaded in binary mode, otherwise it
+     won't run correctly.  If you get lots of "command not found" messages
+     when you try to run it, then it is most likely because the script wasn't
+     downloaded in binary mode.  Some web browsers won't do this for files of
+     that name, so we also have a copy of it called "Xinstall.bin", and most
+     browsers should download that correctly.  When downloading it under this
+     name, select "save as" on your browser, and save the file under the name
+     "Xinstall.sh".
+
+   o The Xinstall.sh script requires some system commands and utilities to
+     function correctly.  While most systems will have these, some Linux
+     installations may not.  If you find that the script is failing because
+     of some missing system command, you will need to install it before you
+     can continue.  If you don't know how to do this, then we recommend that
+     you obtain this version of XFree86 from your Operating System distribu-
+     tor.
+
+   o Always use the version of the Xinstall.sh script that's provided with
+     the release you're installing.  Older versions of the script may not
+     install newer releases correctly.
 
 Once you're run the Xinstall.sh script and found which binary distribution is
 suitable for your system, download the necessary files.  The twelve (12)
 mandatory files for all installations are listed below.  If you have not
 downloaded all of the files, the installer script will complain.
 
-          1.   Xinstall.sh      The installer script
-          2.   extract          The utility for extracting tarballs
-          3.   Xbin.tgz         X clients/utilities and run-time libraries
-          4.   Xlib.tgz         Some data files required at run-time
-          5.   Xman.tgz         Manual pages
-          6.   Xdoc.tgz         XFree86 documentation
-          7.   Xfnts.tgz        Base set of fonts
-          8.   Xfenc.tgz        Base set of font encoding data
-          9.   Xetc.tgz         Run-time configuration files
-          10.  Xvar.tgz         Run-time data
-          11.  Xxserv.tgz       XFree86 X server
-          12.  Xmod.tgz         XFree86 X server modules
+          1.   Xinstall.sh    The installer script
+          2.   extract        The utility for extracting tarballs
+          3.   Xbin.tgz       X clients/utilities and run-time libraries
+          4.   Xlib.tgz       Some data files required at run-time
+          5.   Xman.tgz       Manual pages
+          6.   Xdoc.tgz       XFree86 documentation
+          7.   Xfnts.tgz      Base set of fonts
+          8.   Xfenc.tgz      Base set of font encoding data
+          9.   Xetc.tgz       Run-time configuration files
+          10.  Xvar.tgz       Run-time data
+          11.  Xxserv.tgz     XFree86 X server
+          12.  Xmod.tgz       XFree86 X server modules
 
 NOTES:
 
@@ -86,22 +101,20 @@ NOTES:
    o Some distributions may have additional mandatory tarballs.  While rare,
      the installer script will tell you if any are missing.
 
-The following thirteen (13) tarballs are optional.  You should download the
+The following eleven (11) tarballs are optional.  You should download the
 ones you want to install.
 
-          1.   Xfsrv.tgz        Font server
-          2.   Xnest.tgz        Nested X server
-          3.   Xprog.tgz        X header files, config files and compile-time libs
-          4.   Xprt.tgz         X Print server
-          5.   Xvfb.tgz         Virtual framebuffer X server
-          6.   Xf100.tgz        100dpi fonts
-          7.   Xfcyr.tgz        Cyrillic fonts
-          8.   Xflat2.tgz       Latin-2 fonts
-          9.   Xfnon.tgz        Some large bitmap fonts
-          10.  Xfscl.tgz        Scalable fonts (Speedo and Type1)
-          11.  Xhtml.tgz        HTML version of the documentation
-          12.  Xps.tgz          PostScript version of the documentation
-          13.  Xjdoc.tgz        Documentation in Japanese
+          1.   Xfsrv.tgz      Font server
+          2.   Xnest.tgz      Nested X server
+          3.   Xprog.tgz      X header files, config files and compile-time libs
+          4.   Xprt.tgz       X Print server
+          5.   Xvfb.tgz       Virtual framebuffer X server
+          6.   Xf100.tgz      100dpi fonts
+          7.   Xfcyr.tgz      Cyrillic fonts
+          8.   Xfscl.tgz      Scalable fonts (Speedo and Type1)
+          9.   Xhtml.tgz      HTML version of the documentation
+          10.  Xps.tgz        PostScript version of the documentation
+          11.  Xjdoc.tgz      Documentation in Japanese
 
 NOTES:
 
@@ -110,9 +123,9 @@ NOTES:
 If you miss some and want to install them later, go to the Manual Installa-
 tion (section 4., page 1) section.
 
-3.  Installing XFree86 4.0.2 using the Xinstall.sh script
+3.  Installing XFree86 4.1.0 using the Xinstall.sh script
 
-We strongly recommend that our XFree86 4.0.2 binaries be installed using the
+We strongly recommend that our XFree86 4.1.0 binaries be installed using the
 Xinstall.sh script that we provide.  There are a lot of steps in the manual
 installation process, and those steps can vary according to the platform and
 hardware setup.  There is a description of the manual installation process
@@ -229,7 +242,7 @@ later that you need it, you can create it easily by running:
 
 The next step is to configure the X server.  That is covered in detail in an
 as-yet unwritten document :-(.  In the meantime, there are three ways to cre-
-ate a basic X server configuration file for XFree86 4.0.2.  One is to run the
+ate a basic X server configuration file for XFree86 4.1.0.  One is to run the
 xf86config utility.  Another is to run the xf86cfg utility.  The third option
 is to use the new -configure X server option:
 
@@ -248,9 +261,9 @@ old XF86_* and/or XF98_* X server binaries from /usr/X11R6/bin.
 After the X server configuration is done, it may be advisable to reboot,
 especially if you run xdm (or equivalent) or the font server (xfs).
 
-4.  Installing XFree86 4.0.2 manually
+4.  Installing XFree86 4.1.0 manually
 
-This section describes how to manually install the XFree86 4.0.2 binary dis-
+This section describes how to manually install the XFree86 4.1.0 binary dis-
 tributions.  You should only use this method if you know what you're doing.
 The information here covers some common cases, but not every possible case.
 
@@ -288,6 +301,7 @@ tion procedure for this case is as follows:
      ln -s /etc/X11/xinit /usr/X11R6/lib/X11
      ln -s /etc/X11/xsm /usr/X11R6/lib/X11
      ln -s /etc/X11/xserver /usr/X11R6/lib/X11
+     chmod ug-w /usr/X11R6/lib           # Make sure the permissions are OK
      /sbin/ldconfig /usr/X11R6/lib       # For Linux
      /sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
      /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
@@ -347,11 +361,12 @@ Once that's done, the main part of the installation can be done:
      ./extract -C /usr/X11R6 `pwd`/X[a-df-uw-z]*.tgz
      ./extract -C /usr/X11R6 Xvfb.tgz    # If you are installing Xvfb
      ./extract -C /var Xvar.tgz
+     chmod ug-w /usr/X11R6/lib           # Make sure the permissions are OK
      /sbin/ldconfig /usr/X11R6/lib       # For Linux
      /sbin/ldconfig -m /usr/X11R6/lib    # For FreeBSD, NetBSD, OpenBSD
      /usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.11 2001/03/02 17:40:48 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.12 2001/06/01 18:26:04 dawes Exp $
 
 
 $XFree86$

@@ -6,7 +6,7 @@
 
 1.  Supported hardware
 
-The s3virge driver in XFree86 4.0.2 supports the S3 ViRGE, ViRGE DX, GX, MX,
+The s3virge driver in XFree86 4.1.0 supports the S3 ViRGE, ViRGE DX, GX, MX,
 MX+, and VX chipsets.  A majority of testing is done on ViRGE DX chips, mak-
 ing them the most stable to date.  This release has improved support for
 ViRGE GX2 stability, XVideo support for ViRGE DX (tested) and ViRGE
