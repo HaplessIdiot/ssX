@@ -1,4 +1,4 @@
-/* $XFree86: mmath.h,v 1.11 2001/12/11 09:18:54 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mmath.h,v 1.12 2001/12/31 18:06:22 herrb Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.4
@@ -288,13 +288,13 @@ do {						\
 
 #ifdef USE_IEEE
 /* LITTLE_ENDIAN - add other architectures here */
-#if defined(__i386__) || defined(__alpha__)
-#define IEEE_INF 0x7fc00000 
-#define IEEE_NAN 0x7f800000
+#if defined(__i386__) || defined(__alpha__) || defined(__powerpc__) || defined(__ppc__)
+#define IEEE_INF 0x7f800000 
+#define IEEE_NAN 0x7fc00000
 /* BIG_ENDIAN - add other architectures here */
-#elif defined(__mc68000__) || defined(__ppc__) || defined(__powerpc__) || defined(__sparc__)
-#define IEEE_INF 0x7fffffff
-#define IEEE_NAN 0x7f800000
+#elif defined(__mc68000__) || defined(__sparc__)
+#define IEEE_INF 0x7f800000
+#define IEEE_NAN 0x7fffffff
 #else
 #error "Need to define IEEE_INF and IEEE_NAN for your architecture"
 #endif
