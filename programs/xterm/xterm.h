@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.89 2003/05/19 00:47:33 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.90 2003/09/21 17:12:48 dickey Exp $ */
 
 /************************************************************
 
@@ -570,6 +570,7 @@ extern void unparseputc (int c, int fd);
 extern void unparseputc1 (int c, int fd);
 extern void unparseputs (char *s, int fd);
 extern void unparseseq (ANSI *ap, int fd);
+extern void xtermAddInput(Widget w);
 
 #if OPT_BLINK_CURS
 extern void ToggleCursorBlink(TScreen *screen);
@@ -611,7 +612,6 @@ extern GC xterm_DoubleGC(unsigned chrset, unsigned flags, GC old_gc);
 extern Boolean xtermDeleteIsDEL (void);
 extern void Input (TKeyboard *keyboard, TScreen *screen, XKeyEvent *event, Bool eightbit);
 extern void StringInput (TScreen *screen, Char *string, size_t nbytes);
-extern void xtermAddInput(Widget w);
 
 #if OPT_NUM_LOCK
 extern void VTInitModifiers(void);

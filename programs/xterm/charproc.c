@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.146 2003/09/21 17:12:45 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.147 2003/10/13 00:58:21 dickey Exp $ */
 
 /*
 
@@ -698,6 +698,22 @@ globaldef {
 noshare
 #endif /* VMS */
 WidgetClass xtermWidgetClass = (WidgetClass) & xtermClassRec;
+
+/*
+ * Add input-actions for widgets that are overlooked (scrollbar and toolbar):
+ *
+ *	a) Sometimes the scrollbar passes through translations, sometimes it
+ *	   doesn't.  We add the KeyPress translations here, just to be sure.
+ *	b) In the normal (non-toolbar) configuration, the xterm widget covers
+ *	   almost all of the window.  With a toolbar, there's a relatively
+ *	   large area that the user would expect to enter keystrokes since the
+ *	   program can get the focus.
+ */
+void
+xtermAddInput(Widget w)
+{
+    XtAugmentTranslations(w, XtParseTranslationTable(defaultTranslations));
+}
 
 #if OPT_ISO_COLORS
 /*
@@ -3215,6 +3231,28 @@ HandleStructNotify(Widget w GCC_UNUSED,
 }
 #endif /* HANDLE_STRUCT_NOTIFY */
 
+#if OPT_BLINK_CURS
+static void
+SetCursorBlink(register TScreen * screen, int enable)
+{
+    ShowCursor();
+    if (enable) {
+	screen->cursor_blink = TRUE;
+	StartBlinking(screen);
+    } else {
+	screen->cursor_blink = FALSE;
+	StopBlinking(screen);
+    }
+    update_cursorblink();
+}
+
+void
+ToggleCursorBlink(register TScreen * screen)
+{
+    SetCursorBlink(screen, !(screen->cursor_blink));
+}
+#endif
+
 /*
  * process ANSI modes set, reset
  */
@@ -3334,6 +3372,11 @@ dpmodes(XtermWidget termw,
 	    MotionOff(screen, termw);
 	    set_mousemode(X10_MOUSE);
 	    break;
+#if OPT_BLINK_CURS
+	case 12:		/* att610: Start/stop blinking cursor */
+	    SetCursorBlink(screen, (func == bitset) ? ON : OFF);
+	    break;
+#endif
 	case 18:		/* DECPFF: print form feed */
 	    screen->printer_formfeed = (func == bitset) ? ON : OFF;
 	    break;
@@ -3581,6 +3624,20 @@ savemodes(XtermWidget termw)
 	case SET_X10_MOUSE:	/* mouse bogus sequence */
 	    DoSM(DP_X_X10MSE, screen->send_mouse_pos);
 	    break;
+#if OPT_BLINK_CURS
+	case 12:		/* att610: Start/stop blinking cursor */
+	    DoSM(DP_CRS_BLINK, screen->cursor_blink);
+	    break;
+#endif
+	case 18:		/* DECPFF: print form feed */
+	    DoSM(DP_PRN_FORMFEED, screen->printer_formfeed);
+	    break;
+	case 19:		/* DECPEX: print extent */
+	    DoSM(DP_PRN_EXTENT, screen->printer_extent);
+	    break;
+	case 25:		/* DECTCEM: Show/hide cursor (VT200) */
+	    DoSM(DP_CRS_VISIBLE, screen->cursor_set);
+	    break;
 	case 40:		/* 132 column mode              */
 	    DoSM(DP_X_DECCOLM, screen->c132);
 	    break;
@@ -3698,6 +3755,21 @@ restoremodes(XtermWidget termw)
 	    break;
 	case SET_X10_MOUSE:	/* MIT bogus sequence           */
 	    DoRM(DP_X_X10MSE, screen->send_mouse_pos);
+	    break;
+#if OPT_BLINK_CURS
+	case 12:		/* att610: Start/stop blinking cursor */
+	    DoRM(DP_CRS_BLINK, screen->cursor_blink);
+	    SetCursorBlink(screen, screen->cursor_blink);
+	    break;
+#endif
+	case 18:		/* DECPFF: print form feed */
+	    DoRM(DP_PRN_FORMFEED, screen->printer_formfeed);
+	    break;
+	case 19:		/* DECPEX: print extent */
+	    DoRM(DP_PRN_EXTENT, screen->printer_extent);
+	    break;
+	case 25:		/* DECTCEM: Show/hide cursor (VT200) */
+	    DoRM(DP_CRS_VISIBLE, screen->cursor_set);
 	    break;
 	case 40:		/* 132 column mode              */
 	    DoRM(DP_X_DECCOLM, screen->c132);
@@ -4099,22 +4171,6 @@ unparseputs(char *s, int fd)
     while (*s)
 	unparseputc(*s++, fd);
 }
-
-#if OPT_BLINK_CURS
-void
-ToggleCursorBlink(register TScreen * screen)
-{
-    ShowCursor();
-    if (screen->cursor_blink) {
-	screen->cursor_blink = FALSE;
-	StopBlinking(screen);
-    } else {
-	screen->cursor_blink = TRUE;
-	StartBlinking(screen);
-    }
-    update_cursorblink();
-}
-#endif
 
 void
 ToggleAlternate(register TScreen * screen)

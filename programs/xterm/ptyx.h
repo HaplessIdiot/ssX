@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.107 2003/09/21 17:12:48 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.108 2003/10/13 00:58:22 dickey Exp $ */
 
 /*
  * Copyright 1999-2002,2003 by Thomas E. Dickey
@@ -968,27 +968,33 @@ typedef struct {
 
 	/* indices into save_modes[] */
 typedef enum {
-	DP_DECCKM,
+	DP_CRS_VISIBLE,
 	DP_DECANM,
+	DP_DECARM,
+	DP_DECAWM,
+	DP_DECBKM,
+	DP_DECCKM,
 	DP_DECCOLM,	/* IN132COLUMNS */
+	DP_DECOM,
+	DP_DECPEX,
+	DP_DECPFF,
 	DP_DECSCLM,
 	DP_DECSCNM,
-	DP_DECOM,
-	DP_DECAWM,
-	DP_DECARM,
-	DP_X_X10MSE,
-	DP_DECPFF,
-	DP_DECPEX,
 	DP_DECTCEM,
 	DP_DECTEK,
-	DP_X_DECCOLM,
-	DP_X_MORE,
-	DP_X_MARGIN,
-	DP_X_REVWRAP,
-	DP_X_LOGGING,
+	DP_PRN_EXTENT,
+	DP_PRN_FORMFEED,
 	DP_X_ALTSCRN,
-	DP_DECBKM,
+	DP_X_DECCOLM,
+	DP_X_LOGGING,
+	DP_X_MARGIN,
+	DP_X_MORE,
 	DP_X_MOUSE,
+	DP_X_REVWRAP,
+	DP_X_X10MSE,
+#if OPT_BLINK_CURS
+	DP_CRS_BLINK,
+#endif
 	DP_LAST
 	} SaveModes;
 
@@ -1270,7 +1276,7 @@ typedef struct {
 	int		scrolls;	/* outstanding scroll count,
 					    used only with multiscroll	*/
 	SavedCursor	sc[2];		/* data for restore cursor	*/
-	int		save_modes[24];	/* save dec/xterm private modes	*/
+	int		save_modes[DP_LAST]; /* save dec/xterm private modes */
 
 	/* Improved VT100 emulation stuff.				*/
 	String		keyboard_dialect; /* default keyboard dialect	*/

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.98 2003/09/21 17:12:49 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.99 2003/10/13 00:58:23 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_dev">Development - 2003/10/19 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_180">Patch #180 - 2003/10/12 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_179">Patch #179 - 2003/5/21 - XFree86 4.3.99.5</A>
 <LI><A HREF="#xterm_178">Patch #178 - 2003/5/18 - XFree86 4.3.99.5</A>
@@ -225,6 +226,27 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_dev">Development - 2003/10/19 - XFree86 4.3.99.15</A></H1>
+<ul>
+	<li>modify <code>xtermAddInput()</code> (see note on augmentation in <a
+	    href="#xterm_158">patch #158</a>) to use the complete set of
+	    default keyboard translations so that one can use shifted pageup,
+	    wheel mouse, etc., while the mouse pointer is over the scrollbar.
+	    (Debian #178812).
+
+	<li>make save/restore mode controls apply to show/blink cursor states.
+
+	<li>add escape sequence to start/stop blinking cursor, which allows
+	    implementing <code>cvvis</code> terminfo capability (request by
+	    Nate Bargmann).
+
+	<li>add <code>indp</code> and <code>rin</code> to terminfo entry.
+
+	<li>fix an out-of-bounds array reference in ScrnRefresh() for wide
+	    characters (report by Dan Harnett, patch by Todd Miller, bug dates
+	    from <a href="#xterm_141">patch #141</a>).
+</ul>
 
 <H1><A NAME="xterm_180">Patch #180 - 2003/10/12 - XFree86 4.3.99.15</A></H1>
 <ul>
