@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.30 2003/04/23 21:51:39 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -568,6 +568,7 @@ MGADisplayVideoOverlay(
 ){
     MGAPtr pMga = MGAPTR(pScrn);
     int tmp, hzoom, intrep;
+    int maxOverlayClock;
 
     CHECK_DMA_QUIESCENT(pMga, pScrn);
 
@@ -581,7 +582,15 @@ MGADisplayVideoOverlay(
 
     tmp = pScrn->currentMode->VDisplay +1;
     /* enable accelerated 2x horizontal zoom when pixelclock >135MHz */
-    hzoom = (pScrn->currentMode->Clock > 135000) ? 1 : 0;
+
+    if ((pMga->ChipRev >= 0x80) || (pMga->Chipset == PCI_CHIP_MGAG550)) {
+	/* G450, G550 */
+	maxOverlayClock = 234000;
+    } else {
+	maxOverlayClock = 135000;
+    }
+
+    hzoom = (pScrn->currentMode->Clock > maxOverlayClock) ? 1 : 0;
 
     switch(id) {
     case FOURCC_UYVY:

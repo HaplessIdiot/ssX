@@ -1,4 +1,7 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 547. Set the pixel clock limit above which hzoom is enabled for the video
+      overlay for G450 and G550 cards to 234MHz.  This fixes a problem with
+      the Xv support having half horizontal resolution (Michel Lespinasse).
  546. Add support on Mac OS X for building keymap using Carbon Keyboard
       Layout API (John Harper).
  545. Map holes in kdrive VESA driver (#5436, Juliusz Chroboczek).
@@ -18080,7 +18083,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2924 2003/11/01 04:49:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2925 2003/11/01 08:13:05 torrey Exp $
 
 
 
