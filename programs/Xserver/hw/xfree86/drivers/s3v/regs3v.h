@@ -336,7 +336,7 @@ LUTENTRY;
 #define WaitIdle()       do { mem_barrier(); while (!(IN_SUBSYS_STAT() & 0x2000)); } while (0)
 
 /* Wait until Command FIFO is empty */
-#define WaitCommandEmpty()       do { mem_barrier(); while (!(((((mmtr)s3MmioMem)->subsys_regs.regs.adv_func_cntl)) & 0x200)); } while (0)
+#define WaitCommandEmpty()       do { mem_barrier(); while (!(((((mmtr)s3vMmioMem)->subsys_regs.regs.adv_func_cntl)) & 0x200)); } while (0)
 
 
 #ifndef NULL
