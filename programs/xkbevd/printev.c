@@ -35,8 +35,7 @@
 #define	ynText(v)	((v)?Yes:No)
 
 static char *
-eventTypeToString(evType)
-    int evType;
+eventTypeToString(int evType)
 {
 static char name[20];
     switch (evType) {
@@ -48,10 +47,7 @@ static char name[20];
 }
 
 static void
-xkb_prologue (file, ev, name)
-    FILE *	file;
-    XkbEvent *	ev;
-    char *	name;
+xkb_prologue (FILE *file, XkbEvent *ev, char *name)
 {
     XkbAnyEvent *e = &ev->any;
 
@@ -61,9 +57,7 @@ xkb_prologue (file, ev, name)
 }
 
 static void
-do_XkbStateNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent *	xkbev;
+do_XkbStateNotify(FILE *file, XkbEvent *xkbev)
 {
     XkbStateNotifyEvent *state= &xkbev->state;
 
@@ -98,21 +92,15 @@ do_XkbStateNotify(file,xkbev)
 }
 
 static void
-do_map_message(what,first,num,eol)
-    char *	what;
-    int		first;
-    int		num;
-    int		eol;
+do_map_message(char *what, int first, int num, int eol)
 {
     if (num>1)
 	 printf("%ss %d..%d changed%s",what,first,first+num-1,(eol?"\n":""));
     else printf("%s %d changed%s",what,first,(eol?"\n":""));
 }
 
-void
-do_XkbMapNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent *	xkbev;
+static void
+do_XkbMapNotify(FILE *file,XkbEvent *xkbev)
 {
     XkbMapNotifyEvent *map = &xkbev->map;
     if (map->changed&XkbKeyTypesMask) {
@@ -144,10 +132,8 @@ do_XkbMapNotify(file,xkbev)
     return;
 }
 
-void
-do_XkbControlsNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent *	xkbev;
+static void
+do_XkbControlsNotify(FILE *file, XkbEvent *xkbev)
 {
     XkbControlsNotifyEvent *ctrls = &xkbev->ctrls;
     fprintf(file,"    changed= 0x%x, enabled= 0x%x, enabledChanges= 0x%x\n",
@@ -162,10 +148,8 @@ do_XkbControlsNotify(file,xkbev)
     return;
 }
 
-void
-do_XkbIndicatorNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent	*xkbev;
+static void
+do_XkbIndicatorNotify(FILE *file, XkbEvent *xkbev)
 {
     XkbIndicatorNotifyEvent *leds = &xkbev->indicators;
     if (leds->xkb_type==XkbIndicatorStateNotify) 
@@ -176,10 +160,8 @@ do_XkbIndicatorNotify(file,xkbev)
     return;
 }
 
-void
-do_XkbBellNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent	*xkbev;
+static void
+do_XkbBellNotify(FILE *file, XkbEvent *xkbev)
 {
     XkbBellNotifyEvent *bell = &xkbev->bell;
     fprintf(file,"    bell class= %d, id= %d\n",bell->bell_class,bell->bell_id);
@@ -192,15 +174,13 @@ do_XkbBellNotify(file,xkbev)
 	    XFree(name);
     }
     else fprintf(file,", no name\n");
-    fprintf(file,"    window= 0x%x, %sevent_only\n",bell->window,
+    fprintf(file,"    window= 0x%x, %sevent_only\n",(unsigned int)bell->window,
 						(bell->event_only?"":"!"));
     return;
 }
 
-void
-do_XkbAccessXNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent	*xkbev;
+static void
+do_XkbAccessXNotify(FILE *file, XkbEvent *xkbev)
 {
     XkbAccessXNotifyEvent *sk = &xkbev->accessx;
     char *detail;
@@ -225,9 +205,8 @@ do_XkbAccessXNotify(file,xkbev)
     return;
 }
 
-do_XkbNamesNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent	*xkbev;
+static void
+do_XkbNamesNotify(FILE *file, XkbEvent *xkbev)
 {
     XkbNamesNotifyEvent *names = &xkbev->names;
 
@@ -286,10 +265,8 @@ do_XkbNamesNotify(file,xkbev)
     return;
 }
 
-void
-do_XkbCompatMapNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent	*xkbev;
+static void
+do_XkbCompatMapNotify(FILE *file, XkbEvent *xkbev)
 {
     XkbCompatMapNotifyEvent *map = &xkbev->compat;
 
@@ -306,10 +283,8 @@ do_XkbCompatMapNotify(file,xkbev)
     return;
 }
 
-void
-do_XkbActionMessage(file,xkbev)
-    FILE *	file;
-    XkbEvent	*xkbev;
+static void
+do_XkbActionMessage(FILE *file, XkbEvent *xkbev)
 {
     XkbActionMessageEvent *msg= &xkbev->message;
     fprintf(file,"    message: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
@@ -322,10 +297,8 @@ do_XkbActionMessage(file,xkbev)
     return;
 }
 
-void
-do_XkbNewKeyboardNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent	*xkbev;
+static void
+do_XkbNewKeyboardNotify(FILE *file, XkbEvent *xkbev)
 {
     XkbNewKeyboardNotifyEvent *nk= &xkbev->new_kbd;
     fprintf(file,"    new device: %d min_keycode: %d, max_keycode %d\n",
@@ -336,10 +309,8 @@ do_XkbNewKeyboardNotify(file,xkbev)
     return;
 }
 
-void
-do_XkbExtensionDeviceNotify(file,xkbev)
-    FILE *	file;
-    XkbEvent	*xkbev;
+static void
+do_XkbExtensionDeviceNotify(FILE *file, XkbEvent *xkbev)
 {
     XkbExtensionDeviceNotifyEvent *edn= &xkbev->device;
     fprintf(file,"    device= %d, class= %d, id= %d\n",edn->device,
@@ -354,10 +325,11 @@ do_XkbExtensionDeviceNotify(file,xkbev)
     return;
 }
 
+#ifdef notyet
 static	char keyState[XkbMaxLegalKeyCode];
 
-do_KeyEvent (eventp,compose,repeat)
-    XkbEvent *eventp;
+static void
+do_KeyEvent(XkbEvent *eventp, int compose, int repeat)
 {
     XKeyEvent *e = &eventp->core.xkey;
     KeySym ks;
@@ -376,11 +348,11 @@ do_KeyEvent (eventp,compose,repeat)
 
     if (xkb && xkb->names && xkb->names->keys)
 	 kname= XkbKeyNameText(xkb->names->keys[e->keycode].name,XkbMessage);
-    else kname= "<????>";
+    else kname= "<???""?>";	/* XXX break trigraph */
 
     printf ("    state 0x%x, group= %d, key %s (keycode %u, keysym 0x%x, %s)\n",
 	    	e->state&0x1FFF, (e->state>>13)&0x7, kname,
-		e->keycode, ks, ksname);
+		e->keycode, (unsigned int)ks, ksname);
     printf ("    same_screen %s, autorepeat %s,\n",ynText(e->same_screen),
 			(detectableRepeat ? ynText(repeat) : "UNKNOWN"));
     if (nbytes < 0) nbytes = 0;
@@ -391,9 +363,8 @@ do_KeyEvent (eventp,compose,repeat)
     return;
 }
 
-
-do_KeyPress (eventp)
-    XkbEvent *eventp;
+static void
+do_KeyPress(XkbEvent *eventp)
 {
 int	repeat;
 
@@ -403,16 +374,16 @@ int	repeat;
     return;
 }
 
-do_KeyRelease (eventp)
-    XkbEvent *eventp;
+static void
+do_KeyRelease(XkbEvent *eventp)
 {
     keyState[eventp->core.xkey.keycode]= 0;
     do_KeyEvent (eventp,0,False);
     return;
 }
 
-do_ButtonPress (eventp)
-    XkbEvent *eventp;
+static void
+do_ButtonPress(XkbEvent *eventp)
 {
     XButtonEvent *e = &eventp->core.xbutton;
 
@@ -425,15 +396,15 @@ do_ButtonPress (eventp)
     return;
 }
 
-do_ButtonRelease (eventp)
-    XkbEvent *eventp;
+static void
+do_ButtonRelease(XkbEvent *eventp)
 {
     do_ButtonPress (eventp);		/* since it has the same info */
     return;
 }
 
-do_MotionNotify (eventp)
-    XkbEvent *eventp;
+static void
+do_MotionNotify(XkbEvent *eventp)
 {
     XMotionEvent *e = &eventp->core.xmotion;
 
@@ -446,8 +417,8 @@ do_MotionNotify (eventp)
     return;
 }
 
-do_EnterNotify (eventp)
-    XkbEvent *eventp;
+static void
+do_EnterNotify(XkbEvent *eventp)
 {
     XCrossingEvent *e = &eventp->core.xcrossing;
     char *mode, *detail;
@@ -483,15 +454,15 @@ do_EnterNotify (eventp)
     return;
 }
 
-do_LeaveNotify (eventp)
-    XkbEvent *eventp;
+static void
+do_LeaveNotify(XkbEvent *eventp)
 {
     do_EnterNotify (eventp);		/* since it has same information */
     return;
 }
 
-do_KeymapNotify (eventp)
-    XkbEvent *eventp;
+static void
+do_KeymapNotify(XkbEvent *eventp)
 {
     XKeymapEvent *e = &eventp->core.xkeymap;
     int i;
@@ -505,8 +476,8 @@ do_KeymapNotify (eventp)
     return;
 }
 
-do_ClientMessage (eventp)
-    XkbEvent *eventp;
+static void
+do_ClientMessage(XkbEvent *eventp)
 {
     XClientMessageEvent *e = &eventp->core.xclient;
     char *mname = XGetAtomName (dpy, e->message_type);
@@ -518,8 +489,8 @@ do_ClientMessage (eventp)
     return;
 }
 
-do_MappingNotify (eventp)
-    XkbEvent *eventp;
+static void
+do_MappingNotify(XkbEvent *eventp)
 {
     XMappingEvent *e = &eventp->core.xmapping;
     char *r;
@@ -539,12 +510,9 @@ do_MappingNotify (eventp)
 }
 
 
-
-set_sizehints (hintp, min_width, min_height,
-	       defwidth, defheight, defx, defy, geom)
-    XSizeHints *hintp;
-    int min_width, min_height, defwidth, defheight, defx, defy;
-    char *geom;
+static void
+set_sizehints(XSizeHints *hintp, int min_width, int min_height,
+	      int defwidth, int defheight, int defx, int defy, char *geom)
 {
     int geom_result;
 
@@ -591,11 +559,10 @@ set_sizehints (hintp, min_width, min_height,
     }
     return;
 }
+#endif
 
-Bool 
-PrintXkbEvent(file,ev)
-    FILE *	file;
-    XkbEvent *	ev;
+void
+PrintXkbEvent(FILE *file, XkbEvent *ev)
 {
     if (ev->type==xkbEventCode) {
 	switch (ev->any.xkb_type) {

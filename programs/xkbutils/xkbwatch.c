@@ -1,5 +1,5 @@
 /* $XConsortium: xkbwatch.c /main/5 1996/01/14 18:53:12 kaleb $ */
-/* $XFree86: xc/programs/xkbutils/xkbwatch.c,v 3.1 1996/01/16 15:09:19 dawes Exp $ */
+/* $XFree86: xc/programs/xkbutils/xkbwatch.c,v 3.2 1997/12/06 09:26:18 hohndel Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -45,22 +45,11 @@
 /***====================================================================***/
 
 	Display *	inDpy,*outDpy;
-static	unsigned long	wanted= 0xff;
 	int		evBase,errBase;
 	Bool		synch;
 
 /***====================================================================***/
 
-struct _resource {
-	char *	inDpyName;
-};
-
-#define offset(field)	XtOffsetOf(struct _resource, field)
-static XtResource app_resources[] = {
-    {"inputDisplay", "InputDisplay", XtRString, sizeof(char *),
-	offset(inDpyName), XtRString, NULL }
-};
-#undef offset
 
 static XrmOptionDescRec options[] = {
 {"-off",	"*on.on",		XrmoptionNoArg,		"FALSE"},
@@ -69,55 +58,10 @@ static XrmOptionDescRec options[] = {
 
 /***====================================================================***/
 
-Display *
-GetDisplay(program,dpyName)
-    char *	program;
-    char *	dpyName;
-{
-int		mjr,mnr,error;
-Window		topWin;
-Display	*	dpy;
-
-    mjr= XkbMajorVersion;
-    mnr= XkbMinorVersion;
-    dpy= XkbOpenDisplay(dpyName,&evBase,&errBase,&mjr,&mnr,&error);
-    if (dpy==NULL) {
-	switch (error) {
-	    case XkbOD_BadLibraryVersion:
-		uInformation("%s was compiled with XKB version %d.%02d\n",
-				program,XkbMajorVersion,XkbMinorVersion);
-		uError("X library supports incompatible version %d.%02d\n",
-				mjr,mnr);
-		break;
-	    case XkbOD_ConnectionRefused:
-		uError("Cannot open display \"%s\"\n",dpyName);
-		break;
-	    case XkbOD_NonXkbServer:
-		uError("XKB extension not present on %s\n",dpyName);
-		break;
-	    case XkbOD_BadServerVersion:
-		uInformation("%s was compiled with XKB version %d.%02d\n",
-				program,XkbMajorVersion,XkbMinorVersion);
-		uError("Server %s uses incompatible version %d.%02d\n",
-				dpyName,mjr,mnr);
-		break;
-	    default:
-		uInternalError("Unknown error %d from XkbOpenDisplay\n",error);
-	}
-    }
-    else if (synch)
-	XSynchronize(dpy,True);
-    return dpy;
-}
-
-/***====================================================================***/
-
 int
-main(argc,argv)
-    int		argc;
-    char *	argv[];
+main(int argc, char *argv[])
 {
-Widget		toplevel, session;
+Widget		toplevel;
 XtAppContext	app_con;
 Widget		panel;
 Widget		base[XkbNumModifiers];
@@ -128,13 +72,12 @@ Widget		compat[XkbNumModifiers];
 Widget		baseBox,latchBox,lockBox,effBox,compatBox;
 register int	i;
 unsigned	bit;
-int		n;
 XkbEvent	ev;
 XkbStateRec	state;
-static Arg	hArgs[]= { XtNorientation, (XtArgVal)XtorientHorizontal	};
-static Arg	vArgs[]= { XtNorientation, (XtArgVal)XtorientVertical };
-static Arg	onArgs[]=  { XtNon, (XtArgVal)True };
-static Arg	offArgs[]=  { XtNon, (XtArgVal)False };
+static Arg	hArgs[]= {{ XtNorientation, (XtArgVal)XtorientHorizontal }};
+static Arg	vArgs[]= {{ XtNorientation, (XtArgVal)XtorientVertical }};
+static Arg	onArgs[]=  {{ XtNon, (XtArgVal)True }};
+static Arg	offArgs[]=  {{ XtNon, (XtArgVal)False }};
 static char *	fallback_resources[] = {
     "*Box*background: grey50",
     "*Box*borderWidth: 0",
@@ -279,7 +222,7 @@ static char *	fallback_resources[] = {
 	}
 	else XtDispatchEvent(&ev.core);
     }
-BAIL:
+/* BAIL: */
     if (inDpy) 
 	XCloseDisplay(inDpy);
     if (outDpy!=inDpy)

@@ -31,10 +31,7 @@
 /***====================================================================***/
 
 static char *
-AppendBellNotifyArg(sink,arg,ev)
-   char *	sink;
-   char *	arg;
-   XkbEvent *	ev;
+AppendBellNotifyArg(char *sink, char *arg, XkbEvent *ev)
 {
     if (uStringEqual(arg,"device")||uStringEqual(arg,"D"))
 	sprintf(sink,"%d",ev->bell.device);
@@ -49,17 +46,14 @@ AppendBellNotifyArg(sink,arg,ev)
     else if (uStringEqual(arg,"id")||uStringEqual(arg,"i"))
 	sprintf(sink,"%d",ev->bell.bell_id);
     else if (uStringEqual(arg,"window")||uStringEqual(arg,"w"))
-	sprintf(sink,"0x%x",ev->bell.window);
+	sprintf(sink,"0x%x",(unsigned int)ev->bell.window);
     else if (uStringEqual(arg,"name")||uStringEqual(arg,"n"))
 	sprintf(sink,"%s",XkbAtomText(dpy,ev->bell.name,XkbMessage));
     return sink;
 }
 
 static char *
-AppendAccessXNotifyArg(sink,arg,ev)
-   char *	sink;
-   char *	arg;
-   XkbEvent *	ev;
+AppendAccessXNotifyArg(char *sink, char *arg, XkbEvent *ev)
 {
     if (uStringEqual(arg,"device")||uStringEqual(arg,"D"))
 	sprintf(sink,"%d",ev->accessx.device);
@@ -77,10 +71,7 @@ AppendAccessXNotifyArg(sink,arg,ev)
 }
 
 static char *
-AppendActionMessageArg(sink,arg,ev)
-   char *	sink;
-   char *	arg;
-   XkbEvent *	ev;
+AppendActionMessageArg(char *sink, char *arg, XkbEvent *ev)
 {
     if (uStringEqual(arg,"device")||uStringEqual(arg,"D"))
 	sprintf(sink,"%d",ev->message.device);
@@ -97,10 +88,7 @@ AppendActionMessageArg(sink,arg,ev)
 }
 
 static char *
-AppendEventArg(sink,arg,ev)
-   char *	sink;
-   char *	arg;
-   XkbEvent *	ev;
+AppendEventArg(char *sink, char *arg, XkbEvent *ev)
 {
     switch (ev->any.xkb_type) {
 	case XkbBellNotify:
@@ -120,10 +108,7 @@ AppendEventArg(sink,arg,ev)
 }
 
 static void
-CopyEventArg(sink_inout,source_inout,ev)
-    char **	sink_inout;
-    char **	source_inout;
-    XkbEvent *	ev;
+CopyEventArg(char **sink_inout, char **source_inout, XkbEvent *ev)
 {
 char buf[1024];
 char *source,*sink;
@@ -166,9 +151,7 @@ char *arg;
 }
 
 char *
-SubstituteEventArgs(cmd,ev)
-    char *	cmd;
-    XkbEvent *	ev;
+SubstituteEventArgs(char *cmd, XkbEvent *ev)
 {
 static char buf[1024];
 char *source,*sink;

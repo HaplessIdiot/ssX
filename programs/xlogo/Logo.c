@@ -1,15 +1,9 @@
-/* $XConsortium: Logo.c,v 1.30 94/04/17 20:24:08 kaleb Exp $ */
+/* $TOG: Logo.c /main/31 1998/02/09 14:09:23 kaleb $ */
 /*
 
-Copyright (c) 1988, 1994  X Consortium
+Copyright 1988, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,20 +11,21 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
+#include <X11/Xmu/Drawing.h>
 #include "LogoP.h"
 #include <X11/extensions/shape.h>
 
@@ -43,8 +38,15 @@ static XtResource resources[] = {
        (XtPointer) FALSE},
 };
 
-static void Initialize(), Realize(), Destroy(), Redisplay(), Resize();
-static Boolean SetValues();
+static void Initialize ( Widget request, Widget new, ArgList args, 
+			 Cardinal *num_args );
+static void Destroy ( Widget gw );
+static void Realize ( Widget gw, XtValueMask *valuemaskp, 
+		      XSetWindowAttributes *attr );
+static void Resize ( Widget gw );
+static void Redisplay ( Widget gw, XEvent *event, Region region );
+static Boolean SetValues ( Widget gcurrent, Widget grequest, Widget gnew, 
+			   ArgList args, Cardinal *num_args );
 
 LogoClassRec logoClassRec = {
     { /* core fields */
@@ -98,8 +100,8 @@ WidgetClass logoWidgetClass = (WidgetClass) &logoClassRec;
  *									     *
  *****************************************************************************/
 
-static void create_gcs (w)
-    LogoWidget w;
+static void 
+create_gcs(LogoWidget w)
 {
     XGCValues v;
 
@@ -109,8 +111,8 @@ static void create_gcs (w)
     w->logo.backGC = XtGetGC ((Widget) w, GCForeground, &v);
 }
 
-static void check_shape (w)
-    LogoWidget w;
+static void 
+check_shape(LogoWidget w)
 {
     if (w->logo.shape_window) {
 	int event_base, error_base;
@@ -121,8 +123,8 @@ static void check_shape (w)
 }
 
 /* ARGSUSED */
-static void unset_shape (w)
-    LogoWidget w;
+static void 
+unset_shape(LogoWidget w)
 {
     XSetWindowAttributes attr;
     unsigned long mask;
@@ -143,8 +145,8 @@ static void unset_shape (w)
     w->logo.need_shaping = w->logo.shape_window;
 }
 
-static void set_shape (w)
-    LogoWidget w;
+static void 
+set_shape(LogoWidget w)
 {
     GC ones, zeros;
     Display *dpy = XtDisplay ((Widget) w);
@@ -190,10 +192,8 @@ static void set_shape (w)
  *****************************************************************************/
 
 /* ARGSUSED */
-static void Initialize (request, new, args, num_args)
-    Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
+static void 
+Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args)
 {
     LogoWidget w = (LogoWidget)new;
 
@@ -206,8 +206,8 @@ static void Initialize (request, new, args, num_args)
     w->logo.need_shaping = w->logo.shape_window;
 }
 
-static void Destroy (gw)
-    Widget gw;
+static void 
+Destroy(Widget gw)
 {
     LogoWidget w = (LogoWidget) gw;
     if (w->logo.foreGC) {
@@ -220,10 +220,8 @@ static void Destroy (gw)
     }
 }
 
-static void Realize (gw, valuemaskp, attr)
-    Widget gw;
-    XtValueMask *valuemaskp;
-    XSetWindowAttributes *attr;
+static void 
+Realize(Widget gw, XtValueMask *valuemaskp, XSetWindowAttributes *attr)
 {
     LogoWidget w = (LogoWidget) gw;
 
@@ -236,8 +234,8 @@ static void Realize (gw, valuemaskp, attr)
 	(gw, valuemaskp, attr);
 }
 
-static void Resize (gw)
-    Widget gw;
+static void 
+Resize(Widget gw)
 {
     LogoWidget w = (LogoWidget) gw;
 
@@ -245,10 +243,8 @@ static void Resize (gw)
 }
 
 /* ARGSUSED */
-static void Redisplay (gw, event, region)
-    Widget gw;
-    XEvent *event;		/* unused */
-    Region region;		/* unused */
+static void 
+Redisplay(Widget gw, XEvent *event, Region region)
 {
     LogoWidget w = (LogoWidget) gw;
 
@@ -262,10 +258,9 @@ static void Redisplay (gw, event, region)
 }
 
 /* ARGSUSED */
-static Boolean SetValues (gcurrent, grequest, gnew, args, num_args)
-    Widget gcurrent, grequest, gnew;
-    ArgList args;
-    Cardinal *num_args;
+static Boolean 
+SetValues (Widget gcurrent, Widget grequest, Widget gnew, 
+	   ArgList args, Cardinal *num_args)
 {
     LogoWidget current = (LogoWidget) gcurrent;
     LogoWidget new = (LogoWidget) gnew;

@@ -51,6 +51,7 @@ has the following organization:
        char *name;
        unsigned long num_formats;
        XvFormat *formats;
+       unsigned long num_adaptors;
      } XvAdaptorInfo;
 
 .EE
@@ -82,10 +83,6 @@ A drawable depth supported by the adaptor.
 .IP \fIvisual_id\fR 8
 A visual-id supported for the given depth by the adaptor.
 .\"
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returns True if XvQueryAdaptors(3X) completed successfully.

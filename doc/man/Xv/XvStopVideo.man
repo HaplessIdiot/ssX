@@ -36,10 +36,6 @@ video in a different drawable, the request is ignored.  When video is
 stopped a XvVideoNotify(3X) event with detail XvStopped is generated
 for the associated drawable.
 .\"
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returns True if XvStopVideo(3X) completed successfully.

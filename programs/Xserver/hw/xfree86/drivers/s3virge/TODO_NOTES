@@ -23,6 +23,18 @@ S3VRestore		X
 
 Status
 ------
+03/01/99 KJB
+Macro change done, VGAIN/VGAOUT for register access, INREG/OUTREG for s3v_accel.c.
+Added Mark Vojkovich's re-write of the accel code.  It may only be clean for ViRGE DX
+at the moment.  x11perf showed a couple artifacts in 'move window via parent'.
+In progress, attempt to call cfbScreenInit() functions after MapMem/EnterVT.  Not
+working yet.  Version stamped 0.4.0.
+
+02/22/99 KJB
+Macro change coming to add Mark's accel update.  VGAOUT for old stuff and MEMOUT
+for new stuff?  That way there's no confusion with the old INREG/OUTREG macros.
+Or maybe just stick with INREG/OUTREG for new stuff.
+
 01/30/99 KJB
 Version stamp 0.3.0.  Changed Chipset flags to use PCI IDs exclusively, also use
 common/xf86PciInfo.h for PCI IDs rather than coding them in regs3v.h.
@@ -133,4 +145,4 @@ the new config. management stuff may help here.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.4 1998/11/29 10:50:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.5 1999/01/31 12:21:57 dawes Exp $

@@ -86,14 +86,10 @@ extern Bool showErrors;
 extern Bool dontClear;
 extern Window drawableWindow;
 
-static void FreeCvtToIndexStuff(XParms xp, Parms p);
-void EndConvertToIndex();
+static int CreateCvtToIndexFlo ( XParms xp, Parms p );
 
 int 
-InitConvertToIndex(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+InitConvertToIndex(XParms xp, Parms p, int reps)
 {
 	XieLTriplet levels;
 	int cube;
@@ -179,10 +175,8 @@ int     reps;
 	return( reps );
 }
 
-int
-CreateCvtToIndexFlo( xp, p )
-XParms	xp;
-Parms	p;
+static int
+CreateCvtToIndexFlo(XParms xp, Parms p)
 {
 	int decode_notify;
 	int idx;
@@ -284,10 +278,7 @@ Parms	p;
 }
 
 void 
-DoConvertToIndex(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoConvertToIndex(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -300,10 +291,7 @@ int     reps;
 /* this is for the ColorAlloc event test ( see events.c ) */
 
 void
-DoColorAllocEvent( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoColorAllocEvent(XParms xp, Parms p, int reps)
 {
         int     i;
 
@@ -315,9 +303,8 @@ showErrors );
         }
 }
 
-void EndConvertToIndex(xp, p)
-XParms  xp;
-Parms   p;
+void 
+EndConvertToIndex(XParms xp, Parms p)
 {
 	if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
 		InstallGrayColormap( xp );
@@ -329,10 +316,8 @@ Parms   p;
 	FreeCvtToIndexStuff( xp, p );
 }
 
-static void
-FreeCvtToIndexStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeCvtToIndexStuff(XParms xp, Parms p)
 {
 	if ( ditheredPhotomap )
 	{

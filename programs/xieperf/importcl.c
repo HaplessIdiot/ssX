@@ -84,14 +84,8 @@ static int flo_notify;
 static XiePhotoElement *flograph;
 static int flo_elements;
 
-static void FreeImportClientLUTStuff(XParms xp, Parms p);
-static void FreeImportClientPhotoStuff(XParms xp, Parms p);
-static void FreeImportClientROIStuff(XParms xp, Parms p);
-
-int InitImportClientPhoto(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportClientPhoto(XParms xp, Parms p, int reps)
 {
 	XIEimage *image;
         int decode_notify;
@@ -266,10 +260,8 @@ int InitImportClientPhoto(xp, p, reps)
 	return( reps );
 }
 
-int InitImportClientPhotoExportDrawable(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportClientPhotoExportDrawable(XParms xp, Parms p, int reps)
 {
 	XIEimage *image;
         int decode_notify = 0;
@@ -387,10 +379,8 @@ int InitImportClientPhotoExportDrawable(xp, p, reps)
 	return( reps );
 }
 
-int InitImportClientLUT(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportClientLUT(XParms xp, Parms p, int reps)
 {
 	int i;
         XieOrientation band_order = xieValLSFirst;
@@ -466,10 +456,8 @@ int InitImportClientLUT(xp, p, reps)
 	return( reps );
 }
 
-int InitImportClientROI(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportClientROI(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -529,10 +517,8 @@ int InitImportClientROI(xp, p, reps)
 	return( reps );
 }
 
-void DoImportClientPhoto(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportClientPhoto(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -545,10 +531,8 @@ void DoImportClientPhoto(xp, p, reps)
     	}
 }
 
-void DoImportClientLUT(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportClientLUT(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -561,10 +545,8 @@ void DoImportClientLUT(xp, p, reps)
     	}
 }
 
-void DoImportClientROI(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportClientROI(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -578,17 +560,13 @@ void DoImportClientROI(xp, p, reps)
 }
 
 void 
-EndImportClientLUT(xp, p)
-    XParms  xp;
-    Parms   p;
+EndImportClientLUT(XParms xp, Parms p)
 {
 	FreeImportClientLUTStuff( xp, p );
 }
 
-static void
-FreeImportClientLUTStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeImportClientLUTStuff(XParms xp, Parms p)
 {
         if ( flograph )
         {
@@ -614,17 +592,13 @@ Parms	p;
 }
 
 void 
-EndImportClientPhoto(xp, p)
-    XParms  xp;
-    Parms   p;
+EndImportClientPhoto(XParms xp, Parms p)
 {
 	FreeImportClientPhotoStuff( xp, p );
 }
 
-static void
-FreeImportClientPhotoStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeImportClientPhotoStuff(XParms xp, Parms p)
 {
         if ( XIELut )
         {
@@ -658,17 +632,14 @@ Parms	p;
 
 }
 
-void EndImportClientROI(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndImportClientROI(XParms xp, Parms p)
 {
 	FreeImportClientROIStuff( xp, p );
 }
 
-static void
-FreeImportClientROIStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeImportClientROIStuff(XParms xp, Parms p)
 {
         if ( flograph )
         {

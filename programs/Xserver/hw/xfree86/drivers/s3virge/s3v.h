@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.4 1998/11/29 10:50:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.5 1999/01/26 10:40:28 dawes Exp $ */
 
 #ifndef _S3V_H
 #define _S3V_H
@@ -50,19 +50,27 @@
 #define _S3V_VGAHWMMIO_H
 
 #if defined(__alpha__)
-#define INREG8(addr) xf86ReadSparse8(ps3v->IOBase, (addr))
-#define INREG16(addr) xf86ReadSparse16(ps3v->IOBase, (addr))
-#define INREG(addr) xf86ReadSparse32(ps3v->IOBase, (addr))
-#define OUTREG8(addr,val) xf86WriteSparse8((val),ps3v->IOBase,(addr))
-#define OUTREG16(addr,val) xf86WriteSparse16((val),ps3v->IOBase,(addr))
-#define OUTREG(addr, val) xf86WriteSparse32((val),ps3v->IOBase,(addr))
-#else /* __alpha__ */
-#define INREG8(addr) *(volatile CARD8 *)(ps3v->IOBase + (addr))
-#define INREG16(addr) *(volatile CARD16 *)(ps3v->IOBase + (addr))
-#define INREG(addr) *(volatile CARD32 *)(ps3v->IOBase + (addr))
-#define OUTREG8(addr, val) *(volatile CARD8 *)(ps3v->IOBase + (addr)) = (val)
-#define OUTREG16(addr, val) *(volatile CARD16 *)(ps3v->IOBase + (addr)) = (val)
-#define OUTREG(addr, val) *(volatile CARD32 *)(ps3v->IOBase + (addr)) = (val)
+#define VGAIN8(addr) xf86ReadSparse8(ps3v->IOBase, (addr))
+#define VGAIN16(addr) xf86ReadSparse16(ps3v->IOBase, (addr))
+#define VGAIN(addr) xf86ReadSparse32(ps3v->IOBase, (addr))
+#define VGAOUT8(addr,val) xf86WriteSparse8((val),ps3v->IOBase,(addr))
+#define VGAOUT16(addr,val) xf86WriteSparse16((val),ps3v->IOBase,(addr))
+#define VGAOUT(addr, val) xf86WriteSparse32((val),ps3v->IOBase,(addr))
+
+#define INREG(addr) xf86ReadSparse32(ps3v->MapBase, (addr))
+#define OUTREG(addr, val) xf86WriteSparse32((val),ps3v->MapBase,(addr))
+
+#else /* !(__alpha__) */
+#define VGAIN8(addr) *(volatile CARD8 *)(ps3v->IOBase + (addr))
+#define VGAIN16(addr) *(volatile CARD16 *)(ps3v->IOBase + (addr))
+#define VGAIN(addr) *(volatile CARD32 *)(ps3v->IOBase + (addr))
+#define VGAOUT8(addr, val) *(volatile CARD8 *)(ps3v->IOBase + (addr)) = (val)
+#define VGAOUT16(addr, val) *(volatile CARD16 *)(ps3v->IOBase + (addr)) = (val)
+#define VGAOUT(addr, val) *(volatile CARD32 *)(ps3v->IOBase + (addr)) = (val)
+
+#define INREG(addr) *(volatile CARD32*)(ps3v->MapBase+ (addr))
+#define OUTREG(addr, val) *(volatile CARD32 *)(ps3v->MapBase + (addr)) = (val)
+
 #endif /* __alpha__ */
 
 #endif /*_S3V_VGAHWMMIO_H*/
@@ -111,6 +119,15 @@ typedef struct {
 					/* S3VRec  		 */
     					/*************************/
 typedef struct {
+	/* accel additions */
+	CARD32		AccelFlags;
+	CARD32		AccelCmd;
+	CARD32		SrcBaseY, DestBaseY;
+	CARD32		Stride;
+	CARD32		CommonCmd;
+	CARD32		FullPlaneMask;
+	GCPtr		CurrentGC;
+	/* end accel stuff */
     /* ViRGE specifics -start- */   
   					/* S3V console saved mode registers */
     S3VRegRec 		SavedReg;

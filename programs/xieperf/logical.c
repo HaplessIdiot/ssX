@@ -85,12 +85,8 @@ static XiePhotoElement *flograph;
 static int flo_elements;
 static XieRectangle *rects;
 
-static void FreeLogicalStuff(XParms xp, Parms p);
-
-int InitLogical(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitLogical(XParms xp, Parms p, int reps)
 {
         int i, idx;
 	XieProcessDomain domain;
@@ -293,10 +289,8 @@ int InitLogical(xp, p, reps)
         return( reps );
 }
 
-void DoLogical(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoLogical(XParms xp, Parms p, int reps)
 {
         int     i;
 
@@ -308,17 +302,13 @@ void DoLogical(xp, p, reps)
 }
 
 void
-EndLogical(xp, p)
-    XParms  xp;
-    Parms   p;
+EndLogical(XParms xp, Parms p)
 {
 	FreeLogicalStuff( xp, p );
 }
 
-static void
-FreeLogicalStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeLogicalStuff(XParms xp, Parms p)
 {
 	if ( XIEPhotomap1 && IsPhotomapInCache( XIEPhotomap1 ) == False )
 	{

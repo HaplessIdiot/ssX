@@ -92,11 +92,18 @@ extern char *SubstituteEventArgs(
 #endif
 );
 
-extern Bool PrintXkbEvent(
+extern void PrintXkbEvent(
 #if NeedFunctionPrototypes
 	FILE *		/* file */,
 	XkbEvent *	/* ev */
 #endif
 );
 
+extern int setScanState ( char * file, int line );
+extern int CFGParseFile ( FILE *file );
+
+extern int yylex(void);
+extern int yyparse(void);
+extern int yyerror(char *s);
+extern int yywrap(void);
 #endif /* XKBEVD_H */

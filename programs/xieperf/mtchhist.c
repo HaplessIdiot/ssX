@@ -90,13 +90,8 @@ extern Window monitor2Window;
 extern Window drawableWindow; 
 extern Bool dontClear;
 
-static void FreeMatchHistogramStuff(XParms xp, Parms p);
-
 int 
-InitMatchHistogram(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+InitMatchHistogram(XParms xp, Parms p, int reps)
 {
 	XieProcessDomain domain;
 	XieHistogramShape shape;
@@ -348,10 +343,7 @@ InitMatchHistogram(xp, p, reps)
 }
 
 void 
-DoMatchHistogram(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoMatchHistogram(XParms xp, Parms p, int reps)
 {
     	int     i, done, numHistos;
 
@@ -375,9 +367,7 @@ int     reps;
 }
 
 void 
-EndMatchHistogram(xp, p)
-XParms  xp;
-Parms   p;
+EndMatchHistogram(XParms xp, Parms p)
 {
 	XUnmapWindow( xp->d, monitorWindow );
 	XUnmapWindow( xp->d, monitor2Window );
@@ -386,10 +376,8 @@ Parms   p;
 	FreeMatchHistogramStuff( xp, p );
 }
 
-static void
-FreeMatchHistogramStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeMatchHistogramStuff(XParms xp, Parms p)
 {
         if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
         {

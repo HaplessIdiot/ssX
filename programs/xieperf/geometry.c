@@ -93,13 +93,8 @@ static int flo_notify;
 static int size;
 static XIEimage *image;
 
-static void FreeGeometryStuff(XParms xp, Parms p);
-static void FreeGeometryFAXStuff(XParms xp, Parms p);
-
-int InitGeometry(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitGeometry(XParms xp, Parms p, int reps)
 {
 	int     band_mask = 1;
 	int	idx = 0;
@@ -232,10 +227,8 @@ int InitGeometry(xp, p, reps)
 	return( reps );
 }
 
-void DoGeometry(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoGeometry(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -246,10 +239,8 @@ void DoGeometry(xp, p, reps)
     	}
 }
 
-int InitGeometryFAX(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitGeometryFAX(XParms xp, Parms p, int reps)
 {
 	int     band_mask = 1;
 	int	idx = 0;
@@ -476,10 +467,8 @@ int InitGeometryFAX(xp, p, reps)
 	return( reps );
 }
 
-void DoGeometryFAX(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoGeometryFAX(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -492,12 +481,8 @@ void DoGeometryFAX(xp, p, reps)
 }
 
 int
-SetCoefficients( xp, p, which, gp, coeffs )
-XParms	xp;
-Parms	p;
-int	which;
-GeometryParms *gp;
-float	coeffs[];
+SetCoefficients(XParms xp, Parms p, int which, 
+		GeometryParms *gp, float coeffs[])
 {
 	double	sf, rad;
 	XIEimage *image;
@@ -604,17 +589,13 @@ float	coeffs[];
 }
 
 void
-EndGeometry(xp, p)
-XParms  xp;
-Parms   p;
+EndGeometry(XParms xp, Parms p)
 {
 	FreeGeometryStuff( xp, p );
 }
 
-static void
-FreeGeometryStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeGeometryStuff(XParms xp, Parms p)
 {
 	if ( XIELut )
 	{
@@ -648,7 +629,7 @@ Parms   p;
 	FreeGeometryFAXStuff( xp, p );
 }
 
-static void
+void
 FreeGeometryFAXStuff( xp, p )
 XParms	xp;
 Parms	p;

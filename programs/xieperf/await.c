@@ -75,6 +75,7 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 static XieLut XIELut;
 static XiePhotoElement *flograph;
@@ -84,18 +85,9 @@ static int lutSize;
 static int AwaitHandlerSeen;
 static XParms xplocal;		/* we can't pass args to signal handler */
 
-static void FreeAwaitStuff(XParms xp, Parms p);
 
-extern Display *Open_Display (
-#if NeedFunctionPrototypes
-	char *
-#endif
-	);
-
-int InitAwait(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitAwait(XParms xp, Parms p, int reps)
 {
         XieDataClass    class;
         XieOrientation  band_order;
@@ -186,8 +178,8 @@ int InitAwait(xp, p, reps)
 	return( reps );
 }
 
-AbortFlo(xp)
-    XParms xp;
+void
+AbortFlo(XParms xp)
 {
 	XieExtensionInfo *xieInfo;
 
@@ -202,13 +194,8 @@ AbortFlo(xp)
 }
 
 #ifdef SIGALRM
-#ifdef SIGNALRETURNSINT
-int
-#else
-void
-#endif
-AwaitHandler(sig)
-    int sig;
+SIGNAL_T
+AwaitHandler(int sig)
 {
 	int	pid;
 
@@ -265,8 +252,8 @@ AwaitHandler(sig)
 #ifdef WIN32
 struct _data {XParms xp; Parms p;};
 
-void ChildProc(data)
-    struct _data *data;
+void 
+ChildProc(struct _data *data)
 {
 	XieExtensionInfo *xieInfo;
 	struct _XParms _xp;
@@ -277,16 +264,14 @@ void ChildProc(data)
 	if ( XieInitialize( xp->d, &xieInfo ) )
 	{
 		PumpTheClientData( xp, p, flo, 0, 1,
-			lut, lutSize, 0 );
+			(char *)lut, lutSize, 0 );
 	}
 	XCloseDisplay(xp->d);
 }
 #endif
 
-void DoAwait(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoAwait(XParms xp, Parms p, int reps)
 {
 	int	i, pid;
 	int	status;
@@ -343,7 +328,7 @@ void DoAwait(xp, p, reps)
 			if ( XieInitialize( xp->d, &xieInfo ) )
 			{
 				PumpTheClientData( xp, p, flo, 0, 1, 
-					lut, lutSize, 0 ); 
+					(char *)lut, lutSize, 0 ); 
 			}
 			XCloseDisplay(xp->d);
 			exit( 0 );
@@ -391,18 +376,14 @@ void DoAwait(xp, p, reps)
     	}
 }
 
-void
-EndAwait(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndAwait(XParms xp, Parms p)
 {
 	FreeAwaitStuff( xp, p );
 }
 
-static void
-FreeAwaitStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeAwaitStuff(XParms xp, Parms p)
 {
 	if ( lut )
 	{

@@ -35,10 +35,6 @@ XvSelectPortNotify(3X) enables or disables PortNotify event
 delivery to the requesting client.  XvPortNotify(3X) events are
 generated when port attributes are changed using XvSetPortAttribute(3X).
 .\"
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returns True if XvSelectPortNotify(3X) completed successfully.

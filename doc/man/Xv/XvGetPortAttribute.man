@@ -31,7 +31,7 @@ Specifies the port, associated with the given display, for
 which the attribute values are to be returned. 
 .IP \fIattribute\fR 8
 An atom that identifies the attribute to be queried by this
-request.  Control atoms are obtained using the XInterAtom
+request.  Control atoms are obtained using the XInternAtom
 request with a string from the following table.
 .IP \fIp_value\fR 8
 Pointer to the location where the attribute value is written on
@@ -43,34 +43,37 @@ return.
 XvGetPortAttribute(3X) returns the current value of the requested
 port attribute in the integer pointed to by \fIp_value\fR.  
 The attribute is identified using an Atom that equates to the attribute name.  
-The XInterAtom request can be used with one of the strings
+The XInternAtom request can be used with one of the strings
 below to return a matching Atom.
 .bp
 .PP
-.TS
-tab(@);
-lfHB lfHB lfHB
-lfR  lfR  lfR .
-_
-.PP
-.sp 4p
-Attribute String@Type@Default
-.sp 6p
-_
-.sp 6p
-"XV_ENCODING"@XvEncodingID@Server dependent
-"XV_HUE"@[-1000...1000]@0
-"XV_SATURATION"@[-1000...1000]@0
-"XV_BRIGHTNESS"@[-1000...1000]@0
-"XV_CONTRAST"@[-1000...1000]@0
-.sp 6p
-_
+.\".TS
+.\"tab(@);
+.\"lfHB lfHB lfHB
+.\"lfR  lfR  lfR .
+.\"_
+.\".PP
+.\".sp 4p
+.\"Attribute String@Type@Default
+.\".sp 6p
+.\"_
+.\".sp 6p
+.\""XV_ENCODING"@XvEncodingID@Server dependent
+.\""XV_HUE"@[-1000...1000]@0
+.\""XV_SATURATION"@[-1000...1000]@0
+.\""XV_BRIGHTNESS"@[-1000...1000]@0
+.\""XV_CONTRAST"@[-1000...1000]@0
+.\".sp 6p
+.\".TE
+.nf
+Attribute String        Type             Default
+
+"XV_ENCODING"           XvEncodingID     Server dependent
+"XV_HUE"                [-1000...1000]   0
+"XV_SATURATION"         [-1000...1000]   0
+"XV_BRIGHTNESS"         [-1000...1000]   0
+"XV_CONTRAST"           [-1000...1000]   0
 .TE
-.\"
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returned if XvGetPortAttribute(3X) completed successfully.

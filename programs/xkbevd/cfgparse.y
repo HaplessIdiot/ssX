@@ -1,4 +1,4 @@
-/* $XConsortium: cfgparse.y /main/3 1995/12/07 21:29:17 kaleb $ */
+/* $XConsortium: cfgparse.y /main/5 1996/01/14 16:49:02 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -190,29 +190,27 @@ OptString	:	String	{ $$= $1; }
 String		:	STRING	{ $$= scanStr; scanStr= NULL; }
 		;
 %%
-yyerror(s)
-char	*s;
+int
+yyerror(char *s)
 {
     (void)fprintf(stderr,"%s: line %d of %s\n",s,lineNum,
 					(scanFile?scanFile:"(unknown)"));
     if (scanStr)
 	(void)fprintf(stderr,"last scanned symbol is: %s\n",scanStr);
-    return;
+    return 1;
 }
 
 
 int
-yywrap()
+yywrap(void)
 {
-   return(1);
+   return 1;
 }
 
 int
-CFGParseFile(file)
-FILE 		 *file;
+CFGParseFile(FILE *file)
 {
     if (file) {
-	extern FILE *yyin;
 	yyin= file;
 	if (yyparse()==0) {
 	    return 1;

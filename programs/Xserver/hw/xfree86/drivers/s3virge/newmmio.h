@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/newmmio.h,v 1.1 1998/11/01 12:35:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/newmmio.h,v 1.2 1998/11/22 10:37:29 dawes Exp $ */
 
 /* Copied over from accel/s3_virge */
 
@@ -393,9 +393,10 @@ typedef struct {
 #define IN_SUBSYS_STAT() 	((((mmtr)s3vMmioMem)->subsys_regs.regs.subsystem_csr))
 #define SET_SUBSYS_CRTL(val) 	do { write_mem_barrier(); ((((mmtr)s3vMmioMem)->subsys_regs.regs.subsystem_csr)) = (val); write_mem_barrier(); } while (0)
 
-
+#if 0
 #define SET_DAC_W_INDEX(index)  OUTREG8(DAC_W_INDEX, index)
 #define SET_DAC_DATA(val) 	OUTREG8(DAC_DATA,val)
+#endif
 
 #define IMG_TRANS		(((mmtr)s3vMmioMem)->img)
 #define SET_PIXTRANS(a,v)	IMG_TRANS[a] = (v)

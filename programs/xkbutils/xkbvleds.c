@@ -1,5 +1,5 @@
 /* $XConsortium: xkbvleds.c /main/5 1996/01/14 18:42:34 kaleb $ */
-/* $XFree86: xc/programs/xkbutils/xkbvleds.c,v 3.1 1996/01/16 15:09:18 dawes Exp $ */
+/* $XFree86: xc/programs/xkbutils/xkbvleds.c,v 3.2 1997/12/06 09:26:17 hohndel Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -63,8 +63,7 @@ static	char *		inDpyName;
 /***====================================================================***/
 
 static void
-usage(program)
-    char *	program;
+usage(char *program)
 {
     uInformation("Usage: %s <options>\n",program);
     uInformation("Legal options include the usual X toolkit options plus:\n");
@@ -83,9 +82,7 @@ usage(program)
 }
 
 static Bool
-parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+parseArgs(int argc, char *argv[])
 {
 register int 	i;
 
@@ -153,13 +150,10 @@ register int 	i;
 
 /***====================================================================***/
 
-Display *
-GetDisplay(program,dpyName)
-    char *	program;
-    char *	dpyName;
+static Display *
+GetDisplay(char *program, char *dpyName)
 {
 int		mjr,mnr,error;
-Window		topWin;
 Display	*	dpy;
 
     mjr= XkbMajorVersion;
@@ -197,11 +191,9 @@ Display	*	dpy;
 /***====================================================================***/
 
 int
-main(argc,argv)
-    int		argc;
-    char *	argv[];
+main(int argc, char *argv[])
 {
-Widget		toplevel, session;
+Widget		toplevel;
 XtAppContext	app_con;
 Widget		panel;
 Widget		leds[XkbNumIndicators];
@@ -210,9 +202,9 @@ unsigned	bit;
 unsigned	n;
 XkbDescPtr	xkb;
 XkbEvent	ev;
-static Arg	boxArgs[]= { XtNorientation, (XtArgVal)XtorientHorizontal };
-static Arg	onArgs[]=  { XtNon, (XtArgVal)True };
-static Arg	offArgs[]=  { XtNon, (XtArgVal)False };
+static Arg	boxArgs[]= {{ XtNorientation, (XtArgVal)XtorientHorizontal }};
+static Arg	onArgs[]=  {{ XtNon, (XtArgVal)True }};
+static Arg	offArgs[]=  {{ XtNon, (XtArgVal)False }};
 static char *	fallback_resources[] = {
     "*Box*background: grey40",
     NULL
@@ -357,7 +349,7 @@ static char *	fallback_resources[] = {
 	}
 	else XtDispatchEvent(&ev.core);
     }
-BAIL:
+/* BAIL: */
     if (inDpy) 
 	XCloseDisplay(inDpy);
     if (outDpy!=inDpy)

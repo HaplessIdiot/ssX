@@ -85,13 +85,8 @@ static int monoflag;
 
 static XieClipScaleParam *parms;
 
-static void FreeArithStuff(XParms xp, Parms p);
-
 int 
-InitArithmetic(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+InitArithmetic(XParms xp, Parms p, int reps)
 {
 	XieProcessDomain domain;
 	XieArithmeticOp	op;
@@ -175,10 +170,12 @@ InitArithmetic(xp, p, reps)
 	if ( useDomain == DomainROI || useDomain == DomainCtlPlane )
 		flo_elements++;
 	if ( constrain == True )
+	{
 		if ( image2 )
 			flo_elements += 3;
 		else
 			flo_elements += 2;
+	}
 	if ( xp->screenDepth != image1->depth[ 0 ] && constrain == False )
 	{
 		monoflag = 1;
@@ -393,10 +390,7 @@ InitArithmetic(xp, p, reps)
 }
 
 void 
-DoArithmetic(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoArithmetic(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -408,17 +402,13 @@ int     reps;
 }
 
 void 
-EndArithmetic(xp, p)
-XParms  xp;
-Parms   p;
+EndArithmetic(XParms xp, Parms p)
 {
 	FreeArithStuff( xp, p );
 }
 
-static void
-FreeArithStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeArithStuff(XParms xp, Parms p)
 {
         if ( parms )
         {

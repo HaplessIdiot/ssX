@@ -98,44 +98,36 @@ extern Bool dontClear;
 extern Bool showErrors;
 extern Window drawableWindow;
 
-static void FreePhotofloDoneEventStuff(XParms xp, Parms p);
-static void FreeImportObscuredEventStuff(XParms xp, Parms p);
-static void FreeExportAvailableEventStuff(XParms xp, Parms p);
-static void FreeDecodeNotifyEventStuff(XParms xp, Parms p);
+static int XIEEventErrorHandler ( Display *d, XErrorEvent *ev );
 
 /* general event stuff */
 
 int
-GetTimeout()
+GetTimeout(void)
 {
         return( timeout );
 }
 
 void
-SetTimeout( time )
-int	time;
+SetTimeout(int time)
 {
 	timeout = time;
 }
 
-InitEventInfo(display,info)
-Display *display;
-XieExtensionInfo *info;
+void
+InitEventInfo(Display *display, XieExtensionInfo *info)
 {
         xieInfo = info;
 }
 
-GetExtensionInfo( info )
-XieExtensionInfo **info;
+void
+GetExtensionInfo(XieExtensionInfo **info)
 {
 	*info = xieInfo;
 }
 
 Bool 
-event_check(display,event,arg)
-Display *display;
-XEvent *event;
-char *arg;
+event_check(Display *display, XEvent *event, char *arg)
 {
 	int xie_event;
 
@@ -154,12 +146,8 @@ char *arg;
 }
 
 int
-WaitForXIEEvent( xp, which, flo_id, tag, verbose )
-XParms	xp;
-int	which;
-XiePhotoflo flo_id;
-XiePhototag tag;
-Bool	verbose;
+WaitForXIEEvent(XParms xp, int which, XiePhotoflo flo_id, 
+		XiePhototag tag, Bool verbose )
 {
 	int	Xsocket;
 	XEvent event;
@@ -268,10 +256,8 @@ Bool	verbose;
 
 /* event tests */
 
-int
-XIEEventErrorHandler( d, ev )
-Display	*d;
-XErrorEvent *ev;
+static int
+XIEEventErrorHandler(Display *d, XErrorEvent *ev)
 {
 	if ( showErrors ==True )
 	{
@@ -283,10 +269,7 @@ XErrorEvent *ev;
 }
 
 int
-InitEvents( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitEvents(XParms xp, Parms p, int reps)
 {
 	int	which;
 
@@ -319,10 +302,7 @@ int	reps;
 }
 
 int
-InitPhotofloDoneEvent( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitPhotofloDoneEvent(XParms xp, Parms p, int reps)
 {
         XIEPhotomap = ( XiePhotomap ) NULL;
         flo = ( XiePhotoflo ) NULL;
@@ -367,10 +347,7 @@ int	reps;
 }
 
 int
-InitColorAllocEvent( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitColorAllocEvent(XParms xp, Parms p, int reps)
 {
 	CvtToIndexParms cticfg;
 	EventParms *evcfg;
@@ -409,10 +386,7 @@ int	reps;
 }
 
 int
-InitDecodeNotifyEvent( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitDecodeNotifyEvent(XParms xp, Parms p, int reps)
 {
 	XIEimage *image;
 	XieDecodeUncompressedSingleParam *decode_params=NULL;
@@ -486,10 +460,7 @@ int	reps;
 }
 
 int
-InitImportObscuredEvent( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitImportObscuredEvent(XParms xp, Parms p, int reps)
 {
         flo = ( XiePhotoflo ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
@@ -542,10 +513,7 @@ int	reps;
 }
 
 int
-InitExportAvailableEvent( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitExportAvailableEvent(XParms xp, Parms p, int reps)
 {
 	int	lutSize;
 	char	*lut;
@@ -609,10 +577,7 @@ int	reps;
 }
 
 void
-DoPhotofloDoneEvent( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+DoPhotofloDoneEvent(XParms xp, Parms p, int reps)
 {
         int     i;
 
@@ -623,10 +588,7 @@ int	reps;
 }
 
 void
-DoDecodeNotifyEvent( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+DoDecodeNotifyEvent(XParms xp, Parms p, int reps)
 {
         int     i;
 
@@ -643,10 +605,7 @@ int	reps;
 }
 
 void
-DoImportObscuredEvent( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+DoImportObscuredEvent(XParms xp, Parms p, int reps)
 {
         int     i;
 
@@ -658,10 +617,7 @@ int	reps;
 }
 
 void
-DoExportAvailableEvent( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+DoExportAvailableEvent(XParms xp, Parms p, int reps)
 {
         int     i, done;
 
@@ -681,9 +637,7 @@ int	reps;
 }
 
 void
-EndEvents( xp, p )
-XParms	xp;
-Parms	p;
+EndEvents(XParms xp, Parms p)
 {
 	int	which;
 
@@ -711,10 +665,8 @@ Parms	p;
 	}
 }
 
-static void
-FreePhotofloDoneEventStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreePhotofloDoneEventStuff(XParms xp, Parms p)
 {
         if ( data )
         {
@@ -746,10 +698,8 @@ Parms	p;
         }
 }
 
-static void
-FreeImportObscuredEventStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeImportObscuredEventStuff(XParms xp, Parms p)
 {
         if ( flograph )
         {
@@ -763,10 +713,8 @@ Parms	p;
         }
 }
 
-static void
-FreeExportAvailableEventStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeExportAvailableEventStuff(XParms xp, Parms p)
 {
         if ( data )
         {
@@ -793,10 +741,8 @@ Parms	p;
 	}
 }
 
-static void
-FreeDecodeNotifyEventStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeDecodeNotifyEventStuff(XParms xp, Parms p)
 {
         if ( data )
         {

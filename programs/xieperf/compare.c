@@ -81,13 +81,8 @@ static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 static int flo_elements;
 
-static void FreeCompareStuff(XParms xp, Parms p);
-
 int 
-InitCompare(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+InitCompare(XParms xp, Parms p, int reps)
 {
 	XieProcessDomain domain;
 	XieCompareOp	op;
@@ -256,10 +251,7 @@ InitCompare(xp, p, reps)
 }
 
 void 
-DoCompare(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoCompare(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -271,17 +263,13 @@ int     reps;
 }
 
 void 
-EndCompare(xp, p)
-XParms  xp;
-Parms   p;
+EndCompare(XParms xp, Parms p)
 {
 	FreeCompareStuff( xp, p );
 }
 
-static void
-FreeCompareStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeCompareStuff(XParms xp, Parms p)
 {
 	if ( XIERoi )
         {

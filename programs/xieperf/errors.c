@@ -143,16 +143,8 @@ static char *floErrTab[] = {
 
 #define MAX_FLO_ERROR 19
  
-static void FreeErrorWithLUTStuff(XParms xp, Parms p);
-static void FreeErrorWithROIStuff(XParms xp, Parms p);
-static void FreeErrorWithPhotomapStuff(XParms xp, Parms p);
-static void FreeFloErrorStuff(XParms xp, Parms p);
-
 static void
-ErrorEventPrintError (display, error, fp)
-Display		*display;
-XErrorEvent	*error;
-FILE		*fp;
+ErrorEventPrintError(Display *display, XErrorEvent *error, FILE *fp)
 {
     XieExtensionInfo 	 *xieExtInfo;
     XieFloAccessError    *flo_error      = (XieFloAccessError *) error;
@@ -197,9 +189,7 @@ FILE		*fp;
 }
 
 static int
-XIEErrorHandler( d, ev )
-Display	*d;
-XErrorEvent *ev;
+XIEErrorHandler(Display *d, XErrorEvent *ev)
 {
 	if ( showErrors == True )
 	{
@@ -213,10 +203,7 @@ XErrorEvent *ev;
 }
 
 int
-InitErrors( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitErrors(XParms xp, Parms p, int reps)
 {
 	int	which;
 
@@ -247,10 +234,7 @@ int	reps;
 }
 
 int
-InitCoreErrors( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitCoreErrors(XParms xp, Parms p, int reps)
 {
 	int	which;
 
@@ -284,10 +268,7 @@ int	reps;
 }
 
 int
-InitFloAccessError( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitFloAccessError(XParms xp, Parms p, int reps)
 {
 	Bool merge;
 	XieLTriplet start;
@@ -330,19 +311,13 @@ int	reps;
 }
 
 int
-InitBadValue( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitBadValue(XParms xp, Parms p, int reps)
 {
 	return( reps );
 }
 
 int
-InitFloErrors( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+InitFloErrors(XParms xp, Parms p, int reps)
 {
 	int	which;
 	int	retval;
@@ -420,20 +395,14 @@ int	reps;
 }
 
 int
-InitPhotofloError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitPhotofloError(XParms xp, Parms p, int reps)
 {
 	flo = ( XiePhotoflo ) NULL;
 	return( reps );
 }
 
 int
-InitFloMatchError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloMatchError(XParms xp, Parms p, int reps)
 {
 	XieLTriplet levels;
 
@@ -486,10 +455,7 @@ int     reps;
 }
 
 int
-InitFloTechniqueError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloTechniqueError(XParms xp, Parms p, int reps)
 {
 	XieLTriplet levels;
 
@@ -541,10 +507,7 @@ int     reps;
 }
 
 int
-InitFloPhotomapError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloPhotomapError(XParms xp, Parms p, int reps)
 {
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
@@ -579,10 +542,7 @@ int     reps;
 }
 
 int
-InitFloSourceError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloSourceError(XParms xp, Parms p, int reps)
 {
         flo = ( XiePhotoflo ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
@@ -620,10 +580,7 @@ int     reps;
 }
 
 int
-InitFloElementError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloElementError(XParms xp, Parms p, int reps)
 {
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
@@ -662,10 +619,7 @@ int     reps;
 }
 
 int
-InitFloDrawableError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloDrawableError(XParms xp, Parms p, int reps)
 {
         flo = ( XiePhotoflo ) NULL;
         flograph = ( XiePhotoElement * ) NULL;
@@ -704,10 +658,7 @@ int     reps;
 }
 
 int
-InitFloColorListError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloColorListError(XParms xp, Parms p, int reps)
 {
         XieLTriplet levels;
 	int	idx, cclass;
@@ -807,10 +758,7 @@ int     reps;
 }
 
 int
-InitFloColormapError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloColormapError(XParms xp, Parms p, int reps)
 {
         XieLTriplet levels;
 	int	idx, cclass;
@@ -895,10 +843,7 @@ int     reps;
 }
 
 int
-InitFloGCError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloGCError(XParms xp, Parms p, int reps)
 {
 	static GC myGC;
 
@@ -941,10 +886,7 @@ int     reps;
 }
 
 int
-InitFloOperatorError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloOperatorError(XParms xp, Parms p, int reps)
 {
 	int	idx;
 	XIEimage *image;
@@ -1000,10 +942,7 @@ int     reps;
 }
 
 int
-InitFloDomainError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloDomainError(XParms xp, Parms p, int reps)
 {
 	int	idx;
 	XIEimage *image;
@@ -1060,28 +999,22 @@ int     reps;
 }
 
 int
-InitFloIDError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloIDError(XParms xp, Parms p, int reps)
 {
 	flo = ( XiePhotoflo ) NULL;
 	return( reps );
 }
 
 int
-InitFloValueError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloValueError(XParms xp, Parms p, int reps)
 {
-	char	*lut;
+	unsigned char	*lut;
         XieLTriplet     start, length;
 
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
 	XIELut = ( XieLut ) NULL;
-	lut = ( char * ) NULL;
+	lut = ( unsigned char * ) NULL;
 
         flo_elements = 2;
         flograph = XieAllocatePhotofloGraph(flo_elements);
@@ -1092,7 +1025,7 @@ int     reps;
         }
 	else
 	{
-		lut = ( char * ) malloc( 128 );
+		lut = ( unsigned char * ) malloc( 128 );
 
 		length[ 0 ] = 128;
 		length[ 1 ] = 0;
@@ -1131,10 +1064,7 @@ int     reps;
 }
 
 int
-InitFloROIError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloROIError(XParms xp, Parms p, int reps)
 {
         flograph = ( XiePhotoElement * ) NULL;
         flo = ( XiePhotoflo ) NULL;
@@ -1166,10 +1096,7 @@ int     reps;
 }
 
 int
-InitFloLUTError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+InitFloLUTError(XParms xp, Parms p, int reps)
 {
         Bool    merge;
         XieLTriplet start;
@@ -1210,10 +1137,7 @@ int     reps;
 }
 
 void
-DoBadValueError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoBadValueError(XParms xp, Parms p, int reps)
 {
         XieTechniqueGroup       techGroup;
         XieTechnique            *techVector;
@@ -1245,10 +1169,7 @@ int     reps;
 }
 
 void
-DoColorListError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoColorListError(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -1258,10 +1179,7 @@ int     reps;
 }
 
 void
-DoFloErrorImmediate( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoFloErrorImmediate(XParms xp, Parms p, int reps)
 {
 	int	i;
 	int	flo_id;
@@ -1279,10 +1197,7 @@ int     reps;
 }
 
 void
-DoPhotospaceError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoPhotospaceError(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -1292,10 +1207,7 @@ int     reps;
 }
 
 void
-DoROIError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoROIError(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -1305,10 +1217,7 @@ int     reps;
 }
 
 void	
-DoFloElementError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoFloElementError(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -1319,10 +1228,7 @@ int     reps;
 }
 
 void
-DoLUTError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoLUTError(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -1332,10 +1238,7 @@ int     reps;
 }
 
 void
-DoFloIDError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoFloIDError(XParms xp, Parms p, int reps)
 {
 	int	i;
 	char	data[ 16 ];
@@ -1355,10 +1258,7 @@ int     reps;
 }
 
 void
-DoPhotomapError( xp, p, reps )
-XParms  xp;
-Parms   p;
-int     reps;
+DoPhotomapError(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -1368,10 +1268,7 @@ int     reps;
 }
 
 void
-DoErrors( xp, p, reps )
-XParms	xp;
-Parms	p;
-int	reps;
+DoErrors(XParms xp, Parms p, int reps)
 {
         int     i;
 
@@ -1381,9 +1278,7 @@ int	reps;
 }
 
 void
-EndErrors( xp, p )
-XParms	xp;
-Parms	p;
+EndErrors(XParms xp, Parms p)
 {
 	int	which;
 
@@ -1409,9 +1304,7 @@ Parms	p;
 }
 
 void
-EndCoreErrors( xp, p )
-XParms	xp;
-Parms	p;
+EndCoreErrors(XParms xp, Parms p)
 {
 	int	which;
 
@@ -1439,9 +1332,7 @@ Parms	p;
 }
 
 void
-EndFloErrors( xp, p )
-XParms	xp;
-Parms	p;
+EndFloErrors(XParms xp, Parms p)
 {
 	int	which;
 
@@ -1504,10 +1395,8 @@ Parms	p;
 	}
 }
 
-static void
-FreeErrorWithPhotomapStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeErrorWithPhotomapStuff(XParms xp, Parms p)
 {
         if ( photospace )
         {
@@ -1532,10 +1421,8 @@ Parms	p;
 	}
 }
 
-static void
-FreeErrorWithROIStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeErrorWithROIStuff(XParms xp, Parms p)
 {
         if ( photospace )
         {
@@ -1559,10 +1446,8 @@ Parms	p;
 	}
 }
 
-static void
-FreeErrorWithLUTStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeErrorWithLUTStuff(XParms xp, Parms p)
 {
         if ( photospace )
         {
@@ -1586,10 +1471,8 @@ Parms	p;
 	}
 }
 
-static void
-FreeFloErrorStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeFloErrorStuff(XParms xp, Parms p)
 {
         if ( photospace )
         {

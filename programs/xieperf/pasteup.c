@@ -73,7 +73,19 @@ terms and conditions:
 #define NTILES 16	/* has an integer square root and be a power of 2 */
 #define	SPLIT  4 	/* square root of NTILES */
 
-static int BuildPasteUpFlograph();
+static void InitSegments ( void );
+static void CloseSegments ( XParms xp, Parms p );
+static int SegmentPhotomap ( XParms xp, Parms p, XiePhotomap pm, 
+			     XiePhotomap segvec[], int size, int split, 
+			     int width, int height );
+static int BuildPasteUpFlograph ( XParms xp, Parms p, 
+				  XiePhotoElement **flograph, 
+				  XiePhotomap segments[], int size, 
+				  int split, int width, int height );
+static int BuildMeSomeTiles ( XieTile tiles[], int split, int width, 
+			      int height, int method, int overlap );
+static void SetTileXY ( XieTile tiles[], int split, int width, int height, 
+		       int method, int overlap );
 
 static XieLut XIELut;
 static XiePhotomap XIEPhotomap;
@@ -88,14 +100,8 @@ static int monoflag = 0;
 
 static int pasteUpIdx;
 
-static void FreePasteUpStuff(XParms xp, Parms p);
-static void InitSegments(void);
-static void CloseSegments(XParms xp, Parms p);
-
-int InitPasteUp(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitPasteUp(XParms xp, Parms p, int reps)
 {	
 	XIEimage *image;
 
@@ -155,7 +161,7 @@ int InitPasteUp(xp, p, reps)
    width and height are each congruent to 0 mod size. Caller allocates segvec */
 
 static void
-InitSegments()
+InitSegments(void)
 {
 	int	i;
 
@@ -165,10 +171,8 @@ InitSegments()
 	}
 } 
 
-void
-CloseSegments( xp, p )
-XParms	xp;
-Parms	p;
+static void
+CloseSegments(XParms xp, Parms p)
 {
 	int	i;
 
@@ -182,16 +186,9 @@ Parms	p;
 	}
 }
 
-int
-SegmentPhotomap( xp, p, pm, segvec, size, split, width, height )
-XParms	xp;
-Parms	p;
-XiePhotomap pm;		
-XiePhotomap segvec[];
-int	size;
-int	split;
-int	width;
-int	height;
+static int
+SegmentPhotomap(XParms xp, Parms p, XiePhotomap pm, XiePhotomap segvec[], 
+		int size, int split, int width, int height)
 {
 	int	xoff, yoff;
 	int     flo_elements;
@@ -286,15 +283,9 @@ int	height;
 }
 
 static int
-BuildPasteUpFlograph( xp, p, flograph, segments, size, split, width, height )
-XParms	xp;
-Parms	p;
-XiePhotoElement **flograph;
-XiePhotomap segments[];
-int	size;
-int	split;
-int	width;
-int	height;
+BuildPasteUpFlograph(XParms xp, Parms p, XiePhotoElement **flograph, 
+		     XiePhotomap segments[], int size, int split, 
+		     int width, int height)
 {
 	int	i, flo_elements;
 	int	tile_width, tile_height;
@@ -362,14 +353,29 @@ int	height;
 	return( 1 );
 }
 
+static int
+BuildMeSomeTiles(XieTile tiles[], int split, int width, int height, 
+		 int method, int overlap)
+{
+	int i, j, idx;
+
+	SetTileXY( tiles, split, width, height, method, overlap );
+
+        idx = 0;
+        for ( i = 0; i < split; i++ )
+        {
+                for ( j = 0; j < split; j++ )
+                {
+                        tiles[ idx ].src = idx + 1;
+                        idx++;
+                }
+        }
+	return( 1 );
+}
+
 static void
-SetTileXY( tiles, split, width, height, method, overlap )
-XieTile	tiles[];
-int	split;
-int	width;
-int	height;
-int	method;
-int	overlap;
+SetTileXY(XieTile tiles[], int split, int width, int height, 
+	  int method, int overlap)
 {
 	int	i, j, idx;
 
@@ -416,35 +422,8 @@ int	overlap;
 	}
 }
 
-int
-BuildMeSomeTiles( tiles, split, width, height, method, overlap )
-XieTile tiles[];
-int	split;
-int	width;
-int	height;
-int	method;
-int	overlap;
-{
-	int i, j, idx;
-
-	SetTileXY( tiles, split, width, height, method, overlap );
-
-        idx = 0;
-        for ( i = 0; i < split; i++ )
-        {
-                for ( j = 0; j < split; j++ )
-                {
-                        tiles[ idx ].src = idx + 1;
-                        idx++;
-                }
-        }
-	return( 1 );
-}
-
-void DoPasteUp(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoPasteUp(XParms xp, Parms p, int reps)
 {
     	int     i, method;
 	int	flo_notify;
@@ -482,17 +461,13 @@ void DoPasteUp(xp, p, reps)
 }
 
 void
-EndPasteUp(xp, p)
-    XParms  xp;
-    Parms   p;
+EndPasteUp(XParms xp, Parms p)
 {
 	FreePasteUpStuff( xp, p );
 }
 
-static void
-FreePasteUpStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreePasteUpStuff(XParms xp, Parms p)
 {
 	XieFreePasteUpTiles(&flograph[ pasteUpIdx ] );
 

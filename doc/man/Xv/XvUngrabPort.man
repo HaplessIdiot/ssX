@@ -33,10 +33,6 @@ XvUngrabPort(3X) releases a grabbed port.  If \fItime\fR specifies a
 time before the last XvGrabPort(3X) was executed, the
 request is ignored.
 .\"
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returns True if XvUngrabPort(3X) completed successfully.

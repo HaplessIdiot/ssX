@@ -90,24 +90,19 @@ extern Bool WMSafe;
 static XStandardColormap stdCmap;
 static int cclass;
 
-void EndFunnyEncode();
-static void FreeFunnyEncodeStuff(XParms xp, Parms p);
+extern Window drawableWindow;
+extern Bool dontClear;
 
 int 
-InitFunnyEncode(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+InitFunnyEncode(XParms xp, Parms p, int reps)
 {
 	int decode_notify = 0;
 	int i, idx;
 	XIEimage *image;
-	extern Window drawableWindow;
 	XieProcessDomain domain;
 	XieEncodeTechnique encode_tech = ( XieEncodeTechnique ) NULL;
 	XieEncodeUncompressedSingleParam *encode_single;
 	XieEncodeUncompressedTripleParam *encode_triple;
-	extern Bool dontClear;
 	XieLTriplet levels;
 	int techParmOffset, floIdx;
 	FunnyEncodeParms *ptr;
@@ -508,10 +503,8 @@ int     reps;
 	return( reps );
 }
 
-void DoFunnyEncode(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoFunnyEncode(XParms xp, Parms p, int reps)
 {
     	int     i, j;
 
@@ -527,12 +520,8 @@ void DoFunnyEncode(xp, p, reps)
 }
 
 void 
-EndFunnyEncode(xp, p)
-XParms  xp;
-Parms   p;
+EndFunnyEncode(XParms xp, Parms p)
 {
-	extern Window drawableWindow;
-	extern Bool dontClear;
 
 	dontClear = False;
 	if ( type == xieValTripleBand && !IsStaticVisual( cclass ) )
@@ -542,10 +531,8 @@ Parms   p;
 	FreeFunnyEncodeStuff( xp, p );
 }
 
-static void
-FreeFunnyEncodeStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeFunnyEncodeStuff(XParms xp, Parms p)
 {
 	int	i;
 

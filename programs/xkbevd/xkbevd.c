@@ -1,5 +1,5 @@
 /* $XConsortium: xkbevd.c /main/6 1996/09/28 17:18:29 rws $ */
-/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.5 1996/12/23 07:13:55 dawes Exp $ */
+/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.6 1997/12/06 09:26:16 hohndel Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,12 +28,13 @@
 
 #define	DEBUG_VAR xkbevdDebug
 #include <X11/Xosdefs.h>
-#ifdef X_NOT_STDC_ENV
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
+#else
+extern char *getenv();
 #endif
 #include "xkbevd.h"
 
-extern char *getenv();
 
 #define	lowbit(x)	((x) & (-(x)))
 
@@ -85,10 +86,8 @@ XkbDescPtr	xkb=		NULL;
 #define	M(m)	fprintf(stderr,(m))
 #define	M1(m,a)	fprintf(stderr,(m),(a))
 
-void
-Usage(argc,argv)
-    int 	argc;
-    char *	argv[];
+static void
+Usage(int argc, char *argv[])
 {
     M1("Usage: %s [options]...\n",argv[0]);
     M("Legal options:\n");
@@ -105,12 +104,10 @@ Usage(argc,argv)
 
 /***====================================================================***/
 
-Bool
-parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+static Bool
+parseArgs(int argc, char *argv[])
 {
-register int i,tmp;
+register int i;
 
     for (i=1;i<argc;i++) {
 	if (strcmp(argv[i],"-bg")==0) {
@@ -211,12 +208,8 @@ register int i,tmp;
     return True;
 }
 
-Display *
-GetDisplay(program,dpyName,opcodeRtrn,evBaseRtrn)
-    char *	program;
-    char *	dpyName;
-    int *	opcodeRtrn;
-    int *	evBaseRtrn;
+static Display *
+GetDisplay(char *program, char *dpyName, int *opcodeRtrn, int *evBaseRtrn)
 {
 int	mjr,mnr,error;
 Display	*dpy;
@@ -258,8 +251,7 @@ Display	*dpy;
 /***====================================================================***/
 
 void
-InterpretConfigs(cfg)
-    CfgEntryPtr	cfg;
+InterpretConfigs(CfgEntryPtr cfg)
 {
 char *		name;
 unsigned	priv= 0;
@@ -351,9 +343,8 @@ unsigned	priv= 0;
     return;
 }
 
-CfgEntryPtr
-FindMatchingConfig(ev)
-    XkbEvent *	ev;
+static CfgEntryPtr
+FindMatchingConfig(XkbEvent *ev)
 {
 CfgEntryPtr	cfg,dflt;
 
@@ -387,9 +378,8 @@ CfgEntryPtr	cfg,dflt;
     return dflt;
 }
 
-Bool
-ProcessMatchingConfig(ev)
-    XkbEvent *	ev;
+static Bool
+ProcessMatchingConfig(XkbEvent *ev)
 {
 CfgEntryPtr	cfg;
 char		buf[1024],*cmd;
@@ -454,16 +444,13 @@ int		ok;
 /***====================================================================***/
 
 int
-main(argc,argv)
-    int		argc;
-    char *	argv[];
+main(int argc, char *argv[])
 {
 FILE 	*	file;
 static char 	buf[1024];
 XkbEvent	ev;
 Bool		ok;
 
-    extern FILE *yyin;
 
     yyin = stdin;
     uSetEntryFile(NullString);
@@ -550,7 +537,6 @@ Bool		ok;
     if (soundDir==NULL)	soundDir= DFLT_SOUND_DIR;
     XkbStdBellEvent(dpy,None,0,XkbBI_ImAlive);
     while (1) {
-	CfgEntryPtr	cfg;
 
 	XNextEvent(dpy,&ev.core);
 	if ((!ProcessMatchingConfig(&ev))&&(ev.type==xkbEventCode)&&

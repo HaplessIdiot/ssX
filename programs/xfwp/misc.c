@@ -63,7 +63,7 @@ BadSyntax(
 }
 
 static void 
-Usage()
+Usage(void)
 {
     (void) fprintf (stderr, "Usage:  xfwp [-pdt <#secs>] [-clt <#secs>] \\\n"); 
     (void) fprintf (stderr, 
@@ -74,7 +74,7 @@ Usage()
 }
 
 static void 
-MallocFailed()
+MallocFailed(void)
 {
     (void) fprintf(stderr, "Memory allocation failed, exiting\n");
     exit(1);
@@ -877,7 +877,7 @@ doCheckTimeouts(
          * but it really doesn't matter either way given the logic of the
          * process readables and writables code
  	 */
-	*nfds_ready--;	
+	(*nfds_ready)--;   /* XXX was *nfds_ready-- found spurious by gcc */
 	/*
 	 * if you just shut this connection object down, you don't want
          * to reset its creation date to now, so go to the next one
@@ -948,7 +948,7 @@ doCheckTimeouts(
  	close(server_array[client_listen_counter]->client_listen_fd);
         free(server_array[client_listen_counter]);
         server_array[client_listen_counter] = NULL; 
-	*nfds_ready--;	
+	(*nfds_ready)--;	/* XXX */
 	/*
 	 * if you just shut this connection object down, you don't want
          * to reset its creation date to now, so go to the next one
@@ -1001,7 +1001,7 @@ doCheckTimeouts(
  	close(pm_conn_array[pm_conn_counter]->fd);
         free(pm_conn_array[pm_conn_counter]);
         pm_conn_array[pm_conn_counter] = NULL;
-	*nfds_ready--;	
+	(*nfds_ready)--;	/* XXX */
 	/*
 	 * if you just shut this connection object down, you don't want
          * to reset its creation date to now, so go to the next one

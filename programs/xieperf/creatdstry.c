@@ -74,12 +74,8 @@ static XieLut	PhotofloTestLut1, PhotofloTestLut2;
 static XiePhotoElement *flograph;
 static int flo_elements;
 
-static void FreeCreateDestroyPhotofloStuff(XParms xp, Parms p);
-
-int InitCreateDestroyPhotoflo(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitCreateDestroyPhotoflo(XParms xp, Parms p, int reps)
 {
 	int	lutSize;
 	unsigned char	*lut1, *lut2;
@@ -164,18 +160,14 @@ int InitCreateDestroyPhotoflo(xp, p, reps)
 
 }
 
-int InitCreateDestroy(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitCreateDestroy(XParms xp, Parms p, int reps)
 {
 	return( reps );
 }
 
-void DoCreateDestroyColorList(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoCreateDestroyColorList(XParms xp, Parms p, int reps)
 {
 	int	i;
 	XieColorList clist;
@@ -192,10 +184,8 @@ void DoCreateDestroyColorList(xp, p, reps)
 	}	
 }
 
-void DoCreateDestroyLUT(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoCreateDestroyLUT(XParms xp, Parms p, int reps)
 {
 	XieLut	lut;
 	int	i;
@@ -212,10 +202,8 @@ void DoCreateDestroyLUT(xp, p, reps)
 	}
 }
 
-void DoCreateDestroyPhotomap(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoCreateDestroyPhotomap(XParms xp, Parms p, int reps)
 {
 	XiePhotomap photomap;
 	int	i;
@@ -232,10 +220,8 @@ void DoCreateDestroyPhotomap(xp, p, reps)
 	}
 }
 
-void DoCreateDestroyROI(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoCreateDestroyROI(XParms xp, Parms p, int reps)
 {
 	XieRoi	roi;
 	int	i;
@@ -252,10 +238,8 @@ void DoCreateDestroyROI(xp, p, reps)
 	}
 }
 
-void DoCreateDestroyPhotospace(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoCreateDestroyPhotospace(XParms xp, Parms p, int reps)
 {
 	XiePhotospace photospace;
 	int	i;
@@ -272,10 +256,8 @@ void DoCreateDestroyPhotospace(xp, p, reps)
 	}
 }
 
-void DoCreateDestroyPhotoflo(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoCreateDestroyPhotoflo(XParms xp, Parms p, int reps)
 {
 	XiePhotoflo	flo;
 	int	i;
@@ -291,24 +273,20 @@ void DoCreateDestroyPhotoflo(xp, p, reps)
 	}
 }
 
-void EndCreateDestroy(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndCreateDestroy(XParms xp, Parms p)
 {
 	return;
 }
 
-void EndCreateDestroyPhotoflo(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndCreateDestroyPhotoflo(XParms xp, Parms p)
 {
 	FreeCreateDestroyPhotofloStuff( xp, p );
 }
 
-static void
-FreeCreateDestroyPhotofloStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeCreateDestroyPhotofloStuff(XParms xp, Parms p)
 {
 	if ( flograph )
 	{

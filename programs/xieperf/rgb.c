@@ -73,6 +73,8 @@ terms and conditions:
 #include <stdio.h>
 #include <math.h>
 
+static int CreateRGBFlo ( XParms xp, Parms p );
+
 static XiePhotomap XIEPhotomap;
 
 static XiePhotoElement *flograph;
@@ -83,13 +85,8 @@ static int cclass;
 static XStandardColormap stdCmap;
 static int imageLevels;
 
-static void FreeRGBStuff(XParms xp, Parms p);
-
 int 
-InitRGB(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+InitRGB(XParms xp, Parms p, int reps)
 {
 	static XIEimage *image;
 	int atom;
@@ -158,10 +155,8 @@ int     reps;
 	return( reps );
 }
 
-int
-CreateRGBFlo( xp, p )
-XParms	xp;
-Parms	p;
+static int
+CreateRGBFlo(XParms xp, Parms p)
 {
 	RGBParms *rgb = ( RGBParms * )p->ts;
 	int idx, decode_notify;
@@ -445,10 +440,7 @@ out:
 }
 
 void 
-DoRGB(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoRGB(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -458,19 +450,15 @@ int     reps;
         }
 }
 
-void
-EndRGB(xp, p)
-XParms  xp;
-Parms   p;
+void 
+EndRGB(XParms xp, Parms p)
 {
 	InstallGrayColormap( xp );
 	FreeRGBStuff( xp, p );
 }
 
-static void
-FreeRGBStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeRGBStuff(XParms xp, Parms p)
 {
 	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
 	{

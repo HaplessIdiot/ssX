@@ -79,13 +79,16 @@ static XtResource resources[] = {
 };
 #undef offset
 
-static void Initialize();
-static void Resize();
-static void Realize();
-static Boolean SetValues();
-static void ClassInitialize();
-static void Destroy();
-static XtGeometryResult QueryGeometry();
+static void ClassInitialize ( void );
+static void Initialize ( Widget request, Widget new, ArgList args, 
+			 Cardinal *num_args );
+static void Realize ( Widget w, Mask * mask, XSetWindowAttributes * xswa );
+static void Resize ( Widget w );
+static Boolean SetValues ( Widget current, Widget request, Widget new, 
+			   ArgList args, Cardinal *num_args );
+static void Destroy ( Widget w );
+static XtGeometryResult QueryGeometry ( Widget w, XtWidgetGeometry *intended, 
+					XtWidgetGeometry *preferred );
 
 LEDClassRec ledClassRec = {
   {
@@ -139,14 +142,14 @@ WidgetClass ledWidgetClass = (WidgetClass)&ledClassRec;
  *
  ****************************************************************/
 
-static void ClassInitialize()
+static void 
+ClassInitialize(void)
 {
     XawInitializeWidgetSet();
 }
 
 static void 
-GetPixmaps(lw)
-    LEDWidget lw;
+GetPixmaps(LEDWidget lw)
 {
     XGCValues	values;
     GC		gc;
@@ -213,10 +216,7 @@ static void Initialize(request, new, args, num_args)
 } /* Initialize */
 
 static void
-Realize(w, mask, xswa)
-    Widget			w;
-    Mask *			mask;
-    XSetWindowAttributes *	xswa;
+Realize(Widget w, Mask *mask, XSetWindowAttributes *xswa)
 {
     LEDWidget 	lw = (LEDWidget)w;
     WidgetClass super = simpleWidgetClass;
@@ -230,8 +230,7 @@ Realize(w, mask, xswa)
 }
 
 static void 
-Resize(w)
-    Widget w;
+Resize(Widget w)
 {
     GetPixmaps((LEDWidget)w);
     return;
@@ -242,10 +241,8 @@ Resize(w)
  */
 
 static Boolean 
-SetValues(current, request, new, args, num_args)
-    Widget current, request, new;
-    ArgList args;
-    Cardinal *num_args;
+SetValues(Widget current, Widget request, Widget new, 
+	  ArgList args, Cardinal *num_args)
 {
     LEDWidget curlw = (LEDWidget) current;
     LEDWidget newlw = (LEDWidget) new;
@@ -275,8 +272,7 @@ SetValues(current, request, new, args, num_args)
 }
 
 static void 
-Destroy(w)
-    Widget w;
+Destroy(Widget w)
 {
     LEDWidget lw = (LEDWidget)w;
 
@@ -292,9 +288,9 @@ Destroy(w)
 }
 
 
-static XtGeometryResult QueryGeometry(w, intended, preferred)
-    Widget w;
-    XtWidgetGeometry *intended, *preferred;
+static XtGeometryResult 
+QueryGeometry(Widget w, XtWidgetGeometry *intended, 
+	      XtWidgetGeometry *preferred)
 {
     LEDWidget lw = (LEDWidget)w;
 

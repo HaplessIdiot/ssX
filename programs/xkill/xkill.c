@@ -1,15 +1,9 @@
-/* $XConsortium: xkill.c,v 1.19 94/04/17 20:24:50 converse Exp $ */
+/* $TOG: xkill.c /main/20 1998/02/09 14:09:10 kaleb $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -54,11 +48,17 @@ char *ProgramName;
 #define SelectButtonAny (-1)
 #define SelectButtonFirst (-2)
 
-XID parse_id(), get_window_id();
-int parse_button(), verify_okay_to_kill();
+static int parse_button ( char *s, int *buttonp );
+static XID parse_id ( char *s );
+static XID get_window_id ( Display *dpy, int screen, int button, char *msg );
+static int catch_window_errors ( Display *dpy, XErrorEvent *ev );
+static int kill_all_windows ( Display *dpy, int screenno, Bool top );
+static int verify_okay_to_kill ( Display *dpy, int screenno );
+static Bool wm_state_set ( Display *dpy, Window win );
+static Bool wm_running ( Display *dpy, int screenno );
 
-Exit (code)
-    int code;
+static void
+Exit(int code)
 {
     if (dpy) {
 	XCloseDisplay (dpy);
@@ -66,7 +66,8 @@ Exit (code)
     exit (code);
 }
 
-usage ()
+static void
+usage(void)
 {
     static char *options[] = {
 "where options include:",
@@ -87,9 +88,8 @@ NULL};
     Exit (1);
 }
 
-main (argc, argv)
-    int argc;
-    char *argv[];
+int
+main(int argc, char *argv[])
 {
     int i;				/* iterator, temp variable */
     char *displayname = NULL;		/* name of server to contact */
@@ -191,8 +191,8 @@ main (argc, argv)
 		button = (int) ((unsigned int) pointer_map[0]);
 	    }
 	}
-	if (id = get_window_id (dpy, screenno, button,
-				"the window whose client you wish to kill")) {
+	if ((id = get_window_id (dpy, screenno, button,
+				"the window whose client you wish to kill"))) {
 	    if (id == RootWindow(dpy,screenno)) id = None;
 	    else if (!top) {
 		XID indicated = id;
@@ -218,11 +218,12 @@ main (argc, argv)
     }
 
     Exit (0);
+    /*NOTREACHED*/
+    return 0;
 }
 
-int parse_button (s, buttonp)
-    register char *s;
-    int *buttonp;
+static int 
+parse_button(char *s, int *buttonp)
 {
     register char *cp;
 
@@ -252,8 +253,8 @@ int parse_button (s, buttonp)
 }
 
 
-XID parse_id (s)
-    char *s;
+static XID 
+parse_id(char *s)
 {
     XID retval = None;
     char *fmt = "%ld";			/* since XID is long */
@@ -266,11 +267,8 @@ XID parse_id (s)
     return (retval);
 }
 
-XID get_window_id (dpy, screen, button, msg)
-    Display *dpy;
-    int screen;
-    int button;
-    char *msg;
+static XID 
+get_window_id(Display *dpy, int screen, int button, char *msg)
 {
     Cursor cursor;		/* cursor to use when selecting */
     Window root;		/* the current root */
@@ -331,17 +329,14 @@ XID get_window_id (dpy, screen, button, msg)
 }
 
 
-int catch_window_errors (dpy, ev)
-    Display *dpy;
-    XErrorEvent *ev;
+static int 
+catch_window_errors(Display *dpy, XErrorEvent *ev)
 {
     return 0;
 }
 
-int kill_all_windows (dpy, screenno, top)
-    Display *dpy;
-    int screenno;
-    Bool top;
+static int 
+kill_all_windows(Display *dpy, int screenno, Bool top)
 {
     Window root = RootWindow (dpy, screenno);
     Window dummywindow;
@@ -379,9 +374,8 @@ int kill_all_windows (dpy, screenno, top)
 /*
  * ask the user to press in the root with each button in succession
  */
-int verify_okay_to_kill (dpy, screenno)
-    Display *dpy;
-    int screenno;
+static int 
+verify_okay_to_kill(Display *dpy, int screenno)
 {
     unsigned char pointer_map[256];
     int count = XGetPointerMapping (dpy, pointer_map, 256);
@@ -411,9 +405,8 @@ int verify_okay_to_kill (dpy, screenno)
 /* Return True if the property WM_STATE is set on the window, otherwise
  * return False.
  */
-Bool wm_state_set(dpy, win) 
-Display	*dpy;
-Window	win;
+static Bool 
+wm_state_set(Display *dpy, Window win) 
 {
     Atom wm_state;
     Atom actual_type;
@@ -435,9 +428,8 @@ Window	win;
  * otherwise, return False.
  */
 
-Bool wm_running(dpy, screenno)
-Display *dpy;
-int	screenno;
+static Bool 
+wm_running(Display *dpy, int screenno)
 {
     XWindowAttributes	xwa;
     Status		status;

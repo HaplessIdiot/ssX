@@ -79,22 +79,14 @@ static int flo_elements;
 static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 
-static void FreeQueryColorListStuff(XParms xp, Parms p);
-static void FreeQueryPhotomapStuff(XParms xp, Parms p);
-static void FreeQueryPhotofloStuff(XParms xp, Parms p);
-
-int InitQueryTechniques(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitQueryTechniques(XParms xp, Parms p, int reps)
 {
 	return reps;
 }
 
-int InitQueryColorList(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitQueryColorList(XParms xp, Parms p, int reps)
 {
 	/* allocate a color list */
 
@@ -106,10 +98,8 @@ int InitQueryColorList(xp, p, reps)
 	return reps;
 }
 
-int InitQueryPhotomap(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitQueryPhotomap(XParms xp, Parms p, int reps)
 {
 	if ( ( XIEPhotomap = 
 		GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
@@ -119,10 +109,8 @@ int InitQueryPhotomap(xp, p, reps)
 	return reps;
 }
 
-int InitQueryPhotoflo(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitQueryPhotoflo(XParms xp, Parms p, int reps)
 {
         int     lutSize, lutLevels;
         unsigned char   *lut1, *lut2;
@@ -204,10 +192,8 @@ int InitQueryPhotoflo(xp, p, reps)
 	return reps;
 }
 
-void DoQueryTechniques(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoQueryTechniques(XParms xp, Parms p, int reps)
 {
 	XieTechniqueGroup	techGroup;
 	XieTechnique		*techVector;
@@ -239,10 +225,8 @@ void DoQueryTechniques(xp, p, reps)
 	}
 }
 
-void DoQueryColorList(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoQueryColorList(XParms xp, Parms p, int reps)
 {
 	int	i;
 	Colormap cmap;
@@ -280,10 +264,8 @@ void DoQueryColorList(xp, p, reps)
 	}
 }
 
-void DoQueryPhotomap(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoQueryPhotomap(XParms xp, Parms p, int reps)
 {
 	int	i;
 	XieLTriplet	width;
@@ -311,29 +293,27 @@ void DoQueryPhotomap(xp, p, reps)
 		}
 		if ( levels[ 0 ] != image->levels[ 0 ] )
 		{
-			fprintf( stderr, "XieQueryPhotomap levels return invalid should be 0x%x got 0x%x\n", image->levels[ 0 ], levels[ 0 ] );
+			fprintf( stderr, "XieQueryPhotomap levels return invalid should be 0x%lx got 0x%lx\n", image->levels[ 0 ], levels[ 0 ] );
 			fflush( stderr );
 			error = True;
 		}
 		if ( width[ 0 ] != image->width[ 0 ] )
 		{
-			fprintf( stderr, "XieQueryPhotomap width return invalid should be 0x%x got 0x%x\n", image->width[ 0 ], width[ 0 ] );
+			fprintf( stderr, "XieQueryPhotomap width return invalid should be 0x%x got 0x%lx\n", image->width[ 0 ], width[ 0 ] );
 			fflush( stderr );
 			error = True;
 		}
 		if ( height[ 0 ] != image->height[ 0 ] )
 		{
-			fprintf( stderr, "XieQueryPhotomap height return invalid should be 0x%x got 0x%x\n", image->height[ 0 ], height[ 0 ] );
+			fprintf( stderr, "XieQueryPhotomap height return invalid should be 0x%x got 0x%lx\n", image->height[ 0 ], height[ 0 ] );
 			fflush( stderr );
 			error = True;
 		}
 	}
 }
 
-void DoQueryPhotoflo(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoQueryPhotoflo(XParms xp, Parms p, int reps)
 {
 	int	i;
 	XiePhotofloState state;
@@ -358,25 +338,19 @@ void DoQueryPhotoflo(xp, p, reps)
 	}
 }
 
-void 
-EndQueryTechniques(xp, p)
-    XParms  xp;
-    Parms   p;
+void
+EndQueryTechniques(XParms xp, Parms p)
 {
 }
 
-void 
-EndQueryColorList(xp, p)
-    XParms  xp;
-    Parms   p;
+void
+EndQueryColorList(XParms xp, Parms p)
 {
 	FreeQueryColorListStuff( xp, p );
 }
 
-static void
-FreeQueryColorListStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeQueryColorListStuff(XParms xp, Parms p)
 {
 	if ( XIEColorList )
 	{
@@ -385,18 +359,14 @@ Parms	p;
 	}
 }
 
-void 
-EndQueryPhotomap(xp, p)
-    XParms  xp;
-    Parms   p;
+void
+EndQueryPhotomap(XParms xp, Parms p)
 {
 	FreeQueryPhotomapStuff( xp, p );
 }
 
-static void
-FreeQueryPhotomapStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeQueryPhotomapStuff(XParms xp, Parms p)
 {
 	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
 	{
@@ -406,17 +376,13 @@ Parms	p;
 }
 
 void
-EndQueryPhotoflo(xp, p)
-    XParms  xp;
-    Parms   p;
+EndQueryPhotoflo(XParms xp, Parms p)
 {
 	FreeQueryPhotofloStuff( xp, p );
 }
 
-static void
-FreeQueryPhotofloStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeQueryPhotofloStuff(XParms xp, Parms p)
 {
 	if ( PhotofloTestLut1 )
 	{

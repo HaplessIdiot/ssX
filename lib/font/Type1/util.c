@@ -29,7 +29,13 @@
  */
 /* Author: Katherine A. Hitchcock    IBM Almaden Research Laboratory */
  
+#ifndef FONTMODULE
 #include <stdio.h>
+#else
+#include "fontmisc.h"
+#include "Xmd.h"
+#include "xf86_ansic.h"
+#endif
 #include "util.h"
 #include "fontmisc.h"
  

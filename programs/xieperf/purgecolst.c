@@ -72,10 +72,8 @@ terms and conditions:
 
 static XieColorList XIEColorList;
 
-int InitPurgeColorList(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitPurgeColorList(XParms xp, Parms p, int reps)
 {
 	/* allocate a color list */
 
@@ -87,10 +85,8 @@ int InitPurgeColorList(xp, p, reps)
 	return reps;
 }
 
-void DoPurgeColorList(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoPurgeColorList(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -103,9 +99,7 @@ void DoPurgeColorList(xp, p, reps)
 }
 
 void
-EndPurgeColorList(xp, p)
-    XParms  xp;
-    Parms   p;
+EndPurgeColorList(XParms xp, Parms p)
 {
 	XieDestroyColorList( xp->d, XIEColorList );
 }

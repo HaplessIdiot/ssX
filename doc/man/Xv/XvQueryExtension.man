@@ -35,10 +35,6 @@ numbers for the Xv video extension currently loaded
 on the system.  The extension major request number, event base, and error
 base are also returned.
 .\"
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returns True if XvQueryExtension(3X) completed successfully.

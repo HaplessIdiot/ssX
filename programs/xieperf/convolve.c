@@ -83,15 +83,10 @@ static XiePhotoflo flo;
 static int flo_elements;
 static float *data;
 
-static void FreeConvolveStuff(XParms xp, Parms p);
-
 #define	DATA( n, i, j ) ( float * ) ( *data + ( i * n ) ) + j
 
 int 
-InitConvolve(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+InitConvolve(XParms xp, Parms p, int reps)
 {
 	XieProcessDomain domain;
 	unsigned int bandMask;
@@ -101,7 +96,7 @@ InitConvolve(xp, p, reps)
 	XieConvolveTechnique tech;
 	char *tech_parm = ( char * ) NULL;
 	XieConstant constant;
-	int ( * kfunc )();
+	int ( * kfunc )(float **);
 	int monoflag = 0;
 	Bool photoDest;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
@@ -313,10 +308,7 @@ InitConvolve(xp, p, reps)
 }
 
 void 
-DoConvolve(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoConvolve(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -328,17 +320,13 @@ int     reps;
 }
 
 void 
-EndConvolve(xp, p)
-XParms  xp;
-Parms   p;
+EndConvolve(XParms xp, Parms p)
 {
 	FreeConvolveStuff( xp, p );
 }
 
-static void
-FreeConvolveStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeConvolveStuff(XParms xp, Parms p)
 {
 	if ( data )
 	{
@@ -412,8 +400,7 @@ Parms	p;
 	LaPlacian5().
 */
 
-int	Boxcar3( data )
-float	**data;
+int	Boxcar3(float **data)
 {
 	int	i, j;
 
@@ -430,8 +417,7 @@ float	**data;
 	return( 3 );
 }
 
-int	Boxcar5( data )
-float	**data;
+int	Boxcar5(float **data)
 {
 	int	i, j;
 
@@ -448,8 +434,7 @@ float	**data;
 	return( 5 );
 }
 
-int	LaPlacian3( data )
-float	**data;
+int	LaPlacian3(float **data)
 {
 	int	i, j;
 
@@ -467,8 +452,7 @@ float	**data;
 	return( 3 );
 }
 
-int	LaPlacian5( data )
-float	**data;
+int	LaPlacian5(float **data)
 {
 	int	i, j;
 

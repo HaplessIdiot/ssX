@@ -31,10 +31,6 @@ Selects whether video notification is enabled or disabled.
 XvSelectVideoNotify(3X) enables or disables events to be reported for 
 video activity in a drawable.
 .\"
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returns True if XvSelectVideoNotify(3X) completed successfully.

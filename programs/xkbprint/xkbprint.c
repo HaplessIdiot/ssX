@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.5 1997/06/22 10:17:17 dawes Exp $ */
+/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.6 1997/12/06 09:26:16 hohndel Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -61,11 +61,13 @@
 #define	INPUT_XKB	1
 #define	INPUT_XKM	2
 
+#ifdef notyet
 static char *fileTypeExt[] = {
 	"XXX",
 	"xkm",
 	"xkb"
 };
+#endif
 
 static	unsigned	inputFormat= INPUT_UNKNOWN;
 static	unsigned	outputFormat= WANT_DEFAULT;
@@ -84,10 +86,8 @@ static	XKBPrintArgs	args;
 
 /***====================================================================***/
 
-void
-Usage(argc,argv)
-    int 	argc;
-    char *	argv[];
+static void
+Usage(int argc, char *argv[])
 {
     fprintf(stderr,"Usage: %s [options] input-file [ output-file ]\n",argv[0]);
     fprintf(stderr,"Legal options:\n");
@@ -135,10 +135,8 @@ fprintf(stderr,"              be \"all\", \"none\" or \"common\" (default)\n");
 
 /***====================================================================***/
 
-Bool
-parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+static Bool
+parseArgs(int argc, char *argv[])
 {
 register int i;
 
@@ -227,7 +225,6 @@ register int i;
 	}
 #endif
 	else if (strcmp(argv[i],"-if")==0) {
-	    int tmp;
 	    if (++i>=argc) {
 		uWarning("Internal Font name not specified\n");
 		uAction("Trailing \"-if\" option ignored\n");
@@ -238,7 +235,6 @@ register int i;
 	    args.wantKeycodes= True;
 	}
 	else if (strcmp(argv[i],"-label")==0) {
-	    int tmp;
 	    if (++i>=argc) {
 		uWarning("Label type not specified\n");
 		uAction("Trailing \"-label\" option ignored\n");
@@ -257,7 +253,6 @@ register int i;
 	    }
 	}
 	else if (strcmp(argv[i],"-lc")==0) {
-	    int tmp;
 	    if (++i>=argc) {
 		uWarning("Locale not specified\n");
 		uAction("Trailing \"-lc\" option ignored\n");
@@ -413,7 +408,6 @@ register int i;
     if (outputFont!=NULL) {
 	Bool  ok;
 	FILE *file= NULL;
-	char *tmp;
 
 	if (outputFile==NULL) {
 	    outputFile= uAlloc(strlen(outputFont)+5);
@@ -549,10 +543,8 @@ register int i;
     return True;
 }
 
-Display *
-GetDisplay(program,dpyName)
-    char *	program;
-    char *	dpyName;
+static Display *
+GetDisplay(char *program, char *dpyName)
 {
 int	mjr,mnr,error;
 Display	*dpy;
@@ -591,14 +583,14 @@ Display	*dpy;
 
 /***====================================================================***/
 
+#ifdef notyet
 #define MAX_INCLUDE_OPTS	10
 static char	*includeOpt[MAX_INCLUDE_OPTS];
 static int	numIncludeOpts = 0;
+#endif
 
 int
-main(argc,argv)
-    int		argc;
-    char *	argv[];
+main(int argc, char *argv[])
 {
 FILE 	*	file;
 int		ok;
@@ -644,7 +636,7 @@ XkbFileInfo 	result;
 	}
     }
     if ((inDpy==NULL) && (outDpy==NULL)) {
-	int	mjr,mnr,error;
+	int	mjr,mnr;
 	mjr= XkbMajorVersion;
 	mnr= XkbMinorVersion;
 	if (!XkbLibraryVersion(&mjr,&mnr)) {
@@ -714,7 +706,7 @@ XkbFileInfo 	result;
 	ok= 0;
     }
     if (ok) {
-	FILE *out;
+	FILE *out = NULL;
 	if (setlocale(LC_ALL,(wantLocale))==NULL) {
 	    if (wantLocale!=NULL) {
 		uWarning("Couldn't change to locale %s\n",wantLocale);
