@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.76 2004/06/01 00:16:55 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.77 2004/06/04 17:16:12 dawes Exp $ */
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -439,6 +439,9 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 # ifdef __sparc__
 	"-D__sparc__",
+# endif
+# ifdef __sparc64__
+	"-D__sparc64__",
 # endif
 # ifdef __m68k__
 	"-D__m68k__",
@@ -1064,6 +1067,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __sparc__
 	{"__sparc__", "1"},
+#endif
+#ifdef __sparc64__
+	{"__sparc64__", "1"},
 #endif
 #ifdef __sparcv9__
 	{"__sparcv9__", "1"},

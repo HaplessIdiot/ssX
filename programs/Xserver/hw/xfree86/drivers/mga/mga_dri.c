@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.32 2003/11/06 18:38:04 tsi Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -514,8 +514,10 @@ static void MGAWakeupHandler( int screenNum, pointer wakeupData,
 {
     ScreenPtr pScreen = screenInfo.screens[screenNum];
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    MGAPtr pMga = MGAPTR(pScrn);
 
-    if ( xf86IsEntityShared( pScrn->entityList[0] ) ) {
+    if ( xf86IsEntityShared( pScrn->entityList[0] )
+		&& pMga->DualHeadEnabled) {
         MGASwapContextShared( pScreen );
     } else {
         MGASwapContext( pScreen );
@@ -1110,7 +1112,8 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
 
    pDRIInfo->CreateContext = MGACreateContext;
    pDRIInfo->DestroyContext = MGADestroyContext;
-   if ( xf86IsEntityShared( pScrn->entityList[0] ) ) {
+   if ( xf86IsEntityShared( pScrn->entityList[0] )
+		&& pMga->DualHeadEnabled) {
       pDRIInfo->SwapContext = MGADRISwapContextShared;
    } else {
       pDRIInfo->SwapContext = MGADRISwapContext;

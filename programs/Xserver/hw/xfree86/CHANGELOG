@@ -1,4 +1,16 @@
 XFree86 4.4.99.10 (xx July 2004)
+ 159. Protect inlines everywhere io.h is used in TinyX (reported by
+      Andrew Aitchison).
+ 158. Disable R&R when using rotation with the savage driver (Tim Roberts).
+ 157. Update the 8859-7 unicode conversion data file to the current version
+      (Reported in Bugzilla #1406, Matthew Fischer).
+ 156. Fix typos in some spec docs (Bugzilla #1413, Mikko Markus Torni).
+ 155. Fix mga driver SEGV (Bugzilla #1401, Ryan Underwood).
+ 154. Fix HasSecureRPC build on FreeBSD 4.10 (Bugzilla #1422, Dejan Lesjak).
+ 153. Add __sparc64__ to imakemdep.h (Bugzilla #1424, John Heasley).
+ 152. Fix argument type for FIONREAD (Bugzilla #1426, John Heasley).
+ 151. Fix typo in Hu text in xfree86.xml (Bugzilla #1441, busmanus).
+ 150. Fix x86emu's handling of opcode 0xe9 (Bugzilla #1443, Alexei Kosut).
  149. Fix a problem with wsmouse driver loosing events on 64bit 
       architectures (Bugzilla #1438, John Heasley).
  148. Xterm patch #193 (Thomas Dickey).
@@ -19037,7 +19049,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3295 2004/07/20 01:14:40 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3296 2004/07/21 20:37:23 herrb Exp $
 
 
 

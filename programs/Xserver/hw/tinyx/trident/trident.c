@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/trident/trident.c,v 1.18 2001/06/04 09:45:42 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/trident/trident.c,v 1.1 2004/06/02 22:43:02 dawes Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -68,6 +68,7 @@
  */
 
 #include "trident.h"
+#define inline __inline__
 #include <sys/io.h>
 
 #undef TRI_DEBUG

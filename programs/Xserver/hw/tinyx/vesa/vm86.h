@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vm86.h,v 1.2 2003/11/01 04:49:15 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/tinyx/vesa/vm86.h,v 1.1 2004/06/02 22:43:03 dawes Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -52,6 +52,7 @@ THE SOFTWARE.
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/vm86.h>
+#define inline __inline__
 #include <sys/io.h>
 
 #ifdef NOT_IN_X_SERVER

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.48tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.50 2004/03/30 10:34:07 eich Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -833,6 +833,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	    /* accel is disabled below for shadowFB */
 	    psav->shadowFB = TRUE;
 	    psav->rotate = 1;
+	    xf86DisableRandR();
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		       "Rotating screen clockwise - acceleration disabled\n");
 	} else if(!xf86NameCmp(s, "CCW")) {
@@ -840,6 +841,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	    psav->rotate = -1;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,  "Rotating screen"
 		       "counter clockwise - acceleration disabled\n");
+	    xf86DisableRandR();
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"%s\" is not a valid"
 		       "value for Option \"Rotate\"\n", s);
