@@ -285,6 +285,7 @@
 #define PCI_CHIP_9440		0x9440
 #define PCI_CHIP_9520		0x9520
 #define PCI_CHIP_9525		0x9525
+#define PCI_CHIP_9540		0x9540
 #define PCI_CHIP_9660		0x9660
 #define PCI_CHIP_9750		0x9750
 #define PCI_CHIP_9850		0x9850
@@ -799,6 +800,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_939A,		"Cyber 939A/DVD"},
 				{PCI_CHIP_9520,		"Cyber 9520"},
 				{PCI_CHIP_9525,		"Cyber 9525/DVD"},
+				{PCI_CHIP_9540,		"Cyber 9540"},
 				{PCI_CHIP_9750,		"3DImage975"},
 				{PCI_CHIP_9850,		"3DImage985"},
 				{PCI_CHIP_9880,		"Blade3D"},
