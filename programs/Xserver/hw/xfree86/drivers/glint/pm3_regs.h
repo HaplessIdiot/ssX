@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.19 2000/05/10 20:01:31 alanh Exp $ */
+/* $XFree86: $ */
 
 /*
  * glint register file 
