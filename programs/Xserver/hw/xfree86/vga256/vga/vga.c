@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.103 1997/10/13 17:16:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.104 1997/10/25 13:50:52 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1255,7 +1255,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
 		     displayResolution, displayResolution,
-		     vga256InfoRec.displayWidth))
+		     vga256InfoRec.displayWidth)))
 	        return(FALSE);
 	if((vgaBitsPerPixel == 16) || 
 	   (vgaBitsPerPixel == 24) ||
