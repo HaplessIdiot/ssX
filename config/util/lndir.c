@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.14 2001/07/25 15:04:41 dawes Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.15 2001/12/14 19:53:22 dawes Exp $ */
 
 /* From the original /bin/sh script:
 
@@ -126,15 +126,17 @@ mperror (char *s)
 
 
 static int 
-equivalent(char *lname, char *rname)
+equivalent(char *lname, char *rname, char **p)
 {
     char *s;
 
     if (!strcmp(lname, rname))
 	return 1;
     for (s = lname; *s && (s = strchr(s, '/')); s++) {
-	while (s[1] == '/')
+	while (s[1] == '/') {
 	    strcpy(s+1, s+2);
+	    if (*p) (*p)--;
+	}
     }
     return !strcmp(lname, rname);
 }
@@ -267,7 +269,8 @@ dodir (char *fn,		/* name of "from" directory, either absolute or
 
 	if (symlen >= 0) {
 	    /* Link exists in new tree.  Print message if it doesn't match. */
-	    if (!equivalent (basesymlen>=0 ? basesym : buf, symbuf))
+	    if (!equivalent (basesymlen>=0 ? basesym : buf, symbuf,
+			     basesymlen>=0 ? (char **) 0 : &p))
 		msg ("%s: %s", dp->d_name, symbuf);
 	} else {
 	    if (symlink (basesymlen>=0 ? basesym : buf, dp->d_name) < 0)
