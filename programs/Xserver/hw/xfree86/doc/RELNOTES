@@ -1,7 +1,7 @@
   Release Notes for XFree86[TM] 3.1.2B (beta version)
   The XFree86 Project, Inc
 
-  16 December 1995
+  23 December 1995
 
   This document describes the rationale and conditions of this beta
   release, what is new in the XFree86 beta versions 3.1.2B and 3.1.2A
@@ -53,16 +53,24 @@
   2.2.  Trident driver (SVGA server)
 
 
-     o  ADD SOMETHING HERE
+     o  TGUI9440 is now fully supported by the SVGA server.
+
+     o  Major updates for most of the trident family of chips.
+
+     o  Preliminary support for the 9660/9680 chipsets - please test!
+
+     o  Hardware Cursor support has problems when mode switching.  This
+        is only a positioning issue and shouldn't cause any problems.
+
+
+
+     o  Check README.trident distributed with this release for full
+        details.
 
   2.3.  ARK driver (SVGA server)
 
 
      o  No changes -- say something about it the ics5342 not working.
-
-
-
-
 
   2.4.  S3 server
 
@@ -79,12 +87,19 @@
 
      o  ADD SOMETHING HERE
 
-  2.7.  SuperProbe
+  2.7.  SiS 86C201 support
+
+
+     o  Support is included in 3.1.2B for the SiS 86C201 PCI graphics
+        card.  It is currently only supported by the VGA16 and Mono
+        servers.  Support for 256 colour operation is being worked on.
+
+  2.8.  SuperProbe
 
 
      o  ADD SOMETHING HERE
 
-  2.8.  Client/Library changes
+  2.9.  Client/Library changes
 
 
      o  ADD SOMETHING HERE ??
@@ -112,6 +127,9 @@
         prevent the fonts from being treated as scalable.  This works
         with the fontserver (xfs) too.
 
+
+
+
   3.2.  Trident driver (SVGA server)
 
 
@@ -126,8 +144,6 @@
         settings.
 
   3.4.  ARK driver (SVGA server)
-
-
 
 
      o  Preliminary support has been added for the ICS5342
@@ -195,7 +211,6 @@
      o  Arbitrary clocks can be used on most boards with supported clock
         chips.  This is enabled with the "program_clocks" option.
 
-
   3.9.  ET4000/W32 server
 
 
@@ -245,6 +260,8 @@
 
      o  Colour support has been added to xterm.
 
+
+
      o  XNLS support has been added for KOI8-R.
 
      o  xrdb dynamically allocates string space to avoid overruns.
@@ -261,20 +278,19 @@
   3.1.2.  It consists of the following files:
 
 
-
-  BetaReport         Beta test report template form
-  X312B8514.tgz      8514/A server
-  X312BAGX.tgz       AGX server
-  X312BMa32.tgz      Mach 32 server
-  X312BMa64.tgz      Mach 64 server
-  X312BMa8.tgz       Mach 8 server
-  X312BMono.tgz      Mono server
-  X312BP9K.tgz       P9000 server
-  X312BSVGA.tgz      SVGA server
-  X312BVG16.tgz      16 colour VGA server
-  X312BW32.tgz       ET4000/W32 server
-  X312Bupd.tgz       clients/libraries that have changed since 3.1.2
-  postinst.sh        script to run after installing the 3.1.2B binaries
+       BetaReport         Beta test report template form
+       X312B8514.tgz      8514/A server
+       X312BAGX.tgz       AGX server
+       X312BMa32.tgz      Mach 32 server
+       X312BMa64.tgz      Mach 64 server
+       X312BMa8.tgz       Mach 8 server
+       X312BMono.tgz      Mono server
+       X312BP9K.tgz       P9000 server
+       X312BSVGA.tgz      SVGA server
+       X312BVG16.tgz      16 colour VGA server
+       X312BW32.tgz       ET4000/W32 server
+       X312Bupd.tgz       clients/libraries that have changed since 3.1.2
+       postinst.sh        script to run after installing the 3.1.2B binaries
 
 
 
@@ -310,7 +326,57 @@
   /usr/XFree86-3.1.2A directory.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.7 1995/12/16 08:20:33 dawes Exp $
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.8 1995/12/23 09:39:09 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
