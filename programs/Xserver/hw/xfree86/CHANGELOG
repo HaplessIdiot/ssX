@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 576. Plug SIGIO hole while the server is switching back into its VT
+      (reported by Michel Lespinasse).
  575. Use shadowfb in XDarwin fullscreen Quartz mode (Torrey T. Lyons).
  574. Make RENDER optional for Xvfb. When RENDER is enabled add depth 32 
       pixmap format  to list of supported pixmaps (Egbert Eich).
@@ -15677,4 +15679,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2423 2002/12/04 10:28:05 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2424 2002/12/05 01:07:37 torrey Exp $
