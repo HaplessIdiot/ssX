@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**
  * \file drm_agpsupport.h 
  * DRM support for AGP/GART backend
@@ -37,9 +38,35 @@
 
 #if __REALLY_HAVE_AGP
 
-
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,11)
 #define DRM_AGP_GET (drm_agp_t *)inter_module_get("drm_agp")
 #define DRM_AGP_PUT inter_module_put("drm_agp")
+#else
+#define DRM_AGP_GET &agp_api
+#define DRM_AGP_PUT
+
+typedef struct {
+        void                    (*free_memory)(struct agp_memory *);
+        struct agp_memory *     (*allocate_memory)(size_t, u32);
+        int                     (*bind_memory)(struct agp_memory *, off_t);
+        int                     (*unbind_memory)(struct agp_memory *);
+        void                    (*enable)(u32);
+        int                     (*acquire)(void);
+        void                    (*release)(void);
+        int                     (*copy_info)(struct agp_kern_info *);
+} drm_agp_t;
+
+static drm_agp_t agp_api = {
+	agp_free_memory,
+	agp_allocate_memory,
+	agp_bind_memory,
+	agp_unbind_memory,
+	agp_enable,
+	agp_backend_acquire,
+	agp_backend_release,
+	agp_copy_info
+};
+#endif
 
 /**
  * Pointer to the drm_agp_t structure made available by the agpgart module.

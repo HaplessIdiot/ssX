@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /** 
  * \file drm_memory.h 
  * Memory management wrappers for DRM
@@ -130,7 +131,12 @@ static inline unsigned long
 drm_follow_page (void *vaddr)
 {
 	pgd_t *pgd = pgd_offset_k((unsigned long) vaddr);
+#ifdef HAVE_PUD_OFFSET
+	pud_t *pud = pud_offset(pgd, (unsigned long) vaddr);
+	pmd_t *pmd = pmd_offset(pud, (unsigned long) vaddr);
+#else
 	pmd_t *pmd = pmd_offset(pgd, (unsigned long) vaddr);
+#endif
 	pte_t *ptep = pte_offset_kernel(pmd, (unsigned long) vaddr);
 	return pte_pfn(*ptep) << PAGE_SHIFT;
 }
