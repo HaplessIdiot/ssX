@@ -1,4 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.2 94/04/11 16:03:11 matt Exp $
+.\" $XFree86$
 .\" XF86_SVGA.man
 .TH XF86_SVGA 1 "Version 3.0"  "XFree86"
 .SH NAME
