@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/int10/xf86x86emu.c,v 1.3 1999/12/03 19:17:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86x86emu.c,v 1.1 2000/01/23 04:44:35 dawes Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -47,21 +47,21 @@ xf86Int10ExecSetup(xf86Int10InfoPtr pInt)
     int i;
     X86EMU_intrFuncs intFuncs[256];
     X86EMU_pioFuncs pioFuncs = {
-	(CARD8(*)(CARD16))p_inb,
-	(u16(*)(CARD16))p_inw,
-	(u32(*)(CARD16))p_inl,
-	(void(*)(CARD16,CARD8))p_outb,
-	(void(*)(CARD16,CARD16))p_outw,
-	(void(*)(CARD16,CARD32))p_outl
+	(u8(*)(u16))p_inb,
+	(u16(*)(u16))p_inw,
+	(u32(*)(u16))p_inl,
+	(void(*)(u16,u8))p_outb,
+	(void(*)(u16,u16))p_outw,
+	(void(*)(u16,u32))p_outl
     };
     
     X86EMU_memFuncs memFuncs = {
-	(CARD8(*)(CARD32))Mem_rb,
-	(CARD16(*)(CARD32))Mem_rw,
-	(CARD32(*)(CARD32))Mem_rl,
-	(void(*)(CARD32,CARD8))Mem_wb,
-	(void(*)(CARD32,CARD16))Mem_ww,
-	(void(*)(CARD32,CARD32))Mem_wl
+	(u8(*)(u32))Mem_rb,
+	(u16(*)(u32))Mem_rw,
+	(u32(*)(u32))Mem_rl,
+	(void(*)(u32,u8))Mem_wb,
+	(void(*)(u32,u16))Mem_ww,
+	(void(*)(u32,u32))Mem_wl
     };
 
     X86EMU_setupMemFuncs(&memFuncs);

@@ -27,11 +27,12 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.20 1999/12/13 02:13:06 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.21 2000/01/21 01:11:53 dawes Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
 #include "X.h"
+#include "globals.h"
 #include "pixmap.h"
 #include "region.h"
 #include "gc.h"
@@ -1279,8 +1280,6 @@ extern int cfbScreenPrivateIndex;
  * XFree86 empties the root BorderClip when the VT is inactive,
  * here's a macro which uses that to disable GetImage and GetSpans
  */
-extern WindowPtr *WindowTable;
-
 #define cfbWindowEnabled(pWin) \
     REGION_NOTEMPTY((pWin)->drawable.pScreen, \
 		    &WindowTable[(pWin)->drawable.pScreen->myNum]->borderClip)

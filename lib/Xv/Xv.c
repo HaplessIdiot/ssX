@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xv/Xv.c,v 1.9 1999/12/11 19:27:59 mvojkovi Exp $ */
+/* $XFree86: xc/lib/Xv/Xv.c,v 1.10 1999/12/27 00:39:25 robin Exp $ */
 /*
 ** File: 
 **
@@ -1013,8 +1013,10 @@ int XvShmPutImage (
 
 
 static Bool
-_XvWireToEvent(Display *dpy, XvEvent *re, xvEvent *event)
+_XvWireToEvent(Display *dpy, XEvent *host, xEvent *wire)
 {
+  XvEvent *re    = (XvEvent *)host;
+  xvEvent *event = (xvEvent *)wire;
 
   if (event->u.u.type == _XvCodes->first_event+XvVideoNotify)
     {
@@ -1065,14 +1067,14 @@ _XvInitExtension(Display *dpy)
     }
 
   _XvOldWireToEventVideo = 
-    XESetWireToEvent(dpy, 
+    XESetWireToEvent(dpy,
 		     _XvCodes->first_event + XvVideoNotify, 
-		     (int) _XvWireToEvent);
+		     _XvWireToEvent);
 
   _XvOldWireToEventPort = 
     XESetWireToEvent(dpy, 
 		     _XvCodes->first_event + XvPortNotify, 
-		     (int) _XvWireToEvent);
+		     _XvWireToEvent);
 
   _XvOldErrorString = XESetErrorString(dpy, _XvCodes->extension, 
 				       _XvErrorString);

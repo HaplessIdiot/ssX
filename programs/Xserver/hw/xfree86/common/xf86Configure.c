@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.2 2000/01/25 01:36:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.4 2000/01/26 01:05:50 alanh Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -223,7 +223,7 @@ configureModuleSection (void)
     	module1 = xf86confmalloc(sizeof(XF86LoadRec));
     	memset((XF86LoadPtr)module1,0,sizeof(XF86LoadRec));
     	module1->load_name = "extmod";
-	ptr->mod_load_lst = (XF86OptionPtr)addListItem(
+	ptr->mod_load_lst = (XF86LoadPtr)addListItem(
 					(glp)ptr->mod_load_lst, (glp)module1);
     }
 

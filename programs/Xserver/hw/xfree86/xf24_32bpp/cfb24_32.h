@@ -1,9 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32.h,v 1.2 1999/02/28 11:19:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32.h,v 1.3 1999/03/02 10:42:01 dawes Exp $ */
 
 #ifndef _CFB24_32_H
 #define _CFB24_32_H
 
 #include "gcstruct.h"
+#include "window.h"
 
 typedef struct {
    GCOps		*Ops24bpp;

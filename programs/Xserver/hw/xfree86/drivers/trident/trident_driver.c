@@ -28,14 +28,8 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.70 1999/11/03 20:53:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.75tsi Exp $ */
 
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
 #include "cfb24_32.h"
 
 #include "fb.h"
@@ -409,12 +403,7 @@ static const char *vgahwSymbols[] = {
 };
 
 static const char *fbSymbols[] = {
-    "xf1bppScreenInit",
-    "xf4bppScreenInit",
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb32ScreenInit",
+    "fbScreenInit",
     "cfb24_32ScreenInit",
     NULL
 };

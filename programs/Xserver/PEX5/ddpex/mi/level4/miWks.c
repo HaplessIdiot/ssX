@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miWks.c,v 1.6 1998/07/26 13:14:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miWks.c,v 1.7 1998/10/04 09:34:43 dawes Exp $ */
 
 
 #include "miWks.h"
@@ -171,14 +171,16 @@ ChangeDoubleBuffers (pwks)
 miWksPtr	pwks;
 {
  
-     /* This routine does the actual work to create or delete the
-        Double Buffers. It is a no-op if there is no MultiBuffer
-        Extension, except it still has to SetDoubleBuffers to
-        insure the right drawable gets used
-     */
+     /*
+      * This routine does the actual work to create or delete the Double
+      * Buffers.  It is a no-op if there is no MultiBuffer Extension or the
+      * drawable isn't a window, except it still has to SetDoubleBuffers to
+      * insure the right drawable gets used
+      */
  
 #ifdef MULTIBUFFER
  
+     if (pwks->pRend->pDrawable->type == DRAWABLE_WINDOW)
      if (pwks->curBufferMode == PEXDoubleBuffered && !pwks->hasDoubleBuffer)
      {
  	/* create the Double Buffers */
@@ -191,7 +193,8 @@ miWksPtr	pwks;
  	client = CLIENT_ID(pwks->pRend->pDrawable->id);
  	for (i = 0; i < 2; i++)
  	    ids[i] = FakeClientID (client);
- 	result = CreateImageBuffers (pwks->pRend->pDrawable, 2, ids,
+ 	result = CreateImageBuffers ((WindowPtr)(pwks->pRend->pDrawable),
+			    2, ids,
  			    MultibufferUpdateActionBackground,
  			    MultibufferUpdateHintFrequent);
  	if (result != Success)
@@ -207,7 +210,7 @@ miWksPtr	pwks;
      else if (pwks->curBufferMode == PEXSingleBuffered && pwks->hasDoubleBuffer)
      {
  	/* Destroy the Double Buffers */
- 	DestroyImageBuffers (pwks->pRend->pDrawable);
+ 	DestroyImageBuffers ((WindowPtr)(pwks->pRend->pDrawable));
  	pwks->hasDoubleBuffer = MI_FALSE;
      }
 #endif
