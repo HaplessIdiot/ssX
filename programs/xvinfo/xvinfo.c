@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.6 2001/04/01 14:00:24 tsi Exp $ */
+/* $XFree86: xc/programs/xvinfo/xvinfo.c,v 1.7 2001/10/28 03:34:43 tsi Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 
 			if(formats[n].type == XvRGB) {
 			    fprintf(stdout, "        depth: %i\n", 
-			    		formats[n].depth == XvRGB);
+                                        formats[n].depth);
 
 			    fprintf(stdout, "        red, green, blue masks: " 
 					"0x%x, 0x%x, 0x%x\n", 
