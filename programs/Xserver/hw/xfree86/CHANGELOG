@@ -1,4 +1,9 @@
 XFree86 4.2.99.1 (XX June 2002)
+ 181. Add support to xkbcomp and libxkbfile for composing multi-layout
+      keyboard maps from partial "single layout" files.  This allows
+      the XkbLayout to be specified as a comma-separated list of single
+      layout names.  Note: new "single layout" symbol maps aren't available
+      yet. (#5210, Ivan Pascal).
  180. Fix Xv endianess problem with the Radeon driver (#5207, Guido Guenther).
  179. Updates to the Finnish xkb map, including:
        - add ISO-8859-15 missing symbols ([zZsS]caron)
@@ -14883,4 +14888,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2241 2002/06/04 22:50:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2242 2002/06/04 23:04:47 dawes Exp $

@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.15 2001/07/25 15:05:24 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.16 2002/05/31 18:46:13 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -105,13 +105,7 @@ static	char *		errorPrefix= NULL;
 #define	M1(m,a)	fprintf(stderr,(m),(a))
 
 static void
-#if NeedFunctionPrototypes
 Usage(int argc,char *argv[])
-#else
-Usage(argc,argv)
-    int 	argc;
-    char *	argv[];
-#endif
 {
     if (!xkblist)
 	 M1("Usage: %s [options] input-file [ output-file ]\n",argv[0]);
@@ -174,12 +168,7 @@ Usage(argc,argv)
 /***====================================================================***/
 
 static void
-#if NeedFunctionPrototypes
 setVerboseFlags(char *str)
-#else
-setVerboseFlags(str)
-    char *	str;
-#endif
 {
     for (;*str;str++) {
 	switch (*str) {
@@ -200,13 +189,7 @@ setVerboseFlags(str)
 }
 
 static Bool
-#if NeedFunctionPrototypes
 parseArgs(int argc,char *argv[])
-#else
-parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
-#endif
 {
 register int i,tmp;
 
@@ -634,13 +617,7 @@ register int i,tmp;
 }
 
 static Display *
-#if NeedFunctionPrototypes
 GetDisplay(char *program,char *dpyName)
-#else
-GetDisplay(program,dpyName)
-    char *	program;
-    char *	dpyName;
-#endif
 {
 int	mjr,mnr,error;
 Display	*dpy;
@@ -682,13 +659,7 @@ Display	*dpy;
 extern int yydebug;
 
 int
-#if NeedFunctionPrototypes
 main(int argc,char *argv[])
-#else
-main(argc,argv)
-    int		argc;
-    char *	argv[];
-#endif
 {
 FILE 	*	file;
 XkbFile	*	rtrn;
@@ -697,7 +668,6 @@ int		ok;
 XkbFileInfo 	result;
 Status		status;
 
-    extern FILE *yyin;
     yyin = stdin;
     uSetEntryFile(NullString);
     uSetDebugFile(NullString);

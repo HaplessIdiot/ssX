@@ -53,6 +53,9 @@ typedef struct _XkbRF_DescribeVars {
 } XkbRF_DescribeVarsRec,*XkbRF_DescribeVarsPtr;
 
 typedef struct _XkbRF_Rule {
+	int			number;
+        int			layout_num;
+        int			variant_num;
 	char *			model;
 	char *			layout;
 	char *			variant;
@@ -68,9 +71,10 @@ typedef struct _XkbRF_Rule {
 } XkbRF_RuleRec,*XkbRF_RulePtr;
 
 #define	XkbRF_PendingMatch	(1L<<1)
-#define	XkbRF_Delayed		(1L<<2)
+#define	XkbRF_Option		(1L<<2)
 #define	XkbRF_Append		(1L<<3)
-#define	XkbRF_Invalid		(1L<<4)
+#define	XkbRF_Normal		(1L<<4)
+#define	XkbRF_Invalid		(1L<<5)
 
 typedef struct _XkbRF_Rules {
 	XkbRF_DescribeVarsRec	models;
@@ -90,57 +94,6 @@ typedef struct _XkbRF_Rules {
 /***====================================================================***/
 
 _XFUNCPROTOBEGIN
-
-extern Bool	XkbRF_ApplyRule(
-#if NeedFunctionPrototypes
-    XkbRF_RulePtr		/* rule */,
-    XkbComponentNamesPtr	/* names */
-#endif
-);
-
-extern Bool	XkbRF_CheckApplyRule(
-#if NeedFunctionPrototypes
-    XkbRF_RulePtr		/* rule */,
-    XkbRF_VarDefsPtr		/* defs */,
-    XkbComponentNamesPtr	/* names */
-#endif
-);
-
-extern void	XkbRF_ClearPartialMatches(
-#if NeedFunctionPrototypes
-    XkbRF_RulesPtr		/* rules */
-#endif
-);
-
-extern Bool	XkbRF_ApplyPartialMatches(
-#if NeedFunctionPrototypes
-    XkbRF_RulesPtr		/* rules */,
-    XkbComponentNamesPtr	/* names */
-#endif
-);
-
-extern void	XkbRF_CheckApplyDelayedRules(
-#if NeedFunctionPrototypes
-    XkbRF_RulesPtr		/* rules */,
-    XkbRF_VarDefsPtr		/* defs */,
-    XkbComponentNamesPtr	/* names */
-#endif
-);
-
-extern Bool	XkbRF_CheckApplyRules(
-#if NeedFunctionPrototypes
-    XkbRF_RulesPtr		/* rules */,
-    XkbRF_VarDefsPtr		/* defs */,
-    XkbComponentNamesPtr	/* names */
-#endif
-);
-
-extern char *	XkbRF_SubstituteVars(
-#if NeedFunctionPrototypes
-    char *		/* p_name */,
-    XkbRF_VarDefsPtr 	/* defs */
-#endif
-);
 
 extern Bool	XkbRF_GetComponents(
 #if NeedFunctionPrototypes

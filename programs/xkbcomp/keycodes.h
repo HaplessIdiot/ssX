@@ -1,4 +1,4 @@
-/* $XConsortium: keycodes.h,v 1.2 94/04/04 15:28:21 rws Exp $ */
+/* $Xorg: keycodes.h,v 1.3 2000/08/17 19:54:32 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -31,22 +31,13 @@
 #define	KeyNameToLong(n)	((((unsigned long)n[0])<<24)|(((unsigned long)n[1])<<16)|(((unsigned long)n[2])<<8)|n[3])
 
 extern char * longText(
-#if NeedFunctionPrototypes
-    unsigned long /* val */
-#endif
-);
-
-extern char * keyNameText(
-#if NeedFunctionPrototypes
-    char *	/* name */
-#endif
+    unsigned long 	/* val */,
+    unsigned		/* format */
 );
 
 extern void LongToKeyName(
-#if NeedFunctionPrototypes
 	unsigned long	/* val */,
 	char *		/* name_rtrn */
-#endif
 );
 
 #endif /* KEYCODES_H */

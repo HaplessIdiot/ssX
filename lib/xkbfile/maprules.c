@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.13 2001/07/25 15:04:58 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.15 2002/04/04 14:05:36 eich Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -67,11 +67,13 @@
 #endif
 
 #ifdef DEBUG
-#define PR_DEBUG(s)	fprintf(stderr,s)
-#define PR_DEBUG1(s,a)	fprintf(stderr,s,a)
+#define PR_DEBUG(s)		fprintf(stderr,s)
+#define PR_DEBUG1(s,a)		fprintf(stderr,s,a)
+#define PR_DEBUG2(s,a,b)	fprintf(stderr,s,a,b)
 #else
 #define PR_DEBUG(s)
 #define PR_DEBUG1(s,a)
+#define PR_DEBUG2(s,a,b)
 #endif
 
 /***====================================================================***/
@@ -252,8 +254,12 @@ static	char *	cname[MAX_WORDS] = {
 };
 
 typedef	struct _RemapSpec {
+	int			number;
 	int			num_remap;
-	int			remap[MAX_WORDS];
+	struct	{
+		int	word;
+		int	index;
+                }		remap[MAX_WORDS];
 } RemapSpec;
 
 typedef struct _FileSpec {
@@ -261,7 +267,48 @@ typedef struct _FileSpec {
 	struct _FileSpec *	pending;
 } FileSpec;
 
+typedef struct {
+	char *			model;
+	char *			layout[XkbNumKbdGroups+1];
+	char *			variant[XkbNumKbdGroups+1];
+	char *			options;
+} XkbRF_MultiDefsRec, *XkbRF_MultiDefsPtr;
+
+#define NDX_BUFF_SIZE	4
+
 /***====================================================================***/
+
+static char*
+#if NeedFunctionPrototypes
+get_index(char *str, int *ndx)
+#else
+get_index(str, ndx)
+   char		*str;
+   int		*ndx;
+#endif
+{
+   char ndx_buf[NDX_BUFF_SIZE];
+   char *end;
+
+   if (*str != '[') {
+       *ndx = 0;
+       return str;
+   }
+   str++;
+   end = strchr(str, ']');
+   if (end == NULL) {
+       *ndx = -1;
+       return str - 1;
+   }
+   if ( (end - str) >= NDX_BUFF_SIZE) {
+       *ndx = -1;
+       return end + 1;
+   }
+   strncpy(ndx_buf, str, end - str);
+   ndx_buf[end - str] = '\0';
+   *ndx = atoi(ndx_buf);
+   return end + 1;
+}
 
 static void
 #if NeedFunctionPrototypes
@@ -273,16 +320,20 @@ SetUpRemap(line,remap)
 #endif
 {
 char *		tok,*str;
-unsigned	present;
+unsigned	present, l_ndx_present, v_ndx_present;
 register int	i;
+int		len, ndx;
+_Xstrtokparams	strtok_buf;
 #ifdef DEBUG
 Bool		found;
 #endif
-_Xstrtokparams	strtok_buf;
 
-   present= 0;
+
+   l_ndx_present = v_ndx_present = present= 0;
    str= &line->line[1];
+   len = remap->number;
    bzero((char *)remap,sizeof(RemapSpec));
+   remap->number = len;
    while ((tok=_XStrtok(str," ",strtok_buf))!=NULL) {
 #ifdef DEBUG
 	found= False;
@@ -291,17 +342,40 @@ _Xstrtokparams	strtok_buf;
 	if (strcmp(tok,"=")==0)
 	    continue;
 	for (i=0;i<MAX_WORDS;i++) {
-	    if (strcmp(cname[i],tok)==0) {
+            len = strlen(cname[i]);
+	    if (strncmp(cname[i],tok,len)==0) {
+		if(strlen(tok) > len) {
+		    char *end = get_index(tok+len, &ndx);
+		    if ((i != LAYOUT && i != VARIANT) ||
+			*end != '\0' || ndx == -1)
+		        break;
+		     if (ndx < 1 || ndx > XkbNumKbdGroups) {
+		        PR_DEBUG2("Illegal %s index: %d\n", cname[i], ndx);
+		        PR_DEBUG1("Index must be in range 1..%d\n",
+				   XkbNumKbdGroups);
+			break;
+		     }
+                } else {
+		    ndx = 0;
+                }
 #ifdef DEBUG
 		found= True;
 #endif
 		if (present&(1<<i)) {
-		    PR_DEBUG1("Component \"%s\" listed twice\n",tok);
-		    PR_DEBUG("Second definition ignored\n");
-		    break;
+		    if ((i == LAYOUT && l_ndx_present&(1<<ndx)) ||
+			(i == VARIANT && v_ndx_present&(1<<ndx)) ) {
+		        PR_DEBUG1("Component \"%s\" listed twice\n",tok);
+		        PR_DEBUG("Second definition ignored\n");
+		        break;
+		    }
 		}
-		present|= (1<<i);
-		remap->remap[remap->num_remap++]= i;
+		present |= (1<<i);
+                if (i == LAYOUT)
+                    l_ndx_present |= 1 << ndx;
+                if (i == VARIANT)
+                    v_ndx_present |= 1 << ndx;
+		remap->remap[remap->num_remap].word= i;
+		remap->remap[remap->num_remap++].index= ndx;
 		break;
 	    }
 	}
@@ -314,8 +388,8 @@ _Xstrtokparams	strtok_buf;
    if ((present&PART_MASK)==0) {
 #ifdef DEBUG
 	unsigned mask= PART_MASK;
-	fprintf(stderr,"Mapping needs at one of ");
-	for (i=0;(i<MAX_WORDS)&mask;i++) {
+	fprintf(stderr,"Mapping needs at least one of ");
+	for (i=0; (i<MAX_WORDS); i++) {
 	    if ((1L<<i)&mask) {
 		mask&= ~(1L<<i);
 		if (mask)	fprintf(stderr,"\"%s,\" ",cname[i]);
@@ -347,6 +421,7 @@ _Xstrtokparams	strtok_buf;
 	remap->num_remap= 0;
 	return;
    }
+   remap->number++;
    return;
 }
 
@@ -393,9 +468,10 @@ CheckLine(line,remap,rule)
 #endif
 {
 char *		str,*tok;
-register int	nread;
+register int	nread, i;
 FileSpec	tmp;
 _Xstrtokparams	strtok_buf;
+Bool 		append = False;
 
     if (line->line[0]=='!') {
 	SetUpRemap(line,remap);
@@ -419,23 +495,24 @@ _Xstrtokparams	strtok_buf;
 	    PR_DEBUG1("Extra word \"%s\" ignored\n",tok);
 	    continue;
 	}
-	tmp.name[remap->remap[nread]]= tok;
+	tmp.name[remap->remap[nread].word]= tok;
+	if (*tok == '+' || *tok == '|')
+	    append = True;
     }
     if (nread<remap->num_remap) {
-	PR_DEBUG("Too few words on a line\n");
+	PR_DEBUG1("Too few words on a line: %s\n", line->line);
 	PR_DEBUG("line ignored\n");
 	return False;
     }
-    if ((tmp.name[MODEL]!=NULL)&&(strcmp(tmp.name[MODEL],"*")==0))
-	tmp.name[MODEL]= NULL;
-    if ((tmp.name[LAYOUT]!=NULL)&&(strcmp(tmp.name[LAYOUT],"*")==0))
-	tmp.name[LAYOUT]= NULL;
-    if ((tmp.name[VARIANT]!=NULL)&&(strcmp(tmp.name[VARIANT],"*")==0))
-	tmp.name[VARIANT]= NULL;
 
     rule->flags= 0;
+    rule->number = remap->number;
     if (tmp.name[OPTION])
-	 rule->flags|= XkbRF_Delayed|XkbRF_Append;
+	 rule->flags|= XkbRF_Option;
+    else if (append)
+	 rule->flags|= XkbRF_Append;
+    else
+	 rule->flags|= XkbRF_Normal;
     rule->model= _XkbDupString(tmp.name[MODEL]);
     rule->layout= _XkbDupString(tmp.name[LAYOUT]);
     rule->variant= _XkbDupString(tmp.name[VARIANT]);
@@ -447,6 +524,16 @@ _Xstrtokparams	strtok_buf;
     rule->compat= _XkbDupString(tmp.name[COMPAT]);
     rule->geometry= _XkbDupString(tmp.name[GEOMETRY]);
     rule->keymap= _XkbDupString(tmp.name[KEYMAP]);
+
+    rule->layout_num = rule->variant_num = 0;
+    for (i = 0; i < nread; i++) {
+        if (remap->remap[i].index) {
+	    if (remap->remap[i].word == LAYOUT)
+	        rule->layout_num = remap->remap[i].index;
+	    if (remap->remap[i].word == VARIANT)
+	        rule->variant_num = remap->remap[i].index;
+        }
+    }
     return True;
 }
 
@@ -463,14 +550,127 @@ int len;
 
     if ((!str1)||(!str2))
 	return str1;
-   len= strlen(str1)+strlen(str2)+1;
+    len= strlen(str1)+strlen(str2)+1;
     str1= _XkbTypedRealloc(str1,len,char);
     if (str1)
 	strcat(str1,str2);
     return str1;
 }
 
-Bool
+static void
+#if NeedFunctionPrototypes
+squeeze_spaces(char *p1)
+#else
+squeeze_spaces(p1)
+    char    *p1;
+#endif
+{
+   char *p2;
+   for (p2 = p1; *p2; p2++) {
+       *p1 = *p2;
+       if (*p1 != ' ') p1++;
+   }
+   *p1 = '\0';
+}
+
+static Bool
+#if NeedFunctionPrototypes
+MakeMultiDefs(XkbRF_MultiDefsPtr mdefs, XkbRF_VarDefsPtr defs)
+#else
+MakeMultiDefs(mdefs, defs)
+    XkbRF_MultiDefsPtr mdefs
+    XkbRF_VarDefsPtr    defs;
+#endif
+{
+
+   bzero((char *)mdefs,sizeof(XkbRF_MultiDefsRec));
+   mdefs->model = defs->model;
+   mdefs->options = _XkbDupString(defs->options);
+   if (mdefs->options) squeeze_spaces(mdefs->options); 
+
+   if (defs->layout) {
+       if (!strchr(defs->layout, ',')) {
+           mdefs->layout[0] = defs->layout;
+       } else {
+           char *p;
+           int i;
+           mdefs->layout[1] = _XkbDupString(defs->layout);
+	   if (mdefs->layout[1] == NULL)
+	      return False;
+           squeeze_spaces(mdefs->layout[1]);
+           p = mdefs->layout[1];
+           for (i = 2; i <= XkbNumKbdGroups; i++) {
+              if ((p = strchr(p, ','))) {
+                 *p++ = '\0';
+                 mdefs->layout[i] = p;
+              } else {
+                 break;
+              }
+           }
+           if (p && (p = strchr(p, ',')))
+              *p = '\0';
+       }
+   }
+
+   if (defs->variant) {
+       if (!strchr(defs->variant, ',')) {
+           mdefs->variant[0] = defs->variant;
+       } else {
+           char *p;
+           int i;
+           mdefs->variant[1] = _XkbDupString(defs->variant);
+	   if (mdefs->variant[1] == NULL)
+	      return False;
+           squeeze_spaces(mdefs->variant[1]);
+           p = mdefs->variant[1];
+           for (i = 2; i <= XkbNumKbdGroups; i++) {
+              if ((p = strchr(p, ','))) {
+                 *p++ = '\0';
+                 mdefs->variant[i] = p;
+              } else {
+                 break;
+              }
+           }
+           if (p && (p = strchr(p, ',')))
+              *p = '\0';
+       }
+   }
+   return True;
+}
+
+static void
+#if NeedFunctionPrototypes
+FreeMultiDefs(XkbRF_MultiDefsPtr defs)
+#else
+FreeMultiDefs(defs)
+    XkbRF_MultiDefsPtr    defs;
+#endif
+{
+  if (defs->options) _XkbFree(defs->options);
+  if (defs->layout[1])  _XkbFree(defs->layout[1]);
+  if (defs->variant[1])  _XkbFree(defs->variant[1]);
+}
+
+static void
+#if NeedFunctionPrototypes
+Apply(char *src, char **dst)
+#else
+Apply(src, dst)
+    char *src;
+    char *dst;
+#endif
+{
+    if (src) {
+        if (*src == '+' || *src == '!') {
+	    *dst= _Concat(*dst, src);
+        } else {
+            if (*dst == NULL)
+	        *dst= _XkbDupString(src);
+        }
+    }
+}
+
+static void
 #if NeedFunctionPrototypes
 XkbRF_ApplyRule(	XkbRF_RulePtr 		rule,
 			XkbComponentNamesPtr	names)
@@ -481,86 +681,78 @@ XkbRF_ApplyRule(rule,names)
 #endif
 {
     rule->flags&= ~XkbRF_PendingMatch; /* clear the flag because it's applied */
-    if ((rule->flags&XkbRF_Append)==0) {
-	if ((names->keycodes==NULL)&&(rule->keycodes!=NULL))
-	    names->keycodes= _XkbDupString(rule->keycodes);
 
-	if ((names->symbols==NULL)&&(rule->symbols!=NULL))
-	    names->symbols= _XkbDupString(rule->symbols);
-
-	if ((names->types==NULL)&&(rule->types!=NULL))
-	    names->types= _XkbDupString(rule->types);
-
-	if ((names->compat==NULL)&&(rule->compat!=NULL))
-	    names->compat= _XkbDupString(rule->compat);
-
-	if ((names->geometry==NULL)&&(rule->geometry!=NULL))
-	    names->geometry= _XkbDupString(rule->geometry);
-
-	if ((names->keymap==NULL)&&(rule->keymap!=NULL))
-	    names->keymap= _XkbDupString(rule->keymap);
-    }
-    else {
-	if (rule->keycodes)
-  	    names->keycodes= _Concat(names->keycodes,rule->keycodes);
-	if (rule->symbols)
-  	    names->symbols= _Concat(names->symbols,rule->symbols);
-	if (rule->types)
-  	    names->types= _Concat(names->types,rule->types);
-	if (rule->compat)
- 	    names->compat= _Concat(names->compat,rule->compat);
-	if (rule->geometry)
-  	    names->geometry= _Concat(names->geometry,rule->geometry);
-	if (rule->keymap)
-	    names->keymap= _Concat(names->keymap,rule->keymap);
-    }
-    return (names->keycodes && names->symbols && names->types &&
-		names->compat && names->geometry ) || names->keymap;
+    Apply(rule->keycodes, &names->keycodes);
+    Apply(rule->symbols,  &names->symbols);
+    Apply(rule->types,    &names->types);
+    Apply(rule->compat,   &names->compat);
+    Apply(rule->geometry, &names->geometry);
+    Apply(rule->keymap,   &names->keymap);
 }
 
-#define	CHECK_MATCH(r,d) ((((r)[0]=='?')&&((r)[1]=='\0'))||(strcmp(r,d)==0))
-
-Bool
+static int
 #if NeedFunctionPrototypes
 XkbRF_CheckApplyRule(	XkbRF_RulePtr 		rule,
-			XkbRF_VarDefsPtr	defs,
+			XkbRF_MultiDefsPtr	mdefs,
 			XkbComponentNamesPtr	names)
 #else
-XkbRF_CheckApplyRule(rule,defs,names)
+XkbRF_CheckApplyRule(rule,mdefs,names)
     XkbRF_RulePtr		rule;
-    XkbRF_VarDefsPtr		defs;
+    XkbRF_MultiDefsPtr		mdefs;
     XkbComponentNamesPtr	names;
 #endif
 {
-    if (rule->model!=NULL) {
-	if ((!defs->model)||(!CHECK_MATCH(rule->model,defs->model)))
-	    return False; 
+    Bool pending = False;
+
+    if (rule->model != NULL) {
+        if(mdefs->model == NULL)
+            return 0;
+        if (strcmp(rule->model, "*") == 0) {
+            pending = True;
+        } else {
+	    if (strcmp(rule->model, mdefs->model) != 0)
+	       return 0;
+	}
     }
-    if (rule->layout!=NULL) {
-	if ((!defs->layout)||(!CHECK_MATCH(rule->layout,defs->layout)))
-	    return False;
-    }
-    if (rule->variant!=NULL) {
-	if ((!defs->variant)||(!CHECK_MATCH(rule->variant,defs->variant)))
-	    return False;
-    }
-    if (rule->option!=NULL) {
-	if ((!defs->options)||(!MatchOneOf(rule->option,defs->options)))
-	    return False;
+    if (rule->option != NULL) {
+	if (mdefs->options == NULL)
+	    return 0;
+	if ((!MatchOneOf(rule->option,mdefs->options)))
+	    return 0;
     }
 
-    if ((!rule->option)&&
-   	 ((!rule->model)||(!rule->layout)||(!rule->variant))) {
-	/* partial map -- partial maps are applied in the order they */
-	/* appear, but all partial maps come before any options. */
-	rule->flags|= XkbRF_PendingMatch;
-	return False;
+    if (rule->layout != NULL) {
+	if(mdefs->layout[rule->layout_num] == NULL ||
+	   *mdefs->layout[rule->layout_num] == '\0')
+	    return 0;
+        if (strcmp(rule->layout, "*") == 0) {
+            pending = True;
+        } else {
+	    if (strcmp(rule->layout, mdefs->layout[rule->layout_num]) != 0)
+	       return 0;
+	}
+    }
+    if (rule->variant != NULL) {
+	if (mdefs->variant[rule->variant_num] == NULL ||
+	    *mdefs->variant[rule->variant_num] == '\0')
+	    return 0;
+        if (strcmp(rule->variant, "*") == 0) {
+            pending = True;
+        } else {
+	    if (strcmp(rule->variant, mdefs->variant[rule->variant_num]) != 0)
+	       return 0;
+	}
+    }
+    if (pending) {
+        rule->flags|= XkbRF_PendingMatch;
+	return rule->number;
     }
     /* exact match, apply it now */
-    return XkbRF_ApplyRule(rule,names);
+    XkbRF_ApplyRule(rule,names);
+    return rule->number;
 }
 
-void
+static void
 #if NeedFunctionPrototypes
 XkbRF_ClearPartialMatches(XkbRF_RulesPtr rules)
 #else
@@ -576,7 +768,7 @@ XkbRF_RulePtr	rule;
     }
 }
 
-Bool
+static void
 #if NeedFunctionPrototypes
 XkbRF_ApplyPartialMatches(XkbRF_RulesPtr rules,XkbComponentNamesPtr names)
 #else
@@ -587,78 +779,57 @@ XkbRF_ApplyPartialMatches(rules,names)
 {
 int		i;
 XkbRF_RulePtr	rule;
-Bool		complete;
 
-    complete= False;
-    for (rule=rules->rules,i=0;(i<rules->num_rules)&&(!complete);i++,rule++) {
+    for (rule = rules->rules, i = 0; i < rules->num_rules; i++, rule++) {
 	if ((rule->flags&XkbRF_PendingMatch)==0)
 	    continue;
-	complete= XkbRF_ApplyRule(rule,names);
+	XkbRF_ApplyRule(rule,names);
     }
-    return complete;
 }
 
-void
-#if NeedFunctionPrototypes
-XkbRF_CheckApplyDelayedRules(	XkbRF_RulesPtr 		rules,
-				XkbRF_VarDefsPtr	defs,
-				XkbComponentNamesPtr	names)
-#else
-XkbRF_CheckApplyDelayedRules(rules,defs,names)
-    XkbRF_RulesPtr 		rules;
-    XkbRF_VarDefsPtr		defs;
-    XkbComponentNamesPtr	names;
-#endif
-{
-int		i;
-XkbRF_RulePtr	rule;
-
-    for (rule=rules->rules,i=0;(i<rules->num_rules);i++,rule++) {
-	if ((rule->flags&XkbRF_Delayed)==0)
-	    continue;
-	XkbRF_CheckApplyRule(rule,defs,names);
-    }
-    return;
-}
-
-Bool
+static void
 #if NeedFunctionPrototypes
 XkbRF_CheckApplyRules(	XkbRF_RulesPtr 		rules,
-			XkbRF_VarDefsPtr	defs,
-			XkbComponentNamesPtr	names)
+			XkbRF_MultiDefsPtr	mdefs,
+			XkbComponentNamesPtr	names,
+			int			flags)
 #else
-XkbRF_CheckApplyRules(rules,defs,names)
+XkbRF_CheckApplyRules(rules, mdefs, names, flags)
     XkbRF_RulesPtr 		rules;
-    XkbRF_VarDefsPtr		defs;
+    XkbRF_MultiDefsPtr		mdefs;
     XkbComponentNamesPtr	names;
+    int				flags;
 #endif
 {
 int		i;
 XkbRF_RulePtr	rule;
-Bool		complete;
+int		skip;
 
-    complete= False;
-    for (rule=rules->rules,i=0;(i<rules->num_rules)&&(!complete);i++,rule++) {
-	if ((rule->flags&XkbRF_Delayed)!=0)
+    for (rule = rules->rules, i=0; i < rules->num_rules; rule++, i++) {
+	if ((rule->flags & flags) != flags)
 	    continue;
-	complete= XkbRF_CheckApplyRule(rule,defs,names);
+	skip = XkbRF_CheckApplyRule(rule, mdefs, names);
+	if (skip && !(flags & XkbRF_Option)) {
+	    for ( ;(i < rules->num_rules) && (rule->number == skip);
+		  rule++, i++);
+	    rule--; i--;
+	}
     }
-    return complete;
 }
 
 /***====================================================================***/
 
-char *
+static char *
 #if NeedFunctionPrototypes
-XkbRF_SubstituteVars(char *name,XkbRF_VarDefsPtr defs)
+XkbRF_SubstituteVars(char *name, XkbRF_MultiDefsPtr mdefs)
 #else
-XkbRF_SubstituteVars(name,defs)
+XkbRF_SubstituteVars(name, mdefs)
     char *		name;
-    XkbRF_VarDefsPtr	defs;
+    XkbRF_MultiDefsPtr	mdefs;
 #endif
 {
-char 	*str,*outstr,*orig;
-int	len;
+char 	*str, *outstr, *orig, *var;
+int	len, ndx;
 
     orig= name;
     str= index(name,'%');
@@ -676,17 +847,22 @@ int	len;
 	    extra_len= 2;
 	    str++;
 	}
-
-	if ((str[1]=='l')&&defs->layout)
-	    len+= strlen(defs->layout)+extra_len;
-	else if ((str[1]=='m')&&defs->model)
-	    len+= strlen(defs->model)+extra_len;
-	else if ((str[1]=='v')&&defs->variant)
-	    len+= strlen(defs->variant)+extra_len;
-	if ((pfx=='(')&&(str[2]==')')) {
+	var = str + 1;
+	str = get_index(var + 1, &ndx);
+	if (ndx == -1) {
+	    str = index(str,'%');
+	    continue;
+        }
+	if ((*var=='l') && mdefs->layout[ndx] && *mdefs->layout[ndx])
+	    len+= strlen(mdefs->layout[ndx])+extra_len;
+	else if ((*var=='m')&&mdefs->model)
+	    len+= strlen(mdefs->model)+extra_len;
+	else if ((*var=='v') && mdefs->variant[ndx] && *mdefs->variant[ndx])
+	    len+= strlen(mdefs->variant[ndx])+extra_len;
+	if ((pfx=='(')&&(*str==')')) {
 	    str++;
 	}
-	str= index(&str[1],'%');
+	str= index(&str[0],'%');
     }
     name= (char *)_XkbAlloc(len+1);
     str= orig;
@@ -706,26 +882,30 @@ int	len;
 	    }
 	    else pfx= '\0';
 
-	    if ((str[0]=='l')&&(defs->layout)) {
+	    var = str;
+	    str = get_index(var + 1, &ndx);
+	    if (ndx == -1) {
+	        continue;
+            }
+	    if ((*var=='l') && mdefs->layout[ndx] && *mdefs->layout[ndx]) {
 		if (pfx) *outstr++= pfx;
-		strcpy(outstr,defs->layout);
-		outstr+= strlen(defs->layout);
+		strcpy(outstr,mdefs->layout[ndx]);
+		outstr+= strlen(mdefs->layout[ndx]);
 		if (sfx) *outstr++= sfx;
 	    }
-	    else if ((str[0]=='m')&&(defs->model)) {
+	    else if ((*var=='m')&&(mdefs->model)) {
 		if (pfx) *outstr++= pfx;
-		strcpy(outstr,defs->model);
-		outstr+= strlen(defs->model);
+		strcpy(outstr,mdefs->model);
+		outstr+= strlen(mdefs->model);
 		if (sfx) *outstr++= sfx;
 	    }
-	    else if ((str[0]=='v')&&(defs->variant)) {
+	    else if ((*var=='v') && mdefs->variant[ndx] && *mdefs->variant[ndx]) {
 		if (pfx) *outstr++= pfx;
-		strcpy(outstr,defs->variant);
-		outstr+= strlen(defs->variant);
+		strcpy(outstr,mdefs->variant[ndx]);
+		outstr+= strlen(mdefs->variant[ndx]);
 		if (sfx) *outstr++= sfx;
 	    }
-	    str++;
-	    if ((pfx=='(')&&(str[0]==')'))
+	    if ((pfx=='(')&&(*str==')'))
 		str++;
 	}
 	else {
@@ -752,26 +932,32 @@ XkbRF_GetComponents(rules,defs,names)
     XkbComponentNamesPtr	names;
 #endif
 {
-Bool		complete;
+    XkbRF_MultiDefsRec mdefs;
+
+    MakeMultiDefs(&mdefs, defs);
 
     bzero((char *)names,sizeof(XkbComponentNamesRec));
     XkbRF_ClearPartialMatches(rules);
-    complete= XkbRF_CheckApplyRules(rules,defs,names);
-    if (!complete)
-	complete= XkbRF_ApplyPartialMatches(rules,names);
-    XkbRF_CheckApplyDelayedRules(rules,defs,names);
+    XkbRF_CheckApplyRules(rules, &mdefs, names, XkbRF_Normal);
+    XkbRF_ApplyPartialMatches(rules, names);
+    XkbRF_CheckApplyRules(rules, &mdefs, names, XkbRF_Append);
+    XkbRF_ApplyPartialMatches(rules, names);
+    XkbRF_CheckApplyRules(rules, &mdefs, names, XkbRF_Option);
+
     if (names->keycodes)
-	names->keycodes= XkbRF_SubstituteVars(names->keycodes,defs);
+	names->keycodes= XkbRF_SubstituteVars(names->keycodes, &mdefs);
     if (names->symbols)	
-	names->symbols=	XkbRF_SubstituteVars(names->symbols,defs);
+	names->symbols=	XkbRF_SubstituteVars(names->symbols, &mdefs);
     if (names->types)
-	names->types= XkbRF_SubstituteVars(names->types,defs);
+	names->types= XkbRF_SubstituteVars(names->types, &mdefs);
     if (names->compat)
-	names->compat= XkbRF_SubstituteVars(names->compat,defs);
+	names->compat= XkbRF_SubstituteVars(names->compat, &mdefs);
     if (names->geometry)
-	names->geometry= XkbRF_SubstituteVars(names->geometry,defs);
+	names->geometry= XkbRF_SubstituteVars(names->geometry, &mdefs);
     if (names->keymap)	
-	names->keymap= XkbRF_SubstituteVars(names->keymap,defs);
+	names->keymap= XkbRF_SubstituteVars(names->keymap, &mdefs);
+
+    FreeMultiDefs(&mdefs);
     return (names->keycodes && names->symbols && names->types &&
 		names->compat && names->geometry ) || names->keymap;
 }

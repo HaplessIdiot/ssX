@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbparse.y,v 3.8 2000/10/28 00:34:04 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbparse.y,v 3.9 2001/01/17 23:45:45 dawes Exp $ */
 
 %token
 	END_OF_FILE	0
@@ -99,13 +99,6 @@
 #include <X11/keysym.h>
 #include <X11/extensions/XKBgeom.h>
 
-_XFUNCPROTOBEGIN
-extern	int yylex(
-#if NeedFunctionPrototypes
-	void
-#endif
-);
-_XFUNCPROTOEND
 %}
 %right	EQUALS
 %left	PLUS MINUS
@@ -780,12 +773,7 @@ MapName		:	STRING 	{ $$= scanStr; scanStr= NULL; }
 		;
 %%
 void
-#if NeedFunctionPrototypes
 yyerror(char *s)
-#else
-yyerror(s)
-char	*s;
-#endif
 {
     if (warningLevel>0) {
 	(void)fprintf(stderr,"%s: line %d of %s\n",s,lineNum,
@@ -798,11 +786,7 @@ char	*s;
 
 
 int
-#if NeedFunctionPrototypes
 yywrap(void)
-#else
-yywrap()
-#endif
 {
    return 1;
 }

@@ -33,13 +33,7 @@
 #include <X11/extensions/XKBgeom.h>
 
 static void
-#if NeedFunctionPrototypes
 HandleCollision(AliasInfo *old,AliasInfo *new)
-#else
-HandleCollision(old,new)
-    AliasInfo *		old;
-    AliasInfo *		new;
-#endif
 {
     if (strncmp(new->real,old->real,XkbKeyNameLength)==0) {
 	if (((new->def.fileID==old->def.fileID)&&(warningLevel>0))||
@@ -76,20 +70,11 @@ HandleCollision(old,new)
 }
 
 static void
-#if NeedFunctionPrototypes
 InitAliasInfo(	AliasInfo *	info,
 		unsigned	merge,
 		unsigned	file_id,
 		char *		alias,
 		char *		real)
-#else
-InitAliasInfo(info,merge,file_id,alias,real)
-    AliasInfo *		info;
-    unsigned		merge;
-    unsigned		file_id;
-    char *		alias;
-    char *		real;
-#endif
 {
     bzero(info,sizeof(AliasInfo));
     info->def.merge= merge;
@@ -100,18 +85,10 @@ InitAliasInfo(info,merge,file_id,alias,real)
 }
 
 int 
-#if NeedFunctionPrototypes
 HandleAliasDef(	KeyAliasDef *	def,
 		unsigned 	merge,
 		unsigned 	file_id,
 		AliasInfo **	info_in)
-#else
-HandleAliasDef(def,merge,file_id,info_in)
-    KeyAliasDef *	def;
-    unsigned		merge;
-    unsigned		file_id;
-    AliasInfo **	info_in;
-#endif
 {
 AliasInfo *	info;
 
@@ -138,12 +115,7 @@ AliasInfo *	info;
 }
 
 void
-#if NeedFunctionPrototypes
 ClearAliases(AliasInfo **info_in)
-#else
-ClearAliases(info_in)
-    AliasInfo **	info_in;
-#endif
 {
     if ((info_in)&&(*info_in))
 	ClearCommonInfo(&(*info_in)->def);
@@ -151,14 +123,7 @@ ClearAliases(info_in)
 }
 
 Bool
-#if NeedFunctionPrototypes
 MergeAliases(AliasInfo **into,AliasInfo **merge,unsigned how_merge)
-#else
-MergeAliases(into,merge,how_merge)
-    AliasInfo **	into;
-    AliasInfo **	merge;
-    unsigned		how_merge;
-#endif
 {
 AliasInfo *	tmp;
 KeyAliasDef 	def;
@@ -184,14 +149,7 @@ KeyAliasDef 	def;
 }
 
 int
-#if NeedFunctionPrototypes
 ApplyAliases(XkbDescPtr	xkb,Bool toGeom,AliasInfo **info_in)
-#else
-ApplyAliases(xkb,toGeom,info_in)
-    XkbDescPtr		xkb;
-    Bool		toGeom;
-    AliasInfo **	info_in;
-#endif
 {
 register int 	i;
 XkbKeyAliasPtr	old,a;

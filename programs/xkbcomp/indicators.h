@@ -1,4 +1,4 @@
-/* $XConsortium: indicators.h,v 1.1 94/04/08 15:31:47 erik Exp $ */
+/* $Xorg: indicators.h,v 1.3 2000/08/17 19:54:32 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,56 +28,67 @@
 #ifndef INDICATORS_H
 #define INDICATORS_H 1
 
+#define	_LED_Index	(1<<0)
+#define	_LED_Mods	(1<<1)
+#define	_LED_Groups	(1<<2)
+#define	_LED_Ctrls	(1<<3)
+#define	_LED_Explicit	(1<<4)
+#define	_LED_Automatic	(1<<5)
+#define	_LED_DrivesKbd	(1<<6)
+
+#define	_LED_NotBound	255
+
+typedef struct _LEDInfo {
+    CommonInfo		defs;
+    Atom		name;
+    unsigned char	indicator;
+    unsigned char	flags;
+    unsigned char	which_mods;
+    unsigned char	real_mods;
+    unsigned short	vmods;
+    unsigned char	which_groups;
+    unsigned char	groups;
+    unsigned int	ctrls;
+} LEDInfo;
+
 extern	void	ClearIndicatorMapInfo(
-#if NeedFunctionPrototypes
     Display *		/* dpy */,
-    XkbFileLEDInfo *	/* info */
-#endif
+    LEDInfo *		/* info */
 );
 
 
-extern XkbFileLEDInfo *AddIndicatorMap(
-#if NeedFunctionPrototypes
-    XkbFileLEDInfo *	/* newLED */,
-    XkbFileLEDInfo *	/* oldLEDs */,
-    unsigned		/* merge */,
-    Bool		/* report */
-#endif
+extern LEDInfo *AddIndicatorMap(
+    LEDInfo *		/* oldLEDs */,
+    LEDInfo *		/* newLED */
 );
 
 extern int	SetIndicatorMapField(
-#if NeedFunctionPrototypes
-    XkbFileLEDInfo *	/* led */,
+    LEDInfo *		/* led */,
     XkbDescPtr		/* xkb */,
     char *		/* field */,
     ExprDef *		/* arrayNdx */,
-    ExprDef *		/* value */,
-    unsigned		/* merge */
-#endif
+    ExprDef *		/* value */
 );
 
-extern XkbFileLEDInfo *HandleIndicatorMapDef(
-#if NeedFunctionPrototypes
+extern LEDInfo *HandleIndicatorMapDef(
     IndicatorMapDef *	/* stmt */,
     XkbDescPtr		/* xkb */,
-    XkbFileLEDInfo *	/* dflt */,
-    XkbFileLEDInfo *	/* oldLEDs */,
+    LEDInfo *		/* dflt */,
+    LEDInfo *		/* oldLEDs */,
     unsigned 		/* mergeMode */
-#endif
 );
 
 extern Bool CopyIndicatorMapDefs(
-#if NeedFunctionPrototypes
     XkbFileInfo *	/* result */,
-    XkbFileLEDInfo *	/* leds */
-#endif
+    LEDInfo *		/* leds */,
+    LEDInfo **		/* unboundRtrn */
 );
 
 extern Bool BindIndicators(
-#if NeedFunctionPrototypes
     XkbFileInfo *	/* result */,
-    Bool		/* force */
-#endif
+    Bool		/* force */,
+    LEDInfo *		/* unbound */,
+    LEDInfo **		/* unboundRtrn */
 );
 
 #endif /* INDICATORS_H */
