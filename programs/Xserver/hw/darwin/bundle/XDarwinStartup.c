@@ -11,7 +11,7 @@
  * run by XDarwin.app.
  *
  **************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XDarwinStartup.c,v 1.1 2001/03/29 02:06:51 torrey Exp $ */
 
 #include <unistd.h>
 #include <stdio.h>
@@ -44,7 +44,7 @@ int main(
 
         } else if (!strcmp(argv[i], "-quartz")) {
             // Build the new argument list
-            newargv = (char **) malloc((argc+2) + sizeof(char *));
+            newargv = (char **) malloc((argc+2) * sizeof(char *));
             for (j = argc; j; j--)
                 newargv[j] = argv[j];
             newargv[0] = XPATH(XDarwin.app/Contents/MacOS/XDarwin);
@@ -58,7 +58,7 @@ int main(
     }
 
     // Build the new argument list
-    newargv = (char **) malloc((argc+1) + sizeof(char *));
+    newargv = (char **) malloc((argc+1) * sizeof(char *));
     for (j = argc; j; j--)
         newargv[j] = argv[j];
     newargv[0] = XPATH(XDarwin);
