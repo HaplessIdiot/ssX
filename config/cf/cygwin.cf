@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.46tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.47 2002/11/14 21:01:14 tsi Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -13,7 +13,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.46tsi Exp $
 #define OSMinorVersion          3
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		12
+#define OSTeenyVersion		16
 #endif
 
 #define ProjectRoot 		/usr/X11R6
@@ -84,7 +84,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.46tsi Exp $
 #define NeedVarargsPrototypes   YES
 #define NeedWidePrototypes      NO
 #define SetTtyGroup             YES
-#define ExpandManNames          NO
+#define ExpandManNames          YES
 #define HasDlopen	        NO
 #define HasGnuMake		YES
 #define UseGccMakeDepend	NO
