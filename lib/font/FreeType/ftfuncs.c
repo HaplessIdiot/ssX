@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.5 1998/09/06 07:31:58 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.6 1998/10/05 13:22:01 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "FSproto.h"
@@ -463,7 +463,7 @@ FreeTypeLoadFont(char *fileName,
   NormalisedTransformation trans;
   ttfont_t tf;
   int nocmap;
-  struct ttf_encoding cinfo;
+  struct ttf_mapping mapping;
   long totalWidth, rawTotalWidth;
   int gcnt, used, size;
   int code;
@@ -486,9 +486,9 @@ FreeTypeLoadFont(char *fileName,
 
   if(entry->name.ndashes==14)
     nocmap=ttf_pick_cmap(entry->name.name, entry->name.length, fileName,
-                         face, &cinfo);
+                         face, &mapping);
   else
-    nocmap=ttf_pick_cmap(0,0,fileName,face,&cinfo);
+    nocmap=ttf_pick_cmap(0,0,fileName,face,&mapping);
 
   /* Create fontPrivate storage which will store a list of the glyphs
    * and encodings. */
@@ -508,7 +508,7 @@ FreeTypeLoadFont(char *fileName,
   if(nocmap)
     size= properties.num_Glyphs;
   else
-    size= MIN(cinfo.nchars, properties.num_Glyphs);
+    size= MIN(mapping.size, properties.num_Glyphs);
 
   if(size<=0) {
     if(xf)
@@ -591,10 +591,10 @@ FreeTypeLoadFont(char *fileName,
   for(idx=code=0;               /* need to set idx for the case !recode */
       nocmap?
         ((gcnt<properties.num_Glyphs) && code<=0xfff):
-        (code<MIN(cinfo.nchars, 0xFFFF));
+        (code<MIN(mapping.size, 0xFFFF));
       nocmap?code++:
-        (cinfo.recode?code++:
-         (code=TT_CharMap_Next(cinfo.cmap, code, &idx)))) {
+        (mapping.mapping?code++:
+         (code=TT_CharMap_Next(mapping.cmap, code, &idx)))) {
 
     if(code<0)
       break;
@@ -602,8 +602,8 @@ FreeTypeLoadFont(char *fileName,
     if (nocmap)
       idx = code;
     else
-      if(cinfo.recode)
-        idx = ttf_recode(code, &cinfo);
+      if(mapping.mapping)
+        idx = ttf_remap(code, &mapping);
 
     /* As a special case, we pass 0 even when its not in the ranges;
      * this will allow for the default glyph, which should exist in
@@ -1105,7 +1105,7 @@ FreeTypeOpenScalable(FontPathElementPtr fpe, FontPtr *ppFont, int flags,
   FontBitmapFormat bmfmt;
 
   MUMBLE1("Open Scalable %s, XLFD=",fileName);
-  #ifdef DEBUG
+  #ifdef DEBUG_TRUETYPE
   fwrite(entry->name.name, entry->name.length, 1, stdout);
   #endif
   MUMBLE("\n");
@@ -1153,7 +1153,7 @@ FreeTypeGetInfoScalable(FontPathElementPtr fpe, FontInfoPtr info,
   FontBitmapFormat bmfmt;
 
   MUMBLE("Get info, XLFD= ");
-  #ifdef DEBUG
+  #ifdef DEBUG_TRUETYPE
   fwrite(entry->name.name, entry->name.length, 1, stdout);
   #endif
   MUMBLE("\n");

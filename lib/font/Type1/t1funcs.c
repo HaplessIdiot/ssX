@@ -54,7 +54,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.8 1998/10/03 09:07:17 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.9 1998/10/25 07:11:21 dawes Exp $ */
 
 /*
 
@@ -99,6 +99,8 @@ from The Open Group.
 #include "fntfilst.h"
 #include "FSproto.h"
 #include "t1intf.h"
+#include "fontenc.h"
+#include "t1unicode.h"
  
 #include "objects.h"
 #include "spaces.h"
@@ -121,7 +123,7 @@ static void fillrun();
  
  
 extern psfont *FontP;
-extern psobj *ISOLatin1EncArrayP, *ISOLatin2EncArrayP;
+extern psobj *ISOLatin1EncArrayP;
 
 static void fill();
  
@@ -159,7 +161,9 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        int len, rc, count = 0;
        struct type1font *type1;
        char *p;
-       psobj *fontencoding = NULL;
+       struct font_encoding *encoding;
+       struct font_encoding_mapping *mapping;
+       int no_mapping;
        fsRange char_range;
        psobj *fontmatrix;
        long x0, total_width = 0, total_raw_width = 0;
@@ -245,52 +249,85 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        sxmult = hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]);
        if (sxmult > EPS) sxmult = 1000.0 / sxmult;
 
-       if (entry->name.ndashes == 14 &&
-	   (p=entry->name.name + entry->name.length - 19) 
-             >= entry->name.name &&
-	   !strcmp (p, "-adobe-fontspecific"))
-       {
-	   fontencoding = FontP->fontInfoP[ENCODING].value.data.arrayP;
-       } else if(entry->name.ndashes == 14 &&
-                 (p=entry->name.name + entry->name.length - 10) 
-                   >= entry->name.name &&
-                 !strcmp(p, "-iso8859-2"))
-       {
-	   fontencoding = ISOLatin2EncArrayP;
+       no_mapping=0;
+       p=font_encoding_from_xlfd(entry->name.name, entry->name.length);
+
+       if(p==0) {               /* XLFD does not specify an encoding */
+         mapping=0;
+         no_mapping=2;         /* ISO 8859-1 */
        }
 
-       if (!fontencoding)
-	   fontencoding = ISOLatin1EncArrayP;
+       if(!strcmp(p, "adobe-fontspecific")) {
+         mapping=0;
+         no_mapping=1;         /* font's native encoding vector */
+       }
+
+       if(!no_mapping) {
+         encoding=font_encoding_find(p,fileName);
+         mapping=0;
+         
+         if(encoding) {
+           for(mapping=encoding->mappings; mapping; mapping=mapping->next)
+             if(mapping->type==FONT_ENCODING_POSTSCRIPT)
+               break;
+           if(!mapping)
+             for(mapping=encoding->mappings; mapping; mapping=mapping->next)
+               if(mapping->type==FONT_ENCODING_UNICODE)
+                 break;
+           if(!mapping)
+             no_mapping=2;
+           else
+             no_mapping=0;
+         } else
+           no_mapping=2;
+       }
 
        pFont->info.firstCol = 255;
-       pFont->info.lastCol  = FIRSTCOL;
+       pFont->info.lastCol  = 0;
 
-       for (i=0; i < 256-FIRSTCOL; i++) {
+       for (i=0; i < 256; i++) {
                long h,w;
                long paddedW;
 	       int j;
 	       char *codename;
 
-	       codename = fontencoding[i + FIRSTCOL].data.valueP;
-	       len = fontencoding[i + FIRSTCOL].len;
-	       if (len == 7 && strcmp(codename,".notdef")==0)
-		   continue;
- 
+               if(no_mapping==1) {
+                 codename=FontP->fontInfoP[ENCODING].
+                   value.data.arrayP[i].data.valueP;
+                 len=FontP->fontInfoP[ENCODING].
+                   value.data.arrayP[i].len;
+               } else if(no_mapping) {
+                 codename=unicodetoPSname(i);
+                 len=codename?strlen(codename):0;
+               } else {
+                 int j;
+                 if(mapping->type==FONT_ENCODING_UNICODE) {
+                   codename=unicodetoPSname(font_encoding_recode(i,mapping));
+                 } else
+                   codename=font_encoding_name(i, mapping);
+                 len=codename?strlen(codename):0;
+               }
+               
+               if(len==0) {
+                 if(i==0) {
+                   codename=".notdef";
+                   len=7;
+                 } else
+                   continue;
+               }
+
 	       /* See if this character is in the list of ranges specified
 		  in the XLFD name */
-	       for (j = 0; j < vals->nranges; j++)
-		   if (i + FIRSTCOL >= minchar(vals->ranges[j]) &&
-		       i + FIRSTCOL <= maxchar(vals->ranges[j]))
-		       break;
+               if(i!=0) {
+                 for (j = 0; j < vals->nranges; j++)
+		   if (i >= minchar(vals->ranges[j]) &&
+		       i <= maxchar(vals->ranges[j]))
+                     break;
 
-	       /* If not, don't realize it. */
-	       if (vals->nranges && j == vals->nranges)
+                 /* If not, don't realize it. */
+                 if (vals->nranges && j == vals->nranges)
 		   continue;
-
-	       if (pFont->info.firstCol > i + FIRSTCOL)
-		   pFont->info.firstCol = i + FIRSTCOL;
-	       if (pFont->info.lastCol < i + FIRSTCOL)
-		   pFont->info.lastCol = i + FIRSTCOL;
+               }
 
                rc = 0;
                area = fontfcnB(S, codename, &len, &rc);
@@ -304,6 +341,11 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
                if (area == NULL)
                        continue;
  
+	       if (pFont->info.firstCol > i)
+		   pFont->info.firstCol = i;
+	       if (pFont->info.lastCol < i)
+		   pFont->info.lastCol = i;
+
                h       = area->ymax - area->ymin;
                w       = area->xmax - area->xmin;
                paddedW = PAD(w, pad);
@@ -370,7 +412,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
                return BadFontName;
        }
  
-       if (i != 256 - FIRSTCOL) {
+       if (i != 256) {
                for (i--; i >= 0; i--)
                        if (glyphs[i].bits != NULL)
                                xfree(glyphs[i].bits);
@@ -457,7 +499,7 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
         while (count--) {
                 c = (*chars++);
                 if (c >= firstCol &&
-                       (pci = &type1Font->glyphs[c-FIRSTCOL]) &&
+                       (pci = &type1Font->glyphs[c]) &&
 		       EXIST(pci))
                     *glyphs++ = pci;
                 else if (pDefault)
@@ -469,7 +511,7 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
                 c = *chars++ << 8;
                 c = (c | *chars++);
                 if (c < 256 && c >= firstCol &&
-                        (pci = &type1Font->glyphs[c-FIRSTCOL]) &&
+                        (pci = &type1Font->glyphs[c]) &&
 			EXIST(pci))
                     *glyphs++ = pci;
                 else if (pDefault)
@@ -484,7 +526,7 @@ Type1GetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
             r = (*chars++) - firstRow;
             c = (*chars++);
             if (r < numRows && c < 256 && c >= firstCol &&
-                    (pci = &type1Font->glyphs[(r << 8) + c - FIRSTCOL]) &&
+                    (pci = &type1Font->glyphs[(r << 8) + c]) &&
 		    EXIST(pci))
                 *glyphs++ = pci;
             else if (pDefault)
@@ -528,7 +570,7 @@ void Type1CloseFont(pFont)
        struct type1font *type1;
  
        type1 = (struct type1font *) pFont->fontPrivate;
-       for (i=0; i < 256 - FIRSTCOL; i++)
+       for (i=0; i < 256; i++)
                if (type1->glyphs[i].bits != NULL)
                         xfree(type1->glyphs[i].bits);
        xfree(type1);

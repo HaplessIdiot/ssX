@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.35 1999/01/11 14:40:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.36 1999/01/31 02:24:36 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1011,6 +1011,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
        DOCHTMLDIR = DocHtmlDir
          DOCPSDIR = DocPsDir
           FONTDIR = FontDir		/* font directories */
+     ENCODINGSDIR = $(FONTDIR)/encodings /* font encodings directory */
          XINITDIR = XinitDir		/* xinit config files */
            XDMDIR = XdmDir		/* xdm config files */
         XDMVARDIR = XdmVarDir		/* xdm config files */
@@ -1978,6 +1979,78 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 #define FontObj(basename) FontBaseObj(basename)
 #endif /* CompressAllFonts */
 #endif
+
+#ifndef EncObj
+#define EncObj(basename) basename.enc
+#endif
+#ifndef EncObjComp
+#if GzipFontCompression
+#define EncObjComp(basename) basename.enc.gz
+#else
+#define EncObjComp(basename) basename.enc.Z
+#endif
+#endif
+
+#ifndef EncodingTarget(basename)
+#define EncodingTarget /**/
+#endif
+
+#ifndef CompEncodingTarget(basename)
+#if GzipFontCompression
+#define CompEncodingTarget(basename)					@@\
+EncObjComp(basename): EncObj(basename)					@@\
+	cat $? | $(GZIPCMD) > $@
+#else
+#define CompEncodingTarget(basename)					@@\
+EncObjComp(basename): EncObj(basename)					@@\
+	cat $? | $(COMPRESS) > $@
+#endif
+#endif
+
+/* dummy for now */
+#ifndef MakeEncDir
+#define MakeEncDir(deplist) /**/
+#endif
+
+#ifndef MakeEncodings
+#define MakeEncodings(inst)						@@\
+all::  $(OBJS)								@@\
+									@@\
+MakeEncDir($(OBJS))							@@\
+									@@\
+clean::									@@\
+	RemoveFiles(*.enc.Z *.enc.gz)
+#endif /* MakeEncodings */
+
+#ifndef InstallEncObjs
+#define InstallEncObjs(objs,dest)					@@\
+InstallMultipleFlags(objs,dest,$(INSTDATFLAGS))				@@\
+									@@\
+InstallTarget(install,encodings.dir,$(INSTDATFLAGS),dest)
+#endif /* InstallFontObjs */
+
+#ifndef InstallEncodings
+#define InstallEncodings(dest)						@@\
+InstallEncObjs($(OBJS),dest)
+#endif /* InstallFonts */
+
+/*
+ * Temporary rule to install links to encoding files/dir in target font dirs.
+ * It uses absolute paths in the links.
+ */
+#ifndef InstallEncodingLinks
+#if HasSymLinks
+#define InstallEncodingLinks(edir,fdir)					@@\
+install::								@@\
+	$(RM) $(DESTDIR)fdir/encodings					@@\
+	$(RM) $(DESTDIR)fdir/encodings.dir				@@\
+	$(LN) edir $(DESTDIR)fdir/encodings				@@\
+	$(LN) edir/encodings.dir $(DESTDIR)fdir/encodings.dir
+#else
+#define InstallEncodingLinks(edir,fdir) /**/
+#endif
+#endif
+
 
 /*
  * MakeXkbDir

@@ -1,6 +1,5 @@
 STARTENCODING mulearabic-1
 # This file is derived from data provided by Pablo Saratxaga
-# $XFree86$
 SIZE 0x6A
 STARTMAPPING unicode
 0x21 0x0020

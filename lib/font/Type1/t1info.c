@@ -78,7 +78,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.5 1998/07/25 06:56:58 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.6 1998/10/03 09:07:17 dawes Exp $ */
 
 #include "fntfilst.h"
 #ifndef FONTMODULE
@@ -225,7 +225,7 @@ ComputeBounds(pInfo, pChars, Vals)
  
     maxlap = -32767;
     totchars = pInfo->lastCol - pInfo->firstCol + 1;
-    pChars += pInfo->firstCol - FIRSTCOL;
+    pChars += pInfo->firstCol;
     pInfo->allExist = 1;
     for (i = 0; i < totchars; i++,pChars++) {
         xCharInfo *pmetrics = &pChars->metrics;

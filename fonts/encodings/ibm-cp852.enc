@@ -1,6 +1,5 @@
 STARTENCODING ibm-cp852
 # This file is derived from data provided by the Unicode Consortium
-# $XFree86$
 STARTMAPPING unicode
 0x80	0x00c7	# LATIN CAPITAL LETTER C WITH CEDILLA
 0x81	0x00fc	# LATIN SMALL LETTER U WITH DIAERESIS

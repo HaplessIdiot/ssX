@@ -45,9 +45,10 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.6 1998/09/06 04:46:56 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.7 1998/10/03 09:07:11 dawes Exp $ */
 
 #include "fntfilst.h"
+#include "fontenc.h"
 #ifndef FONTMODULE
 #include <stdio.h>
 #else
@@ -55,6 +56,7 @@ from The Open Group.
 #endif
 
 #include "spint.h"
+#include "bics-unicode.h"
 
 SpeedoFontPtr sp_fp_cur = (SpeedoFontPtr) 0;
 
@@ -173,11 +175,122 @@ sp_load_char_data(file_offset, num, cb_offset)
     return &master->char_data;
 }
 
+struct speedo_encoding {
+  char *name;
+  int *enc;
+  int enc_size;
+};
+
+/* Takes care of caching encodings already referenced */
+static int
+find_encoding(char *fontname, char *filename, int **enc, int *enc_size)
+{
+  static struct speedo_encoding *known_encodings=0;
+  static int number_known_encodings=0;
+  static int known_encodings_size=0;
+
+  char *encoding_name;
+  int iso8859_1;
+  struct font_encoding *encoding;
+  struct font_encoding_mapping *mapping;
+  int i, j, k, size;
+  struct speedo_encoding *temp;
+  int *new_enc;
+  char *new_name;
+      
+  iso8859_1=0;
+
+  encoding_name=font_encoding_from_xlfd(fontname, strlen(fontname));
+  if(!encoding_name) {
+    encoding_name="iso8859-1";
+    iso8859_1=1;
+  }
+  /* We don't go through the font library if asked for Latin-1 */
+  iso8859_1=iso8859_1||!strcmp(encoding_name, "iso8859-1");
+
+  for(i=0; i<number_known_encodings; i++) {
+    if(!strcmp(encoding_name, known_encodings[i].name)) {
+      *enc=known_encodings[i].enc;
+      *enc_size=known_encodings[i].enc_size;
+      return Successful;
+    }
+  }
+
+  /* it hasn't been cached yet, need to compute it */
+  
+  /* ensure we've got enough storage first */
+  
+  if(known_encodings==0) {
+    if((known_encodings=
+        (struct speedo_encoding*)xalloc(2*sizeof(struct speedo_encoding)))
+       ==0)
+      return AllocError;
+    number_known_encodings=0;
+    known_encodings_size=2;
+  }
+  
+  if(number_known_encodings >= known_encodings_size) {
+    if((temp=
+        (struct speedo_encoding*)xrealloc(known_encodings,
+                                          2*sizeof(struct speedo_encoding)*
+                                          known_encodings_size))==0)
+      return AllocError;
+    known_encodings=temp;
+    known_encodings_size*=2;
+  }
+
+  encoding=0;
+  mapping=0;
+  if(!iso8859_1) {
+    encoding=font_encoding_find(encoding_name, filename);
+    if(encoding) {
+      for(mapping=encoding->mappings; mapping; mapping=mapping->next) {
+        if(mapping->type==FONT_ENCODING_UNICODE)
+          break;
+      }
+    }
+  }
+#define SPEEDO_RECODE(c) \
+  (mapping? \
+   unicode_to_bics(font_encoding_recode(c, mapping)): \
+   unicode_to_bics(c))
+        
+  if((new_name=(char*)xalloc(strlen(encoding_name)))==0)
+    return AllocError;
+  strcpy(new_name, encoding_name);
+  
+  /* For now, we limit ourselves to 256 glyphs */
+  size=0;
+  for(i=0; i<(encoding?encoding->size:256) && i<256; i++)
+    if(SPEEDO_RECODE(i)>=0)
+      size++;
+  new_enc=(int*)xalloc(2*size*sizeof(int));
+  if(!new_enc) {
+    xfree(new_name);
+    return AllocError;
+  }
+  for(i=j=0; i<(encoding?encoding->size:256) && i<256; i++)
+    if((k=SPEEDO_RECODE(i))>=0) {
+      new_enc[2*j]=i;
+      new_enc[2*j+1]=k;
+      j++;
+    }
+  known_encodings[number_known_encodings].name=new_name;
+  known_encodings[number_known_encodings].enc=new_enc;
+  known_encodings[number_known_encodings].enc_size=size;
+  number_known_encodings++;
+  
+  *enc=new_enc;
+  *enc_size=size;
+  return Successful;
+#undef SPEEDO_RECODE
+}
+
 int
-sp_open_master(filename, master, encoding)
+sp_open_master(fontname, filename, master)
+    char       *fontname;
     char       *filename;
     SpeedoMasterFontPtr *master;
-    int encoding;
 {
     SpeedoMasterFontPtr spmf;
     ufix8       tmp[16];
@@ -274,13 +387,9 @@ sp_open_master(filename, master, encoding)
     spmf->first_char_id = read_2b(f_buffer + FH_FCHRF);
     spmf->num_chars = read_2b(f_buffer + FH_NCHRL);
 
-    if(encoding == 2) {
-      spmf->enc = sp_bics_l2_map;
-      spmf->enc_size = sp_bics_l2_map_size;
-    } else {
-      spmf->enc = sp_bics_map;
-      spmf->enc_size = sp_bics_map_size;
-    }
+
+    spmf->enc = 0;
+    spmf->enc_size = 0;
 
 #ifdef EXTRAFONTS
     {				/* choose the proper encoding */
@@ -297,7 +406,11 @@ sp_open_master(filename, master, encoding)
     }
 #endif
 
-    /* XXX slam back to ISO Latin1 */
+    if(!spmf->enc)
+      if((ret=find_encoding(fontname, filename, &spmf->enc, &spmf->enc_size))
+         !=Successful)
+        goto cleanup;
+
     spmf->first_char_id = spmf->enc[0];
     /* size of extents array */
     spmf->max_id = spmf->enc[(spmf->enc_size - 1) * 2];

@@ -43,7 +43,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spint.h,v 1.5 1998/09/06 04:46:56 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spint.h,v 1.6 1998/10/03 09:07:12 dawes Exp $ */
 
 #ifndef _SPINT_H_
 #define _SPINT_H_
@@ -163,8 +163,6 @@ extern unsigned long sp_compute_data_size();
 
 extern int  sp_bics_map[];
 extern int  sp_bics_map_size;
-extern int  sp_bics_l2_map[];
-extern int  sp_bics_l2_map_size;
 
 #ifdef EXTRAFONTS
 extern int  adobe_map[];

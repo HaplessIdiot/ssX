@@ -43,14 +43,14 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spencode.c,v 1.3 1998/09/06 13:47:53 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spencode.c,v 1.4 1998/10/03 09:07:11 dawes Exp $ */
 
 #include	"spint.h"
 
-#include	"bics-iso.h"
+/* No longer needed with new encoding code */
+/* #include	"bics-iso.h"
 
-int sp_bics_map_size = (sizeof(sp_bics_map) / (sizeof(int) * 2));
-int sp_bics_l2_map_size = (sizeof(sp_bics_l2_map) / (sizeof(int) * 2));
+int sp_bics_map_size = (sizeof(sp_bics_map) / (sizeof(int) * 2));*/
 
 #ifdef EXTRAFONTS
 #include	"adobe-iso.h"

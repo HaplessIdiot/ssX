@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.5 93/09/04 16:43:32 rws Exp $
-XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.4 1998/07/25 06:56:56 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.5 1999/01/11 05:13:16 dawes Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
@@ -29,7 +29,9 @@ SRCS =          \
        t1stub.c       \
        token.c         \
        type1.c         \
-       util.c
+       util.c \
+       t1unicode.c
+	
 
 OBJS =          \
        arith.o         \
@@ -50,7 +52,8 @@ OBJS =          \
        t1stub.o       \
        token.o         \
        type1.o         \
-       util.o
+       util.o \
+       t1unicode.o
 
 #define DoNormalLib NormalLibFont
 #define DoSharedLib SharedLibFont

@@ -19,18 +19,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/lib/font/FreeType/ftencparse.c,v 1.1 1998/10/05 14:22:59 dawes Exp $ */
+
+/* $XFree86$ */
+
+/* Parser for encoding files */
 
 /* This code is ASCII-dependent */
 
+#include <string.h>
+#include <ctype.h>
+#include <stdio.h>
 
 #include "fntfilio.h"
 #include "fntfilst.h"
 
-#include "ttconfig.h"
-#include "freetype.h"
-#include "ft.h"
-#include "ftenc.h"
+#include "fontenc.h"
+#include "fontencI.h"
+
+#define MAXALIASES 20
 
 #define EOF_TOKEN -1
 #define ERROR_TOKEN -2
@@ -45,7 +51,9 @@ THE SOFTWARE.
 #define ENDMAPPING_LINE 3
 #define CODE_LINE 4
 #define CODE_UNDEFINE_LINE 5
-#define SIZE_LINE 6
+#define NAME_LINE 6
+#define SIZE_LINE 7
+#define ALIAS_LINE 8
 
 /* Return from lexer */
 #define MAXKEYWORDLEN 100
@@ -191,17 +199,24 @@ retry:
   case NUMBER_TOKEN:
     value1=number_value;
     token=gettoken(f,c,&c);
-    if(token!=NUMBER_TOKEN) {
+    switch(token) {
+    case NUMBER_TOKEN:
+      value2=number_value;
+      if(!endOfLine(f,c))
+        return ERROR_LINE;
+      else
+        return CODE_LINE;
+    case KEYWORD_TOKEN:
+      if(!endOfLine(f,c))
+        return ERROR_LINE;
+      else
+        return NAME_LINE;
+    default:
       skipEndOfLine(f,c);
       return ERROR_LINE;
     }
-    value2=number_value;
-    if(!endOfLine(f,c))
-      return ERROR_LINE;
-    else
-      return CODE_LINE;
   case KEYWORD_TOKEN:
-    if(!ftstrcasecmp(keyword_value, "STARTENCODING")) {
+    if(!strcasecmp(keyword_value, "STARTENCODING")) {
       token=gettoken(f,c,&c);
       if(token==KEYWORD_TOKEN) {
         if(endOfLine(f,c))
@@ -212,7 +227,18 @@ retry:
         skipEndOfLine(f,c);
         return ERROR_LINE;
       }
-    } else if(!ftstrcasecmp(keyword_value, "SIZE")) {
+    } else if(!strcasecmp(keyword_value, "ALIAS")) {
+      token=gettoken(f,c,&c);
+      if(token==KEYWORD_TOKEN) {
+        if(endOfLine(f,c))
+          return ALIAS_LINE;
+        else
+          return ERROR_LINE;
+      } else {
+        skipEndOfLine(f,c);
+        return ERROR_LINE;
+      }
+    } else if(!strcasecmp(keyword_value, "SIZE")) {
       token=gettoken(f,c,&c);
       if(token==NUMBER_TOKEN) {
         value1=number_value;
@@ -224,7 +250,7 @@ retry:
         skipEndOfLine(f,c);
         return ERROR_LINE;
       }
-    } else if(!ftstrcasecmp(keyword_value, "STARTMAPPING")) {
+    } else if(!strcasecmp(keyword_value, "STARTMAPPING")) {
       keyword_value[0]=0;
       value1=0; value1=0;
       /* read up to three tokens, the first being a keyword */
@@ -257,7 +283,7 @@ retry:
       else {
         return STARTMAPPING_LINE;
       }
-    } else if(!ftstrcasecmp(keyword_value, "UNDEFINE")) {
+    } else if(!strcasecmp(keyword_value, "UNDEFINE")) {
       token=gettoken(f,c,&c);
       if(token!=NUMBER_TOKEN) {
         skipEndOfLine(f,c);
@@ -275,12 +301,12 @@ retry:
         } else
           return ERROR_LINE;
       }
-    } else if(!ftstrcasecmp(keyword_value, "ENDENCODING")) {
+    } else if(!strcasecmp(keyword_value, "ENDENCODING")) {
       if(endOfLine(f,c))
         return EOF_LINE;
       else
         return ERROR_LINE;
-    } else if(!ftstrcasecmp(keyword_value, "ENDMAPPING")) {
+    } else if(!strcasecmp(keyword_value, "ENDMAPPING")) {
       if(endOfLine(f,c))
         return ENDMAPPING_LINE;
       else
@@ -295,32 +321,37 @@ retry:
 }
 
 static void 
-install_alternative(struct ttf_encoding_info *info,
-                    struct ttf_encoding_alternative *alt)
+install_mapping(struct font_encoding *encoding,
+                struct font_encoding_mapping *mapping)
 {
-  struct ttf_encoding_alternative *a=info->alternatives;
+  struct font_encoding_mapping *m;
 
-  if(a==NULL)
-    info->alternatives=alt;
+  if(encoding->mappings==NULL)
+    encoding->mappings=mapping;
   else {
-    while(a->next!=NULL)
-      a=a->next;
-    a->next=alt;
+    m=encoding->mappings;
+    while(m->next!=NULL)
+      m=m->next;
+    m->next=mapping;
   }
-  alt->next=NULL;
+  mapping->next=NULL;
 }
 
 /* Parser. */
-static struct ttf_encoding_info*
+static struct font_encoding*
 parseEncodingFile(FontFilePtr f)
 {
   int line;
 
-  unsigned short *encoding=NULL;
-  unsigned i, first=0xFFFF, last=0, encsize=0;
-  struct ttf_encoding_info *info=NULL;
-  struct ttf_encoding_alternative *alt=NULL;
-  struct ttf_simple_remapping *mapping;
+  unsigned short *enc=NULL;
+  char **nam=NULL;
+  unsigned i, first=0xFFFF, last=0, encsize=0, namsize=0;
+  struct font_encoding *encoding=NULL;
+  struct font_encoding_mapping *mapping=NULL;
+  struct font_encoding_simple_mapping *sm;
+  struct font_encoding_simple_naming *sn;
+  char *aliases[MAXALIASES];
+  int numaliases=0;
 
 no_encoding:
   line=getline(f);
@@ -328,16 +359,16 @@ no_encoding:
   case EOF_LINE:
     goto done;
   case STARTENCODING_LINE:
-    if((info=
-        (struct ttf_encoding_info*)xalloc(sizeof(struct ttf_encoding_info)))
+    if((encoding=
+        (struct font_encoding*)xalloc(sizeof(struct font_encoding)))
        ==NULL)
       goto error;
-    if((info->charset=(char*)xalloc(strlen(keyword_value)+1))==NULL)
+    if((encoding->name=(char*)xalloc(strlen(keyword_value)+1))==NULL)
       goto error;
-    strcpy(info->charset, keyword_value);
-    info->size=256;
-    info->alternatives=NULL;
-    info->next=NULL;
+    strcpy(encoding->name, keyword_value);
+    encoding->size=256;
+    encoding->mappings=NULL;
+    encoding->next=NULL;
     goto no_mapping;
   default:
     goto no_encoding;           /* ignore unknown lines */
@@ -347,29 +378,49 @@ no_mapping:
   line=getline(f);
   switch(line) {
   case EOF_LINE: goto done;
+  case ALIAS_LINE:
+    if(numaliases<MAXALIASES) {
+      if((aliases[numaliases]=(char*)xalloc(strlen(keyword_value)+1))
+         ==NULL)
+        goto error;
+      strcpy(aliases[numaliases], keyword_value);
+      numaliases++;
+    }
+    goto no_mapping;
   case SIZE_LINE:
-    info->size=value1; 
+    encoding->size=value1; 
     goto no_mapping;
   case STARTMAPPING_LINE:
-    if(!ftstrcasecmp(keyword_value, "unicode")) {
-      if((alt=
-          (struct ttf_encoding_alternative*)
-          xalloc(sizeof(struct ttf_encoding_alternative)))
+    if(!strcasecmp(keyword_value, "unicode")) {
+      if((mapping=
+          (struct font_encoding_mapping*)
+          xalloc(sizeof(struct font_encoding_mapping)))
          ==NULL)
         goto error;
-      alt->pid = -2;
-      alt->eid = 0;
-    } else if(!ftstrcasecmp(keyword_value, "cmap")) {
-      if((alt=
-          (struct ttf_encoding_alternative*)
-          xalloc(sizeof(struct ttf_encoding_alternative)))
+      mapping->type = FONT_ENCODING_UNICODE;
+      mapping->pid = 0;
+      mapping->eid = 0;
+    } else if(!strcasecmp(keyword_value, "cmap")) {
+      if((mapping=
+          (struct font_encoding_mapping*)
+          xalloc(sizeof(struct font_encoding_mapping)))
          ==NULL)
         goto error;
-      alt->pid = value1;
-      alt->eid = value2;
+      mapping->type = FONT_ENCODING_TRUETYPE;
+      mapping->pid = value1;
+      mapping->eid = value2;
       goto mapping;
+    } else if(!strcasecmp(keyword_value, "postscript")) {
+      if((mapping=
+          (struct font_encoding_mapping*)
+          xalloc(sizeof(struct font_encoding_mapping)))
+         ==NULL)
+        goto error;
+      mapping->type = FONT_ENCODING_POSTSCRIPT;
+      mapping->pid = 0;
+      mapping->eid = 0;
+      goto string_mapping;
     } else {                    /* unknown mapping type -- ignore */
-      MUMBLE("Unknown mapping type\n");
       goto skipmapping;
     }
     goto mapping;
@@ -393,66 +444,75 @@ mapping:
   switch(line) {
   case EOF_LINE: goto error;
   case ENDMAPPING_LINE:
-    alt->recode=ttf_simple_remap;
-    if((alt->client_data=mapping=
-        (struct ttf_simple_remapping*)
-        xalloc(sizeof(struct ttf_simple_remapping)))==NULL)
+    mapping->recode=font_encoding_simple_recode;
+    mapping->name=font_encoding_undefined_name;
+    if((mapping->client_data=sm=
+        (struct font_encoding_simple_mapping*)
+        xalloc(sizeof(struct font_encoding_simple_mapping)))==NULL)
       goto error;
-    mapping->first=first;
-    mapping->len=last-first+1;
-    if((mapping->map=
-        (unsigned short*)xalloc(mapping->len*sizeof(unsigned short)))
+    sm->first=first;
+    sm->len=last-first+1;
+    if((sm->map=
+        (unsigned short*)xalloc(sm->len*sizeof(unsigned short)))
        ==NULL) {
-      xfree(mapping);
-      alt->client_data=mapping=NULL;
+      xfree(sm);
+      mapping->client_data=sm=NULL;
       goto error;
     }
-    for(i=0; i<mapping->len; i++)
-      mapping->map[i]=encoding[first+i];
-    install_alternative(info,alt);
-    alt=0;
+    for(i=0; i<sm->len; i++)
+      sm->map[i]=enc[first+i];
+    install_mapping(encoding,mapping);
+    mapping=0;
     first=0xFFFF; last=0;
     goto no_mapping;
   case CODE_LINE:
+    if(value1>0x10000) goto mapping;
     /* Optimize away useless identity mappings */
     if(value1==value2 && (value1<first || value1>last))
       goto mapping;
     if(encsize==0) {
       encsize=value1<256?256:0x10000;
-      if((encoding=
-          (unsigned short*)xalloc(encsize*sizeof(unsigned short)))==NULL)
+      if((enc=
+          (unsigned short*)xalloc(encsize*sizeof(unsigned short)))==NULL) {
+        encsize=0;
         goto error;
+      }
     } else if(encsize<=value1) {
       encsize=0x10000;
-      encoding=(unsigned short*)xrealloc(encoding, encsize);
+      if((enc=(unsigned short*)xrealloc(enc, encsize))==NULL)
+        goto error;
     }
     if(first>last) {
       first=last=value1;
     }
     if(value1<first) {
       for(i=value1; i<first; i++)
-        encoding[i]=i;
+        enc[i]=i;
       first=value1;
     }
     if(value1>last) {
       for(i=last+1; i<=value1; i++)
-        encoding[i]=i;
+        enc[i]=i;
       last=value1;
     }
-    encoding[value1]=value2;
+    enc[value1]=value2;
     goto mapping;
   case CODE_UNDEFINE_LINE:
+    if(value1>=0x10000 || value2>=0x10000) goto mapping;
     if(value2<value1) {
       i=value1; value1=value2; value2=i;
     }
     if(encsize==0) {
       encsize=value2<256?256:0x10000;
-      if((encoding=
-          (unsigned short*)xalloc(encsize*sizeof(unsigned short)))==NULL)
+      if((enc=
+          (unsigned short*)xalloc(encsize*sizeof(unsigned short)))==NULL) {
+        encsize=0;
         goto error;
+      }
     } else if(encsize<=value2) {
       encsize=0x10000;
-      encoding=(unsigned short*)xrealloc(encoding, encsize);
+      if((enc=(unsigned short*)xrealloc(enc, encsize))==NULL)
+        goto error;
     }
     if(first>last) {
       first=value1;
@@ -465,41 +525,124 @@ mapping:
       last=value2;
     }
     for(i=value1; i<=value2; i++) {
-      encoding[i]=0;
+      enc[i]=0;
     }
     goto mapping;
 
   default: goto mapping;        /* ignore unknown lines */
   }
 
+string_mapping:
+  line=getline(f);
+  switch(line) {
+  case EOF_LINE: goto error;
+  case ENDMAPPING_LINE:
+    mapping->recode=font_encoding_undefined_recode;
+    mapping->name=font_encoding_simple_name;
+    if((mapping->client_data=sn=
+        (struct font_encoding_simple_naming*)
+        xalloc(sizeof(struct font_encoding_simple_naming)))==NULL)
+      goto error;
+    sn->first=first;
+    sn->len=last-first+1;
+    if((sn->map=
+        (char**)xalloc(sn->len*sizeof(char*)))
+       ==NULL) {
+      xfree(sn);
+      mapping->client_data=sn=NULL;
+      goto error;
+    }
+    for(i=0; i<sn->len; i++)
+      sn->map[i]=nam[first+i];
+    install_mapping(encoding,mapping);
+    mapping=0;
+    first=0xFFFF; last=0;
+    goto no_mapping;
+  case NAME_LINE:
+    if(value1>=0x10000) goto string_mapping;
+    if(namsize==0) {
+      namsize=value1<256?256:0x10000;
+      if((nam=(char**)xalloc(namsize*sizeof(char*)))==NULL) {
+        namsize=0;
+        goto error;
+      }
+    } else if(namsize<=value1) {
+      namsize=0x10000;
+      if((nam=(char**)xrealloc(nam, namsize))==NULL)
+        goto error;
+    }
+    if(first>last) {
+      first=last=value1;
+    }
+    if(value1<first) {
+      for(i=value1; i<first; i++)
+        nam[i]=NULL;
+      first=value1;
+    }
+    if(value1>last) {
+      for(i=last+1; i<=value1; i++)
+        nam[i]=NULL;
+      last=value1;
+    }
+    if((nam[value1]=(char*)xalloc(strlen(keyword_value)+1))==NULL) {
+      goto error;
+    }
+    strcpy(nam[value1], keyword_value);
+    goto string_mapping;
+
+  default: goto string_mapping; /* ignore unknown lines */
+  }
+
 done:
-  if(encsize) xfree(encoding);
-  return info;
+  if(encsize) xfree(enc); encsize=0;
+  if(namsize) xfree(nam); namsize=0; /* don't free entries! */
+
+  encoding->aliases=NULL;
+  if(numaliases) {
+    if((encoding->aliases=(char**)xalloc((numaliases+1)*sizeof(char*)))
+       ==NULL)
+      goto error;
+    for(i=0; i<numaliases; i++)
+      encoding->aliases[i]=aliases[i];
+    encoding->aliases[numaliases]=NULL;
+  }
+
+  return encoding;
 
 error:
-  if(encsize) xfree(encoding);
-  if(alt) {
-    if(alt->client_data) xfree(alt->client_data);
-    xfree(alt);
+  if(encsize) xfree(enc); encsize=0;
+  if(namsize) {
+    for(i=first; i<=last; i++)
+      if(nam[i])
+        xfree(nam[i]);
+    xfree(nam);
+    namsize=0;
   }
-  if(info) {
-    if(info->charset) xfree(info->charset);
-    for(alt=info->alternatives; alt; alt=alt->next) {
-      if(alt->client_data) xfree(alt->client_data);
-      xfree(alt);
+  if(mapping) {
+    if(mapping->client_data) xfree(mapping->client_data);
+    xfree(mapping);
+  }
+  if(encoding) {
+    if(encoding->name) xfree(encoding->name);
+    for(mapping=encoding->mappings; mapping; mapping=mapping->next) {
+      if(mapping->client_data) xfree(mapping->client_data);
+      xfree(mapping);
     }
-    xfree(info);
+    xfree(encoding);
   }
+  for(i=0; i<numaliases; i++)
+    xfree(aliases[i]);
+  /* We don't need to free sn and sm as they handled locally in the body.*/
   return 0;
 }
 
 /* Public entrypoint */  
-struct ttf_encoding_info* 
+struct font_encoding* 
 loadEncodingFile(char *charset, char *fontFileName)
 {
   FontFilePtr f;
   FILE *file;
-  struct ttf_encoding_info *info;
+  struct font_encoding *encoding;
   char dir[MAXFONTNAMELEN], buf[MAXFONTNAMELEN],
     file_name[MAXFONTNAMELEN], encoding_name[MAXFONTNAMELEN],
     *p, *q, *lastslash;
@@ -532,19 +675,19 @@ loadEncodingFile(char *charset, char *fontFileName)
     return NULL;
   }
 
-  info=NULL;
+  encoding=NULL;
   for(;;) {
     if((count=fscanf(file, "%s %[^\n]\n", encoding_name, file_name))==EOF)
       break;
     if(count!=2)
       break;
-    if(!ftstrcasecmp(encoding_name, charset)) {
+    if(!strcasecmp(encoding_name, charset)) {
       strcpy(buf, dir);
       strcat(buf, file_name);
       if((f=FontFileOpen(buf))==NULL) {
         return NULL;
       }
-      info=parseEncodingFile(f);
+      encoding=parseEncodingFile(f);
       FontFileClose(f);
       break;
     }
@@ -552,6 +695,6 @@ loadEncodingFile(char *charset, char *fontFileName)
 
   fclose(file);
 
-  return info;
+  return encoding;
 }
 

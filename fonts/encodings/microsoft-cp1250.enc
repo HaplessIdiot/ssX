@@ -1,6 +1,5 @@
 STARTENCODING microsoft-cp1250
 # This file is derived from data provided by the Unicode Consortium
-# $XFree86$
 STARTMAPPING unicode 
 0xA1	0x02C7	# CARON
 0xA2	0x02D8	# BREVE
