@@ -1,4 +1,5 @@
 /* $XConsortium: mach32mem.c,v 1.1 94/03/28 21:08:46 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 ATI
  *
