@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.57 2003/10/02 13:30:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.58 2003/10/15 16:29:02 dawes Exp $ */
 
 /*
  *
@@ -372,12 +372,8 @@ static void IA64InstallReloc(unsigned long *, int, enum ia64_operand, long);
 
 #ifdef MergeSectionAlloc
 static void *
-ELFLoaderSectToMem(elffile, align, offset, size, label)
-    ELFModulePtr elffile;
-    int align;
-    unsigned long offset;
-    int size;
-    char *label;
+ELFLoaderSectToMem(ELFModulePtr elffile, int align, unsigned long offset,
+		   int size, char *label)
 {
     void *ret;
 
@@ -389,10 +385,7 @@ ELFLoaderSectToMem(elffile, align, offset, size, label)
 }
 
 static void *
-ELFLoaderSectCalloc(elffile, align, size)
-    ELFModulePtr elffile;
-    int align;
-    int size;
+ELFLoaderSectCalloc(ELFModulePtr elffile, int align, int size)
 {
     void *ret;
 
@@ -415,9 +408,7 @@ _LoaderFileToMem((elffile)->fd,offset,size,label)
  */
 
 static int
-ELFhashCleanOut(voidptr, item)
-    void *voidptr;
-    itemPtr item;
+ELFhashCleanOut(void *voidptr, itemPtr item)
 {
     ELFModulePtr module = (ELFModulePtr) voidptr;
 
@@ -428,10 +419,7 @@ ELFhashCleanOut(voidptr, item)
  * Manage listResolv
  */
 static ELFRelocPtr
-ElfDelayRelocation(elffile, secn, rel)
-    ELFModulePtr elffile;
-    Elf_Word secn;
-    Elf_Rel_t *rel;
+ElfDelayRelocation(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel)
 {
     ELFRelocPtr reloc;
 
@@ -464,8 +452,7 @@ ElfDelayRelocation(elffile, secn, rel)
  * Manage listCOMMON
  */
 static ELFCommonPtr
-ElfAddCOMMON(sym)
-    Elf_Sym *sym;
+ElfAddCOMMON(Elf_Sym *sym)
 {
     ELFCommonPtr common;
 
@@ -499,9 +486,7 @@ ElfCOMMONSize(void)
 }
 
 static int
-ElfCreateCOMMON(elffile, pLookup)
-    ELFModulePtr elffile;
-    LOOKUP *pLookup;
+ElfCreateCOMMON(ELFModulePtr elffile, LOOKUP *pLookup)
 {
     int numsyms = 0, size = 0, l = 0;
     int offset = 0, firstcommon = 0;
@@ -587,10 +572,7 @@ ElfCreateCOMMON(elffile, pLookup)
  * String Table
  */
 static char *
-ElfGetStringIndex(file, offset, index)
-    ELFModulePtr file;
-    int offset;
-    int index;
+ElfGetStringIndex(ELFModulePtr file, int offset, int index)
 {
     if (!offset || !index)
 	return "";
@@ -599,17 +581,13 @@ ElfGetStringIndex(file, offset, index)
 }
 
 static char *
-ElfGetString(file, offset)
-    ELFModulePtr file;
-    int offset;
+ElfGetString(ELFModulePtr file, int offset)
 {
     return ElfGetStringIndex(file, offset, file->strndx);
 }
 
 static char *
-ElfGetSectionName(file, offset)
-    ELFModulePtr file;
-    int offset;
+ElfGetSectionName(ELFModulePtr file, int offset)
 {
     return (char *)(file->shstraddr + offset);
 }
@@ -622,10 +600,7 @@ ElfGetSectionName(file, offset)
  * Get symbol name
  */
 static char *
-ElfGetSymbolNameIndex(elffile, index, secndx)
-    ELFModulePtr elffile;
-    int index;
-    int secndx;
+ElfGetSymbolNameIndex(ELFModulePtr elffile, int index, int secndx)
 {
     Elf_Sym *syms;
 
@@ -646,17 +621,13 @@ ElfGetSymbolNameIndex(elffile, index, secndx)
 }
 
 static char *
-ElfGetSymbolName(elffile, index)
-    ELFModulePtr elffile;
-    int index;
+ElfGetSymbolName(ELFModulePtr elffile, int index)
 {
     return ElfGetSymbolNameIndex(elffile, index, elffile->symndx);
 }
 
 static Elf_Addr
-ElfGetSymbolValue(elffile, index)
-    ELFModulePtr elffile;
-    int index;
+ElfGetSymbolValue(ELFModulePtr elffile, int index)
 {
     Elf_Sym *syms;
     Elf_Addr symval = 0;	/* value of the indicated symbol */
@@ -740,9 +711,7 @@ ElfGetSymbolValue(elffile, index)
  * will be within a 24 bit offset (non-PIC code).
  */
 static Elf_Addr
-ElfGetPltAddr(elffile, index)
-    ELFModulePtr elffile;
-    int index;
+ElfGetPltAddr(ELFModulePtr elffile, int index)
 {
     Elf_Sym *syms;
     Elf_Addr symval = 0;	/* value of the indicated symbol */
@@ -822,9 +791,7 @@ ElfGetPltAddr(elffile, index)
  * Manage GOT Entries
  */
 static void
-ElfAddGOT(elffile, rel)
-    ELFModulePtr elffile;
-    Elf_Rel_t *rel;
+ElfAddGOT(ELFModulePtr elffile, Elf_Rel_t *rel)
 {
     ELFGotEntryPtr gotent;
 
@@ -873,9 +840,7 @@ ElfAddGOT(elffile, rel)
 }
 
 static int
-ELFCreateGOT(elffile, maxalign)
-    ELFModulePtr elffile;
-    int maxalign;
+ELFCreateGOT(ELFModulePtr elffile, int maxalign)
 {
 # ifdef MergeSectionAlloc
     ELFGotPtr gots;
@@ -1017,10 +982,7 @@ ELFCreateGOT(elffile, maxalign)
  * Manage OPD Entries
  */
 static void
-ElfAddOPD(elffile, index, l)
-    ELFModulePtr elffile;
-    int index;
-    LOOKUP *l;
+ElfAddOPD(ELFModulePtr elffile, int index, LOOKUP *l)
 {
     ELFOpdPtr opdent;
 
@@ -1047,8 +1009,7 @@ ElfAddOPD(elffile, index, l)
 }
 
 static void
-ELFCreateOPD(elffile)
-    ELFModulePtr elffile;
+ELFCreateOPD(ELFModulePtr elffile)
 {
     ELFOpdPtr opdent;
 
@@ -1070,9 +1031,7 @@ ELFCreateOPD(elffile)
  * Manage PLT Entries
  */
 static void
-ElfAddPLT(elffile, rel)
-    ELFModulePtr elffile;
-    Elf_Rel_t *rel;
+ElfAddPLT(ELFModulePtr elffile, Elf_Rel_t *rel)
 {
     ELFPltEntryPtr pltent;
 
@@ -1122,8 +1081,7 @@ ElfAddPLT(elffile, rel)
 }
 
 static void
-ELFCreatePLT(elffile)
-    ELFModulePtr elffile;
+ELFCreatePLT(ELFModulePtr elffile)
 {
 # ifdef ELFDEBUG
     ELFDEBUG("ELFCreatePLT: %x entries in the PLT\n", elffile->pltsize / 8);
@@ -1146,11 +1104,8 @@ ELFCreatePLT(elffile)
 }
 
 static void
-IA64InstallReloc(data128, slot, opnd, value)
-    unsigned long *data128;
-    int slot;
-    enum ia64_operand opnd;
-    long value;
+IA64InstallReloc(unsigned long *data128, int slot, enum ia64_operand opnd,
+		 long value)
 {
     unsigned long data = 0;
 
@@ -1240,11 +1195,8 @@ IA64InstallReloc(data128, slot, opnd, value)
  */
 
 static ELFRelocPtr
-Elf_RelocateEntry(elffile, secn, rel, force)
-    ELFModulePtr elffile;
-    Elf_Word secn;
-    Elf_Rel_t *rel;
-    int force;
+Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
+		  int force)
 {
     unsigned char *secp = elffile->saddr[secn];
 
@@ -2571,9 +2523,7 @@ ELFCollectRelocations(elffile, index)
  */
 
 static LOOKUP *
-ELF_GetSymbols(elffile, psecttable)
-    ELFModulePtr elffile;
-    unsigned short **psecttable;
+ELF_GetSymbols(ELFModulePtr elffile, unsigned short **psecttable)
 {
     Elf_Sym *syms;
     Elf_Shdr *sect;
@@ -2716,11 +2666,8 @@ ELF_GetSymbols(elffile, psecttable)
  * Do the work required to load each section into memory.
  */
 static void
-ELFCollectSections(elffile, pass, totalsize, maxalign)
-    ELFModulePtr elffile;
-    int pass;
-    int *totalsize;
-    int *maxalign;
+ELFCollectSections(ELFModulePtr elffile, int pass, int *totalsize,
+		   int *maxalign)
 {
     int i;
     int j;
@@ -2837,10 +2784,7 @@ ELFCollectSections(elffile, pass, totalsize, maxalign)
  * Public API for the ELF implementation of the loader.
  */
 void *
-ELFLoadModule(modrec, elffd, ppLookup)
-    loaderPtr modrec;
-    int elffd;
-    LOOKUP **ppLookup;
+ELFLoadModule(loaderPtr modrec, int elffd, LOOKUP **ppLookup)
 {
     ELFModulePtr elffile;
     Elf_Ehdr *header;
@@ -3097,8 +3041,7 @@ ELFLoadModule(modrec, elffd, ppLookup)
 }
 
 void
-ELFResolveSymbols(mod)
-    void *mod;
+ELFResolveSymbols(void *mod)
 {
     ELFRelocPtr newlist, p, tmp;
 
@@ -3124,8 +3067,7 @@ ELFResolveSymbols(mod)
 }
 
 int
-ELFCheckForUnresolved(mod)
-    void *mod;
+ELFCheckForUnresolved(void *mod)
 {
     ELFRelocPtr erel;
     char *name;
@@ -3148,8 +3090,7 @@ ELFCheckForUnresolved(mod)
 }
 
 void
-ELFUnloadModule(modptr)
-    void *modptr;
+ELFUnloadModule(void *modptr)
 {
     ELFModulePtr elffile = (ELFModulePtr) modptr;
     ELFRelocPtr relptr, reltptr, *brelptr;

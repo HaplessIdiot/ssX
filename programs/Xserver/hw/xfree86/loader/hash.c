@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.21 2003/09/24 02:43:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.22 2003/10/15 16:29:04 dawes Exp $ */
 
 /*
  *
@@ -80,8 +80,7 @@ DumpHashHits(void)
 #endif
 
 static unsigned int
-hashFunc(string)
-    const char *string;
+hashFunc(const char *string)
 {
     int i = 0;
 
@@ -110,8 +109,7 @@ hashFunc(string)
 }
 
 void
-LoaderHashAdd(entry)
-    itemPtr entry;
+LoaderHashAdd(itemPtr entry)
 {
     int bucket = hashFunc(entry->name);
     itemPtr oentry;
@@ -125,10 +123,7 @@ LoaderHashAdd(entry)
 }
 
 void
-LoaderAddSymbols(handle, module, list)
-    int handle;
-    int module;
-    LOOKUP *list;
+LoaderAddSymbols(int handle, int module, LOOKUP *list)
 {
     LOOKUP *l = list, *exports = NULL;
     itemPtr i, exportsItem = NULL;
@@ -196,8 +191,7 @@ LoaderAddSymbols(handle, module, list)
 }
 
 itemPtr
-LoaderHashDelete(string)
-    const char *string;
+LoaderHashDelete(const char *string)
 {
     int bucket = hashFunc(string);
     itemPtr entry;
@@ -219,8 +213,7 @@ LoaderHashDelete(string)
 }
 
 itemPtr
-LoaderHashFind(string)
-    const char *string;
+LoaderHashFind(const char *string)
 {
     int bucket = hashFunc(string);
     itemPtr entry;
@@ -236,8 +229,7 @@ LoaderHashFind(string)
 }
 
 static itemPtr
-LoaderHashFindNearest(address)
-    unsigned long address;
+LoaderHashFindNearest(unsigned long address)
 {
     int i;
     itemPtr entry, best_entry = 0;
@@ -266,8 +258,7 @@ LoaderHashFindNearest(address)
 }
 
 void
-LoaderPrintSymbol(address)
-    unsigned long address;
+LoaderPrintSymbol(unsigned long address)
 {
     itemPtr entry;
 
@@ -309,8 +300,7 @@ LoaderPrintItem(itemPtr pItem)
 }
 
 void
-LoaderPrintAddress(symbol)
-    const char *symbol;
+LoaderPrintAddress(const char *symbol)
 {
     itemPtr entry;
 
@@ -319,9 +309,7 @@ LoaderPrintAddress(symbol)
 }
 
 void
-LoaderHashTraverse(card, fnp)
-    void *card;
-    int (*fnp) (void *, itemPtr);
+LoaderHashTraverse(void *card, int (*fnp)(void *, itemPtr))
 {
     int i;
     itemPtr entry, last_entry = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.18 2002/09/16 18:06:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.19 2003/10/15 16:29:02 dawes Exp $ */
 
 /*
  *
@@ -141,9 +141,7 @@ static COFFRelocPtr COFFCollectRelocations(COFFModulePtr);
  */
 
 static int
-COFFhashCleanOut(voidptr, item)
-    void *voidptr;
-    itemPtr item;
+COFFhashCleanOut(void *voidptr, itemPtr item)
 {
     COFFModulePtr module = (COFFModulePtr) voidptr;
 
@@ -154,10 +152,7 @@ COFFhashCleanOut(voidptr, item)
  * Manage listResolv
  */
 static COFFRelocPtr
-COFFDelayRelocation(cofffile, secndx, rel)
-    COFFModulePtr cofffile;
-    int secndx;
-    RELOC *rel;
+COFFDelayRelocation(COFFModulePtr cofffile, int secndx, RELOC *rel)
 {
     COFFRelocPtr reloc;
 
@@ -179,9 +174,7 @@ COFFDelayRelocation(cofffile, secndx, rel)
  */
 
 static COFFCommonPtr
-COFFAddCOMMON(sym, index)
-    SYMENT *sym;
-    int index;
+COFFAddCOMMON(SYMENT *sym, int index)
 {
     COFFCommonPtr common;
 
@@ -197,8 +190,7 @@ COFFAddCOMMON(sym, index)
 }
 
 static LOOKUP *
-COFFCreateCOMMON(cofffile)
-    COFFModulePtr cofffile;
+COFFCreateCOMMON(COFFModulePtr cofffile)
 {
     int numsyms = 0, size = 0, l = 0;
     int offset = 0;
@@ -266,9 +258,7 @@ COFFCreateCOMMON(cofffile)
  * Get symbol name
  */
 static char *
-COFFGetSymbolName(cofffile, index)
-    COFFModulePtr cofffile;
-    int index;
+COFFGetSymbolName(COFFModulePtr cofffile, int index)
 {
     char *name;
     SYMENT *sym;
@@ -298,17 +288,13 @@ COFFGetSymbolName(cofffile, index)
 }
 
 static SYMENT *
-COFFGetSymbol(file, index)
-    COFFModulePtr file;
-    int index;
+COFFGetSymbol(COFFModulePtr file, int index)
 {
     return (SYMENT *) (((unsigned char *)file->symtab) + (index * SYMESZ));
 }
 
 static unsigned char *
-COFFGetSymbolValue(cofffile, index)
-    COFFModulePtr cofffile;
-    int index;
+COFFGetSymbolValue(COFFModulePtr cofffile, int index)
 {
     unsigned char *symval = 0;	/* value of the indicated symbol */
     itemPtr symbol;		/* name/value of symbol */
@@ -340,9 +326,7 @@ COFFGetSymbolValue(cofffile, index)
  * same module as the calling function.
  */
 static unsigned char *
-COFFGetSymbolGlinkValue(cofffile, index)
-    COFFModulePtr cofffile;
-    int index;
+COFFGetSymbolGlinkValue(COFFModulePtr cofffile, int index)
 {
     unsigned char *symval = 0;	/* value of the indicated symbol */
     itemPtr symbol;		/* name/value of symbol */
@@ -404,10 +388,7 @@ COFFGetSymbolGlinkValue(cofffile, index)
  * Fix all of the relocation for the given section.
  */
 static COFFRelocPtr
-COFF_RelocateEntry(cofffile, secndx, rel)
-    COFFModulePtr cofffile;
-    int secndx;			/* index of the target section */
-    RELOC *rel;
+COFF_RelocateEntry(COFFModulePtr cofffile, int secndx, RELOC *rel)
 {
     SYMENT *symbol;		/* value of the indicated symbol */
     unsigned long *dest32;	/* address of the place being modified */
@@ -809,8 +790,7 @@ COFF_RelocateEntry(cofffile, secndx, rel)
 }
 
 static COFFRelocPtr
-COFFCollectRelocations(cofffile)
-    COFFModulePtr cofffile;
+COFFCollectRelocations(COFFModulePtr cofffile)
 {
     unsigned short i, j;
     RELOC *rel;
@@ -840,8 +820,7 @@ COFFCollectRelocations(cofffile)
  */
 
 static LOOKUP *
-COFF_GetSymbols(cofffile)
-    COFFModulePtr cofffile;
+COFF_GetSymbols(COFFModulePtr cofffile)
 {
     SYMENT *sym;
     AUXENT *aux = NULL;
@@ -1060,8 +1039,7 @@ COFF_GetSymbols(cofffile)
  * Do the work required to load each section into memory.
  */
 static void
-COFFCollectSections(cofffile)
-    COFFModulePtr cofffile;
+COFFCollectSections(COFFModulePtr cofffile)
 {
     unsigned short i;
 
@@ -1157,10 +1135,7 @@ COFFCollectSections(cofffile)
  * Public API for the COFF implementation of the loader.
  */
 void *
-COFFLoadModule(modrec, cofffd, ppLookup)
-    loaderPtr modrec;
-    int cofffd;
-    LOOKUP **ppLookup;
+COFFLoadModule(loaderPtr modrec, int cofffd, LOOKUP **ppLookup)
 {
     COFFModulePtr cofffile;
     FILHDR *header;
@@ -1249,8 +1224,7 @@ COFFLoadModule(modrec, cofffd, ppLookup)
 }
 
 void
-COFFResolveSymbols(mod)
-    void *mod;
+COFFResolveSymbols(void *mod)
 {
     COFFRelocPtr newlist, p, tmp;
 
@@ -1273,8 +1247,7 @@ COFFResolveSymbols(mod)
 }
 
 int
-COFFCheckForUnresolved(mod)
-    void *mod;
+COFFCheckForUnresolved(void *mod)
 {
     char *name;
     COFFRelocPtr crel;
@@ -1297,8 +1270,7 @@ COFFCheckForUnresolved(mod)
 }
 
 void
-COFFUnloadModule(modptr)
-    void *modptr;
+COFFUnloadModule(void *modptr)
 {
     COFFModulePtr cofffile = (COFFModulePtr) modptr;
     COFFRelocPtr relptr, reltptr, *brelptr;
