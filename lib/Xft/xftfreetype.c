@@ -25,7 +25,8 @@
 #include <stdlib.h>
 #include "xftint.h"
 
-#ifdef FREETYPE2
+FT_Library  _XftFTlibrary;
+
 typedef struct _XftFtEncoding {
     const char	*name;
     FT_Encoding	encoding;
@@ -39,12 +40,10 @@ XftFtEncoding	xftFtEncoding[] = {
 };
 
 #define NUM_FT_ENCODINGS    (sizeof xftFtEncoding / sizeof xftFtEncoding[0])
-#endif
 
 XftPattern *
 XftFreeTypeQuery (const char *file, int id, int *count)
 {
-#ifdef FREETYPE2
     FT_Face	face;
     XftPattern	*pat;
     int		slant;
@@ -140,14 +139,12 @@ bail1:
     XftPatternDestroy (pat);
 bail0:
     FT_Done_Face (face);
-#endif
     return 0;
 }
 
 XftFontStruct *
 XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
 {
-#ifdef FREETYPE2
     char	    *file;
     int		    id;
     double	    size;
@@ -281,7 +278,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     encoding = face->charmaps[0]->encoding;
     
     for (j = 0; j < NUM_FT_ENCODINGS; j++)
-	if (!_XftStrCmpIgnoreCase (encoding_name, xftFtEncoding[j].name))
+	if (!strcmp (encoding_name, xftFtEncoding[j].name))
 	{
 	    encoding = xftFtEncoding[j].encoding;
 	    break;
@@ -365,19 +362,16 @@ bail2:
 bail1:
     FT_Done_Face (font->face);
 bail0:
-#endif
     return 0;
 }
 
 void
 XftFreeTypeClose (Display *dpy, XftFontStruct *font)
 {
-#ifdef FREETYPE2
     XRenderFreeGlyphSet (dpy, font->glyphset);
     if (font->realized)
 	free (font->realized);
     FT_Done_Face (font->face);
-#endif
 }
 		  
 XftFontStruct *
@@ -387,3 +381,31 @@ XftFreeTypeGet (XftFont *font)
 	return 0;
     return font->u.ft.font;
 }
+
+/* #define XFT_DEBUG_FONTSET */
+
+Bool
+XftInitFtLibrary (void)
+{
+    char    **d;
+    
+    if (_XftFTlibrary)
+	return True;
+    if (FT_Init_FreeType (&_XftFTlibrary))
+	return False;
+    _XftFontSet = XftFontSetCreate ();
+    if (!_XftFontSet)
+	return False;
+    for (d = XftConfigDirs; d && *d; d++)
+    {
+#ifdef XFT_DEBUG_FONTSET
+	printf ("scan dir %s\n", *d);
+#endif
+	XftDirScan (_XftFontSet, *d);
+    }
+#ifdef XFT_DEBUG_FONTSET
+    XftPrintFontSet (_XftFontSet);
+#endif
+    return True;
+}
+

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftinit.c,v 1.1 2000/11/29 08:39:23 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -25,40 +25,8 @@
 #include <stdlib.h>
 #include "xftint.h"
 
-#ifdef FREETYPE2
-FT_Library  _XftFTlibrary;
-#endif
 XftFontSet  *_XftFontSet;
 Bool	    _XftConfigInitialized;
-
-/* #define XFT_DEBUG_FONTSET */
-
-Bool
-XftInitFtLibrary (void)
-{
-#ifdef FREETYPE2
-    char    **d;
-    
-    if (_XftFTlibrary)
-	return True;
-    if (FT_Init_FreeType (&_XftFTlibrary))
-	return False;
-    _XftFontSet = XftFontSetCreate ();
-    if (!_XftFontSet)
-	return False;
-    for (d = XftConfigDirs; d && *d; d++)
-    {
-#ifdef XFT_DEBUG_FONTSET
-	printf ("scan dir %s\n", *d);
-#endif
-	XftDirScan (_XftFontSet, *d);
-    }
-#ifdef XFT_DEBUG_FONTSET
-    XftPrintFontSet (_XftFontSet);
-#endif
-#endif
-    return True;
-}
 
 Bool
 XftInit (char *config)
