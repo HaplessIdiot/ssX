@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.22 2002/11/06 22:45:36 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.23 2002/11/09 03:36:31 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -76,6 +76,7 @@ static int ProcRenderCreateCursor (ClientPtr pClient);
 static int ProcRenderSetPictureTransform (ClientPtr pClient);
 static int ProcRenderQueryFilters (ClientPtr pClient);
 static int ProcRenderSetPictureFilter (ClientPtr pClient);
+static int ProcRenderCreateAnimCursor (ClientPtr pClient);
 
 static int ProcRenderDispatch (ClientPtr pClient);
 
@@ -108,6 +109,7 @@ static int SProcRenderCreateCursor (ClientPtr pClient);
 static int SProcRenderSetPictureTransform (ClientPtr pClient);
 static int SProcRenderQueryFilters (ClientPtr pClient);
 static int SProcRenderSetPictureFilter (ClientPtr pClient);
+static int SProcRenderCreateAnimCursor (ClientPtr pClient);
 
 static int SProcRenderDispatch (ClientPtr pClient);
 
@@ -143,6 +145,7 @@ int	(*ProcRenderVector[RenderNumberRequests])(ClientPtr) = {
     ProcRenderSetPictureTransform,
     ProcRenderQueryFilters,
     ProcRenderSetPictureFilter,
+    ProcRenderCreateAnimCursor,
 };
 
 int	(*SProcRenderVector[RenderNumberRequests])(ClientPtr) = {
@@ -177,6 +180,7 @@ int	(*SProcRenderVector[RenderNumberRequests])(ClientPtr) = {
     SProcRenderSetPictureTransform,
     SProcRenderQueryFilters,
     SProcRenderSetPictureFilter,
+    SProcRenderCreateAnimCursor,
 };
 
 static void
@@ -1754,6 +1758,51 @@ ProcRenderSetPictureFilter (ClientPtr client)
 }
 
 static int
+ProcRenderCreateAnimCursor (ClientPtr client)
+{
+    REQUEST(xRenderCreateAnimCursorReq);
+    CursorPtr	    *cursors;
+    CARD32	    *deltas;
+    CursorPtr	    pCursor;
+    int		    ncursor;
+    xAnimCursorElt  *elt;
+    int		    i;
+    int		    ret;
+
+    REQUEST_AT_LEAST_SIZE(xRenderCreateAnimCursorReq);
+    LEGAL_NEW_RESOURCE(stuff->cid, client);
+    if (stuff->length & 1)
+	return BadLength;
+    ncursor = (stuff->length - (SIZEOF(xRenderCreateAnimCursorReq) >> 2)) >> 1;
+    cursors = xalloc (ncursor * (sizeof (CursorPtr) + sizeof (CARD32)));
+    if (!cursors)
+	return BadAlloc;
+    deltas = (CARD32 *) (cursors + ncursor);
+    elt = (xAnimCursorElt *) (stuff + 1);
+    for (i = 0; i < ncursor; i++)
+    {
+	cursors[i] = (CursorPtr)SecurityLookupIDByType(client, elt->cursor,
+						       RT_CURSOR, SecurityReadAccess);
+	if (!cursors[i])
+	{
+	    xfree (cursors);
+	    client->errorValue = elt->cursor;
+	    return BadCursor;
+	}
+	deltas[i] = elt->delay;
+	elt++;
+    }
+    ret = AnimCursorCreate (cursors, deltas, ncursor, &pCursor);
+    xfree (cursors);
+    if (ret != Success)
+	return ret;
+    
+    if (AddResource (stuff->cid, RT_CURSOR, (pointer)pCursor))
+	return client->noClientException;
+    return BadAlloc;
+}
+
+static int
 ProcRenderDispatch (ClientPtr client)
 {
     REQUEST(xReq);
@@ -2205,6 +2254,19 @@ SProcRenderSetPictureFilter (ClientPtr client)
     return (*ProcRenderVector[stuff->renderReqType]) (client);
 }
     
+static int
+SProcRenderCreateAnimCursor (ClientPtr client)
+{
+    register int n;
+    REQUEST (xRenderCreateAnimCursorReq);
+    REQUEST_AT_LEAST_SIZE (xRenderCreateAnimCursorReq);
+
+    swaps(&stuff->length, n);
+    swapl(&stuff->cid, n);
+    SwapRestL(stuff);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
+}
+
 static int
 SProcRenderDispatch (ClientPtr client)
 {
