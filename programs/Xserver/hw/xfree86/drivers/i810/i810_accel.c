@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.9 2000/09/13 21:46:50 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.10 2000/09/15 20:27:32 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -98,14 +98,6 @@ static void I810SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 
 static void I810SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
 
-static void I810SetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
-                                int fg, int bg, int rop, 
-                                unsigned int planemask);
-static void I810SubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
-                                int x, int y, int w, int h,
-                                int srcx, int srcy, int skipleft);
-
-
 
 /* The following function sets up the supported acceleration. Call it
  * from the FbInit() function in the SVGA driver, or before ScreenInit
@@ -125,11 +117,11 @@ I810AccelInit( ScreenPtr pScreen )
    if (!infoPtr) return FALSE;
 
    pI810->bufferOffset = 0;
-   infoPtr->Flags = LINEAR_FRAMEBUFFER;
+   infoPtr->Flags = LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
    /* There is a bit blt bug in 24 bpp.  This is a problem, but
       at least without the pixmap cache we can pass the test suite */
    if(pScrn->depth != 24)
-      infoPtr->Flags |= (PIXMAP_CACHE | OFFSCREEN_PIXMAPS);
+      infoPtr->Flags |= PIXMAP_CACHE;
 
    /* Sync
     */
@@ -194,7 +186,6 @@ I810AccelInit( ScreenPtr pScreen )
 	 NO_PLANEMASK | 
 	 ROP_NEEDS_SOURCE |
 	 BIT_ORDER_IN_BYTE_MSBFIRST | 
-         LEFT_EDGE_CLIPPING |
 	 0);
 
       infoPtr->ScanlineColorExpandBuffers = (unsigned char **) 
@@ -214,15 +205,6 @@ I810AccelInit( ScreenPtr pScreen )
       infoPtr->SubsequentColorExpandScanline = 
 	 I810SubsequentColorExpandScanline;	  
    }
-
-   /* Screen to screen color expand */
-   infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST |
-                                                 NO_PLANEMASK;
-   infoPtr->SetupForScreenToScreenColorExpandFill = 
-                I810SetupForScreenToScreenColorExpandFill;
-   infoPtr->SubsequentScreenToScreenColorExpandFill = 
-                I810SubsequentScreenToScreenColorExpandFill;
-
 
    /* Possible todo: Image writes w/ non-GXCOPY rop.
     */
@@ -533,8 +515,6 @@ I810SetupForScanlineCPUToScreenColorExpandFill( ScrnInfoPtr pScrn,
 }
 
 
-static int I810SkipBytes = 0;
-
 static void 
 I810SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 						 int x, int y, 
@@ -548,14 +528,8 @@ I810SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 	      "I810SubsequentScanlineCPUToScreenColorExpandFill "
 	      "%d,%d %dx%x %d\n", 
 	      x,y,w,h,skipleft);
-
-   x += skipleft;
-   w -= skipleft;
-
-   I810SkipBytes = skipleft >> 3;
-
-   pI810->BR[0] = BR00_BITBLT_CLIENT | BR00_OP_MONO_SRC_COPY_BLT | 0x06 |
-                  ((skipleft & 7) << 17);
+   
+   pI810->BR[0] = BR00_BITBLT_CLIENT | BR00_OP_MONO_SRC_COPY_BLT | 0x06; 
    pI810->BR[9] = (pI810->bufferOffset + 
 		   (y * pScrn->displayWidth + x) * pI810->cpp);
    pI810->BR[14] = ( (1 << 16) | (w * pI810->cpp));
@@ -569,7 +543,7 @@ I810SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
    I810Ptr pI810 = I810PTR(pScrn);
 
    pI810->BR[12] = (pI810->AccelInfoRec->ScanlineColorExpandBuffers[0] - 
-		    pI810->FbBase + I810SkipBytes);
+		    pI810->FbBase);
 
    if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
       ErrorF( "I810SubsequentColorExpandScanline %d (addr %x)\n",
@@ -594,57 +568,6 @@ I810SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     */
    pI810->BR[9] += pScrn->displayWidth * pI810->cpp;
    I810GetNextScanlineColorExpandBuffer( pScrn );
-}
-
-
-static void 
-I810SetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
-                                int fg, int bg, int rop,
-                                unsigned int planemask)
-{
-   I810Ptr pI810 = I810PTR(pScrn);
-
-   pI810->BR[13] = (pScrn->displayWidth * pI810->cpp);
-   pI810->BR[13] |= i810Rop[rop] << 16;
-   pI810->BR[13] |= (1<<27);
-   if (bg == -1) pI810->BR[13] |= BR13_MONO_TRANSPCY;
-
-   pI810->BR[18] = bg;
-   pI810->BR[19] = fg;
-}
-
-static void 
-I810SubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
-                                int x, int y, int w, int h,
-                                int srcx, int srcy, int skipleft)
-{
-   I810Ptr pI810 = I810PTR(pScrn);
-   int pitch = pScrn->displayWidth * pI810->cpp; 
-
-   pI810->BR[0] = BR00_BITBLT_CLIENT | BR00_OP_MONO_SRC_COPY_BLT | 0x06 |
-                  ((skipleft & 7) << 17);
-   pI810->BR[9] = (pI810->bufferOffset +
-                   (y * pScrn->displayWidth + x) * pI810->cpp);
-   pI810->BR[14] = ((1 << 16) | (w * pI810->cpp));
-   pI810->BR[11] = ((w+31)/32)-1;
-
-   pI810->BR[12] = (pI810->bufferOffset + (skipleft >> 3) +
-                   (srcy * pScrn->displayWidth + srcx) * pI810->cpp);
-
-   while(h--) {
-      BEGIN_LP_RING( 8 );
-      OUT_RING( pI810->BR[0]);
-      OUT_RING( pI810->BR[13]);
-      OUT_RING( pI810->BR[14] );
-      OUT_RING( pI810->BR[9] );
-      OUT_RING( pI810->BR[11] );
-      OUT_RING( pI810->BR[12] ); /* srcaddr */
-      OUT_RING( pI810->BR[18]);
-      OUT_RING( pI810->BR[19]);
-      ADVANCE_LP_RING();
-      pI810->BR[9] += pitch;
-      pI810->BR[12] += pitch;
-   }
 }
 
 
