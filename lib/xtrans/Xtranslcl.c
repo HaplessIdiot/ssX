@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.37 2001/12/14 19:57:05 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.38 2002/11/20 23:00:36 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -1258,6 +1258,7 @@ TRANS(SCOOpenClient)(XtransConnInfo ciptr, char *port)
      * Everything looks good: fill in the XtransConnInfo structure.
      */
 
+    ciptr->flags |= TRANS_NOUNLINK;
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
 	PRMSG(1,"SCOOpenClient: failed to fill addr info\n",
@@ -1265,7 +1266,6 @@ TRANS(SCOOpenClient)(XtransConnInfo ciptr, char *port)
 	close(fd);
 	return -1;
     }
-    ciptr->flags |= TRANS_NOUNLINK;
 
     return(fd);
 
@@ -1347,13 +1347,13 @@ TRANS(SCOOpenServer)(XtransConnInfo ciptr, char *port)
      * Everything looks good: fill in the XtransConnInfo structure.
      */
 
+    ciptr->flags |= TRANS_NOUNLINK;
     if (TRANS(FillAddrInfo) (ciptr, serverS_path, serverR_path) == 0) {
 	PRMSG(1,"SCOOpenServer: failed to fill in addr info\n", 0,0,0);
 	close(fds);
 	close(fdr);
 	return -1;
     }
-    ciptr->flags |= TRANS_NOUNLINK;
 
     return(fds);
 
@@ -1402,7 +1402,6 @@ TRANS(SCOAccept)(XtransConnInfo ciptr, XtransConnInfo newciptr, int *status)
     /*
      * Everything looks good: fill in the XtransConnInfo structure.
      */
-    ciptr->flags |= TRANS_NOUNLINK;
 
     newciptr->addrlen=ciptr->addrlen;
     if( (newciptr->addr=(char *)xalloc(newciptr->addrlen)) == NULL ) {
@@ -1415,6 +1414,7 @@ TRANS(SCOAccept)(XtransConnInfo ciptr, XtransConnInfo newciptr, int *status)
     }
 
     memcpy(newciptr->addr,ciptr->addr,newciptr->addrlen);
+    newciptr->flags |= TRANS_NOUNLINK;
 
     newciptr->peeraddrlen=newciptr->addrlen;
     if( (newciptr->peeraddr=(char *)xalloc(newciptr->peeraddrlen)) == NULL ) {
@@ -1564,12 +1564,12 @@ TRANS(SCOReopenServer)(XtransConnInfo ciptr, int fd, char *port)
     (void) sprintf(serverR_path, SCORNODENAME, port);
     (void) sprintf(serverS_path, SCOSNODENAME, port);
 
+    ciptr->flags |= TRANS_NOUNLINK;
     if (TRANS(FillAddrInfo) (ciptr, serverS_path, serverR_path) == 0)
     {
 	PRMSG(1, "SCOReopenServer: failed to fill in addr info\n", 0,0,0);
 	return 0;
     }
-    ciptr->flags |= TRANS_NOUNLINK;
 
     return 1;
 
@@ -2105,7 +2105,7 @@ TRANS(LocalOpenServer)(int type, char *protocol, char *host, char *port)
 	if( ciptr->fd >= 0 ) {
 	    ciptr->priv=(char *)&LOCALtrans2devtab[i];
 	    ciptr->index=i;
-	    ciptr->flags=1;
+	    ciptr->flags = 1 | (ciptr->flags & TRANS_KEEPFLAGS);
 	    return ciptr;
 	}
     }
@@ -2153,7 +2153,7 @@ TRANS(LocalReopenServer)(int type, int index, int fd, char *port)
     if( stat > 0 ) {
 	ciptr->priv=(char *)&LOCALtrans2devtab[index];
 	ciptr->index=index;
-	ciptr->flags=1;
+	ciptr->flags = 1 | (ciptr->flags & TRANS_KEEPFLAGS);
 	return ciptr;
     }
 

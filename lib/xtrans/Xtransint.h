@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.33 2002/05/31 18:45:51 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.34 2002/11/20 23:00:36 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -370,6 +370,8 @@ typedef struct _Xtransport_table {
 #define TRANS_NOLISTEN  (1<<3)  /* Don't listen on this one */
 #define TRANS_NOUNLINK	(1<<4)	/* Dont unlink transport endpoints */
 
+/* Flags to preserve when setting others */
+#define TRANS_KEEPFLAGS	(TRANS_NOUNLINK)
 
 /*
  * readv() and writev() don't exist or don't work correctly on some
