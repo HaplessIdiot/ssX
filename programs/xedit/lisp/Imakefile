@@ -29,6 +29,7 @@ SUBDIRS		= modules
 
 SRCS		=\
 		core.c \
+		debugger.c \
 		format.c \
 		helper.c \
 		lisp.c \
@@ -37,6 +38,7 @@ SRCS		=\
 		time.c
 OBJS		=\
 		core.o \
+		debugger.o \
 		format.o \
 		helper.o \
 		lisp.o \

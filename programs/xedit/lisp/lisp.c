@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.10 2001/09/30 20:32:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.11 2001/10/02 06:38:38 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -37,10 +37,8 @@
 
 #include "private.h"
 
-#include "core.h"
 #include "format.h"
 #include "require.h"
-#include "struct.h"
 #include "time.h"
 
 /*
@@ -99,6 +97,9 @@ LispDestroy(LispMac *mac, char *fmt, ...)
 {
     va_list ap;
 
+    if (mac->debugging)
+	LispDebugger(mac, LispDebugCallFatal, NIL, NIL);
+
     while (mac->mem.mem_level)
 	free(mac->mem.mem[--mac->mem.mem_level]);
 
@@ -132,8 +133,21 @@ LispTopLevel(LispMac *mac)
 {
     ENV = GLB;
     SYM = LEX = COD = FRM = NIL;
+    if (mac->debugging) {
+	DBG = NIL;
+	if (mac->debug == LispDebugFinish)
+	    mac->debug = LispDebugUnspec;
+	mac->debug_level = -1;
+	mac->debug_step = 0;
+    }
     gcpro = 0;
     mac->block.block_level = 0;
+    if (mac->block.block_size > 16) {
+	/* may have gone out of memory due to recursive calls */
+	free(mac->block.block);
+	mac->block.block_size = 0;
+	mac->block.block_ret = NIL;
+    }
     mac->setf = NULL;
     mac->cdr = mac->princ = mac->justsize = 0;
     if (mac->stream.stream_level) {
@@ -191,6 +205,13 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
     LispMark(COD);
     LispMark(FRM);
     LispMark(STR);
+    LispMark(RUN[0]);
+    LispMark(RUN[1]);
+    LispMark(RUN[2]);
+    LispMark(RES[0]);
+    LispMark(RES[1]);
+    LispMark(RES[2]);
+    LispMark(DBG);
     LispMark(car);
     LispMark(cdr);
 
@@ -1050,7 +1071,8 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
     }
 
     if (!refs && list != NIL) {
-	list = LispReverse(list);
+	/* Need to update CAR(FRM) or will run function without gc protection! */
+	list = CAR(FRM) = LispReverse(list);
 	for (; list != NIL; list = CDR(list)) {
 	    pair = CAR(list);
 	    LispAddVar(mac, CAR(pair)->data.atom, CDR(pair));
@@ -1088,6 +1110,11 @@ LispBeginBlock(LispMac *mac, LispObj *tag, int eval)
     block->level = mac->level;
     block->block_level = blevel - 1;
 
+    if (mac->debugging) {
+	block->debug_level = mac->debug_level;
+	block->debug_step = mac->debug_step;
+    }
+
     return (block);
 }
 
@@ -1096,6 +1123,19 @@ LispEndBlock(LispMac *mac, LispBlock *block)
 {
     mac->level = block->level;
     mac->block.block_level = block->block_level;
+
+    if (mac->debugging) {
+	if (mac->debug_level >= block->debug_level) {
+	    while (mac->debug_level > block->debug_level) {
+		DBG = CDR(DBG);
+		--mac->debug_level;
+	    }
+	}
+	else
+	    LispDestroy(mac, "this should never happen: "
+			"mac->debug_level < block->debug_level");
+	mac->debug_step = block->debug_step;
+    }
 }
 
 static int
@@ -1270,8 +1310,8 @@ LispRun(LispMac *mac)
 LispObj *
 LispEval(LispMac *mac, LispObj *obj)
 {
-    char *name = NULL, stk[32];
-    LispObj *fun, *cons = NIL, *frm, *res;
+    char *strname;
+    LispObj *name, *fun, *cons = NIL, *frm, *res;
     LispObj *car, *cdr;
     LispBuiltin *fn;
     unsigned num_objs;
@@ -1287,11 +1327,12 @@ LispEval(LispMac *mac, LispObj *obj)
 	case LispOpaque_t:
 	    return (obj);
 	case LispAtom_t:
+	    strname = obj->data.atom;
 	    if (obj->data.atom[0] == ':')
 		return (obj);
-	    else if ((obj = LispGetVar(mac, name = obj->data.atom, 0)) != NULL)
+	    else if ((obj = LispGetVar(mac, obj->data.atom, 0)) != NULL)
 		return (obj);
-	    LispDestroy(mac, "the variable %s is unbound", name);
+	    LispDestroy(mac, "the variable %s is unbound", strname);
 	    /*NOTREACHED*/
 	case LispQuote_t:
 	    return (obj->data.quote);
@@ -1307,20 +1348,12 @@ LispEval(LispMac *mac, LispObj *obj)
     fun = NIL;
     switch (car->type) {
 	case LispAtom_t:
-	    name = car->data.atom;
-	    break;
-	case LispReal_t:
-	    (void)snprintf(stk, sizeof(stk), "%g", car->data.real);
-	    name = stk;
-	    break;
-	case LispNil_t:
-	    name = "NIL";
-	    break;
-	case LispTrue_t:
-	    name = "T";
+	    name = car;
+	    strname = name->data.atom;
 	    break;
 	case LispLambda_t:
-	    name = "<LAMBDA>";
+	    name = NIL;
+	    strname = "NIL";
 	    fun = car;
 	    break;
 	default:
@@ -1332,15 +1365,18 @@ LispEval(LispMac *mac, LispObj *obj)
     ++mac->level;
     frm = FRM;
 
-    if (fun == NIL) {
-	int len = strlen(name);
+    if (mac->debugging)
+	LispDebugger(mac, LispDebugCallBegin, name, CDR(cons));
 
-	if ((fn = LispFindBuiltin(name, len)) == NULL) {
+    if (fun == NIL) {
+	int len = strlen(strname);
+
+	if ((fn = LispFindBuiltin(strname, len)) == NULL) {
 	    LispModule *module = mac->module;
 
 	    while (module != NULL) {
 		if (module->data->find_fun &&
-		    (fn = (module->data->find_fun)(name, len)) != NULL)
+		    (fn = (module->data->find_fun)(strname, len)) != NULL)
 		    break;
 		module = module->next;
 	    }
@@ -1349,21 +1385,21 @@ LispEval(LispMac *mac, LispObj *obj)
 		LispObj *str;
 
 		/* first check for structure functions */
-		if (strncmp("MAKE-", name, 5) == 0) {
+		if (strncmp("MAKE-", strname, 5) == 0) {
 		    for (str = STR; str != NIL; str = CDR(str)) {
-			if (strcmp(CAR(CAR(str))->data.atom, name + 5) == 0) {
+			if (strcmp(CAR(CAR(str))->data.atom, strname + 5) == 0) {
 			    mac->struc = CAR(str);
 			    fn = &LispMakeStructDef;
 			    break;
 			}
 		    }
 		}
-		else if (strchr(name, '-')) {
+		else if (strchr(strname, '-')) {
 		    char *sname, *ptr;
 
 		    /* check if it is a structure field access function */
 		    for (str = STR; str != NIL; str = CDR(str)) {
-			ptr = name;
+			ptr = strname;
 			sname = CAR(CAR(str))->data.atom;
 			while (*ptr == *sname) {
 			    ++ptr;
@@ -1377,10 +1413,10 @@ LispEval(LispMac *mac, LispObj *obj)
 				/* Just checking type */
 				if (CDR(cons) == NIL)
 				    LispDestroy(mac, "too few arguments to %s",
-						name);
+						strname);
 				else if (CDR(CDR(cons)) != NIL)
 				    LispDestroy(mac, "too many arguments to %s",
-						name);
+						strname);
 				res = EVAL(CAR(CDR(cons)));
 
 				return (res->type == LispStruct_t &&
@@ -1418,7 +1454,7 @@ LispEval(LispMac *mac, LispObj *obj)
 	    }
 	    if ((fn->max_args && num_objs > fn->max_args)
 		|| (fn->min_args && num_objs < fn->min_args))
-		LispDestroy(mac, "bad number of arguments to %s", name);
+		LispDestroy(mac, "bad number of arguments to %s", strname);
 
 	    if (fn->eval && num_objs) {
 		LispObj *arg = CDR(cons);
@@ -1440,7 +1476,9 @@ LispEval(LispMac *mac, LispObj *obj)
 
 	    mac->setf = NULL;
 	    mac->cdr = 0;
-	    res = fn->fn(mac, args, name);
+	    res = fn->fn(mac, args, strname);
+	    if (mac->debugging)
+		LispDebugger(mac, LispDebugCallEnd, name, res);
 	    FRM = frm;
 	    --mac->level;
 
@@ -1448,7 +1486,7 @@ LispEval(LispMac *mac, LispObj *obj)
 	}
 
 	for (fun = FUN; fun != NIL; fun = CDR(fun))
-	    if (CAR(fun)->data.lambda.name->data.atom == name) {
+	    if (CAR(fun)->data.lambda.name->data.atom == strname) {
 		fun = CAR(fun);
 		break;
 	    }
@@ -1467,7 +1505,7 @@ LispEval(LispMac *mac, LispObj *obj)
 	    }
 	    if (num_objs != fun->data.lambda.num_args)
 		LispDestroy(mac, "%u is a bad number of arguments to %s,"
-			    " needs %u", num_objs, name,
+			    " needs %u", num_objs, strname,
 			    fun->data.lambda.num_args);
 
 	    if (fun->data.lambda.type == LispMacro)
@@ -1530,17 +1568,17 @@ LispEval(LispMac *mac, LispObj *obj)
 			if (key || optional)
 			    break;
 			else
-			    LispDestroy(mac, "too few arguments to %s", name);
+			    LispDestroy(mac, "too few arguments to %s", strname);
 		    }
 		    else {
 			if (key) {
 			    if (CAR(cdr)->type != LispAtom_t ||
 				CAR(cdr)->data.atom[0] != ':')
 				LispDestroy(mac, "&KEY needs arguments as pairs,"
-					    " at %s", name);
+					    " at %s", strname);
 			    else if (CDR(cdr) == NIL)
 				LispDestroy(mac, "expecting %s value, at %s",
-					    CAR(cdr)->data.atom, name);
+					    CAR(cdr)->data.atom, strname);
 			    keyword = CAR(cdr);
 			    cdr = CDR(cdr);
 			}
@@ -1563,7 +1601,7 @@ LispEval(LispMac *mac, LispObj *obj)
 			    }
 			    if (ltmp == NIL)
 				LispDestroy(mac, "%s is not an argument to %s",
-					    keyword->data.atom, name);
+					    keyword->data.atom, strname);
 			    for (atmp = args; atmp != NIL; atmp = CDR(atmp))
 				if (CAR(atmp) == ltmp) {
 				    CAR(atmp) = res;
@@ -1599,7 +1637,7 @@ LispEval(LispMac *mac, LispObj *obj)
 		}
 	    }
 	    else if (cdr != NIL)
-		LispDestroy(mac, "too many arguments to %s", name);
+		LispDestroy(mac, "too many arguments to %s", strname);
 
 	    /* set to NIL or default any unspecified arguments */
 	    if (key || optional) {
@@ -1621,14 +1659,15 @@ LispEval(LispMac *mac, LispObj *obj)
 	}
 
 	res = LispRunFunMac(mac, fun, args);
-
+	if (mac->debugging)
+	    LispDebugger(mac, LispDebugCallEnd, fun->data.lambda.name, res);
 	FRM = frm;
 	--mac->level;
 
 	return (res);
     }
 
-    LispDestroy(mac, "the function %s is not defined", name);
+    LispDestroy(mac, "the function %s is not defined", strname);
     /*NOTREACHED*/
 
     return (NIL);
@@ -2223,6 +2262,7 @@ LispPrint(LispMac *mac, LispObj *obj, int newline)
 void
 LispUpdateResults(LispMac *mac, LispObj *cod, LispObj *res)
 {
+    GCProtect();
     LispSetVar(mac, RUN[2]->data.atom,
 	       LispGetVar(mac, RUN[1]->data.atom, 0), 0);
     LispSetVar(mac, RUN[1]->data.atom,
@@ -2234,6 +2274,7 @@ LispUpdateResults(LispMac *mac, LispObj *cod, LispObj *res)
     LispSetVar(mac, RES[1]->data.atom,
 	       LispGetVar(mac, RES[0]->data.atom, 0), 0);
     LispSetVar(mac, RES[0]->data.atom, res, 0);
+    GCUProtect();
 }
 
 /* Needs a rewrite to either allow only one LispMac per process or some
@@ -2286,13 +2327,14 @@ LispMachine(LispMac *mac)
 	    mac->level = 0;
 	    if ((cod = LispRun(mac)) != NULL) {
 		obj = EVAL(cod);
-		LispUpdateResults(mac, cod, obj);
-		if (mac->interactive)
+		if (mac->interactive) {
 		    LispPrint(mac, obj, 1);
-		if (!mac->newline) {
-		    LispPrintf(mac, NIL, "\n");
-		    mac->newline = 1;
-		    mac->column = 0;
+		    LispUpdateResults(mac, cod, obj);
+		    if (!mac->newline) {
+			LispPrintf(mac, NIL, "\n");
+			mac->newline = 1;
+			mac->column = 0;
+		    }
 		}
 	    }
 	    global_mac = NULL;
@@ -2386,18 +2428,26 @@ LispBegin(int argc, char *argv[])
     pagesize = getpagesize();
     segsize = pagesize / sizeof(LispObj);
     bzero(mac, sizeof(LispMac));
-    MOD = ENV = GLB = SYM = LEX = COD = FUN = FRM = STR = NIL;
+    MOD = ENV = GLB = SYM = LEX = COD = FUN = FRM = STR = DBG = NIL;
     LispAllocSeg(mac);
 
     /* initialize stream management */
     mac->stream.stream = (LispStream*)calloc(1, sizeof(LispStream));
     if (argc > 1) {
-	if ((mac->stream.stream[0].fp = mac->fp = fopen(argv[1], "r")) == NULL) {
-	    fprintf(lisp_stderr, "Cannot open %s.\n", argv[1]);
+	i = 1;
+
+	if (strcmp(argv[1], "-d") == 0) {
+	    mac->debugging = mac->interactive = 1;
+	    mac->debug_level = -1;
+	    ++i;
+	}
+	if (i < argc &&
+	    (mac->stream.stream[0].fp = mac->fp = fopen(argv[i], "r")) == NULL) {
+	    fprintf(lisp_stderr, "Cannot open %s.\n", argv[i]);
 	    exit(1);
 	}
     }
-    else {
+    if (mac->fp == NULL) {
 	mac->stream.stream[0].fp = mac->fp = lisp_stdin;
 	mac->interactive = 1;
     }
@@ -2413,19 +2463,23 @@ LispBegin(int argc, char *argv[])
 
     mac->errexit = !mac->interactive;
 
-    /* add +, ++, +++, *, **, and *** */
-    for (i = 0; i < 3; i++) {
-	results[i] = '+';
-	results[i + 1] = '\0';
-	RUN[i] = ATOM2(results);
-	_LispSet(mac, RUN[i], NIL, fname, 0);
+    if (mac->interactive) {
+	/* add +, ++, +++, *, **, and *** */
+	for (i = 0; i < 3; i++) {
+	    results[i] = '+';
+	    results[i + 1] = '\0';
+	    RUN[i] = ATOM2(results);
+	    _LispSet(mac, RUN[i], NIL, fname, 0);
+	}
+	for (i = 0; i < 3; i++) {
+	    results[i] = '*';
+	    results[i + 1] = '\0';
+	    RES[i] = ATOM2(results);
+	    _LispSet(mac, RES[i], NIL, fname, 0);
+	}
     }
-    for (i = 0; i < 3; i++) {
-	results[i] = '*';
-	results[i + 1] = '\0';
-	RES[i] = ATOM2(results);
-	_LispSet(mac, RES[i], NIL, fname, 0);
-    }
+    else
+	RUN[0] = RUN[1] = RUN[2] = RES[0] = RES[1] = RES[2] = NIL;
 
     return (mac);
 }
@@ -2453,4 +2507,17 @@ void
 LispSetExitOnError(LispMac *mac, int errexit)
 {
     mac->errexit = !!errexit;
+}
+
+void
+LispDebug(LispMac *mac, int enable)
+{
+    mac->debugging = !!enable;
+
+    if (mac->debugging) {
+	/* assumes we are at the toplevel */
+	DBG = NIL;
+	mac->debug_level = -1;
+	mac->debug_step = 0;
+    }
 }
