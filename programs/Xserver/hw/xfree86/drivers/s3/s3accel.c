@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.13 1997/09/09 10:27:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.14 1997/09/25 16:13:55 hohndel Exp $ */
 
 /*
  *
@@ -55,6 +55,8 @@ static CARD32 ShiftMasks[32];
 #ifdef S3_NEWMMIO
  static Bool LeftClipped = FALSE;
 #endif
+/* replacement wrappers */
+void S3PolyArcWrapper();
 
 #define MAX_LINE_PATTERN_LENGTH 512
 #define LINE_PATTERN_START	((MAX_LINE_PATTERN_LENGTH >> 5) - 1)
@@ -120,6 +122,7 @@ void S3AccelInit()
        	    xf86AccelInfoRec.SubsequentDashedBresenhamLine = 
 				S3SubsequentDashedBresenhamLine32; 
     }
+
 
     /* 8x8 pattern fills */
     if(!S3_911_SERIES(s3ChipId)) {
@@ -195,6 +198,11 @@ void S3AccelInit()
     xf86AccelInfoRec.DoImageWrite = S3DoImageWrite;		
     xf86AccelInfoRec.ImageWriteFlags = NO_TRANSPARENCY | NO_GXCOPY;
 #endif
+
+  
+    if((s3Bpp == 1) && s3InfoRec.ChipUseLinearAddressing) {
+	xf86GCInfoRec.PolyArcWrapper = S3PolyArcWrapper;
+    }
 
     /* pixmap cache */    
     xf86AccelInfoRec.PixmapCacheMemoryStart = 
@@ -632,13 +640,12 @@ static Bool NicePattern;
 void S3SetupForDashedLine(fg, bg, rop, planemask, size)
     int fg, bg, rop, planemask, size;
 {
-    register CARD32 scratch = DashPattern[LINE_PATTERN_START];
-
     S3SetupForCPUToScreenColorExpand(bg, fg, rop, planemask);
 
     NicePattern = FALSE;
 
     if(size <= 32) {
+    	register CARD32 scratch = DashPattern[LINE_PATTERN_START];
 	if(size & (size - 1)) {
 	  	while(size < 16) {
 		   scratch |= (scratch >> size);
@@ -753,33 +760,32 @@ S3SubsequentDashedBresenhamLine32(x1, y1, octant, err, e1, e2, length, start)
 		offset -= DashPatternSize;
 	 }
     } else { 
-	int offset = start;
-	register unsigned char* srcp = (unsigned char*)(DashPattern) + 
-					(MAX_LINE_PATTERN_LENGTH >> 3) - 1;
-	register CARD32* scratch;
-	int scratch2, shift;
-	   	   	
-	while(count--) {
-	   	shift = DashPatternSize - offset;
-		scratch = (CARD32*)(srcp - (offset >> 3) - 3);
-		scratch2 = offset & 0x07;
+        int offset = start;
+        register unsigned char* srcp = (unsigned char*)(DashPattern) + 
+                                        (MAX_LINE_PATTERN_LENGTH >> 3) - 1;
+        register CARD32* scratch;
+        int scratch2, shift;
+                        
+        while(count--) {
+                shift = DashPatternSize - offset;
+                scratch = (CARD32*)(srcp - (offset >> 3) - 3);
+                scratch2 = offset & 0x07;
 
-		if(shift & ~31) {
-		   if(scratch2) {
-		      pattern =	(*scratch << scratch2) |
-				(*(scratch - 1) >> (32 - scratch2));
-		   } else 
-		       pattern = *scratch; 
-		} else {
-		    pattern = (*((CARD32*)(srcp - 3)) >> shift) | 
-			((*scratch & ~(0xFFFFFFFF >> shift)) << scratch2);
-
-		}
-	   	SET_PIX_TRANS_L(pattern);
-		offset += 32;
-		while(offset >= DashPatternSize) 
-		    offset -= DashPatternSize;
-	}	
+                if(shift & ~31) {
+                   if(scratch2) {
+                      pattern = (*scratch << scratch2) |
+                                (*(scratch - 1) >> (32 - scratch2));
+                   } else 
+                       pattern = *scratch; 
+                } else {
+                    pattern = (*((CARD32*)(srcp - 3)) >> shift) | 
+                        (*scratch << scratch2);
+                }
+                SET_PIX_TRANS_L(pattern);
+                offset += 32;
+                while(offset >= DashPatternSize) 
+                    offset -= DashPatternSize;
+	}
     }
 }
 
@@ -892,7 +898,7 @@ void S3SubsequentDashedBresenhamLine16(x1, y1, octant, err, e1, e2, length,
 		       pattern = *scratch; 
 		} else {
 		    pattern = (*((CARD32*)(srcp - 3)) >> shift) | 
-			((*scratch & ~(0xFFFFFFFF >> shift)) << scratch2);
+			(*scratch << scratch2);
 
 		}
 	   	SET_PIX_TRANS_W(pattern >> 16);
@@ -914,7 +920,7 @@ void S3SubsequentDashedBresenhamLine16(x1, y1, octant, err, e1, e2, length,
 		       pattern = *scratch; 
 		} else {
 		    pattern = (*((CARD32*)(srcp - 3)) >> shift) | 
-			((*scratch & ~(0xFFFFFFFF >> shift)) << scratch2);
+			(*scratch << scratch2);
 
 		}
 	   	SET_PIX_TRANS_W(pattern >> 16);
@@ -1030,6 +1036,29 @@ stipplewidth, stippleheight, srcx, srcy)
     WaitIdle();	
     SET_CMD(CMD_RECT | BYTSEQ | _32BIT | PCDATA | DRAW | PLANAR |
 					INC_Y | INC_X | WRTDATA);
+
+    if((dwords == 1) && ((srcx + w) <= stipplewidth)) {
+	register unsigned char* srcptr;
+	unsigned char* lastline = src + (srcwidth * stippleheight);
+#ifdef S3_NEWMMIO
+	register CARD32* destptr = (CARD32*)&IMG_TRANS;
+#endif
+
+	srcp += srcx >> 3;
+	srcx &= 0x07;
+	srcptr = srcp;
+
+	while(h--) {
+#ifdef S3_NEWMMIO
+	   *(destptr++) = reverse_bitorder(*((CARD32*)srcptr) >> srcx);
+#else
+	   SET_PIX_TRANS_L(reverse_bitorder(*((CARD32*)srcptr) >> srcx));
+#endif
+	   srcptr += srcwidth;
+	   if(srcptr >= lastline) srcptr -= (lastline - src);
+        }
+	return;
+    }
 
     if(!((stipplewidth > 32) || (stipplewidth & (stipplewidth - 1)))) { 
     	CARD32 pattern;
@@ -1154,8 +1183,6 @@ stipplewidth, stippleheight, srcx, srcy)
 	   }
 	}
     }
-
-    SET_SYNC_FLAG;
 }
 
 #ifndef S3_NEWMMIO
@@ -1336,7 +1363,6 @@ stipplewidth, stippleheight, srcx, srcy)
 	}
     } 
 
-    SET_SYNC_FLAG;
 }
 
 #endif
@@ -1395,7 +1421,8 @@ S3FillRectStippledCPUToScreenColorExpand(pDrawable, pGC, nBoxInit, pBoxInit)
 	        xoffset, yoffset);
 	}
     }	/* end for loop through each rectangle to draw */
-    return;
+
+    SET_SYNC_FLAG;
 }
 	
 	/***************************************\
@@ -1523,3 +1550,28 @@ srcy, bg, fg, rop, planemask)
 }
 
 #endif
+
+void 
+S3PolyArcWrapper(pDraw, pGC, narcs, parcs)
+    DrawablePtr	pDraw;
+    GCPtr	pGC;
+    int		narcs;
+    xArc	*parcs;
+{
+    cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
+
+    SYNC_CHECK;   
+
+    switch (devPriv->rop) {
+	case GXxor:
+	    cfbZeroPolyArcSS8Xor(pDraw, pGC, narcs, parcs);
+	    break;
+	case GXcopy:
+	    cfbZeroPolyArcSS8Copy(pDraw, pGC, narcs, parcs);
+	    break;
+	default:
+	    cfbZeroPolyArcSS8General(pDraw, pGC, narcs, parcs);
+	    break;
+    }
+}
+

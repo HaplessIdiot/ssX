@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.29 1997/04/17 08:16:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.30 1997/06/15 07:12:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,6 +22,7 @@
  *
  */
 /* $XConsortium: xf86Io.c /main/27 1996/10/19 17:58:55 kaleb $ */
+/* Patch for PS/2 Intellimouse - Tim Goodwin 1997-11-06. */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -466,7 +467,7 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
        */
       if (mouse->mseType == P_MMHIT || mouse->mseType == P_GLIDEPOINT)
         nbuttons = 4;
-      else if (mouse->mseType == P_MSINTELLIMOUSE)
+      else if (mouse->mseType == P_IMSERIAL || mouse->mseType == P_IMPS2)
 	nbuttons = 5;
       else
         nbuttons = 3;

@@ -1,4 +1,11 @@
 XFree86 3.9v (9 November 1997)
+1392. Add Fire GL 3000 option for glint server (#1139, Bart van den Broek).
+1391. Remove unnecessary ARM32 code (#1138, Katrina Maffey).
+1390. Fix a crash in XCopyPlane after server reset (#1137, Katrina Maffey).
+1389. Add support for PS/2 Intellimouse (#1136, Tim Goodwin).
+1388. Add a PolyArc replacement for s3/svga in 8bpp when using a linear
+      framebuffer. Add a stippled rect speedup for destinations less than 32
+      pixels wide (#1135, Mark Vojkovich).
 1387. Add read speed benchmark and support for >8bpp modes to dga test
       program (#1134, Koen Gadeyne).
 1386. Fix dashed lines for vga256 (#1133, Alan Hourihane).

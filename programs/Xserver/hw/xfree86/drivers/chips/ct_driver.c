@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.17 1997/10/25 15:52:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.18 1997/11/01 15:04:45 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -1433,11 +1433,6 @@ Bool ctProbeHiQV()
   ErrorF("ctProbeHiQV\n");
 #endif
 
-/* Allocate memory for the variable. */
-#ifdef __arm32__
-  ctMemClk = (ctMemClockPtr) malloc(sizeof(ctMemClockReg));
-#endif
-
   /* enter/leave */
   ctEnterLeaveHiQV32(ENTER);
 
@@ -1932,12 +1927,6 @@ Bool ctProbeHiQV()
     OFLG_SET(OPTION_NO_IMAGEBLT, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_FAST_DRAM, &CHIPS.ChipOptionFlags);
     
-
-    /* Free the memory we allocated to this variable. */
-#ifdef __arm32__
-    free(ctMemClk);
-#endif
-
     return (TRUE);
 }
 

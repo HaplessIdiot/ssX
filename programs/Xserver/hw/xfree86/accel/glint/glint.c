@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.12 1997/11/01 15:04:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.13 1997/11/08 16:24:24 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -888,6 +888,7 @@ glintProbe()
   OFLG_SET(OPTION_PCI_RETRY, &validOptions);
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &validOptions);
   OFLG_SET(OPTION_SW_CURSOR, &validOptions);
+  OFLG_SET(OPTION_FIREGL3000, &validOptions);
 
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &glintInfoRec.clockOptions);
   OFLG_SET(OPTION_PCI_RETRY, &glintInfoRec.options);

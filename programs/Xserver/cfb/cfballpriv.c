@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfballpriv.c,v 1.2 1997/07/31 07:16:03 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -78,7 +78,7 @@ cfbAllocatePrivates(pScreen, window_index, gc_index)
 	return FALSE;
     cfbPuntCopyPlane = miCopyPlane;
 #ifdef CFB_NEED_SCREEN_PRIVATE
-    if (cfbScreenPrivateIndex == -1)
+    if (cfbScreenPrivateIndex == 1)
       cfbScreenPrivateIndex = AllocateScreenPrivateIndex ();
     if (cfbScreenPrivateIndex == -1)
 	return FALSE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.27 1997/11/01 15:04:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.28 1997/11/08 16:24:26 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -25,6 +25,7 @@
  *
  */
 /* $XConsortium: xf86_Mouse.c /main/21 1996/10/27 11:05:32 kaleb $ */
+/* Patch for PS/2 Intellimouse - Tim Goodwin 1997-11-06. */
 
 /*
  * [JCH-96/01/21] Added fourth button support for P_GLIDEPOINT mouse protocol.
@@ -99,7 +100,8 @@ Bool xf86SupportedMouseTypes[] =
 	TRUE,	/* PS/2 */
 	TRUE,	/* Hitachi Tablet */
 	TRUE,	/* ALPS GlidePoint */
-	TRUE,   /* Microsoft IntelliMouse */
+	TRUE,   /* Microsoft serial IntelliMouse */
+	TRUE,   /* Microsoft PS/2 IntelliMouse */
 };
 
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
@@ -125,7 +127,8 @@ unsigned short xf86MouseCflags[] =
 	0,						     /* PS/2 */
 	(CS8                   | CREAD | CLOCAL | HUPCL ),   /* mmhitablet */
 	(CS7                   | CREAD | CLOCAL | HUPCL ),   /* GlidePoint */
-	(CS7                   | CREAD | CLOCAL | HUPCL ),   /* IntelliMouse */
+	(CS7                   | CREAD | CLOCAL | HUPCL ),   /* Serial IntelliMouse */
+	0,   						     /* PS/2 IntelliMouse */
 };
 #endif /* ! MOUSE_PROTOCOL_IN_KERNEL */
 
@@ -204,7 +207,7 @@ MouseDevPtr mouse;
           xf86SetMouseSpeed(mouse, 1200, mouse->baudRate,
 			    xf86MouseCflags[P_LOGIMAN]);
         }
-      else if (mouse->mseType != P_BM && mouse->mseType != P_PS2) 
+      else if (mouse->mseType != P_BM && mouse->mseType != P_PS2 && mouse->mseType != P_IMPS2) 
 	{
 	  xf86SetMouseSpeed(mouse, 9600, mouse->baudRate,
 			    xf86MouseCflags[mouse->mseType]);
@@ -271,6 +274,13 @@ MouseDevPtr mouse;
 	    else                                  write(mouse->mseFd, "N", 1);
 	  }
         }
+        else if (mouse->mseType == P_IMPS2)
+        {
+          /* Turn on the wheel. */
+          unsigned char s[] = { 243, 200, 243, 100, 243, 80 };
+	  if (write(mouse->mseFd, s, sizeof s) != sizeof s)
+            FatalError("write to mouse failed (%s)\n", strerror(errno));
+        }
 
 #ifdef CLEARDTR_SUPPORT
       if (mouse->mseType == P_MSC && (mouse->mouseFlags & MF_CLEAR_DTR))
@@ -299,7 +309,7 @@ xf86MouseProtocol(device, rBuf, nBytes)
   static unsigned char pBuf[8];
   MouseDevPtr          mouse = MOUSE_DEV(device);
   
-  static unsigned char proto[10][5] = {
+  static unsigned char proto[11][5] = {
     /*  hd_mask hd_id   dp_mask dp_id   nobytes */
     { 	0x40,	0x40,	0x40,	0x00,	3 	},  /* MicroSoft */
     {	0xf8,	0x80,	0x00,	0x00,	5	},  /* MouseSystems */
@@ -311,7 +321,8 @@ xf86MouseProtocol(device, rBuf, nBytes)
     {	0xc0,	0x00,	0x00,	0x00,	3	},  /* PS/2 mouse */
     {	0xe0,	0x80,	0x80,	0x00,	3	},  /* MM_HitTablet */
     { 	0x40,	0x40,	0x40,	0x00,	3 	},  /* GlidePoint */
-    { 	0x40,	0x40,	0x40,	0x00,	4 	}   /* IntelliMouse */
+    { 	0x40,	0x40,	0x40,	0x00,	4 	},  /* Serial IntelliMouse */
+    { 	0xc8,	0x08,	0x00,	0x00,	4 	}   /* PS/2 IntelliMouse */
   };
   
   for ( i=0; i < nBytes; i++) {
@@ -466,7 +477,7 @@ xf86MouseProtocol(device, rBuf, nBytes)
       dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
       break;
 #endif
-    case P_MSINTELLIMOUSE:              /* Microsoft IntelliMouse */
+    case P_IMSERIAL:              /* Microsoft serial IntelliMouse */
       dx = (char) ((pBuf[0] & 0x03) << 6 | pBuf[1]);
       dy = (char) ((pBuf[0] & 0x0c) << 4 | pBuf[2]);
       buttons = 
@@ -487,17 +498,30 @@ xf86MouseProtocol(device, rBuf, nBytes)
        *	    (buttons & 16) ? 'D' : ' ');
        * }
        */
+
       break;
+
+    case P_IMPS2:              /* Microsoft PS/2 IntelliMouse */
+      dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
+      dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
+      buttons = ((pBuf[0] & 1) << 2) |
+                ((pBuf[0] & 6) >> 1) |
+                (pBuf[3] ? (pBuf[3] & 0x80 ? 8 : 16) : 0);
+      break;
+
     default: /* There's a table error */
 	continue;
     }
 
     xf86PostMseEvent(device, buttons, dx, dy);
 
-    if ((mouse->mseType == P_MSINTELLIMOUSE)  &&
-	(buttons & (8 + 16))) {
+    /* Intellimouse wheel roll maps to button 4 or 5 Press event; now
+    generate a Release event. */
+
+    if (((mouse->mseType == P_IMSERIAL) ||
+         (mouse->mseType == P_IMPS2))  &&
+	(buttons & (8 + 16)))
       xf86PostMseEvent(device, buttons & ~ (8 + 16), 0, 0);
-    }
 
     pBufP = 0;
   }
