@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.129 2004/02/16 18:14:33 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.130 2004/03/18 07:06:18 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3461,7 +3461,7 @@ DynamicModuleTarget(name.so, objects)					@@\
 LinkBuildModule($@,subdir)
 #else
 #define PlainObjectModuleTarget(module,objects,subdir)			@@\
-NormalRelocatableTarget(name, objects)					@@\
+NormalRelocatableTarget(module,objects)					@@\
 LinkBuildModule($@,subdir)
 #endif
 #endif
