@@ -1,4 +1,4 @@
-/* $XConsortium: t1stdio.h,v 1.4 91/10/10 11:19:49 rws Exp $ */
+/* $TOG: t1stdio.h /main/6 1998/05/08 08:45:57 kaleb $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -27,7 +27,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1stdio.h,v 1.1.1.1.14.2 1998/07/03 14:40:58 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1stdio.h,v 1.4 1998/07/25 06:56:59 dawes Exp $ */
 /* T1IO FILE structure and related stuff */
 #ifdef XFree86LOADER
 #undef FILE
@@ -58,18 +58,17 @@ typedef struct F_FILE {
 #define EOF (-1)     /* end of file */
 #define F_BUFSIZ (512)
  
-#ifdef XFree86LOADER
-#undef getc
-#endif
-#define getc(f) \
+#define _XT1getc(f) \
   ( \
    ( ((f)->b_cnt > 0) && ((f)->flags == 0) ) ? \
    ( (f)->b_cnt--, (unsigned int)*( (f)->b_ptr++ ) ) : \
    T1Getc(f) \
   )
  
+#define  T1Feof(f)          (((f)->flags & FIOEOF) && ((f)->b_cnt==0))
+
 extern FILE *T1Open(), *T1eexec();
-extern int T1Close(), T1ungetc(), T1Read();
+extern int T1Close(), T1Ungetc(), T1Read();
  
 #ifdef XFree86LOADER
 #undef fclose

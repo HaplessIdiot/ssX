@@ -1,17 +1,10 @@
-/* $XConsortium: fontutil.c /main/11 1996/09/12 10:08:59 kaleb $ */
-/* $XFree86: xc/lib/font/util/fontutil.c,v 3.0 1996/04/15 11:17:51 dawes Exp $ */
+/* $TOG: fontutil.c /main/14 1998/05/07 14:27:41 kaleb $ */
 
 /*
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -19,17 +12,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86: xc/lib/font/util/fontutil.c,v 3.1 1996/12/23 06:02:33 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -171,11 +165,11 @@ QueryTextExtents(pFont, count, chars, info)
     defc[0] = pFont->info.defaultCh >> 8;
     defc[1] = pFont->info.defaultCh;
     (*pFont->get_metrics) (pFont, 1, defc, encoding, &t, &defaultChar);
-    if (IsNonExistentChar (defaultChar))
+    if ((IsNonExistentChar (defaultChar)))
 	defaultChar = 0;
     for (i = 0; i < n; i++)
     {
-	if (IsNonExistentChar (charinfo[i]))
+	if ((IsNonExistentChar (charinfo[i])))
 	{
 	    if (!defaultChar)
 		continue;
@@ -186,7 +180,8 @@ QueryTextExtents(pFont, count, chars, info)
     }
     cm = pFont->info.constantMetrics;
     pFont->info.constantMetrics = FALSE;
-    QueryGlyphExtents(pFont, charinfo + firstReal, n - firstReal, info);
+    QueryGlyphExtents(pFont, (CharInfoPtr*) charinfo + firstReal, 
+		      n - firstReal, info);
     pFont->info.constantMetrics = cm;
     xfree(charinfo);
     return TRUE;
@@ -388,8 +383,7 @@ Bool charset_subset;
     }
     for (ptr2 = ptr; ptr2 < endptr; ptr2++)
     {
-	if (ptr2->min_char_low == 0 &&
-	    ptr2->min_char_high == 0 ||
+	if ((ptr2->min_char_low == 0 && ptr2->min_char_high == 0) ||
 	    ptrmax >= mincharp(ptr2) - 1)
 	{
 	    if (!charset_subset && ptr->min_char_high != ptr2->min_char_high)

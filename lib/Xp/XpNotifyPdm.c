@@ -1,4 +1,4 @@
-/* $TOG: XpNotifyPdm.c /main/4 1997/05/28 11:41:41 kaleb $ */
+/* $TOG: XpNotifyPdm.c /main/5 1997/07/24 15:47:13 kaleb $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -717,6 +717,13 @@ XpNotifyPdm (
     Bool            auth_flag
 )
 {
+    enum { XA_PDM_CLIENT_PROP, XA_PDM_START, XA_PDM_START_OK,
+	   XA_PDM_START_VXAUTH, XA_PDM_START_PXAUTH, XA_PDM_START_ERROR, 
+	   NUM_ATOMS };
+    static char *atom_names[] = { 
+      "PDM_CLIENT_PROP", "PDM_START", "PDM_START_OK",
+      "PDM_START_VXAUTH", "PDM_START_PXAUTH", "PDM_START_ERROR" };
+
     char          cdata[2048];
     char          *tptr;
     Dosnrec       dosnrec;
@@ -725,7 +732,7 @@ XpNotifyPdm (
 
     Display       *sel_display;
     int           sel_screen;
-    Atom          sel_atom, pdm_start;
+    Atom          sel_atom;
     char          *sel_str;
 
     Window        sel_window;
@@ -734,12 +741,13 @@ XpNotifyPdm (
     unsigned char *prop_data;
     int           prop_nelements;
 
-    Atom          ttype, prop_atom;
+    Atom          ttype;
     int           tformat;
     unsigned long nitems, bytes_after;
     unsigned char *return_data;
 
     int           tmpi;
+    Atom	  atoms[NUM_ATOMS];
 
 
 
@@ -776,10 +784,10 @@ XpNotifyPdm (
     /*
      * Create property and transfer data to.
      */
-    prop_atom     = XInternAtom( sel_display, "PDM_CLIENT_PROP", False );
+    XInternAtoms( sel_display, atom_names, NUM_ATOMS, False, atoms );
 
     XChangeProperty( sel_display,
-		     sel_window, prop_atom,
+		     sel_window, atoms[XA_PDM_CLIENT_PROP],
 		     prop_type,
 		     prop_format,
 		     PropModeReplace,
@@ -791,10 +799,8 @@ XpNotifyPdm (
     /*
      * Tickle PDM_MANAGER selection with PDM_START target
      */
-    pdm_start = XInternAtom( sel_display, "PDM_START", False );
-
-    XConvertSelection( sel_display, sel_atom, pdm_start,
-		       prop_atom, sel_window, CurrentTime );
+    XConvertSelection( sel_display, sel_atom, atoms[XA_PDM_START],
+		       atoms[XA_PDM_CLIENT_PROP], sel_window, CurrentTime );
 
     /*
      * Hang out waiting for a SelectionNotify.  Dig out from
@@ -802,7 +808,7 @@ XpNotifyPdm (
      */
     dosnrec.requestor = sel_window;
     dosnrec.selection = sel_atom;
-    dosnrec.target    = pdm_start;
+    dosnrec.target    = atoms[XA_PDM_START];
 
     XIfEvent( sel_display, &tevent, digOutSelectionNotify, (char *) &dosnrec );
 
@@ -818,7 +824,7 @@ XpNotifyPdm (
 		 "XpNotifyPdm: Unable to make selection on %s", sel_str);
 	XFree(sel_str);
 
-	XDeleteProperty( sel_display, sel_window, prop_atom );
+	XDeleteProperty( sel_display, sel_window, atoms[XA_PDM_CLIENT_PROP] );
 	XDestroyWindow( sel_display, sel_window );
 	if ((sel_display != print_display) && (sel_display != video_display))
 	    XCloseDisplay( sel_display );
@@ -829,7 +835,8 @@ XpNotifyPdm (
      * Read property content for status.
      */
     XGetWindowProperty( sel_display, sel_window,
-			prop_atom, 0, 100000, True, AnyPropertyType,
+			atoms[XA_PDM_CLIENT_PROP], 
+			0, 100000, True, AnyPropertyType,
 			&ttype, &tformat, &nitems, &bytes_after,
 			&return_data );
 
@@ -839,7 +846,7 @@ XpNotifyPdm (
      * PropertyNotify events related to this call.
      */
     dopnrec.window = sel_window;
-    dopnrec.atom   = prop_atom;
+    dopnrec.atom   = atoms[XA_PDM_CLIENT_PROP];
     while ( XCheckIfEvent( sel_display, &tevent, digOutPropertyNotify,
 		 (char *) &dopnrec ) );
 
@@ -859,20 +866,20 @@ XpNotifyPdm (
     tmpi = *((Atom *) return_data);
     Xfree( return_data );
 
-    if ( tmpi == XInternAtom( sel_display, "PDM_START_OK", False ) ) {
+    if ( tmpi == atoms[XA_PDM_START_OK] ) {
 	return( (char *) NULL );
     }
-    else if ( tmpi == XInternAtom( sel_display, "PDM_START_VXAUTH", False ) ) {
+    else if ( tmpi == atoms[XA_PDM_START_VXAUTH] ) {
 	sprintf(cdata,
 	     "XpNotifyPdm: PDM not authorized to connect to video display." );
 	return( _xpstrdup( cdata ) );
     }
-    else if ( tmpi == XInternAtom( sel_display, "PDM_START_PXAUTH", False ) ) {
+    else if ( tmpi == atoms[XA_PDM_START_PXAUTH] ) {
 	sprintf(cdata,
 	     "XpNotifyPdm: PDM not authorized to connect to print display." );
 	return( _xpstrdup( cdata ) );
     }
-    else if ( tmpi == XInternAtom( sel_display, "PDM_START_ERROR", False ) ) {
+    else if ( tmpi == atoms[XA_PDM_START_ERROR] ) {
 	sprintf(cdata,
 	     "XpNotifyPdm: PDM encountered an error. See PDM log file." );
 	return( _xpstrdup( cdata ) );

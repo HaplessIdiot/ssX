@@ -1,15 +1,10 @@
-/* $TOG: fontfile.c /main/30 1997/08/17 22:58:08 kaleb $ */
+/* $TOG: fontfile.c /main/33 1998/05/07 15:04:47 kaleb $ */
 
 /*
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,16 +12,16 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.9 1998/07/25 03:10:20 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.10 1998/07/25 06:57:07 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -255,7 +250,6 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     FontScalableEntryPtr   scalable;
     FontScaledPtr	scaled;
     FontBitmapEntryPtr	bitmap;
-    FontBCEntryPtr	bc;
     int			ret;
     Bool		noSpecificSize;
     int			nranges;
@@ -284,7 +278,6 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 
     if (entry)
     {
-	int len;
 	switch (entry->type) {
 	case FONT_ENTRY_BITMAP:
 	    bitmap = &entry->u.bitmap;
@@ -475,13 +468,14 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 }
 
 /* ARGSUSED */
+void
 FontFileCloseFont (fpe, pFont)
     FontPathElementPtr	fpe;
     FontPtr		pFont;
 {
     FontEntryPtr    entry;
 
-    if (entry = (FontEntryPtr) pFont->fpePrivate) {
+    if ((entry = (FontEntryPtr) pFont->fpePrivate)) {
 	switch (entry->type) {
 	case FONT_ENTRY_SCALABLE:
 	    FontFileRemoveScaledInstance (entry, pFont);
@@ -538,6 +532,7 @@ FontFileOpenBitmap (fpe, pFont, flags, entry, format, fmask)
 				  (FontPtr)0);
 }
 
+int
 FontFileGetInfoBitmap (fpe, pFontInfo, entry)
     FontPathElementPtr	fpe;
     FontInfoPtr		pFontInfo;
@@ -561,7 +556,7 @@ _FontFileAddScalableNames(names, scaleNames, nameptr, zeroChars, vals, ranges,
 			  nranges, max)
     FontNamesPtr	names;
     FontNamesPtr	scaleNames;
-    FontNamePtr		*nameptr;
+    FontNamePtr		nameptr;
     char		*zeroChars;
     FontScalablePtr	vals;
     fsRange		*ranges;
@@ -695,7 +690,6 @@ _FontFileListFonts (client, fpe, pat, len, max, names, mark_aliases)
     FontNameRec		zeroName;
     FontNamesPtr	scaleNames;
     FontScalableRec	vals;
-    int			i;
     fsRange		*ranges;
     int			nranges;
     int			result = BadFontName;
@@ -792,6 +786,7 @@ typedef struct _LFWIData {
     int                   current;
 } LFWIDataRec, *LFWIDataPtr;
 
+int
 FontFileListFonts (client, fpe, pat, len, max, names)
     pointer     client;
     FontPathElementPtr fpe;
@@ -803,6 +798,7 @@ FontFileListFonts (client, fpe, pat, len, max, names)
     return _FontFileListFonts (client, fpe, pat, len, max, names, 0);
 }
 
+int
 FontFileStartListFontsWithInfo(client, fpe, pat, len, max, privatep)
     pointer     client;
     FontPathElementPtr fpe;
@@ -946,7 +942,7 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
 	tmpName.length = namelen;
     }
     /* Match non XLFD pattern */
-    if (entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName))
+    if ((entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName)))
     {
 	switch (entry->type) {
 	case FONT_ENTRY_BITMAP:
@@ -990,6 +986,7 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
     return ret;
 }
 
+int
 FontFileListNextFontWithInfo(client, fpe, namep, namelenp, pFontInfo,
 			     numFonts, private)
     pointer		client;
@@ -1109,6 +1106,7 @@ extern void FontFileEmptyBitmapSource();
 typedef int (*IntFunc) ();
 static int  font_file_type;
 
+void
 FontFileRegisterLocalFpeFunctions ()
 {
     font_file_type = RegisterFPEFunctions(FontFileNameCheck,

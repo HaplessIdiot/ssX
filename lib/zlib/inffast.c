@@ -1,7 +1,7 @@
-/* $TOG: inffast.c /main/3 1997/02/26 17:43:09 kaleb $ */
+/* $TOG: inffast.c /main/4 1998/02/04 14:33:49 kaleb $ */
 
 /* inffast.c -- process literals and length/distance pairs fast
- * Copyright (C) 1995-1996 Mark Adler
+ * Copyright (C) 1995-1998 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 

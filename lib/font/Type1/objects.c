@@ -1,4 +1,4 @@
-/* $XConsortium: objects.c,v 1.11 94/03/23 14:28:05 gildea Exp $ */
+/* $TOG: objects.c /main/14 1998/06/16 13:50:14 barstow $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/objects.c,v 1.1.1.1.14.3 1998/07/05 14:35:53 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/objects.c,v 1.4 1998/07/25 06:56:56 dawes Exp $ */
  /* OBJECTS  CWEB         V0025 ********                             */
 /*
 :h1.OBJECTS Module - TYPE1IMAGER Objects Common Routines
@@ -80,7 +80,6 @@ a macro for "strcpy" that diverts it to "my_strcpy".
 #include  "strokes.h"
 #include  "cluts.h"
 static char *TypeFmt();
-static ObjectPostMortem();
 
 /*
 :h3.The "pointer" Macro - Define a Generic Pointer
@@ -935,6 +934,27 @@ void Consume(n, obj1, obj2, obj3) /* non-ANSI avoids overly strict type checking
        }
 }
 /*
+:h4.ObjectPostMortem() - Prints as Much as We Can About a Bad Object
+ 
+This is a subroutine of TypeErr() and ArgErr().
+*/
+ 
+/*ARGSUSED*/
+static void
+ObjectPostMortem(obj) /* non-ANSI avoids overly strict type checking  */
+       register struct xobject *obj;
+{
+       extern struct XYspace *USER;
+ 
+       Pragmatics("Debug", 10);
+       IfTrace2(TRUE,"Bad object is of %s type %z\n", TypeFmt(obj->type), obj);
+ 
+       IfTrace0((obj == (struct xobject *) USER),
+                  "Suspect that InitImager() was omitted.\n");
+       Pragmatics("Debug", 0);
+}
+ 
+/*
 :h3.TypeErr() - Handles "Invalid Object Type" Errors
 */
  
@@ -944,12 +964,18 @@ struct xobject *TypeErr(name, obj, expect, ret) /* non-ANSI avoids overly strict
        int expect;           /* type expected                                */
        struct xobject *ret;  /* object to return to caller                   */
 {
-       static char typemsg[80];
+       /*
+	* This buffer must be large enough to hold 'name' plus
+	* two of the largest strings that can be returned by TypeFmt.
+	* The largest value of 'name' is currently 9 ("ClosePath")
+	* and the longest strings in TypeFmt are 30 characters.
+	*/
+       static char typemsg[115];
  
        if (MustCrash)
                LineIOTrace = TRUE;
  
-       sprintf(typemsg, "Wrong object type in %s; expected %s.\n",
+       sprintf(typemsg, "Wrong object type in %s.  Expected %s; was %s.\n",
                   name, TypeFmt(expect), TypeFmt(obj->type));
        IfTrace0(TRUE,typemsg);
  
@@ -1012,26 +1038,6 @@ static char *TypeFmt(type)
        }
        return(r);
 }
-/*
-:h4.ObjectPostMortem() - Prints as Much as We Can About a Bad Object
- 
-This is a subroutine of TypeErr() and ArgErr().
-*/
- 
-/*ARGSUSED*/
-static ObjectPostMortem(obj) /* non-ANSI avoids overly strict type checking  */
-       register struct xobject *obj;
-{
-       extern struct XYspace *USER;
- 
-       Pragmatics("Debug", 10);
-       IfTrace2(TRUE,"Bad object is of %s type %z\n", TypeFmt(obj->type), obj);
- 
-       IfTrace0((obj == (struct xobject *) USER),
-                  "Suspect that InitImager() was omitted.\n");
-       Pragmatics("Debug", 0);
-}
- 
 /*
 :h3.ArgErr() - Invalid Argument Passed to a Routine
  

@@ -1,4 +1,4 @@
-/* $TOG: t1info.c /main/20 1997/06/09 11:21:53 barstow $ */
+/* $TOG: t1info.c /main/22 1998/05/01 16:42:02 kaleb $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -57,15 +57,9 @@
 
 /*
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -73,18 +67,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.2.2.3 1998/07/05 14:35:56 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.5 1998/07/25 06:56:58 dawes Exp $ */
 
 #include "fntfilst.h"
 #ifndef FONTMODULE
@@ -112,33 +106,33 @@ typedef struct _fontProp {
 }           fontProp;
  
 static fontProp fontNamePropTable[] = {  /* Example: */
-    "FOUNDRY", 0, atom,                  /* adobe */
-    "FAMILY_NAME", 0, atom,              /* times roman */
-    "WEIGHT_NAME", 0, atom,     	 /* bold */
-    "SLANT", 0, atom,			 /* i */
-    "SETWIDTH_NAME", 0, atom,            /* normal */
-    "ADD_STYLE_NAME", 0, atom,		 /* */
-    "PIXEL_SIZE", 0, pixel_size,         /* 18 */
-    "POINT_SIZE", 0, point_size,         /* 180 */
-    "RESOLUTION_X", 0, resolution_x,     /* 72 */
-    "RESOLUTION_Y", 0, resolution_y,     /* 72 */
-    "SPACING", 0, atom,                  /* p */
-    "AVERAGE_WIDTH", 0, average_width,   /* 0 */
-    "CHARSET_REGISTRY", 0, atom,         /* ISO8859 */
-    "CHARSET_ENCODING", 0, truncate_atom, /* 1 */
+    { "FOUNDRY", 0, atom },			/* adobe */
+    { "FAMILY_NAME", 0, atom },			/* times roman */
+    { "WEIGHT_NAME", 0, atom },			/* bold */
+    { "SLANT", 0, atom },			/* i */
+    { "SETWIDTH_NAME", 0, atom },		/* normal */
+    { "ADD_STYLE_NAME", 0, atom },		/* */
+    { "PIXEL_SIZE", 0, pixel_size },		/* 18 */
+    { "POINT_SIZE", 0, point_size },		/* 180 */
+    { "RESOLUTION_X", 0, resolution_x },	/* 72 */
+    { "RESOLUTION_Y", 0, resolution_y },	/* 72 */
+    { "SPACING", 0, atom },			/* p */
+    { "AVERAGE_WIDTH", 0, average_width },	/* 0 */
+    { "CHARSET_REGISTRY", 0, atom },		/* ISO8859 */
+    { "CHARSET_ENCODING", 0, truncate_atom }	/* 1 */
 };
  
 /* NOTICE: Following array is closely related to the sequence of defines
    following it. */
 static fontProp extraProps[] = {
-    "FONT", 0, 0,
-    "COPYRIGHT", 0, 0,
-    "RAW_PIXEL_SIZE", 0, 0,
-    "RAW_POINT_SIZE", 0, 0,
-    "RAW_ASCENT", 0, 0,
-    "RAW_DESCENT", 0, 0,
-    "RAW_AVERAGE_WIDTH", 0, 0,
-    "FACE_NAME", 0, 0,
+    { "FONT", 0, },
+    { "COPYRIGHT", 0, },
+    { "RAW_PIXEL_SIZE", 0, },
+    { "RAW_POINT_SIZE", 0, },
+    { "RAW_ASCENT", 0, },
+    { "RAW_DESCENT", 0, },
+    { "RAW_AVERAGE_WIDTH", 0, },
+    { "FACE_NAME", 0, }
 };
  
 /* this is a bit kludgy */

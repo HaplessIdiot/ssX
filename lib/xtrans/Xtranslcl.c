@@ -1,15 +1,9 @@
-/* $TOG: Xtranslcl.c /main/34 1997/12/09 17:28:12 kaleb $ */
+/* $TOG: Xtranslcl.c /main/37 1998/04/29 07:18:40 barstow $ */
 /*
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,20 +11,20 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.25 1997/11/16 06:17:44 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.26 1997/12/14 02:55:35 dawes Exp $ */
 
-/* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
+/* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
  * All Rights Reserved
  *
@@ -86,6 +80,7 @@ from the X Consortium.
 #endif
 #include <sys/stropts.h>
 #include <sys/wait.h>
+#include <sys/types.h>
 
 /*
  * The local transports should be treated the same as a UNIX domain socket
@@ -290,6 +285,7 @@ char		*port;
     char		*slave, namelen;
     char		buf[20]; /* MAX_PATH_LEN?? */
     PFV			savef;
+    pid_t		saved_pid;
 
     PRMSG(2,"PTSOpenClient(%s)\n", port, 0,0 );
 
@@ -347,7 +343,7 @@ char		*port;
      * cannot be changed back to its original condition, hence the fork().
      */
 
-    if( !fork()) {
+    if(!(saved_pid=fork())) {
 	uid_t       saved_euid;
 
 	saved_euid = geteuid();
@@ -359,7 +355,7 @@ char		*port;
 	exit( 0 );
     }
 
-    wait( &exitval );
+    waitpid(saved_pid, &exitval, 0);
 
     if (chmod(slave, 0666) < 0) {
 	close(fd);
@@ -1805,6 +1801,12 @@ static	char	*XLOCAL=NULL;
 static	char	*workingXLOCAL=NULL;
 static	char	*freeXLOCAL=NULL;
 
+#ifdef sco
+#define DEF_XLOCAL "UNIX:SCO:PTS:NAMED:ISC"
+#else
+#define DEF_XLOCAL "UNIX:PTS:NAMED:ISC:SCO"
+#endif
+
 static void
 TRANS(LocalInitTransports)(protocol)
 
@@ -1822,8 +1824,8 @@ char *protocol;
     else {
 	XLOCAL=(char *)getenv("XLOCAL");
 	if(XLOCAL==NULL)
-	    XLOCAL="UNIX:PTS:NAMED:ISC:SCO";
-	workingXLOCAL=freeXLOCAL=(char *)xalloc (strlen (XLOCAL) + 1);
+	    XLOCAL=DEF_XLOCAL;
+	workingXLOCAL=freeXLOCAL=(char *)malloc (strlen (XLOCAL) + 1);
 	if (workingXLOCAL)
 	    strcpy (workingXLOCAL, XLOCAL);
     }

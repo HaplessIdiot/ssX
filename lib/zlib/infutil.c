@@ -1,7 +1,7 @@
-/* $TOG: infutil.c /main/3 1997/02/26 17:43:42 kaleb $ */
+/* $TOG: infutil.c /main/4 1998/02/04 14:34:09 kaleb $ */
 
 /* inflate_util.c -- data and routines common to blocks and codes
- * Copyright (C) 1995-1996 Mark Adler
+ * Copyright (C) 1995-1998 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 

@@ -1,5 +1,4 @@
-/* $XConsortium: fsio.c,v 1.37 95/04/05 19:58:13 kaleb Exp $ */
-/* $XFree86: xc/lib/font/fc/fsio.c,v 3.5 1997/01/18 06:52:29 dawes Exp $ */
+/* $TOG: fsio.c /main/41 1998/05/07 15:15:52 kaleb $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -24,6 +23,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.6 1998/04/05 00:45:44 robin Exp $ */
 /*
  * font server i/o routines
  */
@@ -224,7 +224,7 @@ _fs_setup_connection(conn, servername, timeout, copy_name_p)
 
     alts = 0;
     /* parse alternate list */
-    if (nalts = rep.num_alternates) {
+    if ((nalts = rep.num_alternates)) {
 	setuplength = rep.alternate_len << 2;
 	alts = (FSFpeAltPtr) xalloc(nalts * sizeof(FSFpeAltRec) +
 				    setuplength);
@@ -357,6 +357,7 @@ _fs_reopen_server(conn)
  * expects everything to be here.  *not* to be called when reading huge
  * numbers of replies, but rather to get each chunk
  */
+int
 _fs_read(conn, data, size)
     FSFpePtr    conn;
     char       *data;
@@ -421,6 +422,7 @@ _fs_read(conn, data, size)
     return 0;
 }
 
+int
 _fs_write(conn, data, size)
     FSFpePtr    conn;
     char       *data;
@@ -465,6 +467,7 @@ _fs_write(conn, data, size)
     return 0;
 }
 
+int
 _fs_read_pad(conn, data, len)
     FSFpePtr    conn;
     char       *data;
@@ -482,6 +485,7 @@ _fs_read_pad(conn, data, len)
     return 0;
 }
 
+int
 _fs_write_pad(conn, data, len)
     FSFpePtr    conn;
     char       *data;
@@ -580,10 +584,10 @@ int
 _fs_any_bit_set(mask)
     fd_set* mask;
 {
-    XFD_ANYSET(mask);
+    return XFD_ANYSET(mask);
 }
 
-int
+void
 _fs_or_bits(dst, m1, m2)
     fd_set* dst;
     fd_set* m1;
@@ -608,6 +612,7 @@ _fs_or_bits(dst, m1, m2)
 #endif
 }
 
+int
 _fs_drain_bytes(conn, len)
     FSFpePtr    conn;
     int         len;
@@ -626,6 +631,7 @@ _fs_drain_bytes(conn, len)
     return 0;
 }
 
+void
 _fs_drain_bytes_pad(conn, len)
     FSFpePtr    conn;
     int         len;
@@ -638,6 +644,7 @@ _fs_drain_bytes_pad(conn, len)
     }
 }
 
+void
 _fs_eat_rest_of_error(conn, err)
     FSFpePtr    conn;
     fsError    *err;

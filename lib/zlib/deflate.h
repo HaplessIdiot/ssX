@@ -1,7 +1,7 @@
-/* $TOG: deflate.h /main/3 1997/02/26 17:42:35 kaleb $ */
+/* $TOG: deflate.h /main/4 1998/02/04 14:33:24 kaleb $ */
 
 /* deflate.h -- internal compression state
- * Copyright (C) 1995-1996 Jean-loup Gailly
+ * Copyright (C) 1995-1998 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
@@ -9,8 +9,6 @@
    part of the implementation of the compression library and is
    subject to change. Applications should only use zlib.h.
  */
-
-/* Id: deflate.h /main/3 1997/02/26 17:42:35 kaleb $ */
 
 #ifndef _DEFLATE_H
 #define _DEFLATE_H
@@ -85,6 +83,7 @@ typedef struct internal_state {
     z_streamp strm;      /* pointer back to this zlib stream */
     int   status;        /* as the name implies */
     Bytef *pending_buf;  /* output still pending */
+    ulg   pending_buf_size; /* size of pending_buf */
     Bytef *pending_out;  /* next pending byte to output to the stream */
     int   pending;       /* nb of bytes in the pending buffer */
     int   noheader;      /* suppress zlib header and adler32 */

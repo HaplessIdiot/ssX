@@ -1,15 +1,10 @@
-/* $TOG: patcache.c /main/8 1997/06/12 11:51:59 barstow $ */
+/* $TOG: patcache.c /main/11 1998/05/07 13:54:55 kaleb $ */
 
 /*
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,16 +12,16 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/patcache.c,v 3.0 1996/04/15 11:17:52 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/patcache.c,v 3.1 1997/07/05 15:15:45 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -62,6 +57,28 @@ typedef struct _FontPatternCache {
     FontPatternCacheEntryPtr	free;
 } FontPatternCacheRec;
 
+/* Empty cache (for rehash) */
+void
+EmptyFontPatternCache (cache)
+    FontPatternCachePtr	cache;
+{
+    int	    i;
+    
+    for (i = 0; i < NBUCKETS; i++)
+	cache->buckets[i] = 0;
+    for (i = 0; i < NENTRIES; i++)
+    {
+	cache->entries[i].next = &cache->entries[i+1];
+	cache->entries[i].prev = 0;
+	cache->entries[i].pFont = 0;
+	xfree (cache->entries[i].pattern);
+	cache->entries[i].pattern = 0;
+	cache->entries[i].patlen = 0;
+    }
+    cache->free = &cache->entries[0];
+    cache->entries[NENTRIES - 1].next = 0;
+}
+
 /* Create and initialize cache */
 FontPatternCachePtr
 MakeFontPatternCache ()
@@ -93,7 +110,7 @@ FreeFontPatternCache (cache)
 }
 
 /* compute id for string */
-static
+static int
 Hash (string, len)
     char    *string;
     int	    len;
@@ -106,28 +123,6 @@ Hash (string, len)
     if (hash < 0)
 	hash = -hash;
     return hash;
-}
-
-/* Empty cache (for rehash) */
-void
-EmptyFontPatternCache (cache)
-    FontPatternCachePtr	cache;
-{
-    int	    i;
-    
-    for (i = 0; i < NBUCKETS; i++)
-	cache->buckets[i] = 0;
-    for (i = 0; i < NENTRIES; i++)
-    {
-	cache->entries[i].next = &cache->entries[i+1];
-	cache->entries[i].prev = 0;
-	cache->entries[i].pFont = 0;
-	xfree (cache->entries[i].pattern);
-	cache->entries[i].pattern = 0;
-	cache->entries[i].patlen = 0;
-    }
-    cache->free = &cache->entries[0];
-    cache->entries[NENTRIES - 1].next = 0;
 }
 
 /* add entry */

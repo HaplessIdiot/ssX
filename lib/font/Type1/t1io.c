@@ -1,4 +1,4 @@
-/* $XConsortium: t1io.c,v 1.10 95/06/09 22:29:35 gildea Exp $ */
+/* $TOG: t1io.c /main/12 1998/05/08 08:45:53 kaleb $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -28,7 +28,7 @@
  * SOFTWARE.
  * Author: Carol H. Thompson  IBM Almaden Research Center
  */
-/* $XFree86: xc/lib/font/Type1/t1io.c,v 3.0.8.3 1998/07/05 14:35:57 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1io.c,v 3.3 1998/07/25 06:56:58 dawes Exp $ */
 /*******************************************************************
 *  I/O package for Type 1 font reading
 ********************************************************************/
@@ -200,11 +200,11 @@ F_FILE *T1eexec(f)   /* Initialization */
      of the Adobe Type 1 Font Format book.)  */
  
   /* Skip over any initial white space chars */
-  while (HighHexP[c=getc(f)] == HWHITE_SPACE) ;
+  while (HighHexP[c=_XT1getc(f)] == HWHITE_SPACE) ;
  
   /* If ASCII, the next 7 chars are guaranteed consecutive */
   randomP[0] = c;  /* store first non white space char */
-  fread((pointer)(randomP+1), 1, 3, f);  /* read 3 more, for a total of 4 */
+  T1Read((pointer)(randomP+1), 1, 3, f);  /* read 3 more, for a total of 4 */
   /* store first four chars */
   for (i=0,p=randomP; i<4; i++) {  /* Check 4 valid ASCIIEncode chars */
     if (HighHexP[*p++] > LAST_HDIGIT) {  /* non-ASCII byte */
@@ -213,7 +213,7 @@ F_FILE *T1eexec(f)   /* Initialization */
     }
   }
   if (asc) {  /* ASCII form, convert first eight bytes to binary */
-    fread((pointer)(randomP+4), 1, 4, f);  /* Need four more */
+    T1Read((pointer)(randomP+4), 1, 4, f);  /* Need four more */
     for (i=0,p=randomP; i<4; i++) {  /* Convert */
       H = HighHexP[*p++];
       randomP[i] = H | LowHexP[*p++];
@@ -228,7 +228,7 @@ F_FILE *T1eexec(f)   /* Initialization */
   /* Decrypt the remaining buffered bytes */
   f->b_cnt = T1Decrypt(f->b_ptr, f->b_cnt);
   Decrypt = 1;
-  return (feof(f))?NULL:f;
+  return (T1Feof(f))?NULL:f;
 } /* end eexec */
  
 /* -------------------------------------------------------------- */

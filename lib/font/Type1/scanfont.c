@@ -1,4 +1,4 @@
-/* $TOG: scanfont.c /main/11 1997/06/09 13:27:16 barstow $ */
+/* $TOG: scanfont.c /main/12 1998/05/08 08:45:46 kaleb $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -28,7 +28,7 @@
  * SOFTWARE.
  */
 /* Author: Katherine A. Hitchcock    IBM Almaden Research Laboratory */
-/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.6 1998/07/25 06:56:57 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.7 1998/09/06 04:46:57 dawes Exp $ */
  
 #ifndef FONTMODULE
 #include <string.h>
@@ -877,7 +877,7 @@ static int getNbytes(N)
   if (N > vm_free_bytes()) {
     return(SCAN_OUT_OF_MEMORY);
   }
-  I = fread(tokenStartP,1,N,inputP->data.fileP);
+  I = T1Read(tokenStartP,1,N,inputP->data.fileP);
   if ( I != N )     return(SCAN_FILE_EOF);
   return(SCAN_OK);
 }
@@ -1599,15 +1599,15 @@ int scan_font(FontP)
     filterFile.data.fileP = NULL;
  
     inputP = &inputFile;
-    if (fileP = fopen(filename,filetype)) {
+    if (fileP = T1Open(filename,filetype)) {
       /* get the first byte of file */
-      V = getc(fileP);
+      V = _XT1getc(fileP);
       /* if file starts with x'80' then skip next 5 bytes */
       if ( V == 0X80 ) {
-        for (i=0;i<5;i++) V = getc(fileP);
+        for (i=0;i<5;i++) V = _XT1getc(fileP);
         starthex80 = TRUE;
       }
-      else ungetc(V,fileP);
+      else T1Ungetc(V,fileP);
       objFormatFile(inputP,fileP);
     }
     else {
@@ -1650,7 +1650,7 @@ int scan_font(FontP)
               if (0== strncmp(tokenStartP,"CharStrings",11) ) {
                 rc = BuildCharStrings(FontP);
                 if ( (rc == SCAN_OK) ||(rc == SCAN_END) ) {
-                  fclose(inputP->data.fileP);
+                  T1Close(inputP->data.fileP);
                   /* Build the Blues Structure */
                   rc = GetType1Blues(FontP);
                   /* whatever the return code, return it */
@@ -1688,15 +1688,15 @@ int scan_font(FontP)
             if (0 == strncmp(tokenStartP,"eexec",5) ) {
                /* if file started with x'80', check next 5 bytes */
                if (starthex80) {
-                 V = getc(fileP);
+                 V = _XT1getc(fileP);
                  if ( V == 0X80 ) {
-                   for (i=0;i<5;i++) V = getc(fileP);
+                   for (i=0;i<5;i++) V = _XT1getc(fileP);
                  }
-                 else ungetc(V,fileP);
+                 else T1Ungetc(V,fileP);
                }
                filterFile.data.fileP = T1eexec(inputP->data.fileP);
                if (filterFile.data.fileP == NULL) {
-                 fclose(inputFile.data.fileP);
+                 T1Close(inputFile.data.fileP);
                  return(SCAN_FILE_OPEN_ERROR);
                }
                inputP = &filterFile;
@@ -1708,7 +1708,7 @@ int scan_font(FontP)
  
   }
   while (rc ==0);
-  fclose(inputP->data.fileP);
+  T1Close(inputP->data.fileP);
   if (tokenTooLong) return(SCAN_OUT_OF_MEMORY);
   return(rc);
 }

@@ -1,15 +1,9 @@
-/* $TOG: Xtranssock.c /main/60 1997/10/16 13:03:18 barstow $ */
+/* $TOG: Xtranssock.c /main/61 1998/02/06 15:54:53 kaleb $ */
 /*
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,20 +11,20 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.32 1997/10/25 13:49:58 hohndel Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.33 1997/11/16 06:17:45 dawes Exp $ */
 
-/* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
+/* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
  * All Rights Reserved
  *
@@ -1373,15 +1367,15 @@ else
     {
 	if ((servp = _XGetservbyname (port,"tcp",sparams)) == NULL)
 	{
-	    PRMSG (1,"SocketINETConnect: Can't get service for %s\n",
+	    PRMSG (1,"SocketINETConnect: can't get service for %s\n",
 		  port, 0, 0);
 	    return TRANS_CONNECT_FAILED;
 	}
-	sockname.sin_port = htons(servp->s_port);
+	sockname.sin_port = htons (servp->s_port);
     }
     else
     {
-	tmpport = strtol(port, (char**)NULL, 10);
+	tmpport = strtol (port, (char**)NULL, 10);
 	if (tmpport < 1024 || tmpport > USHRT_MAX)
 	    return TRANS_CONNECT_FAILED;
 	sockname.sin_port = htons (((unsigned short) tmpport));

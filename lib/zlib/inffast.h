@@ -1,7 +1,7 @@
-/* $TOG: inffast.h /main/3 1997/02/26 17:43:15 kaleb $ */
+/* $TOG: inffast.h /main/4 1998/02/04 14:33:53 kaleb $ */
 
 /* inffast.h -- header to use inffast.c
- * Copyright (C) 1995-1996 Mark Adler
+ * Copyright (C) 1995-1998 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
