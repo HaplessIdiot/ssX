@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.19 2001/07/01 02:13:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.20 2001/07/15 01:57:35 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -97,13 +97,22 @@ static NSPortMessage *signalMessage;
 {
     NXEvent ev;
     static BOOL mouse1Pressed = NO;
+    unsigned int adjustedModifiers;
 
     if (!serverRunning)
         return NO;
 
-    if(([anEvent type]==NSKeyDown) && (![anEvent isARepeat]) &&
-       ([anEvent keyCode]==[Preferences keyCode]) &&
-       ([anEvent modifierFlags]==[Preferences modifiers])) {
+    // Check for switch keypress
+    // Ignore caps lock iff the swich key preference does not use caps lock.
+    if ([Preferences modifiers] & NSAlphaShiftKeyMask) {
+        adjustedModifiers = [anEvent modifierFlags];
+    } else {
+        adjustedModifiers = [anEvent modifierFlags] & ~NSAlphaShiftKeyMask;
+    }
+    if (([anEvent type] == NSKeyDown) && (![anEvent isARepeat]) &&
+        ([anEvent keyCode] == [Preferences keyCode]) &&
+        (adjustedModifiers == [Preferences modifiers]))
+    {
         [self toggle];
         return YES;
     }
@@ -217,7 +226,7 @@ static NSPortMessage *signalMessage;
         sigprocmask(SIG_BLOCK, &set, NULL);
     }
 
-    if (quartzRootless = -1) {
+    if (quartzRootless == -1) {
         // The display mode was not set from the command line.
         // Show mode pick panel?
         if ([Preferences modeWindow]) {

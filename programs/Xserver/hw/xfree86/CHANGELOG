@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 130. Make XDarwin ignore Caps Lock when checking for VT switch, except when
+      the user's switch key preference includes Caps Lock (Gregory Parker).
  129. Update XDarwin Cocoa UI and preferences for rootless mode. Add more
       explicit error message for users trying to run in Quartz modes without
       Quartz support. Remove unneeded info.nib files (Torrey T. Lyons).
@@ -13545,4 +13547,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1872 2001/07/14 19:38:27 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1873 2001/07/15 01:57:33 torrey Exp $
