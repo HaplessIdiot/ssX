@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.9 2003/04/30 23:15:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.10 2003/08/12 23:47:10 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -61,10 +61,9 @@
     IBOutlet NSPanel *switchWindow;
 
     // Menu elements setable by Apple-WM extension
-    NSMenu *windowMenu;
-    NSMenuItem *windowSeparator;
-    NSMenu *dockMenu;
-    NSMenuItem *dockSeparator;
+    IBOutlet NSMenu *windowMenu;
+    IBOutlet NSMenuItem *windowSeparator;
+    IBOutlet NSMenu *dockMenu;
     int checkedWindowItem;
 }
 
@@ -89,8 +88,9 @@
 - (void)sendXEvent:(xEvent *)xe;
 - (void)sendShowHide:(BOOL)show;
 - (void)clientProcessDone:(int)clientStatus;
-- (void)setWindowMenu:(NSArray *)list;
-- (void)setWindowMenuCheck:(NSNumber *)nn;
+- (void)itemSelected:sender;
+- (void)setX11WindowList:(NSArray *)list;
+- (void)setX11WindowCheck:(NSNumber *)nn;
 
 // Aqua interface actions
 - (IBAction)startFullScreen:(id)sender;

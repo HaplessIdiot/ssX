@@ -49,6 +49,7 @@
             CLASS = XServer; 
             LANGUAGE = ObjC; 
             OUTLETS = {
+                dockMenu = NSMenu; 
                 helpWindow = NSWindow; 
                 modeWindow = NSWindow; 
                 startFullScreenButton = NSButton; 
@@ -56,6 +57,8 @@
                 startupHelpButton = NSButton; 
                 startupModeButton = NSButton; 
                 switchWindow = NSPanel; 
+                windowMenu = NSMenu; 
+                windowSeparator = NSMenuItem; 
             }; 
             SUPERCLASS = NSObject; 
         }
