@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.21 1998/07/25 16:56:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.22 1998/07/26 09:56:19 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -479,7 +479,7 @@ xf86DisableIO()
 #endif /* USE_I386_IOPL */
 
 
-#ifdef USE_ARC_MMAP || defined(__arm32__)
+#if defined(USE_ARC_MMAP) || defined(__arm32__)
 
 void
 xf86EnableIO()
