@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.29 2001/05/07 21:59:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.30 2001/06/16 21:57:42 mvojkovi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -661,10 +661,12 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
   RegionRec WinRegion;
   RegionRec ClipRegion;
   BoxRec WinBox;
-  ScreenPtr pScreen = portPriv->pDraw->pScreen;
+  ScreenPtr pScreen;
   int ret = Success;
   Bool clippedAway = FALSE;
 
+  /* Hack to avoid "unused variable `pScreen'" warnings. */
+  portPriv->pDraw->pScreen = pScreen = portPriv->pDraw->pScreen;
   xf86XVUpdateCompositeClip(portPriv);
 
   /* translate the video region to the screen */
@@ -723,9 +725,12 @@ xf86XVReputVideo(XvPortRecPrivatePtr portPriv)
   RegionRec WinRegion;
   RegionRec ClipRegion;
   BoxRec WinBox;
-  ScreenPtr pScreen = portPriv->pDraw->pScreen;
+  ScreenPtr pScreen;
   int ret = Success;
   Bool clippedAway = FALSE;
+
+  /* Hack to avoid "unused variable `pScreen'" warnings. */
+  portPriv->pDraw->pScreen = pScreen = portPriv->pDraw->pScreen;
 
   xf86XVUpdateCompositeClip(portPriv);
 
@@ -810,9 +815,12 @@ xf86XVReputImage(XvPortRecPrivatePtr portPriv)
   RegionRec WinRegion;
   RegionRec ClipRegion;
   BoxRec WinBox;
-  ScreenPtr pScreen = portPriv->pDraw->pScreen;
+  ScreenPtr pScreen;
   int ret = Success;
   Bool clippedAway = FALSE;
+
+  /* Hack to avoid "unused variable `pScreen'" warnings. */
+  portPriv->pDraw->pScreen = pScreen = portPriv->pDraw->pScreen;
 
   xf86XVUpdateCompositeClip(portPriv);
 
@@ -1368,7 +1376,7 @@ xf86XVPutStill(
    CARD16 drw_w, CARD16 drw_h
 ){
   XvPortRecPrivatePtr portPriv = (XvPortRecPrivatePtr)(pPort->devPriv.ptr);
-  ScreenPtr pScreen = pDraw->pScreen;
+  ScreenPtr pScreen;
   RegionRec WinRegion;
   RegionRec ClipRegion;
   BoxRec WinBox;
@@ -1379,6 +1387,9 @@ xf86XVPutStill(
       return BadAlloc;
 
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
+
+  /* Hack to avoid "unused variable `pScreen'" warnings. */
+  pDraw->pScreen = pScreen = pDraw->pScreen;
 
   WinBox.x1 = pDraw->x + drw_x;
   WinBox.y1 = pDraw->y + drw_y;
@@ -1519,7 +1530,7 @@ xf86XVGetStill(
    CARD16 drw_w, CARD16 drw_h
 ){
   XvPortRecPrivatePtr portPriv = (XvPortRecPrivatePtr)(pPort->devPriv.ptr);
-  ScreenPtr pScreen = pDraw->pScreen;
+  ScreenPtr pScreen;
   RegionRec WinRegion;
   RegionRec ClipRegion;
   BoxRec WinBox;
@@ -1530,6 +1541,9 @@ xf86XVGetStill(
       return BadAlloc;
 
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
+
+  /* Hack to avoid "unused variable `pScreen'" warnings. */
+  pDraw->pScreen = pScreen = pDraw->pScreen;
 
   WinBox.x1 = pDraw->x + drw_x;
   WinBox.y1 = pDraw->y + drw_y;
@@ -1664,7 +1678,7 @@ xf86XVPutImage(
    CARD16 width, CARD16 height
 ){
   XvPortRecPrivatePtr portPriv = (XvPortRecPrivatePtr)(pPort->devPriv.ptr);
-  ScreenPtr pScreen = pDraw->pScreen;
+  ScreenPtr pScreen;
   RegionRec WinRegion;
   RegionRec ClipRegion;
   BoxRec WinBox;
@@ -1675,6 +1689,9 @@ xf86XVPutImage(
       return BadAlloc;
 
   if(!portPriv->pScrn->vtSema) return Success; /* Success ? */
+
+  /* Hack to avoid "unused variable `pScreen'" warnings. */
+  pDraw->pScreen = pScreen = pDraw->pScreen;
 
   WinBox.x1 = pDraw->x + drw_x;
   WinBox.y1 = pDraw->y + drw_y;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.18 2001/01/17 19:43:29 dawes Exp $
+XCOMM $XFree86: xc/lib/fontenc/Imakefile,v 1.1 2001/08/13 21:46:48 dawes Exp $
 
    INCLUDES = -I$(FONTINCSRC) -I$(FONTLIBSRC)/include -I$(FONTLIBSRC)/fontfile \
 	      -I$(XTOP)/include
@@ -11,12 +11,14 @@ FONTENCDEFS = -DFONTENC_NO_LIBFONT \
        SRCS = fontenc.c encparse.c
        OBJS = fontenc.o encparse.o
 
-#define DoNormalLib YES
-#define DoSharedLib NO
-#define DoDebugLib NO
-#define DoProfileLib NO
+#define DoNormalLib NormalLibFontEnc
+#define DoSharedLib SharedLibFontEnc
+#define DoDebugLib DebugLibFontEnc
+#define DoProfileLib ProfileLibFontEnc
 #define LibName fontenc
 #define LibHeaders NO
+#define SoRev SOFONTENCREV
+
 #include <Library.tmpl>
 
 LinkSourceFile(fontenc.c,$(FONTLIBSRC)/fontfile)

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.14 2000/11/14 16:54:45 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.15 2001/08/13 21:46:47 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -187,8 +187,8 @@ gettoken(FontFilePtr f, int c, int *cp)
     } else if(c >= '0' && c <= '9') {
         number_value = getnum(f,c,cp);
         return NUMBER_TOKEN;
-    } else if(c >= 'A' && c <= 'Z' ||
-              c >= 'a' && c <= 'z' ||
+    } else if((c >= 'A' && c <= 'Z') ||
+              (c >= 'a' && c <= 'z') ||
               c == '/' || c == '_' || c == '-' || c == '.') {
         p = keyword_value;
         *p++ = c;

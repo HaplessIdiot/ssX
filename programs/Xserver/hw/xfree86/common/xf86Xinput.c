@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.63 2001/04/01 14:00:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.64 2001/06/20 19:07:58 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -52,6 +52,7 @@
 #include "exevents.h"	/* AddInputDevice */
 #include "exglobals.h"
 
+#define EXTENSION_PROC_ARGS void *
 #include "extnsionst.h"
 #include "extinit.h"	/* LookupDeviceIntRec */
 
@@ -87,12 +88,6 @@ static int      debug_level = 0;
  * macros
  *****************************************************************************/
 #define ENQUEUE(e) xf86eqEnqueue((e))
-
-/******************************************************************************
- * Global variables
- *****************************************************************************/
-static LocalDevicePtr	switch_device = NULL;
-extern DeviceAssocRec	switch_assoc;
 
 /***********************************************************************
  *
@@ -445,11 +440,6 @@ ChangePointerDevice (
     axes_changed = FALSE;
    *************************************************************************/
 
-  /* Return failure if we try with the Switch device */
-  if (switch_device && new_dev == switch_device->dev) {
-    return !Success;
-  }
-  
   /*
    * We don't allow axis swap or other exotic features.
    */
@@ -865,22 +855,18 @@ xf86PostMotionEvent(DeviceIntPtr	device,
     int				oldaxis[6];
     int				*axisvals;
     AxisInfoPtr			axes;
-    int				dx, dy;
+    int				dx = 0, dy = 0;
     float			mult;
     int				x, y;
     int				loop_start;
     int				i;
     int				num;
     
-    DBG(5, ErrorF("xf86PostMotionEvent BEGIN 0x%x(%s) switch=0x%x is_core=%s is_shared=%s is_absolute=%s\n",
-		  device, device->name, switch_device,
+    DBG(5, ErrorF("xf86PostMotionEvent BEGIN 0x%x(%s) is_core=%s is_shared=%s is_absolute=%s\n",
+		  device, device->name,
 		  is_core ? "True" : "False",
 		  is_shared ? "True" : "False",
 		  is_absolute ? "True" : "False"));
-    
-    if (is_core || is_shared) {
-      xf86SwitchCoreDevice(switch_device, device);
-    }
     
     xf86Info.lastEventTime = xev->time = current = GetTimeInMillis();
     
@@ -1007,7 +993,8 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 	    /*
 	     * Deliver core event
 	     */
-	    if (is_core || is_shared && num_valuators >= 2 && loop_start == 0) {
+	    if (is_core ||
+		(is_shared && num_valuators >= 2 && loop_start == 0)) {
 #ifdef XFreeXDGA
 		/*
 		 * Let DGA peek at the event and steal it
@@ -1053,8 +1040,8 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 	if (local->last == local->first)
 	    local->first = (local->first + 1) % device->valuator->numMotionEvents;
     }
-    DBG(5, ErrorF("xf86PostMotionEvent END   0x%x(%s) switch=0x%x is_core=%s is_shared=%s\n",
-		  device, device->name, switch_device,
+    DBG(5, ErrorF("xf86PostMotionEvent END   0x%x(%s) is_core=%s is_shared=%s\n",
+		  device, device->name,
 		  is_core ? "True" : "False",
 		  is_shared ? "True" : "False"));
 }
@@ -1189,10 +1176,6 @@ xf86PostButtonEvent(DeviceIntPtr	device,
     if (num_valuators && (!val || (first_valuator + num_valuators > val->numAxes))) {
 	ErrorF("Bad valuators reported for device \"%s\"\n", device->name);
 	return;
-    }
-
-    if (is_core || is_shared) {
-	xf86SwitchCoreDevice(switch_device, device);
     }
 
     if (!is_core) {

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.122 2001/08/13 19:34:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.123 2001/08/13 21:46:43 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -288,6 +288,19 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildFontEncLib
 #define BuildFontEncLib		BuildLibraries
+#endif
+/*
+ * This enables binary compatibility with the older (XFree86 <= 4.1) fontenc
+ * entry points in the Xfont library (and X server).  If this is turned off,
+ * then SharedFontRev should have it's major revision bumped, and the
+ * XFree86 font module ABI (in xfree86/common/xf86Module.h) should have it's
+ * major revision bumped.
+ *
+ * Note: this does not enable those older functions in the separate libfontenc
+ * library (which didn't exist previously).
+ */
+#ifndef FontencCompatibility
+#define FontencCompatibility	YES
 #endif
 #ifndef BuildLowMem
 #define BuildLowMem		NO
@@ -1376,9 +1389,9 @@ XCOMM X Window System make variables; these need to be coordinated with rules
      UCSMAPPREFIX = $(FONTDIR)/util/map-
 #else
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
-            FONTC = $(CLIENTENVSETUP) $(XBUILDBINDIR)/bdftopcf
-        MKFONTDIR = $(CLIENTENVSETUP) $(XBUILDBINDIR)/mkfontdir
-         XFTCACHE = $(CLIENTENVSETUP) XFT_CONFIG=$(XFTLIBSRC)/XftConfig $(XBUILDBINDIR)/xftcache
+            FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
+        MKFONTDIR = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/mkfontdir
+         XFTCACHE = $(CLIENTENVSETUP) $(PRELOADSETUP) XFT_CONFIG=$(XFTLIBSRC)/XftConfig $(XBUILDBINDIR)/xftcache
 #if HasPerl
       MKHTMLINDEX = RunPerlScript($(CONFIGSRC)/util/mkhtmlindex.pl,)
 #else
@@ -1442,6 +1455,13 @@ XCOMM X Window System make variables; these need to be coordinated with rules
    CLIENTENVSETUP = BuildLibPathVar=BuildLibPath
 #else
    CLIENTENVSETUP = 
+#endif
+
+#ifdef PreloadSetup
+     PRELOADSETUP = PreloadSetup
+#endif
+#ifdef PreloadFontSetup
+ PRELOADFONTSETUP = PreloadFontSetup
 #endif
 
 #ifndef ShLibIncludeFile
@@ -2419,7 +2439,7 @@ ProjectUnsharedLibReferences(FS,FS,$(FSLIBSRC),XBuildLibDir)
          FONTLIBSRC = $(LIBSRC)/font
 #if SharedLibFont
 #ifndef SharedFontRev
-#define SharedFontRev 1.3
+#define SharedFontRev 1.4
 #endif
 SharedFontLibReferences()
 XCOMM SharedLibReferences(XFONT,Xfont,$(FONTLIBSRC),SOFONTREV,SharedFontRev)
@@ -2432,6 +2452,29 @@ XCOMM ProjectUnsharedLibReferences(XFONT,Xfont,$(FONTLIBSRC),XBuildLibDir)
 ProjectUnsharedLibReferences(FONTSTUB,fntstubs,$(FONTSUBLIBSRC),XBuildLibDir)
          DEPFONTLIB = $(DEPXFONTLIB) $(DEPFONTSTUBLIB)
             FONTLIB = $(XFONTLIB) $(FONTSTUBLIB)
+
+
+#ifndef SharedLibFontEnc
+#define SharedLibFontEnc	NO
+#endif
+#ifndef NormalLibFontEnc
+#define NormalLibFontEnc (!SharedLibFont | ForceNormalLib)
+#endif
+#ifndef DebugLibFontEnc
+#define DebugLibFontEnc		NO	/* debugged fontenc library */
+#endif
+#ifndef ProfileLibFontEnc
+#define ProfileLibFontEnc	NO	/* profiled fontenc library */
+#endif
+         FONTENCLIBSRC = $(LIBSRC)/fontenc
+#if SharedLibFontEnc
+#ifndef SharedFontEncRev
+#define SharedFontEncRev 1.0
+#endif
+SharedLibReferences(XFONTENC,fontenc,$(FONTENCLIBSRC),SOFONTENCREV,SharedFontEncRev)
+#else
+ProjectUnsharedLibReferences(XFONTENC,fontenc,$(FONTENCLIBSRC),XBuildLibDir)
+#endif
 
 #ifndef SharedLibXpm
 #define SharedLibXpm HasSharedLibraries
@@ -2578,7 +2621,7 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
      XKBCOMPCMD = $(BINDIR)/XkbComp
 #else
      XKBCOMPSRC = $(PROGRAMSRC)/XkbComp
-     XKBCOMPCMD = $(CLIENTENVSETUP) $(XBUILDBINDIR)/XkbComp
+     XKBCOMPCMD = $(CLIENTENVSETUP) $(PRELOADSETUP) $(XBUILDBINDIR)/XkbComp
 #endif
 #else /* !BuildXKBlib */
 #ifndef XkbClientDepLibs
@@ -2878,7 +2921,7 @@ encodings.dir: deplist							@@\
 	@(E=; for i in dirlist; do \					@@\
 	   E="$$E -e $$i"; done; \					@@\
 	 set -x; \							@@\
-	 RunProgram(MKFONTDIR, -r -p inst/ $$E .))			@@\
+	 RunProgram(MKFONTDIR, -n -r -p inst/ $$E .))			@@\
 									@@\
 clean::									@@\
 	RemoveFiles(fonts.dir encodings.dir)

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.371 2001/08/12 22:48:43 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.372 2001/08/13 21:46:43 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1267,10 +1267,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #ifndef GzipFontCompression
 # define GzipFontCompression	YES
-#endif
-
-#ifndef FontencCompatibility
-# define FontencCompatibility   NO
 #endif
 
 /* Disable stripping installed programs for this release. */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.112 2001/08/08 14:22:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.113 2001/08/15 16:25:21 paulo Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -31,12 +31,12 @@
 
 #include "compiler.h"
 
+#include "Xpoll.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #define XF86_OS_PRIVS
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
-#include "Xpoll.h"
 
 
 #ifdef XFreeXDGA
@@ -431,7 +431,9 @@ xf86PostKbdEvent(unsigned key)
 
   specialkey = scanCode;
 
+#ifdef __linux__
 customkeycodes:
+#endif
   if (xf86IsPc98()) {
     switch (scanCode) {
       case 0x0e: specialkey = 0x0e; break; /* KEY_BackSpace */

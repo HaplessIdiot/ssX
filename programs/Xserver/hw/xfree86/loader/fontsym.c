@@ -1,9 +1,12 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.6 2000/02/13 06:15:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/fontsym.c,v 1.7 2001/08/13 21:46:51 dawes Exp $ */
 
 #include "font.h"
 #include "sym.h"
 #include "fntfilst.h"
 #include "fontenc.h"
+#ifdef FONTENC_COMPATIBILITY
+#include "fontencc.h"
+#endif
 #include "fntfilio.h"
 #include "fntfil.h"
 #include "fontutil.h"

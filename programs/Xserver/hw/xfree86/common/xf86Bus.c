@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.63 2001/06/02 15:21:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.64 2001/06/03 05:24:46 tsi Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -615,7 +615,7 @@ xf86AccessLeaveState(void)
  * xf86AccessRestoreState() - Restore the access registers to the
  * state before X was started. This is handy for framebuffers.
  */
-void 
+static void 
 xf86AccessRestoreState(void)
 {
     if (!xf86ResAccessEnter)
@@ -1678,6 +1678,8 @@ xf86GetResourcesImplicitly(int entityIndex)
 	return NULL;
     case BUS_PCI:
 	return GetImplicitPciResources(entityIndex);
+    case BUS_last:
+	return NULL;
     }
     return NULL;
 }

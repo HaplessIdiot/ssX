@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.244 2001/08/15 08:54:59 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.245 2001/08/15 16:25:21 paulo Exp $ */
 
 
 /*
@@ -1079,7 +1079,7 @@ configInputKbd(IDevPtr inputp)
   if (noXkbExtension)
     xf86Msg(from, "XKB: disabled\n");
 
-#define NULL_IF_EMPTY(s) (s[0] ? s : (xfree(s), NULL))
+#define NULL_IF_EMPTY(s) (s[0] ? s : (xfree(s), (char *)NULL))
 
   if (!noXkbExtension && !XkbInitialMap) {
     if ((s = xf86SetStrOption(inputp->commonOptions, "XkbKeymap", NULL))) {

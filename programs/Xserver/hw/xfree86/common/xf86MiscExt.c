@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.6 2000/08/04 16:13:25 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.7 2001/08/15 16:25:21 paulo Exp $ */
 
 /*
  * This file contains the Pointer/Keyboard functions needed by the 
@@ -25,8 +25,6 @@
 #ifdef XINPUT
 #include "XI.h"
 #include "XIproto.h"
-#include "extnsionst.h"
-#include "extinit.h"
 #include "xf86Xinput.h"
 #else
 #include "inputstr.h"
@@ -204,6 +202,8 @@ MiscExtSetMouseValue(pointer mouse, MiscExtMseValType valtype, int value)
     return FALSE;
 }
 
+/* The misc extension doesn't (yet) call this. */
+#if 0
 Bool
 MiscExtSetMouseDevice(pointer mouse, char* device)
 {
@@ -212,6 +212,7 @@ MiscExtSetMouseDevice(pointer mouse, char* device)
     mse->device = device;
     return TRUE;
 }
+#endif
                                                                                
 Bool
 MiscExtGetKbdSettings(pointer *kbd)
