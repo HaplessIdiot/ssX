@@ -1,4 +1,6 @@
 XFree86 4.4.99.3 (xx March 2004)
+  51. Change crosscompile default for PreIncDir & StdIncDir (#5725,
+      Alexander Gottwald, Harold L Hunt II).
   50. Differentiate left and right modifier keys on Mac OS X 10.3
       (Kaleb Keithley).
   49. Warning fixes (#6190, Peter Breitenlohner).
@@ -18782,7 +18784,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3199 2004/03/31 16:37:08 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3200 2004/03/31 22:29:08 torrey Exp $
 
 
 
