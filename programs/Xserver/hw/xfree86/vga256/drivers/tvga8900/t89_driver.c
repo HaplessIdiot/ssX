@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.20 1996/01/12 14:38:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.21 1996/01/13 12:22:20 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1260,7 +1260,9 @@ TVGA8900Restore(restore)
 
 		if (TVGAchipset >= TGUI9440AGi)
 		{
-			outw(vgaIOBase + 4, ((restore->PixelBusReg) << 8) | 0x38);
+			if (vgaBitsPerPixel > 8)
+				outw(vgaIOBase + 4, 
+					((restore->PixelBusReg) << 8) | 0x38);
 #if 0
 			outw(vgaIOBase + 4, ((restore->GraphEngReg) << 8) | 0x36);
 #endif
@@ -1433,8 +1435,11 @@ TVGA8900Save(save)
 
 		if (TVGAchipset >= TGUI9440AGi)
 		{
-			outb(vgaIOBase + 4, 0x38); 
-			save->PixelBusReg = inb(vgaIOBase + 5);
+			if (vgaBitsPerPixel > 8)
+			{
+				outb(vgaIOBase + 4, 0x38); 
+				save->PixelBusReg = inb(vgaIOBase + 5);
+			}
 #if 0
 			outb(vgaIOBase + 4, 0x36); 
 			save->GraphEngReg = inb(vgaIOBase + 5);
