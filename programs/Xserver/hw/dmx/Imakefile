@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.6tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.7 2005/02/01 18:08:51 tsi Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -12,6 +12,8 @@ GLX_SRCS = dmx_glxvisuals.c $(PANORAMIX_SRCS)
 GLX_OBJS = dmx_glxvisuals.o $(PANORAMIX_OBJS)
 DMX_GLX_DEFINES = $(GLX_DEFINES) -DGLXPROXY
 GLXPROXY_SUBDIR = glxProxy
+#else
+DMX_GLX_DEFINES = -UGLXEXT
 #endif
 
 #define IHaveSubdirs
