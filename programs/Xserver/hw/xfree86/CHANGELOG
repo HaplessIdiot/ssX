@@ -19,7 +19,8 @@ XFree86 4.1.99.2 (xx October 2001)
       memory (Marc La France).
  392. Add doc for Solaris, but don't format it yet (Marc La France).
  391. Normalise driver names (Marc La France).
- 390. For SPARCs, disable DGA support in ATI driver (Marc La France).
+ 390. For SPARCs, disable DGA support in ATI driver
+      (from #4650, David S. Miller).
  389. Clean up some debugging messages (Marc La France).
  388. Fix newport driver for when a /proc fs isn't mounted (Marc La France).
  387. Fix DAC handling bugs in s3 driver (Marc La France).
@@ -14043,4 +14044,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2001 2001/10/26 06:13:56 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2002 2001/10/28 03:33:13 tsi Exp $
