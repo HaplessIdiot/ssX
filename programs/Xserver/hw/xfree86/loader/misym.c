@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.24 1999/12/27 02:22:36 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.26 2000/01/02 21:02:48 alanh Exp $ */
 
 /*
  *
@@ -144,6 +144,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miCreateDefColormap)
    SYMFUNC(miClearVisualTypes)
    SYMFUNC(miSetVisualTypes)
+   SYMFUNC(miSetVisualTypesAndMasks)
    SYMFUNC(miGetDefaultVisualMask)
    SYMFUNC(miInitVisuals)
    SYMFUNC(miWindowExposures)

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.41 1999/12/30 02:06:00 robin Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.42 2000/01/24 22:21:59 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_124">Patch #124 - 2000/1/27 - XFree86 3.9.17b</A>
 <LI><A HREF="#xterm_123">Patch #123 - 2000/1/22 - XFree86 3.9.17a</A>
 <LI><A HREF="#xterm_122">Patch #122 - 1999/12/28 - XFree86 3.9.16f</A>
 <LI><A HREF="#xterm_121">Patch #121 - 1999/11/14 - XFree86 3.9.16c</A>
@@ -167,7 +168,38 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_123">Patch #123 - 1999/1/22 - XFree86 3.9.17a</A></H1>
+<H1><A NAME="xterm_124">Patch #124 - 2000/1/27 - XFree86 3.9.17b</A></H1>
+<ul>
+	<li>change coding of editing keypad's "Delete" key to
+	  &lt;escape&gt;[3~, in the default (Sun/PC) keyboard mode.
+	  This makes the terminfo kdch1 capability independent of the
+	  coding of the backarrow key, which sends either backspace (8)
+	  or DEL (127).  The reason for doing this (compatibility with
+	  the <em>screen</em> program) outweighs the choice of DEL (127)
+	  which was used in X11R5/X11R6 xterms.  The <em>screen</em>
+	  program translates whatever matches kdch1 into &lt;escape&gt;[3~,
+	  even if it happens to be the stty erase character.
+
+	<li>add encoding for control/?, to work around xmodmap or key
+	  translations which may confuse backspace and delete.  A control/? 
+	  will send DEL (127), and a control/H will of course send backspace
+	  (8).
+
+	<li>add encoding for kcbt to &lt;escape&gt;[Z (fixes Debian #54840).
+
+	<li>minor correction to logic that encodes Sun and DEC function keys
+	  to avoid sending an escape sequence if the key symbol is not found
+	  in xterm's lookup table.
+
+	<li>simplify ifdef's in main.c for POSIX VDISABLE so the "^-" pattern
+	  is more likely to be implemented when <em>imake</em> configures xterm
+	  (fixes Debian #55105).
+
+	<li>change manpage to make it clearer what codes are sent by the
+	  backarrow key.
+</ul>
+
+<H1><A NAME="xterm_123">Patch #123 - 2000/1/22 - XFree86 3.9.17a</A></H1>
 <ul>
 	<li>add a note reserving OSC 51 for use in Emacs shell (request by
 	  Rob Myoff &lt;mayoff@dqd.com&gt;).

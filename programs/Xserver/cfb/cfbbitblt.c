@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.7 1999/10/13 04:20:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.8 2000/01/21 01:11:54 dawes Exp $ */
 
 /*
 
@@ -1072,6 +1072,8 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     extern RegionPtr    miHandleExposures();
     void		(*doBitBlt)();
 
+#if IMAGE_BYTE_ORDER == LSBFirst
+
     if (pSrcDrawable->bitsPerPixel == 1 && pDstDrawable->bitsPerPixel == PSZ)
     {
     	if (bitPlane == 1)
@@ -1151,6 +1153,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 				 dstx, dsty, bitPlane);
     }
     else
+#endif
 	ret = miCopyPlane (pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
     return ret;

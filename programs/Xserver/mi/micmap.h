@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/micmap.h,v 1.4 1999/04/11 13:11:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.h,v 1.5 1999/06/14 07:32:11 dawes Exp $ */
 
 #include "colormapst.h"
 
@@ -24,6 +24,9 @@ int miExpandDirectColors(ColormapPtr, int, xColorItem *, xColorItem *);
 Bool miCreateDefColormap(ScreenPtr);
 void miClearVisualTypes(void);
 Bool miSetVisualTypes(int, int, int, int);
+Bool miSetVisualTypesAndMasks(int depth, int visuals, int bitsPerRGB, 
+			      int preferredCVC,
+			      Pixel redMask, Pixel greenMask, Pixel blueMask);
 int miGetDefaultVisualMask(int);
 Bool miInitVisuals(VisualPtr *, DepthPtr *, int *, int *, int *, VisualID *,
 			unsigned long, int, int);

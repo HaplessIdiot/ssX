@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.12 1999/02/07 06:18:13 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.13 1999/05/09 10:50:26 dawes Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -893,7 +893,7 @@ typedef void (*BeforeFlushType)(
 #if NeedFunctionPrototypes
     Display*	/* display */,
     XExtCodes*	/* codes */,
-    char*	/* data */,
+    _Xconst char* /* data */,
     long	/* len */
 #endif
 );
@@ -1320,14 +1320,14 @@ extern void (*XESetBeforeFlush(
 #if NeedNestedPrototypes
 	       Display*			/* display */,
 	       XExtCodes*		/* codes */,
-	       char*			/* data */,
+	       _Xconst char*		/* data */,
 	       long			/* len */
 #endif
             )		/* proc */   
 #endif
 ))(
 #if NeedNestedPrototypes
-    Display*, XExtCodes*, char*, long
+    Display*, XExtCodes*, _Xconst char*, long
 #endif
 );
 

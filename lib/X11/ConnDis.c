@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.15 1999/01/12 06:24:14 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.16 1999/05/09 10:49:06 dawes Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -458,8 +458,6 @@ XtransConnInfo	trans_conn;
 
 
 
-static int padlength[4] = {0, 3, 2, 1};	 /* make sure auth is multiple of 4 */
-
 Bool
 _XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
      Display *dpy;
@@ -485,12 +483,12 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
      */
     if (auth_length > 0) {
 	add_to_iov (auth_proto, auth_length);
-	pad = padlength [auth_length & 3];
+	pad = -auth_length & 3; /* pad auth_length to a multiple of 4 */
 	if (pad) add_to_iov (padbuf, pad);
     }
     if (auth_strlen > 0) {
 	add_to_iov (auth_string, auth_strlen);
-	pad = padlength [auth_strlen & 3];
+	pad = -auth_strlen & 3; /* pad auth_strlen to a multiple of 4 */
 	if (pad) add_to_iov (padbuf, pad);
     }
 
@@ -571,7 +569,7 @@ static char *default_xauth_names[] = {
     "MIT-MAGIC-COOKIE-1"
 };
 
-static int default_xauth_lengths[] = {
+static _Xconst int default_xauth_lengths[] = {
 #ifdef K5AUTH
     14,     /* strlen ("MIT-KERBEROS-5") */
 #endif
@@ -587,7 +585,7 @@ static int default_xauth_lengths[] = {
 #define NUM_DEFAULT_AUTH    (sizeof (default_xauth_names) / sizeof (default_xauth_names[0]))
     
 static char **xauth_names = default_xauth_names;
-static int  *xauth_lengths = default_xauth_lengths;
+static _Xconst int  *xauth_lengths = default_xauth_lengths;
 
 static int  xauth_names_length = NUM_DEFAULT_AUTH;
 

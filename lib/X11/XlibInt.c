@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.17 1999/05/09 10:50:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.18 1999/12/27 00:39:22 robin Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -175,10 +175,6 @@ static void _XProcessInternalConnection();
  * return anything.  Whenever possible routines that create objects return
  * the object they have created.
  */
-
-static int padlength[4] = {0, 3, 2, 1};
-    /* lookup table for adding padding bytes to data that is read from
-    	or written to the X socket.  */
 
 static xReq _dummy_request = {
 	0, 0, 0
@@ -1230,7 +1226,7 @@ void _XReadPad (dpy, data, size)
 	 * whatever is needed.
 	 */
 
-	iov[1].iov_len = padlength[size & 3];
+	iov[1].iov_len = -size & 3;
 	iov[1].iov_base = pad;
 	size += iov[1].iov_len;
 #ifdef XTHREADS
@@ -1301,7 +1297,7 @@ _XSend (dpy, data, size)
 #endif
 {
 	struct iovec iov[3];
-	static char pad[3] = {0, 0, 0};
+	static char const pad[3] = {0, 0, 0};
            /* XText8 and XText16 require that the padding bytes be zero! */
 
 	long skip, dbufsize, padsize, total, todo;
@@ -1314,7 +1310,7 @@ _XSend (dpy, data, size)
 	/* make sure no one else can put in data */
 	dpy->bufptr = dpy->bufmax;
 #endif
-	padsize = padlength[size & 3];
+	padsize = -size & 3;
 	for (ext = dpy->flushes; ext; ext = ext->next_flush) {
 	    (*ext->before_flush)(dpy, &ext->codes, dpy->buffer, dbufsize);
 	    (*ext->before_flush)(dpy, &ext->codes, (char *)data, size);
@@ -1369,7 +1365,7 @@ _XSend (dpy, data, size)
 
 	    InsertIOV (dpy->buffer, dbufsize)
 	    InsertIOV ((char *)data, size)
-	    InsertIOV (pad, padsize)
+	    InsertIOV ((char *)pad, padsize)
     
 	    ESET(0);
 	    if ((len = _X11TransWritev(dpy->trans_conn, iov, i)) >= 0) {

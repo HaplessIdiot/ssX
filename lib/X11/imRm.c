@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRm.c,v 3.6 1999/04/28 15:04:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imRm.c,v 3.7 1999/05/09 10:50:36 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -266,7 +266,7 @@ static char *supported_local_ic_values_list[] = {
     (char *)NULL
 };
 
-static XIMStyle supported_local_styles[] = {
+static XIMStyle const supported_local_styles[] = {
     XIMPreeditNone	| XIMStatusNone,
     XIMPreeditNothing	| XIMStatusNothing,
     0						/* dummy */

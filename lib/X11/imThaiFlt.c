@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.1 1998/10/03 08:41:36 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.2 1999/05/09 10:50:37 dawes Exp $ */
 
 /*
 **++ 
@@ -82,7 +82,7 @@ extern int _Xlcmbstowcs();
 /* character classification table */
 #define TACTIS_CHARS 256
 Private
-char tactis_chtype[TACTIS_CHARS] = {
+char const tactis_chtype[TACTIS_CHARS] = {
     CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL,  /*  0 -  7 */
     CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL,  /*  8 - 15 */
     CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL,  /* 16 - 23 */
@@ -128,7 +128,7 @@ char tactis_chtype[TACTIS_CHARS] = {
 #define CH_CLASSES      17  /* 17 classes of chars */
 
 Private
-char write_rules_lookup[CH_CLASSES][CH_CLASSES] = {
+char const write_rules_lookup[CH_CLASSES][CH_CLASSES] = {
         /* Table 0: writing/outputing rules */
         /* row: leading char,  column: following char */
 /* CTRL NON CONS LV FV1 FV2 FV3 BV1 BV2 BD TONE AD1 AD2 AD3 AV1 AV2 AV3 */
@@ -152,7 +152,7 @@ char write_rules_lookup[CH_CLASSES][CH_CLASSES] = {
 };
 
 Private
-char wtt_isc1_lookup[CH_CLASSES][CH_CLASSES] = {
+char const wtt_isc1_lookup[CH_CLASSES][CH_CLASSES] = {
       /* Table 1: WTT default input sequence check rules */
       /* row: leading char,  column: following char */
 /* CTRL NON CONS LV FV1 FV2 FV3 BV1 BV2 BD TONE AD1 AD2 AD3 AV1 AV2 AV3 */
@@ -176,7 +176,7 @@ char wtt_isc1_lookup[CH_CLASSES][CH_CLASSES] = {
 };
 
 Private
-char wtt_isc2_lookup[CH_CLASSES][CH_CLASSES] = {
+char const wtt_isc2_lookup[CH_CLASSES][CH_CLASSES] = {
       /* Table 2: WTT strict input sequence check rules */
       /* row: leading char,  column: following char */
 /* CTRL NON CONS LV FV1 FV2 FV3 BV1 BV2 BD TONE AD1 AD2 AD3 AV1 AV2 AV3 */
@@ -200,7 +200,7 @@ char wtt_isc2_lookup[CH_CLASSES][CH_CLASSES] = {
 };
 
 Private
-char thaicat_isc_lookup[CH_CLASSES][CH_CLASSES] = {
+char const thaicat_isc_lookup[CH_CLASSES][CH_CLASSES] = {
       /* Table 3: Thaicat input sequence check rules */
       /* row: leading char,  column: following char */
 /* CTRL NON CONS LV FV1 FV2 FV3 BV1 BV2 BD TONE AD1 AD2 AD3 AV1 AV2 AV3 */
@@ -621,7 +621,7 @@ typedef KeySym (*StateProc)();
  *  State handler to implement the Thai hex input method.
  */
 
-Private int nstate_handlers = 3;
+Private int const nstate_handlers = 3;
 Private StateProc state_handler[] = {
 	HexIMNormalKey,
 	HexIMFirstComposeKey,
@@ -637,7 +637,7 @@ struct _XMapThaiKey {
 	KeySym to;
 };
 
-Private struct _XMapThaiKey ThaiComposeTable[] = {
+Private struct _XMapThaiKey const ThaiComposeTable[] = {
 	{ /* 0xa4 */ XK_currency,	/* 0xa5 */ XK_yen },
 	{ /* 0xa2 */ XK_cent,		/* 0xa3 */ XK_sterling },
 	{ /* 0xe6 */ XK_ae,		/* 0xef */ XK_idiaeresis },
@@ -666,7 +666,7 @@ ThaiComposeConvert(dpy, insym, outsym ,lower, upper)
     KeySym insym;
     KeySym *outsym,*lower,*upper;
 {
-    struct _XMapThaiKey *table_entry = ThaiComposeTable;
+    struct _XMapThaiKey const *table_entry = ThaiComposeTable;
 
     while (table_entry->from != XK_VoidSymbol) {
 	if (table_entry->from == insym) {
