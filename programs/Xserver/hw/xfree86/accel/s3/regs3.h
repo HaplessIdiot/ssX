@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.1 94/03/28 21:13:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.1 1994/05/14 06:52:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.2 1994/05/21 23:55:32 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -69,21 +69,20 @@
 				   outb(vgaCRReg, 0x50); }
 #endif				   
 
-#define S3_911_ONLY(chip)     (chip==0x81)
-#define S3_924_ONLY(chip)     (chip==0x82)
+#define S3_911_ONLY(chip)       (chip==0x81)
+#define S3_924_ONLY(chip)       (chip==0x82)
 #define S3_911_SERIES(chip)     ((chip&0xf0)==0x80)
 #define S3_801_SERIES(chip)     ((chip&0xf0)==0xa0)
 #define S3_801_I_SERIES(chip)	(S3_801_SERIES(chip) && ((chip) & 0x08))
 #define S3_801_REV_C(chip)      (S3_801_SERIES(chip) && ((chip) & 0x07) >= 2)
 #define S3_928_P(chip)          ((chip&0xf0)==0xb0)
-#define S3_928_SERIES(chip)     (((chip&0xf0)==0x90)||S3_928_P(chip))
-#define S3_928_REV_E(chip)      (S3_928_SERIES(chip) && ((chip) & 0x0F) >= 4)
-#define S3_801_928_SERIES(chip) (S3_801_SERIES(chip)||S3_928_SERIES(chip))
+#define S3_928_ONLY(chip)       (((chip&0xf0)==0x90)||S3_928_P(chip))
+#define S3_928_REV_E(chip)      (S3_928_ONLY(chip) && ((chip) & 0x0F) >= 4)
+#define S3_801_928_SERIES(chip) (S3_801_SERIES(chip)||S3_928_ONLY(chip))
 #define S3_8XX_9XX_SERIES(chip) (S3_911_SERIES(chip)||S3_801_928_SERIES(chip))
 #define S3_864_SERIES(chip)     ((chip&0xf0)==0xc0)
 #define S3_964_SERIES(chip)     ((chip&0xf0)==0xd0)
 #define S3_x64_SERIES(chip)	(S3_864_SERIES(chip) || S3_964_SERIES(chip))
-#undef  S3_928_SERIES
 #define S3_928_SERIES(chip)     (((chip&0xf0)==0x90)||S3_928_P(chip)||S3_x64_SERIES(chip)) /* hack for 864/964 looking like 928 */
 #define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || S3_x64_SERIES(chip))
 

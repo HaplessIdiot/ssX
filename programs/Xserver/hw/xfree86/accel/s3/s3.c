@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.10 1994/07/15 07:02:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.11 1994/07/19 06:57:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -48,6 +48,7 @@
 #include "s3Bt485.h"
 #include "s3Ti3020.h"
 
+#define USE_XCONFIG_RAMDAC
 
 extern int s3MaxClock;
 extern int s3MaxBt485Clock, s3MaxBt485MuxClock;
@@ -142,6 +143,9 @@ static SymTabRec s3DacTable[] = {
    { ATT20C505_DAC,	"att20c505" },
    { TI3020_DAC,	"ti3020" },
    { ATT20C498_DAC,	"att20c498" },
+   { TI3025_DAC,	"ti3025" },
+   { ATT20C490_DAC,	"att20c490" },
+   { SC15025_DAC,	"sc15025" },
    { -1,		"" },
 };
 
@@ -338,10 +342,7 @@ s3Probe()
       return(FALSE);
    }
 
-   /*
-    * Just an example of how the .ramdac field might be used
-    */
-#ifdef NOT_YET
+#ifdef USE_XCONFIG_RAMDAC
    if (s3InfoRec.ramdac) {
       s3RamdacType = xf86StringToToken(s3DacTable, s3InfoRec.ramdac);
       if (s3RamdacType < 0) {
@@ -358,24 +359,25 @@ s3Probe()
    OFLG_SET(OPTION_NOLINEAR_MODE, &validOptions);
    if (!S3_x64_SERIES(s3ChipId))
       OFLG_SET(OPTION_NO_MEM_ACCESS, &validOptions);
+#ifndef USE_XCONFIG_RAMDAC
    OFLG_SET(OPTION_NORMAL_DAC, &validOptions);
    OFLG_SET(OPTION_BT485, &validOptions);
+   OFLG_SET(OPTION_TI3020, &validOptions);
+   OFLG_SET(OPTION_ATT490_1, &validOptions);
+   OFLG_SET(OPTION_SC15025, &validOptions);
+   OFLG_SET(OPTION_ATT498, &validOptions);
+#endif
    OFLG_SET(OPTION_BT485_CURS, &validOptions);
    OFLG_SET(OPTION_SHOWCACHE, &validOptions);
    OFLG_SET(OPTION_FB_DEBUG, &validOptions);
-   OFLG_SET(OPTION_TI3020, &validOptions);
    OFLG_SET(OPTION_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_NO_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_TI3020_FAST, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
-   OFLG_SET(OPTION_20C505, &validOptions);
    OFLG_SET(OPTION_FAST_DRAM, &validOptions);
    OFLG_SET(OPTION_MED_DRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM, &validOptions);
-   OFLG_SET(OPTION_ATT490_1, &validOptions);
-   OFLG_SET(OPTION_SC15025, &validOptions);
    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
-   OFLG_SET(OPTION_ATT498, &validOptions);
    OFLG_SET(OPTION_SPEA_MERCURY, &validOptions);
    OFLG_SET(OPTION_NUMBER_NINE, &validOptions);
    OFLG_SET(OPTION_STB_PEGASUS, &validOptions);
@@ -520,6 +522,7 @@ s3Probe()
     * but, the OPTION flag setting/checking goes.
     */
 
+#ifndef USE_XCONFIG_RAMDAC
    /*
     * Handle RAMDAC Option flags first.
     */
@@ -593,27 +596,29 @@ s3Probe()
 	 }
       }
    }
+#endif
 
    /* Make sure CR55 is unlocked for Bt485 probe */
    outb(vgaCRIndex, 0x39);
    outb(vgaCRReg, 0xA5);
 
    /*
-    * To set the s3InfoRec.ramdac string from the token, do:
-    * s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
+    * For chipsets other than 928 or 864/964, there is only one RAMDAC
+    * type possible.  Only probe for 928 and 864/964.
     */
+   if ((S3_928_SERIES(s3ChipId) || S3_x64_SERIES(s3ChipId)) &&
+       s3RamdacType == UNKNOWN_DAC) {
 
-   /* For chipsets other than 928 or 864/964, there is only one RAMDAC type possible */
-   if (!S3_928_SERIES(s3ChipId) && !S3_x64_SERIES(s3ChipId)) {
-      s3RamdacType = NORMAL_DAC;
-   } else if (s3RamdacType == UNKNOWN_DAC) {
-      /* Otherwise, probe for the RAMDAC type */
       /*
        * Bt485/AT&T20C505 first
        *
        * Probe for the bloody thing.  Set 0x3C6 to a bogus value, then
        * try to get the Bt485 status register.  If it's there, then we will
        * get something else back from this port.
+       */
+
+      /*
+       * XXXX The "Detected an ....." messages should probably go
        */
       unsigned char tmp2;
       tmp = inb(0x3C6);
@@ -670,12 +675,54 @@ s3Probe()
 	    s3RamdacType = ATT498_DAC;
 	 }
       }
+   }
 
-      /* If it wasn't a ATT498 either, it must be a "normal" ramdac */
-      if (s3RamdacType == UNKNOWN_DAC) {
+   /* If we still don't know the ramdac type, set it to NORMAL_DAC */
+   if (s3RamdacType == UNKNOWN_DAC) {
+      s3RamdacType = NORMAL_DAC;
+   }
+   
+#ifdef USE_XCONFIG_RAMDAC
+   /* make sure s3InfoRec.ramdac is set correctly */
+   s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
+
+   /* Check Ramdac type is supported on the current S3 chipset */
+   {
+      char *chips = NULL;
+
+      switch (s3RamdacType) {
+      case BT485_DAC:
+      case ATT20C505_DAC:
+	 if (!S3_928_ONLY(s3ChipId) && !S3_964_SERIES(s3ChipId)) {
+	    chips = "928 and 964";
+	 }
+	 break;
+      case TI3020_DAC:
+	 if (!S3_928_ONLY(s3ChipId) && !S3_964_SERIES(s3ChipId)) {
+	    chips = "928 and 964";
+	 }
+	 break;
+      case ATT20C498_DAC:
+	 /* XXXX Some day we should support this with the 805i */
+	 if (!S3_864_SERIES(s3ChipId)) {
+	    chips = "864";
+	 }
+	 break;
+      }
+      if (chips) {
+	 ErrorF("%s %s: Ramdac \"%s\" is only supported with %s chips\n",
+		XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.ramdac, chips);
+	 OFLG_CLR(XCONFIG_RAMDAC, &s3InfoRec.xconfigFlag);
+	 /* Treat the ramdac as a "normal" dac */
 	 s3RamdacType = NORMAL_DAC;
+	 s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
       }
    }
+
+   ErrorF("%s %s: Ramdac type: %s\n",
+	  OFLG_ISSET(XCONFIG_RAMDAC, &s3InfoRec.xconfigFlag) ?
+	  XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.ramdac);
+#endif
 
    /* Now handle the various ramdac cursor options */
 
@@ -715,16 +762,6 @@ s3Probe()
         OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
 	OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options)))
       s3Bt485PixMux = TRUE;
-
-   /* Move this down, and only force when s3UsingPixMux is TRUE */
-#if 0
-   /* pixmux on Bt485 requires use of Bt's cursor */
-   if (s3Bt485PixMux && !OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
-      OFLG_SET(OPTION_BT485_CURS, &s3InfoRec.options);
-      ErrorF("%s %s: Using hardware cursor from Bt485/20C505 RAMDAC\n",
-	     XCONFIG_PROBED, s3InfoRec.name);
-   }
-#endif
 
    if (DAC_IS_ATT498 && 
        (OFLG_ISSET(OPTION_ELSA_W1000PRO, &s3InfoRec.options) ||
@@ -1008,7 +1045,14 @@ s3Probe()
       }
    }
 
+#ifdef USE_XCONFIG_RAMDAC
+   if (DAC_IS_ATT490 || DAC_IS_SC15025 || DAC_IS_ATT498) {
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
+         s3DAC8Bit = TRUE;
+   }
+#else
    if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
+      s3RamdacType = ATT20C490_DAC;
       if (xf86Verbose)
          ErrorF("%s %s: Using AT&T 20C490/1 RAMDAC\n",
             XCONFIG_GIVEN, s3InfoRec.name);
@@ -1025,12 +1069,14 @@ s3Probe()
    }
      
    if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
+      s3RamdacType = SC15025_DAC;
       if (xf86Verbose)
          ErrorF("%s %s: Using Sierra SC 15025/6 RAMDAC\n",
             XCONFIG_GIVEN, s3InfoRec.name);
       if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
          s3DAC8Bit = TRUE;
    }
+#endif
 
    if (s3DAC8Bit && xf86Verbose)
       ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.7 1994/06/28 12:28:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.8 1994/07/19 06:57:57 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -132,7 +132,7 @@ s3CleanUp(void)
    /*
     * Restore AT&T 20C490/1 command register.
     */
-   if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
+   if (DAC_IS_ATT490) {
       xf86setdaccomm(oldS3->ATT490_1);
    }
    
@@ -146,7 +146,7 @@ s3CleanUp(void)
    /*
     * Restore Sierra SC 15025/6 registers.
     */
-   if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
+   if (DAC_IS_SC15025) {
       c=xf86getdaccomm();
       xf86setdaccomm( c | 0x10 );  /* set internal register access */
       (void)xf86dactocomm();
@@ -302,7 +302,7 @@ s3Init(mode)
       /*
        * Save AT&T 20C490/1 command register.
        */
-      if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
+      if (DAC_IS_ATT490) {
          oldS3->ATT490_1 = xf86getdaccomm();
       }
 
@@ -317,7 +317,7 @@ s3Init(mode)
        * Save Sierra SC15025/6 command registers.
        */
       LOCK_SYS_REGS;
-      if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
+      if (DAC_IS_SC15025) {
          oldS3->SC15025[0] = xf86getdaccomm();
 	 xf86setdaccomm((oldS3->SC15025[0] | 0x10));
          (void)xf86dactocomm();
@@ -495,7 +495,7 @@ s3Init(mode)
    /*
     * Set AT&T 20C490/1 command register to 8-bit mode if desired.
     */
-   if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
+   if (DAC_IS_ATT490) {
       if (s3DAC8Bit) {
          xf86setdaccommbit(0x02);
       } else {
@@ -517,7 +517,7 @@ s3Init(mode)
    /*
     * Set Sierra SC 15025/6 command registers to 8-bit mode if desired.
     */
-   if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
+   if (DAC_IS_SC15025) {
       LOCK_SYS_REGS;
       if (s3DAC8Bit) {
          tmp2=xf86getdaccomm();
