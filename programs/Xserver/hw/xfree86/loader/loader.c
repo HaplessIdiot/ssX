@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.2 1997/02/17 09:46:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.3 1997/02/18 04:33:50 dawes Exp $ */
 
 
 
@@ -85,6 +85,10 @@ static loader_funcs funcs[] = {
 	{COFF2LoadModule,COFF2ResolveSymbols,COFF2CheckForUnresolved,COFF2UnloadModule},
 	/* LD_AOUTOBJECT */
 	{AOUTLoadModule,AOUTResolveSymbols,AOUTCheckForUnresolved,AOUTUnloadModule},
+#ifdef DLOPEN_SUPPORT
+	/* LD_DLOPEN */
+	{DLLoadModule,DLResolveSymbols,DLCheckForUnresolved,DLUnloadModule},
+#endif
 	};
 
 int	numloaders=sizeof(funcs)/sizeof(loader_funcs);

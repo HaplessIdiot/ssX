@@ -1,4 +1,8 @@
 XFree86 3.2Ag (18 February 1997)
+ 463. Add DPMS support (off mode only) to the P9000 server
+      (#9, Karl Anders Oygard).
+ 462. Add PCI probing to the P9000 server (#9, Karl Anders Oygard).
+ 461. Resync PC98 Imakefiles.
  460. Enable the loadable server for LynxOS AT (#46, Thomas Mueller).
  459. Better fix for XF86Setup compile problems (David Dawes).
 
