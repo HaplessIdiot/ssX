@@ -1,3 +1,9 @@
+XFree86 3.9Pu (2x June 1999)
+2777. Disable building the Xanti extension (Mark Vojkovich).
+2776. Update the log file handling to catch most messages that are generated
+      before the log file is actually opened (David Dawes).
+2775. Another fix for PM2 text restoration (Egbert Eich).
+
 XFree86 3.9Pt (20 June 1999)
 2774. First cut at converting the fbdev, sis, glide, neomagic and rendition
       drivers for the new RAC code (David Dawes).
@@ -8229,4 +8235,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.781 1999/06/20 08:41:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.782 1999/06/20 15:02:47 dawes Exp $
