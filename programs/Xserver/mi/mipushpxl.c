@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mipushpxl.c,v 5.5 94/04/17 20:27:47 dpw Exp $ */
+/* $XFree86$ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
