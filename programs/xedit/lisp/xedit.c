@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.21 2002/12/04 05:27:59 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.22 2002/12/16 03:59:27 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -122,6 +122,10 @@ static LispString result_string;
 static XawTextPropertyList **property_lists;
 static Cardinal num_property_lists;
 
+/* Some hacks to (at lest try to) avoid problems reentering Xlib while
+ * testing for user interrupts */
+static volatile int disable_timeout, request_timeout;
+
 extern int pagesize;
 
 static LispBuiltin xeditbuiltins[] = {
@@ -182,6 +186,11 @@ SigalrmHandler(int signum)
 {
     XEvent event;
 
+    if (disable_timeout) {
+	request_timeout = 1;
+	return;
+    }
+
     /* Check if user pressed C-g */
     if (XCheckIfEvent(XtDisplay(textwindow), &event, ControlGPredicate, NULL)) {
 	XPutBackEvent(XtDisplay(textwindow), &event);
@@ -202,6 +211,7 @@ WrapWrite(Widget output, const void *buffer, size_t nbytes)
     XawTextBlock block;
     XawTextPosition position;
 
+    disable_timeout = 1;
     position = XawTextGetInsertionPoint(output);
     block.firstPos = 0;
     block.format = FMT8BIT;
@@ -209,6 +219,13 @@ WrapWrite(Widget output, const void *buffer, size_t nbytes)
     block.ptr = (String)buffer;
     XawTextReplace(output, position, position, &block);
     XawTextSetInsertionPoint(output, position + block.length);
+    disable_timeout = 0;
+
+    if (request_timeout) {
+	XFlush(XtDisplay(output));
+	request_timeout = 0;
+	SigalrmHandler(SIGALRM);
+    }
 
     return ((ssize_t)nbytes);
 }
@@ -629,7 +646,9 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     if ((anchor = XawTextSourceFindAnchor(w, (from))) != NULL) {	\
 	entity = anchor->entities;					\
 	/* Find first entity in the region to parse */			\
-	while (entity && anchor->position + entity->offset < (from))	\
+	while (entity &&						\
+	       anchor->position + entity->offset + entity->length <=	\
+	       (from))							\
 	    entity = entity->next;					\
 	/* Loop storing information */					\
 	while (entity &&						\
@@ -753,7 +772,8 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     XmuDestroyScanline(clip);
 
     data->syntable = syntable;
-    if (indent && syntable != NIL &&
+    /* XXX check lisp__running to know if at the toplevel parsing state */
+    if (indent && syntable != NIL && !lisp__running &&
 	/* Doing an undo, probably will need an exported interface for this
 	 * case. Should not change the text now. */
 	(!src->textSrc.enable_undo || !src->textSrc.undo_state))
