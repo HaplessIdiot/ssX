@@ -1,5 +1,4 @@
 /* $XConsortium: mmio_928.c,v 1.1 94/03/28 21:17:36 dpw Exp $ */
-/* $XFree86$ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -27,6 +26,7 @@
 
 #include "s3.h"
 #include "regs3.h"
+extern short s3ChipId;
 
 static Bool MMIO_928Probe();
 static char *MMIO_928Ident();
