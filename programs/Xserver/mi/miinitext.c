@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.57 2001/05/10 10:17:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.58 2001/05/23 03:29:42 keithp Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -334,9 +334,7 @@ InitExtensions(argc, argv)
 #if defined(XFreeXDGA)
     XFree86DGAExtensionInit();
 #endif
-#endif
 #ifdef XF86DRI
-#ifndef XPRINT	/* we don't want Glx in the Xprint server */
     XFree86DRIExtensionInit();
 #endif
 #endif
