@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.24 2001/04/10 20:33:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.25 2001/04/18 09:24:47 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -128,6 +128,13 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
     	/* Make sure the rest of the register writes go to both PM3's */
     	GLINT_SLOW_WRITE_REG(3, BroadcastMask);
     }
+
+    /* Disable LocalBuffer. Fixes stripes problems when 
+     * doing screen-to-screen copies */
+    GLINT_SLOW_WRITE_REG(UNIT_DISABLE, PM3LBDestReadMode);
+    GLINT_SLOW_WRITE_REG(UNIT_DISABLE, PM3LBDestReadEnables);
+    GLINT_SLOW_WRITE_REG(UNIT_DISABLE, PM3LBSourceReadMode);
+    GLINT_SLOW_WRITE_REG(UNIT_DISABLE, PM3LBWriteMode);
 
     /* Host out PreInit */
     /* Set filter mode to enable sync tag & data output */
