@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XExtToWire.c,v 3.4 2001/12/14 19:55:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xi/XExtToWire.c,v 3.5 2002/10/16 00:37:28 dawes Exp $ */
 
 /****************************************************************
  *
@@ -61,6 +61,7 @@ SOFTWARE.
 #include <X11/extensions/extutil.h>
 #include "XIint.h"
 
+Status
 _XiEventToWire(dpy, re, event, count)
     register Display *dpy;	/* pointer to display structure */
     register XEvent *re;	/* pointer to client event */
