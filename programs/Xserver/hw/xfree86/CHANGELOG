@@ -1,3 +1,6 @@
+XFree86 3.9.16Z (xx December 1999)
+3390. Jumbo font patch.  This updates the bdf/misc fonts to the
+      latest ISO versions (#3429+updates, Markus Kuhn).
 3389. Fix a problem with no Xv encodings being reported (Mark Vojkovich).
 3388. Update Xv driver interface docs (Mark Vojkovich).
 
@@ -9175,4 +9178,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.883 1999/12/14 03:38:51 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.886 1999/12/17 03:06:39 mvojkovi Exp $
