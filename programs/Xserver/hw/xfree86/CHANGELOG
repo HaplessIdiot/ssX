@@ -1,4 +1,6 @@
-XFree86 4.3.99.11 (xx August 2003)
+XFree86 4.3.99.12 (xx August 2003)
+
+XFree86 4.3.99.11 (25 August 2003)
  399. Try to make the state of libXfont more consistent.  It shouldn't depend
       on whether a static or loadable XFree86 server is being built, so it
       now always has a dependency on the FreeType2 library (when FreeType
@@ -17609,7 +17611,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2822 2003/08/24 20:52:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2823 2003/08/25 04:05:58 dawes Exp $
 
 
 
