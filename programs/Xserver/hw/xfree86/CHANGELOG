@@ -1,4 +1,7 @@
 XFree86 4.0d (16 June 2000)
+ 313. FontInfo.c (lib/X11) needs to be built with the bigfont defines (#3996,
+      Paulo Cesar Pereira de Andrade).
+ 312. Disable the smart scheduler for SVR4.0 (based on #3916, Takaaki Nomura).
  311. Add a check for PS/2 mice on Linux for the X server's -configure
       option (#3991, Paulo Cesar Pereira de Andrade).
  310. Fix a problem mouse driver button flush was causing with Xaw menus
@@ -10620,4 +10623,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1187 2000/06/17 00:03:13 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1188 2000/06/17 00:27:30 dawes Exp $
