@@ -378,9 +378,22 @@ XftDefaultSubstitute (Display *dpy, int screen, XftPattern *pattern)
     }
     if (XftPatternGet (pattern, XFT_RGBA, 0, &v) == XftResultNoMatch)
     {
+	int	subpixel = XFT_RGBA_NONE;
+#if RENDER_MAJOR > 0 || RENDER_MINOR >= 6
+	int render_order = XRenderQuerySubpixelOrder (dpy, screen);
+	switch (render_order) {
+	default:
+	case SubPixelUnknown:		subpixel = XFT_RGBA_NONE; break;
+	case SubPixelHorizontalRGB:	subpixel = XFT_RGBA_RGB; break;
+	case SubPixelHorizontalBGR:	subpixel = XFT_RGBA_BGR; break;
+	case SubPixelVerticalRGB:	subpixel = XFT_RGBA_VRGB; break;
+	case SubPixelVerticalBGR:	subpixel = XFT_RGBA_VBGR; break;
+	case SubPixelNone:		subpixel = XFT_RGBA_NONE; break;
+	}
+#endif
 	XftPatternAddInteger (pattern, XFT_RGBA,
 			      XftDefaultGetInteger (dpy, XFT_RGBA, screen, 
-						    XFT_RGBA_NONE));
+						    subpixel));
     }
     if (XftPatternGet (pattern, XFT_MINSPACE, 0, &v) == XftResultNoMatch)
     {
