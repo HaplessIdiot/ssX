@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.10 1997/01/23 10:59:34 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.11 1997/07/29 12:07:25 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -108,7 +108,7 @@ proc Intro_create_widgets { win } {
 	text $w.intro.textframe.text
 	$w.intro.textframe.text tag configure heading \
 		-justify center -foreground yellow \
-		-font -adobe-times-bold-i-normal--25-180-*-*-p-*-iso8859-1
+		-font -adobe-times-bold-i-normal--24-240-*-*-p-*-iso8859-1
 	$w.intro.textframe.text insert end "Introduction to Configuration\
 					with XF86Setup" heading
 	if !$pc98 {
