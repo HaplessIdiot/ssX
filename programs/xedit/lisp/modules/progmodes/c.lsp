@@ -27,10 +27,11 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.10 2002/10/20 05:58:55 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.12 2002/10/21 04:18:36 paulo Exp $
 ;;
 
 (require "syntax")
+(require "indent")
 (in-package "XEDIT")
 
 (defsynprop *prop-format*
@@ -40,9 +41,6 @@
     :underline	t
 )
 
-;; The default values are my preferred style. It also should match
-;; a "java" style, with a base indentation of 4 spaces, and adding one
-;; indent level to case/default labels.
 (defsynoptions *c-DEFAULT-style*
     ;; Positive number. Basic indentation.
     (:indentation		.	4)
@@ -60,7 +58,7 @@
     (:cont-indent		.	t)
 
     ;; Boolean. Move cursor to the indent column after pressing <Enter>?
-    (:newline-indent		.	nil)
+    (:newline-indent		.	t)
 
     ;; Boolean. Set to T if tabs shouldn't be used to fill indentation.
     (:emulate-tabs		.	nil)
@@ -81,7 +79,7 @@
 
     ;; Boolean. Remove extra spaces from previous line.
     ;;		This should default to T when newline-indent is not NIL.
-    (:trim-blank-lines		.	nil)
+    (:trim-blank-lines		.	t)
 
     ;; Boolean. If this hash-table entry is set, no indentation is done.
     ;;		Useful to temporarily disable indentation.
@@ -141,9 +139,8 @@
 ))
 
 (defvar *c-mode-options* *c-DEFAULT-style*)
-; (setq *c-mode-options* *c-bsd-style*)
+;(setq *c-mode-options* *c-gnu-style*)
 
-;;(defsyntax *c-mode* :main nil #+debug #'c-indent #-debug nil *c-mode-options*
 (defsyntax *c-mode* :main nil #'c-indent *c-mode-options*
     ;;  All recognized C keywords.
     (syntoken
@@ -258,1066 +255,809 @@
     (syntoken "\\c" :property *prop-control*)
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; This is a very lazy "pattern matcher" for the C language.
+;; If the syntax in the code is not correct, it may get confused, and
+;; because it is "lazy" some wrong constructs will be recognized as
+;; correct when reducing patterns.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defindent *c-mode-indent* :main
+    ;; this must be the first token
+    (indtoken "^\\s*"		:start-of-line)
+    (indtoken "\\<case\\>"	:c-case)
+    (indtoken "\\<default\\>"	:c-default)
+    (indtoken "\\<do\\>"	:do)
+    (indtoken "\\<if\\>"	:c-if)
+    (indtoken "\\<else\\>"	:c-else)
+    (indtoken "\\<for\\>"	:c-for)
+    (indtoken "\\<switch\\>"	:c-switch)
+    (indtoken "\\<while\\>"	:c-while)
+    ;; Match identifiers and numbers as an expression
+    (indtoken "\\w+"		:expression)
+    (indtoken ";"		:semi		:nospec t)
+    (indtoken ":"		:collon		:nospec t)
 
-(defconstant c-spaces '(#\Space #\Page #\Return #\Vt))
-(defconstant c-tab+spaces (cons #\Tab c-spaces))
-
-;; Assumes the argument `from' is an offset inside (or at the beginning)
-;; of the string or character and returns the offset of the start of the
-;; matching character. Example:
-;;   "some string"
-;;   ^		^
-;;   |		from
-;;   offset
-(defun c-char-match (from char &aux (offset from) (pattern (string char)))
-    (while
-	(and
-	    (setq offset (search-backward pattern offset))
-	    (> offset (point-min))
-	    ;; keep looping if there is a backslash before the character
-	    ;; XXX this check isn't completely safe
-	    (char= #\\ (char-before offset))
+    (indinit			(c-braces 0))
+    (indtoken "{"
+	:obrace
+	:nospec t
+	:code	(decf c-braces)
+    )
+    (indtoken "}"
+	:cbrace
+	:nospec t
+	:begin	:braces
+	:code	(incf c-braces)
+    )
+    (indtable :braces
+	(indtoken "{"
+	    :obrace
+	    :nospec t
+	    :switch -1
+	    :code   (decf c-braces)
 	)
-	(decf offset 2)
-    )
-    offset
-)
-
-;; Calculate the indentation to align with character at given offset
-(defun c-offset-align (offset &aux
-		       (start (scan offset :eol :left))
-		       (line (read-text start (- offset start)))
-		       (indent 0))
-    (dotimes (i (length line) indent)
-	(if (char= (char line i) #\Tab)
-	    (incf indent (- 8 (rem indent 8)))
-	    (incf indent)
+	(indtoken "}"
+	    :cbrace
+	    :nospec t
+	    :begin  :braces
+	    :code   (incf c-braces)
 	)
     )
-)
 
-;; Calculate indentation starting at `start'
-;; Assumes start is the offset of the first character in a line
-;; Returns 3 values:
-;;	o indentation
-;;	o relative offset of first non-blank character
-;;	o first non-blank character, newline if empty line, or nil if at eof
-(defun c-offset-indent (start &aux (index 0) (indent 0) char)
-    (loop
-	(setq char (char-after (+ start index)))
-	(cond
-	    ;; eof reached
-	    ((null char)
-		(return)
-	    )
-	    ;; a blank character
-	    ((member char c-spaces)
-		(incf indent)
-	    )
-	    ;; adjust tabulation
-	    ((char= char #\Tab)
-		(incf indent (- 8 (rem indent 8)))
-	    )
-	    ;; newline or a non blank character
-	    (t (return))
-	)
-	(incf index)
+    (indinit			(c-bra 0))
+    (indtoken ")"		:cparen		:nospec t :code (incf c-bra))
+    (indtoken "("		:oparen		:nospec t :code (decf c-bra))
+    (indtoken "]"		:cbrack		:nospec t :code (incf c-bra))
+    (indtoken "["		:obrack		:nospec t :code (decf c-bra))
+    (indtoken "\\\\$"		:continuation)
+
+    ;; C++ style comment, disallow other tokens to match inside comment
+    (indtoken "//.*$"		nil)
+
+    (indtoken "#"		:hash		:nospec t)
+    (indtoken "\""		:cstring	:nospec t	:begin :string)
+    (indtoken "'"		:cconstant	:nospec t	:begin :constant)
+    (indtoken "*/"		:ccomment	:nospec t	:begin :comment)
+    ;; this must be the last token
+    (indtoken "$"		:end-of-line)
+
+    (indtable :string
+	;; Ignore escaped characters
+	(indtoken "\\." 	nil)
+	;; Return to the toplevel when the start of the string is found
+	(indtoken "\""		:ostring	:nospec t	:switch -1)
     )
-    (values indent index char)
-)
-
-;; The `char' argument must be either ), ], }, or >. The code doesn't
-;; try to flag errors if something is unbalanced, just skips over comments,
-;; strings, preprocessor lines and character. If a match is not found,
-;; returns nil.
-;; Assumes that the `from' is not inside a comment, preprocessor, string,
-;; or character.
-(defun c-exp-match (from match
-		    &aux char count offset line index open start adjust)
-    (setq
-	count	1
-	offset	(scan from :eol :left)
-	;; add -1 to read the matching character when the expression is empty
-	line	(read-text offset (- from offset -1))
-	index	(1- (length line))
-	;; < and > aren't currently used, but should at some time,
-	;; to properly parse c++ templates.
-	open	(case match (#\) #\() (#\] #\[) (#\} #\{) (#\> #\<))
+    (indtable :constant
+	;; Ignore escaped characters
+	(indtoken "\\." 	nil)
+	;; Return to the toplevel when the start of the character is found
+	(indtoken "'"		:oconstant	:nospec t	:switch -1)
+    )
+    (indtable :comment
+	(indtoken "/*"		:ocomment	:nospec t	:switch -1)
     )
 
-    (loop
-	;; check if need to read a new line of text
-	(while (minusp index)
-	    (if adjust
-		(setq offset (scan from :eol :left) adjust nil)
-		(progn
-		    (setq start offset)
-		    (multiple-value-setq
-			(offset from)
-			(c-top-match (scan from :eol :left :count 2))
-		    )
-		    ;; if cannot find a safe point to restart parsing
-		    (and (= start offset) (return (setq from nil)))
-		)
-	    )
-	    ;; rebuild loop state
+    ;; "Complex" statements
+    (indinit		(c-complex 0) (c-cases 0))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Order of reduce rules here is important, process comment,
+    ;; continuations, preprocessor and set states when an eol is found.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    (indinit	(c-offset (point-max))
+		(c-prev-offset c-offset)
+    )
+    (indreduce :indent
+	t
+	((:start-of-line))
+	(and (= *ind-start* *ind-offset*)
 	    (setq
-		line   (read-text offset (- from offset))
-		index  (1- (length line))
+		*offset* (+ *ind-offset* *ind-length*)
 	    )
 	)
-
-	(setq char (char line index))
-	(cond
-	    ;; found the matching (, [, {, or <
-	    ((char= char open)
-		(if (zerop (decf count))
-		    ;; success
-		    (return (setq from (+ offset index)))
-		)
-	    )
-	    ;; found another ), ], }, or <
-	    ((char= char match)
-		(incf count)
-	    )
-	    ;; found a comment?
-	    ((and (char= char #\/)
-		  (plusp index)
-		  (char= (char line (1- index)) #\*))
-		(setq from (search-backward "/*" (+ offset (- index 2))))
-		;; should never be true, cannot find start of comment
-		(unless (integerp from)
-		    (return)
-		)
-		(setq  adjust t)
-	    )
-	    ;; found a string or character
-	    ((member char '(#\" #\'))
-		(setq from (c-char-match (+ offset (1- index)) char))
-		;; should never be true, cannot find start of string/character
-		(unless (integerp from)
-		    (return)
-		)
-		(setq adjust t)
-	    )
-	)
-
-	(if adjust
-	    (if (>= from offset)
-		(setq adjust nil index (- from offset 1))
-		(setq index -1)
-	    )
-	    (decf index)
+	(setq
+	    c-prev-offset   c-offset
+	    c-offset	    *ind-offset*
 	)
     )
-    from
-)
 
-;; This function is used when parsing backwards the file.
-;; The text line starting at `from' may:
-;;	o end in a c++ style comment
-;;	o be a preprocessor line
-;;	o be the last line of a multiline preprocessor directive
-;; Variables `left' and `right' are used as a temporary value for
-;; the result, because there may be backslashes ending lines that
-;; aren't preprocessor directives, or comments/strings/characters
-;; that aren't part of a preprocessor directive.
-(defun c-top-match (from &aux char to line index left right adjust)
-    (setq
-	to	(scan from :eol :right)
-	left	from
-	right	to
-	line	(read-text left (- right left))
-	index	(1- (length line))
+    ;; Delete comments
+    (indreduce nil
+	t
+	((:ocomment nil :ccomment))
     )
 
-    (loop
-	(when (minusp index)
-	    (and
-		(<=
-		    (setq left (scan right :eol :left :count (if adjust 1 2)))
-		    (point-min)
-		)
-		;; if start of file found return from loop
-		(return)
+    ;; Join in a single token to simplify removal of possible multiline
+    ;; preprocessor directives
+    (indinit			c-continuation)
+    (indreduce :continuation
+	t
+	((:continuation :end-of-line))
+	(setq c-continuation t)
+    )
+
+    (indreduce :eol
+	t
+	((:end-of-line))
+	;; If a safe state was reached, reject this line and go to the
+	;;  resolve rules.
+	;; Anything after the eol offset is safe to parse now
+	(setq c-continuation nil)
+    )
+
+    ;; Delete blank lines
+    (indreduce nil
+	t
+	((:indent :eol))
+    )
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Preprocessor
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indreduce nil
+	t
+	((:indent :hash :expression nil :eol))
+    )
+    (indreduce nil
+	(>= *ind-offset* *ind-start*)
+	((:indent :hash))
+	(setq *indent* 0)
+	(indent-macro-reject-left)
+    )
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Expressions
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indreduce :expression
+	t
+	;; Reduce to a single expression
+	((:expression :parens)
+	 (:expression :bracks)
+	 (:expression :expression)
+	;; These may be multiline
+	 (:ostring (not :ostring) :cstring)
+	 (:oconstant (not :oconstant) :cconstant)
+	)
+    )
+
+    (indreduce :expression
+	t
+	((:expression :eol :indent :expression)
+	 (:expression :eol :expression)
+	)
+    )
+
+    ;; A semicollon, start a statement
+    (indreduce :stat
+	t
+	((:semi))
+    )
+
+    ;; Expression following (possibly empty) statement
+    (indreduce :stat
+	t
+	((:expression :stat))
+    )
+
+    ;; Multiline statements
+    (indreduce :stat
+	t
+	((:expression :eol :indent :stat)
+	 ;; rule below may have removed the :indent
+	 (:expression :eol :stat)
+	)
+    )
+
+    (indinit	c-exp-indent)
+    ;; XXX This rule avoids parsing large amounts of code
+    (indreduce :stat
+	t
+	;; Eat eol if following expression
+	((:indent :stat :eol)
+	 (:indent :stat)
+	)
+	(if
+	    (or
+		(null c-exp-indent)
+		(/= (cdar c-exp-indent) (+ *ind-offset* *ind-length*))
 	    )
-	    (or adjust (setq right (scan left :eol :right)))
-	    (if (char= (char-before right) #\\)
-		;; if it is a continuation, maybe a multiline preprocessor
+	    ;; A new statement, i.e. not just joining a multiline one
+	    (push
+		(cons
+		    (offset-indentation *ind-offset* :resolve t)
+		    (+ *ind-offset* *ind-length*)
+		)
+		c-exp-indent
+	    )
+	    ;; Update start of statement
+	    (rplaca
+		(car c-exp-indent)
+		(offset-indentation *ind-offset* :resolve t)
+	    )
+	)
+	(when (consp (cdr c-exp-indent))
+	    (if (and
+		    (zerop c-complex)
+		    (zerop c-cases)
+		    (= (caar c-exp-indent) (caadr c-exp-indent))
+		)
+		;; Two statements with the same indentation
 		(progn
-		    (setq
-			line	(read-text left (- right left))
-			index	(1- (length line))
-		    )
-		    ;; empty line before continuation
-		    (and (minusp index) (return))
+		    (setq *indent* (caar c-exp-indent))
+		    (indent-macro-reject-left)
 		)
-		;; else a safe point was found
-		;; XXX maybe should check for spaces after a backslash
-		(return)
-	    )
-	    (setq adjust nil)
-	)
-
-	(case (setq char (char line index))
-	    ;; maybe a comment
-	    (#\/
-		(when (plusp index)
-		    (case (char line (decf index))
-			;; c++ comment
-			(#\/	(setq to (+ left (1- index)) right to adjust t))
-			;; normal comment
-			(#\*
-			    (setq
-				right (search-backward "/*" (+ left (1- index)))
-				adjust t
-			    )
-			)
-		    )
+		;; Different indentation or complex state
+		(progn
+		    (rplacd c-exp-indent nil)
+		    (setq c-complex 0)
 		)
 	    )
-	    ;; preprocessor directive; XXX don't flag an error if this
-	    ;; is not the first non blank character in the line?
-	    (#\#
-		(setq
-		    to (if (plusp index) (+ left (1- index)) left)
-		    right to
-		    adjust t
-		)
-	    )
-	    ;; string or character
-	    ((#\" #\')
-		(setq right (c-char-match (+ left (1- index)) char) adjust t)
-	    )
-	)
-
-	(or right (return))
-
-	(if adjust
-	    (if (>= right left)
-		(setq adjust nil index (- right left 1))
-		(setq index -1)
-	    )
-	    (decf index)
 	)
     )
 
-    ;;  if `to' is smaller than `from', a c++ comment or preprocessor
-    ;; directive, possibly multiline, was found
-    (and (< to from) (setq from left))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Handle braces
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indreduce :obrace
+	;; If not in the first line
+	(< *ind-offset* *ind-start*)
+	;; If the opening { is the first non blank char in the line
+	((:indent :obrace))
+	(setq *indent* (offset-indentation (+ *ind-offset* *ind-length*)))
+	(indent-macro-reject-left)
+    )
+    (indreduce :stat
+	;; If block finishes before current line, group as an statement
+	(< (+ *ind-offset* *ind-length*) *ind-start*)
+	((:obrace (not :obrace) :cbrace))
+    )
 
-    (values from to)
-)
-
-;; Helper function. If line starts in a toplevel state, return it's
-;; indentation, nil otherwise.
-(defun c-indentation (offset &aux indent index char)
-    (when (= offset (scan offset :eol :left))
-	(multiple-value-setq (indent index char) (c-offset-indent offset))
-	(when (and (characterp char) (char/= char #\Newline))
-	    (return-from c-indentation (values indent char))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Labels
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indreduce :label
+	t
+	((:indent :expression :collon :eol))
+	(when (and *label-dedent* (>= *ind-offset* *ind-start*))
+	    (setq
+		*indent*
+		(- (offset-indentation *ind-offset* :resolve t) *base-indent*)
+	    )
+	    (indent-macro-reject-left)
 	)
     )
-)
 
-;; This function is called in the toplevel syntax-table, so it knows
-;; that the cursor is not inside a comment, preprocessor, string, or
-;; character.
-(defun c-indent (syntax syntable)
-    (prog*
-	(
-	;; insert position in the file
-	(point (point))
-
-	;; start offset of current line
-	(start (scan point :eol :left))
-
-	;; start parsing this region
-	(left start)
-	(right point)
-
-	;; hash table of options
-	(options (syntax-options syntax))
-
-	;; information for text before cursor
-	(line (read-text left (- right left)))
-	(index (1- (length line)))
-
-	(patterns '(
-	    (#.(re-comp "case|default")	. :case)
-	    (#.(re-comp "if")		. :if)
-	    ;; XXX same handling for now
-	    (#.(re-comp "do|else")	. :else)
-	    (#.(re-comp "for")		. :for)
-	    (#.(re-comp "switch")	. :switch)
-	    (#.(re-comp "while")	. :while)
-	))
-
-	;; current character read
-	char
-
-	;; temporary
-	offset
-
-	;; flag to readjust input text
-	adjust
-
-	;; temporary
-	result
-
-	;; indentation of current line
-	current-indent
-
-	;; offset of first non blank character in the current line
-	current-offset
-
-	;; parsed expressions, while building indentation information
-	info
-
-	;; flag indicating if current line starts in a toplevel state
-	toplevel
-
-	;; indentation to be used
-	(indent 0)
-
-	;; temporary flags
-	test
-	bols
-	block
-	flow
-	switch
-	cont
-
-	;; parameters from options hash-table
-	*indentation*
-	*brace-indent*
-	*case-indent*
-	*cont-indent*
-	*emulate-tabs*
-	*newline-indent*
-	*only-newline-indent*
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Handle if
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indreduce :if
+	t
+	((:c-if :parens)
 	)
+	(incf c-complex)
+    )
 
+    (indreduce :else
+	t
+	((:c-else))
+	(incf c-complex)
+    )
+
+    ;; Join
+    (indreduce :else-if
+	t
+	((:else :if)
+	 (:else :eol :indent :if)
+	)
+	(incf c-complex)
+    )
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Handle for
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Join with the parentheses
+    (indreduce :for
+	t
+	((:c-for :parens)
+	)
+	(incf c-complex)
+    )
+    ;; Before current line, simplify
+    (indreduce :stat
+	(< (+ *ind-offset* *ind-length*) *ind-point*)
+	((:for :stat)
+	)
+    )
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Handle while and do
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indreduce :while
+	t
+	((:c-while :parens)
+	)
+	(incf c-complex)
+    )
+    (indreduce :stat
+	t
+	((:do :stat :while)
+	 (:while :stat)
+	)
+    )
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Handle switch
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indinit			c-case-flag)
+
+    (indreduce :switch
+	t
+	((:c-switch :parens)
+	)
+    )
+    ;; Transform in a statement
+    (indreduce :stat
+	(< (+ *ind-offset* *ind-length*) *ind-start*)
+	((:switch :stat)
+	 ;; Do it now or some rule may stop parsing, and calculate
+	 ;; a wrong indentation for nested switches
+	 (:switch :eol :indent :stat)
+	)
+    )
+    ;; An open switch
+    (indreduce :obrace
+	(and
+	    (<= c-braces 0)
+	    (> *ind-start* *ind-offset*)
+	)
+	((:indent :switch :obrace)
+	)
+	(setq
+	    *indent* (offset-indentation *ind-offset* :resolve t)
+	    c-case-flag nil
+	)
+	(indent-macro-reject-left)
+    )
+    (indreduce nil
+	(and
+	    (<= c-braces 0)
+	    (> *ind-start* *ind-offset*)
+	)
+	((:indent :switch :eol :indent :obrace)
+	)
+	(setq *indent* (offset-indentation *ind-offset* :resolve t))
+	(and *brace-indent* (incf *indent* *base-indent*))
+	(indent-macro-reject-left)
+    )
+    ;; Before current line
+    (indreduce :case
 	(and
 	    (or
-		(not (hash-table-p options))
-		(gethash :disable-indent options)
+		(not *case-indent*)
+		(prog1 c-case-flag (setq c-case-flag t))
 	    )
-	    (return-from c-indent)
+	    (<= c-braces 0)
+	    (< *ind-offset* *ind-start*)
 	)
-
+	((:indent :case)
+	)
 	(setq
-	    *newline-indent*	  (gethash :newline-indent options nil)
-	    *only-newline-indent* (gethash :only-newline-indent options nil)
+	    *indent* (offset-indentation *ind-offset* :resolve t)
+	    c-case-flag nil
 	)
-
-	(or
-	    (if (or *newline-indent* *only-newline-indent*)
-		;; if at bol
-		(= point start)
-		;; or after first char typed
-		(= (1- point) start)
-	    )
-	    ;; or one of these was typed
-	    (member (char-before point) '(#\{ #\} #\; #\: #\] #\)))
-	    ;; else save cpu time...
-	    (return-from c-indent)
+	(indent-macro-reject-left)
+    )
+    (indreduce :case
+	t
+	((:c-case :expression :collon)
+	 (:c-default :collon)
+	 ;; Assume that it is yet being edited, or adjusting indentation
+	 (:c-case)
+	 (:c-default)
 	)
-
-	(setq
-	    *indentation*	(gethash :indentation options 4)
-	    *brace-indent*	(gethash :brace-indent options nil)
-	    *case-indent*	(gethash :case-indent options t)
-	    *cont-indent*	(gethash :cont-indent options t)
-	    *emulate-tabs*	(gethash :emulate-tabs options nil)
+	(and (>= *ind-offset* *ind-start*)
+	    (incf c-cases)
 	)
+    )
 
-	;; parse until start of line is found
-	(loop
-	    ;; start of line found, line may be empty
-	    (and (minusp index) (return))
-
-	    ;; read a character
-	    (setq char (char line index))
-
-	    ;; parse the character
-	    (cond
-		;; check for the end of a comment
-		((and (plusp index)
-		      (char= char #\/)
-		      (char= (char line (1- index)) #\*))
-		    (setq right (search-backward "/*" (+ start (- index 2))))
-		    (if (and (integerp right) (>= right start))
-			;; skip the comment
-			(setq index (- right start))
-			;; failed to find start or is multiline
-			(return-from c-indent)
-		    )
-		)
-		;; check for end of string or character
-		((member char '(#\" #\'))
-		    ;; find start
-		    (setq right (c-char-match (+ start (1- index)) char))
-		    (if (and (integerp right) (>= right start))
-			;; skip the string or character
-			(setq index (- right start))
-			;; failed to find start or is multiline
-			(return-from c-indent)
-		    )
-		)
-	    )
-	    (decf index)
-	)
-
-	;; line starts in a toplevel state, continue parsing
-
-	;; calculate current indentation and find first non blank character
-	(multiple-value-setq
-	    (current-indent index char)
-	    (c-offset-indent start)
-	)
-	;; if should only indent after first char typed
-	(if
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Handle parentheses and brackets
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Reduce matches
+    (indreduce :parens
+	t
+	((:oparen (not :oparen) :cparen))
+	(when
 	    (and
-		(zerop index)
-		(or (null char) (char= char #\Newline))
+		(< *ind-offset* *ind-start*)
+		(> (+ *ind-offset* *ind-length*) *ind-start*)
 	    )
-	    ;; line is empty
-	    (if (and (not *newline-indent*) (not *only-newline-indent*))
-		(return-from c-indent)
-	    )
-	    ;; line is not empty
-	    (and *only-newline-indent* (return-from c-indent))
+	    (setq *indent* (1+ (offset-indentation *ind-offset* :align t)))
+	    (indent-macro-reject-left)
 	)
-	(setq current-offset (+ start index))
-
-	;; if line starts with one of these characters, align with match
-	(when (member char '(#\) #\]))
-	    (setq right (c-exp-match (1- current-offset) char))
-	    (if (integerp right)
-		(progn
-		    (setq indent (c-offset-align right))
-		    (go :indent)
-		)
-		;; unbalanced
-		(return-from c-indent)
+    )
+    (indreduce :bracks
+	t
+	((:obrack (not :obrack) :cbrack))
+	(when
+	    (and
+		(< *ind-offset* *ind-start*)
+		(> (+ *ind-offset* *ind-length*) *ind-start*)
 	    )
+	    (setq *indent* (1+ (offset-indentation *ind-offset* :align t)))
+	    (indent-macro-reject-left)
 	)
+    )
 
-	;; build information to calculate indentation
-	(setq index -1)
-	(loop
-	    (while (minusp index)
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Assuming previous lines have correct indentation, this allows
+    ;; resolving the indentation fastly
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Line ended with an open brace
+    (indreduce :obrace
+	(< *ind-offset* *ind-start*)
+	((:indent (or :for :while :if :else-if :else :do) :obrace)
+	)
+	(setq *indent* (offset-indentation *ind-offset* :resolve t))
+	(indent-macro-reject-left)
+    )
+    ;; Adjust indentation level if current line starts with an open brace
+    (indreduce nil
+	(< *ind-offset* *ind-start* (+ *ind-offset* *ind-length*))
+	 ;; Just set initial indentation
+	((:indent (or :for :while :if :else-if :else :do) :eol :indent :obrace)
+	)
+	(setq *indent* (offset-indentation *ind-offset* :resolve t))
+	(and *brace-indent* (incf *indent* *base-indent*))
+	(indent-macro-reject-left)
+    )
+    ;; Previous rule failed, current line does not start with an open brace
+    (indreduce :flow
+	;; first statement is in current line
+	(and
+	    (<= c-braces 0)
+	    (> (+ *ind-offset* *ind-length*) *ind-start* *ind-offset*)
+	)
+	((:indent (or :for :while :if :else-if :else :do) :eol :indent)
+	)
+	(setq *indent* (offset-indentation *ind-offset* :resolve t))
+	(indent-macro-reject-left)
+    )
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Simplify, remove old (:eol :indent)
+    ;; This must be the last rule, to avoid not matching the
+    ;; rules for fast calculation of indentation above
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indreduce nil
+	(> *ind-offset* c-prev-offset)
+	((:eol :indent))
+    )
+
+
+    (indinit			(c-flow 0))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; If
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indinit			c-if-flow)
+    (indresolve :if
+	(and (< *ind-offset* *ind-start*)
+	    (push c-flow c-if-flow)
+	    (incf *indent* *base-indent*)
+	    (incf c-flow)
+	)
+    )
+    (indresolve (:else-if :else)
+	(when c-if-flow
+	    (while (< c-flow (car c-if-flow))
+		(incf *indent* *base-indent*)
+		(incf c-flow)
+	    )
+	    (or (eq *ind-token* :else-if) (pop c-if-flow))
+	)
+	(and (< *ind-offset* *ind-start*)
+	    (incf *indent* *base-indent*)
+	    (incf c-flow)
+	)
+    )
+
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; For/while/do
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indresolve (:for :while :do)
+	(and (< *ind-offset* *ind-start*)
+	    (incf *indent* *base-indent*)
+	    (incf c-flow)
+	)
+    )
+
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Switch
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indresolve :switch
+	(setq c-case-flag nil)
+    )
+    (indresolve (:case :c-case)
+	(if (< *ind-offset* *ind-start*)
+	    (or c-case-flag
 		(setq
-		    offset left
-		    left   (scan left :eol :left :count (if adjust 1 2))
-		)
-
-		;; failed to backup a line, start of file reached?
-		(and (not adjust) (= offset left) (return))
-
-		;; make sure input text is in a toplevel region
-		(setq offset right)
-		(multiple-value-setq (left right) (c-top-match left))
-		;; don't reparse an skiped expression
-		(when adjust
-		    (and (> right offset) (setq right offset))
-		    (setq adjust nil)
-		)
-		(when (>= right left)
-		    (setq
-			line	 (read-text left (- right left))
-			index	 (1- (length line))
-			toplevel (c-indentation left)
+		    *indent*
+		    (+ (offset-indentation *ind-offset* :resolve t)
+			*base-indent*
 		    )
 		)
 	    )
-
-	    (setq char (char line index))
-
-	    (cond
-		;; identifiers and numbers
-		((or (alphanumericp char) (char= char #\_))
-		    ;; offset of first non alphanumeric char
-		    (setq offset (1+ index))
-
-		    ;; skip alphanumeric characters
-		    (while
-			(and
-			    (plusp index)
-			    (setq char (char line (decf index)))
-			    (or (alphanumericp char) (char= char #\_))
-			)
-		    )
-		    ;; index points to the first alphanumeric char
-		    (if (plusp index)
-			(incf index)
-			(unless (or (alphanumericp char) (char= char #\_))
-			    (incf index)
-			)
-		    )
-
-		    ;; check regex patterns
-		    (dolist (pat patterns)
-			(setq
-			    result
-			    (re-exec (car pat) line :start index :end offset)
-			)
-			;; if matched
-			(when (and (consp result) (= (caar result) index))
-			    ;; update state information
-			    (push (cons (cdr pat) (+ left index)) info)
-			    (return)
-			)
-		    )
-		)
-
-		;; string or character
-		((member char '(#\" #\'))
-		    (setq right (c-char-match (1- (+ left index)) char))
-		    (if (integerp right)
-			(setq adjust t)
-			;; failed to find start
-			(return-from c-indent)
-		    )
-		)
-
-		;; maybe comment
-		((char= char #\/)
-		    (when
-			(and (plusp index) (char= (char line (1- index)) #\*))
-			(setq right (search-backward "/*" (+ left (- index 1))))
-			(if (integerp right)
-			    (setq adjust t)
-			    ;; failed to find start of comment
-			    (return-from c-indent)
-			)
-		    )
-		)
-
-		;; skip expression
-		;; XXX if this becomes too slow, may need to not check for
-		;; comments, strings, preprocessor, etc...
-		((member char '(#\) #\] #\}))
-		    (setq right (c-exp-match (1- (+ left index)) char))
-		    (if (integerp right)
-			(progn
-			    (setq adjust t)
-			    (push
-				(cons
-				    (cdr
-					(assoc char '(
-					    (#\) . :parentheses)
-					    (#\] . :brackets)
-					    (#\} . :braces))
-					)
-				    )
-				    (+ left index)
-				)
-				info
-			    )
-			)
-			;; failed to find start
-			(return-from c-indent)
-		    )
-		)
-
-		;; inside an expression, align with it
-		((member char '(#\( #\[))
-		    (setq indent (1+ (c-offset-align (+ left index))))
-		    (go :indent)
-		)
-
-		;; skip spaces
-		((member char c-tab+spaces)
-		    (setq offset (+ left index 1))
-		    (while
-			(and
-			    (plusp index)
-			    (setq char (char line (decf index)))
-			    (member char c-tab+spaces)
-			)
-		    )
-		    ;; index points to the first non space character
-		    (if (plusp index)
-			(incf index)
-			(unless (member char c-tab+spaces) (incf index))
-		    )
-
-		    ;; if:
-		    ;;	o in a toplevel state
-		    ;;	o at the start of non blank line
-		    ;;	o looks like a continuation or start of expression
-		    ;;	o not a comment line
-		    ;; XXX won't properly handle code after comment
-		    ;; in the same line.
-		    (and
-			toplevel
-			(zerop index)
-			(or (not info) (/= (cdar info) offset))
-			(characterp (setq char (char-after offset)))
-			(char/= char #\Newline)
-			(or
-			    ;; if first char is not /
-			    (char/= char #\/)
-			    ;; or if eof after /
-			    (null (setq char (char-after (1+ offset))))
-			    (and
-				;; or * does not follow /
-				(char/= char #\*)
-				;; or / does not follow /
-				(char/= char #\/)
-			    )
-			)
-			(push (cons :bol offset) info)
-		    )
-		)
-
-		;; block start
-		((char= char #\{)
-		    (push (cons :block (+ left index)) info)
-		)
-
-		;; if not ::
-		;; XXX needs better handling to know if is a label or a bitfield
-		((char= char #\:)
-		    (and (or (zerop index) (char/= (char line (1- index)) char))
-			(push (cons :collon (+ left index)) info)
-		    )
-		)
-
-		;; characters that may also be used to resolve indentation
-		((member char '(#\; #\, #\=))
-		    (push
-			(cons
-			    (cdr
-				(assoc char '(
-				    (#\; . :expression)
-				    (#\, . :comma)
-				    (#\= . :assign)
-				    )
-				)
-			    )
-			    (+ left index)
-			)
-			info
-		    )
-		)
-	    )
-
-	    ;; check if a safe-point was found
-	    ;;	A "safe-point" is an offset from where it is expected to
-	    ;; be able to calculate the correct indentation for the cursor
-	    ;; line based on the indentation of the "safe-point" and the
-	    ;; information collected while looping.
-	    (when (and toplevel (zerop index))
-		;; if nothing matched, remember start of line offset
-		(when
-		    (and
-			info
-			;; not a continuation/start of expression
-			(not (eq (caar info) :bol))
-			(not (member (char line 0) c-tab+spaces))
-			;; nothing recorded at bol offset
-			(/= (cdar info) left)
-		    )
-		    (push (cons :bol left) info)
-		)
-
-		(setq result info test (caar result))
-		(cond
-		    ;; easy cases when line starts with any of these
-		    ((member test '(:block :case :else) :test #'eq)
-			(go :process)
-		    )
-
-		    ;; if line starts with any of these
-		    ((member test '(:if :for :while :switch) :test #'eq)
-			(setq result (cdr result))
-			;; if expression inside parentheses does not follow
-			(unless (eq (caar result) :parentheses)
-			    (return-from c-indent)
-			)
-			(setq result (cdr result))
-			;; expression is inside a block
-			(and (eq (caar result) :block)
-			    (go :process)
-			)
-		    )
-
-		    ;; line starts at the middle or start of an expression
-		    ((eq test :bol)
-			(setq
-			    bols 1 result (cdr result) test (caar result)
-			)
-			(loop
-			    (cond
-				;; "simple" code block
-				((eq test :block)
-				    (go :process)
-				)
-
-				((and
-				    (eq test :bol)
-				    (or
-					(and
-					    (null *case-indent*)
-					    (null *cont-indent*)
-					)
-					(<=
-					    (c-offset-align (cdar result))
-					    *indentation*
-					)
-				    ))
-
-				    (when (> (incf bols) 2)
-					(pop info)
-					(until (eq (caar info) :bol)
-					    (pop info)
-					)
-					(go :process)
-				    )
-				)
-
-				((member
-				    test
-				    '(:comma
-				      :assign
-				      :collon
-				      :parenthesis
-				      :brackets
-				      :expression
-				    )
-				    :test #'eq)
-				    ;; do nothing
-				)
-
-				;; anything else or end of list
-				(t
-				    (return)
-				)
-			    )
-			    (setq result (cdr result) test (caar result))
-			)
-		    )
-		)
-	    )
-
-	    (if adjust
-		(if (>= (setq index (- right left 1)) 0)
-		    ;; if didn't skip more than one line
-		    (setq adjust nil)
-		    (setq left right)
-		)
-		;; no adjusting required, just check previous character
-		(decf index)
+	    (and c-case-flag (= (decf c-cases) 0)
+		(decf *indent* *base-indent*)
 	    )
 	)
+	(setq c-case-flag t)
+    )
 
-;------------------------------------------------------------------------
-; calculate indentation based on the collected information
-:process
-	;; at the start of the file?
-	(and (null info) (setq indent 0) (go :indent))
 
-	;; convert (:else ...) (:if ...) to (:else-if), for simplicity
-	(setq result info)
-	(while result
-	    (and (eq (caar result) :else) (eq (caadr result) :if)
-		(rplaca (car result) :else-if)
-		(rplacd result (cddr result))
-	    )
-	    (setq result (cdr result))
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Braces/flow control
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indresolve :flow
+	(incf *indent* *base-indent*)
+    )
+    (indresolve :obrace
+	(and (< *ind-offset* *ind-start*)
+	    (incf *indent* *base-indent*)
 	)
-
-	;; initialize indent to the indentation of first item in info
-	(setq indent (c-offset-align (cdar info)) flow 0 block 0 bols 0 switch 0)
-
-	;; calculate indentation
-	(dolist (item info)
-	    (case (car item)
-		(:case
-		    (setq bols 0)
-		    (unless (> switch 0)
-			(setq switch 1 indent (+ indent *indentation*))
-		    )
-		)
-
-		(:switch
-		    (setq
-			bols   0
-			flow   (1+ flow)
-			switch (+ switch flow)
-			indent (+ indent *indentation*)
-		    )
-		    (and *case-indent* (incf indent *indentation*))
-		)
-
-		((:if :else-if :else :for :while)
-		    (setq
-			bols   0
-			flow   (1+ flow)
-			indent (+ indent *indentation*)
-		    )
-		)
-
-		;; no change in indentation
-		((:parentheses :brackets)
-		    (setq bols 0)
-		)
-
-		(:braces
-		    (when (> flow 0)
-			(setq
-			    offset nil
-			    flow   (1- flow)
-			    indent (- indent *indentation*)
-			)
-			(and (> switch 0) (>= switch flow) *case-indent*
-			    (while (> switch 0)
-				(setq
-				    indent (- indent *indentation*)
-				    switch (1- switch)
-				)
-			    )
-			)
-		    )
-		    (setq bols 0)
-		)
-
-		;; open code block
-		(:block
-		    ;; if indentation not yet added
-		    (if (= flow 0)
-			;; increment one indentation level
-			(setq indent (+ indent *indentation*))
-			(progn
-			    (setq flow (1- flow))
-			    (and *brace-indent* (= switch 0)
-				(incf indent *indentation*)
-			    )
-			)
-		    )
-		    (setq block 1 bols 0)
-		)
-
-		(:expression
-		    (while (> flow 0)
-			(setq
-			    indent (- indent *indentation*)
-			    flow   (1- flow)
-			)
-		    )
-		    (setq bols 0)
-		)
-
-		(:bol
-		    (incf bols)
-		)
-
-		((:comma :collon)
-		    (setq bols 0)
-		)
-
-		(:assign
-		)
-	    )
+    )
+    (indresolve :cbrace
+	(decf *indent* *base-indent*)
+	(and *case-indent* c-case-flag
+	    (decf *indent* *base-indent*)
+	    (setq c-case-flag nil)
 	)
-
-	(and *cont-indent* (> bols 0) (setq cont t))
-
-	;; if line starts with { or }
-	(when (characterp (setq char (char-after current-offset)))
-	    (cond
-		((char= char #\{)
-		    (and (> flow 0) (decf indent *indentation*))
-		    (and *brace-indent* (incf indent *indentation*))
-		    (and (> switch 0) *brace-indent* *case-indent*
-			(decf indent *indentation*)
-		    )
-		    (go :indent)
-		)
-		((char= char #\})
-		    (decf indent *indentation*)
-		    (and (> switch 0) *case-indent*
-			(decf indent *indentation*)
-		    )
-		    (go :indent)
-		)
-	    )
+	(and (not *offset*) (>= *ind-offset* *ind-start*)
+	    (setq *offset* *ind-offset*)
 	)
+    )
 
-	;; check if need to remove one indentation level
-	(let (lline lcase)
-	    (setq
-		right (scan current-offset :eol :right)
-		line  (read-text current-offset (- right current-offset))
-		lline (length line)
-	    )
 
-	    (setq test nil)
-	    (dolist (case '("case" "default"))
-		(setq lcase (length case))
-		(and
-		    (>= lline lcase)
-		    (string= line case :end1 lcase)
-		    (or
-			(= lline lcase)
-			(not
-			    (or
-				(char= (setq char (char line lcase)) #\_)
-				(alphanumericp char)
-			    )
-			)
-		    )
-		    (decf indent *indentation*)
-		    (return (setq test t))
-		)
-	    )
-
-	    ;; indentation not decremented, check for a label
-	    (when
-		(and
-		    (not test)
-		    (or (> switch 0) (gethash :label-dedent options))
-		)
-		;; remove spaces
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Statements
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indresolve :stat
+	(when (< *ind-offset* *ind-start*)
+	    (while (> c-flow 0)
 		(setq
-		    line (string-trim c-tab+spaces line)
-		    index (1- (length line))
-		)
-		;; check if looks like a label
-		(when (and (plusp index) (char= (char line index) #\:))
-		    (setq
-			line
-			(string-right-trim
-			    c-tab+spaces
-			    (subseq line 0 index)
-			)
-
-			index
-			(1- (length line))
-		    )
-		    (when (plusp index)
-			(while
-			    (and
-				(>= index 0)
-				(setq char (char line index))
-				(or
-				    (alphanumericp char)
-				    (char= char #\_)
-				)
-			    )
-			    (decf index)
-			)
-			;; was a label
-			(and (minusp index) (decf indent *indentation*))
-		    )
+		    *indent*	(- *indent* *base-indent*)
+		    c-flow	(1- c-flow)
 		)
 	    )
 	)
-	(and cont (> indent 0) (incf indent *indentation*))
+	(and
+	    *cont-indent*
+	    (< *ind-offset* *ind-start*)
+	    (> (+ *ind-offset* *ind-length*) *ind-start*)
+	    (incf *indent* *base-indent*)
+	)
+    )
 
+    (indresolve :expression
+	(and
+	    *cont-indent*
+	    (zerop c-bra)
+	    (> *indent* 0)
+	    (< *ind-offset* *ind-start*)
+	    (> (+ *ind-offset* *ind-length*) *ind-start*)
+	    (incf *indent* *base-indent*)
+	)
+    )
 
-;------------------------------------------------------------------------
-; indent the current line
-:indent
-	(and (minusp indent) (setq indent 0))
-	(when (/= indent current-indent)
-	    (let
-		(tabs spaces string)
-		(if *emulate-tabs*
-		    (setq
-			index  indent
-			offset (+ start index)
-			string (make-string index :initial-element #\Space)
-		    )
-		    (progn
-			(multiple-value-setq (tabs spaces) (floor indent 8))
-			(setq
-			    index  (+ tabs spaces)
-			    offset (+ start index)
-			    string (make-string index :initial-element #\Tab)
-			)
-			(fill string #\Space :start tabs)
-		    )
-		)
-		(replace-text start current-offset string)
-		(if (> current-offset point)
-		    (goto-char offset)
-		    (goto-char (- point (- current-offset start index)))
-		)
-	    )
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Open
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (indresolve (:oparen :obrack)
+	(and (< *ind-offset* *ind-start*)
+	    (setq *indent* (1+ (offset-indentation *ind-offset* :align t)))
+	)
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Find a "good" offset to start parsing backwards, so that it should
+;; always generate the same results.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun c-offset-indent (&aux char (point (point)))
+    ;; Skip spaces forward
+    (while (member (setq char (char-after point)) indent-spaces)
+	(incf point)
+    )
+    (or (characterp char) (return-from c-offset-indent point))
+
+    ;;	Skip word chars
+    (when (alphanumericp char)
+	(while (and (setq char (char-after point)) (alphanumericp char))
+	    (incf point)
+	)
+	(or (characterp char) (return-from c-offset-indent point))
+
+	;; Skip spaces forward
+	(while (member (setq char (char-after point)) indent-spaces)
+	    (incf point)
+	)
+	(or (characterp char) (return-from c-offset-indent point))
+    )
+
+    (if (char= char #\Newline) point (1+ point))
+)
+(compile 'c-offset-indent)
+
+(defun c-should-indent (options)
+    (when (hash-table-p options)
+	;; check if previous line has extra spaces
+	(and (gethash :trim-blank-lines options)
+	    (indent-clear-empty-line)
 	)
 
-	;; last character typed
-	(setq point (point) char (char-before point) left point)
-	;; check if some extra work should be done
-	(cond
-	    ((and
-		(member char '(#\{ #\}))
-		(gethash :newline-before-brace options)
-		(< (c-indentation start) (1- (c-offset-align point))))
+	;; indentation disabled?
+	(and (gethash :disable-indent options)
+	    (return-from c-should-indent)
+	)
 
+	(let*
+	    (
+	    (point (point))
+	    (start (scan point :eol :left))
+	    (char (char-before point))
+	    offset
+	    match
+	    text
+	    )
+
+	    ;; at the start of an empty file
+	    (or (characterp char)
+		(return-from c-should-indent)
+	    )
+
+	    ;; if at bol and should indent only when starting a line
+	    (and (gethash :only-newline-indent options)
+		(return-from c-should-indent (= point start))
+	    )
+
+	    (and
+		(char= char #\{)
+		(or
+		    (gethash :newline-after-brace options)
+		    (gethash :newline-before-brace options)
+		)
+		(return-from c-should-indent t)
+	    )
+	    (and
+		(char= char #\;)
+		(gethash :newline-after-semi options)
+		(return-from c-should-indent t)
+	    )
+
+	    ;; if one of these was typed, must check indentation
+	    (and (member char '(#\} #\: #\] #\) #\#))
+		(return-from c-should-indent t)
+	    )
+
+	    (and (gethash :newline-indent options)
+		;; at the start of a line
+		(and (= point start)
+		    (return-from c-should-indent t)
+		)
+	    )
+
+	    ;; first char
+	    (setq offset (1- point))
+	    (when (gethash :cont-indent options)
 		(while
 		    (and
-			(> (decf left) start)
-			(member (char-before left) c-tab+spaces)
+			(> offset start)
+			(member (char-before offset) indent-spaces)
 		    )
-		    ;; skip blanks
-		)
-		(replace-text left left (string #\Newline))
-		(c-indent syntax syntable)
-	    )
-
-	    ((or
-		(and
-		    (member char '(#\{ #\}))
-		    (gethash :newline-after-brace options)
-		)
-		(and
-		    (char= char #\;)
-		    (gethash :newline-after-semi options)
-		))
-
-		(incf left)
-		(if (= left (scan left :eol :left) (scan left :eol :right))
-		    (progn
-			(goto-char left)
-			(c-indent syntax syntable)
-		    )
-		    (progn
-			(replace-text left left (string #\Newline))
-			(goto-char left)
-			(c-indent syntax syntable)
-		    )
+		    (decf offset)
 		)
 	    )
+	    (and (<= offset start)
+		(return-from c-should-indent t)
+	    )
 
-	    (t
-		(when (gethash :trim-blank-lines options)
-		    (setq
-			offset left
-			left   (scan start :eol :left :count 2)
-			right  (scan left :eol :right)
+	    ;; check for keywords that change indentation
+	    (when (alphanumericp char)
+		(setq offset (1- point))
+		(while
+		    (and
+			(alphanumericp (char-before offset))
+			(> offset start)
 		    )
-		    (when (and (< left offset) (/= left right))
-			(setq
-			    line  (read-text left (- right left))
-			    index (1- (length line))
-			)
-			(while
-			    (and
-				(>= index 0)
-				(member (char line index) c-tab+spaces)
-			    )
-			    (decf index)
-			)
-			(and (minusp index) (replace-text left right ""))
-		    )
+		    (decf offset)
+		)
+		(setq
+		    text	(read-text offset (- point offset))
+		    match	(re-exec #.(re-comp "(case|else)\\w?\\>") text)
+		)
+		(and
+		    (consp match)
+		    (return-from c-should-indent (<= (- (caar match) offset) 2))
 		)
 	    )
 	)
+    )
+    ;; Should not indent
+    nil
+)
+(compile 'c-should-indent)
+
+
+(defun c-indent-check (syntax syntable options
+		       &aux start point char left brace change)
+    (setq
+	point	(point)
+	char	(char-before point)
+	left	point
+	brace	(member char '(#\{ #\}))
+    )
+
+    (when
+	(and brace (gethash :newline-before-brace options))
+	(setq start (scan point :eol :left))
+	(while
+	    (and
+		(> (decf left) start)
+		(member (char-before left) indent-spaces)
+	    )
+	    ;; skip blanks
+	)
+	(when (> left start)
+	    (replace-text left left (string #\Newline))
+	    (c-indent syntax syntable)
+	    (setq change t)
+	)
+    )
+
+    (when
+	(or
+	    (and brace (not change) (gethash :newline-after-brace options))
+	    (and (char= char #\;) (gethash :newline-after-semi options))
+	)
+	(setq left (point))
+	(replace-text left left (string #\Newline))
+	(goto-char (1+ left))
+	(c-indent syntax syntable)
+    )
+)
+
+(defun c-indent (syntax syntable)
+    (let*
+	(
+	(options (syntax-options syntax))
+	*base-indent*
+	*brace-indent*
+	*case-indent*
+	*label-dedent*
+	*cont-indent*
+	)
+
+	(or (c-should-indent options) (return-from c-indent))
+
+	(setq
+	    *base-indent*	(gethash :indentation options 4)
+	    *brace-indent*	(gethash :brace-indent options nil)
+	    *case-indent*	(gethash :case-indent options t)
+	    *label-dedent*	(gethash :label-dedent options t)
+	    *cont-indent*	(gethash :cont-indent options t)
+	)
+
+	(indent-macro
+	    *c-mode-indent*
+	    (c-offset-indent)
+	    (gethash :emulate-tabs options)
+	)
+
+	(c-indent-check syntax syntable options)
     )
 )
 (compile 'c-indent)

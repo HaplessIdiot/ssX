@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.12 2002/09/15 21:32:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.13 2002/10/06 17:11:44 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -575,8 +575,10 @@ Lisp_Intern(LispMac *mac, LispBuiltin *builtin)
 
 	symbol->data.atom->unreadable = unreadable;
 	/* If symbol being create in the keyword package, make it external */
-	if (package == mac->keyword)
+	if (package == mac->keyword) {
 	    symbol->data.atom->ext = LispTrue_t;
+	    symbol->data.atom->constant = LispTrue_t;
+	}
 	RETURN(0) = NIL;
     }
     else {

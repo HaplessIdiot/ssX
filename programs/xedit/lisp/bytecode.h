@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.h,v 1.1 2002/08/25 02:48:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.h,v 1.2 2002/09/22 07:09:06 paulo Exp $ */
 
 #include "private.h"
 
@@ -156,6 +156,10 @@ typedef enum {
 
     XBC_CALL_SET,
 	/* Like BCALL, but also followed by an short index of local variable */
+
+    XBC_BYTECALL,	/* Call bytecode */
+	/* 1 byte for number of arguments */
+	/* 1 byte for index in bytecode table */
 
     XBC_FUNCALL,
 	/* Opcode followed by function and arguments objects, to

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.6 2002/09/15 21:32:33 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.8 2002/10/06 17:11:47 paulo Exp $
 ;;
 
 (provide "syntax")
@@ -59,9 +59,9 @@ o Add a command to match without increment the offset in the input, this
 	match "<"	<- the table already eated this, so it won't be matched.
   This must be carefully checked at compile time, such instruction should
   be in a token that returns or starts a new one, and even then, may need
-  rutime check to make sure it won't enter an infinite loop.
+  runtime check to make sure it won't enter an infinite loop.
 o Allow combining properties, this is supported in Xaw, and could allow some
-  very intereting effects for complex documents.
+  very interesting effects for complex documents.
 o Maybe have an separated function/loop for tables that don't have tokens
   that start/switch to another table, and/or have the contained attribute set.
   This could allow running considerably faster.
@@ -84,6 +84,9 @@ o Fix problems matching EOL. Since EOL is an empty string match, if there
   input is at EOL.
   One possible solution would be to add the ending newline to the input,
   and then instead of matching "$", should match "\\n".
+o Allow both, :switch and :begin to the be specified for tokens, it is
+  almost mandatory for a file format with sections that automatically ends
+  the previous one.
 |#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
