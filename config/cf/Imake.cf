@@ -832,14 +832,16 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #  define s390xArchitecture
 #  undef __s390x__
 # endif
-# if defined(__x86_64__)
+# if defined(__AMD64__) || defined (__x86_64__)
+#  undef __AMD64__
 #  undef __x86_64__
-#  define x86_64Architecture
+#  define AMD64Architecture
 # endif
-# if defined(x86_64__)
+# if defined(AMD64__) || defined (x86_64__)
+#  undef AMD64__
 #  undef x86_64__
-#  ifndef x86_64Architecture
-#   define x86_64Architecture
+#  ifndef AMD64Architecture
+#   define AMD64Architecture
 #  endif
 # endif
 #endif /* linux */

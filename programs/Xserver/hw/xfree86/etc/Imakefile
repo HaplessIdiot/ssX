@@ -140,7 +140,7 @@ InstallProgram(mmapw,$(BINDIR))
 #if defined(i386Architecture) || \
     defined(AlphaArchitecture) || \
     defined(ia64Architecture) || \
-    defined(x86_64Architecture)
+    defined(AMD64Architecture)
 
        SRCS8 = ioport.c
 

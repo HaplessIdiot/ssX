@@ -244,7 +244,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 /* On x86, determine whether to build with MTRR support */
 #ifndef HasMTRRSupport
-# if defined (i386Architecture) || defined (x86_64Architecture)
+# if defined (i386Architecture) || defined (AMD64Architecture)
 /* There is no certain way to know if <asm/mtrr.h> is available,
    but it made it into kernel 2.2, so... */
 #  if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
@@ -260,7 +260,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #ifndef XF86INT10_BUILD
 # if defined (i386Architecture)
 #  define XF86INT10_BUILD	X86VM
-# elif defined (x86_64Architecture)
+# elif defined (AMD64Architecture)
 #  define XF86INT10_BUILD	X86EMU_OS
 # else
 #  define XF86INT10_BUILD	X86EMU_GENERIC
@@ -296,7 +296,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #    define BuildXF86DRI	YES
 #  elif defined(SuperHArchitecture)
 #    define BuildXF86DRI	NO
-#  elif defined(x86_64Architecture)
+#  elif defined(AMD64Architecture)
 #    define BuildXF86DRI	YES
 #  else
 #    define BuildXF86DRI	NO
@@ -325,7 +325,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
    kernel revisions.  So, we'll only build the module for kernels that are
    known to be supported by the module. */
 #ifndef BuildXF86DRM
-#  if defined(i386Architecture) || defined(ia64Architecture) || defined(SparcArchitecture) || defined(AlphaArchitecture) || defined(x86_64Architecture)
+#  if defined(i386Architecture) || defined(ia64Architecture) || defined(SparcArchitecture) || defined(AlphaArchitecture) || defined(AMD64Architecture)
 #    if OSMajorVersion == 2
        /* Only tested for Linux 2.2.0 through 2.2.12 */
 #      if OSMinorVersion == 2 && OSTeenyVersion <= 12
@@ -350,7 +350,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 
 #ifndef HasAgpGart
-#  if defined(i386Architecture) || defined(ia64Architecture) || defined(x86_64Architecture)
+#  if defined(i386Architecture) || defined(ia64Architecture) || defined(AMD64Architecture)
      /* The AGPGART header file is included in os-support/linux, which
         allows all drivers that depend on AGP to build properly. */
 #    define HasAgpGart	YES
@@ -505,7 +505,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #define MkdirHierCmd		mkdir -p
 
 #ifndef HaveLib64
-# if defined (x86_64Architecture) || defined (s390xArchitecture)
+# if defined (AMD64Architecture) || defined (s390xArchitecture)
 #  define HaveLib64	YES
 # else
 #  define HaveLib64	NO
@@ -624,13 +624,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #   define LdCmd		CcCmd -nostdlib -Wl,"-m m68klinux"
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* Mc68020Architecture */
-#  ifdef x86_64Architecture
+#  ifdef AMD64Architecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
 #   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-DUSE_GAS -U__ELF__
-#  endif /* x86_64Architecture */
+#  endif /* AMD64Architecture */
 # endif /* UseElfFormat */
 #else
 # if UseElfFormat
@@ -670,13 +670,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #   define AsmDefines		-D__ELF__
 #   define CplusplusCmd		c++ -b m68k-linux
 #  endif /* Mc68020Architecture */
-#  ifdef x86_64Architecture
+#  ifdef AMD64Architecture
 #   define CcCmd                 gcc
 #   define CplusplusCmd          g++
 #   define AsCmd                 CcCmd -c -x assembler
 #   define LdCmd                 CcCmd -nostdlib
 #   define AsmDefines            -D__ELF__
-#  endif /* x86_64Architecture */
+#  endif /* AMD64Architecture */
 # else
 #  define CcCmd			gcc
 #  define AsCmd			CcCmd -c -x assembler
@@ -865,14 +865,14 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # endif
 #endif
 
-#ifdef x86_64Architecture
+#ifdef AMD64Architecture
 # ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	DefaultGcc2x86_64Opt
+#  define OptimizedCDebugFlags	DefaultGcc2AMD64Opt
 # endif
-# define LinuxMachineDefines   -D__x86_64__
+# define LinuxMachineDefines   -D__AMD64__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
-#endif /* x86_64Architecture */
+#endif /* AMD64Architecture */
 
 #ifndef StandardDefines
 # define StandardDefines	-Dlinux LinuxMachineDefines LinuxSourceDefines

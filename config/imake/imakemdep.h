@@ -371,8 +371,11 @@ char *cpp_argv[ARGUMENTS] = {
 # ifdef __ia64__
 	"-D__ia64__",
 # endif
+# ifdef __AMD64__
+	"-D__AMD64__",
+# endif
 # ifdef __x86_64__
-	"-D__x86_64__",
+	"-D__AMD64__",
 # endif
 # ifdef __s390__
 	"-D__s390__",
@@ -1252,10 +1255,12 @@ struct symtab	predefs[] = {
 # ifdef __ia64__
 	{"__ia64__", "1"},
 # endif
-# ifdef x86_64
+# if defined (AMD64) || defined (x86_64)
+	{"AMD64", "1"},
 	{"x86_64", "1"},
 # endif
-# ifdef __x86_64__
+# if defined (__AMD64__) || defined (__x86_64__)
+	{"__AMD64__", "1"},
 	{"__x86_64__", "1"},
 # endif
 # ifdef __i386__

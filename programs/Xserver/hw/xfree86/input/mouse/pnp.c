@@ -729,7 +729,7 @@ static struct ps2protos {
 } ps2 [] = {
     { 0x0, PROT_PS2 },
     { 0x3, PROT_IMPS2 },
-    { 0x5, PROT_EXPPS2 },
+    { 0x4, PROT_EXPPS2 },
     { -1 , PROT_UNKNOWN }
 };
 

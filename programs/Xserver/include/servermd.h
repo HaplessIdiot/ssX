@@ -403,7 +403,7 @@ SOFTWARE.
 
 #endif /* ia64 */
 
-#if defined(__x86_64__) || defined(x86_64)
+#if defined(__AMD64__) || defined(AMD64)
 # define IMAGE_BYTE_ORDER	LSBFirst
 
 # if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
@@ -422,7 +422,7 @@ SOFTWARE.
 # define FAST_CONSTANT_OFFSET_MODE
 /* ???? */
 # define FAST_UNALIGNED_READS
-#endif /* x86_64 */
+#endif /* AMD64 */
 
 #ifdef stellar
 

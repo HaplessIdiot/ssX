@@ -392,7 +392,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # endif
 #endif
 
-#if defined(x86_64Architecture)
+#if defined(AMD64Architecture)
 # ifndef XF86Server
 #  define XF86Server		YES
 # endif
@@ -470,14 +470,14 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				vga dummy fbdev vesa
 # endif
 
-/* DRI tdfx driver needs Glide, which is not available for x86_64 */
+/* DRI tdfx driver needs Glide, which is not available for AMD64 */
 # define TdfxDriDriver		/**/
 
 # define DevelDRIDrivers	/**/
 
 # define DriDrivers		gamma i810 mga r128 radeon r200 \
 				TdfxDriDriver DevelDRIDrivers
-#endif /*x86_64Arcitecture*/
+#endif /*AMD64Arcitecture*/
 
 /* SPARC and UltraSPARC drivers */
 
@@ -1352,7 +1352,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
    || defined (Sparc64Architecture) \
    || defined(ia64Architecture) \
    || defined(s390xArchitecture) \
-   || defined(x86_64Architecture)
+   || defined(AMD64Architecture)
 #    define GlxArchDefines -D__GLX_ALIGN64
 #  elif defined(AlphaArchitecture)
 /* On the Alpha we need to ensure floating point accuracy for 3D */
@@ -1903,9 +1903,9 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # endif
 #endif
 
-#if HasGcc2 && defined(x86_64Architecture)
-# ifndef DefaultGcc2x86_64Opt
-#  define DefaultGcc2x86_64Opt -O2 -fno-strength-reduce GccAliasingArgs
+#if HasGcc2 && defined(AMD64Architecture)
+# ifndef DefaultGcc2AMD64Opt
+#  define DefaultGcc2AMD64Opt -O2 -fno-strength-reduce GccAliasingArgs
 # endif
 #endif
 
@@ -1961,7 +1961,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # ifndef Has3DNowSupport
 #  define Has3DNowSupport NO
 # endif
-#elif defined (x86_64Architecture)
+#elif defined (AMD64Architecture)
 # ifndef HasX86Support
 #  define HasX86Support NO
 # endif
@@ -1990,7 +1990,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #endif
 
 #ifndef StaticNeedsPicForShared
-# if defined (x86_64Architecture)\
+# if defined (AMD64Architecture)\
   || defined (AlphaArchitecture) \
   || defined (ia64Architecture) \
   || defined (PpcArchitecture) \

@@ -35,7 +35,7 @@
 #include <string.h>
 #if defined(linux) && \
     (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
-    || defined(__x86_64__))
+    || defined(__AMD64__))
 #include <malloc.h>
 #endif
 #include <stdarg.h>
@@ -330,7 +330,7 @@ LoaderInit(void)
 
 #if defined(linux) && \
     (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
-     || ( defined __x86_64__ && ! defined UseMMAP && ! defined DoMMAPedMerge))
+     || ( defined __AMD64__ && ! defined UseMMAP && ! defined DoMMAPedMerge))
     /*
      * The glibc malloc uses mmap for large allocations anyway. This breaks
      * some relocation types because the offset overflow. See loader.h for more
@@ -448,7 +448,7 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
     new_off_bias = (offset + offsetbias) - new_off;
     if ((new_off_bias + size) > new_size) new_size += pagesize;
     ret = (unsigned long) mmap(0,new_size,MMAP_PROT,MAP_PRIVATE
-#  ifdef __x86_64__
+#  ifdef __AMD64__
 			       | MAP_32BIT
 #  endif
 			       ,
@@ -458,7 +458,7 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
     return (void *)(ret + new_off_bias);
 # else
     ret = (unsigned long) mmap(0,size,MMAP_PROT,MAP_PRIVATE
-#  ifdef __x86_64__
+#  ifdef __AMD64__
 			       | MAP_32BIT
 #  endif
 			       ,

@@ -30,7 +30,7 @@ DLOBJ=dlloader.o
     SHM_DEFINES = -DHAS_SHM
 #endif
 
-#if defined (x86_64Architecture)
+#if defined (AMD64Architecture)
 ARCHDEFINES = -DDoMMAPedMerge -DMmapPageAlign
 #endif
 

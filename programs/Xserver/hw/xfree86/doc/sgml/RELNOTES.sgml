@@ -248,7 +248,7 @@ don't have enough space to cover them all here.
 <item> Various Cygwin support updates, including an experimental rootless
 	X server for Cygwin/XFree86.
 
-<item> AMD x86-64 support (primarily for Linux so far) has been added.
+<item> AMD AMD64 support (primarily for Linux so far) has been added.
 
 <item> Support added for OpenBSD/sparc64.
 

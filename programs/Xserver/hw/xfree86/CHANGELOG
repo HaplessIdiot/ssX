@@ -1,4 +1,8 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 214. Changed any occurance of x86_64 to AMD64, the official name of the
+      architecture (Egbert Eich).
+ 213. Removed Copyright sign from man pages as this causes some formatters
+      to choke (Egbert Eich).
  212. Export SysV IPC functions to modules in Net and OpenBSD 
       (Bugzilla #355, Quentin Garnier). 
  211. Fix rootless bug when reordering windows behind others (Torrey T Lyons).

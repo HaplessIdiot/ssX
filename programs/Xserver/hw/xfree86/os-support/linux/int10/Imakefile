@@ -45,7 +45,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/int10 \
 
 DEFINES=-DHAVE_SYSV_IPC $(X86EMUDEFINES) $(EXTRADEFINES)
 
-#if defined(i386Architecture) || defined (x86_64Architecture)
+#if defined(i386Architecture) || defined (AMD64Architecture)
 EXTRADEFINES=-D_PC
 #endif
 

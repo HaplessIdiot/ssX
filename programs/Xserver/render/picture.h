@@ -169,7 +169,7 @@ typedef __int64		xFixed_32_32;
       defined(ia64) || defined(__ia64__) || \
       defined(__sparc64__) || \
       defined(__s390x__) || \
-      defined(x86_64) || defined (__x86_64__)
+      defined(AMD64) || defined (__AMD64__)
 typedef long		xFixed_32_32;
 # else
 #  if defined(__GNUC__) && \

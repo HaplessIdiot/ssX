@@ -448,7 +448,7 @@ __ustw (unsigned long r5, unsigned short * r11)
 #    define outw(a,b)	_outw(b,a)
 #    define outl(a,b)	_outl(b,a) 
 
-#   elif defined(linux) && defined(__x86_64__) 
+#   elif defined(linux) && defined(__AMD64__) 
  
 #    include <inttypes.h>
 
