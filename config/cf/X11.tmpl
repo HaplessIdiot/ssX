@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.149 2002/03/02 22:54:50 herrb Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.150 2002/03/04 19:36:47 mvojkovi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3425,7 +3425,7 @@ clean::									@@\
 	$(RM) index.raw file.nPS file.PS file.txt
 #endif
 
-#ifndef MakeSimpleDoc(file,srcs)
+#ifndef MakeSimpleDoc
 #define MakeSimpleDoc(file,srcs) MakeDepSimpleDoc(file,srcs,srcs)
 #endif
 
