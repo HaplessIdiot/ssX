@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.116 2003/05/25 03:12:21 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.117 2003/05/27 16:06:05 tsi Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3175,10 +3175,16 @@ MakeMakeSubdirs(dirs,Makefiles)
 /*
  * Translate XCOMM into pound sign with sed, rather than passing -DXCOMM=XCOMM
  * to cpp, because that trick does not work on all ANSI C preprocessors.
- * Also delete line numbers from the cpp output (-P is not portable, I guess).
+ * Delete line numbers from the cpp output (-P is not portable, I guess).
+ * Allow XCOMM to be preceded by whitespace and provide a means of generating
+ * output lines with trailing backslashes.
  */
 #ifndef CppSedMagic
-#define CppSedMagic sed -e '/^#  *[0-9][0-9]*  *.*$$/d' -e '/^XCOMM$$/s//#/' -e '/^XCOMM[^a-zA-Z0-9_]/s/^XCOMM/#/'
+#define CppSedMagic sed -e '/^#  *[0-9][0-9]*  *.*$$/d' \
+			-e '/^#line  *[0-9][0-9]*  *.*$$/d' \
+			-e '/^[ 	]*XCOMM$$/s/XCOMM/#/' \
+			-e '/^[ 	]*XCOMM[^a-zA-Z0-9_]/s/XCOMM/#/' \
+			-e '/\@\@$$/s/\@\@$$/\\/'
 #endif /* CppSedMagic */
 
 #ifndef CppFileTarget
