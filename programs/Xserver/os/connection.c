@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.50 2001/08/16 08:23:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.51 2001/08/23 15:26:05 alanh Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -392,7 +392,7 @@ CreateWellKnownSockets()
 	RunFromSmartParent = TRUE;
     ParentProcess = getppid ();
     if (RunFromSmartParent) {
-	if (ParentProcess > 0) {
+	if (ParentProcess > 1) {
 	    kill (ParentProcess, SIGUSR1);
 	}
     }
@@ -450,7 +450,7 @@ ResetWellKnownSockets ()
      */
 #if !defined(WIN32)
     if (RunFromSmartParent) {
-	if (ParentProcess > 0) {
+	if (ParentProcess > 1) {
 	    kill (ParentProcess, SIGUSR1);
 	}
     }
