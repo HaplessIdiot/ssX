@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 131. Fix potential XDarwin bug in translating Darwin keymappings to X11
+      keymaps with unrecognized modifier keys (Gregory Parker).
  130. Make XDarwin ignore Caps Lock when checking for VT switch, except when
       the user's switch key preference includes Caps Lock (Gregory Parker).
  129. Update XDarwin Cocoa UI and preferences for rootless mode. Add more
@@ -13547,4 +13549,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1873 2001/07/15 01:57:33 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1874 2001/07/15 02:23:27 torrey Exp $

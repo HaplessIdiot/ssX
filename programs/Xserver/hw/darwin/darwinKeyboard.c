@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.4 2001/04/01 07:12:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.5 2001/04/25 02:23:47 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -507,7 +507,7 @@ void DarwinKeyboardInit(
                 map[keyCode * GLYPHS_PER_KEY] = XK_Help;
                 modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
             } else {
-                break;
+                continue;
             }
             left = 0;
         }
