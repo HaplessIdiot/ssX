@@ -13,7 +13,7 @@
     <date>15 June 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.25 2001/08/18 02:51:11 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.26 2001/10/02 11:44:15 alanh Exp $
     </ident>
 
     <toc>
@@ -71,7 +71,7 @@
            name="http://dri.sourceforge.net/DRIcompile.html">
       <p>
         Edits, corrections and updates to this document may be mailed
-        to brianp@valinux.com.
+        to <email>brian@tungstengrahpics.com</email>.
 
     <sect>Supported Architectures & Hardware
 <p>
@@ -195,7 +195,7 @@
       XFree86 4.0.1 added automatic kernel module loading to the X server.
       On Linux, the X server uses modprobe to load kernel modules.
       In Linux 2.4.x the DRM kernel modules should be kept in
-      <tt>/lib/modules/2.4.x/kernel/driver/char/drm/</tt> for automatic
+      <tt>/lib/modules/2.4.x/kernel/drivers/char/drm/</tt> for automatic
       loading to work.
       <p>
       Optionally, DRM kernel modules can be loaded manually with insmod
@@ -748,7 +748,7 @@
 
           <p>
             The kernel module for 3dfx hardware is named <tt>tdfx.o</tt> and
-	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
+	    should be installed in /lib/modules/2.4.x/kernel/drivers/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for 3dfx hardware should be in
@@ -939,7 +939,7 @@
             </verb>
           <p>
             The kernel module for the i810 is named <tt>i810.o</tt> and
-	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
+	    should be installed in /lib/modules/2.4.x/kernel/drivers/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for the i810 should be in
@@ -1036,7 +1036,7 @@
 
           <p>
             The kernel module for the G200/G400 is named <tt>mga.o</tt> and
-	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
+	    should be installed in /lib/modules/2.4.x/kernel/drivers/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for the G200/G400 should be in
@@ -1179,7 +1179,7 @@
             </verb>
           <p>
             The kernel module for the Rage 128 is named <tt>r128.o</tt> and
-	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
+	    should be installed in /lib/modules/2.4.x/kernel/drivers/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for the Rage 128 should be in
@@ -1262,7 +1262,7 @@
             </verb>
           <p>
             The kernel module for the Radeon is named <tt>radeon.o</tt> and
-	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
+	    should be installed in /lib/modules/2.4.x/kernel/drivers/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for the Radeon should be in
