@@ -373,12 +373,6 @@
   If your mouse does not work try using kermit or tip to connect to the
   mouse serial port and verify that it does indeed generate characters.
 
-  5.1.  Configuring a PS/2 mouse for XFree86 on NetBSD
-
-  The NetBSD pms mouse driver handles PS/2 style mice as Busmouse.
-  Specify the protocol `busmouse' in the mouse section of your
-  XF86Config file if you're using a PS/2 mouse.
-
   6.  Running X
 
   8mb of memory is a recommended minimum for running X.  The server,
@@ -393,9 +387,12 @@
   because the server takes over the screen.
 
   To get out of X windows, type: ``exit'' in the console xterm.  You can
-
   customize your X by creating .xinitrc, .xserverrc, and .twmrc files in
   your home directory as described in the xinit and startx man pages.
+
+
+
+
 
   7.  Kernel Support for X
 
@@ -459,9 +456,9 @@
   mode. But XFree86 servers can take advantage (or require) linear
   access to the display memory.
 
-
   The P9000, Mach64 and AGX servers require linear memory access, other
   accelerated servers can take advantage of it, but do not require it.
+
 
   There are two ways to allow XFree86 to access linear memory:
 
@@ -524,6 +521,9 @@
         options         SYSVMSG
         options         SYSVSEM
         options         SYSVSHM
+
+
+
 
 
   to your kernel config file. Then from /sys/arch/i386/config, type:
@@ -724,7 +724,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.19 1996/02/04 09:08:15 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.20 1996/02/12 11:13:08 dawes Exp $
 
 
 

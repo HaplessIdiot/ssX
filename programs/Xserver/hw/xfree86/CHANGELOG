@@ -1,4 +1,6 @@
 XFree86 3.1.2Cd (12 February 1996)
+339. Fix library ordering for Linux a.out for xset, xdpyinfo and xvidtune
+     (Harald Koenig).
 338. Add a version check to the XInput dynamic modules (Frederic Lepied).
 337. Fix keyboard LED initialisation.  This usually shows up as a problem
      on *BSD where the NumLock LED is on when the server is started.
