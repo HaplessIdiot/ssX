@@ -37,7 +37,7 @@ The XFree86 binary beta releases may be freely redistributed providing that
 they are not modified in any way, and providing that an unmodified version
 of this document is included with the distribution.
 
-The reasons for making this beta release publically available are to
+The reasons for making this beta release publicly available are to
 give it the widest possible testing, and also to make support for
 new hardware available.
 
@@ -111,7 +111,7 @@ our usual support address.
 	screen wrapping with version 3.1.2, please remove them when
 	testing this version.  If there are problems with the new
 	defaults, please report them to us.
-  <item>Prelminary support has been added for the AT&amp;T 20C409 and
+  <item>Preliminary support has been added for the AT&amp;T 20C409 and
 	AT&amp;T 20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
 	currently does not work.
   <item>The IBM RGB526 RAMDAC used on the newer Diamond Stealth64
@@ -185,8 +185,71 @@ our usual support address.
 </itemize>
 <p>
 
+<sect>Installing an XFree86 Beta Release
+<p>
+The XFree86 3.1.2A binary beta release is distributed as a upgrade to
+3.1.2.  It consists of the following files:
+<!--
+<quote>
+<descrip>
+<tag/BetaReport/	Beta test report template form
+<tag/X312A8514.tgz/	8514/A server
+<tag/X312AAGX.tgz/	AGX server
+<tag/X312AMa32.tgz/	Mach 32 server
+<tag/X312AMa64.tgz/	Mach 64 server
+<tag/X312AMa8.tgz/	Mach 8 server
+<tag/X312AMono.tgz/	Mono server
+<tag/X312AP9K.tgz/	P9000 server
+<tag/X312ASVGA.tgz/	SVGA server
+<tag/X312AVG16.tgz/	16 colour VGA server
+<tag/X312AW32.tgz/	ET4000/W32 server
+<tag/X312Aupd.tgz/	clients/libraries that have changed since 3.1.2
+<tag/postinst.sh/	script to run after installing the 3.1.2A binaries
+</descrip>
+</quote>
+-->
+<quote>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.2 1995/11/18 02:31:16 dawes Exp $
+BetaReport	   Beta test report template form
+X312A8514.tgz	   8514/A server
+X312AAGX.tgz	   AGX server
+X312AMa32.tgz	   Mach 32 server
+X312AMa64.tgz	   Mach 64 server
+X312AMa8.tgz	   Mach 8 server
+X312AMono.tgz	   Mono server
+X312AP9K.tgz	   P9000 server
+X312ASVGA.tgz	   SVGA server
+X312AVG16.tgz	   16 colour VGA server
+X312AW32.tgz	   ET4000/W32 server
+X312Aupd.tgz	   clients/libraries that have changed since 3.1.2
+postinst.sh	   script to run after installing the 3.1.2A binaries
+</verb>
+</quote>
+
+If you don't already have XFree86 3.1.2 installed, first install that.
+Then, you will need to get at least one of the XFree86 3.1.2A X servers
+plus the update set (<tt/X312Aupt.tgz/), the post-install script, and
+the BetaReport file.  It is recommended that these be
+installed in the directory <tt>/usr/XFree86-3.1.2A</tt>.  The following
+example is for installing the S3 and Mono servers, and it assumes
+that the above files are located in <tt>/var/tmp</tt>:
+
+<tscreen><verb>
+	mkdir /usr/XFree86-3.1.2A
+	cd /usr/XFree86-3.1.2A
+	gzip -d < /var/tmp/X312AS3.tgz | tar vxf -
+	gzip -d < /var/tmp/X312AMono.tgz | tar vxf -
+	gzip -d < /var/tmp/X312Aupd.tgz | tar vxf -
+	sh /var/tmp/postinst.sh
+</verb></tscreen>
+	
+The <tt>postinst.sh</tt> script makes a backup copy of the 3.1.2 versions
+you already had installed in /usr/X11R6.  It puts the backups into the
+/usr/XFree86-3.1.2 directory.  It then links the 3.1.2A versions into
+/usr/X11R6.
+<p>
+<verb>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.3 1995/11/18 23:49:15 dawes Exp $
 </verb>
 
 </article>

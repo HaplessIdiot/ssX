@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.8 1995/07/15 15:09:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.9 1995/07/16 09:15:16 dawes Exp $
 
 #if SystemV
  CONFIGFILES = ldterm.sdevice ptem.sdevice ptm.sdevice pts.node \
@@ -46,9 +46,13 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.8 1995/07/15 15
 #endif
 #endif
 
+#if XFree86Version % 10
+POSTINST = postinst.sh
+#endif
+
        FILES = $(CONFIGFILES) $(TERMFILES) \
                $(PATCHFILES) $(XDMCONF) ati.test.c regati.h \
-               et4000clock.c xmodmap.std $(MISCFILES)
+               et4000clock.c xmodmap.std $(MISCFILES) $(POSTINST)
     INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	       -I$(SERVERSRC)/include -I$(INCLUDESRC)
 

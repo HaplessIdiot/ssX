@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.18 1995/11/16 11:06:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.19 1995/11/18 02:31:33 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1231,7 +1231,7 @@ void screen_configuration() {
 
 	printf("%s", devicesettingscomment_text);
 
-	if (config_screentype != 4)
+	if (config_screentype < 3)
 		goto skipramdacselection;
 
 	printf("%s", ramdaccomment_text);
