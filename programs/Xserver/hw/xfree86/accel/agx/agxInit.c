@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.0 1994/06/15 15:35:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -56,6 +56,10 @@
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+
+#if defined(__BSD__) || defined(MACH386)
+#include <sys/resource.h>
+#endif
 
 extern int  agxMaxClock;
 extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
@@ -853,6 +857,7 @@ finish:
    InfoRec->clock[knownclkindex] = knownclkvalue;
    InfoRec->clocks = num; 
 
+   return(TRUE);
 }
 
 void
@@ -1234,6 +1239,8 @@ agxSetUpProbeCRTC(crtcRegs)
    crtcRegs->clock_sel = 0;
 
    crtcRegs->overscan = 0x01;
+
+   return(TRUE);
 }
 
 

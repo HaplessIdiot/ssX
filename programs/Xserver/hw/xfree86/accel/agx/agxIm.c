@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.0 1994/06/15 15:35:30 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -44,14 +44,10 @@ void	(*agxImageReadFunc)();
 void	(*agxImageWriteFunc)();
 void	(*agxImageFillFunc)();
 
-static	void	agxImageRead();
-static	void	agxImageWrite();
-static	void	agxImageFill();
 static	void	agxImageFillBank();
 static	void	agxImageFillNoMem();
 static	void	agxImageReadBank();
 static	void	agxImageWriteBank();
-static	void	agxImageReadNoMem();
 static	void	agxImageWriteNoMem();
 
 static unsigned long PMask;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxText.c,v 3.0 1994/06/15 15:35:41 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -50,17 +50,17 @@ agxPolyText8(pDraw, pGC, x, y, count, chars)
      GCPtr pGC;
      int   x, y;
      int   count;
-     unsigned char *chars;
+     char *chars;
 {
    CacheFont8Ptr ret;
 
    if (!xf86VTSema)
    {
-      return(miPolyText8(pDraw, pGC, x, y, count, (char *)chars));
+      return(miPolyText8(pDraw, pGC, x, y, count, chars));
    }
 
    if ((ret = agxCacheFont8(pGC->font)) == NULL)
-       return miPolyText8(pDraw, pGC, x, y, count, (char *)chars);
+       return miPolyText8(pDraw, pGC, x, y, count, chars);
    else
        return agxCPolyText8(pDraw, pGC, x, y, count, chars, ret);
 }

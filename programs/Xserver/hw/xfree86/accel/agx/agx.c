@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.0 1994/06/15 15:35:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1098,8 +1098,9 @@ agxEnterLeaveVT(enter, screen_idx)
  */
 
 Bool
-agxCloseScreen(screen_idx)
+agxCloseScreen(screen_idx, pScreen)
    int screen_idx;
+   ScreenPtr pScreen;
 {
    /*
     * Hmm... The server may shut down even if it is not running on the

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.0 1994/06/15 15:35:14 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -65,7 +65,9 @@ static void showcache();
  */
 
 void
-agxBitCache8Init()
+agxBitCache8Init(x,y)
+   int x;
+   int y;
 {
    unsigned char i;
    bitMapRowPtr bptr;

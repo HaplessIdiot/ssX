@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.0 1994/06/15 15:35:17 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -573,7 +573,7 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
     int			srcx, srcy;
     int			width, height;
     int			dstx, dsty;
-    unsigned int 	bitPlane;
+    unsigned long	bitPlane;
 {
    PixmapPtr pBitmap = NULL;
    RegionPtr prgnSrcClip;       /* may be a new region, or just a copy */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.0 1994/06/15 15:35:13 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -32,128 +32,712 @@
 #define AGX_CURSMAX		64
 
 #include "X.h"
+#include "input.h"
+#include "pixmap.h"
+#include "region.h"
+#include "gc.h"
+#include "gcstruct.h"
+#include "colormap.h"
+#include "colormapst.h"
+#include "miscstruct.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#include "windowstr.h"
 #include "misc.h"
 #include "xf86.h"
 #include "regionstr.h"
 #include "regagx.h"
 
-extern Bool agxProbe();
-extern Bool agxInitialize();
-extern void agxEnterLeaveVT();
-extern void agxAdjustFrame();
-extern Bool agxSwitchMode();
-extern void agxPrintIdent();
-extern Bool agxClockSelect();
-extern Bool xgaNiClockSelect();
-extern void agxResetCRTC();
-
-extern agxSaveBlock *agxHWSave();
-extern void         agxHWRestore();
+_XFUNCPROTOBEGIN
 
 extern void agxSetRead();
 extern void agxSetReadWrite();
 extern void agxSetWrite();
-
-extern void agxDline();
-extern void agxDsegment();
-
-extern Bool agxSaveScreen();
-extern Bool agxCloseScreen();
-
-extern Bool agxInit();
-extern void agxInitDisplay();
-extern void agxInitAperture();
-extern void agxInitEnvironment();
-extern void agxCalcCRTCRegs();
-extern void agxSetCRTCRegs();
-extern void agxInitLUT();
-extern void agxSaveLUT();
-extern void agxRestoreLUT();
-extern void agxCleanUp();
 extern void agxSetRamdac();
-
-extern int agxListInstalledColormaps();
-extern int agxGetInstalledColormaps();
-extern void agxStoreColors();
-extern void agxInstallColormap();
-extern void agxUninstallColormap();
-extern void agxRestoreColor0();
-
-extern Bool agxRealizeFont();
-extern Bool agxUnrealizeFont();
-
 extern void (*agxImageReadFunc)();
 extern void (*agxImageWriteFunc)();
 extern void (*agxImageFillFunc)();
-extern void agxImageStipple();
-extern void agxImageOpStipple();
-extern int  agxBytePadScratchMapPow2();
 
-extern void agxCacheInit();
-extern void agxFontCache8Init();
-extern void agxImageInit();
+/* agx.c */
+Bool agxProbe(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void agxPrintIdent(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+int agxGetMemSize(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+Bool agxInit(
+#if NeedFunctionPrototypes
+    int ,
+    ScreenPtr ,
+    int ,
+    char **
+#endif
+);
+void agxEnterLeaveVT(
+#if NeedFunctionPrototypes
+    Bool ,
+    int 
+#endif
+);
+Bool agxCloseScreen(
+#if NeedFunctionPrototypes
+    int screen_idx,
+    ScreenPtr pScreen
+#endif
+);
+Bool agxSaveScreen(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    Bool 
+#endif
+);
+void agxAdjustFrame(
+#if NeedFunctionPrototypes
+    int ,
+    int 
+#endif
+);
+/* agxCmap.c */
+int agxListInstalledColormaps(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    Colormap *
+#endif
+);
+void agxStoreColors(
+#if NeedFunctionPrototypes
+    ColormapPtr ,
+    int ,
+    xColorItem *
+#endif
+);
+void agxInstallColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr 
+#endif
+);
+void agxUninstallColormap(
+#if NeedFunctionPrototypes
+    ColormapPtr 
+#endif
+);
+/* agxCursor.c */
+Bool agxCursorInit(
+#if NeedFunctionPrototypes
+    char *,
+    ScreenPtr 
+#endif
+);
+void agxRepositionCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr 
+#endif
+);
+void agxRestoreCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr 
+#endif
+);
+void agxRenewCursorColor(
+#if NeedFunctionPrototypes
+    ScreenPtr 
+#endif
+);
+void agxWarpCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    int ,
+    int 
+#endif
+);
+void agxQueryBestSize(
+#if NeedFunctionPrototypes
+    int ,
+    unsigned short *,
+    unsigned short *,
+    ScreenPtr 
+#endif
+);
+void agxCursorOff(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void agxClearSavedCursor(
+#if NeedFunctionPrototypes
+    int 
+#endif
+);
+/* agxInit.c */
+void vgarestore(
+#if NeedFunctionPrototypes
+    agxSaveBlock *
+#endif
+);
+agxSaveBlock *agxHWSave(
+#if NeedFunctionPrototypes
+    agxSaveBlock *,
+    int 
+#endif
+);
+void agxHWRestore(
+#if NeedFunctionPrototypes
+    agxSaveBlock *
+#endif
+);
+void agxInitDisplay(
+#if NeedFunctionPrototypes
+    int ,
+    agxCRTCRegPtr 
+#endif
+);
+void agxCalcCRTCRegs(
+#if NeedFunctionPrototypes
+    agxCRTCRegPtr ,
+    DisplayModePtr 
+#endif
+);
+void agxInitGE(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void agxSetCRTCRegs(
+#if NeedFunctionPrototypes
+    agxCRTCRegPtr 
+#endif
+);
+Bool agxSwitchMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr 
+#endif
+);
+Bool agxGetClocks(
+#if NeedFunctionPrototypes
+    int ,
+    int ,
+    int ,
+    int ,
+    ScrnInfoRec *
+#endif
+);
+void agxResetCRTC(
+#if NeedFunctionPrototypes
+    int 
+#endif
+);
+Bool agxClockSelect(
+#if NeedFunctionPrototypes
+    int ,
+    int 
+#endif
+);
+Bool xgaNiClockSelect(
+#if NeedFunctionPrototypes
+    int ,
+    int 
+#endif
+);
+Bool agxValidateClocks(
+#if NeedFunctionPrototypes
+    int 
+#endif
+);
+Bool agxSetUpProbeCRTC(
+#if NeedFunctionPrototypes
+    agxCRTCRegPtr 
+#endif
+);
+Bool agxProbeClocks(
+#if NeedFunctionPrototypes
+    int 
+#endif
+);
+void agxSaveLUT(
+#if NeedFunctionPrototypes
+    LUTENTRY *
+#endif
+);
+void agxRestoreLUT(
+#if NeedFunctionPrototypes
+    LUTENTRY *
+#endif
+);
+void agxInitLUT(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void agxCleanUp(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void agxImageClear(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+/* agxIm.c */
+void agxImageInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+int agxBytePadScratchMapPow2(
+#if NeedFunctionPrototypes
+    int ,
+    int 
+#endif
+);
+void agxMemToVid(
+#if NeedFunctionPrototypes
+    unsigned int ,
+    unsigned int ,
+    unsigned char *,
+    unsigned int ,
+    unsigned int 
+#endif
+);
+void agxImageStipple(
+#if NeedFunctionPrototypes
+    int ,
+    int ,
+    int ,
+    int ,
+    unsigned char *,
+    int ,
+    int ,
+    int ,
+    int ,
+    int ,
+    unsigned int ,
+    unsigned int ,
+    unsigned int 
+#endif
+);
+void agxImageOpStipple(
+#if NeedFunctionPrototypes
+    int ,
+    int ,
+    int ,
+    int ,
+    unsigned char *,
+    int ,
+    int ,
+    int ,
+    int ,
+    int ,
+    unsigned int ,
+    unsigned int ,
+    unsigned int ,
+    unsigned int 
+#endif
+);
+/* agxScrIn.c */
+Bool agxScreenInit(
+#if NeedFunctionPrototypes
+    register ScreenPtr ,
+    pointer ,
+    int ,
+    int ,
+    int ,
+    int ,
+    int 
+#endif
+);
+/* agxGC.c */
+Bool agxCreateGC(
+#if NeedFunctionPrototypes
+    register GCPtr 
+#endif
+);
+/* agxBlt.c */
+RegionPtr agxCopyArea(
+#if NeedFunctionPrototypes
+    register DrawablePtr ,
+    register DrawablePtr ,
+    GC *,
+    int ,
+    int ,
+    int ,
+    int ,
+    int ,
+    int 
+#endif
+);
+void agxFindOrdering(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    DrawablePtr ,
+    GC *,
+    int ,
+    BoxPtr ,
+    int ,
+    int ,
+    int ,
+    int ,
+    unsigned int *
+#endif
+);
+RegionPtr agxCopyPlane(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    int ,
+    int ,
+    int ,
+    int ,
+    int ,
+    unsigned long 
+#endif
+);
+/* agxLine.c */
+void agxLine(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    int ,
+    DDXPointPtr 
+#endif
+);
+/* agxSeg.c */
+void agxSegment(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    register xSegment *
+#endif
+);
+/* agxMap.c */
+void agxMapSetSrc(
+#if NeedFunctionPrototypes
+    int 
+#endif
+);
+void agxMapSetDst(
+#if NeedFunctionPrototypes
+    int 
+#endif
+);
+void agxMapSetSrcDst(
+#if NeedFunctionPrototypes
+    int 
+#endif
+);
+/* agxBCach.c */
+void agxBitCache8Init(
+#if NeedFunctionPrototypes
+    int x,
+    int y
+#endif
+);
+/* agxFCach.c */
+void agxUnCacheFont8(
+#if NeedFunctionPrototypes
+    FontPtr 
+#endif
+);
+/* agxFont.c */
+Bool agxRealizeFont(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    FontPtr 
+#endif
+);
+Bool agxUnrealizeFont(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    FontPtr 
+#endif
+);
+/* agxText.c */
+int agxPolyText8(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    int ,
+    int ,
+    char *
+#endif
+);
+void agxImageText8(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    int ,
+    int ,
+    char *
+#endif
+);
+/* agxFRect.c */
+void agxPolyFillRect(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    register GCPtr ,
+    int ,
+    xRectangle *
+#endif
+);
+/* agxFS.c */
+void agxSolidFSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    DDXPointPtr ,
+    int *,
+    int 
+#endif
+);
+void agxTiledFSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    DDXPointPtr ,
+    int *,
+    int 
+#endif
+);
+void agxStipFSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    DDXPointPtr ,
+    int *,
+    int 
+#endif
+);
+void agxOStipFSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    int ,
+    DDXPointPtr ,
+    int *,
+    int 
+#endif
+);
+/* agxGS.c */
+void agxGetSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    int ,
+    register DDXPointPtr ,
+    int *,
+    int ,
+    char *
+#endif
+);
+/* agxSS.c */
+void agxSetSpans(
+#if NeedFunctionPrototypes
+    DrawablePtr ,
+    GCPtr ,
+    char *,
+    register DDXPointPtr ,
+    int *,
+    int ,
+    int 
+#endif
+);
+/* xf86RamDac.c */
+void xf86ProbeRamDac(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void xf86SetUpRamDac(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void xf86RamDacHWNoop(
+#if NeedFunctionPrototypes
+    union xf86RamDacSave *
+#endif
+);
+void xf86RamDacNoopInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+/* xf86Bt481.c */
+void xf86Bt481HWSave(
+#if NeedFunctionPrototypes
+    union xf86RamDacSave *
+#endif
+);
+void xf86Bt481HWRestore(
+#if NeedFunctionPrototypes
+    union xf86RamDacSave *
+#endif
+);
+void xf86Bt481Init(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+Bool xf86Bt482RealizeCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    CursorPtr 
+#endif
+);
+void xf86Bt482CursorOn(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void xf86Bt482CursorOff(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void xf86Bt482MoveCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    int ,
+    int 
+#endif
+);
+void xf86Bt482RecolorCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    CursorPtr 
+#endif
+);
+void xf86Bt482LoadCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    CursorPtr ,
+    int ,
+    int ,
+    int 
+#endif
+);
+/* xf86Bt485.c */
+unsigned char xf86InBt485StatReg(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+Bool xf86Bt485RealizeCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    CursorPtr 
+#endif
+);
+void xf86Bt485CursorOn(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void xf86Bt485CursorOff(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void xf86Bt485MoveCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    int ,
+    int 
+#endif
+);
+void xf86Bt485RecolorCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    CursorPtr 
+#endif
+);
+void xf86Bt485LoadCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr ,
+    CursorPtr ,
+    int ,
+    int ,
+    int 
+#endif
+);
+void xf86Bt485HWSave(
+#if NeedFunctionPrototypes
+    union xf86RamDacSave *
+#endif
+);
+void xf86Bt485HWRestore(
+#if NeedFunctionPrototypes
+    union xf86RamDacSave *
+#endif
+);
+void xf86Bt485Init(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+/* xf861502x.c */
+void xf86OutSc1502xCmd(
+#if NeedFunctionPrototypes
+    int ,
+    int 
+#endif
+);
+unsigned char xf86InSc1502xCmd(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void xf86OutSc1502xIndReg(
+#if NeedFunctionPrototypes
+    int ,
+    int ,
+    int 
+#endif
+);
+unsigned char xf86InSc1502xIndReg(
+#if NeedFunctionPrototypes
+    int 
+#endif
+);
+void xf86Sc1502xHWSave(
+#if NeedFunctionPrototypes
+    union xf86RamDacSave *
+#endif
+);
+void xf86Sc1502xHWRestore(
+#if NeedFunctionPrototypes
+    union xf86RamDacSave *
+#endif
+);
+void xf86Sc1502xInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void xf86Sc1502xPrintId(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
-extern int agxCacheTile();
-extern int agxCacheStipple();
-extern int agxCacheOpStipple();
-extern Bool agxCachableTile();
-extern Bool agxCachableStipple();
-extern Bool agxCachableOpStipple();
-extern void agxCImageFill();
-extern void agxCImageStipple();
-extern void agxCImageOpStipple();
-extern void agxCacheFreeSlot();
-
-extern void agxUnCacheFont8();
-extern int agxCPolyText8();
-extern int agxCImageText8();
-
-extern void agxPolyPoint();
-extern void agxLine();
-extern void agxLine1Rect();
-extern void agxSegment();
-
-extern void agxSetSpans();
-extern void agxGetSpans();
-
-extern void agxSolidFSpans();
-extern void agxTiledFSpans();
-extern void agxStipFSpans();
-extern void agxOStipFSpans();
-
-extern void agxPolyFillRect();
-
-extern int agxPolyText8();
-extern void agxImageText8();
-extern int agxPolyText16();
-extern void agxImageText16();
-
-extern void agxFindOrdering();
-extern RegionPtr agxCopyArea();
-extern RegionPtr agxCopyPlane();
-extern void agxCopyWindow();
-extern void agxGetImage();
-
-extern void agxPaintWindow();
-extern void agxFillBoxSolid();
-
-extern void agxSaveAreas();
-extern void agxRestoreAreas();
-
-extern Bool agxCreateGC();
-
-extern Bool agxCursorInit();
-extern void agxRestoreCursor();
-extern void agxCursorOff();
-extern void agxRenewCursorColor();
-extern void agxQueryBestSize();
-extern void agxWarpCursor();
-
-extern int agxGetMemSize();
-
-extern void agxMapSetSrc();
-extern void agxMapSetDst();
-extern void agxMapSetSrcDst();
+_XFUNCPROTOEND
 
 extern pointer agxVideoMem;
 extern pointer agxPhysVidMem;
