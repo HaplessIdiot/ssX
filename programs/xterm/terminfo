@@ -1,5 +1,5 @@
 # $XConsortium: terminfo,v 1.11 94/10/13 21:24:31 gildea Exp $
-# $XFree86: xc/programs/xterm/terminfo,v 3.9 1996/10/19 15:18:10 dawes Exp $
+# $XFree86: xc/programs/xterm/terminfo,v 3.10 1996/10/20 13:36:06 dawes Exp $
 # meml locks memory above the cursor; memu unlocks (ala HP terminals)
 #
 xterm|xterm-24|xterms|vs100|xterm terminal emulator (X Window System),
@@ -192,7 +192,7 @@ xterm-r6|xterm-old|xterm X11R6 version,
 	tbc=\E[3g,
 	xenl,
 #
-# Compatible with the R6 xterm
+# Compatible with the R5 xterm
 xterm-r5|xterm R5 version,
 	am, xenl, km, msgr,
 	cols#80, it#8, lines#24,
