@@ -653,10 +653,13 @@ static CARD32 radeonGetLastFrame (radeonContextPtr rmesa)
    else
       ret = -EINVAL;
 
+#ifndef __alpha__
    if ( ret == -EINVAL ) {
       frame = INREG( RADEON_LAST_FRAME_REG );
+      ret = 0;
    } 
-   else if ( ret ) {
+#endif
+   if ( ret ) {
       fprintf( stderr, "%s: drmRadeonGetParam: %d\n", __FUNCTION__, ret );
       exit(1);
    }
@@ -921,9 +924,13 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       } else
 	ret = -EINVAL;
 
+#ifndef __alpha__
       if ( ret == -EINVAL ) {
 	 clear = INREG( RADEON_LAST_CLEAR_REG );
-      } else if ( ret ) {
+	 ret = 0;
+      }
+#endif
+      if ( ret ) {
 	 fprintf( stderr, "%s: drmRadeonGetParam: %d\n", __FUNCTION__, ret );
 	 exit(1);
       }
