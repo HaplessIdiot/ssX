@@ -831,6 +831,23 @@
       start_point   = gloader->base.outline.n_points;
       start_contour = gloader->base.outline.n_contours;
 
+#if 1
+      /*
+       * XXX a hack to try and make sure enough space exists for this glyph;
+       * trying to update this incrementally below means tracking all of the
+       * pointers into the various arrays which I've failed to do.  Note the
+       * magic constant -- best not have any composite glyphs with more than
+       * this number of overall points.
+       *
+       * keithp@keithp.com
+       */
+      if (start_point == 0 && start_contour == 0)
+      {
+	error = FT_GlyphLoader_Check_Points( gloader, 512, 0 );
+	if ( error )
+	  goto Fail;
+      }
+#endif
       error = face->read_composite_glyph( loader );
       if ( error )
         goto Fail;
@@ -970,10 +987,6 @@
               }
             }
           }
-
-	  error = FT_GlyphLoader_Check_Points( gloader, num_new_points, 0 );
-	  if ( error )
-	    goto Fail;
 
           translate_array( num_new_points, loader->zone.cur, x, y );
           cur_to_org( num_new_points, &loader->zone );
