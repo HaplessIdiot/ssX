@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.69 2003/02/11 03:33:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.70 2003/04/03 12:52:31 alanh Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -326,6 +326,7 @@ static MouseProtocolRec mouseProtocols[] = {
     { "IntelliMouse",		MSE_SERIAL,	msDefaults,	PROT_IMSERIAL },
     { "ThinkingMouse",		MSE_SERIAL,	msDefaults,	PROT_THINKING },
     { "AceCad",			MSE_SERIAL,	acecadDefaults,	PROT_ACECAD },
+    { "ValuMouseScroll",	MSE_SERIAL,	msDefaults,	PROT_VALUMOUSESCROLL },
 
     /* Standard PS/2 */
     { "PS/2",			MSE_PS2,	NULL,		PROT_PS2 },
@@ -1462,6 +1463,16 @@ MouseReadInput(InputInfoPtr pInfo)
 	    }
 	    break;
 
+	case PROT_VALUMOUSESCROLL:	/* Kensington ValuMouseScroll */
+            buttons = ((int)(pBuf[0] & 0x20) >> 3)
+                      | ((int)(pBuf[0] & 0x10) >> 4)
+                      | ((int)(pBuf[3] & 0x10) >> 3);
+            dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
+            dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
+	    dz = (pBuf[3] & 0x08) ? ((int)(pBuf[3] & 0x0F) - 0x10) : 
+                                    ((int)(pBuf[3] & 0x0F));
+	    break;
+
 	default: /* There's a table error */
 #ifdef EXTMOUSEDEBUG
 	    ErrorF("mouse table error\n");
@@ -2210,6 +2221,7 @@ static unsigned char proto[PROT_NUMPROTOS][8] = {
   {  0x40, 0x40, 0x40, 0x00,  3,  ~0x3f, 0x00, MPF_NONE },  /* IntelliMouse */
   {  0x40, 0x40, 0x40, 0x00,  3,  ~0x33, 0x00, MPF_NONE },  /* ThinkingMouse */
   {  0x80, 0x80, 0x80, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* ACECAD */
+  {  0x40, 0x40, 0x40, 0x00,  4,   0x00, 0xff, MPF_NONE },  /* ValuMouseScroll */
 							    /* PS/2 variants */
   {  0xc0, 0x00, 0x00, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* PS/2 mouse */
   {  0xc8, 0x08, 0x00, 0x00,  3,   0x00, 0x00, MPF_NONE },  /* genericPS/2 mouse*/

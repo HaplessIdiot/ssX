@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.man,v 1.4 2002/12/15 01:15:05 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.man,v 1.5 2002/12/17 20:55:21 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH MOUSE __drivermansuffix__ __vendorversion__
@@ -55,7 +55,7 @@ Specify the mouse protocol.  Valid protocol types include:
 .PP
 .RS 12
 Auto, Microsoft, MouseSystems, MMSeries, Logitech, MouseMan, MMHitTab,
-GlidePoint, IntelliMouse, ThinkingMouse, AceCad, PS/2, ImPS/2,
+GlidePoint, IntelliMouse, ThinkingMouse, ValuMouseScroll, AceCad, PS/2, ImPS/2,
 ExplorerPS/2, ThinkingMousePS/2, MouseManPlusPS/2, GlidePointPS/2,
 NetMousePS/2, NetScrollPS/2, BusMouse, SysMouse, WSMouse, USB, Xqueue.
 .RE
