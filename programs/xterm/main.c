@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.153 2002/08/06 19:55:56 herrb Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.154 2002/08/12 00:36:33 dickey Exp $ */
 
 /* main.c */
 
@@ -486,6 +486,10 @@ static Bool xterm_exiting = False;
 ** SEGV.
 */
 static char **command_to_exec = NULL;
+
+#if OPT_LUIT_PROG
+static char **command_to_exec_with_luit = NULL;
+#endif
 
 #define TERMCAP_ERASE "kb"
 #define VAL_INITIAL_ERASE A2E(8)
@@ -918,6 +922,12 @@ static XrmOptionDescRec optionDescList[] = {
 {"-u8",		"*utf8",	XrmoptionNoArg,		(caddr_t) "2"},
 {"+u8",		"*utf8",	XrmoptionNoArg,		(caddr_t) "0"},
 #endif
+#if OPT_LUIT_PROG
+{"-lc",		"*locale",	XrmoptionNoArg,		(caddr_t) "True"},
+{"+lc",		"*locale",	XrmoptionNoArg,		(caddr_t) "False"},
+{"-lcc",	"*localeFilter",XrmoptionSepArg,	(caddr_t) NULL},
+{"-en",		"*locale",	XrmoptionSepArg,	(caddr_t) NULL},
+#endif
 {"-ulc",	"*colorULMode",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+ulc",	"*colorULMode",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -1058,6 +1068,10 @@ static OptionHelp options[] = {
 { "-tn name",              "TERM environment variable name" },
 #if OPT_WIDE_CHARS
 { "-/+u8",                 "turn on/off UTF-8 mode (implies wide-characters)" },
+#endif
+#if OPT_LUIT_PROG
+{ "-/+lc",                 "turn on/off locale mode using luit" },
+{ "-lcc path",             "filename of locale converter (" DEFLOCALEFILTER ")" },
 #endif
 { "-/+ulc",                "turn off/on display of underline as color" },
 #ifdef HAVE_UTMP
@@ -1865,7 +1879,6 @@ main(int argc, char *argv[]ENVP_ARG)
 			       (int) egid, strerror(errno));
 #endif
 	}
-
 #ifdef __OpenBSD__
 	if (resource.utmpInhibit) {
 	    /* Can totally revoke group privs */
@@ -1993,20 +2006,6 @@ main(int argc, char *argv[]ENVP_ARG)
 	break;
     }
 
-#if OPT_WIDE_CHARS
-    /* Test whether UTF-8 mode should be active by default */
-    {
-	char *s;
-
-	if (((s = getenv("LC_ALL")) != 0 && *s != '\0') ||
-	    ((s = getenv("LC_CTYPE")) != 0 && *s != '\0') ||
-	    ((s = getenv("LANG")) != 0 && *s != '\0')) {
-	    if (strstr(s, "UTF-8"))
-		defaultUTF8[0] = '2';
-	}
-    }
-#endif
-
     SetupMenus(toplevel, &form_top, &menu_top);
 
     term = (XtermWidget) XtVaCreateManagedWidget("vt100", xtermWidgetClass,
@@ -2069,6 +2068,37 @@ main(int argc, char *argv[]ENVP_ARG)
 
 	XtSetValues(toplevel, args, 2);
     }
+#if OPT_LUIT_PROG
+    if (term->misc.callfilter) {
+	int u = (term->misc.use_encoding ? 2 : 0);
+	if (command_to_exec) {
+	    int n;
+	    char **c;
+	    for (n = 0, c = command_to_exec; *c; n++, c++) ;
+	    c = malloc((n + 3 + u) * sizeof(char *));
+	    if (c == NULL)
+		SysError(ERROR_LUMALLOC);
+	    memcpy(c + 2 + u, command_to_exec, (n + 1) * sizeof(char *));
+	    c[0] = term->misc.localefilter;
+	    if (u) {
+		c[1] = "-encoding";
+		c[2] = term->misc.locale_str;
+	    }
+	    c[1 + u] = "--";
+	    command_to_exec_with_luit = c;
+	} else {
+	    static char *luit[4];
+	    luit[0] = term->misc.localefilter;
+	    if (u) {
+		luit[1] = "-encoding";
+		luit[2] = term->misc.locale_str;
+		luit[3] = NULL;
+	    } else
+		luit[1] = NULL;
+	    command_to_exec_with_luit = luit;
+	}
+    }
+#endif
 #if OPT_TEK4014
     if (inhibit & I_TEK)
 	screen->TekEmu = FALSE;
@@ -3990,6 +4020,22 @@ spawn(void)
 	    TRACE(("spawn cannot tell pty its size\n"));
 #endif /* sun vs TIOCSWINSZ */
 	    signal(SIGHUP, SIG_DFL);
+#if OPT_LUIT_PROG
+	    /*
+	     * Use two copies of command_to_exec, in case luit is not actually
+	     * there, or refuses to run.  In that case we will fall-through to
+	     * to command that the user gave anyway.
+	     */
+	    if (command_to_exec_with_luit) {
+		TRACE(("spawning command \"%s\"\n", *command_to_exec_with_luit));
+		execvp(*command_to_exec_with_luit, command_to_exec_with_luit);
+		/* print error message on screen */
+		fprintf(stderr, "%s: Can't execvp %s: %s\n",
+			xterm_name, *command_to_exec_with_luit, strerror(errno));
+		fprintf(stderr, "%s: cannot support your locale.\n",
+			xterm_name);
+	    }
+#endif
 	    if (command_to_exec) {
 		TRACE(("spawning command \"%s\"\n", *command_to_exec));
 		execvp(*command_to_exec, command_to_exec);
@@ -4085,7 +4131,7 @@ spawn(void)
 		close(cp_pipe[0]);
 		close(pc_pipe[1]);
 		SysError(handshake.fatal_error);
-		/*NOTREACHED*/
+		/*NOTREACHED */
 
 	    case UTMP_ADDED:
 		/* The utmp entry was set by our slave.  Remember
@@ -4416,6 +4462,28 @@ spawn(void)
      * Execute specified program or shell. Use find_program to
      * simulate the same behaviour as the original execvp.
      */
+#if OPT_LUIT_PROG
+    if (command_to_exec_with_luit) {
+	capability programcap;
+
+	if (find_program(*command_to_exec_with_luit, &programcap) != STD_OK) {
+	    fprintf(stderr, "%s: Could not find %s!\n",
+		    xterm_name, *command_to_exec_with_luit);
+	    exit(ERROR_EXEC);
+	}
+
+	err = exec_file(&programcap, NILCAP, &ttycap, 0,
+			command_to_exec_with_luit, envnew, capvnew,
+			&screen->proccap);
+	if (err != STD_OK) {
+	    fprintf(stderr, "%s: Could not exec %s!\n",
+		    xterm_name, *command_to_exec_with_luit);
+	    fprintf(stderr, "%s: cannot support your locale.\n", xterm_name);
+	} else {
+	    goto luit_succeeded;
+	}
+    }
+#endif
     if (command_to_exec) {
 	capability programcap;
 
@@ -4461,6 +4529,7 @@ spawn(void)
 
 	free(shname_minus);
     }
+  luit_succeeded:
     free(capvnew);
 
     signal(SIGINT, SIG_IGN);

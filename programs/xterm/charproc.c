@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.130 2002/04/28 19:04:19 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.131 2002/08/12 00:36:32 dickey Exp $ */
 
 /*
 
@@ -580,13 +580,16 @@ static XtResource resources[] =
 #endif
 
 #if OPT_WIDE_CHARS
-    {XtNutf8, XtCUtf8, XtRInt, sizeof(int),
-     XtOffsetOf(XtermWidgetRec, screen.utf8_mode),
-     XtRString, defaultUTF8},
+    Ires(XtNutf8, XtCUtf8, screen.utf8_mode, 3),
     Bres(XtNwideChars, XtCWideChars, screen.wide_chars, FALSE),
     Bres(XtNvt100Graphics, XtCVT100Graphics, screen.vt100_graphics, TRUE),
     Sres(XtNwideBoldFont, XtCWideBoldFont, misc.f_wb, DEFWIDEBOLDFONT),
     Sres(XtNwideFont, XtCWideFont, misc.f_w, DEFWIDEFONT),
+#endif
+
+#if OPT_LUIT_PROG
+    Sres(XtNlocale, XtCLocale, misc.locale_str, "medium"),
+    Sres(XtNlocaleFilter, XtCLocaleFilter, misc.localefilter, DEFLOCALEFILTER),
 #endif
 
 #if OPT_INPUT_METHOD
@@ -4353,6 +4356,82 @@ VTClassInit(void)
 #define init_Sres(name) wnew->name = x_strtrim(request->name)
 #endif
 
+#if OPT_WIDE_CHARS
+static void
+VTInitialize_locale(XtermWidget request)
+{
+    char *locale;
+    Boolean is_utf8;
+
+    if ((locale = getenv("LC_ALL")) == 0 || *locale == '\0')
+	if ((locale = getenv("LC_CTYPE")) == 0 || *locale == '\0')
+	    if ((locale = getenv("LANG")) == 0 || *locale == '\0')
+		locale = "";
+#ifdef HAVE_LANGINFO_CODESET	/* FIXME: not available yet */
+    is_utf8 = (strcmp(nl_langinfo(CODESET), "UTF-8") == 0);
+#else
+    is_utf8 = (strstr(locale, "UTF-8") != NULL);
+#endif
+
+#if OPT_LUIT_PROG
+    request->misc.callfilter = 0;
+    request->misc.use_encoding = 0;
+
+    if (x_strcasecmp(request->misc.locale_str, "TRUE") == 0 ||
+	x_strcasecmp(request->misc.locale_str, "ON") == 0 ||
+	x_strcasecmp(request->misc.locale_str, "YES") == 0 ||
+	x_strcasecmp(request->misc.locale_str, "AUTO") == 0 ||
+	strcmp(request->misc.locale_str, "1") == 0) {
+	/* when true ... fully obeying LC_CTYPE locale */
+	request->misc.callfilter = is_utf8 ? 0 : 1;
+	request->screen.utf8_mode = 2;
+    } else if (x_strcasecmp(request->misc.locale_str, "FALSE") == 0 ||
+	       x_strcasecmp(request->misc.locale_str, "OFF") == 0 ||
+	       x_strcasecmp(request->misc.locale_str, "NO") == 0 ||
+	       strcmp(request->misc.locale_str, "0") == 0) {
+	/* when false ... original value of utf8_mode is effective */
+	if (request->screen.utf8_mode == 3) {
+	    request->screen.utf8_mode = is_utf8 ? 2 : 0;
+	}
+    } else if (x_strcasecmp(request->misc.locale_str, "MEDIUM") == 0 ||
+	       x_strcasecmp(request->misc.locale_str, "SEMIAUTO") == 0) {
+	/* when medium ... obeying locale only for UTF-8 and Asian */
+	if (is_utf8) {
+	    request->screen.utf8_mode = 2;
+	} else if (
+#ifdef MB_CUR_MAX
+		      MB_CUR_MAX > 1 ||
+#else
+		      !strncmp(locale, "ja", 2) ||
+		      !strncmp(locale, "ko", 2) ||
+		      !strncmp(locale, "zh", 2) ||
+#endif
+		      !strncmp(locale, "th", 2) ||
+		      !strncmp(locale, "vi", 2)) {
+	    request->misc.callfilter = 1;
+	    request->screen.utf8_mode = 2;
+	} else {
+	    request->screen.utf8_mode = 0;
+	}
+    } else if (x_strcasecmp(request->misc.locale_str, "UTF-8") == 0 ||
+	       x_strcasecmp(request->misc.locale_str, "UTF8") == 0) {
+	/* when UTF-8 ... UTF-8 mode */
+	request->screen.utf8_mode = 2;
+    } else {
+	/* other words are regarded as encoding name passed to luit */
+	request->misc.callfilter = 1;
+	request->screen.utf8_mode = 2;
+	request->misc.use_encoding = 1;
+    }
+#else
+    if (request->screen.utf8_mode == 3) {
+	request->screen.utf8_mode = is_utf8 ? 2 : 0;
+    }
+#endif /* OPT_LUIT_PROG */
+
+}
+#endif
+
 /* ARGSUSED */
 static void
 VTInitialize(Widget wrequest,
@@ -4633,13 +4712,25 @@ VTInitialize(Widget wrequest,
 #endif
 
 #if OPT_WIDE_CHARS
-    init_Bres(screen.wide_chars);
+    VTInitialize_locale(request);
+
+#if OPT_LUIT_PROG
+    init_Bres(misc.callfilter);
+    init_Bres(misc.use_encoding);
+    init_Sres(misc.locale_str);
+    init_Sres(misc.localefilter);
+#endif
+
     init_Bres(screen.vt100_graphics);
+    init_Bres(screen.wide_chars);
     if (request->screen.utf8_mode) {
 	wnew->screen.wide_chars = True;
 	wnew->screen.utf8_mode = 2;	/* disable further change */
-	TRACE(("initialized UTF-8 mode\n"));
+    } else {
+	wnew->screen.utf8_mode = 0;
     }
+    TRACE(("initialized UTF-8 mode to %d\n", wnew->screen.utf8_mode));
+
     if (wnew->screen.wide_chars != False)
 	wnew->num_ptrs = (OFF_COM2H + 1);
 #endif

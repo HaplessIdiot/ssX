@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.94 2002/06/01 00:54:49 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.95 2002/08/06 19:55:56 herrb Exp $ */
 
 /*
  * Copyright 1999,2000,2001,2002 by Thomas E. Dickey
@@ -491,6 +491,10 @@ typedef struct {
 #define OPT_HIGHLIGHT_COLOR 1 /* true if xterm supports color highlighting */
 #endif
 
+#ifndef OPT_LUIT_PROG
+#define OPT_LUIT_PROG   0 /* true if xterm supports luit */
+#endif
+
 #ifndef OPT_MAXIMIZE
 #define OPT_MAXIMIZE	1 /* add actions for iconify ... maximize */
 #endif
@@ -725,6 +729,10 @@ typedef struct {
 #define CurMaxCol(screen, row) screen->max_col
 #define CurCursorX(screen, row, col) CursorX(screen, col)
 #define CurFontWidth(screen, row) FontWidth(screen)
+#endif
+
+#if OPT_LUIT_PROG && !OPT_WIDE_CHARS
+#error Luit requires the wide-chars configuration
 #endif
 
 	/* the number of pointers per row in 'ScrnBuf' */
@@ -1341,6 +1349,12 @@ typedef struct _Misc {
 #if OPT_WIDE_CHARS
     char *f_w;
     char *f_wb;
+#endif
+#if OPT_LUIT_PROG
+    Boolean callfilter;		/* true to invoke luit */
+    Boolean use_encoding;	/* true to use -encoding option for luit */
+    char *locale_str;		/* "locale" resource */
+    char *localefilter;		/* path for luit */
 #endif
 #if OPT_INPUT_METHOD
     char *f_x;

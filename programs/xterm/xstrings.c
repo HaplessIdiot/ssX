@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xstrings.c,v 1.3 2002/06/01 00:54:50 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xstrings.c,v 1.4 2002/08/12 00:36:33 dickey Exp $ */
 
 /************************************************************
 
@@ -53,20 +53,39 @@ x_basename(char *name)
     return (cp ? cp + 1 : name);
 }
 
+int
+x_strcasecmp(const char *s1, const char *s2)
+{
+    unsigned len = strlen(s1);
+
+    if (len != strlen(s2))
+	return 1;
+
+    while (len-- != 0) {
+	if (toupper(*s1) != toupper(*s2))
+	    return 1;
+	s1++, s2++;
+    }
+
+    return 0;
+}
+
 /*
  * Allocates a copy of a string
  */
 char *
-x_strdup(char *s)
+x_strdup(const char *s)
 {
+    char *result = 0;
+
     if (s != 0) {
 	char *t = malloc(strlen(s) + 1);
 	if (t != 0) {
 	    strcpy(t, s);
 	}
-	s = t;
+	result = t;
     }
-    return s;
+    return result;
 }
 
 /*
