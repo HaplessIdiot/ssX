@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbblt.c,v 1.5 2000/02/14 19:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbblt.c,v 1.7 2000/09/22 05:58:01 keithp Exp $ */
 
 #include "fb.h"
 
@@ -312,8 +312,8 @@ fbBlt (FbBits   *srcLine,
 
 #ifdef FB_24BIT
 
-#if 0
-#include <stdio.h>
+#undef DEBUG_BLT24
+#ifdef DEBUG_BLT24
 
 static unsigned long
 getPixel (char *src, int x)
@@ -340,8 +340,12 @@ fbBlt24Line (FbBits	    *src,
 	 
 	     Bool	    reverse)
 {
-    char    *origDst;
-    int	    origX;
+#ifdef DEBUG_BLT24
+    char    *origDst = (char *) dst;
+    FbBits  *origLine = dst + ((dstX >> FB_SHIFT) - 1);
+    int	    origNlw = ((width + FB_MASK) >> FB_SHIFT) + 3;
+    int	    origX = dstX / 24;
+#endif
     
     int	    leftShift, rightShift;
     FbBits  startmask, endmask;
@@ -352,17 +356,21 @@ fbBlt24Line (FbBits	    *src,
 
     int	    rot;
     FbDeclareMergeRop ();
-
-    origDst = (char *) dst;
-    origX = dstX / 24;
     
     FbInitializeMergeRop (alu, FB_ALLONES);
     FbMaskBits(dstX, width, startmask, n, endmask);
+#ifdef DEBUG_BLT24
+    ErrorF ("dstX %d width %d reverse %d\n", dstX, width, reverse);
+#endif
     if (reverse)
     {
 	src += ((srcX + width - 1) >> FB_SHIFT) + 1;
 	dst += ((dstX + width - 1) >> FB_SHIFT) + 1;
-	rot = FbFirst24Rot (((dstX + width) & FB_MASK));
+	rot = FbFirst24Rot (((dstX + width - 8) & FB_MASK));
+	rot = FbPrev24Rot(rot);
+#ifdef DEBUG_BLT24
+	ErrorF ("dstX + width - 8: %d rot: %d\n", (dstX + width - 8) & FB_MASK, rot);
+#endif
 	srcX = (srcX + width - 1) & FB_MASK;
 	dstX = (dstX + width - 1) & FB_MASK;
     }
@@ -373,8 +381,14 @@ fbBlt24Line (FbBits	    *src,
 	srcX &= FB_MASK;
 	dstX &= FB_MASK;
 	rot = FbFirst24Rot (dstX);
+#ifdef DEBUG_BLT24
+	ErrorF ("dstX: %d rot: %d\n", dstX, rot);
+#endif
     }
     mask = FbRot24(pm,rot);
+#ifdef DEBUG_BLT24
+    ErrorF ("pm 0x%x mask 0x%x\n", pm, mask);
+#endif
     if (srcX == dstX)
     {
 	if (reverse)
@@ -508,7 +522,7 @@ fbBlt24Line (FbBits	    *src,
 	    }
 	}
     }
-#if 0
+#ifdef DEBUG_BLT24
     {
 	int firstx, lastx, x;
 
@@ -517,9 +531,12 @@ fbBlt24Line (FbBits	    *src,
 	    firstx--;
 	lastx = origX + width/24 + 1;
 	for (x = firstx; x <= lastx; x++)
-	    fprintf (stderr, "%06x ", getPixel (origDst, x));
+	    ErrorF ("%06x ", getPixel (origDst, x));
+	ErrorF ("\n");
+	while (origNlw--)
+	    ErrorF ("%08x ", *origLine++);
+	ErrorF ("\n");
     }
-    fprintf (stderr, "\n");
 #endif
 }
 
@@ -554,8 +571,8 @@ fbBlt24 (FbBits	    *srcLine,
 	srcLine += srcStride;
 	dstLine += dstStride;
     }
-#if 0
-    fprintf (stderr, "\n");
+#ifdef DEBUG_BLT24
+    ErrorF ("\n");
 #endif
 }
 #endif /* FB_24BIT */
