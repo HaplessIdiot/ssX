@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.8 2001/04/01 14:00:15 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.10 2001/07/07 23:00:43 paulo Exp $
  */
 
 #include "config.h"
@@ -389,7 +389,8 @@ ExpertConfigureEnd(void)
     UpdateMenuDeviceList(MONITOR);
 
     /* Update layout menu */
-    for (i = 0; i < ((CompositeWidget)layoutp)->composite.num_children; i++)
+        /* first entry is "New server layout" */
+    for (i = 1; i < ((CompositeWidget)layoutp)->composite.num_children; i++)
 	XtDestroyWidget(((CompositeWidget)layoutp)->composite.children[i]);
     lay = XF86Config->conf_layout_lst;
     while (lay != NULL) {
