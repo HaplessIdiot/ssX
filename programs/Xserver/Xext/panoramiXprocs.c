@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.9 1999/05/03 12:15:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.10 1999/05/15 06:24:48 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -45,13 +45,13 @@ extern void (* ReplySwapVector[256])();
 extern WindowPtr *WindowTable;
 extern char *ConnectionInfo;
 extern int connBlockScreenStart;
+extern XID PanoramiXVisualTable[256][MAXSCREENS];
+
 
 extern XID clientErrorValue;
 
 extern void Swap32Write();
 
-static ClientPtr onlyClient;
-static Bool grabbingClient = FALSE;
 extern int connBlockScreenStart;
 
 extern int (* InitialVector[3]) ();
@@ -67,11 +67,6 @@ extern Bool InsertFakeRequest();
 static void KillAllClients();
 static void DeleteClientFromAnySelections();
 extern void ProcessWorkQueue();
-
-
-static int nextFreeClientID; /* always MIN free client ID */
-
-static int	nClients;	/* number active clients */
 
 extern char isItTimeToYield;
 
@@ -111,8 +106,6 @@ int PanoramiXCreateWindow(register ClientPtr client)
     int 		cmap_offset = 0;
     int                 pback_offset = 0;
     int                 pbord_offset = 0;
-    int                 class_index, this_class_index;
-    int                 vid_index, this_vid_index;
 
 
     REQUEST_AT_LEAST_SIZE(xCreateWindowReq);
@@ -176,22 +169,6 @@ int PanoramiXCreateWindow(register ClientPtr client)
 	stuff->visual = orig_visual = 0;
     }
 
-    if ( stuff->visual != CopyFromParent)
-      {
-       /* Find the correct visual for this screen */
-	for (class_index = 0; class_index < PanoramiXColorDepthTable[0].numVisuals; class_index++)
-	  {
-	    for (vid_index = 0; vid_index < PanoramiXColorDepthTable[0].panoramiXScreenMap[class_index].vmap[stuff->depth].numVids; vid_index++)
-	      {
-		if ( stuff->visual == PanoramiXColorDepthTable[0].panoramiXScreenMap[class_index].vmap[stuff->depth].vid[vid_index] )
-		{
-		  this_class_index = class_index;
-		  this_vid_index   = vid_index;
-		  break;
-		}
-	       }
-	   }
-      }
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
 	if (parentWin == PanoramiXWinRoot) {
 	    stuff->x = orig_x - panoramiXdataPtr[j].x;
@@ -203,9 +180,7 @@ int PanoramiXCreateWindow(register ClientPtr client)
 	IF_RETURN((!pParent),BadWindow);
 	stuff->parent = parID;
 	if ( orig_visual != CopyFromParent ) 
-	  {
-	    stuff->visual = PanoramiXColorDepthTable[j].panoramiXScreenMap[this_class_index].vmap[stuff->depth].vid[this_vid_index];
-	  }
+	    stuff->visual = PanoramiXVisualTable[orig_visual][j];
 	if (pBackgndPmap)
 	    *((CARD32 *) &stuff[1] + pback_offset) = pBackgndPmap->info[j].id;
 	if (pBorderPmap)
@@ -1256,6 +1231,16 @@ int PanoramiXClearToBackground(register ClientPtr client)
 }
 
 
+/* 
+   CopyArea and CopyPlane are not correct yet.  We still need to
+   take care of the case where src and dst are windows on different
+   screens.  DEC's original code tried to do this but segfaults
+   during xtest.  I will rewrite it eventually but for now it has
+   been removed.  There are also problems with expose events.
+   At the moment, each screen sends an event for its part.  These
+   should be combined and sent as one event.
+*/
+
 int PanoramiXCopyArea(ClientPtr client)
 {
     int			j, result;
@@ -1273,16 +1258,16 @@ int PanoramiXCopyArea(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xCopyAreaReq);
 
-    VALIDATE_DRAWABLE_AND_GC(stuff->dstDrawable, pDst, pGC, client);
+    VERIFY_DRAWABLE(pDst, stuff->dstDrawable, client);
     if (stuff->dstDrawable != stuff->srcDrawable) {
         VERIFY_DRAWABLE(pSrc, stuff->srcDrawable, client);
         if ((pDst->pScreen != pSrc->pScreen) || (pDst->depth != pSrc->depth)) {
             client->errorValue = stuff->dstDrawable;
             return (BadMatch);
         }
-    } else {
+    } else 
         pSrc = pDst;
-    } 
+
     pPanoramiXSrcRoot = (pSrc->type == DRAWABLE_PIXMAP)
 					? PanoramiXPmapRoot : PanoramiXWinRoot;
     pPanoramiXDstRoot = (pDst->type == DRAWABLE_PIXMAP)
@@ -1309,52 +1294,31 @@ int PanoramiXCopyArea(ClientPtr client)
 	    stuff->dstX = dstx - panoramiXdataPtr[j].x;
 	    stuff->dstY = dsty - panoramiXdataPtr[j].y;
 	}
+
 	result = (* SavedProcVector[X_CopyArea])(client);
+
 	BREAK_IF(result != Success);
     }
     return (result);
 }
 
+
 int PanoramiXCopyPlane(ClientPtr client)
 {
-    int 	  SrcScr = -1, DstScr = -1;
-    PixmapPtr 	  pMap = NULL;
-    Pixmap	  pmapID;
-    PanoramiXRect   SrcRect, DstRect;
-    int 	  i, j, k;
-    Window 	  srcID, dstID;
-    DrawablePtr   pSrc, pDst;
-    GContext 	  GCID;
-    GContext      GCIDbase;
-    GC		  *pGC;
-    PanoramiXWindow *pPanoramiXSrc;
-    PanoramiXWindow *pPanoramiXDst;
-    PanoramiXGC 	  *pPanoramiXGC = PanoramiXGCRoot;
-    RegionPtr 	  *PanoramiXRgnPtrs;
-    RegionPtr 	  *FetchRgnPtrs = NULL;
-    RegionPtr 	  pRgn;
+    int			j, result;
+    DrawablePtr		pSrc, pDst;
+    GContext		GCID;
+    GC			*pGC;
+    PanoramiXWindow 	*pPanoramiXSrcRoot;
+    PanoramiXWindow 	*pPanoramiXDstRoot;
+    PanoramiXWindow	*pPanoramiXSrc;
+    PanoramiXWindow	*pPanoramiXDst;
+    PanoramiXGC		*pPanoramiXGC = PanoramiXGCRoot;
     REQUEST(xCopyPlaneReq);
     int           srcx = stuff->srcX, srcy = stuff->srcY;
     int           dstx = stuff->dstX, dsty = stuff->dstY;
-    int           width = stuff->width, height = stuff->height;
 
     REQUEST_SIZE_MATCH(xCopyPlaneReq);
-
-    VALIDATE_DRAWABLE_AND_GC(stuff->dstDrawable, pDst, pGC, client);
-    if (stuff->dstDrawable != stuff->srcDrawable) {
-        VERIFY_DRAWABLE(pSrc, stuff->srcDrawable, client);
-        if (pDst->pScreen != pSrc->pScreen) {
-            client->errorValue = stuff->dstDrawable;
-            return (BadMatch);
-        }
-    } else {
-        pSrc = pDst;
-    }
-
-    /*
-     *	Check to see if stuff->bitPlane has exactly ONE good bit set
-     */
-
 
     if(stuff->bitPlane == 0 || (stuff->bitPlane & (stuff->bitPlane - 1)) ||
        (stuff->bitPlane > (1L << (pSrc->depth - 1))))
@@ -1363,212 +1327,46 @@ int PanoramiXCopyPlane(ClientPtr client)
        return(BadValue);
     }
 
-    pPanoramiXSrc = (pSrc->type == DRAWABLE_PIXMAP)
+    VERIFY_DRAWABLE(pDst, stuff->dstDrawable, client);
+    if (stuff->dstDrawable != stuff->srcDrawable) {
+        VERIFY_DRAWABLE(pSrc, stuff->srcDrawable, client);
+        if (pDst->pScreen != pSrc->pScreen) {
+            client->errorValue = stuff->dstDrawable;
+            return (BadMatch);
+        }
+    } else {
+        pSrc = pDst;
+    } 
+    pPanoramiXSrcRoot = (pSrc->type == DRAWABLE_PIXMAP)
 					? PanoramiXPmapRoot : PanoramiXWinRoot;
-    pPanoramiXDst = (pDst->type == DRAWABLE_PIXMAP)
+    pPanoramiXDstRoot = (pDst->type == DRAWABLE_PIXMAP)
 					? PanoramiXPmapRoot : PanoramiXWinRoot;
+    pPanoramiXSrc = pPanoramiXSrcRoot;
+    pPanoramiXDst = pPanoramiXDstRoot;
     PANORAMIXFIND_ID(pPanoramiXSrc, stuff->srcDrawable);
     IF_RETURN(!pPanoramiXSrc, BadDrawable);
     PANORAMIXFIND_ID(pPanoramiXDst, stuff->dstDrawable);
     IF_RETURN(!pPanoramiXDst, BadDrawable);
-    GCIDbase = stuff->gc;
-    PANORAMIXFIND_ID(pPanoramiXGC, GCIDbase);
+    GCID = stuff->gc;
+    PANORAMIXFIND_ID(pPanoramiXGC, GCID);
     IF_RETURN(!pPanoramiXGC, BadGC);
-    
-    /*
-     *	Unless both are pixmaps, need to do special things to accomodate
-     *	being on multiple screens, different screens, etc.
-     */
-    
-    if (pSrc->type != DRAWABLE_PIXMAP) {
-	SrcRect.x = pSrc->x + srcx;
-	SrcRect.y = pSrc->y + srcy;
-	SrcRect.width = width;
-	SrcRect.height = height;
-	for (SrcScr = PanoramiXNumScreens - 1; SrcScr>=0; SrcScr-- )
-	    if (RECTA_SUBSUMES_RECTB(panoramiXdataPtr[SrcScr], SrcRect))
-		break;
-    }
-    if (pDst->type != DRAWABLE_PIXMAP) {
-	DstRect.x = pDst->x + dstx;
-	DstRect.y = pDst->y + dsty;
-	DstRect.width = width;
-	DstRect.height = height;
-	for (DstScr = PanoramiXNumScreens - 1; DstScr>=0; DstScr--)
-	    if (RECTA_SUBSUMES_RECTB(panoramiXdataPtr[DstScr], DstRect))
-		break;
-    } 
-	
-    /*
-     *	If source is on multiple screens, different screen from destination,
-     *	destination is on multiple screens, or destination is a pixmap,
-     *	need to get info into local pixmap for subsequent transfer.
-     */
 
-             
-    if ((pSrc->type != DRAWABLE_PIXMAP) && 
-	  (SrcScr < 0 || DstScr < 0 || SrcScr != DstScr 
-		|| pDst->type == DRAWABLE_PIXMAP)) {
-	unsigned char save_alu;
-	RegionRec     tempReg;
-	RegionPtr     pCompositeClip;
-	PanoramiXPmap   *pPanoramiXPmap = PanoramiXPmapRoot;
-
-	pMap = (PixmapPtr) (*pSrc->pScreen->CreatePixmap)(pSrc->pScreen,
-				    width, height, pGC->depth);
-	PANORAMIXFIND_LAST(pPanoramiXPmap, PanoramiXPmapRoot);
-	pPanoramiXPmap->next = 
-		    (PanoramiXPmap *)Xcalloc(sizeof(PanoramiXPmap));
-	pPanoramiXPmap = pPanoramiXPmap->next;
-	pmapID = FakeClientID(0);
-	AddResource(pmapID, RT_PIXMAP, (pointer)pMap);
-	for (j = PanoramiXNumScreens - 1; j>=0; j--)
-	    pPanoramiXPmap->info[j].id = pmapID;
-	tempReg.extents.x1 = 0;
-	tempReg.extents.y1 = 0;
-	tempReg.extents.x2 = width;
-	tempReg.extents.y2 = height;
-	tempReg.data = NULL;
-	FetchRgnPtrs = 
-	    (RegionPtr *) ALLOCATE_LOCAL(PanoramiXNumScreens * sizeof(RegionPtr));
-	i = 0;
-	FOR_NSCREENS_OR_ONCE(pPanoramiXSrc, j) {
-	    if ((SrcScr >= 0) && pPanoramiXSrc)
-		j = SrcScr;
-	    srcID = pPanoramiXSrc->info[j].id;
-	    pSrc = (DrawablePtr) SecurityLookupIDByClass(client, srcID, RC_DRAWABLE, 
-				 			 SecurityReadAccess);
-	    GCID = pPanoramiXGC->info[j].id;
-	    pGC = (GC *) LookupIDByType(GCID, RT_GC);
-	    pMap->drawable.pScreen = pSrc->pScreen;
-	    pGC->pScreen = pSrc->pScreen;
-	    save_alu = pGC->alu;
-	    pGC->alu = GXcopy;
-	    pCompositeClip = pGC->pCompositeClip;
-	    pGC->pCompositeClip = 
-&tempReg;
-	    FetchRgnPtrs[i++] = (*pGC->ops->CopyPlane)(pSrc, (DrawablePtr) pMap,
-			 pGC, srcx, srcy, width, height, 0, 0, stuff->bitPlane);
-	    pGC->alu = save_alu;
-	    pGC->pCompositeClip = pCompositeClip;
-	    if (SrcScr >= 0)
-		j = 0;
-	}
+    FOR_NSCREENS_OR_ONCE(pPanoramiXSrc, j) {
+        stuff->dstDrawable = pPanoramiXDst->info[j].id;
+        stuff->srcDrawable = pPanoramiXSrc->info[j].id;
+        stuff->gc = pPanoramiXGC->info[j].id;
+        if (pPanoramiXSrc == pPanoramiXSrcRoot) {       
+            stuff->srcX = srcx - panoramiXdataPtr[j].x;
+            stuff->srcY = srcy - panoramiXdataPtr[j].y;
+        }
+        if (pPanoramiXDst == pPanoramiXDstRoot) {       
+            stuff->dstX = dstx - panoramiXdataPtr[j].x;
+            stuff->dstY = dsty - panoramiXdataPtr[j].y;
+        }
+        result = (* SavedProcVector[X_CopyPlane])(client);
+        BREAK_IF(result != Success);
     }
-
-    if (pMap) {
-	pSrc = (DrawablePtr) pMap;
-	srcx = 0;
-	srcy = 0;
-    }
-    PanoramiXRgnPtrs = 
-	    (RegionPtr *) ALLOCATE_LOCAL(PanoramiXNumScreens * sizeof(RegionPtr));
-    k = 0;
-	/* if src and dst are entirely on one screen, 
-	   then we only need one simple transfer */
-    if ((DstScr >= 0) && (pMap || (SrcScr >=0))) {
-	dstID = pPanoramiXDst->info[DstScr].id;
-	pDst = (DrawablePtr) SecurityLookupIDByClass(client, dstID, RC_DRAWABLE,
-						     SecurityReadAccess);
-	GCID = pPanoramiXGC->info[DstScr].id;
-	pGC = (GC *) LookupIDByType(GCID, RT_GC);
-	ValidateGC(pDst, pGC);
-	if (pMap) {
-	    pMap->drawable.pScreen = pDst->pScreen;
-	} else {
-	    srcID = pPanoramiXSrc->info[SrcScr].id;
-	    if (srcID != dstID) {
-		pSrc = (DrawablePtr) SecurityLookupIDByClass(client, srcID, RC_DRAWABLE,
-							     SecurityReadAccess);
-	    } else 
-		pSrc = pDst;
-	}
-	if (pMap)
-	    PanoramiXRgnPtrs[k++] = (*pGC->ops->CopyPlane)(pSrc, pDst, pGC, 
-			              srcx, srcy, width, height, dstx, dsty, 
-				      1);
-	else 
-	    PanoramiXRgnPtrs[k++] = (*pGC->ops->CopyPlane)(pSrc, pDst, pGC, 
-				      srcx, srcy, width, height, dstx, dsty,
-				      stuff->bitPlane);
-    }else {
-      FOR_NSCREENS_OR_ONCE(pPanoramiXDst, j) {
-	if (DstScr >= 0) {
-	    dstID = pPanoramiXDst->info[DstScr].id;
-	    GCID = pPanoramiXGC->info[DstScr].id;
-	} else {
-	    dstID = pPanoramiXDst->info[j].id;
-	    GCID = pPanoramiXGC->info[j].id;
-	}
-	pDst = (DrawablePtr) SecurityLookupIDByClass(client, dstID, RC_DRAWABLE,
-						     SecurityReadAccess);
-	pGC = (GC *) LookupIDByType(GCID, RT_GC);
-	ValidateGC(pDst, pGC);
-	if (pMap) {
-	    pMap->drawable.pScreen = pDst->pScreen;
-	} else {
-	    srcID = pPanoramiXSrc->info[j].id;
-	    if (srcID != dstID) {
-		pSrc = (DrawablePtr) SecurityLookupIDByClass(client, srcID, RC_DRAWABLE,
-							     SecurityReadAccess);
-	    } else {
-		pSrc = pDst;
-	    }
-	}
-	if (pMap)
-	    PanoramiXRgnPtrs[k++] = (*pGC->ops->CopyPlane)(pSrc, pDst, pGC, 
-			              srcx, srcy, width, height, dstx, dsty, 
-				      1); 
-	else 
-	    PanoramiXRgnPtrs[k++] = (*pGC->ops->CopyPlane)(pSrc, pDst, pGC, 
-				      srcx, srcy, width, height, dstx, dsty,
-				      stuff->bitPlane);
-      }
-    }
-    
-    if (pMap) {
-	for (j = PanoramiXNumScreens - 1; j>=0; j--)
-	    if (PanoramiXRgnPtrs[j])
-		(*pDst->pScreen->RegionDestroy) (PanoramiXRgnPtrs[j]);
-	DEALLOCATE_LOCAL(PanoramiXRgnPtrs);
-	PanoramiXRgnPtrs = FetchRgnPtrs;
-	k = i;
-    }
-    j = 1;
-    i = 0;
-    pRgn = PanoramiXRgnPtrs[i];
-    while ((j < k) && pRgn && !REGION_NIL(pRgn)) {
-	if (PanoramiXRgnPtrs[j]) {
-	    (*pGC->pScreen->Intersect)(pRgn, pRgn, PanoramiXRgnPtrs[j++]);
-	} else {
-	    pRgn = PanoramiXRgnPtrs[i++];
-	}
-    }
-    for (j = 0 ; j < k; j++) {
-	pRgn = PanoramiXRgnPtrs[j];
-	GCID = pPanoramiXGC->info[j].id;
-	pGC = (GC *) LookupIDByType(GCID, RT_GC);
-	if (pGC && pGC->graphicsExposures)
-	    (*pDst->pScreen->SendGraphicsExpose) (client, pRgn,
-					    stuff->dstDrawable, X_CopyPlane, 0);
-	if (pRgn)
-	    (*pDst->pScreen->RegionDestroy) (pRgn);
-    }
-    DEALLOCATE_LOCAL(PanoramiXRgnPtrs);
-    if (pMap) {
-	PanoramiXPmap *pPanoramiXPmap = PanoramiXPmapRoot;
-	PanoramiXPmap *pback = PanoramiXPmapRoot;
-
-	for (; pPanoramiXPmap && (pPanoramiXPmap->info[0].id != pmapID); 
-					    pPanoramiXPmap = pPanoramiXPmap->next)
-	    pback = pPanoramiXPmap;
-	FreeResource(pPanoramiXPmap->info[0].id, RT_NONE);
-	if (pback) {
-	    pback->next = pPanoramiXPmap->next;
-	    Xfree(pPanoramiXPmap);
-	}
-    }
-    return (client->noClientException);
+    return (result);
 }
 
 
@@ -1585,8 +1383,7 @@ int PanoramiXPolyPoint(ClientPtr client)
 
     REQUEST_AT_LEAST_SIZE(xPolyPointReq);
     locDraw = (DrawablePtr) SecurityLookupIDByClass(client, stuff->drawable, 
-RC_DRAWABLE,
-						    SecurityReadAccess);
+					RC_DRAWABLE, SecurityReadAccess);
     IF_RETURN(!locDraw, BadDrawable);
     pPanoramiXWin = (locDraw->type == DRAWABLE_PIXMAP)
 					? PanoramiXPmapRoot : PanoramiXWinRoot;
@@ -2533,13 +2330,10 @@ int PanoramiXCreateColormap(register ClientPtr client)
     Colormap		mid;
     register WindowPtr	pWin;
     ScreenPtr 		pScreen;
-    DepthPtr 		 pDepth;
 
     REQUEST(xCreateColormapReq);
 
     int 		result;
-    int                 vid_index, class_index;
-    int                 this_vid_index, this_class_index, this_depth;
     int			j = 0;
     VisualID            orig_visual;
     Colormap		cmapID;
@@ -2570,41 +2364,15 @@ int PanoramiXCreateColormap(register ClientPtr client)
     /* Use Screen 0 to get the matching Visual ID */
     pWin = (WindowPtr)SecurityLookupWindow(stuff->window, client,
                                            SecurityReadAccess);
-    if ( stuff->visual != CopyFromParent)
-      {
-       /* Find the correct visual for screen 0 */
-	for (class_index = 0; class_index < PanoramiXColorDepthTable[0].numVisuals; 
-class_index++)
-	  {
-	    for (j = 0; j < PanoramiXColorDepthTable[0].panoramiXScreenMap[class_index
-].numDepths; j++ )
-	      {
-		pDepth = (DepthPtr) &pWin->drawable.pScreen->allowedDepths[j];
-		for (vid_index = 0; vid_index < PanoramiXColorDepthTable[0].panoramiXScreenMap[class_index].vmap[pDepth->depth].numVids; vid_index++)
-		  {
-		    if ( stuff->visual == PanoramiXColorDepthTable[0].panoramiXScreenMap[class_index].vmap[pDepth->depth].vid[vid_index] )
-		      {
-			this_class_index = class_index;
-			this_vid_index   = vid_index;
-			this_depth       = pDepth->depth;
-			break;
-		      }
-		  }
-	      }
-	  }
-      }
+
     if (!pWin)
          return(BadWindow);
     pScreen = pWin->drawable.pScreen;
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
 	stuff->mid = localCmap->info[j].id;
 	stuff->window = pPanoramiXWin->info[j].id;
-        /* Look for the matching visual class, and use its
-	   visual id for creating this colormap. */
 	if ( orig_visual != CopyFromParent ) 
-	  {
-	    stuff->visual = PanoramiXColorDepthTable[j].panoramiXScreenMap[this_class_index].vmap[this_depth].vid[this_vid_index];
-	  }
+	    stuff->visual = PanoramiXVisualTable[orig_visual][j];
 	result = (* SavedProcVector[X_CreateColormap])(client);
 	BREAK_IF(result != Success);
     }

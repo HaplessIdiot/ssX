@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.4 1999/01/13 08:30:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.5 1999/05/23 06:33:36 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -62,8 +62,14 @@ PanoramiXPmap 	*PanoramiXPmapRoot;
 
 PanoramiXEdge   panoramiXEdgePtr[MAXSCREENS];
 RegionRec   	PanoramiXScreenRegion[MAXSCREENS];
-PanoramiXCDT	PanoramiXColorDepthTable[MAXSCREENS];
-PanoramiXDepth  PanoramiXLargestScreenDepth;
+
+int		PanoramiXNumDepths;
+DepthPtr	PanoramiXDepths;
+int		PanoramiXNumVisuals;
+VisualPtr	PanoramiXVisuals;
+/* We support at most 256 visuals */
+XID		PanoramiXVisualTable[256][MAXSCREENS];
+
 
 int (* SavedProcVector[256]) ();
 ScreenInfo *GlobalScrInfo;
@@ -90,6 +96,7 @@ extern int defaultBackingStore;
 extern char *ConnectionInfo;
 extern int connBlockScreenStart;
 extern int (* ProcVector[256]) ();
+extern xConnSetupPrefix connSetupPrefix;
 
 /*
  *	Server dispatcher function replacements
@@ -182,7 +189,7 @@ XineramaCreateGC(GCPtr pGC)
     Bool ret;
 
     pScreen->CreateGC = pScreenPriv->CreateGC;
-    if(ret = (*pScreen->CreateGC)(pGC)) {
+    if((ret = (*pScreen->CreateGC)(pGC))) {
 	PanoramiXGCPtr pGCPriv = 
 		(PanoramiXGCPtr) pGC->devPrivates[PanoramiXGCIndex].ptr;
 
@@ -578,22 +585,30 @@ void PanoramiXExtensionInit(int argc, char *argv[])
     ProcVector[X_AllocNamedColor] = PanoramiXAllocNamedColor;
     ProcVector[X_AllocColorCells] = PanoramiXAllocColorCells;
     ProcVector[X_FreeColors] = PanoramiXFreeColors;
-    ProcVector[X_StoreColors] = PanoramiXStoreColors;
+    ProcVector[X_StoreColors] = PanoramiXStoreColors;    
 
     return;
 }
 extern 
 Bool PanoramiXCreateConnectionBlock(void)
 {
-    int i;
+    int i, j, length;
     int old_width, old_height;
     int width_mult, height_mult;
     xWindowRoot *root;
     xConnSetup *setup;
+    xVisualType *visual;
+    xDepth *depth;
+    VisualPtr pVisual;
 
     /*
      *	Do normal CreateConnectionBlock but faking it for only one screen
      */
+
+    if(!PanoramiXNumDepths) {
+	ErrorF("PanoramiX error: Incompatible screens. No common visuals\n");
+	return FALSE;
+    }
 
     i = screenInfo.numScreens;
     screenInfo.numScreens = 1;
@@ -604,12 +619,49 @@ Bool PanoramiXCreateConnectionBlock(void)
 
     screenInfo.numScreens = i;
     
+    setup = (xConnSetup *) ConnectionInfo;
+    root = (xWindowRoot *) (ConnectionInfo + connBlockScreenStart);
+    length = connBlockScreenStart + sizeof(xWindowRoot);
+
+    /* overwrite the connection block */
+    root->nDepths = PanoramiXNumDepths;
+
+    for (i = 0; i < PanoramiXNumDepths; i++) {
+	depth = (xDepth *) (ConnectionInfo + length);
+	depth->depth = PanoramiXDepths[i].depth;
+	depth->nVisuals = PanoramiXDepths[i].numVids;
+	length += sizeof(xDepth);
+	visual = (xVisualType *)(ConnectionInfo + length);
+	
+	for (j = 0; j < depth->nVisuals; j++, visual++) {
+	    visual->visualID = PanoramiXDepths[i].vids[j];
+
+	    for (pVisual = PanoramiXVisuals;
+		 pVisual->vid != visual->visualID;
+		 pVisual++)
+	         ;
+
+	    visual->class = pVisual->class;
+	    visual->bitsPerRGB = pVisual->bitsPerRGBValue;
+	    visual->colormapEntries = pVisual->ColormapEntries;
+	    visual->redMask = pVisual->redMask;
+	    visual->greenMask = pVisual->greenMask;
+	    visual->blueMask = pVisual->blueMask;
+	}
+
+	length += (depth->nVisuals * sizeof(xVisualType));
+    }
+
+    connSetupPrefix.length = length >> 2;
+
+    xfree(PanoramiXVisuals);
+    for (i = 0; i < PanoramiXNumDepths; i++)
+	xfree(PanoramiXDepths[i].vids);
+    xfree(PanoramiXDepths);
+
     /*
      *  OK, change some dimensions so it looks as if it were one big screen
      */
-
-    setup = (xConnSetup *) ConnectionInfo;
-    root = (xWindowRoot *) (ConnectionInfo + connBlockScreenStart);
     
     old_width = root->pixWidth;
     old_height = root->pixHeight;
@@ -670,90 +722,107 @@ void PanoramiXDestroyScreenRegion(WindowPtr pWin)
 extern
 void PanoramiXConsolidate(void)
 {
-    int 	i,j,k,v,d,n;
-    DepthPtr    pDepth; 
-    VisualPtr   pVisual;
-    register WindowPtr pWin;
-    Bool        SameDepth;
+    int 	i, j, k, l;
+    VisualPtr   pVisual, pVisual2;
+    ScreenPtr   pScreen, pScreen2;
 
-    PanoramiXLargestScreenDepth.numDepths = (screenInfo.screens[PanoramiXNumScreens -1])->numDepths;
-    PanoramiXLargestScreenDepth.screenNum = PanoramiXNumScreens - 1;
-    SameDepth = TRUE;
-    for (i = 0; i < 2; i++) 
-    {
-      for (j =0; j < 6; j++) 
-      {
-	PanoramiXColorDepthTable[i].panoramiXScreenMap[j].numDepths=0;
-	for (n = 0; n < 6; n++)
-	{
-	  PanoramiXColorDepthTable[i].panoramiXScreenMap[j].listDepths[n]=0;
-	}
-	for (k = 0; k < 33; k++) 
-	{
-	   PanoramiXColorDepthTable[i].panoramiXScreenMap[j].vmap[k].numVids=0;
-	   for (v = 0; v < 10; v++)
-	   {
-	     PanoramiXColorDepthTable[i].panoramiXScreenMap[j].vmap[k].vid[v]=0;
+    /* initialize the visual table */
+    for (i = 0; i < 256; i++) {
+	for (j = 0; j < MAXSCREENS - 1; j++) 
+	 PanoramiXVisualTable[i][j] = 0;
+    }
+
+    pScreen = screenInfo.screens[0];
+    pVisual = pScreen->visuals; 
+
+    PanoramiXNumDepths = 0;
+    PanoramiXDepths = xcalloc(pScreen->numDepths,sizeof(DepthRec));
+    PanoramiXNumVisuals = 0;
+    PanoramiXVisuals = xcalloc(pScreen->numVisuals,sizeof(VisualRec));
+
+    for (i = 0; i < pScreen->numVisuals; i++, pVisual++) {
+	PanoramiXVisualTable[pVisual->vid][0] = pVisual->vid;
+
+	/* check if the visual exists on all screens */
+	for (j = 1; j < PanoramiXNumScreens; j++) {
+	    pScreen2 = screenInfo.screens[j];
+	    pVisual2 = pScreen2->visuals;
+
+	    for (k = 0; k < pScreen2->numVisuals; k++, pVisual2++) {
+		if ((pVisual->class == pVisual2->class) &&
+		    (pVisual->bitsPerRGBValue == pVisual2->bitsPerRGBValue) &&
+		    (pVisual->ColormapEntries == pVisual2->ColormapEntries) &&
+		    (pVisual->nplanes == pVisual2->nplanes) &&
+		    (pVisual->redMask == pVisual2->redMask) &&
+		    (pVisual->greenMask == pVisual2->greenMask) &&
+		    (pVisual->blueMask == pVisual2->blueMask) &&
+		    (pVisual->offsetRed == pVisual2->offsetRed) &&
+		    (pVisual->offsetGreen == pVisual2->offsetGreen) &&
+		    (pVisual->offsetBlue == pVisual2->offsetBlue))
+		{
+		    Bool AlreadyUsed = FALSE;
+		    for (l = 0; l < 256; l++) {
+			if (pVisual2->vid == PanoramiXVisualTable[l][j]) {	
+			    AlreadyUsed = TRUE;
+			    break;
+			}
+		    }
+		    if (!AlreadyUsed) {
+			PanoramiXVisualTable[pVisual->vid][j] = pVisual2->vid;
+			break;
+		    }
+		}
 	    }
 	}
-      }
-    }
-    for (i = PanoramiXNumScreens - 1; i >= 0; i--) 
-      {
+	
+	/* if it doesn't exist on all screens we can't use it */
+	for (j = 0; j < PanoramiXNumScreens; j++) {
+	    if (!PanoramiXVisualTable[pVisual->vid][j]) {
+		PanoramiXVisualTable[pVisual->vid][0] = 0;
+		break;
+	    }
+	}
+
+	/* if it does, make sure it's in the list of supported depths and visuals */
+	if(PanoramiXVisualTable[pVisual->vid][0]) {
+	    Bool GotIt = FALSE;
+
+	    PanoramiXVisuals[PanoramiXNumVisuals].vid = pVisual->vid;
+	    PanoramiXVisuals[PanoramiXNumVisuals].class = pVisual->class;
+	    PanoramiXVisuals[PanoramiXNumVisuals].bitsPerRGBValue = pVisual->bitsPerRGBValue;
+	    PanoramiXVisuals[PanoramiXNumVisuals].ColormapEntries = pVisual->ColormapEntries;
+	    PanoramiXVisuals[PanoramiXNumVisuals].nplanes = pVisual->nplanes;
+	    PanoramiXVisuals[PanoramiXNumVisuals].redMask = pVisual->redMask;
+	    PanoramiXVisuals[PanoramiXNumVisuals].greenMask = pVisual->greenMask;
+	    PanoramiXVisuals[PanoramiXNumVisuals].blueMask = pVisual->blueMask;
+	    PanoramiXVisuals[PanoramiXNumVisuals].offsetRed = pVisual->offsetRed;
+	    PanoramiXVisuals[PanoramiXNumVisuals].offsetGreen = pVisual->offsetGreen;
+	    PanoramiXVisuals[PanoramiXNumVisuals].offsetBlue = pVisual->offsetBlue;
+	    PanoramiXNumVisuals++;	
+
+	    for (j = 0; j < PanoramiXNumDepths; j++) {
+	        if (PanoramiXDepths[j].depth == pVisual->nplanes) {
+		    PanoramiXDepths[j].vids[PanoramiXDepths[j].numVids] = pVisual->vid;
+		    PanoramiXDepths[j].numVids++;
+		    GotIt = TRUE;
+		    break;
+		}	
+	    }   
+
+	    if (!GotIt) {
+		PanoramiXDepths[PanoramiXNumDepths].depth = pVisual->nplanes;
+		PanoramiXDepths[PanoramiXNumDepths].numVids = 1;
+		PanoramiXDepths[PanoramiXNumDepths].vids = xalloc(sizeof(VisualID) * 256);
+	        PanoramiXDepths[PanoramiXNumDepths].vids[0] = pVisual->vid;
+		PanoramiXNumDepths++;
+	    } 
+	}
+    } 
+
+    for (i =  0; i < PanoramiXNumScreens; i++) {
 	PanoramiXWinRoot->info[i].id = WindowTable[i]->drawable.id;
 	PanoramiXCmapRoot->info[i].id = (screenInfo.screens[i])->defColormap;
-
-	/* Create a Color-Depth-Table, this will help us deal
-	   with mixing graphics boards and visuals, of course
-	   given that the boards support multi-screen to begin 
-	   with. Fill the panoramiXCDT table by screen, then 
-	   visual type and allowable depths.
-	*/
-        pWin = WindowTable[i];
-        if ( (screenInfo.screens[i])->numDepths > 
-	          PanoramiXLargestScreenDepth.numDepths )
-	  { 
-	    PanoramiXLargestScreenDepth.numDepths = (screenInfo.screens[i])->numDepths;
-	    PanoramiXLargestScreenDepth.screenNum = i; 
-	    SameDepth = FALSE;
-	  }
- 	for (v = 0, pVisual = pWin->drawable.pScreen->visuals; 
-	     v < pWin->drawable.pScreen->numVisuals; v++, pVisual++) 
-	  {
-	    PanoramiXColorDepthTable[i].panoramiXScreenMap[pVisual->class].numDepths = (screenInfo.screens[i])->numDepths;
-	    for ( j = 0; j < (screenInfo.screens[i])->numDepths; j++) 
-	      {
-	      pDepth = (DepthPtr) &pWin->drawable.pScreen->allowedDepths[j]; 
-	      PanoramiXColorDepthTable[i].panoramiXScreenMap[pVisual->class].listDepths[j] = pDepth->depth; 
-	      for (d = 0; d < pDepth->numVids; d++)
-		{
-		  if (pVisual->vid == pDepth->vids[d])
-		    {
-		      PanoramiXColorDepthTable[i].
- 			panoramiXScreenMap[pVisual->class].vmap[pDepth->depth].
- 			vid[ 
-			  PanoramiXColorDepthTable[i].
- 			  panoramiXScreenMap[pVisual->class].
- 			  vmap[pDepth->depth].numVids++ 
-			] 
- 		      = pDepth->vids[d];
-  		    }
-  		}
-  	      }
-	  }
-	PanoramiXColorDepthTable[i].numVisuals = 6;
-     } /* for each screen */
-    /*  Fill in ColorDepthTable for mixed visuals with varying depth.
-        Can't do that until we figure out how to handle mixed visuals
-	and varying card visual/depth initialization. If we can decide
-	how to map the relationship, then we can use this table to 
-	shove the information into and use for cross-referencing when
-	necessary.
-
-	In the meantime, check to see if the screens are the same,
-	if they don't then disable panoramiX, print out a message,
-	don't support this mode. 
-     */
+    }
 }
 
 /* Since locate_neighbors is recursive, a quick simple example 

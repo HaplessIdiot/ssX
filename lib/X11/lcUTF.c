@@ -25,7 +25,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.8 1998/10/03 08:41:43 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.9 1998/10/21 06:11:59 dawes Exp $ */
 
 
 #ifdef X_LOCALE
@@ -113,6 +113,12 @@ static void	init_cyrillictab(
 #endif
 );
 static void	init_koi8rtab(
+#if NeedFunctionPrototypes
+    int*,
+    wchar_t
+#endif
+);
+static void	init_koi8utab(
 #if NeedFunctionPrototypes
     int*,
     wchar_t
@@ -219,6 +225,8 @@ static XlcUTFDataRec default_utf_data[] =
     {"GB2312.1980-0", XlcGR, init_gb2312tab, gb2rune, N11n_zh, 0x2175},
     {"KOI8-R", XlcGL, init_koi8rtab, latin2rune, N11n_none, 0x20},
     {"KOI8-R", XlcGR, init_koi8rtab, latin2rune, N11n_none, 0x20},
+    {"KOI8-U", XlcGL, init_koi8utab, latin2rune, N11n_none, 0x20},
+    {"KOI8-U", XlcGR, init_koi8utab, latin2rune, N11n_none, 0x20},
 };
 
 
@@ -470,6 +478,20 @@ init_koi8rtab(tbl, fb_default)
 #endif
 {
     init_8859_tab (tbl, fb_default, tabkoi8_r);
+}
+
+static void
+#if NeedFunctionPrototypes
+init_koi8utab(
+    int*	tbl,
+    wchar_t	fb_default)
+#else
+init_koi8utab(tbl, fb_default)
+    int*	tbl;
+    wchar_t	fb_default;
+#endif
+{
+    init_8859_tab (tbl, fb_default, tabkoi8_u);
 }
 
 static void

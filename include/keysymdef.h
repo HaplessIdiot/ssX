@@ -927,6 +927,7 @@ SOFTWARE.
 #define XK_Serbian_nje                                 0x6aa  /* deprecated */
 #define XK_Serbian_tshe                                0x6ab
 #define XK_Macedonia_kje                               0x6ac
+#define XK_Ukrainian_ghe_with_upturn                   0x6ad
 #define XK_Byelorussian_shortu                         0x6ae
 #define XK_Cyrillic_dzhe                               0x6af
 #define XK_Serbian_dze                                 0x6af  /* deprecated */
@@ -949,6 +950,7 @@ SOFTWARE.
 #define XK_Serbian_NJE                                 0x6ba  /* deprecated */
 #define XK_Serbian_TSHE                                0x6bb
 #define XK_Macedonia_KJE                               0x6bc
+#define XK_Ukrainian_GHE_WITH_UPTURN                   0x6bd
 #define XK_Byelorussian_SHORTU                         0x6be
 #define XK_Cyrillic_DZHE                               0x6bf
 #define XK_Serbian_DZE                                 0x6bf  /* deprecated */

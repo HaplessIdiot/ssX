@@ -1,4 +1,13 @@
 XFree86 3.9Pp (30 May 1999)
+2690. Add some large encoding files for the `fontenc' layer (#2827,
+      Juliusz Chroboczek).
+2689. A rewrite of the way Xinerama handles visuals (#2824, Mark Vojkovich).
+2688. Integrate the pointer acceleration patch from Kevin Brown (#2823,
+      Frederic Lepied).
+2687. Make button mapping work for XInput "AlwaysCore" devices (#2823,
+      Frederic Lepied).
+2686. Fix xtest failure with SiS TwoPointLine (#2821, Juanjo Santamarta).
+2685. Xlib support for KOI8-U (#2820, Aleksey Novodvorsky).
 2684. Fix a problems with the new mouse code looping by adding CLOCAL to
       the standard termios flags for xf86OpenSerial() (#2819, Matthieu Herrb).
 2683. New font document (#2818, Juliusz Chroboczek).
@@ -8059,4 +8068,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.757 1999/05/23 14:37:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.758 1999/05/29 14:41:43 dawes Exp $

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.23 1999/05/07 02:56:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.24 1999/05/09 06:06:22 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -120,6 +120,8 @@ typedef struct _LocalDeviceRec {
     unsigned int	    last;
     int			    old_x;
     int			    old_y;
+    float		    dxremaind;
+    float		    dyremaind;
     char *		    type_name;
     IntegerFeedbackPtr	    always_core_feedback;
     IDevPtr		    conf_idev;
