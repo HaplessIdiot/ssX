@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.14 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.15 2002/09/12 04:08:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1016,7 +1016,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    }
 
    pI830->directRenderingDisabled =
-	xf86ReturnOptValBool(pI830->Options, OPTION_DRI, FALSE);
+	!xf86ReturnOptValBool(pI830->Options, OPTION_DRI, TRUE);
 
 #ifdef XF86DRI
    if (!pI830->directRenderingDisabled) {
