@@ -22,7 +22,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from GROUPE BULL.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Xpm/lib/XpmI.h,v 1.2 2000/08/23 22:10:00 tsi Exp $ */
 
 /*****************************************************************************\
 * XpmI.h:                                                                     *
@@ -83,7 +83,8 @@ extern FILE *popen();
 #endif
 
 /* the following is defined in X11R6 but not in previous versions */
-#if defined(__alpha) || defined(__alpha__)
+#if defined(__alpha) || defined(__alpha__) || \
+    defined(ia64) || defined(__ia64__)
 #ifndef LONG64
 #define LONG64
 #endif

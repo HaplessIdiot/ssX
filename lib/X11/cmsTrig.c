@@ -24,7 +24,7 @@
  * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.3 1999/05/09 10:50:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.4 2000/08/23 22:10:02 tsi Exp $ */
 /*
  *	It should be pointed out that for simplicity's sake, the
  *	environment parameters are defined as floating point constants,
@@ -90,13 +90,8 @@ double _XcmsArcTangent();
 #ifdef _CRAY
 #define XCMS_DMAXPOWTWO	((double)(1 < 47))
 #else
-#if defined(__alpha__) || defined(__alpha)
 #define XCMS_DMAXPOWTWO	((double)(XCMS_LONG_MAX) * \
 	    (1L << ((XCMS_NBITS(double)-XCMS_DEXPLEN) - XCMS_NBITS(int) + 1)))
-#else
-#define XCMS_DMAXPOWTWO	((double)(XCMS_LONG_MAX) * \
-	    (1L << ((XCMS_NBITS(double)-XCMS_DEXPLEN) - XCMS_NBITS(long) + 1)))
-#endif
 #endif
 
 /*

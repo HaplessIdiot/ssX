@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.15 2000/02/12 20:45:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.17 2000/06/09 07:53:25 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -176,7 +176,8 @@ char rad;
   if (xf86IsPc98())
     return;
 
-#if defined(__alpha__) || defined (__i386__) /* only these arches have an ISA bus */
+#if defined(__alpha__) || defined (__i386__) || defined(__ia64__)
+
   /* The ioport way */
 
   for (i = 0; i < RATE_COUNT; i++)
@@ -199,7 +200,6 @@ char rad;
   usleep(10000);
   outb(0x60, value);
 
-  return;
 #endif /* __alpha__ || __i386__ */
 }
 
