@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.34 1998/07/25 16:55:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.35 1998/07/26 09:56:15 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -958,6 +958,7 @@ xf86eqProcessInputEvents ()
  * convenient functions to post events
  */
 
+#if 0
 #define RELATIVE_CHECK(VALUATOR,IDX)				\
        {							\
 	    if (!is_absolute) {					\
@@ -971,6 +972,15 @@ xf86eqProcessInputEvents ()
 		axisvals[(IDX)] = (VALUATOR);			\
 	    }							\
     }
+#else
+#define RELATIVE_CHECK(VALUATOR,IDX)				\
+    do {							\
+	if (!is_absolute) {					\
+	    (VALUATOR) += axisvals[(IDX)];			\
+	    axisvals[(IDX)] = (VALUATOR);			\
+	}							\
+    } while (0)
+#endif
 
 
 void

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.1.2.4 1998/06/09 14:40:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.2 1998/07/25 16:56:40 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -827,8 +827,21 @@ xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
 		unsigned char *Buf, int Len)
 {
     pointer hostbase = pciBusAddrToHostAddr(Tag, (ADDRESS)Base);
-    
-    return(xf86ReadBIOS((unsigned long)hostbase, Offset, Buf, Len));
+    CARD32 romaddr;
+    int ret;
+
+    /* XXX This assumes that memory access is enabled */
+
+    romaddr = pciReadLong(Tag, PCI_MAP_ROM_REG);
+    /* Enable ROM address decoding */
+    pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr | PCI_MAP_ROM_DECODE_ENABLE);
+
+    ret = xf86ReadBIOS((unsigned long)hostbase, Offset, Buf, Len);
+
+    /* Restore ROM address decoding */
+    pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr);
+
+    return ret;
 }
 
 #endif /* INCLUDE_XF86_MAP_PCI_MEM */
