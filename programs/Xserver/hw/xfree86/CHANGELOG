@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 409. Fix portability problem in the generation of the man page version string
+      (Marc La France).
  408. Fix a NativeGDI problem on Cygwin/XFree86 (#5007, #5008, Harold Hunt).
  407. Fix for threaded libraries (Marc La France).
  406. Finish removal of SuperProbe (Marc La France).
@@ -6,7 +8,7 @@ XFree86 4.1.99.2 (xx October 2001)
  404. Fix bug in HTML install script (Marc La France).
  403. Missing ident lines for some XFree86-modified files (Marc La France).
  402. Add default half-width doublescanned modes (Marc La France).
- 401. Mark all driver-registered resources with ResBus (Maarc La France).
+ 401. Mark all driver-registered resources with ResBus (Marc La France).
  400. Fix DPMS-related build problem (Marc La France).
  399. Log a message just before calling each ChipProbe() during '-probe'
       processing (Marc La France).
@@ -14045,4 +14047,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2004 2001/10/29 21:10:20 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2005 2001/10/30 15:39:06 alanh Exp $
