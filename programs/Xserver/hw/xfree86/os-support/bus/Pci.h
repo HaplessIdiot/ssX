@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.29 2002/08/27 22:07:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.30tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -357,6 +357,8 @@ typedef struct pci_bus_info {
 	void          *pciBusPriv;   /* Implementation private data */
 	pciConfigPtr   bridge;       /* bridge that opens this bus  */
 } pciBusInfo_t;
+
+#define HOST_NO_BUS ((pciBusInfo_t *)(-1))
 
 /* configMech values */
 #define PCI_CFG_MECH_UNKNOWN 0 /* Not yet known  */

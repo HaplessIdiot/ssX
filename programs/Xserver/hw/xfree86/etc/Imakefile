@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/24 1996/10/28 04:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.42 2002/04/04 14:05:50 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.43tsi Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -124,7 +124,13 @@ NormalProgramTarget(matchagp,matchagp.o,$(XF86OSSRC)/libxf86_os.a,-L../os-suppor
 InstallProgram(matchagp,$(BINDIR))
 #endif /* BuildMatchagp */
 
-        SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4) $(SRCS5)
+       SRCS6 = mmapr.c
+
+AllTarget(ProgramTargetName(mmapr))
+NormalProgramTarget(mmapr,mmapr.o,NullParameter,NullParameter,NullParameter)
+InstallProgram(mmapr,$(BINDIR))
+
+        SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4) $(SRCS5) $(SRCS6)
 
 #if (SystemV && !defined(i386ScoArchitecture)) || SystemV4
 InstallNamedProg($(INSTPROG),xf86install,$(LIBDIR)/etc)

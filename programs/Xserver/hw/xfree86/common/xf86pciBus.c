@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.59 2002/09/18 12:48:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.60tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -2050,15 +2050,24 @@ xf86GetPciBridgeInfo(void)
 	    case PCI_SUBCLASS_BRIDGE_HOST:
 		/* Is this the correct bridge?  If not, ignore bus info */
 		pBusInfo = pcrp->businfo;
-		if (pBusInfo && (pcrp != pBusInfo->bridge)) {
-		    xf86MsgVerb(X_WARNING, 3, "Host bridge mismatch for bus"
-				" %x: %x:%x:%x and %x:%x:%x\n",
-				pBusInfo->primary_bus,
-				pcrp->busnum, pcrp->devnum, pcrp->funcnum,
-				pBusInfo->bridge->busnum,
-				pBusInfo->bridge->devnum,
-				pBusInfo->bridge->funcnum);
-		    pBusInfo = NULL;
+		if (pBusInfo == HOST_NO_BUS)
+		    break;
+
+		secondary = 0;
+		if (pBusInfo) {
+		    /* Find "secondary" bus segment */
+		    while (pBusInfo != pciBusInfo[secondary])
+			secondary++;
+		    if (pcrp != pBusInfo->bridge) {
+			xf86MsgVerb(X_WARNING, 3, "Host bridge mismatch for"
+				    " bus %x: %x:%x:%x and %x:%x:%x\n",
+				    pBusInfo->primary_bus,
+				    pcrp->busnum, pcrp->devnum, pcrp->funcnum,
+				    pBusInfo->bridge->busnum,
+				    pBusInfo->bridge->devnum,
+				    pBusInfo->bridge->funcnum);
+			pBusInfo = NULL;
+		    }
 		}
 
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
@@ -2069,10 +2078,10 @@ xf86GetPciBridgeInfo(void)
 		PciBus->subordinate = pciNumBuses - 1;
 
 		if (pBusInfo) {
-		    PciBus->primary = PciBus->secondary = pcrp->busnum;
+		    PciBus->primary = PciBus->secondary = secondary;
 		    if (pBusInfo->funcs->pciGetBridgeBusses)
 			(*pBusInfo->funcs->pciGetBridgeBusses)
-			    (pBusInfo->primary_bus,
+			    (secondary,
 			     &PciBus->primary,
 			     &PciBus->secondary,
 			     &PciBus->subordinate);
@@ -2086,14 +2095,13 @@ xf86GetPciBridgeInfo(void)
 
 		if (pBusInfo && pBusInfo->funcs->pciControlBridge)
 		    PciBus->brcontrol =
-			(*pBusInfo->funcs->pciControlBridge)
-			    (pBusInfo->primary_bus, 0, 0);
+			(*pBusInfo->funcs->pciControlBridge)(secondary, 0, 0);
 		else
 		    PciBus->brcontrol = PCI_PCI_BRIDGE_VGA_EN;
 
 		if (pBusInfo && pBusInfo->funcs->pciGetBridgeResources) {
 		    (*pBusInfo->funcs->pciGetBridgeResources)
-			(pBusInfo->primary_bus,
+			(secondary,
 			 (pointer *)&PciBus->preferred_io,
 			 (pointer *)&PciBus->preferred_mem,
 			 (pointer *)&PciBus->preferred_pmem);
