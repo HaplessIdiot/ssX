@@ -1,4 +1,6 @@
 XFree86 4.5.99.1 (xx March 2005)
+   9. Modify the handling of preferred EDID modes to allow user-specified
+      modes that are larger than the preferred mode (David Dawes).
    8. Build and warning cleanups and fixes (David Dawes).
    7. Fix some bad alignment problems when allocating memory from
       the end of AGP space in the i830 driver (Alan Hourihane).
@@ -19476,7 +19478,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3477 2005/03/21 19:00:07 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3478 2005/03/23 03:11:27 dawes Exp $
 
 
 
