@@ -1,4 +1,5 @@
 XFree86 3.9.16Z (xx December 1999)
+3391. Mga_dac3026 rev A/B fixes (#3427, Mark Montague).
 3390. Jumbo font patch.  This updates the bdf/misc fonts to the
       latest ISO versions (#3429+updates, Markus Kuhn).
 3389. Fix a problem with no Xv encodings being reported (Mark Vojkovich).
@@ -9178,4 +9179,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.886 1999/12/17 03:06:39 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.887 1999/12/26 17:44:31 robin Exp $

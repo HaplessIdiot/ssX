@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.49 1999/09/25 14:37:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.50 1999/09/27 06:29:52 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -93,23 +93,25 @@ const static unsigned char MGADACregs[] = {
 
    ...The more precise statement of the software workaround is to insure
    that bits 7-5 of register 0x37 (Blue Color Key High) and bits 7-5 of
-   register 0x38 (HZOOM)are the same... */
+   register 0x38 (HZOOM)are the same...
+*/
 
-/* also note: the values of the MUX control register 0x19 are different
-   from the ones listed in table 2-17 of the 3026 manual. It is not clear
-   why this is the case, but it may be to deal with 2MB boards(?) */
+/* also note: the values of the MUX control register 0x19 (index [2]) can be
+   found in table 2-17 of the 3026 manual. If interlace is set, the values
+   listed here are incremented by one. 
+*/
    
 #define DACREGSIZE sizeof(MGADACregs)
 /*
  * initial values of ti3026 registers
  */
 const static unsigned char MGADACbpp8[DACREGSIZE] = {
-	0x06, 0x80, 0x48, 0x25, 0x00,   0x00, 0x0C, 0x00, 0x1E, 0xFF,
+	0x06, 0x80, 0x4b, 0x25, 0x00,   0x00, 0x0C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0x00, 0x00,    0, 0x00,
 	0x00
 };
 const static unsigned char MGADACbpp16[DACREGSIZE] = {
-	0x07, 0x45, 0x50, 0x15, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0x07, 0x45, 0x53, 0x15, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0x00, 0x10,    0, 0x00,
 	0x00
 };
@@ -117,13 +119,20 @@ const static unsigned char MGADACbpp16[DACREGSIZE] = {
  * [0] value was 0x07, but changed to 0x06 by Doug Merrit to fix high res
  * stripe glitches and clock glitches at 24bpp.
  */
+/* [0] value is now set inside of MGA3026Init, based on the silicon revision
+   It is still set to 7 or 6 based on the revision, though, since setting to
+   8 as in the documentation makes (some?) revB chips get the colors wrong...
+   maybe BGR instead of RGB? This only applies to 24bpp, since it is the only
+   one documented as depending on revision.
+ */
+
 const static unsigned char MGADACbpp24[DACREGSIZE] = {
-	0x06, 0x56, 0x58, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0x06, 0x56, 0x5b, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0x00, 0x10,    0, 0x00,
 	0x00
 };
 const static unsigned char MGADACbpp32[DACREGSIZE] = {
-	0x07, 0x46, 0x58, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0x07, 0x46, 0x5b, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0x00, 0x10,    0, 0x00,
 	0x00
 };
@@ -132,7 +141,7 @@ const static unsigned char MGADACbpp32[DACREGSIZE] = {
    has to be off in register 0x1e -> bit4 clear */
    
 const static unsigned char MGADACbpp8plus24[DACREGSIZE] = {
-	0x07, 0x06, 0x5C, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF, 
+	0x07, 0x06, 0x5b, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF, 
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0x00, 0x01, 0x00, 0x00, 
 	0x00
 };
@@ -541,7 +550,31 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    && (pLayout->weight.green == 5) && (pLayout->weight.blue == 5) ) {
 	    pReg->DacRegs[1] &= ~0x01;
 	}
-	pReg->DacRegs[2] |= pMga->Interleave? 0x04 : 0x03;	
+	if (pMga->Interleave ) 	pReg->DacRegs[2] += 1;
+
+
+	if ( pLayout->bitsPerPixel == 24 ) {
+	  int silicon_rev;
+	  /* we need to set DacRegs[0] differently based on the silicon
+	   * revision of the 3026 RAMDAC, as per page 2-14 of tvp3026.pdf.
+	   * If we have rev A silicon, we want 0x07; rev B silicon wants
+	   * 0x06.
+	   */
+	  silicon_rev = inTi3026(TVP3026_SILICON_REV);
+	  
+#ifdef DEBUG
+	    ErrorF("TVP3026 revision 0x%x (rev %s)\n",
+		   silicon_rev, (silicon_rev <= 0x20) ? "A" : "B");
+#endif
+	    
+	    if(silicon_rev <= 0x20) {
+	      /* rev A */
+	      pReg->DacRegs[0] = 0x07;
+	    } else {
+	      /* rev B */
+	      pReg->DacRegs[0] = 0x06;
+	    }
+	}
 
 	/*
 	 * This will initialize all of the generic VGA registers.
