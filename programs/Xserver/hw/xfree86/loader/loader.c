@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.3 1997/02/18 04:33:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.4 1997/02/18 12:04:28 dawes Exp $ */
 
 
 
@@ -56,6 +56,9 @@
 #define strerror(err) "strerror unsupported"
 #endif
 
+#ifdef __EMX__
+void * os2_calloc(size_t,size_t);
+#endif
 
 #ifdef HANDLE_IN_HASH_ENTRY
 #define MAX_HANDLE 256
@@ -182,8 +185,13 @@ ErrorF("=NULL\n",ptr);
 	return NULL;
 	}
 
+#ifndef __EMX__
 if( (ptr=(char *)calloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
+#else
+if( (ptr=(char *)os2_calloc(size,1)) == NULL )
+	FatalError("_LoaderFileToMem() malloc failed\n" );
+#endif
 
 if(lseek(fd,offset+offsetbias,SEEK_SET)<0)
 	FatalError("\n_LoaderFileToMem() lseek() failed: %s\n",strerror(errno));

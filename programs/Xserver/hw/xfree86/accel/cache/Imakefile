@@ -25,7 +25,7 @@ NormalLibraryTarget(xf86cache,$(OBJS))
 InstallLinkKitLibrary(xf86cache,$(LINKKITDIR)/lib)
 
 #if DoLoadableServer
-InstallDynamicModule(libxf86cache.a,$(MODULEDIR))
+InstallDynamicModule(LibraryTargetName(xf86cache),$(MODULEDIR))
 #endif
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.6 1997/02/18 17:51:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.7 1997/02/18 22:26:21 hohndel Exp $ */
 
 
 
@@ -40,6 +40,10 @@
 #include "xf86_PCI.h"
 #include "CirrusClk.h"
 #include "vga.h"
+
+#ifdef __EMX__
+void usleep(unsigned long);
+#endif
 
 extern Bool xf86Resetting;
 extern Bool xf86ProbeFailed;

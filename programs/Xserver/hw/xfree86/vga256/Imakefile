@@ -51,7 +51,7 @@ InstallLinkKitLibrary(vga256,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(cvga256.SHsuf,$(LINKKITDIR))
 
 #if DoLoadableServer
-InstallDynamicModule(libvga256.a,$(MODULEDIR))
+InstallDynamicModule(LibraryTargetName(vga256),$(MODULEDIR))
 #endif
 
 DependSubdirs($(SUBDIRS))

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.1 1997/02/17 16:07:30 hohndel Exp $ */
 
 
 
@@ -31,6 +31,10 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef __EMX__
+#include <sys/param.h>
+#endif
 
 #include "aout.h"
 #include "sym.h"

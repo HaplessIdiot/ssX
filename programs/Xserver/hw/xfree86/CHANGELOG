@@ -1,4 +1,7 @@
 XFree86 3.2Ag (19 February 1997)
+ 472. Fix Imakefiles and loader problems on OS/2 (#53, Sebastien Marineau).
+ 471. Fix problems with ISC and the Mach32 module (#55, Michael Rohleder).
+ 470. Fix Xnest and Xvfb when DoLoadableServer is YES (Dirk Hohndel).
  469. Clear up multiplex support on 96xx and display error message when
       requested resolution exceeds available memory with the accelerator 
       engine (#52, Alan Hourihane).

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aout.h,v 1.1 1997/02/17 16:07:30 hohndel Exp $ */
 
 
 
@@ -37,6 +37,10 @@
 
 #ifndef _AOUT_H
 #define _AOUT_H
+
+#ifdef ISC
+#include <sys/bsdtypes.h>
+#endif
 
 #define __LDPGSZ        4096
 #ifndef AOUT_PAGSIZ
