@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.7 2000/01/26 02:00:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.8 2000/10/20 14:59:02 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -38,7 +38,6 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec FilesTab[] =
 {
-	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{FONTPATH, "fontpath"},
 	{RGBPATH, "rgbpath"},
@@ -73,9 +72,7 @@ xf86parseFilesSection (void)
 		switch (token)
 		{
 		case COMMENT:
-			if (xf86getToken (NULL) != STRING)
-				Error (QUOTE_MSG, "###");
-			ptr->file_comment = val.str;
+			ptr->file_comment = xf86addComment(ptr->file_comment, val.str);
 			break;
 		case FONTPATH:
 			if (xf86getToken (NULL) != STRING)
@@ -169,7 +166,7 @@ xf86printFileSection (FILE * cf, XF86ConfFilesPtr ptr)
 		return;
 
 	if (ptr->file_comment)
-		fprintf (cf, "\t###          \"%s\"\n", ptr->file_comment);
+		fprintf (cf, "%s", ptr->file_comment);
 	if (ptr->file_logfile)
 		fprintf (cf, "\tLogFile      \"%s\"\n", ptr->file_logfile);
 	if (ptr->file_rgbpath)

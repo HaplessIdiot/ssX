@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.14 2000/11/02 19:58:20 anderson Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.16 2001/02/15 19:54:41 eich Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -149,32 +149,60 @@ xf86getToken (xf86ConfigSymTabRec * tab)
 
 		/* 
 		 * Get start of next Token. EOF is handled,
-		 * whitespaces & comments are* skipped. 
+		 * whitespaces are skipped. 
 		 */
-		do
+
+again:
+		if (!c)
 		{
-			if (!c)
+			if (fgets (configBuf, CONFIG_BUF_LEN - 1, configFile) == NULL)
 			{
-				if (fgets (configBuf, CONFIG_BUF_LEN - 1, configFile) == NULL)
-				{
-					return (pushToken = EOF_TOKEN);
-				}
-				configLineNo++;
-				configStart = configPos = 0;
+				return (pushToken = EOF_TOKEN);
 			}
-#ifndef __EMX__
-			while (((c = configBuf[configPos++]) == ' ') || (c == '\t') || (c == '\n'));
-#else
-			while (((c = configBuf[configPos++]) == ' ') || (c == '\t') || (c == '\n')
-				   || (c == '\r'));
-#endif
-			if (c == '#')
-				c = '\0';
+			configLineNo++;
+			configStart = configPos = 0;
 		}
-		while (!c);
+
+		i = 0;
+		for (;;) {
+			c = configBuf[configPos++];
+			configRBuf[i++] = c;
+			switch (c) {
+				case ' ':
+				case '\t':
+				case '\r':
+					continue;
+				case '\n':
+					i = 0;
+					continue;
+			}
+			break;
+		}
+		if (c == '\0')
+			goto again;
+
+		if (c == '#')
+		{
+			do
+			{
+				configRBuf[i++] = (c = configBuf[configPos++]);
+#ifndef __EMX__
+			}
+			while ((c != '\n') && (c != '\0'));
+#else
+			}
+			while ((c != '\n') && (c != '\r') && (c != '\0'));
+#endif
+			configRBuf[i] = '\0';
+			/* XXX no private copy.
+			 * Use xf86addComment when setting a comment.
+			 */
+			val.str = configRBuf;
+			return (COMMENT);
+		}
 
 		/* GJA -- handle '-' and ','  * Be careful: "-hsync" is a keyword. */
-		if ((c == ',') && !isalpha (configBuf[configPos]))
+		else if ((c == ',') && !isalpha (configBuf[configPos]))
 		{
 			configStart = configPos;
 			return COMMA;
@@ -977,4 +1005,50 @@ xf86nameCompare (const char *s1, const char *s2)
 		c2 = (isupper (*s2) ? tolower (*s2) : *s2);
 	}
 	return (c1 - c2);
+}
+
+char *
+xf86addComment(char *cur, char *add)
+{
+	char *str;
+	int len, curlen, iscomment, hasnewline = 0, endnewline;
+
+	if (add == NULL || add[0] == '\0')
+		return (cur);
+
+	if (cur) {
+		curlen = strlen(cur);
+		if (curlen)
+		    hasnewline = cur[curlen - 1] == '\n';
+	}
+	else
+		curlen = 0;
+
+	str = add;
+	iscomment = 0;
+	while (*str) {
+	    if (*str != ' ' && *str != '\t')
+		break;
+	    ++str;
+	}
+	iscomment = (*str == '#');
+
+	len = strlen(add);
+	endnewline = add[len - 1] == '\n';
+	len +=  1 + iscomment + (!hasnewline) + (!endnewline);
+
+	if ((str = xf86confrealloc(cur, len + curlen)) == NULL)
+		return (cur);
+
+	cur = str;
+
+	if (curlen && !hasnewline)
+		cur[curlen++] = '\n';
+	if (!iscomment)
+		cur[curlen++] = '#';
+	strcpy(cur + curlen, add);
+	if (!endnewline)
+		strcat(cur, "\n");
+
+	return (cur);
 }

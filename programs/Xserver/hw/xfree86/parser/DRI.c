@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.8 2000/11/30 20:45:33 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.9 2001/03/08 21:32:35 anderson Exp $
  * 
  */
 
@@ -58,13 +58,23 @@ xf86parseBuffers (void)
 	Error ("Buffers size expected", NULL);
     ptr->buf_size = val.num;
 
-    if ((token = xf86getToken (NULL)) == STRING) {
-	ptr->buf_flags = val.str;
-    } else {
-	ptr->buf_flags = NULL;
-	xf86unGetToken (token);
+    switch (token = xf86getToken (NULL)) {
+	case STRING:
+	    ptr->buf_flags = val.str;
+	    if ((token = xf86getToken (NULL)) == COMMENT)
+		ptr->buf_comment = xf86addComment(ptr->buf_comment, val.str);
+	    else
+		xf86unGetToken(token);
+	    break;
+	case COMMENT:
+	    ptr->buf_comment = xf86addComment(ptr->buf_comment, val.str);
+	    break;
+	default:
+	    ptr->buf_flags = NULL;
+	    xf86unGetToken (token);
+	    break;
     }
-    
+
 #ifdef DEBUG
     printf ("Buffers parsed\n");
 #endif
@@ -106,6 +116,9 @@ xf86parseDRISection (void)
 	    case EOF_TOKEN:
 		Error (UNEXPECTED_EOF_MSG, NULL);
 		break;
+	    case COMMENT:
+		ptr->dri_comment = xf86addComment(ptr->dri_comment, val.str);
+		break;
 	    default:
 		Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 		break;
@@ -130,6 +143,8 @@ xf86printDRISection (FILE * cf, XF86ConfDRIPtr ptr)
 	return;
     
     fprintf (cf, "Section \"DRI\"\n");
+    if (ptr->dri_comment)
+	fprintf (cf, "%s", ptr->dri_comment);
     if (ptr->dri_group_name)
 	fprintf (cf, "\tGroup        \"%s\"\n", ptr->dri_group_name);
     else if (ptr->dri_group >= 0)
@@ -140,7 +155,10 @@ xf86printDRISection (FILE * cf, XF86ConfDRIPtr ptr)
 	fprintf (cf, "\tBuffers      %d %d",
 		 bufs->buf_count, bufs->buf_size);
 	if (bufs->buf_flags) fprintf (cf, " \"%s\"", bufs->buf_flags);
-	fprintf (cf, "\n");
+	if (bufs->buf_comment)
+	    fprintf(cf, "%s", bufs->buf_comment);
+	else
+	    fprintf (cf, "\n");
     }
     fprintf (cf, "EndSection\n\n");
 }
@@ -152,6 +170,7 @@ xf86freeDRI (XF86ConfDRIPtr ptr)
 	return;
     
     xf86freeBuffersList (ptr->dri_buffers_lst);
+    TestFree (ptr->dri_comment);
     xf86conffree (ptr);
 }
 
@@ -162,6 +181,7 @@ xf86freeBuffersList (XF86ConfBuffersPtr ptr)
 
     while (ptr) {
 	TestFree (ptr->buf_flags);
+	TestFree (ptr->buf_comment);
 	prev = ptr;
 	ptr  = ptr->list.next;
 	xf86conffree (prev);

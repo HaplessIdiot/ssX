@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.5 2000/04/04 22:36:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.6 2000/10/20 14:59:02 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -67,28 +67,11 @@ xf86parseModuleSubSection (XF86LoadPtr head, char *name)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			ptr->load_comment = xf86addComment(ptr->load_comment, val.str);
+			break;
 		case OPTION:
-			{
-				char *name;
-				if ((token = xf86getToken (NULL)) != STRING)
-				{
-					xf86parseError (BAD_OPTION_MSG, NULL);
-					xf86conffree(ptr);
-					return NULL;
-				}
-				name = val.str;
-				if ((token = xf86getToken (NULL)) == STRING)
-				{
-					ptr->load_opt = xf86addNewOption (ptr->load_opt,
-														name, val.str);
-				}
-				else
-				{
-					ptr->load_opt = xf86addNewOption (ptr->load_opt,
-														name, NULL);
-					xf86unGetToken (token);
-				}
-			}
+			ptr->load_opt = xf86parseOption(ptr->load_opt);
 			break;
 		case EOF_TOKEN:
 			xf86parseError (UNEXPECTED_EOF_MSG, NULL);
@@ -116,6 +99,9 @@ xf86parseModuleSection (void)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			ptr->mod_comment = xf86addComment(ptr->mod_comment, val.str);
+			break;
 		case LOAD:
 			if (xf86getToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Load");
@@ -162,33 +148,41 @@ xf86printModuleSection (FILE * cf, XF86ConfModulePtr ptr)
 	if (ptr == NULL)
 		return;
 
+	if (ptr->mod_comment)
+		fprintf(cf, "%s", ptr->mod_comment);
 	for (lptr = ptr->mod_load_lst; lptr; lptr = lptr->list.next)
 	{
 		switch (lptr->load_type)
 		{
 		case XF86_LOAD_MODULE:
-			if( lptr->load_opt == NULL )
-				fprintf (cf, "\tLoad  \"%s\"\n", lptr->load_name);
+			if( lptr->load_opt == NULL ) {
+				fprintf (cf, "\tLoad  \"%s\"", lptr->load_name);
+				if (lptr->load_comment)
+					fprintf(cf, "%s", lptr->load_comment);
+				else
+					fputc('\n', cf);
+			}
 			else
 			{
-				XF86OptionPtr optr;
 				fprintf (cf, "\tSubSection \"%s\"\n", lptr->load_name);
-				for(optr=lptr->load_opt;optr;optr=optr->list.next)
-				{
-					fprintf (cf, "\t\tOption \"%s\"", optr->opt_name);
-					if( optr->opt_val)
-						fprintf (cf, " \"%s\"", optr->opt_val);
-					fprintf (cf, "\n" );
-				}
+				if (lptr->load_comment)
+					fprintf(cf, "%s", lptr->load_comment);
+				xf86printOptionList(cf, lptr->load_opt, 2);
 				fprintf (cf, "\tEndSubSection\n");
 			}
 			break;
 		case XF86_LOAD_DRIVER:
-			fprintf (cf, "\tLoadDriver  \"%s\"\n", lptr->load_name);
+			fprintf (cf, "\tLoadDriver  \"%s\"", lptr->load_name);
+				if (lptr->load_comment)
+					fprintf(cf, "%s", lptr->load_comment);
+				else
+					fputc('\n', cf);
 			break;
+#if 0
 		default:
 			fprintf (cf, "#\tUnknown type  \"%s\"\n", lptr->load_name);
 			break;
+#endif
 		}
 	}
 }
@@ -197,12 +191,18 @@ XF86LoadPtr
 xf86addNewLoadDirective (XF86LoadPtr head, char *name, int type, XF86OptionPtr opts)
 {
 	XF86LoadPtr new;
+	int token;
 
 	new = xf86confcalloc (1, sizeof (XF86LoadRec));
 	new->load_name = name;
 	new->load_type = type;
 	new->load_opt  = opts;
 	new->list.next = NULL;
+
+	if ((token = xf86getToken(NULL)) == COMMENT)
+		new->load_comment = xf86addComment(new->load_comment, val.str);
+	else
+		xf86unGetToken(token);
 
 	return ((XF86LoadPtr) xf86addListItem ((glp) head, (glp) new));
 }
@@ -219,9 +219,11 @@ xf86freeModules (XF86ConfModulePtr ptr)
 	while (lptr)
 	{
 		TestFree (lptr->load_name);
+		TestFree (lptr->load_comment);
 		prev = lptr;
 		lptr = lptr->list.next;
 		xf86conffree (prev);
 	}
+	TestFree (ptr->mod_comment);
 	xf86conffree (ptr);
 }
