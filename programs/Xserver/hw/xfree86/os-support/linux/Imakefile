@@ -1,11 +1,18 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:28:45 dpw Exp $
 #include <Server.tmpl>
 
+#ifdef BuildXInputExt
+# if defined(JoystickSupport) || defined(Joystick2Support)
+	JOYSTICK_SRC = lnx_jstk.c
+	JOYSTICK_OBJ = lnx_jstk.o
+# endif
+#endif
+
 SRCS = lnx_init.c lnx_video.c IO_utils.c lnx_io.c bios_devmem.c mapVT_noop.c \
-       VTsw_usl.c std_kbdEv.c posix_tty.c std_mouse.c std_mseEv.c
+       VTsw_usl.c std_kbdEv.c posix_tty.c std_mouse.c std_mseEv.c $(JOYSTICK_SRC)
 
 OBJS = lnx_init.o lnx_video.o IO_utils.o lnx_io.o bios_devmem.o mapVT_noop.o \
-       VTsw_usl.o std_kbdEv.o posix_tty.o std_mouse.o std_mseEv.o
+       VTsw_usl.o std_kbdEv.o posix_tty.o std_mouse.o std_mseEv.o $(JOYSTICK_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(INCLUDESRC)

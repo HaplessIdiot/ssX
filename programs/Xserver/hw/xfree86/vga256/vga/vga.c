@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.38 1995/12/09 11:08:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.39 1995/12/17 05:04:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1017,6 +1017,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   pScreen->SaveScreen = vgaSaveScreen;
   pScreen->whitePixel = 1;
   pScreen->blackPixel = 0;
+  XF86FLIP_PIXELS();
 #ifndef MONOVGA
   /* For 16/32bpp, the cfb defaults are OK. */
   if (vgaBitsPerPixel <= 8) { /* For 8bpp SVGA and VGA16 */

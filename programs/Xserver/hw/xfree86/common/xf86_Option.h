@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.39 1995/12/17 05:03:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.40 1995/12/21 11:44:38 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -92,6 +92,7 @@ typedef struct {
 #define OPTION_NO_IMAGEBLT	45 /* Avoid system-to-video BitBLT (cirrus) */
 #define OPTION_NO_FONT_CACHE	46 /* Don't enable the font cache */
 #define OPTION_NO_PIXMAP_CACHE	47 /* Don't enable the pixmap cache */
+#define OPTION_TRIO32_FC_BUG	48 /* Workaround Trio32 font cache bug */
 
 /* RAMDAC options */
 #define OPTION_BT485_CURS	50 /* Override Bt485 RAMDAC probe */
@@ -104,6 +105,7 @@ typedef struct {
 #define OPTION_TI3026_CURS	57 /* Use 3026 RAMDAC cursor (default) */
 #define OPTION_IBMRGB_CURS	58 /* Use IBM RGB52x RAMDAC cursor (default) */
 #define OPTION_DAC_6_BIT	59 /* 6-bit DAC operation */
+#define OPTION_NO_TI3026_CURS	60 /* Use 3026 RAMDAC cursor (default) */
 
 /* Vendor specific options */
 #define OPTION_SPEA_MERCURY	70 /* pixmux for SPEA Mercury (S3) */
@@ -252,6 +254,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "no_imageblt",	OPTION_NO_IMAGEBLT },
   { "no_font_cache",	OPTION_NO_FONT_CACHE },
   { "no_pixmap_cache",	OPTION_NO_PIXMAP_CACHE },
+  { "trio32_fc_bug",	OPTION_TRIO32_FC_BUG },
 
   { "bt485_curs",	OPTION_BT485_CURS },
   { "ti3020_curs",	OPTION_TI3020_CURS },

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32scrin.c,v 1.4 95/01/06 20:57:04 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.5 1994/12/10 02:07:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.7 1995/01/28 16:59:27 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -60,6 +60,7 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfbmskbits.h"
 #include "mibstore.h"
 #include "mach32.h"
+#include "xf86Priv.h"
 
 extern RegionPtr mfbPixmapToRegion();
 extern Bool cfbAllocatePrivates();
@@ -186,8 +187,9 @@ mach32ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     cfbWindowPrivateIndex = cfbGCPrivateIndex = -1;
     pScreen->defColormap = FakeClientID(0);
-    /* let CreateDefColormap do whatever it wants for pixels */ 
-    pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
+    pScreen->whitePixel = (Pixel) 1;
+    pScreen->blackPixel = (Pixel) 0;
+    XF86FLIP_PIXELS();
     pScreen->QueryBestSize = mfbQueryBestSize;
     /* SaveScreen */
     pScreen->GetImage = mach32GetImage;

@@ -1,5 +1,5 @@
 /* $XConsortium: s3scrin.c,v 1.4 95/01/16 20:07:23 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.7 1995/01/28 17:15:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.8 1995/05/07 11:49:58 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -63,6 +63,7 @@ Modified for the S3 by Jon N. Tombs (jon@esix2.us.es)
 #include "mibstore.h"
 #include "s3.h"
 #include "regs3.h"
+#include "xf86Priv.h"
 
 extern RegionPtr mfbPixmapToRegion();
 extern Bool mfbRegisterCopyPlaneProc();
@@ -160,6 +161,7 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
      */ 
     pScreen->whitePixel = (Pixel) 1;
     pScreen->blackPixel = (Pixel) 0;
+    XF86FLIP_PIXELS();
     pScreen->QueryBestSize = mfbQueryBestSize;
     /* SaveScreen */
     pScreen->GetImage = s3GetImage;

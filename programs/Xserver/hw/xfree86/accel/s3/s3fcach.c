@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.4 95/01/23 15:33:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.16 1995/07/12 15:36:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.17 1995/12/17 05:03:23 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -318,8 +318,16 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
    S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-   S3_OUTW32(WRT_MASK, pGC->planemask);
+   if (s3Trio32FCBug) {
+      S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+      S3_OUTW32(WRT_MASK, pGC->planemask);
+
+      WaitQueue16_32(1,2);
+      S3_OUTW32(BKGD_COLOR, 0);
+   } else {
+      S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+      S3_OUTW32(WRT_MASK, pGC->planemask);
+   }
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);

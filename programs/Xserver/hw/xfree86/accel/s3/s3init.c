@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.80 1995/12/07 07:24:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.81 1995/12/21 11:44:12 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2100,7 +2100,7 @@ s3Init(mode)
 	       already++;
 	       ErrorF("%s %s: Ti3026 hardware cursor in interlaced modes "
 		      "doesn't work correctly,\n"
-		      "\tplease use Option \"no_ti3026_curs\" when using "
+		      "\tplease use Option \"sw_cursor\" when using "
 		      "interlaced modes!\n"
 		      ,XCONFIG_PROBED, s3InfoRec.name);
 	    }
@@ -2241,7 +2241,7 @@ s3Init(mode)
 	       already++;
 	       ErrorF("%s %s: IBMRGB hardware cursor in interlaced modes "
 		      "doesn't work correctly,\n"
-		      "\tplease use Option \"no_IBMRGB_curs\" when using "
+		      "\tplease use Option \"sw_cursor\" when using "
 		      "interlaced modes!\n"
 		      ,XCONFIG_PROBED, s3InfoRec.name);
 	    }

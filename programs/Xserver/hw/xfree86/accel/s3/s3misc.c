@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.33 1995/12/17 05:03:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.34 1995/12/21 11:44:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -64,6 +64,7 @@
  
 extern char s3Mbanks;
 extern Bool s3Mmio928;
+extern unsigned long s3MemBase;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
@@ -199,13 +200,24 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       outb(vgaCRIndex, 0x59);
 	       if (S3_x64_SERIES(s3ChipId)) 
 		  if (s3InfoRec.MemBase != 0) 
-		     outb(vgaCRReg, s3InfoRec.MemBase>>24);
+		     outb(vgaCRReg, s3InfoRec.MemBase >> 24);
+		  else if (s3MemBase != 0)
+		     outb(vgaCRReg, s3MemBase >> 24);
 		  else
-		     outb(vgaCRReg, 0x03 | 0xf0);
+		     outb(vgaCRReg, 0xf3);
 	       else
 		  outb(vgaCRReg, 0x03);
+
 	       outb(vgaCRIndex, 0x5a);
-	       outb(vgaCRReg, 0x00);
+	       if (S3_x64_SERIES(s3ChipId)) 
+		  if (s3InfoRec.MemBase != 0) 
+		     outb(vgaCRReg, (s3InfoRec.MemBase >> 16) & 0x80);
+		  else if (s3MemBase != 0)
+		     outb(vgaCRReg, (s3MemBase >> 16) & 0x80);
+		  else
+		     outb(vgaCRReg, 0x00);
+	       else
+	          outb(vgaCRReg, 0x00);
 #else
 	       outb(vgaCRIndex, 0x59);
 	       outb(vgaCRReg, 0x00);

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.19 1995/12/09 11:07:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.20 1995/12/21 11:44:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -44,10 +44,17 @@
 #include "extnsionst.h"
 #include "scrnintstr.h"
 #include "servermd.h"
+
+
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
 #endif
 
+#ifdef XINPUT
+#include "XI.h"
+#include "XIproto.h"
+#include "xf86Xinput.h"
+#endif
 
 #define XE_POINTER  1
 #define XE_KEYBOARD 2
@@ -62,6 +69,15 @@ extern int   on_steal_input;
 extern Bool  XTestStealKeyData();
 extern void  XTestStealMotionData();
 
+#ifdef XINPUT
+#define ENQUEUE(ev, code, direction, dev_type) \
+  (ev)->u.u.detail = (code); \
+  (ev)->u.u.type   = (direction); \
+  if (!on_steal_input ||  \
+      XTestStealKeyData((ev)->u.u.detail, (ev)->u.u.type, dev_type, \
+			xtest_mousex, xtest_mousey)) \
+  xf86eqEnqueue((ev))
+#else
 #define ENQUEUE(ev, code, direction, dev_type) \
   (ev)->u.u.detail = (code); \
   (ev)->u.u.type   = (direction); \
@@ -69,6 +85,7 @@ extern void  XTestStealMotionData();
       XTestStealKeyData((ev)->u.u.detail, (ev)->u.u.type, dev_type, \
 			xtest_mousex, xtest_mousey)) \
   mieqEnqueue((ev))
+#endif
 
 #define MOVEPOINTER(dx, dy, time) \
   if (on_steal_input) \
@@ -77,17 +94,27 @@ extern void  XTestStealMotionData();
 
 #else /* ! XTESTEXT1 */
 
+#ifdef XINPUT
+#define ENQUEUE(ev, code, direction, dev_type) \
+  (ev)->u.u.detail = (code); \
+  (ev)->u.u.type   = (direction); \
+  xf86eqEnqueue((ev))
+#else
 #define ENQUEUE(ev, code, direction, dev_type) \
   (ev)->u.u.detail = (code); \
   (ev)->u.u.type   = (direction); \
   mieqEnqueue((ev))
-
+#endif
 #define MOVEPOINTER(dx, dy, time) \
   miPointerDeltaCursor (dx, dy, time)
 
 #endif
 
 Bool xf86VTSema = TRUE;
+
+#ifdef	XINPUT
+extern	InputInfo 	inputInfo;
+#endif	/* XINPUT */
 
 /*
  * The first of many hack's to get VT switching to work under
@@ -337,7 +364,11 @@ ProcessInputEvents ()
 
   xf86Info.inputPending = FALSE;
 
+#ifdef XINPUT
+  xf86eqProcessInputEvents();
+#else
   mieqProcessInputEvents();
+#endif
   miPointerUpdate();
 
   miPointerPosition(&x, &y);
@@ -902,7 +933,14 @@ xf86PostMseEvent(buttons, dx, dy)
   static OsTimerPtr timer = NULL;
   int         id, change;
   int         truebuttons;
-  xEvent      mevent;
+  xEvent      mevent[2];
+#ifdef XINPUT
+  DeviceIntPtr			device;   	/* Mouse from which the event came */
+  deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer *) mevent;
+  deviceValuator		*xv = (deviceValuator *) (xev+1);
+  int				is_pointer; /* the mouse is the pointer ? */
+#endif
+
 #ifdef AMOEBA
   int	      pressed;
 
@@ -910,7 +948,16 @@ xf86PostMseEvent(buttons, dx, dy)
   buttons &= ~BUTTON_PRESS;
 #endif
 
-  xf86Info.lastEventTime = mevent.u.keyButtonPointer.time = GetTimeInMillis();
+#ifdef XINPUT
+  is_pointer = IsCorePointer((DeviceIntPtr)xf86Info.pPointer);
+
+  if (!is_pointer) {
+    device = (DeviceIntPtr) xf86Info.pPointer;
+    xev->time = xf86Info.lastEventTime = GetTimeInMillis();
+  }
+  else
+#endif
+  xf86Info.lastEventTime = mevent->u.keyButtonPointer.time = GetTimeInMillis();
 
   truebuttons = buttons;
   if (xf86Info.mseType == P_MMHIT)
@@ -929,14 +976,32 @@ xf86PostMseEvent(buttons, dx, dy)
       dy = (dy * xf86Info.num)/ xf86Info.den;
     }
 
-#ifdef XFreeXDGA
-    if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectMouse) {
-	XF86DirectVideoMoveMouse(dx, dy, mevent.u.keyButtonPointer.time);
-    } else
+#ifdef XINPUT
+    if (is_pointer) {
 #endif
-    {
-        MOVEPOINTER(dx, dy, mevent.u.keyButtonPointer.time);
+#ifdef XFreeXDGA
+      if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectMouse) {
+	XF86DirectVideoMoveMouse(dx, dy, mevent->u.keyButtonPointer.time);
+      } else
+#endif
+	{
+	  MOVEPOINTER(dx, dy, mevent->u.keyButtonPointer.time);
+	}
+#ifdef XINPUT
     }
+    else {
+      xev->type = DeviceMotionNotify;
+      xev->deviceid = device->id | MORE_EVENTS;
+      xv->type = DeviceValuator;
+      xv->deviceid = device->id;
+      xv->num_valuators = 2;
+      xv->first_valuator = 0;
+      xv->device_state = 0;
+      xv->valuator0 = dx;
+      xv->valuator1 = dy;
+      xf86eqEnqueue(mevent);
+    }
+#endif
   }
 
   if (xf86Info.emulate3Buttons)
@@ -953,7 +1018,7 @@ xf86PostMseEvent(buttons, dx, dy)
         change = buttons ^ reverseMap[xf86Info.lastButtons];
       if (change & 02)
 	{
-	  ENQUEUE(&mevent,
+	  ENQUEUE(mevent,
 		  2, (buttons & 02) ? ButtonPress : ButtonRelease,
 		  XE_POINTER);
 	}
@@ -963,16 +1028,46 @@ xf86PostMseEvent(buttons, dx, dy)
        */
       if (id = stateTab[buttons + xf86Info.emulateState][0])
 	{
-	  ENQUEUE(&mevent,
-		  abs(id), (id < 0 ? ButtonRelease : ButtonPress), 
-		  XE_POINTER);
+#ifdef XINPUT
+          if (is_pointer) {
+#endif
+            ENQUEUE(mevent,
+                    abs(id), (id < 0 ? ButtonRelease : ButtonPress), 
+                    XE_POINTER);
+#ifdef XINPUT
+          }
+          else {
+            xev->type = (id < 0 ? DeviceButtonRelease : DeviceButtonPress);
+            xev->deviceid = device->id | MORE_EVENTS;
+            xv->type = DeviceValuator;
+            xv->deviceid = device->id;
+            xv->num_valuators = 0;
+            xv->device_state = 0;
+            xf86eqEnqueue(mevent);
+          }
+#endif 
 	}
 
       if (id = stateTab[buttons + xf86Info.emulateState][1])
 	{
-	  ENQUEUE(&mevent,
-		  abs(id), (id < 0 ? ButtonRelease : ButtonPress), 
-		  XE_POINTER);
+#ifdef XINPUT
+	  if (is_pointer) {
+#endif
+            ENQUEUE(mevent,
+                    abs(id), (id < 0 ? ButtonRelease : ButtonPress), 
+                    XE_POINTER);
+#ifdef XINPUT
+          }
+          else {
+            xev->type = (id < 0 ? DeviceButtonRelease : DeviceButtonPress);
+            xev->deviceid = device->id | MORE_EVENTS;
+            xv->type = DeviceValuator;
+            xv->deviceid = device->id;
+            xv->num_valuators = 0;
+            xv->device_state = 0;
+            xf86eqEnqueue(mevent);
+          }   
+#endif
 	}
 
       xf86Info.emulateState = stateTab[buttons + xf86Info.emulateState][2];
@@ -995,9 +1090,24 @@ xf86PostMseEvent(buttons, dx, dy)
     {
 #ifdef AMOEBA
       if (truebuttons != 0) {
-	  ENQUEUE(&mevent,
-		  truebuttons, (pressed ? ButtonPress : ButtonRelease),
-                  XE_POINTER);
+#ifdef XINPUT
+          if (is_pointer) {
+#endif
+	    ENQUEUE(mevent,
+		    truebuttons, (pressed ? ButtonPress : ButtonRelease),
+		    XE_POINTER);
+#ifdef XINPUT
+	  }
+	  else {
+            xev->type = pressed ? DeviceButtonPress : DeviceButtonRelease;
+            xev->deviceid = device->id | MORE_EVENTS;
+            xv->type = DeviceValuator;
+            xv->deviceid = device->id;
+            xv->num_valuators = 0;
+            xv->device_state = 0;
+            xf86eqEnqueue(mevent);
+	  }
+#endif
       }
 #else
       /*
@@ -1014,9 +1124,24 @@ xf86PostMseEvent(buttons, dx, dy)
 	{
 	  id = ffs(change);
 	  change &= ~(1 << (id-1));
-	  ENQUEUE(&mevent,
-		  id, (buttons&(1<<(id-1)))? ButtonPress : ButtonRelease,
-		  XE_POINTER);
+#ifdef XINPUT
+          if (is_pointer) {
+#endif
+            ENQUEUE(mevent,
+                    id, (buttons&(1<<(id-1)))? ButtonPress : ButtonRelease,
+                    XE_POINTER);
+#ifdef XINPUT
+          }
+          else {
+            xev->type = (buttons&(1<<(id-1)))? DeviceButtonPress : DeviceButtonRelease;
+            xev->deviceid = device->id | MORE_EVENTS;
+            xv->type = DeviceValuator;
+            xv->deviceid = device->id;
+            xv->num_valuators = 0;
+            xv->device_state = 0;
+            xf86eqEnqueue(mevent);
+          }
+#endif
 	}
 #endif
     }
@@ -1203,7 +1328,11 @@ XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
   tevent.u.keyButtonPointer.rootX = mousex;
   tevent.u.keyButtonPointer.rootY = mousey;
   tevent.u.keyButtonPointer.time = xf86Info.lastEventTime = GetTimeInMillis();
+#ifdef XINPUT
+  xf86eqEnqueue(&tevent);
+#else
   mieqEnqueue(&tevent);
+#endif
   xf86Info.inputPending = TRUE;               /* virtual event */
 }
 

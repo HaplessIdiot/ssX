@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.15 1995/12/16 08:21:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.16 1995/12/17 05:04:02 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1022,9 +1022,11 @@ TVGA8900FbInit()
 
 #ifndef MONOVGA
 	/* If not a TGUI then chipsets don't have any speedups - so exit */
-	/* Exception is the 8900CL/D as they have linear.. */
+	/* Exception is the 8900CL/D and the 9200CXr as they have linear */
 	if (!tridentIsTGUI)
-		if ((TVGAchipset != TVGA8900CL) && (TVGAchipset != TVGA8900D))
+		if ( (TVGAchipset != TVGA8900CL) && 
+		     (TVGAchipset != TVGA8900D)  &&
+		     (TVGAchipset != TVGA9200CXr) )
 			return;
 
 	if (tridentIsTGUI)
@@ -1188,7 +1190,7 @@ TVGA8900EnterLeave(enter)
 #ifdef XFreeXDGA
 	if (vga256InfoRec.directMode & XF86DGADirectGraphics && !enter)
 	{
-		if (tridentHWCursorType == 1)
+		if (tridentHWCursorType)
 			TridentHideCursor();
 		return;
 	}
@@ -1630,10 +1632,13 @@ TVGA8900Init(mode)
  				((mode->CrtcVSyncStart & 0x400) >> 5) |
  				(((mode->CrtcVDisplay - 1) & 0x400) >> 6) |
  				0x08;
-		new->MiscExtFunc = 0x95;	/* Enable Dual Banks */
 #ifndef MONOVGA
+		new->MiscExtFunc = 0x95;	/* Enable Dual Banks */
 		new->MiscExtFunc |= 0x02;	/* Enable Chain 4 mode */
 		new->CommandReg = 0x00;		/* Standard colourmap */
+		if (tridentHWCursorType)
+		  if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
+			new->std.Attribute[17] = 0x00; /* Black overscan */
 		if ( (TVGAchipset == TVGA9200CXr) ||
 		     (TVGAchipset == TGUI9400CXi) ||
 		     (TVGAchipset == TGUI9420DGi) ||
@@ -1645,8 +1650,10 @@ TVGA8900Init(mode)
 			if (vgaBitsPerPixel == 32)
 				new->CommandReg = 0xC0;
 		}
+#endif
 		if (TVGAchipset == TGUI9440AGi)
 		{
+#ifndef MONOVGA
 			if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
 			{
 				new->GraphEngReg = 0x82; /* Enable MMIO, GER */
@@ -1654,12 +1661,12 @@ TVGA8900Init(mode)
 			}
 			else
 				new->GraphEngReg = 0x80; /* Enable 0x21XX, GER */
-			if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
-				new->std.Attribute[17] = 0x00; /* Disable overscan */
 			new->MiscIntContReg = 0x06;
+#endif
 			new->AddColReg = 0x2C;		/* Force Int. Clock/DAC */
 			if (mode->Flags & V_INTERLACE)
 				new->AddColReg |= 0x10;
+#ifndef MONOVGA
 			if (vgaBitsPerPixel == 16)
 			{
 				new->MiscExtFunc |= 0x08; /* Clock Division by 2 */
@@ -1673,9 +1680,11 @@ TVGA8900Init(mode)
 				new->MiscExtFunc |= 0x40; /* Clock Division by 3 */
 				new->PixelBusReg = 0x08;
 			}
+#endif
 		}
 		if ((TVGAchipset == TGUI9660XGi) || (TVGAchipset == TGUI9680))
 		{	
+#ifndef MONOVGA
 			if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))
 			{
 				new->GraphEngReg = 0x82; /* Enable MMIO, GER */
@@ -1690,8 +1699,8 @@ TVGA8900Init(mode)
 			if (mode->Flags & V_INTERLACE)
 				new->SYNCDACReg = 0x10; /* ??? */
 #endif
-		}
 #endif
+		}
 	}
 
 	if (new->std.NoClock >= 0)

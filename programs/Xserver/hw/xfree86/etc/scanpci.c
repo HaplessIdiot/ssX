@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.2 1995/11/30 13:04:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.3 1995/12/02 05:06:11 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -531,7 +531,7 @@ struct pci_vendor_device {
                             { 0x0001, "82C101", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x5333, "S3", {
-                            { 0x8811, "Trio64", NF },
+                            { 0x8811, "Trio32/64", NF },
                             { 0x8880, "868", NF },
                             { 0x88B0, "928", NF },
                             { 0x88C0, "864-0", NF },

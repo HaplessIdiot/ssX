@@ -25,7 +25,12 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.2 1995/07/19 12:44:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.3 1995/10/21 11:50:37 dawes Exp $ */
+
+/* Only used if INTERNAL_MALLOC is defined
+ * - otherwise xalloc() in utils.c is used
+ */
+#ifdef INTERNAL_MALLOC
 
 #if defined(__STDC__) || defined(AMOEBA)
 #ifndef NOSTDHDRS
@@ -38,9 +43,12 @@ extern char *realloc();
 #endif
 
 #include "Xos.h"
-#include <stdio.h>
 #include "misc.h"
 #include "X.h"
+
+#ifdef XALLOC_LOG
+#include <stdio.h>
+#endif
 
 extern Bool Must_have_memory;
 
@@ -118,7 +126,7 @@ extern Bool Must_have_memory;
  * - large blocks (>=11k) are mmapped on xalloc, and unmapped on xfree,
  *   so we don't need any free lists etc.
  *   As this needs 2 system calls, we only do this for the quite
- *   infrequent () large blocks.
+ *   infrequent large (>=11k) blocks.
  * - instead of reinventing the wheel, we use system malloc for medium
  *   sized blocks (>256, <11k).
  * - for small blocks (<=256) we use an other approach:
@@ -143,7 +151,7 @@ extern Bool Must_have_memory;
  *
  */
  
-#define DEBUG
+#define XALLOC_DEBUG
 
 /* this must be a multiple of SIZE_STEPS below */
 #define MAX_SMALL 264		/* quite many blocks of 264 */
@@ -155,15 +163,21 @@ extern Bool Must_have_memory;
  * this makes blocks align to that, too! */
 #define SIZE_STEPS		(sizeof(double))
 #define SIZE_HEADER		(2*sizeof(long)) /* = sizeof(double) for 32bit */
-#ifdef DEBUG
+#ifdef XALLOC_DEBUG
 #define SIZE_TAIL		(sizeof(long))
 #endif
 
 #define MAGIC			0x14071968
 #define MAGIC2			0x25182079
 
-#ifdef DEBUG
-#define FREE_ERASES
+#ifdef XALLOC_DEBUG
+#define XFREE_ERASES
+#endif
+
+#ifndef XALLOC_LOG
+#define LOG_ALLOC(_fun, _size, _ret)
+#define LOG_REALLOC(_fun, _ptr, _size, _ret)
+#define LOG_FREE(_fun, _ptr)
 #endif
 
 static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
@@ -198,7 +212,7 @@ static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
 #include <unistd.h>
 #endif /* SVR4 */
 
-#if defined(sun) && !defined(SVR4)
+#if defined(sun) && !defined(SVR4) /* SunOS */
 #define MMAP_DEV_ZERO
 #define HAS_GETPAGESIZE
 #include <sys/types.h>
@@ -209,16 +223,18 @@ static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
 #undef _SC_PAGESIZE
 #endif
 
-#ifdef INTERNAL_MALLOC
-
 #if defined(HAS_MMAP_ANON) || defined (MMAP_DEV_ZERO)
 static int pagesize;
 #endif
 
 #ifdef MMAP_DEV_ZERO
 static int devzerofd = -1;
-#endif
+#include <errno.h>
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
+#endif
+
 
 unsigned long *
 Xalloc (amount)
@@ -229,12 +245,14 @@ Xalloc (amount)
 
     /* zero size requested */
     if (amount == 0) {
+	LOG_ALLOC("Xalloc=0", amount, 0);
 	return (unsigned long *)NULL;
     }
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
- 	ErrorF("warning: Xalloc(<0) ignored..\n");
+ 	ErrorF("Xalloc warning: Xalloc(<0) ignored..\n");
+ 	LOG_ALLOC("Xalloc<0", amount, 0);
 	return (unsigned long *)NULL;
     }
 
@@ -260,9 +278,9 @@ Xalloc (amount)
 			for (i=0; i<(amount<100 ? 40 : 20); i++) {
 				p1 = p2;
 				p1[-2] = amount;
-#ifdef DEBUG
+#ifdef XALLOC_DEBUG
 				p1[-1] = MAGIC;
-#endif /* DEBUG */
+#endif /* XALLOC_DEBUG */
 #ifdef SIZE_TAIL
 				*(unsigned long *)((unsigned char *)p1 + amount) = MAGIC2;
 				p2 = (unsigned long *)((char *)p1 + SIZE_HEADER + amount + SIZE_TAIL);
@@ -280,12 +298,15 @@ Xalloc (amount)
 			free_lists[indx] = (unsigned long *)((char *)ptr + SIZE_HEADER + amount + SIZE_HEADER);
 #endif /* SIZE_TAIL */
 			/* take the fist one */
-			return (unsigned long *)((char *)ptr + SIZE_HEADER);
+			ptr = (unsigned long *)((char *)ptr + SIZE_HEADER);
+			LOG_ALLOC("Xalloc-S", amount, ptr);
+			return ptr;
 		} /* else fall through to 'Out of memory' */
 	} else {
 		/* take that piece of mem out of the list */
 		free_lists[indx] = *((unsigned long **)ptr);
 		/* already has size (and evtl. magic) filled in */
+		LOG_ALLOC("Xalloc-S", amount, ptr);
 		return ptr;
 	}
 #if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
@@ -318,13 +339,15 @@ Xalloc (amount)
 #ifdef SIZE_TAIL
 		ptr[0] -= SIZE_TAIL;
 #endif
-#ifdef DEBUG
+#ifdef XALLOC_DEBUG
 		ptr[1] = MAGIC;
-#endif /* DEBUG */
+#endif /* XALLOC_DEBUG */
 #ifdef SIZE_TAIL
 		((unsigned long *)((char *)ptr + amount))[-1] = MAGIC2;
 #endif /* SIZE_TAIL */
-		return (unsigned long *)((char *)ptr+SIZE_HEADER);
+		ptr = (unsigned long *)((char *)ptr + SIZE_HEADER);
+		LOG_ALLOC("Xalloc-L", amount, ptr);
+		return ptr;
 	} /* else fall through to 'Out of memory' */
 #endif /* HAS_MMAP_ANON || MMAP_DEV_ZERO */
     } else {
@@ -336,18 +359,20 @@ Xalloc (amount)
 #endif /* SIZE_TAIL */
 	if (ptr != (unsigned long *)NULL) {
 		ptr[0] = amount;
-#ifdef DEBUG
+#ifdef XALLOC_DEBUG
 		ptr[1] = MAGIC;
-#endif /* DEBUG */
+#endif /* XALLOC_DEBUG */
 #ifdef SIZE_TAIL
 		*(unsigned long *)((char *)ptr + amount + SIZE_HEADER) = MAGIC2;
 #endif /* SIZE_TAIL */
 		ptr = (unsigned long *)((char *)ptr + SIZE_HEADER);
+		LOG_ALLOC("Xalloc-M", amount, ptr);
 		return ptr;
 	}
     }
     if (Must_have_memory)
 	FatalError("Out of memory");
+    LOG_ALLOC("Xalloc-oom", amount, 0);
     return (unsigned long *)NULL;
 }
 
@@ -369,7 +394,7 @@ XNFalloc (amount)
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
-	ErrorF("warning: XNFalloc(<0) ignored..\n");
+	ErrorF("Xalloc warning: XNFalloc(<0) ignored..\n");
 	return (unsigned long *)NULL;
     }
     ptr = Xalloc(amount);
@@ -420,7 +445,7 @@ Xrealloc (ptr, amount)
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
-	ErrorF("warning: Xrealloc(<0) ignored..\n");
+	ErrorF("Xalloc warning: Xrealloc(<0) ignored..\n");
 	if (ptr)
 		Xfree(ptr);	/* ?? */
 	return (unsigned long *)NULL;
@@ -430,12 +455,12 @@ Xrealloc (ptr, amount)
     if ( (new_ptr) && (ptr) ) {
 	unsigned long old_size;
 	old_size = ((unsigned long *)ptr)[-2];
-#ifdef DEBUG
+#ifdef XALLOC_DEBUG
 	if (MAGIC != ((unsigned long *)ptr)[-1]) {
-		ErrorF("Xrealloc(): header corrupt :-(\n");
+		ErrorF("Xalloc error: header corrupt in Xrealloc() :-(\n");
 		return (unsigned long *)NULL;
 	}
-#endif /* DEBUG */
+#endif /* XALLOC_DEBUG */
 	/* copy min(old size, new size) */
 	memcpy((char *)new_ptr, (char *)ptr, (amount < old_size ? amount : old_size));
     }
@@ -482,13 +507,13 @@ Xfree(ptr)
 	return;
 
     pheader = (unsigned long *)((char *)ptr - SIZE_HEADER);
-#ifdef DEBUG
+#ifdef XALLOC_DEBUG
     if (MAGIC != pheader[1]) {
 	/* Diagnostic */
-	ErrorF("Xfree(): Header corrupt :-(\n");
+	ErrorF("Xalloc error: Header corrupt in Xfree() :-(\n");
 	return;
     }
-#endif /* DEBUG */
+#endif /* XALLOC_DEBUG */
     size = pheader[0];
     if (size <= MAX_SMALL) {
 	/* put this small block at the head of the list */
@@ -496,13 +521,13 @@ Xfree(ptr)
 #ifdef SIZE_TAIL
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
-		ErrorF("Xfree(): Tail corrupt for small block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
+		ErrorF("Xalloc error: Tail corrupt in Xfree() for small block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
 		return;
 	}
 #endif /* SIZE_TAIL */
-#ifdef FREE_ERASES
+#ifdef XFREE_ERASES
 	memset(ptr,0xFF,size);
-#endif /* FREE_ERASES */
+#endif /* XFREE_ERASES */
 	indx = (size-1) / SIZE_STEPS;
 	*(unsigned long **)(ptr) = free_lists[indx];
 	free_lists[indx] = (unsigned long *)ptr;
@@ -512,7 +537,7 @@ Xfree(ptr)
 #ifdef SIZE_TAIL
 	if (MAGIC2 != ((unsigned long *)((char *)ptr + size))[0]) {
 		/* Diagnostic */
-		ErrorF("Xfree(): Tail corrupt for big block (adr=0x%x, val=0x%x)\n",(char *)ptr+size,((unsigned long *)((char *)ptr + size))[0]);
+		ErrorF("Xalloc error: Tail corrupt in Xfree() for big block (adr=0x%x, val=0x%x)\n",(char *)ptr+size,((unsigned long *)((char *)ptr + size))[0]);
 		return;
 	}
 	size += SIZE_TAIL;
@@ -524,13 +549,13 @@ Xfree(ptr)
 #ifdef SIZE_TAIL
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
-		ErrorF("Xfree(): Tail corrupt for medium block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
+		ErrorF("Xalloc error: Tail corrupt in Xfree() for medium block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
 		return;
 	}
 #endif /* SIZE_TAIL */
-#ifdef FREE_ERASES
+#ifdef XFREE_ERASES
 	memset(pheader,0xFF,size+SIZE_HEADER);
-#endif /* FREE_ERASES */
+#endif /* XFREE_ERASES */
 	free((char *)pheader);
     }
 }
@@ -566,4 +591,8 @@ OsInitAllocator ()
     }
 #endif
 }
-#endif
+
+#else /* !INTERNAL_MALLOC */
+/* This is to avoid an empty .o */
+static int no_internal_xalloc;
+#endif /* INTERNAL_MALLOC */

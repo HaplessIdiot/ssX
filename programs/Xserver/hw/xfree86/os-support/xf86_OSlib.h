@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.17 1995/06/02 10:17:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.18 1995/07/01 10:49:57 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -128,6 +128,7 @@
 #    define DEV_MEM "/dev/pmem"
 #  endif
 #  define CLEARDTR_SUPPORT
+#  define POSIX_TTY
 # endif /* SVR4 */
 
 # if defined(sun) && defined (i386) && defined (SVR4)
@@ -188,6 +189,8 @@ extern int errno;
 # define CLEARDTR_SUPPORT
 # define USE_VT_SYSREQ
 
+# define POSIX_TTY
+
 #endif /* linux */
 
 /**************************************************************************/
@@ -233,6 +236,7 @@ extern int errno;
 
 # include <termios.h>
 # define termio termios
+# define POSIX_TTY
 
 # include <errno.h>
 extern int errno;
@@ -357,6 +361,7 @@ extern int errno;
 
 # include <termios.h>
 # define termio termios
+# define POSIX_TTY
 
 # include <errno.h>
 

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Priv.h,v 1.5 95/01/16 13:17:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.10 1995/11/12 09:51:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.11 1995/11/30 13:04:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -107,6 +107,11 @@ typedef struct {
   void		*screenPtr;
 #endif
 
+#ifdef XINPUT
+  /* joystick part */
+  DeviceIntPtr  pJstk;          /* device pointer */
+#endif
+
 } xf86InfoRec, *xf86InfoPtr;
 
 extern xf86InfoRec xf86Info;
@@ -149,6 +154,13 @@ extern Bool xf86SupportedMouseTypes[];
 extern int xf86NumMouseTypes;
 extern int xf86bpp;
 extern xrgb xf86weight;
+
+extern Bool xf86FlipPixels;
+#define XF86FLIP_PIXELS() \
+	if (xf86FlipPixels) { \
+		pScreen->whitePixel = (pScreen->whitePixel) ? 0 : 1; \
+		pScreen->blackPixel = (pScreen->blackPixel) ? 0 : 1; \
+	}
 
 #endif /* _XF86PRIV_H */
 

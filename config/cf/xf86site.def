@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.55 1995/12/16 08:13:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.56 1995/12/21 11:43:10 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -273,8 +273,22 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.55 1995/12/16 08:13:01 dawes Exp $
  * To build only the servers with a cut-down source tree, uncomment
  * this.
  *
-#define BuildServersOnly      YES
+#define BuildServersOnly	YES
  */
+
+/*
+ * To build the servers with Extended input devices.
+ * Select the devices you want setting them to YES.       
+ * Note: Joystick support is only included for Linux at the moment.
+ *
+ */
+#define BuildXInputExt		YES
+#ifdef LinuxArchitecture
+#define JoystickSupport		YES
+#define Joystick2Support	YES
+#endif
+#define WacomSupport		YES
+#define ElographicsSupport	YES 
 
 /*
  * To disable the ScreenSaver Extension, comment this line.

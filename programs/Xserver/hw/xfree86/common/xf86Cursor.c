@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Cursor.c,v 1.3 95/01/06 20:57:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.5 1995/01/28 17:03:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.6 1995/06/14 09:44:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,11 +39,17 @@
 static Bool   xf86CursorOffScreen();
 static void   xf86CrossScreen();
 static void   xf86WrapCursor();
+#ifdef XINPUT
+extern void   xf86eqEnqueue();
+#endif
 
 miPointerScreenFuncRec xf86PointerScreenFuncs = {
   xf86CursorOffScreen,
   xf86CrossScreen,
   xf86WrapCursor,
+#ifdef XINPUT
+  xf86eqEnqueue,
+#endif
 };
 
 

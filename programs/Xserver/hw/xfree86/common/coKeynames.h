@@ -1,4 +1,5 @@
 /* $XConsortium: coKeynames.h,v 1.1 94/03/28 21:22:29 dpw Exp $ */
+/* $XFree86$ */
 /*
  * This file is derived from "atKeynames.h"
  * Written by Holger Veit (veit@du9ds3.uni-duisburg.de)

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.28 1995/12/16 08:19:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.29 1995/12/17 05:03:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -596,6 +596,8 @@ GetATIPCIInformation()
 		xf86TokenToString(mach64ChipTable, info.ChipType),
 		info.ChipRev, info.ApertureBase,
 		info.BlockIO ? "Block" : "Sparse", info.IOBase);
+    }
+    if (found) {
 	return &info;
     } else {
 	return NULL;

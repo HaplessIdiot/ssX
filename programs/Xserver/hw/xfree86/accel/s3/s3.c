@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.109 1995/12/17 05:03:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.110 1995/12/21 11:44:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -148,6 +148,12 @@ ScrnInfoRec s3InfoRec =
 #endif
 };
 
+typedef struct S3PCIInformation {
+   int ChipType;
+   int ChipRev;
+   unsigned long MemBase;
+} S3PCIInformation;
+
 short s3alu[16] =
 {
    MIX_0,
@@ -218,6 +224,24 @@ static SymTabRec s3DacTable[] = {
    { -1,		"" },
 };
 
+static SymTabRec s3ChipTable[] = {
+   { S3_UNKNOWN,	"unknown" },
+   { S3_911,		"911" },
+   { S3_924,		"924" },
+   { S3_801,		"801" },
+   { S3_805,		"805" },
+   { S3_928,		"928" },
+   { S3_TRIO_32_64,	"Trio32/64" },
+   { S3_864,		"864" },
+   { S3_868,		"868" },
+   { S3_964,		"964" },
+   { S3_968,		"968" },
+   { S3_TRIO32,		"Trio32" },
+   { S3_TRIO64,		"Trio64" },
+   { S3_TRIO64VPLUS,	"Trio64V+" },
+   { -1,		"" },
+};
+
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 Bool  (*s3ClockSelectFunc) ();
 static Bool LegendClockSelect();
@@ -249,6 +273,8 @@ pointer vgaBase = NULL;
 pointer vgaBaseLow = NULL;
 pointer vgaBaseHigh = NULL;
 pointer s3VideoMem = NULL;
+Bool s3Trio32FCBug = FALSE;
+unsigned long s3MemBase = 0;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern int  xf86Verbose;
@@ -542,7 +568,7 @@ S3ProbeATT4xx(Bool quiet)
 			s3RamdacType = ATT498_DAC;
 		}
 		xf86setdaccomm(olddaccomm);
-	} else if ((mir = 0x84) && (dir == 0x09)) {
+	} else if ((mir == 0x84) && (dir == 0x09)) {
 		if( !quiet ) {
 			ErrorF("%s %s: Detected an ATT 20C409 RAMDAC\n",
 				XCONFIG_PROBED, s3InfoRec.name);
@@ -553,7 +579,7 @@ S3ProbeATT4xx(Bool quiet)
 			OFLG_SET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions);
 			clockchip_probed = XCONFIG_PROBED;
 		}
-	} else if ((mir = 0x84) && (dir == 0x99)) {
+	} else if ((mir == 0x84) && (dir == 0x99)) {
 		/*
 		 * according to the 21C499 data sheet it is fully compatible
 		 * with the 22C409. So we will only miss its new features
@@ -573,6 +599,69 @@ S3ProbeATT4xx(Bool quiet)
 		}
 	}
 	return(s3RamdacType);
+}
+
+/*
+ * s3GetPCIInfo -- probe for PCI information
+ */
+S3PCIInformation *
+s3GetPCIInfo()
+{
+   static S3PCIInformation info = {0, };
+   struct pci_config_reg *pcrp;
+   Bool found = FALSE;
+   int i = 0;
+
+   xf86scanpci();
+   while (pcrp = pci_devp[i]) {
+      if (pcrp->_vendor == PCI_S3_VENDOR_ID) {
+	 found = TRUE;
+	 switch (pcrp->_device) {
+	 case PCI_TRIO_32_64:
+	    info.ChipType = S3_TRIO_32_64;
+	    break;
+	 case PCI_928:
+	    info.ChipType = S3_928;
+	    break;
+	 case PCI_864_0:
+	 case PCI_864_1:
+	    info.ChipType = S3_864;
+	    break;
+	 case PCI_964_0:
+	 case PCI_964_1:
+	    info.ChipType = S3_964;
+	    break;
+	 case PCI_868:
+	    info.ChipType = S3_868;
+	    break;
+	 case PCI_968:
+	    info.ChipType = S3_968;
+	    break;
+	 default:
+	    info.ChipType = S3_UNKNOWN;
+	    break;
+	 }
+	 info.ChipRev = pcrp->_class_revision & 0xFF;
+	 info.MemBase = pcrp->_base0 & 0xFF800000;
+	 break;
+      }
+      i++;
+   }
+   if (found && xf86Verbose) {
+      if (info.ChipType != S3_UNKNOWN) {
+	 ErrorF("%s %s: PCI: %s rev %x, Linear FB @ 0x%08x\n", XCONFIG_PROBED,
+		s3InfoRec.name, xf86TokenToString(s3ChipTable, info.ChipType),
+		info.ChipRev, info.MemBase);
+      } else {
+	 ErrorF("%s %s: PCI: unknown (please report), ID 0x%04x rev %x,"
+		" Linear FB @ 0x%08x\n", XCONFIG_PROBED,
+		s3InfoRec.name, info.ChipType, info.ChipRev, info.MemBase);
+      }
+   }
+   if (found)
+      return &info;
+   else
+      return NULL;
 }
 
 /*
@@ -623,42 +712,13 @@ s3Probe()
    Bool pixMuxWidthOK = TRUE;
    int s3ChipRev = 0;
    int idx = 0;
+   S3PCIInformation *pciInfo = NULL;
    struct pci_config_reg *pcrp;
 
-#if 0
-   /* check for PCI devices first */
-   while (pcrp = pci_devp[idx]) {
-      if (pcrp->_vendor != 0x5333)
-         continue;
-      switch(pcrp->_device) {
-         case 0x8811:  /* Trio64 */
-            ErrorF("%s %s: PCI S3 chipset: Trio64, memory base 0x%x\n", 
-	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
-	    break;
-         case 0x88B0:  /* 928    */
-            ErrorF("%s %s: PCI S3 chipset: 928, memory base 0x%x\n", 
-	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
-	    break;
-         case 0x88C0:  /* 864-0  */
-            ErrorF("%s %s: PCI S3 chipset: 864-0, memory base 0x%x\n", 
-	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
-	    break;
-         case 0x88C1:  /* 864-1  */
-            ErrorF("%s %s: PCI S3 chipset: 864-1, memory base 0x%x\n", 
-	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
-	    break;
-         case 0x88D0:  /* 964    */
-            ErrorF("%s %s: PCI S3 chipset: 964, memory base 0x%x\n", 
-	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
-	    break;
-	 default:
-            ErrorF("%s %s: PCI S3 chipset: Unknown, memory base 0x%x\n", 
-	           XCONFIG_PROBED, s3InfoRec.name, pcrp->_base0);
-	    break;
-      }
-      break;
-   }
-#endif
+   /* Do general PCI probe first */
+   pciInfo = s3GetPCIInfo();
+   if (pciInfo && pciInfo->MemBase)
+      s3MemBase = pciInfo->MemBase;
 
    xf86ClearIOPortList(s3InfoRec.scrnIndex);
    xf86AddIOPorts(s3InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
@@ -778,15 +838,10 @@ s3Probe()
    OFLG_SET(OPTION_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_NO_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_TI3026_CURS, &validOptions);
+   OFLG_SET(OPTION_NO_TI3026_CURS, &validOptions);
    OFLG_SET(OPTION_IBMRGB_CURS, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
    OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
-#if 0
-   /* These aren't used anywhere */
-   OFLG_SET(OPTION_FAST_DRAM, &validOptions);
-   OFLG_SET(OPTION_MED_DRAM, &validOptions);
-   OFLG_SET(OPTION_SLOW_DRAM, &validOptions);
-#endif
    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
    OFLG_SET(OPTION_SPEA_MERCURY, &validOptions);
    OFLG_SET(OPTION_NUMBER_NINE, &validOptions);
@@ -813,12 +868,10 @@ s3Probe()
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
    OFLG_SET(OPTION_S3_964_BT485_VCLK, &validOptions);
-#if 0
-   OFLG_SET(OPTION_S3_INVERT_VCLK, &validOptions);
-#endif
    OFLG_SET(OPTION_SLOW_VRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
    OFLG_SET(OPTION_FAST_VRAM, &validOptions);
+   OFLG_SET(OPTION_TRIO32_FC_BUG, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
 #ifdef PC98
@@ -858,6 +911,9 @@ s3Probe()
 	 }
       }
    }
+
+   if (OFLG_ISSET(OPTION_TRIO32_FC_BUG, &s3InfoRec.options))
+      s3Trio32FCBug = TRUE;
 
    if (OFLG_ISSET(OPTION_GENOA, &s3InfoRec.options))
       s3BiosVendor = GENOA_BIOS;
@@ -981,7 +1037,7 @@ s3Probe()
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
-	    if ((s3ChipRev & 0x40) == 0x40) 
+	    if ((s3ChipRev & 0x400) == 0x400) 
 	       chipname = "Trio64V+ (untested, please report !!)";
 	    else 
 	       chipname = "Trio64";

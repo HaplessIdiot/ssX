@@ -43,7 +43,7 @@ Modified for the I128 by Robin Cutshaw (robin@XFree86.Org)
 
 ********************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.0 1995/12/07 07:24:11 dawes Exp $ */
 
 
 #include "X.h"
@@ -65,6 +65,7 @@ Modified for the I128 by Robin Cutshaw (robin@XFree86.Org)
 #include "mibstore.h"
 #include "i128.h"
 #include "i128reg.h"
+#include "xf86Priv.h"
 
 extern RegionPtr mfbPixmapToRegion();
 extern Bool cfbAllocatePrivates();
@@ -220,9 +221,9 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
   
   cfbWindowPrivateIndex = cfbGCPrivateIndex = -1;
   pScreen->defColormap = FakeClientID(0);
-  /* let CreateDefColormap do whatever it wants for pixels */ 
   pScreen->whitePixel = (Pixel) 1;
   pScreen->blackPixel = (Pixel) 0;
+  XF86FLIP_PIXELS();
   pScreen->QueryBestSize = mfbQueryBestSize;
   /* SaveScreen */
   pScreen->RealizeFont = mfbRealizeFont;

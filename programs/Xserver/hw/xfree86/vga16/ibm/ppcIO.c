@@ -1,5 +1,5 @@
 /* $XConsortium: ppcIO.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.2 1995/01/28 17:06:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.3 1995/05/07 11:53:05 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -66,6 +66,13 @@ SOFTWARE.
 
 #include "mistruct.h"
 #include "mi.h"
+
+extern Bool xf86FlipPixels;
+#define XF86FLIP_PIXELS() \
+	if (xf86FlipPixels) { \
+		pScreen->whitePixel = (pScreen->whitePixel) ? 0 : 1; \
+		pScreen->blackPixel = (pScreen->blackPixel) ? 0 : 1; \
+	}
 
 extern ScreenRec vgaScreenRec ; /* Forward Declaration Here */
 
@@ -228,6 +235,7 @@ Init16Output( pScreen, pbits, virtx, virty, dpix, dpiy, width )
   pScreen->defColormap = FakeClientID(0);
   pScreen-> whitePixel = VGA_WHITE_PIXEL;
   pScreen-> blackPixel = VGA_BLACK_PIXEL;
+  XF86FLIP_PIXELS();
   pScreen-> rgf = 0;
   *(pScreen-> GCperDepth) = *(sampleGCperDepth);
   *(pScreen-> PixmapPerDepth) = *(samplePixmapPerDepth);

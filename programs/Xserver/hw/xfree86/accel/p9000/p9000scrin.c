@@ -1,5 +1,5 @@
 /* $XConsortium: p9000scrin.c,v 1.3 95/01/06 20:57:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.7 1995/01/28 15:55:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000scrin.c,v 3.8 1995/05/24 12:22:01 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -64,6 +64,7 @@ Modified for the P9000 by Erik Nygren (nygren@mit.edu)
 #include "mibstore.h"
 #include "p9000.h"
 #include "p9000reg.h"
+#include "xf86Priv.h"
 
 extern RegionPtr mfbPixmapToRegion();
 extern Bool cfbAllocatePrivates();
@@ -217,8 +218,9 @@ p9000ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
   
   cfbWindowPrivateIndex = cfbGCPrivateIndex = -1;
   pScreen->defColormap = FakeClientID(0);
-  /* let CreateDefColormap do whatever it wants for pixels */ 
-  pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
+  pScreen->whitePixel = (Pixel) 1;
+  pScreen->blackPixel = (Pixel) 0;
+  XF86FLIP_PIXELS();
   pScreen->QueryBestSize = mfbQueryBestSize;
   /* SaveScreen */
   pScreen->RealizeFont = mfbRealizeFont;

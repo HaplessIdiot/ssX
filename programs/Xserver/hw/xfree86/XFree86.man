@@ -1,6 +1,6 @@
 .\" $XConsortium: XFree86.man,v 1.6 95/01/23 15:33:32 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.18 1995/11/12 09:50:49 dawes Exp $
-.TH XFree86 1 "Version 3.1.2"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.19 1995/11/30 13:02:47 dawes Exp $
+.TH XFree86 1 "Version 3.1.2B"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
 .SH DESCRIPTION
@@ -140,6 +140,9 @@ Set number of bits per pixel.  The default is 8.  Legal values are
 .B \-weight \fInnn\fP
 Set RGB weighting at 16 bpp.  The default is 565.  This applies
 only to those servers which support 16 bpp.
+.TP 8
+.B \-flipPixels
+Swap the default values for the black and white pixels.
 .TP 8
 .B \-gamma \fIvalue\fP
 Set the gamma correction.  \fIvalue\fP must be between 0.1 and 10.  The

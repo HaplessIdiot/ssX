@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.3 94/12/27 11:29:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.14 1995/04/24 05:20:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.15 1995/12/21 11:44:05 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -99,6 +99,33 @@
 #define S3_x64_SERIES(chip)	(((chip&0xe0)==0xc0) || S3_x6x_SERIES(chip) ||  S3_TRIOxx_SERIES(chip))
 #define S3_928_SERIES(chip)     (S3_928_ONLY(chip) || S3_x64_SERIES(chip))
 #define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || S3_x64_SERIES(chip) || S3_x66_SERIES(chip) || S3_x68_SERIES(chip))
+
+/* PCI data */
+#define PCI_S3_VENDOR_ID	0x5333
+#define PCI_TRIO_32_64		0x8811
+#define PCI_928			0x88B0
+#define PCI_864_0		0x88C0
+#define PCI_864_1		0x88C1
+#define PCI_868			0x8880
+#define PCI_964_0		0x88D0
+#define PCI_964_1		0x88D1
+#define PCI_968			0x88F0
+
+/* Chip tags */
+#define S3_UNKNOWN		 0
+#define	S3_911			 1
+#define S3_924			 2
+#define S3_801			 3
+#define S3_805			 4
+#define S3_928			 5
+#define S3_TRIO_32_64		 6
+#define S3_864			 7
+#define S3_868			 8
+#define S3_964			 9
+#define S3_968			10
+#define S3_TRIO32		11
+#define S3_TRIO64		12
+#define S3_TRIO64VPLUS		13
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6

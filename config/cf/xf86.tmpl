@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.0tsi Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.1 1995/07/12 15:27:40 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -18,4 +18,30 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.0tsi Exp $
 #define ImakeSubCmdHelper $$imakeprefix$(IMAKE) -I$$imaketop \
 			  -I$$imakeprefix$(IRULESRC) $(IMAKE_DEFINES)
 #endif
+#endif
+
+#if BuildXInputExt
+# if defined(JoystickSupport) && JoystickSupport
+#  define JoystickDefines -DJOYSTICK_SUPPORT
+# else
+#  define JoystickDefines
+# endif
+# if defined(Joystick2Support) && Joystick2Support
+#  define Joystick2Defines -DJOYSTICK2_SUPPORT
+# else
+#  define Joystick2Defines
+# endif
+# if defined(WacomSupport) && WacomSupport
+#  define WacomDefines -DWACOM_SUPPORT
+# else
+#  define WacomDefines
+# endif
+# if defined(ElographicsSupport) && ElographicsSupport
+#  define ElographicsDefines -DELOGRAPHICS_SUPPORT
+# else
+#  define ElographicsDefines
+# endif
+
+    XINPUT_DEVICES = JoystickDefines Joystick2Defines WacomDefines ElographicsDefines
+
 #endif

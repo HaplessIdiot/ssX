@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2B (beta version)
  <author>The XFree86 Project, Inc
- <date>16 December 1995
+ <date>23 December 1995
 
 
 <abstract>
@@ -61,7 +61,12 @@ our usual support address.
 <sect1> Trident driver (SVGA server)
 <p>
 <itemize>
-  <item>ADD SOMETHING HERE
+  <item>TGUI9440 is now fully supported by the SVGA server.
+  <item>Major updates for most of the trident family of chips.
+  <item>Preliminary support for the 9660/9680 chipsets - please test!
+  <item>Hardware Cursor support has problems when mode switching.
+	This is only a positioning issue and shouldn't cause any problems.
+  <item>Check README.trident distributed with this release for full details.
 </itemize>
 <sect1> ARK driver (SVGA server)
 <p>
@@ -82,6 +87,13 @@ our usual support address.
 <p>
 <itemize>
   <item>ADD SOMETHING HERE
+</itemize>
+<sect1> SiS 86C201 support
+<p>
+<itemize>
+  <item>Support is included in 3.1.2B for the SiS 86C201 PCI graphics card.
+	It is currently only supported by the VGA16 and Mono servers.
+	Support for 256 colour operation is being worked on.
 </itemize>
 <sect1> SuperProbe
 <p>
@@ -298,7 +310,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.6 1995/11/30 13:04:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.7 1995/12/16 08:20:33 dawes Exp $
 </verb>
 
 </article>

@@ -25,7 +25,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.1 1995/12/17 05:04:06 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -282,7 +282,7 @@ static Bool TridentUnrealizeCursor(pScr, pCurs)
  * module.
  */
 
-extern void TVGA8900SetWrite();
+extern void TGUISetWrite();
 
 static void TridentLoadCursorToCard(pScr, pCurs, x, y)
 	ScreenPtr pScr;
@@ -301,7 +301,7 @@ static void TridentLoadCursorToCard(pScr, pCurs, x, y)
 			cursor_image, 1024);
 	else {
 		vgaSaveBank();
-		TVGA8900SetWrite(TridentCursorAddress >> 16);
+		TGUISetWrite(TridentCursorAddress >> 16);
 		memcpy((unsigned char *)vgaBase + (TridentCursorAddress & 0xFFFF),
 			cursor_image, 1024);
 		vgaRestoreBank();

@@ -1,5 +1,5 @@
 /* $XConsortium: mach8scrin.c,v 1.4 95/01/16 20:07:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.1 1994/12/10 03:00:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.3 1995/01/28 17:00:54 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -57,6 +57,7 @@ Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 #include "cfbmskbits.h"
 #include "mibstore.h"
 #include "mach8.h"
+#include "xf86Priv.h"
 
 extern RegionPtr mfbPixmapToRegion();
 extern Bool mfbAllocatePrivates();
@@ -150,8 +151,9 @@ mach8ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	    i = 0;
     }
     pScreen->defColormap = FakeClientID(0);
-    /* let CreateDefColormap do whatever it wants for pixels */ 
-    pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
+    pScreen->whitePixel = (Pixel) 1;
+    pScreen->blackPixel = (Pixel) 0;
+    XF86FLIP_PIXELS();
     pScreen->QueryBestSize = mfbQueryBestSize;
     /* SaveScreen */
     pScreen->GetImage = mach8GetImage;

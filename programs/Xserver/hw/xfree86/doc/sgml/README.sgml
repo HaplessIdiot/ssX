@@ -720,6 +720,8 @@ XFree86 Project has been provided from its proceeds.
   <item>  Andrew Burgess
   <item>  <url url="http://www.bsdi.com/"  
 	name="Berkeley Software Design, Inc">, Falls Church, VA
+  <item>  <url url="http://www.caldera.com/"  
+	name="Caldera, Inc.">
   <item>  <url url="http://www.delix.de/"
 	name="Delix Computer GmbH">, Stuttgart, Germany
   <item>  <url url="http://www.destek.net/Destek/"  
@@ -928,7 +930,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.38 1995/12/07 07:25:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.39 1995/12/21 11:44:58 dawes Exp $
 </verb>
 
 </article>

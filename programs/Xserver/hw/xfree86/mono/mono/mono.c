@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.20 1995/12/09 11:08:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.21 1995/12/17 05:03:37 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -476,6 +476,7 @@ monoScreenInit (index, pScreen, argc, argv)
 
     pScreen->blackPixel = 0;
     pScreen->whitePixel = 1;
+    XF86FLIP_PIXELS();
 
     pScreen->CloseScreen = monoCloseScreen;
     pScreen->SaveScreen  = monoSaveScreenFunc;

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.19 1995/12/16 08:21:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.20 1995/12/17 05:03:55 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -73,8 +73,10 @@ typedef struct {
   unsigned char AuxillaryMode;
   unsigned char Misc;           /* ATC 0x16 */
   unsigned char SegSel;
-#ifdef W32_ACCEL_SUPPORT
+#ifdef W32_SUPPORT
   unsigned char VSConf2;        /* CRTC 0x37 */
+#endif
+#ifdef W32_ACCEL_SUPPORT
   ICS5341state gendac;
 #endif
 #ifndef MONOVGA
@@ -114,7 +116,7 @@ extern void     ET4000W32SetReadWrite();
 static unsigned char 	save_divide = 0;
 #ifndef MONOVGA
 static unsigned char    initialRCConf = 0x70;
-#ifdef W32_ACCEL_SUPPORT
+#ifdef W32_SUPPORT
 /* these should be taken from the "Saved" register set instead of this way */
 static unsigned char    initialCompatibility = 0x18;
 static unsigned char    initialVSConf2 = 0x0b;
@@ -579,7 +581,7 @@ ET4000Probe()
 #ifndef MONOVGA
     /* Save initial RCConf value */
     outb(vgaIOBase + 4, 0x32); initialRCConf = inb(vgaIOBase + 5);
-#ifdef W32_ACCEL_SUPPORT
+#ifdef W32_SUPPORT
     /* Save initial Auxctrl (CRTC 0x34) value */
     outb(vgaIOBase + 4, 0x34); initialCompatibility = inb(vgaIOBase + 5);
     /* Save initial VSConf2 (CRTC 0x37) value */
@@ -806,7 +808,7 @@ ET4000Restore(restore)
   if (restore->std.NoClock >= 0)
     outw(vgaIOBase + 4, (restore->Compatibility << 8) | 0x34);
   outw(vgaIOBase + 4, (restore->OverflowHigh << 8)  | 0x35);
-#ifdef W32_ACCEL_SUPPORT  
+#ifdef W32_SUPPORT  
   outw(vgaIOBase + 4, (restore->VSConf2 << 8)  | 0x37);
 #endif
 #ifndef MONOVGA
@@ -861,7 +863,7 @@ ET4000Save(save)
 
   outb(vgaIOBase + 4, 0x33); save->ExtStart     = inb(vgaIOBase + 5);
   outb(vgaIOBase + 4, 0x35); save->OverflowHigh = inb(vgaIOBase + 5);
-#ifdef W32_ACCEL_SUPPORT  
+#ifdef W32_SUPPORT  
   outb(vgaIOBase + 4, 0x37); save->VSConf2 = inb(vgaIOBase + 5);
 #endif
 #ifndef MONOVGA
@@ -1027,12 +1029,10 @@ ET4000Init(mode)
    * when something is being drawn. This only happens WAY beyond 80 MHz 
    * (those 135 MHz ramdac's...)
    */
-#ifdef W32_ACCEL_SUPPORT
    new->Compatibility = (initialCompatibility & 0x7F) | 0x80;
    new->VSConf2 = initialVSConf2;
    if (vga256InfoRec.clock[mode->Clock] > 80000)
      new->VSConf2 = (new->VSConf2 & 0x7f) | 0x80;
-#endif
 
    if (et4000_type >= TYPE_ET4000W32P)
    {

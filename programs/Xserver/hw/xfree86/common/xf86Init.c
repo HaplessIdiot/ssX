@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.28 1995/12/07 07:25:21 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.29 1995/12/21 11:44:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -23,6 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -30,6 +31,12 @@
 #include "servermd.h"
 #include "scrnintstr.h"
 #include "site.h"
+
+#ifdef XINPUT
+#include "inputstr.h"
+#include "XI.h"
+#include "XIproto.h"
+#endif
 
 #include "compiler.h"
 
@@ -50,6 +57,7 @@ extern int xtest_command_key;
 Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
 Bool xf86ProbeFailed = TRUE;
+Bool xf86FlipPixels = FALSE;
 Bool xf86ScreensOpen = FALSE;
 int xf86Verbose = 1;
 Bool xf86fpFlag = FALSE;
@@ -334,10 +342,17 @@ InitInput(argc, argv)
   RegisterKeyboardDevice(xf86Info.pKeyboard); 
   RegisterPointerDevice(xf86Info.pPointer); 
 
-  miRegisterPointerDevice(screenInfo.screens[0], xf86Info.pPointer);
-  mieqInit (xf86Info.pKeyboard, xf86Info.pPointer);
-}
+#ifdef XINPUT
+  InitExtInput();
+#endif
 
+  miRegisterPointerDevice(screenInfo.screens[0], xf86Info.pPointer);
+#ifdef XINPUT
+  xf86eqInit (xf86Info.pKeyboard, xf86Info.pPointer);
+#else
+  mieqInit (xf86Info.pKeyboard, xf86Info.pPointer);
+#endif
+}
 
 /*
  * OsVendorInit --
@@ -457,6 +472,11 @@ ddxProcessArgument (argc, argv, i)
   if (!strcmp(argv[i],"-probeonly"))
   {
     xf86ProbeOnly = TRUE;
+    return 1;
+  }
+  if (!strcmp(argv[i],"-flipPixels"))
+  {
+    xf86FlipPixels = TRUE;
     return 1;
   }
   if (!strcmp(argv[i],"-verbose"))
@@ -580,6 +600,7 @@ ddxUseMsg()
   ErrorF("-bgamma f              set gamma value for blue phase\n");
   ErrorF("-weight nnn            set RGB weighting at 16 bpp.  Default: 565\n");
 #endif /* XF86MONOVGA */
+  ErrorF("-flipPixels            swap default black/white Pixel values\n");
   ErrorF(
    "-showconfig            show which drivers are included in the server\n");
   xf86UseMsg();

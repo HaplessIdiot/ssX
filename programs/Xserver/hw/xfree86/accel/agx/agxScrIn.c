@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.6 1995/05/27 03:03:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.7 1995/06/21 11:51:50 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -63,6 +63,7 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 #include "agx.h"
 #include "regagx.h"
 #include "hercRamDac.h"
+#include "xf86Priv.h"
 
 extern RegionPtr mfbPixmapToRegion();
 extern Bool mfbRegisterCopyPlaneProc();
@@ -173,8 +174,9 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 
     cfbWindowPrivateIndex = cfbGCPrivateIndex = -1;
     pScreen->defColormap = FakeClientID(0);
-    /* let CreateDefColormap do whatever it wants for pixels */ 
-    pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
+    pScreen->whitePixel = (Pixel) 1;
+    pScreen->blackPixel = (Pixel) 0;
+    XF86FLIP_PIXELS();
     pScreen->QueryBestSize = mfbQueryBestSize;
     /* SaveScreen */
     pScreen->GetImage = agxGetImage;
