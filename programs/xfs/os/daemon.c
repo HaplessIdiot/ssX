@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.6 2001/07/23 13:15:53 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.7 2001/07/25 15:05:22 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -82,7 +82,7 @@ BecomeOrphan ()
     default:
 	/* parent */
 
-#ifndef CSRG_BASED
+#if !defined(CSRG_BASED) && !defined(__QNXNTO__)
 #if defined(SVR4)
 	stat = setpgid(child_id, child_id);
 	/* This gets error EPERM.  Why? */
@@ -110,7 +110,7 @@ BecomeDaemon ()
      * Close standard file descriptors and get rid of controlling tty
      */
 
-#ifdef CSRG_BASED
+#if defined(CSRG_BASED) || defined(__QNXNTO__)
     daemon (0, 0);
 #else
 #if defined(SYSV) || defined(SVR4)
@@ -151,7 +151,7 @@ BecomeDaemon ()
 #endif /* CSRG_BASED */
 }
 
-#if defined(linux) || defined(CSRG_BASED)
+#if defined(linux) || defined(CSRG_BASED) || defined(__QNXNTO__)
 FILE *pidFilePtr;
 static int pidFd;
 char *pidFile = "/var/run/xfs.pid";
@@ -160,7 +160,7 @@ char *pidFile = "/var/run/xfs.pid";
 int
 StorePid ()
 {
-#if defined(linux) || defined(CSRG_BASED)
+#if defined(linux) || defined(CSRG_BASED) || defined(__QNXNTO__)
     int         oldpid;
 
     if (pidFile[0] != '\0') {

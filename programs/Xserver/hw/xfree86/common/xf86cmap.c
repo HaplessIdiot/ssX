@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.21 2001/05/06 00:49:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.22 2001/05/06 21:59:07 mvojkovi Exp $ */
 
-#ifdef _XOPEN_SOURCE
+#if defined(_XOPEN_SOURCE) || defined(__QNXNTO__)
 #include <math.h>
 #else
 #define _XOPEN_SOURCE   /* to get prototype for pow on some systems */

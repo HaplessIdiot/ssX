@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.42 2001/11/02 23:29:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.43 2001/11/14 22:56:48 dawes Exp $ */
 
 
 /*
@@ -60,9 +60,11 @@
 /* XXX This should be in a header somewhere */
 extern void ClientSleepUntil(ClientPtr, TimeStamp, void(*)(ClientPtr, pointer),
 			     pointer);
+#ifdef HAS_SHM
 extern int ShmCompletionCode;
 extern int BadShmSegCode;
 extern RESTYPE ShmSegType;
+#endif
 
 /* DIX things */
 
@@ -320,9 +322,11 @@ LOOKUP dixLookupTab[] = {
 
   /* libXext.a */
   SYMFUNC(ClientSleepUntil)
+#ifdef HAS_SHM
   SYMVAR(ShmCompletionCode)
   SYMVAR(BadShmSegCode)
   SYMVAR(ShmSegType)
+#endif
 
   /* librender.a */
 #ifdef RENDER

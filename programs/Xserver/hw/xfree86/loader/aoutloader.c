@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.15 1999/03/14 11:18:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.16 2001/08/01 00:44:55 tsi Exp $ */
 
 /*
  *
@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef QNX
+#ifdef __QNX__
 #include <fcntl.h>
 #else
 #include <sys/fcntl.h>

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.53 2001/07/24 08:32:49 alanh Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.54 2001/08/06 20:51:02 dawes Exp $ */
 
 
 /* 
@@ -296,7 +296,11 @@ in this Software without prior written authorization from The Open Group.
 #define DEFAULT_CPP "/usr/bin/cpp"
 #endif
 #if defined (__QNX__)
+#ifdef __QNXNTO__
+#define DEFAULT_CPP "/usr/bin/cpp"
+#else
 #define DEFAULT_CPP "/usr/X11R6/bin/cpp"
+#endif
 #endif
 /*
  * Step 5:  cpp_argv
@@ -659,6 +663,9 @@ char *cpp_argv[ARGUMENTS] = {
         "-D__QNXNTO__",
 #if defined(i386)
         "-Di386",
+#endif
+#if defined(__i386__)
+        "-D__i386__",
 #endif
 #if defined(PPC)
         "-DPPC",

@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 483. Updates/fixes for the QNX6 (aka Neutrino) port (#4990, Frank Liu).
  482. Autodetect when -fno-merge-constants is needed for building modules,
       and enable its use by default in those cases (Marc La France,
       David Dawes).
@@ -14163,4 +14164,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2042 2001/11/15 07:36:20 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2043 2001/11/16 00:52:32 dawes Exp $

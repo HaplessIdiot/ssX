@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.14 2000/12/13 16:52:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.15 2001/01/06 21:29:16 tsi Exp $ */
 
 /*
  *
@@ -25,7 +25,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
-#ifdef QNX
+#ifdef __QNX__
 #include <fcntl.h>
 #else
 #include <sys/fcntl.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.8 2001/10/17 04:52:07 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaWideLine.c,v 1.9 2001/10/28 03:34:04 tsi Exp $ */
 
 /*
 
@@ -15,7 +15,7 @@ Original mi code written by Keith Packard.
 */
 
 #ifndef XFree86LOADER
-#ifdef _XOPEN_SOURCE
+#if defined(_XOPEN_SOURCE) || defined(__QNXNTO__)
 #include <math.h>
 #else
 #define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
