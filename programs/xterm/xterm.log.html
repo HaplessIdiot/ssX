@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.73 2001/10/08 01:08:10 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.74 2001/10/10 19:46:23 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_162">Patch #162 - 2001/10/23 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_161">Patch #161 - 2001/10/10 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_160">Patch #160 - 2001/10/7 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_159">Patch #159 - 2001/9/19 - XFree86 4.1.0</A>
@@ -206,6 +207,22 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_162">Patch #162 - 2001/10/23 - XFree86 4.1.0</A></H1>
+<ul>
+	<li>correct logic that processes <code>-class</code> option, so that
+	  a following <code>-e</code> option is handled (Debian #116297).
+
+	<li>improve options-decoding to allow <code>-version</code> and
+	  <code>-help</code> options to be combined (Debian #110226).
+
+	<li>add a 10 millisecond delay in event loop when processing
+	  <code>-hold</code> option, to avoid using too much CPU time
+	  (Debian #116213).
+
+	<li>prefix final program execution in <code>uxterm</code> with "exec"
+	  to avoid a useless shell hanging around (Christian Weisgerber).
+</ul>
+
 <H1><A NAME="xterm_161">Patch #161 - 2001/10/10 - XFree86 4.1.0</A></H1>
 <ul>
 	<li>modify logic that resets keypad application mode to avoid doing
@@ -220,7 +237,7 @@ xc/programs/Xserver/hw/xfree86).
 	<li>correct Imakefile install-rule for <code>uxname</code> script
 	   (reported by Nam SungHyun &lt;namsh@lge.com&gt;).
 
-	<li>resync with XFree86 CVS: correct typo in <code>&lt;ncurses/term.h&gt;</code> 
+	<li>resync with XFree86 CVS: correct typo in <code>&lt;ncurses/term.h&gt;</code>
 	   ifdef.
 </ul>
 
@@ -229,7 +246,9 @@ xc/programs/Xserver/hw/xfree86).
 	<li>modify logic in main.c (see patch #145) to avoid generating the
 	    same identifier, for example, for /dev/tty1 and /dev/pts/1, which
 	    is used to denote an entry in the utmp file (Debian bug report
-	    #84676), 
+	    #84676),  A similar fix was also sent by Jerome Borsboom
+	    &lt;borsboom@westbrabant.net&gt; in May, but I overlooked it when
+	    reviewing bug reports.
 
 	<li>add configure check for <code>&lt;ncurses/term.h&gt;</code> to get
 	    rid of hardcoded <code>__CYGWIN__</code> ifdef in resize.c
@@ -254,7 +273,7 @@ xc/programs/Xserver/hw/xfree86).
 	<ul>
 	<li>Modified xterm app default to use LFD fontnames instead of old type
 	    (Michael Schroeder).
-	<li>Fix xterm when XIM is disabled - caused a segfault 
+	<li>Fix xterm when XIM is disabled - caused a segfault
 	    (Tomohiro Kubota).
 	</ul>
 </ul>
@@ -278,7 +297,7 @@ xc/programs/Xserver/hw/xfree86).
 	   pointer happens to fall on the scrollbar.  This can happen, for
 	   instance, if the user's <code>app-defaults</code> or
 	   <code>.Xdefaults</code> file contains a translations resource,
-	   though it may also happen through unrelated resource settings: 
+	   though it may also happen through unrelated resource settings:
 	   probably a bug in libXt (reported by Paul Fox
 	   &lt;pgf@foxharp.boston.ma.us&gt; and Dmitry Yu.  Bolkhovityanov
 	   &lt;D.Yu.Bolkhovityanov@inp.nsk.su&gt;).
@@ -388,7 +407,7 @@ xc/programs/Xserver/hw/xfree86).
 	  be a smart thing to do, in the hope that the selection requestor will
 	  try UTF8_STRING afterwards; opinions?)
 
-	  <li>Xutf8TextPropertyToTextList fully handles STRING and UTF8_STRING. 
+	  <li>Xutf8TextPropertyToTextList fully handles STRING and UTF8_STRING.
 	  It systematically fails for COMPOUND_TEXT.
 
 	  <li>Xutf8LookupString will properly handle single-keystroke input for
@@ -441,7 +460,7 @@ xc/programs/Xserver/hw/xfree86).
 	  is being stopped.  Per specification it also means that the operating
 	  system is sending SIGCHLD to parent to the bash (XTERM).
 	  Now the issue is that xterm assumes it cannot happen and it expects
-	  to receive SIGCHLD only upon <em>termination</em> of its children. 
+	  to receive SIGCHLD only upon <em>termination</em> of its children.
 	  This causes a deadlock with xterm waiting for the child to
 	  die, and the child waiting for SIGCONT.
 	  (report/patch by Adam Sulmicki), analysis/testing by Sven Mascheck
