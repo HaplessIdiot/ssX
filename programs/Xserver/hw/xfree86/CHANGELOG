@@ -1,3 +1,9 @@
+XFree86 3.0Cd (21 July 1994)
+135. Update contrib source to the XC's full release version.
+134. Fix pixel doubling problem on #9 GXE64 cards (Robin Cutshaw).
+133. Change '--print' to 'print-libgcc-file-name' in Linux config files
+     for compatibility with gcc 2.6 (Orest Zbrowoski).
+
 XFree86 3.0Cc (19 July 1994)
 132. Make use of the Xconfig Ramdac keyword in the S3 server.
 131. Improved support for the ELSA W2000Pro (Dirk Hohndel).
