@@ -13,7 +13,7 @@
     <date>15 March 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.16 2001/01/08 01:07:33 martin Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.17 2001/03/21 16:56:18 dawes Exp $
     </ident>
 
     <toc>
@@ -74,9 +74,9 @@
         to brianp@valinux.com.
 
     <sect>Supported Architectures & Hardware
-	<p>
+<p>
       <sect1>CPU Architectures
-	<p>
+<p>
           The architectures currently supported by the DRI have grown
           from the initial Intel i386 systems to now include the Alpha
           Processor and the Sun SPARC machines.
@@ -99,7 +99,7 @@
           details.
 
       <sect1> Graphics Hardware
-	<p>
+<p>
           XFree86 4.0 (or later versions) includes 3D acceleration for the
           following graphics hardware:
 
@@ -176,7 +176,7 @@
 
 
     <sect>Kernel Modules
-    <p>
+<p>
       3D hardware acceleration requires a DRI kernel module that's
       specific to your graphics hardware.
       <P>
@@ -899,9 +899,9 @@
 
 
       <sect1>Intel i810
-        <p>
+<p>
         <sect2>Dependencies
-          <p>
+<p>
           A Linux kernel with AGP GART support is required.
           The 2.2.x kernel series does not have AGP GART support.
           The 2.4.x test kernels have AGP GART and have been tested
@@ -909,7 +909,7 @@
           <p>
 
         <sect2>Configuration
-          <p>
+<p>
           Your XF86Config file's device section must specify the
           <tt>i810</tt> device, and specify a usable amount of video
           ram to reserve.
@@ -969,14 +969,14 @@
 <p>
 
       <sect1>Matrox G200 and G400
-      <p>
+<p>
         <sect2>Dependencies
-        <p>
+<p>
           A Linux kernel with AGP GART support (such as the 2.4.x test
           kernels) is needed.
           <p>
         <sect2>Configuration
-        <p>
+<p>
           Your XF86Config file's device section must specify the
           <tt>mga</tt> device:  
           <verb>
@@ -1100,14 +1100,14 @@
 
 
       <sect1>ATI Rage 128
-      <p>
+<p>
         <sect2>Dependencies
-        <p>
+<p>
           A Linux kernel with AGP GART support (such as the 2.4.x test
           kernels) is needed.
           <p>
         <sect2>Configuration
-        <p>
+<p>
           Your XF86Config file's device section must specify the
           <tt>ati</tt> device:
           <verb>
@@ -1171,14 +1171,14 @@
 
 
       <sect1>ATI Radeon
-      <p>
+<p>
         <sect2>Dependencies
-        <p>
+<p>
           A Linux kernel with AGP GART support (such as the 2.4.x test
           kernels) is needed.
           <p>
         <sect2>Configuration
-        <p>
+<p>
           Your XF86Config file's device section must specify the
           <tt>ati</tt> device:
           <verb>

@@ -13,7 +13,7 @@
     <date>15 March 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.10 2001/01/08 01:07:34 martin Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.11 2001/03/21 16:56:18 dawes Exp $
     </ident>
 
     <toc>
@@ -219,22 +219,22 @@
         runtime which CPU-dependent optimizations should be used and
 	enable them where appropriate.
 
-        <sect1>Intel Pentium III Features
-        <p>
+        <sect1>Intel Pentium III Features <p>
+
             The Pentium III SSE (Katmai) instructions are used in
             optimized vertex transformation functions in the Mesa-based
             DRI drivers.
             On Linux, SSE requires a recent kernel (such as 2.4.0-test11
             or later) both at compile time and runtime.
 
-        <sect1>AMD 3DNow! Features
-        <p>
+        <sect1>AMD 3DNow! Features <p>
+
             AMD's 3DNow! instructions are used in optimized vertex
             transformation functions in the Mesa-based DRI drivers.
             3DNow! is supported in most versions of Linux.
 
-        <sect1>Alpha Features
-	<p>
+        <sect1>Alpha Features <p>
+
             On newer Alpha processors a significant performance increase
             can be seen with the addition of the -mcpu= option to GCC.
             This option is dependent on the architecture of the processor.
