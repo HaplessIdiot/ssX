@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/31 1998/06/16 15:16:14 msr $
-XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.18 1999/12/27 00:40:11 robin Exp $
+XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.19 2000/01/31 19:33:44 dawes Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -18,9 +18,13 @@ ZLIB = GzipLibrary
 BSDEMUL = $(DEPXBSDLIB)
 #endif
 #endif
+#if BuildFontCacheLib
+FONTCACHELIB = $(XFONTCACHELIB)
+#endif
+
 
 FSDIRS = $(OSDIR) $(DIFSDIR) $(PCFDIRS)
-FSLIBS = $(DIFSLIB) $(DIFSLIB) $(OSLIB) $(BSDEMUL)
+FSLIBS = $(DIFSLIB) $(DIFSLIB) $(OSLIB) $(BSDEMUL) $(FONTCACHELIB)
 #ifdef i386IscArchitecture
 FSSYSLIBS = $(LDPRELIBS) $(FONTLIB) $(EXTRA_LIBRARIES) $(SYSLIBS) $(ZLIB) 
 #else

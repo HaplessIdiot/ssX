@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/63 1997/11/24 16:48:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.30 2000/01/31 19:33:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.31 2000/02/08 17:18:53 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -90,19 +90,28 @@ XF86BIGFOBJS = xf86bigfont.o
         DPMSOBJS = dpms.o
 #endif
 
+#if BuildFontCache
+   FONTCACHESRCS = fontcache.c
+   FONTCACHEOBJS = fontcache.o
+#if 0
+   FONTCACHEINCLUDES = -I$(XF86SRC)/os-support
+#endif
+#endif
+
+
        SRCS = shape.c $(SHMSRCS) $(MULTIBUFSRC) \
               mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c \
 	      bigreq.c sync.c $(SCRNSAVSRC) xcmisc.c $(VIDMODESRCS) \
 	      $(XF86MISCSRCS) $(XF86BIGFSRCS) $(XF86DGASRCS) $(SECURITYSRCS) \
 	      $(APPGROUPSRCS) xprint.c $(CUPSRCS) $(PNRXSRCS) $(DPMSSRCS) \
-	      $(EVISRCS) $(XVSRCS) $(XANTISRCS)
+	      $(EVISRCS) $(XVSRCS) $(XANTISRCS) $(FONTCACHESRCS)
 
        OBJS = shape.o $(SHMOBJS) $(MULTIBUFOBJ) \
               mitmisc.o xtest.o xtest1di.o xtest1dd.o sleepuntil.o \
               bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o $(VIDMODEOBJS) \
 	      $(XF86MISCOBJS) $(XF86BIGFOBJS) $(XF86DGAOBJS) $(SECURITYOBJS) \
 	      $(APPGROUPOBJS) xprint.o $(CUPOBJS) $(PNRXOBJS) $(DPMSOBJS) \
-	      $(EVIOBJS) $(XVOBJS) $(XANTIOBJS)
+	      $(EVIOBJS) $(XVOBJS) $(XANTIOBJS) $(FONTCACHEOBJS)
 
       SOBJS = $(SHMOBJS) $(APPGROUPOBJS) $(SECURITYOBJS) xprint.o \
 	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(PNRXOBJS) \
@@ -110,7 +119,8 @@ XF86BIGFOBJS = xf86bigfont.o
 
 XF86INCLUDES = -I$(XF86COMSRC)
     INCLUDES = -I. -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
-		$(PNRXINCLUDES) $(XF86INCLUDES) -I$(FONTINCSRC)
+		$(PNRXINCLUDES) $(XF86INCLUDES) -I$(FONTINCSRC) \
+ 		$(FONTCACHEINCLUDES)
     LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
 NormalLibraryObjectRule()

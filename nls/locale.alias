@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.19 2000/02/08 17:18:47 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.20 2000/02/12 02:54:28 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -283,6 +283,7 @@ ja_JP.eucjp					ja_JP.eucJP
 Jp_JP						ja_JP.eucJP
 ja_JP.AJEC					ja_JP.eucJP
 ja_JP.EUC					ja_JP.eucJP
+ja_JP.EUC_JP					ja_JP.eucJP
 ja_JP.ISO-2022-JP				ja_JP.JIS7
 ja_JP.JIS					ja_JP.JIS7
 ja_JP.jis7					ja_JP.JIS7
@@ -783,6 +784,7 @@ ja_JP.eucjp:					ja_JP.eucJP
 Jp_JP:						ja_JP.eucJP
 ja_JP.AJEC:					ja_JP.eucJP
 ja_JP.EUC:					ja_JP.eucJP
+ja_JP.EUC-JP:					ja_JP.eucJP
 ja_JP.ISO-2022-JP:				ja_JP.JIS7
 ja_JP.JIS:					ja_JP.JIS7
 ja_JP.jis7:					ja_JP.JIS7

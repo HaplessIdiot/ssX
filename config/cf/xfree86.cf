@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.265 2000/02/13 00:12:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.266 2000/02/13 00:56:00 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -700,8 +700,8 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #define BuildFreeType		YES
 #endif
 
-#ifndef BuildXTT
-#define BuildXTT		YES
+#ifndef BuildXTrueType
+#define BuildXTrueType		YES
 #endif
 
 /*

@@ -1,13 +1,18 @@
 XCOMM $XConsortium: Imakefile,v 1.7 91/12/20 11:29:16 rws Exp $
-XCOMM $XFree86: xc/programs/xset/Imakefile,v 3.6 1997/01/12 10:49:25 dawes Exp $
+XCOMM $XFree86: xc/programs/xset/Imakefile,v 3.7 1997/11/22 06:50:40 dawes Exp $
 
-        DEFINES = ExtensionDefines DPMSDefines
-        DEPLIBS = $(DEPXMULIB) $(DEPXLIB) $(DEPXF86LIBS)
-LOCAL_LIBRARIES = $(XMULIB) $(XF86LIBS) $(XLIB)
+        DEFINES = ExtensionDefines DPMSDefines \
+		  FontCacheExtensionDefines
+        DEPLIBS = $(DEPXMULIB) $(DEPXLIB) $(DEPXF86LIBS) $(DEPFONTLIBS)
+LOCAL_LIBRARIES = $(XMULIB) $(XF86LIBS) $(FONTLIBS) $(XLIB)
 
 #if BuildXF86MiscLibrary
        DEPXF86LIBS = $(DEPXXF86MISCLIB)
           XF86LIBS = $(XXF86MISCLIB)
+#endif
+#if BuildFontCacheLib
+      DEPFONTLIBS = $(DEPXFONTCACHELIB)
+         FONTLIBS = $(XFONTCACHELIB)
 #endif
 
 SimpleProgramTarget(xset)

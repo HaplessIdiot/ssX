@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/39 1997/02/26 18:09:44 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.31 1999/08/28 09:00:23 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.32 2000/02/13 00:12:49 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -89,6 +89,10 @@ REGEXDIR = regex
 XALIBDIR = Xa
 #endif
 
+#if BuildFontCacheLib
+FONTCACHELIBDIR = Xfontcache
+#endif
+
 FONTSUBDIR = font
 
 #if !BuildServersOnly
@@ -108,7 +112,7 @@ LINTSUBDIRS = Xau Xdmcp X11 $(XEXTDIR) $(XKBLIBDIR) $(XKBUILIBDIR) \
 	      $(REGEXDIR)
 #endif
 
-SUBDIRS = $(BERKDIR) xtrans $(LINTSUBDIRS) $(FONTSUBDIR)
+SUBDIRS = $(BERKDIR) xtrans $(LINTSUBDIRS) $(FONTSUBDIR) $(FONTCACHELIBDIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

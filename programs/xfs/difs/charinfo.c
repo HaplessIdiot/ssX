@@ -45,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * This file was once on the other side of
  * the font library interface as util/fsfuncs.c.
  */
-/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.6 1999/03/07 11:40:51 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.7 1999/08/22 07:19:44 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include "misc.h"
@@ -132,6 +132,7 @@ getCharInfos (
     xchars = (CharInfoPtr *) fsalloc (sizeof (CharInfoPtr) * nchars);
     if (!xchars)
 	return AllocError;
+    bzero (xchars, sizeof (CharInfoPtr) * nchars);
 
     if (ink_metrics)
 	metrics_func = (MetricsFunc)pfont->get_metrics;
@@ -167,9 +168,9 @@ getCharInfos (
 		    fsfree (xchars);
 		    return err;
 		}
-		if (glyphCount != 1 || 
+/*		if (glyphCount != 1 || 
 		   (*xci == defaultPtr && defaultCh != ((r<<8)+c)))
-		    *xci = &junkDefault;
+		    *xci = &junkDefault;*/
 		xci++;
 	    }
 	}

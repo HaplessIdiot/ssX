@@ -4,7 +4,7 @@ XCOMM $XConsortium: bsdLib.rules /main/3 1996/09/28 16:09:18 rws $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.11 1999/01/11 05:13:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.12 1999/06/06 08:47:44 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -126,6 +126,17 @@ revname = rev								@@\
 Concat3(DEP,varname,LIB) = SharedLibDependencies(libname,libsource,revname) @@\
 Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
 LintLibReferences(varname,libname,libsource)
+#endif
+
+ /*
+ * SharedFontLibReferences - shared font libraries
+ */
+#ifndef SharedFontLibReferences
+#define SharedFontLibReferences()					@@\
+SOFONTREV = SharedFontRev						@@\
+DEPFONTLIB = SharedLibDependencies(Xfont,$(FONTLIBSRC),SOFONTREV)	@@\
+FONTLIB = -L$(FREETYPELIBDIR) -L$(FONTLIBSRC) LoaderLibPrefix -lXfont	@@\
+LintLibReferences(XFONT,Xfont,$(FONTLIBSRC))
 #endif
 
 /*

@@ -43,21 +43,80 @@ in this Software without prior written authorization from The Open Group.
  * %W%	%E%
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/difs/initfonts.c,v 1.3 1999/03/07 14:23:32 dawes Exp $ */
 
 #include        "font.h"
 #include	"difs.h"
+#ifdef FONTCACHE
+#include        "misc.h"
+#include        "fontcacheP.h"
+
+#define CACHE_HI_MARK	(2048 * 1024)
+#define CACHE_LOW_MARK	(((2048 * 1024) / 4) * 3)
+#define CACHE_BALANCE	70
+#endif
 
 FontPatternCachePtr fontPatternCache;
+#ifdef FONTCACHE
+FontCacheSettings cacheSettings = { -1, -1, -1 };
+#endif
 
 void
 InitFonts(void)
 {
+#ifdef FONTCACHE
+    long himark, lowmark;
+    long balance;
+    FontCacheSettings cs;
+#endif
+
     if (fontPatternCache)
 	FreeFontPatternCache(fontPatternCache);
     fontPatternCache = MakeFontPatternCache();
 
     ResetFontPrivateIndex();
+
+#ifdef FONTCACHE
+    /* check cache control parameters */
+    if (cacheSettings.himark == -1) {
+	himark = CACHE_HI_MARK;
+	if (cacheSettings.lowmark == -1) {
+	    lowmark = CACHE_LOW_MARK;
+	} else {
+	    lowmark = cacheSettings.lowmark;
+	}
+    } else {
+	himark = cacheSettings.himark;
+	if (cacheSettings.lowmark == -1) {
+	    lowmark = (himark / 4) * 3;
+	} else {
+	    lowmark = cacheSettings.lowmark;
+	}
+    }
+    if (cacheSettings.balance == -1) {
+	balance = CACHE_BALANCE;
+    } else {
+	balance = cacheSettings.balance;
+    }
+
+    if (himark <= 0 || lowmark <= 0) {
+	FatalError("illegal cache parameter setting\n");
+    }
+    if (himark <= lowmark) {
+	FatalError("illegal cache parameter setting\n");
+    }
+    if (!(10 <= balance && balance <= 90)) {
+	FatalError("illegal cache parameter setting\n");
+    }
+
+    /* set cache control parameters */
+    cs.himark = himark;
+    cs.lowmark = lowmark;
+    cs.balance = balance;
+    if (FontCacheChangeSettings(&cs) == 0) {
+	FatalError("couldn't init renderer font cache\n");
+    }
+#endif
 
 #ifdef FONT_PCF
     FontFileRegisterFpeFunctions();

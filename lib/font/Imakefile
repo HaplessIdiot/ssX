@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/14 1998/06/16 15:23:15 msr $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.26 1999/06/13 13:47:28 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.28 1999/11/19 13:53:27 hohndel Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -48,9 +48,9 @@ REQUIREDLIBS = SharedXfontReqs
 FREETYPEPROFILEOBJS = FreeType/profiled/?*.o
       FREETYPEDONES = FreeType/DONE
 #endif
-#if BuildXTT
+#if BuildXTrueType
             XTTDIRS = X-TrueType
-#if XTTInLibFont
+#if XTTInLibXFont
       XTTSHAREDOBJS = X-TrueType/?*.o
       XTTSTATICOBJS = X-TrueType/$(STATIC_OBJSDIR)?*.o
        XTTDEBUGOBJS = X-TrueType/debugger/?*.o
@@ -67,39 +67,42 @@ FREETYPEPROFILEOBJS = FreeType/profiled/?*.o
        BUILTINDONES = builtins/DONE
 #endif
 
-       SUBDIRS = bitmap fontfile fc \
+       SUBDIRS = bitmap fontfile fc fontcache \
 		 $(SPEEDODIRS) $(TYPE1DIRS) \
 		 $(FREETYPEDIRS) $(XTTDIRS) $(BUILTINDIRS) \
 		 util stubs
-   SHARED_OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o \
+   SHARED_OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o fontcache/?*.o \
 		 $(SPEEDOSHAREDOBJS) $(TYPE1SHAREDOBJS) \
 		 $(FREETYPESHAREDOBJS) $(XTTSHAREDOBJS) \
 		 $(BUILTINSHAREDOBJS) util/?*.o
    STATIC_OBJS = bitmap/$(STATIC_OBJSDIR)?*.o fontfile/$(STATIC_OBJSDIR)?*.o \
-		 fc/$(STATIC_OBJSDIR)?*.o \
+		 fc/$(STATIC_OBJSDIR)?*.o fontcache/$(STATIC_OBJSDIR)?*.o \
 		 $(SPEEDOSTATICOBJS) $(TYPE1STATICOBJS) \
 		 $(FREETYPESTATICOBJS) $(XTTSTATICOBJS) \
 		 $(BUILTINSTATICOBJS) util/$(STATIC_OBJSDIR)?*.o
     DEBUG_OBJS = bitmap/debugger/?*.o fontfile/debugger/?*.o fc/debugger/?*.o \
+		 fontcache/debugger/?*.o \
 		 $(SPEEDODEBUGOBJS) $(TYPE1DEBUGOBJS) \
 		 $(FREETYPEDEBUGOBJS) $(XTTDEBUGOBJS) \
 		 $(BUILTINDEBUGOBJS) util/debugger/?*.o
   PROFILE_OBJS = bitmap/profiled/?*.o fontfile/profiled/?*.o fc/profiled/?*.o \
+		 fontcache/profiled/?*.o \
 		 $(SPEEDOPROFILEOBJS) $(TYPE1PROFILEOBJS) \
 		 $(FREETYPEPROFILEOBJS) $(XTTPROFILEOBJS) \
 		 $(BUILTINPROFILEOBJS) util/profiled/?*.o
-         DONES = bitmap/DONE fontfile/DONE fc/DONE \
+         DONES = bitmap/DONE fontfile/DONE fc/DONE fontcache/DONE \
 		 $(SPEEDODONES) $(TYPE1DONES) \
 		 $(FREETYPEDONES) $(XTTDONES) \
 		 $(BUILTINDONES) util/DONE
 
 #if DoLoadableServer
-      BASEDIRS = fontfile fc util
+      BASEDIRS = fontfile fc util fontcache
    BASELIBOBJS = fontfile/$(STATIC_OBJSDIR)?*.o fc/$(STATIC_OBJSDIR)?*.o \
-		 util/$(STATIC_OBJSDIR)?*.o
+		 util/$(STATIC_OBJSDIR)?*.o fontcache/$(STATIC_OBJSDIR)?*.o 
       BASEOBJS = fontfile/module/ffcheck.o fontfile/module/register.o \
 		 util/private.o
-     BASEDONES = fontfile/DONE fontfile/module/DONE fc/DONE util/DONE
+     BASEDONES = fontfile/DONE fontfile/module/DONE fc/DONE util/DONE \
+		 fontcache/DONE
 #endif
 
 #if HasParallelMake

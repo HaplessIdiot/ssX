@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/register.c,v 1.11 1999/07/17 05:30:43 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/register.c,v 1.12 1999/08/21 13:48:04 dawes Exp $ */
 
 /*
  * This is in a separate source file so that small programs
@@ -58,6 +58,9 @@ FontFileRegisterFpeFunctions(void)
 #endif
 #ifdef BUILD_FREETYPE
     FreeTypeRegisterFontFileFunctions();
+#endif
+#ifdef BUILD_XTRUETYPE
+    XTrueTypeRegisterFontFileFunctions();
 #endif
 
 #endif /* ifndef LOWMEMFTPT */

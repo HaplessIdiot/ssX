@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.5 1999/08/21 13:48:48 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fontinfo.c,v 1.6 1999/08/22 07:19:45 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -109,7 +109,7 @@ convert_props(
     for (i = 0; i < pinfo->nprops; i++)
     {
 	data_len += strlen(NameForAtom(pinfo->props[i].name));
-	if (pinfo->isStringProp[i])
+	if (NULL != pinfo->isStringProp && pinfo->isStringProp[i])
 	    data_len += strlen(NameForAtom(pinfo->props[i].value));
     }
 
@@ -141,7 +141,7 @@ convert_props(
 	local_offset.name.length = strlen(str);
 	memmove( (char *)string_base+cur_off, str, local_offset.name.length);
 	cur_off += local_offset.name.length;
-	if (pinfo->isStringProp[i])
+	if (NULL != pinfo->isStringProp && pinfo->isStringProp[i])
 	{
 	    local_offset.value.position = cur_off;
 	    str = NameForAtom(pinfo->props[i].value);
