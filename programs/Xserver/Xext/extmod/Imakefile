@@ -94,7 +94,6 @@ LinkSourceFile(bigreq.c,..)
 LinkSourceFile(sync.c,..)
 LinkSourceFile(xcmisc.c,..)
 LinkSourceFile(xprint.c,..)
-LinkSourceFile(SecurityPolicy,..)
 
 NormalLibraryObjectRule()
 SpecialObjectRule(modinit.o,../modinit.c $(ICONFIGFILES),$(EXT_DEFINES))
@@ -106,12 +105,5 @@ SpecialCObjectRule(security,$(ICONFIGFILES),$(POLICYFILEDEF))
 #endif
 
 InstallDynamicModule(LibraryTargetName(extmod),$(MODULEDIR))
-InstallLinkKitLibrary(ext,$(LINKKITDIR)/lib)
-
-LinkVarDirectory(xserver,.,xserver,.)
-
-#if BuildXCSecurity && InstallSecurityConfig
-InstallNonExecFile(SecurityPolicy,$(SERVERCONFIGDIR))
-#endif
 
 DependTarget()
