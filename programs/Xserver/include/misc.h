@@ -1,9 +1,13 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.26 2001/05/06 06:28:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.27 2001/07/25 15:05:09 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -62,7 +66,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: misc.h,v 1.4 2000/08/17 19:53:29 cpqbld Exp $ */
+/* $Xorg: misc.h,v 1.5 2001/02/09 02:05:15 xorgcvs Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*

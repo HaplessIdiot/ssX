@@ -1,10 +1,14 @@
 /*
- * $Xorg: iceauth.h,v 1.3 2000/08/17 19:53:53 cpqbld Exp $
+ * $Xorg: iceauth.h,v 1.4 2001/02/09 02:05:31 xorgcvs Exp $
  *
  * 
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -23,7 +27,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/iceauth/iceauth.h,v 3.3 2001/01/17 23:44:54 dawes Exp $ */
+/* $XFree86: xc/programs/iceauth/iceauth.h,v 3.4 2001/07/25 15:05:13 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xos.h>

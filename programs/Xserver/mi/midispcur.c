@@ -4,13 +4,17 @@
  * machine independent cursor display routines
  */
 
-/* $Xorg: midispcur.c,v 1.3 2000/08/17 19:53:37 cpqbld Exp $ */
+/* $Xorg: midispcur.c,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
 
 /*
 
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -26,7 +30,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/midispcur.c,v 1.4 2001/01/17 22:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/midispcur.c,v 1.5 2001/09/04 14:03:28 dawes Exp $ */
 
 #define NEED_EVENTS
 # include   "X.h"

@@ -1,10 +1,14 @@
-/* $Xorg: xinit.c,v 1.4 2000/08/17 19:54:30 cpqbld Exp $ */
+/* $Xorg: xinit.c,v 1.5 2001/02/09 02:05:49 xorgcvs Exp $ */
 
 /*
 
 Copyright 1986, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -21,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.29 2001/10/08 17:52:58 alanh Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.30 2001/12/09 15:36:02 herrb Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>

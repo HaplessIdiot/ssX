@@ -1,9 +1,13 @@
-/* $Xorg: Xtransint.h,v 1.3 2000/08/17 19:46:46 cpqbld Exp $ */
+/* $Xorg: Xtransint.h,v 1.4 2001/02/09 02:04:06 xorgcvs Exp $ */
 /*
 
 Copyright 1993, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -22,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.29 2001/07/23 13:15:43 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.30 2001/07/25 15:04:59 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *

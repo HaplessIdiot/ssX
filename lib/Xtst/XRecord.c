@@ -1,11 +1,15 @@
 /*
-$Xorg: XRecord.c,v 1.3 2000/08/17 19:46:23 cpqbld Exp $
+$Xorg: XRecord.c,v 1.4 2001/02/09 02:04:00 xorgcvs Exp $
 
 XRecord.c - client-side library for RECORD extension
 
 Copyright 1995, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
@@ -46,7 +50,7 @@ from The Open Group.
 /*
  * By Stephen Gildea, X Consortium, and Martha Zimet, NCD.
  */
-/* $XFree86: xc/lib/Xtst/XRecord.c,v 1.2 2001/08/17 22:08:10 tsi Exp $ */
+/* $XFree86: xc/lib/Xtst/XRecord.c,v 1.3 2001/10/28 03:32:41 tsi Exp $ */
 
 #include <stdio.h>
 #include <assert.h>

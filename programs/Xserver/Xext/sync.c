@@ -1,9 +1,13 @@
-/* $Xorg: sync.c,v 1.3 2000/08/17 19:47:59 cpqbld Exp $ */
+/* $Xorg: sync.c,v 1.4 2001/02/09 02:04:33 xorgcvs Exp $ */
 /*
 
 Copyright 1991, 1993, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -46,7 +50,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.9 2001/07/23 13:15:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.10 2001/08/23 13:01:36 alanh Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS

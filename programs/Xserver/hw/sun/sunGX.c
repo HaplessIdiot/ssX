@@ -1,10 +1,14 @@
 /*
-static char *rid="$Xorg: sunGX.c,v 1.4 2000/08/18 11:06:23 xorgcvs Exp $";
+static char *rid="$Xorg: sunGX.c,v 1.5 2001/02/09 02:04:44 xorgcvs Exp $";
  */
 /*
 Copyright 1991, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -23,7 +27,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.5 2001/08/17 22:08:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.6 2001/10/28 03:33:10 tsi Exp $ */
 
 #include	"sun.h"
 

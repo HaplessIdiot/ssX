@@ -1,10 +1,14 @@
-/* $Xorg: record.c,v 1.3 2000/08/17 19:53:45 cpqbld Exp $ */
+/* $Xorg: record.c,v 1.4 2001/02/09 02:05:27 xorgcvs Exp $ */
 
 /*
 
 Copyright 1995, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
@@ -28,7 +32,7 @@ This work benefited from earlier work done by Martha Zimet of NCD
 and Jim Haggerty of Metheus.
 
 */
-/* $XFree86: xc/programs/Xserver/record/record.c,v 1.7 2001/01/17 22:37:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/record/record.c,v 1.8 2001/10/28 03:34:19 tsi Exp $ */
 
 #define NEED_EVENTS
 #include "dixstruct.h"

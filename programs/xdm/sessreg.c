@@ -3,7 +3,11 @@
  *
  * Copyright 1990, 1998  The Open Group
  *
- * All Rights Reserved.
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.
  * 
  * The above copyright notice and this permission notice shall be included
  * in all copies or substantial portions of the Software.
@@ -26,7 +30,7 @@
  *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
 
-/* $XFree86: xc/programs/xdm/sessreg.c,v 3.16 2001/01/17 23:45:22 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/sessreg.c,v 3.17 2001/07/25 15:05:19 dawes Exp $ */
 
 /*
  * sessreg

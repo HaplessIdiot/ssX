@@ -1,10 +1,14 @@
-/* $XFree86: xc/programs/twm/events.c,v 1.10 2001/08/27 21:11:39 dawes Exp $ */
+/* $XFree86: xc/programs/twm/events.c,v 1.11 2001/12/02 15:57:03 herrb Exp $ */
 /*****************************************************************************/
 /*
 
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -49,7 +53,7 @@ in this Software without prior written authorization from The Open Group.
 
 /***********************************************************************
  *
- * $Xorg: events.c,v 1.3 2000/08/17 19:54:05 cpqbld Exp $
+ * $Xorg: events.c,v 1.4 2001/02/09 02:05:36 xorgcvs Exp $
  *
  * twm event handling
  *

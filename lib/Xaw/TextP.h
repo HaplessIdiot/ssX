@@ -1,5 +1,5 @@
 /*
-* $Xorg: TextP.h,v 1.3 2000/08/17 19:45:40 cpqbld Exp $
+* $Xorg: TextP.h,v 1.4 2001/02/09 02:03:46 xorgcvs Exp $
 */
 
 
@@ -7,7 +7,11 @@
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -45,7 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.19 2001/01/17 19:42:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.20 2001/08/01 00:44:39 tsi Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h

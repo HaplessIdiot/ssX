@@ -1,9 +1,13 @@
-/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.7 2001/07/25 15:05:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.8 2001/10/28 03:33:06 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -78,7 +82,7 @@ Author:  Adobe Systems Incorporated
 
 */
 
-/* $Xorg: dixutils.c,v 1.3 2000/08/17 19:48:18 cpqbld Exp $ */
+/* $Xorg: dixutils.c,v 1.4 2001/02/09 02:04:40 xorgcvs Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

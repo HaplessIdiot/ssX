@@ -1,8 +1,12 @@
-/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.6 2001/10/28 03:32:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.7 2001/11/23 19:50:42 dawes Exp $ */
 /*
 Copyright 1996, 1998, 2001  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -20,7 +24,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $Xorg: appgroup.c,v 1.5 2001/02/01 18:40:28 pookie Exp $ */
+/* $Xorg: appgroup.c,v 1.6 2001/02/09 02:04:32 xorgcvs Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS

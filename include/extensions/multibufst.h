@@ -1,9 +1,13 @@
 /*
- * $Xorg: multibufst.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $
+ * $Xorg: multibufst.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $
  *
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -20,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/include/extensions/multibufst.h,v 3.5 2001/01/17 17:53:22 dawes Exp $ */
+/* $XFree86: xc/include/extensions/multibufst.h,v 3.6 2001/07/25 15:04:42 dawes Exp $ */
 
 #ifndef _MULTIBUFST_H_
 #define _MULTIBUFST_H_

@@ -1,10 +1,14 @@
-/* $Xorg: lbx_zlib.h,v 1.3 2000/08/17 19:46:41 cpqbld Exp $ */
+/* $Xorg: lbx_zlib.h,v 1.4 2001/02/09 02:04:05 xorgcvs Exp $ */
 
 /*
 
 Copyright 1996  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
@@ -46,7 +50,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.8 2001/01/17 19:43:36 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.9 2001/08/27 19:01:07 dawes Exp $ */
 
 #include "zlib.h"
 #include "Xfuncproto.h"

@@ -1,9 +1,13 @@
-/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.9 2001/01/17 22:37:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.10 2001/08/06 20:51:17 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -41,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: mibitblt.c,v 1.4 2000/08/17 19:53:36 cpqbld Exp $ */
+/* $Xorg: mibitblt.c,v 1.5 2001/02/09 02:05:20 xorgcvs Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"

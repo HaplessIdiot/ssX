@@ -7,7 +7,11 @@
 
 Portions Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -26,7 +30,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xfsinfo/xfsinfo.c,v 1.2 2001/04/01 14:00:21 tsi Exp $ */
+/* $XFree86: xc/programs/xfsinfo/xfsinfo.c,v 1.3 2001/08/27 17:41:02 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

@@ -1,4 +1,4 @@
-/* $Xorg: TMkey.c,v 1.3 2000/08/17 19:46:18 cpqbld Exp $ */
+/* $Xorg: TMkey.c,v 1.4 2001/02/09 02:03:58 xorgcvs Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -38,7 +38,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -55,7 +59,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/TMkey.c,v 3.8 2001/08/01 00:44:41 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/TMkey.c,v 3.9 2001/08/22 22:52:20 dawes Exp $ */
 
 #define XK_MISCELLANY
 #define XK_LATIN1

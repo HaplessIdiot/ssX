@@ -1,9 +1,13 @@
-/* $Xorg: charinfo.c,v 1.3 2000/08/17 19:54:20 cpqbld Exp $ */
+/* $Xorg: charinfo.c,v 1.4 2001/02/09 02:05:42 xorgcvs Exp $ */
 /*
  
 Copyright 1990, 1991, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -45,7 +49,7 @@ in this Software without prior written authorization from The Open Group.
  * This file was once on the other side of
  * the font library interface as util/fsfuncs.c.
  */
-/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.10 2001/08/01 00:45:04 tsi Exp $ */
+/* $XFree86: xc/programs/xfs/difs/charinfo.c,v 1.11 2001/10/28 03:34:34 tsi Exp $ */
 
 #include <X11/Xos.h>
 #include "misc.h"

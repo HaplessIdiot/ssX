@@ -1,10 +1,14 @@
 /*
- * $Xorg: Xos.h,v 1.5 2000/08/18 04:05:44 coskrey Exp $
+ * $Xorg: Xos.h,v 1.6 2001/02/09 02:03:22 xorgcvs Exp $
  * 
  * 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -23,7 +27,7 @@ in this Software without prior written authorization from The Open Group.
  * The X Window System is a Trademark of The Open Group.
  *
  */
-/* $XFree86: xc/include/Xos.h,v 3.34 2001/07/23 13:15:40 dawes Exp $ */
+/* $XFree86: xc/include/Xos.h,v 3.35 2001/08/30 21:51:02 alanh Exp $ */
 
 /* This is a collection of things to try and minimize system dependencies
  * in a "signficant" number of source files.

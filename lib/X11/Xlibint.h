@@ -1,10 +1,14 @@
-/* $Xorg: Xlibint.h,v 1.4 2000/08/17 19:45:07 cpqbld Exp $ */
+/* $Xorg: Xlibint.h,v 1.5 2001/02/09 02:03:38 xorgcvs Exp $ */
 
 /*
 
 Copyright 1984, 1985, 1987, 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -23,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.20 2001/10/01 13:43:57 eich Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.21 2001/10/28 03:32:33 tsi Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1

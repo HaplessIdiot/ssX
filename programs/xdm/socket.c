@@ -1,9 +1,13 @@
-/* $Xorg: socket.c,v 1.3 2000/08/17 19:54:15 cpqbld Exp $ */
+/* $Xorg: socket.c,v 1.4 2001/02/09 02:05:40 xorgcvs Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -22,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.8 2001/07/23 13:15:52 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.9 2001/07/25 15:05:19 dawes Exp $ */
 
 /*
  * xdm - display manager daemon

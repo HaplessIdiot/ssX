@@ -1,12 +1,16 @@
 /* 
- * $Xorg: xset.c,v 1.5 2000/08/17 19:55:03 cpqbld Exp $
+ * $Xorg: xset.c,v 1.6 2001/02/09 02:05:58 xorgcvs Exp $
  */
 
 /*
 
 Copyright 1985, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -23,7 +27,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.23 2001/08/01 00:45:07 tsi Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.24 2001/08/29 11:09:43 alanh Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>

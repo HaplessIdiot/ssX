@@ -1,10 +1,13 @@
-/* $Xorg: pcfread.c,v 1.4 2000/10/30 09:55:54 pookie Exp $ */
-
+/* $Xorg: pcfread.c,v 1.5 2001/02/09 02:04:02 xorgcvs Exp $ */
 /*
 
 Copyright 1990, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -23,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.16 2001/04/04 00:34:28 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.17 2001/11/06 16:11:36 alanh Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

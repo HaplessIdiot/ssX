@@ -1,4 +1,4 @@
-/* $Xorg: TMparse.c,v 1.5 2000/08/17 19:46:18 cpqbld Exp $ */
+/* $Xorg: TMparse.c,v 1.6 2001/02/09 02:03:58 xorgcvs Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,13 +32,17 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TMparse.c,v 3.6 2001/08/01 00:44:41 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/TMparse.c,v 3.7 2001/08/22 22:52:20 dawes Exp $ */
 
 /*
 
 Copyright 1987, 1988, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.

@@ -1,15 +1,14 @@
-/* $XConsortium: XIEprotost.h,v 1.6 94/04/17 20:11:12 mor Exp $ */
+/* $Xorg: XIEprotost.h,v 1.7 2001/02/09 02:03:23 xorgcvs Exp $ */
 /******************************************************************************
 
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +16,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -233,7 +232,11 @@ typedef struct {
 typedef struct {
     CARD16		elemType B16;
     CARD16		elemLength B16;
+#if defined(__cplusplus) || defined(c_plusplus)
+    xieTypDataClass	c_class;
+#else
     xieTypDataClass	class;
+#endif
     xieTypOrientation	bandOrder;
     CARD16		pad B16;
     CARD32		length0 B32;
@@ -248,7 +251,11 @@ typedef struct {
     CARD16			elemType B16;
     CARD16			elemLength B16;
     BOOL			notify;
+#if defined(__cplusplus) || defined(c_plusplus)
+    xieTypDataClass 		c_class;
+#else
     xieTypDataClass 		class;
+#endif
     CARD16			pad B16;
     CARD32			width0 B32;
     CARD32			width1 B32;
@@ -329,7 +336,11 @@ typedef struct {
     INT32		domainOffsetX B32;
     INT32		domainOffsetY B32;
     xieTypPhototag	domainPhototag B16;		
+#if defined(__cplusplus) || defined(c_plusplus)
+    xieTypArithmeticOp	c_operator;
+#else
     xieTypArithmeticOp	operator;
+#endif
     CARD8		bandMask;
     xieTypFloat		constant0 B32;
     xieTypFloat		constant1 B32;
@@ -391,7 +402,11 @@ typedef struct {
     INT32		domainOffsetX B32;
     INT32		domainOffsetY B32;
     xieTypPhototag	domainPhototag B16;		
+#if defined(__cplusplus) || defined(c_plusplus)
+    xieTypCompareOp	c_operator;
+#else
     xieTypCompareOp	operator;
+#endif
     BOOL		combine;
     xieTypFloat		constant0 B32;
     xieTypFloat		constant1 B32;
@@ -417,7 +432,11 @@ typedef struct {
     CARD16		elemType B16;
     CARD16		elemLength B16;
     xieTypPhototag	src B16;
+#if defined(__cplusplus) || defined(c_plusplus)
+    xieTypDataClass	c_class;
+#else
     xieTypDataClass	class;
+#endif
     CARD8		precision;
     Colormap		colormap B32;
 } xieFloConvertFromIndex;
@@ -515,7 +534,11 @@ typedef struct {
     INT32		domainOffsetX B32;
     INT32		domainOffsetY B32;
     xieTypPhototag	domainPhototag B16;		
+#if defined(__cplusplus) || defined(c_plusplus)
+    CARD8		c_operator;
+#else
     CARD8		operator;
+#endif
     CARD8		bandMask;
     xieTypFloat		constant0 B32;
     xieTypFloat		constant1 B32;
@@ -544,7 +567,11 @@ typedef struct {
     INT32		domainOffsetX B32;
     INT32		domainOffsetY B32;
     xieTypPhototag	domainPhototag B16;		
+#if defined(__cplusplus) || defined(c_plusplus)
+    xieTypMathOp	c_operator;
+#else
     xieTypMathOp	operator;
+#endif
     CARD8		bandMask;
 } xieFloMath;
 

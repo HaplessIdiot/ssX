@@ -1,4 +1,4 @@
-/* $XConsortium: FSErrDis.c,v 1.5 94/04/17 20:15:10 dpw Exp $ */
+/* $Xorg: FSErrDis.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
 
 /* @(#)FSErrDis.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -27,14 +27,13 @@
 
 /*
 
-Copyright (c) 1987, 1994  X Consortium
+Copyright 1987, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -42,13 +41,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 */
 
@@ -73,7 +72,24 @@ char       *FSErrorList[] = {
 int         FSErrorListSize = sizeof(FSErrorList);
 
 
-FSGetErrorText(svr, code, buffer, nbytes)
+/* ARGSUSED */
+int FSGetErrorDatabaseText(svr, name, type, defaultp, buffer, nbytes)
+    register char *name,
+               *type;
+    char       *defaultp;
+    FSServer     *svr;
+    char       *buffer;
+    int         nbytes;
+{
+    if (nbytes == 0)
+	return 0;
+    (void) strncpy(buffer, (char *) defaultp, nbytes);
+    if ((strlen(defaultp) + 1) > nbytes)
+	buffer[nbytes - 1] = '\0';
+    return 1;
+}
+
+int FSGetErrorText(svr, code, buffer, nbytes)
     register int code;
     register FSServer *svr;
     char       *buffer;
@@ -85,7 +101,7 @@ FSGetErrorText(svr, code, buffer, nbytes)
     register _FSExtension *ext;
 
     if (nbytes == 0)
-	return;
+	return 0;
     sprintf(buf, "%d", code);
     if (code <= (FSErrorListSize / sizeof(char *)) && code > 0) {
 	defaultp = FSErrorList[code];
@@ -97,21 +113,6 @@ FSGetErrorText(svr, code, buffer, nbytes)
 	    (*ext->error_string) (svr, code, &ext->codes, buffer, nbytes);
 	ext = ext->next;
     }
-    return;
+    return 1;
 }
 
-/* ARGSUSED */
-FSGetErrorDatabaseText(svr, name, type, defaultp, buffer, nbytes)
-    register char *name,
-               *type;
-    char       *defaultp;
-    FSServer     *svr;
-    char       *buffer;
-    int         nbytes;
-{
-    if (nbytes == 0)
-	return;
-    (void) strncpy(buffer, (char *) defaultp, nbytes);
-    if ((strlen(defaultp) + 1) > nbytes)
-	buffer[nbytes - 1] = '\0';
-}

@@ -1,10 +1,14 @@
-/* $Xorg: xwd.c,v 1.4 2000/08/17 19:55:13 cpqbld Exp $ */
+/* $Xorg: xwd.c,v 1.5 2001/02/09 02:06:03 xorgcvs Exp $ */
 
 /*
 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -21,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwd/xwd.c,v 3.8 2001/07/25 15:05:31 dawes Exp $ */
+/* $XFree86: xc/programs/xwd/xwd.c,v 3.9 2001/08/29 11:09:44 alanh Exp $ */
 
 /*
  * xwd.c MIT Project Athena, X Window system window raster image dumper.

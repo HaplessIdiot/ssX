@@ -1,11 +1,15 @@
-/* $Xorg: lndir.c,v 1.4 2000/08/17 19:41:52 cpqbld Exp $ */
+/* $Xorg: lndir.c,v 1.5 2001/02/09 02:03:17 xorgcvs Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
 /* 
 Copyright (c) 1990, 1998 The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -22,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.13 2001/04/01 13:59:57 tsi Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.14 2001/07/25 15:04:41 dawes Exp $ */
 
 /* From the original /bin/sh script:
 

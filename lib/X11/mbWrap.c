@@ -1,9 +1,13 @@
-/* $Xorg: mbWrap.c,v 1.3 2000/08/17 19:45:21 cpqbld Exp $ */
+/* $Xorg: mbWrap.c,v 1.4 2001/02/09 02:03:40 xorgcvs Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -46,7 +50,7 @@ from The Open Group.
  * 
  *		 M. Collins		OSF  
  */				
-/* $XFree86: xc/lib/X11/mbWrap.c,v 1.4 2001/01/17 19:41:56 dawes Exp $ */
+/* $XFree86: xc/lib/X11/mbWrap.c,v 1.5 2001/10/28 03:32:35 tsi Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.89 94/04/17 20:10:52 rws Exp $
+ *	$Xorg: Xproto.h,v 1.4 2001/02/09 02:03:23 xorgcvs Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -28,14 +28,13 @@
 
 /***********************************************************
 
-Copyright (c) 1987  X Consortium
+Copyright 1987, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -43,13 +42,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -278,7 +277,7 @@ typedef struct {
 } xConnClientPrefix;
 
 typedef struct {
-    BOOL           success;
+    CARD8          success;
     BYTE           lengthReason; /*num bytes in string following if failure */
     CARD16         majorVersion B16, 
                    minorVersion B16;
@@ -410,8 +409,6 @@ typedef CARD8 KEYCODE;
  * XRep:
  *    meant to be 32 byte quantity 
  *****************/
-
-#ifdef NEED_REPLIES
 
 /* GenericReply is the common format of all replies.  The "data" items
    are specific to each individual reply type. */
@@ -967,8 +964,6 @@ typedef struct {
     CARD32 pad7 B32;
     } xListHostsReply;
 
-#endif /* NEED_REPLIES */
-
 
 
 
@@ -996,10 +991,6 @@ typedef struct {
  * xEvent
  *    All events are 32 bytes
  *****************************************************************/
-
-#ifdef NEED_EVENTS                /* this hack is necessary because
-				     the symbol table in the library
-				     is too big to link */
 
 typedef struct _xEvent {
     union {
@@ -1230,16 +1221,12 @@ typedef struct {
     BYTE map[31];
     } xKeymapEvent;
 
-#endif /* NEED_EVENTS */
-
 #define XEventSize (sizeof(xEvent))
 
 /* XReply is the union of all the replies above whose "fixed part"
 fits in 32 bytes.  It does NOT include GetWindowAttributesReply,
 QueryFontReply, QueryKeymapReply, or GetKeyboardControlReply 
 ListFontsWithInfoReply */
-
-#ifdef NEED_REPLIES
 
 typedef union {
     xGenericReply generic;
@@ -1279,12 +1266,8 @@ typedef union {
     xGetScreenSaverReply screenSaver;
     xListHostsReply hosts;
     xError error;
-#ifdef NEED_EVENTS
     xEvent event;
-#endif /* NEED_EVENTS */
 } xReply;
-
-#endif /* NEED_REPLIES */
 
 
 
@@ -1295,7 +1278,7 @@ typedef union {
 
 /* Request structure */
 
-typedef struct {
+typedef struct _xReq {
 	CARD8 reqType;
 	CARD8 data;            /* meaning depends on request type */
 	CARD16 length B16;         /* length in 4 bytes quantities 
@@ -1430,8 +1413,6 @@ typedef struct {
     Time time B32;
     } xConvertSelectionReq;
 
-#ifdef NEED_EVENTS
-
 typedef struct {
     CARD8 reqType;
     BOOL propagate;
@@ -1445,8 +1426,6 @@ typedef struct {
     xEvent event;
 #endif /* WORD64 */
 } xSendEventReq;
-
-#endif /* NEED_EVENTS */
 
 typedef struct {
     CARD8 reqType;

@@ -1,9 +1,13 @@
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.17 2001/02/16 13:24:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.19 2001/09/26 19:26:16 paulo Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -43,7 +47,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Xorg: devices.c,v 1.3 2000/08/17 19:48:17 cpqbld Exp $ */
+/* $Xorg: devices.c,v 1.4 2001/02/09 02:04:39 xorgcvs Exp $ */
 
 #include "X.h"
 #include "misc.h"

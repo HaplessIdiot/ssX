@@ -1,4 +1,4 @@
-/* $XConsortium: hpCursorUtils.c,v 1.2 94/04/17 20:30:05 rws Exp $ */
+/* $Xorg: hpCursorUtils.c,v 1.4 2001/02/09 02:04:42 xorgcvs Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -18,8 +18,8 @@
  *************************************************************************/
 
 /*''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-Copyright (c) 1988 by Hewlett-Packard Company
-Copyright (c) 1987, 1988 by Digital Equipment Corporation, Maynard, 
+Copyright 1988 by Hewlett-Packard Company
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, 
               Massachusetts
 
 Permission to use, copy, modify, and distribute this software 
@@ -40,15 +40,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 
-Copyright (c) 1987, 1988  X Consortium
+Copyright 1987, 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -56,15 +54,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''*/
 
@@ -81,56 +79,12 @@ from the X Consortium.
 extern int hpActiveScreen;		/* Stacked mode, >1 head */
 extern WindowPtr *WindowTable;		/* Defined by DIX */
 
-static BoxRec LimitTheCursor;
 static CursorPtr currentCursors[MAXSCREENS];
 
 void hpBlottoCursors()
 {
   int j;
   for (j = MAXSCREENS; j--; ) currentCursors[j] = NULL;
-}
-
-/************************************************************
- * hpConstrainCursor
- *
- * This function simply sets the box to which the cursor 
- * is limited.  
- * 
- * ASSUMPTION:  a single BoxRec is used for recording
- * the cursor limits, instead of one per screen.  This is 
- * done, in part, because the bogus hpConstrainXY routine
- * (see below) is not passed a pScreen pointer.
- *
- * THEREFORE:  Zaphod mode code will have to call this routine
- * to establish new limits when the cursor leaves one screen
- * for another.
- *
- ************************************************************/
-
-void 
-hpConstrainCursor (pScreen,pBox)
-ScreenPtr pScreen;    /* Screen to which it should be constrained */
-BoxPtr   pBox;        /* Box in which... */
-{
-	LimitTheCursor = *pBox;
-}
-
-/************************************************************
- * hpConstrainXY
- *
- * This function is called directly from x_hil.c
- * It adjusts the cursor position to fit within the current 
- * constraints.
- *
- ************************************************************/
-
-Bool
-hpConstrainXY(px,py)
-    int *px, *py;
-{
-    *px = max( LimitTheCursor.x1, min( LimitTheCursor.x2,*px));
-    *py = max( LimitTheCursor.y1, min( LimitTheCursor.y2,*py));
-    return TRUE;
 }
 
 /************************************************************
@@ -156,7 +110,11 @@ BoxPtr    pResultBox;    /* RETURN: limits for hot spot */
 }
 
 /************************************************************
+ *
  * hpSetCursorPosition
+ *
+ *      This routine is called from DIX when the X11 sprite/cursor is warped.
+ *
  ************************************************************/
 
 Bool 
@@ -171,38 +129,16 @@ Bool	  generateEvent;
 
     php 	= (hpPrivPtr) pScreen->devPrivate;
 
-    /* Check to see if we've switched screens: */
+    /* Must Update the Input Driver's Variables: */
     InDev = GET_HPINPUTDEVICE((DeviceIntPtr)LookupPointerDevice());
-    if (pScreen != InDev->pScreen)
-    {
-        WindowPtr pRootWindow = WindowTable[InDev->pScreen->myNum];
-
-        /*
-        ********************************************************************
-        ** Turn old cursor off, blank/unblank screens for stacked mode,
-        ** let DIX know there is a new screen, set the input driver variable
-        ** to the new screen number.
-        ********************************************************************
-        */
-
-        (*((hpPrivPtr)(InDev->pScreen->devPrivate))->CursorOff)
-        (InDev->pScreen);                     /* Old cursor off */
-        php->ChangeScreen(pScreen);      /* Stacked mode switch */
-        NewCurrentScreen(pScreen, xhot, yhot);/* Let DIX know */
-        hpActiveScreen = pScreen->myNum;      /* Input driver global */
-    }
-
-
-    /* Must Update the Corvallis Input Driver's Variables: */
     InDev->pScreen = pScreen;
     InDev->coords[0] = xhot;
     InDev->coords[1] = yhot;
 
-    if (!generateEvent)
-    {
-	(*php->MoveMouse)(pScreen, xhot, yhot, 0); /* Do the move now */
-    }
-    else
+    /* Do the move now */
+    (*php->MoveMouse)(pScreen, xhot, yhot, 0);
+
+    if (generateEvent)
     {
         queue_motion_event(InDev);  /* Enqueue motion event, in x_hil.c */
         isItTimeToYield++;          /* Insures client get the event! */
@@ -210,4 +146,4 @@ Bool	  generateEvent;
 
     return(TRUE);
 
-}
+} /* hpSetCursorPosition() */

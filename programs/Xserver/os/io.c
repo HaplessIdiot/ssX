@@ -2,7 +2,11 @@
 
 Copyright 1987, 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -40,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: io.c,v 1.5 2001/01/03 16:40:02 coskrey Exp $ */
+/* $Xorg: io.c,v 1.6 2001/02/09 02:05:23 xorgcvs Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -48,7 +52,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.30 2001/08/23 15:26:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.31 2001/11/23 19:21:36 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>

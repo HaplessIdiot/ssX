@@ -1,4 +1,4 @@
-/* $Xorg: SetLocale.c,v 1.3 2000/08/17 19:44:54 cpqbld Exp $ */
+/* $Xorg: SetLocale.c,v 1.4 2001/02/09 02:03:36 xorgcvs Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -32,7 +32,11 @@
 
 Copyright 1987,1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -51,7 +55,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/SetLocale.c,v 3.14 2001/07/25 15:04:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/SetLocale.c,v 3.15 2001/10/28 03:32:32 tsi Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"

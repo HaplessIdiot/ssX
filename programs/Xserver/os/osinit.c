@@ -1,9 +1,13 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.23 2001/06/30 22:41:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.24 2001/07/23 13:15:50 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -41,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: osinit.c,v 1.3 2000/08/17 19:53:41 cpqbld Exp $ */
+/* $Xorg: osinit.c,v 1.4 2001/02/09 02:05:23 xorgcvs Exp $ */
 
 #include <stdio.h>
 #include "X.h"

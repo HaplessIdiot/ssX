@@ -1,9 +1,12 @@
-/* $Xorg: Ps.h,v 1.4 2000/11/08 17:04:21 pookie Exp $ */
+/* $Xorg: Ps.h,v 1.5 2001/02/09 02:04:35 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -70,7 +73,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.10 2001/10/31 22:50:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.11 2001/11/21 22:40:33 dawes Exp $ */
 
 #ifndef _PS_H_
 #define _PS_H_

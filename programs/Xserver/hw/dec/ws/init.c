@@ -1,13 +1,12 @@
 /***********************************************************
 
-Copyright (c) 1991  X Consortium
+Copyright 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -15,13 +14,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1991 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -46,10 +45,11 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: init.c,v 1.10 94/04/17 20:29:55 dpw Exp $ */
+/* $Xorg: init.c,v 1.4 2001/02/09 02:04:41 xorgcvs Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/file.h>
 #include <sys/time.h>
 #include <sys/tty.h>
@@ -64,6 +64,9 @@ SOFTWARE.
 #include "input.h"
 /* XXX */
 #include <sys/workstation.h>
+#ifdef __alpha
+#include <machine/hal_sysinfo.h>
+#endif
 #include <sys/inputdevice.h>
 #include "ws.h"
 
@@ -125,6 +128,7 @@ int forceDepth;
 int wsScreenPrivateIndex;
 /* the following filth is forced by a broken dix interface */
 
+#ifndef PRINT_ONLY_SERVER
 void
 InitOutput(screenInfo, argc, argv)
     ScreenInfo *screenInfo;
@@ -134,37 +138,32 @@ InitOutput(screenInfo, argc, argv)
     int i, j;
     int si = 0;
     static int inited = FALSE;
-    static int ma = 4;
-    static int mt = 4;
-    static PtrCtrl ctrl;
-    static int  clicklevel;
 
     if (!inited) {
-	char *clickvolume;
-	char *mouseAcceleration;
-	char *mouseThreshold;
 	char *forceD;
 	ws_keyboard_control control;
-        inited = TRUE;
-        if ((wsFd = open("/dev/mouse",  O_RDWR, 0)) < 0) {
-		ErrorF("couldn't open device\n");
+	struct stat statbuf;
+	inited = TRUE;
+	if (!stat("/dev/ws0", &statbuf)) {
+	    if ((wsFd = open("/dev/ws0",  O_RDWR, 0)) < 0) {
+		ErrorF("couldn't open device /dev/ws0\n");
 		exit (1);
+	    }
+	} else {
+	    if ((wsFd = open("/dev/mouse",  O_RDWR, 0)) < 0) {
+		ErrorF("couldn't open device /dev/mouse\n");
+		exit (1);
+	    }
 	}
 	if (ioctl (wsFd, GET_WORKSTATION_INFO, &wsinfo) != 0) {
-		ErrorF("GET_WORKSTATION_INFO failed \n");
-		exit(1);
+		FatalError("GET_WORKSTATION_INFO failed, errno %d (%s)\n",
+			   errno, strerror(errno));
 	}
 	control.device_number = wsinfo.console_keyboard;
 	if (ioctl(wsFd, GET_KEYBOARD_CONTROL, &control) == -1) {
-		ErrorF("GET_KEYBOARD_CONTROL failed\n");
-		exit(1);
+		FatalError("GET_KEYBOARD_CONTROL failed, errno %d (%s)\n",
+			   errno, strerror(errno));
 	}
-	defaultKeyboardControl.click = control.click;
-	defaultKeyboardControl.bell = control.bell;
-	defaultKeyboardControl.bell_pitch = control.bell_pitch;
-	defaultKeyboardControl.bell_duration = control.bell_duration;
-	defaultKeyboardControl.autoRepeat = control.auto_repeat;
-	defaultKeyboardControl.leds = control.leds;
 	memmove(defaultKeyboardControl.autoRepeats, control.autorepeats, 32);
 	
     /* turn off cursors on additional screens initially */
@@ -177,12 +176,6 @@ InitOutput(screenInfo, argc, argv)
 	* opened the device.
 	*/
 
-	if (commandLinePairMatch( argc, argv, "c", &clickvolume))
-		sscanf( clickvolume, "%d", &clicklevel);
-	if (commandLinePairMatch( argc, argv, "-a", &mouseAcceleration))
-		sscanf( mouseAcceleration, "%d", &ma);
-	if (commandLinePairMatch( argc, argv, "-t", &mouseThreshold))
-		sscanf( mouseThreshold, "%d", &mt);
 	if (commandLinePairMatch( argc, argv, "-forceDepth", &forceD))
 		sscanf ( forceD, "%d", &forceDepth);
     }
@@ -236,20 +229,21 @@ InitOutput(screenInfo, argc, argv)
     screenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
     screenInfo->numPixmapFormats = NumFormats;
 
-    ctrl.num = ma;
-    ctrl.den = 1;
-    ctrl.threshold = mt;
-    wsChangePointerControl( (DevicePtr) NULL, &ctrl);
-    wsClick(clicklevel);
-    if (commandLineMatch(argc, argv, "-c")) wsClick(0);
     wsScreenPrivateIndex = AllocateScreenPrivateIndex();
+#ifdef __alpha
+    if (getsysinfo(GSI_CPU, (caddr_t)&ws_cpu, sizeof(ws_cpu), 0, 0) == -1) {
+        fprintf(stderr,"INIT: cannot get cputype.\n");
+        exit(1);
+    }
+#else
     ws_cpu = wsinfo.cpu;
+#endif
     for(i = 0; i < wsinfo.num_screens_exist; i++) {
 	int j, DECaccelerator = FALSE;
 	screenDesc[si].screen = i;
 	if (ioctl(wsFd,	 GET_SCREEN_INFO, &screenDesc[si]) == -1) {
-	    ErrorF("GET_SCREEN_INFO failed\n");
-	    exit(1);
+	    FatalError("GET_SCREEN_INFO failed, errno %d (%s)\n",
+		       errno, strerror(errno));
 	}
 	if (si >= MAXSCREENS) {
 	    ErrorF ("Server configured for %d screens, can't configure screen %d\n", MAXSCREENS, si);
@@ -306,9 +300,11 @@ InitInput(argc, argv)
     if (!inited) {
 	inited = TRUE;
 	if (ioctl(wsFd,  GET_AND_MAP_EVENT_QUEUE, &queue) == -1)  {
-		ErrorF("GET_AND_MAP_EVENT_QUEUE failed\n");
-		exit(1);
+		FatalError("GET_AND_MAP_EVENT_QUEUE failed, errno %d (%s)\n",
+			   errno, strerror(errno));
 	}
     }
     SetTimeSinceLastInputEvent ();
 }
+#endif /* PRINT_ONLY_SERVER */
+

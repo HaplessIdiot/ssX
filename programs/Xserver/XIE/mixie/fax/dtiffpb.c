@@ -1,15 +1,15 @@
-/* $XConsortium: dtiffpb.c,v 1.3 94/04/17 20:34:29 rws Exp $ */
+/* $Xorg: dtiffpb.c,v 1.4 2001/02/09 02:04:25 xorgcvs Exp $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module fax/tiffpb.c ****/
 /******************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +17,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -87,12 +87,9 @@ terms and conditions:
 #include "fax.h"
 #include "faxint.h"
 #include "bits.h"
-
-#include <servermd.h>
-	/* pick up the BITMAP_BIT_ORDER from Core X*/
+#include "xiemd.h"
 
 /* by decree of PackBits spec */
-
 
 /**********************************************************************/
 int decode_tiffpb(state)
@@ -193,14 +190,20 @@ if code && 0x80 =>  -128 <= code < 0
 The positive case is even easier.
 
 ***/
+	    if (byteptr >= endptr) {
+	       state->magic_needs = 1;
+	       state->strip_state = StripStateDone;
+	       save_state_and_return(state);
+	    }
 	    if (*byteptr & 0x80) { 		/* -128 <= code < 0    */
 		register int foo = 0x7f & *byteptr;
 		if (foo) {
 		   length_acc = 129 - foo  ;
 		   goal = PB_GOAL_GetRepeatByte;
 		}
-		else
+		else {
 		   length_acc = 0;		/* -128 => code = 0     */
+		}
 	    }
 	    else { 				/*    0 <= code <= 127 */
 		length_acc = 1 + *byteptr;
@@ -213,11 +216,6 @@ The positive case is even easier.
 		state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
 	       	save_state_and_return(state);
 	    }
-	    if (byteptr >= endptr) {
-	       state->magic_needs = 1;
-	       state->strip_state = StripStateDone;
-	       save_state_and_return(state);
-	    }
 	    break;
 
 	  case PB_GOAL_GetLiteralBytes:
@@ -228,26 +226,37 @@ The positive case is even easier.
 	       to save state and return.
 	    */
 	    a0_in_bytes = a0_pos / 8;
-	    while (length_acc-- > 0) {
-		a0_color = *byteptr++;
-		olp[a0_in_bytes++] = a0_color;
+	    while (length_acc > 0) {
 	        if (byteptr >= endptr) {
 	       	   a0_pos = a0_in_bytes << 3;
 	     	   state->magic_needs = 1;
 	           state->strip_state = StripStateDone;
 	           save_state_and_return(state);
 	        }
+		a0_color = *byteptr++; length_acc--;
+#if (IMAGE_BYTE_ORDER == MSBFirst)
+		olp[a0_in_bytes++] = a0_color;
+#else
+		olp[a0_in_bytes++] = _ByteReverseTable[a0_color];
+#endif
 	    }
 	    a0_pos = a0_in_bytes << 3;
+
 	    if (a0_pos >= width) {
 		++lines_found;
 	       	goal = PB_GOAL_StartNewLine;
 	    }
 	    else
 	     	goal = PB_GOAL_GetRunLength;
+
 	    break;
 
 	  case PB_GOAL_GetRepeatByte:
+	    if (byteptr >= endptr) {
+	     	state->magic_needs = 1;
+	     	state->strip_state = StripStateDone;
+	       	save_state_and_return(state);
+	    }
 	    a0_color = *byteptr++;
 	
 	    /* Important Note!!  we are guaranteed that output line 
@@ -257,7 +266,11 @@ The positive case is even easier.
 
 	    a0_in_bytes = a0_pos / 8;
 	    for (i=0; i<length_acc; ++i) 
+#if (IMAGE_BYTE_ORDER == MSBFirst)
 		olp[a0_in_bytes+i] = a0_color;
+#else
+		olp[a0_in_bytes+i] = _ByteReverseTable[a0_color];
+#endif
 
 	    a0_pos += 8*length_acc;
 	    if (a0_pos >= width) {
@@ -267,11 +280,6 @@ The positive case is even easier.
 	    else
 		goal = PB_GOAL_GetRunLength;
 
-	    if (byteptr >= endptr) {
-	     	state->magic_needs = 1;
-	     	state->strip_state = StripStateDone;
-	       	save_state_and_return(state);
-	    }
 	    break;
 
 	  default:
@@ -280,4 +288,5 @@ The positive case is even easier.
 	  } /* end of switch */
 	} /* end of main decoding loop */
 }
+
 /**** module fax/tiffpb.c ****/

@@ -1,9 +1,13 @@
-/* $Xorg: imThaiFlt.c,v 1.4 2000/08/17 19:45:15 cpqbld Exp $ */
+/* $Xorg: imThaiFlt.c,v 1.5 2001/02/09 02:03:39 xorgcvs Exp $ */
 /***********************************************************
 
 Copyright 1993, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -41,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.9 2001/10/28 03:32:34 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.10 2001/10/31 22:50:25 tsi Exp $ */
 
 /*
 **++ 

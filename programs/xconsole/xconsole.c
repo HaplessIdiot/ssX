@@ -1,9 +1,13 @@
 /*
- * $Xorg: xconsole.c,v 1.4 2000/08/17 19:54:13 cpqbld Exp $
+ * $Xorg: xconsole.c,v 1.5 2001/02/09 02:05:40 xorgcvs Exp $
  *
 Copyright 1990, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -22,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.27 2001/07/25 15:05:18 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.28 2001/12/02 18:41:29 herrb Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>

@@ -1,10 +1,14 @@
-/* $Xorg: FormP.h,v 1.3 2000/08/17 19:45:33 cpqbld Exp $ */
+/* $Xorg: FormP.h,v 1.4 2001/02/09 02:03:43 xorgcvs Exp $ */
 
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -42,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/FormP.h,v 1.11 1999/06/20 08:41:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/FormP.h,v 1.12 2001/01/17 19:42:26 dawes Exp $ */
 
 /* Form widget private definitions */
 

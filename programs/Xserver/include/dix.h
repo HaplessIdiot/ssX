@@ -1,9 +1,13 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.20 2001/09/04 14:03:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.21 2001/10/28 03:34:11 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -41,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: dix.h,v 1.3 2000/08/17 19:53:29 cpqbld Exp $ */
+/* $Xorg: dix.h,v 1.4 2001/02/09 02:05:15 xorgcvs Exp $ */
 
 #ifndef DIX_H
 #define DIX_H

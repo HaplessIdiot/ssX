@@ -1,9 +1,13 @@
-/* $Xorg: cup.c,v 1.3 2000/08/17 19:47:56 cpqbld Exp $ */
+/* $Xorg: cup.c,v 1.4 2001/02/09 02:04:32 xorgcvs Exp $ */
 /*
 
 Copyright 1997, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -20,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.8 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/cup.c,v 1.9 2001/10/28 03:32:50 tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS

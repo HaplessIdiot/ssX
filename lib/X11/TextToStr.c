@@ -1,9 +1,13 @@
-/* $Xorg: TextToStr.c,v 1.3 2000/08/17 19:44:57 cpqbld Exp $ */
+/* $Xorg: TextToStr.c,v 1.4 2001/02/09 02:03:37 xorgcvs Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -21,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/X11/TextToStr.c,v 1.3 1998/10/03 08:41:23 dawes Exp $ */
+/* $XFree86: xc/lib/X11/TextToStr.c,v 1.4 2001/01/17 19:41:45 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xatom.h>

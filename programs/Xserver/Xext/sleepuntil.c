@@ -1,9 +1,13 @@
 /*
- * $Xorg: sleepuntil.c,v 1.3 2000/08/17 19:47:58 cpqbld Exp $
+ * $Xorg: sleepuntil.c,v 1.4 2001/02/09 02:04:33 xorgcvs Exp $
  *
 Copyright 1992, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -21,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.3 2001/08/01 00:44:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.4 2001/08/23 13:01:36 alanh Exp $ */
 
 /* dixsleep.c - implement millisecond timeouts for X clients */
 

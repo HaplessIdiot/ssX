@@ -1,4 +1,4 @@
-/* $XConsortium: wsutils.h /main/2 1995/12/07 10:36:37 kaleb $ */
+/* $Xorg: wsutils.h,v 1.4 2001/02/09 02:06:03 xorgcvs Exp $ */
 /** ------------------------------------------------------------------------
 	This file contains routines for manipulating generic lists.
 	Lists are implemented with a "harness".  In other words, each
@@ -8,17 +8,31 @@
 	to the current member of the list (used by the first_in_list and
 	next_in_list functions).
 
-       (c)Copyright 1994 Hewlett-Packard Co.
-       
-                                RESTRICTED RIGHTS LEGEND
-       Use, duplication, or disclosure by the U.S. Government is subject to
-       restrictions as set forth in sub-paragraph (c)(1)(ii) of the Rights in
-       Technical Data and Computer Software clause in DFARS 252.227-7013.
-                                Hewlett-Packard Company
-                                3000 Hanover Street
-                                Palo Alto, CA 94304 U.S.A.
-       Rights for non-DOD U.S. Government Departments and Agencies are as set
-       forth in FAR 52.227-19(c)(1,2).
+Copyright 1994 Hewlett-Packard Co.
+Copyright 1996, 1998  The Open Group
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall
+not be used in advertising or otherwise to promote the sale, use or
+other dealings in this Software without prior written authorization
+from The Open Group.
+
     ------------------------------------------------------------------------ **/
 /******************************************************************************
  *

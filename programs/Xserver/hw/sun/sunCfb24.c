@@ -1,10 +1,14 @@
-/* $Xorg: sunCfb24.c,v 1.3 2000/08/17 19:48:29 cpqbld Exp $ */
+/* $Xorg: sunCfb24.c,v 1.4 2001/02/09 02:04:43 xorgcvs Exp $ */
 
 /*
 
 Copyright 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
@@ -21,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings in
 this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb24.c,v 1.2 2001/10/28 03:33:10 tsi Exp $ */
 
 /*
  * The CG8 is similar to the CG4 in that it has a mono plane, an enable 

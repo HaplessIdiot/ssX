@@ -1,12 +1,16 @@
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbrctstp8.c,v 3.4 2001/01/17 22:36:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrctstp8.c,v 3.5 2001/10/28 03:33:01 tsi Exp $ */
 /*
 
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -26,7 +30,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $Xorg: cfbrctstp8.c,v 1.3 2000/08/17 19:48:15 cpqbld Exp $ */
+/* $Xorg: cfbrctstp8.c,v 1.4 2001/02/09 02:04:38 xorgcvs Exp $ */
 
 #if PSZ == 8
 

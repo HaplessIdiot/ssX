@@ -1,9 +1,13 @@
 /*
- * $Xorg: XMultibuf.c,v 1.5 2000/08/17 19:45:51 cpqbld Exp $
+ * $Xorg: XMultibuf.c,v 1.6 2001/02/09 02:03:49 xorgcvs Exp $
  *
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -21,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Authors:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xext/XMultibuf.c,v 1.3 2000/09/26 15:56:56 tsi Exp $ */
+/* $XFree86: xc/lib/Xext/XMultibuf.c,v 1.4 2001/01/17 19:42:46 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES

@@ -1,9 +1,13 @@
-/* $Xorg: imakemdep.h,v 1.5 2000/08/17 19:41:50 cpqbld Exp $ */
+/* $Xorg: imakemdep.h,v 1.6 2001/02/09 02:03:16 xorgcvs Exp $ */
 /*
 
 Copyright (c) 1993, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -20,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.54 2001/08/06 20:51:02 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.55 2001/11/16 16:47:51 dawes Exp $ */
 
 
 /* 

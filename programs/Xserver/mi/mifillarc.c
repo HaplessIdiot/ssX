@@ -1,9 +1,13 @@
-/* $XFree86: xc/programs/Xserver/mi/mifillarc.c,v 3.5 2001/01/17 22:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifillarc.c,v 3.6 2001/08/06 20:51:18 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -23,7 +27,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $Xorg: mifillarc.c,v 1.3 2000/08/17 19:53:37 cpqbld Exp $ */
+/* $Xorg: mifillarc.c,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
 
 #include <math.h>
 #include "X.h"

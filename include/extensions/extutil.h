@@ -1,9 +1,13 @@
 /*
- * $Xorg: extutil.h,v 1.3 2000/08/18 04:05:45 coskrey Exp $
+ * $Xorg: extutil.h,v 1.4 2001/02/09 02:03:24 xorgcvs Exp $
  *
 Copyright 1989, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -27,7 +31,7 @@ in this Software without prior written authorization from The Open Group.
  * protocol extensions.  THESE INTERFACES ARE NOT PART OF THE X STANDARD AND
  * ARE SUBJECT TO CHANGE!
  */
-/* $XFree86: xc/include/extensions/extutil.h,v 1.7 2001/08/18 02:45:19 dawes Exp $ */
+/* $XFree86: xc/include/extensions/extutil.h,v 1.8 2001/08/19 02:47:49 tsi Exp $ */
 
 #ifndef _EXTUTIL_H_
 #define _EXTUTIL_H_

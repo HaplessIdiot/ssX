@@ -1,15 +1,14 @@
-/* $XConsortium: PEX.h,v 5.11 94/04/17 20:35:48 hersh Exp $ */
+/* $Xorg: PEX.h,v 1.4 2001/02/09 02:04:17 xorgcvs Exp $ */
 
 /***********************************************************
 
-Copyright (c) 1989, 1990, 1991  X Consortium
+Copyright 1989, 1990, 1991, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -17,13 +16,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. 
 
@@ -235,6 +234,133 @@ SOFTWARE.
 #define PEXDepthCueLUT		11
 #define PEXColourApproxLUT	12
 #define PEXMaxTableType		12
+
+/* LUT  BitMask Values */
+/* Color Table Values */
+#define	 PEXLUTVColor			(1L<<0)
+
+/* Color Approximation Table Values */
+#define	PEXLUTVColorApproxMethod	(1L<<0)
+#define	PEXLUTVColorModel		(2L<<0)
+#define	PEXLUTVMax1			(3L<<0)
+#define	PEXLUTVMax2			(4L<<0)
+#define	PEXLUTVMax3			(5L<<0)
+#define	PEXLUTVDither			(6L<<0)
+#define	PEXLUTVMult1			(7L<<0)
+#define	PEXLUTVMult2			(8L<<0)
+#define	PEXLUTVMult3			(9L<<0)
+#define	PEXLUTVWeight1			(10L<<0)
+#define	PEXLUTVWeight2			(11L<<0)
+#define	PEXLUTVWeight3			(12L<<0)
+#define	PEXLUTVBasePixel		(13L<<0)
+
+/* Data Mapping Table Values */
+#define	PEXLUTVDataMapMethod		(1L<<0)
+#define	PEXLUTVSourceSelectors		(2L<<0)
+
+/* Depth Cue Table Values */
+#define	PEXLUTVDepthCueMode		(1L<<0)
+#define	PEXLUTVFrontReferencePlane 	(2L<<0)
+#define	PEXLUTVBackReferencePlane 	(3L<<0)
+#define	PEXLUTVFrontScalePlane 		(4L<<0)
+#define	PEXLUTVBackScalePlane 		(5L<<0)
+#define	PEXLUTVDepthCueColor		(6L<<0)
+
+/*  Edge Bundle Table Values */
+#define	PEXLUTVSurfaceEdgeFlag		(1L<<0)
+#define	PEXLUTVSurfaceEdgeType		(2L<<0)
+#define	PEXLUTVSurfaceEdgeWidth		(3L<<0)
+#define	PEXLUTVSurfaceEdgeColor		(4L<<0)
+
+/* Extent Size Table Values */
+#define	 PEXLUTVExtentSize		(1L<<0)
+
+/*  Highlight Table Values */
+#define	 PEXLUTVHighlightMethod		(1L<<0)
+#define	 PEXLUTVHighlightColor		(2L<<0)
+
+/* Interior Bundle Table Values */
+#define	 PEXLUTVInteriorStyle		(1L<<0)
+#define	 PEXLUTVInteriorStyleIndex	(2L<<0)
+#define	 PEXLUTVInteriorReflectionModel	(3L<<0)
+#define	 PEXLUTVInteriorInterpMethod	(4L<<0)
+#define	 PEXLUTVBFInteriorStyle		(5L<<0)
+#define	 PEXLUTVBFInteriorStyleIndex	(6L<<0)
+#define	 PEXLUTVBFReflectionModel	(7L<<0)
+#define	 PEXLUTVBFInterpMethod		(8L<<0)
+#define	 PEXLUTVSurfaceApprox		(9L<<0)
+#define	 PEXLUTVSurfaceColor 		(10L<<0)
+#define	 PEXLUTVReflectionAttrs		(11L<<0)
+#define	 PEXLUTVBFSurfaceColor 		(12L<<0)
+#define	 PEXLUTVBFReflectionAttrs	(13L<<0)
+#define	 PEXLUTVPSurfChar		(14L<<0)
+
+/* Light Table Values */
+#define	 PEXLUTVLightType		(1L<<0)
+#define	 PEXLUTVLightDirection		(2L<<0)
+#define	 PEXLUTVLightPosition		(3L<<0)
+#define	 PEXLUTVLightConcentration	(4L<<0)
+#define	 PEXLUTVLightSpreadAngle	(5L<<0)
+#define	 PEXLUTVLightConstantAttenFactor (6L<<0)
+#define	 PEXLUTVLightLinearAttenFactor	(7L<<0)
+#define	 PEXLUTVLightColor		(8L<<0)
+#define	 PEXLUTVLightConcClampRegion	(9L<<0)
+#define	 PEXLUTVLightQuadraticAttenFactor (10L<<0)
+
+/*  Line Table Values */
+#define	PEXLUTVLineType			(1L<<0)
+#define	PEXLUTVLineInterpMethod		(2L<<0)
+#define	PEXLUTVLineCurveApprox		(3L<<0)
+#define	PEXLUTVLineWidth		(4L<<0)
+#define	PEXLUTVLineColor		(5L<<0)
+#define	PEXLUTVLineCapStyle		(6L<<0)
+#define	PEXLUTVLineJoinStyle		(7L<<0)
+
+/* Marker Bundle Table Values */
+#define	PEXLUTVMarkerType		(1L<<0)
+#define	PEXLUTVMarkerScaleFactor	(2L<<0)
+#define	PEXLUTVMarkerColor		(3L<<0)
+
+/* Marker Glyph Table Values */
+#define	PEXLUTVMarkerGlyph		(1L<<0)
+
+/* Pattern Table Values */
+#define	PEXLUTVPatternData		(1L<<0)
+
+/* Text Bundle Table Values */
+#define	 PEXLUTVTextFontIndex		(1L<<0)
+#define	 PEXLUTVTextPrecision		(2L<<0)
+#define	 PEXLUTVTextCharExpansion	(3L<<0)
+#define	 PEXLUTVTextCharSpacing		(4L<<0)
+#define	 PEXLUTVTextColor		(5L<<0)
+
+/* Text Font Table Values */
+#define	 PEXLUTVTextFontGroup		(1L<<0)
+
+/* Texture Mapping Table Values */
+#define	 PEXLUTVTMTextureMapID		(1L<<0)
+#define	 PEXLUTVTMRenderingControl	(2L<<0)
+#define	 PEXLUTVTMParamMethod		(3L<<0)
+#define	 PEXLUTVTMFPDataIndex		(4L<<0)
+#define	 PEXLUTVTMReflectionMatrix	(5L<<0)
+#define	 PEXLUTVTMOrientationMatrix	(6L<<0)
+#define	 PEXLUTVTMCompositionMethod	(7L<<0)
+#define	 PEXLUTVTMChannelNumber		(8L<<0)
+#define	 PEXLUTVTMEnvironmentColor	(9L<<0)
+#define	 PEXLUTVTMBackgroundColor	(10L<<0)
+#define	 PEXLUTVTMSampleMinMag		(11L<<0)
+#define	 PEXLUTVTMBoundaryConditions	(12L<<0)
+#define	 PEXLUTVTMClampingMethod	(13L<<0)
+#define	 PEXLUTVTMClampColor		(14L<<0)
+#define	 PEXLUTVTMSamplingHints		(15L<<0)
+
+/* View Table Values */
+#define	 PEXLUTVViewClipFlags		(1L<<0)
+#define	 PEXLUTVViewClipLimits		(1L<<0)
+#define	 PEXLUTVViewOrientationMatrix	(1L<<0)
+#define	 PEXLUTVViewMappingMatrix	(1L<<0)
+#define	 PEXLUTVViewEyepoint		(1L<<0)
+
 
 /* Status in GetTableEntry */
 #define PEXDefaultEntry	0

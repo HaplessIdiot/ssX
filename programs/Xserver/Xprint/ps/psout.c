@@ -1,9 +1,13 @@
-/* $Xorg: psout.c,v 1.6 2000/11/08 17:20:06 pookie Exp $ */
+/* $Xorg: psout.c,v 1.7 2001/02/09 02:04:36 xorgcvs Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -69,7 +73,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.7 2001/01/17 22:36:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.8 2001/11/21 22:40:33 dawes Exp $ */
 
 /*      
  * For XFree86 3.3.3:  

@@ -1,12 +1,16 @@
 /*
-* $Xorg: Xtos.h,v 1.3 2000/08/17 19:46:20 cpqbld Exp $
+* $Xorg: Xtos.h,v 1.4 2001/02/09 02:03:59 xorgcvs Exp $
 */
 
 /***********************************************************
 
 Copyright 1987, 1988, 1994, 1998  The Open Group
 
-All Rights Reserved.
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -44,7 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Xtos.h,v 3.7 2001/10/10 19:06:36 herrb Exp $ */
+/* $XFree86: xc/lib/Xt/Xtos.h,v 3.8 2001/11/01 23:35:26 dawes Exp $ */
 
 #ifndef _Xtos_h
 #define _Xtos_h
