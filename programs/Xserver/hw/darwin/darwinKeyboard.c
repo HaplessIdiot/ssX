@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.1 2000/11/15 01:36:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.2 2001/01/14 16:44:55 herrb Exp $ */
 
 /*
 ===========================================================================
@@ -199,6 +199,7 @@ static void DarwinChangeKeyboardControl( DeviceIntPtr device, KeybdCtrl *ctrl ) 
 
 static	CARD8 modMap[MAP_LENGTH];
 static	KeySym map[256 * GLYPHS_PER_KEY];
+static unsigned char modifierKeycodes[NX_NUMMODIFIERS][2];
 
 //-----------------------------------------------------------------------------
 // Data Stream Object
@@ -316,14 +317,17 @@ void DarwinKeyboardInit(
 {
     KeySym              *k;
     int                 i;
-    short		numMods, numKeys, numPadKeys = 0;
+    short               numMods, numKeys, numPadKeys = 0;
     KeySymsRec          keySyms;
     NXKeyMapping        keyMap;
-    DataStream		*keyMapStream;
+    DataStream          *keyMapStream;
     unsigned char const *numPadStart = 0;
 
     memset( modMap, NoSymbol, sizeof( modMap ) );
     memset( map, 0, sizeof( map ) );
+    for (i = 0; i < NX_NUMMODIFIERS; i++) {
+        modifierKeycodes[i][0] = modifierKeycodes[i][1] = 0;
+    }
 
     // Open a shared connection to the HID System.
     // Note that the Event Status Driver is really just a wrapper
@@ -345,9 +349,10 @@ void DarwinKeyboardInit(
 
     // Compute the modifier map and
     // insert X modifier KeySyms into keyboard map.
+    // Store modifier keycodes in modifierKeycodes.
     numMods = get_number(keyMapStream);
     while (numMods-- > 0) {
-        int	    	left = 1;                   // first keycode is left
+        int	            left = 1;                   // first keycode is left
         short const     charCode = get_number(keyMapStream);
         short           numKeyCodes = get_number(keyMapStream);
         if (charCode == NX_MODIFIERKEY_NUMERICPAD) {
@@ -359,32 +364,32 @@ void DarwinKeyboardInit(
             if (charCode == NX_MODIFIERKEY_ALPHALOCK) {
                 modMap[keyCode + MIN_KEYCODE] = LockMask;
                 map[keyCode * GLYPHS_PER_KEY] = XK_Caps_Lock;
+                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
             } else if (charCode == NX_MODIFIERKEY_SHIFT) {
                 modMap[keyCode + MIN_KEYCODE] = ShiftMask;
                 map[keyCode * GLYPHS_PER_KEY] =
                         (left ? XK_Shift_L : XK_Shift_R);
+                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
             } else if (charCode == NX_MODIFIERKEY_CONTROL) {
                 modMap[keyCode + MIN_KEYCODE] = ControlMask;
                 map[keyCode * GLYPHS_PER_KEY] =
                         (left ? XK_Control_L : XK_Control_R);
+                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
             } else if (charCode == NX_MODIFIERKEY_ALTERNATE) {
                 modMap[keyCode + MIN_KEYCODE] = AltMask;
-                if (left) {
-                    map[keyCode * GLYPHS_PER_KEY] = XK_Alt_L;
-                    darwinKeyOptionL = keyCode + MIN_KEYCODE;
-                } else
-                    map[keyCode * GLYPHS_PER_KEY] = XK_Alt_R;
+                map[keyCode * GLYPHS_PER_KEY] =
+                        (left ? XK_Alt_L : XK_Alt_R);
+                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
             } else if (charCode == NX_MODIFIERKEY_COMMAND) {
                 modMap[keyCode + MIN_KEYCODE] = MetaMask;
-                if (left) {
-                    map[keyCode * GLYPHS_PER_KEY] = XK_Meta_L;
-                    darwinKeyCommandL = keyCode + MIN_KEYCODE;
-                } else
-                    map[keyCode * GLYPHS_PER_KEY] = XK_Meta_R;
+                map[keyCode * GLYPHS_PER_KEY] =
+                        (left ? XK_Meta_L : XK_Meta_R);
+                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
             } else if (charCode == NX_MODIFIERKEY_NUMERICPAD) {
                 continue;
             } else if (charCode == NX_MODIFIERKEY_HELP) {
                 map[keyCode * GLYPHS_PER_KEY] = XK_Help;
+                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
             } else {
                 break;
             }
@@ -487,6 +492,16 @@ void DarwinKeyboardInit(
     assert( InitKeyboardDeviceStruct( (DevicePtr)pDev, &keySyms, modMap,
                                       DarwinBell,
                                       DarwinChangeKeyboardControl ));
+}
+
+/*
+ * DarwinModifierKeycode
+ * Return the keycode + MIN_KEYCODE for an NX_MODIFIERKEY_* modifier.
+ * side = 0 for left or 1 for right.
+ */
+int DarwinModifierKeycode(int modifier, int side)
+{
+    return modifierKeycodes[modifier][side];
 }
 
 /*
