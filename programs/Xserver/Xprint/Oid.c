@@ -30,13 +30,9 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include "os.h"
-#include "Oid.h"
-#include <X11/Xfuncs.h>		/* for memmove */
+/* $XFree86: xc/programs/Xserver/Xprint/Oid.c,v 1.2 1998/12/20 11:57:25 dawes Exp $ */
+
+#include "attributes.h"
 
 /*
  * XpOidNotify value strings
@@ -755,7 +751,7 @@ XpOidLinkedListFirstOid(XpOidLinkedList* me)
 XpOid
 XpOidLinkedListNextOid(XpOidLinkedList* me)
 {
-    if(me->current ? me->current = me->current->next : xFalse)
+    if(me->current ? (me->current = me->current->next) != 0 : xFalse)
 	return me->current->oid;
     else
 	return xpoid_none;
@@ -1717,6 +1713,7 @@ TrayMediumListValidate(XpOidTrayMediumList* me,
 	 * list
 	 */
 	if(tray_ds == (XpOidMediumDiscreteSizeList*)NULL)
+	{
 	    if(unspecified_tray_ds == (XpOidMediumDiscreteSizeList*)NULL)
 	    {
 		/*
@@ -1727,7 +1724,10 @@ TrayMediumListValidate(XpOidTrayMediumList* me,
 		continue;
 	    }
 	    else
+	    {
 		tray_ds = unspecified_tray_ds;
+	    }
+	}
 	/*
 	 * loop through the discrete sizes list, looking for a size that
 	 * matches the medium for the current input tray
@@ -2109,15 +2109,13 @@ const char* XpOidNotifyString(XpOidNotify notify)
 {
     switch(notify)
     {
+    default:
     case XPOID_NOTIFY_UNSUPPORTED:
 	return (const char*)NULL;
-	break;
     case XPOID_NOTIFY_NONE:
 	return NOTIFY_NONE_STR;
-	break;
     case XPOID_NOTIFY_EMAIL:
 	return NOTIFY_EMAIL_STR;
-	break;
     }
 }
 
@@ -2242,7 +2240,7 @@ XpOidDocFmtNext(XpOidDocFmt* doc_fmt,
     const char* first_nonws_ptr;
     const char* format;
     const char* variant;
-    const char* version;
+    const char* version = 0;
     int format_len;
     int variant_len;
     int version_len;
@@ -2555,10 +2553,12 @@ XpOidDocFmtListHasFmt(const XpOidDocFmtList* list,
 	     * variants must both be NULL or match
 	     */
 	    if(fmt->variant == (char*)NULL)
+	    {
 		if(list->list[i].variant == (char*)NULL)
 		    return xTrue;
 		else
 		    continue;
+	    }
 	    if(list->list[i].variant == (char*)NULL)
 		continue;
 	    if(strcmp(fmt->variant, list->list[i].variant) != 0)
@@ -2567,10 +2567,12 @@ XpOidDocFmtListHasFmt(const XpOidDocFmtList* list,
 	     * versions must both be NULL or match
 	     */
 	    if(fmt->version == (char*)NULL)
+	    {
 		if(list->list[i].version == (char*)NULL)
 		    return xTrue;
 		else
 		    continue;
+	    }
 	    if(list->list[i].version == (char*)NULL)
 		continue;
 	    if(strcmp(fmt->version, list->list[i].version) == 0)

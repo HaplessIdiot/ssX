@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPixel.c,v 1.3 1999/09/27 14:59:15 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -85,7 +85,7 @@ PclPolyPoint( pDrawable, pGC, mode, nPoints, pPoints )
     xloc = pPoints[0].x + pDrawable->x;
     yloc = pPoints[0].y + pDrawable->y;
 
-    sprintf( t, "\27%0BPW0,0;LT0;PU;PA%d,%d", xloc, yloc );
+    sprintf( t, "\27%%0BPW0,0;LT0;PU;PA%d,%d", xloc, yloc );
     SEND_PCL( outFile, t );
     
     /*

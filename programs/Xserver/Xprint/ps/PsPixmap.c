@@ -53,7 +53,7 @@ in this Software without prior written authorization from The Open Group.
  * or other dealings in this Software without prior written authorization
  * from said copyright holders.
  */
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPixmap.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPixmap.c,v 1.2 1999/01/31 12:21:40 dawes Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -195,7 +195,7 @@ PsGetFreeDisplayBlock(PsPixmapPrivPtr priv)
   return(disp);
 }
 
-void
+static void
 PsReplay(DisplayElmPtr elm, DrawablePtr pDrawable)
 {
   switch(elm->type)
@@ -484,6 +484,8 @@ PsCreateFillElementList(PixmapPtr pix, int *nElms)
         case PolyFillArcCmd:
           *nElms += elm->c.arcs.nArcs;
           break;
+        default:
+          break;
       }
     }
   }
@@ -545,6 +547,8 @@ PsCreateFillElementList(PixmapPtr pix, int *nElms)
                 elms[*nElms].c.arc.style = styl;
                 *nElms += 1;
               }
+              break;
+            default:
               break;
           }
         }

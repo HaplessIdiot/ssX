@@ -38,6 +38,11 @@ copyright holders.
  * request will allow us to build it with the description in the locale of
  * the requesting client.
  */
+#ifndef _XpDiPrint_H_
+#define _XpDiPrint_H_ 1
+
+#include "scrnintstr.h"
+
 typedef struct _diListEntry {
     char *name;
     char *description;
@@ -52,3 +57,17 @@ extern XpDiListEntry **XpDiGetPrinterList(
     char *name,
     int localeLen,
     char *locale);
+
+extern char * XpDiGetDriverName(int index, char *printerName);
+
+extern WindowPtr XpDiValidatePrinter(char *printerName, int printerNameLen);
+
+extern int XprintOptions(int argc, char **argv, int i);
+
+extern void PrinterInitOutput(ScreenInfo *pScreenInfo, int argc, char **argv);
+
+extern void _XpVoidNoop(void);
+
+extern Bool _XpBoolNoop(void);
+
+#endif /* _XpDiPrint_H_ */

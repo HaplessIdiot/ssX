@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsSpans.c,v 1.4 1998/10/04 09:37:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsSpans.c,v 1.5 1999/09/25 14:36:49 dawes Exp $ */
 
 #include "Ps.h"
 #include "gcstruct.h"
@@ -88,7 +88,7 @@ PsFillSpans(
   PsOutPtr    psOut;
   int         xoffset, yoffset;
   xRectangle *rects, *r;
-  RegionPtr   fillRegion, region;
+  RegionPtr   fillRegion, region = 0;
   int         i;
   int         nbox;
   BoxPtr      pbox;

@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.4 1998/10/04 09:37:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.5 1998/12/20 11:57:28 dawes Exp $ */
 
 /*      
  * For XFree86 3.3.3:  
@@ -84,6 +84,7 @@ in this Software without prior written authorization from The Open Group.
 
 #include <stdlib.h>
 #include "os.h"
+#include "Ps.h"
 #include "psout.h"
 
 PsElmPtr PsCloneFillElementList(int nElms, PsElmPtr elms);
@@ -1201,7 +1202,9 @@ PsOut_BeginPattern(PsOutPtr self, void *tag, int w, int h, PsFillEnum type,
   switch(type) {
     case PsTile:   key[1] = 't'; break;
     case PsStip:   key[1] = 's'; break;
-    case PsOpStip: key[1] = 'o'; break; }
+    case PsOpStip: key[1] = 'o'; break;
+    default: break;
+  }
   S_OutTok(self, key, 0);
   S_OutTok(self, "db/PatternType 1 d/PaintType 1 d", 0);
   S_OutTok(self, "/TilingType 1 d/BBox[0 0", 0);
@@ -1246,7 +1249,9 @@ PsOut_SetPattern(PsOutPtr self, void *tag, PsFillEnum type)
   switch(type) {
     case PsTile:   key[0] = 't'; break;
     case PsStip:   key[0] = 's'; break;
-    case PsOpStip: key[0] = 'o'; break; }
+    case PsOpStip: key[0] = 'o'; break;
+    default: break;
+  }
   S_OutTok(self, key, 0);
   S_OutTok(self, "spt", 1);
   self->CurColor = 0xFFFFFFFF;

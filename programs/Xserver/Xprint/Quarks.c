@@ -92,10 +92,9 @@ static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 
 #define NEVERFREETABLESIZE ((8192-12) & ~(DALIGN-1))
 static char *neverFreeTable = NULL;
-static int  neverFreeTableSize = 0;
+static unsigned  neverFreeTableSize = 0;
 
-static char *permalloc(length)
-    register unsigned int length;
+static char *permalloc(register unsigned int length)
 {
     char *ret;
 
@@ -113,8 +112,7 @@ static char *permalloc(length)
     return(ret);
 }
 
-char *Xpermalloc(length)
-    unsigned int length;
+char *Xpermalloc(unsigned int length)
 {
     int i;
 
@@ -129,7 +127,7 @@ char *Xpermalloc(length)
 	    neverFreeTable += DALIGN - i;
 	} else
 #endif
-	    if (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (WALIGN-1)) {
+	    if ((i = (NEVERFREETABLESIZE - neverFreeTableSize) & (WALIGN-1)) != 0) {
 		neverFreeTableSize -= WALIGN - i;
 		neverFreeTable += WALIGN - i;
 	    }
@@ -138,18 +136,18 @@ char *Xpermalloc(length)
 }
 
 static Bool
-ExpandQuarkTable()
+ExpandQuarkTable(void)
 {
     unsigned long oldmask, newmask;
     register char c, *s;
     register Entry *oldentries, *entries;
     register Entry entry;
-    register int oldidx, newidx, rehash;
+    register unsigned long oldidx, newidx, rehash;
     Signature sig;
     XrmQuark q;
 
     oldentries = quarkTable;
-    if (oldmask = quarkMask)
+    if ((oldmask = quarkMask) != 0)
 	newmask = (oldmask << 1) + 1;
     else {
 	if (!stringTable) {
@@ -181,12 +179,12 @@ ExpandQuarkTable()
     quarkMask = newmask;
     quarkRehash = quarkMask - 2;
     for (oldidx = 0; oldidx <= oldmask; oldidx++) {
-	if (entry = oldentries[oldidx]) {
+	if ((entry = oldentries[oldidx]) != 0) {
 	    if (entry & LARGEQUARK)
 		q = entry & (LARGEQUARK-1);
 	    else
 		q = (entry >> QUARKSHIFT) & QUARKMASK;
-	    for (sig = 0, s = NAME(q); c = *s++; )
+	    for (sig = 0, s = NAME(q); (c = *s++) != 0; )
 		sig = (sig << 1) + c;
 	    newidx = HASH(sig);
 	    if (entries[newidx]) {
@@ -203,17 +201,9 @@ ExpandQuarkTable()
     return True;
 }
 
-#if NeedFunctionPrototypes
 XrmQuark _XrmInternalStringToQuark(
     register _Xconst char *name, register int len, register Signature sig,
     Bool permstring)
-#else
-XrmQuark _XrmInternalStringToQuark(name, len, sig, permstring)
-    register XrmString name;
-    register int len;
-    register Signature sig;
-    Bool permstring;
-#endif
 {
     register XrmQuark q;
     register Entry entry;
@@ -224,7 +214,7 @@ XrmQuark _XrmInternalStringToQuark(name, len, sig, permstring)
 
     rehash = 0;
     idx = HASH(sig);
-    while (entry = quarkTable[idx]) {
+    while ((entry = quarkTable[idx]) != 0) {
 	if (entry & LARGEQUARK)
 	    q = entry & (LARGEQUARK-1);
 	else {
@@ -253,7 +243,7 @@ nomatch:    if (!rehash)
     }
     if (nextUniq == nextQuark)
 	return NULLQUARK;
-    if ((nextQuark + (nextQuark >> 2)) > quarkMask) {
+    if ((unsigned long)(nextQuark + (nextQuark >> 2)) > quarkMask) {
 	if (!ExpandQuarkTable())
 	    return NULLQUARK;
 	return _XrmInternalStringToQuark(name, len, sig, permstring);
@@ -302,7 +292,7 @@ nomatch:    if (!rehash)
 #endif
     }
     NAME(q) = (char *)name;
-    if (q <= QUARKMASK)
+    if ((unsigned long)q <= QUARKMASK)
 	entry = (q << QUARKSHIFT) | (sig & XSIGMASK);
     else
 	entry = q | LARGEQUARK;
@@ -311,13 +301,7 @@ nomatch:    if (!rehash)
     return q;
 }
 
-#if NeedFunctionPrototypes
-XrmQuark XrmStringToQuark(
-    _Xconst char *name)
-#else
-XrmQuark XrmStringToQuark(name)
-    XrmString name;
-#endif
+XrmQuark XrmStringToQuark(_Xconst char *name)
 {
     register char c, *tname;
     register Signature sig = 0;
@@ -325,19 +309,13 @@ XrmQuark XrmStringToQuark(name)
     if (!name)
 	return (NULLQUARK);
     
-    for (tname = (char *)name; c = *tname++; )
+    for (tname = (char *)name; (c = *tname++) != 0; )
 	sig = (sig << 1) + c;
 
     return _XrmInternalStringToQuark(name, tname-(char *)name-1, sig, False);
 }
 
-#if NeedFunctionPrototypes
-XrmQuark XrmPermStringToQuark(
-    _Xconst char *name)
-#else
-XrmQuark XrmPermStringToQuark(name)
-    XrmString name;
-#endif
+XrmQuark XrmPermStringToQuark(_Xconst char *name)
 {
     register char c, *tname;
     register Signature sig = 0;
@@ -345,21 +323,20 @@ XrmQuark XrmPermStringToQuark(name)
     if (!name)
 	return (NULLQUARK);
 
-    for (tname = (char *)name; c = *tname++; )
+    for (tname = (char *)name; (c = *tname++) != 0; )
 	sig = (sig << 1) + c;
 
     return _XrmInternalStringToQuark(name, tname-(char *)name-1, sig, True);
 }
 
-XrmQuark XrmUniqueQuark()
+XrmQuark XrmUniqueQuark(void)
 {
     if (nextUniq == nextQuark)
 	return NULLQUARK;
     return nextUniq--;
 }
 
-XrmString XrmQuarkToString(quark)
-    register XrmQuark quark;
+XrmString XrmQuarkToString(register XrmQuark quark)
 {
     if (quark <= 0 || quark >= nextQuark)
     	return NULLSTRING;

@@ -31,18 +31,17 @@ typedef int Bool;
 
 #define FALSE 0
 
-Bool DPMSSupported()
+Bool DPMSSupported(void)
 {
     return FALSE;
 }
 
-int DPSMGet(level)
-    int *level;
+int DPSMGet(int *level)
 {
     return -1;
 }
 
-void DPMSSet(level)
+void DPMSSet(int level)
 {
 
 }

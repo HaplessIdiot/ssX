@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXstubs.c,v 3.7 1999/09/06 12:35:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXstubs.c,v 3.8 1999/09/06 12:52:28 dawes Exp $ */
 /*
  * HISTORY
  * Log
@@ -18,12 +18,12 @@ typedef int Bool;
 
 void *panoramiXdataPtr = 0;
 
-void PanoramiXConsolidate()
+void PanoramiXConsolidate(void)
 {
 	/* Not supported with Xnest */ 
 }
 
-Bool PanoramiXCreateConnectionBlock()
+Bool PanoramiXCreateConnectionBlock(void)
 {
 	/* Not supported with Xnest */ 
 	return 0;
@@ -39,12 +39,12 @@ void* PanoramiXPmapRoot = 0;
 
 int PanoramiXNumScreens = 0;
 
-void PanoramiXExtensionInit()
+void PanoramiXExtensionInit(void)
 {
 	/* Not supported with Xnest */ 
 }
 
-Bool PanoramiXCreateScreenRegion()
+Bool PanoramiXCreateScreenRegion(void)
 {
 	/* Not supported with Xnest */
 	return 0;
@@ -60,7 +60,7 @@ Bool PanoramiXPmapRootFreeable = 0;
 int PanoramiXPixWidth = 0;
 int PanoramiXPixHeight = 0;
 
-void XineramaGetImageData()
+void XineramaGetImageData(void)
 {
 	/* Not supported with Xnest */ 
 }

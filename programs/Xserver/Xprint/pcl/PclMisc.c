@@ -44,10 +44,9 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.4 1997/01/12 10:40:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.5 1998/12/20 11:57:26 dawes Exp $ */
 
 #include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
-#include <stdio.h>
 #include "Pcl.h"
 
 #include "cursor.h"
@@ -55,6 +54,7 @@ copyright holders.
 
 #include "windowstr.h"
 #include "propertyst.h"
+#include "attributes.h"
 
 
 /*ARGSUSED*/
@@ -249,6 +249,7 @@ char *ptr;
  * in the clipped area.
  * For XP-PCL-LJ3, it draws the spooled figures in the clipped area.
  */
+void
 PclSendData(
 	FILE *outFile,
 	PclContextPrivPtr pConPriv,

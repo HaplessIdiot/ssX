@@ -32,11 +32,7 @@ copyright holders.
 */
 #include <scrnintstr.h>
 
-#define _XP_PRINT_SERVER_
-#include "extensions/Printstr.h"
-#undef _XP_PRINT_SERVER_
-
-#include "AttrValid.h"
+#include "attributes.h"
 
 /*
  * default medium-source-sizes supported = na-letter w/.25" margins
@@ -48,7 +44,7 @@ static XpOidMediumDiscreteSizeList DefaultMediumSizeList = {
     &DefaultMediumSize, 1
 };
 static XpOidMediumSourceSize DefaultMediumSourceSize = {
-    xpoid_unspecified, XpOidMediumSS_DISCRETE, &DefaultMediumSizeList
+    xpoid_unspecified, XpOidMediumSS_DISCRETE, { &DefaultMediumSizeList }
 };
 static XpOidMediumSS DefaultMediumSS = {
     &DefaultMediumSourceSize, 1
@@ -300,7 +296,7 @@ XpPutMediumSSAttr(XpContextPtr pContext,
 }
 
 const XpOidMediumSS*
-XpGetDefaultMediumSS()
+XpGetDefaultMediumSS(void)
 {
     return &DefaultMediumSS;
 }

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.6 1999/03/14 03:22:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.7 1999/04/11 13:11:12 dawes Exp $ */
 
 #ifndef _MERGEROP_H_
 #define _MERGEROP_H_
@@ -141,13 +141,13 @@ extern mergeRopRec	mergeRopBits[16];
     (((dst) & (((src) & _ca1) ^ _cx1)) ^ (((src) & _ca2) ^ _cx2))
 
 #define DoMergeRop24u(src, dst, i)					\
-((dst) & ((src) & _ca1u[i] ^ _cx1u[i]) ^ ((src) & _ca2u[i] ^ _cx2u[i]))
+(((dst) & (((src) & _ca1u[i]) ^ _cx1u[i])) ^ (((src) & _ca2u[i]) ^ _cx2u[i]))
 
 #define DoMaskMergeRop24(src, dst, mask, index)  {\
 	register int idx = ((index) & 3)<< 1; \
 	unsigned long _src0 = (src);\
-	unsigned long _src1 = _src0 & _ca1 ^ _cx1; \
-	unsigned long _src2 = _src0 & _ca2 ^ _cx2; \
+	unsigned long _src1 = (_src0 & _ca1) ^ _cx1; \
+	unsigned long _src2 = (_src0 & _ca2) ^ _cx2; \
 	*(dst) = (((*(dst)) & cfbrmask[idx]) | (((*(dst)) & cfbmask[idx]) & \
 	(((( _src1 |(~mask))<<cfb24Shift[idx])&cfbmask[idx]) ^ \
 	 ((( _src2&(mask))<<cfb24Shift[idx])&cfbmask[idx])))); \
@@ -163,44 +163,44 @@ extern mergeRopRec	mergeRopBits[16];
     (((dst) & ((((src) & _ca1) ^ _cx1) | ~(mask))) ^ ((((src) & _ca2) ^ _cx2) & (mask)))
 
 #define DoMaskMergeRop24u(src, dst, mask, i)							\
-((dst) & (((src) & _ca1u[(i)] ^ _cx1u[(i)]) | ~(mask)) ^ (((src) & _ca2u[(i)] ^ _cx2u[(i)]) & (mask)))
+(((dst) & ((((src) & _ca1u[(i)]) ^ _cx1u[(i)]) | ~(mask))) ^ ((((src) & _ca2u[(i)]) ^ _cx2u[(i)]) & (mask)))
 
 #define DoMergeRop24(src,dst,index) {\
 	register int idx = ((index) & 3)<< 1; \
 	unsigned long _src0 = (src);\
-	unsigned long _src1 = _src0 & _ca1 ^ _cx1; \
-	unsigned long _src2 = _src0 & _ca2 ^ _cx2; \
-	*(dst) = (((*(dst)) & cfbrmask[idx]) | (((*(dst)) & cfbmask[idx]) & \
-	((_src1 << cfb24Shift[idx])&cfbmask[idx]) ^ \
+	unsigned long _src1 = (_src0 & _ca1) ^ _cx1; \
+	unsigned long _src2 = (_src0 & _ca2) ^ _cx2; \
+	*(dst) = (((*(dst)) & cfbrmask[idx]) | ((((*(dst)) & cfbmask[idx]) & \
+	((_src1 << cfb24Shift[idx])&cfbmask[idx])) ^ \
 	((_src2 << cfb24Shift[idx])&cfbmask[idx]))); \
 	idx++; \
 	(dst)++; \
-	*(dst) = (((*(dst)) & cfbrmask[idx]) | (((*(dst)) & cfbmask[idx]) & \
-	((_src1 >> cfb24Shift[idx])&cfbmask[idx]) ^ \
+	*(dst) = (((*(dst)) & cfbrmask[idx]) | ((((*(dst)) & cfbmask[idx]) & \
+	((_src1 >> cfb24Shift[idx])&cfbmask[idx])) ^ \
 	((_src2 >> cfb24Shift[idx])&cfbmask[idx]))); \
 	(dst)--; \
 	}
 
-#define DoPrebuiltMergeRop(dst) ((dst) & _cca ^ _ccx)
+#define DoPrebuiltMergeRop(dst) (((dst) & _cca) ^ _ccx)
 
 #define DoPrebuiltMergeRop24(dst,index) { \
 	register int idx = ((index) & 3)<< 1; \
-	*(dst) = (((*(dst)) & cfbrmask[idx]) | (((*(dst)) & cfbmask[idx]) &\
-	(( _cca <<cfb24Shift[idx])&cfbmask[idx]) ^ \
+	*(dst) = (((*(dst)) & cfbrmask[idx]) | ((((*(dst)) & cfbmask[idx]) &\
+	(( _cca <<cfb24Shift[idx])&cfbmask[idx])) ^ \
 	(( _ccx <<cfb24Shift[idx])&cfbmask[idx]))); \
 	idx++; \
 	(dst)++; \
-	*(dst) = (((*(dst)) & cfbrmask[idx]) | (((*(dst)) & cfbmask[idx]) &\
-	(( _cca >>cfb24Shift[idx])&cfbmask[idx]) ^ \
+	*(dst) = (((*(dst)) & cfbrmask[idx]) | ((((*(dst)) & cfbmask[idx]) &\
+	(( _cca >>cfb24Shift[idx])&cfbmask[idx])) ^ \
 	(( _ccx >>cfb24Shift[idx])&cfbmask[idx]))); \
 	(dst)--; \
 	}
 
 #define DoMaskPrebuiltMergeRop(dst,mask) \
-    ((dst) & (_cca | ~(mask)) ^ (_ccx & (mask)))
+    (((dst) & (_cca | ~(mask))) ^ (_ccx & (mask)))
 
-#define PrebuildMergeRop(src) ((_cca = (src) & _ca1 ^ _cx1), \
-			       (_ccx = (src) & _ca2 ^ _cx2))
+#define PrebuildMergeRop(src) ((_cca = ((src) & _ca1) ^ _cx1), \
+			       (_ccx = ((src) & _ca2) ^ _cx2))
 
 #ifndef MROP
 #define MROP 0
@@ -349,9 +349,9 @@ extern mergeRopRec	mergeRopBits[16];
     _cx1 = _bits->cx1; \
 }
 #define MROP_SOLID(src,dst) \
-    ((dst) & ((src) & _ca1 ^ _cx1) ^ (src))
+    (((dst) & (((src) & _ca1) ^ _cx1)) ^ (src))
 #define MROP_MASK(src,dst,mask)	\
-    (((dst) & (((src) & _ca1 ^ _cx1)) | (~(mask)) ^ ((src) & (mask))))
+    (((dst) & ((((src) & _ca1) ^ _cx1)) | (~(mask)) ^ ((src) & (mask))))
 #define MROP_NAME(prefix)	MROP_NAME_CAT(prefix,CopyXorAndReverseOr)
 #define MROP_PREBUILD(src)	PrebuildMergeRop(src)
 #define MROP_PREBUILT_DECLARE()	DeclarePrebuiltMergeRop()

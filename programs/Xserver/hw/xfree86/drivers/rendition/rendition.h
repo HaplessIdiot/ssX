@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.h,v 1.2 1999/10/14 04:43:14 dawes Exp $ */
 
 #ifndef __RENDITION_H__
 #define __RENDITION_H__
@@ -57,6 +57,7 @@
 
 /* Drivers using cfb need this */
 
+#undef PSZ
 #define PSZ 8
 #include "cfb.h"
 #undef PSZ

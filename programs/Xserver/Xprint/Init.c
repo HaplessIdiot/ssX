@@ -50,7 +50,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.5 1997/01/14 22:14:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Init.c,v 1.6 1997/06/15 07:12:11 dawes Exp $ */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -75,47 +75,27 @@ copyright holders.
 #include "cursor.h"
 #include "misc.h"
 #include "windowstr.h"
-#include "scrnintstr.h"
 #include "inputstr.h"
 
 #include "gcstruct.h"
 #include "fonts/fontstruct.h"
 #include "errno.h"
 
-#define _XP_PRINT_SERVER_
-#include "Printstr.h" 
-#undef _XP_PRINT_SERVER_
-
 typedef char *XPointer;
+#define HAVE_XPointer 1
+
 #define Status int
 #include <Xresource.h>
 
 #include "DiPrint.h"
-#include "AttrValid.h"
 #include "attributes.h"
 
 extern  char    *display;		/* display number as a string */
 
 #include "os.h"
 
-extern char *getenv();
-extern void XpAddPrinterAttribute();
-extern char *XpGetConfigDir();
-extern XpContextPtr XpContextOfClient();
-
-/*
-extern int GiveUp();
-*/
-
 extern WindowPtr *WindowTable; /* declared in dix:globals.c */
 
-
-#if NeedFunctionPrototypes
-
-static void GetDriverFromPrinterName(
-    char *printerName,
-    char **driverName,
-    Bool (**initScreenFunc)());
 static void GenericScreenInit(
     int index,
     ScreenPtr pScreen,
@@ -126,15 +106,6 @@ static Bool InitPrintDrivers(
     ScreenPtr pScreen,
     int argc,
     char **argv);
-
-#else
-
-static void GetDriverFromPrinterName();
-static void GenericScreenInit();
-static Bool InitPrintDrivers();
-
-#endif
-
 
 /*
  * The following two defines are used to build the name "X*printers", where
@@ -217,14 +188,17 @@ extern XpValidatePoolsRec RasterValidatePoolsRec; /* From RasterAttVal.c */
 
 static
 PixmapFormatRec	ColorPclPixmapFormats[] = {
-    1, 1, BITMAP_SCANLINE_PAD,
-    8, 8, BITMAP_SCANLINE_PAD,
-    24,32, BITMAP_SCANLINE_PAD
+    { 1, 1, BITMAP_SCANLINE_PAD },
+    { 8, 8, BITMAP_SCANLINE_PAD },
+    { 24,32, BITMAP_SCANLINE_PAD }
 };
 
 #define NUMCPCLFORMATS	(sizeof ColorPclPixmapFormats)/(sizeof ColorPclPixmapFormats[0])
 
-extern Bool InitializeColorPclDriver();
+#ifdef XPPCLDDX
+extern Bool InitializeColorPclDriver(BFuncArgs);
+#endif
+
 extern XpValidatePoolsRec PclValidatePoolsRec;
 
 #endif
@@ -233,7 +207,7 @@ extern XpValidatePoolsRec PclValidatePoolsRec;
 
 static
 PixmapFormatRec	MonoPclPixmapFormats[] = {
-    1, 1, BITMAP_SCANLINE_PAD
+    { 1, 1, BITMAP_SCANLINE_PAD }
 };
 
 #define NUMMPCLFORMATS	(sizeof MonoPclPixmapFormats)/(sizeof MonoPclPixmapFormats[0])
@@ -247,21 +221,18 @@ extern XpValidatePoolsRec PclValidatePoolsRec;
 
 static
 PixmapFormatRec	PSPixmapFormats[] = {
-    1, 1, BITMAP_SCANLINE_PAD,
-    8, 8, BITMAP_SCANLINE_PAD,
-    24,32, BITMAP_SCANLINE_PAD
+    { 1, 1, BITMAP_SCANLINE_PAD },
+    { 8, 8, BITMAP_SCANLINE_PAD },
+    { 24,32, BITMAP_SCANLINE_PAD }
 };
 
 #define NUMPSFORMATS	(sizeof PSPixmapFormats)/(sizeof PSPixmapFormats[0])
 
-extern Bool InitializePsDriver();
+#include "ps/Ps.h"
 extern XpValidatePoolsRec PsValidatePoolsRec;
 
 #endif
 
-    
-typedef Bool (*pBFunc)();
-typedef void (*pVFunc)();
 /*
  * The driverInitArray contains an entry for each driver the
  * server knows about. Each element contains pointers to pixmap formats, the
@@ -384,10 +355,10 @@ static char *origFontPath = (char *)NULL;
  * of the next option to process.
  */
 int
-XprintOptions(argc, argv, i)
-    int argc;
-    char **argv;
-    int i;
+XprintOptions(
+    int argc,
+    char **argv,
+    int i)
 {
     if(strcmp(argv[i], "-XpFile") == 0)
     {
@@ -417,9 +388,7 @@ static pIFunc
 GetInitFunc(driverName)
 */
 
-static Bool (*
-GetInitFunc(driverName))()
-     char *driverName;
+static pBFunc GetInitFunc(char *driverName)
 {
     driverInitRec *pInitRec;
     int numDrivers = sizeof(driverInits)/sizeof(driverInitRec);
@@ -431,7 +400,7 @@ GetInitFunc(driverName))()
           return pInitRec->initFunc;
     }
 
-    return (Bool(*)())NULL;
+    return 0;
 }
 
 static void
@@ -454,17 +423,17 @@ GetDimFuncAndRec(
 	}
     }
 
-    *dimensionsFunc = (pVFunc)NULL;
-    *pValRec = (XpValidatePoolsRec *)NULL;
+    *dimensionsFunc = 0;
+    *pValRec = 0;
     return;
 }
 
 static void
-FreePrinterDb()
+FreePrinterDb(void)
 {
     PrinterDbPtr pCurEntry, pNextEntry;
 
-    for(pCurEntry = printerDb, pNextEntry = (PrinterDbPtr)NULL; 
+    for(pCurEntry = printerDb, pNextEntry = 0;
 	pCurEntry != (PrinterDbPtr)NULL; pCurEntry = pNextEntry)
     {
 	pNextEntry = pCurEntry->next;
@@ -476,7 +445,7 @@ FreePrinterDb()
 	 */
 	xfree(pCurEntry);
     }
-    printerDb = (PrinterDbPtr)NULL;
+    printerDb = 0;
 }
 
 /*
@@ -486,8 +455,7 @@ FreePrinterDb()
  * XXX AddPrinterDbName needs to check for (and not add) duplicate names.
  */
 static Bool
-AddPrinterDbName(name)
-    char *name;
+AddPrinterDbName(char *name)
 {
     PrinterDbPtr pEntry = (PrinterDbPtr)xalloc(sizeof(PrinterDbEntry));
 
@@ -509,8 +477,7 @@ AddPrinterDbName(name)
 }
 
 static void
-AugmentPrinterDb(command)
-    char *command;
+AugmentPrinterDb(const char *command)
 {
     FILE *fp;
     char name[256];
@@ -529,7 +496,7 @@ AugmentPrinterDb(command)
  * FreeNameMap frees all remaining memory associated with the nameMap.
  */
 static void
-FreeNameMap()
+FreeNameMap(void)
 {
     NameMapPtr pEntry, pTmp;
 
@@ -551,9 +518,7 @@ FreeNameMap()
  * AddNameMap adds an element to the nameMap linked list.
  */
 static Bool
-AddNameMap(name, qualifier)
-    char *name;
-    char *qualifier;
+AddNameMap(char *name, char *qualifier)
 {
     NameMapPtr pEntry;
 
@@ -575,7 +540,7 @@ AddNameMap(name, qualifier)
  * is NULLed out.
  */
 static void
-MergeNameMap()
+MergeNameMap(void)
 {
     NameMapPtr pMap;
     PrinterDbPtr pDb;
@@ -598,7 +563,7 @@ MergeNameMap()
  * each printer in the printerDb.
  */
 static void
-CreatePrinterAttrs()
+CreatePrinterAttrs(void)
 {
     PrinterDbPtr pDb;
 
@@ -632,7 +597,7 @@ CreatePrinterAttrs()
  * the screens.
  */
 static void
-StoreDriverNames()
+StoreDriverNames(void)
 {
     PrinterDbPtr pEntry;
 
@@ -643,7 +608,7 @@ StoreDriverNames()
 							  "xp-ddx-identifier");
 	if(pEntry->driverName == (char *)NULL || 
 	   strlen(pEntry->driverName) == 0 ||
-	   GetInitFunc(pEntry->driverName) == (Bool(*)())NULL)
+	   GetInitFunc(pEntry->driverName) == 0)
 	{
 	    if (pEntry->driverName && (strlen(pEntry->driverName) != 0)) {
 	        ErrorF("Xp Extension: Can't load driver %s\n", 
@@ -660,7 +625,7 @@ StoreDriverNames()
     }
 }
 
-char *
+static char *
 MbStrchr(
     char *str,
     int ch)
@@ -689,7 +654,7 @@ MbStrchr(
  * string must be freed by the caller.
  */
 static char *
-GetConfigFileName()
+GetConfigFileName(void)
 {
     /*
      * We need to find the system-wide file, if one exists.  This
@@ -701,7 +666,7 @@ GetConfigFileName()
     /*
      * Check for a LANG-specific file.
      */
-    if(dirName = XpGetConfigDir(TRUE))
+    if ((dirName = XpGetConfigDir(TRUE)) != 0)
     {
         filePath = (char *)xalloc(strlen(dirName) +
 				  strlen(XPRINTERSFILENAME) + 2);
@@ -720,7 +685,7 @@ GetConfigFileName()
 	xfree(filePath);
     }
 
-    if(dirName = XpGetConfigDir(FALSE))
+    if ((dirName = XpGetConfigDir(FALSE)) != 0)
     {
 	filePath = (char *)xalloc(strlen(dirName) +
 				  strlen(XPRINTERSFILENAME) + 2);
@@ -750,7 +715,7 @@ GetConfigFileName()
  * XXX
  */
 static PrinterDbPtr
-BuildPrinterDb()
+BuildPrinterDb(void)
 {
     char *printerList, *augmentCmd = (char *)NULL;
     Bool defaultAugment = TRUE, freeConfigFileName;
@@ -779,7 +744,7 @@ BuildPrinterDb()
 		{
 		    while((tok = strtok((char *)NULL, " \t")) != (char *)NULL)
 		    {
-		        if(ptr = MbStrchr(tok, '\012'))
+		        if ((ptr = MbStrchr(tok, '\012')) != 0)
 		            *ptr = (char)'\0';
 			AddPrinterDbName(tok);
 		    }
@@ -845,8 +810,7 @@ BuildPrinterDb()
 }
 
 static void
-FreeDriverMap(driverMap)
-    DriverMapPtr driverMap;
+FreeDriverMap(DriverMapPtr driverMap)
 {
     DriverMapPtr pCurEntry, pNextEntry;
 
@@ -872,7 +836,7 @@ FreeDriverMap(driverMap)
  * the next rehash or server recycle.
  */
 int
-XpRehashPrinterList()
+XpRehashPrinterList(void)
 {
     PrinterDbPtr pEntry, pPrev;
     DriverMapPtr driverMap = (DriverMapPtr)NULL, pDrvEnt;
@@ -1004,7 +968,7 @@ FindFontDir(
         return (char *)NULL;
     
     configDir = XpGetConfigDir(TRUE);
-    if(fontDir = ValidateFontDir(configDir, modelName))
+    if ((fontDir = ValidateFontDir(configDir, modelName)) != 0)
     {
 	xfree(configDir);
 	return fontDir;
@@ -1064,7 +1028,7 @@ AddToFontPath(
  * and to properly free the modified version upon server recycle.
  */
 static void
-AugmentFontPath()
+AugmentFontPath(void)
 {
     char *newPath, *modelID, **allIDs = (char **)NULL;
     PrinterDbPtr pDb, pDbEntry;
@@ -1125,7 +1089,7 @@ AugmentFontPath()
     for(i = 0; allIDs != (char **)NULL && allIDs[i] != (char *)NULL; i ++)
     {
 	char *fontDir;
-	if(fontDir = FindFontDir(allIDs[i]))
+	if ((fontDir = FindFontDir(allIDs[i])) != 0)
 	{
 	    AddToFontPath(fontDir);
 	    xfree(fontDir);
@@ -1215,7 +1179,7 @@ XpClientIsPrintClient(
      * fpe->name.
      */
     if(fpe->name_length < PATH_PREFIX_LEN || 
-       (strlen(fontDir) != (fpe->name_length - PATH_PREFIX_LEN)) ||
+       (strlen(fontDir) != (unsigned)(fpe->name_length - PATH_PREFIX_LEN)) ||
        strncmp(fontDir, fpe->name + PATH_PREFIX_LEN, 
 	       fpe->name_length - PATH_PREFIX_LEN))
     {
@@ -1227,9 +1191,7 @@ XpClientIsPrintClient(
 }
 
 static void
-AddFormats(pScreenInfo, driverName)
-    ScreenInfo *pScreenInfo;
-    char *driverName;
+AddFormats(ScreenInfo *pScreenInfo, char *driverName)
 {
     int i, j;
     driverInitRec *pInitRec;
@@ -1280,10 +1242,10 @@ AddFormats(pScreenInfo, driverName)
  ************************************************************/
 
 void
-PrinterInitOutput(pScreenInfo, argc, argv)
-     ScreenInfo *pScreenInfo;
-     int argc;
-     char **argv;
+PrinterInitOutput(
+     ScreenInfo *pScreenInfo,
+     int argc,
+     char **argv)
 {
     PrinterDbPtr pDb, pDbEntry;
     int driverCount = 0, i;
@@ -1444,11 +1406,11 @@ PrinterInitOutput(pScreenInfo, argc, argv)
  * screen.
  */
 static Bool
-InitPrintDrivers(index, pScreen, argc, argv)
-    int index;
-    ScreenPtr pScreen;
-    int argc;
-    char **argv;
+InitPrintDrivers(
+    int index,
+    ScreenPtr pScreen,
+    int argc,
+    char **argv)
 {
     PrinterDbPtr pDb, pDb2;
 
@@ -1469,7 +1431,7 @@ InitPrintDrivers(index, pScreen, argc, argv)
 	    }
 	    if(callInit == TRUE)
 	    {
-	        Bool (*initFunc)();
+	        pBFunc initFunc;
 	        initFunc = GetInitFunc(pDb->driverName);
 	        if(initFunc(index, pScreen, argc, argv) == FALSE)
 	        {
@@ -1482,13 +1444,13 @@ InitPrintDrivers(index, pScreen, argc, argv)
 }
 
 void
-_XpVoidNoop()
+_XpVoidNoop(void)
 {
     return;
 }
 
 Bool
-_XpBoolNoop()
+_XpBoolNoop(void)
 {
     return TRUE;
 }
@@ -1500,11 +1462,11 @@ _XpBoolNoop()
  */
 
 static void
-GenericScreenInit( index, pScreen, argc, argv )
-     int index;
-     ScreenPtr pScreen;
-     int argc;
-     char **argv;
+GenericScreenInit(
+     int index,
+     ScreenPtr pScreen,
+     int argc,
+     char **argv)
 {
     int i;
     float fWidth, fHeight, maxWidth, maxHeight;
@@ -1533,7 +1495,6 @@ GenericScreenInit( index, pScreen, argc, argv )
       {
 	if(pDb->screenNum == index)
 	{
-
 	    XpValidatePoolsRec *pValRec;
 	    pVFunc dimensionsFunc;
 
@@ -1572,9 +1533,9 @@ GenericScreenInit( index, pScreen, argc, argv )
  * freeing the associated memory.
  */
 static char *
-QualifyName(fileName, searchPath)
-    char *fileName;
-    char *searchPath;
+QualifyName(
+    char *fileName,
+    char *searchPath)
 {
     char * curPath = searchPath;
     char * nextPath;
@@ -1622,11 +1583,11 @@ QualifyName(fileName, searchPath)
  * XXX "localeName" elements of the XpDiListEntry to the specified locale.
  */
 static void
-FillPrinterListEntry(pEntry, pDb, localeLen, locale)
-    XpDiListEntry *pEntry;
-    PrinterDbPtr pDb;
-    int localeLen;
-    char *locale;
+FillPrinterListEntry(
+    XpDiListEntry *pEntry,
+    PrinterDbPtr pDb,
+    int localeLen,
+    char *locale)
 {
     static char *localeStr = (char *)NULL;
 
@@ -1649,18 +1610,19 @@ FillPrinterListEntry(pEntry, pDb, localeLen, locale)
  *
  */
 static Bool
-GetPrinterListInfo(pEntry, nameLen, name, localeLen, locale)
-    XpDiListEntry *pEntry;
-    int nameLen;
-    char *name;
-    int localeLen;
-    char *locale;
+GetPrinterListInfo(
+    XpDiListEntry *pEntry,
+    int nameLen,
+    char *name,
+    int localeLen,
+    char *locale)
 {
     PrinterDbPtr pDb, pDb2;
 
     for(pDb = printerDb; pDb != (PrinterDbPtr)NULL; pDb = pDb->next)
     {
-	if(strlen(pDb->name) == nameLen && !strncmp(pDb->name, name, nameLen))
+	if (strlen(pDb->name) == (unsigned)nameLen
+	&& !strncmp(pDb->name, name, nameLen))
 	{
 	    FillPrinterListEntry(pEntry, pDb, localeLen, locale);
 	    return TRUE;
@@ -1674,8 +1636,7 @@ GetPrinterListInfo(pEntry, nameLen, name, localeLen, locale)
  * for a printer list.
  */
 void
-XpDiFreePrinterList(list)
-    XpDiListEntry **list;
+XpDiFreePrinterList(XpDiListEntry **list)
 {
     int i;
 
@@ -1695,11 +1656,11 @@ XpDiFreePrinterList(list)
  * the information for all printers is desired.
  */
 XpDiListEntry **
-XpDiGetPrinterList(nameLen, name, localeLen, locale)
-    int nameLen;
-    char *name;
-    int localeLen;
-    char *locale;
+XpDiGetPrinterList(
+    int nameLen,
+    char *name,
+    int localeLen,
+    char *locale)
 {
     XpDiListEntry **pList;
 
@@ -1753,9 +1714,7 @@ XpDiGetPrinterList(nameLen, name, localeLen, locale)
 }
 
 WindowPtr
-XpDiValidatePrinter(printerName, printerNameLen)
-    char *printerName;
-    int printerNameLen;
+XpDiValidatePrinter(char *printerName, int printerNameLen)
 {
     PrinterDbPtr pCurEntry;
     WindowPtr pWin;
@@ -1763,7 +1722,7 @@ XpDiValidatePrinter(printerName, printerNameLen)
     for(pCurEntry = printerDb;
 	pCurEntry != (PrinterDbPtr)NULL; pCurEntry = pCurEntry->next)
     {
-        if(strlen(pCurEntry->name) == printerNameLen &&
+        if(strlen(pCurEntry->name) == (unsigned)printerNameLen &&
 	   !strncmp(pCurEntry->name, printerName, printerNameLen))
 	    return  WindowTable[pCurEntry->screenNum];
     }
@@ -1776,9 +1735,7 @@ XpDiValidatePrinter(printerName, printerNameLen)
  * on the specified screen.
  */
 char *
-XpDiGetDriverName(index, printerName)
-    int index;
-    char *printerName;
+XpDiGetDriverName(int index, char *printerName)
 {
 
     PrinterDbPtr pCurEntry;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbunmap.h,v 1.3 1998/11/22 10:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbunmap.h,v 1.4 1998/11/28 10:42:52 dawes Exp $ */
 /*
  * Copyright (C) 1994-1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -29,12 +29,24 @@
  * Unmap names
  */
 
-#undef NAME
+#undef CFBNAME
 #undef CATNAME
 
-#undef cfbScreenPrivateIndex
 #undef QuartetBitsTable
 #undef QuartetPixelMaskTable
+#undef cfb8ClippedLineCopy
+#undef cfb8ClippedLineGeneral 
+#undef cfb8ClippedLineXor
+#undef cfb8LineSS1Rect
+#undef cfb8LineSS1RectCopy
+#undef cfb8LineSS1RectGeneral 
+#undef cfb8LineSS1RectPreviousCopy
+#undef cfb8LineSS1RectXor
+#undef cfb8SegmentSS1Rect
+#undef cfb8SegmentSS1RectCopy
+#undef cfb8SegmentSS1RectGeneral 
+#undef cfb8SegmentSS1RectShiftCopy
+#undef cfb8SegmentSS1RectXor
 #undef cfbAllocatePrivates
 #undef cfbBSFuncRec
 #undef cfbBitBlt
@@ -50,8 +62,8 @@
 #undef cfbCopyWindow
 #undef cfbCreateGC
 #undef cfbCreatePixmap
-#undef cfbCreateWindow
 #undef cfbCreateScreenResources
+#undef cfbCreateWindow
 #undef cfbDestroyPixmap
 #undef cfbDestroyWindow
 #undef cfbDoBitblt
@@ -93,11 +105,11 @@
 #undef cfbNonTEOps1Rect
 #undef cfbPadPixmap
 #undef cfbPaintWindow
-#undef cfbPolyGlyphBlt8
-#undef cfbPolyGlyphRop8
 #undef cfbPolyFillArcSolidCopy
 #undef cfbPolyFillArcSolidGeneral
 #undef cfbPolyFillRect
+#undef cfbPolyGlyphBlt8
+#undef cfbPolyGlyphRop8
 #undef cfbPolyPoint
 #undef cfbPositionWindow
 #undef cfbPutImage
@@ -105,6 +117,7 @@
 #undef cfbRestoreAreas
 #undef cfbSaveAreas
 #undef cfbScreenInit
+#undef cfbScreenPrivateIndex
 #undef cfbSegmentSD
 #undef cfbSegmentSS
 #undef cfbSetScanline
@@ -128,26 +141,12 @@
 #undef cfbVertS
 #undef cfbXRotatePixmap
 #undef cfbYRotatePixmap
+#undef cfbZeroPolyArcSS8Copy
+#undef cfbZeroPolyArcSS8General
+#undef cfbZeroPolyArcSS8Xor
 #undef cfbendpartial
 #undef cfbendtab
 #undef cfbmask
 #undef cfbrmask
 #undef cfbstartpartial
 #undef cfbstarttab
-#undef cfb8LineSS1Rect
-#undef cfb8SegmentSS1Rect
-#undef cfb8ClippedLineCopy
-#undef cfb8ClippedLineXor
-#undef cfb8ClippedLineGeneral 
-#undef cfb8SegmentSS1RectCopy
-#undef cfb8SegmentSS1RectXor
-#undef cfb8SegmentSS1RectGeneral 
-#undef cfb8SegmentSS1RectShiftCopy
-#undef cfb8LineSS1RectCopy
-#undef cfb8LineSS1RectXor
-#undef cfb8LineSS1RectGeneral 
-#undef cfb8LineSS1RectPreviousCopy
-#undef cfbZeroPolyArcSS8Copy
-#undef cfbZeroPolyArcSS8Xor
-#undef cfbZeroPolyArcSS8General
-

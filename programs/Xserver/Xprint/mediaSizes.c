@@ -62,14 +62,8 @@ copyright holders.
 #include "scrnintstr.h"
 #include "fontstruct.h"
 
-#define _XP_PRINT_SERVER_
-#include "Printstr.h" 
-#undef _XP_PRINT_SERVER_
-
 #include "DiPrint.h"
-#include "AttrValid.h"
-
-extern XpContextPtr XpContextOfClient();
+#include "attributes.h"
 
 typedef struct {
     XpOid page_size;
@@ -149,8 +143,7 @@ static PageDimensionsRec PageDimensions[] =
  *       attributes pools have been validated.
  */
 int
-XpGetResolution(
-		XpContextPtr pContext)
+XpGetResolution(XpContextPtr pContext)
 {
     unsigned long resolution;
 
@@ -190,8 +183,7 @@ XpGetResolution(
  *       attributes pools have been validated.
  */
 XpOid
-XpGetContentOrientation(
-			XpContextPtr pContext)
+XpGetContentOrientation(XpContextPtr pContext)
 {
     XpOid orientation;
 
@@ -383,7 +375,7 @@ XpGetMediumMillimeters(
 		       float *width,  /* return */
 		       float *height) /* return */
 {
-    int i;
+    unsigned i;
 
     *width = *height = 0;
     for(i = 0; i < XpNumber(PageDimensions); i++)
@@ -707,9 +699,7 @@ XpGetMaxWidthHeightRes(
 }
 
 FontResolutionPtr
-XpGetClientResolutions(client, num)
-    ClientPtr client;
-    int *num;
+XpGetClientResolutions(ClientPtr client, int *num)
 {
     static struct _FontResolution res;
     int resolution = XpGetResolution(XpContextOfClient(client)); 
@@ -725,15 +715,13 @@ XpGetClientResolutions(client, num)
 }
 
 
-void XpSetFontResFunc(client)
-    ClientPtr client;
+void XpSetFontResFunc(ClientPtr client)
 {
     client->fontResFunc = XpGetClientResolutions;
 }
 
 
-void XpUnsetFontResFunc(client)
-    ClientPtr client;
+void XpUnsetFontResFunc(ClientPtr client)
 {
     client->fontResFunc = NULL;
 }

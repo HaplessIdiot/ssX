@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclGC.c,v 1.5 1998/03/20 21:04:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclGC.c,v 1.6 1998/12/20 11:57:26 dawes Exp $ */
 
 #include "gcstruct.h"
 
@@ -52,6 +52,8 @@ copyright holders.
 #include "pixmapstr.h"
 #include "colormapst.h"
 #include "windowstr.h"
+#include "cfb.h"
+#include "cfb32.h"
 #include "migc.h"
 #include "scrnintstr.h"
 #include "resource.h"
@@ -98,8 +100,7 @@ static GCFuncs PclGCFuncs =
 ;
 
 Bool
-PclCreateGC( pGC )
-     GCPtr pGC;
+PclCreateGC(GCPtr pGC)
 {
     if( pGC->depth == 1 )
       {
@@ -137,11 +138,11 @@ PclDestroyGC(GCPtr pGC)
 
 
 int
-PclGetDrawablePrivateStuff( pDrawable, gc, valid, file )
-     DrawablePtr pDrawable;
-     GC *gc;
-     unsigned long *valid;
-     FILE **file;
+PclGetDrawablePrivateStuff(
+     DrawablePtr pDrawable,
+     GC *gc,
+     unsigned long *valid,
+     FILE **file)
 {
     XpContextPtr pCon;
     PclPixmapPrivPtr pPriv;
@@ -175,9 +176,9 @@ PclGetDrawablePrivateStuff( pDrawable, gc, valid, file )
 }
 
 void
-PclSetDrawablePrivateGC( pDrawable, gc )
-     DrawablePtr pDrawable;
-     GC gc;
+PclSetDrawablePrivateGC(
+     DrawablePtr pDrawable,
+     GC gc)
 {
     PixmapPtr pix;
     XpContextPtr pCon;
@@ -322,10 +323,10 @@ PclSendPattern(char *bits,
 }
 
 int
-PclUpdateDrawableGC( pGC, pDrawable, outFile )
-     GCPtr pGC;
-     DrawablePtr pDrawable;
-     FILE **outFile;
+PclUpdateDrawableGC(
+     GCPtr pGC,
+     DrawablePtr pDrawable,
+     FILE **outFile)
 {
     Mask drawableMask, changeMask = 0;
     GC dGC;
@@ -393,12 +394,14 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 	    changeMask |= GCTileStipYOrigin;
 	  
 	  if( dGC.numInDashList == pGC->numInDashList )
+	  {
 	    for( i = 0; i < dGC.numInDashList; i++ )
 	      if( cPriv->dash[i] != pGC->dash[i] )
 		{
 		    changeMask |= GCDashList;
 		    break;
 		}
+	  }
 	  else
 	    changeMask |= GCDashList;
       }
@@ -528,7 +531,7 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 	    }
 	  else /* PseudoColor or StaticGray */
 	    {
-		sprintf( t, "SP%d;", pGC->fgPixel );
+		sprintf( t, "SP%ld;", (long) pGC->fgPixel );
 		SEND_PCL( *outFile, t );
 	    }
 #else
@@ -656,7 +659,7 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 		sz = h * BitmapBytePad( w );
 
 		bits = (char *)xalloc( sz );
-		mfbGetImage(pGC->tile.pixmap, 0, 0, w, h, XYPixmap, ~0, bits);
+		mfbGetImage(&(pGC->tile.pixmap->drawable), 0, 0, w, h, XYPixmap, ~0, bits);
 		PclSendPattern( bits, sz, 1, h, w, 100, *outFile );
 		xfree( bits );
 	    }
@@ -664,7 +667,7 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 	    {
 		sz = h * PixmapBytePad( w, 8 );
 		bits = (char *)xalloc( sz );
-		cfbGetImage(pGC->tile.pixmap, 0, 0, w, h, ZPixmap, ~0, bits);
+		cfbGetImage(&(pGC->tile.pixmap->drawable), 0, 0, w, h, ZPixmap, ~0, bits);
 		PclSendPattern( bits, sz, 8, h, w, 100, *outFile );
 		xfree( bits );
 	    }
@@ -673,7 +676,7 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 		sz = h * PixmapBytePad( w, 24 );
 		
 		bits = (char *)xalloc( sz );
-		cfb32GetImage(pGC->tile.pixmap, 0, 0, w, h, ZPixmap, ~0, bits);
+		cfb32GetImage(&(pGC->tile.pixmap->drawable), 0, 0, w, h, ZPixmap, ~0, bits);
 		PclSendPattern( bits, sz, 24, h, w, 100, *outFile );
 		xfree( bits );
 	    }
@@ -711,7 +714,7 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 		sz = h * BitmapBytePad( w );
 
 		bits = (char *)xalloc( sz );
-		mfbGetImage( pGC->stipple, 0, 0, w, h, XYPixmap, ~0, bits );
+		mfbGetImage( &(pGC->stipple->drawable), 0, 0, w, h, XYPixmap, ~0, bits );
 
 		w2 = ( w / 8 ) + ( ( w%8 ) ? 1 : 0 );
 		/*
@@ -754,30 +757,30 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 		  {
 		      mfbValidateGC( scratchGC, ~0L,
 				    (DrawablePtr)scratchPix );
-		      mfbCopyPlane( pGC->stipple,
+		      mfbCopyPlane( &(pGC->stipple->drawable),
 				   (DrawablePtr)scratchPix, scratchGC, 0,
 				   0, w, h, 0, 0, 1 );
-		      mfbGetImage( scratchPix, 0, 0, w, h, XYPixmap, ~0,
+		      mfbGetImage( &(scratchPix->drawable), 0, 0, w, h, XYPixmap, ~0,
 				  bits );
 		  }
 		else if( pGC->depth <= 8 )
 		  {
 		      cfbValidateGC( scratchGC, ~0L,
 				    (DrawablePtr)scratchPix );
-		      cfbCopyPlane( pGC->stipple,
+		      cfbCopyPlane( &(pGC->stipple->drawable),
 				   (DrawablePtr)scratchPix, scratchGC, 0,
 				   0, w, h, 0, 0, 1 );
-		      cfbGetImage( scratchPix, 0, 0, w, h, ZPixmap, ~0, 
+		      cfbGetImage( &(scratchPix->drawable), 0, 0, w, h, ZPixmap, ~0, 
 				  bits );
 		  }
 		else if( pGC->depth <= 32 )
 		  {
 		      cfb32ValidateGC( scratchGC, ~0L,
 				    (DrawablePtr)scratchPix );
-		      cfb32CopyPlane( pGC->stipple,
+		      cfb32CopyPlane( &(pGC->stipple->drawable),
 				   (DrawablePtr)scratchPix, scratchGC, 0,
 				   0, w, h, 0, 0, 1 );
-		      cfb32GetImage( scratchPix, 0, 0, w, h, ZPixmap, ~0, 
+		      cfb32GetImage( &(scratchPix->drawable), 0, 0, w, h, ZPixmap, ~0, 
 				  bits );
 		  }
 		PclSendPattern( bits, sz, pGC->depth, h, w, 101, *outFile );
@@ -856,9 +859,9 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 
 
 void
-PclComputeCompositeClip(pGC, pDrawable)
-    GCPtr           pGC;
-    DrawablePtr     pDrawable;
+PclComputeCompositeClip(
+    GCPtr           pGC,
+    DrawablePtr     pDrawable)
 {
     ScreenPtr       pScreen = pGC->pScreen;
 
@@ -978,10 +981,10 @@ PclComputeCompositeClip(pGC, pDrawable)
 
 /*ARGSUSED*/
 void
-PclValidateGC( pGC, changes, pDrawable )
-     GCPtr pGC;
-     unsigned long changes;
-     DrawablePtr pDrawable;
+PclValidateGC(
+     GCPtr pGC,
+     unsigned long changes,
+     DrawablePtr pDrawable)
 {
     /*
      * Pixmaps should be handled by their respective validation
@@ -1039,4 +1042,3 @@ PclValidateGC( pGC, changes, pDrawable )
     PclSetDrawablePrivateGC( pDrawable, *pGC, changes );
 */
 }
-
