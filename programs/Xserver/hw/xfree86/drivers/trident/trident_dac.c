@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.54 2001/09/25 10:25:13 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.55 2001/09/25 11:32:41 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -773,7 +773,7 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     
     /* Unprotect registers */
     OUTW(0x3C4, ((0xC0 ^ 0x02) << 8) | NewMode1);
-    OUTW(vgaIOBase + 4, (0x92 << 8) | NewMode1);
+    OUTW(0x3C4, (0x92 << 8) | Protection);
 
     INB_3x4(Offset);
     INB_3x4(LinearAddReg);
@@ -994,14 +994,14 @@ Tridentddc1Read(ScrnInfoPtr pScrn)
     /* New mode */
     OUTB(0x3C4, 0x0B); temp = INB(0x3C5);
 
-    OUTB(vgaIOBase + 4, NewMode1);
-    temp = INB(vgaIOBase + 5);
-    OUTB(vgaIOBase + 5, temp | 0x80);
+    OUTB(0x3C4, NewMode1);
+    temp = INB(0x3C5);
+    OUTB(0x3C5, temp | 0x80);
 
     /* Define SDA as input */
     OUTW(vgaIOBase + 4, (0x04 << 8) | I2C);
 
-    OUTW(vgaIOBase + 4, (temp << 8) | NewMode1);
+    OUTW(0x3C4, (temp << 8) | NewMode1);
 
     /* Wait until vertical retrace is in progress. */
     while (INB(vgaIOBase + 0xA) & 0x08);
