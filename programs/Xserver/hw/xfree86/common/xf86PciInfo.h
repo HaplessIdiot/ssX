@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.113 2001/11/05 23:37:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.114 2001/11/21 22:42:59 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -789,7 +789,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
 #endif
 
 /* Increase this as required */
-#define MAX_DEV_PER_VENDOR 64
+#define MAX_DEV_PER_VENDOR 80
 
 typedef struct {
     unsigned short VendorID;
