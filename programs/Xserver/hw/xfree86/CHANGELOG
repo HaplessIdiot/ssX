@@ -1,4 +1,9 @@
 XFree86 4.4.99.17 (xx October 2004)
+ 211. Add experimental '-novt' and '-nohw' options to the XFree86 server
+      (David Dawes).
+ 210. Restore default mode "zoom" behaviour by not marking multiple
+      default modes of the same name as "userdef", and fix zoom when using
+      an randr-selected root window size (David Dawes).
  209. Add an example for setting the repeat rate to the xset(1) man page
       (Bugzilla #1506, David Dawes, suggested by Alan Iwi).
  208. Remove vestigial rootlessAqua.h from XDarwin DDX (Torrey T. Lyons).
@@ -19151,7 +19156,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3337 2004/10/29 01:17:24 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3338 2004/11/05 02:56:27 dawes Exp $
 
 
 
