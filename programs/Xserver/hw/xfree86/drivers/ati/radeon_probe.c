@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.9 2001/05/04 19:05:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.10 2001/06/13 23:34:06 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -178,6 +178,8 @@ RADEONProbe(DriverPtr drv, int flags)
 	if (pEnt->active) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
 
+#ifdef XFree86LOADER
+
 	    if (!xf86LoadSubModule(pScrn, "radeon")) {
 		xf86Msg(X_ERROR,
 		    RADEON_NAME ":  Failed to load \"radeon\" module.\n");
@@ -186,6 +188,8 @@ RADEONProbe(DriverPtr drv, int flags)
 	    }
 
 	    xf86LoaderReqSymLists(RADEONSymbols, NULL);
+
+#endif
 
 	    pScrn->driverVersion = RADEON_VERSION_CURRENT;
 	    pScrn->driverName    = RADEON_DRIVER_NAME;
