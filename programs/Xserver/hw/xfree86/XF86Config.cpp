@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.7 2000/03/21 23:17:23 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.8 2000/06/14 02:13:07 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ "Version 4.0.1"  "XFree86"
@@ -471,7 +471,7 @@ This is only suitable for VESA DPMS compatible monitors, and may not be
 supported by all video drivers.  It is only enabled for screens that
 have the
 .B \*qDPMS\*q
-option set. 
+option set (see the MONITOR section below). 
 .TP 7
 .BI "Option \*qSuspendTime\*q  \*q" time \*q
 sets the inactivity timeout for the "suspend" phase of DPMS mode.
@@ -482,7 +482,7 @@ This is only suitable for VESA DPMS compatible monitors, and may not be
 supported by all video drivers.  It is only enabled for screens that
 have the
 .B \*qDPMS\*q
-option set. 
+option set (see the MONITOR section below). 
 .TP 7
 .BI "Option \*qOffTime\*q  \*q" time \*q
 sets the inactivity timeout for the "off" phase of DPMS mode.
@@ -493,7 +493,7 @@ This is only suitable for VESA DPMS compatible monitors, and may not be
 supported by all video drivers.  It is only enabled for screens that
 have the
 .B \*qDPMS\*q
-option set. 
+option set (see the MONITOR section below). 
 .TP 7
 .BI "Option \*qPixmap\*q  \*q" bpp \*q
 This sets the pixmap format to use for depth 24.  Allowed values for
