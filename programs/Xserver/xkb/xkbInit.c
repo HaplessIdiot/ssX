@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.18 2001/01/17 22:37:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.19 2001/08/23 14:33:26 alanh Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1022,7 +1022,6 @@ XkbUseMsg()
     ErrorF("-ar1                   set XKB autorepeat delay\n");
     ErrorF("-ar2                   set XKB autorepeat interval\n");
     ErrorF("-noloadxkb             don't load XKB keymap description\n");
-    ErrorF("-xkbcomp               default keymap compiler\n");
     ErrorF("-xkbdb                 file that contains default XKB keymaps\n");
     ErrorF("-xkbmap                XKB keyboard description to load on startup\n");
 }
