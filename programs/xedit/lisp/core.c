@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.28 2002/03/05 03:52:33 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.29 2002/03/08 04:33:17 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -2625,7 +2625,7 @@ Lisp_Setenv(LispMac *mac, LispBuiltin *builtin)
     ovalue = ARGUMENT(1);
     oname = ARGUMENT(0);
 
-    ERROR_CHECK_STRING_P(oname);
+    ERROR_CHECK_STRING(oname);
     name = THESTR(oname);
 
     ERROR_CHECK_STRING(ovalue);
