@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.42 2001/08/17 13:27:51 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.44 2001/10/01 13:43:58 eich Exp $
 XCOMM
 
 POSIX:						C
@@ -623,16 +623,19 @@ yi_US.microsoft-cp1255:				yi_US.CP1255
 yi_US.MICROSOFT-CP1255:				yi_US.CP1255
 zh:						zh_CN.eucCN
 zh_CN:						zh_CN.eucCN
-zh_CN.big5:					zh_TW.big5
 zh_CN.Big5:					zh_TW.big5
 zh_CN.EUC:					zh_CN.eucCN
+zh_CN.GB2312:					zh_CN.eucCN
+zh_CN.GBK:					zh_CN.gbk
+zh_CN.big5:					zh_TW.big5
 zh_CN.euc:					zh_CN.eucCN
 zh_CN.gb2312:					zh_CN.eucCN
-zh_CN.gbk:					zh_CN.GBK
+zh_HK:						zh_HK.big5
+zh_HK.Big5:					zh_HK.big5
+zh_HK.Big5HKSCS:				zh_HK.big5hkscs
 zh_TW:						zh_TW.big5
+zh_TW.Big5:					zh_TW.big5
 zh_TW.EUC:					zh_TW.eucTW
-zh_TW.euc:					zh_TW.eucTW
-zh_TW.big5:					zh_TW.big5
 
 XCOMM The following locale names are used in SCO 3.0
 english_uk.8859:				en_GB.ISO8859-1

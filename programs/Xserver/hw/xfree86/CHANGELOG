@@ -1,4 +1,20 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 423. Linux/PA-RISC portability fixes (#4892, Grant Grundler, Bdale Garbee,
+      and LaMont Jones).
+ 422. Linux/mips portability patch (#4891, Guido Guenther).
+ 421. Preliminary support for building on Linux/arm32 (#4890,
+      Branden Robinson).
+ 420. Make it possible to build the X server on Linux/m68k platforms
+      (#4889, Christian T. Steigies).
+ 419. Fixes for xman's manpath config handling (#4886, Branden Robinson and
+      Colin Watson).
+ 418. Fix some man page aliases (#4882, Branden Robinson).
+ 417. Define __GLX_ALIGN64 for glx on Alpha (based on #4888, Branden Robinson).
+ 416. Remove PEX5 from the lists of specs in doc/specs/Imakefile (#4881,
+      Branden Robinson).
+ 415. linux.cf updates (#4874, Branden Robinson).
+ 414. Updates for zh locale files (#4879, Branden Robinson).
+ 413. xf86config man page update (#4877, Branden Robinson).
  412. Startx enhancements and cleanups (#4875, Branden Robinson and
       Henry T. So).
  411. Use DirectDraw2 instead of DirectDraw on Cygwin (#5012, Harold Hunt).
@@ -14051,4 +14067,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2008 2001/11/01 12:19:35 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2009 2001/11/01 15:29:01 dawes Exp $

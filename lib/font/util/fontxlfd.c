@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.10 2001/01/17 19:43:33 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.11 2001/07/25 15:04:57 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -191,7 +191,8 @@ xlfd_round_double(double x)
 
 #if defined(i386) || defined(__i386__) || \
     defined(ia64) || defined(__ia64__) || \
-    defined(__alpha__) || defined(__alpha)
+    defined(__alpha__) || defined(__alpha) || \
+    defined(__hppa__)
 #if !defined(__EMX__)
 #include <float.h>
 

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.110 2001/10/10 19:06:35 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.111 2001/10/25 00:18:51 dickey Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -418,6 +418,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #elif defined(Arm32Architecture)
 #define ByteOrder		X_LITTLE_ENDIAN
 #elif defined(PpcArchitecture)
+#define ByteOrder		X_BIG_ENDIAN
+#elif defined(HPArchitecture)
 #define ByteOrder		X_BIG_ENDIAN
 #elif defined(SuperHArchitecture)
 #define ByteOrder		X_LITTLE_ENDIAN

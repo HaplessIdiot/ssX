@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.15 2001/08/26 16:21:29 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.16 2001/10/28 03:34:27 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -508,11 +508,14 @@ WaitForChild (void)
 		}
 		break;
 	    case waitCompose (SIGTERM,0,0):
-		d->startTries = 0;
-		Debug ("Display exited on SIGTERM\n");
-		if (d->displayType.origin == FromXDMCP || d->status == zombie)
+		Debug ("Display exited on SIGTERM, try %d of %d\n",
+			d->startTries, d->startAttempts);
+		if (d->displayType.origin == FromXDMCP ||
+		    d->status == zombie ||
+		    ++d->startTries >= d->startAttempts) {
+		    LogError ("Display %s is being disabled\n", d->name);
 		    StopDisplay(d);
-		else
+		} else
 		    RestartDisplay (d, TRUE);
 		break;
 	    case REMANAGE_DISPLAY:
