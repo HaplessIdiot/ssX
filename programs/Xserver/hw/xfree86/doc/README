@@ -27,40 +27,44 @@
 
      4. Support in the S3 server for the Chrontel 8391 clock chip.
 
-     5. Bug fixes and some performance improvements for most of the
+     5. Support for SPEA Mercury P64 and MIRO Crystal 40SV.
+
+     6. Bug fixes and some performance improvements for most of the
         accelerated servers.
 
-     6. Support for `double scan' video modes (most servers).
+     7. Support for `double scan' video modes (most servers).
 
-     7. New chipset support for the SVGA server.  This includes the
+     8. New chipset support for the SVGA server.  This includes the
         Avance Logic 2228/2301, Chips & Technology 655xx, Cirrus Logic
         6440, and Oak OTI-087.  Accelerated support is included for the
         OTI-087.
 
-     8. Support for FreeBSD 2.0.
-
-     9. Preliminary support for OS/2 (client-only at this stage; this is
-        still under development).
+     9. Support for FreeBSD 2.0.
 
      10.
-        Linear aperture access when running on BSD/386.
+        Preliminary support for OS/2 (client-only at this stage; this is
+        still under development).
 
      11.
+        Linear aperture access when running on BSD/386.
+
+     12.
         16bpp and 32bpp support for more S3 boards (refer to README.S3
         (S3.html) for details).
 
-     12.
+     13.
         Support for ISC's SVR3 (only tested for 3.x and 4.x).
 
-     13.
+     14.
         The `xf86config' utility for generating XF86Config files has
         been improved and now uses a database of video cards.
 
-     14.
+     15.
         The X server LinkKit has been updated to include support for
         LBX.
 
-     15.
+
+     16.
         The slow X server startup time on machines without hardware
         floating point has been improved.
 
@@ -258,7 +262,6 @@
 
      Tseng
         ET3000, ET4000AX, ET4000/W32
-
      Western Digital/Paradise
         PVGA1
 
@@ -459,7 +462,6 @@
 
      o  Jon Tombs <tombs@XFree86.org>
 
-
      o  Kees Verstoep <versto@cs.vu.nl>
 
      o  Paul Vixie <paul@vix.com>
@@ -523,8 +525,8 @@
 
         o  Doug Anson <danson@lgc.com>,
 
-        o  David Holland <davidh@use.com>
 
+        o  David Holland <davidh@use.com>
 
      ISC SVR3 support by:
 
@@ -655,8 +657,8 @@
 
         o  Manfred Brands <mb@oceonics.nl>
 
-        o  Randy Hendry <randy@sgi.com>
 
+        o  Randy Hendry <randy@sgi.com>
 
         o  Jeff Kirk <jeff@bambam.dsd.ES.COM>
 
@@ -840,6 +842,8 @@
 
      o  LunetIX Softfair, Berlin, Germany
 
+     o  MIRO Computer Products AG, Braunschweig, Germany
+
      o  Rich & Amy Murphey
 
      o  Brett Neumeier
@@ -921,7 +925,6 @@
         +  sunsite.unc.edu:/pub/X11/XFree86
            (ftp://sunsite.unc.edu/pub/X11/XFree86) (source and binaries)
 
-
         +  abode.ccd.bnl.gov:/pub/XFree86
            (ftp://abode.ccd.bnl.gov/pub/XFree86) (Solaris, SVR4, SCO
            binaries)
@@ -985,9 +988,6 @@
         +  ftp.edu.tw:/X/XFree86/3.1.1
            (ftp://ftp.edu.tw/X/XFree86/3.1.1) (source and Linux
            binaries)
-
-
-
   Refer to the README file under the specified directory for information
   on which files you need to get to build your distribution.
 
@@ -997,7 +997,7 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.13 1995/01/22 03:06:29 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.14 1995/01/23 01:30:05 dawes Exp $
 
 
 

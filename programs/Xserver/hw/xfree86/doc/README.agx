@@ -1,6 +1,6 @@
   Notes on the AGX Server
   Henry Worth
-  13 December 1994
+  21 January 1995
 
   1.  General Notes
 
@@ -17,10 +17,11 @@
   and Sierra RAMDACs (15025 and 15021), and generic VGA RAMDAC.
 
 
-  The current driver has some basic acceleration routines: solid zero-
-  width lines (except AGX-014), bitblt fill's, tiles, and stipples, and
-  a basic font cache. Performance is not yet impressive, but there is
-  quite of bit of potential for future versions of the driver.
+  The current driver has a number of acceleration routines: solid and
+  dashed zero-width lines (except AGX-014), bitblt fill's, tiles, and
+  stipples, solid arc and polygon fills, and font cache. Performance for
+  local-bus boards using the AGX-015 and AGX-016 is in the high 70 to
+  low 80 kxstone range.
 
   Boards that have had some testing include ISA and VLB versions of most
   of the Hercules Graphite series, Spider Black Widow VLB and Black
@@ -50,25 +51,17 @@
 
 
 
-     o  The AGX-016 adds support for additional virtual width's, the
-        current server does not support these.
-
-
-
      o  The video memory probe has been problematic, recent fixes
         haven't failed yet, but earlier versions showed promise too...
 
 
 
-     o  Needs more testing.
+     o  As in all software, needs more testing.
 
 
 
-     o  Sometimes running with -probeonly option under Linux results in
-        corruption of the lower-order characters of the font (most
-        noticeable are the blanks). This is difficult to reproduce (I've
-        only seen once myself), one fix was made hours before 3.1
-        release that may have fixed it, but ...
+
+
 
 
   4.  ToDo
@@ -130,14 +123,13 @@
         Be sure to check the clock rating of the RAMDAC(s) on your video
         board and don't exceed that rating even if the server allows it,
         overclocking RAMDACs will damage them.
+
         The clock rating generally appears as suffix to part number, may
         only have the most significant digit(s), and may be mixed with
         other codes (e.g. package type). For example, an 85Mhz Bt481 in
         a plastic J-lead package has a part number of Bt481KPJ85 and a
         135Mhz AT&T20C505 has a part number of ATT20C505-13. Sierra
         stamps the rated speed below the part numbers in a dark ink.
-
-
         "normal"
            normal VGA style RAMDAC (6-bit DAC), default if none
            specified. Most boards should work with this parm, but some
@@ -261,7 +253,6 @@
            POST defaults should be ok.
 
 
-
            "vram_delay_latch", "vram delay_ras", "vram_extend_ras",
               "slow_dram"
               Set all of the above vram options.
@@ -314,13 +305,13 @@
         rules:
 
 
-          AGX-014 : 1024 and 2048.
+          AGX-014 : 512, 1024 and 2048.
 
 
-          AGX-015 : 1024, 1280, and 2048.
+          AGX-015 : 512, 1024, 1280, and 2048.
 
 
-          AGX-016 : 600, 800, 1024, 1280, and 2048.
+          AGX-016 : 512, 600, 800, 1024, 1280, and 2048.
 
 
      When panning I occasionally get streaks if the virtual resolution
@@ -394,6 +385,7 @@
      not near 28.322Mhz. If this warning appears, you should not use the
      probed clock values without additional verification from other
      sources.
+
      In the case of the AGX-014 and later AGX's, only the external clock
      select lines are used, this means the clock values correspond to
      the values of the video board's clock chip.
@@ -402,7 +394,6 @@
      clock selects and the second 8 are based on some AGX extensions.
      For the XGA-1 only 8 clocks are available.  The XGA-2 uses a
      programmable clock.
-
      The maximum pixel clock generally allowed is 85Mhz, but some
      RAMDACs support higher values. In any case you, should check your
      RAMDAC, some RAMDACs used on AGX based boards are produced in
@@ -418,12 +409,11 @@
         have had very little testing.
 
         The doublescan flag is now supported, however the minimum clock
-        supported is generally 25Mhz so resolutions of less than 400x300
-        are not likely to be supported by most monitors.  In creating
-        doublescan mode timings, the vertical timings will have to be
-        for the doubled values, e.g. for 400x300 the timings will
-        actually be 400x600. The common XFree86 config routines may
-        eventually take care of this automatically, but not yet.
+        supported is generally 25Mhz, so resolutions of less than
+        400x300 are not likely to be supported by most monitors.  In
+        creating doublescan mode timings, the vertical timings will
+        match the apparent resolutions, e.g. for 400x300 the timings
+        should describe 300 lines, not 600.
 
 
      Examples:
@@ -448,18 +438,6 @@
 
      For the Spider Black Widow Plus (2MB VLB AGX-016, with Sierra
      SC15021 RAMDAC):
-
-
-
-
-
-
-
-
-
-
-
-
                   Section "Device"
                       Identifier "SBWP"
                       VendorName "Spider"
@@ -487,13 +465,11 @@
   you know of any vendors still producing XGA clones for the (E)ISA,
   VESA, or even PCI bus, let me know. Some bits of crude POS probe code
   exist, but have proved useless for AGX based boards and are currently
-  disabled.
+  disabled. A few people have made attempts to use XGA cards, but no one
+  has reported success.
 
-  To attempt using an XGA compatible board, you will need to specify at
-  least the XGA instance number (typically 0 for chips integrated on the
-  motherboard and 1 for the first expansion card based adapter).
-  However, you may need to explicitly specify other information. The
-  accel section parms that may be of use are:
+  To attempt using an XGA compatible board, you will need to specify
+  several parms:
 
 
      Instance       nn
@@ -512,6 +488,19 @@
         (instance * 0x80) where ext_mem_address is the high order 4-bits
         of POS register 2 (the server assumes zero).
 
+
+     POSbase       nnnn
+        While this was intend to override the POS register base address,
+        until someone with an XGA card can complete and test POS
+        register probing, it will be used to specify the value of POS
+        register 4.  POS register 4 contains bits 31-25 of the XGA's
+        video memory system address. The value is shifted one place to
+        the left so that it is contained in bits 7-1 of POS register 4.
+        Bit 0 of the register is not used by this server as the XGA's
+        linear aperture is not used (however, the graphics engine must
+        be configured with this address).
+
+
   The XGA-2 has programmable clocks up to 90Mhz, this, and the XGA color
   table code are the most notable areas of XGA unique code that have had
   absolutely no testing in any form. The XGA-1 clocks selection is a
@@ -519,67 +508,12 @@
   to get an XGA going indicates that probing doesn't work. To specify
   programmable clocks for the XGA-2, specify any of the programmable
   clock option values on the clocks line (e.g.  "icd2061a", doesn't
-  matter which).  Standard XGA-1 clock values, switching, and probing
-  can also be used with the XGA-2.
-
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.4 1995/01/21 10:44:39 dawes Exp $
+  matter which).  Standard XGA-1 clock values can also be used with the
+  XGA-2.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.5 1995/01/23 01:30:08 dawes Exp $
 
 
 
