@@ -42,7 +42,7 @@
 
 #define SISDRIVERVERSIONYEAR    4
 #define SISDRIVERVERSIONMONTH   1
-#define SISDRIVERVERSIONDAY     7
+#define SISDRIVERVERSIONDAY     12
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -372,7 +372,7 @@ typedef unsigned char UChar;
 #define SiS_SD_SUPPORTXVGAMMA1 0x00200000   /* Xv Gamma correction for CRT1 supported */
 #define SiS_SD_SUPPORTTV       0x00400000   /* CRT2=TV supported */
 #define SiS_SD_SUPPORTYPBPR    0x00800000   /* CRT2=YPbPr (525i, 525p, 750p) is supported */
-#define SiS_SD_SUPPORTHIVISION 0x01000000   /* CRT2=HiVision is supported */
+#define SiS_SD_SUPPORTHIVISION 0x01000000   /* CRT2=HiVision (1080i) is supported */
 
 #define SIS_DIRECTKEY         0x03145792
 
