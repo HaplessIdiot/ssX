@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.21 1998/07/25 16:55:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.22 1998/08/16 10:25:44 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -748,18 +748,38 @@ MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
  * This function saves the video state.
  */
 void
-MGA3026Save(ScrnInfoPtr pScrn)
+MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
+	    Bool saveFonts)
 {
-	MGAPtr pMga = MGAPTR(pScrn);
-	MGARegPtr mgaReg = &pMga->SavedReg;
 	int i;
+	MGAPtr pMga = MGAPTR(pScrn);
 	
 	/* Allocate the DacRegs space if not done already */
 	if (mgaReg->DacRegs == NULL) {
 		mgaReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
 	}
 
-		
+	/*
+	 * Code is needed to get back to bank zero.
+	 */
+	outw(0x3DE, 0x0004);
+	
+	/*
+	 * This function will handle creating the data structure and filling
+	 * in the generic VGA portion.
+	 */
+	vgaHWSave(pScrn, vgaReg, saveFonts);
+
+	/*
+	 * The port I/O code necessary to read in the extended registers 
+	 * into the fields of the vgaMGARec structure.
+	 */
+	for (i = 0; i < 6; i++)
+	{
+		outb(0x3DE, i);
+		mgaReg->ExtVga[i] = inb(0x3DF);
+	}
+	
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
 	for (i = 0; i < 3; i++)
 		outTi3026(TVP3026_PIX_CLK_DATA, 0, mgaReg->DacClk[i] =
@@ -773,7 +793,6 @@ MGA3026Save(ScrnInfoPtr pScrn)
 	for (i = 0; i < DACREGSIZE; i++)
 		mgaReg->DacRegs[i]	 = inTi3026(MGADACregs[i]);
 	
-	/* why is this DacLong?  This isn't Dac specific is it? */
 	mgaReg->DacLong = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
 	
 }
@@ -862,7 +881,7 @@ MGA3026UseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
 
 
 void
-MGA3026PreInit(ScrnInfoPtr pScrn)
+MGA3026RamdacInit(ScrnInfoPtr pScrn)
 {
     MGAPtr pMga;
     MGARamdacPtr MGAdac;
@@ -983,20 +1002,4 @@ MGA3026PreInit(ScrnInfoPtr pScrn)
 ErrorF("Setting MCLK to %d\n", MGAdac->MemoryClock);
     MGATi3026SetMCLK( pScrn, MGAdac->MemoryClock );
 #endif
-}
-
-void
-MGA3026StoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
-{
-   MGAPtr pMga = MGAPTR(pScrn);
-   int i;
-
-    if(ndef > 256) ndef = 256;
-
-    for(i = 0; i < ndef; i++) {
-	outTi3026dreg(TVP3026_WADR_PAL, pdef[i].pixel);
-	outTi3026dreg(TVP3026_COL_PAL, pdef[i].red >> 8);
-	outTi3026dreg(TVP3026_COL_PAL, pdef[i].green >> 8);
-	outTi3026dreg(TVP3026_COL_PAL, pdef[i].blue >> 8);
-    }
 }

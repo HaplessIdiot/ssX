@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.2 1998/07/25 16:58:35 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.3 1998/08/19 07:49:24 dawes Exp $
  *
  * Copyright 1991-1998 by The XFree86 Project, Inc.
  *
@@ -817,7 +817,7 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     regp->CRTC[19] = scrninfp->displayWidth >> 4;  /* just a guess */
     regp->CRTC[20] = 0x00;
     regp->CRTC[21] = (mode->CrtcVBlankStart-1) & 0xFF; 
-    regp->CRTC[22] = (mode->CrtcVBlankEnd-1) & 0xFF;
+    regp->CRTC[22] = (mode->CrtcVBlankEnd-1 - 1) & 0xFF;
     if (depth < 8)
         regp->CRTC[23] = 0xE3;
     else
