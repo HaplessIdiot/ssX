@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.66 2003/01/18 15:22:33 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.67 2003/02/04 07:13:54 paulo Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1062,14 +1062,12 @@ MouseReadInput(InputInfoPtr pInfo)
 	}
 #endif
 	if (pBufP >= pMse->protoPara[4]) {
-	    
 	    /*
 	     * Buffer contains a full packet, which has already been processed:
 	     * Empty the buffer and check for optional 4th byte, which will be
 	     * processed directly, without being put into the buffer first.
 	     */
 	    pBufP = 0;
-
 	    if ((u & pMse->protoPara[0]) != pMse->protoPara[1] &&
 		(u & pMse->protoPara[5]) == pMse->protoPara[6]) {
 		/*
@@ -1106,7 +1104,6 @@ MouseReadInput(InputInfoPtr pInfo)
 		 * mistakingly received a byte even if we didn't see anything
 		 * preceeding the byte.
 		 */
-
 #ifdef EXTMOUSEDEBUG
 		ErrorF("mouse 4th byte %02x\n",u);
 #endif
@@ -2215,7 +2212,7 @@ static unsigned char proto[PROT_NUMPROTOS][8] = {
   {  0x80, 0x80, 0x80, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* ACECAD */
 							    /* PS/2 variants */
   {  0xc0, 0x00, 0x00, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* PS/2 mouse */
-  {  0xc8, 0x08, 0x00, 0x00,  3,   0x08, 0x00, MPF_NONE },  /* genericPS/2 mouse*/
+  {  0xc8, 0x08, 0x00, 0x00,  3,   0x00, 0x00, MPF_NONE },  /* genericPS/2 mouse*/
   {  0x08, 0x08, 0x00, 0x00,  4,   0x00, 0xff, MPF_NONE },  /* IntelliMouse */
   {  0x08, 0x08, 0x00, 0x00,  4,   0x00, 0xff, MPF_NONE },  /* Explorer */
   {  0x80, 0x80, 0x00, 0x00,  3,   0x00, 0xff, MPF_NONE },  /* ThinkingMouse */
@@ -2392,7 +2389,8 @@ initMouseHW(InputInfoPtr pInfo)
     unsigned char *param = NULL;
     int paramlen = 0;
     int count = 10;
-
+    Bool ps2Init = TRUE;
+    
     switch (pMse->protocolID) {
 	case PROT_LOGI:		/* Logitech Mice */
 	    /* 
@@ -2546,17 +2544,16 @@ initMouseHW(InputInfoPtr pInfo)
 	    break;
 
 	case PROT_GENPS2:
+	    ps2Init = FALSE;
 	    break;
 
 	case PROT_PS2:
 	case PROT_GLIDEPS2:
-	    do_ps2Reset(pInfo);
 	    break;
 	
 	case PROT_IMPS2:		/* IntelliMouse */
 	{
 	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80, 242 };
-	    do_ps2Reset(pInfo);
 	    param = seq;
 	    paramlen = sizeof(seq);
 	}
@@ -2567,7 +2564,6 @@ initMouseHW(InputInfoPtr pInfo)
 	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80,
 					   243, 200, 243, 200, 243, 80, 242 };
 	
-	    do_ps2Reset(pInfo);
 	    param = seq;
 	    paramlen = sizeof(seq);
 	}
@@ -2578,7 +2574,6 @@ initMouseHW(InputInfoPtr pInfo)
 	{
 	    static unsigned char seq[] = { 232, 3, 230, 230, 230, };
 	
-	    do_ps2Reset(pInfo);
 	    param = seq;
 	    paramlen = sizeof(seq);
 	}
@@ -2588,7 +2583,6 @@ initMouseHW(InputInfoPtr pInfo)
 	{
 	    static unsigned char seq[] = { 230, 232, 0, 232, 3, 232, 2, 232, 1,
 					   230, 232, 3, 232, 1, 232, 2, 232, 3, };
-	    do_ps2Reset(pInfo);
 	    param = seq;
 	    paramlen = sizeof(seq);
 	}
@@ -2599,7 +2593,6 @@ initMouseHW(InputInfoPtr pInfo)
 	    static unsigned char seq[] = { 243, 10, 232,  0, 243, 20, 243, 60,
 					   243, 40, 243, 20, 243, 20, 243, 60,
 					   243, 40, 243, 20, 243, 20, };
-	    do_ps2Reset(pInfo);
 	    param = seq;
 	    paramlen = sizeof(seq);
 	}
@@ -2614,114 +2607,110 @@ initMouseHW(InputInfoPtr pInfo)
 	    /* Nothing to do. */
 	    break;
     }
- REDO:  /*
+
+    if (pMse->class & (MSE_PS2 | MSE_XPS2)) {
+	/*
 	 * If one part of the PS/2 mouse initialization fails
 	 * redo complete initialization. There are mice which
 	 * have occasional problems with initialization and
 	 * are in an unknown state.
 	 */
-    if (paramlen > 0) {
-	if (pMse->class & (MSE_PS2 | MSE_XPS2)) {
-	    int count = 10;
+	if (ps2Init) {
+	REDO:
+	    do_ps2Reset(pInfo);
+	    if (paramlen > 0) {
+		if (!ps2SendPacket(pInfo,param,paramlen)) {
+		    usleep(30000);
+		    xf86FlushInput(pInfo->fd);
+		    if (!count--)
+			return FALSE;
+		    goto REDO;
+		} 
+		usleep(30000);
+		xf86FlushInput(pInfo->fd);
+	    }
+	    
+	    if (osInfo->SetPS2Res) {
+		osInfo->SetPS2Res(pInfo, pMse->protocol, pMse->sampleRate,
+				  pMse->resolution);
+	    } else {
+		unsigned char c2[2];
+		
+		c = 0xE6;	/*230*/	/* 1:1 scaling */
+		if (!ps2SendPacket(pInfo,&c,1)) {
+		    if (!count--)
+			return FALSE;
+		    goto REDO;
+		}
+		c2[0] = 0xF3; /*243*/ /* set sampling rate */
+		if (pMse->sampleRate > 0) {
+		    if (pMse->sampleRate >= 200)
+			c2[1] = 200;
+		    else if (pMse->sampleRate >= 100)
+			c2[1] = 100;
+		    else if (pMse->sampleRate >= 80)
+			c2[1] = 80;
+		    else if (pMse->sampleRate >= 60)
+			c2[1] = 60;
+		    else if (pMse->sampleRate >= 40)
+			c2[1] = 40;
+		    else
+			c2[1] = 20;
+		} else {
+		    c2[1] = 100;
+		}
+		if (!ps2SendPacket(pInfo,c2,2)) {
+		    if (!count--)
+			return FALSE;
+		    goto REDO;
+		}
+		c2[0] = 0xE8; /*232*/	/* set device resolution */
+		if (pMse->resolution > 0) {
+		    if (pMse->resolution >= 200)
+			c2[1] = 3;
+		    else if (pMse->resolution >= 100)
+			c2[1] = 2;
+		    else if (pMse->resolution >= 50)
+			c2[1] = 1;
+		    else
+			c2[1] = 0;
+		} else {
+		    c2[1] = 2;
+		}
+		if (!ps2SendPacket(pInfo,c2,2)) {
+		    if (!count--)
+			return FALSE;
+		    goto REDO;
+		}
+		usleep(30000);
+		xf86FlushInput(pInfo->fd);
+		if (!ps2EnableDataReporting(pInfo)) {
+		    xf86Msg(X_INFO, "%s: ps2EnableDataReporting: failed\n",
+			    pInfo->name);
+		    xf86FlushInput(pInfo->fd);
+		    if (!count--)
+			return FALSE;
+		    goto REDO;
+		} else {
+		    xf86Msg(X_INFO, "%s: ps2EnableDataReporting: succeeded\n",
+			    pInfo->name);
+		}
+	    }
 	    /*
-	     * If this fails try it again. We hope to
-	     * detect a misconfigured mouse later on
-	     * so we can redo the initialization.
+	     * The PS/2 reset handling needs to be rechecked.
+	     * We need to wait until after the 4.3 release.
 	     */
-	    while (count--) {
-		if (ps2SendPacket(pInfo,param,paramlen))
-		    break;
-	    usleep(30000);
-	    } 
-	    if (!count)
-		xf86Msg(X_ERROR, "%s: Mouse initialization failed\n",
-			pInfo->name);
-	} else {
+	}
+    } else {
+	if (paramlen > 0) {
 	    if (xf86WriteSerial(pInfo->fd, param, paramlen) != paramlen)
 		xf86Msg(X_ERROR, "%s: Mouse initialization failed\n",
 			pInfo->name);
-	}
-	usleep(30000);
-	xf86FlushInput(pInfo->fd);
-    }
-
-    if (pMse->class & (MSE_PS2 | MSE_XPS2)) {
-	
-	if (osInfo->SetPS2Res) {
-	    osInfo->SetPS2Res(pInfo, pMse->protocol, pMse->sampleRate,
-			      pMse->resolution);
-	} else {
-	    unsigned char c2[2];
-	    
-	    c = 0xE6;	/*230*/	/* 1:1 scaling */
-	    if (!ps2SendPacket(pInfo,&c,1)) {
-		if (!count--)
-		    return FALSE;
-		do_ps2Reset(pInfo);
-		goto REDO;
-	    }
-	    c2[0] = 0xF3; /*243*/ /* set sampling rate */
-	    if (pMse->sampleRate > 0) {
-		if (pMse->sampleRate >= 200)
-		    c2[1] = 200;
-		else if (pMse->sampleRate >= 100)
-		    c2[1] = 100;
-		else if (pMse->sampleRate >= 80)
-		    c2[1] = 80;
-		else if (pMse->sampleRate >= 60)
-		    c2[1] = 60;
-		else if (pMse->sampleRate >= 40)
-		    c2[1] = 40;
-		else
-		    c2[1] = 20;
-	    } else {
-		c2[1] = 100;
-	    }
-	    if (!ps2SendPacket(pInfo,c2,2)) {
-		if (!count--)
-		    return FALSE;
-		do_ps2Reset(pInfo);
-		goto REDO;
-	    }
-	    c2[0] = 0xE8; /*232*/	/* set device resolution */
-	    if (pMse->resolution > 0) {
-		if (pMse->resolution >= 200)
-		    c2[1] = 3;
-		else if (pMse->resolution >= 100)
-		    c2[1] = 2;
-		else if (pMse->resolution >= 50)
-		    c2[1] = 1;
-		else
-		    c2[1] = 0;
-	    } else {
-		c2[1] = 2;
-	    }
-	    if (!ps2SendPacket(pInfo,c2,2)) {
-		if (!count--)
-		    return FALSE;
-		do_ps2Reset(pInfo);
-		goto REDO;
-	    }
 	    usleep(30000);
 	    xf86FlushInput(pInfo->fd);
-	    if (!ps2EnableDataReporting(pInfo)) {
-		xf86Msg(X_INFO, "%s: ps2EnableDataReporting: failed\n",
-			pInfo->name);
-		xf86FlushInput(pInfo->fd);
-		if (!count--)
-		    return FALSE;
-		do_ps2Reset(pInfo);
-		goto REDO;
-	    } else {
-		xf86Msg(X_INFO, "%s: ps2EnableDataReporting: succeeded\n",
-			pInfo->name);
-	    }
 	}
-	/*
-	 * The PS/2 reset handling needs to be rechecked.
-	 * We need to wait until after the 4.3 release.
-	 */
     }
+
     return TRUE;
 }
 
