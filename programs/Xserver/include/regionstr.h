@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.4 2001/01/17 22:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.5 2001/03/30 02:15:23 keithp Exp $ */
 
 #ifndef REGIONSTRUCT_H
 #define REGIONSTRUCT_H
@@ -251,7 +251,10 @@ extern RegDataRec miBrokenData;
 
 #define REGION_UNINIT(_pScreen, _pReg) \
 { \
-    if ((_pReg)->data && (_pReg)->data->size) xfree((_pReg)->data); \
+    if ((_pReg)->data && (_pReg)->data->size) { \
+	xfree((_pReg)->data); \
+	(_pReg)->data = NULL; \
+    } \
 }
 
 #define REGION_RESET(_pScreen, _pReg, _pBox) \
