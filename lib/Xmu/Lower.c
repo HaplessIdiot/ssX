@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/Lower.c,v 1.6 1998/09/05 06:36:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lower.c,v 1.7 1998/10/03 09:06:32 dawes Exp $ */
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
@@ -30,6 +30,12 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xmu/SysUtil.h>
 
 #include <stdio.h>
+
+#ifndef HAS_SNPRINTF
+#undef SCOPE
+#define SCOPE static
+#include "snprintf.c"
+#endif
 
 #if NeedVarargsPrototypes
 #include <stdarg.h>
@@ -139,7 +145,7 @@ XmuSnprintf(char *str, int size, _Xconst char *fmt, ...)
 
   Va_start(ap, fmt);
 
-#ifndef HAS_SNPRINTF
+#if 0
   retval = vsprintf(str, fmt, ap);
   if (retval >= size)
     {

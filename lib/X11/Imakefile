@@ -3,7 +3,7 @@ XCOMM $TOG: Imakefile /main/196 1997/05/20 10:06:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.23 1998/06/28 08:41:31 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.24 1998/12/20 11:56:56 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoExtraLib SharedLibX11
@@ -80,10 +80,6 @@ EXTRA_LIBRARIES = /**/
          K5SRCS = k5encode.c
          K5INCL = Krb5Includes
          K5DEFS = Krb5Defines
-#endif
-#if !HasSnprintf
-       MISCSRCS = snprintf.c
-       MISCOBJS = snprintf.o
 #endif
 #if NeedLibInsideFlag
     LIB_DEFINES = -D_XLIBINT_
@@ -959,12 +955,6 @@ LinkSourceFile(Wrap.h,$(XDMCPLIBSRC))
 LinkSourceFile(Wrap.c,$(XDMCPLIBSRC))
 LinkSourceFile(Wraphelp.c,$(XDMCPLIBSRC))
 #endif
-
-#if !HasSnprintf
-LinkSourceFile(snprintf.c,../misc)
-SpecialCLibObjectRule(snprintf,$(ICONFIGFILES),-DLIBX11)
-#endif
-LinkSourceFile(snprintf.h,../misc)
 
 MAKEKEYS = ./makekeys
 
