@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.23 2002/10/18 19:38:03 keithp Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.24 2003/01/01 22:08:40 torrey Exp $
 
 #if BuildServer && DoLoadableServer
 #define IHaveSubdirs
@@ -7,7 +7,7 @@ XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.23 2002/10/18 19:38:03 keithp
 SUBDIRS = module
 #endif
 
-DEFINES = ServerExtraDefines StrcasecmpDefines
+DEFINES = ServerExtraDefines StrcasecmpDefines Freetype2BuildDefines
 
 #if FontLibSharedFreeType
 FT2INCS = -I$(FREETYPE2INCDIR) -I$(FREETYPE2INCDIR)/include

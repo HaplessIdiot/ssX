@@ -16,7 +16,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/FreeType/ftoption.h,v 1.3 2002/10/01 00:02:10 alanh Exp $ */
 
 #ifndef __FTOPTION_H__
 #define __FTOPTION_H__
@@ -377,7 +377,7 @@ FT_BEGIN_HEADER
   /* By undefining this, you will only compile the code necessary to load  */
   /* TrueType glyphs without hinting.                                      */
   /*                                                                       */
-#define  TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+/* #define  TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
 
 
   /*************************************************************************/

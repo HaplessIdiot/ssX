@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.10 2002/10/01 00:02:11 alanh Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.11 2002/10/16 14:16:25 tsi Exp $
 
 FT2SOURCEDIR = $(TOP)/extras/freetype2/src
 FT2INCDIR = $(TOP)/extras/freetype2/include
@@ -6,7 +6,7 @@ FT2INCDIR = $(TOP)/extras/freetype2/include
 #define IHaveModules
 #include <Server.tmpl>
 
-DEFINES = -DFONTMODULE
+DEFINES = -DFONTMODULE Freetype2BuildDefines
 
 INCLUDES = -I.. -I$(FONTINCSRC) -I../../include -I$(XINCLUDESRC) \
            -I$(SERVERSRC)/include \

@@ -14,12 +14,12 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/FreeType/ftheader.h,v 1.3 2002/10/01 00:02:10 alanh Exp $ */
 
 #ifndef __FT_HEADER_H__
 #define __FT_HEADER_H__
 
-  /*************************************************************************/
+  /*@***********************************************************************/
   /*                                                                       */
   /* <Macro>                                                               */
   /*    FT_BEGIN_HEADER                                                    */
@@ -37,7 +37,7 @@
 #endif
 
 
-  /*************************************************************************/
+  /*@***********************************************************************/
   /*                                                                       */
   /* <Macro>                                                               */
   /*    FT_END_HEADER                                                      */
@@ -362,6 +362,28 @@
   /*                                                                       */
 #define FT_BDF_H  <freetype/ftbdf.h>
 
+  /*************************************************************************/
+  /*                                                                       */
+  /* @macro:                                                               */
+  /*    FT_GZIP_H                                                          */
+  /*                                                                       */
+  /* @description:                                                         */
+  /*    A macro used in #include statements to name the file containing    */
+  /*    the definitions of an API to support for gzip-compressed files.    */
+  /*                                                                       */
+#define FT_GZIP_H  <freetype/ftgzip.h>
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* @macro:                                                               */
+  /*    FT_WINFONTS_H                                                      */
+  /*                                                                       */
+  /* @description:                                                         */
+  /*    A macro used in #include statements to name the file containing    */
+  /*    the definitions of an API to support Windows .FNT files            */
+  /*                                                                       */
+#define FT_WINFONTS_H   <freetype/ftwinfnt.h>
 
   /*************************************************************************/
   /*                                                                       */
@@ -488,6 +510,7 @@
   /* */
 
 #define FT_TRIGONOMETRY_H          <freetype/fttrigon.h>
+#define FT_STROKER_H               <freetype/ftstroker.h>
 #define FT_SYNTHESIS_H             <freetype/ftsynth.h>
 #define FT_ERROR_DEFINITIONS_H     <freetype/fterrdef.h>
 
@@ -498,6 +521,8 @@
 #define FT_CACHE_INTERNAL_CACHE_H  <freetype/cache/ftccache.h>
 
 #define FT_XFREE86_H               <freetype/ftxf86.h>
+
+#define FT_INCREMENTAL_H           <freetype/ftincrem.h>
 
   /* now include internal headers definitions from <freetype/internal/...> */
 

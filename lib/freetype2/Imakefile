@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.11 2003/05/23 23:39:52 torrey Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.12 2003/05/25 03:12:24 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -29,11 +29,13 @@ FREETYPEINC = $(FREETYPETOP)/include/freetype
 
 #ifdef DarwinArchitecture
 # if DarwinQuartzSupport
-DEFINES = -DTARGET_API_MAC_CARBON=TRUE
+DEFINES = -DTARGET_API_MAC_CARBON=TRUE Freetype2BuildDefines
 REQUIREDLIBS = -framework CoreServices -framework ApplicationServices
 # else
-DEFINES = -DDARWIN_NO_CARBON
+DEFINES = -DDARWIN_NO_CARBON Freetype2BuildDefines
 # endif
+#else
+DEFINES = Freetype2BuildDefines
 #endif
 
 INCLUDES = -I. $(FREETYPE2INCLUDES)\
@@ -67,9 +69,12 @@ SRCS_BASE = ftbase.c \
             ftglyph.c \
             ftinit.c \
             ftmm.c \
+            ftpfr.c \
+            ftstroker.c \
             ftsynth.c \
             ftsystem.c \
             fttype1.c \
+            ftwinfnt.c \
             ftxf86.c
 
 OBJS_BASE = ftbase.o \
@@ -79,9 +84,12 @@ OBJS_BASE = ftbase.o \
             ftglyph.o \
             ftinit.o \
             ftmm.o \
+            ftpfr.o \
+            ftstroker.o \
             ftsynth.o \
             ftsystem.o \
             fttype1.o \
+            ftwinfnt.o \
             ftxf86.o
 
 #if defined(DarwinArchitecture) && DarwinQuartzSupport
@@ -199,9 +207,12 @@ LinkSourceFile(ftdebug.c,$(FREETYPESRC)/base)
 LinkSourceFile(ftglyph.c,$(FREETYPESRC)/base)
 LinkSourceFile(ftinit.c,$(FREETYPESRC)/base)
 LinkSourceFile(ftmm.c,$(FREETYPESRC)/base)
+LinkSourceFile(ftpfr.c,$(FREETYPESRC)/base)
+LinkSourceFile(ftstroker.c,$(FREETYPESRC)/base)
 LinkSourceFile(ftsynth.c,$(FREETYPESRC)/base)
 LinkSourceFile(ftsystem.c,$(FREETYPESRC)/base)
 LinkSourceFile(fttype1.c,$(FREETYPESRC)/base)
+LinkSourceFile(ftwinfnt.c,$(FREETYPESRC)/base)
 LinkSourceFile(ftxf86.c,$(FREETYPESRC)/base)
 
 #if defined(DarwinArchitecture) && DarwinQuartzSupport
