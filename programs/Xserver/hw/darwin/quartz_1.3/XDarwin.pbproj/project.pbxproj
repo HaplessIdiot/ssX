@@ -7,17 +7,19 @@
 	objects = {
 		01279092000747AA0A000002 = {
 			isa = PBXFileReference;
-			path = Xserver.m;
+			path = XServer.m;
 			refType = 4;
 		};
 		0127909600074AF60A000002 = {
 			isa = PBXFileReference;
-			path = XApplication.m;
+			name = XApplication.m;
+			path = ../quartz/XApplication.m;
 			refType = 4;
 		};
 		0127909800074B1A0A000002 = {
 			isa = PBXFileReference;
-			path = XApplication.h;
+			name = XApplication.h;
+			path = ../quartz/XApplication.h;
 			refType = 4;
 		};
 		014C68ED00ED6A9D7F000001 = {
@@ -42,7 +44,8 @@
 		};
 		014C68F200ED7AD67F000001 = {
 			isa = PBXFileReference;
-			path = fakeBoxRec.h;
+			name = fakeBoxRec.h;
+			path = ../quartz/fakeBoxRec.h;
 			refType = 4;
 		};
 		014C68F300EE5AB97F000001 = {
@@ -119,7 +122,7 @@
 			isa = PBXGroup;
 			name = "X Server";
 			path = ..;
-			refType = 2;
+			refType = 4;
 		};
 		018F40F3003E1916CE6F79C2 = {
 			isa = PBXFileReference;
@@ -231,12 +234,14 @@
 //044
 		04329610000763920A000002 = {
 			isa = PBXFileReference;
-			path = Preferences.m;
+			name = Preferences.m;
+			path = ../quartz/Preferences.m;
 			refType = 4;
 		};
 		04329611000763920A000002 = {
 			isa = PBXFileReference;
-			path = Preferences.h;
+			name = Preferences.h;
+			path = ../quartz/Preferences.h;
 			refType = 4;
 		};
 //040
@@ -547,7 +552,8 @@
 //174
 		170DFAFF00729A35416877C2 = {
 			isa = PBXFileReference;
-			path = XDarwinStartup.c;
+			name = XDarwinStartup.c;
+			path = ../quartz/XDarwinStartup.c;
 			refType = 4;
 		};
 		170DFB0000729C86416877C2 = {
@@ -560,7 +566,7 @@
 			isa = PBXGroup;
 			name = IOKit;
 			path = ..;
-			refType = 2;
+			refType = 4;
 		};
 //170
 //171
@@ -666,7 +672,7 @@
 //1C4
 		1C4A3109004D8F24CE6F79C2 = {
 			isa = PBXFileReference;
-			path = Xserver.h;
+			path = XServer.h;
 			refType = 4;
 		};
 //1C0
@@ -743,9 +749,13 @@
 		29B97314FDCFA39411CA2CEA = {
 			children = (
 				080E96DDFE201D6D7F000001,
+				018F40F2003E1902CE6F79C2,
+				170DFB0000729C86416877C2,
+				43B962CE00617089416877C2,
+				F51B53260253F84B01000001,
+				32FEE13C00E07C3E7F000001,
 				29B97315FDCFA39411CA2CEA,
 				29B97317FDCFA39411CA2CEA,
-				618092480041B0E4CE6F79C2,
 				29B97323FDCFA39411CA2CEA,
 				19C28FACFE9D520D11CA2CBB,
 			);
@@ -757,10 +767,6 @@
 		29B97315FDCFA39411CA2CEA = {
 			children = (
 				170DFAFF00729A35416877C2,
-				018F40F2003E1902CE6F79C2,
-				170DFB0000729C86416877C2,
-				43B962CE00617089416877C2,
-				32FEE13C00E07C3E7F000001,
 			);
 			isa = PBXGroup;
 			name = "Other Sources";
@@ -782,7 +788,7 @@
 			);
 			isa = PBXGroup;
 			name = Resources;
-			path = "";
+			path = ../bundle;
 			refType = 4;
 		};
 		29B97318FDCFA39411CA2CEA = {
@@ -860,6 +866,7 @@
 			);
 			isa = PBXGroup;
 			name = Rootless;
+			path = "";
 			refType = 4;
 		};
 		32FEE13E00E07CBE7F000001 = {
@@ -949,6 +956,7 @@
 			);
 			isa = PBXGroup;
 			name = Quartz;
+			path = ../quartz;
 			refType = 4;
 		};
 		43B962CF00617089416877C2 = {
@@ -995,29 +1003,31 @@
 //432
 //433
 //434
-//610
-//611
-//612
-//613
-//614
-		618092480041B0E4CE6F79C2 = {
-			children = (
-			);
-			isa = PBXGroup;
-			name = Libraries;
-			path = ../../..;
-			refType = 2;
-		};
-//610
-//611
-//612
-//613
-//614
 //F50
 //F51
 //F52
 //F53
 //F54
+		F51B53260253F84B01000001 = {
+			children = (
+				F51B53270253F8B701000001,
+				F51B53280253F8B701000001,
+			);
+			isa = PBXGroup;
+			name = "Full Screen";
+			path = ../quartz;
+			refType = 4;
+		};
+		F51B53270253F8B701000001 = {
+			isa = PBXFileReference;
+			path = fullscreen.c;
+			refType = 4;
+		};
+		F51B53280253F8B701000001 = {
+			isa = PBXFileReference;
+			path = fullscreen.h;
+			refType = 4;
+		};
 		F51BF62A02026DAF01000001 = {
 			isa = PBXFileReference;
 			name = Portuguese;
@@ -1062,12 +1072,14 @@
 		};
 		F5269C2D01D5BC3501000001 = {
 			isa = PBXFileReference;
-			path = pseudoramiX.c;
+			name = pseudoramiX.c;
+			path = ../quartz/pseudoramiX.c;
 			refType = 4;
 		};
 		F5269C2E01D5BC3501000001 = {
 			isa = PBXFileReference;
-			path = pseudoramiX.h;
+			name = pseudoramiX.h;
+			path = ../quartz/pseudoramiX.h;
 			refType = 4;
 		};
 		F53321390193CB6A01000001 = {
