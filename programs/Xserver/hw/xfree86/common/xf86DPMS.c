@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.9 2003/08/24 17:36:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DPMS.c,v 1.10 2003/10/17 20:02:12 alanh Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -37,6 +37,8 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #ifdef DPMSExtension
+#define DPMS_SERVER
+#include "extensions/dpms.h"
 #include "dpmsproc.h"
 #endif
 
@@ -140,6 +142,9 @@ DPMSSet(int level)
 
     if (DPMSIndex < 0)
 	return;
+
+    if (level != DPMSModeOn)
+	SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverActive);
 
     /* For each screen, set the DPMS level */
     for (i = 0; i < xf86NumScreens; i++) {
