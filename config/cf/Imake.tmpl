@@ -1,11 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $TOG: Imake.tmpl /main/249 1997/10/13 15:28:56 kaleb $
+XCOMM $Xorg: Imake.tmpl,v 1.4 2000/08/17 19:41:46 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.87 2000/12/02 19:06:57 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.88 2001/01/15 20:56:14 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -786,7 +786,7 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 #ifndef UNCOMPRESSPATH
-#define UNCOMPRESSPATH /usr/ucb/uncompress
+#define UNCOMPRESSPATH /usr/ucb/uncompress /* obsolete */
 #endif
 #ifndef OptimizedCDebugFlags
 #define OptimizedCDebugFlags -O
@@ -886,6 +886,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef HasGcc2ForCplusplus
 #define HasGcc2ForCplusplus NO
+#endif
+#ifndef HasBrokenCCForLink
+#define HasBrokenCCForLink NO
 #endif
 #ifndef HasCenterLineC
 #define HasCenterLineC NO
