@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.5 1998/09/19 12:14:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.6 1998/10/05 13:23:02 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -157,7 +157,7 @@ xf86HandleBuiltinMode(ScrnInfoPtr scrp,
     int DivFactor = 1;
     int clockIndex;
     
-    if ( p->type & M_T_CLOCK_C ) {
+    if ((p->type & M_T_CLOCK_C) == M_T_CLOCK_C) {
 	/* Check clock is in range */
 	for (cp = clockRanges; cp != NULL; cp = cp->next) {
 	    if ((cp->minClock <= p->Clock) &&
@@ -308,7 +308,7 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	     * Since built-in modes always come before user specified
 	     * modes it will always be found first.  
 	     */
-	    if ( p->type & M_T_BUILTIN ) 
+	    if (p->type & M_T_BUILTIN) 
 		return xf86HandleBuiltinMode(scrp, p,modep, clockRanges,
 					     allowDiv2);
 		
@@ -1121,7 +1121,8 @@ xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
 	return;
 
     do {
-	if (p->type & M_T_CRTC_C){
+	if (!(p->type & M_T_BUILTIN) ||
+	    ((p->type & M_T_CRTC_C) == M_T_CRTC_C)) {
 	    p->CrtcHDisplay		= p->HDisplay;
 	    p->CrtcHSyncStart	        = p->HSyncStart;
 	    p->CrtcHSyncEnd		= p->HSyncEnd;
