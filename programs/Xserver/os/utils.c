@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.17 1996/03/29 22:19:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.18 1996/06/29 09:10:24 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -126,6 +126,9 @@ extern int defaultColorVisualClass;
 extern Bool permitOldBugs;
 extern int monitorResolution;
 extern Bool defeatAccessControl;
+#ifdef SERVER_LOCK
+static Bool nolock = FALSE;
+#endif
 
 Bool CoreDump;
 Bool noTestExtensions;
@@ -232,6 +235,7 @@ LockServer()
   char tmp[PATH_MAX], lock[PATH_MAX], pid_str[12];
   int lfd, i, haslock, l_pid, t;
 
+  if (nolock) return;
   /*
    * Path names
    */
@@ -357,6 +361,8 @@ UnlockServer()
 {
 #ifndef AMOEBA
   char buf[PATH_MAX];
+
+  if (nolock) return;
 
   if (!StillLocking){
 
@@ -528,6 +534,9 @@ void UseMsg()
 #endif
 #ifdef RLIMIT_STACK
     ErrorF("-ls int                limit stack space to N Kb\n");
+#endif
+#ifdef SERVER_LOCK
+    ErrorF("-nolock                disable the locking mechanism\n");
 #endif
 #ifndef NOLOGOHACK
     ErrorF("-logo                  enable logo in screen saver\n");
@@ -772,6 +781,12 @@ char	*argv[];
 	    }
 	    else
 		UseMsg();
+	}
+#endif
+#ifdef SERVER_LOCK
+	else if ( strcmp ( argv[i], "-nolock") == 0)
+	{
+	    nolock = TRUE;
 	}
 #endif
 #ifndef NOLOGOHACK

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.18 1996/08/20 12:29:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.19 1996/08/23 11:04:20 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -386,11 +386,16 @@ struct pci_vendor_device {
 	void (*print_func)(struct pci_config_reg *);
     } device[MAX_DEV_PER_VENDOR];
 } pvd[] = {
+        { 0x0e11, "Compaq", {
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x1000, "NCR", {
                             { 0x0001, "53C810", NF },
                             { 0x0002, "53C820", NF },
                             { 0x0003, "53C825", NF },
                             { 0x0004, "53C815", NF },
+                            { 0x0005, "53C810AP", NF },
+                            { 0x0006, "53C860", NF },
+                            { 0x000F, "53C875", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1002, "ATI", {
                             { 0x4158, "Mach32", NF },
@@ -422,7 +427,7 @@ struct pci_vendor_device {
                             { 0x9001, "P9000", NF },
                             { 0x9100, "P9100", NF },
                             { 0x0000, (char *)NULL, NF } } },
-        { 0x1011, "Digital", {
+        { 0x1011, "Digital Equipment Corporation", {
                             { 0x0001, "DC21050 PCI-PCI Bridge",print_pcibridge},
                             { 0x0002, "DC21040 10Mb/s Ethernet", NF },
                             { 0x0009, "DC21140 10/100 Mb/s Ethernet", NF },
@@ -437,9 +442,16 @@ struct pci_vendor_device {
                             { 0x00B8, "GD 5446", NF },
                             { 0x00D0, "GD 5462", NF },
                             { 0x1100, "CL 6729", NF },
-                            { 0x1200, "CL 7542", NF },
+                            { 0x1200, "GD 7542", NF },
+                            { 0x1202, "GD 7543", NF },
+                            { 0x1204, "GD 7541", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x1014, "IBM", {
+                            { 0x0022, "82351 pci-pci bridge", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x101A, "NCR", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x101C, "WD*", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1022, "AMD", {
                             { 0x2000, "79C970 Lance", NF },
@@ -465,6 +477,8 @@ struct pci_vendor_device {
                             { 0x00DC, "65548", NF },
                             { 0x00E0, "65550", NF },
                             { 0x00E4, "65554", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x1031, "Miro", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1036, "FD", {
                             { 0x0000, "TMC-18C30 (36C70)", NF },
@@ -493,6 +507,8 @@ struct pci_vendor_device {
                             { 0xC621, "82C621", NF },
                             { 0xC822, "82C822", NF },
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x104A, "SGS Thomson", {
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x104B, "BusLogic", {
                             { 0x0140, "946C 01", NF },
                             { 0x1040, "946C 10", NF },
@@ -513,6 +529,8 @@ struct pci_vendor_device {
         { 0x1061, "X", {
                             { 0x0001, "ITT AGX016", NF },
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x1074, "Nexgen", {
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x1077, "QLogic", {
                             { 0x1020, "ISP1020", NF },
                             { 0x1022, "ISP1022", NF },
@@ -529,6 +547,8 @@ struct pci_vendor_device {
         { 0x1098, "Vision", {
                             { 0x0001, "QD 8500", NF },
                             { 0x0002, "QD 8580", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x10A8, "Sierra", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x10AA, "ACC", {
                             { 0x0000, (char *)NULL, NF } } },
@@ -547,8 +567,22 @@ struct pci_vendor_device {
                             { 0x1451, "M1451", NF },
                             { 0x5215, "M4803", NF },
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x10CD, "Advanced System Products", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x10DC, "CERN", {
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x10E0, "IMS", {
                             { 0x8849, "8849", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x10E1, "Tekram", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x10E8, "AMCC", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x10EA, "Intergraphics", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x10EC, "Realtek", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x1101, "Initio Corp", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1106, "VIA", {
                             { 0x0505, "VT 82C505", NF },
@@ -561,17 +595,41 @@ struct pci_vendor_device {
         { 0x111A, "EF", {
                             { 0x0000, "155P-MF1", NF },
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x1127, "Fore Systems", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x112F, "Imaging Technology", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x113C, "PLX", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x1142, "Alliance", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x114A, "VMIC", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x114F, "DIGI*", {
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x1159, "Mutech", {
                             { 0x0001, "MV1000", NF },
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x1179, "Toshiba", {
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x1193, "Zeinet", {
                             { 0x0001, "1221", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x11CB, "Specialix", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x11FE, "Control", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x120E, "Cyclades", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x1281, "YOKOGAWA", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1C1C, "Symphony", {
                             { 0x0001, "82C101", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1DE1, "Tekram", {
                             { 0xDC29, "DC290", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x4005, "Avance", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x5333, "S3", {
                             { 0x8811, "Trio32/64", NF },
@@ -590,16 +648,26 @@ struct pci_vendor_device {
                             { 0x0484, "82378IB pci-isa bridge", NF },
                             { 0x0486, "82430ZX Aries", NF },
                             { 0x04A3, "82434LX pci cache mem controller", NF },
+                            { 0x1230, "82371 bus-master IDE controller", NF },
                             { 0x1223, "SAA7116", NF },
                             { 0x122D, "82437 Triton", NF },
                             { 0x122E, "82471 Triton", NF },
                             { 0x1230, "82438", NF },
+                            { 0x1250, "82439", NF },
+                            { 0x7000, "82371 pci-isa bridge", NF },
+                            { 0x7010, "82371 bus-master IDE controller", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x9004, "Adaptec", {
                             { 0x5078, "7850", NF },
+                            { 0x5578, "7855", NF },
+                            { 0x6078, "7860", NF },
                             { 0x7078, "294x", NF },
                             { 0x7178, "2940", NF },
                             { 0x7278, "7872", NF },
+                            { 0x7478, "2944", NF },
+                            { 0x8178, "2940U", NF },
+                            { 0x8278, "3940U", NF },
+                            { 0x8478, "2944U", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x907F, "Atronics", {
                             { 0x2015, "IDE-2015PL", NF },
@@ -607,6 +675,7 @@ struct pci_vendor_device {
         { 0xEDD8, "ARK Logic", {
                             { 0xA091, "1000PV", NF },
                             { 0xA099, "2000PV", NF },
+                            { 0xA0A1, "2000MT", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x0000, (char *)NULL, {
                             { 0x0000, (char *)NULL, NF } } }
@@ -625,16 +694,29 @@ struct pci_vendor_device {
 #endif
 
 
+int f_flag=0;
+
 main(int argc, unsigned char *argv[])
 {
     unsigned long tmplong1, tmplong2, config_cmd;
     unsigned char tmp1, tmp2;
     unsigned int idx;
     struct pci_config_reg pcr;
+    int ch;
 
-    if (argc != 1) {
-	printf("Usage: %s\n");
+    if (argc > 2) {
+	printf("Usage: %s [-f] \n");
 	exit(1);
+    }
+    while((ch = getopt(argc, argv, "f")) != EOF) {
+     	switch((char)ch) {
+	case 'f':
+		f_flag = 1;
+		break;
+	default :
+		printf("Usage: %s [-f] \n");
+		exit(1);
+        }
     }
 #if !defined(MSDOS)
     if (getuid()) {
@@ -681,6 +763,8 @@ main(int argc, unsigned char *argv[])
     idx = 0;
 
     do {
+        printf("Probing for devices on PCI bus %d:\n\n", pcr._pcibusidx);
+
         for (pcr._cardnum = 0x0; pcr._cardnum < 0x20; pcr._cardnum += 0x1) {
 	    config_cmd = PCI_EN | (pcr._pcibuses[pcr._pcibusidx]<<16) |
                                   (pcr._cardnum<<11);
@@ -720,10 +804,20 @@ main(int argc, unsigned char *argv[])
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x40);
 	    pcr._user_config = inl(PCI_MODE1_DATA_REG);
 
-            /* check for pci-pci bridges (currently we only know Digital) */
-            if ((pcr._vendor == 0x1011) && (pcr._device == 0x0001))
-                if (pcr._secondary_bus_number > 0)
-                    pcr._pcibuses[pcr._pcinumbus++] = pcr._secondary_bus_number;
+            /* check for pci-pci bridges */
+#define PCI_CLASS_MASK 		0xff000000
+#define PCI_SUBCLASS_MASK 	0x00ff0000
+#define PCI_CLASS_BRIDGE 	0x06000000
+#define PCI_SUBCLASS_BRIDGE_PCI	0x00040000
+	    switch(pcr._class_revision & (PCI_CLASS_MASK|PCI_SUBCLASS_MASK)) {
+		case PCI_CLASS_BRIDGE|PCI_SUBCLASS_BRIDGE_PCI:
+		    if (pcr._secondary_bus_number > 0) {
+		        pcr._pcibuses[pcr._pcinumbus++] = pcr._secondary_bus_number;
+		    }
+			break;
+		default:
+			break;
+	    }
 
 	    if (idx++ >= MAX_PCI_DEVICES)
 	        continue;
@@ -820,57 +914,69 @@ identify_card(struct pci_config_reg *pcr)
 		printf(" Device unknown\n");
 	else {
 	    printf("\n");
-	    if (pvd[i].device[j].print_func != (void (*)())NULL) {
-                pvd[i].device[j].print_func(pcr);
-		return;
+	    if (f_flag) {
+	        if (pvd[i].device[j].print_func != (void (*)())NULL) {
+                    pvd[i].device[j].print_func(pcr);
+		    return;
+	        }
 	    }
 	}
 
-        if (pcr->_status_command)
-            printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
-                pcr->_status, pcr->_command);
-        if (pcr->_class_revision)
-            printf("  CLASS     0x%02x 0x%02x 0x%02x  REVISION 0x%02x\n",
-                pcr->_base_class, pcr->_sub_class, pcr->_prog_if,
-		pcr->_rev_id);
-        if (pcr->_bist_header_latency_cache)
-            printf("  BIST      0x%02x  HEADER 0x%02x  LATENCY 0x%02x  CACHE 0x%02x\n",
-                pcr->_bist, pcr->_header_type, pcr->_latency_timer,
-		pcr->_cache_line_size);
-        if (pcr->_base0)
-            printf("  BASE0     0x%08x  addr 0x%08x  %s\n",
-                pcr->_base0, pcr->_base0 & (pcr->_base0 & 0x1 ?
-		0xFFFFFFFC : 0xFFFFFFF0), pcr->_base0 & 0x1 ? "I/O" : "MEM");
-        if (pcr->_base1)
-            printf("  BASE1     0x%08x  addr 0x%08x  %s\n",
-                pcr->_base1, pcr->_base1 & (pcr->_base1 & 0x1 ?
-		0xFFFFFFFC : 0xFFFFFFF0), pcr->_base1 & 0x1 ? "I/O" : "MEM");
-        if (pcr->_base2)
-            printf("  BASE2     0x%08x  addr 0x%08x  %s\n",
-                pcr->_base2, pcr->_base2 & (pcr->_base2 & 0x1 ?
-		0xFFFFFFFC : 0xFFFFFFF0), pcr->_base2 & 0x1 ? "I/O" : "MEM");
-        if (pcr->_base3)
-            printf("  BASE3     0x%08x  addr 0x%08x  %s\n",
-                pcr->_base3, pcr->_base3 & (pcr->_base3 & 0x1 ?
-		0xFFFFFFFC : 0xFFFFFFF0), pcr->_base3 & 0x1 ? "I/O" : "MEM");
-        if (pcr->_base4)
-            printf("  BASE4     0x%08x  addr 0x%08x  %s\n",
-                pcr->_base4, pcr->_base4 & (pcr->_base4 & 0x1 ?
-		0xFFFFFFFC : 0xFFFFFFF0), pcr->_base4 & 0x1 ? "I/O" : "MEM");
-        if (pcr->_base5)
-            printf("  BASE5     0x%08x  addr 0x%08x  %s\n",
-                pcr->_base5, pcr->_base5 & (pcr->_base5 & 0x1 ?
-		0xFFFFFFFC : 0xFFFFFFF0), pcr->_base5 & 0x1 ? "I/O" : "MEM");
-        if (pcr->_baserom)
-            printf("  BASEROM   0x%08x  addr 0x%08x  %sdecode-enabled\n",
-                pcr->_baserom, pcr->_baserom & 0xFFFF8000,
-                pcr->_baserom & 0x1 ? "" : "not-");
-        if (pcr->_max_min_ipin_iline)
-            printf("  MAX_LAT   0x%02x  MIN_GNT 0x%02x  INT_PIN 0x%02x  INT_LINE 0x%02x\n",
-                pcr->_max_lat, pcr->_min_gnt, pcr->_int_pin, pcr->_int_line);
-        if (pcr->_user_config)
-            printf("  BYTE_0    0x%02x  BYTE_1  0x%02x  BYTE_2  0x%02x  BYTE_3  0x%02x\n",
-                pcr->_user_config_0, pcr->_user_config_1, pcr->_user_config_2, pcr->_user_config_3);
+	if (f_flag) {
+            if (pcr->_status_command)
+                printf("  STATUS    0x%04x  COMMAND 0x%04x\n",
+                    pcr->_status, pcr->_command);
+            if (pcr->_class_revision)
+                printf("  CLASS     0x%02x 0x%02x 0x%02x  REVISION 0x%02x\n",
+                    pcr->_base_class, pcr->_sub_class, pcr->_prog_if,
+		    pcr->_rev_id);
+            if (pcr->_bist_header_latency_cache)
+                printf("  BIST      0x%02x  HEADER 0x%02x  LATENCY 0x%02x  CACHE 0x%02x\n",
+                    pcr->_bist, pcr->_header_type, pcr->_latency_timer,
+		    pcr->_cache_line_size);
+            if (pcr->_base0)
+                printf("  BASE0     0x%08x  addr 0x%08x  %s\n",
+                    pcr->_base0, pcr->_base0 & (pcr->_base0 & 0x1 ?
+		    0xFFFFFFFC : 0xFFFFFFF0), 
+		    pcr->_base0 & 0x1 ? "I/O" : "MEM");
+            if (pcr->_base1)
+                printf("  BASE1     0x%08x  addr 0x%08x  %s\n",
+                    pcr->_base1, pcr->_base1 & (pcr->_base1 & 0x1 ?
+		    0xFFFFFFFC : 0xFFFFFFF0), 
+		    pcr->_base1 & 0x1 ? "I/O" : "MEM");
+            if (pcr->_base2)
+                printf("  BASE2     0x%08x  addr 0x%08x  %s\n",
+                    pcr->_base2, pcr->_base2 & (pcr->_base2 & 0x1 ?
+		    0xFFFFFFFC : 0xFFFFFFF0), 
+		    pcr->_base2 & 0x1 ? "I/O" : "MEM");
+            if (pcr->_base3)
+                printf("  BASE3     0x%08x  addr 0x%08x  %s\n",
+                    pcr->_base3, pcr->_base3 & (pcr->_base3 & 0x1 ?
+		    0xFFFFFFFC : 0xFFFFFFF0), 
+		    pcr->_base3 & 0x1 ? "I/O" : "MEM");
+            if (pcr->_base4)
+                printf("  BASE4     0x%08x  addr 0x%08x  %s\n",
+                    pcr->_base4, pcr->_base4 & (pcr->_base4 & 0x1 ?
+		    0xFFFFFFFC : 0xFFFFFFF0), 
+		    pcr->_base4 & 0x1 ? "I/O" : "MEM");
+            if (pcr->_base5)
+                printf("  BASE5     0x%08x  addr 0x%08x  %s\n",
+                    pcr->_base5, pcr->_base5 & (pcr->_base5 & 0x1 ?
+		    0xFFFFFFFC : 0xFFFFFFF0), 
+		    pcr->_base5 & 0x1 ? "I/O" : "MEM");
+            if (pcr->_baserom)
+                printf("  BASEROM   0x%08x  addr 0x%08x  %sdecode-enabled\n",
+                    pcr->_baserom, pcr->_baserom & 0xFFFF8000,
+                    pcr->_baserom & 0x1 ? "" : "not-");
+            if (pcr->_max_min_ipin_iline)
+                printf("  MAX_LAT   0x%02x  MIN_GNT 0x%02x  INT_PIN 0x%02x  INT_LINE 0x%02x\n",
+                    pcr->_max_lat, pcr->_min_gnt, 
+		    pcr->_int_pin, pcr->_int_line);
+            if (pcr->_user_config)
+                printf("  BYTE_0    0x%02x  BYTE_1  0x%02x  BYTE_2  0x%02x  BYTE_3  0x%02x\n",
+                    pcr->_user_config_0, pcr->_user_config_1, 
+		    pcr->_user_config_2, pcr->_user_config_3);
+	}
 }
 
 

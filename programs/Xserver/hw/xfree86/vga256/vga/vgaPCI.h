@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.8 1996/08/16 12:32:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.9 1996/08/18 01:52:55 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -62,7 +62,9 @@
 #define PCI_CHIP_GD5436		0x00AC
 #define PCI_CHIP_GD5446         0x00B8
 #define PCI_CHIP_GD5462		0x00D0
+#define PCI_CHIP_GD7541		0x1204
 #define PCI_CHIP_GD7542		0x1200
+#define PCI_CHIP_GD7543		0x1202
 
 /* Trident */
 #define PCI_CHIP_9320		0x9320
@@ -101,6 +103,7 @@
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091
 #define PCI_CHIP_2000PV		0xA099
+#define PCI_CHIP_2000MT		0xA0A1
 
 /* Increase this as required */
 #define MAX_DEV_PER_VENDOR 16
@@ -168,7 +171,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_GD5436,	"GD5436"},
 				{PCI_CHIP_GD5446,       "GD5446"},
 				{PCI_CHIP_GD5462,       "GD5462"},
+				{PCI_CHIP_GD7541,	"GD7541"},
 				{PCI_CHIP_GD7542,	"GD7542"},
+				{PCI_CHIP_GD7543,	"GD7543"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NCR_2,	"NCR",	{
 				{0x0000,		NULL}}},
@@ -213,6 +218,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_ARK,	"ARK Logic", {
 				{PCI_CHIP_1000PV,	"1000PV"},
 				{PCI_CHIP_2000PV,	"2000PV"},
+				{PCI_CHIP_2000MT,	"2000MT"},
 				{0x0000,		NULL}}},
     {0x0000,		NULL,	{
 				{0x0000,		NULL}}},

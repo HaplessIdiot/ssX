@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.10 1996/03/29 22:17:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.11 1996/06/29 09:08:16 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -33,6 +33,7 @@
  *
  *	- ARK1000PV (32-bit DRAM, PCI or VESA bus, 8-bit RAMDAC inteface)
  *	- ARK2000PV (64-bit DRAM, PCI or VESA bus, 16-bit RAMDAC interface)
+ *	- ARK2000MT (untested)
  *
  *	The driver does not support the older ARK1000VL yet, althought it
  * 	may work if you let the driver think it is an ARK1000PV.
@@ -360,11 +361,13 @@ static int arkDisplayableMemory;
 #define ARK1000VL	0
 #define ARK1000PV	1
 #define ARK2000PV	2
+#define ARK2000MT	3	/* not tested */
 
 static SymTabRec chipsets[] = {
 	{ ARK1000VL,	"ark1000vl" },
 	{ ARK1000PV,	"ark1000pv" },
 	{ ARK2000PV,	"ark2000pv" },
+	{ ARK2000MT,	"ark2000mt" },
 	{ -1,		"" },
 };
 
@@ -582,6 +585,9 @@ ArkProbe()
 		case 0x13 :
 			arkChip = ARK2000PV;
 			break;
+		case 0x14 :
+			arkChip = ARK2000MT;
+			break;
 		default :
 			ErrorF("%s %s: ark: Unknown ARK chip (id = 0x%02X, rev = %d)\n",
 				XCONFIG_PROBED, vga256InfoRec.name,
@@ -611,7 +617,7 @@ ArkProbe()
 				vga256InfoRec.videoRam = 1024;
 			else
 				vga256InfoRec.videoRam = 2048;
-		if (arkChip == ARK2000PV)
+		if (arkChip == ARK2000PV || arkChip == ARK2000MT)
 			if ((SR10 & 0xC0) == 0)
 				vga256InfoRec.videoRam = 1024;
 			else
@@ -749,7 +755,7 @@ ArkProbe()
 		if (maxclock16bpp > 60000)
 			maxclock16bpp = 60000;
 	}
-	if (arkChip == ARK2000PV) {
+	if (arkChip == ARK2000PV || arkChip == ARK2000MT) {
 #ifdef ARK_8BPP_MULTIPLEXING_SUPPORTED
 		if (maxclock8bpp > 240000)
 			maxclock8bpp = 240000;
@@ -830,7 +836,8 @@ ArkProbe()
 	if (vga256InfoRec.s3MClk != 0) {
 		int DRAM_bandwidth, bandwidth_limit;
 		DRAM_bandwidth = vga256InfoRec.s3MClk * 2;
-		if (arkChip == ARK2000PV && vga256InfoRec.videoRam >= 2048)
+		if ((arkChip == ARK2000PV || arkChip == ARK2000MT)
+		    && vga256InfoRec.videoRam >= 2048)
 			/* 64-bit DRAM bus. */
 			DRAM_bandwidth *= 2;
 	         /*
@@ -906,7 +913,8 @@ ArkProbe()
 		ARK.ChipLinearSize = vga256InfoRec.videoRam * 1024;
 		if (maxclock16bpp > 0)
 			ARK.ChipHas16bpp = TRUE;
-		if (arkChip == ARK2000PV && maxclock32bpp > 0)
+		if ((arkChip == ARK2000PV || arkChip == ARK2000MT)
+		    && maxclock32bpp > 0)
 			ARK.ChipHas32bpp = TRUE;
 	}
 
@@ -1115,7 +1123,7 @@ vgaArkPtr restore;
 	wrinx(0x3C4, 0x27, restore->SR27);
 	wrinx(0x3C4, 0x29, restore->SR29);
 	wrinx(0x3C4, 0x2A, restore->SR2A);
-	if (arkChip == ARK2000PV) {
+	if (arkChip == ARK2000PV || arkChip == ARK2000MT) {
 		wrinx(0x3C4, 0x28, restore->SR28);
 		wrinx(0x3C4, 0x2B, restore->SR2B);
 	}
@@ -1124,7 +1132,7 @@ vgaArkPtr restore;
  	wrinx(vgaIOBase + 4, 0x41, restore->CR41);
  	wrinx(vgaIOBase + 4, 0x42, restore->CR42);
  	wrinx(vgaIOBase + 4, 0x44, restore->CR44);
- 	if (arkChip == ARK2000PV)
+ 	if (arkChip == ARK2000PV || arkChip == ARK2000MT)
 	 	wrinx(vgaIOBase + 4, 0x46, restore->CR46);
 
 	/* RAMDAC registers. */
@@ -1207,7 +1215,7 @@ vgaArkPtr save;
 	save->SR27 = rdinx(0x3C4, 0x27);
 	save->SR29 = rdinx(0x3C4, 0x29);
 	save->SR2A = rdinx(0x3C4, 0x2A);
-	if (arkChip == ARK2000PV) {
+	if (arkChip == ARK2000PV || arkChip == ARK2000MT) {
 		save->SR28 = rdinx(0x3C4, 0x28);
 		save->SR2B = rdinx(0x3C4, 0x2B);
 	}
@@ -1216,7 +1224,7 @@ vgaArkPtr save;
 	save->CR41 = rdinx(vgaIOBase + 4,  0x41);
 	save->CR42 = rdinx(vgaIOBase + 4,  0x42);
 	save->CR44 = rdinx(vgaIOBase + 4,  0x44);
- 	if (arkChip == ARK2000PV)
+ 	if (arkChip == ARK2000PV || arkChip == ARK2000MT)
 		save->CR46 = rdinx(vgaIOBase + 4,  0x46);
 
 	/* RAMDAC registers. */
@@ -1330,7 +1338,7 @@ DisplayModePtr mode;
 	 */
 
 	/* Select 8 or 16-bit video output to RAMDAC on 2000PV. */
-	if (arkChip == ARK2000PV) {
+	if (arkChip == ARK2000PV || arkChip == ARK2000MT) {
 		new->CR46 = rdinx(vgaIOBase + 4, 0x46) & ~0x04;	/* 8-bit */
 		dac16 = 0;
 		if (multiplexing)
@@ -1373,7 +1381,7 @@ DisplayModePtr mode;
 	if (vga256InfoRec.bitsPerPixel == 16)
 		new->SR11 |= 0x0A;
 	if (vga256InfoRec.bitsPerPixel == 32)
-		if (arkChip == ARK2000PV)
+		if (arkChip == ARK2000PV || arkChip == ARK2000MT)
 			new->SR11 |= 0x0E;
 		else
 			/*
@@ -1473,7 +1481,7 @@ DisplayModePtr mode;
 			val &= ~0x07;
 			val |= threshold;
 		}
-		if (arkChip == ARK2000PV) {
+		if (arkChip == ARK2000PV || arkChip == ARK2000MT) {
 			threshold = 12;	/* A guess. */
 			val &= 0x40;
 			val |= 0x10;	/* 32-deep FIFO. */
@@ -1614,7 +1622,7 @@ DisplayModePtr mode;
 	new->SR27 = rdinx(0x3C4, 0x27);
 	new->SR29 = rdinx(0x3C4, 0x29);
 	new->SR2A = rdinx(0x3C4, 0x2A);
-	if (arkChip == ARK2000PV) {
+	if (arkChip == ARK2000PV || arkChip == ARK2000MT) {
 		new->SR28 = rdinx(0x3C4, 0x28);
 		new->SR2B = rdinx(0x3C4, 0x2B);
 	}
@@ -1639,7 +1647,8 @@ int x, y;
 	/*
 	 * 64 bit memory access when 'ark2000pv' with 'memory>=2048'
 	 */
-	if (arkChip == ARK2000PV && vga256InfoRec.videoRam >= 2048)
+	if ((arkChip == ARK2000PV || arkChip == ARK2000MT)
+	    && vga256InfoRec.videoRam >= 2048)
 		Base >>= 3;
 	else
 		Base >>= 2;

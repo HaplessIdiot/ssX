@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.2 1996/08/24 12:52:29 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/preinst.sh,v 3.3 1996/08/25 14:12:01 dawes Exp $
 #
 # preinst.sh  (for XFree86 3.1.2F)
 #
@@ -47,11 +47,66 @@ OLDFILES=" \
 	lib/X11/xkb/symbols/de_nodead \
 	"
 
-if [ ! -d $RUNDIR/. ]; then
-	echo $RUNDIR does not exist
-	echo "There is no need to run this script if you don't have an older"
-	echo "version of XFree86 installed"
+# First, do some checks for Linux/ELF
+
+if [ "`uname`" = Linux ]; then
+	if file -L /bin/sh | grep ELF >/dev/null 2>&1; then
+		echo ""
+		echo "You appear to have an ELF system."
+		# Check libncurses
+		LIBNCURSES="`ls /lib/libncurses.so.[34].* 2>/dev/null`"
+		if [ X"$LIBNCURSES" = X ]; then
+			echo ""
+			echo "Before continuing, you will need to get a current version of the ncurses"
+			echo "library.  Versions newer than 1.9.9 (which are installed with a major number"
+			echo "of 3) will do."
+			NEEDSOMETHING=YES
+		fi
+		# Check ldconfig
+		LDSO=`/sbin/ldconfig -v -n | awk '{ print $3 }'`
+		LDSOMIN=`echo $LDSO | awk -F. '{ print $3 }'`
+		LDSOMID=`echo $LDSO | awk -F. '{ print $2 }'`
+		LDSOMAJ=`echo $LDSO | awk -F. '{ print $1 }'`
+		if [ "$LDSOMAJ" -gt 1 ]; then
+			: OK
+		else
+			if [ "$LDSOMID" -gt 7 ]; then
+				: OK
+			else
+				if [ "$LDSOMIN" -ge 14 ]; then
+					: OK
+				else
+					echo ""
+					echo "Before continuing you will need to get a current version of ld.so."
+					echo "Versions newer than 1.7.14 will do."
+					NEEDSOMETHING=YES
+				fi
+			fi
+		fi
+	else
+		case "`arch`" in
+		i*86)
+			echo ""
+			echo "You appear to have an a.out system."
+			;;
+		esac
+	fi
+fi
+
+if [ X"$NEEDSOMETHING" != X ]; then
+	echo ""
+	echo "When you've made the required updates, re-run this script"
+	echo "before continuing with the installation"
 	exit 1
+fi
+
+
+# If there is no previous installation, there is nothing more to do
+
+if [ ! -d $RUNDIR/. ]; then
+	echo ""
+	echo Done
+	exit 0
 fi
 
 echo ""
@@ -102,6 +157,7 @@ for i in $OLDFILES; do
 	fi
 done
 
+echo ""
 echo Done
 
 exit 0

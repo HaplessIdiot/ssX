@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.60 1996/08/20 12:30:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.61 1996/08/23 11:04:51 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -446,6 +446,8 @@ static int cirrusClockLimit[] = {
   135100,	/* 5436 */
   135100,       /* 5446 */
   170000,       /* 5462 */
+  80100,	/* 7541 */
+  80100,	/* 7542 */
   80100,	/* 7543 */
 #else 
   /* Clock limits for 256-color mode. */
@@ -495,6 +497,9 @@ static int cirrusClockLimit16bpp[] = {
   85500,	/* 5436 */
   85500,        /* 5446 */
   135100,       /* 5462 */
+  40100,	/* 7541 */
+  40100,	/* 7542 */
+  40100,	/* 7543 */
 };
 
 static int cirrusClockLimit32bpp[] = {
@@ -505,8 +510,11 @@ static int cirrusClockLimit32bpp[] = {
   45100,	/* 5434 */
   0,		/* 5430 */
   45100,	/* 5436 */
-  45100,        /* 5446 */
-  85500,        /* 5462 */  /* Hmm... I wonder if this will break something */
+  45100,	/* 5446 */
+  85500,	/* 5462 */  /* Hmm... I wonder if this will break something */
+  0,		/* 7541 */
+  0,		/* 7542 */
+  0,		/* 7543 */
 };
 
 #define new ((vgacirrusPtr)vgaNewVideoState)

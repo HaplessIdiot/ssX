@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.18 1996/08/24 12:54:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.19 1996/08/26 14:48:12 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -1023,9 +1023,9 @@ CHIPSProbe()
 		default:
 		    CHIPSchipset = CT_545;
 		}
+	        ErrorF("%s %s: ct65545+: chip revision: %i\n",
+		    XCONFIG_PROBED, vga256InfoRec.name, temp & 07);
 	    }
-	    ErrorF("%s %s: ct65545+: chip revision: %i\n",
-		XCONFIG_PROBED, vga256InfoRec.name, temp & 07);
 	}
 	/* At this point the chip could still be a ct65550, so check for
 	 * that. This test needs some looking at */

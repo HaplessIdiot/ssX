@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.39 1996/08/14 14:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.40 1996/08/23 11:04:59 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -602,6 +602,7 @@ TVGA8900Probe()
 		tridentLinearOK = TRUE;
 		tridentDACtype = TGUIDAC;
 		TVGA8900.ChipHas16bpp = TRUE;
+		TVGA8900.ChipUse2Banks = TRUE;
 		tridentTGUIProgrammableClocks = TRUE;
 		break;
 	case TGUI9400CXi:
@@ -610,6 +611,7 @@ TVGA8900Probe()
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
+		TVGA8900.ChipUse2Banks = TRUE;
 		break;
 	case TGUI9430DGi:
 		tridentHWCursorType = 2;		/* HW cursor */
@@ -621,6 +623,7 @@ TVGA8900Probe()
 		tridentTGUIProgrammableClocks = FALSE;	/* Not programmable */
 		tridentDACtype = TKD8001;
 		TVGA8900.ChipHas16bpp = TRUE;
+		TVGA8900.ChipUse2Banks = TRUE;
 		break;
 	case TGUI9440AGi:
 	case TGUI9660XGi:
@@ -631,8 +634,20 @@ TVGA8900Probe()
 		tridentHWCursorType = 1;
 		tridentDACtype = TGUIDAC;
 		TVGA8900.ChipHas16bpp = TRUE;
+		TVGA8900.ChipUse2Banks = TRUE;
 		break;
       	}
+
+	/* 
+	 * Set up 2 bank registers 
+	 */
+
+	if (TVGA8900.ChipUse2Banks == TRUE)
+	{
+		TVGA8900.ChipSetRead = TGUISetRead;
+		TVGA8900.ChipSetWrite = TGUISetWrite;
+		TVGA8900.ChipSetReadWrite = TGUISetReadWrite;
+	}
 	
  	/* 
 	 * How much Video Ram have we got?
@@ -1552,7 +1567,7 @@ TVGA8900Init(mode)
 	if (tridentIsTGUI)
 	{
 		outb(0x3CE, 0x0F);
-		new->MiscExtFunc = inb(0x3CF) | 0x03;
+		new->MiscExtFunc = inb(0x3CF) | 0x07;
 	}
 	new->CommandReg = 0x00;		/* DAC Standard colourmap */
 
@@ -1600,9 +1615,12 @@ TVGA8900Init(mode)
 		if (OFLG_ISSET(OPTION_TGUI_PCI_READ_OFF,
 					&vga256InfoRec.options))
 			new->PCIReg &= 0xFD;
+		/* This defaults to OFF */
 		if (OFLG_ISSET(OPTION_TGUI_PCI_WRITE_ON, 
 					&vga256InfoRec.options))
 			new->PCIReg |= 0x04;
+		else
+			new->PCIReg &= 0xFB;
 		if (OFLG_ISSET(OPTION_TGUI_PCI_WRITE_OFF,
 					&vga256InfoRec.options))
 			new->PCIReg &= 0xFB;

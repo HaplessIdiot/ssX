@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.5 1996/02/19 09:51:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.6 1996/08/11 13:02:05 dawes Exp $ */
 
 
 
@@ -15,6 +15,7 @@
 #include "scrnintstr.h"
 #include "compiler.h"
 
+#include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 
@@ -28,6 +29,10 @@
 
 static dmask_t		real_mask = (dmask_t) (D_REL | D_BUTTON);
 static int		config_buttons = 0;
+
+extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
+				    unsigned long start, unsigned long stop,
+				    ScreenPtr pScreen);
 
 /******************************************************************************/
 /*
@@ -73,14 +78,14 @@ xf86OsMouseProc(pPointer, what)
 	ErrorF("ev_init: Failed to initialize event driver\n");
 
       dmask = real_mask;
-      xf86Info.mouseDev.mseFd = ev_open(&dmask);
-      switch (xf86Info.mouseDev.mseFd) {
+      xf86Info.mouseDev->mseFd = ev_open(&dmask);
+      switch (xf86Info.mouseDev->mseFd) {
 	case -1: FatalError("ev_open: Error in Configuration files\n");
 	case -2: FatalError("ev_open: No mouse devices to attach\n");
 	case -3: FatalError("ev_open: Unable to open a found device\n");
 	case -4: FatalError("ev_open: unable to open an event queue\n");
 	default:
-	  if (xf86Info.mouseDev.mseFd < 0)
+	  if (xf86Info.mouseDev->mseFd < 0)
 	    FatalError("ev_open: Failed to open device, reason unkown\n");
 	  break;
       }
@@ -108,7 +113,7 @@ xf86OsMouseProc(pPointer, what)
       InitPointerDeviceStruct((DevicePtr)pPointer, 
 			      map, 
 			      buttons,
-			      GetMotionEvents, 
+			      miPointerGetMotionEvents, 
 			      (PtrCtrlProcPtr)xf86MseCtrl, 
 			      0);
       xfree(map);
@@ -117,19 +122,19 @@ xf86OsMouseProc(pPointer, what)
       
     case DEVICE_ON:
       ev_resume();
-      AddEnabledDevice(xf86Info.mouseDev.mseFd);
-      xf86Info.mouseDev.lastButtons = 0;
-      xf86Info.mouseDev.emulateState = 0;
+      AddEnabledDevice(xf86Info.mouseDev->mseFd);
+      xf86Info.mouseDev->lastButtons = 0;
+      xf86Info.mouseDev->emulateState = 0;
       pPointer->public.on = TRUE;
       break;
       
     case DEVICE_CLOSE:
     case DEVICE_OFF:
       pPointer->public.on = FALSE;
-      RemoveEnabledDevice(xf86Info.mouseDev.mseFd);
+      RemoveEnabledDevice(xf86Info.mouseDev->mseFd);
       if (what == DEVICE_CLOSE) {
 	ev_close();
-	xf86Info.mouseDev.mseFd = -1;
+	xf86Info.mouseDev->mseFd = -1;
       } else
 	ev_suspend();
       break;
