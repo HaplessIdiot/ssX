@@ -20,7 +20,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/glxinfo/glxinfo.c,v 1.4 2001/03/19 13:57:35 alanh Exp $ */
+/* $XFree86: xc/programs/glxinfo/glxinfo.c,v 1.5 2001/04/02 21:22:05 dawes Exp $ */
 
 /*
  * This program is a work-alike of the IRIX glxinfo program.
@@ -44,6 +44,7 @@
 #include <GL/glx.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 
 #ifndef GLX_NONE_EXT
@@ -140,6 +141,13 @@ print_extension_list(const char *ext)
 
 
 static void
+print_display_info(Display *dpy)
+{
+   printf("name of display: %s\n", DisplayString(dpy));
+}
+
+
+static void
 print_screen_info(Display *dpy, int scrnum)
 {
    Window win;
@@ -203,11 +211,26 @@ print_screen_info(Display *dpy, int scrnum)
       const char *glRenderer = (const char *) glGetString(GL_RENDERER);
       const char *glVersion = (const char *) glGetString(GL_VERSION);
       const char *glExtensions = (const char *) glGetString(GL_EXTENSIONS);
+      char *displayName = NULL;
+      char *colon = NULL, *period = NULL;
 #ifdef DO_GLU
       const char *gluVersion = (const char *) gluGetString(GLU_VERSION);
       const char *gluExtensions = (const char *) gluGetString(GLU_EXTENSIONS);
 #endif
-      printf("display: %s  screen:%d\n", DisplayString(dpy), scrnum);
+      /* Strip the screen number from the display name, if present. */
+      if (!(displayName = malloc(strlen(DisplayString(dpy)) + 1))) {
+         fprintf(stderr, "Error: malloc() failed\n");
+         exit(1);
+      }
+      strcpy(displayName, DisplayString(dpy));
+      colon = strrchr(displayName, ':');
+      if (colon) {
+         period = strchr(colon, '.');
+         if (period)
+            *period = '\0';
+      }
+      printf("display: %s  screen: %d\n", displayName, scrnum);
+      free(displayName);
       printf("direct rendering: %s\n", glXIsDirect(dpy, ctx) ? "Yes" : "No");
       printf("server glx vendor string: %s\n", serverVendor);
       printf("server glx version string: %s\n", serverVersion);
@@ -636,6 +659,7 @@ main(int argc, char *argv[])
    }
    else {
       numScreens = ScreenCount(dpy);
+      print_display_info(dpy);
       for (scrnum = 0; scrnum < numScreens; scrnum++) {
          mesa_hack(dpy, scrnum);
          print_screen_info(dpy, scrnum);
