@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/gfx/gfx_disp.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: gfx_disp.c $
  *
@@ -633,14 +633,14 @@ void gfx_reset_timing_lock(void)
 int gfx_set_display_bpp(unsigned short bpp)
 {
 	int retval = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_set_display_bpp(bpp);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_set_display_bpp(bpp);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -653,14 +653,14 @@ int gfx_set_display_bpp(unsigned short bpp)
 int gfx_is_display_mode_supported(int xres, int yres, int bpp, int hz)
 {
 	int retval = -1;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_is_display_mode_supported(xres, yres, bpp, hz);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_is_display_mode_supported(xres, yres, bpp, hz);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -671,14 +671,14 @@ int gfx_is_display_mode_supported(int xres, int yres, int bpp, int hz)
 int gfx_set_display_mode(int xres, int yres, int bpp, int hz)
 {
 	int retval = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_set_display_mode(xres, yres, bpp, hz);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_set_display_mode(xres, yres, bpp, hz);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -696,20 +696,20 @@ int gfx_set_display_timings(unsigned short bpp, unsigned short flags,
 	unsigned long frequency)
 {
 	int retval = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_set_display_timings(bpp, flags, 
 			hactive, hblankstart, hsyncstart, hsyncend, hblankend, htotal,
 			vactive, vblankstart, vsyncstart, vsyncend, vblankend, vtotal,
 			frequency);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_set_display_timings(bpp, flags, 
 			hactive, hblankstart, hsyncstart, hsyncend, hblankend, htotal,
 			vactive, vblankstart, vsyncstart, vsyncend, vblankend, vtotal,
 			frequency);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -719,14 +719,14 @@ int gfx_set_display_timings(unsigned short bpp, unsigned short flags,
  */
 void gfx_set_display_pitch(unsigned short pitch)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_display_pitch(pitch);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_pitch(pitch);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -735,14 +735,14 @@ void gfx_set_display_pitch(unsigned short pitch)
  */
 void gfx_set_display_offset(unsigned long offset)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_display_offset(offset);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_offset(offset);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -752,14 +752,14 @@ void gfx_set_display_offset(unsigned long offset)
 int gfx_set_display_palette_entry(unsigned long index, unsigned long palette)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_set_display_palette_entry(index, palette);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_set_display_palette_entry(index, palette);
-	#endif
+#	endif
 	return(status);
 }
 
@@ -770,14 +770,14 @@ int gfx_set_display_palette_entry(unsigned long index, unsigned long palette)
 int gfx_set_display_palette(unsigned long *palette)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_set_display_palette(palette);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_set_display_palette(palette);
-	#endif
+#	endif
 	return(status);
 }
 
@@ -787,14 +787,14 @@ int gfx_set_display_palette(unsigned long *palette)
  */
 void gfx_set_cursor_enable(int enable)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_cursor_enable(enable);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_cursor_enable(enable);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -803,14 +803,14 @@ void gfx_set_cursor_enable(int enable)
  */
 void gfx_set_cursor_colors(unsigned long bkcolor, unsigned long fgcolor)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_cursor_colors(bkcolor, fgcolor);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_cursor_colors(bkcolor, fgcolor);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -821,14 +821,14 @@ void gfx_set_cursor_position(unsigned long memoffset,
 	unsigned short xpos, unsigned short ypos, 
 	unsigned short xhotspot, unsigned short yhotspot)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_cursor_position(memoffset, xpos, ypos, xhotspot, yhotspot);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_cursor_position(memoffset, xpos, ypos, xhotspot, yhotspot);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -838,14 +838,14 @@ void gfx_set_cursor_position(unsigned long memoffset,
 void gfx_set_cursor_shape32(unsigned long memoffset, 
 	unsigned long *andmask, unsigned long *xormask)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_cursor_shape32(memoffset, andmask, xormask);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_cursor_shape32(memoffset, andmask, xormask);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -855,10 +855,10 @@ void gfx_set_cursor_shape32(unsigned long memoffset,
 void gfx_set_cursor_shape64(unsigned long memoffset, 
 	unsigned long *andmask, unsigned long *xormask)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_cursor_shape64(memoffset, andmask, xormask);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -867,10 +867,10 @@ void gfx_set_cursor_shape64(unsigned long memoffset,
  */
 void gfx_set_icon_enable(int enable)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_icon_enable(enable);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -879,10 +879,10 @@ void gfx_set_icon_enable(int enable)
  */
 void gfx_set_icon_colors (unsigned long color0, unsigned long color1, unsigned long color2)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_icon_colors (color0, color1, color2);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -891,10 +891,10 @@ void gfx_set_icon_colors (unsigned long color0, unsigned long color1, unsigned l
  */
 void gfx_set_icon_position(unsigned long memoffset, unsigned short xpos)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_icon_position(memoffset, xpos);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -904,10 +904,10 @@ void gfx_set_icon_position(unsigned long memoffset, unsigned short xpos)
 void gfx_set_icon_shape64(unsigned long memoffset, 
 	unsigned long *andmask, unsigned long *xormask, unsigned int lines)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_icon_shape64(memoffset, andmask, xormask, lines);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -917,14 +917,14 @@ void gfx_set_icon_shape64(unsigned long memoffset,
 int gfx_set_compression_enable(int enable)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_set_compression_enable(enable);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_set_compression_enable(enable);
-	#endif
+#	endif
 	return(status);
 }
 
@@ -935,14 +935,14 @@ int gfx_set_compression_enable(int enable)
 int gfx_set_compression_offset(unsigned long offset)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_set_compression_offset(offset);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_set_compression_offset(offset);
-	#endif
+#	endif
 	return(status);
 }
 
@@ -953,14 +953,14 @@ int gfx_set_compression_offset(unsigned long offset)
 int gfx_set_compression_pitch(unsigned short pitch)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_set_compression_pitch(pitch);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_set_compression_pitch(pitch);
-	#endif
+#	endif
 	return(status);
 }
 
@@ -971,14 +971,14 @@ int gfx_set_compression_pitch(unsigned short pitch)
 int gfx_set_compression_size(unsigned short size)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_set_compression_size(size);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_set_compression_size(size);
-	#endif
+#	endif
 	return(status);
 }
 
@@ -988,10 +988,10 @@ int gfx_set_compression_size(unsigned short size)
  */
 void gfx_set_display_priority_high(int enable)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_display_priority_high(enable);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1003,10 +1003,10 @@ void gfx_set_display_priority_high(int enable)
  */
 void gfx_set_display_video_format(unsigned long format)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_video_format(format);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1018,14 +1018,14 @@ void gfx_set_display_video_format(unsigned long format)
  */
 void gfx_set_display_video_enable(int enable)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_display_video_enable(enable);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_video_enable(enable);
-	#endif
+#	endif
 	return;
 }
 
@@ -1038,14 +1038,14 @@ void gfx_set_display_video_enable(int enable)
  */
 void gfx_set_display_video_size(unsigned short width, unsigned short height)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_display_video_size(width, height);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_video_size(width, height);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1057,14 +1057,14 @@ void gfx_set_display_video_size(unsigned short width, unsigned short height)
  */
 void gfx_set_display_video_offset(unsigned long offset)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_set_display_video_offset(offset);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_video_offset(offset);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1077,10 +1077,10 @@ void gfx_set_display_video_offset(unsigned long offset)
 void gfx_set_display_video_yuv_offsets(unsigned long yoffset, unsigned long uoffset,
 									   unsigned long voffset)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_video_yuv_offsets(yoffset, uoffset, voffset);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1092,10 +1092,10 @@ void gfx_set_display_video_yuv_offsets(unsigned long yoffset, unsigned long uoff
  */
 void gfx_set_display_video_yuv_pitch (unsigned long ypitch, unsigned long uvpitch)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_video_yuv_pitch (ypitch, uvpitch);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1107,10 +1107,10 @@ void gfx_set_display_video_yuv_pitch (unsigned long ypitch, unsigned long uvpitc
  */
 void gfx_set_display_video_downscale (unsigned short srch, unsigned short dsth)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_video_downscale (srch, dsth);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1122,10 +1122,10 @@ void gfx_set_display_video_downscale (unsigned short srch, unsigned short dsth)
  */
 void gfx_set_display_video_vertical_downscale_enable (int enable)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_set_display_video_vertical_downscale_enable (enable);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1135,14 +1135,14 @@ void gfx_set_display_video_vertical_downscale_enable (int enable)
 int gfx_test_timing_active(void)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_test_timing_active();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_test_timing_active();
-	#endif
+#	endif
 	return(status);
 }
 
@@ -1153,14 +1153,14 @@ int gfx_test_timing_active(void)
 int gfx_test_vertical_active(void)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_test_vertical_active();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_test_vertical_active();
-	#endif
+#	endif
 	return(status);
 }
 
@@ -1171,14 +1171,14 @@ int gfx_test_vertical_active(void)
 int gfx_wait_vertical_blank(void)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_wait_vertical_blank();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_wait_vertical_blank();
-	#endif
+#	endif
 	return(status);
 }
 
@@ -1188,14 +1188,14 @@ int gfx_wait_vertical_blank(void)
  */
 void gfx_delay_milliseconds(unsigned long milliseconds)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_delay_milliseconds(milliseconds);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_delay_milliseconds(milliseconds);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1204,14 +1204,14 @@ void gfx_delay_milliseconds(unsigned long milliseconds)
  */
 void gfx_delay_microseconds(unsigned long microseconds)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_delay_microseconds(microseconds);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_delay_microseconds(microseconds);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1223,14 +1223,14 @@ void gfx_delay_microseconds(unsigned long microseconds)
  */
 void gfx_enable_panning(int x, int y)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_enable_panning( x,  y);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_enable_panning( x,  y);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1240,14 +1240,14 @@ void gfx_enable_panning(int x, int y)
 int gfx_set_fixed_timings(int panelResX, int panelResY, unsigned short width, unsigned short height, unsigned short bpp)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_set_fixed_timings( panelResX,  panelResY,   width,   height,  bpp);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_set_fixed_timings( panelResX,  panelResY,   width,   height,  bpp);
-	#endif
+#	endif
 	return (status);
 }
 
@@ -1258,14 +1258,14 @@ int gfx_set_fixed_timings(int panelResX, int panelResY, unsigned short width, un
 int gfx_set_panel_present(int panelResX, int panelResY, unsigned short width, unsigned short height, unsigned short bpp)
 {
 	int status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_set_panel_present( panelResX,  panelResY,   width,   height,  bpp);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_set_panel_present( panelResX,  panelResY,   width,   height,  bpp);
-	#endif
+#	endif
 	return (status);
 }
 
@@ -1276,14 +1276,14 @@ int gfx_set_panel_present(int panelResX, int panelResY, unsigned short width, un
 int gfx_set_vtotal(unsigned short vtotal)
 {
 	int retval = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_set_vtotal(vtotal);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_set_vtotal(vtotal);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -1306,14 +1306,14 @@ int gfx_mode_frequency_supported(int xres, int yres, int bpp, unsigned long freq
 {
 	int freq = 0;
 
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		freq = gu1_mode_frequency_supported(xres, yres, bpp, frequency);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		freq = gu2_mode_frequency_supported(xres, yres, bpp, frequency);
-	#endif
+#	endif
 	return(freq);
 }
 
@@ -1323,14 +1323,14 @@ int gfx_mode_frequency_supported(int xres, int yres, int bpp, unsigned long freq
  */
 int gfx_get_refreshrate_from_frequency(int xres, int yres, int bpp, int *hz, unsigned long frequency)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_get_refreshrate_from_frequency(xres, yres, bpp, hz, frequency);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_get_refreshrate_from_frequency(xres, yres, bpp, hz, frequency);
-	#endif
+#	endif
 
 	return(1);
 }
@@ -1341,14 +1341,14 @@ int gfx_get_refreshrate_from_frequency(int xres, int yres, int bpp, int *hz, uns
  */
 int gfx_get_refreshrate_from_mode(int xres, int yres, int bpp, int *hz, unsigned long frequency)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_get_refreshrate_from_mode(xres, yres, bpp, hz, frequency);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_get_refreshrate_from_mode(xres, yres, bpp, hz, frequency);
-	#endif
+#	endif
 
 	return(1);
 }
@@ -1361,14 +1361,14 @@ int gfx_get_frequency_from_refreshrate(int xres, int yres, int bpp, int hz, int 
 {
 	int retval = -1;
 
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_get_frequency_from_refreshrate(xres, yres, bpp, hz, frequency);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_get_frequency_from_refreshrate(xres, yres, bpp, hz, frequency);
-	#endif
+#	endif
 
 	return retval;
 }
@@ -1380,14 +1380,14 @@ int gfx_get_frequency_from_refreshrate(int xres, int yres, int bpp, int hz, int 
 unsigned long gfx_get_max_supported_pixel_clock (void)
 {
 	unsigned long status = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_get_max_supported_pixel_clock();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_get_max_supported_pixel_clock();
-	#endif
+#	endif
 	return (status);
 }
 
@@ -1398,14 +1398,14 @@ unsigned long gfx_get_max_supported_pixel_clock (void)
 unsigned short gfx_get_display_pitch(void)
 {
 	unsigned short pitch = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		pitch = gu1_get_display_pitch();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		pitch = gu2_get_display_pitch();
-	#endif
+#	endif
 	return(pitch);
 }
 
@@ -1417,14 +1417,14 @@ unsigned short gfx_get_display_pitch(void)
 int gfx_get_display_mode_count(void)
 {
 	int retval = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_get_display_mode_count();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_get_display_mode_count();
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -1435,14 +1435,14 @@ int gfx_get_display_mode_count(void)
 unsigned long gfx_get_frame_buffer_line_size(void)
 {
 	unsigned long retval = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_get_frame_buffer_line_size();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_get_frame_buffer_line_size();
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -1455,14 +1455,14 @@ unsigned long gfx_get_frame_buffer_line_size(void)
 int gfx_get_display_mode(int *xres, int *yres, int *bpp, int *hz)
 {
 	int retval = -1;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_get_display_mode(xres, yres, bpp, hz);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_get_display_mode(xres, yres, bpp, hz);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -1474,14 +1474,14 @@ int gfx_get_display_mode(int *xres, int *yres, int *bpp, int *hz)
 int gfx_get_display_details(unsigned int mode, int *xres, int *yres, int *hz)
 {
 	int retval = -1;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		retval = gu1_get_display_details(mode, xres, yres, hz);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		retval = gu2_get_display_details(mode, xres, yres, hz);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -1492,14 +1492,14 @@ int gfx_get_display_details(unsigned int mode, int *xres, int *yres, int *hz)
 unsigned short gfx_get_hactive(void)
 {
 	unsigned short hactive = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		hactive = gu1_get_hactive();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		hactive = gu2_get_hactive();
-	#endif
+#	endif
 	return(hactive);
 }
 
@@ -1510,14 +1510,14 @@ unsigned short gfx_get_hactive(void)
 unsigned short gfx_get_hsync_start(void)
 {
 	unsigned short hsync_start = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		hsync_start = gu1_get_hsync_start();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		hsync_start = gu2_get_hsync_start();
-	#endif
+#	endif
 	return(hsync_start);
 }
 
@@ -1528,14 +1528,14 @@ unsigned short gfx_get_hsync_start(void)
 unsigned short gfx_get_hsync_end(void)
 {
 	unsigned short hsync_end = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		hsync_end = gu1_get_hsync_end();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		hsync_end = gu2_get_hsync_end();
-	#endif
+#	endif
 	return(hsync_end);
 }
 
@@ -1546,14 +1546,14 @@ unsigned short gfx_get_hsync_end(void)
 unsigned short gfx_get_htotal(void)
 {
 	unsigned short htotal = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		htotal = gu1_get_htotal();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		htotal = gu2_get_htotal();
-	#endif
+#	endif
 	return(htotal);
 }
 
@@ -1564,14 +1564,14 @@ unsigned short gfx_get_htotal(void)
 unsigned short gfx_get_vactive(void)
 {
 	unsigned short vactive = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		vactive = gu1_get_vactive();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		vactive = gu2_get_vactive();
-	#endif
+#	endif
 	return(vactive);
 }
 
@@ -1582,14 +1582,14 @@ unsigned short gfx_get_vactive(void)
 unsigned short gfx_get_vsync_end(void)
 {
 	unsigned short vsync_end = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		vsync_end = gu1_get_vsync_end();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		vsync_end = gu2_get_vsync_end();
-	#endif
+#	endif
 	return(vsync_end);
 }
 
@@ -1600,14 +1600,14 @@ unsigned short gfx_get_vsync_end(void)
 unsigned short gfx_get_vtotal(void)
 {
 	unsigned short vtotal = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		vtotal = gu1_get_vtotal();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		vtotal = gu2_get_vtotal();
-	#endif
+#	endif
 	return(vtotal);
 }
 
@@ -1618,14 +1618,14 @@ unsigned short gfx_get_vtotal(void)
 unsigned short gfx_get_display_bpp(void)
 {
 	unsigned short bpp = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		bpp = gu1_get_display_bpp();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		bpp = gu2_get_display_bpp();
-	#endif
+#	endif
 	return(bpp);
 }
 
@@ -1636,14 +1636,14 @@ unsigned short gfx_get_display_bpp(void)
 unsigned short gfx_get_vline(void)
 {
 	unsigned short vline = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		vline = gu1_get_vline();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		vline = gu2_get_vline();
-	#endif
+#	endif
 	return(vline);
 }
 
@@ -1654,14 +1654,14 @@ unsigned short gfx_get_vline(void)
 unsigned long gfx_get_display_offset(void)
 {
 	unsigned long offset = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		offset = gu1_get_display_offset();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		offset = gu2_get_display_offset();
-	#endif
+#	endif
 	return(offset);
 }
 
@@ -1672,14 +1672,14 @@ unsigned long gfx_get_display_offset(void)
 unsigned long gfx_get_cursor_offset(void)
 {
 	unsigned long base = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		base = gu1_get_cursor_offset();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		base = gu2_get_cursor_offset();
-	#endif
+#	endif
 	return(base);
 }
 
@@ -1696,14 +1696,14 @@ unsigned long gfx_get_cursor_offset(void)
 unsigned short gfx_get_hblank_start(void)
 {
 	unsigned short hblank_start = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		hblank_start = gu1_get_hblank_start();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		hblank_start = gu2_get_hblank_start();
-	#endif
+#	endif
 	return(hblank_start);
 }
 
@@ -1714,14 +1714,14 @@ unsigned short gfx_get_hblank_start(void)
 unsigned short gfx_get_hblank_end(void)
 {
 	unsigned short hblank_end = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		hblank_end = gu1_get_hblank_end();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		hblank_end = gu2_get_hblank_end();
-	#endif
+#	endif
 	return(hblank_end);
 }
 
@@ -1732,14 +1732,14 @@ unsigned short gfx_get_hblank_end(void)
 unsigned short gfx_get_vblank_start(void)
 {
 	unsigned short vblank_start = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		vblank_start = gu1_get_vblank_start();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		vblank_start = gu2_get_vblank_start();
-	#endif
+#	endif
 	return(vblank_start);
 }
 
@@ -1750,14 +1750,14 @@ unsigned short gfx_get_vblank_start(void)
 unsigned short gfx_get_vsync_start(void)
 {
 	unsigned short vsync_start = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		vsync_start = gu1_get_vsync_start();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		vsync_start = gu2_get_vsync_start();
-	#endif
+#	endif
 	return(vsync_start);
 }
 
@@ -1768,14 +1768,14 @@ unsigned short gfx_get_vsync_start(void)
 unsigned short gfx_get_vblank_end(void)
 {
 	unsigned short vblank_end = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		vblank_end = gu1_get_vblank_end();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		vblank_end = gu2_get_vblank_end();
-	#endif
+#	endif
 	return(vblank_end);
 }
 
@@ -1787,14 +1787,14 @@ int gfx_get_display_palette_entry(unsigned long index, unsigned long *palette)
 {
 	int status = 0;
 
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		status = gu1_get_display_palette_entry(index, palette);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		status = gu2_get_display_palette_entry(index, palette);
-	#endif
+#	endif
 
 	return status;
 }
@@ -1805,14 +1805,14 @@ int gfx_get_display_palette_entry(unsigned long index, unsigned long *palette)
  */
 void gfx_get_display_palette(unsigned long *palette)
 {
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		gu1_get_display_palette(palette);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_get_display_palette(palette);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -1822,14 +1822,14 @@ void gfx_get_display_palette(unsigned long *palette)
 unsigned long gfx_get_cursor_enable(void)
 {
 	unsigned long enable = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		enable = gu1_get_cursor_enable();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		enable = gu2_get_cursor_enable();
-	#endif
+#	endif
 	return(enable);
 }
 
@@ -1840,14 +1840,14 @@ unsigned long gfx_get_cursor_enable(void)
 unsigned long gfx_get_cursor_position(void)
 {
 	unsigned long position = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		position = gu1_get_cursor_position();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		position = gu2_get_cursor_position();
-	#endif
+#	endif
 	return(position);
 }
 
@@ -1858,14 +1858,14 @@ unsigned long gfx_get_cursor_position(void)
 unsigned long gfx_get_cursor_clip(void)
 {
 	unsigned long offset = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		offset = gu1_get_cursor_clip();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		offset = gu2_get_cursor_clip();
-	#endif
+#	endif
 	return(offset);
 }
 
@@ -1876,14 +1876,14 @@ unsigned long gfx_get_cursor_clip(void)
 unsigned long gfx_get_cursor_color(int index)
 {
 	unsigned long color = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		color = gu1_get_cursor_color(index);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		color = gu2_get_cursor_color(index);
-	#endif
+#	endif
 	return(color);
 }
 
@@ -1894,10 +1894,10 @@ unsigned long gfx_get_cursor_color(int index)
 unsigned long gfx_get_icon_enable(void)
 {
 	unsigned long enable = 0;
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		enable = gu2_get_icon_enable();
-	#endif
+#	endif
 	return(enable);
 }
 
@@ -1909,10 +1909,10 @@ unsigned long gfx_get_icon_offset(void)
 {
 	unsigned long base = 0;
 	
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		base = gu2_get_icon_offset();
-	#endif
+#	endif
 	
 	return(base);
 }
@@ -1925,10 +1925,10 @@ unsigned long gfx_get_icon_position(void)
 {
 	unsigned long position = 0;
 	
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		position = gu2_get_icon_position();
-	#endif
+#	endif
 	
 	return(position);
 }
@@ -1941,10 +1941,10 @@ unsigned long gfx_get_icon_color(int index)
 {
 	unsigned long color = 0;
 
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		color = gu2_get_icon_color(index);
-	#endif
+#	endif
 	
 	return(color);
 }
@@ -1956,14 +1956,14 @@ unsigned long gfx_get_icon_color(int index)
 int gfx_get_compression_enable(void)
 {
 	int enable = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		enable = gu1_get_compression_enable();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		enable = gu2_get_compression_enable();
-	#endif
+#	endif
 	return(enable);
 }
 
@@ -1974,14 +1974,14 @@ int gfx_get_compression_enable(void)
 unsigned long gfx_get_compression_offset(void)
 {
 	unsigned long offset = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		offset = gu1_get_compression_offset();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		offset = gu2_get_compression_offset();
-	#endif
+#	endif
 	return(offset);
 }
 
@@ -1992,14 +1992,14 @@ unsigned long gfx_get_compression_offset(void)
 unsigned short gfx_get_compression_pitch(void)
 {
 	unsigned short pitch = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		pitch = gu1_get_compression_pitch();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		pitch = gu2_get_compression_pitch();
-	#endif
+#	endif
 	return(pitch);
 }
 
@@ -2010,14 +2010,14 @@ unsigned short gfx_get_compression_pitch(void)
 unsigned short gfx_get_compression_size(void)
 {
 	unsigned short size = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		size = gu1_get_compression_size();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		size = gu2_get_compression_size();
-	#endif
+#	endif
 	return(size);
 }
 
@@ -2028,10 +2028,10 @@ unsigned short gfx_get_compression_size(void)
 int gfx_get_display_priority_high(void)
 {
 	int high = GFX_STATUS_UNSUPPORTED;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		high = gu1_get_display_priority_high();
-	#endif
+#	endif
 	return(high);
 }
 
@@ -2042,14 +2042,14 @@ int gfx_get_display_priority_high(void)
 int gfx_get_valid_bit(int line)
 {
 	int valid = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		valid = gu1_get_valid_bit(line);
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		valid = gu2_get_valid_bit(line);
-	#endif
+#	endif
 	return(valid);
 }
 
@@ -2060,14 +2060,14 @@ int gfx_get_valid_bit(int line)
 unsigned long gfx_get_display_video_offset(void)
 {
 	unsigned long offset = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		offset = gu1_get_display_video_offset();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		offset = gu2_get_display_video_offset();
-	#endif
+#	endif
 	return(offset);
 }
 
@@ -2078,10 +2078,10 @@ unsigned long gfx_get_display_video_offset(void)
 void gfx_get_display_video_yuv_offsets(unsigned long *yoffset, unsigned long *uoffset,
 												unsigned long *voffset)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_get_display_video_yuv_offsets(yoffset, uoffset, voffset);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -2090,10 +2090,10 @@ void gfx_get_display_video_yuv_offsets(unsigned long *yoffset, unsigned long *uo
  */
 void gfx_get_display_video_yuv_pitch(unsigned long *ypitch, unsigned long *uvpitch)
 {
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		gu2_get_display_video_yuv_pitch(ypitch, uvpitch);
-	#endif
+#	endif
 }
 
 /*---------------------------------------------------------------------------
@@ -2104,10 +2104,10 @@ unsigned long gfx_get_display_video_downscale_delta(void)
 {
 	unsigned long ret_value = 0;
 
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		ret_value = gu2_get_display_video_downscale_delta();
-	#endif
+#	endif
 
 	return ret_value;
 }
@@ -2120,10 +2120,10 @@ int gfx_get_display_video_downscale_enable(void)
 {
 	int ret_value = 0;
 
-	#if GFX_DISPLAY_GU2
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		ret_value = gu2_get_display_video_downscale_enable();
-	#endif
+#	endif
 
 	return ret_value;
 }
@@ -2135,14 +2135,14 @@ int gfx_get_display_video_downscale_enable(void)
 unsigned long gfx_get_display_video_size(void)
 {
 	unsigned long size = 0;
-	#if GFX_DISPLAY_GU1
+#	if GFX_DISPLAY_GU1
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU1)
 		size = gu1_get_display_video_size();
-	#endif
-	#if GFX_DISPLAY_GU2
+#	endif
+#	if GFX_DISPLAY_GU2
 	if (gfx_display_type & GFX_DISPLAY_TYPE_GU2)
 		size = gu2_get_display_video_size();
-	#endif
+#	endif
 	return(size);
 }
 

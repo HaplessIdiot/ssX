@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/gfx/rndr_gu2.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: rndr_gu2.c $
  *
@@ -1728,7 +1728,7 @@ void gfx2_color_pattern_fill(unsigned long dstoffset, unsigned short width, unsi
  * blending.  It also allows the use of an arbitrary ROP with transparency.
  *---------------------------------------------------------------------------
  */
- #if GFX_2DACCEL_DYNAMIC
+#if GFX_2DACCEL_DYNAMIC
 void gu22_screen_to_screen_blt(unsigned long srcoffset, unsigned long dstoffset, 
 							  unsigned short width, unsigned short height, int flags)
 #else

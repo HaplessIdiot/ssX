@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/gfx/disp_gu2.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: disp_gu2.c $
  *
@@ -153,7 +153,7 @@ void gfx_delay_milliseconds(unsigned long milliseconds)
 {
 	/* ASSUME 300 MHz, 2 CLOCKS PER INCREMENT */
 
-	#define RC_READS_PER_MILLISECOND 150000L
+#	define RC_READS_PER_MILLISECOND 150000L
 
 	unsigned long loop;
 	loop = milliseconds * RC_READS_PER_MILLISECOND;
