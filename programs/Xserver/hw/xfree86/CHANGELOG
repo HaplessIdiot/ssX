@@ -1,4 +1,9 @@
 XFree86 4.3.99.14 (xx September 2003)
+ 476. Fixes and updates for XKB keyboard maps:
+      - Add 'United Kingdom w/deadkeys' gb(intl) keymap (Bugzilla #744,
+        Phil Jones).
+      - Add multi_layout compliant 'us_intl' keymap (Ivan Pascal).
+      - Fix 'macintosh' geometry file (Bugzilla #753, Simon Vallet).
  475. APM driver:
       . improved clock parameter calculation.
       . Fixed order of initialization of cursor.
@@ -17836,7 +17841,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2868 2003/09/28 20:15:48 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2869 2003/10/02 13:29:41 eich Exp $
 
 
 
