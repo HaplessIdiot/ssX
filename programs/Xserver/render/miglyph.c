@@ -59,7 +59,7 @@ miGlyphExtents (int		nlist,
 	    x1 = x - glyph->info.x;
 	    if (x1 < MINSHORT)
 		x1 = MINSHORT;
-	    y1 = x - glyph->info.y;
+	    y1 = y - glyph->info.y;
 	    if (y1 < MINSHORT)
 		y1 = MINSHORT;
 	    x2 = x1 + glyph->info.width;
@@ -227,5 +227,7 @@ miGlyphs (CARD8		op,
 			  0, 0,
 			  x, y,
 			  width, height);
+	FreePicture ((pointer) pMask, (XID) 0);
+	(*pScreen->DestroyPixmap) (pMaskPixmap);
     }
 }
