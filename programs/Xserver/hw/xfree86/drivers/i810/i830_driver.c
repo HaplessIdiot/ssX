@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.41 2003/10/21 01:50:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.42 2003/10/21 01:55:35 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2339,7 +2339,7 @@ SaveHWState(ScrnInfoPtr pScrn)
    pVesa = pI830->vesa;
    /*
     * This save/restore method doesn't work for 845G BIOS, or for some
-    * other platforms.  Enable it in all cases
+    * other platforms.  Enable it in all cases.
     */
    /*
     * KW: This may have been because of the behaviour I've found on my
