@@ -39,6 +39,10 @@
  * $Header$
  */
 
+
+
+/* $XFree86$ */
+
 #ifndef __glumymath_h_
 #define __glumymath_h_
 
@@ -54,7 +58,12 @@
 extern "C" double	sqrt(double);
 extern "C" float	ceilf(float);
 extern "C" float	floorf(float);
+#ifndef NEEDCEILF
 #define NEEDCEILF
+#endif
+#elif defined(NEEDCEILF)
+extern "C" float	ceilf(float);
+extern "C" float	floorf(float);
 #endif
 
 #ifdef LIBRARYBUILD
