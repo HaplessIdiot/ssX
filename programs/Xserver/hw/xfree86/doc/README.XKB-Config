@@ -19,7 +19,7 @@ don't need to touch any of xkb configuration files.
 
 2.  Selecting XKB Configuration
 
-The easiest and the most natural way how to specify a keyboard mapping is tu
+The easiest and the most natural way how to specify a keyboard mapping is to
 use rules component. As its name suggests it describes a number of general
 rules how to combine all bits and pieces into a valid and useful keyboard
 mapping. All you need to do is to select a suitable rules file and then to
