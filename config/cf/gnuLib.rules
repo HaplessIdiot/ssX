@@ -1,7 +1,7 @@
 /*
  * GNU/Hurd shared library rules
  *
- * $XFree86: xc/config/cf/gnuLib.rules,v 1.1.2.2 1998/12/22 12:27:32 hohndel Exp $
+ * $XFree86: xc/config/cf/gnuLib.rules,v 1.5 2002/01/16 00:39:59 keithp Exp $
  */
 
 /*
@@ -113,7 +113,7 @@ Concat(lib,libname.so.rev):  solist $(EXTRALIBRARYDEPS)			@@\
 	LinkBuildLibraryMaybe(Concat(lib,libname.so),$(SOSYMLINK))	@@\
 									@@\
 clean::									@@\
-	@MAJREV=`expr rev : '\([^.]*\)'`; \				@@\
+	@MAJREV=`echo rev | sed 's/\.[^\.]*$$//'`; \			@@\
 	set -x; $(RM) Concat(lib,libname.so.$$MAJREV)			@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
 
@@ -152,7 +152,7 @@ Concat(lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)		@@\
 	LinkBuildLibraryMaybe(Concat(lib,libname.so),$(SOSYMLINK))	@@\
 									@@\
 clean::									@@\
-	@MAJREV=`expr rev : '\([^.]*\)'`; \				@@\
+	@MAJREV=`echo rev | sed 's/\.[^\.]*$$//'`; \			@@\
 	set -x; $(RM) Concat(lib,libname.so.$$MAJREV)			@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
 

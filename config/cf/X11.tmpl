@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.202 2003/04/14 20:35:50 herrb Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.203 2003/04/29 21:36:50 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2823,9 +2823,20 @@ ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
 #endif
           FREETYPE2LIBSRC = $(LIBSRC)/freetype2
 
-/* FreeType 2.0.9, version_info 9:0:3 */
+/*
+ * FreeType 2.1.1
+ *
+ * Get the library version information from version_info in
+ * in xc/extras/freetype2/builds/unix/configure.ac.
+ *
+ * current:revision:age = 9:1:3
+ *
+ * The LibtoolMinorVersions revision is "(current - age).age".
+ * The !LibtoolMinorVersions revision is "current.0".
+ * Freetype2Version should be set to "current.revision.age"
+ */
 #ifndef Freetype2Version
-#define Freetype2Version 9.0.3
+#define Freetype2Version 9.1.3
 #endif
 
 #if SharedLibFreetype2
@@ -2921,14 +2932,28 @@ FREETYPE2DEFINES = -DFREETYPE2
 #endif
           EXPATLIBSRC = $(LIBSRC)/expat
 
-/* Expat 1.95.2 */
+/*
+ * Expat 1.95.4.
+ *
+ * Get the library version information from LIBCURRENT, LIBREVISION and LIBAGE
+ * in xc/extras/expat/configure.
+ *
+ * LIBCURRENT:LIBREVISION:LIBAGE = 3:0:3
+ *
+ * The LibtoolMinorVersions revision is "(LIBCURRENT - LIBAGE).LIBAGE".
+ * The !LibtoolMinorVersions revision is "LIBCURRENT.0".
+ */
 #ifndef ExpatVersion
 #define ExpatVersion 1.95.4
 #endif
 
 #if SharedLibExpat
 #ifndef SharedExpatRev
+#if LibtoolMinorVersions
+#define SharedExpatRev 0.3
+#else
 #define SharedExpatRev 3.0
+#endif
 #endif
 SharedLibReferences(EXPAT,expat,$(EXPATLIBSRC),SOEXPATREV,SharedExpatRev)
 #else
