@@ -49,7 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.h,v 1.7 2002/05/17 22:37:47 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.h,v 1.8 2002/05/17 23:55:29 keithp Exp $ */
 
 #ifndef _XawClock_h
 #define _XawClock_h
@@ -119,7 +119,11 @@ SOFTWARE.
 #define XtNmajorColor "majorColor"
 #define XtNminorColor "minorColor"
 
-#define XtRRenderColor "RenderColor"
+#define XtRXftColor "XftColor"
+
+#define XtNface "face"
+#define XtCFace "Face"
+#define XtRXftFont "XftFont"
 
 		/* Boolean: use sharp rendering for Render polygons */
 #define XtNsharp "sharp"
