@@ -227,6 +227,16 @@ XftDrawStringUtf8 (XftDraw	*d,
 		   int		len);
 
 void
+XftDrawStringUtf16 (XftDraw	*draw,
+		    XftColor	*color,
+		    XftFont	*public,
+		    int		x,
+		    int		y,
+		    FcChar8	*string,
+		    FcEndian	endian,
+		    int		len);
+
+void
 XftDrawCharSpec (XftDraw	*d,
 		 XftColor	*color,
 		 XftFont	*font,
