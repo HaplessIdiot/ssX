@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfblinebank.h,v 3.5 1994/11/26 12:47:27 dawes Exp $ */
 /* mfblinebank.h */
 /* included from mfb.h if MFB_LINE_BANK is defined */
 
@@ -24,13 +24,21 @@ extern int vgaWriteseg;
 extern int vgaReadWriteseg;
 extern int vgaSaveReadseg;
 
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__bsdi__)
+#ifdef CSRG_BASED
 #define VGABASE 0xFF000000
 #else
 #define VGABASE 0xF0000000
 #endif
 
-#ifdef __GCC__
+#if __GNUC__ > 1
+#define USE_GCC_INLINE
+#endif
+
+#if __GNUC__ > 1
+#define USE_ASM_BANK_MACROS
+#endif
+
+#ifdef USE_GCC_INLINE
 #define gcc_inline __inline__
 #else
 #define gcc_inline /**/
@@ -87,14 +95,14 @@ void
 
 #ifndef BANK_DEBUG
 
-#ifdef __GNUC__
+#ifdef USE_ASM_BANK_MACROS
 #define DO_BANK_READ(_bank)						\
 __asm__ __volatile__							\
 ("call *%0"								\
  : /* OUT     */							\
  : /* IN      */ "c" /*ecx*/ ((unsigned long)vgaSetReadFunc),		\
 		 "a" /*eax*/ (_bank)					\
- : /* CLOBBER */ "dx","memory" /*edx*/					\
+ : /* CLOBBER */ "ax","dx","memory" /*eax,edx*/				\
 );
 #define DO_BANK_WRITE(_bank)						\
 __asm__ __volatile__							\
@@ -102,7 +110,7 @@ __asm__ __volatile__							\
  : /* OUT     */							\
  : /* IN      */ "c" /*ecx*/ ((unsigned long)vgaSetWriteFunc),		\
 		 "a" /*eax*/ (_bank)					\
- : /* CLOBBER */ "dx","memory" /*edx*/					\
+ : /* CLOBBER */ "ax","dx","memory" /*eax,edx*/				\
 );
 #define DO_BANK_READ_WRITE(_bank)						\
 __asm__ __volatile__							\
@@ -110,7 +118,7 @@ __asm__ __volatile__							\
  : /* OUT     */							\
  : /* IN      */ "c" /*ecx*/ ((unsigned long)vgaSetReadWriteFunc),	\
 		 "a" /*eax*/ (_bank)					\
- : /* CLOBBER */ "dx","memory" /*edx*/					\
+ : /* CLOBBER */ "ax","dx","memory" /*eax,edx*/				\
 );
 #else
 extern void vgaBankRead(
@@ -131,7 +139,7 @@ int n
 #define DO_BANK_READ(_bank)       vgaBankRead(_bank)
 #define DO_BANK_WRITE(_bank)      vgaBankWrite(_bank)
 #define DO_BANK_READ_WRITE(_bank) vgaBankReadWrite(_bank)
-#endif /* __GCC__ */
+#endif /* USE_ASM_BANK_MACROS */
 
 
 static gcc_inline PixelType *vga2ScanlineOffsetFuncSrc(p,offset)
@@ -140,7 +148,7 @@ static gcc_inline PixelType *vga2ScanlineOffsetFuncSrc(p,offset)
 {
 register /*signed*/ long delta;
 register /*signed*/ long deltabank;
-  if ((unsigned long)p >= VGABASE) {
+  if ((unsigned long)(p + offset) >= VGABASE) {
      /* virtual framebuffer address */
      p += offset;
      p = (PixelType *)((unsigned long)p - (unsigned long)VGABASE);
@@ -178,7 +186,7 @@ static gcc_inline PixelType *vga2ScanlineOffsetFuncDst(p,offset)
 {
 register /*signed*/ long delta;
 register /*signed*/ long deltabank;
-  if ((unsigned long)p >= VGABASE) {
+  if ((unsigned long)(p + offset) >= VGABASE) {
      /* virtual framebuffer address */
      p += offset;
      p = (PixelType *)((unsigned long)p - (unsigned long)VGABASE);
@@ -216,7 +224,7 @@ static gcc_inline PixelType *vga2ScanlineOffsetFuncBoth(p,offset)
 {
 register /*signed*/ long delta;
 register /*signed*/ long deltabank;
-  if ((unsigned long)p >= VGABASE) {
+  if ((unsigned long)(p + offset) >= VGABASE) {
      /* virtual framebuffer address */
      p += offset;
      p = (PixelType *)((unsigned long)p - (unsigned long)VGABASE);
