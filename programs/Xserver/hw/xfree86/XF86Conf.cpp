@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.38 1999/05/23 15:01:57 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.39 1999/05/30 07:50:48 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -239,31 +239,31 @@ XCOMM    Option	"XkbModel"	"microsoft"
 XCOMM
 XCOMM If you have a US "windows" keyboard you will want:
 XCOMM
-XCOMM    Option	"XkbModel	"pc104"
+XCOMM    Option	"XkbModel"	"pc104"
 XCOMM
 XCOMM Then to change the language, change the Layout setting.
 XCOMM For example, a german layout can be obtained with:
 XCOMM
-XCOMM    Option	"XkbLayout	"de"
+XCOMM    Option	"XkbLayout"	"de"
 XCOMM
 XCOMM or:
 XCOMM
-XCOMM    Option	"XkbLayout	"de"
-XCOMM    Option	"XkbVariant	"nodeadkeys"
+XCOMM    Option	"XkbLayout"	"de"
+XCOMM    Option	"XkbVariant"	"nodeadkeys"
 XCOMM
 XCOMM If you'd like to switch the positions of your capslock and
 XCOMM control keys, use:
 XCOMM
-XCOMM    Option	"XkbOptions	"ctrl:swapcaps"
+XCOMM    Option	"XkbOptions"	"ctrl:swapcaps"
 
 
 XCOMM These are the default XKB settings for XFree86
 XCOMM
-XCOMM    Option	"XkbRules	"xfree86"
-XCOMM    Option	"XkbModel	"pc101"
-XCOMM    Option	"XkbLayout	"us"
-XCOMM    Option	"XkbVariant	""
-XCOMM    Option	"XkbOptions	""
+XCOMM    Option	"XkbRules"	"xfree86"
+XCOMM    Option	"XkbModel"	"pc101"
+XCOMM    Option	"XkbLayout"	"us"
+XCOMM    Option	"XkbVariant"	""
+XCOMM    Option	"XkbOptions"	""
 
 EndSection
 
