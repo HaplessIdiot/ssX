@@ -1,5 +1,5 @@
 /* $XConsortium: regmach64.h,v 1.2 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.4 1995/11/12 09:51:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.5 1995/12/02 01:35:47 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -32,8 +32,10 @@
 
 #include "compiler.h"
 
+#if 0
 /* NON-GUI IO MAPPED Registers */
 
+#define ioCONFIG_CHIP_ID	0x6eec
 #define ioCONFIG_CNTL		0x6aec
 #define ioSCRATCH_REG0		0x42ec
 #define ioSCRATCH_REG1		0x46ec
@@ -44,7 +46,33 @@
 #define ioGEN_TEST_CNTL 	0x66ec
 #define ioCLOCK_CNTL	 	0x4aec
 #define ioCRTC_GEN_CNTL 	0x1eec
+#else
+extern unsigned ioCONFIG_CHIP_ID;
+extern unsigned ioCONFIG_CNTL;
+extern unsigned ioSCRATCH_REG0;
+extern unsigned ioSCRATCH_REG1;
+extern unsigned ioCONFIG_STAT0;
+extern unsigned ioMEM_CNTL;
+extern unsigned ioDAC_REGS;
+extern unsigned ioDAC_CNTL;
+extern unsigned ioGEN_TEST_CNTL;
+extern unsigned ioCLOCK_CNTL;
+extern unsigned ioCRTC_GEN_CNTL;
+#endif
 
+/* NON-GUI sparse IO register offsets */
+
+#define sioCONFIG_CHIP_ID	0x1B
+#define sioCONFIG_CNTL		0x1A
+#define sioSCRATCH_REG0		0x10
+#define sioSCRATCH_REG1		0x11
+#define sioCONFIG_STAT0		0x1C
+#define sioMEM_CNTL		0x14
+#define sioDAC_REGS		0x17
+#define sioDAC_CNTL		0x18
+#define sioGEN_TEST_CNTL 	0x19
+#define sioCLOCK_CNTL	 	0x12
+#define sioCRTC_GEN_CNTL 	0x07
 
 /* NON-GUI MEMORY MAPPED Registers - expressed in BYTE offsets */
 
@@ -88,6 +116,7 @@
 
 #define GEN_TEST_CNTL           0x00D0  /* Dword offset 34 */
 
+#define CONFIG_CNTL		0x00DC	/* Dword offset 37 (CT and ET) */
 #define CONFIG_CHIP_ID          0x00E0  /* Dword offset 38 */
 #define CONFIG_STAT0            0x00E4  /* Dword offset 39 */
 #define CONFIG_STAT1            0x00E8  /* Dword offset 3A */
@@ -245,6 +274,10 @@
 
 /* Mach64 engine bit constants - these are typically ORed together */
 
+/* BUS_CNTL register constants */
+#define BUS_FIFO_ERR_ACK        0x00200000
+#define BUS_HOST_ERR_ACK        0x00800000
+
 /* GEN_TEST_CNTL register constants */
 #define HWCURSOR_ENABLE         0x80
 #define GUI_ENGINE_ENABLE       0x100
@@ -257,16 +290,52 @@
 #define CLOCK_DIV2		0x10
 #define CLOCK_DIV4		0x20
 #define CLOCK_STROBE		0x40
+#define PLL_WR_EN		0x02
+
+/* PLL registers */
+#define PLL_MACRO_CNTL		0x01
+#define PLL_REF_DIV		0x02
+#define PLL_GEN_CNTL		0x03
+#define MCLK_FB_DIV		0x04
+#define PLL_VCLK_CNTL		0x05
+#define VCLK_POST_DIV		0x06
+#define VCLK0_FB_DIV		0x07
+#define VCLK1_FB_DIV		0x08
+#define VCLK2_FB_DIV		0x09
+#define VCLK3_FB_DIV		0x0A
+#define PLL_TEST_CTRL		0x0E
+#define PLL_TEST_COUNT		0x0F
+
+/* Fields in PLL registers */
+#define PLL_PC_GAIN		0x07
+#define PLL_VC_GAIN		0x18
+#define PLL_DUTY_CYC		0xE0
+#define PLL_OVERRIDE		0x01
+#define PLL_MCLK_RST		0x02
+#define OSC_EN			0x04
+#define EXT_CLK_EN		0x08
+#define MCLK_SRC_SEL		0x70
+#define EXT_CLK_CNTL		0x80
+#define VCLK_SRC_SEL		0x03
+#define PLL_VCLK_RST		0x04
+#define VCLK_INVERT		0x08
+#define VCLK0_POST		0x03
+#define VCLK1_POST		0x0C
+#define VCLK2_POST		0x30
+#define VCLK3_POST		0xC0
 
 /* CONFIG_CNTL register constants */
 #define APERTURE_4M_ENABLE      1
 #define APERTURE_8M_ENABLE      2
 #define VGA_APERTURE_ENABLE     4
 
-/* CONFIG_STAT0 register constants */
+/* CONFIG_STAT0 register constants (GX, CX) */
 #define CFG_BUS_TYPE		0x00000007
 #define CFG_MEM_TYPE		0x00000038
 #define CFG_INIT_DAC_TYPE	0x00000e00
+
+/* CONFIG_STAT0 register constants (CT, ET) */
+#define CFG_MEM_TYPE_CT		0x00000007
 
 #define ISA			0
 #define EISA			1
@@ -311,7 +380,7 @@
 #define CLK_ATT20C408		5
 #define CLK_IBM514		6
 
-/* CONFIG_CNTL register constants */
+/* MEM_CNTL register constants */
 #define MEM_SIZE_ALIAS		0x00000007
 #define MEM_SIZE_512K		0x00000000
 #define MEM_SIZE_1M		0x00000001
@@ -319,6 +388,40 @@
 #define MEM_SIZE_4M		0x00000003
 #define MEM_SIZE_6M		0x00000004
 #define MEM_SIZE_8M		0x00000005
+#define MEM_BNDRY               0x00030000
+#define MEM_BNDRY_0K            0x00000000
+#define MEM_BNDRY_256K          0x00010000
+#define MEM_BNDRY_512K          0x00020000
+#define MEM_BNDRY_1M            0x00030000
+#define MEM_BNDRY_EN            0x00040000
+
+/* ATI PCI constants */
+#define PCI_ATI_VENDOR_ID	0x1002
+#define PCI_MACH64_GX		0x4758
+#define PCI_MACH64_CX		0x4358
+#define PCI_MACH64_CT		0x4354
+#define PCI_MACH64_ET		0x4554
+
+/* CONFIG_CHIP_ID register constants */
+#define CFG_CHIP_TYPE		0x0000FFFF
+#define CFG_CHIP_CLASS		0x00FF0000
+#define CFG_CHIP_REV		0xFF000000
+#define CFG_CHIP_VERSION	0x07000000
+#define CFG_CHIP_FOUNDRY	0x38000000
+#define CFG_CHIP_REVISION	0xC0000000
+
+/* Chip IDs read from CONFIG_CHIP_ID */
+#define MACH64_GX_ID		0xD7
+#define MACH64_CX_ID		0x57
+#define MACH64_CT_ID		0x4354
+#define MACH64_ET_ID		0x4554
+
+/* Mach64 chip types */
+#define MACH64_UNKNOWN		0
+#define MACH64_GX		1
+#define MACH64_CX		2
+#define MACH64_CT		3
+#define MACH64_ET		4
 
 /* DST_CNTL register constants */
 #define DST_X_RIGHT_TO_LEFT     0

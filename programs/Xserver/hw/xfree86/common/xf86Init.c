@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.26 1995/11/18 02:30:56 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.27 1995/11/30 13:04:10 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -611,6 +611,8 @@ xf86PrintConfig()
  * This is for publicly released beta server binaries.
  *
  * The current version is written to $HOME/.xf86ServerName
+ * If $HOME isn't set (as may be the case when starting xdm at boot time)
+ * try '/'.
  *
  * Defining EXPIRE_SERVER enables the server expiry date.  If EXPIRY_TIME
  * is 0, this is disabled.
@@ -677,8 +679,8 @@ xf86CheckBeta()
 
 #ifdef SHOW_BETA_MESSAGE
   if (!(home = getenv("HOME")))
-    showmessage = TRUE;
-  else {
+    home = "/";
+  {
     if (!(filename =
 	  (char *)ALLOCATE_LOCAL(strlen(home) + strlen(xf86ServerName) + 3)))
       showmessage = TRUE;
@@ -781,6 +783,11 @@ xf86CheckBeta()
   }
 #ifdef SHOW_BETA_MESSAGE
   if (writefile) {
+    /*
+     * This should really be done as the real-uid to avoid problems writing
+     * as root to NFS-mounted home directories, and potential security
+     * problems.
+     */
     unlink(filename);
     if (f = fopen(filename, "w")) {
       fprintf(f, XF86_VERSION);

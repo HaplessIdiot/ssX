@@ -1,5 +1,5 @@
 /* $XConsortium: ativga.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.1 1995/01/28 15:53:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.2 1995/05/27 03:04:26 dawes Exp $ */
 /***************************************************************************
  * Start of VGA font saving and restoration code.
  * Created: Sun Jun 27 12:50:09 1993 by faith@cs.unc.edu
@@ -52,6 +52,7 @@
 #include "xf86_OSlib.h"
 #include "vga.h"
 #include "regmach64.h"
+#include "mach64.h"
 
 typedef struct {
    vgaHWRec std;
@@ -119,25 +120,29 @@ void mach64SaveVGAInfo(screen_idx)
     * xf86/vga256/drivers/ati/driver.c
     */
 
-   /* Unlock ATI specials */
-   outb(ATIExtReg, (((b8_save = inATI(0xb8)) & 0xC0) << 8) | 0xb8);
+   if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+     /* Unlock ATI specials */
+     outb(ATIExtReg, (((b8_save = inATI(0xb8)) & 0xC0) << 8) | 0xb8);
 
-   b2_save = inATI(0xb2);
-   outb(ATIExtReg, 0x00b2);	/* segment select 0 */
+     b2_save = inATI(0xb2);
+     outb(ATIExtReg, 0x00b2);	/* segment select 0 */
+   }
 
    vgaNewVideoState = vgaHWSave(vgaNewVideoState, sizeof(SaveBlock));
 
-   save->ATIReg0  = inATI(0xb0);
-   save->ATIReg1  = inATI(0xb1);
-   save->ATIReg2  = b2_save;
-   save->ATIReg5  = inATI(0xb5);
-   save->ATIReg6  = inATI(0xb6);
-   save->ATIReg3  = inATI(0xb3);
-   save->ATIReg8  = b8_save;
-   save->ATIRegE  = inATI(0xbe);
-   save->ATIReg9  = inATI(0xb9);
-   save->ATIRegA6 = inATI(0xa6);
-   save->ATIRegA7 = inATI(0xa7);
+   if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+     save->ATIReg0  = inATI(0xb0);
+     save->ATIReg1  = inATI(0xb1);
+     save->ATIReg2  = b2_save;
+     save->ATIReg5  = inATI(0xb5);
+     save->ATIReg6  = inATI(0xb6);
+     save->ATIReg3  = inATI(0xb3);
+     save->ATIReg8  = b8_save;
+     save->ATIRegE  = inATI(0xbe);
+     save->ATIReg9  = inATI(0xb9);
+     save->ATIRegA6 = inATI(0xa6);
+     save->ATIRegA7 = inATI(0xa7);
+   }
    
 #if 0
   /*
@@ -156,26 +161,28 @@ void mach64RestoreVGAInfo()
     * xf86/vga256/drivers/ati/driver.c
     */
 
-   /* Unlock ATI specials */
-   outw(ATIExtReg, ((inATI(0xb8) & 0xC0) << 8) | 0xb8);
+   if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+     /* Unlock ATI specials */
+     outw(ATIExtReg, ((inATI(0xb8) & 0xC0) << 8) | 0xb8);
 
-   /* Load ATI Extended registers */
-   outw(ATIExtReg, (save->ATIReg0 << 8) | 0xb0);
-   outw(ATIExtReg, (save->ATIReg1 << 8) | 0xb1);
-   outw(ATIExtReg, (save->ATIReg2 << 8) | 0xb2);
-   outw(ATIExtReg, (save->ATIReg3 << 8) | 0xb3);
-   outw(ATIExtReg, (save->ATIReg5 << 8) | 0xb5);
-   outw(ATIExtReg, (save->ATIReg6 << 8) | 0xb6);
-   outw(ATIExtReg, (save->ATIRegE << 8) | 0xbE);
-   outw(ATIExtReg, (save->ATIReg9 << 8) | 0xb9);
-   outw(ATIExtReg, (save->ATIRegA6 << 8) | 0xa6);
-   outw(ATIExtReg, (save->ATIRegA7 << 8) | 0xa7);
+     /* Load ATI Extended registers */
+     outw(ATIExtReg, (save->ATIReg0 << 8) | 0xb0);
+     outw(ATIExtReg, (save->ATIReg1 << 8) | 0xb1);
+     outw(ATIExtReg, (save->ATIReg2 << 8) | 0xb2);
+     outw(ATIExtReg, (save->ATIReg3 << 8) | 0xb3);
+     outw(ATIExtReg, (save->ATIReg5 << 8) | 0xb5);
+     outw(ATIExtReg, (save->ATIReg6 << 8) | 0xb6);
+     outw(ATIExtReg, (save->ATIRegE << 8) | 0xbE);
+     outw(ATIExtReg, (save->ATIReg9 << 8) | 0xb9);
+     outw(ATIExtReg, (save->ATIRegA6 << 8) | 0xa6);
+     outw(ATIExtReg, (save->ATIRegA7 << 8) | 0xa7);
 
-   /*
-    * Last but not least ATIReg8 -- according to vgadoc's this lock the 
-    * ATI special registers
-    */
-   outw(ATIExtReg, (save->ATIReg8 << 8) | 0xb8);
+     /*
+      * Last but not least ATIReg8 -- according to vgadoc's this lock the 
+      * ATI special registers
+      */
+     outw(ATIExtReg, (save->ATIReg8 << 8) | 0xb8);
+   }
 
    /*
     * Restore the generic vga registers

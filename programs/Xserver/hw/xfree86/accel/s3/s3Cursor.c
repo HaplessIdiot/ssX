@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.5 95/01/23 15:33:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.19 1995/06/29 13:30:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.20 1995/12/02 05:05:04 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -362,20 +362,11 @@ s3LoadCursor(pScr, pCurs, x, y)
    /* s3 stuff */
    WaitIdle();
 
-#ifdef DONT_USE_IMAGE_WRITE
-   WaitQueue16_32(7,8);
-#else
    WaitQueue(4);
-#endif
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-#ifdef DONT_USE_IMAGE_WRITE
-   S3_OUTW32(WRT_MASK, ~0);
-   S3_OUTW(FRGD_MIX, FSS_PCDATA | MIX_SRC);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | 0);
-#endif
 
    WaitIdle();
 
@@ -393,28 +384,24 @@ s3LoadCursor(pScr, pCurs, x, y)
       else
          n = bytes_remaining;
 
-#ifndef DONT_USE_IMAGE_WRITE
-      (*s3ImageWriteFunc)(xpos/s3Bpp, ypos, n/s3Bpp, 1, (char *)(ram + ram_loc), n, 0, 0,
-			  MIX_SRC, ~0);
-#else
-      WaitQueue(5);
-
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | 0);
-      S3_OUTW(MAJ_AXIS_PCNT, n - 1);
-      S3_OUTW(CUR_X, xpos);
-      S3_OUTW(CUR_Y, ypos);
-
-      S3_OUTW(CMD, CMD_RECT | _16BIT | BYTSEQ | INC_X | INC_Y
- 		     | PCDATA | DRAW | WRTDATA);
-
-      WaitQueue(8);
-
-      for (i = ram_loc; i < n/2 + ram_loc; i++) {
-         S3_OUTW(PIX_TRANS, ram[i]);
+#define S3CURSORRAMWIDTH 16
+   if (s3InfoRec.modes->Flags & V_DBLSCAN) {
+      char *ram_tmp = (char *) (ram + ram_loc);
+      for (i = 0; i < n/2; i += S3CURSORRAMWIDTH) {
+      (*s3ImageWriteFunc)((xpos+i*2)/s3Bpp, ypos, S3CURSORRAMWIDTH/s3Bpp, 1,
+			  ram_tmp, S3CURSORRAMWIDTH, 0, 0, MIX_SRC, ~0);
+      (*s3ImageWriteFunc)((xpos+S3CURSORRAMWIDTH+i*2)/s3Bpp, ypos, S3CURSORRAMWIDTH/s3Bpp, 1,
+			  ram_tmp, S3CURSORRAMWIDTH, 0, 0, MIX_SRC, ~0);
+      ram_tmp += S3CURSORRAMWIDTH;
       }
-#endif
-
-      ram_loc += n/2;
+   } else
+      (*s3ImageWriteFunc)(xpos/s3Bpp, ypos, n/s3Bpp, 1,
+			  (char *)(ram + ram_loc), n, 0, 0,
+			  MIX_SRC, ~0);
+      if (s3InfoRec.modes->Flags & V_DBLSCAN) 
+         ram_loc += n/4;
+      else
+         ram_loc += n/2;
       ypos++;
       xpos = 0;
       bytes_remaining -= n;
@@ -583,6 +570,8 @@ s3MoveCursor(pScr, x, y)
       yoff = 0;
    }
 
+   if (s3InfoRec.modes->Flags & V_DBLSCAN)
+	y *= 2;
    WaitIdle();
 
    /* This is the recomended order to move the cursor */

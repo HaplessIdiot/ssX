@@ -1,5 +1,5 @@
 /* $XConsortium: mach64curs.c,v 1.2 95/01/12 20:21:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.5 1995/09/17 06:31:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.6 1995/11/12 09:51:10 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -417,15 +417,12 @@ mach64RecolorCursor(pScr, pCurs, displayed)
 
     if (pScr->rootDepth > 8) 
     {
-        /* assume that the root visual is TrueColor or DirectColor */
-        for (pVisual = pScr->visuals; 
-	     pVisual->vid != pScr->rootVisual; 
-	     pVisual++);
-
-        (*pScr->ResolveColor)(&maskColor.red, &maskColor.green, 
-			      &maskColor.blue, pVisual);
-        (*pScr->ResolveColor)(&sourceColor.red, &sourceColor.green, 
-			      &sourceColor.blue, pVisual);
+	maskColor.red >>= 8;
+	maskColor.green >>= 8;
+	maskColor.blue >>= 8;
+	sourceColor.red >>= 8;
+	sourceColor.green >>= 8;
+	sourceColor.blue >>= 8;
     } 
     else
     {

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.h,v 1.2 95/01/16 13:16:32 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.6 1995/03/06 14:47:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.7 1995/11/12 09:51:09 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -70,6 +70,7 @@ extern int mach64Ramdac;
 extern int mach64RamdacSubType;
 extern int mach64BusType;
 extern int mach64MemType;
+extern int mach64ChipType;
 extern int mach64ClockType;
 extern int mach64Clocks[MACH64_NUM_CLOCKS];
 extern int mach64MinFreq;
@@ -80,6 +81,8 @@ extern int mach64NAdj;
 extern int mach64CXClk;
 
 extern unsigned int mach64MemorySize;
+extern unsigned int mach64ApertureSize;
+extern unsigned long mach64ApertureAddr;
 
 extern short mach64WeightMask;
 

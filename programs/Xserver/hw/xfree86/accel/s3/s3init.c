@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.78 1995/11/30 13:03:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.79 1995/12/02 05:05:08 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1111,17 +1111,21 @@ s3Init(mode)
 	 xf86setdaccomm( (tmp&0x02) | daccomm );  /* set mode 2,
 						  pixel multiplexing on */
 
-	 outb(vgaCRIndex, 0x33);
-	 tmp = inb(vgaCRReg);
-	 outb(vgaCRReg, tmp | 0x08 );
+	 if ( ! DAC_IS_ATT20C409 ) {
+	    outb(vgaCRIndex, 0x33);	/* set VCLK = -DCLK */
+	    tmp = inb(vgaCRReg);
+	    outb(vgaCRReg, tmp | 0x08 );
+	 }
 	 
 	 if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
-	    outb(vgaCRIndex, 0x67);
-	    if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options))
-	       outb(vgaCRReg, 0x10 );
+	    outb(vgaCRIndex, 0x67);	/* set Mode 8: Two 8-bit color
+	    				   1 VCLK / 2 pixels */
+	    if (    OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)
+	         || DAC_IS_ATT20C409 )
+	       outb(vgaCRReg, 0x10 );	/* VCLK is out of phase with DCLK */
 	    else
-	       outb(vgaCRReg, 0x11 );  /* set Mode 8: Two 8-bit color,
-					  1 VCLK/2 pixels */
+	       outb(vgaCRReg, 0x11 );	/* VCLK is in phase with DCLK */
+
 	    outb(vgaCRIndex, 0x6d);
 	    outb(vgaCRReg, 2 );     /* delay -BLANK pulse by 2 DCLKs */
 	 }

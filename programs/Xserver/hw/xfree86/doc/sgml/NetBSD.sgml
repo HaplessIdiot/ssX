@@ -7,7 +7,7 @@ David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>Last modified on: 19 July 1995
+<Date>Last modified on: 3 Dec 1995
 
 <toc>
 
@@ -28,7 +28,7 @@ The sources for XFree86 are available by anonymous ftp from:
 <url name="ftp.XFree86.org:/pub/XFree86/current"
 url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
-Binaries for NetBSD 1.0 and NetBSD-current are available from:
+Binaries for NetBSD 1.1 and NetBSD-current are available from:
 
 <url name="ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD">
@@ -42,12 +42,17 @@ url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2">
 <url name="ftp.eecs.umich.edu:/BSD/XFree86"
 url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
 
-If you're still running NetBSD 0.9, you should think about upgrading
-to a newer version of NetBSD first.  If you don't you'll have to build
-XFree86 from the sources (which has not been tested on NetBSD 0.9)
+Other versions:
 
-This release has also been tested on NetBSD-current of July, 17th
-1995 with <tt>option "COMPAT_10"</tt> in the kernel config file.
+Binaries built with NetBSD 1.1 are not compatible with earlier
+versions. 
+
+If you're still running NetBSD 0.9 or 1.0, you should think about
+upgrading to a newer version of NetBSD first.
+
+If you don't, you'll have to build XFree86 from the sources.  XFree86
+3.1.2 compiles cleanly under NetBSD 1.0; it has not been tested with
+NetBSD 0.9. Binaries built on 1.0 will work on 1.1.
 
 XFree86 3.1.2 also builds on NetBSD/sparc. See section <ref id="sparc"
 name="Building on NetBSD/sparc"> for details.
@@ -158,7 +163,7 @@ below.
 <item> You must be logged in as root to unpack the archives and use a
 	``umask'' value of 022.  Typing ``<tt/umask 022/'' sets it.
 	<em/Caution:/ If you do not extract the files as user ``root''
-	with the correct umask you may not be able to run XFree86 3.1.2.
+	with the correct umask you may not be able to run XFree86.
 	The X server needs special permissions that are only granted
 	to the root user.
 
@@ -362,7 +367,7 @@ server itself is required.
 The pccons driver is the most widely tested and is the console driver
 contained in the NetBSD binary distribution's kernels.
 
-The pcvt console driver is bundled with NetBSD 1.0. The pcvt X
+The pcvt console driver is bundled with NetBSD. The pcvt X
 mode is compatible with the pccons driver X mode. It offers several
 virtual consoles and international keyboard support. In order to use
 this driver, change the line:
@@ -379,7 +384,7 @@ to
 
 in your kernel config file, and rebuild and install your kernel.
 
-Syscons and codrv are not bundled with NetBSD 1.0. They are
+Syscons and codrv are not bundled with NetBSD 1.1. They are
 available by anonymous FTP from a number of sites.
 
 If using pccons you get the message:
@@ -416,14 +421,14 @@ accelerated servers can take advantage of it, but do not require it.
 
 There are two ways to allow XFree86 to access linear memory:
 <enum>
-<item> Disable the kernel security feature by initializing the
-   ``<bf/securelevel/'' variable to <bf/-1/ in
-   <tt>/sys/kern/kern_sysctl.c</tt>, line 205 and building a new
-   kernel. For more informations, see the comments in
-   <tt>/usr/include/sys/systm.h</tt>.
+<item> Disable the kernel security feature by adding
+   `option INSECURE' in the kernel configuration file and build a new
+   kernel. 
 
-   NetBSD-current users can also disable kernel security by adding
-   `option INSECURE' in their kernel configuration file.
+   On NetBSD-1.0 you have to disable kernel security by initializing
+   the ``<bf/securelevel/'' variable to <bf/-1/ in
+   <tt>/sys/kern/kern_sysctl.c</tt>, line 205. For more informations,
+   see the comments in <tt>/usr/include/sys/systm.h</tt>.
 
 <item> Install the NetBSD aperture driver:
    <enum>	
@@ -434,13 +439,18 @@ There are two ways to allow XFree86 to access linear memory:
    modload -o ${KERNDIR}/ap -e ap -p ${KERNDIR}/apinstall ${KERNDIR}/ap.o
  fi
 </verb></tscreen>
-
-    If you use NetBSD-current, replace ``ap.o'' with ``ap-current.o'' in
-    the above lines.
-
+    The distributed ap.o won't work with NetBSD 1.0. In this case,
+    unpack <tt>xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar</tt>
+    and recompile it.
+	
     <item> Reboot your system. XFree86 will auto-detect the aperture
        driver if available.
     </enum>
+
+    Warning: if you boot another kernel than <tt>/netbsd</tt>,
+    loadable kernel modules can crash your system. Always boot in
+    single user mode when you want to run another kernel.
+
 </enum>
 
 <quote>
@@ -452,11 +462,9 @@ There are two ways to allow XFree86 to access linear memory:
 
 <sect1>MIT-SHM
 <p>
-NetBSD 1.0 supports System V shared memory. If XFree86 3.1.2 detects
-this support in your kernel, it will support the MIT-SHM extension.
-
-    Under NetBSD 1.0, use the following to add shared memory
-    support to your kernel:
+NetBSD 1.0 and later supports System V shared memory. If XFree86 
+detects this support in your kernel, it will support the MIT-SHM
+extension.
 
     To add support for system V shared memory to your kernel add the
     lines:
@@ -552,10 +560,10 @@ like this in the <tt/xc/ directory (suggested by Andrew Cagney
 If you have installed the syscons or codrv console drivers, these
 files should be taken from your installed version of the driver.
 
-<sect1> Support for shared libs under NetBSD 1.0
+<sect1> Support for shared libs under NetBSD 1.0 and later
 
 <p>
-    By default XFree86 3.1.2 builds for NetBSD 1.0 with shared libraries 
+    By default XFree86 3.1.2 builds for NetBSD with shared libraries 
     support. If you're building on 0.9 or don't want shared libraries 
     add the following line to <tt/xf86site.def/:
 
@@ -627,7 +635,7 @@ Another note: If you get the message:
  ld.so: undefined symbol _XtCvtStringToFont 
 </tscreen>
 
-at run-time, you've stumbled on a semantic weakness of NetBSD 1.0
+at run-time, you've stumbled on a semantic weakness of the NetBSD 
 dynamic linker. Applications that use libXmu also need libXt. If the
 client uses a standard <tt/Imakefile/, this dependency will probably by
 included in the Makefile automagically -- you'll not see the
@@ -649,7 +657,7 @@ and many others.
 
 <verb>
 $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.14 1995/07/17 13:52:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.15 1995/07/21 14:40:47 dawes Exp $
 </verb>
 
 </article>

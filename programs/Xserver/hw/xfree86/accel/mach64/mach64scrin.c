@@ -1,5 +1,5 @@
 /* $XConsortium: mach64scrin.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64scrin.c,v 3.2 1995/03/06 14:47:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64scrin.c,v 3.3 1995/11/12 09:51:15 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -173,6 +173,11 @@ mach64ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			visual->offsetRed = 24;
 			visual->offsetGreen = 16;
 			visual->offsetBlue = 8;
+			break;
+		    case DAC_INTERNAL:
+			visual->offsetRed = 16;
+			visual->offsetGreen = 8;
+			visual->offsetBlue = 0;
 			break;
 		    default:
 			visual->offsetRed = 0;

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Mouse.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.3 1995/11/12 09:51:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.4 1995/11/30 13:04:13 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -344,14 +344,14 @@ xf86MouseProtocol(rBuf, nBytes)
 		  | ((int)(pBuf[0] & 0x20) >> 3)
 		  | ((int)(pBuf[0] & 0x10) >> 4);
       }
-      dx = ((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F);
-      dy = ((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F);
+      dx = (char)(((pBuf[0] & 0x03) << 6) | (pBuf[1] & 0x3F));
+      dy = (char)(((pBuf[0] & 0x0C) << 4) | (pBuf[2] & 0x3F));
       break;
       
     case P_MSC:             /* Mouse Systems Corp */
       buttons = (~pBuf[0]) & 0x07;
-      dx =    (pBuf[1]) + (char)(pBuf[3]);
-      dy = - (pBuf[2]) + (pBuf[4]);
+      dx =    (char)(pBuf[1]) + (char)(pBuf[3]);
+      dy = - ((char)(pBuf[2]) + (char)(pBuf[4]));
       break;
       
     case P_MMHIT:           /* MM_HitTablet */
@@ -371,8 +371,8 @@ xf86MouseProtocol(rBuf, nBytes)
       
     case P_BM:              /* BusMouse */
       buttons = (~pBuf[0]) & 0x07;
-      dx =   pBuf[1];
-      dy = - pBuf[2];
+      dx =   (char)pBuf[1];
+      dy = - (char)pBuf[2];
       break;
 
     case P_PS2:		    /* PS/2 mouse */

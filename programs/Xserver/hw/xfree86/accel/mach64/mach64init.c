@@ -1,5 +1,5 @@
 /* $XConsortium: mach64init.c,v 1.3 95/01/16 13:16:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.7 1995/11/12 09:51:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.8 1995/12/02 01:35:43 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -57,10 +57,18 @@ static char old_GRA06, old_SEQ02, old_SEQ04;
 static unsigned long old_BUS_CNTL;
 static unsigned long old_CONFIG_CNTL;
 static unsigned long old_MEM_CNTL;
+static unsigned long old_CRTC_GEN_CNTL;
 
 static unsigned long old_CRTC_OFF_PITCH;
 static unsigned long old_DST_OFF_PITCH;
 static unsigned long old_SRC_OFF_PITCH;
+
+static unsigned long old_CRTC_H_SYNC_STRT_WID;
+static unsigned long old_CRTC_H_TOTAL_DISP;
+static unsigned long old_CRTC_V_SYNC_STRT_WID;
+static unsigned long old_CRTC_V_TOTAL_DISP;
+
+static int oldClockFreq;
 
 static char old_ATI68860[4];
 static char old_ATI68875[3];
@@ -232,17 +240,18 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
     }
 
     crtcRegs->fifo_v1 =	mach64FIFOdepth(crtcRegs->color_depth,
-					crtcRegs->dot_clock);
+					crtcRegs->dot_clock, mode->HDisplay);
 }
 
 /*
  * mach64FIFOdepth --
- *	Calculates the correct FIFO depth for th Mach64 depending on the
+ *	Calculates the correct FIFO depth for the Mach64 depending on the
  *	color depth and clock selected.
  */
-int mach64FIFOdepth(cdepth, clock)
+int mach64FIFOdepth(cdepth, clock, width)
     int cdepth;
     int clock;
+    int width;
 {
     int fifo_v1;
 
@@ -269,7 +278,10 @@ int mach64FIFOdepth(cdepth, clock)
     case MEM_SIZE_4M:
     case MEM_SIZE_6M:
     case MEM_SIZE_8M:
-	fifo_v1 /= 12;
+	if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET)
+	    fifo_v1 /= 10;
+	else
+	    fifo_v1 /= 12;
 	break;
     }
 
@@ -277,31 +289,109 @@ int mach64FIFOdepth(cdepth, clock)
     case CRTC_PIX_WIDTH_8BPP:
 	switch (mach64MemorySize) {
 	case MEM_SIZE_512K:
-	    if (fifo_v1 < 0x02) fifo_v1 = 0x02;
+	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
+	    } else {
+		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
+	    }
 	    if (fifo_v1 > 0x0c) fifo_v1 = 0x0c;
 	    break;
 	case MEM_SIZE_1M:
-	    if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-	    if (fifo_v1 > 0x06) fifo_v1 = 0x0c;
+	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
+		if (fifo_v1 > 0x08) fifo_v1 = 0x08;
+	    } else {
+		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
+		if (fifo_v1 > 0x06) fifo_v1 = 0x06;
+	    }
 	    break;
 	case MEM_SIZE_2M:
 	case MEM_SIZE_4M:
 	case MEM_SIZE_6M:
 	case MEM_SIZE_8M:
-	    if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-	    if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
+	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+		if (width <= 640) {
+		    if (fifo_v1 < 0x09) fifo_v1 = 0x09;
+		} else if (width <= 1024) {
+		    if (fifo_v1 < 0x08) fifo_v1 = 0x08;
+		} else {
+		    if (fifo_v1 < 0x0e) fifo_v1 = 0x0e;
+		}
+		if (fifo_v1 > 0x0f) fifo_v1 = 0x0f;
+	    } else {
+		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
+		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
+	    }
 	    break;
 	}
 	break;
     case CRTC_PIX_WIDTH_15BPP:
     case CRTC_PIX_WIDTH_16BPP:
+	switch (mach64MemorySize) {
+	case MEM_SIZE_512K:
+	case MEM_SIZE_1M:
+	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
+		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
+	    } else {
+		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
+		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
+	    }
+	    break;
+	case MEM_SIZE_2M:
+	case MEM_SIZE_4M:
+	case MEM_SIZE_6M:
+	case MEM_SIZE_8M:
+	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+		if (width <= 800) {
+		    if (fifo_v1 < 0x08) fifo_v1 = 0x08;
+		} else {
+		    if (fifo_v1 < 0x0e) fifo_v1 = 0x0e;
+		}
+		if (fifo_v1 > 0x0f) fifo_v1 = 0x0f;
+	    } else {
+		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
+		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
+	    }
+	    break;
+	}
+	break;
     case CRTC_PIX_WIDTH_24BPP:
     case CRTC_PIX_WIDTH_32BPP:
-	if (fifo_v1 < 0x02) fifo_v1 = 0x02;
-	if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
+	switch (mach64MemorySize) {
+	case MEM_SIZE_512K:
+	case MEM_SIZE_1M:
+	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+		if (fifo_v1 < 0x04) fifo_v1 = 0x04;
+		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
+	    } else {
+		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
+		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
+	    }
+	    break;
+	case MEM_SIZE_2M:
+	case MEM_SIZE_4M:
+	case MEM_SIZE_6M:
+	case MEM_SIZE_8M:
+	    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+		if (width <= 640) {
+		    if (fifo_v1 < 0x0d) fifo_v1 = 0x0d;
+		} else {
+		    if (fifo_v1 < 0x0e) fifo_v1 = 0x0e;
+		}
+		if (fifo_v1 > 0x0f) fifo_v1 = 0x0f;
+	    } else {
+		if (fifo_v1 < 0x02) fifo_v1 = 0x02;
+		if (fifo_v1 > 0x0e) fifo_v1 = 0x0e;
+	    }
+	    break;
+	}
 	break;
     }
 
+#ifdef DEBUG
+    ErrorF("CRTC FIFO set to %d\n", fifo_v1);
+#endif
     return(fifo_v1);
 }
 
@@ -712,6 +802,75 @@ void mach64ProgramClk408(clkCntl, MHz100)
 }
 
 /*
+ * mach64ProgramClkMach64CT --
+ *
+ */
+void mach64ProgramClkMach64CT(clkCntl, MHz100)
+    int clkCntl;
+    int MHz100;
+{
+    char old_crtc_ext_disp;
+    extern void mach64PrintCTPLL();
+    int M, N, P, Q, R;
+    int mhz100 = MHz100;
+    unsigned char tmp1, tmp2;
+
+    old_crtc_ext_disp = inb(ioCRTC_GEN_CNTL+3);
+    outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp | (CRTC_EXT_DISP_EN >> 24));
+
+    M = mach64RefDivider;
+    R = mach64RefFreq;
+
+    if (clkCntl > 3) clkCntl = 3;
+
+    if (mhz100 < mach64MinFreq) mhz100 = mach64MinFreq;
+    if (mhz100 > mach64MaxFreq) mhz100 = mach64MaxFreq;
+
+    Q = (mhz100 * M)/(2 * R);
+    if (Q > 255) {
+	ErrorF("mach64ProgramClkMach64CT: Warning: Q > 255\n");
+	Q = 255;
+	P = 0;
+    }
+    else if (Q > 127)
+	P = 0;
+    else if (Q > 63)
+	P = 1;
+    else if (Q > 31)
+	P = 2;
+    else if (Q >= 16)
+	P = 3;
+    else {
+	ErrorF("mach64ProgramClkMach64CT: Warning: Q < 16\n");
+	P = 3;
+    }
+    N = Q * (1 << P);
+
+#ifdef DEBUG
+    ErrorF("New freq: %.2f\n", (double)((2 * R * N)/(M * (1 << P))) / 100.0);
+#endif
+
+    outb(ioCLOCK_CNTL + 1, PLL_VCLK_CNTL << 2);
+    tmp1 = inb(ioCLOCK_CNTL + 2);
+    outb(ioCLOCK_CNTL + 1, (PLL_VCLK_CNTL  << 2) | PLL_WR_EN);
+    outb(ioCLOCK_CNTL + 2, tmp1 | 0x04);
+    outb(ioCLOCK_CNTL + 1, VCLK_POST_DIV << 2);
+    tmp2 = inb(ioCLOCK_CNTL + 2);
+    outb(ioCLOCK_CNTL + 1, ((VCLK0_FB_DIV + clkCntl) << 2) | PLL_WR_EN);
+    outb(ioCLOCK_CNTL + 2, N);
+    outb(ioCLOCK_CNTL + 1, (VCLK_POST_DIV << 2) | PLL_WR_EN);
+    outb(ioCLOCK_CNTL + 2,
+	 (tmp2 & ~(0x03 << (2 * clkCntl))) | (P << (2 * clkCntl)));
+    outb(ioCLOCK_CNTL + 1, (PLL_VCLK_CNTL << 2) | PLL_WR_EN);
+    outb(ioCLOCK_CNTL + 2, tmp1 & ~0x04);
+    usleep(5000);
+    outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
+    outb(ioCLOCK_CNTL, clkCntl);
+
+    return;
+}
+
+/*
  * mach64ProgramClk --
  *	Program the clock chip for the use with RAMDAC.
  */
@@ -728,6 +887,9 @@ void mach64ProgramClk(clkCntl, MHz100)
 	break;
     case CLK_CH8398:
 	mach64ProgramClk8398(clkCntl, MHz100);
+	break;
+    case CLK_MACH64CT:
+	mach64ProgramClkMach64CT(clkCntl, MHz100);
 	break;
     case CLK_ATT20C408:
 	mach64ProgramClk408(clkCntl, MHz100);
@@ -873,47 +1035,63 @@ void mach64InitLUT()
     }
 }
 
+int
+mach64GetCTClock(i)
+     int i;
+{
+    int M = mach64RefDivider;
+    int R = mach64RefFreq;
+    int N, P;
+
+    outb(ioCLOCK_CNTL + 1, (VCLK0_FB_DIV + i) << 2);
+    N = inb(ioCLOCK_CNTL + 2);
+    outb(ioCLOCK_CNTL + 1, VCLK_POST_DIV << 2);
+    P = 1 << ((inb(ioCLOCK_CNTL + 2) >> (2 * i)) & 0x03);
+    return (2 * R * N)/(M * P);
+}
+    
 /*
  * mach64ResetEngine --
  *	Resets the GUI engine and clears any FIFO errors.
  */
 void mach64ResetEngine()
 {
-    /* Reset Engine */
-    regw(GEN_TEST_CNTL,0);
-    regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE);
-
-    /* PCI: Write to status registers if (mach64BusType == PCI) */
-    regw(GUI_STAT, 0);
-    regw(FIFO_STAT, 0);
+    int temp;
 
     /* Ensure engine is not locked up by clearing any FIFO errors */
-    regw(BUS_CNTL, (regr(BUS_CNTL) & 0xff00ffff) | 0x00ff0000);
+    regw(BUS_CNTL, regr(BUS_CNTL) | BUS_HOST_ERR_ACK | BUS_FIFO_ERR_ACK);
 
-    /* Reset engine again for security */
-    regw(GEN_TEST_CNTL,0);
-    switch (mach64MemType) {
-    case DRAMx4:
-    case DRAMx16:
-    case GraphicsDRAMx16:
-    case EnhancedVRAMx16ssr:
-	if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
-	    regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE | BLOCK_WRITE_ENABLE);
-	else
-	    regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE);
-	break;
-    case VRAMx16:
-    case VRAMx16ssr:
-    case EnhancedVRAMx16:
-	if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
-	    regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE);
-	else
-	    regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE | BLOCK_WRITE_ENABLE);
-	break;
-    default:
-	regw(GEN_TEST_CNTL, GUI_ENGINE_ENABLE);
-	ErrorF("mach64ResetEngine: Unknown Memory Type (%d)\n", mach64MemType);
-    }
+    /* Reset engine */
+    temp = regr(GEN_TEST_CNTL);
+    regw(GEN_TEST_CNTL, temp & ~GUI_ENGINE_ENABLE);
+
+    if (mach64ChipType == MACH64_GX)
+	switch (mach64MemType) {
+	case DRAMx4:
+	case DRAMx16:
+	case GraphicsDRAMx16:
+	case EnhancedVRAMx16ssr:
+	    if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
+		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
+				    BLOCK_WRITE_ENABLE);
+	    else
+		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+	    break;
+	case VRAMx16:
+	case VRAMx16ssr:
+	case EnhancedVRAMx16:
+	    if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
+		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+	    else
+		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
+				    BLOCK_WRITE_ENABLE);
+	    break;
+	default:
+	    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+	    ErrorF("mach64ResetEngine: Unknown Memory Type (%d)\n", mach64MemType);
+	}
+    else
+	regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
 
     WaitIdleEmpty();
 }
@@ -964,8 +1142,8 @@ void mach64InitEnvironment()
     regw(SRC_HEIGHT2_WIDTH2, 0);
     regw(SRC_CNTL, 0);
 
-    WaitQueue(15);
-    regw(HOST_CNTL, 0);
+    WaitQueue(7);
+    regw(HOST_CNTL, regr(HOST_CNTL) & ~HOST_BYTE_ALIGN);
     regw(PAT_REG0, 0);
     regw(PAT_REG1, 0);
     regw(PAT_CNTL, 0);
@@ -973,6 +1151,7 @@ void mach64InitEnvironment()
     regw(SC_LEFT_RIGHT, ((mach64MaxX << 16) | 0 ));
     regw(SC_TOP_BOTTOM, ((mach64MaxY << 16) | 0 ));
 
+    WaitQueue(9);
     regw(DP_BKGD_CLR, 0);
     regw(DP_FRGD_CLR, 1);
     regw(DP_WRITE_MASK, 0xffffffff);
@@ -1000,14 +1179,20 @@ void mach64InitAperture(screen_idx)
 	old_CONFIG_CNTL = inw(ioCONFIG_CNTL);
     }
 
+#if 0
     if (mach64InfoRec.MemBase != 0)
 	apaddr = (mach64InfoRec.MemBase & 0xffc00000);
+    else if (mach64ApertureAddr != 0)
+	apaddr = mach64ApertureAddr & 0xffc00000);
     else if (mach64BusType == PCI)
 	apaddr = 0x7c000000;
     else
 	apaddr = 0x04000000;  /* for VLB board */
+#else
+    apaddr = mach64ApertureAddr;
+#endif
 
-    if (mach64MemorySize <= MEM_SIZE_4M) {
+    if (mach64ApertureSize == MEM_SIZE_4M) {
 	apsize = 4 * 1024 * 1024;
 	mach64MemRegOffset = 0x3ffc00;
 	outw(ioCONFIG_CNTL, ((apaddr/(4*1024*1024)) << 4) | 1);
@@ -1020,10 +1205,12 @@ void mach64InitAperture(screen_idx)
     if (!mach64VideoMem) {
 	mach64VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION, 
 				       (pointer)apaddr, apsize);
+#if 0
 	if (xf86Verbose) {
 	    ErrorF("%s %s: Aperture mapped to 0x%x\n",
 		   XCONFIG_PROBED, mach64InfoRec.name, apaddr);
 	}
+#endif
     }
 }
 
@@ -1465,6 +1652,43 @@ int mach64ProgramCH8398(colorDepth, dotClock)
 }
 
 /* 
+ * mach64ProgramInternal --
+ * 
+ */
+int mach64ProgramInternal(colorDepth, dotClock)
+    int colorDepth;
+    int dotClock;
+{
+    int muxMode = FALSE;
+    int temp;
+
+    switch (colorDepth) {
+    case CRTC_PIX_WIDTH_8BPP:
+	temp = inb(ioDAC_CNTL + 1);
+	if (mach64DAC8Bit)
+	    outb(ioDAC_CNTL + 1, temp | 0x01);
+	else
+	    outb(ioDAC_CNTL + 1, temp & ~0x01);
+	break;
+    case CRTC_PIX_WIDTH_15BPP:
+    case CRTC_PIX_WIDTH_16BPP:
+    case CRTC_PIX_WIDTH_24BPP:
+    case CRTC_PIX_WIDTH_32BPP:
+	temp = inb(ioDAC_CNTL + 1);
+	outb(ioDAC_CNTL + 1, temp | 0x01);
+	outb(ioDAC_REGS + 2, 0xFF);
+        outb(ioDAC_REGS, 0);
+	for (temp = 0; temp < 256; temp++) {
+	    outb(ioDAC_REGS + 1, temp);
+	    outb(ioDAC_REGS + 1, temp);
+	    outb(ioDAC_REGS + 1, temp);
+	}
+    }
+
+    return muxMode;
+}
+
+/* 
  * mach64SetRamdac --
  * 
  */
@@ -1506,6 +1730,9 @@ void mach64SetRamdac(colorDepth, AccelMode, dotClock)
 	break;
     case DAC_ATT20C408:
 	muxMode = mach64ProgramATT21C498(colorDepth, dotClock);
+	break;
+    case DAC_INTERNAL:
+	muxMode = mach64ProgramInternal(colorDepth, dotClock);
 	break;
 #ifdef NOT_YET_SUPPORTED
     case DAC_STG1700:
@@ -1556,12 +1783,19 @@ void mach64InitDisplay(screen_idx)
 
     mach64SaveVGAInfo(screen_idx);
 
-    outb(ATIEXT, ATI2E); old_ATI2E = inb(ATIEXT+1);
-    outb(ATIEXT, ATI32); old_ATI32 = inb(ATIEXT+1);
-    outb(ATIEXT, ATI36); old_ATI36 = inb(ATIEXT+1);
-    outb(VGAGRA, GRA06); old_GRA06 = inb(VGAGRA+1);
-    outb(VGASEQ, SEQ02); old_SEQ02 = inb(VGASEQ+1);
-    outb(VGASEQ, SEQ04); old_SEQ04 = inb(VGASEQ+1);
+    if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+	outb(ATIEXT, ATI2E); old_ATI2E = inb(ATIEXT+1);
+	outb(ATIEXT, ATI32); old_ATI32 = inb(ATIEXT+1);
+	outb(ATIEXT, ATI36); old_ATI36 = inb(ATIEXT+1);
+	outb(VGAGRA, GRA06); old_GRA06 = inb(VGAGRA+1);
+	outb(VGASEQ, SEQ02); old_SEQ02 = inb(VGASEQ+1);
+	outb(VGASEQ, SEQ04); old_SEQ04 = inb(VGASEQ+1);
+    } else {
+	old_CRTC_H_SYNC_STRT_WID = regr(CRTC_H_SYNC_STRT_WID);
+	old_CRTC_H_TOTAL_DISP = regr(CRTC_H_TOTAL_DISP);
+	old_CRTC_V_SYNC_STRT_WID = regr(CRTC_V_SYNC_STRT_WID);
+	old_CRTC_V_TOTAL_DISP = regr(CRTC_V_TOTAL_DISP);
+    }
 
     old_DAC_MASK = inb(ioDAC_REGS+2);
 
@@ -1634,15 +1868,35 @@ void mach64InitDisplay(screen_idx)
 	break;
     }
 
+    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET) {
+	oldClockFreq = mach64GetCTClock(mach64CXClk);
+#ifdef DEBUG
+	ErrorF("oldClockFreq = %d\n", oldClockFreq);
+#endif
+    }
+
+
     old_BUS_CNTL = regr(BUS_CNTL);
     old_MEM_CNTL = regr(MEM_CNTL);
+    old_CRTC_GEN_CNTL = inl(ioCRTC_GEN_CNTL);
+
+#ifdef DEBUG
+    ErrorF("BUS_CNTL was 0x%08x, MEM_CNTL was 0x%08x\n", old_BUS_CNTL,
+	   old_MEM_CNTL);
+    ErrorF("CRTC_GEN_CNTL was 0x%08x\n", old_CRTC_GEN_CNTL);
+#endif
 
     old_CRTC_OFF_PITCH = regr(CRTC_OFF_PITCH);
     old_DST_OFF_PITCH = regr(DST_OFF_PITCH);
     old_SRC_OFF_PITCH = regr(SRC_OFF_PITCH);
 
     /* Turn off the VGA memory boundary */
-    regw(MEM_CNTL, old_MEM_CNTL & 0xfff8ffff);
+    if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET)
+	regw(MEM_CNTL, old_MEM_CNTL & ~(MEM_BNDRY | MEM_BNDRY_EN));
+
+#ifdef DEBUG
+    ErrorF("MEM_CNTL is 0x%08x\n", regr(MEM_CNTL));
+#endif
 
     WaitQueue(4);
 
@@ -1681,6 +1935,9 @@ void mach64CleanUp()
 	return;
 
     WaitIdleEmpty();
+
+    if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET)
+    	mach64ProgramClk(mach64CXClk, oldClockFreq);
 
     mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, FALSE, 5035);
 
@@ -1761,14 +2018,21 @@ void mach64CleanUp()
 	LUTInited = FALSE;
     }
 
-    /* Reset the VGA registers */
-    WaitQueue(6);
-    outw(ATIEXT, ATI2E | old_ATI2E << 8);
-    outw(ATIEXT, ATI32 | old_ATI32 << 8);
-    outw(ATIEXT, ATI36 | old_ATI36 << 8);
-    outw(VGAGRA, GRA06 | old_GRA06 << 8);
-    outw(VGASEQ, SEQ02 | old_SEQ02 << 8);
-    outw(VGASEQ, SEQ04 | old_SEQ04 << 8);
+    if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+	/* Reset the VGA registers */
+	WaitQueue(6);
+	outw(ATIEXT, ATI2E | old_ATI2E << 8);
+	outw(ATIEXT, ATI32 | old_ATI32 << 8);
+	outw(ATIEXT, ATI36 | old_ATI36 << 8);
+	outw(VGAGRA, GRA06 | old_GRA06 << 8);
+	outw(VGASEQ, SEQ02 | old_SEQ02 << 8);
+	outw(VGASEQ, SEQ04 | old_SEQ04 << 8);
+    } else {
+	regw(CRTC_H_SYNC_STRT_WID, old_CRTC_H_SYNC_STRT_WID);
+	regw(CRTC_H_TOTAL_DISP, old_CRTC_H_TOTAL_DISP);
+	regw(CRTC_V_SYNC_STRT_WID, old_CRTC_V_SYNC_STRT_WID);
+	regw(CRTC_V_TOTAL_DISP, old_CRTC_V_TOTAL_DISP);
+    }
 
     WaitQueue(8);
     outb(ioDAC_REGS+2, old_DAC_MASK);
@@ -1781,7 +2045,8 @@ void mach64CleanUp()
     regw(DST_OFF_PITCH, old_DST_OFF_PITCH);
     regw(SRC_OFF_PITCH, old_SRC_OFF_PITCH);
 
-    regw(CRTC_GEN_CNTL, 0x00020200);
+    /* Was getting set to 0x00020200 */
+    regw(CRTC_GEN_CNTL, old_CRTC_GEN_CNTL);
 
     mach64CursorOff();
 
