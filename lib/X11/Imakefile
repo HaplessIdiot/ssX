@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/192 1996/02/02 16:15:49 kaleb $
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.14 1996/08/26 06:19:02 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.13 1996/05/13 06:37:07 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -60,8 +60,7 @@ EXTRA_LIBRARIES = /**/
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
      CMS_DEFINES = -DXCMSDB=\"$(LIBDIR)/Xcms.txt\"
 #if HasSnprintf
-    MISC_DEFINES = -DHAS_SNPRINTF -DLIBX11
-#endif
+    MISC_DEFINES = -DHAS_SNPRINTF -DLIBX11 #endif
 #if MotifBC
       BC_DEFINES = -DMOTIFBC
 #endif

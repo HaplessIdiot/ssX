@@ -1,5 +1,5 @@
 /* $XConsortium: lcFile.c,v 1.1 94/01/20 17:56:55 rws Exp $ */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.2 1996/04/15 11:58:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.3 1996/05/13 06:37:14 dawes Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -29,6 +29,7 @@
 #include "Xlibint.h"
 #include "XlcPubI.h"
 #include <X11/Xos.h>
+#include "snprintf.h"
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
 #endif
@@ -237,7 +238,7 @@ _XlcFileName(lcd, category)
     n = parse_path(dir, args, 256);
     for(i = 0; i < n; ++i){
 	char buf[BUFSIZE], *name;
-	sprintf(buf, "%s/%s.dir", args[i], cat);
+	_XSnprintf(buf, sizeof(buf), "%s/%s.dir", args[i], cat);
 	name = _XlcResolveName(lc_name, buf, RtoL);
 	if(name == NULL){
 	    continue;
@@ -246,7 +247,7 @@ _XlcFileName(lcd, category)
 	    /* supposed to be absolute path name */
 	    file_name = name;
 	}else{
-	    sprintf(buf, "%s/%s", args[i], name);
+	    _XSnprintf(buf, sizeof(buf), "%s/%s", args[i], name);
 	    Xfree(name);
 	    file_name = Xmalloc(strlen(buf) + 1);
 	    if(file_name == NULL){
@@ -284,7 +285,7 @@ _XlcResolveLocaleName(lc_name, full_name, language, territory, codeset)
     xlocaledir(dir,BUFSIZE);
     n = parse_path(dir, args, 256);
     for(i = 0; i < n; ++i){
-	sprintf(buf, "%s/%s", args[i], LOCALE_ALIAS);
+	_XSnprintf(buf, sizeof(buf), "%s/%s", args[i], LOCALE_ALIAS);
 	name = _XlcResolveName(lc_name, buf, LtoR);
 	if(name != NULL){
 	    break;
@@ -351,7 +352,7 @@ _XlcResolveDBName(lc_name, file_name)
     xlocaledir(dir,BUFSIZE);
     n = parse_path(dir, args, 256);
     for(i = 0; i < n; ++i){
-	sprintf(buf, "%s/%s", args[i], LOCALE_DIR);
+	_XSnprintf(buf, sizeof(buf), "%s/%s", args[i], LOCALE_DIR);
 	name = _XlcResolveName(lc_name, buf, RtoL);
 	if(name != NULL){
 	    break;

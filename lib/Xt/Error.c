@@ -62,6 +62,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "IntrinsicI.h"
 #include <stdio.h>
+#include "snprintf.h"
 
 /* The error handlers in the application context aren't used since we can't
    come up with a uniform way of using them.  If you can, define
@@ -163,8 +164,8 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
     String str_class;
     String type_str;
     XrmValue result;
-    char str_name[BUFSIZ];
-    char temp[BUFSIZ];
+    char *str_name = NULL;
+    char *temp = NULL;
 
 #if GLOBALERRORS
     LOCK_PROCESS;
@@ -179,11 +180,15 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
         app->error_inited = TRUE;
     }
 #endif /* GLOBALERRORS */
+    if (!(str_name = ALLOCATE_LOCAL(strlen(name) + strlen(type) + 2)))
+	_XtAllocError(NULL);
     (void) sprintf(str_name, "%s.%s", name, type);
     /* XrmGetResource requires the name and class to be fully qualified
      * and to have the same number of components. */
     str_class = (char *)class;
     if (! strchr(class, '.')) {
+	if (!(temp = ALLOCATE_LOCAL(2 * strlen(class) + 2)))
+	    _XtAllocError(NULL);
 	(void) sprintf(temp, "%s.%s", class, class);
 	str_class = temp;
     }
@@ -205,6 +210,10 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
 	(void) memmove(buffer, defaultp, len);
 	buffer[len] = '\0';
     }
+    if (str_name)
+	DEALLOCATE_LOCAL(str_name);
+    if (temp)
+	DEALLOCATE_LOCAL(temp);
 #if GLOBALERRORS
     UNLOCK_PROCESS;
 #else
@@ -237,8 +246,9 @@ void _XtDefaultErrorMsg (name,type,class,defaultp,params,num_params)
 	if (i > 10) i = 10;
 	(void) memmove((char*)par, (char*)params, i * sizeof(String) );
 	bzero( &par[i], (10-i) * sizeof(String) );
-        (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
-		       par[4], par[5], par[6], par[7], par[8], par[9]);
+        (void) _XtSnprintf(message, sizeof(message), buffer, par[0], par[1],
+			par[2], par[3], par[4], par[5], par[6], par[7],
+			par[8], par[9]);
 	XtError(message);
 	if (i != *num_params)
 	    XtWarning( "some arguments in previous message were lost" );
@@ -262,8 +272,9 @@ void _XtDefaultWarningMsg (name,type,class,defaultp,params,num_params)
 	if (i > 10) i = 10;
 	(void) memmove((char*)par, (char*)params, i * sizeof(String) );
 	bzero ( &par[i], (10-i) * sizeof(String) );
-        (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
-		       par[4], par[5], par[6], par[7], par[8], par[9]);
+        (void) _XtSnprintf(message, sizeof(message), buffer, par[0], par[1],
+			par[2], par[3], par[4], par[5], par[6], par[7],
+			par[8], par[9]);
 	XtWarning(message); 
 	if (i != *num_params)
 	    XtWarning( "some arguments in previous message were lost" );

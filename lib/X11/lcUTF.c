@@ -1,4 +1,5 @@
 /* $XConsortium: lcUTF.c /main/9 1996/04/19 16:00:56 kaleb $ */
+/* $XFree86$ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -26,6 +27,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 #include "XlcUTF.h"
+#include "snprintf.h"
 
 static long	getutfrune();
 static void our_wctomb(
@@ -178,7 +180,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_1);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_1);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -213,7 +215,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_2);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_2);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -248,7 +250,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_3);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_3);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -283,7 +285,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_4);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_4);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -318,7 +320,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_5);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_5);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -353,7 +355,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_6);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_6);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -388,7 +390,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_7);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_7);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -423,7 +425,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_8);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_8);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -458,7 +460,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_9);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, tab8859_9);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_latin_tab(fp, tbl, fb_default);
@@ -549,7 +551,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, jis0208);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, jis0208);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_table(fp, &tabkuten, tbl, KUTENMAX, fb_default);
@@ -587,7 +589,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, ksc5601);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, ksc5601);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_table(fp, &tabksc5601, tbl, KSCMAX, fb_default);
@@ -625,7 +627,7 @@ long	fb_default;
 	if(q) {
 	    *q = '\0';
 	}
-	sprintf(filename, "%s/%s/%s", p, TBL_DATA_DIR, gb2312);
+	_XSnprintf(filename, BUFSIZE, "%s/%s/%s", p, TBL_DATA_DIR, gb2312);
 	fp = fopen(filename, "r");
 	if(fp) {
 	    set_table(fp, &tabgb, tbl, GBMAX, fb_default);
