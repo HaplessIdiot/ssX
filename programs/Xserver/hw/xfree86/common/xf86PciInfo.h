@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.87 2001/02/12 04:24:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.88 2001/02/17 23:19:51 mvojkovi Exp $ */
 /*
  * PCI Probe
  *
@@ -489,10 +489,10 @@
 #define PCI_CHIP_GEFORCE2GTS_1  0x0151
 #define PCI_CHIP_GEFORCE2ULTRA  0x0152
 #define PCI_CHIP_QUADRO2PRO     0x0153
-#define PCI_CHIP_0200		0x0200
-#define PCI_CHIP_0201		0x0201
-#define PCI_CHIP_0202		0x0202
-#define PCI_CHIP_0203		0x0203
+#define PCI_CHIP_GEFORCE3	0x0200
+#define PCI_CHIP_GEFORCE3_1	0x0201
+#define PCI_CHIP_GEFORCE3_2	0x0202
+#define PCI_CHIP_GEFORCE3_3	0x0203
 
 /* NVIDIA & SGS */
 #define PCI_CHIP_RIVA128	0x0018
@@ -1228,6 +1228,10 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_GEFORCE2GTS_1,"GeForce2 GTS (rev 1)",0},
 				{PCI_CHIP_GEFORCE2ULTRA,"GeForce2 Ultra",0},
 				{PCI_CHIP_QUADRO2PRO,	"Quadro 2 Pro",0},
+				{PCI_CHIP_GEFORCE3,	"GeForce3",0},
+				{PCI_CHIP_GEFORCE3_1,	"GeForce3 (rev 1)",0},
+				{PCI_CHIP_GEFORCE3_2,	"GeForce3 (rev 2)",0},
+				{PCI_CHIP_GEFORCE3_3,	"GeForce3 (rev 3)",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IMS, {
