@@ -1,4 +1,10 @@
 XFree86 4.1.99.5 (xx January 2002)
+ 640. Only use SA_RESTART in xterm when it's available (#5121, Frank Liu).
+ 639. Work around Watcom compiler bug that shows up when building Mesa's
+      stencil.c (David Dawes, based on #5121, Frank Liu).
+ 638. Handle __inline and __inline__ in compiler.h for non-GNU compilers,
+      which makes it more likely that drivers will build with other compilers
+      (David Dawes, based on #5121, Frank Liu).
  637. Build fixes for xedit/lisp. Don't define NEED_SNPRINTF when not needed.
       Avoid a double recursion into subdirs (#5123, Matthieu Herrb).
       Added code for systems without getpagesize.
@@ -14454,4 +14460,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2111 2002/01/02 23:49:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2112 2002/01/04 19:24:11 paulo Exp $
