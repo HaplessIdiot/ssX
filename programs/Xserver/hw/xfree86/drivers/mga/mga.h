@@ -260,7 +260,6 @@ typedef struct {
     unsigned long	BiosAddress;
     MessageType		BiosFrom;
     unsigned char *     IOBase;
-    unsigned char *     IOBaseDense;
     unsigned char *	FbBase;
     unsigned char *	ILOADBase;
     unsigned char *	FbStart;

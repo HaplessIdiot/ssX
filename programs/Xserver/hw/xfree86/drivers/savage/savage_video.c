@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.3 2001/05/18 23:35:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.4 2001/06/15 21:22:57 dawes Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -525,7 +525,6 @@ void SavageInitVideo(ScreenPtr pScreen)
     int num_adaptors;
 
     xf86ErrorFVerb(XVTRACE,"SavageInitVideo\n");
-xf86Break1();
     if(
 	(psav->Chipset == S3_SAVAGE_MX) ||
 	(psav->Chipset == S3_SAVAGE2000)

@@ -1,4 +1,110 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 346. Changed itn10 module to stub on Sparc (Egbert Eich).
+ 345. Added hyperpen driver (Roland Jansen et. al.).
+ 344. Fixed alignments of x86emu-structures for AXP (Jay Estabrook).
+ 343. Fixed XLoadQueryFont() and XLoadFont() to support locales 
+      (required for Euro support) (Markus Kuhn).
+ 342. Modified XtCvtStringToFont() to match any ISO8859 instead of 
+      latin1 as fallback. Required for Euro Support (Markus Kuhn).
+ 341. Added acute to compose key list for iso8859-15 (Markus Kuhn).
+ 340. Modified XV Xinerama support to recognize adaptors if screen 0
+  has no adaptor (Egbert Eich).
+ 339. Modified order of disable devices and LeaveVT() to be symetric
+      to the enter case (Egbert Eich).
+ 338. Modified GetTimeInMillis() to handle non monotonous system clocks
+      (Egbert Eich).
+ 337. Added comment about a Zeos Meridan 850c Notebook to C&T docs (Alan Cox).
+ 336. Added call to vbeFree() to apm driver (Egbert Eich).
+ 335. C&T driver:
+      - fixed sig11 problem for non-69030 chipsets.
+      - fixed DGA to announce acellerated functions only if accelleration
+        is enabled.
+      - added FP_mode flag to C&T driver which allows to override the detected
+        state of the flat panel (Egbert Eich).
+      - fixed driver to act appropriately if the BIOS switches to the 
+        external monitor it detects when doing DDC.
+      - Set IOBase correctly for MMIO when detection 65545 PCI.
+      - fixed text screen restauration on 69030 (Egbert Eich).
+      - reinabled correct KGA handling of C&T chips: unblank before the end
+        of scanline.
+      - added support for composite sync.
+      - when FP is active disallow display sizes greater than panel.
+      - added double buffering to video support.
+      - fixed register settings to prevent flickering during video playback.
+       (Egbert Eich).
+ 334. Fixed bug in C&T driver that caused interlaced mode not to work 
+      (Claus Hulstrøm).
+ 333. Added full MMIO support for C&T 69030 chips (Gregg H. Burman).
+ 332. Fixed MMIO accel code in Cirrus Alpine driver, got PIO accel code to
+      work (Egbert Eich).
+ 331. Fixed fbdev to obtain 24 bit framebuffer format from the kernel, added
+      more failure messages to fbdev driver (Egbert Eich).
+ 330. Added calls to vbeFree() to rendition, savage, silicon motion, 
+      i740 and i810 driver (Egbert Eich).
+ 329. Modified MGA driver for new Sparse allocation sceme (Jay Estabrook).
+ 328. Modified handling of sparse addresses on AXP: The code now no longer
+      maps the entire sparse range. Now the required ranges are mapped
+      relative to a fixed base address (Jay Estabrook).
+ 327. Fixed HW cursor for MGA G100 (Egbert Eich).
+ 326. Fixed MGA drivers to be able to use overlay modes when HAL lib is
+      loaded (Egbert Eich).
+ 325. Disabled accel functions that cause lockups on certain neomagic
+      systems by default. They can be reenabled by setting the option
+      "StrangeLockups" to "no" (Egbert Eich).
+ 324. Did a further fix on ScreenToScreenCopy() for Neomagic 2200 
+      (Egbert Eich).
+ 323. Added experimental support for Toshiba Libretto. This can be enabled
+      by the option "DisplayHeight480" (Egbert Eich).
+ 322. Fixed clipping in Savage driver, update to version 1.1.1.19 
+      (Tim Roberts).
+ 321. fixed calls to BLTSync() on SiS driver (Egbert Eich).
+ 320. Fixed Mono8x8PatternFill(): Moving SETROPFG behind SETROPBG did the
+      trick (Egbert Eich).
+ 319. Setting 24 bpp pximap flags correctly in SiS driver dependening 
+      on chipset (Egbert Eich).
+ 318. Setting depth and bpp of framebuffer correctly for suncg14 and sunleo
+      driver (Thorsten Kukuk).
+ 317. Tseng driver not longer ignores results of TsengDoMemLimit() which
+      tests for certain restrictions on the usable framebuffer size 
+      (Egbert Eich).
+ 316. Vesa driver: adding calls to vbeFree() before exiting PreInit(). 
+      Reinit vbe in ScreenInit() (Egbert Eich).
+ 315. Adding int10 initialization to generic vga driver (Egbert Eich).
+ 314. Modified generic vga driver to use shadow fb for vga16 on AXP.
+      This works around the problem that AXP can address memory only 32bit
+      wide which doesn't work on a latched register planar fb (Egbert Eich).
+ 313. Removing 3.3 code from wacom driver. Makes driver hard to read
+      (Egbert Eich).
+ 312. Removing message output from xf86WcmPlug() which causes -configure
+      to core dump (Egbert Eich).
+ 311. Modified int10 Pci code to be able to use new version of 
+      xf86ReadPciBIOS() (Egbert Eich).
+ 310. Modified int10 int1A handler to return valid when an unimplemented int10
+      call is encountered. This allows fallback to system BIOS (Egbert Eich).
+ 309. Modified xf86ReadPciBIOS() to check for valid i386 PC signature.
+      Added functions xf86GetAvailablePciBIOSTypes() and 
+      xf86ReadPciBIOSByType() to obtain available PCI BIOS types and 
+      retrieve a certain BIOS by type (Egbert Eich).
+ 308. Reversed bogus patch 1050 of version 4.0.2. The graphics engine will
+      *never* be called after receiving an APM suspend and before receiving
+      an APM resume. If the neomagic locks up on resume this has a different
+      reason (Egbert Eich).
+ 307. Change  real/effective user ID to 0/0 before calling modprobe in 
+      xf86LoadKernelModule() on Linux so user can also load drm modules. Fixed
+      PATH environment variable to /sbin (Stefan Dirsch, Egbert Eich).
+ 306. Removed disable/enable interrupt code on ia64 as interrupts cannot
+      be controled from user level (Egbert Eich).
+ 305. Further attempt to fix split algorithm for MTRR regions (Egbert Eich).
+ 304. Fixed problem in XAACopyPlaneNtoNColorExpand() that caused bogus
+      memory accesses when src was not in fb memory (Egbert Eich).
+ 303. Fixed cfb8_32PaintWindow() to use correct cfb32FillBoxTileOdd function
+      (Egbert Eich).
+ 302. Fix to xdm PAM support (Werner Fink).
+ 301. Fixed cz and cz_querty keyboard layouts, added support for Slovak
+      keyboard (Jan Holesovsky).
+ 300. Fixed core dump in twm if no locales are present (Egbert Eich).
+ 299. Modified xterm app default to use LFD fontnames instead of old type
+      (Michael Schroeder).
  298. Add a f.startwm function to twm to start another manager. 
       (Matthieu Herrb).
  297. Disable MIT-SHM in Xnest, caused a segfault (Matthieu Herrb). 

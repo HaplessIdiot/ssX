@@ -387,13 +387,31 @@ xf86KbdProc (pKeyboard, what)
  * These are getting tossed in here until I can think of where
  * they really belong
  */
+#define HALFMONTH ((unsigned long) 1<<31)
 CARD32
 GetTimeInMillis()
 {
     struct timeval  tp;
+    register CARD32 val;
+    static CARD32 oldval = 0;
+    static CARD32 skew = 0;
 
     gettimeofday(&tp, 0);
-    return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
+    val = (tp.tv_sec * 1000) + (tp.tv_usec / 1000) + skew;
+    /* On some systems the clock is not monothonic */
+    if ((val < oldval) && ((oldval - val) < HALFMONTH)) {
+      /* if clock is not monothonic find out clock skew skew */
+        xf86MsgVerb(X_WARNING,4,"System time not monotonic!\n");
+	skew += oldval - val;
+	val = (tp.tv_sec * 1000) + (tp.tv_usec / 1000) + skew;
+    } else if (skew && ((val - oldval) < HALFMONTH)) {
+      /* try to reduce skew */
+        INT32 diff = skew - (val - oldval);
+	skew = diff < 0 ? 0 : diff;
+	val = (tp.tv_sec * 1000) + (tp.tv_usec / 1000) + skew;
+    }
+    oldval = val;
+    return val;
 }
 #endif /* DDXTIME && !QNX4 */
 

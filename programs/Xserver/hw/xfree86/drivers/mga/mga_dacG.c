@@ -575,7 +575,6 @@ MGAPaletteLoadCallback(ScrnInfoPtr pScrn)
 	}
 	pal++;
     }
-    
     pMga->PaletteLoadCallback = NULL;
 }
 
@@ -855,6 +854,14 @@ MGAGShowCursor(ScrnInfoPtr pScrn)
     outMGAdac(MGA1064_CURSOR_CTL, 0x03);
 }
 
+static void 
+MGAGShowCursorG100(ScrnInfoPtr pScrn)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+    /* Enable cursor - X-Windows mode */
+    outMGAdac(MGA1064_CURSOR_CTL, 0x01);
+}
+
 static void
 MGAGHideCursor(ScrnInfoPtr pScrn)
 {
@@ -880,6 +887,7 @@ MGAGSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     OUTREG8( RAMDAC_OFFSET + MGA1064_CUR_YHI, (y & 0xF00) >> 8);
 }
 
+
 static void
 MGAGSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
@@ -894,6 +902,22 @@ MGAGSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     outMGAdac(MGA1064_CURSOR_COL1_RED,   (fg & 0x00FF0000) >> 16);
     outMGAdac(MGA1064_CURSOR_COL1_GREEN, (fg & 0x0000FF00) >> 8);
     outMGAdac(MGA1064_CURSOR_COL1_BLUE,  (fg & 0x000000FF));
+}
+
+static void
+MGAGSetCursorColorsG100(ScrnInfoPtr pScrn, int bg, int fg)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    /* Background color */
+    outMGAdac(MGA1064_CURSOR_COL1_RED,   (bg & 0x00FF0000) >> 16);
+    outMGAdac(MGA1064_CURSOR_COL1_GREEN, (bg & 0x0000FF00) >> 8);
+    outMGAdac(MGA1064_CURSOR_COL1_BLUE,  (bg & 0x000000FF));
+
+    /* Foreground color */
+    outMGAdac(MGA1064_CURSOR_COL2_RED,   (fg & 0x00FF0000) >> 16);
+    outMGAdac(MGA1064_CURSOR_COL2_GREEN, (fg & 0x0000FF00) >> 8);
+    outMGAdac(MGA1064_CURSOR_COL2_BLUE,  (fg & 0x000000FF));
 }
 
 static Bool 
@@ -1003,6 +1027,7 @@ MGAG_i2cInit(ScrnInfoPtr pScrn)
 
 /*
  * MGAGRamdacInit
+ * Handle broken G100 special.
  */
 static void
 MGAGRamdacInit(ScrnInfoPtr pScrn)
@@ -1014,11 +1039,17 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
     MGAdac->CursorOffscreenMemSize = 1024;
     MGAdac->CursorMaxWidth         = 64;
     MGAdac->CursorMaxHeight        = 64;
-    MGAdac->SetCursorColors        = MGAGSetCursorColors;
     MGAdac->SetCursorPosition      = MGAGSetCursorPosition;
     MGAdac->LoadCursorImage        = MGAGLoadCursorImage;
     MGAdac->HideCursor             = MGAGHideCursor;
-    MGAdac->ShowCursor             = MGAGShowCursor;
+    if ((pMga->Chipset == PCI_CHIP_MGAG100) 
+	|| (pMga->Chipset == PCI_CHIP_MGAG100)) {
+      MGAdac->SetCursorColors        = MGAGSetCursorColorsG100;
+      MGAdac->ShowCursor             = MGAGShowCursorG100;
+    } else {
+      MGAdac->SetCursorColors        = MGAGSetCursorColors;
+      MGAdac->ShowCursor             = MGAGShowCursor;
+    }
     MGAdac->UseHWCursor            = MGAGUseHWCursor;
     MGAdac->CursorFlags            =
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN

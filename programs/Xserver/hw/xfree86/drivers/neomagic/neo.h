@@ -236,6 +236,7 @@ typedef struct neoRec
     Bool progLcdStretch;
     Bool progLcdStretchOpt;
     Bool overrideValidate;
+    Bool strangeLockups;
     /* registers */
     NeoRegRec NeoModeReg;
     NeoRegRec NeoSavedReg;

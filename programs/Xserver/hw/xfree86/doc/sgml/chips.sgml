@@ -590,7 +590,14 @@ Tested on a HP OmniBook 5000CTS (800x600 TFT, 65548, 1Mbyte)
 <quote><verb>
 Modeline "800x600@8bpp"	  30.150  800  896  960 1056   600  600  604  628
 Options: "FixPanelSize", "UseModeline"
-Test on a Zeos Meridan 850c (800x600 DSTN, 65545, 1Mbyte)
+Tested on a Zeos Meridan 850c (800x600 DSTN, 65545, 1Mbyte)
+</verb></quote>
+
+The IBM PC110  works best with a 15MHz clock (Thanks to Alan Cox):
+<quote><verb>
+Modeline "640x480"        15.00   640  672  728  816   480  489  496  526
+Options: "TextClockFreq" "15.00"
+IBM PC110 (65535, Citizen L6481L-FF DSTN) 
 </verb></quote>
 
 The NEC Versa 4080 just needs the "FixPanelSize" option. To the best of my

@@ -9,6 +9,11 @@ xkb_symbols "basic" {
      // to satisfy most unix, windows and mac users.
      // 2001 by Kamil Toman <ktoman@email.cz>
 
+     // Switching to US added by Jan Holesovsky <kendy@suse.cz>, 2001
+
+    include "us_group2(basic)"
+    include "group(shift_toggle)"
+
     name[Group1]= "Czech";
 
     key.type = "FOUR_LEVEL";

@@ -1125,11 +1125,20 @@ xf86VTSwitch()
       xf86Screens[i]->LeaveVT(i, 0);
     }
 #if !defined(__EMX__)
+
+    /* 
+     * Keep the order: Disable Device > LeaveVT
+     *                        EnterVT > EnableDevice 
+     */
     DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
     pInfo = xf86InputDevs;
     while (pInfo) {
       DisableDevice(pInfo->dev);
       pInfo = pInfo->next;
+    }
+    xf86EnterServerState(SETUP);
+    for (i = 0; i < xf86NumScreens; i++) {
+      xf86Screens[i]->LeaveVT(i, 0);
     }
 #endif /* !__EMX__ */
     for (ih = InputHandlers; ih; ih = ih->next)
@@ -1219,6 +1228,7 @@ xf86VTSwitch()
       pInfo = pInfo->next;
     }
 #endif /* !__EMX__ */
+    
     for (ih = InputHandlers; ih; ih = ih->next)
       xf86EnableInputHandler(ih);
   }

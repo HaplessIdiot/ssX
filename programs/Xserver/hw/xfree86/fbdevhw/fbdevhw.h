@@ -19,7 +19,7 @@ Bool  fbdevHWProbe(pciVideoPtr pPci, char *device, char **namep);
 Bool  fbdevHWInit(ScrnInfoPtr pScrn, pciVideoPtr pPci, char *device);
 
 char* fbdevHWGetName(ScrnInfoPtr pScrn);
-int   fbdevHWGetDepth(ScrnInfoPtr pScrn);
+int   fbdevHWGetDepth(ScrnInfoPtr pScrn, int *fbbpp);
 int   fbdevHWGetLineLength(ScrnInfoPtr pScrn);
 int   fbdevHWGetType(ScrnInfoPtr pScrn);
 int   fbdevHWGetVidmem(ScrnInfoPtr pScrn);

@@ -754,7 +754,7 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
       * XXX Check if this is correct
       */
      if (!pCir->UseMMIO) {
-         pScrn->racIoFlags =   RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+         pScrn->racIoFlags = RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT | RAC_FB;
  	xf86SetOperatingState(resVgaMemShared, pCir->pEnt->index,ResUnusedOpr);
      } else {
          xf86SetOperatingState(RES_SHARED_VGA, pCir->pEnt->index, ResUnusedOpr);

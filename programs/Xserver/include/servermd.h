@@ -191,6 +191,7 @@ SOFTWARE.
 
 #endif /* SuperH */
 
+
 #if (defined(sun) && !(defined(i386) && defined(SVR4))) || \
     (defined(__uxp__) && (defined(sparc) || defined(mc68000))) || \
     defined(__sparc__) || defined(__mc68000__)
@@ -338,6 +339,13 @@ SOFTWARE.
 #define GLYPHPADBYTES         	4
 #define GETLEFTBITS_ALIGNMENT  1	
 
+#define BITMAP_SCANLINE_UNIT	8
+#define LARGE_INSTRUCTION_CACHE
+#define FAST_CONSTANT_OFFSET_MODE
+#define FAST_UNALIGNED_READ
+
+#define FAST_MEMCPY
+
 #endif /* linux/s390 */
 
 #if defined (linux) && defined (__s390x__)
@@ -347,6 +355,12 @@ SOFTWARE.
 #define GLYPHPADBYTES          4
 #define GETLEFTBITS_ALIGNMENT  1
 
+#define BITMAP_SCANLINE_UNIT	8
+#define LARGE_INSTRUCTION_CACHE
+#define FAST_CONSTANT_OFFSET_MODE
+#define FAST_UNALIGNED_READ
+
+#define FAST_MEMCPY
 #endif /* linux/s390x */
 
 

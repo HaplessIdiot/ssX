@@ -258,6 +258,8 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #ifndef XF86INT10_BUILD
 # ifdef i386Architecture
 #  define XF86INT10_BUILD	X86VM
+# elif defined SparcArchitecture
+#  define XF86INT10_BUILD	X86INT10_STUB
 # else
 #  define XF86INT10_BUILD	X86EMU_GENERIC
 # endif

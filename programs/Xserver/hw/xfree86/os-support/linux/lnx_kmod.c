@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include "xf86_OSproc.h"
+#include "xf86.h"
 
 
 #define MODPROBE_PATH_FILE      "/proc/sys/kernel/modprobe"
@@ -66,7 +67,16 @@ xf86LoadKernelModule(const char *modName)
     */
    switch (pid = fork()) {
    case 0:  /* child */
+      /* change real/effective user ID to 0/0 as we need to
+       * preinstall agpgart module for some DRM modules 
+       */
+      if (setreuid(0,0)) {
+         xf86Msg(X_WARNING,"LoadKernelModule: "
+		 "Setting of real/effective user Id to 0/0 failed");
+      }
+      setenv("PATH","/sbin",1);
       n = execl(mpPath, "modprobe", modName, NULL);
+      xf86Msg(X_WARNING,"LoadKernelModule %s\n",xf86strerror(xf86GetErrno()));
       exit(EXIT_FAILURE);  /* if we get here the child's exec failed */
       break;
    case -1:  /* fork failed */

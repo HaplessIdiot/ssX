@@ -119,7 +119,7 @@ Bool xf86IsEntityPrimary(int entityIndex);
 Bool xf86FixPciResource(int entityIndex, int prt, memType alignment,
 			 long type);
 resPtr xf86ReallocatePciResources(int entityIndex, resPtr pRes);
-resPtr xf86SetOperatingState(resList list, int entityIndex, int mask);
+resPtr xf86SetOperatingState(const resList list, int entityIndex, int mask);
 void xf86EnterServerState(xf86State state);
 resRange xf86GetBlock(long type, memType size,
 		      memType window_start, memType window_end,

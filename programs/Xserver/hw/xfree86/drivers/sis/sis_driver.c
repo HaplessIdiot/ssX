@@ -705,11 +705,18 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * Our preference for depth 24 is 24bpp, so tell it that too.
      */
+    switch (pSiS->Chipset) {
+    case PCI_CHIP_SIS300:
+    case PCI_CHIP_SIS630:
+    case PCI_CHIP_SIS540:
+    case PCI_CHIP_SIS530:
     pix24flags = Support32bppFb | Support24bppFb |
                 SupportConvert24to32 | SupportConvert32to24;
-    if (pSiS->Chipset == PCI_CHIP_SIS6326)
-            pix24flags |= PreferConvert32to24;
-
+    default:
+            pix24flags = Support24bppFb |
+		SupportConvert32to24 | PreferConvert32to24;
+    }
+    
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, pix24flags))
     return FALSE;
 
@@ -1207,6 +1214,7 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     if (!(*pSiS->ModeInit)(pScrn, mode))
         return FALSE;
+    
 
     PDEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
                 "HDisplay: %d, VDisplay: %d  \n",
@@ -1311,7 +1319,7 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise the first mode */
     if (!SISModeInit(pScrn, pScrn->currentMode))
         return FALSE;
-
+    
     /* Clear frame buffer */
     OnScreenSize = pScrn->displayWidth * pScrn->currentMode->VDisplay * (pScrn->bitsPerPixel / 8);
     memset(pSiS->FbBase, 0, OnScreenSize);
@@ -1348,12 +1356,13 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (pScrn->bitsPerPixel > 8) {
         if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
                               pScrn->defaultVisual))
-            return FALSE;
+	    return FALSE;
+	
     } else {
         if (!miSetVisualTypes(pScrn->depth, 
                               miGetDefaultVisualMask(pScrn->depth),
                               pScrn->rgbBits, pScrn->defaultVisual))
-            return FALSE;
+		return FALSE;
     }
 
     width = pScrn->virtualX;
@@ -1376,8 +1385,8 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     if (!miSetPixmapDepths())
-        return FALSE;
-
+	return FALSE;
+    
     {
         static int GlobalHWQueueLength = 0;
 

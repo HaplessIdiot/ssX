@@ -1,4 +1,4 @@
-/* $XFree86: Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PM.c,v 3.4 2000/12/08 20:13:34 eich Exp $ */
 
 
 #include "X.h"
@@ -38,7 +38,7 @@ DoApmEvent(pmEvent event)
      * this might cause problems in the future. It is a global server 
      * variable therefore it needs to be in a server info structure
      */
-    static Bool suspended;
+    static Bool suspended = FALSE;
     int i;
     
     switch(event) {

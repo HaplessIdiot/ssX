@@ -142,7 +142,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #define XInputDrivers		mouse /* acecad */ calcomp citron \
 				digitaledge dmc dynapro elographics \
 				microtouch mutouch penmount spaceorb summa \
-				wacom void /* magictouch */
+				wacom void /* magictouch */ hyperpen
 #endif
 
 /* <linux/input.h> support mainly for USB support */

@@ -399,9 +399,12 @@ fbdevHWGetName(ScrnInfoPtr pScrn)
 }
 
 int
-fbdevHWGetDepth(ScrnInfoPtr pScrn)
+fbdevHWGetDepth(ScrnInfoPtr pScrn, int *fbbpp)
 {
 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
+
+	if (fbbpp)
+	    *fbbpp = fPtr->var.bits_per_pixel;
 
 	if (fPtr->fix.visual == FB_VISUAL_TRUECOLOR ||
 	    fPtr->fix.visual == FB_VISUAL_DIRECTCOLOR)

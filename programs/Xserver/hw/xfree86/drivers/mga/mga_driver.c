@@ -1449,15 +1449,18 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #ifdef USEMGAHAL
-    if (HAL_CHIPSETS && !xf86ReturnOptValBool(pMga->Options, OPTION_NOHAL, FALSE)
-        && xf86LoadSubModule(pScrn, "mga_hal")) {
-	 xf86LoaderReqSymLists(halSymbols, NULL);
-	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,"Matrox HAL module used\n");
-	 pMga->HALLoaded = TRUE;
-       } else {
-	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Matrox HAL module not found - using builtin mode setup instead\n");
-	 pMga->HALLoaded = FALSE;
-       }
+    if (HAL_CHIPSETS) {
+        if (!xf86ReturnOptValBool(pMga->Options, OPTION_NOHAL, FALSE)
+	    && xf86LoadSubModule(pScrn, "mga_hal")) {
+	  xf86LoaderReqSymLists(halSymbols, NULL);
+	  xf86DrvMsg(pScrn->scrnIndex, X_INFO,"Matrox HAL module used\n");
+	  pMga->HALLoaded = TRUE;
+	} else {
+	  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Matrox HAL module not loaded "
+		     "- using builtin mode setup instead\n");
+	  pMga->HALLoaded = FALSE;
+	}
+    }
 #endif
 
     /*
@@ -1712,7 +1715,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	       		(unsigned long)pMga->ILOADAddress);
 	    }
     }
-
 
 #if !defined(__powerpc__)
     /*
@@ -2414,14 +2416,6 @@ MGAMapMem(ScrnInfoPtr pScrn)
     if (pMga->IOBase == NULL)
 	return FALSE;
 
-#ifdef __alpha__
-    pMga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex,
-				      VIDMEM_MMIO | VIDMEM_MMIO_32BIT,
-				      pMga->PciTag, pMga->IOAddress, 0x4000);
-    if (pMga->IOBaseDense == NULL)
-	return FALSE;
-#endif
-
     pMga->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pMga->PciTag, pMga->FbAddress,
 				 pMga->FbMapSize);
@@ -2725,13 +2719,36 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		"  Make sure to validate the mode before.\n");
 	return FALSE;
     }
+    
     );	/* MGA_HAL */
 
+    /* getting around bugs in the HAL lib. MATROX: hint, hint */
     MGA_HAL(
-    if(pMga->SecondCrtc == FALSE && pMga->HWCursor == TRUE) {
-	outMGAdac(MGA1064_CURSOR_BASE_ADR_LOW, pMga->FbCursorOffset >> 10);
-	outMGAdac(MGA1064_CURSOR_BASE_ADR_HI, pMga->FbCursorOffset >> 18);
-    }
+	    switch (pMga->Chipset) {
+	    case PCI_CHIP_MGA1064:
+	    case PCI_CHIP_MGAG100:
+	    case PCI_CHIP_MGAG100_PCI:
+	    case PCI_CHIP_MGAG200:
+	    case PCI_CHIP_MGAG200_PCI:
+	    case PCI_CHIP_MGAG400:	      
+	      if(pMga->SecondCrtc == FALSE && pMga->HWCursor == TRUE) {
+		outMGAdac(MGA1064_CURSOR_BASE_ADR_LOW, 
+			  pMga->FbCursorOffset >> 10);
+		outMGAdac(MGA1064_CURSOR_BASE_ADR_HI, 
+			  pMga->FbCursorOffset >> 18);
+		outMGAdac(MGA1064_CURSOR_CTL, 0x00);
+	      }
+	      if (pMga->Overlay8Plus24 == TRUE) {
+    		  outMGAdac(MGA1064_MUL_CTL, MGA1064_MUL_CTL_32bits);
+    		  outMGAdac(MGA1064_COL_KEY_MSK_LSB,0xFF);
+    		  outMGAdac(MGA1064_COL_KEY_LSB,pMga->colorKey);
+  		  outMGAdac(MGA1064_COL_KEY_MSK_MSB,0xFF);
+  		  outMGAdac(MGA1064_COL_KEY_MSB,0xFF);
+	      }		
+	      break;
+	    default:
+	      break;
+	    }
     );	/* MGA_HAL */
 #endif
     MGA_NOT_HAL((*pMga->Restore)(pScrn, vgaReg, mgaReg, FALSE));
@@ -2955,6 +2972,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef USEMGAHAL
     MGA_HAL(
 	/* There is a problem in the HALlib: set soft reset bit */
+	/* MATROX: hint, hint */
 	if (!pMga->Primary && !pMga->FBDev &&
 	    (pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SG) ) {
 	    OUTREG(MGAREG_Reset, 1);

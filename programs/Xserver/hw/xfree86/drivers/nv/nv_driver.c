@@ -656,8 +656,6 @@ NVCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     NVUnmapMem(pScrn);
     vgaHWUnmapMem(pScrn);
-    if (pNv->pInt)
-	xf86FreeInt10(pNv->pInt);
     if (pNv->AccelInfoRec)
         XAADestroyInfoRec(pNv->AccelInfoRec);
     if (pNv->CursorInfoRec)
@@ -772,8 +770,8 @@ nvDoDDCVBE(ScrnInfoPtr pScrn)
  		xf86SetDDCproperties(pScrn,MonInfo);
  	    }
  	    vbeFree(pVbe);
- 	} else 
- 	  xf86FreeInt10(pNv->pInt);
+ 	}
+	xf86FreeInt10(pNv->pInt);
  	pNv->pInt = NULL;
      }
      return MonInfo;
@@ -1502,6 +1500,9 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     pNv->CurrentLayout.weight.blue = pScrn->weight.blue;
     pNv->CurrentLayout.mode = pScrn->currentMode;
 
+    xf86FreeInt10(pNv->pInt);
+
+    pNv->pInt = NULL;
     return TRUE;
 }
 

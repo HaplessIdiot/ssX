@@ -742,7 +742,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	dump_registers(pInt);
 	if (xf86GetVerbosity() > 3)
 	    stack_trace(pInt);
-	return 1;
+	return 0;
     }
 }
 

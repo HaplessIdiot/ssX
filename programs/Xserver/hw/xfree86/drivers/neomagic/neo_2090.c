@@ -132,7 +132,7 @@ Neo2090AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentSolidFillRect = 
 	Neo2090SubsequentSolidFillRect;
 
-    if (nPtr->NeoChipset == PCI_CHIP_NM2093) {
+    if (nPtr->NeoChipset == PCI_CHIP_NM2093 && !nPtr->strangeLockups) {
 	/*
 	 * We do CPUToScreenColorExpand (ab)using the Scanline functions:
 	 * the neo chipsets need byte padding however we can only do dword

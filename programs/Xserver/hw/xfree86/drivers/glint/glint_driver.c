@@ -1078,15 +1078,14 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
     if (FBDevProbed) {
-	int default_depth;
+	int default_depth, fbbpp;
 	
 	if (!fbdevHWInit(pScrn,NULL,xf86FindOptionValue(pGlint->pEnt->device->options,"fbdev"))) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "fbdevHWInit failed!\n");	
 		return FALSE;
 	}
-	default_depth = fbdevHWGetDepth(pScrn);
-	if (!xf86SetDepthBpp(pScrn, default_depth, default_depth, default_depth,
-			     Support24bppFb | Support32bppFb))
+	default_depth = fbdevHWGetDepth(pScrn,&fbbpp);
+	if (!xf86SetDepthBpp(pScrn, default_depth, default_depth, fbbpp,0))
 		return FALSE;
     } else {
 	if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb | Support32bppFb 

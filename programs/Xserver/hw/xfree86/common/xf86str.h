@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.78 2001/05/15 18:22:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.79 2001/05/18 23:35:31 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -624,13 +624,13 @@ typedef struct _resRec {
 
 typedef struct {
     int numChipset;
-    resRange *resList;
+    const resRange *resList;
 } IsaChipsets;
 
 typedef struct { 
     int numChipset;
     int PCIid;
-    resRange *resList;
+    const resRange *resList;
 } PciChipsets;
 
 /* Entity properties */

@@ -77,6 +77,7 @@ typedef struct alpRec {
 	/* MMIO Base for BitBLT operation. This is
 	   IOBase for 5446 and 7548, IOBase+0x100 for 5480 */
 	unsigned char *	    BLTBase;
+        CARD32              transRop;
 /* XXX For XF86Config based mem configuration */
 	CARD32			sr0f, sr17;
 } AlpRec, *AlpPtr;

@@ -156,7 +156,7 @@ chipsStdReadMR(CHIPSPtr cPtr, CARD8 index)
 }
 
 static void
-chipsStdWriteMSS(CHIPSPtr cPtr, CARD8 value)
+chipsStdWriteMSS(CHIPSPtr cPtr, vgaHWPtr hwp, CARD8 value)
 {
     outb(CHIPS_MSS, value);
 }
@@ -244,8 +244,25 @@ chipsMmioReadMR(CHIPSPtr cPtr, CARD8 index)
 }
 
 static void
-chipsMmioWriteMSS(CHIPSPtr cPtr, CARD8 value)
+chipsMmioWriteMSS(CHIPSPtr cPtr, vgaHWPtr hwp, CARD8 value)
 {
+    /* 69030 MMIO Fix.
+     *
+     * <value> determines which MMIOBase to use; either
+     * Pipe A or Pipe B. -GHB
+     */
+    if ((value & MSS_SHADOW) == MSS_PIPE_B)
+	cPtr->MMIOBaseVGA = cPtr->MMIOBasePipeB;
+    else
+	cPtr->MMIOBaseVGA = cPtr->MMIOBasePipeA;
+
+    hwp->MMIOBase = cPtr->MMIOBaseVGA;
+
+    /* Since our Pipe constants don't set bit 3 of MSS, the value
+     * written here has no effect on the hardware's behavior. It
+     * does allow us to use the value returned by readMSS() to key
+     * the above logic, though. -GHB
+     */
     chipsmoutb(CHIPS_MMIO_MSS, value);
 }
 

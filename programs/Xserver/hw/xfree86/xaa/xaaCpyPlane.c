@@ -133,8 +133,9 @@ XAACopyPlaneNtoNColorExpand(
         bzero(data, height * pitch);
 
 	dataPtr = data;
-	srcPtr = ((pptSrc->y + pSrc->y) * srcwidth) + src + 
-			((pptSrc->x + pSrc->x) * Bpp) + offset;
+        srcPtr = ((pptSrc->y) * srcwidth) + src + 
+                        ((pptSrc->x) * Bpp) + offset;
+
 	while(h--) {
 	    for(i = index = 0; i < width; i++, index += Bpp) {
 	       if(mask & srcPtr[index])

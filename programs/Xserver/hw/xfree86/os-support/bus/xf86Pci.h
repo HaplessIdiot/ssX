@@ -630,6 +630,13 @@ typedef enum {
 #define pci_user_config_2	      cfgspc.regs.devspf.bytes[2]
 #define pci_user_config_3	      cfgspc.regs.devspf.bytes[3]
 
+typedef enum {
+  PCI_BIOS_PC = 0,
+  PCI_BIOS_OPEN_FIRMARE,
+  PCI_BIOS_HP_PA_RISC,
+  PCI_BIOS_OTHER
+} PciBiosType;
+
 /* Public PCI access functions */
 void          pciInit(void);
 PCITAG        pciFindFirst(CARD32 id, CARD32 mask);
@@ -652,6 +659,11 @@ pointer       xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag,
 				ADDRESS Base, unsigned long Size);
 int           xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 				unsigned char *Buf, int Len);
+int           xf86ReadPciBIOSByType(unsigned long Offset, PCITAG Tag, 
+				    int basereg, unsigned char *Buf, 
+				    int Len, PciBiosType Type);
+int           xf86GetAvailablePciBIOSTypes(PCITAG Tag, int basereg, 
+					   PciBiosType *Buf);
 pciConfigPtr *xf86scanpci(int flags);
 
 /* Old sytle PCI access functions (for compatibility) */

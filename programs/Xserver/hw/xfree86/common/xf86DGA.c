@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.40 2001/03/04 01:29:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.41 2001/05/25 02:44:34 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -348,7 +348,7 @@ xf86SetDGAMode(
    pScreenPriv->pixmapMode = FALSE;
    pScreenPriv->grabMouse = TRUE;
    pScreenPriv->grabKeyboard = TRUE;
-   
+
    return Success;
 }
 

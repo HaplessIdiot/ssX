@@ -381,7 +381,7 @@ static Bool
 FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 {
 	FBDevPtr fPtr;
-	int default_depth;
+	int default_depth, fbbpp;
 	const char *mod = NULL, *s;
 	const char **syms = NULL;
 
@@ -414,9 +414,8 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	/* open device */
 	if (!fbdevHWInit(pScrn,NULL,xf86FindOptionValue(fPtr->pEnt->device->options,"fbdev")))
 		return FALSE;
-	default_depth = fbdevHWGetDepth(pScrn);
-	if (!xf86SetDepthBpp(pScrn, default_depth, default_depth, default_depth,
-			     Support24bppFb | Support32bppFb))
+	default_depth = fbdevHWGetDepth(pScrn,&fbbpp);
+	if (!xf86SetDepthBpp(pScrn, default_depth, default_depth, fbbpp,0))
 		return FALSE;
 	xf86PrintDepthBpp(pScrn);
 
@@ -531,7 +530,7 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	else
 		/* FIXME: this doesn't work for all cases, e.g. when each scanline
 			has a padding which is independent from the depth (controlfb) */
-		pScrn->displayWidth = fbdevHWGetLineLength(pScrn)/(fbdevHWGetDepth(pScrn) >> 3);
+		pScrn->displayWidth = fbdevHWGetLineLength(pScrn)/(fbdevHWGetDepth(pScrn,NULL) >> 3);
 
 	xf86PrintModes(pScrn);
 
@@ -637,31 +636,40 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	       pScrn->offset.red,pScrn->offset.green,pScrn->offset.blue);
 #endif
 
-	if (NULL == (fPtr->fbmem = fbdevHWMapVidmem(pScrn)))
+	if (NULL == (fPtr->fbmem = fbdevHWMapVidmem(pScrn))) {
+	        xf86DrvMsg(scrnIndex,X_ERROR,"Map vid mem failed\n");
 		return FALSE;
+	}
 	fPtr->fboff = fbdevHWLinearOffset(pScrn);
 
 	fbdevHWSave(pScrn);
 
-	if (!fbdevHWModeInit(pScrn, pScrn->currentMode))
+	if (!fbdevHWModeInit(pScrn, pScrn->currentMode)) {
+		xf86DrvMsg(scrnIndex,X_ERROR,"Mode init failed\n");
 		return FALSE;
-
+	}
 	fbdevHWSaveScreen(pScreen, SCREEN_SAVER_ON);
 	fbdevHWAdjustFrame(scrnIndex,0,0,0);
 
 	/* mi layer */
 	miClearVisualTypes();
 	if (pScrn->bitsPerPixel > 8) {
-		if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits, TrueColor))
+		if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits, TrueColor)) {
+			xf86DrvMsg(scrnIndex,X_ERROR,"Set visual types failed\n");
 			return FALSE;
+		}
 	} else {
 		if (!miSetVisualTypes(pScrn->depth,
 				      miGetDefaultVisualMask(pScrn->depth),
-				      pScrn->rgbBits, pScrn->defaultVisual))
+				      pScrn->rgbBits, pScrn->defaultVisual)) {
+			xf86DrvMsg(scrnIndex,X_ERROR,"Set visual types failed\n");
 			return FALSE;
+		}
 	}
-	if (!miSetPixmapDepths())
+	if (!miSetPixmapDepths()) {
+	  xf86DrvMsg(scrnIndex,X_ERROR,"Set pixmap depths failed\n");
 	  return FALSE;
+	}
 
 #if 0
 	if(fPtr->rotate==3 || fPtr->rotate==1)
@@ -679,8 +687,11 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* shadowfb */
 	if (fPtr->shadowFB) {
 		if ((fPtr->shadowmem = shadowAlloc(width, height,
-						   pScrn->bitsPerPixel)) == NULL)
+						   pScrn->bitsPerPixel)) == NULL) {
+		xf86DrvMsg(scrnIndex,X_ERROR,
+			   "Allocation of shadow memory failed\n");
 		return FALSE;
+	}
 
 		fPtr->fbstart   = fPtr->shadowmem;
 	} else {
@@ -704,7 +715,7 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		if (fPtr->shadowFB)
 		{
 		  xf86DrvMsg(scrnIndex, X_ERROR,
-			     "Internal error: Shadwo framebuffer not supported for afb\n");
+			     "Internal error: Shadow framebuffer not supported for afb\n");
 		  ret = FALSE;
 		  break;
 		}

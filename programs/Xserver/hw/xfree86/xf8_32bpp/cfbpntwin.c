@@ -52,7 +52,7 @@ cfb8_32PaintWindow(
 		}
 	    }
 #endif
-	    cfb32FillBoxTileOddCopy ((DrawablePtr)pWin,
+	    cfb32FillBoxTileOddGeneral ((DrawablePtr)pWin,
 			(int)REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
 			pWin->background.pixmap, xorg, yorg, GXcopy, 
 			(pWin->drawable.depth == 24) ? 0x00ffffff : 0xff000000);
@@ -100,7 +100,7 @@ cfb8_32PaintWindow(
 		}
 	    }
 #endif
-	    cfb32FillBoxTileOddCopy ((DrawablePtr)pWin,
+	    cfb32FillBoxTileOddGeneral ((DrawablePtr)pWin,
 			(int)REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
 			pWin->border.pixmap, xorg, yorg, GXcopy, 
 			(pWin->drawable.depth == 24) ? 0x00ffffff : 0xff000000);

@@ -166,6 +166,7 @@ vbeProbeDDC(vbeInfoPtr pVbe)
     xf86ExecX86int10(pVbe->pInt10);
 
     if ((pVbe->pInt10->ax & 0xff) != 0x4f) {
+        xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC not supported\n");
 	pVbe->ddc = DDC_NONE;
 	return FALSE;
     }

@@ -323,7 +323,7 @@ CG14PreInit(ScrnInfoPtr pScrn, int flags)
     deal with depth
     *********************/
     
-    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 32, 0, 32, Support32bppFb)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */

@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.5 2000/09/19 12:46:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.7 2001/05/25 18:19:13 eich Exp $ */
 
 #ifdef __NetBSD__
 #  include <sys/types.h>
@@ -250,12 +250,11 @@ void main(void)
 	HTotal = ((inb(0x3D5)&0xFF) + 5) << shift;
 	outb(0x3D4,1);
 	HDisplay = ((inb(0x3D5)&0xFF) + 1) << shift;
-	outb(0x3D4,2);
+	outb(0x3D4,4);
 	HSyncStart = ((inb(0x3D5)&0xFF) + 1) << shift;
-	outb(0x3D4,3);
+	outb(0x3D4,5);
 	HSyncEnd = inb(0x3D5)&0x1F;
 	outb(0x3D4,5);
-	HSyncEnd |= (inb(0x3D5)&0x80) >> 2;
 	HSyncEnd += HSyncStart >> shift;
 	HSyncEnd <<= shift;
 	
@@ -271,6 +270,7 @@ void main(void)
 	VSyncStart |= (inb(0x3D5)&0x80) << 2;
 	outb(0x3D4,0x12);
 	    VDisplay |= inb(0x3D5)&0xFF;
+	VDisplay += 1;
 	outb(0x3D4,0x10);
 	VSyncStart |= inb(0x3D5)&0xFF;
 	

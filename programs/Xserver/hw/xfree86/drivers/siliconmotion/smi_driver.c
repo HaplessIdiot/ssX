@@ -3139,6 +3139,7 @@ SMI_ProbeDDC(ScrnInfoPtr pScrn, int index)
 	{
 		pVbe = VBEInit(NULL, index);
 		ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+		vbeFree(pVbe);
 	}
 }
 

@@ -464,4 +464,5 @@ XCOMM Useful for portuguese language
 <dead_acute> <c>			: "\347"	ccedilla
 <dead_acute> <dead_acute>		: "'"		apostrophe
 <dead_grave> <dead_grave>		: "`"		grave
+<acute>					: "'"		apostrophe
 XCOMM End of Sequence Definition

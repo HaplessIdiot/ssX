@@ -133,7 +133,6 @@ A(WaitForFifo)(ApmPtr pApm, int slots)
     if (i == MAXLOOP) {
       unsigned int status = STATUS();
 
-      xf86Break1();
       WRXB(0x1FF, 0);
       if (!xf86ServerIsExiting())
 	  FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", status);
@@ -1482,7 +1481,6 @@ A(Sync)(ScrnInfoPtr pScrn)
   if (i == MAXLOOP) {
     unsigned int status = STATUS();
 
-    xf86Break1();
     WRXB(0x1FF, 0);
     if (!xf86ServerIsExiting())
 	FatalError("Hung in ApmSync" APM_SUFF_24 APM_SUFF_IOP "(%d) (Status = 0x%08X)\n", pScrn->pScreen->myNum, status);
@@ -1518,7 +1516,6 @@ A(Sync6422)(ScrnInfoPtr pScrn)
   if (i == MAXLOOP) {
     unsigned int status = STATUS();
 
-    xf86Break1();
     WRXB(0x1FF, 0);
     if (!xf86ServerIsExiting())
 	FatalError("Hung in ApmSync6422() (Status = 0x%08X)\n", status);

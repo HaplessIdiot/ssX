@@ -788,11 +788,17 @@ I18N_FetchName(dpy, w, winname)
     XTextProperty text_prop;
     char **list;
     int    num;
-
+    
     status = XGetWMName(dpy, w, &text_prop);
-    if (!status || !text_prop.value || !text_prop.nitems) return 0;
+    if (!status || !text_prop.value || !text_prop.nitems) {
+      *winname = NULL;
+      return 0;
+    }
     status = XmbTextPropertyToTextList(dpy, &text_prop, &list, &num);
-    if (status < Success || !num || !*list) return 0;
+    if (status < Success || !num || !*list) {
+      *winname = NULL;      
+      return 0;
+    }
     XFree(text_prop.value);
     *winname = (char *)strdup(*list);
     XFreeStringList(list);

@@ -10,7 +10,8 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.40 2001/08/17 13:27:58
       TESTDATA = 
      DATAFILES = altwin am az \
 		 be bg br by \
-		 ca ca_enhanced compose ctrl cz cz_qwerty \
+		 ca ca_enhanced compose ctrl \
+		 czsk cz cz_qwerty \
 		 de de_CH dk dvorak \
 		 ee el en_US es \
 		 fi fr fr_CH \
@@ -26,7 +27,7 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.40 2001/08/17 13:27:58
 		 ralt ro ru \
 		 se si sk sk_qwerty sr \
 		 th tr \
-		 ua us us_intl us_group3 \
+		 ua us us_intl us_group2 us_group3 \
 		 vn
 
        SUBDIRS = digital fujitsu hp macintosh nec sgi sony sun xfree68

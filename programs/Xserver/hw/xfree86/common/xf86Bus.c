@@ -2205,7 +2205,7 @@ xf86EnterServerState(xf86State state)
  * xf86SetOperatingState() -- Set ResOperMask for resources listed.
  */
 resPtr
-xf86SetOperatingState(resList list, int entityIndex, int mask)
+xf86SetOperatingState(const resList list, int entityIndex, int mask)
 {
     resPtr acc;
     resPtr r_fail = NULL;

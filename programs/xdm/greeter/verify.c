@@ -117,35 +117,42 @@ static int PAM_conv (int num_msg,
 #endif
 		     struct pam_response **resp,
 		     void *appdata_ptr) {
-	int replies = 0;
+	int count = 0, replies = 0;
 	struct pam_response *reply = NULL;
+	size_t size = sizeof(struct pam_response);
 
-	reply = malloc(sizeof(struct pam_response));
-	if (!reply) return PAM_CONV_ERR;
-#define COPY_STRING(s) (s) ? strdup(s) : NULL
+#define GET_MEM \
+	if (reply) realloc(reply, size); \
+	else reply = (struct pam_response*)malloc(size); \
+	if (!reply) return PAM_CONV_ERR; \
+	size += sizeof(struct pam_response)
+#define COPY_STRING(s) (s) ? strdup(s) : (char*)NULL
 
-	for (replies = 0; replies < num_msg; replies++) {
-		switch (msg[replies]->msg_style) {
+	for (count = 0; count < num_msg; count++) {
+		switch (msg[count]->msg_style) {
+		case PAM_PROMPT_ECHO_ON:
+			/* user name given to PAM already */
+			return PAM_CONV_ERR;
 		case PAM_PROMPT_ECHO_OFF:
 			/* wants password */
+			GET_MEM;
 			reply[replies].resp_retcode = PAM_SUCCESS;
 			reply[replies].resp = COPY_STRING(PAM_password);
+			/* PAM frees resp */
 			break;
 		case PAM_TEXT_INFO:
 			/* ignore the informational mesage */
 			break;
-		case PAM_PROMPT_ECHO_ON:
-			/* user name given to PAM already */
-			/* fall through */
 		default:
 			/* unknown or PAM_ERROR_MSG */
-			free (reply);
+			if (reply) free (reply);
 			return PAM_CONV_ERR;
 		}
 	}
 
 #undef COPY_STRING
-	*resp = reply;
+#undef GET_MEM
+	if (reply) *resp = reply;
 	return PAM_SUCCESS;
 }
 
@@ -420,7 +427,7 @@ done:
 
 #else /* USE_PAM */
 #define PAM_BAIL	\
-	if (pam_error != PAM_SUCCESS) { pam_end(*pamhp, 0); return 0; }
+	if (pam_error != PAM_SUCCESS) goto pam_failed;
 
 	PAM_password = greet->password;
 	pam_error = pam_start("xdm", greet->name, &PAM_conversation, pamhp);
@@ -442,6 +449,13 @@ done:
 	if (!p || strlen (greet->name) == 0) {
 		Debug ("getpwnam() failed.\n");
 		bzero(greet->password, strlen(greet->password));
+		return 0;
+	}
+
+	if (pam_error != PAM_SUCCESS) {
+	pam_failed:
+		pam_end(*pamhp, PAM_SUCCESS);
+		*pamhp = NULL;
 		return 0;
 	}
 #undef PAM_BAIL
