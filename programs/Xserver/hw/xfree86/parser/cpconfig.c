@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.2 1998/07/25 16:57:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.3 1999/05/30 07:18:30 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -26,6 +26,8 @@
  * in this Software without prior written authorization from Metro Link.
  * 
  */
+
+/* View/edit this file with tab stops set to 4 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,26 +58,22 @@ xrealloc (void *p, int size)
 
 #endif
 
+#define CONFPATH "%A,%R,/etc/X11/%R,%P/etc/X11/%R,%E,%F,/etc/X11/%F," \
+		 "%P/etc/X11/%F,%D/%X,/etc/X11/%X,/etc/%X,%P/etc/X11/%X.%H," \
+		 "%P/etc/X11/%X,%P/lib/X11/%X.%H,%P/lib/X11/%X"
 
 int
 main (int argc, char *argv[])
 {
-	char filename[128];
+	const char *filename;
+	char *cmdline = NULL;
 	XF86ConfigPtr conf;
 
 	if (argc > 1)
 	{
-		if (strlen(argv[1]) >= sizeof(xf86ConfigFile))
-		{
-			fprintf(stderr, "Filename `%s' is too long\n", argv[1]);
-			exit(1);
-		}
-		else
-		{
-			strcpy(xf86ConfigFile, argv[1]);
-		}
+		cmdline = argv[1];
 	}
-	if (xf86OpenConfigFile (filename))
+	if ((filename = xf86OpenConfigFile (CONFPATH, cmdline, NULL)))
 	{
 		fprintf (stderr, "Opened %s for the config file\n", filename);
 	}

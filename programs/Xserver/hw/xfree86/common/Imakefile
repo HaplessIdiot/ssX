@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.99 1999/05/09 12:31:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.100 1999/05/22 08:40:01 dawes Exp $
 
 
 
@@ -153,9 +153,10 @@ OFILES = \
   OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
 CONSDEFINES = XFree86ConsoleDefines
 EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
+PROJECTROOT = ProjectRoot
+XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"'
 
-    DEFINES =	$(XCONFIGDEFINES) $(CONSDEFINES) $(PNPMOUSEDEFINES) \
-		$(KBDDEFINES)
+    DEFINES =	$(CONSDEFINES) $(PNPMOUSEDEFINES) $(KBDDEFINES)
 
 AllTarget($(OFILES))
 
@@ -163,6 +164,7 @@ SpecialObjectRule(xf86Bus.o,xf86Bus.c,$(VGAINCLUDES))
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(EXT_DEFINES) $(MODPATHDEFINES) $(LOGDEFINES))
+SpecialCObjectRule(xf86Config,$(ICONFIGFILES),$(XCONFIGDEFINES))
 
 #if NeedXF86Beta
 SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.44 1999/05/22 08:40:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.45 1999/05/23 14:38:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -20,6 +20,7 @@
  * Parameters set ONLY from the command line options
  * The global state of these things is held in xf86InfoRec (when appropriate).
  */
+extern const char *xf86ConfigFile;
 extern Bool xf86AllowMouseOpenFail;
 #ifdef XF86VIDMODE
 extern Bool xf86VidModeDisabled;
@@ -75,7 +76,6 @@ extern Bool xf86Exiting;
 extern Bool xf86Resetting;
 extern Bool xf86Initialising;
 extern Bool xf86ProbeFailed;
-extern char xf86ConfigFile[];
 extern int xf86NumScreens;
 extern pciVideoPtr *xf86PciVideoInfo;
 extern const char *xf86VisualNames[];
@@ -112,6 +112,11 @@ void xf86AccessSetup(void);
 void xf86FindPrimaryDevice(void);
 /* new RAC */
 void xf86ResourceBrokerInit(void);
+
+/* xf86Config.c */
+
+Bool xf86PathIsAbsolute(const char *path);
+Bool xf86PathIsSafe(const char *path);
 
 /* xf86DefaultModes */
 

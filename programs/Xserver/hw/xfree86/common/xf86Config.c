@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.182 1999/05/30 07:18:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.183 1999/05/30 07:50:49 dawes Exp $ */
 
 
 /*
@@ -32,6 +32,31 @@ extern DeviceAssocRec mouse_assoc;
 #ifdef XKB
 #define XKB_IN_SERVER
 #include "XKBsrv.h"
+#endif
+
+/*
+ * These paths define the way the config file search is done.  The escape
+ * sequences are documented in parser/scan.c.
+ */
+#ifndef ROOT_CONFIGPATH
+#define ROOT_CONFIGPATH	"%A," "%R," \
+			"/etc/X11/%R," "%P/etc/X11/%R," \
+			"%E," "%F," \
+			"/etc/X11/%F," "%P/etc/X11/%F," \
+			"%D/%X," \
+			"/etc/X11/%X," "/etc/%X," "%P/etc/X11/%X.%H," \
+			"%P/etc/X11/%X," "%P/lib/X11/%X.%H," \
+			"%P/lib/X11/%X"
+#endif
+#ifndef USER_CONFIGPATH
+#define USER_CONFIGPATH	"/etc/X11/%S," "%P/etc/X11/%S," \
+			"/etc/X11/%G," "%P/etc/X11/%G," \
+			"/etc/X11/%X," "/etc/%X," "%P/etc/X11/%X.%H," \
+			"%P/etc/X11/%X," "%P/lib/X11/%X.%H," \
+			"%P/lib/X11/%X"
+#endif
+#ifndef PROJECTROOT
+#define PROJECTROOT	"/usr/X11R6"
 #endif
 
 static char *fontPath = NULL;
@@ -2022,19 +2047,31 @@ addDefaultModes(MonPtr monitorp)
 Bool
 xf86HandleConfigFile(void)
 {
-    char filename[PATH_MAX];
+    const char *filename;
+    char *searchpath;
+    MessageType from = X_DEFAULT;
 
-    if (xf86OpenConfigFile (filename)) {
-        ErrorF ("Opened %s for the config file\n", filename);
-    }
-    else {
-        ErrorF ("Unable to open config file\n");
-        return FALSE;
+    if (getuid() == 0)
+	searchpath = ROOT_CONFIGPATH;
+    else
+	searchpath = USER_CONFIGPATH;
+
+    if (xf86ConfigFile)
+	from = X_CMDLINE;
+
+    filename = xf86OpenConfigFile(searchpath, xf86ConfigFile, PROJECTROOT);
+    if (filename) {
+	xf86MsgVerb(from, 0, "Using config file: \"%s\"\n", filename);
+    } else {
+	xf86Msg(X_ERROR, "Unable to locate/open config file");
+	if (xf86ConfigFile)
+	    xf86ErrorFVerb(0, ": \"%s\"", xf86ConfigFile);
+	xf86ErrorFVerb(0, "\n");
+	return FALSE;
     }
     if ((xf86configptr = xf86ReadConfigFile ()) == NULL) {
-        ErrorF ("Problem when parsing config file\n");
-        return FALSE;
-        
+	xf86Msg(X_ERROR, "Problem parsing the config file\n");
+	return FALSE;
     }
     xf86CloseConfigFile ();
 
@@ -2128,4 +2165,17 @@ xf86HandleConfigFile(void)
     return TRUE;
 }
 
+
+/* These make the equivalent parser functions visible to the common layer. */
+Bool
+xf86PathIsAbsolute(const char *path)
+{
+    return (PathIsAbsolute(path) != 0);
+}
+
+Bool
+xf86PathIsSafe(const char *path)
+{
+    return (PathIsSafe(path) != 0);
+}
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.122 1999/05/30 07:18:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.123 1999/05/30 07:50:50 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -71,8 +71,6 @@ static char *expKey = NULL;
 #ifdef __EMX__
 extern void os2ServerVideoAccess();
 #endif
-
-char xf86ConfigFile[PATH_MAX + 1] = {0,};
 
 #ifdef XFree86LOADER
 static char *baseModules[] = {
@@ -168,7 +166,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 
     /* Read and parse the config file */
-    if( ! xf86HandleConfigFile() ) {
+    if (!xf86HandleConfigFile()) {
       xf86Msg(X_ERROR, "Error from xf86HandleConfigFile()\n");
       return;
     }
@@ -792,8 +790,10 @@ InitInput(argc, argv)
 	    /* XXX register a dummy core keyboard */
 	}
 #endif
+#endif
     }
 
+#ifdef NEW_INPUT
     /* Initialise all input devices. */
     pInfo = xf86InputDevs;
     while (pInfo) {
@@ -971,17 +971,7 @@ ddxProcessArgument(int argc, char **argv, int i)
   /* First the options that are only allowed for root */
   if (getuid() == 0)
   {
-    if (!strcmp(argv[i], "-xf86config"))
-    {
-      int len;
-      if (!argv[i+1])
-	return 0;
-      if ((len = strlen(argv[i+1]) >= PATH_MAX))
-	FatalError("XF86Config path name too long\n");
-      strcpy(xf86ConfigFile, argv[i+1]);
-      return 2;
-    }
-    else if (!strcmp(argv[i], "-modulepath"))
+    if (!strcmp(argv[i], "-modulepath"))
     {
       char *mp;
       if (!argv[i + 1])
@@ -1007,6 +997,19 @@ ddxProcessArgument(int argc, char **argv, int i)
       xf86LogFileFrom = X_CMDLINE;
       return 2;
     }
+  }
+  if (!strcmp(argv[i], "-xf86config"))
+  {
+    if (!argv[i + 1])
+      return 0;
+    if (getuid() != 0 && !xf86PathIsSafe(argv[i + 1])) {
+      ErrorF("\nInvalid argument for -xf86config\n"
+	  "\tFor non-root users, the file specified with -xf86config must be\n"
+	  "\ta relative path and must not contain any \"..\" elements.\n\n");
+      return 0;
+    }
+    xf86ConfigFile = argv[i + 1];
+    return 2;
   }
   if (!strcmp(argv[i],"-showunresolved"))
   {

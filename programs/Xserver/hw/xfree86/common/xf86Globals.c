@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.16 1999/05/09 06:06:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.17 1999/05/23 14:38:02 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -135,6 +135,7 @@ xf86InfoRec xf86Info = {
 	Pix24DontCare,	/* pixmap24 */
 	X_DEFAULT	/* pix24From */
 };
+const char *xf86ConfigFile = NULL;
 const char *xf86ModulePath = DEFAULT_MODULE_PATH;
 MessageType xf86ModPathFrom = X_DEFAULT;
 const char *xf86LogFile = DEFAULT_LOGPREFIX;
