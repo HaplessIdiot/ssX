@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.1 2001/11/02 23:29:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.2 2001/11/08 04:00:12 tsi Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA
 X11R6 Changes Copyright (c) 1994 by Robert Chesler of Absol-Puter, Hudson, NH.
@@ -47,12 +47,16 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /*-----------------*
  *  Include Files  *
  *-----------------*/
-#include <stdio.h>
-#include <errno.h>
 
 #define NEED_REPLIES
 #define NEED_EVENTS
+#ifndef EXTMODULE
+#include <stdio.h>
+#include <errno.h>
 #include <X11/Xos.h>
+#else
+#include "xf86_ansic.h"
+#endif
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include "input.h"              /* Server DevicePtr definitions */
