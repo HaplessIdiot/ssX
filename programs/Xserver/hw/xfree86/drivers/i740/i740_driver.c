@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.38tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.39 2002/10/23 16:08:36 tsi Exp $ */
 
 /*
  * Authors:
@@ -188,7 +188,7 @@ typedef enum {
   OPTION_SLOW_RAM,
   OPTION_DAC_6BIT,
   OPTION_USE_PIO,
-  OPTION_VGACOMPAT,
+  OPTION_VGACOMPAT
 } I740Opts;
 
 static const OptionInfoRec I740Options[] = {
