@@ -1,6 +1,6 @@
                               Fonts in XFree86
 
-                    Juliusz Chroboczek, <jch@xfree86.org>
+                  Juliusz Chroboczek, <jch@pps.jussieu.fr>
 
                               17 November 2003
 
@@ -1181,7 +1181,7 @@ The IANA RFC documents, available from a number of sites throughout the
 world, often provide interesting information about character set issues; see
 for example RFC 373.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.25 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.26 dawes Exp $
 
 
 $XFree86$
