@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.50 2002/01/23 01:00:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.51 2002/01/25 16:10:50 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -309,6 +309,8 @@ xf86HandleBuiltinMode(ScrnInfoPtr scrp,
     modep->CrtcVAdjusted   = p->CrtcVAdjusted;
     modep->HSync           = p->HSync;
     modep->VRefresh        = p->VRefresh;
+    modep->Private         = p->Private;
+    modep->PrivSize        = p->PrivSize;
 
     p->prev = modep;
     
@@ -575,6 +577,8 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     modep->CrtcVAdjusted	= bestMode->CrtcVAdjusted;
     modep->HSync		= bestMode->HSync;
     modep->VRefresh		= bestMode->VRefresh;
+    modep->Private		= bestMode->Private;
+    modep->PrivSize		= bestMode->PrivSize;
 
     bestMode->prev = modep;
 
@@ -1473,6 +1477,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     /* Lookup each mode */
     validateAllDefaultModes = FALSE;
     for (p = scrp->modes; ; p = p->next) {
+	Bool repeat;
+
 	/*
 	 * If the supplied mode names don't produce a valid mode, scan through
 	 * unconsidered modePool members until one survives validation.  This
@@ -1531,8 +1537,26 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    endp = &p->next;
 	}
 
+	repeat = FALSE;
     lookupNext:
+	if (repeat && ((status = p->status) != MODE_OK)) {
+		if (p->type & M_T_BUILTIN)
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using built-in mode \"%s\" (%s)\n",
+			       p->name, xf86ModeStatusToString(status));
+		else if (p->type & M_T_DEFAULT)
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using default mode \"%s\" (%s)\n", p->name,
+			       xf86ModeStatusToString(status));
+		else
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using mode \"%s\" (%s)\n", p->name,
+			       xf86ModeStatusToString(status));
+	}
 	status = xf86LookupMode(scrp, p, clockRanges, strategy);
+	if (repeat && status == MODE_NOMODE) {
+	    continue;
+	}
 	if (status != MODE_OK) {
 		if (p->type & M_T_BUILTIN)
 		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
@@ -1557,6 +1581,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		p->status = status;
 	    continue;
 	}
+	repeat = TRUE;
 
 	newLinePitch = linePitch;
 	newVirtX = virtX;
@@ -1625,20 +1650,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    p->status = (scrp->ValidMode)(scrp->scrnIndex, p, FALSE,
 					  MODECHECK_FINAL);
 
-	   if (p->status != MODE_OK) {
-	        if (p->type & M_T_BUILTIN)
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using built-in mode \"%s\" (%s)\n",
-			       p->name, xf86ModeStatusToString(p->status));
-		else if (p->type & M_T_DEFAULT)
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using default mode \"%s\" (%s)\n", p->name,
-			       xf86ModeStatusToString(p->status));
-		else
-		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			       "Not using mode \"%s\" (%s)\n", p->name,
-			       xf86ModeStatusToString(p->status));
-
+	    if (p->status != MODE_OK) {
 	        goto lookupNext;
 	    }
 	}
