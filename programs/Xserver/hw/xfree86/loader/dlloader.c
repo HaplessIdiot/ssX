@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.2.2.4 1998/05/22 13:47:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.7 1998/07/25 16:56:13 dawes Exp $ */
 
 
 /*
@@ -158,7 +158,7 @@ DLResolveSymbols(void *mod)
 }
 
 int
-DLCheckForUnresolved(int color_depth, void *mod)
+DLCheckForUnresolved(void *mod)
 {
     return 0;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.39 1998/09/13 05:23:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.40 1998/09/19 12:14:57 dawes Exp $ */
 
 /*
  *
@@ -387,6 +387,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ReadPciBIOS)
    SYMFUNC(AllocatePixmapPrivateIndex)
    SYMFUNC(AllocatePixmapPrivate)
+
+   /* Loader functions */
    SYMFUNC(LoaderDefaultFunc)
    SYMFUNC(LoadModule)
    SYMFUNC(LoadSubModule)
@@ -396,6 +398,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(LoaderCheckUnresolved)
    SYMFUNC(LoadExtension)
    SYMFUNC(LoadFont)
+   SYMFUNC(LoaderReqSymbols)
+   SYMFUNC(LoaderReqSymLists)
+   SYMFUNC(LoaderRefSymLists)
 
    /*
     * these here are our own interfaces to libc functions

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.79 1998/08/02 07:54:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.80 1998/09/13 05:23:33 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -374,7 +374,7 @@ ErrorF("Screen deleted because of no matching config section\n");
 #endif
 
 #ifdef XFree86LOADER
-    if (LoaderCheckUnresolved(0, LD_RESOLV_IFDONE)) {
+    if (LoaderCheckUnresolved(LD_RESOLV_IFDONE)) {
 	/* For now, just a warning */
 	xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
     }

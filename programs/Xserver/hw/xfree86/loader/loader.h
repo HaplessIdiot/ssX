@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.13 1998/07/25 16:56:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.14 1998/08/19 07:49:22 dawes Exp $ */
 
 /*
  *
@@ -170,7 +170,7 @@ typedef struct _loader *loaderPtr;
 
 typedef void * (*LoadModuleProcPtr)(loaderPtr modrec, int fd, LOOKUP **);
 typedef void (*ResolveSymbolsProcPtr)(void *);
-typedef int (*CheckForUnresolvedProcPtr)(int, void *);
+typedef int (*CheckForUnresolvedProcPtr)(void *);
 typedef char * (*AddressToSectionProcPtr)(void *, unsigned long);
 typedef void (*LoaderUnloadProcPtr)(void *);
 
@@ -214,7 +214,7 @@ void LoaderFixups(void);
 void LoaderResolve(void);
 int LoaderResolveSymbols(void);
 char *LoaderHandleToName(int);
-int _LoaderHandleUnresolved(char *, char *, int);
+int _LoaderHandleUnresolved(char *, char *);
 void LoaderHashAdd(itemPtr);
 itemPtr LoaderHashDelete(const char *);
 itemPtr LoaderHashFind(const char *);

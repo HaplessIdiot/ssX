@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.4 1998/08/29 05:44:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.5 1998/09/20 06:01:32 dawes Exp $ */
 
 
 /*
@@ -94,7 +94,7 @@ typedef struct _vgaHWRec {
     pointer			Base;		/* Address of "VGA" memory */
     int				MapSize;	/* Size of "VGA" memory */
     int				IOBase;		/* I/O Base address */
-    unsigned long 		MemBase;	/* MemBase + port addr =
+    CARD8 * 			MemBase;	/* MemBase + port addr =
 							register addr */
     pointer			FontInfo1;	/* save area for fonts in
 							plane 2 */ 
@@ -164,7 +164,7 @@ typedef struct _vgaHWRec {
 /* vgaHW.c */
 
 void vgaHWSetStdFuncs(vgaHWPtr hwp);
-void vgaHWSetMmioFuncs(vgaHWPtr hwp, unsigned long memBase);
+void vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *memBase);
 void vgaHWProtect(ScrnInfoPtr pScrn, Bool on);
 Bool vgaHWSaveScreen(ScreenPtr pScreen, Bool on);
 void vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.2 1998/07/25 16:55:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.3 1998/08/13 14:45:48 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -112,6 +112,9 @@ void LoadFont(pointer);
 #endif
 void LoaderErrorMsg(const char *, const char *, int, int);
 void LoadExtension(ExtensionModule *);
+void LoaderRefSymLists(const char **, ...);
+void LoaderReqSymLists(const char **, ...);
+void LoaderReqSymbols(const char *, ...);
 
 typedef pointer (*ModuleSetupProc)(pointer, pointer, int *, int *);
 typedef void (*ModuleTearDownProc)(pointer);

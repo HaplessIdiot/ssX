@@ -21,14 +21,14 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.h,v 1.1.2.2 1998/07/04 13:32:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.h,v 1.2 1998/07/25 16:56:15 dawes Exp $ */
 
 #ifndef _ELFLOADER_H
 #define _ELFLOADER_H
 /* elfloader.c */
 extern void *ELFLoadModule(loaderPtr, int, LOOKUP **);
 extern void ELFResolveSymbols(void *);
-extern int ELFCheckForUnresolved(int, void *);
+extern int ELFCheckForUnresolved(void *);
 extern char *ELFAddressToSection(void *,unsigned long);
 extern void ELFUnloadModule(void *);
 #endif /* _ELFLOADER_h */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.6 1998/08/29 08:56:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.7 1998/09/20 06:01:32 dawes Exp $ */
 
 /*
  *
@@ -485,7 +485,7 @@ mmioReadDacData(vgaHWPtr hwp)
 }
 
 void
-vgaHWSetMmioFuncs(vgaHWPtr hwp, unsigned long memBase)
+vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *memBase)
 {
     hwp->writeCrtc		= mmioWriteCrtc;
     hwp->readCrtc		= mmioReadCrtc;

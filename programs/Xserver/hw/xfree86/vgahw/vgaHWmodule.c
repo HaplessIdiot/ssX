@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHWmodule.c,v 1.1.2.4 1998/07/19 13:22:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHWmodule.c,v 1.2 1998/07/25 16:58:36 dawes Exp $ */
 
 /*
  * Copyright 1998 by The XFree86 Project, Inc
@@ -9,7 +9,6 @@
 #include "xf86Module.h"
 
 MODULEINITPROTO(vgahwModuleInit);
-static MODULESETUPPROTO(vgaHWSetup);
 
 static XF86ModuleVersionInfo VersRec = {
 	"vgahw",
@@ -30,13 +29,6 @@ vgahwModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
     *vers = &VersRec;
     *setup = NULL;
     *teardown = NULL;
-}
-
-static pointer
-vgaHWSetup(pointer module, pointer opts, int *errmaj, int *errmin)
-{
-    /* vgaHW's colourmap support needs cfb's */
-    return LoadSubModule(module, "cfb", NULL, NULL, errmaj, errmin);
 }
 
 #endif

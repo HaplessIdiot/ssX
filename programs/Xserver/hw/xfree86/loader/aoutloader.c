@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.7.2.3 1998/07/04 13:32:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.12 1998/07/25 16:56:11 dawes Exp $ */
 
 /*
  *
@@ -745,8 +745,7 @@ void	*mod;
 } /* AOUTResolveSymbols */
 
 int
-AOUTCheckForUnresolved(color_depth, mod)
-int	color_depth;
+AOUTCheckForUnresolved(mod)
 void	*mod;
 {
     int symnum;
@@ -772,7 +771,7 @@ void	*mod;
 	symnum = crel->rel->r_symbolnum;
         name=AOUTGetSymbolName(crel->file, crel->file->symtab + symnum);
         flag = _LoaderHandleUnresolved(name,
-		   _LoaderHandleToName(crel->file->handle), color_depth);
+		   _LoaderHandleToName(crel->file->handle));
 	xf86loaderfree(name);
         if (flag) fatalsym = 1;
 	crel = crel->next;
