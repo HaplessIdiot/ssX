@@ -8,7 +8,7 @@
 .ds Xs 52600 3 xqueryserverstring.gl
 .TH GLXQUERYSERVERSTRING
 .SH NAME
-.B "glXQueryServerString
+glXQueryServerString
 \- return string describing the server
 
 .SH C SPECIFICATION

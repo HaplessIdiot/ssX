@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.4 2000/03/21 21:48:35 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.5 2000/03/21 22:15:48 dawes Exp $ */
 
 
 /* TO DO ****
@@ -469,7 +469,12 @@ manrefextract(char *p) {
 	manrefname = p;
 	while (*p && *p!=' ' && *p!='(') p++; *p++='\0';
 	while (*p==' ' || *p=='(') p++; p0=p;
+#ifdef XFree86
+	/* Don't allow a letter after the man section number */
+	p++;
+#else
 	while (*p && *p!=')') p++;
+#endif
 	manrefsect = p0;
   }
   *p='\0';
@@ -4233,13 +4238,16 @@ source_command(char *p) {
 	 while (isspace(*p)) p++;
 	 if (*p) {
 	   q=strchr(p, ' ');
-	   if (q!=NULL) *q++='\0';
-	   strcpy(manName, p);
-	   for (p=q; isspace(*p); p++) /*nada*/;
-	   if (*p) {
+	   if (q!=NULL)
+	   {
+	     *q++='\0';
+	     strcpy(manName, p);
+	     for (p=q; isspace(*p); p++) /*nada*/;
+	     if (*p) {
 		   q=strchr(p,' ');
 		   if (q!=NULL) *q++='\0';
 		   strcpy(manSect, p);
+	     }
 	   }
 	 }
 	 sI=0;

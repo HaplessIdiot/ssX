@@ -8,7 +8,7 @@
 .ds Xs 29851 4 xgetclientstring.gl
 .TH GLXGETCLIENTSTRING
 .SH NAME
-.B "glXGetClientString
+glXGetClientString
 \- return a string describing the client
 
 .SH C SPECIFICATION

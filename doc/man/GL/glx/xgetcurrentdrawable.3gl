@@ -7,7 +7,7 @@
 .ds Xs 49921 2 xgetcurrentdrawable.gl
 .TH GLXGETCURRENTDRAWABLE
 .SH NAME
-.B "glXGetCurrentDrawable
+glXGetCurrentDrawable
 \- return the current drawable
 
 .SH C SPECIFICATION

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.67 2000/03/21 21:08:06 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.68 2000/03/21 21:29:44 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1251,15 +1251,20 @@ install.man::								@@\
 #endif /* InstallGenManPageAliases */
 
 #ifndef BuildInstallHtmlManPage
-#if BuildHtmlManPages || 1
+#if BuildHtmlManPages
 #define BuildInstallHtmlManPage(file,dest,suffix)			@@\
 AllTarget(dest.suffix.html)						@@\
 									@@\
 dest.suffix.html: file.man						@@\
-	RemoveFile(dest.suffix.html)					@@\
-	$(RMANCMD) < file.man > dest.suffix.html			@@\
+	RemoveFiles(dest.suffix.html dest.suffix-html)			@@\
+	$(RMANCMD) < file.man > dest.suffix-html && \			@@\
+	  $(MV) dest.suffix-html $@					@@\
 									@@\
-InstallNamedTarget(install.man,dest.suffix.html,$(INSTMANFLAGS),$(DOCHTMLDIR),dest.suffix.html)
+InstallNamedTarget(install.man,dest.suffix.html,$(INSTMANFLAGS),$(DOCHTMLDIR),dest.suffix.html)								@@\
+									@@\
+clean::									@@\
+	RemoveFiles(dest.suffix.html dest.suffix-html)
+
 #else
 #define BuildInstallHtmlManPage(file,dest,suffix) /**/
 #endif

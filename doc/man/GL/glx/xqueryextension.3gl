@@ -8,7 +8,7 @@
 .ds Xs 25267 2 xqueryextension.gl
 .TH GLXQUERYEXTENSION
 .SH NAME
-.B "glXQueryExtension
+glXQueryExtension
 \- indicate whether the GLX extension is supported
 
 .SH C SPECIFICATION

@@ -8,7 +8,7 @@
 .ds Xs 25633 3 xgetcontextidext.gl
 .TH GLXGETCONTEXTIDEXT
 .SH NAME
-.B "glXGetContextIDEXT
+glXGetContextIDEXT
 \- get the XID for a context.
 
 .SH C SPECIFICATION

@@ -8,7 +8,7 @@
 .ds Xs 12384 2 xisdirect.gl
 .TH GLXISDIRECT
 .SH NAME
-.B "glXIsDirect
+glXIsDirect
 \- indicate whether direct rendering is enabled
 
 .SH C SPECIFICATION

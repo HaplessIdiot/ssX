@@ -1,5 +1,5 @@
 .TH XvSetPortAttribute 3X 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xv/XvSetPortAttribute.man,v 1.4 1999/03/02 11:49:17 dawes Exp $
 .SH Name
 XvSetPortAttribute \- sets an attribute of a video port 
 .\"
@@ -39,24 +39,24 @@ XvSetPortAttribute(3X) permits a client to set the port attribute
 to specified values.  This request supports the following values:
 .bp
 .PP
-.\".TS
-.\"tab(@);
-.\"lfHB lfHB lfHB
-.\"lfR  lfR  lfR .
-.\"_
-.\".PP
-.\".sp 4p
-.\"Attribute String@Type@Default
-.\".sp 6p
-.\"_
-.\".sp 6p
-.\""XV_ENCODING"@XvEncodingID@Server dependent
-.\""XV_HUE"@[-1000...1000]@0
-.\""XV_SATURATION"@[-1000...1000]@0
-.\""XV_BRIGHTNESS"@[-1000...1000]@0
-.\""XV_CONTRAST"@[-1000...1000]@0
-.\".sp 6p
-.\".TE
+.\" .TS
+.\" tab(@);
+.\" lfHB lfHB lfHB
+.\" lfR  lfR  lfR .
+.\" _
+.\" .PP
+.\" .sp 4p
+.\" Attribute String@Type@Default
+.\" .sp 6p
+.\" _
+.\" .sp 6p
+.\" "XV_ENCODING"@XvEncodingID@Server dependent
+.\" "XV_HUE"@[-1000...1000]@0
+.\" "XV_SATURATION"@[-1000...1000]@0
+.\" "XV_BRIGHTNESS"@[-1000...1000]@0
+.\" "XV_CONTRAST"@[-1000...1000]@0
+.\" .sp 6p
+.\" .TE
 .nf
 Attribute String        Type             Default
 
@@ -65,7 +65,7 @@ Attribute String        Type             Default
 "XV_SATURATION"         [-1000...1000]   0
 "XV_BRIGHTNESS"         [-1000...1000]   0
 "XV_CONTRAST"           [-1000...1000]   0
-.TE
+.fi
 .PP
 The supplied encoding must be one of the encodings listed for the
 adaptor, otherwise an Encoding error results.

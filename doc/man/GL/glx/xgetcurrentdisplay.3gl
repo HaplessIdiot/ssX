@@ -8,7 +8,7 @@
 .ds Xs 59497 2 xgetcurrentdisplay.gl
 .TH GLXGETCURRENTDISPLAY
 .SH NAME
-.B "glXGetCurrentDisplay
+glXGetCurrentDisplay
 \- get display for current context
 
 .SH C SPECIFICATION

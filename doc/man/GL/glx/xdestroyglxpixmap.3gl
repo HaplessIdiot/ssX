@@ -8,7 +8,7 @@
 .ds Xs 2275 2 xdestroyglxpixmap.gl
 .TH GLXDESTROYGLXPIXMAP
 .SH NAME
-.B "glXDestroyGLXPixmap
+glXDestroyGLXPixmap
 \- destroy a GLX pixmap
 
 .SH C SPECIFICATION

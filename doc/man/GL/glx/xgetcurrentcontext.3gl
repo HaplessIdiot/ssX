@@ -7,7 +7,7 @@
 .ds Xs 49308 2 xgetcurrentcontext.gl
 .TH GLXGETCURRENTCONTEXT
 .SH NAME
-.B "glXGetCurrentContext
+glXGetCurrentContext
 \- return the current context
 
 .SH C SPECIFICATION
