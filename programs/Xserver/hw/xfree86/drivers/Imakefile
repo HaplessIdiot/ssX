@@ -1,0 +1,28 @@
+XCOMM $XFree86: $
+
+
+
+
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+
+SUBDIRS = XF86CardDrivers
+
+#ifndef OS2Architecture
+SRCS = */?*.c
+
+OBJS = */?*_drv.o
+#else
+SRCS = al2101/?*.c mx/?*.c oak/?*.c realtek/?*.c sis/?*.c trident/?*.c
+
+OBJS = al2101/?*.o mx/?*.o oak/?*.o realtek/?*.o sis/?*.o trident/?*.o
+#endif
+
+MakeSubdirs($(SUBDIRS))
+
+NormalLibraryObjectRule()
+
+ForceSubdirs($(SUBDIRS))
+
+DependSubdirs($(SUBDIRS))

@@ -1,0 +1,42 @@
+XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:29:56 rws $
+
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr77c22/Imakefile,v 3.8 1997/02/25 14:22:36 hohndel Exp $
+
+
+
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = ncr_driver.c ncr_bank.s
+
+OBJS = ncr_driver.o ncr_bank.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(ncr_drv, $(OBJS))
+
+InstallLinkKitNonExecFile(ncr_driver.c,$(LINKKITDIR)/drivers/ncr77c22)
+InstallLinkKitNonExecFile(ncr_bank.s,$(LINKKITDIR)/drivers/ncr77c22)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/ncr77c22)
+
+#if DoLoadableServer
+InstallDynamicModule(ncr_drv.o,$(MODULEDIR))
+#endif
+
+DependTarget()

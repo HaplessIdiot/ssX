@@ -1,0 +1,35 @@
+XCOMM $XFree86: $
+
+
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = mx_driver.c mx_bank.s
+
+OBJS = mx_driver.o mx_bank.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(mx_drv, $(OBJS))
+
+InstallLinkKitNonExecFile(mx_driver.c,$(LINKKITDIR)/drivers/mx)
+InstallLinkKitNonExecFile(mx_bank.s,$(LINKKITDIR)/drivers/mx)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/mx)
+
+#if DoLoadableServer
+InstallDynamicModule(mx_drv.o,$(MODULEDIR))
+#endif
+
+DependTarget()
