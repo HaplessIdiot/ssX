@@ -27,7 +27,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/dynapro/xf86Dyna.c,v 1.2 1999/08/22 05:57:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/dynapro/xf86Dyna.c,v 1.3 2000/08/11 19:10:43 dawes Exp $ */
 
 #define _DYNAPRO_C_
 
@@ -100,7 +100,6 @@ static const char *reqSymbols[] = {
 	"xf86MotionHistoryAllocate",
 	"xf86NameCmp",
 	"xf86OpenSerial",
-	"xf86CloseSerial",
 	"xf86OptionListCreate",
 	"xf86OptionListMerge",
 	"xf86OptionListReport",
@@ -108,7 +107,6 @@ static const char *reqSymbols[] = {
 	"xf86PostMotionEvent",
 	"xf86PostProximityEvent",
 	"xf86ProcessCommonOptions",
-	"xf86RemoveLocalDevice",
 	"xf86ScaleAxis",
 	"xf86SetIntOption",
 	"xf86SetStrOption",

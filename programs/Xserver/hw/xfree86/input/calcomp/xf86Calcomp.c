@@ -31,7 +31,7 @@
  * authorization  from Martin Kroeker or Daveg GmbH.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.3 2001/11/23 19:50:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.4 2001/11/23 23:11:16 dawes Exp $ */
 
 #define _CALCOMP_C_
 /*****************************************************************************
@@ -132,7 +132,6 @@ static const char *reqSymbols[] = {
         "xf86MotionHistoryAllocate",
         "xf86NameCmp",
         "xf86OpenSerial",
-        "xf86CloseSerial",
         "xf86OptionListCreate",
         "xf86OptionListMerge",
         "xf86OptionListReport",

@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.7 1999/04/04 07:03:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.8 1999/06/05 15:55:28 dawes Exp $ */
 
 #define _SAMPLE_C_
 /*****************************************************************************
@@ -101,8 +101,6 @@ TearDownProc( pointer p )
 	ErrorF ("Sample TearDownProc Called\n");
 
 	DeviceOff (local->dev);
-
-	xf86RemoveLocalDevice (local);
 
 	xf86CloseSerial (local->fd);
 	XisbFree (priv->buffer);

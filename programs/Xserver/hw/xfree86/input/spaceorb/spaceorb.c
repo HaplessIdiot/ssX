@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.11 2001/05/15 18:22:22 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.12 2001/10/28 03:33:58 tsi Exp $ */
 
 #define _SPACEORB_C_
 /*****************************************************************************
@@ -109,7 +109,6 @@ static const char *reqSymbols[] = {
         "xf86MotionHistoryAllocate",
         "xf86NameCmp",
         "xf86OpenSerial",
-        "xf86CloseSerial",
         "xf86OptionListCreate",
         "xf86OptionListMerge",
         "xf86OptionListReport",
@@ -117,7 +116,6 @@ static const char *reqSymbols[] = {
         "xf86PostMotionEvent",
         "xf86PostProximityEvent",
         "xf86ProcessCommonOptions",
-        "xf86RemoveLocalDevice",
         "xf86ScaleAxis",
         "xf86SetIntOption",
         "xf86SetStrOption",
