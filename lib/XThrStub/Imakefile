@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/XThrStub/Imakefile,v 3.2 1998/12/20 11:57:00 dawes Exp $
+XCOMM $XFree86: xc/lib/XThrStub/Imakefile,v 3.3 2004/04/05 02:33:11 dawes Exp $
 #define DoNormalLib NormalLibXThrStub
 #define DoSharedLib SharedLibXThrStub
 #define DoExtraLib ExtraLibXThrStub
@@ -14,7 +14,7 @@ XCOMM $XFree86: xc/lib/XThrStub/Imakefile,v 3.2 1998/12/20 11:57:00 dawes Exp $
 REQUIREDLIBS = SharedXThrStubReqs
 #endif
 
-#if NeedUIThrStubs
+#if NeedUIThrStubs || (defined(ThrStubsForCompat) && ThrStubsForCompat)
 STUBSRCS = UIThrStubs.c
 STUBOBJS = UIThrStubs.o
 #endif
