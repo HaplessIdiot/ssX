@@ -9,7 +9,7 @@
 <date>18 December 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.88 2003/12/15 19:38:22 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.89 2003/12/19 04:26:12 dawes Exp $
 </ident>
 
 <abstract>
@@ -1006,6 +1006,235 @@ please contact
 <p>
 -->
 
+<sect>Credits
+<p>
+<bf>THIS IS A SAMPLE/DRAFT OF HOW A CREDITS SECTION IN THE XFREE86 RELEASE
+NOTES MIGHT LOOK</bf>
 
+<descrip>
+<tag>New Features, Enhancements and Updates:</tag>
+  <descrip>
+  <tag>IPv6 support:</tag>Alan Coopersmith, Marc Aurele La France, Matthieu
+	Herrb, David H. Dawes.
+  <tag>NVIDIA 'nv' driver rewrite:</tag>Mark Vojkovich.
+  <tag>SiS driver enhancements:</tag>Thomas Winischhofer.
+  <tag>New VIA video driver:</tag>VIA, Alan Cox.
+  <tag>Intel 'i810' driver fixes and stability improvements:</tag>Egbert Eich,
+	David H. Dawes, Christian Zietz
+  <tag>Improved and more flexible Compose system:</tag>Ivan Pascal.
+  <tag>Automatic configuration for the XFree86 server:</tag>David H. Dawes.
+  <tag>Reworked FreeType font backend module:</tag>Chisato Yamauchi and
+	the After X-TT Project.
+  <tag>Xterm fixes, maintenance and enhancements:</tag>Thomas E. Dickey.
+  <tag>Mac OS X enhancements:</tag>Torrey T. Lyons, John Harper.
+  <tag>GNU/Hurd updates and preliminary GNU/KFreeBSD and GNU/KNetBSD
+	support:</tag> Robert Millan.
+  </descrip>
+<tag>Integration:</tag>
+  <descrip>
+  <tag>General Integration of Submissions:</tag>Egbert Eich, David H. Dawes,
+	Ivan Pascal, Alan Hourihane, Matthieu Herrb.
+  <tag>DRI Integration:</tag>Alan Hourihane.
+  </descrip>
+<tag>Release Engineering:</tag>David H. Dawes.
+
+<tag>Patches and other submissions (in alphabetical order):</tag>
+Roi a Torkilsheyggi,
+Dave Airlie,
+Andrew Aitchison,
+Marco Antonio Alvarez,
+Alexandr Andreev,
+Jack Angel,
+Eric Anholt,
+Ani,
+Juuso &Aring;berg,
+Sergey Babkin,
+Alexey Baj,
+Matthew W. S. Bell,
+Vano Beridze,
+Hiroyuki Bessho,
+Andrew Bevitt,
+Martin Birgmeier,
+Jakub Bogusz,
+Le Hong Boi,
+Paul Bolle,
+Charl Botha,
+Stanislav Brabec,
+Eric Branlund,
+Rob Braun,
+Peter Breitenlohner,
+Michael Breuer,
+Kevin Brosius,
+Frederick Bruckman,
+Oswald Buddenhagen,
+Nilg&uuml;n Belma Bug&uuml;ner,
+Ping Cheng,
+Juliusz Chroboczek,
+Fred Clift,
+Alan Coopersmith,
+Martin Costabel,
+Alan Cox,
+Michel D&auml;nzer,
+David Dawes,
+Leif Delgass,
+Richard Dengler,
+John Dennis,
+Thomas Dickey,
+Randy Dunlap,
+Chris Edgington,
+Paul Eggert,
+Paul Elliott,
+Emmanuel,
+Visanu Euarchukiati,
+Mike Fabian,
+Rik Faith,
+Brian Feldman,
+Wu Jian Feng,
+Kevin P. Fleming,
+Jose Fonseca,
+Hugues Fournier,
+Miguel Freitas,
+Quentin Garnier,
+B&oslash;rre Gaup,
+Frank Giessler,
+Wolfram Gloger,
+Alexander Gottwald,
+Guido Guenther,
+Ralf Habacker,
+Bruno Haible,
+Lindsay Haigh,
+John Harper,
+Mike Harris,
+Bryan W. Headley,
+John Heasley,
+Matthieu Herrb,
+Jonathan Hough,
+Alan Hourihane,
+Joel Ray Holveck,
+Harold L Hunt II,
+Ricardo Y. Igarashi,
+Mutsumi ISHIKAWA ,
+Tsuyoshi ITO,
+Kean Johnston,
+Nicolas JOLY,
+Phil Jones,
+Roman Kagan,
+Theppitak Karoonboonyanan,
+Etsushi Kato,
+Koike Kazuhiko,
+Aidan Kehoe,
+Juergen Keil,
+Andreas Kies,
+Thomas Klausner,
+Egmont Koblinger,
+Vlatko Kosturjak,
+Kusanagi Kouichi,
+Peter Kunzmann,
+Nick Kurshev,
+Mashrab Kuvatov,
+Marc La France,
+maxim,
+Nolan Leake,
+Michel Lespinasse,
+Noah Levitt,
+Dave Love,
+H.J. Lu,
+Lubos Lunak,
+Sven Luther,
+Torrey T. Lyons,
+Calum Mackay,
+Roland Mainz,
+Kevin Martin,
+Michal Maruska,
+Kensuke Matsuzaki,
+Ferris McCormick,
+Nicholas Miell,
+Robert Millan,
+Hisashi MIYASHITA,
+Patrik Montgomery,
+Joe Moss,
+Josselin Mouette,
+Frank Murphy,
+Reiko Nakajima,
+Dan Nelson,
+Bastien Nocera,
+Alexandre Oliva,
+Hideki ONO,
+Peter Osterlund,
+Sergey V. Oudaltsov,
+S&eacute;amus &Oacute; Ciardhu&aacute;in,
+Bob Paauwe,
+Paul Pacheco,
+Tom Pala,
+Ivan Pascal,
+T. M. Pederson,
+Earle F. Philhower III,
+Nils Philippsen,
+Manfred Pohler,
+Alexander Pohoyda,
+Arnaud Quette,
+Jim Radford,
+Dale Rahn,
+Lucas Correia Villa Real,
+Ren&eacute; Rebe,
+Sebastian Rittau,
+Tim Roberts,
+Alastair M. Robinson,
+Branden Robinson,
+Daniel Rock,
+Ian Romanick,
+Bernhard Rosenkraenzer,
+M&aring;ns Rullg&aring;rd,
+Andriy Rysin,
+Supphachoke Santiwichaya,
+Pablo Saratxaga,
+Matthias Scheler,
+Jens Schweikhardt,
+Danilo Segan,
+Shantonu Sen,
+Stas Sergeev,
+JungShik Shin,
+Jungshik Shin,
+Nikola Smolenski,
+Paul Stewart,
+Alexander Stohr,
+Alan Strohm,
+Will Styles,
+James Su,
+Mike Sulivan,
+Ville Syrjala,
+Slava Sysoltsev,
+Akira TAGOH,
+Toshimitsu Tanaka,
+Akira Taniguchi,
+Owen Taylor,
+Neil Terry,
+Adam Tlalka,
+Linus Torvalds,
+Christian Tosta,
+Warren Turkal,
+Stephen J. Turnbull,
+Ted Unangst,
+Mike Urban,
+Simon Vallet,
+Thuraiappah Vaseeharan,
+Luc Verhaegen,
+Michail Vidiassov,
+Sebastiano Vigna,
+Mark Vojkovich,
+Stephane Voltz,
+Boris Weissman,
+Keith Whitwell,
+Thomas Winischhofer,
+Kim Woelders,
+Roy Wood,
+Jason L. Wright,
+Joerg Wunsch,
+Chisato Yamauchi,
+Hui Yu.
+  
+<tag>Webmaster:</tag>Georgina O. Economou
+
+</descrip>
 
 </article>
