@@ -67,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/await.c,v 3.3 1999/03/02 10:42:07 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/await.c,v 3.4 2001/01/17 23:45:36 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xthreads.h>
@@ -227,16 +227,16 @@ AwaitHandler(int sig)
 
 	if ( ++AwaitHandlerSeen == 2 )
 	{
-		exit( 1 );
+		_exit( 1 );
 	}
 	if ( ( pid = fork() ) == -1 )	
 	{
-		exit( 1 );
+		_exit( 1 );
 	}
 	else if ( pid == 0 )			/* child */
 	{
-	        AbortFlo(xplocal);
-		exit( 0 );
+	        AbortFlo(xplocal); /* XXX is this safe ? */
+		_exit( 0 );
 	}
 	else					/* parent */
 	{
