@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.5 1998/11/29 10:50:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.6 1998/12/13 10:33:44 dawes Exp $ */
 
 /*
  *
@@ -81,6 +81,9 @@ extern Bool S3VAccelInit32(ScreenPtr pScreen);
 #define S3VIRGE_VERSION_MAJOR   0
 #define S3VIRGE_VERSION_MINOR   2
 #define S3VIRGE_PATCHLEVEL      0
+#define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
+				(S3VIRGE_VERSION_MINOR << 16) | \
+				S3VIRGE_PATCHLEVEL)
 
 /* 
  * This contains the functions needed by the server after loading the
