@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbwindow.c,v 1.1 1999/01/03 03:58:57 dawes Exp $ */
 
 
 #include "X.h"
@@ -80,7 +80,7 @@ cfb8_32CopyWindow(
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
-    cfb8_32SegregateChildren(pWin, &rgnDst32);
+    miSegregateChildren(pWin, &rgnDst32, 24);
     if(REGION_NOTEMPTY(pScreen, &rgnDst32)) {
 	REGION_INTERSECT(pScreen, &rgnDst32, &rgnDst32, prgnSrc);
 	nbox = REGION_NUM_RECTS(&rgnDst32);
@@ -111,23 +111,6 @@ cfb8_32ChangeWindowAttributes(
     return TRUE;
 }
 
-
-void
-cfb8_32SegregateChildren(
-    WindowPtr pWin, 
-    RegionPtr pReg32
-){
-    ScreenPtr pScreen = pWin->drawable.pScreen;
-    WindowPtr pChild;
-
-    for(pChild = pWin->firstChild; pChild; pChild = pChild->nextSib) {
-	if(pChild->drawable.depth == 24)
-	    REGION_UNION(pScreen, pReg32, pReg32, &pChild->borderClip);
-
-	if(pChild->firstChild)
-	    cfb8_32SegregateChildren(pChild, pReg32);
-    }
-}
 
 void
 cfb8_32WindowExposures(
