@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.75 1999/03/21 12:46:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.76 1999/03/28 15:32:54 dawes Exp $ */
 
 /*
  *
@@ -412,6 +412,8 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86xv.c */
    SYMFUNC(xf86XVScreenInit)
+   SYMFUNC(xf86XVRegisterGenericAdaptor)
+   SYMFUNC(xf86XVListGenericAdaptors)
 
    /* xf86VidMode.c */
    SYMFUNC(VidModeExtensionInit)
