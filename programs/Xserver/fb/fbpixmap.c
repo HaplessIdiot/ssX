@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.6 2000/04/06 15:27:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpixmap.c,v 1.7 2000/05/06 21:09:34 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -79,10 +79,9 @@ PixmapPtr
 fbCreatePixmap (ScreenPtr pScreen, int width, int height, int depth)
 {
     int	bpp;
-
     bpp = BitsPerPixel (depth);
 #ifdef FB_SCREEN_PRIVATE
-    if (bpp == 32)
+    if (bpp == 32 && depth <= 24)
 	bpp = fbGetScreenPrivate(pScreen)->pix32bpp;
 #endif
     return fbCreatePixmapBpp (pScreen, width, height, depth, bpp);
