@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.31 2000/03/21 19:56:57 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.32 2000/03/31 22:55:14 dawes Exp $
 XCOMM
 XCOMM $OpenBSD: OpenBSD.cf,v 1.33 1998/09/27 04:52:48 rahnds Exp $
 XCOMM
@@ -222,7 +222,7 @@ clean::									@@\
 
 #define InstallManPageLong(file,destdir,dest)				@@\
 BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
-									@@
+									@@\
 InstallManPageLongBase(file,destdir,dest)
 
 #define InstallGenManPageLong(file,destdir,dest,suffix)			@@\

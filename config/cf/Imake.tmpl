@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.76 2000/05/04 20:16:54 alanh Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.77 2000/05/11 18:14:06 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -180,7 +180,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef RmanCmd
 #if BuildRman
-#ifdef UseIntalled		/* assume BINDIR in path */
+#ifdef UseInstalled		/* assume BINDIR in path */
 #define RmanCmd rman
 #else
 #define RmanCmd $(TOP)/config/util/rman

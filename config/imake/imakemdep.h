@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.35 1999/12/27 00:39:17 robin Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.36 1999/12/30 02:09:25 robin Exp $ */
 
 
 /* 
@@ -328,7 +328,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-Uunix",	/* remove unix symbol so that filename unix.c okay */
 #endif
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(MACH) || defined(linux) || defined(__GNU__)
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(MACH) || defined(linux) || defined(__GNU__) || defined(__bsdi__)
 # ifdef __i386__
 	"-D__i386__",
 # endif
@@ -683,7 +683,7 @@ char *cpp_argv[ARGUMENTS] = {
 # define DEFAULT_OS_MAJOR_REV	"v V%[0-9]"
 # define DEFAULT_OS_MINOR_REV	"v V%*dL%[0-9]"
 # define DEFAULT_OS_NAME	"srvm %[^\n]"
-#elif defined(linux)
+#elif defined(linux) || defined(__bsdi__)
 # define DEFAULT_OS_MAJOR_REV	"r %[0-9]"
 # define DEFAULT_OS_MINOR_REV	"r %*d.%[0-9]"
 # define DEFAULT_OS_TEENY_REV	"r %*d.%*d.%[0-9]"

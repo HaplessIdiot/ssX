@@ -1,4 +1,13 @@
 XFree86 4.0b (18 May 2000)
+ 177. Add support for building shared libraries on BSD/OS (#3876, Kurt Lidl).
+ 176. Add imake support for automatically determining the version for BSD/OS,
+      and update bsdi.cf for the features relevant to the different versions
+      (#3876, Kurt Lidl).
+ 175. Xterm patch #132 (#3874, Thomas Dickey).
+ 174. Fix rman-related build problems when building external applications
+      (#3869, Matthieu Herrb, #3890, H. J. Lu).
+ 173. Fix a typo in OpenBSD.cf (#3867, Matthieu Herrb).
+ 172. Fix some build warnings (#3864, Ani Joshi).
  171. Fix some BSDI typos in hw/sun (#3862, Kurt Lidl).
  170. Fix r128 palette save/restore when VT switching (#3861, Ani Joshi).
  169. Disable the X server's internal malloc by default (#3860, Keith Packard).
@@ -10334,4 +10343,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1154 2000/05/14 20:44:00 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1155 2000/05/17 19:52:21 dawes Exp $

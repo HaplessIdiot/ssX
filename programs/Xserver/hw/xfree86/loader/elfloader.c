@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.22 1999/08/22 05:57:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.23 1999/12/13 23:56:38 robin Exp $ */
 
 /*
  *
@@ -1236,7 +1236,7 @@ ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 #else
  /* Linux PPC */
 	case R_PPC_ADDR32: /* 1 */
-	    dest32=(unsigned long *)(secp+rel->r_offset);
+	    dest32=(unsigned int *)(secp+rel->r_offset);
 	    symval=ElfGetSymbolValue(elffile,ELF_R_SYM(rel->r_info));
 #ifdef ELFDEBUG
 	    ELFDEBUG( "R_PPC_ADDR32\t" );
@@ -1328,7 +1328,7 @@ ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 #endif
 	    break;
 	case R_PPC_REL24: /* 10 */
-	    dest32=(unsigned long *)(secp+rel->r_offset);
+	    dest32=(unsigned int *)(secp+rel->r_offset);
 #ifdef ELFDEBUG
 	    ELFDEBUG( "R_PPC_REL24 %s\t", ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)) );
 	    ELFDEBUG( "secp=%x\t", secp );
@@ -1370,7 +1370,7 @@ ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 #endif
 	    break;
 	case R_PPC_REL32: /* 26 */
-	    dest32=(unsigned long *)(secp+rel->r_offset);
+	    dest32=(unsigned int *)(secp+rel->r_offset);
 #ifdef ELFDEBUG
 	    ELFDEBUG( "R_PPC_REL32\t" );
 	    ELFDEBUG( "secp=%x\t", secp );

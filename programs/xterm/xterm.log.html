@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.49 2000/03/03 20:02:35 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.50 2000/03/31 20:13:50 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_132">Patch #132 - 2000/4/11 - XFree86 4.0a</A>
 <LI><A HREF="#xterm_131">Patch #131 - 2000/3/3 - XFree86 3.9.18b</A>
 <LI><A HREF="#xterm_130">Patch #130 - 2000/3/1 - XFree86 3.9.18a</A>
 <LI><A HREF="#xterm_129">Patch #129 - 2000/2/26 - XFree86 3.9.18a</A>
@@ -174,6 +175,38 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_132">Patch #132 - 2000/4/11 - XFree86 4.0a</A></H1>
+<ul>
+	<li>undo an incorrect change from patch #113 caused the right scrollbar
+	  to be positioned incorrectly when re-enabling it (analysis by
+	  D Roland Walker).
+
+	<li>add ctrlFKeys resource, replacing constant for adjusting
+	  control-F1 to control-F12 to VT220-style F10-F20.  The resource
+	  changes the constant 12 to a default value of 10 (request by
+	  Jim Knoble &lt;jmknoble@pobox.com&gt;).
+
+	<li>correct ifdef'ing for conflict between definitions in AIX's
+	  &lt;sys/select.h&gt; and &lt;X11/XPoll.h&gt; (reported by Clint
+	  Olsen).
+
+	<li>add checks for return-values of getutid(), initgroups() and
+	  setuid() in main.c, as well as modifying ifdef's for __osf__ to
+	  include tty-group and WTMP logic (adapted from patch by Paul Szabo
+	  &lt;psz@maths.usyd.edu.au&gt;)
+
+	<li>modify resize.c to build and work on os390 (uses EBCDIC)
+	  (adapted from patch by Phil Sidler &lt;Phil.Sidler@airborne.com&gt;)
+
+	<li>use Ires(), Bres() and Sres() macros to simplify resource list in
+	  charproc.c
+
+	<li>resync with XFree86 4.0a:
+	<ul>
+	  <li>correct a typo in os2main.c (Holger Veit, from 4.0a).
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_131">Patch #131 - 2000/3/3 - XFree86 3.9.18b</A></H1>
 <ul>
