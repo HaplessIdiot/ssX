@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.4 2000/12/06 22:00:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.5 2000/12/07 20:26:22 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -1111,7 +1111,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	    SavageFreeBIOSModeTable( psav, &psav->ModeTable );
 	}
 
-	psav->ModeTable = SavageGetBIOSModeTable( psav, pScrn->bitsPerPixel );
+	psav->ModeTable = SavageGetBIOSModeTable( psav, pScrn->depth );
 
 	if( !psav->ModeTable || !psav->ModeTable->NumModes ) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
