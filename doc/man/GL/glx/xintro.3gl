@@ -1,3 +1,4 @@
+.\" $XFree86$
 '\"! eqn | mmdoc
 '\"macro stdmacro
 .ds Vn Version 1.2
@@ -70,9 +71,9 @@ Return values \f2dpy\fP,
 \f2win\fP should all be tested.
 .P
 .Ex
-#include <GL/glx.h>
-#include <GL/gl.h>
-#include <unistd.h>
+\&#include <GL/glx.h>
+\&#include <GL/gl.h>
+\&#include <unistd.h>
 
 static int attributeListSgl[] = { 
 	GLX_RGBA, 
