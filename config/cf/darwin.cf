@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.7 2001/03/13 02:36:12 torrey Exp $
+XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.8 2001/03/17 18:21:37 herrb Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -103,11 +103,7 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.7 2001/03/13 02:36:12 torrey Exp $
 /* no Display Power Management extension */
 #define BuildDPMSExt            NO
 
-/* no Render extension */
-#define BuildRender             NO
-
 #define BuildXvExt              NO
-
 
 /* no OpenGL libraries */
 #ifndef BuildGLXLibrary	
@@ -123,7 +119,7 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.7 2001/03/13 02:36:12 torrey Exp $
 #include <darwinLib.rules>
 
 /*
- * OpenBSD specific Imake Config files
+ * Darwin specific Imake Config files
  */
 #ifndef LocalConfigFiles
 #define LocalConfigFiles \
@@ -131,7 +127,6 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.7 2001/03/13 02:36:12 torrey Exp $
 	darwinLib.tmpl
 #endif
 
-/* include all the xfree rules */
-/* I haven't tracked down why this is needed, but it is... */
+/* include all the XFree86 rules */
 #include <xfree86.cf>
 
