@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.10 2002/11/12 06:05:08 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.11 2002/11/13 04:35:47 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -338,16 +338,15 @@ XeditUpdateModeInfos(void)
 void
 XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
 {
+    GC_ENTER();
     LISP_SETUP();
-    int alloced;
+    int alloced, return_count;
     XawTextBlock block;
     XawTextPosition position;
     char *string, *ptr;
-    LispObj *result, *code, *_cod, **presult = &result;
+    LispObj *result, *code, *_cod, *returns;
 
     LISP_ENTER();
-
-    *presult = NIL;
 
     position = left;
     XawTextSourceRead(XawTextGetSource(textwindow), left, &block, right - left);
@@ -375,6 +374,7 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
     execute_string.input = 0;
     LispPushInput(&execute_stream);
     _cod = COD;
+    result = NIL;
     if ((code = LispRead()) != NULL) {
 	if (code == EOLIST)
 	    LispDestroy("object cannot start with #\\)");
@@ -385,17 +385,23 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
     COD = _cod;
     LispPopInput(&execute_stream);
 
-    XeditPrint(output, result);
+    returns = NIL;
     if (RETURN_COUNT) {
-	int i;
-
-	for (i = 0; i < RETURN_COUNT; i++)
-	    XeditPrint(output, RETURN(i));
+	returns = _cod = CONS(RETURN(0), NIL);
+	GC_PROTECT(returns);
+	for (return_count = 1; return_count < RETURN_COUNT; return_count++) {
+	    RPLACD(_cod, CONS(RETURN(return_count), NIL));
+	    _cod = CDR(_cod);
+	}
     }
     LispUpdateResults(code, result);
+    XeditPrint(output, result);
+    for (; CONSP(returns); returns = CDR(returns))
+	XeditPrint(output, CAR(returns));
 
     if (alloced)
 	LispFree(string);
+    GC_LEAVE();
 
     LISP_LEAVE();
 }
