@@ -1,5 +1,5 @@
 /* $XConsortium: button.c /main/75 1996/11/29 10:33:33 swick $ */
-/* $XFree86: xc/programs/xterm/button.c,v 3.12 1997/05/23 09:19:46 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.13 1997/06/29 07:54:40 dawes Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -1436,7 +1436,7 @@ SaveText(screen, row, scol, ecol, lp, eol)
 	i = Length(screen, row, scol, ecol);
 	ecol = scol + i;
 #if OPT_DEC_CHRSET
-	if (CSET_DOUBLE(SCRN_BUF_CSETS(screen, row)[0])) {
+	if (CSET_DOUBLE(SCRN_BUF_CSETS(screen, row + screen->topline)[0])) {
 		scol = (scol + 0) / 2;
 		ecol = (ecol + 1) / 2;
 	}

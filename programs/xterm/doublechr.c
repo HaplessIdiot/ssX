@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/xterm/doublechr.c,v 3.1 1997/06/29 07:54:42 dawes Exp $
  */
 
 /************************************************************
@@ -63,15 +63,13 @@ repaint_line(newChrSet)
 
 	TRACE(("repaint_line(%2d,%2d) (%d)\n", screen->cur_row, screen->cur_col, newChrSet))
 
-	/* If switching from single-width, clear the part of the line that is
-	 * pushed off to the right.
+	/* If switching from single-width, keep the cursor in the visible part
+	 * of the line.
 	 */
 	if (CSET_DOUBLE(newChrSet)) {
 		width /= 2;
-		if (!CSET_DOUBLE(curChrSet)) {
-			screen->cur_col = width;
-			ClearRight(screen, -1);
-		}
+		if (curcol > width)
+			curcol = width;
 	}
 
 	/* FIXME: do VT220 softchars allow double-sizes? */

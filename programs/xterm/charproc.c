@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.46 1997/06/29 07:54:41 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.47 1997/07/06 05:31:05 dawes Exp $
  */
 
 /*
@@ -2444,7 +2444,7 @@ dotext(screen, charset, buf, ptr)
  * write a string str of length len onto the screen at
  * the current cursor position.  update cursor position.
  */
-void
+static void
 WriteText(screen, str, len)
     register TScreen	*screen;
     register Char	*str;
@@ -4044,11 +4044,6 @@ ShowCursor()
 
 	c     = SCRN_BUF_CHARS(screen, screen->cursor_row)[screen->cursor_col];
 	flags = SCRN_BUF_ATTRS(screen, screen->cursor_row)[screen->cursor_col];
-#if OPT_DEC_CHRSET
-	if (CSET_DOUBLE(SCRN_BUF_CSETS(screen, screen->cursor_row)[0])) {
-		c = SCRN_BUF_CHARS(screen, screen->cursor_row)[screen->cursor_col/2];
-	}
-#endif
 
 #ifndef NO_ACTIVE_ICON
 	if (IsIcon(screen)) {
@@ -4106,7 +4101,7 @@ ShowCursor()
 
 	TRACE(("%s @%d, calling drawXtermText\n", __FILE__, __LINE__))
 	drawXtermText(screen, flags, currentGC,
-		x = CursorX(screen, screen->cur_col),
+		x = CurCursorX(screen, screen->cur_row, screen->cur_col),
 		y = CursorY(screen, screen->cur_row),
 		curXtermChrSet(screen->cur_row),
 		&c, 1);

@@ -1,4 +1,15 @@
 XFree86 3.9k (29 July 1997)
+1160. Several fixes to xterm. Correct  an indexing error in the doublesize
+      character logic. Correct the logic of ShowCursor when it is painting in
+      a doublesize cell. Correct the behavior when switching to doublesize
+      characters and back again. Add cbt (back_tab) to the terminfo
+      description. Correct the logic for disabling xmc. Minor correction to
+      positioning of underlines for small (e.g., 5x8 font size. Add more
+      special-case tokens to the standalone configure script's imake-option
+      filter. Add a '--enable-logging' option for the standalone configure
+      script. Add check and ifdef's for the standalone configure script to
+      allow for building on platforms with X11R6, which lacks Xpoll.h
+      (#769,821, Thomas Dickey).
 1159. Preliminary support for Millennium on PC98 (#825, Shuichiro Urata,
       Takaaki Nomura).
 1158. update XKB for PC98 (#825, Isao Ohishi).
@@ -5191,4 +5202,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.512 1997/07/26 12:59:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.513 1997/07/29 12:07:19 hohndel Exp $

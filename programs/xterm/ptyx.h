@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.22 1997/06/29 07:54:42 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.23 1997/07/06 05:31:08 dawes Exp $
  */
 
 /*
@@ -840,6 +840,8 @@ typedef struct _TekWidgetRec {
 #define FontHeight(screen)	((screen)->whichVwin->f_height)
 #define FontAscent(screen)	(IsIcon(screen) ? (screen)->fnt_icon->ascent \
 						: (screen)->fnt_norm->ascent)
+#define FontDescent(screen)	(IsIcon(screen) ? (screen)->fnt_icon->descent \
+						: (screen)->fnt_norm->descent)
 #define Scrollbar(screen)	((screen)->whichVwin->scrollbar)
 #define NormalGC(screen)	((screen)->whichVwin->normalGC)
 #define ReverseGC(screen)	((screen)->whichVwin->reverseGC)

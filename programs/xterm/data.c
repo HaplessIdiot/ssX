@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.c,v 1.12 95/04/05 19:58:47 kaleb Exp $
- *	$XFree86: xc/programs/xterm/data.c,v 3.2 1996/08/13 11:36:56 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.c,v 3.3 1997/05/23 09:19:49 dawes Exp $
  */
 
 /*
@@ -31,12 +31,8 @@
 #endif
 
 #include "ptyx.h"		/* gets Xt stuff, too */
-
-#if XtSpecificationRelease >= 6
-#include <X11/Xpoll.h>
-#endif
-
 #include "data.h"
+
 #include <setjmp.h>
 
 XPoint T_boxlarge[NBOX] = {

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.h /main/13 1996/11/24 17:35:40 rws $
- *	$XFree86: xc/programs/xterm/data.h,v 3.2 1996/08/13 11:36:57 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.h,v 3.3 1996/12/23 07:14:27 dawes Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -25,7 +25,7 @@
  * SOFTWARE.
  */
 
-#if XtSpecificationRelease >= 6
+#if XtSpecificationRelease >= 6 && !defined(NO_XPOLL_H)
 #include <X11/Xpoll.h>
 #else
 #define Select(n,r,w,e,t) select(n,(fd_set*)r,(fd_set*)w,(fd_set*)e,(struct timeval *)t)

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c /main/35 1996/12/01 23:47:05 swick $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.14 1997/06/29 07:54:43 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.15 1997/07/06 05:31:08 dawes Exp $
  */
 
 /*
@@ -94,7 +94,7 @@ ScrnBuf Allocate (nrow, ncol, addr)
    the actual character array and the second (odd) one is the attributes.
    each line is formed from four char arrays.  The first one is the actual
    character array, the second one is the attributes, the third is the
-   foreground color, and the fourth is the background color.
+   foreground and background colors, and the fourth denotes the character set.
  */
 register int nrow, ncol;
 Char **addr;
