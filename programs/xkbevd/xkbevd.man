@@ -1,5 +1,5 @@
-.\" $XConsortium: xkbevd.man /main/2 1995/12/15 10:52:08 kaleb $
-.TH XKBCOMP 1 "Release 6" "X Version 11"
+.\" $TOG: xkbevd.man /main/4 1997/11/04 20:57:18 kaleb $
+.TH XKBCOMP 1 "Release 6.4" "X Version 11"
 .SH NAME
 xkbevd \- XKB event daemon
 .SH SYNOPSIS

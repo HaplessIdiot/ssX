@@ -1,5 +1,4 @@
-/* $XConsortium: session.c /main/77 1996/11/24 17:32:33 rws $ */
-/* $XFree86: xc/programs/xdm/session.c,v 3.10 1996/08/11 13:04:27 dawes Exp $ */
+/* $TOG: session.c /main/78 1997/10/05 20:42:47 kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/programs/xdm/session.c,v 3.11 1996/12/23 07:10:57 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -65,6 +65,10 @@ from the X Consortium.
 
 #ifdef CSRG_BASED
 #include <sys/param.h>
+#ifdef HAS_SETUSERCONTEXT
+#include <login_cap.h>
+#include <pwd.h>
+#endif
 #endif
 
 extern	int	PingServer();
@@ -494,6 +498,9 @@ StartClient (verify, d, pidp, name, passwd)
     char	**f, *home, *getEnv ();
     char	*failsafeArgv[2];
     int	pid;
+#ifdef HAS_SETUSERCONTEXT
+    struct passwd* pwd;
+#endif
 
     if (verify->argv) {
 	Debug ("StartSession %s: ", verify->argv[0]);
@@ -512,17 +519,8 @@ StartClient (verify, d, pidp, name, passwd)
 
 	/* Do system-dependent login setup here */
 
-#ifdef AIXV3
-	/*
-	 * Set the user's credentials: uid, gid, groups,
-	 * audit classes, user limits, and umask.
-	 */
-	if (setpcred(name, NULL) == -1)
-	{
-	    LogError("setpcred for \"%s\" failed, errno=%d\n", name, errno);
-	    return (0);
-	}
-#else /* AIXV3 */
+#ifndef AIXV3
+#ifndef HAS_SETUSERCONTEXT
 	if (setgid(verify->gid) < 0)
 	{
 	    LogError("setgid %d (user \"%s\") failed, errno=%d\n",
@@ -545,6 +543,38 @@ StartClient (verify, d, pidp, name, passwd)
 	{
 	    LogError("setuid %d (user \"%s\") failed, errno=%d\n",
 		     verify->uid, name, errno);
+	    return (0);
+	}
+#else /* HAS_SETUSERCONTEXT */
+	/*
+	 * Set the user's credentials: uid, gid, groups,
+	 * environment variables, resource limits, and umask.
+	 */
+	pwd = getpwnam(name);
+	if (pwd)
+	{
+	    if (setusercontext(NULL, pwd, pwd->pw_uid, LOGIN_SETALL) < 0)
+	    {
+		LogError("setusercontext for \"%s\" failed, errno=%d\n", name,
+		    errno);
+		return (0);
+	    }
+	    endpwent();
+	}
+	else
+	{
+	    LogError("getpwnam for \"%s\" failed, errno=%d\n", name, errno);
+	    return (0);
+	}
+#endif /* HAS_SETUSERCONTEXT */
+#else /* AIXV3 */
+	/*
+	 * Set the user's credentials: uid, gid, groups,
+	 * audit classes, user limits, and umask.
+	 */
+	if (setpcred(name, NULL) == -1)
+	{
+	    LogError("setpcred for \"%s\" failed, errno=%d\n", name, errno);
 	    return (0);
 	}
 #endif /* AIXV3 */

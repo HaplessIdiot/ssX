@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.23 1997/08/26 10:01:48 hohndel Exp $ */
+/* $TOG: miinitext.c /main/44 1997/10/30 15:51:48 kaleb $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.24 1997/09/09 10:27:59 hohndel Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -54,7 +54,9 @@ SOFTWARE.
 #ifdef NOPEXEXT /* sleaze for Solaris cpp building XsunMono */
 #undef PEXEXT
 #endif
-
+#ifdef PANORAMIX
+extern Bool noPanoramiXExtension;
+#endif
 extern Bool noTestExtensions;
 #ifdef XKB
 extern Bool noXkbExtension;
@@ -94,6 +96,9 @@ InitExtension PexExtensionInitPtr = NULL;
 #endif
 #ifdef MULTIBUFFER
 extern void MultibufferExtensionInit(INITARGS);
+#endif
+#ifdef PANORAMIX
+extern void PanoramiXExtensionInit(INITARGS);
 #endif
 #ifdef XINPUT
 extern void XInputExtensionInit(INITARGS);
@@ -154,6 +159,9 @@ extern void SecurityExtensionInit(INITARGS);
 #ifdef XPRINT
 extern void	XpExtensionInit(INITARGS);
 #endif
+#ifdef TOGCUP
+extern void	XcupExtensionInit(INITARGS);
+#endif
 #ifdef XF86VIDMODE
 extern void	XFree86VidModeExtensionInit(INITARGS);
 #endif
@@ -182,6 +190,11 @@ InitExtensions(argc, argv)
     int		argc;
     char	*argv[];
 {
+#ifdef PANORAMIX
+#if !defined(PRINT_ONLY_SERVER) && !defined(NO_PANORAMIX)
+  if (!noPanoramiXExtension) PanoramiXExtensionInit();
+#endif
+#endif
 #ifdef BEZIER
     BezierExtensionInit();
 #endif
@@ -271,6 +284,9 @@ InitExtensions(argc, argv)
 #endif
 #ifdef XPRINT
     XpExtensionInit();
+#endif
+#ifdef TOGCUP
+    XcupExtensionInit();
 #endif
 #if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER)
     XFree86VidModeExtensionInit();

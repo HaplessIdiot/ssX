@@ -1,4 +1,4 @@
-XCOMM $TOG: Imakefile /main/11 1997/06/06 10:34:59 kaleb $
+XCOMM $TOG: Imakefile /main/12 1997/07/15 15:31:02 kaleb $
 
 #ifndef CgiBinDir
 #define CgiBinDir /files/web/cgi-bin
@@ -12,7 +12,6 @@ XCOMM $TOG: Imakefile /main/11 1997/06/06 10:34:59 kaleb $
 
     CGIBINDIR = CgiBinDir
     PROXYMNGR = ProxyManager
-    PROJECTROOT = ProjectRoot
     WINCENTERHOST = WinCenterHost
 
 #define PerlTarget(name)						@@\

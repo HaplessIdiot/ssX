@@ -1,4 +1,4 @@
-/* $XConsortium: migc.c,v 1.4 94/04/17 20:27:36 dpw Exp $ */
+/* $TOG: migc.c /main/5 1997/11/04 10:35:56 kaleb $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -36,22 +36,7 @@ from the X Consortium.
 #include "windowstr.h"
 #include "migc.h"
 
-/* This structure has to line up with the mfb and cfb gc private structures so
- * that when it is superimposed on them, the three fields that migc.c needs to
- * see will be accessed correctly.  I know this is not beautiful, but it seemed
- * better than all the code duplication in cfb and mfb.
- */
-typedef struct {
-    unsigned char       pad1;
-    unsigned char       pad2;
-    unsigned char       pad3;
-    unsigned		pad4:1;
-    unsigned		freeCompClip:1;
-    PixmapPtr		pRotatedPixmap;
-    RegionPtr		pCompositeClip;
-} miPrivGC;
-
-static int miGCPrivateIndex;
+int miGCPrivateIndex;
 
 void
 miRegisterGCPrivateIndex(gcindex)

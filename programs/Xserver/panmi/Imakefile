@@ -1,0 +1,117 @@
+XCOMM $TOG: Imakefile /main/1 1997/10/29 13:27:41 kaleb $
+#include <Server.tmpl>
+
+#if ! HasCbrt
+CBRT_SRC = cbrt.c
+CBRT_OBJ = cbrt.o
+#endif
+
+SRCS =  $(CBRT_SRC) mivaltree.c mipolyseg.c mipolyrect.c \
+	mipoly.c mipolycon.c mipolygen.c mipolyutil.c \
+	mifillrct.c miwideline.c mispans.c \
+ 	miarc.c mizerarc.c mifillarc.c \
+	miwindow.c micursor.c miregion.c \
+	mipolytext.c mibitblt.c mipolypnt.c mipushpxl.c \
+	miexpose.c miglblt.c mizerline.c mifpolycon.c \
+	midash.c mibstore.c miinitext.c mieq.c \
+	mipointer.c misprite.c midispcur.c miscrinit.c miclipn.c migc.c
+
+OBJS =	$(CBRT_OBJ) mivaltree.o mipolyseg.o mipolyrect.o \
+	mipoly.o mipolycon.o mipolygen.o mipolyutil.o \
+	mifillrct.o miwideline.o mispans.o \
+	miarc.o mizerarc.o mifillarc.o \
+	miwindow.o micursor.o miregion.o \
+	mipolytext.o mibitblt.o mipolypnt.o mipushpxl.o \
+	miexpose.o miglblt.o mizerline.o mifpolycon.o \
+	midash.o mibstore.o miinitext.o mieq.o \
+	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o migc.o
+
+#ifdef XFree86Version
+/* 
+ * Make sure XINPUT, XF86VidTune isn't defined for the miinitext.o 
+ * used by Xnest, Xvfb 
+ */
+EXT_DEFINES = ExtensionDefines -UXINPUT -UXF86VIDMODE
+#else
+EXT_DEFINES = ExtensionDefines
+#endif
+
+INCLUDES = -I. -I../include -I../../../include/fonts \
+           -I$(XINCLUDESRC) -I$(FONTINCSRC)
+LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(mi,$(OBJS))
+LintLibraryTarget(mi,$(SRCS))
+NormalLintTarget($(SRCS))
+
+#ifndef Win32Architecture
+all:: cbrt.o
+#endif
+
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
+
+InstallLinkKitLibrary(mi,$(LINKKITDIR)/lib)
+InstallLinkKitLibrary(cbrt,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(mi.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mibstore.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(miline.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mipointer.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(misprite.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mispritest.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mistruct.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(miinitext.c,$(LINKKITDIR)/include)
+
+LinkSourceFile(cbrt.c,../mi)
+LinkSourceFile(miarc.c,../mi)
+LinkSourceFile(mibitblt.c,../mi)
+LinkSourceFile(mibstorest.h,../mi)
+LinkSourceFile(mibstore.c,../mi)
+LinkSourceFile(mibstore.h,../mi)
+LinkSourceFile(miclipn.c,../mi)
+LinkSourceFile(micursor.c,../mi)
+LinkSourceFile(midash.c,../mi)
+LinkSourceFile(midispcur.c,../mi)
+LinkSourceFile(mieq.c,../mi)
+LinkSourceFile(mifillarc.c,../mi)
+LinkSourceFile(mifillarc.h,../mi)
+LinkSourceFile(mifillrct.c,../mi)
+LinkSourceFile(mifpolycon.c,../mi)
+LinkSourceFile(mifpoly.h,../mi)
+LinkSourceFile(migc.c,../mi)
+LinkSourceFile(migc.h,../mi)
+LinkSourceFile(miglblt.c,../mi)
+LinkSourceFile(miinitext.c,../mi)
+LinkSourceFile(miline.h,../mi)
+LinkSourceFile(mipointer.c,../mi)
+LinkSourceFile(mipointer.h,../mi)
+LinkSourceFile(mipointrst.h,../mi)
+LinkSourceFile(mipolycon.c,../mi)
+LinkSourceFile(mipolygen.c,../mi)
+LinkSourceFile(mipolypnt.c,../mi)
+LinkSourceFile(mipolyrect.c,../mi)
+LinkSourceFile(mipolyseg.c,../mi)
+LinkSourceFile(mipolytext.c,../mi)
+LinkSourceFile(mipolyutil.c,../mi)
+LinkSourceFile(mipoly.c,../mi)
+LinkSourceFile(mipoly.h,../mi)
+LinkSourceFile(mipushpxl.c,../mi)
+LinkSourceFile(miscanfill.h,../mi)
+LinkSourceFile(miscrinit.c,../mi)
+LinkSourceFile(mispans.c,../mi)
+LinkSourceFile(mispans.h,../mi)
+LinkSourceFile(mispritest.h,../mi)
+LinkSourceFile(misprite.c,../mi)
+LinkSourceFile(misprite.h,../mi)
+LinkSourceFile(mistruct.h,../mi)
+LinkSourceFile(mivalidate.h,../mi)
+LinkSourceFile(miwideline.c,../mi)
+LinkSourceFile(miwideline.h,../mi)
+LinkSourceFile(miwindow.c,../mi)
+LinkSourceFile(mizerarc.c,../mi)
+LinkSourceFile(mizerarc.h,../mi)
+LinkSourceFile(mizerline.c,../mi)
+LinkSourceFile(mi.h,../mi)
+
+DependTarget()

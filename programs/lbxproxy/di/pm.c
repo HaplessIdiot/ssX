@@ -1,4 +1,4 @@
-/* $TOG: pm.c /main/23 1997/09/12 14:31:00 barstow $ */
+/* $TOG: pm.c /main/24 1997/11/07 10:07:15 barstow $ */
 
 /*
 Copyright (c) 1996  X Consortium
@@ -319,7 +319,7 @@ PMprocessMessages (iceConn, clientData, opcode, length,
 	char *authName = NULL, *authData = NULL;
 	int authLen;
 	char * colon;
-	char * fqdn;
+	char * tmpAddress = NULL;
 	
 	CHECK_AT_LEAST_SIZE (iceConn, PMopcode, opcode,
 	    length, SIZEOF (pmGetProxyAddrMsg), IceFatalToProtocol);
@@ -384,9 +384,10 @@ PMprocessMessages (iceConn, clientData, opcode, length,
 	    *colon = ':';
 
 	    if (hostent && hostent->h_name) {
-		serverAddress = (char *) realloc (serverAddress, 
-			strlen (hostent->h_name) + strlen (colon) + 1);
-		(void) sprintf (serverAddress, "%s%s", hostent->h_name, colon);
+		tmpAddress = (char *) malloc (strlen (hostent->h_name) + 
+					      strlen (colon) + 1);
+		(void) sprintf (tmpAddress, "%s%s", hostent->h_name, colon);
+	        serverAddress = tmpAddress;
 	    }
 	}
 	display_name = serverAddress;
@@ -466,6 +467,8 @@ PMprocessMessages (iceConn, clientData, opcode, length,
 	    free (authName);
 	if (authData)
 	    free (authData);
+	if (tmpAddress)
+	    free (tmpAddress);
 
 	break;
     }

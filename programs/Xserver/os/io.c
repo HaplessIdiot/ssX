@@ -45,8 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c /main/72 1996/12/27 15:40:56 rws $ */
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.14 1996/12/31 07:08:46 dawes Exp $ */
+/* $TOG: io.c /main/73 1997/10/16 14:08:19 kaleb $ */
 /*****************************************************************
  * i/o functions
  *
@@ -54,6 +53,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.15 1997/01/18 06:58:00 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -197,7 +197,20 @@ OsCommPtr AvailableInput = (OsCommPtr)NULL;
 #define YieldControlDeath()			\
         { timesThisConnection = 0; }
 
-#if defined(LBX) || defined(LBX_COMPAT)
+#ifdef hpux_not_tog
+#define LBX_NEED_OLD_SYMBOL_FOR_LOADABLES
+#endif
+
+#ifdef LBX
+#ifdef LBX_NEED_OLD_SYMBOL_FOR_LOADABLES
+#undef ReadRequestFromClient
+int
+ReadRequestFromClient(client)
+    ClientPtr client;
+{
+    return (*client->readRequest)(client);
+}
+#endif
 int
 StandardReadRequestFromClient(client)
     ClientPtr client;
@@ -769,192 +782,6 @@ SkipRequests(req, client, numskipped)
 static int padlength[4] = {0, 3, 2, 1};
 
  /********************
- * FlushClient()
- *    If the client isn't keeping up with us, then we try to continue
- *    buffering the data and set the apropriate bit in ClientsWritable
- *    (which is used by WaitFor in the select).  If the connection yields
- *    a permanent error, or we can't allocate any more space, we then
- *    close the connection.
- *
- **********************/
-
-int
-#ifdef LBX
-StandardFlushClient(who, oc, extraBuf, extraCount)
-#else
-FlushClient(who, oc, extraBuf, extraCount)
-#endif
-    ClientPtr who;
-    OsCommPtr oc;
-    char *extraBuf;
-    int extraCount; /* do not modify... returned below */
-{
-    register ConnectionOutputPtr oco = oc->output;
-    int connection = oc->fd;
-    XtransConnInfo trans_conn = oc->trans_conn;
-    struct iovec iov[3];
-    static char padBuffer[3];
-    long written;
-    long padsize;
-    long notWritten;
-    long todo;
-
-    if (!oco)
-	return 0;
-    written = 0;
-    padsize = padlength[extraCount & 3];
-    notWritten = oco->count + extraCount + padsize;
-    todo = notWritten;
-    while (notWritten) {
-	long before = written;	/* amount of whole thing written */
-	long remain = todo;	/* amount to try this time, <= notWritten */
-	int i = 0;
-	long len;
-
-	/* You could be very general here and have "in" and "out" iovecs
-	 * and write a loop without using a macro, but what the heck.  This
-	 * translates to:
-	 *
-	 *     how much of this piece is new?
-	 *     if more new then we are trying this time, clamp
-	 *     if nothing new
-	 *         then bump down amount already written, for next piece
-	 *         else put new stuff in iovec, will need all of next piece
-	 *
-	 * Note that todo had better be at least 1 or else we'll end up
-	 * writing 0 iovecs.
-	 */
-#define InsertIOV(pointer, length) \
-	len = (length) - before; \
-	if (len > remain) \
-	    len = remain; \
-	if (len <= 0) { \
-	    before = (-len); \
-	} else { \
-	    iov[i].iov_len = len; \
-	    iov[i].iov_base = (pointer) + before; \
-	    i++; \
-	    remain -= len; \
-	    before = 0; \
-	}
-
-	InsertIOV ((char *)oco->buf, oco->count)
-	InsertIOV (extraBuf, extraCount)
-	InsertIOV (padBuffer, padsize)
-
-	errno = 0;
-	if (trans_conn && (len = _XSERVTransWritev(trans_conn, iov, i)) >= 0)
-	{
-	    written += len;
-	    notWritten -= len;
-	    todo = notWritten;
-	}
-	else if (ETEST(errno)
-#ifdef SUNSYSV /* check for another brain-damaged OS bug */
-		 || (errno == 0)
-#endif
-#ifdef EMSGSIZE /* check for another brain-damaged OS bug */
-		 || ((errno == EMSGSIZE) && (todo == 1))
-#endif
-		)
-	{
-	    /* If we've arrived here, then the client is stuffed to the gills
-	       and not ready to accept more.  Make a note of it and buffer
-	       the rest. */
-	    FD_SET(connection, &ClientsWriteBlocked);
-	    AnyClientsWriteBlocked = TRUE;
-
-	    if (written < oco->count)
-	    {
-		if (written > 0)
-		{
-		    oco->count -= written;
-		    memmove((char *)oco->buf,
-			    (char *)oco->buf + written,
-			  oco->count);
-		    written = 0;
-		}
-	    }
-	    else
-	    {
-		written -= oco->count;
-		oco->count = 0;
-	    }
-
-	    if (notWritten > oco->size)
-	    {
-		unsigned char *obuf;
-
-		obuf = (unsigned char *)xrealloc(oco->buf,
-						 notWritten + BUFSIZE);
-		if (!obuf)
-		{
-		    _XSERVTransDisconnect(oc->trans_conn);
-		    _XSERVTransClose(oc->trans_conn);
-		    oc->trans_conn = NULL;
-		    MarkClientException(who);
-		    oco->count = 0;
-		    return(-1);
-		}
-		oco->size = notWritten + BUFSIZE;
-		oco->buf = obuf;
-	    }
-
-	    /* If the amount written extended into the padBuffer, then the
-	       difference "extraCount - written" may be less than 0 */
-	    if ((len = extraCount - written) > 0)
-		memmove ((char *)oco->buf + oco->count,
-			 extraBuf + written,
-		       len);
-
-	    oco->count = notWritten; /* this will include the pad */
-	    /* return only the amount explicitly requested */
-	    return extraCount;
-	}
-#ifdef EMSGSIZE /* check for another brain-damaged OS bug */
-	else if (errno == EMSGSIZE)
-	{
-	    todo >>= 1;
-	}
-#endif
-	else
-	{
-	    if (oc->trans_conn)
-	    {
-		_XSERVTransDisconnect(oc->trans_conn);
-		_XSERVTransClose(oc->trans_conn);
-		oc->trans_conn = NULL;
-	    }
-	    MarkClientException(who);
-	    oco->count = 0;
-	    return(-1);
-	}
-    }
-
-    /* everything was flushed out */
-    oco->count = 0;
-    /* check to see if this client was write blocked */
-    if (AnyClientsWriteBlocked)
-    {
-	FD_CLR(oc->fd, &ClientsWriteBlocked);
- 	if (! XFD_ANYSET(&ClientsWriteBlocked))
-	    AnyClientsWriteBlocked = FALSE;
-    }
-    if (oco->size > BUFWATERMARK)
-    {
-	xfree(oco->buf);
-	xfree(oco);
-    }
-    else
-    {
-	oco->next = FreeOutputs;
-	FreeOutputs = oco;
-    }
-    oc->output = (ConnectionOutputPtr)NULL;
-    return extraCount; /* return only the amount explicitly requested */
-}
-
- /********************
  * FlushAllOutput()
  *    Flush all clients with output.  However, if some client still
  *    has input in the queue (more requests), then don't flush.  This
@@ -1146,6 +973,205 @@ WriteToClient (who, count, buf)
     memmove((char *)oco->buf + oco->count, buf, count);
     oco->count += count + padBytes;
     return(count);
+}
+
+ /********************
+ * FlushClient()
+ *    If the client isn't keeping up with us, then we try to continue
+ *    buffering the data and set the apropriate bit in ClientsWritable
+ *    (which is used by WaitFor in the select).  If the connection yields
+ *    a permanent error, or we can't allocate any more space, we then
+ *    close the connection.
+ *
+ **********************/
+
+#ifdef LBX
+#ifdef LBX_NEED_OLD_SYMBOL_FOR_LOADABLES
+#undef FlushClient
+int
+FlushClient(who, oc, extraBuf, extraCount)
+    ClientPtr who;
+    OsCommPtr oc;
+    char *extraBuf;
+    int extraCount;
+{
+    return (*oc->Flush)(who, oc, extraBuf, extraCount);
+}
+#endif
+int
+StandardFlushClient(who, oc, extraBuf, extraCount)
+#else
+int
+FlushClient(who, oc, extraBuf, extraCount)
+#endif
+    ClientPtr who;
+    OsCommPtr oc;
+    char *extraBuf;
+    int extraCount; /* do not modify... returned below */
+{
+    register ConnectionOutputPtr oco = oc->output;
+    int connection = oc->fd;
+    XtransConnInfo trans_conn = oc->trans_conn;
+    struct iovec iov[3];
+    static char padBuffer[3];
+    long written;
+    long padsize;
+    long notWritten;
+    long todo;
+
+    if (!oco)
+	return 0;
+    written = 0;
+    padsize = padlength[extraCount & 3];
+    notWritten = oco->count + extraCount + padsize;
+    todo = notWritten;
+    while (notWritten) {
+	long before = written;	/* amount of whole thing written */
+	long remain = todo;	/* amount to try this time, <= notWritten */
+	int i = 0;
+	long len;
+
+	/* You could be very general here and have "in" and "out" iovecs
+	 * and write a loop without using a macro, but what the heck.  This
+	 * translates to:
+	 *
+	 *     how much of this piece is new?
+	 *     if more new then we are trying this time, clamp
+	 *     if nothing new
+	 *         then bump down amount already written, for next piece
+	 *         else put new stuff in iovec, will need all of next piece
+	 *
+	 * Note that todo had better be at least 1 or else we'll end up
+	 * writing 0 iovecs.
+	 */
+#define InsertIOV(pointer, length) \
+	len = (length) - before; \
+	if (len > remain) \
+	    len = remain; \
+	if (len <= 0) { \
+	    before = (-len); \
+	} else { \
+	    iov[i].iov_len = len; \
+	    iov[i].iov_base = (pointer) + before; \
+	    i++; \
+	    remain -= len; \
+	    before = 0; \
+	}
+
+	InsertIOV ((char *)oco->buf, oco->count)
+	InsertIOV (extraBuf, extraCount)
+	InsertIOV (padBuffer, padsize)
+
+	errno = 0;
+	if (trans_conn && (len = _XSERVTransWritev(trans_conn, iov, i)) >= 0)
+	{
+	    written += len;
+	    notWritten -= len;
+	    todo = notWritten;
+	}
+	else if (ETEST(errno)
+#ifdef SUNSYSV /* check for another brain-damaged OS bug */
+		 || (errno == 0)
+#endif
+#ifdef EMSGSIZE /* check for another brain-damaged OS bug */
+		 || ((errno == EMSGSIZE) && (todo == 1))
+#endif
+		)
+	{
+	    /* If we've arrived here, then the client is stuffed to the gills
+	       and not ready to accept more.  Make a note of it and buffer
+	       the rest. */
+	    FD_SET(connection, &ClientsWriteBlocked);
+	    AnyClientsWriteBlocked = TRUE;
+
+	    if (written < oco->count)
+	    {
+		if (written > 0)
+		{
+		    oco->count -= written;
+		    memmove((char *)oco->buf,
+			    (char *)oco->buf + written,
+			  oco->count);
+		    written = 0;
+		}
+	    }
+	    else
+	    {
+		written -= oco->count;
+		oco->count = 0;
+	    }
+
+	    if (notWritten > oco->size)
+	    {
+		unsigned char *obuf;
+
+		obuf = (unsigned char *)xrealloc(oco->buf,
+						 notWritten + BUFSIZE);
+		if (!obuf)
+		{
+		    _XSERVTransDisconnect(oc->trans_conn);
+		    _XSERVTransClose(oc->trans_conn);
+		    oc->trans_conn = NULL;
+		    MarkClientException(who);
+		    oco->count = 0;
+		    return(-1);
+		}
+		oco->size = notWritten + BUFSIZE;
+		oco->buf = obuf;
+	    }
+
+	    /* If the amount written extended into the padBuffer, then the
+	       difference "extraCount - written" may be less than 0 */
+	    if ((len = extraCount - written) > 0)
+		memmove ((char *)oco->buf + oco->count,
+			 extraBuf + written,
+		       len);
+
+	    oco->count = notWritten; /* this will include the pad */
+	    /* return only the amount explicitly requested */
+	    return extraCount;
+	}
+#ifdef EMSGSIZE /* check for another brain-damaged OS bug */
+	else if (errno == EMSGSIZE)
+	{
+	    todo >>= 1;
+	}
+#endif
+	else
+	{
+	    if (oc->trans_conn)
+	    {
+		_XSERVTransDisconnect(oc->trans_conn);
+		_XSERVTransClose(oc->trans_conn);
+		oc->trans_conn = NULL;
+	    }
+	    MarkClientException(who);
+	    oco->count = 0;
+	    return(-1);
+	}
+    }
+
+    /* everything was flushed out */
+    oco->count = 0;
+    /* check to see if this client was write blocked */
+    if (AnyClientsWriteBlocked)
+    {
+	FD_CLR(oc->fd, &ClientsWriteBlocked);
+ 	if (! XFD_ANYSET(&ClientsWriteBlocked))
+	    AnyClientsWriteBlocked = FALSE;
+    }
+    if (oco->size > BUFWATERMARK)
+    {
+	xfree(oco->buf);
+	xfree(oco);
+    }
+    else
+    {
+	oco->next = FreeOutputs;
+	FreeOutputs = oco;
+    }
+    oc->output = (ConnectionOutputPtr)NULL;
+    return extraCount; /* return only the amount explicitly requested */
 }
 
 ConnectionInputPtr

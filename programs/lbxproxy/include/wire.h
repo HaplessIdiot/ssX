@@ -1,4 +1,4 @@
-/* $TOG: wire.h /main/17 1997/09/12 14:29:09 barstow $ */
+/* $TOG: wire.h /main/18 1997/10/16 13:00:30 barstow $ */
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -56,9 +56,11 @@ typedef struct _extinfo *ExtensionInfoPtr;
 
 /*
  * MAXTRANSPORTS is the maximum number of transports or listen
- * ports that a proxy can support.  See connection.c. 
+ * ports that a proxy can support.  The number is determine at compile
+ * by the xtrans library but there is no public interface to this
+ * number.  See lib/xtrans/Xtrans.c for more information.
  */
-#define MAXTRANSPORTS	6
+#define MAXTRANSPORTS	13
 
 /*
  * The maximum number of options that is negotiable.

@@ -1,4 +1,4 @@
-.\" $XConsortium: xcmsdb.man,v 1.9 94/04/17 20:39:01 gildea Exp $
+.\" $TOG: xcmsdb.man /main/12 1997/11/04 20:56:22 kaleb $
 .\" Copyright 1990, Tektronix Inc.
 .\" Copyright (c) 1993  X Consortium
 .\" 
@@ -24,7 +24,7 @@
 .\" be used in advertising or otherwise to promote the sale, use or other 
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
-.TH XCMSDB 1 "Release 6" "X Version 11"
+.TH XCMSDB 1 "Release 6.4" "X Version 11"
 .SH NAME
 xcmsdb \- Device Color Characterization utility for X Color Management System
 .SH SYNOPSIS
