@@ -1,4 +1,6 @@
-XFree86 4.1.99.2 (xx August 2001)
+XFree86 4.1.99.2 (xx September 2001)
+ 262. Fix a fontenc-related problem that can cause the TrueType backend
+      to crash (#4909, Juliusz Chroboczek).
  261. Fix DPMS support for I128 driver (Robin Cutshaw).
  260. Add OSVErrorF for Cygwin/XFree86 (#4923, Harold Hunt).
  259. Support Trident Cyber9320 ISA chip (Alan Hourihane).
@@ -13775,4 +13777,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1928 2001/08/30 21:26:01 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1929 2001/09/03 03:23:03 robin Exp $
