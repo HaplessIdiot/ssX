@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.32 2002/08/01 00:30:34 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.33 2003/03/23 04:56:02 mvojkovi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -764,18 +764,53 @@ void PanoramiXConsolidate(void)
     int 	i, j, k;
     VisualPtr   pVisual, pVisual2;
     ScreenPtr   pScreen, pScreen2;
+    DepthPtr    pDepth, pDepth2;
     PanoramiXRes *root, *defmap, *saver;
+    Bool        foundDepth, missingDepth;
 
     if(!PanoramiXVisualTable)
 	PanoramiXVisualTable = xcalloc(256 * MAXSCREENS, sizeof(XID));
 
     pScreen = screenInfo.screens[0];
     pVisual = pScreen->visuals; 
+    pDepth  = pScreen->allowedDepths;
 
     PanoramiXNumDepths = 0;
     PanoramiXDepths = xcalloc(pScreen->numDepths,sizeof(DepthRec));
     PanoramiXNumVisuals = 0;
     PanoramiXVisuals = xcalloc(pScreen->numVisuals,sizeof(VisualRec));
+
+    for (i = 0; i < pScreen->numDepths; i++, pDepth++) {
+        missingDepth = FALSE;
+        for (j = 1; j < PanoramiXNumScreens; j++) {
+             pScreen2 = screenInfo.screens[j];
+             pDepth2 = pScreen2->allowedDepths;
+
+             foundDepth = FALSE;
+             for (k = 0; k < pScreen2->numDepths; k++, pDepth2++) {
+                 if(pDepth2->depth == pDepth->depth) {
+                     foundDepth = TRUE;
+                     break;
+                 }
+             }
+
+             if(!foundDepth) {
+                missingDepth = TRUE;
+                break;
+             }
+        }
+          
+        if(!missingDepth) {
+            PanoramiXDepths[PanoramiXNumDepths].depth = pDepth->depth;
+            PanoramiXDepths[PanoramiXNumDepths].numVids = 0;
+            if(pDepth->numVids)
+                PanoramiXDepths[PanoramiXNumDepths].vids = 
+                      xalloc(sizeof(VisualID) * pDepth->numVids);      
+            else
+                PanoramiXDepths[PanoramiXNumDepths].vids = NULL;
+            PanoramiXNumDepths++;
+        }
+    }
 
     for (i = 0; i < pScreen->numVisuals; i++, pVisual++) {
 	PanoramiXVisualTable[pVisual->vid * MAXSCREENS] = pVisual->vid;
@@ -796,23 +831,12 @@ void PanoramiXConsolidate(void)
 		    (pVisual->offsetGreen == pVisual2->offsetGreen) &&
 		    (pVisual->offsetBlue == pVisual2->offsetBlue))
 		{
-		    Bool AlreadyUsed = FALSE;
-#if 0
-/* Open GL should do this reduction, not us */
-		    for (l = 0; l < 256; l++) {
-			if (pVisual2->vid == 
-				PanoramiXVisualTable[(l * MAXSCREENS) + j]) 
-			{	
-			    AlreadyUsed = TRUE;
-			    break;
-			}
-		    }
-#endif
-		    if (!AlreadyUsed) {
+                /* We merely assign the first visual that matches.  OpenGL
+                   will need to get involved at some point if you want
+                   match GLX visuals */
 			PanoramiXVisualTable[(pVisual->vid * MAXSCREENS) + j] =
 					 pVisual2->vid;
 			break;
-		    }
 		}
 	    }
 	}
@@ -827,8 +851,6 @@ void PanoramiXConsolidate(void)
 
 	/* if it does, make sure it's in the list of supported depths and visuals */
 	if(PanoramiXVisualTable[pVisual->vid * MAXSCREENS]) {
-	    Bool GotIt = FALSE;
-
 	    PanoramiXVisuals[PanoramiXNumVisuals].vid = pVisual->vid;
 	    PanoramiXVisuals[PanoramiXNumVisuals].class = pVisual->class;
 	    PanoramiXVisuals[PanoramiXNumVisuals].bitsPerRGBValue = pVisual->bitsPerRGBValue;
@@ -846,18 +868,9 @@ void PanoramiXConsolidate(void)
 	        if (PanoramiXDepths[j].depth == pVisual->nplanes) {
 		    PanoramiXDepths[j].vids[PanoramiXDepths[j].numVids] = pVisual->vid;
 		    PanoramiXDepths[j].numVids++;
-		    GotIt = TRUE;
 		    break;
 		}	
 	    }   
-
-	    if (!GotIt) {
-		PanoramiXDepths[PanoramiXNumDepths].depth = pVisual->nplanes;
-		PanoramiXDepths[PanoramiXNumDepths].numVids = 1;
-		PanoramiXDepths[PanoramiXNumDepths].vids = xalloc(sizeof(VisualID) * 256);
-	        PanoramiXDepths[PanoramiXNumDepths].vids[0] = pVisual->vid;
-		PanoramiXNumDepths++;
-	    } 
 	}
     } 
 
