@@ -458,6 +458,7 @@
 #define PCI_CHIP_PERMEDIA2	0x0007
 #define PCI_CHIP_GAMMA		0x0008
 #define PCI_CHIP_PERMEDIA2V	0x0009
+#define PCI_CHIP_PERMEDIA3	0x000A
 
 /* S3 */
 #define PCI_CHIP_PLATO		0x0551
@@ -1229,6 +1230,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_PERMEDIA2,	"GLINT Permedia 2",0},
 				{PCI_CHIP_GAMMA,	"GLINT Gamma",0},
 				{PCI_CHIP_PERMEDIA2V,	"GLINT Permedia 2v",0},
+				{PCI_CHIP_PERMEDIA3,	"GLINT Permedia 3",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_AVANCE_2, {
 				{0x0000,		NULL,0}}},

@@ -1,4 +1,5 @@
 XFree86 4.0b (?? April 2000)
+ 141. Add Permedia3 support to the glint driver (Sven Luther).
  140. Fix XvPutImage in the client libs so that it can use the BIG-REQUESTS
       extension (Mark Vojkovich).
  139. Fixed xf4bpp for devPrivates in PixmapRec. (Egbert Eich).
