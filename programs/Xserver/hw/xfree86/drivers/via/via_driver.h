@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.h,v 1.1 2003/04/15 15:35:47 alanh Exp $ */
 #ifndef _VIA_DRIVER_H
 #define _VIA_DRIVER_H
 
@@ -264,9 +264,6 @@ void VIARefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 
 /* In via_dga.c */
 Bool VIADGAInit(ScreenPtr);
-
-/* In via_driver.c */
-void FillGraphicInfo(ScrnInfoPtr pScrn);
 
 /* In via_i2c.c */
 Bool VIAI2CInit(ScrnInfoPtr pScrn);

@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.2 2003/04/16 22:29:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.3 2003/04/17 13:43:07 alanh Exp $ */
 #include "xf86RAC.h"
 #include "shadowfb.h"
 
@@ -279,29 +279,6 @@ static XF86ModuleVersionInfo VIAVersRec = {
 
 XF86ModuleData viaModuleData = {&VIAVersRec, VIASetup, NULL};
 
-void FillGraphicInfo(ScrnInfoPtr pScrn)
-{
-    VIAPtr pVia = VIAPTR(pScrn);
-    VIABIOSInfoPtr pBIOSInfo = pVia->pBIOSInfo;
-
-	gVIAGraphicInfo.TotalVRAM = pVia->videoRambytes;
-	gVIAGraphicInfo.VideoHeapBase = pVia->FBFreeStart;
-	gVIAGraphicInfo.VideoHeapEnd = pVia->FBFreeEnd - 1;
-	gVIAGraphicInfo.GEAddress = (CARD32 *)pVia->MapBase;
-	gVIAGraphicInfo.VidMMAddress = (CARD32 *)pVia->VidMapBase;
-	gVIAGraphicInfo.dwWidth = pBIOSInfo->CrtcHDisplay;
-	gVIAGraphicInfo.dwHeight = pBIOSInfo->CrtcVDisplay;
-	gVIAGraphicInfo.dwBPP = pScrn->bitsPerPixel;
-	gVIAGraphicInfo.dwPitch = (((pScrn->virtualX) + 15) & ~15) * (pScrn->bitsPerPixel) / 8;
-	gVIAGraphicInfo.dwRefreshRate = (unsigned long)pBIOSInfo->FoundRefresh;
-	gVIAGraphicInfo.dwModeWidth = pBIOSInfo->CrtcHDisplay;
-	gVIAGraphicInfo.dwModeHeight = pBIOSInfo->CrtcVDisplay;
-	gVIAGraphicInfo.dwDVIOn = pBIOSInfo->DVIAttach;
-	gVIAGraphicInfo.dwExpand = pBIOSInfo->scaleY;
-	gVIAGraphicInfo.dwPanelWidth = pBIOSInfo->panelX;
-	gVIAGraphicInfo.dwPanelHeight = pBIOSInfo->panelY;
-}
-
 static pointer VIASetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
@@ -335,6 +312,30 @@ static pointer VIASetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
+
+static void
+FillGraphicInfo(ScrnInfoPtr pScrn)
+{
+    VIAPtr pVia = VIAPTR(pScrn);
+    VIABIOSInfoPtr pBIOSInfo = pVia->pBIOSInfo;
+
+	gVIAGraphicInfo.TotalVRAM = pVia->videoRambytes;
+	gVIAGraphicInfo.VideoHeapBase = pVia->FBFreeStart;
+	gVIAGraphicInfo.VideoHeapEnd = pVia->FBFreeEnd - 1;
+	gVIAGraphicInfo.GEAddress = (CARD32 *)pVia->MapBase;
+	gVIAGraphicInfo.VidMMAddress = (CARD32 *)pVia->VidMapBase;
+	gVIAGraphicInfo.dwWidth = pBIOSInfo->CrtcHDisplay;
+	gVIAGraphicInfo.dwHeight = pBIOSInfo->CrtcVDisplay;
+	gVIAGraphicInfo.dwBPP = pScrn->bitsPerPixel;
+	gVIAGraphicInfo.dwPitch = (((pScrn->virtualX) + 15) & ~15) * (pScrn->bitsPerPixel) / 8;
+	gVIAGraphicInfo.dwRefreshRate = (unsigned long)pBIOSInfo->FoundRefresh;
+	gVIAGraphicInfo.dwModeWidth = pBIOSInfo->CrtcHDisplay;
+	gVIAGraphicInfo.dwModeHeight = pBIOSInfo->CrtcVDisplay;
+	gVIAGraphicInfo.dwDVIOn = pBIOSInfo->DVIAttach;
+	gVIAGraphicInfo.dwExpand = pBIOSInfo->scaleY;
+	gVIAGraphicInfo.dwPanelWidth = pBIOSInfo->panelX;
+	gVIAGraphicInfo.dwPanelHeight = pBIOSInfo->panelY;
+}
 
 static int
 WaitIdleCLE266(VIAPtr pVia)
