@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.24 2000/06/24 02:26:39 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.25 2000/06/24 16:14:07 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -275,7 +275,7 @@ InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
 
 XCOMM libOSmesa needs libGL, so build it now
 
-#if !GlxUseSGISI && (!GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
+#if BuildXF86DRI && !GlxUseSGISI && (!GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
 OSMESASUBDIRS = mesa/src/OSmesa
 MakeSubdirs($(OSMESASUBDIRS))
 #endif

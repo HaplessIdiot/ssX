@@ -1,4 +1,5 @@
 XFree86 4.0g (xx June 2000)
+ 386. Don't build a non-DRI libOSMesa (Takaaki Nomura).
  385. Add generic DGA support to SiS driver (Alan Hourihane).
  386. Add more support structure for Alpha/DRI (not enabled yet though)
       (Alan Hourihane).
@@ -10751,4 +10752,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1214 2000/06/26 05:41:30 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1215 2000/06/26 10:26:12 alanh Exp $
