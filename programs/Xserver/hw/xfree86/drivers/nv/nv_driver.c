@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.81 2002/01/04 21:22:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.82 2002/01/30 01:35:02 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1129,13 +1129,11 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue); 
     }
 
-#if 0
     /* Doesn't work */
     if (xf86ReturnOptValBool(pNv->Options, OPTION_FLAT_PANEL, FALSE)) {
 	pNv->FlatPanel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "using flat panel\n");
     }
-#endif
 
     if (xf86GetOptValInteger(pNv->Options, OPTION_CRTC_NUMBER, 
                                 &pNv->forceCRTC)) 
@@ -1320,6 +1318,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         case NV_ARCH_04:
         case NV_ARCH_10:
         case NV_ARCH_20:
+        default:
             pNv->FbUsableSize -= 128 * 1024;
             break;
     }

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.11 2001/10/30 19:38:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.12 2002/01/30 01:35:03 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -209,8 +209,8 @@ NVIsSecond (ScrnInfoPtr pScrn)
        pNv->SecondCRTC = FALSE;
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-               "Detected %s CRTC controller being used\n",
-               pNv->SecondCRTC ? "second" : "first");
+               "Detected CRTC controller %i being used\n",
+               pNv->SecondCRTC ? 1 : 0);
 
     if(pNv->forceCRTC != -1) {
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -323,7 +323,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
     switch(pNv->Chipset & 0x0ff0) {
     case 0x0110:
-        if(pNv->Mobile)
+        if((pNv->Chipset & 0x0fff) == 0x0112)
             pNv->SecondCRTC = TRUE;
         break;
     case 0x0170:

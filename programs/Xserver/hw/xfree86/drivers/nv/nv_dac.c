@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.15 2001/12/11 19:42:01 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.16 2002/01/30 01:35:02 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -75,7 +75,7 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        vertStart = vertTotal - 3;  
        vertEnd = vertTotal - 2;
        vertBlankStart = vertStart;
-       horizStart = horizTotal -3;
+       horizStart = horizTotal - 3;
        horizEnd = horizTotal - 2;   
        horizBlankEnd = horizTotal + 4;    
     }
@@ -167,10 +167,10 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
                            mode->Clock,
 			   mode->Flags);
 
-    nvReg->scale = pNv->riva.PRAMDAC[0x00000848/4] & 0xff000ff;
+    nvReg->scale = pNv->riva.PRAMDAC[0x00000848/4] & 0xfff000ff;
     if(pNv->FlatPanel) {
        nvReg->pixel |= (1 << 7);
-       nvReg->scale |= (2 << 8);
+       nvReg->scale |= (1 << 8) ;
     }
     if(pNv->SecondCRTC) {
        nvReg->head  = 0;
@@ -217,7 +217,7 @@ NVDACSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, NVRegPtr nvReg,
     pNv->riva.UnloadStateExt(&pNv->riva, nvReg);
 
     if((pNv->Chipset & 0x0ff0) == 0x0110) 
-       nvReg->crtcOwner = pNv->Mobile ? 3 : 0;
+       nvReg->crtcOwner = ((pNv->Chipset & 0x0fff) == 0x0112) ? 3 : 0;
 }
 
 #define DEPTH_SHIFT(val, w) ((val << (8 - w)) | (val >> ((w << 1) - 8)))
