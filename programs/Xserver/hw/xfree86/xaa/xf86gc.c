@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.0 1996/11/18 13:22:19 dawes Exp $ */
 
 /***********************************************************
 
@@ -526,6 +526,8 @@ xf86ValidateGC(pGC, changes, pDrawable)
 		miDestroyGCOps (pGC->ops);
 #endif
 	    *(pGC->ops) = *newops;
+	    /* Make sure the devPrivate.val is correct! */
+	    pGC->ops->devPrivate.val = 2;
 	    /*
 	     * These are special, the cfb logic relies on MatchCommon
 	     * to select the right functions for the common case, and
@@ -566,8 +568,20 @@ xf86ValidateGC(pGC, changes, pDrawable)
     if (new_rrop) {
         new_line = TRUE;
         new_text = TRUE;
+        /*
+         * The accelerated text functions rely on cfb fall-back functions.
+         * These are set in the xf86AccelInfoRec, not pGC->ops, so we
+         * must make sure that the cfb text function is initialized.
+         * Same goes for FillRect and FillSpans.
+         */
+        if (!match_common)
+            new_cfb_text = TRUE;
         new_fillspans = TRUE;
+        if (!match_common)
+            new_cfb_fillspans = TRUE;
         new_fillarea = TRUE;
+        if (!match_common)
+            new_cfb_fillarea = TRUE;
     }
 
     if (new_line || match_common) {

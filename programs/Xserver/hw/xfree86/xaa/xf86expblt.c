@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.0 1996/11/18 13:22:13 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -480,7 +480,6 @@ unsigned int *xf86DrawNonTETextScanline(base, glyphinfop, line, nglyph)
     UINT64_ASSIGN(bits, 0, 0);
     shift = 0;
     i = 0;
-    line = 0;
     while (i < nglyph) {
         /* Check whether the current glyph has bits for this scanline. */
         if (line >= glyphinfop[i].firstline
@@ -488,6 +487,9 @@ unsigned int *xf86DrawNonTETextScanline(base, glyphinfop, line, nglyph)
             UINT64_ORLEFTSHIFTEDINT(bits, glyphinfop[i].bitsp[line], shift);
         }
         shift += glyphinfop[i].width;
+        /*
+         * XXX This does not take into account overlapping characters.
+         */
         if (shift >= 32) {
             /* Write a 32-bit word. */
             WRITE_IN_BITORDER(base, UINT64_LOW32(bits));
@@ -880,6 +882,96 @@ static unsigned int *DrawTextScanlineWidth24(base, glyphp, line, nglyph)
         base += 3;
         nglyph -= 4;
         glyphp += 4;
+    }
+    return base;
+}
+
+/*
+ * Stipple bitmap data transfer. This requires the scanline to start
+ * with a horizontal stipple offset that is at a byte (multiple of 8 pixel)
+ * boundary in the stipple bitmap scanline.
+ * Source data access can be unaligned.
+ */
+ 
+#ifdef MSBFIRST
+unsigned int *xf86DrawStippleScanlineMSBFirst(base, src, srcwidth,
+stipplewidth, srcoffset, w)
+#else
+unsigned int *xf86DrawStippleScanline(base, src, srcwidth, stipplewidth,
+srcoffset, w)
+#endif
+    unsigned int *base;
+    unsigned char *src;		/* Pointer to stipple bitmap. */
+    int srcwidth;		/* Width of stipple bitmap in bytes. */
+    int stipplewidth;		/* Width of stipple in pixels. */
+    int srcoffset;		/* The offset in bytes into the stipple */
+    				/* of the first pixel. */
+    int w;			/* Width of scanline in pixels. */
+{
+    UINT64_DECLARE(bits);
+    int shift, i, sw;
+    unsigned char *srcp;
+
+    UINT64_ASSIGN(bits, 0, 0);
+    shift = 0;
+    i = 0;
+    sw = stipplewidth - srcoffset * 8;
+    srcp = src + srcoffset;
+    for (;;) {
+        int dw;
+        /*
+         * If we can add the whole stipple width, do so.
+         * If the stipple width is larger than the number of pixels left
+         * to draw, only add part of the stipple.
+         */
+        dw = min(w, sw);
+        if (dw >= 32) {
+            UINT64_ORLEFTSHIFTEDINT(bits, *((unsigned int *)srcp), shift);
+            shift += 32;
+            sw -= 32;
+            w -= 32;
+            srcp += 4;
+        }
+        else {
+            /* Make sure no source overrunning occurs. */
+            if (dw > 24) {
+                UINT64_ORLEFTSHIFTEDINT(bits, *(unsigned int *)srcp, shift);
+            }
+            else
+            if (dw > 16) {
+                unsigned int data;
+                data = *(unsigned short *)srcp +
+                    (*(unsigned char *)(srcp + 2) << 16);
+                UINT64_ORLEFTSHIFTEDINT(bits, data, shift);
+            }
+            else
+            if (dw > 8) {
+                UINT64_ORLEFTSHIFTEDINT(bits, *(unsigned short *)srcp, shift);
+            }
+            else {
+                UINT64_ORLEFTSHIFTEDINT(bits, *(unsigned char *)srcp, shift);
+            }
+            shift += dw;
+            sw = 0;
+            w -= dw;
+        }
+        if (shift >= 32) {
+            /* Write a 32-bit word. */
+            WRITE_IN_BITORDER(base, UINT64_LOW32(bits));
+            base++;
+            shift -= 32;
+            UINT64_SHIFTRIGHT32(bits);
+        }
+        if (w == 0)
+            break;
+        if (sw == 0) {
+            srcp = src;
+            sw = stipplewidth;
+        }
+    }
+    if (shift > 0) {
+        WRITE_IN_BITORDER(base, UINT64_LOW32(bits));
+        base++;
     }
     return base;
 }

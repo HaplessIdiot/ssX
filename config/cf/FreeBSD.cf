@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/10 1996/01/22 17:35:30 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.54 1996/10/16 14:28:22 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.55 1996/11/18 13:06:58 dawes Exp $
 
 #ifndef OSName
 #define OSName			FreeBSD 2.1.6
@@ -74,7 +74,7 @@ XCOMM operating system:  OSName
 #define GnuMallocLibrary	-lgnumalloc
 #endif
 
-#if OSMajorVersion >= 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
 /*
  * Note: the tk-4.1 package for FreeBSD doesn't have the static lib, so
  * you'll have to build it yourself, or change the definition of

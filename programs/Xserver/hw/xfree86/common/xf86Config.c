@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.104 1996/10/16 14:40:45 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.105 1996/11/18 13:11:02 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -80,7 +80,7 @@ static char   *fontPath = NULL;           /* font path */
 static char   *modulePath = NULL;	  /* module path */
 static int    pushToken = LOCK_TOKEN;
 static LexRec val;                        /* global return value */
-
+static char   DCerr;  
 static int scr_index = 0;
 
 #ifdef XF86SETUP
@@ -151,6 +151,24 @@ static CONFIG_RETURN_TYPE configMonitorSection(
 static CONFIG_RETURN_TYPE configDynamicModuleSection(
 #if NeedFunctionPrototypes
     void
+#endif
+);
+static char *xf86DCSaveLine(
+#if NeedFunctionPrototypes
+char *,
+int
+#endif
+);
+static char *xf86DCOption(
+#if NeedFunctionPrototypes
+char *,
+LexRec
+#endif
+);
+static char * xf86DCConcatOption(
+#if NeedFunctionPrototypes
+char *,
+char *
 #endif
 );
 #ifndef XF86SETUP
@@ -1798,8 +1816,11 @@ configDeviceSection()
   devp->s3MClk = 0;
   devp->s3RefClk = 0;
   devp->s3BlankDelay = -1;
+  devp->DCConfig = NULL;
+  devp->DCOptions = NULL;
 
   while ((token = xf86GetToken(DeviceTab)) != ENDSECTION) {
+    devp->DCConfig = xf86DCSaveLine(devp->DCConfig, token);
     switch (token) {
 
     case IDENTIFIER:
@@ -1902,7 +1923,8 @@ configDeviceSection()
 	i++;
       }
       if (xf86_OptionTab[i].token == -1)
-        xf86ConfigError("Unknown option string");
+        /*xf86ConfigError("Unknown option string");*/
+	devp->DCOptions = xf86DCOption(devp->DCOptions,val);
       break;
 
     case VIDEORAM:
@@ -2077,7 +2099,8 @@ configDeviceSection()
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
     default:
-      xf86ConfigError("Device section keyword expected");
+      if(DCerr)
+	xf86ConfigError("Device section keyword expected");
       break;
     }
   }
@@ -2630,6 +2653,7 @@ configScreenSection()
       dispp->defaultVisual = -1;
       OFLG_ZERO(&(dispp->options));
       OFLG_ZERO(&(dispp->xconfigFlag));
+      dispp->DCOptions = NULL;
 
       configDisplaySubsection(dispp);
       break;
@@ -2683,6 +2707,8 @@ configScreenSection()
 	  screen->textClockFreq = device_list[i].textClockValue;
 	  if (OFLG_ISSET(XCONFIG_VGABASE, &screen->xconfigFlag))
 	    screen->VGAbase = device_list[i].VGAbase;
+	  screen->DCConfig = device_list[i].DCConfig;
+	  screen->DCOptions = device_list[i].DCOptions;
 #ifdef XF86SETUP
 	  screen->device = (void *) &device_list[i];
 #endif
@@ -2845,6 +2871,7 @@ configScreenSection()
         if (OFLG_ISSET(i, &(dispp->xconfigFlag)))
           OFLG_SET(i, &(screen->xconfigFlag));
       }
+	screen->DCOptions = xf86DCConcatOption(screen->DCOptions,dispp->DCOptions);
 #ifdef XF86SETUP
       xf86setup_scrn_ndisps[driverno-SVGA] = numDisps;
       xf86setup_scrn_displays[driverno-SVGA] = dispList;
@@ -3076,7 +3103,7 @@ DispPtr disp;
 	i++;
       }
       if (xf86_OptionTab[i].token == -1)
-        xf86ConfigError("Unknown option string");
+      disp->DCOptions = xf86DCOption(disp->DCOptions,val);
       break;
 
     /* The following should really go in the S3 server */
@@ -3559,3 +3586,126 @@ xf86CheckMode(scrp, dispmp, monp, verbose)
 	return MODE_OK;
 }
 
+/*
+ * Save entire line from config file in memory area, if memory area
+ * does not exist allocate it. Set DCerr according to value of token.
+ * Return address of memory area.
+ */
+static char *xf86DCSaveLine(DCPointer,token)
+     char *DCPointer;
+     int token;
+{
+  static int len = 0; /* length of memory area where to store strings */
+  static int pos = 0; /* current position */
+  char *currpointer;  /* pointer to current position in memory area */
+  static int currline; /* lineno of line currently interpreted */
+  int addlen;         /* len to add to pos */
+
+  if(DCPointer == NULL){   /* initialize */
+    DCPointer = (char *)xalloc(4096);  /* initial size 4kB */
+    len = 4096;  
+    strcpy(DCPointer,configPath);
+    pos = strlen(DCPointer) + 1;
+    currline = -1;  /* no line yet */
+  }
+
+    if(configLineNo != currline)  /* new line */
+      {
+	currline = configLineNo; 
+	addlen = strlen(configBuf) + 1 + sizeof(int); /* string + lineno */
+	while ( (pos + addlen) >= len ){  /* not enough space? */
+	  DCPointer = (char *)xrealloc(DCPointer, (len + 4096));
+	  len += 4096;
+	}
+	currpointer = DCPointer + pos;  /* find current position */
+	*((int *)currpointer) = currline;   /* store lineno */
+	strcpy((currpointer + sizeof(int)),configBuf); /* store complete line*/
+	pos += addlen;                      /* goto end */
+	currpointer += addlen;
+	*(currpointer) = EOF;               /* mark end */
+      }
+  switch(token){
+  case STRING:
+  case DASH:
+  case NUMBER:
+  case COMMA:
+    break;
+  case ERROR_TOKEN:    /* if unknown token unset DCerr to ignore it  */
+    DCerr = 0;         /* and subsequent STRING, DASH, NUMBER, COMMA */
+    break;
+  default:             /* set to complain if a valid token is        */
+    DCerr = 1;         /* an followed by unwanted STRING etc.        */
+  }
+  return(DCPointer);      
+}
+
+/* 
+ * Store any unknown Option strings (contained in val.str)
+ * in a  memory are pointed to by pointer. If it doesn't 
+ * exist allocate it and return a pointer pointing to it
+ */
+
+static char *
+xf86DCOption(DCPointer, val)
+     char *DCPointer;
+     LexRec val;
+{
+  static int len = 0;
+  static int pos = 0;
+  int addlen;
+  char *currpointer;                   /* current position */
+
+  if (DCPointer == NULL){              /* First time: initialize */
+    DCPointer = (char *)xalloc(4096);       /* allocate enough space  */
+    strcpy(DCPointer,configPath);
+    pos = strlen(DCPointer) + 1;
+    len = 4096;                      /* and total length       */
+  } 
+
+  addlen = sizeof(int) + strlen(val.str) + 1;  /* token, lineno */  
+  while( (pos + addlen) >= len ){              /* reallocate if not enough */
+    DCPointer = (char *)xrealloc(DCPointer, (len + 4096));
+    len += 4096;
+  }
+  currpointer = DCPointer + pos;        
+  *(int *)currpointer=configLineNo;
+  strcpy(currpointer + sizeof(int),val.str);         /* store string */
+  pos += addlen;
+  *(currpointer + addlen) = EOF;                     /* mark end     */
+  return(DCPointer);
+}
+
+static char 
+* xf86DCConcatOption(Pointer1, Pointer2)
+char *Pointer1;
+char *Pointer2;
+{
+  int s1 = 0;
+  int s2 = 0;
+  int s3;
+  char *ptmp;
+
+  if(Pointer1)
+    while(*(Pointer1 + s1) != EOF){s1++;}
+  else if (Pointer2)
+    return Pointer2;
+  else return NULL;
+  if(Pointer2)
+    while(*(Pointer2 + s2) != EOF){s2++;}
+  else if (Pointer1)
+    return Pointer1;
+  else return NULL;
+  s3 = strlen(Pointer2) + 1;
+  s2 -= s3;
+
+  Pointer1 = (char *)xrealloc(Pointer1,s1+s2+1); 
+  ptmp = Pointer1 + s1;
+  Pointer2 += s3;
+  do{
+    *ptmp = *Pointer2;
+    *ptmp++;
+    *Pointer2++;
+  } while(s2--);
+  return Pointer1;
+}
+    

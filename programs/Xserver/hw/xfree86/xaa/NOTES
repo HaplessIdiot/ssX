@@ -1,5 +1,5 @@
 
-This document describes the XAA (XFree86 acceleration architecture),
+This document describes the XAA (XFree86 Acceleration Architecture),
 which is the new acceleration interface for the SVGA server (but not
 limited to the SVGA server).
 
@@ -28,7 +28,7 @@ can confirm a problem using the lastest version, please do so.
 
 - There is a memory leak that shows up running xscreensaver for a long time.
   Possibly in ValidateGC. This also shows up with x11perf -gc (Change GC test).
-  Modification 107 does not fix this.
+  Modification 107 does not fix this. Modification 114 does seem to fix it.
 
 - At 8bpp, olvwm is reported to crash. This happened in an old version, but
   apparently it may happen in a recent version also. No confirmation yet.
@@ -43,11 +43,32 @@ can confirm a problem using the lastest version, please do so.
 - At 16bpp, the 8x8 hardware pattern doesn't seem to work. This looks like
   an ARK chip problem.
 
+- The non-terminal emulator font acceleration is suspect, I don't think
+  it handles horizontally overlapping characters correctly (no visible
+  evidence yet) in the xf86DrawNonTETextScanline function.
+
 When the server crashes, run 'gdb -c core XF86_SVGA' and print a
 back-trace ('backtrace').
 
 Change Log:
 
+122. Fix some problems with drawing of Non-TE of text strings.
+121. Fix compilation problem in xf86spans.c (Takaaki Nomura).
+120. Add sanity checks in PolyFillRect and FillSpans for <= 0 specified
+     rects or spans.
+119. Make sure the cfb fall-back text functions are initialized correctly.
+     This problem showed up when non-TE text acceleration was added.
+118. Add the TWO_POINT_LINE_ERROR_TERM flag, but don't implement it yet.
+117. Implement a stipple bitmap scanline function in xf86expblt.c for
+     future use in color expansion stipple acceleration.
+116. Implement color expansion text acceleration for non-terminal emulator
+     fonts. Fix non-TE text scanline function in xf86expblt.c.
+115. Add NO_SYNC_AFTER_CPU_COLOR_EXPAND flag.
+114. When cfb MatchCommon is succesful in ValidateGC, make sure the
+     devPrivate.val is still correct. Fixes memory leak.
+113. Fix bug in xf86PolyFillRect. This does not fix the pixmap cache.
+
+Version 0.4d (XFree86 3.2a) (18 November 1996)
 112. Prepare for integration into source tree (hw/xfree86/xaa/*).
 111. Move the declaration of xf86PixmapIndex into xf86initac.c.
 110. Screeninit functions renamed; vgabpp.h renamed to xf86scrin.h.
@@ -235,7 +256,7 @@ Version 0.1 (25 October 1996)
 
 1.1
 
-Advantages of this new interface:
+Some advantages of this new interface:
 
 - Easier implementation of accelerated functions.
 - More efficient use of accelerated functions.
@@ -339,6 +360,12 @@ Flags
     whether the last pixel should be drawn. If this is not supported,
     PolySegment cannot support the CapNotLast CapStyle.
 
+    TWO_POINT_LINE_ERROR_TERM
+
+    Indicates that TwoPointLine supports the optional error term flag
+    and parameter that allows the initial error term to be provided
+    for software clipped lines.
+
     HARDWARE_PATTERN_SCREEN_ORIGIN
 
     Indicates that the origin for hardware 8x8 pattern fills is always
@@ -369,6 +396,13 @@ Flags
     BitBLTs are converted to smaller BitBLTs with supported directions
     if necessary.
 
+    NO_SYNC_AFTER_CPU_COLOR_EXPAND
+
+    Indicates that a Sync() is not required after a CPU-to-screen color
+    expansion operation. Generally, this can be defined if host color
+    expansion data is processed by the graphics chip in the same way as
+    accelerated graphics commands (it uses the command FIFO).
+
 Sync()
 
     This function should be defined if BACKGROUND_OPERATIONS is enabled
@@ -383,6 +417,11 @@ SetupForFillRectSolid(color, rop, planemask)
     fill. It is called once before a batch of "Subsequent" fill
     commands. Currently the restrictions for the operation are set up 
     with xf86GCInfoRec.PolyFillRectSolidFlags.
+
+    Another acceleration commmand might still be executing when a SetUp
+    function is called (assuming BACKGROUND_OPERATIONS). You may have
+    to do a Sync() here. In the current XAA code this doesn't happen,
+    but it might in the future.
 
 SubsequentFillRectSolid(x, y, w, h)
 
@@ -448,13 +487,16 @@ SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 
 SubsequentTwoPointLine(x1, y1, x2, y2, bias)
 
-    Draw a line between (x1, y1) and (x2, y2) (excl.). This is found in
-    some newer chips. It is taken advantage of. The 8 lower bits of
-    bias indicate whether 1 should be subtracted from the error term
-    for each of the octants (e.g. bit 0 matches octant 0). If bit 8
-    (0x100) is set, the last pixel should not be drawn (use
+    Draw a line between (x1, y1) and (x2, y2); the last point is drawn. 
+    This is found in some newer chips. It is taken advantage of. The 8
+    lower bits of bias indicate whether 1 should be subtracted from the
+    error term for each of the octants (e.g. bit 0 matches octant 0),
+    it is not a requirement to support this parameter.  If bit 8
+    (0x100) of bias is set, the last pixel should not be drawn (use
     TWO_POINT_LINE_NOT_LAST to indicate whether this flag is
     supported). This function requires hardware clipping.
+
+    Note that horizontal lines are always drawn with FillRectSolid.
 
 SetClippingRectangle(x1, y1, x2, y2)
 
@@ -672,16 +714,17 @@ FramebufferBase
 
     This is the address of the linear framebuffer. It is required
     by the ScanlineScreenToScreenColorExpand, and is automatically
-    initialized.
+    initialized. It should not be set up in a chip-specific driver.
 
 BitsPerPixel
 
     This is the number of bits per pixel, stored here for convenience.
+    There's no need to initialize this from a driver.
 
 FramebufferWidth
 
     The is the width of the framebuffer in pixels, stored here for
-    convenience.
+    convenience. There's no need to initialize this from a driver.
 
 ScratchBufferAddr
 ScratchBufferSize
@@ -698,7 +741,53 @@ ErrorTermBits
     the sign bit.
 
 
-1.4	The best strategy
+1.6	Commonly Used Parameters
+
+This section clarifies the format of some of the commonly used
+parameters in the low-level functions (as described above).
+
+Coordinates ("x", "y") are pixel coordinates unless otherwise noted.
+
+The width and height ("w", "h") define the size of the area involved in
+pixel units.
+
+Colors (named "color", "bg" or "fg") are simple pixel values. They are
+not "replicated" over the 32-bit integer argument. So for example in
+8bpp mode, bits 0-7 of the value represent the pixel value, and the
+rest of the bits is zero. If your chip requires a "replicated" 32-bit
+pixel value (4 duplicated pixels for 8bpp), you will have to do that in
+your low-level functions implementation.
+
+The planemask is a mask that defines what bits in the pixel value
+are to be modified on the screen. Again, this value cannot be assumed
+to be "replicated" to 32-bit in 8bpp and 16bpp modes.
+
+The raster-op ("rop") is one of the 16 raster-operations that X
+defines:
+
+    #define GXclear			0x0	/* 0 */
+    #define GXand			0x1	/* src AND dst */
+    #define GXandReverse		0x2	/* src AND NOT dst */
+    #define GXcopy			0x3	/* src */
+    #define GXandInverted		0x4	/* NOT src AND dst */
+    #define GXnoop			0x5	/* dst */
+    #define GXxor			0x6	/* src XOR dst */
+    #define GXor			0x7	/* src OR dst */
+    #define GXnor			0x8	/* NOT src AND NOT dst */
+    #define GXequiv			0x9	/* NOT src XOR dst */
+    #define GXinvert			0xa	/* NOT dst */
+    #define GXorReverse			0xb	/* src OR NOT dst */
+    #define GXcopyInverted		0xc	/* NOT src */
+    #define GXorInverted		0xd	/* NOT src OR dst */
+    #define GXnand			0xe	/* NOT src OR NOT dst */
+    #define GXset			0xf	/* 1 */
+
+For each graphics operation you can define that only GXcopy is supported
+by setting the GXCOPY_ONLY flag in the flags for that particular
+operation.
+
+
+1.5	The best strategy
 
 Start with simple filled solid rectangles and screen-to-screen copies
 (BitBLT). Those two functions alone will accelerate the vast majority
@@ -1022,9 +1111,48 @@ xfGCInfoRec.CopyAreaFlags:
 
 - More complete 24bpp-in-8bpp-mode support.
 
+3.1	More Concurrency?
 
-Current chip-specific implementations
--------------------------------------
+More concurrency between graphics and CPU processing sounds very
+attractive. This can be implemented by not "syncing" when leaving the
+graphic drawing code, but instead allowing graphics commands to
+continue while X is doing its request processing, or even during
+context switching or when the client is running. The ever larger PCI
+write buffers help to make this a very nice optimization. This requires
+awareness of coprocessor activity at several levels in the server code
+(for example, at any point where something is read or written to the
+video card).
+
+There are variations between chipsets that affect how easily they would
+support such a scheme. The best behaviour is what I would call "in
+order execution" of coprocessor commands and simple CPU writes to the
+framebuffer. That is, if you send some graphics coprocessor commands to
+the chip, and then write something to the framebuffer, it is guaranteed
+that the framebuffer writes will only happen when the graphics commands
+have been completed. This avoids, for example, having to check for
+coprocessor activity each time something is drawn with a "dumb"
+framebuffer function. I think that PCI write buffers on the motherboard
+generally follow this behaviour, but graphics chips generally do not.
+
+Of course, reading or querying anything from the graphics card is
+something you will want to avoid, since in most cases this will result
+in the CPU being stalled until all the PCI and on-chip write buffers
+are flushed and processed. Chips that require frequent querying or do
+not allow concurrent coprocessor execution and CPU framebuffer access
+will take much less benefit.
+
+A somewhat wild way to test this kind of scheme is to simply not define
+the BACKGROUND_OPERATIONS flag, but despite that not do any syncing
+in the graphics primitives. Without BACKGROUND_OPERATIONS set, the XAA
+code almost never calls Sync itself. Someone (inadvertently) tried
+this on an ET6000, and it seemed to significantly increase
+performance. This is of course hazardous and prone to lock-ups etc.
+
+
+4.	Comparison Of Chip-specific Implementations
+
+
+4.1	Current Chip-specific Implementations
 
 ARK Logic
 
@@ -1058,6 +1186,7 @@ Cirrus Logic GD5426/28/29/30/34/40/46
     LEFT_EDGE_CLIPPING
     VIDEO_SOURCE_GRANULARITY_DWORD
 
+
 Matrox Millenium
 
     BACKGROUND_OPERATIONS
@@ -1074,8 +1203,8 @@ Matrox Millenium
     ScreenToScreenColorExpand
     VIDEO_SOURCE_GRANULARITY_PIXEL
 
-Chip-specific performance
--------------------------
+
+4.2	Chip-specific Performance
 
 This table is intended to help with determining what kinds of
 operations best suit a particular chip. It shows the results (in MB/s)
@@ -1103,32 +1232,36 @@ screen copy
 8x8 pattern fill
 400x400		  105.16    116.08       -         -         -         -
 color expansion
-CPU to screen        -         -      116.25       -      261.03       -
+CPU to screen        -         -      116.25       -      261.03*      -
 scanl. scr-to-scr  71.75       -       80.64       -         -         -
 10x10 scr-to-scr   29.90       -       26.69       -         -         -
 
-Chip	          MGA-Mill  MGA-Mill  MGA-Mill
-Memory            2MB WRAM  4MB WRAM  2MB WRAM
+Chip	          MGA-Mill  MGA-Mill  MGA-Mill  TGUI9680
+Memory            2MB WRAM  4MB WRAM  2MB WRAM  2MB DRAM
 CPU               DX4/133   P133      P133
-Bus		  PCI 33MHz PCI 33MHz PCI 33Mhz
-bpp, dot clock    8bpp      8bpp 1024 8bpp 1152
+Bus		  PCI 33MHz PCI 33MHz PCI 33Mhz PCI
+bpp, dot clock    8bpp      8bpp 1024 8bpp 1152 8bpp 2048
 -------------------------------------------------------------------
-framebuffer        26.48     83.70     83.13
+framebuffer        26.48     83.70     83.13     10.09
 solid filled rect
-10x1               28.63     34.28     41.30
-40x40             385.13    316.47    453.02
-400x400          1656.93   1367.64   1942.59
+10x1               28.63     34.28     41.30      3.06
+40x40             385.13    316.47    453.02     55.97
+400x400          1656.93   1367.64   1942.59    145.16
 screen copy
-10x10		   29.18     23.47     35.09
-40x40		   81.52     74.55     99.92
-400x400		  114.81    105.83    137.60
-400x400 scroll       -         -         -
+10x10		   29.18     23.47     35.09     12.61
+40x40		   81.52     74.55     99.92     35.38
+400x400		  114.81    105.83    137.60     46.48
+400x400 scroll       -         -         -       51.88
 8x8 pattern fill
-400x400		     -         -         -
+400x400		     -         -         -       51.74
 color expansion
-CPU to screen     211.11    419.09    416.23
-scanl. scr-to-scr    -         -         -
-10x10 scr-to-scr     -         -         -
+CPU to screen     211.11*   419.09*   416.23*      -
+scanl. scr-to-scr    -         -         -         -
+10x10 scr-to-scr     -         -         -       15.26
+
+(*) After this benchmark was taken, the color expansion benchmark was
+    changed to write a pattern including both colors instead of just the
+    background one, which is likely to affect the score.
 
 The 10x1 filled rectangles score tells a lot about the command overhead
 for small fills, which is important for operations that fill span-by-span.
@@ -1151,13 +1284,6 @@ Makefile). If you don't, you're bound to get unexplainable core dumps.
 That also applies to SVGA drivers using the new interface; they should
 be recompiled after a new version of the generic acceleration code
 in installed.
-
-Unfortunately it seems make depend does not run a check for dependencies
-seperately for each different depth that a source file is compiled with.
-That means trouble, for example, when you change something in vga256map.h
-(which is needed by vga256 versions of source files). Anyone know how
-to fix this? I guess the fix is to have depth-specific versions linked
-into a seperate directory for each depth.
 
 Header files:
 

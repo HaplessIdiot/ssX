@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.14 1996/10/13 11:19:13 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.15 1996/11/18 13:08:16 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -282,6 +282,8 @@ void xf86writepci(
 
 /* S3 */
 #define PCI_CHIP_TRIO		0x8811
+#define PCI_CHIP_AURORA64VP	0x8812
+#define PCI_CHIP_TRIO64UVP	0x8814
 #define PCI_CHIP_868		0x8880
 #define PCI_CHIP_928		0x88B0
 #define PCI_CHIP_864_0		0x88C0

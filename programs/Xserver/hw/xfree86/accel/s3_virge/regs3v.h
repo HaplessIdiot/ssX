@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/regs3v.h,v 3.1 1996/10/17 15:17:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/regs3v.h,v 3.2 1996/10/18 15:01:47 dawes Exp $ */
 /*
  * regs3v.h
  *
@@ -308,13 +308,13 @@ typedef struct {
 LUTENTRY;
 
 /* Wait until "v" queue entries are free */
-#define	WaitQueue(v)	 while (((IN_SUBSYS_STAT()) & 0x1f00) < (((v)+2) << 8))
+#define	WaitQueue(v)	 do { mem_barrier(); while (((IN_SUBSYS_STAT()) & 0x1f00) < (((v)+2) << 8)); } while (0)
 
 /* Wait until GP is idle and queue is empty */
-#define	WaitIdleEmpty()  while ((IN_SUBSYS_STAT() & 0x3f00) != 0x3000)
+#define	WaitIdleEmpty()  do { mem_barrier(); while ((IN_SUBSYS_STAT() & 0x3f00) != 0x3000); } while (0)
 
 /* Wait until GP is idle */
-#define WaitIdle()       while (!(IN_SUBSYS_STAT() & 0x2000))
+#define WaitIdle()       do { mem_barrier(); while (!(IN_SUBSYS_STAT() & 0x2000)); } while (0)
 
 #ifndef NULL
 #define NULL	0

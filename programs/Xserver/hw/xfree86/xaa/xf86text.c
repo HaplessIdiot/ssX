@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.0 1996/11/18 13:22:40 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -248,8 +248,12 @@ xf86PolyGlyphBltNonTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 
 /*
- * The folowing functions implement non-clipped text drawing
+ * The code below implements non-clipped text drawing
  * using hardware bitmap color expansion.
+ */
+
+/*
+ * Low level function declarations.
  */
 
 static void DrawTextTECPUToScreenColorExpand(
@@ -268,6 +272,23 @@ static void DrawTextTEScreenToScreenColorExpand(
     int h,
     unsigned int **glyphp,
     int glyphwidth
+#endif
+);
+
+static void DrawTextNonTECPUToScreenColorExpand(
+#if NeedFunctionPrototypes
+    int nglyph,
+    int h,
+    NonTEGlyphInfo *glyphinfop
+#endif
+);
+
+static void DrawTextNonTEScreenToScreenColorExpand(
+#if NeedFunctionPrototypes
+    int nglyph,
+    int w,
+    int h,
+    NonTEGlyphInfo *glyphinfop
 #endif
 );
 
@@ -291,28 +312,12 @@ CollectCharacters(glyphp, nglyph, pglyphBase, ppci)
 }
 
 /* 
- * This function collects glyph info for Non-TE text strings.
+ * What follows are text functions for "TE" (fixed-size) fonts:
+ * - ImageText using CPU-to-screen color expansion.
+ * - ImageText using scanline screen-to-screen color expansion.
+ * - PolyText using CPU-to-screen color expansion.
+ * - PolyText using scanline screen-to-screen color expansion.
  */
-
-static void
-CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci, maxascent)
-    NonTEGlyphInfo *glyphinfop;
-    unsigned int nglyph;
-    unsigned char *pglyphBase;
-    CharInfoPtr *ppci;
-    int maxascent;
-{
-    int i;
-
-    for (i = 0; i < nglyph; i++) {
-	glyphinfop[i].bitsp = (unsigned int *)FONTGLYPHBITS(
-	    pglyphBase, ppci[i]);
-	glyphinfop[i].width = GLYPHWIDTHPIXELS(ppci[i]);
-	glyphinfop[i].firstline = maxascent - ppci[i]->metrics.ascent;
-	glyphinfop[i].lastline = maxascent + ppci[i]->metrics.descent;
-	ppci++;
-    }
-}
 
 void
 xf86ImageTextTECPUToScreenColorExpand(pDrawable, pGC, xInit, yInit,
@@ -424,7 +429,6 @@ nglyph, ppci, pglyphBase)
 
     /* Characters are padded to 4 bytes. */
     unsigned int **glyphp;
-    int destaddr, blitwidth;
 
     glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
     glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
@@ -500,7 +504,6 @@ nglyph, ppci, pglyphBase)
 
     /* Characters are padded to 4 bytes. */
     unsigned int **glyphp;
-    int destaddr, blitwidth;
 
     glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
     glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
@@ -566,7 +569,6 @@ nglyph, ppci, pglyphBase)
 
     /* Characters are padded to 4 bytes. */
     unsigned int **glyphp;
-    int destaddr, blitwidth;
 
     glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
     glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
@@ -604,12 +606,362 @@ nglyph, ppci, pglyphBase)
     DEALLOCATE_LOCAL(glyphp);
 }
 
+/* 
+ * This function collects glyph info for Non-TE text strings.
+ * It returns the total width of the string in pixels.
+ */
+
+static int
+CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci, maxascent)
+    NonTEGlyphInfo *glyphinfop;
+    unsigned int nglyph;
+    unsigned char *pglyphBase;
+    CharInfoPtr *ppci;
+    int maxascent;
+{
+    int i, w;
+
+    w = 0;
+    for (i = 0; i < nglyph; i++) {
+        /*
+         * Note that the glyph bitmap address is pre-adjusted, so that the
+         * offset is the same for differently sized glyphs when writing a
+         * text scanline.
+         *
+         * The width of each character should be carefully determined,
+         * considering the leftSideBearing of the next character, since
+         * characters can overlap horizontally.
+         */
+	glyphinfop[i].bitsp = (unsigned int *)FONTGLYPHBITS(
+	    pglyphBase, ppci[i]) - (maxascent - ppci[i]->metrics.ascent);
+        if (i < nglyph - 1)
+	    glyphinfop[i].width = ppci[i]->metrics.characterWidth +
+	        ppci[i + 1]->metrics.leftSideBearing -
+	        ppci[i]->metrics.leftSideBearing;
+	else
+	    glyphinfop[i].width = ppci[i]->metrics.characterWidth
+	        - ppci[i]->metrics.leftSideBearing;
+	w += glyphinfop[i].width;
+	glyphinfop[i].firstline = maxascent - ppci[i]->metrics.ascent;
+	glyphinfop[i].lastline = maxascent + ppci[i]->metrics.descent - 1;
+    }
+    return w;
+}
+
+/* 
+ * What follows are equivalent functions for "Non-TE" ("proportional") fonts:
+ * - ImageText using CPU-to-screen color expansion.
+ * - ImageText using scanline screen-to-screen color expansion.
+ * - PolyText using CPU-to-screen color expansion.
+ * - PolyText using scanline screen-to-screen color expansion.
+ */
+
+void
+xf86ImageTextNonTECPUToScreenColorExpand(pDrawable, pGC, xInit, yInit,
+nglyph, ppci, pglyphBase)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    FontPtr pfont = pGC->font;
+    unsigned int *pdstBase;
+    int widthDst;
+    int widthGlyph;
+    int w, h;
+    int x, y;
+
+    int glyphWidth;		       /* Character width in pixels. */
+    int glyphWidthBytes;	       /* Character width in bytes (padded). */
+    int i;
+
+    NonTEGlyphInfo *glyphinfop;
+
+    glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
+    glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
+    h = FONTASCENT(pfont) + FONTDESCENT(pfont);
+
+    /*
+     * Check for non-standard glyphs, glyphs that are too wide.
+     */
+    if (glyphWidthBytes != 4 || glyphWidth > 32) {
+        xf86GCInfoRec.ImageGlyphBltFallBack(
+            pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	return;
+    }
+
+    if ((h | glyphWidth) == 0)
+	return;
+
+    /*
+     * The "leftSideBearing" of the first character is added to the
+     * x-coordinate.
+     */
+    x = xInit + (*ppci)->metrics.leftSideBearing + pDrawable->x;
+    y = yInit - FONTASCENT(pfont) + pDrawable->y;
+
+    /*
+     * If only color expansion with transparency is supported, then
+     * do it in two steps -- first do the background with a solid fill,
+     * then draw the text with transparency.
+     */
+    if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
+        /* First fill-in the background. */
+        xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, pGC->alu,
+            pGC->planemask);
+        xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
+    }
+
+    /* Allocate list of pointers to glyph info. */
+    glyphinfop = (NonTEGlyphInfo *)ALLOCATE_LOCAL(nglyph *
+        sizeof(NonTEGlyphInfo));
+
+    w = CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci,
+        FONTASCENT(pfont));
+
+    if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
+        if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+            xf86AccelInfoRec.Sync();
+        xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
+            -1, pGC->fgPixel, pGC->alu, pGC->planemask);
+    }
+    else
+        xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
+            pGC->bgPixel, pGC->fgPixel, pGC->alu, pGC->planemask);
+
+    xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
+        x, y, w, h, 0);
+
+#if 0
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
+        DrawTextNonTECPUToScreenColorExpandBytePadded(
+            nglyph, w, h, glyphp, glyphwidth);
+    else
+#endif
+        DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop);
+
+    DEALLOCATE_LOCAL(glyphinfpp);
+}
+
+
+void
+xf86ImageTextNonTEScreenToScreenColorExpand(pDrawable, pGC, xInit, yInit,
+nglyph, ppci, pglyphBase)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    FontPtr pfont = pGC->font;
+    unsigned int *pdstBase;
+    int widthDst;
+    int widthGlyph;
+    int w, h;
+    int x, y;
+
+    int glyphWidth;		       /* Character width in pixels. */
+    int glyphWidthBytes;	       /* Character width in bytes (padded). */
+    int i;
+
+    NonTEGlyphInfo *glyphinfop;
+
+    glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
+    glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
+    h = FONTASCENT(pfont) + FONTDESCENT(pfont);
+    /* Allocate list of pointers to glyph info. */
+    glyphinfop = (NonTEGlyphInfo *)ALLOCATE_LOCAL(nglyph *
+        sizeof(NonTEGlyphInfo));
+
+    w = CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci,
+        FONTASCENT(pfont));
+
+    /*
+     * Check for non-standard glyphs, glyphs that are too wide,
+     * and for strings whose scanlines are too large to fit in the
+     * bitmap buffer in video memory.
+     */
+    if (glyphWidthBytes != 4 || glyphWidth > 32 || ((w + 31)
+    & ~31) / 8 * 2 > xf86AccelInfoRec.ScratchBufferSize) {
+        xf86GCInfoRec.ImageGlyphBltFallBack(
+            pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	return;
+    }
+
+    if ((h | glyphWidth) == 0)
+	return;
+
+    /*
+     * The "leftSideBearing" of the first character is added to the
+     * x-coordinate.
+     */
+    x = xInit + (*ppci)->metrics.leftSideBearing + pDrawable->x;
+    y = yInit - FONTASCENT(pfont) + pDrawable->y;
+
+    if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
+        /* First fill-in the background. */
+        xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, pGC->alu,
+            pGC->planemask);
+        xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
+    }
+
+    if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
+        if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+            xf86AccelInfoRec.Sync();
+        xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
+            x, y, w, h, -1, pGC->fgPixel, pGC->alu, pGC->planemask);
+    }
+    else
+        xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
+            x, y, w, h, pGC->bgPixel, pGC->fgPixel, pGC->alu, pGC->planemask);
+
+    DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop);
+
+    DEALLOCATE_LOCAL(glyphinfop);
+}
+
+
+void
+xf86PolyTextNonTECPUToScreenColorExpand(pDrawable, pGC, xInit, yInit,
+nglyph, ppci, pglyphBase)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    FontPtr pfont = pGC->font;
+    unsigned int *pdstBase;
+    int widthDst;
+    int widthGlyph;
+    int w, h;
+    int x, y;
+
+    int glyphWidth;		       /* Character width in pixels. */
+    int glyphWidthBytes;	       /* Character width in bytes (padded). */
+    int i;
+
+    NonTEGlyphInfo *glyphinfop;
+
+    glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
+    glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
+    h = FONTASCENT(pfont) + FONTDESCENT(pfont);
+
+    /*
+     * Check for non-standard glyphs, glyphs that are too wide.
+     */
+    if (glyphWidthBytes != 4 || glyphWidth > 32) {
+        xf86GCInfoRec.PolyGlyphBltFallBack(
+            pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	return;
+    }
+
+    if ((h | glyphWidth) == 0)
+	return;
+
+    /*
+     * The "leftSideBearing" of the first character is added to the
+     * x-coordinate.
+     */
+    x = xInit + (*ppci)->metrics.leftSideBearing + pDrawable->x;
+    y = yInit - FONTASCENT(pfont) + pDrawable->y;
+
+    /* Allocate list of pointers to glyph info. */
+    glyphinfop = (NonTEGlyphInfo *)ALLOCATE_LOCAL(nglyph *
+        sizeof(NonTEGlyphInfo));
+
+    w = CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci,
+        FONTASCENT(pfont));
+    
+    xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
+        -1, pGC->fgPixel, pGC->alu, pGC->planemask);
+
+    xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
+        x, y, nglyph * glyphWidth, h, 0);
+
+#if 0
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
+        DrawTextNonTECPUToScreenColorExpandBytePadded(
+            nglyph, w, h, glyphinfop);
+    else
+#endif
+        DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop);
+
+    DEALLOCATE_LOCAL(glyphinfop);
+}
+
+void
+xf86PolyTextNonTEScreenToScreenColorExpand(pDrawable, pGC, xInit, yInit,
+nglyph, ppci, pglyphBase)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int xInit, yInit;
+    int nglyph;
+    CharInfoPtr *ppci;		       /* array of character info */
+    unsigned char *pglyphBase;	       /* start of array of glyphs */
+{
+    FontPtr pfont = pGC->font;
+    unsigned int *pdstBase;
+    int widthDst;
+    int widthGlyph;
+    int w, h;
+    int x, y;
+
+    int glyphWidth;		       /* Character width in pixels. */
+    int glyphWidthBytes;	       /* Character width in bytes (padded). */
+    int i;
+
+    NonTEGlyphInfo *glyphinfop;
+
+    glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
+    glyphWidthBytes = GLYPHWIDTHBYTESPADDED(*ppci);
+    h = FONTASCENT(pfont) + FONTDESCENT(pfont);
+    /* Allocate list of pointers to glyph info. */
+    glyphinfop = (NonTEGlyphInfo *)ALLOCATE_LOCAL(nglyph *
+        sizeof(NonTEGlyphInfo));
+
+    w = CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci,
+        FONTASCENT(pfont));
+
+    /*
+     * Check for non-standard glyphs, glyphs that are too wide,
+     * and for strings whose scanlines are too large to fit in the
+     * bitmap buffer in video memory.
+     */
+    if (glyphWidthBytes != 4 || glyphWidth > 32 || ((w + 31)
+    & ~31) / 8 * 2 > xf86AccelInfoRec.ScratchBufferSize) {
+        xf86GCInfoRec.PolyGlyphBltFallBack(
+            pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
+	return;
+    }
+
+    if ((h | glyphWidth) == 0)
+	return;
+
+    /*
+     * The "leftSideBearing" of the first character is added to the
+     * x-coordinate.
+     */
+    x = xInit + (*ppci)->metrics.leftSideBearing + pDrawable->x;
+    y = yInit - FONTASCENT(pfont) + pDrawable->y;
+
+    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
+        x, y, w, h, -1, pGC->fgPixel, pGC->alu, pGC->planemask);
+
+    DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop);
+
+    DEALLOCATE_LOCAL(glyphinfop);
+}
+
 
 
 /*
  * The following are lower-level function that transfer the text
  * bitmap from the CPU to the screen to be color expanded.
- *
  */
  
 /*
@@ -712,12 +1064,12 @@ glyphwidth)
 
 #endif
 
-
 /*
- * The following function is used for Imagetext/Polytext with TE font with
- * buffered screen-to-screen color expansion. Each scanline is first
- * transferred from the CPU to a scratch buffer in off-screen video memory,
- * and then color expanded to the on-screen destination.
+ * The following function is used for Imagetext/Polytext with TE font
+ * with buffered screen-to-screen color expansion ("ping pong
+ * buffers"). Each scanline is first transferred from the CPU to a
+ * scratch buffer in off-screen video memory, and then color expanded
+ * to the on-screen destination.
  */
 
 static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth)
@@ -755,6 +1107,113 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
 	    xf86DrawTextScanline((unsigned int *)
 	        (xf86AccelInfoRec.FramebufferBase + base),
 	        glyphp, line, nglyph, glyphwidth);
+	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
+	    base * 8);
+	line++;
+    }
+
+    if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+        xf86AccelInfoRec.Sync();
+}
+
+/*
+ * This function is used for Imagetext/Polytext with Non-TE font with
+ * CPU-to-screen color expansion (DWORD padding at the end of scanlines).
+ */
+
+static void DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop)
+    int nglyph;
+    int h;
+    NonTEGlyphInfo *glyphinfop;
+{
+    int bitmapwidth;
+    int line;
+    unsigned char *base;
+    unsigned int *(*DrawTextScanlineFunc)(
+#if NeedNestedPrototypes
+        unsigned int *base,
+        NonTEGlyphInfo *glyphinfop,
+        int line,
+        int nglyph
+#endif
+    );
+
+    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+#if 0
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            DrawTextScanlineFunc = xf86DrawNonTETextScanline3MSBFirst;
+        else
+#endif
+            DrawTextScanlineFunc = xf86DrawNonTETextScanlineMSBFirst;
+    else
+#if 0
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            DrawTextScanlineFunc = xf86DrawNonTETextScanline3;
+        else
+#endif
+            DrawTextScanlineFunc = xf86DrawNonTETextScanline;
+
+    base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+
+    line = 0;
+    while (line < h) {
+	base = (unsigned char *)(*DrawTextScanlineFunc)(
+	    (unsigned int *)base, glyphinfop, line, nglyph);
+        if (base >=
+        (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+            base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+	line++;
+    }
+
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
+        if (((int)base - (int)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 4)
+            *(unsigned int *)base = 0;
+
+    xf86AccelInfoRec.Sync();
+}
+
+/*
+ * The following function is used for Imagetext/Polytext with Non-TE font
+ * with buffered screen-to-screen color expansion ("ping pong
+ * buffers"). Each scanline is first transferred from the CPU to a
+ * scratch buffer in off-screen video memory, and then color expanded
+ * to the on-screen destination.
+ */
+
+static void DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop)
+    int nglyph;
+    int w;
+    int h;
+    NonTEGlyphInfo *glyphinfop;
+{
+    int bitmapwidth;
+    int line;
+
+    /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
+    /* in units of pixels. */
+    bitmapwidth = (w + 31) & ~31;
+
+    line = 0;
+    while (line < h) {
+        int base;
+	base = xf86AccelInfoRec.ScratchBufferAddr;
+        if (line & 1)
+            /*
+             * There are two buffers -- while the first one is being
+             * blitted, the other one is initialized. Then the other
+             * way around, and so on.
+             */
+	    base += bitmapwidth / 8;
+	if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+	    xf86AccelInfoRec.Sync();
+        if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	    xf86DrawNonTETextScanlineMSBFirst((unsigned int *)
+	        (xf86AccelInfoRec.FramebufferBase + base),
+	        glyphinfop, line, nglyph);
+        else
+	    xf86DrawNonTETextScanline((unsigned int *)
+	        (xf86AccelInfoRec.FramebufferBase + base),
+	        glyphinfop, line, nglyph);
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
 	    base * 8);
 	line++;

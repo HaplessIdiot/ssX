@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.24 1996/10/10 14:05:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.25 1996/10/13 11:29:41 dawes Exp $
 
 
 
@@ -117,6 +117,7 @@ SERVERSRCS = \
 SRCS =	\
 	$(XF86DL_SRC) \
 	$(XCONFIGSRC).c \
+	xf86DCConf.c \
 	xf86IniExt.c \
 	xf86MIniExt.c \
 	xf86Cursor.c \
@@ -140,6 +141,7 @@ SRCS =	\
 OBJS = \
 	$(XF86DL_OBJ) \
 	$(XCONFIGSRC).o \
+	xf86DCConf.o \
 	xf86Cursor.o \
 	xf86Events.o \
 	xf86Io.o \
@@ -216,6 +218,7 @@ InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 # endif
 #endif
 SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
+SpecialObjectRule(xf86DCConf.o,xf86DCConf.c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 #if XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer ||\
@@ -270,6 +273,8 @@ LinkSourceFile(xf86Beta.c,$(XF86SRC)/common)
 #endif
 LinkSourceFile(xf86Config.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Cursor.c,$(XF86SRC)/common)
+LinkSourceFile(xf86DCConf.c,$(XF86SRC)/common)
+LinkSourceFile(xf86DCConf.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Dl.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Elo.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Events.c,$(XF86SRC)/common)
@@ -307,6 +312,7 @@ InstallLinkKitNonExecFile(xf86Procs.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_Option.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_Option.c,$(XF98LINKKITDIR))
 InstallLinkKitNonExecFile(xf86_Config.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86DCConf.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(compiler.h,$(XF98LINKKITDIR)/include)
 InstallLinkKitNonExecFile(XF86_SVGA.c,$(XF98LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_VGA16.c,$(XF98LINKKITDIR))

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.0 1996/11/18 13:22:42 dawes Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -16,6 +16,8 @@
 #define HARDWARE_PATTERN_ALIGN_64	0x400
 #define ONLY_TWO_BITBLT_DIRECTIONS	0x800
 #define ONLY_LEFT_TO_RIGHT_BITBLT	0x1000
+#define NO_SYNC_AFTER_CPU_COLOR_EXPAND  0x2000
+#define TWO_POINT_LINE_ERROR_TERM	0x4000
 
 /* Graphics operation flags */
 

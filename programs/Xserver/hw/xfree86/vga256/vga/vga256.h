@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.1 1994/12/25 12:36:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga256.h,v 3.2 1996/02/04 09:14:51 dawes Exp $ */
 
 
 
@@ -358,7 +358,7 @@ int fastvga256HorzS(
 );
 
 /* vgalineV.s */
-int fastvga256VertS(
+void fastvga256VertS(
 #if NeedFunctionPrototypes
     int ,
     unsigned long ,

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.h,v 3.0 1996/11/18 13:22:14 dawes Exp $ */
 
 
 /*
@@ -198,3 +198,34 @@ ScanlineReturn xf86DrawBitmapScanlineMSBFirstBytePadded(
     int nbytes
 #endif
     );
+
+/*
+ * Stipple bitmap data transfer. This requires the scanline to start
+ * with a horizontal stipple offset that is at a byte (multiple of 8 pixel)
+ * boundary in the stipple bitmap scanline.
+ * Source data access can be unaligned.
+ */
+ 
+unsigned int *xf86DrawStippleScanline(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned char *src,		/* Pointer to stipple bitmap. */
+    int srcwidth,		/* Width of stipple bitmap in bytes. */
+    int stipplewidth,		/* Width of stipple in pixels. */
+    int srcoffset,		/* The offset in bytes into the stipple */
+    				/* of the first pixel. */
+    int w			/* Width of scanline in pixels. */
+#endif
+);
+
+unsigned int *xf86DrawStippleScanlineMSBFirst(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    unsigned char *src,		/* Pointer to stipple bitmap. */
+    int srcwidth,		/* Width of stipple bitmap in bytes. */
+    int stipplewidth,		/* Width of stipple in pixels. */
+    int srcoffset,		/* The offset in bytes into the stipple */
+    				/* of the first pixel. */
+    int w			/* Width of scanline in pixels. */
+#endif
+);

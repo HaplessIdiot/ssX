@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.6 1996/10/17 15:17:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.7 1996/11/18 13:10:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -133,6 +133,8 @@ ScrnInfoRec s3InfoRec =
    0,				/* int offTime */
    -1,				/* int s3BlankDelay */
    0,				/* int textClockFreq */
+   NULL,                        /* char* DCConfig */
+   NULL,                        /* char* DCOptions */
 #ifdef XFreeXDGA
    0,				/* int directMode */
    s3SetVidPage,		/* Set Vid Page */
@@ -701,31 +703,36 @@ s3Probe()
 #endif
 
 
-   /* LocalBus or EISA or PCI */
-   if (S3_ViRGE_VX_SERIES(s3ChipId))
-      s3Localbus = TRUE;
-   else {
-      s3Localbus = ((config & 0x03) <= 2);
+   /* ViRGE is always PCI (or VLB if ever?!),  ViRGE/VX is only PCI */
+   s3Localbus = TRUE;
 
-      if (xf86Verbose) {
-	 switch (config & 0x03) {
-	 case 1:
-	    ErrorF("%s %s: card type: 386/486 localbus\n",
-		   XCONFIG_PROBED, s3InfoRec.name);
-	    s3VLB = TRUE;
-	    break;
-	 case 2:
+   if (!S3_ViRGE_VX_SERIES(s3ChipId)) {
+      if (config & 0x02) {
+	 if (xf86Verbose)
 	    ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, s3InfoRec.name);
-	    break;
-	 default:
-	    ErrorF("%s %s: unknown bus type %d (please report)\n",
-		   XCONFIG_PROBED, s3InfoRec.name, config & 0x03);
-	 }
+      } else {
+	 if (xf86Verbose)
+	    ErrorF("%s %s: card type: VLB\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	 s3VLB = TRUE;
       }
    }
 
+   /* reset S3 graphics engine to avoid memory corruption */
+   if (!S3_ViRGE_VX_SERIES(s3ChipId)) {
+      outb(vgaCRIndex, 0x66);
+      i = inb(vgaCRReg);
+      outb(vgaCRReg, i |  0x02);
+      usleep(10000);  /* wait a little bit... */
+   }
    card_id = s3DetectELSA(s3InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
 			  &max_mem_clock, &hwconf);
+   if (!S3_ViRGE_VX_SERIES(s3ChipId)) {
+      outb(vgaCRIndex, 0x66);
+      outb(vgaCRReg, i & ~0x02);  /* clear reset flag */
+      usleep(10000);  /* wait a little bit... */
+   }
+
    if (card_id > 0) {
       if (s3BiosVendor == UNKNOWN_BIOS)
 	 s3BiosVendor = ELSA_BIOS;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb32.h,v 3.0 1994/07/15 07:03:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb32.h,v 3.1 1996/02/04 09:06:01 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -531,7 +531,7 @@ extern int cfb32HorzS(
 #endif
 );
 
-extern int cfb32VertS(
+extern void cfb32VertS(
 #if NeedFunctionPrototypes
     int /*rop*/,
     unsigned long /*and*/,

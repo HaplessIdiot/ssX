@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.8 1996/10/18 15:01:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.9 1996/10/24 12:29:54 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -407,8 +407,10 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    if (alu != ROP_0 && alu != ROP_1 && alu != ROP_D && alu != ROP_Dn)
       for ( ; h--; ) {
 	 CARD32 *psrcs = (CARD32 *)(psrc + px * s3Bpp);
-	 for (i = 0; i < w; i+=4)
+	 for (i = 0; i < w; i+=4) {
 	    *IMG_TRANS = ldl_u(psrcs++);
+	    write_mem_barrier();
+	 }
 	 psrc += pwidth;
       }
    WaitIdle();
@@ -564,11 +566,11 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
       pline = (unsigned char *)(psrc + pwidth * mod);
       pend = (CARD32 *)(pline + pw * s3Bpp);
 
-      wrapped1 = (ldl_u(pline) << 8) | (pline[pw - 1] << 0);
+      wrapped1 = (ldl_u((CARD32 *)pline) << 8) | (pline[pw - 1] << 0);
       pnext1 = (CARD32 *)(pline + 3);
-      wrapped2 = (ldw_u(pline) << 16) | (ldw_u(pline + pw - 2) << 0);
+      wrapped2 = (ldw_u((CARD16 *)pline) << 16) | (ldw_u((CARD16*)(pline + pw - 2)) << 0);
       pnext2 = (CARD32 *)(pline + 2);
-      wrapped3 = (pline[0] << 24) | ((ldl_u(pline + pw - 3) & 0xffffff) << 0);
+      wrapped3 = (pline[0] << 24) | ((ldl_u((CARD32*)(pline + pw - 3)) & 0xffffff) << 0);
       pnext3 = (CARD32 *)(pline + 1);
 
       modulus (x - pox, pw, mod);
@@ -580,19 +582,23 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 	    switch ((unsigned char *)(pend) - (unsigned char *)(plines)) {
 	    case 1:
 	       *IMG_TRANS = wrapped1;
+	       write_mem_barrier();
 	       plines = pnext1;
 	       break;
 	    case 2:
 	       *IMG_TRANS = wrapped2;
+	       write_mem_barrier();
 	       plines = pnext2;
 	       break;
 	    case 3:
 	       *IMG_TRANS = wrapped3;
+	       write_mem_barrier();
 	       plines = pnext3;
 	       break;
 	    }
 	 } else {
 	    *IMG_TRANS = ldl_u(plines++);
+	    write_mem_barrier();
 	 }
 	 if (plines == pend)
 	    plines = (CARD32 *)pline;
@@ -695,6 +701,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 	           | (s3SwapBits[ ( pix >>  8 ) & 0xff ] <<  8)
 		   | (s3SwapBits[ ( pix >> 16 ) & 0xff ] << 16)
 		   | (s3SwapBits[ ( pix >> 24 ) & 0xff ] << 24);
+	 write_mem_barrier();
 	 pnt += pwidth;
       }
    }
@@ -752,6 +759,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 		         | (s3SwapBits[ ( pix >>  8 ) & 0xff ] <<  8)
 			 | (s3SwapBits[ ( pix >> 16 ) & 0xff ] << 16)
 			 | (s3SwapBits[ ( pix >> 24 ) & 0xff ] << 24);
+	       write_mem_barrier();
 	       srcx += 32;
 	       while (srcx >= pw)
 		  srcx -= pw;

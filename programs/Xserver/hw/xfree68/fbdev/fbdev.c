@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.0 1996/08/18 01:46:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.1 1996/08/18 03:54:46 dawes Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -17,7 +17,7 @@
  */
 
 
-#define fbdev_PATCHLEVEL "4"
+#define fbdev_PATCHLEVEL "5"
 
 
 #include "X.h"
@@ -803,6 +803,7 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 		break;
 
 	    case FB_TYPE_PACKED_PIXELS:
+		width = fb_fix.line_length ? 8*fb_fix.line_length/bpp : xsize;
 		switch (bpp) {
 #ifdef CONFIG_CFB8
 		    case 8:

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.14 1996/09/01 04:14:12 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.15 1996/10/03 08:29:47 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -390,6 +390,7 @@ typedef struct _Xtransport_table {
 #define TRANS_ALIAS	(1<<0)	/* record is an alias, don't create server */
 #define TRANS_LOCAL	(1<<1)	/* local transport */
 #define TRANS_DISABLED	(1<<2)	/* Don't open this one */
+#define TRANS_NOLISTEN  (1<<3)  /* Don't listen on this one */
 
 
 /*

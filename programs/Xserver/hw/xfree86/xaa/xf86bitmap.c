@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.0 1996/11/18 13:22:10 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -154,7 +154,8 @@ srcy, bg, fg, rop, planemask)
         /* First fill-in the background. */
         xf86AccelInfoRec.SetupForFillRectSolid(bg, rop, planemask);
         xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
-        if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+        if ((xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+        && !(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
             xf86AccelInfoRec.Sync();
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
             -1, fg, rop, planemask);
@@ -190,6 +191,8 @@ srcy, bg, fg, rop, planemask)
 		xf86AccelInfoRec.Sync();
 	        return;
 	    }
+	    if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+	        xf86AccelInfoRec.Sync();
         }
         x += skipleft;
         srcx += skipleft;
@@ -235,9 +238,9 @@ srcy, bg, fg, rop, planemask)
             sr = xf86DrawBitmapScanlineMSBFirstBytePadded(
                 sr.base, (unsigned int *)srcp, sr.bits, bytewidth);
             if (sr.base >= xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
-                sr.base = (unsigned char *)
+                sr.base = (unsigned int *)((unsigned char *)
                     xf86AccelInfoRec.CPUToScreenColorExpandBase +
-                    ((unsigned int)sr.base & 3);
+                    ((unsigned int)sr.base & 3));
             srcp += srcwidth;
         }
         if ((unsigned int)sr.base & 3) {
@@ -478,8 +481,8 @@ void xf86SubsequentFillRectSolid24bppColorExpand(x, y, w, h)
     else
         Do24bppFillPass(w, h, first_pass_lsb, base);
 
-    /* This is not absolutely required, but probably best to do it. */
-    xf86AccelInfoRec.Sync();
+    if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+        xf86AccelInfoRec.Sync();
 
     /* Now set up for the last byte of each pixel, with transparency. */
     xf86AccelInfoRec.SetupForCPUToScreenColorExpand(

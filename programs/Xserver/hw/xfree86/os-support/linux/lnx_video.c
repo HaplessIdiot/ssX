@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.8 1996/08/18 01:51:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.9 1996/08/20 12:29:40 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -34,10 +34,27 @@
 #include "xf86_OSlib.h"
 
 #ifdef __alpha__
-extern unsigned long _bus_base(void) __attribute__((const));
-#define BUS_BASE _bus_base()
+
+/*
+ * The Jensen lacks dense memory, thus we have to address the bus via
+ * the sparse addressing scheme.
+ *
+ * Martin Ostermann (ost@comnets.rwth-aachen.de) - Apr.-Sep. 1996
+ */
+
+#ifdef TEST_JENSEN_CODE /* define to test the Sparse addressing on a non-Jensen */
+#define SPARSE (5)
+#define isJensen (1)
+#else
+#define isJensen (!_bus_base())
+#define SPARSE (7)
+#endif
+
+#define BUS_BASE (isJensen ? _bus_base_sparse() : _bus_base())
+#define JENSEN_SHIFT(x) (isJensen ? ((long)x<<SPARSE) : (long)x)
 #else
 #define BUS_BASE 0
+#define JENSEN_SHIFT(x) (x)
 #endif
 
 /***************************************************************************/
@@ -71,6 +88,9 @@ unsigned long Size;
       	int fd;
 
 #ifdef ONLY_MMAP_FIXED_WORKS
+#ifdef __alpha__
+	FatalError("xf86MapVidMem: Unexpected code for Alpha (pagesize=8k!)\n");
+#endif 
 	AllocAddress[ScreenNum][Region] = (pointer)xalloc(Size + 0x1000);
 	if (AllocAddress[ScreenNum][Region] == NULL)
 	{
@@ -92,8 +112,8 @@ unsigned long Size;
 			   strerror(errno));
 	}
 	/* This requirers linux-0.99.pl10 or above */
-	base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-			     MAP_SHARED, fd, (off_t)Base + BUS_BASE);
+	base = (pointer)mmap((caddr_t)0, JENSEN_SHIFT(Size), PROT_READ|PROT_WRITE,
+			     MAP_SHARED, fd, (off_t)(JENSEN_SHIFT(Base) + BUS_BASE));
 #endif
 	close(fd);
 	if ((long)base == -1)
@@ -125,7 +145,7 @@ int Region;
 pointer Base;
 unsigned long Size;
 {
-    munmap((caddr_t)Base, Size);
+    munmap((caddr_t)JENSEN_SHIFT(Base), JENSEN_SHIFT(Size));
 #ifdef ONLY_MMAP_FIXED_WORKS
     xfree(AllocAddress[ScreenNum][Region]);
 #endif

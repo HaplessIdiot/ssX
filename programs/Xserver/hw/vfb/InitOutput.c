@@ -211,6 +211,11 @@ OsVendorInit()
 }
 
 void
+OsVendorFatalError()
+{
+}
+
+void
 ddxUseMsg()
 {
     ErrorF("-screen scrn WxHxD     set screen's width, height, depth\n");

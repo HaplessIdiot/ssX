@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.0 1996/11/18 13:22:18 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.1 1996/06/29 09:05:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.0 1996/11/18 13:22:18 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -76,10 +76,10 @@ xf86FillRectTileCached(
 /* For performance: if only one box, see if it needs to be cached. */
 /* Don't cache if area being filled is smaller than the pattern.   */
 
-#define DO_CACHE_PATTERN(nRectInit, pRectInit, pPixmap)                 \
-    (!(((nRectInit) == 1) &&                                            \
-       ((pRectInit)->width <= (pPixmap)->drawable.width) &&             \
-       ((pRectInit)->height <= (pPixmap)->drawable.height)))
+#define DO_CACHE_PATTERN(nBox, pBox, pPixmap)                     \
+    (!(((nBox) == 1) &&                                           \
+       ((pBox)->x2 - (pbox)->x1 <= (pPixmap)->drawable.width) &&  \
+       ((pBox)->y2 - (pbox)->y1 <= (pPixmap)->drawable.height)))
 
 
 static Bool UsingStippleFallBack = FALSE;
@@ -103,7 +103,11 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     void	    (*BoxFill)();
     int		    n;
     int		    xorg, yorg;
-    PixmapPtr	    pPixmap;
+    int		    nboxFill;
+
+    /* No bullshit please. */
+    if (nrectFill <= 0)
+        return;
 
     /*
      * cfb does "priv = cfbGetGCPrivate(pGC);" here. But since we compile
@@ -241,6 +245,7 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     	    DEALLOCATE_LOCAL(pboxClippedBase);
         return;
     }
+    nboxFill = pboxClipped - pboxClippedBase;
 
     /*
      * This seems to be a better place to set BoxFill. Here we know what
@@ -263,7 +268,7 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
     case FillTiled:
         if ((xf86AccelInfoRec.Flags & PIXMAP_CACHE)
-        && DO_CACHE_PATTERN(nrectFill, prectInit, pGC->tile.pixmap)
+        && DO_CACHE_PATTERN(nboxFill, pboxClippedBase, pGC->tile.pixmap)
         && xf86CacheTile(pGC->tile.pixmap)) {
             BoxFill = xf86FillRectTileCached;
         }
@@ -276,7 +281,7 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     case FillStippled:
         if ((xf86AccelInfoRec.Flags & PIXMAP_CACHE)
         && (!(xf86AccelInfoRec.Flags & DO_NOT_CACHE_STIPPLES))
-        && DO_CACHE_PATTERN(nrectFill, prectInit, pGC->stipple)
+        && DO_CACHE_PATTERN(nboxFill, pboxClippedBase, pGC->stipple)
         && xf86CacheStipple(pDrawable, pGC)) {
             BoxFill = xf86FillRectTileCached;
         }
@@ -296,7 +301,7 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     case FillOpaqueStippled:
         if ((xf86AccelInfoRec.Flags & PIXMAP_CACHE)
         && (!(xf86AccelInfoRec.Flags & DO_NOT_CACHE_STIPPLES))
-        && DO_CACHE_PATTERN(nrectFill, prectInit, pGC->stipple)
+        && DO_CACHE_PATTERN(nboxFill, pboxClippedBase, pGC->stipple)
         && xf86CacheStipple(pDrawable, pGC)) {
             BoxFill = xf86FillRectTileCached;
         }
@@ -315,8 +320,7 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
     }
 
-    (*BoxFill) (pDrawable, pGC,
-		pboxClipped-pboxClippedBase, pboxClippedBase);
+    (*BoxFill) (pDrawable, pGC, nboxFill, pboxClippedBase);
     if (UsingStippleFallBack)
         UsingStippleFallBack = FALSE;
     if (pboxClippedBase != stackRects)

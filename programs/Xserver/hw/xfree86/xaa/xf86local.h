@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.0 1996/11/18 13:22:27 dawes Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -329,6 +329,45 @@ xf86ImageGlyphBltTE(
 );
 
 void
+xf86ImageGlyphBltNonTE(
+#if NeedFunctionPrototypes
+    DrawablePtr		pDrawable,
+    GCPtr		pGC,
+    int			xInit,
+    int			yInit,
+    int			nglyph,
+    CharInfoPtr		*ppci,
+    unsigned char	*pglyphBase
+#endif
+);
+
+void
+xf86PolyGlyphBltTE(
+#if NeedFunctionPrototypes
+    DrawablePtr		pDrawable,
+    GCPtr		pGC,
+    int			xInit,
+    int			yInit,
+    int			nglyph,
+    CharInfoPtr		*ppci,
+    unsigned char *	pglyphBase
+#endif
+);
+
+void
+xf86PolyGlyphBltNonTE(
+#if NeedFunctionPrototypes
+    DrawablePtr		pDrawable,
+    GCPtr		pGC,
+    int			xInit,
+    int			yInit,
+    int			nglyph,
+    CharInfoPtr		*ppci,
+    unsigned char *	pglyphBase
+#endif
+);
+
+void
 xf86ImageTextTECPUToScreenColorExpand(
 #if NeedFunctionPrototypes
     DrawablePtr		pDrawable,
@@ -381,20 +420,7 @@ xf86PolyTextTEScreenToScreenColorExpand(
 );
 
 void
-xf86ImageGlyphBltNonTE(
-#if NeedFunctionPrototypes
-    DrawablePtr		pDrawable,
-    GCPtr		pGC,
-    int			xInit,
-    int			yInit,
-    int			nglyph,
-    CharInfoPtr		*ppci,
-    unsigned char	*pglyphBase
-#endif
-);
-
-void
-xf86PolyGlyphBltTE(
+xf86ImageTextNonTECPUToScreenColorExpand(
 #if NeedFunctionPrototypes
     DrawablePtr		pDrawable,
     GCPtr		pGC,
@@ -407,7 +433,33 @@ xf86PolyGlyphBltTE(
 );
 
 void
-xf86PolyGlyphBltNonTE(
+xf86ImageTextNonTEScreenToScreenColorExpand(
+#if NeedFunctionPrototypes
+    DrawablePtr		pDrawable,
+    GCPtr		pGC,
+    int			xInit,
+    int			yInit,
+    int			nglyph,
+    CharInfoPtr		*ppci,
+    unsigned char *	pglyphBase
+#endif
+);
+
+void
+xf86PolyTextNonTECPUToScreenColorExpand(
+#if NeedFunctionPrototypes
+    DrawablePtr		pDrawable,
+    GCPtr		pGC,
+    int			xInit,
+    int			yInit,
+    int			nglyph,
+    CharInfoPtr		*ppci,
+    unsigned char *	pglyphBase
+#endif
+);
+
+void
+xf86PolyTextNonTEScreenToScreenColorExpand(
 #if NeedFunctionPrototypes
     DrawablePtr		pDrawable,
     GCPtr		pGC,

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 13:30:06 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.17 1996/10/06 13:12:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.18 1996/10/16 14:39:11 dawes Exp $
 
 #if defined(SVR3Architecture) || defined(SVR4Architecture) || defined(SCOArchitecture)
 # define OSModule OS_SYSV
@@ -20,6 +20,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.17 1996/
 #endif
 #if defined(LinuxArchitecture)
 # define OSModule OS_Linux
+#if defined(AlphaArchitecture) && !UseElfFormat  /* fix/replacement for broken libc-0.43 io.c */
+  OS_IO_SRC = glibcAxpIo.c
+  OS_IO_OBJ = glibcAxpIo.c
+#endif
 #endif
 #if defined(LynxOSArchitecture)
 # define OSModule OS_LynxOS
@@ -74,8 +78,12 @@ DEFINES = $(GASDEFINES) $(CONSDEFINES) $(IOPERMDEFINES)
 PROG = SuperProbe
 
 AllTarget(ProgramTargetName($(PROG)))
-SetUIDProgramTarget($(PROG),$(OBJS),NullParameter,$(SPECIALS),NullParameter)
-InstallProgramWithFlags($(PROG),$(BINDIR),$(INSTUIDFLAGS))
+NormalProgramTarget($(PROG),$(OBJS),NullParameter,$(SPECIALS),NullParameter)
+InstallProgram($(PROG),$(BINDIR))
 InstallManPage($(PROG),$(MANDIR))
+
+#if defined(LinuxArchitecture) && defined(AlphaArchitecture) && !UseElfFormat
+LinkSourceFile(glibc_axp_ioperm.c,../common_hw)
+#endif
 
 DependTarget()

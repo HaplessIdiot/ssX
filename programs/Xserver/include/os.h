@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h /main/55 1995/12/08 13:34:38 dpw $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.13 1996/03/29 22:19:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.14 1996/05/13 06:44:25 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -458,6 +458,12 @@ extern void OsInit(
 );
 
 extern void OsCleanup(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void OsVendorFatalError(
 #if NeedFunctionPrototypes
     void
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.20 1996/10/17 15:22:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.21 1996/10/23 13:12:56 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -129,6 +129,8 @@ extern Bool defeatAccessControl;
 #ifdef SERVER_LOCK
 static Bool nolock = FALSE;
 #endif
+
+extern char* protNoListen;
 
 Bool CoreDump;
 Bool noTestExtensions;
@@ -544,6 +546,7 @@ void UseMsg()
     ErrorF("-logo                  enable logo in screen saver\n");
     ErrorF("nologo                 disable logo in screen saver\n");
 #endif
+    ErrorF("-nolisten string       don't listen on protocol\n");
     ErrorF("-p #                   screen-saver pattern duration (minutes)\n");
     ErrorF("-pn                    accept failure to listen on all ports\n");
     ErrorF("-nopn                  reject failure to listen on all ports\n");
@@ -801,6 +804,13 @@ char	*argv[];
 	    logoScreenSaver = 0;
 	}
 #endif
+	else if ( strcmp( argv[i], "-nolisten") == 0)
+	{
+            if(++i < argc)
+	        protNoListen = argv[i];
+	    else
+		UseMsg();
+	}
 	else if ( strcmp( argv[i], "-p") == 0)
 	{
 	    if(++i < argc)
@@ -1289,6 +1299,9 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 #endif
     ErrorF("\n");
+#ifdef DDXOSFATALERROR
+    OsVendorFatalError();
+#endif
     AbortServer();
     /*NOTREACHED*/
 }

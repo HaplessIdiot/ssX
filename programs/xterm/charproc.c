@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.36 1996/09/22 05:16:06 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.37 1996/11/18 13:25:50 dawes Exp $
  */
 
 /*
@@ -859,6 +859,7 @@ static void VTparse()
 	register int row, col, top, bot, scstype, count;
 	Bool private_function;	/* distinguish private-mode from standard */
 	int string_mode;	/* nonzero iff we're processing a string */
+	int lastchar;		/* positive iff we had a graphic character */
 
 	/* We longjmp back to this point in VTReset() */
 	(void)setjmp(vtjmpbuf);
@@ -868,8 +869,10 @@ static void VTparse()
 	scstype = 0;
 	private_function = False;
 	string_mode = 0;
+	lastchar = -1;
 
 	for( ; ; ) {
+            int thischar = -1;
 	    c = doinput();
 
 	    /* Accumulate string for APC, DCS, PM, OSC, SOS controls */
@@ -926,20 +929,22 @@ static void VTparse()
 				cp++;
 			}
 			if(screen->curss) {
+				thischar = *bptr;
 				dotext(screen, term->flags,
 				 screen->gsets[(int)(screen->curss)],
 				 	bptr, bptr + 1,
 					term->cur_foreground,
 					term->cur_background );
 				screen->curss = 0;
-				bptr++;
 			}
-			if(bptr < cp)
+			if(bptr < cp) {
+				thischar = cp[-1];
 				dotext(screen, term->flags,
 				 screen->gsets[(int)(screen->curgl)],
 				 	bptr, cp,
 					term->cur_foreground,
 					term->cur_background );
+			}
 			bptr = cp;
 			break;
 
@@ -1859,6 +1864,23 @@ static void VTparse()
 			parsestate = groundtable;
 			break;
 
+		 case CASE_REP:
+			/* REP */
+			if (lastchar >= 0 && isprint(lastchar)) {
+			    Char repeated[2];
+			    count = (param[0] < 1) ? 1 : param[0];
+			    repeated[0] = lastchar;
+			    while (count-- > 0) {
+				dotext(screen, term->flags,
+					screen->gsets[(int)(screen->curgl)],
+					repeated, repeated+1,
+					term->cur_foreground,
+					term->cur_background );
+			    }
+			}
+			parsestate = groundtable;
+			break;
+
 		 case CASE_LS2:
 			/* LS2 */
 			screen->curgl = 2;
@@ -1903,7 +1925,9 @@ static void VTparse()
 			window_ops(term);
 			parsestate = groundtable;
 			break;
-		}
+	    }
+	    if (parsestate == groundtable)
+		    lastchar = thischar;
 	}
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.8 1996/10/18 15:01:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.9 1996/10/21 05:27:32 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -101,6 +101,7 @@ __inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r,
 	    getbuf = SWPBIT(pix+3)<<24 | SWPBIT(pix+2)<<16
 	       |     SWPBIT(pix+1)<< 8 | SWPBIT(pix+0)<< 0;
 	    *IMG_TRANS = getbuf;
+	    write_mem_barrier();
 	    pix += 4;
 	 }
 	 pb += pwidth;

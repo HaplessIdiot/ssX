@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.55 1996/09/29 13:35:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.56 1996/10/03 08:34:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -83,6 +83,8 @@ typedef struct {
    unsigned long VGAbase;      /* VGA ot XGA 64K aperature base address */
    int s3RefClk;
    int s3BlankDelay;
+   char *DCConfig;
+   char *DCOptions;
 } GDevRec, *GDevPtr;
 
 typedef struct {
@@ -98,6 +100,7 @@ typedef struct {
    int defaultVisual;
    OFlagSet options;
    OFlagSet xconfigFlag;
+   char *DCOptions;
 } DispRec, *DispPtr;
 
 /*
@@ -393,7 +396,7 @@ static SymTabRec KeyMapTab[] = {
 #define TEXTCLOCKFRQ   103
 
 #ifdef INIT_CONFIG
-static SymTabRec DeviceTab[] = {
+SymTabRec DeviceTab[] = {
   { ENDSECTION, "endsection"},
   { IDENTIFIER, "identifier"},
   { VENDOR, 	"vendorname"},
@@ -424,6 +427,10 @@ static SymTabRec DeviceTab[] = {
   { TEXTCLOCKFRQ, "textclockfreq" },
   { -1,		"" },
 };
+#else
+
+extern SymTabRec DeviceTab[];
+
 #endif /* INIT_CONFIG */
 
 /* Keyboard keywords */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.37 1996/10/21 05:28:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.38 1996/11/18 13:21:55 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -230,38 +230,17 @@ unsigned char defaultDAC[768] =
 #endif /* NEED_SAVED_CMAP */
 
 /*
- * With USE_ASM_SLOWBCOPY, the version in common_hw/SlowBcopy.s is used.
+ * With Intel, the version in common_hw/SlowBcopy.s is used.
  * This avoids port I/O during the copy (which causes problems with
  * some hardware.
  */
 #ifdef __alpha__
-#undef USE_ASM_SLOWBCOPY
+#define slowbcopy_tobus(src,dst,count) SlowBCopyToBus(src,dst,count)
+#define slowbcopy_frombus(src,dst,count) SlowBCopyFromBus(src,dst,count)
 #else /* __alpha__ */
-#define USE_ASM_SLOWBCOPY
+#define slowbcopy_tobus(src,dst,count) SlowBcopy(src,dst,count)
+#define slowbcopy_frombus(src,dst,count) SlowBcopy(src,dst,count)
 #endif /* __alpha__ */
-
-#ifdef USE_ASM_SLOWBCOPY
-#define slowbcopy SlowBcopy
-#else
-/*
- * slowbcopy --
- *	slow version of bcopy for save/restore of font and text data.
- */
-static void
-slowbcopy(src, dst, count)
-     char *src, *dst;
-     int count;
-{
-  int i;
-  unsigned char temp;
-
-  for (i = 0; i < count; i++)
-  {
-    *dst++ = *src++;
-    outb(0x80, 0x00);
-  }
-}
-#endif
 
 /*
  * vgaProtect --
@@ -662,7 +641,7 @@ vgaHWRestore(restore)
       outw(0x3CE, 0x0204);    /* read plane 2 */
       outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
       outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy(restore->FontInfo1, vgaBase, FONT_AMOUNT);
+      slowbcopy_tobus(restore->FontInfo1, vgaBase, FONT_AMOUNT);
     }
     if (restore->FontInfo2) {
       outw(0x3C4, 0x0802);    /* write to plane 3 */
@@ -670,7 +649,7 @@ vgaHWRestore(restore)
       outw(0x3CE, 0x0304);    /* read plane 3 */
       outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
       outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy(restore->FontInfo2, vgaBase, FONT_AMOUNT);
+      slowbcopy_tobus(restore->FontInfo2, vgaBase, FONT_AMOUNT);
     }
     if (restore->TextInfo) {
       outw(0x3C4, 0x0102);    /* write to plane 0 */
@@ -678,13 +657,13 @@ vgaHWRestore(restore)
       outw(0x3CE, 0x0004);    /* read plane 0 */
       outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
       outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy(restore->TextInfo, vgaBase, TEXT_AMOUNT);
+      slowbcopy_tobus(restore->TextInfo, vgaBase, TEXT_AMOUNT);
       outw(0x3C4, 0x0202);    /* write to plane 1 */
       outw(0x3C4, 0x0604);    /* enable plane graphics */
       outw(0x3CE, 0x0104);    /* read plane 1 */
       outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
       outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy((char *)restore->TextInfo + TEXT_AMOUNT, vgaBase, TEXT_AMOUNT);
+      slowbcopy_tobus((char *)restore->TextInfo + TEXT_AMOUNT, vgaBase, TEXT_AMOUNT);
     }
   }
   vgaSaveScreen(NULL, TRUE);
@@ -954,7 +933,7 @@ vgaHWSave(save, size)
       outw(0x3CE, 0x0204);    /* read plane 2 */
       outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
       outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy(vgaBase, save->FontInfo1, FONT_AMOUNT);
+      slowbcopy_frombus(vgaBase, save->FontInfo1, FONT_AMOUNT);
     }
 #endif /* SAVE_FONT1 */
 #ifdef SAVE_FONT2
@@ -967,7 +946,7 @@ vgaHWSave(save, size)
       outw(0x3CE, 0x0304);    /* read plane 3 */
       outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
       outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy(vgaBase, save->FontInfo2, FONT_AMOUNT);
+      slowbcopy_frombus(vgaBase, save->FontInfo2, FONT_AMOUNT);
     }
 #endif /* SAVE_FONT2 */
 #ifdef SAVE_TEXT
@@ -984,13 +963,13 @@ vgaHWSave(save, size)
       outw(0x3CE, 0x0004);    /* read plane 0 */
       outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
       outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy(vgaBase, save->TextInfo, TEXT_AMOUNT);
+      slowbcopy_frombus(vgaBase, save->TextInfo, TEXT_AMOUNT);
       outw(0x3C4, 0x0202);    /* write to plane 1 */
       outw(0x3C4, 0x0604);    /* enable plane graphics */
       outw(0x3CE, 0x0104);    /* read plane 1 */
       outw(0x3CE, 0x0005);    /* write mode 0, read mode 0 */
       outw(0x3CE, 0x0506);    /* set graphics */
-      slowbcopy(vgaBase, (char *)save->TextInfo + TEXT_AMOUNT, TEXT_AMOUNT);
+      slowbcopy_frombus(vgaBase, (char *)save->TextInfo + TEXT_AMOUNT, TEXT_AMOUNT);
     }
 #endif /* SAVE_TEXT */
   }

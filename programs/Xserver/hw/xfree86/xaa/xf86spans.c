@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86spans.c,v 3.0 1996/11/18 13:22:39 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -79,7 +79,6 @@ xf86FillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     xf86AccelInfoRec.FillSpansSolid(n, ppt, pwidth, fSorted, pGC->fgPixel,
         pGC->alu);
 
-    DEALLOCATE_LOCAL(pBox);
     DEALLOCATE_LOCAL(ppt);
     DEALLOCATE_LOCAL(pwidth);
 }
@@ -108,8 +107,6 @@ xf86FillSpansAsRects(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
     int i, h;
-    BoxPtr pBox;
-    int nBox;
 
     if (!(pGC->planemask))
 	return;
@@ -190,6 +187,8 @@ xf86FillSpansTiled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int *initPwidth;
     cfbPrivGCPtr devPriv;
 
+    if (nInit <= 0)
+        return;
     if (!(pGC->planemask))
         return;
 
@@ -213,7 +212,8 @@ xf86FillSpansTiled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
                     ppt, pwidth, fSorted);
 
-    DoPatternedFillSpans (pDrawable, pGC, n, ppt, pwidth);
+    if (n > 0)
+        DoPatternedFillSpans (pDrawable, pGC, n, ppt, pwidth);
 
     DEALLOCATE_LOCAL(initPpt);
     DEALLOCATE_LOCAL(initPwidth);
@@ -237,6 +237,8 @@ xf86FillSpansStippled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int *initPwidth;
     cfbPrivGCPtr devPriv;
 
+    if (nInit <= 0)
+        return;
     if (!(pGC->planemask))
         return;
 
@@ -260,7 +262,8 @@ xf86FillSpansStippled(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
                     ppt, pwidth, fSorted);
 
-    DoPatternedFillSpans (pDrawable, pGC, n, ppt, pwidth);
+    if (n > 0)
+        DoPatternedFillSpans (pDrawable, pGC, n, ppt, pwidth);
 
     DEALLOCATE_LOCAL(initPpt);
     DEALLOCATE_LOCAL(initPwidth);

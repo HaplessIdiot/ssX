@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.18 1996/10/13 11:21:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.19 1996/11/18 13:21:56 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -117,6 +117,9 @@
 
 /* S3 */
 #define PCI_CHIP_VIRGE		0x5631
+#define PCI_CHIP_TRIO		0x8811
+#define PCI_CHIP_AURORA64VP	0x8812
+#define PCI_CHIP_TRIO64UVP	0x8814
 #define PCI_CHIP_TRIO		0x8811
 #define PCI_CHIP_VIRGE_VX	0x883D
 #define PCI_CHIP_868		0x8880
@@ -258,6 +261,8 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_S3,	"S3",	{
 				{PCI_CHIP_VIRGE,	"ViRGE"},
 				{PCI_CHIP_TRIO,		"Trio32/64"},
+				{PCI_CHIP_AURORA64VP,	"Aurora64V+"},
+				{PCI_CHIP_TRIO64UVP,	"Trio64UV+"},
 				{PCI_CHIP_VIRGE_VX,	"ViRGE/VX"},
 				{PCI_CHIP_868,		"868"},
 				{PCI_CHIP_928,		"928"},

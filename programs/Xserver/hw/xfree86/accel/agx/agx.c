@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.49 1996/09/14 13:06:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.50 1996/10/16 14:39:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -141,6 +141,8 @@ ScrnInfoRec agxInfoRec = {
     0,                  /* int offTime    */
     -1,                 /* int s3BlankDelay    */
     0,			/* int textClockFreq */
+  NULL,                 /* char* DCConfig */
+  NULL,                 /* char* DCOptions */
 #ifdef XFreeXDGA
     0,                  /* int directMode    */
     agxSetVidPage,      /* Set Vid Page    */

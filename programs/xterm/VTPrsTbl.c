@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: VTPrsTbl.c,v 1.10 95/06/09 22:17:06 gildea Exp $
- *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.7 1996/09/22 05:16:01 dawes Exp $
+ *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.8 1996/11/18 13:25:46 dawes Exp $
  */
 
 /*
@@ -485,7 +485,7 @@ CASE_GROUND_STATE,
 /*	`		a		b		c	*/
 CASE_HPA,
 CASE_GROUND_STATE,
-CASE_GROUND_STATE,
+CASE_REP,
 CASE_DA1,
 /*	d		e		f		g	*/
 CASE_VPA,

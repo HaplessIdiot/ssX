@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.19 1996/10/08 12:23:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.20 1996/11/18 13:10:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -256,6 +256,7 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 }
 
 #define mem_barrier() __asm__ __volatile__("mb": : :"memory")
+#define write_mem_barrier() WHAT??
 
 
 #else /* defined(linux) && defined(__alpha__) */
@@ -267,6 +268,7 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #define stl_u(v,p)	((unsigned int   *)(p)) = (v)
 #define stw_u(v,p)	((unsigned short *)(p)) = (v)
 #define mem_barrier()   /* NOP */
+#define write_mem_barrier()   /* NOP */
 
 #if !defined(FAKEIT) && !defined(__mc68000__)
 #ifdef GCCUSESGAS
@@ -1186,7 +1188,7 @@ static int inb(port)
 #define stq_u(v,p)	((unsigned long  *)(p)) = (v)
 #define stl_u(v,p)	((unsigned int   *)(p)) = (v)
 #define stw_u(v,p)	((unsigned short *)(p)) = (v)
-#define mem_barrier()   /* NOP */
+#define write_mem_barrier()   /* NOP */
 #endif /* __GNUC__ */
 
 #if defined(IODEBUG) && defined(__GNUC__)

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.12 1996/09/24 13:52:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.13 1996/10/03 08:32:31 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -226,13 +226,14 @@ int *Chipset;
     	    p1 = strchr(p1, ',');
     	    if (p1 != NULL)
     	    {
-    	    	(void)strncpy(name, p, (p1-p));
-		name[p1-p] = '\0';
+    	    	(void)strncpy(name, p, (p1-p) > sizeof(name) ? sizeof(name) : (p1-p));
+		name[sizeof(name)] = '\0';
 		p1++;
     	    }
 	    else
 	    {
-		(void)strcpy(name, p);
+		(void)strncpy(name, p, sizeof(name) - 1);
+		name[sizeof(name)] = '\0';
 	    }
 	    if (StrCaseCmp(name, chip_p->name) == 0)
 	    {
@@ -373,7 +374,8 @@ char *argv[];
     	p = argv[0];
     else
     	p++;
-    (void)strcpy(MyName, p);
+    (void)strncpy(MyName, p, sizeof(MyName) - 1);
+    MyName[sizeof(MyName)] = '\0';
 
     for (i=1; i < argc; i++)
     {

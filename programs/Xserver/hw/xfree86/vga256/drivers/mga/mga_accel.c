@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.0 1996/11/18 13:18:05 dawes Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -17,11 +17,15 @@
 
 void MgaSync();
 void MGANAME(SetupForFillRectSolid)();
-void MgaSubsequentFillRectSolid();
+void MGANAME(SubsequentFillRectSolid)();
 void MGANAME(SetupForScreenToScreenCopy)();
 void MGANAME(SubsequentScreenToScreenCopy)();
 void MGANAME(SetupForCPUToScreenColorExpand)();
-void MgaSubsequentCPUToScreenColorExpand();
+void MGANAME(SubsequentCPUToScreenColorExpand)();
+void MGANAME(SetupForScreenToScreenColorExpand)();
+void MGANAME(SubsequentScreenToScreenColorExpand)();
+void MGANAME(SubsequentTwoPointLine)();
+void MGANAME(SetClippingRectangle)();
 
 /* 
  * Include any definitions for communicating with the coprocessor here.
@@ -47,14 +51,18 @@ void MgaSubsequentCPUToScreenColorExpand();
  */
 /* #include "coprocessor.h" */
 
-static int mga_cmd, mga_lastcmd, mga_rop;
+static int mga_cmd, mga_lastcmd, mga_linecmd, mga_rop;
 static int mgablitxdir, mgablitydir;
+static int mga_ClipRect;
 
 /*
  * The following function sets up the supported acceleration. Call it
  * from the FbInit() function in the SVGA driver.
  */
-void MGANAME(AccelInit)() {
+void MGANAME(AccelInit)() 
+{
+    int tmp;
+    
     /*
      * If you to disable acceleration, just don't modify anything
      * in the AccelInfoRec.
@@ -65,25 +73,22 @@ void MGANAME(AccelInit)() {
      * Usually, you will want to use BACKGROUND_OPERATIONS,
      * and if you have ScreenToScreenCopy, use the PIXMAP_CACHE.
      */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE;
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
+			     TWO_POINT_LINE_NOT_LAST | USE_TWO_POINT_LINE |
+			     HARDWARE_CLIP_LINE;
+
+    /*
+     * install hardware lines and clipping
+     */
+
+    xf86AccelInfoRec.SubsequentTwoPointLine = MGANAME(SubsequentTwoPointLine);
+    xf86AccelInfoRec.SetClippingRectangle = MGANAME(SetClippingRectangle);
 
     /*
      * The following line installs a "Sync" function, that waits for
      * all coprocessor operations to complete.
      */
     xf86AccelInfoRec.Sync = MgaSync;
-
-switch( MgaAccelSwitch("SolidFill") )
-{
-case 2:
-    xf86GCInfoRec.PolyFillRectSolidFlags = 0;
-#if PSZ == 24
-    xf86GCInfoRec.PolyFillRectSolidFlags |= NO_PLANEMASK;
-#endif
-    xf86AccelInfoRec.SetupForFillRectSolid   = (void (*)())NoopDDA;
-    xf86AccelInfoRec.SubsequentFillRectSolid = (void (*)())NoopDDA;
-break;
-case 1:                
 
     /*
      * We want to set up the FillRectSolid primitive for filling a solid
@@ -98,21 +103,10 @@ case 1:
     /*
      * Install the low-level functions for drawing solid filled rectangles.
      */
-    xf86AccelInfoRec.SetupForFillRectSolid   = MGANAME(SetupForFillRectSolid);
-    xf86AccelInfoRec.SubsequentFillRectSolid = MgaSubsequentFillRectSolid;
-} 
-
-switch( MgaAccelSwitch("ScreenCopy") )
-{
-case 2:
-    xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY;
-#if PSZ == 24
-    xf86GCInfoRec.CopyAreaFlags |= NO_PLANEMASK;
-#endif
-    xf86AccelInfoRec.SetupForScreenToScreenCopy = (void (*)())NoopDDA;
-    xf86AccelInfoRec.SubsequentScreenToScreenCopy = (void (*)())NoopDDA;
-break;
-case 1:
+    xf86AccelInfoRec.SetupForFillRectSolid   = 
+    				MGANAME_A(SetupForFillRectSolid);
+    xf86AccelInfoRec.SubsequentFillRectSolid = 
+    				MGANAME_A(SubsequentFillRectSolid);
 
     /*
      * We also want to set up the ScreenToScreenCopy (BitBLT) primitive for
@@ -130,48 +124,39 @@ case 1:
      * Install the low-level functions for screen-to-screen copy.
      */
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
-        				MGANAME(SetupForScreenToScreenCopy);
+        			MGANAME_A(SetupForScreenToScreenCopy);
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
-        				MGANAME(SubsequentScreenToScreenCopy);
-}
-
-switch( MgaAccelSwitch("CPUColorExp") )
-{
-case 2:
-    xf86AccelInfoRec.ColorExpandFlags = SCANLINE_PAD_DWORD |
-        CPU_TRANSFER_PAD_DWORD | BIT_ORDER_IN_BYTE_LSBFIRST |
-        LEFT_EDGE_CLIPPING; 
-#if PSZ == 24
-    xf86AccelInfoRec.ColorExpandFlags |= NO_PLANEMASK;
-#endif
-    xf86AccelInfoRec.SetupForCPUToScreenColorExpand = (void (*)())NoopDDA;
-    xf86AccelInfoRec.SubsequentCPUToScreenColorExpand = (void (*)())NoopDDA;
-    {
-        static char expandwin[0x1C00];
-        xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)expandwin;
-        xf86AccelInfoRec.CPUToScreenColorExpandRange = 0x1C00;
-    }
-break;
-case 1:
+        			MGANAME_A(SubsequentScreenToScreenCopy);
 
     /*
-     * CPU-to-screen color expansion
+     * color expansion
      */
     xf86AccelInfoRec.ColorExpandFlags = SCANLINE_PAD_DWORD |
         CPU_TRANSFER_PAD_DWORD | BIT_ORDER_IN_BYTE_LSBFIRST |
-        LEFT_EDGE_CLIPPING; 
+        LEFT_EDGE_CLIPPING | VIDEO_SOURCE_GRANULARITY_PIXEL; 
 #if PSZ == 24
     xf86AccelInfoRec.ColorExpandFlags |= NO_PLANEMASK;
 #endif
 
+    xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
+    			MGANAME_A(SetupForScreenToScreenColorExpand);
+    xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
+    			MGANAME_A(SubsequentScreenToScreenColorExpand);
+    					
     xf86AccelInfoRec.SetupForCPUToScreenColorExpand = 
-				MGANAME(SetupForCPUToScreenColorExpand);
+				MGANAME_A(SetupForCPUToScreenColorExpand);
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand = 
-				MgaSubsequentCPUToScreenColorExpand;
-     					
-    xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)MGAMMIOBase;
+				MGANAME_A(SubsequentCPUToScreenColorExpand);
+    
+    if( xf86AccelInfoRec.SubsequentCPUToScreenColorExpand == 
+    							(void (*)())NoopDDA) 
+    {	
+        static char expandwin[0x1C00];	
+        xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)expandwin;
+    }
+    else
+        xf86AccelInfoRec.CPUToScreenColorExpandBase = (unsigned*)MGAMMIOBase;
     xf86AccelInfoRec.CPUToScreenColorExpandRange = 0x1C00;
-}
 
     /*
      * Finally, we set up the video memory space available to the pixmap
@@ -185,8 +170,82 @@ case 1:
         		vga256InfoRec.videoRam * 1024 - 1024);
 }
 
+/*
+ * Replicate colors and planemasks
+ */ 
+#if PSZ == 8 
+#define REPLICATE(pixel) pixel |= (pixel << 24) | (pixel << 16) | (pixel << 8); 
+#elif PSZ == 16 
+#define REPLICATE(pixel) pixel |= (pixel << 16);
+#else 
+#define REPLICATE(pixel) ; 
+#endif    
 
 /*
+ * Disable clipping
+ */
+#define DISABLECLIPPING() \
+    MGAREG(MGAREG_CXBNDRY) = 0xFFFF0000;  /* (maxX << 16) | minX */ \
+    MGAREG(MGAREG_YTOP) = 0x00000000;  /* minPixelPointer */ \
+    MGAREG(MGAREG_YBOT) = 0x007FFFFF;  /* maxPixelPointer */ \
+    mga_ClipRect = 0; /* one time line clipping is off */
+
+/*
+ * Use faster access type for certain rop's
+ *
+ * SETACCESSNOGXCOPY when rop isn't GXcopy
+ * SETACCESS1 for GXcopy and foreground only used
+ * SETACCESS2 for GXcopy and both foreground and background used
+ */
+#define SETACCESSNOGXCOPY(cmd,rop) \
+    if( (rop == GXclear) || (rop == GXcopyInverted) || (rop == GXset) ) \
+    	cmd |= MGADWG_RPL; \
+    else \
+    	cmd |= MGADWG_RSTR;
+
+#if PSZ != 24
+
+#define SETACCESS2(cmd,rop,bg,fg,transc) SETACCESS1(cmd,rop,fg)
+#define SETACCESS1(cmd,rop,fg) \
+    if( rop == GXcopy ) \
+    	cmd |= MGADWG_BLK; \
+    else \
+        SETACCESSNOGXCOPY(cmd,rop);
+
+#else /* PSZ != 24 */
+
+#define SETACCESS1(cmd,rop,fg) \
+    if( rop == GXcopy ) \
+    { \
+        if( !(((fg >> 16) ^ fg) & 0xFF) && !(((fg >> 8) ^ fg) & 0xFF) ) \
+        { \
+    	    fg |= (fg & 0xFF) << 24; \
+    	    mga_cmd |= MGADWG_BLK; \
+    	} \
+    	else \
+    	    mga_cmd |= MGADWG_RPL; \
+    } \
+    else \
+        SETACCESSNOGXCOPY(cmd,rop);
+
+#define SETACCESS2(cmd,rop,bg,fg,transc) \
+    if( rop == GXcopy ) \
+        if( (transc || \
+             !(((bg >> 16) ^ bg) & 0xFF) && !(((bg >> 8) ^ bg) & 0xFF) ) && \
+            !(((fg >> 16) ^ fg) & 0xFF) && !(((fg >> 8) ^ fg) & 0xFF) ) \
+        { \
+    	    bg |= (bg & 0xFF) << 24; \
+    	    fg |= (fg & 0xFF) << 24; \
+    	    cmd |= MGADWG_BLK; \
+    	} \
+    	else \
+    	    cmd |= MGADWG_RPL; \
+    else \
+        SETACCESSNOGXCOPY(cmd,rop);
+
+#endif /* PSZ != 24 */
+             
+/*    
  * This is the implementation of the SetupForFillRectSolid function
  * that sets up the coprocessor for a subsequent batch for solid
  * rectangle fills.
@@ -195,58 +254,30 @@ void MGANAME(SetupForFillRectSolid)(color, rop, planemask)
     int color, rop;
     unsigned planemask;
 {
-#if PSZ == 8
-    color |= (color << 24) | (color << 16) | (color << 8);
-    planemask |= (planemask << 24) | (planemask << 16) | (planemask << 8);
-#elif PSZ == 16
-    color |= (color << 16);
-    planemask |= (planemask << 16);    
-#endif
-
     mga_cmd = MGADWG_TRAP | MGADWG_NOZCMP | MGADWG_SOLID | MGADWG_ARZERO | 
     	       MGADWG_SGNZERO | MGADWG_SHIFTZERO | MGADWG_BMONOLEF;
-    /*
-     * now use faster access type for certain rop's
-     */
-    if( rop == GXcopy )
-    {
-#if PSZ == 24
-        if( !(((color >> 16) ^ color) & 0xFF) && 
-            !(((color >> 8) ^ color) & 0xFF) )
-        {
-    	    color |= (color & 0xFF) << 24;
-    	    mga_cmd |= MGADWG_BLK;
-    	}
-    	else
-    	    mga_cmd |= MGADWG_RPL;
-#else /* PSZ == 24 */
-    	mga_cmd |= MGADWG_BLK;
-#endif /* PSZ == 24 */ 
-    }
-    else if( (rop == GXclear) || (rop == GXcopyInverted) || (rop == GXset) )
-    {
-    	mga_cmd |= MGADWG_RPL;
-    }
-    else
-    {
-    	mga_cmd |= MGADWG_RSTR;
-    }
 
-    SETRASTEROP(rop);
+    SETACCESS1(mga_cmd,rop,color);
+
+    REPLICATE(color);
     SETFOREGROUNDCOLOR(color);
 #if PSZ != 24
+    REPLICATE(planemask);
     SETWRITEPLANEMASK(planemask);
 #endif
-    /*
-     * turn off clipping
-     */
-    MGAREG(MGAREG_CXBNDRY) = 0xFFFF0000;  /* (maxX << 16) | minX */
-    MGAREG(MGAREG_YTOP) = 0x00000000;  /* minPixelPointer */
-    MGAREG(MGAREG_YBOT) = 0x007FFFFF;  /* maxPixelPointer */
-    MGAREG(MGAREG_DWGCTL) = mga_cmd;
-}
+    SETRASTEROP(rop);
+    /* mga_lastcmd is used by TwoPointLine() to restore the FillRect state */
+    MGAREG(MGAREG_DWGCTL) = mga_lastcmd = mga_cmd;
+    DISABLECLIPPING();
 
-#if PSZ == 8
+    /* now, we construct mga_linecmd by masking the opcod and optimising */
+    /* the use of gxcopy rop. opcod is clear so we can draw lines quickly */
+
+    if ( rop == GXcopy )
+	mga_linecmd = mga_lastcmd & 0xffffff00; /* xy, RPL atyp, clear opcod */
+    else
+	mga_linecmd = mga_lastcmd & 0xffffff70; /* xy, clear opcod */
+}
 
 /*
  * This is the implementation of the SubsequentForFillRectSolid function
@@ -254,7 +285,7 @@ void MGANAME(SetupForFillRectSolid)(color, rop, planemask)
  * the specified location and size, with the parameters from the SetUp
  * call.
  */
-void MgaSubsequentFillRectSolid(x, y, w, h)
+void MGANAME(SubsequentFillRectSolid)(x, y, w, h)
     int x, y, w, h;
 {
     MGAREG(MGAREG_FXBNDRY) = ((x + w) << 16) | x;
@@ -268,8 +299,6 @@ void MgaSubsequentFillRectSolid(x, y, w, h)
  * so the transparency color is ignored.
  */
 
-#endif /* PSZ == 8 */
- 
 void MGANAME(SetupForScreenToScreenCopy)(xdir, ydir, rop, planemask,
 transparency_color)
     int xdir, ydir;
@@ -284,21 +313,10 @@ transparency_color)
     /*
      * now use faster access type for certain rop's
      */
-    if( (rop == GXcopy) || (rop == GXclear) || 
-	(rop == GXcopyInverted) || (rop == GXset) )
-    {
-    	mga_cmd |= MGADWG_RPL;
-    }
+    if( rop == GXcopy )
+        mga_cmd |= MGADWG_RPL;
     else
-    {
-    	mga_cmd |= MGADWG_RSTR;
-    }
-
-#if PSZ == 8
-	planemask |= (planemask << 8) | (planemask << 16) | (planemask << 24);
-#elif PSZ == 16
-	planemask |= (planemask << 16);
-#endif
+        SETACCESSNOGXCOPY(mga_cmd,rop);
 
     mgablitxdir = xdir;
     mgablitydir = ydir;
@@ -315,20 +333,15 @@ transparency_color)
     if( xdir != 1 )
         mga_sgn |= 1;
 
-    SETRASTEROP(rop);
 #if PSZ != 24
+    REPLICATE(planemask);
     SETWRITEPLANEMASK(planemask);
 #endif
-
-    /*
-     * disable clipping
-     */
-    MGAREG(MGAREG_CXBNDRY) = 0xFFFF0000;  /* (maxX << 16) | minX */
-    MGAREG(MGAREG_YTOP) = 0x00000000;  /* minPixelPointer */
-    MGAREG(MGAREG_YBOT) = 0x007FFFFF;  /* maxPixelPointer */
+    SETRASTEROP(rop);
     MGAREG(MGAREG_DWGCTL) = mga_lastcmd = mga_cmd;
     MGAREG(MGAREG_SGN) = mga_sgn;
     MGAREG(MGAREG_AR5) = srcpitch;
+    DISABLECLIPPING();
 }
 
 /*
@@ -399,6 +412,57 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
 }
 
 /*
+ * setup for screen-to-screen color expansion
+ */
+void MGANAME(SetupForScreenToScreenColorExpand)(bg, fg, rop, planemask)
+    int bg, fg, rop;
+    unsigned planemask;
+{
+    int transc = ( bg == -1 );
+    
+    mga_cmd = MGADWG_BITBLT | MGADWG_NOZCMP | MGADWG_SGNZERO |
+    	MGADWG_SHIFTZERO | MGADWG_BMONOLEF;
+    
+    SETACCESS2(mga_cmd,rop,bg,fg,transc)
+    /*
+     * check transparency 
+     */
+    if( transc )
+        mga_cmd |= MGWDWG_TRANSC;
+    else
+    {
+        REPLICATE(bg);
+        SETBACKGROUNDCOLOR(bg);
+    }
+
+    REPLICATE(fg);
+    SETFOREGROUNDCOLOR(fg);
+#if PSZ != 24
+    REPLICATE(planemask);
+    SETWRITEPLANEMASK(planemask);
+#endif
+    SETRASTEROP(rop);
+    MGAREG(MGAREG_DWGCTL) = mga_cmd;
+    DISABLECLIPPING();
+}
+
+/*
+ * executing screen-to-screen color expansion
+ */
+void MGANAME(SubsequentScreenToScreenColorExpand)(srcx, srcy, x, y, w, h)
+    int srcx, srcy, x, y, w, h;
+{
+    int srcStart = srcy * xf86AccelInfoRec.FramebufferWidth * 8 + srcx;
+    int srcStop = srcStart + w - 1;
+
+    MGAREG(MGAREG_AR3) = srcStart;
+    MGAREG(MGAREG_AR0) = srcStop;
+    MGAREG(MGAREG_AR5) = (w + 31) & ~31;   /* SCANLINE_PAD_DWORD */
+    MGAREG(MGAREG_FXBNDRY) = ((x + w - 1) << 16) | x;
+    MGAREG(MGAREG_YDSTLEN + MGAREG_EXEC) = (y << 16) | h;
+}
+
+/*
  * setup for CPU-to-screen color expansion
  */
 void MGANAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
@@ -409,35 +473,8 @@ void MGANAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
     
     mga_cmd = MGADWG_ILOAD | MGADWG_LINEAR | MGADWG_NOZCMP | MGADWG_SGNZERO |
     	MGADWG_SHIFTZERO | MGADWG_BMONOLEF;
-    /*
-     * now use faster access type for certain rop's
-     */
-    if( rop == GXcopy )
-    {
-#if PSZ == 24
-        if( (transc || 
-             !(((bg >> 16) ^ bg) & 0xFF) && !(((bg >> 8) ^ bg) & 0xFF) ) &&
-            !(((fg >> 16) ^ fg) & 0xFF) && !(((fg >> 8) ^ fg) & 0xFF) )
-        {
-    	    bg |= (bg & 0xFF) << 24;
-    	    fg |= (fg & 0xFF) << 24;
-    	    mga_cmd |= MGADWG_BLK;
-    	}
-    	else
-    	    mga_cmd |= MGADWG_RPL;
-#else /* PSZ == 24 */
-    	mga_cmd |= MGADWG_BLK;
-#endif /* PSZ == 24 */ 
-    }
-    else if( (rop == GXclear) || (rop == GXcopyInverted) || (rop == GXset) )
-    {
-    	mga_cmd |= MGADWG_RPL;
-    }
-    else
-    {
-    	mga_cmd |= MGADWG_RSTR;
-    }
 
+    SETACCESS2(mga_cmd,rop,bg,fg,transc)
     /*
      * check transparency 
      */
@@ -445,23 +482,14 @@ void MGANAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
         mga_cmd |= MGWDWG_TRANSC;
     else
     {
-#if PSZ == 8
-        bg |= (bg << 24) | (bg << 16) | (bg << 8);
-#elif PSZ == 16
-        bg |= (bg << 16);
-#endif
+        REPLICATE(bg);
         SETBACKGROUNDCOLOR(bg);
     }
 
-#if PSZ == 8
-    fg |= (fg << 24) | (fg << 16) | (fg << 8);
-    planemask |= (planemask << 24) | (planemask << 16) | (planemask << 8);
-#elif PSZ == 16
-    fg |= (fg << 16);
-    planemask |= (planemask << 16);    
-#endif
+    REPLICATE(fg);
     SETFOREGROUNDCOLOR(fg);
 #if PSZ != 24
+    REPLICATE(planemask);
     SETWRITEPLANEMASK(planemask);
 #endif
     SETRASTEROP(rop);
@@ -471,12 +499,10 @@ void MGANAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
     MGAREG(MGAREG_YBOT) = 0x007FFFFF;  /* maxPixelPointer */
 }
 
-#if PSZ == 8
-
 /*
  * executing CPU-to-screen color expansion
  */
-void MgaSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
+void MGANAME(SubsequentCPUToScreenColorExpand)(x, y, w, h, skipleft)
     int x, y, w, h, skipleft;
 {
 #if 0
@@ -484,12 +510,83 @@ void MgaSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
 #endif
        
     MGAREG(MGAREG_CXBNDRY) = ((x + w - 1) << 16) | (x + skipleft);
-    /* Harm's bitmap is XY - we need linear */
-    w = (w + 31) & ~31;    
+    w = (w + 31) & ~31;     /* SCANLINE_PAD_DWORD */
     MGAREG(MGAREG_AR0) = (w * h) - 1;
     MGAREG(MGAREG_AR3) = 0;            /* we need it here for stability */
     MGAREG(MGAREG_FXBNDRY) = ((x + w - 1) << 16) | x;
     MGAREG(MGAREG_YDSTLEN + MGAREG_EXEC) = (y << 16) | h;
 }
 
-#endif /* PSZ == 8 */
+/*
+ * MgaSubsequentTwoPointLine ()
+ * by ajv 961116
+ * 
+ * changelog:
+ *  961116 - started
+ *  961118 - merged it with 3.2a, added capstyle, added compatibility with
+ *           SetupForFillRectSolid (which does the setup for lines and
+ * 	     rectangles)
+ *  961120 - modified it so that fewer instructions are executed per line
+ *           segment, and moved some code into SetupForFillRect so that
+ * 	     that code is not constantly being (unnecessarily) reevaluated
+ * 	     all the time.
+ *  961121 - added one time only clipping as per Harm's notes. Also worked
+ *           to introduce concurrency by doing more work behind the EXEC. 
+ *           Reordered code for register starved CPU's (Intel x86) plus
+ * 	     it achieves better locality of code for other processors.
+ */
+
+void
+MGANAME(SubsequentTwoPointLine)(x1, y1, x2, y2, bias)
+        int x1, y1, x2, y2, bias;
+{
+    register int mga_localcmd = mga_linecmd;
+
+    /* draw the last pixel? */
+    if ( !(bias & 0x0100) )
+        mga_localcmd |= MGADWG_AUTOLINE_OPEN; /* no */
+    else
+        mga_localcmd |= MGADWG_AUTOLINE_CLOSE; /* yep */
+
+    MGAREG(MGAREG_DWGCTL) = mga_localcmd;
+    MGAREG(MGAREG_XYSTRT) = ( y1 << 16 ) | x1;
+    MGAREG(MGAREG_XYEND + MGAREG_EXEC) = ( y2 << 16 ) | x2;
+
+    /* do some work whilst the chipset is busy */
+
+    /* if clipping is on, disable it */
+    if ( mga_ClipRect )
+    {
+	DISABLECLIPPING();
+    }
+
+    /* restore FillRect state for future rects */
+    MGAREG(MGAREG_DWGCTL) = mga_lastcmd;
+}
+
+void
+MGANAME(SetClippingRectangle)(x1, y1, x2, y2)
+        int x1, y1, x2, y2;
+{
+        int tmp;
+
+        if ( x2 < x1 )
+        {
+                tmp = x2;
+                x2 = x1;
+                x1 = tmp;
+        }
+
+        if ( y2 < y1 )
+        {
+                tmp = y2;
+                y2 = y1;
+                y1 = tmp;
+        }
+        MGAREG(MGAREG_CXBNDRY) = (x2 << 16) | x1;
+        MGAREG(MGAREG_YTOP) = y1;  /* minPixelPointer */
+        MGAREG(MGAREG_YBOT) = y2 & 0x007FFFFF;  /* maxPixelPointer */
+
+	/* indicate to TwoPoint Line that one time only clipping is on */
+	mga_ClipRect = 1;
+}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.8 1996/10/18 15:01:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.9 1996/11/18 13:10:48 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -574,6 +574,7 @@ s3Init(mode)
       }
 
       outb(vgaCRIndex, 0x67);
+      outb(vgaCRReg, 0x50);  /* ask S3 why this is needed for ViRGE/VX ... */
       outb(vgaCRReg, pixmux | invert_vclk);    /* set S3 mux mode */
 
       outb(0x3c4, 0x15);
@@ -938,6 +939,13 @@ s3Init(mode)
       outb(vgaCRIndex, 0x36);            /* ViRGE/VX requires 1-cycle EDO */
       tmp = inb(vgaCRReg);               /* for GE operations */
       outb(vgaCRReg, tmp & ~0x08);
+
+      outb(vgaCRIndex, 0x67);
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, 0x50);  /* ask S3 why this is needed for ViRGE/VX ... */
+      usleep(10000);
+      outb(vgaCRIndex, 0x67);
+      outb(vgaCRReg, tmp);
    }
 
    if (s3MmioMem != NULL)
@@ -1069,7 +1077,10 @@ s3InitEnvironment()
       usleep(10000);  /* wait a little bit... */
       if (IN_SUBSYS_STAT() != 0x3000) {  /* 2nd try */
 	int tmp;
-	outb(vgaCRIndex, 0x66);
+	if (S3_ViRGE_VX_SERIES(s3ChipId))
+	   outb(vgaCRIndex, 0x63);
+	else 
+	   outb(vgaCRIndex, 0x66);
 	tmp = inb(vgaCRReg);
 	outb(vgaCRReg, tmp |  0x02);
 	outb(vgaCRReg, tmp & ~0x02);
@@ -1125,7 +1136,10 @@ s3InitEnvironment()
    else {
       int tmp;
       /* reset S3 graphics engine */
-      outb(vgaCRIndex, 0x66);
+      if (S3_ViRGE_VX_SERIES(s3ChipId))
+	 outb(vgaCRIndex, 0x63);
+      else 
+	 outb(vgaCRIndex, 0x66);
       tmp = inb(vgaCRReg);
       outb(vgaCRReg, tmp |  0x02);
       outb(vgaCRReg, tmp & ~0x02);

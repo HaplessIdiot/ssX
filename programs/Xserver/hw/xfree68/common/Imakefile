@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.1tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.2 1996/10/03 08:32:02 dawes Exp $
 
 
 
@@ -89,6 +89,7 @@ SERVERSRCS = \
 SRCS =	\
 	$(XF86DL_SRC) \
 	$(XCONFIGSRC).c \
+	xf86DCConf.c \
 	xf86IniExt.c \
 	xf86MIniExt.c \
 	xf86Cursor.c \
@@ -112,6 +113,7 @@ SRCS =	\
 OBJS = \
 	$(XF86DL_OBJ) \
 	$(XCONFIGSRC).o \
+	xf86DCConf.o \
 	xf86Cursor.o \
 	xf86Events.o \
 	xf86Io.o \
@@ -175,6 +177,7 @@ InstallDynamicModule(xf86Summa.so,$(MODULEDIR))
 # endif
 #endif
 SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
+SpecialObjectRule(xf86DCConf.o,xf86DCConf.c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES) $(EXT_DEFINES))
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES) $(KEYB_DEFINES))
 SpecialCObjectRule($(KBD),$(ICONFIGFILES),$(KEYB_DEFINES))
@@ -199,6 +202,8 @@ LinkSourceFile(xf86Beta.c,$(XF86SRC)/common)
 #endif
 LinkSourceFile(xf86Config.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Cursor.c,$(XF86SRC)/common)
+LinkSourceFile(xf86DCConf.c,$(XF86SRC)/common)
+LinkSourceFile(xf86DCConf.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Dl.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Elo.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Events.c,$(XF86SRC)/common)
@@ -235,6 +240,7 @@ InstallLinkKitNonExecFile(xf86Procs.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_Option.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_Option.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(xf86_Config.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86DCConf.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(compiler.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(XF68_FBDev.c,$(LINKKITDIR))
 

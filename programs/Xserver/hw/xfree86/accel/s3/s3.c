@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.146 1996/09/22 05:03:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.148 1996/11/18 13:10:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -141,6 +141,8 @@ ScrnInfoRec s3InfoRec =
    0,				/* int offTime */
    -1,				/* int s3BlankDelay */
    0,				/* int textClockFreq */
+   NULL,                        /* char* DCConfig */
+   NULL,                        /* char* DCOptions */
 #ifdef XFreeXDGA
    0,				/* int directMode */
    s3SetVidPage,		/* Set Vid Page */
@@ -273,6 +275,10 @@ int s3Trio32FCBug = 0;
 int s3_968_DashBug = 0;
 unsigned long s3MemBase = 0;
 Bool tmp_useSWCursor = FALSE;
+#ifdef __alpha__
+unsigned long _bus_base(void);
+Bool isJensen = FALSE;
+#endif
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern int  xf86Verbose;
@@ -315,6 +321,7 @@ int s3BiosVendor = UNKNOWN_BIOS;
 
 static Bool in_s3Probe = TRUE; /* s3ValidMode helpers */
 static Bool not_safe = TRUE;
+static int TempVirtualX, TempVirtualY;
 
 #ifdef PC98
 extern Bool	BoardInit();
@@ -638,7 +645,6 @@ s3Probe()
    DisplayModePtr pMode, pEnd;
    unsigned char config, tmp;
    int i, j;
-   int tx, ty;
    OFlagSet validOptions;
    char *card, *serno;
    int card_id, max_pix_clock, max_mem_clock, hwconf;
@@ -930,6 +936,18 @@ s3Probe()
    OFLG_SET(OPTION_TRIO64VP_BUG2, &validOptions);
    OFLG_SET(OPTION_TRIO64VP_BUG3, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
+
+#ifdef __alpha__
+#ifdef TEST_JENSEN_CODE
+   if (1)
+#else
+   if (!_bus_base()) 
+#endif
+   { /* Jensen */
+       isJensen = TRUE;
+       OFLG_SET(OPTION_NOLINEAR_MODE, &s3InfoRec.options);
+   }
+#endif /* __alpha__ */
 
 #ifdef PC98
    if (OFLG_ISSET(OPTION_PW_MUX, &s3InfoRec.options)) {
@@ -1645,8 +1663,8 @@ s3Probe()
  
    lookupFlags = LOOKUP_DEFAULT;
 
-   tx = s3InfoRec.virtualX;
-   ty = s3InfoRec.virtualY;
+   TempVirtualX = s3InfoRec.virtualX;
+   TempVirtualY = s3InfoRec.virtualY;
 
 
 redo_mode_lookup:
@@ -1706,9 +1724,28 @@ redo_mode_lookup:
    }
 
 
-   if ((tx != s3InfoRec.virtualX) || (ty != s3InfoRec.virtualY))
+   if ((TempVirtualX != s3InfoRec.virtualX) || 
+			(TempVirtualY != s3InfoRec.virtualY)) {
       OFLG_CLR(XCONFIG_VIRTUAL,&s3InfoRec.xconfigFlag);
+ 	/* These will never get overwritten if they were specified 
+		in the XF86Config file */
+      s3InfoRec.virtualX = TempVirtualX;
+      s3InfoRec.virtualY = TempVirtualY;
+   }
 
+   if (s3InfoRec.virtualX > maxDisplayWidth) {
+      ErrorF("%s: Virtual width (%d) is too large.  Maximum is %d\n",
+	     s3InfoRec.name, s3InfoRec.virtualX, maxDisplayWidth);
+      xf86DisableIOPorts(s3InfoRec.scrnIndex);
+      return (FALSE);
+   }
+   if (s3InfoRec.virtualY > maxDisplayHeight) {
+      ErrorF("%s: Virtual height (%d) is too large.  Maximum is %d\n",
+	     s3InfoRec.name, s3InfoRec.virtualY, maxDisplayHeight);
+      xf86DisableIOPorts(s3InfoRec.scrnIndex);
+      return (FALSE);
+   }
+ 
    /*
     *  If we had to delete a mode due to the inability to switch
     *  between mux and non-mux modes, we favor the mux modes and
@@ -2046,10 +2083,14 @@ s3ValidMode(DisplayModePtr pMode, Bool verbose)
 	return MODE_BAD;
     } 
 
-    if(in_s3Probe)/* vidmode extensions don't have the right to do this */
+
+
+    if(in_s3Probe)
     {
-	 s3InfoRec.virtualX = max(s3InfoRec.virtualX, pMode->HDisplay);
-	 s3InfoRec.virtualY = max(s3InfoRec.virtualY, pMode->VDisplay);
+	/* these will never actually change if a virtual size was
+		explicitly given in the XF86Config file */
+	 TempVirtualX = max(TempVirtualX, pMode->HDisplay);
+	 TempVirtualY = max(TempVirtualY, pMode->VDisplay);
     }
 
 

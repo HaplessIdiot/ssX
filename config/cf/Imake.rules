@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/208 1996/01/17 11:08:27 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.26 1996/08/14 14:30:36 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.27 1996/09/01 04:12:46 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -478,7 +478,7 @@ clean clean.tc::							@@\
 #define BuildIncludesTop(srclist)					@@\
 includes:: srclist							@@\
 	MakeDir($(BUILDINCDIR))						@@\
-	@(set -x; cd $(BUILDINCDIR); for i in srclist; do \		@@\
+	@(set -x; cd $(BUILDINCDIR) && for i in srclist; do \		@@\
 		RemoveFile($$i); \					@@\
 		$(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/$$i .; \		@@\
 	done)
@@ -488,7 +488,7 @@ includes:: srclist							@@\
 #define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
 includes:: srclist							@@\
 	MakeDir($(BUILDINCDIR)/dstsubdir)				@@\
-	@(set -x; cd $(BUILDINCDIR)/dstsubdir; for i in srclist; do \	@@\
+	@(set -x; cd $(BUILDINCDIR)/dstsubdir && for i in srclist; do \	@@\
 		RemoveFile($$i); \					@@\
 		$(LN) $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)/$$i .; \	@@\
 	done)
@@ -498,7 +498,7 @@ includes:: srclist							@@\
 #define BuildInterfaces(srclist,dstsubdir,dstupdir)			@@\
 interfaces::								@@\
 	MakeDir($(BUILDINCDIR)/dstsubdir)				@@\
-	@(set -x; cd $(BUILDINCDIR)/dstsubdir; for i in srclist; do \	@@\
+	@(set -x; cd $(BUILDINCDIR)/dstsubdir && for i in srclist; do \	@@\
 		RemoveFile($$i); \					@@\
 		$(LN) $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)/$$i .; \	@@\
 	done)
@@ -911,9 +911,9 @@ install::  fromlib							@@\
 #ifndef InstallLibraryAlias
 #define	InstallLibraryAlias(libname,alias,dest)				@@\
 install::								@@\
-	-(cd $(DESTDIR)dest; \						@@\
+	-(cd $(DESTDIR)dest && ( \					@@\
 		RemoveFile(LibraryTargetName(alias)); \			@@\
-		$(LN) LibraryTargetName(libname) LibraryTargetName(alias))
+		$(LN) LibraryTargetName(libname) LibraryTargetName(alias)))
 #endif /* InstallLibraryAlias */
 
 
@@ -1371,7 +1371,7 @@ target:: ProgramTargetName($(IMAKE))					@@\
 NoCmpScript(ProgramTargetName($(IMAKE)) $(IMAKE).Osuf)			@@\
 									@@\
 ProgramTargetName($(IMAKE)) $(IMAKE).Osuf:				@@\
-	-@(cd $(IMAKESRC); if [ -f Makefile ]; then \			@@\
+	-@(cd $(IMAKESRC) && if [ -f Makefile ]; then \			@@\
 	echo "checking $@ in $(IMAKESRC) first..."; $(MAKE) all; else \	@@\
 	echo "bootstrapping $@ from Makefile.ini in $(IMAKESRC) first..."; \	@@\
 	$(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; fi; \	@@\
@@ -2001,9 +2001,9 @@ clean::									@@\
 #define MakeSubincludesForBuild(step,dir,srclist)			@@\
 step::  dir srclist							@@\
 	@-(list=`echo srclist | sed -e 's/[^ ]*\///g'`; \		@@\
-		set -x; cd dir; RemoveFiles($$list))			@@\
+		set -x; cd dir && RemoveFiles($$list))			@@\
 	@for i in srclist; do \						@@\
-		(set -x; cd dir; $(LN) ../$$i .); \			@@\
+		(set -x; cd dir && $(LN) ../$$i .); \			@@\
 	done								@@\
 									@@\
 dir::									@@\
@@ -2012,7 +2012,7 @@ dir::									@@\
 clean::									@@\
 	@-(if [ -d dir ]; then \					@@\
 		list=`echo srclist | sed -e 's/[^ ]*\///g'`; \		@@\
-		set -x; cd dir; RemoveFile($$list); else exit 0; fi)
+		set -x; cd dir && RemoveFile($$list); else exit 0; fi)
 #endif
 
 
@@ -2065,7 +2065,7 @@ NamedTargetSubdirs(depend,dirs,"depending",NullParameter,depend)
 #ifndef ForceSubdirs
 #define ForceSubdirs(dirs)						@@\
 dirs: FRC								@@\
-	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
+	@cd $@  && echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
 	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
 									@@\
 FRC:
@@ -2178,7 +2178,7 @@ MakeLintSubdirs(dirs,lintlib,lintlib)
 #define MakeMakeSubdirs(dirs,target)					@@\
 $(ONESUBDIR)/Makefile:							@@\
 	@MakeFlagsToShellFlags(n,executeit="no"); \			@@\
-	cd $(ONESUBDIR); \						@@\
+	cd $(ONESUBDIR) && \						@@\
 	if [ "$$executeit" != "no" ]; then \				@@\
 		ImakeSubCmdHelper -DTOPDIR=$(IMAKETOP) -DCURDIR=$(ONECURDIR)$(ONESUBDIR); \ @@\
 	fi;								@@\
@@ -2236,9 +2236,13 @@ target::								@@\
 			fi; \						@@\
 		fi; \							@@\
 		$(MAKE) $(MFLAGS) $(MAKE_OPTS) ONESUBDIR=$$i ONECURDIR=$$curdir IMAKETOP=$$imaketop IMAKEPREFIX=$$imakeprefix $$i/Makefile; \	@@\
-		cd $$i;	\						@@\
-		$(MAKE) $(MFLAGS) Makefiles; \				@@\
-		cd $$newtop; \						@@\
+		if [ -d $$i ] ; then \					@@\
+			cd $$i; \					@@\
+			$(MAKE) $(MFLAGS) Makefiles; \			@@\
+			cd $$newtop; \					@@\
+		else \							@@\
+			exit 1; \					@@\
+		fi; \							@@\
 	done
 
 #ifdef UseInstalled

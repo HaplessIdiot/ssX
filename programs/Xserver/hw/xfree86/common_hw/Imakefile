@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.18 1996/10/08 12:23:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.19 1996/10/18 15:02:56 dawes Exp $
 
 
 
@@ -10,8 +10,12 @@ XCOMM $XConsortium: Imakefile /main/8 1995/11/12 19:30:15 kaleb $
 #include <Server.tmpl>
 
 #if defined(LinuxArchitecture) && defined(AlphaArchitecture)
-XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c
-XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
+#if !UseElfFormat  /* fix/replacement for broken libc-0.43 io.c */
+IOSRC=glibcAxpIo.c
+IOOBJ=glibcAxpIo.o
+#endif
+XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c $(IOSRC)
+XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o $(IOOBJ)
 #else
 XSRCS = BUSmemcpy.s IODelay.s SlowBcopy.s
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o

@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.5 1996/09/22 04:59:06 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.6 1996/11/18 13:07:33 dawes Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -558,6 +558,9 @@ Cursor Backward Tabulation \*(Ps tab stops (default = 1) (CBT)
 .
 .IP \\*(Cs\\*(Ps\\*s\\*^
 Scroll down \*(Ps lines (default = 1) (SD, according to ISO)
+.
+.IP \\*(Cs\\*(Ps\\*s\\*b
+Repeat the preceding graphic character \*(Ps times.
 .
 .IP \\*(Cs\\*(Ps\\*s\\*c
 Send Device Attributes (DA)

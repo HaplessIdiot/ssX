@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vgainit/vgabppscrin.c,v 3.3 1996/06/29 09:09:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vgainit/vgabppscrin.c,v 3.4 1996/11/20 14:02:03 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -64,7 +64,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "xf86Priv.h"	/* for xf86weight */
 #include "vga.h"
 
-#if 0
+#if 1
 #if PSZ == 16
 #define vgabppScreenInit vga16bppScreenInit
 #endif

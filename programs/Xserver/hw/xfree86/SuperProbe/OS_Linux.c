@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.5 1996/05/10 06:56:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.6 1996/08/20 12:26:09 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Orest Zborowski <orestz@eskimo.com>
  *
@@ -37,10 +37,28 @@
 #include <sys/mman.h>
 
 #ifdef __alpha__
-extern unsigned long _bus_base(void) __attribute__((const));
-#define BUS_BASE _bus_base()
+/*
+ * The Jensen lacks dense memory, thus we have to address the bus via
+ * the sparse addressing scheme.
+ *
+ * Martin Ostermann (ost@comnets.rwth-aachen.de) - Apr.-Sep. 1996
+ */
+
+#ifdef TEST_JENSEN_CODE /* define to test the Sparse addressing on a non-Jensen */
+#define isJensen (1)
+#define SPARSE (5)
+#define WORD_CODING (0x08)
+#else
+#define isJensen (!_bus_base())
+#define SPARSE (7)
+#define WORD_CODING (0x20)
+#endif
+
+#define BUS_BASE (isJensen ? _bus_base_sparse() : _bus_base())
+#define JENSEN_SHIFT(x) (isJensen ? ((long)x<<SPARSE) : (long)x)
 #else
 #define BUS_BASE 0
+#define JENSEN_SHIFT(x) (x)
 #endif
 
 static int VT_fd = -1;
@@ -161,6 +179,11 @@ Byte *MapVGA()
 	int fd;
 	Byte *base;
 
+	if(isJensen){
+		fprintf(stderr, "%s: MemProbe not supported on Jensen\n", MyName);
+		return((Byte *)0);
+	}
+	
 	if ((fd = open("/dev/mem", O_RDWR)) < 0)
 	{
 		fprintf(stderr, "%s: Failed to open /dev/mem\n", MyName);
@@ -187,6 +210,23 @@ Byte *base;
 {
 	munmap((caddr_t)base, 0x10000);
 	return;
+}
+
+SlowBCopyFromBus(src, dst, count)
+     unsigned char *src, *dst;
+     int count;
+{
+  unsigned long addr;
+  long result;
+  
+  addr = (unsigned long) src;
+  while( count ){
+    result = *(volatile int *) addr;
+    result >>= ((addr>>SPARSE) & 3) * 8;
+    *dst++ = (unsigned char) (0xffUL & result);
+    addr += 1<<SPARSE;
+    count--;
+  }
 }
 
 /*
@@ -220,9 +260,9 @@ int Len;
 		Base = (Byte *)((off_t)Base & 0xF8000);
 
 	mysize = myoffset + Len;
-	mybase = (unsigned char *)mmap((caddr_t)0, mysize, PROT_READ,
+	mybase = (unsigned char *)mmap((caddr_t)0, JENSEN_SHIFT(mysize), PROT_READ,
 				       MAP_SHARED, BIOS_fd,
-				       (off_t)Base + BUS_BASE);
+				       (off_t)JENSEN_SHIFT(Base) + BUS_BASE);
 
 	if (mybase == (unsigned char *)-1UL) {
 		fprintf(stderr, "%s: Failed to mmap /dev/mem (%d)\n",
@@ -235,7 +275,17 @@ int Len;
 		/*
 	 	 * Sanity check...
 	 	 */
+	  if (isJensen)
+	  {
+	      tmp = *(volatile int *) (mybase + WORD_CODING);
+	      tmp >>= ((long)Base & 3) * 8;
+	      tmp &=  0xffffUL;
+	  }
+	  else
+	  {
 		tmp = *(Word *)mybase;
+	  }
+
 		if (tmp != (Word)0xAA55)
 		{
 			fprintf(stderr,
@@ -245,9 +295,12 @@ int Len;
 		}
 	}
 
-	memcpy(Buffer, &mybase[myoffset], Len);
+	if (isJensen)
+	   SlowBCopyFromBus(&mybase[JENSEN_SHIFT(myoffset)], Buffer, Len);
+	else
+	   memcpy(Buffer, &mybase[myoffset], Len);
 
-	munmap((caddr_t)mybase, mysize);
+	munmap((caddr_t)((off_t)JENSEN_SHIFT(Base) | BUS_BASE), mysize);
 
 #else /* __alpha__ */
 

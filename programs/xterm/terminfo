@@ -1,5 +1,5 @@
 # $XConsortium: terminfo,v 1.11 94/10/13 21:24:31 gildea Exp $
-# $XFree86: xc/programs/xterm/terminfo,v 3.10 1996/10/20 13:36:06 dawes Exp $
+# $XFree86: xc/programs/xterm/terminfo,v 3.11 1996/10/20 13:46:44 dawes Exp $
 # meml locks memory above the cursor; memu unlocks (ala HP terminals)
 #
 xterm|xterm-24|xterms|vs100|xterm terminal emulator (X Window System),
@@ -155,6 +155,10 @@ xterm-ic|xterm-vi|xterm with insert character instead of insert mode,
 	ich1=\E[@,
 	rmir@,
 	smir@,
+	use=xterm,
+#
+xterm-rep|xterm with repeat-character control,
+	rep=%p1%c\E[%p2%{1}%-%db,
 	use=xterm,
 #
 # Compatible with the R6 xterm

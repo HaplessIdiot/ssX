@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.61 1996/09/29 13:41:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.62 1996/11/18 13:21:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -192,6 +192,8 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int offTime */
   -1,			/* int s3BlankDelay */
   0,			/* int textClockFreq */
+  NULL,                 /* char* DCConfig */
+  NULL,                 /* char* DCOptions */
 #ifdef XFreeXDGA
   0,                    /* int directMode */
   NULL,                 /* Set Vid Page */
