@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.69 1999/09/25 14:37:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.71 2000/02/08 13:13:27 eich Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -470,11 +470,20 @@ extern int errno;
 #   if defined(PCVT_SUPPORT)
 #    if !defined(SYSCONS_SUPPORT)
       /* no syscons, so include pcvt specific header file */
-#     if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#     if defined(__FreeBSD__) || defined(__OpenBSD__)
 #      include <machine/pcvt_ioctl.h>
 #     else
-#      include <sys/pcvt_ioctl.h>
-#     endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
+#      if defined(__NetBSD__)
+#       if defined(WSCONS_SUPPORT)
+         /* NetBSD's wscons has a PCVT-compatibility module. */
+#        include <dev/wscons/wsdisplay_usl_io.h>
+#       else
+#        include <machine/pcvt_ioctl.h>
+#       endif /* WSCONS_SUPPORT */
+#      else
+#       include <sys/pcvt_ioctl.h>
+#      endif /* __NetBSD__ */
+#     endif /* __FreeBSD__ || __OpenBSD__ */
 #    else /* pcvt and syscons: hard-code the ID magic */
 #     define VGAPCVTID _IOWR('V',113, struct pcvtid)
       struct pcvtid {

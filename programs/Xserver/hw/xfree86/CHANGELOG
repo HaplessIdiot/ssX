@@ -1,4 +1,12 @@
 XFree86 4.0f (23 June 2000)
+ 370. Make using libpthread optional for OpenBSD 2.7.
+ 369. Fix a problem when calling XF86VidModeSwitchMode() when the switched
+      screen is different from the one that has the pointer (#4024,
+      Paulo Cesar Pereira de Andrade).
+ 368. Bindist files for Linux/mips (#4023, Guido Guenther).
+ 367. Allow XFree86 to compile on NetBSD-current and 1.5_ALPHA, which
+      no longer use the pcvt console, but have a compatibility mode for it
+      in wscons (#4021, Bernd Ernesti).
  366. Add support for the iso8859-13 charset to Xlib (#4020, Bruno Haible).
  365. Add ISO-8859-13 support to the UTF-8 converters, which is needed for
       Lithuanian UTF-8 locales (#4019, Bruno Haible).
@@ -10709,4 +10717,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1205 2000/06/23 19:29:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1206 2000/06/23 19:51:00 dawes Exp $
