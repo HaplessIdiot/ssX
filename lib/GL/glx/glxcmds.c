@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.28 2003/12/08 00:53:59 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.29 2004/01/28 18:11:38 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1116,6 +1116,13 @@ fbconfig_compare( const __GLcontextModes * const * const a,
      */
 
     PREFER_SMALLER( visualSelectGroup );
+
+    /* The sort order for the visualRating is GLX_NONE, GLX_SLOW, and
+     * GLX_NON_CONFORMANT_CONFIG.  It just so happens that this is the
+     * numerical sort order of the enums (0x8000, 0x8001, and 0x800D).
+     */
+    PREFER_SMALLER( visualRating );
+
     PREFER_SMALLER( rgbBits );
 
     if ( ((*a)->doubleBufferMode != (*b)->doubleBufferMode) ) {
