@@ -27,47 +27,60 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winerror.c,v 1.3 2001/10/23 22:22:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winclip.c,v 1.2 2001/06/04 13:04:41 alanh Exp $ */
 
-#include "win.h"
-
-extern FILE		*g_pfLog;
-
-#ifdef DDXOSVERRORF
-void
-OsVendorVErrorF (const char *pszFormat, va_list va_args)
-{
-  static pthread_mutex_t	s_pmPrinting = PTHREAD_MUTEX_INITIALIZER;
-
-  /* Check we opened the log file first */
-  if (g_pfLog == NULL) return;
-
-  /* Lock the printing mutex */
-  pthread_mutex_lock (&s_pmPrinting);
-
-  /* Print the error message to a log file, could be stderr */
-  vfprintf (g_pfLog, pszFormat, va_args);
-
-  /* Flush after every write, to make updates show up quickly */
-  fflush (g_pfLog);
-
-  /* Unlock the printing mutex */
-  pthread_mutex_unlock (&s_pmPrinting);
-}
-#endif
+#include "winclipboard.h"
 
 
 /*
- * os/util.c/FatalError () calls our vendor ErrorF, so the message
- * from a FatalError will be logged.  Thus, the message for the
- * fatal error is not passed to this function.
- *
- * Attempt to do last-ditch, safe, important cleanup here.
+ * Process a given Windows message
  */
-#ifdef DDXOSFATALERROR
-void
-OsVendorFatalError (void)
+
+LRESULT CALLBACK
+winClipboardWindowProc (HWND hwnd, UINT message, 
+			WPARAM wParam, LPARAM lParam)
 {
-  
-}
+  /* Branch on message type */
+  switch (message)
+    {
+    case WM_DESTROY:
+      PostQuitMessage (0);
+      return 0;
+
+    case WM_CREATE:
+#if 0
+      ErrorF ("WindowProc - WM_CREATE\n");
 #endif
+      return 0;
+    }
+
+  /* Let Windows perform default processing for unhandled messages */
+  return DefWindowProc (hwnd, message, wParam, lParam);
+}
+
+
+/*
+ * Process any pending Windows messages
+ */
+
+BOOL
+winClipboardFlushWindowsMessageQueue (HWND hwnd)
+{
+  MSG			msg;
+
+  /* Flush the messaging window queue */
+  /* NOTE: Do not pass the hwnd of our messaging window to PeekMessage,
+   * as this will filter out many non-window-specific messages that
+   * are sent to our thread, such as WM_QUIT.
+   */
+  while (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE))
+    {
+      /* Dispatch the message if not WM_QUIT */
+      if (msg.message == WM_QUIT)
+	return FALSE;
+      else
+	DispatchMessage (&msg);
+    }
+  
+  return TRUE;
+}

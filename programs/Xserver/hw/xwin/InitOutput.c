@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.30 2002/10/17 08:18:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.31 2002/10/31 23:04:39 alanh Exp $ */
 
 #include "win.h"
 #include "winconfig.h"
@@ -51,6 +51,7 @@ FILE		*g_pfLog = NULL;
 DWORD		g_dwEnginesSupported = 0;
 HINSTANCE	g_hInstance = 0;
 HWND		g_hDlgDepthChange = NULL;
+Bool		g_fCalledSetLocale = FALSE;
 
 
 /*
@@ -115,6 +116,10 @@ winInitializeDefaultScreens (void)
   ZeroMemory (g_ScreenInfo, MAXSCREENS * sizeof (winScreenInfo));
 
   /* Get default width and height */
+  /*
+   * NOTE: These defaults will cause the window to cover only
+   * the primary monitor in the case that we have multiple monitors.
+   */
   dwWidth = GetSystemMetrics (SM_CXSCREEN);
   dwHeight = GetSystemMetrics (SM_CYSCREEN);
 
@@ -129,6 +134,8 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].dwScreen = i;
       g_ScreenInfo[i].dwWidth  = dwWidth;
       g_ScreenInfo[i].dwHeight = dwHeight;
+      g_ScreenInfo[i].dwUserWidth  = dwWidth;
+      g_ScreenInfo[i].dwUserHeight = dwHeight;
       g_ScreenInfo[i].fUserGaveHeightAndWidth
 	=  WIN_DEFAULT_USER_GAVE_HEIGHT_AND_WIDTH;
       g_ScreenInfo[i].dwBPP = WIN_DEFAULT_BPP;
@@ -139,6 +146,9 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].fFullScreen = FALSE;
       g_ScreenInfo[i].fDecoration = TRUE;
       g_ScreenInfo[i].fRootless = FALSE;
+      g_ScreenInfo[i].fMultiWindow = FALSE;
+      g_ScreenInfo[i].fMultipleMonitors = FALSE;
+      g_ScreenInfo[i].fClipboard = FALSE;
       g_ScreenInfo[i].fLessPointer = FALSE;
       g_ScreenInfo[i].fScrollbars = FALSE;
       g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
@@ -303,6 +313,16 @@ ddxUseMsg (void)
   ErrorF ("-rootless\n"
 	  "\tEXPERIMENTAL: Run the server in pseudo-rootless mode.\n");
 
+  ErrorF ("-multiwindow\n"
+	  "\tEXPERIMENTAL: Run the server in multi-window mode.\n");
+
+  ErrorF ("-multiplemonitors\n"
+	  "\tEXPERIMENTAL: Use the entire virtual screen if multiple\n"
+	  "\tmonitors are present.\n");
+
+  ErrorF ("-clipboard\n"
+	  "\tEXPERIMENTAL: Run the clipboard integration module.\n");
+
   ErrorF ("-scrollbars\n"
 	  "\tIn windowed mode, allow screens bigger than the Windows desktop.\n"
 	  "\tMoreover, if the window has decorations, one can now resize\n"
@@ -437,6 +457,8 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  g_ScreenInfo[nScreenNum].fUserGaveHeightAndWidth = TRUE;
 	  g_ScreenInfo[nScreenNum].dwWidth = iWidth;
 	  g_ScreenInfo[nScreenNum].dwHeight = iHeight;
+	  g_ScreenInfo[nScreenNum].dwUserWidth = iWidth;
+	  g_ScreenInfo[nScreenNum].dwUserHeight = iHeight;
 	}
       else if (i + 3 < argc
 	       && 1 == sscanf (argv[i + 2], "%d",
@@ -449,6 +471,8 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  g_ScreenInfo[nScreenNum].fUserGaveHeightAndWidth = TRUE;
 	  g_ScreenInfo[nScreenNum].dwWidth = iWidth;
 	  g_ScreenInfo[nScreenNum].dwHeight = iHeight;
+	  g_ScreenInfo[nScreenNum].dwUserWidth = iWidth;
+	  g_ScreenInfo[nScreenNum].dwUserHeight = iHeight;
 	}
       else
 	{
@@ -653,6 +677,59 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
 
   /*
+   * Look for the '-multiwindow' argument
+   */
+  if (strcmp (argv[i], "-multiwindow") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fMultiWindow = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fMultiWindow = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-multiplemonitors' argument
+   */
+  if (strcmp (argv[i], "-multiplemonitors") == 0
+      || strcmp (argv[i], "-multimonitors") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fMultipleMonitors = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fMultipleMonitors = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
    * Look for the '-scrollbars' argument
    */
   if (strcmp (argv[i], "-scrollbars") == 0)
@@ -678,6 +755,32 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	      /* No scrollbar in fullscreen mode */
 	      g_ScreenInfo[g_iLastScreen].fScrollbars = TRUE;
 	    }
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-clipboard' argument
+   */
+  if (strcmp (argv[i], "-clipboard") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fClipboard = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fClipboard = TRUE;
 	}
 
       /* Indicate that we have processed this argument */
@@ -1145,9 +1248,14 @@ InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
   /* Initialize each screen */
   for (i = 0; i < g_iNumScreens; i++)
     {
+      /* Initialize the screen */
       if (-1 == AddScreen (winScreenInit, argc, argv))
 	{
 	  FatalError ("InitOutput - Couldn't add screen %d", i);
 	}
     }
+
+#if CYGDEBUG || YES
+  ErrorF ("InitOutput - Returning.\n");
+#endif
 }

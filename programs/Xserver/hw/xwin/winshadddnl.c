@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.22 2002/07/05 09:19:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.23 2002/10/17 08:18:25 alanh Exp $ */
 
 #include "win.h"
 
@@ -123,18 +123,19 @@ winReleasePrimarySurfaceShadowDDNL (ScreenPtr pScreen)
 
   ErrorF ("winReleasePrimarySurfaceShadowDDNL - Hello\n");
 
-  /*
-   * Detach the clipper from the primary surface.
-   * NOTE: We do this explicity for clarity.  The Clipper is not released.
-   */
-  IDirectDrawSurface4_SetClipper (pScreenPriv->pddsPrimary4,
-				  NULL);
-  
-  ErrorF ("winReleasePrimarySurfaceShadowDDNL - Detached clipper\n");
-
-  /* Release the primary surface, if there is one */
+  /* Release the primary surface and clipper, if they exist */
   if (pScreenPriv->pddsPrimary4)
     {
+      /*
+       * Detach the clipper from the primary surface.
+       * NOTE: We do this explicity for clarity.  The Clipper is not released.
+       */
+      IDirectDrawSurface4_SetClipper (pScreenPriv->pddsPrimary4,
+				      NULL);
+  
+      ErrorF ("winReleasePrimarySurfaceShadowDDNL - Detached clipper\n");
+
+      /* Release the primary surface */
       IDirectDrawSurface4_Release (pScreenPriv->pddsPrimary4);
       pScreenPriv->pddsPrimary4 = NULL;
     }
@@ -307,10 +308,11 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
 	}
 
       /* Only change the video mode when different than current mode */
-      if (pScreenInfo->dwWidth != GetSystemMetrics (SM_CXSCREEN)
-	  || pScreenInfo->dwHeight != GetSystemMetrics (SM_CYSCREEN)
-	  || pScreenInfo->dwBPP != GetDeviceCaps (hdc, BITSPIXEL)
-	  || pScreenInfo->dwRefreshRate != 0)
+      if (!pScreenInfo->fMultipleMonitors
+	  && (pScreenInfo->dwWidth != GetSystemMetrics (SM_CXSCREEN)
+	      || pScreenInfo->dwHeight != GetSystemMetrics (SM_CYSCREEN)
+	      || pScreenInfo->dwBPP != GetDeviceCaps (hdc, BITSPIXEL)
+	      || pScreenInfo->dwRefreshRate != 0))
 	{
 	  ErrorF ("winAllocateFBShadowDDNL - Changing video mode\n");
 
@@ -418,7 +420,7 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
       return FALSE;
     }
   
-#if CYGDEBUG
+#if CYGDEBUG || YES
   ErrorF ("winAllocateFBShadowDDNL - Created shadow pitch: %d\n",
 	  ddsdShadow.u1.lPitch);
 #endif
@@ -426,6 +428,11 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   /* Grab the pitch from the surface desc */
   pScreenInfo->dwStride = (ddsdShadow.u1.lPitch * 8)
     / pScreenInfo->dwBPP;
+
+#if CYGDEBUG || YES
+  ErrorF ("winAllocateFBShadowDDNL - Created shadow stride: %d\n",
+	  pScreenInfo->dwStride);
+#endif
 
   /* Save the pointer to our surface memory */
   pScreenInfo->pfb = lpSurface;
@@ -541,9 +548,6 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
       ErrorF ("winShadowUpdateDDNL - be x1 %d y1 %d x2 %d y2 %d\n",
 	      pBoxExtents->x1, pBoxExtents->y1,
 	      pBoxExtents->x2, pBoxExtents->y2);
-      ErrorF ("winShadowUpdateDDNL - cl l %d t %d r %d b %d\n",
-	      rcClient.left, rcClient.top,
-	      rcClient.right, rcClient.bottom);
 #endif
 
       /* Calculating a bounding box for the source is easy */
@@ -653,8 +657,14 @@ winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen)
       pScreenPriv->hwndScreen = NULL;
     }
 
+  /* Destroy the thread startup mutex */
+  pthread_mutex_destroy (&pScreenPriv->pmServerStarted);
+
   /* Kill our screeninfo's pointer to the screen */
   pScreenInfo->pScreen = NULL;
+
+  /* Invalidate the ScreenInfo's fb pointer */
+  pScreenInfo->pfb = NULL;
 
   /* Free the screen privates for this screen */
   free ((pointer) pScreenPriv);

@@ -1,4 +1,9 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 872. Bring Cygwin/XFree86 up-to-date (#5613)
+       - Multiwindow Window Manager (Kensuke Matsuzaki).
+       - Clipboard integration (Harold Hunt).
+       - Remove unnecessary redefines of fchown/fchmod (Takashi Sawanaka)
+       - Fix some NULL pointer problems on screen changes (Alexander Gottwald).
  871. Fix some problems when noaccel is used in the nsc driver (Sarma Kolluru).
  870. Fix acceleration bugs in the nsc driver (Sarma Kolluru).
  869. Change initMouseHW() to always return TRUE, which restores the older
@@ -16321,4 +16326,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2542 2003/02/11 13:36:38 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2543 2003/02/12 13:08:52 alanh Exp $

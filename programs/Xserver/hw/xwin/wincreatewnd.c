@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincreatewnd.c,v 1.3 2002/07/05 09:19:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincreatewnd.c,v 1.4 2002/10/17 08:18:22 alanh Exp $ */
 
 #include "win.h"
 #include "shellapi.h"
@@ -36,6 +36,9 @@
 /*
  * Local function prototypes
  */
+
+static Bool
+winGetWorkArea (RECT *prcWorkArea, winScreenInfo *pScreenInfo);
 
 static Bool
 winAdjustForAutoHide (RECT *prcWorkArea);
@@ -65,7 +68,7 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
   wc.hInstance = g_hInstance;
-  wc.hIcon = LoadIcon (g_hInstance, IDI_XWIN);
+  wc.hIcon = LoadIcon (g_hInstance, MAKEINTRESOURCE(IDI_XWIN));
   wc.hCursor = 0;
   wc.hbrBackground = 0;
   wc.lpszMenuName = NULL;
@@ -119,20 +122,25 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-  int			iWidth = pScreenInfo->dwWidth;
-  int			iHeight = pScreenInfo->dwHeight;
+  int			iWidth = pScreenInfo->dwUserWidth;
+  int			iHeight = pScreenInfo->dwUserHeight;
   HWND			*phwnd = &pScreenPriv->hwndScreen;
   WNDCLASS		wc;
   RECT			rcClient, rcWorkArea;
   DWORD			dwWindowStyle;
   
-  ErrorF ("winCreateBoundingWindowWindowed - Initial w: %d h: %d\n",
-	  iWidth, iHeight);
+  ErrorF ("winCreateBoundingWindowWindowed - User w: %d h: %d\n",
+	  pScreenInfo->dwUserWidth, pScreenInfo->dwUserHeight);
+  ErrorF ("winCreateBoundingWindowWindowed - Current w: %d h: %d\n",
+	  pScreenInfo->dwWidth, pScreenInfo->dwHeight);
   
+  /* Set the common window style flags */
   dwWindowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
   
   /* Decorated or undecorated window */
-  if (pScreenInfo->fDecoration && !pScreenInfo->fRootless)
+  if (pScreenInfo->fDecoration
+      && !pScreenInfo->fRootless
+      && !pScreenInfo->fMultiWindow)
     {
       dwWindowStyle |= WS_CAPTION;
       if (pScreenInfo->fScrollbars)
@@ -147,7 +155,7 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
   wc.hInstance = g_hInstance;
-  wc.hIcon = LoadIcon (g_hInstance, IDI_XWIN);
+  wc.hIcon = LoadIcon (g_hInstance, MAKEINTRESOURCE(IDI_XWIN));
   wc.hCursor = 0;
   wc.hbrBackground = (HBRUSH) GetStockObject (WHITE_BRUSH);
   wc.lpszMenuName = NULL;
@@ -155,7 +163,7 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   RegisterClass (&wc);
 
   /* Get size of work area */
-  SystemParametersInfo (SPI_GETWORKAREA, 0, &rcWorkArea, 0);
+  winGetWorkArea (&rcWorkArea, pScreenInfo);
 
   /* Adjust for auto-hide taskbars */
   winAdjustForAutoHide (&rcWorkArea);
@@ -170,7 +178,9 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 #endif
       
       /* Adjust the window width and height for borders and title bar */
-      if (pScreenInfo->fDecoration && !pScreenInfo->fRootless)
+      if (pScreenInfo->fDecoration
+	  && !pScreenInfo->fRootless
+	  && !pScreenInfo->fMultiWindow)
 	{
 #if CYGDEBUG
 	  ErrorF ("winCreateBoundingWindowWindowed - Window has decoration\n");
@@ -206,8 +216,16 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 	   * In this case we have to ignore the requested width and height
 	   * and instead use the largest possible window that we can.
 	   */
-	  iWidth = GetSystemMetrics (SM_CXSCREEN);
-	  iHeight = GetSystemMetrics (SM_CYSCREEN);
+	  if (pScreenInfo->fMultipleMonitors)
+	    {
+	      iWidth = GetSystemMetrics (SM_CXVIRTUALSCREEN);
+	      iHeight = GetSystemMetrics (SM_CYVIRTUALSCREEN);
+	    }
+	  else
+	    {
+	      iWidth = GetSystemMetrics (SM_CXSCREEN);
+	      iHeight = GetSystemMetrics (SM_CYSCREEN);
+	    }
 	}
     }
   else
@@ -217,10 +235,18 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
       ErrorF ("winCreateBoundingWindowWindowed - User did not give "
 	      "height and width\n");
 #endif
+      /* Defaults are wrong if we have multiple monitors */
+      if (pScreenInfo->fMultipleMonitors)
+	{
+	  iWidth = GetSystemMetrics (SM_CXVIRTUALSCREEN);
+	  iHeight = GetSystemMetrics (SM_CYVIRTUALSCREEN);
+	}
     }
 
   /* Clean up the scrollbars flag, if necessary */
-  if ((!pScreenInfo->fDecoration || pScreenInfo->fRootless)
+  if ((!pScreenInfo->fDecoration
+       || pScreenInfo->fRootless
+       || pScreenInfo->fMultiWindow)
       && pScreenInfo->fScrollbars)
     {
       /* We cannot have scrollbars if we do not have a window border */
@@ -342,7 +368,10 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 #endif
 
   /* Show the window */
-  ShowWindow (*phwnd, SW_SHOWNORMAL);
+  if (pScreenInfo->fMultiWindow)
+    ShowWindow (*phwnd, SW_SHOWMINNOACTIVE);
+  else
+    ShowWindow (*phwnd, SW_SHOWNORMAL);
   if (!UpdateWindow (*phwnd))
     {
       ErrorF ("winCreateBoundingWindowWindowed - UpdateWindow () failed\n");
@@ -363,6 +392,77 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 
   ErrorF ("winCreateBoundingWindowWindowed -  Returning\n");
 
+  return TRUE;
+}
+
+
+/*
+ * Find the work area of all attached monitors
+ */
+
+static Bool
+winGetWorkArea (RECT *prcWorkArea, winScreenInfo *pScreenInfo)
+{
+  int			iPrimaryWidth, iPrimaryHeight;
+  int			iWidth, iHeight;
+  int			iLeft, iTop;
+  int			iPrimaryNonWorkAreaWidth, iPrimaryNonWorkAreaHeight;
+
+  /* SPI_GETWORKAREA only gets the work area of the primary screen. */
+  SystemParametersInfo (SPI_GETWORKAREA, 0, prcWorkArea, 0);
+
+  /* Bail out here if we aren't using multiple monitors */
+  if (!pScreenInfo->fMultipleMonitors)
+    return TRUE;
+  
+  ErrorF ("winGetWorkArea - Original WorkArea: %d %d %d %d\n",
+	  prcWorkArea->top, prcWorkArea->left,
+	  prcWorkArea->bottom, prcWorkArea->right);
+
+  /* Get size of full virtual screen */
+  iWidth = GetSystemMetrics (SM_CXVIRTUALSCREEN);
+  iHeight = GetSystemMetrics (SM_CYVIRTUALSCREEN);
+
+  ErrorF ("winGetWorkArea - Virtual screen is %d x %d\n", iWidth, iHeight);
+
+  /* Get origin of full virtual screen */
+  iLeft = GetSystemMetrics (SM_XVIRTUALSCREEN);
+  iTop = GetSystemMetrics (SM_YVIRTUALSCREEN);
+
+  ErrorF ("winGetWorkArea - Virtual screen origin is %d, %d\n", iLeft, iTop);
+  
+  /* Get size of primary screen */
+  iPrimaryWidth = GetSystemMetrics (SM_CXSCREEN);
+  iPrimaryHeight = GetSystemMetrics (SM_CYSCREEN);
+
+  ErrorF ("winGetWorkArea - Primary screen is %d x %d\n",
+	 iPrimaryWidth, iPrimaryHeight);
+  
+  /* Work out how much of the primary screen we aren't using */
+  iPrimaryNonWorkAreaWidth = iPrimaryWidth - (prcWorkArea->right -
+					      prcWorkArea->left);
+  iPrimaryNonWorkAreaHeight = iPrimaryHeight - (prcWorkArea->bottom
+						- prcWorkArea->top);
+  
+  /* Update the rectangle to include all monitors */
+  if (iLeft < 0) 
+    {
+      prcWorkArea->left = iLeft;
+    }
+  if (iTop < 0) 
+    {
+      prcWorkArea->top = iTop;
+    }
+  prcWorkArea->right = prcWorkArea->left + iWidth -
+    iPrimaryNonWorkAreaWidth;
+  prcWorkArea->bottom = prcWorkArea->top + iHeight -
+    iPrimaryNonWorkAreaHeight;
+  
+  ErrorF ("winGetWorkArea - Adjusted WorkArea for multiple "
+	  "monitors: %d %d %d %d\n",
+	  prcWorkArea->top, prcWorkArea->left,
+	  prcWorkArea->bottom, prcWorkArea->right);
+  
   return TRUE;
 }
 

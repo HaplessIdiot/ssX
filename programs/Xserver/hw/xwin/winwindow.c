@@ -26,9 +26,9 @@
  *from the XFree86 Project.
  *
  * Authors:	Harold L Hunt II
- *		MATSUZAKI Kensuke
+ *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.4 2002/10/31 23:04:39 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.5 2002/11/07 10:31:32 alanh Exp $ */
 
 #include "win.h"
 
@@ -39,11 +39,13 @@
 static int
 winAddRgn (WindowPtr pWindow, pointer data);
 
-static void
+static
+void
 winUpdateRgn (WindowPtr pWindow);
 
 #ifdef SHAPE
-static void
+static
+void
 winReshape (WindowPtr pWin);
 #endif
 
@@ -54,7 +56,7 @@ winReshape (WindowPtr pWin);
 Bool
 winCreateWindowNativeGDI (WindowPtr pWin)
 {
-  ErrorF ("winCreateWindow()\n");
+  ErrorF ("winCreateWindowNativeGDI ()\n");
   return TRUE;
 }
 
@@ -65,7 +67,7 @@ winCreateWindowNativeGDI (WindowPtr pWin)
 Bool
 winDestroyWindowNativeGDI (WindowPtr pWin)
 {
-  ErrorF ("winDestroyWindow()\n");
+  ErrorF ("winDestroyWindowNativeGDI ()\n");
   return TRUE;
 }
 
@@ -76,7 +78,7 @@ winDestroyWindowNativeGDI (WindowPtr pWin)
 Bool
 winPositionWindowNativeGDI (WindowPtr pWin, int x, int y)
 {
-  ErrorF ("winPositionWindow()\n");
+  ErrorF ("winPositionWindowNativeGDI ()\n");
   return TRUE;
 }
 
@@ -89,7 +91,7 @@ winCopyWindowNativeGDI (WindowPtr pWin,
 			DDXPointRec ptOldOrg,
 			RegionPtr prgnSrc)
 {
-  ErrorF ("winCopyWindow()\n");
+  ErrorF ("winCopyWindowNativeGDI ()\n");
 }
 
 
@@ -99,7 +101,7 @@ winCopyWindowNativeGDI (WindowPtr pWin,
 Bool
 winChangeWindowAttributesNativeGDI (WindowPtr pWin, unsigned long mask)
 {
-  ErrorF ("winChangeWindowAttributes()\n");
+  ErrorF ("winChangeWindowAttributesNativeGDI ()\n");
   return TRUE;
 }
 
@@ -111,7 +113,7 @@ winChangeWindowAttributesNativeGDI (WindowPtr pWin, unsigned long mask)
 Bool
 winUnmapWindowNativeGDI (WindowPtr pWindow)
 {
-  ErrorF ("winUnmapWindow()\n");
+  ErrorF ("winUnmapWindowNativeGDI ()\n");
   /* This functions is empty in the CFB,
    * we probably won't need to do anything
    */
@@ -126,7 +128,7 @@ winUnmapWindowNativeGDI (WindowPtr pWindow)
 Bool
 winMapWindowNativeGDI (WindowPtr pWindow)
 {
-  ErrorF ("winMapWindow()\n");
+  ErrorF ("winMapWindowNativeGDI ()\n");
   /* This function is empty in the CFB,
    * we probably won't need to do anything
    */
@@ -145,7 +147,7 @@ winCreateWindowPRootless (WindowPtr pWin)
   winWindowPriv(pWin);
 
 #if CYGDEBUG
-  ErrorF ("winCreateWindowPRootless()\n");
+  ErrorF ("winCreateWindowPRootless ()\n");
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->CreateWindow(pWin);
@@ -167,7 +169,7 @@ winDestroyWindowPRootless (WindowPtr pWin)
   winWindowPriv(pWin);
 
 #if CYGDEBUG
-  ErrorF ("winDestroyWindowPRootless()\n");
+  ErrorF ("winDestroyWindowPRootless ()\n");
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->DestroyWindow(pWin);
@@ -193,7 +195,7 @@ winPositionWindowPRootless (WindowPtr pWin, int x, int y)
   Bool			fResult = FALSE;
 
 #if CYGDEBUG
-  ErrorF ("winPositionWindowPRootless()\n");
+  ErrorF ("winPositionWindowPRootless ()\n");
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->PositionWindow(pWin, x, y);
@@ -213,7 +215,7 @@ winChangeWindowAttributesPRootless (WindowPtr pWin, unsigned long mask)
   Bool			fResult = FALSE;
 
 #if CYGDEBUG
-  ErrorF ("winChangeWindowAttributesPRootless()\n");
+  ErrorF ("winChangeWindowAttributesPRootless ()\n");
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->ChangeWindowAttributes(pWin, mask);
@@ -235,7 +237,7 @@ winUnmapWindowPRootless (WindowPtr pWin)
   winWindowPriv(pWin);
 
 #if CYGDEBUG
-  ErrorF ("winUnmapWindowPRootless()\n");
+  ErrorF ("winUnmapWindowPRootless ()\n");
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->UnrealizeWindow(pWin);
@@ -262,7 +264,7 @@ winMapWindowPRootless (WindowPtr pWin)
   Bool			fResult = FALSE;
 
 #if CYGDEBUG
-  ErrorF ("winMapWindowPRootless()\n");
+  ErrorF ("winMapWindowPRootless ()\n");
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->RealizeWindow(pWin);
@@ -280,7 +282,7 @@ void
 winSetShapePRootless (WindowPtr pWin)
 {
 #if CYGDEBUG
-  ErrorF ("winSetShapePRootless()\n");
+  ErrorF ("winSetShapePRootless ()\n");
 #endif
 
   winGetScreenPriv(pWin->drawable.pScreen)->SetShape(pWin);
@@ -310,7 +312,7 @@ winAddRgn (WindowPtr pWin, pointer data)
   if (pWin->parent != NULL) 
     {
 #if CYGDEBUG
-      ErrorF("winAddRgn()\n");
+      ErrorF ("winAddRgn ()\n");
 #endif
       if (pWin->mapped)
 	{
@@ -326,7 +328,7 @@ winAddRgn (WindowPtr pWin, pointer data)
 	  
 	  if (hRgnWin == NULL)
 	    {
-	      ErrorF ("winAddRgn - CreateRectRgn() failed\n");
+	      ErrorF ("winAddRgn - CreateRectRgn () failed\n");
 	      ErrorF ("  Rect %d %d %d %d\n",
 		      iX, iY, iX + iWidth, iY + iHeight);
 	    }
@@ -336,7 +338,7 @@ winAddRgn (WindowPtr pWin, pointer data)
 	      if (CombineRgn (hRgnWin, hRgnWin, pWinPriv->hRgn, RGN_AND)
 		  == ERROR)
 		{
-		  ErrorF ("winSetShapePRootless - CombineRgn() failed\n");
+		  ErrorF ("winAddRgn - CombineRgn () failed\n");
 		}
 	    }
 	  
@@ -344,7 +346,7 @@ winAddRgn (WindowPtr pWin, pointer data)
 
 	  if (CombineRgn (hRgn, hRgn, hRgnWin, RGN_OR) == ERROR)
 	    {
-	      ErrorF ("winAddRgn - CombineRgn() failed\n");
+	      ErrorF ("winAddRgn - CombineRgn () failed\n");
 	    }
 	  
 	  DeleteObject (hRgnWin);
@@ -376,7 +378,7 @@ winUpdateRgn (WindowPtr pWin)
     }
   else
     {
-      ErrorF ("winUpdateRgn fail to CreateRectRgn\n");
+      ErrorF ("winUpdateRgn - CreateRectRgn failed.\n");
     }
 }
 
@@ -394,25 +396,27 @@ winReshape (WindowPtr pWin)
   winWindowPriv(pWin);
 
 #if CYGDEBUG
-  ErrorF ("winReshape()\n");
+  ErrorF ("winReshape ()\n");
 #endif
-  
+
+  /* Bail if the window is the root window */
   if (pWin->parent == NULL)
-    { /* If pWin is Root */
-      return;
-    }
-  else if (pWin->parent->parent != NULL)
-    { /* If pWin is not top level */
-      return;
-    }
-  
+    return;
+
+  /* Bail if the window is not top level */
+  if (pWin->parent->parent != NULL)
+    return;
+
+  /* Free any existing window region stored in the window privates */
   if (pWinPriv->hRgn != NULL)
     {
       DeleteObject (pWinPriv->hRgn);
       pWinPriv->hRgn = NULL;
     }
   
-  if (!wBoundingShape(pWin)) return;
+  /* Bail if the window has no bounding region defined */
+  if (!wBoundingShape (pWin))
+    return;
 
   REGION_INIT(pScreen, &rrNewShape, NullBox, 0);
   REGION_COPY(pScreen, &rrNewShape, wBoundingShape(pWin));
@@ -424,9 +428,13 @@ winReshape (WindowPtr pWin)
   
   if (nRects > 0)
     {
+      /* Create initial empty Windows region */
       hRgn = CreateRectRgn (0, 0, 0, 0);
-      for (pRects = pShape, pEnd = pShape+nRects; pRects < pEnd; pRects++)
+
+      /* Loop through all rectangles in the X region */
+      for (pRects = pShape, pEnd = pShape + nRects; pRects < pEnd; pRects++)
         {
+	  /* Create a Windows region for the X rectangle */
 	  hRgnRect = CreateRectRgn (pRects->x1, pRects->y1,
 				    pRects->x2, pRects->y2);
 	  if (hRgnRect == NULL)
@@ -434,14 +442,17 @@ winReshape (WindowPtr pWin)
 	      ErrorF("winReshape - CreateRectRgn() failed\n");
 	    }
 
+	  /* Merge the Windows region with the accumulated region */
 	  if (CombineRgn (hRgn, hRgn, hRgnRect, RGN_OR) == ERROR)
 	    {
 	      ErrorF("winReshape - CombineRgn() failed\n");
 	    }
 
+	  /* Delete the temporary Windows region */
 	  DeleteObject (hRgnRect);
         }
       
+      /* Save a handle to the composite region in the window privates */
       pWinPriv->hRgn = hRgn;
     }
 

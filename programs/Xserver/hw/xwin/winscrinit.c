@@ -29,9 +29,9 @@
  *		Suhaib M Siddiqi
  *		Peter Busch
  *		Harold L Hunt II
- *		MATSUZAKI Kensuke
+ *		Kensuke Matsuzaki
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.24 2002/10/17 08:18:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.25 2002/10/31 23:04:39 alanh Exp $ */
 
 #include "win.h"
 
@@ -50,13 +50,6 @@ winScreenInit (int index,
   winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
   winPrivScreenPtr	pScreenPriv;
   HDC			hdc;
-#if 0
-  DEBUG_FN_NAME("winScreenInit");
-  DEBUGVARS;
-  /*DEBUGPROC_MSG;*/
-
-  DEBUG_MSG ("Hello");
-#endif
 
 #if CYGDEBUG
   ErrorF ("winScreenInit - dwWidth: %d dwHeight: %d\n",
@@ -113,6 +106,19 @@ winScreenInit (int index,
 #endif
     }
 
+  /*
+   * Check that all monitors have the same display depth if we are using
+   * multiple monitors
+   */
+  if (pScreenInfo->fMultipleMonitors 
+      && !GetSystemMetrics (SM_SAMEDISPLAYFORMAT))
+    {
+      ErrorF ("winScreenInit - Monitors do not all have same pixel format / "
+	      "display depth.\n"
+	      "Using primary display only.\n");
+      pScreenInfo->fMultipleMonitors = FALSE;
+    }
+
   /* Create display window */
   if (!(*pScreenPriv->pwinCreateBoundingWindow) (pScreen))
     {
@@ -121,12 +127,40 @@ winScreenInit (int index,
       return FALSE;
     }
 
-  /* Store the initial height, width, and depth of the display */
+  /* Get a device context */
   hdc = GetDC (pScreenPriv->hwndScreen);
-  pScreenPriv->dwLastWindowsWidth = GetSystemMetrics (SM_CXSCREEN);
-  pScreenPriv->dwLastWindowsHeight = GetSystemMetrics (SM_CYSCREEN);
-  pScreenPriv->dwLastWindowsBitsPixel
-    = GetDeviceCaps (hdc, BITSPIXEL);
+
+  /* Store the initial height, width, and depth of the display */
+  /* Are we using multiple monitors? */
+  if (pScreenInfo->fMultipleMonitors)
+    {
+      pScreenPriv->dwLastWindowsWidth = GetSystemMetrics (SM_CXVIRTUALSCREEN);
+      pScreenPriv->dwLastWindowsHeight = GetSystemMetrics (SM_CYVIRTUALSCREEN);
+
+      /* 
+       * In this case, some of the defaults set in
+       * winInitializeDefaultScreens () are not correct ...
+       */
+      if (!pScreenInfo->fUserGaveHeightAndWidth)
+	{
+	  pScreenInfo->dwWidth = GetSystemMetrics (SM_CXVIRTUALSCREEN);
+	  pScreenInfo->dwHeight = GetSystemMetrics (SM_CYVIRTUALSCREEN);
+	  pScreenInfo->dwWidth_mm = (pScreenInfo->dwWidth /
+				     WIN_DEFAULT_DPI) * 25.4;
+	  pScreenInfo->dwHeight_mm = (pScreenInfo->dwHeight /
+				      WIN_DEFAULT_DPI) * 25.4;
+	}
+    }
+  else
+    {
+      pScreenPriv->dwLastWindowsWidth = GetSystemMetrics (SM_CXSCREEN);
+      pScreenPriv->dwLastWindowsHeight = GetSystemMetrics (SM_CYSCREEN);
+    }
+
+  /* Save the original bits per pixel */
+  pScreenPriv->dwLastWindowsBitsPixel = GetDeviceCaps (hdc, BITSPIXEL);
+
+  /* Release the device context */
   ReleaseDC (pScreenPriv->hwndScreen, hdc);
     
   /* Clear the visuals list */
@@ -161,6 +195,7 @@ winFinishScreenInitFB (int index,
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   VisualPtr		pVisual = NULL;
   char			*pbits = NULL;
+  int			iReturn;
 
 #if WIN_LAYER_SUPPORT
   pScreenPriv->dwLayerKind = LAYER_SHADOW;
@@ -408,10 +443,103 @@ winFinishScreenInitFB (int index,
       /* Undefine the WRAP macro, as it is not needed elsewhere */
 #undef WRAP
     }
+  /* Handle multi window mode */
+  else if (pScreenInfo->fMultiWindow)
+    {
+      /* Define the WRAP macro temporarily for local use */
+#define WRAP(a) \
+    if (pScreen->a) { \
+        pScreenPriv->a = pScreen->a; \
+    } else { \
+        ErrorF("null screen fn " #a "\n"); \
+        pScreenPriv->a = NULL; \
+    }
+
+      /* Save a pointer to each lower-level window procedure */
+      WRAP(CreateWindow);
+      WRAP(DestroyWindow);
+      WRAP(RealizeWindow);
+      WRAP(UnrealizeWindow);
+      WRAP(PositionWindow);
+      WRAP(ChangeWindowAttributes);
+      WRAP(ReparentWindow);
+      WRAP(RestackWindow);
+#ifdef SHAPE
+      WRAP(SetShape);
+#endif
+
+      /* Assign multi-window window procedures to be top level procedures */
+      pScreen->CreateWindow = winCreateWindowMultiWindow;
+      pScreen->DestroyWindow = winDestroyWindowMultiWindow;
+      pScreen->PositionWindow = winPositionWindowMultiWindow;
+      pScreen->ChangeWindowAttributes = winChangeWindowAttributesMultiWindow;
+      pScreen->RealizeWindow = winMapWindowMultiWindow;
+      pScreen->UnrealizeWindow = winUnmapWindowMultiWindow;
+      pScreen->ReparentWindow = winReparentWindowMultiWindow;
+      pScreen->RestackWindow = winRestackWindowMultiWindow;
+#ifdef SHAPE
+      pScreen->SetShape = winSetShapeMultiWindow;
+#endif
+
+      /* Undefine the WRAP macro, as it is not needed elsewhere */
+#undef WRAP
+    }
 
   /* Wrap either fb's or shadow's CloseScreen with our CloseScreen */
   pScreenPriv->CloseScreen = pScreen->CloseScreen;
   pScreen->CloseScreen = pScreenPriv->pwinCloseScreen;
+
+  /* Create a mutex for modules in seperate threads to wait for */
+  iReturn = pthread_mutex_init (&pScreenPriv->pmServerStarted, NULL);
+  if (iReturn != 0)
+    {
+      ErrorF ("winFinishScreenInitFB - pthread_mutex_init () failed: %d\n",
+	      iReturn);
+      return FALSE;
+    }
+
+  /* Own the mutex for modules in seperate threads */
+  iReturn = pthread_mutex_lock (&pScreenPriv->pmServerStarted);
+  if (iReturn != 0)
+    {
+      ErrorF ("winFinishScreenInitFB - pthread_mutex_lock () failed: %d\n",
+	      iReturn);
+      return FALSE;
+    }
+
+  /* Set the ServerStarted flag to false */
+  pScreenPriv->fServerStarted = FALSE;
+
+#if CYGDEBUG || YES
+  if (pScreenInfo->fMultiWindow)
+    ErrorF ("winFinishScreenInitFB - Calling winInitWM.\n");
+#endif
+
+  /* Initialize multi window mode */
+  if (pScreenInfo->fMultiWindow
+      && !winInitWM (&pScreenPriv->pWMInfo,
+		     &pScreenPriv->ptWMProc,
+		     &pScreenPriv->pmServerStarted,
+		     pScreenInfo->dwScreen))
+    {
+      ErrorF ("winFinishScreenInitFB - winInitWM () failed.\n");
+      return FALSE;
+    }
+
+#if CYGDEBUG || YES
+  if (pScreenInfo->fClipboard)
+    ErrorF ("winFinishScreenInitFB - Calling winInitClipboard.\n");
+#endif
+
+  /* Initialize the clipboard manager */
+  if (pScreenInfo->fClipboard
+      && !winInitClipboard (&pScreenPriv->ptClipboardProc,
+			    &pScreenPriv->pmServerStarted,
+			    pScreenInfo->dwScreen))
+    {
+      ErrorF ("winFinishScreenInitFB - winClipboardInit () failed.\n");
+      return FALSE;
+    }
 
   /* Tell the server that we are enabled */
   pScreenPriv->fEnabled = TRUE;
@@ -419,7 +547,7 @@ winFinishScreenInitFB (int index,
   /* Tell the server that we have a valid depth */
   pScreenPriv->fBadDepth = FALSE;
 
-#if CYGDEBUG
+#if CYGDEBUG || YES
   ErrorF ("winFinishScreenInitFB - returning\n");
 #endif
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/12/02 10:20:33 lehors $
-XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.13 2002/07/05 09:19:25 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.14 2002/10/17 08:18:18 alanh Exp $
 
 #include <Server.tmpl>
 
@@ -44,7 +44,15 @@ SRCS =	InitInput.c \
 	wincreatewnd.c \
 	winregistry.c \
 	winconfig.c \
-	winmsg.c
+	winmsg.c \
+	winmultiwindowwindow.c \
+	winmultiwindowwm.c \
+	winclipboardinit.c \
+	winclipboardtextconv.c \
+	winclipboardthread.c \
+	winclipboardunicode.c \
+	winclipboardwndproc.c \
+	winclipboardxevents.c
 
 /*
  * NOTE: The windialogs.rc file is compiled into windialogs.res.
@@ -89,7 +97,15 @@ OBJS =	InitInput.o \
 	wincreatewnd.o \
 	winregistry.o \
 	winconfig.o \
-	winmsg.o
+	winmsg.o \
+	winmultiwindowwindow.o \
+	winmultiwindowwm.o \
+	winclipboardinit.o \
+	winclipboardtextconv.o \
+	winclipboardthread.o \
+	winclipboardunicode.o \
+	winclipboardwndproc.o \
+	winclipboardxevents.o
 
 INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 	   -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi \
