@@ -5,11 +5,9 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.3 2001/04/01 07:12:14 torrey Exp $ */
 
 // X headers
-#include "mi.h"
-#include "mipointer.h"
 #include "scrnintstr.h"
 
 // System headers
@@ -26,6 +24,7 @@
 
 #include "../darwin.h"
 #include "quartz.h"
+#include "quartzAudio.h"
 
 #define kDarwinMaxScreens 100
 static ScreenPtr darwinScreens[kDarwinMaxScreens];
@@ -43,75 +42,6 @@ static void QuartzStoreColors(
     xColorItem      *pdefs)
 {
 }
-
-/*
-===========================================================================
-
- Pointer functions
-
-===========================================================================
-*/
-
-/*
- * QuartzCursorOffScreen
- */
-static Bool QuartzCursorOffScreen(ScreenPtr *pScreen, int *x, int *y)
-{
-    return FALSE;
-}
-
-
-/*
- * QuartzCrossScreen
- */
-static void QuartzCrossScreen(ScreenPtr pScreen, Bool entering)
-{
-    return;
-}
-
-
-/*
- * QuartzWarpCursor
- *  Change the cursor position without generating an event or motion history
- */
-static void
-QuartzWarpCursor(
-    ScreenPtr               pScreen,
-    int                     x,
-    int                     y)
-{
-    CGDisplayErr            cgErr;
-    CGPoint                 cgPoint;
-
-    cgPoint = CGPointMake(x, y);
-    cgErr = CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgPoint);
-    if (cgErr != CGDisplayNoErr) {
-        ErrorF("Could not set cursor position with error code 0x%x.\n", cgErr);
-    }
-    miPointerWarpCursor(pScreen, x, y);
-}
-
-
-static miPointerScreenFuncRec quartzScreenFuncsRec = {
-  QuartzCursorOffScreen,
-  QuartzCrossScreen,
-  QuartzWarpCursor,
-};
-
-
-/* 
- * QuartzInitCursor
- */
-static Bool QuartzInitCursor(ScreenPtr pScreen) 
-{
-    // initialize software cursor handling
-    if (!miDCInitialize(pScreen, &quartzScreenFuncsRec)) {
-        return FALSE;
-    }
-
-    return TRUE;
-}
-
 
 /*
 ===========================================================================
@@ -188,7 +118,10 @@ static void QuartzCapture(void)
 {
     if (! CGDisplayIsCaptured(kCGDirectMainDisplay)) {
         CGDisplayCapture(kCGDirectMainDisplay);
+// FIXME: Properly initialize X cursor
+#if 0
         CGDisplayHideCursor(kCGDirectMainDisplay);
+#endif
         HideMenuBar();
     }
 }
@@ -201,7 +134,7 @@ static void QuartzCapture(void)
 static void QuartzRelease(void)
 {
     if (CGDisplayIsCaptured(kCGDirectMainDisplay)) {
-        CGDisplayShowCursor(kCGDirectMainDisplay);
+        InitCursor();
         CGDisplayRelease(kCGDirectMainDisplay);
         ShowMenuBar();
     }
