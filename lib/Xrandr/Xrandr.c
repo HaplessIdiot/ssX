@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.8 2002/10/14 18:01:39 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.9 2002/11/04 00:21:56 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  * Copyright © 2002 Hewlett Packard Company, Inc.
@@ -238,7 +238,7 @@ static XRRScreenConfiguration *_XRRValidateCache (Display *dpy, int screen)
 	configs = xrri->config;
 
 	if (configs[screen] == NULL)
-	    configs[screen] = XRRGetScreenInfo (dpy, RootWindow(dpy, screen));
+	    configs[screen] = _XRRGetScreenInfo (dpy, RootWindow(dpy, screen));
 	return configs[screen];
     } else {
 	return NULL;
@@ -563,8 +563,6 @@ static XRRScreenConfiguration *_XRRGetScreenInfo (Display *dpy, Window window)
     if (nbytes > nbytesRead)
 	_XEatData (dpy, (unsigned long) (nbytes - nbytesRead));
     
-    SyncHandle ();
-	
     return (XRRScreenConfiguration *)(scp);
 }
 
@@ -574,6 +572,7 @@ XRRScreenConfiguration *XRRGetScreenInfo (Display *dpy, Window window)
   LockDisplay (dpy);
   config = _XRRGetScreenInfo(dpy, window);
   UnlockDisplay (dpy);
+  SyncHandle ();
   return config;
 }
 
