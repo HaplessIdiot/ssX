@@ -3461,7 +3461,7 @@ The &s.code;XF86VideoAdaptorRec&e.code;:
 <quote><p>
 <verb>
 typedef struct {
-	unsigned char type; 
+	unsigned int type; 
 	int flags;
 	char *name;
 	int nEncodings;
@@ -3469,8 +3469,11 @@ typedef struct {
 	int nFormats;
 	XF86VideoFormatPtr pFormats;  
 	int nPorts;
-	XF86AttributeListPtr pAttributes;
 	DevUnion *pPortPrivates;
+	int nAttributes;
+	XF86AttributePtr pAttributes;
+	int nImages;
+	XF86ImagePtr pImages;
 	PutVideoFuncPtr PutVideo;
 	PutStillFuncPtr PutStill;
 	GetVideoFuncPtr GetVideo;
@@ -3479,6 +3482,8 @@ typedef struct {
 	SetPortAttributeFuncPtr SetPortAttribute;
 	GetPortAttributeFuncPtr GetPortAttribute;
 	QueryBestSizeFuncPtr QueryBestSize;
+	PutImageFuncPtr PutImage;
+	QueryImageAttributesFuncPtr QueryImageAttributes;
 } XF86VideoAdaptorRec, *XF86VideoAdaptorPtr;
 </verb>
 
@@ -3487,13 +3492,32 @@ typedef struct {
     
      &s.code;type&e.code;
      <quote><p>
-	This can be &s.code;XvInputMask&e.code;,
-	&s.code;XvOutputMask&e.code; or both OR'd together.  This refers
-	to the target drawable and is similar to a Window's
-	&s.code;class&e.code;.  &s.code;XvInputMask&e.code; indicates
-	that the adaptor can put video into a drawable.
-	&s.code;XvOutputMask&e.code; indicates that the adaptor can get
-	video from a drawable.
+	This can be any of the following flags OR'd together.
+
+	&s.code;XvInputMask&e.code;
+	&s.code;XvOutputMask&e.code;
+	<quote><p>
+	    These refer to the target drawable and are similar to a Window's 
+	    class. &s.code;XvInputMask&e.code; indicates that the adaptor
+	    can put video into a drawable.  &s.code;XvOutputMask&e.code;
+	    indicates that the adaptor can get video from a drawable.
+	</quote>
+
+	&s.code;XvVideoMask&e.code;
+	&s.code;XvStillMask&e.code;
+	&s.code;XvImageMask&e.code;
+	<quote><p>
+	    These indicate that the adaptor supports video, still or
+	    image primitives respectively.
+	</quote>
+
+	&s.code;XvWindowMask&e.code;
+	&s.code;XvPixmapMask&e.code;
+	<quote><p>
+	    These indicate the types of drawables the adaptor is capable
+	    of rendering into.  At the moment, Pixmap rendering is not
+	    supported and the &s.code;XvPixmapMask&e.code; flag is ignored.
+	</quote>
 
      </quote>
 
@@ -3504,10 +3528,13 @@ typedef struct {
 	&s.code;VIDEO_NO_CLIPPING&e.code;
 	<quote><p>
 	   This indicates that the video adaptor does not support
-	   clipping.  The driver will never receive Get/Put requests
+	   clipping.  The driver will never receive ``Put'' requests
 	   where less than the entire area determined by
 	   &s.code;drw_x&e.code;, &s.code;drw_y&e.code;,
 	   &s.code;drw_w&e.code; and &s.code;drw_h&e.code; is visible.
+	   This flag does not apply to ``Get'' requests.  Hardware
+	   that is incapable of clipping ``Gets'' may punt or get
+	   the extents of the clipping region passed to it.
 
 	</quote>
 
@@ -3519,17 +3546,6 @@ typedef struct {
 
 	</quote>
 
-	&s.code;VIDEO_EXPOSE&e.code;
-	<quote><p>
-	   This flag applies to &s.code;GetStill&e.code; and
-	   &s.code;GetVideo&e.code; only, it indicates the clip list
-	   shall contain obscured regions.  Note the source region will
-	   still be clipped against the screen bounds.  This flag is
-	   meant for showing all the contents of the [root] window, if
-	   the administrator has no hesitations regarding security.
-
-	</quote>
-
 	&s.code;VIDEO_OVERLAID_STILLS&e.code;
 	<quote><p>
 	   Implementing PutStill for hardware that does video as an
@@ -3538,6 +3554,18 @@ typedef struct {
 	   called whenever the destination gets clipped or moved so that
 	   the still can be left up until then.
 
+	</quote>
+
+	&s.code;VIDEO_OVERLAID_IMAGES&e.code;
+	<quote><p>
+	    Same as &s.code;VIDEO_OVERLAID_STILLS&e.code; but for images.
+	</quote>
+
+	&s.code;VIDEO_CLIP_TO_VIEWPORT&e.code;
+	<quote><p>
+	    Indicates that the clip region passed to the driver functions
+	    should be clipped to the visible portion of the screen in the
+	    case where the viewport is smaller than the virtual desktop.
 	</quote>
 
      </quote>
@@ -3554,6 +3582,7 @@ typedef struct {
 	The number of encodings the adaptor is capable of and pointer
 	to the &s.code;XF86VideoEncodingRec&e.code; array.  The
 	&s.code;XF86VideoEncodingRec&e.code; is described later on.
+	Encodings are required unless the driver only supports images.
 
      </quote>
 
@@ -3579,19 +3608,34 @@ typedef struct {
 	In the case where there may be many ports, this enables the
 	driver to know which port the request is intended for.  Most
 	commonly, this will contain a pointer to the data structure
-	containing information about the port.
+	containing information about the port.  In Xv, all ports on
+	a particular adaptor are expected to be identical in their
+	functionality.
 
      </quote>
 
-     &s.code;pAttributes&e.code;
+     &s.code;nAttributes&nl;
+     pAttributes&e.code;
      <quote><p>
-	There is an array of &s.code;XF86AttributeListRecs&e.code; with
-	an entry for each port.
+	The number of attributes recognized by the adaptor and a pointer to
+	the array of &s.code;XF86AttributeRecs&e.code;.  The
+	&s.code;XF86AttributeRec&e.code; is described later on.
 
      </quote>
+
+     &s.code;nImages&nl;
+     pImages&e.code;
+     <quote><p>
+	The number of &s.code;XF86ImageRecs&e.code; supported by the adaptor 
+	and a pointer to the array of &s.code;XF86ImageRecs&e.code;. The
+	&s.code;XF86ImageRec&e.code; is described later on.
+
+     </quote>
+
 
      &s.code;PutVideo PutStill GetVideo GetStill StopVideo
-     SetPortAttribute GetPortAttribute QueryBestSize&e.code;
+     SetPortAttribute GetPortAttribute QueryBestSize PutImage
+     QueryImageAttributes&e.code;
      <quote><p>
 	These functions define the DDX-&gt;driver interface.  In each
 	case, the pointer &s.code;data&e.code; is passed to the driver.
@@ -3599,40 +3643,47 @@ typedef struct {
 	fields are required except under the following conditions:
 
 	<enum>
-	 <item>&s.code;PutVideo&e.code; and &s.code;PutStill&e.code;
-	     are not required when the adaptor type does not contain
-	     &s.code;XvInputMask&e.code;.
+	 <item>&s.code;PutVideo&e.code;, &s.code;PutStill&e.code; and
+	     the image routines &s.code;PutImage&e.code; and 
+	     &s.code;QueryImageAttributes&e.code; are not required when the 
+	     adaptor type does not contain &s.code;XvInputMask&e.code;.
 
 	 <item>&s.code;GetVideo&e.code; and &s.code;GetStill&e.code;
 	     are not required when the adaptor type does not contain
 	     &s.code;XvOutputMask&e.code;.
 
+	 <item>&s.code;GetVideo&e.code; and &s.code;PutVideo&e.code;
+	     are not required when the adaptor type does not contain
+	     &s.code;XvVideoMask&e.code;.
+
+	 <item>&s.code;GetStill&e.code; and &s.code;PutStill&e.code;
+	     are not required when the adaptor type does not contain
+	     &s.code;XvStillMask&e.code;.
+
+	 <item>&s.code;PutImage&e.code; and &s.code;QueryImageAttributes&e.code;
+	     are not required when the adaptor type does not contain
+	     &s.code;XvImageMask&e.code;.
+
 	</enum>
 
-	These functions should return Success if the operation was
-	completed successfully.  They can return &s.code;XvBadAlloc&e.code;
-	otherwise.  Xv DDX will not call a Get/Put function while video
-	is active, rather issue a &s.code;StopVideo&e.code; call first.
+	With the exception of &s.code;QueryImageAttributes&e.code;, these
+	functions should return &s.code;Success&e.code; if the operation was
+	completed successfully.  They can return &s.code;XvBadAlloc&e.code; 
+	otherwise. &s.code;QueryImageAttributes&e.code; returns the size
+	of the XvImage queried.
 
-	Earlier versions of Xv DDX had a &s.code;ReclipVideo&e.code;
-	function, obsolete now.  The clip region will be passed directly
-	by the functions below.  If the &s.code;VIDEO_NO_CLIPPING&e.code;
-	flag is set, the &s.code;RegionPtr&e.code; should be ignored by
+	If the &s.code;VIDEO_NO_CLIPPING&e.code;
+	flag is set, the &s.code;clipBoxes&e.code; may be ignored by
 	the driver.  &s.code;ClipBoxes&e.code; is an &s.code;X-Y&e.code;
 	banded region identical to those used throughout the server.
-	The clipBoxes represent the visible portions of area determined
+	The clipBoxes represent the visible portions of the area determined
 	by &s.code;drw_x&e.code;, &s.code;drw_y&e.code;,
 	&s.code;drw_w&e.code; and &s.code;drw_h&e.code; in the Get/Put
 	function.  The boxes are in screen coordinates, are guaranteed
-	not to overlap and an empty region will be passed only to
-	&s.code;GetVideo&e.code;, once.  This to notify the driver the
-	primitive is totally obscured now.  A &s.code;StopVideo&e.code;
-	call will immediately follow nevertheless.  In the case where
-	the &s.code;VIDEO_INVERT_CLIPLIST&e.code; flag is set,
+	not to overlap and an empty region will never be passed.  
+	If the driver has specified &s.code;VIDEO_INVERT_CLIPLIST&e.code;,
 	&s.code;clipBoxes&e.code; will indicate the areas of the primitive
-	which are obscured rather than the areas visible.  The Region
-	must not be altered by the driver and will be deleted when the
-	function returns.
+	which are obscured rather than the areas visible. 
 
     </quote>
 
@@ -3642,11 +3693,10 @@ typedef struct {
 		&f.indent;RegionPtr clipBoxes, pointer data )&e.code;
     <quote><p>
 	  This indicates that the driver should take a subsection
-	  &s.code;vid_w&nbsp;&times;&nbsp;vid_h&e.code; at location
+	  &s.code;vid_w&e.code; by &s.code;vid_h&e.code; at location
 	  &s.code;(vid_x,vid_y)&e.code; from the video stream and direct
-	  it into the rectangle
-	  &s.code;rw_w&nbsp;&times;&nbsp;drw_h&e.code; at location
-	  &s.code;(drw_x,drw_y)&e.code; on the screen, scaling as
+	  it into the rectangle &s.code;drw_w&e.code; by &s.code;drw_h&e.code;
+	  at location &s.code;(drw_x,drw_y)&e.code; on the screen, scaling as
 	  necessary.  Due to the large variations in capabilities of
 	  the various hardware expected to be used with this extension,
 	  it is not expected that all hardware will be able to do this
@@ -3734,8 +3784,9 @@ typedef struct {
 	  encoding the particular port should be using (see the description
 	  of &s.code;XF86VideoEncodingRec&e.code; below).  If the
 	  requested encoding is unsupported, the driver should return
-	  &s.code;XvBadEncoding&e.code;.  &s.code;Success&e.code; should
-	  be returned otherwise.
+	  &s.code;XvBadEncoding&e.code;.  If the value lies outside the
+	  advertised range &s.code;BadValue&e.code; may be returned.
+	  &s.code;Success&e.code; should be returned otherwise.
 
     </quote>
 
@@ -3747,15 +3798,58 @@ typedef struct {
 	   &s.code;QueryBestSize&e.code; provides the client with a way
 	   to query what the destination dimensions would end up being
 	   if they were to request that an area
-	   &s.code;vid_w&nbsp;&times;&nbsp;vid_h&e.code; from the video
+	   &s.code;vid_w&e.code by &s.code;vid_h&e.code; from the video
 	   stream be scaled to rectangle of
-	   &s.code;drw_w&nbsp;&times;&nbsp;drw_h&e.code; on the screen.
+	   &s.code;drw_w&e.code; by &s.code;drw_h&e.code; on the screen.
 	   Since it is not expected that all hardware will be able to
 	   get the target dimensions exactly, it is important that the
 	   driver provide this function.  The returned dimensions must
 	   be less than or equal to the requested dimension.
 
     </quote>
+
+	&s.code;typedef  int (* PutImageFuncPtr)( ScrnInfoPtr pScrn, 
+		&f.indent;short src_x, short src_y, short drw_x, short drw_y,
+		&f.indent;short src_w, short src_h, short drw_w, short drw_h,
+		&f.indent;int image, char *buf, short width, short height,
+		&f.indent;Bool sync, RegionPtr clipBoxes, pointer data )&e.code;
+    <quote><p>
+	  This is similar to &s.code;PutStill&e.code; except that the
+	  source of the video is not a port but the data stored in a system 
+	  memory buffer at &s.code;buf&e.code;.  The data is in the format 
+	  indicated by the &s.code;image&e.code; descriptor and represents a 
+	  source of size &s.code;width&e.code; by &s.code;height&e.code;.
+	  If &s.code;sync&e.code; is TRUE the driver should not return
+	  from this function until it is through reading the data
+	  from &s.code;buf&e.code;.  Returning when &s.code;sync&e.code;
+	  is TRUE indicates that it is safe for the data at &s.code;buf&e.code;
+	  to be replaced, freed, or modified.
+	
+    </quote>
+
+	&s.code;typedef  int (* QueryImageAttributesFuncPtr)( ScrnInfoPtr pScrn,
+		&f.indent;int image, short *width, short *height,
+		&f.indent;int *pitches, int *offsets)&e.code;
+    <quote><p>
+	  This function is called to let the driver specify how data for
+	  a particular &s.code;image&e.code; of size &s.code;width&e.code;
+	  by &s.code;height&e.code; should be stored.  Sometimes only
+	  the size and corrected width and height are needed.  In that
+	  case &s.code;pitches&e.code; and &s.code;offsets&e.code; are
+	  NULL.  The size of the memory required for the image is returned
+	  by this function.  The &s.code;width&e.code; and 
+	  &s.code;height&e.code; of the requested image can be altered by
+	  the driver to reflect format limitations (such as component
+	  sampling periods that are larger than one).  If 
+	  &s.code;pitches&e.code; and &s.code;offsets&e.code; are not NULL,
+	  these will be arrays with as many elements in them as there
+	  are planes in the &s.code;image&e.code; format.  The driver
+	  should specify the pitch (in bytes) of each scanline in the
+	  particular plane as well as the offset to that plane (in bytes)
+	  from the begining of the image.
+	
+    </quote>
+
     </quote>
 
 The XF86VideoEncodingRec:
@@ -3767,8 +3861,8 @@ typedef struct {
 	unsigned short width, height;
 	XvRationalRec rate;
 } XF86VideoEncodingRec, *XF86VideoEncodingPtr;
-</verb>
 
+</verb>
    The &s.code;XF86VideoEncodingRec&e.code; specifies what encodings
    the adaptor can support.  Most of this data is just informational
    and for the client's benefit, and is what will be reported by
@@ -3797,32 +3891,159 @@ typedef struct {
 
 </quote>
 
-The XF86AttributeListRec:
+The XF86AttributeRec:
 
 <quote><p>
 <verb>
 typedef struct {
-	int   number;  
-	int   *flags;
-	char  **names;
+	int   flags;
+	int   min_value;
+	int   max_value;
+	char  *name;
 } XF86AttributeListRec, *XF86AttributeListPtr;
+
 </verb>
 
-   Each port will have one of these indicating the &s.code;number&e.code;
-   of attributes for that port, an array of names of the attributes and
-   an array of flags associated with each attribute.  Both arrays are
-   &s.code;number&e.code; in size.  Currently defined flags are
-   &s.code;XvGettable&e.code; and &s.code;XvSettable&e.code; which may
-   be OR'd together indicating that attribute is ``gettable'' or ``settable''
-   by the client.  Both arrays can be nulled if number is zero.  While
-   the Xv DDX copies most data from these structures and stores it
-   internally, including adaptor and encoding names, the attribute names
-   are not copied, but only their pointers.  Because of this, the strings
-   pointed to by &s.code;names[]&e.code; must exist as long as Xv is
-   initialized.
+   Each adaptor may have an array of these advertising the attributes
+   for its ports.  Currently defined flags are &s.code;XvGettable&e.code; 
+   and &s.code;XvSettable&e.code; which may be OR'd together indicating that 
+   attribute is ``gettable'' or ``settable'' by the client.  The 
+   &s.code;min&e.code; and &s.code;max&e.code; field specify the valid range 
+   for the value.  &s.code;Name&e.code; is a text string describing the
+   attribute by name.
 
 </quote>
 
+The XF86ImageRec:
+
+<quote><p>
+<verb>
+typedef struct {
+	int id;
+	int type;
+	int byte_order;
+	char guid[16];               
+	int bits_per_pixel;
+	int format;
+	int num_planes;
+
+	/* for RGB formats */
+	int depth;
+	unsigned int red_mask;       
+	unsigned int green_mask;   
+	unsigned int blue_mask;   
+
+	/* for YUV formats */
+	unsigned int y_sample_bits;
+	unsigned int u_sample_bits;
+	unsigned int v_sample_bits;   
+	unsigned int horz_y_period;
+	unsigned int horz_u_period;
+	unsigned int horz_v_period;
+	unsigned int vert_y_period;
+	unsigned int vert_u_period;
+	unsigned int vert_v_period;
+	char component_order[32];
+	int scanline_order;
+} XF86ImageRec, *XF86ImagePtr; 
+</verb>
+
+   XF86ImageRec describes how video source data is laid out in memory.
+   The fields are as follows:
+
+    &s.code;id&e.code;
+    <quote><p>
+	This is a unique descriptor for the format.  It is often good to
+        set this value to the FOURCC for the format when applicable. 
+    </quote>
+
+    &s.code;type&e.code;
+    <quote><p>
+	This is &s.code;XvRGB&e.code; or &s.code;XvYUV&e.code;. 
+    </quote>
+
+    &s.code;byte_order&e.code;
+    <quote><p>
+	This is &s.code;LSBFirst&e.code; or &s.code;MSBFirst&e.code;. 
+    </quote>
+
+    &s.code;guid&e.code;
+    <quote><p>
+	This is the Globally Unique IDentifier for the format.  When
+	not applicable, all characters should be NULL. 
+    </quote>
+
+    &s.code;bits_per_pixel&e.code;
+    <quote><p>
+	The number of bits taken up (but not necessarily used) by each
+	pixel.  Note that for some planar formats which have fractional
+	bits per pixel (such as IF09) this number may be rounded _down_.
+    </quote>
+
+    &s.code;format&e.code;
+    <quote><p>
+	This is &s.code;XvPlanar&e.code; or &s.code;XvPacked&e.code;. 
+    </quote>
+
+   &s.code;num_planes&e.code;
+    <quote><p>
+	The number of planes in planar formats.  This should be set to
+	one for packed formats.
+    </quote>
+
+   &s.code;depth&e.code;
+    <quote><p>
+	The significant bits per pixel in RGB formats (analgous to the
+	depth of a pixmap format).
+    </quote>
+
+   &s.code;red_mask&e.code;
+   &s.code;green_mask&e.code;
+   &s.code;blue_mask&e.code;
+    <quote><p>
+	The red, green and blue bitmasks for packed RGB formats.
+    </quote>
+
+   &s.code;y_sample_bits&e.code;
+   &s.code;u_sample_bits&e.code;
+   &s.code;v_sample_bits&e.code;
+    <quote><p>
+	The y, u and v sample sizes (in bits).
+    </quote>
+
+   &s.code;horz_y_period&e.code;
+   &s.code;horz_u_period&e.code;
+   &s.code;horz_v_period&e.code;
+    <quote><p>
+	The y, u and v sampling periods in the horizontal direction.
+    </quote>
+
+   &s.code;vert_y_period&e.code;
+   &s.code;vert_u_period&e.code;
+   &s.code;vert_v_period&e.code;
+    <quote><p>
+	The y, u and v sampling periods in the vertical direction.
+    </quote>
+
+   &s.code;component_order&e.code;
+    <quote><p>
+	Uppercase ascii characters representing the order that 
+	samples are stored within packed formats.  For planar formats
+	this represents the ordering of the planes.  Unused characters
+	in the 32 byte string should be set to NULL.
+    </quote>
+
+   &s.code;scanline_order&e.code;
+    <quote><p>
+	This is &s.code;XvTopToBottom&e.code; or &s.code;XvBottomToTop&e.code;. 
+    </quote>
+
+  Since some formats (particular some planar YUV formats) may not
+be completely defined by the parameters above, the guid, when
+available, should provide the most accurate description of the 
+format.
+
+</quote>
 
 <sect>The Loader
 <p>
