@@ -1,0 +1,302 @@
+<html>
+<!--noncomplex document-->
+
+<head>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html;charset=utf-8">
+</head>
+<body>
+<font  face="Times New Roman,Times"></FONT><H1><font size = "+8" >1.Data Formats</FONT></H1>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><font size = "+4" ><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">RS-232 mode: <img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Connect to serial port (RS-232):<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">When reset, Touch pad data format is compatible to Msmouse.</FONT><font size = "+2" ></FONT><img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><font size = "+4" ><img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><p>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">When host send '00h' with 9600 bps, 8bit data, 1 stop, no parity;<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Pad will be set to 9600bps, and return '0Fh'.<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><p>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Data format in 9600bps:</FONT><font size = "+2" ></FONT><img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><font size = "+4" ><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Data format:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Byte 1:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><U>D7D6D5D4D3D2D1D0<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">　　</U><img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">　0 　 10C 　 M　L 　 R　P<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><p>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">　　Bit<img height=1 width=24 src="file:/usr/lib/mswordview/patterns/clear.gif">0　“1”= Touch, “0”=Un-touch　(P)<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">
+1 R-key: <img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">“1”= Lift key depressed.(R)<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">
+2 L-key: <img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">“1”= Right key depressed.(L)<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">
+3 M-key: <img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">“1”= Middle key depressed.(M)<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">
+4 Click status: <img height=1 width=18 src="file:/usr/lib/mswordview/patterns/clear.gif">“1”= user click the pad.(C)<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">
+5 Alw<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">ays “0”<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">
+6 Always “1”<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">
+7 Always “0”<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><p>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><U>D7D6D5D4D3D2D1D0</U><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Byte 2:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"> 0　0　0　0　x9　 x8　x7 　x6 <img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">High 4 Bit of X data<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Byte 3:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"> 0　0x5x4x3 　x2　x1 　x0<img height=1 width=24 src="file:/usr/lib/mswordview/patterns/clear.gif">Low 6 Bit of X data<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Byte 4:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"> 0　0　0　0　y9 　y8　y7 　y6<img height=1 width=18 src="file:/usr/lib/mswordview/patterns/clear.gif">High 4 B<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">it of Y data<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Byte 5:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"> 0　0y5y4y3y2　y1 　y0<img height=1 width=36 src="file:/usr/lib/mswordview/patterns/clear.gif">Low 6 Bit of Y data<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif"></FONT><font size = "+4" ><p>
+&nbsp;&nbsp;TOUCH RANGE:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X=60 - 960&nbsp;&nbsp;Y=60 - 960&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;SAMPLE RATE:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;120 POINT/SEC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+ <br>
+Pen&nbsp;&nbsp;mode: <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data format is same, but move is more fast, and no click check.</FONT><font size = "+4" ></FONT><font size = "+8" ><U><p>
+<br>
+<br>
+<br>
+</U><B><p>
+2.Function Command</B></FONT><font size = "+4" ><B><br>
+Function：</B><p>
+Provides user use the driver that develop by yourself to control Super Elite’s <br>
+Touch function Chip Controller.<br>
+No more need to use Super Elite driver to controller.<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">[Attention]:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">If all commands exceed 2 bytes, you must input 1 byte by 1 byte,<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">In other words, you must input 1 byte and receive ECHO of Chip<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Controller then input next byte.<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Otherwise, maybe confuse whole system.</FONT><font size = "+2" ></FONT><font size = "+8" ><U><p>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</U></FONT><font size = "+6" ><B><br>
+2.1Function Description</B></FONT><font size = "+4" ><p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">1. [00H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Demand the Chip Controller doing &quot;Software Reset&quot;process or identify<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller insists or not.<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"></FONT><H3><font size = "+4" ><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><B>Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">0FH<img height=1 width=36 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Software Reset OK</B></FONT></H3>
+<font size = "+4" ><p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:00H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller Return:0FH<p>
+<br>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">2. [01H]<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Read EEPROM Data<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Entry:<img height=1 width=18 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>1</SUB>A<SUB>2</SUB>01H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>1</SUB>: 30H ~ 33H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>2</SUB>: 30H ~ 3FH<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">Coordinate (A<SUB>1</SUB>, A<SUB>2</SUB>) Data<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:30H30H01H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">(Read coordinate (0,0) address date of EEPROM)<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller Return:08H21H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">(Represent coordinate (0,0) address in EEPROM)<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Note:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Each address of EEPROM can store 1word data; totality can store 64 words,<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Coordinate Data show from (00H, 00H) to (03H, 0FH), <br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Indicate from (30H, 30H) to (33H, 3FH) in Chip controller at present.</FONT><font size = "+2" ></FONT><font size = "+8" ><U><p>
+<br>
+<br>
+</U></FONT><font size = "+4" ><p>
+3. [02H] <img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Write data into EEPROM<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Entry:<img height=1 width=18 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>1</SUB>A<SUB>2</SUB>D<SUB>1</SUB>D<SUB>2</SUB>D<SUB>3</SUB>D<SUB>4</SUB>02H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>1</SUB>: 01H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>2</SUB>: 01H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">D<SUB>1</SUB> ~ D<SUB>4</SUB>: 30H ~ 39H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Note:</FONT><H3><font size = "+4" ><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><B>Above data description is entry method of IC AT93C46,if you use IC </B></FONT></H3>
+<font size = "+4" ><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">NMC9346N,you must entry 0CHA<SUB>1</SUB>A<SUB>2</SUB>0BHA<SUB>1</SUB>A<SUB>2</SUB>D<SUB>1</SUB>D<SUB>2</SUB>D<SUB>3</SUB>D<SUB>4</SUB>02H<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">ECHO transport command<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:30H30H31H38H30H31H02H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">(Write 1801 data into (0,0) address)<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller Return:30H30H31H38H30H31H02H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">(ECHO transport command 1 byte by 1 byte)<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">4. [03H]<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Change the return data of Panel from Chip Controller to A/D Data<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">03H normally<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:03H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:03H<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">5. [04H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Change the return data of Panel from Chip Controller to the set-up value<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">04H<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:04H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:04H</FONT><font size = "+2" ></FONT><font size = "+8" ><U><p>
+<br>
+<br>
+</U></FONT><font size = "+4" ><p>
+6. [06H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Read the Jump set status of Chip Controller<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">setting Data<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Set up as below:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">D<SUB>7</SUB>, D6:Don't Care<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">D<SUB>5</SUB>:Jump 2<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">D<SUB>4</SUB>:Jump 1<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">D<SUB>3</SUB>:STREAM / POINT MODE<img height=1 width=18 src="file:/usr/lib/mswordview/patterns/clear.gif"><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">D<SUB>2</SUB>D<SUB>1</SUB>D<SUB>0</SUB>:Baud Rate<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">1:1200<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">2:2400<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">3:4800<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">4:9600<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:06H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:ECH<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">7. [07H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Transform the Value of Chip Controller to Point Mode<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">07H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:07H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:07H<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">8. [08H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Transform the Value of Chip Controller to STREAM Mode<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">08H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:08H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:08H</FONT><font size = "+2" ></FONT><font size = "+8" ><U><p>
+<br>
+<br>
+<br>
+<br>
+</U></FONT><font size = "+4" ><p>
+9. [09H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Command the Chip Controller to stop reading Panel Data temporarily<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">09H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:</FONT><H8><font size = "+4" ><B><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"></B><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:09H</FONT></H8>
+<font size = "+4" ><br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:09H<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">10. [0AH]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller regains to read Panel data<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">0AH normally<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:0AH<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:0AH<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">11. [0BH]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Clear the Position Data of EEPROM<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Entry:<img height=1 width=18 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>1</SUB>A<SUB>2</SUB>0BH<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">0BH<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:30H30H0BH<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">(Clear coordinate (0,0) address data of EEPROM)<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:30H30H0BH<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">(ECHO transport 1 byte by 1 byte)<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">12. [0CH]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Clear the RAM Buffer of Chip Controller That communicate with EEPROM<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">0CH<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:0CH<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:0CH</FONT><font size = "+2" ><p>
+</FONT><font size = "+8" ><U></U></FONT><font size = "+4" ><p>
+<br>
+13. [11H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Transform Baud Rate to 1200 bps<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">11H of Baud Rate 1200 normally<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:11H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:11H (Baud Rate: 1200 bps)<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">14. [12H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Transform Baud Rate to 2400 bps<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">12H of Baud Rate 2400 normally<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:12H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:12H (Baud Rate: 2400 bps)<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">15. [13H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Transform Baud Rate to 4800 bps<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">13H of Baud Rate 4800 normally<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:13H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:13H (Baud Rate: 4800 bps)<p>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">16. [14H]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Transform Baud Rate to 9600 bps<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">14H of Baud Rate 9600 normally<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:14H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:14H (Baud Rate: 9600 bps)</FONT><font size = "+2" ></FONT><font size = "+8" ><U><p>
+<br>
+<br>
+<br>
+<br>
+</U></FONT><font size = "+4" ><p>
+<br>
+17. [1FH]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Enter sleep mode<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">1FH normally<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">E0H while awake<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">(Whether use Touch function or Keyboard input)<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:1FH<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:1FH<p>
+<br>
+<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">18. [30H ~ 3FH]<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Set the coordinate address of EEPROM,2 Bytes regard as 1 set,<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">The same description of A<SUB>1</SUB>, A<SUB>2</SUB> with<img height=1 width=36 src="file:/usr/lib/mswordview/patterns/clear.gif">2. [01H]<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Entry:<img height=1 width=18 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>1</SUB>A<SUB>2</SUB>01H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>1</SUB>:30H ~ 33H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">A<SUB>2</SUB>:30H ~ 3FH<p>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Return:<img height=1 width=12 src="file:/usr/lib/mswordview/patterns/clear.gif">ECHO transport Command<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Example:<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Driver Command:30H30H<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">(Set coordinate (0,0) address data)<br>
+<img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif"><img height=1 width=48 src="file:/usr/lib/mswordview/patterns/clear.gif">Chip Controller:30H30H</FONT><font size = "+2" ></FONT><font size = "+8" ><U><p>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</U></FONT><font size = "+2" ><p>
+<br>
+<br>
+</font>
+<dir>
+<dir>
+<dir>
+<dir>
+<dir>
+<dir>
+<dir>
+<dir>
+<dir><img height=1 width=103 src="file:/usr/lib/mswordview/patterns/clear.gif">
+<br><img src="file:/usr/lib/mswordview/patterns/documentend.gif"><br>
+<hr><p>
+Document converted from word 8 by 
+<a href="http://www.csn.ul.ie/~caolan/docs/MSWordView.html">MSWordView</a> (mswordview 0.5.2)<br>
+MSWordView written by <a href="mailto:Caolan.McNamara@ul.ie">Caolan McNamara</a>
+</body>
+
+</html>
