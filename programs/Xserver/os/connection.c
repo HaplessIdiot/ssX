@@ -1,5 +1,5 @@
-/* $XConsortium: connection.c,v 1.187 94/04/17 20:26:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.0 1994/04/28 12:42:39 dawes Exp $ */
+/* $XConsortium: connection.c,v 1.188 94/06/02 11:36:56 mor Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.1 1994/05/08 05:25:27 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -300,7 +300,7 @@ CreateWellKnownSockets()
     }
 
     if (WellKnownConnections == 0)
-        FatalError ("Cannot establish any listening sockets");
+        FatalError ("Cannot establish any listening sockets - Make sure an X server isn't already running");
 
     OsSignal (SIGPIPE, SIG_IGN);
     OsSignal (SIGHUP, AutoResetServer);

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: chooser.c,v 1.19 94/04/17 20:03:34 rws Exp $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.0 1994/05/04 15:06:20 dawes Exp $
+ * $XConsortium: chooser.c,v 1.20 94/06/03 16:34:39 mor Exp $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.1 1994/05/22 00:02:06 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -580,7 +580,8 @@ RegisterHostname (name)
 	    }
 
 	for (ifr = ifcp->ifc_req, n = ifcp->ifc_len / sizeof (struct ifreq);
-	     --n >= 0; ifr++)
+	    --n >= 0;
+	    ifr++)
 #else
 	ifc.ifc_len = sizeof (buf);
 	ifc.ifc_buf = buf;

@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.130 94/05/13 16:03:10 matt Exp $
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XConsortium: sun.cf,v 1.131 94/06/03 21:38:47 matt Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.1 1994/05/30 11:33:25 dawes Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -25,21 +25,41 @@ XCOMM operating system:  OSName
 
 /*
  * Compiler setup.  This sun.cf file knows what options to use with 
- * certain compilers, including Sun C, CenterLine C, and gcc.  If you
- * don't tell us which compiler you have, we assume you have the 
- * unbundled Sun C compiler under Solaris 2.x, and the bundled /bin/cc
+ * certain compilers, including Sun C, CenterLine C, and gcc.  It 
+ * also understands how to set some of the options for various C++
+ * compilers, including Sun C++ and CenterLine C++.
+ *
+ * === C Compiler Setup ==========================================
+ *
+ * For SunPro C, define HasSunC to YES in site.def.  
+ * For CenterLine C, define HasCenterLineC to YES in site.def
+ * For gcc or gcc2, define HasGcc or HasGcc2 to YES in site.def
+ * For other compilers, define HasSunC to NO in site.def, then 
+ *    provide appropriate values for the various compiler related
+ *    configuration varibles used here.
+ * 
+ * If you say you have the SunPro C compiler, we assume you have 
+ * version 2.0.x of the compiler.  If you have version 3.0.x instead, 
+ * define CCompilerMajorVersion as 3 in site.def
+ *
+ * If you don't tell us which C compiler you have, we assume you have 
+ * the SunPro C compiler under Solaris 2.x, and the bundled /bin/cc 
  * under SunOS 4.1.x
  *
- * If you have CenterLine C, you can just define HasCenterLineC to YES
- * in site.def, or if you have gcc or gcc2, you can just define HasGcc 
- * or HasGcc2 to YES in site.def
- * 
- * If you have some other compiler, you must define HasSunC to NO in
- * site.def, then provide appropriate values for the various compiler
- * related configuration varibles used here.  If you submit changes to
- * support other compilers as an X11 request for enhancement, we'll
- * consider adding them in the future.  It's always easier to add and
- * support such changes if we have a copy of the compiler in question.
+ * === C++ Compiler Setup ==========================================
+ *
+ * For SunPro C++, define HasSunCplusplus to YES in site.def
+ * For CenterLine C++, define HasCenterLineCplusplus to YES in site.def
+ * For other compilers, define HasCplusplus to YES in site.def, and 
+ *    check to see if you need to provide values for CplusplusOptions
+ *    and/or DefaultCplusplusOptions.
+ *
+ * In any case, you may also need to set CplusplusDependIncludes.
+ *
+ * If you say you have the SunPro C++ compiler, we assume you have 
+ * version 3.0.x of the compiler.  If you have version 4.0.x instead, 
+ * define CplusplusCompilerMajorVersion as 4 in site.def.
+ *
  */
 
 #ifndef HasSunC
@@ -50,48 +70,39 @@ XCOMM operating system:  OSName
 #endif
 #endif
 
-/*
- * If you say you have the unbundled Sun C compiler, we assume you have
- * version 2.0.x of the compiler unless you say otherwise.  If you have
- * version 3.0.x of the C compiler, define CCompilerMajorVersion as 3
- * in site.def
- */
-
 #if HasSunC 
 #ifndef CCompilerMajorVersion
 #define CCompilerMajorVersion 2
 #endif
-#ifndef CcCmd
-#define CcCmd /opt/SUNWspro/bin/cc
 #endif
-#endif
-
-/*
- * If you say you have the Sun C++ compiler, we assume you have version 
- * 3.0.x of the compiler (the cfront-based version) unless you say otherwise.
- * If you have version 4.0.x of the C++ compiler (the one with exceptions)
- * define CplusplusCompilerMajorVersion as 4 in site.def
- */
 
 #if HasSunCplusplus
+#ifndef HasCplusplus
+#define HasCplusplus YES
+#endif
 #ifndef CplusplusCompilerMajorVersion
 #define CplusplusCompilerMajorVersion 3
 #endif
-#ifndef CplusplusCmd
-#define CplusplusCmd /opt/SUNWspro/bin/CC
 #endif
-#endif
-
-/*
- * If you say you have the CenterLine C compiler, we assume that clcc
- * is somewhere in your default path.
- */
 
 #if HasCenterLineC
 #ifndef CcCmd
 #define CcCmd clcc
 #endif
 #endif
+
+#if HasCenterLineCplusplus
+#ifndef HasCplusplus
+#define HasCplusplus YES
+#endif
+#ifndef DefaultCplusplusOptions
+#define DefaultCplusplusOptions -Xa
+#endif
+#ifndef CplusplusOptions
+#define CplusplusOptions -Xa
+#endif
+#endif
+
 
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
 /* We do not guarantee this will work */

@@ -1,5 +1,5 @@
-/* $XConsortium: fontxlfd.c,v 1.18 94/04/17 20:17:33 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: fontxlfd.c,v 1.19 94/06/05 14:42:48 rws Exp $ */
+/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.0 1994/05/21 23:52:50 dawes Exp $ */
 
 /*
 
@@ -131,10 +131,10 @@ double *result;
 }
 
 static char *
-xlfd_double_to_text(value, buffer, sign_required)
+xlfd_double_to_text(value, buffer, space_required)
 double value;
 char *buffer;
-int sign_required;
+int space_required;
 {
     char formatbuf[40];
     register char *p1;
@@ -154,6 +154,9 @@ int sign_required;
 #endif
     /* Compute a format to use to render the number */
     sprintf(formatbuf, "%%.%dle", XLFD_NDIGITS);
+
+    if (space_required)
+	*buffer++ = ' ';
 
     /* Render the number using printf's idea of formatting */
     sprintf(buffer, formatbuf, value);
@@ -191,14 +194,6 @@ int sign_required;
 	}
     }
 
-    /* If we need a sign at the beginning and don't have one, stuff
-       it in. */
-    if (sign_required && *buffer != *minus)
-    {
-	memmove(buffer + 1, buffer, strlen(buffer) + 1);
-	buffer[0] = *plus;
-    }
-
     /* Last step, convert the locale-specific sign and radix characters
        to our own. */
     for (p1 = buffer; *p1; p1++)
@@ -208,7 +203,7 @@ int sign_required;
 	else if (*p1 == *radix) *p1 = '.';
     }
 
-    return buffer;
+    return buffer - space_required;
 }
 
 double
@@ -416,7 +411,7 @@ FontParseXLFDName(fname, vals, subst)
 	ptr = strchr(ptr, '-') + 1;		/* skip setwidth_name */
 	ptr = strchr(ptr, '-') + 1;		/* skip add_style_name */
 
-	if ((ptr - fname) + spacingLen + strlen(ptr5) + 10 >= 1024)
+	if ((ptr - fname) + spacingLen + strlen(ptr5) + 10 >= (unsigned)1024)
 	    return FALSE;
 	*ptr++ = replaceChar;
 	*ptr++ = '-';

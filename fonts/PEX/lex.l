@@ -1,6 +1,6 @@
 %{
-/* $XConsortium: lex.l,v 5.6 94/04/17 20:10:07 rws Exp $ */
-/* $XFree86: xc/fonts/PEX/lex.l,v 3.2 1994/06/05 13:40:20 dawes Exp $ */
+/* $XConsortium: lex.l,v 5.7 94/06/04 17:03:52 rws Exp $ */
+/* $XFree86: xc/fonts/PEX/lex.l,v 3.3 1994/06/06 06:42:18 dawes Exp $ */
 
 /*****************************************************************
 

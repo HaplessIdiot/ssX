@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.2 94/03/31 11:37:29 gildea Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.0 1994/04/29 14:03:06 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.1 1994/05/04 14:54:18 dawes Exp $
 
 /*
  * Linux shared library rules (DLL version)
@@ -258,7 +258,7 @@ JUMP_DIR=./jump								@@\
 JUMP_LIB=Concat(lib,libname)						@@\
 									@@\
 XCOMM  this is needed for newer gnumake versions			@@\
-	export JUMP_DIR JUMP_LIB					@@\
+export JUMP_DIR JUMP_LIB						@@\
 									@@\
 JUMP_IS_HOST=$(Concat(JUMP_IS_HOST_,libname))				@@\
 JUMP_AR=$(JUMP_DIR)/Concat(lib,libname.a~)				@@\
