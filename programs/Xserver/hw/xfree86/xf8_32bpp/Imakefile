@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/Imakefile,v 1.4 1999/05/16 10:13:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/Imakefile,v 1.5 1999/08/14 10:50:17 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -21,7 +21,7 @@ OBJS = 	cfbbstore.o cfbcpyarea.o cfbcpyplane.o cfbgcmisc.o \
 INCLUDES = -I. -I$(XF86SRC)/xf1bpp -I$(SERVERSRC)/mfb \
         -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
         -I$(XF86OSSRC) -I$(XF86COMSRC) -I$(EXTINCSRC) \
-        -I$(FONTINCSRC) -I$(XINCLUDESRC)
+        -I$(FONTINCSRC) -I$(XINCLUDESRC) -I$(SERVERSRC)/Xext
 
 
 ModuleObjectRule()

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Alliance.c,v 3.1 1997/07/06 07:06:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Alliance.c,v 3.2 1999/08/28 09:00:49 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -42,7 +42,7 @@ Chip_Descriptor Alliance_Descriptor = {
 	FALSE,
 	FALSE,
 	TRUE,
-	NULL,
+	MemProbe_Alliance,
 };
 
 Bool Probe_Alliance(Chipset)
@@ -105,4 +105,13 @@ int *Chipset;
 	return(TRUE);
 }
 
+static int MemProbe_Alliance(Chipset)
+int Chipset;
+{
+    int mem = 0;
 
+    EnableIOPorts(NUMPORTS, Ports);
+    mem = rdinx(SEQ_IDX, 0x20) * 64;
+    DisableIOPorts(NUMPORTS, Ports);
+    return mem;
+}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.48 1999/09/04 13:04:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.49 1999/09/06 11:27:28 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -708,8 +708,12 @@ typedef struct _ScrnInfoRec {
     xf86CurrentAccessPtr CurrentAccess;
     resType		resourceType;
     pointer		busAccess;
+
     /* Allow screens to be enabled/disabled individually */
     Bool		vtSema;
+    PixmapPtr		ppix;			/* Previous screen root pixmap
+						 * while switched out */
+
     /*
      * These can be used when the minor ABI version is incremented.
      * The NUM_* parameters must be reduced appropriately to keep the

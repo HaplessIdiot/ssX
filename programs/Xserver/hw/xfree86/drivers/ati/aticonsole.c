@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.3 1999/07/06 11:38:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.4 1999/09/25 14:37:20 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -133,12 +133,10 @@ ATILeaveGraphics
     ATIPtr      pATI
 )
 {
-    Bool Exiting = xf86ServerIsExiting();
-
     if (pScreenInfo->vtSema)
     {
         /* If not exiting, save graphics video state */
-        if (!Exiting)
+        if (!xf86ServerIsExiting())
             ATICRTCSave(pScreenInfo, pATI, &pATI->NewHW);
 
         /* Restore mode in effect on server entry */
@@ -151,8 +149,7 @@ ATILeaveGraphics
     ATILock(pATI);
 
     /* Unmap apertures */
-    if (Exiting)
-        ATIUnmapApertures(pScreenInfo, pATI);
+    ATIUnmapApertures(pScreenInfo, pATI);
 
     SetTimeSinceLastInputEvent();
 }
@@ -199,8 +196,19 @@ ATIEnterVT
 )
 {
     ScrnInfoPtr pScreenInfo = xf86Screens[iScreen];
+    ScreenPtr   pScreen     = pScreenInfo->pScreen;
+    ATIPtr      pATI        = ATIPTR(pScreenInfo);
 
-    return ATIEnterGraphics(NULL, pScreenInfo, ATIPTR(pScreenInfo));
+    if (!ATIEnterGraphics(NULL, pScreenInfo, pATI))
+        return FALSE;
+
+    /* If used, modify banking interface */
+    if (!miModifyBanking(pScreen, &pATI->BankInfo))
+        return FALSE;
+
+    /* Tell framebuffer about remapped aperture */
+    return (*pScreen->ModifyPixmapHeader)(pScreenInfo->ppix,
+        -1, -1, -1, -1, -1, pATI->pMemory);
 }
 
 /*

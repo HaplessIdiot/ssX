@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.37 1999/08/28 09:00:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.38 1999/09/25 14:37:09 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2215,13 +2215,14 @@ xf86GetPciRes(resPtr *sysRes, resPtr *nonsysRes)
     pciConfigPtr pcrp, *pcrpp;
     pciVideoPtr pvp, *pvpp;
     CARD32 *basep;
-    memType end;
     int i;
     resPtr pRes;
     resRange range;
 
-    *sysRes = NULL;
-    *nonsysRes = NULL;
+    if (sysRes)
+	*sysRes = NULL;
+    if (nonsysRes)
+	*nonsysRes = NULL;
 
     if (!sysRes || !nonsysRes || !xf86PciInfo)
 	return;

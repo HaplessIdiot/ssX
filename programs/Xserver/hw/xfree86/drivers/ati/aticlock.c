@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.5 1999/08/01 07:57:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.6 1999/09/25 14:37:19 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1217,7 +1217,7 @@ ATIClockSet
 )
 {
     CARD8 clock_cntl0, crtc_gen_cntl3;
-    CARD8 tmp, tmp2, tmp3;
+    CARD8 tmp, tmp2;
     unsigned int Programme;
     int N = pATIHW->FeedbackDivider - pATI->ClockDescriptor.NAdjust;
     int M = pATIHW->ReferenceDivider - pATI->ClockDescriptor.MAdjust;
@@ -1281,9 +1281,7 @@ ATIClockSet
 
         case ATI_CLOCK_INTERNAL:
             /* Reset VCLK generator */
-            tmp3 = ATIGetMach64PLLReg(PLL_VCLK_CNTL) |
-                (/* PLL_VCLK_SRC_SEL | */ PLL_VCLK_RESET);
-            ATIPutMach64PLLReg(PLL_VCLK_CNTL, tmp3);
+            ATIPutMach64PLLReg(PLL_VCLK_CNTL, pATIHW->pll_vclk_cntl);
 
             /* Set post-divider */
             tmp2 = pATIHW->clock << 1;
@@ -1303,8 +1301,8 @@ ATIClockSet
             ATIPutMach64PLLReg(tmp, SetBits(N, 0xFFU));
 
             /* End VCLK generator reset */
-            tmp3 &= ~PLL_VCLK_RESET;
-            ATIPutMach64PLLReg(PLL_VCLK_CNTL, tmp3);
+            ATIPutMach64PLLReg(PLL_VCLK_CNTL,
+                pATIHW->pll_vclk_cntl & ~PLL_VCLK_RESET);
 
             /* Reset write bit */
             ATIAccessMach64PLLReg(pATI, 0, FALSE);

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.21 1999/08/21 13:47:37 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.22 1999/08/28 09:00:28 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -1750,13 +1750,8 @@ XawTextSourceRemoveAnchor(Widget w, XawTextAnchor *anchor)
     return (NULL);
 }
 
-/*
- * This function is very likely to change soon. Currently, there is a hack
- * to test/develop the XAW_TENTF_REPLACE attribute using the `type' argument
- * as a pointer to a *static* XawTextBlock structure.
- */
 XawTextEntity *
-XawTextSourceAddEntity(Widget w, int type, int flags,
+XawTextSourceAddEntity(Widget w, int type, int flags, XtPointer data,
 		       XawTextPosition position, Cardinal length,
 		       XrmQuark property)
 {
@@ -1809,20 +1804,16 @@ XawTextSourceAddEntity(Widget w, int type, int flags,
 		    (void)XawTextSourceRemoveAnchor(w, next);
 		entity->next = NULL;
 
-		return (XawTextSourceAddEntity(w, type, flags, position,
+		return (XawTextSourceAddEntity(w, type, flags, data, position,
 					       length, property));
 	    }
 	}
     }
 
     entity = XtNew(XawTextEntity);
-    if (flags & XAW_TENTF_REPLACE) {
-	entity->type = 0;
-	entity->data = (XtPointer)type;
-    }
-    else
-	entity->type = type;
+    entity->type = type;
     entity->flags = flags;
+    entity->data = data;
     entity->offset = position - anchor->position;
     entity->length = length;
     entity->property = property;

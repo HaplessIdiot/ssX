@@ -33,6 +33,7 @@
 #include "panoramiXext.h"
 #include "gcstruct.h"
 
+
 typedef struct _PanoramiXData {
     int x;
     int y;
@@ -42,45 +43,28 @@ typedef struct _PanoramiXData {
 
 typedef struct _PanoramiXInfo {
     XID id ;
+    pointer pntr;
 } PanoramiXInfo;
 
 typedef struct _PanoramiXList {
+    PanoramiXInfo info[MAXSCREENS];
     struct 	 _PanoramiXList *next;
     Bool	 FreeMe;
-    Bool         VisibilitySent;
-    unsigned int visibility ;
-    PanoramiXInfo info[MAXSCREENS];
+    union {
+	struct {
+	    unsigned int visibility;
+	} win;
+	struct {
+	    Bool shared;
+	} pix;
+	char raw_data[4];
+    } u;
 } PanoramiXList;
 
 typedef PanoramiXList PanoramiXWindow;
 typedef PanoramiXList PanoramiXGC;
 typedef PanoramiXList PanoramiXCmap;
 typedef PanoramiXList PanoramiXPmap;
-
-typedef struct _PanoramiXRect {
-    int x, y, width, height;
-} PanoramiXRect;
-
-typedef struct _PanoramixVisualMap {
-  VisualID	vid[10];
-  short		numVids;
-} PanoramiXVisualMap;
-
-typedef struct _PanoramiXVisualDepthMap {
-  PanoramiXVisualMap	vmap[33];	/* 1,4,8,12,24,32 */
-  short		numDepths;
-  short		listDepths[6] ;
-} PanoramiXVisualDepthMap;
-
-typedef struct _PanoramiXCDT {
-  PanoramiXVisualDepthMap 	panoramiXScreenMap[6]; /* 0-5 */
-  short         numVisuals;
-} PanoramiXCDT;
-
-typedef struct _PanoramiXDepth {
-  short               numDepths;
-  int                 screenNum;
-} PanoramiXDepth;
 
 #define XE_PTR (xE->u.keyButtonPointer)
 #define BREAK_IF(a) if ((a)) break

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.39 1999/08/29 12:42:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.40 1999/09/04 09:14:19 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -169,17 +169,33 @@
 #define PCI_CHIP_MACH64GB	0x4742
 #define PCI_CHIP_MACH64GD	0x4744
 #define PCI_CHIP_MACH64GI	0x4749
+#define PCI_CHIP_MACH64GL	0x474C
+#define PCI_CHIP_MACH64GM	0x474D
+#define PCI_CHIP_MACH64GN	0x474E
+#define PCI_CHIP_MACH64GO	0x474F
 #define PCI_CHIP_MACH64GP	0x4750
 #define PCI_CHIP_MACH64GQ	0x4751
+#define PCI_CHIP_MACH64GR	0x4752
+#define PCI_CHIP_MACH64GS	0x4753
 #define PCI_CHIP_MACH64GT	0x4754
 #define PCI_CHIP_MACH64GU	0x4755
+#define PCI_CHIP_MACH64GV	0x4756
+#define PCI_CHIP_MACH64GW	0x4757
 #define PCI_CHIP_MACH64GX	0x4758
 #define PCI_CHIP_MACH64GZ	0x475A
 #define PCI_CHIP_MACH64LB	0x4C42
 #define PCI_CHIP_MACH64LD	0x4C44
 #define PCI_CHIP_MACH64LG	0x4C47
 #define PCI_CHIP_MACH64LI	0x4C49
+#define PCI_CHIP_MACH64LM	0x4C4D
+#define PCI_CHIP_MACH64LN	0x4C4E
 #define PCI_CHIP_MACH64LP	0x4C50
+#define PCI_CHIP_MACH64LR	0x4C52
+#define PCI_CHIP_MACH64LS	0x4C53
+#define PCI_CHIP_RAGE128RE	0x5245
+#define PCI_CHIP_RAGE128RF	0x5246
+#define PCI_CHIP_RAGE128RK	0x524B
+#define PCI_CHIP_RAGE128RL	0x524C
 #define PCI_CHIP_MACH64VT	0x5654
 #define PCI_CHIP_MACH64VU	0x5655
 #define PCI_CHIP_MACH64VV	0x5656
@@ -412,6 +428,7 @@
 #define PCI_CHIP_AP6410		0x3210
 #define PCI_CHIP_AP6422		0x6422
 #define PCI_CHIP_AT24		0x6424
+#define PCI_CHIP_AT3D		0x643D
 
 /* 3Dfx Interactive */
 #define PCI_CHIP_VOODOO_GRAPHICS 0x0001
@@ -647,17 +664,33 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MACH64GB,	"Mach64 GB"},
 				{PCI_CHIP_MACH64GD,	"Mach64 GD"},
 				{PCI_CHIP_MACH64GI,	"Mach64 GI"},
+				{PCI_CHIP_MACH64GL,	"Mach64 GL"},
+				{PCI_CHIP_MACH64GM,	"Mach64 GM"},
+				{PCI_CHIP_MACH64GN,	"Mach64 GN"},
+				{PCI_CHIP_MACH64GO,	"Mach64 GO"},
 				{PCI_CHIP_MACH64GP,	"Mach64 GP"},
 				{PCI_CHIP_MACH64GQ,	"Mach64 GQ"},
+				{PCI_CHIP_MACH64GR,	"Mach64 GR"},
+				{PCI_CHIP_MACH64GS,	"Mach64 GS"},
 				{PCI_CHIP_MACH64GT,	"Mach64 GT"},
-				{PCI_CHIP_MACH64GU,	"Mach64 GT"},
+				{PCI_CHIP_MACH64GU,	"Mach64 GU"},
+				{PCI_CHIP_MACH64GV,	"Mach64 GV"},
+				{PCI_CHIP_MACH64GW,	"Mach64 GW"},
 				{PCI_CHIP_MACH64GX,	"Mach64 GX"},
 				{PCI_CHIP_MACH64GZ,	"Mach64 GZ"},
 				{PCI_CHIP_MACH64LB,	"Mach64 LB"},
 				{PCI_CHIP_MACH64LD,	"Mach64 LD"},
 				{PCI_CHIP_MACH64LG,	"Mach64 LG"},
 				{PCI_CHIP_MACH64LI,	"Mach64 LI"},
+				{PCI_CHIP_MACH64LM,	"Mach64 LM"},
+				{PCI_CHIP_MACH64LN,	"Mach64 LN"},
 				{PCI_CHIP_MACH64LP,	"Mach64 LP"},
+				{PCI_CHIP_MACH64LR,	"Mach64 LR"},
+				{PCI_CHIP_MACH64LS,	"Mach64 LS"},
+				{PCI_CHIP_RAGE128RE,	"Rage 128 RE"},
+				{PCI_CHIP_RAGE128RF,	"Rage 128 RF"},
+				{PCI_CHIP_RAGE128RK,	"Rage 128 RK"},
+				{PCI_CHIP_RAGE128RL,	"Rage 128 RL"},
 				{PCI_CHIP_MACH64VT,	"Mach64 VT"},
 				{PCI_CHIP_MACH64VU,	"Mach64 VU"},
 				{PCI_CHIP_MACH64VV,	"Mach64 VV"},
@@ -1318,14 +1351,7 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x7881, "AHA-2940U/UW SCSI", NF },
                         { 0x0000, (char *)NULL, NF } } },
 #endif
-        { PCI_VENDOR_ATI, {
-                        { 0x4750, "XPERT XL", NF },
-                        { 0x4755, "Mach64-GT-B+DVD", NF },
-                        { 0x0084, "Xpert'98", NF },
-                        { 0x4d55, "264GT3 (Rage3D III)", NF },
-                        { 0x0088, "Mach64 (SuSE Econ)", NF },
-                        { 0x4c42, "XPERT LCD", NF },
-                        { 0x0000, (char *)NULL, NF } } },
+	/* ATI card info deleted;  unmaintainable */
 #ifdef VENDOR_INCLUDE_NONVIDEO
 #ifdef INCLUDE_EMPTY_LISTS
 	{ PCI_VENDOR_COMPAQ, {

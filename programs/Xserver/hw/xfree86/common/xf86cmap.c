@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.15 1999/07/18 03:26:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.16 1999/08/01 07:57:12 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -37,7 +37,7 @@
 #define LOAD_PALETTE(pmap, index) \
     ((pmap == miInstalledMaps[index]) && \
      ((pScreenPriv->flags & CMAP_LOAD_EVEN_IF_OFFSCREEN) || \
-      (xf86Screens[index]->vtSema || pScreenPriv->isDGAmode)))
+      xf86Screens[index]->vtSema || pScreenPriv->isDGAmode))
 
 
 typedef struct _CMapLink {
@@ -170,9 +170,11 @@ Bool xf86HandleColormaps(
     pScreenPriv->SwitchMode = pScrn->SwitchMode;
     pScreenPriv->SetDGAMode = pScrn->SetDGAMode;    
 
-    pScrn->EnterVT = CMapEnterVT;
-    if(flags & CMAP_RELOAD_ON_MODE_SWITCH) 
-	pScrn->SwitchMode = CMapSwitchMode;
+    if (!(flags & CMAP_LOAD_EVEN_IF_OFFSCREEN)) {
+	pScrn->EnterVT = CMapEnterVT;
+	if (flags & CMAP_RELOAD_ON_MODE_SWITCH) 
+	    pScrn->SwitchMode = CMapSwitchMode;
+    }
 #ifdef XFreeXDGA
     pScrn->SetDGAMode = CMapSetDGAMode;
 #endif
@@ -889,7 +891,8 @@ CMapChangeGamma(
     }
 
     if(miInstalledMaps[pScreen->myNum] && 
-       (pScrn->vtSema || pScreenPriv->isDGAmode)) {
+       ((pScreenPriv->flags & CMAP_LOAD_EVEN_IF_OFFSCREEN) ||
+	pScrn->vtSema || pScreenPriv->isDGAmode)) {
 	ColormapPtr pMap = miInstalledMaps[pScreen->myNum];
 
 	if(!(pScreenPriv->flags & CMAP_PALETTED_TRUECOLOR) &&

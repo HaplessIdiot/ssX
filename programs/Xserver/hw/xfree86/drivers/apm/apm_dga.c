@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.3 1999/08/28 09:00:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.4 1999/08/28 14:32:46 dawes Exp $ */
 /*
  * file: apm_dga.c
  * ported from s3virge, ported from mga
@@ -49,225 +49,253 @@ ApmSync(ScrnInfoPtr pScrn)
 {
 }
 
+static __inline__ int FindSmallestPitch(ApmPtr pApm, int Bpp, int width)
+{
+    if (width <= 640)
+	return 640;
+    else if (width <= 800)
+	return 800;
+    else if (width <= 1024)
+	return 1024;
+    else if (width <= 1152)
+	return 1152;
+    else if (width <= 1280)
+	return 1280;
+    else if (width <= 1600)
+	return 1600;
+    return (width + 7) & ~7;
+}
 
-Bool
-ApmDGAInit(ScreenPtr pScreen)
-{   
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    APMDECL(pScrn);
-    DGAModePtr modes = NULL, newmodes = NULL, currentMode;
-    DisplayModePtr pMode, firstMode;
-    int Bpp = pScrn->bitsPerPixel >> 3;
-    int num = 0;
-    Bool oneMore;
-
-
-    
-    pMode = firstMode = pScrn->modes;
-
-    while(pMode) {
-	if(pScrn->displayWidth != pMode->HDisplay) {
-	    newmodes = xrealloc(modes, (num + 2) * sizeof(DGAModeRec));
-	    oneMore = TRUE;
-	} else {
-	    newmodes = xrealloc(modes, (num + 1) * sizeof(DGAModeRec));
-	    oneMore = FALSE;
-	}
-
-	if(!newmodes) {
-	   xfree(modes);
-	   return FALSE;
-	}
-	modes = newmodes;
+static DGAModePtr
+ApmSetupDGAMode(ScrnInfoPtr pScrn, DGAModePtr modes, int *num,
+		   int bitsPerPixel, int depth, Bool pixmap, int secondPitch,
+		   unsigned long red, unsigned long green, unsigned long blue,
+		   short visualClass)
+{
+   DisplayModePtr firstMode, pMode;
+   APMDECL(pScrn);
+   DGAModePtr mode, newmodes;
+   int size, pitch, Bpp = bitsPerPixel >> 3;
 
 SECOND_PASS:
 
-	currentMode = modes + num;
-	num++;
+   pMode = firstMode = pScrn->modes;
 
-	currentMode->mode = pMode;
-	currentMode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
-	if(pMode->Flags & V_DBLSCAN)
-	   currentMode->flags |= DGA_DOUBLESCAN;
-	if(pMode->Flags & V_INTERLACE)
-	   currentMode->flags |= DGA_INTERLACED;
-	currentMode->byteOrder = pScrn->imageByteOrder;
-	currentMode->depth = pScrn->depth;
-	currentMode->bitsPerPixel = pScrn->bitsPerPixel;
-	currentMode->red_mask = pScrn->mask.red;
-	currentMode->green_mask = pScrn->mask.green;
-	currentMode->blue_mask = pScrn->mask.blue;
-	currentMode->viewportWidth = pMode->HDisplay;
-	currentMode->viewportHeight = pMode->VDisplay;
-	currentMode->xViewportStep = 3;
-	currentMode->yViewportStep = 1;
-	currentMode->viewportFlags = DGA_FLIP_RETRACE;
-	currentMode->offset = 0;
-	currentMode->address = (pointer)(pApm->LinAddress +
-			0*((char *)pApm->FbBase - (char *)pApm->LinMap));
-/*cep*/
-  xf86ErrorFVerb(4, 
-	"	ApmDGAInit firstone vpWid=%d, vpHgt=%d, Bpp=%d, mdbitsPP=%d\n",
-		currentMode->viewportWidth,
-		currentMode->viewportHeight,
-		Bpp,
-		currentMode->bitsPerPixel
-		 );
-		
+   while(1) {
 
-	if(oneMore) { /* first one is narrow width */
-	    currentMode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;
-	    currentMode->imageWidth = pMode->HDisplay;
-	    currentMode->imageHeight =  (pScrn->videoRam * 1024 - pApm->OffscreenReserved) /
-					currentMode->bytesPerScanline; 
-	    currentMode->imageHeight =  pMode->VDisplay;
-	    currentMode->pixmapWidth = currentMode->imageWidth;
-	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
-					currentMode->viewportWidth;
-	    /* this might need to get clamped to some maximum */
-	    currentMode->maxViewportY = currentMode->imageHeight -
-					currentMode->viewportHeight;
-	    oneMore = FALSE;
-	if(!pApm->NoAccel && Bpp * 8 == currentMode->bitsPerPixel &&
-		(currentMode->imageWidth ==  640 ||
-		 currentMode->imageWidth ==  800 ||
-		 currentMode->imageWidth == 1024 ||
-		 currentMode->imageWidth == 1152 ||
-		 currentMode->imageWidth == 1280 ||
-		 currentMode->imageWidth == 1600))
-	   currentMode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT |
-				   DGA_BLIT_RECT_TRANS;
+	pitch = FindSmallestPitch(pApm, Bpp, pMode->HDisplay);
+	size = pitch * Bpp * pMode->VDisplay;
 
-/*cep*/
-  xf86ErrorFVerb(4, 
-	"	ApmDGAInit imgHgt=%d, ram=%d, bytesPerScanl=%d\n",
-		currentMode->imageHeight,
-		pScrn->videoRam << 10,
-		currentMode->bytesPerScanline );
-		
-	    goto SECOND_PASS;
-	} else {
-	    currentMode->bytesPerScanline = 
-			((pScrn->displayWidth * Bpp) + 3) & ~3L;
-	    currentMode->imageWidth = pScrn->displayWidth;
-	    currentMode->imageHeight =  (pScrn->videoRam * 1024 - pApm->OffscreenReserved) /
-					currentMode->bytesPerScanline; 
-	    currentMode->pixmapWidth = currentMode->imageWidth;
-	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
-					currentMode->viewportWidth;
-	    /* this might need to get clamped to some maximum */
-	    currentMode->maxViewportY = currentMode->imageHeight -
-					currentMode->viewportHeight;
-	    if(!pApm->NoAccel && Bpp * 8 == currentMode->bitsPerPixel &&
-		    (currentMode->imageWidth ==  640 ||
-		     currentMode->imageWidth ==  800 ||
-		     currentMode->imageWidth == 1024 ||
-		     currentMode->imageWidth == 1152 ||
-		     currentMode->imageWidth == 1280 ||
-		     currentMode->imageWidth == 1600))
-	       currentMode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT |
-				       DGA_BLIT_RECT_TRANS;
-	}	    
+	if((!secondPitch || (pitch != secondPitch)) &&
+		(size <= pScrn->videoRam * 1024 - pApm->OffscreenReserved)) {
+
+	    if(secondPitch)
+		pitch = secondPitch; 
+
+	    if(!(newmodes = xrealloc(modes, (*num + 1) * sizeof(DGAModeRec))))
+		break;
+
+	    modes = newmodes;
+	    mode = modes + *num;
+
+	    mode->mode = pMode;
+	    mode->flags = DGA_CONCURRENT_ACCESS;
+
+	    if(pixmap)
+		mode->flags |= DGA_PIXMAP_AVAILABLE;
+	    if(!pApm->NoAccel) {
+		mode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
+		if (Bpp != 3)
+		    mode->flags |= DGA_BLIT_RECT_TRANS;
+	    }
+	    if(pMode->Flags & V_DBLSCAN)
+		mode->flags |= DGA_DOUBLESCAN;
+	    if(pMode->Flags & V_INTERLACE)
+		mode->flags |= DGA_INTERLACED;
+	    mode->byteOrder = pScrn->imageByteOrder;
+	    mode->depth = depth;
+	    mode->bitsPerPixel = bitsPerPixel;
+	    mode->red_mask = red;
+	    mode->green_mask = green;
+	    mode->blue_mask = blue;
+	    mode->visualClass = visualClass;
+	    mode->viewportWidth = pMode->HDisplay;
+	    mode->viewportHeight = pMode->VDisplay;
+	    mode->xViewportStep = (bitsPerPixel == 24) ? 4 : 1;
+	    mode->yViewportStep = 1;
+	    mode->viewportFlags = DGA_FLIP_RETRACE;
+	    mode->offset = 0;
+	    mode->address = pApm->FbBase;
+	    mode->bytesPerScanline = pitch * Bpp;
+	    mode->imageWidth = pitch;
+	    mode->imageHeight =  (pScrn->videoRam * 1024 -
+			pApm->OffscreenReserved) / mode->bytesPerScanline; 
+	    mode->pixmapWidth = mode->imageWidth;
+	    mode->pixmapHeight = mode->imageHeight;
+	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
+	   /* this might need to get clamped to some maximum */
+	    mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
+
+	    (*num)++;
+	}
 
 	pMode = pMode->next;
 	if(pMode == firstMode)
 	   break;
     }
 
-    pApm->numDGAModes = num;
-    pApm->DGAModes = modes;
+    if(secondPitch) {
+	secondPitch = 0;
+	goto SECOND_PASS;
+    }
 
-    if (pApm->AccelInfoRec)
-	ApmDGAFuncs.Sync = pApm->AccelInfoRec->Sync;
-    return DGAInit(pScreen, &ApmDGAFuncs, modes, num);  
+    return modes;
+}
+
+Bool
+ApmDGAInit(ScreenPtr pScreen)
+{   
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   APMDECL(pScrn);
+   DGAModePtr modes = NULL;
+   int num = 0;
+
+   /* 8 */
+   modes = ApmSetupDGAMode (pScrn, modes, &num, 8, 8, 
+		(pScrn->bitsPerPixel == 8),
+		(pScrn->bitsPerPixel != 8) ? 0 : pScrn->displayWidth,
+		0, 0, 0, PseudoColor);
+
+   /* 15 */
+   modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 15, 
+		(pScrn->bitsPerPixel == 16),
+		(pScrn->depth != 15) ? 0 : pScrn->displayWidth,
+		0x7c00, 0x03e0, 0x001f, TrueColor);
+
+   modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 15, 
+		(pScrn->bitsPerPixel == 16),
+		(pScrn->depth != 15) ? 0 : pScrn->displayWidth,
+		0x7c00, 0x03e0, 0x001f, DirectColor);
+
+   /* 16 */
+   modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 16, 
+		(pScrn->bitsPerPixel == 16),
+		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
+		0xf800, 0x07e0, 0x001f, TrueColor);
+
+   modes = ApmSetupDGAMode (pScrn, modes, &num, 16, 16, 
+		(pScrn->bitsPerPixel == 16),
+		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
+		0xf800, 0x07e0, 0x001f, DirectColor);
+
+   /* 24 */
+   modes = ApmSetupDGAMode (pScrn, modes, &num, 24, 24, 
+		(pScrn->bitsPerPixel == 24),
+		(pScrn->bitsPerPixel != 24) ? 0 : pScrn->displayWidth,
+		0xff0000, 0x00ff00, 0x0000ff, TrueColor);
+
+   modes = ApmSetupDGAMode (pScrn, modes, &num, 24, 24, 
+		(pScrn->bitsPerPixel == 24),
+		(pScrn->bitsPerPixel != 24) ? 0 : pScrn->displayWidth,
+		0xff0000, 0x00ff00, 0x0000ff, DirectColor);
+
+   /* 32 */
+   modes = ApmSetupDGAMode (pScrn, modes, &num, 32, 24, 
+		(pScrn->bitsPerPixel == 32),
+		(pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
+		0xff0000, 0x00ff00, 0x0000ff, TrueColor);
+
+   modes = ApmSetupDGAMode (pScrn, modes, &num, 32, 24, 
+		(pScrn->bitsPerPixel == 32),
+		(pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
+		0xff0000, 0x00ff00, 0x0000ff, DirectColor);
+
+   pApm->numDGAModes = num;
+   pApm->DGAModes = modes;
+
+   return DGAInit(pScreen, &ApmDGAFuncs, modes, num);  
 }
 
 
 static Bool
-ApmSetMode(
-    ScrnInfoPtr pScrn,
-    DGAModePtr pMode
-)
+ApmSetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 {
-    static int OldDisplayWidth[MAXSCREENS];
-    int index = pScrn->pScreen->myNum, c;
+    int		index = pScrn->pScreen->myNum, c;
     APMDECL(pScrn);
 
     if(!pMode) { /* restore the original mode */
-	/* put the ScreenParameters back */
-	
-	pScrn->displayWidth = OldDisplayWidth[index];
-	
-        pScrn->SwitchMode(index, pScrn->currentMode, 0);
-	pApm->DGAactive = FALSE;
-    } else {
-	if(!pApm->DGAactive) {  /* save the old parameters */
-	    OldDisplayWidth[index] = pScrn->displayWidth;
+	if (pApm->DGAactive) {
+	    memcpy(&pApm->CurrentLayout, &pApm->SavedLayout,
+						sizeof pApm->CurrentLayout);
+	    pApm->DGAactive = FALSE;
+	}
 
+        pScrn->SwitchMode(index, pScrn->currentMode, 0);
+    } else {
+	if (!pApm->DGAactive) {
+	    memcpy(&pApm->SavedLayout, &pApm->CurrentLayout,
+						sizeof pApm->CurrentLayout);
 	    pApm->DGAactive = TRUE;
 	}
 
-	pScrn->displayWidth = (8 * pMode->bytesPerScanline) / 
-			      pMode->bitsPerPixel;
+	switch(pMode->bitsPerPixel) {
+	case 8:
+	    c = DEC_BITDEPTH_8;
+	    break;
+
+	case 16:
+	    c = DEC_BITDEPTH_16;
+	    break;
+
+	case 24:
+	    c = DEC_BITDEPTH_24 | DEC_SOURCE_LINEAR | DEC_DEST_LINEAR;
+	    break;
+
+	case 32:
+	    c = DEC_BITDEPTH_32;
+	    break;
+
+	default:
+	    c = 0;
+	    break;
+	}
+
+	switch(pMode->imageWidth) {
+	case 640:
+	    c |= DEC_WIDTH_640;
+	    break;
+       
+	case 800:
+	    c |= DEC_WIDTH_800;
+	    break;
+       
+	case 1024:
+	    c |= DEC_WIDTH_1024;
+	    break;
+       
+	case 1152:
+	    c |= DEC_WIDTH_1152;
+	    break;
+       
+	case 1280:
+	    c |= DEC_WIDTH_1280;
+	    break;
+       
+	case 1600:
+	    c |= DEC_WIDTH_1600;
+	    break;
+	}
+
+	pApm->CurrentLayout.Setup_DEC = (pApm->CurrentLayout.Setup_DEC & ~(DEC_BITDEPTH_MASK|DEC_WIDTH_MASK|DEC_SOURCE_LINEAR|DEC_DEST_LINEAR)) | c;
+	pApm->CurrentLayout.displayWidth	= pMode->bytesPerScanline /
+						    (pMode->bitsPerPixel >> 3);
+	pApm->CurrentLayout.displayHeight	= pMode->imageHeight;
+	pApm->CurrentLayout.Scanlines	= pMode->imageHeight + 1;
+	pApm->CurrentLayout.bitsPerPixel	= pMode->bitsPerPixel;
+	pApm->CurrentLayout.bytesPerScanline= pMode->bytesPerScanline;
 
         pScrn->SwitchMode(index, pMode->mode, 0);
     }
-
-    switch(pScrn->bitsPerPixel) {
-    case 8:
-	c = DEC_BITDEPTH_8;
-	break;
-
-    case 16:
-	c = DEC_BITDEPTH_16;
-	break;
-
-    case 24:
-	c = DEC_BITDEPTH_24;
-	break;
-
-    case 32:
-	c = DEC_BITDEPTH_32;
-	break;
-
-    default:
-	c = 0;
-	break;
-    }
-
-    switch(pScrn->displayWidth) {
-    case 640:
-	c |= DEC_WIDTH_640;
-	break;
-   
-    case 800:
-	c |= DEC_WIDTH_800;
-	break;
-   
-    case 1024:
-	c |= DEC_WIDTH_1024;
-	break;
-   
-    case 1152:
-	c |= DEC_WIDTH_1152;
-	break;
-   
-    case 1280:
-	c |= DEC_WIDTH_1280;
-	break;
-   
-    case 1600:
-	c |= DEC_WIDTH_1600;
-	break;
-    }
-
-    pApm->Setup_DEC = (pApm->Setup_DEC & ~(DEC_BITDEPTH_MASK|DEC_WIDTH_MASK)) | c;
-    pApm->displayWidth	= pScrn->display->virtualX;
-    pApm->displayHeight	= pScrn->display->virtualY;
-    pApm->bitsPerPixel	= pScrn->bitsPerPixel;
-    pApm->bytesPerScanline= (pApm->displayWidth * pApm->bitsPerPixel) >> 3;
 
     return TRUE;
 }
@@ -302,8 +330,7 @@ ApmSetViewport(
 	    ApmWriteSeq(0x1C, 0x2F);
 	}
 	else {
-	    unsigned char tmp = RDXB_IOP(0xDB);
-	    WRXB_IOP(0xDB, (tmp & 0xF4) |  0x0A);
+	    WRXB_IOP(0xDB, (RDXB_IOP(0xDB) & 0xF4) |  0x0A);
 	    wrinx(0x3C4, 0x1B, 0x20);
 	    wrinx(0x3C4, 0x1C, 0x2F);
 	}

@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.2 1999/08/29 12:42:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.3 1999/08/30 01:25:04 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -30,6 +30,8 @@ typedef struct _TDFXRec *TDFXPtr;
 
 #ifdef PROP_3DFX
 #include "tdfx_priv.h"
+#else
+#define PROPDATA
 #endif
 extern Bool TDFXInitPrivate(ScreenPtr pScreen);
 extern void TDFXShutdownPrivate(ScreenPtr pScreen);
@@ -40,6 +42,7 @@ extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
 
 #if 0
 /* These are not normally turned on. They are only included for debugging. */
+#define TDFX_DEBUG_CMDS
 #define TRACEACCEL 1
 #define TRACE 1
 #define TRACECURS 1
@@ -49,25 +52,25 @@ extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
 #ifdef TRACE
 #define TDFXTRACE ErrorF
 #else
-#define TDFXTRACE 0 && (unsigned long)
+#define TDFXTRACE if(0) ErrorF
 #endif
 
 #ifdef TRACEACCEL
 #define TDFXTRACEACCEL ErrorF
 #else
-#define TDFXTRACEACCEL 0 && (unsigned long)
+#define TDFXTRACEACCEL if(0) ErrorF
 #endif
 
 #ifdef TRACECURS
 #define TDFXTRACECURS ErrorF
 #else
-#define TDFXTRACECURS 0 && (unsigned long)
+#define TDFXTRACECURS if(0) (unsigned long)
 #endif
 
 #ifdef TRACEREG
 #define TDFXTRACEREG ErrorF
 #else
-#define TDFXTRACEREG 0 && (unsigned long)
+#define TDFXTRACEREG if(0) ErrorF
 #endif
 
 #include <xaa.h>
@@ -86,7 +89,6 @@ typedef struct {
   unsigned int vidpll;
   unsigned int dacmode;
   unsigned int vgainit0;
-  unsigned int vgainit1;
   unsigned int screensize;
   unsigned int stride;
   unsigned int cursloc;
@@ -95,6 +97,8 @@ typedef struct {
   unsigned int clip0max;
   unsigned int clip1min;
   unsigned int clip1max;
+  unsigned int srcbaseaddr;
+  unsigned int dstbaseaddr;
   unsigned char ExtVga[2];
 } TDFXRegRec, *TDFXRegPtr;
 
@@ -115,8 +119,10 @@ typedef struct _TDFXRec {
   PCITAG PciTag;
   int HasSGRAM;
   int PciCnt;
+  int PrevDrawState;
   int DrawState;
   int Cmd;
+  int DashedLineSize;
   BoxRec prevBlitDest;
   TDFXRegRec SavedReg;
   TDFXRegRec ModeReg;
@@ -138,9 +144,9 @@ typedef struct _TDFXRec {
   TDFXReadWordFunc readLong;
   TDFXSyncFunc sync;
   int syncDone;
-#ifdef PROPDATA
+  int scanlineWidth;
+  int *scanlineColorExpandBuffers[2];
   PROPDATA;
-#endif
 #ifdef XF86DRI
   Bool directRenderingEnabled;
   DRIInfoPtr pDRIInfo;
@@ -156,6 +162,7 @@ typedef struct _TDFXRec {
 
 #define DRAW_STATE_CLIPPING 0x1
 #define DRAW_STATE_TRANSPARENT 0x2
+#define DRAW_STATE_CLIP1CHANGED 0x4
 
 #define TDFX2XCUTOFF 135000
 
@@ -166,6 +173,7 @@ extern Bool TDFXDRIScreenInit(ScreenPtr pScreen);
 extern void TDFXDRICloseScreen(ScreenPtr pScreen);
 extern Bool TDFXDRIFinishScreenInit(ScreenPtr pScreen);
 extern Bool TDFXDGAInit(ScreenPtr pScreen);
+extern void TDFXCursorGrabMemory(ScreenPtr pScreen);
 
 extern Bool TDFXSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 extern void TDFXAdjustFrame(int scrnIndex, int x, int y, int flags);

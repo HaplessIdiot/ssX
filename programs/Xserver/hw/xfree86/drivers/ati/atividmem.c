@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.3 1999/07/06 11:38:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.4 1999/08/01 07:57:24 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -59,9 +59,9 @@ const char *ATIMemoryTypeNames_264xT[] =
     "DRAM",
     "EDO DRAM",
     "Pseudo-EDO DRAM",
-    "SDRAM",
-    "SGRAM",
-    "Unknown video memory type",
+    "SDRAM (1:1)",
+    "SGRAM (1:1)",
+    "SGRAM (2:1) 32-bit",
     "Unknown video memory type"
 };
 
@@ -81,8 +81,12 @@ ATIMapApertures
         return TRUE;
 
     /* Map VGA aperture */
-    if (pATI->VGAAdapter != ATI_ADAPTER_VGA)
+    if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
     {
+        /*
+         * No relocation, resizing, caching or write-combining of this
+         * aperture is supported.  Hence, the hard-coded values here...
+         */
         pATI->pBank = xf86MapVidMem(pScreenInfo->scrnIndex, VIDMEM_MMIO,
             0x000A0000U, 0x00010000U);
         if (!pATI->pBank)
@@ -145,5 +149,4 @@ ATIUnmapApertures
         xf86UnMapVidMem(pScreenInfo->scrnIndex, pATI->pBank, 0x00010000U);
 
     pATI->pMemory = pATI->pBank = NULL;
-    return;
 }

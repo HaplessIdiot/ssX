@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/panoramiXsrv.h,v 1.2 1999/06/27 14:07:20 dawes Exp $ */
+/* $XFree86: xc/include/extensions/panoramiXsrv.h,v 1.3 1999/09/06 11:27:16 dawes Exp $ */
 
 #ifndef _PANORAMIXSRV_H_
 #define _PANORAMIXSRV_H_
@@ -11,7 +11,6 @@ extern PanoramiXPmap *PanoramiXPmapRoot;
 extern PanoramiXData *panoramiXdataPtr;
 extern int PanoramiXPixWidth;
 extern int PanoramiXPixHeight;
-extern PanoramiXCDT PanoramiXColorDepthTable[MAXSCREENS];
 extern RegionRec PanoramiXScreenRegion[MAXSCREENS];
 
 extern void PanoramiXConsolidate(void);

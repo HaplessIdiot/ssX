@@ -23,7 +23,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.67 1999/08/01 07:57:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.68 1999/09/25 14:37:34 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -753,6 +753,7 @@ struct pci_vendor_device {
                             { 0x4742, "Mach64 GB", print_mach64 },
                             { 0x4744, "Mach64 GD", print_mach64 },
                             { 0x4749, "Mach64 GI", print_mach64 },
+                            { 0x474C, "Mach64 GL", print_mach64 },
                             { 0x474D, "Mach64 GM", print_mach64 },
                             { 0x474E, "Mach64 GN", print_mach64 },
                             { 0x474F, "Mach64 GO", print_mach64 },
@@ -770,10 +771,14 @@ struct pci_vendor_device {
                             { 0x4C44, "Mach64 LD", print_mach64 },
                             { 0x4C47, "Mach64 LG", print_mach64 },
                             { 0x4C49, "Mach64 LI", print_mach64 },
+                            { 0x4C4D, "Mach64 LM", print_mach64 },
+                            { 0x4C4E, "Mach64 LN", print_mach64 },
                             { 0x4C50, "Mach64 LP", print_mach64 },
+                            { 0x4C52, "Mach64 LR", print_mach64 },
+                            { 0x4C53, "Mach64 LS", print_mach64 },
                             { 0x5245, "Rage 128 RE", NF },
                             { 0x5246, "Rage 128 RF", NF },
-                            { 0x524B, "Rage 128 RX", NF },
+                            { 0x524B, "Rage 128 RK", NF },
                             { 0x524C, "Rage 128 RL", NF },
                             { 0x5654, "Mach64 VT", print_mach64 },
                             { 0x5655, "Mach64 VU", print_mach64 },
@@ -1220,8 +1225,8 @@ struct pci_vendor_device {
                             { 0x0004, "GLINT Permedia", NF },
                             { 0x0006, "GLINT MX", NF },
                             { 0x0007, "GLINT Permedia 2", NF },
-			    { 0x0008, "GLINT Gamma", NF },
-			    { 0x0009, "GLINT Permedia 2v", NF },
+                            { 0x0008, "GLINT Gamma", NF },
+                            { 0x0009, "GLINT Permedia 2v", NF },
                             { 0x0000, (char *)NULL, NF } } } ,
         { 0x4005, "Avance", {
                             { 0x0000, (char *)NULL, NF } } },
@@ -1359,12 +1364,6 @@ main(int argc, char *argv[])
 		exit(1);
         }
     }
-#if !defined(MSDOS)
-    if (getuid()) {
-	printf("This program must be run as root\n");
-	exit(1);
-    }
-#endif
 
 #if defined(DGUX)
     printf("Scanpci for Intel ix86 DG/ux R4.20MU04...MUxx\n\n");
@@ -1797,10 +1796,9 @@ print_mach64(struct pci_config_reg *pcr)
 	sparse_io = 0x1c8;
 	break;
     }
-    printf("  SPARSEIO  0x%03x    %s    %s\n",
-	    sparse_io, pcr->_user_config_0 & 0x04 ? "Block IO enabled" :
-	    "Sparse IO enabled",
-	    pcr->_user_config_0 & 0x08 ? "Disable 0x46E8" : "Enable 0x46E8");
+    printf("  SPARSEIO  0x%03x    %s IO enabled    %sable 0x46E8\n",
+	    sparse_io, pcr->_user_config_0 & 0x04 ? "Block" : "Sparse",
+	    pcr->_user_config_0 & 0x08 ? "Dis" : "En");
 }
 
 void

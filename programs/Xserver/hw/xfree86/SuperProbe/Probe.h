@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.66 1999/08/28 09:00:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.67 1999/09/25 14:37:01 dawes Exp $ */
 
 /*
  * Includes
@@ -468,6 +468,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ATI264LT	SVGA_TYPE(V_ATI,27)	/* ATI 264LT		*/
 #define CHIP_ATI264LTPRO SVGA_TYPE(V_ATI,28)	/* ATI 264LT Pro	*/
 #define CHIP_ATI264XL	SVGA_TYPE(V_ATI,29)	/* ATI 264XL or XC	*/
+#define CHIP_ATIMOBILITY SVGA_TYPE(V_ATI,30)	/* ATI 3D Rage Mobility */
 #define CHIP_AL_UNKNOWN	SVGA_TYPE(V_AL,0)	/* Avance Logic unknown	*/
 #define CHIP_AL2101	SVGA_TYPE(V_AL,1)	/* Avance Logic 2101	*/
 #define CHIP_AL2228	SVGA_TYPE(V_AL,2)	/* Avance Logic 2228	*/

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.8 1999/07/10 12:17:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.9 1999/08/28 09:00:57 dawes Exp $ */
 
 
 #include "X.h"
@@ -45,18 +45,12 @@ WaitForFifo(ApmPtr pApm, int slots)
       if ((STATUS() & STATUS_FIFO) >= slots)
 	break;
     }
-    if (i == MAXLOOP && !xf86Exiting) {
+    if (i == MAXLOOP && !xf86ServerIsExiting()) {
       FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", STATUS());
     }
   }
 }
 
-static __inline__ void
-ApmCheckMMIO_InitFast(ScrnInfoPtr pScrn)
-{
-  if (!APMPTR(pScrn)->apmMMIO_Init)
-    ApmCheckMMIO_Init(pScrn);
-}
 
 int ApmHWCursorInit(ScreenPtr pScreen)
 {
@@ -109,7 +103,6 @@ ApmShowCursor(ScrnInfoPtr pScrn)
 {
   APMDECL(pScrn);
 
-  ApmCheckMMIO_InitFast(pScrn);
   WaitForFifo(pApm, 2);
   WRXW(0x144, pApm->CursorAddress >> 10);
   WRXB(0x140, 1);
@@ -122,14 +115,13 @@ ApmHideCursor(ScrnInfoPtr pScrn)
 {
   APMDECL(pScrn);
 
-  ApmCheckMMIO_InitFast(pScrn);
   WaitForFifo(pApm, 1);
   WRXB(0x140, 0);
 }
 
 static Bool ApmUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
-    return xf86Screens[pScreen->myNum]->bitsPerPixel >= 8;
+    return APMPTR(xf86Screens[pScreen->myNum])->CurrentLayout.bitsPerPixel >= 8;
 }
 
 static void
@@ -169,7 +161,7 @@ ApmSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
   APMDECL(pScrn);
   u16 packedcolfg, packedcolbg;
 
-  if (pScrn->bitsPerPixel == 8)
+  if (pApm->CurrentLayout.bitsPerPixel == 8)
   {
     WaitForFifo(pApm, 2);
     WRXB(0x141, fg);

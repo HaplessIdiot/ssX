@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.66 1999/07/19 13:36:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.67 1999/09/25 14:37:00 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -48,7 +48,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "ATI 264GT-B+DVD (3D Rage II+DVD)",
 		  "ATI 264GT-IIc (3D Rage IIc)", "ATI 264GT3 (3D Rage Pro)",
 		  "ATI 264LT", "ATI 264LT Pro (3D Rage LT Pro)",
-		  "ATI Rage XL or XC" },
+		  "ATI Rage XL or XC", "ATI Rage Mobility" },
 /* AL */	{ "Avance Logic (chipset unknown)",
 		  "Avance Logic 2101", "Avance Logic 2228" },
 /* CT */	{ "Chips & Tech (chipset unknown)",
@@ -214,7 +214,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 /* Alliance */	{ "Alliance Semiconductor (chipset unknown)",
 		  "Alliance Semiconductor ProMotion 6410",
 		  "Alliance Semiconductor ProMotion 6422",
-		  "Alliance Semiconductor ProMotion AT24" },
+		  "Alliance Semiconductor ProMotion AT24" ,
+		  "Alliance Semiconductor ProMotion AT3D" },
 /* Matrox */	{ "Matrox (chipset unknown)",
 		  "Matrox Atlas",
 		  "Matrox Millennium",

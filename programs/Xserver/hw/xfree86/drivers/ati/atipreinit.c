@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.3 1999/08/21 13:48:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.4 1999/09/25 14:37:22 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -306,34 +306,6 @@ ATIReportMemory
         Message += snprintf(Message, Buffer + SizeOf(Buffer) - Message,
             " (using %d kB)", pScreenInfo->videoRam);
     xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED, "%s.\n", Buffer);
-
-    if (pATI->OptionShadowFB)
-    {
-        /* Until ShadowFB becomes a true screen wrapper... */
-        if (pATI->ApertureSize < (pATI->VideoRAM * 1024))
-        {
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "Cannot shadow a banked frame buffer.\n");
-            pATI->OptionShadowFB = FALSE;
-        }
-        else if (pScreenInfo->depth < 8)
-        {
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "Cannot shadow a planar frame buffer.\n");
-            pATI->OptionShadowFB = FALSE;
-        }
-#if 0
-        else if (pATI->OptionAccel)
-        {
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "Cannot shadow an accelerated frame buffer.\n");
-            pATI->OptionShadowFB = FALSE;
-        }
-#endif
-        else
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-                "Using shadow frame buffer.\n");
-    }
 }
 
 static const int videoRamSizes[] =
@@ -573,7 +545,8 @@ ATIPreInit
                     IOValue2 = inl(pATI->CPIO_LCD_GEN_CTRL);
                 }
                 else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
-                         (pATI->Chip == ATI_CHIP_264XL))
+                         (pATI->Chip == ATI_CHIP_264XL) ||
+                         (pATI->Chip == ATI_CHIP_MOBILITY))
                 {
                     pATI->LCDPanelID = GetBits(IOValue1, CFG_PANEL_ID);
 
@@ -583,6 +556,12 @@ ATIPreInit
                     pATI->CPIO_LCD_DATA = ATIIOPort(LCD_DATA);
 
                     IOValue1 = inl(pATI->CPIO_LCD_INDEX);
+                    IOValue2 = ATIGetLTProLCDReg(LCD_HORZ_STRETCHING);
+#if 0
+                    if (IOValue2 & AUTO_HORZ_RATIO)
+#endif
+                        pATI->LCDHorizontal =
+                            (GetBits(IOValue2, HORZ_PANEL_SIZE) + 1) << 3;
                     IOValue2 = ATIGetLTProLCDReg(LCD_EXT_VERT_STRETCH);
 #if 0
                     if (IOValue2 & AUTO_VERT_RATIO)
@@ -819,6 +798,12 @@ ATIPreInit
                             i += j;
                             goto NextBIOSByte;
                         }
+                    /* ... verify panel width ... */
+                    if ((pATI->LCDHorizontal > 8) &&
+                        (pATI->LCDHorizontal <=
+                         (int)(MaxBits(HORZ_PANEL_SIZE) << 3)) &&
+                        (pATI->LCDHorizontal != BIOSWord(i + 0x19U)))
+                        continue;
 
                     /* ... and verify panel height */
                     if ((pATI->LCDVertical > 1) &&
@@ -1092,7 +1077,8 @@ ATIPreInit
     if (!xf86SetDefaultVisual(pScreenInfo, -1))
         return FALSE;
 
-    if ((pScreenInfo->depth > 8) && (pScreenInfo->defaultVisual != TrueColor))
+    if ((pScreenInfo->depth > 8) &&
+        ((pScreenInfo->defaultVisual | DynamicClass) != DirectColor))
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
             "Driver does not support default visual %s for depth %d.\n",
@@ -1421,6 +1407,7 @@ ATIPreInit
     {
         pATI->OldHW.crtc = pATI->NewHW.crtc;
         pATI->OldHW.SetBank = (ATIBankProcPtr)NoopDDA;
+        pATI->BankInfo.BankSize = 0;            /* No banking */
     }
     else
     {
@@ -1474,6 +1461,39 @@ ATIPreInit
             pATI->OldHW.SetBank = ATIMach64SetBankPacked;
         else
             pATI->OldHW.SetBank = ATIMach64SetBankPlanar;
+
+        if (((pATI->ApertureSize * pScreenInfo->depth) /
+             pATI->BankInfo.nBankDepth) >=
+            (unsigned)(pScreenInfo->videoRam * 1024))
+            pATI->BankInfo.BankSize = 0;        /* No banking */
+    }
+
+    if (pATI->OptionShadowFB)
+    {
+        /* Until ShadowFB becomes a true screen wrapper... */
+        if (pATI->BankInfo.BankSize)
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Cannot shadow a banked frame buffer.\n");
+            pATI->OptionShadowFB = FALSE;
+        }
+        else if (pScreenInfo->depth < 8)
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Cannot shadow a planar frame buffer.\n");
+            pATI->OptionShadowFB = FALSE;
+        }
+#if 0
+        else if (pATI->OptionAccel)
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Cannot shadow an accelerated frame buffer.\n");
+            pATI->OptionShadowFB = FALSE;
+        }
+#endif
+        else
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+                "Using shadow frame buffer.\n");
     }
 
     /* 264VT-B's and later have DSP registers */

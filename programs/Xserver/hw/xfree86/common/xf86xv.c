@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.12 1999/05/23 06:33:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.13 1999/09/06 11:27:29 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -389,19 +389,24 @@ xf86XVInitAdaptors(
 
       pa->devPriv.ptr = (pointer)adaptorPriv;
 
+      if(!(pa->type & (XvPixmapMask | XvWindowMask)) ||
+	 !adaptorPtr->GetPortAttribute || !adaptorPtr->QueryBestSize ||
+	 !adaptorPtr->StopVideo || !adaptorPtr->SetPortAttribute) {
+		xf86XVFreeAdaptor(pa);
+		continue;
+      }
+
       if(pa->type & XvInputMask) {
-	 if(!adaptorPtr->PutVideo || !adaptorPtr->PutStill || 
-            !adaptorPtr->StopVideo || !adaptorPtr->SetPortAttribute ||
-            !adaptorPtr->GetPortAttribute || !adaptorPtr->QueryBestSize) {
+	 if((!adaptorPtr->PutVideo && (pa->type & XvVideoMask)) ||
+	    (!adaptorPtr->PutStill && (pa->type & XvStillMask))) {
 		xf86XVFreeAdaptor(pa);
 		continue;
 	 }
       }
 
       if(pa->type & XvOutputMask) {
-	 if(!adaptorPtr->GetVideo || !adaptorPtr->GetStill ||
-            !adaptorPtr->StopVideo || !adaptorPtr->SetPortAttribute ||
-            !adaptorPtr->GetPortAttribute || !adaptorPtr->QueryBestSize) {
+	 if((!adaptorPtr->GetVideo && (pa->type & XvVideoMask)) ||
+	    (!adaptorPtr->GetStill && (pa->type & XvStillMask))) {
 		xf86XVFreeAdaptor(pa);
 		continue;
 	 }

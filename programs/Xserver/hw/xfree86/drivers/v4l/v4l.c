@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.7 1999/05/23 06:33:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.8 1999/06/06 14:06:07 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -594,7 +594,7 @@ V4LProbe(DriverPtr drv, int flags)
 	VAR[i]->nPorts = 1;
 
 	/* init VideoAdaptorRec */
-	VAR[i]->type  = XvInputMask;
+	VAR[i]->type  = XvInputMask | XvWindowMask | XvVideoMask;
 	VAR[i]->name  = "video4linux";
 	VAR[i]->flags = VIDEO_INVERT_CLIPLIST;
 

@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.14 1999/09/06 11:27:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.15 1999/09/25 14:36:44 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -161,10 +161,8 @@ int PanoramiXCreateWindow(register ClientPtr client)
 	localWin->info[j].id = winID;
     }
     localWin->FreeMe = FALSE;
-    localWin->visibility = VisibilityNotViewable;
-    localWin->VisibilitySent = FALSE;
-    PANORAMIXFIND_LAST(pPanoramiXWin, PanoramiXWinRoot);
-    pPanoramiXWin->next = localWin;
+    localWin->u.win.visibility = VisibilityNotViewable;
+    PANORAMIXFIND_ADD(PanoramiXWinRoot, localWin);
    
     if (stuff->class == InputOnly) {
 	/* Kludge.  DEC forgot about InputOnly windows */
@@ -194,9 +192,8 @@ int PanoramiXCreateWindow(register ClientPtr client)
 	BREAK_IF(result != Success); 
     }
     if (result != Success) {
-       pPanoramiXWin->next = NULL;
-       if (localWin)
-           Xfree(localWin);
+	PanoramiXWinRoot->next = localWin->next;
+	Xfree(localWin);
     }
     return (result);
 }
@@ -419,15 +416,11 @@ SecurityReadAccess);
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib) {
       pPanoramiXWin = PanoramiXWinRoot;
       PANORAMIXFIND_ID(pPanoramiXWin, pChild->drawable.id);
-      if (pPanoramiXWin)
-	  pPanoramiXWin->VisibilitySent = FALSE;
     }
     pPanoramiXWin = PanoramiXWinRoot;
     PANORAMIXFIND_ID(pPanoramiXWin, stuff->id);
     IF_RETURN(!pPanoramiXWin, BadWindow);
     PanoramiXMapped = TRUE;
-    PanoramiXVisibilityNotifySent = FALSE;
-    pPanoramiXWin->VisibilitySent = FALSE;
     for (j = 0; j <= (PanoramiXNumScreens - 1); j++)
     {
 	 winID = pPanoramiXWin->info[j].id;
@@ -439,15 +432,11 @@ client,SecurityReadAccess);
     }
     /* clean up */
     PanoramiXMapped = FALSE;
-    PanoramiXVisibilityNotifySent = FALSE;
-    pPanoramiXWin->VisibilitySent = FALSE;
     pWin = (WindowPtr) SecurityLookupWindow(stuff->id, 
 client,SecurityReadAccess);
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib){
       pPanoramiXWin = PanoramiXWinRoot;
       PANORAMIXFIND_ID(pPanoramiXWin, pChild->drawable.id);
-      if (pPanoramiXWin)
-	pPanoramiXWin->VisibilitySent = FALSE;
     }
     return (result);
 }
@@ -477,16 +466,12 @@ client,SecurityReadAccess);
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib){
       pPanoramiXWin = PanoramiXWinRoot;
       PANORAMIXFIND_ID(pPanoramiXWin, pChild->drawable.id);
-      if (pPanoramiXWin)
-	pPanoramiXWin->VisibilitySent = FALSE;
     }
 
     pPanoramiXWin = PanoramiXWinRoot;
     PANORAMIXFIND_ID(pPanoramiXWin, stuff->id);
     IF_RETURN(!pPanoramiXWin, BadWindow);
     PanoramiXMapped = TRUE;
-    PanoramiXVisibilityNotifySent = FALSE;
-    pPanoramiXWin->VisibilitySent = FALSE;
     for (j = 0; j <= (PanoramiXNumScreens - 1); j++)
     {
 	stuff->id = pPanoramiXWin->info[j].id;
@@ -494,15 +479,11 @@ client,SecurityReadAccess);
     }
     /* clean up */
     PanoramiXMapped = FALSE;
-    PanoramiXVisibilityNotifySent = FALSE;
-    pPanoramiXWin->VisibilitySent = FALSE;
     pWin = (WindowPtr) SecurityLookupWindow(stuff->id, 
 client,SecurityReadAccess);
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib) {
       pPanoramiXWin = PanoramiXWinRoot;
       PANORAMIXFIND_ID(pPanoramiXWin, pChild->drawable.id);
-      if (pPanoramiXWin)
-	pPanoramiXWin->VisibilitySent = FALSE;
     }
     PANORAMIX_FREE(client);
     return (result);
@@ -533,15 +514,11 @@ client,SecurityReadAccess);
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib){
       pPanoramiXWin = PanoramiXWinRoot;
       PANORAMIXFIND_ID(pPanoramiXWin, pWin->drawable.id);
-      if (pPanoramiXWin)
-	pPanoramiXWin->VisibilitySent = FALSE;
     }
 
     PANORAMIXFIND_ID(pPanoramiXWin, stuff->id);
     IF_RETURN(!pPanoramiXWin, BadWindow);
     PanoramiXMapped = TRUE;
-    PanoramiXVisibilityNotifySent = FALSE;
-    pPanoramiXWin->VisibilitySent = FALSE;
     for (j = 0; j <= (PanoramiXNumScreens - 1); j++)
     {
 	 stuff->id = pPanoramiXWin->info[j].id;
@@ -550,15 +527,11 @@ client,SecurityReadAccess);
 
     /* clean up */
     PanoramiXMapped = FALSE;
-    PanoramiXVisibilityNotifySent = FALSE;
-    pPanoramiXWin->VisibilitySent = FALSE;
     pWin = (WindowPtr) SecurityLookupWindow(stuff->id, 
 client,SecurityReadAccess);
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib) {
       pPanoramiXWin = PanoramiXWinRoot;
       PANORAMIXFIND_ID(pPanoramiXWin, pChild->drawable.id);
-      if (pPanoramiXWin)
-	pPanoramiXWin->VisibilitySent = FALSE;
     }
     PANORAMIX_FREE(client);
     return (client->noClientException);
@@ -589,15 +562,11 @@ client,SecurityReadAccess);
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib){
       pPanoramiXWin = PanoramiXWinRoot;
       PANORAMIXFIND_ID(pPanoramiXWin, pWin->drawable.id);
-      if (pPanoramiXWin)
-	pPanoramiXWin->VisibilitySent = FALSE;
     }
 
     PANORAMIXFIND_ID(pPanoramiXWin, stuff->id);
     IF_RETURN(!pPanoramiXWin, BadWindow);
     PanoramiXMapped = TRUE;
-    PanoramiXVisibilityNotifySent = FALSE;
-    pPanoramiXWin->VisibilitySent = FALSE;
     for (j = 0; j <= (PanoramiXNumScreens - 1); j++)
     {
 	stuff->id = pPanoramiXWin->info[j].id;
@@ -606,14 +575,10 @@ client,SecurityReadAccess);
 
     /* clean up */
     PanoramiXMapped = FALSE;
-    PanoramiXVisibilityNotifySent = FALSE;
-    pPanoramiXWin->VisibilitySent = FALSE;
     pWin = (WindowPtr) SecurityLookupWindow(stuff->id, client,SecurityReadAccess);
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib){
       pPanoramiXWin = PanoramiXWinRoot;
       PANORAMIXFIND_ID(pPanoramiXWin, pWin->drawable.id);
-      if (pPanoramiXWin)
-	pPanoramiXWin->VisibilitySent = FALSE;
     }
     PANORAMIX_FREE(client);
     return (client->noClientException);
@@ -885,8 +850,7 @@ RC_DRAWABLE,
 	localPmap->info[j].id = pmapID;
     }
     localPmap->FreeMe = FALSE;
-    PANORAMIXFIND_LAST(pPanoramiXPmap, PanoramiXPmapRoot);
-    pPanoramiXPmap->next = localPmap;
+    PANORAMIXFIND_ADD(PanoramiXPmapRoot, localPmap);
    
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
 	stuff->pid = localPmap->info[j].id;
@@ -895,9 +859,8 @@ RC_DRAWABLE,
 	BREAK_IF(result != Success);
     }
     if (result != Success) {
-	pPanoramiXPmap->next = NULL;
-	if (localPmap)
-	    Xfree(localPmap);
+	PanoramiXPmapRoot->next = localPmap->next;
+	Xfree(localPmap);
     }
     return (result);
 }
@@ -998,8 +961,7 @@ RC_DRAWABLE,
 	localGC->info[j].id = GCID;
     }
     localGC->FreeMe = FALSE;
-    PANORAMIXFIND_LAST(pPanoramiXGC, PanoramiXGCRoot);
-    pPanoramiXGC->next = localGC;
+    PANORAMIXFIND_ADD(PanoramiXGCRoot, localGC);
    
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
 	stuff->gc = localGC->info[j].id;
@@ -1014,8 +976,8 @@ RC_DRAWABLE,
 	BREAK_IF(result != Success);
     }
     if (result != Success) {
-       pPanoramiXGC->next = NULL;
-       Xfree(localGC);
+	PanoramiXGCRoot->next = localGC->next;
+	Xfree(localGC);
     }
     return (result);
 }
@@ -1407,13 +1369,11 @@ int PanoramiXCopyPlane(ClientPtr client)
 
 int PanoramiXPolyPoint(ClientPtr client)
 {
-    int 	  result, npoint, i, j;
+    int 	  result, npoint, j;
     PanoramiXWindow *pPanoramiXWin;
-    PanoramiXGC 	  *pPanoramiXGC = PanoramiXGCRoot;
+    PanoramiXGC   *pPanoramiXGC = PanoramiXGCRoot;
     DrawablePtr   locDraw;
-    int           x_off = 0, y_off = 0;
     xPoint 	  *origPts;
-    xPoint	  *origPtr, *modPtr;
     REQUEST(xPolyPointReq);
 
     REQUEST_AT_LEAST_SIZE(xPolyPointReq);
@@ -1431,20 +1391,28 @@ int PanoramiXPolyPoint(ClientPtr client)
         origPts = (xPoint *) ALLOCATE_LOCAL(npoint * sizeof(xPoint));
         memcpy((char *) origPts, (char *) &stuff[1], npoint * sizeof(xPoint));
         FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
-	  if (pPanoramiXWin == PanoramiXWinRoot) {
-	      x_off = panoramiXdataPtr[j].x;
-	      y_off = panoramiXdataPtr[j].y;
-	  }
-	  modPtr = (xPoint *) &stuff[1];
-	  origPtr = origPts;
-	  for (i = npoint; i; i--) {
-	      modPtr->x = origPtr->x - x_off;
-	      modPtr++->y = origPtr++->y - y_off;
-	  }
-	  stuff->drawable = pPanoramiXWin->info[j].id;
-	  stuff->gc = pPanoramiXGC->info[j].id;
-	  result = (* SavedProcVector[X_PolyPoint])(client);
-	  BREAK_IF(result != Success);
+
+            memcpy(&stuff[1], origPts, npoint * sizeof(xPoint));
+
+            if (pPanoramiXWin == PanoramiXWinRoot) {
+                xPoint *pnts = (xPoint*)&stuff[1];
+                int x_off = panoramiXdataPtr[j].x;
+                int y_off = panoramiXdataPtr[j].y;
+                int i;
+
+                i = (stuff->coordMode == CoordModePrevious) ? 1 : npoint;
+
+                while(i--) {
+                    pnts->x -= x_off;
+                    pnts->y -= y_off;
+                    pnts++;
+                }
+            }
+
+	    stuff->drawable = pPanoramiXWin->info[j].id;
+	    stuff->gc = pPanoramiXGC->info[j].id;
+	    result = (* SavedProcVector[X_PolyPoint])(client);
+	    BREAK_IF(result != Success);
         }
         DEALLOCATE_LOCAL(origPts);
         return (result);
@@ -1456,13 +1424,11 @@ int PanoramiXPolyPoint(ClientPtr client)
 
 int PanoramiXPolyLine(ClientPtr client)
 {
-    int 	  result, npoint, i, j;
+    int 	  result, npoint, j;
     PanoramiXWindow *pPanoramiXWin;
     PanoramiXGC 	  *pPanoramiXGC = PanoramiXGCRoot;
     DrawablePtr   locDraw;
-    int           x_off = 0, y_off = 0;
     xPoint 	  *origPts;
-    xPoint	  *origPtr, *modPtr;
     REQUEST(xPolyLineReq);
 
     REQUEST_AT_LEAST_SIZE(xPolyLineReq);
@@ -1487,20 +1453,28 @@ RC_DRAWABLE,
         origPts = (xPoint *) ALLOCATE_LOCAL(npoint * sizeof(xPoint));
         memcpy((char *) origPts, (char *) &stuff[1], npoint * sizeof(xPoint));
         FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
-	  if (pPanoramiXWin == PanoramiXWinRoot) {
-	      x_off = panoramiXdataPtr[j].x;
-	      y_off = panoramiXdataPtr[j].y;
-	  }
-	  modPtr = (xPoint *) &stuff[1];
-	  origPtr = origPts;
-	  for (i = npoint; i; i--) {
-	      modPtr->x = origPtr->x - x_off;
-	      modPtr++->y = origPtr++->y - y_off;
-	  }
-	  stuff->drawable = pPanoramiXWin->info[j].id;
-	  stuff->gc = pPanoramiXGC->info[j].id;
-	  result = (* SavedProcVector[X_PolyLine])(client);
-	  BREAK_IF(result != Success);
+
+            memcpy(&stuff[1], origPts, npoint * sizeof(xPoint));
+
+            if (pPanoramiXWin == PanoramiXWinRoot) {
+                xPoint *pnts = (xPoint*)&stuff[1];
+                int x_off = panoramiXdataPtr[j].x;
+                int y_off = panoramiXdataPtr[j].y;
+                int i;
+
+                i = (stuff->coordMode == CoordModePrevious) ? 1 : npoint;
+
+                while(i--) {
+                    pnts->x -= x_off;
+                    pnts->y -= y_off;
+                    pnts++;
+                }
+            }
+
+	    stuff->drawable = pPanoramiXWin->info[j].id;
+	    stuff->gc = pPanoramiXGC->info[j].id;
+	    result = (* SavedProcVector[X_PolyLine])(client);
+	    BREAK_IF(result != Success);
         }
         DEALLOCATE_LOCAL(origPts);
         return (result);
@@ -1671,13 +1645,11 @@ int PanoramiXPolyArc(ClientPtr client)
 
 int PanoramiXFillPoly(ClientPtr client)
 {
-    int 	  result, count, i, j;
+    int 	  result, count, j;
     PanoramiXWindow *pPanoramiXWin;
     PanoramiXGC 	  *pPanoramiXGC = PanoramiXGCRoot;
     DrawablePtr   locDraw;
-    int		  x_off = 0, y_off = 0;
     DDXPointPtr	  locPts;
-    DDXPointPtr	  origPts, modPts;
     REQUEST(xFillPolyReq);
 
     REQUEST_AT_LEAST_SIZE(xFillPolyReq);
@@ -1695,20 +1667,28 @@ int PanoramiXFillPoly(ClientPtr client)
        locPts = (DDXPointPtr) ALLOCATE_LOCAL(count * sizeof(DDXPointRec));
        memcpy((char *) locPts, (char *) &stuff[1], count * sizeof(DDXPointRec));
        FOR_NSCREENS_OR_ONCE((pPanoramiXWin && pPanoramiXGC), j) {
-	if (pPanoramiXWin == PanoramiXWinRoot) {
-	    x_off = panoramiXdataPtr[j].x;
-	    y_off = panoramiXdataPtr[j].y;
-	}
-	modPts = (DDXPointPtr) &stuff[1];
-	origPts = locPts;
-	for (i = count; i; i--) {
-	    modPts->x = origPts->x - x_off;
-	    modPts++->y = origPts++->y - y_off;
-	}
-	stuff->drawable = pPanoramiXWin->info[j].id;
-	stuff->gc = pPanoramiXGC->info[j].id;
-	result = (* SavedProcVector[X_FillPoly])(client);
-	BREAK_IF(result != Success);
+
+	    memcpy(&stuff[1], locPts, count * sizeof(DDXPointRec));
+
+	    if (pPanoramiXWin == PanoramiXWinRoot) {
+		DDXPointPtr pnts = (DDXPointPtr)&stuff[1];
+		int x_off = panoramiXdataPtr[j].x;
+		int y_off = panoramiXdataPtr[j].y;
+		int i;
+
+		i = (stuff->coordMode == CoordModePrevious) ? 1 : count;
+
+		while(i--) {
+		    pnts->x -= x_off;
+		    pnts->y -= y_off;
+		    pnts++;
+		}
+	    }
+
+	    stuff->drawable = pPanoramiXWin->info[j].id;
+	    stuff->gc = pPanoramiXGC->info[j].id;
+	    result = (* SavedProcVector[X_FillPoly])(client);
+	    BREAK_IF(result != Success);
        }
        DEALLOCATE_LOCAL(locPts);
        return (result);
@@ -2153,7 +2133,6 @@ PanoramiXPolyText16(register ClientPtr client)
 }
 
 
-
 int PanoramiXImageText8(ClientPtr client)
 {
     int 	  result, j;
@@ -2228,6 +2207,7 @@ int PanoramiXImageText16(ClientPtr client)
 }
 
 
+
 int PanoramiXCreateColormap(register ClientPtr client)
 {
     Colormap		mid;
@@ -2261,8 +2241,7 @@ int PanoramiXCreateColormap(register ClientPtr client)
 	localCmap->info[j].id = cmapID;
     }
     localCmap->FreeMe = FALSE;
-    PANORAMIXFIND_LAST(pPanoramiXCmap, PanoramiXCmapRoot);
-    pPanoramiXCmap->next = localCmap;
+    PANORAMIXFIND_ADD(PanoramiXCmapRoot, localCmap);
    
     /* Use Screen 0 to get the matching Visual ID */
     pWin = (WindowPtr)SecurityLookupWindow(stuff->window, client,
@@ -2280,9 +2259,8 @@ int PanoramiXCreateColormap(register ClientPtr client)
 	BREAK_IF(result != Success);
     }
     if (result != Success) {
-       pPanoramiXCmap->next = NULL ;
-       if (localCmap)
-           Xfree(localCmap);
+	PanoramiXCmapRoot->next = localCmap->next;
+	Xfree(localCmap);
     }
     return (result);
 }
@@ -2307,8 +2285,10 @@ int PanoramiXFreeColormap(ClientPtr client)
     REQUEST_SIZE_MATCH(xResourceReq);
 
     for (; pPanoramiXCmap && (pPanoramiXCmap->info[0].id != stuff->id);
-					    pPanoramiXCmap = pPanoramiXCmap->next)
-        pPanoramiXCmapback = pPanoramiXCmap;
+         pPanoramiXCmap = pPanoramiXCmap->next) 
+    {
+	pPanoramiXCmapback = pPanoramiXCmap;
+    }
     IF_RETURN(!pPanoramiXCmap, BadColor);
     FOR_NSCREENS_OR_ONCE(pPanoramiXCmap, j) {
         stuff->id = pPanoramiXCmap->info[j].id;

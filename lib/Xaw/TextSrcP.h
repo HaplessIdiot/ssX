@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.10 1999/08/15 13:00:39 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.11 1999/08/28 09:00:29 dawes Exp $ */
 
 #ifndef _XawTextSrcP_h
 #define _XawTextSrcP_h
@@ -221,6 +221,7 @@ XawTextEntity *XawTextSourceAddEntity
  Widget			source,
  int			type,
  int			flags,
+ XtPointer		data,
  XawTextPosition	position,
  Cardinal		length,
  XrmQuark		property

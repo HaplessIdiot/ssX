@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/xf86rush.h,v 1.1 1999/09/04 09:14:08 dawes Exp $ */
 /*
 
 Copyright (c) 1998  Daryll Strauss
@@ -14,6 +14,8 @@ Copyright (c) 1998  Daryll Strauss
 #define X_XF86RushLockPixmap		1
 #define X_XF86RushUnlockPixmap		2
 #define X_XF86RushUnlockAllPixmaps	3
+#define X_XF86RushSetCopyMode		4
+#define X_XF86RushSetPixelStride	5
 
 #define XF86RushNumberEvents		0
 
@@ -60,6 +62,22 @@ Bool XF86RushUnlockPixmap(
 Bool XF86RushUnlockAllPixmaps(
 #if NeedFunctionPrototypes
     Display *		/* dpy */
+#endif			    
+);
+
+Bool XF86RushSetCopyMode(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    int			/* screen */,
+    int			/* copy mode */
+#endif			    
+);
+
+Bool XF86RushSetPixelStride(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    int			/* screen */,
+    int			/* pixel stride */
 #endif			    
 );
 

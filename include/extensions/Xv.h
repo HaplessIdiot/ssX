@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/Xv.h,v 1.3 1999/05/23 06:33:22 dawes Exp $ */
 
 #ifndef XV_H
 #define XV_H
@@ -62,6 +62,12 @@ typedef XID XvEncodingID;
 
 #define XvInputMask      (1L<<XvInput)
 #define XvOutputMask     (1L<<XvOutput)
+#define XvPixmapMask	 0x00000004
+#define XvWindowMask	 0x00000008
+
+#define XvVideoMask	 0x00010000
+#define XvStillMask	 0x00020000
+#define XvImageMask	 0x00040000
 
 #define XvGettable	0x01
 #define XvSettable	0x02

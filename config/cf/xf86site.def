@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.147 1999/08/29 12:20:50 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.148 1999/09/25 14:36:31 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -474,10 +474,16 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.147 1999/08/29 12:20:50 dawes Exp 
  */
 
 /*
- * If you want to build the client library for the xf86rush extension,
+ * If you don't want to build the xf86rush extension, uncomment this line.
+ *
+#define BuildXF86RushExt	NO
+ */
+
+/*
+ * If you don't want to build the client library for the xf86rush extension,
  * uncomment this line.
  *
-#define BuildXF86RushLibrary	YES
+#define BuildXF86RushLibrary	NO
  */
 
 /*

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.1 1999/08/29 12:20:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.2 1999/08/29 12:42:56 dawes Exp $ */
 
 /*
  * Authors:
@@ -557,14 +557,14 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 	       pI740->pEnt->device->chipID);
   } else {
     from = X_PROBED;
-    pScrn->chipset = (char *)xf86TokenToString(I740Chipsets, pI740->pEnt->device->chipID);
+    pScrn->chipset = (char *)xf86TokenToString(I740Chipsets, pI740->PciInfo->chipType);
   }
   if (pI740->pEnt->device->chipRev >= 0) {
     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
 	       pI740->pEnt->device->chipRev);
   }
 
-  xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
+  xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", (pScrn->chipset!=NULL)?pScrn->chipset:"Unknown i740");
 
   if (pI740->pEnt->device->MemBase != 0) {
     pI740->LinearAddr = pI740->pEnt->device->MemBase;
@@ -1234,7 +1234,7 @@ I740SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
 
   switch (pScrn->bitsPerPixel) {
   case 8:
-    /* pVga->CRTC[0x13] = pScrn->displayWidth >> 3; */
+    pVga->CRTC[0x13] = pScrn->displayWidth >> 3;
     i740Reg->ExtOffset      = pScrn->displayWidth >> 11;
     i740Reg->PixelPipeCfg1 = DISPLAY_8BPP_MODE;
     i740Reg->BitBLTControl = COLEXP_8BPP;
@@ -1245,18 +1245,18 @@ I740SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode) {
     } else {
       i740Reg->PixelPipeCfg1 = DISPLAY_16BPP_MODE;
     }
-    /* pVga->CRTC[0x13] = pScrn->displayWidth >> 2; */
+    pVga->CRTC[0x13] = pScrn->displayWidth >> 2;
     i740Reg->ExtOffset      = pScrn->displayWidth >> 10;
     i740Reg->BitBLTControl = COLEXP_16BPP;
     break;
   case 24:
-    /* pVga->CRTC[0x13] = (pScrn->displayWidth * 3) >> 3; */
-    i740Reg->ExtOffset      = (pScrn->displayWidth * 3)>> 11;
+    pVga->CRTC[0x13] = (pScrn->displayWidth * 3) >> 3;
+    i740Reg->ExtOffset      = (pScrn->displayWidth * 3) >> 11;
     i740Reg->PixelPipeCfg1 = DISPLAY_24BPP_MODE;
     i740Reg->BitBLTControl = COLEXP_24BPP;
     break;
   case 32:
-    /* pVga->CRTC[0x13] = pScrn->displayWidth >> 1; */
+    pVga->CRTC[0x13] = pScrn->displayWidth >> 1;
     i740Reg->ExtOffset      = pScrn->displayWidth >> 9;
     i740Reg->PixelPipeCfg1 = DISPLAY_32BPP_MODE;
     i740Reg->BitBLTControl = COLEXP_RESERVED; /* Not implemented on i740 */
@@ -1328,6 +1328,7 @@ I740ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
   vgaHWPtr hwp;
   I740Ptr pI740;
+  vgaRegPtr pVga;
 
   hwp = VGAHWPTR(pScrn);
   pI740 = I740PTR(pScrn);
@@ -1335,6 +1336,18 @@ I740ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
   vgaHWUnlock(hwp);
 
   if (!vgaHWInit(pScrn, mode)) return FALSE;
+  /*
+   * the KGA fix in vgaHW.c results in the first
+   * scanline and the first character clock (8 pixels)
+   * of each scanline thereafter on display with an i740
+   * to be blank. Restoring CRTC 3, 5, & 22 to their
+   * "theoretical" values corrects the problem. KAO.
+   */
+  pVga = &VGAHWPTR(pScrn)->ModeReg;
+  pVga->CRTC[3]  = (((mode->CrtcHBlankEnd >> 3) - 1) & 0x1F) | 0x80;
+  pVga->CRTC[5]  = ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x20) << 2)
+        | (((mode->CrtcHSyncEnd >> 3)) & 0x1F);
+  pVga->CRTC[22] = (mode->CrtcVBlankEnd - 1) & 0xFF;
 
   pScrn->vtSema = TRUE;
 

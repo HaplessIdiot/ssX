@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.24 1999/08/22 05:57:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.25 1999/09/25 14:37:11 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -265,7 +265,7 @@ DGASetDGAMode(
 		pScreenPriv->savedColormap = NULL;
 	    }
 	    pScreenPriv->dgaColormap = NULL;
-	    (*pScreenPriv->funcs->SetMode)(pScreenPriv->pScrn, NULL);
+	    (*pScreenPriv->funcs->SetMode)(pScrn, NULL);
 	    (*pScrn->SaveRestoreImage)(index, RestoreImage);
 
 	    FreeMarkedVisuals(pScreen);
@@ -289,12 +289,14 @@ DGASetDGAMode(
 	return BadAlloc;
    } 
 
-   if(!(*pScreenPriv->funcs->SetMode)(pScreenPriv->pScrn, pMode)) {
+   if(!(*pScreenPriv->funcs->SetMode)(pScrn, pMode)) {
 	xfree(device);
 	if(!pScreenPriv->current)
 	     (*pScrn->SaveRestoreImage)(index, FreeImage);
 	return BadAlloc;
    }
+
+   pScrn->currentMode = pMode->mode;
 
    if(!pScreenPriv->current && !pScreenPriv->input) {
 	/* if it's multihead we need to warp the cursor off of
@@ -304,8 +306,13 @@ DGASetDGAMode(
    pScrn->vtSema = FALSE;
 
    if(pScreenPriv->current) {
-	if(pScreenPriv->current->pPix)
-	    (*pScreen->DestroyPixmap)(pScreenPriv->current->pPix);
+	PixmapPtr oldPix = pScreenPriv->current->pPix;
+	if(oldPix) {
+	    if(oldPix->drawable.id)
+		FreeResource(oldPix->drawable.id, RT_NONE);
+	    else
+		(*pScreen->DestroyPixmap)(oldPix);
+	}
 	xfree(pScreenPriv->current);
 	pScreenPriv->current = NULL;
    } 
@@ -434,8 +441,13 @@ DGAShutdown()
 	pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
 
 	if(pScreenPriv && pScreenPriv->current) {
-	    if(pScreenPriv->current->pPix)
-		(*pScreen->DestroyPixmap)(pScreenPriv->current->pPix);
+	    PixmapPtr oldPix = pScreenPriv->current->pPix;
+	    if(oldPix) {
+		if(oldPix->drawable.id)
+		    FreeResource(oldPix->drawable.id, RT_NONE);
+		else
+		    (*pScreen->DestroyPixmap)(oldPix);
+	    }
 	    xfree(pScreenPriv->current);
 
 	    (*pScreenPriv->funcs->SetMode)(pScreenPriv->pScrn, NULL);

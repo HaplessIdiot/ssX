@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.6 1999/07/10 12:17:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.7 1999/08/28 09:00:57 dawes Exp $ */
 
 
 /* Everything using inb/outb, etc needs "compiler.h" */
@@ -97,6 +97,13 @@ typedef struct {
 	unsigned int	EX[NoEXRegs];
 } ApmRegStr, *ApmRegPtr;
 
+typedef struct {
+    int			displayWidth, displayHeight;
+    int			bitsPerPixel, bytesPerScanline;
+    int			Scanlines;
+    unsigned int	Setup_DEC;
+} ApmFBLayout;
+
 #define APM_CACHE_NUMBER	32
 
 typedef struct {
@@ -128,6 +135,7 @@ typedef struct {
     int			MinClock;                        /* Min ramdac clock */
     int			MaxClock;                        /* Max ramdac clock */
     int			apmMMIO_Init;
+    ApmFBLayout		CurrentLayout, SavedLayout;
     EntityInfoPtr	pEnt;
     XAAInfoRecPtr	AccelInfoRec;
     xf86CursorInfoPtr	CursorInfoRec;
@@ -135,7 +143,6 @@ typedef struct {
     DGAModePtr		DGAModes;
     int			BaseCursorAddress,CursorAddress,DisplayedCursorAddress;
     int			OffscreenReserved;
-    unsigned int	Setup_DEC;
     int			blitxdir, blitydir;
     Bool		apmTransparency, apmClip, ShadowFB, I2C;
     I2CBusPtr		I2CPtr;
@@ -147,17 +154,17 @@ typedef struct {
     int			apmCachePtr;
     unsigned char	regcurr[0x54];
     ScreenPtr		pScreen;
-    int			displayWidth, displayHeight;
-    int			bitsPerPixel, bytesPerScanline;
-    int			Scanlines;
     int			Generation;
-    int			apmLock;
-    RegionRec		apmLockedRegion;
+    int			apmLock, pixelStride, RushY[7], CopyMode;
+    Bool		(*DestroyPixmap)(PixmapPtr);
+    PixmapPtr		(*CreatePixmap)(ScreenPtr, int, int, int);
     int			MemClk;
     unsigned char	*ShadowPtr;
     int			ShadowPitch;
     int			ScratchMem, ScratchMemSize, ScratchMemOffset;
+    int			ScratchMemPtr, ScratchMemEnd;
     int			ScratchMemWidth;
+    CARD32		color;
 } ApmRec, *ApmPtr;
 
 #define curr		((unsigned char *)pApm->regcurr)
@@ -185,6 +192,7 @@ enum ApmChipId {
 
 typedef struct {
     BoxRec			box;
+    int				num;
     MoveAreaCallbackProcPtr	MoveAreaCallback;
     RemoveAreaCallbackProcPtr	RemoveAreaCallback;
     void			*devPriv;
@@ -197,7 +205,7 @@ extern int	ApmHWCursorInit(ScreenPtr pScreen);
 extern int	ApmDGAInit(ScreenPtr pScreen);
 extern int	ApmAccelInit(ScreenPtr pScreen);
 extern Bool	ApmI2CInit(ScreenPtr pScreen);
-extern void	XFree86RushExtensionInit(void);
+extern void	XFree86RushExtensionInit(ScreenPtr pScreen);
 extern void	ApmCheckMMIO_Init(ScrnInfoPtr pScrn);
 extern void	ApmCheckMMIO_Init_IOP(ScrnInfoPtr pScrn);
 extern void	ApmCheckMMIO_Init24(ScrnInfoPtr pScrn);
@@ -205,6 +213,6 @@ extern void	ApmCheckMMIO_Init24_IOP(ScrnInfoPtr pScrn);
 
 extern int	ApmPixmapIndex;
 #define APM_GET_PIXMAP_PRIVATE(pix)\
-	(ApmPixmapPtr)((pix)->devPrivates[ApmPixmapIndex].ptr)
+	((ApmPixmapPtr)(((PixmapPtr)(pix))->devPrivates[ApmPixmapIndex].ptr))
 
 #include "apm_regs.h"

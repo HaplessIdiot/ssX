@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.5 1999/02/07 06:18:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.6 1999/09/25 14:38:12 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -32,16 +32,25 @@ static void ShadowRestoreAreas (
     WindowPtr pWin 
 );
 static void ShadowPaintWindow (
-  WindowPtr pWin,
-  RegionPtr prgn,
-  int what 
+    WindowPtr pWin,
+    RegionPtr prgn,
+    int what 
 );
 static void ShadowCopyWindow(
-   WindowPtr pWin,
-   DDXPointRec ptOldOrg,
-   RegionPtr prgn 
+    WindowPtr pWin,
+    DDXPointRec ptOldOrg,
+    RegionPtr prgn 
 );
 static Bool ShadowCreateGC(GCPtr pGC);
+static Bool ShadowModifyPixmapHeader(
+    PixmapPtr pPixmap,
+    int width,
+    int height,
+    int depth,
+    int bitsPerPixel,
+    int devKind,
+    pointer pPixData
+);
 
 static Bool ShadowEnterVT(int index, int flags);
 static void ShadowLeaveVT(int index, int flags);
@@ -57,6 +66,7 @@ typedef struct {
   CopyWindowProcPtr			CopyWindow;
   CreateGCProcPtr			CreateGC;
   BackingStoreRestoreAreasProcPtr	RestoreAreas;  
+  ModifyPixmapHeaderProcPtr		ModifyPixmapHeader;
   Bool				(*EnterVT)(int, int);
   void				(*LeaveVT)(int, int);
   Bool				(*SaveRestoreImage)(int, SaveRestoreFlags);
@@ -168,6 +178,7 @@ ShadowFBInit (
     pPriv->CopyWindow = pScreen->CopyWindow;
     pPriv->CreateGC = pScreen->CreateGC;
     pPriv->RestoreAreas = pScreen->BackingStoreFuncs.RestoreAreas;
+    pPriv->ModifyPixmapHeader = pScreen->ModifyPixmapHeader;
 
     pPriv->EnterVT = pScrn->EnterVT;
     pPriv->LeaveVT = pScrn->LeaveVT;
@@ -179,6 +190,7 @@ ShadowFBInit (
     pScreen->CopyWindow = ShadowCopyWindow;
     pScreen->CreateGC = ShadowCreateGC;
     pScreen->BackingStoreFuncs.RestoreAreas = ShadowRestoreAreas;
+    pScreen->ModifyPixmapHeader = ShadowModifyPixmapHeader;
 
     pScrn->EnterVT = ShadowEnterVT;
     pScrn->LeaveVT = ShadowLeaveVT;
@@ -200,8 +212,8 @@ ShadowEnterVT(int index, int flags)
 	pPriv->vtSema = TRUE;
 
 	box.x1 = box.y1 = 0;
-	box.x2 = pScrn->virtualX - 1;
-	box.y2 = pScrn->virtualY - 1;
+	box.x2 = pScrn->virtualX;
+	box.y2 = pScrn->virtualY;
 
 	(*pPriv->refresh)(pScrn, 1, &box);
 
@@ -224,7 +236,32 @@ ShadowLeaveVT(int index, int flags)
 static Bool
 ShadowSaveRestoreImage(int index, SaveRestoreFlags what)
 {
-    return TRUE; 
+    ScrnInfoPtr pScrn = xf86Screens[index];
+    ScreenPtr pScreen = pScrn->pScreen;
+
+    /* Fake being switched out */
+    switch (what) {
+    case SaveImage:
+	if (pScrn->ppix)
+	    return TRUE;
+
+	pScrn->ppix = GetScratchPixmapHeader(pScreen,
+	    -1, -1, pScreen->rootDepth, -1, -1, NULL);
+	return TRUE;
+
+    case RestoreImage:
+    case FreeImage:
+	if (!pScrn->ppix)
+	    return TRUE;
+
+	FreeScratchPixmapHeader(pScrn->ppix);
+	pScrn->ppix = NULL;
+	return TRUE;
+
+    default:
+	ErrorF("ShadowSaveRestoreImage: Invalid flag (%d)\n", what);
+	return FALSE;
+    }
 }
 
 
@@ -243,6 +280,7 @@ ShadowCloseScreen (int i, ScreenPtr pScreen)
     pScreen->CopyWindow = pPriv->CopyWindow;
     pScreen->CreateGC = pPriv->CreateGC;
     pScreen->BackingStoreFuncs.RestoreAreas = pPriv->RestoreAreas;
+    pScreen->ModifyPixmapHeader = pPriv->ModifyPixmapHeader;
 
     pScrn->EnterVT = pPriv->EnterVT;
     pScrn->LeaveVT = pPriv->LeaveVT;
@@ -324,6 +362,42 @@ ShadowCopyWindow(
 	    (*pPriv->refresh)(pPriv->pScrn, num, REGION_RECTS(prgn));    
     }
 
+}
+
+static Bool
+ShadowModifyPixmapHeader(
+    PixmapPtr pPixmap,
+    int width,
+    int height,
+    int depth,
+    int bitsPerPixel,
+    int devKind,
+    pointer pPixData
+)
+{
+    ScreenPtr pScreen;
+    ScrnInfoPtr pScrn;
+    ShadowScreenPtr pPriv;
+    Bool retval;
+
+    if (!pPixmap)
+	return FALSE;
+
+    pScreen = pPixmap->drawable.pScreen;
+    pScrn = xf86Screens[pScreen->myNum];
+
+    /* Ignore changes to root pixmap while switched out */
+    if (pPixmap == pScrn->ppix)
+        return TRUE;
+
+    pPriv = GET_SCREEN_PRIVATE(pScreen);
+
+    pScreen->ModifyPixmapHeader = pPriv->ModifyPixmapHeader;
+    retval = (*pScreen->ModifyPixmapHeader)(pPixmap,
+	width, height, depth, bitsPerPixel, devKind, pPixData);
+    pScreen->ModifyPixmapHeader = ShadowModifyPixmapHeader;
+
+    return retval;
 }
 
 /**********************************************************/

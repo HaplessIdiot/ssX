@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.115 1999/09/06 11:27:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.116 1999/09/25 14:37:28 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -734,7 +734,7 @@ MGASoftReset(ScrnInfoPtr pScrn)
 	usleep(10);
 
 #if 0
-	/* This will hang is the PLLs aren't on */
+	/* This will hang if the PLLs aren't on */
 
 	/* wait until drawing engine is ready */
 	while ( MGAISBUSY() )
@@ -758,41 +758,97 @@ MGASoftReset(ScrnInfoPtr pScrn)
 static int
 MGACountRam(ScrnInfoPtr pScrn)
 {
-	MGAPtr pMga = MGAPTR(pScrn);
+    MGAPtr pMga = MGAPTR(pScrn);
+    int ProbeSize = 8192;
+    int SizeFound = 2048;
+    CARD32 biosInfo = 0;
 
-	if (pMga->FbAddress)
-	{
-		volatile unsigned char* base;
-		unsigned char tmp, tmp3, tmp5;
-	
-		pMga->FbMapSize = 8192 * 1024;
-		MGAMapMem(pScrn);
-		base = pMga->FbBase;
-	
-		/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
-		OUTREG8(0x1FDE, 3);
-		tmp = INREG8(0x1FDF);
-		OUTREG8(0x1FDF, tmp | 0x80);
-	
-		/* write, read and compare method */
-		base[0x500000] = 0x55;
-		base[0x300000] = 0x33;
-		base[0x100000] = 0x11;
-		tmp5 = base[0x500000];
-		tmp3 = base[0x300000];
+#if 0
+    /* This isn't correct. It looks like this can have arbitrary
+	data for the memconfig even when the bios has initialized
+	it.  At least, my cards don't advertise the documented 
+	values (my 8 and 16 Meg G200s have the same values) */
+    if(pMga->Primary) /* can only trust this for primary cards */
+	biosInfo = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
+#endif
 
-		/* restore CRTCEXT3 state */
-		OUTREG8(0x1FDE, 3);
-		OUTREG8(0x1FDF, tmp);
-	
-		MGAUnmapMem(pScrn);
-	
-		if(tmp5 == 0x55)
-			return 8192;
-		if(tmp3 == 0x33)
-			return 4096;
+    switch(pMga->Chipset) {
+    case PCI_CHIP_MGA2164:
+    case PCI_CHIP_MGA2164_AGP:
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+		"Unable to probe memory amount due to hardware bug.  "
+		"Assuming 4096 KB\n");
+	return 4096;
+    case PCI_CHIP_MGAG400:
+	if(biosInfo) {
+	    switch((biosInfo >> 10) & 0x07) {
+	    case 0:
+		return (biosInfo & (1 << 14)) ? 32768 : 16384;
+	    case 1:
+	    case 2:	    
+		return 16384;
+	    case 3:	    
+	    case 5:	    
+		return 65536;
+	    case 4:	   
+		return 32768;
+	    }
 	}
-	return 2048;
+	ProbeSize = 32768;
+	break;
+    case PCI_CHIP_MGAG200:
+    case PCI_CHIP_MGAG200_PCI:
+	if(biosInfo) {
+	    switch((biosInfo >> 11) & 0x03) {
+	    case 0:
+		return 8192;
+	    default:
+		return 16384;
+	    }
+	}
+	ProbeSize = 16384;
+	break;
+    case PCI_CHIP_MGAG100:
+	if(biosInfo) /* I'm not sure if the docs are correct */
+	    return (biosInfo & (1 << 12)) ? 16384 : 8192;
+    case PCI_CHIP_MGA1064:
+    case PCI_CHIP_MGA2064:
+	ProbeSize = 8192;
+        break;
+    default:
+        break;
+    }
+
+    if (pMga->FbAddress) {
+	volatile unsigned char* base;
+	unsigned char tmp;
+	int i;
+	
+	pMga->FbMapSize = ProbeSize * 1024;
+	MGAMapMem(pScrn);
+	base = pMga->FbBase;
+
+	/* turn MGA mode on - enable linear frame buffer (CRTCEXT3) */
+	OUTREG8(0x1FDE, 3);
+	tmp = INREG8(0x1FDF);
+	OUTREG8(0x1FDF, tmp | 0x80);
+	
+	/* write, read and compare method */
+	for(i = ProbeSize; i > 2048; i -= 2048) {
+	    base[(i * 1024) - 1] = 0xAA;
+	    if(base[(i * 1024) - 1] == 0xAA) {
+		SizeFound = i;
+		break;
+	    }
+	}
+	
+	/* restore CRTCEXT3 state */
+	OUTREG8(0x1FDE, 3);
+	OUTREG8(0x1FDF, tmp);
+	
+	MGAUnmapMem(pScrn);
+   }
+   return SizeFound;
 }
 
 /*
@@ -1483,22 +1539,14 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * If the user has specified the amount of memory in the XF86Config
      * file, we respect that setting.
      */
+    from = X_PROBED;
     if (pMga->pEnt->device->videoRam != 0) {
 	pScrn->videoRam = pMga->pEnt->device->videoRam;
 	from = X_CONFIG;
-    } else if((pMga->Chipset == PCI_CHIP_MGA2164) ||
-	(pMga->Chipset == PCI_CHIP_MGA2164_AGP)){
-	pScrn->videoRam = 4096;
-	from = X_DEFAULT;
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-	 "Skipping memory probe due to hardware bug.  Assuming 4096 kBytes\n");
+    } else if (pMga->FBDev) {
+	pScrn->videoRam = fbdevHWGetVidmem(pScrn)/1024;
     } else {
-	if (pMga->FBDev) {
-	    pScrn->videoRam = fbdevHWGetVidmem(pScrn)/1024;
-	} else {
-	    pScrn->videoRam = MGACountRam(pScrn);
-	}
-	from = X_PROBED;
+	pScrn->videoRam = MGACountRam(pScrn);
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
                pScrn->videoRam);

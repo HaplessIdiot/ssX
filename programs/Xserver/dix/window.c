@@ -66,7 +66,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.12 1999/03/20 08:58:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.13 1999/05/23 06:33:37 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -3355,9 +3355,72 @@ SendVisibilityNotify(pWin)
     WindowPtr pWin;
 {
     xEvent event;
+    unsigned int visibility = pWin->visibility;
+
+#ifdef PANORAMIX
+    /* This is not quite correct yet, but it's close */
+    if(!noPanoramiXExtension) {
+	PanoramiXWindow *pPanoramiXWin = PanoramiXWinRoot;
+	WindowPtr pWin2;
+	int i, Scrnum;
+
+	Scrnum = pWin->drawable.pScreen->myNum;
+	
+	PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, pWin->drawable.id, Scrnum);
+	
+	if(!pPanoramiXWin || 
+	   (pPanoramiXWin->u.win.visibility == pWin->visibility))
+		return;
+
+	switch(pWin->visibility) {
+	case VisibilityUnobscured:
+	    for(i = 0; i < PanoramiXNumScreens; i++) {
+		if(i == Scrnum) continue;
+
+		pWin2 = (WindowPtr)LookupIDByType(pPanoramiXWin->info[i].id, 
+	       						RT_WINDOW);
+
+		if(!i) pWin = pWin2;
+		
+		if(pWin2->visibility == VisibilityUnobscured)
+		    return;
+	    }
+	    break;
+	case VisibilityPartiallyObscured:
+	    for(i = 0; i < PanoramiXNumScreens; i++) {
+		if(i == Scrnum) continue;
+
+		pWin2 = (WindowPtr)LookupIDByType(pPanoramiXWin->info[i].id, 
+	       						RT_WINDOW);
+		
+		if(!i) pWin = pWin2;
+
+		if(pWin2->visibility == VisibilityUnobscured)
+		    return;
+	    }
+	    break;
+	case VisibilityFullyObscured:
+	    for(i = 0; i < PanoramiXNumScreens; i++) {
+		if(i == Scrnum) continue;
+
+		pWin2 = (WindowPtr)LookupIDByType(pPanoramiXWin->info[i].id, 
+	       						RT_WINDOW);
+		
+		if(!i) pWin = pWin2;
+
+		if(pWin2->visibility != VisibilityFullyObscured)
+		    return;
+	    }
+	    break;
+	}
+	
+	pPanoramiXWin->u.win.visibility = visibility;
+    }
+#endif
+
     event.u.u.type = VisibilityNotify;
     event.u.visibility.window = pWin->drawable.id;
-    event.u.visibility.state = pWin->visibility;
+    event.u.visibility.state = visibility;
     DeliverEvents(pWin, &event, 1, NullWindow);
 }
 

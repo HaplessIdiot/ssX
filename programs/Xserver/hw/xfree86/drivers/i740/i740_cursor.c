@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_cursor.c,v 1.1 1999/08/29 12:20:58 dawes Exp $ */
 
 /*
  * Authors:
@@ -79,14 +79,28 @@ I740CursorInit(ScreenPtr pScreen)
   infoPtr->ShowCursor = I740ShowCursor;
   infoPtr->UseHWCursor = I740UseHWCursor;
 
+/*
+ * Allocate a region the full width and tall enough
+ * that at least 6K of video memory is consumed.
+ * Then use a 1 kilobyte piece that is 4K byte aligned
+ * within that region. KAO.
+ */
   fbarea = xf86AllocateOffscreenArea(pScreen, 
-				     (1024+pI740->cpp-1)/pI740->cpp,
-				     (1024+pScrn->displayWidth*pI740->cpp-1) /
-				     (pScrn->displayWidth*pI740->cpp), 
-				     4096, 0, 0, 0);
-  pI740->CursorStart = (fbarea->box.x1 + pScrn->displayWidth * fbarea->box.y1)
-    * pI740->cpp;
-
+				pScrn->displayWidth,
+				(6*1024)/(pScrn->displayWidth*pI740->cpp)+1,
+				0,0,0,0);
+  if (fbarea == NULL) {
+    pI740->CursorStart=0;
+    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+	       "Hardware cursor disabled due to failure allocating offscreen memory.\n");
+  }
+  else {
+    pI740->CursorStart = ((((fbarea->box.x1 + pScrn->displayWidth * fbarea->box.y1) * pI740->cpp)+4096)&0xfff000);
+  }
+  /*
+   * Perhaps move the cursor to the beginning of the frame buffer
+   * so that it never fails?
+   */
   if (pI740->CursorStart>4*1024*1024) {
     pI740->CursorStart=0;
     xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
@@ -143,7 +157,7 @@ I740SetCursorPosition(ScrnInfoPtr pScrn, int x, int y) {
     y=-y;
   }
   pI740->writeControl(pI740, XRX, CURSOR_Y_LO, y&0xFF);
-  pI740->writeControl(pI740, XRX, CURSOR_Y_HI, (((y >> 8) & 0x07) | CURSOR_Y_POS));
+  pI740->writeControl(pI740, XRX, CURSOR_Y_HI, (((y >> 8) & 0x07) | flag));
 }
 
 static void

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/xf86rushstr.h,v 1.1 1999/09/04 09:14:08 dawes Exp $ */
 /*
 
 Copyright (c) 1998  Daryll Strauss
@@ -77,5 +77,26 @@ typedef struct _XF86RushUnlockAllPixmaps {
     CARD16      length B16;
 } xXF86RushUnlockAllPixmapsReq;
 #define sz_xXF86RushUnlockAllPixmapsReq   4
+
+typedef struct _XF86RushSetCopyMode {
+    CARD8       reqType;                /* always RushReqCode */
+    CARD8       rushReqType;            /* always X_RushSetCopyMode */
+    CARD16      length B16;
+    CARD16      screen B16;
+    CARD16      pad B16;
+    CARD32      CopyMode B32;
+} xXF86RushSetCopyModeReq;
+#define sz_xXF86RushSetCopyModeReq      12
+
+
+typedef struct _XF86RushSetPixelStride {
+    CARD8       reqType;                /* always RushReqCode */
+    CARD8       rushReqType;            /* always X_RushSetCopyMode */
+    CARD16      length B16;
+    CARD16      screen B16;
+    CARD16      pad B16;
+    CARD32      PixelStride B32;
+} xXF86RushSetPixelStrideReq;
+#define sz_xXF86RushSetPixelStrideReq      12
 
 #endif /* _XF86RUSHSTR_H_ */

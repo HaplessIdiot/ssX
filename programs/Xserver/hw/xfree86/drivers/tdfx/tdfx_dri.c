@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.1 1999/08/29 12:21:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.2 1999/08/30 01:25:04 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -341,7 +341,7 @@ TDFXDRIFinishScreenInit(ScreenPtr pScreen)
   pTDFXDRI->cpp=pTDFX->cpp;
   pTDFXDRI->stride=pTDFX->stride;
 #ifdef PROP_3DFX
-  FillPrivateDRI(pTDFX, pTDFXDRI);
+  TDFXFillPrivateDRI(pTDFX, pTDFXDRI);
 #endif
   pTDFXDRI->textureOffset=pTDFX->texOffset;
   pTDFXDRI->textureSize=4*1024*1024; /* !!! This should be calculated !!! */

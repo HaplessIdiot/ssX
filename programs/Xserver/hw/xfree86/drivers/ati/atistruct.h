@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.3 1999/08/21 13:48:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.4 1999/09/25 14:37:23 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -57,7 +57,7 @@ typedef struct _ATIHWRec
           b0, b1, b2, b3,     b5, b6,     b8, b9, ba,         bd, be, bf;
 
     /* Mach64 PLL register */
-    CARD8 pll_ext_vpll_cntl;
+    CARD8 pll_vclk_cntl, pll_ext_vpll_cntl;
 
     /* Mach64 registers */
     CARD32 crtc_h_total_disp, crtc_h_sync_strt_wid,
@@ -229,7 +229,7 @@ typedef struct _ATIRec
 
         /* Mach64 registers */
         CARD32 bus_cntl, config_cntl, crtc_gen_cntl, mem_info, gen_test_cntl,
-               dac_cntl, crtc_int_cntl;
+               dac_cntl, crtc_int_cntl, lcd_index;
     } LockData;
 
     /* Mode data */

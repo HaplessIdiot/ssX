@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.248 1999/09/06 11:27:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.249 1999/09/25 14:36:32 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -473,6 +473,14 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 /*
+ * Build the Rush extension library (non standard extension for cooperation
+ * between glide library and X server). Enabled by default only for Linux.
+ */
+#ifndef BuildXF86RushExt
+#define BuildXF86RushExt	NO
+#endif
+
+/*
  * XIE
  */
 #ifndef BuildXIE
@@ -547,7 +555,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #define BuildGLXLibrary		YES
 #endif
 #ifndef BuildXF86RushLibrary
-#define BuildXF86RushLibrary	YES
+#define BuildXF86RushLibrary	BuildXF86RushExt
 #endif
 
 /*

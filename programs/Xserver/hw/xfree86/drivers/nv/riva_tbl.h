@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/riva_tbl.h,v 1.1.2.3 1999/04/21 07:21:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_tbl.h,v 1.1 1999/08/01 07:21:01 dawes Exp $ */
 /*
  * RIVA Fixed Functionality Init Tables.
  */
@@ -61,6 +61,7 @@ static unsigned RivaTableFIFO[][2] =
     {0x00001800, 0x80000010},
     {0x00002000, 0x80000011},
     {0x00002800, 0x80000012},
+    {0x00003000, 0x80000014},
     {0x00003800, 0x80000013}
 };
 static unsigned nv3TablePFIFO[][2] =
@@ -354,10 +355,18 @@ static unsigned nv4TablePRAMIN[][2] =
 #endif
     {0x00000512, 0x00000000},
     {0x00000513, 0x00000000},
+#if 1
+    {0x00000514, 0x01008021},
+#else
     {0x00000514, 0x0100A033},
+#endif
     {0x00000516, 0x00000000},
     {0x00000517, 0x00000000},
+#if 1
+    {0x00000518, 0x0100801F},
+#else
     {0x00000518, 0x0100805F},
+#endif
     {0x0000051A, 0x00000000},
     {0x0000051B, 0x00000000},
 #if 1

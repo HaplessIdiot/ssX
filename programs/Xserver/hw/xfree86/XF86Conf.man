@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.62 1999/04/25 10:01:54 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.63 1999/09/25 14:36:55 dawes Exp $
 .TH XF86Config 4/5 "Version 4.0"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -915,6 +915,8 @@ must appear. The subsections names are:
 \fBWacomEraser\fP (eraser of a Wacom tablet)
 \fBWacomCursor\fP (cursor of a Wacom tablet)
 \fBElographics\fP (Elographics touchscreen)
+\fBMicrotouchFinger\fP (Microtouch touchscreen operated with finger)
+\fBMicrotouchStylus\fP (Microtouch touchscreen operated with stylus)
 \fBSummaSketch\fP (SummaSketch tablet)
 \fBMouse\fP (Mouse)
 .fi
@@ -1043,6 +1045,11 @@ sets the maximum Y position reported by the touchscreen.
 .TP 4
 .B MinimumYPosition \fIposition\fP
 sets the minimum Y position reported by the touchscreen.
+
+When an axis minimum is greater than its maximum the driver
+reverse the axis. This is useful to cope with ill assembled
+screens.
+
 .TP 4
 .B ScreenNo \fInumber\fP
 sets the screen number where the touchscreen is connected.
@@ -1061,6 +1068,94 @@ cannot put the device in extended mode (i.e. sending extended events). You
 can also use the latest integer feedback to control this feature. When the
 value of the feedback is zero, the feature is disabled. The feature
 is enabled for any other value.
+.TP 4
+.B SwapAxes
+Exchange the X and Y axes at the driver level. This is useful to cope with
+defective screen assemblies.
+.TP 4
+.B PortraitMode \fIorientation\fP
+configure the orientation of the screen. "Portrait" is to be used when the
+screen has been turned 90 degrees clockwise, "PortraitCCW" is used when the
+screen has been turned 90 degrees counter clockwise and "Landscape" (or not specifying
+this option) is for a normal orientation. It is to be noted that this option
+is applied after axes swap and reversal so it is possible to cope with defective
+assembly and still change orientation.
+
+.RE
+The \fBMicrotouchFinger\fP and \fBMicrotouchStylus\fP subsections support
+the following entries:
+.RS 8
+.TP 4
+.B Port \fI"path"\fP
+sets the path to the special file which controls the serial port. The
+driver supports two X input devices, the finger and the stylus, that share
+the same port. This entry declare the port to be used and it should be
+given identically for both X devices. Doing this, the driver knows that it
+should bind both X devices to the same touchscreen. This must be the
+first entry of the subsection. The default is /dev/ttyS1.
+.TP 4
+.B DeviceName \fI"name"\fP
+sets the name of the X device. It defaults to FINGER for the MicrotouchFinger
+subsection and to STYLUS for the MicrotouchStylus subsection.
+.TP 4
+.B LinkSpeed \fI \fP
+sets the speed of the serial link connecting the touchscreen. Legal
+values are: B300, B1200, B2400, B9600, B19200. The controller must
+be configured to the corresponding speed before launching X. The
+driver will not attempt to detect and change the speed. The default is
+B9600.
+.TP 4
+.B MaximumXPosition \fIposition\fP
+sets the maximum X position reported by the touchscreen.
+.TP 4
+.B MinimumXPosition \fIposition\fP
+sets the minimum X position reported by the touchscreen.
+.TP 4
+.B MaximumYPosition \fIposition\fP
+sets the maximum Y position reported by the touchscreen.
+.TP 4
+.B MinimumYPosition \fIposition\fP
+sets the minimum Y position reported by the touchscreen.
+
+When an axis minimum is greater than its maximum the driver
+reverse the axis. This is useful to cope with ill assembled
+screens.
+
+.TP 4
+.B ScreenNo \fInumber\fP
+sets the screen number where the touchscreen is mounted.
+.TP 4
+.B AlwaysCore
+enables the sharing of the core pointer. When this feature is enabled, the
+device will take control of the core pointer (and thus will emit core events)
+and at the same time will be able, when asked so, to report extended events.
+You can use the last available integer feedback to control this feature. When
+the value of the feedback is zero, the feature is disabled. The feature is
+enabled for any other value.
+.TP 4
+.B HistorySize \fInumber\fP
+sets the motion history size. By default the value is zero.
+.TP 4
+.B DebugLevel \fInumber \fP
+sets the level of debugging info reported. Valid values range from 0 to 5.
+A value of zero suppress all debugging reports and a value of 5 ask for the
+maximum verbosity.
+.TP 4
+.B SwapAxes
+Exchange the X and Y axes at the driver level. This is useful to cope with
+defective screen assemblies.
+.TP 4
+.B PortraitMode \fIorientation\fP
+configure the orientation of the screen. "Portrait" is to be used when the
+screen has been turned 90 degrees clockwise, "PortraitCCW" is used when the
+screen has been turned 90 degrees counter clockwise and "Landscape" (or not specifying
+this option) is for a normal orientation. It is to be noted that this option
+is applied after axes swap and reversal so it is possible to cope with defective
+assembly and still change orientation.
+.TP 4
+.B Frequency \fInumber\fP
+sets the frequency parameter for a ThruGlass Microtouch panel.
+
 .RE
 .TP
 The \fBSummaSketch\fP subsection support the following entries:

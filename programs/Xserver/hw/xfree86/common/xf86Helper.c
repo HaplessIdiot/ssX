@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.56 1999/08/28 09:00:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.57 1999/09/25 14:37:12 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -915,15 +915,60 @@ xf86SetBlackWhitePixels(ScreenPtr pScreen)
 }
 
 /*
- * create a new serial number for the window. Used in xf86SaveRestoreImage
+ * Create a new serial number for the window.  Used in xf86SaveRestoreImage()
  * to force revalidation of all the GC in the window tree of each screen.
  */
 /*ARGSUSED*/
 int
-xf86NewSerialNumber(WindowPtr p, pointer unused)
+xf86NewSerialNumber(WindowPtr pWin, pointer unused)
 {
-    p->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     return WT_WALKCHILDREN;
+}
+
+/*
+ * A second utility function for xf86SaveRestoreImage().  This one finds the
+ * pixmaps whose private data is to be exchanged and creates a region that
+ * covers the virtual screen.
+ */
+static void
+xf86GetPixmapsAndRegion(ScrnInfoPtr pScrnInfo, ScreenPtr pScreen,
+			PixmapPtr *pspix, PixmapPtr *ppix, RegionPtr pRegion)
+{
+    BoxRec pixBox;
+
+    *pspix = (*pScreen->GetScreenPixmap)(pScreen);
+    *ppix = pScrnInfo->ppix;
+
+    pixBox.x1 = pixBox.y1 = 0;
+    pixBox.x2 = pScreen->width;
+    pixBox.y2 = pScreen->height;
+    REGION_INIT(pScreen, pRegion, &pixBox, 1);
+}
+
+/*
+ * A third utility function for xf86SaveRestoreImage().  This one exchanges the
+ * private data of two pixmaps.
+ */
+static void
+xf86ExchangePixmapData(PixmapPtr pspix, PixmapPtr ppix)
+{
+#ifdef PIXPRIV
+    DevUnion *devPrivates = pspix->devPrivates;
+#endif
+    DevUnion devPrivate = pspix->devPrivate;
+    int devKind = pspix->devKind;
+
+#ifdef PIXPRIV
+    pspix->devPrivates = ppix->devPrivates;
+    ppix->devPrivates = devPrivates;
+#endif
+
+    pspix->devPrivate = ppix->devPrivate;
+    ppix->devPrivate = devPrivate;
+
+    pspix->devKind = ppix->devKind;
+    ppix->devKind = devKind;
 }
 
 /*
@@ -934,119 +979,96 @@ xf86NewSerialNumber(WindowPtr p, pointer unused)
  *
  * This has been rewritten compared with the older code, with the intention
  * of making it more general.  It relies on some new functions added to
- * the ScreenRec.  It has not been tested yet.
+ * the ScreenRec.
  *
- * Here, we switch the pixmap data pointers, rather than the pixmaps themselves
- * to avoid having to find and change any references to the screen pixmap
- * such as GC's, window privates etc.
+ * Here, we exchange the pixmap private data, rather than the pixmaps
+ * themselves to avoid having to find and change any references to the screen
+ * pixmap such as GC's, window privates etc.  This also means that this code
+ * does not need to know exactly how the pixmap pixels are accessed.  Further,
+ * this exchange is >not< done through the screen's ModifyPixmapHeader()
+ * vector.  This means the called frame buffer code layers can determine
+ * whether they are switched in or out by keeping track of the root pixmap's
+ * private data, and therefore don't need to access pScrnInfo->vtSema.
  */
-
 Bool
 xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
 {
-    ScreenPtr pScreen;
-    static unsigned char *devPrivates[MAXSCREENS];
-    static int devKinds[MAXSCREENS];
-    pointer devPrivate;
-    Bool ret = FALSE;
-    int width, height, devKind, bitsPerPixel;
-    PixmapPtr pScreenPix, pPix;
-
-    BoxRec pixBox;
+    ScrnInfoPtr pScrnInfo = xf86Screens[scrnIndex];
+    ScreenPtr pScreen = pScrnInfo->pScreen;
+    PixmapPtr pspix, ppix;
     RegionRec pixReg;
-
-    pScreen = xf86Screens[scrnIndex]->pScreen;
-
-    pixBox.x1 = pixBox.y1 = 0;
-    pixBox.x2 = pScreen->width;
-    pixBox.y2 = pScreen->height;
-    REGION_INIT(pScreen, &pixReg, &pixBox, 1);
-
-    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
 
     switch (what) {
     case SaveImage:
-        /*
-         * Create a dummy pixmap to write to while VT is switched out, and
-         * copy the screen to that pixmap.
-         */
-	width = pScreenPix->drawable.width;
-	height = pScreenPix->drawable.height;
-	bitsPerPixel = pScreenPix->drawable.bitsPerPixel;
-
-	/* save the old data */
-	devPrivates[scrnIndex] = pScreenPix->devPrivate.ptr;
-	devKinds[scrnIndex] = pScreenPix->devKind;
-	
-	/* allocate new data */
-	devKind = (((width * bitsPerPixel) + 31) >> 5) << 2; /* which macro ? */
-        devPrivate = xalloc(devKind * height);
-
-        if(devPrivate) {
-	    pPix = GetScratchPixmapHeader(pScreen, width, height, 
-		   pScreen->rootDepth, bitsPerPixel, devKind, devPrivate);
-				
-	    if(pPix) {
-		(*pScreen->BackingStoreFuncs.SaveAreas)(pPix, &pixReg, 0, 0,
-						WindowTable[scrnIndex]);
-
-		FreeScratchPixmapHeader(pPix);
-
-		/* modify the pixmap */
-		pScreenPix->devPrivate.ptr = devPrivate;
-		pScreenPix->devKind = devKind;
-
-		WalkTree(xf86Screens[scrnIndex]->pScreen,xf86NewSerialNumber,0);
-		ret = TRUE;
-	    } else
-		xfree(devPrivate);
+	/*
+	 * Create a dummy pixmap to write to while VT is switched out, and
+	 * copy the screen to that pixmap.
+	 */
+	if (!pScrnInfo->ppix) {
+	    pScrnInfo->ppix = (*pScreen->CreatePixmap)(pScreen,
+		pScrnInfo->displayWidth, pScreen->height, pScreen->rootDepth);
+	    if (!pScrnInfo->ppix)
+		return FALSE;
 	}
+
+	/* Determine pixmaps to swap and virtual screen region */
+	xf86GetPixmapsAndRegion(pScrnInfo, pScreen, &pspix, &ppix, &pixReg);
+
+	/* Copy screen to temporary pixmap */
+	(*pScreen->BackingStoreFuncs.SaveAreas)(ppix, &pixReg, 0, 0,
+	    WindowTable[scrnIndex]);
+
+	/* Swap pixmap data */
+	xf86ExchangePixmapData(pspix, ppix);
+
+	/* Cause revalidation of all GC's */
+	WalkTree(pScreen, xf86NewSerialNumber, 0);
+
+	/* Turf region */
+	REGION_UNINIT(pScreen, &pixReg);
 	break;
+
     case RestoreImage:
 	/*
 	 * Reinstate the screen pixmap and copy the dummy pixmap back
 	 * to the screen.
 	 */
-	
 	if (!xf86Resetting) {
-	     width = pScreenPix->drawable.width;
-	     height = pScreenPix->drawable.height;
-	     bitsPerPixel = pScreenPix->drawable.bitsPerPixel;
-	     devPrivate = pScreenPix->devPrivate.ptr;
-	     devKind = pScreenPix->devKind;
+	    if (!pScrnInfo->ppix)
+		return FALSE;
 
-	     /* scratch pixmap for the saved screen */
-	     pPix = GetScratchPixmapHeader(pScreen, width, height, 
-		   pScreen->rootDepth, bitsPerPixel, devKind, devPrivate);
+	    /* Determine pixmaps to swap and virtual screen region */
+	    xf86GetPixmapsAndRegion(pScrnInfo, pScreen,
+		&pspix, &ppix, &pixReg);
 
-	     if(pPix) {
-		/* restore the screen pixmap's correct values */
-		pScreenPix->devPrivate.ptr = devPrivates[scrnIndex];
-		pScreenPix->devKind = devKinds[scrnIndex];
+	    /* Swap pixmap data */
+	    xf86ExchangePixmapData(pspix, ppix);
 
-		(*pScreen->BackingStoreFuncs.RestoreAreas)(pPix, &pixReg, 0, 0,
-						       WindowTable[scrnIndex]);
-		xfree(devPrivate);
-		FreeScratchPixmapHeader(pPix);
-		/* restore old values */
-		WalkTree(xf86Screens[scrnIndex]->pScreen,xf86NewSerialNumber,0);
-		ret = TRUE;
-	     }
-	     break;
-	} 
+	    /* Restore screen from temporary pixmap */
+	    (*pScreen->BackingStoreFuncs.RestoreAreas)(ppix, &pixReg, 0, 0,
+		WindowTable[scrnIndex]);
+
+	    /* Cause revalidation of all GC's */
+	    WalkTree(pScreen, xf86NewSerialNumber, 0);
+
+	    /* Turf region */
+	    REGION_UNINIT(pScreen, &pixReg);
+	}
 	/* Fall through */
+
     case FreeImage:
-	if (pScreenPix->devPrivate.ptr)
-	    xfree(pScreenPix->devPrivate.ptr);
-	ret = TRUE;
+	if (pScrnInfo->ppix) {
+	    (*pScreen->DestroyPixmap)(pScrnInfo->ppix);
+	    pScrnInfo->ppix = NULL;
+	}
 	break;
+
     default:
 	ErrorF("xf86SaveRestoreImage: Invalid flag (%d)\n", what);
+	return FALSE;
     }
-    REGION_UNINIT(pScreen, &pixReg);
-    return ret;
+    return TRUE;
 }
-
 /* Buffer to hold log data written before the log file is opened */
 static char *saveBuffer = NULL;
 static int size = 0, unused = 0, pos = 0;

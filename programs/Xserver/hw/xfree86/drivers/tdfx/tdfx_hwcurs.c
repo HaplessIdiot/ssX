@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_hwcurs.c,v 1.1 1999/08/29 12:21:04 dawes Exp $ */
 /*
    Voodoo Banshee driver version 1.0.2
 
@@ -53,7 +53,8 @@ TDFXCursorInit(ScreenPtr pScreen)
   infoPtr->MaxHeight = 64;
   infoPtr->Flags = HARDWARE_CURSOR_BIT_ORDER_MSBFIRST|
     HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK|
-    HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64;
+    HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64 |
+    HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;
   infoPtr->SetCursorColors = TDFXSetCursorColors;
   infoPtr->SetCursorPosition = TDFXSetCursorPosition;
   infoPtr->LoadCursorImage = TDFXLoadCursorImage;

@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.30 1999/08/22 05:57:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.31 1999/09/25 14:37:27 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -371,10 +371,9 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		break;
 	}
 
-	if(pMga->UsePCIRetry)
-		pReg->Option &= ~0x20000000;
-	else
-		pReg->Option |= 0x20000000;
+	/* must always have the pci retries on but rely on 
+	   polling to keep them from occuring */
+	pReg->Option &= ~0x20000000;
 
 	switch(pLayout->bitsPerPixel)
 	{

@@ -24,7 +24,7 @@
 /* Rewritten with reference from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.8 1998/01/24 16:58:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.1 1999/08/01 07:20:55 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -40,18 +40,11 @@
  * RIVA supports full colour cursors as X1R5G5B5.  Upper bit is the XOR
  * bit.  All 0's equals transparency.
  */
-#define MAX_CURS            32
 #define TRANSPARENT_PIXEL   0
 #define ConvertToRGB555(c) \
 ( (( c & 0xf80000 ) >> 9 ) | (( c & 0xf800 ) >> 6 ) | (( c & 0xf8) >> 3 ) |0x8000)
 
-/*
- * Internal colors
- */
-static unsigned short foreColor, backColor;   /* Color for cursor in RGB555 */
-static unsigned bitimage[MAX_CURS*2];         /* Previous image */
-
-static void ConvertCursor(unsigned int* src, unsigned short *dst)
+static void ConvertCursor(NVPtr pNv, unsigned int* src, unsigned short *dst)
 {
     int i, j, b, m;
     
@@ -62,7 +55,7 @@ static void ConvertCursor(unsigned int* src, unsigned short *dst)
         for ( j = 0; j < MAX_CURS; j++ )
         {
             if ( m & 1 )
-                *dst = ( b & 1) ? foreColor : backColor;
+                *dst = ( b & 1) ? pNv->curFg : pNv->curBg;
             else
                 *dst = TRANSPARENT_PIXEL;
 
@@ -81,21 +74,24 @@ LoadCursor(ScrnInfoPtr pScrn, unsigned short *tmp)
     
     numInts = (MAX_CURS*MAX_CURS*2) / sizeof(int);
     image   = (int *)tmp;
-    save    = pNv->riva.ShowHideCursor(&pNv->riva, 0); /* Hide cursor, saving its current display state */
+    /* Hide cursor, saving its current display state */
+    save    = pNv->riva.ShowHideCursor(&pNv->riva, 0);
     for (i = 0; i < numInts; i++)
         pNv->riva.CURSOR[i] = image[i];
-    pNv->riva.ShowHideCursor(&pNv->riva, save); /* Restore cursor display state */
+    /* Restore cursor display state */
+    pNv->riva.ShowHideCursor(&pNv->riva, save);
 }
 
 static void
 NVLoadCursorImage( ScrnInfoPtr pScrn, unsigned char *src )
 {
+    NVPtr pNv = NVPTR(pScrn);
     unsigned short      tmp[MAX_CURS*MAX_CURS];
 
     /* Copy image for color changes */
-    memcpy(bitimage, src, MAX_CURS*2*4);
+    memcpy(pNv->curImage, src, MAX_CURS*2*4);
 
-    ConvertCursor((unsigned int*)src, tmp);
+    ConvertCursor(pNv, (unsigned int*)src, tmp);
     LoadCursor(pScrn, tmp);
 }
 
@@ -122,6 +118,7 @@ NVSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 static void
 NVSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
+    NVPtr pNv = NVPTR(pScrn);
     unsigned short fore, back;
 
     if (pScrn->vtSema)
@@ -129,14 +126,14 @@ NVSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
         fore = ConvertToRGB555(fg);
         back = ConvertToRGB555(bg);
         
-        if (foreColor != fore || backColor != back)
+        if (pNv->curFg != fore || pNv->curBg != back)
         {
             unsigned short      tmp[MAX_CURS*MAX_CURS];
             
-            foreColor = fore;
-            backColor = back;
+            pNv->curFg = fore;
+            pNv->curBg = back;
             
-            ConvertCursor(bitimage, tmp);
+            ConvertCursor(pNv, pNv->curImage, tmp);
             LoadCursor(pScrn, tmp);
         }
     }
@@ -181,7 +178,8 @@ NVCursorInit(ScreenPtr pScreen)
 
     infoPtr->MaxWidth = MAX_CURS;
     infoPtr->MaxHeight = MAX_CURS;
-    infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP | HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_32; 
+    infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+                     HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_32; 
     infoPtr->SetCursorColors = NVSetCursorColors;
     infoPtr->SetCursorPosition = NVSetCursorPosition;
     infoPtr->LoadCursorImage = NVLoadCursorImage;

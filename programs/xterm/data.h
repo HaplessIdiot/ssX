@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.h /main/13 1996/11/24 17:35:40 rws $
- *	$XFree86: xc/programs/xterm/data.h,v 3.19 1999/08/21 13:49:01 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.h,v 3.20 1999/09/25 14:38:29 dawes Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -55,6 +55,7 @@ extern char *ptydev;
 extern char *ttydev;
 extern char *xterm_name;
 extern Boolean sunFunctionKeys;
+extern int hold_screen;
 
 #if OPT_HP_FUNC_KEYS
 extern Boolean hpFunctionKeys;

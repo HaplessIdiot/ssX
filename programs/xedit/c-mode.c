@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/c-mode.c,v 1.2 1999/08/21 13:48:47 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/c-mode.c,v 1.3 1999/08/28 09:01:20 dawes Exp $ */
 
 #include "xedit.h"
 #include <X11/IntrinsicP.h>
@@ -191,6 +191,9 @@ C_ModeEnd(Widget src)
 #endif
 #ifndef MIN
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
+#endif
+#ifndef ABS
+#define ABS(a)		((a) > 0 ? (a) : -(a))
 #endif
 
 static XawTextPosition
@@ -404,7 +407,7 @@ previous_anchor:
 	XawTextPosition kfrom, kto;
 	int delta = info->block->length - (info->right - info->left);
 
-	if (XawTextSourceAnchorAndEntity(w, position - info->block->length,
+	if (XawTextSourceAnchorAndEntity(w, position - MAX(1, ABS(delta)),
 					 &kanc, &kent) == False)
 	    kent = NULL;
 	else {
@@ -452,7 +455,7 @@ previous_anchor:
 	ent = parser.ent;
 	while (ent) {
 	    nent = ent->next;
-	    XawTextSourceAddEntity(parser.source, 0, 0, ent->position,
+	    XawTextSourceAddEntity(parser.source, 0, 0, NULL, ent->position,
 				   ent->length, ent->identifier);
 	    XtFree((XtPointer)ent);
 	    ent = nent;
@@ -553,7 +556,7 @@ C_Commit(C_Parser *parser)
 	    }
 	}
 	else
-	    XawTextSourceAddEntity(parser->source, 0, 0, position, length,
+	    XawTextSourceAddEntity(parser->source, 0, 0, NULL, position, length,
 				   quark);
     }
 }
@@ -692,9 +695,21 @@ C_Parse3(C_Parser *parser)
 			(void)C_Get(parser);
 		}
 		else {
-		    while ((ch = C_Parse4(parser)) != '\n' && ch != EOF)
+		    while ((ch = C_Parse4(parser)) != '\n' && ch != EOF) {
 			if (ch == '\\')
 			    (void)C_Get(parser);
+			else if (ch == '"' || ch == '\'') {
+			    int c;
+
+			    while ((c = C_Peek(parser)) != '\n' && c != EOF) {
+				(void)C_Get(parser);
+				if (c == '\\')
+				    (void)C_Get(parser);
+				else if (c == ch)
+				    break;
+			    }
+			}
+		    }
 		}
 		parser->end = parser->offset;
 		C_Commit(parser);

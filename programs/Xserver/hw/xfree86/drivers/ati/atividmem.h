@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.h,v 1.3 1999/07/06 11:38:40 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -65,7 +65,7 @@ typedef enum
     MEM_264_PSEUDO_EDO,
     MEM_264_SDRAM,
     MEM_264_SGRAM,
-    MEM_264_TYPE_6,
+    MEM_264_SGRAM32,
     MEM_264_TYPE_7
 } ATI264MemoryType;
 extern const char *ATIMemoryTypeNames_264xT[];

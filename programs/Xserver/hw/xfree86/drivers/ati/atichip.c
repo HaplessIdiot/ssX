@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.5 1999/07/06 11:38:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.6 1999/08/21 13:48:31 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -68,11 +68,12 @@ const char *ATIChipNames[] =
     "ATI 3D Rage Pro",
     "ATI 3D Rage LT Pro",
     "ATI 3D Rage XL or XC",
+    "ATI 3D Rage Mobility",
     "ATI unknown Mach64",
 };
 
 const char *ATIFoundryNames[] =
-    { "SGS", "NEC", "KCS", "UMC", "4", "5", "6", "UMC" };
+    { "SGS", "NEC", "KCS", "UMC", "TSMC", "5", "6", "UMC" };
 
 /*
  * ATIMach32ChipID --
@@ -313,10 +314,12 @@ ATIMach64ChipID
             pATI->LCDVBlendFIFOSize = 800;
             break;
 
+        case OldChipID('G', 'L'):
         case OldChipID('G', 'O'):
         case OldChipID('G', 'R'):
         case OldChipID('G', 'S'):
             pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'L'):
         case NewChipID('G', 'O'):
         case NewChipID('G', 'R'):
         case NewChipID('G', 'S'):
@@ -333,6 +336,28 @@ ATIMach64ChipID
         case NewChipID('G', 'N'):
             pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
             pATI->Chip = ATI_CHIP_264XL;
+            pATI->BusType = ATI_BUS_AGP;
+            pATI->LCDVBlendFIFOSize = 1024;
+            break;
+
+        case OldChipID('L', 'R'):
+        case OldChipID('L', 'S'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('L', 'R'):
+        case NewChipID('L', 'S'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_MOBILITY;
+            pATI->BusType = ATI_BUS_PCI;
+            pATI->LCDVBlendFIFOSize = 1024;
+            break;
+
+        case OldChipID('L', 'M'):
+        case OldChipID('L', 'N'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('L', 'M'):
+        case NewChipID('L', 'N'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_MOBILITY;
             pATI->BusType = ATI_BUS_AGP;
             pATI->LCDVBlendFIFOSize = 1024;
             break;
@@ -423,12 +448,19 @@ ATIChipID
         case OldChipID('L', 'P'):  case NewChipID('L', 'P'):
             return ATI_CHIP_264LTPRO;
 
+        case OldChipID('G', 'L'):  case NewChipID('G', 'L'):
         case OldChipID('G', 'M'):  case NewChipID('G', 'M'):
         case OldChipID('G', 'N'):  case NewChipID('G', 'N'):
         case OldChipID('G', 'O'):  case NewChipID('G', 'O'):
         case OldChipID('G', 'R'):  case NewChipID('G', 'R'):
         case OldChipID('G', 'S'):  case NewChipID('G', 'S'):
             return ATI_CHIP_264XL;
+
+        case OldChipID('L', 'M'):  case NewChipID('L', 'M'):
+        case OldChipID('L', 'N'):  case NewChipID('L', 'N'):
+        case OldChipID('L', 'R'):  case NewChipID('L', 'R'):
+        case OldChipID('L', 'S'):  case NewChipID('L', 'S'):
+            return ATI_CHIP_MOBILITY;
 
         default:
             return ATI_CHIP_Mach64;

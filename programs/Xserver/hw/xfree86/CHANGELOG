@@ -1,4 +1,68 @@
 XFree86 3.9.16b (26 September 1999)
+3217. Xterm patch #116 (#3280, Thomas Dickey).
+3216. Add new flags to the Xv adaptor type to indicate that it can be used
+      to render into window or pixmaps and do video or stills (#3279,
+      Mark Vojkovich).
+3215. Fix some MGA pci retry related corruption problems (#3278,
+      Mark Vojkovich).
+3214. Attempt to autoprobe the memory on all MGA cards except the 2164
+      (#3277, Mark Vojkovich).
+3213. APM driver updates, including bug fixes, 24bpp acceleration and
+      improved Rush support (#3276, Loic Grenie).
+3212. Some DGA fixes (3275, Loic Grenie).
+3211. Fix and document the CMAP_LOAD_EVEN_IF_OFFSCREEN option for the common
+      layer cmap code (#3274, Marc La France).
+3210. Some resource management speed improvements in Xinerama (#3273,
+      Mark Vojkovich).
+3209. Fix an off-by-one error in shadowfb's EnterVT wrapper (#3272,
+      Marc La France).
+3208. Fix ATI driver DAC handling for >8bpp TrueColor and add >8bpp
+      DirectColor support (#3271, Marc La France).
+3207. Add a hardcopy version of the Xv specs (#3270, Mark Vojkovich).
+3206. Integration of a bug fix by David Woodhouse in the Microtouch
+      driver. Correct a possible problem when configuring only one of
+      the two devices supported by the driver (#3269, Patrick Lecoanet).
+3205. Update XF86Conf.man to reflect the current state of the input drivers
+      (#3269, Patrick Lecoanet).
+3204. Add support for the ThruGlass touchscreens to the Microtouch driver
+      (#3269, Andreas Micklei).
+3203. Add SwapAxes and PortraitMode options to the Elographics and
+      Microtouch drivers (#3269, Patrick Lecoanet).
+3202. Port Microtouch and elographics drivers to the new module loading method
+      (#3269, Patrick Lecoanet).
+3201. Rewrite the way Xinerama handles visibility events.  Also fix some
+      problems with CoordModePrevious primitives drawn on the root window
+      (#3267, Mark Vojkovich).
+3200. Some Xaw and xedit updates.  The html-mode code is removed from xedit
+      (#3265, Paulo Cesar Pereira de Andrade).
+3199. Fix a problem with pScrn->rgbBits not being set in the correct place
+      in the tdfx driver (#3264, Scott Bertin).
+3198. Update ATI info for `XFree86 -scanpci` (#3263, Marc La France).
+3197. ATI driver changes:
+       - Rage XC & Rage XL fixes.
+       - Preliminary Rage Mobility support.
+       - Fix from Christian Lupien to disable TVOUT feature of 3D Rage
+         adapters.
+       - Work around vertical blending limitations with "shallow" modes by
+         doublescanning (accelerator CRTC) or multiscanning (VGA CRTC) them.
+       - Fix bug that did not map the VGA aperture for generic VGA support.
+      (#3260, Marc La France).
+3196. Warning fixes in miscrinit.c (#3260, Marc La France).
+3195. Rework mibank for maintenance reasons (#3260, 3281, Marc La France).
+3194. VT switching changes, implementing a framework for framebuffer layers
+      to be notified when an aperture is remapped at a different virtual
+      address during EnterVT, and improved DDX-independence for mibank,
+      and xf86SaveRestoreImage() no longer cares how the lower framebuffer
+      layers access pixmap pixels (#3260, Marc La France).
+3193. Remove scanpci's redundant check for "root".  It get in the way when
+      setting its setuid bit (#3260, Marc La France).
+3192. Add several acceleration functions to the tdfx driver, and fix some
+      compliance problems (#3259, Darryl Strauss).
+3191. i740 driver updates (#3256, Kurt Olsen).
+3190. Enable image writes in the nv driver for the TNT in 32 bit mode
+      (#3255, Jarno Paananen, Neil Burch).
+3189. Remove the last global variables form the nv driver (#3255,
+      Jarno Paananen).
 3188. Turn MGA soft reset stuff back on but modified so that it doesn't
       poll for fifos in case the PLLs aren't powered up (#3254,
       Mark Vojkovich).
@@ -8812,4 +8876,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.829 1999/09/06 11:27:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.830 1999/09/25 14:36:52 dawes Exp $

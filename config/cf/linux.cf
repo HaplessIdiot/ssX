@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.102 1999/09/06 11:27:13 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.103 1999/09/25 14:36:30 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -194,6 +194,13 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #  else
 #    define BuildXF86DRM            NO
 #  endif
+#endif
+
+/*
+ * The Rush extension support.
+ */
+#ifndef BuildXF86RushExt
+#define BuildXF86RushExt	YES
 #endif
 
 #ifndef LinuxFBDevSupport

@@ -1,8 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.19 1999/07/18 03:26:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.20 1999/08/28 09:00:58 dawes Exp $ */
 
 
 #include "apm.h"
 #include "xf86cmap.h"
+#include "shadowfb.h"
 #include "xf86Resources.h"
 
 #include "compiler.h"
@@ -84,9 +85,6 @@ static IsaChipsets ApmIsaChipsets[] = {
     {-1,		RES_UNDEFINED}
 };
 
-#ifdef XFree86LOADER
-#endif
-
 typedef enum {
     OPTION_SET_MCLK,
     OPTION_SW_CURSOR,
@@ -153,10 +151,13 @@ static const char *xaaSymbols[] = {
     "XAACursorInit",
     "XAADestroyInfoRec",
     "XAAInit",
+    "XAAPixmapIndex",
     "XAAQueryBestSize",
+    "XAAReverseBitOrder",
     "XAARestoreCursor",
     "XAAScreenIndex",
     "XAAStippleScanlineFuncMSBFirst",
+    "XAAGlyphScanlineFuncLSBFirst",
     "XAAWarpCursor",
     NULL
 };
@@ -987,6 +988,12 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
 
+    pApm->CurrentLayout.displayWidth	= pScrn->display->virtualX;
+    pApm->CurrentLayout.displayHeight	= pScrn->display->virtualY;
+    pApm->CurrentLayout.bitsPerPixel	= pScrn->bitsPerPixel;
+    pApm->CurrentLayout.bytesPerScanline= (pApm->CurrentLayout.displayWidth * pApm->CurrentLayout.bitsPerPixel) >> 3;
+    pApm->CurrentLayout.Scanlines	= (pScrn->videoRam << 10) / pApm->CurrentLayout.bytesPerScanline + 1;
+
     return TRUE;
 }
 
@@ -1299,15 +1306,15 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     {
 	int offset;
 
-	offset = (pScrn->displayWidth *
-		  pScrn->bitsPerPixel / 8)	>> 3;
+	offset = (pApm->CurrentLayout.displayWidth *
+		  pApm->CurrentLayout.bitsPerPixel / 8)	>> 3;
 	hwp->ModeReg.CRTC[0x13] = offset;
 	/* Bit 8 resides at CR1C bits 7:4. */
 	ApmReg->CRT[0x1C] = (offset & 0xf00) >> 4;
     }
 
     /* Set pixel depth. */
-    switch(pScrn->bitsPerPixel)
+    switch(pApm->CurrentLayout.bitsPerPixel)
     {
     case 4:
 	 ApmReg->EX[XR80] = 0x01;
@@ -1328,7 +1335,7 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	 ApmReg->EX[XR80] = 0x0F;
 	 break;
     default:
-	 FatalError("Unsupported bit depth %d\n", pScrn->bitsPerPixel);
+	 FatalError("Unsupported bit depth %d\n", pApm->CurrentLayout.bitsPerPixel);
 	 break;
     }
 
@@ -1383,7 +1390,7 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* Set up the RAMDAC registers. */
 
-    if (pScrn->bitsPerPixel > 8)
+    if (pApm->CurrentLayout.bitsPerPixel > 8)
 	/* Get rid of white border. */
 	hwp->ModeReg.Attribute[0x11] = 0x00;
     else
@@ -1522,8 +1529,8 @@ ApmRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     int width, height, Bpp, FBPitch;
     unsigned char *src, *dst;
 
-    Bpp = pScrn->bitsPerPixel >> 3;
-    FBPitch = pScrn->displayWidth * Bpp;
+    Bpp = pApm->CurrentLayout.bitsPerPixel >> 3;
+    FBPitch = pApm->CurrentLayout.displayWidth * Bpp;
 
     while(num--) {
 	width = (pbox->x2 - pbox->x1) * Bpp;
@@ -1565,6 +1572,8 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     APMDECL(pScrn);
     int			ret;
     unsigned char	*FbBase;
+
+    pApm->pScreen = pScreen;
 
     /* Map the chip memory and MMIO areas */
     if (pApm->noLinear) {
@@ -1621,7 +1630,7 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * miSetVisualTypes for each visual supported.
      */
 
-    if (pScrn->bitsPerPixel > 8) {
+    if (pApm->CurrentLayout.bitsPerPixel > 8) {
 	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
 				pScrn->defaultVisual))
 	    return FALSE;
@@ -1830,9 +1839,9 @@ ApmAdjustFrame(int scrnIndex, int x, int y, int flags)
     APMDECL(pScrn);
     int Base;
 
-    if (pScrn->bitsPerPixel == 24)
+    if (pApm->CurrentLayout.bitsPerPixel == 24)
 	x = (x + 3) & ~3;
-    Base = ((y * pScrn->displayWidth + x) * (pScrn->bitsPerPixel / 8)) >> 2;
+    Base = ((y * pApm->CurrentLayout.displayWidth + x) * (pApm->CurrentLayout.bitsPerPixel / 8)) >> 2;
     /*
      * These are the generic starting address registers.
      */

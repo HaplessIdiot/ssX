@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.1 1999/08/29 12:21:04 dawes Exp $ */
 /*
    Voodoo Banshee driver version 1.0.1
 
@@ -35,6 +35,9 @@
 #define SST_VGA0_LEGACY_DECODE          (1 << SST_VGA0_LEGACY_DECODE_SHIFT)
 #define SST_VGA0_ENABLE_DECODE          0
 #define SST_ENABLE_ALT_READBACK         0
+#define SST_VGA0_CLUT_SELECT_SHIFT      2
+#define SST_CLUT_SELECT_6BIT            0
+#define SST_CLUT_SELECT_8BIT            1
 #define SST_VGA0_CONFIG_READBACK_SHIFT  10
 #define SST_VIDEO_PROCESSOR_EN          BIT(0)
 #define SST_CURSOR_MODE_SHIFT           1

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.1 1999/07/06 11:38:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.2 1999/08/01 07:57:20 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -111,9 +111,17 @@ ATIUnlock
         pATI->LockData.crtc_gen_cntl = inl(pATI->CPIO_CRTC_GEN_CNTL) &
             ~(CRTC_EN | CRTC_LOCK_REGS);
         tmp = pATI->LockData.crtc_gen_cntl & ~CRTC_EXT_DISP_EN;
+        if (pATI->Chip >= ATI_CHIP_264XL)
+            tmp = (tmp & ~CRTC_INT_ENS_X) | CRTC_INT_ACKS_X;
         outl(pATI->CPIO_CRTC_GEN_CNTL, tmp | CRTC_EN);
         outl(pATI->CPIO_CRTC_GEN_CNTL, tmp);
         outl(pATI->CPIO_CRTC_GEN_CNTL, tmp | CRTC_EN);
+        if (pATI->Chip >= ATI_CHIP_264XL)
+        {
+            pATI->LockData.lcd_index = inl(pATI->CPIO_LCD_INDEX);
+            outl(pATI->CPIO_LCD_INDEX, pATI->LockData.lcd_index &
+                ~(LCD_MONDET_INT_EN | LCD_MONDET_INT));
+        }
 
         /* Ensure VGA aperture is enabled */
         outl(pATI->CPIO_DAC_CNTL, pATI->LockData.dac_cntl | DAC_VGA_ADR_EN);
@@ -312,5 +320,7 @@ ATILock
         outl(pATI->CPIO_DAC_CNTL, pATI->LockData.dac_cntl);
         if (pATI->Chip < ATI_CHIP_264CT)
             outl(pATI->CPIO_MEM_INFO, pATI->LockData.mem_info);
+        else if (pATI->Chip >= ATI_CHIP_264XL)
+            outl(pATI->CPIO_LCD_INDEX, pATI->LockData.lcd_index);
     }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.2 1999/07/10 12:17:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.3 1999/08/28 09:00:59 dawes Exp $ */
 
 
 
@@ -6,7 +6,7 @@
 #define curr16		((CARD16 *)(curr - 0x30))
 #define curr32		((CARD32 *)(curr - 0x30))
 #define check08(addr, val)						\
-    ((addr) >= 0x80 || (((addr)&0xF8) == 0x48) || curr08[addr] != (val))
+    ((addr) >= 0x80 || (((addr)&0xF8) == 0x48) || curr08[(addr)] != (val))
 #define check16(addr, val)						\
     ((addr) >= 0x80 || (((addr)&0xF8) == 0x48) || curr16[(addr) / 2] != (val)||\
 	((addr) == 0x50 && curr32[0x40 / 4] & DEC_QUICKSTART_ONSOURCE)||\
@@ -28,15 +28,15 @@
 #define RDXB_M(addr)     (*(volatile unsigned char  *)(pApm->MemMap+(addr)))
 #define RDXW_M(addr)     (*(volatile unsigned short *)(pApm->MemMap+(addr)))
 #define RDXL_M(addr)     (*(volatile unsigned int   *)(pApm->MemMap+(addr)))
-#define WRXB_M(addr,val) (void) (check08((addr), (val)) && \
-			(*(volatile unsigned char  *)(pApm->MemMap+(addr)) = (val),	\
-			curr08[MIN((addr), 0x80)] = (val)))
-#define WRXW_M(addr,val) (void) (check16((addr), (val)) && \
-			(*(volatile unsigned short *)(pApm->MemMap+(addr)) = (val),	\
-			curr16[MIN(((addr) / 2), 0x40)] = (val)))
-#define WRXL_M(addr,val) (void) (check32((addr), (val)) && \
-			(*(volatile unsigned int   *)(pApm->MemMap+(addr)) = (val),	\
-			curr32[MIN(((addr) / 4), 0x20)] = (val)))
+#define WRXB_M(addr,val)  do { if (check08((addr), (val))) { \
+			*(volatile unsigned char  *)(pApm->MemMap+(addr)) = (val);	\
+			curr08[MIN((addr), 0x80)] = (val); }} while (0)
+#define WRXW_M(addr,val)  do { if (check16((addr), (val))) { \
+			*(volatile unsigned short *)(pApm->MemMap+(addr)) = (val);	\
+			curr16[MIN(((addr) / 2), 0x40)] = (val); }} while (0)
+#define WRXL_M(addr,val)  do { if (check32((addr), (val))) { \
+			*(volatile unsigned int   *)(pApm->MemMap+(addr)) = (val);	\
+			curr32[MIN(((addr) / 4), 0x20)] = (val); }} while (0)
 
 /* IO port access to extended registers */
 #define RDXB_IOP(addr)     (wrinx(0x3c4, 0x1d, (addr) >> 2),inb(pApm->xbase + ((addr) & 3)))
@@ -126,17 +126,17 @@
 #define SETDDA_ERRORTERM(eterm)		WRXW(0x74, (eterm))
 #define SETDDA_ADSTEP(s1,s2)		WRXL(0x70, ((s2) << 16)|((s1) & 0xFFFF))
 
-#define SETCLIP_CTRL(ctrl)		WRXB(0x30, ctrl)
-#define SETCLIP_LEFT(x)			WRXW(0x38, x)
-#define SETCLIP_TOP(y)			WRXW(0x3A, y)
+#define SETCLIP_CTRL(ctrl)		WRXB(0x30, (ctrl))
+#define SETCLIP_LEFT(x)			WRXW(0x38, (x))
+#define SETCLIP_TOP(y)			WRXW(0x3A, (y))
 #define SETCLIP_LEFTTOP(x,y)		WRXL(0x38, ((y) << 16) | ((x) & 0xFFFF))
-#define SETCLIP_RIGHT(x)		WRXW(0x3C, x)
-#define SETCLIP_BOT(y)			WRXW(0x3E, y)
+#define SETCLIP_RIGHT(x)		WRXW(0x3C, (x))
+#define SETCLIP_BOT(y)			WRXW(0x3E, (y))
 #define SETCLIP_RIGHTBOT(x,y)		WRXL(0x3C, ((y) << 16) | ((x) & 0xFFFF))
 
 /* RASTER OPERATION REGISTER */
 /* P = pattern   S = source   D = destination */
-#define SETROP(rop)			WRXB(0x46, rop)
+#define SETROP(rop)			WRXB(0x46, (rop))
 #define ROP_P_and_S_and_D		0x80
 #define ROP_S_xor_D			0x66
 #define ROP_S				0xCC

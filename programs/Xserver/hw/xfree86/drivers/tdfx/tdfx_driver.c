@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.1 1999/08/29 12:21:03 dawes Exp $ */
 
 /*
  * Authors:
@@ -35,7 +35,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 /*
- * This server does not support these XFree86 4.0 features yet
+ * This server does not support these XFree 4.0 features yet
  * DDC1 & DDC2 (requires I2C)
  * shadowFb (if requested or acceleration is off)
  * Overlay planes
@@ -71,6 +71,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Drivers using the mi colourmap code need: */
 
 #include "micmap.h"
+
+/* Required for line biases */
+#include "miline.h"
 
 /* Drivers using cfb need: */
 
@@ -200,7 +203,7 @@ static const char *vgahwSymbols[] = {
     "vgaHWLock",
     "vgaHWUnlock",
     "vgaHWFreeHWRec",
-    "vgaHWSaveScreen",
+    "vgaHWSeqReset",
     "vgaHWHandleColormaps",
     0
 };
@@ -543,9 +546,9 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   if (xf86RegisterResources(pTDFX->pEnt->index, 0, ResNone))
       return FALSE;
   if (pTDFX->usePIO)
-    pScrn->racIoFlags = RAC_FB | RAC_COLORMAP;
+    pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
   else
-    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP;
+    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
 
   /* Set pScrn->monitor */
   pScrn->monitor = pScrn->confScreen->monitor;
@@ -569,8 +572,10 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   xf86PrintDepthBpp(pScrn);
 
   pScrn->rgbBits=8;
-  if (!xf86SetWeight(pScrn, defaultWeight, defaultWeight))
-    return FALSE;
+  if (pScrn->depth>8) {
+    if (!xf86SetWeight(pScrn, defaultWeight, defaultWeight))
+      return FALSE;
+  }
 
   if (!xf86SetDefaultVisual(pScrn, -1)) {
     return FALSE;
@@ -902,7 +907,6 @@ PrintRegisters(ScrnInfoPtr pScrn, TDFXRegPtr regs)
   ErrorF("VidCfg = %x versus %x\n",  pTDFX->readLong(pTDFX, VIDPROCCFG), regs->vidcfg);
   ErrorF("DACmode = %x versus %x\n", pTDFX->readLong(pTDFX, DACMODE), regs->dacmode);
   ErrorF("Vgainit0 = %x versus %x\n", pTDFX->readLong(pTDFX, VGAINIT0), regs->vgainit0);
-  ErrorF("Vgainit1 = %x versus %x\n", pTDFX->readLong(pTDFX, VGAINIT1), regs->vgainit1);
   ErrorF("DramInit0 = %x\n", pTDFX->readLong(pTDFX, DRAMINIT0));
   ErrorF("DramInit1 = %x\n", pTDFX->readLong(pTDFX, DRAMINIT1));
   ErrorF("VidPLL = %x versus %x\n", pTDFX->readLong(pTDFX, PLLCTRL0), regs->vidpll);
@@ -957,6 +961,8 @@ DoSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TDFXRegPtr tdfxReg, Bool saveFonts)
   tdfxReg->clip0max=TDFXReadLongMMIO(pTDFX, SST_2D_CLIP0MAX);
   tdfxReg->clip1min=TDFXReadLongMMIO(pTDFX, SST_2D_CLIP1MIN);
   tdfxReg->clip1max=TDFXReadLongMMIO(pTDFX, SST_2D_CLIP1MAX);
+  tdfxReg->srcbaseaddr=TDFXReadLongMMIO(pTDFX, SST_2D_SRCBASEADDR);
+  tdfxReg->dstbaseaddr=TDFXReadLongMMIO(pTDFX, SST_2D_DSTBASEADDR);
 }
 
 static void
@@ -1004,6 +1010,8 @@ DoRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TDFXRegPtr tdfxReg,
   TDFXWriteLongMMIO(pTDFX, SST_2D_CLIP1MAX, tdfxReg->clip1max);
   pTDFX->writeLong(pTDFX, VGAINIT0, tdfxReg->vgainit0);
   pTDFX->writeLong(pTDFX, VIDPROCCFG, tdfxReg->vidcfg);
+  TDFXWriteLongMMIO(pTDFX, SST_2D_SRCBASEADDR, tdfxReg->srcbaseaddr);
+  TDFXWriteLongMMIO(pTDFX, SST_2D_DSTBASEADDR, tdfxReg->dstbaseaddr);
 
   vgaHWProtect(pScrn, FALSE);
 
@@ -1141,6 +1149,8 @@ TDFXInitVGA(ScrnInfoPtr pScrn)
     tdfxReg->vgainit0 |= SST_VGA0_ENABLE_DECODE << SST_VGA0_LEGACY_DECODE_SHIFT;
   }
   tdfxReg->vgainit0 |= SST_ENABLE_ALT_READBACK << SST_VGA0_CONFIG_READBACK_SHIFT;
+  tdfxReg->vgainit0 |= SST_CLUT_SELECT_8BIT << SST_VGA0_CLUT_SELECT_SHIFT;
+
   tdfxReg->vgainit0 |= BIT(12);
 
   tdfxReg->vidcfg = SST_VIDEO_PROCESSOR_EN | SST_CURSOR_X11 | SST_DESKTOP_EN |
@@ -1340,6 +1350,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   vgaHWPtr hwp;
   TDFXPtr pTDFX;
   VisualPtr visual;
+  int maxy;
   BoxRec MemBox;
   RegionRec MemRegion;
 
@@ -1375,12 +1386,14 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   pTDFX->lowMemLoc=((pTDFX->lowMemLoc+pTDFX->stride-1)/pTDFX->stride)*pTDFX->stride; 
   pTDFX->fbOffset=pTDFX->lowMemLoc;
+  maxy=pScrn->virtualY+128;
   MemBox.y1 = pScrn->virtualY;
   MemBox.x1 = 0;
   MemBox.x2 = pScrn->displayWidth;
-  MemBox.y2 = MemBox.y1+128;
-  pTDFX->lowMemLoc += MemBox.y2*pTDFX->stride;
-  pTDFX->maxClip=(MemBox.x2&0xFFF)|((MemBox.y2&0xFFF)<<16);
+  MemBox.y2 = maxy;
+
+  pTDFX->lowMemLoc += maxy*pTDFX->stride;
+  pTDFX->maxClip=((pScrn->virtualX+1)&0xFFF) | (((maxy+1)&0xFFF)<<16);
 
   TDFXSave(pScrn);
   if (!TDFXModeInit(pScrn, pScrn->currentMode)) return FALSE;
@@ -1436,8 +1449,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     return FALSE;
   }
 
-  xf86SetBlackWhitePixels(pScreen);
-
   if (pScrn->bitsPerPixel>8) {
     visual = pScreen->visuals + pScreen->numVisuals;
     while (--visual >= pScreen->visuals) {
@@ -1452,10 +1463,37 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     }
   }
 
+  xf86SetBlackWhitePixels(pScreen);
+
+  TDFXDGAInit(pScreen);
+
+  REGION_INIT(pScreen, &MemRegion, &MemBox, 1);
+  if (!xf86InitFBManagerRegion(pScreen, &MemRegion)) {
+    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Failed to init memory manager\n");
+    REGION_UNINIT(pScreen, &MemRegion);
+    return FALSE;
+  }
+  REGION_UNINIT(pScreen, &MemRegion);
+
+  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
+  if (!pTDFX->NoAccel) {
+    if (!TDFXAccelInit(pScreen)) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		 "Hardware acceleration initialization failed\n");
+    }
+  }
+
   miInitializeBackingStore(pScreen);
   xf86SetBackingStore(pScreen);
 
   miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
+  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_SW_CURSOR, FALSE)) {
+    if (!TDFXCursorInit(pScreen)) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		 "Hardware cursor initialization failed\n");
+    }
+  }
 
   if (!miCreateDefColormap(pScreen)) return FALSE;
 
@@ -1470,14 +1508,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   }
 
   TDFXAdjustFrame(scrnIndex, 0, 0, 0);
-
-  REGION_INIT(pScreen, &MemRegion, &MemBox, 1);
-  if (!xf86InitFBManagerRegion(pScreen, &MemRegion)) {
-    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Failed to init memory manager\n");
-    REGION_UNINIT(pScreen, &MemRegion);
-    return FALSE;
-  }
-  REGION_UNINIT(pScreen, &MemRegion);
 
 #ifdef DPMSExtension
   xf86DPMSInit(pScreen, TDFXDisplayPowerManagementSet, 0);
@@ -1508,23 +1538,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     }
   }
 #endif
-
-  TDFXDGAInit(pScreen);
-
-  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
-  if (!pTDFX->NoAccel) {
-    if (!TDFXAccelInit(pScreen)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		 "Hardware acceleration initialization failed\n");
-    }
-  }
-
-  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_SW_CURSOR, FALSE)) {
-    if (!TDFXCursorInit(pScreen)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		 "Hardware cursor initialization failed\n");
-    }
-  }
 
   pScreen->SaveScreen = TDFXSaveScreen;
   pTDFX->CloseScreen = pScreen->CloseScreen;
@@ -1612,6 +1625,14 @@ TDFXCloseScreen(int scrnIndex, ScreenPtr pScreen)
   if (pTDFX->AccelInfoRec) XAADestroyInfoRec(pTDFX->AccelInfoRec);
   pTDFX->AccelInfoRec=0;
   if (pTDFX->DGAModes) xfree(pTDFX->DGAModes);
+  pTDFX->DGAModes=0;
+  if (pTDFX->scanlineColorExpandBuffers[0])
+    xfree(pTDFX->scanlineColorExpandBuffers[0]);
+  pTDFX->scanlineColorExpandBuffers[0]=0;
+  if (pTDFX->scanlineColorExpandBuffers[1])
+    xfree(pTDFX->scanlineColorExpandBuffers[1]);
+  pTDFX->scanlineColorExpandBuffers[1]=0;
+  
   pScrn->vtSema=FALSE;
 
   pScreen->CloseScreen = pTDFX->CloseScreen;
@@ -1639,12 +1660,45 @@ TDFXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
   return MODE_OK;
 }
 
-static Bool
-TDFXSaveScreen(ScreenPtr pScreen, Bool unblack)
+/* replacement of vgaHWBlankScreen(pScrn, unblank) which doesn't unblank
+ * the screen if it is already unblanked. */
+static void
+TDFXBlankScreen(ScrnInfoPtr pScrn, Bool unblank)
 {
-  TDFXTRACE("TDFXSaveScreen start\n");
-  return vgaHWSaveScreen(pScreen, unblack);
+  vgaHWPtr hwp = VGAHWPTR(pScrn);
+  unsigned char scrn;
+
+  TDFXTRACE("TDFXBlankScreen start\n");
+
+  scrn = hwp->readSeq(hwp, 0x01);
+
+  if (unblank) {
+    if((scrn & 0x20) == 0) return;
+    scrn &= ~0x20;                    /* enable screen */
+  } else {
+    scrn |= 0x20;                     /* blank screen */
+  }
+
+  vgaHWSeqReset(hwp, TRUE);
+  hwp->writeSeq(hwp, 0x01, scrn);     /* change mode */
+  vgaHWSeqReset(hwp, FALSE);
 }
+
+static Bool
+TDFXSaveScreen(ScreenPtr pScreen, Bool unblank)
+{
+  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+  TDFXTRACE("TDFXSaveScreen start\n");
+
+  if (unblank)
+    SetTimeSinceLastInputEvent();
+
+  if (pScrn->vtSema) {
+    TDFXBlankScreen(pScrn, unblank);
+  }
+  return TRUE;
+}                                                                             
 
 #ifdef DPMSExtension
 static void
