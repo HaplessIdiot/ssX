@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.4 1994/06/18 16:29:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.5 1994/06/19 11:08:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -331,10 +331,12 @@ vgaProbe()
 	rounding = Drivers[i]->ChipRounding;
 #endif /* XF86VGA16 */
 #endif /* MONOVGA */
+#if 0
 	for (j=0; j < vga256InfoRec.clocks; j++)
 	  for (k=j+1; k < vga256InfoRec.clocks; k++)
 	    if (vga256InfoRec.clock[j] == vga256InfoRec.clock[k])
 	      vga256InfoRec.clock[k] = 0;
+#endif
 
         if (xf86Verbose)
         {

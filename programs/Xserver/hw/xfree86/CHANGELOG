@@ -1,5 +1,7 @@
 XFree86 3.0Cb (16 July 1994)
-128. Support for #9GXE in S3 server (Robin Cutshaw).
+130. Updated xc/bug-report for XC fix-03.
+129. Don't mark duplicate clocks as zero in VGA servers.
+128. Support for #9GXE64 in S3 server (Robin Cutshaw).
 127. Tiled pixmap/stipple expansion for the S3 server (David Wexelblat).
 126. Tiled pixmap/stipple expansion for Mach8 and 8514 servers (Hans Nasten).
 125. P9000 updates.  Includes colour restoration fix, changes in Modes

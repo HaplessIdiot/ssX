@@ -1,4 +1,5 @@
 /* $XConsortium: xf86_ClkPr.c,v 1.1 94/03/28 21:25:28 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -143,10 +144,10 @@ finish:
 		InfoRec->clock[i] = (int)(0.5 +
                     (((float)knownclkvalue) * InfoRec->clock[knownclkindex]) / 
 	            (InfoRec->clock[i]));
-		/* Round to nearest 100KHz */
-		InfoRec->clock[i] += 50;
-		InfoRec->clock[i] /= 100;
-		InfoRec->clock[i] *= 100;
+		/* Round to nearest 10KHz */
+		InfoRec->clock[i] += 5;
+		InfoRec->clock[i] /= 10;
+		InfoRec->clock[i] *= 10;
 	    }
 	}
     }
