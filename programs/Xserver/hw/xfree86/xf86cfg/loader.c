@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.1 2000/10/20 14:59:05 alanh Exp $
  */
 #define LOADER_PRIVATE
 #include "loader.h"
@@ -227,9 +227,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86shmctl)
    SYMFUNC(xf86setjmp)
    SYMFUNC(xf86longjmp)
-#ifdef __alpha__
-   SYMFUNC(_bus_base)
-#endif
 
     SYMFUNC(xf86AddDriver)
     {0,0}
