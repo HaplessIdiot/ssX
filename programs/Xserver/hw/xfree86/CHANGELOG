@@ -1,4 +1,6 @@
 XFree86 4.0.1a (2 August 2000)
+ 474. i810 DRI updates (Jeff Hartmann).
+ 473. i810 driver updates (H. J. Lu).
  472. Save/restore the text mode colourmap for Solaris, to fix a blank
       screen problem on Solaris 8 after exiting the X server (#A.104,
       Richard Coley).
@@ -10910,4 +10912,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1253 2000/08/01 20:52:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1254 2000/08/01 23:38:46 dawes Exp $

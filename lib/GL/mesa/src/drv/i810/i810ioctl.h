@@ -23,6 +23,8 @@ void i810DDInitIoctlFuncs( GLcontext *ctx );
 
 void i810SwapBuffers( i810ContextPtr imesa );
 
+int i810_check_copy(int fd);
+
 GLbitfield i810Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 		      GLint cx, GLint cy, GLint cw, GLint ch );
 

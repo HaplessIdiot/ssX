@@ -45,7 +45,9 @@ static drmBufPtr i810_get_buffer_ioctl( i810ContextPtr imesa )
    buf->idx = dma.request_idx;
    buf->used = 0;
    buf->total = dma.request_size;
-   buf->address = (drmAddress)dma.virtual;
+
+   if(imesa->i810Screen->use_copy_buf != 1) 
+       buf->address = (drmAddress)dma.virtual;
    return buf;
 }
 
@@ -340,6 +342,16 @@ void i810FlushVerticesLocked( i810ContextPtr imesa )
 
    if (nbox > I810_NR_SAREA_CLIPRECTS)
       imesa->dirty |= I810_UPLOAD_CLIPRECTS;
+   
+   if(imesa->i810Screen->use_copy_buf == 1 && vertex.used) {
+      drm_i810_copy_t copy;
+      
+      copy.idx = buffer->idx;
+      copy.used = buffer->used;
+      copy.address = buffer->address;
+      ioctl(imesa->driFd, DRM_IOCTL_I810_COPY, &copy);
+   }
+
 
    imesa->sarea->vertex_prim = imesa->vertex_prim;
 
@@ -456,6 +468,11 @@ GLuint *i810AllocDwords( i810ContextPtr imesa, int dwords, GLuint prim )
    imesa->vertex_dma_buffer->used += dwords * 4;
 
    return start;
+}
+
+int i810_check_copy(int fd)
+{
+   return(ioctl(fd, DRM_IOCTL_I810_DOCOPY));
 }
 
 static void i810DDFlush( GLcontext *ctx )
