@@ -1,3 +1,6 @@
+XFree86 3.1.1b (19 February 1995)
+  9. Fix problem of attempting to include the VGAHELP extension in Xnest.
+
 XFree86 3.1.1a (12 February 1995)
   8. VGAHELP X server extension for tuning video modes (Kaleb Keithley).
   7. Fix libfont problem that can cause xfs to get into a loop (Jason Venner).
