@@ -2,13 +2,15 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:48:12 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.1 2002/05/31 15:12:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.2 2002/05/31 16:12:18 dawes Exp $
 
+#if DoLoadableServer
 #if !BuildModuleInSubdir
 #define IHaveModules
-#elif !defined(IHaveModules) && DoLoadableServer
+#elif !defined(IHaveModules)
 #define IHaveSubdirs
 SUBDIRS = module
+#endif
 #endif
 
 #include <Server.tmpl>
@@ -44,14 +46,12 @@ STIPPLEDEF = -DHAS_STIPPLE_CODE
 #endif
 #endif
 
-#if defined(XFree86Version) && defined(IHaveModules)
-#if DoLoadableServer
+#if defined(IHaveModules)
 XFMODSRC = cfbmodule.c
 XFMODOBJ = cfbmodule.o
 #endif
-#endif
 
-#if !(DoLoadableServer && defined(LinkDirectory))
+#if !(defined(IHaveModules) && defined(LinkDirectory))
 CFBCMAP = cfbcmap.o
 #endif
 

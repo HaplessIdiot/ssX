@@ -1,10 +1,12 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.2 2002/02/25 18:00:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.3 2002/05/31 18:12:36 dawes Exp $
 
+#if DoLoadableServer
 #if !BuildModuleInSubdir
 #define IHaveModules
-#elif !defined(IHaveModules) && DoLoadableServer
+#elif !defined(IHaveModules)
 #define IHaveSubdirs
 SUBDIRS = module
+#endif
 #endif
 
 #include <Server.tmpl>
@@ -27,7 +29,7 @@ SUBDIRS = module
 #include "../../../../../lib/GL/mesa/src/X/Imakefile.inc"
 #include "../../../../../lib/GL/mesa/src/Imakefile.inc"
 
-#if DoLoadableServer && defined(IHaveModules)
+#ifdef IHaveModules
         MSRCS = GLcoremodule.c
         MOBJS = GLcoremodule.o
 #endif
@@ -47,7 +49,7 @@ SUBDIRS = module
 
       DEFINES = $(GLX_DEFINES)
 
-#if DoLoadableServer && defined(IHaveModules)
+#ifdef IHaveModules
 ModuleObjectRule()
 
 DepLibraryModuleTarget(GLcore, $(DONES) $(OBJS),$(OBJS) $(XOBJS))
