@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.108 2001/04/03 22:22:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.109 2001/04/04 18:25:12 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -134,13 +134,13 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 /* Not used now */
 #ifndef BuildLatin2Fonts
-#define BuildLatin2Fonts	NO
+#define BuildLatin2Fonts	YES
 #endif
 #ifndef BuildCyrillicFonts
-#define BuildCyrillicFonts	NO
+#define BuildCyrillicFonts	YES
 #endif
 #ifndef UseKoi8RForCyrillic
-#define UseKoi8RForCyrillic	NO
+#define UseKoi8RForCyrillic	YES
 #endif
 /* Some bdf font generation details.  The scripts for this require perl. */
 #ifndef TruncateUCSFonts
@@ -151,6 +151,74 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef DerivedUCSFonts
 #define DerivedUCSFonts		HasPerl
+#endif
+/* These primarily control generation of derived 8-bit fonts. */
+#ifndef BuildUCSFonts
+#define BuildUCSFonts		YES
+#endif
+/* Setting BuildISO8859_1Fonts to NO may result in problems. */
+#ifndef BuildISO8859_1Fonts
+#define BuildISO8859_1Fonts	YES
+#endif
+#ifndef BuildISO8859_2Fonts
+#define BuildISO8859_2Fonts	YES
+#endif
+#ifndef BuildISO8859_3Fonts
+#define BuildISO8859_3Fonts	YES
+#endif
+#ifndef BuildISO8859_4Fonts
+#define BuildISO8859_4Fonts	YES
+#endif
+#ifndef BuildISO8859_5Fonts
+#define BuildISO8859_5Fonts	BuildCyrillicFonts
+#endif
+#ifndef BuildArabicFonts
+#define BuildArabicFonts	YES
+#endif
+#ifndef BuildISO8859_6Fonts
+#define BuildISO8859_6Fonts	BuildArabicFonts
+#endif
+#ifndef BuildGreekFonts
+#define BuildGreekFonts		YES
+#endif
+#ifndef BuildISO8859_7Fonts
+#define BuildISO8859_7Fonts	BuildGreekFonts
+#endif
+#ifndef BuildHebrewFonts
+#define BuildHebrewFonts	YES
+#endif
+#ifndef BuildISO8859_8Fonts
+#define BuildISO8859_8Fonts	BuildHebrewFonts
+#endif
+#ifndef BuildISO8859_9Fonts
+#define BuildISO8859_9Fonts	YES
+#endif
+#ifndef BuildISO8859_10Fonts
+#define BuildISO8859_10Fonts	YES
+#endif
+#ifndef BuildISO8859_13Fonts
+#define BuildISO8859_13Fonts	YES
+#endif
+#ifndef BuildISO8859_14Fonts
+#define BuildISO8859_14Fonts	YES
+#endif
+#ifndef BuildISO8859_15Fonts
+#define BuildISO8859_15Fonts	YES
+#endif
+#ifndef BuildKOI8_RFonts
+#define BuildKOI8_RFonts	BuildCyrillicFonts
+#endif
+#ifndef BuildJapaneseFonts
+#define BuildJapaneseFonts	YES
+#endif
+#ifndef BuildJISX0201Fonts
+#define BuildJISX0201Fonts	BuildJapaneseFonts
+#endif
+#ifndef BuildKoreanFonts
+#define BuildKoreanFonts	YES
+#endif
+#ifndef BuildChineseFonts
+#define BuildChineseFonts	YES
 #endif
 #ifndef HasXAudio
 #define HasXAudio		NO

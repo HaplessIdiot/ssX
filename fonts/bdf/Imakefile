@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/fonts/bdf/Imakefile,v 3.1 1997/04/17 12:55:42 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/Imakefile,v 3.2 2001/01/17 17:33:09 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags /* as nothing */
 
@@ -16,11 +16,8 @@ DPI100DIR = 100dpi
 #if BuildCyrillicFonts
 CYRILLICDIR = cyrillic
 #endif
-#if BuildLatin2Fonts
-LATIN2DIR = latin2
-#endif
 
-        SUBDIRS = misc $(DPI75DIR) $(DPI100DIR) $(CYRILLICDIR) $(LATIN2DIR)
+        SUBDIRS = misc $(DPI75DIR) $(DPI100DIR) $(CYRILLICDIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

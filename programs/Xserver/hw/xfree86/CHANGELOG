@@ -1,4 +1,10 @@
-XFree86 4.0.99.2 (?? March 2001)
+XFree86 4.0.99.2 (?? April 2001)
+ 328. Handle build-time generation of 8 bit fonts from the UCS versions,
+      rework the way this is organised, and allow some better control over
+      which fonts are built/installed (David Dawes).
+ 327. Add UCS versions of most of the 75dpi and 100dpi bdf fonts, and generate
+      8-bit subsets of them.  Also, remove the now-redundant latin2
+      bdf font directories (#4512 Markus Kuhn).
  326. Add support for Trident CyberBladeXP and CyberBladeXPm (mobile)
       (Alan Hourihane, Robert V Fleisig).
  325. Add XKB descriptions for the extra keys on an IBM Rapid Access keyboard
@@ -12796,4 +12802,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1661 2001/04/04 12:46:33 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1662 2001/04/04 13:09:37 alanh Exp $
