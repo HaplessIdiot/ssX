@@ -1,4 +1,7 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 767. Fix xtest failures for the savage driver's zero width lines by
+      removing the TwoPointLine and using only the Bresenham version
+      (reported by Nicolas Joly).
  766. Fix refresh rate setting for 845G/856G systems that don't support the
       Intel-specific refresh rate BIOS calls (Bugzilla #1106, David Dawes,
       reported by Lucian Precup).
@@ -18569,7 +18572,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3110 2004/01/25 01:12:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3111 2004/01/25 16:57:45 dawes Exp $
 
 
 
