@@ -1,5 +1,5 @@
 /* ftstdlib.h -- modified for XFree86. */
-/* $XFree86: xc/lib/font/FreeType/module/ftstdlib.h,v 1.1 2003/11/20 02:35:40 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/module/ftstdlib.h,v 1.2tsi Exp $ */
 
 /***************************************************************************/
 /*                                                                         */
@@ -164,28 +164,33 @@
 #define ft_isdigit   xf86isdigit
 #define ft_isxdigit  xf86isxdigit
 
-#define ft_memcmp   xf86memcmp
-#define ft_memcpy   xf86memcpy
-#define ft_memmove  xf86memmove
-#define ft_memset   xf86memset
-#define ft_strcat   xf86strcat
-#define ft_strcmp   xf86strcmp
-#define ft_strcpy   xf86strcpy
-#define ft_strlen   xf86strlen
-#define ft_strncmp  xf86strncmp
-#define ft_strncpy  xf86strncpy
-#define ft_strrchr  xf86strrchr
+#define ft_memcmp    xf86memcmp
+#define ft_memcpy    xf86memcpy
+#define ft_memmove   xf86memmove
+#define ft_memset    xf86memset
+#define ft_strcat    xf86strcat
+#define ft_strcmp    xf86strcmp
+#define ft_strcpy    xf86strcpy
+#define ft_strlen    xf86strlen
+#define ft_strncmp   xf86strncmp
+#define ft_strncpy   xf86strncpy
+#define ft_strrchr   xf86strrchr
 
-#define ft_sprintf  xf86sprintf
+#define ft_sprintf   xf86sprintf
 
-#define ft_qsort  xf86qsort
-#define ft_exit   xf86exit
+#define ft_qsort     xf86qsort
+#define ft_exit      xf86exit
 
-#define ft_atol   xf86atol
+#define ft_atol      xf86atol
 
-#define ft_jmp_buf  jmp_buf
-#define ft_setjmp   setjmp
-#define ft_longjmp  longjmp
+#define ft_jmp_buf   jmp_buf
+#define ft_setjmp    setjmp
+#define ft_longjmp   longjmp
+
+#undef  memcpy
+#define memcpy       xf86memcpy
+#undef  memset
+#define memset       xf86memset
 
 #endif /* FONTMODULE */
 

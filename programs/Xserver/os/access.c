@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.56 2004/05/06 21:10:58 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.57tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -474,7 +474,6 @@ DefineSelf (int fd)
 	{
 	    host->family = FamilyLocalHost;
 	    host->len = 0;
-	    acopy("", host->addr, 0);
 	    host->next = selfhosts;
 	    selfhosts = host;
 	}
@@ -610,7 +609,6 @@ DefineLocalHost:
 	{
 	    host->family = FamilyLocalHost;
 	    host->len = 0;
-	    acopy("", host->addr, 0);
 	    host->next = selfhosts;
 	    selfhosts = host;
 	}
@@ -1015,7 +1013,6 @@ DefineSelf (int fd)
 	{
 	    host->family = FamilyLocalHost;
 	    host->len = 0;
-	    acopy("", host->addr, 0);
 	    host->next = selfhosts;
 	    selfhosts = host;
 	}
