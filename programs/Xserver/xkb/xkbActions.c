@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.10 2002/12/20 20:18:35 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbActions.c,v 3.11 2003/02/13 15:36:48 dawes Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -933,13 +933,6 @@ unsigned	mods,mask,oldCoreState = 0,oldCorePrevState = 0;
     ev.u.keyButtonPointer.rootX = x;
     ev.u.keyButtonPointer.rootY = y;
 
-    mask= XkbSARedirectVModsMask(&pAction->redirect);
-    mods= XkbSARedirectVMods(&pAction->redirect);
-    if (mask)	XkbVirtualModsToReal(xkbi->desc,mask,&mask);
-    if (mods)	XkbVirtualModsToReal(xkbi->desc,mods,&mods);
-    mask|= pAction->redirect.mods_mask;
-    mods|= pAction->redirect.mods;
-
     if (filter->keycode==0) {		/* initial press */
 	if ((pAction->redirect.new_key<xkbi->desc->min_key_code)||
 	    (pAction->redirect.new_key>xkbi->desc->max_key_code)) {
@@ -954,6 +947,13 @@ unsigned	mods,mask,oldCoreState = 0,oldCorePrevState = 0;
 
 	ev.u.u.type = KeyPress;
 	ev.u.u.detail = pAction->redirect.new_key;
+
+        mask= XkbSARedirectVModsMask(&pAction->redirect);
+        mods= XkbSARedirectVMods(&pAction->redirect);
+        if (mask) XkbVirtualModsToReal(xkbi->desc,mask,&mask);
+        if (mods) XkbVirtualModsToReal(xkbi->desc,mods,&mods);
+        mask|= pAction->redirect.mods_mask;
+        mods|= pAction->redirect.mods;
 
 	if ( mask || mods ) {
 	    old= xkbi->state;
@@ -986,6 +986,13 @@ unsigned	mods,mask,oldCoreState = 0,oldCorePrevState = 0;
 	ev.u.u.type = KeyRelease;
 	ev.u.u.detail = filter->upAction.redirect.new_key;
 
+        mask= XkbSARedirectVModsMask(&filter->upAction.redirect);
+        mods= XkbSARedirectVMods(&filter->upAction.redirect);
+        if (mask) XkbVirtualModsToReal(xkbi->desc,mask,&mask);
+        if (mods) XkbVirtualModsToReal(xkbi->desc,mods,&mods);
+        mask|= filter->upAction.redirect.mods_mask;
+        mods|= filter->upAction.redirect.mods;
+
 	if ( mask || mods ) {
 	    old= xkbi->state;
 	    oldCoreState= xkbi->device->key->state;
@@ -1015,7 +1022,7 @@ unsigned	mods,mask,oldCoreState = 0,oldCorePrevState = 0;
 	filter->keycode= 0;
 	filter->active= 0;
     }
-    return 1;
+    return 0;
 }
 
 static int
