@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.293 2000/06/17 00:02:02 martin Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.294 2000/06/17 01:40:39 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -324,18 +324,25 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 # ifndef XFShadowFB
 #  define XFShadowFB            YES
 # endif
-
-/* int10 module (otherwise it won't build) */
-# ifndef XF86Int10
-#  define XF86Int10		YES
+/* XAA module */
+# ifndef XF86XAA
+#  define XF86XAA               YES
+# endif
+/* ramdac module */
+# ifndef XF86Ramdac
+#  define XF86Ramdac            YES
 # endif
 /* RAC (Resource Access Control) module */
 # ifndef XF86RAC
 #  define XF86RAC		YES
 # endif
+/* int10 module */
+# ifndef XF86Int10
+#  define XF86Int10		YES
+# endif
 
 # ifndef XF86CardDrivers
-#  define XF86CardDrivers      	newport
+#  define XF86CardDrivers      	XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif
 

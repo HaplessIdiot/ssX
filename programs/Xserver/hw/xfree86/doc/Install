@@ -1,4 +1,4 @@
-                  Installation Details for XFree86[tm] 4.0
+                 Installation Details for XFree86[tm] 4.0.1
 
                           The XFree86 Project, Inc
 
@@ -6,11 +6,11 @@
 
                                   Abstract
 
-     This document contains information about installing XFree86 4.0.
+     This document contains information about installing XFree86 4.0.1.
 
 1.  Introduction
 
-This document contains information about installing XFree86 4.0 binary dis-
+This document contains information about installing XFree86 4.0.1 binary dis-
 tributions as provided by The XFree86 Project.  The installation procedures
 for binary distributions provided by others may be different.
 
@@ -23,17 +23,18 @@ Together with the binary distributions, we provide a customised version of
 GNU tar called "extract", and an installation script.  We recommend that
 these be used to install the binary distributions.
 
-2.  How to get the XFree86 4.0 binary distributions
+2.  How to get the XFree86 4.0.1 binary distributions
 
-We, The XFree86 Project, provide XFree86 4.0 binaries for a range of operat-
-ing systems at our ftp site <URL:ftp://ftp.xfree86.org/pub/XFree86/4.0/bina-
-ries/>.  Our ftp site is also mirrored by many sites around the world.  There
-is a sub-directory for each OS/platform that we have binaries for.  The first
-thing you need to do is to decide which of these suits you.  In most cases,
-the choice is straightforward.  In some cases (e.g., Linux) there may be a
-number of choices depending on what architecture or libc version you are
-using.  We recommend that you first download the Xinstall.sh script, and run
-it as follows to find out which binary distribution you should download.
+We, The XFree86 Project, provide XFree86 4.0.1 binaries for a range of oper-
+ating systems at our ftp site
+<URL:ftp://ftp.xfree86.org/pub/XFree86/4.0.1/binaries/>.  Our ftp site is
+also mirrored by many sites around the world.  There is a sub-directory for
+each OS/platform that we have binaries for.  The first thing you need to do
+is to decide which of these suits you.  In most cases, the choice is
+straightforward.  In some cases (e.g., Linux) there may be a number of
+choices depending on what architecture or libc version you are using.  We
+recommend that you first download the Xinstall.sh script, and run it as fol-
+lows to find out which binary distribution you should download.
 
      sh Xinstall.sh -check
 
@@ -99,14 +100,14 @@ NOTES:
 If you miss some and want to install them later, you can do so by following
 the appropriate part of the section that describes manual installation.
 
-3.  Installing XFree86 4.0 using the Xinstall.sh script
+3.  Installing XFree86 4.0.1 using the Xinstall.sh script
 
-We strongly recommend that our XFree86 4.0 binary distributions be installed
-using the Xinstall.sh script that we provide.  The main reason that we make
-this recommendation is that there are a lot of steps in the manual installa-
-tion process, and those steps can vary according to the situation.  There is,
-however, a description of the manual installation process for the most common
-cases below for those who might need it.
+We strongly recommend that our XFree86 4.0.1 binary distributions be
+installed using the Xinstall.sh script that we provide.  The main reason that
+we make this recommendation is that there are a lot of steps in the manual
+installation process, and those steps can vary according to the situation.
+There is, however, a description of the manual installation process for the
+most common cases below for those who might need it.
 
 Put all of the downloaded files into a single directory (choose some tempo-
 rary location with enough space).  Become the super user (root), cd to that
@@ -206,7 +207,7 @@ later that you need it, you can create it easily by running:
 
 The next step is to configure the X server.  That is covered in detail in an
 as-yet unwritten document :-(.  In the meantime, there are two ways to create
-a basic X server configuration file for XFree86 4.0.  One is to run the
+a basic X server configuration file for XFree86 4.0.1.  One is to run the
 xf86config utility.  Another is to use the new -configure X server option:
 
      XFree86 -configure
@@ -220,11 +221,11 @@ old XF86_* and/or XF98_* X server binaries from /usr/X11R6/bin.
 After the X server configuration is done, it may be advisable to reboot,
 especially if you run xdm (or equivalent) or the font server (xfs).
 
-4.  Installing XFree86 4.0 manually
+4.  Installing XFree86 4.0.1 manually
 
-This section describes how to manually install the XFree86 4.0 binary distri-
-butions.  You should only use this method if you know what you're doing.  The
-information here covers some common cases, but not every possible case.
+This section describes how to manually install the XFree86 4.0.1 binary dis-
+tributions.  You should only use this method if you know what you're doing.
+The information here covers some common cases, but not every possible case.
 
 Put all of the downloaded files into a single directory (choose some tempo-
 rary location with enough space).  Become the super user (root).  All of the

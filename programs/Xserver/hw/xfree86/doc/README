@@ -1,4 +1,4 @@
-                         README for XFree86[tm] 4.0
+                        README for XFree86[tm] 4.0.1
 
                           The XFree86 Project, Inc
 
@@ -9,9 +9,9 @@
      XFree86 is a port of X11R6.4 that supports several UNIX(R) and
      UNIX-like operating systems on Intel and other platforms.
 
-1.  What is XFree86 4.0?
+1.  What is XFree86 4.0.1?
 
-XFree86 4.0 is the first
+XFree86 4.0.1 is the first
  full release of the new XFree86 4 series.  The road to XFree86 4 began in
 mid 1997, with serious work starting in early 1998.  The first pre-4.0 snap-
 shot was released in mid 1999, and 4.0 was released in early 2000.  A lot has
@@ -47,29 +47,29 @@ mended that you join the XFree86 development team
 <URL:http://www.xfree86.org:/developer.html>.  That way you will have access
 to the latest source and to other developers.
 
-3.  How to get XFree86 4.0
+3.  How to get XFree86 4.0.1
 
-XFree86 4.0 can be found at the XFree86 ftp server
-<URL:ftp://ftp.xfree86.org/pub/XFree86/4.0/>, and at mirrors of this server.
-Information about obtaining and installing binary distributions of this
-release can be found in the Installation Document.  Information about obtain-
-ing the release in source form is given below.
+XFree86 4.0.1 can be found at the XFree86 ftp server
+<URL:ftp://ftp.xfree86.org/pub/XFree86/4.0.1/>, and at mirrors of this
+server.  Information about obtaining and installing binary distributions of
+this release can be found in the Installation Document.  Information about
+obtaining the release in source form is given below.
 
-The source for version 4.0 is split into three tarballs: X400src-1.tgz,
-X400src-2.tgz, X400src-3.tgz.  The first contains everything except the fonts
+The source for version 4.0.1 is split into three tarballs: X401src-1.tgz,
+X401src-2.tgz, X401src-3.tgz.  The first contains everything except the fonts
 and general X11 documentation.  It is sufficient for building XFree86 is you
 already have a set of fonts.  The second contains the fonts and the source
 for the general X11 documentation.  The third contains the general X11 docu-
 mentation in hardcopy format.
 
-A source patch relative to version 3.9.18 is also available.  Because of its
-size, it is split into two parts.  The patch files are 3.9.18-4.0.diff1.gz
-and 3.9.18-4.0.diff2.gz.  These patches should be applied to a clean 3.9.18
-source tree, working from the directory containing the xc/ directory.  The
-patches should be applied by running:
+A source patch relative to version 4.0 is also available.  Because of its
+size, it is split into two parts.  The patch files are 4.0-4.0.1.diff1.gz and
+4.0-4.0.1.diff2.gz.  These patches should be applied to a clean 4.0 source
+tree, working from the directory containing the xc/ directory.  The patches
+should be applied by running:
 
-     gunzip < 3.9.18-4.0.diff1.gz | patch -p0 -E
-     gunzip < 3.9.18-4.0.diff2.gz | patch -p0 -E
+     gunzip < 4.0-4.0.1.diff1.gz | patch -p0 -E
+     gunzip < 4.0-4.0.1.diff2.gz | patch -p0 -E
 
 The contrib part of the distribution has now been folded into the main source
 tree, so a separate contrib tarball is no longer required.

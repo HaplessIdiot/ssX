@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.10 2000/03/18 17:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.11 2000/06/17 00:03:25 martin Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -87,10 +87,12 @@ TDFXFirstSync(ScrnInfoPtr pScrn) {
   TDFXPtr pTDFX = TDFXPTR(pScrn);
 
   if (!pTDFX->syncDone) {
+#ifdef XF86DRI
     if (pTDFX->directRenderingEnabled) {
       DRILock(screenInfo.screens[pScrn->scrnIndex], 0);
       TDFXSwapContextPrivate(screenInfo.screens[pScrn->scrnIndex]);
     }
+#endif
     pTDFX->syncDone=TRUE;
     pTDFX->sync(pScrn);
   }
@@ -103,10 +105,12 @@ TDFXCheckSync(ScrnInfoPtr pScrn) {
   if (pTDFX->syncDone) {
     pTDFX->sync(pScrn);
     pTDFX->syncDone=FALSE;
+#ifdef XF86DRI
     if (pTDFX->directRenderingEnabled) {
       TDFXLostContext(screenInfo.screens[pScrn->scrnIndex]);
       DRIUnlock(screenInfo.screens[pScrn->scrnIndex]);
     }
+#endif
   }
 }
 

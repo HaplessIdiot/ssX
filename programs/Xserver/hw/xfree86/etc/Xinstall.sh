@@ -1,9 +1,10 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.10 2000/04/04 19:25:17 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.11 2000/06/13 02:28:35 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
+# Copyright © 2000 by VA Linux Systems, Inc.
 # Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
 #
 # This script should be used to install XFree86 4.0.

@@ -1,5 +1,5 @@
 // $TOG: xfree86 /main/5 1997/08/02 10:11:05 kaleb $
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.10 2000/02/12 02:54:46 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.11 2000/06/15 20:50:04 dawes Exp $
 default xkb_keycodes "xfree86" {
 
     minimum= 8;
@@ -91,7 +91,7 @@ default xkb_keycodes "xfree86" {
     <SYRQ> =  92;
     <SCLK> =  78;
     <PAUS> = 110;
-    <BRK>  = 114
+    <BRK>  = 114;
 
     <INS>  = 106;
     <HOME> =  97;

@@ -1,8 +1,8 @@
-                               DRI Users Guide
+                               DRI User Guide
 
                            Precision Insight, Inc.
 
-                                6 March 2000
+                                 18 May 2000
 
 1.  Preamble
 
@@ -24,8 +24,9 @@ The XFree86 Project.  Linux is a registered trademark of Linus Torvalds.
 Intel is a registered trademark of Intel Corporation.  3Dlabs, GLINT, and
 Oxygen are either registered trademarks or trademarks of 3Dlabs Inc. Ltd.
 3dfx, Voodoo3, Voodoo4, and Voodoo5 are registered trademarks of 3dfx Inter-
-active, Incorporated.  All other trademarks mentioned are the property of
-their respective owners.
+active, Incorporated.  Matrox is a registered trademark of Matrox Electronic
+Systems Ltd.  ATI Rage is a registered trademark of ATI Technologies, Inc.
+All other trademarks mentioned are the property of their respective owners.
 
 2.  Introduction
 
@@ -39,9 +40,11 @@ which may occur.  Readers should have a basic understanding of Linux, X and
 OpenGL.  See the resources section at the end for more documentation and
 software downloads.
 
-This document does not cover compilation or installation of XFree86 4.0; it
+This document does not cover compilation or installation of XFree86 4.0.  It
 is assumed that you've already installed a Linux distribution which includes
-XFree86 4.0.
+XFree86 4.0 or that you're an experienced Linux developer who has compiled
+the DRI for himself.  DRI download, compilation and installation instructions
+can be found at http://dri.sourceforge.net/DRIcompile.html
 
 3.  Supported Hardware
 
@@ -49,7 +52,8 @@ XFree86 4.0.
 CPUs.  Support for Alpha, and perhaps other CPUs, should be available in the
 future.
 
-XFree86 4.0 includes 3D acceleration for the following graphics hardware:
+XFree86 4.0 (or later versions) includes 3D acceleration for the following
+graphics hardware:
 
    o 3dfx:
 
@@ -70,15 +74,41 @@ XFree86 4.0 includes 3D acceleration for the following graphics hardware:
      There are many configurations of 3dfx cards on the market.  Not all have
      been tested.
 
-   o 3Dlabs Oxygen GMX 2000 (MX/Gamma based)
+   o Matrox:
 
-Support for the following hardware is underway:
+        o Matrox G200
+
+        o Matrox G400
 
    o Intel i810
 
-   o Matrox G400
+        o i810
+
+        o i810-dc100
+
+        o i810e
 
    o ATI Rage 128
+
+        o Rage Fury AGP
+
+        o Rage Magnum AGP
+
+        o XPERT 2000 AGP
+
+        o XPERT 128 AGP
+
+        o XPERT 99 AGP
+
+        o All-in-Wonder 128 AGP
+
+     The PCI versions of these cards also have minimal support.  Note that
+     there are also Rage 128 Pro based boards on the market, and these are
+     not yet supported.
+
+   o 3Dlabs Oxygen GMX 2000 (MX/Gamma based)
+
+Support for the following hardware is underway:
 
    o 3dfx Voodoo4 and Voodoo5 series
 
@@ -86,8 +116,12 @@ Support for the following hardware is underway:
 
    o XFree86 4.0
 
-   o Linux kernel 2.2.x (later kernels will be supported in the near future,
-     and may be required for some chipsets)
+   o For the 3dfx Voodoo3 driver, Linux kernel 2.2.x (later kernels will be
+     supported in the near future, and may be required for some chipsets)
+
+   o For the Matrox G200/G400, Linux kernel 2.3.51, with AGP support
+
+   o For the Intel i810, Linux kernel 2.3.99-pre6, with AGP support
 
 Mesa 3.3 (beta) is included with XFree86 4.0; there is no need to download
 the stand-alone Mesa distribution.
@@ -99,20 +133,16 @@ eration support.
 
 5.1  Kernel module
 
-Before starting the X server you must install the correct kernel module for
-your hardware.
+XFree86 4.0.1 added automatic kernel module loading to the X server.  On
+Linux, the X server uses modprobe to load kernel modules.  The DRM kernel
+modules should be in /lib/modules/KERNEL-VERSION/misc/ for automatic loading
+to work.
 
-This can be done by executing the following as root:
+Optionally, DRM kernel modules can be loaded manually with insmod prior to
+starting the X server.
 
-             insmod XXX/drivername.o
-
-where XXX is the directory containing the module.
-
-For example, on 3dfx hardware, the kernel module is called tdfx.o so you you
-would type insmod XXX/tdfx.o
-
-Verify that the kernel module was installed by checking that /proc/dri/0
-exists.
+You can verify that the kernel module was installed with lsmod, checking the
+X server startup log, and checking that /proc/dri/0 exists.
 
 5.2  XF86Config file
 
@@ -151,7 +181,7 @@ You have to be careful that the group id (8000 in this example) is unique.
 Then you would use the following DRI section:
 
              Section "DRI"
-                  Group 8000
+                  Group "xf86dri"
                   Mode 0660
              EndSection
 
@@ -165,13 +195,41 @@ the DRI section, please also remove the /dev/dri directory with the rm -rf
 /dev/dri command.]
 
 Next, the Device section of the XF86Config file must describe your particular
-hardware.  For example, here's the Device section for a 3dfx Voodoo3 card:
+hardware.
+
+For example, here's the Device section for a 3dfx Voodoo3 card:
 
              Section "Device"
                  Identifier  "Voodoo3"
                  VendorName  "3dfx"
                  Driver      "tdfx"
              EndSection
+
+Here's the Device section for a Matrox G400 card:
+
+          Section "Device"
+              Identifier  "G400"
+              VendorName  "Matrox"
+              Driver      "mga"
+              VideoRam    32768
+          EndSection
+
+Here's the Device section for an ATI Rage 128 card:
+
+          Section "Device"
+              Identifier  "Rage128"
+              VendorName  "ATI"
+              Driver      "r128"
+          EndSection
+
+Here's the Device section for an Intel i810 motherboard:
+
+          Section "Device"
+              Identifier  "i810"
+              VendorName  "Intel"
+              Driver      "i810"
+              VideoRam    10000
+          EndSection
 
 Finally, the Screen section of the XF86Config file may have to be specially
 configured as well.  For example, Voodoo3 hardware acceleration is only
@@ -188,6 +246,10 @@ available in 16bpp mode.
                ViewPort    0 0
               EndSubsection
              EndSection
+
+Replace Voodoo3 with G400 for Matrox G400.
+
+Replace Voodoo3 with Rage128 for ATI Rage 128.
 
 If there are errors in the XF86Config file, the X server will log errors to
 the file /var/log/XFree86.0.log
@@ -253,7 +315,22 @@ If you get an error message such as
 if means that the libGL.so.1 file is not the right location.  Proceed to the
 trouble shooting section.
 
-6.4  glxinfo
+6.4  libOSMesa.so
+
+OSMesa (Off-Screen Mesa) is an interface and driver for rendering 3D images
+into a user-allocated block of memory rather than an on-screen window.
+
+libOSMesa.so implements the OSMesa interface and must be linked with your
+application if you want to use the OSMesa functions.  You must also link with
+libGL.so.  For example:
+
+             gcc osdemo.c -L/usr/X11R6/lib -lOSMesa -lGLU -lGL -o osdemo
+
+In stand-alone Mesa this interface was compiled into the monolithic libGL.so
+(formerly libMesaGL.so) library.  In XFree86 4.0.1 and later this interface
+is implemented in a separate library.
+
+6.5  glxinfo
 
 glxinfo is a useful program for checking which version of libGL you're using
 as well as which DRI-based driver.  Simply type glxinfo and examine the
@@ -281,7 +358,7 @@ glxinfo also lists all of the GLX-enhanced visuals available.  Here you can
 determine which visuals may have depth buffers, stencil buffers, accumulation
 buffers, etc.
 
-6.5  Environment Variables
+6.6  Environment Variables
 
 The libGL.so library recognizes three environment variables.  Normally, none
 of them need to be defined.  If you're using the csh or tcsh shells, type
@@ -289,17 +366,20 @@ setenv VARNAME value to set the variable.  Otherwise, if you're using sh or
 bash, type export VARNAME=value.
 
   1.  LIBGL_DEBUG, if defined will cause libGL.so to print error and diagnos-
-      tic messages.  This can help to solve problems.
+      tic messages.  This can help to solve problems.  Setting LIBGL_DEBUG to
+      verbose may provide additional information.
 
   2.  LIBGL_ALWAYS_INDIRECT, if defined this will force libGL.so to always
       use indirect rendering instead of hardware acceleration.  This can be
       useful to isolate rendering errors.
 
-  3.  LIBGL_DRIVERS_DIR can be used to override the default directory which
-      is searched for 3D drivers.  In a typical XFree86 installation, the 3D
-      drivers should be in /usr/X11R6/lib/modules/dri/.  This environment
-      variable can be used to specify a different directory.  Note that this
-      feature is disabled for set-uid programs.
+  3.  LIBGL_DRIVERS_PATH can be used to override the default directories
+      which are searched for 3D drivers.  The value is one or more paths sep-
+      arated by colons.  In a typical XFree86 installation, the 3D drivers
+      should be in /usr/X11R6/lib/modules/dri/ and LIBGL_DRIVERS_PATH need
+      not be defined.  Note that this feature is disabled for set-uid pro-
+      grams.  This variable replaces the LIBGL_DRIVERS_DIR env var used in
+      XFree86 4.0.
 
 Mesa-based drivers (this includes most of the drivers listed above) also
 observe many of the existing Mesa environment variables.  These include the
@@ -434,13 +514,47 @@ bleshooting.
 
 8.1  3dfx Voodoo3
 
-8.1.1  Troubleshooting
+8.1.1  Configuration
+
+Your XF86Config file's device section must specify the tdfx device:
+
+             Section "Device"
+                 Identifier  "Voodoo3"
+                 VendorName  "3dfx"
+                 Driver      "tdfx"
+             EndSection
+
+The Screen section should then reference the Voodoo3 device:
+
+          Section "Screen"
+              Identifier  "Screen 1"
+              Device      "Voodoo3"
+              Monitor     "High Res Monitor"
+              DefaultDepth 16
+              Subsection "Display"
+               Depth       16
+               Modes       "1280x1024" "1024x768" "800x600" "640x480"
+               ViewPort    0 0
+              EndSubsection
+             EndSection
+
+The kernel module for the Voodoo3 is named tdfx.o and should be installed in
+/lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
+Xserver if needed.
+
+The DRI 3D driver for the Voodoo3 should be in /usr/X11R6/lib/mod-
+ules/dri/tdfx_dri.so.  This will be automatically loaded by libGL.so.
+
+8.1.2  Troubleshooting
 
    o 3D acceleration for Voodoo3 is only supported in the 16 bit/pixel screen
      mode.  Use xdpyinfo to verify that all your visuals are depth 16.  Edit
      your XF86Config file if needed.
 
-8.1.2  Performance
+   o The /dev/3dfx device is not used for DRI; it's only for Glide on older
+     3dfx hardware.
+
+8.1.3  Performance
 
    o Normally, buffer swapping in double-buffered applications is synchro-
      nized to your monitor's refresh rate.  This may be overridden by setting
@@ -454,16 +568,162 @@ bleshooting.
      Performer Town demo, may become sluggish when falling back to software
      rendering to render in that mode.
 
-8.1.3  Known Problems
+8.1.4  Known Problems
+
+   o Glide cannot be used directly; only OpenGL-based programs are supported
+     on the Voodoo3.
 
    o SSystem has problems because of poorly set near and far clipping planes.
      The office.unc Performer model also suffers from this problem.
 
 8.2  Intel i810
 
-8.3  Matrox G400
+8.2.1  Configuration
+
+Your XF86Config file's device section must specify the i810 device, and spec-
+ify a usable amount of video ram to reserve.
+
+             Section "Device"
+                 Identifier  "i810"
+                 VendorName  "Intel"
+                 Driver      "i810"
+              VideoRam    10000
+             EndSection
+
+The Screen section should then reference the i810 device:
+
+          Section "Screen"
+              Identifier  "Screen 1"
+              Device      "i810"
+              Monitor     "High Res Monitor"
+              DefaultDepth 16
+              Subsection "Display"
+               Depth       16
+               Modes       "1280x1024" "1024x768" "800x600" "640x480"
+               ViewPort    0 0
+              EndSubsection
+             EndSection
+
+The kernel module for the i810 is named i810.o and should be installed in
+/lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
+Xserver if needed.
+
+The DRI 3D driver for the i810 should be in /usr/X11R6/lib/mod-
+ules/dri/i810_dri.so.  This will be automatically loaded by libGL.so.
+
+8.2.2  Troubleshooting
+
+   o 3D acceleration for the i810 is only available in the 16 bit/pixel
+     screen mode at this time.  32bpp acceleration is not supported by this
+     hardware.  Use xdpyinfo to verify that all your visuals are depth 16.
+     Edit your XF86Config file if needed.
+
+   o The i810 uses system ram for video and 3d graphics.  The X server will
+     ordinarily reserve 4mb of ram for graphics, which is too little for an
+     effective 3d setup.  To tell the driver to use a larger amount, specify
+     a VideoRam option in the Device section of your XF86Config file.  A num-
+     ber between 10000 and 16384 seems adequate for most requirements.  If
+     too little memory is available for DMA buffers, back and depth buffers
+     and textures, direct rendering will be disabled.
+
+8.3  Matrox G200 and G400
+
+8.3.1  Configuration
+
+Your XF86Config file's device section must specify the mga device:
+
+             Section "Device"
+                 Identifier  "MGA"
+                 VendorName  "Matrox"
+                 Driver      "mga"
+             EndSection
+
+The Screen section should then reference the MGA device:
+
+          Section "Screen"
+              Identifier  "Screen 1"
+              Device      "MGA"
+              Monitor     "High Res Monitor"
+              DefaultDepth 16
+              Subsection "Display"
+               Depth       16
+               Modes       "1280x1024" "1024x768" "800x600" "640x480"
+               ViewPort    0 0
+              EndSubsection
+             EndSection
+
+The kernel module for the G200/G400 is named mga.o and should be installed in
+/lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
+Xserver if needed.
+
+The DRI 3D driver for the G200/G400 should be in /usr/X11R6/lib/mod-
+ules/dri/mga_dri.so.  This will be automatically loaded by libGL.so.
+
+8.3.2  Troubleshooting
+
+   o 3D acceleration for the G200 and G400 is only supported in the 16
+     bit/pixel screen mode at this time.  32bpp will be supported in the
+     future.  Use xdpyinfo to verify that all your visuals are depth 16.
+     Edit your XF86Config file if needed.
+
+8.3.3  Performance
+
+No data at this time.
+
+8.3.4  Known Problems
+
+   o Multitexture is currently disabled on the G400 to work around a hardware
+     lockup bug.  This should be restored in a subsequent release.
 
 8.4  ATI Rage 128
+
+8.4.1  Configuration
+
+Your XF86Config file's device section must specify the r128 device:
+
+             Section "Device"
+                 Identifier  "Rage128"
+                 VendorName  "ATI"
+                 Driver      "r128"
+             EndSection
+
+The Screen section should then reference the Rage 128 device:
+
+          Section "Screen"
+              Identifier  "Screen 1"
+              Device      "Rage128"
+              Monitor     "High Res Monitor"
+              DefaultDepth 16
+              Subsection "Display"
+               Depth       16
+               Modes       "1280x1024" "1024x768" "800x600" "640x480"
+               ViewPort    0 0
+              EndSubsection
+              Subsection "Display"
+               Depth       32
+               Modes       "1280x1024" "1024x768" "800x600" "640x480"
+               ViewPort    0 0
+              EndSubsection
+             EndSection
+
+The kernel module for the Rage 128 is named r128.o and should be installed in
+/lib/modules/KERNEL-VERSION/misc/.  It will be automatically loaded by the
+Xserver if needed.
+
+The DRI 3D driver for the Rage 128 should be in /usr/X11R6/lib/mod-
+ules/dri/r128_dri.so.  This will be automatically loaded by libGL.so.
+
+You may also set your screen depth to 32 for 32bpp mode.
+
+8.4.2  Performance
+
+While PCI Rage 128 based cards are supported, they do not yet support PCI
+GART, so they will not perform as well as their AGP counterparts.
+
+8.4.3  Known Problems
+
+DGA is not yet supported in the ATI Rage 128 X server.  This feature will be
+added in a future release.
 
 8.5  3DLabs Oxygen GMX 2000
 
@@ -503,7 +763,40 @@ When you run multiple GL applications at once you may notice poor time slic-
 ing.  This is due to an interaction problem with the Linux scheduler which
 will be addressed in the future.
 
-9.5  Bug Database
+9.5  libGL.so and dlopen()
+
+A number of popular OpenGL applications on Linux (such as Quake3, HereticII,
+Heavy Gear 2, etc) dynamically open the libGL.so library at runtime with
+dlopen(), rather than linking with -lGL at compile/link time.
+
+If dynamic loading of libGL.so is not implemented carefully, there can be a
+number of serious problems.  Here are the things to be careful of in your
+application:
+
+   o Specify the RTLD_GLOBAL flag to dlopen().  If you don't do this then
+     you'll likely see a runtime error message complaining that _glapi_Con-
+     text is undefined when libGL.so tries to open a hardware-specific
+     driver.  Without this flag, nested opening of dynamic libraries does not
+     work.
+
+   o Do not close the library with dlclose() until after XCloseDisplay() has
+     been called.  When libGL.so initializes itself it registers several
+     callbacks functions with Xlib.  When XCloseDisplay() is called those
+     callback functions are called.  If libGL.so has already been unloaded
+     with dlclose() this will cause a segmentation fault.
+
+   o Your application should link with -lpthread.  On Linux, libGL.so uses
+     the pthreads library in order to provide thread safety.  There is appar-
+     ently a bug in the dlopen()/dlclose() code which causes crashes if the
+     library uses pthreads but the parent application doesn't.  The only
+     known work-around is to link the application with -lpthread.
+
+Some applications don't yet incorporate these procedures and may fail.  For
+example, changing the graphics settings in some video games will expose this
+problem.  The DRI developers are working with game vendors to prevent this
+problem in the future.
+
+9.6  Bug Database
 
 The DRI bug database which includes bugs related to specific drivers is at
 the SourceForge DRI Bug Database
@@ -531,16 +824,18 @@ forge.net/resources/resources.html
    o Visit the DRI project on SourceForge.net for the latest development news
      about the DRI and 3D drivers.
 
+   o The DRI Compilation Guide explains how to download, compile and install
+     the DRI for yourself.
+
 10.3  Support
 
    o The DRI-users mailing list at SourceForge is a forum for people to dis-
      cuss DRI problems.
 
-   o XXX IHV support?
+   o In the future there may be IHV and Linux vendor support resources for
+     the DRI.
 
-   o XXX Linux distro support?
-
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.4 2000/03/31 20:13:22 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.5 2000/06/17 00:03:17 martin Exp $
 
 
 $XFree86$
