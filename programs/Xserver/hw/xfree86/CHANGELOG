@@ -1,4 +1,8 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 628. OS/2 fixes:
+       - Unable to connect to a font server.
+       - SIGFPE in GLX.
+      (Bugzila #920, Frank Giessler).
  627. Add a missing entry to big5hkscs-0.enc (Bugzilla #917, Jungshik Shin).
  626. Update libfreetype-xtt2 to version 1.1:
        - Fixed erroneous method of making up italic bitmap.
@@ -18271,7 +18275,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2996 2003/11/29 01:37:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2997 2003/11/29 01:44:24 dawes Exp $
 
 
 
