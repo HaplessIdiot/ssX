@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 747. Allow xdm's chooser to be installed into a directory other than LIBDIR
+      (#6033, Luke Mewburn).
  746. Add XKB description for the Logitech Access keyboard (#6026,
       Michael Geddes).
  745. Fix typo in computing xterm's relative font size (Jess Thrysoee).
@@ -18517,7 +18519,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3089 2004/01/09 00:10:27 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3090 2004/01/09 00:16:03 dawes Exp $
 
 
 
