@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.1 2001/01/08 01:07:27 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.2 2001/03/21 16:14:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -51,6 +51,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define PCI_CHIP_RADEON_QE	0x5145
 #define PCI_CHIP_RADEON_QF	0x5146
 #define PCI_CHIP_RADEON_QG	0x5147
+#define PCI_CHIP_RADEON_VE     0x5159
 #endif
 
 
@@ -122,6 +123,7 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
    case PCI_CHIP_RADEON_QE:
    case PCI_CHIP_RADEON_QF:
    case PCI_CHIP_RADEON_QG:
+   case PCI_CHIP_RADEON_VE:
       radeonScreen->chipset = RADEON_CARD_TYPE_RADEON;
       break;
    default:

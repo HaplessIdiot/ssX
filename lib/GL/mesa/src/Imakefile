@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.24 2001/03/23 20:56:32 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.25 2001/04/03 02:29:33 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -27,7 +27,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
 #if GlxBuiltInTdfx
-    TDFX_DEFS = -DFX
+ TDFX_DEFINES = -DFX
 #endif
 
 #ifdef i386Architecture
@@ -39,11 +39,11 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #include "Imakefile.inc"
 
 #ifdef UseCompaqMathLibrary
-      MATHDEF = -DCCPML
+ MATH_DEFINES = -DCCPML
 #endif
 
-      DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS) \
-		$(MESA_ASM_DEFS) $(MATHDEF)
+      DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFINES) \
+		$(MESA_ASM_DEFINES) $(MATH_DEFINES)
      INCLUDES = -I$(INCLUDESRC) -I$(XINCLUDESRC) -I$(EXTINCSRC) \
 		-I$(MESASRCDIR)/src -I$(GLXLIBSRC)/dri
          SRCS = $(COREMESASRCS)

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.16 2001/03/23 20:56:33 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.17 2001/04/03 02:29:34 dawes Exp $
 
 /*
  * Only need SharedLib build unless OSMesa lib is built, or driver is built
@@ -28,7 +28,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #define NeedToLinkMesaSrc
 #include "Imakefile.inc"
 
-      DEFINES = $(ALLOC_DEFINES) GlxDefines /*-DFX*/ $(MESA_ASM_DEFS)
+      DEFINES = $(ALLOC_DEFINES) GlxDefines $(MESA_ASM_DEFINES)
      INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC) -I$(MESASRCDIR)/src \
 		-I$(MESASRCDIR)/src/X86
 
@@ -86,4 +86,3 @@ ObjectFromAsmSource(katmai_xform_raw4, NullParameter)
 #endif
 
 DependTarget()
-

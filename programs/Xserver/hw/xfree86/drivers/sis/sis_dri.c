@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.8 2000/12/02 01:16:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.12 2001/04/19 12:40:33 alanh Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -80,17 +80,17 @@ SISInitVisualConfigs(ScreenPtr pScreen)
   case 32:
     numConfigs = (useZ16)?8:16;
 
-    if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
-                           numConfigs))) {
+    if (!(pConfigs = (__GLXvisualConfig*)xcalloc(sizeof(__GLXvisualConfig),
+						   numConfigs))) {
       return FALSE;
     }
-    if (!(pSISConfigs = (SISConfigPrivPtr)xnfcalloc(sizeof(SISConfigPrivRec),
-                            numConfigs))) {
+    if (!(pSISConfigs = (SISConfigPrivPtr)xcalloc(sizeof(SISConfigPrivRec),
+						    numConfigs))) {
       xfree(pConfigs);
       return FALSE;
     }
-    if (!(pSISConfigPtrs = (SISConfigPrivPtr*)xnfcalloc(sizeof(SISConfigPrivPtr),
-                              numConfigs))) {
+    if (!(pSISConfigPtrs = (SISConfigPrivPtr*)xcalloc(sizeof(SISConfigPrivPtr),
+							  numConfigs))) {
       xfree(pConfigs);
       xfree(pSISConfigs);
       return FALSE;
@@ -162,7 +162,7 @@ SISInitVisualConfigs(ScreenPtr pScreen)
     }
     if (i != numConfigs) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-                 "[drm] Incorrect initialization of visuals\n");
+                 "[dri] Incorrect initialization of visuals.  Disabling DRI.\n");
       return FALSE;
     }
     break;
@@ -182,6 +182,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   SISPtr pSIS = SISPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   SISDRIPtr pSISDRI;
+  drmVersionPtr version;
 
    /* Check that the GLX, DRI, and DRM modules have been loaded by testing
     * for canonical symbols in each module. */
@@ -190,7 +191,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
    if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
    if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "SISDRIScreenInit failed (libdri.a too old)\n");
+                 "[dri] SISDRIScreenInit failed (libdri.a too old)\n");
       return FALSE;
    }
      
@@ -200,7 +201,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
       DRIQueryVersion(&major, &minor, &patch);
       if (major != 3 || minor != 1 || patch < 0) {
          xf86DrvMsg(pScreen->myNum, X_ERROR,
-                    "[drm] SISDRIScreenInit failed (DRI version = %d.%d.%d, expected 3.1.x).  Disabling DRI.\n",
+                    "[dri] SISDRIScreenInit failed because of a version mismatch.\n"
+                    "[dri] libDRI version is %d.%d.%d but version 4.0.x is needed.\n"
+                    "[dri] Disabling DRI.\n",
                     major, minor, patch);
          return FALSE;
       }
@@ -250,7 +253,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->SAREASize = SAREA_MAX;
 #endif
 
-  if (!(pSISDRI = (SISDRIPtr)xnfcalloc(sizeof(SISDRIRec),1))) {
+  if (!(pSISDRI = (SISDRIPtr)xcalloc(sizeof(SISDRIRec),1))) {
     DRIDestroyInfoRec(pSIS->pDRIInfo);
     pSIS->pDRIInfo=0;
     return FALSE;
@@ -267,6 +270,8 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
   if (!DRIScreenInit(pScreen, pDRIInfo, &pSIS->drmSubFD)) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+                   "[dri] DRIScreenInit failed.  Disabling DRI.\n");
     xfree(pDRIInfo->devPrivate);
     pDRIInfo->devPrivate=0;
     DRIDestroyInfoRec(pSIS->pDRIInfo);
@@ -274,6 +279,28 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     pSIS->drmSubFD = -1;
     return FALSE;
   }
+
+#if 000
+  /* XXX Check DRM kernel version here */
+  version = drmGetVersion(info->drmFD);
+  if (version) {
+    if (version->version_major != 1 ||
+      version->version_minor < 0) {
+      /* incompatible drm version */
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "[dri] SISDRIScreenInit failed because of a version mismatch.\n"
+                 "[dri] sis.o kernel module version is %d.%d.%d but version 1.0.x is needed.\n"
+                 "[dri] Disabling the DRI.\n",
+                 version->version_major,
+                 version->version_minor,
+                 version->version_patchlevel);
+      drmFreeVersion(version);
+      R128DRICloseScreen(pScreen);
+      return FALSE;
+    }
+    drmFreeVersion(version);
+  }
+#endif
 
   pSISDRI->regs.size = SISIOMAPSIZE;
   pSISDRI->regs.map = 0;
@@ -373,7 +400,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     SISDRICloseScreen(pScreen);
     return FALSE;
   }
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "visual configs initialized\n" );
+  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[dri] visual configs initialized.\n" );
 
   return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.19 2001/03/21 19:46:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.20 2001/04/10 16:08:00 dawes Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -355,7 +355,7 @@ static void MGAWaitForIdleDMA( ScrnInfoPtr pScrn )
 	 return;
 
       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
-		  "Idle timed out, resetting engine...\n" );
+		  "[dri] Idle timed out, resetting engine...\n" );
 
       drmMGAEngineReset( pMga->drmFD );
    }
@@ -919,7 +919,7 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
    if ( !xf86LoaderCheckSymbol( "drmAvailable" ) )		return FALSE;
    if ( !xf86LoaderCheckSymbol( "DRIQueryVersion" ) ) {
       xf86DrvMsg( pScreen->myNum, X_ERROR,
-		  "MGADRIScreenInit failed (libdri.a too old)\n" );
+		  "[dri] MGADRIScreenInit failed (libdri.a too old)\n" );
       return FALSE;
    }
 
@@ -927,11 +927,11 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
    {
       int major, minor, patch;
       DRIQueryVersion( &major, &minor, &patch );
-      if ( major != 4 || minor < 0) {
+      if ( major != 4 || minor < 0 ) {
          xf86DrvMsg( pScreen->myNum, X_ERROR,
-		     "[drm] MGADRIScreenInit failed "
-		     "(DRI version = %d.%d.%d, expected 4.0.x).  "
-		     "Disabling DRI.\n",
+		     "[dri] MGADRIScreenInit failed because of a version mismatch.\n"
+		     "[dri] libDRI version = %d.%d.%d but version 4.0.x is needed.\n"
+		     "[dri] Disabling the DRI.\n",
 		     major, minor, patch );
          return FALSE;
       }
@@ -944,14 +944,14 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
    if ( (pScrn->bitsPerPixel / 8) != 2 &&
 	(pScrn->bitsPerPixel / 8) != 4 ) {
       xf86DrvMsg( pScreen->myNum, X_ERROR,
-		  "[drm] Direct rendering only supported in 16 and 32 bpp modes\n" );
+		  "[dri] Direct rendering only supported in 16 and 32 bpp modes\n" );
       return FALSE;
    }
 
    pDRIInfo = DRICreateInfoRec();
    if ( !pDRIInfo ) {
       xf86DrvMsg( pScreen->myNum, X_ERROR,
-		  "[drm] DRICreateInfoRec() failed\n" );
+		  "[dri] DRICreateInfoRec() failed\n" );
       return FALSE;
    }
    pMga->pDRIInfo = pDRIInfo;
@@ -1059,7 +1059,7 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
       DRIDestroyInfoRec( pMga->pDRIInfo );
       pMga->pDRIInfo = 0;
       xf86DrvMsg( pScreen->myNum, X_ERROR,
-		  "[drm] DRIScreenInit Failed\n" );
+		  "[drm] DRIScreenInit failed.  Disabling DRI.\n" );
       return FALSE;
    }
 
@@ -1068,12 +1068,12 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
       drmVersionPtr version = drmGetVersion(pMga->drmFD);
       if ( version ) {
          if ( version->version_major != 3 ||
-	      version->version_minor < 0) {
+	      version->version_minor < 0 ) {
             /* incompatible drm version */
             xf86DrvMsg( pScreen->myNum, X_ERROR,
-			"[drm] MGADRIScreenInit failed "
-			"(DRM version = %d.%d.%d, expected 3.0.x).  "
-			"Disabling DRI.\n",
+			"[dri] MGADRIScreenInit failed because of a version mismatch.\n"
+			"[dri] mga.o kernel module version is %d.%d.%d but version 3.0.x is needed.\n"
+			"[dri] Disabling DRI.\n",
 			version->version_major,
 			version->version_minor,
 			version->version_patchlevel );
@@ -1117,7 +1117,7 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
       DRICloseScreen( pScreen );
       return FALSE;
    }
-   xf86DrvMsg( pScrn->scrnIndex, X_INFO, "visual configs initialized\n" );
+   xf86DrvMsg( pScrn->scrnIndex, X_INFO, "[dri] visual configs initialized\n" );
 
    return TRUE;
 }

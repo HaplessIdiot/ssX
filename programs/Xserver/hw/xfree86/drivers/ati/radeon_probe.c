@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.6 2001/01/06 20:19:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.7 2001/04/01 14:00:10 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -78,6 +78,7 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RADEON_QE, "ATI Radeon QE (AGP)" },
     { PCI_CHIP_RADEON_QF, "ATI Radeon QF (AGP)" },
     { PCI_CHIP_RADEON_QG, "ATI Radeon QG (AGP)" },
+    { PCI_CHIP_RADEON_VE, "ATI Radeon VE (AGP)" },
     { -1,                 NULL }
 };
 
@@ -86,6 +87,7 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_RADEON_QE, PCI_CHIP_RADEON_QE, RES_SHARED_VGA },
     { PCI_CHIP_RADEON_QF, PCI_CHIP_RADEON_QF, RES_SHARED_VGA },
     { PCI_CHIP_RADEON_QG, PCI_CHIP_RADEON_QG, RES_SHARED_VGA },
+    { PCI_CHIP_RADEON_VE, PCI_CHIP_RADEON_VE, RES_SHARED_VGA },
     { -1,                 -1,                 RES_UNDEFINED }
 };
 

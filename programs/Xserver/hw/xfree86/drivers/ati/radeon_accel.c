@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.11 2001/03/21 17:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.13 2001/03/28 20:08:22 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -238,8 +238,13 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
     clock_cntl_index = INREG(RADEON_CLOCK_CNTL_INDEX);
     mclk_cntl        = INPLL(pScrn, RADEON_MCLK_CNTL);
 
-    /* FIXME: Remove magic numbers! */
-    OUTPLL(RADEON_MCLK_CNTL, (mclk_cntl | 0x003f0000));
+    OUTPLL(RADEON_MCLK_CNTL, (mclk_cntl |
+			      RADEON_FORCEON_MCLKA |
+			      RADEON_FORCEON_MCLKB |
+			      RADEON_FORCEON_YCLKA |
+			      RADEON_FORCEON_YCLKB |
+			      RADEON_FORCEON_MC |
+			      RADEON_FORCEON_AIC));
 
     rbbm_soft_reset   = INREG(RADEON_RBBM_SOFT_RESET);
 

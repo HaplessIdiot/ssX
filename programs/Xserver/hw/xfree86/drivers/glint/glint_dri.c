@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.25 2001/03/28 11:10:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.26 2001/04/10 16:08:00 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -345,7 +345,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
     if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "GLINTDRIScreenInit failed (libdri.a too old)\n");
+                 "[dri] GLINTDRIScreenInit failed (libdri.a too old)\n");
       return FALSE;
     }
 
@@ -355,7 +355,9 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
        DRIQueryVersion(&major, &minor, &patch);
        if (major != 4 || minor < 0) {
           xf86DrvMsg(pScreen->myNum, X_ERROR,
-                     "GLINTDRIScreenInit failed (DRI version = %d.%d.%d, expected 4.0.x).  Disabling DRI.\n",
+                     "[dri] GLINTDRIScreenInit failed because of a version mismatch.\n"
+                     "[dri] libDRI version is %d.%d.%d but version 4.0.x is needed.\n"
+                     "[dri] Disabling DRI.\n",
                      major, minor, patch);
           return FALSE;
        }
@@ -446,10 +448,12 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
                 version->version_minor < 0) {
                 /* incompatible drm version */
                 xf86DrvMsg(pScreen->myNum, X_ERROR,
-                           "GLINTDRIScreenInit failed (DRM version = %d.%d.%d, expected 1.0.x).  Disabling DRI.\n",
-                           version->version_major,
-                           version->version_minor,
-                           version->version_patchlevel);
+                    "[dri] GLINTDRIScreenInit failed because of a version mismatch.\n"
+                    "[dri] gamma.o kernel module version is %d.%d.%d but version 1.0.x is needed.\n"
+                    "[dri] Disabling DRI.\n",
+                    version->version_major,
+                    version->version_minor,
+                    version->version_patchlevel);
                 GLINTDRICloseScreen(pScreen);
                 drmFreeVersion(version);
                 return FALSE;
@@ -622,7 +626,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	DRICloseScreen(pScreen);
 	return FALSE;
     }
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "visual configs initialized\n" );
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[dri] visual configs initialized.\n" );
 
     return TRUE;
 }

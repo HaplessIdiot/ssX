@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.11 2001/04/10 16:07:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.12 2001/04/16 15:02:11 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -52,6 +52,12 @@
 #include "GL/glxtokens.h"
 #include "sarea.h"
 
+#if defined(__alpha__)
+# define PCIGART_ENABLED
+#else
+# undef PCIGART_ENABLED
+#endif
+
 /* ?? HACK - for now, put this here... */
 /* ?? Alpha - this may need to be a variable to handle UP1x00 vs TITAN */
 #if defined(__alpha__)
@@ -78,6 +84,9 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
     case 8:  /* 8bpp mode is not support */
     case 15: /* FIXME */
     case 24: /* FIXME */
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+		   "[dri] RADEONInitVisualConfigs failed (depth %d not supported).  "
+		   "Disabling DRI.\n", info->CurrentLayout.pixel_code);
 	return FALSE;
 
 #define RADEON_USE_ACCUM   1
@@ -265,7 +274,7 @@ static Bool RADEONCreateContext(ScreenPtr pScreen, VisualPtr visual,
 		  DRM_REMOVABLE,
 		  &ctx_info->sarea_handle) < 0) {
         xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "[DRI] could not create private sarea for ctx id (%d)\n",
+		   "[dri] could not create private sarea for ctx id (%d)\n",
 		   (int)hwContext);
         return FALSE;
     }
@@ -273,7 +282,7 @@ static Bool RADEONCreateContext(ScreenPtr pScreen, VisualPtr visual,
     if (drmAddContextPrivateMapping(info->drmFD, hwContext,
 				    ctx_info->sarea_handle) < 0) {
         xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "[DRI] could not associate private sarea to ctx id (%d)\n",
+		   "[dri] could not associate private sarea to ctx id (%d)\n",
 		   (int)hwContext);
         drmRmMap(info->drmFD, ctx_info->sarea_handle);
         return FALSE;
@@ -298,7 +307,7 @@ static void RADEONDestroyContext(ScreenPtr pScreen, drmContext hwContext,
 
     if (drmRmMap(info->drmFD, ctx_info->sarea_handle) < 0) {
         xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "[DRI] could not remove private sarea for ctx id (%d)\n",
+		   "[dri] could not remove private sarea for ctx id (%d)\n",
 		   (int)hwContext);
     }
 #endif
@@ -530,7 +539,7 @@ static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
 			     pSAREAPriv->boxes, pSAREAPriv->nbox);
 	if (ret) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "DRIInitBuffers timed out, resetting engine...\n");
+		       "[dri] DRIInitBuffers timed out, resetting engine...\n");
 	    RADEONEngineReset(pScrn);
 	    RADEONEngineRestore(pScrn);
 	    RADEONCP_RESET(pScrn, info);
@@ -867,7 +876,7 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
     return TRUE;
 }
 
-#if 0
+#if defined(PCIGART_ENABLED)
 /* Initialize the PCIGART state.  Request memory for use in PCI space,
    and initialize the Radeon registers to point to that memory. */
 static Bool RADEONDRIPciInit(RADEONInfoPtr info, ScreenPtr pScreen)
@@ -1035,7 +1044,7 @@ static Bool RADEONDRIBufInit(RADEONInfoPtr info, ScreenPtr pScreen)
 {
 				/* Initialize vertex buffers */
     if (info->IsPCI) {
-#if 1
+#if !defined(PCIGART_ENABLED)
 	return TRUE;
 #else
 	info->bufNumBufs = drmAddBufs(info->drmFD,
@@ -1108,7 +1117,7 @@ static void RADEONDRISAREAInit(ScreenPtr pScreen,
 	break;
     default:
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "RADEONDRISAREAInit failed: Unsupported depth (%d bpp)\n",
+		   "[dri] RADEONDRISAREAInit failed: Unsupported depth (%d bpp).  Disabling DRI.\n",
 		   info->CurrentLayout.pixel_code);
 	return;
     }
@@ -1292,7 +1301,7 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
     if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
     if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "RADEONDRIScreenInit failed (libdri.a too old)\n");
+                 "[dri] RADEONDRIScreenInit failed (libdri.a too old)\n");
       return FALSE;
     }
 
@@ -1300,18 +1309,21 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
     DRIQueryVersion(&major, &minor, &patch);
     if (major != 4 || minor < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "RADEONDRIScreenInit failed "
-		   "(DRI version = %d.%d.%d, expected 4.0.x).  "
-		   "Disabling DRI.\n",
+		   "[dri] RADEONDRIScreenInit failed because of a version mismatch.\n"
+		   "[dri] libDRI version is %d.%d.%d but version 4.0.x is needed.\n"
+		   "[dri] Disabling DRI.\n",
 		   major, minor, patch);
 	return FALSE;
     }
 
     switch (info->CurrentLayout.pixel_code) {
     case 8:
-	/* These modes are not supported (yet). */
     case 15:
     case 24:
+	/* These modes are not supported (yet). */
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+		   "[dri] RADEONInitVisualConfigs failed (depth %d not supported).  "
+		   "Disabling DRI.\n", info->CurrentLayout.pixel_code);
 	return FALSE;
 
 	/* Only 16 and 32 color depths are supports currently. */
@@ -1389,7 +1401,7 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->createDummyCtxPriv = FALSE;
 
     if (!DRIScreenInit(pScreen, pDRIInfo, &info->drmFD)) {
-	xf86DrvMsg(pScreen->myNum, X_ERROR, "DRIScreenInit failed!\n");
+	xf86DrvMsg(pScreen->myNum, X_ERROR, "[dri] DRIScreenInit failed.  Disabling DRI.\n");
 	xfree(pDRIInfo->devPrivate);
 	pDRIInfo->devPrivate = NULL;
 	DRIDestroyInfoRec(pDRIInfo);
@@ -1404,12 +1416,12 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 	    version->version_minor < 1) {
             /* incompatible drm version */
             xf86DrvMsg(pScreen->myNum, X_ERROR,
-                       "RADEONDRIScreenInit failed "
-		       "(DRM version = %d.%d.%d, expected 1.1.x).  "
-		       "Disabling DRI.\n",
-                       version->version_major,
-                       version->version_minor,
-                       version->version_patchlevel);
+                "[dri] RADEONDRIScreenInit failed because of a version mismatch.\n"
+		"[dri] radeon.o kernel module version is %d.%d.%d but version 1.1.x is needed.\n"
+		"[dri] Disabling DRI.\n",
+                version->version_major,
+                version->version_minor,
+                version->version_patchlevel);
             drmFreeVersion(version);
             RADEONDRICloseScreen(pScreen);
             return FALSE;
@@ -1417,7 +1429,7 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 	drmFreeVersion(version);
     }
 
-#if 1
+#if !defined(PCIGART_ENABLED)
 				/* Initialize AGP */
     if (!info->IsPCI && !RADEONDRIAgpInit(info, pScreen)) {
 	RADEONDRICloseScreen(pScreen);
@@ -1426,7 +1438,7 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 
 				/* Initialize PCI */
     if (info->IsPCI) {
-	xf86DrvMsg(pScreen->myNum, X_ERROR, "PCI cards not yet supported\n");
+	xf86DrvMsg(pScreen->myNum, X_ERROR, "[dri] PCI cards not yet supported.  Disabling DRI.\n");
 	RADEONDRICloseScreen(pScreen);
 	return FALSE;
     }
@@ -1435,9 +1447,9 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
     if (!info->IsPCI && !RADEONDRIAgpInit(info, pScreen)) {
 	info->IsPCI = TRUE;
 	xf86DrvMsg(pScreen->myNum, X_WARNING,
-		   "AGP failed to initialize -- falling back to PCI mode.\n");
+		   "[agp] AGP failed to initialize -- falling back to PCI mode.\n");
 	xf86DrvMsg(pScreen->myNum, X_WARNING,
-		   "Make sure you have the agpgart kernel module loaded.\n");
+		   "[agp] Make sure you have the agpgart kernel module loaded.\n");
     }
 
 				/* Initialize PCI */
@@ -1461,7 +1473,7 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 	RADEONDRICloseScreen(pScreen);
 	return FALSE;
     }
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Visual configs initialized\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[dri] Visual configs initialized\n");
 
     return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.7 2001/03/03 22:26:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.8 2001/03/21 17:02:22 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -687,9 +687,12 @@
 #define RADEON_MC_AGP_LOCATION              0x014c
 #define RADEON_MC_FB_LOCATION               0x0148
 #define RADEON_MCLK_CNTL                    0x0012 /* PLL */
-#       define RADEON_FORCE_GCP             (1 << 16)
-#       define RADEON_FORCE_PIPE3D_CP       (1 << 17)
-#       define RADEON_FORCE_RCP             (1 << 18)
+#       define RADEON_FORCEON_MCLKA         (1 << 16)
+#       define RADEON_FORCEON_MCLKB         (1 << 17)
+#       define RADEON_FORCEON_YCLKA         (1 << 18)
+#       define RADEON_FORCEON_YCLKB         (1 << 19)
+#       define RADEON_FORCEON_MC            (1 << 20)
+#       define RADEON_FORCEON_AIC           (1 << 21)
 #define RADEON_MDGPIO_A_REG                 0x01ac
 #define RADEON_MDGPIO_EN_REG                0x01b0
 #define RADEON_MDGPIO_MASK                  0x0198

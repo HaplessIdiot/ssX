@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.7 2001/04/10 16:08:02 dawes Exp $
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.8 2001/04/18 14:52:42 dawes Exp $
  * Acceleration for the Creator and Creator3D framebuffer - DRI/DRM support.
  *
  * Copyright (C) 2000 David S. Miller (davem@redhat.com)
@@ -221,8 +221,9 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 		DRIQueryVersion(&major, &minor, &patch);
 		if (major != 4 || minor < 0) {
 		xf86DrvMsg(pScreen->myNum, X_ERROR,
-                    "[drm] FFBDRIScreenInit failed (DRI version = %d.%d.%d, "
-		    "expected 4.0.x).  Disabling DRI.\n",
+                    "[dri] FFBDRIScreenInit failed because of a version mismatch.\n"
+		    "[dri] libDRI version is %d.%d.%d but version, 4.0.x is needed.\n"
+		    "[dri]  Disabling DRI.\n",
                     major, minor, patch);
 		return FALSE;
 		}
@@ -277,10 +278,34 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 	pDRIInfo->createDummyCtxPriv	= FALSE;
 
 	if (!DRIScreenInit(pScreen, pDRIInfo, &(pFfb->drmSubFD))) {
+                xf86DrvMsg(pScreen->myNum, X_ERROR,
+                           "[dri] DRIScreenInit failed.  Disabling DRI.\n");
 		DRIDestroyInfoRec(pFfb->pDRIInfo);
 		xfree(pFfbDRI);
 		return FALSE;
 	}
+
+#if 000 /* XXX this should be cleaned up and used */
+        /* Check the ffb DRM version */
+        version = drmGetVersion(info->drmFD);
+        if (version) {
+           if (version->version_major != 1 ||
+               version->version_minor < 0) {
+              /* incompatible drm version */
+              xf86DrvMsg(pScreen->myNum, X_ERROR,
+                         "[dri] FFBDRIScreenInit failed because of a version mismatch.\n"
+                         "[dri] ffb.o kernel module version is %d.%d.%d but version 1.0.x is needed.\n"
+                         "[dri] Disabling the DRI.\n",
+                         version->version_major,
+                         version->version_minor,
+                         version->version_patchlevel);
+              drmFreeVersion(version);
+              R128DRICloseScreen(pScreen);
+	    return FALSE;
+           }
+           drmFreeVersion(version);
+        }
+#endif
 
 	pFfb->pFfbSarea = DRIGetSAREAPrivate(pScreen);
 	init_ffb_sarea(pFfb, pFfb->pFfbSarea);
