@@ -30,160 +30,9 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.1 2001/04/05 20:13:51 dawes Exp $ */
 
 #include "win.h"
-
-#define WIN_XOR(a,b) ((!(a) && (b)) || ((a) && !(b)))
-
-/*
- * Modify the screen pixmap to point to the new framebuffer address
- */
-static
-Bool
-winUpdateFBPointer (ScreenPtr pScreen, void *pbits)
-{
-  winScreenPriv(pScreen);
-  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-
-  /* Location of shadow framebuffer has changed */
-  pScreenInfo->pfb = pbits;
-	      
-  /* Update the screen pixmap */
-  if (!(*pScreen->ModifyPixmapHeader)(pScreen->devPrivate,
-				      pScreen->width,
-				      pScreen->height,
-				      pScreen->rootDepth,
-				      BitsPerPixel (pScreen->rootDepth),
-				      PixmapBytePad (pScreenInfo->dwStride,
-						     pScreenInfo->dwDepth),
-				      pScreenInfo->pfb))
-    {
-      FatalError ("winUpdateFramebufferPointer () - Failed modifying "\
-		  "screen pixmap\n");
-    }
-
-  return TRUE;
-}
-
-/*
-  We have to store the last state of each mode
-  key before we lose the keyboard focus.
-*/
-static
-void
-winStoreModeKeyStates (ScreenPtr pScreen)
-{
-  winScreenPriv(pScreen);
-
-  /* Initialize all mode key states to off */
-  pScreenPriv->dwModeKeyStates = 0x0L;
-
-  pScreenPriv->dwModeKeyStates |= 
-    (GetKeyState (VK_NUMLOCK) & 0x0001) << NumLockMapIndex;
-
-  pScreenPriv->dwModeKeyStates |=
-    (GetKeyState (VK_SCROLL) & 0x0001) << ScrollLockMapIndex;
-
-  pScreenPriv->dwModeKeyStates |=
-    (GetKeyState (VK_CAPITAL) & 0x0001) << LockMapIndex;
-
-  pScreenPriv->dwModeKeyStates |=
-    (GetKeyState (VK_KANA) & 0x0001) << KanaMapIndex;
-  
-  ErrorF ("winStoreModeKeyStates () - dwModeKeyStates: %08x\n",
-	  pScreenPriv->dwModeKeyStates);
-}
-
-/*
-  Upon regaining the keyboard focus we must
-  resynchronize our internal mode key states
-  with the actual state of the keys.
-*/
-void
-winRestoreModeKeyStates (ScreenPtr pScreen)
-{
-  winScreenPriv(pScreen);
-  xEvent		xCurrentEvent;
-  ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
-
-  ErrorF ("winRestoreModeKeyStates ()\n");
-
-  /* Has the key state changed? */
-  if (WIN_XOR(pScreenPriv->dwModeKeyStates & NumLockMask,
-	      GetKeyState (VK_NUMLOCK)))
-    {
-      ErrorF ("winRestoreModeKeyStates () - Restoring NumLock\n");
-
-      xCurrentEvent.u.u.detail = MIN_KEYCODE + VK_NUMLOCK;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-    }
-    
-  /* Has the key state changed? */
-  if (WIN_XOR(pScreenPriv->dwModeKeyStates & LockMask,
-	      GetKeyState (VK_CAPITAL)))
-    {
-      ErrorF ("winRestoreModeKeyStates () - Restoring CapsLock\n");
-
-      xCurrentEvent.u.u.detail = MIN_KEYCODE + VK_CAPITAL;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-    }
-
-  /* Has the key state changed? */
-  if (WIN_XOR(pScreenPriv->dwModeKeyStates & ScrollLockMask,
-	      GetKeyState (VK_SCROLL)))
-    {
-      ErrorF ("winRestoreModeKeyStates () - Restoring ScrollLock\n");
-      
-      xCurrentEvent.u.u.detail = MIN_KEYCODE + VK_SCROLL;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-    }
-
-  /* Has the key state changed? */
-  if (WIN_XOR(pScreenPriv->dwModeKeyStates & KanaMask,
-	      GetKeyState (VK_KANA)))
-    {
-      ErrorF ("winRestoreModeKeyStates () - Restoring KanaLock\n");
-      xCurrentEvent.u.u.detail = MIN_KEYCODE + VK_KANA;
-
-      /* Push the key */
-      xCurrentEvent.u.u.type = KeyPress;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-
-      /* Release the key */
-      xCurrentEvent.u.u.type = KeyRelease;
-      xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
-      mieqEnqueue (&xCurrentEvent);
-    }
-}
 
 /* Called by the WakeupHandler
  * Processes and/or dispatches Windows messages
@@ -202,9 +51,9 @@ winWindowProc (HWND hWnd, UINT message,
   LPCREATESTRUCT	pcs;
   HRESULT		ddrval;
   RECT			rcClient, rcSrc;
+  int			iScanCode;
 
-  //ErrorF ("winWindowProc () - Message: %d\n", message);
-
+  /* Initialize our event structure */
   ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
 
   /* Retrieve screen privates pointers for this window */
@@ -213,11 +62,6 @@ winWindowProc (HWND hWnd, UINT message,
     {
       pScreenInfo = pScreenPriv->pScreenInfo;
       pScreen = pScreenInfo->pScreen;
-    }
-  else
-    {
-      ErrorF ("winWindowProc () - Screen privates are null, msg: %d\n",
-	      message);
     }
 
   /* Branch on message type */
@@ -294,8 +138,6 @@ winWindowProc (HWND hWnd, UINT message,
 					   &rcSrc,
 					   DDBLT_WAIT,
 					   NULL);
-	  if (FAILED (ddrval))
-	    FatalError ("winWindowProc () - DD blt failed\n");
 
 	  /* Relock the shadow surface */
 	  ddrval = IDirectDrawSurface_Lock (pScreenPriv->pddsShadow,
@@ -332,9 +174,6 @@ winWindowProc (HWND hWnd, UINT message,
 					   &rcSrc,
 					   DDBLT_WAIT,
 					   NULL);
-	  if (FAILED (ddrval))
-	    FatalError ("winWindowProc () - DDNL Blt failed: %08x\n",
-			ddrval);
 	  break;
 
 	case WIN_SERVER_PRIMARY_DD:
@@ -343,7 +182,7 @@ winWindowProc (HWND hWnd, UINT message,
 
 	     We'll have to hand roll the clipping for windowed mode;
 	     the performance of the primary fb server is so bad
-	     that it probably won't be work the effort to write
+	     that it probably wouldn't be worth the effort to write
 	     the clipping code.
 	  */
 	  break;
@@ -462,8 +301,9 @@ winWindowProc (HWND hWnd, UINT message,
 	  pScreenPriv->iDeltaZ = 0;
 	}
 
-      /* Only process this message if the wheel has moved further than
-	 WHEEL_DELTA
+      /*
+	Only process this message if the wheel has moved further than
+	WHEEL_DELTA
       */
       if (iDeltaZ >= WHEEL_DELTA || (-1 * iDeltaZ) >= WHEEL_DELTA)
 	{
@@ -474,9 +314,10 @@ winWindowProc (HWND hWnd, UINT message,
 	}
       else
 	{
-	  /* Wheel has not moved past WHEEL_DELTA threshold;
-	     we will store the wheel delta until the threshold
-	     has been reached.
+	  /*
+	    Wheel has not moved past WHEEL_DELTA threshold;
+	    we will store the wheel delta until the threshold
+	    has been reached.
 	  */
 	  pScreenPriv->iDeltaZ = iDeltaZ;
 	  return 0;
@@ -492,7 +333,11 @@ winWindowProc (HWND hWnd, UINT message,
 	  xCurrentEvent.u.u.detail = Button5;
 	}
 
-      /* Flip iDeltaZ to positive, if negative */
+      /*
+	Flip iDeltaZ to positive, if negative,
+	because always need to generate a *positive* number of
+	button clicks for the Z axis.
+      */
       if (iDeltaZ < 0)
 	{
 	  iDeltaZ *= -1;
@@ -515,86 +360,18 @@ winWindowProc (HWND hWnd, UINT message,
 
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
-      /* Bail out early if this is a mouse button */
-      if (wParam < 0x07 && wParam != VK_CANCEL)
-	break;
-
-      /* Generic key down */
+      winTranslateKey (wParam, lParam, &iScanCode);
       xCurrentEvent.u.u.type = KeyPress;
-
-      /* There are a couple funny keys */
-      switch (wParam)
-	{
-	case VK_RETURN:
-	  if (lParam & WIN_KEY_EXTENDED)
-	    xCurrentEvent.u.u.detail = WIN_VK_KP_RETURN + MIN_KEYCODE;
-	  else
-	    xCurrentEvent.u.u.detail = wParam + MIN_KEYCODE;
-	  break;
-	case VK_MENU:
-	  if (lParam & WIN_KEY_EXTENDED)
-	    xCurrentEvent.u.u.detail = VK_RMENU + MIN_KEYCODE;
-	  else
-	    xCurrentEvent.u.u.detail = VK_LMENU + MIN_KEYCODE;
-	  break;
-	case VK_CONTROL:
-	  if (lParam & WIN_KEY_EXTENDED)
-	    xCurrentEvent.u.u.detail = VK_RCONTROL + MIN_KEYCODE;
-	  else
-	    xCurrentEvent.u.u.detail = VK_LCONTROL + MIN_KEYCODE;
-	  break;
-	case VK_SHIFT:
-	  if (lParam & WIN_KEY_EXTENDED)
-	    xCurrentEvent.u.u.detail = VK_RSHIFT + MIN_KEYCODE;
-	  else
-	    xCurrentEvent.u.u.detail = VK_LSHIFT + MIN_KEYCODE;
-	  break;
-	default:
-	  xCurrentEvent.u.u.detail = wParam + MIN_KEYCODE;
-	}
+      xCurrentEvent.u.u.detail = iScanCode;
       xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
       mieqEnqueue (&xCurrentEvent);
       return 0;
 
     case WM_SYSKEYUP:
     case WM_KEYUP:
-      /* Bail out early if this is a mouse button */
-      if (wParam < 0x07 && wParam != VK_CANCEL)
-	break;
-
-      /* Generic key up */
+      winTranslateKey (wParam, lParam, &iScanCode);
       xCurrentEvent.u.u.type = KeyRelease;
-
-      /* There are a couple funny keys */
-      switch (wParam)
-	{
-	case VK_RETURN:
-	  if (lParam & WIN_KEY_EXTENDED)
-	    xCurrentEvent.u.u.detail = WIN_VK_KP_RETURN + MIN_KEYCODE;
-	  else
-	    xCurrentEvent.u.u.detail = wParam + MIN_KEYCODE;
-	  break;
-	case VK_MENU:
-	  if (lParam & WIN_KEY_EXTENDED)
-	    xCurrentEvent.u.u.detail = VK_RMENU + MIN_KEYCODE;
-	  else
-	    xCurrentEvent.u.u.detail = VK_LMENU + MIN_KEYCODE;
-	  break;
-	case VK_CONTROL:
-	  if (lParam & WIN_KEY_EXTENDED)
-	    xCurrentEvent.u.u.detail = VK_RCONTROL + MIN_KEYCODE;
-	  else
-	    xCurrentEvent.u.u.detail = VK_LCONTROL + MIN_KEYCODE;
-	  break;
-	case VK_SHIFT:
-	  if (lParam & WIN_KEY_EXTENDED)
-	    xCurrentEvent.u.u.detail = VK_RSHIFT + MIN_KEYCODE;
-	  else
-	    xCurrentEvent.u.u.detail = VK_LSHIFT + MIN_KEYCODE;
-	  break;
-	default:
-	  xCurrentEvent.u.u.detail = wParam + MIN_KEYCODE;
-	}
+      xCurrentEvent.u.u.detail = iScanCode;
       xCurrentEvent.u.keyButtonPointer.time = GetTickCount ();
       mieqEnqueue (&xCurrentEvent);
       return 0;
@@ -714,8 +491,9 @@ winWindowProc (HWND hWnd, UINT message,
 	  if (pScreenPriv->fEnabled
 	      && pScreen != miPointerCurrentScreen ())
 	    {
-	      /* Tell mi that we are changing the screen that receives
-		 mouse input events.
+	      /*
+		Tell mi that we are changing the screen that receives
+		mouse input events.
 	      */
 	      miPointerSetNewScreen (pScreenInfo->dwScreen,
 				     0, 0);
@@ -773,21 +551,24 @@ winWindowProc (HWND hWnd, UINT message,
       switch (pScreenInfo->dwEngine)
 	{
 	case WIN_SERVER_SHADOW_GDI:
-	  /* Are we active?
-	     Are we fullscreen?
+	  /*
+	    Are we active?
+	    Are we fullscreen?
 	  */
 	  if (pScreenPriv != NULL
 	      && pScreenPriv->fActive
 	      && pScreenInfo->fFullScreen)
 	    {
-	      /* Activating, attempt to bring our window 
-		 to the top of the display
+	      /*
+		Activating, attempt to bring our window 
+		to the top of the display
 	      */
 	      ShowWindow (hWnd, SW_RESTORE);
 	    }
 	  
-	  /* Are we inactive?
-	     Are we fullscreen?
+	  /*
+	    Are we inactive?
+	    Are we fullscreen?
 	  */
 	  if (pScreenPriv != NULL
 	      && !pScreenPriv->fActive
@@ -801,14 +582,16 @@ winWindowProc (HWND hWnd, UINT message,
 	  break;
 
 	case WIN_SERVER_SHADOW_DD:
-	  /* Do we have a surface?
-	     Are we active?
-	     Are we fullscreen?
+	  /*
+	    Do we have a surface?
+	    Are we active?
+	    Are we fullscreen?
 	  */
 	  if (pScreenPriv != NULL
 	      && pScreenPriv->pddsPrimary != NULL
 	      && pScreenPriv->fActive
-	      && pScreenInfo->fFullScreen)
+	      //&& pScreenInfo->fFullScreen
+	      )
 	    {
 	      /* Primary surface was lost, restore it */
 	      IDirectDrawSurface_Restore (pScreenPriv->pddsPrimary);
@@ -816,14 +599,16 @@ winWindowProc (HWND hWnd, UINT message,
 	  break;
 
 	case WIN_SERVER_SHADOW_DDNL:
-	  /* Do we have a surface?
-	     Are we active?
-	     Are we full screen?
+	  /*
+	    Do we have a surface?
+	    Are we active?
+	    Are we full screen?
 	  */
 	  if (pScreenPriv != NULL
 	      && pScreenPriv->pddsPrimary4 != NULL
 	      && pScreenPriv->fActive
-	      && pScreenInfo->fFullScreen)
+	      //&& pScreenInfo->fFullScreen
+	      )
 	    {
 	      /* Primary surface was lost, restore it */
 	      IDirectDrawSurface_Restore (pScreenPriv->pddsPrimary4);

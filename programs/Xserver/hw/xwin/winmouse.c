@@ -25,64 +25,54 @@
  *or other dealings in this Software without prior written authorization
  *from the XFree86 Project.
  *
- * Authors:	Harold L Hunt II
+ * Authors:	Dakshinamurthy Karra
+ *		Suhaib M Siddiqi
+ *		Peter Busch
+ *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winmisc.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
+/* $XFree86$ */
 
 #include "win.h"
 
-/* See Porting Layer Definition - p. 33 */
-/* Called by clients, returns the best size for a cursor, tile, or
-   stipple, specified by class (sometimes called kind) */
 void
-winQueryBestSizeNativeGDI (int class, unsigned short *pWidth,
-			   unsigned short *pHeight, ScreenPtr pScreen)
+winMouseCtrl (DeviceIntPtr pDevice, PtrCtrl *pCtrl)
 {
-  fprintf (stderr, "winQueryBestSize()\n");
+
 }
 
-/*
-  Count the number of one bits in a color mask.
-*/
-CARD8
-winCountBits (DWORD dw)
-{
-  DWORD		dwBits = 0;
-
-  while (dw)
-    {
-      dwBits += (dw & 1);
-      dw >>= 1;
-    }
-
-  return dwBits;
-}
-
-/*
- * Modify the screen pixmap to point to the new framebuffer address
+/* See Porting Layer Definition - p. 18
+ * This is known as a DeviceProc
  */
-Bool
-winUpdateFBPointer (ScreenPtr pScreen, void *pbits)
+int
+winMouseProc (DeviceIntPtr pDeviceInt, int iState)
 {
-  winScreenPriv(pScreen);
-  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  CARD8			map[6];
+  DevicePtr		pDevice = (DevicePtr) pDeviceInt;
 
-  /* Location of shadow framebuffer has changed */
-  pScreenInfo->pfb = pbits;
-	      
-  /* Update the screen pixmap */
-  if (!(*pScreen->ModifyPixmapHeader)(pScreen->devPrivate,
-				      pScreen->width,
-				      pScreen->height,
-				      pScreen->rootDepth,
-				      BitsPerPixel (pScreen->rootDepth),
-				      PixmapBytePad (pScreenInfo->dwStride,
-						     pScreenInfo->dwDepth),
-				      pScreenInfo->pfb))
+  switch (iState)
     {
-      FatalError ("winUpdateFramebufferPointer () - Failed modifying "\
-		  "screen pixmap\n");
-    }
+    case DEVICE_INIT:
+      map[1] = 1;
+      map[2] = 2;
+      map[3] = 3;
+      map[4] = 4;
+      map[5] = 5;
+      InitPointerDeviceStruct (pDevice,
+			       map,
+			       5, /* Buttons 4 and 5 are mouse wheel events */
+			       miPointerGetMotionEvents,
+			       winMouseCtrl,
+			       miPointerGetMotionBufferSize ());
+      break;
 
-  return TRUE;
+    case DEVICE_ON:
+      pDevice->on = TRUE;
+      break;
+
+    case DEVICE_CLOSE:
+    case DEVICE_OFF:
+      pDevice->on = FALSE;
+      break;
+    }
+  return Success;
 }

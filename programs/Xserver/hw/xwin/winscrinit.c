@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
 
 #include "win.h"
 
@@ -47,7 +47,9 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
   HWND			*phwnd = &pScreenPriv->hwndScreen;
   WNDCLASS		wc;
 
+#if CYGDEBUG
   ErrorF ("winCreateBoundingWindowFullScreen ()\n");
+#endif
 
   /* Setup our window class */
   wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -127,10 +129,11 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   /* Get size of work area */
   SystemParametersInfo (SPI_GETWORKAREA, 0, &rcWorkArea, 0);
 
+#if CYGDEBUG
   ErrorF ("winCreateBoundingWindowWindowed () - WorkArea width %d height %d\n",
 	  rcWorkArea.right - rcWorkArea.left,
 	  rcWorkArea.bottom - rcWorkArea.top);
-  
+#endif
 
   /* Adjust the window width and height for border and title bars */
   iWidth += 2 * GetSystemMetrics (SM_CXFIXEDFRAME);
@@ -161,9 +164,11 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 	- GetSystemMetrics (SM_CYCAPTION);
     }
   
+#if CYGDEBUG
   ErrorF ("winCreateBoundingWindowWindowed () - Adjusted width: %d "\
 	  "height: %d\n",
 	  pScreenInfo->dwWidth, pScreenInfo->dwHeight);
+#endif
     
   /* Create the window */
   *phwnd = CreateWindowExA (0,			// Extended styles
@@ -196,16 +201,12 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   
   /* Attempt to bring our window to the top of the display */
   BringWindowToTop (*phwnd);
-  
-  ErrorF ("winCreateBoundingWindowWindowed () - Returning\n");
-
-  /* Hide that Windows cursor */
-  //ShowCursor (FALSE);
 }
 
-/* Determine what type of screen we are initializing
-   and call the appropriate procedure to intiailize
-   that type of screen.
+/*
+  Determine what type of screen we are initializing
+  and call the appropriate procedure to intiailize
+  that type of screen.
 */
 Bool
 winScreenInit (int index,
@@ -252,40 +253,17 @@ winFinishScreenInitFB (int index,
 		       ScreenPtr pScreen,
 		       int argc, char **argv)
 {
-  winScreenInfoPtr      pScreenInfo = &g_winScreens[index];
-  Bool                  fReturn = TRUE;
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  Bool			fReturn = TRUE;
   char			*pbits = NULL;
-  winPrivScreenPtr	pScreenPriv;
-
-  //#if 0
-  /* Allocate privates for this screen */
-  winAllocatePrivates (pScreen);
-
-  /* Get a pointer to the privates structure that was allocated */
-  pScreenPriv = winGetScreenPriv (pScreen);
-
-  /* Save a pointer to this screen in the screen info structure */
-  pScreenInfo->pScreen = pScreen;
-
-  /* Save a pointer to the screen info in the screen privates structure */
-  /* This allows us to get back to the screen info from a sceen pointer */
-  pScreenPriv->pScreenInfo = pScreenInfo;
-  
-  /* Detect which engines are supported */
-  winDetectSupportedEngines (pScreen);
-
-  /* Determine which engine to use */
-  if (!winSetEngine (pScreen))
-    return FALSE;
-
-  /* Adjust the video mode for our engine type */
-  if (!(*pScreenPriv->pwinAdjustVideoMode) (pScreen))
-    return FALSE;
-  //#endif
 
   /* Initial display parameters */
   pScreenInfo->dwBPP = winBitsPerPixel (pScreenInfo->dwDepth);
-  ErrorF ("winScreenInit () - dwBPP: %d\n", pScreenInfo->dwBPP);
+
+#if CYGDEBUG
+  ErrorF ("winFinishScreenInitFB () - dwBPP: %d\n", pScreenInfo->dwBPP);
+#endif
 
   /* Create display window */
   (*pScreenPriv->pwinCreateBoundingWindow) (pScreen);
@@ -301,7 +279,7 @@ winFinishScreenInitFB (int index,
   fReturn = (*pScreenPriv->pwinAllocateFB) (pScreen);
   if (!fReturn)
     {
-      ErrorF ("winScreenInit () - Could not allocate framebuffer\n");
+      ErrorF ("winFinishScreenInitFB () - Could not allocate framebuffer\n");
       return FALSE;
     }
 
@@ -309,20 +287,12 @@ winFinishScreenInitFB (int index,
   fReturn = (*pScreenPriv->pwinInitVisuals) (pScreen);
   if (!fReturn)
     {
-      ErrorF ("winScreenInit () - winInitVisuals failed\n");
+      ErrorF ("winFinishScreenInitFB () - winInitVisuals failed\n");
       return FALSE;
     }
-  ErrorF ("winScreenInit () - Returned from winInitVisuals ()\n");
-
-#if 0
-  /* Tell the server that we are enabled */
-  pScreenPriv->fEnabled = TRUE;
-#endif
 
   /* Setup a local variable to point to the framebuffer */
   pbits = pScreenInfo->pfb;
-  
-  ErrorF ("winScreenInit () - Calling fbScreenInit ()\n");
 
   /* Initialize the fb code */
   if (!fbScreenInit (pScreen,
@@ -332,9 +302,9 @@ winFinishScreenInitFB (int index,
 		     pScreenInfo->dwStride,
 		     pScreenInfo->dwBPP))
     {
+      ErrorF ("winFinishScreenInitFB () - fbScreenInit failed\n");
       return FALSE;
     }
-  ErrorF ("winScreenInit () - Returned from fbScreenInit ()\n");
 
   pScreen->GetWindowPixmap = winGetWindowPixmap;
   pScreen->SetWindowPixmap = winSetWindowPixmap;
@@ -344,12 +314,6 @@ winFinishScreenInitFB (int index,
   fbPictureInit (pScreen, NULL, 0);
 #endif
 
-#if 0
-  /* Wrap fb's CloseScreen with our CloseScreen */
-  pScreenPriv->CloseScreen = pScreen->CloseScreen;
-  pScreen->CloseScreen = pScreenPriv->pwinCloseScreen;
-#endif
-
   /* Setup the cursor routines */
   miDCInitialize (pScreen, &g_winPointerCursorFuncs);
 
@@ -357,45 +321,34 @@ winFinishScreenInitFB (int index,
   fReturn = fbCreateDefColormap (pScreen);
   if (!fReturn)
     {
-      ErrorF ("winScreenInit () - Could not create colormap\n");
+      ErrorF ("winFinishScreenInitFB () - Could not create colormap\n");
       return FALSE;
     }
-
-  /* Register our block and wakeup handlers; these procedures
-     process messages in our Windows message queue; specifically,
-     they process mouse and keyboard input.
-
-     These procedures will be wrapped by the shadow fb block
-     and wakeup handlers.
-  */
-#if 0
-  RegisterBlockAndWakeupHandlers (winBlockHandler,
-				  winWakeupHandler,
-				  (pointer) pScreen);
-#endif
-  pScreen->BlockHandler = winBlockHandler;
-  pScreen->WakeupHandler = winWakeupHandler;
-  pScreen->blockData = pScreen;
-  pScreen->wakeupData = pScreen;
 
   /* Initialize the shadow framebuffer layer */
   if (pScreenInfo->dwEngine == WIN_SERVER_SHADOW_GDI
       || pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DD
       || pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL)
     {
-      ErrorF ("winScreenInit () - Calling shadowInit ()\n");
       shadowInit (pScreen,
-		  pScreenPriv->pwinShadowUpdateProc,
-		  pScreenPriv->pwinShadowWindowProc);
-      ErrorF ("winScreenInit () - Returned from shadowInit ()\n");
+		  pScreenPriv->pwinShadowUpdate,
+		  pScreenPriv->pwinShadowWindow);
     }
+
+  /* Register our block and wakeup handlers; these procedures
+     process messages in our Windows message queue; specifically,
+     they process mouse and keyboard input.
+  */
+  RegisterBlockAndWakeupHandlers ((BlockHandlerProcPtr)NoopDDA,
+				  winWakeupHandler,
+				  pScreen);
 
   /* Wrap either fb's or shadow's CloseScreen with our CloseScreen */
   pScreenPriv->CloseScreen = pScreen->CloseScreen;
   pScreen->CloseScreen = pScreenPriv->pwinCloseScreen;
 
   /* See Porting Layer Definition - p. 33 */
-  /* SaveScreen () has something to do with sceen savers */
+  /* SaveScreen () has something to do with screen savers */
   /* Our SaveScreen () does nothing */
   pScreen->SaveScreen = winSaveScreen;
 
@@ -592,7 +545,6 @@ winSetEngine (ScreenPtr pScreen)
 Bool
 winSaveScreen (ScreenPtr pScreen, int on)
 {
-  ErrorF ("winSaveScreen ()\n");
   return TRUE;
 }
 
@@ -831,8 +783,10 @@ winFinishScreenInitNativeGDI (int index,
   ErrorF ("winScreenInit () - calling winCreateDefColormap()\n");
   fReturn = winCreateDefColormapNativeGDI (pScreen);
 
+#ifdef RENDER
   ErrorF ("winScreenInit () - calling miPictureInit()\n");
   miPictureInit (pScreen, formats, nformats);
+#endif
   
   if (fReturn)
     {

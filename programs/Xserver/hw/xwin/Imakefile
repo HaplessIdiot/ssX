@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/12/02 10:20:33 lehors $
-XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.1 2000/08/10 17:40:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xwin/Imakefile,v 1.4 2001/04/05 20:13:49 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -12,7 +12,6 @@ MMAPDEF = -DHAS_MMAP
 SRCSA =	InitInput.c \
 	InitOutput.c \
 	stubs.c \
-	miinitext.c \
 	wingc.c \
 	winpolyline.c \
 	winfillsp.c \
@@ -34,12 +33,13 @@ SRCSA =	InitInput.c \
 	winshadgdi.c \
 	winshaddd.c \
 	winshadddnl.c \
-	winpfbdd.c
+	winpfbdd.c \
+	winkeybd.c \
+	winmouse.c
 
 OBJSA =	InitInput.o \
 	InitOutput.o \
 	stubs.o \
-	miinitext.o \
 	wingc.o \
 	winpolyline.o \
 	winfillsp.o \
@@ -61,7 +61,9 @@ OBJSA =	InitInput.o \
 	winshadgdi.o \
 	winshaddd.o \
 	winshadddnl.o \
-	winpfbdd.o
+	winpfbdd.o \
+	winkeybd.o \
+	winmouse.o
 
 INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
 	   -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi \
@@ -79,10 +81,7 @@ SRCS =	$(SRCSA) $(SRCSB) $(SRCSC)
 OBJS =	$(OBJSA) $(OBJSB) $(OBJSC)
 
 LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
-SpecialCObjectRule(InitInput,$(ICONFIGFILES),$(EXT_DEFINES))
-
-LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -DNO_HW_ONLY_EXTS -DNO_MODULE_EXTS $(EXT_MODULE_DEFINES) -UXFree86LOADER)
+SpecialCObjectRule(stubs,$(ICONFIGFILES),$(EXT_DEFINES))
 
 #if BuildDPMS
 LinkSourceFile(dpmsstubs.c,$(SERVERSRC)/Xext)

@@ -17,7 +17,7 @@ software will be error-free.
 THESE DISCLAIMERS OF WARRANTY CONSTITUTE AN ESSENTIAL PART OF THIS
 AGREEMENT. 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/ntux_xf.c,v 3.1 2000/08/10 17:40:31 dawes Exp $ */
 
 /*
 * ntux_xf.c
@@ -37,7 +37,7 @@ AGREEMENT.
 
 
 
-#include <windows.h>
+#include "windows.h"
 #include <stdio.h>
 #include "keysym.h"
 

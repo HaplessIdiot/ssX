@@ -22,15 +22,17 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.1 2000/08/10 17:40:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.4 2001/04/05 20:13:49 dawes Exp $ */
 
 #include "win.h"
 
-int              g_nNumScreens;
-winScreenInfo    g_winScreens[MAXSCREENS];
-//Bool             g_fPixmapDepths[33];
-int              g_nLastScreen = -1;
-ColormapPtr      g_cmInstalledMaps[MAXSCREENS];
+int		g_nNumScreens;
+winScreenInfo	g_winScreens[MAXSCREENS];
+int		g_nLastScreen = -1;
+ColormapPtr	g_cmInstalledMaps[MAXSCREENS];
+int		g_fdMessageQueue = -1;
+int		g_winScreenPrivateIndex = -1;
+unsigned long	g_winGeneration = 0;
 
 static PixmapFormatRec g_PixmapFormats[] = {
         { 1,    1,      BITMAP_SCANLINE_PAD },
@@ -42,43 +44,6 @@ static PixmapFormatRec g_PixmapFormats[] = {
 	{ 32,	32,	BITMAP_SCANLINE_PAD }
 };
 const int NUMFORMATS = sizeof (g_PixmapFormats) / sizeof (g_PixmapFormats[0]);
-
-#if 0
-/* Set all pixmap flags to false, except 1 bit depth pixmaps */
-void
-winInitializePixmapDepths (void)
-{
-#if 0
-  int i;
-#endif
-
-  /* We don't care what pixmaps people use, as long
-     as they are standard depths.
-  */
-  g_fPixmapDepths[1] = TRUE;
-  g_fPixmapDepths[4] = TRUE;
-  g_fPixmapDepths[8] = TRUE;
-  g_fPixmapDepths[16] = TRUE;
-  g_fPixmapDepths[24] = TRUE;
-  g_fPixmapDepths[32] = TRUE;
-
-#if 0
-  for (i = 2; i <= 32; i++)
-    {
-      g_fPixmapDepths[i] = FALSE;
-
-      if (i == 16 || i == 24 || i == 32 )
-	{
-	  g_fPixmapDepths[i] = TRUE;
-	}
-      else
-	{
-	  g_fPixmapDepths[i] = FALSE;
-	}
-    }
-#endif
-}
-#endif
 
 void
 winInitializeDefaultScreens (void)
@@ -105,7 +70,6 @@ winBitsPerPixel (DWORD dwDepth)
   if (dwDepth == 1) return 1;
   else if (dwDepth <= 8) return 8;
   else if (dwDepth <= 16) return 16;
-  else if (dwDepth <= 24) return 24;
   else return 32;
 }
 
@@ -113,7 +77,19 @@ winBitsPerPixel (DWORD dwDepth)
 void
 ddxGiveUp()
 {
+#if CYGDEBUG
   ErrorF ("ddxGiveUp ()\n");
+#endif
+
+  /* Close our handle to our message queue */
+  if (g_fdMessageQueue != WIN_FD_INVALID)
+    {
+      /* Close /dev/windows */
+      close (g_fdMessageQueue);
+
+      /* Set the file handle to invalid */
+      g_fdMessageQueue = WIN_FD_INVALID;
+    }
 
   /* Tell Windows that we want to end the app */
   PostQuitMessage (0);
@@ -123,24 +99,26 @@ ddxGiveUp()
 void
 AbortDDX (void)
 {
+#if CYGDEBUG
   ErrorF ("AbortDDX ()\n");
+#endif
   ddxGiveUp ();
 }
 
 void
 OsVendorInit (void)
 {
+#if CYGDEBUG
   ErrorF ("OsVendorInit ()\n");
+#endif
 }
 
 /* See Porting Layer Definition - p. 57 */
 void
 ddxUseMsg (void)
 {
-  ErrorF ("-screen scrn WxHxD\n"\
-	  "\tSet screen's width, height, bit depth\n");
-  ErrorF ("-pixdepths list-of-int\n"\
-	  "\tSupport given pixmap depths\n");
+  ErrorF ("-screen n WxHxD\n"\
+	  "\tSet screen n's width, height, and bit depth\n");
   ErrorF ("-linebias n\n"\
 	  "\tAdjust thin line pixelization\n");
   ErrorF ("-blackpixel n\n"\
@@ -149,10 +127,9 @@ ddxUseMsg (void)
 	  "\tPixel value for white\n");
   ErrorF ("-engine n\n"\
 	  "\tOverride the server's detected engine type:\n"\
-	  "\t\tShadow FB GDI DIB\t\t1\n"\
-	  "\t\tShadow FB DirectDraw\t\t2\n"\
-	  "\t\tShadow FB DirectDraw Nonlocking\t4\n"\
-	  "\t\tPrimary FB DirectDraw\t\t8\n");
+	  "\t\tGDI blitter\t\t1\n"\
+	  "\t\tDirectDraw blitter\t2\n"\
+	  "\t\tDirectDraw4 blitter\t4\n");
   ErrorF ("-fullscreen\n"
 	  "\tRun the specified server engine in fullscreen mode\n");
 }
@@ -167,12 +144,9 @@ ddxProcessArgument (int argc, char *argv[], int i)
   if (fFirstTime)
     {
       winInitializeDefaultScreens ();
-#if 0
-      winInitializePixmapDepths ();
-#endif
       fFirstTime = FALSE;
     }
-
+  
   /*
     Look for the '-screen n WxHxD' arugment
   */
@@ -210,36 +184,6 @@ ddxProcessArgument (int argc, char *argv[], int i)
       g_nLastScreen = nScreenNum;
       return 3;
     }
-
-#if 0
-  /*
-    Look for the '-pixdepths list-of-depths' argument
-  */
-  if (strcmp (argv[i], "-pixdepths") == 0)
-    {
-      int		nDepth, nReturn = 1;
-
-      /* Display the usage message if the argument is malformed */
-      if (++i >= argc)
-	{
-	  UseMsg ();
-	  return 0;
-	}
-
-      while ((i < argc) && (nDepth = atoi (argv[i++])) != 0)
-        {
-          if (nDepth < 0 || nDepth > 32)
-            {
-              ErrorF ("Invalid pixmap depth %d\n", nDepth);
-              UseMsg ();
-	      return 0;
-            }
-          g_fPixmapDepths[nDepth] = TRUE;
-          nReturn++;
-        }
-      return nReturn;
-    }
-#endif
 
   /*
     Look for the '-blackpixel n' argument
@@ -415,7 +359,7 @@ GetTimeInMillis (void)
 {
   return GetTickCount ();
 }
-#endif
+#endif /* DDXTIME */
 
 /* See Porting Layer Definition - p. 20 */
 /* We use ddxProcessArgument, so we don't need to touch argc and argv */
@@ -424,40 +368,6 @@ InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
 {
   int		i;
 
-#if 0
-  int		iNumFormats = 0;
-
-  /* Initialize pixmap formats */
-
-  /* Flag a pixmap depth for every screen depth that we have */
-  for (i = 0; i < g_nNumScreens; ++i)
-    {
-      g_fPixmapDepths[g_winScreens[i].dwDepth] = TRUE;
-    }
-
-  /* Loop through all possible pixmap depths */
-  for (i = 1; i <= 32; ++i)
-    {
-      /* Create a screen info format for existing pixmap depths */
-      if (g_fPixmapDepths[i])
-	{
-	  /* Have we exceeded the number of allowed formats? */
-	  if (iNumFormats >= MAXFORMATS)
-	    {
-	      FatalError ("MAXFORMATS is too small for this server\n");
-	    }
-
-	  /* Setup a screen info format */
-	  screenInfo->formats[iNumFormats].depth = i;
-	  screenInfo->formats[iNumFormats].bitsPerPixel = winBitsPerPixel (i);
-	  screenInfo->formats[iNumFormats].scanlinePad = BITMAP_SCANLINE_PAD;
-
-	  /* Increment the number of formats */
-	  iNumFormats++;
-	}
-    }
-#endif
-  
   /* Setup global screen info parameters */
   screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
   screenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
@@ -467,12 +377,14 @@ InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
 
   /* Describe how we want common pixmap formats padded */
   for (i = 0; i < NUMFORMATS; i++)
-    screenInfo->formats[i] = g_PixmapFormats[i];
+    {
+      screenInfo->formats[i] = g_PixmapFormats[i];
+    }
 
   /* Initialize each screen */
   for (i = 0; i < g_nNumScreens; i++)
     {
-      if (-1 == AddScreen (winFinishScreenInitFB, argc, argv))
+      if (-1 == AddScreen (winScreenInit, argc, argv))
 	{
 	  FatalError ("Couldn't add screen %d", i);
 	}

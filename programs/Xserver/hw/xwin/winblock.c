@@ -27,32 +27,14 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winblock.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
 
 #include "win.h"
 
 /* See Porting Layer Definition - p. 6 */
 void
-winBlockHandler (int iScreen,
-		 pointer pBlockData,
-		 pointer pTimeout,
-		 pointer pReadmask)
+winBlockHandler (pointer pBlockData,
+		 OSTimePtr pptv,
+		 pointer pReadMask)
 {
-  ScreenPtr		pScreen = (ScreenPtr) pBlockData;
-  winPrivScreenPtr	pScreenPriv;
-  winScreenInfoPtr	pScreenInfo;
-  MSG			msg;
-
-  //ErrorF ("winBlockHandler () - pScreen: %08x\n", pScreen);
-
-  pScreenPriv = winGetScreenPriv (pScreen);
-  pScreenInfo = pScreenPriv->pScreenInfo;
-
-  //ErrorF ("winBlockHandler () - Got privates\n");
-
-  while (PeekMessage (&msg, pScreenPriv->hwndScreen, 0, 0, PM_REMOVE))
-    {
-      TranslateMessage (&msg);
-      DispatchMessage (&msg);
-    }
 }
