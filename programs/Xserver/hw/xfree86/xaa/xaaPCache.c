@@ -785,19 +785,17 @@ XAAInitPixmapCache(
     else Target256 = ntotal >> 4;
     if(Target256 < 4) Target256 = 0;
 
-
     if(!Num512) { /* no room */
     } else if((Num512 < 4) || (!Target512)) {
 	while(Num512) {
 	   SubdivideList(&List512, &List256);
 	   Num256 += 4; Num512--;
 	}
-    } else if(Num512 > MAX_512) {
+    } else if((Num512 > MAX_512) || (Num512 > Target512)){
 	while(Num512 > MAX_512) {
 	   SubdivideList(&List512, &List256);
 	   Num256 += 4; Num512--;
 	}
-    } else {
 	while(Num512 > Target512) {
 	    if(Num256 < MAX_256) {
 		SubdivideList(&List512, &List256);
@@ -812,19 +810,18 @@ XAAInitPixmapCache(
 	   SubdivideList(&List256, &List128);
 	   Num128 += 4; Num256--;
 	}
-    } else if(Num256 > MAX_256) {
+    } else if((Num256 > MAX_256) || (Num256 > Target256)) {
 	while(Num256 > MAX_256) {
 	   SubdivideList(&List256, &List128);
 	   Num128 += 4; Num256--;
 	}
-    } else {
 	while(Num256 > Target256) {
 	    if(Num128 < MAX_128) {
 		SubdivideList(&List256, &List128);
 		Num128 += 4; Num256--;
 	    } else break;
 	}
-    }
+    } 
 
     if(Num128 && ((Num128 < 4) || (Num128 > MAX_128))) {
 	CacheLinkPtr next;
@@ -837,7 +834,6 @@ XAAInitPixmapCache(
 	   NumPartial++; Num128--;
 	}
     }
-
 
     MaxPartialHeight = MaxPartialWidth = 0;
 

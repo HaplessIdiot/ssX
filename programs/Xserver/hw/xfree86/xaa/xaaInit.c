@@ -45,6 +45,9 @@ int XAAGCIndex = -1;
 int XAAPixmapIndex = -1;
 static unsigned long XAAGeneration = 0;
 
+/* temp kludge */
+static Bool SwitchedOut = FALSE;
+
 
 #ifdef XFree86LOADER
 
@@ -432,7 +435,7 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
     if((infoRec->Flags & OFFSCREEN_PIXMAPS) && pScrn->vtSema && (depth != 1) &&
 	((BitsPerPixel(depth) == pScrn->bitsPerPixel) || 
 		!(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)) && 
-	(size >= MIN_OFFPIX_SIZE) && 
+	(size >= MIN_OFFPIX_SIZE) && !SwitchedOut &&
 	(!infoRec->maxOffPixWidth || (w <= infoRec->maxOffPixWidth)) &&
 	(!infoRec->maxOffPixHeight || (h <= infoRec->maxOffPixHeight)) )
     {
@@ -456,7 +459,7 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 	    goto BAILOUT;
 
         if(!(area = xf86AllocateOffscreenArea(pScreen, w, h, gran, 0,
-                                XAARemoveAreaCallback, pPix))) {
+                                XAARemoveAreaCallback, NULL))) {
 	    xfree(pLink);
 	    goto BAILOUT;
 	}
@@ -476,6 +479,7 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 	    pPix->drawable.bitsPerPixel = pScrn->bitsPerPixel;
 	    pPix->devKind = pScreenPix->devKind;
 	    pPix->devPrivate.ptr = pScreenPix->devPrivate.ptr;
+	    area->devPrivate.ptr = pPix;
 
   	    pPriv->flags = OFFSCREEN;
 	    pPriv->offscreenArea = area;
@@ -516,15 +520,21 @@ XAADestroyPixmap(PixmapPtr pPix)
     Bool ret;
 
     if((pPix->refcnt == 1) && (pPriv->flags & OFFSCREEN)) {
-	if(pPriv->offscreenArea) {
-	   if(pPriv->flags & DGA_PIXMAP)
-		xfree(pPriv->offscreenArea);
-	   else
-		xf86FreeOffscreenArea(pPriv->offscreenArea);
-	} else
-	    xfree(pPix->devPrivate.ptr);
-
-        DELIST_OFFSCREEN_PIXMAP(pPix);
+	if(pPriv->flags & DGA_PIXMAP)
+	    xfree(pPriv->offscreenArea);
+        else {
+	    FBAreaPtr area = pPriv->offscreenArea;
+	    if(!area) { 
+		PixmapLinkPtr pLink = infoRec->OffscreenPixmaps;
+		while(pLink->pPix != pPix)
+		    pLink = pLink->next;
+		xfree(pPix->devPrivate.ptr);
+		area = pLink->area;
+	    }
+	    xf86FreeOffscreenArea(area);
+	    pPriv->offscreenArea = NULL;
+	    DELIST_OFFSCREEN_PIXMAP(pPix);
+	} 
     }
     
     XAA_SCREEN_PROLOGUE (pScreen, DestroyPixmap);
@@ -674,6 +684,7 @@ XAASaveRestoreImage (int index, SaveRestoreFlags what)
 	    XAAMoveOutOffscreenPixmaps(pScreen);
 	if(infoRec->Flags & PIXMAP_CACHE)
 	    XAAInvalidatePixmapCache(pScreen);
+	SwitchedOut = TRUE;
     }
 
     ret = (*pScreenPriv->SaveRestoreImage)(index, what);
@@ -681,6 +692,7 @@ XAASaveRestoreImage (int index, SaveRestoreFlags what)
     if(what == RestoreImage) {
 	if((infoRec->Flags & OFFSCREEN_PIXMAPS) && (infoRec->OffscreenPixmaps))
 	    XAAMoveInOffscreenPixmaps(pScreen);
+	SwitchedOut = FALSE;
     }
 
     return ret;
