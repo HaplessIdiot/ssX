@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 583. Fix atimisc's decoding of the mode on input for large panels
+      (Marc La France).
  582. Fix SEGV when ATIPreinit() fails (Marc La France).
  581. In rootless XDarwin, don't send ButtonPress events when clicking in
       non-X11 windows (Torrey T. Lyons, John Harper).
@@ -18171,7 +18173,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2955 2003/11/13 18:42:43 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2956 2003/11/13 18:43:26 tsi Exp $
 
 
 

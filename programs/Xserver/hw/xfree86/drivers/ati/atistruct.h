@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.38tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.39tsi Exp $ */
 /*
  * Copyright 1999 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -318,8 +318,8 @@ typedef struct _ATIRec
      * LCD panel data.
      */
     int LCDPanelID, LCDClock, LCDHorizontal, LCDVertical;
-    int LCDHSyncStart, LCDHSyncWidth, LCDHBlankWidth;
-    int LCDVSyncStart, LCDVSyncWidth, LCDVBlankWidth;
+    unsigned LCDHSyncStart, LCDHSyncWidth, LCDHBlankWidth;
+    unsigned LCDVSyncStart, LCDVSyncWidth, LCDVBlankWidth;
     int LCDVBlendFIFOSize;
 
     /*
@@ -420,7 +420,7 @@ typedef struct _ATIRec
 
     CARD8 OptionMMIOCache;      /* Cache MMIO writes */
     CARD8 OptionTestMMIOCache;  /* Test MMIO cache integrity */
-    CARD8 OptionPanelDisplay;   /* Prefer CRT over digital panel */
+    CARD8 OptionPanelDisplay;   /* Prefer digital panel over CRT */
     CARD8 OptionProbeClocks;    /* Force probe for fixed clocks */
     CARD8 OptionShadowFB;       /* Use shadow frame buffer */
     CARD8 OptionLCDSync;        /* Temporary */
