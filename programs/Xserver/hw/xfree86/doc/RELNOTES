@@ -277,7 +277,61 @@ enough space to cover them all here.
    o Support has been added for more Alpha platforms under Linux.  This now
      includes all platforms that require sparse memory mapping.
 
-3.  Notes for people migrating from XFree86 3.3.x.
+3.  Drivers
+
+XFree86 4.0.2 includes the following drivers:
+
++--------------+--------------------------+----------------------------------+
+|Driver Name   | Description              | Further Information              |
++--------------+--------------------------+----------------------------------+
+|apm           | Alliance Pro Motion      | README.apm                       |
+|ark           | Ark Logic                |                                  |
+|ati           | ATI                      | README.ati, README.r128, r128(4) |
+|chips         | Chips & Technologies     | README.chips, chips(4)           |
+|cirrus        | Cirrus Logic             |                                  |
+|cyrix (*)     | Cyrix MediaGX            | README.cyrix                     |
+|fbdev         | Linux fbdev              | fbdev(4)                         |
+|glide         | Glide2x (3Dfx)           | glide(4)                         |
+|glint         | 3Dlabs, TI               | glint(4)                         |
+|i128          | Number Nine              | README.I128, i128(4)             |
+|i740          | Intel i740               | README.i740                      |
+|i810          | Intel i810               | README.i810, i810(4)             |
+|imstt         | Integrated Micro Solns   |                                  |
+|mga           | Matrox                   | mga(4)                           |
+|neomagic      | NeoMagic                 | neomagic(4)                      |
+|newport (-)   | SGI Newport              | README.newport, newport(4)       |
+|nv            | NVIDIA                   | nv(4)                            |
+|rendition     | Rendition                | README.rendition, rendition(4)   |
+|s3virge       | S3 ViRGE                 | README.s3virge, s3virge(4)       |
+|savage        | S3 Savage                | savage(4)                        |
+|siliconmotion | Silicon Motion           | siliconmotion(4)                 |
+|sis           | SiS                      | README.SiS                       |
+|sunbw2 (+)    | Sun bw2                  |                                  |
+|suncg14 (+)   | Sun cg14                 |                                  |
+|suncg3 (+)    | Sun cg3                  |                                  |
+|suncg6 (+)    | Sun GX and Turbo GX      |                                  |
+|sunffb (+)    | Sun Creator/3D, Elite 3D |                                  |
+|sunleo (+)    | Sun Leo (ZX)             |                                  |
+|suntcx (+)    | Sun TCX                  |                                  |
+|tdfx          | 3Dfx                     |                                  |
+|tga           | DEC TGA                  | README.TGA                       |
+|trident       | Trident                  | trident(4)                       |
+|tseng         | Tseng Labs               |                                  |
+|vesa          | VESA                     | vesa(4)                          |
+|vga           | Generic VGA              | vga(4)                           |
++--------------+--------------------------+----------------------------------+
+
+Drivers marked with (*) are present in a preliminary form in this release,
+but are not complete and/or stable yet.
+
+Drivers marked with (+) are for Linux/Sparc only.
+
+Drivers marked with (-) are for Linux/mips only.
+
+Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
+listed above. Further information can be found in README.Darwin.
+
+4.  Notes for people migrating from XFree86 3.3.x.
 
 Unlike XFree86 3.3.x where there are multiple X server binaries, each of
 which drive different hardware, XFree86 4.0.2 has a single X server binary
@@ -291,7 +345,7 @@ IA-64, Sparc, and Mips platforms, and for Darwin on PowerPC.  Work on support
 for additional architectures and operating systems is in progress, and is
 planned for future releases.
 
-3.1  Loader and Modules
+4.1  Loader and Modules
 
 The XFree86 X server has a built-in run-time loader, donated by Metro Link
 <URL:http://www.metrolink.com>.  This loader can load normal object files and
@@ -329,7 +383,7 @@ Note about module security
      hope to have a mechanism for signing/verifying the modules that we
      provide available in a future release.
 
-3.2  Configuration File
+4.2  Configuration File
 
 The X server configuration file format has been extended to handle some of
 the new functionality.  The xf86config utility can be used to generate a
@@ -489,7 +543,7 @@ The config file search patch has been extended, with the directories /etc/X11
 and /usr/X11R6/etc/X11 being added.  The full search path details are docu-
 mented in the XF86Config manual page.
 
-3.3  Command Line Options
+4.3  Command Line Options
 
 The following new X server command line options have been added:
 
@@ -600,13 +654,13 @@ The following X server command line options have been changed since 3.3.x:
           This makes it possible for users to choose from multiple
           config files that the the sysadmin has provided.
 
-3.4  XAA
+4.4  XAA
 
 The XFree86 Acceleration Architecture (XAA) has been completely rewritten
 from scratch.  Most drivers implement acceleration by making use of the XAA
 module.
 
-3.5  Multi-head
+4.5  Multi-head
 
 Some multi-head configurations are supported in this release, primarily with
 multiple PCI/AGP cards.  However, this is an area that is still being worked
@@ -622,7 +676,7 @@ to be resolved.  Some combinations can be made to work better by changing
 which card is the primary card (either by using a different PCI slot, or by
 changing the system BIOS's preference for the primary card).
 
-3.6  Xinerama
+4.6  Xinerama
 
 Xinerama is an X server extension that allows multiple physical screens to
 behave as a single screen.  With traditional multi-head in X11, windows can-
@@ -644,14 +698,14 @@ Known problems:
      way.  This is an issue that needs to be dealt with in the individual
      window managers, and isn't specifically an XFree86 problem.
 
-3.7  DGA version 2
+4.7  DGA version 2
 
 DGA 2.0 is included in 4.0.2, but is not implemented by all drivers.  Prelim-
 inary documentation for the client libraries can be found in the README.DGA
 document.  A good degree of backwards compatibility with version 1.0 is pro-
 vided.
 
-3.8  DDC
+4.8  DDC
 
 The VESA(R) Display Data Channel (DDC[tm]) standard allows the monitor to
 tell the video card (or on some cases the computer directly) about itself;
@@ -673,7 +727,7 @@ to the and non-DDC default value 75 with the -dpi 75 command line option for
 the X server, or by specifying appropriate screen dimensions with the "Dis-
 playSize" keyword in the "Monitor" section of the config file.
 
-3.9  GLX and the Direct Rendering Infrastructure (DRI)
+4.9  GLX and the Direct Rendering Infrastructure (DRI)
 
 Precision Insight <URL:http://www.precisioninsight.com> (now part of the Pro-
 fessional Services group at VA Linux Systems <URL:http://www.valinux.com>)
@@ -694,15 +748,14 @@ cards, ATI Rage 128, and Matrox G400.  Updated information on DRI compatible
 drivers can be found at the DRI Project <URL:http://dri.sourceforge.net> on
 SourceForge <URL:http://www.sourceforge.net>.
 
-3.10  X-Video Extension (Xv)
+4.10  X-Video Extension (Xv)
 
 An XvQueryPortAttributes function has been added as well as support for XvIm-
 ages.  XvImages are XImages in alternate color spaces such as YUV and can be
 passed to the server through shared memory segments.  This allows clients to
-display YUV data with high quality hardware scaling and filtering.   XvImages
-are only supported by the Matrox G200/G400 cards at the moment.
+display YUV data with high quality hardware scaling and filtering.
 
-3.11  Other extensions
+4.11  Other extensions
 
 The XFree86-Misc extension has not been fully ported to the new server archi-
 tecture yet.  This should be completed in a future release.
@@ -715,61 +768,7 @@ The new xgamma utility makes use of this feature.  Compatibility with the
 3.3.x version of the extension is provided.  The missing parts of this exten-
 sion and some new features should be completed in a future release.
 
-3.12  Drivers
-
-XFree86 4.0.2 includes the following drivers:
-
-+--------------+-----------------------------+----------------------------------+
-|Driver Name   | Description                 | Further Information              |
-+--------------+-----------------------------+----------------------------------+
-|apm           | Alliance Pro Motion         | README.apm                       |
-|ark           | Ark Logic                   |                                  |
-|ati           | ATI                         | README.ati, README.r128, r128(4) |
-|chips         | Chips & Technologies        | README.chips, chips(4)           |
-|cirrus        | Cirrus Logic                |                                  |
-|cyrix (*)     | Cyrix MediaGX               | README.cyrix                     |
-|fbdev         | Linux fbdev                 | fbdev(4)                         |
-|glide         | Glide2x (3Dfx)              | glide(4)                         |
-|glint         | 3Dlabs, TI                  | glint(4)                         |
-|i128          | Number Nine                 | README.I128, i128(4)             |
-|i740          | Intel i740                  | README.i740                      |
-|i810          | Intel i810                  | README.i810, i810(4)             |
-|imstt         | Integrated Micro Solutions  |                                  |
-|mga           | Matrox                      | mga(4)                           |
-|neomagic      | NeoMagic                    | neomagic(4)                      |
-|newport (-)   | SGI Newport                 | README.newport, newport(4)       |
-|nv            | NVIDIA                      | nv(4)                            |
-|rendition     | Rendition, rendition(4)     | README.rendition                 |
-|s3virge       | S3 ViRGE                    | README.s3virge, s3virge(4)       |
-|savage        | S3 Savage                   | savage(4)                        |
-|siliconmotion | Silicon Motion              | siliconmotion(4)                 |
-|sis           | SiS                         | README.SiS                       |
-|sunbw2 (+)    | Sun bw2                     |                                  |
-|suncg14 (+)   | Sun cg14                    |                                  |
-|suncg3 (+)    | Sun cg3                     |                                  |
-|suncg6 (+)    | Sun GX and Turbo GX         |                                  |
-|sunffb (+)    | Sun Creator/3D and Elite 3D |                                  |
-|sunleo (+)    | Sun Leo (ZX)                |                                  |
-|suntcx (+)    | Sun TCX                     |                                  |
-|tdfx          | 3Dfx                        |                                  |
-|tga           | DEC TGA                     | README.TGA                       |
-|trident       | Trident                     | trident(4)                       |
-|tseng         | Tseng Labs                  |                                  |
-|vesa          | VESA                        | vesa(4)                          |
-|vga           | Generic VGA                 | vga(4)                           |
-+--------------+-----------------------------+----------------------------------+
-
-Drivers marked with (*) are present in a preliminary form in this release,
-but are not complete and/or stable yet.
-
-Drivers marked with (+) are for Linux/Sparc only.
-
-Drivers marked with (-) are for Linux/mips only.
-
-Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
-listed above. Further information can be found in README.Darwin.
-
-3.13  Xaw
+4.12  Xaw
 
 Two versions of the Xaw library are provided with XFree86 4.x. A version with
 bug fixes and a few binary compatible improvements and a new version with
@@ -828,11 +827,11 @@ Bug fixes:
    o Several bugs were fixed in the text code, while some code was rewritten
      from scratch.
 
-3.14  Xpm
+4.13  Xpm
 
 Version 3.4k of the Xpm (X pixmap) library is now integrated into XFree86.
 
-3.15  xedit
+4.14  xedit
 
 Xedit have been changed to use most of the new features added to the new ver-
 sion of the Xaw library, and some xedit only features were added. Emacs users
@@ -871,18 +870,18 @@ xedit. These include:
 
         o C-mode: this mode is expected to be stable, and fully usable.
 
-3.16  Font support
+4.15  Font support
 
 Details about the font support in XFree86 4.x can be found in the
 README.fonts document.
 
-3.17  TrueType support
+4.16  TrueType support
 
 XFree86 4.x comes with two TrueType backends, known as `xfsft' (the
 "freetype" module) and `X-TrueType' (the "xtt" module).  Both of these back-
 ends are based on the FreeType library.
 
-3.18  CID font support
+4.17  CID font support
 
 Support for CID-keyed fonts is included in XFree86 4.x.  The CID-keyed font
 format was designed by Adobe Systems <URL:http://www.adobe.com> for fonts
@@ -890,7 +889,7 @@ with large character sets.  The CID-keyed font support in XFree86 was donated
 by SGI <URL:http://www.sgi.com>.  See the LICENSE document for a copy of the
 CID Font Code Public License.
 
-3.19  Internationalisation of the scalable font backends
+4.18  Internationalisation of the scalable font backends
 
 XFree86 4.x has a ``fontenc'' layer to allow the scalable font backends to
 use a common method of font re-encoding.  This re-encoding makes it possible
@@ -899,14 +898,14 @@ layer is used by the Type1 and Speedo backends and the `xfsft' version of the
 TrueType backend.  The `X-TrueType' version of the TrueType backend uses a
 different re-encoding method based on loadable encoding modules.
 
-3.20  Large font optimisation
+4.19  Large font optimisation
 
 The glyph metrics array, which all the X clients using a particular font have
 access to, is now placed in shared memory, so as to reduce redundant memory
 consumption.  For non-local clients, the glyph metrics array is transmitted
 in a compressed format.
 
-3.21  Unicode/ISO 10646 support
+4.20  Unicode/ISO 10646 support
 
 What is included in 4.x:
 
@@ -939,7 +938,7 @@ What is included in 4.x:
    o Both the xfsft (the "freetype" module) and the X-TrueType (the "xtt"
      module) TrueType font backends support Unicode-encoded fonts.
 
-3.22  Lucidux fonts from Bigelow and Holmes
+4.21  Lucidux fonts from Bigelow and Holmes
 
 XFree86 now includes the ``Lucidux'' family of professionally hinted Type 1
 fonts.  This family consists of the fonts ``Lucidux Serif'', ``Lucidux Sans''
@@ -952,7 +951,7 @@ Blenda Horn from Y&Y, Inc.  For more information, please contact
 <design@bigelowandholmes.com> or <sales@yandy.com>, or consult Y&Y's web site
 <URL:http://www.yandy.com>.
 
-3.23  Directory rearrangements
+4.22  Directory rearrangements
 
 Some changes to the installed XFree86 directory structure have been imple-
 mented for 4.x.  One important change is a modified search path for the X
@@ -963,7 +962,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.47 2000/12/15 18:02:41 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.49 2000/12/15 19:32:39 dawes Exp $
 
 
 $XFree86$
