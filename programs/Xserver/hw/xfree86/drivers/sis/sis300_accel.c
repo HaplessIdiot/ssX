@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.3 2000/03/31 20:13:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.4 2000/12/02 01:16:17 dawes Exp $ */
 
 /*
  *
@@ -176,7 +176,7 @@ SiS300AccelInit(ScreenPtr pScreen)
 */
 
         /* Screen To Screen Color Expand */
-/*        infoPtr->SetupForScreenToScreenColorExpandFill =
+/*      infoPtr->SetupForScreenToScreenColorExpandFill =
                                 SiSSetupForScreenToScreenColorExpand;
         infoPtr->SubsequentScreenToScreenColorExpandFill =
                                 SiSSubsequentScreenToScreenColorExpand;
@@ -317,6 +317,7 @@ static void SiSSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 /*      XAAInfoRecPtr   pXAA = XAAPTR(pScrn);*/
         PDEBUG(ErrorF("Setup ScreenCopy(%d, %d, 0x%x, 0x%x, 0x%x)\n",
                         xdir, ydir, rop, planemask, trans_color));
+
 /*
         ErrorF("XAAInfoPtr->UsingPixmapCache = %s\n"
                 "XAAInfoPtr->CanDoMono8x8 = %s\n"
@@ -357,11 +358,8 @@ static void SiSSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
                         pXAA->NeedToSync ? "True" : "False");
 */
                         
-        SiSSetupSRCBase(0)
         SiSSetupDSTColorDepth(SISPTR(pScrn)->DstColor);
         SiSSetupSRCPitch(pSiS->scrnOffset)
-        SiSSetupDSTBase(0)
-/*      SiSSetupDSTRect(pSiS->scrnOffset, pScrn->virtualY)*/
         SiSSetupDSTRect(pSiS->scrnOffset, -1)
         SiSSetupROP(sisALUConv[rop])
         if (xdir > 0)   SiSSetupCMDFlag(X_INC)
@@ -374,10 +372,22 @@ static void SiSSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
                                 int width, int height)
 {
         SISPtr  pSiS = SISPTR(pScrn);
+        long srcbase, dstbase;
 
         PDEBUG(ErrorF("Subsequent ScreenCopy(%d,%d, %d,%d, %d,%d)\n",
                         src_x, src_y, dst_x, dst_y, width, height));
 
+        srcbase=dstbase=0;
+        if (src_y >= 2048) 
+        {       srcbase=pSiS->scrnOffset*src_y;
+                src_y=0;
+        }       
+        if (dst_y >= pScrn->virtualY) 
+        {       dstbase=pSiS->scrnOffset*dst_y;
+                dst_y=0;
+        }       
+        SiSSetupSRCBase(srcbase);
+        SiSSetupDSTBase(dstbase);
         if (!(pSiS->CommandReg & X_INC))  {
                 src_x += width-1;
                 dst_x += width-1;
@@ -402,7 +412,6 @@ SiSSetupForSolidFill(ScrnInfoPtr pScrn,
                         color, rop, planemask));
 
         SiSSetupPATFG(color)
-        SiSSetupDSTBase(0)
 /*      SiSSetupDSTRect(pSiS->scrnOffset, pScrn->virtualY)*/
         SiSSetupDSTRect(pSiS->scrnOffset, -1)
         SiSSetupDSTColorDepth(SISPTR(pScrn)->DstColor);
@@ -415,9 +424,16 @@ SiSSubsequentSolidFillRect(ScrnInfoPtr pScrn,
                         int x, int y, int w, int h)
 {
         SISPtr  pSiS = SISPTR(pScrn);
+        long dstbase;
 
         PDEBUG(ErrorF("Subsequent SolidFillRect(%d, %d, %d, %d)\n",
                         x, y, w, h));
+        dstbase=0;
+        if (y>=2048)
+        {       dstbase=pSiS->scrnOffset*y;
+                y=0;
+        }
+        SiSSetupDSTBase(dstbase)
         SiSSetupDSTXY(x,y)
         SiSSetupRect(w,h)
         SiSDoCMD
@@ -434,7 +450,6 @@ SiSSetupForSolidLine(ScrnInfoPtr pScrn,
 
         SiSSetupLineCount(1)
         SiSSetupPATFG(color)
-        SiSSetupDSTBase(0)
 /*      SiSSetupDSTRect(pSiS->scrnOffset, pScrn->virtualY)*/
         SiSSetupDSTRect(pSiS->scrnOffset, -1)
         SiSSetupDSTColorDepth(SISPTR(pScrn)->DstColor);
@@ -447,9 +462,19 @@ SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
                         int x1, int y1, int x2, int y2, int flags)
 {
         SISPtr  pSiS = SISPTR(pScrn);
+        long dstbase,miny,maxy;
 
         PDEBUG(ErrorF("Subsequent SolidLine(%d, %d, %d, %d, 0x%x)\n",
                         x1, y1, x2, y2, flags));
+        dstbase=0;
+        miny=(y1>y2)?y2:y1;
+        maxy=(y1>y2)?y1:y2;
+        if (maxy>=2048)
+        {       dstbase=pSiS->scrnOffset*miny;
+                y1-=miny;
+                y2-=miny;
+        }
+        SiSSetupDSTBase(dstbase)
 
         SiSSetupX0Y0(x1,y1)
         SiSSetupX1Y1(x2,y2)
@@ -463,9 +488,17 @@ SiSSubsequentSolidHorzVertLine(ScrnInfoPtr pScrn,
                                 int x, int y, int len, int dir)
 {
         SISPtr  pSiS = SISPTR(pScrn);
+        long dstbase;
 
         PDEBUG(ErrorF("Subsequent SolidHorzVertLine(%d, %d, %d, %d)\n",
                         x, y, len, dir));
+
+        dstbase=0;
+        if ((y>=2048) || ((y+len)>=2048))
+        {       dstbase=pSiS->scrnOffset*y;
+                y=0;
+        }
+        SiSSetupDSTBase(dstbase)
 
         SiSSetupX0Y0(x,y)
         if (dir==DEGREES_0)
@@ -486,7 +519,6 @@ SiSSetupForDashedLine(ScrnInfoPtr pScrn,
                 fg, bg, rop, planemask, length, *(pattern+4), *pattern));
 
         SiSSetupLineCount(1)
-        SiSSetupDSTBase(0)
 /*      SiSSetupDSTRect(pSiS->scrnOffset, pScrn->virtualY)*/
         SiSSetupDSTRect(pSiS->scrnOffset, -1)
         SiSSetupDSTColorDepth(SISPTR(pScrn)->DstColor);
@@ -503,9 +535,20 @@ SiSSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn,
                                 int flags, int phase)
 {
         SISPtr  pSiS = SISPTR(pScrn);
+        long dstbase,miny,maxy;
 
         PDEBUG(ErrorF("Subsequent DashedLine(%d,%d, %d,%d, 0x%x,0x%x)\n",
                 x1, y1, x2, y2, flags, phase));
+
+        dstbase=0;
+        miny=(y1>y2)?y2:y1;
+        maxy=(y1>y2)?y1:y2;
+        if (maxy>=2048)
+        {       dstbase=pSiS->scrnOffset*miny;
+                y1-=miny;
+                y2-=miny;
+        }
+        SiSSetupDSTBase(dstbase)
 
         SiSSetupX0Y0(x1,y1)
         SiSSetupX1Y1(x2,y2)
@@ -525,7 +568,6 @@ SiSSetupForMonoPatternFill(ScrnInfoPtr pScrn,
         PDEBUG(ErrorF("Setup MonoPatFill(0x%x,0x%x, 0x%x,0x%x, 0x%x, 0x%x)\n",
                         patx, paty, fg, bg, rop, planemask));
 
-        SiSSetupDSTBase(0)
         SiSSetupDSTRect(pSiS->scrnOffset, -1)
         SiSSetupDSTColorDepth(SISPTR(pScrn)->DstColor);
         SiSSetupMONOPAT(patx,paty)
@@ -541,9 +583,17 @@ SiSSubsequentMonoPatternFill(ScrnInfoPtr pScrn,
                                 int x, int y, int w, int h)
 {
         SISPtr  pSiS = SISPTR(pScrn);
+        long dstbase;
 
         PDEBUG(ErrorF("Subsequent MonoPatFill(0x%x,0x%x, %d,%d, %d,%d)\n",
                                 patx, paty, x, y, w, h));
+        dstbase=0;
+        if (y>=2048)
+        {       dstbase=pSiS->scrnOffset*y;
+                y=0;
+        }
+
+        SiSSetupDSTBase(dstbase)
         SiSSetupDSTXY(x,y)
         SiSSetupRect(w,h)
         SiSDoCMD
@@ -560,7 +610,6 @@ SiSSetupForColorPatternFill(ScrnInfoPtr pScrn,
         PDEBUG(ErrorF("Setup ColorPatFill(0x%x,0x%x, 0x%x,0x%x, 0x%x)\n",
                         patx, paty, rop, planemask, trans_color));
 
-        SiSSetupDSTBase(0)
 /*      SiSSetupDSTRect(pSiS->scrnOffset, pScrn->virtualY)*/
         SiSSetupDSTRect(pSiS->scrnOffset, -1)
         SiSSetupDSTColorDepth(SISPTR(pScrn)->DstColor);
@@ -574,9 +623,18 @@ SiSSubsequentColorPatternFill(ScrnInfoPtr pScrn,
                                 int x, int y, int w, int h)
 {
         SISPtr  pSiS = SISPTR(pScrn);
+        long dstbase;
 
         PDEBUG(ErrorF("Subsequent ColorPatFill(0x%x,0x%x, %d,%d, %d,%d)\n",
                                 patx, paty, x, y, w, h));
+
+        dstbase=0;
+        if (y>=2048)
+        {       dstbase=pSiS->scrnOffset*y;
+                y=0;
+        }
+        SiSSetupDSTBase(dstbase)
+
         SiSSetupDSTXY(x,y)
         SiSSetupRect(w,h)
         SiSDoCMD
@@ -593,7 +651,6 @@ SiSSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
         PDEBUG(ErrorF("Setup CPUToScreen ColorExpand(0x%x,0x%x, 0x%x,0x%x)\n",
                         fg, bg, rop, planemask));
 
-        SiSSetupDSTBase(0)
 /*      SiSSetupDSTRect(pSiS->scrnOffset, pScrn->virtualY)*/
         SiSSetupDSTRect(pSiS->scrnOffset, -1)
         SiSSetupDSTColorDepth(SISPTR(pScrn)->DstColor);
@@ -612,9 +669,17 @@ SiSSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
                                 int x, int y, int w, int h, int skipleft)
 {
         SISPtr          pSiS = SISPTR(pScrn);
+        long dstbase;
 
         PDEBUG(ErrorF("Subsequent CPUToScreen ColorExpand(%d,%d, %d,%d, %d)\n",
                                 x, y, w, h, skipleft));
+
+        dstbase=0;
+        if (y>=2048)
+        {       dstbase=pSiS->scrnOffset*y;
+                y=0;
+        }
+        SiSSetupDSTBase(dstbase)
 
 /*      SiSSetupSRCPitch(((w+31)&0xFFE0)/8)*/
         SiSSetupSRCPitch((w+7)/8)
@@ -624,6 +689,7 @@ SiSSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
         pSiS->DoColorExpand = TRUE;
 }
 
+#if 0
 static void
 SiSSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
                                 int fg, int bg,
@@ -660,7 +726,7 @@ SiSSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
         SiSDoCMD
 }
 
-
+#endif
 
 static void 
 SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg, int rop, unsigned int planemask)
@@ -670,7 +736,6 @@ SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
         while ((MMIO_IN16(pSiS->IOBase, 0x8242) & 0x1F00)!=0) {}
         pSiS->ColorExpandRingHead = 0;
         pSiS->ColorExpandRingTail = pSiS->ColorExpandBufferNumber - 1;
-        SiSSetupDSTBase(0);
         SiSSetupSRCXY(0,0);
         SiSSetupROP(sisALUConv[rop]);
         SiSSetupSRCFG(fg);
@@ -690,7 +755,16 @@ int     xcurrent, ycurrent;
 static void SiSSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y, int w, int h, int skipleft)
 {
         SISPtr pSiS=SISPTR(pScrn);      
-        int _x0,_y0,_x1,_y1; 
+        int _x0,_y0,_x1,_y1;
+        long dstbase;
+
+        dstbase=0;
+        if (y>=2048)
+        {       dstbase=pSiS->scrnOffset*y;
+                y=0;
+        }
+        SiSSetupDSTBase(dstbase)
+
         if (skipleft > 0)  
         {       _x0=x+skipleft;
                 _y0=y;

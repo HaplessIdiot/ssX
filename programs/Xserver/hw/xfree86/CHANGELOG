@@ -1,4 +1,6 @@
 XFree86 4.0.1Zb (14 December 2000)
+1184. Fix sis driver corrupt display with more than 8MB of video memory (#4378,
+      Can-Ru Yeou).
 1183. Fix xf86cfg build problem on systems that don't come with snprintf
       and/or regex (based on #4361, Thomas Mueller).
 1182. Fix siliconmotion driver screen restoration when a graphics vesafb mode
@@ -12061,4 +12063,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1473 2000/12/13 07:02:33 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1474 2000/12/14 01:39:49 dawes Exp $
