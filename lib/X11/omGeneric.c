@@ -31,7 +31,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.9 1998/06/28 08:41:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.10 1998/10/03 08:41:44 dawes Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -836,6 +836,7 @@ parse_omit_name(oc, font_data, pattern)
 		last--;
 	} else {
 	    *++last = '-';
+	}
 	
 	break;
     }
