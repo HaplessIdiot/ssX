@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.1 94/03/28 21:48:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.10 1994/12/02 05:48:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.11 1994/12/25 12:35:00 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -262,26 +262,6 @@ typedef struct
   CursorPtr pCurs;
   int skewed;
 } cirrusCurRec, *cirrusCurRecPtr;
-
-_XFUNCPROTOBEGIN
-
-/* In cir_alloc.c: */
-#if NeedFunctionPrototypes
-extern int CirrusInitializeAllocator ( int base );
-extern int CirrusAllocate ( int size );
-extern int CirrusCursorAllocate ( cirrusCurRecPtr cirrusCur );
-extern void CirrusFree ( int vidaddr );
-extern void CirrusUploadPattern ( unsigned char *pattern, int width,
-				 int height, int vidaddr, int srcpitch );
-#else
-extern int CirrusInitializeAllocator ();
-extern int CirrusAllocate ();
-extern int CirrusCursorAllocate ();
-extern void CirrusFree ();
-extern void CirrusUploadPattern();
-#endif
-
-_XFUNCPROTOEND
 
 #define HAVE543X() (cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
 

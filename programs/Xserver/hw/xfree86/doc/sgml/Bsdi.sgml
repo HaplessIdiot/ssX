@@ -254,9 +254,12 @@ later releases can use:
 <verb>                   
 #if (BSD >= 199103)
 </verb>
-To ensure that this symbol is correctly defined, include either
-<tt>&lt;X11/Xos.h&gt;</tt> (best) or <tt>&lt;sys/param.h&gt;</tt> in the
-source that requires it.
+To ensure that this symbol is correctly defined, include
+<tt>&lt;sys/param.h&gt;</tt> in the source that requires it.  Note that
+the symbol <bf/CSRG_BASED/ is defined for *BSD systems in XFree86 3.1.1
+and later.  This should be used to protect the inclusion of
+<tt>&lt;sys/param.h&gt;</tt>.
+
 For code that really is specific to a particular i386 BSD port, use
 <tt>__FreeBSD__</tt> for FreeBSD, <tt>__NetBSD__</tt> for NetBSD,
 <tt>__386BSD__</tt> for 386BSD, and <tt>__bsdi__</tt> for BSD/386.
@@ -300,7 +303,7 @@ instructions on how to build a new kernel.
 </verb>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.1 1994/12/25 08:38:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.2 1994/12/26 11:03:19 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.32 94/04/09 21:46:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/Imakefile,v 3.2 1994/11/30 20:26:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.3 1994/12/25 12:12:15 dawes Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -7,6 +7,7 @@ LOCALFILES = LocalConfigFiles
 
 DEFFILES = \
 xf86site.def \
+host.def \
 site.def
 
 RULEFILES = \

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.c,v 1.1 94/03/28 21:48:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.4 1994/08/31 04:44:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.5 1994/12/25 12:34:50 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -172,8 +172,8 @@ fillWidth, fillHeight, dstPitch, rop, patternword1, patternword2)
   int i;
   pointer pDst;
 
-  if (!HAVE543X() && fillHeight > 1024) {
-      /* Split into two for 5426, 5428 & 5429. */
+  if (fillHeight > 1024) {
+      /* Split into two for 542x/5430/4. */
       _CirrusBLTColorExpand8x8PatternFill(dstAddr, fgcolor, bgcolor,
           fillWidth, 1024, dstPitch, rop, patternword1, patternword2);
       _CirrusBLTColorExpand8x8PatternFill(dstAddr + dstPitch * 1024,
@@ -252,7 +252,7 @@ void _CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, h, dir)
      int w, h;
      int dir;			/* >0, increase adrresses, <0, decrease */
 {
-  if ((!HAVE543X()) && h > 1024) {
+  if (h > 1024) {
      /* Split into two. */
      if (dir > 0) {
          _CirrusBLTBitBlt(dstAddr, srcAddr, dstPitch, srcPitch, w, 1024, dir);
@@ -308,8 +308,8 @@ fillHeight, dstPitch)
 {
   int size, i;
 
-  if (!HAVE543X() && fillHeight > 1024) {
-      /* Split into two for 5426, 5428 & 5429. */
+  if (fillHeight > 1024) {
+      /* Split into two for 542x/30/34. */
       CirrusBLTColorExpandImageWriteFill(dstAddr, fgcolor, fillWidth, 1024,
           dstPitch);
       CirrusBLTColorExpandImageWriteFill(dstAddr + dstPitch * 1024, fgcolor,
@@ -411,8 +411,8 @@ destpitch, rop)
     unsigned char *base;
     int srcaddr, busy, i;
 
-    if (!HAVE543X() && h > 1024) {
-        /* Split into two for 5426, 5428, & 5429. */
+    if (h > 1024) {
+        /* Split into two for 542x/30/34 */
         _CirrusBLT8x8PatternFill(destaddr, w, 1024, pattern, patternpitch,
             destpitch, rop);
         /* Vertical alignment is correct since 1024 is a multiple of 8. */
@@ -469,8 +469,8 @@ destpitch, rop)
     unsigned char *base;
     int srcaddr, busy, k, i;
 
-    if (!HAVE543X() && h > 1024) {
-        /* Split into two for 5426, 5428, & 5429. */
+    if (h > 1024) {
+        /* Split into two for 542x/30/34. */
         _CirrusBLT16x16PatternFill(destaddr, w, 1024, pattern, patternpitch,
             destpitch, rop);
         /* Vertical alignment is correct since 1024 is a multiple of 16. */
@@ -543,8 +543,8 @@ destpitch, rop)
     unsigned char *base;
     int srcaddr, saved_destaddr, x, busy, k, chip_supports_32byte_fill;
 
-    if (!HAVE543X() && h > 1024) {
-        /* Split into two for 5426, 5428, & 5429. */
+    if (h > 1024) {
+        /* Split into two for 542x/30/34. */
         _CirrusBLT32x32PatternFill(destaddr, w, 1024, pattern, patternpitch,
             destpitch, rop);
         /* Vertical alignment is correct since 1024 is a multiple of 16. */

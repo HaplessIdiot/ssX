@@ -552,13 +552,15 @@ BSD-specific.  The value of the symbol can be used to distinguish
 different BSD releases.  For example, code specific to the Net-2 and
 later releases can use:
 
-<tscreen><verb>
+<tscreen>
 #if (BSD >= 199103)
-</verb></tscreen>
+</tscreen>
 
-To ensure that this symbol is correctly defined, include either
-<tt>&lt;X11/Xos.h&gt;</tt> (best) or <tt>&lt;sys/param.h&gt;</tt> in
-the source that requires it.  
+To ensure that this symbol is correctly defined, include
+<tt>&lt;sys/param.h&gt;</tt> in the source that requires it.  Note that
+the symbol <bf/CSRG_BASED/ is defined for *BSD systems in XFree86 3.1.1
+and later.  This should be used to protect the inclusion of
+<tt>&lt;sys/param.h&gt;</tt>.
 
 For code that really is specific to a particular i386 BSD port, use
 <bf/__FreeBSD__/ for FreeBSD, <bf/__NetBSD__/ for NetBSD,
@@ -579,7 +581,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.1 1994/12/25 08:38:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.2 1994/12/26 11:03:23 dawes Exp $
 </verb>
 
 </article>

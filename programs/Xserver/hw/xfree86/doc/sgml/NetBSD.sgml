@@ -1,7 +1,7 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.1 on NetBSD 1.0
+<title> README for XFree86 3.1.0B on NetBSD
 <author>Rich  Murphey,
 David Dawes,
 Marc  Wandschneider,
@@ -37,8 +37,14 @@ Binaries for NetBSD 1.0 are available from:
 <p>
 <url url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
 
-If you're running NetBSD 0.9, you'll have to build it from the source.
+If you're still running NetBSD 0.9, you'll have to build it from the source.
 If you've done it and want to share your binaries, please let us know.
+
+This release has also been tested on NetBSD-current of January, 1st 1995 with
+<tt/option "COMPAT_10"/ in the kernel config file.
+
+XFree86 now also builds on NetBSD/sparc. See section <ref id="sparc">
+for details.
 
 <sect>Bug Reports for This Document
 
@@ -56,11 +62,15 @@ man pages, config files, and the server link kit.  The full distribution
 takes over 40MB of disk space.  The large archives are split into
 smaller chunks.
 
+All archives are now made using the NetBSD package tools. We recommand
+that you install these tools first.  All packages can be installed
+using <tt/pkg_add/.
+
 Note that many clients were moved from the X11R6 distribution to the
 ``contrib'' area. However, they are still distributed with the
 XFree86 binary distribution. 
 
-    The contents of the archives are:
+    The contents of the packages are:
 
 <descrip>
 <tag/REQUIRED:/
@@ -95,7 +105,7 @@ XFree86 binary distribution.
     <tag/prog/ the X11 header files and static libraries needed only 
 		  for compiling other X applications
     <tag/man/ man pages except XFree86 specific ones in the doc archive
-    <tag/other-fonts/ the other fonts (100dpi, scaled, Japanese, Chinese, etc)
+    <tag/otherfonts/ the other fonts (100dpi, scaled, Japanese, Chinese, etc)
     <tag/linkkit/ X server reconfiguration kit
     </descrip>
 </descrip>
@@ -104,9 +114,40 @@ If this is your first time, then you can safely install all of the
 packages.  As a minimal install, you'll need doc, bin, fonts lib,
 config, and one X server.
 
+<sect1> Installing the packages with <tt/pkg_add/
+
+<p>
+<enum>
+<item> Concatenate back the multi-part packages you want to install
+(bin, fonts, linkkit and otherfonts): 
+<tscreen><verb>
+ % cat xf86-3.1.0B-bin.tar.gz.* > xf86-3.1.0B-bin.tar.gz
+ % cat xf86-3.1.0B-fonts.tar.gz.* > xf86-3.1.0B-fonts.tar.gz
+ % cat xf86-3.1.0B-linkkit.tar.gz.* > xf86-3.1.0B-linkkit.tar.gz
+ % cat xf86-3.1.0B-otherfonts.tar.gz.* > xf86-3.1.0B-otherfonts.tar.gz
+</verb></tscreen>
+You can remove individual parts once they are cat'd together.
+
+<item> Become ``root''.
+
+<item> For each package that you want to install type:
+<tscreen><verb>
+ # pkg_add xf86-3.1.0B-<pkg>.tar.gz
+</verb></tscreen>
+If you don't have enough room in /usr/X11R6 you can specify another
+directory by using the <tt/-p/ option to <tt/pkg_add/. See
+<em/pkg_add(8)/ for details.
+
+</enum>
+
+Continue with item <ref id="install-cont" name="Setting XWINHOME">
+below. 
+  
+<sect1>Installing the packages without <tt/pkg_add/
+<p>
     To unpack and install the archives:
 <enum>
-<item> create some destination directory in which you'd like the
+<item> Create some destination directory in which you'd like the
        X distribution to live.  <tt>/usr/X11R6</tt> is recommended, but if that
        partition is full (as it is on my machine), then just create an
        alternate directory, and sym-link <tt>/usr/X11R6</tt> to this place.
@@ -121,37 +162,37 @@ config, and one X server.
 <item> You must be logged in as root to unpack the archives and use a
 	``umask'' value of 022.  Typing ``<tt/umask 022/'' sets it.
 	<em/Caution:/ If you do not extract the files as user ``root''
-	with the correct umask you may not be able to run XFree86 3.1.
+	with the correct umask you may not be able to run XFree86 3.1.0B.
 	The X server needs special permissions that are only granted
 	to the root user.
 
-	Assuming that the destination directory for XFree86 3.1 is
+	Assuming that the destination directory for XFree86 3.1.0B is
 	<tt>/usr/X11R6</tt>, run the following from wherever all the archive
 	files are (replace <tt>/usr/X11R6</tt> with wherever you wish them to
 	go if that isn't the place):
 <tscreen><verb>
  cd /usr/X11R6
 
- cat xf86-3.1-bin.tar.gz.* | tar xzf -
- cat xf86-3.1-fonts.tar.gz.* | tar xzf -
- cat xf86-3.1-linkkit.tar.gz.* | tar xzf -
- cat xf86-3.1-other-fonts.tar.gz.* | tar xzf -
+ cat xf86-3.1.0B-bin.tar.gz.* | tar xzf -
+ cat xf86-3.1.0B-fonts.tar.gz.* | tar xzf -
+ cat xf86-3.1.0B-linkkit.tar.gz.* | tar xzf -
+ cat xf86-3.1.0B-other-fonts.tar.gz.* | tar xzf -
 
- tar xzf xf86-3.1-config.tar.gz
- tar xzf xf86-3.1-doc.tar.gz
- tar xzf xf86-3.1-fs.tar.gz
- tar xzf xf86-3.1-lib.tar.gz 
- tar xzf xf86-3.1-man.tar.gz
- tar xzf xf86-3.1-man.tar.gz
- tar xzf xf86-3.1-prog.tar.gz
+ tar xzf xf86-3.1.0B-config.tar.gz
+ tar xzf xf86-3.1.0B-doc.tar.gz
+ tar xzf xf86-3.1.0B-fs.tar.gz
+ tar xzf xf86-3.1.0B-lib.tar.gz 
+ tar xzf xf86-3.1.0B-man.tar.gz
+ tar xzf xf86-3.1.0B-man.tar.gz
+ tar xzf xf86-3.1.0B-prog.tar.gz
 </verb></tscreen>
 	And unpack the server(s) you need:
 <tscreen><verb>
  tar xzf xf86-<server>.tar.gz
 </verb></tscreen>
 
-<item> Set the <tt/XWINHOME/ environment variable to the path where you
-	installed XFree86. Under csh  type:
+<item> <label id="install-cont"> Set the <tt/XWINHOME/ environment
+variable to the path where you installed XFree86. Under csh  type:
 <tscreen><verb>
  setenv XWINHOME /usr/X11R6
 </verb></tscreen>
@@ -309,8 +350,8 @@ available by anonymous FTP from a number of sites.
 If using pccons you get the mesage:
 
 <tscreen><verb>
-> XFree86 Version 3.1 / X Window System
-> (protocol Version 11, revision 0, vendor release 5000)
+> XFree86 Version 3.1.0B / X Window System
+> (protocol Version 11, revision 0, vendor release 6000)
 > Operating System: NetBSD
 > Configured drivers:
 >   Mach8: accelerated server for ATI Mach-8 graphics adaptors
@@ -385,7 +426,7 @@ There are two ways to allow XFree86 to access linear memory:
 
 <sect1>MIT-SHM
 <p>
-NetBSD 1.0 supports System V shared memory. If XFree86 3.1 detects
+NetBSD 1.0 supports System V shared memory. If XFree86 3.1.0B detects
 this support in your kernel, it will support the MIT-SHM extension.
 
     Under NetBSD 1.0, use the following to add shared memory
@@ -461,13 +502,34 @@ files should be taken from your installed version of the driver.
 <sect1> Support for shared libs under NetBSD 1.0
 
 <p>
-    By default XFree86 3.1 builds for NetBSD 1.0 with shared libraries 
+    By default XFree86 3.1.0B builds for NetBSD 1.0 with shared libraries 
     support. If you're building on 0.9 or don't want shared libraries 
     add the following line to <tt/xf86site.def/:
 
 <tscreen>	
  #define BuildBsdSharedLibs 	NO
 </tscreen>
+
+<sect1>Building on NetBSD/sparc<label id="sparc">
+
+<p>
+XFree86 3.1.0B now also compiles on NetBSD/sparc. The Sun server
+patches from Dennis Ferguson and Matthew Green have been integrated in
+<tt>xc/programs/Xserver/hw/sun</tt>.  Small
+modifications to <tt/xf86site.def/ are needed:
+<itemize>
+<item> Set all variables defining the servers to build to
+<bf/NO/. (The variables controlling the Sun servers to build
+<bf/Xsun24Server/, <bf/XsunServer/ and <bf/XsunMonoServer/ are
+defined at the end of <tt/NetBSD.cf/.)
+<item> Set <bf/ServerToInstall/ to the sun server of your
+choice. (Xsun or XsunMono).
+<item> Look at other applicable options in the <em/INSTALL/ document.
+</itemize>
+
+Problems with this port should be reported to the
+<em/port-sparc@NetBSD.Org/ mailing list or directly to me
+<em/matthieu@laas.fr/ rather than to the xfree86 mailing list. 
 
 <sect>Building New X Clients
 
@@ -495,9 +557,11 @@ later releases can use:
 #if (BSD >= 199103)
 </tscreen>
 
-To ensure that this symbol is correctly defined, include either
-<tt>&lt;X11/Xos.h&gt;</tt> (best) or <tt>&lt;sys/param.h&gt;</tt> in
-the source that requires it.  
+To ensure that this symbol is correctly defined, include
+<tt>&lt;sys/param.h&gt;</tt> in the source that requires it.  Note that
+the symbol <bf/CSRG_BASED/ is defined for *BSD systems in XFree86 3.1.1
+and later.  This should be used to protect the inclusion of
+<tt>&lt;sys/param.h&gt;</tt>.
 
 For code that really is specific to a particular i386 BSD port, use
 <bf/__FreeBSD__/ for FreeBSD, <bf/__NetBSD__/ for NetBSD,
@@ -530,7 +594,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.1 1994/12/25 08:38:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.2 1994/12/26 11:03:30 dawes Exp $
 </verb>
 
 </article>

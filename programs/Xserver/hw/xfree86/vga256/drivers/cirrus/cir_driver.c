@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.23 1994/12/11 10:56:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.24 1994/12/25 12:34:56 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -103,6 +103,7 @@
  */
 
 #include "cir_driver.h"
+#include "cir_alloc.h"
 #ifndef MONOVGA
 #include "vga256.h"
 #endif
@@ -145,7 +146,7 @@ int cirrusReprogrammedMCLK = 0;
  * The 543x should be compatible. -HH
  */
 
-#define Has_HWCursor(x) (((x) >= CLGD5420 && (x) <= CLGD5429) || \
+#define Has_HWCursor(x) (((x) >= CLGD5422 && (x) <= CLGD5429) || \
     (x) == CLGD5430 || (x) == CLGD5434)
 
 /* Define a structure for the HIDDEN DAC cursor colours */
@@ -291,10 +292,11 @@ static cirrusClockRec cirrusClockTab[] = {
   /* These are all too high according to the databook.  They can be enabled
      with the "16clocks" option  *if* this driver has been compiled with
      ALLOW_OUT_OF_SPEC_CLOCKS defined. [542x only] */
-  { 0x7E, 0x28 },		/* 90.203 */
-  { 0x7E, 0x26 },		/* 94.950 */
-  { 0x7E, 0x24 },		/* 100.226 */
-  { 0x7B, 0x20 },		/* 110.069 */
+  { 0x58, 0x1C },		/* 89.998 */
+  { 0x49, 0x16 },		/* 95.019 */
+  { 0x46, 0x14 },		/* 100.226 */
+  { 0x53, 0x16 },		/* 108.035 */
+  { 0x5C, 0x18 },		/* 110.248 */
 };
 
 /* Doubled clocks for 16-bit clocking mode with pixel clock ~< 45 MHz. */
@@ -354,7 +356,7 @@ static int cirrusClockLimit[] = {
    * Multiplexing has now been added, but is untested -- HH.
    */
 #if defined(ALLOW_8BPP_MULTIPLEXING)
-  110100,	/* 5434 */
+  110300,	/* 5434 */
 #else
   85500,	/* 5434 */
 #endif
@@ -663,12 +665,20 @@ cirrusProbe()
 	  rev = (IdentVal & 0x03);
 
 	  outb(vgaIOBase + 0x04, 0x25); partstatus = inb(vgaIOBase + 0x05);
+          cirrusChipRevision = 0x00;
 
 	  switch( id )
 	       {
 	     case CLGD5420_ID:
 	     case CLAVGA2_ID:		/* AVGA2 uses 5402 */
 	       cirrusChip = CLGD5420;	/* 5420 or 5402 */
+	       /* Check for CL-GD5420-75QC-B */
+	       /* It has a Hidden-DAC register. */
+	       outb(0x3C6, 0x00);
+	       outb(0x3C6, 0xFF);
+	       inb(0x3C6); inb(0x3c6); inb(0x3C6); inb(0x3C6);
+	       if (inb(0x3C6) != 0xFF)
+	           cirrusChipRevision = 0x01;	/* 5420-75QC-B */
 	       break;
 	     case CLGD5422_ID:
 	       cirrusChip = CLGD5422;
@@ -683,7 +693,6 @@ cirrusProbe()
 	       cirrusChip = CLGD5428;
 	       break;
 	     case CLGD5429_ID:
-	       cirrusChipRevision = 0x00;
 	       if (partstatus >= 0x67)
 	           cirrusChipRevision = 0x01;	/* >= Rev. B, fixes BLT */
 	       cirrusChip = CLGD5429;
@@ -716,7 +725,6 @@ cirrusProbe()
 
 	     /* 'Alpine' family. */
 	     case CLGD5434_ID:
-	       cirrusChipRevision = 0x00;
 	       if ((partstatus & 0xC0) == 0xC0)
 	          cirrusChipRevision = 0x01;	/* Better than rev. D/E. */
 	       cirrusChip = CLGD5434;		/* handles 60 MHz MCLK. */
@@ -1043,6 +1051,11 @@ cirrusProbe()
 		       vga256InfoRec.clock[i] =
 		          CLOCKVAL(cirrusClockTab[i].numer, cirrusClockTab[i].denom);
 		   }
+	       else
+	           if (xf86Verbose)
+                       ErrorF("%s %s: %s: Using programmable clocks\n",
+	                   XCONFIG_PROBED, vga256InfoRec.name,
+	                   vga256InfoRec.chipset);
 	       }
      else
           if (vga256InfoRec.clocks > cirrusClockNo)
@@ -1325,15 +1338,16 @@ nolinear:
 	}
     }	  
 
-  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
+  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
+  && !(cirrusChip == CLGD5420 && cirrusChipRevision == 1)) {
     if (xf86Verbose)
       {
         ErrorF ("%s %s: %s: Using accelerator functions\n",
 	    XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
       }
 
-    /* Accel functions are available on all chips; some use the BitBLT */
-    /* engine if available. */
+    /* Accel functions are available on all chips except 5420-75QC-B; some
+     * use the BitBLT engine if available. */
 
     if (vgaBitsPerPixel == 8) {
         vga256LowlevFuncs.doBitbltCopy = CirrusDoBitbltCopy;

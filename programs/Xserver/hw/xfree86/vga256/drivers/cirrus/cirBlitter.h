@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.h,v 1.1 94/03/28 21:48:17 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.h,v 3.4 1994/10/20 06:11:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.h,v 3.5 1994/12/25 12:34:52 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 
@@ -64,6 +64,7 @@
   outw (0x3CE, ((((fillWidth) - 1) & 0x00001F00)) | 0x21);
 
 /* Height: the 5426 goes up to 1024, the 5434 can do 2048. */
+/* It appears many 5434's only go up to 2048. */
 
 /* The height is preserved by a blit only on the 543x. */
 #define SETHEIGHT543X(fillHeight) \

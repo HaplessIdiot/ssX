@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.27 1994/12/26 01:04:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.28 1994/12/26 10:40:55 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -69,21 +69,21 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.27 1994/12/26 01:04:48 dawes Exp $
  * SVGA server:
  *
 #define XF86SvgaDrivers		et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 compaq oak mx al2101 ali cl6420 \
+				ncr77c22 compaq oak mx al2101 ali cl64xx \
 				video7 chips generic
  */
 
 /*
  * VGA16 server:
  *
-#define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl6420 generic
+#define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl64xx generic
  */
 
 /*
  * VGA2 driver in Mono server:
  *
 #define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 compaq oak cl6420 generic
+				ncr77c22 compaq oak cl64xx generic
  */
 
 /*
@@ -98,6 +98,16 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.27 1994/12/26 01:04:48 dawes Exp $
 #define XF86W32Drivers		et4000w32
  */
 
+/*
+ * BSD Console driver support (for FreeBSD and NetBSD).
+ * By default support is included for pccons, syscons and pcvt.
+ * To change the list of supported drivers, set the following parameter.
+ * Possible values are -DPCCONS_SUPPORT, -DSYSCONS_SUPPORT, -DPCVT_SUPPORT,
+ * -DCODRV_SUPPORT.  The following example includes support for syscons and
+ * pcvt only.
+ *
+#define XFree86ConsoleDefines	-DSYSCONS_SUPPORT -DPCVT_SUPPORT
+ */
 
 /*
  * To play with LBX, uncomment this.  Note, after doing this, you should

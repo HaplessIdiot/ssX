@@ -212,7 +212,6 @@ Option ``fifo_aggressive'' (5424/6/8/9/30)
 	performance at high dot clocks.
 <tag>
 Option ``no_2mb_banksel'' (542x)
-HERE
 </tag>
 	This option will cause the driver not to set the `DRAM bank select'
 	bit to enable the upper megabyte of memory on a 2Mbyte card. This
@@ -551,7 +550,7 @@ New features in XFree86 3.1.1:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.0 1994/12/20 11:33:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.1 1994/12/26 11:03:45 dawes Exp $
 </verb>
 
 </article>

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.10 1994/12/25 12:17:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.11 1994/12/25 13:45:41 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -75,6 +75,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.10 1994/1
 
 /* The Mach32 server */
 #define XF86Mach32Server	YES
+
+/* The Mach64 server */
+#define XF86Mach64Server	YES
 
 /* The P9000 server */
 #define XF86P9000Server		YES

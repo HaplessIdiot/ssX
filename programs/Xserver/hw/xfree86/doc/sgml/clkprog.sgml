@@ -44,16 +44,14 @@ while cards with a fully programmable clock would use the frequency argument.
 When such an external program is being used, the server does not change
 any register fields related to clock selection, and the external program
 must be careful to only modify clock selection fields.  The program is
-run with stdin and stdout set to x386Info.consoleFd -- which is the
+run with stdin and stdout set to xf86Info.consoleFd -- which is the
 fd to use for display-related ioctl() operations if required.
 Stderr is
 the same as the server's stderr -- so error or warning messages should
 be directed there.  The program is run with the uid set to the real user's
 ID -- so if it needs to use privileged system calls it should be suid-root.
-On most systems the program will inherit access privileges to VGA registers
-(although this might change if it proves a security problem).  For servers
-which bypass TSS I/O control by raising the IOPL, this is reset before
-the external program is called (no drivers do this yet).
+The program does not inherit any I/O access privileges, so it will
+need to do whatever is required to enable them.
 
 The program is expected to return an exit status 0 when successful, and a
 status in the range 1-254 when it fails.  If the external program fails
@@ -67,7 +65,7 @@ A sample clock switching program is provided for use with many ET4000 cards
 that have a fixed set of 8 clocks.  This program is only intended as a sample,
 and it is not intended for general use (the internal server code handles this
 type of card).  The program is
-<tt>mit/server/ddx/x386/etc/et4000clock.c</tt>
+<tt>xc/programs/Xserver/hw/xfree86/etc/et4000clock.c</tt>
 in the source tree, and 
 <tt>/usr/X11R6/lib/X11/etc/et4000clock.c</tt> in the binary tree.
 
@@ -75,7 +73,7 @@ The idea of using an external clock program was suggested by
 Frank Klemm &lt;<it>pfk@rz.uni-jena.de</it>&gt;
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.clkprog,v 3.1 1994/09/25 13:26:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.0 1994/12/20 11:33:45 dawes Exp $
 </verb>
 
 </article>

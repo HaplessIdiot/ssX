@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.13 1994/11/30 20:43:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.14tsi Exp $ */
 /*
- * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -471,7 +471,7 @@ static const char *DACNames[] =
 };
 
 #define ATI_CLOCK_NONE     0    /* Must be zero */
-#define ATI_CLOCK_CRYSTALS 1
+#define ATI_CLOCK_CRYSTALS 1    /* Must be one */
 #define ATI_CLOCK_18810    2
 #define ATI_CLOCK_18811_0  3
 #define ATI_CLOCK_18811_1  4
@@ -836,14 +836,19 @@ int no;
  * clock lines.  It returns a clock line number (or 0).
  */
 static int
-ATIMatchClockLine(Clock_Line, Number_Of_Clocks, Calibration_Clock_Number)
-const int **Clock_Line, Number_Of_Clocks, Calibration_Clock_Number;
+ATIMatchClockLine(Clock_Line, Number_Of_Clocks,
+                  Calibration_Clock_Number, Clock_Map)
+const int **Clock_Line, Number_Of_Clocks, Calibration_Clock_Number, Clock_Map;
 {
-        int Clock_Chip = 0, Clock_Chip_Index;
+        int Clock_Chip = 0, Clock_Chip_Index = 0;
         int Number_Of_Matching_Clocks = 0;
         int Minimum_Gap = CLOCK_TOLERANCE + 1;
 
-        for (Clock_Chip_Index = 0;  Clock_Line[++Clock_Chip_Index]; )
+        /* If checking for XF86Config clock order, skip crystals */
+        if (Clock_Map)
+                Clock_Chip_Index++;
+
+        for (;  Clock_Line[++Clock_Chip_Index]; )
         {
                 int Maximum_Gap = 0, Clock_Count = 0, Clock_Index;
 
@@ -854,7 +859,7 @@ const int **Clock_Line, Number_Of_Clocks, Calibration_Clock_Number;
                         int Gap, XF86Config_Clock, Specification_Clock;
 
                         Specification_Clock =
-                                Clock_Line[Clock_Chip_Index][Clock_Index];
+                         Clock_Line[Clock_Chip_Index][Clock_Index ^ Clock_Map];
                         if (Specification_Clock < 0)
                                 break;
                         if (!Specification_Clock ||
@@ -903,7 +908,7 @@ ATIGetClocks()
         int Number_Of_Documented_Clocks, Number_Of_Undivided_Clocks;
         int Number_Of_Dividers, Number_Of_Clocks;
         int Calibration_Clock_Number, Calibration_Clock_Value;
-        int Clock_Index, Specification_Clock;
+        int Clock_Index, Specification_Clock, Clock_Map;
 
         /*
          * Determine the number of clock values the board should be able to
@@ -952,7 +957,33 @@ probe_clocks:
                         Calibration_Clock_Number, Calibration_Clock_Value,
                         &vga256InfoRec);
 
+                /* Tell user clocks were probed, instead of supplied */
                 OFLG_CLR(XCONFIG_CLOCKS, &vga256InfoRec.xconfigFlag);
+
+                /*
+                 * Attempt to match probed clocks to a known specification.
+                 */
+                ATIClock =
+                        ATIMatchClockLine(ClockLine,
+                                Number_Of_Documented_Clocks,
+                                Calibration_Clock_Number, 0);
+
+                if (ATIBoard <= ATI_BOARD_V4)
+                {
+                        /*
+                         * V3 and V4 boards don't have clock chips.
+                         */
+                        if (ATIClock > ATI_CLOCK_CRYSTALS)
+                                ATIClock = ATI_CLOCK_NONE;
+                }
+                else
+                {
+                        /*
+                         * All others don't have crystals.
+                         */
+                        if (ATIClock == ATI_CLOCK_CRYSTALS)
+                                ATIClock = ATI_CLOCK_NONE;
+                }
         }
         else
         {
@@ -981,22 +1012,64 @@ probe_clocks:
                  * clocks, and clock lines that could have been used with the
                  * pre-2.1.1 ati driver.
                  */
-                if (ATIMatchClockLine(InvalidClockLine, Number_Of_Clocks, -1))
+                if (ATIMatchClockLine(InvalidClockLine,
+                                      Number_Of_Clocks, -1, 0))
+                        vga256InfoRec.clocks = 0;
+                else
+                {
+                        /*
+                         * Attempt to match clocks to a known specification.
+                         */
+                        ATIClock =
+                                ATIMatchClockLine(ClockLine,
+                                        Number_Of_Documented_Clocks,
+                                        Calibration_Clock_Number, 0);
+
+                        /*
+                         * Ensure crystals are not matched to clock chips, and
+                         * vice versa.
+                         */
+                        if (ATIBoard <= ATI_BOARD_V4)
+                        {
+                                if (ATIClock > ATI_CLOCK_CRYSTALS)
+                                        vga256InfoRec.clocks = 0;
+                        }
+                        else
+                        {
+                                if (ATIClock == ATI_CLOCK_CRYSTALS)
+                                        vga256InfoRec.clocks = 0;
+                        }
+                }
+
+                if (!vga256InfoRec.clocks)
                 {
                         ErrorF("Invalid or obsolete XF86Config clocks line "
                                "rejected.\nClocks will be probed.  See "
                                "README.ati for more information.\n");
-                        vga256InfoRec.clocks = 0;
                         goto probe_clocks;
                 }
-        }
 
-        /*
-         * Attempt to match clocks line to a known specification.
-         */
-        ATIClock =
-                ATIMatchClockLine(ClockLine, Number_Of_Documented_Clocks,
-                        Calibration_Clock_Number);
+                /*
+                 * Now, check for clocks that are specified in the wrong order.
+                 * This is meant to catch people trying to use the clock order
+                 * intended for the accelerated servers.
+                 */
+                if (!ATIClock)
+                        for (Clock_Map = 1;
+                             Clock_Map < Number_Of_Documented_Clocks;
+                             Clock_Map++)
+                                if (ATIMatchClockLine(ClockLine,
+                                        Number_Of_Documented_Clocks,
+                                        -1, Clock_Map))
+                                {
+                                        ErrorF("XF86Config clocks order "
+                                               "incorrect.  Clocks will be "
+                                               "probed.\nSee README.ati for "
+                                               "more information.\n");
+                                        vga256InfoRec.clocks = 0;
+                                        goto probe_clocks;
+                                }
+        }
 
         switch (ATIClock)
         {
@@ -1368,8 +1441,16 @@ ATIProbe()
         xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
         /*
-         * First determine if a Mach64 is present.
+         * Determine if a Mach64 is present, making sure it's not in some wierd
+         * state.
          */
+        IO_Value = inl(BUS_CNTL);
+        outl(BUS_CNTL, (IO_Value &
+                ~(BUS_ROM_DIS | BUS_FIFO_ERR_INT_EN | BUS_HOST_ERR_INT_EN)) |
+                BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT);
+        outl(GEN_TEST_CNTL, 0);
+        outl(GEN_TEST_CNTL, GEN_GUI_EN);
+
         IO_Value = inl(SCRATCH_REG0);
         outl(SCRATCH_REG0, 0x55555555);          /* Test odd bits */
         if (inl(SCRATCH_REG0) == 0x55555555)
@@ -1378,18 +1459,6 @@ ATIProbe()
                 if (inl(SCRATCH_REG0) == 0xAAAAAAAA)
                 {
                         /* A Mach64 has been detected */
-                        if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
-                        {
-                                /* Reset Mach64 engine */
-                                IO_Value2 = inl(BUS_CNTL);
-                                outl(BUS_CNTL, (IO_Value2 &
-                                        ~(BUS_ROM_DIS | BUS_FIFO_ERR_INT_EN |
-                                                BUS_HOST_ERR_INT_EN)) |
-                                        BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT);
-                                outl(GEN_TEST_CNTL, 0);
-                                outl(GEN_TEST_CNTL, GEN_GUI_EN);
-                        }
-
                         IO_Value2 = inl(CONFIG_STATUS_0);
                         if ((IO_Value2 & (CFG_VGA_EN | CFG_CHIP_EN)) !=
                             (CFG_VGA_EN | CFG_CHIP_EN))
@@ -1440,23 +1509,18 @@ ATIProbe()
                 if (!(BIOS_Data[0x44] & 0x40))
                 {
                         /* An 8514/A compatible accelerator detected */
-                        if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
-                        {
-                                /*
-                                 * Reset the 8514/A and disable all interrupts.
-                                 */
-                                outw(SUBSYS_CNTL,
-                                        GPCTRL_RESET | CHPTEST_NORMAL);
-                                outw(SUBSYS_CNTL,
-                                        GPCTRL_ENAB | CHPTEST_NORMAL);
 
-                                /*
-                                 * Don't leave any Mach8 or Mach32 in 8514/A
-                                 * mode.
-                                 */
-                                IO_Value = inw(CLOCK_SEL);
-                                outw(CLOCK_SEL, IO_Value);
-                        }
+                        /*
+                         * Reset the 8514/A and disable all interrupts.
+                         */
+                        outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
+                        outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
+
+                        /*
+                         * Don't leave any Mach8 or Mach32 in 8514/A mode.
+                         */
+                        IO_Value = inw(CLOCK_SEL);
+                        outw(CLOCK_SEL, IO_Value);
 
                         IO_Value = inw(ERR_TERM);
                         outw(ERR_TERM, 0x5A5A);
@@ -1669,26 +1733,6 @@ ATIProbe()
         ErrorF("%s or similar RAMDAC detected.\n", DACNames[ATIDac]);
         ErrorF("This is a %s video adapter.\n", BoardNames[ATIBoard]);
 
-        /* The following is temporary */
-        if (ATIBoard >= ATI_BOARD_MACH8)
-        {
-                char *Version = XF86_VERSION;
-                for (  ;  *Version;  Version++)
-                        if (isalpha(*Version))
-                        {
-                                if (OFLG_ISSET(OPTION_NOACCEL,
-                                        &vga256InfoRec.options))
-                                        ErrorF("Thank you for trying option "
-                                               "\"noaccel\"!  Good luck!\n");
-                                else
-                                        ErrorF("Please try option \"noaccel\" "
-                                               "and report any problems to "
-                                               "tsi@ualberta.ca.\n");
-                                break;
-                        }
-        }
-        /* End of temporary code */
-
         /* From now on, ignore Mach8 accelerator */
         if (ATIBoard == ATI_BOARD_MACH8)
                 ATIBoard = ATIVGABoard;
@@ -1891,7 +1935,6 @@ ATIProbe()
         OFLG_SET(OPTION_PROBE_CLKS, &ATI.ChipOptionFlags);
         OFLG_SET(OPTION_UNDOC_CLKS, &ATI.ChipOptionFlags);
         OFLG_SET(OPTION_CSYNC,      &ATI.ChipOptionFlags);
-        OFLG_SET(OPTION_NOACCEL,    &ATI.ChipOptionFlags);      /* Temporary */
 
         /*
          * Return success.
@@ -1921,6 +1964,7 @@ Bool enter;
                 saved_mem_info;
 
         static Bool entered = LEAVE;
+        unsigned char misc;
         unsigned int tmp;
 
         if (enter == entered)
@@ -1931,7 +1975,6 @@ Bool enter;
         {
                 xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
-                if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
                 if (Chip_Has_SUBSYS_CNTL)
                 {
                         /* Save register values to be modified */
@@ -1993,8 +2036,10 @@ Bool enter;
                                 ~(CTL_MEM_BNDRY | CTL_MEM_BNDRY_EN));
                 }
 
-                vgaIOBase = (inb(R_GENMO) & 0x01) ?
-                        ColourIOBase : MonochromeIOBase;
+                misc = inb(R_GENMO);
+                vgaIOBase = (misc & 0x01) ? ColourIOBase : MonochromeIOBase;
+
+                PutReg(SEQX, 0x00, 0x01);       /* Start synchonous reset */
 
                 /*
                  * Ensure all registers are read/write and disable all non-VGA
@@ -2076,9 +2121,15 @@ Bool enter;
                         PutReg(CRTX(vgaIOBase), 0x11,
                                 (VSyncEnd & 0x0F) | 0x20);
                 }
+
+                outb(GENMO, misc);              /* Restore GENMO */
+                PutReg(SEQX, 0x00, 0x03);       /* End synchronous reset */
         }
         else
         {
+                misc = inb(R_GENMO);            /* Save GENMO before reset */
+                PutReg(SEQX, 0x00, 0x01);       /* Start synchronous reset */
+
                 /* Protect CRTC[0-7] */
                 tmp = GetReg(CRTX(vgaIOBase), 0x11);
                 outb(CRTD(vgaIOBase), tmp | 0x80);
@@ -2107,7 +2158,9 @@ Bool enter;
                         }
                 }
 
-                if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+                outb(GENMO, misc);              /* Restore after reset */
+                PutReg(SEQX, 0x00, 0x03);       /* End synchronous reset */
+
                 if (Chip_Has_SUBSYS_CNTL)
                 {
                         /* Reset the 8514/A and disable all interrupts */
@@ -2649,14 +2702,14 @@ DisplayModePtr mode;
         mode->VSyncEnd = (mode->VSyncStart & 0x3F0) | (crt11 & 0x0F);
         if (mode->VSyncEnd <= mode->VSyncStart)
                 mode->VSyncEnd += 0x10;
-	mode->CrtcVSyncEnd = mode->VSyncEnd;
+        mode->CrtcVSyncEnd = mode->VSyncEnd;
 
         /*
          */
         mode->CrtcVTotal = mode->VTotal =
                 (((crt07 & 0x20) << 4) | ((crt07 & 0x01) << 8) | crt06) + 2;
 
-	mode->CrtcVAdjusted = TRUE;
+        mode->CrtcVAdjusted = TRUE;
 
         /*
          * Set flags.
@@ -2697,13 +2750,15 @@ DisplayModePtr mode;
                 ShiftCount--;
         if (crt17 & 0x04)
                 ShiftCount++;
-        if (ShiftCount > 0) {
+        if (ShiftCount > 0)
+        {
                 mode->VDisplay <<= ShiftCount;
                 mode->VSyncStart <<= ShiftCount;
                 mode->VSyncEnd <<= ShiftCount;
                 mode->VTotal <<= ShiftCount;
         }
-        if (ShiftCount < 0) {
+        else if (ShiftCount < 0)
+        {
                 mode->VDisplay >>= -ShiftCount;
                 mode->VSyncStart >>= -ShiftCount;
                 mode->VSyncEnd >>= -ShiftCount;

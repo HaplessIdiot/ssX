@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.1 1994/10/30 02:58:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.2 1994/12/05 03:46:13 dawes Exp $ */
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -17,11 +17,43 @@
 #define CLOCKVAL(n, d) \
      ((((n) & 0x7F) * CLOCK_FACTOR / ((d) & 0x3E)) >> ((d) & 1))
 
+#define NU_FIXED_CLOCKS 19
+
+typedef struct {
+  unsigned char numer;
+  unsigned char denom;
+} cirrusClockRec;
+
+static cirrusClockRec cirrusClockTab[] = {
+  { 0x33, 0x3B },		/* 12.588 */
+  { 0x4A, 0x2B },		/* 25.227 */
+  { 0x5B, 0x2F },		/* 28.325 */
+  { 0x45, 0x30 }, 		/* 41.164 */
+  { 0x7E, 0x33 },		/* 36.082 */
+  { 0x42, 0x1F },		/* 31.500 */
+  { 0x51, 0x3A },		/* 39.992 */
+  { 0x55, 0x36 },		/* 45.076 */
+  { 0x65, 0x3A },		/* 49.867 */
+  { 0x76, 0x34 },		/* 64.983 */
+  { 0x7E, 0x32 },		/* 72.163 */
+  { 0x6E, 0x2A },		/* 75.000 */
+  { 0x5F, 0x22 },		/* 80.013 */
+  { 0x7D, 0x2A },		/* 85.226 */
+  { 0x58, 0x1C },		/* 89.998 */
+  { 0x49, 0x16 },		/* 95.019 */
+  { 0x46, 0x14 },		/* 100.226 */
+  { 0x53, 0x16 },		/* 108.035 */
+  { 0x5C, 0x18 },		/* 110.248 */
+};
+
+
 /*
  * This function returns the 7-bit numerator and 6-bit denominator/post-scalar
  * value that corresponds to the closest clock found. If the MCLK is very close
  * to the requested frequency, it sets a flag so that the MCLK can be used
  * as VCLK on chips that support it.
+ * If a frequency close to one of the tested clock values is found,
+ * use the tested clock since others can be unstable.
  */
 
 int CirrusFindClock(freq, num_out, den_out, usemclk_out)
@@ -30,10 +62,22 @@ int CirrusFindClock(freq, num_out, den_out, usemclk_out)
 	int *den_out;
 	int *usemclk_out;
 {
-	int n;
+	int n, i;
 	int num, den;
 	int ffreq, mindiff;
 	int mclk;
+
+	/* Prefer a tested value if it matches within 0.1%. */
+	for (i = 0; i < NU_FIXED_CLOCKS; i++) {
+		int diff;
+		diff = abs(CLOCKVAL(cirrusClockTab[i].numer, 
+		          cirrusClockTab[i].denom) - freq);
+		if (diff < freq / 1000) {
+			num = cirrusClockTab[i].numer;
+			den = cirrusClockTab[i].denom;
+			goto foundclock;
+		}
+	}
 
 	mindiff = freq; 
 	for (n = 0x10; n < 0x7f; n++) {
@@ -54,6 +98,7 @@ int CirrusFindClock(freq, num_out, den_out, usemclk_out)
 		}
 	}
 
+foundclock:
 	*num_out = num;
 	*den_out = den;
 

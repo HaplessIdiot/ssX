@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fillst.c,v 1.1 94/03/28 21:49:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.5 1994/08/20 07:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.6 1994/12/25 12:35:04 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -41,6 +41,7 @@
 #include "compiler.h"
 
 #include "cir_driver.h"
+#include "cir_alloc.h"
 
 
 /*

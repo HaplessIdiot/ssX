@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.0 1994/12/25 12:35:07 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -46,6 +46,9 @@ Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl)
  *
  * The BitBLT foreground/VGA set/reset register does not interfere with
  * plain framebuffer writes on the MMIO chips (5429, 543x).
+ * Note that for heights > 1024, BLTs must be split into two because
+ * of the stupid 1024 line restriction of the 5429/5430/4 (even though
+ * the 543x databook says 2048).
  *
  */
 
@@ -218,11 +221,26 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
 	    	else {
 		    int destaddr;
 		    destaddr = clippedY1 * destpitch + clippedX1 * (PSZ / 8);
-		    do { BLTBUSY(busy); } while (busy);
-		    SETDESTADDR(destaddr);
-	            SETWIDTH(PSZ / 8);
-		    SETHEIGHT(height);
-		    STARTBLT();
+		    if (height > 1024) {
+			    do { BLTBUSY(busy); } while (busy);
+			    SETDESTADDR(destaddr);
+		            SETWIDTH(PSZ / 8);
+			    SETHEIGHT(1024);
+			    STARTBLT();
+			    destaddr += destpitch * 1024;
+			    do { BLTBUSY(busy); } while (busy);
+			    SETDESTADDR(destaddr);
+		            SETWIDTH(PSZ / 8);
+			    SETHEIGHT(height - 1024);
+			    STARTBLT();
+		    }
+		    else {
+			    do { BLTBUSY(busy); } while (busy);
+			    SETDESTADDR(destaddr);
+		            SETWIDTH(PSZ / 8);
+			    SETHEIGHT(height);
+			    STARTBLT();
+		    }
 		}
 	    }
 
@@ -240,11 +258,26 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
 	    	else {
 		    int destaddr;
 		    destaddr = clippedY1 * destpitch + clippedX2 * (PSZ / 8);
-		    do { BLTBUSY(busy); } while (busy);
-		    SETDESTADDR(destaddr);
-	            SETWIDTH(PSZ / 8);
-		    SETHEIGHT(height);
-		    STARTBLT();
+		    if (height > 1024) {
+			    do { BLTBUSY(busy); } while (busy);
+			    SETDESTADDR(destaddr);
+		            SETWIDTH(PSZ / 8);
+			    SETHEIGHT(1024);
+			    STARTBLT();
+			    destaddr += destpitch * 1024;
+			    do { BLTBUSY(busy); } while (busy);
+			    SETDESTADDR(destaddr);
+		            SETWIDTH(PSZ / 8);
+			    SETHEIGHT(height - 1024);
+			    STARTBLT();
+		    }
+		    else {
+			    do { BLTBUSY(busy); } while (busy);
+			    SETDESTADDR(destaddr);
+		            SETWIDTH(PSZ / 8);
+			    SETHEIGHT(height);
+			    STARTBLT();
+		    }
 		}
 	    }
 
