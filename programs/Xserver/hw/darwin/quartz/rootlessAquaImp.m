@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.3 2002/08/28 06:41:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.4 2002/12/10 00:00:39 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "fakeBoxRec.h"
@@ -63,9 +63,9 @@ int AquaDisplayCount()
 void AquaScreenInit(int index, int *x, int *y, int *width, int *height,
                     int *rowBytes, int *bps, int *spp, int *bpp)
 {
-    *bps = 8;
     *spp = 3;
-    *bpp = 32;
+    *bps = CGDisplayBitsPerSample(kCGDirectMainDisplay);
+    *bpp = CGDisplayBitsPerPixel(kCGDirectMainDisplay);
 
     if (noPseudoramiXExtension) {
         NSScreen *screen = [[NSScreen screens] objectAtIndex:index];
