@@ -1,4 +1,6 @@
 XFree86 4.3.99.14 (xx October 2003)
+ 496. Added USB keyboard support for Solaris/x86 platform (Bugzilla #352,
+      Daniel Rock).
  495. i830/i810 driver:
       * Added Christian Ziez's code to tweak BIOS image to convince chipset of
         resized video RAM.
@@ -17927,7 +17929,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2875 2003/10/08 15:48:36 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2876 2003/10/08 23:20:09 alanh Exp $
 
 
 
