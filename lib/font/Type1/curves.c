@@ -42,6 +42,7 @@ through.
 Include files needed:
 */
  
+#include "os.h"
 #include "objects.h"
 #include "spaces.h"
 #include "paths.h"
@@ -50,7 +51,6 @@ Include files needed:
 #include "lines.h"
 #include "arith.h"
  
-#include "os.h"
  
 /*
 :h3.Functions Provided to Other Modules

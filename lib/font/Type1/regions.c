@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/regions.c,v 3.1 1998/10/03 09:07:16 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/regions.c,v 3.2 1999/08/21 13:47:45 dawes Exp $ */
  /* REGIONS  CWEB         V0023 LOTS                                 */
 /*
 :h1 id=regions.REGIONS Module - Regions Operator Handler
@@ -41,6 +41,7 @@ This module is responsible for creating and manipulating regions.
 The included files are:
 */
  
+#include  "os.h"
 #include  "objects.h"
 #include  "spaces.h"
 #include  "paths.h"
@@ -52,7 +53,6 @@ The included files are:
 #include  "hints.h"
 #include  "strokes.h"      /* to pick up 'DoStroke'                        */
 
-#include  "os.h"
 
 static void newfilledge ( struct region *R, fractpel xmin, fractpel xmax, 
 			  fractpel ymin, fractpel ymax, int isdown );

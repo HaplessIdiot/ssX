@@ -42,6 +42,7 @@ The included files are:
 */
  
                              /*   after the system includes  (dsr)           */
+#include  "os.h"
 #include  "objects.h"
 #include  "spaces.h"
 #include  "paths.h"
@@ -51,7 +52,6 @@ The included files are:
 #include  "strokes.h"      /* understands how to coerce stroke paths       */
 #include  "trig.h"
 
-#include  "os.h"
 
 /*
 :h3.Routines Available to the TYPE1IMAGER User

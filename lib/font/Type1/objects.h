@@ -43,7 +43,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/objects.h,v 1.5 1999/05/03 05:58:46 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/objects.h,v 1.6 1999/08/21 13:47:43 dawes Exp $ */
 /*SHARED*/
  
 /*END SHARED*/
@@ -92,9 +92,7 @@ extern void addmemory ( long *addr, long size );
 extern void delmemory ( void );
 
 
-#ifdef XFree86LOADER
 #undef abort
-#endif
 #define   abort(line)       FatalError(line)
 #define   Allocate(n,t,s)   t1_Allocate(n,t,s)
 #define   Free(obj)         t1_Free(obj)

@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/objects.c,v 1.5 1998/10/03 09:07:16 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/objects.c,v 1.6 1999/08/21 13:47:43 dawes Exp $ */
  /* OBJECTS  CWEB         V0025 ********                             */
 /*
 :h1.OBJECTS Module - TYPE1IMAGER Objects Common Routines
@@ -72,6 +72,7 @@ a macro for "strcpy" that diverts it to "my_strcpy".
                                /* moved these includes from above the    */
                                /*   was included first (it contains com- */
                                /*   piler defines).  dsr 081291          */
+#include  "os.h"
 #include  "objects.h"
 #include  "spaces.h"
 #include  "paths.h"
@@ -81,7 +82,6 @@ a macro for "strcpy" that diverts it to "my_strcpy".
 #include  "strokes.h"
 #include  "cluts.h"
 
-#include  "os.h"
 
 static char *TypeFmt(int type);
 

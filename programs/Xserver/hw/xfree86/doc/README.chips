@@ -7,7 +7,7 @@
 
 1.  Introduction
 
-With the release of XFree86 version 3.9.15, the Chips and Technologies driver
+With the release of XFree86 version 3.9.16, the Chips and Technologies driver
 has been extensively rewritten and contains many new features.  This driver
 must be considered work in progress, and those users wanting stability and
 encouraged to use the older XFree86 3.3.x versions. However this version of
@@ -275,6 +275,20 @@ Screen, Monitor, Device.
             allows the user to select a different clock for the server to use
             when returning to the text console.
 
+      Option "FPClock8"   "65.0"
+            Option "FPClock16"  "65.0" Option "FPClock24"  "65.0" Option
+            "FPClock32"  "65.0"" In general the LCD panel clock should be set
+            independently of the modelines supplied. Normally the chips BIOS
+            set the flat panel clock correctly and so the default behaviour
+            with HiQV chipset is to leave the flat panel clock alone, or
+            force it to be 90% of the maximum allowable clock if the current
+            panel clock exceeds the dotclock limitation due to a depth
+            change. This option allows the user to force the server the
+            reprogram the flat panel clock independently of the modeline with
+            HiQV chipset. The four options are for 8bpp or less, 16, 24 or
+            32bpp LCD panel clocks, where the options above set the clocks to
+            65MHz.
+
       Option "MMIO"
             This has a different effect depending on the hardware on which it
             is used. For the 6554x machines MMIO is only used to talk to the
@@ -366,6 +380,13 @@ Screen, Monitor, Device.
             memory clock that will cause pixel errors with this option.  If
             you get pixel error with this option try using the "SetMemClk" to
             slow the memory clock.
+
+      Option "ColorKey" "255"
+            Normally the color transparency key for the overlay is the 8bpp
+            lookup table entry 255. This might cause troubles with some
+            applications, and so this option allows the color transparency
+            key to be set to some other value. Legal values are 2 to 255
+            inclusive.
 
       Option "XaaNoScreenToScreenCopy",
             Option "XaaNoSolidFillRect", Option "XaaNoSolidHorVertLine",
@@ -755,7 +776,7 @@ won't cause damage.
 
                         startx -- -depth 24 -fbbpp 32   8-8-8 RGB truecolor
 
-            however as XFree86 version 3.9.15 allows 32bpp pixmaps to be used
+            however as XFree86 version 3.9.16 allows 32bpp pixmaps to be used
             with framebuffers operating in 24bpp, this mode of operating will
             cost performance for no gain in functionality.
 
@@ -825,7 +846,7 @@ Contributors (In no particular order)
 We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.26 1999/07/19 13:36:22 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.27 1999/08/14 10:49:36 dawes Exp $
 
 
 $XFree86$

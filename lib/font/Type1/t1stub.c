@@ -27,7 +27,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1stub.c,v 1.4 1998/07/25 06:56:59 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1stub.c,v 1.5 1999/08/21 13:47:51 dawes Exp $ */
 
 #ifdef FONTMODULE
 #include "Xdefs.h"	/* Bool declaration */
@@ -36,8 +36,8 @@
 #else 
 #include <stdio.h>
 #endif
-#include "objects.h"	/* get #define for abort() */
 #include "os.h"
+#include "objects.h"	/* get #define for abort() */
 
 static void 
 xiStub(void)
