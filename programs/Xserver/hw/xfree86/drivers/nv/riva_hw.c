@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.30 2002/04/22 18:14:58 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.31 2002/04/26 21:58:48 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1172,16 +1172,16 @@ static int CalcVClock
 
     VClk     = (unsigned)clockIn;
     
-    if (chip->CrystalFreqKHz == 14318)
-    {
-        lowM  = 8;
-        highM = 14 - (chip->Architecture == NV_ARCH_03);
-    }
-    else
+    if (chip->CrystalFreqKHz == 13500)
     {
         lowM  = 7;
         highM = 13 - (chip->Architecture == NV_ARCH_03);
     }                      
+    else
+    {
+        lowM  = 8;
+        highM = 14 - (chip->Architecture == NV_ARCH_03);
+    }
 
     highP = 4 - (chip->Architecture == NV_ARCH_03);
     for (P = 0; P <= highP; P ++)
@@ -1191,19 +1191,21 @@ static int CalcVClock
         {
             for (M = lowM; M <= highM; M++)
             {
-                N    = (VClk * M / chip->CrystalFreqKHz) << P;
-                Freq = (chip->CrystalFreqKHz * N / M) >> P;
-                if (Freq > VClk)
-                    DeltaNew = Freq - VClk;
-                else
-                    DeltaNew = VClk - Freq;
-                if (DeltaNew < DeltaOld)
-                {
-                    *mOut     = M;
-                    *nOut     = N;
-                    *pOut     = P;
-                    *clockOut = Freq;
-                    DeltaOld  = DeltaNew;
+                N    = (VClk << P) * M / chip->CrystalFreqKHz;
+                if(N <= 255) {
+                    Freq = (chip->CrystalFreqKHz * N / M) >> P;
+                    if (Freq > VClk)
+                        DeltaNew = Freq - VClk;
+                    else
+                        DeltaNew = VClk - Freq;
+                    if (DeltaNew < DeltaOld)
+                    {
+                        *mOut     = M;
+                        *nOut     = N;
+                        *pOut     = P;
+                        *clockOut = Freq;
+                        DeltaOld  = DeltaNew;
+                    }
                 }
             }
         }
