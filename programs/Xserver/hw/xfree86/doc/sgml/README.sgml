@@ -16,7 +16,7 @@
 <date>26 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.133 2003/02/27 01:17:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.134 2003/02/27 01:19:32 dawes Exp $
 </ident>
 
 <abstract>
@@ -63,8 +63,10 @@ software.  If you find problems with this snapshot, you are encouraged
 to report your findings to the public XFree86 mailing list:
 <email>XFree86@XFree86.org</email>.
 
+<![ %relcandidate [
 XFree86 &relvers; is a feature-complete snapshot of XFree86
 &nextfullrelvers;.
+]]>
 ]]> 
 
 <p>
