@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.11 1999/06/06 08:48:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.12 1999/06/13 13:47:23 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -65,6 +65,15 @@ static void Resolve(Widget, XawTextPosition, int, int, XawTextPosition*);
 static void SetTabs(Widget, int, short*);
 static void GetCursorBounds(Widget, XRectangle*);
 
+#ifndef OLDXAW
+static Boolean CvtStringToPropertyList(Display*, XrmValue*, Cardinal*,
+				       XrmValue*, XrmValue*, XtPointer*);
+static Boolean CvtPropertyListToString(Display*, XrmValue*, Cardinal*,
+				       XrmValue*, XrmValue*, XtPointer*);
+static Bool BeginPaint(Widget);
+static Bool EndPaint(Widget);
+#endif
+
 /*
  * External
  */
@@ -105,9 +114,31 @@ static XtResource resources[] = {
     XtRString,
     XtDefaultForeground
   },
+  {
+    XawNtextProperties,
+    XawCTextProperties,
+    XawRTextProperties,
+    sizeof(XawTextPropertyList*),
+    offset(properties),
+    XtRImmediate,
+    NULL
+  },
 #endif
 };
 #undef offset
+
+#ifndef OLDXAW
+static TextSinkExtRec extension_rec = {
+    NULL,				/* next_extension */
+    NULLQUARK,				/* record_type */
+    1,					/* version */
+    sizeof(TextSinkExtRec),		/* record_size */
+    BeginPaint,
+    NULL,
+    NULL,
+    EndPaint
+};
+#endif
 
 #define Superclass	(&objectClassRec)
 TextSinkClassRec textSinkClassRec = {
@@ -170,9 +201,21 @@ static void
 XawTextSinkClassPartInitialize(WidgetClass wc)
 {
     TextSinkObjectClass t_src, superC;
+#ifndef OLDXAW
+    static XtConvertArgRec CvtArgs[] = {
+      {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.self),
+       sizeof(Widget)},
+    };
+#endif
 
     t_src = (TextSinkObjectClass) wc;
     superC = (TextSinkObjectClass) t_src->object_class.superclass;
+
+#ifndef OLDXAW
+    extension_rec.record_type = XrmPermStringToQuark("TextSink");
+    extension_rec.next_extension = (XtPointer)t_src->text_sink_class.extension;
+    t_src->text_sink_class.extension = &extension_rec;
+#endif
 
     /* 
      * We don't need to check for null super since we'll get to TextSink
@@ -217,6 +260,13 @@ XawTextSinkClassPartInitialize(WidgetClass wc)
     if (t_src->text_sink_class.GetCursorBounds == XtInheritGetCursorBounds)
 	t_src->text_sink_class.GetCursorBounds =
 	    superC->text_sink_class.GetCursorBounds;
+
+#ifndef OLDXAW
+    XtSetTypeConverter(XtRString, XawRTextProperties, CvtStringToPropertyList,
+		       &CvtArgs[0], XtNumber(CvtArgs), XtCacheNone, NULL);
+    XtSetTypeConverter(XawRTextProperties, XtRString, CvtPropertyListToString,
+		       NULL, 0, XtCacheNone, NULL);
+#endif
 }
 
 /*
@@ -240,6 +290,9 @@ XawTextSinkInitialize(Widget request, Widget cnew,
     sink->text_sink.tab_count = 0; /* Initialize the tab stops. */
     sink->text_sink.tabs = NULL;
     sink->text_sink.char_tabs = NULL;
+#ifndef OLDXAW
+    sink->text_sink.paint = NULL;
+#endif
 }
 
 /*
@@ -822,7 +875,7 @@ XawTextSinkSetTabs(Widget w, int tab_count, int *tabs)
  *	rect - X rectance containing the cursor bounds
  *
  * Description:
- *	Finds the bounding box for the insert curor (caret).
+ *	Finds the bounding box for the insert cursor (caret).
  */
 /*ARGSUSED*/
 void
@@ -832,3 +885,394 @@ XawTextSinkGetCursorBounds(Widget w, XRectangle *rect)
 
     (*cclass->text_sink_class.GetCursorBounds)(w, rect);
 }
+
+#ifndef OLDXAW
+Bool
+XawTextSinkBeginPaint(Widget w)
+{
+    TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
+
+    if (cclass->text_sink_class.extension->BeginPaint == NULL ||
+	cclass->text_sink_class.extension->PreparePaint == NULL ||
+	cclass->text_sink_class.extension->DoPaint == NULL ||
+	cclass->text_sink_class.extension->EndPaint == NULL)
+	return (False);
+
+    return ((*cclass->text_sink_class.extension->BeginPaint)(w));
+}
+
+static Bool
+BeginPaint(Widget w)
+{
+    TextSinkObject sink = (TextSinkObject)w;
+
+    if (sink->text_sink.paint != NULL)
+	return (False);
+
+    sink->text_sink.paint = XtNew(XawTextPaintList);
+    sink->text_sink.paint->clip = XmuCreateArea();
+    sink->text_sink.paint->hightabs = NULL;
+    sink->text_sink.paint->paint = NULL;
+    sink->text_sink.paint->bearings = NULL;
+
+    return (True);
+}
+
+void
+XawTextSinkPreparePaint(Widget w, int y, int line, XawTextPosition from,
+			XawTextPosition to, Bool highlight)
+{
+    TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
+
+    (*cclass->text_sink_class.extension->PreparePaint)
+	(w, y, line, from, to, highlight);
+}
+
+/*ARGSUSED*/
+static void
+PreparePaint(Widget w, int y, int line, XawTextPosition from, XawTextPosition to,
+	     Bool highlight)
+{
+}
+
+void
+XawTextSinkDoPaint(Widget w)
+{
+    TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
+
+    (*cclass->text_sink_class.extension->DoPaint)(w);
+}
+
+/*ARGSUSED*/
+static void
+DoPaint(Widget w)
+{
+}
+
+Bool
+XawTextSinkEndPaint(Widget w)
+{
+    TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
+
+    return ((*cclass->text_sink_class.extension->EndPaint)(w));
+}
+
+static Bool
+EndPaint(Widget w)
+{
+    TextSinkObject sink = (TextSinkObject)w;
+    XawTextPaintStruct *paint, *next;
+
+    if (sink->text_sink.paint == NULL)
+	return (False);
+
+    XmuDestroyArea(sink->text_sink.paint->clip);
+    if (sink->text_sink.paint->hightabs)
+	XmuDestroyArea(sink->text_sink.paint->hightabs);
+    paint = sink->text_sink.paint->paint;
+    while (paint) {
+	next = paint->next;
+	if (paint->text)
+	    XtFree((XtPointer)paint->text);
+	if (paint->backtabs)
+	    XmuDestroyArea(paint->backtabs);
+	XtFree((XtPointer)paint);
+	paint = next;
+    }
+
+    paint = sink->text_sink.paint->bearings;
+    while (paint) {
+	next = paint->next;
+	if (paint->text)
+	    XtFree((XtPointer)paint->text);
+	XtFree((XtPointer)paint);
+	paint = next;
+    }
+
+    XtFree((XtPointer)sink->text_sink.paint);
+    sink->text_sink.paint = NULL;
+}
+
+static XawTextPropertyList **prop_lists;
+static Cardinal num_prop_lists;
+
+static int
+bcmp_qident(_Xconst void *left, _Xconst void *right)
+{
+    return ((int)left - (*(XawTextProperty**)right)->identifier);
+}
+
+static int
+qcmp_qident(_Xconst void *left, _Xconst void *right)
+{
+    return ((*(XawTextProperty**)left)->identifier -
+	    (*(XawTextProperty**)right)->identifier);
+}
+
+static void
+DestroyTextPropertyList(XawTextPropertyList *list)
+{
+    int i;
+
+    for (i = 0; i < list->num_properties; i++)
+	XtFree((char*)list->properties[i]);
+    if (list->properties)
+	XtFree((char*)list->properties);
+    XtFree((char*)list);
+}
+
+XawTextProperty *
+XawTextSinkGetProperty(Widget w, XrmQuark property)
+{
+    TextSinkObject sink = (TextSinkObject)w;
+    XawTextPropertyList *list = sink->text_sink.properties;
+
+    if (list) {
+	XawTextProperty **ptr = (XawTextProperty**)
+	    bsearch((void*)property, list->properties, list->num_properties,
+		    sizeof(XawTextProperty*), bcmp_qident);
+
+	if (ptr)
+	    return (*ptr);
+    }
+
+    return (NULL);
+}
+
+XawTextPropertyList *
+XawTextSinkConvertPropertyList(String name, String spec, Screen *screen,
+			       Colormap colormap, int depth)
+{
+    XrmQuark qname = XrmStringToQuark(name);
+    XawTextPropertyList **ptr = (XawTextPropertyList**)
+	bsearch((void*)qname, prop_lists, num_prop_lists,
+		sizeof(XawTextPropertyList*), bcmp_qident);
+    XawTextPropertyList *propl, *prev = NULL;
+    String str, tok, tmp;
+
+    if (ptr) {
+	propl = *ptr;
+	while (propl) {
+	    prev = propl;
+	    if (propl->screen == screen &&
+		propl->colormap == colormap &&
+		propl->depth == depth)
+		return (propl);
+	    propl = propl->next;
+	}
+    }
+
+    propl = XtNew(XawTextPropertyList);
+    propl->identifier = qname;
+    propl->screen = screen;
+    propl->colormap = colormap;
+    propl->depth = depth;
+    propl->next = NULL;
+
+    if (prev)
+	prev->next = propl;
+
+    propl->properties = NULL;
+    propl->num_properties = 0;
+
+    str = XtNewString(spec);
+    for (tok = str; tok; tok = tmp) {
+	XawTextProperty *prop;
+	XawParams *params;
+	XrmQuark ident;
+	XawArgVal *argval;
+	XColor color, exact;
+
+	tmp = strchr(tok, ',');
+	if (tmp) {
+	    *tmp = '\0';
+	    if (*++tmp == '\0')
+		tmp = NULL;
+	}
+	params = XawParseParamsString(tok);
+	ident = XrmStringToQuark(params->name);
+	if (ident == NULLQUARK) {
+	    DestroyTextPropertyList(propl);
+	    if (prev)
+		prev->next = NULL;
+	    XawFreeParamsStruct(params);
+	    return (NULL);
+	}
+	else if (bsearch((void*)qname, propl->properties, propl->num_properties,
+			 sizeof(XawTextProperty*), bcmp_qident)) {
+	    XawFreeParamsStruct(params);
+	    continue;
+	}
+
+	prop = XtNew(XawTextProperty);
+	prop->identifier = ident;
+	prop->mask = 0;
+	if ((argval = XawFindArgVal(params, "foreground")) != NULL &&
+	    argval->value) {
+	    if (!XAllocNamedColor(DisplayOfScreen(screen), colormap,
+				  argval->value, &color, &exact)) {
+		DestroyTextPropertyList(propl);
+		if (prev)
+		    prev->next = NULL;
+		XawFreeParamsStruct(params);
+		return (NULL);
+	    }
+	    prop->foreground = color.pixel;
+	    prop->mask |= XAW_TPROP_FOREGROUND;
+	}
+	if ((argval = XawFindArgVal(params, "background")) != NULL &&
+	    argval->value) {
+	    if (!XAllocNamedColor(DisplayOfScreen(screen), colormap,
+				  argval->value, &color, &exact)) {
+		DestroyTextPropertyList(propl);
+		if (prev)
+		    prev->next = NULL;
+		XawFreeParamsStruct(params);
+		return (NULL);
+	    }
+	    prop->background = color.pixel;
+	    prop->mask |= XAW_TPROP_BACKGROUND;
+	}
+	if ((argval = XawFindArgVal(params, "font")) != NULL &&
+	    argval->value) {
+	    if ((prop->font = XLoadQueryFont(DisplayOfScreen(screen),
+					     argval->value)) == NULL) {
+		DestroyTextPropertyList(propl);
+		if (prev)
+		    prev->next = NULL;
+		XawFreeParamsStruct(params);
+		return (NULL);
+	    }
+	    prop->mask |= XAW_TPROP_FONT;
+	}
+
+	/* fontset */
+
+	if (XawFindArgVal(params, "overstrike"))
+	    prop->mask |= XAW_TPROP_OVERSTRIKE;
+	if (XawFindArgVal(params, "underline"))
+	    prop->mask |= XAW_TPROP_UNDERLINE;
+
+	propl->properties = (XawTextProperty**)
+	XtRealloc((XtPointer)propl->properties, sizeof(XawTextProperty*) *
+		  (propl->num_properties + 1));
+	propl->properties[propl->num_properties++] = prop;
+	qsort((void*)propl->properties, propl->num_properties,
+	      sizeof(XawTextProperty*), qcmp_qident);
+
+	XawFreeParamsStruct(params);
+    }
+
+    prop_lists = (XawTextPropertyList**)
+    XtRealloc((XtPointer)prop_lists, sizeof(XawTextPropertyList*) *
+	      (num_prop_lists + 1));
+    prop_lists[num_prop_lists++] = propl;
+    qsort((void*)prop_lists, num_prop_lists, sizeof(XawTextPropertyList*),
+	  qcmp_qident);
+
+    XtFree(str);
+
+    return (propl);
+}
+
+/*ARGSUSED*/
+static Boolean
+CvtStringToPropertyList(Display *dpy, XrmValue *args, Cardinal *num_args,
+			XrmValue *fromVal, XrmValue *toVal,
+			XtPointer *converter_data)
+{
+    XawTextPropertyList *propl = NULL;
+    String name;
+    Widget w;
+
+    if (*num_args != 1) {
+      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		      "wrongParameters", "cvtStringToTextProperties",
+		      "ToolkitError",
+		      "String to textProperties conversion needs widget argument",
+		      NULL, NULL);
+	return (False);
+    }
+
+    w = *(Widget*)args[0].addr;
+    while (w && !XtIsWidget(w))
+	w = XtParent(w);
+
+    name = (String)(fromVal[0].addr);
+
+    if (w) {
+	XawTextPropertyList **ptr = (XawTextPropertyList**)
+	    bsearch((void*)XrmStringToQuark(name), prop_lists, num_prop_lists,
+		    sizeof(XawTextPropertyList*), bcmp_qident);
+
+	if (ptr) {
+	    Screen *screen = w->core.screen;
+	    Colormap colormap = w->core.colormap;
+	    int depth = w->core.depth;
+
+	    propl = *ptr;
+	    while (propl) {
+		if (propl->screen == screen &&
+		    propl->colormap == colormap &&
+		    propl->depth == depth)
+		    break;
+		propl = propl->next;
+	    }
+	}
+    }
+
+    if (!propl) {
+	XtDisplayStringConversionWarning(dpy, (String)fromVal->addr,
+					 XawRTextProperties);
+	toVal->addr = NULL;
+	toVal->size = sizeof(XawTextPropertyList*);
+	return (False);
+    }
+
+    if (toVal->addr != NULL) {
+	if (toVal->size < sizeof(XawTextPropertyList*))	{
+	    toVal->size = sizeof(XawTextPropertyList*);
+	    return (False);
+	}
+	*(XawTextPropertyList**)(toVal->addr) = propl;
+    }
+    else {
+	static XawTextPropertyList *static_val;
+
+	static_val = propl;
+	toVal->addr = (XPointer)&static_val;
+    }
+    toVal->size = sizeof(XawTextProperty*);
+
+    return (True);
+}
+
+/*ARGSUSED*/
+static Boolean
+CvtPropertyListToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+			XrmValue *fromVal, XrmValue *toVal,
+			XtPointer *converter_data)
+{
+    static char *buffer;
+    Cardinal size;
+    XawTextPropertyList *propl;
+
+    propl = *(XawTextPropertyList**)fromVal[0].addr;
+
+    buffer = XrmQuarkToString(propl->identifier);
+    size = strlen(buffer) + 1;
+
+    if (toVal->addr != NULL) {
+	if (toVal->size < size) {
+	    toVal->size = size;
+	    return (False);
+	}
+	strcpy((char *)toVal->addr, buffer);
+    }
+    else
+	toVal->addr = buffer;
+    toVal->size = size;
+
+    return (True);
+}
+#endif

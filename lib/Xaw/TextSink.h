@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSink.h,v 1.6 1999/05/09 10:51:42 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.h,v 1.7 1999/06/06 08:48:17 dawes Exp $ */
 
 #ifndef _XawTextSink_h
 #define _XawTextSink_h
@@ -80,6 +80,10 @@ typedef enum {XawisOn, XawisOff} XawTextInsertState;
 #ifndef XtNcursorColor
 #define XtNcursorColor		"cursorColor"
 #endif
+
+#define XawNtextProperties	"textProperties"
+#define XawCTextProperties	"TextProperties"
+#define XawRTextProperties	"XawTextProperties"
 #endif
 
 /*

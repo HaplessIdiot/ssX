@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.55 1999/07/04 06:39:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.56 1999/08/01 07:57:29 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -85,9 +85,6 @@ static void MGANAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 static void MGANAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
 				int srcx, int srcy, int skipleft);
-static void MGANAME(SetupForImageRead)(ScrnInfoPtr pScrn, int bpp, int depth);
-static void MGANAME(SubsequentImageReadRect)(ScrnInfoPtr pScrn,
-				int x, int y, int w, int h);
 static void MGANAME(SetupForDashedLine)(ScrnInfoPtr pScrn, int fg, int bg, 
 				int rop, unsigned int planemask, int length,
     				unsigned char *pattern);
@@ -118,6 +115,7 @@ extern void MGANonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
 				NonTEGlyphPtr glyphs, BoxPtr pbox,
 				int fg, int rop, unsigned int planemask);
 extern void MGAValidatePolyArc(GCPtr, unsigned long, DrawablePtr);
+extern void MGAValidatePolyPoint(GCPtr, unsigned long, DrawablePtr);
 extern void MGAFillCacheBltRects(ScrnInfoPtr, int, unsigned int, int, BoxPtr,
 				int, int, XAACacheInfoPtr);
 
@@ -299,20 +297,6 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->SetupForImageWrite = MGANAME(SetupForImageWrite);
     infoPtr->SubsequentImageWriteRect = MGANAME(SubsequentImageWriteRect);
 
-#if 0
-    /* image reads */
-    infoPtr->ImageReadFlags = 	CPU_TRANSFER_PAD_DWORD |
-				SCANLINE_PAD_DWORD;
-    if(pMga->ILOADBase) {
-	infoPtr->ImageReadRange = 0x800000;
-	infoPtr->ImageReadBase = pMga->ILOADBase;
-    } else {
-	infoPtr->ImageReadRange = 0x1C00;
-	infoPtr->ImageReadBase = pMga->IOBase;
-    }
-    infoPtr->SetupForImageRead = MGANAME(SetupForImageRead);
-    infoPtr->SubsequentImageReadRect = MGANAME(SubsequentImageReadRect);
-#endif
 
     /* midrange replacements */
 
@@ -335,9 +319,13 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 				MGAFillMono8x8PatternRectsTwoPass;
     }
 
-    infoPtr->ValidatePolyArc = MGAValidatePolyArc;
-    infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask | 
+    if(infoPtr->SetupForSolidFill) {
+	infoPtr->ValidatePolyArc = MGAValidatePolyArc;
+	infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask | 
 				GCLineStyle | GCFillStyle;
+	infoPtr->ValidatePolyPoint = MGAValidatePolyPoint;
+	infoPtr->PolyPointMask = GCFunction | GCPlaneMask;
+    }
 
     if((PSZ == 24) || (pMga->AccelFlags & MGA_NO_PLANEMASK)) {
 	infoPtr->ImageWriteFlags |= NO_PLANEMASK;
@@ -1040,36 +1028,6 @@ static void MGANAME(SubsequentImageWriteRect)(
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
-	/*****************\
-	|   Image Reads   |
-	\*****************/
-
-static void MGANAME(SetupForImageRead)(
-    ScrnInfoPtr pScrn, 
-    int bpp, int depth
-){
-    MGAPtr pMga = MGAPTR(pScrn);
-    WAITFIFO(2);
-    OUTREG(MGAREG_AR5, pScrn->displayWidth);
-    OUTREG(MGAREG_DWGCTL, MGADWG_IDUMP | MGADWG_BU32RGB | MGADWG_SHIFTZERO |
-			MGADWG_SGNZERO | 0x000c0000);
-}
-
-static void MGANAME(SubsequentImageReadRect)(
-    ScrnInfoPtr pScrn,
-    int x, int y, int w, int h
-){
-    MGAPtr pMga = MGAPTR(pScrn);
-    int start = XYADDRESS(x, y);
-
-    WAITFIFO(6);
-    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_GENERAL);
-    OUTREG(MGAREG_AR0, start + w - 1);
-    OUTREG(MGAREG_AR3, start);
-    OUTREG(MGAREG_FXBNDRY, (w - 1) << 16);
-    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
-    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
-} 
 
 	/***************************\
 	|      Dashed  Lines        |
@@ -1757,7 +1715,7 @@ MGAValidatePolyArc(
    ScrnInfoPtr pScrn = xf86Screens[pGC->pScreen->myNum];
    MGAPtr pMga = MGAPTR(pScrn);
 
-   if((pMga->AccelFlags & MGA_NO_PLANEMASK) & (pGC->planemask != ~0))
+   if((pMga->AccelFlags & MGA_NO_PLANEMASK) && (pGC->planemask != ~0))
 	return;
 
    if(!pGC->lineWidth && 
@@ -1767,6 +1725,84 @@ MGAValidatePolyArc(
 		(pScrn->bitsPerPixel == 24))) {
 	pGC->ops->PolyArc = MGAPolyArcThinSolid;
    }
+}
+
+static void
+MGAPolyPoint (
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int mode,	
+    int npt,
+    xPoint *ppt
+){
+    int numRects = REGION_NUM_RECTS(pGC->pCompositeClip);
+    XAAInfoRecPtr infoRec;
+    BoxPtr pbox;
+    MGAPtr pMga;
+    int xorg, yorg;
+
+    if(!numRects) return;
+    
+    if(numRects != 1) {
+	XAAFallbackOps.PolyPoint(pDraw, pGC, mode, npt, ppt);
+	return;
+    }
+
+    infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    pMga = MGAPTR(infoRec->pScrn);
+    xorg = pDraw->x;
+    yorg = pDraw->y;
+
+    pbox = REGION_RECTS(pGC->pCompositeClip);
+
+    (*infoRec->SetClippingRectangle)(infoRec->pScrn,
+                pbox->x1, pbox->y1, pbox->x2 - 1, pbox->y2 - 1);
+    (*infoRec->SetupForSolidFill)(infoRec->pScrn, pGC->fgPixel, pGC->alu,
+				   pGC->planemask);
+
+    if(mode == CoordModePrevious) {
+	while(npt--) {
+	    xorg += ppt->x;
+	    yorg += ppt->y;
+	    WAITFIFO(2);
+	    OUTREG(MGAREG_FXBNDRY, ((xorg + 1) << 16) | (xorg & 0xffff));
+	    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (yorg << 16) | 1);
+	    ppt++;
+	} 
+    } else {
+	int x;
+	while(npt--) {
+	    x = ppt->x + xorg;
+	    WAITFIFO(2);
+	    OUTREG(MGAREG_FXBNDRY, ((x + 1) << 16) | (x & 0xffff));
+	    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, ((ppt->y + yorg) << 16) | 1);
+	    ppt++;
+	}
+    }
+    
+    (*infoRec->DisableClipping)(infoRec->pScrn);
+  
+    SET_SYNC_FLAG(infoRec);
+}
+
+
+void
+MGAValidatePolyPoint(
+   GCPtr 	pGC,
+   unsigned long changes,
+   DrawablePtr pDraw
+){
+   ScrnInfoPtr pScrn = xf86Screens[pGC->pScreen->myNum];
+   MGAPtr pMga = MGAPTR(pScrn);
+
+   pGC->ops->PolyPoint = XAAFallbackOps.PolyPoint;
+
+   if((pMga->AccelFlags & MGA_NO_PLANEMASK) && (pGC->planemask != ~0))
+	return;
+
+   if((pGC->alu != GXcopy) || (pGC->planemask != ~0) || 
+					(pScrn->bitsPerPixel == 24))
+	pGC->ops->PolyPoint = MGAPolyPoint;
 }
 
 

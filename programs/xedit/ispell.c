@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.11 1999/07/04 06:40:09 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.12 1999/07/11 08:49:31 dawes Exp $ */
 
 #include "xedit.h"
 #ifndef X_NOT_STDC_ENV
@@ -2151,7 +2151,7 @@ InitIspell(void)
     dict_res.default_addr = "";
 
     list = XtNewString(ispell.dict_list);
-    for (str = strtok(list, " \t"); str; str = strtok(NULL, " \t,")) {
+    for (str = strtok(list, " \t,"); str; str = strtok(NULL, " \t,")) {
 	ispell_dict *dic = XtNew(ispell_dict);
 
 	dic->sme = XtCreateManagedWidget(str, smeBSBObjectClass,

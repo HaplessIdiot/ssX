@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Text.h,v 1.11 1999/05/03 12:15:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.h,v 1.12 1999/06/06 08:48:14 dawes Exp $ */
 
 #ifndef _XawText_h
 #define _XawText_h
@@ -139,6 +139,7 @@ typedef struct {
     unsigned long format;
 } XawTextBlock, *XawTextBlockPtr;
 
+#ifndef OLDXAW
 typedef struct {
     int line_number;
     int column_number;
@@ -147,10 +148,20 @@ typedef struct {
     Boolean overwrite_mode;
 } XawTextPositionInfo;
 
+typedef struct {
+    XawTextPosition left, right;
+    XawTextBlock *block;
+} XawTextPropertyInfo;
+
+typedef struct _XawTextAnchor XawTextAnchor;
+typedef struct _XawTextEntity XawTextEntity;
+typedef struct _XawTextProperty XawTextProperty;
+typedef struct _XawTextPropertyList XawTextPropertyList;
+#endif
+
 #include <X11/Xaw/TextSink.h>
 #include <X11/Xaw/TextSrc.h>
 
-#ifndef notdef
 #define XtEtextScrollNever "never"
 #define XtEtextScrollWhenNeeded "whenneeded"
 #define XtEtextScrollAlways "always"
@@ -158,7 +169,6 @@ typedef struct {
 #define XtEtextResizeWidth "width"
 #define XtEtextResizeHeight "height"
 #define XtEtextResizeBoth "both"
-#endif
 
 #define XtEtextWrapNever	"never"
 #define XtEtextWrapLine		"line"

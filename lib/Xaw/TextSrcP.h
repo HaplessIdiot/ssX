@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.8 1999/06/13 13:47:24 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.9 1999/06/20 08:41:11 dawes Exp $ */
 
 #ifndef _XawTextSrcP_h
 #define _XawTextSrcP_h
@@ -55,6 +55,24 @@ SOFTWARE.
  */
 #include <X11/Xaw/TextSrc.h>
 #include <X11/Xaw/TextP.h>	/* This source works with the Text widget */
+
+#ifndef OLDXAW
+struct _XawTextAnchor {
+    XawTextPosition position;
+    XawTextEntity *entities, *cache;
+};
+
+#define	XAW_TENTF_HIDE	0x0001
+#define XAW_TENTF_READ	0x0002
+struct _XawTextEntity {
+    short type;
+    short flags;
+    XawTextEntity *next, *future_use;
+    XawTextPosition offset;	/* from the anchor */
+    Cardinal length;
+    XrmQuark property;
+};
+#endif
 
 #if 0	/* no longer used */
 /* New fields for the TextSrc object class */
@@ -127,7 +145,10 @@ typedef struct {
     XawTextUndo *undo;
     WidgetList text;			/* TextWidget's using this source */
     Cardinal num_text;
-    XtPointer pad[4];	/* for future use and keep binary compatability */
+    XtCallbackList property_callback;
+    XawTextAnchor **anchors;
+    int num_anchors;
+    XtPointer pad[1];	/* for future use and keep binary compatability */
 #endif
 } TextSrcPart;
 
@@ -153,6 +174,63 @@ wchar_t* _XawTextMBToWC
  char		*str,
  int		*len_in_out
  );
+
+#ifndef OLDXAW
+XawTextAnchor *XawTextSourceAddAnchor
+(
+ Widget			source,
+ XawTextPosition	position
+ );
+
+XawTextAnchor *XawTextSourceFindAnchor
+(
+ Widget			source,
+ XawTextPosition	position
+ );
+
+XawTextAnchor *XawTextSourceNextAnchor
+(
+ Widget			 source,
+ XawTextAnchor		*anchor
+ );
+
+XawTextAnchor *XawTextSourcePrevAnchor
+(
+ Widget			 source,
+ XawTextAnchor		*anchor
+ );
+
+XawTextAnchor *XawTextSourceRemoveAnchor
+(
+ Widget			 source,
+ XawTextAnchor		*anchor
+ );
+
+Bool XawTextSourceAnchorAndEntity
+(
+ Widget			  w,
+ XawTextPosition	  position,
+ XawTextAnchor		**anchor_return,
+ XawTextEntity		**entity_return
+ );
+
+XawTextEntity *XawTextSourceAddEntity
+(
+ Widget			source,
+ int			type,
+ int			flags,
+ XawTextPosition	position,
+ Cardinal		length,
+ XrmQuark		property
+ );
+
+void XawTextSourceClearEntities
+(
+ Widget			w,
+ XawTextPosition	left,
+ XawTextPosition	right
+ );
+#endif
 
 #if 0	/* no longer used */
 typedef XawTextPosition (*_XawTextPositionFunc)();

@@ -24,7 +24,7 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/Clip.c,v 1.1 1998/08/16 10:25:03 dawes Exp $ */
 
 #include <stdlib.h>
 
@@ -769,9 +769,9 @@ XmuOptimizeScanline(XmuScanline *scanline)
     {
       if (!XmuValidSegment(z))
 	{
-	  p = z->next;
+	  p->next = z->next;
 	  XmuDestroySegment(z);
-	  z = p->next;
+	  z = p;
 	}
     }
   return (scanline);

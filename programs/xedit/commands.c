@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.17 1999/06/20 08:41:41 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.18 1999/07/19 13:36:33 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -38,10 +38,12 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <X11/Xmu/SysUtil.h>
+#include <X11/IntrinsicP.h>
+#include <X11/Xaw/TextSrcP.h>
 
 void ResetSourceChanged(xedit_flist_item*);
 static void ResetDC(Widget, XtPointer, XtPointer);
-static void SourceChanged(Widget, XtPointer, XtPointer);
+void SourceChanged(Widget, XtPointer, XtPointer);
 
 static void AddDoubleClickCallback(Widget, Bool);
 static Bool ReallyDoLoad(char*, char*);
@@ -331,8 +333,6 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 	  else {
 	      if (!item)
 		  item = flist.itens[0];
-	      XtRemoveCallback(item->source, XtNcallback, SourceChanged,
-			       (XtPointer)item);
 	      item->source = scratch =
 		  XtVaCreateWidget("textSource", international ?
 				   multiSrcObjectClass : asciiSrcObjectClass,
@@ -340,11 +340,12 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 				   XtNtype, XawAsciiFile,
 				   XtNeditType, XawtextEdit,
 				   NULL, NULL);
-
 	      ResetSourceChanged(item);
 
 	      item = AddTextSource(source, name, filename, EXISTS_BIT,
 				   file_access);
+	      XtAddCallback(item->source, XtNcallback, SourceChanged,
+			    (XtPointer)item);
 	  }
 	  item->flags |= EXISTS_BIT;
 	  ResetSourceChanged(item);
@@ -478,6 +479,8 @@ ReallyDoLoad(char *name, char *filename)
 	XtSetValues(source, args, num_args);
 
 	item = AddTextSource(source, name, filename, flags, file_access);
+	XtAddCallback(item->source, XtNcallback, SourceChanged,
+		      (XtPointer)item);
 	if (exists && file_access == WRITE_OK) {
 	    struct stat st;
 
@@ -499,7 +502,7 @@ ReallyDoLoad(char *name, char *filename)
  *	Returns: none.
  */
 /*ARGSUSED*/
-static void
+void
 SourceChanged(Widget w, XtPointer client_data, XtPointer call_data)
 {
     xedit_flist_item *item = (xedit_flist_item*)client_data;
@@ -562,8 +565,6 @@ ResetSourceChanged(xedit_flist_item *item)
     XtSetArg(args[num_args], XtNsourceChanged, False);	++num_args;
     XtSetValues(item->source, args, num_args);
 
-    if (XtHasCallbacks(item->source, XtNcallback) != XtCallbackHasSome)
-	XtAddCallback(item->source, XtNcallback, SourceChanged, (XtPointer)item);
     item->flags &= ~CHANGED_BIT;
 }
 

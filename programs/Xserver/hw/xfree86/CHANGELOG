@@ -1,4 +1,7 @@
 XFree86 3.9.15b (15 August 1999)
+2953. Improved point rendering performance for the MGA driver (#3123,
+      Mark Vojkovich).
+2952. Xaw and xedit updates (#3122, Paulo Cesar Pereira de Andrade).
 2951. Remove the Latin2 Type1 fonts.
 2950. Change the RGB mask names in the DGA structures (#3120, Mark Vojkovich).
 2949. More acceleration and bug fixes for the NV driver (#3119,
@@ -8563,4 +8566,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.811 1999/08/01 11:55:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.812 1999/08/14 10:49:28 dawes Exp $

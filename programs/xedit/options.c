@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/options.c,v 1.3 1999/05/16 10:13:08 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/options.c,v 1.4 1999/06/13 13:47:51 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -39,25 +39,78 @@
 #include <X11/Xaw/SimpleMenu.h>
 
 /*
+ * Types
+ */
+typedef struct _property_info {
+    Boolean automatic;
+    char *ext_res, *prop_res;
+    char **extensions;
+    int num_extensions;
+    XawTextPropertyList *properties;
+    void (*SetMode)(Widget);
+    void (*UnsetMode)(Widget);
+} property_info;
+
+/*
  * Prototypes
  */
 static void SetColumns(Widget, XEvent*, String*, Cardinal*);
 static void ChangeField(Widget, XEvent*, String*, Cardinal*);
 static void EditCallback(Widget, XtPointer, XtPointer);
+static void ModeCallback(Widget, XtPointer, XtPointer);
 static void PopupColumnsCallback(Widget, XtPointer, XtPointer);
 static void CreateColumnsShell(void);
 static void ProcessColumnsCallback(Widget, XtPointer, XtPointer);
+static void DoSetTextProperties(xedit_flist_item*, property_info*);
+
+/*
+ * externs in c-mode.c
+ */
+extern void C_ModeStart(Widget);
+extern void C_ModeEnd(Widget);
+extern void _XawTextBuildLineTable(TextWidget, XawTextPosition, _XtBoolean);
 
 /*
  * Initialization
  */
+extern Widget texts[3];
+
 static Widget edit_popup, wrap_popup, justify_popup, scroll_popup,
-	      columns_shell, left_text, right_text;
+	      columns_shell, left_text, right_text, mode_popup;
+
+static XFontStruct *fonts[3];
+static Pixel foregrounds[3], backgrounds[3];
 
 static XtActionsRec actions[] = {
     {"set-columns", SetColumns},
     {"change-field", ChangeField},
 };
+
+#define	C_MODE	0
+static property_info property_list[] = {
+    {
+	/* C */
+	False,		/* automatic */
+	NULL,		/* ext_res */
+	NULL,		/* prop_res */
+	NULL,		/* extensions */
+	0,		/* num_extensions */
+	NULL,		/* properties */
+	C_ModeStart,	/* SetMode */
+	C_ModeEnd	/* UnsetMode */
+    },
+};
+
+#define Offset(field) XtOffsetOf(struct _property_info, field)
+static XtResource C_resources[] = {
+    {"auto", "Auto", XtRBoolean, sizeof(Boolean),
+	Offset(automatic), XtRImmediate, (XtPointer)True},
+    {"extensions", "Extensions", XtRString, sizeof(char*),
+	Offset(ext_res), XtRString, "c,h,cc,C"},
+    {"properties", "Properties", XtRString, sizeof(char*),
+	Offset(prop_res), XtRString, "error?background=black&foreground=white"},
+};
+#undef Offset
 
 #define WRAP_NEVER	1
 #define WRAP_LINE	2
@@ -72,7 +125,7 @@ static XtActionsRec actions[] = {
 
 static Widget autoFill, wrapNever, wrapLine, wrapWord,
 	      justifyLeft, justifyRight, justifyCenter, justifyFull,
-	      breakColumns, scrollVert, scrollHoriz;
+	      breakColumns, scrollVert, scrollHoriz, modeNone, modeC;
 
 void
 CreateEditPopup(void)
@@ -141,6 +194,42 @@ CreateEditPopup(void)
     scrollHoriz		= XtCreateManagedWidget("horizontal", smeBSBObjectClass,
 						scroll_popup, NULL, 0);
     XtAddCallback(scrollHoriz, XtNcallback, EditCallback, (XtPointer)SCROLL_HORIZ);
+
+    if (international == False) {
+	char *list, *str;
+
+	mode_popup	= XtCreatePopupShell("editModes", simpleMenuWidgetClass,
+					     edit_popup, NULL, 0);
+	XtRealizeWidget(mode_popup);
+
+	XtSetArg(args[0], XtNmenuName, "editModes");
+	XtCreateManagedWidget("modeMenuItem", smeBSBObjectClass, edit_popup, args, 1);
+
+	modeNone	= XtCreateManagedWidget("none", smeBSBObjectClass,
+						mode_popup, NULL, 0);
+	XtAddCallback(modeNone, XtNcallback, ModeCallback, (XtPointer)NULL);
+	modeC		= XtCreateManagedWidget("C", smeBSBObjectClass,
+						mode_popup, NULL, 0);
+	XtGetApplicationResources(modeC, (XtPointer)&property_list[C_MODE],
+				  C_resources, XtNumber(C_resources), NULL, 0);
+	property_list[C_MODE].properties =
+	    XawTextSinkConvertPropertyList("C", property_list[C_MODE].prop_res,
+					   topwindow->core.screen,
+					   topwindow->core.colormap,
+					   topwindow->core.depth);
+	list = XtNewString(property_list[C_MODE].ext_res);
+	for (str = strtok(list, " \t,"); str; str = strtok(NULL, " \t,")) {
+	    property_list[C_MODE].extensions =
+		(char**)XtRealloc((XtPointer)property_list[C_MODE].extensions,
+				  (property_list[C_MODE].num_extensions + 1) *
+				  sizeof(char*));
+	    property_list[C_MODE].extensions
+		[property_list[C_MODE].num_extensions++] = XtNewString(str);
+	}
+	XtFree(list);
+
+	XtAddCallback(modeC, XtNcallback, ModeCallback, (XtPointer)&property_list[C_MODE]);
+    }
 }
 
 void
@@ -153,6 +242,7 @@ SetEditMenu(void)
     XawTextJustifyMode justify;
     XawTextScrollMode vscroll, hscroll;
     short left, right;
+    XawTextPropertyList *prop;
 
     num_args = 0;
     XtSetArg(args[num_args], XtNwrap, &wrap_mode);		++num_args;
@@ -163,6 +253,9 @@ SetEditMenu(void)
     XtSetArg(args[num_args], XtNscrollVertical, &vscroll);	++num_args;
     XtSetArg(args[num_args], XtNscrollHorizontal, &hscroll);	++num_args;
     XtGetValues(textwindow, args, num_args);
+
+    XtSetArg(args[0], XawNtextProperties, &prop);
+    XtGetValues(XawTextGetSink(textwindow), args, 1);
 
     if (flist.pixmap) {
 	XtSetArg(args[0], XtNleftBitmap, None);
@@ -222,6 +315,16 @@ SetEditMenu(void)
 	    XtSetValues(scrollHoriz, &args[0], 1);
 	else
 	    XtSetValues(scrollHoriz, &args[1], 1);
+
+	if (prop == NULL) {
+	    XtSetValues(modeNone, &args[1], 1);
+	    XtSetValues(modeC, &args[0], 1);
+	}
+	else if (prop == property_list[C_MODE].properties) {
+	    XtSetValues(modeNone, &args[0], 1);
+	    XtSetValues(modeC, &args[1], 1);
+	}
+
     }
     if (!auto_fill) {
 	XtSetSensitive(wrapNever, True);
@@ -434,4 +537,127 @@ ChangeField(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
     XtSetKeyboardFocus(columns_shell,
 		       focus == left_text ? right_text : left_text);
+}
+
+/*ARGSUSED*/
+static void
+ModeCallback(Widget sme, XtPointer client_data, XtPointer call_data)
+{
+    DoSetTextProperties(FindTextSource(XawTextGetSource(textwindow), NULL),
+			(property_info*)client_data);
+}
+
+void
+SetTextProperties(xedit_flist_item *item, Bool force)
+{
+    int i, j;
+    char *ext = strrchr(item->name, '.');
+    property_info *info = NULL;
+
+    if (!ext || !*ext) {
+	DoSetTextProperties(item, NULL);
+	return;
+    }
+
+    ++ext;
+
+    for (i = 0; i < sizeof(property_list) / sizeof(property_list[0]); i++) {
+	info = &property_list[i];
+	for (j = 0; j < info->num_extensions; j++)
+	    if (strcmp(info->extensions[j], ext) == 0)
+		break;
+	if (j < info->num_extensions)
+	    break;
+    }
+
+    if (i < sizeof(property_list) / sizeof(property_list[0]) &&
+	(force || info->automatic == True))
+	DoSetTextProperties(item, info);
+    else
+	DoSetTextProperties(item, NULL);
+}
+
+void
+UpdateTextProperties(void)
+{
+    Arg args[4];
+    Cardinal num_args;
+    xedit_flist_item *item;
+    XawTextPropertyList *prop;
+    Widget text, source, sink;
+    int i;
+
+    /* save default information */
+    if (fonts[0] == NULL) {
+	for (i = 0; i < 3; i++) {
+	    num_args = 0;
+	    XtSetArg(args[num_args], XtNfont, &fonts[i]);	      ++num_args;
+	    XtSetArg(args[num_args], XtNforeground, &foregrounds[i]); ++num_args;
+	    XtSetArg(args[num_args], XtNbackground, &backgrounds[i]); ++num_args;
+	    XtGetValues(XawTextGetSink(texts[i]), args, num_args);
+	}
+    }
+
+    for (i = 0; i < 3; i++) {
+	text = texts[i];
+	source = XawTextGetSource(text);
+	sink = XawTextGetSink(text);
+	item = FindTextSource(source, NULL);
+
+	XtSetArg(args[0], XawNtextProperties, &prop);
+	XtGetValues(sink, args, 1);
+
+	if (item == NULL || prop == item->properties)
+	    continue;
+
+	XtSetArg(args[0], XawNtextProperties, item->properties);
+	num_args = 1;
+	if (item->properties == NULL) {
+	    XtSetArg(args[num_args], XtNfont, fonts[i]);	     ++num_args;
+	    XtSetArg(args[num_args], XtNforeground, foregrounds[i]); ++num_args;
+	    XtSetArg(args[num_args], XtNbackground, backgrounds[i]); ++num_args;
+	}
+	XtSetValues(sink, args, num_args);
+
+	_XawTextBuildLineTable((TextWidget)text,
+			       XawTextTopPosition(text), True);
+	XawTextDisplay(text);
+    }
+}
+
+static void
+DoSetTextProperties(xedit_flist_item *item, property_info *info)
+{
+    XawTextPropertyList *prop;
+    Widget source;
+    Arg args[1];
+    int idx, i;
+
+    for (idx = 0; idx < 3; idx++)
+	if (texts[idx] == textwindow)
+	    break;
+
+    source = item->source;
+
+    XtSetArg(args[0], XawNtextProperties, &prop);
+    XtGetValues(XawTextGetSink(texts[idx]), args, 1);
+
+    XawTextSourceClearEntities(source, 0,
+			       XawTextSourceScan(source, 0, XawstAll,
+						 XawsdRight, 1, True));
+
+    if (prop) {
+	for (i = 0; i < sizeof(property_list) / sizeof(property_list[0]); i++)
+	    if (property_list[i].properties == prop) {
+		(property_list[i].UnsetMode)(source);
+		break;
+	    }
+    }
+
+    if (info)
+	(info->SetMode)(source);
+
+    item->properties = info ? info->properties : NULL;
+
+    UpdateTextProperties();
 }
