@@ -1,4 +1,6 @@
-XFree86 4.3.99.17 (xx November 2003)
+XFree86 4.3.99. (xx December 2003)
+
+XFree86 4.3.99.4.3.99.901 ( 2 December 2003)
  645. Update xterm's checking of modifiers to match change 635, and handle
       the case of keys like Meta_L being in more than one modifier.  This
       addresses an issue arising from Bugzilla #924 (David Dawes).
@@ -18324,7 +18326,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3011 2003/12/02 23:35:20 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3012 2003/12/03 00:22:53 dawes Exp $
 
 
 
