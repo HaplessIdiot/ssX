@@ -1,3 +1,7 @@
+3538. Add drm_poll to fix SIGIO problem in the drm kernel modules, and change
+      drm to use /{proc,dev}/dri to avoid conflicts with /{proc,dev}/graphics
+      (Rik Faith and Daryll Strauss).
+
 XFree86 3.9.17a (20 January 2000)
 3537. Fix glint/Imakefile so that the correct fb.h is included, and rename
       the private fb.h file in fbdevhw so that it won't be mistakenly included
@@ -9254,4 +9258,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.934 2000/01/19 22:37:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.935 2000/01/19 23:01:51 dawes Exp $
