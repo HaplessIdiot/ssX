@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.17 2002/05/22 16:22:07 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.19 2002/06/14 22:34:57 keithp Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -977,7 +977,7 @@ Redisplay(Widget gw, XEvent *event, Region region)
     ClockWidget w = (ClockWidget) gw;
     if (w->clock.analog) {
 #ifdef XRENDER
-	if (w->clock.render)
+	if (w->clock.render && w->clock.can_polygon)
 	    XClipBox (region, &w->clock.damage);
 	else
 #endif
