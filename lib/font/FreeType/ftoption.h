@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/freetype2/include/freetype/config/ftoption.h,v 1.6 2003/05/29 02:13:03 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftoption.h,v 1.6 2003/06/08 15:41:13 herrb Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftoption.h                                                             */
@@ -381,7 +381,7 @@ FT_BEGIN_HEADER
   /*   do not #undef this macro here, since the build system might         */
   /*   define for certain configurations                                   */
   /*                                                                       */
-#define  TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+/* #define  TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
 
 
   /*************************************************************************/
