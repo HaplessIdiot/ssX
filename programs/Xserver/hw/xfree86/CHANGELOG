@@ -1,4 +1,6 @@
-XFree86 3.1.1f (23 April 1995)
+XFree86 3.1.1f (24 April 1995)
+ 64. Remove ComplexProgramTargetNoMan rule, and use NormalProgramTarget
+     instead.
  63. Fix cirrus MMIO problem introduced in 3.1.1e, and allow 135MHz clocks
      for a wider range of CL-GD5434 revisions (Harm Hanemaayer).
  62. Update to S3 HW cursor fix (Harald Koenig).
