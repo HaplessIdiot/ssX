@@ -353,6 +353,7 @@ unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
     munmap((caddr_t)Base, Size);
 }
 
+
 /***************************************************************************/
 /* I/O Permissions section                                                 */
 /***************************************************************************/
@@ -560,7 +561,7 @@ readSparse8(pointer Base, register unsigned long Offset)
 	}
       }
 
-    result = *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 5));
+    result = *(vuip) ((unsigned long)lnxSBase + (Offset << 5));
     result >>= shift;
     return 0xffUL & result;
 }
@@ -581,7 +582,7 @@ readSparse16(pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    result = *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<5)+(1<<(5-2)));
+    result = *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2)));
     result >>= shift;
     return 0xffffUL & result;
 }
@@ -626,7 +627,7 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<5)+(1<<(5-2))) =
+    *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2))) =
       w * 0x00010001;
     mem_barrier();
 
@@ -655,7 +656,7 @@ writeSparseNB8(int Value, pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    *(vuip) ((unsigned long)xf86LinuxSBase + (Offset << 5)) = b * 0x01010101;
+    *(vuip) ((unsigned long)lnxSBase + (Offset << 5)) = b * 0x01010101;
 }
 
 static void
@@ -673,7 +674,7 @@ writeSparseNB16(int Value, pointer Base, register unsigned long Offset)
 	msb_set = msb;
       }
     }
-    *(vuip)((unsigned long)xf86LinuxSBase+(Offset<<5)+(1<<(5-2))) =
+    *(vuip)((unsigned long)lnxSBase+(Offset<<5)+(1<<(5-2))) =
       w * 0x00010001;
 }
 

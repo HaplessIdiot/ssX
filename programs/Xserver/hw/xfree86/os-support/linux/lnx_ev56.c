@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_ev56.c,v 3.2 2000/02/13 07:39:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_ev56.c,v 3.4 2000/02/15 02:00:14 eich Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -9,9 +9,6 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86OSpriv.h"
-
-extern pointer xf86LinuxSBase;
-extern pointer xf86LinuxBase;
 
 int readDense8(pointer Base, register unsigned long Offset);
 int readDense16(pointer Base, register unsigned long Offset);
