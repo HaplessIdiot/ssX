@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.h,v 1.3 2000/08/25 13:42:23 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.h,v 1.4 2001/04/10 16:07:50 dawes Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -28,9 +28,6 @@
 
 #ifndef MGA_BUFFERS_H
 #define MGA_BUFFERS_H
-
-void mgaDDSetReadBuffer(GLcontext *ctx, GLframebuffer *buffer,
-			GLenum mode );
 
 GLboolean mgaDDSetDrawBuffer(GLcontext *ctx, GLenum mode );
 

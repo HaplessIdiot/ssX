@@ -1,8 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/xtrapproto.h,v 1.1 2001/11/02 23:29:26 dawes Exp $ */
 
 #ifndef __XTRAPPROTO__
 #define __XTRAPPROTO__
-/* RCSID = $Header: /vol1/history/xf86/xc/include/extensions/Attic/xtrapproto.h,v 1.1 2001/11/02 23:29:26 dawes Exp $" */
 
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA

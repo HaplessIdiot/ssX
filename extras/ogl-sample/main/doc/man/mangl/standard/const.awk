@@ -30,8 +30,6 @@
 # published by SGI, but has not been independently verified as being
 # compliant with the OpenGL(R) version 1.2.1 Specification.
 #
-# $Date: 2002/01/14 22:13:30 $ $Revision: 1.3 $
-# $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/doc/man/mangl/standard/const.awk,v 1.3 2002/01/14 22:13:30 dawes Exp $
 
 # compare manpages to gl.h
 #

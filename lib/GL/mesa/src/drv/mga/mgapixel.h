@@ -24,12 +24,12 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.h,v 1.2 2001/03/21 16:14:22 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.h,v 1.3 2001/04/10 16:07:51 dawes Exp $ */
 
 #ifndef MGA_PIXELS_H
 #define MGA_PIXELS_H
 
-#include "types.h"
+#include "mtypes.h"
 
 extern void mgaDDInitPixelFuncs( GLcontext *ctx );
 

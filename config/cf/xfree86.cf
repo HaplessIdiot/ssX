@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.389 2002/01/25 21:55:45 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.390 2002/02/21 21:24:23 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -313,13 +313,22 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				siliconmotion \
 				vesa vga XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
-# if HasGlide3
-#  define TdfxDriDriver		tdfx
-# else
-#  define TdfxDriDriver		/**/
+
+/*
+ * DRI drivers under development, or drivers included on this platform
+ * only for build testing.
+ */
+# ifndef DevelDRIDrivers
+#  if XFree86Devel
+#   define DevelDRIDrivers	ffb
+#  else
+#   define DevelDRIDrivers	/**/
+#  endif
 # endif
+
 # ifndef DriDrivers
-#  define DriDrivers		gamma TdfxDriDriver mga i810 i830 r128 radeon sis
+#  define DriDrivers		gamma i810 /*i830*/ mga r128 radeon \
+				/*sis*/ tdfx DevelDRIDrivers
 # endif
 #endif
 
@@ -577,13 +586,8 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				savage nv DevelDrivers siliconmotion vga \
 				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
-# if HasGlide3
-#  define TdfxDriDriver		tdfx
-# else
-#  define TdfxDriDriver		/**/
-# endif
 # ifndef DriDrivers
-#  define DriDrivers		gamma TdfxDriDriver mga r128 radeon sis
+#  define DriDrivers		gamma tdfx mga r128 radeon sis
 # endif
 #endif
 
@@ -673,13 +677,8 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 				DevelDrivers vga \
 				XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
-# if HasGlide3
-#  define TdfxDriDriver		tdfx
-# else
-#  define TdfxDriDriver		/**/
-# endif
 # ifndef DriDrivers
-#  define DriDrivers		gamma TdfxDriDriver mga r128 radeon
+#  define DriDrivers		gamma tdfx mga r128 radeon
 # endif
 #endif
 

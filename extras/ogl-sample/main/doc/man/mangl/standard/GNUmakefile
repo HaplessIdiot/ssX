@@ -32,8 +32,6 @@
 # published by SGI, but has not been independently verified as being
 # compliant with the OpenGL(R) version 1.2.1 Specification.
 #
-# $Date: 2002/01/14 22:13:28 $ $Revision: 1.3 $
-# $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/doc/man/mangl/standard/Attic/GNUmakefile,v 1.3 2002/01/14 22:13:28 dawes Exp $
 
 # NOTES:
 # - The file "lor-c.mn" contains the source for the List of Routines section

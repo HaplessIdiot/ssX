@@ -25,10 +25,11 @@
  *    Keith Whitwell <keithw@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.2 2001/03/21 16:14:22 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.3 2001/04/10 16:07:51 dawes Exp $ */
 
 #include "enums.h"
-#include "types.h"
+#include "mtypes.h"
+#include "macros.h"
 #include "texutil.h"
 #include "mgadd.h"
 #include "mgacontext.h"
@@ -37,12 +38,14 @@
 #include "mgabuffers.h"
 
 #include "drm.h"
+#include "xf86drmMga.h"
+
+#include "swrast/swrast.h"
 
 #define IS_AGP_MEM( mmesa, p )						\
    ((GLuint)mmesa->mgaScreen->buffers.map <= ((GLuint)p) &&		\
     (GLuint)mmesa->mgaScreen->buffers.map +				\
     (GLuint)mmesa->mgaScreen->buffers.size > ((GLuint)p))
-
 #define AGP_OFFSET( mmesa, p )						\
      (((GLuint)p) - (GLuint)mmesa->mgaScreen->buffers.map )
 
@@ -113,25 +116,30 @@ check_color( const GLcontext *ctx, GLenum type, GLenum format,
 	       cpp == 2 && format == GL_RGB ) ) ) )
       return GL_FALSE;
 
-   return ( ctx->ColorMatrix.type == MATRIX_IDENTITY &&
-	    !ctx->Pixel.ScaleOrBiasRGBA &&
-	    !ctx->Pixel.ScaleOrBiasRGBApcm &&
-	    !ctx->Pixel.MapColorFlag &&
-	    !ctx->Pixel.ColorTableEnabled &&
-	    !ctx->Pixel.PostColorMatrixColorTableEnabled &&
-	    !ctx->Pixel.MinMaxEnabled &&
-	    !ctx->Pixel.HistogramEnabled &&
-	    !packing->SwapBytes &&
-	    !packing->LsbFirst );
+   return (!ctx->_ImageTransferState &&
+	   !packing->SwapBytes &&
+	   !packing->LsbFirst);
 }
 
 static GLboolean
 check_color_per_fragment_ops( const GLcontext *ctx )
 {
-   return ( !(ctx->RasterMask & ~(SCISSOR_BIT|WINCLIP_BIT|MULTI_DRAW_BIT)) &&
-	    ctx->Current.RasterPosValid &&
-	    ctx->Pixel.ZoomX == 1.0F &&
-	    ( ctx->Pixel.ZoomY == 1.0F || ctx->Pixel.ZoomY == -1.0F ) );
+   return (!(       ctx->Color.AlphaEnabled ||
+		    ctx->Depth.Test ||
+		    ctx->Fog.Enabled ||
+		    ctx->Scissor.Enabled ||
+		    ctx->Stencil.Enabled ||
+		    !ctx->Color.ColorMask[0] ||
+		    !ctx->Color.ColorMask[1] ||
+		    !ctx->Color.ColorMask[2] ||
+		    !ctx->Color.ColorMask[3] ||
+		    ctx->Color.ColorLogicOpEnabled ||
+		    ctx->Texture._ReallyEnabled ||
+		    ctx->Depth.OcclusionTest
+           ) &&
+	   ctx->Current.RasterPosValid &&
+	   ctx->Pixel.ZoomX == 1.0F &&
+	   (ctx->Pixel.ZoomY == 1.0F || ctx->Pixel.ZoomY == -1.0F));
 }
 
 static GLboolean
@@ -171,29 +179,29 @@ clip_pixelrect( const GLcontext *ctx,
    *width = MIN2(*width, MAX_WIDTH); /* redundant? */
 
    /* left clipping */
-   if (*x < buffer->Xmin) {
-      *skipPixels += (buffer->Xmin - *x);
-      *width -= (buffer->Xmin - *x);
-      *x = buffer->Xmin;
+   if (*x < buffer->_Xmin) {
+      *skipPixels += (buffer->_Xmin - *x);
+      *width -= (buffer->_Xmin - *x);
+      *x = buffer->_Xmin;
    }
 
    /* right clipping */
-   if (*x + *width > buffer->Xmax)
-      *width -= (*x + *width - buffer->Xmax - 1);
+   if (*x + *width > buffer->_Xmax)
+      *width -= (*x + *width - buffer->_Xmax - 1);
 
    if (*width <= 0)
       return GL_FALSE;
 
    /* bottom clipping */
-   if (*y < buffer->Ymin) {
-      *skipRows += (buffer->Ymin - *y);
-      *height -= (buffer->Ymin - *y);
-      *y = buffer->Ymin;
+   if (*y < buffer->_Ymin) {
+      *skipRows += (buffer->_Ymin - *y);
+      *height -= (buffer->_Ymin - *y);
+      *y = buffer->_Ymin;
    }
 
    /* top clipping */
-   if (*y + *height > buffer->Ymax)
-      *height -= (*y + *height - buffer->Ymax - 1);
+   if (*y + *height > buffer->_Ymax)
+      *height -= (*y + *height - buffer->_Ymax - 1);
 
    if (*height <= 0)
       return GL_FALSE;
@@ -205,11 +213,11 @@ clip_pixelrect( const GLcontext *ctx,
 }
 
 static GLboolean
-mgaDDReadPixels( GLcontext *ctx,
-		 GLint x, GLint y, GLsizei width, GLsizei height,
-		 GLenum format, GLenum type,
-		 const struct gl_pixelstore_attrib *pack,
-		 GLvoid *pixels )
+mgaTryReadPixels( GLcontext *ctx,
+		  GLint x, GLint y, GLsizei width, GLsizei height,
+		  GLenum format, GLenum type,
+		  const struct gl_pixelstore_attrib *pack,
+		  GLvoid *pixels )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
    drm_mga_blit_t blit;
@@ -256,7 +264,7 @@ mgaDDReadPixels( GLcontext *ctx,
        * Could get the acclerator to solid fill the destination with
        * zeros first...  Or get the cpu to do it...
        */
-      if (ctx->Visual->DepthBits == 24)
+      if (ctx->Visual.depthBits == 24)
 	 return GL_FALSE;
 
       planemask = ~0;
@@ -283,6 +291,7 @@ mgaDDReadPixels( GLcontext *ctx,
 
    LOCK_HARDWARE( mmesa );
 
+#if 0
    {
       __DRIdrawablePrivate *dPriv = mmesa->driDrawable;
       int nbox, retcode, i;
@@ -353,11 +362,24 @@ mgaDDReadPixels( GLcontext *ctx,
 
       UPDATE_LOCK( mmesa, DRM_LOCK_FLUSH | DRM_LOCK_QUIESCENT );
    }
+#endif
 
    UNLOCK_HARDWARE( mmesa );
 
    return GL_TRUE;
 }
+
+static void
+mgaDDReadPixels( GLcontext *ctx,
+		 GLint x, GLint y, GLsizei width, GLsizei height,
+		 GLenum format, GLenum type,
+		 const struct gl_pixelstore_attrib *pack,
+		 GLvoid *pixels )
+{
+   if (!mgaTryReadPixels( ctx, x, y, width, height, format, type, pack, pixels))
+      _swrast_ReadPixels( ctx, x, y, width, height, format, type, pack, pixels);
+}
+
 
 
 
@@ -378,6 +400,7 @@ static void do_draw_pix( GLcontext *ctx,
    x += mmesa->drawX;
    y += mmesa->drawY;
 
+#if 0
    blit.dest = dest;
    blit.planemask = planemask;
    blit.source = ((mmesa->mgaScreen->agp.handle + AGP_OFFSET(mmesa, pixels))
@@ -436,17 +459,18 @@ static void do_draw_pix( GLcontext *ctx,
 	 exit(1);
       }
    }
+#endif
 }
 
 
 
 
 static GLboolean
-mgaDDDrawPixels( GLcontext *ctx,
-		 GLint x, GLint y, GLsizei width, GLsizei height,
-		 GLenum format, GLenum type,
-		 const struct gl_pixelstore_attrib *unpack,
-		 const GLvoid *pixels )
+mgaTryDrawPixels( GLcontext *ctx,
+		  GLint x, GLint y, GLsizei width, GLsizei height,
+		  GLenum format, GLenum type,
+		  const struct gl_pixelstore_attrib *unpack,
+		  const GLvoid *pixels )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
    GLint size, skipPixels, skipRows;
@@ -476,7 +500,7 @@ mgaDDDrawPixels( GLcontext *ctx,
    case GL_DEPTH_COMPONENT:
       dest = mmesa->mgaScreen->depthOffset;
 
-      if (ctx->Visual->DepthBits == 24)
+      if (ctx->Visual.depthBits == 24)
 	 planemask = ~0xff;
       else
 	 planemask = ~0;
@@ -532,7 +556,8 @@ mgaDDDrawPixels( GLcontext *ctx,
        */
 /*        drmBufPtr buf = mgaGetBufferLocked(mmesa); */
       GLuint bufferpitch = (width*cpp+31)&~31;
-      char *address = mmesa->mgaScreen->agp.map;
+
+      char *address = 0; /*  mmesa->mgaScreen->agp.map; */
 
       do {
 /*  	 GLuint rows = MIN2( height, MGA_DMA_BUF_SZ / bufferpitch ); */
@@ -548,23 +573,19 @@ mgaDDDrawPixels( GLcontext *ctx,
 	  */
 #if 0
 	 if (cpp == 2) {
-	    if (!_mesa_convert_teximage( MESA_FORMAT_RGB565,
-					 width, rows,
-					 address, bufferpitch,
-					 width, rows,
-					 format, type,
-					 pixels, unpack )) {
+	    if (!_mesa_convert_texsubimage2d( MESA_FORMAT_RGB565,
+					      0, 0, width, rows,
+					      bufferpitch, format, type,
+					      unpack, pixels, address )) {
 /*  	       mgaReleaseBufLocked( mmesa, buf ); */
 	       UNLOCK_HARDWARE(mmesa);
 	       return GL_FALSE;
 	    }
 	 } else {
-	    if (!_mesa_convert_teximage( MESA_FORMAT_ARGB8888,
-					 width, rows,
-					 address, bufferpitch,
-					 width, rows,
-					 format, type,
-					 pixels, unpack )) {
+	    if (!_mesa_convert_texsubimage2d( MESA_FORMAT_ARGB8888,
+					      0, 0, width, rows,
+					      bufferpitch, format, type,
+					      unpack, pixels, address )) {
 /*  	       mgaReleaseBufLocked( mmesa, buf ); */
 	       UNLOCK_HARDWARE(mmesa);
 	       return GL_FALSE;
@@ -595,6 +616,18 @@ mgaDDDrawPixels( GLcontext *ctx,
    return GL_TRUE;
 }
 
+static void
+mgaDDDrawPixels( GLcontext *ctx,
+		 GLint x, GLint y, GLsizei width, GLsizei height,
+		 GLenum format, GLenum type,
+		 const struct gl_pixelstore_attrib *unpack,
+		 const GLvoid *pixels )
+{
+   if (!mgaTryDrawPixels( ctx, x, y, width, height, format, type,
+			  unpack, pixels ))
+      _swrast_DrawPixels( ctx, x, y, width, height, format, type,
+			  unpack, pixels );
+}
 
 
 
@@ -637,6 +670,16 @@ void mgaDDInitPixelFuncs( GLcontext *ctx )
    ctx->Driver.GetAgpOffset = mgaDDGetAgpOffset;
    ctx->Driver.FreeAgpMemory = mgaDDFreeAgpMemory;
 #endif
+
+   /* Pixel path fallbacks.
+    */
+   ctx->Driver.Accum = _swrast_Accum;
+   ctx->Driver.Bitmap = _swrast_Bitmap;
+   ctx->Driver.CopyPixels = _swrast_CopyPixels;
+   ctx->Driver.DrawPixels = _swrast_DrawPixels;
+   ctx->Driver.ReadPixels = _swrast_ReadPixels;
+   ctx->Driver.ResizeBuffersMESA = _swrast_alloc_buffers;
+
    if (getenv("MGA_BLIT_PIXELS")) {
       ctx->Driver.ReadPixels = mgaDDReadPixels; /* requires agp dest */
       ctx->Driver.DrawPixels = mgaDDDrawPixels; /* works with agp/normal mem */

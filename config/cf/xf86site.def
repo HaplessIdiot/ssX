@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.179 2002/01/16 18:36:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.180 2002/02/14 19:08:17 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -291,7 +291,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.179 2002/01/16 18:36:00 dawes Exp 
  */
 
 /* 
- * The 3Dfx 3D DRI driver requires glide 3.
+ * Have glide 3?
  *
 #define HasGlide3 YES
  */
