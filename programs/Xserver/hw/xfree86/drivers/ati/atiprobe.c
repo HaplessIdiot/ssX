@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.26tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.27 2000/08/24 22:20:16 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -402,7 +402,7 @@ ATI8514Probe
         return NULL;
     }
 
-    /* Ensure and Mach8 or Mach32 is not in 8514/A emulation mode */
+    /* Ensure any Mach8 or Mach32 is not in 8514/A emulation mode */
     IOValue1 = inw(CLOCK_SEL);
     outw(CLOCK_SEL, IOValue1);
     ProbeWaitIdleEmpty();

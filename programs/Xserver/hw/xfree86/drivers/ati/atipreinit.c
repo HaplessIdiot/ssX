@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.30 2000/08/24 22:20:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.31 2000/08/25 16:00:19 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -455,9 +455,94 @@ ATIPreInit
 
     ConfiguredMonitor = NULL;
 
+    if (!(flags & PROBE_DETECT))
+    {
+        xf86DrvMsg(pScreenInfo->scrnIndex,
+            pATI->Chipset ? X_CONFIG : X_DEFAULT,
+            "Chipset:  \"%s\".\n", ATIChipsetNames[pATI->Chipset]);
+
+        /* Promote chipset specification */
+        switch (pATI->Chipset)
+        {
+
+#ifndef AVOID_CPIO
+
+            case ATI_CHIPSET_IBMVGA:
+                if (pATI->Adapter == ATI_ADAPTER_VGA)
+                    break;      /* XXX */
+                /* Fall through */
+
+            case ATI_CHIPSET_VGAWONDER:
+                pATI->Chipset = ATI_CHIPSET_ATIVGA;
+                break;
+
+            case ATI_CHIPSET_IBM8514:
+                if (pATI->Adapter == ATI_ADAPTER_8514A)
+                    break;      /* XXX */
+                /* Fall through */
+
+            case ATI_CHIPSET_MACH8:
+            case ATI_CHIPSET_MACH32:
+
+#endif /* AVOID_CPIO */
+
+            case ATI_CHIPSET_MACH64:
+            case ATI_CHIPSET_RAGE128:
+                pATI->Chipset = ATI_CHIPSET_ATI;
+                break;
+
+            default:
+                break;
+        }
+
+        /* Set monitor */
+        pScreenInfo->monitor = pScreenInfo->confScreen->monitor;
+
+        /* Set depth, bpp, etc. */
+        if ((pATI->Chipset != ATI_CHIPSET_ATI) ||
+            (pATI->Chip < ATI_CHIP_264CT))
+            i = NoDepth24Support;       /* No support for >8bpp either */
+        else
+            i = Support24bppFb | Support32bppFb;
+        if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, i))
+            return FALSE;
+
+        switch (pScreenInfo->depth)
+        {
+
+#ifndef AVOID_CPIO
+
+            case 1:  case 4:
+
+#endif /* AVOID_CPIO */
+
+            case 8:  case 15:  case 16:  case 24:
+                break;
+
+            default:
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                    "Driver does not support depth %d.\n",
+                    pScreenInfo->depth);
+                return FALSE;
+        }
+
+        xf86PrintDepthBpp(pScreenInfo);
+
+        if ((i == NoDepth24Support) && (pScreenInfo->depth > 8))
+        {
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                "Depth %d is not supported through this adapter.\n",
+                pScreenInfo->depth);
+            return FALSE;
+        }
+
+        /* Pick up XF86Config options */
+        ATIProcessOptions(pScreenInfo, pATI);
+    }
+
 #ifdef AVOID_CPIO
 
-    if (flags & PROBE_DETECT)
+    else
         return TRUE;
 
 #else /* AVOID_CPIO */
@@ -525,9 +610,6 @@ ATIPreInit
     xf86UnloadSubModule(pDDCModule);
 
 #endif /* AVOID_CPIO */
-
-    /* Set monitor */
-    pScreenInfo->monitor = pScreenInfo->confScreen->monitor;
 
     pATI->Block0Base = 0;       /* Might no longer be valid */
     if ((pVideo = pATI->PCIInfo))
@@ -894,7 +976,7 @@ ATIPreInit
         {
             /*
              * Compensate for BIOS absence.  Note that the reference
-             * frequency will be set later by option processing.
+             * frequency has already been set by option processing.
              */
             if ((pATI->DAC & 0x0FU) == ATI_DAC_INTERNAL)
                 pATI->ProgrammableClock = ATI_CLOCK_INTERNAL;
@@ -1121,9 +1203,6 @@ ATIPreInit
 #endif /* AVOID_CPIO */
 
     /* Report what was found */
-    xf86DrvMsg(pScreenInfo->scrnIndex, pATI->Chipset ? X_CONFIG : X_DEFAULT,
-        "Chipset:  \"%s\".\n", ATIChipsetNames[pATI->Chipset]);
-
     xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
         "%s graphics controller detected.\n", ATIChipNames[pATI->Chip]);
 
@@ -1222,97 +1301,6 @@ ATIPreInit
             }
         }
     }
-
-    /* Promote chipset specification */
-    switch (pATI->Chipset)
-    {
-
-#ifndef AVOID_CPIO
-
-        case ATI_CHIPSET_IBMVGA:
-            if (pATI->Adapter == ATI_ADAPTER_VGA)
-                break;          /* XXX */
-            /* Fall through */
-
-        case ATI_CHIPSET_VGAWONDER:
-            pATI->Chipset = ATI_CHIPSET_ATIVGA;
-            break;
-
-        case ATI_CHIPSET_IBM8514:
-            if (pATI->Adapter == ATI_ADAPTER_8514A)
-                break;          /* XXX */
-            /* Fall through */
-
-        case ATI_CHIPSET_MACH8:
-        case ATI_CHIPSET_MACH32:
-
-#endif /* AVOID_CPIO */
-
-        case ATI_CHIPSET_MACH64:
-        case ATI_CHIPSET_RAGE128:
-            pATI->Chipset = ATI_CHIPSET_ATI;
-            break;
-
-        default:
-            break;
-    }
-
-    /*
-     * Set depth, bpp, etc.
-     */
-
-    if ((pATI->Chipset != ATI_CHIPSET_ATI) || (pATI->Chip < ATI_CHIP_264CT))
-        i = NoDepth24Support;   /* No support for >8bpp either */
-    else
-        i = Support24bppFb | Support32bppFb;
-    if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, i))
-    {
-        ATILock(pATI);
-        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
-        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
-        return FALSE;
-    }
-
-    switch (pScreenInfo->depth)
-    {
-
-#ifndef AVOID_CPIO
-
-        case 1:  case 4:
-
-#endif /* AVOID_CPIO */
-
-        case 8:  case 15:  case 16:  case 24:
-            break;
-
-        default:
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-                "Driver does not support depth %d.\n",
-                pScreenInfo->depth);
-            ATILock(pATI);
-            ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
-            ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
-            return FALSE;
-    }
-
-    xf86PrintDepthBpp(pScreenInfo);
-
-    if ((i == NoDepth24Support) && (pScreenInfo->depth > 8))
-    {
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-            "Depth %d is not supported through this adapter.\n",
-            pScreenInfo->depth);
-        ATILock(pATI);
-        ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
-        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
-        return FALSE;
-    }
-
-    /*
-     * Pick up XF86Config options.
-     */
-
-    ATIProcessOptions(pScreenInfo, pATI);
 
 #ifdef AVOID_CPIO
 
@@ -1716,7 +1704,7 @@ ATIPreInit
 #ifndef AVOID_CPIO
 
                 /* Except for PCI & AGP, allow for user override */
-                if (pATI->BusType < ATI_BUS_PCI)
+                if (!pATI->PCIInfo)
                 {
                     if (pATI->Chip == ATI_CHIP_88800CX)
                         IOValue2 = ~((unsigned long)((1 << 23) - 1));

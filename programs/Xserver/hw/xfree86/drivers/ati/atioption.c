@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.9 2000/08/04 21:07:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.10 2000/08/22 21:54:30 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -23,7 +23,6 @@
 
 #include "ati.h"
 #include "atiadapter.h"
-#include "atibus.h"
 #include "atioption.h"
 #include "atistruct.h"
 
@@ -203,7 +202,7 @@ ATIProcessOptions
 
 #ifndef AVOID_CPIO
 
-    if (pATI->BusType >= ATI_BUS_PCI)
+    if (pATI->PCIInfo)
 
 #endif /* AVOID_CPIO */
 
