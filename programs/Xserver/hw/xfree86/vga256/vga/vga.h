@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.18 1996/12/23 06:59:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.19 1996/12/28 08:19:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -142,8 +142,16 @@ extern unsigned char byte_reversed[256];
 /* All each driver to set a display pitch other than virtualX */
 void vgaSetPitchAdjustHook(int (* ChipPitchAdjust)());
 
+/* All each driver to set an offset into the linear frame buffer */
+void vgaSetLinearOffsetHook(int (* ChipLinearOffset)());
+
 /* Allow each driver to hook the ScreenInit function */
 void vgaSetScreenInitHook(Bool (* ChipScrInit)());
+
+/* Allow each driver to provide a VESA Display Power Management
+   Signaling (DPMS) mode setting function */
+void vgaSetDisplayPowerManagementHook(void (* ChipDisplayPowerManagement)());
+extern void (* vgaDisplayPowerManagementFunc)();
 
 /*
  * hooks for communicating with the VideoChip on the VGA
@@ -251,6 +259,11 @@ typedef struct {
 #define COLORMAP_SIZE 256
 
 #endif
+
+#define DPMSModeOn	0
+#define DPMSModeStandby	1
+#define DPMSModeSuspend	2
+#define DPMSModeOff	3
 
 #define DACDelay \
 	{ \

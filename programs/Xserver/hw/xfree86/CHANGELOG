@@ -1,3 +1,15 @@
+XFree86 3.2o (4 January 1997)
+ 176. Add DPMS support for the MGA driver (Leonard N. Zubkoff).
+ 175. Add sync-on-green support to the MGA driver (Leonard N. Zubkoff).
+ 174. Add support for display modes that require more than 4MB on
+      Millennium cards (Leonard N. Zubkoff).
+ 173. Enable acceleration support for the Trident 9320LCD chips
+      (Alan Hourihane).
+ 172. Add parallel make support for the lbxutil Imakefile (Robin Cutshaw).
+ 171. Fix XAA crash for drivers that don't fill in the ServerInfoRec
+      field (Alan Hourihane).
+ 170. Fix a problem with the Xmark script (Andrew E. Mileski).
+
 XFree86 3.2n (3 January 1997)
  169. Fix some xaa build problems on some platforms.
  168. Updates to NetBSD.cf, including auto-detection of ELF (Chris Demetriou).

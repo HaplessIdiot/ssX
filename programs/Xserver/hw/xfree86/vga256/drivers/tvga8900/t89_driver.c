@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.56 1996/12/28 08:29:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.57 1996/12/30 14:00:15 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -675,6 +675,7 @@ TVGA8900Probe()
 		tridentDACtype = TGUIDAC;
 		TVGA8900.ChipUse2Banks = TRUE;
 		tridentTGUIProgrammableClocks = TRUE;
+		tridentHasAcceleration = TRUE;
 		break;
 	case TGUI9400CXi:
 		tridentIsTGUI = TRUE;	
@@ -707,7 +708,6 @@ TVGA8900Probe()
 		else
 			tridentHasAcceleration = TRUE;
 		TVGA8900.ChipHas16bpp = TRUE;
-		TVGA8900.ChipHas32bpp = TRUE;
 		TVGA8900.ChipUse2Banks = TRUE;
 		break;
 	case TGUI96xx:
@@ -743,7 +743,6 @@ TVGA8900Probe()
 		tridentDACtype = TGUIDAC;
 		tridentHasAcceleration = TRUE;
 		TVGA8900.ChipHas16bpp = TRUE;
-		TVGA8900.ChipHas32bpp = TRUE;
 		TVGA8900.ChipUse2Banks = TRUE;
 		break;
       	}

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.95 1996/12/28 08:03:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.96 1997/01/02 04:04:32 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -294,7 +294,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.95 1996/12/28 08:03:17 dawes Exp $
 /*
  * To disable building XInput support, uncomment this
  *
-#define BuildXInputExt		YES
+#define BuildXInputExt		NO
  */
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.65 1996/12/23 06:59:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.66 1996/12/28 08:19:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -252,6 +252,8 @@ void (* vgaSaveScreenFunc)() = vgaHWSaveScreen;
 void (* vgaFbInitFunc)() = (void (*)())NoopDDA;
 Bool (* vgaScrInitFunc)() = (Bool (*)())NoopDDA;
 int (* vgaPitchAdjustFunc)() = (int (*)())NoopDDA;
+int (* vgaLinearOffsetFunc)() = (int (*)())NoopDDA;
+void (* vgaDisplayPowerManagementFunc)() = (void (*)())NoopDDA;
 void (* vgaSetReadFunc)() = (void (*)())NoopDDA;
 void (* vgaSetWriteFunc)() = (void (*)())NoopDDA;
 void (* vgaSetReadWriteFunc)() = (void (*)())NoopDDA;
@@ -1078,12 +1080,28 @@ void vgaSetPitchAdjustHook(int (* ChipPitchAdjust)())
 }
 
 
+/* Allow each driver to optionally set an offset of the
+   frame buffer data from the linear base address. */
+void vgaSetLinearOffsetHook(int (* ChipLinearOffset)())
+{
+  vgaLinearOffsetFunc = ChipLinearOffset;
+}
+
+
 /* Allow each driver to hook the ScreenInit function */
 void vgaSetScreenInitHook(Bool (* ChipScrInit)())
 {
   vgaScrInitFunc = ChipScrInit;
 }
 
+
+/* Allow each driver to provide a VESA Display Power Management
+   Signaling (DPMS) mode setting function */
+void vgaSetDisplayPowerManagementHook(
+	void (* ChipDisplayPowerManagement)())
+{
+  vgaDisplayPowerManagementFunc = ChipDisplayPowerManagement;
+}
 
 
 /*
@@ -1157,6 +1175,9 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     /* This doesn't mean anything yet for SVGA 16/32bpp (no banking). */
     if (vgaUseLinearAddressing)
     {
+      if (vgaLinearOffsetFunc != (int (*)())NoopDDA)
+	vgaLinearBase = (void *)((unsigned long)vgaLinearBase
+				 + (*vgaLinearOffsetFunc)());
       vgaReadBottom = vgaLinearBase;
       vgaReadTop = (void *)((unsigned int)vgaLinearSize
       			    + (unsigned long)vgaLinearBase);

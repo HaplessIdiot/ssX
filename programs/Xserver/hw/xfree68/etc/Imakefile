@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/10/19 19:10:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/etc/Imakefile,v 3.0 1996/08/18 01:46:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/etc/Imakefile,v 3.1 1996/12/27 06:52:40 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -80,7 +80,6 @@ LinkSourceFile(scanpci.c,$(XF86SRC)/etc)
 LinkSourceFile(sun.tcap,$(XF86SRC)/etc)
 LinkSourceFile(sun.tinfo,$(XF86SRC)/etc)
 LinkSourceFile(vga.bdf,$(XF86SRC)/etc)
-LinkSourceFile(xf86pci.c,$(XF86SRC)/etc)
 LinkSourceFile(xmodmap.std,$(XF86SRC)/etc)
 
 LinkFile(sun.termcap,sun.tcap)

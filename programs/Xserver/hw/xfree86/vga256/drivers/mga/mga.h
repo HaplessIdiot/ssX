@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.6 1996/12/12 09:16:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.7 1996/12/28 08:17:49 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -44,6 +44,7 @@ extern unsigned char *MGAMMIOBaseDENSE;
 
 extern int MGAinterleave;
 extern int MGAusefbitblt;
+extern int MGAydstorg;
 
 /*
  * ROPs

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.1 1996/11/24 09:56:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_accel.c,v 3.2 1996/12/09 11:54:17 dawes Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -420,13 +420,13 @@ void MGANAME(SubsequentScreenToScreenCopy)(xsrc, ysrc, xdst, ydst, w, h)
     }
     if(left_to_right)    /* left to right */
     {
-        srcStart = ysrc * xf86AccelInfoRec.FramebufferWidth + xsrc;
+        srcStart = ysrc * xf86AccelInfoRec.FramebufferWidth + xsrc + MGAydstorg;
         srcStop  = srcStart + w;
         mga_sgn &= ~1;
     }
     else             /* right to left */
     {
-        srcStop  = ysrc * xf86AccelInfoRec.FramebufferWidth + xsrc;
+        srcStop  = ysrc * xf86AccelInfoRec.FramebufferWidth + xsrc + MGAydstorg;;
         srcStart = srcStop + w;
         mga_sgn |= 1;
     }
@@ -486,7 +486,8 @@ void MGANAME(SetupForScreenToScreenColorExpand)(bg, fg, rop, planemask)
 void MGANAME(SubsequentScreenToScreenColorExpand)(srcx, srcy, x, y, w, h)
     int srcx, srcy, x, y, w, h;
 {
-    int srcStart = srcy * xf86AccelInfoRec.FramebufferWidth * 8 + srcx;
+    int srcStart = srcy * xf86AccelInfoRec.FramebufferWidth * 8 + srcx
+								+ MGAydstorg;
     int srcStop = srcStart + w - 1;
 
     OUTREG(MGAREG_AR3, srcStart);
@@ -618,8 +619,10 @@ MGANAME(SetClippingRectangle)(x1, y1, x2, y2)
                 y1 = tmp;
         }
         OUTREG(MGAREG_CXBNDRY, (x2 << 16) | x1);
-        OUTREG(MGAREG_YTOP, y1);  /* minPixelPointer */
-        OUTREG(MGAREG_YBOT, y2 & 0x007FFFFF);  /* maxPixelPointer */
+        OUTREG(MGAREG_YTOP,
+	       y1 * xf86AccelInfoRec.FramebufferWidth + MGAydstorg);
+        OUTREG(MGAREG_YBOT,
+	       y2 * xf86AccelInfoRec.FramebufferWidth + MGAydstorg);
 
 	/* indicate to TwoPoint Line that one time only clipping is on */
 	mga_ClipRect = 1;

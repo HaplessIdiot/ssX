@@ -31,9 +31,13 @@
  *		Andrew E. Mileski
  *			aem@ott.hookup.net
  *		RAMDAC timing, and BIOS stuff
+ *
+ *		Leonard N. Zubkoff
+ *			lnz@dandelion.com
+ *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.15 1996/12/28 08:17:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.16 1996/12/30 14:00:00 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -63,6 +67,7 @@ extern vgaPCIInformation *vgaPCIInfo;
 MGABiosInfo MGABios;
 int MGAinterleave;
 int MGAusefbitblt;
+int MGAydstorg;
 unsigned char* MGAMMIOBase = NULL;
 #ifdef __alpha__
 unsigned char* MGAMMIOBaseDENSE = NULL;
@@ -119,6 +124,8 @@ static void		MGARestore();
 static void		MGAAdjust();
 static void		MGAFbInit();
 static int		MGAPitchAdjust();
+static int		MGALinearOffset();
+static void		MGADisplayPowerManagement();
 
 extern void		MGASetRead();
 extern void		MGASetWrite();
@@ -706,7 +713,7 @@ MGAProbe()
 		MGA.ChipLinearBase = pcr->_base1 & 0xff800000;
 	else
 		MGA.ChipLinearBase = 0;
-	
+
 	/* Allow this to be overriden in the XF86Config file */
 	if (vga256InfoRec.BIOSbase == 0) {
 		if ( pcr->_baserom )	/* details: rombase sdk pp 4-15 */
@@ -773,7 +780,8 @@ MGAProbe()
 	OFLG_SET(OPTION_NOLINEAR_MODE, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_NO_BITBLT, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_NOACCEL, &MGA.ChipOptionFlags);
-	
+	OFLG_SET(OPTION_SYNC_ON_GREEN, &MGA.ChipOptionFlags);
+
 	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
 
 	/* Moved width checking because virtualX isn't set until after
@@ -781,6 +789,10 @@ MGAProbe()
 	   PitchAdjust hook. */
 
 	vgaSetPitchAdjustHook(MGAPitchAdjust);
+
+	vgaSetLinearOffsetHook(MGALinearOffset);
+
+	vgaSetDisplayPowerManagementHook(MGADisplayPowerManagement);
 
 	return(TRUE);
 }
@@ -976,6 +988,48 @@ MGAPitchAdjust()
 }
 
 /*
+ * MGALinearOffset --
+ *
+ * This function computes the byte offset into the linear frame buffer where
+ * the frame buffer data should actually begin.  According to DDK misc.c line
+ * 1023, if more than 4MB is to be displayed, YDSTORG must be set appropriately
+ * to align memory bank switching, and this requires a corresponding offset
+ * on linear frame buffer access.
+ */
+static int
+MGALinearOffset()
+{
+	int BytesPerPixel = vgaBitsPerPixel / 8;
+	int offset, offset_modulo, ydstorg_modulo;
+
+	MGAydstorg = 0;
+	if (vga256InfoRec.virtualX * vga256InfoRec.virtualY * BytesPerPixel
+		<= 4*1024*1024)
+	    return 0;
+
+	offset = (4*1024*1024) % (vga256InfoRec.displayWidth * BytesPerPixel);
+	offset_modulo = 4;
+	ydstorg_modulo = 64;
+	if (vgaBitsPerPixel == 24)
+	    offset_modulo *= 3;
+	if (MGAinterleave)
+	{
+	    offset_modulo <<= 1;
+	    ydstorg_modulo <<= 1;
+	}
+	MGAydstorg = offset / BytesPerPixel;
+	while ((offset % offset_modulo) != 0 ||
+	       (MGAydstorg % ydstorg_modulo) != 0)
+	{
+	    offset++;
+	    MGAydstorg = offset / BytesPerPixel;
+	}
+
+	return MGAydstorg * BytesPerPixel;
+}
+
+
+/*
  * MGAFbInit --
  *
  * This function is used to initialise chip-specific graphics functions.
@@ -1118,7 +1172,7 @@ MGAInit(mode)
 DisplayModePtr mode;
 {
 	int hd, hs, he, ht, vd, vs, ve, vt, wd;
-	int i;
+	int i, index_1d;
 
 	/*
 	 * This will allocate the datastructure and initialize all of the
@@ -1167,9 +1221,13 @@ DisplayModePtr mode;
 				((vs & 0x400) >> 5) |
 				((vs & 0x800) >> 5);
 	if (vgaBitsPerPixel == 24)
-		newVS->ExtVga[3]	= (((1 << MGABppShft) * 3) - 1) | 0x88;
+		newVS->ExtVga[3]	= (((1 << MGABppShft) * 3) - 1) | 0x80;
 	else
-		newVS->ExtVga[3]	= ((1 << MGABppShft) - 1) | 0x88;
+		newVS->ExtVga[3]	= ((1 << MGABppShft) - 1) | 0x80;
+
+	/* Set viddelay (CRTCEXT3 Bits 3-4). */
+	newVS->ExtVga[3] |= (vga256InfoRec.videoRam == 8192 ? 0x10
+			     : vga256InfoRec.videoRam == 2048 ? 0x08 : 0x00);
 
 	newVS->ExtVga[4]	= 0;
 		
@@ -1197,7 +1255,28 @@ DisplayModePtr mode;
 	newVS->std.CRTC[22] = (vt + 1) & 0xFF;
 
 	for (i = 0; i < sizeof(MGADACregs); i++)
-		newVS->DACreg[i] = MGAInitDAC[i]; 
+	{
+	    newVS->DACreg[i] = MGAInitDAC[i]; 
+	    if (MGADACregs[i] == 0x1D)
+		index_1d = i;
+	}
+
+	/* Per DDK vid.c line 75, sync polarity should be controlled
+	 * via the TVP3026 RAMDAC register 1D and so MISC Output Register
+	 * should always have bits 6 and 7 set. */
+
+	newVS->std.MiscOutReg |= 0xC0;
+	if ((mode->Flags & (V_PHSYNC | V_NHSYNC)) &&
+	    (mode->Flags & (V_PVSYNC | V_NVSYNC)))
+	{
+	    if (mode->Flags & V_NHSYNC)
+		newVS->DACreg[index_1d] |= 0x01;
+	    if (mode->Flags & V_NVSYNC)
+		newVS->DACreg[index_1d] |= 0x02;
+	}
+	
+	if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &vga256InfoRec.options))
+	    newVS->DACreg[index_1d] |= 0x20;
 
 	newVS->DAClong = MGAinterleave << 12;
 
@@ -1376,7 +1455,7 @@ static void
 MGAAdjust(x, y)
 int x, y;
 {
-	int Base = (y * vga256InfoRec.displayWidth + x) >>
+	int Base = (y * vga256InfoRec.displayWidth + x + MGAydstorg) >>
 			(3 - MGABppShft);
 	int tmp;
 
@@ -1419,4 +1498,36 @@ DisplayModePtr mode;
 	{
 		return(MODE_BAD);
 	}
+}
+
+/*
+ * MGADisplayPowerManagement --
+ *
+ * Sets VESA Display Power Management Signaling (DPMS) Mode.
+ */
+static void MGADisplayPowerManagement(PowerManagementMode)
+int PowerManagementMode;
+{
+	unsigned char crtcext1;
+	outb(0x3DE, 0x01);
+	crtcext1 = inb(0x3DF) & ~0x30;
+	switch (PowerManagementMode)
+	{
+	case DPMSModeOn:
+	    /* HSync: On, VSync: on */
+	    break;
+	case DPMSModeStandby:
+	    /* HSync: Off, VSync: on */
+	    crtcext1 |= 0x10;
+	    break;
+	case DPMSModeSuspend:
+	    /* HSync: On, VSync: off */
+	    crtcext1 |= 0x20;
+	    break;
+	case DPMSModeOff:
+	    /* HSync: Off, VSync: off */
+	    crtcext1 |= 0x30;
+	    break;
+	}
+	outb(0x3DF, crtcext1);
 }

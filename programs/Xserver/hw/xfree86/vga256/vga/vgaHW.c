@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.43 1996/12/23 06:59:31 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.44 1996/12/28 08:19:17 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -301,17 +301,22 @@ vgaOffMode(timer, now, arg)
       /* the server is running on the current vt */
       /* so just go for it */
 
-      outb(vgaIOBase + 4, 0x17);
-      sync = inb(vgaIOBase + 5);
+     if (vgaDisplayPowerManagementFunc != (void (*)())NoopDDA)
+       (*vgaDisplayPowerManagementFunc)(on ? DPMSModeOn : DPMSModeOff);
+     else
+       {
+	 outb(vgaIOBase + 4, 0x17);
+	 sync = inb(vgaIOBase + 5);
 
-      if (on) {
-	 sync |= 0x80;			/* enable sync   */
-      } else {
-	 sync &= ~0x80;			/* disable sync */
-      }
-
-      usleep(10000);
-      outb(vgaIOBase + 5, sync);
+	 if (on) {
+	   sync |= 0x80;			/* enable sync   */
+	 } else {
+	   sync &= ~0x80;			/* disable sync */
+	 }
+	 
+	 usleep(10000);
+	 outb(vgaIOBase + 5, sync);
+       }
    }
    TimerFree(vgaOffTimer);
    vgaOffTimer = NULL;
@@ -336,8 +341,8 @@ vgaSuspendMode(timer, now, arg)
       /* the server is running on the current vt */
       /* so just go for it */
 
-      /* not supported yet */
-      /* Code to enter suspend mode should go here */
+     if (vgaDisplayPowerManagementFunc != (void (*)())NoopDDA)
+       (*vgaDisplayPowerManagementFunc)(on ? DPMSModeOn : DPMSModeSuspend);
 
       if (!on && vga256InfoRec.offTime != 0) {
 	 if (vga256InfoRec.offTime > vga256InfoRec.suspendTime &&

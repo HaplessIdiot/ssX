@@ -26,10 +26,10 @@ but should work in this way according to the chipset documentation.
 
 <bf> NOTES: </bf>
 <itemize>
+<item>Acceleration is now supported for the 9320, 9440, 9660, 9680, 9682
+and Cyber chips.
 <item>The Cyber 9382/5 chips that have started to appear, have preliminary
 support in XFree86 3.2 and appear to work at 800x600 on the LCD.
-The server cannot yet detect the Cyber chips and therefore it is necessary
-to specify "Chipset 'cyber938x'" in your XF86Config file to support them.
 <item>The TGUI9440/9660/9680 are now fully supported by the SVGA server.
 <item>16 bits per pixel is now supported for the 8900D, 9200CXr, 9400CXi,
 9420DGi, 9430DGi, 9440AGi, 9660XGi and 9680, but only the 9440AGi and 9400CXi
@@ -57,6 +57,7 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	but hasn't been extensively tested yet.
 <tag>Option &dquot;hw_cursor&dquot;</tag>
 	Turn on hardware cursor (NOTE: it is off by default)
+	This is known to be buggy.
 <tag>Option &dquot;tgui_pci_read_off&dquot;</tag>
 	Turn off PCI burst read mode.
 <tag>Option &dquot;tgui_pci_write_off&dquot;</tag>
@@ -70,9 +71,9 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	Turn off programmable clock. Use fixed VGA clocks only.
 	Useful for fixed frequency monitors - usually used for VGA
 	monitors - not SVGA.
+<tag>Option &dquot;noaccel;&dquot</tag>
+	Turn off XAA acceleration.
 </descrip>
-<item>No acceleration features of the newer chipsets have been taken
-advantage of yet!
 </itemize>
 
 The original Trident chipset, 8800BR, cannot be supported as an SVGA chipset 
@@ -137,7 +138,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.15 1996/12/23 06:46:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.16 1996/12/30 13:59:47 dawes Exp $
 
 
 
