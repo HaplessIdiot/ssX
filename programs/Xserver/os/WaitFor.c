@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.27 2001/01/17 22:37:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.28 2001/04/01 14:00:16 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -242,11 +242,7 @@ WaitForSomething(pClientsReady)
 #endif /* DPMSExtension */
 
 	    if (
-#ifndef __CYGWIN__
 		timeout <= 0
-#else
-		timeout = 0
-#endif
 #ifdef DPMSExtension
 		 && ScreenSaverTime > 0
 #endif /* DPMSExtension */

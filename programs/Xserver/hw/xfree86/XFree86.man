@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.50 2001/03/28 14:35:14 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.51 2001/03/28 17:58:37 dawes Exp $ 
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -467,6 +467,7 @@ tseng(__drivermansuffix__),
 v4l(__drivermansuffix__),
 vesa(__drivermansuffix__),
 vga(__drivermansuffix__),
+vmware(__drivermansuffix__),
 .br
 README
 .IR <http://www.xfree86.org/current/README.html> ,

@@ -13,7 +13,7 @@
     <date>15 March 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.11 2001/03/21 16:56:18 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.12 2001/03/27 23:15:48 dawes Exp $
     </ident>
 
     <toc>
@@ -156,7 +156,7 @@
           compilation problems.
 	<item>Read /usr/src/linux/Documentation/Changes.
 	  This file lists the minimum requirements for all software
-	  packages required to build the kernel.  You must upgrage at
+	  packages required to build the kernel.  You must upgrade at
 	  least gcc, make, binutils and modutils to at least the
 	  versions specified in this file.  The other packages may not
 	  be needed.  If you are upgrading from Linux 2.2.x you must

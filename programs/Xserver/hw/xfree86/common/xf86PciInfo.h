@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.91 2001/03/24 21:54:16 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.92 2001/03/28 17:58:39 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -866,7 +866,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_DIGITAL, {
 				{PCI_CHIP_DEC21030,	"21030/TGA",0},
 				{0x0001,		"DC21050 PCI-PCI Bridge"
-						 /* print_pcibridge} */,0 },
+						 /* print_pcibridge */,0 },
 				{0x0002,		"DC21040 10Mb/s Ethernet",0 },
 				{0x0009,		"DC21140 10/100 Mb/s Ethernet",0 },
 				{0x000D,		"TGA2",0 },
@@ -1604,14 +1604,14 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x0000, (char *)NULL,0, NF } } },
 #endif
 	{ PCI_VENDOR_SONY, {
-						{ 0x8051, "Vaio Video",0,NF },
+			{ 0x8051, "Vaio Video",0,NF },
 #ifdef VENDOR_INCLUDE_NONVIDEO
-						{ 0x8052, "Vaio Audio",0,NF },
-						{ 0x8054, "Vaio Firewire",0,NF },
-						{ 0x8056, "Vaio Modem",0,NF },
-						{ 0x8057, "Vaio Ethernet",0,NF },
+			{ 0x8052, "Vaio Audio",0,NF },
+			{ 0x8054, "Vaio Firewire",0,NF },
+			{ 0x8056, "Vaio Modem",0,NF },
+			{ 0x8057, "Vaio Ethernet",0,NF },
 #endif
-						{ 0x0000, (char *)NULL,0, NF } } },
+			{ 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_DIAMOND, {
                         { 0x0003, "Monster Fusion",0, NF },
 			{ 0x00b8, "Fire GL1",0, NF },
@@ -1774,6 +1774,8 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
 	{ PCI_VENDOR_NETGEAR, {
 			{ 0xf004, "FA310-TX Rev. D2",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
+#endif
+#if 0
 	{ PCI_VENDOR_VMWARE, {
     			{PCI_CHIP_VMWARE0405,	"PCI SVGA (FIFO)",0, NF },
     			{PCI_CHIP_VMWARE0710,	"LEGACY SVGA",0, NF },

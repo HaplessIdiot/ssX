@@ -141,6 +141,10 @@ XftCoreAddFonts
 XftCoreClose
 XftCoreOpen
 XftXlfdParse
+XftInitFtLibrary
+XftConfigDirs
+XftDirScan
+XftDirSave
 
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xft/Xft-def.cpp,v 1.1 2001/02/13 19:19:12 dawes Exp $ */
