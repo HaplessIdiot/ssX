@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.34 2002/03/18 21:47:48 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.35 2002/08/05 20:47:06 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -87,7 +87,6 @@ typedef struct {
     CloseScreenProcPtr  CloseScreen;
     Bool                FBDev;
     /* Color expansion */
-    Bool                useFifo;
     unsigned char       *expandBuffer;
     unsigned char       *expandFifo;
     int                 expandWidth;
@@ -97,8 +96,8 @@ typedef struct {
     int			Rotate;
     NVFBLayout		CurrentLayout;
     /* Cursor */
-    unsigned short      curFg, curBg;
-    unsigned int        curImage[MAX_CURS*2];
+    CARD32              curFg, curBg;
+    CARD32              curImage[MAX_CURS*2];
     /* Misc flags */
     unsigned int        opaqueMonochrome;
     int                 currentRop;
@@ -115,6 +114,7 @@ typedef struct {
     Bool		SecondCRTC;
     int			forceCRTC;
     OptionInfoPtr	Options;
+    Bool                alphaCursor;
 } NVRec, *NVPtr;
 
 #define NVPTR(p) ((NVPtr)((p)->driverPrivate))
