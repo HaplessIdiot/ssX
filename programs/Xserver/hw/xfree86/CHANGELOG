@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx February 2004)
+ 787. Increase PCI I/O space size on Linux/PowerPC (Bugzilla #1143,
+      Paul Mackerras).
  786. Fix DRI cleanup at exit and re-enabling on reset for the via driver
       (Bugzilla #998, Thomas Hellström).
  785. Fix Xv error propagation to the client for the via driver (Bugzilla #998,
@@ -18612,7 +18614,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3127 2004/02/04 04:15:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3128 2004/02/04 04:17:52 dawes Exp $
 
 
 
