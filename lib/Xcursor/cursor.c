@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/cursor.c,v 1.3 2002/10/11 17:06:45 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/cursor.c,v 1.4 2002/11/23 02:34:45 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -746,36 +746,6 @@ XcursorFilenameLoadCursors (Display *dpy, const char *file)
     return cursors;
 }
 
-Cursor
-XcursorLibraryLoadCursor (Display *dpy, const char *file)
-{
-    int		    size = XcursorGetDefaultSize (dpy);
-    char	    *theme = XcursorGetTheme (dpy);
-    XcursorImages   *images = XcursorLibraryLoadImages (file, theme, size);
-    Cursor	    cursor;
-    
-    if (!images)
-	return None;
-    cursor = XcursorImagesLoadCursor (dpy, images);
-    XcursorImagesDestroy (images);
-    return cursor;
-}
-
-XcursorCursors *
-XcursorLibraryLoadCursors (Display *dpy, const char *file)
-{
-    int		    size = XcursorGetDefaultSize (dpy);
-    char	    *theme = XcursorGetTheme (dpy);
-    XcursorImages   *images = XcursorLibraryLoadImages (file, theme, size);
-    XcursorCursors  *cursors;
-    
-    if (!images)
-	return 0;
-    cursors = XcursorImagesLoadCursors (dpy, images);
-    XcursorImagesDestroy (images);
-    return cursors;
-}
-
 /*
  * Stolen from XCreateGlyphCursor (which we cruelly override)
  */
@@ -814,7 +784,7 @@ _XcursorCreateGlyphCursor(Display	    *dpy,
  * Stolen from XCreateFontCursor (which we cruelly override)
  */
 
-static Cursor
+Cursor
 _XcursorCreateFontCursor (Display *dpy, unsigned int shape)
 {
     static XColor _Xconst foreground = { 0,    0,     0,     0  };  /* black */
@@ -838,52 +808,3 @@ _XcursorCreateFontCursor (Display *dpy, unsigned int shape)
 				      shape, shape + 1, &foreground, &background);
 }
 
-Cursor
-XcursorShapeLoadCursor (Display *dpy, unsigned int shape)
-{
-    int		    size = XcursorGetDefaultSize (dpy);
-    char	    *theme = XcursorGetTheme (dpy);
-    XcursorImages   *images = XcursorShapeLoadImages (shape, theme, size);
-    Cursor	    cursor;
-    
-    if (images)
-    {
-	cursor = XcursorImagesLoadCursor (dpy, images);
-	XcursorImagesDestroy (images);
-    }
-    else
-	cursor = None;
-    if (cursor == None)
-	cursor = _XcursorCreateFontCursor (dpy, shape);
-    return cursor;
-}
-
-XcursorCursors *
-XcursorShapeLoadCursors (Display *dpy, unsigned int shape)
-{
-    int		    size = XcursorGetDefaultSize (dpy);
-    char	    *theme = XcursorGetTheme (dpy);
-    XcursorImages   *images = XcursorShapeLoadImages (shape, theme, size);
-    XcursorCursors  *cursors;
-    
-    if (images)
-    {
-	cursors = XcursorImagesLoadCursors (dpy, images);
-	XcursorImagesDestroy (images);
-    }
-    else
-	cursors = 0;
-    if (!cursors)
-    {
-	cursors = XcursorCursorsCreate (dpy, 1);
-	cursors->cursors[0] = _XcursorCreateFontCursor (dpy, shape);
-	if (cursors->cursors[0] == None)
-	{
-	    XcursorCursorsDestroy (cursors);
-	    cursors = 0;
-	}
-	else
-	    cursors->ncursor = 1;
-    }
-    return cursors;
-}

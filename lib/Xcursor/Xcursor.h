@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/Xcursor.h,v 1.2 2002/09/05 07:29:55 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/Xcursor.h,v 1.3 2002/11/23 02:34:45 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -208,6 +208,8 @@ typedef struct _XcursorComments {
     XcursorComment  **comments;	/* array of XcursorComment pointers */
 } XcursorComments;
 
+#define XCURSOR_CORE_THEME  "core"
+
 _XFUNCPROTOBEGIN
 
 /*
@@ -345,6 +347,12 @@ XcursorLibraryLoadImage (const char *library, const char *theme, int size);
 XcursorImages *
 XcursorLibraryLoadImages (const char *library, const char *theme, int size);
 
+/*
+ * Library/shape API
+ */
+int
+XcursorLibraryShape (const char *library);
+    
 /*
  * Image/Cursor APIs
  */
