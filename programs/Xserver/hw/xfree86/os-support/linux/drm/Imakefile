@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/Imakefile,v 1.25 2005/01/31 18:20:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/Imakefile,v 1.26 2005/02/08 16:28:05 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -73,7 +73,7 @@ MTRR_DEFINES = -DHAS_MTRR_SUPPORT
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I../.. -Ikernel \
-	   -I$(DRMSRCDIR)/shared
+	   -I$(DRMINCLUDESDIR)
 
 DEFINES = $(MTRR_DEFINES) $(GLX_DEFINES)
 
@@ -102,7 +102,6 @@ InstallDriverSDKLibraryModule(drm,$(DRIVERSDKMODULEDIR),linux)
 #include "../../shared/drm/Imakefile.inc"
 
 LinkSourceFileListToSubdir(includes,$(SRCS_SHARED),$(DRMSHAREDDIR),$(DRM_COPY_DIR))
-LinkSourceFileListToSubdir(includes,$(SRCS_SCRIPTS_LINUX),$(DRMSCRIPTSDIR),$(DRM_COPY_DIR))
 LinkSourceFileListToSubdir(includes,$(SRCS_LINUX),$(DRMLINUXDIR),$(DRM_COPY_DIR))
 
 INSTALL_LIST = $(INSTALL_SHARED) $(INSTALL_LINUX)

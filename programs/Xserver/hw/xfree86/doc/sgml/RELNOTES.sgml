@@ -9,7 +9,7 @@
 <date>26 January 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.124 2005/02/19 02:22:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.125 2005/02/25 18:25:36 dawes Exp $
 </ident>
 
 <abstract>
@@ -1102,7 +1102,7 @@ or the 'cvs log' information for individual source files.
   <descrip>
   <tag>General Integration of Submissions:</tag>David H. Dawes, Marc La France,
 	Alan Hourihane, Ivan Pascal.
-  <tag>DRI Integration:</tag>Alan Hourihane.
+  <tag>DRI Integration:</tag>Alan Hourihane, David H. Dawes.
   </descrip>
 <tag>Release Engineering:</tag>David H. Dawes.
 
@@ -1206,6 +1206,7 @@ Roland Mainz,
 N Marci,
 Kevin Martin,
 Stephen McCamant,
+Mesa Developers,
 Luke Mewburn,
 Petr Mladek,
 Bram Moolenaar,

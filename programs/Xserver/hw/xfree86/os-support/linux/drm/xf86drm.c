@@ -31,7 +31,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.37 2004/06/30 20:40:13 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.38 2004/12/10 16:07:05 alanh Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -103,7 +103,7 @@ extern unsigned long _bus_base(void);
 #endif
 
 #ifndef DRM_MAX_MINOR
-#define DRM_MAX_MINOR 16
+#define DRM_MAX_MINOR 15
 #endif
 
 #ifndef makedev

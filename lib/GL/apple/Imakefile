@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.6 2004/04/21 04:59:40 torrey Exp $
+XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.7 2004/12/10 17:47:24 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -31,7 +31,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
       DEFINES = $(ALLOC_DEFINES) GlxDefines $(GLX_DEFS) -DXP_NO_X_HEADERS=1 \
                 -DOSVERSION=OSMajorVersion*100+OSMinorVersion
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I$(XF86OSSRC) \
-                -I$(DRMSRCDIR)/shared -I$(DRI_INCS) -F$(AS)/Frameworks
+                -I$(DRMINCLUDESDIR) -I$(DRI_INCS) -F$(AS)/Frameworks
          SRCS = appledri.c $(DRI_SRCS)
          OBJS = appledri.o  $(DRI_OBJS)
 
@@ -42,7 +42,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 dri_dispatch.h :
 	./build-dispatch <dri_dispatch.defs >$@
 
-LinkSourceFile(drm.h,$(DRMSRCDIR)/shared)
+LinkSourceFile(drm.h,$(DRMINCLUDESDIR))
 
 #include <Library.tmpl>
 

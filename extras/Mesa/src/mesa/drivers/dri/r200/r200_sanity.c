@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_sanity.c,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_sanity.c,v 1.1.1.2 2004/12/10 15:05:57 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2002 ATI Technologies Inc., Ontario, Canada, and
@@ -139,6 +139,12 @@ static struct {
    { R200_PP_CUBIC_OFFSET_F1_4, 5, "R200_PP_CUBIC_OFFSET_F1_4" },
    { R200_PP_CUBIC_FACES_5, 1, "R200_PP_CUBIC_FACES_5" },
    { R200_PP_CUBIC_OFFSET_F1_5, 5, "R200_PP_CUBIC_OFFSET_F1_5" },
+   { RADEON_PP_TEX_SIZE_0, 2, "RADEON_PP_TEX_SIZE_0" },
+   { RADEON_PP_TEX_SIZE_1, 2, "RADEON_PP_TEX_SIZE_1" },
+   { RADEON_PP_TEX_SIZE_2, 2, "RADEON_PP_TEX_SIZE_2" },
+#ifdef R200_EMIT_RB3D_BLENDCOLOR
+   { R200_RB3D_BLENDCOLOR, 3, "R200_RB3D_BLENDCOLOR" },
+#endif
 };
 
 struct reg_names {
@@ -459,6 +465,7 @@ static struct reg_names reg_names[] = {
    { R200_PP_TXCBLEND2_7, "R200_PP_TXCBLEND2_7" },
    { R200_PP_TXABLEND_7, "R200_PP_TXABLEND_7" },
    { R200_PP_TXABLEND2_7, "R200_PP_TXABLEND2_7" },
+   { R200_RB3D_BLENDCOLOR, "R200_RB3D_BLENDCOLOR" },
    { R200_RB3D_ABLENDCNTL, "R200_RB3D_ABLENDCNTL" },
    { R200_RB3D_CBLENDCNTL, "R200_RB3D_CBLENDCNTL" },
    { R200_SE_TCL_OUTPUT_VTX_COMP_SEL, "R200_SE_TCL_OUTPUT_VTX_COMP_SEL" },
@@ -735,8 +742,8 @@ static void dump_state( void )
 
 
 static int radeon_emit_packets( 
-   drmRadeonCmdHeader header,
-   drmRadeonCmdBuffer *cmdbuf )
+   drm_radeon_cmd_header_t header,
+   drm_radeon_cmd_buffer_t *cmdbuf )
 {
    int id = (int)header.packet.packet_id;
    int sz = packet[id].len;
@@ -771,8 +778,8 @@ static int radeon_emit_packets(
 
 
 static int radeon_emit_scalars( 
-   drmRadeonCmdHeader header,
-   drmRadeonCmdBuffer *cmdbuf )
+   drm_radeon_cmd_header_t header,
+   drm_radeon_cmd_buffer_t *cmdbuf )
 {
    int sz = header.scalars.count;
    int *data = (int *)cmdbuf->buf;
@@ -799,8 +806,8 @@ static int radeon_emit_scalars(
 
 
 static int radeon_emit_scalars2( 
-   drmRadeonCmdHeader header,
-   drmRadeonCmdBuffer *cmdbuf )
+   drm_radeon_cmd_header_t header,
+   drm_radeon_cmd_buffer_t *cmdbuf )
 {
    int sz = header.scalars.count;
    int *data = (int *)cmdbuf->buf;
@@ -812,7 +819,7 @@ static int radeon_emit_scalars2(
       fprintf(stderr, "emit scalars2, start %d stride %d nr %d (end %d)\n",
 	      start, stride, sz, start + stride * sz);
 
-   if (start + stride * sz > 257) {
+   if (start + stride * sz > 258) {
       fprintf(stderr, "emit scalars OVERFLOW %d/%d/%d\n", start, stride, sz);
       return -1;
    }
@@ -833,8 +840,8 @@ static int radeon_emit_scalars2(
  * Check: table start, end, nr, etc.
  */
 static int radeon_emit_vectors( 
-   drmRadeonCmdHeader header,
-   drmRadeonCmdBuffer *cmdbuf )
+   drm_radeon_cmd_header_t header,
+   drm_radeon_cmd_buffer_t *cmdbuf )
 {
    int sz = header.vectors.count;
    int *data = (int *)cmdbuf->buf;
@@ -1009,7 +1016,7 @@ static int print_prim_and_flags( int prim )
 
 /* build in knowledge about each packet type
  */
-static int radeon_emit_packet3( drmRadeonCmdBuffer *cmdbuf )
+static int radeon_emit_packet3( drm_radeon_cmd_buffer_t *cmdbuf )
 {
    int cmdsz;
    int *cmd = (int *)cmdbuf->buf;
@@ -1188,9 +1195,9 @@ static int radeon_emit_packet3( drmRadeonCmdBuffer *cmdbuf )
 
 /* Check cliprects for bounds, then pass on to above:
  */
-static int radeon_emit_packet3_cliprect( drmRadeonCmdBuffer *cmdbuf )
+static int radeon_emit_packet3_cliprect( drm_radeon_cmd_buffer_t *cmdbuf )
 {   
-   XF86DRIClipRectRec *boxes = (XF86DRIClipRectRec *)cmdbuf->boxes;
+   drm_clip_rect_t *boxes = (drm_clip_rect_t *)cmdbuf->boxes;
    int i = 0;
 
    if (VERBOSE && total_changed) {
@@ -1217,11 +1224,11 @@ static int radeon_emit_packet3_cliprect( drmRadeonCmdBuffer *cmdbuf )
 
 int r200SanityCmdBuffer( r200ContextPtr rmesa,
 			   int nbox,
-			   XF86DRIClipRectRec *boxes )
+			   drm_clip_rect_t *boxes )
 {
    int idx;
-   drmRadeonCmdBuffer cmdbuf;
-   drmRadeonCmdHeader header;
+   drm_radeon_cmd_buffer_t cmdbuf;
+   drm_radeon_cmd_header_t header;
    static int inited = 0;
 
    if (!inited) {
@@ -1232,7 +1239,7 @@ int r200SanityCmdBuffer( r200ContextPtr rmesa,
 
    cmdbuf.buf = rmesa->store.cmd_buf;
    cmdbuf.bufsz = rmesa->store.cmd_used;
-   cmdbuf.boxes = (drmClipRect *)boxes;
+   cmdbuf.boxes = (drm_clip_rect_t *)boxes;
    cmdbuf.nbox = nbox;
 
    while ( cmdbuf.bufsz >= sizeof(header) ) {

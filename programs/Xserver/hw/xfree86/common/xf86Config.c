@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.286 2005/02/15 03:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.287 2005/02/26 01:07:12 dawes Exp $ */
 
 
 /*
@@ -5975,7 +5975,7 @@ xf86ConfAllocDRI()
 
     pDri = xcalloc(1, sizeof(*pDri));
     pDri->group = -1;
-    pDri->mode = -1;
+    pDri->mode = 0;
     pDri->handle = pDri;
     return pDri;
 }
@@ -6228,7 +6228,6 @@ configDRI(ConfigHandle handle, const XF86ConfDRIRec *driConf, MessageType from)
     /* If no DRI section found, create the default. */
     if (!d) {
 	d = xf86ConfAllocDRI();
-	d->group = -1;
     }
     return d;
 }

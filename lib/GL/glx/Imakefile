@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.29 2004/06/01 00:16:56 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.30 2004/12/10 16:06:56 alanh Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -207,7 +207,7 @@ ALIAS_DEFINES = -DGLX_ALIAS_UNSUPPORTED
 		-I$(MESASRCDIR)/src/mesa/drivers/x11 \
 		-I$(MESASRCDIR)/src/mesa/$(ASM_DIR) \
 		-I$(XF86OSSRC) \
-		-I$(DRMSRCDIR)/shared \
+		-I$(DRMINCLUDESDIR) \
 		$(DRI_INCS)
 
 #include <Library.tmpl>

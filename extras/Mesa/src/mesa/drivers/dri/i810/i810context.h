@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.h,v 1.9 2002/12/16 16:18:51 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i810/i810context.h,v 1.1.1.2 2004/12/10 15:05:44 alanh Exp $ */
 
 #ifndef I810CONTEXT_INC
 #define I810CONTEXT_INC
@@ -30,6 +30,7 @@ typedef struct i810_context_t i810Context;
 typedef struct i810_context_t *i810ContextPtr;
 typedef struct i810_texture_object_t *i810TextureObjectPtr;
 
+#include "drm.h"
 #include "mtypes.h"
 #include "mm.h"
 
@@ -126,6 +127,7 @@ struct i810_context_t {
    GLuint dirty;		/* I810_UPLOAD_* */
    GLuint Setup[I810_CTX_SETUP_SIZE];
    GLuint BufferSetup[I810_DEST_SETUP_SIZE];
+   GLuint LodBias[2];
    int vertex_size;
    int vertex_stride_shift;
    unsigned int lastStamp;
@@ -156,7 +158,7 @@ struct i810_context_t {
    int drawX;			/* origin of drawable in draw buffer */
    int drawY;
    GLuint numClipRects;		/* cliprects for that buffer */
-   XF86DRIClipRectPtr pClipRects;
+   drm_clip_rect_t *pClipRects;
 
    int lastSwap;
    int texAge;
@@ -165,11 +167,11 @@ struct i810_context_t {
   
  
    GLboolean scissor;
-   XF86DRIClipRectRec draw_rect;
-   XF86DRIClipRectRec scissor_rect;
+   drm_clip_rect_t draw_rect;
+   drm_clip_rect_t scissor_rect;
 
-   drmContext hHWContext;
-   drmLock *driHwLock;
+   drm_context_t hHWContext;
+   drm_hw_lock_t *driHwLock;
    int driFd;
 
    __DRIdrawablePrivate *driDrawable;

@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.275 2005/02/28 18:08:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.276 2005/02/28 23:19:12 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -672,7 +672,8 @@ VENDORMANVERSION = XVendorManVersionString
 #define HasExpat		NO
 #endif
 #ifndef UseExpat
-#define UseExpat		(UseFontconfig)
+#define UseExpat		(UseFontconfig || \
+				 (BuildXF86DRI && BuildGLXLibrary))
 #endif
 #ifndef BuildExpatLibrary
 #define BuildExpatLibrary	(UseExpat && !HasExpat)
@@ -982,8 +983,8 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define GlxDefines /**/
 #endif
 #endif
-#ifndef DRMSrcDir
-#define DRMSrcDir $(TOP)/extras/drm
+#ifndef DRMIncludesDir
+#define DRMIncludesDir $(XF86OSSRC)/shared/drm/kernel
 #endif
 #ifndef MesaSrcDir
 #define MesaSrcDir $(TOP)/extras/Mesa
@@ -1756,8 +1757,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
         EXTINCSRC = $(XTOP)/include/extensions
       FTSOURCEDIR = FreeTypeSrcDir
      XTTSOURCEDIR = XTrueTypeSrcDir
-        DRMSRCDIR = DRMSrcDir
        MESASRCDIR = MesaSrcDir
+   DRMINCLUDESDIR = DRMIncludesDir
   OGLSAMPLESRCDIR = OglSampleSrcDir
         PSWRAPSRC = $(XTOP)/config/pswrap
      TRANSCOMMSRC = $(LIBSRC)/xtrans

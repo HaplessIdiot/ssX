@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_state_init.c,v 1.4 2004/12/10 15:30:10 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_state_init.c,v 1.5 2004/12/10 17:47:23 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -311,8 +311,10 @@ void r200InitState( r200ContextPtr rmesa )
    rmesa->hw.ctx.cmd[CTX_CMD_0] = cmdpkt(RADEON_EMIT_PP_MISC);
    rmesa->hw.ctx.cmd[CTX_CMD_1] = cmdpkt(RADEON_EMIT_PP_CNTL);
    rmesa->hw.ctx.cmd[CTX_CMD_2] = cmdpkt(RADEON_EMIT_RB3D_COLORPITCH);
+#ifdef R200_EMIT_RB3D_BLENDCOLOR
    if (rmesa->r200Screen->drmSupportsBlendColor)
       rmesa->hw.ctx.cmd[CTX_CMD_3] = cmdpkt(R200_EMIT_RB3D_BLENDCOLOR);
+#endif
    rmesa->hw.lin.cmd[LIN_CMD_0] = cmdpkt(RADEON_EMIT_RE_LINE_PATTERN);
    rmesa->hw.lin.cmd[LIN_CMD_1] = cmdpkt(RADEON_EMIT_SE_LINE_WIDTH);
    rmesa->hw.msk.cmd[MSK_CMD_0] = cmdpkt(RADEON_EMIT_RB3D_STENCILREFMASK);
