@@ -536,7 +536,7 @@ clean cleantc::								@@\
 	fi
 #endif /* MakeDir */
 
-#ifndef MakeDirInline(dir)
+#ifndef MakeDirInline
 #define MakeDirInline(dir) if [ -d dir ]; then \			@@\
 		:; \							@@\
 	else \								@@\

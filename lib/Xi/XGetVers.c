@@ -71,12 +71,33 @@ XExtensionVersion
     char		*name;
 #endif
     {       
+    XExtensionVersion		*ext;
+
+    LockDisplay (dpy);
+    ext = _XiGetExtensionVersion (dpy, name);
+    if (ext != NoSuchExtension) { /* This is unlocked in _XiCheckExtInit() */
+	UnlockDisplay (dpy);
+	SyncHandle();
+    }
+    return (ext);
+    }
+
+XExtensionVersion
+#if NeedFunctionPrototypes
+*_XiGetExtensionVersion (
+    register Display 	*dpy,
+    _Xconst char	*name)
+#else
+*_XiGetExtensionVersion (dpy, name)
+    register Display 	*dpy;
+    char		*name;
+#endif
+    {       
     xGetExtensionVersionReq 	*req;
     xGetExtensionVersionReply 	rep;
     XExtensionVersion		*ext;
     XExtDisplayInfo *info = XInput_find_display (dpy);
 
-    LockDisplay (dpy);
     if (_XiCheckExtInit(dpy, Dont_Check) == -1)
 	return ((XExtensionVersion *) NoSuchExtension);
 
@@ -89,8 +110,6 @@ XExtensionVersion
 
     if (! _XReply (dpy, (xReply *) &rep, 0, xTrue)) 
 	{
-	UnlockDisplay(dpy);
-	SyncHandle();
 	return (XExtensionVersion *) NULL;
 	}
     ext = (XExtensionVersion *) Xmalloc (sizeof (XExtensionVersion));
@@ -103,8 +122,6 @@ XExtensionVersion
 	    ext->minor_version = rep.minor_version;
 	    }
 	}
-    UnlockDisplay(dpy);
-    SyncHandle();
     return (ext);
     }
 

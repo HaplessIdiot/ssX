@@ -549,7 +549,11 @@ typedef struct {
 #endif
 
 #ifndef OPT_SCO_FUNC_KEYS
+#ifdef SCO
+#define OPT_SCO_FUNC_KEYS 1 /* true if xterm supports SCO-style function keys */
+#else
 #define OPT_SCO_FUNC_KEYS 0 /* true if xterm supports SCO-style function keys */
+#endif
 #endif
 
 #ifndef OPT_SESSION_MGT

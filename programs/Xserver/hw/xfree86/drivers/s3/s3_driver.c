@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.11 2002/12/11 17:30:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.13 2003/07/04 16:24:28 eich Exp $ */
 
 
 #include "xf86.h"
@@ -706,7 +706,7 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 
 	clockRanges = xnfcalloc(sizeof(ClockRange), 1);
 	clockRanges->next = NULL;
-	clockRanges->minClock = 16000;	/* guess */
+	clockRanges->minClock = 15600;
 	clockRanges->maxClock = pS3->MaxClock;
 	clockRanges->clockIndex = -1;
 	clockRanges->interlaceAllowed = FALSE;	/* not yet */

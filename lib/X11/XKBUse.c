@@ -669,7 +669,7 @@ XkbUseExtension(dpy,major_rtrn,minor_rtrn)
     static int debugMsg;
     static int been_here= 0;
 
-    if ( dpy->xkb_info && (!dpy->flags&XlibDisplayNoXkb)) {
+    if ( dpy->xkb_info && !(dpy->flags & XlibDisplayNoXkb)) {
 	if (major_rtrn)	*major_rtrn= dpy->xkb_info->srv_major;
 	if (minor_rtrn)	*minor_rtrn= dpy->xkb_info->srv_minor;
 	return True;

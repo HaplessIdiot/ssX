@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.94 2003/06/18 16:17:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.95 2003/06/30 16:52:57 eich Exp $ */
 
 /*
  * Authors:
@@ -751,7 +751,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
      * for these operations are exclusive.
      */
   if (pTDFX->usePIO) {
-      ErrorF("FOOBAR\n");
       pScrn->racMemFlags = 0;
       pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
   } else

@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.9 2003/07/01 13:05:34 eich Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.10 2003/07/04 16:24:30 eich Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -90,7 +90,6 @@ static float bigEncodingFuzz = 0.02;
 static int relative;
 static int doScalable;
 static int doBitmaps;
-static int onlyEncodings;
 static int onlyEncodings;
 static ListPtr encodingsToDo;
 static int reencodeLegacy;

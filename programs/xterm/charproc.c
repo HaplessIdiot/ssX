@@ -395,7 +395,11 @@ static XtResource resources[] =
     Bres(XtNcutNewline, XtCCutNewline, screen.cutNewline, TRUE),
     Bres(XtNcutToBeginningOfLine, XtCCutToBeginningOfLine,
 	 screen.cutToBeginningOfLine, TRUE),
+#ifdef SCO
+    Bres(XtNdeleteIsDEL, XtCDeleteIsDEL, screen.delete_is_del, TRUE),
+#else
     Bres(XtNdeleteIsDEL, XtCDeleteIsDEL, screen.delete_is_del, 2),
+#endif
     Bres(XtNdynamicColors, XtCDynamicColors, misc.dynamicColors, TRUE),
     Bres(XtNeightBitControl, XtCEightBitControl, screen.control_eight_bits, FALSE),
     Bres(XtNeightBitInput, XtCEightBitInput, screen.input_eight_bits, TRUE),

@@ -17,7 +17,7 @@ XCOMM $Xorg: Imake.cf,v 1.4 2000/08/17 19:41:45 cpqbld Exp $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.80 2003/01/15 02:52:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.82 2003/06/12 14:12:24 eich Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -302,6 +302,25 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.80 2003/01/15 02:52:12 dawes Exp $
 # define SVR3Architecture
 # define i386ScoArchitecture
 # define i386Sco325Architecture
+# undef i386
+# undef i486
+# undef i586
+# undef i686
+# undef k6
+# undef __i386__
+# undef __i486__
+# undef __i586__
+# undef __i686__
+# undef __k6__
+# undef __i386
+# undef __i486
+# undef __i586
+# undef __i686
+# undef __k6
+# undef pentium
+# undef __pentium
+# undef pentiumpro
+# undef __pentiumpro
 #endif /* sco - SCO Open Server 5 */
 
 #ifdef USL
