@@ -1,3 +1,9 @@
+XFree86 3.1.2B (27 December 1995)
+173. Fix a problem with the ARK/ICS5342 clock programming (don't know if this
+     completely fixes the clock programming problems).
+172. Don't do PCI probe in S3 server for PC98 (Takefumi Tsukada).
+171. Fix bank select problem with S3 911 cards when using DGA.
+
 XFree86 3.1.2Af (26 December 1995)
 170. Added README.DGA which gives a brief outline of the API for the DGA
      extension.  This should be converted to man pages.

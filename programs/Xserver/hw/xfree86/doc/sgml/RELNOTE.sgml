@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2B (beta version)
  <author>The XFree86 Project, Inc
- <date>26 December 1995
+ <date>27 December 1995
 
 
 <abstract>
@@ -35,7 +35,7 @@ date of the next release.  The expiry date for 3.1.2B is 1 April 1996.
 
 The XFree86 binary beta releases may be freely redistributed providing that
 they are not modified in any way, and providing that an unmodified version
-of this document is included with the distribution.
+of this document and the BetaReport document is included with the distribution.
 
 The reasons for making this beta release publicly available are to
 give it the widest possible testing, and also to make support for
@@ -97,9 +97,10 @@ our usual support address.
 <sect1> ARK driver (SVGA server)
 <p>
 <itemize>
-  <item>No changes since 3.1.2A.  The ICS5342 clock support (required
-	for the Diamond Stealth64 Graphics 2001 series) reportedly
-	doesn't work.
+  <item>The ICS5342 clock support (required for the Diamond Stealth64
+	Graphics 2001 series) reportedly didn't work in the 3.1.2A version.
+	A problem with it has been found and fixed in 3.1.2B, but it hasn't
+	been tested.
 </itemize>
 <sect1> S3 server
 <p>
@@ -132,8 +133,17 @@ our usual support address.
   <item>The Mach64 GX-F (GX rev 3) is now supported.
   <item>The IBM RGB514 RAMDAC is now supported (as used on the ATI
 	Graphics Turbo Pro 1600).
+  <item>The <tt>"program_clocks"</tt> option added in the 3.1.2A version
+	has been removed, so if you have been using it in your XF86Config you
+	will need to remove it.  The use of programmed clocks is now the
+	default when a programmable clock chip is present.  This can be
+	disabled if necessary by adding the following line to the Device
+	section of the XF86Config:
+	<tscreen><verb>
+	Option "no_program_clocks"
+	</verb></tscreen>
   <item>The memory base should now be correctly detected for VLB cards.
-	If you've needed to add a `MemBase' line to your XF86Config for
+	If you've needed to add a `MemBase' line to the XF86Config for
 	previous versions, please try removing it, and let us know if there
 	are any problems.
   <item>Cursor colour problems at 16bpp/32bpp mode with some RAMDACs have
@@ -159,7 +169,19 @@ our usual support address.
 <sect1> ET4000/W32 server
 <p>
 <itemize>
-  <item>ADD SOMETHING HERE
+  <item>Support for the STG1703 RAMDAC/clock has been added.  To use the
+	programmable clock add the following line to the Device section
+	of the XF86Config:
+	<tscreen><verb>
+	ClockChip "stg1703"
+	</verb></tscreen>
+  <item>Options have been added to allow PCI burst mode and W32 interleaving
+	to be turned off.  The XF86Config Device section entries for these
+	are:
+	<tscreen><verb>
+	Option "pci_burst_off"
+	Option "w32_interleave_off"
+	</verb></tscreen>
 </itemize>
 <sect1> SiS 86C201 support
 <p>
@@ -392,7 +414,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.9 1995/12/26 06:08:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.10 1995/12/26 10:41:45 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.6 95/01/06 20:57:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.15 1995/07/12 15:36:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.16 1995/12/21 11:44:10 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -249,7 +249,6 @@ s3ImageWriteBanked (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
   * necessary that offset == s3BankSize; and by the above initialisation of
   * offset, we know offset < s3BankSize
   */
-   outb (vgaCRIndex, 0x35);
    if (old_bank != bank) {
       s3BankSelect(bank);
    }
@@ -343,7 +342,6 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
    BLOCK_CURSOR;
    WaitIdleEmpty ();
    s3EnableLinear();
-   outb (vgaCRIndex, 0x35);
    if (old_bank != bank) {
       s3BankSelect(bank);
    }
@@ -452,7 +450,6 @@ s3ImageFillBanked (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
    WaitIdleEmpty();
    s3EnableLinear();
-   outb (vgaCRIndex, 0x35);
    if (bank != old_bank) {
       s3BankSelect(bank);
    }
@@ -608,7 +605,6 @@ s3ImageWrite (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
   * necessary that offset == s3BankSize; and by the above initialisation of
   * offset, we know offset < s3BankSize
   */
-   outb (vgaCRIndex, 0x35);
    if (old_bank != bank) {
       s3BankSelect(bank);
    }
@@ -688,7 +684,6 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
    BLOCK_CURSOR;
    WaitIdleEmpty ();
    s3EnableLinear();
-   outb (vgaCRIndex, 0x35);
    if (old_bank != bank) {
       s3BankSelect(bank);
    }
@@ -789,7 +784,6 @@ s3ImageFill (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    BLOCK_CURSOR;
    s3EnableLinear();
 
-   outb (vgaCRIndex, 0x35);
    if (bank != old_bank) {
       s3BankSelect(bank);
    }

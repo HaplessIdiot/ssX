@@ -1,5 +1,5 @@
 /* $XConsortium: s3linear.h,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3linear.h,v 3.3 1994/08/20 07:34:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3linear.h,v 3.5 1995/01/28 17:02:19 dawes Exp $ */
 /*
  * s3EnableLinear() and s3DisableLinear() are wrappers to surround
  * any function call that is going to access the video ram through
@@ -115,8 +115,8 @@ extern unsigned char s3Port51;
         if (S3_801_928_SERIES (s3ChipId)) {		\
 	   outb(vgaCRIndex, 0x39);			\
 	   outb(vgaCRReg, 0xa5);			\
-	   outb(vgaCRIndex, 0x35);			\
 	}						\
+	outb(vgaCRIndex, 0x35);				\
 	outb(vgaCRReg, (X & 0x0f));			\
         new_mbank = (X & 0xf0)>>2;			\
 	if (s3Mbanks != new_mbank) {			\

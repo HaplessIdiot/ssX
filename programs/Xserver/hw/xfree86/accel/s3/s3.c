@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.111 1995/12/23 09:38:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.112 1995/12/26 06:08:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -715,10 +715,12 @@ s3Probe()
    S3PCIInformation *pciInfo = NULL;
    struct pci_config_reg *pcrp;
 
+#ifndef PC98
    /* Do general PCI probe first */
    pciInfo = s3GetPCIInfo();
    if (pciInfo && pciInfo->MemBase)
       s3MemBase = pciInfo->MemBase;
+#endif
 
    xf86ClearIOPortList(s3InfoRec.scrnIndex);
    xf86AddIOPorts(s3InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
