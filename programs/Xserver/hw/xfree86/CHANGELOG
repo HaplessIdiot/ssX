@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 785. Fix Xv error propagation to the client for the via driver (Bugzilla #998,
+      Thomas Hellström).
  784. Fix a problem when utilizing DrawArrays when indirect rendering
       (Bugzilla #1142, DRI Project).
  783. Xterm followup fix for Bugzilla #981 (Thomas Dickey).
@@ -18608,7 +18610,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3125 2004/02/01 02:19:58 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3126 2004/02/03 23:04:05 alanh Exp $
 
 
 
