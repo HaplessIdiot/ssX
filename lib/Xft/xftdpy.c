@@ -70,6 +70,7 @@ _XftDisplayInfoGet (Display *dpy, FcBool createIfNecessary)
     XftDisplayInfo	*info, **prev;
     XRenderPictFormat	pf;
     int			i;
+    int			event_base, error_base;
 
     for (prev = &_XftDisplayInfo; (info = *prev); prev = &(*prev)->next)
     {
@@ -100,7 +101,8 @@ _XftDisplayInfoGet (Display *dpy, FcBool createIfNecessary)
 
     info->display = dpy;
     info->defaults = 0;
-    info->hasRender = XRenderFindVisualFormat (dpy, DefaultVisual (dpy, DefaultScreen (dpy))) != 0;
+    info->hasRender = (XRenderQueryExtension (dpy, &event_base, &error_base) &&
+		       (XRenderFindVisualFormat (dpy, DefaultVisual (dpy, DefaultScreen (dpy))) != 0));
     info->use_free_glyphs = FcTrue;
     if (info->hasRender)
     {

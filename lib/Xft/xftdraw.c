@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.19 2002/05/24 05:54:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.21 2002/07/06 01:24:34 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -153,7 +153,7 @@ XftDrawCreate (Display   *dpy,
     draw->render.pict = 0;
     draw->core.gc = 0;
     draw->core.use_pixmap = 0;
-    draw->clip = 0;
+    draw->clip_type = XftClipTypeNone;
     draw->subwindow_mode = ClipByChildren;
     XftMemAlloc (XFT_MEM_DRAW, sizeof (XftDraw));
     return draw;
@@ -177,7 +177,7 @@ XftDrawCreateBitmap (Display	*dpy,
     draw->colormap = 0;
     draw->render.pict = 0;
     draw->core.gc = 0;
-    draw->clip = 0;
+    draw->clip_type = XftClipTypeNone;
     draw->subwindow_mode = ClipByChildren;
     XftMemAlloc (XFT_MEM_DRAW, sizeof (XftDraw));
     return draw;
@@ -202,7 +202,7 @@ XftDrawCreateAlpha (Display *dpy,
     draw->colormap = 0;
     draw->render.pict = 0;
     draw->core.gc = 0;
-    draw->clip = 0;
+    draw->clip_type = XftClipTypeNone;
     draw->subwindow_mode = ClipByChildren;
     XftMemAlloc (XFT_MEM_DRAW, sizeof (XftDraw));
     return draw;
@@ -284,8 +284,16 @@ XftDrawDestroy (XftDraw	*draw)
 	XRenderFreePicture (draw->dpy, draw->render.pict);
     if (draw->core.gc)
 	XFreeGC (draw->dpy, draw->core.gc);
-    if (draw->clip)
-	XDestroyRegion (draw->clip);
+    switch (draw->clip_type) {
+    case XftClipTypeRegion:
+	XDestroyRegion (draw->clip.region);
+	break;
+    case XftClipTypeRectangles:
+	free (draw->clip.rect);
+	break;
+    case XftClipTypeNone:
+	break;
+    }
     XftMemFree (XFT_MEM_DRAW, sizeof (XftDraw));
     free (draw);
 }
@@ -398,9 +406,21 @@ _XftDrawRenderPrepare (XftDraw	*draw)
 						  format, mask, &pa);
 	if (!draw->render.pict)
 	    return FcFalse;
-	if (draw->clip)
+	switch (draw->clip_type) {
+	case XftClipTypeRegion:
 	    XRenderSetPictureClipRegion (draw->dpy, draw->render.pict,
-					 draw->clip);
+					 draw->clip.region);
+	    break;
+	case XftClipTypeRectangles:
+	    XRenderSetPictureClipRectangles (draw->dpy, draw->render.pict,
+					     draw->clip.rect->xOrigin,
+					     draw->clip.rect->yOrigin,
+					     XftClipRects(draw->clip.rect),
+					     draw->clip.rect->n);
+	    break;
+	case XftClipTypeNone:
+	    break;
+	}
     }
     return FcTrue;
 }
@@ -420,8 +440,21 @@ _XftDrawCorePrepare (XftDraw *draw, XftColor *color)
 	draw->core.gc = XCreateGC (draw->dpy, draw->drawable, mask, &gcv);
 	if (!draw->core.gc)
 	    return FcFalse;
-	if (draw->clip)
-	    XSetRegion (draw->dpy, draw->core.gc, draw->clip);
+	switch (draw->clip_type) {
+	case XftClipTypeRegion:
+	    XSetRegion (draw->dpy, draw->core.gc, draw->clip.region);
+	    break;
+	case XftClipTypeRectangles:
+	    XSetClipRectangles (draw->dpy, draw->core.gc,
+				draw->clip.rect->xOrigin,
+				draw->clip.rect->yOrigin,
+				XftClipRects (draw->clip.rect),
+				draw->clip.rect->n,
+				Unsorted);
+	    break;
+	case XftClipTypeNone:
+	    break;
+	}
     }
     XSetForeground (draw->dpy, draw->core.gc, color->pixel);
     return FcTrue;
@@ -744,12 +777,22 @@ XftDrawSetClip (XftDraw	*draw,
 {
     Region			n = 0;
 
-    if (!r && !draw->clip)
+    /*
+     * Check for quick exits
+     */
+    if (!r && draw->clip_type == XftClipTypeNone)
 	return True;
-
-    if (r && draw->clip && XEqualRegion (r, draw->clip))
+    
+    if (r && 
+	draw->clip_type == XftClipTypeRegion && 
+	XEqualRegion (r, draw->clip.region))
+    {
 	return True;
+    }
 
+    /*
+     * Duplicate the region so future changes can be short circuited
+     */
     if (r)
     {
 	n = XCreateRegion ();
@@ -762,9 +805,36 @@ XftDrawSetClip (XftDraw	*draw,
 	    }
 	}
     }
-    if (draw->clip)
-	XDestroyRegion (draw->clip);
-    draw->clip = n;
+
+    /*
+     * Destroy existing clip
+     */
+    switch (draw->clip_type) {
+    case XftClipTypeRegion:
+	XDestroyRegion (draw->clip.region);
+	break;
+    case XftClipTypeRectangles:
+	free (draw->clip.rect);
+	break;
+    case XftClipTypeNone:
+	break;
+    }
+    
+    /*
+     * Set the clip
+     */
+    if (n)
+    {
+	draw->clip_type = XftClipTypeRegion;
+	draw->clip.region = n;
+    }
+    else
+    {
+	draw->clip_type = XftClipTypeNone;
+    }
+    /*
+     * Apply new clip to existing objects
+     */
     if (draw->render.pict)
     {
 	if (n)
@@ -780,9 +850,81 @@ XftDrawSetClip (XftDraw	*draw,
     if (draw->core.gc)
     {
 	if (n)
-	    XSetRegion (draw->dpy, draw->core.gc, draw->clip);
+	    XSetRegion (draw->dpy, draw->core.gc, draw->clip.region);
 	else
 	    XSetClipMask (draw->dpy, draw->core.gc, None);
+    }
+    return True;
+}
+
+Bool
+XftDrawSetClipRectangles (XftDraw		*draw,
+			  int			xOrigin,
+			  int			yOrigin,
+			  _Xconst XRectangle	*rects,
+			  int			n)
+{
+    XftClipRect	*new = 0;
+
+    /*
+     * Check for quick exit
+     */
+    if (draw->clip_type == XftClipTypeRectangles && 
+	!memcmp (XftClipRects (draw->clip.rect), rects, n * sizeof (XRectangle)))
+    {
+	return True;
+    }
+
+    /*
+     * Duplicate the region so future changes can be short circuited
+     */
+    new = malloc (sizeof (XftClipRect) + n * sizeof (XRectangle));
+    if (!new)
+	return False;
+
+    new->n = n;
+    new->xOrigin = xOrigin;
+    new->yOrigin = yOrigin;
+    memcpy (XftClipRects (new), rects, n * sizeof (XRectangle));
+
+    /*
+     * Destroy existing clip
+     */
+    switch (draw->clip_type) {
+    case XftClipTypeRegion:
+	XDestroyRegion (draw->clip.region);
+	break;
+    case XftClipTypeRectangles:
+	free (draw->clip.rect);
+	break;
+    case XftClipTypeNone:
+	break;
+    }
+    
+    /*
+     * Set the clip
+     */
+    draw->clip_type = XftClipTypeRectangles;
+    draw->clip.rect = new;
+    /*
+     * Apply new clip to existing objects
+     */
+    if (draw->render.pict)
+    {
+	XRenderSetPictureClipRectangles (draw->dpy, draw->render.pict,
+					 new->xOrigin,
+					 new->yOrigin,
+					 XftClipRects(new),
+					 new->n);
+    }
+    if (draw->core.gc)
+    {
+	XSetClipRectangles (draw->dpy, draw->core.gc,
+			    new->xOrigin,
+			    new->yOrigin,
+			    XftClipRects (new),
+			    new->n,
+			    Unsorted);
     }
     return True;
 }
