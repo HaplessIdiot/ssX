@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.264 2002/11/05 05:34:39 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.265 2002/11/20 04:04:57 dawes Exp $ */
 
 
 /*
@@ -707,7 +707,8 @@ typedef enum {
     FLAG_ALLOW_DEACTIVATE_GRABS,
     FLAG_ALLOW_CLOSEDOWN_GRABS,
     FLAG_LOG,
-    FLAG_RENDER_COLORMAP_MODE
+    FLAG_RENDER_COLORMAP_MODE,
+    FLAG_HANDLE_SPECIAL_KEYS
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -770,6 +771,8 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_LOG,			"Log",				OPTV_STRING,
 	{0}, FALSE },
   { FLAG_RENDER_COLORMAP_MODE, "RenderColormapMode",            OPTV_STRING,
+        {0}, FALSE },
+  { FLAG_HANDLE_SPECIAL_KEYS,  "HandleSpecialKeys",             OPTV_STRING,
         {0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
 	{0}, FALSE },
@@ -920,6 +923,23 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	}
     }
 #endif
+    {
+	const char *s;
+	if ((s = xf86GetOptValString(FlagOptions, FLAG_HANDLE_SPECIAL_KEYS))) {
+	    if (!xf86NameCmp(s,"always")) {
+		xf86Msg(X_CONFIG, "Always handling special keys in DDX\n");
+		xf86Info.ddxSpecialKeys = SKAlways;
+	    } else if (!xf86NameCmp(s,"whenneeded")) {
+		xf86Msg(X_CONFIG, "Special keys handled in DDX only if needed\n");
+		xf86Info.ddxSpecialKeys = SKWhenNeeded;
+	    } else if (!xf86NameCmp(s,"never")) {
+		xf86Msg(X_CONFIG, "Never handling special keys in DDX\n");
+		xf86Info.ddxSpecialKeys = SKNever;
+	    } else {
+		xf86Msg(X_WARNING,"Unknown HandleSpecialKeys option\n");
+	    }
+        }
+    }
     i = -1;
     xf86GetOptValInteger(FlagOptions, FLAG_ESTIMATE_SIZES_AGGRESSIVELY, &i);
     if (i >= 0)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.51 2002/10/11 01:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.52 2002/10/11 13:32:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -328,7 +328,10 @@ xf86KbdProc (pKeyboard, what)
 			     (KbdCtrlProcPtr)xf86KbdCtrl);
 #ifdef XKB
     } else {
- 	XkbComponentNamesRec names;
+ 	XkbComponentNamesRec	names;
+	XkbDescPtr		desc;
+	Bool			foundTerminate = FALSE;
+	int			keyc;
 	if (XkbInitialMap) {
 	    if ((xf86Info.xkbkeymap = strchr(XkbInitialMap, '/')) != NULL)
 		xf86Info.xkbkeymap++;
@@ -364,6 +367,23 @@ xf86KbdProc (pKeyboard, what)
 				    modMap, 
 				    xf86KbdBell,
 				    (KbdCtrlProcPtr)xf86KbdCtrl);
+
+	/* Search keymap for Terminate action */
+	desc  = pKeyboard->key->xkbInfo->desc;
+	for (keyc = desc->min_key_code; keyc <= desc->max_key_code; keyc++) {
+	    int i;
+	    for (i = 1; i <= XkbKeyNumActions(desc, keyc); i++) {
+		if (XkbKeyAction(desc, keyc, i)
+		  && XkbKeyAction(desc, keyc, i)->type == XkbSA_Terminate) {
+		    foundTerminate = TRUE;
+		    goto searchdone;
+		}
+	    }
+  	}
+searchdone:
+	xf86Info.ActionKeyBindingsSet = foundTerminate;
+	if (!foundTerminate)
+	    xf86Msg(X_INFO, "Server_Terminate keybinding not found\n");
     }
 #endif
     

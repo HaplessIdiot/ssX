@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.33 2002/09/16 18:05:47 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.34 2002/09/18 16:31:57 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -32,6 +32,12 @@ typedef enum {
     LogSync
 } Log;
 
+typedef enum {
+    SKNever,
+    SKWhenNeeded,
+    SKAlways
+} SpecialKeysInDDX;
+
 /*
  * xf86InfoRec contains global parameters which the video drivers never
  * need to access.  Global parameters which the video drivers do need
@@ -63,6 +69,8 @@ typedef struct {
     Bool		modeSwitchLock;
     Bool		composeLock;
     Bool		vtSysreq;
+    SpecialKeysInDDX	ddxSpecialKeys;
+    Bool		ActionKeyBindingsSet;
 #if defined(SVR4) && defined(i386)
     Bool		panix106;
 #endif  /* SVR4 && i386 */

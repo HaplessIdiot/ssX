@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.34 2001/08/13 17:46:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.37 2002/09/16 18:05:45 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -89,6 +89,8 @@ xf86InfoRec xf86Info = {
 	FALSE,		/* modeSwitchLock */
 	FALSE,		/* composeLock */
 	FALSE,		/* vtSysreq */
+	SKWhenNeeded,	/* ddxSpecialKeys */
+	FALSE,		/* ActionKeyBindingsSet */
 #if defined(SVR4) && defined(i386)
 	FALSE,		/* panix106 */
 #endif
