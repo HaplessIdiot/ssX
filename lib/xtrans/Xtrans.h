@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.9 1997/01/18 06:52:39 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.10 1997/11/16 06:17:44 dawes Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -107,7 +107,7 @@ static char* __xtransname = "_FSTrans";
 #else
 #define TRANS(func) _FontTrans/**/func
 #endif
-static char* __transname = "_FontTrans";
+static char* __xtransname = "_FontTrans";
 #endif /* FONT_t */
 
 #ifdef ICE_t
