@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.13 2000/11/21 23:10:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.15 2001/02/15 19:37:26 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -56,7 +56,7 @@ xf86Int10InfoPtr
 xf86InitInt10(int entityIndex)
 {
     xf86Int10InfoPtr pInt;
-    int screen, cs;
+    int screen;
     void* base = 0;
     void* vbiosMem = 0;
     legacyVGARec vga;
@@ -137,10 +137,12 @@ xf86InitInt10(int entityIndex)
 	    }
 	    break;
 	case BUS_ISA:  
+#if 0
 	    (void)memset(vbiosMem, 0, V_BIOS_SIZE);
 	    if (xf86ReadBIOS(V_BIOS, 0, vbiosMem, V_BIOS_SIZE) < V_BIOS_SIZE)
 		xf86DrvMsg(screen, X_WARNING,
 		    "Unable to retrieve all of segment 0x0C0000.\n");
+#endif
 	    if (!int10_check_bios(screen, V_BIOS >> 4, vbiosMem)) {
 	        xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (4)\n");
 		goto error1;
@@ -190,7 +192,6 @@ xf86InitInt10(int entityIndex)
 	    xf86DrvMsg(screen, X_ERROR, "Cannot read V_BIOS (5)\n");
 	    goto error1;
 	}
-	xfree(pEnt);
     }
 
     pInt->BIOSseg = V_BIOS >> 4;
@@ -367,7 +368,7 @@ write_w(xf86Int10InfoPtr pInt, int addr, CARD16 val)
 {
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
     if (OFF(addr + 1) > 0)
-	V_ADDR_WW(addr, val);
+      { V_ADDR_WW(addr, val); }
 #endif
     V_ADDR_WB(addr, val);
     V_ADDR_WB(addr + 1, val >> 8);
@@ -378,7 +379,7 @@ write_l(xf86Int10InfoPtr pInt, int addr, CARD32 val)
 {
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
     if (OFF(addr + 3) > 2)
-	V_ADDR_WL(addr, val);
+      { V_ADDR_WL(addr, val); }
 #endif
     V_ADDR_WB(addr, val);
     V_ADDR_WB(addr + 1, val >> 8);
