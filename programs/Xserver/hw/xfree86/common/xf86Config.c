@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.142 1998/04/05 00:45:52 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.143 1998/04/05 16:15:57 robin Exp $
  *
  * Loosely based on code bearing the following copyright:
  *
@@ -5861,7 +5861,6 @@ xf86PruneModes(monp, allmodes, scrp, card)
 	}
 	return remainder; /* Return pointer to {the first / the list } */
 }
-#endif
 
 #ifndef XF86SETUP
 void
