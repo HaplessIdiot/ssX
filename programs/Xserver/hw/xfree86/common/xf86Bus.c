@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.68 2002/01/25 21:55:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.70 2002/05/22 21:38:26 herrb Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -1728,7 +1728,7 @@ convertRange2Host(int entityIndex, resRange *pRange)
  */
 
 resPtr
-xf86RegisterResources(int entityIndex, resList list, int access)
+xf86RegisterResources(int entityIndex, resList list, unsigned long access)
 {
     resPtr res = NULL;
     resRange range;

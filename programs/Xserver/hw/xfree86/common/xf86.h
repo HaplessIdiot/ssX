@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.158 2002/01/25 21:55:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.159 2002/05/02 15:20:18 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -113,7 +113,8 @@ int xf86GetPciEntity(int bus, int dev, int func);
 Bool xf86SetEntityFuncs(int entityIndex, EntityProc init,
 			EntityProc enter, EntityProc leave, pointer);
 void xf86DeallocateResourcesForEntity(int entityIndex, unsigned long type);
-resPtr xf86RegisterResources(int entityIndex, resList list, int Access);
+resPtr xf86RegisterResources(int entityIndex, resList list, 
+			     unsigned long Access);
 Bool xf86CheckPciMemBase(pciVideoPtr pPci, memType base);
 void xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86SetAccessFuncPtr funcs,
 			xf86SetAccessFuncPtr oldFuncs);
