@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.9 1997/02/25 14:21:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.10 1997/02/27 13:58:53 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -39,7 +39,9 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#ifndef sun
 #include <stdlib.h>
+#endif
 #define NO_OSLIB_PROTOTYPES
 #include "xf86Procs.h"
 #if NeedVarargsPrototypes
