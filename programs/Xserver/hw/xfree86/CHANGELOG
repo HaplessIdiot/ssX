@@ -1,4 +1,6 @@
 XFree86 3.9i (6 July 1997)
+1092. Fix apm HW cursor problem at VT switch, and a problem with
+      screen-to-screen bitblts (#745, Henrik Harmsen).
 1091. VidMode extensions updates, including adding a new function to
       return the available clocks, and how many more clocks can be programmed,
       add the HSkew parameter and some reserved fields (this introduces
@@ -5083,4 +5085,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.504 1997/07/06 07:06:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.505 1997/07/06 12:08:36 dawes Exp $

@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.2 1997/05/31 13:51:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.3 1997/06/25 08:25:01 hohndel Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -98,6 +98,7 @@ static void
 ApmShowCursor(void) 
 {
   /* Enable the hardware cursor. */
+  ApmCheckMMIO_Init();
   WRXB_DYN(0x140, apmCursorControlMode | 1);
 }
 
@@ -109,6 +110,7 @@ ApmShowCursor(void)
 static void 
 ApmHideCursor(void) 
 {
+  ApmCheckMMIO_Init();
   /* Disable the hardware cursor. */
   WRXB_DYN(0x140, apmCursorControlMode);
 }

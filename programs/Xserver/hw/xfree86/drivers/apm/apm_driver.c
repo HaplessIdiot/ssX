@@ -2,17 +2,26 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.4 1997/06/03 14:11:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.5 1997/06/25 08:25:02 hohndel Exp $ */
 
 /*
   TODO (also see apm_accel.c)
+
   Add 24 bpp support
+
+  New code for max dotclock?
+    Hercules says: Do not let the video dot clock * bytes per pixel
+    go above the available memory bandwidth which is around 200MB/s.
+    Then how come the manual says it is OK to use a 144MHz vclk in 16
+    bit for 1280x1024? That is something like 290MB/s...? Hmm...
+    It can't be double indexed mode either, since that doesn't exist 
+    for anything but 8 bit...
 */
 
 /* 
-   Created by Alliance Semiconductor
-   Modified by Kent Hamilton for Xfree86
-   Modified 1997-06 by Henrik Harmsen (hch@cd.chalmers.se or 
+   Created by Kent Hamilton for Xfree86 from source from Alliance
+
+   Modified 1997-06 by Henrik Harmsen (hch@cd.chalmers.se, 
                                        Henrik.Harmsen@erv.ericsson.se)
      - Added support for AT3D
      - Acceleration added for 8,16,32bpp: (for AT3D and AT24)
@@ -24,6 +33,13 @@
      - Set to programmable VCLK clock
      - Set MCLK to 57.3 MHz on AT3D.
      - Various bugfixes and cleanups
+   
+   Modified 1997-07-06 by Henrik Harmsen
+     - Fixed bug that made the HW cursor screw up on VT switches
+     - Probably fixed bug that screwed up the screen when using
+       screen-screen bitblts. This forced me to put an ApmSync() at 
+       the end of ApmSubsequentScreenToScreenCopy() which makes
+       me unhappy... But: Better it works than not...
 */
 
 #include <math.h>
@@ -687,6 +703,8 @@ ApmRestore(vgaApmPtr restore)
   wrinx(0x3C4, 0x1b, restore->SR1B);
   wrinx(0x3C4, 0x1c, restore->SR1C);
 
+  apmMMIO_Init = FALSE;
+
   /* Hardware cursor registers. */
   WRXL_IOP(0x140, restore->XR140);
   WRXW_IOP(0x144, restore->XR144);
@@ -714,7 +732,6 @@ ApmRestore(vgaApmPtr restore)
 
   vgaProtect(FALSE);
 
-  apmMMIO_Init = FALSE;
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.1 1997/06/25 08:25:01 hohndel Exp $ */
 
 
 /*
@@ -41,8 +41,11 @@ static void ApmSetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned 
 static void ApmSubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w, int h);
 static void ApmSetupForCPUToScreenColorExpand(int bg, int fg, int rop, unsigned int planemask);
 static void ApmSubsequentCPUToScreenColorExpand(int x, int y, int w, int h, int skipleft);
+static void ApmSetupForScreenToScreenColorExpand(int bg, int fg, int rop,
+                                                 unsigned int planemask);
+static void ApmSubsequentScreenToScreenColorExpand(int srcx, int srcy, int x, 
+                                                   int y, int w, int h);
 static void WaitForFifo(void);
-static void CheckMMIO_Init(void);
 static void Dump(void* start, u32 len);
 
 /* Statics */
@@ -70,7 +73,7 @@ ApmAccelInit(void)
   xf86AccelInfoRec.SetupForFillRectSolid = ApmSetupForFillRectSolid;
   xf86AccelInfoRec.SubsequentFillRectSolid = ApmSubsequentFillRectSolid;
 
-  /* Accelerated color expansion */
+  /* Accelerated CPU to screen color expansion */
   xf86AccelInfoRec.SetupForCPUToScreenColorExpand = ApmSetupForCPUToScreenColorExpand;
   xf86AccelInfoRec.SubsequentCPUToScreenColorExpand = ApmSubsequentCPUToScreenColorExpand;
   xf86AccelInfoRec.CPUToScreenColorExpandRange = 30*1024;
@@ -78,6 +81,15 @@ ApmAccelInit(void)
     VIDEO_SOURCE_GRANULARITY_PIXEL |
     NO_PLANEMASK | SCANLINE_PAD_BYTE | CPU_TRANSFER_PAD_QWORD
     | BIT_ORDER_IN_BYTE_MSBFIRST;
+
+#if 0
+  /* Since this code is not used yet, I cannot test it */
+  /* Accelerated screen to screen color expansion */
+  xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
+    ApmSetupForScreenToScreenColorExpand;
+  xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
+    ApmSubsequentScreenToScreenColorExpand;
+#endif
 
   /* Accelerated screen-screen bitblts */
   xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY | GXCOPY_ONLY | 
@@ -111,7 +123,8 @@ ApmSync(void)
 static void 
 ApmSetupForFillRectSolid(int color, int rop, unsigned int planemask)
 {
-  CheckMMIO_Init();
+  ApmCheckMMIO_Init();
+  WaitForFifo(); /* This is so we don't get hung on the bus */
   SETFOREGROUNDCOLOR(color);
 }
 
@@ -139,7 +152,7 @@ static void
 ApmSetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned int planemask,
                               int transparency_color)
 {
-  CheckMMIO_Init();
+  ApmCheckMMIO_Init();
   blitxdir = xdir;
   blitydir = ydir;
 }
@@ -181,12 +194,14 @@ ApmSubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w, int h)
   SETHEIGHT(h);
 
   SETDEC(DEC_START | DEC_OP_BLT | cx | cy | apmScreenWidth_DEC | apmBitsPerPixel_DEC);
+  ApmSync();
 }
 
 static void 
 ApmSetupForCPUToScreenColorExpand(int bg, int fg, int rop, unsigned int planemask)
 {
-  CheckMMIO_Init();
+  ApmCheckMMIO_Init();
+  WaitForFifo(); /* This is so we don't get hung on the bus */
   SETFOREGROUNDCOLOR(fg);
   Transparency = FALSE;
   if (bg == -1)
@@ -202,6 +217,7 @@ ApmSubsequentCPUToScreenColorExpand(int x, int y, int w, int h, int skipleft)
 {
   u32 control;
 
+  WaitForFifo(); /* This is so we don't get hung on the bus */
   SETSOURCEX(0); /* According to manual, it just has to be zero */
   SETDESTX(x);
   SETDESTY(y);
@@ -216,6 +232,20 @@ ApmSubsequentCPUToScreenColorExpand(int x, int y, int w, int h, int skipleft)
   SETDEC(DEC_START | control | apmScreenWidth_DEC | apmBitsPerPixel_DEC);
 }
 
+
+static void 
+ApmSetupForScreenToScreenColorExpand(int bg, int fg, int rop,
+                                     unsigned int planemask)
+{
+}
+
+static void 
+ApmSubsequentScreenToScreenColorExpand(int srcx, int srcy, int x, 
+                                       int y, int w, int h)
+{
+}
+
+
 static void
 WaitForFifo(void)
 {
@@ -229,8 +259,8 @@ WaitForFifo(void)
     FatalError("AT3D: Hung in WaitForFifo()\n");
 }
 
-static void
-CheckMMIO_Init(void)
+void
+ApmCheckMMIO_Init(void)
 {
   if (!apmMMIO_Init)
   {

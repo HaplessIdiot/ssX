@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.1 1997/06/25 08:25:01 hohndel Exp $ */
 
 
 
@@ -127,6 +127,7 @@ extern int apmMMIO_Init;
 extern u32 apm_xbase;
 
 void ApmAccelInit(void);
+void ApmCheckMMIO_Init(void);
 
 /* Variables defined in apm_cursor.c. */
 
