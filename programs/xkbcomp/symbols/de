@@ -3,13 +3,13 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/symbols/de,v 3.10 2001/10/01 14:04:15 eich Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/de,v 3.12 2002/11/25 14:05:06 eich Exp $
 
 default partial alphanumeric_keys 
 xkb_symbols "basic" {
 
     // Describes the differences between a very simple US/ASCII
-    // keyboard and a very simple German keybaord
+    // keyboard and a very simple German keyboard
 
     // Alphanumeric section
     name[Group1]= "German";

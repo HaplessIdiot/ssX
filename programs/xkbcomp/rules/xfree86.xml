@@ -146,6 +146,18 @@
     </model>
     <model>
       <configItem>
+        <name>btc9001ah</name>
+        <description>BTC 9001AH</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
+        <name>btc5090</name>
+        <description>BTC 5090</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
         <name>cherryblue</name>
         <description>Cherry Blue Line CyBo@rd</description>
       </configItem>
@@ -2110,6 +2122,12 @@
             <description>Turkish (F)</description>
             <description xml:lang="bg">турска (F)</description>
             <description xml:lang="ru">Турецкая (F)</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>tr_alt</name>
+            <description>Turkish Alt-Q Layout</description>
           </configItem>
         </variant>
       </variantList>

@@ -1,4 +1,4 @@
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/ro,v 3.6 2003/05/29 12:41:58 pascal Exp $
 
 
 default partial alphanumeric_keys
@@ -118,4 +118,36 @@ xkb_symbols "comma" {
 
     key <AC02> { [], [ 0x1000219,	0x1000218	] };
     key <AD05> { [], [ 0x100021b,	0x100021a	] };
+};
+
+partial alphanumeric_keys
+xkb_symbols "ro_de" {
+    // add romanian-specific characters to the basic German layout.
+    // Romanian symbols are accessible with combination of <AltGr> and
+    // 'a', 's', 't', 'i', 'ä' and <Shift> for capital letters.
+    // To view romanian specific symbols, add "export LC_CTYPE=ro_RO"
+    // to your .profile.
+    include "de(basic)"
+
+    name[Group1]="Romanian for German keyboard";
+
+    key <AD05> {        [         t,    T               ],
+                        [ tcedilla,     Tcedilla        ]       };
+    key <AD08> {        [         i,    I               ],
+                        [ icircumflex,  Icircumflex     ]       };
+    key <AC01> {        [         a,    A               ],
+                        [ acircumflex,  Acircumflex     ]       };
+    key <AC02> {        [         s,    S               ],
+                        [ scedilla,     Scedilla        ]       };
+    key <AC11> {        [ adiaeresis,   Adiaeresis      ],
+                        [ abreve,       Abreve          ]       };
+};
+
+partial alphanumeric_keys
+xkb_symbols "ro_de_nodeadkeys" {
+    // Read the comment for ro_de !
+    include "ro(ro_de)"
+    include "de(nodeadkeys)"
+    key <AC11> {        [ adiaeresis,   Adiaeresis      ],
+                        [ abreve,       Abreve          ]       };
 };

@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.29 2002/12/20 02:07:10 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.30 2003/04/03 16:34:49 dawes Exp $
 
 
 default xkb_keymap "us" {
@@ -350,5 +350,13 @@ xkb_keymap "us_microsoft" {
     xkb_compatibility	{ include "default"		};
     xkb_symbols		{ include "us(pc105)"		};
     xkb_geometry	{ include "microsoft"		};
+};
+
+xkb_keymap "uz" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "en_US(pc105)+uz"	};
+    xkb_geometry	{ include "pc(pc102)"		};
 };
 
