@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.19 2001/10/06 01:20:46 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.21 2002/01/15 21:22:31 keithp Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -141,6 +141,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 /* no Display Power Management extension */
 #define BuildDPMSExt            NO
+
+/* no XFree86-Misc extension */
+#define BuildXF86MiscExt        NO
 
 #define BuildLibPathVar         DYLD_LIBRARY_PATH
 
