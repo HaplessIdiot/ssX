@@ -1,4 +1,7 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 249. Removed O_SYNC from open call for /dev/mem for all Linux platforms.
+      This hopefully takes care of the speed problem 
+      (Bugzilla #419, #414, Egbert Eich).
  248. Fixed fontstosfnt to build on OS/2 (Bugzilla #415, Frank Giessler
       Juliusz Chroboczek).
  247. Fixed DMC touchscreen driver: button press events are properly
@@ -17160,7 +17163,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2749 2003/06/25 18:06:23 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2750 2003/06/25 18:16:08 eich Exp $
 
 
 

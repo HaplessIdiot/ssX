@@ -430,7 +430,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
         mapflags |= MAP_NONCACHED; 
 #endif
 
-#if 1
+#if 0
     /* this will disappear when people upgrade their kernels */
     fd = open(DEV_MEM,
 	      ((flags & VIDMEM_READONLY) ? O_RDONLY : O_RDWR) | O_SYNC);
