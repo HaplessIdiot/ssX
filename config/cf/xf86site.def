@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.7 1994/06/18 16:11:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.8 1994/06/26 13:01:00 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -9,6 +9,14 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.7 1994/06/18 16:11:33 dawes Exp $
  * installing XFree86 on the systems supported by it.
  */
 /******************************************************************************/
+
+/*
+ * If using GCC 2.x on a system where it isn't the default, uncomment
+ * the following
+ *
+#define HasGcc2		YES
+ */
+
 /*
  * Which servers do you wish to build, you can save a lot of disk space
  * by only compiling the server you will be using.  It will also save you
@@ -90,24 +98,26 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.7 1994/06/18 16:11:33 dawes Exp $
  * Do you want to install the default system config files, this will overwrite
  * and files that you may be currently using.  This would only be required
  * on a first time build.
+ *
  */
 #define InstallXdmConfig	YES
 #define InstallXinitConfig	YES
 
 /*
- * You will not require this if you use 'xdm' to provide your
- * logins.  If however you use 'startx' or 'xinit' to start your
- * X server, then you will need this on.
+ * If you only run the X server under xdm the X servers don't need to be
+ * installed SetUID, and you may comment out the lines below.  If you run
+ * the servers by hand (with xinit or startx), then they do need to be
+ * installed SetUID on most OSs.
+ * Consult your system administrator before making the X server setuid.
+ *
  */
-/*
- * You do NOT need SetUID if you only run the server under xdm
- * You MAY need SetUID if users run the server by hand, under xinit or
- * Consult your system administrator before making the X server setuid
- */
+#if !defined(i386MachArchitecture)
 #define InstallXserverSetUID	YES
+#endif
 
 /*
  * Do you want to include support for the FontServer
+ *
  */
 #define BuildFontServer		YES
 #define InstallFSConfig		YES	/* install sample fs config */
@@ -118,6 +128,51 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.7 1994/06/18 16:11:33 dawes Exp $
  * fonts)
  *
 #define BuildFonts		NO
+ */
+
+/*
+ * To disable the ScreenSaver Extension, comment this line.
+ *
+ */
+#define BuildScreenSaverExt	YES
+
+/*
+ * If you don't want to build PEX, uncomment this.
+ *
+#define BuildPexExt		NO
+ */
+
+/*
+ * If you don't want to build XIE, uncomment this.
+ *
+#define BuildXIE		NO
+ */
+
+/*
+ * If you don't want to build DIS (the Document Imaging Subset of XIE)
+ * comment out this line.  This option is only relevant when XIE is built.
+ *
+ */
+#define BuildDIS		YES
+
+/*
+ * If you are running Solaris x86, and have the aperture driver installed,
+ * uncomment this.
+ *
+#define HasSolx86ApertureDriver	YES
+ */
+
+/*
+ * If you want XDMAUTH support (if you have Wraphelp.c), uncomment this.
+ *
+#define HasXdmAuth		YES
+ */
+
+/*
+ * To forceably build static libraries in addition to shared libraries,
+ * uncomment this.
+ *
+#define ForceNormalLib		YES
  */
 
 /*
@@ -136,6 +191,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.7 1994/06/18 16:11:33 dawes Exp $
 
 /*
  * Define to build only those parts of contrib supported by XFree86
+ * NOTE: This should not be defined at all if you want to build all
+ * of contrib.  Defining it to NO won't work.
  *
  */
 #define XF86Contrib

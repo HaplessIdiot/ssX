@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.12 1994/06/18 16:11:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.13 1994/06/26 13:01:01 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -152,6 +152,40 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.12 1994/06/18 16:11:36 dawes Exp $
 #endif
 
 /*
+ * Note, the PEX, XIE and DIS will probably be changed for 3.1.  For now,
+ * turn everything on to make sure it builds/runs.
+ */
+
+/*
+ * PEX doesn't work for 1-bit and 4-bit servers
+ */
+#ifndef BuildPexExt
+#define BuildPexExt		XF86AccelServer || XF86SVGAServer
+#endif
+
+/*
+ * XIE doesn't work for our 1-bit and 4-bit servers
+ */
+#ifndef BuildXIE
+#define BuildXIE		XF86AccelServer || XF86SVGAServer
+#endif
+
+/*
+ * Build DIS by default when XIE is enabled
+ */
+#ifndef BuildDIS
+#define BuildDIS		BuildXIE
+#endif
+
+/*
+ * Build the ExtraExtension lib even when not including the extra extensions
+ * in the servers
+ */
+#ifndef BuildExtraExtensionLibrary
+#define BuildExtraExtensionLibrary	YES
+#endif
+
+/*
  * By default, build all of the fonts.
  */
 /*
@@ -180,7 +214,8 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.12 1994/06/18 16:11:36 dawes Exp $
 
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
-#define XFree86ServerDefines	-DAVOID_GLYPHBLT LinkKitDefines 
+#define XFree86ServerDefines	ApertureDrvDefines LinkKitDefines \
+				-DAVOID_GLYPHBLT
 #endif
 
 #ifndef XF86LinkKit
@@ -193,6 +228,10 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.12 1994/06/18 16:11:36 dawes Exp $
 #else
 #define LinkKitDefines	/**/
 #endif
+#endif
+
+#ifndef ApertureDrvDefines
+#define ApertureDrvDefines	/**/
 #endif
 
 #ifndef ServerExtraDefines
@@ -288,8 +327,14 @@ XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 /*
  * GNU Compiler stuff
  */
+#ifndef HasGcc2
+#define HasGcc2 NO
+#endif
 #ifndef HasGcc
 #define HasGcc HasGcc2
+#endif
+#ifndef HasGcc2ForCplusplus
+#define HasGcc2ForCplusplus HasGcc2
 #endif
 
 #if HasGcc

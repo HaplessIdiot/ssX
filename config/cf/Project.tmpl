@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl,v 1.242 94/04/13 14:58:40 rws Exp $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.0 1994/05/29 02:01:43 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.1 1994/06/12 16:30:12 dawes Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -77,6 +77,9 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.0 1994/05/29 02:01:43 dawes Exp $
 #else
 #define BuildFresco		NO
 #endif
+#endif
+#ifndef BuildScreenSaverExt
+#define BuildScreenSaverExt	NO
 #endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
@@ -210,6 +213,13 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.0 1994/05/29 02:01:43 dawes Exp $
 #ifndef BigReqDefines
 #define BigReqDefines -DBIGREQS
 #endif
+#ifndef ScreenSaverExtensionDefines
+#if BuildScreenSaverExt
+#define ScreenSaverExtensionDefines -DSCREENSAVER
+#else
+#define ScreenSaverExtensionDefines /**/
+#endif
+#endif
 #ifndef SitePervasiveExtensionDefines
 #define SitePervasiveExtensionDefines /**/
 #endif
@@ -220,7 +230,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.0 1994/05/29 02:01:43 dawes Exp $
 #define SiteExtensionDefines /**/
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DXSYNC -DXCMISC PexDefines ShmDefines XieDefines BigReqDefines SiteExtensionDefines
+#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DXSYNC -DXCMISC PexDefines ShmDefines XieDefines BigReqDefines SiteExtensionDefines ScreenSaverExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
@@ -387,6 +397,15 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.0 1994/05/29 02:01:43 dawes Exp $
 #define ForceNormalLib (HasGcc && !HasGcc2)
 #endif
 
+#ifndef BuildExtraExtensionLibrary
+/* Add to the conditional other extra extensions if required */
+#if BuildScreenSaverExt
+#define BuildExtraExtensionLibrary YES
+#else
+#define BuildExtraExtensionLibrary NO
+#endif
+#endif
+
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System make variables; these need to be coordinated with rules
 
@@ -484,6 +503,21 @@ UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
 #endif
          XLIBONLY = $(XONLYLIB)
 
+#if BuildExtraExtensionLibrary
+#ifndef SharedLibXExExt
+#define SharedLibXExExt	NO
+#endif
+#ifndef NormalLibXExExt
+#define NormalLibXExExt  YES
+#endif
+#ifndef DebugLibXExExt
+#define DebugLibXExExt	NO
+#endif
+#ifndef ProfileLibXExExt
+#define ProfileLibXExExt	NO
+#endif
+#endif
+
 #ifndef SharedLibXext
 #define SharedLibXext HasSharedLibraries
 #endif
@@ -498,17 +532,36 @@ UnsharedLibReferences(XONLY,X11,$(XLIBSRC))
 #endif
       XEXTLIBSRC = $(LIBSRC)/Xext
    LBXXEXTLIBSRC = $(TOP)/workInProgress/lbx/lib/Xext
+#if BuildExtraExtensionLibrary
+    XEXEXTLIBSRC = $(LIBSRC)/XExExt
+#endif
 #if SharedLibXext
 #ifndef SharedXextRev
 #define SharedXextRev 6.0
 #endif
-SharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
+SharedLibReferences(XEXT,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
 SharedLibReferences(LBXXEXT,lbxXext,$(LBXXEXTLIBSRC),SOXEXTREV,SharedXextRev)
 #else
-UnsharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC))
+UnsharedLibReferences(XEXT,Xext,$(XEXTLIBSRC))
 UnsharedLibReferences(LBXXEXT,lbxXext,$(LBXXEXTLIBSRC))
 #endif
-LINTEXTENSIONLIB = $(LINTEXTENSION)
+
+#if BuildExtraExtensionLibrary
+#if SharedLibXExExt
+#ifndef SharedXExExtRev
+#define SharedXExExtRev 6.0
+#endif
+SharedLibReferences(XEXEXT,XExExt,$(XEXEXTLIBSRC),SOXEXEXTREV,SharedXExExtRev)
+#else
+UnsharedLibReferences(XEXEXT,XExExt,$(XEXEXTLIBSRC))
+#endif
+#endif
+
+     EXTENSIONLIB = $(XEXTLIB) $(XEXEXTLIB)
+  DEPEXTENSIONLIB = $(DEPXEXTLIB) $(DEPXEXEXTLIB)
+    LINTEXTENSION = $(LINTXEXT) $(LINTXEXEXT)
+
+ LINTEXTENSIONLIB = $(LINTEXTENSION)
           DEPXLIB = $(DEPEXTENSIONLIB) $(DEPXONLYLIB)
              XLIB = $(EXTENSIONLIB) $(XONLYLIB)
          LINTXLIB = $(LINTXONLYLIB)
