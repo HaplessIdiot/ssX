@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xload/get_rload.c,v 1.2 2001/08/15 16:27:53 tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "xload.h"
 
 #ifndef _PATH_RWHODIR
 #define _PATH_RWHODIR "/var/spool/rwho"
@@ -23,8 +24,8 @@ extern XLoadResources resources ;
 
 void GetRLoadPoint( w, closure, call_data )
      Widget   w;              /* unused */
-     caddr_t  closure;        /* unused */
-     caddr_t  call_data;      /* pointer to (double) return value */
+     XtPointer  closure;        /* unused */
+     XtPointer  call_data;      /* pointer to (double) return value */
 
 {
   int f;

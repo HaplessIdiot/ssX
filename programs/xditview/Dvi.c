@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xditview/Dvi.c,v 1.2 2000/12/03 05:20:53 keithp Exp $ */
+/* $XFree86: xc/programs/xditview/Dvi.c,v 1.3 2001/08/01 00:45:03 tsi Exp $ */
 
 
 /*
@@ -309,7 +309,9 @@ Redisplay(w, event, region)
 	Region region;
 {
 	DviWidget	dw = (DviWidget) w;
+#ifndef USE_XFT
 	XRectangle	extents;
+#endif
 	
 #ifdef USE_XFT
 	XClearArea (XtDisplay (dw),

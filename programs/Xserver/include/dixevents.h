@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dixevents.h,v 3.1 1996/04/15 11:34:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixevents.h,v 3.2 1996/12/24 02:27:27 dawes Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -94,6 +94,7 @@ WindowsRestructured(
 #endif
 	);
 
+#if 0
 extern void
 NewCurrentScreen(
 #if NeedFunctionPrototypes
@@ -102,6 +103,7 @@ NewCurrentScreen(
 	int                    /* y */
 #endif
 	);
+#endif
 
 extern int
 ProcWarpPointer(
@@ -110,6 +112,7 @@ ProcWarpPointer(
 #endif
 	);
 
+#if 0
 extern void
 #ifdef XKB
 CoreProcessKeyboardEvent (
@@ -135,6 +138,7 @@ ProcessPointerEvent (
 	int                    /* count */
 #endif
 	);
+#endif
 
 extern int
 EventSelectForWindow(

@@ -1,5 +1,5 @@
 /* $XConsortium: xload.c,v 1.37 94/04/17 20:43:44 converse Exp $ */
-/* $XFree86: xc/programs/xload/xload.c,v 1.4 2001/08/01 00:45:05 tsi Exp $ */
+/* $XFree86: xc/programs/xload/xload.c,v 1.5 2001/08/13 19:35:01 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -47,15 +47,15 @@ from the X Consortium.
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/StripChart.h>
 #include <X11/Xmu/SysUtil.h>
+#include "xload.h"
 
 #include "xload.bit"
 
 char *ProgramName;
 
-extern void InitLoadPoint(void), GetLoadPoint(), GetRLoadPoint();
-static void quit();
-static void ClearLights();
-static void SetLights();
+static void quit(Widget w, XEvent *event, String *params, Cardinal *num_params);
+static void ClearLights(Display *dpy);
+static void SetLights(XtPointer data, XtIntervalId *timer);
 
 /*
  * Definition of the Application resources structure.
@@ -115,7 +115,7 @@ static int light_update = 10 * 1000;
  * Exit with message describing command line format.
  */
 
-void usage()
+static void usage(void)
 {
     fprintf (stderr, "usage:  %s [-options ...]\n\n", ProgramName);
     fprintf (stderr, "where options include:\n");
@@ -148,9 +148,7 @@ void usage()
 }
 
 int
-main(argc, argv)
-    int argc;
-    char **argv;
+main(int argc, char **argv)
 {
     XtAppContext app_con;
     Widget toplevel, load, pane, label_wid, load_parent;

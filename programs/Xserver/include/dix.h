@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.17 2001/05/26 01:25:42 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.18 2001/08/01 00:44:58 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -935,11 +935,13 @@ extern int DeliverEvents(
 #endif
 );
 
+#if 0
 extern void SetCriticalEvent(
 #if NeedFunctionPrototypes
     int /*event*/
 #endif
 );
+#endif
 
 extern void WriteEventsToClient(
 #if NeedFunctionPrototypes
@@ -949,6 +951,7 @@ extern void WriteEventsToClient(
 #endif
 );
 
+#if 0
 extern int TryClientEvents(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/,
@@ -959,7 +962,9 @@ extern int TryClientEvents(
     GrabPtr /*grab*/
 #endif
 );
+#endif
 
+#if 0
 extern int EventSelectForWindow(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/,
@@ -992,6 +997,7 @@ extern void WindowsRestructured(
     void
 #endif
 );
+#endif
 
 #ifdef RANDR
 void
