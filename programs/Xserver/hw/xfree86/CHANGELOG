@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 598. Fix the processing of xdm/config/Xres.cpp, which is broken with
+      gcc 3.3.2 (reported by Chisato Yamauchi).
  597. Fix two problems with Xvfb:
         - Too much memory was allocated because of a confusion between
           bytes and pixels.
@@ -18202,7 +18204,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2967 2003/11/15 02:40:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2968 2003/11/15 03:05:37 dawes Exp $
 
 
 
