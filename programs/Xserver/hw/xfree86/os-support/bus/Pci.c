@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.5 1998/09/19 12:14:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.6 1999/01/14 13:05:02 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -21,11 +21,11 @@
  * 	pciTag()       - Return tag for a given PCI bus, device, & function
  * 	pciBusAddrToHostAddr() - Convert a PCI address to a host address
  * 	pciHostAddrToBusAddr() - Convert a host address to a PCI address
- *      pciGetBaseSize - Returns the number of bits in a PCI base addr mapping
- *      xf86MapPciMem() - Like xf86MapVidMem() expect function expects
+ *	pciGetBaseSize - Returns the number of bits in a PCI base addr mapping
+ *	xf86MapPciMem() - Like xf86MapVidMem() expect function expects
  *                        a PCI address and PCITAG (identifies PCI domain)
- *      xf86MapPciMemSparse - Like xf86MapPciMem() but for xf86MapVidMemSparse
- *      xf86ReadPciBIOS() - Like xf86ReadBIOS, except that it handles PCI/host
+ *	xf86MapPciMemSparse - Like xf86MapPciMem() but for xf86MapVidMemSparse
+ *	xf86ReadPciBIOS() - Like xf86ReadBIOS, except that it handles PCI/host
  *                          address translation and BIOS decode enabling.
  *	xf86scanpci()  - Return info about all PCI devices
  * 
@@ -437,7 +437,7 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive)
 
   /*
    * silently ignore bogus index values.  Valid values are 0-6.  0-5 are
-   * 6 base address registers, and 6 is the ROM base address register.
+   * the 6 base address registers, and 6 is the ROM base address register.
    */
   if (index < 0 || index > 6)
     return 0;
