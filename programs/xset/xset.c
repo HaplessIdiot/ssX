@@ -1,6 +1,6 @@
 /* 
  * $XConsortium: xset.c /main/71 1996/11/24 17:24:48 rws $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.7 1997/01/27 07:01:25 dawes Exp $ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.8 1997/01/27 08:26:32 dawes Exp $ 
  */
 
 /*
@@ -542,14 +542,18 @@ for (i = 1; i < argc; ) {
       }
 
       i++;
-      arg = nextarg(i, argv);
-      if (is_number(arg, 10000)) {
-	delay = atoi(arg);
-	i++;
-        arg = nextarg(i, argv);
-        if (is_number(arg, 255)) {
-	  rate = atoi(arg);
+      arg = argv[i];
+      if (i < argc) {
+        if (is_number(arg, 10000)) {
+	  delay = atoi(arg);
 	  i++;
+          arg = argv[i];
+	  if (i < argc) {
+            if (is_number(arg, 255)) {
+	      rate = atoi(arg);
+	      i++;
+            }
+          }
         }
       }
       if (miscpresent)
