@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.17 2002/11/10 23:22:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.18 2002/11/12 06:05:08 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -712,11 +712,11 @@ LispWriteFloat(LispObj *stream, LispObj *object)
 static int
 LispWriteArray(LispObj *stream, LispObj *object, write_info *info)
 {
-    int length;
+    int length = 0;
     long print_level = info->level;
 
     if (object->data.array.rank == 0) {
-	length = LispWriteStr(stream, "#0A", 3);
+	length += LispWriteStr(stream, "#0A", 3);
 	length += LispDoWriteObject(stream, object->data.array.list, info, 1);
 	return (length);
     }
@@ -724,12 +724,12 @@ LispWriteArray(LispObj *stream, LispObj *object, write_info *info)
     ++info->level;
     if (info->print_level < 0 || info->level <= info->print_level) {
 	if (object->data.array.rank == 1)
-	    length = LispWriteStr(stream, "#(", 2);
+	    length += LispWriteStr(stream, "#(", 2);
 	else {
 	    char stk[32];
 
 	    format_integer(stk, object->data.array.rank, 10);
-	    length = LispWriteChar(stream, '#');
+	    length += LispWriteChar(stream, '#');
 	    length += LispWriteStr(stream, stk, strlen(stk));
 	    length += LispWriteStr(stream, "A(", 2);
 	}
