@@ -1,0 +1,21 @@
+#include "../lisp.cf"
+#include "../lisp.rules"
+
+INCLUDES	= -I..  -I$(XINCLUDESRC)
+
+GPERFFLAGS	= -T -n -a -c -p -j1 -g -o -t -D -N
+
+#if BuildSharedLispModules
+GperfLispFile(x11,x11table,$(GPERFFLAGS) x11FindFun)
+GperfLispFile(xt,xttable,$(GPERFFLAGS) xtFindFun)
+
+LispModuleTarget(x11.so,x11.o, $(XLIB))
+LispModuleTarget(xt.so,xt.o, $(XTOOLLIB) $(XLIB))
+LispModuleTarget(xaw.so,xaw.o, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB))
+
+InstallMultipleFlags(x11.so,$(LISPDIR),$(INSTINCFLAGS))
+InstallMultipleFlags(xt.so,$(LISPDIR),$(INSTINCFLAGS))
+InstallMultipleFlags(xaw.so,$(LISPDIR),$(INSTINCFLAGS))
+#endif
+
+InstallMultipleFlags(fun.lsp,$(LISPDIR),$(INSTINCFLAGS))

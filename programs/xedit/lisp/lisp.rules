@@ -1,0 +1,23 @@
+#define GperfLispFile(dep,file,flags)					@@\
+dep.c::	file.c								@@\
+									@@\
+file.c: file.gperf							@@\
+	RemoveFile($@)							@@\
+	$(GPERF) flags $? > $@						@@\
+									@@\
+depend::								@@\
+									@@\
+clean::									@@\
+	RemoveFile(file.c)
+
+#ifndef LispModuleTarget
+#define LispModuleTarget(module,modlist,liblist)			@@\
+AllTarget(module)							@@\
+									@@\
+module: modlist 							@@\
+	RemoveFile($@)							@@\
+	$(CC) -o $@ $(SHLIBLDFLAGS) modlist $(LDOPTIONS) liblist $(EXTRA_LOAD_FLAGS) @@\
+									@@\
+clean:: 								@@\
+	RemoveFile(module)
+#endif

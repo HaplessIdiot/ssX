@@ -1,0 +1,96 @@
+$XFree86$
+
+    SUMMARY
+
+  This is a small lisp interpreter for xedit. In the current implementation,
+it is just reading from stdin and writing to stdout/stderr. The code in xedit
+just wraps these and read/write from a pipe to the lisp interpreter. This
+is expected to change at some time, so that it should be possible to manage
+the xedit text buffers from lisp code.
+
+  It has a very simple method for loading shared modules, slightly based on
+the XFree86 loader code, that is currently disabled by default. To enable it,
+edit lisp.cf and change BuildSharedLispModules to YES.
+
+  Assuming you have built it with BuildSharedLispModules enabled, you can build
+a small test application can be built in this directory running "make lsp".
+Two lisp programs are available in the test directory. To test the programs
+run "./lsp hello.lsp" or "./lsp widgets.lsp".
+
+  Currently, it should be used as an helper and/or a small calculator embeded
+in xedit. For the future it should be possible to write entire interfaces
+in the xedit text buffers. The code is expected to be very stable, and by
+using it, xedit should not crash in any way (actually, it can't, as the
+lisp is running in a separate process). The lisp process is started once the
+first eval is called.
+
+
+    USAGE SUMMARY
+
+  To evaluate lisp expressions, put the text cursor just after the
+lisp expression and press:
+C-x,C-e	- will evaluate it, and print the result to the message window
+C-j	- will evaluate it, and print the result to the edit window, any
+	  errors are printed to the message window.
+C-g	- will send an SIGINT to the lisp process, and that process will
+	  stop whatever it was processing and jump to the toplevel,
+	  to wait for more input.
+
+Note that C-j currently will only work in the *scratch* buffer.
+
+
+    IMPLEMENTATION SUMMARY
+
+  The interpreter is expected to be a subset of Common Lisp, and is not
+expected to invent any new features or interfaces, just become more and
+more compatible with Common Lisp. The only non Common Lisp features, currently
+are:
+
+  o It is currently case sensitive, this is because in the initial stages it
+    was mean't to be as Emacs Lisp compatible as possible.
+  o It has some Emacs Lisp functions, that should be removed and replaced with
+    the Common Lisp equivalent ones.
+  o The currently implemented function names are in table.gperf
+
+
+
+    BUGS
+
+  If (print) is called with a circular list as argument, the lisp interpreter
+will crash. A code for circular list detection was written, but removed as
+it was buggy.
+  The (gc) code was slightly changed to avoid circular lists, but the code
+is not correct, so (gc) may need to be called several times to get deep enough
+on some more complex data structures, and free it. But calling (gc) explicitly
+is not required, as it will be called every time there are not enough available
+cells.
+
+
+    WHY?
+
+  I have used Emacs for a long time, and since I was working as volunteer to
+make of Xaw a better user interface, xedit seemed to need some work. For at
+least 3 years now, I don't use any other text editor than xedit, unless I
+need for some reason to work on the text console (like when debugging the
+xserver or xfs).
+
+  The lisp code was mostly written for some years, but not incorporated in
+xedit. Since the Lisp language is unlikely to change from day to night, it
+can be safely incorporated in xedit. Contrarily to this is an html
+viewer/editor to xedit I have been writing for some years. I wish I could add
+it to Xaw/xedit soon, but unfortunately it is still unstable, and not
+functional.
+
+
+    NOTE
+
+  The lisp interpreter is mean't to be usable without xedit and without Xaw.
+The xedit text buffer interface, when done will be just a module.
+
+
+    HELPING
+
+  Send comments and code to me or to the XFree86 mailing/patch lists.
+
+--
+Paulo
