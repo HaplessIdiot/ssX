@@ -1,5 +1,5 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/Imakefile,v 1.2 1999/02/13 16:44:59 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/Imakefile,v 1.3 1999/02/14 07:52:29 hohndel Exp $
 
 #include <Server.tmpl>
 
@@ -11,10 +11,9 @@ MODPATHDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 		-I$(FONTLIBSRC)/include -I$(XF86PARSERSRC) \
 		-I$(XF86SRC)/loader $(VGAINCLUDES) -I$(XF86SRC)/rac
 
-ModuleObjectRule()
+SRCS = xf86ScanPci.c xf86PciData.c
 
-xf86ScanPci.c: $(XF86SRC)/common/xf86PciInfo.h
-xf86PciData.c: $(XF86SRC)/common/xf86PciInfo.h
+ModuleObjectRule()
 
 LibraryModuleTarget(scanpci,xf86ScanPci.o)
 

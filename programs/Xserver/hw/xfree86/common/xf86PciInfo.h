@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.17 1999/02/13 16:44:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.18 1999/02/14 07:52:28 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -52,6 +52,7 @@
 #define PCI_VENDOR_UMC		0x1060
 #define PCI_VENDOR_X		0x1061
 #define PCI_VENDOR_PICOP	0x1066
+#define PCI_VENDOR_MYLEX	0x1069
 #define PCI_VENDOR_APPLE	0x106B
 #define PCI_VENDOR_NEXGEN	0x1074
 #define PCI_VENDOR_QLOGIC	0x1077
@@ -115,6 +116,7 @@
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_INTEL	0x8086
 #define PCI_VENDOR_ADAPTEC	0x9004
+#define PCI_VENDOR_ADAPTEC_2	0x9005
 #define PCI_VENDOR_ATRONICS	0x907F
 #define PCI_VENDOR_ARK		0xEDD8
 
@@ -161,9 +163,15 @@
 #define PCI_CHIP_MACH64GT	0x4754
 #define PCI_CHIP_MACH64GU	0x4755
 #define PCI_CHIP_MACH64GX	0x4758
-#define PCI_CHIP_MACH64LT	0x4C47
+#define PCI_CHIP_MACH64GZ	0x475A
+#define PCI_CHIP_MACH64LB	0x4C42
+#define PCI_CHIP_MACH64LD	0x4C44
+#define PCI_CHIP_MACH64LG	0x4C47
+#define PCI_CHIP_MACH64LI	0x4C49
+#define PCI_CHIP_MACH64LP	0x4C50
 #define PCI_CHIP_MACH64VT	0x5654
 #define PCI_CHIP_MACH64VU	0x5655
+#define PCI_CHIP_MACH64VV	0x5656
 
 /* VLSI */
 #define PCI_CHIP_82C592_FC1	0x0005
@@ -261,6 +269,7 @@
 #define PCI_CHIP_MGAG200_PCI	0x0520
 #define PCI_CHIP_MGAG200	0x0521
 #define PCI_CHIP_IMPRESSION	0x0D10
+#define PCI_CHIP_MGAG100_PCI	0x1000
 #define PCI_CHIP_MGAG100	0x1001
 
 /* Chips & Tech */
@@ -356,6 +365,7 @@
 #define PCI_CHIP_I128		0x2309
 #define PCI_CHIP_I128_2		0x2339
 #define PCI_CHIP_I128_T2R	0x493D
+#define PCI_CHIP_I128_T2R4	0x5348
 
 /* BrookTree */
 #define PCI_CHIP_BT848		0x0350
@@ -364,6 +374,7 @@
 /* NVIDIA */
 #define PCI_CHIP_NV1		0x0008
 #define PCI_CHIP_DAC64		0x0009
+#define PCI_CHIP_RIVATNT	0x0020
 
 /* NVIDIA & SGS */
 #define PCI_CHIP_RIVA128	0x0018
@@ -376,6 +387,7 @@
 /* 3Dfx Interactive */
 #define PCI_CHIP_VOODOO_GRAPHICS 0x0001
 #define PCI_CHIP_VOODOO2	0x0002
+#define PCI_CHIP_BANSHEE	0x0003
 
 /* Rendition */
 #define PCI_CHIP_V1000		0x0001
@@ -437,7 +449,7 @@
 #define PCI_CHIP_I740		0x7800
 
 /* Increase this as required */
-#define MAX_DEV_PER_VENDOR 37
+#define MAX_DEV_PER_VENDOR 40
 
 typedef struct {
     unsigned short VendorID;
@@ -471,20 +483,26 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ATI,	"ATI",	{
 				{PCI_CHIP_MACH32,	"Mach32"},
-				{PCI_CHIP_MACH64GX,	"Mach64 GX"},
-				{PCI_CHIP_MACH64CX,	"Mach64 CX"},
 				{PCI_CHIP_MACH64CT,	"Mach64 CT"},
+				{PCI_CHIP_MACH64CX,	"Mach64 CX"},
 				{PCI_CHIP_MACH64ET,	"Mach64 ET"},
-				{PCI_CHIP_MACH64VT,	"Mach64 VT"},
-				{PCI_CHIP_MACH64VU,	"Mach64 VT"},
-				{PCI_CHIP_MACH64GP,	"Mach64 GT"},
+				{PCI_CHIP_MACH64GB,	"Mach64 GB"},
+				{PCI_CHIP_MACH64GD,	"Mach64 GD"},
+				{PCI_CHIP_MACH64GI,	"Mach64 GI"},
+				{PCI_CHIP_MACH64GP,	"Mach64 GP"},
+				{PCI_CHIP_MACH64GQ,	"Mach64 GQ"},
 				{PCI_CHIP_MACH64GT,	"Mach64 GT"},
 				{PCI_CHIP_MACH64GU,	"Mach64 GT"},
-				{PCI_CHIP_MACH64LT,	"Mach64 LT"},
-				{PCI_CHIP_MACH64GB,	"Mach64 GT"},
-				{PCI_CHIP_MACH64GD,	"Mach64 GT"},
-				{PCI_CHIP_MACH64GI,	"Mach64 GT"},
-				{PCI_CHIP_MACH64GQ,	"Mach64 GT"},
+				{PCI_CHIP_MACH64GX,	"Mach64 GX"},
+				{PCI_CHIP_MACH64GZ,	"Mach64 GZ"},
+				{PCI_CHIP_MACH64LB,	"Mach64 LB"},
+				{PCI_CHIP_MACH64LD,	"Mach64 LD"},
+				{PCI_CHIP_MACH64LG,	"Mach64 LG"},
+				{PCI_CHIP_MACH64LI,	"Mach64 LI"},
+				{PCI_CHIP_MACH64LP,	"Mach64 LP"},
+				{PCI_CHIP_MACH64VT,	"Mach64 VT"},
+				{PCI_CHIP_MACH64VU,	"Mach64 VU"},
+				{PCI_CHIP_MACH64VV,	"Mach64 VV"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_VLSI, "VLSI", {
@@ -592,6 +610,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MGA2164_AGP,	"MGA 2164W AGP"},
 				{PCI_CHIP_MGAG200_PCI,	"MGA G200 PCI"},
 				{PCI_CHIP_MGAG200,	"MGA G200 AGP"},
+				{PCI_CHIP_MGAG100_PCI,	"MGA G100 PCI"},
 				{PCI_CHIP_MGAG100,	"MGA G100 AGP"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_CHIPSTECH, "C&T", {
@@ -675,6 +694,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_I128,		"Imagine 128"},
 				{PCI_CHIP_I128_2,	"Imagine 128 II"},
 				{PCI_CHIP_I128_T2R,	"Imagine 128 T2R"},
+				{PCI_CHIP_I128_T2R4,	"Imagine 128 T2R4"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_UMC,	"UMC",	{
@@ -693,6 +713,9 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_PICOP , "PICOP", {
                                 {0x0001,		"PT86C52x Vesuvius" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_MYLEX, "Mylex", {
+                                {0x0010,		"AccelRAID 250" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_APPLE, "Apple", {
                                 {0x0001,		"Bandit" },
@@ -819,6 +842,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_NVIDIA,	"NVidia",	{
 				{PCI_CHIP_NV1,		"NV1"},
 				{0x009,			"DAC64"},
+				{PCI_CHIP_RIVATNT,	"Riva TNT"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IMS, "IMS", {
@@ -904,7 +928,8 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 #endif
     {PCI_VENDOR_3DFX,	"3Dfx Interactive", {
 				{PCI_CHIP_VOODOO_GRAPHICS, "Voodoo Graphics"},
-				{PCI_CHIP_VOODOO2, "Voodoo2"},
+				{PCI_CHIP_VOODOO2, 	"Voodoo2"},
+				{PCI_CHIP_BANSHEE, 	"Banshee"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_SIGMADESIGNS, "Sigma Designs", {
                                 {0x6401, "REALmagic64/GX (SD 6425)" },
@@ -970,12 +995,13 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0484, "82378IB/ZB pci-isa bridge"},
 				{0x0486, "82430ZX Aries"},
 				{0x04A3, "82434LX/NX pci cache mem controller"},
+				{0x0960, "960RD processor/bridge"},
 				{0x1221, "82092AA"},
 				{0x1222, "82092AA"},
 				{0x1223, "SAA7116"},
 				{0x1226, "82596"},
 				{0x1227, "82865"},
-				{0x1229, "82557 10/100MBit network controller"},
+				{0x1229, "82557/8 10/100MBit network controller"},
 				{0x122D, "82437 Triton"},
 				{0x122E, "82471 Triton"},
 				{0x1230, "82371 bus-master IDE controller"},
@@ -993,14 +1019,40 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x7111, "82371AB PIIX4 IDE"},
 				{0x7112, "82371AB PIIX4 USB"},
 				{0x7113, "82371AB PIIX4 ACPI"},
-				{0x7180, "82443LX"},
-				{0x7181, "82443LX"},
-				{0x7190, "82443BX"},
-				{0x7191, "82443BX"},
+				{0x7180, "82443LX PAC Host"},
+				{0x7181, "82443LX PAC AGP"},
+				{0x7190, "82443BX Host"},
+				{0x7191, "82443BX AGP"},
+				{0x7192, "82443BX Host (no AGP)"},
 				{0x84C4, "P6"},
 				{0x84C5, "82450GX20"},
 				{PCI_CHIP_I740,		"i740"},
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_ADAPTEC, "Adaptec", {
+				{0x0010, "2940U2" },
+				{0x1078, "7810" },
+				{0x5078, "7850" },
+				{0x5578, "7855" },
+				{0x6078, "7860" },
+				{0x6178, "2940AU" },
+				{0x7078, "7870" },
+				{0x7178, "2940" },
+				{0x7278, "7872" },
+				{0x7378, "398X" },
+				{0x7478, "2944" },
+				{0x7895, "7895" },
+				{0x8078, "7880" },
+				{0x8178, "2940U/UW" },
+				{0x8278, "3940U/UW" },
+				{0x8378, "389XU" },
+				{0x8478, "2944U" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_ADAPTEC_2, "Adaptec", {
+                                {0x001F, "7890/7891" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_ATRONICS, "Atronics", {
+                                {0x2015, "IDE-2015PL" },
+ 				{0x0000,		NULL}}},
     {PCI_VENDOR_ARK,	"ARK Logic", {
 				{PCI_CHIP_1000PV,	"1000PV"},
 				{PCI_CHIP_2000PV,	"2000PV"},
