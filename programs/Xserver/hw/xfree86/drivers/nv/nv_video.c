@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.8 2002/04/26 19:57:14 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.9 2002/05/12 22:09:34 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -729,6 +729,7 @@ static int NVPutImage
     int pitch, newSize, offset, s2offset, s3offset;
     int srcPitch, srcPitch2, dstPitch;
     int top, left, npixels, nlines, bpp;
+    Bool skip = FALSE;
     BoxRec dstBox;
     CARD32 tmp;
 
@@ -804,10 +805,26 @@ static int NVPutImage
 
     if(!pPriv->linear) return BadAlloc;
 
-    offset = pPriv->linear->offset * bpp; 
+    offset = pPriv->linear->offset * bpp;
 
-    if(pPriv->doubleBuffer && pPriv->currentBuffer) 
-	offset += (newSize * bpp) >> 1;
+    if(pPriv->doubleBuffer) {
+        RIVA_HW_INST  *pRiva   = &(pNv->riva);
+        int mask = 1 << (pPriv->currentBuffer << 2);
+
+#if 0
+        /* burn the CPU until the next buffer is available */
+        while(pRiva->PMC[0x00008700/4] & mask);
+#else
+        /* overwrite the newest buffer if there's not one free */
+        if(pRiva->PMC[0x00008700/4] & mask) {
+           if(!pPriv->currentBuffer)
+              offset += (newSize * bpp) >> 1;
+           skip = TRUE;
+        } else 
+#endif
+        if(pPriv->currentBuffer)
+            offset += (newSize * bpp) >> 1;
+    }
 
     dst_start = pNv->FbStart + offset;
         
@@ -815,15 +832,6 @@ static int NVPutImage
     top = ya >> 16;
     left = (xa >> 16) & ~1;
     npixels = ((((xb + 0xffff) >> 16) + 1) & ~1) - left;
-
-#if 0
-    /* I have my reservations about this */
-    if(pPriv->doubleBuffer) {
-	RIVA_HW_INST  *pRiva   = &(pNv->riva);
-	int mask = 1 << (pPriv->currentBuffer << 2);
-	while(pRiva->PMC[0x00008700/4] & mask);
-    }
-#endif
 
     switch(id) {
     case FOURCC_YV12:
@@ -854,10 +862,12 @@ static int NVPutImage
         break;
     }
 
-    NVPutOverlayImage(pScrnInfo, offset, id, dstPitch, &dstBox, xa, ya, xb, yb,
-                       width, height, src_w, src_h, drw_w, drw_h, clipBoxes);
-
-    pPriv->currentBuffer ^= 1;
+    if(!skip) {
+       NVPutOverlayImage(pScrnInfo, offset, id, dstPitch, &dstBox, 
+                         xa, ya, xb, yb,
+                         width, height, src_w, src_h, drw_w, drw_h, clipBoxes);
+       pPriv->currentBuffer ^= 1;
+    } 
 
     return Success;
 }
