@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.226 2003/10/18 02:14:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.227tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -471,7 +471,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXF86DGALibrary	(BuildXF86DGA && !BuildServersOnly)
 #endif
 #ifndef BuildXResExt
-#define BuildXResExt            NO 
+#define BuildXResExt            NO
 #endif
 #ifndef BuildXResLibrary
 #define BuildXResLibrary        (BuildXResExt && !BuildServersOnly)
@@ -1250,14 +1250,14 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #ifndef HasBlindFaithInUnicode
 #define HasBlindFaithInUnicode YES
 #endif
-#ifndef XTrueTypeCConvModule  
+#ifndef XTrueTypeCConvModule
 #if DoLoadableServer
 #define XTrueTypeCConvModule YES
 #else
 #define XTrueTypeCConvModule NO
 #endif
 #endif
-#ifndef XTrueTypeUseOptEncodings  
+#ifndef XTrueTypeUseOptEncodings
 #define XTrueTypeUseOptEncodings YES
 #endif
 #ifndef XTrueTypeCConvIncDir
@@ -1489,11 +1489,11 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define PsWrap $(PSWRAPSRC)/pswrap
 #endif
 
-#ifndef ResourceConfigurationManagement 
+#ifndef ResourceConfigurationManagement
 #define ResourceConfigurationManagement YES
 #endif
 
-#ifndef XtPopdownConformance 
+#ifndef XtPopdownConformance
 #define XtPopdownConformance YES
 #endif
 
@@ -1547,7 +1547,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
            XSMDIR = XsmDir		/* xsm config files */
            NLSDIR = NlsDir		/* nls files */
        XLOCALEDIR = XLocaleDir		/* locale files */
-      LBXPROXYDIR = LbxproxyDir	        /* lbxproxy files */
+      LBXPROXYDIR = LbxproxyDir		/* lbxproxy files */
   PROXYMANAGERDIR = ProxyManagerDir	/* proxy manager config files */
         XPRINTDIR = XPrintDir		/* print config file root */
       XAPPLOADDIR = XAppLoadDir		/* application default resource dir */
@@ -1570,7 +1570,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 # if !CrossCompiling
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
   MKFONTSCALE_DIR = $(PRELOADFREETYPESETUP) $(XBUILDBINDIR)/mkfontscale -b -s -l
-        MKFONTDIR = $(CLIENTENVSETUP) $(MKFONTSCALE_DIR)  
+        MKFONTDIR = $(CLIENTENVSETUP) $(MKFONTSCALE_DIR)
        XCURSORGEN = $(CLIENTENVSETUP) $(PRELOADSETUP) $(XBUILDBINDIR)/xcursorgen
 # elif UseInstalledOnCrossCompile
         MKFONTDIR = $(BINDIR)/mkfontdir
@@ -1637,9 +1637,9 @@ XCOMM X Window System make variables; these need to be coordinated with rules
   SYSTEMENVLIBDIR = SystemBuildLibPath
 # endif
        XENVLIBDIR = X11BuildLibPath
-   CLIENTENVSETUP = BuildLibPathVar=BuildLibPath
+   CLIENTENVSETUP = Concat3(BuildLibPathVar,=,BuildLibPath)
 #else
-   CLIENTENVSETUP = 
+   CLIENTENVSETUP =
 #endif
 
 #ifdef PreloadSetup
@@ -2454,7 +2454,7 @@ ProjectUnsharedLibReferences(XFONTCACHE,Xfontcache,$(XFONTCACHELIBSRC),XBuildLib
 #endif
 
 #ifndef SharedLibXau
-#define SharedLibXau 		NO
+#define SharedLibXau		NO
 #endif
 #ifndef NormalLibXau
 #define NormalLibXau (!SharedLibXau | ForceNormalLib)
@@ -2480,7 +2480,7 @@ ProjectUnsharedLibReferences(XAUTH,Xau,$(XAUTHSRC),$(USRLIBDIR))
 #endif
 
 #ifndef SharedLibXdmcp
-#define SharedLibXdmcp 		NO
+#define SharedLibXdmcp		NO
 #endif
 #ifndef NormalLibXdmcp
 #define NormalLibXdmcp (!SharedLibXdmcp | ForceNormalLib)
@@ -2531,7 +2531,7 @@ ProjectUnsharedLibReferences(XMU,Xmu,$(XMUSRC),XBuildLibDir)
 #define SharedLibXmuu HasSharedLibraries
 #endif
 #ifndef NormalLibXmuu
-#define NormalLibXmuu 		(!SharedLibXmuu | ForceNormalLib)
+#define NormalLibXmuu		(!SharedLibXmuu | ForceNormalLib)
 #endif
 #ifndef DebugLibXmuu
 #define DebugLibXmuu		NO	/* debugged Xmuu library */
@@ -3124,7 +3124,7 @@ EXPATDEFINES = -DEXPAT
 #define SharedLibXft1 HasSharedLibraries
 #endif
 #ifndef NormalLibXft1
-#define NormalLibXft1 		NO
+#define NormalLibXft1		NO
 #endif
 #ifndef DebugLibXft1
 #define DebugLibXft1		NO
@@ -3229,7 +3229,7 @@ FCCACHE = $(BINDIR)/fc-cache
 #else
 FCCACHE = set -x; $(CLIENTENVSETUP) $(PRELOADXFTSETUP) FONTCONFIG_PATH=$(FONTCONFIGLIBSRC) $(XBUILDBINDIR)/fc-cache
 #endif
-	  
+
 #else /* BuildFontconfigLibrary */
 
 #if HasFontconfig
@@ -3699,7 +3699,7 @@ InstallFontObjs($(OBJS),dest)
 
 
 /*
- * InstallFontAliases - generate rules to install font aliases databases. 
+ * InstallFontAliases - generate rules to install font aliases databases.
  */
 #ifndef InstallFontAliases
 #define InstallFontAliases(dest)					@@\
@@ -4120,10 +4120,10 @@ clean::									@@\
 
 #ifndef MakeLatexDoc
 #if HasLatex
-#define MakeLatexDoc(file,src)	 					@@\
+#define MakeLatexDoc(file,src)						@@\
 all:: file.ps PdfLatexTarget(file)					@@\
 									@@\
-file.dvi: src	  							@@\
+file.dvi: src								@@\
 	$(LATEX) src							@@\
 									@@\
 file.ps: file.dvi							@@\
@@ -4131,12 +4131,12 @@ file.ps: file.dvi							@@\
 									@@\
 LatexToPdf(file)							@@\
 									@@\
-clean:: 								@@\
+clean::									@@\
 	RemoveFiles(file.nps file.ps file.dvi file.log)			@@\
 	RemoveFiles(file.aux file.toc file.lof file.lot)		@@\
 	$(RM) PdfLatexClean(file)
 #else /* HasLatex */
-#define MakeLatexDoc(file,src)	 					@@\
+#define MakeLatexDoc(file,src)						@@\
 all::									@@\
 file.ps: src								@@\
 	@echo "cannot make file.ps: no latex on this system"; exit 1
