@@ -1,4 +1,4 @@
-/* mga_drv.c -- Matrox G200/G400 driver -*- linux-c -*-
+/* i810_drv.c -- I810 driver -*- linux-c -*-
  * Created: Mon Dec 13 01:56:22 1999 by jhartmann@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -26,6 +26,7 @@
  *
  * Authors:
  *    Rickard E. (Rik) Faith <faith@valinux.com>
+ *    Jeff Hartmann <jhartmann@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
 
@@ -35,47 +36,42 @@
 #include <pci/pcivar.h>
 #include <opt_drm_linux.h>
 
-#include "mga.h"
+#include "i810.h"
 #include "drmP.h"
-#include "mga_drv.h"
+#include "i810_drv.h"
 
-#define DRIVER_AUTHOR		"Gareth Hughes, VA Linux Systems Inc."
+#define DRIVER_AUTHOR		"VA Linux Systems Inc."
 
-#define DRIVER_NAME		"mga"
-#define DRIVER_DESC		"Matrox G200/G400"
-#define DRIVER_DATE		"20010321"
+#define DRIVER_NAME		"i810"
+#define DRIVER_DESC		"Intel i810"
+#define DRIVER_DATE		"20010616"
 
-#define DRIVER_MAJOR		3
+#define DRIVER_MAJOR		2
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	2
+#define DRIVER_PATCHLEVEL	0
 
-/* List acquired from http://www.yourvote.com/pci/pcihdr.h and xc/xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h
- * Please report to anholt@teleport.com inaccuracies or if a chip you have works that is marked unsupported here.
- */
+/* Device IDs unknown.  Can someone help?  anholt@teleport.com */
 drm_chipinfo_t DRM(devicelist)[] = {
-	{0x102b, 0x0520, 0, "Matrox G200 (PCI)"},
-	{0x102b, 0x0521, 1, "Matrox G200 (AGP)"},
-	{0x102b, 0x0525, 1, "Matrox G400 (AGP)"},
 	{0, 0, 0, NULL}
 };
 
-#define DRIVER_IOCTLS							   \
-	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]	      = { mga_dma_buffers, 1, 0 }, \
-	[DRM_IOCTL_NR(DRM_IOCTL_MGA_INIT)]    = { mga_dma_init,    1, 1 }, \
-	[DRM_IOCTL_NR(DRM_IOCTL_MGA_FLUSH)]   = { mga_dma_flush,   1, 0 }, \
-	[DRM_IOCTL_NR(DRM_IOCTL_MGA_RESET)]   = { mga_dma_reset,   1, 0 }, \
-	[DRM_IOCTL_NR(DRM_IOCTL_MGA_SWAP)]    = { mga_dma_swap,    1, 0 }, \
-	[DRM_IOCTL_NR(DRM_IOCTL_MGA_CLEAR)]   = { mga_dma_clear,   1, 0 }, \
-	[DRM_IOCTL_NR(DRM_IOCTL_MGA_VERTEX)]  = { mga_dma_vertex,  1, 0 }, \
-	[DRM_IOCTL_NR(DRM_IOCTL_MGA_INDICES)] = { mga_dma_indices, 1, 0 }, \
-	[DRM_IOCTL_NR(DRM_IOCTL_MGA_ILOAD)]   = { mga_dma_iload,   1, 0 }, \
-	[DRM_IOCTL_NR(DRM_IOCTL_MGA_BLIT)]    = { mga_dma_blit,    1, 0 },
+#define DRIVER_IOCTLS							    \
+	[DRM_IOCTL_NR(DRM_IOCTL_I810_INIT)]   = { i810_dma_init,    1, 1 }, \
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_VERTEX)] = { i810_dma_vertex,  1, 0 }, \
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_CLEAR)]  = { i810_clear_bufs,  1, 0 }, \
+      	[DRM_IOCTL_NR(DRM_IOCTL_I810_FLUSH)]  = { i810_flush_ioctl, 1, 0 }, \
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_GETAGE)] = { i810_getage,      1, 0 }, \
+	[DRM_IOCTL_NR(DRM_IOCTL_I810_GETBUF)] = { i810_getbuf,      1, 0 }, \
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_SWAP)]   = { i810_swap_bufs,   1, 0 }, \
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_COPY)]   = { i810_copybuf,     1, 0 }, \
+   	[DRM_IOCTL_NR(DRM_IOCTL_I810_DOCOPY)] = { i810_docopy,      1, 0 },
 
 
-#define __HAVE_COUNTERS         3
+#define __HAVE_COUNTERS         4
 #define __HAVE_COUNTER6         _DRM_STAT_IRQ
 #define __HAVE_COUNTER7         _DRM_STAT_PRIMARY
 #define __HAVE_COUNTER8         _DRM_STAT_SECONDARY
+#define __HAVE_COUNTER9         _DRM_STAT_DMA
 
 
 #include "drm_agpsupport.h"
@@ -91,8 +87,9 @@ drm_chipinfo_t DRM(devicelist)[] = {
 #include "drm_init.h"
 #include "drm_ioctl.h"
 #include "drm_lock.h"
+#include "drm_lists.h"
 #include "drm_memory.h"
 #include "drm_vm.h"
 #include "drm_sysctl.h"
 
-DRIVER_MODULE(mga, pci, mga_driver, mga_devclass, 0, 0);
+DRIVER_MODULE(i810, pci, i810_driver, i810_devclass, 0, 0);
