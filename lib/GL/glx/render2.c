@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/render2.c,v 1.5 2003/11/14 16:20:59 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/render2.c,v 1.6 2004/01/31 09:29:33 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -434,7 +434,7 @@ void glEnable(GLenum cap)
 	case GL_TEXTURE_COORD_ARRAY:
 	case GL_VERTEX_ARRAY:
 	case GL_SECONDARY_COLOR_ARRAY:
-	case GL_FOG_COORD_ARRAY:
+	case GL_FOG_COORDINATE_ARRAY:
 	    glEnableClientState(cap);
 	    return;
 	default:
@@ -461,7 +461,7 @@ void glDisable(GLenum cap)
 	case GL_TEXTURE_COORD_ARRAY:
 	case GL_VERTEX_ARRAY:
 	case GL_SECONDARY_COLOR_ARRAY:
-	case GL_FOG_COORD_ARRAY:
+	case GL_FOG_COORDINATE_ARRAY:
 	    glDisableClientState(cap);
 	    return;
 	default:
