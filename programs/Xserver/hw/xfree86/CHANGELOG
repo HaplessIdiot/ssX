@@ -1,6 +1,11 @@
-XFree86 3.9Px (11 July 1999)
+XFree86 3.9Px (12 July 1999)
+2880. Fix a bug in the wacom driver that shows up when multiple wacom devices
+      don't report the same valuators (#3010, Frederic Lepied).
+2879. Some updates to the PCI/RAC code (#3008, Egbert Eich).
+2878. Fix the acute and apostrophe mixup in the German xkb layout with the
+      nodeadkey option, and add the EuroSign to AltGr+e (#3006, Markus Kuhn).
 2877. Add code to the mga driver to handle PC98 architecture machines
-      (Takaaki Nomura).
+      (#3007, Takaaki Nomura).
 2876. Add a global (ServerFlags) "PC98" Option for the Japanese PC98
       architecture, and add a function xf86IsPc98() that drivers can call
       to check for this.
@@ -8420,4 +8425,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.796 1999/07/11 09:41:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.797 1999/07/11 10:26:58 dawes Exp $

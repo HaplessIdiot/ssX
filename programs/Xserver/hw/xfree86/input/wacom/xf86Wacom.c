@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.11 1999/07/06 11:38:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.12 1999/07/11 08:49:29 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -49,7 +49,7 @@
  *
  */
 
-static const char identification[] = "$Identification: 7 $";
+static const char identification[] = "$Identification: 8 $";
 
 #include <xf86Version.h>
 
@@ -80,6 +80,8 @@ static const char identification[] = "$Identification: 7 $";
 #include <xf86Module.h>
 #endif
 
+#undef memset
+#define memset xf86memset
 #undef sleep
 #define sleep(t) xf86WaitForInput(-1, 1000 * (t))
 #define wait_for_fd(fd) xf86WaitForInput((fd), 1000)
@@ -1724,6 +1726,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	    
 	    /* Device ID packet */
 	    if ((common->wcmData[0] & 0xfc) == 0xc0) {
+		memset(ds, 0, sizeof(*ds));
 		ds->proximity = 1;
 		ds->device_id = (((common->wcmData[1] & 0x7f) << 5) |
 				 ((common->wcmData[2] & 0x7c) >> 2));
