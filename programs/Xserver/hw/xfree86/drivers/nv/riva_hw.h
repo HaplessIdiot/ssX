@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.12 2001/07/19 02:22:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.13 2001/09/07 01:28:35 mvojkovi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010003
@@ -60,8 +60,12 @@
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop;
+#endif
     U032 reserved01[0x0BB];
     U032 Rop3;
 } RivaRop;
@@ -71,8 +75,12 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop;
+#endif
     U032 reserved01[0x0BD];
     U032 Shape;
     U032 reserved03[0x001];
@@ -86,8 +94,12 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop;
+#endif
     U032 reserved01[0x0BB];
     U032 TopLeft;
     U032 WidthHeight;
@@ -98,8 +110,12 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop[1];
+#endif
     U032 reserved01[0x0BC];
     U032 Color;
     U032 reserved03[0x03E];
@@ -112,8 +128,12 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop;
+#endif
     U032 reserved01[0x0BB];
     U032 TopLeftSrc;
     U032 TopLeftDst;
@@ -125,8 +145,12 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop[1];
+#endif
     U032 reserved01[0x0BC];
     U032 TopLeft;
     U032 WidthHeight;
@@ -140,8 +164,12 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop;
+#endif
     U032 reserved01[0x0BB];
     U032 reserved03[(0x040)-1];
     U032 Color1A;
@@ -202,8 +230,12 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop;
+#endif
     U032 reserved01[0x0BC];
     U032 TextureOffset;
     U032 TextureFormat;
@@ -228,8 +260,12 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop;
+#endif
     U032 reserved01[0x0BB];
     U032 ColorKey;
     U032 TextureOffset;
@@ -262,8 +298,12 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop[1];
+#endif
     U032 reserved01[0x0BC];
     U032 Color;             /* source color               0304-0307*/
     U032 Reserved02[0x03e];
@@ -293,16 +333,24 @@ typedef volatile struct
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop;
+#endif
     U032 reserved01[0x0BE];
     U032 Offset;
 } RivaSurface;
 typedef volatile struct
 {
     U032 reserved00[4];
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    U032 FifoFree;
+#else
     U016 FifoFree;
     U016 Nop;
+#endif
     U032 reserved01[0x0BD];
     U032 Pitch;
     U032 RenderBufferOffset;

@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.22 2001/03/31 20:32:13 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.23 2001/06/16 22:00:30 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -587,8 +587,12 @@ NVAccelInit(ScreenPtr pScreen)
         NVSubsequentMono8x8PatternFillRect;
 
     /* Color expansion */
-    infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
+    infoPtr->ScanlineCPUToScreenColorExpandFillFlags =
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+				BIT_ORDER_IN_BYTE_MSBFIRST | 
+#else
 				BIT_ORDER_IN_BYTE_LSBFIRST | 
+#endif
 				NO_PLANEMASK | 
 				CPU_TRANSFER_PAD_DWORD |
 				LEFT_EDGE_CLIPPING | 		
