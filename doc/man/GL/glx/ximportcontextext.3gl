@@ -8,7 +8,7 @@
 .ds Xs 38402 4 ximportcontextext.gl
 .TH GLXIMPORTCONTEXTEXT
 .SH NAME
-.B "glXImportContextEXT
+glXImportContextEXT
 \- import another process's indirect rendering context.
 
 .SH C SPECIFICATION

@@ -8,7 +8,7 @@
 .ds Xs 60987 10 xgetconfig.gl
 .TH GLXGETCONFIG
 .SH NAME
-.B "glXGetConfig
+glXGetConfig
 \- return information about GLX visuals
 
 .SH C SPECIFICATION

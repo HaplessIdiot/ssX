@@ -8,7 +8,7 @@
 .ds Xs 36423 3 xqueryversion.gl
 .TH GLXQUERYVERSION
 .SH NAME
-.B "glXQueryVersion
+glXQueryVersion
 \- return the version numbers of the GLX extension
 
 .SH C SPECIFICATION

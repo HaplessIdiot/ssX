@@ -1,5 +1,5 @@
 .TH XvGetPortAttribute 3X
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xv/XvGetPortAttribute.man,v 1.4 1999/03/02 11:49:14 dawes Exp $
 .SH Name
 XvGetPortAttribute \- return current port attribute value
 .\"
@@ -48,24 +48,24 @@ The XInternAtom request can be used with one of the strings
 below to return a matching Atom.
 .bp
 .PP
-.\".TS
-.\"tab(@);
-.\"lfHB lfHB lfHB
-.\"lfR  lfR  lfR .
-.\"_
-.\".PP
-.\".sp 4p
-.\"Attribute String@Type@Default
-.\".sp 6p
-.\"_
-.\".sp 6p
-.\""XV_ENCODING"@XvEncodingID@Server dependent
-.\""XV_HUE"@[-1000...1000]@0
-.\""XV_SATURATION"@[-1000...1000]@0
-.\""XV_BRIGHTNESS"@[-1000...1000]@0
-.\""XV_CONTRAST"@[-1000...1000]@0
-.\".sp 6p
-.\".TE
+.\" .TS
+.\" tab(@);
+.\" lfHB lfHB lfHB
+.\" lfR  lfR  lfR .
+.\" _
+.\" .PP
+.\" .sp 4p
+.\" Attribute String@Type@Default
+.\" .sp 6p
+.\" _
+.\" .sp 6p
+.\" "XV_ENCODING"@XvEncodingID@Server dependent
+.\" "XV_HUE"@[-1000...1000]@0
+.\" "XV_SATURATION"@[-1000...1000]@0
+.\" "XV_BRIGHTNESS"@[-1000...1000]@0
+.\" "XV_CONTRAST"@[-1000...1000]@0
+.\" .sp 6p
+.\" .TE
 .nf
 Attribute String        Type             Default
 
@@ -74,7 +74,7 @@ Attribute String        Type             Default
 "XV_SATURATION"         [-1000...1000]   0
 "XV_BRIGHTNESS"         [-1000...1000]   0
 "XV_CONTRAST"           [-1000...1000]   0
-.TE
+.fi
 .SH Returned Values
 .IP [Success] 8
 Returned if XvGetPortAttribute(3X) completed successfully.

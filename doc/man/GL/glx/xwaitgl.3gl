@@ -8,7 +8,7 @@
 .ds Xs 20224 2 xwaitgl.gl
 .TH GLXWAITGL
 .SH NAME
-.B "glXWaitGL
+glXWaitGL
 \- complete GL execution prior to subsequent X calls
 
 .SH C SPECIFICATION

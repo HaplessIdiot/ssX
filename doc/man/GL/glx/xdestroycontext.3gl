@@ -8,7 +8,7 @@
 .ds Xs 5532 2 xdestroycontext.gl
 .TH GLXDESTROYCONTEXT
 .SH NAME
-.B "glXDestroyContext
+glXDestroyContext
 \- destroy a GLX context
 
 .SH C SPECIFICATION

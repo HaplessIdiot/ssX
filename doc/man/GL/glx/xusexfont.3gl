@@ -8,7 +8,7 @@
 .ds Xs 55673 5 xusexfont.gl
 .TH GLXUSEXFONT
 .SH NAME
-.B "glXUseXFont
+glXUseXFont
 \- create bitmap display lists from an X font
 
 .SH C SPECIFICATION

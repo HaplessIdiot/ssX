@@ -8,7 +8,7 @@
 .ds Xs 62493 5 xcreateglxpixmap.gl
 .TH GLXCREATEGLXPIXMAP
 .SH NAME
-.B "glXCreateGLXPixmap
+glXCreateGLXPixmap
 \- create an off-screen GLX rendering area
 
 .SH C SPECIFICATION

@@ -8,7 +8,7 @@
 .ds Xs 58988 14 xchoosevisual.gl
 .TH GLXCHOOSEVISUAL
 .SH NAME
-.B "glXChooseVisual
+glXChooseVisual
 \- return a visual that matches specified attributes
 
 .SH C SPECIFICATION

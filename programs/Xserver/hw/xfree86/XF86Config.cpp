@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.5 2000/03/20 15:57:48 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.6 2000/03/21 19:57:07 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ "Version 4.0"  "XFree86"
@@ -1557,12 +1557,24 @@ trident(__drivermansuffix__),
 tseng(__drivermansuffix__),
 v4l(__drivermansuffix__),
 vga(__drivermansuffix__),
-.IR README ,
-.IR RELNOTES ,
-.IR README.mouse ,
-.IR README.DRI ,
-.IR Status ,
-.IR Install .
+.br
+README
+.IR <http://www.xfree86.org/current/README.html> ,
+.br
+RELNOTES
+.IR <http://www.xfree86.org/current/RELNOTES.html> ,
+.br
+README.mouse
+.IR <http://www.xfree86.org/current/mouse.html> ,
+.br
+README.DRI
+.IR <http://www.xfree86.org/current/DRI.html> ,
+.br
+Status
+.IR <http://www.xfree86.org/current/Status.html> ,
+.br
+Install
+.IR <http://www.xfree86.org/current/Install.html> .
 .SH AUTHORS
 This manual page was largely rewritten for XFree86 4.0 by David Dawes
 .IR <dawes@xfree86.org> .

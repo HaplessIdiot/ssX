@@ -8,7 +8,7 @@
 .ds Xs 51469 3 xquerycontextinfoext.gl
 .TH GLXQUERYCONTEXTINFOEXT
 .SH NAME
-.B "glXQueryContextInfoEXT
+glXQueryContextInfoEXT
 \- query context information
 
 .SH C SPECIFICATION

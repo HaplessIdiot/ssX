@@ -8,7 +8,7 @@
 .ds Xs 32008 15 xintro.gl
 .TH GLXINTRO
 .SH NAME
-.B "glXIntro
+glXIntro
 \- Introduction to OpenGL in the X window system
 
 .SH OVERVIEW

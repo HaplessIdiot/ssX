@@ -8,7 +8,7 @@
 .ds Xs 26309 3 xqueryextensionsstring.gl
 .TH GLXQUERYEXTENSIONSSTRING
 .SH NAME
-.B "glXQueryExtensionsString
+glXQueryExtensionsString
 \- return list of supported extensions
 
 .SH C SPECIFICATION

@@ -8,7 +8,7 @@
 .ds Xs 49166 6 xcopycontext.gl
 .TH GLXCOPYCONTEXT
 .SH NAME
-.B "glXCopyContext
+glXCopyContext
 \- copy state from one rendering context to another
 
 .SH C SPECIFICATION

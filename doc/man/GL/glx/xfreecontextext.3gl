@@ -8,7 +8,7 @@
 .ds Xs 37853 3 xfreecontextext.gl
 .TH GLXFREECONTEXTEXT
 .SH NAME
-.B "glXFreeContextEXT
+glXFreeContextEXT
 \- free client-side memory for imported context
 
 .SH C SPECIFICATION

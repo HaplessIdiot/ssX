@@ -8,7 +8,7 @@
 .ds Xs 16965 8 xcreatecontext.gl
 .TH GLXCREATECONTEXT
 .SH NAME
-.B "glXCreateContext
+glXCreateContext
 \- create a new GLX rendering context
 
 .SH C SPECIFICATION

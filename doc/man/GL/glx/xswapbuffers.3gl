@@ -8,7 +8,7 @@
 .ds Xs 58040 5 xswapbuffers.gl
 .TH GLXSWAPBUFFERS
 .SH NAME
-.B "glXSwapBuffers
+glXSwapBuffers
 \- exchange front and back buffers
 
 .SH C SPECIFICATION
