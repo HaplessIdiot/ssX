@@ -23,7 +23,7 @@
 #include "glxclient.h"
 #include <extutil.h>
 #include <Xext.h>
-#include <strings.h>
+#include <string.h>
 
 static const char GL_ClientExtensions[] = 
                   "GL_EXT_abgr "
