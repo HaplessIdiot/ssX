@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfballpriv.c,v 1.7 1998/12/20 11:57:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfballpriv.c,v 1.8 1999/04/04 08:46:06 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -56,7 +56,7 @@ cfbAllocatePrivates(pScreen, window_index, gc_index)
     int		*window_index, *gc_index;
 {
     if (!window_index || !gc_index ||
-	*window_index == -1 && *gc_index == -1)
+	(*window_index == -1 && *gc_index == -1))
     {
     	if (!mfbAllocatePrivates(pScreen,
 			     	 &cfbWindowPrivateIndex, &cfbGCPrivateIndex))

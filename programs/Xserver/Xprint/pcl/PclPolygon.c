@@ -11,7 +11,7 @@
 **    *  Created:	10/23/95
 **    *
 **    *********************************************************
-** 
+**
 ********************************************************************/
 /*
 (c) Copyright 1996 Hewlett-Packard Company
@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPolygon.c,v 1.4 1998/03/20 21:04:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPolygon.c,v 1.5 1999/09/25 14:36:47 dawes Exp $ */
 
 
 #include "Pcl.h"
@@ -52,11 +52,11 @@ copyright holders.
 #include "windowstr.h"
 
 void
-PclPolyRectangle( pDrawable, pGC, nRects, pRects )
-     DrawablePtr pDrawable;
-     GCPtr pGC;
-     int nRects;
-     xRectangle *pRects;
+PclPolyRectangle(
+     DrawablePtr pDrawable,
+     GCPtr pGC,
+     int nRects,
+     xRectangle *pRects)
 {
     char t[80];
     FILE *outFile;
@@ -68,23 +68,23 @@ PclPolyRectangle( pDrawable, pGC, nRects, pRects )
     int xoffset, yoffset;
     XpContextPtr pCon;
     PclContextPrivPtr pConPriv;
-    
+
     if( PclUpdateDrawableGC( pGC, pDrawable, &outFile ) == FALSE )
       return;
 
     pCon = PclGetContextFromWindow( (WindowPtr) pDrawable );
     pConPriv = (PclContextPrivPtr)
 			pCon->devPrivates[PclContextPrivateIndex].ptr;
-    
+
     /*
      * Allocate the storage required to deal with the clipping
-     * regions. 
+     * regions.
      */
     region = REGION_CREATE( pGC->pScreen, NULL, 0 );
     drawRects = (xRectangle *)xalloc( nRects * sizeof( xRectangle ) );
-    
+
     fudge = 3 * pGC->lineWidth + 1;
-    
+
     /*
      * Generate the PCL code to draw the rectangles, by defining them
      * as a macro which uses the HP-GL/2 rectangle drawing function.
@@ -94,13 +94,13 @@ PclPolyRectangle( pDrawable, pGC, nRects, pRects )
 
     xoffset = pDrawable->x;
     yoffset = pDrawable->y;
-    
+
     for( i = 0, r = drawRects; i < nRects; i++, r++ )
       {
 	  xRectangle rect = pRects[i];
-	  
+
 	  /* Draw the rectangle */
-	  sprintf( t, "PU%d,%d;ER%d,%d;", rect.x + xoffset, 
+	  sprintf( t, "PU%d,%d;ER%d,%d;", rect.x + xoffset,
 		  rect.y + yoffset, rect.width, rect.height );
 	  SAVE_PCL( outFile, pConPriv, t );
 
@@ -114,7 +114,7 @@ PclPolyRectangle( pDrawable, pGC, nRects, pRects )
       }
     SAVE_PCL( outFile, pConPriv, ";\033%0A" ); /* End the macro */
     MACRO_END( outFile );
-    
+
     /*
      * Convert the collection of rectangles to a proper region, then
      * intersect it with the clip region.
@@ -123,16 +123,16 @@ PclPolyRectangle( pDrawable, pGC, nRects, pRects )
 				  drawRects, CT_UNSORTED );
 
     REGION_INTERSECT( pGC->pScreen, region, drawRegion, pGC->pCompositeClip );
-    
+
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input
      * window" and render the set of rectangles to it.
      */
     pbox = REGION_RECTS( region );
     nbox = REGION_NUM_RECTS( region );
-    
+
     PclSendData(outFile, pConPriv, pbox, nbox, 1.0);
-    
+
     /*
      * Clean up the temporary regions
      */
@@ -142,13 +142,13 @@ PclPolyRectangle( pDrawable, pGC, nRects, pRects )
 }
 
 void
-PclFillPolygon( pDrawable, pGC, shape, mode, nPoints, pPoints )
-     DrawablePtr pDrawable;
-     GCPtr pGC;
-     int shape;
-     int mode;
-     int nPoints;
-     DDXPointPtr pPoints;
+PclFillPolygon(
+     DrawablePtr pDrawable,
+     GCPtr pGC,
+     int shape,
+     int mode,
+     int nPoints,
+     DDXPointPtr pPoints)
 {
     char t[80];
     FILE *outFile;
@@ -162,14 +162,14 @@ PclFillPolygon( pDrawable, pGC, shape, mode, nPoints, pPoints )
     XpContextPtr pCon;
     PclContextPrivPtr pConPriv;
     char *command;
-    
+
     if( PclUpdateDrawableGC( pGC, pDrawable, &outFile ) == FALSE )
       return;
 
     pCon = PclGetContextFromWindow( (WindowPtr) pDrawable );
     pConPriv = (PclContextPrivPtr)
 			pCon->devPrivates[PclContextPrivateIndex].ptr;
-    
+
     /*
      * Generate the PCL code to draw the filled polygon, by defining
      * it as a macro which uses the HP-GL/2 polygon drawing function.
@@ -188,7 +188,7 @@ PclFillPolygon( pDrawable, pGC, shape, mode, nPoints, pPoints )
 	  xoffset = yoffset = 0;
 	  command = "PR";
       }
-    
+
     /* Begin the polygon */
     sprintf( t, "PU%d,%d;PM0;%s", pPoints[0].x + xoffset, pPoints[0].y
 	    + yoffset, command );
@@ -197,13 +197,13 @@ PclFillPolygon( pDrawable, pGC, shape, mode, nPoints, pPoints )
     /* Seed the bounding box */
     xtop = xbottom = pPoints[0].x + xoffset;
     yleft = yright = pPoints[0].y + yoffset;
-    
+
     /* Add the rest of the points to the polygon */
     for( i = 1; i < nPoints; i++ )
       {
 	  if( i != 1 )
 	    SAVE_PCL( outFile, pConPriv, "," );
-	  
+
 	  sprintf( t, "%d,%d", pPoints[i].x + xoffset, pPoints[i].y +
 		  yoffset );
 	  SAVE_PCL( outFile, pConPriv, t );
@@ -221,7 +221,7 @@ PclFillPolygon( pDrawable, pGC, shape, mode, nPoints, pPoints )
       fillRule = 0;
     else
       fillRule = 1;
-    
+
     sprintf( t, ";PM2;FP%d;\033%%0A", fillRule );
     SAVE_PCL( outFile, pConPriv, t );
     MACRO_END ( outFile );
@@ -237,7 +237,7 @@ PclFillPolygon( pDrawable, pGC, shape, mode, nPoints, pPoints )
 
     if( mode == CoordModePrevious )
       REGION_TRANSLATE( pGC->pScreen, drawRegion, pPoints[0].x, pPoints[0].y );
-    
+
     region = REGION_CREATE( pGC->pScreen, NULL, 0 );
 
     REGION_INTERSECT( pGC->pScreen, region, drawRegion, pGC->pCompositeClip );
@@ -248,7 +248,7 @@ PclFillPolygon( pDrawable, pGC, shape, mode, nPoints, pPoints )
      */
     pbox = REGION_RECTS( region );
     nbox = REGION_NUM_RECTS( region );
-    
+
     PclSendData(outFile, pConPriv, pbox, nbox, 1.0);
 
     /*
@@ -259,11 +259,11 @@ PclFillPolygon( pDrawable, pGC, shape, mode, nPoints, pPoints )
 }
 
 void
-PclPolyFillRect( pDrawable, pGC, nRects, pRects )
-     DrawablePtr pDrawable;
-     GCPtr pGC;
-     int nRects;
-     xRectangle *pRects;
+PclPolyFillRect(
+     DrawablePtr pDrawable,
+     GCPtr pGC,
+     int nRects,
+     xRectangle *pRects)
 {
     char t[80];
     FILE *outFile;
@@ -275,14 +275,14 @@ PclPolyFillRect( pDrawable, pGC, nRects, pRects )
     short fudge;
     XpContextPtr pCon;
     PclContextPrivPtr pConPriv;
-    
+
     if( PclUpdateDrawableGC( pGC, pDrawable, &outFile ) == FALSE )
       return;
 
     pCon = PclGetContextFromWindow( (WindowPtr) pDrawable );
     pConPriv = (PclContextPrivPtr)
 			pCon->devPrivates[PclContextPrivateIndex].ptr;
-    
+
     /*
      * Allocate the storage required to deal with the clipping
      * regions.
@@ -292,7 +292,7 @@ PclPolyFillRect( pDrawable, pGC, nRects, pRects )
 
 
     fudge = 3 * pGC->lineWidth + 1;
-    
+
     /*
      * Generate the PCL code to draw the filled rectangles, by
      * defining them as a macro which uses the HP-GL/2 rectangle
@@ -300,19 +300,19 @@ PclPolyFillRect( pDrawable, pGC, nRects, pRects )
      */
     MACRO_START( outFile, pConPriv );
     SAVE_PCL( outFile, pConPriv, "\033%0B" );
-    
+
     xoffset = pDrawable->x;
     yoffset = pDrawable->y;
-    
+
     for( i = 0, r = drawRects; i < nRects; i++, r++ )
       {
 	  xRectangle rect = pRects[i];
-	  
+
 	  /* Draw the rectangle */
 	  sprintf( t, "PU%d,%d;RR%d,%d;", rect.x + xoffset, rect.y +
 		  yoffset, rect.width, rect.height );
 	  SAVE_PCL( outFile, pConPriv, t );
-	  
+
 	  /* Build the bounding box */
 	  r->x = MIN( rect.x, rect.x + rect.width ) + xoffset - fudge;
 	  r->y = MIN( rect.y, rect.y + rect.height ) + yoffset -
@@ -322,7 +322,7 @@ PclPolyFillRect( pDrawable, pGC, nRects, pRects )
       }
     SAVE_PCL( outFile, pConPriv, ";\033%0A" ); /* End the macro */
     MACRO_END( outFile );
-    
+
     /*
      * Convert the collection of rectangles to a proper region, then
      * intersect it with the clip region.
@@ -330,16 +330,16 @@ PclPolyFillRect( pDrawable, pGC, nRects, pRects )
     drawRegion = RECTS_TO_REGION( pGC->pScreen, nRects,
 				  drawRects, CT_UNSORTED );
     REGION_INTERSECT( pGC->pScreen, region, drawRegion, pGC->pCompositeClip );
-    
+
     /*
      * For each rectangle in the clip region, set the HP-GL/2 "input
      * window" and render the set of rectangles to it.
      */
     pbox = REGION_RECTS( region );
     nbox = REGION_NUM_RECTS( region );
-    
+
     PclSendData(outFile, pConPriv, pbox, nbox, 1.0);
-    
+
     /*
      * Clean up the temporary regions
      */
@@ -347,4 +347,3 @@ PclPolyFillRect( pDrawable, pGC, nRects, pRects )
     REGION_DESTROY( pGC->pScreen, region );
     xfree( drawRects );
 }
-

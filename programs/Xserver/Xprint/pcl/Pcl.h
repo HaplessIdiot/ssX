@@ -11,7 +11,7 @@
 **    *  Created:	1/30/95
 **    *
 **    *********************************************************
-** 
+**
 ********************************************************************/
 /*
 (c) Copyright 1996 Hewlett-Packard Company
@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.3 1998/03/20 21:04:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.4 1998/12/20 11:57:26 dawes Exp $ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -53,7 +53,7 @@ copyright holders.
 #include "scrnintstr.h"
 
 /*
-#include "X.h" 
+#include "X.h"
 #include "Xproto.h"
 #include "Xatom.h"
 #include "misc.h"
@@ -248,18 +248,18 @@ RegionPtr PclCopyPlane(
 /******
  * Functions in PclAttr.c
  ******/
-extern char *PclGetAttributes( 
+extern char *PclGetAttributes(
     XpContextPtr pCon,
     XPAttributes pool );
 extern char *PclGetOneAttribute(
     XpContextPtr pCon,
     XPAttributes pool,
     char *attr );
-extern int PclAugmentAttributes( 
+extern int PclAugmentAttributes(
     XpContextPtr pCon,
     XPAttributes pool,
     char *attrs );
-extern int PclSetAttributes( 
+extern int PclSetAttributes(
     XpContextPtr pCon,
     XPAttributes pool,
     char *attrs );
@@ -285,6 +285,16 @@ extern int PclUpdateColormap(DrawablePtr pDrawable,
 			     XpContextPtr pCon,
 			     GCPtr gc,
 			     FILE *outFile);
+extern void PclLookUp(ColormapPtr cmap,
+		      PclContextPrivPtr cPriv,
+		      unsigned short *r,
+		      unsigned short *g,
+		      unsigned short *b);
+extern PclPaletteMapPtr PclFindPaletteMap(PclContextPrivPtr cPriv,
+				   ColormapPtr cmap,
+				   GCPtr gc);
+extern unsigned char *PclReadMap(char *, int *);
+
 
 /******
  * Functions in PclCursor.c
@@ -317,6 +327,27 @@ extern Bool PclSetCursorPosition(
     Bool generateEvent);
 
 /******
+ * Functions in PclSFonts.c
+ ******/
+extern void
+PclDownloadSoftFont8(
+    FILE *fp,
+    PclSoftFontInfoPtr pSoftFontInfo,
+    PclFontHead8Ptr pfh,
+    PclCharDataPtr pcd,
+    unsigned char *code);
+extern void PclDownloadSoftFont16(
+    FILE *fp,
+    PclSoftFontInfoPtr pSoftFontInfo,
+    PclFontHead16Ptr pfh,
+    PclCharDataPtr pcd,
+    unsigned char row,
+    unsigned char col);
+extern PclSoftFontInfoPtr PclCreateSoftFontInfo(void);
+extern void PclDestroySoftFontInfo(
+    PclSoftFontInfoPtr pSoftFontInfo );
+
+/******
  * Functions in PclGC.c
  ******/
 extern Bool PclCreateGC(GCPtr pGC);
@@ -337,10 +368,19 @@ extern int PclGetDrawablePrivateStuff(
     GC *gc,
     unsigned long *valid,
     FILE **file );
-				      
+extern void PclSetDrawablePrivateGC(
+     DrawablePtr pDrawable,
+     GC gc);
+extern void PclComputeCompositeClip(
+    GCPtr pGC,
+    DrawablePtr pDrawable);
+
 /******
  * Functions in PclInit.c
  ******/
+extern Bool PclCloseScreen(
+    int index,
+    ScreenPtr pScreen);
 extern Bool InitializePclDriver(
     int ndx,
     ScreenPtr pScreen,
@@ -381,6 +421,12 @@ extern int PclGetMediumDimensions(
 extern int PclGetReproducibleArea(
     XpContextPtr pCon,
     xRectangle *pRect);
+extern void PclSendData(
+    FILE *outFile,
+    PclContextPrivPtr pConPriv,
+    BoxPtr pbox,
+    int nbox,
+    double ratio);
 
 /******
  * Functions in PclPixel.c
@@ -570,12 +616,3 @@ extern int PclGetDocumentData(
 
 
 #endif  /* _PCL_H_ */
-
-
-
-
-
-
-
-
-

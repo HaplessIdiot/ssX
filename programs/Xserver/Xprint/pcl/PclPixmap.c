@@ -46,8 +46,9 @@ copyright holders.
 */
 
 #include "Pcl.h"
-/*#include "cfb.h"*/
-/* #include "mfb.h" */
+#include "cfb.h"
+#include "cfb32.h"
+#include "mfb.h"
 #include "pixmapstr.h"
 
 PixmapPtr
@@ -56,25 +57,24 @@ PclCreatePixmap(ScreenPtr pScreen,
 		int height,
 		int depth)
 {
-extern PixmapPtr mfbCreatePixmap(), cfbCreatePixmap(), cfb32CreatePixmap();
-
     if( depth == 1 )
       return mfbCreatePixmap( pScreen, width, height, depth );
     else if( depth <= 8 )
       return cfbCreatePixmap( pScreen, width, height, depth );
     else if( depth <= 32 )
       return cfb32CreatePixmap( pScreen, width, height, depth );
+    return 0;
 }
 
 
 Bool
 PclDestroyPixmap(PixmapPtr pPixmap)
 {
-extern Bool mfbDestroyPixmap(), cfbDestroyPixmap(), cfb32DestroyPixmap();
     if( pPixmap->drawable.depth == 1 )
       return mfbDestroyPixmap( pPixmap );
     else if( pPixmap->drawable.depth <= 8 )
       return cfbDestroyPixmap( pPixmap );
     else if( pPixmap->drawable.depth <= 32 )
       return cfb32DestroyPixmap( pPixmap );
+    return 0;
 }

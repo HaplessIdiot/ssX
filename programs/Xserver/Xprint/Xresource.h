@@ -79,9 +79,7 @@ _XFUNCPROTOBEGIN
  ****************************************************************/
 
 extern char *Xpermalloc(
-#if NeedFunctionPrototypes
     unsigned int	/* size */
-#endif
 );
 
 /****************************************************************
@@ -98,28 +96,20 @@ typedef char *XrmString;
 
 /* find quark for string, create new quark if none already exists */
 extern XrmQuark XrmStringToQuark(
-#if NeedFunctionPrototypes
     _Xconst char* 	/* string */
-#endif
 );
 
 extern XrmQuark XrmPermStringToQuark(
-#if NeedFunctionPrototypes
     _Xconst char* 	/* string */
-#endif
 );
 
 /* find string for quark */
 extern XrmString XrmQuarkToString(
-#if NeedFunctionPrototypes
     XrmQuark 		/* quark */
-#endif
 );
 
 extern XrmQuark XrmUniqueQuark(
-#if NeedFunctionPrototypes
     void
-#endif
 );
 
 #define XrmStringsEqual(a1, a2) (strcmp(a1, a2) == 0)
@@ -134,18 +124,14 @@ extern XrmQuark XrmUniqueQuark(
 typedef enum {XrmBindTightly, XrmBindLoosely} XrmBinding, *XrmBindingList;
 
 extern void XrmStringToQuarkList(
-#if NeedFunctionPrototypes
     _Xconst char*	/* string */,
     XrmQuarkList	/* quarks_return */
-#endif
 );
 
 extern void XrmStringToBindingQuarkList(
-#if NeedFunctionPrototypes
     _Xconst char*	/* string */,
     XrmBindingList	/* bindings_return */,
     XrmQuarkList	/* quarks_return */
-#endif
 );
 
 /****************************************************************
@@ -197,92 +183,72 @@ typedef struct _XrmHashBucketRec *XrmDatabase;
 
 
 extern void XrmDestroyDatabase(
-#if NeedFunctionPrototypes
     XrmDatabase		/* database */    
-#endif
 );
 
 extern void XrmQPutResource(
-#if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
     XrmBindingList	/* bindings */,
     XrmQuarkList	/* quarks */,
     XrmRepresentation	/* type */,
     XrmValue*		/* value */
-#endif
 );
 
 extern void XrmPutResource(
-#if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
     _Xconst char*	/* specifier */,
     _Xconst char*	/* type */,
     XrmValue*		/* value */
-#endif
 );
 
 extern void XrmQPutStringResource(
-#if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
     XrmBindingList      /* bindings */,
     XrmQuarkList	/* quarks */,
     _Xconst char*	/* value */
-#endif
 );
 
 extern void XrmPutStringResource(
-#if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
     _Xconst char*	/* specifier */,
     _Xconst char*	/* value */
-#endif
 );
 
 extern void XrmPutLineResource(
-#if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
     _Xconst char*	/* line */
-#endif
 );
 
-extern  XrmQGetResource(
-#if NeedFunctionPrototypes
+extern  Bool XrmQGetResource(
     XrmDatabase		/* database */,
     XrmNameList		/* quark_name */,
     XrmClassList	/* quark_class */,
     XrmRepresentation*	/* quark_type_return */,
     XrmValue*		/* value_return */
-#endif
 );
 
 extern Bool XrmGetResource(
-#if NeedFunctionPrototypes
     XrmDatabase		/* database */,
     _Xconst char*	/* str_name */,
     _Xconst char*	/* str_class */,
     char**		/* str_type_return */,
     XrmValue*		/* value_return */
-#endif
 );
 
 extern Bool XrmQGetSearchList(
-#if NeedFunctionPrototypes
     XrmDatabase		/* database */,
     XrmNameList		/* names */,
     XrmClassList	/* classes */,
     XrmSearchList	/* list_return */,
     int			/* list_length */
-#endif
 );
 
 extern Bool XrmQGetSearchResource(
-#if NeedFunctionPrototypes
     XrmSearchList	/* list */,
     XrmName		/* name */,
     XrmClass		/* class */,
     XrmRepresentation*	/* type_return */,
     XrmValue*		/* value_return */
-#endif
 );
 
 /****************************************************************
@@ -294,89 +260,67 @@ extern Bool XrmQGetSearchResource(
 #ifdef NOT_IN_SERVER
 
 extern void XrmSetDatabase(
-#if NeedFunctionPrototypes
     Display*		/* display */,
     XrmDatabase		/* database */
-#endif
 );
 
 extern XrmDatabase XrmGetDatabase(
-#if NeedFunctionPrototypes
     Display*		/* display */
-#endif
 );
 
 #endif /* NOT_IN_SERVER */
 
 extern XrmDatabase XrmGetFileDatabase(
-#if NeedFunctionPrototypes
     _Xconst char*	/* filename */
-#endif
 );
 
 extern Status XrmCombineFileDatabase(
-#if NeedFunctionPrototypes
     _Xconst char* 	/* filename */,
     XrmDatabase*	/* target */,
     Bool		/* override */
-#endif
 );
 
 extern XrmDatabase XrmGetStringDatabase(
-#if NeedFunctionPrototypes
     _Xconst char*	/* data */  /*  null terminated string */
-#endif
 );
 
 extern void XrmPutFileDatabase(
-#if NeedFunctionPrototypes
     XrmDatabase		/* database */,
     _Xconst char*	/* filename */
-#endif
 );
 
 extern void XrmMergeDatabases(
-#if NeedFunctionPrototypes
     XrmDatabase		/* source_db */,
     XrmDatabase*	/* target_db */
-#endif
 );
 
 extern void XrmCombineDatabase(
-#if NeedFunctionPrototypes
     XrmDatabase		/* source_db */,
     XrmDatabase*	/* target_db */,
     Bool		/* override */
-#endif
 );
 
 #define XrmEnumAllLevels 0
 #define XrmEnumOneLevel  1
 
 extern Bool XrmEnumerateDatabase(
-#if NeedFunctionPrototypes
     XrmDatabase		/* db */,
     XrmNameList		/* name_prefix */,
     XrmClassList	/* class_prefix */,
     int			/* mode */,
     Bool (*)(
-#if NeedNestedPrototypes
 	     XrmDatabase*	/* db */,
 	     XrmBindingList	/* bindings */,
 	     XrmQuarkList	/* quarks */,
 	     XrmRepresentation*	/* type */,
 	     XrmValue*		/* value */,
 	     XPointer		/* closure */
-#endif
 	     )		/* proc */,
     XPointer		/* closure */
-#endif
 );
 
 extern char *XrmLocaleOfDatabase(
-#if NeedFunctionPrototypes
     XrmDatabase 	/* database */
-#endif
 );
 
 
@@ -407,14 +351,12 @@ typedef struct {
 
 
 extern void XrmParseCommand(
-#if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
     XrmOptionDescList	/* table */,
     int			/* table_count */,
     _Xconst char*	/* name */,
     int*		/* argc_in_out */,
     char**		/* argv_in_out */		     
-#endif
 );
 
 _XFUNCPROTOEND

@@ -70,7 +70,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.3 1998/03/20 21:04:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.4 1998/10/04 09:37:26 dawes Exp $ */
 
 #ifndef _PS_H_
 #define _PS_H_
@@ -111,13 +111,17 @@ in this Software without prior written authorization from The Open Group.
 /*
  *  Some sleazes to force the XrmDB stuff into the server
  */
+#ifndef HAVE_XPointer
 typedef char *XPointer;
 #define Status int
 #define True 1
 #define False 0
+#endif
+
 #include "misc.h"
 #include <Xfuncproto.h>
 #include "../Xresource.h"
+#include "attributes.h"
 
 /*
  *  Public index variables from PsInit.c
@@ -127,6 +131,7 @@ extern int PsScreenPrivateIndex;
 extern int PsWindowPrivateIndex;
 extern int PsContextPrivateIndex;
 extern int PsPixmapPrivateIndex;
+extern XpValidatePoolsRec PsValidatePoolsRec;
 
 /*
  *  Display list structures
@@ -251,7 +256,7 @@ typedef struct
 {
   XrmDatabase   resDB;
   ColormapPtr   CMap;
-  Bool        (*DestroyWindow)();
+  Bool        (*DestroyWindow)(WindowPtr);
 } PsScreenPrivRec, *PsScreenPrivPtr;
 
 typedef struct
@@ -307,7 +312,7 @@ extern int PsStartJob(XpContextPtr pCon, Bool sendClientData, ClientPtr client);
 extern int PsEndJob(XpContextPtr pCon, Bool cancel);
 extern int PsStartPage(XpContextPtr pCon, WindowPtr pWin);
 extern int PsEndPage(XpContextPtr pCon, WindowPtr pWin);
-extern int PsStartDoc(XpContextPtr pCon);
+extern int PsStartDoc(XpContextPtr pCon, XPDocumentType type);
 extern int PsEndDoc(XpContextPtr pCon, Bool cancel);
 extern int PsDocumentData(XpContextPtr pCon, DrawablePtr pDraw, char *pData,
     int len_data, char *pFmt, int len_fmt, char *pOpt, int len_opt,

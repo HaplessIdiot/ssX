@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.6 1997/01/14 22:14:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.7 1997/01/18 06:53:09 dawes Exp $ */
 
 #include <Xproto.h>
 #include <string.h>
@@ -59,13 +59,14 @@ copyright holders.
 #include "extensions/Printstr.h"
 #undef _XP_PRINT_SERVER_
 
+#include "attributes.h"
 #include "Xrm.c"
 
 static XrmDatabase CopyDb(XrmDatabase inDb);
 
-extern XrmDatabase XpSpoolerGetServerAttributes();
+extern XrmDatabase XpSpoolerGetServerAttributes(void);
 
-static int attrGeneration = 0;
+static unsigned long attrGeneration = 0;
 
 typedef struct {
     XrmDatabase *pDb;
@@ -139,8 +140,7 @@ static char NULL_STRING[] = "\0";
  * $LANG.  It makes no attempt to ensure that the directory actually exists.
  */
 char *
-XpGetConfigDir(useLocale)
-    Bool useLocale;
+XpGetConfigDir(Bool useLocale)
 { 
     char *dirName, *langName, *langDir, *configDir;
     Bool freeLangDir = False;
@@ -184,8 +184,7 @@ XpGetConfigDir(useLocale)
  * locale (if other than the top-level).
  */
 static XrmDatabase
-GetMergedDatabase(attrName)
-    char *attrName;
+GetMergedDatabase(const char *attrName)
 {
     char *dirName, *fileName;
     XrmDatabase db;
@@ -222,7 +221,7 @@ GetMergedDatabase(attrName)
  * the context.
  */
 static void
-BuildSystemAttributes()
+BuildSystemAttributes(void)
 {
     if(systemAttributes.printers != (XrmDatabase)NULL)
 	XrmDestroyDatabase(systemAttributes.printers);
@@ -245,13 +244,13 @@ BuildSystemAttributes()
  * passed as the client_data (aka "closure").
  */
 static Bool
-AddDbEntry(sourceDB, bindings, quarks, type, value, client_data)
-    XrmDatabase *sourceDB;
-    XrmBindingList bindings;
-    XrmQuarkList quarks;
-    XrmRepresentation *type;
-    XrmValue *value;
-    XPointer client_data;
+AddDbEntry(
+    XrmDatabase *sourceDB,
+    XrmBindingList bindings,
+    XrmQuarkList quarks,
+    XrmRepresentation *type,
+    XrmValue *value,
+    XPointer client_data)
 {
     DbEnumStruct *pEnumStruct = (DbEnumStruct *)client_data;
     XrmName xrm_name[5];
@@ -295,9 +294,9 @@ AddDbEntry(sourceDB, bindings, quarks, type, value, client_data)
  * printer.
  */
 static XrmDatabase
-BuildPrinterAttrs(printerName, qualifierName)
-    char *printerName;
-    char *qualifierName;
+BuildPrinterAttrs(
+    char *printerName,
+    char *qualifierName)
 {
     XrmDatabase printerDB = (XrmDatabase)NULL;
 
@@ -376,10 +375,10 @@ BuildPrinterAttrs(printerName, qualifierName)
  * level doc and job databases.
  */
 static XrmDatabase
-BuildABase(printerName, qualifierName, sourceBase)
-    char *printerName;
-    char *qualifierName;
-    XrmDatabase sourceBase;
+BuildABase(
+    char *printerName,
+    char *qualifierName,
+    XrmDatabase sourceBase)
 {
     XrmDatabase builtDB = (XrmDatabase)NULL;
 
@@ -427,7 +426,7 @@ BuildABase(printerName, qualifierName, sourceBase)
  * databases stored in the global attrList.
  */
 static void
-FreeAttrList()
+FreeAttrList(void)
 {
     PrAttrPtr pAttr, pNext;
 
@@ -456,7 +455,7 @@ FreeAttrList()
  * by calling XpBuildAttributeStore for a new list of printers.
  */
 int
-XpRehashAttributes()
+XpRehashAttributes(void)
 {
     if(attrList != (PrAttrPtr)NULL)
         FreeAttrList();
@@ -470,9 +469,9 @@ XpRehashAttributes()
  * calls BuildSystemAttributes to create the system-level databases.
  */
 void
-XpBuildAttributeStore(printerName, qualifierName)
-    char *printerName;
-    char *qualifierName;
+XpBuildAttributeStore(
+    char *printerName,
+    char *qualifierName)
 {
     PrAttrPtr pAttr;
 
@@ -512,13 +511,13 @@ XpBuildAttributeStore(printerName, qualifierName)
 
 
 static Bool
-StoreEntry(sourceDB, bindings, quarks, type, value, client_data)
-    XrmDatabase *sourceDB;
-    XrmBindingList bindings;
-    XrmQuarkList quarks;
-    XrmRepresentation *type;
-    XrmValue *value;
-    XPointer client_data;
+StoreEntry(
+    XrmDatabase *sourceDB,
+    XrmBindingList bindings,
+    XrmQuarkList quarks,
+    XrmRepresentation *type,
+    XrmValue *value,
+    XPointer client_data)
 {
     XrmDatabase *outDb = (XrmDatabase *)client_data;
 
@@ -532,8 +531,7 @@ StoreEntry(sourceDB, bindings, quarks, type, value, client_data)
  * the copy.
  */
 static XrmDatabase
-CopyDb(inDb)
-    XrmDatabase inDb;
+CopyDb(XrmDatabase inDb)
 {
     XrmDatabase outDb = (XrmDatabase)NULL;
     XrmQuark empty = NULLQUARK;
@@ -549,8 +547,7 @@ CopyDb(inDb)
  * attributes databases for the printer associated with the context.
  */
 void
-XpInitAttributes( pContext )
-     XpContextPtr pContext;
+XpInitAttributes(XpContextPtr pContext)
 {
     ContextAttrPtr pCtxtAttrs;
     PrAttrPtr pPrAttr = attrList;
@@ -571,8 +568,8 @@ XpInitAttributes( pContext )
 }
 
 void
-XpDestroyAttributes( pContext )
-    XpContextPtr pContext;
+XpDestroyAttributes(
+    XpContextPtr pContext)
 {
     ContextAttrPtr pCtxtAttrs;
 
@@ -598,10 +595,10 @@ XpDestroyAttributes( pContext )
  * in which case the pContext parameter is ignored.
  */
 char *
-XpGetOneAttribute( pContext, class, attributeName )
-     XpContextPtr pContext;
-     XPAttributes class;
-     char *attributeName;
+XpGetOneAttribute(
+     XpContextPtr pContext,
+     XPAttributes class,
+     char *attributeName)
 {
     ContextAttrPtr pCtxtAttrs;
     XrmDatabase db = (XrmDatabase)NULL;
@@ -668,12 +665,11 @@ XpGetOneAttribute( pContext, class, attributeName )
  * function does not recognize XPServerAttr.
  */
 void
-XpPutOneAttribute( pContext, class, attributeName, value )
-
-XpContextPtr pContext;
-XPAttributes class;
-const char* attributeName;
-const char* value;
+XpPutOneAttribute(
+	XpContextPtr pContext,
+	XPAttributes class,
+	const char* attributeName,
+	const char* value)
 {
     ContextAttrPtr pCtxtAttrs;
     XrmDatabase db;
@@ -722,8 +718,8 @@ const char* value;
  * struct to indicate the new amount of space available.
  */
 static Bool
-ExpandSpace(pStr)
-    StringDbStruct *pStr;
+ExpandSpace(
+    StringDbStruct *pStr)
 {
     char *newSpace;
 
@@ -742,9 +738,9 @@ ExpandSpace(pStr)
  * are updated.
  */
 static void
-PutString(pStr, pString)
-    StringDbStruct *pStr;
-    char *pString;
+PutString(
+    StringDbStruct *pStr,
+    char *pString)
 {
     int len = strlen(pString);
 
@@ -762,9 +758,9 @@ PutString(pStr, pString)
  * the byte, and the nextPos and space fields are updated.
  */
 static void
-PutByte(pStr, byte)
-    StringDbStruct *pStr;
-    char byte;
+PutByte(
+    StringDbStruct *pStr,
+    char byte)
 {
     if(pStr->space <= 1)
 	if(!ExpandSpace(pStr))
@@ -784,13 +780,13 @@ PutByte(pStr, byte)
  * This code is based directly on that in "DumpEntry" in Xrm.c.
  */
 static Bool
-AppendEntry(db, bindings, quarks, type, value, data)
-    XrmDatabase         *db;
-    XrmBindingList      bindings;
-    XrmQuarkList        quarks;
-    XrmRepresentation   *type;
-    XrmValuePtr         value;
-    XPointer            data;
+AppendEntry(
+    XrmDatabase         *db,
+    XrmBindingList      bindings,
+    XrmQuarkList        quarks,
+    XrmRepresentation   *type,
+    XrmValuePtr         value,
+    XPointer            data)
 {
     StringDbStruct *pEnumStr = (StringDbStruct *)data;
     Bool        firstNameSeen;
@@ -798,7 +794,7 @@ AppendEntry(db, bindings, quarks, type, value, data)
     char *s, c;
 
     if (*type != XrmQString)
-	return;
+	return False;
 
     for (firstNameSeen = False; *quarks; bindings++, quarks++) {
         if (*bindings == XrmBindLoosely) {
@@ -851,9 +847,9 @@ AppendEntry(db, bindings, quarks, type, value, data)
  * unlike XpGetOneAttribute, where the caller must not free the string.
  */
 char *
-XpGetAttributes( pContext, class )
-     XpContextPtr pContext;
-     XPAttributes class;
+XpGetAttributes(
+     XpContextPtr pContext,
+     XPAttributes class)
 {
     ContextAttrPtr pCtxtAttrs;
     XrmDatabase db = (XrmDatabase)NULL;
@@ -906,10 +902,10 @@ XpGetAttributes( pContext, class )
 }
 
 int
-XpAugmentAttributes( pContext, class, attributes )
-     XpContextPtr pContext;
-     XPAttributes class;
-     char *attributes;
+XpAugmentAttributes(
+     XpContextPtr pContext,
+     XPAttributes class,
+     char *attributes)
 {
     XrmDatabase db;
     ContextAttrPtr pCtxtAttrs;
@@ -942,10 +938,10 @@ XpAugmentAttributes( pContext, class, attributes )
  * XpSetAttributes - sets the attribute stores for a specified context.
  */
 int
-XpSetAttributes( pContext, class, attributes )
-     XpContextPtr pContext;
-     XPAttributes class;
-     char *attributes;
+XpSetAttributes(
+     XpContextPtr pContext,
+     XPAttributes class,
+     char *attributes)
 {
     XrmDatabase db;
     ContextAttrPtr pCtxtAttrs;
@@ -983,12 +979,11 @@ XpSetAttributes( pContext, class, attributes )
 }
 
 void
-XpAddPrinterAttribute(printerName, printerQualifier, attributeName, 
-		      attributeValue)
-    char *printerName;
-    char *printerQualifier;
-    char *attributeName;
-    char *attributeValue;
+XpAddPrinterAttribute(
+    char *printerName,
+    char *printerQualifier,
+    char *attributeName,
+    char *attributeValue)
 {
     PrAttrPtr pAttr;
 
@@ -1047,7 +1042,7 @@ static char serverAttrStr[] = "*document-attributes-supported:	copy-count\n\
 *multiple-documents-supported:	False";
 
 XrmDatabase
-XpSpoolerGetServerAttributes()
+XpSpoolerGetServerAttributes(void)
 {
     char *totalAttrs, *localeName;
     XrmDatabase db;
@@ -1064,34 +1059,6 @@ XpSpoolerGetServerAttributes()
     db =  XrmGetStringDatabase(totalAttrs);
     xfree(totalAttrs);
     return db;
-}
-
-/*
- * ExecuteCommand takes two pointers - the command to execute,
- * and the "argv" style NULL-terminated vector of arguments for the command.
- * We wait for the command to terminate before continuing to ensure that
- * we don't delete the job file before the spooler has made a copy.
- */
-static void
-ExecCommand(pCommand, argVector)
-    char *pCommand;
-    char **argVector;
-{
-    pid_t childPid;
-    int status;
-
-    if((childPid = fork()) == 0)
-    {
-	/* return BadAlloc? */
-	if (execv(pCommand, argVector) == -1) {
-	    FatalError("unable to exec '%s'", pCommand);
-	}
-    }
-    else
-    {
-        (void) waitpid(childPid, &status, 0);
-    }
-    return;
 }
 
 /*
@@ -1412,9 +1379,9 @@ static char DEFAULT_SPOOL_COMMAND[] = "/usr/bin/lp -d %printer-name% -n %copy-co
 #endif
 
 int
-XpSubmitJob(fileName, pContext)
-     char *fileName;
-     XpContextPtr pContext;
+XpSubmitJob(
+     char *fileName,
+     XpContextPtr pContext)
 {
     char **vector, *cmdNam, *cmdOpt, *command, *userName;
     int i;
@@ -1454,6 +1421,7 @@ XpSubmitJob(fileName, pContext)
 
     FreeVector(vector);
     xfree(cmdNam);
+    return Success;
 }
 
 /*

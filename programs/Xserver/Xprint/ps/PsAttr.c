@@ -1,4 +1,25 @@
-/* $XConsortium: PsAttr.c /main/2 1996/11/16 15:24:49 rws $ */
+/* $TOG: PsAttr.c /main/3 1998/02/09 15:42:17 kaleb $ */
+/*
+
+Copyright 1996, 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /*
  * (c) Copyright 1996 Hewlett-Packard Company
  * (c) Copyright 1996 International Business Machines Corp.
@@ -43,14 +64,13 @@
 **    *
 **    *  Created By:	Roger Helmendach (Liberty Systems)
 **    *
-**    *  Copyright:	Copyright 1996 X Consortium, Inc.
+**    *  Copyright:	Copyright 1996 The Open Group, Inc.
 **    *
 **    *********************************************************
 ** 
 ********************************************************************/
 
 #include "Ps.h"
-#include "attributes.h"
 
 char *
 PsGetAttributes(

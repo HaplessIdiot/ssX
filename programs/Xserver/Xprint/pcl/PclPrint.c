@@ -43,7 +43,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPrint.c,v 1.3 1996/12/30 13:59:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPrint.c,v 1.4 1996/12/31 07:06:01 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -64,15 +64,11 @@ copyright holders.
 #include "AttrValid.h"
 #include "Oid.h"
 
-extern PclSoftFontInfoPtr PclCreateSoftFontInfo();
-extern void PclDestroySoftFontInfo(PclSoftFontInfoPtr);
-
 int
-PclStartJob( pCon, sendClientData, client )
-     XpContextPtr pCon;
-     Bool sendClientData;
-     ClientPtr client;
-     
+PclStartJob(
+     XpContextPtr pCon,
+     Bool sendClientData,
+     ClientPtr client)
 {
     PclContextPrivPtr pConPriv = 
       (PclContextPrivPtr)pCon->devPrivates[PclContextPrivateIndex].ptr;
@@ -129,9 +125,9 @@ PclStartJob( pCon, sendClientData, client )
 }
 
 int
-PclEndJob( pCon, cancel )
-     XpContextPtr pCon;
-     Bool cancel;
+PclEndJob(
+     XpContextPtr pCon,
+     Bool cancel)
 {
     PclContextPrivPtr priv = (PclContextPrivPtr)
       pCon->devPrivates[PclContextPrivateIndex].ptr;
@@ -153,7 +149,7 @@ PclEndJob( pCon, cancel )
 	  if( priv->getDocClient != (ClientPtr)NULL ) {
 	      XpFinishDocData( priv->getDocClient );
 
-	      priv->getDocClient == NULL;
+	      priv->getDocClient = NULL;
 	      priv->getDocBufSize = 0;
 	  }
 
@@ -184,7 +180,7 @@ PclEndJob( pCon, cancel )
 	  if( priv->getDocClient != (ClientPtr)NULL ) {
 	      XpFinishDocData( priv->getDocClient );
 
-	      priv->getDocClient == NULL;
+	      priv->getDocClient = NULL;
 	      priv->getDocBufSize = 0;
 	  }
 
@@ -250,9 +246,9 @@ PclEndJob( pCon, cancel )
  * ClearArea the window and all descendant windows
  */
 int
-PclStartPage( pCon, pWin )
-     XpContextPtr pCon;
-     WindowPtr pWin;
+PclStartPage(
+     XpContextPtr pCon,
+     WindowPtr pWin)
 {
     register WindowPtr pChild;
     PclContextPrivPtr pConPriv = (PclContextPrivPtr)
@@ -491,9 +487,9 @@ SendDocData( PclContextPrivPtr pPriv )
  * Write page file to job file
  */
 int
-PclEndPage( pCon, pWin )
-     XpContextPtr pCon;
-     WindowPtr pWin;
+PclEndPage(
+     XpContextPtr pCon,
+     WindowPtr pWin)
 {
     PclContextPrivPtr pConPriv = (PclContextPrivPtr)
       pCon->devPrivates[PclContextPrivateIndex].ptr;
@@ -567,9 +563,9 @@ PclStartDoc(XpContextPtr pCon,
 }
 
 int
-PclEndDoc( pCon, cancel )
-     XpContextPtr pCon;
-     Bool cancel;
+PclEndDoc(
+     XpContextPtr pCon,
+     Bool cancel)
 {
     /*
      * XXX What should I do if I get cancel == TRUE?
@@ -589,18 +585,18 @@ PclEndDoc( pCon, cancel )
 #define DOC_HPGL 2
 
 int
-PclDocumentData( pCon, pDraw, pData, len_data, pFmt, len_fmt, pOpt, len_opt, client)
-     XpContextPtr pCon;
-     DrawablePtr pDraw;
-     char *pData;
-     int len_data;
-     char *pFmt;
-     int len_fmt;
-     char *pOpt;
-     int len_opt;
-     ClientPtr client;
+PclDocumentData(
+     XpContextPtr pCon,
+     DrawablePtr pDraw,
+     char *pData,
+     int len_data,
+     char *pFmt,
+     int len_fmt,
+     char *pOpt,
+     int len_opt,
+     ClientPtr client)
 {
-    int type;
+    int type = 0;
     PclContextPrivPtr pPriv = (PclContextPrivPtr)
       pCon->devPrivates[PclContextPrivateIndex].ptr;
     XpOidDocFmtList *formats;
@@ -704,10 +700,10 @@ PclDocumentData( pCon, pDraw, pData, len_data, pFmt, len_fmt, pOpt, len_opt, cli
  */
 
 int
-PclGetDocumentData( pCon, client, maxBufferSize )
-     XpContextPtr pCon;
-     ClientPtr client;
-     int maxBufferSize;
+PclGetDocumentData(
+     XpContextPtr pCon,
+     ClientPtr client,
+     int maxBufferSize)
 {
     PclContextPrivPtr pPriv = (PclContextPrivPtr)
       pCon->devPrivates[PclContextPrivateIndex].ptr;

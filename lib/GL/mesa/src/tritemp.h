@@ -53,7 +53,7 @@
  * initial rev
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/tritemp.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/tritemp.h,v 1.2 1999/03/14 03:20:54 dawes Exp $ */
 
 /*
  * Triangle Rasterizer Template
@@ -515,54 +515,54 @@
 
       {
          int subTriangle;
-         GLfixed fx, fxLeftEdge, fxRightEdge, fdxLeftEdge, fdxRightEdge;
+         GLfixed fx, fxLeftEdge = 0, fxRightEdge = 0, fdxLeftEdge = 0, fdxRightEdge = 0;
          GLfixed fdxOuter;
          int idxOuter;
          float dxOuter;
-         GLfixed fError, fdError;
+         GLfixed fError = 0, fdError = 0;
          float adjx, adjy;
-         GLfixed fy;
-         int iy;
+         GLfixed fy = 0;
+         int iy = 0;
 #ifdef PIXEL_ADDRESS
-         PIXEL_TYPE *pRow;
-         int dPRowOuter, dPRowInner;  /* offset in bytes */
+         PIXEL_TYPE *pRow = 0;
+         int dPRowOuter = 0, dPRowInner;  /* offset in bytes */
 #endif
 #ifdef INTERP_Z
-         GLdepth *zRow;
-         int dZRowOuter, dZRowInner;  /* offset in bytes */
-         GLfixed fz, fdzOuter, fdzInner;
+         GLdepth *zRow = 0;
+         int dZRowOuter = 0, dZRowInner;  /* offset in bytes */
+         GLfixed fz = 0, fdzOuter = 0, fdzInner;
 #endif
 #ifdef INTERP_RGB
-         GLfixed fr, fdrOuter, fdrInner;
-         GLfixed fg, fdgOuter, fdgInner;
-         GLfixed fb, fdbOuter, fdbInner;
+         GLfixed fr = 0, fdrOuter = 0, fdrInner;
+         GLfixed fg = 0, fdgOuter = 0, fdgInner;
+         GLfixed fb = 0, fdbOuter = 0, fdbInner;
 #endif
 #ifdef INTERP_SPEC
-         GLfixed fsr, fdsrOuter, fdsrInner;
-         GLfixed fsg, fdsgOuter, fdsgInner;
-         GLfixed fsb, fdsbOuter, fdsbInner;
+         GLfixed fsr = 0, fdsrOuter = 0, fdsrInner;
+         GLfixed fsg = 0, fdsgOuter = 0, fdsgInner;
+         GLfixed fsb = 0, fdsbOuter = 0, fdsbInner;
 #endif
 #ifdef INTERP_ALPHA
-         GLfixed fa, fdaOuter, fdaInner;
+         GLfixed fa = 0, fdaOuter = 0, fdaInner;
 #endif
 #ifdef INTERP_INDEX
-         GLfixed fi, fdiOuter, fdiInner;
+         GLfixed fi = 0, fdiOuter = 0, fdiInner;
 #endif
 #ifdef INTERP_INT_ST
-         GLfixed fs, fdsOuter, fdsInner;
-         GLfixed ft, fdtOuter, fdtInner;
+         GLfixed fs = 0, fdsOuter = 0, fdsInner;
+         GLfixed ft = 0, fdtOuter = 0, fdtInner;
 #endif
 #ifdef INTERP_STUV
-         GLfloat sLeft, dsOuter, dsInner;
-         GLfloat tLeft, dtOuter, dtInner;
-         GLfloat uLeft, duOuter, duInner;
-         GLfloat vLeft, dvOuter, dvInner;
+         GLfloat sLeft = 0.0, dsOuter = 0.0, dsInner;
+         GLfloat tLeft = 0.0, dtOuter = 0.0, dtInner;
+         GLfloat uLeft = 0.0, duOuter = 0.0, duInner;
+         GLfloat vLeft = 0.0, dvOuter = 0.0, dvInner;
 #endif
 #ifdef INTERP_STUV1
-         GLfloat s1Left, ds1Outer, ds1Inner;
-         GLfloat t1Left, dt1Outer, dt1Inner;
-         GLfloat u1Left, du1Outer, du1Inner;
-         GLfloat v1Left, dv1Outer, dv1Inner;
+         GLfloat s1Left = 0.0, ds1Outer = 0.0, ds1Inner;
+         GLfloat t1Left = 0.0, dt1Outer = 0.0, dt1Inner;
+         GLfloat u1Left = 0.0, du1Outer = 0.0, du1Inner;
+         GLfloat v1Left = 0.0, dv1Outer = 0.0, dv1Inner;
 #endif
 
          for (subTriangle=0; subTriangle<=1; subTriangle++) {

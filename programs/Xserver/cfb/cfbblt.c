@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.6 1999/01/24 14:23:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.7 1999/01/26 10:40:03 dawes Exp $ */
 
 /*
 
@@ -373,7 +373,7 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	  xoffDst = ( - pbox->x1) & PAM;
 #if 1
 	  if((int)xoffSrc != (int)xoffDst /* Alignments must be same. */
-	     || (widthDstBytes & PAM != widthSrcBytes & PAM && h > 1))
+	     || ((widthDstBytes & PAM) != (widthSrcBytes & PAM) && h > 1))
 #else
 	    if(1)
 #endif
@@ -655,7 +655,7 @@ pdst++;
 	  xoffDst = (-pbox->x2) & PAM;
 #if 1
 	  if(xoffSrc != xoffDst /* Alignments must be same. */
-	     || (widthDstBytes & PAM != widthSrcBytes & PAM && h > 1))
+	     || ((widthDstBytes & PAM) != (widthSrcBytes & PAM) && h > 1))
 #else
 	    if(1)
 #endif

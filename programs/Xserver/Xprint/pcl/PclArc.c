@@ -45,7 +45,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArc.c,v 1.2 1998/03/20 21:04:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArc.c,v 1.3 1999/09/25 14:36:45 dawes Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -54,14 +54,15 @@ copyright holders.
 #include "Pcl.h"
 #include "gcstruct.h"
 #include "windowstr.h"
+#include "attributes.h"
 
 static void
-PclDoArc( pDrawable, pGC, nArcs, pArcs, DoIt )
-     DrawablePtr pDrawable;
-     GCPtr pGC;
-     int nArcs;
-     xArc *pArcs;
-     void (*DoIt)();
+PclDoArc(
+     DrawablePtr pDrawable,
+     GCPtr pGC,
+     int nArcs,
+     xArc *pArcs,
+     void (*DoIt)(FILE *, PclContextPrivPtr, double, double, xArc))
 {
     char t[80];
     FILE *outFile;
@@ -203,11 +204,11 @@ DrawArc(FILE *outFile,
 }
 
 void
-PclPolyArc( pDrawable, pGC, nArcs, pArcs )
-     DrawablePtr pDrawable;
-     GCPtr pGC;
-     int nArcs;
-     xArc *pArcs;
+PclPolyArc(
+     DrawablePtr pDrawable,
+     GCPtr pGC,
+     int nArcs,
+     xArc *pArcs)
 {
     PclDoArc( pDrawable, pGC, nArcs, pArcs, DrawArc );
 }
@@ -247,11 +248,11 @@ DoChord(FILE *outFile,
 
 
 void
-PclPolyFillArc( pDrawable, pGC, nArcs, pArcs )
-     DrawablePtr pDrawable;
-     GCPtr pGC;
-     int nArcs;
-     xArc *pArcs;
+PclPolyFillArc(
+     DrawablePtr pDrawable,
+     GCPtr pGC,
+     int nArcs,
+     xArc *pArcs)
 {
     switch( pGC->arcMode )
       {

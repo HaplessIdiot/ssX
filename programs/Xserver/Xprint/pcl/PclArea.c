@@ -11,7 +11,7 @@
 **    *  Created:	10/23/95
 **    *
 **    *********************************************************
-** 
+**
 ********************************************************************/
 /*
 (c) Copyright 1996 Hewlett-Packard Company
@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArea.c,v 1.5 1998/03/20 21:04:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclArea.c,v 1.6 1999/09/25 14:36:46 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -54,6 +54,9 @@ copyright holders.
 #include "region.h"
 
 #include "cfb.h"
+#if 1
+#include "cfb32.h"
+#endif
 
 void
 PclPutImage(DrawablePtr pDrawable,
@@ -73,10 +76,10 @@ PclPutImage(DrawablePtr pDrawable,
     unsigned long oldPlanemask;
     unsigned long i;
     long bytesPer;
-    
+
     if( ( w == 0 ) || ( h == 0 ) )
       return;
-    
+
     if( format != XYPixmap )
       {
 	  pPixmap = GetScratchPixmapHeader( pDrawable->pScreen,
@@ -86,7 +89,7 @@ PclPutImage(DrawablePtr pDrawable,
 					   depth ), (pointer)pImage );
 	  if( !pPixmap )
 	    return;
-	  
+
 	  if( format == ZPixmap )
 	    (void)(*pGC->ops->CopyArea)( (DrawablePtr)pPixmap, pDrawable, pGC,
 				  leftPad, 0, w, h, x, y );
@@ -105,7 +108,7 @@ PclPutImage(DrawablePtr pDrawable,
 
 	  if( !pPixmap )
 	    return;
-	  
+
 	  depth = pGC->depth;
 	  oldPlanemask = pGC->planemask;
 	  oldFg = pGC->fgPixel;
@@ -114,12 +117,11 @@ PclPutImage(DrawablePtr pDrawable,
 	  gcv[1] = 0;
 	  DoChangeGC( pGC, GCForeground | GCBackground, gcv, 0 );
 	  bytesPer = (long)h * BitmapBytePad( w + leftPad );
-	  
+
 	  for( i = 1 << (depth-1); i != 0; i >>= 1, pImage += bytesPer )
 	    {
 		if( i & oldPlanemask )
 		  {
-		      extern void cfbPutImage(), cfb32PutImage();
 		      gcv[0] = i;
 		      DoChangeGC( pGC, GCPlaneMask, gcv, 0 );
 		      ValidateGC( pDrawable, pGC );
@@ -161,16 +163,16 @@ PclMonoPixmapFragment(FILE *outFile,
 {
     char *bits, t[80], *row;
     int h, w, i;
-    
+
     /*
      * Create a storage area large enough to hold the entire pixmap,
-     * then use mfbGetImage to get the appropriate bits.  
+     * then use mfbGetImage to get the appropriate bits.
      */
     h = y2 - y1;
     w = BitmapBytePad( x2 - x1 );
-    
+
     bits = (char *)xalloc( h * w );
-    mfbGetImage( (DrawablePtr)pix, x1, y1, x2 - x1, h, 
+    mfbGetImage( (DrawablePtr)pix, x1, y1, x2 - x1, h,
 		XYPixmap, ~0, bits );
 
     /*
@@ -180,7 +182,7 @@ PclMonoPixmapFragment(FILE *outFile,
      */
     sprintf( t, "\033%%0BPU%d,%d;\033%%1A", dstx, dsty );
     SEND_PCL( outFile, t );
-    
+
     /*
      * Now, wrap the raster in the appropriate PCL code.  Right now,
      * it's going to go down the wire without any compression.  That
@@ -189,14 +191,14 @@ PclMonoPixmapFragment(FILE *outFile,
     sprintf( t, "\033*t300R\033*r%dT\033*r%dS\033*r1A\033*b0M",
 	    h, x2 - x1 );
     SEND_PCL( outFile, t );
-    
+
     sprintf( t, "\033*b%dW", w );
     for( row = bits, i = 0; i <= h; i++, row += w )
       {
 	  SEND_PCL( outFile, t );
 	  SEND_PCL_COUNT( outFile, row, w );
       }
-    
+
     SEND_PCL( outFile, "\033*rC" );
 
     /*
@@ -217,21 +219,20 @@ PclColorPixmapFragment(FILE *outFile,
 {
     char *bits, t[80], *row;
     int h, w, i;
-    extern void cfbGetImage(), cfb32GetImage();
-    
+
     /*
      * Create a storage area large enough to hold the entire pixmap,
-     * then use cfbGetImage to get the appropriate bits.  
+     * then use cfbGetImage to get the appropriate bits.
      */
     h = y2 - y1;
     w = PixmapBytePad( x2 - x1, pix->drawable.depth );
-    
+
     bits = (char *)xalloc( h * w );
     if (pix->drawable.depth <= 8)
-	cfbGetImage( (DrawablePtr)pix, x1, y1, x2 - x1, h, 
+	cfbGetImage( (DrawablePtr)pix, x1, y1, x2 - x1, h,
 		ZPixmap, ~0, bits );
     else if (pix->drawable.depth <= 32)
-	cfb32GetImage( (DrawablePtr)pix, x1, y1, x2 - x1, h, 
+	cfb32GetImage( (DrawablePtr)pix, x1, y1, x2 - x1, h,
 		ZPixmap, ~0, bits );
 
     /*
@@ -250,16 +251,16 @@ PclColorPixmapFragment(FILE *outFile,
     sprintf( t, "\033*t300R\033*r%dt%ds1A\033*b0M",
 	    h, x2 - x1 );
     SEND_PCL( outFile, t );
-    
+
     sprintf( t, "\033*b%dW", w );
     for( row = bits, i = 0; i < h; i++, row += w )
       {
 	  SEND_PCL( outFile, t );
 	  SEND_PCL_COUNT( outFile, row, w );
       }
-    
+
     SEND_PCL( outFile, "\033*rC" );
-    
+
     /*
      * Clean things up a bit
      */
@@ -292,8 +293,7 @@ PclCopyArea(DrawablePtr pSrc,
     int nrect;
     void (*doFragment)(FILE *, PixmapPtr, short, short, short, short,
 		       short, short );
-    extern RegionPtr mfbCopyArea(), cfbCopyArea(), cfb32CopyArea();
-    
+
     /*
      * Since we don't store any information on a per-window basis, we
      * can't copy from a window.
@@ -322,7 +322,7 @@ PclCopyArea(DrawablePtr pSrc,
     PclGetDrawablePrivateStuff( pSrc, &srcGC, &valid, &srcFile );
 */
     PclGetDrawablePrivateStuff( pDst, &dstGC, &valid, &dstFile );
-    
+
     /*
      * If we're copying to a window, we have to do some actual
      * drawing, instead of just handing it off to mfb or cfb.  Start
@@ -334,7 +334,7 @@ PclCopyArea(DrawablePtr pSrc,
     box.y2 = srcy + height;
     drawRegion = REGION_CREATE( pGC->pScreen, &box, 0 );
     REGION_TRANSLATE( pGC->pScreen, drawRegion, dstx, dsty );
-    
+
     region = REGION_CREATE( pGC->pScreen, NULL, 0 );
     REGION_INTERSECT( pGC->pScreen, region, drawRegion, pGC->pCompositeClip );
 
@@ -346,7 +346,7 @@ PclCopyArea(DrawablePtr pSrc,
       doFragment = PclMonoPixmapFragment;
     else
       doFragment = PclColorPixmapFragment;
-    
+
     /*
      * Actually draw each section of the bitmap.
      */
@@ -358,18 +358,18 @@ PclCopyArea(DrawablePtr pSrc,
 	  (*doFragment)( dstFile, (PixmapPtr)pSrc, prect->x1 - dstx,
 			prect->y1 - dsty, prect->x2 - dstx,
 			prect->y2 - dsty, prect->x1, prect->y1 );
-	  
+
 	  nrect--;
 	  prect++;
       }
-    
+
     /*
      * Update the destination's GC to the source's GC.
      */
 /*
     PclSetDrawablePrivateGC( pDst, srcGC );
 */
-    
+
     /*
      * Determine the region that needs to be returned.  This is the
      * region of the source that falls outside the boundary of the
@@ -381,17 +381,17 @@ PclCopyArea(DrawablePtr pSrc,
     box.y2 = pixSrc->drawable.height;
     whole = REGION_CREATE( pGC->pScreen, &box, 0 );
     ret = REGION_CREATE( pGC->pScreen, NULL, 0 );
-    
+
     REGION_TRANSLATE( pGC->pScreen, drawRegion, -dstx, -dsty );
     REGION_SUBTRACT( pGC->pScreen, ret, drawRegion, whole );
-    
+
     /*
      * Clean up the regions
      */
     REGION_DESTROY( pGC->pScreen, drawRegion );
     REGION_DESTROY( pGC->pScreen, region );
     REGION_DESTROY( pGC->pScreen, whole );
-    
+
     if( REGION_NOTEMPTY( pGC->pScreen, ret ) )
       return ret;
     else
@@ -416,20 +416,19 @@ PclCopyPlane(DrawablePtr pSrc,
     RegionPtr reg;
     GCPtr scratchGC;
     PixmapPtr scratchPix;
-    extern RegionPtr mfbCopyPlane(), cfbCopyPlane(), cfb32CopyPlane();
-    
+
     /*
      * Since we don't store PCL on a per-window basis, there's no good
      * way to copy from a window.
      */
     if( pSrc->type == DRAWABLE_WINDOW )
       return NULL;
-    
+
     /*
      * Copying from a pixmap to a pixmap is already implemented by
      * mfb/cfb.
      */
-    if( pSrc->type == DRAWABLE_PIXMAP && 
+    if( pSrc->type == DRAWABLE_PIXMAP &&
        pDst->type == DRAWABLE_PIXMAP )
       {
 	  if( pDst->depth == 1 )
@@ -450,7 +449,7 @@ PclCopyPlane(DrawablePtr pSrc,
      */
     scratchPix = (*pDst->pScreen->CreatePixmap)( pDst->pScreen, width,
 						height, pDst->depth );
-    
+
     scratchGC = GetScratchGC( pDst->depth, pDst->pScreen );
     CopyGC( pGC, scratchGC, ~0L );
 
@@ -472,14 +471,13 @@ PclCopyPlane(DrawablePtr pSrc,
 	  cfb32CopyPlane( pSrc, (DrawablePtr)scratchPix, scratchGC,
 		       srcx, srcy, width, height, 0, 0, plane );
       }
-    
+
     reg = PclCopyArea( (DrawablePtr)scratchPix, pDst, pGC, 0, 0, width,
 		      height, dstx, dsty );
-    
+
     FreeScratchGC( scratchGC );
-    
+
     (*pDst->pScreen->DestroyPixmap)( scratchPix );
-    
+
     return reg;
 }
-
