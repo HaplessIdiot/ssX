@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.15 2000/12/06 18:08:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.16 2001/01/06 20:19:13 tsi Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -21,6 +21,7 @@ typedef struct {
     int scrnIndex;
     pointer cpuRegs;
     CARD16  BIOSseg;
+    CARD16  inb40time;
     pointer private;
     struct _int10Mem* mem;
     int num;

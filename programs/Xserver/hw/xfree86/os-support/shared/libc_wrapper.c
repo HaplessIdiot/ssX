@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.70 2000/09/26 15:57:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.71 2000/12/06 20:39:54 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -25,6 +25,7 @@
 
 #include <X.h>
 #include <Xmd.h>
+#include <Xos.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #if defined(__bsdi__)
@@ -1095,9 +1096,11 @@ xf86getsecs(long * secs, long * usecs)
 {
 	struct timeval tv;
 
-	gettimeofday(&tv, NULL);
-	*secs = tv.tv_sec;
-	*usecs= tv.tv_usec;
+	X_GETTIMEOFDAY(&tv);
+	if (secs)
+		*secs = tv.tv_sec;
+	if (usecs)
+		*usecs= tv.tv_usec;
 
 	return;
 }
