@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.97 2003/01/01 02:21:17 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.98 2003/01/01 02:50:19 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -145,6 +145,18 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0302, "0x0302" },
   { 0x10DE0308, "0x0308" },
   { 0x10DE0309, "0x0309" },
+  { 0x10DE0311, "0x0311" },
+  { 0x10DE0312, "0x0312" },
+  { 0x10DE0316, "0x0316" },
+  { 0x10DE0317, "0x0317" },
+  { 0x10DE0318, "0x0318" },
+  { 0x10DE0319, "0x0319" },
+  { 0x10DE031A, "0x031A" },
+  { 0x10DE031B, "0x031B" },
+  { 0x10DE031C, "0x031C" },
+  { 0x10DE031D, "0x031D" },
+  { 0x10DE031E, "0x031E" },
+  { 0x10DE031F, "0x031F" },
   {-1, NULL}
 };
 
@@ -1593,6 +1605,34 @@ NVRestore(ScrnInfoPtr pScrn)
     vgaHWProtect(pScrn, FALSE);
 }
 
+static void
+NVDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
+{
+  unsigned char crtc1A;
+  vgaHWPtr hwp = VGAHWPTR(pScrn);
+
+  if (!pScrn->vtSema) return;
+
+  crtc1A = hwp->readCrtc(hwp, 0x1A) & ~0xC0;
+
+  switch (PowerManagementMode) {
+  case DPMSModeStandby:  /* HSync: Off, VSync: On */
+    crtc1A |= 0x80;
+    break;
+  case DPMSModeSuspend:  /* HSync: On, VSync: Off */
+    crtc1A |= 0x40;
+    break;
+  case DPMSModeOff:      /* HSync: Off, VSync: Off */
+    crtc1A |= 0xC0;
+    break;
+  case DPMSModeOn:       /* HSync: On, VSync: On */
+  default:
+    break;
+  }
+
+  hwp->writeCrtc(hwp, 0x1A, crtc1A);
+}
+
 
 /* Mandatory */
 
@@ -1827,7 +1867,11 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Call the vgaHW DPMS function directly.
        XXX There must be a way to get all the DPMS modes. */
+#if 0
     xf86DPMSInit(pScreen, vgaHWDPMSSet, 0);
+#else
+    xf86DPMSInit(pScreen, NVDPMSSet, 0);
+#endif
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- DPMS set up\n"));
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Color maps etc. set up\n"));
