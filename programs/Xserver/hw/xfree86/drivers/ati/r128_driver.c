@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.23 2001/03/08 17:12:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.24 2001/03/21 17:02:21 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1541,6 +1541,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     ScrnInfoPtr pScrn  = xf86Screens[pScreen->myNum];
     R128InfoPtr info   = R128PTR(pScrn);
     BoxRec      MemBox;
+    int		y2;
 
     R128TRACE(("R128ScreenInit %x %d\n", pScrn->memPhysBase, pScrn->fbOffset));
 
@@ -1851,13 +1852,14 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	MemBox.x1 = 0;
 	MemBox.y1 = 0;
 	MemBox.x2 = pScrn->displayWidth;
-	MemBox.y2 = (info->FbMapSize
+	y2        = (info->FbMapSize
 		     / (pScrn->displayWidth *
 			info->CurrentLayout.pixel_bytes));
 				/* The acceleration engine uses 14 bit
 				   signed coordinates, so we can't have any
 				   drawable caches beyond this region. */
-	if (MemBox.y2 > 8191) MemBox.y2 = 8191;
+	if (y2 > 8191) y2 = 8191;
+	MemBox.y2 = y2;
 
 	if (!xf86InitFBManager(pScreen, &MemBox)) {
 	    xf86DrvMsg(scrnIndex, X_ERROR,
