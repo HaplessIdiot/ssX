@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_tcl.c,v 1.1.1.3 2004/12/10 15:33:04 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_tcl.c,v 1.4 2004/12/10 15:41:01 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -101,7 +101,7 @@ static GLboolean discrete_prim[0x10] = {
 };
    
 
-#define LOCAL_VARS r200ContextPtr rmesa = R200_CONTEXT(ctx); (void)rmesa
+#define LOCAL_VARS r200ContextPtr rmesa = R200_CONTEXT(ctx)
 #define ELT_TYPE  GLushort
 
 #define ELT_INIT(prim, hw_prim) \
