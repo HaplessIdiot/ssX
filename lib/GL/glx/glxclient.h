@@ -31,7 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
-/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.18 2003/11/29 01:31:20 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.19 2004/01/28 18:11:38 alanh Exp $ */
 
 /*
  * Direct rendering support added by Precision Insight, Inc.
@@ -666,11 +666,8 @@ extern void __glFreeAttributeState(__GLXcontext *);
 ** a pointer to the config data for that screen (if the screen supports GL).
 */
 typedef struct __GLXscreenConfigsRec {
-    __GLcontextModes *configs;
-    int numConfigs;
     __GLXvisualConfig * old_configs;
     int numOldConfigs;
-
     const char *serverGLXexts;
     char *effectiveGLXexts;
 
@@ -681,6 +678,9 @@ typedef struct __GLXscreenConfigsRec {
     __DRIscreen driScreen;
 #endif
 
+   /* Avoid breaking binary compatibility and put these here */
+   __GLcontextModes *configs;
+   int numConfigs;
    /**
     * Per-screen dynamic GLX extension tracking.  The \c direct_support
     * field only contains enough bits for 64 extensions.  Should libGL
