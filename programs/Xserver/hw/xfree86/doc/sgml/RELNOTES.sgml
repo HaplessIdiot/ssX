@@ -9,7 +9,7 @@
 <date>28 January 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.106 2004/02/07 04:37:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.107 2004/02/08 01:46:37 dawes Exp $
 </ident>
 
 <abstract>
@@ -1158,6 +1158,7 @@ Kevin Brosius,
 Frederick Bruckman,
 Oswald Buddenhagen,
 Nilg&uuml;n Belma Bug&uuml;ner,
+Julian Cable,
 Yukun Chen,
 Ping Cheng,
 Juliusz Chroboczek,
