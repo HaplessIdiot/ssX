@@ -380,6 +380,17 @@ Section "Device"
   Videoram 2048
 EndSection
 
+#From: ciotti@nas.nasa.gov (Robert B. Ciotti)
+#Date: Fri, 30 Sep 1994 10:34:37 -0700
+Section "Device"
+    Identifier "Number9GXE64PCI"
+    VendorName "NumberNine"
+    BoardName "GXE64PCI"
+    Clockchip "icd2061a"
+    Option "number_nine"
+    Option "dac_8_bit"
+EndSection
+
 #From: Richard Coley <rcoley@pyra.co.uk>
 #Date: Thu, 15 Sep 1994 12:29:10 +0100 (BST)
 Section "Device"
@@ -483,7 +494,6 @@ Section "Device"
     Videoram 2048
 EndSection
 
-#From: haw30@eng.amdahl.com (Henry A Worth )
 #Date: Tue, 27 Sep 94 22:10:01 PDT
 Section "Device"
     Identifier "Spider Black Widow Plus"
@@ -544,5 +554,4 @@ Section "Device"
 EndSection
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.1 1994/09/27 14:19:09 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.2 1994/09/28 16:24:56 dawes Exp $
