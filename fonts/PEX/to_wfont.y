@@ -1,6 +1,6 @@
 %{
 /* $XConsortium: to_wfont.y,v 5.7 94/04/17 20:10:08 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.0 1994/04/28 12:29:51 dawes Exp $ */
 
 /*****************************************************************
 
@@ -642,13 +642,14 @@ freeall()
 		if (path->subpaths != NULL)
 			free((char *) path->subpaths);
 	}
-	free(Table);
-	free(sp_table);
-	free(strokes);
-	for (i=0; i < head.num_props; i++, head.properties++) {
-	  if (head.properties != NULL)
-	    free((char *) head.properties);
-	}
+	if (Table)
+		free(Table);
+	if (sp_table)
+		free(sp_table);
+	if (strokes)
+		free(strokes);
+	if (head.properties != NULL)
+		free((char *) head.properties);
 }
 
 check_nstroke()
