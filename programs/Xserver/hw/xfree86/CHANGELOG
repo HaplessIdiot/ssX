@@ -1,4 +1,7 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 717. The current VIA DRI driver isn't remotely compatible with the current
+      code, so make sure it isn't loaded by requiring version 2.0.0 or later
+      (Alan Cox).
  716. Fix VIA KM400 memory detection (Luc Verhaegen, Bugzilla #813).
  715. Fix a long standing VIA Xv problem with totem/xine and YUV surface
       types (Uberto Barbini).
@@ -18451,7 +18454,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3064 2003/12/31 05:44:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3065 2003/12/31 05:45:32 dawes Exp $
 
 
 
