@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.47 2001/11/16 00:45:05 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.49 2002/04/04 14:05:34 eich Exp $ */
 
 /*
  * 
@@ -1721,7 +1721,7 @@ CleanCppOutput(FILE *tmpfd, char *tmpfname)
 #ifdef CROSSCOMPILE
 			if (fixup_whitespace)
 #endif
-#if defined CROSSCOMPILE || defined FIXUP_WHITESPACE
+#if defined CROSSCOMPILE || defined FIXUP_CPP_WHITESPACE
 			    KludgeResetRule();
 #endif
 		} else {
@@ -1729,7 +1729,7 @@ CleanCppOutput(FILE *tmpfd, char *tmpfname)
 #ifdef CROSSCOMPILE
 			if (fixup_whitespace)
 #endif
-#if defined CROSSCOMPILE || defined FIXUP_WHITESPACE
+#if defined CROSSCOMPILE || defined FIXUP_CPP_WHITESPACE
 			    KludgeOutputLine(&input);
 #endif
 			writetmpfile(tmpfd, input, strlen(input), tmpfname);
@@ -1923,7 +1923,7 @@ Emalloc(int size)
 	return(p);
 }
 
-#if defined CROSSCOMPILE || defined FIXUP_WHITESPACE
+#if defined CROSSCOMPILE || defined FIXUP_CPP_WHITESPACE
 void
 KludgeOutputLine(char **pline)
 {
