@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.10 2001/07/25 08:04:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.11 2001/08/17 22:08:13 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -592,6 +592,7 @@
 #define RADEON_DST_HEIGHT_Y                 0x15a0
 #define RADEON_DST_LINE_START               0x1600
 #define RADEON_DST_LINE_END                 0x1604
+#define RADEON_DST_LINE_PATCOUNT            0x1608
 #define RADEON_DST_OFFSET                   0x1404
 #define RADEON_DST_PITCH                    0x1408
 #define RADEON_DST_PITCH_OFFSET             0x142c
@@ -1013,6 +1014,8 @@
 #define RADEON_SC_TOP                       0x1648
 #define RADEON_SC_TOP_LEFT                  0x16ec
 #define RADEON_SC_TOP_LEFT_C                0x1c88
+#       define RADEON_SC_SIGN_MASK_LO	      0x8000
+#       define RADEON_SC_SIGN_MASK_HI	      0x80000000
 #define RADEON_SDRAM_MODE_REG               0x0158
 #define RADEON_SEQ8_DATA                    0x03c5 /* VGA */
 #define RADEON_SEQ8_IDX                     0x03c4 /* VGA */

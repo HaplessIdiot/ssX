@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.16 2001/07/25 08:04:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.17 2001/08/17 22:08:13 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -346,7 +346,6 @@ void RADEONRestoreAccelState(ScrnInfoPtr pScrn)
     RADEONEntPtr pRADEONEnt;
     DevUnion* pPriv;
 
-    /*xf86DrvMsg(pScrn->scrnIndex, X_INFO, "===>Restore\n");*/
     pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
             gRADEONEntityIndex);
     pRADEONEnt = pPriv->ptr;
@@ -367,8 +366,6 @@ void RADEONRestoreAccelState(ScrnInfoPtr pScrn)
        like BKGD_CLK FG_CLK...*/
 
     RADEONWaitForIdle(pScrn);
-
-    /*xf86DrvMsg(pScrn->scrnIndex, X_INFO, "<===Restore\n");*/
 
 }
 
@@ -481,6 +478,43 @@ static void  RADEONSubsequentSolidFillRect(ScrnInfoPtr pScrn,
 }
 
 /* Setup for XAA solid lines. */
+
+/* unlike r128, Radeon don't have the Last-Pel controlling bit in DP_CNTL_XDIR_YDIR_YMAJOR
+   for line drawing, so we have to do it using our own extrapolation routine*/
+static void LastLinePel(int *x1, int *y1, int *x2, int *y2)
+{
+	int tg, deltax, deltay;
+	int xa = *x1, ya = *y1, xb = *x2, yb = *y2;
+
+	deltax = xb - xa;
+	deltay = yb - ya;
+
+	tg = labs((deltay<<4) / deltax);
+	if((tg >= 7) && (tg <= 39))
+	{
+		if(deltax > 0)xb++;
+		else xb--;
+		if(deltay > 0)yb++;
+		else yb--;
+	}
+	else
+	{
+		if(labs(deltax) > labs(deltay))
+		{
+			if(deltax > 0) xb++;
+			else xb--;
+		}
+		else
+		{
+			if(deltay > 0) yb++;
+			else yb--;
+		}
+		   
+	}
+}
+
+
+/* Setup for XAA solid lines. */
 static void RADEONSetupForSolidLine(ScrnInfoPtr pScrn,
 				    int color, int rop, unsigned int planemask)
 {
@@ -510,17 +544,14 @@ static void RADEONSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
 {
     RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
-    int           direction   = 0;
 
-    if (xa < xb) direction |= RADEON_DST_X_DIR_LEFT_TO_RIGHT;
-    if (ya < yb) direction |= RADEON_DST_Y_DIR_TOP_TO_BOTTOM;
-
-    RADEONWaitForFifo(pScrn, 4);
-    OUTREG(RADEON_DST_Y_X,                  (ya << 16) | xa);
     if (!(flags & OMIT_LAST))
-	OUTREG(RADEON_DP_CNTL_XDIR_YDIR_YMAJOR, direction);
+		LastLinePel(&xa, &ya, &xb, &yb);
+
+    RADEONWaitForFifo(pScrn, 2);
     OUTREG(RADEON_DST_LINE_START,           (ya << 16) | xa);
     OUTREG(RADEON_DST_LINE_END,             (yb << 16) | xb);
+
 }
 
 /* Subsequent XAA solid horizontal and vertical lines */
@@ -586,18 +617,13 @@ static void RADEONSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn,
 {
     RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
-    int           direction   = 0;
 
-    if (xa < xb) direction |= RADEON_DST_X_DIR_LEFT_TO_RIGHT;
-    if (ya < yb) direction |= RADEON_DST_Y_DIR_TOP_TO_BOTTOM;
-
-
-    RADEONWaitForFifo(pScrn, 5);
+    RADEONWaitForFifo(pScrn, 3);
     if (!(flags & OMIT_LAST))
-	OUTREG(RADEON_DP_CNTL_XDIR_YDIR_YMAJOR, direction);
-    OUTREG(RADEON_DST_Y_X,          (ya << 16) | xa);
-    OUTREG(RADEON_BRUSH_Y_X,        (phase << 16) | phase);
+		LastLinePel(&xa, &ya, &xb, &yb);
+
     OUTREG(RADEON_DST_LINE_START,   (ya << 16) | xa);
+	OUTREG(RADEON_DST_LINE_PATCOUNT, phase);
     OUTREG(RADEON_DST_LINE_END,     (yb << 16) | xb);
 }
 
@@ -990,6 +1016,62 @@ static void RADEONSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     }
 }
 
+static void RADEONSetClippingRectangle(ScrnInfoPtr pScrn,
+							  int x1, int y1, int x2, int y2)
+{
+	RADEONInfoPtr   info        = RADEONPTR(pScrn);
+	unsigned char *RADEONMMIO = info->MMIO;
+	unsigned long tmp = 0;
+
+	if(x1 < 0)
+	{
+		tmp = -x1;
+		tmp |= RADEON_SC_SIGN_MASK_LO;
+	}
+	else tmp = x1;
+
+	if(y1 < 0)
+	{
+		tmp |= ((-y1) << 16);
+		tmp |= RADEON_SC_SIGN_MASK_HI;
+	}
+	else tmp |= (y1 << 16);
+
+	OUTREG(RADEON_SC_TOP_LEFT, tmp);
+
+	if(x2 < 0)
+	{
+		tmp = -x2;
+		tmp |= RADEON_SC_SIGN_MASK_LO;
+	}
+	else tmp = x2;
+
+	if(y2 < 0)
+	{
+		tmp |= ((-y2) << 16);
+		tmp |= RADEON_SC_SIGN_MASK_HI;
+	}
+	else tmp |= (y2 << 16);
+    OUTREG(RADEON_SC_BOTTOM_RIGHT, tmp);
+
+    OUTREG(RADEON_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl | RADEON_GMC_DST_CLIPPING));
+
+}
+
+static void
+RADEONDisableClipping(ScrnInfoPtr pScrn)
+{
+	RADEONInfoPtr   info        = RADEONPTR(pScrn);
+	unsigned char *RADEONMMIO = info->MMIO;
+
+	OUTREG(RADEON_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl & ~RADEON_GMC_DST_CLIPPING));
+
+	OUTREG(RADEON_SC_TOP_LEFT, 0);
+	OUTREG(RADEON_SC_BOTTOM_RIGHT, INREG(RADEON_DEFAULT_SC_BOTTOM_RIGHT));
+
+}
+
+
 
 /* ================================================================
  * CP-based 2D acceleration
@@ -1111,6 +1193,208 @@ static void RADEONCPSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 
     ADVANCE_RING();
 }
+
+/* Setup for XAA solid lines. */
+static void RADEONCPSetupForSolidLine(ScrnInfoPtr pScrn,
+				    int color, int rop, unsigned int planemask)
+{
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+
+    RING_LOCALS;
+    BEGIN_RING( 6 );
+    OUT_RING_REG(RADEON_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
+										   | RADEON_GMC_BRUSH_SOLID_COLOR
+										   | RADEON_GMC_SRC_DATATYPE_COLOR
+										   | RADEON_ROP[rop].pattern));
+    OUT_RING_REG(RADEON_DP_BRUSH_FRGD_CLR,  color);
+    OUT_RING_REG(RADEON_DP_WRITE_MASK,      planemask);
+
+    ADVANCE_RING();
+
+}
+
+
+/* Subsequent XAA solid TwoPointLine line.
+
+   Tests: xtest CH06/drwln, ico, Mark Vojkovich's linetest program
+
+   [See http://www.xfree86.org/devel/archives/devel/1999-Jun/0102.shtml for
+   Mark Vojkovich's linetest program, posted 2Jun99 to devel@xfree86.org.]
+*/
+static void RADEONCPSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
+					      int xa, int ya, int xb, int yb,
+					      int flags)
+{
+    RADEONInfoPtr info = RADEONPTR(pScrn);
+
+    RING_LOCALS;
+    BEGIN_RING( 4 );
+
+    if (!(flags & OMIT_LAST))
+	{
+		LastLinePel(&xa, &ya, &xb, &yb);
+	}
+
+	OUT_RING_REG(RADEON_DST_LINE_START,           (ya << 16) | xa);
+	OUT_RING_REG(RADEON_DST_LINE_END,             (yb << 16) | xb);
+
+	ADVANCE_RING();
+
+}
+
+/* Subsequent XAA solid horizontal and vertical lines */
+static void RADEONCPSubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
+					     int x, int y, int len, int dir )
+{
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
+
+    RING_LOCALS;
+    BEGIN_RING( 6 );
+
+    OUT_RING_REG(RADEON_DP_CNTL, (RADEON_DST_X_LEFT_TO_RIGHT
+			    | RADEON_DST_Y_TOP_TO_BOTTOM));
+	
+    if (dir == DEGREES_0) 
+	{
+		OUT_RING_REG( RADEON_DST_Y_X,          (y << 16) | x );
+		OUT_RING_REG( RADEON_DST_WIDTH_HEIGHT, (len << 16) | 1 );		
+    } 
+	else 
+	{
+		OUT_RING_REG( RADEON_DST_Y_X,          (y << 16) | x );
+		OUT_RING_REG( RADEON_DST_WIDTH_HEIGHT, (1 << 16) | len );		
+    }
+    ADVANCE_RING();
+}
+
+
+/* Setup for XAA dashed lines.
+
+   Tests: xtest CH05/stdshs, XFree86/drwln
+
+   NOTE: Since we can only accelerate lines with power-of-2 patterns of
+   length <= 32.
+*/
+static void RADEONCPSetupForDashedLine(ScrnInfoPtr pScrn,
+				     int fg, int bg,
+				     int rop, unsigned int planemask,
+				     int length, unsigned char *pattern)
+{
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
+    CARD32        pat         = *(CARD32 *)pattern;
+
+    RING_LOCALS;
+
+    switch (length) {
+    case  2: pat |= pat <<  2;  /* fall through */
+    case  4: pat |= pat <<  4;  /* fall through */
+    case  8: pat |= pat <<  8;  /* fall through */
+    case 16: pat |= pat << 16;
+    }
+
+    BEGIN_RING( 12 );
+    OUT_RING_REG(RADEON_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
+									 | (bg == -1
+										? RADEON_GMC_BRUSH_32x1_MONO_FG_LA
+										: RADEON_GMC_BRUSH_32x1_MONO_FG_BG)
+									 | RADEON_ROP[rop].pattern
+									 | RADEON_GMC_BYTE_LSB_TO_MSB));
+    OUT_RING_REG(RADEON_DP_WRITE_MASK,      planemask);
+    OUT_RING_REG(RADEON_DP_BRUSH_FRGD_CLR,  fg);
+    if(bg != -1) OUT_RING_REG(RADEON_DP_BRUSH_BKGD_CLR,  bg);
+    OUT_RING_REG(RADEON_BRUSH_DATA0, pat);
+	ADVANCE_RING();
+
+}
+
+/* Subsequent XAA dashed line. */
+static void RADEONCPSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn,
+					       int xa, int ya,
+					       int xb, int yb,
+					       int flags,
+					       int phase)
+{
+    RADEONInfoPtr info        = RADEONPTR(pScrn);
+
+    RING_LOCALS;
+
+    if (!(flags & OMIT_LAST))
+	{
+		LastLinePel(&xa, &ya, &xb, &yb);
+	}
+
+	BEGIN_RING(6);
+    OUT_RING_REG(RADEON_DST_LINE_START,   (ya << 16) | xa);
+	OUT_RING_REG(RADEON_DST_LINE_PATCOUNT, phase);
+    OUT_RING_REG(RADEON_DST_LINE_END,     (yb << 16) | xb);
+	ADVANCE_RING();
+}
+
+
+static void RADEONCPSetClippingRectangle(ScrnInfoPtr pScrn,
+							  int x1, int y1, int x2, int y2)
+{
+	RADEONInfoPtr   info        = RADEONPTR(pScrn);
+	unsigned long tmp1 = 0, tmp2 = 0;
+
+	if(x1 < 0)
+	{
+		tmp1 = -x1;
+		tmp1 |= RADEON_SC_SIGN_MASK_LO;
+	}
+	else tmp1 = x1;
+
+	if(y1 < 0)
+	{
+		tmp1 |= ((-y1) << 16);
+		tmp1 |= RADEON_SC_SIGN_MASK_HI;
+	}
+	else tmp1 |= (y1 << 16);
+
+	if(x2 < 0)
+	{
+		tmp2 = -x2;
+		tmp2 |= RADEON_SC_SIGN_MASK_LO;
+	}
+	else tmp2 = x2;
+
+	if(y2 < 0)
+	{
+		tmp2 |= ((-y2) << 16);
+		tmp2 |= RADEON_SC_SIGN_MASK_HI;
+	}
+	else tmp2 |= (y2 << 16);
+
+	{
+	
+	RING_LOCALS;
+	BEGIN_RING( 3 );
+	OUT_RING_REG(RADEON_SC_TOP_LEFT, tmp1);
+	OUT_RING_REG(RADEON_SC_BOTTOM_RIGHT, tmp2);
+	OUT_RING_REG(RADEON_DP_GUI_MASTER_CNTL, 
+				 (info->dp_gui_master_cntl | RADEON_GMC_DST_CLIPPING));
+
+	ADVANCE_RING();
+	}
+}
+
+static void
+RADEONCPDisableClipping(ScrnInfoPtr pScrn)
+{
+    RADEONInfoPtr   info        = RADEONPTR(pScrn);
+	/* unsigned char *RADEONMMIO = info->MMIO;*/
+    RING_LOCALS;
+    BEGIN_RING( 3 );
+    OUT_RING_REG(RADEON_DP_GUI_MASTER_CNTL, 
+					 (info->dp_gui_master_cntl & ~RADEON_GMC_DST_CLIPPING));
+	OUT_RING_REG(RADEON_SC_TOP_LEFT, 0);
+    OUT_RING_REG(RADEON_SC_BOTTOM_RIGHT, (RADEON_DEFAULT_SC_RIGHT_MAX
+					    | RADEON_DEFAULT_SC_BOTTOM_MAX));
+
+	ADVANCE_RING();
+
+}
+
 
 /* Point the DST_PITCH_OFFSET register at the current buffer.  This
  * allows us to interact with the back and depth buffers.  All CP 2D
@@ -1276,6 +1560,31 @@ static void RADEONCPAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
     a->SetupForScreenToScreenCopy       = RADEONCPSetupForScreenToScreenCopy;
     a->SubsequentScreenToScreenCopy     = RADEONCPSubsequentScreenToScreenCopy;
 
+
+    a->SetupForDashedLine              = RADEONCPSetupForDashedLine;
+    a->SubsequentDashedTwoPointLine    = RADEONCPSubsequentDashedTwoPointLine;
+    a->DashPatternMaxLength            = 32;
+	/*ROP3 doesn't seem to work properly for dashedline with GXinvert*/
+    a->DashedLineFlags                 = (LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
+										  | LINE_PATTERN_POWER_OF_2_ONLY 
+										  | ROP_NEEDS_SOURCE); 
+
+
+	a->SolidLineFlags 		= 0;
+    a->SetupForSolidLine               = RADEONCPSetupForSolidLine;
+    a->SubsequentSolidTwoPointLine     = RADEONCPSubsequentSolidTwoPointLine;
+    a->SubsequentSolidHorVertLine      = RADEONCPSubsequentSolidHorVertLine;
+    a->SubsequentSolidBresenhamLine 	= NULL;
+
+    /* clipping */
+    a->SetClippingRectangle = RADEONCPSetClippingRectangle;
+    a->DisableClipping = RADEONCPDisableClipping;
+    a->ClippingFlags = 	HARDWARE_CLIP_SOLID_LINE  |
+		HARDWARE_CLIP_DASHED_LINE |
+		/*HARDWARE_CLIP_SOLID_FILL  |*/ /* seems very slow with this on ???*/
+		HARDWARE_CLIP_MONO_8x8_FILL |
+		HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;
+
     if(!info->IsSecondary && xf86IsEntityShared(pScrn->entityList[0]))
         a->RestoreAccelState           = RADEONRestoreCPAccelState;
 
@@ -1347,8 +1656,21 @@ static void RADEONMMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
     a->SetupForDashedLine              = RADEONSetupForDashedLine;
     a->SubsequentDashedTwoPointLine    = RADEONSubsequentDashedTwoPointLine;
     a->DashPatternMaxLength            = 32;
+	/*ROP3 doesn't seem to work properly for dashedline with GXinvert*/
     a->DashedLineFlags                 = (LINE_PATTERN_LSBFIRST_LSBJUSTIFIED
-					  | LINE_PATTERN_POWER_OF_2_ONLY);
+										  | LINE_PATTERN_POWER_OF_2_ONLY 
+										  | ROP_NEEDS_SOURCE); 
+
+    /* clipping, note without this, 
+       all line accelerations will not be called */
+    a->SetClippingRectangle = RADEONSetClippingRectangle;
+    a->DisableClipping = RADEONDisableClipping;
+    a->ClippingFlags = 	HARDWARE_CLIP_SOLID_LINE  |
+		HARDWARE_CLIP_DASHED_LINE |
+		/*HARDWARE_CLIP_SOLID_FILL  |*/ /* seems very slow with this on ???*/
+		HARDWARE_CLIP_MONO_8x8_FILL |
+		HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;
+
 
     if(xf86IsEntityShared(pScrn->entityList[0]))
     {
