@@ -1,4 +1,15 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 805. Card name changes/fixes (Hui Yu@ATI).
+ 804. Panel color channel depth fix for Radeons (Hui Yu@ATI).
+ 803. Include list_for_each_safe define for kernels that do not have it
+      (Kevin Martin).
+ 802. Fix 2D corruption around 3D window, when 3D window is moving and using
+      Radeon page flipping code (Michel Dänzer).
+ 801. Big endian fixes for Rage 128 and Radeon video and Radeon cursor code
+      (Michel Dänzer).
+ 800. Enable PCI GART for all architectures (still gated by ForcePCIMode, if
+      on an AGP card) (Michel Dänzer).
+ 799. Fix for Radeon's CP accelerated 2D sync routine (Michel Dänzer).
  798.  SiS driver fixes:
 	- Fix for SiS730+LVDS machines (display modes restricted due to 
 	  hardware limits; LCD text mode restoration fixed)
@@ -16150,4 +16161,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2505 2003/01/29 15:23:15 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2506 2003/01/29 15:42:14 eich Exp $

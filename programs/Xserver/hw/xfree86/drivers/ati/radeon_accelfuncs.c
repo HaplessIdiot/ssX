@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accelfuncs.c,v 1.4 2003/01/17 19:54:03 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accelfuncs.c,v 1.5 2003/01/19 00:45:15 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -106,16 +106,43 @@ void
 FUNC_NAME(RADEONWaitForIdle)(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr  info = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
     int            i    = 0;
 
-#ifdef ACCEL_MMIO
+#ifdef ACCEL_CP
+    /* Make sure the CP is idle first */
+    if (info->CPStarted) {
+	int  ret;
+	FLUSH_RING();
 
-    unsigned char *RADEONMMIO = info->MMIO;
+	for (;;) {
+	    do {
+		ret = drmCommandNone(info->drmFD, DRM_RADEON_CP_IDLE);
+		if (ret && ret != -EBUSY) {
+		    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			       "%s: CP idle %d\n", __FUNCTION__, ret);
+		}
+	    } while ((ret == -EBUSY) && (i++ < RADEON_TIMEOUT));
+
+	    if (ret == 0) return;
+
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Idle timed out, resetting engine...\n");
+	    RADEONEngineReset(pScrn);
+	    RADEONEngineRestore(pScrn);
+
+	    /* Always restart the engine when doing CP 2D acceleration */
+	    RADEONCP_RESET(pScrn, info);
+	    RADEONCP_START(pScrn, info);
+	}
+    }
+#endif
 
     RADEONTRACE(("WaitForIdle (entering): %d entries, stat=0x%08x\n",
 		     INREG(RADEON_RBBM_STATUS) & RADEON_RBBM_FIFOCNT_MASK,
 		     INREG(RADEON_RBBM_STATUS)));
 
+    /* Wait for the engine to go idle */
     RADEONWaitForFifoFunction(pScrn, 64);
 
     for (;;) {
@@ -139,40 +166,6 @@ FUNC_NAME(RADEONWaitForIdle)(ScrnInfoPtr pScrn)
 	}
 #endif
     }
-
-#else /* ACCEL_CP */
-
-    int  ret;
-
-    if (!info->CPStarted) {
-	RADEONWaitForIdleMMIO(pScrn);
-	return;
-    }
-    
-    FLUSH_RING();
-
-    for (;;) {
-	do {
-	    ret = drmCommandNone(info->drmFD, DRM_RADEON_CP_IDLE);
-	    if (ret && ret != -EBUSY) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "%s: CP idle %d\n", __FUNCTION__, ret);
-	    }
-	} while ((ret == -EBUSY) && (i++ < RADEON_TIMEOUT));
-
-	if (ret == 0) return;
-
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Idle timed out, resetting engine...\n");
-	RADEONEngineReset(pScrn);
-	RADEONEngineRestore(pScrn);
-
-	/* Always restart the engine when doing CP 2D acceleration */
-	RADEONCP_RESET(pScrn, info);
-	RADEONCP_START(pScrn, info);
-    }
-
-#endif
 }
 
 /* This callback is required for multiheader cards using XAA */
