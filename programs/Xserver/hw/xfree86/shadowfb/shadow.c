@@ -6,7 +6,7 @@
    Pre-fb-write callbacks and RENDER support - Nolan Leake (nolan@vmware.com)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.10 2000/02/08 13:13:33 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.11 2002/10/16 22:12:54 alanh Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -1627,7 +1627,6 @@ ShadowPolyText16(
     SHADOW_GC_OP_PROLOGUE(pGC);
 
     if(IS_VISIBLE(pDraw)) {
-ErrorF("PolyText16 (%d, %d) %d\n", x, y, count);
         ShadowFontToBox(&box, pDraw, pGC, x, y, count, (char*)chars, 1);
        
         TRIM_BOX(box, pGC);
