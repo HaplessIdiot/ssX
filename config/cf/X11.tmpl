@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: X11.tmpl /main/290 1996/12/27 16:14:21 kaleb $
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.7 1997/01/02 04:04:28 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.8 1997/01/12 10:38:06 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -640,6 +640,12 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.7 1997/01/02 04:04:28 dawes Exp $
 #ifndef BuildLibTop
 #define BuildLibTop ../..	/* relative to BuildLibDir */
 #endif
+#ifndef BuildModuleDir
+#define BuildModuleDir $(BUILDLIBDIR)/modules
+#endif
+#ifndef BuildModuleTop
+#define BuildModuleTop $(BUILDLIBTOP)/..
+#endif
 #ifndef LibDir
 #define LibDir $(USRLIBDIR)/X11
 #endif
@@ -770,6 +776,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
       BUILDLIBTOP = BuildLibTop		/* top relative to BUILDLIBDIR */
       BUILDBINDIR = BuildBinDir		/* built binaries */
       BUILDBINTOP = BuildBinTop		/* top relative to BUILDBINDIR */
+   BUILDMODULEDIR = BuildModuleDir	/* built server modules */
+   BUILDMODULETOP = BuildModuleTop	/* top relative to BUILDMODULEDIR */
     XBUILDINCROOT = XBuildIncRoot	/* base of X build loc */
      XBUILDINCDIR = XBuildIncDir
      XBUILDINCTOP = XBuildIncTop

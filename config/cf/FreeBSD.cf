@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/13 1996/09/29 20:13:31 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.57 1996/12/23 05:50:01 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.58 1996/12/31 04:14:25 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -74,8 +74,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define GnuMallocLibrary	-lgnumalloc
 #endif
 
-#if (OSMajorVersion > 2) || (OSMajorVersion == 2 && OSMinorVersion >= 2)
-/* 2.2 has libz.  Maybe 2.1.6 does too? */
+#if (OSMajorVersion > 2) || (OSMajorVersion == 2 && OSMinorVersion >= 2) \
+	|| (OSMajorVersion == 2 && OSMinorVersion == 1 && OSTeenyVersion >= 6)
+/* 2.1.6 and 2.2 have libz */
 #ifndef HasGzipLibrary
 #define HasGzipLibrary		YES
 #endif

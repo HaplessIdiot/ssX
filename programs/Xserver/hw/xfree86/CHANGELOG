@@ -1,4 +1,6 @@
 XFree86 3.2Af (XX February 1997)
+ 455. Move module rules from xf86.rules to Imake.rules, and when building
+      a module, install a link to it in xc/exports/lib/modules/ (David Dawes).
  454. Start Elf loader for Linux/Alpha; doesn't work, yet (#44, Alan Hourihane).
  453. Hide cursor in S3/SVGA when DGA is active (#43, Mark Vojkovich).
  452. a.out loader for module loading (#42, Matthieu Herrb).
