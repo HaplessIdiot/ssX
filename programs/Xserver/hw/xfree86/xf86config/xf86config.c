@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.62 2002/11/18 05:42:41 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.63 2003/01/18 07:27:13 paulo Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -374,12 +374,14 @@ static char *mousetype_identifier[] = {
 	"Auto",
 #ifdef WSCONS_SUPPORT
 # define M_WSMOUSE		(M_AUTO + 1)
-	"wsmouse",
+# define WS_MOUSE_STRING	"wsmouse"
+	WS_MOUSE_STRING,
 # define M_MOUSESYSTEMS		(M_WSMOUSE + 1)
 #else
 # define M_MOUSESYSTEMS		(M_AUTO + 1)
 #endif
-	"MouseSystems",
+#define M_MOUSESYSTEMS_STRING	"MouseSystems"
+	M_MOUSESYSTEMS_STRING,
 #define M_PS2			(M_MOUSESYSTEMS + 1)
 	"PS/2",
 #define M_IMPS2			(M_PS2 + 1)
@@ -397,7 +399,8 @@ static char *mousetype_identifier[] = {
 #define M_NETSCROLL_PS2		(M_NETMOUSE_PS2 + 1)
 	"NetScrollPS/2",
 #define M_MICROSOFT		(M_NETSCROLL_PS2 + 1)
-	"Microsoft",
+#define M_MICROSOFT_STRING	"Microsoft"
+	M_MICROSOFT_STRING,
 #define M_BUSMOUSE		(M_MICROSOFT + 1)
 	"Busmouse",
 #define M_LOGITECH		(M_BUSMOUSE + 1)
@@ -455,12 +458,13 @@ static char *mousedev_text =
 "\n";
 
 static char *mousecomment_text =
-"If you have a two-button or three-button mouse, it is most likely of type 1,\n"
-"if you have a wheel mouse, it can probably support both protocol 2 and 3.\n"
+"If you have a two-button or three-button mouse, it is most likely of type\n"
+M_MICROSOFT_STRING ", if you have a wheel mouse, it can probably support both\n"
+"protocol " M_MICROSOFT_STRING " and " M_MOUSESYSTEMS_STRING ".\n"
 #ifdef WSCONS_SUPPORT
 "\n"
-"If your system uses the wscons console driver, with a PS/2 type mouse, select\n"
-"10.\n"
+"If your system uses the wscons console driver, with a PS/2 type mouse,\n"
+"select " WS_MOUSE_STRING ".\n"
 #endif
 "\n";
 
