@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.6 1998/08/19 07:49:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.7 1998/08/29 05:43:37 dawes Exp $ */
 
 
 
@@ -109,7 +109,7 @@ TsengXAAInit_Colexp(ScrnInfoPtr pScrn)
 #if 1
     if (!Is_ET6K) {
 	pTseng->XAAScanlineColorExpandBuffers[0] =
-	    (unsigned char *) xnfalloc(((pScrn->virtualX + 31)/32) * 4 * pTseng->Bytesperpixel);
+	    xnfalloc(((pScrn->virtualX + 31)/32) * 4 * pTseng->Bytesperpixel);
 	if (pTseng->XAAScanlineColorExpandBuffers[0] == NULL) {
 	    xf86Msg(X_ERROR, "Could not malloc color expansion scanline buffer.\n");
 	    return FALSE;

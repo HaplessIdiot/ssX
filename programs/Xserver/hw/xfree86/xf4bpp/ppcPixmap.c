@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixmap.c,v 1.1.2.1 1998/06/27 14:48:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixmap.c,v 1.2 1998/07/25 16:59:36 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -95,7 +95,7 @@ xf4bppCreatePixmap( pScreen, width, height, depth )
 	return (PixmapPtr) NULL ;
 
     size = PixmapBytePad(width, depth);
-    pPixmap = (PixmapPtr) xalloc( sizeof (PixmapRec) + (height * size) ) ;
+    pPixmap = xalloc( sizeof (PixmapRec) + (height * size) ) ;
     if ( !pPixmap )
 	return (PixmapPtr) NULL ;
     pPixmap->drawable.type = DRAWABLE_PIXMAP ;
@@ -127,7 +127,7 @@ xf4bppCopyPixmap(pSrc)
 
     TRACE(("xf4bppCopyPixmap(pSrc=0x%x)\n", pSrc)) ;
     size = pSrc->drawable.height * pSrc->devKind;
-    pDst = (PixmapPtr)xalloc(sizeof(PixmapRec) + size);
+    pDst = xalloc(sizeof(PixmapRec) + size);
     if (!pDst)
 	return NullPixmap;
     pDst->drawable = pSrc->drawable;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.8 1998/07/25 16:56:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.9 1999/01/03 03:58:44 dawes Exp $ */
 
 /*
  *
@@ -145,7 +145,7 @@ LOOKUP	*list ;
      * and add it to the given namespace.
      */
     while ( l->symName ) {
-	i = (itemPtr) xf86loadermalloc( sizeof( itemRec )) ;
+	i = xf86loadermalloc( sizeof( itemRec )) ;
 	i->name = l->symName ;
 	if( strcmp(i->name,"ModuleInit") == 0
 #if defined(__powerpc__) && defined(Lynx)
@@ -160,7 +160,7 @@ LOOKUP	*list ;
 		modname = _LoaderHandleToCanonicalName(handle);
 		if (modname) 
 		{
-			i->name = (char*)xf86loadermalloc(strlen(modname) +
+			i->name = xf86loadermalloc(strlen(modname) +
 						strlen(origname) + 1);
 			if( i->name )
 			    {

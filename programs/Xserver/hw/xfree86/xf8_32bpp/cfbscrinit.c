@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbscrinit.c,v 1.1 1999/01/03 03:58:56 dawes Exp $ */
 
 
 #include "X.h"
@@ -51,7 +51,7 @@ cfb8_32AllocatePrivates(ScreenPtr pScreen)
 	cfb8_32Generation = serverGeneration;
    }
 
-   if (!(pScreenPriv = (cfb8_32ScreenPtr)xalloc(sizeof(cfb8_32ScreenRec))))
+   if (!(pScreenPriv = xalloc(sizeof(cfb8_32ScreenRec))))
         return FALSE;
 
    pScreen->devPrivates[cfb8_32ScreenPrivateIndex].ptr = (pointer)pScreenPriv;

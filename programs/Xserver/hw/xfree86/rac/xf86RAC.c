@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RAC.c,v 1.1 1998/09/19 12:15:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RAC.c,v 1.2 1998/10/05 13:23:15 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -251,7 +251,7 @@ xf86RACInit(ScreenPtr pScreen, unsigned int flag)
     if (!AllocateGCPrivate(pScreen, RACGCIndex, sizeof(RACGCRec)))
 	return FALSE;
 
-    if (!(pScreenPriv = (RACScreenPtr)xalloc(sizeof(RACScreenRec))))
+    if (!(pScreenPriv = xalloc(sizeof(RACScreenRec))))
 	return FALSE;
 
     pScreen->devPrivates[RACScreenIndex].ptr = (pointer)pScreenPriv;

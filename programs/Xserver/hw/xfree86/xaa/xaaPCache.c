@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.8 1998/12/06 06:08:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.9 1999/01/03 03:58:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -55,7 +55,7 @@ Enlist(CacheLinkPtr link, int x, int y, int w, int h)
 {
     CacheLinkPtr newLink;
 
-    newLink = (CacheLinkPtr)xalloc(sizeof(CacheLink));
+    newLink = xalloc(sizeof(CacheLink));
     newLink->next = link;
     newLink->x = x; newLink->y = y;
     newLink->w = w; newLink->h = h;	
@@ -935,8 +935,7 @@ XAAInitPixmapCache(
     }
 
 
-    pCachePriv = 
-	(XAAPixmapCachePrivatePtr)xcalloc(1,sizeof(XAAPixmapCachePrivate));
+    pCachePriv = xcalloc(1,sizeof(XAAPixmapCachePrivate));
     if(!pCachePriv) {
 	if(Num512) FreeList(List512);
 	if(Num256) FreeList(List256);
@@ -950,24 +949,21 @@ XAAInitPixmapCache(
     infoRec->PixmapCachePrivate = (char*)pCachePriv;
 
     if(Num512) {
-	pCachePriv->Info512 = 
-		(XAACacheInfoPtr)xcalloc(Num512,sizeof(XAACacheInfoRec));
+	pCachePriv->Info512 = xcalloc(Num512,sizeof(XAACacheInfoRec));
 	if(!pCachePriv->Info512) Num512 = 0;
 	if(Num512) TransferList(List512, pCachePriv->Info512, Num512);
 	FreeList(List512);
     	pCachePriv->Num512x512 = Num512;
     }
     if(Num256) {
-	pCachePriv->Info256 = 
-		(XAACacheInfoPtr)xcalloc(Num256, sizeof(XAACacheInfoRec));
+	pCachePriv->Info256 = xcalloc(Num256, sizeof(XAACacheInfoRec));
 	if(!pCachePriv->Info256) Num256 = 0;
 	if(Num256) TransferList(List256, pCachePriv->Info256, Num256);
 	FreeList(List256);
     	pCachePriv->Num256x256 = Num256;
     }
     if(Num128) {
-	pCachePriv->Info128 = 
-		(XAACacheInfoPtr)xcalloc(Num128, sizeof(XAACacheInfoRec));
+	pCachePriv->Info128 = xcalloc(Num128, sizeof(XAACacheInfoRec));
 	if(!pCachePriv->Info128) Num128 = 0;
 	if(Num128) TransferList(List128, pCachePriv->Info128, Num128);
 	FreeList(List128);
@@ -975,8 +971,7 @@ XAAInitPixmapCache(
     }
 
     if(NumPartial) {
-	pCachePriv->InfoPartial = 
-		(XAACacheInfoPtr)xcalloc(NumPartial, sizeof(XAACacheInfoRec));
+	pCachePriv->InfoPartial = xcalloc(NumPartial, sizeof(XAACacheInfoRec));
 	if(!pCachePriv->InfoPartial) NumPartial = 0;
 	if(NumPartial) 
 	    TransferList(ListPartial, pCachePriv->InfoPartial, NumPartial);
@@ -985,8 +980,7 @@ XAAInitPixmapCache(
     }
 
     if(NumColor) {
-	pCachePriv->InfoColor = 
-		(XAACacheInfoPtr)xcalloc(NumColor, sizeof(XAACacheInfoRec));
+	pCachePriv->InfoColor = xcalloc(NumColor, sizeof(XAACacheInfoRec));
 	if(!pCachePriv->InfoColor) NumColor = 0;
 	if(NumColor) TransferList(ListColor, pCachePriv->InfoColor, NumColor);
 	FreeList(ListColor);
@@ -994,8 +988,7 @@ XAAInitPixmapCache(
     }
 
     if(NumMono) {
-	pCachePriv->InfoMono = 
-		(XAACacheInfoPtr)xcalloc(NumMono, sizeof(XAACacheInfoRec));
+	pCachePriv->InfoMono = xcalloc(NumMono, sizeof(XAACacheInfoRec));
 	if(!pCachePriv->InfoMono) NumMono = 0;
 	if(NumMono) TransferList(ListMono, pCachePriv->InfoMono, NumMono);
 	FreeList(ListMono);

@@ -23,7 +23,7 @@
  *
  * Generic RAMDAC access routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.c,v 1.3 1998/08/20 08:56:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.c,v 1.4 1998/12/06 06:08:36 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -39,7 +39,7 @@ RamDacCreateInfoRec()
 {
     RamDacRecPtr infoRec;
 
-    infoRec = (RamDacRecPtr)xcalloc(1, sizeof(RamDacRec));
+    infoRec = xcalloc(1, sizeof(RamDacRec));
 
     return infoRec;
 }
@@ -49,7 +49,7 @@ RamDacHelperCreateInfoRec()
 {
     RamDacHelperRecPtr infoRec;
 
-    infoRec = (RamDacHelperRecPtr)xcalloc(1, sizeof(RamDacHelperRec));
+    infoRec = xcalloc(1, sizeof(RamDacHelperRec));
 
     return infoRec;
 }

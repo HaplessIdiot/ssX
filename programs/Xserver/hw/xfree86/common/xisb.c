@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xisb.c,v 1.1 1998/12/05 14:40:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xisb.c,v 1.2 1998/12/06 06:08:26 dawes Exp $ */
 
 /*
 	X Input Serial Buffer routines for use in any XInput driver that accesses
@@ -64,10 +64,10 @@ XisbNew (int fd, xf86ssize_t size)
 {
 	XISBuffer *b;
 
-	b = (XISBuffer *) xalloc (sizeof (XISBuffer));
+	b = xalloc (sizeof (XISBuffer));
 	if (!b)
 		return (NULL);
-	b->buf = (unsigned char *) xalloc ((sizeof (unsigned char) * size));
+	b->buf = xalloc ((sizeof (unsigned char) * size));
 	if (!b->buf)
 	{
 		xfree (b);

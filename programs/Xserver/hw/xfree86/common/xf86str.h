@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.14 1999/01/13 03:19:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.15 1999/01/14 01:44:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -234,6 +234,8 @@ typedef struct {
     int			vendor;
     int			chipType;
     int			chipRev;
+    int			subsysVendor;
+    int			subsysCard;
     int			bus;
     int			device;
     int			func;
@@ -242,9 +244,10 @@ typedef struct {
     int			interface;
     unsigned long	memBase[6];
     unsigned long	ioBase[6];
-    unsigned long       size[6];
-    unsigned char       type[6];
+    int			size[6];
+    unsigned char	type[6];
     unsigned long	biosBase;
+    int			biosSize;
     pointer		thisCard;
 } pciVideoRec, *pciVideoPtr;
 

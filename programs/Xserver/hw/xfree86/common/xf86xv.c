@@ -4,7 +4,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.3 1998/09/13 05:23:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.4 1998/12/06 06:08:26 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -133,7 +133,7 @@ xf86XVScreenInit(
      a CloseScreen hook so that we don't have to wrap it.  I'm not
      sure that I appreciate that.  */
 
-  ScreenPriv = (XF86XVScreenPtr)xalloc(sizeof(XF86XVScreenRec));
+  ScreenPriv = xalloc(sizeof(XF86XVScreenRec));
   pxvs->devPriv.ptr = (pointer)ScreenPriv;
 
   if(!ScreenPriv) return FALSE;
@@ -230,7 +230,7 @@ xf86XVInitAdaptors(
   pxvs->nAdaptors = 0;
   pxvs->pAdaptors = NULL;
 
-  pAdaptor = (XvAdaptorPtr)xcalloc(infoPtr->NumAdaptors, sizeof(XvAdaptorRec));
+  pAdaptor = xcalloc(infoPtr->NumAdaptors, sizeof(XvAdaptorRec));
   if(!pAdaptor) return FALSE;
 
   for(pa = pAdaptor, na = 0, numAdaptor = 0; 
@@ -253,11 +253,10 @@ xf86XVInitAdaptors(
       pa->ddSetPortAttribute = xf86XVSetPortAttribute;
       pa->ddGetPortAttribute = xf86XVGetPortAttribute;
       pa->ddQueryBestSize = xf86XVQueryBestSize;
-      if((pa->name = (char*)xalloc(strlen(adaptorPtr->name))))
+      if((pa->name = xalloc(strlen(adaptorPtr->name))))
           strcpy(pa->name, adaptorPtr->name);
 
-      pEncode = 
-	(XvEncodingPtr)xcalloc(adaptorPtr->nEncodings, sizeof(XvEncodingRec));
+      pEncode = xcalloc(adaptorPtr->nEncodings, sizeof(XvEncodingRec));
       if(!pEncode) {
           xf86XVFreeAdaptor(pa);
           continue;
@@ -270,7 +269,7 @@ xf86XVInitAdaptors(
 
           pe->id = encodingPtr->id;
           pe->pScreen = pScreen;
-          if((pe->name = (char*)xalloc(strlen(encodingPtr->name))))
+          if((pe->name = xalloc(strlen(encodingPtr->name))))
               strcpy(pe->name, encodingPtr->name);
           pe->width = encodingPtr->width;
           pe->height = encodingPtr->height;
@@ -289,8 +288,7 @@ xf86XVInitAdaptors(
 
       totFormat = adaptorPtr->nFormats;
 
-      pFormat = 
-	(XvFormatPtr)xcalloc(totFormat, sizeof(XvFormatRec));
+      pFormat = xcalloc(totFormat, sizeof(XvFormatRec));
       if(!pFormat) {
           xf86XVFreeAdaptor(pa);
           continue;
@@ -333,8 +331,7 @@ xf86XVInitAdaptors(
       }
 
 
-      adaptorPriv = 
-	(XvAdaptorRecPrivatePtr)xcalloc(1, sizeof(XvAdaptorRecPrivate));
+      adaptorPriv = xcalloc(1, sizeof(XvAdaptorRecPrivate));
       if(!adaptorPriv) {
           xf86XVFreeAdaptor(pa);
           continue;
@@ -374,8 +371,7 @@ xf86XVInitAdaptors(
 	 }
       }
 
-      pPort = 
-	(XvPortPtr)xcalloc(adaptorPtr->nPorts, sizeof(XvPortRec));
+      pPort = xcalloc(adaptorPtr->nPorts, sizeof(XvPortRec));
       if(!pPort) {
           xf86XVFreeAdaptor(pa);
           continue;
@@ -394,7 +390,7 @@ xf86XVInitAdaptors(
           pp->grab.client = (ClientPtr)NULL;
           pp->time = currentTime;
 
-	  portPriv = (XvPortRecPrivatePtr)xcalloc(1, sizeof(XvPortRecPrivate));
+	  portPriv = xcalloc(1, sizeof(XvPortRecPrivate));
           pp->devPriv.ptr = portPriv;
 	  if(!portPriv) continue;
 
@@ -691,7 +687,7 @@ xf86XVEnlistPortInWindow(WindowPtr pWin, XvPortRecPrivatePtr portPriv)
    }
 
    if(!winPriv) {
-	winPriv = (XF86XVWindowPtr)xalloc(sizeof(XF86XVWindowRec));
+	winPriv = xalloc(sizeof(XF86XVWindowRec));
 	if(!winPriv) return BadAlloc;
 	winPriv->PortRec = portPriv;
 	winPriv->next = PrivRoot;

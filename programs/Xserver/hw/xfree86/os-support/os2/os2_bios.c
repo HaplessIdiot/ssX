@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.5 1996/12/23 06:50:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.6 1997/01/05 11:59:17 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -84,7 +84,7 @@ int Len;
 	par.numbytes 	= (Phys_address & 0x7fff) + Len;
 	plen 		= sizeof(par);
 
-	dta		= (UCHAR*)xalloc(par.numbytes);
+	dta		= xalloc(par.numbytes);
 	dlen 		= par.numbytes;
 
 	/* issue call to get a readonly copy of BIOS ROM */

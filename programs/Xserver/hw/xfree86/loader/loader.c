@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.27 1998/10/25 07:12:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.28 1999/01/03 03:58:45 dawes Exp $ */
 
 /*
  *
@@ -353,10 +353,10 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
     }
 
 #ifndef __EMX__
-    if( (ptr=(char *)xf86loadercalloc(size,1)) == NULL )
+    if( (ptr=xf86loadercalloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
 #else
-    if( (ptr=(char *)os2loader_calloc(size,1)) == NULL )
+    if( (ptr=os2loader_calloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
 #endif
 
@@ -412,7 +412,7 @@ static loaderPtr listHead = (loaderPtr) 0 ;
 static loaderPtr
 _LoaderListPush()
 {
-  loaderPtr item = (loaderPtr) xf86loadercalloc(1, sizeof (struct _loader));
+  loaderPtr item = xf86loadercalloc(1, sizeof (struct _loader));
   item->next = listHead ;
   listHead = item;
 
@@ -561,8 +561,7 @@ _LoaderAddressToSection(const unsigned long address, const char **module,
 static void
 AppendSymbol(symlist *list, const char *sym)
 {
-    list->list = (const char **)xnfrealloc(list->list,
-					   (list->num + 1) * sizeof(char **));
+    list->list = xnfrealloc(list->list, (list->num + 1) * sizeof(char **));
     list->list[list->num] = sym;
     list->num++;
 }
@@ -707,7 +706,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
     int numsyms = 0;
     int resetoff;
 
-    /* lookup_ret = (LOOKUP **) xf86loadermalloc(sizeof (LOOKUP *)); */
+    /* lookup_ret = xf86loadermalloc(sizeof (LOOKUP *)); */
 
     arnamesize=strlen(modrec->name);
 
@@ -870,7 +869,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 	for (i = 0, p = lookup_ret; p && p->symName; i++, p++)
 	    ;
 	if (i) {
-	    myLookup = (LOOKUP *) xf86loaderrealloc(myLookup, (numsyms + i + 1)
+	    myLookup = xf86loaderrealloc(myLookup, (numsyms + i + 1)
 					   * sizeof (LOOKUP));
 	    if (!myLookup)
 		continue; /* Oh well! */
@@ -986,9 +985,9 @@ LoaderOpen(const char *module, const char *cname, int handle,
     }
 
     tmp=_LoaderListPush();
-    tmp->name = (char *) xf86loadermalloc(strlen(module) + 1);
+    tmp->name = xf86loadermalloc(strlen(module) + 1);
     strcpy(tmp->name, module);
-    tmp->cname = (char *) xf86loadermalloc(strlen(cname) + 1);
+    tmp->cname = xf86loadermalloc(strlen(cname) + 1);
     strcpy(tmp->cname, cname);
     tmp->handle = new_handle;
     tmp->module = moduleseq++;

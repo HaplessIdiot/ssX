@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.3 1998/08/19 07:49:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.4 1998/12/05 14:40:27 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -178,7 +178,7 @@ addNewOption (XF86OptionPtr head, char *name, char *val)
 	if (head != NULL && (old = FindOption(head, name)) != NULL)
 		new = old;
 	else
-		new = (XF86OptionPtr) xf86confmalloc (sizeof (XF86OptionRec));
+		new = xf86confmalloc (sizeof (XF86OptionRec));
 	new->opt_name = name;
 	new->opt_val = val;
 	new->opt_used = 0;
@@ -249,7 +249,7 @@ NewOption(char *name, char *value)
 {
     XF86OptionPtr opt;
 
-    opt = (XF86OptionPtr) xf86confmalloc(sizeof (XF86OptionRec));
+    opt = xf86confmalloc(sizeof (XF86OptionRec));
     if (!opt)
 	return NULL;
 
@@ -324,10 +324,10 @@ OptionListCreate( char **options, int count )
 	for (i = 0; i < count; i += 2)
 	{
 		/* can't use strdup because it calls malloc */
-		t1 = (char *) xf86confmalloc (sizeof (char) *
+		t1 = xf86confmalloc (sizeof (char) *
 				(strlen (options[i]) + 1));
 		strcpy (t1, options[i]);
-		t2 = (char *) xf86confmalloc (sizeof (char) *
+		t2 = xf86confmalloc (sizeof (char) *
 				(strlen (options[i + 1]) + 1));
 		strcpy (t2, options[i + 1]);
 		p = addNewOption (p, t1, t2);

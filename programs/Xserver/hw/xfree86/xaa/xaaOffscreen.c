@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOffscreen.c,v 1.2 1998/12/06 13:30:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -93,7 +93,7 @@ XAAMoveOutOffscreenPixmap(PixmapPtr pPix)
     bitsPerPixel = pPix->drawable.bitsPerPixel;
 
     devKind = (((width * bitsPerPixel) + 31) >> 5) << 2; /* which macro ?*/
-    if(!(data = (unsigned char*)xalloc(devKind * height)))
+    if(!(data = xalloc(devKind * height)))
 	FatalError("Out of memory\n");
 
     tmpPix = GetScratchPixmapHeader(pScreen, width, height, 

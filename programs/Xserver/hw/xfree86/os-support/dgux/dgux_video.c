@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_video.c,v 1.1 1998/12/13 07:37:47 dawes Exp $ */
 /*
  * INTEL DG/UX RELEASE 4.20 MU03
  * Copyright 1997 Takis Psarogiannakopoulos Cambridge,UK
@@ -134,7 +134,7 @@ unsigned long Size;
         }
         else
         {
-            AllocAddress[ScreenNum][Region] = (pointer)xalloc(Size + 0x1000);
+            AllocAddress[ScreenNum][Region] = xalloc(Size + 0x1000);
             if (AllocAddress[ScreenNum][Region] == (pointer)0)
             {
                 FatalError("xf86MapVidMem: can't alloc framebuffer space\n");
@@ -346,7 +346,7 @@ unsigned *Ports;
 	{
 	    FatalError("xf86AddIOPorts: I/O control lists not initialised\n");
 	}
-	EnabledPorts[ScreenNum] = (unsigned *)xrealloc(EnabledPorts[ScreenNum], 
+	EnabledPorts[ScreenNum] = xrealloc(EnabledPorts[ScreenNum], 
 			(NumEnabledPorts[ScreenNum]+NumPorts)*sizeof(unsigned));
 	for (i = 0; i < NumPorts; i++)
 	{

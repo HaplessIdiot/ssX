@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.1 1998/08/29 05:44:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.2 1998/08/29 14:34:41 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -67,7 +67,7 @@ xf86InitCursor(
     if(!xf86InitHardwareCursor(pScreen, infoPtr))
 	return FALSE;
 
-    ScreenPriv = (xf86CursorScreenPtr)xcalloc(1, sizeof(xf86CursorScreenRec));
+    ScreenPriv = xcalloc(1, sizeof(xf86CursorScreenRec));
     if(!ScreenPriv) return FALSE;
 
     pScreen->devPrivates[xf86CursorScreenIndex].ptr = (pointer)ScreenPriv;
@@ -341,7 +341,7 @@ xf86CursorMoveCursor(ScreenPtr pScreen, int x, int y)
 xf86CursorInfoPtr 
 xf86CreateCursorInfoRec(void)
 {
-    return((xf86CursorInfoPtr)xcalloc(1,sizeof(xf86CursorInfoRec)));
+    return(xcalloc(1,sizeof(xf86CursorInfoRec)));
 }
 
 

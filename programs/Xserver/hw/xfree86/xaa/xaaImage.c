@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.8 1998/12/13 05:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.9 1999/01/03 03:58:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -330,7 +330,7 @@ XAAPutImage(
 	TheRect.height = h; 
 
 	if(MaxBoxes > (infoRec->PreAllocSize/sizeof(BoxRec))) {
-	    pClipBoxes = (BoxPtr)xalloc(MaxBoxes * sizeof(BoxRec));
+	    pClipBoxes = xalloc(MaxBoxes * sizeof(BoxRec));
 	    if(!pClipBoxes) return;	
 	} else pClipBoxes = (BoxPtr)infoRec->PreAllocMem;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaLineMisc.c,v 1.3 1998/09/05 06:37:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaLineMisc.c,v 1.4 1998/09/27 04:43:45 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -90,8 +90,7 @@ XAAComputeDash(GCPtr pGC)
 				(PatternLength & (PatternLength - 1)))
 	return;
 
-    pGCPriv->DashPattern = 
-	(unsigned char*)xcalloc((PatternLength + 31) >> 5, 4);
+    pGCPriv->DashPattern = xcalloc((PatternLength + 31) >> 5, 4);
     if(!pGCPriv->DashPattern) return;
     pGCPriv->DashLength = PatternLength;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.8 1998/12/13 10:33:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.9 1999/01/03 03:58:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -77,7 +77,7 @@ XAACreateInfoRec()
 {
     XAAInfoRecPtr infoRec;
 
-    infoRec = (XAAInfoRecPtr)xcalloc(1, sizeof(XAAInfoRec));
+    infoRec = xcalloc(1, sizeof(XAAInfoRec));
 
     return infoRec;
 }
@@ -121,7 +121,7 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     if (!AllocatePixmapPrivate(pScreen, XAAPixmapIndex, sizeof(XAAPixmapRec)))
 	return FALSE;
 
-    if (!(pScreenPriv = (XAAScreenPtr)xalloc(sizeof(XAAScreenRec))))
+    if (!(pScreenPriv = xalloc(sizeof(XAAScreenRec))))
 	return FALSE;
 
     pScreen->devPrivates[XAAScreenIndex].ptr = (pointer)pScreenPriv;
@@ -177,8 +177,7 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	pScreen->WindowExposures = XAAWindowExposures8_32;
     }
 
-    infoRec->PreAllocMem = 
-		(unsigned char*)xalloc(MAX_PREALLOC_MEM);
+    infoRec->PreAllocMem = xalloc(MAX_PREALLOC_MEM);
     if(infoRec->PreAllocMem)
     	infoRec->PreAllocSize = MAX_PREALLOC_MEM;
 
@@ -420,7 +419,7 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 
 	    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
 
-	    pLink = (PixmapLinkPtr)xalloc(sizeof(PixmapLink));
+	    pLink = xalloc(sizeof(PixmapLink));
 
 	    if(pLink)
 	      area = xf86AllocateOffscreenArea(pScreen, w, h, 0, 0, 

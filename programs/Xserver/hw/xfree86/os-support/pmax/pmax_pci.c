@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_pci.c,v 1.2.2.1 1998/06/09 14:41:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_pci.c,v 1.3 1998/07/25 16:56:55 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -281,10 +281,10 @@ nh640xPciInit(void)
 	  if (pciBusInfo[bus])
 		  busp = pciBusInfo[bus];
 	  else
-		  busp = (pciBusInfo_t *)Xalloc(sizeof(pciBusInfo_t));
+		  busp = xalloc(sizeof(pciBusInfo_t));
 	  
 	  if (!busp)
-		  FatalError("nh640xPciInit: Xalloc failed\n");
+		  FatalError("nh640xPciInit: xalloc failed\n");
 
 	  /* Initialize pci bus info */
 	  busp->configMech  = PCI_CFG_MECH_OTHER;
@@ -405,7 +405,7 @@ nh640xPciFindNext(void)
 		     * Found a secondary PCI bus
 		     */
 		    if (!pciBusInfo[sec_bus]) {
-			    pciBusInfo[sec_bus] = Xalloc(sizeof(pciBusInfo_t));
+			    pciBusInfo[sec_bus] = xalloc(sizeof(pciBusInfo_t));
 
 			    if (!pciBusInfo[sec_bus])
 				    FatalError("nh640xPciFindNext: alloc failed\n!!!");

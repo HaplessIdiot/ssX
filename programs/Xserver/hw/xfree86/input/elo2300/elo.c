@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.1 1998/12/05 14:40:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.2 1998/12/13 10:33:48 dawes Exp $ */
 
 #define _elo_C_
 /*****************************************************************************
@@ -138,8 +138,8 @@ SetupProc(	pointer module,
 			int *errmaj,
 			int *errmin )
 {
-	LocalDevicePtr local = (LocalDevicePtr) xcalloc (1, sizeof (LocalDeviceRec));
-	EloPrivatePtr priv = (EloPrivatePtr) xcalloc (1, sizeof (EloPrivateRec));
+	LocalDevicePtr local = xcalloc (1, sizeof (LocalDeviceRec));
+	EloPrivatePtr priv = xcalloc (1, sizeof (EloPrivateRec));
 	pointer		defaults,
 				merged;
 	char *s;

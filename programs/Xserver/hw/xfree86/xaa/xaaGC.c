@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.9 1998/12/06 06:08:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.10 1998/12/13 05:32:57 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -112,7 +112,7 @@ XAAValidateGC(
 
     /* If our Ops are still the default ones we need to allocate new ones */
     if(pGC->ops == &XAAFallbackOps) {
-	if(!(pGCPriv->XAAOps = (GCOps*)xalloc(sizeof(GCOps)))) {	
+	if(!(pGCPriv->XAAOps = xalloc(sizeof(GCOps)))) {	
 	    pGCPriv->XAAOps = &XAAFallbackOps;
 	    return;
 	}

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.65 1999/01/11 05:13:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.66 1999/01/13 03:19:39 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -766,13 +766,13 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     for (i = 0; accelWidths[i] != 0; i++) {
 	if (accelWidths[i] % pMga->Rounding == 0) {
 	    n++;
-	    linePitches = (int *)xnfrealloc(linePitches, n * sizeof(int));
+	    linePitches = xnfrealloc(linePitches, n * sizeof(int));
 	    linePitches[n - 1] = accelWidths[i];
 	}
     }
     /* Mark the end of the list */
     if (n > 0) {
-	linePitches = (int *)xnfrealloc(linePitches, (n + 1) * sizeof(int));
+	linePitches = xnfrealloc(linePitches, (n + 1) * sizeof(int));
 	linePitches[n] = 0;
     }
     return linePitches;
@@ -1251,7 +1251,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfalloc(sizeof(ClockRange));
     clockRanges->next = NULL;
     clockRanges->minClock = pMga->MinClock;
     clockRanges->maxClock = pMga->MaxClock;

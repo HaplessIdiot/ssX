@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.43 1998/12/20 11:57:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.44 1998/12/29 13:00:47 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1054,7 +1054,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfalloc(sizeof(ClockRange));
     clockRanges->next = NULL;
     clockRanges->ClockMulFactor = cPtr->ClockMulFactor;
     clockRanges->minClock = cPtr->MinClock;
@@ -2062,7 +2062,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	cPtr->IOAddress = cPtr->FbAddress + 0x200000L;
 
     /* 32bit register address offsets */
-    cPtr->Regs32 = (unsigned int *)xnfalloc(sizeof(ChipsReg32));
+    cPtr->Regs32 = xnfalloc(sizeof(ChipsReg32));
     if ((cPtr->Flags & ChipsAccelSupport) ||
 	    (cPtr->Flags & ChipsHWCursor)) {
 	tmp = cPtr->readXR(cPtr, 0x07);
@@ -2651,7 +2651,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     if (cPtr->UseMMIO)
 	cPtr->Regs32 = ChipsReg32;
     else {
-	cPtr->Regs32 = (unsigned int *)xnfalloc(sizeof(ChipsReg32));
+	cPtr->Regs32 = xnfalloc(sizeof(ChipsReg32));
 	if ((cPtr->Flags & ChipsAccelSupport) ||
 		(cPtr->Flags & ChipsHWCursor)) {
 	    tmp =  cPtr->readXR(cPtr, 0x07);

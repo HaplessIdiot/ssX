@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.9.4.1 1998/06/05 16:23:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.11 1998/07/25 16:57:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -131,7 +131,7 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	}
 	else
 	{
-	    AllocAddress[ScreenNum][Region] = (pointer)xalloc(Size + 0x1000);
+	    AllocAddress[ScreenNum][Region] = xalloc(Size + 0x1000);
 	    if (AllocAddress[ScreenNum][Region] == (pointer)0)
 	    {
 		FatalError("xf86MapVidMem: can't alloc framebuffer space\n");

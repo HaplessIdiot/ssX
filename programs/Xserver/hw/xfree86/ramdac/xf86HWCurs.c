@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.1 1998/08/29 05:44:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.2 1998/08/29 14:34:42 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -163,7 +163,7 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
     int SrcPitch, DstPitch, y, x;
     int dwords = size >> 3;
 
-    if(!(mem = (unsigned char *)xcalloc(1, size)))
+    if(!(mem = xcalloc(1, size)))
 	return NULL;
 
     SrcPitch = (pCurs->bits->width + 31) >> 5;
@@ -238,7 +238,7 @@ RealizeCursorInterleave1(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
     if (!(mem2 = RealizeCursorInterleave0(infoPtr, pCurs)))
 	return NULL;
 
-    if(!(mem = (unsigned char *)xcalloc(1, size))) {
+    if(!(mem = xcalloc(1, size))) {
         xfree(mem2);
 	return NULL;
     }
@@ -282,7 +282,7 @@ RealizeCursorInterleave8(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
     if (!(mem2 = RealizeCursorInterleave0(infoPtr, pCurs)))
 	return NULL;
 
-    if(!(mem = (unsigned char *)xcalloc(1, size))) {
+    if(!(mem = xcalloc(1, size))) {
         xfree(mem2);
 	return NULL;
     }
@@ -317,7 +317,7 @@ RealizeCursorInterleave16(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
     if (!(mem2 = RealizeCursorInterleave0(infoPtr, pCurs)))
 	return NULL;
 
-    if(!(mem = (unsigned char *)xcalloc(1, size))) {
+    if(!(mem = xcalloc(1, size))) {
         xfree(mem2);
 	return NULL;
     }
@@ -352,7 +352,7 @@ RealizeCursorInterleave32(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
     if (!(mem2 = RealizeCursorInterleave0(infoPtr, pCurs)))
 	return NULL;
 
-    if(!(mem = (unsigned char *)xcalloc(1, size))) {
+    if(!(mem = xcalloc(1, size))) {
         xfree(mem2);
 	return NULL;
     }
@@ -387,7 +387,7 @@ RealizeCursorInterleave64(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
     if (!(mem2 = RealizeCursorInterleave0(infoPtr, pCurs)))
 	return NULL;
 
-    if(!(mem = (unsigned char *)xcalloc(1, size))) {
+    if(!(mem = xcalloc(1, size))) {
         xfree(mem2);
 	return NULL;
     }

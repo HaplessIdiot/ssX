@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.1 1998/11/28 10:43:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.2 1998/12/20 11:57:42 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -159,7 +159,7 @@ chips_i2cInit(ScrnInfoPtr pScrn)
     I2CPtr->scrnIndex  = pScrn->scrnIndex;
     I2CPtr->I2CPutBits = chips_I2CPutBits;
     I2CPtr->I2CGetBits = chips_I2CGetBits;
-    I2CPtr->DriverPrivate.ptr = (pointer)xalloc(sizeof(CHIPSI2CRec));
+    I2CPtr->DriverPrivate.ptr = xalloc(sizeof(CHIPSI2CRec));
     ((CHIPSI2CPtr)(I2CPtr->DriverPrivate.ptr))->cPtr = cPtr;
     
     if (!xf86I2CBusInit(I2CPtr))

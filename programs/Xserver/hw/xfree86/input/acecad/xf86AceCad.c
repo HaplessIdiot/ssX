@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.6 1998/07/25 16:54:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/xf86AceCad.c,v 1.1 1998/12/05 14:40:16 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -910,8 +910,8 @@ xf86AceCadSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 static LocalDevicePtr
 xf86AceCadAllocate()
 {
-    LocalDevicePtr	local = (LocalDevicePtr)xalloc(sizeof(LocalDeviceRec));
-    AceCadDevicePtr	priv = (AceCadDevicePtr)xalloc(sizeof(AceCadDeviceRec));
+    LocalDevicePtr	local = xalloc(sizeof(LocalDeviceRec));
+    AceCadDevicePtr	priv = xalloc(sizeof(AceCadDeviceRec));
 #if defined (sun) && !defined(i386)
     char		*dev_name = getenv("ACECAD_DEV");
 #endif
@@ -936,7 +936,7 @@ xf86AceCadAllocate()
 
 #if defined(sun) && !defined(i386)
     if (def_name) {
-	priv->acecadDevice = (char *)xalloc(strlen(dev_name) + 1);
+	priv->acecadDevice = xalloc(strlen(dev_name) + 1);
 	strcpy(priv->acecadDevice, device_name);
 	ErrorF("xf86AceCadOpen port changed to '%s'\n", priv->acecadDevice);
     } else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.7 1998/11/28 10:43:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.8 1998/12/06 06:08:25 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -84,7 +84,7 @@ xf86InitFBManagerRegion(
 	xf86FBGeneration = serverGeneration;
    }
 
-   offman = (FBManagerPtr)xalloc(sizeof(FBManager));
+   offman = xalloc(sizeof(FBManager));
    if(!offman) return FALSE;
 
    pScreen->devPrivates[xf86FBScreenIndex].ptr = (pointer)offman;
@@ -134,12 +134,11 @@ xf86RegisterFreeBoxCallback(
 
    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
 
-   newCallbacks = (FreeBoxCallbackProcPtr*)xrealloc(
-		offman->FreeBoxesUpdateCallback, 
+   newCallbacks = xrealloc( offman->FreeBoxesUpdateCallback, 
 		sizeof(FreeBoxCallbackProcPtr) * (offman->NumCallbacks + 1));
 
-   newPrivates = (DevUnion*)xrealloc(offman->devPrivates,
-		sizeof(DevUnion) * (offman->NumCallbacks + 1));
+   newPrivates = xrealloc(offman->devPrivates,
+			  sizeof(DevUnion) * (offman->NumCallbacks + 1));
 
    if(!newCallbacks || !newPrivates)
 	return FALSE;     
@@ -189,7 +188,7 @@ AllocateArea(
 	if(((boxp->y2 - boxp->y1) < h) || ((boxp->x2 - x) < w))
 	   continue;
 
-	link = (FBLinkPtr)xalloc(sizeof(FBLink));
+	link = xalloc(sizeof(FBLink));
 	if(!link) return NULL;
 
         area = &(link->area);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.4 1998/12/13 05:32:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.5 1998/12/20 11:57:51 dawes Exp $ */
 
 /*
    A CopyPlane function that handles bitmap->screen copies and
@@ -172,7 +172,7 @@ XAAPushPixelsSolidColorExpansion(
    TheRect.height = dy; 
 
    if(MaxBoxes > (infoRec->PreAllocSize/sizeof(BoxRec))) {
-	pClipBoxes = (BoxPtr)xalloc(MaxBoxes * sizeof(BoxRec));
+	pClipBoxes = xalloc(MaxBoxes * sizeof(BoxRec));
 	if(!pClipBoxes) return;	
    } else pClipBoxes = (BoxPtr)infoRec->PreAllocMem;
 

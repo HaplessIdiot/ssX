@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.12.2.2 1998/06/04 17:36:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.13 1998/07/25 16:56:53 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -111,7 +111,7 @@ int what;
 		if (rc == 0)
 			ErrorF("xf86-OS/2: OsMouse has %d button(s).\n",nbutton);
 		if(nbutton==2) nbutton++;
-		map = (unsigned char *) xalloc(nbutton + 1);
+		map = xalloc(nbutton + 1);
 		if (map == (unsigned char *) NULL)
 			FatalError("Failed to allocate OsMouse map structure\n");
 

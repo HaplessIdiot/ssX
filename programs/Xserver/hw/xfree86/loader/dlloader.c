@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.8 1998/09/20 14:41:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.9 1998/09/27 04:43:41 dawes Exp $ */
 
 
 /*
@@ -97,7 +97,7 @@ DLFindSymbol(const char *name)
 #ifdef NEED_UNDERSCORE_FOR_DLLSYM
     char *n;
 
-    n = (char *)xf86loadermalloc(strlen(name) + 2);
+    n = xf86loadermalloc(strlen(name) + 2);
     sprintf(n, "_%s", name);
 #endif
     
@@ -130,7 +130,7 @@ DLLoadModule(loaderPtr modrec, int fd, LOOKUP **ppLookup)
     DLModulePtr dlfile;
     DLModuleList *l;
 
-    if ((dlfile=(DLModulePtr)xf86loadercalloc(1,sizeof(DLModuleRec)))==NULL) {
+    if ((dlfile=xf86loadercalloc(1,sizeof(DLModuleRec)))==NULL) {
 	ErrorF("Unable  to allocate DLModuleRec\n");
 	return NULL;
     }
@@ -142,7 +142,7 @@ DLLoadModule(loaderPtr modrec, int fd, LOOKUP **ppLookup)
 	return NULL;
     }
     /* Add it to the module list */
-    l = (DLModuleList *)xf86loadermalloc(sizeof(DLModuleList));
+    l = xf86loadermalloc(sizeof(DLModuleList));
     l->module = dlfile;
     l->next = dlModuleList;
     dlModuleList = l;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.31 1998/12/13 10:33:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.32 1999/01/03 03:58:46 dawes Exp $ */
 
 /*
  *
@@ -506,7 +506,7 @@ FindModule (const char *module, const char *dir, const char **subdirlist,
 	int d, p, s;
 	struct stat stat_buf;
 
-	buf = (char *) xcalloc (1, strlen (module) + strlen (dir) + 40);
+	buf = xcalloc (1, strlen (module) + strlen (dir) + 40);
 	for (d = 0; d < sizeof (subdirs) / sizeof (char *); d++)
 		for (p = 0; p < sizeof (prefixes) / sizeof (char *); p++)
 			for (s = 0; s < sizeof (suffixes) / sizeof (char *); s++)
@@ -819,7 +819,7 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	 * <modulename>ModuleInit
 	 * and if yes, call it.
 	 */
-	p = (char *) xalloc (strlen (name) + strlen ("ModuleInit") + 1);
+	p = xalloc (strlen (name) + strlen ("ModuleInit") + 1);
 	if (!p)
 		goto LoadModule_fail;
 	strcpy (p, name);
@@ -961,7 +961,7 @@ FreeModuleDesc (ModuleDescPtr head)
 ModuleDescPtr
 NewModuleDesc (const char *name)
 {
-	ModuleDescPtr mdp = (ModuleDescPtr) xalloc (sizeof (ModuleDesc));
+	ModuleDescPtr mdp = xalloc (sizeof (ModuleDesc));
 
 	if (mdp)
 	{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.18 1998/12/13 10:33:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.19 1998/12/13 11:14:48 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -625,7 +625,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
         /* Set a default mode, overridding any virtual settings */
         pScreenInfo->virtualX = pScreenInfo->displayWidth = 320;
         pScreenInfo->virtualY = 200;
-        pScreenInfo->modes = (DisplayModePtr)xalloc(sizeof(DisplayModeRec));
+        pScreenInfo->modes = xalloc(sizeof(DisplayModeRec));
         if (!pScreenInfo->modes)
             return FALSE;
         *pScreenInfo->modes = GenericDefaultMode;

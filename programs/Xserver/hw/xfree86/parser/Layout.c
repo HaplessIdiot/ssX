@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.2 1998/07/25 16:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.3 1999/01/12 06:24:25 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -66,8 +66,7 @@ parseLayoutSection (void)
 			{
 				XF86ConfInactivePtr iptr;
 
-				iptr = (XF86ConfInactivePtr) xf86confmalloc
-					(sizeof (XF86ConfInactiveRec));
+				iptr = xf86confmalloc (sizeof (XF86ConfInactiveRec));
 				iptr->list.next = NULL;
 				if (xf86GetToken (NULL) != STRING)
 					Error (INACTIVE_MSG, NULL);
@@ -80,8 +79,7 @@ parseLayoutSection (void)
 			{
 				XF86ConfAdjacencyPtr aptr;
 
-				aptr = (XF86ConfAdjacencyPtr) xf86confmalloc
-					(sizeof (XF86ConfAdjacencyRec));
+				aptr = xf86confmalloc (sizeof (XF86ConfAdjacencyRec));
 				aptr->list.next = NULL;
 				if (xf86GetToken (NULL) != STRING)
 					Error (SCREEN_MSG, NULL);

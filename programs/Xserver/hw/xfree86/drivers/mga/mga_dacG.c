@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.12 1998/11/15 04:30:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.13 1998/11/29 10:50:25 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -265,7 +265,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	/* Allocate the DacRegs space if not done already */
 	if (pReg->DacRegs == NULL) {
-		pReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
+		pReg->DacRegs = xnfcalloc(DACREGSIZE, 1);
 	}
 	for (i = 0; i < DACREGSIZE; i++) {
 	    pReg->DacRegs[i] = initDAC[i]; 
@@ -641,7 +641,7 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	
 	/* Allocate the DacRegs space if not done already */
 	if (mgaReg->DacRegs == NULL) {
-		mgaReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
+		mgaReg->DacRegs = xnfcalloc(DACREGSIZE, 1);
 	}
 
 	/*

@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.8 1998/10/05 13:22:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.9 1998/11/01 12:35:48 dawes Exp $ */
 
 /*
- * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
 
 /*
@@ -74,6 +74,13 @@ struct {
      ((b) == PCI_CLASS_DISPLAY) ||					      \
      ((b) == PCI_CLASS_MULTIMEDIA && (s) == PCI_SUBCLASS_MULTIMEDIA_VIDEO))
 
+/*
+ * PCI classes for which potentially destructive checking of the map sizes
+ * may be done.  Any classes where this may be unsafe should be omitted
+ * from this list.
+ */
+#define PCINONSYSTEMCLASSES(b,s) PCIALWAYSPRINTCLASSES(b,s)
+
 static void
 xf86FindPCIVideoInfo(void)
 {
@@ -93,14 +100,15 @@ xf86FindPCIVideoInfo(void)
     while ((pcrp = pcrpp[i])) {
 	if (PCIINFOCLASSES(pcrp->_base_class, pcrp->_sub_class)) {
 	    num++;
-	    xf86PciVideoInfo = (pciVideoPtr *)xnfrealloc(xf86PciVideoInfo,
-					      sizeof(pciVideoPtr) * (num + 1));
+	    xf86PciVideoInfo = xnfrealloc(xf86PciVideoInfo,
+					  sizeof(pciVideoPtr) * (num + 1));
 	    xf86PciVideoInfo[num] = NULL;
-	    info = xf86PciVideoInfo[num - 1] =
-		(pciVideoPtr)xnfalloc(sizeof(pciVideoRec));
+	    info = xf86PciVideoInfo[num - 1] = xnfalloc(sizeof(pciVideoRec));
 	    info->vendor = pcrp->_vendor;
 	    info->chipType = pcrp->_device;
 	    info->chipRev = pcrp->_rev_id;
+	    info->subsysVendor = pcrp->_subsys_vendor;
+	    info->subsysCard = pcrp->_subsys_card;
 	    info->bus = pcrp->busnum;
 	    info->device = pcrp->devnum;
 	    info->func = pcrp->funcnum;
@@ -108,11 +116,15 @@ xf86FindPCIVideoInfo(void)
 	    info->subclass = pcrp->_sub_class;
 	    info->interface = pcrp->_prog_if;
 	    info->biosBase = pcrp->_baserom;
+	    info->biosSize = pciGetBaseSize(pcrp->tag, 6, TRUE);
 	    info->thisCard = pcrp;
 	    for (j = 0; j < 6; j++) {
 		info->memBase[j] = 0;
 		info->ioBase[j] = 0;
-		info->size[j] = 0;
+		if (PCINONSYSTEMCLASSES(info->class, info->subclass))
+		    info->size[j] = pciGetBaseSize(pcrp->tag, j, TRUE);
+		else
+		    info->size[j] = pciGetBaseSize(pcrp->tag, j, FALSE);
 		info->type[j] = 0;
 	    }
 
@@ -252,7 +264,7 @@ xf86FindPCIVideoInfo(void)
 			memdone = TRUE;
 		    } else
 			ErrorF(", ");
-		    ErrorF("0x%08x", info->memBase[i]);
+		    ErrorF("0x%08x/%d", info->memBase[i], info->size[i]);
 		}
 	    }
 	    for (i = 0; i < 6; i++) {
@@ -262,7 +274,7 @@ xf86FindPCIVideoInfo(void)
 			iodone = TRUE;
 		    } else
 			ErrorF(", ");
-		    ErrorF("0x%04x", info->ioBase[i]);
+		    ErrorF("0x%04x/%d", info->ioBase[i], info->size[i]);
 		}
 	    }
 	    ErrorF("\n");
@@ -283,18 +295,16 @@ xf86BusProbe(void)
 }
 
 /*
- * Functions to access the bus list.  Perhaps it might be best to keep
- * the data structures opaque to the video drivers, requiring that they
- * manipulate them via functions here.
+ * Functions to access the bus list.  The data structures are opaque to
+ * the video drivers.
  */
 
 static BusPtr
 xf86AllocateBusSlot(void)
 {
     xf86NumBusSlots++;
-    xf86BusSlots = (BusPtr *)xnfrealloc(xf86BusSlots,
-					sizeof(BusPtr) * xf86NumBusSlots);
-    xf86BusSlots[xf86NumBusSlots - 1] = (BusPtr)xnfalloc(sizeof(BusRec));
+    xf86BusSlots = xnfrealloc(xf86BusSlots, sizeof(BusPtr) * xf86NumBusSlots);
+    xf86BusSlots[xf86NumBusSlots - 1] = xnfalloc(sizeof(BusRec));
     return xf86BusSlots[xf86NumBusSlots - 1];
 }
 
@@ -449,13 +459,12 @@ xf86GetPciInfoForScreen(int scrnIndex, pciVideoPtr **pPciList,
 	    if (*ppPci != NULL) {
 		num++;
 		if (pPciList != NULL) {
-		    *pPciList = (pciVideoPtr *)xnfrealloc(*pPciList,
-						num * sizeof(pciVideoPtr));
+		    *pPciList = xnfrealloc(*pPciList,
+					   num * sizeof(pciVideoPtr));
 		    (*pPciList)[num - 1] = *ppPci;
 		}
 		if (pRes != NULL) {
-		    *pRes = (BusResource *)xnfrealloc(*pRes,
-						num * sizeof(BusResource));
+		    *pRes = xnfrealloc(*pRes, num * sizeof(BusResource));
 		    (*pRes)[num - 1] = p->resource;
 		}
 	    } else {
@@ -680,8 +689,7 @@ xf86GetIsaInfoForScreen(int scrnIndex, BusResource **pRes)
 	if (p->scrnIndex == scrnIndex && p->busType == BUS_ISA) {
 	    num++;
 	    if (pRes != NULL) {
-		*pRes = (BusResource *)xnfrealloc(*pRes,
-						  num * sizeof(BusResource));
+		*pRes = xnfrealloc(*pRes, num * sizeof(BusResource));
 		(*pRes)[num - 1] = p->resource;
 	    }
 	}
@@ -788,7 +796,7 @@ xf86FindChipsetsForScreen(int scrnIndex, DriverPtr drv, int **chipsets)
 	p = xf86BusSlots[i];
 	if (p->scrnIndex == scrnIndex && p->driver == drv){
 	    num++;
-	    *chipsets = (int *)xnfrealloc(*chipsets,num * sizeof(int));
+	    *chipsets = xnfrealloc(*chipsets,num * sizeof(int));
 	    (*chipsets)[num - 1] = p->chipset;
 	}
     }
@@ -874,12 +882,10 @@ setupPciAccess(void)
 	i++;
 	if (PCISHAREDIOCLASSES(pcp->_base_class, pcp->_sub_class)) {
 	    j++;
-	    xf86PciAccInfo =
-		(pciAccPtr *)xnfrealloc(xf86PciAccInfo,
+	    xf86PciAccInfo = xnfrealloc(xf86PciAccInfo,
 					sizeof(pciAccPtr) * (j + 1));
 	    xf86PciAccInfo[j] = NULL;
-	    pcaccp = xf86PciAccInfo[j - 1] =
-		(pciAccPtr)xalloc(sizeof(pciAccRec));
+	    pcaccp = xf86PciAccInfo[j - 1] = xnfalloc(sizeof(pciAccRec));
 	    pcaccp->busnum = pcp->busnum; 
 	    pcaccp->devnum = pcp->devnum; 
 	    pcaccp->funcnum = pcp->funcnum;
@@ -1070,11 +1076,9 @@ GetRBTypesForScreen(int scrnIndex, BusType **ppBt, BusResource **ppRes)
 	p = xf86BusSlots[i];
 	if (p->scrnIndex == scrnIndex) {
 	    num++;
-	    *ppRes = (BusResource *)xnfrealloc(*ppRes,
-					       num * sizeof(BusResource));
+	    *ppRes = xnfrealloc(*ppRes, num * sizeof(BusResource));
 	    (*ppRes)[num - 1] = p->resource;
-	    *ppBt = (BusType *)xnfrealloc(*ppBt,
-					       num * sizeof(BusType));
+	    *ppBt = xnfrealloc(*ppBt, num * sizeof(BusType));
 	    (*ppBt)[num - 1] = p->busType;
 	}
     }

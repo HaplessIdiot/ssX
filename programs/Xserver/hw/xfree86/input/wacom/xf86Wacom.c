@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.33 1998/07/25 16:55:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.1 1998/12/05 14:40:22 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -372,7 +372,7 @@ xf86WcmConfig(LocalDevicePtr    *array,
 		xfree(common);
 		common = priv->common = ((WacomDevicePtr) array[loop]->private)->common;
 		common->wcmNumDevices++;
-		common->wcmDevices = (LocalDevicePtr *) xrealloc(common->wcmDevices,
+		common->wcmDevices = xrealloc(common->wcmDevices,
 								 sizeof(LocalDevicePtr) * common->wcmNumDevices);
 		common->wcmDevices[common->wcmNumDevices - 1] = dev;
 		break;
@@ -1703,9 +1703,9 @@ static LocalDevicePtr
 xf86WcmAllocate(char *  name,
                 int     flag)
 {
-    LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
-    WacomDevicePtr        priv = (WacomDevicePtr) xalloc(sizeof(WacomDeviceRec));
-    WacomCommonPtr        common = (WacomCommonPtr) xalloc(sizeof(WacomCommonRec));
+    LocalDevicePtr        local = xalloc(sizeof(LocalDeviceRec));
+    WacomDevicePtr        priv = xalloc(sizeof(WacomDeviceRec));
+    WacomCommonPtr        common = xalloc(sizeof(WacomCommonRec));
 #if defined(sun) && !defined(i386)
     char			*dev_name = (char *) getenv("WACOM_DEV");  
 #endif
@@ -1750,14 +1750,14 @@ xf86WcmAllocate(char *  name,
     common->wcmDevice = "";		/* device file name */
 #if defined(sun) && !defined(i386)
     if (dev_name) {
-	common->wcmDevice = (char*) xalloc(strlen(dev_name)+1);
+	common->wcmDevice = xalloc(strlen(dev_name)+1);
 	strcpy(common->wcmDevice, dev_name);
 	ErrorF("xf86WcmOpen port changed to '%s'\n", common->wcmDevice);
     }
 #endif
     common->wcmSuppress = -1;		/* transmit position if increment is superior */
     common->wcmFlags = 0;		/* various flags */
-    common->wcmDevices = (LocalDevicePtr*) xalloc(sizeof(LocalDevicePtr));
+    common->wcmDevices = xalloc(sizeof(LocalDevicePtr));
     common->wcmDevices[0] = local;
     common->wcmNumDevices = 1;		/* number of devices */
     common->wcmIndex = 0;		/* number of bytes read */

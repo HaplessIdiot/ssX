@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.5 1998/12/05 14:40:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.6 1998/12/20 13:16:35 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1204,8 +1204,8 @@ xf86MouseConvert(LocalDevicePtr	local,
 static LocalDevicePtr
 xf86MouseAllocate()
 {
-    LocalDevicePtr	local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
-    MouseDevPtr		mouse = (MouseDevPtr) xalloc(sizeof(MouseDevRec));
+    LocalDevicePtr	local = xalloc(sizeof(LocalDeviceRec));
+    MouseDevPtr		mouse = xalloc(sizeof(MouseDevRec));
     int			i;
     
     local->name = "MOUSE";

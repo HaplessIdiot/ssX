@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.8 1998/10/11 10:20:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.9 1998/11/15 04:30:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -820,7 +820,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    status = xf86InitialCheckModeForDriver(scrp, p, maxPitch, virtualX,
 						   virtualY);
 	    if (status == MODE_OK) {
-		new = (DisplayModePtr)xnfalloc(sizeof(DisplayModeRec));
+		new = xnfalloc(sizeof(DisplayModeRec));
 		*new = *p;
 		new->next = NULL;
 		if (!q) {
@@ -853,7 +853,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
      * done.
      */
     if (scrp->modes == NULL) {
-	scrp->modes = (DisplayModePtr)xnfalloc(sizeof(DisplayModeRec));
+	scrp->modes = xnfalloc(sizeof(DisplayModeRec));
 	scrp->modes->next = NULL;
 	scrp->modes->prev = NULL;
     }
@@ -863,7 +863,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    firstMode = FALSE;
 	} else {
 	    if (q->next == NULL) {
-		q->next = (DisplayModePtr)xnfalloc(sizeof(DisplayModeRec));
+		q->next = xnfalloc(sizeof(DisplayModeRec));
 		q->next->next = NULL;
 		q->next->name = NULL;
 	    } else {
@@ -873,7 +873,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    q->next->prev = q;
 	    q = q->next;
 	}
-	q->name = (char *)xnfalloc(strlen(modeNames[i]) + 1);
+	q->name = xnfalloc(strlen(modeNames[i]) + 1);
 	strcpy(q->name, modeNames[i]);
     }
     q->next = NULL;

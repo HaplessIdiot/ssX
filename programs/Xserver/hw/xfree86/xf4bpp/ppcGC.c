@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGC.c,v 1.1.2.1 1998/06/27 14:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGC.c,v 1.2 1998/07/25 16:59:34 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -175,10 +175,10 @@ register GCPtr pGC ;
 		return (mfbCreateGC(pGC));
 		}
 
-	if ( !( pPriv = (ppcPrivGC *) xalloc( sizeof( ppcPrivGC ) ) ) )
+	if ( !( pPriv = xalloc( sizeof( ppcPrivGC ) ) ) )
 		return FALSE ;
 
-	if ( !( pOps = (GCOps *) xalloc( sizeof( GCOps ) ) ) ) {
+	if ( !( pOps = xalloc( sizeof( GCOps ) ) ) ) {
 		xfree(pPriv);
 		return FALSE;
 	}

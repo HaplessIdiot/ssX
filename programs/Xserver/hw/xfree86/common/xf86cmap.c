@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.6 1998/12/06 06:08:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.7 1998/12/13 05:32:41 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -127,15 +127,15 @@ Bool xf86HandleColormaps(
 
     elements = 1 << sigRGBbits;
 
-    if(!(gamma = (LOCO*)xalloc(elements * sizeof(LOCO))))
+    if(!(gamma = xalloc(elements * sizeof(LOCO))))
     	return FALSE;
 
-    if(!(indices = (int*)xalloc(maxColors * sizeof(int)))) {
+    if(!(indices = xalloc(maxColors * sizeof(int)))) {
 	xfree(gamma);
 	return FALSE;
     }
       
-    if(!(pScreenPriv = (CMapScreenPtr)xalloc(sizeof(CMapScreenRec)))) {
+    if(!(pScreenPriv = xalloc(sizeof(CMapScreenRec)))) {
 	xfree(gamma);
 	xfree(indices);
 	return FALSE;     
@@ -222,10 +222,10 @@ CMapAllocateColormapPrivate(ColormapPtr pmap)
     else 
 	numColors = 1 << pmap->pVisual->nplanes; 
 
-    if(!(colors = (LOCO*)xalloc(numColors * sizeof(LOCO))))
+    if(!(colors = xalloc(numColors * sizeof(LOCO))))
 	return FALSE;
 
-    if(!(pColPriv = (CMapColormapPtr)xalloc(sizeof(CMapColormapRec)))) {
+    if(!(pColPriv = xalloc(sizeof(CMapColormapRec)))) {
 	xfree(colors);
 	return FALSE;
     }	
@@ -238,7 +238,7 @@ CMapAllocateColormapPrivate(ColormapPtr pmap)
     pColPriv->overscan = -1;
 
     /* add map to list */
-    pLink = (CMapLinkPtr)xalloc(sizeof(CMapLink));
+    pLink = xalloc(sizeof(CMapLink));
     if(pLink) {
 	pLink->cmap = pmap;
 	pLink->next = pScreenPriv->maps;

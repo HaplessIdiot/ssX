@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.88 1999/01/13 08:31:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.89 1999/01/14 01:44:17 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -351,7 +351,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     for (i = 0; i < xf86NumScreens; i++) {
       int warned = 0;
       if (xf86Screens[i]->name == NULL) {
-	xf86Screens[i]->name = (char *)xnfalloc(strlen("screen") + 1 + 1);
+	xf86Screens[i]->name = xnfalloc(strlen("screen") + 1 + 1);
 	if (i < 10)
 	  sprintf(xf86Screens[i]->name, "screen%c", i + '0');
 	else
