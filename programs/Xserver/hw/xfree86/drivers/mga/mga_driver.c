@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.164 2000/07/08 22:09:10 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.165 2000/07/11 01:46:36 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -81,6 +81,7 @@
 
 #include "cfb8_32.h"
 #include "fb.h"
+#include "dixstruct.h"
 
 #include "mga_bios.h"
 #include "mga_reg.h"
@@ -136,6 +137,7 @@ static Bool	MGAUnmapMem(ScrnInfoPtr pScrn);
 static void	MGASave(ScrnInfoPtr pScrn);
 static void	MGARestore(ScrnInfoPtr pScrn);
 static Bool	MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+static void 	MGABlockHandler(int, pointer, pointer, pointer);
 
 
 /* 
@@ -1045,7 +1047,7 @@ VgaIOEnable(void *arg)
 }
 #endif /* DISABLE_VGA_IO */
 
-void
+static void
 MGAProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
@@ -2340,6 +2342,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
+    pMga->BlockHandler = pScreen->BlockHandler;
+    pScreen->BlockHandler = MGABlockHandler;
+
     if(!pMga->ShadowFB) /* hardware cursor needs to wrap this layer */
 	MGADGAInit(pScreen);
 
@@ -2737,6 +2742,31 @@ ErrorF("MGADisplayPowerManagementSet: %d\n", PowerManagementMode);
 	OUTREG8(0x1FDF, crtcext1);
 }
 #endif
+
+
+static void
+MGABlockHandler (
+    int i,
+    pointer     blockData,
+    pointer     pTimeout,
+    pointer     pReadmask
+){
+    ScreenPtr      pScreen = screenInfo.screens[i];
+    ScrnInfoPtr    pScrn = xf86Screens[i];
+    MGAPtr         pMga = MGAPTR(pScrn);
+
+    if(pMga->PaletteLoadCallback) 
+	(*pMga->PaletteLoadCallback)(pScrn);
+
+    pScreen->BlockHandler = pMga->BlockHandler;
+    (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
+    pScreen->BlockHandler = MGABlockHandler;
+
+    if(pMga->VideoTimerCallback) {
+	UpdateCurrentTime();
+	(*pMga->VideoTimerCallback)(pScrn, currentTime.milliseconds);
+    }
+}
 
 #if defined (DEBUG)
 /*
