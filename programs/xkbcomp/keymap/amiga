@@ -1,0 +1,8 @@
+// $XFree86$
+default xkb_keymap "usa1" {
+    xkb_keycodes	{ include "amiga(usa1)"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "amiga(usa1)"		};
+    xkb_geometry	{ include "amiga(usa1)"		};
+};
