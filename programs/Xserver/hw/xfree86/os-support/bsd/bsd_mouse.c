@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.4 1999/05/17 13:17:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.5 1999/05/22 09:59:52 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -277,6 +277,7 @@ wsconsPreInit(InputInfoPtr pInfo, const char *protocol, int flags)
     MouseDevPtr pMse;
 
     pMse->protocol = protocol;
+    xf86Msg(X_CONFIG, "%s: Protocol: %s\n", pInfo->name, protocol);
 
     /* Collect the options, and process the common options. */
     xf86CollectInputOptions(pInfo, NULL, NULL);
