@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.60 2000/01/23 21:59:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.61 2000/02/22 19:06:42 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -28,7 +28,7 @@ REPORTFORM = BugReport
 #if !BuildLinuxDocText
 OSREADMES = \
 	/*ReadmeFile(Bsdi)*/	\
-	ReadmeFile(DGux)	\
+	ReadmeFile(DGUX)	\
 	ReadmeFile(FreeBSD)	\
 	ReadmeFile(isc)		\
 	ReadmeFile(Linux)	\
