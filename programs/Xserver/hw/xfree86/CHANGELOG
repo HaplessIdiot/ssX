@@ -1,4 +1,10 @@
 XFree86 4.3.99.10 (xx July 2003)
+ 333. Resync with Cygwin/XFree86 changes up to Test92 (#5721, Harold Hunt and
+      the Cygwin/XFree86 project).
+ 332. Add a clean target for Cygwin's ResourceObjectRule() rule (#5720,
+      Harold Hunt).
+ 331. Fix xman's formatting/displaying of manual pages on Darwin, where
+      'groff' defaults to PostScript formatting (#5719, T. M. Pederson).
  330. SiS driver update:
        - Fixed SiS 620 support
        - Added interface for sisctrl utility
@@ -17411,7 +17417,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2789 2003/07/28 12:37:49 twini Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2790 2003/07/29 07:28:20 herrb Exp $
 
 
 
