@@ -1,4 +1,5 @@
 /* $XFree86$ */
+/* $XdotOrg$ */
 /*
  * DAC helper functions (Save/Restore, MemClk, etc)
  *
@@ -28,7 +29,10 @@
  *
  * Author:  	Thomas Winischhofer <thomas@winischhofer.net>
  *
+ * --------------------------------------------------------------------------
+ *
  * SiS_compute_vclk(), SiSCalcClock() and parts of SiSMclk():
+ *
  * Copyright (C) 1998, 1999 by Alan Hourihane, Wigan, England
  * Written by:
  *	 Alan Hourihane <alanh@fairlite.demon.co.uk>,
@@ -37,9 +41,26 @@
  *       Mitani Hiroshi <hmitani@drl.mei.co.jp>,
  *       David Thomas <davtom@dream.org.uk>,
  *	 Thomas Winischhofer <thomas@winischhofer.net>.
- * Licensed under the terms of the XFree86 license
- * (http://www.xfree86.org/current/LICENSE1.html)
  *
+ * Licensed under the following terms:
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appears in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * and that the name of the copyright holder not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission. The copyright holder makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without expressed or implied warranty.
+ *
+ * THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO
+ * EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
 #include "xf86.h"
@@ -74,7 +95,7 @@ static void SetBlock(CARD16 port, CARD8 from, CARD8 to, CARD8 *DataPtr);
 
 static const unsigned short ch700xidx[] = {
       0x00,0x07,0x08,0x0a,0x0b,0x04,0x09,0x20,0x21,0x18,0x19,0x1a,
-      0x1b,0x1c,0x1d,0x1e,0x1f,  /* 0x0e,  - TW: Don't save the power register */
+      0x1b,0x1c,0x1d,0x1e,0x1f,  /* 0x0e,  - Don't save the power register */
       0x01,0x03,0x06,0x0d,0x11,0x13,0x14,0x15,0x17,0x22,0x23,0x24
    };
 
@@ -412,7 +433,7 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
     sisReg->sisRegs3C2 = inSISREG(SISMISCR);	 /* Misc */
 
-    /* TW: Save TV registers */
+    /* Save TV registers */
     if((pSiS->Chipset == PCI_CHIP_SIS6326) && (pSiS->SiS6326Flags & SIS6326_HASTV)) {
        outSISIDXREG(SISCR, 0x80, 0x86);
        for(i = 0x00; i <= 0x44; i++) {
@@ -479,7 +500,7 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     usleep(10000);
     outSISIDXREG(SISSR, 0x00, 0x03);    /* End Reset */
 
-    /* TW: Restore TV registers */
+    /* Restore TV registers */
     pSiS->SiS6326Flags &= ~SIS6326_TVON;
     if((pSiS->Chipset == PCI_CHIP_SIS6326) && (pSiS->SiS6326Flags & SIS6326_HASTV)) {
        for(i = 0x01; i <= 0x44; i++) {
@@ -1296,6 +1317,7 @@ SiSMclk(SISPtr pSiS)
     case PCI_CHIP_SIS315PRO:
     case PCI_CHIP_SIS330:
     case PCI_CHIP_SIS660:
+    case PCI_CHIP_SIS340:
         /* Numerator */
 	inSISIDXREG(SISSR, 0x28, Num);
         mclk = 14318 * ((Num & 0x7f) + 1);
@@ -1372,9 +1394,12 @@ SiSEstimateCRT2Clock(ScrnInfoPtr pScrn, BOOLEAN IsForMergedFBCRT2)
 	   } else if(pSiS->VBLCDFlags & VB_LCD_1280x768) {
 	      return 81000;
 	   } else if(pSiS->VBLCDFlags & VB_LCD_1280x800) {
+	      return 83000; /* Use this any way; BIOS timing seems wrong */
+#if 0	   
 	      /* Must fake clock; built-in mode shows 83 for VGA, but uses only 70 for LCD */
 	      if(IsForMergedFBCRT2) return 83000;
 	      else                  return 70000;
+#endif	      
 	   } else if(pSiS->VBLCDFlags & VB_LCD_1400x1050) {
 	      /* Must fake clock; built-in mode shows 122 for VGA, but uses only 108 for LCD */
 	      if(IsForMergedFBCRT2) return 123000;
@@ -1473,6 +1498,7 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 	case PCI_CHIP_SIS650:
 	case PCI_CHIP_SIS330:
 	case PCI_CHIP_SIS660:
+	case PCI_CHIP_SIS340:
 	        switch(pSiS->Chipset) {
         	case PCI_CHIP_SIS300:
 	            magic = magic300[bus/64];
@@ -1505,7 +1531,11 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 		    } else {
 		       magic = magic550[bus/64];
 		    }
-		    max = 680000;
+		    max = 800000;
+		case PCI_CHIP_SIS340:
+		    magic = magic315[bus/64];
+		    max = 800000;
+		    break;
                 }
 
                 PDEBUG(ErrorF("mclk: %d, bus: %d, magic: %g, bpp: %d\n",
@@ -1550,17 +1580,17 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 
 		        if(!GetForCRT1) {
 
-			     /* TW: First head = CRT2 */
+			     /* First head = CRT2 */
 
 			     if(crt2clock) {
-			        /* TW: We use the mem bandwidth as max clock; this
-				 *     might exceed the 70% limit a bit, but that
-				 *     does not matter; we take care of that limit
-				 *     when we calc CRT1. Overall, we might use up
-				 *     to 85% of the memory bandwidth, which seems
-				 *     enough to use accel and video.
-				 *     The "* macic" is just to compensate the
-				 *     calculation below.
+			        /* We use the mem bandwidth as max clock; this
+				 * might exceed the 70% limit a bit, but that
+				 * does not matter; we take care of that limit
+				 * when we calc CRT1. Overall, we might use up
+				 * to 85% of the memory bandwidth, which seems
+				 * enough to use accel and video.
+				 * The "* macic" is just to compensate the
+				 * calculation below.
 				*/
 			        total = crt2used * magic;
 				
@@ -1587,7 +1617,7 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 
 			} else {
 #ifdef SISDUALHEAD
-			     /* TW: Second head = CRT1 */
+			     /* Second head = CRT1 */
 
 			     /*     Now We know about the first head's depth,
 			      *     so we can calculate more accurately.
@@ -1885,6 +1915,7 @@ SISDACPreInit(ScrnInfoPtr pScrn)
       case PCI_CHIP_SIS315PRO:
       case PCI_CHIP_SIS330:
       case PCI_CHIP_SIS660:
+      case PCI_CHIP_SIS340:
         pSiS->MaxClock               = SiSMemBandWidth(pScrn, FALSE);
         pSiS->SiSSave                = SiS315Save;
         pSiS->SiSSave2               = SiS301Save;
