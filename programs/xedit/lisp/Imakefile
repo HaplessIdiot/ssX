@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.9 2001/10/28 03:34:29 tsi Exp $
 
 #include "lisp.cf"
 #include "lisp.rules"
@@ -59,9 +59,9 @@ AllTarget(ProgramTargetName($(SAMP)))
 CCOPTIONS	= -fpic
 DLLIB		= DlLibrary
 LOCAL_LDFLAGS	= -Xlinker -E
-DEFINES		= -DSHARED_MODULES -DLISPDIR='"$(LISPDIR)"' -DNEED_SNPRINTF
+DEFINES		= -DSHARED_MODULES -DLISPDIR='"$(LISPDIR)"' $(SNPRINTF_DEFS)
 #else
-DEFINES		= -DLISPDIR='"$(LISPDIR)"' -DNEED_SNPRINTF
+DEFINES		= -DLISPDIR='"$(LISPDIR)"' $(SNPRINTF_DEFS)
 #endif
 
        INCLUDES = $(MISC_INCLUDES)

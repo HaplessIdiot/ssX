@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.24 2001/10/24 07:57:24 alanh Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.25 2001/10/28 03:34:30 tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +37,24 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <signal.h>
+
+#ifndef X_NOT_POSIX
+#include <unistd.h>	/* for sysconf(), and getpagesize() */
+#endif
+
+#if defined(linux)
+#include <asm/page.h>	/* for PAGE_SIZE */
+#define HAS_GETPAGESIZE
+#define HAS_SC_PAGESIZE	/* _SC_PAGESIZE may be an enum for Linux */
+#endif
+
+#if defined(CSRG_BASED)
+#define HAS_GETPAGESIZE
+#endif
+
+#if defined(sun)
+#define HAS_GETPAGESIZE
+#endif
 
 #include "private.h"
 
@@ -99,6 +117,8 @@ int LispFPESignal(int);
 void LispAbortSignal(int);
 void LispFPESignal(int);
 #endif
+
+static int GetPageSize(void);
 
 /*
  * Initialization
@@ -298,6 +318,41 @@ static LispBuiltin lispbuiltins[] = {
 /*
  * Implementation
  */
+static int
+GetPageSize(void)
+{
+    static int pagesize = -1;
+
+    if (pagesize != -1)
+	return pagesize;
+
+    /* Try each supported method in the preferred order */
+
+#if defined(_SC_PAGESIZE) || defined(HAS_SC_PAGESIZE)
+    pagesize = sysconf(_SC_PAGESIZE);
+#endif
+
+#ifdef _SC_PAGE_SIZE
+    if (pagesize == -1)
+	pagesize = sysconf(_SC_PAGE_SIZE);
+#endif
+
+#ifdef HAS_GETPAGESIZE
+    if (pagesize == -1)
+	pagesize = getpagesize();
+#endif
+
+#ifdef PAGE_SIZE
+    if (pagesize == -1)
+	pagesize = PAGE_SIZE;
+#endif
+
+    if (pagesize == -1)
+	pagesize = 0;
+
+    return pagesize;
+}
+
 void
 LispDestroy(LispMac *mac, char *fmt, ...)
 {
@@ -3389,7 +3444,7 @@ LispBegin(int argc, char *argv[])
     if (lisp_stderr == NULL)
 	lisp_stderr = fdopen(2, "w");
 
-    pagesize = getpagesize();
+    pagesize = GetPageSize();
     segsize = pagesize / sizeof(LispObj);
     bzero((char*)mac, sizeof(LispMac));
     MOD = ENV = GLB = LEX = COD = FRM = DBG = BRK = PRO = NIL;
