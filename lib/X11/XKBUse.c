@@ -1,4 +1,4 @@
-/* $XConsortium: XKBUse.c,v 1.5 94/04/08 02:57:29 erik Exp $ */
+/* $XConsortium: XKBUse.c /main/12 1996/03/01 14:30:08 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,6 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 #include <stdio.h>
+#include <ctype.h>
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -39,10 +40,14 @@ extern char *getenv();
 static Bool	_XkbIgnoreExtension = False;
 
 void
+#if NeedFunctionPrototypes
+XkbNoteMapChanges(XkbMapChangesPtr old,XkbMapNotifyEvent *new,unsigned wanted)
+#else
 XkbNoteMapChanges(old,new,wanted)
-    XkbMapChangesRec	*old;
-    XkbMapNotifyEvent	*new;
-    unsigned int	 wanted;
+    XkbMapChangesPtr	old;
+    XkbMapNotifyEvent *	new;
+    unsigned int	wanted;
+#endif
 {
     int first,oldLast,newLast;
     wanted&= new->changed;
@@ -140,18 +145,59 @@ XkbNoteMapChanges(old,new,wanted)
 	    old->num_key_explicit = new->num_key_explicit;
 	}
     }
+    if (wanted&XkbModifierMapMask) {
+	if (old->changed&XkbModifierMapMask) {
+	    first = old->first_modmap_key;
+	    oldLast = old->first_modmap_key+old->num_modmap_keys-1;
+	    newLast = new->first_modmap_key+new->num_modmap_keys-1;
+
+	    if (new->first_modmap_key<first)
+		first = new->first_modmap_key;
+	    if (oldLast>newLast)
+		newLast= oldLast;
+	    old->first_modmap_key = first;
+	    old->num_modmap_keys = newLast-first+1;
+	}
+	else {
+	    old->first_modmap_key = new->first_modmap_key;
+	    old->num_modmap_keys = new->num_modmap_keys;
+	}
+    }
+    if (wanted&XkbVirtualModMapMask) {
+	if (old->changed&XkbVirtualModMapMask) {
+	    first = old->first_vmodmap_key;
+	    oldLast = old->first_vmodmap_key+old->num_vmodmap_keys-1;
+	    newLast = new->first_vmodmap_key+new->num_vmodmap_keys-1;
+
+	    if (new->first_vmodmap_key<first)
+		first = new->first_vmodmap_key;
+	    if (oldLast>newLast)
+		newLast= oldLast;
+	    old->first_vmodmap_key = first;
+	    old->num_vmodmap_keys = newLast-first+1;
+	}
+	else {
+	    old->first_vmodmap_key = new->first_vmodmap_key;
+	    old->num_vmodmap_keys = new->num_vmodmap_keys;
+	}
+    }
     old->changed|= wanted;
     return;
 }
 
 void
-XkbNoteCoreMapChanges(old,new,wanted)
-    XkbMapChangesRec	*old;
-    XMappingEvent	*new;
-    unsigned int	 wanted;
+#if NeedFunctionPrototypes
+_XkbNoteCoreMapChanges(	XkbMapChangesPtr	 old,
+			XMappingEvent * 	new,
+			unsigned int 		wanted)
+#else
+_XkbNoteCoreMapChanges(old,new,wanted)
+    XkbMapChangesPtr	old;
+    XMappingEvent *	new;
+    unsigned int	wanted;
+#endif
 {
     int first,oldLast,newLast;
-
 
     if ((new->request==MappingKeyboard)&&(wanted&XkbKeySymsMask)) {
 	if (old->changed&XkbKeySymsMask) {
@@ -176,22 +222,26 @@ XkbNoteCoreMapChanges(old,new,wanted)
 }
 
 static Bool
+#if NeedFunctionPrototypes
+wire_to_event(Display *dpy,XEvent *re,xEvent *event)
+#else
 wire_to_event(dpy,re,event)
     Display *dpy;
     XEvent *re;
     xEvent *event;
+#endif
 {
     xkbEvent *xkbevent= (xkbEvent *)event;
     XkbInfoPtr xkbi;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
 	return False;
     xkbi = dpy->xkb_info;
     if (((event->u.u.type&0x7f)-xkbi->codes->first_event)!=XkbEventCode)
 	return False;
 
-    switch (xkbevent->u.any.xkbType&0x7f) {
+    switch (xkbevent->u.any.xkbType) {
 	case XkbStateNotify:
 	    {
 		xkbStateNotify *sn = (xkbStateNotify *)event;
@@ -219,6 +269,11 @@ wire_to_event(dpy,re,event)
 		    sev->latched_mods = sn->latchedMods;
 		    sev->locked_mods = sn->lockedMods;
 		    sev->compat_state = sn->compatState;
+		    sev->grab_mods = sn->grabMods;
+		    sev->compat_grab_mods = sn->compatGrabMods;
+		    sev->lookup_mods = sn->lookupMods;
+		    sev->compat_lookup_mods = sn->compatLookupMods;
+		    sev->ptr_buttons = sn->ptrBtnState;
 		    return True;
 		}
 	    }
@@ -226,7 +281,8 @@ wire_to_event(dpy,re,event)
 	case XkbMapNotify:
 	    {
 		xkbMapNotify *mn = (xkbMapNotify *)event;
-		if (xkbi->selected_events&XkbMapNotifyMask) {
+		if ((xkbi->selected_events&XkbMapNotifyMask)&&
+				(xkbi->selected_map_details&mn->changed)) {
 		    XkbMapNotifyEvent *mev;
 		    mev =(XkbMapNotifyEvent *)re;
 		    mev->type = XkbEventCode+xkbi->codes->first_event;
@@ -238,17 +294,23 @@ wire_to_event(dpy,re,event)
 		    mev->time = mn->time;
 		    mev->device = mn->deviceID;
 		    mev->changed =  mn->changed;
+		    mev->min_key_code = mn->minKeyCode;
+		    mev->max_key_code = mn->maxKeyCode;
 		    mev->first_type = mn->firstType;
 		    mev->num_types = mn->nTypes;
 		    mev->first_key_sym = mn->firstKeySym;
 		    mev->num_key_syms = mn->nKeySyms;
-		    mev->first_key_act = mn->firstKeyAction;
-		    mev->num_key_acts = mn->nKeyActions;
+		    mev->first_key_act = mn->firstKeyAct;
+		    mev->num_key_acts = mn->nKeyActs;
 		    mev->first_key_behavior = mn->firstKeyBehavior;
 		    mev->num_key_behaviors = mn->nKeyBehaviors;
 		    mev->vmods = mn->virtualMods;
 		    mev->first_key_explicit = mn->firstKeyExplicit;
 		    mev->num_key_explicit = mn->nKeyExplicit;
+		    mev->first_modmap_key = mn->firstModMapKey;
+		    mev->num_modmap_keys = mn->nModMapKeys;
+		    mev->first_vmodmap_key = mn->firstVModMapKey;
+		    mev->num_vmodmap_keys = mn->nVModMapKeys;
 		    XkbNoteMapChanges(&xkbi->changes,mev,XKB_XLIB_MAP_MASK);
 		    if (xkbi->changes.changed)
 			xkbi->flags|= XkbMapPending;
@@ -265,7 +327,7 @@ wire_to_event(dpy,re,event)
 		    ev->first_keycode = mn->firstKeySym;
 		    ev->request = MappingKeyboard;
 		    ev->count = mn->nKeySyms;
-		    XkbNoteCoreMapChanges(&xkbi->changes,ev,XKB_XLIB_MAP_MASK);
+		    _XkbNoteCoreMapChanges(&xkbi->changes,ev,XKB_XLIB_MAP_MASK);
 		    if (xkbi->changes.changed)
 			xkbi->flags|= XkbMapPending;
 		    return True;
@@ -290,6 +352,7 @@ wire_to_event(dpy,re,event)
 		    cev->enabled_ctrls =  cn->enabledControls;
 		    cev->enabled_ctrl_changes = cn->enabledControlChanges;
 		    cev->keycode = cn->keycode;
+		    cev->num_groups = cn->numGroups;
 		    cev->event_type = cn->eventType;
 		    cev->req_major = cn->requestMajor;
 		    cev->req_minor = cn->requestMinor;
@@ -311,9 +374,8 @@ wire_to_event(dpy,re,event)
 		    iev->display = dpy;
 		    iev->time = in->time;
 		    iev->device = in->deviceID;
-		    iev->state_changed =  in->stateChanged;
+		    iev->changed =  in->changed;
 		    iev->state=  in->state;
-		    iev->map_changed =  in->mapChanged;
 		    return True;
 		}
 	    }
@@ -332,9 +394,8 @@ wire_to_event(dpy,re,event)
 		    iev->display = dpy;
 		    iev->time = in->time;
 		    iev->device = in->deviceID;
-		    iev->state_changed =  in->stateChanged;
+		    iev->changed =  in->changed;
 		    iev->state=  in->state;
-		    iev->state_changed =  in->mapChanged;
 		    return True;
 		}
 	    }
@@ -354,33 +415,35 @@ wire_to_event(dpy,re,event)
 		    bev->time = bn->time;
 		    bev->device = bn->deviceID;
 		    bev->percent = bn->percent;
-		    bev->pitch = bn->percent;
+		    bev->pitch = bn->pitch;
 		    bev->duration = bn->duration;
 		    bev->bell_class = bn->bellClass;
 		    bev->bell_id = bn->bellID;
 		    bev->name = bn->name;
 		    bev->window = bn->window;
+		    bev->event_only = bn->eventOnly;
 		    return True;
 		}
 	    }
 	    break;
-	case XkbSlowKeyNotify:
+	case XkbAccessXNotify:
 	    {
-		if (xkbi->selected_events&XkbSlowKeyNotifyMask) {
-		    xkbSlowKeyNotify *skn =(xkbSlowKeyNotify *)event;
-		    XkbSlowKeyNotifyEvent *skev;
-		    skev =(XkbSlowKeyNotifyEvent *)re;
-		    skev->type = XkbEventCode+xkbi->codes->first_event;
-		    skev->xkb_type = XkbSlowKeyNotify;
-		    skev->serial = _XSetLastRequestRead(dpy,
+		if (xkbi->selected_events&XkbAccessXNotifyMask) {
+		    xkbAccessXNotify *axn =(xkbAccessXNotify *)event;
+		    XkbAccessXNotifyEvent *axev;
+		    axev =(XkbAccessXNotifyEvent *)re;
+		    axev->type = XkbEventCode+xkbi->codes->first_event;
+		    axev->xkb_type = XkbAccessXNotify;
+		    axev->serial = _XSetLastRequestRead(dpy,
 						(xGenericReply *)event);
-		    skev->send_event = ((event->u.u.type&0x80)!=0);
-		    skev->display = dpy;
-		    skev->time = skn->time;
-		    skev->device = skn->deviceID;
-		    skev->slow_key_state = skn->slowKeyState;
-		    skev->keycode = skn->keycode;
-		    skev->delay = skn->delay;
+		    axev->send_event = ((event->u.u.type&0x80)!=0);
+		    axev->display = dpy;
+		    axev->time = axn->time;
+		    axev->device = axn->deviceID;
+		    axev->detail = axn->detail;
+		    axev->keycode = axn->keycode;
+		    axev->sk_delay = axn->slowKeysDelay;
+		    axev->debounce_delay = axn->debounceDelay;
 		    return True;
 		}
 	    }
@@ -404,12 +467,13 @@ wire_to_event(dpy,re,event)
 		    nev->num_types = nn->nTypes;
 		    nev->first_lvl = nn->firstLevelName;
 		    nev->num_lvls = nn->nLevelNames;
-		    nev->first_radio_group = nn->firstRadioGroup;
+		    nev->num_aliases = nn->nAliases;
 		    nev->num_radio_groups = nn->nRadioGroups;
-		    nev->num_char_sets = nn->nCharSets;
-		    nev->changed_mods = nn->changedMods;
 		    nev->changed_vmods = nn->changedVirtualMods;
+		    nev->changed_groups = nn->changedGroupNames;
 		    nev->changed_indicators = nn->changedIndicators;
+		    nev->first_key = nn->firstKey;
+		    nev->num_keys = nn->nKeys;
 		    return True;
 		}
 	    }
@@ -428,32 +492,10 @@ wire_to_event(dpy,re,event)
 		    cmev->display = dpy;
 		    cmev->time = cmn->time;
 		    cmev->device = cmn->deviceID;
-		    cmev->changed_mods = cmn->changedMods;
-		    cmev->changed_vmods = cmn->changedVirtualMods;
+		    cmev->changed_groups = cmn->changedGroups;
 		    cmev->first_si = cmn->firstSI;
 		    cmev->num_si = cmn->nSI;
 		    cmev->num_total_si = cmn->nTotalSI;
-		    return True;
-		}
-	    }
-	    break;
-	case XkbAlternateSymsNotify:
-	    {
-		if (xkbi->selected_events&XkbAlternateSymsNotifyMask) {
-		    xkbAlternateSymsNotify *asn=(xkbAlternateSymsNotify *)event;
-		    XkbAlternateSymsNotifyEvent *asev;
-		    asev =(XkbAlternateSymsNotifyEvent *)re;
-		    asev->type = XkbEventCode+xkbi->codes->first_event;
-		    asev->xkb_type = XkbAlternateSymsNotify;
-		    asev->serial = _XSetLastRequestRead(dpy,
-						(xGenericReply *)event);
-		    asev->send_event = ((event->u.u.type&0x80)!=0);
-		    asev->display = dpy;
-		    asev->time = asn->time;
-		    asev->device = asn->deviceID;
-		    asev->alt_syms_id = asn->altSymsID;
-		    asev->first_key = asn->firstKey;
-		    asev->num_keys = asn->nKeys;
 		    return True;
 		}
 	    }
@@ -463,7 +505,7 @@ wire_to_event(dpy,re,event)
 		if (xkbi->selected_events&XkbActionMessageMask) {
 		    xkbActionMessage *am= (xkbActionMessage *)event;
 		    XkbActionMessageEvent *amev;
-		    amev= (XkbActionMessageEvent *)am;
+		    amev= (XkbActionMessageEvent *)re;
 		    amev->type = XkbEventCode+xkbi->codes->first_event;
 		    amev->xkb_type = XkbActionMessage;
 		    amev->serial = _XSetLastRequestRead(dpy,
@@ -475,75 +517,185 @@ wire_to_event(dpy,re,event)
 		    amev->keycode = am->keycode;
 		    amev->press = am->press;
 		    amev->key_event_follows = am->keyEventFollows;
+		    amev->group = am->group;
+		    amev->mods = am->mods;
 		    memcpy(amev->message,am->message,XkbActionMessageLength);
+		    amev->message[XkbActionMessageLength]= '\0';
+		    return True;
+		}
+	    }
+	    break;
+	case XkbExtensionDeviceNotify:
+	    {
+		if (xkbi->selected_events&XkbExtensionDeviceNotifyMask) {
+		    xkbExtensionDeviceNotify *ed=
+					(xkbExtensionDeviceNotify *)event;
+		    XkbExtensionDeviceNotifyEvent *edev;
+		    edev= (XkbExtensionDeviceNotifyEvent *)re;
+		    edev->type= XkbEventCode+xkbi->codes->first_event;
+		    edev->xkb_type= XkbExtensionDeviceNotify;
+		    edev->serial= _XSetLastRequestRead(dpy,
+						(xGenericReply *)event);
+		    edev->send_event= ((event->u.u.type&0x80)!=0);
+		    edev->display= dpy;
+		    edev->time= ed->time;
+		    edev->device= ed->deviceID;
+		    edev->led_class= ed->ledClass;
+		    edev->led_id= ed->ledID;
+		    edev->reason= ed->reason;
+		    edev->supported= ed->supported;
+		    edev->leds_defined= ed->ledsDefined;
+		    edev->led_state= ed->ledState;
+		    edev->first_btn= ed->firstBtn;
+		    edev->num_btns= ed->nBtns;
+		    edev->unsupported= ed->unsupported;
+		    return True;
+		}
+	    }
+	    break;
+	case XkbNewKeyboardNotify:
+	    {
+		xkbNewKeyboardNotify *nkn = (xkbNewKeyboardNotify *)event;
+		if ((xkbi->selected_events&XkbNewKeyboardNotifyMask)&&
+				    (xkbi->selected_nkn_details&nkn->changed)) {
+		    XkbNewKeyboardNotifyEvent *nkev;
+		    nkev =(XkbNewKeyboardNotifyEvent *)re;
+		    nkev->type = XkbEventCode+xkbi->codes->first_event;
+		    nkev->xkb_type = XkbNewKeyboardNotify;
+		    nkev->serial = _XSetLastRequestRead(dpy,
+						(xGenericReply *)event);
+		    nkev->send_event = ((event->u.u.type&0x80)!=0);
+		    nkev->display = dpy;
+		    nkev->time = nkn->time;
+		    nkev->device = nkn->deviceID;
+		    nkev->old_device = nkn->oldDeviceID;
+		    nkev->min_key_code = nkn->minKeyCode;
+		    nkev->max_key_code = nkn->maxKeyCode;
+		    nkev->old_min_key_code = nkn->oldMinKeyCode;
+		    nkev->old_max_key_code = nkn->oldMaxKeyCode;
+		    nkev->req_major = nkn->requestMajor;
+		    nkev->req_minor = nkn->requestMinor;
+		    nkev->changed = nkn->changed;
+		    if ((xkbi->desc)&&(nkev->send_event==0)&&
+			((xkbi->desc->device_spec==nkev->old_device)||
+			 (nkev->device!=nkev->old_device))) {
+			xkbi->flags= XkbMapPending|XkbXlibNewKeyboard;
+		    }
+		    return True;
+		}
+		else if(nkn->changed&(XkbNKN_KeycodesMask|XkbNKN_DeviceIDMask)){
+		    register XMappingEvent *ev = (XMappingEvent *)re;
+		    ev->type = MappingNotify;
+		    ev->serial = _XSetLastRequestRead(dpy,
+						(xGenericReply *)event);
+		    ev->send_event = ((event->u.u.type&0x80)!=0);
+		    ev->display = dpy;
+		    ev->window = 0;
+		    ev->first_keycode = dpy->min_keycode;
+		    ev->request = MappingKeyboard;
+		    ev->count = (dpy->max_keycode-dpy->min_keycode)+1;
+		    if ((xkbi->desc)&&(ev->send_event==0)&&
+			((xkbi->desc->device_spec==nkn->oldDeviceID)||
+			 (nkn->deviceID!=nkn->oldDeviceID))) {
+			xkbi->flags|= XkbMapPending|XkbXlibNewKeyboard;
+		    }
+		    return True;
 		}
 	    }
 	    break;
 	default:
+#ifdef DEBUG
 	    fprintf(stderr,"Got unknown Xkb event (%d, base=%d)\n",re->type,
 						xkbi->codes->first_event);
+#endif
 	    break;
     }
     return False;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbIgnoreExtension(Bool ignore)
+#else
 XkbIgnoreExtension(ignore)
     Bool ignore;
+#endif
 {
+    if (getenv("XKB_FORCE")!=NULL) {
+#ifdef DEBUG
+	fprintf(stderr,"Forcing use of XKB (overriding an IgnoreExtensions)\n");
+#endif
+	return False;
+    }
+#ifdef DEBUG
+    else if (getenv("XKB_DEBUG")!=NULL) {
+	fprintf(stderr,"Explicitly %signoring XKB\n",ignore?"":"not ");
+    }
+#endif
     _XkbIgnoreExtension = ignore;
     return True;
 }
 
 static void
+#if NeedFunctionPrototypes
+_XkbFreeInfo(Display *dpy)
+#else
 _XkbFreeInfo(dpy)
     Display *dpy;
+#endif
 {
     XkbInfoPtr xkbi = dpy->xkb_info;
     if (xkbi) {
 	if (xkbi->desc)
-	    Xfree(xkbi->desc);
-	if (xkbi->modmap)
-	    Xfree(xkbi->modmap);
+	    XkbFreeKeyboard(xkbi->desc,XkbAllComponentsMask,True);
 	Xfree(xkbi);
       }
 }
 
 Bool
-XkbUseExtension(dpy)
-    Display *dpy;
+#if NeedFunctionPrototypes
+XkbUseExtension(Display *dpy,int *major_rtrn,int *minor_rtrn)
+#else
+XkbUseExtension(dpy,major_rtrn,minor_rtrn)
+    Display *	dpy;
+    int *	major_rtrn;
+    int *	minor_rtrn;
+#endif
 {
     xkbUseExtensionReply rep;
     register xkbUseExtensionReq *req;
     XExtCodes		*codes;
-    int	ev_base;
+    int	ev_base,forceIgnore;
     XkbInfoPtr xkbi;
-#ifdef DEBUG
+    char *	str;
     static int debugMsg;
-#endif
     static int been_here= 0;
 
-    if ( dpy->xkb_info )
+    if ( dpy->xkb_info ) {
+	if (major_rtrn)	*major_rtrn= dpy->xkb_info->srv_major;
+	if (minor_rtrn)	*minor_rtrn= dpy->xkb_info->srv_minor;
 	return True;
+    }
     if (!been_here) {
-#ifdef DEBUG
 	debugMsg= (getenv("XKB_DEBUG")!=NULL);
-#endif
 	been_here= 1;
     }
-    if ((dpy->flags&XlibDisplayNoXkb) || dpy->keysyms ||
-	_XkbIgnoreExtension || getenv("XKB_DISABLE")) {
+
+    if (major_rtrn)	*major_rtrn= 0;
+    if (minor_rtrn)	*minor_rtrn= 0;
+
+    forceIgnore= (dpy->flags&XlibDisplayNoXkb)||dpy->keysyms;
+    forceIgnore= forceIgnore&(major_rtrn==NULL)&&(minor_rtrn==NULL);
+    if ( forceIgnore || _XkbIgnoreExtension || getenv("XKB_DISABLE")) {
 	LockDisplay(dpy);
 	dpy->flags |= XlibDisplayNoXkb;
 	UnlockDisplay(dpy);
-#ifdef DEBUG
 	if (debugMsg)
 	    fprintf(stderr,"XKB extension disabled or missing\n");
-#endif
 	return False;
     }
 
-    xkbi = (XkbInfoPtr)Xcalloc(1, sizeof(XkbInfoRec));
+    xkbi = _XkbTypedCalloc(1, XkbInfoRec);
     if ( !xkbi )
 	return False;
 
@@ -552,10 +704,8 @@ XkbUseExtension(dpy)
 	dpy->flags |= XlibDisplayNoXkb;
 	UnlockDisplay(dpy);
 	Xfree(xkbi);
-#ifdef DEBUG
 	if (debugMsg)
 	    fprintf(stderr,"XKB extension not present\n");
-#endif
 	return False;
     }
     xkbi->codes = codes;
@@ -566,34 +716,120 @@ XkbUseExtension(dpy)
     req->xkbReqType = X_kbUseExtension;
     req->wantedMajor = XkbMajorVersion;
     req->wantedMinor = XkbMinorVersion;
-    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse) || !rep.supported) {
-#ifdef DEBUG
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse) || !rep.supported ) {
+	Bool	fail;
+	fail= True;
 	if (debugMsg)
 	    fprintf(stderr,
 		"XKB version mismatch (want %d.%02d, got %d.%02d)\n", 
 		XkbMajorVersion,XkbMinorVersion,
 		rep.serverMajor, rep.serverMinor);
-#endif
-	/* could theoretically try for an older version here */
-	dpy->flags |= XlibDisplayNoXkb;
-	UnlockDisplay(dpy);
-	SyncHandle();
-	Xfree(xkbi);
-	return False;
+
+	/* pre-release 0.65 is very close to 1.00 */
+	if ((rep.serverMajor==0)&&(rep.serverMinor==65)) {
+	    if (debugMsg)
+		fprintf(stderr,"Trying to fall back to version 0.65...");
+	    GetReq(kbUseExtension, req);
+	    req->reqType = xkbi->codes->major_opcode;
+	    req->xkbReqType = X_kbUseExtension;
+	    req->wantedMajor = 0;
+	    req->wantedMinor = 65;
+	    if ( _XReply(dpy, (xReply *)&rep, 0, xFalse) && rep.supported ) {
+		if (debugMsg)
+		    fprintf(stderr,"succeeded\n");
+		fail= False;
+	    }
+	    else if (debugMsg) fprintf(stderr,"failed\n");
+	}
+	if (fail) {
+	    dpy->flags |= XlibDisplayNoXkb;
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    Xfree(xkbi);
+	    if (major_rtrn)	*major_rtrn= rep.serverMajor;
+	    if (minor_rtrn) *minor_rtrn= rep.serverMinor;
+	    return False;
+	}
     }
+#ifdef DEBUG
+    else if ( forceIgnore ) {
+	fprintf(stderr,"Internal Error!  XkbUseExtension succeeded with forceIgnore set\n");
+    }
+#endif
+    UnlockDisplay(dpy);
     xkbi->srv_major= rep.serverMajor;
     xkbi->srv_minor= rep.serverMinor;
-#ifdef DEBUG
+    if (major_rtrn)	*major_rtrn= rep.serverMajor;
+    if (minor_rtrn)	*minor_rtrn= rep.serverMinor;
     if (debugMsg)
 	fprintf(stderr,"XKB (version %d.%02d/%d.%02d) OK!\n",
 				XkbMajorVersion,XkbMinorVersion,
 				rep.serverMajor,rep.serverMinor);
-#endif
     dpy->xkb_info = xkbi;
     dpy->free_funcs->xkb = _XkbFreeInfo;
     ev_base = codes->first_event;
-    UnlockDisplay(dpy);
+    xkbi->xlib_ctrls|= (XkbLC_BeepOnComposeFail|XkbLC_ComposeLED);
+    if ((str=getenv("_XKB_OPTIONS_ENABLE"))!=NULL) {
+	if ((str=getenv("_XKB_LATIN1_LOOKUP"))!=NULL) {
+	    if ((strcmp(str,"off")==0)||(strcmp(str,"0")==0))
+		 xkbi->xlib_ctrls&= ~XkbLC_ForceLatin1Lookup;
+	    else xkbi->xlib_ctrls|= XkbLC_ForceLatin1Lookup;
+	}
+	if ((str=getenv("_XKB_CONSUME_LOOKUP_MODS"))!=NULL) {
+	    if ((strcmp(str,"off")==0)||(strcmp(str,"0")==0))
+		 xkbi->xlib_ctrls&= ~XkbLC_ConsumeLookupMods;
+	    else xkbi->xlib_ctrls|= XkbLC_ConsumeLookupMods;
+	}
+	if ((str=getenv("_XKB_CONSUME_SHIFT_AND_LOCK"))!=NULL) {
+	    if ((strcmp(str,"off")==0)||(strcmp(str,"0")==0))
+		 xkbi->xlib_ctrls&= ~XkbLC_AlwaysConsumeShiftAndLock;
+	    else xkbi->xlib_ctrls|= XkbLC_AlwaysConsumeShiftAndLock;
+	}
+	if ((str=getenv("_XKB_IGNORE_NEW_KEYBOARDS"))!=NULL) {
+	    if ((strcmp(str,"off")==0)||(strcmp(str,"0")==0))
+		 xkbi->xlib_ctrls&= ~XkbLC_IgnoreNewKeyboards;
+	    else xkbi->xlib_ctrls|= XkbLC_IgnoreNewKeyboards;
+	}
+	if ((str=getenv("_XKB_CONTROL_FALLBACK"))!=NULL) {
+	    if ((strcmp(str,"off")==0)||(strcmp(str,"0")==0))
+		 xkbi->xlib_ctrls&= ~XkbLC_ControlFallback;
+	    else xkbi->xlib_ctrls|= XkbLC_ControlFallback;
+	}
+	if ((str=getenv("_XKB_COMP_LED"))!=NULL) {
+	    if ((strcmp(str,"off")==0)||(strcmp(str,"0")==0))
+		 xkbi->xlib_ctrls&= ~XkbLC_ComposeLED;
+	    else {
+		xkbi->xlib_ctrls|= XkbLC_ComposeLED;
+		if (strlen(str)>0)
+		    xkbi->composeLED= XInternAtom(dpy,str,False);
+	    }
+	}
+	if ((str=getenv("_XKB_COMP_FAIL_BEEP"))!=NULL) {
+	    if ((strcmp(str,"off")==0)||(strcmp(str,"0")==0))
+		 xkbi->xlib_ctrls&= ~XkbLC_BeepOnComposeFail;
+	    else xkbi->xlib_ctrls|= XkbLC_BeepOnComposeFail;
+	}
+    }
+    if ((xkbi->composeLED==None)&&((xkbi->xlib_ctrls&XkbLC_ComposeLED)!=0))
+	xkbi->composeLED= XInternAtom(dpy,"Compose",False);
+#ifdef DEBUG
+    if (debugMsg) {
+	register unsigned c= xkbi->xlib_ctrls;
+	fprintf(stderr,"XKB compose: beep on failure is %s, LED is %s\n",
+		((c&XkbLC_BeepOnComposeFail)?"on":"off"),
+		((c&XkbLC_ComposeLED)?"on":"off"));
+	fprintf(stderr,"XKB XLookupString: %slatin-1, %s lookup modifiers\n",
+		((c&XkbLC_ForceLatin1Lookup)?"allow non-":"force "),
+		((c&XkbLC_ConsumeLookupMods)?"consume":"re-use"));
+	fprintf(stderr,
+	    "XKB XLookupString: %sconsume shift and lock, %scontrol fallback\n",
+	    ((c&XkbLC_AlwaysConsumeShiftAndLock)?"always ":"don't "),
+	    ((c&XkbLC_ControlFallback)?"":"no "));
+
+    }
+#endif
     XESetWireToEvent(dpy,ev_base+XkbEventCode,wire_to_event);
     SyncHandle();
     return True;
 }
+

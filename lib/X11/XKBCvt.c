@@ -1,5 +1,5 @@
-/* $XConsortium: XKBCvt.c /main/21 1996/02/02 14:09:26 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.5 1996/01/16 15:01:06 dawes Exp $ */
+/* $XConsortium: XKBCvt.c /main/22 1996/03/01 14:29:37 kaleb $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.6 1996/02/04 08:54:25 dawes Exp $ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -125,6 +125,24 @@ static unsigned char Const cyrillic[128] =
     0xbf, 0xcf, 0xc0, 0xc1, 0xc2, 0xc3, 0xb6, 0xb2, /* 15 */
     0xcc, 0xcb, 0xb7, 0xc8, 0xcd, 0xc9, 0xc7, 0xca};
 
+/* maps Cyrillic keysyms to KOI0-8 */
+static unsigned char Const koi8[128] =
+   {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0xa3, 0x00, 0x00, 0x00, 0x00, /* 10 */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0xb3, 0x00, 0x00, 0x00, 0x00, /* 11 */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, /* 12 */
+    0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf,
+    0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, /* 13 */
+    0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf,
+    0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, /* 14 */
+    0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef,
+    0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, /* 15 */
+    0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff};
 /* maps Greek keysyms to 8859-7 */
 static unsigned char Const greek[128] =
    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -435,6 +453,41 @@ __XkbDefaultToUpper(sym)
     return upper;
 }
 
+int _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
+    XPointer priv;
+    KeySym keysym;
+    char *buffer;
+    int nbytes;
+    Status *status;
+{
+    if ((keysym&0xffffff00)==0xff00) {
+        return _XkbHandleSpecialSym(keysym, buffer, nbytes, status);
+    } else {
+        if (nbytes>0) {
+	    buffer[0] = koi8[keysym & 0x7f];
+            if (nbytes>1)
+                buffer[1]= '\0';
+            return 1;
+        }
+    }
+    return 0;
+}
+static KeySym
+_XkbKoi8ToKS(priv,buffer,nbytes,status)
+    XPointer priv;
+    char *buffer;
+    int nbytes;
+    Status *status;
+{
+    if (nbytes!=1)
+        return NoSymbol;
+    if (((buffer[0]&0x80)==0)&&(buffer[0]>=32))
+        return buffer[0];
+    else if ((buffer[0]&0x7f)>=32) {
+        return 0xd00|buffer[0];
+    }
+    return NoSymbol;
+}
 /***====================================================================***/
 
 
@@ -490,6 +543,9 @@ static XkbConverters    cvt_Thai = {
         _XkbKSToThai, NULL, _XkbThaiToKS, NULL, NULL
 };
 
+static XkbConverters    cvt_Koi8 = {
+        _XkbKSToKoi8, NULL, _XkbKoi8ToKS, NULL, NULL
+};
 static int
 #if NeedFunctionPrototypes
 Strcmp(char *str1, char *str2)
@@ -546,6 +602,8 @@ _XkbGetConverters(charset, cvt_rtrn)
 	     *cvt_rtrn = cvt_kana;
 	else if (Strcmp(charset, "tis620.2533-1")==0)
 	     *cvt_rtrn = cvt_Thai;
+	else if (Strcmp(charset, "koi8")==0)
+	     *cvt_rtrn = cvt_Koi8;
 	/* other codesets go here */
 	else *cvt_rtrn = cvt_latin1;
 	return 1;
@@ -677,5 +735,4 @@ char *tmp;
     return NULL;
 }
 #endif
-
 

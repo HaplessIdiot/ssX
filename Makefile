@@ -1,5 +1,5 @@
 # $XConsortium: Makefile /main/33 1996/02/02 19:03:18 gildea $
-# $XFree86: xc/Makefile,v 3.3 1996/01/24 21:51:40 dawes Exp $
+# $XFree86: xc/Makefile,v 3.4 1996/02/10 10:35:14 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -53,7 +53,7 @@ World:
 	$(MAKE_CMD) $(MFLAGS) clean BOOTSTRAPSUBDIRS=
 	$(MAKE_CMD) $(MFLAGS) includes
 	$(MAKE_CMD) $(MFLAGS) depend
-	$(MAKE_CMD) $(MFLAGS) $(WORLDOPTS)
+	$(MAKE_CMD) $(MFLAGS) $(WORLDOPTS) World
 	@echo ""
 	@date
 	@echo ""

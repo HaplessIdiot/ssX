@@ -1,4 +1,4 @@
-/* $XConsortium: XKBMisc.c /main/2 1996/02/03 06:04:25 kaleb $ */
+/* $XConsortium: XKBMisc.c /main/3 1996/03/01 14:29:50 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -517,31 +517,31 @@ unsigned		changed,changedVMods,tmp;
     }
     else {
 	XkbAction *pActs;
+	unsigned int	new_vmodmask;
 	changed|= XkbKeyActionsMask;
 	pActs= XkbResizeKeyActions(xkb,key,nSyms);
 	if (!pActs)
 	    return False;
+	new_vmodmask= 0;
 	for (n=0;n<nSyms;n++) {
 	    if (interps[n]) {
 		unsigned effMods;
 
 		pActs[n]= *((XkbAction *)&interps[n]->act);
-		if ((n==0)||((interps[n]->match&XkbSI_LevelOneOnly)==0))
+		if ((n==0)||((interps[n]->match&XkbSI_LevelOneOnly)==0)) {
 		     effMods= mods;
+		     if (interps[n]->virtual_mod!=XkbNoModifier)
+			new_vmodmask|= (1<<interps[n]->virtual_mod);
+		}
 		else effMods= 0;
 		_XkbSetActionKeyMods(xkb,&pActs[n],effMods);
 	    }
 	    else pActs[n].type= XkbSA_NoAction;
 	}
-	if ((explicit&XkbExplicitVModMapMask)==0) {
-	    unsigned new_vmodmask;
-	    if (interps[0]&&(interps[0]->virtual_mod!=XkbNoModifier))
-		 new_vmodmask= (1<<interps[0]->virtual_mod);
-	    else new_vmodmask= 0;
-	    if (xkb->server->vmodmap[key]!=new_vmodmask) {
-		changed|= XkbVirtualModMapMask;
-		xkb->server->vmodmap[key]= new_vmodmask;
-	    }
+	if (((explicit&XkbExplicitVModMapMask)==0)&&
+				(xkb->server->vmodmap[key]!=new_vmodmask)) {
+	    changed|= XkbVirtualModMapMask;
+	    xkb->server->vmodmap[key]= new_vmodmask;
 	}
 	if (interps[0]) {
 	    if ((interps[0]->flags&XkbSI_LockingKey)&&
