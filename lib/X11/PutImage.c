@@ -906,6 +906,13 @@ PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
 
 extern void _XInitImageFuncPtrs();
 
+#ifdef USE_DYNAMIC_XCURSOR
+void
+_XNoticePutBitmap (Display	*dpy,
+		   Drawable	draw,
+		   XImage	*image);
+#endif
+    
 int
 XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 							      req_height)
@@ -996,5 +1003,15 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 
     UnlockDisplay(dpy);
     SyncHandle();
+#ifdef USE_DYNAMIC_XCURSOR
+    if (image->bits_per_pixel == 1 &&
+	x == 0 && y == 0 &&
+	width == image->width && height == image->height &&
+	gc->values.function == GXcopy &&
+	(gc->values.plane_mask & 1))
+    {
+	_XNoticePutBitmap (dpy, d, image);
+    }
+#endif
     return 0;
 }
