@@ -1,39 +1,43 @@
+XFree86 3.9v (1 November 1997)
+1370. Add missing pm_accel.c.
+1369. Add ImageWrite support to glint server (Alan Hourihane).
+
 XFree86 3.9u (1 November 1997)
-1367. Add support for I128 Revolution to scanpci and SuperProbe (#1100,
+1368. Add support for I128 Revolution to scanpci and SuperProbe (#1100,
       Robin Cutshaw).
-1366. Compile fixes for ARM32/NetBSD (#1099, Katrina Maffey).
-1365. Change mga to use bresenham lines instead of two point (#1098,
+1367. Compile fixes for ARM32/NetBSD (#1099, Katrina Maffey).
+1366. Change mga to use bresenham lines instead of two point (#1098,
       Radek Kapitan).
-1364. Add mga stipple code so that it is 256K pixels barrier sensible and 
+1365. Add mga stipple code so that it is 256K pixels barrier sensible and 
       even faster than current XAA stipple code (#1097, Mark Vojkovich, 
       Radek Kapitan).
-1363. Move C&T hw cursor into XAA. Re-enable ImageWrite on C&T. Rewrite 32bpp
+1364. Move C&T hw cursor into XAA. Re-enable ImageWrite on C&T. Rewrite 32bpp
       HiQV code (should be almost usable) (#1096, David Bateman).
-1362. Get the ch8398 work in tseng driver at every color depth and any hibit
+1363. Get the ch8398 work in tseng driver at every color depth and any hibit
       setting (#1095, George Krajcsovits).
-1361. Changes to XAA hw cursor code to better support switching between hw
+1362. Changes to XAA hw cursor code to better support switching between hw
       and sw cursor (#1094, David Bateman).
-1360. Fix stupid error caused by hand-aplying a patch (#1092, Mark Vojkovich).
-1359. Resync PC98 Imakefiles (#1091, Takaaki Nomura).
-1358. Build fix for PANIX (#1090, Takaaki Nomura).
-1357. Fix a duplicate inclusion of <sys/termio.h> on ISC inside xterm/screen.c 
+1361. Fix incorrect parenthesis placement caused by hand-aplying part of 
+      change 1347 (#1092, Mark Vojkovich).
+1360. Resync PC98 Imakefiles (#1091, Takaaki Nomura).
+1359. Build fix for PANIX (#1090, Takaaki Nomura).
+1358. Fix a duplicate inclusion of <sys/termio.h> on ISC inside xterm/screen.c 
       and update the help text for xterm to correspond with the appropriate 
       commandline switches (#1089, Michael Rohleder).
-1356. Fix some incorrect type modifications in change 1347 (#1087,1088
+1357. Fix some incorrect type modifications in change 1347 (#1087,1088
       Alan Hourihane, Michael Rohleder).
-1355. Fix mga_xaarepl.c to compile with non-GNU cc (#1086, Robin Cutshaw).
-1354. Clean up vgaPCI.h for Trident (#1085, Alan Hourihane).
-1353. Fix a bug introduced in change 1222 (#1084, Koen Gadeyne).
-1352. Remove amiga/ataritt files from xkbcomp/symbols Imakefile (they have
-      been added via fixtrackers... are we missing files here?)
-      (#1083, Takaaki Nomura).
-1351. Update VideoBoard98 (#1081, Takaaki Nomura).
-1350. Add DO_NOT_BLIT_STIPPLES to the xf86AccelInfoRec.Flags (#1070,
+1356. Fix mga_xaarepl.c to compile with non-GNU cc (#1086, Robin Cutshaw).
+1355. Clean up vgaPCI.h for Trident (#1085, Alan Hourihane).
+1354. Fix a bug introduced in change 1222 (#1084, Koen Gadeyne).
+1353. Remove amiga/ataritt files from xkbcomp/symbols Imakefile (they have
+      been moved to a subdir in change 1338) (#1083, Takaaki Nomura).
+1352. Update VideoBoard98 (#1081, Takaaki Nomura).
+1351. Add DO_NOT_BLIT_STIPPLES to the xf86AccelInfoRec.Flags (#1070,
       Marc Vojkovich).
-1349. More work for Permedia 2 support. Still doesn't work (Dirk Hohndel).
-1348. Split acceleration drivers for GLINT and Permedia. Get glint server
+1350. More work for Permedia 2 support. Still doesn't work (Dirk Hohndel).
+1349. Split acceleration drivers for GLINT and Permedia. Get glint server
       to work (again) on Fire GL 1000 (Helmut Fahrion).
-1347. Get glint server to work on Fire GL 3000 (Bart van den Broek).
+1348. Get glint server to work on Fire GL 3000 (Bart van den Broek).
 
 XFree86 3.9t (26 October 1997)
 1347. Add support for ARM32 architecture and IGS CyberPro 2010 support
@@ -100,8 +104,8 @@ XFree86 3.9s (15 October 1997)
       right-scrollbar to xterm (#1037, Thomas Dickey, Michael Rohleder).
 1312. Add GD7555 to vgaPCI.h and fix XF98_SVGA (#1036, Shuichi Ueno).
 1311. Fix a bug with Qword pad support in ImageWrite (#1033, Mark Vojkovich).
-1310. up the TV output for 9685 boards on PC98 and fix build problem on SVR4.0
-      (#1029, Takaaki Nomura, Isao Ohishi).
+1310. Fix mystique driver and build problem on SVR4.0 (#1029, Takaaki Nomura, 
+      Isao Ohishi).
 1309. Fix SuperProbe to correctly detect memory on the Trident 9685 (#1023,
       Alan Hourihane).
 1308. Add hardware clipping and transparency for the trident chips that 
@@ -5532,4 +5536,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.540 1997/10/26 13:24:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.541 1997/11/01 15:04:24 hohndel Exp $
