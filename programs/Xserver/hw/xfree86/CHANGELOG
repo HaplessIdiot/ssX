@@ -1,4 +1,6 @@
 XFree86 4.0.1d (xx October 2000)
+ 777. Experimental XAA Render support in the MGA driver (Mark Vojkovich).
+ 776. Preliminary XAA support for the Render extension (Mark Vojkovich).
  775. Pass depth/bpp correctly, scan all fbdev devices, misc fbdev fixes.
       (#4179, Michel Danzer).
  774. Add generic Vesa driver, fixes for xf86cfg plus changes to parser to
@@ -11247,4 +11249,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1348 2000/10/20 14:58:57 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1349 2000/10/20 15:04:32 alanh Exp $
