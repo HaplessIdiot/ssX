@@ -116,48 +116,6 @@ typedef enum {dps_event_pass_through, dps_event_internal_dispatch,
 
 /* Event delivery types for XDPSSetEventDelivery */
 
-#ifdef _NO_PROTO
-
-extern DPSContext XDPSCreateContext();
-extern DPSContext XDPSCreateSimpleContext();
-extern DPSContext XDPSCreateSecureContext();
-extern DPSContext DPSCreateTextContext();
-extern DPSContext DPSContextFromContextID();
-extern DPSContext XDPSFindContext ();
-extern void DPSDefaultTextBackstop ();
-extern void DPSChangeEncoding ();
-typedef void (*XDPSStatusProc)();
-extern XDPSStatusProc XDPSRegisterStatusProc();
-extern int XDPSGetContextStatus();
-extern long int DPSNewUserObjectIndex();
-extern DPSContext XDPSContextFromSharedID();
-extern DPSSpace XDPSSpaceFromSharedID();
-extern XID XDPSXIDFromContext();
-extern XID XDPSXIDFromSpace();
-extern DPSContext XDPSContextFromXID();
-extern DPSSpace XDPSSpaceFromXID();
-extern void XDPSUnfreezeContext();
-extern void XDPSSetStatusMask();
-extern DPSEventDelivery XDPSSetEventDelivery();
-extern Bool XDPSIsStatusEvent();
-extern Bool XDPSIsOutputEvent();
-extern Bool XDPSIsReadyEvent();
-extern Bool XDPSIsDPSEvent();
-extern Bool XDPSDispatchEvent();
-extern void XDPSSyncGCClip();
-extern void XDPSReconcileRequests();
-extern Status XDPSNXSetClientArg();
-extern Status XDPSNXSetAgentArg();
-extern void XDPSNotifyWhenReady();	/* L2 DPS/PROTO 9 */
-typedef void (*XDPSReadyProc)();
-extern XDPSReadyProc XDPSRegisterReadyProc();
-extern int XDPSGetProtocolVersion();
-extern Status XDPSCreateStandardColormaps();
-extern void XDPSGetDefaultColorMaps();
-extern void XDPSFlushGC();	/* DPS NX 2.0 */
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -285,7 +243,7 @@ extern int XDPSGetContextStatus(DPSContext ctxt);
 
   /* Returns the status of 'ctxt' as defined in XDPS.h. */
 
-extern long int DPSNewUserObjectIndex();
+extern long int DPSNewUserObjectIndex(void);
 
   /* Returns a new user object index.  The Client Library is
      the sole allocator of new user object indices.  User object
@@ -461,7 +419,5 @@ extern void XDPSFlushGC(Display *dpy, GC gc);
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-#endif /* _NO_PROTO */
 
 #endif /* DPSXCLIENT_H */

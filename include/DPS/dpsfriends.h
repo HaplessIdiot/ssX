@@ -130,31 +130,33 @@ typedef enum {
   dps_tInt,	dps_tUInt,
   dps_tLong,	dps_tULong } DPSDefinedType;
   
+struct _t_DPSContextRec;
+
   /* Enumerates the C data types that can be used to describe wrap
      parameters. */
 
-typedef void (*DPSContextProc)(/*
+typedef void (*DPSContextProc)(
 			       struct _t_DPSContextRec *ctxt
-*/);
+);
 
-typedef void (*DPSContextBufProc)(/*
+typedef void (*DPSContextBufProc)(
 				  struct _t_DPSContextRec *ctxt, char *buf,
 				  unsigned int count
-*/);
+);
 
-typedef void (*DPSContextTypedArrayProc)(/*
+typedef void (*DPSContextTypedArrayProc)(
 					 struct _t_DPSContextRec *ctxt,
 					 DPSDefinedType type,
 					 char *array, unsigned int length
-*/);
+);
 
-typedef void (*DPSWriteNumStringProc)(/*
-				         struct _t_DPSContextRec ctxt,
+typedef void (*DPSWriteNumStringProc)(
+				         struct _t_DPSContextRec *ctxt,
 					 DPSDefinedType type,
 					 const void *array,
 					 unsigned int count,
 					 int scale
-*/);
+);
 
 typedef struct {
   DPSContextBufProc BinObjSeqWrite;
@@ -227,9 +229,11 @@ typedef struct {
 
   /* The DPSProcsRec may be extended to include system-specific items */
 
-typedef void (*DPSSpaceProc)(/*
+struct _t_DPSSpaceRec;
+
+typedef void (*DPSSpaceProc)(
 			     struct _t_DPSSpaceRec *space
-*/);
+);
 
 typedef struct {
   DPSSpaceProc DestroySpace;
@@ -270,14 +274,16 @@ typedef struct _t_DPSContextExtensionRec {
   struct _t_DPSContextExtensionRec *next;
 } DPSContextExtensionRec;
 
+struct _t_DPSContextRec;
+
 typedef struct _t_DPSContextRec {
   char *priv;
   DPSSpace space;
   DPSProgramEncoding programEncoding;
   DPSNameEncoding nameEncoding;
   DPSProcs procs;
-  void (*textProc)();
-  void (*errorProc)();
+  void (*textProc)(struct _t_DPSContextRec *, char *, long unsigned);
+  void (*errorProc)(struct _t_DPSContextRec *, int, long unsigned, long unsigned);
   DPSResults resultTable;
   unsigned int resultTableLength;
   struct _t_DPSContextRec *chainParent, *chainChild;
@@ -419,7 +425,7 @@ extern void DPSUpdateNameMap(DPSContext ctxt);
   
 extern void DPSBinObjSeqWrite(DPSContext ctxt, char *buf, unsigned int count);
   
-extern DPSContext DPSPrivCurrentContext();
+extern DPSContext DPSPrivCurrentContext(void);
     
 extern void DPSWriteStringChars(DPSContext ctxt, char *buf,
 				unsigned int count);
@@ -472,7 +478,7 @@ extern DPSContextExtensionRec *DPSRemoveContextExtensionRec(DPSContext ctxt,
 
   /* This procedure removes a context extension record */
 
-extern int DPSGenerateExtensionRecID();
+extern int DPSGenerateExtensionRecID(void);
 
   /* This procedure generates a unique extension record id. */
 

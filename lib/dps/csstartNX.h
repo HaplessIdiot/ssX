@@ -41,12 +41,6 @@
 
 #include <X11/Xlib.h>
 
-#ifndef _NO_PROTO
-#define ARGS(list) (list)
-#else
-#define ARGS(list) ()
-#endif
-
 /* ---Globals--- */
 
 extern Bool gStartXDPSNXIsPresent;
@@ -57,8 +51,7 @@ extern Bool gStartXDPSNXIsPresent;
 
 /* ---Functions--- */
 
-extern int
-StartXDPSNX ARGS((char **additionalArgs));
+extern int StartXDPSNX (char **additionalArgs);
      /*
       * StartXDPSNX attempts to fork and exec the object file specified by
       * the DPSSetNXArg argument "DPSNXEXEC".  It passes as arguments to the
@@ -69,5 +62,6 @@ StartXDPSNX ARGS((char **additionalArgs));
       * started correctly.  Otherwise it returns !Success
       */
 
+extern int XDPSNXRecommendPort(int transport);
 
 #endif	/* CSSTARTNX_H */

@@ -36,9 +36,11 @@
  * Author:  Adobe Systems Incorporated
  */
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>
 
-#include "publictypes.h"
+#include "dpsXpriv.h"
 #include "DPS/dpsclient.h"
 #include "dpsprivate.h"
 #include "dpsdict.h"
@@ -129,51 +131,56 @@ DPSContext DPSGlobalContext;
   
 Globals DPSglobals = NULL;
 
-char *DPScalloc(e, n) integer e, n; {
+char *DPScalloc(integer e, integer n)
+{
   char *p;
   while (!(p = (char *)calloc(e, n))) {
     DPSOutOfMemory();
     }
   return p;
-  }
+}
 
 
 
-void DPSSafeSetLastNameIndex(ctxt) DPSContext ctxt; {
+void DPSSafeSetLastNameIndex(DPSContext ctxt)
+{
   /* we're about to call the error handler, so roll back the
      lastNameIndex to the last known valid index */
   DPSCheckInitClientGlobals();
   if (ctxt != dummyCtx && ctxt->space != NIL)
     ((DPSPrivContext)ctxt)->lastNameIndex = ((DPSPrivSpace)(ctxt->space))->lastNameIndex;
-  }
+}
 
-void DPSCheckInitClientGlobals() {
+void DPSCheckInitClientGlobals(void)
+{
   if (!DPSglobals) {
     DPSglobals = (Globals)DPScalloc(sizeof(GlobalsRec), 1);
     globLastNameIndex = -1;
     }
-  }
+}
 
 /**************************************************************/
 /* Procedures that support the DPSCreateContext context procs */
 /**************************************************************/
 
 /* ARGSUSED */
-static void ReleaseInput(unused, buffer)
-  char *unused; char *buffer; {
+static void ReleaseInput(
+  char *unused, char *buffer)
+{
   ContextBuffer cb = (ContextBuffer)buffer;
   if (cb == NIL) return;
   cb->next = contextBuffers;
   contextBuffers = cb;
   queuedBuffers--;
-  }
+}
 
 /* ARGSUSED */
-static void StuffResultVal(ctxt, result, tag, obj)
-  DPSContext ctxt;
-  DPSResults result;
-  integer tag;
-  DPSBinObj obj; {
+static void StuffResultVal(
+  DPSContext ctxt,
+  DPSResults result,
+  integer tag,
+  DPSBinObj obj)
+{
 
   integer type = obj->attributedType & ~DPS_EXEC;
   integer nObjs = 1;
@@ -185,7 +192,7 @@ static void StuffResultVal(ctxt, result, tag, obj)
     if (result->count == -1 && nObjs != 1) {
       DPSSafeSetLastNameIndex(ctxt);
       if (ctxt->errorProc != NIL)
-	(*ctxt->errorProc)(ctxt, dps_err_resultTypeCheck, (char *)obj, 0);
+	(*ctxt->errorProc)(ctxt, dps_err_resultTypeCheck, (long unsigned)obj, 0);
       return;
       }
     obj = (DPSBinObj) ((char *)obj + obj->val.arrayVal);
@@ -274,7 +281,7 @@ static void StuffResultVal(ctxt, result, tag, obj)
 	if (nObjs != 1) {
 	  DPSSafeSetLastNameIndex(ctxt);
 	  if (ctxt->errorProc != NIL)
-	    (*ctxt->errorProc)(ctxt, dps_err_resultTypeCheck, (char *)obj, 0);
+	    (*ctxt->errorProc)(ctxt, dps_err_resultTypeCheck, (long unsigned)obj, 0);
 	  }
 	else if (type == DPS_STRING) {
 	  if (result->count == -1) {
@@ -307,13 +314,13 @@ static void StuffResultVal(ctxt, result, tag, obj)
       default:
 	DPSSafeSetLastNameIndex(ctxt);
 	if (ctxt->errorProc != NIL)
-	  (*ctxt->errorProc)(ctxt, dps_err_resultTypeCheck, (char *)obj, 0);
+	  (*ctxt->errorProc)(ctxt, dps_err_resultTypeCheck, (long unsigned)obj, 0);
       } /* switch (result->type) */
 
     if (bump == 0) {
       DPSSafeSetLastNameIndex(ctxt);
       if (ctxt->errorProc != NIL)
-	(*ctxt->errorProc)(ctxt, dps_err_resultTypeCheck, (char *)obj, 0);
+	(*ctxt->errorProc)(ctxt, dps_err_resultTypeCheck, (long unsigned)obj, 0);
       return;
       }
     if (result->count != -1) {
@@ -324,13 +331,13 @@ static void StuffResultVal(ctxt, result, tag, obj)
     nObjs--;
     } while (nObjs > 0); /* do */
 
-  } /* StuffResultVal */
+} /* StuffResultVal */
 
 
-static void NumFormatFromTokenType(t, numFormat)
-  unsigned char t;
-  DPSNumFormat *numFormat; {
-  
+static void NumFormatFromTokenType(
+  unsigned char t,
+  DPSNumFormat *numFormat)
+{
   switch (t) {
     case DPS_HI_IEEE:
       *numFormat = dps_ieee;
@@ -346,7 +353,7 @@ static void NumFormatFromTokenType(t, numFormat)
       break;
     default: DPSCantHappen();
     }
-  }
+}
  
 
 #if !IEEEFLOAT
@@ -355,7 +362,8 @@ static void ConvSeqInPlace(nObjs, currObj, base, tokenType)
   integer nObjs;
   DPSBinObj currObj;
   char *base;
-  unsigned char tokenType; {
+  unsigned char tokenType;
+{
   DPSNumFormat numFormat;
   
   NumFormatFromTokenType(tokenType, &numFormat);
@@ -387,30 +395,32 @@ static void ConvSeqInPlace(nObjs, currObj, base, tokenType)
       } /* end switch */
     ++currObj;
     } /* end while */
-  }
+}
 #endif /* !IEEEFLOAT */
   
-boolean DPSKnownContext(ctxt) DPSContext ctxt; {
+boolean DPSKnownContext(DPSContext ctxt)
+{
   DPSPrivContext cc, c = (DPSPrivContext) ctxt;
   DPSPrivSpace ss;
   for (ss = spaces; ss != NIL; ss = ss->next)
     for (cc = ss->firstContext; cc != NIL; cc = cc->next)
       if (cc == c) return true;
   return false;
-  }
+}
 
-boolean DPSKnownSpace(space) DPSSpace space; {
+boolean DPSKnownSpace(DPSSpace space)
+{
   DPSPrivSpace ss, s = (DPSPrivSpace) space;
   for (ss = spaces; ss != NIL; ss = ss->next)
     if (ss == s) return true;
   return false;
-  }
+}
 
-void DPSclientPrintProc (ctxt, buf, nch)
-  DPSContext ctxt;
-  char	     *buf;
-  integer    nch;
-  {
+void DPSclientPrintProc (
+  DPSContext ctxt,
+  char	     *buf,
+  unsigned    nch)
+{
   DPSPrivContext cc = (DPSPrivContext) ctxt;
 
 #define DPS_SEQ_MIN 2
@@ -431,8 +441,8 @@ void DPSclientPrintProc (ctxt, buf, nch)
     }
   while (nch > 0) {
     char *oldBuf = NIL;
-    integer oldNch = 0;
-    integer n;
+    unsigned oldNch = 0;
+    unsigned n;
     if (cc->objBuf) { /* we're buffering */
       unsigned long int m;
       char *b = cc->objBuf + cc->nObjBufChars;
@@ -446,7 +456,7 @@ void DPSclientPrintProc (ctxt, buf, nch)
       b = cc->objBuf;
       minSize = (*(b+1) == 0) ? DPS_EXT_HEADER_SIZE : DPS_HEADER_SIZE;
       if (cc->nObjBufChars < minSize) {
-	if (nch + cc->nObjBufChars < minSize) {
+	if (nch + cc->nObjBufChars < (unsigned) minSize) {
 	  os_bcopy(buf, b + cc->nObjBufChars, nch);
 	  cc->nObjBufChars += nch;
 	  return;
@@ -471,7 +481,7 @@ void DPSclientPrintProc (ctxt, buf, nch)
       /* here with m = BOS total length in bytes, b = cc->objBuf */
       cc->objBuf = (char *)realloc(b, m);
 
-      if (nch < m - cc->nObjBufChars) {
+      if (nch + cc->nObjBufChars < m) {
 	os_bcopy(buf, cc->objBuf + cc->nObjBufChars, nch);
 	cc->nObjBufChars += nch;
 	return;
@@ -509,9 +519,9 @@ void DPSclientPrintProc (ctxt, buf, nch)
       DPSExtendedBinObjSeq bos;
       DPSExtendedBinObjSeqRec bosRec;
       DPSBinObj firstObj;
-      integer t;
+      unsigned t;
       unsigned long int m;
-      integer minSize;
+      unsigned minSize;
       
       if (nch < DPS_SEQ_MIN) {
 	/* gotta buffer it */
@@ -579,7 +589,7 @@ void DPSclientPrintProc (ctxt, buf, nch)
 	DPSSafeSetLastNameIndex((DPSContext)cc);
 	DURING
 	  if (cc->errorProc != NIL)
-	    (*cc->errorProc)((DPSContext)cc, dps_err_ps, buf, m);
+	    (*cc->errorProc)((DPSContext)cc, dps_err_ps, (unsigned long)buf, m);
 	HANDLER
 	  if (oldBuf) free(buf);
 	  RERAISE;
@@ -589,7 +599,7 @@ void DPSclientPrintProc (ctxt, buf, nch)
 	if (!cc->resultTable || t > cc->resultTableLength) {
 	  if (cc->chainParent == NIL && cc->errorProc != NIL) {
 	    DPSSafeSetLastNameIndex((DPSContext)cc);
-	    (*cc->errorProc)((DPSContext)cc, dps_err_resultTagCheck, buf, m);
+	    (*cc->errorProc)((DPSContext)cc, dps_err_resultTagCheck, (unsigned long)buf, m);
 	    }
 	  }
 	else if (t == cc->resultTableLength) {
@@ -618,9 +628,8 @@ void DPSclientPrintProc (ctxt, buf, nch)
 /**************************************/
 
 
-static void procWaitContext(ctxt)
-  DPSContext ctxt; {
-
+static void procWaitContext(DPSContext ctxt)
+{
   typedef struct {
     unsigned char tokenType;
     unsigned char topLevelCount;
@@ -646,10 +655,10 @@ static void procWaitContext(ctxt)
   ctxt->resultTableLength = 0;  /* same value as termination tag */
   DPSBinObjSeqWrite(ctxt, (char *) &dpsF,sizeof(DPSQ));
   DPSAwaitReturnValues(ctxt);
-  }
+}
 
-static void procUpdateNameMap(ctxt)
-  DPSContext ctxt; {
+static void procUpdateNameMap(DPSContext ctxt)
+{
   integer i;
   DPSPrivContext c = (DPSPrivContext) ctxt;
   DPSPrivSpace s = (DPSPrivSpace) ctxt->space;
@@ -672,47 +681,51 @@ static void procUpdateNameMap(ctxt)
   }
 }
 
-static void procWriteData(ctxt, buf, count)
-  DPSContext ctxt;
-  char *buf;
-  unsigned int count; {
+static void procWriteData(
+  DPSContext ctxt,
+  char *buf,
+  unsigned int count)
+{
   /* safe to call with chain */
   DPSinnerProcWriteData(ctxt, buf, count);
   if (ctxt->chainChild != NIL) DPSWriteData(ctxt->chainChild, buf, count);
-  }
+}
 
-static void procBinObjSeqWrite(ctxt, buf, count)
-  DPSContext ctxt;
-  char *buf;
-  unsigned int count; {
+static void procBinObjSeqWrite(
+  DPSContext ctxt,
+  char *buf,
+  unsigned int count)
+{
   if (((DPSPrivContext)ctxt)->lastNameIndex < globLastNameIndex) DPSUpdateNameMap(ctxt);
   DPSinnerProcWriteData(ctxt, buf, count);
   if (ctxt->chainChild != NIL) DPSBinObjSeqWrite(ctxt->chainChild, buf, count);
-  }
+}
 
-static void procWriteStringChars(ctxt, buf, count)
-  DPSContext ctxt;
-  char *buf;
-  unsigned int count; {
+static void procWriteStringChars(
+  DPSContext ctxt,
+  char *buf,
+  unsigned int count)
+{
   DPSinnerProcWriteData(ctxt, buf, count);
   if (ctxt->chainChild != NIL) DPSWriteStringChars(ctxt->chainChild, buf, count);
-  }
+}
 
-static void procWritePostScript(ctxt, buf, count)
-  DPSContext ctxt;
-  char *buf;
-  unsigned int count; {
+static void procWritePostScript(
+  DPSContext ctxt,
+  char *buf,
+  unsigned int count)
+{
   DPSinnerProcWriteData(ctxt, buf, count);
   if (ctxt->chainChild != NIL) DPSWritePostScript(ctxt->chainChild, buf, count);
-  }
+}
 
-static void innerProcWriteNumstring(ctxt, type, data, size, scale, writeProc)
-    DPSContext ctxt;
-    DPSDefinedType type;
-    char *data;
-    unsigned int size;
-    int scale;
-    void (*writeProc)();
+static void innerProcWriteNumstring(
+    DPSContext ctxt,
+    DPSDefinedType type,
+    char *data,
+    unsigned int size,
+    int scale,
+    void (*writeProc)(DPSContext, char *, unsigned))
 {
     unsigned char HNumHeader[4];
     register int i;
@@ -738,6 +751,9 @@ static void innerProcWriteNumstring(ctxt, type, data, size, scale, writeProc)
 	    HNumHeader[1] = 48 + ((DPS_DEF_TOKENTYPE % 2) * 128)
                 + ((DPS_DEF_TOKENTYPE >= 130) ? 1 : 0);
 	    break;
+
+	default:
+	    break;
     }
 
     HNumHeader[(DPS_DEF_TOKENTYPE % 2) ? 2 : 3] = (unsigned char) size;
@@ -751,7 +767,7 @@ static void innerProcWriteNumstring(ctxt, type, data, size, scale, writeProc)
 		(*writeProc)(ctxt, (char *) data, size * 4);
 	    } else {
 		while (size > 0) {
-		    for (i = 0; i < NBUFSIZE && i < size; i++) {
+		    for (i = 0; i < NBUFSIZE && (unsigned) i < size; i++) {
 			ibuf[i] = ((long *) data)[i];
 		    }
 		    (*writeProc)(ctxt, (char *) ibuf,
@@ -771,25 +787,29 @@ static void innerProcWriteNumstring(ctxt, type, data, size, scale, writeProc)
 
 	case dps_tFloat:
 	    (*writeProc)(ctxt, (char *) data, size * sizeof(float));
+
+	default:
+	    break;
     }
 } /* innerProcWriteNumstring */
 
-static void procWriteNumstring(ctxt, type, data, size, scale)
-    DPSContext ctxt;
-    DPSDefinedType type;
-    char *data;
-    unsigned int size;
-    int scale;
+static void procWriteNumstring(
+    DPSContext ctxt,
+    DPSDefinedType type,
+    char *data,
+    unsigned int size,
+    int scale)
 {
   innerProcWriteNumstring(ctxt, type, data, size, scale, DPSinnerProcWriteData);
   if (ctxt->chainChild != NIL) DPSWriteNumString(ctxt->chainChild, type, data, size, scale);
-  }
+}
 
-static void writeTypedObjectArray(ctxt, type, array, length)
-  DPSContext ctxt;
-  DPSDefinedType type;
-  char *array;
-  unsigned int length; {
+static void writeTypedObjectArray(
+  DPSContext ctxt,
+  DPSDefinedType type,
+  char *array,
+  unsigned int length)
+{
 
 #define DPSMAX_SEQ 10		 
   unsigned int i;
@@ -951,10 +971,10 @@ static void writeTypedObjectArray(ctxt, type, array, length)
 
     default:;
     }
-  } /* writeTypedObjectArray */
+} /* writeTypedObjectArray */
 
-static void procDestroyContext(ctxt)
-  DPSContext ctxt; {
+static void procDestroyContext(DPSContext ctxt)
+{
   DPSPrivContext c = (DPSPrivContext)ctxt, cc, prev;
   DPSPrivSpace ss = (DPSPrivSpace)(c->space);
 
@@ -985,9 +1005,10 @@ static void procDestroyContext(ctxt)
  
   DPSPrivateDestroyContext(ctxt);
   free(c);
-  }
+}
 
-static void procDestroySpace(space) DPSSpace space; {
+static void procDestroySpace(DPSSpace space)
+{
   DPSPrivSpace ns, prevS, ss = (DPSPrivSpace)space;
   integer sid = ss->sid;
 
@@ -1007,14 +1028,14 @@ static void procDestroySpace(space) DPSSpace space; {
   
   DPSPrivateDestroySpace(space);
   free(ss);
-  }
+}
 
-static void procInterrupt(ctxt)
-  DPSContext ctxt; {
+static void procInterrupt(DPSContext ctxt)
+{
   DPSPrivContext c = (DPSPrivContext)ctxt;
-  DPSSendInterrupt(c->wh, c->cid, DPSclientPrintProc);
+  DPSSendInterrupt((XDPSPrivContext)c->wh, c->cid, DPSclientPrintProc);
   if (ctxt->chainChild != NIL) DPSInterruptContext(ctxt->chainChild);
-  }
+}
 
 
 /****************************************************************/
@@ -1024,15 +1045,17 @@ static void procInterrupt(ctxt)
 /* precondition: (c >= 129 && c <= 159), which means that c is the
    first byte of either a binary token or a binary object sequence */
 
-static boolean IsBinaryToken(c) unsigned char c; {
+static boolean IsBinaryToken(unsigned char c)
+{
   return (c != DPS_HI_IEEE && c != DPS_LO_IEEE
 	  && c != DPS_HI_NATIVE && c != DPS_LO_NATIVE);
-  }
+}
 
 /* returns the number of initial bytes of a given goody that are
    required to figure out how many bytes are needed for the entire goody */
    
-static integer GetHdrNBytes(t) unsigned char *t; {
+static unsigned GetHdrNBytes(unsigned char *t)
+{
   if (!IsBinaryToken(*t)) {
     if (*(++t) == 0) return DPS_EXT_HEADER_SIZE;
     else return DPS_HEADER_SIZE;
@@ -1050,12 +1073,13 @@ static integer GetHdrNBytes(t) unsigned char *t; {
       if (*t > 149 && *t < 160) return(1); /* unassigned */
       else return(1);
     }
-  }
+}
 
 
-static void WriteHomogeneousArrayAsASCII(ctxt, buf)
-  DPSContext ctxt;
-  register unsigned char *buf; {
+static void WriteHomogeneousArrayAsASCII(
+  DPSContext ctxt,
+  register unsigned char *buf)
+{
   Swap32Rec n32;
   Swap16Rec n16;
   register unsigned char *b;
@@ -1118,12 +1142,13 @@ static void WriteHomogeneousArrayAsASCII(ctxt, buf)
 	  }
   else DPSCantHappen();
       DPSPrintf(ctxt, "\n] ");
-  } /* WriteHomogeneousArrayAsASCII */
+} /* WriteHomogeneousArrayAsASCII */
 
 /* returns the number of bytes needed for the entire goody. buf points
    to enough initial bytes of the goody to figure this out (see above). */
    
-static integer GetNBytes(buf) register unsigned char *buf; {
+static integer GetNBytes(register unsigned char *buf)
+{
   unsigned short int nBytes;
   register unsigned char *r = (unsigned char *)&nBytes;
   
@@ -1215,18 +1240,16 @@ static integer GetNBytes(buf) register unsigned char *buf; {
       default: nBytes = 1; /* unassigned */
       }
   return(nBytes);
-  }
+}
   
-static void WriteSeqAsAscii(ctxt, base, currObj, nObjs, tokenType,
-			    numstringOffsets)
-  DPSContext ctxt;
-  char *base;
-  DPSBinObj currObj;
-  unsigned int nObjs; 
-  unsigned char tokenType;
-  int *numstringOffsets;
+static void WriteSeqAsAscii(
+  DPSContext ctxt,
+  char *base,
+  DPSBinObj currObj,
+  unsigned int nObjs,
+  unsigned char tokenType,
+  int *numstringOffsets)
 {
-
   integer nLineObjs = 0;
   DPSNumFormat numFormat;
   float f;
@@ -1275,7 +1298,7 @@ static void WriteSeqAsAscii(ctxt, base, currObj, nObjs, tokenType,
 	DPSPrintf(ctxt, "%g ", f);
 	break;
       case DPS_NAME: {
-	char *p;
+	char *p = 0;
 	integer index;
 	
 	index = currObj->val.nameVal;
@@ -1368,12 +1391,13 @@ static void WriteSeqAsAscii(ctxt, base, currObj, nObjs, tokenType,
 
     DPSPrintf(ctxt, "\n");
 
-  } /* WriteSeqAsAscii */
+} /* WriteSeqAsAscii */
 
-static void ConvertAndWriteSeqAsData(ctxt, bosBuf, pass)
-  DPSContext ctxt;
-  char *bosBuf;
-  int pass; {
+static void ConvertAndWriteSeqAsData(
+  DPSContext ctxt,
+  char *bosBuf,
+  int pass)
+{
   DPSPrivContext cc = (DPSPrivContext) ctxt;
   DPSExtendedBinObjSeq bos;
   DPSExtendedBinObjSeqRec bosRec;
@@ -1452,7 +1476,7 @@ static void ConvertAndWriteSeqAsData(ctxt, bosBuf, pass)
 
     if (type == DPS_STRING && newObj.length > 0) {
       /* keep track of where strings start */
-      firstCharOffset = (newObj.val.stringVal < firstCharOffset)
+      firstCharOffset = ((unsigned) newObj.val.stringVal < firstCharOffset)
 	? newObj.val.stringVal : firstCharOffset;
       }
     if (type == DPS_NAME) {
@@ -1476,7 +1500,7 @@ static void ConvertAndWriteSeqAsData(ctxt, bosBuf, pass)
 	  }
       else { /* name is already a string */
 	  /* keep track of where strings start */
-	  firstCharOffset = (newObj.val.nameVal < firstCharOffset)
+	  firstCharOffset = ((unsigned) newObj.val.nameVal < firstCharOffset)
 	    ? newObj.val.nameVal : firstCharOffset;
 	}
       } /* end if type == DPS_NAME */
@@ -1532,7 +1556,7 @@ next_obj:
     default:;
     }
     
-  } /* ConvertAndWriteSeqAsData */
+} /* ConvertAndWriteSeqAsData */
 
 #define MIN16 -32768
 #define MAX16 32767
@@ -1541,10 +1565,11 @@ next_obj:
    if all of the array elements are "integers", or all are "reals".
    Will return -1 for any other case. */
    
-static integer TestHomogeneous(aryObj, length, numFormat)
-  DPSBinObj aryObj;
-  unsigned short length; 
-  DPSNumFormat numFormat; {
+static integer TestHomogeneous(
+  DPSBinObj aryObj,
+  unsigned short length,
+  DPSNumFormat numFormat)
+{
   integer tmp, r = -1;
   
   while (length--) {
@@ -1581,16 +1606,15 @@ bump_obj:
     ++aryObj;
     }
   return(r);
-  } /* TestHomogeneous */
+} /* TestHomogeneous */
 
-static void WriteSeqAsTokens(ctxt, base, currObj, nObjs, tokenType,
-			     numstringOffsets)
-  DPSContext ctxt;
-  char *base;
-  DPSBinObj currObj;
-  unsigned int nObjs; 
-  unsigned char tokenType;
-  int *numstringOffsets;
+static void WriteSeqAsTokens(
+  DPSContext ctxt,
+  char *base,
+  DPSBinObj currObj,
+  unsigned int nObjs,
+  unsigned char tokenType,
+  int *numstringOffsets)
 {
   int nLineObjs = 0;
   DPSNumFormat numFormat;
@@ -1652,7 +1676,7 @@ static void WriteSeqAsTokens(ctxt, base, currObj, nObjs, tokenType,
 	DPSWriteData(ctxt, (char *) &currObj->val.realVal, 4);
 	break;
       case DPS_NAME: {
-	char *p;
+	char *p = 0;
 	integer index = currObj->val.nameVal;
 	
 	length = currObj->length;
@@ -1767,11 +1791,12 @@ next_obj:
     } /* end while */
 
     DPSPrintf(ctxt, "\n");
-  } /* WriteSeqAsTokens */
+} /* WriteSeqAsTokens */
 
-static void WriteTokenAsAscii(ctxt, buf)
-  DPSContext ctxt;
-  register unsigned char *buf; {
+static void WriteTokenAsAscii(
+  DPSContext ctxt,
+  register unsigned char *buf)
+{
   Swap32Rec n32;
   Swap16Rec n16;
   register unsigned char *b;
@@ -1803,7 +1828,7 @@ static void WriteTokenAsAscii(ctxt, buf)
       break;
     case 137: {  /* 16 or 32-bit fixed */
 	unsigned char r = *buf++;
-	float f;
+	float f = 0.0;
 	boolean hi = (r < 128);
 	
 	if (!hi) r -= 128;
@@ -1907,11 +1932,9 @@ share_str_code:
       DPSPrintf(ctxt, "%s ", DPSSysNames[*buf]);
       break;
     case 147:	/* literal user name index */
-      if ((int) *buf > globLastNameIndex) /* +++ */;
       DPSPrintf(ctxt, "/%s ", DPSNameFromIndex(*buf));
       break;
     case 148:	/* executable user name index */
-      if ((int) *buf > globLastNameIndex) /* +++ */;
       DPSPrintf(ctxt, "%s ", DPSNameFromIndex(*buf));
       break;
     case 149: {  /* homogeneous number array */
@@ -1920,17 +1943,17 @@ share_str_code:
       }
     default:; /* unassigned */
     }
-  } /* WriteTokenAsAscii */
+} /* WriteTokenAsAscii */
   
 
 /* WriteEntireGoody converts an entire binary token or binary object
    sequence as specified by ctxt's encoding parameters. Write the
    converted bytes via DPSWriteData.  buf points to the complete goody. */
    
-static void WriteEntireGoody(ctxt, buf, numstringOffsets)
-  DPSContext ctxt;
-  unsigned char *buf;
-  int *numstringOffsets;
+static void WriteEntireGoody(
+  DPSContext ctxt,
+  unsigned char *buf,
+  int *numstringOffsets)
 {
 
   DPSExtendedBinObjSeq bos = (DPSExtendedBinObjSeq) buf;
@@ -1961,16 +1984,16 @@ static void WriteEntireGoody(ctxt, buf, numstringOffsets)
     case dps_binObjSeq:
       if (ctxt->nameEncoding == dps_strings) {
 	  /* takes three passes to do conversions */
-	  ConvertAndWriteSeqAsData(ctxt, (unsigned char *) buf, 0);
-	  ConvertAndWriteSeqAsData(ctxt, (unsigned char *) buf, 1);
-	  ConvertAndWriteSeqAsData(ctxt, (unsigned char *) buf, 2);
+	  ConvertAndWriteSeqAsData(ctxt, (char *) buf, 0);
+	  ConvertAndWriteSeqAsData(ctxt, (char *) buf, 1);
+	  ConvertAndWriteSeqAsData(ctxt, (char *) buf, 2);
 	}
       else if (bos->tokenType != DPS_DEF_TOKENTYPE
 	       || cc->numFormat != DPSDefaultNumFormat) {
 	  /* first pass just writes modified seqHead */
-	  ConvertAndWriteSeqAsData(ctxt, (unsigned char *) buf, 0);
+	  ConvertAndWriteSeqAsData(ctxt, (char *) buf, 0);
 	  /* second pass converts numbers and writes the sequence */
-	  ConvertAndWriteSeqAsData(ctxt, (unsigned char *) buf, 1);
+	  ConvertAndWriteSeqAsData(ctxt, (char *) buf, 1);
 	}
       else DPSWriteData(ctxt, (char *) buf, bos->length);
       break;
@@ -2000,37 +2023,41 @@ static void WriteEntireGoody(ctxt, buf, numstringOffsets)
 /* Context procs for DPSCreateTextContext */
 /**************************************/
 
-static void textWriteData(ctxt, buf, nch)
-  DPSContext ctxt; char *buf; unsigned int nch; {
+static void textWriteData(DPSContext ctxt, char *buf, unsigned int nch)
+{
   (*ctxt->textProc)(ctxt, buf, nch);
   if (ctxt->chainChild != NIL) DPSWriteData(ctxt->chainChild, buf, nch);
-  }
+}
 
-static void textFlushContext(ctxt) DPSContext ctxt; {
+static void textFlushContext(DPSContext ctxt)
+{
   if (ctxt->chainChild != NIL) DPSFlushContext(ctxt->chainChild);
-  }
+}
 
-static void textInterruptContext(ctxt) DPSContext ctxt; {
+static void textInterruptContext(DPSContext ctxt)
+{
   if (ctxt->chainChild != NIL) DPSInterruptContext(ctxt->chainChild);
-  }
+}
 
-static void textDestroyContext(ctxt) DPSContext ctxt; {
+static void textDestroyContext(DPSContext ctxt)
+{
   DPSPrivContext c = (DPSPrivContext)ctxt;
 
   DPSUnchainContext(ctxt);
 
   free(c);
-  }
+}
 
-static void textInnerWritePostScript(ctxt, buf, nch)
-  DPSContext ctxt; char *buf; unsigned int nch; {
+static void textInnerWritePostScript(
+  DPSContext ctxt, char *buf, unsigned int nch)
+{
   DPSPrivContext cc = (DPSPrivContext)ctxt;
   while (nch > 0) {
     char *oldBuf = NIL;
     integer oldNch = 0;
-    integer n;
+    unsigned n;
     if (cc->outBuf) { /* we're buffering */
-      integer m;
+      unsigned m;
       integer bst;
       if (!IsBinaryToken(cc->outBuf[0]) && cc->nOutBufChars < DPS_SEQ_MIN) {
 	char *tb = cc->outBuf + cc->nOutBufChars;
@@ -2044,7 +2071,7 @@ static void textInnerWritePostScript(ctxt, buf, nch)
 	/* # bytes needed to determine size */
       if (cc->nOutBufChars < bst) {
 	char *b = cc->outBuf;
-	if (nch + cc->nOutBufChars < bst) {
+	if (nch + cc->nOutBufChars < (unsigned) bst) {
 	  os_bcopy(buf, cc->outBuf + cc->nOutBufChars, nch);
 	  cc->nOutBufChars += nch;
 	  return;
@@ -2061,7 +2088,7 @@ static void textInnerWritePostScript(ctxt, buf, nch)
       else m = GetNBytes((unsigned char *) cc->outBuf);
 
       /* here with size of entire goody in m and outBuf set up */
-      if (nch < m - cc->nOutBufChars) {
+      if (nch + cc->nOutBufChars < m) {
 	os_bcopy(buf, cc->outBuf + cc->nOutBufChars, nch);
 	cc->nOutBufChars += nch;
 	return;
@@ -2100,7 +2127,7 @@ static void textInnerWritePostScript(ctxt, buf, nch)
 
     if (nch != 0) {
       /* here with the next binary object sequence or encoded token */
-      integer m;
+      unsigned m = 0;
       integer bst;
       if (!IsBinaryToken(buf[0]) && nch < DPS_SEQ_MIN) {
 	/* gotta buffer it */
@@ -2111,10 +2138,10 @@ static void textInnerWritePostScript(ctxt, buf, nch)
 	return;
 	}
       bst = GetHdrNBytes((unsigned char *) buf);
-      if (nch < bst || nch < (m = GetNBytes((unsigned char *) buf))) {
+      if (nch < (unsigned)bst || nch < (m = GetNBytes((unsigned char *) buf))) {
 	/* gotta buffer it */
 	DPSAssertWarn(!oldBuf, cc, "problem converting binary token/sequence (oldBuf)");
-	if (nch < bst) {
+	if (nch < (unsigned) bst) {
 	  cc->outBuf = (char *)DPScalloc(bst, 1);
 	  }
 	else {
@@ -2150,10 +2177,11 @@ static void textInnerWritePostScript(ctxt, buf, nch)
 	}
       } /* if (nch != 0) */
     } /* while (nch > 0) */
-  } /* textInnerWritePostScript */
+} /* textInnerWritePostScript */
 
-static void textWritePostScript(ctxt, buf, nch)
-  DPSContext ctxt; char *buf; unsigned int nch; {
+static void textWritePostScript(
+  DPSContext ctxt, char *buf, unsigned int nch)
+{
   DPSContext children = ctxt->chainChild;
   /* disconnect temporarily so that high level procs can
      be called safely */
@@ -2168,13 +2196,14 @@ static void textWritePostScript(ctxt, buf, nch)
     ctxt->chainChild = children;
     DPSWritePostScript(ctxt->chainChild, buf, nch);
     }
-  }
+}
 
-static void textWriteStringChars(ctxt, buf, nch)
-  DPSContext ctxt; char *buf; unsigned int nch; {
+static void textWriteStringChars(
+  DPSContext ctxt, char *buf, unsigned int nch)
+{
   DPSContext children = ctxt->chainChild;
 
-  if (DPSCheckShared(ctxt)) return;
+  if (DPSCheckShared((DPSPrivContext)ctxt)) return;
   /* disconnect temporarily so that high level procs can
      be called safely */
   if (children != NIL) ctxt->chainChild = NIL;
@@ -2188,14 +2217,15 @@ static void textWriteStringChars(ctxt, buf, nch)
     ctxt->chainChild = children;
     DPSWriteStringChars(ctxt->chainChild, buf, nch);
     }
-  }
+}
 
-static void textBinObjSeqWrite(ctxt, buf, nch)
-  DPSContext ctxt; char *buf; unsigned int nch; {
+static void textBinObjSeqWrite(
+  DPSContext ctxt, char *buf, unsigned int nch)
+{
   DPSContext children = ctxt->chainChild;
   DPSPrivContext c = (DPSPrivContext) ctxt;
 
-  if (DPSCheckShared(ctxt)) return;
+  if (DPSCheckShared(c)) return;
   if (c->lastNameIndex < globLastNameIndex)
     DPSUpdateNameMap(ctxt);
   /* disconnect temporarily so that high level procs can
@@ -2211,14 +2241,14 @@ static void textBinObjSeqWrite(ctxt, buf, nch)
     ctxt->chainChild = children;
     DPSBinObjSeqWrite(ctxt->chainChild, buf, nch);
     }
-  }
+}
 
-static void textWriteNumstring(ctxt, type, data, size, scale)
-    DPSContext ctxt;
-    DPSDefinedType type;
-    char *data;
-    unsigned int size;
-    int scale;
+static void textWriteNumstring(
+    DPSContext ctxt,
+    DPSDefinedType type,
+    char *data,
+    unsigned int size,
+    int scale)
 {
     DPSPrivContext cc = (DPSPrivContext) ctxt;
 #define BUFFER_GROW 10
@@ -2252,20 +2282,22 @@ static void textWriteNumstring(ctxt, type, data, size, scale)
 /********************************************/
 /* Public procs for dealing with user names */
 
-char *DPSNameFromIndex(index) long int index; {
+char *DPSNameFromIndex(long int index)
+{
   if (DPSglobals == NIL || index < 0 || index > globLastNameIndex
       || userNameDict == NIL)
     return NIL;
   return (char *) userNames[index];
-  }
+}
 
-void DPSMapNames(ctxt, nNames, names, indices)
-  DPSContext ctxt;
-  unsigned int nNames;
-  char **names;
-  int **indices; {
-  integer i;
-  char *last;
+void DPSMapNames(
+  DPSContext ctxt,
+  unsigned int nNames,
+  char **names,
+  int **indices)
+{
+  unsigned i;
+  char *last = names[0];
 
   DPSCheckInitClientGlobals();
 
@@ -2282,7 +2314,6 @@ void DPSMapNames(ctxt, nNames, names, indices)
     char *n = names[i];
     DPSContext c;
     
-    if (i == 0) last = names[0];
     if (n == NIL)
       n = last;
     else
@@ -2290,7 +2321,7 @@ void DPSMapNames(ctxt, nNames, names, indices)
     DPSAssert(n != NIL);
     if (strlen(n) > 128) {
       DPSSafeSetLastNameIndex(ctxt);
-      (*ctxt->errorProc)(ctxt, dps_err_nameTooLong, n, strlen(n));
+      (*ctxt->errorProc)(ctxt, dps_err_nameTooLong, (unsigned long) n, strlen(n));
       return;
       }
     j = DPSWDictLookup(userNameDict, n);
@@ -2325,15 +2356,16 @@ void DPSMapNames(ctxt, nNames, names, indices)
 	((DPSPrivContext)c)->lastNameIndex = globLastNameIndex;
       }
     } /* for */
-  }
+}
      
 /**********************/
 /* Other public procs */
 
-void DPSDefaultErrorProc(ctxt, errorCode, arg1, arg2)
-  DPSContext ctxt;
-  DPSErrorCode errorCode;
-  long unsigned int arg1, arg2; {
+void DPSDefaultErrorProc(
+  DPSContext ctxt,
+  DPSErrorCode errorCode,
+  long unsigned int arg1, long unsigned int arg2)
+{
 
   DPSTextProc textProc = DPSGetCurrentTextBackstop();
   
@@ -2400,7 +2432,7 @@ void DPSDefaultErrorProc(ctxt, errorCode, arg1, arg2)
     case dps_err_invalidContext:
       if (textProc != NIL) {
 	char m[100];
-	(void) sprintf(m, "%s%s%d%s", prefix, contextinfix, arg1, suffix);
+	(void) sprintf(m, "%s%s%ld%s", prefix, contextinfix, arg1, suffix);
 	(*textProc)(ctxt, m, strlen(m));
 	}
       break;
@@ -2424,10 +2456,9 @@ void DPSDefaultErrorProc(ctxt, errorCode, arg1, arg2)
 	DPSDefaultPrivateHandler(ctxt, errorCode, arg1, arg2, prefix, suffix);
 	break;
     }
-  } /* DPSDefaultErrorProc */
+} /* DPSDefaultErrorProc */
 
-void DPSCheckRaiseError(c)
-    DPSContext c;
+void DPSCheckRaiseError(DPSContext c)
 {
     DPSPrivContext cc = (DPSPrivContext) c;
     if (cc != NULL && cc->resyncing) {
@@ -2442,16 +2473,18 @@ void DPSCheckRaiseError(c)
 
 /* dps_err_invalidAccess is now defined for all clients. */
 
-static void textAwaitReturnValues(ctxt) DPSContext ctxt; {
+static void textAwaitReturnValues(DPSContext ctxt)
+{
   (*ctxt->errorProc)(ctxt, dps_err_invalidAccess, 0, 0);
-  }
+}
 
-static void Noop() {
-  }
+static void Noop(void)
+{
+}
   
-DPSContext DPSCreateTextContext(textProc, errorProc)
-  DPSTextProc textProc; DPSErrorProc errorProc;
-  {
+DPSContext DPSCreateTextContext(
+  DPSTextProc textProc, DPSErrorProc errorProc)
+{
   DPSPrivContext c;
 
   if (DPSInitialize () != 0) return((DPSContext) NIL);
@@ -2478,7 +2511,7 @@ DPSContext DPSCreateTextContext(textProc, errorProc)
     {
     textSpace = (DPSPrivSpace) DPScalloc(sizeof (DPSPrivSpaceRec), 1);
     textSpace->procs = (DPSSpaceProcs) DPScalloc(sizeof (DPSSpaceProcsRec), 1);
-    textSpace->procs->DestroySpace = Noop;
+    textSpace->procs->DestroySpace = (DPSSpaceProc) Noop;
     textSpace->lastNameIndex = -1;
     DPSInitPrivateSpaceFields(textSpace);
     }
@@ -2486,28 +2519,29 @@ DPSContext DPSCreateTextContext(textProc, errorProc)
 
   DPSInitPrivateTextContextFields(c, textSpace);
   return (DPSContext)c;
-  } /* DPSCreateTextContext */
+} /* DPSCreateTextContext */
 
 
-static DPSContext CreateDummyContext() {
+static DPSContext CreateDummyContext(void)
+{
   DPSPrivContext c;
 
   DPSCheckInitClientGlobals();
   if (!dummyCtxProcs) {
     dummyCtxProcs = (DPSProcs)DPScalloc(sizeof(DPSProcsRec), 1);
-    dummyCtxProcs->BinObjSeqWrite = Noop;
-    dummyCtxProcs->WriteTypedObjectArray = Noop;
-    dummyCtxProcs->WriteStringChars = Noop;
-    dummyCtxProcs->WritePostScript = Noop;
-    dummyCtxProcs->WriteData = Noop;
-    dummyCtxProcs->FlushContext = Noop;
-    dummyCtxProcs->ResetContext = Noop;
-    dummyCtxProcs->WaitContext = Noop;
-    dummyCtxProcs->UpdateNameMap = Noop;
-    dummyCtxProcs->AwaitReturnValues = Noop;
-    dummyCtxProcs->Interrupt = Noop;
-    dummyCtxProcs->DestroyContext = Noop;
-    dummyCtxProcs->WriteNumString = Noop;
+    dummyCtxProcs->BinObjSeqWrite = (DPSContextBufProc) Noop;
+    dummyCtxProcs->WriteTypedObjectArray = (DPSContextTypedArrayProc) Noop;
+    dummyCtxProcs->WriteStringChars = (DPSContextBufProc) Noop;
+    dummyCtxProcs->WritePostScript = (DPSContextBufProc) Noop;
+    dummyCtxProcs->WriteData = (DPSContextBufProc) Noop;
+    dummyCtxProcs->FlushContext = (DPSContextProc) Noop;
+    dummyCtxProcs->ResetContext = (DPSContextProc) Noop;
+    dummyCtxProcs->WaitContext = (DPSContextProc) Noop;
+    dummyCtxProcs->UpdateNameMap = (DPSContextProc) Noop;
+    dummyCtxProcs->AwaitReturnValues = (DPSContextProc) Noop;
+    dummyCtxProcs->Interrupt = (DPSContextProc) Noop;
+    dummyCtxProcs->DestroyContext = (DPSContextProc) Noop;
+    dummyCtxProcs->WriteNumString = (DPSWriteNumStringProc) Noop;
     }
 
   c = (DPSPrivContext)DPScalloc(sizeof(DPSPrivContextRec), 1);
@@ -2519,39 +2553,43 @@ static DPSContext CreateDummyContext() {
   c->numstringOffsets = NULL;
 
   return (DPSContext)c;
-  } /* CreateDummyContext */
+} /* CreateDummyContext */
 
-void DPSSetTextBackstop(textProc)
-  DPSTextProc textProc; {
+void DPSSetTextBackstop(DPSTextProc textProc)
+{
   DPSCheckInitClientGlobals();
   if (!dummyCtx) dummyCtx = CreateDummyContext();
   dummyCtx->textProc = textProc;
-  }
+}
 
-DPSTextProc DPSGetCurrentTextBackstop() {
+DPSTextProc DPSGetCurrentTextBackstop(void)
+{
   DPSCheckInitClientGlobals();
   if (dummyCtx == NIL) return NIL;
   else return dummyCtx->textProc;
-  }
+}
 
-void DPSSetErrorBackstop(errorProc)
-  DPSErrorProc errorProc; {
+void DPSSetErrorBackstop(DPSErrorProc errorProc)
+{
   DPSCheckInitClientGlobals();
   if (!dummyCtx) dummyCtx = CreateDummyContext();
   dummyCtx->errorProc = errorProc;
-  }
+}
 
-DPSErrorProc DPSGetCurrentErrorBackstop() {
+DPSErrorProc DPSGetCurrentErrorBackstop(void)
+{
   DPSCheckInitClientGlobals();
   if (dummyCtx == NIL) return NIL;
   else return dummyCtx->errorProc;
-  }
+}
 
-static void NoteInitFailure() {
+static void NoteInitFailure(DPSContext ctxt, char *buf, long unsigned length)
+{
   initFailed = -1;
-  }
+}
 
-int DPSInitialize() {
+int DPSInitialize(void)
+{
   DPSCheckInitClientGlobals();
   if (!clientStarted) {
     clientStarted = true;
@@ -2560,14 +2598,14 @@ int DPSInitialize() {
     /* textProc will not be used unless DPS initialization fails */
     }
   return initFailed;
-  }
+}
 
-DPSContext DPSCreateContext(wh, textProc, errorProc, space)
-  char *wh;
-  DPSTextProc textProc;
-  DPSErrorProc errorProc;
-  DPSSpace space;
-  {
+DPSContext DPSCreateContext(
+  char *wh,
+  DPSTextProc textProc,
+  DPSErrorProc errorProc,
+  DPSSpace space)
+{
   
   DPSPrivSpace ss;
   DPSPrivContext c;
@@ -2583,7 +2621,7 @@ DPSContext DPSCreateContext(wh, textProc, errorProc, space)
     ctxProcs->WriteData = procWriteData;
     ctxProcs->UpdateNameMap = procUpdateNameMap;
     ctxProcs->Interrupt = procInterrupt;
-    ctxProcs->WriteNumString = procWriteNumstring;
+    ctxProcs->WriteNumString = (DPSWriteNumStringProc) procWriteNumstring;
     }
   if (!spaceProcs) {
     spaceProcs = (DPSSpaceProcs)DPScalloc(sizeof(DPSSpaceProcsRec), 1);
@@ -2622,7 +2660,10 @@ DPSContext DPSCreateContext(wh, textProc, errorProc, space)
   DPSInitPrivateContextFields(c, ss);
 
   c->numFormat = DPSCreatePrivContext(
-	wh, (DPSContext)c, &c->cid, &ss->sid,
+	(XDPSPrivContext)wh,
+	(DPSContext)c,
+	(ContextPSID *)&c->cid,
+	(SpaceXID *)&ss->sid,
 	(space == NIL), DPSclientPrintProc);
   if (c->numFormat ==  (DPSNumFormat) -1)
     { /* can't create the context */
@@ -2635,16 +2676,17 @@ DPSContext DPSCreateContext(wh, textProc, errorProc, space)
     return NIL;
     }
   else return (DPSContext)c;
-  } /* DPSCreateContext */
+} /* DPSCreateContext */
 
-char *DPSSetWh(ctxt, newWh) 
-  DPSContext ctxt;
-  char *newWh; {
+char *DPSSetWh(
+  DPSContext ctxt,
+  char *newWh)
+{
   DPSPrivContext cc = (DPSPrivContext) ctxt;
   char *tmp = cc->wh;
   cc->wh = newWh;
   return(tmp);
-  }
+}
 
 /*
    The chainParent field is non-NIL if this context automatically receives
@@ -2653,7 +2695,8 @@ char *DPSSetWh(ctxt, newWh)
    The chainChild field is non-NIL if this context automatically sends along
    to the referenced (child) context a copy of any PostScript code received.
 */
-int DPSChainContext(parent, child) DPSContext parent, child; {
+int DPSChainContext(DPSContext parent, DPSContext child)
+{
   DPSContext cc = child->chainChild;
 
   if (child->chainParent != NIL)
@@ -2673,9 +2716,10 @@ int DPSChainContext(parent, child) DPSContext parent, child; {
     (void) DPSChainContext(child, cc);
     }
   return 0;
-  }
+}
 
-void DPSUnchainContext(ctxt) DPSContext ctxt; {
+void DPSUnchainContext(DPSContext ctxt)
+{
   DPSContext p = ctxt->chainParent;
   DPSContext c = ctxt->chainChild;
 
@@ -2689,95 +2733,103 @@ void DPSUnchainContext(ctxt) DPSContext ctxt; {
     c->chainParent = p;
     ctxt->chainChild = NIL;
     }
-  }
+}
 
 /****************/
 /* Veneer procs */
 
-void DPSAwaitReturnValues(ctxt)
-  DPSContext ctxt; {
+void DPSAwaitReturnValues(DPSContext ctxt)
+{
   (*(ctxt)->procs->AwaitReturnValues)((ctxt));
-  }
+}
 
-void DPSDestroyContext(ctxt)
-  DPSContext ctxt; {
+void DPSDestroyContext(DPSContext ctxt)
+{
   (*(ctxt)->procs->DestroyContext)((ctxt));
-  }
+}
 
-void DPSDestroySpace(spc)
-  DPSSpace spc; {
+void DPSDestroySpace(DPSSpace spc)
+{
   (*(spc)->procs->DestroySpace)((spc));
-  }
+}
 
-void DPSFlushContext(ctxt)
-  DPSContext ctxt; {
+void DPSFlushContext(DPSContext ctxt)
+{
   (*(ctxt)->procs->FlushContext)((ctxt));
-  }
+}
 
-DPSContext DPSGetCurrentContext() { return DPSGlobalContext; }
+DPSContext DPSGetCurrentContext(void) { return DPSGlobalContext; }
 
-void DPSInterruptContext(ctxt)
-  DPSContext ctxt; {
+void DPSInterruptContext(DPSContext ctxt)
+{
   (*(ctxt)->procs->Interrupt)((ctxt));
-  }
+}
 
-DPSContext DPSPrivCurrentContext() { return DPSGlobalContext; }
+DPSContext DPSPrivCurrentContext(void) { return DPSGlobalContext; }
 
-void DPSResetContext(ctxt)
-  DPSContext ctxt; {
+void DPSResetContext(DPSContext ctxt)
+{
   (*(ctxt)->procs->ResetContext)((ctxt));
-  }
+}
 
-void DPSSetResultTable(ctxt, tbl, len)
-  register DPSContext ctxt;
-  DPSResults tbl;
-  unsigned int len; {
+void DPSSetResultTable(
+  register DPSContext ctxt,
+  DPSResults tbl,
+  unsigned int len)
+{
   (ctxt)->resultTable = (tbl);
   (ctxt)->resultTableLength = (len);
-  }
+}
 
-void DPSSetContext(ctxt)
-  DPSContext ctxt; {
+void DPSSetContext(
+  DPSContext ctxt)
+{
   DPSGlobalContext = ctxt;
-  }
+}
 
-void DPSUpdateNameMap(ctxt)
-  DPSContext ctxt; {
+void DPSUpdateNameMap(
+  DPSContext ctxt)
+{
   (*(ctxt)->procs->UpdateNameMap)((ctxt));
-  }
+}
 
-void DPSWaitContext(ctxt)
-  DPSContext ctxt; {
+void DPSWaitContext(
+  DPSContext ctxt)
+{
   (*(ctxt)->procs->WaitContext)(ctxt);
- }
+}
 
-void DPSBinObjSeqWrite(ctxt, buf, count)
-  DPSContext ctxt;
-  char *buf;
-  unsigned int count; {
+void DPSBinObjSeqWrite(
+  DPSContext ctxt,
+  char *buf,
+  unsigned int count)
+{
   (*(ctxt)->procs->BinObjSeqWrite)((ctxt), (buf), (count));
-  }
+}
 
-void DPSWriteData(ctxt, buf, count)
-  DPSContext ctxt;
-  char *buf;
-  unsigned int count; {
+void DPSWriteData(
+  DPSContext ctxt,
+  char *buf,
+  unsigned int count)
+{
   (*(ctxt)->procs->WriteData)((ctxt), (buf), (count));
-  }
+}
 
-void DPSWritePostScript(ctxt, buf, count)
-  DPSContext ctxt;
-  char *buf;
-  unsigned int count; {
+void DPSWritePostScript(
+  DPSContext ctxt,
+  char *buf,
+  unsigned int count)
+{
   (*(ctxt)->procs->WritePostScript)((ctxt), (buf), (count));
-  }
+}
 
-void DPSWriteStringChars(ctxt, buf, count)
-  DPSContext ctxt;
-  char *buf;
-  unsigned int count; {
+void DPSWriteStringChars(
+  DPSContext ctxt,
+  char *buf,
+  unsigned int count)
+{
   (*(ctxt)->procs->WriteStringChars)((ctxt), (buf), (count));
-  }
+}
 
 void DPSWriteNumString(ctxt, type, data, size, scale)
     DPSContext ctxt;
@@ -2797,8 +2849,7 @@ void DPSWriteTypedObjectArray(ctxt, type, array, length)
   (*(ctxt)->procs->WriteTypedObjectArray)((ctxt), (type), (array), (length));
   }
   
-void DPSInitCommonTextContextProcs(p)
-    DPSProcs p;
+void DPSInitCommonTextContextProcs(DPSProcs p)
 {
     p->BinObjSeqWrite = textBinObjSeqWrite;
     p->WriteTypedObjectArray = writeTypedObjectArray;
@@ -2806,17 +2857,16 @@ void DPSInitCommonTextContextProcs(p)
     p->WritePostScript = textWritePostScript;
     p->WriteData = textWriteData;
     p->FlushContext = textFlushContext;
-    p->ResetContext = Noop;
-    p->WaitContext = Noop;
+    p->ResetContext = (DPSContextProc) Noop;
+    p->WaitContext = (DPSContextProc) Noop;
     p->UpdateNameMap = procUpdateNameMap;
     p->AwaitReturnValues = textAwaitReturnValues;
     p->Interrupt = textInterruptContext;
     p->DestroyContext = textDestroyContext;
-    p->WriteNumString = textWriteNumstring;
+    p->WriteNumString = (DPSWriteNumStringProc) textWriteNumstring;
 }
 
-void DPSInitCommonContextProcs(p)
-    DPSProcs p;
+void DPSInitCommonContextProcs(DPSProcs p)
 {
     p->BinObjSeqWrite = procBinObjSeqWrite;
     p->WriteTypedObjectArray = writeTypedObjectArray;
@@ -2827,11 +2877,10 @@ void DPSInitCommonContextProcs(p)
     p->WriteData = procWriteData;
     p->UpdateNameMap = procUpdateNameMap;
     p->Interrupt = procInterrupt;
-    p->WriteNumString = procWriteNumstring;
+    p->WriteNumString = (DPSWriteNumStringProc) procWriteNumstring;
 }
 
-void DPSInitCommonSpaceProcs(p)
-    DPSSpaceProcs p;
+void DPSInitCommonSpaceProcs(DPSSpaceProcs p)
 {
     p->DestroySpace = procDestroySpace;
 }
@@ -2901,7 +2950,7 @@ DPSContextExtensionRec *DPSRemoveContextExtensionRec(ctxt, extensionId)
     return rret;
 }
 
-int DPSGenerateExtensionRecID()
+int DPSGenerateExtensionRecID(void)
 {
     static int id = 1;
 

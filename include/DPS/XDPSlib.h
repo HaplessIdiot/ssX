@@ -83,72 +83,6 @@ typedef enum {
 
 #define DPSCAP_SYNCMASK_DFLT	DPSCAP_SYNCMASK_RECONCILE
 
-#ifdef _NO_PROTO
-
-typedef void (*XDPSLEventHandler)();
-
-extern int XDPSLInit();
-extern ContextXID XDPSLCreateContextAndSpace();
-extern SpaceXID XDPSLCreateSpace();
-extern void XDPSLGiveInput();
-extern int XDPSLGetStatus();
-extern void XDPSLDestroySpace();
-extern void XDPSLReset();
-extern void XDPSLNotifyContext();
-extern ContextXID XDPSLCreateContextFromID();
-extern Status XDPSLIDFromContext();
-extern ContextPSID XDPSLContextFromXID();
-extern void XDPSLSetStatusMask();
-extern XExtCodes *XDPSLGetCodes();
-extern void XDPSLSetTextEventHandler();
-extern void XDPSLCallOutputEventHandler();
-extern void XDPSLSetStatusEventHandler();
-extern void XDPSLCallStatusEventHandler();
-extern void XDPSLInitDisplayFlags();
-extern Bool XDPSLGetPassEventsFlag();
-extern void XDPSLSetPassEventsFlag();
-extern Bool XDPSLGetWrapWaitingFlag();
-extern void XDPSLSetWrapWaitingFlag();
-/* L2-DPS/PROTO 9 additions */
-extern void XDPSLNotifyWhenReady();
-extern XDPSLPSErrors XDPSLTestErrorCode();
-extern int XDPSLGetVersion();
-extern void XDPSLSetReadyEventHandler();
-extern void XDPSLCallReadyEventHandler();
-/* DPS NX additions */
-extern char * XDPSLSetAgentName();
-extern void XDPSLSetCodes();
-extern Display * XDPSLGetShunt();
-extern void XDPSLSetShunt();
-extern void XDPSLSetVersion();
-extern void XDPSLSetClientMessageHandler();
-extern CSDPSFakeEventTypes XDPSLGetCSDPSFakeEventType();
-extern Bool XDPSLDispatchCSDPSFakeEvent();
-extern void XDPSLGetCSDPSStatus();
-extern void XDPSLSetXErrorConvertProc();
-extern void XDPSLCAPNotify();
-extern void XDPSLSync();
-extern void *XDPSLEnumerateEvents();
-extern void XDPSLSetAfterProc();
-extern int XDPSLGetSyncMask();
-extern void XDPSLSetSyncMask();
-extern void XDPSLFlush();
-extern void XDPSLGetCSDPSReady();
-extern void XDPSLReconcileRequests();
-extern Status XDPSLSetAgentArg();
-extern void XDPSLCleanAll();
-extern void XDPSLUpdateAgentArgs();
-extern void XDPSLCleanContext();
-#ifdef VMS
-extern void XDPSLSetDisplay();
-#endif /* VMS */
-/* DPS NX 2.0 */
-extern void XDPSLFlushGC();
-extern void XDPSLSetGCFlushMode();
-extern int XDPSLGetGCFlushMode();
-
-#else /* _NO_PROTO */
-
 typedef void (*XDPSLEventHandler)(XEvent *event);
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -307,6 +241,8 @@ extern void XDPSLSetSyncMask(Display *dpy, int mask);
 
 extern void XDPSLFlush(Display *dpy);
 
+extern void XDPSLSyncGCClip(Display *xdpy, GC gc);
+
 extern void XDPSLGetCSDPSReady(Display *xdpy,
                                  XEvent *event,
                                  void **ret_ctxt,
@@ -322,13 +258,6 @@ extern void XDPSLUpdateAgentArgs(Display *xdpy);
 
 extern void XDPSLCleanContext(Display *xdpy, ContextXID cxid);
 
-/* L2-DPS/PROTO 9 additions for DPS NX */
-extern void XDPSLGetCSDPSReady(Display *dpy,
-                                XEvent *event,
-				void **ret_ctxt,
-				int *ret_val);
-
-
 #ifdef VMS
 extern void XDPSLSetDisplay(Display *dpy);
 #endif /* VMS */
@@ -343,8 +272,6 @@ extern int XDPSLGetGCFlushMode(Display *dpy);
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-#endif /* _NO_PROTO */
 
 typedef struct _XDPSLOutputEvent {
     int type;			/* of event. */

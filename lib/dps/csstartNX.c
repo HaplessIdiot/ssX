@@ -44,8 +44,12 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <X11/Xos.h>
+
 #include "DPSCAPproto.h"
 #include "Xlibnet.h"            /* New for R5, delete for R4 */
+#include "dpsassert.h"
+#include "csfindNX.h"
+#include "csstartNX.h"
 
 /* ---Defines--- */
 
@@ -72,7 +76,7 @@ pid_t gSecretAgentPID = 0;	/* PID of launched agent *Shh!* Not public! */
 /* ---Private Functions--- */
 
 static int
-TryTCP()
+TryTCP(void)
 {
     struct sockaddr_in insock;
     int request;
@@ -86,7 +90,7 @@ TryTCP()
        to it doesn't exist in the services list it will seg. fault...
        * sigh *  */
     if ((serventInfo = getservbyname(DPS_NX_SERV_NAME,
-    					(char *) NULL)) != NULL)
+    					(char *) 0)) != 0)
         if (strcmp("tcp", serventInfo->s_proto) == 0) {
 	  startPort = ntohs(serventInfo->s_port);
 	}
@@ -156,8 +160,7 @@ TryTCP()
 /* ---Functions--- */
 
 int
-XDPSNXRecommendPort(transport)
-    int transport;
+XDPSNXRecommendPort(int transport)
 {
     int ret;
     
@@ -175,8 +178,7 @@ XDPSNXRecommendPort(transport)
 }
 
 int
-StartXDPSNX(additionalArgs)
-     char **additionalArgs;
+StartXDPSNX(char **additionalArgs)
 {
   char **args, **cpp;
   pid_t childPid;
@@ -186,24 +188,24 @@ StartXDPSNX(additionalArgs)
   char *execObj, **execArgs;
 
   (void) XDPSGetNXArg(XDPSNX_EXEC_FILE, (void **) &execObj);
-  if (execObj == NULL) return (!Success);
+  if (execObj == 0) return (!Success);
 
   /* Create the argv list for the execl() call */
   (void) XDPSGetNXArg(XDPSNX_EXEC_ARGS, (void **) &execArgs);
-  if (execArgs != NULL)
-    for(cpp = execArgs; *cpp != NULL; cpp++, argc++); /* count args. */
-  if (additionalArgs != NULL)	/* add on the add-on args. */
-    for(cpp = additionalArgs; *cpp != NULL; cpp++, argc++); 
+  if (execArgs != 0)
+    for(cpp = execArgs; *cpp != 0; cpp++, argc++); /* count args. */
+  if (additionalArgs != 0)	/* add on the add-on args. */
+    for(cpp = additionalArgs; *cpp != 0; cpp++, argc++); 
 
   args = (char **) Xmalloc(sizeof(char *) * (argc+1));
-  if (args == NULL)
+  if (args == 0)
     return(!Success);
-  args[argc] = NULL;		/* cap end of args */
+  args[argc] = 0;		/* cap end of args */
   args[i++] = execObj;
-  if (additionalArgs != NULL)
-    for(cpp = additionalArgs; *cpp != NULL; cpp++, i++) args[i] = *cpp;
-  if (execArgs != NULL)
-    for(cpp = execArgs; *cpp != NULL; cpp++, i++) args[i] = *cpp;
+  if (additionalArgs != 0)
+    for(cpp = additionalArgs; *cpp != 0; cpp++, i++) args[i] = *cpp;
+  if (execArgs != 0)
+    for(cpp = execArgs; *cpp != 0; cpp++, i++) args[i] = *cpp;
 
   /* now try to start up the agent... */
   if ((childPid = fork()) != -1) {
@@ -232,7 +234,6 @@ StartXDPSNX(additionalArgs)
   } else {			/* Error in fork */
     status = !Success;
   }
-  if (args != NULL) (void) XFree(args);
+  if (args != 0) (void) XFree(args);
   return(status);
 }
-

@@ -1,7 +1,27 @@
-/* $XConsortium: lbxsquish.c /main/5 1996/12/15 21:26:30 rws $ */
+/* $TOG: lbxsquish.c /main/6 1998/02/09 14:32:39 kaleb $ */
+/*
+
+Copyright 1996, 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /*
  * Copyright 1994 Network Computing Devices, Inc.
- * Copyright 1996 X Consortium, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -22,12 +42,15 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
 #include "Xos.h"
 #include "misc.h"
+#include "colormapst.h"
+#include "propertyst.h"
 #include "lbxserve.h"
 #define _XLBX_SERVER_
 #include "lbxstr.h"
@@ -111,8 +134,7 @@ static char lbxevpad[] = {
 };
 
 int
-LbxSquishEvent(buf)
-    char *buf;
+LbxSquishEvent(char *buf)
 {
     int delta = lbxevdelta[((xEvent *)buf)->u.u.type];
     int pad = lbxevpad[((xEvent *)buf)->u.u.type];

@@ -46,7 +46,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.5 1999/03/14 03:21:20 dawes Exp $ */
 
 #include "zlib.h"
 #include "Xfuncproto.h"
@@ -110,20 +110,15 @@ struct iovec {
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #endif
 
-void
-FreeInput(
-#if NeedFunctionPrototypes
-    ZlibBufferPtr	/* inbuf */,
-    int			/* len */
-#endif
-);
 
-int
-GetInputPtr(
-#if NeedFunctionPrototypes
-    int			/* fd */,
-    ZlibBufferPtr	/* inbuf */,
-    int			/* reqlen */,
-    unsigned char **	/* ppkt */
-#endif
-);
+/* lbx_zlib_io.c */
+extern int InitZlibBuffer ( ZlibBufferPtr b, int size );
+extern void FreeZlibBuffer ( ZlibBufferPtr b );
+extern int GetInputPtr ( int fd, ZlibBufferPtr inbuf, int reqlen, 
+			 unsigned char **ppkt );
+extern int StuffInput ( ZlibBufferPtr inbuf, char *pkt, int reqlen );
+extern void FreeInput ( ZlibBufferPtr inbuf, int len );
+extern char * ReserveOutBuf ( ZlibBufferPtr outbuf, int outlen );
+extern void CommitOutBuf ( ZlibBufferPtr outbuf, int outlen );
+extern int FlushOutBuf ( int fd, ZlibBufferPtr outbuf );
+extern int FlushIovBuf ( int fd, struct iovec *iovbuf );

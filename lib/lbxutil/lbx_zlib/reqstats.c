@@ -1,16 +1,10 @@
-/* $XConsortium: reqstats.c /main/10 1996/02/27 14:48:28 mor $ */
+/* $TOG: reqstats.c /main/11 1998/02/09 10:23:25 kaleb $ */
 
 /*
 
-Copyright (c) 1996  X Consortium
+Copyright 1996  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
@@ -18,15 +12,15 @@ included in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -55,7 +49,7 @@ int unknown_extension_bytes = 0;
 struct ReqStats CoreRequestStats[128];
 struct ReqStats LbxRequestStats[LbxNumberReqs];
 
-void LbxPrintReqStats ();
+static void LbxPrintReqStats (int);
 
 char *X_ReqNames[128] = {
     0,				    /*  0  */
@@ -233,7 +227,8 @@ char *LBX_ReqNames[LbxNumberReqs] = {
 
 
 
-InitLbxReqStats ()
+void
+InitLbxReqStats (void)
 
 {
     bzero (CoreRequestStats, 128 * sizeof (struct ReqStats));
@@ -243,11 +238,10 @@ InitLbxReqStats ()
 }
 
 
-PrintStatsTable (table, count, reqNames)
-
-struct ReqStats *table;
-int count;
-char **reqNames;
+static void
+PrintStatsTable (struct ReqStats *table,
+		 int count,
+		 char **reqNames)
 
 {
     int i;
@@ -291,12 +285,10 @@ char **reqNames;
     }
 }
 
-
-PrintDeltaStats (table, count, reqNames)
-
-struct ReqStats *table;
-int count;
-char **reqNames;
+static void
+PrintDeltaStats (struct ReqStats *table,
+		 int count,
+		 char **reqNames)
 
 {
     int i;
@@ -313,10 +305,8 @@ char **reqNames;
 }
 
 
-void
-LbxPrintReqStats (dummy)
-
-int dummy;
+static void
+LbxPrintReqStats (int dummy)
 
 {
     unsigned long total;
@@ -369,9 +359,8 @@ int dummy;
 }
 
 
-do_decompress_with_stats (priv)
-
-struct compress_private *priv;
+void
+do_decompress_with_stats (struct compress_private *priv)
 
 {
     int incount = priv->cp_inputbufend - priv->cp_inputbuf;
@@ -497,14 +486,6 @@ struct compress_private *priv;
 
     priv->cp_inputbuf = priv->stream.next_in;
     priv->cp_outputbuf = priv->stream.next_out;
-}
-
-#else /* LBXREQSTATS */
-
-_LbxEmptyFunction ()
-
-{
-    ;
 }
 
 #endif /* LBXREQSTATS */

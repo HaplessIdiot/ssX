@@ -30,7 +30,7 @@
 
 Notice===
  */
-/* $XFree86: xc/extras/X-TrueType/xttcconv.c,v 1.6 2000/02/18 12:18:48 tsi Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttcconv.c,v 1.7 2000/02/29 16:07:13 tsi Exp $ */
 
 #include "xttversion.h"
 
@@ -505,17 +505,19 @@ codeconv_search_code_converter(char const *charsetName,
 
             {
                 char **l;
-				char **tryItFirst = NULL;
+		char **tryItFirst = NULL;
 
                 for (l=list; *l ; l++) {
-					if(!mystrcasecmp(*l,moduleArg.charSetHints->charsetStdName))
-						tryItFirst = l;
-				}
+			if(!mystrcasecmp(*l,moduleArg.charSetHints->charsetStdName)) {
+				tryItFirst = l;
+				break;
+			}
+		}
 
-				if(tryItFirst)
-					l = tryItFirst;
-				else
-					l = list;
+		if(tryItFirst)
+			l = tryItFirst;
+		else
+			l = list;
 			
                 while(*l && !isFound) {
                     /* load and call module */

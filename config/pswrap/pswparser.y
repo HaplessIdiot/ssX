@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/pswparser.y,v 1.2 2000/05/11 18:14:08 tsi Exp $ */
+/* $XFree86: xc/config/pswrap/pswparser.y,v 1.3 2000/05/18 17:20:18 dawes Exp $ */
 
 /* 
  * Not all yaccs understand this.
@@ -193,7 +193,7 @@ Item:
 	| CNAME '[' Subscript ']'
 		{ $$ = PSWSubscriptItem($1, $3); }
 	| CNAME '[' Subscript ']' ':' CNAME
-		{ $$ = PSWScaleItem($1, $3, $6, NULL); }
+		{ $$ = PSWScaleItem($1, $3, $6, 0); }
 	| CNAME '[' Subscript ']' ':' CINTEGER
 		{ $$ = PSWScaleItem($1, $3, NULL, $6); }
 	| CNAME
@@ -256,7 +256,7 @@ Type:
 
 Token:
 	PSINTEGER
-		{ $$ = PSWToken(T_INT, $1); }
+		{ $$ = PSWToken(T_INT, (char *)$1); }
 	| PSREAL
 		{ $$ = PSWToken(T_FLOAT, $1); }
 	| PSBOOLEAN
@@ -272,7 +272,7 @@ Token:
 	| PSSUBNAME PSINDEX
 		{ $$ = PSWToken2(T_SUBSCRIPTED, $1, $2); }
 	| '[' Body ']'
-		{ $$ = PSWToken(T_ARRAY, $2); }
+		{ $$ = PSWToken(T_ARRAY, (char *)$2); }
 	| '{' Body '}'
-		{ $$ = PSWToken(T_PROC, $2); }
+		{ $$ = PSWToken(T_PROC, (char *)$2); }
 	;

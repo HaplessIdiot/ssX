@@ -47,3 +47,7 @@ typedef struct tableentry {
 
 extern tableentry TIFFFaxWhiteCodes[];
 extern tableentry TIFFFaxBlackCodes[];
+
+/* misc.c */
+extern int LbxImageFindDiff ( unsigned char *cp, int bs, int be, int color );
+extern void LbxReverseBits ( unsigned char *cp, int n );

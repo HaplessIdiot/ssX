@@ -40,6 +40,7 @@
 /* Imports */
 /***********/
 
+#include <stdlib.h>
 #include <stdio.h>
 
 #ifdef XENVIRONMENT
@@ -50,20 +51,7 @@
 
 #include "pswdict.h"
 #include "pswpriv.h"
-
-extern char *hfile;
-extern char *ofile;
-extern char *ifile;
-extern FILE *header;
-extern int yylineno; /* current line number in pswrap source file */
-extern int outlineno;
-
-extern void EmitPrototype();
-extern void EmitBodyHeader();
-extern void EmitBody();
-
-extern char *psw_malloc();
-extern char *psw_calloc();
+#include "pswsemantics.h"
 
 /***********************/
 /* Module-wide globals */
@@ -79,29 +67,29 @@ static PSWDict currentDict = NULL;
 /* Procedures called by the parser's annotations */
 /*************************************************/
 
-static boolean IsCharType(t) Type t; {
+static boolean IsCharType(Type t)
+{
   return (t == T_CHAR || t == T_UCHAR);
-  }
+}
 
-static boolean IsNumStrType(t) Type t; {
+static boolean IsNumStrType(Type t)
+{
 	return (t == T_NUMSTR
 			|| t == T_FLOATNUMSTR
 			|| t == T_LONGNUMSTR
 			|| t == T_SHORTNUMSTR);
 }
   
-void PSWName(s) char *s; {
+void PSWName(char *s)
+{
   currentPSWName = psw_malloc(strlen(s)+1);
   strcpy(currentPSWName, s);
   reportedPSWName = 0;
-  }
+}
   
   /* Generate the code for this wrap now */
-void FinalizePSWrapDef(hdr, body)
-  Header hdr; Body body;
+void FinalizePSWrapDef(Header hdr, Body body)
 {
-  extern int bigFile;
-  
   if (header && ! hdr->isStatic) EmitPrototype(hdr); 
 
   printf("#line %d \"%s\"\n", ++outlineno, ofile);
@@ -152,11 +140,11 @@ void FinalizePSWrapDef(hdr, body)
   currentDict = NULL;
   currentPSWName = NULL;
   reportedPSWName = 0;
-  }
+}
 
   /* Complete construction of the Header tree and make some semantic checks */
-Header PSWHeader(isStatic, inArgs, outArgs)
-  boolean isStatic; Args inArgs, outArgs; {
+Header PSWHeader(boolean isStatic, Args inArgs, Args outArgs)
+{
   char *name = currentPSWName;
   register Arg arg, prevArg;
   register Item item, prevItem;
@@ -229,7 +217,7 @@ Header PSWHeader(isStatic, inArgs, outArgs)
     for (item = arg->items; item; item = item->next) {
       if (arg->type == T_USEROBJECT) {
  	     ErrIntro(item->sourceLine);
-         fprintf(stderr,"output parameter can not be of type userobject\n",
+         fprintf(stderr,"output parameter %s can not be of type userobject\n",
                item->name);
  	     /* remove item from list */
  	     if (prevItem) {prevItem->next = item->next;}
@@ -337,15 +325,12 @@ Header PSWHeader(isStatic, inArgs, outArgs)
   hdr->outArgs = outArgs;
 
   return hdr;
-  }
+}
 
-Token PSWToken(type, val)
-  Type type;
-  char *val; {
+Token PSWToken(Type type, char *val)
+{
   register Token token = (Token)psw_calloc(sizeof(TokenRec), 1);
-  extern int errorCount;
-  extern char *ifile;
-  
+ 
   token->next = NULL;
   token->type = type;
   token->val = val;
@@ -378,14 +363,11 @@ Token PSWToken(type, val)
     }
 
   return token;
-  }
+}
 
-Token PSWToken2(type, val, ind)
-  Type type;
-  char *val; char *ind; {
+Token PSWToken2(Type type, char *val, char *ind)
+{
   register Token token = (Token)psw_calloc(sizeof(TokenRec), 1);
-  extern int errorCount;
-  extern char *ifile;
   Item dictVal = (Item) PSWDictLookup(currentDict, val);
   Item dvi;
 
@@ -428,38 +410,38 @@ Token PSWToken2(type, val, ind)
   /*  ERRORS fall through */
   free(token);
   return (PSWToken(T_NAME,val));
-  }
+}
 
-Arg PSWArg(type, items)
-  Type type; Items items; {
+Arg PSWArg(Type type, Items items)
+{
   register Arg arg = (Arg)psw_calloc(sizeof(ArgRec), 1);
   arg->next = NULL;
   arg->type = type;
   arg->items = items;
   return arg;
-  }
+}
 
-Item PSWItem(name)
-  char *name; {
+Item PSWItem(char *name)
+{
   register Item item = (Item)psw_calloc(sizeof(ItemRec), 1);
   item->next = NULL;
   item->name = name;
   item->sourceLine = yylineno;
   return item;
-  }
+}
 
-Item PSWStarItem(name)
-  char *name; {
+Item PSWStarItem(char *name)
+{
   register Item item = (Item)psw_calloc(sizeof(ItemRec), 1);
   item->next = NULL;
   item->name = name;
   item->starred = true;
   item->sourceLine = yylineno;
   return item;
-  }
+}
 
-Item PSWSubscriptItem(name, subscript)
-  char *name; Subscript subscript; {
+Item PSWSubscriptItem(char *name, Subscript subscript)
+{
   register Item item = (Item)psw_calloc(sizeof(ItemRec), 1);
   item->next = NULL;
   item->name = name;
@@ -467,13 +449,9 @@ Item PSWSubscriptItem(name, subscript)
   item->subscripted = true;
   item->sourceLine = yylineno;
   return item;
-  }
+}
 
-Item PSWScaleItem(name, subscript, nameval, val)
-  char *name;
-  Subscript subscript;
-  char *nameval;
-  int val;
+Item PSWScaleItem(char *name, Subscript subscript, char *nameval, int val)
 {
   Item item;
   Scale scale = (Scale)psw_calloc(sizeof(ScaleRec), 1);
@@ -489,29 +467,29 @@ Item PSWScaleItem(name, subscript, nameval, val)
   return(item);
 }
   
-Subscript PSWNameSubscript(name)
-  char *name; {
+Subscript PSWNameSubscript(char *name)
+{
   Subscript subscript = (Subscript)psw_calloc(sizeof(SubscriptRec), 1);
   subscript->name = name;
   return subscript;
-  }
+}
 
-Subscript PSWIntegerSubscript(val)
-  int val; {
+Subscript PSWIntegerSubscript(int val)
+{
   Subscript subscript = (Subscript)psw_calloc(sizeof(SubscriptRec), 1);
   subscript->constant = true;
   subscript->val = val;
   return subscript;
-  }
+}
 
-Args ConsPSWArgs(arg, args)
-  Arg arg; Args args; {
+Args ConsPSWArgs(Arg arg, Args args)
+{
   arg->next = args;
   return arg;
-  }
+}
 
-Tokens AppendPSWToken(token, tokens)
-  register Token token; Tokens tokens; {
+Tokens AppendPSWToken(Token token, Tokens tokens)
+{
   register Token t;
   static Token firstToken, lastToken;	/* cache ptr to last */
   
@@ -546,10 +524,10 @@ Tokens AppendPSWToken(token, tokens)
   lastToken = t->next = token;
 
   return tokens;
-  }
+}
 
-Args AppendPSWArgs(arg, args)
-  Arg arg; Args args; {
+Args AppendPSWArgs(Arg arg, Args args)
+{
   register Arg a;
   arg->next = NULL;
   if (args == NULL) return arg;
@@ -558,10 +536,10 @@ Args AppendPSWArgs(arg, args)
 
   a->next = arg; 
   return args;
-  }
+}
 
-Items AppendPSWItems(item, items)
-  Item item; Items items; {
+Items AppendPSWItems(Item item, Items items)
+{
   register Item t;
   item->next = NULL;
   if (items == NULL) return item;
@@ -570,5 +548,4 @@ Items AppendPSWItems(item, items)
 
   t->next = item; 
   return items;
-  }
-
+}

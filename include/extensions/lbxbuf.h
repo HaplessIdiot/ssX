@@ -38,8 +38,8 @@
 
 typedef struct _zlibbuffer  *ZlibBufferPtr;
 
-extern int  InitZlibBuffer();
-extern void FreeZlibBuffer();
-extern char *ReserveOutBuf();
+extern int  InitZlibBuffer(ZlibBufferPtr b, int size);
+extern void FreeZlibBuffer(ZlibBufferPtr b);
+extern char *ReserveOutBuf(ZlibBufferPtr outbuf, int outlen);
 
 #endif	/* _BUFFER_H_ */

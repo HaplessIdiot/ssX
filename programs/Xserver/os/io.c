@@ -48,7 +48,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.19 1998/08/16 10:25:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.21 1999/11/19 13:55:10 hohndel Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -77,6 +77,8 @@ extern int errno;
 #include "dixstruct.h"
 #include "misc.h"
 #ifdef LBX
+#include "colormapst.h"
+#include "propertyst.h"
 #include "lbxserve.h"
 #endif
 

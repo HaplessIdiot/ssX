@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dps/csconndi.c,v 1.2 2000/02/15 14:51:21 dawes Exp $ */
 
 #if defined(sun) && !defined(SVR4)
 #define memmove(t,f,c) bcopy(f,t,c)
@@ -80,6 +80,7 @@
 
 #include "DPSCAPproto.h"
 #include "cslibint.h"
+#include "dpsassert.h"
 
 #if defined(hpux) || defined(AIXV3)
 #define SELECT_TYPE int *
@@ -88,7 +89,6 @@
 #endif
 
 #ifndef _XANYSET
-extern int N_XANYSET();
 #define _XANYSET N_XANYSET
 #endif /* _XANYSET */
 
@@ -96,26 +96,26 @@ extern int N_XANYSET();
 #define X_CONNECTION_RETRIES 5
 #endif
 
+#define CONN_PARAMS char *, int , int , int *, int *, char **
+
 #ifdef DNETCONN
-static int MakeDECnetConnection();
+static int MakeDECnetConnection(CONN_PARAMS);
 #endif
 #ifdef UNIXCONN
-static int MakeUNIXSocketConnection();
+static int MakeUNIXSocketConnection(CONN_PARAMS);
 #endif
 #ifdef TCPCONN
-static int MakeTCPConnection();
+static int MakeTCPConnection(CONN_PARAMS);
 #endif
 #ifdef STREAMSCONN
-extern int _XMakeStreamsConnection();
+extern int _XMakeStreamsConnection(CONN_PARAMS);
 #endif
 
 /* This global controls the size of the output socket buffer.  Zero
    means to use the system default size. */
 int gNXSndBufSize = 0;
 
-static char *copystring (src, len)
-    char *src;
-    int len;
+static char *copystring (char *src, int len)
 {
     char *dst = Xmalloc (len + 1);
 
@@ -146,23 +146,22 @@ static char *copystring (src, len)
  */
  
 int 
-DPSCAPConnect(display_name, fullnamep, dpynump,
-		      familyp, saddrlenp, saddrp)
-    char *display_name;
-    char **fullnamep;			/* RETURN */
-    int *dpynump;			/* RETURN */
-    int *familyp;			/* RETURN */
-    int *saddrlenp;			/* RETURN */
-    char **saddrp;			/* RETURN, freed by caller */
+DPSCAPConnect(
+    char *display_name,
+    char **fullnamep,			/* RETURN */
+    int *dpynump,			/* RETURN */
+    int *familyp,			/* RETURN */
+    int *saddrlenp,			/* RETURN */
+    char **saddrp)			/* RETURN, freed by caller */
 {
     char *lastp, *p;			/* char pointers */
     char *phostname = NULL;		/* start of host of display */
     char *pdpynum = NULL;		/* start of dpynum of display */
     char *pscrnum = NULL;		/* start of screen of display */
     Bool dnet = False;			/* if true, then DECnet format */
-    int iagent;			/* required display number */
+    int iagent;				/* required display number */
     int iscreen = 0;			/* optional screen number */
-    int (*connfunc)();			/* method to create connection */
+    int (*connfunc)(CONN_PARAMS);	/* method to create connection */
     int fd = -1;			/* file descriptor to return */
     int len;				/* length tmp variable */
 
@@ -492,14 +491,13 @@ static int MakeDECnetConnection (phostname, iagent, retries,
 #endif
 #endif
 
-static int MakeUNIXSocketConnection (phostname, iagent, retries,
-				     familyp, saddrlenp, saddrp)
-    char *phostname;
-    int iagent;
-    int retries;
-    int *familyp;			/* RETURN */
-    int *saddrlenp;			/* RETURN */
-    char **saddrp;			/* RETURN */
+static int MakeUNIXSocketConnection (
+    char *phostname,
+    int iagent,
+    int retries,
+    int *familyp,			/* RETURN */
+    int *saddrlenp,			/* RETURN */
+    char **saddrp)			/* RETURN */
 {
     struct sockaddr_un unaddr;		/* UNIX socket data block */
     struct sockaddr *addr;		/* generic socket pointer */
@@ -547,14 +545,13 @@ static int MakeUNIXSocketConnection (phostname, iagent, retries,
 
 
 #ifdef TCPCONN
-static int MakeTCPConnection (phostname, iagent, retries,
-			      familyp, saddrlenp, saddrp)
-    char *phostname;
-    int iagent;
-    int retries;
-    int *familyp;			/* RETURN */
-    int *saddrlenp;			/* RETURN */
-    char **saddrp;			/* RETURN */
+static int MakeTCPConnection (
+    char *phostname,
+    int iagent,
+    int retries,
+    int *familyp,			/* RETURN */
+    int *saddrlenp,			/* RETURN */
+    char **saddrp)			/* RETURN */
 {
     char hostnamebuf[256];		/* tmp space */
     unsigned long hostinetaddr;		/* result of inet_addr of arpa addr */
@@ -713,10 +710,7 @@ static int MakeTCPConnection (phostname, iagent, retries,
  * Disconnect from server.
  */
 
-int N_XDisconnectDisplay (server)
-
-    int server;
-
+int N_XDisconnectDisplay (int server)
 {
     (void) close(server);
     return 0;
@@ -732,8 +726,7 @@ int N_XDisconnectDisplay (server)
  * 2) if the connection can be read, must enqueue events and handle errors,
  * until the connection is writable.
  */
-void N_XWaitForWritable(dpy)
-    Display *dpy;
+void N_XWaitForWritable(Display *dpy)
 {
     unsigned long r_mask[MSKCNT];
     unsigned long w_mask[MSKCNT];
@@ -783,7 +776,7 @@ void N_XWaitForWritable(dpy)
 		if (ev->u.u.type == X_Error)
 		    _XError (dpy, (xError *) ev);
 		else		/* it's an event packet; die */
-		    DPSFatalProc(NULL, "N_XWaitForWritable read bogus X event");
+		    DPSFatalProc((DPSContext)0, "N_XWaitForWritable read bogus X event");
 	    }
 	    ENDITERATE
 	}
@@ -793,8 +786,7 @@ void N_XWaitForWritable(dpy)
 }
 
 
-N_XWaitForReadable(dpy)
-  Display *dpy;
+void N_XWaitForReadable(Display *dpy)
 {
     unsigned long r_mask[MSKCNT];
     int result;
@@ -812,10 +804,11 @@ N_XWaitForReadable(dpy)
 
 static int padlength[4] = {0, 3, 2, 1};	 /* make sure auth is multiple of 4 */
 
-_XSendClientPrefix (dpy, client, auth_proto, auth_string)
-     Display *dpy;
-     xConnClientPrefix *client;		/* contains count for auth_* */
-     char *auth_proto, *auth_string;	/* NOT null-terminated */
+_XSendClientPrefix (
+     Display *dpy,
+     xConnClientPrefix *client,		/* contains count for auth_* */
+     char *auth_proto,			/* NOT null-terminated */
+     char char *auth_string)		/* NOT null-terminated */
 {
     int auth_length = client->nbytesAuthProto;
     int auth_strlen = client->nbytesAuthString;

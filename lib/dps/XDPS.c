@@ -42,17 +42,23 @@
 #include <stdio.h>
 /* Include this first so that Xasync.h, included from Xlibint.h, can find
    the definition of NOFILE */
+#include <stdlib.h>
 #include <sys/param.h>
 #include <X11/Xlibint.h>
-#include "cslibint.h"
+#include <X11/Xatom.h>
+#include <X11/Xutil.h>
+
 #include "DPS/XDPS.h"
 #include "DPS/XDPSproto.h"
 #include "DPS/XDPSlib.h"
 #include "DPS/dpsNXargs.h"
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
+
+#include "cslibint.h"
 #include "dpsassert.h"
 #include "DPSCAPClient.h"
+
+#include "publictypes.h"
+#include "dpsXpriv.h"
 
 /* === DEFINITIONS === */
 
@@ -70,7 +76,7 @@
 
 /* === TYPES === */
 
-typedef Status (*PSCMProc)();
+typedef Status (*PSCMProc)(Display *, XEvent *, xEvent *);
 
 typedef struct {
     char passEvents;
@@ -82,7 +88,7 @@ typedef struct {
 /* For now DPSDisplayFlags is no larger than a pointer.  Revisit this if the
    structure grows. */
 
-typedef int (*GenericProcPtrReturnsInt)();
+typedef int (*GenericProcPtrReturnsInt)(Display *);
 
 typedef struct _t_DPSCAPPausedContextData {
     struct _t_DPSCAPPausedContextData *next;
@@ -97,11 +103,11 @@ typedef struct {
 } DPSCAPAgentArgs;
 
 typedef struct {
-    int (*Flush)();
-    int (*Read)();
-    int (*ReadPad)();
-    Status (*Reply)();
-    int (*Send)();
+    void (*Flush)(Display *);
+    int (*Read)(Display*, char*, long);
+    void (*ReadPad)(Display*, char*, long);
+    Status (*Reply)(Display*, xReply*, int, Bool);
+    void (*Send)(Display*, _Xconst char*, long);
 } XDPSLIOProcs;
 
 /* === GLOBALS === */
@@ -144,13 +150,12 @@ static Display *dpys[DPSMAXDISPLAYS];
 static nextDpy = 0;
 #endif /* VMS */
 
-static void DPSCAPInitGC();
-static Bool DPSCAPResumeWithIX();
-static Status DPSCAPClientMessageProc();
-static int DPSCAPAfterProc();    
-static unsigned int DPSCAPSetPause();
-static Bool DPSCAPResumeContext();
-static Bool WaitForSyncProc();
+static void DPSCAPInitGC(Display *dpy, Display *agent, GC gc);
+static Status DPSCAPClientMessageProc(Display *dpy, XEvent *re, xEvent *event);
+static int DPSCAPAfterProc(Display *xdpy);
+static unsigned int DPSCAPSetPause(Display *xdpy, ContextXID cxid);
+static Bool DPSCAPResumeContext(Display *xdpy, ContextXID cxid);
+static Bool WaitForSyncProc(Display *xdpy, XEvent *event, char *arg);
 
 static XDPSLIOProcs xlProcs = {  /* Use these for DPS/X extension */
     _XFlush,
@@ -174,7 +179,7 @@ static XDPSLIOProcs nxlProcs = { /* Use these for NX */
 
 /* === PRIVATE PROCS === */
 
-static int Punt()
+static int Punt(void)
 {
     DPSFatalProc(NULL, "Extension has not been initialized");
     exit(1);
@@ -183,7 +188,7 @@ static int Punt()
 #ifdef VMS
 /* This is a terribly inefficient way to find a per-display index, but we
    need it till we get dpy->fd fixed in VMS%%%%%*/
-static int FindDpyNum(dpy)
+static int FindDpyNum(Display *dpy)
 {
 int i;
 for (i=0; dpys[i] != dpy ; i++)
@@ -205,68 +210,54 @@ return i;
 
 /* ARGSUSED */
 void
-XDPSLSetTextEventHandler(dpy, proc)
-    Display *dpy;
-    XDPSLEventHandler proc;
+XDPSLSetTextEventHandler(Display *dpy, XDPSLEventHandler proc)
 {
     TextProc = proc;
 }
 
 /* ARGSUSED */
 void
-XDPSLCallOutputEventHandler(dpy, event)
-    Display *dpy;
-    XEvent *event;
+XDPSLCallOutputEventHandler(Display *dpy, XEvent *event)
 {
     (*TextProc)(event);
 }
 
 void
-XDPSLSetStatusEventHandler(dpy, proc)
-    Display *dpy;
-    XDPSLEventHandler proc;
+XDPSLSetStatusEventHandler(Display *dpy, XDPSLEventHandler proc)
 {
     StatusProc[DPY_NUMBER(dpy)] = proc;
 }
 
 void
-XDPSLCallStatusEventHandler(dpy, event)
-    Display *dpy;
-    XEvent *event;
+XDPSLCallStatusEventHandler(Display *dpy, XEvent *event)
 {
     (*(StatusProc[DPY_NUMBER(dpy)]))(event);
 }
 
 /* Added for L2-DPS/PROTO 9 */
 void
-XDPSLSetReadyEventHandler(dpy, proc)
-    Display *dpy;
-    XDPSLEventHandler proc;
+XDPSLSetReadyEventHandler(Display *dpy, XDPSLEventHandler proc)
 {
     ReadyProc[DPY_NUMBER(dpy)] = proc;
 }
 
 /* Added for L2-DPS/PROTO 9 */
 void
-XDPSLCallReadyEventHandler(dpy, event)
-    Display *dpy;
-    XEvent *event;
+XDPSLCallReadyEventHandler(Display *dpy, XEvent *event)
 {
     (*(ReadyProc[DPY_NUMBER(dpy)]))(event);
 }
 
 /* Added for L2-DPS/PROTO 9 */
 int
-XDPSLGetVersion(dpy)
-    Display *dpy;
+XDPSLGetVersion(Display *dpy)
 {
     return(version[DPY_NUMBER(dpy)]);
 }
 /* See CSDPS additions for XDPSLSetVersion */
 
 void
-XDPSLInitDisplayFlags(dpy)
-    Display *dpy;
+XDPSLInitDisplayFlags(Display *dpy)
 {
     int d = DPY_NUMBER(dpy);
     displayFlags[d].wrapWaiting = False;
@@ -277,20 +268,15 @@ XDPSLInitDisplayFlags(dpy)
        contexts, which is a Good Thing */
 }
 
-XExtCodes *XDPSLGetCodes(dpy)
-    Display *dpy;
+XExtCodes *XDPSLGetCodes(Display *dpy)
 {
     return Codes[DPY_NUMBER(dpy)];
 }
 
 /* ARGSUSED */
 static int
-CloseDisplayProc(dpy, codes)
-Display *dpy;
-XExtCodes *codes;
+CloseDisplayProc(Display *dpy, XExtCodes *codes)
 {
-    extern void XDPSPrivZapDpy();
-    
     /* This proc is for native DPS/X only, not CSDPS */
     Codes[DPY_NUMBER(dpy)] = NULL;
     /* Clear list */
@@ -299,43 +285,35 @@ XExtCodes *codes;
     dpys[DPY_NUMBER(dpy)] = NULL;
  /*%%%%Temp till we fix dpy->fd*/
 #endif /* VMS */
+    return 0;	/* return-value is ignored */
 }
 
 Bool
-XDPSLGetPassEventsFlag(dpy)
-    Display *dpy;
+XDPSLGetPassEventsFlag(Display *dpy)
 {
     return displayFlags[DPY_NUMBER(dpy)].passEvents;
 }
 
 void
-XDPSLSetPassEventsFlag(dpy, flag)
-    Display *dpy;
-    Bool flag;
+XDPSLSetPassEventsFlag(Display *dpy, Bool flag)
 {
     displayFlags[DPY_NUMBER(dpy)].passEvents = flag;
 }
 
 Bool
-XDPSLGetWrapWaitingFlag(dpy)
-    Display *dpy;
+XDPSLGetWrapWaitingFlag(Display *dpy)
 {
     return displayFlags[DPY_NUMBER(dpy)].wrapWaiting;
 }
 
 void
-XDPSLSetWrapWaitingFlag(dpy, flag)
-    Display *dpy;
-    Bool flag;
+XDPSLSetWrapWaitingFlag(Display *dpy, Bool flag)
 {
     displayFlags[DPY_NUMBER(dpy)].wrapWaiting = flag;
 }
 
 static Status 
-ConvertOutputEvent(dpy, ce, we)
-    Display *dpy;
-    XEvent *ce;
-    xEvent *we;
+ConvertOutputEvent(Display *dpy, XEvent *ce, xEvent *we)
 {
     register PSOutputEvent *wireevent = (PSOutputEvent *) we;
     register XDPSLOutputEvent *clientevent = (XDPSLOutputEvent *) ce;
@@ -356,10 +334,7 @@ ConvertOutputEvent(dpy, ce, we)
 }
 
 static Status 
-ConvertStatusEvent(dpy, ce, we)
-    Display *dpy;
-    XEvent *ce;
-    xEvent *we;
+ConvertStatusEvent(Display *dpy, XEvent *ce, xEvent *we)
 {
     register PSStatusEvent *wireevent = (PSStatusEvent *) we;
     register XDPSLStatusEvent *clientevent = (XDPSLStatusEvent *) ce;
@@ -380,10 +355,7 @@ ConvertStatusEvent(dpy, ce, we)
 
 /* Added for L2-DPS/PROTO 9 */
 static Status
-ConvertReadyEvent(dpy, ce, we)
-    Display *dpy;
-    XEvent *ce;
-    xEvent *we;
+ConvertReadyEvent(Display *dpy, XEvent *ce, xEvent *we)
 {
     register PSReadyEvent *wireevent = (PSReadyEvent *) we;
     register XDPSLReadyEvent *clientevent = (XDPSLReadyEvent *) ce;
@@ -409,11 +381,7 @@ ConvertReadyEvent(dpy, ce, we)
 /* ARGSUSED */
 
 static int
-CatchBadMatch(dpy, err, codes, ret_code)
-    Display *dpy;
-    xError *err;
-    XExtCodes *codes;
-    int *ret_code;
+CatchBadMatch(Display *dpy, xError *err, XExtCodes *codes, int *ret_code)
 {
     if (err->errorCode == BadMatch)
         {
@@ -429,10 +397,10 @@ CatchBadMatch(dpy, err, codes, ret_code)
 
 
 int
-XDPSLInit(dpy, numberType, floatingName)
-    Display *dpy;
-    int *numberType;		/* RETURN */
-    char **floatingName;	/* RETURN: CALLER MUST NOT MODIFY OR FREE! */
+XDPSLInit(
+    Display *dpy,
+    int *numberType,		/* RETURN */
+    char **floatingName)	/* RETURN: CALLER MUST NOT MODIFY OR FREE! */
 {
     XExtCodes *codes = (XExtCodes *)NULL;
     register xPSInitReq *req;
@@ -442,8 +410,7 @@ XDPSLInit(dpy, numberType, floatingName)
     
     {
         char *ddt;
-        extern char *getenv();
-        
+
         if ((ddt = getenv("DPSNXOVER")) != NULL) {
             gForceCSDPS = (*ddt == 't' || *ddt == 'T');
             if (gForceCSDPS)
@@ -496,7 +463,7 @@ try_dps_nx:
        the client has a later (higher) version of
        the protocol than the server */
     {
-    int (*oldErrorProc)();
+    int (*oldErrorProc)(Display*, xError*, XExtCodes*, int*);
     int libVersion;
     Bool doneIt;
     
@@ -567,9 +534,10 @@ try_dps_nx:
 
 
 
-static void CopyColorMapsIntoCreateContextReq(req, colorcube, grayramp)
-    xPSCreateContextReq *req;
-    XStandardColormap *colorcube, *grayramp;
+static void CopyColorMapsIntoCreateContextReq(
+    xPSCreateContextReq *req,
+    XStandardColormap *colorcube,
+    XStandardColormap *grayramp)
 {
     req->cmap = 0;
     if (colorcube != NULL) {
@@ -611,19 +579,18 @@ static void CopyColorMapsIntoCreateContextReq(req, colorcube, grayramp)
 
 /* ARGSUSED */
 ContextXID
-XDPSLCreateContextAndSpace(xdpy, draw, gc, x, y, eventMask, grayRamp,
-			   colorCube, actual, cpsid, sxid,
-			   secure)
-    register Display *xdpy;
-    Drawable draw;
-    GC gc;
-    int x, y;
-    unsigned int eventMask;
-    XStandardColormap *grayRamp,*colorCube;
-    unsigned int actual;
-    ContextPSID *cpsid;		/* RETURN */
-    SpaceXID *sxid;		/* RETURN */
-    Bool secure;                /* Added for L2-DPS/PROTO 9 */
+XDPSLCreateContextAndSpace(
+    register Display *xdpy,
+    Drawable draw,
+    GC gc,
+    int x, int y,
+    unsigned int eventMask,
+    XStandardColormap *grayRamp,
+    XStandardColormap *colorCube,
+    unsigned int actual,
+    ContextPSID *cpsid,		/* RETURN */
+    SpaceXID *sxid,		/* RETURN */
+    Bool secure)                /* Added for L2-DPS/PROTO 9 */
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -653,6 +620,7 @@ XDPSLCreateContextAndSpace(xdpy, draw, gc, x, y, eventMask, grayRamp,
 
     switch (index)
 	{
+	default:
 	case 0: /* Both are default */
 	    XDPSGetDefaultColorMaps(xdpy, (Screen *) NULL, draw,
 				    &defColorcube, &defGrayramp);
@@ -730,19 +698,18 @@ XDPSLCreateContextAndSpace(xdpy, draw, gc, x, y, eventMask, grayRamp,
 
 /* ARGSUSED */
 ContextXID
-XDPSLCreateContext(xdpy, sxid, draw, gc, x, y, eventMask, grayRamp,
-		   colorCube, actual, cpsid,
-		   secure)
-    register Display *xdpy;
-    SpaceXID sxid;
-    Drawable draw;
-    GC gc;
-    int x, y;
-    unsigned int eventMask;
-    XStandardColormap *grayRamp,*colorCube;
-    unsigned int actual;
-    ContextPSID *cpsid;		/* RETURN */
-    Bool secure;                /* L2-DPS/PROTO 9 addition */
+XDPSLCreateContext(
+    register Display *xdpy,
+    SpaceXID sxid,
+    Drawable draw,
+    GC gc,
+    int x, int y,
+    unsigned int eventMask,
+    XStandardColormap *grayRamp,
+    XStandardColormap *colorCube,
+    unsigned int actual,
+    ContextPSID *cpsid,		/* RETURN */
+    Bool secure)                /* L2-DPS/PROTO 9 addition */
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -771,6 +738,7 @@ XDPSLCreateContext(xdpy, sxid, draw, gc, x, y, eventMask, grayRamp,
 
     switch (index)
 	{
+	default:
 	case 0: /* Both are default */
 	    XDPSGetDefaultColorMaps(xdpy, (Screen *) NULL, draw,
 				    &defColorcube, &defGrayramp);
@@ -845,8 +813,7 @@ XDPSLCreateContext(xdpy, sxid, draw, gc, x, y, eventMask, grayRamp,
 }
 
 SpaceXID
-XDPSLCreateSpace(xdpy)
-    register Display *xdpy;
+XDPSLCreateSpace(Display *xdpy)
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -879,11 +846,7 @@ XDPSLCreateSpace(xdpy)
 #define COALESCEGIVEINPUT
 
 void
-XDPSLGiveInput(xdpy, cxid, data, length)
-register Display *xdpy;
-ContextXID cxid;
-char *data;
-int length;
+XDPSLGiveInput(Display *xdpy, ContextXID cxid, char *data, int length)
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -994,9 +957,7 @@ int length;
 
 
 int
-XDPSLGetStatus(xdpy, cxid)
-    register Display *xdpy;
-    ContextXID cxid;
+XDPSLGetStatus(Display *xdpy, ContextXID cxid)
 {
     int dpyix;
     Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1036,9 +997,7 @@ XDPSLGetStatus(xdpy, cxid)
 }
 
 void
-XDPSLDestroySpace( xdpy, sxid )
-    Display *xdpy;
-    SpaceXID sxid;
+XDPSLDestroySpace(Display *xdpy, SpaceXID sxid)
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1072,9 +1031,7 @@ XDPSLDestroySpace( xdpy, sxid )
 
 
 void
-XDPSLReset( xdpy, cxid )
-    Display *xdpy; 
-    ContextXID cxid; 
+XDPSLReset(Display *xdpy, ContextXID cxid) 
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1107,10 +1064,10 @@ XDPSLReset( xdpy, cxid )
 }
 
 void
-XDPSLNotifyContext( xdpy, cxid, ntype )
-    Display *xdpy; 
-    ContextXID cxid; 
-    int ntype;		  /* should this be an enum?? %%% */
+XDPSLNotifyContext(
+    Display *xdpy, 
+    ContextXID cxid, 
+    int ntype)		  /* should this be an enum?? %%% */
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1151,10 +1108,10 @@ XDPSLNotifyContext( xdpy, cxid, ntype )
 
 
 ContextXID
-XDPSLCreateContextFromID( xdpy, cpsid, sxid )
-    Display *xdpy; 
-    ContextPSID cpsid; 
-    SpaceXID *sxid;		/* RETURN */
+XDPSLCreateContextFromID(
+    Display *xdpy, 
+    ContextPSID cpsid, 
+    SpaceXID *sxid)		/* RETURN */
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1196,11 +1153,11 @@ XDPSLCreateContextFromID( xdpy, cpsid, sxid )
 /* Returns 1 on success, 0 on failure (cpsid not a valid context). */
 
 Status
-XDPSLIDFromContext( xdpy, cpsid, cxid, sxid )
-    Display *xdpy; 
-    ContextPSID cpsid; 
-    ContextXID *cxid;			/* RETURN */
-    SpaceXID *sxid;			/* RETURN */
+XDPSLIDFromContext(
+    Display *xdpy,
+    ContextPSID cpsid, 
+    ContextXID *cxid,			/* RETURN */
+    SpaceXID *sxid)			/* RETURN */
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1239,9 +1196,7 @@ XDPSLIDFromContext( xdpy, cpsid, cxid, sxid )
 
 
 ContextPSID
-XDPSLContextFromXID( xdpy, cxid )
-    Display *xdpy; 
-    ContextXID cxid; 
+XDPSLContextFromXID(Display *xdpy, ContextXID cxid)
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1278,10 +1233,12 @@ XDPSLContextFromXID( xdpy, cxid )
 
 
 void
-XDPSLSetStatusMask( xdpy, cxid, enableMask, disableMask, nextMask )
-    Display *xdpy;
-    ContextXID cxid;
-    unsigned int enableMask, disableMask, nextMask;
+XDPSLSetStatusMask(
+    Display *xdpy,
+    ContextXID cxid,
+    unsigned int enableMask,
+    unsigned int disableMask,
+    unsigned int nextMask)
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1344,11 +1301,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 
 */  
-
-_XReadPad (xdpy, data, size)
-	register Display *dpy;
-	register char *data;
-	register long size;
+void
+_XReadPad (Display *dpy, char *data, long size)
 {
 	static int padlength[4] = {0,3,2,1};
 	register long bytes_read;
@@ -1367,10 +1321,10 @@ _XReadPad (xdpy, data, size)
 /* _____________ LEVEL 2 DPS/PROTOCOL 9 ADDITIONS _____________ */
 
 void
-XDPSLNotifyWhenReady( xdpy, cxid, val )
-    Display *xdpy;
-    ContextXID cxid;
-    int val[4];
+XDPSLNotifyWhenReady(
+    Display *xdpy,
+    ContextXID cxid,
+    int val[4])
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1422,9 +1376,7 @@ XDPSLNotifyWhenReady( xdpy, cxid, val )
 }
 
 XDPSLPSErrors
-XDPSLTestErrorCode(dpy, ecode)
-    Display *dpy;
-    int ecode;
+XDPSLTestErrorCode(Display *dpy, int ecode)
 {
     XExtCodes *c = XDPSLGetCodes(dpy);
 
@@ -1449,54 +1401,44 @@ XDPSLTestErrorCode(dpy, ecode)
 /* === NEW HOOKS INTO XDPS === */
 
 void
-XDPSLSetVersion(dpy, ver)
-    Display *dpy;
-    unsigned ver;
+XDPSLSetVersion(Display *dpy, unsigned ver)
 {
     version[DPY_NUMBER(dpy)] = ver;
 }
 
 void
-XDPSLSetCodes(dpy, codes)
-    Display *dpy;
-    XExtCodes *codes;
+XDPSLSetCodes(Display *dpy, XExtCodes *codes)
 {
     Codes[DPY_NUMBER(dpy)] = codes;
 }
 
 Display *
-XDPSLGetShunt(dpy_in)
-    register Display *dpy_in;
+XDPSLGetShunt(Display *dpy_in)
 {
     return(ShuntMap[DPY_NUMBER(dpy_in)]);
 }
 
 void
-XDPSLSetShunt(dpy_in, dpy_out)
-    Display *dpy_in, *dpy_out;
+XDPSLSetShunt(Display *dpy_in, Display *dpy_out)
 {
     ShuntMap[DPY_NUMBER(dpy_in)] = dpy_out;
 }
 
 int
-XDPSLGetSyncMask(dpy)
-    Display *dpy;
+XDPSLGetSyncMask(Display *dpy)
 {
     return (int)displayFlags[DPY_NUMBER(dpy)].syncMask;
 }
 
 void
-XDPSLSetSyncMask(dpy, mask)
-    Display *dpy;
-    int mask;
+XDPSLSetSyncMask(Display *dpy, int mask)
 {
     displayFlags[DPY_NUMBER(dpy)].syncMask = (char)mask;
     gForceFlush = (mask & DPSCAP_SYNCMASK_RECONCILE);
 }
 
 void
-XDPSLFlush(xdpy)
-    register Display *xdpy;
+XDPSLFlush(Display *xdpy)
 {
     register Display *dpy = ShuntMap[DPY_NUMBER(xdpy)];
 
@@ -1506,14 +1448,11 @@ XDPSLFlush(xdpy)
 }
 
 void
-XDPSLSyncGCClip(xdpy, gc)
-    register Display *xdpy;
-    register GC gc;
+XDPSLSyncGCClip(Display *xdpy, GC gc)
 {
     register unsigned long oldDirty;
     register int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
-    extern int gNXSyncGCMode;
 
     /* We DON'T want to notice all gc changes, just the clip */
     oldDirty = gc->dirty;
@@ -1536,18 +1475,14 @@ XDPSLSyncGCClip(xdpy, gc)
 
 #ifdef VMS
 void
-XDPSLSetDisplay(dpy)
-    Display *dpy;
+XDPSLSetDisplay(Display *dpy)
 {
     dpys[DPY_NUMBER(dpy)] = dpy;
 }
 #endif /* VMS */
 
 char *
-XDPSLSetAgentName(dpy, name, deflt)
-    Display *dpy;
-    char *name;
-    int deflt;
+XDPSLSetAgentName(Display *dpy, char *name, int deflt)
 {
     char *old;
     
@@ -1568,8 +1503,7 @@ XDPSLSetAgentName(dpy, name, deflt)
 
 
 void
-XDPSLSetClientMessageHandler(dpy)
-    Display *dpy;
+XDPSLSetClientMessageHandler(Display *dpy)
 {
     if (dpy == NULL) return;
     ClientMsgProc[DPY_NUMBER(dpy)] = XESetWireToEvent(
@@ -1579,8 +1513,7 @@ XDPSLSetClientMessageHandler(dpy)
 }
 
 void
-XDPSLSetAfterProc(xdpy)
-    Display *xdpy;
+XDPSLSetAfterProc(Display *xdpy)
 {
     if (xdpy == NULL) return;
     AfterProcs[DPY_NUMBER(xdpy)] = (GenericProcPtrReturnsInt)
@@ -1590,9 +1523,7 @@ XDPSLSetAfterProc(xdpy)
 
 
 CSDPSFakeEventTypes
-XDPSLGetCSDPSFakeEventType(dpy, event)
-    Display *dpy;
-    XEvent *event;
+XDPSLGetCSDPSFakeEventType(Display *dpy, XEvent *event)
 {
     XExtCodes *codes = Codes[DPY_NUMBER(dpy)];
     XExtData *extData;
@@ -1621,10 +1552,10 @@ XDPSLGetCSDPSFakeEventType(dpy, event)
 }
 
 Bool
-XDPSLDispatchCSDPSFakeEvent(dpy, event, t)
-    Display *dpy;
-    XEvent *event;
-    CSDPSFakeEventTypes t;
+XDPSLDispatchCSDPSFakeEvent(
+    Display *dpy,
+    XEvent *event,
+    CSDPSFakeEventTypes t)
 {
     register XDPSLOutputEvent *oce;
     register DPSCAPOutputEvent *oev;
@@ -1697,14 +1628,14 @@ samo_samo:
     return(True);
 }
 
-extern struct _t_DPSContextRec *XDPSContextFromXID();
+extern struct _t_DPSContextRec *XDPSContextFromXID(Display *, ContextXID);
 
 void
-XDPSLGetCSDPSStatus(xdpy, event, ret_ctxt, ret_status)
-    Display *xdpy;
-    XEvent *event;
-    void **ret_ctxt;
-    int *ret_status;
+XDPSLGetCSDPSStatus(
+    Display *xdpy,
+    XEvent *event,
+    void **ret_ctxt,
+    int *ret_status)
 {
     register DPSCAPStatusEvent *sev;
 
@@ -1718,11 +1649,11 @@ XDPSLGetCSDPSStatus(xdpy, event, ret_ctxt, ret_status)
 }
 
 void
-XDPSLGetCSDPSReady(xdpy, event, ret_ctxt, ret_val)
-    Display *xdpy;
-    XEvent *event;
-    void **ret_ctxt;
-    int *ret_val;
+XDPSLGetCSDPSReady(
+    Display *xdpy,
+    XEvent *event,
+    void **ret_ctxt,
+    int *ret_val)
 {
     /* Assert: event is ClientMessage with typePSReady */
    
@@ -1739,12 +1670,12 @@ XDPSLGetCSDPSReady(xdpy, event, ret_ctxt, ret_val)
 }
 
 void
-XDPSLCAPNotify(xdpy, cxid, ntype, data, extra)
-    Display *xdpy; 
-    ContextXID cxid; 
-    unsigned int ntype;		  /* should this be an enum?? %%% */
-    unsigned int data;
-    unsigned int extra;
+XDPSLCAPNotify(
+    Display *xdpy, 
+    ContextXID cxid, 
+    unsigned int ntype,		  /* should this be an enum?? %%% */
+    unsigned int data,
+    unsigned int extra)
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -1778,8 +1709,7 @@ XDPSLCAPNotify(xdpy, cxid, ntype, data, extra)
 }
 
 void
-XDPSLSync(xdpy)
-    Display *xdpy;
+XDPSLSync(Display *xdpy)
 {
     register Display *dpy = ShuntMap[DPY_NUMBER(xdpy)];
     
@@ -1828,9 +1758,7 @@ fprintf(stderr, "received.\n");
 }
 
 void
-XDPSLReconcileRequests(xdpy, cxid)
-    Display *xdpy;
-    ContextXID cxid;
+XDPSLReconcileRequests(Display *xdpy, ContextXID cxid)
 {
     int dpyix;
     unsigned int seqnum;
@@ -1862,9 +1790,7 @@ XDPSLReconcileRequests(xdpy, cxid)
 }
 
 Status
-XDPSLSetAgentArg(xdpy, arg, val)
-    Display *xdpy;
-    int arg, val;
+XDPSLSetAgentArg(Display *xdpy, int arg, int val)
 {
     int dpyix;
     register Display *dpy = ShuntMap[dpyix = DPY_NUMBER(xdpy)];
@@ -2039,10 +1965,10 @@ XDPSLFlushGC(xdpy, gc)
 /* === PRIVATE CSDPS PROCS === */
 
 static Status
-DPSCAPClientMessageProc(dpy, re, event)
-    Display *dpy;
-    XEvent *re;
-    register xEvent *event;
+DPSCAPClientMessageProc(
+    Display *dpy,
+    XEvent *re,
+    xEvent *event)
 {
     register XDPSLOutputEvent *oce;
     register DPSCAPOutputEvent *oev;
@@ -2159,9 +2085,7 @@ pass_the_buck:
 
 
 static void
-DPSCAPInitGC(dpy, agent, gc)
-    Display *dpy, *agent;
-    GC gc;
+DPSCAPInitGC(Display *dpy, Display *agent, GC gc)
 {
     XGCValues values;
     unsigned long valuemask = DPSGCBITS & ~(GCClipMask);
@@ -2179,16 +2103,13 @@ DPSCAPInitGC(dpy, agent, gc)
 /* ARGSUSED */
 
 static Bool
-WaitForSyncProc(xdpy, event, arg)
-    Display *xdpy;
-    XEvent *event;
-    char *arg;
+WaitForSyncProc(Display *xdpy, XEvent *event, char *arg)
 {
     DPSCAPData my = (DPSCAPData)arg;
     
     if ((event->type & 0x7F) == ClientMessage 
 	&& event->xclient.message_type == my->typeSync
-	&& event->xclient.data.l[0] == my->saveseq) {
+	&& event->xclient.data.l[0] == (long) my->saveseq) {
       return(True);
     } else {
       return(False);
@@ -2197,8 +2118,7 @@ WaitForSyncProc(xdpy, event, arg)
 
 
 static int
-DPSCAPAfterProc(xdpy)
-    Display *xdpy;
+DPSCAPAfterProc(Display *xdpy)
 {
     register Display *dpy = ShuntMap[DPY_NUMBER(xdpy)];
     GenericProcPtrReturnsInt proc;
@@ -2220,9 +2140,7 @@ DPSCAPAfterProc(xdpy)
 
 
 static unsigned int
-DPSCAPSetPause(xdpy, cxid)
-    register Display *xdpy;
-    register ContextXID cxid;
+DPSCAPSetPause(Display *xdpy, ContextXID cxid)
 {
     register DPSCAPPausedContextData *slot;
     int dpyix;
@@ -2273,9 +2191,7 @@ test_ret:
 }
 
 static Bool
-DPSCAPResumeContext(xdpy, cxid)
-    register Display *xdpy;
-    register ContextXID cxid;
+DPSCAPResumeContext(Display *xdpy, ContextXID cxid)
 {
     register DPSCAPPausedContextData *slot;
     unsigned int ret;
@@ -2322,9 +2238,3 @@ DPSCAPResumeContext(xdpy, cxid)
     /* Fall thru */
     return(False);
 }
-
-
-
-
-
-

@@ -36,10 +36,12 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/lexer.l,v 1.6 2000/02/18 12:18:42 tsi Exp $ */
+/* $XFree86: xc/config/pswrap/lexer.l,v 1.7 2000/04/05 18:13:12 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "pswpriv.h"
 #include "pswparser.h"
 
@@ -47,14 +49,6 @@
 #if defined(FLEX_SCANNER) && !defined(YY_FLEX_LEX_COMPAT) && !defined(__EMX__)
 int yylineno = 1;
 #endif
-
-extern int outlineno;		/* output line number */
-
-extern int maxstring;		/* max PS string length to scan (-s) */
-extern char *string_temp;	/* buffer of that size for scanning strings */
-extern char *psw_malloc();
-extern void stringerr();	/* report string overflow */
-extern char *ifile;		/* input file name for error messages */
 
 static int parens = 0;		/* current paren balancing */
 static char *sbody;		/* cur pointer into string_temp */
@@ -319,7 +313,7 @@ endps { 		/* BOGUS end of a wrap */
 	    DEBUGP((stderr,"DEF ->CINTEGER %s\n",yytext));
 	    /* I have no idea why the cast is needed in the next line,
 	       but it seems to make the compiler happy on alpha */
-	    sscanf((char *) yytext,"%lo",&yylval.intobj);
+	    sscanf((char *) yytext,"%o",&yylval.intobj);
 	    return CINTEGER;
 	}
 }
@@ -328,7 +322,7 @@ endps { 		/* BOGUS end of a wrap */
 	if (nonComment) {
 	    DEBUGP((stderr,"DEF ->CINTEGER %s\n",yytext));
 	    /* See previous comment... */
-	    sscanf((char *) yytext,"0x%lx",&yylval.intobj);
+	    sscanf((char *) yytext,"0x%x",&yylval.intobj);
 	    return CINTEGER;
 	}
 }
@@ -378,7 +372,7 @@ endps { 		/* BOGUS end of a wrap */
 
 <PS>{DIGIT}+#{RADIXDIGIT}+ {	/* a radix number */
 #define MAX_ULONG ((unsigned long) -1)
-	int base = 0;
+	unsigned base = 0;
 	unsigned char *s = (unsigned char *) yytext;
 	register unsigned long x, limit;
 	register unsigned long i = 0;
@@ -760,7 +754,7 @@ endps { 		/* BOGUS end of a wrap */
 
 %%
 
-int yywrap () {
+int yywrap (void) {
     if (!feof(yyin))
     	return (0);
 /* The following appears not to work with flex.  As it is error
@@ -774,12 +768,8 @@ int yywrap () {
     return (1);
 }
 
-void stringerr(type)
-	int type;
+void stringerr(int type)
 {
-    extern char *currentPSWName;
-    extern char *ifile;
-
     ErrIntro(strlineno);
     fprintf(stderr,"%sstring too long (caught at line %d)\n",
     	((type==1)?"":"hex "),yylineno);

@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.5 2000/02/13 05:24:37 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.6 2000/02/14 19:20:20 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -702,7 +702,7 @@ get_metrics(FreeTypeFont *ft, int c, struct xtt_char_width char_width)
 
         if ((entry = FontCacheGetEntry()) == NULL) {
             charInfo = &nocharinfo;
-            fprintf(stderr, "can't get cache entry\n");
+            fprintf(stderr, "get_metrics: can't get cache entry\n");
             goto next;
         }
         FC_TT_SETVFUNC(entry);
@@ -790,10 +790,9 @@ get_glyph(FreeTypeFont *ft, int c, int spacing)
             char_width.pixel = char_width.raw = 0;
         get_metrics(ft, c, char_width);
         /* Retry to get it created in get_metrics(). */
-        FontCacheSearchEntry(ft->cache, c, &entry);
-        if (!charInfo) {
+        if (!FontCacheSearchEntry(ft->cache, c, &entry)) {
             charInfo = &nocharinfo;
-            fprintf(stderr, "can't get cache entry\n");
+            fprintf(stderr, "get_glyph: can't get cache entry\n");
             goto next;
         }
     }

@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.24 2000/02/27 02:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.28 2000/04/27 16:26:47 eich Exp $ */
 
 #define EXPERIMENTAL
 
@@ -1367,10 +1367,6 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 	vgaHWGetIOBase(hwp);
 
-	/* Map the CIR memory and MMIO areas */
-	if (!CirMapMem(pCir, pScrn->scrnIndex))
-		return FALSE;
-
 	/* Save the current state */
 	LgSave(pScrn);
 
@@ -1901,13 +1897,13 @@ LgDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 static void
 mmioWriteCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
 {
-  moutb(index << 4, value);
+  moutb(index << 2, value);
 }
 
 static CARD8
 mmioReadCrtc(vgaHWPtr hwp, CARD8 index)
 {
-  return minb(index << 4);
+  return minb(index << 2);
 }
 
 static void

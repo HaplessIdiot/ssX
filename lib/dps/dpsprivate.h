@@ -40,6 +40,7 @@
 #define	DPSPRIVATE_H
 
 #include "DPS/dpsconfig.h"
+#include "DPS/dpsclient.h"
 
 typedef enum {
   dps_hiFirst, dps_loFirst
@@ -49,19 +50,17 @@ typedef enum {
   dps_ieee, dps_native
   } DPSNumFormat;
 
-typedef void (*DPSClientPrintProc)(/*
-  ContextID cid;
-  unsigned char *buf;
-  unsigned int count; */);
+typedef void (*DPSClientPrintProc)(
+  DPSContext		/* cid */,
+  char *		/* buf */,
+  unsigned int		/* count */);
   /* Call-back procedure to handle output from the PostScript server for
      context with id 'cid'. Passed to DPSServicePostScript.
     'buf' contains 'count' bytes. */
 
 extern void DPSInitClient(
-  /* DPSTextProc textProc;
-     procedure (*bufReleaseProc)(PSContext context; char *buffer);
-   */
-   );
+  DPSTextProc		textProc,
+  void			(* /* releaseProc */) (char *, char *));
 /* Initialize the environment-specific parts of the client library */
 
 #ifndef DPSDefaultProgramEncoding
@@ -88,51 +87,7 @@ extern void DPSInitClient(
 #define DPSDefaultNameEncoding dps_indexed
 #endif /* not DPSDefaultNameEncoding */
 
-extern DPSNumFormat DPSCreatePrivContext(
-  /* void *wh;
-   * DPSContext ctxt;
-   * long int *cidP, *sidP;
-   * boolean newSpace;
-   * DPSClientPrintProc printProc;
-   */
-  );
-  /* returns -1 if server can't create the context */
-
-extern void DPSIncludePrivContext(
-  /* void *wh;
-   * DPSContext ctxt;
-   * long int cid, sid;
-   * DPSClientPrintProc printProc;
-   */
-  );
-
-extern void DPSSendPostScript(
- /*   void *wh; DPSClientPrintProc printProc;
-  *   ContextID cID; char *buffer; long int count;
-  *   boolean (*returnControl)();
-  */
- );
-
-extern void DPSSendInterrupt(
-  /* void *wh; ContextID cID; DPSClientPrintProc printProc; */
-  );
-
-extern void DPSSendEOF(
-  /* void *wh; ContextID cID; DPSClientPrintProc printProc; */
-  );
-
-extern void DPSSendTerminate(
-  /* void *wh; ContextID cID; DPSClientPrintProc printProc; */
-  );
-
-extern void DPSSendDestroySpace(
-  /* void *wh; SpaceID sid; DPSClientPrintProc printProc; */
-  );
-  
-extern void DPSReportInvalid(/* ContextID cID; */);
-  /* Called by the implementation of dpsprivate.h. Implemented by dpsclient.c */
-
-extern void DPSCheckRaiseError(/* DPSContext c; */);
+extern void DPSCheckRaiseError(DPSContext c);
   /* Checks the resynching flag in a DPSPrivContext and raises an exception
      if true */
 
@@ -148,12 +103,13 @@ extern char **DPSSysNamesAux;
      DPSSysNamesAux[index - DPS_FIRST_AUX_SYSNAME] is the string
      for an uncommon system name. */
 
-extern void DPSInitSysNames();
+extern int DPSInitialize(void);
+extern void DPSInitSysNames(void);
 
-extern char *DPSSetWh(/* DPSContext ctxt; char *newWh */);
+extern char *DPSSetWh(DPSContext /* ctxt */, char * /* newWh */);
   /* set new window handle, returns old window handle */
 
-extern void DPSOutOfMemory();
+extern void DPSOutOfMemory(void);
   /*
      This is called by the DPS software when it cannot allocate any more
      storage from the heap (e.g., when malloc returns NIL).

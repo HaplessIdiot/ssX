@@ -42,8 +42,7 @@
 
 #include "dpsassert.h"
 
-void XDPSSetXtEventDispatching(dpy)
-    Display *dpy;
+void XDPSSetXtEventDispatching(Display *dpy)
 {
     DPSFatalProc(NULL, "Attempt to use XDPSSetXtEventDispatching with pre-R6 Intrinsics\n");
     exit(1);
@@ -62,8 +61,7 @@ typedef struct _DpyProcRec {
 
 static DpyProcRec *dpyProcList = NULL;
 
-static Boolean NXDispatcher(event)
-    XEvent *event;
+static Boolean NXDispatcher(XEvent *event)
 {
     DpyProcRec *d;
 
@@ -75,8 +73,7 @@ static Boolean NXDispatcher(event)
     else return False;
 }
 	
-void XDPSSetXtEventDispatching(dpy)
-    Display *dpy;
+void XDPSSetXtEventDispatching(Display *dpy)
 {
     int codes;
     XExtCodes *c;

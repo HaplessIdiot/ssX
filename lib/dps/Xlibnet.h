@@ -13,7 +13,7 @@ written prior permission.  M.I.T. makes no representations about the
 suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
-/* $XFree86: xc/lib/dps/Xlibnet.h,v 1.3 2000/02/21 20:12:03 dawes Exp $ */
+/* $XFree86: xc/lib/dps/Xlibnet.h,v 1.4 2000/04/05 18:13:20 dawes Exp $ */
 /*
  * Xlibnet.h - Xlib networking include files for UNIX Systems.
  */
@@ -225,6 +225,7 @@ without express or implied warranty.
  *
  * #define _XANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
  */
+extern int N_XANYSET(unsigned long *);
 #endif
 
 /*

@@ -39,12 +39,14 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#include "pswpriv.h"
+#include "psw.h"
+
 #define outfil stdout
 #define MAX_PER_LINE 16
 
-extern int outlineno;		/* line number in output file */
-
-int PSWStringLength(s) char *s; {
+int PSWStringLength(char *s)
+{
     register char *c = s;
     register int len = 0;
 
@@ -57,7 +59,8 @@ int PSWStringLength(s) char *s; {
     return (len);
 }
 
-void PSWOutputStringChars(s) char *s; {
+void PSWOutputStringChars(char *s)
+{
     register char *c = s;
     register char b;
     register int perline = 0;
@@ -109,12 +112,12 @@ void PSWOutputStringChars(s) char *s; {
 }
 
 
-int PSWHexStringLength(s) char *s; {
+int PSWHexStringLength(char *s)
+{
     return ((int) (strlen(s)+1)/2);
 }
 
-void PSWOutputHexStringChars(s)
-    register char *s;
+void PSWOutputHexStringChars(register char *s)
 {
     register int perline = 0;
     char tmp[3];

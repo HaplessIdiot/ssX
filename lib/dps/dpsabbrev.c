@@ -326,24 +326,20 @@ static short abbrevPtr[] = {
     -1,	/* 211 */
 };
 
-void DPSFetchAbbrevList(list, count)
-    DPSAbbrevRec **list;
-    int *count;
+void DPSFetchAbbrevList(DPSAbbrevRec **list, int *count)
 {
     *list = abbrev;
     *count = sizeof(abbrev) / sizeof(abbrev[0]);
 }
 
-char *DPSGetSysnameAbbrev(n)
-    int n;
+char *DPSGetSysnameAbbrev(int n)
 {
-    if (n > sizeof(abbrevPtr) / sizeof(abbrevPtr[0])) return NULL;
+    if ((unsigned) n > sizeof(abbrevPtr) / sizeof(abbrevPtr[0])) return NULL;
     if (abbrevPtr[n] == -1) return NULL;
     return abbrev[abbrevPtr[n]].abbrev;
 }
 
-char *DPSGetOperatorAbbrev(op)
-    char *op;
+char *DPSGetOperatorAbbrev(char *op)
 {
     int min, max, n;
     int res;

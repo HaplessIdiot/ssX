@@ -35,26 +35,29 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/dps/csfindNX.c,v 1.2 2000/02/15 14:51:22 dawes Exp $ */
+/* $XFree86: xc/lib/dps/csfindNX.c,v 1.3 2000/02/18 12:18:53 tsi Exp $ */
 
 #include <sys/param.h>				/* for MAXHOSTNAMELEN */
 #include <stdlib.h>
+#include <unistd.h>		/* getuid() */
 #include <string.h>
 #include <pwd.h>
+
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xlibint.h>
 #include <X11/Xatom.h>
 #include <X11/Xresource.h>
+
 #include "csfindNX.h"
 #include "dpsNXprops.h"
 #include "Xlibnet.h"
 #include "DPS/dpsXclient.h"
 #include "DPS/dpsNXargs.h"
 #include <DPS/XDPSlib.h>
-#include "cslibint.h"
 
-extern char *getenv();
+#include "dpsassert.h"
+#include "cslibint.h"
 
 /* ---Defines--- */
 
@@ -81,27 +84,28 @@ static Bool gXDPSNXAutoLaunch = False;
 unsigned char gXDPSNXErrorCode;
 extern int gNXSndBufSize;  /* Output buffer size, zero means default */
 
-static char *getHomeDir();
+static char *getHomeDir(char *);
 
 /* ---Private Functions--- */
 
 static int
-TmpErrorHandler(dpy, err)
-     Display *dpy;
-     XErrorEvent *err;
+TmpErrorHandler(
+     Display *dpy,
+     XErrorEvent *err)
 {
   gXDPSNXErrorCode = err->error_code;
+  return 0;
 }
 
 
 static int
-GetProperty(dpy, w, prop, type, nitems, data)
-     Display *dpy;
-     Window w;
-     Atom prop;
-     Atom type;
-     int *nitems;		/* IN: if non-null then RETURN val */
-     char **data;		/* RETURN */
+GetProperty(
+     Display *dpy,
+     Window w,
+     Atom prop,
+     Atom type,
+     unsigned long *nitems,	/* IN: if non-null then RETURN val */
+     char **data)		/* RETURN */
 {
   long largest_len = ((((unsigned long) -1) >> 1) / 4);
   Atom actual_type;
@@ -135,15 +139,15 @@ GetProperty(dpy, w, prop, type, nitems, data)
   dpy (ie. it assumes that the caller has done an XGrabServer).
   */
 static AgentIdList
-GetAgentIdList(dpy, nAgents)
-     Display *dpy;
-     unsigned long *nAgents;	/* RETURN: number of agents in list */
+GetAgentIdList(
+     Display *dpy,
+     unsigned long *nAgents)	/* RETURN: number of agents in list */
 {
   Atom serverListAtom = XInternAtom(dpy, XDPSNX_BILLBOARD_PROP, True);
   Window  *agents = NULL;
   AgentIdList agentList = NULL;
-  int (*oldErrorHandler)() = (int (*)())NULL; /* the current error handler */
-  int i, current;
+  int (*oldErrorHandler)(Display *, XErrorEvent *) = 0; /* the current error handler */
+  unsigned long i, current;
 
   if (serverListAtom == None) { /* Servers registered on dpy */
     goto failed;
@@ -167,7 +171,7 @@ GetAgentIdList(dpy, nAgents)
   for (i=0; i < *nAgents; i++) {
     unsigned long len;
     int *agentWillingness;
-    int k;
+    unsigned long k;
 
     for (k=0; k < i; k++) /* Search for duplicate ids */
       if (agents[i] == agents[k]) { /* uh oh... */
@@ -184,7 +188,7 @@ GetAgentIdList(dpy, nAgents)
 	agents[i] = None;
 	gXDPSNXErrorCode = None;
       } else {
-	int j = 0;
+	unsigned long j = 0;
 	
 	/* insert the agents into agentList in "most to least willing" order */
 	while ((j < current) && (agentList[j].willingness > *agentWillingness))
@@ -227,17 +231,17 @@ GetAgentIdList(dpy, nAgents)
 
 
 static int
-XDPSNXOnDisplay(dpy, licenseMethod, host, transport, port)
-     Display *dpy;
-     char *licenseMethod;
-     char **host;
-     int *transport;
-     int *port;
+XDPSNXOnDisplay(
+     Display *dpy,
+     char *licenseMethod,
+     char **host,
+     int *transport,
+     int *port)
 {
-  int nAgents = 0;
+  unsigned long nAgents = 0;
   AgentIdList agentList = NULL;
   Bool match = False;
-  int i = 0;
+  unsigned long i = 0;
   int status = !Success;
 
 #ifdef DPSLNKL
@@ -282,7 +286,7 @@ XDPSNXOnDisplay(dpy, licenseMethod, host, transport, port)
 	Atom *licenseMethods = NULL;
 	unsigned long nMethods;
 	unsigned long remaining;
-	int j;
+	unsigned long j;
 	
 	if (GetProperty(dpy, agentList[i].id,
 			XInternAtom(dpy, XDPSNX_LICENSE_METHOD_PROP, True),
@@ -349,11 +353,11 @@ XDPSNXOnDisplay(dpy, licenseMethod, host, transport, port)
 
 
 static int
-ParseAgentString(string, hostname, transport, port)
-     char *string;
-     char **hostname;		/* RETURN */
-     int *transport;		/* RETURN */
-     int *port;			/* RETURN */
+ParseAgentString(
+     char *string,
+     char **hostname,		/* RETURN */
+     int *transport,		/* RETURN */
+     int *port)			/* RETURN */
 {
   int dnet = 0;
   Bool transportSpecified = False;
@@ -409,23 +413,23 @@ ParseAgentString(string, hostname, transport, port)
     /* identify protocol */
     if (dnet)
       *transport = XDPSNX_TRANS_DECNET;
-    else if (transportSpecified)
+    else if (transportSpecified) {
       if (strcmp(namebuf, "unix") == 0)
         *transport = XDPSNX_TRANS_UNIX;
       else 			/* assume tcp */
         *transport = XDPSNX_TRANS_TCP;
-    else 
+    } else 
       *transport = XDPSNX_TRANS_TCP;
   }
   return(Success);
 }
 
 static int
-FindXDPSNXInXrmDatabase(dpy, host, transport, port)
-     Display *dpy;
-     char **host;
-     int *transport;
-     int *port;
+FindXDPSNXInXrmDatabase(
+     Display *dpy,
+     char **host,
+     int *transport,
+     int *port)
 {
   XrmDatabase rDB = NULL;	/* for merged database */
   XrmDatabase serverDB, applicationDB;
@@ -476,8 +480,7 @@ FindXDPSNXInXrmDatabase(dpy, host, transport, port)
 
 
 static char *
-getHomeDir(dest)
-     char *dest;
+getHomeDir(char *dest)
 {
   register char *ptr;
 
@@ -507,12 +510,12 @@ getHomeDir(dest)
 int gForceLaunchHack = 0;   /* Undocumented way to force autolaunch */
 
 XDPSNXFindNXResult
-XDPSNXFindNX(dpy, licenseMethod, host, transport, port)
-     Display *dpy;
-     char *licenseMethod;
-     char **host;
-     int *transport;
-     int *port;
+XDPSNXFindNX(
+     Display *dpy,
+     char *licenseMethod,
+     char **host,
+     int *transport,
+     int *port)
 {
   char *agentenv;
   
@@ -545,9 +548,7 @@ XDPSNXFindNX(dpy, licenseMethod, host, transport, port)
 
 
 Status
-XDPSNXSetClientArg(arg, value)
-     int arg;
-     void *value;
+XDPSNXSetClientArg(int arg, void *value)
 {
   Display *dpy;
   
@@ -616,9 +617,7 @@ XDPSNXSetClientArg(arg, value)
 
 
 void
-XDPSGetNXArg(arg, value)
-     int arg;
-     void **value;
+XDPSGetNXArg(int arg, void **value)
 {
   static char agentBuffer[255];
   

@@ -36,6 +36,9 @@
  * Author:  Adobe Systems Incorporated
  */
 
+#include <stdlib.h>
+#include <unistd.h>	/* sleep() */
+#include <stdio.h>
 #include <ctype.h>
 
 #ifdef VMS
@@ -58,16 +61,15 @@
 
 #include "dpsXpriv.h"
 #include "DPS/dpsXclient.h"
-#define Atom PSWAtom
 
 #include "dpsdict.h"
 #include "DPS/dpsexcept.h"
 
 #include "dpsXint.h"
 
-static DPSPrivContext FindPrivContext (dpy, cid)
-  Display  *dpy;
-  long int cid;
+static DPSPrivContext FindPrivContext (
+  Display  *	dpy,
+  long int	cid)
 {
   DPSPrivSpace ss;
   DPSPrivContext cc;
@@ -79,18 +81,19 @@ static DPSPrivContext FindPrivContext (dpy, cid)
   return (NIL);
 }
 
-DPSContext XDPSFindContext (dpy, cid)
-  Display  *dpy;
-  int cid;
+DPSContext XDPSFindContext (
+  Display  *	dpy,
+  int		cid)
 {
   return ((DPSContext) FindPrivContext (dpy, cid));
 }
 
-DPSContext DPSContextFromContextID(ctxt, contextID, textProc, errorProc)
-  DPSContext ctxt;
-  int contextID;
-  DPSTextProc textProc;
-  DPSErrorProc errorProc; {
+DPSContext DPSContextFromContextID(
+  DPSContext ctxt,
+  int contextID,
+  DPSTextProc textProc,
+  DPSErrorProc errorProc)
+{
   DPSPrivSpace ss;
   Display *dpy = ((XDPSPrivContext) ((DPSPrivContext) ctxt)->wh)->dpy;
   DPSPrivContext c, cc = FindPrivContext (dpy, contextID);
@@ -130,10 +133,10 @@ DPSContext DPSContextFromContextID(ctxt, contextID, textProc, errorProc)
     (XDPSPrivContext) c->wh, (DPSContext)c, c->cid, ss->sid, DPSclientPrintProc);
 
   return (DPSContext)c;
-  }
+}
 
-boolean DPSPrivateCheckWait(ctxt)
-    DPSContext ctxt;
+boolean DPSPrivateCheckWait(
+    DPSContext ctxt)
 {
     DPSPrivContext cc = (DPSPrivContext) ctxt;
 
@@ -142,31 +145,32 @@ boolean DPSPrivateCheckWait(ctxt)
 	if (cc->errorProc != NIL) {
 	    (*cc->errorProc) (ctxt, cc->zombie ? dps_err_deadContext :
 			                         dps_err_invalidAccess,
-			      (char *) ctxt, 0);
+			      (unsigned long) ctxt, 0);
 	}
 	return true;
     }
     return false;
 }
 
-static void procFlushContext(ctxt)
-  DPSContext ctxt; {
+static void procFlushContext(
+  DPSContext ctxt)
+{
   DPSPrivContext c = (DPSPrivContext) ctxt;
   XDPSLFlush (((XDPSPrivContext) c->wh)->dpy);
   if (ctxt->chainChild != NIL) DPSFlushContext(ctxt->chainChild);
-  }
+}
 
 /* ARGSUSED */
-static Bool FindDPSEvent(dpy, event, arg)
-  Display *dpy;
-  XEvent *event;
-  char *arg;
+static Bool FindDPSEvent(
+  Display *dpy,
+  XEvent *event,
+  char *arg)
 {
   return XDPSIsDPSEvent(event);
 }
 
-static void procAwaitReturnValues(ctxt)
-  DPSContext ctxt; {
+static void procAwaitReturnValues(DPSContext ctxt)
+{
   DPSPrivContext c = (DPSPrivContext)ctxt;
  
   XDPSPrivContext xwh = (XDPSPrivContext) c->wh;
@@ -209,7 +213,7 @@ static void procAwaitReturnValues(ctxt)
 	c->resultTable = NIL;
 	c->resultTableLength = 0;
 	if (c->errorProc != NIL)
-	  (*c->errorProc) (ctxt, dps_err_deadContext, (char *) c, 0);
+	  (*c->errorProc) (ctxt, dps_err_deadContext, (unsigned long) c, 0);
 	XDPSLSetWrapWaitingFlag(xwh->dpy, False);
 	E_RTRN_VOID;
 	}
@@ -240,12 +244,13 @@ static void procAwaitReturnValues(ctxt)
 
   if (((DPSPrivSpace)(c->space))->lastNameIndex < c->lastNameIndex)
     ((DPSPrivSpace)(c->space))->lastNameIndex = c->lastNameIndex;
-  }
+}
 
-void DPSinnerProcWriteData(ctxt, buf, count)
-  DPSContext ctxt;
-  char *buf;
-  unsigned int count; {
+void DPSinnerProcWriteData(
+  DPSContext ctxt,
+  char *buf,
+  unsigned int count)
+{
   DPSPrivContext c = (DPSPrivContext) ctxt;
   
   /* ASSERT: safe to call with chain */
@@ -253,10 +258,10 @@ void DPSinnerProcWriteData(ctxt, buf, count)
   /* No local buffering */
   DPSSendPostScript ((XDPSPrivContext) c->wh, DPSclientPrintProc,
 		     c->cid, buf, count, NIL);
-  } /* DPSinnerProcWriteData */
+} /* DPSinnerProcWriteData */
 
-static void procResetContext(ctxt)
-  DPSContext ctxt; {
+static void procResetContext(DPSContext ctxt)
+{
   DPSPrivContext c = (DPSPrivContext) ctxt;
   int currStatus;
   register XDPSPrivContext xwh = (XDPSPrivContext) c->wh;
@@ -314,10 +319,9 @@ static void procResetContext(ctxt)
     }
   
   c->eofReceived = false;
-  }
+}
 
-void DPSPrivateDestroyContext(ctxt)
-    DPSContext ctxt;
+void DPSPrivateDestroyContext(DPSContext ctxt)
 {
   DPSPrivContext c = (DPSPrivContext)ctxt;
   DPSPrivSpace s = (DPSPrivSpace) c->space;
@@ -330,8 +334,7 @@ void DPSPrivateDestroyContext(ctxt)
   if (c->wh != s->wh) free(c->wh);
 }
 
-void DPSPrivateDestroySpace(space)
-    DPSSpace space;
+void DPSPrivateDestroySpace(DPSSpace space)
 {
     DPSPrivSpace ss = (DPSPrivSpace) space;
 
@@ -341,32 +344,31 @@ void DPSPrivateDestroySpace(space)
     free (ss->wh);
 }
 
-boolean DPSCheckShared(ctxt)
-  DPSPrivContext ctxt; 
+boolean DPSCheckShared(DPSPrivContext ctxt)
 {
   return ctxt->creator == false && ctxt->resultTable != NIL;
   /* let procAwaitReturnValues generate error */
 }
 
 /* ARGSUSED */
-void DPSServicePostScript(returnControl)
-  boolean (*returnControl)(); {
-  } /* DPSServicePostScript */
+void DPSServicePostScript(boolean (*returnControl)(void))
+{
+} /* DPSServicePostScript */
 
-DPSHandleBogusError(ctxt, prefix, suffix)
-  DPSContext ctxt;
-  char *prefix, *suffix;
+void DPSHandleBogusError(DPSContext ctxt, char *prefix, char *suffix)
 {
     char *buf = "bogus error output from context";
     DPSDefaultPrivateHandler(ctxt, dps_err_warning,
 			     (long unsigned int)buf, 0, prefix, suffix);
 }
 
-void DPSDefaultPrivateHandler(ctxt, errorCode, arg1, arg2, prefix, suffix)
-  DPSContext ctxt;
-  DPSErrorCode errorCode;
-  long unsigned int arg1, arg2; 
-  char *prefix, *suffix;
+void DPSDefaultPrivateHandler(
+  DPSContext ctxt,
+  DPSErrorCode errorCode,
+  long unsigned int arg1,
+  long unsigned int arg2,
+  char *prefix,
+  char *suffix)
 {
 
   DPSTextProc textProc = DPSGetCurrentTextBackstop();
@@ -447,15 +449,12 @@ void DPSDefaultPrivateHandler(ctxt, errorCode, arg1, arg2, prefix, suffix)
   }
 }
 
-void DPSInitPrivateSpaceFields(s)
-    DPSPrivSpace s;
+void DPSInitPrivateSpaceFields(DPSPrivSpace s)
 {
     s->creator = true;
 }
 
-void DPSInitPrivateContextFields(c, s)
-    DPSPrivContext c;
-    DPSPrivSpace s;
+void DPSInitPrivateContextFields(DPSPrivContext c, DPSPrivSpace s)
 {
     c->creator = true;
     c->zombie = false;
@@ -465,9 +464,7 @@ void DPSInitPrivateContextFields(c, s)
     }
 }
 
-void  DPSInitPrivateTextContextFields(c, s)
-    DPSPrivContext c;
-    DPSPrivSpace s;
+void  DPSInitPrivateTextContextFields(DPSPrivContext c, DPSPrivSpace s)
 {
     c->creator = true;
     c->zombie = false;
@@ -478,12 +475,12 @@ void  DPSInitPrivateTextContextFields(c, s)
   
 long int DPSLastUserObjectIndex = 0;
 
-long int DPSNewUserObjectIndex ()
+long int DPSNewUserObjectIndex (void)
 {
   return (DPSLastUserObjectIndex++);
 }
 
-void XDPSSetProcs ()
+void XDPSSetProcs (void)
 {
   DPSCheckInitClientGlobals ();
   if (!textCtxProcs)
@@ -509,24 +506,22 @@ void XDPSSetProcs ()
   XDPSconvProcs->WriteNumString = textCtxProcs->WriteNumString;
 }
 
-void DPSInitPrivateContextProcs(p)
-    DPSProcs p;
+void DPSInitPrivateContextProcs(DPSProcs p)
 {
     p->FlushContext = procFlushContext;
     p->ResetContext = procResetContext;
     p->AwaitReturnValues = procAwaitReturnValues;
 }
 
-DPSContext XDPSCreateSimpleContext (dpy, draw, gc, x, y,
-					   textProc, errorProc, space)
-  Display	*dpy;
-  Drawable	draw;
-  GC		gc;
-  int		x;
-  int		y;
-  DPSTextProc	textProc;
-  DPSErrorProc	errorProc;
-  DPSSpace	space;
+DPSContext XDPSCreateSimpleContext (
+  Display	*dpy,
+  Drawable	draw,
+  GC		gc,
+  int		x,
+  int		y,
+  DPSTextProc	textProc,
+  DPSErrorProc	errorProc,
+  DPSSpace	space)
 {
   XDPSPrivContext xwh = XDPSCreatePrivContextRec (dpy, draw, gc, x, y,
   						  0, DefaultStdCMap,
@@ -545,20 +540,19 @@ DPSContext XDPSCreateSimpleContext (dpy, draw, gc, x, y,
 }
 
 
-DPSContext XDPSCreateContext (dpy, draw, gc, x, y, eventmask, grayramp,
-				     ccube, actual, textProc, errorProc, space)
-  Display		*dpy;
-  Drawable		draw;
-  GC			gc;
-  int			x;
-  int			y;
-  unsigned int		eventmask;
-  XStandardColormap	*grayramp;
-  XStandardColormap	*ccube;
-  int			actual;
-  DPSTextProc		textProc;
-  DPSErrorProc		errorProc;
-  DPSSpace	space;
+DPSContext XDPSCreateContext (
+  Display		*dpy,
+  Drawable		draw,
+  GC			gc,
+  int			x,
+  int			y,
+  unsigned int		eventmask,
+  XStandardColormap	*grayramp,
+  XStandardColormap	*ccube,
+  int			actual,
+  DPSTextProc		textProc,
+  DPSErrorProc		errorProc,
+  DPSSpace		space)
 {
   XDPSPrivContext xwh = XDPSCreatePrivContextRec (dpy, draw, gc, x, y,
   						  eventmask, grayramp,
@@ -576,20 +570,19 @@ DPSContext XDPSCreateContext (dpy, draw, gc, x, y, eventmask, grayramp,
     }
 }
 
-DPSContext XDPSCreateSecureContext (dpy, draw, gc, x, y, eventmask, grayramp,
-				     ccube, actual, textProc, errorProc, space)
-  Display		*dpy;
-  Drawable		draw;
-  GC			gc;
-  int			x;
-  int			y;
-  unsigned int		eventmask;
-  XStandardColormap	*grayramp;
-  XStandardColormap	*ccube;
-  int			actual;
-  DPSTextProc		textProc;
-  DPSErrorProc		errorProc;
-  DPSSpace	space;
+DPSContext XDPSCreateSecureContext (
+  Display		*dpy,
+  Drawable		draw,
+  GC			gc,
+  int			x,
+  int			y,
+  unsigned int		eventmask,
+  XStandardColormap	*grayramp,
+  XStandardColormap	*ccube,
+  int			actual,
+  DPSTextProc		textProc,
+  DPSErrorProc		errorProc,
+  DPSSpace		space)
 {
   XDPSPrivContext xwh = XDPSCreatePrivContextRec (dpy, draw, gc, x, y,
   						  eventmask, grayramp,
@@ -645,7 +638,7 @@ DPSContext XDPSContextFromSharedID (dpy, cid, textProc, errorProc)
 
   s = spaces;
   while (s != NIL)
-    if (s->sid == sxid && ((XDPSPrivContext) s->wh)->dpy == dpy)
+    if ((SpaceXID)s->sid == sxid && ((XDPSPrivContext) s->wh)->dpy == dpy)
       break;
     else
       s = s->next;
@@ -701,8 +694,8 @@ void DPSChangeEncoding (ctxt, newProgEncoding, newNameEncoding)
 	DPSSafeSetLastNameIndex(ctxt);
 	if (cc->errorProc != NIL)
 	  (*cc->errorProc) (ctxt, dps_err_encodingCheck,
-			    (char *) newNameEncoding,
-			    (char *) newProgEncoding);
+			    (unsigned long) newNameEncoding,
+			    (unsigned long) newProgEncoding);
 	return;
 	}
       if (ctxt->procs == textCtxProcs)
@@ -734,7 +727,7 @@ DPSSpace XDPSSpaceFromSharedID (dpy, sid)
 
   s = spaces;
   while (s != NIL)
-    if (s->sid == sid && ((XDPSPrivContext) s->wh)->dpy == dpy)
+    if ((SpaceXID)s->sid == sid && ((XDPSPrivContext) s->wh)->dpy == dpy)
       break;
     else
       s = s->next;
@@ -832,7 +825,7 @@ DPSSpace XDPSSpaceFromXID (dpy, sxid)
   DPSPrivSpace  ss;
   
   for (ss = spaces;  ss != NIL;  ss = ss->next)
-    if (ss->sid == sxid && ((XDPSPrivContext) ss->wh)->dpy == dpy)
+    if ((SpaceXID)ss->sid == sxid && ((XDPSPrivContext) ss->wh)->dpy == dpy)
       return ((DPSSpace) ss);
 
   return (NIL);
@@ -936,9 +929,9 @@ void XDPSReadyEventHandler (e)
 
 
 
-void DPSWarnProc(ctxt, msg)
-    DPSContext ctxt;
-    char *msg;
+void DPSWarnProc(
+    DPSContext ctxt,
+    char *msg)
 {
     DPSErrorProc ep;
 
@@ -948,9 +941,9 @@ void DPSWarnProc(ctxt, msg)
     (*ep)(ctxt, dps_err_warning, (long unsigned int)msg, 0);
 }
 
-void DPSFatalProc(ctxt, msg)
-    DPSContext ctxt;
-    char *msg;
+void DPSFatalProc(
+    DPSContext ctxt,
+    char *msg)
 {
     DPSErrorProc ep;
 
@@ -960,22 +953,23 @@ void DPSFatalProc(ctxt, msg)
     (*ep)(ctxt, dps_err_fatal, (long unsigned int)msg, 0);
 }
 
-void DPSCantHappen() {
-  static locked = 0;
+void DPSCantHappen(void)
+{
+  static int locked = 0;
   char *msg = "assertion failure or DPSCantHappen";
   if (locked > 0) abort();
   ++locked;
   DPSFatalProc((DPSContext)NULL, msg);
   /* Fatal proc shouldn't return, but client can override and do anything. */
   --locked;
-  }
+}
 
 
 /* Procedures for delayed event dispatching */
 
-DPSEventDelivery XDPSSetEventDelivery(dpy, newMode)
-    Display *dpy;
-    DPSEventDelivery newMode;
+DPSEventDelivery XDPSSetEventDelivery(
+    Display *dpy,
+    DPSEventDelivery newMode)
 {
     Bool old = XDPSLGetPassEventsFlag(dpy);
 
@@ -986,16 +980,18 @@ DPSEventDelivery XDPSSetEventDelivery(dpy, newMode)
 	case dps_event_internal_dispatch:
 	    XDPSLSetPassEventsFlag(dpy, False);
 	    break;
+	default:
+	    break;
     }
 
     if (old) return dps_event_pass_through;
     else return dps_event_internal_dispatch;
 }
 
-Bool XDPSIsStatusEvent(event, ctxt, status)
-    XEvent *event;
-    DPSContext *ctxt;
-    int *status;
+Bool XDPSIsStatusEvent(
+    XEvent *event,
+    DPSContext *ctxt,
+    int *status)
 {
     Display *d = event->xany.display;
     XExtCodes *c = XDPSLGetCodes(d);
@@ -1022,8 +1018,8 @@ Bool XDPSIsStatusEvent(event, ctxt, status)
     return True;
 }
 
-Bool XDPSIsOutputEvent(event)
-    XEvent *event;
+Bool XDPSIsOutputEvent(
+    XEvent *event)
 {
     Display *d = event->xany.display;
     XExtCodes *c = XDPSLGetCodes(d);
@@ -1044,8 +1040,8 @@ Bool XDPSIsOutputEvent(event)
     return event->type == c->first_event + PSEVENTOUTPUT;
 }
 
-Bool XDPSIsDPSEvent(event)
-    XEvent *event;
+Bool XDPSIsDPSEvent(
+    XEvent *event)
 {
     Display *d = event->xany.display;
     XExtCodes *c = XDPSLGetCodes(d);
@@ -1065,8 +1061,8 @@ Bool XDPSIsDPSEvent(event)
 	   event->type <  c->first_event + NPSEVENTS;
 }
 
-Bool XDPSDispatchEvent(event)
-    XEvent *event;
+Bool XDPSDispatchEvent(
+    XEvent *event)
 {
     Display *d = event->xany.display;
     XExtCodes *c = XDPSLGetCodes(d);
@@ -1094,10 +1090,10 @@ Bool XDPSDispatchEvent(event)
 }
 
 /* L2-DPS/PROTO 9 addition */
-Bool XDPSIsReadyEvent(event, ctxt, val)
-    XEvent *event;
-    DPSContext *ctxt;
-    int *val;
+Bool XDPSIsReadyEvent(
+    XEvent *event,
+    DPSContext *ctxt,
+    int *val)
 {
     Display *d = event->xany.display;
     XExtCodes *c = XDPSLGetCodes(d);
@@ -1129,8 +1125,8 @@ Bool XDPSIsReadyEvent(event, ctxt, val)
     return True;
 }
 
-int XDPSGetProtocolVersion(dpy)
-    Display *dpy;
+int XDPSGetProtocolVersion(
+    Display *dpy)
 {
     return XDPSLGetVersion(dpy);
 }

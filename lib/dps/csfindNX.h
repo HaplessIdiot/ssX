@@ -44,13 +44,6 @@
 
 #define XDPSNX_DEFAULT_EXEC_NAME "dpsnx.agent"
 
-
-#ifndef _NO_PROTO
-#define ARGS(list) list
-#else
-#define ARGS(list) ()
-#endif
-
 /* ---TYPES--- */
 
 typedef enum {
@@ -63,12 +56,12 @@ typedef enum {
 /* ---Functions--- */
 
 extern XDPSNXFindNXResult
-XDPSNXFindNX ARGS((
+XDPSNXFindNX (
 		   Display *dpy, /* Display client wants to attach to */
 		   char *licenseMethod,     /* license method client speaks */
 		   char **host,	           /* RETURN: Agent host name */
 		   int *transport,         /* RETURN: Agent transport */
-		   int *port));	           /* RETURN: Agent's port    */
+		   int *port);	           /* RETURN: Agent's port    */
      /*
       * Find an agent for this client that will service display dpy.
       * The licenseMethod arg. specifies the type of licensing that the client
@@ -83,9 +76,9 @@ XDPSNXFindNX ARGS((
 
 
 extern void
-XDPSGetNXArg ARGS((
+XDPSGetNXArg (
 		   int arg,	        /* Argument to be retrieved */
-		   void **value));	   /* value of the argument */
+		   void **value);	   /* value of the argument */
      /*
        Gets the value of the given argument.  Returns the value in val.  If the
        value will fit in val (ie, a Bool) then the value is placed there,

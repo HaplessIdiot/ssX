@@ -196,7 +196,7 @@ extern void DPSRaise(int Code, char *Message);
    writes an error message to os_stderr and aborts with DPSCantHappen.
  */
 
-extern void DPSCantHappen();
+extern void DPSCantHappen(void);
 /* Calls abort. This is used only to handle "impossible" errors;
    there is no recovery, and DPSCantHappen does not return.
  */

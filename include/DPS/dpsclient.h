@@ -92,19 +92,19 @@ typedef int DPSErrorCode;
        values on a text context.
   */
 
-typedef void (*DPSTextProc)(/*
-			    struct _t_DPSContext *ctxt, char *buf,
+typedef void (*DPSTextProc)(
+			    struct _t_DPSContextRec *ctxt, char *buf,
 			    long unsigned int count
-*/);
+);
 
   /* Call-back procedure to handle text from the PostScript interpreter.
      'buf' contains 'count' bytes of ASCII text. */
 
-typedef void (*DPSErrorProc)(/*
-			     struct _t_DPSContext *ctxt,
+typedef void (*DPSErrorProc)(
+			     struct _t_DPSContextRec *ctxt,
 			     DPSErrorCode errorCode,
 			     long unsigned int arg1, long unsigned int arg2
-*/);
+);
   
   /* Call-back procedure to report errors from the PostScript interpreter.
      The meaning of arg1 and arg2 depend on 'errorCode', as described above.
@@ -126,37 +126,6 @@ typedef enum {dps_context_execution, dps_context_text} DPSContextType;
   /* See DPSGetContextType below */
 
 /*=== PROCEDURES ===*/
-
-#ifdef _NO_PROTO
-
-extern void DPSDefaultErrorProc();
-extern void DPSSetTextBackstop();
-extern DPSTextProc DPSGetCurrentTextBackstop();
-extern void DPSSetErrorBackstop();
-extern DPSErrorProc DPSGetCurrentErrorBackstop();
-extern DPSContext DPSGetCurrentContext();
-extern void DPSSetContext();
-extern void DPSWritePostScript();
-extern void DPSPrintf();
-extern void DPSWriteData();
-extern void DPSFlushContext();
-extern int DPSChainContext();
-extern void DPSUnchainContext();
-extern void DPSResetContext();
-extern void DPSWaitContext();
-extern void DPSInterruptContext();
-extern void DPSDestroyContext();
-extern void DPSDestroySpace();
-extern void DPSSetNumStringConversion();
-extern void DPSSetWrapSynchronization();
-extern void DPSSuppressBinaryConversion();
-extern void DPSSetAbbrevMode();
-extern void DPSFetchAbbrevList();
-extern char *DPSGetSysnameAbbrev();
-extern char *DPSGetOperatorAbbrev();
-extern DPSContextType DPSGetContextType();
-
-#else /* _NO_PROTO */
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -198,7 +167,7 @@ extern void DPSSetTextBackstop(DPSTextProc textProc);
      not made known to the dps client library. NULL will be passed as the ctxt
      argument to textProc in the latter case. */
 
-extern DPSTextProc DPSGetCurrentTextBackstop();
+extern DPSTextProc DPSGetCurrentTextBackstop(void);
 
   /* Returns the textProc passed most recently to DPSSetTextBackstop, or NULL
      if none */
@@ -210,12 +179,12 @@ extern void DPSSetErrorBackstop(DPSErrorProc errorProc);
      known to the dps client library. NULL will be passed as the ctxt
      argument to errorProc. */
 
-extern DPSErrorProc DPSGetCurrentErrorBackstop();
+extern DPSErrorProc DPSGetCurrentErrorBackstop(void);
 
   /* Returns the errorProc passed most recently to DPSSetErrorBackstop, or NULL
      if none */
 
-extern DPSContext DPSGetCurrentContext();
+extern DPSContext DPSGetCurrentContext(void);
 
   /* Get the default context. Used in conjunction with psops.h and with
      wraps that are defined without an explicit DPSContext argument. 
@@ -402,8 +371,6 @@ extern DPSContextType DPSGetContextType(DPSContext ctxt);
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-#endif /* _NO_PROTO */
 
 #define DPSSetTextProc(ctxt, tp) ((ctxt)->textProc = (tp))
 

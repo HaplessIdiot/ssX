@@ -43,21 +43,21 @@
 
 /* PROCEDURES */
 
-extern void PSWName(/* char *s */);
-extern void FinalizePSWrapDef(/* hdr, body */);
-extern Header PSWHeader(/* isStatic, inArgs, outArgs */);
-extern Token PSWToken(/* type, val */);
-extern Token PSWToken2(/* type, val, ind */);
-extern Arg PSWArg(/* type, items */);
-extern Item PSWItem(/* name */);
-extern Item PSWStarItem(/* name */);
-extern Item PSWSubscriptItem(/* name, subscript */);
-extern Item PSWScaleItem(/* name, subscript */);
-extern Subscript PSWNameSubscript(/* name */);
-extern Subscript PSWIntegerSubscript(/* val */);
-extern Args ConsPSWArgs(/* arg, args */);
-extern Tokens AppendPSWToken(/* token, tokens */);
-extern Args AppendPSWArgs(/* arg, args */);
-extern Items AppendPSWItems(/* item, items */);
+extern Arg PSWArg(Type, Items);
+extern Args AppendPSWArgs(Arg, Args);
+extern Args ConsPSWArgs(Arg, Args);
+extern Header PSWHeader(boolean, Args, Args);
+extern Item PSWItem(char *);
+extern Item PSWScaleItem(char *, Subscript, char *, int);
+extern Item PSWStarItem(char *);
+extern Item PSWSubscriptItem(char *, Subscript);
+extern Items AppendPSWItems(Item, Items);
+extern Subscript PSWIntegerSubscript(int);
+extern Subscript PSWNameSubscript(char *);
+extern Token PSWToken(Type, char *);
+extern Token PSWToken2(Type, char *, char *);
+extern Tokens AppendPSWToken(Token, Tokens);
+extern void FinalizePSWrapDef(Header, Body);
+extern void PSWName(char *);
 
 #endif /* PSWSEMANTICS_H */

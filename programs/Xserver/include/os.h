@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.30 1999/10/13 04:21:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.31 2000/04/05 18:14:02 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -121,6 +121,12 @@ extern int WaitForSomething(
 #ifdef LBX
 #define ReadRequestFromClient(client)   ((client)->readRequest(client))
 extern int StandardReadRequestFromClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern int ClientConnectionNumber(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
@@ -272,6 +278,18 @@ extern int MakeClientGrabImpervious(
 extern int MakeClientGrabPervious(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
+#endif
+);
+
+extern void CloseDownFileDescriptor(
+#if NeedFunctionPrototypes
+    ClientPtr /* client */
+#endif
+);
+
+extern void AvailableClientInput(
+#if NeedFunctionPrototypes
+    ClientPtr /* client */
 #endif
 );
 

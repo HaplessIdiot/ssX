@@ -22,7 +22,7 @@
  * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
  * OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/lbxutil/image/dfaxg42d.c,v 1.2 1996/12/30 13:58:37 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/image/dfaxg42d.c,v 1.3 1998/12/20 11:57:16 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncproto.h>
@@ -45,9 +45,7 @@ static short sp_data, sp_bit;
  */
 
 static unsigned char
-fetchByte (inbuf)
-
-unsigned char **inbuf;
+fetchByte (unsigned char **inbuf)
 
 {
     unsigned char byte = **inbuf;
@@ -61,9 +59,7 @@ unsigned char **inbuf;
  */
 
 static int
-decode_white_run (inbuf)
-
-unsigned char **inbuf;
+decode_white_run (unsigned char **inbuf)
 
 {
     short state = sp_bit;
@@ -100,9 +96,7 @@ unsigned char **inbuf;
  */
 
 static int
-decode_black_run (inbuf)
-
-unsigned char **inbuf;
+decode_black_run (unsigned char **inbuf)
 
 {
     short state = sp_bit + 8;
@@ -140,9 +134,7 @@ unsigned char **inbuf;
  */
 
 static int
-decode_uncomp_code (inbuf)
-
-unsigned char **inbuf;
+decode_uncomp_code (unsigned char **inbuf)
 
 {
     short code;
@@ -164,10 +156,8 @@ unsigned char **inbuf;
  */
 
 static void
-fillspan (cp, x, count)
-
-register char *cp;
-register int x, count;
+fillspan (char *cp,
+	  int x, int count)
 
 {
     static unsigned char masks[] =
@@ -208,9 +198,7 @@ register int x, count;
  */
 
 static int
-nextbit (inbuf)
-
-unsigned char **inbuf;
+nextbit (unsigned char **inbuf)
 
 {
     static unsigned char bitMask[8] =
@@ -230,12 +218,10 @@ unsigned char **inbuf;
 
 
 static int
-DecodeFaxG42D (inbuf, refline, pixels_per_line, outbuf)
-
-unsigned char **inbuf;
-unsigned char *refline;
-int pixels_per_line;
-unsigned char *outbuf;
+DecodeFaxG42D (unsigned char **inbuf,
+	       unsigned char *refline,
+	       int pixels_per_line,
+	       unsigned char *outbuf)
 
 {
     int a0 = -1;
@@ -388,15 +374,12 @@ bad:
 
 
 int
-LbxImageDecodeFaxG42D (inbuf, outbuf, image_bytes, pixels_per_line,
-		       padded_bytes_per_scanline, reverse_bits)
-
-unsigned char *inbuf;
-unsigned char *outbuf;
-int image_bytes;
-int pixels_per_line;
-int padded_bytes_per_scanline;
-int reverse_bits;
+LbxImageDecodeFaxG42D (unsigned char *inbuf,
+		       unsigned char *outbuf,
+		       int image_bytes,
+		       int pixels_per_line,
+		       int padded_bytes_per_scanline,
+		       int reverse_bits)
 
 {
     int bytes_per_scanline = ROUNDUP8 (pixels_per_line);

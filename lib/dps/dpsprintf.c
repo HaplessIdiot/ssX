@@ -36,45 +36,14 @@
  * Author:  Adobe Systems Incorporated
  */
 
+#include <stdio.h>
+
 #include "publictypes.h"
 #include "DPS/dpsclient.h"
 
 #ifdef USE_DOPRINT
 extern void DPSdoprint();
 #endif /* USE_DOPRINT */
-
-#ifdef _NO_PROTO
-#include <varargs.h>
-
-void DPSPrintf(va_alist)
-    va_dcl
-{
-    va_list args;
-    DPSContext ctxt;
-    char *fmt;
-
-#ifdef VAXC
-    va_start_1(args, sizeof(DPSContext) + sizeof(char *));
-#else /* VAXC */
-    va_start(args);
-#endif /* VAXC */
-
-    ctxt = (DPSContext) va_arg(args, DPSContext);
-    fmt = va_arg(args, char *);
-
-#ifdef USE_DOPRINT
-    DPSdoprint(ctxt, fmt, &args);
-#else /* USE_DOPRINT */
-    {
-	char buffer[10000];
-	vsprintf(buffer, fmt, args);
-	DPSWritePostScript(ctxt, buffer, strlen(buffer));
-    }
-#endif /* USE_DOPRINT */
-    va_end(args);
-}
-
-#else /* _NO_PROTO */
 
 #include <stdarg.h>
 
@@ -99,5 +68,3 @@ void DPSPrintf(DPSContext ctxt, char *fmt, ...)
 #endif /* USE_DOPRINT */
     va_end(args);
 }
-
-#endif /* _NO_PROTO */

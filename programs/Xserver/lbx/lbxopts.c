@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxopts.c,v 1.2 1998/12/20 11:57:56 dawes Exp $ */
 
 #ifdef OPTDEBUG
 #include <stdio.h>
@@ -29,6 +29,8 @@
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
+#include "colormapst.h"
+#include "propertyst.h"
 #include "lbxserve.h"
 #include "lbxstr.h"
 #include "lbximage.h"
@@ -38,22 +40,35 @@
 #include "lbxzlib.h"
 #endif /* NO_ZLIB */
 
-static int LbxDeltaOpt();
-static int LbxProxyDeltaOpt();
-static int LbxServerDeltaOpt();
-static int LbxStreamCompOpt();
-static int LbxBitmapCompOpt();
-static int LbxPixmapCompOpt();
-static int LbxMessageCompOpt();
-static int LbxUseTagsOpt();
-static int LbxCmapAllOpt();
+static int LbxProxyDeltaOpt ( LbxNegOptsPtr pno, unsigned char *popt, 
+			      int optlen, unsigned char *preply );
+static int LbxServerDeltaOpt ( LbxNegOptsPtr pno, unsigned char *popt, 
+			       int optlen, unsigned char *preply );
+static int LbxDeltaOpt ( unsigned char *popt, int optlen, 
+			 unsigned char *preply, short *pn, short *pmaxlen );
+static int LbxStreamCompOpt ( LbxNegOptsPtr pno, unsigned char *popt, 
+			      int optlen, unsigned char *preply );
+static int ZlibParse ( LbxNegOptsPtr pno, unsigned char *popt, int optlen, 
+		       unsigned char *preply );
+static int LbxMessageCompOpt ( LbxNegOptsPtr pno, unsigned char *popt, 
+			       int optlen, unsigned char *preply );
+static int LbxUseTagsOpt ( LbxNegOptsPtr pno, unsigned char *popt, 
+				  int optlen, unsigned char *preply );
+static int LbxBitmapCompOpt ( LbxNegOptsPtr pno, unsigned char *popt, 
+				     int optlen, unsigned char *preply );
+static int LbxPixmapCompOpt ( LbxNegOptsPtr pno, unsigned char *popt, 
+				     int optlen, unsigned char *preply );
+static int MergeDepths ( int *depths, LbxPixmapCompMethod *method );
+static int LbxCmapAllOpt ( LbxNegOptsPtr pno, unsigned char *popt, 
+				  int optlen, unsigned char *preply );
 
 /*
  * List of LBX options we recognize and are willing to negotiate
  */
 static struct _LbxOptionParser {
     CARD8	optcode;
-    int		(*parser)();
+    int		(*parser)(LbxNegOptsPtr, unsigned char *, 
+			  int, unsigned char *);
 } LbxOptions[] = {
     { LBX_OPT_DELTA_PROXY, 	LbxProxyDeltaOpt },
     { LBX_OPT_DELTA_SERVER,	LbxServerDeltaOpt },
@@ -70,8 +85,8 @@ static struct _LbxOptionParser {
 /*
  * Set option defaults
  */
-LbxOptionInit(pno)
-    LbxNegOptsPtr pno;
+void
+LbxOptionInit(LbxNegOptsPtr pno)
 {
     bzero(pno, sizeof(LbxNegOptsRec));
     pno->proxyDeltaN = pno->serverDeltaN = LBX_OPT_DELTA_NCACHE_DFLT;
@@ -86,11 +101,10 @@ LbxOptionInit(pno)
 }
 
 int
-LbxOptionParse(pno, popt, optlen, preply)
-    LbxNegOptsPtr pno;
-    unsigned char *popt;
-    int		  optlen;
-    unsigned char *preply;
+LbxOptionParse(LbxNegOptsPtr  pno,
+	       unsigned char *popt,
+	       int	      optlen,
+	       unsigned char *preply)
 {
     int		  i;
     int		  nopts = *popt++;
@@ -140,34 +154,31 @@ LbxOptionParse(pno, popt, optlen, preply)
 }
 
 static int
-LbxProxyDeltaOpt(pno, popt, optlen, preply)
-    LbxNegOptsPtr pno;
-    unsigned char *popt;
-    int		  optlen;
-    unsigned char *preply;
+LbxProxyDeltaOpt(LbxNegOptsPtr  pno,
+		 unsigned char *popt,
+		 int		optlen,
+		 unsigned char *preply)
 {
     return LbxDeltaOpt(popt, optlen, preply,
 		       &pno->proxyDeltaN, &pno->proxyDeltaMaxLen);
 }
 
 static int
-LbxServerDeltaOpt(pno, popt, optlen, preply)
-    LbxNegOptsPtr pno;
-    unsigned char *popt;
-    int		  optlen;
-    unsigned char *preply;
+LbxServerDeltaOpt(LbxNegOptsPtr  pno,
+		  unsigned char *popt,
+		  int		 optlen,
+		  unsigned char *preply)
 {
     return LbxDeltaOpt(popt, optlen, preply,
 		       &pno->serverDeltaN, &pno->serverDeltaMaxLen);
 }
 
 static int
-LbxDeltaOpt(popt, optlen, preply, pn, pmaxlen)
-    unsigned char *popt;
-    int		  optlen;
-    unsigned char *preply;
-    short	  *pn;
-    short	  *pmaxlen;
+LbxDeltaOpt(unsigned char *popt,
+	    int		   optlen,
+	    unsigned char *preply,
+	    short	  *pn,
+	    short	  *pmaxlen)
 {
     short	  n;
     short	  maxlen;
@@ -212,12 +223,12 @@ LbxDeltaOpt(popt, optlen, preply, pn, pmaxlen)
     return LBX_OPT_DELTA_REPLYLEN;
 }
 
-static int ZlibParse();
 
 static struct _LbxStreamCompParser {
     int		typelen;
     char	*type;
-    int		(*parser)();
+    int		(*parser)(LbxNegOptsPtr, unsigned char *, 
+			  int, unsigned char *);
 } LbxStreamComp[] = {
 #ifndef NO_ZLIB
     { ZLIB_STRCOMP_OPT_LEN,	ZLIB_STRCOMP_OPT, 	ZlibParse },
@@ -228,11 +239,10 @@ static struct _LbxStreamCompParser {
     (sizeof(LbxStreamComp) / sizeof(struct _LbxStreamCompParser))
 
 static int
-LbxStreamCompOpt(pno, popt, optlen, preply)
-    LbxNegOptsPtr pno;
-    unsigned char *popt;
-    int		  optlen;
-    unsigned char *preply;
+LbxStreamCompOpt(LbxNegOptsPtr  pno,
+		 unsigned char *popt,
+		 int		optlen,
+		 unsigned char *preply)
 {
     int		  i;
     int		  typelen;
@@ -278,18 +288,11 @@ LbxStreamCompOpt(pno, popt, optlen, preply)
 }
 
 
-extern LbxStreamCompHandle ZlibInit();
-extern int ZlibStuffInput(), ZlibInputAvail(), ZlibFlush(),
-	 ZlibRead(), ZlibWriteV();
-extern void ZlibCompressOn(), ZlibCompressOff(), ZlibFree();
-
-
 static int
-ZlibParse(pno, popt, optlen, preply)
-    LbxNegOptsPtr  pno;
-    unsigned char  *popt;
-    int		   optlen;
-    unsigned char  *preply;
+ZlibParse(LbxNegOptsPtr   pno,
+	  unsigned char  *popt,
+	  int		  optlen,
+	  unsigned char  *preply)
 {
     int level;		/* compression level */
 
@@ -315,11 +318,10 @@ ZlibParse(pno, popt, optlen, preply)
 }
 
 static int
-LbxMessageCompOpt(pno, popt, optlen, preply)
-    LbxNegOptsPtr pno;
-    unsigned char *popt;
-    int		  optlen;
-    unsigned char *preply;
+LbxMessageCompOpt(LbxNegOptsPtr  pno,
+		  unsigned char *popt,
+		  int		 optlen,
+		  unsigned char *preply)
 {
 
     if (optlen == 0) {
@@ -335,11 +337,10 @@ LbxMessageCompOpt(pno, popt, optlen, preply)
 
 
 static int
-LbxUseTagsOpt(pno, popt, optlen, preply)
-    LbxNegOptsPtr pno;
-    unsigned char *popt;
-    int		  optlen;
-    unsigned char *preply;
+LbxUseTagsOpt(LbxNegOptsPtr  pno,
+	      unsigned char *popt,
+	      int 	     optlen,
+	      unsigned char *preply)
 {
 
     if (optlen == 0) {
@@ -405,22 +406,18 @@ LbxPixmapCompMethods [] = {
 	(sizeof (LbxPixmapCompMethods) / sizeof (LbxPixmapCompMethod))
 #endif
 
-static int MergeDepths ();
-
 
 static int
-LbxImageCompOpt (pixmap, pno, popt, optlen, preply)
-
-Bool	       pixmap;
-LbxNegOptsPtr  pno;
-unsigned char  *popt;
-int	       optlen;
-unsigned char  *preply;
+LbxImageCompOpt (Bool	         pixmap,
+		 LbxNegOptsPtr   pno,
+		 unsigned char  *popt,
+		 int	         optlen,
+		 unsigned char  *preply)
 
 {
     unsigned char *preplyStart = preply;
     int numMethods = *popt++;
-    char *myIndices, *hisIndices;
+    unsigned char *myIndices, *hisIndices;
     unsigned *retFormats;
     int **retDepths;
     int replyCount = 0;
@@ -635,12 +632,10 @@ unsigned char  *preply;
 
 
 static int
-LbxBitmapCompOpt (pno, popt, optlen, preply)
-
-LbxNegOptsPtr  pno;
-unsigned char  *popt;
-int	       optlen;
-unsigned char  *preply;
+LbxBitmapCompOpt (LbxNegOptsPtr   pno,
+		  unsigned char  *popt,
+		  int	          optlen,
+		  unsigned char  *preply)
 
 {
     return (LbxImageCompOpt (0 /* bitmap */, pno, popt, optlen, preply));
@@ -648,12 +643,10 @@ unsigned char  *preply;
 
 
 static int
-LbxPixmapCompOpt (pno, popt, optlen, preply)
-
-LbxNegOptsPtr  pno;
-unsigned char  *popt;
-int	       optlen;
-unsigned char  *preply;
+LbxPixmapCompOpt (LbxNegOptsPtr   pno,
+		  unsigned char  *popt,
+		  int	          optlen,
+		  unsigned char  *preply)
 
 {
     return (LbxImageCompOpt (1 /* Pixmap */, pno, popt, optlen, preply));
@@ -661,10 +654,8 @@ unsigned char  *preply;
 
 
 LbxBitmapCompMethod *
-LbxSrvrLookupBitmapCompMethod (proxy, methodOpCode)
-
-LbxProxyPtr proxy;
-int methodOpCode;
+LbxSrvrLookupBitmapCompMethod (LbxProxyPtr proxy,
+			       int methodOpCode)
 
 {
     int i;
@@ -684,10 +675,8 @@ int methodOpCode;
 
 
 LbxPixmapCompMethod *
-LbxSrvrLookupPixmapCompMethod (proxy, methodOpCode)
-
-LbxProxyPtr proxy;
-int methodOpCode;
+LbxSrvrLookupPixmapCompMethod (LbxProxyPtr proxy,
+			       int methodOpCode)
 
 {
     int i;
@@ -707,9 +696,7 @@ int methodOpCode;
 
 
 LbxBitmapCompMethod *
-LbxSrvrFindPreferredBitmapCompMethod (proxy)
-
-LbxProxyPtr proxy;
+LbxSrvrFindPreferredBitmapCompMethod (LbxProxyPtr proxy)
 
 {
     if (proxy->numBitmapCompMethods == 0)
@@ -721,11 +708,9 @@ LbxProxyPtr proxy;
 
 
 LbxPixmapCompMethod *
-LbxSrvrFindPreferredPixmapCompMethod (proxy, format, depth)
-
-LbxProxyPtr proxy;
-int format;
-int depth;
+LbxSrvrFindPreferredPixmapCompMethod (LbxProxyPtr proxy,
+				      int format,
+				      int depth)
 
 {
     if (proxy->numPixmapCompMethods == 0)
@@ -758,10 +743,9 @@ int depth;
 }
 
 
-static int MergeDepths (depths, method)
-
-int *depths;
-LbxPixmapCompMethod *method;
+static int 
+MergeDepths (int *depths,
+	     LbxPixmapCompMethod *method)
 
 {
     int i, j, count;
@@ -789,12 +773,10 @@ LbxPixmapCompMethod *method;
 #define LbxCmapAllMethod "XC-CMAP"
 
 static int
-LbxCmapAllOpt (pno, popt, optlen, preply)
-
-LbxNegOptsPtr  pno;
-unsigned char  *popt;
-int	       optlen;
-unsigned char  *preply;
+LbxCmapAllOpt (LbxNegOptsPtr   pno,
+	       unsigned char  *popt,
+	       int	       optlen,
+	       unsigned char  *preply)
 
 {
     int numMethods = *popt++;

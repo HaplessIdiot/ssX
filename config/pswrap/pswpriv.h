@@ -39,6 +39,8 @@
 #ifndef PSWPRIV_H
 #define PSWPRIV_H
 
+#include <stdio.h>
+
 #include "pswtypes.h"
 #include "psw.h"
 
@@ -125,5 +127,52 @@ typedef struct _t_TokenListRec {
   Token token;
   } TokenListRec, *TokenList;
 
+extern FILE *header;
+extern boolean noUserNames;  	/* -n flag */
+extern char *currentPSWName;
+extern char *hfile;
+extern char *ifile;
+extern char *ifile;		/* input file name for error messages */
+extern char *ofile;
+extern char *prog;
+extern char *string_temp;	/* buffer of that size for scanning strings */
+extern char headid[];
+extern char yytext[];
+extern int bigFile;
+extern int doANSI;		/* -a flag */
+extern int errorCount;
+extern int maxstring;		/* max PS string length to scan (-s) */
+extern int lexdebug;		/* debug flag for lexer */
+extern int errorCount;		/* non-fatal errs */
+extern int outlineno;		/* line number in output file */
+extern int pad;			/* -p flag */
+extern int reentrant;
+extern int reportedPSWName;
+extern int yylineno;		/* current line number in pswrap source file */
+
+/* lexer.l */
+extern int yylex(void);
+extern void stringerr(int);	/* report string overflow */
+
+/* psw.c */
+extern void EmitPrototype(Header);
+extern void EmitBodyHeader(Header);
+extern void EmitBody(Tokens, Header);
+extern void FreeBody(Body);
+
+/* pswfile.c */
+extern void FinishHFile(void);
+extern void InitHFile(void);
+extern void InitOFile(void);
+
+/* pswparser.y */
+extern int yyparse (void);
+
+/* systemnames.c */
+extern void InitWellKnownPSNames(void);
+
+/* yyerror.c */
+extern void ErrIntro(int);
+extern void yyerror(char *);
 
 #endif /* PSWPRIV_H */

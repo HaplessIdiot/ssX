@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.11 1999/09/04 09:14:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.12 1999/10/14 02:45:28 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -399,6 +399,36 @@ extern int GetGeometry(
     xGetGeometryReply* /* wa */
 #endif
 );
+
+extern int SendConnSetup(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    char* /*reason*/
+#endif
+);
+
+extern int
+DoGetImage(
+#if NeedFunctionPrototypes
+    ClientPtr	/*client*/,
+    int /*format*/,
+    Drawable /*drawable*/,
+    int /*x*/, 
+    int /*y*/, 
+    int /*width*/, 
+    int /*height*/,
+    Mask /*planemask*/,
+    xGetImageReply **/*im_return*/
+#endif
+);
+
+#ifdef LBX
+extern void IncrementClientCount(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+#endif /* LBX */
 
 /* dixutils.c */
 

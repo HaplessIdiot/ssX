@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.37 1999/03/21 07:35:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.38 1999/05/15 12:10:35 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -160,6 +160,8 @@ extern __const__ int _nfiles;
 #include "extensions/security.h"
 #endif
 #ifdef LBX
+#include "colormapst.h"
+#include "propertyst.h"
 #include "lbxserve.h"
 #endif
 

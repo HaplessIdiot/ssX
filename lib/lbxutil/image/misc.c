@@ -28,6 +28,8 @@
  * by the LBX server and proxy.
  */
 
+#include "lbxfax.h"
+
 static unsigned char zeroruns[256] = {
     8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,	/* 0x00 - 0x0f */
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,	/* 0x10 - 0x1f */
@@ -111,16 +113,14 @@ static unsigned char BitRevTable[256] = {
  */
 
 static int
-findspan (bpp, bs, be, tab)
-
-unsigned char **bpp;
-int bs, be;
-register unsigned char *tab;
+findspan (unsigned char **bpp,
+	  int bs, int be,
+	  unsigned char *tab)
 
 {
-    register unsigned char *bp = *bpp;
-    register int bits = be - bs;
-    register int n, span;
+    unsigned char *bp = *bpp;
+    int bits = be - bs;
+    int n, span;
 
     /*
      * Check partial byte on lhs.
@@ -179,10 +179,8 @@ done:
  */
 
 int
-LbxImageFindDiff (cp, bs, be, color)
-
-unsigned char *cp;
-int bs, be, color;
+LbxImageFindDiff (unsigned char *cp,
+		  int bs, int be, int color)
 
 {
     cp += bs >> 3;			/* adjust byte offset */
@@ -192,10 +190,9 @@ int bs, be, color;
 
 
 
-LbxReverseBits (cp, n)
-
-register unsigned char *cp;
-register int n;
+void
+LbxReverseBits (unsigned char *cp, 
+		int n)
 
 {
     for (; n > 8; n -= 8)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.9 1998/08/14 13:35:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.10 1998/10/04 09:39:44 dawes Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -68,6 +68,8 @@ extern int errno;
 #include "opaque.h"
 #include "dixstruct.h"
 #include "misc.h"
+#include "colormapst.h"
+#include "propertyst.h"
 #include "lbxserve.h"
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
