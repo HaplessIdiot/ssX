@@ -1,10 +1,25 @@
+XFree86 3.1.2Bd (8 January 1996)
+194. Fix a build problem when BuildServersOnly is set to YES.
+193. Clean up the InstallManPageLong() run for NetBSD (Takefumi Tsukada).
+192. Modify ForceSubdirs() rule for NetBSD and FreeBSD so that it works
+     with GNU make (Matthieu Herrb).
+191. Fix a Ti3026 clock problem that appears on SPEA 968+Ti3026 cards
+     (Harald Koenig).
+190. Fix TGUI 94440 HW cursor problems (Alan Hourihane).
+189. Fix problems with the TGUI 9660/9680 support (Alan Hourihane).
+188. Fix 256-colour interlace problem with TGUI cards (Alan Hourihane).
+187. Fix for text mode restore problem when the DGA extension has been
+     used with the SVGA server (Alan Hourihane).
+186. Set the Block I/O bit in the PCI userconfig register for Mach64 cards
+     that report an I/O address range.
+
 XFree86 3.1.2Bc (7 January 1996)
 185. Update lnxLib.rules for new GNU elf tools which look for libname.so
      rather than libname.so.rev at link time (Helmut Geyer).
 184. Set default ProjectRoot back to /usr/X11R6.
 183. Include fix-trackers to seq-4024 (includes more a more recent XKB snap,
      some record updates, and some config and Xlib updates).
-182. Fix some merge problem.
+182. Fix some merge problems.
 
 XFree86 3.1.2Bb (6 January 1996)
 181. Merge in X11R6.1 beta.
