@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/80 1996/01/14 18:35:47 kaleb $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.11 1996/01/16 15:08:45 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.12 1996/08/20 12:33:02 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -9,6 +9,10 @@ XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.11 1996/01/16 15:08:45 dawes Exp $
 
 #ifndef SharedLibXdmGreet
 #define SharedLibXdmGreet (defined(AlphaArchitecture) || SystemV4)
+#endif
+
+#ifndef BuildBoth
+#define BuildBoth (defined(LinuxArchitecture) && !SharedLibXdmGreet)
 #endif
 
 #if HasXdmAuth
@@ -33,13 +37,23 @@ KRB5SRCS = krb5auth.c
 
 #if SharedLibXdmGreet
 GREET_DIR = greeter
-#if SystemV4 || UseElfFormat
+#if SystemV4
     DLLIB = -ldl
+#endif
+#if defined(LinuxArchitecture) && (defined(AlphaArchitecture) || UseElfFormat)
+    DLLIB = -rdynamic -ldl
 #endif
 #else
 GREET_DEFINES = -DGREET_USER_STATIC
 GREETSRCS = greet.c verify.c Login.c
 GREETOBJS = greet.o verify.o Login.o
+#if BuildBoth
+GREETSHADOWSRCS = greetsh.c verifysh.c Loginsh.c
+GREETSHADOWOBJS = greetsh.o verifysh.o Loginsh.o
+#if !UseElfFormat
+SHADOWLIB = -lshadow
+#endif
+#endif
 #endif
 
 #if SystemV4 || HasShadowPasswd
@@ -116,11 +130,26 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
        
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
-#if BuildChooser
-       PROGRAMS = xdm xdmshell sessreg chooser
-#else
-       PROGRAMS = xdm xdmshell sessreg
+
+#if BuildBoth
+          SRCS5 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
+		  netaddr.c reset.c resource.c protodpy.c policy.c \
+		  sessionsh.c socket.c streams.c util.c xdmcp.c \
+		  mitauth.c \
+		  genauth.c access.c choose.c \
+		  $(XDMAUTHSRCS) $(RPCSRCS) $(KRB5SRCS) $(GREETSHADOWSRCS)
+          OBJS5 = auth.o daemon.o server.o dpylist.o dm.o error.o file.o \
+		  netaddr.o reset.o resource.o protodpy.o policy.o \
+		  sessionsh.o socket.o streams.o util.o xdmcp.o \
+		  mitauth.o \
+		  genauth.o access.o choose.o \
+		  $(XDMAUTHOBJS) $(RPCOBJS) $(KRB5OBJS) $(GREETSHADOWOBJS)
+     XDM_SHADOW = xdm-shadow
 #endif
+#if BuildChooser
+        CHOOSER = chooser
+#endif
+       PROGRAMS = xdm xdmshell sessreg $(CHOOSER) $(XDM_SHADOW)
 
  OSMAJORVERSION = OSMajorVersion
  OSMINORVERSION = OSMinorVersion
@@ -171,6 +200,10 @@ NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3),NullParameter)
 InstallProgram(chooser,$(XDMDIR))
 InstallAppDefaults(Chooser)
 #endif
+#if BuildBoth
+NormalProgramTarget(xdm-shadow,$(OBJS5),$(DEPLIBS),$(LOCAL_LIBRARIES),$(SHADOWLIB))
+InstallProgram(xdm-shadow,$(BINDIR))
+#endif
 
 SpecialCObjectRule(auth,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(policy,$(ICONFIGFILES),$(_NOOP_))
@@ -185,6 +218,12 @@ LinkSourceFile(verify.c,greeter)
 LinkSourceFile(Login.c,greeter)
 LinkSourceFile(Login.h,greeter)
 LinkSourceFile(LoginP.h,greeter)
+#if BuildBoth
+ObjectFromSpecialSource(greetsh,greet,-DUSESHADOW)
+ObjectFromSpecialSource(verifysh,verify,-DUSESHADOW)
+ObjectFromSpecialSource(Loginsh,Login,-DUSESHADOW)
+ObjectFromSpecialSource(sessionsh,session,-DUSESHADOW)
+#endif
 #endif /* !SharedLibXdmGreet */
 
 #ifdef IHaveSubdirs
