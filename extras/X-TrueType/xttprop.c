@@ -3,7 +3,7 @@
    Copyright (c) 1998 Go Watanabe, All rights reserved.
    Copyright (c) 1998 Takuya SHIOZAKI, All rights reserved.
    Copyright (c) 1998 X-TrueType Server Project, All rights reserved.
-  
+
 ===Notice
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -26,7 +26,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 */
@@ -177,7 +177,8 @@ freetype_compute_props(FontInfoPtr pinfo,
                        int raw_width,
                        int raw_ascent,
                        int raw_descent,
-                       char *fontname)
+                       char *fontname,
+                       char *copyright)
 {
     FontPropPtr pp;
     int         i, nprops;
@@ -202,12 +203,12 @@ freetype_compute_props(FontInfoPtr pinfo,
     for (i = NNAMEPROPS, pp = pinfo->props, fpt = fontNamePropTable,
              is_str = pinfo->isStringProp;   i;
          i--, pp++, fpt++, is_str++) {
-        
+
         if (*ptr2) {
             ptr1 = ptr2 + 1;
             if (!(ptr2 = strchr(ptr1, '-'))) ptr2 = strchr(ptr1, '\0');
         }
-        
+
         pp->name = fpt->atom;
         switch (fpt->type) {
         case atom:
@@ -250,8 +251,8 @@ freetype_compute_props(FontInfoPtr pinfo,
             break;
         case COPYRIGHTPROP:
             *is_str = True;
-            pp->value = MakeAtom("copyright",
-                                 strlen("copyright"), True);
+            pp->value = MakeAtom(copyright,
+                                 strlen(copyright), True);
             break;
         case RAWPIXELPROP:
             *is_str = False;

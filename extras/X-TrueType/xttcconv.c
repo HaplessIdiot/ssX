@@ -26,7 +26,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
  */
@@ -42,12 +42,14 @@ static char const * const releaseID =
 #include "xttcommon.h"
 #include "xttcconv.h"
 #include "xttcconvP.h"
+#ifndef FONTMODULE
+/* for X11R6.[0-4] or XFree86 3.3.x */
+# include "fontmisc.h"
+#endif
 
 #ifdef CCONV_MODULE
 # ifndef FONTMODULE
 /* for X11R6.[0-4] or XFree86 3.3.x */
-
-#   include "fontmisc.h"
 
 #   include <dlfcn.h>
 #   ifndef DL_OPTION
@@ -71,9 +73,11 @@ static char const * const releaseID =
 #     define DLCLOSE dlclose
 #   endif /* DLCLOSE */
 #   ifndef CCONV_MODULE_DIR
-#     define CCONV_MODULE_DIR "/usr/X11R6/lib/modules/codeconv"
+#     define CCONV_MODULE_DIR "/usr/X11R6/lib/modules"
 #   endif /* CCONV_MODULE_DIR */
-#   define LEN_CCONV_MODULE_DIR (sizeof(CCONV_MODULE_DIR)-1)
+#   ifndef CCONV_MODULE_SUBDIR
+#     define CCONV_MODULE_SUBDIR "codeconv"
+#   endif /* CCONV_MODULE_SUBDIR */
 #   ifndef CCONV_MODULE_EXTENTION
 #     define CCONV_MODULE_EXTENTION ".so"
 #   endif /* CCONV_MODULE_EXTENTION */
@@ -91,6 +95,8 @@ static char const * const releaseID =
 #     define CCONV_ENTRYPOINT_POSTFIX "_entrypoint"
 #   endif /* CCONV_ENTRYPOINT_POSTFIX */
 #   define LEN_CCONV_ENTRYPOINT_POSTFIX (sizeof(CCONV_ENTRYPOINT_POSTFIX)-1)
+
+static char *X_TT_CodeConvModulePath = NULL;
 
 # else
 /* for New Designed XFree86 */
@@ -185,6 +191,7 @@ static const char* convModuleSubdir[] = {
 ENTRYFUNC_PROTO_TEMPLATE(ISO8859_1_entrypoint);
 #ifdef OPT_ENCODINGS
 ENTRYFUNC_PROTO_TEMPLATE(BIG5_entrypoint);
+ENTRYFUNC_PROTO_TEMPLATE(BIG5ETEN_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(GB2312_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(JISX0201_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(JISX0208_entrypoint);
@@ -210,6 +217,7 @@ ENTRYFUNC_PROTO_TEMPLATE(ARMSCII8_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(ARABIC_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(MULEENCODING_entrypoint);
 ENTRYFUNC_PROTO_TEMPLATE(DOSENCODING_entrypoint);
+ENTRYFUNC_PROTO_TEMPLATE(GEORGIAN_entrypoint);
 #endif /* OPT_ENCODINGS */
 #endif /* !CCONV_MODULE */
 
@@ -223,6 +231,7 @@ static mod_entrypoint_ptr_t preloadedCodeConverter[] = {
     ISO8859_1_entrypoint,
 #ifdef OPT_ENCODINGS
     BIG5_entrypoint,
+    BIG5ETEN_entrypoint,
     GB2312_entrypoint,
     JISX0201_entrypoint,
     JISX0208_entrypoint,
@@ -248,6 +257,7 @@ static mod_entrypoint_ptr_t preloadedCodeConverter[] = {
     ARABIC_entrypoint,
     MULEENCODING_entrypoint,
     DOSENCODING_entrypoint,
+    GEORGIAN_entrypoint,
 #endif /* OPT_ENCODINGS */
 #endif /* !CCONV_MODULE */
     NULL
@@ -257,7 +267,25 @@ static mod_entrypoint_ptr_t preloadedCodeConverter[] = {
 /*************************************************
   codeconv public functions
  */
-
+#ifdef CCONV_MODULE
+/* set module path
+ * - using "passive method" to keep binary compatibility
+ *   from the previous versions.
+ */
+#if !defined(FONTMODULE)
+/* for X11R6.[0-4] or XFree86 3.3.x */
+void
+X_TT_SetCodeConvModulePath(char const *rstrModulePath)
+{
+          int len;
+          if ( X_TT_CodeConvModulePath )
+              xfree(X_TT_CodeConvModulePath);
+          len = strlen(rstrModulePath);
+          X_TT_CodeConvModulePath = (char *)xalloc(len+1);
+          strcpy(X_TT_CodeConvModulePath, rstrModulePath);
+}
+#endif /* !defined(FONTMODULE) */
+#endif
 /* find code converter */
 Bool /* isFound */
 codeconv_search_code_converter(char const *charsetName,
@@ -282,7 +310,7 @@ codeconv_search_code_converter(char const *charsetName,
             /* separate charset name string */
             char *p, *q;
             
-            hints.charsetStdName = p = strdup(charsetName);
+            hints.charsetStdName = p = xstrdup(charsetName);
             if (NULL != (q=strchr(p, '.'))) {
                 /* YEAR field */
                 *q = '\0'; q++;
@@ -315,84 +343,127 @@ codeconv_search_code_converter(char const *charsetName,
 #ifdef CCONV_MODULE
     {
 #if !defined(FONTMODULE)
-		char* pathModule = NULL;
 /* for X11R6.[0-4] or XFree86 3.3.x */
         
         DIR *dir = NULL;
         struct dirent *dp;
-        if (NULL == (dir = opendir(CCONV_MODULE_DIR)))
-            goto endScanMod;
-        while (NULL != (dp=readdir(dir)) && !isFound) {
-            const char *baseName = dp->d_name;
-			int baseNameLen = strlen(baseName);
-            /* check extention */ 
-            if (!strcmp(baseName+(baseNameLen-LEN_CCONV_MODULE_EXTENTION),
-                        CCONV_MODULE_EXTENTION)) {
-                /* match extention */
-                char *entrypointFuncName;
-                {
-                    /* concat dirName & baseName */
-                    pathModule =
-                        (char *)xalloc(LEN_CCONV_MODULE_DIR+1+baseNameLen +1);
-                    strcpy(pathModule, CCONV_MODULE_DIR);
-                    strcat(pathModule, "/");
-                    strcat(pathModule, baseName);
-                }
-                {
-                    int entrypointFuncNameBaseLen = baseNameLen;
-#if defined(PREPEND_UNDERSCORE)
-                    entrypointFuncNameBaseLen++; /* For FuncSym prefix "_" */
-#endif
-                    /* make entrypoint function name */
-                    entrypointFuncName =
-                        (char *)xalloc(entrypointFuncNameBaseLen
-                                       +LEN_CCONV_ENTRYPOINT_POSTFIX+1);
-#if defined(PREPEND_UNDERSCORE)
-                    /* FuncSym prefix "_" */
-                    strcpy(entrypointFuncName, "_");
-                    /* "Foo.so" into entrypointFuncName */
-                    strcat(entrypointFuncName, baseName);
-#else
-                    /* "Foo.so" into entrypointFuncName */
-                    strcpy(entrypointFuncName, baseName);
-#endif
-                    /* "Foo" into entrypointFuncName */
-                    entrypointFuncName[entrypointFuncNameBaseLen-
-                    LEN_CCONV_MODULE_EXTENTION] = '\0';
-                    /* "Foo_entrypoint" into entrypointFuncName */
-                    strcat(entrypointFuncName, CCONV_ENTRYPOINT_POSTFIX);
-                }
-                {
-                    /* bind and call module */
-                    ft_module_handle_t handle;
+        char *pathListHead = NULL, *pathListTmp, *pathListNext;
 
-                    if (NULL != (handle = DLOPEN(pathModule, DL_OPTION))) {
-                        mod_entrypoint_ptr_t entryPoint;
-                        entryPoint =
-                            (mod_entrypoint_ptr_t)DLSYM(handle,
-                                                        entrypointFuncName);
-                        if (NULL != entryPoint)
-                            isFound =
-                                (*entryPoint)(&hints, refCodeConverterInfo,
-                                              refMapID);
-                        if (isFound) {
-                            refCodeConverterInfo->handleModule = handle;
-                        } else {
-                            DLCLOSE(handle);
-                        }
-                    } else {
-                        fprintf(stderr, "warning: cannot dlopen - %s\n",
-                                dlerror());
+        if ( X_TT_CodeConvModulePath ) {
+            pathListHead = (char*)xalloc(strlen(X_TT_CodeConvModulePath)+1);
+            if ( !pathListHead )
+                goto endScanMod;
+            strcpy(pathListHead, X_TT_CodeConvModulePath);
+        } else {
+            pathListHead = (char *)xalloc(sizeof(CCONV_MODULE_DIR)+1);
+            if ( !pathListHead )
+                goto endScanMod;
+            strcpy(pathListHead, CCONV_MODULE_DIR);
+        }
+            
+        pathListTmp = pathListHead;
+        do {
+            char *moduleSubDir = NULL;
+            /* cut and pick the path element */
+            
+            pathListNext = strchr(pathListTmp, ',');
+            if ( pathListNext ) {
+                *pathListNext = '\0';
+                pathListNext++;
+            }
+            moduleSubDir =
+                (char *)xalloc(strlen(pathListTmp) +
+                               sizeof(CCONV_MODULE_SUBDIR) + 1 + 1);
+            strcpy(moduleSubDir, pathListTmp);
+            strcat(moduleSubDir, "/");
+            strcat(moduleSubDir, CCONV_MODULE_SUBDIR);
+
+            if (NULL == (dir = opendir(moduleSubDir)))
+                goto nextPathElement;
+            while (NULL != (dp=readdir(dir)) && !isFound) {
+                const char *baseName = dp->d_name;
+                int baseNameLen = strlen(baseName);
+                /* check extention */ 
+                if (!strcmp(baseName+(baseNameLen-LEN_CCONV_MODULE_EXTENTION),
+                            CCONV_MODULE_EXTENTION)) {
+                    /* match extention */
+                    char* pathModule = NULL;
+                    char *entrypointFuncName = NULL;
+                    {
+                        /* concat dirName & baseName */
+                        pathModule =
+                            (char *)xalloc(strlen(moduleSubDir)+1
+                                           +baseNameLen +1);
+                        strcpy(pathModule, moduleSubDir);
+                        strcat(pathModule, "/");
+                        strcat(pathModule, baseName);
                     }
-                }
-                xfree(entrypointFuncName);
-            } /* match file name extention */
-        } /* loop by directory entry */
+                    {
+                        int entrypointFuncNameBaseLen = baseNameLen;
+#if defined(PREPEND_UNDERSCORE)
+                        entrypointFuncNameBaseLen++; /* For FuncSym prefix "_" */
+#endif
+                        /* make entrypoint function name */
+                        entrypointFuncName =
+                            (char *)xalloc(entrypointFuncNameBaseLen
+                                           +LEN_CCONV_ENTRYPOINT_POSTFIX+1);
+#if defined(PREPEND_UNDERSCORE)
+                        /* FuncSym prefix "_" */
+                        strcpy(entrypointFuncName, "_");
+                        /* "Foo.so" into entrypointFuncName */
+                        strcat(entrypointFuncName, baseName);
+#else
+                        /* "Foo.so" into entrypointFuncName */
+                        strcpy(entrypointFuncName, baseName);
+#endif
+                        /* "Foo" into entrypointFuncName */
+                        entrypointFuncName[entrypointFuncNameBaseLen-
+                                          LEN_CCONV_MODULE_EXTENTION] = '\0';
+                        /* "Foo_entrypoint" into entrypointFuncName */
+                        strcat(entrypointFuncName, CCONV_ENTRYPOINT_POSTFIX);
+                    }
+                    {
+                        /* bind and call module */
+                        ft_module_handle_t handle;
+
+                        if (NULL != (handle = DLOPEN(pathModule, DL_OPTION))) {
+                            mod_entrypoint_ptr_t entryPoint;
+                            entryPoint =
+                                (mod_entrypoint_ptr_t)DLSYM(handle,
+                                                            entrypointFuncName);
+                            if (NULL != entryPoint)
+                                isFound =
+                                    (*entryPoint)(&hints, refCodeConverterInfo,
+                                                  refMapID);
+                            if (isFound) {
+                                refCodeConverterInfo->handleModule = handle;
+                            } else {
+                                DLCLOSE(handle);
+                            }
+                        } else {
+                            fprintf(stderr, "warning: cannot dlopen - %s\n",
+                                    dlerror());
+                        }
+                    }
+                    if ( pathModule ) {
+                        xfree(pathModule);
+                    }
+                    if ( entrypointFuncName ) {
+                        xfree(entrypointFuncName);
+                    }
+                } /* match file name extention */
+            } /* loop by directory entry */
+        nextPathElement:
+            xfree(moduleSubDir);
+            if ( dir ) {
+                closedir(dir);
+                dir = NULL;
+            }
+            pathListTmp = pathListNext;
+        } while (pathListTmp);
     endScanMod:
-        if (dir)
-            closedir(dir);
-		if(pathModule)
-			xfree(pathModule);
+        if ( pathListHead )
+            xfree(pathListHead);
 #else /* ! FONTMODULE */
 /* for New Designed XFree86 */
         
