@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 135. Fix enabling of DRI when XvMC is disabled (#5208, Matthew Sottek, Intel).
  134. Fix HW Cursor handling in vmware driver (#5193, Jeremy, VMWare).
  133. YUV handling updates for v4l module. Can now handle multiple formats
       and find common format for both videocard and kernel.(#5196, Gerd Knorr).
@@ -14794,4 +14795,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2213 2002/05/14 20:19:48 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2214 2002/05/14 20:24:00 alanh Exp $
