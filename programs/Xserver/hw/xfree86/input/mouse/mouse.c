@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.8 1999/05/22 09:59:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.9 1999/06/05 15:55:26 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -315,6 +315,7 @@ MouseCommonOptions(InputInfoPtr pInfo)
 {
     MouseDevPtr pMse;
     MessageType from = X_DEFAULT;
+    char *s;
 
     pMse = pInfo->private;
 
@@ -339,7 +340,36 @@ MouseCommonOptions(InputInfoPtr pInfo)
     if (pMse->chordMiddle)
 	xf86Msg(X_CONFIG, "%s: ChordMiddle\n", pInfo->name);
 
-    /* XXX Add parsing of the ZAxisMapping option. */
+    s = xf86SetStrOption(pInfo->options, "ZAxisMapping", NULL);
+    if (s) {
+	int b1 = 0, b2 = 0;
+	char *msg = NULL;
+
+	if (!xf86NameCmp(s, "x")) {
+	    pMse->negativeZ = pMse->positiveZ = MSE_MAPTOX;
+	    msg = xstrdup("X axis");
+	} else if (!xf86NameCmp(s, "y")) {
+	    pMse->negativeZ = pMse->positiveZ = MSE_MAPTOY;
+	    msg = xstrdup("Y axis");
+	} else if (sscanf(s, "%d %d", &b1, &b2) == 2 &&
+		 b1 > 0 && b1 <= MSE_MAXBUTTONS &&
+		 b2 > 0 && b2 <= MSE_MAXBUTTONS) {
+	    pMse->negativeZ = b1;
+	    pMse->positiveZ = b2;
+	    msg = xstrdup("buttons XX and YY");
+	    if (msg)
+		sprintf(msg, "buttons %d and %d", b1, b2);
+	} else {
+	    pMse->negativeZ = pMse->positiveZ = MSE_NOZMAP;
+	}
+	if (msg) {
+	    xf86Msg(X_CONFIG, "%s: ZAxisMapping: %s\n", pInfo->name, msg);
+	    xfree(msg);
+	} else {
+	    xf86Msg(X_WARNING, "%s: Invalid ZAxisMapping value: \"%s\"\n",
+		    pInfo->name, s);
+	}
+    }
 }
 
 static InputInfoPtr
@@ -361,7 +391,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     /* Initialise the InputInfoRec. */
     pInfo->name = dev->identifier;
     pInfo->type_name = XI_MOUSE;
-    pInfo->flags = /*XI86_NO_OPEN_ON_INIT |*/ XI86_SEND_DRAG_EVENTS;
+    pInfo->flags = XI86_POINTER_CAPABLE | XI86_SEND_DRAG_EVENTS;
     pInfo->device_control = MouseProc;
     pInfo->read_input = MouseReadInput;
     pInfo->motion_history_proc = xf86GetMotionEvents;
