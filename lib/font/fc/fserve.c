@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.8 1998/10/03 09:07:24 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.9 1999/01/31 12:25:11 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -59,6 +59,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"fontmisc.h"
 #include	"fontstruct.h"
 #include	"fservestr.h"
+#include	"fontutil.h"
 #include	<errno.h>
 #if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 extern int errno;

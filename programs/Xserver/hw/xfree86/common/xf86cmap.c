@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.8 1999/01/14 13:04:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.9 1999/02/28 11:19:34 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -54,6 +54,7 @@ typedef struct {
   SetOverscanFuncPtr		SetOverscan;
   Bool				(*EnterVT)(int, int);
   Bool				(*SwitchMode)(int, DisplayModePtr, int);
+  int				(*SetDGAMode)(int, int, DGADevicePtr);
   int				maxColors;
   int				sigRGBbits;
   int				gammaElements;
@@ -82,6 +83,7 @@ static void CMapDestroyColormap (ColormapPtr);
 
 static Bool CMapEnterVT(int, int);
 static Bool CMapSwitchMode(int, DisplayModePtr, int);
+static int  CMapSetDGAMode(int, int, DGADevicePtr);
 
 static void ComputeGamma(CMapScreenPtr);
 static Bool CMapAllocateColormapPrivate(ColormapPtr);
@@ -161,10 +163,14 @@ Bool xf86HandleColormaps(
 
     pScreenPriv->EnterVT = pScrn->EnterVT;
     pScreenPriv->SwitchMode = pScrn->SwitchMode;
+    pScreenPriv->SetDGAMode = pScrn->SetDGAMode;
+    
 
     pScrn->EnterVT = CMapEnterVT;
-    if(flags & CMAP_RELOAD_ON_MODE_SWITCH)
+    if(flags & CMAP_RELOAD_ON_MODE_SWITCH) {
 	pScrn->SwitchMode = CMapSwitchMode;
+	pScrn->SetDGAMode = CMapSetDGAMode;
+    }
  
     ComputeGamma(pScreenPriv);
 
@@ -432,6 +438,23 @@ CMapSwitchMode(int index, DisplayModePtr mode, int flags)
 	return TRUE;
     }
     return FALSE;
+}
+
+
+static int  
+CMapSetDGAMode(int index, int num, DGADevicePtr dev)
+{
+    ScreenPtr pScreen = screenInfo.screens[index];
+    CMapScreenPtr pScreenPriv = 
+        (CMapScreenPtr) pScreen->devPrivates[CMapScreenIndex].ptr;
+    int ret;
+
+    ret = (*pScreenPriv->SetDGAMode)(index, num, dev);
+
+    if(!num && miInstalledMaps[index])
+	CMapReinstallMap(miInstalledMaps[index]);
+
+    return ret;
 }
 
 
@@ -752,6 +775,7 @@ UnwrapScreen(ScreenPtr pScreen)
 
     pScrn->EnterVT = pScreenPriv->EnterVT; 
     pScrn->SwitchMode = pScreenPriv->SwitchMode; 
+    pScrn->SetDGAMode = pScreenPriv->SetDGAMode; 
 
     xfree(pScreenPriv->gamma);
     xfree(pScreenPriv->PreAllocIndices);

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/13 1996/10/27 11:49:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/Imakefile,v 1.13 1999/01/26 10:40:21 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/Imakefile,v 1.14 1999/01/31 12:21:51 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -26,7 +26,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(XF86SRC)/xf1bpp -I$(XF86SRC)/xf4bpp -I$(XINCLUDESRC) \
 	   -I$(XF86SRC)/xaa -I$(FONTINCSRC) -I$(XF86SRC)/ramdac\
 	   -I$(XF86SRC)/rac -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
-	   -I$(XF86SRC)/xf24_32bpp
+	   -I$(XF86SRC)/xf24_32bpp -I$(XF86SRC)/shadowfb
 #endif
 
 #if MakeHasPosixVariableSubstitutions

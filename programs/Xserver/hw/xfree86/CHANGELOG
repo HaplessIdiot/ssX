@@ -1,4 +1,17 @@
 XFree86 3.9Pe (14 March 1999)
+2364. Add gamma correction to the C&T driver, but disabled because it doesn't
+      work yet (David Bateman).
+2363. Add shadow fb support to the C&T driver (David Bateman).
+2362. Finish off the VidMode extension backward compatibility code
+      (David Bateman).
+2361. Add SetGamma/GetGamma requests to the VidMode extension, and a client
+      called 'xgamma' that makes use of them to allow the server's gamma
+      correction to be changed dynamically (David Bateman).
+2360. Make the cursor layer smart enough to remove the cursor itself when
+      DGA is activated (#2552, Mark Vojkovich).
+2359. Add some overlay-related entries to the ScrnInfoRec (#2550,
+      Mark Vojkovich).
+2358. Some DGA fixes (#2550, 2551, Mark Vojkovich).
 2357. Set X_BYTE_ORDER from the imake config, and use it in place of
       the system's BYTE_ORDER (David Dawes).
 2356. Update copyright notices in the s3virge driver (#2546, Kevin Brosius).
@@ -45,8 +58,8 @@ XFree86 3.9Pe (14 March 1999)
       the "mtrr" option is specified or -verbose is used (#2531, David Wragg).
 2332. Disable transparency for screen to screen copies for the Trident
       Image3D (Alan Hourihane).
-2331. Remove pixmaps from offscreen memory when they are used to tile
-      drawables that aren't in videomemory (#2497, Mark Vojkovich).
+2331. Fix some offscreen pixmap-related problems with XAA (#2497, 2549,
+      Mark Vojkovich).
 
 XFree86 3.9Pd (9 March 1999)
 2330. Updates for Hurd port (#2528, UCHIYAMA Yasushi).
@@ -7469,4 +7482,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.703 1999/03/14 03:21:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.704 1999/03/14 05:51:01 dawes Exp $

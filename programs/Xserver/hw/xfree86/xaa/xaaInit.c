@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.15 1999/02/07 06:18:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.16 1999/03/07 11:40:46 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -36,6 +36,7 @@ static void XAASaveAreas (PixmapPtr pPixmap, RegionPtr prgnSave,
 			int xorg, int yorg, WindowPtr pWin);
 static Bool XAAEnterVT (int index, int flags);
 static void XAALeaveVT (int index, int flags);
+static Bool XAASaveRestoreImage (int index, SaveRestoreFlags what);
 
 
 int XAAScreenIndex = -1;
@@ -178,6 +179,8 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScrn->EnterVT = XAAEnterVT; 
     pScreenPriv->LeaveVT = pScrn->LeaveVT;
     pScrn->LeaveVT = XAALeaveVT;
+    pScreenPriv->SaveRestoreImage = pScrn->SaveRestoreImage;
+    pScrn->SaveRestoreImage = XAASaveRestoreImage;
 
     pScreenPriv->WindowExposures = pScreen->WindowExposures;
     if(infoRec->Flags & OVERLAY_8_32) {
@@ -212,6 +215,7 @@ XAACloseScreen (int i, ScreenPtr pScreen)
 
     pScrn->EnterVT = pScreenPriv->EnterVT; 
     pScrn->LeaveVT = pScreenPriv->LeaveVT; 
+    pScrn->SaveRestoreImage = pScreenPriv->SaveRestoreImage;
    
     pScreen->CreateGC = pScreenPriv->CreateGC;
     pScreen->CloseScreen = pScreenPriv->CloseScreen;
@@ -237,27 +241,26 @@ XAACloseScreen (int i, ScreenPtr pScreen)
 
 static void
 XAAGetImage (
-    DrawablePtr pDrawable,
+    DrawablePtr pDraw,
     int	sx, int sy, int w, int h,
     unsigned int    format,
     unsigned long   planemask,
     char	    *pdstLine 
 )
 {
-    ScreenPtr pScreen = pDrawable->pScreen;
+    ScreenPtr pScreen = pDraw->pScreen;
     XAA_SCREEN_PROLOGUE (pScreen, GetImage);
     if(xf86Screens[pScreen->myNum]->vtSema && 
-		(pDrawable->type == DRAWABLE_WINDOW)) {
-	SYNC_CHECK(pDrawable);
+	((pDraw->type == DRAWABLE_WINDOW) || IS_OFFSCREEN_PIXMAP(pDraw))) {
+	SYNC_CHECK(pDraw);
     }
-    (*pScreen->GetImage) (pDrawable, sx, sy, w, h,
-			  format, planemask, pdstLine);
+    (*pScreen->GetImage) (pDraw, sx, sy, w, h, format, planemask, pdstLine);
     XAA_SCREEN_EPILOGUE (pScreen, GetImage, XAAGetImage);
 }
 
 static void
 XAAGetSpans (
-    DrawablePtr	pDrawable,
+    DrawablePtr pDraw,
     int		wMax,
     DDXPointPtr	ppt,
     int		*pwidth,
@@ -265,13 +268,13 @@ XAAGetSpans (
     char	*pdstStart
 )
 {
-    ScreenPtr	    pScreen = pDrawable->pScreen;
+    ScreenPtr pScreen = pDraw->pScreen;
     XAA_SCREEN_PROLOGUE (pScreen, GetSpans);
     if(xf86Screens[pScreen->myNum]->vtSema && 
-		(pDrawable->type == DRAWABLE_WINDOW)) {
-	SYNC_CHECK(pDrawable);
+	((pDraw->type == DRAWABLE_WINDOW) || IS_OFFSCREEN_PIXMAP(pDraw))) {
+	SYNC_CHECK(pDraw);
     }
-    (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+    (*pScreen->GetSpans) (pDraw, wMax, ppt, pwidth, nspans, pdstStart);
     XAA_SCREEN_EPILOGUE (pScreen, GetSpans, XAAGetSpans);
 }
 
@@ -455,6 +458,7 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 		
 		pLink->next = infoRec->OffscreenPixmaps;
 		pLink->pPix = pPix;
+		infoRec->OffscreenPixmaps = pLink;
 	    } else {
 		if(pLink) xfree(pLink);
 		(*pScreen->DestroyPixmap)(pPix);
@@ -503,8 +507,31 @@ XAADestroyPixmap(PixmapPtr pPix)
 }
 
 
+/*  These two aren't really needed for anything */
+
 static Bool 
 XAAEnterVT(int index, int flags)
+{
+    ScreenPtr pScreen = screenInfo.screens[index];
+    XAAScreenPtr pScreenPriv = 
+	(XAAScreenPtr) pScreen->devPrivates[XAAScreenIndex].ptr;
+
+    return((*pScreenPriv->EnterVT)(index, flags));
+}
+
+static void 
+XAALeaveVT(int index, int flags)
+{
+    ScreenPtr pScreen = screenInfo.screens[index];
+    XAAScreenPtr pScreenPriv = 
+	(XAAScreenPtr) pScreen->devPrivates[XAAScreenIndex].ptr;
+
+    (*pScreenPriv->LeaveVT)(index, flags);
+}
+
+
+static Bool 
+XAASaveRestoreImage (int index, SaveRestoreFlags what)
 {
     ScreenPtr pScreen = screenInfo.screens[index];
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
@@ -512,27 +539,19 @@ XAAEnterVT(int index, int flags)
 	(XAAScreenPtr) pScreen->devPrivates[XAAScreenIndex].ptr;
     Bool ret;
 
-    if(pScreenPriv->AccelInfoRec->Flags & PIXMAP_CACHE)
-	XAAInvalidatePixmapCache(pScreen);
+    if(what == SaveImage) {
+	if((infoRec->Flags & OFFSCREEN_PIXMAPS) && (infoRec->OffscreenPixmaps))
+	    XAAMoveOutOffscreenPixmaps(pScreen);
+	if(infoRec->Flags & PIXMAP_CACHE)
+	    XAAInvalidatePixmapCache(pScreen);
+    }
 
-    ret = (*pScreenPriv->EnterVT)(index, flags);
+    ret = (*pScreenPriv->SaveRestoreImage)(index, what);
 
-    if((infoRec->Flags & OFFSCREEN_PIXMAPS) && infoRec->OffscreenPixmaps)
-	XAAMoveInOffscreenPixmaps(pScreen);
+    if(what == RestoreImage) {
+	if((infoRec->Flags & OFFSCREEN_PIXMAPS) && (infoRec->OffscreenPixmaps))
+	    XAAMoveInOffscreenPixmaps(pScreen);
+    }
 
     return ret;
-}
-
-static void 
-XAALeaveVT(int index, int flags)
-{
-    ScreenPtr pScreen = screenInfo.screens[index];
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
-    XAAScreenPtr pScreenPriv = 
-	(XAAScreenPtr) pScreen->devPrivates[XAAScreenIndex].ptr;
-
-    if((infoRec->Flags & OFFSCREEN_PIXMAPS) && infoRec->OffscreenPixmaps)
-	 XAAMoveOutOffscreenPixmaps(pScreen);
-
-    (*pScreenPriv->LeaveVT)(index, flags);
 }

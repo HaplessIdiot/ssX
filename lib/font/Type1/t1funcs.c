@@ -54,7 +54,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.9 1998/10/25 07:11:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.10 1999/01/31 04:59:29 dawes Exp $ */
 
 /*
 
@@ -97,6 +97,7 @@ from The Open Group.
 #endif
 
 #include "fntfilst.h"
+#include "fontutil.h"
 #include "FSproto.h"
 #include "t1intf.h"
 #include "fontenc.h"

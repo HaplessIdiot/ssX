@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.1 1999/03/07 08:29:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.2 1999/03/07 13:38:45 dawes Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -19,6 +19,7 @@
 
 #ifdef XF86VIDMODE
 #include "vidmodeproc.h"
+#include "xf86cmap.h"
 
 static int VidModeGeneration = 0;
 static int VidModeIndex = -1;
@@ -542,6 +543,44 @@ VidModeGetNumOfModes(int scrnIndex)
 	if (!VidModeGetNextModeline(scrnIndex, &mode, &dotClock))
 	    return nummodes;
     } while (TRUE);
+}
+
+Bool
+VidModeSetGamma(int scrnIndex, float red, float green, float blue)
+{
+    ScrnInfoPtr pScrn;
+    Gamma gamma;
+
+    DEBUG_P("VidModeSetGamma");
+
+    if (!VidModeAvailable(scrnIndex))
+	return FALSE;
+
+    pScrn = xf86Screens[scrnIndex];
+    gamma.red = red;
+    gamma.green = green;
+    gamma.blue = blue;
+    if (xf86ChangeGamma(pScrn->pScreen, gamma) != Success)
+	return FALSE;
+    else
+	return TRUE;
+}
+
+Bool
+VidModeGetGamma(int scrnIndex, float *red, float *green, float *blue)
+{
+    ScrnInfoPtr pScrn;
+
+    DEBUG_P("VidModeGetGamma");
+
+    if (!VidModeAvailable(scrnIndex))
+	return FALSE;
+
+    pScrn = xf86Screens[scrnIndex];
+    *red = pScrn->gamma.red;
+    *green = pScrn->gamma.green;
+    *blue = pScrn->gamma.blue;
+    return TRUE;
 }
 
 pointer

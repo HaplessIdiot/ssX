@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.25 1999/03/07 08:29:27 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.26 1999/03/12 02:36:20 dawes Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -54,6 +54,8 @@ from Kaleb S. KEITHLEY
 /* new for version 2.x of this extension */
 #define X_XF86VidModeGetDotClocks	13
 #define X_XF86VidModeSetClientVersion	14
+#define X_XF86VidModeSetGamma		15
+#define X_XF86VidModeGetGamma		16
 
 #define CLKFLAG_PROGRAMABLE		1
 
@@ -147,6 +149,13 @@ typedef struct {
     Bool forced;		/* extents of new region */
     Time time;			/* event timestamp */
 } XF86VidModeNotifyEvent;
+
+typedef struct {
+    float red;			/* Red Gamma value */
+    float green;		/* Green Gamma value */
+    float blue;			/* Blue Gamma value */
+} XF86VidModeGamma;
+
 
 #define XF86VidModeSelectNextMode(disp, scr) \
 	XF86VidModeSwitchMode(disp, scr, 1)
@@ -255,6 +264,18 @@ Bool XF86VidModeGetDotClocks(
     int*		/* number of clocks return */,
     int*		/* max dot clock return */,
     int**		/* clocks return */
+);
+
+Bool XF86VidModeGetGamma(
+    Display*			/* dpy */,
+    int				/* screen */,
+    XF86VidModeGamma*		/* Gamma */
+);
+
+Bool XF86VidModeSetGamma(
+    Display*			/* dpy */,
+    int				/* screen */,
+    XF86VidModeGamma*		/* Gamma */
 );
 
 _XFUNCPROTOEND

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.9 1998/08/29 05:42:55 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.10 1998/10/03 09:07:21 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -31,6 +31,7 @@ from The Open Group.
 
 #include "fntfilst.h"
 #include "bitmap.h"
+#include "fontutil.h"
 #ifndef FONTMODULE
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -891,11 +892,6 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
 		     (opf->info.lastCol - opf->info.firstCol + 1) + \
 		     (i)%(lastCol - firstCol + 1) + \
 		     firstCol - opf->info.firstCol)
-
-    extern int  bitmapGetBitmaps();
-    extern int  bitmapGetExtents();
-    extern int  bitmapGetGlyphs();
-    extern int  bitmapGetMetrics();
 
     *sWidth = 0;
 

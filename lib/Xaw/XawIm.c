@@ -48,7 +48,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.6 1998/10/03 08:42:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.7 1999/03/14 03:21:13 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -1532,7 +1532,7 @@ _XawImUnsetFocus(Widget inwidg)
 int
 _XawImWcLookupString(Widget inwidg, XKeyPressedEvent *event,
 		     wchar_t* buffer_return, int bytes_buffer,
-		     KeySym *keysym_return, Status *status_return)
+		     KeySym *keysym_return)
 {
     XawVendorShellExtPart*	ve;
     VendorShellWidget		vw;
@@ -1544,10 +1544,10 @@ _XawImWcLookupString(Widget inwidg, XKeyPressedEvent *event,
     if ((vw = SearchVendorShell(inwidg)) && (ve = GetExtPart(vw)) &&
 	ve->im.xim && (p = GetIcTableShared(inwidg, ve)) && p->xic) {
 	  return(XwcLookupString(p->xic, event, buffer_return, bytes_buffer/sizeof(wchar_t),
-				 keysym_return, status_return));
+				 keysym_return, NULL));
     }
     ret = XLookupString( event, tmp_buf, sizeof(tmp_buf), keysym_return,
-		         (XComposeStatus*) status_return );
+		         NULL );
     for ( i = 0, tmp_p = tmp_buf, buf_p = buffer_return; i < ret; i++ ) {
 	*buf_p++ = _Xaw_atowc(*tmp_p++);
     }
@@ -1556,7 +1556,7 @@ _XawImWcLookupString(Widget inwidg, XKeyPressedEvent *event,
 
 int
 _XawLookupString(Widget w, XKeyEvent *event, char *buffer_return, int buffer_size,
-		 KeySym *keysym_return, XComposeStatus *status_return)
+		 KeySym *keysym_return)
 {
     XawVendorShellExtPart *ve;
     VendorShellWidget vw;
@@ -1565,10 +1565,10 @@ _XawLookupString(Widget w, XKeyEvent *event, char *buffer_return, int buffer_siz
     if ((vw = SearchVendorShell(w)) && (ve = GetExtPart(vw))
 	&& ve->im.xim && (p = GetIcTableShared(w, ve)) && p->xic)
 	return (XmbLookupString(p->xic, event, buffer_return, buffer_size,
-				keysym_return, status_return));
+				keysym_return, NULL));
 
     return (XLookupString(event, buffer_return, buffer_size,
-			  keysym_return, status_return));
+			  keysym_return, NULL));
 }
 
 int

@@ -78,9 +78,10 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.6 1998/10/03 09:07:17 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.7 1999/01/31 04:59:30 dawes Exp $ */
 
 #include "fntfilst.h"
+#include "fontutil.h"
 #ifndef FONTMODULE
 #include <stdio.h> 
 #include <math.h>

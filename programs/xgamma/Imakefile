@@ -1,0 +1,12 @@
+XCOMM $XFree86$
+
+        DEPLIBS = $(DEPXXF86VMLIB)
+#ifdef OS2Architecture
+LOCAL_LIBRARIES = $(XXF86VMLIB)
+#else
+LOCAL_LIBRARIES = $(XXF86VMLIB) $(XLIB)
+#endif
+           SRCS = xgamma.c
+           OBJS = xgamma.o
+
+ComplexProgramTarget(xgamma)

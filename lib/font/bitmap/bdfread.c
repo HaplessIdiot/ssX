@@ -46,12 +46,13 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.2 1998/07/25 06:57:03 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.3 1998/10/03 09:07:20 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
 #endif
 #include "fntfilst.h"
+#include "fontutil.h"
 /* use bitmap structure */
 #include "bitmap.h"
 #include "bdfint.h"
@@ -60,8 +61,6 @@ from The Open Group.
 #define MAXENCODING 0xFFFF
 #define BDFLINELEN  1024
 
-extern int  bitmapGetGlyphs(), bitmapGetMetrics();
-extern int  bitmapGetBitmaps(), bitmapGetExtents();
 static Bool bdfPadToTerminal();
 extern int  bdfFileLineNum;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.20 1999/02/28 11:19:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.21 1999/03/14 03:21:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -471,6 +471,8 @@ typedef struct _ScrnInfoRec {
 						 * here */
     DriverPtr		drv;			/* xf86DriverList[] entry */
     pointer		module;			/* Pointer to module head */
+    int			colorKey;
+    int			overlayFlags;
 
     /* Some of these may be moved out of here into the driver private area */
 
@@ -658,6 +660,12 @@ typedef void (*DPMSSetProcPtr)(ScrnInfoPtr, int, int);
 #define INTERLACE_REFRESH_WEIGHT	1.5
 #define SYNC_TOLERANCE		0.01	/* 1 percent */
 #define CLOCK_TOLERANCE		2000	/* Clock matching tolerance (2MHz) */
+
+
+#define OVERLAY_8_32_DUALFB	0x00000001
+#define OVERLAY_8_24_DUALFB	0x00000002
+#define OVERLAY_8_16_DUALFB	0x00000004
+#define OVERLAY_8_32_PLANAR	0x00000008
 
 #if 0
 #define LD_RESOLV_IFDONE		0	/* only check if no more 

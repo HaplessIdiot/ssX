@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.12 1999/02/28 11:19:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.13 1999/03/07 11:40:26 dawes Exp $ */
 
 /*
 
@@ -195,6 +195,9 @@ ProcXF86DGAGetViewPortSize(ClientPtr client)
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
 
+    if (!DGAAvailable(stuff->screen)) 
+	return (DGAErrorBase + XF86DGANoDirectVideoMode);
+
     if(!(mode = DGAGetOldDGAMode(stuff->screen)))
 	return (DGAErrorBase + XF86DGANoDirectVideoMode);
 
@@ -223,8 +226,8 @@ ProcXF86DGASetViewPort(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xXF86DGASetViewPortReq);
 
-    if (!DGAAvailable(stuff->screen))
-	return (DGAErrorBase + XF86DGANoDirectVideoMode);
+    if (!DGAActive(stuff->screen))
+	return (DGAErrorBase + XF86DGADirectNotActivated);
 
     if (!DGASetViewport(stuff->screen, stuff->x, stuff->y, DGA_FLIP_RETRACE))
 	return DGAErrorBase + XF86DGADirectNotActivated;
@@ -281,8 +284,8 @@ ProcXF86DGAInstallColormap(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xXF86DGAInstallColormapReq);
 
-    if (!DGAAvailable(stuff->screen))
-	return (DGAErrorBase + XF86DGANoDirectVideoMode);
+    if (!DGAActive(stuff->screen))
+	return (DGAErrorBase + XF86DGADirectNotActivated);
 
     pcmp = (ColormapPtr  )LookupIDByType(stuff->id, RT_COLORMAP);
     if (pcmp) {
@@ -334,8 +337,8 @@ ProcXF86DGAViewPortChanged(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xXF86DGAViewPortChangedReq);
 
-    if (!DGAAvailable(stuff->screen))
-	return (DGAErrorBase + XF86DGANoDirectVideoMode);
+    if (!DGAActive(stuff->screen))
+	return (DGAErrorBase + XF86DGADirectNotActivated);
 
     rep.type = X_Reply;
     rep.length = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.11 1999/01/14 13:05:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.12 1999/03/12 02:36:27 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -80,8 +80,8 @@ XAAValidateGC(
 	/* make sure we're not using videomemory pixmaps to render
 	   onto system memory drawables */
 
-	if(!pGC->tileIsPixel && pGC->tile.pixmap &&
-				IS_OFFSCREEN_PIXMAP(pGC->tile.pixmap)) {
+	if((pGC->fillStyle == FillTiled) && 
+	    IS_OFFSCREEN_PIXMAP(pGC->tile.pixmap)) {
 
 	    XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
 	    FBAreaPtr area = pPriv->offscreenArea;
@@ -100,6 +100,21 @@ XAAValidateGC(
 	    pGCPriv->changes = 0;
 	}
 	pGCPriv->flags = OPS_ARE_ACCEL;
+
+	/* Ugh.  If we can't use the blitter on offscreen pixmaps used
+	   as tiles, then we need to move them out as cfb can't handle
+	   tiles with non-zero origins */
+
+	if((pGC->fillStyle == FillTiled) && 
+	    IS_OFFSCREEN_PIXMAP(pGC->tile.pixmap) &&
+	    (DO_PIXMAP_COPY != (*infoRec->TiledFillChooser)(pGC))) {
+
+	    XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
+	    FBAreaPtr area = pPriv->offscreenArea;
+
+	    XAARemoveAreaCallback(area); /* clobbers pPriv->offscreenArea */
+	    xf86FreeOffscreenArea(area);
+	}
     }
 
     XAA_GC_FUNC_EPILOGUE(pGC);
@@ -329,7 +344,8 @@ XAACopyAreaPixmap(
 
     XAA_PIXMAP_OP_PROLOGUE(pGC, pDst);
 
-    if(infoRec->pScrn->vtSema && (pSrc->type == DRAWABLE_WINDOW)){
+    if(infoRec->pScrn->vtSema && 
+	((pSrc->type == DRAWABLE_WINDOW) || IS_OFFSCREEN_PIXMAP(pSrc))){
 	if(infoRec->NeedToSync) {
 	   (*infoRec->Sync)(infoRec->pScrn);
 	    infoRec->NeedToSync = FALSE;
@@ -357,7 +373,8 @@ XAACopyPlanePixmap(
 
     XAA_PIXMAP_OP_PROLOGUE(pGC, pDst);
 
-    if(infoRec->pScrn->vtSema && (pSrc->type == DRAWABLE_WINDOW)){
+    if(infoRec->pScrn->vtSema && 
+	((pSrc->type == DRAWABLE_WINDOW) || IS_OFFSCREEN_PIXMAP(pSrc))){
 	if(infoRec->NeedToSync) {
 	   (*infoRec->Sync)(infoRec->pScrn);
 	    infoRec->NeedToSync = FALSE;

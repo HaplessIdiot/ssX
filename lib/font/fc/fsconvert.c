@@ -22,7 +22,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.2 1999/01/31 12:25:10 dawes Exp $ */
 /*
  * FS data conversion
  */
@@ -33,6 +33,7 @@
 #include	"fontmisc.h"
 #include	"fontstruct.h"
 #include	"fservestr.h"
+#include	"fontutil.h"
 
 extern char _fs_glyph_undefined;
 extern char _fs_glyph_requested;

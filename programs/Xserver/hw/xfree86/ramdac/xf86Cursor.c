@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.2 1998/08/29 14:34:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.3 1999/01/14 13:05:20 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -46,6 +46,7 @@ static void xf86CursorQueryBestSize(int, unsigned short*, unsigned short*,
 static Bool xf86CursorSwitchMode(int, DisplayModePtr,int);
 static Bool xf86CursorEnterVT(int, int);
 static void xf86CursorLeaveVT(int, int);
+static int  xf86SetDGAMode(int, int, DGADevicePtr);
 
 
 Bool 
@@ -105,6 +106,8 @@ xf86InitCursor(
     pScrn->EnterVT = xf86CursorEnterVT; 
     ScreenPriv->LeaveVT = pScrn->LeaveVT;
     pScrn->LeaveVT = xf86CursorLeaveVT;
+    ScreenPriv->SetDGAMode = pScrn->SetDGAMode;
+    pScrn->SetDGAMode = xf86SetDGAMode;
 
     return TRUE;
 }
@@ -131,6 +134,7 @@ xf86CursorCloseScreen(int i, ScreenPtr pScreen)
     pScrn->SwitchMode = ScreenPriv->SwitchMode;
     pScrn->EnterVT = ScreenPriv->EnterVT; 
     pScrn->LeaveVT = ScreenPriv->LeaveVT; 
+    pScrn->SetDGAMode = ScreenPriv->SetDGAMode;
 
     xfree ((pointer) ScreenPriv);
 
@@ -238,6 +242,31 @@ xf86CursorLeaveVT(int index, int flags)
     ScreenPriv->SWCursor = TRUE;
 
     (*ScreenPriv->LeaveVT)(index, flags);
+}
+
+
+static int  
+xf86SetDGAMode(int index, int num, DGADevicePtr devRet)
+{
+    ScreenPtr pScreen = screenInfo.screens[index];
+    xf86CursorScreenPtr ScreenPriv = 
+     (xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
+    int ret;
+
+    if(num && ScreenPriv->isUp) {
+	xf86SetCursor(pScreen, 0, ScreenPriv->x, ScreenPriv->y);
+	ScreenPriv->isUp = FALSE;
+	ScreenPriv->SWCursor = TRUE;
+    }
+
+    ret = (*ScreenPriv->SetDGAMode)(index, num, devRet);
+
+    if(!num && ScreenPriv->CurrentCursor) {
+	xf86CursorSetCursor(pScreen, ScreenPriv->CurrentCursor, 
+			ScreenPriv->x, ScreenPriv->y);
+    }
+
+    return ret;
 }
 
     

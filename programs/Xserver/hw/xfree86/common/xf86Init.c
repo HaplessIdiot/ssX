@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.102 1999/03/07 08:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.103 1999/03/14 03:21:52 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -27,6 +27,10 @@ extern int atoi();
 
 #ifdef XFree86LOADER
 #include "loaderProcs.h"
+#endif
+
+#ifdef XFreeXDGA
+#include "dgaproc.h"
 #endif
 
 #define XF86_OS_PRIVS
@@ -704,6 +708,9 @@ ddxGiveUp()
     xf86AccessLeave();
 #ifdef USE_XF86_SERVERLOCK
     xf86UnlockServer();
+#endif
+#ifdef XFreeXDGA
+    DGAShutdown();
 #endif
 
     xf86CloseConsole();

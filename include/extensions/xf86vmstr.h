@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.21 1998/10/02 07:39:19 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.22 1999/03/07 08:29:28 dawes Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -439,4 +439,49 @@ typedef struct _XF86VidModeSetClientVersion {
 } xXF86VidModeSetClientVersionReq;
 #define sz_xXF86VidModeSetClientVersionReq	8
 
+typedef struct _XF86VidModeGetGamma {
+    CARD8	reqType;		/* always XF86VidModeReqCode */
+    CARD8	xf86vidmodeReqType;
+    CARD16	length B16;
+    CARD16	screen B16;
+    CARD16	pad B16;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+} xXF86VidModeGetGammaReq;
+#define sz_xXF86VidModeGetGammaReq		32
+
+typedef struct {
+    BYTE	type;
+    BOOL	pad;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	red B32;
+    CARD32	green B32;
+    CARD32	blue B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+} xXF86VidModeGetGammaReply;
+#define sz_xXF86VidModeGetGammaReply		32
+
+typedef struct _XF86VidModeSetGamma {
+    CARD8	reqType;		/* always XF86VidModeReqCode */
+    CARD8	xf86vidmodeReqType;
+    CARD16	length B16;
+    CARD16	screen B16;
+    CARD16	pad B16;
+    CARD32	red B32;
+    CARD32	green B32;
+    CARD32	blue B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+} xXF86VidModeSetGammaReq;
+#define sz_xXF86VidModeSetGammaReq		32
+
 #endif /* _XF86VIDMODESTR_H_ */
+

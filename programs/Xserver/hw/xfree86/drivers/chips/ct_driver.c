@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.50 1999/01/26 10:40:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.51 1999/02/12 22:52:00 hohndel Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -118,6 +118,12 @@
 /* Needed by Resources Access Control (RAC) */
 #include "xf86RAC.h"
 
+/* Needed by the Shadow Framebuffer */
+#include "shadowfb.h"
+
+/* Needed for replacement LoadPalette function for Gamma Correction */
+#include "xf86cmap.h"
+
 /* These need to be checked */
 #if 0
 #ifdef XFreeXDGA 
@@ -187,6 +193,9 @@ static void     chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 static void     chipsHWCursorOn(CHIPSPtr cPtr);
 static void     chipsHWCursorOff(CHIPSPtr cPtr);
 static void     chipsFixResume(ScrnInfoPtr pScrn);
+static void     chipsRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+static void     chipsLoadPalette(ScrnInfoPtr pScrn, int numColors,
+				int *indices, LOCO *colors, short visualClass);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -533,7 +542,8 @@ typedef enum {
     OPTION_SYNC_ON_GREEN,
     OPTION_PANEL_SIZE,
     OPTION_18_BIT_BUS,
-    OPTION_SHOWCACHE
+    OPTION_SHOWCACHE,
+    OPTION_SHADOW_FB
 } CHIPSOpts;
 
 static OptionInfoRec Chips655xxOptions[] = {
@@ -553,6 +563,7 @@ static OptionInfoRec Chips655xxOptions[] = {
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_18_BIT_BUS,	"18BitBus",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -565,6 +576,7 @@ static OptionInfoRec ChipsWingineOptions[] = {
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -587,6 +599,7 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_SYNC_ON_GREEN,	"SyncOnGreen",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_18_BIT_BUS,	"18BitBus",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -658,6 +671,11 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+static const char *shadowSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(chipsSetup);
@@ -702,7 +720,7 @@ chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
 			  ramdacSymbols, racSymbols, ddcSymbols, i2cSymbols,
-			  NULL);
+			  shadowSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -994,8 +1012,13 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Fall through */
     case CHIPS_CT68554:
 	cPtr->Flags |= ChipsTMEDSupport;
+	/* Fall through */
     case CHIPS_CT65554:
     case CHIPS_CT65550:
+#if 0
+	cPtr->Flags |= ChipsGammaSupport;
+#endif
+	/* Fall through */
     case CHIPS_CT65548:
     case CHIPS_CT65546:
     case CHIPS_CT65545:
@@ -1229,6 +1252,16 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
 
+    if (cPtr->Flags & ChipsShadowFB) {
+	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    if (cPtr->UseFullMMIO)
+		chipsUnmapMem(pScrn);
+	    CHIPSFreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    }
+    
     if (cPtr->Flags & ChipsHWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    if (cPtr->UseFullMMIO)
@@ -1425,6 +1458,13 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO option ignored\n");
 	}
+    }
+
+    if (xf86IsOptionSet(cPtr->Options, OPTION_SHADOW_FB)) {
+	cPtr->Flags |= ChipsShadowFB;
+	cPtr->Flags &= ~ChipsAccelSupport;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
 
     /* Store register values that might be messed up by a suspend resume */
@@ -2017,6 +2057,13 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
+    if (xf86IsOptionSet(cPtr->Options, OPTION_SHADOW_FB)) {
+	cPtr->Flags |= ChipsShadowFB;
+	cPtr->Flags &= ~ChipsAccelSupport;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
+    }
+
     /* monitor info */
     cPtr->Monitor = chipsSetMonitor(pScrn);
 
@@ -2408,6 +2455,13 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	    (cPtr->Flags & ChipsMMIOSupport)) {
 	cPtr->UseMMIO = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling MMIO\n");
+    }
+
+    if (xf86IsOptionSet(cPtr->Options, OPTION_SHADOW_FB)) {
+	cPtr->Flags |= ChipsShadowFB;
+	cPtr->Flags &= ~ChipsAccelSupport;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
     }
 
     /* monitor info */
@@ -2891,6 +2945,56 @@ CHIPSLeaveVT(int scrnIndex, int flags)
     chipsLock(pScrn);
 }
 
+static void
+chipsRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    int width, height, Bpp, FBPitch;
+    unsigned char *src, *dst;
+   
+    Bpp = pScrn->bitsPerPixel >> 3;
+    FBPitch = pScrn->displayWidth * Bpp;
+
+    while(num--) {
+	width = (pbox->x2 - pbox->x1) * Bpp;
+	height = pbox->y2 - pbox->y1;
+	src = cPtr->ShadowPtr + (pbox->y1 * cPtr->ShadowPitch) + 
+						(pbox->x1 * Bpp);
+	dst = cPtr->FbBase + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
+
+	while(height--) {
+	    memcpy(dst, src, width);
+	    dst += FBPitch;
+	    src += cPtr->ShadowPitch;
+	}
+	
+	pbox++;
+    }
+} 
+
+static void
+chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
+		 short visualClass)
+{
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    int i, index;
+
+    for (i = 0; i < numColors; i++) {
+	index = indices[i];
+	hwp->writeDacWriteAddr(hwp, index);
+	DACDelay(hwp);
+	hwp->writeDacData(hwp, colors[index].red);
+	DACDelay(hwp);
+	hwp->writeDacData(hwp, colors[index].green);
+	DACDelay(hwp);
+	hwp->writeDacData(hwp, colors[index].blue);
+	DACDelay(hwp);
+    }
+
+    /* This shouldn't be necessary, but we'll play safe. */
+    hwp->disablePalette(hwp);
+}
+
 /* Mandatory */
 static Bool
 CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
@@ -2903,6 +3007,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VisualPtr visual;
     int allocatebase, freespace, currentaddr;
     unsigned int racflag = 0;
+    unsigned char *FBStart;
 
     /*
      * we need to get the ScrnInfoRec for this screen, so let's allocate
@@ -2995,45 +3100,55 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
      */
+    if(cPtr->Flags & ChipsShadowFB) {
+	cPtr->ShadowPitch = 
+		((pScrn->virtualX * pScrn->bitsPerPixel >> 3) + 3) & ~3L;
+	cPtr->ShadowPtr = xalloc(cPtr->ShadowPitch * pScrn->virtualY);
+	FBStart = cPtr->ShadowPtr;
+    } else {
+	cPtr->ShadowPtr = NULL;
+	FBStart = cPtr->FbBase;
+    }
+
     switch (pScrn->bitsPerPixel) {
     case 1:
-	ret = xf1bppScreenInit(pScreen, cPtr->FbBase,
+	ret = xf1bppScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 4:
-	ret = xf4bppScreenInit(pScreen, cPtr->FbBase,
+	ret = xf4bppScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 8:
-	ret = cfbScreenInit(pScreen, cPtr->FbBase,
+	ret = cfbScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, cPtr->FbBase,
+	ret = cfb16ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 24:
 	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, cPtr->FbBase,
+	    ret = cfb24ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	else
-	    ret = cfb24_32ScreenInit(pScreen, cPtr->FbBase,
+	    ret = cfb24_32ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, cPtr->FbBase,
+	ret = cfb32ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
@@ -3278,13 +3393,24 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
+    if (cPtr->Flags & ChipsShadowFB)
+	ShadowFBInit(pScreen, chipsRefreshArea);
+
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
     
-    if (!vgaHWHandleColormaps(pScreen))
-	return FALSE;
-
+    if ((cPtr->Flags & ChipsGammaSupport) && (pScrn->depth > 8)) {
+	if(!xf86HandleColormaps(pScreen, 256, 8,
+		chipsLoadPalette, NULL, CMAP_PALETTED_TRUECOLOR |
+		CMAP_RELOAD_ON_MODE_SWITCH))	
+	    return FALSE;
+      
+    } else {
+	if (!vgaHWHandleColormaps(pScreen))
+	    return FALSE;
+    }
+    
     if (pScrn->bitsPerPixel <= 8)
         racflag = RAC_COLORMAP;
     if (cPtr->Flags & ChipsHWCursor)
@@ -3412,6 +3538,8 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	XAADestroyInfoRec(cPtr->AccelInfoRec);
     if (cPtr->CursorInfoRec)
 	xf86DestroyCursorInfoRec(cPtr->CursorInfoRec);
+    if (cPtr->ShadowPtr)
+	xfree(cPtr->ShadowPtr);
     pScrn->vtSema = FALSE;
     pScreen->CloseScreen = cPtr->CloseScreen; /*§§§*/
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);/*§§§*/
@@ -4282,6 +4410,8 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* bpp depend */
     if (pScrn->bitsPerPixel == 16) {
 	ChipsNew->XR[0x81] = (ChipsNew->XR[0x81] & 0xF0) | 0x4;
+	if (cPtr->Flags & ChipsGammaSupport)
+	    ChipsNew->XR[0x82] |= 0x0C;
 	/* 16bpp = 5-5-5             */
 	ChipsNew->FR[0x10] |= 0x0C;   /*Colour Panel               */
 	ChipsNew->XR[0x20] = 0x10;    /*BitBLT Draw Mode for 16 bpp */
@@ -4289,10 +4419,14 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    ChipsNew->XR[0x81] |= 0x01;	/*16bpp */
     } else if (pScrn->bitsPerPixel == 24) {
 	ChipsNew->XR[0x81] = (ChipsNew->XR[0x81] & 0xF0) | 0x6;
+	if (cPtr->Flags & ChipsGammaSupport)
+	    ChipsNew->XR[0x82] |= 0x0C;
 	/* 24bpp colour              */
 	ChipsNew->XR[0x20] = 0x20;    /*BitBLT Draw Mode for 24 bpp */
     } else if (pScrn->bitsPerPixel == 32) {
 	ChipsNew->XR[0x81] = (ChipsNew->XR[0x81] & 0xF0) | 0x7;
+	if (cPtr->Flags & ChipsGammaSupport)
+	    ChipsNew->XR[0x82] |= 0x0C;
 	/* 32bpp colour              */
 	ChipsNew->XR[0x20] = 0x10;    /*BitBLT Draw Mode for 16 bpp */
     }

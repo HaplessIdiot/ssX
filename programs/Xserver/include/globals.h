@@ -1,7 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/include/globals.h,v 1.1 1999/01/13 08:31:09 dawes Exp $ */
 
 #ifndef _XSERV_GLOBAL_H_
 #define _XSERV_GLOBAL_H_
+
+#include "window.h"	/* for WindowPtr */
 
 /* Global X server variables that are visible to mi, dix, os, and ddx */
 
@@ -15,6 +17,11 @@ extern char *rgbPath;
 extern int monitorResolution;
 extern Bool loadableFonts;
 extern int defaultColorVisualClass;
+
+extern Bool Must_have_memory;
+extern WindowPtr *WindowTable;
+extern int GrabInProgress;
+extern Bool noTestExtensions;
 
 #if DPMSExtension
 extern CARD32 defaultDPMSStandbyTime;

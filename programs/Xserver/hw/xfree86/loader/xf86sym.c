@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.71tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.72 1999/03/14 03:22:14 dawes Exp $ */
 
 /*
  *
@@ -241,6 +241,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(DGAInit)
    /* For extmod */
    SYMFUNC(DGAAvailable)
+   SYMFUNC(DGAActive)
    SYMFUNC(DGASetMode)
    SYMFUNC(DGASelectInput)
    SYMFUNC(DGAGetViewportStatus)
@@ -400,6 +401,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(VidModeAddModeline)
    SYMFUNC(VidModeGetDotClock)
    SYMFUNC(VidModeGetNumOfModes)
+   SYMFUNC(VidModeSetGamma)
+   SYMFUNC(VidModeGetGamma)
    SYMFUNC(VidModeCreateMode)
    SYMFUNC(VidModeCopyMode)
    SYMFUNC(VidModeGetModeValue)

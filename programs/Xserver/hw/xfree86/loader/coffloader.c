@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.9 1998/09/20 14:41:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.10 1999/01/14 13:04:53 dawes Exp $ */
 
 /*
  *
@@ -244,7 +244,7 @@ COFFModulePtr	cofffile;
     while(listCOMMON) {
         common=listCOMMON;
         lookup[l].symName=COFFGetSymbolName(cofffile,common->index);
-        lookup[l].offset=(void (*)())(cofffile->common+offset);
+        lookup[l].offset=(funcptr)(cofffile->common+offset);
 #ifdef COFFDEBUG
         COFFDEBUG("Adding %x %s\n", lookup[l].offset, lookup[l].symName );
 #endif
@@ -938,7 +938,7 @@ COFFModulePtr	cofffile;
 		    if( (sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
 		       && cofffile->saddr[sym->n_scnum-1]) {
 			lookup[l].symName=symname;
-			lookup[l].offset=(void (*)())
+			lookup[l].offset=(funcptr)
 			    (cofffile->saddr[sym->n_scnum-1]+
 			     sym->n_value-cofffile->txtaddr);
 #ifdef COFFDEBUG
@@ -967,7 +967,7 @@ COFFModulePtr	cofffile;
 		    if( (sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
 		       && cofffile->saddr[sym->n_scnum-1]) {
 			lookup[l].symName=symname;
-			lookup[l].offset=(void (*)())
+			lookup[l].offset=(funcptr)
 			    (cofffile->saddr[sym->n_scnum-1]+
 			     sym->n_value-cofffile->dataddr);
 #ifdef COFFDEBUG
@@ -996,7 +996,7 @@ COFFModulePtr	cofffile;
 		    if( (sym->n_sclass == C_EXT || sym->n_sclass == C_HIDEXT)
 		       && cofffile->saddr[sym->n_scnum-1]) {
 			lookup[l].symName=symname;
-			lookup[l].offset=(void (*)())
+			lookup[l].offset=(funcptr)
 			    (cofffile->saddr[sym->n_scnum-1]+
 			     sym->n_value-cofffile->bssaddr);
 #ifdef COFFDEBUG

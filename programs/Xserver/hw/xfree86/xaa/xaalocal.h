@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.15 1998/12/13 05:32:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.16 1999/01/03 03:58:52 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -53,6 +53,7 @@ typedef struct _XAAScreen {
    XAAInfoRecPtr 		AccelInfoRec;
    Bool                		(*EnterVT)(int, int);
    void                		(*LeaveVT)(int, int);
+   Bool				(*SaveRestoreImage)(int, SaveRestoreFlags);
 } XAAScreenRec, *XAAScreenPtr;
 
 #define	OPS_ARE_PIXMAP		0x00000001

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/vidmodeproc.h,v 1.1 1999/03/07 08:29:30 dawes Exp $ */
 
 /* Prototypes for DGA functions that the DDX must provide */
 
@@ -54,6 +54,8 @@ void VidModeSetCrtcForMode(int scrnIndex, pointer mode);
 Bool VidModeAddModeline(int scrnIndex, pointer mode);
 int VidModeGetDotClock(int scrnIndex, int Clock);
 int VidModeGetNumOfModes(int scrnIndex);
+Bool VidModeSetGamma(int scrnIndex, float red, float green, float blue);
+Bool VidModeGetGamma(int scrnIndex, float *red, float *green, float *blue);
 pointer VidModeCreateMode(void);
 void VidModeCopyMode(pointer modefrom, pointer modeto);
 int VidModeGetModeValue(pointer mode, int valtyp);

@@ -19,7 +19,7 @@
 ! other dealings in this Software without prior written authorization
 ! from The Open Group.
 !
-! $XFree86: xc/lib/X11/XErrorDB,v 3.19 1998/10/03 08:41:25 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.20 1999/03/12 02:36:20 dawes Exp $
 !
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
@@ -579,6 +579,8 @@ XRequest.XFree86-VidModeExtension.11: XF86VidModeGetViewPort
 XRequest.XFree86-VidModeExtension.12: XF86VidModeSetViewPort
 XRequest.XFree86-VidModeExtension.13: XF86VidModeGetDotClocks
 XRequest.XFree86-VidModeExtension.14: XF86VidModeSetClientVersion
+XRequest.XFree86-VidModeExtension.15: XF86VidModeSetGamma
+XRequest.XFree86-VidModeExtension.16: XF86VidModeGetGamma
 XProtoError.XFree86-VidModeExtension.0: XF86VidModeBadClock
 XProtoError.XFree86-VidModeExtension.1: XF86VidModeBadHTimings
 XProtoError.XFree86-VidModeExtension.2: XF86VidModeBadVTimings

@@ -45,9 +45,10 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.6 1998/10/03 09:07:12 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spinfo.c,v 1.7 1999/02/07 06:18:21 dawes Exp $ */
 
 #include "fntfilst.h"
+#include "fontutil.h"
 #include "spint.h"
 #ifndef FONTMODULE
 #include <math.h>
