@@ -492,6 +492,7 @@ _mesa_DeleteTextures( GLsizei n, const GLuint *texName)
 		     ctx->Shared->DefaultD[d]->RefCount++;
 		     t->RefCount--;
 		     ASSERT( t->RefCount >= 0 );
+                     ctx->NewState |= NEW_TEXTURING;
 		  }
 	       }
             }

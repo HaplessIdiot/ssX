@@ -944,16 +944,16 @@ clear_32bit_ximage( GLcontext *ctx, GLboolean all,
                     GLint x, GLint y, GLint width, GLint height )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
-   if (all) {
-      register GLint n = xmesa->xm_buffer->width * xmesa->xm_buffer->height;
-      register GLuint *ptr4 = (GLuint *) xmesa->xm_buffer->backimage->data;
-      register GLuint pixel = (GLuint) xmesa->clearpixel;
-      if (xmesa->swapbytes) {
-         pixel = ((pixel >> 24) & 0x000000ff)
+   register GLuint pixel = (GLuint) xmesa->clearpixel;
+   if (xmesa->swapbytes) {
+      pixel = ((pixel >> 24) & 0x000000ff)
             | ((pixel >> 8)  & 0x0000ff00)
             | ((pixel << 8)  & 0x00ff0000)
             | ((pixel << 24) & 0xff000000);
-      }
+   }
+   if (all) {
+      register GLint n = xmesa->xm_buffer->width * xmesa->xm_buffer->height;
+      register GLuint *ptr4 = (GLuint *) xmesa->xm_buffer->backimage->data;
       if (pixel==0) {
          MEMSET( ptr4, pixel, 4*n );
       }
@@ -966,7 +966,6 @@ clear_32bit_ximage( GLcontext *ctx, GLboolean all,
    }
    else {
       register int i, j;
-      register GLuint pixel = (GLuint) xmesa->clearpixel;
       for (j=0;j<height;j++) {
          register GLuint *ptr4 = PIXELADDR4( xmesa->xm_buffer, x, y+j );
          for (i=0;i<width;i++) {
