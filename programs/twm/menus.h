@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/menus.h,v 1.3 1999/02/20 15:07:24 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/menus.h,v 1.4 2001/01/17 23:45:07 dawes Exp $ */
 
 
 /***********************************************************************
@@ -144,6 +144,9 @@ extern int ConstMoveXL;
 extern int ConstMoveXR;
 extern int ConstMoveYT;
 extern int ConstMoveYB;
+extern int menuFromFrameOrWindowOrTitlebar;
+extern int ResizeOrigX;
+extern int ResizeOrigY;
 
 #define MAXMENUDEPTH	10	/* max number of nested menus */
 extern int MenuDepth;
@@ -185,7 +188,6 @@ extern void FocusOnRoot ( void );
 extern void DeIconify ( TwmWindow *tmp_win );
 extern void Iconify ( TwmWindow *tmp_win, int def_x, int def_y );
 extern void SetMapStateProp ( TwmWindow *tmp_win, int state );
-extern Bool GetWMState ( Window w, int *statep, Window *iwp );
 extern void WarpToScreen ( int n, int inc );
 extern void BumpWindowColormap ( TwmWindow *tmp, int inc );
 extern void HideIconManager ( void );

@@ -56,7 +56,7 @@ from The Open Group.
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.7 2001/07/23 13:15:51 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.h,v 3.8 2001/07/25 15:05:16 dawes Exp $ */
 
 #ifndef _TWM_
 #define _TWM_
@@ -413,6 +413,9 @@ extern void RemoveDQuote ( char *str );
 extern Atom TwmAtoms[];
 
 extern Bool use_fontset;
+
+extern int ShapeEventBase;
+extern int ShapeErrorBase;
 
 #define _XA_MIT_PRIORITY_COLORS		TwmAtoms[0]
 #define _XA_WM_CHANGE_STATE		TwmAtoms[1]

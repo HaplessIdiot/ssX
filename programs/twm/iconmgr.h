@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  * */
-/* $XFree86: xc/programs/twm/iconmgr.h,v 1.3 1999/02/20 15:07:23 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/iconmgr.h,v 1.4 2001/01/17 23:45:06 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -71,6 +71,7 @@ typedef struct IconMgr
 
 extern int iconmgr_textx;
 extern WList *DownIconManager;
+extern int iconifybox_width, iconifybox_height;
 
 extern void ActiveIconManager ( WList *active );
 extern WList *AddIconManager ( TwmWindow *tmp_win );

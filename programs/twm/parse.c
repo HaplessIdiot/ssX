@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.c,v 1.8 2001/01/17 23:45:07 dawes Exp $ */
+/* $XFree86: xc/programs/twm/parse.c,v 1.9 2001/04/23 20:31:08 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -88,13 +88,10 @@ static int twmStringListInput ( void );
 static int ParseUsePPosition ( char *s );
 
 extern int yylineno;
-extern int mods;
 
 int ConstrainedMoveTime = 400;		/* milliseconds, event times */
 
 int (*twmInputFunc)(void);
-
-extern char *defTwmrc[];		/* default bindings */
 
 
 /***********************************************************************
