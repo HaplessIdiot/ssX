@@ -1,4 +1,7 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 938. Fix adding FP native mode for Radeon (Hui Yu@ATI, Kevin Martin).
+ 937. Initialize I2C when primary head has an invalid DDC type for the
+      Radeon driver (Hui Yu@ATI).
  936. Video fixes for TV and TVOverscan for the nsc driver (Sarma Kolluru).
  935. Fix to prevent ShadowComposite() to try to update the framebuffer
       when server is switched away (Egbert Eich).
@@ -16471,4 +16474,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2572 2003/02/21 15:06:17 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2573 2003/02/21 16:51:07 alanh Exp $
