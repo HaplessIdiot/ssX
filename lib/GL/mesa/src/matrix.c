@@ -860,7 +860,7 @@ do {									\
 	 mat = &ctx->TextureMatrix[ctx->Texture.CurrentTransformUnit];	\
 	 break;								\
       default:								\
-         gl_problem(ctx, "Bad matrix mode in "##where);			\
+         gl_problem(ctx, "Bad matrix mode in " where);			\
    }									\
 } while (0)
 

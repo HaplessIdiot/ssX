@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.20 1999/01/31 12:22:26 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.21 1999/02/28 11:20:11 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -172,8 +172,6 @@ static char ttydev[64], ptydev[64];
 #if (defined(SVR4) && !defined(sun)) || (defined(SYSV) && defined(i386))
 #define USE_OSM
 #include <signal.h>
-FILE *osm_pipe();
-static int child_pid;
 #endif
 
 #ifdef USE_PTY
@@ -181,6 +179,7 @@ static int get_pty(int *pty, int *tty, char *ttydev, char *ptydev);
 #endif
 #ifdef USE_OSM
 static FILE *osm_pipe(void);
+static int child_pid;
 #endif
 
 #ifdef Lynx
