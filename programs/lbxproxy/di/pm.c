@@ -24,7 +24,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.12tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -32,6 +32,7 @@ from The Open Group.
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <X11/Xmd.h>
 #include <X11/Xlib.h>
@@ -376,35 +377,102 @@ PMprocessMessages (iceConn, clientData, opcode, length,
 	 * the display name could be something like :0, local:0
 	 * or unix:0.
 	 *
-	 * Search for last colon to allow IPv6 numeric addresses.
 	 */
-	colon = strrchr (serverAddress, ':');
+
+ 	/* Search for last colon to allow IPv6 numeric addresses. */
+	colon = strrchr (serverAddress, ':'); 
+
 	if (colon)
 	{
 #if defined(IPv6) && defined(AF_INET6)
 	    struct addrinfo *ai, hints;
+	    Bool bracketed = False;
+	    char canonaddr[INET6_ADDRSTRLEN];
+	    int addrtype = AF_UNSPEC;
 #else
 	    struct hostent *hostent;
 #endif
-	    char *canonhost = NULL;
+	    const char *canonhost = NULL;
+	    char *protocol = NULL;
 	    char *hoststart = strchr(serverAddress, '/');
 
-	    if (hoststart == NULL)
+	    if (hoststart == NULL) {
 		hoststart = serverAddress;
-
-	    /* DECnet :: addresses */
-	    if (*(colon - 1) == ':') {
-		colon--;
+	    } else {
+		protocol = serverAddress;
+		*(hoststart++) = '\0';
 	    }
 
+	    /* Clear extra colon from DECnet :: addresses, but not IPv6 
+	       numeric addresses ending in ::, followed by :display */
+	    if (((colon > hoststart) && (*(colon - 1) == ':')) 
+#if defined(IPv6) && defined(AF_INET6)
+	      /* Make sure there are only two colons unless the protocol is
+		 specified as DECnet */
+	      && ( ((colon - 1) == hoststart) || (*(colon - 2) != ':') ||
+		( (protocol != NULL) && (strcmp(protocol, "dnet") == 0) ) )
+#endif
+	    ) {
+		colon--;
+	    }
+#if defined(IPv6) && defined(AF_INET6)
+	    /* hostname in IPv6 [numeric_addr]:0 form? */
+	    else if ( (hoststart[0] == '[') && 
+	      (hoststart < colon) && (*(colon-1) == ']') &&
+	      ( (protocol == NULL) || (strcmp(protocol, "tcp") == 0) 
+		|| (strcmp(protocol, "inet6") == 0) ) ) {
+		struct sockaddr_in6 sin6;
+
+		*(colon - 1) = '\0';
+		/* Verify address is valid IPv6 numeric form */
+		if (inet_pton(AF_INET6, hoststart + 1, &sin6) == 1) {
+		    /* It is. Use it as such. */
+		    hoststart++;
+		    bracketed = True;
+		} else {
+		    /* It's not, restore it just in case some other code 
+		       can use it. */
+		    *(colon - 1) = ']';
+		}		
+	    }
+#endif
+
 	    *colon = '\0';
+
 #if defined(IPv6) && defined(AF_INET6)
 	    (void)memset(&hints, 0, sizeof(hints));
 	    hints.ai_flags = AI_CANONNAME;
-	    if (getaddrinfo(hoststart, NULL, &hints, &ai) == 0)
+	    if (bracketed == True) {
+		hints.ai_flags |= AI_NUMERICHOST;
+		addrtype = AF_INET6;
+	    } else if (protocol != NULL) {
+		if (strcmp(protocol, "inet") == 0) {
+		    addrtype = AF_INET;
+		} else if (strcmp(protocol, "inet6") == 0) {
+		    addrtype = AF_INET6;
+		}
+	    } 
+	    hints.ai_family = addrtype;
+	    if (getaddrinfo(hoststart, NULL, &hints, &ai) == 0) {
 		canonhost = ai->ai_canonname;
-	    else 
+	    } else {
+		/* Couldn't get name - check if in numeric form, and if so,
+		   translate to canonical presentation form */
+		struct sockaddr_storage sa;
+
+		if ( ((addrtype = AF_UNSPEC) || (addrtype = AF_INET6)) &&
+		     (inet_pton(AF_INET6, hoststart, &sa) == 1) ) {
+		    canonhost = inet_ntop(AF_INET6, &sa, 
+		      canonaddr, sizeof(canonaddr));
+		}
+		else if ( ((addrtype = AF_UNSPEC) || (addrtype = AF_INET)) &&
+		     (inet_pton(AF_INET, hoststart, &sa) == 1) ) {
+		    canonhost = inet_ntop(AF_INET, &sa, 
+		      canonaddr, sizeof(canonaddr));
+		}
+
 		ai = NULL;
+	    }
 #else
 	    hostent = gethostbyname (hoststart);
 	    if (hostent && hostent->h_name)
@@ -412,12 +480,33 @@ PMprocessMessages (iceConn, clientData, opcode, length,
 #endif
 	    *colon = ':';
 
+#if defined(IPv6) && defined(AF_INET6)
+	    if (bracketed) {
+		*(colon - 1) = ']';
+	    }
+#endif
 
 	    if (canonhost) {
-		tmpAddress = (char *) malloc (strlen (canonhost) + 
+		const char *canonproto = "";
+#if defined(IPv6) && defined(AF_INET6)
+		if (ai && (ai->ai_family == AF_INET)) {
+		    canonproto = "inet/";
+		} else if (ai && (ai->ai_family == AF_INET6)) {
+		    canonproto = "inet6/";
+		} else 
+#endif
+		if (protocol != NULL) {
+		    canonproto = protocol;
+		}
+		tmpAddress = malloc (strlen(canonproto) + strlen (canonhost) +
 					      strlen (colon) + 1);
-		(void) sprintf (tmpAddress, "%s%s", canonhost, colon);
+		(void) sprintf (tmpAddress, "%s%s%s", canonproto,
+		  		canonhost, colon);
 	        serverAddress = tmpAddress;
+	    }
+
+	    if (protocol != NULL) {
+		*(protocol + strlen(protocol)) = '/';
 	    }
 #if defined(IPv6) && defined(AF_INET6)
 	    if (ai != NULL)

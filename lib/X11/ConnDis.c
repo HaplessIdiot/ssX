@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.25tsi Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.26tsi Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -89,7 +89,16 @@ static char *copystring (char *src, int len)
  *
  *     [protocol/] [hostname] : [:] displaynumber [.screennumber]
  *
- * The second colon indicates a DECnet style name.  No hostname is interpretted
+ * A string with exactly two colons seperating hostname from the display
+ * indicates a DECnet style name.  Colons in the hostname may occur if an
+ * IPv6 numeric address is used as the hostname.  An IPv6 numeric address
+ * may also end in a double colon, so three colons in a row indicates an
+ * IPv6 address ending in :: followed by :display.  To make it easier for
+ * people to read, an IPv6 numeric address hostname may be surrounded by
+ * [ ] in a similar fashion to the IPv6 numeric address URL syntax defined
+ * by IETF RFC 2732.
+ *
+ * If no hostname and no protocol is specified, the string is interpreted
  * as the most efficient local connection to a server on the same machine.  
  * This is usually:
  *
@@ -164,7 +173,8 @@ _X11TransConnectDisplay (
     /*
      * Step 1, find the hostname.  This is delimited by either one colon,
      * or two colons in the case of DECnet (DECnet Phase V allows a single
-     * colon in the hostname).
+     * colon in the hostname).  (See note above regarding IPv6 numeric 
+     * addresses with triple colons or [] brackets.)
      */
 
     lastp = p;
@@ -175,7 +185,11 @@ _X11TransConnectDisplay (
 
     if (!lastc) return NULL;		/* must have a colon */
 
-    if ((lastp != lastc) && (*(lastc - 1) == ':')) {
+    if ((lastp != lastc) && (*(lastc - 1) == ':') 
+#if defined(IPv6) && defined(AF_INET6)
+      && ( ((lastc - 1) == lastp) || (*(lastc - 2) != ':'))
+#endif
+	) {
 	/* DECnet display specified */
 
 #ifndef DNETCONN

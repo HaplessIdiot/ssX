@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.29tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.30tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -214,6 +214,7 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
     char	*mybuf, *tmpptr;
     char	*_protocol, *_host, *_port;
     char	hostnamebuf[256];
+    int		_host_len;
 
     PRMSG (3,"ParseAddress(%s)\n", address, 0, 0);
 
@@ -295,8 +296,10 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
     if ((mybuf != _host) && (*(mybuf - 1) == ':')
 #if defined(IPv6) && defined(AF_INET6)
       /* An IPv6 address can end in :: so three : in a row is assumed to be
-	 an IPv6 host and not a DECnet node with a : in it's name */
-      && !( (mybuf > (_host + 2)) && (*(mybuf - 2) == ':') )
+	 an IPv6 host and not a DECnet node with a : in it's name, unless
+         DECnet is specifically requested */
+      && ( ((mybuf - 1) == _host) || (*(mybuf - 2) != ':') ||
+	((_protocol != NULL) && (strcmp(_protocol, "dnet") == 0)) )
 #endif
 	)
     {
@@ -306,11 +309,33 @@ TRANS(ParseAddress) (char *address, char **protocol, char **host, char **port)
 
     *mybuf ++= '\0';
 
-    if (strlen(_host) == 0)
+    _host_len = strlen(_host);
+    if (_host_len == 0)
     {
 	TRANS(GetHostname) (hostnamebuf, sizeof (hostnamebuf));
 	_host = hostnamebuf;
     }
+#if defined(IPv6) && defined(AF_INET6)
+    /* hostname in IPv6 [numeric_addr]:0 form? */
+    else if ( (_host_len > 3) && 
+      ((strcmp(_protocol, "tcp") == 0) || (strcmp(_protocol, "inet6") == 0))
+      && (*_host == '[') && (*(_host + _host_len - 1) == ']') ) { 
+	struct sockaddr_in6 sin6;
+
+	*(_host + _host_len - 1) = '\0';
+
+	/* Verify address is valid IPv6 numeric form */
+	if (inet_pton(AF_INET6, _host + 1, &sin6) == 1) {
+	    /* It is. Use it as such. */
+	    _host++;
+	    _protocol = "inet6";
+	} else {
+	    /* It's not, restore it just in case some other code can use it. */
+	    *(_host + _host_len - 1) = ']';
+	}
+    }
+#endif
+
 
     /* Get the port */
 

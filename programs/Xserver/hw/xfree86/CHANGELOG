@@ -1,4 +1,17 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 318. More IPv6 changes from Alan Coopersmith as follows:
+      - Add support for IPv6 bracketed numeric addresses, similar to RFC 2732
+        syntax to a number of areas.
+      - Fix some issues with colon parsing and determining which addresses are
+        DECnet (two colons between hostname and display number) and which are
+        non-bracketed IPv6 numeric addresses ending in two colons, followed by
+        another colon and the display number (three colons in a row).
+      - Fix additional places Fabio forgot to change the string length when
+        switching "inetv6" to "inet6".
+      - Use MAXHOSTNAMELEN if it is defined for MAXHOSTNAME in xrdb.  (Perhaps
+        NI_MAXHOST should be used as well on platforms that support it.)
+      - Make #include <sys/socket.h> in Xtrans.h look like the other places
+        it's included in the tree, with checks for Lynx & Win32
  317. IPv6:  2003.07.11 update to X.Org's response to comment #13;  i.e.
       s/FamilyInternetV6/FamilyInternet6/g  (Marc La France).
  316. IPv6 build fixes for older Linux systems;  Many of these are derived from
@@ -17330,7 +17343,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2779 2003/07/18 15:39:49 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2780 2003/07/18 15:53:24 tsi Exp $
 
 
 

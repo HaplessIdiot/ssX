@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/choose.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/xsm/choose.c,v 1.6tsi Exp $ */
 
 #include "xsm.h"
 #include "saveutil.h"
@@ -144,7 +144,12 @@ GetSessionNames(int *count_ret, String **short_names_ret,
 		else
 		{
 		    char *host = ((char *) strchr (id, '/')) + 1;
-		    char *colon = (char *) strchr (host, ':');
+		    char *colon = (char *) strrchr (host, ':');
+
+		    /* backtrack over previous colon if there are 2 (DECnet),
+		       but not three (IPv6) */
+		    if ((*(colon - 1) == ':') && (*(colon - 2) != ':'))
+			colon--;
 
 		    *colon = '\0';
 
