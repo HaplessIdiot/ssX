@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.71 1999/01/26 10:40:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.72 1999/01/31 12:21:55 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -282,13 +282,11 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
-#if MGAuseI2C
 static const char *i2cSymbols[] = {
     "xf86CreateI2CBusRec",
     "xf86I2CBusInit",
     NULL
 };
-#endif
 
 #ifdef XFree86LOADER
 
@@ -332,11 +330,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
 			  xf8_32bppSymbols, ramdacSymbols,
-			  ddcSymbols, 
-#if MGAuseI2C
-			  i2cSymbols,
-#endif
-			  NULL);
+			  ddcSymbols, i2cSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
