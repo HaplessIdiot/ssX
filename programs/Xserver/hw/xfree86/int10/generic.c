@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.10 2000/07/13 21:31:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.11 2000/10/11 22:53:00 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -146,7 +146,7 @@ xf86InitInt10(int entityIndex)
 	    }
 	    break;
 	case BUS_ISA:  
-	    if (!int10_read_bios(screen,V_BIOS,vbiosMem)) {
+	    if (!int10_read_bios(screen,V_BIOS >> 4,vbiosMem)) {
 	        xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (5)\n");
 		goto error1;
 	    }
