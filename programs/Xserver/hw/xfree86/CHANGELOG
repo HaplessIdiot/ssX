@@ -1,4 +1,7 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 770. Add a UseRpath build switch to allow the use of -rpath to be enabled
+      or disabled from the host.def file.  Implemented for *BSD, Hurd, Linux.
+      The default settings remains as before (David Dawes).
  769. Add a root window property called XFree86_VT that holds the VT number
       that the XFree86 server is running on (Andrew Aitcheson, suggested by
       Samuel Thibault).
@@ -18578,7 +18581,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3112 2004/01/25 17:39:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3113 2004/01/27 01:31:38 dawes Exp $
 
 
 
