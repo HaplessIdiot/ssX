@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texmem.c,v 1.5 2002/12/17 00:32:56 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texmem.c,v 1.6 2003/09/28 20:15:25 alanh Exp $ */
 /**************************************************************************
 
 Copyright (C) Tungsten Graphics 2002.  All Rights Reserved.  
@@ -60,7 +60,7 @@ void
 r200DestroyTexObj( r200ContextPtr rmesa, r200TexObjPtr t )
 {
    if ( R200_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, "%s( %p, %p )\n", __FUNCTION__, t, t->base.tObj );
+      fprintf( stderr, "%s( %p, %p )\n", __FUNCTION__, (void *)t, (void *)t->base.tObj );
    }
 
    if ( rmesa != NULL ) {
@@ -289,7 +289,7 @@ static void uploadSubImage( r200ContextPtr rmesa, r200TexObjPtr t,
 
    if ( R200_DEBUG & DEBUG_TEXTURE ) {
       fprintf( stderr, "%s( %p, %p ) level/width/height/face = %d/%d/%d/%u\n", 
-	       __FUNCTION__, t, t->base.tObj, level, width, height, face );
+	       __FUNCTION__, (void *)t, (void *)t->base.tObj, level, width, height, face );
    }
 
    ASSERT(face < 6);
@@ -442,7 +442,7 @@ int r200UploadTexImages( r200ContextPtr rmesa, r200TexObjPtr t, GLuint face )
 
    if ( R200_DEBUG & (DEBUG_TEXTURE|DEBUG_IOCTL) ) {
       fprintf( stderr, "%s( %p, %p ) sz=%d lvls=%d-%d\n", __FUNCTION__,
-	       rmesa->glCtx, t->base.tObj, t->base.totalSize,
+	       (void *)rmesa->glCtx, (void *)t->base.tObj, t->base.totalSize,
 	       t->base.firstLevel, t->base.lastLevel );
    }
 

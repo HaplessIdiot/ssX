@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tris.c,v 1.4 2002/10/30 12:52:01 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tris.c,v 1.5 2003/09/28 20:15:38 alanh Exp $ */
 
 /* Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
@@ -216,7 +216,7 @@ static void tdfx_print_vertex( GLcontext *ctx, const tdfxVertex *v )
 {
    tdfxContextPtr imesa = TDFX_CONTEXT( ctx );
 
-   fprintf(stderr, "vertex at %p\n", v);
+   fprintf(stderr, "vertex at %p\n", (void *)v);
 
    if (imesa->vertexFormat == TDFX_LAYOUT_TINY) {
       fprintf(stderr, "x %f y %f z %f\n", v->v.x, v->v.y, v->v.z);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texstate.c,v 1.7 2003/09/28 20:15:30 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texstate.c,v 1.8 2003/12/02 13:02:39 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -760,7 +760,7 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
 	   || (texUnit->_Current != NULL) );
 
    if ( RADEON_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, "%s( %p, %d )\n", __FUNCTION__, ctx, unit );
+      fprintf( stderr, "%s( %p, %d )\n", __FUNCTION__, (void *)ctx, unit );
    }
 
    /* Set the texture environment state.  Isn't this nice and clean?

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texstate.c,v 1.4 2003/09/28 20:15:25 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texstate.c,v 1.5 2003/12/02 13:02:39 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -717,7 +717,7 @@ static GLboolean r200UpdateTextureEnv( GLcontext *ctx, int unit )
 	   || (texUnit->_Current != NULL) );
 
    if ( R200_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, "%s( %p, %d )\n", __FUNCTION__, ctx, unit );
+      fprintf( stderr, "%s( %p, %d )\n", __FUNCTION__, (void *)ctx, unit );
    }
 
    /* Set the texture environment state.  Isn't this nice and clean?

@@ -25,7 +25,7 @@
  *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.17 2003/09/28 20:15:16 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.18 2003/12/02 13:02:38 alanh Exp $ */
 
 #include "mtypes.h"
 #include "macros.h"
@@ -587,7 +587,7 @@ void mgaGetILoadBufferLocked( mgaContextPtr mmesa )
 {
    if (MGA_DEBUG&DEBUG_VERBOSE_IOCTL)
       fprintf(stderr, "mgaGetIloadBuffer (buffer now %p)\n",
-	   mmesa->iload_buffer);
+	   (void *)mmesa->iload_buffer);
 
    mmesa->iload_buffer = mga_get_buffer_ioctl( mmesa );
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.11 2003/09/28 20:15:20 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.12 2003/12/18 21:56:37 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -261,7 +261,7 @@ void r128CopyBuffer( const __DRIdrawablePrivate *dPriv )
    if ( R128_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "\n********************************\n" );
       fprintf( stderr, "\n%s( %p )\n\n",
-	       __FUNCTION__, rmesa->glCtx );
+	       __FUNCTION__, (void *)rmesa->glCtx );
       fflush( stderr );
    }
 
@@ -339,7 +339,7 @@ void r128PageFlip( const __DRIdrawablePrivate *dPriv )
 
    if ( R128_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "\n%s( %p ): page=%d\n\n",
-	       __FUNCTION__, rmesa->glCtx, rmesa->sarea->pfCurrentPage );
+	       __FUNCTION__, (void *)rmesa->glCtx, rmesa->sarea->pfCurrentPage );
    }
 
    FLUSH_BATCH( rmesa );
