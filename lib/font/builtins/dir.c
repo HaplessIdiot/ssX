@@ -22,7 +22,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/lib/font/builtins/dir.c,v 1.2 1999/11/19 14:59:11 hohndel Exp $ */
 
 #include "builtin.h"
 
@@ -37,8 +37,9 @@ BuiltinReadDirectory (directory, pdir)
     dir = FontFileMakeDir ("", builtin_dir_count);
     for (i = 0; i < builtin_dir_count; i++)
     {
-	if (!FontFileAddFontFile (dir, builtin_dir[i].font_name,
-				  builtin_dir[i].file_name))
+	if (!FontFileAddFontFile (dir,
+				  (char *) builtin_dir[i].font_name,
+				  (char *) builtin_dir[i].file_name))
 	{
 	    FontFileFreeDir (dir);
 	    return BadFontPath;
@@ -46,8 +47,9 @@ BuiltinReadDirectory (directory, pdir)
     }
     for (i = 0; i < builtin_alias_count; i++)
     {
-	if (!FontFileAddFontAlias (dir, builtin_alias[i].alias_name,
-				   builtin_alias[i].font_name))
+	if (!FontFileAddFontAlias (dir, 
+				   (char *) builtin_alias[i].alias_name,
+				   (char *) builtin_alias[i].font_name))
 	{
 	    FontFileFreeDir (dir);
 	    return BadFontPath;

@@ -1,4 +1,5 @@
 XFree86 3.9.16Za (xx December 1999)
+3412. Compress built-in fonts (#3522, Keith Packard).
 3411. Fix ct_driver for static server (#3521, Takaaki Nomura).
 3410. Fix the last Xaw user of XtOffset (#3520, Keith Packard).
 3409. FreeBSD-current compile fix (#3519, Eric Anholt).
@@ -9208,4 +9209,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.908 1999/12/30 02:12:51 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.909 1999/12/30 02:18:04 robin Exp $
