@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.24 2001/05/24 19:55:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.25 2001/11/28 21:53:01 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -482,9 +482,9 @@ Permedia2I2CGetBits(I2CBusPtr b, int *scl, int *sda)
 void
 Permedia2PreInit(ScrnInfoPtr pScrn)
 {
+#if defined(__alpha__)
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-#if defined(__alpha__)
     /*
      * On Alpha, we have to init secondary PM2 cards, since
      * int10 cannot be run on the OEMed cards with VGA disable
