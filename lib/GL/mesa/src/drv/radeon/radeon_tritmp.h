@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tritmp.h,v 1.1 2001/01/08 01:07:28 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -247,7 +247,8 @@ static void TAG(line)( GLcontext *ctx,
    GLfloat z[2];
 #endif
 #if (IND & RADEON_TWOSIDE_BIT)
-   int c[2];
+   GLuint c[2];
+   GLuint s[2];
 #endif
 
    v[0] = &verts[e0];
@@ -256,17 +257,24 @@ static void TAG(line)( GLcontext *ctx,
 #if (IND & RADEON_TWOSIDE_BIT)
    c[0] = v[0]->ui[4];
    c[1] = v[1]->ui[4];
+   s[0] = v[0]->ui[5];
+   s[1] = v[1]->ui[5];
 #endif
 
 #if (IND & RADEON_TWOSIDE_BIT)
    {
       GLubyte (*vbcolor)[4] = ctx->VB->ColorPtr->data;
+      GLubyte (*vbspec)[4] = ctx->VB->Specular;
       if ( IND & RADEON_FLAT_BIT ) {
 	 RADEON_COLOR( (char *)&v[0]->ui[4], vbcolor[pv] );
 	 v[1]->ui[4] = v[0]->ui[4];
+	 RADEON_COLOR3( (char *)&v[0]->ui[5], vbspec[pv] );
+	 v[1]->ui[5] = v[0]->ui[5];
       } else {
 	 RADEON_COLOR( (char *)&v[0]->ui[4], vbcolor[e0] );
 	 RADEON_COLOR( (char *)&v[1]->ui[4], vbcolor[e1] );
+	 RADEON_COLOR3( (char *)&v[0]->ui[5], vbspec[e0] );
+	 RADEON_COLOR3( (char *)&v[1]->ui[5], vbspec[e1] );
       }
    }
 #endif
@@ -289,6 +297,8 @@ static void TAG(line)( GLcontext *ctx,
 #if (IND & RADEON_TWOSIDE_BIT)
    v[0]->ui[4] = c[0];
    v[1]->ui[4] = c[1];
+   v[0]->ui[5] = s[0];
+   v[1]->ui[5] = s[1];
 #endif
 }
 
@@ -309,7 +319,10 @@ static void TAG(points)( GLcontext *ctx,
 
 	    if ( IND & RADEON_TWOSIDE_BIT ) {
 	       GLubyte (*vbcolor)[4] = VB->ColorPtr->data;
+               GLubyte (*vbspec)[4] = VB->Specular;
 	       RADEON_COLOR( (char *)&tmp0.v.color, vbcolor[i] );
+               if (vbspec)
+                  RADEON_COLOR3( (char *)&tmp0.v.specular, vbspec[i] );
 	    }
 	    if ( IND & RADEON_OFFSET_BIT ) {
 	       GLfloat offset = ctx->PointZoffset * rmesa->depth_scale;

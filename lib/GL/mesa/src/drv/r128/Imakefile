@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.11 2000/12/12 23:24:28 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.12 2001/02/16 01:26:11 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -28,6 +28,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines -DDRIVERTS
  DRI_INCLUDES = -I../../../../dri \
+		-I../../../../dri/drm \
 		-I../../../../glx \
 		-I../../../dri \
 		-I$(TOP)/include \
@@ -152,6 +153,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../stages.c \
 		../../state.c \
 		../../stencil.c \
+		../../texformat.c \
 		../../teximage.c \
 		../../texobj.c \
 		../../texstate.c \
@@ -225,6 +227,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../stages.o \
 		../../state.o \
 		../../stencil.o \
+		../../texformat.o \
 		../../teximage.o \
 		../../texobj.o \
 		../../texstate.o \

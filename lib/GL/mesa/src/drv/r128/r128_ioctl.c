@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.2 2000/12/12 17:17:07 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.3 2001/01/08 01:07:21 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -216,7 +216,7 @@ void r128FireEltsLocked( r128ContextPtr rmesa,
 	 }
 
 	 rmesa->sarea->dirty |= R128_UPLOAD_CLIPRECTS;
-	 drmR128FlushIndices( fd, prim, buffer->idx, start, end, discard );
+	 drmR128FlushIndices( fd, prim, buffer->idx, start, end, d );
       }
    }
 
@@ -460,6 +460,8 @@ static GLbitfield r128DDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
    __DRIdrawablePrivate *dPriv = rmesa->driDrawable;
    GLuint flags = 0;
+   GLuint color_mask = 0;
+   GLuint depth_mask = 0;
    GLint i;
    GLint ret;
 
@@ -478,22 +480,26 @@ static GLbitfield r128DDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 
    if ( mask & DD_FRONT_LEFT_BIT ) {
       flags |= DRM_R128_FRONT;
+      color_mask = rmesa->setup.plane_3d_mask_c;
       mask &= ~DD_FRONT_LEFT_BIT;
    }
 
    if ( mask & DD_BACK_LEFT_BIT ) {
       flags |= DRM_R128_BACK;
+      color_mask = rmesa->setup.plane_3d_mask_c;
       mask &= ~DD_BACK_LEFT_BIT;
    }
 
    if ( ( mask & DD_DEPTH_BIT ) && ctx->Depth.Mask ) {
       flags |= DRM_R128_DEPTH;
+      depth_mask |= rmesa->DepthMask;
       mask &= ~DD_DEPTH_BIT;
    }
 #if 0
    /* FIXME: Add stencil support */
    if ( mask & DD_STENCIL_BIT ) {
       flags |= DRM_R128_DEPTH;
+      depth_mask |= rmesa->StencilMask;
       mask &= ~DD_STENCIL_BIT;
    }
 #endif
@@ -506,10 +512,6 @@ static GLbitfield r128DDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    cy  = dPriv->y + dPriv->h - cy - ch;
 
    LOCK_HARDWARE( rmesa );
-
-   if ( rmesa->dirty & ~R128_UPLOAD_CLIPRECTS ) {
-      r128EmitHwStateLocked( rmesa );
-   }
 
    for ( i = 0 ; i < rmesa->numClipRects ; ) {
       GLint nr = MIN2( i + R128_NR_SAREA_CLIPRECTS , rmesa->numClipRects );
@@ -557,8 +559,8 @@ static GLbitfield r128DDClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       }
 
       ret = drmR128Clear( rmesa->driFd, flags,
-			  cx, cy, cw, ch,
-			  rmesa->ClearColor, rmesa->ClearDepth );
+			  rmesa->ClearColor, rmesa->ClearDepth,
+			  color_mask, depth_mask );
 
       if ( ret ) {
 	 UNLOCK_HARDWARE( rmesa );

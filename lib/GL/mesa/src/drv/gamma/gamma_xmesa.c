@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.10 2001/01/31 16:15:38 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.11 2001/02/07 13:26:17 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -59,9 +59,9 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
     {
        int major, minor, patch;
        if (XF86DRIQueryVersion(sPriv->display, &major, &minor, &patch)) {
-          if (major != 3 || minor != 1 || patch < 0) {
+          if (major != 4 || minor < 0) {
              char msg[1000];
-             sprintf(msg, "gamma DRI driver expected DRI version 3.1.x but got version %d.%d.%d", major, minor, patch);
+             sprintf(msg, "gamma DRI driver expected DRI version 4.0.x but got version %d.%d.%d", major, minor, patch);
              __driMesaMessage(msg);
              return GL_FALSE;
           }
@@ -70,8 +70,7 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 
     /* Check that the DDX driver version is compatible */
     if (sPriv->ddxMajor != 1 ||
-        sPriv->ddxMinor != 0 ||
-        sPriv->ddxPatch < 0) {
+        sPriv->ddxMinor < 0) {
         char msg[1000];
         sprintf(msg, "gamma DRI driver expected DDX driver version 1.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch);
         __driMesaMessage(msg);
@@ -80,8 +79,7 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 
     /* Check that the DRM driver version is compatible */
     if (sPriv->drmMajor != 1 ||
-        sPriv->drmMinor != 0 ||
-        sPriv->drmPatch < 0) {
+        sPriv->drmMinor < 0) {
         char msg[1000];
         sprintf(msg, "gamm DRI driver expected DRM driver version 1.0.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
         __driMesaMessage(msg);

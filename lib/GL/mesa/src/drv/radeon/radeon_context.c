@@ -58,7 +58,27 @@ int RADEON_DEBUG = (0
 /*		    | DEBUG_VERBOSE_DRI */
 /*		    | DEBUG_VERBOSE_IOCTL */
 /*		    | DEBUG_VERBOSE_2D */
+/*		    | DEBUG_VERBOSE_TEXTURE */
    );
+#endif
+
+#ifdef PER_CONTEXT_SAREA
+char *radeonGetPerContextSAREA(int fd,
+			       drmContext hHWContext,
+			       drmSize size)
+{
+   drmHandle handle;
+   drmAddress address;
+
+   if(drmGetContextPrivateMapping(fd, hHWContext, &handle) < 0) {
+      return NULL;
+   }
+   if(drmMap(fd, handle, size, &address) < 0) {
+      return NULL;
+   }
+
+   return address;
+}
 #endif
 
 /* Create the device specific context.
@@ -89,7 +109,18 @@ GLboolean radeonCreateContext( Display *dpy, GLvisual *glVisual,
    radeonScreen = rmesa->radeonScreen = (radeonScreenPtr)(sPriv->private);
 
    rmesa->sarea = (RADEONSAREAPrivPtr)((char *)sPriv->pSAREA +
-				       sizeof(XF86DRISAREARec));
+				       radeonScreen->sarea_priv_offset);
+
+#ifdef PER_CONTEXT_SAREA
+   rmesa->private_sarea = radeonGetPerContextSAREA(rmesa->driFd,
+					   rmesa->hHWContext,
+					   radeonScreen->private_sarea_size);
+   if(!rmesa->private_sarea) {
+      fprintf(stderr, "Can't map private SAREA\n");
+      FREE( rmesa );
+      return GL_FALSE;
+   }
+#endif
 
    rmesa->tmp_matrix = (GLfloat *) ALIGN_MALLOC( 16 * sizeof(GLfloat), 16 );
    if ( !rmesa->tmp_matrix ) {
@@ -133,15 +164,7 @@ GLboolean radeonCreateContext( Display *dpy, GLvisual *glVisual,
       ctx->Const.MaxTextureSize = (1 << 10);
    }
 
-   /* FIXME: Support all available texture units... */
    ctx->Const.MaxTextureUnits = 2;
-
-#if ENABLE_PERF_BOXES
-   if (getenv("LIBGL_PERFORMANCE_BOXES"))
-      rmesa->boxes = 1;
-   else
-      rmesa->boxes = 0;
-#endif
 
    ctx->DriverCtx = (void *)rmesa;
 
@@ -184,10 +207,19 @@ GLboolean radeonCreateContext( Display *dpy, GLvisual *glVisual,
 void radeonDestroyContext( radeonContextPtr rmesa )
 {
    if ( rmesa ) {
+      radeonScreenPtr radeonScreen = rmesa->radeonScreen;
       radeonTexObjPtr t, next_t;
       int i;
 
-      for ( i = 0 ; i < rmesa->radeonScreen->numTexHeaps ; i++ ) {
+#ifdef PER_CONTEXT_SAREA
+      if ( rmesa->private_sarea ) {
+	 drmUnmap( (drmAddress)rmesa->private_sarea,
+		   radeonScreen->private_sarea_size );
+	 rmesa->private_sarea = NULL;
+      }
+#endif
+
+      for ( i = 0 ; i < radeonScreen->numTexHeaps ; i++ ) {
 	 foreach_s ( t, next_t, &rmesa->TexObjList[i] ) {
 	    radeonDestroyTexObj( rmesa, t );
 	 }

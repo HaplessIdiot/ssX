@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.14 2001/01/08 01:07:18 martin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.15 2001/02/16 01:26:11 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -27,12 +27,19 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
 #if BuildXF86DRI
   DRI_DEFINES = GlxDefines -DDRIVERTS
- DRI_INCLUDES = -I../../../../dri -I../../../../glx \
+ DRI_INCLUDES = -I../../../../dri \
+		-I../../../../glx \
 		-I../../../dri \
-		-I$(TOP)/include -I$(TOP)/include/GL \
-		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri \
+		-I$(TOP)/include \
+		-I$(TOP)/include/GL \
+		-I$(XF86OSSRC) \
+		-I$(XF86COMSRC) \
+		-I$(SERVERSRC)/GL/dri \
 		-I$(XF86DRIVERSRC)/mga \
-		-I../../../include -I../.. -I../../X -I../common
+		-I../../../include \
+		-I../.. \
+		-I../../X \
+		-I../common
 #endif
 
 MESA_INCLUDES = -I. -I.. -I../../include \
@@ -50,12 +57,14 @@ MESA_INCLUDES = -I. -I.. -I../../include \
       DRMSRCS = ../../../../dri/drm/xf86drm.c \
 		../../../../dri/drm/xf86drmHash.c \
 		../../../../dri/drm/xf86drmRandom.c \
-		../../../../dri/drm/xf86drmSL.c
+		../../../../dri/drm/xf86drmSL.c \
+		../../../../dri/drm/xf86drmMga.c
 
       DRMOBJS = ../../../../dri/drm/xf86drm.o \
 		../../../../dri/drm/xf86drmHash.o \
 		../../../../dri/drm/xf86drmRandom.o \
-		../../../../dri/drm/xf86drmSL.o
+		../../../../dri/drm/xf86drmSL.o \
+		../../../../dri/drm/xf86drmMga.o
 
       MGASRCS = mgabuffers.c \
 		mgadd.c \
@@ -63,7 +72,6 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		mgafastpath.c \
 		mgaioctl.c \
 		mgapipeline.c \
-		mgapixel.c \
 		mgaspan.c \
 		mgastate.c \
 		mgatex.c \
@@ -79,7 +87,6 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		mgafastpath.o \
 		mgaioctl.o \
 		mgapipeline.o \
-		mgapixel.o \
 		mgaspan.o \
 		mgastate.o \
 		mgatex.o \
@@ -144,6 +151,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../stages.c \
 		../../state.c \
 		../../stencil.c \
+		../../texformat.c \
 		../../teximage.c \
 		../../texobj.c \
 		../../texstate.c \
@@ -217,6 +225,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../stages.o \
 		../../state.o \
 		../../stencil.o \
+		../../texformat.o \
 		../../teximage.o \
 		../../texobj.o \
 		../../texstate.o \
@@ -340,7 +349,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
          OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) \
 		$(ASMOBJS) $(COMMONOBJS) $(MGAOBJS) $(HIOBJS)
 
-REQUIREDLIBS += MathLibrary 
+REQUIREDLIBS += MathLibrary
 #if !GlxBuiltInMga
 REQUIREDLIBS += -L../../../.. -lGL -L../../../../../X11 -lX11
 #endif

@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.h,v 1.5 2000/09/24 13:51:08 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.h,v 1.6 2001/01/08 01:07:19 martin Exp $ */
 
 #ifndef MGATIS_INC
 #define MGATIS_INC
@@ -38,8 +38,7 @@ extern void mgaDDTrifuncInit( void );
 #define MGA_FLAT_BIT	    0x1
 #define MGA_OFFSET_BIT	    0x2	
 #define MGA_TWOSIDE_BIT	    0x4	
-#define MGA_NODRAW_BIT	    0x8
-#define MGA_FALLBACK_BIT    0x10
+#define MGA_FALLBACK_BIT    0x8
 
 static __inline void mga_draw_triangle( mgaContextPtr mmesa,
 				      mgaVertex *v0, 
@@ -90,40 +89,42 @@ static __inline void mga_draw_point( mgaContextPtr mmesa,
 {
    GLuint vertsize = mmesa->vertsize;
    GLuint *wv = mgaAllocVertexDwords( mmesa, 6*vertsize);
-   int j;
+   GLuint j;
+   const GLfloat x = tmp->v.x + 0.125;
+   const GLfloat y = tmp->v.y - 0.125;
 
-   *(float *)&wv[0] = tmp->v.x - sz;
-   *(float *)&wv[1] = tmp->v.y - sz;
+   *(float *)&wv[0] = x - sz;
+   *(float *)&wv[1] = y - sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->v.x + sz;
-   *(float *)&wv[1] = tmp->v.y - sz;
+   *(float *)&wv[0] = x + sz;
+   *(float *)&wv[1] = y - sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->v.x + sz;
-   *(float *)&wv[1] = tmp->v.y + sz;
+   *(float *)&wv[0] = x + sz;
+   *(float *)&wv[1] = y + sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->v.x + sz;
-   *(float *)&wv[1] = tmp->v.y + sz;
+   *(float *)&wv[0] = x + sz;
+   *(float *)&wv[1] = y + sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->v.x - sz;
-   *(float *)&wv[1] = tmp->v.y + sz;
+   *(float *)&wv[0] = x - sz;
+   *(float *)&wv[1] = y + sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->v.x - sz;
-   *(float *)&wv[1] = tmp->v.y - sz;
+   *(float *)&wv[0] = x - sz;
+   *(float *)&wv[1] = y - sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
 }
@@ -134,55 +135,79 @@ static __inline void mga_draw_line( mgaContextPtr mmesa,
 				  const mgaVertex *tmp1,
 				  float width )
 {
-   GLuint vertsize = mmesa->vertsize;
+   const GLuint vertsize = mmesa->vertsize;
    GLuint *wv = mgaAllocVertexDwords( mmesa, 6 * vertsize );
-   float dx, dy, ix, iy;
-   int j;
+   GLuint j;
+   GLfloat x0 = tmp0->v.x;
+   GLfloat y0 = tmp0->v.y;
+   GLfloat x1 = tmp1->v.x;
+   GLfloat y1 = tmp1->v.y;
+   GLfloat dx, dy, ix, iy;
+   GLfloat hw;
 
+   hw = 0.5F * width;
+   if (hw > 0.1F && hw < 0.5F) {
+      hw = 0.5F;
+   }
+
+   /* adjust vertices depending on line direction */
    dx = tmp0->v.x - tmp1->v.x;
    dy = tmp0->v.y - tmp1->v.y;
-
-   ix = width * .5; iy = 0;
-  
-   if ((ix<.5) && (ix>0.1)) ix = .5; /* I want to see lines with width
-                                        0.5 also */
-  
    if (dx * dx > dy * dy) {
-      iy = ix; ix = 0;
+      /* X-major line */
+      ix = 0.0F;
+      iy = hw;
+      if (x1 < x0) {
+         x0 += 0.5F;
+         x1 += 0.5F;
+      }
+      y0 -= 0.5F;
+      y1 -= 0.5F;
    }
-  
-   *(float *)&wv[0] = tmp0->v.x - ix;
-   *(float *)&wv[1] = tmp0->v.y - iy;
+   else {
+      /* Y-major line */
+      ix = hw;
+      iy = 0.0F;
+      if (y1 > y0) {
+         y0 -= 0.5F;
+         y1 -= 0.5F;
+      }
+      x0 += 0.5F;
+      x1 += 0.5F;
+   }
+
+   *(float *)&wv[0] = x0 - ix;
+   *(float *)&wv[1] = y0 - iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp0->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp1->v.x + ix;
-   *(float *)&wv[1] = tmp1->v.y + iy;
+   *(float *)&wv[0] = x1 + ix;
+   *(float *)&wv[1] = y1 + iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp1->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp0->v.x + ix;
-   *(float *)&wv[1] = tmp0->v.y + iy;
+   *(float *)&wv[0] = x0 + ix;
+   *(float *)&wv[1] = y0 + iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp0->ui[j];
    wv += vertsize;
 	 
-   *(float *)&wv[0] = tmp0->v.x - ix;
-   *(float *)&wv[1] = tmp0->v.y - iy;
+   *(float *)&wv[0] = x0 - ix;
+   *(float *)&wv[1] = y0 - iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp0->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp1->v.x - ix;
-   *(float *)&wv[1] = tmp1->v.y - iy;
+   *(float *)&wv[0] = x1 - ix;
+   *(float *)&wv[1] = y1 - iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp1->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp1->v.x + ix;
-   *(float *)&wv[1] = tmp1->v.y + iy;
+   *(float *)&wv[0] = x1 + ix;
+   *(float *)&wv[1] = y1 + iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp1->ui[j];
    wv += vertsize;

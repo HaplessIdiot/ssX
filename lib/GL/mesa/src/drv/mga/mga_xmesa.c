@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.9 2000/12/21 13:58:55 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.10 2001/01/08 01:07:18 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -67,10 +67,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef MGA_DEBUG
 int MGA_DEBUG = (0
 /*  		  | DEBUG_ALWAYS_SYNC */
-/*  		  | DEBUG_VERBOSE_MSG */
+  		  | DEBUG_VERBOSE_MSG
 /*   		  | DEBUG_VERBOSE_LRU */
-/*  		  | DEBUG_VERBOSE_DRI */
-/*  		  | DEBUG_VERBOSE_IOCTL */
+  		  | DEBUG_VERBOSE_DRI
+  		  | DEBUG_VERBOSE_IOCTL
 /*   		  | DEBUG_VERBOSE_2D */
 		  );
 #endif
@@ -85,7 +85,7 @@ static mgaContextPtr      mgaCtx = 0;
  * XMesaResetDriver
  * XMesaCreateVisual
  * XMesaDestroyVisual
- * XMesaCreateContext 
+ * XMesaCreateContext
  * XMesaDestroyContext
  * XMesaCreateWindowBuffer
  * XMesaCreatePixmapBuffer
@@ -107,9 +107,9 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
    {
       int major, minor, patch;
       if (XF86DRIQueryVersion(sPriv->display, &major, &minor, &patch)) {
-         if (major != 3 || minor != 1 || patch < 0) {
+         if (major != 4 || minor < 0) {
             char msg[1000];
-            sprintf(msg, "MGA DRI driver expected DRI version 3.1.x but got version %d.%d.%d", major, minor, patch);
+            sprintf(msg, "MGA DRI driver expected DRI version 4.0.x but got version %d.%d.%d", major, minor, patch);
             __driMesaMessage(msg);
             return GL_FALSE;
          }
@@ -118,8 +118,7 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 
    /* Check that the DDX driver version is compatible */
    if (sPriv->ddxMajor != 1 ||
-       sPriv->ddxMinor != 0 ||
-       sPriv->ddxPatch < 0) {
+       sPriv->ddxMinor < 0) {
       char msg[1000];
       sprintf(msg, "MGA DRI driver expected DDX driver version 1.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch);
       __driMesaMessage(msg);
@@ -127,11 +126,10 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
    }
 
    /* Check that the DRM driver version is compatible */
-   if (sPriv->drmMajor != 2 ||
-       sPriv->drmMinor != 1 ||
-       sPriv->drmPatch < 0) {
+   if (sPriv->drmMajor != 3 ||
+       sPriv->drmMinor < 0) {
       char msg[1000];
-      sprintf(msg, "MGA DRI driver expected DRM driver version 2.{0,1}.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
+      sprintf(msg, "MGA DRI driver expected DRM driver version 3.0.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
       __driMesaMessage(msg);
       return GL_FALSE;
    }
@@ -155,33 +153,67 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
       return GL_FALSE;
    }
 
-   
+
    mgaScreen->chipset = serverInfo->chipset;
    mgaScreen->width = serverInfo->width;
    mgaScreen->height = serverInfo->height;
    mgaScreen->mem = serverInfo->mem;
    mgaScreen->cpp = serverInfo->cpp;
+
+   mgaScreen->agpMode = serverInfo->agpMode;
+
    mgaScreen->frontPitch = serverInfo->frontPitch;
    mgaScreen->frontOffset = serverInfo->frontOffset;
-   mgaScreen->backOffset = serverInfo->backOffset; 
+   mgaScreen->backOffset = serverInfo->backOffset;
    mgaScreen->backPitch  =  serverInfo->backPitch;
    mgaScreen->depthOffset = serverInfo->depthOffset;
    mgaScreen->depthPitch  =  serverInfo->depthPitch;
 
+   mgaScreen->mmio.handle = serverInfo->registers.handle;
+   mgaScreen->mmio.size = serverInfo->registers.size;
+   if ( drmMap( sPriv->fd,
+		mgaScreen->mmio.handle, mgaScreen->mmio.size,
+		&mgaScreen->mmio.map ) < 0 ) {
+      FREE( mgaScreen );
+      sPriv->private = NULL;
+      __driMesaMessage( "Couldn't map MMIO registers" );
+      return GL_FALSE;
+   }
 
+#if 0
+   mgaScreen->status.handle = serverInfo->status.handle;
+   mgaScreen->status.size = serverInfo->status.size;
+   if ( drmMap( sPriv->fd,
+		mgaScreen->status.handle, mgaScreen->status.size,
+		&mgaScreen->status.map ) < 0 ) {
+      drmUnmap( mgaScreen->mmio.map, mgaScreen->mmio.size );
+      FREE( mgaScreen );
+      sPriv->private = NULL;
+      __driMesaMessage( "Couldn't map status page" );
+      return GL_FALSE;
+   }
+#endif
+
+   mgaScreen->primary.handle = serverInfo->primary.handle;
+   mgaScreen->primary.size = serverInfo->primary.size;
+   mgaScreen->buffers.handle = serverInfo->buffers.handle;
+   mgaScreen->buffers.size = serverInfo->buffers.size;
+
+#if 0
    mgaScreen->agp.handle = serverInfo->agp;
    mgaScreen->agp.size = serverInfo->agpSize;
 
-   if (drmMap(sPriv->fd, 
-	      mgaScreen->agp.handle, 
-	      mgaScreen->agp.size, 
-	      (drmAddress *)&mgaScreen->agp.map) != 0) 
+   if (drmMap(sPriv->fd,
+	      mgaScreen->agp.handle,
+	      mgaScreen->agp.size,
+	      (drmAddress *)&mgaScreen->agp.map) != 0)
    {
       Xfree(mgaScreen);
       sPriv->private = NULL;
       __driMesaMessage("Couldn't map agp region");
       return GL_FALSE;
    }
+#endif
 
    mgaScreen->textureOffset[MGA_CARD_HEAP] = serverInfo->textureOffset;
    mgaScreen->textureOffset[MGA_AGP_HEAP] = (serverInfo->agpTextureOffset |
@@ -190,23 +222,24 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
    mgaScreen->textureSize[MGA_CARD_HEAP] = serverInfo->textureSize;
    mgaScreen->textureSize[MGA_AGP_HEAP] = serverInfo->agpTextureSize;
 
-   mgaScreen->logTextureGranularity[MGA_CARD_HEAP] = 
+   mgaScreen->logTextureGranularity[MGA_CARD_HEAP] =
       serverInfo->logTextureGranularity;
-   mgaScreen->logTextureGranularity[MGA_AGP_HEAP] = 
+   mgaScreen->logTextureGranularity[MGA_AGP_HEAP] =
       serverInfo->logAgpTextureGranularity;
 
-   mgaScreen->texVirtual[MGA_CARD_HEAP] = (char *)(mgaScreen->sPriv->pFB + 
+   mgaScreen->texVirtual[MGA_CARD_HEAP] = (char *)(mgaScreen->sPriv->pFB +
 					   serverInfo->textureOffset);
-   mgaScreen->texVirtual[MGA_AGP_HEAP] = (mgaScreen->agp.map + 
+#if 0
+   mgaScreen->texVirtual[MGA_AGP_HEAP] = (mgaScreen->agp.map +
 					  serverInfo->agpTextureOffset);
+#endif
 
    mgaScreen->mAccess = serverInfo->mAccess;
 
-
    /* For calculating setupdma addresses.
     */
-   mgaScreen->dmaOffset = serverInfo->agpBufferOffset;   
-   
+   mgaScreen->dmaOffset = serverInfo->buffers.handle;
+
    mgaScreen->bufs = drmMapBufs(sPriv->fd);
    if (!mgaScreen->bufs) {
       /*drmUnmap(mgaScreen->agp_tex.map, mgaScreen->agp_tex.size);*/
@@ -215,6 +248,7 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
       __driMesaMessage("Couldn't map dma buffers");
       return GL_FALSE;
    }
+   mgaScreen->sarea_priv_offset = serverInfo->sarea_priv_offset;
 
    mgaDDFastPathInit();
    mgaDDEltPathInit();
@@ -277,8 +311,8 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
    mgaContextPtr mmesa;
    __DRIscreenPrivate *sPriv = driContextPriv->driScreenPriv;
    mgaScreenPrivate *mgaScreen = (mgaScreenPrivate *)sPriv->private;
-   drm_mga_sarea_t *saPriv=(drm_mga_sarea_t*)(((char*)sPriv->pSAREA)+
-					      sizeof(XF86DRISAREARec));
+   MGASAREAPrivPtr saPriv = (MGASAREAPrivPtr)(((char*)sPriv->pSAREA)+
+					      mgaScreen->sarea_priv_offset);
 
    if (MGA_DEBUG&DEBUG_VERBOSE_DRI)
       fprintf(stderr, "XMesaCreateContext\n");
@@ -313,10 +347,10 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
     * that both texture units can bind a maximal texture and have them
     * on the card at once.
     */
-   { 
+   {
       int nr = 2;
 
-      if (mgaScreen->chipset == MGA_CARD_TYPE_G200) 
+      if (mgaScreen->chipset == MGA_CARD_TYPE_G200)
 	 nr = 1;
 
       if (mgaScreen->textureSize[0] < nr*1024*1024) {
@@ -328,44 +362,49 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
       } else {
 	 ctx->Const.MaxTextureLevels = 11;
 	 ctx->Const.MaxTextureSize = 1<<10;
-      }      
+      }
    }
 
    mmesa->hw_stencil = mesaVis->StencilBits && mesaVis->DepthBits == 24;
 
    switch (mesaVis->DepthBits) {
-   case 16: 
-      mmesa->depth_scale = 1.0/(GLdouble)0xffff; 
+   case 16:
+      mmesa->depth_scale = 1.0/(GLdouble)0xffff;
       mmesa->depth_clear_mask = ~0;
       mmesa->ClearDepth = 0xffff;
       break;
-   case 24: 
-      mmesa->depth_scale = 1.0/(GLdouble)0xffffff; 
+   case 24:
+      mmesa->depth_scale = 1.0/(GLdouble)0xffffff;
       if (mmesa->hw_stencil) {
 	 mmesa->depth_clear_mask = 0xffffff00;
 	 mmesa->stencil_clear_mask = 0x000000ff;
       } else
 	 mmesa->depth_clear_mask = ~0;
       mmesa->ClearDepth = 0xffffff00;
-      break; 
-   case 32: 
-      mmesa->depth_scale = 1.0/(GLdouble)0xffffffff; 
+      break;
+   case 32:
+      mmesa->depth_scale = 1.0/(GLdouble)0xffffffff;
       mmesa->depth_clear_mask = ~0;
       mmesa->ClearDepth = 0xffffffff;
       break;
    };
 
-
+   mmesa->canDoStipple = GL_FALSE;
    mmesa->renderindex = -1;		/* impossible value */
    mmesa->new_state = ~0;
    mmesa->dirty = ~0;
-   mmesa->warp_pipe = 0;   
+   mmesa->warp_pipe = 0;
    mmesa->CurrentTexObj[0] = 0;
    mmesa->CurrentTexObj[1] = 0;
-   
+
    mmesa->texAge[0] = 0;
    mmesa->texAge[1] = 0;
-   
+
+#if 0
+   mmesa->status = (GLuint *)mmesa->mgaScreen->status.map;
+#endif
+   mmesa->primary_offset = mmesa->mgaScreen->primary.handle;
+
    ctx->DriverCtx = (void *) mmesa;
    mmesa->glCtx = ctx;
 
@@ -376,8 +415,7 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
    mgaDDInitSpanFuncs( ctx );
    mgaDDInitDriverFuncs( ctx );
    mgaDDInitIoctlFuncs( ctx );
-   mgaDDInitPixelFuncs( ctx );
-
+/*   mgaDDInitPixelFuncs( ctx );*/
 
    ctx->Driver.TriangleCaps = (DD_TRI_CULL|
 			       DD_TRI_LIGHT_TWOSIDE|
@@ -388,7 +426,7 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
     */
    ctx->TriangleCaps |= DD_CLIP_FOG_COORD;
 
-   if (ctx->VB) 
+   if (ctx->VB)
       mgaDDRegisterVB( ctx->VB );
 
    if (ctx->NrPipelineStages)
@@ -423,14 +461,16 @@ GLframebuffer *XMesaCreateWindowBuffer( Display *dpy,
                                         __DRIdrawablePrivate *driDrawPriv,
                                         GLvisual *mesaVis)
 {
+   GLboolean swStencil = mesaVis->StencilBits > 0 && mesaVis->DepthBits != 24;
+
    if (MGA_DEBUG&DEBUG_VERBOSE_DRI)
       fprintf(stderr, "XMesaCreateWindowBuffer\n");
 
    return gl_create_framebuffer(mesaVis,
                                 GL_FALSE,  /* software depth buffer? */
-                                mesaVis->StencilBits > 0,
+                                swStencil,
                                 mesaVis->AccumRedBits > 0,
-                                mesaVis->AlphaBits > 0
+                                GL_FALSE   /* software alpha buffer/ */
                                 );
 }
 
@@ -459,7 +499,7 @@ GLframebuffer *XMesaCreatePixmapBuffer( Display *dpy,
 void XMesaSwapBuffers(__DRIdrawablePrivate *driDrawPriv)
 {
    /* XXX should do swap according to the buffer, not the context! */
-   mgaContextPtr mmesa = mgaCtx;    
+   mgaContextPtr mmesa = mgaCtx;
    FLUSH_VB( mmesa->glCtx, "swap buffers" );
    mgaSwapBuffers(mmesa);
 }
@@ -489,7 +529,7 @@ XMesaCloseFullScreen(__DRIcontextPrivate *driContextPriv)
 
 /* This looks buggy to me - the 'b' variable isn't used anywhere...
  * Hmm - It seems that the drawable is already hooked in to
- * driDrawablePriv.  
+ * driDrawablePriv.
  *
  * But why are we doing context initialization here???
  */
@@ -504,8 +544,8 @@ GLboolean XMesaMakeCurrent(__DRIcontextPrivate *driContextPriv,
 
       if (mgaCtx->driDrawable != driDrawPriv) {
 	 mgaCtx->driDrawable = driDrawPriv;
-	 mgaCtx->dirty = ~0; 
-	 mgaCtx->dirty_cliprects = (MGA_FRONT|MGA_BACK); 
+	 mgaCtx->dirty = ~0;
+	 mgaCtx->dirty_cliprects = (MGA_FRONT|MGA_BACK);
       }
 
       if (!mgaCtx->glCtx->Viewport.Width)
@@ -521,28 +561,28 @@ GLboolean XMesaMakeCurrent(__DRIcontextPrivate *driContextPriv,
 }
 
 
-void mgaGetLock( mgaContextPtr mmesa, GLuint flags ) 
+void mgaGetLock( mgaContextPtr mmesa, GLuint flags )
 {
    __DRIdrawablePrivate *dPriv = mmesa->driDrawable;
-   drm_mga_sarea_t *sarea = mmesa->sarea;
+   MGASAREAPrivPtr sarea = mmesa->sarea;
    int me = mmesa->hHWContext;
    int i;
 
-   drmGetLock(mmesa->driFd, mmesa->hHWContext, flags);	
+   drmGetLock(mmesa->driFd, mmesa->hHWContext, flags);
 
-   if (*(dPriv->pStamp) != mmesa->lastStamp) { 
+   if (*(dPriv->pStamp) != mmesa->lastStamp) {
       mmesa->lastStamp = *(dPriv->pStamp);
       mmesa->setupdone = 0;
       mmesa->dirty_cliprects = (MGA_FRONT|MGA_BACK);
       mgaUpdateRects( mmesa, (MGA_FRONT|MGA_BACK) );
    }
 
-   mmesa->dirty |= MGA_UPLOAD_CTX | MGA_UPLOAD_CLIPRECTS;
+   mmesa->dirty |= MGA_UPLOAD_CONTEXT | MGA_UPLOAD_CLIPRECTS;
 
-    mmesa->sarea->dirty |= MGA_UPLOAD_CTX; 
+    mmesa->sarea->dirty |= MGA_UPLOAD_CONTEXT;
 
    if (sarea->ctxOwner != me) {
-      mmesa->dirty |= (MGA_UPLOAD_CTX | MGA_UPLOAD_TEX0 | 
+      mmesa->dirty |= (MGA_UPLOAD_CONTEXT | MGA_UPLOAD_TEX0 |
 		       MGA_UPLOAD_TEX1 | MGA_UPLOAD_PIPE);
       sarea->ctxOwner=me;
    }

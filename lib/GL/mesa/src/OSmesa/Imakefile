@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.5 2000/11/13 23:31:25 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.6 2000/12/12 23:24:27 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -75,6 +75,7 @@ MESA_INCLUDES = -I. -I.. -I../../include -I../../../../../include
 		../stages.c \
 		../state.c \
 		../stencil.c \
+		../texformat.c \
 		../teximage.c \
 		../texobj.c \
 		../texstate.c \
@@ -149,6 +150,7 @@ MESA_INCLUDES = -I. -I.. -I../../include -I../../../../../include
 		../stages.o \
 		../state.o \
 		../stencil.o \
+		../texformat.o \
 		../teximage.o \
 		../texobj.o \
 		../texstate.o \

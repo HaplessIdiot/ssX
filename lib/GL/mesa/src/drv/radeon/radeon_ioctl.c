@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.1 2001/01/08 01:07:27 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -271,7 +271,7 @@ void radeonFireEltsLocked( radeonContextPtr rmesa,
 	 }
 
 	 rmesa->sarea->dirty |= RADEON_UPLOAD_CLIPRECTS;
-	 drmRadeonFlushIndices( fd, prim, buffer->idx, start, end, discard );
+	 drmRadeonFlushIndices( fd, prim, buffer->idx, start, end, d );
       }
    }
 
@@ -321,6 +321,7 @@ void radeonFireBlitLocked( radeonContextPtr rmesa, drmBufPtr buffer,
 			   GLint offset, GLint pitch, GLint format,
 			   GLint x, GLint y, GLint width, GLint height )
 {
+#if 0
    GLint ret;
 
    ret = drmRadeonTextureBlit( rmesa->driFd, buffer->idx,
@@ -332,6 +333,7 @@ void radeonFireBlitLocked( radeonContextPtr rmesa, drmBufPtr buffer,
       fprintf( stderr, "drmRadeonTextureBlit: return = %d\n", ret );
       exit( 1 );
    }
+#endif
 }
 
 
@@ -431,7 +433,7 @@ void radeonSwapBuffers( radeonContextPtr rmesa )
       GLint n = 0;
 
       for ( ; i < nr ; i++ ) {
-	 *b++ = *(XF86DRIClipRectRec *)&box[i];
+	 *b++ = *(XF86DRIClipRectPtr)&box[i];
 	 n++;
       }
       rmesa->sarea->nbox = n;
@@ -539,6 +541,8 @@ static GLbitfield radeonDDClear( GLcontext *ctx, GLbitfield mask,
 #endif
    CARD32 clear;
    GLuint flags = 0;
+   GLuint color_mask = 0;
+   GLuint depth_mask = 0;
    GLint ret, i;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
@@ -557,17 +561,20 @@ static GLbitfield radeonDDClear( GLcontext *ctx, GLbitfield mask,
 
    if ( mask & DD_FRONT_LEFT_BIT ) {
       flags |= DRM_RADEON_FRONT;
+      color_mask = rmesa->setup.rb3d_planemask;
       mask &= ~DD_FRONT_LEFT_BIT;
    }
 
    if ( mask & DD_BACK_LEFT_BIT ) {
       flags |= DRM_RADEON_BACK;
+      color_mask = rmesa->setup.rb3d_planemask;
       mask &= ~DD_BACK_LEFT_BIT;
    }
 
    if ( mask & DD_DEPTH_BIT ) {
       if ( ctx->Depth.Mask ) {
 	 flags |= DRM_RADEON_DEPTH;
+	 depth_mask |= rmesa->DepthMask;
       }
       mask &= ~DD_DEPTH_BIT;
    }
@@ -575,6 +582,7 @@ static GLbitfield radeonDDClear( GLcontext *ctx, GLbitfield mask,
    /* FIXME: Add stencil support */
    if ( mask & DD_STENCIL_BIT ) {
       flags |= DRM_RADEON_DEPTH;
+      depth_mask |= rmesa->StencilMask;
       mask &= ~DD_STENCIL_BIT;
    }
 #endif
@@ -610,10 +618,6 @@ static GLbitfield radeonDDClear( GLcontext *ctx, GLbitfield mask,
    }
 #endif
 
-   if ( rmesa->dirty & ~RADEON_UPLOAD_CLIPRECTS ) {
-      radeonEmitHwStateLocked( rmesa );
-   }
-
    for ( i = 0 ; i < rmesa->numClipRects ; ) {
       GLint nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS, rmesa->numClipRects );
       XF86DRIClipRectPtr box = rmesa->pClipRects;
@@ -643,7 +647,7 @@ static GLbitfield radeonDDClear( GLcontext *ctx, GLbitfield mask,
 	 }
       } else {
 	 for ( ; i < nr ; i++ ) {
-	    *b++ = *(XF86DRIClipRectRec *)&box[i];
+	    *b++ = *(XF86DRIClipRectPtr)&box[i];
 	    n++;
 	 }
       }
@@ -660,8 +664,9 @@ static GLbitfield radeonDDClear( GLcontext *ctx, GLbitfield mask,
       }
 
       ret = drmRadeonClear( rmesa->driFd, flags,
-			    cx, cy, cw, ch,
-			    rmesa->ClearColor, rmesa->ClearDepth );
+			    rmesa->ClearColor, rmesa->ClearDepth,
+			    color_mask, depth_mask,
+			    rmesa->sarea->boxes, rmesa->sarea->nbox );
 
       if ( ret ) {
 	 UNLOCK_HARDWARE( rmesa );

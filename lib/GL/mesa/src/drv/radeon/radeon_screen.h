@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.h,v 1.1 2001/01/08 01:07:27 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -68,6 +68,10 @@ typedef struct {
    int texSize[RADEON_NR_TEX_HEAPS];
    int logTexGranularity[RADEON_NR_TEX_HEAPS];
 
+#ifdef PER_CONTEXT_SAREA
+   drmSize private_sarea_size;
+#endif
+
    radeonRegionRec mmio;
    radeonRegionRec status;
    radeonRegionRec agpTextures;
@@ -77,7 +81,7 @@ typedef struct {
    __volatile__ CARD32 *scratch;
 
    __DRIscreenPrivate *driScreen;
-
+   unsigned int sarea_priv_offset;
 } radeonScreenRec, *radeonScreenPtr;
 
 extern radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv );

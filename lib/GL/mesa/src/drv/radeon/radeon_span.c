@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_span.c,v 1.1 2001/01/08 01:07:28 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_span.c,v 1.2 2001/01/16 05:10:58 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -57,7 +57,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 			     rmesa->readOffset +			\
 			     (dPriv->x * radeonScreen->cpp) +		\
 			     (dPriv->y * pitch));			\
-   GLushort p;								\
+   GLuint p;								\
    (void) read_buf; (void) buf; (void) p
 
 #define LOCAL_DEPTH_VARS						\
@@ -80,13 +80,13 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 #define CLIPSPAN( _x, _y, _n, _x1, _n1, _i )				\
-   if ((_y < miny) || (_y >= maxy)) {					\
+   if ( _y < miny || _y >= maxy ) {					\
       _n1 = 0, _x1 = x;							\
    } else {								\
       _n1 = _n;								\
       _x1 = _x;								\
-      if (_x1 < minx) _i += (minx - _x1), _x1 = minx;			\
-      if (_x1 + _n1 >= maxx) n1 -= (_x1 + n1 - maxx);			\
+      if ( _x1 < minx ) _i += (minx-_x1), n1 -= (minx-_x1), _x1 = minx; \
+      if ( _x1 + _n1 >= maxx ) n1 -= (_x1 + n1 - maxx);		        \
    }
 
 #define Y_FLIP( _y )		(height - _y - 1)
@@ -229,10 +229,10 @@ static GLuint radeon_mba_z32( radeonContextPtr rmesa,
 /* 16-bit depth buffer functions
  */
 #define WRITE_DEPTH( _x, _y, d )					\
-   *(GLushort *)(buf + radeon_mba_z16( rmesa, _x+xo, _y+yo )) = d;
+   *(GLushort *)(buf + radeon_mba_z16( rmesa, _x + xo, _y + yo )) = d;
 
 #define READ_DEPTH( d, _x, _y )						\
-   d = *(GLushort *)(buf + radeon_mba_z16( rmesa, _x+xo, _y+yo ));
+   d = *(GLushort *)(buf + radeon_mba_z16( rmesa, _x + xo, _y + yo ));
 
 #define TAG(x) radeon##x##_16
 #include "depthtmp.h"
@@ -241,7 +241,7 @@ static GLuint radeon_mba_z32( radeonContextPtr rmesa,
  */
 #define WRITE_DEPTH( _x, _y, d )					\
 do {									\
-   GLuint offset = radeon_mba_z32( rmesa, _x+xo, _y+yo );		\
+   GLuint offset = radeon_mba_z32( rmesa, _x + xo, _y + yo );		\
    GLuint tmp = *(GLuint *)(buf + offset);				\
    tmp &= 0xff000000;							\
    tmp |= ((d) & 0x00ffffff);						\
@@ -249,7 +249,8 @@ do {									\
 } while (0)
 
 #define READ_DEPTH( d, _x, _y )						\
-   d = *(GLuint *)(buf + radeon_mba_z32( rmesa, _x+xo, _y+yo )) & 0x00ffffff;
+   d = *(GLuint *)(buf + radeon_mba_z32( rmesa, _x + xo,		\
+					 _y + yo )) & 0x00ffffff;
 
 #define TAG(x) radeon##x##_24_8
 #include "depthtmp.h"
@@ -263,7 +264,7 @@ do {									\
  */
 #define WRITE_STENCIL( _x, _y, d )					\
 do {									\
-   GLuint offset = radeon_mba_z32( rmesa, _x+xo, _y+yo );		\
+   GLuint offset = radeon_mba_z32( rmesa, _x + xo, _y + yo );		\
    GLuint tmp = *(GLuint *)(buf + offset);				\
    tmp &= 0x00ffffff;							\
    tmp |= (((d) & 0xff) << 24);						\
@@ -272,7 +273,7 @@ do {									\
 
 #define READ_STENCIL( d, _x, _y )					\
 do {									\
-   GLuint offset = radeon_mba_z32( rmesa, _x+xo, _y+yo );		\
+   GLuint offset = radeon_mba_z32( rmesa, _x + xo, _y + yo );		\
    GLuint tmp = *(GLuint *)(buf + offset);				\
    tmp &= 0xff000000;							\
    d = tmp >> 24;							\
@@ -326,10 +327,12 @@ void radeonDDInitSpanFuncs( GLcontext *ctx )
 	ctx->Driver.ReadDepthPixels	= radeonReadDepthPixels_24_8;
 	ctx->Driver.WriteDepthPixels	= radeonWriteDepthPixels_24_8;
 
+#if 0 /* only need these for hardware stencil buffers */
 	ctx->Driver.ReadStencilSpan	= radeonReadStencilSpan_24_8;
 	ctx->Driver.WriteStencilSpan	= radeonWriteStencilSpan_24_8;
 	ctx->Driver.ReadStencilPixels	= radeonReadStencilPixels_24_8;
 	ctx->Driver.WriteStencilPixels	= radeonWriteStencilPixels_24_8;
+#endif
 	break;
 
     default:

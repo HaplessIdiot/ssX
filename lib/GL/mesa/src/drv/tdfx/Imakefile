@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.19 2000/12/12 23:24:28 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.20 2001/02/16 01:26:11 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -57,41 +57,43 @@ MESA_INCLUDES = -I. -I.. -I../../include
 		../../../../dri/drm/xf86drmRandom.o \
 		../../../../dri/drm/xf86drmSL.o
 
-     TDFXSRCS = tdfx_xmesa.c \
-		tdfx_init.c \
-		tdfx_inithw.c \
-		fxclip.c \
-		fxcva.c \
-		fxdd.c \
-		fxddspan.c \
-		fxddtex.c \
-		fxfastpath.c \
-		fxglidew.c \
-		fxpipeline.c \
-		fxrender.c \
-		fxsanity.c \
-		fxsetup.c \
-		fxtexman.c \
-		fxtrifuncs.c \
-		fxvsetup.c
+     TDFXSRCS = tdfx_context.c \
+		tdfx_dd.c \
+		tdfx_pixels.c \
+		tdfx_fastpath.c \
+		tdfx_g3ext.c \
+		tdfx_lock.c \
+		tdfx_pipeline.c \
+		tdfx_render.c \
+		tdfx_screen.c \
+		tdfx_span.c \
+		tdfx_state.c \
+		tdfx_tex.c \
+		tdfx_texman.c \
+		tdfx_texstate.c \
+		tdfx_tris.c \
+		tdfx_vb.c \
+		tdfx_wrapper.c \
+		tdfx_xmesa.c
 
-     TDFXOBJS = tdfx_xmesa.o \
-		tdfx_init.o \
-		tdfx_inithw.o \
-		fxclip.o \
-		fxcva.o \
-		fxdd.o \
-		fxddspan.o \
-		fxddtex.o \
-		fxfastpath.o \
-		fxglidew.o \
-		fxpipeline.o \
-		fxrender.o \
-		fxsanity.o \
-		fxsetup.o \
-		fxtexman.o \
-		fxtrifuncs.o \
-		fxvsetup.o
+     TDFXOBJS = tdfx_context.o \
+		tdfx_dd.o \
+		tdfx_pixels.o \
+		tdfx_fastpath.o \
+		tdfx_g3ext.o \
+		tdfx_lock.o \
+		tdfx_pipeline.o \
+		tdfx_render.o \
+		tdfx_screen.o \
+		tdfx_span.o \
+		tdfx_state.o \
+		tdfx_tex.o \
+		tdfx_texman.o \
+		tdfx_texstate.o \
+		tdfx_tris.o \
+		tdfx_vb.o \
+		tdfx_wrapper.o \
+		tdfx_xmesa.o
 
      MESASRCS = ../../aatriangle.c \
 		../../accum.c \
@@ -148,6 +150,7 @@ MESA_INCLUDES = -I. -I.. -I../../include
 		../../stages.c \
 		../../state.c \
 		../../stencil.c \
+		../../texformat.c \
 		../../teximage.c \
 		../../texobj.c \
 		../../texstate.c \
@@ -221,6 +224,7 @@ MESA_INCLUDES = -I. -I.. -I../../include
 		../../stages.o \
 		../../state.o \
 		../../stencil.o \
+		../../texformat.o \
 		../../teximage.o \
 		../../texobj.o \
 		../../texstate.o \
@@ -345,7 +349,6 @@ REQUIREDLIBS = -l$(GLIDE3LIBNAME) MathLibrary
 #if !GlxBuiltInTdfx
 REQUIREDLIBS += -L../../../.. -lGL
 #endif
-
 
 #if !GlxUseBuiltInDRIDriver
 #undef DoNormalLib NormalLibGlx

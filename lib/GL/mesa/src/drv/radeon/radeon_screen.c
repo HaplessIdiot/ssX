@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.1 2001/01/08 01:07:27 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -60,39 +60,6 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
 {
    radeonScreenPtr radeonScreen;
    RADEONDRIPtr radeonDRIPriv = (RADEONDRIPtr)sPriv->pDevPriv;
-
-   /* Check the DRI version */
-   {
-      int major, minor, patch;
-      if ( XF86DRIQueryVersion( sPriv->display, &major, &minor, &patch ) ) {
-         if ( major != 3 || minor != 1 || patch < 0 ) {
-            char msg[128];
-            sprintf( msg, "Radeon DRI driver expected DRI version 3.1.x but got version %d.%d.%d", major, minor, patch );
-            __driMesaMessage( msg );
-            return GL_FALSE;
-         }
-      }
-   }
-
-   /* Check that the DDX driver version is compatible */
-   if ( sPriv->ddxMajor != 4 ||
-	sPriv->ddxMinor != 0 ||
-	sPriv->ddxPatch < 0 ) {
-      char msg[128];
-      sprintf( msg, "Radeon DRI driver expected DDX driver version 4.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch );
-      __driMesaMessage( msg );
-      return GL_FALSE;
-   }
-
-   /* Check that the DRM driver version is compatible */
-   if ( sPriv->drmMajor != 1 ||
-	sPriv->drmMinor != 0 ||
-	sPriv->drmPatch < 0 ) {
-      char msg[128];
-      sprintf( msg, "Radeon DRI driver expected DRM driver version 2.1.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch );
-      __driMesaMessage( msg );
-      return GL_FALSE;
-   }
 
    /* Allocate the private area */
    radeonScreen = (radeonScreenPtr) CALLOC( sizeof(*radeonScreen) );
@@ -192,6 +159,11 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
    }
 
    radeonScreen->driScreen = sPriv;
+   radeonScreen->sarea_priv_offset = radeonDRIPriv->sarea_priv_offset;
+
+#ifdef PER_CONTEXT_SAREA
+   radeonScreen->perctx_sarea_size = radeonDRIPriv->perctx_sarea_size;
+#endif
 
    radeonDDSetupInit();
    radeonDDTriangleFuncsInit();

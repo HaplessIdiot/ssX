@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.7 2000/11/08 05:02:46 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.8 2001/01/08 01:07:19 martin Exp $ */
  
 #include "mgacontext.h"
 #include "mgavb.h"
@@ -35,34 +35,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TEX0 {					\
+#define TEX0 {				\
   v->v.tu0 = tc0[i][0];			\
   v->v.tv0 = tc0[i][1];			\
 }
 
-#define TEX1 {					\
+#define TEX1 {				\
   v->v.tu1 = tc1[i][0];			\
   v->v.tv1 = tc1[i][1];			\
 }
 
-#define SPC {					\
-  GLubyte *spec = &(VB->Spec[0][i][0]);		\
+#define SPC {				\
+  GLubyte *spec = &(VB->Spec[0][i][0]);	\
   v->v.specular.red = spec[0];		\
-  v->v.specular.green = spec[1];		\
+  v->v.specular.green = spec[1];	\
   v->v.specular.blue = spec[2];		\
 }
 
-#define FOG {					\
-  GLubyte *spec = &(VB->Spec[0][i][0]);		\
-  v->v.specular.alpha = spec[3];		\
+#define FOG {				\
+  GLubyte *spec = &(VB->Spec[0][i][0]);	\
+  v->v.specular.alpha = spec[3];	\
 }
 
 #define COL {					\
   GLubyte *col = &(VB->Color[0]->data[i][0]);	\
-  v->v.color.blue  = col[2];		\
-  v->v.color.green = col[1];		\
-  v->v.color.red   = col[0];		\
-  v->v.color.alpha = col[3];		\
+  v->v.color.blue  = col[2];			\
+  v->v.color.green = col[1];			\
+  v->v.color.red   = col[0];			\
+  v->v.color.alpha = col[3];			\
 }
 
 /* The v code we have doesn't seem to support projective texturing
@@ -70,14 +70,13 @@
  * second set of texcoords).  This may be a problem for the g400.  
  */
 #define TEX0_4						\
-  if (VB->TexCoordPtr[0]->size == 4)			\
-  {							\
+  if (VB->TexCoordPtr[0]->size == 4) {			\
      GLfloat (*tc)[4] = VB->TexCoordPtr[0]->data;	\
      v = &(MGA_DRIVER_DATA(VB)->verts[start]);		\
      mmesa->setupdone &= ~MGA_WIN_BIT;			\
-     for (i=start; i < end; i++, v++)	{		\
-        float oow = 1.0 / tc[i][3];			\
-	v->v.rhw *= tc[i][3];			\
+     for (i = start; i < end; i++, v++) {		\
+        GLfloat oow = 1.0 / tc[i][3];			\
+	v->v.rhw *= tc[i][3];				\
 	v->v.tu0 *= oow;				\
 	v->v.tv0 *= oow;				\
      }							\
@@ -138,7 +137,7 @@ static void name(struct vertex_buffer *VB, GLuint start, GLuint end)	\
 	    spec;							\
 	    fog;							\
 	 }								\
-	    col;							\
+         col;								\
       }									\
    tex0_4;								\
 }
