@@ -1,8 +1,19 @@
+XFree86 3.0A (15 May 1994)
+ 51. SVGA driver for the AL2101 chipset (Paolo Severini).
+ 50. SVGA driver for the MX68000 and MX68010 chipsets (Frank Dikker).
+ 49. Updates to the Cirrus driver (Harm Hanemaayer).  Includes code cleanup,
+     mono support, improved handling of the 5430, 5434, and transparent
+     text acceleration.
+ 48. Preliminary code for detecting S3 864/964 and AT&T 20C498 (Harald Koenig).
+ 47. Generic VGA256 driver -- works only at 320x200 (Harm Hanemaayer)
+ 46. Fixes for vga2/mfb and vga16/mfb Imakefiles.
+ 45. Include SuperProbe.
+
 XFree86 3.0d (8 May 1994)
  44. Add missing files to vga2/mfb.
  43. Set VendorString and VendorRelease up for XFree86.
  42. Workaround for STREAMSCONN Xdmcp problems (Xserver and xdm).
- 41. 16 bit (staticcolor) support for Mach32 (Craig Groeschel).
+ 41. 16 bit (directcolor) support for Mach32 (Craig Groeschel).
  40. Minix 3886vm support (Philip Homburg).
 
 XFree86 3.0c (6 May 1994)
