@@ -1,4 +1,5 @@
 /* $XConsortium: expr.c /main/9 1996/03/01 14:32:05 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
