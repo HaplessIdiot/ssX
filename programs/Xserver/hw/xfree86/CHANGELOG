@@ -1,11 +1,12 @@
-XFree86 4.0.1g (28 November 2000)
+XFree86 4.0.1g (29 November 2000)
+1023. Fix small bug in lcGeneric.c (#4301, Ivan Pascal).
 1022. Rewrite Xft library for Render extension/core text and font management
       Change xterm to use new interface (Keith Packard).
 1021. s3virge driver updates, including Xv fixes for the ViRGE DX, disable
       GX2 color expansion until it's stable, GX2 Xv code (not enabled or
       working yet) (#4299, Kevin Brosius).
 1020. Siliconmotion driver (#4298, Frido Garritsen, Silicon Motion, Inc.).
-1019. Fix Estonian_Estonia.1257 entry in locale.alias (#4297,
+1019. Fix Estonian_Estonia.1257 entry in locale.alias (#4297, 4300,
       Nerijus Baliunas).
 1018. New Lithuanian XKB map (#4296, Nerijus Baliunas).
 1017. Fix a problem with the "xtt" font module introduced with recent
@@ -11697,4 +11698,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1418 2000/11/28 20:59:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1419 2000/11/29 08:39:17 keithp Exp $
