@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.22 2002/06/30 23:07:31 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.23 2002/10/06 16:44:08 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -314,7 +314,7 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 		return 0;
 	} else {
 #ifdef linux
-	    if (p->pw_passwd[0] == '!' || p->pw_passwd[0] == '*') {
+	    if (!strcmp(p->pw_passwd, "!") || !strcmp(p->pw_passwd, "*")) {
 		Debug ("The account is locked, no login allowed.\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;
