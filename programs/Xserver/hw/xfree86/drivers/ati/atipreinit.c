@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.34 2000/10/10 15:16:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.35 2000/10/11 22:52:57 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -30,11 +30,11 @@
 #include "atidac.h"
 #include "atidsp.h"
 #include "atiident.h"
+#include "atiload.h"
 #include "atilock.h"
 #include "atimach64.h"
 #include "atimach64io.h"
 #include "atimode.h"
-#include "atimodule.h"
 #include "atipreinit.h"
 #include "atiprint.h"
 #include "atividmem.h"
