@@ -24,7 +24,7 @@
 /* Rewritten with reference from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.2 1999/09/27 06:29:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_cursor.c,v 1.3 2001/01/22 21:32:36 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -42,7 +42,7 @@
  */
 #define TRANSPARENT_PIXEL   0
 #define ConvertToRGB555(c) \
-( (( c & 0xf80000 ) >> 9 ) | (( c & 0xf800 ) >> 6 ) | (( c & 0xf8) >> 3 ) |0x8000)
+(((c & 0xf80000) >> 9 ) | ((c & 0xf800) >> 6 ) | ((c & 0xf8) >> 3 ) | 0x8000)
 
 static void ConvertCursor(NVPtr pNv, unsigned int* src, unsigned short *dst)
 {
@@ -54,14 +54,22 @@ static void ConvertCursor(NVPtr pNv, unsigned int* src, unsigned short *dst)
         m = *src++;
         for ( j = 0; j < MAX_CURS; j++ )
         {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+            if ( m & 0x80000000)
+                *dst = ( b & 0x80000000) ? pNv->curFg : pNv->curBg;
+            else
+                *dst = TRANSPARENT_PIXEL;
+            b <<= 1;
+            m <<= 1;
+#else
             if ( m & 1 )
                 *dst = ( b & 1) ? pNv->curFg : pNv->curBg;
             else
                 *dst = TRANSPARENT_PIXEL;
-
-            dst++;
             b >>= 1;
             m >>= 1;
+#endif
+            dst++;
         }
     }
 }
@@ -122,7 +130,12 @@ NVSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
     {
         fore = ConvertToRGB555(fg);
         back = ConvertToRGB555(bg);
-        
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+        fore = (fore << 8) | (fore >> 8);
+        back = (back << 8) | (back >> 8);
+#endif
+
         if (pNv->curFg != fore || pNv->curBg != back)
         {
             unsigned short      tmp[MAX_CURS*MAX_CURS];

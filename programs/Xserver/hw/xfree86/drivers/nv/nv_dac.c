@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.13 2001/10/08 22:28:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.14 2001/10/21 20:40:22 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -166,6 +166,9 @@ NVDACRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, NVRegPtr nvReg,
     NVPtr pNv = NVPTR(pScrn);
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVDACRestore\n"));
     pNv->riva.LoadStateExt(&pNv->riva, nvReg);
+#if defined(__powerpc__)
+    restoreFonts = FALSE;
+#endif
     vgaHWRestore(pScrn, vgaReg, VGA_SR_CMAP | VGA_SR_MODE | 
 			(restoreFonts? VGA_SR_FONTS : 0));
 }
