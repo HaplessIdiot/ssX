@@ -630,10 +630,7 @@ SiS_PanelDelay(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT DelayTime)
          } else {
        	    Delay = SiS_Pr->SiS_PanelDelayTbl[DelayIndex].timer[1];
          }
-	 Delay <<= 2;
-	 if(SiS_Pr->SiS_VBType & (VB_SIS302LV | VB_SIS302ELV)) {
-	    Delay <<= 5;
-	 }
+	 Delay <<= 8;
 	 SiS_DDC2Delay(SiS_Pr, Delay);
 
       }
