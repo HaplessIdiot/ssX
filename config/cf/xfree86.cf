@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.382 2001/10/30 16:55:40 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.383 2001/11/01 23:35:23 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1240,11 +1240,11 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #ifndef BuildCIDFonts
 # define BuildCIDFonts		YES
 #endif
+#ifndef BuildTrueTypeFonts
+# define BuildTrueTypeFonts	YES
+#endif
 #ifndef BuildCyrillicFonts
 # define BuildCyrillicFonts	YES
-#endif
-#ifndef BuildLatin2Fonts
-# define BuildLatin2Fonts	YES
 #endif
 #ifndef UseKoi8RForCyrillic
 # define UseKoi8RForCyrillic	YES

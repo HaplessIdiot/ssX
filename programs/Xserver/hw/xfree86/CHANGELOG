@@ -1,4 +1,10 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 499. Add new Luxi fonts from Bigelow & Holmes (#5010, Charles Bigelow and
+      Kris Holmes, integrated by Juliusz Chroboczek).
+ 498. Update the ClearlyU fonts to version 1.8 (#5009, Mark Leisher).
+ 497. Add XKB symbols for Saami (#5006, 5059, Børre Gaup).
+ 496. Change the mapping of the JIS reverse solidus to what most Japanese
+      users expect (#5002, Juliusz Chroboczek).
  495. Fix hiding/showing of mouse cursor under Windows on Cygwin/XFree86
       (#5056, Harold Hunt).
  494. Fix Permedia3 SDRAM based boards planemask problems (Jay Estabrook).
@@ -14183,4 +14189,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2052 2001/11/20 00:09:10 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2053 2001/11/21 08:51:21 alanh Exp $
