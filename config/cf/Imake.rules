@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.194 94/08/30 17:25:36 matt Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.6 1994/11/19 07:32:18 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.7 1994/11/22 02:32:57 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1101,7 +1101,7 @@ ProgramTargetName($(IXX)):						@@\
 DependDependency()							@@\
 									@@\
 depend::								@@\
-	RunProgram(DEPEND,$(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_INCLUDES) $(DEPEND_DEFINES) -- $(SRCS))
+	RunProgram(DEPEND,$(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- $(SRCS))
 #endif /* DependTarget */
 
 /*
@@ -1112,9 +1112,9 @@ depend::								@@\
 DependDependency()							@@\
 									@@\
 depend::								@@\
-	RunProgram(DEPEND,$(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_INCLUDES) $(DEPEND_DEFINES) -- srcs1)	@@\
-	RunProgram(DEPEND,-a $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_INCLUDES) $(DEPEND_DEFINES) -- srcs2)	@@\
-	RunProgram(DEPEND,-a $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_INCLUDES) $(DEPEND_DEFINES) -- srcs3)
+	RunProgram(DEPEND,$(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs1)	@@\
+	RunProgram(DEPEND,-a $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs2)	@@\
+	RunProgram(DEPEND,-a $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs3)
 #endif /* DependTarget3 */
 
 
