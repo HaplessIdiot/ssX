@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.7 2003/04/23 21:51:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.9 2003/10/08 15:48:40 eich Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -635,7 +635,11 @@ I830SetupImageVideo(ScreenPtr pScreen)
 
    pI830->adaptor = adapt;
 
-   /* Initialise pPriv->refreshOK */
+   /*
+    * Initialise pPriv->refreshOK.  Set it to TRUE here so that a warning will
+    * be generated if I830VideoSwitchModeAfter() sets it to FALSE.
+    */
+   pPriv->refreshOK = TRUE;
    I830VideoSwitchModeAfter(pScrn, pScrn->currentMode);
 
    pI830->BlockHandler = pScreen->BlockHandler;
@@ -1791,6 +1795,9 @@ I830VideoSwitchModeBefore(ScrnInfoPtr pScrn, DisplayModePtr mode)
    if (pixrate > pPriv->maxRate && pPriv->refreshOK) {
       I830StopVideo(pScrn, pPriv, TRUE);
       pPriv->refreshOK = FALSE;
+      xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	"Disabling XVideo output because the mode pixel rate (%d MHz)\n"
+	"\texceeds the hardware limit (%d MHz).\n", pixrate, pPriv->maxRate);
    }
 }
 
@@ -1812,6 +1819,16 @@ I830VideoSwitchModeAfter(ScrnInfoPtr pScrn, DisplayModePtr mode)
       mode->VRefresh = 60;
 
    pixrate = (mode->HDisplay * mode->VDisplay * mode->VRefresh) / 1000000;
-   pPriv->refreshOK = (pixrate <= pPriv->maxRate);
+   if (pPriv->refreshOK && pixrate > pPriv->maxRate) {
+      pPriv->refreshOK = FALSE;
+      xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	"Disabling XVideo output because the mode pixel rate (%d MHz)\n"
+	"\texceeds the hardware limit (%d MHz)\n", pixrate, pPriv->maxRate);
+   } else if (!pPriv->refreshOK && pixrate <= pPriv->maxRate) {
+      pPriv->refreshOK = TRUE;
+      xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	"Enabling XVideo output (mode pixel rate %d MHz is within limits).\n",
+	pixrate);
+   }
 }
 
