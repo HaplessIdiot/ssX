@@ -1,33 +1,28 @@
-
-XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/dri/Imakefile,v 1.5 1999/02/26 08:37:30 martin Exp $
+XCOMM $XFree86$
+XCOMM $PI: xc/programs/Xserver/GL/dri/Imakefile,v 1.13 1999/06/07 12:55:30 faith Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
-#define IHaveSubdirs
+#if DoLoadableServer
+MSRC = drimodule.c
+MOBJ = drimodule.o
+#endif
 
-      SUBDIRS = drm
+         SRCS = xf86dri.c dri.c $(MSRC)
+         OBJS = xf86dri.o dri.o $(MOBJ)
 
-         SRCS = xf86dri.c
-         OBJS = xf86dri.o
-
-     INCLUDES = -I$(SERVERSRC)/include -I$(XTOP)/include -I$(EXTINCSRC)
+     INCLUDES = -I$(SERVERSRC)/include -I$(XTOP)/include -I$(EXTINCSRC) \
+		-I$(XF86OSSRC) -I$(XF86COMSRC) \
+		-I../include -I../glx -I$(LIBSRC)/GL/include \
+		-I../../mi -I$(FONTINCSRC)
       DEFINES = $(GLX_DEFINES)
 
 LinkSourceFile(xf86dri.h,../../../../lib/GL/dri)
 LinkSourceFile(xf86dristr.h,../../../../lib/GL/dri)
 
-#if DoLoadableServer
 ModuleObjectRule()
-SubdirLibraryRule($(OBJS))
-#else
-MakeSubdirs($(SUBDIRS))
-NormalLibraryTarget(dri,$(OBJS))
-NormalLibraryObjectRule()
-#endif
+LibraryModuleTarget(dri,$(OBJS))
+InstallLibraryModule(dri,$(MODULEDIR),extensions)
 
 DependTarget()
-
-DependSubdirs($(SUBDIRS))
-MakeLintLibSubdirs($(SUBDIRS))
-LintSubdirs($(SUBDIRS))

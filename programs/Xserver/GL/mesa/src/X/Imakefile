@@ -1,6 +1,5 @@
-
-XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.3 1999/02/26 08:52:46 martin Exp $
 XCOMM $XFree86$
+XCOMM $PI: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.6 1999/03/15 21:36:10 martin Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -35,9 +34,9 @@ LinkSourceFile(size.h,../../../../../../lib/GL/glx)
 ModuleObjectRule()
 SubdirLibraryRule($(OBJS))
 #else
+NormalLibraryTarget(GLcoreX,$(OBJS))
 NormalLibraryObjectRule()
 #endif
-NormalLibraryTarget(GLcoreX,$(OBJS))
 
 LintLibraryTarget(dri,$(SRCS))
 NormalLintTarget($(SRCS))

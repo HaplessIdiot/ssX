@@ -1,4 +1,4 @@
-/*
+/* $XFree86: xc/programs/Xserver/GL/glx/glxext.c,v 1.3 1999/04/11 13:10:36 dawes Exp $
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
 ** License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -16,10 +16,8 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glxext.c,v 1.2 1999/02/23 07:49:27 martin Exp $
-** $XFree86: xc/programs/Xserver/GL/glx/glxext.c,v 1.2 1999/03/14 03:21:24 dawes Exp $
+** $SGI$
 */
-/* $XFree86$ */
 
 #define NEED_REPLIES
 #include "glxserver.h"
@@ -280,33 +278,31 @@ Bool __glXCoreType(void)
 
 /************************************************************************/
 
+void GlxSetVisualConfigs(int nconfigs, 
+                         __GLXvisualConfig *configs, void **privates)
+{
+    (*__glXExt->setVisualConfigs)(nconfigs, configs, privates);
+}
+
 static miInitVisualsProcPtr saveInitVisualsProc;
 
-Bool
-GlxInitVisuals
-(
-    VisualPtr *       visualp,
-    DepthPtr *        depthp,
-    int *             nvisualp,
-    int *             ndepthp,
-    int *             rootDepthp,
-    VisualID *        defaultVisp,
-    unsigned long     sizes,
-    int               bitsPerRGB,
-    int               preferredVis
-)
+Bool GlxInitVisuals(VisualPtr *visualp, DepthPtr *depthp,
+		    int *nvisualp, int *ndepthp,
+		    int *rootDepthp, VisualID *defaultVisp,
+		    unsigned long sizes, int bitsPerRGB,
+		    int preferredVis)
 {
     Bool ret;
 
     if (saveInitVisualsProc) {
-	ret = saveInitVisualsProc(visualp, depthp, nvisualp, ndepthp,
-				  rootDepthp, defaultVisp, sizes, bitsPerRGB,
-				  preferredVis);
-	if (!ret)
-	    return False;
+        ret = saveInitVisualsProc(visualp, depthp, nvisualp, ndepthp,
+                                  rootDepthp, defaultVisp, sizes, bitsPerRGB,
+                                  preferredVis);
+        if (!ret)
+            return False;
     }
     (*__glXExt->initVisuals)(visualp, depthp, nvisualp, ndepthp, rootDepthp,
-			     defaultVisp, sizes, bitsPerRGB);
+                             defaultVisp, sizes, bitsPerRGB);
     return True;
 }
 
@@ -316,7 +312,7 @@ GlxWrapInitVisuals(miInitVisualsProcPtr *initVisProc)
     saveInitVisualsProc = *initVisProc;
     *initVisProc = GlxInitVisuals;
 }
-    
+
 /************************************************************************/
 
 void __glXFlushContextCache(void)

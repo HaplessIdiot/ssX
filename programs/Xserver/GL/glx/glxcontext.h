@@ -1,6 +1,7 @@
 #ifndef _GLX_context_h_
 #define _GLX_context_h_
 
+/* $XFree86$ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -19,7 +20,7 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glxcontext.h,v 1.3 1999/02/26 08:52:44 martin Exp $
+** $SGI$
 */
 
 typedef struct __GLXcontextRec __GLXcontext;

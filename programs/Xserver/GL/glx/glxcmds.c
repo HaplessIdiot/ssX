@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.2 1999/03/14 03:21:23 dawes Exp $
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -16,8 +17,7 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glxcmds.c,v 1.2 1999/02/23 07:49:27 martin Exp $
-** $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.0tsi Exp $
+** $SGI$
 */
 
 #define NEED_REPLIES
@@ -159,6 +159,16 @@ int __glXCreateContext(__GLXclientState *cl, GLbyte *pc)
 	return BadAlloc;
     }
     __glXMemset(glxc, 0, sizeof(__GLXcontext));
+
+    /*
+    ** Initially, setup the part of the context that could be used by
+    ** a GL core that needs windowing information (e.g., Mesa).
+    */
+    glxc->pScreen = pScreen;
+    glxc->pGlxScreen = pGlxScreen;
+    glxc->pVisual = pVisual;
+    glxc->pGlxVisual = pGlxVisual;
+
     if (!isDirect) {
 	__GLcontextModes *modes;
 	/*
@@ -172,8 +182,7 @@ int __glXCreateContext(__GLXclientState *cl, GLbyte *pc)
 	** Allocate a GL context
 	*/
 	imports.other = (void *)glxc;
-	glxc->gc = (*pGlxScreen->createContext)(&imports, modes,
-						shareGC, pGlxVisual);
+	glxc->gc = (*pGlxScreen->createContext)(&imports, modes, shareGC);
 	if (!glxc->gc) {
 	    __glXFree(glxc);
 	    client->errorValue = gcId;
@@ -198,12 +207,9 @@ int __glXCreateContext(__GLXclientState *cl, GLbyte *pc)
     }
     
     /*
-    ** Finally, now that everything is working, setup the context.
+    ** Finally, now that everything is working, setup the rest of the
+    ** context.
     */
-    glxc->pScreen = pScreen;
-    glxc->pGlxScreen = pGlxScreen;
-    glxc->pVisual = pVisual;
-    glxc->pGlxVisual = pGlxVisual;
     glxc->id = gcId;
     glxc->share_id = shareList;
     glxc->idExists = GL_TRUE;

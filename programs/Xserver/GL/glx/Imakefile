@@ -1,6 +1,5 @@
-
-XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/Imakefile,v 1.6 1999/02/26 08:52:43 martin Exp $
-XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.3 1999/03/21 13:21:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.4 1999/04/11 13:10:36 dawes Exp $
+XCOMM $PI: xc/programs/Xserver/GL/glx/Imakefile,v 1.11 1999/05/27 03:43:33 jens Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -25,18 +24,18 @@ XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.3 1999/03/21 13:21:25 d
 
 #if GlxUseSGISI
      INCLUDES = -I. -I../include -I$(SERVERSRC)/include -I$(XTOP)/include \
-		-I$(SERVERSRC)/mi \
+                -I$(SERVERSRC)/mi \
                 -I$(EXTINCSRC) -I$(FONTINCSRC) -I$(LIBSRC)/GL/include \
                 -I$(XF86SRC) -I$(XF86COMSRC) -I$(XF86OSSRC)
 #else
      INCLUDES = -I. -I../include -I$(SERVERSRC)/include -I$(XTOP)/include \
-		-I$(SERVERSRC)/mi \
+                -I$(SERVERSRC)/mi \
                 -I$(EXTINCSRC) -I$(FONTINCSRC) -I$(LIBSRC)/GL/include \
                 -I$(XF86SRC) -I../mesa/include -I../mesa/src -I../mesa/src/X
 #endif
-XCOMM If you remove "-DDEBUG" from DEFINES, then make sure you
-XCOMM comment out the define in ../mesa/src/X/xf86glx.c
-      DEFINES = $(GLX_DEFINES) -DDEBUG
+XCOMM If you add "-DDEBUG" in DEFINES, then make sure you also
+XCOMM add DEBUG to the define in ../mesa/src/X/xf86glx.c
+      DEFINES = $(GLX_DEFINES)
 
 
 #if DoLoadableServer

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.35 1999/04/11 13:11:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.36 1999/05/04 09:35:27 dawes Exp $ */
 
 
 
@@ -58,6 +58,13 @@ typedef struct _xf86dirent XF86DIRENT;
 
 typedef unsigned long xf86size_t;
 typedef signed long xf86ssize_t;
+typedef unsigned long xf86dev_t;
+typedef unsigned int xf86mode_t;
+typedef unsigned int xf86uid_t;
+
+struct xf86stat {
+    xf86dev_t st_rdev;	/* This is incomplete */
+};
 
 /* for setvbuf */
 #define XF86_IONBF    1
@@ -84,6 +91,32 @@ typedef signed long xf86ssize_t;
 #define XF86_SEEK_SET	0
 #define XF86_SEEK_CUR	1
 #define XF86_SEEK_END	2
+
+/* for access */
+#define XF86_R_OK       0
+#define XF86_W_OK       1
+#define XF86_X_OK       2
+#define XF86_F_OK       3
+
+/* for chmod */
+#define XF86_S_ISUID   04000 /* set user ID on execution */
+#define XF86_S_ISGID   02000 /* set group ID on execution */
+#define XF86_S_ISVTX   01000 /* sticky bit */
+#define XF86_S_IRUSR   00400 /* read by owner */
+#define XF86_S_IWUSR   00200 /* write by owner */
+#define XF86_S_IXUSR   00100 /* execute/search by owner */
+#define XF86_S_IRGRP   00040 /* read by group */
+#define XF86_S_IWGRP   00020 /* write by group */
+#define XF86_S_IXGRP   00010 /* execute/search by group */
+#define XF86_S_IROTH   00004 /* read by others */
+#define XF86_S_IWOTH   00002 /* write by others */
+#define XF86_S_IXOTH   00001 /* execute/search by others */
+
+/* for mknod */
+#define XF86_S_IFREG 0010000
+#define XF86_S_IFCHR 0020000
+#define XF86_S_IFBLK 0040000
+#define XF86_S_IFIFO 0100000
 
 /*
  * errno values
@@ -264,6 +297,26 @@ typedef signed long xf86ssize_t;
 #undef bzero
 #define bzero(vp,ui)		xf86bzero(vp,ui)
 #define execl	        	xf86execl
+#define chmod(a,b)              xf86chmod(a,b)
+#define geteuid                 xf86geteuid
+#define mknod(a,b,c)            xf86mknod(a,b,c)
+#define sleep(a)                xf86sleep(a)
+#define S_ISUID XF86_S_ISUID
+#define S_ISGID XF86_S_ISGID
+#define S_ISVTX XF86_S_ISVTX
+#define S_IRUSR XF86_S_IRUSR
+#define S_IWUSR XF86_S_IWUSR
+#define S_IXUSR XF86_S_IXUSR
+#define S_IRGRP XF86_S_IRGRP
+#define S_IWGRP XF86_S_IWGRP
+#define S_IXGRP XF86_S_IXGRP
+#define S_IROTH XF86_S_IROTH
+#define S_IWOTH XF86_S_IWOTH
+#define S_IXOTH XF86_S_IXOTH
+#define S_IFREG XF86_S_IFREG
+#define S_IFCHR XF86_S_IFCHR
+#define S_IFBLK XF86_S_IFBLK
+#define S_IFIFO XF86_S_IFIFO
 
 /* some types */
 #define FILE			XF86FILE
@@ -272,6 +325,9 @@ typedef signed long xf86ssize_t;
 #define DIRENT			XF86DIRENT
 #define size_t			xf86size_t
 #define ssize_t			xf86ssize_t
+#define dev_t                   xf86dev_t
+#define mode_t                  xf86mode_t
+#define uid_t                   xf86uid_t
 
 /*
  * There should be no need to #undef any of these.  If they are already
@@ -298,6 +354,9 @@ typedef signed long xf86ssize_t;
 #define write(a,b,c)		xf86write(a,b,c)
 #define mmap(a,b,c,d,e,f)	xf86mmap(a,b,c,d,e,f)
 #define munmap(a,b)		xf86munmap(a,b)
+#define stat(a,b)               xf86stat(a,b)
+#define fstat(a,b)              xf86fstat(a,b)
+#define access(a,b)             xf86access(a,b)
 #define O_RDONLY		XF86_O_RDONLY
 #define O_WRONLY		XF86_O_WRONLY
 #define O_RDWR			XF86_O_RDWR
@@ -310,6 +369,10 @@ typedef signed long xf86ssize_t;
 #define MAP_SHARED		XF86_MAP_SHARED
 #define MAP_PRIVATE		XF86_MAP_PRIVATE
 #define MAP_FAILED		XF86_MAP_FAILED
+#define R_OK                    XF86_R_OK
+#define W_OK                    XF86_W_OK
+#define X_OK                    XF86_X_OK
+#define F_OK                    XF86_F_OK
 #ifndef __EMX__
 #define errno			xf86errno
 #endif

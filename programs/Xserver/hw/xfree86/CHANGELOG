@@ -1,4 +1,7 @@
-XFree86 3.9Pr (12 June 1999)
+XFree86 3.9Ps (14 June 1999)
+2749. Direct Rendering Infrastructure from Precision Insight (#2871).
+
+XFree86 3.9Pr (13 June 1999)
 2748. Xterm patch #107 (#2879, Thomas Dickey).
 2747. Cirrus driver updates, including support for generic (V4L) video
       adapters, fix depth 15 mode for the laguna chips and turn of the DAC
@@ -8180,4 +8183,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.774 1999/06/13 07:11:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.775 1999/06/13 13:47:39 dawes Exp $

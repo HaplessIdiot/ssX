@@ -1,6 +1,7 @@
 #ifndef _GLX_screens_h_
 #define _GLX_screens_h_
 
+/* $XFree86$ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -19,7 +20,7 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glxscreens.h,v 1.3 1999/02/26 08:52:44 martin Exp $
+** $SGI$
 */
 
 #include "GL/internal/glcore.h"
@@ -43,8 +44,7 @@ typedef struct {
     */
     __GLinterface *(*createContext)(__GLimports *imports,
 				    __GLcontextModes *modes,
-				    __GLinterface *shareGC,
-				    __GLXvisualConfig *pGlxVisual);
+				    __GLinterface *shareGC);
 
     /*
     ** Create a buffer using information from glxPriv.  This routine
@@ -54,6 +54,7 @@ typedef struct {
     void (*createBuffer)(__GLXdrawablePrivate *glxPriv);
 
     __GLXvisualConfig *pGlxVisual;
+    void **pVisualPriv;
     GLint numVisuals;
     GLint numUsableVisuals;
 

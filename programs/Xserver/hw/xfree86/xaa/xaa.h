@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.24 1999/04/11 13:11:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.25 1999/05/16 10:13:02 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1243,6 +1243,12 @@ Bool
 XAAInitDualFramebufferOverlay(
    ScreenPtr pScreen, 
    DepthChangeFuncPtr callback
+);
+
+void
+XAASync(
+    ScreenPtr pScreen,
+    Bool force
 );
 
 #endif /* _XAA_H */

@@ -1,10 +1,6 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:06:19 kaleb $
-
-
-
-
-
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.19 1999/05/17 13:17:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.20 1999/05/22 08:40:12 dawes Exp $
+XCOMM $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 1.9 1999/06/07 13:01:42 faith Exp $
 
 #include <Server.tmpl>
 
@@ -25,6 +21,11 @@ SHARED_CFLAGS = PositionIndependentCFlags
 MTRRDEFINES = -DHAS_MTRR_SUPPORT
 #endif
 
+#if BuildXF86DRI
+DRI_SRC = sigio.c
+DRI_OBJ = sigio.o
+#endif
+
 #if NewInput
 MOUSESRC = lnx_mouse.c
 MOUSEOBJ = lnx_mouse.o
@@ -35,11 +36,11 @@ MOUSEOBJ = std_mouse.o std_mseEv.o
 
 SRCS = lnx_init.c lnx_video.c lnx_io.c libc_wrapper.c bios_mmap.c \
        mapVT_noop.c VTsw_usl.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
-       stdResource.c vidmem.c $(JOYSTICK_SRC)
+       stdResource.c vidmem.c $(JOYSTICK_SRC) $(DRI_SRC)
 
 OBJS = lnx_init.o lnx_video.o lnx_io.o libc_wrapper.o bios_mmap.o \
        mapVT_noop.o VTsw_usl.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-       stdResource.o vidmem.o $(JOYSTICK_OBJ)
+       stdResource.o vidmem.o $(JOYSTICK_OBJ) $(DRI_OBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -50,6 +51,14 @@ DEFINES = $(MTRRDEFINES) $(RESDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
+
+#if BuildXF86DRI
+#define IHaveSubdirs
+SUBDIRS = drm
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
 
 #if BuildXInputExt
 # if DoLoadableServer
@@ -72,5 +81,9 @@ LinkSourceFile(std_mseEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
+
+#if BuildXF86DRI
+LinkSourceFile(sigio.c,../shared)
+#endif
 
 DependTarget()

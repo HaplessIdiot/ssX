@@ -126,7 +126,7 @@
  * the clear pixel value if needed.
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/X/xmesa1.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/X/xmesa1.c,v 1.2 1999/03/14 03:21:01 dawes Exp $ */
 
 #ifndef XFree86Server
 #include <assert.h>
@@ -155,6 +155,10 @@
 #include "gcstruct.h"
 #include "GL/xf86glx.h"
 #include "xf86glx_util.h"
+#else
+#ifdef GLX_DIRECT_RENDERING
+#include "dri_mesaint.h"
+#endif
 #endif
 
 
@@ -1483,6 +1487,19 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
    v->vishandle = visinfo;
 #endif
 
+#ifdef XFree86Server
+   /* Initialize the depth of the screen */
+   {
+       PixmapFormatRec *format;
+
+       for (format = screenInfo.formats;
+	    format->depth != display->rootDepth;
+	    format++)
+	   ;
+       v->screen_depth = format->bitsPerPixel;
+   }
+#endif
+
    /* check for MESA_GAMMA environment variable */
    gamma = getenv("MESA_GAMMA");
    if (gamma) {
@@ -1565,11 +1582,14 @@ void XMesaDestroyVisual( XMesaVisual v )
  *                      lists or NULL if no sharing is wanted.
  * Return:  an XMesaContext or NULL if error.
  */
-XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list )
+XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+				 , __DRIcontextPrivate *driContextPriv
+#endif
+			       )
 {
    XMesaContext c;
    GLboolean direct = GL_TRUE; /* XXXX */
-   /* NOT_DONE: should this be GL_FALSE??? */
 
    c = (XMesaContext) calloc( 1, sizeof(struct xmesa_context) );
    if (!c) {
@@ -1598,6 +1618,9 @@ XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list )
 
    c->gl_ctx->Driver.UpdateState = xmesa_update_state;
 
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+   c->driContextPriv = driContextPriv;
+#endif
    return c;
 }
 
@@ -1632,7 +1655,11 @@ void XMesaDestroyContext( XMesaContext c )
  */
 XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
                                       XMesaWindow w,
-                                      XMesaContext c )
+                                      XMesaContext c
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+				     , __DRIdrawablePrivate *driDrawPriv
+#endif
+				    )
 {
 #ifndef XFree86Server
    XWindowAttributes attr;
@@ -1654,7 +1681,7 @@ XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
    assert(v);
 
 #ifdef XFree86Server
-   if (GET_VISUAL_DEPTH(v) != ((XMesaDrawable)w)->depth) {
+   if (GET_VISUAL_DEPTH(v) != ((XMesaDrawable)w)->bitsPerPixel) {
 #else
    XGetWindowAttributes( v->display, w, &attr );
 
@@ -1766,14 +1793,26 @@ XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
    }
 #endif
 
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+   b->driDrawPriv = driDrawPriv;
+#endif
+
    return b;
 }
 
 
 XMesaBuffer XMesaCreateWindowBuffer( XMesaVisual v,
-                                     XMesaWindow w )
+                                     XMesaWindow w
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+				     , __DRIdrawablePrivate *driDrawPriv
+#endif
+				   )
 {
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+   return XMesaCreateWindowBuffer2( v, w, NULL, driDrawPriv );
+#else
    return XMesaCreateWindowBuffer2( v, w, NULL );
+#endif
 }
 
 
@@ -1786,7 +1825,11 @@ XMesaBuffer XMesaCreateWindowBuffer( XMesaVisual v,
  * Return:  new XMesaBuffer or NULL if error
  */
 XMesaBuffer XMesaCreatePixmapBuffer( XMesaVisual v,
-				     XMesaPixmap p, XMesaColormap cmap )
+				     XMesaPixmap p, XMesaColormap cmap
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+				     , __DRIdrawablePrivate *driDrawPriv
+#endif
+				   )
 {
    int client = 0;
    XMesaBuffer b = alloc_xmesa_buffer();
@@ -1834,6 +1877,10 @@ XMesaBuffer XMesaCreatePixmapBuffer( XMesaVisual v,
       return NULL;
    }
 
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+   b->driDrawPriv = driDrawPriv;
+#endif
+
    return b;
 }
 
@@ -1847,7 +1894,8 @@ void XMesaDestroyBuffer( XMesaBuffer b )
    int client = 0;
 
 #ifdef XFree86Server
-   client = CLIENT_ID(b->frontbuffer->id);
+   if (b->frontbuffer)
+       client = CLIENT_ID(b->frontbuffer->id);
 #endif
 
    if (b->gc1)  XMesaFreeGC( b->xm_visual->display, b->gc1 );
@@ -2162,10 +2210,75 @@ void XMesaSwapBuffers( XMesaBuffer b )
 	 else
 #endif
          {
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+	     {
+		 __DRIdrawablePrivate *pdp = b->driDrawPriv;
+		 __DRIscreenPrivate *psp = pdp->driScreenPriv;
+		 drmContext hHWContext = pdp->driContextPriv->hHWContext;
+
+		 /*
+		 ** Grab the lock and make sure drawable info is still
+		 ** up to date.
+		 */
+		 DRM_LIGHT_LOCK(psp->fd, &psp->pSAREA->lock, hHWContext);
+		 DRI_MESA_VALIDATE_DRAWABLE_INFO(b->display, psp->myNum, pdp);
+
+		 /* Copy back image to front buffer */
+		 if (pdp->numClipRects) {
+		     int numClipRects = pdp->numClipRects;
+		     XF86DRIClipRectPtr pRect = pdp->pClipRects;
+		     int y;
+		     GLbyte *s8, *d8;
+		     GLuint *s32, *d32;
+
+		     while (numClipRects--) {
+			 int w = pRect->x2-pRect->x1;
+
+			 switch (psp->fbBPP) {
+			 case 8:
+			     for (y = pRect->y1; y < pRect->y2; y++) {
+				 s8 = (GLbyte *)b->backimage->data +
+				     y*b->backimage->bytes_per_line +
+				     pRect->x1;
+				 d8 = (GLbyte *)psp->pFB + psp->fbOrigin +
+				     (pdp->y + y)*psp->fbStride +
+				     pdp->x + pRect->x1;
+				 memcpy(d8, s8, w);
+			     }
+			     break;
+			 case 15:
+			 case 16:
+			     break;
+			 case 24:
+			     break;
+			 case 32:
+			     for (y = pRect->y1; y < pRect->y2; y++) {
+				 s32 = (GLuint *)b->backimage->data +
+				     y*b->backimage->bytes_per_line +
+				     pRect->x1;
+				 /* This is calculated in GLbytes */
+				 d8 = (GLbyte *)psp->pFB + psp->fbOrigin +
+				     (pdp->y + y)*psp->fbStride;
+				 d32 = (GLuint *)d8;
+				 /* This is calculated in GLuints */
+				 d32 += pdp->x + pRect->x1;
+				 memcpy(d32, s32, w<<2);
+			     }
+			     break;
+			 }
+
+			 pRect++;
+		     }
+		 }
+		 /* Unlock the screen */
+		 DRM_UNLOCK(psp->fd, &psp->pSAREA->lock, hHWContext);
+	     }
+#else
             XMesaPutImage( b->xm_visual->display, b->frontbuffer,
 			   b->cleargc,
 			   b->backimage, 0, 0,
 			   0, 0, b->width, b->height );
+#endif
          }
       }
       else {
@@ -2179,7 +2292,7 @@ void XMesaSwapBuffers( XMesaBuffer b )
 		      );
       }
    }
-#ifdef XFree86Server
+#if defined(GLX_DIRECT_RENDERING) || defined(XFree86Server)
    /* NOT_NEEDED */
 #else
    XSync( b->xm_visual->display, False );

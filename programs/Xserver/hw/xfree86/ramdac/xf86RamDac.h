@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.8 1999/02/12 22:52:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.9 1999/03/28 15:33:02 dawes Exp $ */
 
 #ifndef _XF86RAMDAC_H
 #define _XF86RAMDAC_H 1
@@ -8,6 +8,7 @@
 /* Define unique vendor codes for RAMDAC's */
 #define VENDOR_IBM	0x0000
 #define VENDOR_BT	0x0001
+#define VENDOR_TI	0x0002
 
 typedef struct _RamDacRegRec {
 /* This is probably the nastiest assumption, we allocate 1024 slots for
@@ -17,6 +18,7 @@ typedef struct _RamDacRegRec {
  */
     unsigned short DacRegs[0x400];	/* register set */
     unsigned char DAC[0x300];		/* colour map */
+    Bool Overlay;
 } RamDacRegRec, *RamDacRegRecPtr;
 
 typedef struct _RamDacHWRegRec {

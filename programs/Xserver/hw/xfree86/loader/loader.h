@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.19 1999/06/13 13:47:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.20 1999/06/13 15:49:07 dawes Exp $ */
 
 /*
  *
@@ -66,7 +66,7 @@
 
 #define TestFree(a) if (a) { xfree (a); a = NULL; }
 
-#define HASHDIV 8
+#define HASHDIV 10
 #define HASHSIZE (1<<HASHDIV)
 
 typedef struct _elf_reloc   *ELFRelocPtr;

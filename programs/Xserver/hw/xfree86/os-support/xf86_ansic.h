@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.23 1999/05/04 09:35:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.24 1999/05/15 12:10:33 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -235,6 +235,9 @@ extern xf86ssize_t xf86read(int, void *, xf86size_t);
 extern xf86ssize_t xf86write(int, const void *, xf86size_t);
 extern void* xf86mmap(void*, xf86size_t, int, int, int, xf86size_t /* off_t */);
 extern int xf86munmap(void*, xf86size_t);
+extern int xf86stat(const char *, struct xf86stat *);
+extern int xf86fstat(int, struct xf86stat *);
+extern int xf86access(const char *, int);
 extern int xf86errno;
 extern int xf86GetErrno(void);
 
@@ -254,6 +257,10 @@ extern void xf86bzero(void*,unsigned int);
 extern void xf86getsecs(CARD32 *, CARD32 *);
 extern int xf86execl(const char *, const char *, ...);
 extern long xf86fpossize(void);
+extern int xf86chmod(const char *, xf86mode_t);
+extern xf86uid_t xf86geteuid(void);
+extern int xf86mknod(const char *, xf86mode_t, xf86dev_t);
+unsigned int xf86sleep(unsigned int seconds);
 
 #else /* XFree86LOADER || NEED_XF86_TYPES */
 #include <unistd.h>

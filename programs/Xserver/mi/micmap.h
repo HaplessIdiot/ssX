@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/micmap.h,v 1.3 1998/11/22 10:37:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.h,v 1.4 1999/04/11 13:11:19 dawes Exp $ */
 
 #include "colormapst.h"
 
@@ -28,6 +28,10 @@ int miGetDefaultVisualMask(int);
 Bool miInitVisuals(VisualPtr *, DepthPtr *, int *, int *, int *, VisualID *,
 			unsigned long, int, int);
 void miResetInitVisuals(void);
+
+void miHookInitVisuals(void (**old)(miInitVisualsProcPtr *),
+		       void (*new)(miInitVisualsProcPtr *));
+
 
 #define MAX_PSEUDO_DEPTH	10
 #define MIN_TRUE_DEPTH		6

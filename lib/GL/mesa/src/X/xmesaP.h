@@ -79,6 +79,9 @@
 #include "GL/xf86glx.h"
 #include "xf86glx_util.h"
 #else
+#ifdef GLX_DIRECT_RENDERING
+#include "dri_mesa.h"
+#endif
 #ifdef SHM
 #  include <X11/extensions/XShm.h>
 #endif
@@ -105,7 +108,9 @@ typedef struct {
 struct xmesa_visual {
 	GLvisual *gl_visual;	/* Device independent visual parameters */
 	XMesaDisplay *display;	/* The X11 display */
-#ifndef XFree86Server
+#ifdef XFree86Server
+	GLint screen_depth;	/* The depth of the screen */
+#else
 	XVisualInfo *vishandle;	/* The pointer returned by glXChooseVisual */
 #endif
 	XMesaVisualInfo visinfo;	/* X's visual info */
@@ -165,6 +170,13 @@ struct xmesa_context {
 
 	GLubyte clearcolor[4];		/* current clearing color */
 	unsigned long clearpixel;	/* current clearing pixel value */
+
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+	__DRIcontextPrivate *driContextPriv; /* back pointer to DRI context
+					      * used for locking
+					      */
+	void *private;			/* device-specific private context */
+#endif
 };
 
 
@@ -244,6 +256,13 @@ struct xmesa_buffer {
   GLboolean FXisHackUsable;	        /* Is 3Dfx Glide for rendering into X win possible ? */
   GLboolean FXwindowHack;	        /* Use 3Dfx Glide for rendering into X win ? */
   fxMesaContext FXctx;
+#endif
+
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+  __DRIdrawablePrivate *driDrawPriv;	/* back pointer to DRI drawable
+					 * used for direct access to framebuffer
+					 */
+  void *private;			/* device-specific private drawable */
 #endif
 
    struct xmesa_buffer *Next;	/* Linked list pointer: */
@@ -563,7 +582,11 @@ extern triangle_func xmesa_get_triangle_func( GLcontext *ctx );
 /* XXX this is a hack to implement shared display lists with 3Dfx */
 extern XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
 					     XMesaWindow w,
-					     XMesaContext c );
+					     XMesaContext c
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+					     , __DRIdrawablePrivate *driDrawPriv
+#endif
+					   );
 
 /*
  * These are the extra routines required for integration with XFree86.

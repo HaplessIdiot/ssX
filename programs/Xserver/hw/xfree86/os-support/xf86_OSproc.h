@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.26 1999/06/05 15:55:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.27 1999/06/12 07:19:03 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -175,6 +175,12 @@ extern void xf86SlowBCopyFromBus(unsigned char *, unsigned char *, int);
 extern void xf86SlowBCopyToBus(unsigned char *, unsigned char *, int);
 #endif /* __alpha__ */
 
+/* These routines are in shared/sigio.c and are not loaded as part of the
+   module.  These routines are small, and the code if very POSIX-signal (or
+   OS-signal) specific, so it seemed better to provide more complex
+   wrappers than to wrap each individual function called. */
+extern int xf86InstallSIGIOHandler(int fd, void (*f)(int));
+extern int xf86RemoveSIGIOHandler(int fd);
 
 #ifdef XF86_OS_PRIVS
 extern void xf86OpenConsole(void);
@@ -221,7 +227,6 @@ resPtr xf86AccResFromOS(resPtr ret);
 PciBusPtr xf86InitOSPciAllocator(const pciConfigPtr *pciInfo,
 				resPtr *sysRes,	const resPtr pciRes);
 #endif /* NEED_OS_RAC_PROTOS */
-
 
 #endif /* XF86_OS_PRIVS */
 

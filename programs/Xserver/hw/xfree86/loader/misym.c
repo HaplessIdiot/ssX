@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.18 1999/04/04 07:03:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.19 1999/04/11 13:11:04 dawes Exp $ */
 
 /*
  *
@@ -137,6 +137,8 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miInitVisuals)
    SYMFUNC(miWindowExposures)
    SYMFUNC(miSegregateChildren)
+   SYMFUNC(miClipNotify)
+   SYMFUNC(miHookInitVisuals)
    SYMVAR(miZeroLineScreenIndex)
    SYMVAR(miSpritePointerFuncs)
    SYMVAR(miPointerScreenIndex)

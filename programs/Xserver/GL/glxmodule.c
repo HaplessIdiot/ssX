@@ -25,13 +25,13 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/glxmodule.c,v 1.4 1999/04/11 15:28:08 dawes Exp $ */
 
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glxmodule.c,v 1.4 1999/02/27 03:25:03 jens Exp $
+ * $PI: xc/programs/Xserver/GL/glxmodule.c,v 1.10 1999/06/08 11:01:04 faith Exp $
  */
 
 #include "xf86Module.h"
@@ -40,22 +40,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 static MODULESETUPPROTO(glxSetup);
 
-#ifdef XF86DRI
-extern void XFree86DRIExtensionInit(INITARGS);
-#define _XF86DRI_SERVER_
-#include "xf86dristr.h"
-
-ExtensionModule XF86DRIExt =
-{
-    XFree86DRIExtensionInit,
-    XF86DRINAME,
-    NULL,
-    NULL
-};
-#endif
-
 extern void GlxExtensionInit(INITARGS);
 extern void GlxWrapInitVisuals(miInitVisualsProcPtr *);
+extern void InitGlxWrapInitVisuals(void (*f)(miInitVisualsProcPtr *));
 
 ExtensionModule GLXExt =
 {
@@ -85,20 +72,19 @@ XF86ModuleData glxModuleData = { &VersRec, glxSetup, NULL };
 static pointer
 glxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    pointer GLcore = NULL;
+    pointer GLcore  = NULL;
 #ifdef GLX_USE_SGI_SI
     char GLcoreName[] = "libGL";
 #else
     char GLcoreName[] = "libGLcore";
 #endif
 
-#ifdef XF86DRI
-    LoadExtension(&XF86DRIExt);
-#endif
     LoadExtension(&GLXExt);
 
     /* Wrap the init visuals routine in micmap.c */
     GlxWrapInitVisuals(&miInitVisualsProc);
+    /* Make sure this gets wrapped each time InitVisualWrap is called. */
+    miHookInitVisuals(NULL, GlxWrapInitVisuals);
 
     GLcore = LoadSubModule(module, GLcoreName, NULL, NULL, NULL, NULL, 
 			   errmaj, errmin);

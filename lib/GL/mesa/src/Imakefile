@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.1 1999/06/14 07:23:43 dawes Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/Imakefile,v 1.2 1999/04/05 05:24:33 martin Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -15,7 +15,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
                 attrib.c bitmap.c blend.c clip.c colortab.c context.c \
                 copypix.c depth.c dlist.c drawpix.c enable.c eval.c \
                 feedback.c fog.c get.c hash.c image.c light.c lines.c \
-                logic.c masking.c matrix.c misc.c mmath.c mthreads.c \
+                logic.c masking.c matrix.c glmisc.c mmath.c mthreads.c \
                 pb.c pixel.c points.c pointers.c polygon.c quads.c \
                 rastpos.c readpix.c rect.c scissor.c shade.c span.c \
                 stencil.c teximage.c texobj.c texstate.c texture.c \
@@ -25,7 +25,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
                 attrib.o bitmap.o blend.o clip.o colortab.o context.o \
                 copypix.o depth.o dlist.o drawpix.o enable.o eval.o \
                 feedback.o fog.o get.o hash.o image.o light.o lines.o \
-                logic.o masking.o matrix.o misc.o mmath.o mthreads.o \
+                logic.o masking.o matrix.o glmisc.o mmath.o mthreads.o \
                 pb.o pixel.o points.o pointers.o polygon.o quads.o \
                 rastpos.o readpix.o rect.o scissor.o shade.o span.o \
                 stencil.o teximage.o texobj.o texstate.o texture.o \
