@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.446tsi Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.447 2003/05/27 16:34:31 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1358,7 +1358,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 /* On the Alpha we need to ensure floating point accuracy for 3D */
 #    define GlxArchDefines -D__GLX_ALIGN64 -mieee
 #  elif defined(DarwinArchitecture)
-/* GLX contains lots of uninitalized globals, which can upset Darwin */
+/* GLX contains lots of uninitialized globals, which can upset Darwin */
 #    define GlxArchDefines -fno-common
 #  else
 #    define GlxArchDefines /**/
