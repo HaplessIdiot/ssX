@@ -120,8 +120,14 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 
     while (chips->name) {
 	for (j = 0; xf86PCIVendorInfoData[i].Device[j].DeviceName; j++)
-	    if (chips->token == xf86PCIVendorInfoData[i].Device[j].DeviceID)
-		break;	
+	    if (chips->token == xf86PCIVendorInfoData[i].Device[j].DeviceID) {
+		if (strcmp(chips->name, xf86PCIVendorInfoData[i].Device[j].DeviceName)) {
+		    printf("    ERROR chipset strings don't match: \"%s\" \"%s\"\n",
+			   chips->name, xf86PCIVendorInfoData[i].Device[j].DeviceName);
+		    *err += 2;
+		}
+		break;
+	    }
 	if (!xf86PCIVendorInfoData[i].Device[j].DeviceName) {
 	    printf("    WARNING chipset \"%s\" not in list.\n", chips->name);
 	    ++*err;
