@@ -322,7 +322,6 @@ static const char *fbdevHWSymbols[] = {
 	"fbdevHWRestore",
 	"fbdevHWModeInit",
 	"fbdevHWSave",
-
 	"fbdevHWUnmapMMIO",
 	"fbdevHWUnmapVidmem",
 	"fbdevHWMapMMIO",
@@ -1349,21 +1348,24 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     pGlint->irq = pGlint->pEnt->device->irq;
 
     /* Register the PCI-assigned resources. */
-    if (xf86RegisterResources(pGlint->pEnt->index, NULL, ResExclusive)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+    if (pGlint->numMXDevices == 0) {
+        if (xf86RegisterResources(pGlint->pEnt->index, NULL, ResExclusive)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "xf86RegisterResources() found resource conflicts\n");
-	return FALSE;
+	    return FALSE;
+        }
+    } else {
+        for (i = 0; i < pGlint->numMXDevices; i++) {
+	    if (xf86RegisterResources(pGlint->pEntMX[i]->index, NULL,
+				  ResExclusive)) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "xf86RegisterResources() found resource conflicts\n");
+	        return FALSE;
+	    }
+        }
     }
     if (pGlint->pEntGeometry) {
 	if (xf86RegisterResources(pGlint->pEntGeometry->index, NULL, ResExclusive)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "xf86RegisterResources() found resource conflicts\n");
-	    return FALSE;
-	}
-    }
-    for (i = 0; i < pGlint->numMXDevices; i++) {
-	if (xf86RegisterResources(pGlint->pEntMX[i]->index, NULL,
-				  ResExclusive)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "xf86RegisterResources() found resource conflicts\n");
 	    return FALSE;
