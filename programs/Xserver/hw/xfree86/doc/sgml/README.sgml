@@ -1,8 +1,9 @@
 <!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
 <!ENTITY % defs SYSTEM "defs.ent"> %defs;
 <!ENTITY % onediff 'IGNORE'>	 <!-- patch is a single diff file -->
-<!ENTITY % twodiffs 'INCLUDE'>	 <!-- patch is split into two diff files -->
+<!ENTITY % twodiffs 'IGNORE'>	 <!-- patch is split into two diff files -->
 <!ENTITY % threediffs 'IGNORE'> <!-- patch is split into three diff files -->
+<!ENTITY % fourdiffs 'INCLUDE'> <!-- patch is split into four diff files -->
 ]>
 
 
@@ -13,7 +14,7 @@
 <date>30 June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.106 2000/07/02 02:35:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.107 2000/07/02 16:35:56 dawes Exp $
 </ident>
 
 <abstract>
@@ -266,11 +267,30 @@ gunzip &lt; &prevrelvers;-&relvers;.diff3.gz | patch -p0 -E
 </verb></tscreen>
 ]]>
 
+<![ %fourdiffs; [
+A source patch relative to version &prevrelvers; is also available.
+Because of its size, it is split into four parts.
+The patch files are <tt>&prevrelvers;-&relvers;.diff1.gz</tt>,
+<tt>&prevrelvers;-&relvers;.diff2.gz</tt>,
+<tt>&prevrelvers;-&relvers;.diff3.gz</tt> and
+<tt>&prevrelvers;-&relvers;.diff4.gz</tt>.  These patches should
+be applied to a clean &prevrelvers; source tree, working from the directory
+containing the <tt>xc/</tt> directory.  The patches should be applied by
+running:
+
+<tscreen><verb>
+gunzip &lt; &prevrelvers;-&relvers;.diff1.gz | patch -p0 -E
+gunzip &lt; &prevrelvers;-&relvers;.diff2.gz | patch -p0 -E
+gunzip &lt; &prevrelvers;-&relvers;.diff3.gz | patch -p0 -E
+gunzip &lt; &prevrelvers;-&relvers;.diff4.gz | patch -p0 -E
+</verb></tscreen>
+]]>
+
 The contrib part of the distribution has been folded into the main
 source tree, so a separate contrib tarball is no longer required.
 
 To format the XFree86 documentation use the latest version of our doctools
-package available as <tt>doctools-1.2.tgz</tt>.
+package available as <tt>doctools-&doctoolsvers;.tgz</tt>.
 
 <sect>Reporting Bugs
 <p>

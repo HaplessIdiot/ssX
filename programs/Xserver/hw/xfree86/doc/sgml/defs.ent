@@ -1,4 +1,4 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.13 2000/06/30 16:54:28 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.14 2000/11/28 20:59:17 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
@@ -13,6 +13,9 @@
 <!-- SuperProbe version strings -->
 <!ENTITY spvers CDATA "2.23">
 <!ENTITY legacyspvers CDATA "2.21">
+
+<!-- doctools version strings -->
+<!ENTITY doctoolsvers CDATA "1.2">
 
 <!-- These should be set according to which snapshot/release this is -->
 <!ENTITY % firstsnap 'IGNORE'>
