@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.52 2001/12/28 15:49:11 dawes Exp $ */
+/* $XFree86: r128_driver.c,v 1.53 2001/12/28 17:31:44 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1143,7 +1143,7 @@ R128I2cInit(ScrnInfoPtr pScrn)
         xf86LoaderReqSymLists(i2cSymbols,NULL);
 	else{
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
-            "Fail to load 12c module\n");
+            "Fail to load i2c module\n");
 		return FALSE;
     }
 
