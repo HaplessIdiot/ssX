@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.16 2003/11/17 03:35:48 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.17 2003/11/21 05:22:08 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,15 +56,18 @@
 
 char *encodings_array[] =
     { "iso8859-1", "iso8859-2", "iso8859-3", "iso8859-4", "iso8859-5",
-      "iso8859-6", "iso8859-7", "iso8859-8", "iso8859-9", "iso8859-10",
-      "iso8859-11", "iso8859-12", "iso8859-13", "iso8859-14", "iso8859-15",
-      "koi8-r", "koi8-u", "koi8-ru", "koi8-e", "koi8-uni",
+      "iso8859-6", "iso8859-6.8", "iso8859-6.8x", "iso8859-6.16",
+      "iso8859-7", "iso8859-8", "iso8859-9", "iso8859-10",
+      "iso8859-11", "iso8859-12", "iso8859-13", "iso8859-14",
+      "iso8859-15", "iso8859-16",
+      "ansi-1251", "koi8-r", "koi8-u", "koi8-ru", "koi8-e", "koi8-uni",
       "tis620-2",
       "adobe-standard", "adobe-symbol",
-      "ibm-cp437", "microsoft-cp1252",
+      "ibm-cp437", "ibm-cp850", "ibm-cp852", "ibm-cp866", "microsoft-cp1252",
       /* But not "adobe-dingbats", as it uses generic glyph names. */
       "jisx0201.1976-0", "jisx0208.1983-0", "jisx0208.1990-0",
-      "jisx0212.1990-0", "big5-0", "gb2312.1980-0",
+      "jisx0212.1990-0", "big5-0", "big5.eten-0", "big5hkscs-0",
+      "gb2312.1980-0", "gb18030.2000-0", "gb18030.2000-1",
       "ksc5601.1987-0", "ksc5601.1992-3"};
 
 char *extra_encodings_array[] =
