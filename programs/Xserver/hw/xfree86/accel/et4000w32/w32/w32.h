@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.2 1994/09/25 12:28:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.3 1994/11/19 07:52:28 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -36,12 +36,16 @@ glenn@cs.utexas.edu)
 #include <stdio.h>
 
 typedef unsigned char *ByteP; 
+typedef volatile unsigned char *VByteP; 
 typedef unsigned short *WordP;
 typedef unsigned *LongP;
 
 
 extern
-ByteP W32Buffer, ACL;
+ByteP W32Buffer;
+
+extern
+VByteP ACL;
 
 
 extern

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.1 1994/09/25 12:28:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32stip.h,v 3.2 1994/11/19 07:52:40 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -145,24 +145,24 @@ glenn@cs.utexas.edu)
 		w = w32_chunks; \
 		while (w--) \
 		{ \
-		    *(volatile ByteP)ACL = bits; \
-		    *(volatile ByteP)ACL = bits >> 8; \
-		    *(volatile ByteP)ACL = bits >> 16; \
-		    *(volatile ByteP)ACL = bits >> 24; \
+		    *ACL = bits; \
+		    *ACL = bits >> 8; \
+		    *ACL = bits >> 16; \
+		    *ACL = bits >> 24; \
 	    	} \
 		switch (w32_misc) \
 		{ \
 		    case 3: \
-			*(volatile ByteP)ACL = bits; \
-			*(volatile ByteP)ACL = bits >> 8; \
-			*(volatile ByteP)ACL = bits >> 16; \
+			*ACL = bits; \
+			*ACL = bits >> 8; \
+			*ACL = bits >> 16; \
 			break; \
 		    case 2: \
-			*(volatile ByteP)ACL = bits; \
-			*(volatile ByteP)ACL = bits >> 8; \
+			*ACL = bits; \
+			*ACL = bits >> 8; \
 			break; \
 		    case 1: \
-			*(volatile ByteP)ACL = bits; \
+			*ACL = bits; \
 			break; \
 		} \
 	    }
