@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.5 2000/11/29 22:01:11 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.6 2000/11/30 00:49:44 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -567,8 +567,6 @@ R128AllocateMemory(
    return new_linear;
 }
 
-static int counter = 0;
-
 static void
 R128DisplayVideo(
     ScrnInfoPtr pScrn,
@@ -583,7 +581,8 @@ R128DisplayVideo(
 ){
     R128InfoPtr info = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
-    int h_inc, step_by, skip;
+    int h_inc, step_by, start;
+    int p1_accum_init, p1_preshift, p23_accum_init, p23_preshift;
 
     h_inc = ((src_w - 1) << 12) / (drw_w - 1);
     step_by = 1;
@@ -593,8 +592,16 @@ R128DisplayVideo(
 	h_inc >>= 1;
     }
 	
-    skip = (left >> 16) & ~7;
-    offset += skip << 1;
+    left >>= 16;
+    offset += (left & ~7) << 1;
+    left = left & 7;
+    start = ((left & 3) << 12) + 0x00002800 + (h_inc >> 1); 
+    p1_accum_init = (start << 8) & 0x000f8000;
+    p1_preshift = (start << 16) & 0xf0000000;
+
+    start = ((left & 1) << 12) + 0x00002800 + (h_inc >> 2); 
+    p23_accum_init = (start << 8) & 0x000f8000;
+    p23_preshift = (start << 16) & 0x70000000;
 
     OUTREG(R128_OV0_REG_LOAD_CNTL, 1);
     while(!(INREG(R128_OV0_REG_LOAD_CNTL) & (1 << 3)));
@@ -606,12 +613,14 @@ R128DisplayVideo(
     OUTREG(R128_OV0_V_INC, ((src_h - 1) << 20) / (drw_h - 1));
     OUTREG(R128_OV0_P1_BLANK_LINES_AT_TOP, 0x00000fff | ((src_h - 1) << 16));
     OUTREG(R128_OV0_VID_BUF_PITCH0_VALUE, pitch);
-    OUTREG(R128_OV0_P1_X_START_END, width);
-    OUTREG(R128_OV0_P2_X_START_END, width >> 1);
-    OUTREG(R128_OV0_P3_X_START_END, width >> 1);
+    OUTREG(R128_OV0_P1_X_START_END, (width - 1) | (left << 16));
+    left >>= 1;
+    OUTREG(R128_OV0_P2_X_START_END, ((width >> 1) - 1) | (left << 16));
+    OUTREG(R128_OV0_P3_X_START_END, ((width >> 1) - 1) | (left << 16));
     OUTREG(R128_OV0_VID_BUF0_BASE_ADRS, offset & 0xfffffff0);
     OUTREG(R128_OV0_P1_V_ACCUM_INIT, (2 << 20) | 0x00000001);  /* fixme */
-    OUTREG(R128_OV0_P1_H_ACCUM_INIT, (3 << 28));	       /* fixme */
+    OUTREG(R128_OV0_P1_H_ACCUM_INIT, p1_preshift | p1_accum_init);
+    OUTREG(R128_OV0_P23_H_ACCUM_INIT, p23_preshift | p23_accum_init);
 
     if(id == FOURCC_UYVY)
        OUTREG(R128_OV0_SCALE_CNTL, 0x41008C03);
