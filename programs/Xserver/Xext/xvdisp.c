@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.16 2000/08/10 17:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.17 2001/02/20 05:29:19 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -2011,7 +2011,7 @@ XineramaXvPutVideo(ClientPtr client)
     Bool isRoot;
     int result = Success, i, x, y;
 
-    REQUEST_AT_LEAST_SIZE(xvPutImageReq);
+    REQUEST_AT_LEAST_SIZE(xvPutVideoReq);
 
     if(!(draw = (PanoramiXRes *)SecurityLookupIDByClass(
                 client, stuff->drawable, XRC_DRAWABLE, SecurityWriteAccess)))
