@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greet.h,v 1.3 1999/02/25 06:01:06 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greet.h,v 1.5 2000/05/31 07:15:11 eich Exp $ */
 
 /*
  * greet.h - interface to xdm's dynamically-loadable modular greeter
@@ -82,7 +82,7 @@ struct dlfuncs {
 #endif
     char *(*_crypt)(CRYPT_ARGS);
 #ifdef USE_PAM
-    pam_handle_t *(*_thepamh)(void);
+    pam_handle_t **(*_thepamhp)(void);
 #endif
 };
 
@@ -178,7 +178,7 @@ extern  void    (*__xdm_endpwent)(void);
 #endif
 extern	char    *(*__xdm_crypt)(CRYPT_ARGS);
 #ifdef USE_PAM
-extern  pam_handle_t    *(*__xdm_thepamh)(void);
+extern  pam_handle_t    **(*__xdm_thepamhp)(void);
 #endif
 
 /*
@@ -217,6 +217,6 @@ extern  pam_handle_t    *(*__xdm_thepamh)(void);
 #endif
 #define	getpwnam	(*__xdm_getpwnam)
 #define	crypt		(*__xdm_crypt)
-#define thepamh		(*__xdm_thepamh)
+#define thepamhp	(*__xdm_thepamhp)
 
 #endif /* GREET_LIB */

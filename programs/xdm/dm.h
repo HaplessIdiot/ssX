@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.19 2000/06/14 00:16:14 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.20 2000/11/14 18:20:39 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -417,6 +417,7 @@ extern void ReinitResources (void);
 
 /* in session.c */
 #ifdef USE_PAM
+extern pam_handle_t **thepamhp(void);
 extern pam_handle_t *thepamh(void);
 #endif
 extern char **defaultEnv (void);

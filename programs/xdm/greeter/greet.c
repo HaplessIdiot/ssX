@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.6 2000/05/31 07:15:13 eich Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.7 2000/06/14 00:16:16 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -83,7 +83,7 @@ void   (*__xdm_endpwent)(void) = NULL;
 #endif
 char     *(*__xdm_crypt)(CRYPT_ARGS) = NULL;
 #ifdef USE_PAM
-pam_handle_t *(*__xdm_thepamh)(void) = NULL;
+pam_handle_t **(*__xdm_thepamhp)(void) = NULL;
 #endif
 
 #endif

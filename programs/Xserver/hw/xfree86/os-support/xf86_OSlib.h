@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.74 2000/08/11 19:51:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.75 2000/10/17 16:53:19 tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -888,6 +888,8 @@ double RInt(
 #  define MOUSE_PROTOCOL_IN_KERNEL
 # endif
 #endif
+
+#define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
 
 #define XF86_OS_PRIVS
 #include "xf86_OSproc.h"

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.22 2000/05/31 07:15:11 eich Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.23 2000/06/17 00:27:34 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -97,10 +97,21 @@ extern  void	endpwent(void);
 extern	char	*crypt(CRYPT_ARGS);
 #endif
 #ifdef USE_PAM
-pam_handle_t *thepamh()
+pam_handle_t **thepamhp()
 {
 	static pam_handle_t *pamh = NULL;
-	return pamh;
+	return &pamh;
+}
+
+pam_handle_t *thepamh()
+{
+	pam_handle_t **pamhp;
+
+	pamhp = thepamhp();
+	if (pamhp)
+		return *pamhp;
+	else
+		return NULL;
 }
 #endif
 
@@ -139,7 +150,7 @@ static	struct dlfuncs	dlfuncs = {
 #endif
 	crypt,
 #ifdef USE_PAM
-	thepamh,
+	thepamhp,
 #endif
 	};
 

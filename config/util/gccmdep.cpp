@@ -3,7 +3,7 @@ XCOMM!/bin/sh
 XCOMM
 XCOMM makedepend which uses 'gcc -M'
 XCOMM
-XCOMM $XFree86: xc/config/util/gccmdep.cpp,v 3.3 1996/02/25 01:16:15 dawes Exp $
+XCOMM $XFree86: xc/config/util/gccmdep.cpp,v 3.4 2000/08/08 03:16:26 dawes Exp $
 XCOMM
 XCOMM Based on mdepend.cpp and code supplied by Hongjiu Lu <hjl@nynexst.com>
 XCOMM
@@ -33,7 +33,7 @@ while [ $# != 0 ]; do
 	    -D*|-I*)
 		args="$args '$1'"
 		;;
-	    -g|-o)
+	    -g|-O*)
 		;;
 	    *)
 		if [ "$endmarker"x = x ]; then

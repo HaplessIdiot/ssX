@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.2 2000/09/26 15:57:22 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/vidmode.c,v 1.3 2000/10/20 14:59:08 alanh Exp $
  */
 
 /*
@@ -34,7 +34,6 @@
  */
 
 #include "vidmode.h"
-#include <X11/extensions/Xinerama.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.13 1999/04/28 05:36:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.14 2000/11/06 19:24:08 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -143,6 +143,7 @@ void
 xf86OpenConsole()
 {
     int i, fd = -1;
+    int result;
     xf86ConsOpen_t *driver;
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
     vtmode_t vtmode;
@@ -243,11 +244,15 @@ xf86OpenConsole()
 	    /*
 	     * now get the VT
 	     */
-	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
+	    SYSCALL(result =
+		    ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno));
+	    if (result != 0)
 	    {
     	        xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	    }
-	    if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
+	    SYSCALL(result =
+		    ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno));
+	    if (result != 0)
 	    {
 	        xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	    }

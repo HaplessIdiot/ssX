@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.15 1998/10/06 06:08:25 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.16 1999/03/21 07:34:26 dawes Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -566,15 +566,16 @@ char *getnextline(struct filepointer *filep)
 			}
 			continue;
 		}
-#if defined(WIN32) || defined(__EMX__)
 		else if (*p == '/' && *(p+1) == '/') { /* consume comments */
 			*p++ = ' ', *p++ = ' ';
 			while (*p && *p != '\n')
 				*p++ = ' ';
-			lineno++;
+			if (*p == '\n') {
+				lineno++;
+				*p++ = ' ';
+			}
 			continue;
 		}
-#endif
 		else if (*p == '\\') {
 			if (*(p+1) == '\n') {
 				*p = ' ';
