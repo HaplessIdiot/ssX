@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.11 2002/01/29 01:04:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.12 2002/08/06 13:46:27 dawes Exp $
  */
 
 #ifndef _VESA_H_
@@ -109,6 +109,8 @@ typedef struct _VESARec
     Bool shadowFB, primary;
     CARD8 *shadowPtr;
     CARD32 windowAoffset;
+    /* Don't override the default refresh rate. */
+    Bool defaultRefresh;
     /* DGA info */
     DGAModePtr pDGAMode;
     int nDGAMode;
