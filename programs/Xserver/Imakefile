@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.276 2003/01/15 02:34:02 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.277 2003/01/23 19:18:32 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -612,7 +612,9 @@ XF86I2CLIB = $(XF86SRC)/i2c/LibraryTargetName(i2c)
 #if XF86DDC
 XF86DDCLIB = $(XF86SRC)/ddc/LibraryTargetName(ddc)
 #endif
-XF86VBELIB = $(XF86OSSRC)/vbe/vbe.o
+#if XF86VBE
+XF86VBELIB = $(XF86SRC)/vbe/LibraryTargetName(vbe)
+#endif
 #if XF86RAC
 XF86RACLIB = $(XF86SRC)/rac/LibraryTargetName(rac)
 #endif
@@ -629,14 +631,14 @@ XF86IDRIVERLIB = $(XF86SRC)/input/LibraryTargetName(idriver)
 XF86DRVOBJS = $(XF86SRC)/drivers/drvConf.o
 XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
               $(XF86XAALIB) $(XF86VGAHWLIB) $(XF86FBDEVHWLIB) \
-	      $(XF8_32WIDLIB) $(XF8_32BPPLIB) $(XF86VBELIB) \
+	      $(XF8_32WIDLIB) $(XF8_32BPPLIB) \
 	      $(XF8_16BPPLIB) $(XF24_32BPPLIB) \
 	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB) $(AFBLIB)
 XF86IDRVOBJS = $(XF86SRC)/input/drvConf.o
 XF86IDRVLIBS = $(XF86IDRIVERLIB)
 XF86SCANLIB = $(XF86SRC)/scanpci/LibraryTargetName(scanpci)
 XF86LIBS  = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) $(XF86RACLIB) \
-	    $(XF86PARSLIB) $(XF86OSLIB) $(XF86INT10LIB) 
+	    $(XF86PARSLIB) $(XF86VBELIB) $(XF86OSLIB) $(XF86INT10LIB) 
 #else
 XF86LIBS  = $(MEMDEBUGLIB) $(XF86INIT) $(XF86COMLIB) \
 	    $(XF86PARSLIB) $(XF86OSLIB) 

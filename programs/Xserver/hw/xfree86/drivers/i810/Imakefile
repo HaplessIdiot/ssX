@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.23 2002/11/18 17:00:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/Imakefile,v 1.24 2002/12/10 01:27:04 dawes Exp $
 XCOMM
 XCOMM This is the Imakefile for the i810 driver.  
 XCOMM 
@@ -69,7 +69,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC)				\
 	   -I$(SERVERSRC)/miext/shadow					\
            -I$(SERVERSRC)/fb -I$(XF86SRC)/xaa -I$(XF86SRC)/ramdac	\
 	   -I$(XF86SRC)/vgahw -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c		\
-	   -I$(XF86OSSRC)/vbe -I$(XF86SRC)/int10			\
+	   -I$(XF86SRC)/vbe -I$(XF86SRC)/int10			\
 	   -I$(SERVERSRC)/Xext 						\
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC)	\
 	   -I$(EXTINCSRC) -I$(SERVERSRC)/render				\

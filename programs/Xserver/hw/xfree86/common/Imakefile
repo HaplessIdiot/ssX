@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.146 2003/01/28 22:41:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.147 2003/01/31 20:46:46 dawes Exp $
 
 
 
@@ -173,7 +173,7 @@ OFILES = \
 		-I$(FONTLIBSRC)/include -I$(FONTINCSRC) \
 		-I$(XF86SRC) -I$(XF86PARSERSRC) \
 		-I$(XF86SRC)/loader $(VGAINCLUDES) -I$(XF86SRC)/rac \
-	        -I$(XF86SRC)/scanpci -I$(XF86OSSRC)/vbe -I$(XF86SRC)/int10 \
+	        -I$(XF86SRC)/scanpci -I$(XF86SRC)/vbe -I$(XF86SRC)/int10 \
 		-I$(XF86SRC)/ddc -I$(SERVERSRC)/render $(RANDRINCS)
 
      OSNAME = OSName
