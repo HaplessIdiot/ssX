@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.47 2001/09/09 01:07:26 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.48 2001/10/24 01:21:25 dickey Exp $ */
 
 /***********************************************************
 
@@ -1050,9 +1050,9 @@ main (int argc, char **argv, char **envp)
 	{
 	    char *s;
 
-	    if ((s = getenv("LC_ALL")) ||
-		(s = getenv("LC_CTYPE")) ||
-		(s = getenv("LANG"))) {
+	    if (((s = getenv("LC_ALL")) != 0 && *s != '\0') ||
+		((s = getenv("LC_CTYPE")) != 0 && *s != '\0') ||
+		((s = getenv("LANG")) != 0 && *s != '\0')) {
 		if (strstr(s, "UTF-8"))
 		    defaultUTF8[0] = '2';
 	    }

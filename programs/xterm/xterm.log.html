@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <!--
  *****************************************************************************
- * Copyright 1996,1997,1998,1999,2000,2001 by Thomas E. Dickey               *
+ * Copyright 1996,1997,1998,1999,2000,2001,2002 by Thomas E. Dickey          *
  * All Rights Reserved.                                                      *
  *                                                                           *
  * Permission to use, copy, modify, and distribute this software and its     *
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_165">Patch #165 - 2002/1/5 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_164">Patch #164 - 2001/11/13 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_163">Patch #163 - 2001/11/04 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_162">Patch #162 - 2001/10/23 - XFree86 4.1.0</A>
@@ -209,7 +210,61 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_164">Patch #164 - 2001/1l/13 - XFree86 4.1.0</A></H1>
+<H1><A NAME="xterm_165">Patch #165 - 2002/01/05 - XFree86 4.1.0</A></H1>
+<ul>
+	<li>modify <code>uxterm</code> script to strip encoding part from
+	  environment variable before adding ".UTF-8" (based on Debian
+	  #125947, but using a more portable solution).
+
+	<li>add an assignment statement in VTInitialize() to make
+	  <code>awaitInput</code> resource work.
+
+	<li>use new macros init_Bres(), etc., in VTInitialize() to add trace of
+	  the initialization of resources.
+
+	<li>modify checks for $LC_ALL, related environment variables to ensure
+	  the resulting strings are nonempty (report by Markus Kuhn).
+
+	<li>add an ifdef in charproc.c for num_ptrs variable in case all
+	  configure options are disabled.
+
+	<li>modify definition of getXtermBackground() to avoid negative array
+	  index warning on Tru64 (report by Jeremie Petit).
+
+	<li>improve fix from patch #165 (still Debian #117184, report by Matt
+	  Zimmerman &lt;mdz@debian.org&gt;)
+
+	<li>correct install rule for uxterm in Makefile.in, to handle the
+	  case where building in a different directory than xterm's source
+	  (patch by Paul Gilmartin).
+
+	<li>documented ANSI.SYS-style cursor save/restore escape sequences
+	  in ctlseqs.ms, which are in xterm since X11R5.
+
+	<li>correct two entries in the default charClass table, which did not
+	  follow the manpage comment about the character number corresponding
+	  to the class (patch by Marc Bevand &lt;bevand_m@epita.fr&gt;).
+
+	<li>fix a couple of typos in comments in the app-defaults files
+	  (David Krause &lt;xfree86@davidkrause.com&gt;).
+
+	<li>resync with XFree86 CVS:
+	  <ul>
+	  <li>update language of copyrights in some files to reflect the fact
+	      that they were reassigned from X Consortium to The Open Group in
+	      1998.  Note that this xterm source is derived from the 1996
+	      version from X Consortium, does not incorporate changes made by X
+	      Consortium or The Open Group after that date, hence we do not add
+	      The Open Group's 1998 copyright date to related files.
+
+	  <li>save/restore <code>errno</code> in signal catcher (Matthieu Herrb).
+
+	  <li>modify UXTerm.ad's font5 resource so that xterm can display double
+	      width characters using a font distributed with XFree86 (Tomohiro KUBOTA).
+	  </ul>
+</ul>
+
+<H1><A NAME="xterm_164">Patch #163 - 2001/11/13 - XFree86 4.1.0</A></H1>
 <ul>
 	<li>correct a case where <code>ptyInitialErase</code> and
 	  <code>backarrowKeyIsErase</code> resources combine to set
@@ -218,7 +273,7 @@ xc/programs/Xserver/hw/xfree86).
 	  (Debian #117184)
 </ul>
 
-<H1><A NAME="xterm_163">Patch #163 - 2001/1l/04 - XFree86 4.1.0</A></H1>
+<H1><A NAME="xterm_163">Patch #163 - 2001/11/04 - XFree86 4.1.0</A></H1>
 <ul>
 	<li>correct ifdef's for <code>__QNX__</code> and
 	  <code>USE_SYSV_PGRP</code> in main.c call to <code>tcsetpgrp</code>,
