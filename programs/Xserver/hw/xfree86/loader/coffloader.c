@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.3.2.2 1998/07/04 13:32:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.8 1998/07/25 16:56:12 dawes Exp $ */
 
 /*
  *
@@ -1263,8 +1263,7 @@ void *mod;
 }
 
 int
-COFFCheckForUnresolved(color_depth, mod)
-int color_depth;
+COFFCheckForUnresolved( mod)
 void	*mod;
 {
     char	*name;
@@ -1278,7 +1277,7 @@ void	*mod;
 	{
 	name = COFFGetSymbolName(crel->file, crel->rel->r_symndx);
         flag = _LoaderHandleUnresolved(name,
-			_LoaderHandleToName(crel->file->handle), color_depth);
+			_LoaderHandleToName(crel->file->handle));
         if (flag) fatalsym = 1;
 	xf86loaderfree(name);
 	crel=crel->next;

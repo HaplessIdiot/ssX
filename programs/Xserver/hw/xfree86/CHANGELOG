@@ -1,4 +1,9 @@
 XFree86 3.9Nf (20 September 1998)
+1852. Update the sample config file to be consistent with the update format.
+1851. Add a mechanism to allow modules to tell the loader which symbols from
+      from other modules it references, and which of those are essential.
+      This makes it possible to eliminate unnecessary warnings about
+      unresolved symbols, and to trigger a fatal error where appropriate.
 1850. More attempts towards a working G100 server (1982, Dirk Hohndel).
 1849. Update the mga driver for use with the resource management code.
 1848. Fix some bugs and typos in the resource management code.
@@ -6530,4 +6535,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.627 1998/09/20 08:39:18 hohndel Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.13 1998/07/25 16:56:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.14 1998/08/19 07:49:21 dawes Exp $ */
 
 /*
  *
@@ -2004,8 +2004,7 @@ void *mod;
 }
 
 int
-ELFCheckForUnresolved(color_depth, mod)
-int	color_depth;
+ELFCheckForUnresolved(mod)
 void	*mod;
 {
     ELFRelocPtr	erel;
@@ -2021,7 +2020,7 @@ void	*mod;
 	*addr += ((int) &LoaderDefaultFunc - (int)addr);
 	name = ElfGetSymbolName(erel->file, ELF_R_SYM(erel->rel->r_info));
         flag = _LoaderHandleUnresolved(name,
-			_LoaderHandleToName(erel->file->handle), color_depth);
+			_LoaderHandleToName(erel->file->handle));
         if(flag) fatalsym = 1;
 	xf86loaderfree(name);
 	erel=erel->next;

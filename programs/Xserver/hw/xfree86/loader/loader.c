@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.23 1998/08/13 14:46:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.24 1998/08/19 07:49:22 dawes Exp $ */
 
 /*
  *
@@ -36,6 +36,7 @@
 #if defined(linux) && defined(__alpha__)
 #include <malloc.h>
 #endif
+#include <stdarg.h>
 #include "ar.h"
 #include "elf.h"
 #include "coff.h"
@@ -104,6 +105,22 @@ char DebuggerPresent = 0;
 LDRCommonPtr ldrCommons;
 int nCommons;
 
+typedef struct {
+    int			num;
+    const char **	list;
+} symlist;
+
+/*
+ * List of symbols that may be referenced, and which are allowed to be
+ * unresolved providing that they don't appear on the "reqired" list.
+ */
+static symlist refList = { 0, NULL };
+
+/* List of symbols that must not be unresolved */
+static symlist reqList = { 0, NULL };
+
+static int fatalReqSym = 0;
+
 /* Prototypes for static functions. */
 static int _GetModuleType(int, long);
 static loaderPtr _LoaderListPush(void);
@@ -111,7 +128,7 @@ static loaderPtr _LoaderListPop(int);
 /*ARGSUSED*/
 static void ARCHIVEResolveSymbols(void *unused) {}
 /*ARGSUSED*/
-static int ARCHIVECheckForUnresolved(int foo, void *v) { return 0; }
+static int ARCHIVECheckForUnresolved(void *v) { return 0; }
 /*ARGSUSED*/
 static char *ARCHIVEAddressToSection(void *modptr, unsigned long address)
 { return NULL; }
@@ -508,57 +525,118 @@ _LoaderAddressToSection(const unsigned long address, const char **module,
 
   return 0;
 }
+
+
+/*
+ * Add a list of symbols to the referenced list.
+ */
+
+static void
+AppendSymbol(symlist *list, const char *sym)
+{
+    list->list = (const char **)xnfrealloc(list->list,
+					   (list->num + 1) * sizeof(char **));
+    list->list[list->num] = sym;
+    list->num++;
+}
+
+static void
+AppendSymList(symlist *list, const char **syms)
+{
+    while (*syms) {
+	AppendSymbol(list, *syms);
+	syms++;
+    }
+}
+
+static int
+SymInList(symlist *list, char *sym)
+{
+    int i;
+
+    for (i = 0; i < list->num; i++)
+	if (strcmp(list->list[i], sym) == 0)
+	    return 1;
+
+    return 0;
+}
+
+void
+LoaderRefSymLists(const char **list0, ...)
+{
+    va_list ap;
+    const char **l;
+
+    if (list0 == NULL)
+	return;
+
+    va_start(ap, list0);
+    l = list0;
+    do {
+	AppendSymList(&refList, l);
+	l = va_arg(ap, const char **);
+    } while (l != NULL);
+    va_end(ap);
+}
+
+void
+LoaderReqSymLists(const char **list0, ...)
+{
+    va_list ap;
+    const char **l;
+
+    if (list0 == NULL)
+	return;
+
+    va_start(ap, list0);
+    l = list0;
+    do {
+	AppendSymList(&reqList, l);
+	l = va_arg(ap, const char **);
+    } while (l != NULL);
+    va_end(ap);
+}
+
+void
+LoaderReqSymbols(const char *sym0, ...)
+{
+    va_list ap;
+    const char *s;
+
+    if (sym0 == NULL)
+	return;
+
+    va_start(ap, sym0);
+    s = sym0;
+    do {
+	AppendSymbol(&reqList, s);
+	s = va_arg(ap, const char *);
+    } while (s != NULL);
+    va_end(ap);
+}
+
 /* 
  * _LoaderHandleUnresolved() decides what to do with an unresolved
- * symbol. Right now, it will ignore cfb* symbols whose color depth
- * does not match that of the current server. This has to be checked for
- * the vga16, and xaa servers. Other unresolved will 
- * always be printed out. 
+ * symbol.  Symbols that are not on the "referenced" or "required" lists
+ * get a warning if they are unresolved.  Symbols that are on the "required"
+ * list generate a fatal error if they are unresolved.
  */
 
 int
-_LoaderHandleUnresolved(char *symbol, char *module, int color_depth)
+_LoaderHandleUnresolved(char *symbol, char *module)
 {
     int fatalsym = 0;
 
-    /* XXX remove this depth stuff */
-    switch (color_depth){
-          case 4:  /* Don't know how to handle yet */
-	       break;
-          case 8:
-	       if (!strncmp(symbol,"cfb16", 5)) break;
-	       if (!strncmp(symbol,"cfb24", 5)) break;
-	       if (!strncmp(symbol,"cfb32", 5)) break;
-	       ErrorF("Symbol %s from module %s is unresolved!\n",
-	           symbol, module);
-	       fatalsym = 1;
-	       break;
-	  case 15:
-          case 16:
-	       if (!strncmp(symbol,"cfb24", 5)) break;
-	       if (!strncmp(symbol,"cfb32", 5)) break;
-	       ErrorF("Symbol %s from module %s is unresolved!\n",
-	           symbol, module);
-	       fatalsym = 1;
-	       break;
-          case 24:
-	       if (!strncmp(symbol,"cfb16", 5)) break;
-	       if (!strncmp(symbol,"cfb32", 5)) break;
-	       ErrorF("Symbol %s from module %s is unresolved!\n",
-	           symbol, module);
-	       fatalsym = 1;
-	       break;
-	  case 32:
-	       if (!strncmp(symbol,"cfb16", 5)) break;
-	       if (!strncmp(symbol,"cfb24", 5)) break;
-	       ErrorF("Symbol %s from module %s is unresolved!\n",
-	           symbol, module);
-	       fatalsym = 1;
-	       break;
-	  }
-    if (xf86ShowUnresolved && !fatalsym){
-          ErrorF("Symbol %s from module %s is unresolved!\n",
-	       symbol, module);
+    if (xf86ShowUnresolved && !fatalsym) {
+	if (SymInList(&reqList, symbol)) {
+	    fatalReqSym = 1;
+	    ErrorF("Required symbol %s from module %s is unresolved!\n",
+		   symbol, module);
+	}
+	if (!SymInList(&refList, symbol)) {
+	    ErrorF("Symbol %s from module %s is unresolved!\n",
+		   symbol, module);
+	}
     }
     return(fatalsym);
 }
@@ -902,7 +980,7 @@ LoaderResolveSymbols(void)
 }
 
 int
-LoaderCheckUnresolved(int color_depth, int delay_flag )
+LoaderCheckUnresolved(int delay_flag )
 {
   int i,ret=0;
   LoaderResolveOptions delayFlag = delay_flag;
@@ -919,8 +997,11 @@ LoaderCheckUnresolved(int color_depth, int delay_flag )
 
   if (!check_unresolved_sema ||  delayFlag == LD_RESOLV_FORCE)
 	for(i=0;i<numloaders;i++)
-	   if (funcs[i].CheckForUnresolved(color_depth, &funcs[i]))
+	   if (funcs[i].CheckForUnresolved(&funcs[i]))
 		ret=1;
+
+  if (fatalReqSym)
+    FatalError("Some required symbols were unresolved\n");
 
   return ret;
 }

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: */
+/* $XFree86$ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -224,6 +224,52 @@ static XF86ModuleVersionInfo mgaVersRec =
 };
 
 /*
+ * List of symbols from other modules that this module references.  This
+ * list is used to tell the loader that it is OK for symbols here to be
+ * unresolved providing that it hasn't been told that they haven't been
+ * told that they are essential via a call to LoaderReqSymbols() or
+ * LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * unresolved symbols that are not required.
+ */
+
+static const char *vgahwSymbols[] = {
+    "vgaHWGetHWRec",
+    "vgaHWUnlock",
+    "vgaHWInit",
+    "vgaHWProtect",
+    "vgaHWSetMmioFuncs",
+    "vgaHWGetIOBase",
+    "vgaHWMapMem",
+    "vgaHWLock",
+    "vgaHWFreeHWRec",
+    "vgaHWSaveScreen",
+    NULL
+};
+
+static const char *cfbSymbols[] = {
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb24ScreenInit",
+    "cfb32ScreenInit",
+    NULL
+};
+
+static const char *xaaSymbols[] = {
+    "XAADestroyInfoRec",
+    "XAACreateInfoRec",
+    "XAAInit",
+    "XAAStippleScanlineFuncLSBFirst",
+    NULL
+};
+
+static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+/*
  * This function is the module init function.
  * Its name has to be the driver name followed by ModuleInit()
  */
@@ -250,10 +296,14 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	/*
 	 * Modules that this driver always requires may be loaded here
 	 * by calling LoadSubModule().
-	 *
-	 * Although this driver currently always requires the vgahw module
-	 * that dependency will be removed later, so we don't load it here.
 	 */
+
+	/*
+	 * Tell the loader about symbols from other modules that this module
+	 * might refer to.
+	 */
+	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+			  ramdacSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -265,6 +315,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	return NULL;
     }
 }
+
 
 #endif /* XFree86LOADER */
 
@@ -672,6 +723,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     int bytesPerPixel;
     ClockRangePtr clockRanges;
     char *mod = NULL;
+    const char *reqSym = NULL;
 
     /*
      * Note: This function is only called once at server startup, and
@@ -689,6 +741,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
+
+    LoaderReqSymLists(vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -1287,15 +1341,19 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     switch (pScrn->bitsPerPixel) {
     case 8:
 	mod = "cfb";
+	reqSym = "cfbScreenInit";
 	break;
     case 16:
 	mod = "cfb16";
+	reqSym = "cfb16ScreenInit";
 	break;
     case 24:
 	mod = "cfb24";
+	reqSym = "cfb24ScreenInit";
 	break;
     case 32:
 	mod = "cfb32";
+	reqSym = "cfb32ScreenInit";
 	break;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
@@ -1303,19 +1361,25 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
+    LoaderReqSymbols(reqSym, NULL);
+
     /* Load XAA if needed */
-    if (!pMga->NoAccel)
+    if (!pMga->NoAccel) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
+	LoaderReqSymLists(xaaSymbols, NULL);
+    }
 
     /* Load ramdac if needed */
-    if (pMga->HWCursor)
+    if (pMga->HWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
+	LoaderReqSymLists(ramdacSymbols, NULL);
+    }
 
     return TRUE;
 }
