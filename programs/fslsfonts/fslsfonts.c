@@ -1,4 +1,5 @@
 /* $XConsortium: fslsfonts.c,v 1.7 94/04/17 20:38:29 rws Exp $ */
+/* $XFree86$ */
 /*
  
 Copyright (c) 1990  X Consortium
@@ -127,6 +128,10 @@ main(argc, argv)
     }
 
     if ((svr = FSOpenServer(servername)) == NULL) {
+	if (FSServerName(servername) == NULL) {
+	    fprintf(stderr, "%s: no font server defined\n", program_name);
+	    exit(0);
+	}
 	fprintf(stderr, "%s:  unable to open server \"%s\"\n",
 		program_name, FSServerName(servername));
 	exit(0);
