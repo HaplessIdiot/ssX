@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.45 2001/11/01 23:35:27 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.46 2001/11/03 21:24:17 dawes Exp $
 XCOMM
 
 POSIX:						C
@@ -121,16 +121,20 @@ el_GR.iso88597:					el_GR.ISO8859-7
 el_GR.ISO-8859-7:				el_GR.ISO8859-7
 el_GR@euro:					el_GR.ISO8859-15
 en:						en_US.ISO8859-1
+en.ISO-8859-1:					en_US.ISO8859-1
 en_AU:						en_AU.ISO8859-1
 en_AU.iso88591:					en_AU.ISO8859-1
+en_AU.ISO-8859-1:				en_AU.ISO8859-1
 en_AU.ISO_8859-1:				en_AU.ISO8859-1
 en_CA:						en_CA.ISO8859-1
 en_CA.iso88591:					en_CA.ISO8859-1
+en_CA.ISO-8859-1:				en_CA.ISO8859-1
 en_CA.ISO_8859-1:				en_CA.ISO8859-1
 en_GB:						en_GB.ISO8859-1
 en_GB.88591:					en_GB.ISO8859-1
 en_GB.88591.en:					en_GB.ISO8859-1
 en_GB.iso88591:					en_GB.ISO8859-1
+en_GB.ISO-8859-1:				en_GB.ISO8859-1
 en_GB.ISO_8859-1:				en_GB.ISO8859-1
 en_UK:						en_GB.ISO8859-1
 ENG_GB.8859:					en_GB.ISO8859-1
@@ -144,6 +148,7 @@ en_US:						en_US.ISO8859-1
 en_US.88591:					en_US.ISO8859-1
 en_US.88591.en:					en_US.ISO8859-1
 en_US.iso88591:					en_US.ISO8859-1
+en_US.ISO-8859-1:				en_US.ISO8859-1
 en_US.ISO_8859-1:				en_US.ISO8859-1
 #if defined(SVR4) && defined(sun)
 en_US.utf8:					en_US.UTF-8
@@ -446,20 +451,25 @@ nl_NL.iso885915:				nl_NL.ISO8859-15
 nl_NL@euro:					nl_NL.ISO8859-15
 no:						no_NO.ISO8859-1
 nb:						nb_NO.ISO8859-1
+nn:						nn_NO.ISO8859-1
 ny:						ny_NO.ISO8859-1
 no_NO:						no_NO.ISO8859-1
 nb_NO:						nb_NO.ISO8859-1
+nn_NO:						nn_NO.ISO8859-1
 ny_NO:						ny_NO.ISO8859-1
 no_NO.88591:					no_NO.ISO8859-1
 nb_NO.88591:					nb_NO.ISO8859-1
+nn_NO.88591:					nn_NO.ISO8859-1
 ny_NO.88591:					ny_NO.ISO8859-1
 no_NO.88591.en:					no_NO.ISO8859-1
 no_NO.iso88591:					no_NO.ISO8859-1
 no_NO.ISO-8859-1:				no_NO.ISO8859-1
 nb_NO.ISO-8859-1:				nb_NO.ISO8859-1
+nn_NO.ISO_8859-1:				nn_NO.ISO8859-1
 ny_NO.ISO_8859-1:				ny_NO.ISO8859-1
 no_NO.iso885915:				no_NO.ISO8859-15
 nb_NO.iso885915:				nb_NO.ISO8859-15
+nn_NO.iso885915:				nn_NO.ISO8859-15
 ny_NO.iso885915:				ny_NO.ISO8859-15
 no@nynorsk:					ny_NO.ISO8859-1
 nynorsk:					nn_NO.ISO8859-1
