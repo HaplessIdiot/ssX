@@ -1,11 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/sfbmodule.c,v 1.1 1999/01/31 12:38:06 dawes Exp $ */
 
 
 #ifdef XFree86LOADER
 
 #include "xf86Module.h"
-
-static MODULESETUPPROTO(shadowfbSetup);
 
 static XF86ModuleVersionInfo VersRec =
 {

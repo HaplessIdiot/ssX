@@ -18,7 +18,7 @@
 #include "fontstruct.h"
 #include "xf86.h"
 #include "xf86str.h"
-#include "xf86shadow.h"
+#include "shadowfb.h"
 
 
 static Bool ShadowCloseScreen (int i, ScreenPtr pScreen);
@@ -128,7 +128,7 @@ static unsigned long ShadowGeneration = 0;
 
 
 Bool
-xf86ShadowFBInit (
+ShadowFBInit (
     ScreenPtr		pScreen,
     RefreshAreaFuncPtr  refreshArea
 ){
