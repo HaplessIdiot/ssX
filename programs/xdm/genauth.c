@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.9 2000/05/31 07:15:11 eich Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.10 2001/01/17 23:45:21 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -70,7 +70,7 @@ longtochars (long l, unsigned char *c)
 
 # define FILE_LIMIT	1024	/* no more than this many buffers */
 
-#ifndef ARC4_RANDOM
+#if !defined(ARC4_RANDOM) && !defined(DEV_RANDOM)
 static int
 sumFile (char *name, long sum[2])
 {
@@ -230,9 +230,25 @@ GenerateAuthData (char *auth, int len)
 	static long localkey[2] = {0,0};
     
 	if ( (localkey[0] == 0) && (localkey[1] == 0) ) {
+#ifdef ARC4_RANDOM
+	    localkey[0] = arc4random();
+	    localkey[1] = arc4random();
+#elif defined(DEV_RANDOM)
+	    int fd;
+    
+	    if ((fd = open(DEV_RANDOM, O_RDONLY)) >= 0) {
+		if (read(fd, (char *)localkey, 8) != 8) {
+		    localkey[0] = 1;
+		}
+		close(fd);
+	    } else {
+		localkey[0] = 1;
+	    }
+#else 
     	    if (!sumFile (randomFile, localkey)) {
 		localkey[0] = 1; /* To keep from continually calling sumFile() */
     	    }
+#endif
 	}
 
     	seed = (ldata[0]+localkey[0]) + ((ldata[1]+localkey[1]) << 16);
