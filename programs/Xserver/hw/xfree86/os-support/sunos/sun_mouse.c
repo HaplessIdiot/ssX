@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.8 2005/01/31 22:12:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.9 2005/02/03 03:32:54 dawes Exp $ */
 /*
  * Copyright 1999-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -358,6 +358,7 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
     const char *dev;
     char *realdev = NULL;
     struct stat sbuf;
+    const char *ret = NULL;
     int i;
 
     dev = xf86SetStrOption(pInfo->conf_idev->commonOptions, "Device", NULL);
@@ -393,9 +394,11 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 	realdev[i] = '\0';
     }
     if (realdev && strcmp(realdev, DEFAULT_MOUSE_PS2_DEV) == 0)
-	return PS2_PROTOCOL_NAME;
+	ret = PS2_PROTOCOL_NAME;
+    if (realdev)
+	xfree(realdev);
 
-    return NULL;
+    return ret;
 }
 
 static const char *
