@@ -1,0 +1,19 @@
+XCOMM $XFree86: $
+
+FREETYPETOP = $(TOP)/extras/freetype2
+FREETYPESRC = $(FREETYPETOP)/src
+FREETYPEINC = $(FREETYPETOP)/include/freetype
+
+HEADERS= \
+        ftbuild.h \
+        ftconfig.h \
+        ftmodule.h \
+        ftoption.h
+
+BuildIncludes($(HEADERS),freetype2/freetype/config,../../..)
+InstallMultipleFlags($(HEADERS),$(INCDIR)/freetype2/freetype/config,$(INSTINCFLAGS))
+
+LinkSourceFile(ftbuild.h,$(FREETYPEINC)/config)
+LinkSourceFile(ftconfig.h,$(FREETYPEINC)/config)
+LinkSourceFile(ftmodule.h,$(FREETYPEINC)/config)
+LinkSourceFile(ftoption.h,$(FREETYPEINC)/config)
