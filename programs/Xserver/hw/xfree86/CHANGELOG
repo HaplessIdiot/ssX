@@ -1,4 +1,13 @@
 XFree86 4.0.1c (25 August 2000)
+ 551. Man page for Xmark (#4097, Richard Braakman).
+ 550. Fixes for Macintosh XKB data files (#4094, Ani Joshi).
+ 549. Change VarDbDirectory to /var/lib on Linux to comply with FHS 2.1
+      (#4093, Branden Robinson).
+ 548. Include <sys/types.h> in agpgart.h (#4091, Branden Robinson).
+ 547. Re-add installation of the micro font (#4090, Branden Robinson).
+ 546. Fix the rstart/server script generation (#4088, 4089, Branden Robinson).
+ 545. Allow mkhtmlindex.sh to work when the shell's -e flag is used (#4087,
+      Branden Robinson).
  544. Xterm patch #144 (#4109, Thomas Dickey).
  543. Xterm patch #143 (#4104, Thomas Dickey).
  542. Xterm patch #142 (#4102, Thomas Dickey).
@@ -11049,4 +11058,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1280 2000/08/25 13:42:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1281 2000/08/25 21:51:01 dawes Exp $

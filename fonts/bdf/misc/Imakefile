@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/36 1998/05/20 15:10:33 kaleb $
-XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.9 2000/06/26 23:00:15 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.10 2000/06/27 00:06:33 dawes Exp $
 
 ARABIC24OBJS = FontObj(arabic24)
 ARABIC24DIR = $(TOP)/extras/fonts/arabic24
@@ -69,6 +69,7 @@ OBJS = FontObj(5x7) FontObj(5x7-ISO8859-1) \
 	FontObj(18x18ja) FontObj(18x18ko) \
 	FontObj(cursor) FontObj(deccurs) FontObj(decsess) FontObj(olcursor) \
 	FontObj(olgl10) FontObj(olgl12) FontObj(olgl14) FontObj(olgl19) \
+	FontObj(micro) \
 	FontObj(nil2) FontObj(clB6x10) FontObj(clB6x12) FontObj(clB8x10) \
 	FontObj(clB8x12) FontObj(clB8x13) FontObj(clB8x14) FontObj(clB8x16) \
 	FontObj(clB8x8) FontObj(clB9x15) FontObj(clI6x12) FontObj(clI8x8) \
@@ -213,6 +214,7 @@ FontTarget(olgl10)
 FontTarget(olgl12)
 FontTarget(olgl14)
 FontTarget(olgl19)
+FontTarget(micro)
 FontTarget(nil2)
 FontTarget(clB6x10)
 FontTarget(clB6x12)

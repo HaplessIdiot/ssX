@@ -1,4 +1,4 @@
-XCOMM! /bin/sh
+/* REXX script */
 XCOMM $XConsortium: server.cpp,v 1.4 94/02/06 19:52:05 mor Exp $
 XCOMM
 
@@ -26,4 +26,4 @@ XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 XCOMM
 XCOMM $XFree86: xc/programs/rstart/server.cpp,v 3.0 1995/03/11 14:20:38 dawes Exp $
 
-exec LIBDIR/SERVERNAME.real -c LIBDIR/config
+start LIBDIR/SERVERNAME -c LIBDIR/config
