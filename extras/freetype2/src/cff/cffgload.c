@@ -15,7 +15,7 @@
 /*                                                                         */
 /***************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/extras/freetype2/src/cff/cffgload.c,v 1.2tsi Exp $ */
 
 
 #include <ft2build.h>
@@ -369,7 +369,7 @@
     decoder->num_globals  = cff->num_global_subrs;
     decoder->globals      = cff->global_subrs;
     decoder->globals_bias = cff_compute_bias( decoder->num_globals );
-    
+
     decoder->hint_mode    = hint_mode;
   }
 
@@ -1772,7 +1772,7 @@
             hinter->apply( hinter->hints,
                            builder->current,
                            (PSH_Globals)builder->hints_globals,
-                           builder->hint_flags );
+                           (FT_Render_Mode)builder->hint_flags );
           }
 
           /* add current outline to the glyph slot */
