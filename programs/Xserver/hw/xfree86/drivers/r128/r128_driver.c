@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.15 2000/02/14 19:20:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.16 2000/02/15 18:01:12 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -383,27 +383,14 @@ static Bool R128MapMMIO(ScrnInfoPtr pScrn)
 
     if (info->FBDev) {
 	info->MMIO = fbdevHWMapMMIO(pScrn);
-#ifdef __alpha__
-	info->MMIO32 = info->MMIO; /* XXX */
-#endif
     } else {
 	info->MMIO = xf86MapPciMem(pScrn->scrnIndex,
 				   VIDMEM_MMIO | VIDMEM_READSIDEEFFECT,
 				   info->PciTag,
 				   info->MMIOAddr,
 				   R128_MMIOSIZE);
-#ifdef __alpha__
-	info->MMIO32 = xf86MapPciMem(pScrn->scrnIndex,
-				   VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_MMIO_32BIT,
-				   info->PciTag,
-				   info->MMIOAddr,
-				   R128_MMIOSIZE);
-#endif
     }
 
-#ifdef __alpha__
-    if (!info->MMIO32) return FALSE;
-#endif
     if (!info->MMIO) return FALSE;
     return TRUE;
 }
@@ -418,14 +405,8 @@ static Bool R128UnmapMMIO(ScrnInfoPtr pScrn)
 	fbdevHWUnmapMMIO(pScrn);
     else {
 	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO, R128_MMIOSIZE);
-#ifdef __alpha__
-	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO32, R128_MMIOSIZE);
-#endif
     }
     info->MMIO = NULL;
-#ifdef __alpha__
-    info->MMIO32 = NULL;
-#endif
     return TRUE;
 }
 
@@ -705,7 +686,10 @@ static Bool R128PreInitVisual(ScrnInfoPtr pScrn)
     
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, (Support24bppFb
 					  | Support32bppFb
-					  | SupportConvert32to24)))
+#ifndef USE_FB
+					  | SupportConvert32to24
+#endif
+					  )))
 	return FALSE;
 
     switch (pScrn->depth) {
@@ -790,10 +774,6 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     int           offset = 0;	/* RAM Type */
     MessageType   from;
     unsigned char *R128MMIO;
-#ifdef __alpha__
-    unsigned char *R128MMIO32;
-#endif
-
 				/* Chipset */
     from = X_PROBED;
     if (dev->chipset && *dev->chipset) {
@@ -880,18 +860,13 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     from             = X_PROBED;
     R128MapMMIO(pScrn);
     R128MMIO         = info->MMIO;
-#ifdef __alpha__
-    R128MMIO32       = info->MMIO32;
-#endif
     if (info->FBDev)
 	pScrn->videoRam = fbdevHWGetVidmem(pScrn) / 1024;
     else
 	pScrn->videoRam = INREG(R128_CONFIG_MEMSIZE) / 1024;
     info->MemCntl    = INREG(R128_MEM_CNTL);
+    info->BusCntl    = INREG(R128_BUS_CNTL);
     R128MMIO         = NULL;
-#ifdef __alpha__
-    R128MMIO32       = NULL;
-#endif
     R128UnmapMMIO(pScrn);
     switch (info->MemCntl & 0x3) {
     case 0:			/* SDR SGRAM 1:1 */
@@ -1475,6 +1450,7 @@ static void R128RestoreCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
     OUTREG(R128_GEN_INT_CNTL,         restore->gen_int_cntl);
     OUTREG(R128_CAP0_TRIG_CNTL,       restore->cap0_trig_cntl);
     OUTREG(R128_CAP1_TRIG_CNTL,       restore->cap1_trig_cntl);
+    OUTREG(R128_BUS_CNTL,	      restore->bus_cntl);
 }
 
 /* Write CRTC registers. */
@@ -1604,6 +1580,7 @@ static void R128SaveCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
     save->gen_int_cntl       = INREG(R128_GEN_INT_CNTL);
     save->cap0_trig_cntl     = INREG(R128_CAP0_TRIG_CNTL);
     save->cap1_trig_cntl     = INREG(R128_CAP1_TRIG_CNTL);
+    save->bus_cntl	     = INREG(R128_BUS_CNTL);
 }
 
 /* Read CRTC registers. */
@@ -1731,7 +1708,8 @@ static void R128Restore(ScrnInfoPtr pScrn)
 }
 
 /* Define common registers for requested video mode. */
-static void R128InitCommonRegisters(R128SavePtr save, DisplayModePtr mode)
+static void R128InitCommonRegisters(R128SavePtr save, DisplayModePtr mode,
+				    R128InfoPtr info)
 {
     save->ovr_clr            = 0;
     save->ovr_wid_left_right = 0;
@@ -1745,6 +1723,12 @@ static void R128InitCommonRegisters(R128SavePtr save, DisplayModePtr mode)
     save->gen_int_cntl       = 0;
     save->cap0_trig_cntl     = 0;
     save->cap1_trig_cntl     = 0;
+    save->bus_cntl	     = info->BusCntl;
+    /*
+     * If bursts are enabled, turn on discards and aborts
+     */
+    if (save->bus_cntl & (R128_BUS_WRT_BURST|R128_BUS_READ_BURST))
+	save->bus_cntl |= R128_BUS_RD_DISCARD_EN | R128_BUS_RD_ABORT_EN;
 }
 
 /* Define CRTC registers for requested video mode. */
@@ -2013,7 +1997,7 @@ static Bool R128Init(ScrnInfoPtr pScrn, DisplayModePtr mode, R128SavePtr save)
 
     info->Flags = mode->Flags;
     
-    R128InitCommonRegisters(save, mode);
+    R128InitCommonRegisters(save, mode, info);
     if (!R128InitCrtcRegisters(pScrn, save, mode, info)) return FALSE;
     R128InitPLLRegisters(pScrn, save, mode, &info->pll, dot_clock);
     if (!R128InitDDARegisters(pScrn, save, mode, &info->pll, info))

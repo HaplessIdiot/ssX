@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.5 2000/02/15 02:00:14 eich Exp $ */
 
 /* Resource information code */
 
@@ -104,7 +104,7 @@ xf86PciBusAccWindowsFromOS(void)
 	RANGE(range,0xF9000000,0xffffffff,ResExcMemBlock);
 	ret = xf86AddResToList(ret, &range, -1);
     } else {
-	RANGE(range,0,0xffffffff,ResExcIoBlock);
+	RANGE(range,0,0xffffffff,ResExcMemBlock);
 	ret = xf86AddResToList(ret, &range, -1);
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/int10/generic.c,v 1.3 1999/12/03 19:17:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.2 2000/02/08 13:13:22 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -326,6 +326,8 @@ setupTable(xf86Int10InfoPtr pInt, memType address,int loc,int size)
 static CARD8
 read_b(xf86Int10InfoPtr pInt, int addr)
 {
+    if (!BASE(addr,SHIFT)) return 0xff;
+    
     return V_ADDR_RB(addr,SHIFT,OFF(addr));
 }
 
@@ -335,6 +337,8 @@ read_w(xf86Int10InfoPtr pInt, int addr)
     int shift = SHIFT;
     int off = OFF(addr);
 
+    if (!BASE(addr,shift)) return 0xffff;
+    
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     return ((V_ADDR_RB(addr,shift,off))
 	    || ((V_ADDR_RB(addr,shift,off + 1)) << 8));
@@ -354,6 +358,8 @@ read_l(xf86Int10InfoPtr pInt, int addr)
     int shift = SHIFT;
     int off = OFF(addr);
 	
+    if (!BASE(addr,shift)) return 0xffffffff;
+    
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     return ((V_ADDR_RB(addr,shift,off))
 	    || ((V_ADDR_RB(addr,shift,off + 1)) << 8)
@@ -374,6 +380,8 @@ read_l(xf86Int10InfoPtr pInt, int addr)
 static void
 write_b(xf86Int10InfoPtr pInt, int addr, CARD8 val)
 {
+    if (!BASE(addr,SHIFT)) return;
+    
     V_ADDR_WB(addr,SHIFT,OFF(addr),val);
 }
 
@@ -382,9 +390,12 @@ write_w(xf86Int10InfoPtr pInt, int addr, CARD16 val)
 {
     int shift = SHIFT;
     int off = OFF(addr);
+    
+    if (!BASE(addr,shift)) return;
+    
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-    (V_ADDR_WB(addr,shift,off),val);
-    (V_ADDR_WB(addr,shift,off + 1),val >> 8);
+    V_ADDR_WB(addr,shift,off,val);
+    V_ADDR_WB(addr,shift,off + 1,val >> 8);
 #else
     if (OFF(addr + 1) > 0) {
 	V_ADDR_WW(addr,shift,OFF(addr),val);
@@ -400,6 +411,8 @@ write_l(xf86Int10InfoPtr pInt, int addr, CARD32 val)
 {
     int shift = SHIFT;
     int off = OFF(addr);
+    if (!BASE(addr,shift)) return;
+    
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     V_ADDR_WB(addr,shift,off,val);
     V_ADDR_WB(addr,shift,off + 1, val >> 8);

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/GL/glxmodule.c,v 1.6 2000/01/25 18:37:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glxmodule.c,v 1.7 2000/01/29 17:16:53 dawes Exp $ */
 
 /*
  * Authors:
@@ -77,9 +77,9 @@ glxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     pointer GLcore  = NULL;
 #ifdef GLX_USE_SGI_SI
-    char GLcoreName[] = "libGL";
+    char GLcoreName[] = "GL";
 #else
-    char GLcoreName[] = "libGLcore";
+    char GLcoreName[] = "GLcore";
 #endif
 
     LoadExtension(&GLXExt, FALSE);

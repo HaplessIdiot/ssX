@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.3 2000/02/12 20:45:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.4 2000/02/13 19:33:58 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -89,21 +89,6 @@ static inline unsigned short regr16(volatile unsigned long base_addr, unsigned l
 
 #define R128MMIO_VARS()                                                     \
     unsigned char *R128MMIO   = R128PTR(pScrn)->MMIO
-
-#elif defined (__alpha__)
-				/* Memory mapped register access macros */
-#define INREG8(addr)        MMIO_IN8(R128MMIO, addr)
-#define INREG16(addr)       MMIO_IN16(R128MMIO, addr)
-#define INREG(addr)         *(volatile CARD32 *)(R128MMIO32 + (addr))
-#define OUTREG8(addr, val)  MMIO_OUT8(R128MMIO, addr, val)
-#define OUTREG16(addr, val) MMIO_OUT16(R128MMIO, addr, val)
-#define OUTREG(addr, val)   *(volatile CARD32 *)(R128MMIO32 + (addr)) = (val)
-
-#define ADDRREG(addr)       ((volatile CARD32 *)(R128MMIO32 + (addr)))
-
-#define R128MMIO_VARS()                                                     \
-    unsigned char *R128MMIO   = R128PTR(pScrn)->MMIO;                       \
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32
 
 #else
 				/* Memory mapped register access macros */
@@ -273,6 +258,11 @@ static inline unsigned short regr16(volatile unsigned long base_addr, unsigned l
 #define R128_BRUSH_SCALE                  0x1470
 #define R128_BRUSH_Y_X                    0x1474
 #define R128_BUS_CNTL                     0x0030
+#	define R128_BUS_RD_DISCARD_EN	  (1 << 24)
+#	define R128_BUS_RD_ABORT_EN	  (1 << 25)
+#	define R128_BUS_MSTR_DISCONNECT_EN (1 << 28)
+#	define R128_BUS_WRT_BURST         (1 << 29)
+#	define R128_BUS_READ_BURST	  (1 << 30)
 #define R128_BUS_CNTL1                    0x0034
 
 #define R128_CACHE_CNTL                   0x1724

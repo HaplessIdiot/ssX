@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.5 2000/02/13 19:33:55 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.6 2000/02/14 19:20:49 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -92,6 +92,7 @@ typedef struct {
     CARD32     gen_int_cntl;
     CARD32     cap0_trig_cntl;
     CARD32     cap1_trig_cntl;
+    CARD32     bus_cntl;
 
 				/* Other registers to save for VT switches */
     CARD32     dp_datatype;
@@ -154,12 +155,10 @@ typedef struct {
     unsigned long     BIOSAddr;	  /* BIOS physical address                   */
 
     unsigned char     *MMIO;	  /* Map of MMIO region                      */
-#ifdef __alpha__
-    unsigned char     *MMIO32;	  /* 32-bit MMIO region			     */
-#endif
     unsigned char     *FB;	  /* Map of frame buffer                     */
 
     CARD32            MemCntl;
+    CARD32	      BusCntl;
     unsigned long     FbMapSize;  /* Size of frame buffer, in bytes          */
     int               Flags;	  /* Saved copy of mode flags                */
     

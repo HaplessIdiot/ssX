@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.14 1999/03/01 02:13:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Server.tmpl,v 3.15 1999/10/13 04:20:41 dawes Exp $
 /*
  * Server imakefile info  - this contains any special redefinitions, etc.
  * that Imakefiles in the server subtree will need.
@@ -27,6 +27,9 @@ XCOMM $TOG: Server.tmpl /main/15 1997/07/16 14:43:38 kaleb $
 #endif
 #ifndef DoLoadableServer
 #define DoLoadableServer NO
+#endif
+#ifndef MakeDllModules
+#define MakeDllModules NO
 #endif
 #ifndef InstallServerSetUID
 #define InstallServerSetUID NO
