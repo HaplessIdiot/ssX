@@ -17,12 +17,35 @@
 We highly recommend using gcc to build XFree86, but it generally also builds
 with the native compiler for each platform;
 
-1.  How to get the XFree86 4.2.99.902 source
+1.  How to get the XFree86 4.3.0 source
 
-The source for the XFree86 4.2.99.902 snapshot is available from the XFree86
-CVS repository.  See See http://www.xfree86.org/cvs/ for details.  The tag
-for this snapshot is "xf-4_2_99_902".  To get the current development ver-
-sion, don't specify any tag.
+There are a few starting points for getting the XFree86 source.  One option
+is to start directly with the XFree86 4.3.0 source distribution.  In this
+case, the procedure is as follows:
+
+   o The XFree86 source is contained in files X430src-1.tgz, X430src-2.tgz
+     and X430src-3.tgz.  These can be found at
+     ftp://ftp.xfree86.org/pub/XFree86/4.3.0/source/ and similar locations on
+     XFree86 mirror sites.  X430src-2.tgz contains the fonts and documenta-
+     tion source.  X430src-3.tgz contains the hardcopy documentation.
+     X430src-1.tgz contains everything else.  If you don't need the docs or
+     fonts you can get by with only X430src-1.tgz.
+
+   o Extract each of these files by running the following from a directory on
+     a filesystem containing enough space (the full source requires around
+     270MB, and a similar amount is required in addition to this for the com-
+     piled binaries):
+
+          gzip -d < X430src-1.tgz | tar vxf -
+
+          gzip -d < X430src-2.tgz | tar vxf -
+
+          gzip -d < X430src-3.tgz | tar vxf -
+
+Another option is to get the source by anonymous CVS or CVSup.  See
+http://www.xfree86.org/cvs/ for details on the different procedure available.
+
+All methods will produce one main source directory called xc.
 
 2.  Configuring the source before building
 
@@ -36,6 +59,9 @@ OS.
 Unlike previous versions, imake can now automatically detect and set the var-
 ious OS*Version parameters, so you shouldn't need to enter those settings
 explicitly.
+
+If you are using just the X430src-1.tgz part of the source dist, you will
+need to define BuildFonts to NO.
 
 3.  Using a shadow directory of symbolic links for the build
 
