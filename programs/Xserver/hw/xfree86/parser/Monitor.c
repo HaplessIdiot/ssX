@@ -454,7 +454,7 @@ xf86parseMonitorSection (void)
 						ptr->mon_n_hsync++;
 						goto HorizDone;
 				}
-				if (ptr->mon_n_hsync == CONF_MAX_HSYNC)
+				if (ptr->mon_n_hsync >= CONF_MAX_HSYNC)
 					Error ("Sorry. Too many horizontal sync intervals.", NULL);
 				ptr->mon_n_hsync++;
 			} while ((token = xf86getSubToken (&(ptr->mon_comment))) == NUMBER);
@@ -491,7 +491,7 @@ HorizDone:
 						ptr->mon_n_vrefresh++;
 						goto VertDone;
 				}
-				if (ptr->mon_n_vrefresh == CONF_MAX_VREFRESH)
+				if (ptr->mon_n_vrefresh >= CONF_MAX_VREFRESH)
 					Error ("Sorry. Too many vertical refresh intervals.", NULL);
 				ptr->mon_n_vrefresh++;
 			} while ((token = xf86getSubToken (&(ptr->mon_comment))) == NUMBER);
