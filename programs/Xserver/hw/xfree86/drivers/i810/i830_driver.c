@@ -76,6 +76,14 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *          suspect this is a BIOS bug (hence the 1280x1024@85Hz case).
  *          For now I'm switching to 800x600@60Hz then to 80x25 text mode
  *          and then restoring the registers - very ugly indeed.
+ *
+ *    15/10/2001
+ *        - Improved 1600x1200 mode set workaround. The previous workaround
+ *          was causing mode set problems later on.
+ *
+ *    18/10/2001
+ *        - Fixed a bug in I830BIOSLeaveVT() which caused a bug when you
+ *          switched VT's
  */
 
 #include "xf86.h"
@@ -1506,6 +1514,7 @@ Bool I830VESASetVBEMode (ScrnInfoPtr pScrn,int mode,CRTCInfoBlock *block)
 		pVesa->pInt->ax = 0x0049;
 		xf86ExecX86int10_wrapper (pVesa->pInt,pScrn);
 		return (TRUE);
+	  case 0x4003:
 	  case 0x03:
 		pVesa->pInt->ax = 0x0003;
 		xf86ExecX86int10_wrapper (pVesa->pInt,pScrn);
@@ -1540,16 +1549,45 @@ Bool I830VESASaveRestore (ScrnInfoPtr pScrn,int function)
 
    /* Insure that if the Ring is active we are Synced */
 
+#if 0
    if(pI810->AccelInfoRec != NULL)
 	 {
 		I810RefreshRing (pScrn);
 		I810Sync (pScrn);
 	 }
+#endif
 
-   /* FIXME: Workaround for 1600x1200 bug */
+   /* FIXME: Workaround for 1600x1200 mode set problem */
 #if 1
    if (function == MODE_RESTORE) {
-	   I830VESASetVBEMode (pScrn,0xc052,NULL);
+	   int thisMode;
+	   I830VESAGetVBEMode (pScrn,&thisMode);
+
+	   DPRINTF (PFX,"Current mode: 0x%.8x\n",thisMode);
+
+	   thisMode &= 0xff;
+
+	   if (thisMode == 0x3a || thisMode == 0x4a || thisMode == 0x4b || thisMode == 0x5a || /* 1600x1200 */
+		   thisMode == 0x38 || thisMode == 0x48 || thisMode == 0x49 || thisMode == 0x58) {	/* 1280x1024 */
+		   DPRINTF (PFX,"Doing 1600x1200 / 1280x1024 mode hack\n");
+
+		   /* first we restore everything the way we're supposed to do it */
+		   I830VESASetVBEMode (pScrn,pVesa->stateMode,NULL);
+		   RestoreFonts (pScrn);
+		   I830BIOSSetRegisters (pScrn,SET_SAVED_MODE);
+
+		   /* now we fake a 800x600x8 mode save and restore */
+ 		   I830VESASetVBEMode (pScrn,pVesa->stateMode,NULL);
+		   I830BIOSSaveRegisters (pScrn);
+		   SaveFonts (pScrn);
+		   I830VESASetVBEMode (pScrn,0xc032,NULL);
+		   I830VESASetVBEMode (pScrn,pVesa->stateMode,NULL);
+		   RestoreFonts (pScrn);
+		   I830BIOSSetRegisters (pScrn,SET_SAVED_MODE);
+		   I830VESASetVBEMode (pScrn,pVesa->stateMode,NULL);
+
+		   return (TRUE);
+	   }
    }
 #endif
 
@@ -2320,73 +2358,89 @@ I830BIOSFreeScreen(int scrnIndex, int flags)
 }
 
 void
-I830BIOSLeaveVT(int scrnIndex, int flags)
-{
-   ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-   vgaHWPtr hwp = VGAHWPTR(pScrn);
-   I810Ptr pI810 = I810PTR(pScrn);   
+I830BIOSLeaveVT (int scrnIndex,int flags) {
+	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	vgaHWPtr hwp = VGAHWPTR (pScrn);
+	I810Ptr pI810 = I810PTR (pScrn);
 
-   if(I810_DEBUG & DEBUG_VERBOSE_DRI) ErrorF("\n\n\nLeave VT\n");
+	DPRINTF (PFX,"Leave VT\n");
 
 #ifdef XF86DRI
-   if(pI810->directRenderingEnabled) {      
-      if(I810_DEBUG & DEBUG_VERBOSE_DRI)
-	ErrorF("calling dri lock\n");
-      DRILock(screenInfo.screens[scrnIndex], 0);
-      pI810->LockHeld = 1;
-   }
+	if (pI810->directRenderingEnabled) {
+		DPRINTF (PFX,"calling dri lock\n");
+		DRILock (screenInfo.screens[scrnIndex],0);
+		pI810->LockHeld = 1;
+	}
 #endif
 
-   if(pI810->AccelInfoRec) {
-      I810Sync(pScrn);
-      DO_RING_IDLE();
-   }
+#if 0
+	if (pI810->AccelInfoRec != NULL) {
+		DPRINTF (PFX,"syncing ring buffer\n");
+		I810Sync (pScrn);
+		DO_RING_IDLE ();
+	}
+#endif
 
-   I830VESASaveRestore(xf86Screens[scrnIndex], MODE_RESTORE);
-   if(!I810UnbindGARTMemory(pScrn)) return;
-   vgaHWLock(hwp);
+	I830VESASaveRestore (pScrn,MODE_RESTORE);
+
+	if (!I810UnbindGARTMemory (pScrn)) return;
+
+	vgaHWLock(hwp);
 }
 
 Bool
-I830BIOSEnterVT(int scrnIndex, int flags)
-{
-   ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-   I810Ptr pI810 = I810PTR(pScrn);   
-   VESAPtr pVesa = pI810->vesa;
+I830BIOSEnterVT (int scrnIndex,int flags) {
+	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	I810Ptr pI810 = I810PTR (pScrn);
 
-   if(I810_DEBUG & DEBUG_VERBOSE_DRI) ErrorF("\n\nENTER VT\n");
+	DPRINTF (PFX,"Enter VT\n");
 
-   if(!I810BindGARTMemory(pScrn)) return FALSE;
+	if (!I810BindGARTMemory (pScrn)) return FALSE;
 
 #ifdef XF86DRI
-   if (pI810->directRenderingEnabled) {
-      DRIUnlock(screenInfo.screens[scrnIndex]);
-      pI810->LockHeld = 0;
-   }
+	if (pI810->directRenderingEnabled) {
+		DPRINTF (PFX,"calling dri unlock\n");
+		DRIUnlock (screenInfo.screens[scrnIndex]);
+		pI810->LockHeld = 0;
+	}
 #endif
 
-   /* Switch to configured display device */
-   pVesa->pInt->num = 0x10;
-   pVesa->pInt->ax = 0x5f64;
-   pVesa->pInt->bx = 0x0001;
-   pVesa->pInt->cx = (CARD16)pI810->configured_device;
-   xf86ExecX86int10_wrapper(pVesa->pInt, pScrn);
+	/* FIXME: Is this really necessary? */
+#if 0
+	VESAPtr pVesa = pI810->vesa;
+	/* Switch to configured display device */
+	pVesa->pInt->num = 0x10;
+	pVesa->pInt->ax = 0x5f64;
+	pVesa->pInt->bx = 0x0001;
+	pVesa->pInt->cx = (CARD16) pI810->configured_device;
+	xf86ExecX86int10_wrapper (pVesa->pInt,pScrn);
 
-   if(pVesa->pInt->ax != 0x005f) {
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		 "Failed to switch to configured display device\n");
-      return FALSE;
-   }
+	if (pVesa->pInt->ax != 0x005f) {
+		xf86DrvMsg (pScrn->scrnIndex,X_INFO,"Failed to switch to configured display device\n");
+		return FALSE;
+	}
+#endif
 
-   if(!I830VESASetMode(xf86Screens[scrnIndex],
-		      xf86Screens[scrnIndex]->currentMode)) return FALSE;
-   I830BIOSAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
-   return TRUE;
+	if (!I830VESASetMode (pScrn,pScrn->currentMode))
+		return FALSE;
+
+	I830BIOSAdjustFrame (scrnIndex,pScrn->frameX0,pScrn->frameY0,0);
+
+#if 1
+	if (pI810->AccelInfoRec != NULL) {
+		DPRINTF (PFX,"syncing ring buffer\n");
+		I810Sync (pScrn);
+		DO_RING_IDLE ();
+	}
+#endif
+
+	return TRUE;
 }
 
 Bool
 I830BIOSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
+   DPRINTF (PFX,"mode == %s\n",mode);
    return I830VESASetMode(xf86Screens[scrnIndex], mode);
 }
 
