@@ -330,24 +330,40 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->Option2 = 0x0000007;
 		break;
 	case PCI_CHIP_MGAG400:
-	        if(pMga->OverclockMem) {
-		    /* 166 Mhz but faster graphics engine clock */
-		    pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x13;
-		    pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x7A;
-		    pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x08;
-		    pReg->Option3 = 0x0190a421;
+	       if(pMga->Dac.maxPixelClock == 360000) {  /* G400 MAX */
+	           if(pMga->OverclockMem) {
+			/* 150/200  */
+			pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x05;
+			pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x42;
+			pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
+			pReg->Option3 = 0x019B8419;
+			pReg->Option = 0x50574120;
+		   } else {
+			/* 125/166  */
+			pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x02;
+			pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x1B;
+			pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
+			pReg->Option3 = 0x019B8419;
+			pReg->Option = 0x5053C120;
+		   } 
 		} else {
-		    /* 165 Mhz */
-		    pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x09;
-		    pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x3C;
-		    pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
-		    pReg->Option3 = 0x0190a419;
-		} 
+	           if(pMga->OverclockMem) {
+			/* 125/166  */
+			pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x02;
+			pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x1B;
+			pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
+			pReg->Option3 = 0x019B8419;
+			pReg->Option = 0x5053C120;
+		   } else {
+			/* 110/166  */
+			pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x13;
+			pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x7A;
+			pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x08;
+			pReg->Option3 = 0x0190a421;
+			pReg->Option = 0x50044120;
+		   } 
+		}
 		pReg->Option2 = 0x01003000;
-		if(pMga->HasSDRAM)
-		    pReg->Option = 0x50040120;
-		else
-		    pReg->Option = 0x50044120;
 		break;
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
