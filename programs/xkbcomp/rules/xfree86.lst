@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.36 2001/10/10 19:18:31 herrb Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.37 2001/11/21 21:20:54 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -32,35 +32,55 @@
   chicony	Chicony Internet Keyboard
   dell		Dell Internet Keyboard
 
+
+// The entries here should be ordered as follows:
+//
+//   US entries first
+//   others in alphabetical order by the language/country name in English
+
 ! layout
   us		U.S. English
-  en_US		U.S. English w/ISO9995-3
+  en_US		U.S. English w/ ISO9995-3
   us_intl	U.S. English w/ deadkeys
+  al		Albanian
+  ar		Arabic
   am		Armenian
   az		Azerbaidjani
   by		Belarusian
   be		Belgian
+  ben		Bengali
   br		Brazilian
   bg		Bulgarian
+  mm		Burmese
   ca		Canadian
+  hr		Croatian
   cz		Czech
   cz_qwerty	Czech (qwerty)
   dk		Danish
+  nl		Dutch
   dvorak	Dvorak
   ee		Estonian
   fi		Finnish
   fr		French
   fr_CH		Swiss French
+  ge_la		Georgian (latin)
+  ge_ru		Georgian (russian)
   de		German
   de_CH		Swiss German
   el		Greek
-  hr		Croatian
+  guj		Gujarati
+  gur		Gurmukhi
+  dev		Hindi
   hu		Hungarian
   is		Icelandic
+  iu		Inuktitut
+  ir		Iranian
   il		Israeli
   it		Italian
   jp		Japanese
+  la		Latin America
   lt		Lithuanian qwerty "numeric"
+  lt_a		Lithuanian azerty
   lt_std	Lithuanian azerty standard
   lt_p		Lithuanian qwerty "programmer's"
   lv		Latvian
@@ -69,9 +89,11 @@
   mt_us		Maltese (US layout)
   no		Norwegian
   pl		Polish
+  pl2		Polish (qwertz)
   pt		Portuguese
   ro		Romanian
   ru		Russian
+  ru_yawerty	Russian (cyrillic phonetic)
   se_FI		Saami (Finland)
   se_NO		Saami (Norway)
   se_SE		Saami (Sweden)
@@ -81,12 +103,16 @@
   sk_qwerty	Slovak (qwerty)
   es		Spanish
   se		Swedish
+  tj		Tajik
+  tml		Tamil
   th		Thai
+  tr		Turkish 
+  tr_f		Turkish (F)
   ua		Ukrainian 
   gb		United Kingdom
   vn		Vietnamese
+  yu		Yugoslavian
   nec/jp	PC-98xx Series
-  tr		Turkish 
 
 ! variant
   nodeadkeys	Eliminate dead keys
