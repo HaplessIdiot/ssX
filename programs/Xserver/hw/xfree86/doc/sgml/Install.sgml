@@ -6,10 +6,10 @@
 
 <title>Installation Details for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>30 June 2000
+<date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.8 2000/12/14 01:06:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.9 2000/12/14 22:15:47 dawes Exp $
 </ident>
 
 <abstract>
@@ -26,8 +26,8 @@ This document contains information about installing the XFree86 binaries
 as provided by The XFree86 Project.
 
 <p>
-The XFree86 binaries that we provide for UNIX-like OS's (Linux, the BSDs
-and Solaris) are packaged in a platform-independent gzipped format (aka
+The XFree86 binaries that we provide for UNIX-like OS's (Linux, the BSDs,
+Solaris, etc) are packaged in a platform-independent gzipped tar format (aka
 "tarballs" identified by the <tt>.tgz</tt> suffix).  Along with the
 binaries we provide a customized version of the GNU tar utility called
 "extract" and an installation script.  We recommend that these be
@@ -36,7 +36,7 @@ used to install the binaries.
 
 <sect>Downloading the XFree86 &relvers; binaries
 <p>
-We, The XFree86 Project, provide XFree86 &relvers; binaries for a range
+We provide XFree86 &relvers; binaries for a range
 of operating systems at our
 <![ %snapshot; [
 <url name="ftp site"
@@ -46,7 +46,7 @@ url="ftp://ftp.xfree86.org/pub/XFree86/snapshots/&relvers/binaries/">.
 <url name="ftp site"
 url="ftp://ftp.xfree86.org/pub/XFree86/&relvers/binaries/">.
 ]]>
-Often during releases, our ftp site is heavily loaded.  Instead of
+Often during releases our ftp site is heavily loaded.  Instead of
 downloading directly from us we recommend that instead you use one of
 our mirror sites.  Another advantage of using our mirror sites is that
 some of them support http access (ours does not).
@@ -54,20 +54,20 @@ some of them support http access (ours does not).
 <p>
 Our binaries are organized by sub-directories which correspond to each
 of the OS/platforms for which we provide binaries.  First go to the
-sub-directory  that represents your OS Platform. In some cases (e.g.,
+sub-directory  that represents your OS platform. In some cases (e.g.,
 Linux) there may be a number of choices depending on the architecture
 or libc version your platform uses.  In all case we recommend that you
 first download the <tt>Xinstall.sh</tt> script, and run it as in the
-following example  to find out which binary distribution you should
+following example to find out which binary distribution you should
 download.
 
 <tscreen><verb>
 sh Xinstall.sh -check
 </verb></tscreen>
 
-The output of this utility tells you which is the correct set of  binaries
-for you to download.   If you are careful with this step you  will save
-yourself a lot  time and trouble  from NOT downloading an incompatible
+The output of this utility tells you which is the correct set of binaries
+for you to download.  If you are careful with this step you will save
+yourself a lot time and trouble from NOT downloading an incompatible
 distribution.
 
 <bf>NOTE</bf>: the Xinstall.sh script must be downloaded in binary mode,
@@ -81,7 +81,7 @@ and save the file under the name "<tt>Xinstall.sh</tt>".
 
 Once you're run the <tt>Xinstall.sh</tt> script and found which binary
 distribution is suitable for your system, download the necessary files.
-The twelve  (12) mandatory files for all installations are listed below.
+The twelve (12) mandatory files for all installations are listed below.
 If you have not downloaded all of the files, the installer script will
 complain.
 
@@ -276,10 +276,11 @@ ln -s /usr/X11R6/bin/rstartd /usr/bin/rstartd
 <sect1>After the installation is complete
 <p>
 The next step is to configure the X server.  That is covered in detail
-in an as-yet unwritten document :-(.  In the meantime, there are two
+in an as-yet unwritten document :-(.  In the meantime, there are three
 ways to create a basic X server configuration file for XFree86 &relvers;.
-One is to run the <tt>xf86config</tt> utility.  Another is to use the
-new <tt>-configure</tt> X server option:
+One is to run the <tt>xf86config</tt> utility.  Another is to run the
+<tt>xf86cfg</tt> utility.  The third option is to use the new
+<tt>-configure</tt> X server option:
 
 <tscreen><verb>
 XFree86 -configure
