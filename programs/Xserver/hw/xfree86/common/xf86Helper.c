@@ -1653,7 +1653,16 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	xfree(instances);
 	return 0;
     }
-    if (xf86DoProbe || xf86DoConfigure) return 1;
+    if (xf86DoProbe) return 1;
+
+    if (xf86DoConfigure) {
+	for (i = 0; i < allocatedInstances; i++) {
+	    pPci = instances[i].pci;
+	    if (xf86IsPrimaryPci(pPci)) return 1;
+	}
+	return 0;
+    }
+
 #ifdef DEBUG
     ErrorF("%s instances found: %d\n", driverName, allocatedInstances);
 #endif
@@ -1833,8 +1842,13 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     int *retEntities = NULL;
 
     /* For now, bail here when xf86DoProbe is set. */
-    if (xf86DoProbe || xf86DoConfigure)
+    if (xf86DoProbe)
 	return 0;
+
+    if (xf86DoConfigure) {
+	if (xf86IsPrimaryIsa()) return 1;
+	return 0;
+    }
 
     for (i = 0; i < numDevs; i++) {
 	MessageType from = X_CONFIG;
