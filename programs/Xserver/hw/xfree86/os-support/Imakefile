@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.49 2001/11/01 23:35:32 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.51 2001/11/08 22:20:40 herrb Exp $
 
 
 
@@ -14,6 +14,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:38:46 kaleb $
 	(defined(SunArchitecture) && defined(SparcArchitecture)) || \
 	(defined(FreeBSDArchitecture) && defined(AlphaArchitecture)) || \
 	(defined(OpenBSDArchitecture) && defined(PpcArchitecture)) || \
+	(defined(LynxOSArchitecture) && defined(PpcArchitecture)) || \
 	defined(LinuxArchitecture)
 BUS_SUBDIR = bus
 #endif
