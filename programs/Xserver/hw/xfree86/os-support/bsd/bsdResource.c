@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsdResource.c,v 1.3 2001/01/06 20:19:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsdResource.c,v 1.4 2001/02/12 01:25:24 tsi Exp $ */
 
 /* Resource information code */
 
@@ -69,6 +69,7 @@ xf86IsaBusAccWindowsFromOS(void)
 resPtr
 xf86AccResFromOS(resPtr ret)
 {
+    resPtr ret = NULL;
     resRange range;
 
     /*
@@ -154,6 +155,9 @@ xf86IsaBusAccWindowsFromOS(void)
 resPtr
 xf86AccResFromOS(resPtr ret)
 {
+    resPtr ret = NULL;
+    resRange range;
+
     /*
      * At minimum, the top and bottom resources must be claimed, so that
      * resources that are (or appear to be) unallocated can be relocated.
