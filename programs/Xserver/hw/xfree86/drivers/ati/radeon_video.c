@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.13 2002/04/24 16:20:41 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.15 2002/06/27 22:39:29 keithp Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
@@ -1442,35 +1442,30 @@ RADEONDisplaySurface(
     OffscreenPrivPtr pPriv = (OffscreenPrivPtr)surface->devPrivate.ptr;
     ScrnInfoPtr pScrn = surface->pScrn;
 
-	RADEONInfoPtr info = RADEONPTR(pScrn);
+    RADEONInfoPtr info = RADEONPTR(pScrn);
     RADEONPortPrivPtr portPriv = info->adaptor->pPortPrivates[0].ptr;
 
-
-	
-    INT32 x1, y1, x2, y2;
+    INT32 xa, ya, xb, yb;
     BoxRec dstBox;
 	
-   if(src_w > (drw_w << 4))
+    if (src_w > (drw_w << 4))
 	drw_w = src_w >> 4;
-   if(src_h > (drw_h << 4))
+    if (src_h > (drw_h << 4))
 	drw_h = src_h >> 4;
 
-
-    x1 = src_x;
-    x2 = src_x + src_w;
-    y1 = src_y;
-    y2 = src_y + src_h;
+    xa = src_x;
+    xb = src_x + src_w;
+    ya = src_y;
+    yb = src_y + src_h;
 
     dstBox.x1 = drw_x;
     dstBox.x2 = drw_x + drw_w;
     dstBox.y1 = drw_y;
     dstBox.y2 = drw_y + drw_h;
 
-    if(!RADEONClipVideo(&dstBox, &x1, &x2, &y1, &y2, clipBoxes, 
+    if (!RADEONClipVideo(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, 
 			surface->width, surface->height))
-    {
 	return Success;
-    }
 
     dstBox.x1 -= pScrn->frameX0;
     dstBox.x2 -= pScrn->frameX0;
@@ -1479,19 +1474,20 @@ RADEONDisplaySurface(
 
     RADEONResetVideo(pScrn);
 
-    RADEONDisplayVideo(pScrn, surface->id, surface->offsets[0],  surface->offsets[0],
-	     surface->width, surface->height, surface->pitches[0],
-	     x1, x2, y1, &dstBox, src_w, src_h, drw_w, drw_h);
+    RADEONDisplayVideo(pScrn, surface->id,
+		       surface->offsets[0], surface->offsets[0],
+		       surface->width, surface->height, surface->pitches[0],
+		       xa, xb, ya, &dstBox, src_w, src_h, drw_w, drw_h);
 
-	if(portPriv->autopaint_colorkey)(*info->accel->FillSolidRects)(pScrn, portPriv->colorKey, GXcopy,
-					(CARD32)~0,
-					REGION_NUM_RECTS(clipBoxes),
-					REGION_RECTS(clipBoxes));
-    
+    if (portPriv->autopaint_colorkey)
+	(*info->accel->FillSolidRects)(pScrn, portPriv->colorKey, GXcopy,
+				       (CARD32)~0,
+				       REGION_NUM_RECTS(clipBoxes),
+				       REGION_RECTS(clipBoxes));
 
     pPriv->isOn = TRUE;
     /* we've prempted the XvImage stream so set its free timer */
-    if(portPriv->videoStatus & CLIENT_VIDEO_ON) {
+    if (portPriv->videoStatus & CLIENT_VIDEO_ON) {
 	REGION_EMPTY(pScrn->pScreen, &portPriv->clip);   
 	UpdateCurrentTime();
 	portPriv->videoStatus = FREE_TIMER;
@@ -1506,12 +1502,12 @@ RADEONDisplaySurface(
 static void 
 RADEONInitOffscreenImages(ScreenPtr pScreen)
 {
-/*    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-	RADEONInfoPtr info = RADEONPTR(pScrn);*/
+/*  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    RADEONInfoPtr info = RADEONPTR(pScrn); */
     XF86OffscreenImagePtr offscreenImages;
     /* need to free this someplace */
 
-    if(!(offscreenImages = xalloc(sizeof(XF86OffscreenImageRec))))
+    if (!(offscreenImages = xalloc(sizeof(XF86OffscreenImageRec))))
 	return;
 
     offscreenImages[0].image = &Images[0];
@@ -1527,7 +1523,6 @@ RADEONInitOffscreenImages(ScreenPtr pScreen)
     offscreenImages[0].max_height = 1024;
     offscreenImages[0].num_attributes = NUM_ATTRIBUTES;
     offscreenImages[0].attributes = Attributes;
-
 
     xf86XVRegisterOffscreenImages(pScreen, offscreenImages, 1);
 }
