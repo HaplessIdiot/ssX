@@ -2,7 +2,7 @@
 
 
 
-# $XFree86: xc/Makefile,v 3.21 2001/03/03 22:03:43 tsi Exp $
+# $XFree86: xc/Makefile,v 3.22 2001/12/19 21:37:26 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -26,6 +26,9 @@ IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES)
 MAKE_OPTS = -f xmakefile
 MAKE_CMD = $(MAKE) $(MAKE_OPTS)
 FLAGS = $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)" CC="$(CC)"
+VERSINC = -Iprograms/Xserver/hw/xfree86
+VERSSRC = $(CONFIGSRC)/util/printver.c
+VERSPROG = $(CONFIGSRC)/util/printver
 
 all:
 	@$(MAKE_CMD) xmakefile-exists || $(MAKE) all-initial
@@ -39,8 +42,10 @@ all-initial:
 	@echo Do not name your log file make.log or it will be deleted.
 
 World:
+	@$(RM) $(VERSPROG)
+	@$(CC) $(VERSINC) -o $(VERSPROG) $(VERSSRC)
 	@echo ""
-	@echo Building $(RELEASE) of the X Window System.
+	@echo Building XFree86`$(VERSPROG)`.
 	@echo ""
 	@case "x$(BOOTSTRAPCFLAGS)" in x) \
 	echo I hope you checked the configuration parameters in $(IRULESRC) ; \
@@ -70,8 +75,9 @@ World:
 	fi
 	cd $(IMAKESRC) && $(MAKE) $(FLAGS) clean
 	$(MAKE) $(MFLAGS) Makefile.boot
-	$(MAKE_CMD) $(MFLAGS) VerifyOS
 	$(MAKE_CMD) $(MFLAGS) version.def
+	$(MAKE) $(MFLAGS) Makefile.boot
+	$(MAKE_CMD) $(MFLAGS) VerifyOS
 	$(MAKE_CMD) $(MFLAGS) Makefiles
 	$(MAKE_CMD) $(MFLAGS) BOOTSTRAPSUBDIRS= clean
 	$(MAKE_CMD) $(MFLAGS) includes
@@ -80,7 +86,7 @@ World:
 	@echo ""
 	@date
 	@echo ""
-	@echo Full build of $(RELEASE) of the X Window System complete.
+	@echo Full build of XFree86`$(VERSPROG)` complete.
 	@echo ""
 
 .PRECIOUS: Makefile
@@ -124,7 +130,7 @@ xmakefile: Imakefile
 
 World.Win32:
 	@echo :
-	@echo Building $(RELEASE) of the X Window System.
+	@echo Building XFree86.
 	@echo :
 	@echo :
 	-@if not exist $(IRULESRC)\host.def echo > $(IRULESRC)\host.def
@@ -146,12 +152,12 @@ World.Win32:
 	$(MAKE_CMD) $(MFLAGS) $(WIN32WORLDOPTS)
 	@echo :
 	@echo :
-	@echo Full build of $(RELEASE) of the X Window System complete.
+	@echo Full build of XFree86 complete.
 	@echo :
 
 World.OS2:
 	@echo :
-	@echo Building $(RELEASE) of the X Window System on OS/2.
+	@echo Building XFree86 on OS/2.
 	@echo :
 	@echo :
 	-@if not exist $(IRULESRC)\host.def echo > $(IRULESRC)\host.def
@@ -168,7 +174,7 @@ World.OS2:
 	$(MAKE) $(MFLAGS)  
 	@echo :
 	@echo :
-	@echo Full build of $(RELEASE) of the X Window System complete.
+	@echo Full build of XFree86 complete.
 	@echo :
 
 # don't allow any default rules in this Makefile
