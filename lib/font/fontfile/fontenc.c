@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.10 2000/11/14 16:54:45 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.12 2001/08/13 21:46:47 dawes Exp $ */
 
 /* Backend-independent encoding code */
 
@@ -759,7 +759,7 @@ FontEncLoad(const char *encoding_name, const char *filename)
             char *new_name;
             int numaliases = 0;
             
-            new_name = xalloc(strlen(encoding_name + 1));
+            new_name = xalloc(strlen(encoding_name) + 1);
             if(new_name == NULL)
                 return NULL;
             strcpy(new_name, encoding_name);
