@@ -10,7 +10,7 @@
 # hackish perl - author Dirk Hohndel
 # Copyright 1999 by The XFree86 Project, Inc.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/common/modeline2c.pl,v 1.3 1999/11/18 16:52:06 tsi Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/common/modeline2c.pl,v 1.4 2001/01/06 21:29:06 tsi Exp $
 
 my %flagshash;
 $flagshash{""} = "0";
@@ -61,10 +61,11 @@ while (<>) {
     chop;
     print "/*" . $_ . " */\n";
   }
-  if (/^ModeLine\s+(\S+)\s+([\d.\s]+)(.*)/) {
+  if (/^ModeLine\s+(\S+)\s+([\d.\s]+)(.*)/i) {
     my $name = $1;
     my $values = $2;
     my $flags = $3;
+    $flags =~ y/A-Z/a-z/;
     $values =~ /([\d.]+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/;
     printf("\t{MODEPREFIX(%s),%d, %d,%d,%d,%d,0, %d,%d,%d,%d,0, %s, MODESUFFIX},\n",
 	   $name,$1*1000,$2,$3,$4,$5,$6,$7,$8,$9,$flagshash{$flags});
