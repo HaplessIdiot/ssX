@@ -1,10 +1,9 @@
-/* $XFree86: xc/programs/Xserver/record/recordmod.c,v 1.3 1998/12/13 10:33:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/record/recordmod.c,v 1.4 1999/01/17 10:54:16 dawes Exp $ */
 
 #include "xf86Module.h"
 
 extern Bool noTestExtensions;
 
-MODULEINITPROTO(recordModuleInit);
 static MODULESETUPPROTO(recordSetup);
 
 extern void RecordExtensionInit(INITARGS);
@@ -25,18 +24,11 @@ static XF86ModuleVersionInfo VersRec = {
 	1, 13, 0,
 	ABI_CLASS_EXTENSION,
 	ABI_EXTENSION_VERSION,
-	NULL,
+	MOD_CLASS_EXTENSION,
 	{0,0,0,0}
 };
 
-void
-recordModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-		 ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = recordSetup;
-    *teardown = NULL;
-}
+XF86ModuleData recordModuleData = { &VersRec, recordSetup, NULL };
 
 static pointer
 recordSetup(pointer module, pointer opts, int *errmaj, int *errmin)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbmodule.c,v 1.5 1999/01/17 10:54:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbmodule.c,v 1.6 1999/01/17 12:29:24 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -28,7 +28,6 @@
 #ifdef XFree86LOADER
 #include "xf86Module.h"
 
-MODULEINITPROTO(mfbModuleInit);
 
 static XF86ModuleVersionInfo VersRec =
 {
@@ -40,16 +39,10 @@ static XF86ModuleVersionInfo VersRec =
 	1, 0, 0,
 	ABI_CLASS_ANSIC,		/* Only need the ansic layer */
 	ABI_ANSIC_VERSION,
-	NULL,
+	MOD_CLASS_NONE,
 	{0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
-void
-mfbModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = NULL;
-    *teardown = NULL;
-}
+XF86ModuleData mfbModuleData = { &VersRec, NULL, NULL };
+
 #endif

@@ -23,21 +23,18 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.4 1999/01/17 10:53:45 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.5 1999/01/23 09:55:35 dawes Exp $ */
 
 #include "misc.h"
 
 #include "fontmod.h"
 #include "xf86Module.h"
 
-MODULEINITPROTO(freetypeModuleInit);
 static MODULESETUPPROTO(freetypeSetup);
 
     /*
-     * this is the module init function that is executed when loading
-     * libtype1 as a module. Its name has to be ModuleInit.
-     * With this we initialize the function and variable pointers used
-     * in generic parts of XFree86
+     * This is the module data function that is accessed when loading
+     * libfreetype as a module.
      */
 
 static XF86ModuleVersionInfo VersRec =
@@ -50,18 +47,11 @@ static XF86ModuleVersionInfo VersRec =
 	1, 0, 0,
 	ABI_CLASS_FONT,			/* Font module */
 	ABI_FONT_VERSION,
-	NULL,
+	MOD_CLASS_FONT,
 	{0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
-void
-freetypeModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = freetypeSetup;
-    *teardown = NULL;
-}
+XF86ModuleData freetypeModuleData = { &VersRec, freetypeSetup, NULL };
 
 extern void FreeTypeRegisterFontFileFunctions(void);
 

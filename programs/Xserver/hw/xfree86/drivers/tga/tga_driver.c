@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.12 1999/01/17 10:54:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.13 1999/01/23 09:55:56 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -90,7 +90,7 @@ static Bool	TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 /* 
  * This contains the functions needed by the server after loading the driver
- * module.  It must be supplied, and gets passed back by the ModuleInit
+ * module.  It must be supplied, and gets passed back by the SetupProc
  * function in the dynamic case.  In the static case, a reference to this
  * is compiled in, and this requires that the name of this DriverRec be
  * an upper-case version of the driver name.
@@ -139,7 +139,6 @@ static RamDacSupportedInfoRec BTramdacs[] = {
 
 #ifdef XFree86LOADER
 
-MODULEINITPROTO(tgaModuleInit);
 static MODULESETUPPROTO(tgaSetup);
 
 static XF86ModuleVersionInfo tgaVersRec =
@@ -152,24 +151,11 @@ static XF86ModuleVersionInfo tgaVersRec =
 	TGA_MAJOR_VERSION, TGA_MINOR_VERSION, TGA_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
-	NULL,
+	MOD_CLASS_VIDEODRV,
 	{0,0,0,0}
 };
 
-/*
- * This function is the magic init function for XFree86 modules.
- * It adds the DriverRec to the list of available drivers.
- *
- * Its name has to be the driver name followed by ModuleInit()
- */
-void
-tgaModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-		ModuleTearDownProc *teardown)
-{
-    *vers = &tgaVersRec;
-    *setup = tgaSetup;
-    *teardown = NULL;
-}
+XF86ModuleData tgaModuleData = { &tgaVersRec, tgaSetup, NULL };
 
 pointer
 tgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)

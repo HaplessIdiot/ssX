@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.37 1999/01/23 09:56:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.38 1999/01/24 13:32:38 dawes Exp $ */
 
 /*
  *
@@ -512,7 +512,6 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 	int vercode[3];
 	char verstr[4];
 	long ver = data->xf86version;
-	char *abiname;
 
 	xf86Msg (X_INFO, "Module %s: vendor=\"%s\"\n",
 			data->modname ? data->modname : "UNKNOWN!",
@@ -534,53 +533,32 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 	xf86ErrorF("%s%s, module version = %d.%d.%d\n", verstr, verstr + 2,
 			data->majorversion, data->minorversion, data->patchlevel);
 
-	if (!data->abivendor) {
-		switch (data->abiclass)
-		{
-		case ABI_CLASS_NONE:
-			abiname = NULL;
-			break;
-		case ABI_CLASS_ANSIC:
-			abiname = "ANSI C Emulation";
-			ver = LoaderVersionInfo.ansicVersion;
-			break;
-		case ABI_CLASS_VIDEODRV:
-			abiname = "XFree86 Video Driver";
-			ver = LoaderVersionInfo.videodrvVersion;
-			break;
-		case ABI_CLASS_XINPUT:
-			abiname = "XInput Driver";
-			ver = LoaderVersionInfo.xinputVersion;
-			break;
-		case ABI_CLASS_EXTENSION:
-			abiname = "Server Extension";
-			ver = LoaderVersionInfo.extensionVersion;
-			break;
-		case ABI_CLASS_FONT:
-			abiname = "Font Renderer";
-			ver = LoaderVersionInfo.fontVersion;
-			break;
-		default:
-			/* XXX This should be an error condition */
-			abiname = NULL;
-			xf86MsgVerb(X_WARNING, 0,
-			    	"Unknown ABI class (%d) for module \"%s\"\n",
-			    	data->abiclass, data->modname);
-		}
-	} else {
-		abiname = data->abivendor;
-	}
-	if (abiname) {
+    if (data->moduleclass)
+		xf86ErrorFVerb(2, "\tModule class: %s\n", data->moduleclass);
+		
+	ver = -1;
+	if (data->abiclass) {
 		int abimaj, abimin;
 		int vermaj, vermin;
 
+		if (!strcmp(data->abiclass, ABI_CLASS_ANSIC))
+			ver = LoaderVersionInfo.ansicVersion;
+		else if (!strcmp(data->abiclass, ABI_CLASS_VIDEODRV))
+			ver = LoaderVersionInfo.videodrvVersion;
+		else if (!strcmp(data->abiclass, ABI_CLASS_XINPUT))
+			ver = LoaderVersionInfo.xinputVersion;
+		else if (!strcmp(data->abiclass, ABI_CLASS_EXTENSION))
+			ver = LoaderVersionInfo.extensionVersion;
+		else if (!strcmp(data->abiclass, ABI_CLASS_FONT))
+			ver = LoaderVersionInfo.fontVersion;
+
 		abimaj = GET_ABI_MAJOR(data->abiversion);
 		abimin = GET_ABI_MINOR(data->abiversion);
-		vermaj = GET_ABI_MAJOR(ver);
-		vermin = GET_ABI_MINOR(ver);
 		xf86ErrorFVerb(2, "\tABI class: %s, version %d.%d\n",
-			       abiname, abimaj, abimin);
-		if (!data->abivendor) {
+			       data->abiclass, abimaj, abimin);
+		if (ver != -1) {
+			vermaj = GET_ABI_MAJOR(ver);
+			vermin = GET_ABI_MINOR(ver);
 			if (abimaj != vermaj) {
 				/* XXX This should be an error condition */
 				xf86MsgVerb(X_WARNING, 0,
@@ -592,8 +570,7 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 				xf86MsgVerb(X_WARNING, 0,
 					"module ABI minor version (%d) is "
 					"newer than the server's version "
-					"(%d)\n", data->abiversion & 0xFFFF,
-					ver & 0xFFFF);
+					"(%d)\n", abimin, vermin);
 			}
 		}
 	}
@@ -623,22 +600,25 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 				}
 			}
 		}
-		if (req->abivendor) {
-			if (!data->abivendor || strcmp(req->abivendor, data->abivendor)) {
-				xf86MsgVerb(X_WARNING, 2, "vendor ABI (%s) doesn't match the "
-							"required vendor ABI (%s)\n", data->abivendor,
-							req->abivendor);
+		if (req->moduleclass) {
+			if (!data->moduleclass ||
+				strcmp(req->moduleclass, data->moduleclass)) {
+				xf86MsgVerb(X_WARNING, 2, "Module class (%s) doesn't match "
+							"the required class (%s)\n",
+							data->moduleclass ? data->moduleclass : "<NONE>",
+							req->moduleclass);
 				return FALSE;
 			}
 		} else if (req->abiclass != ABI_CLASS_NONE) {
-			if (data->abiclass != req->abiclass) {
-				xf86MsgVerb(X_WARNING, 2, "ABI class (%d) doesn't match the "
-							"required ABI class (%d)\n", data->abiclass,
+			if (!data->abiclass || strcmp(req->abiclass, data->moduleclass)) {
+				xf86MsgVerb(X_WARNING, 2, "ABI class (%s) doesn't match the "
+							"required ABI class (%s)\n",
+							data->abiclass ? data->abiclass : "<NONE>",
 							req->abiclass);
 				return FALSE;
 			}
 		}
-		if ((req->abivendor || req->abiclass != ABI_CLASS_NONE) &&
+		if ((req->abiclass != ABI_CLASS_NONE) &&
 			req->abiversion != ABI_VERS_UNSPEC) {
 			int reqmaj, reqmin, maj, min;
 			reqmaj = GET_ABI_MAJOR(req->abiversion);
@@ -813,7 +793,10 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 			const XF86ModReqInfo * modreq,
 			int *errmaj, int *errmin)
 {
+#if 0
 	ModuleInitProc initfunc = NULL;
+#endif
+	XF86ModuleData *initdata = NULL;
 	char **pathlist = NULL;
 	char *found = NULL;
 	char *name = NULL;
@@ -915,12 +898,12 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 		goto LoadModule_fail;
 
 	ret->filename = xstrdup(found);
-	/* 
-	 * now check if there's the special function
-	 * <modulename>ModuleInit
-	 * and if yes, call it.
+
+	/*
+	 * now check if the special data object <modulename>ModuleData is
+	 * present.
 	 */
-	p = xalloc (strlen (name) + strlen ("ModuleInit") + 1);
+	p = xalloc (strlen (name) + strlen ("ModuleData") + 1);
 	if (!p) {
 		if (errmaj)
 			*errmaj = LDR_NOMEM;
@@ -929,15 +912,18 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 		goto LoadModule_fail;
 	}
 	strcpy (p, name);
-	strcat (p, "ModuleInit");
-	initfunc = (ModuleInitProc) LoaderSymbol (p);
-
-	if (initfunc)
+	strcat (p, "ModuleData");
+	initdata = LoaderSymbol (p);
+	if (initdata)
 	{
 		ModuleSetupProc setup;
 		ModuleTearDownProc teardown;
 		XF86ModuleVersionInfo *vers;
-		initfunc(&vers, &setup, &teardown);
+
+		vers = initdata->vers;
+		setup = initdata->setup;
+		teardown = initdata->teardown;
+
 		if (!wasLoaded) {
 			if (vers) {
 				if (!CheckVersion (module, vers, modreq)) {
@@ -948,9 +934,14 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 					goto LoadModule_fail;
 				}
 			} else {
-				xf86Msg(X_WARNING,
+				xf86Msg(X_ERROR,
 					"LoadModule: Module %s does not supply"
 					" version information\n", module);
+				if (errmaj)
+					*errmaj = LDR_INVALID;
+				if (errmin)
+					*errmin = 0;
+				goto LoadModule_fail;
 			}
 		}
 		if (setup)
@@ -958,26 +949,17 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 		if (teardown)
 			ret->TearDownProc = teardown;
 		ret->path = path;
-
-#if 0
-			/* Kept for reference */
-			case MAGIC_DONT_CHECK_UNRESOLVED:
-				check_unresolved_sema++;
-				break;
-
-#ifdef GLXEXT
-			case MAGIC_GLX_VISUALS_INIT:
-				GlxInitVisualsPtr = (GlxInitVisualsType) data;
-				break;
-#endif
-#endif
-
 	}
 	else
 	{
-		/* no initfunc, complain */
-		xf86Msg (X_WARNING, "LoadModule: Module %s does not have a %s "
-				"routine.\n", module, p);
+		/* no initdata, fail the load */
+		xf86Msg (X_ERROR, "LoadModule: Module %s does not have a %s "
+				"data object.\n", module, p);
+		if (errmaj)
+			*errmaj = LDR_INVALID;
+		if (errmin)
+			*errmin = 0;
+		goto LoadModule_fail;
 	}
 	if (ret->SetupProc)
 	{
@@ -1196,6 +1178,9 @@ LoaderErrorMsg(const char *name, const char *modname, int errmaj, int errmin)
 		break;
 	case LDR_BADUSAGE:
 		msg = "invalid argument(s) to LoadModule()";
+		break;
+	case LDR_INVALID:
+		msg = "invalid module";
 		break;
 	default:
 		msg = "uknown error";

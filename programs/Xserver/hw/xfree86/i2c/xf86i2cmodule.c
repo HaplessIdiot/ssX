@@ -5,11 +5,10 @@
  *      (c) 1998 Gerd Knorr <kraxel@cs.tu-berlin.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2cmodule.c,v 1.4 1999/01/17 10:54:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2cmodule.c,v 1.5 1999/01/17 12:29:23 dawes Exp $ */
 
 #include "xf86Module.h"
 
-MODULEINITPROTO(i2cModuleInit);
 static MODULESETUPPROTO(i2cSetup);
 
 static XF86ModuleVersionInfo i2cVersRec =
@@ -20,20 +19,13 @@ static XF86ModuleVersionInfo i2cVersRec =
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,
         1, 2, 0,
-        ABI_CLASS_VIDEODRV,                     /* This is a ????  driver */
+        ABI_CLASS_VIDEODRV,		/* This needs the video driver ABI */
         ABI_VIDEODRV_VERSION,
-        NULL,
+        MOD_CLASS_NONE,
         {0,0,0,0}
 };
 
-void
-i2cModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-              ModuleTearDownProc *teardown)
-{
-    *vers = &i2cVersRec;
-    *setup = i2cSetup;
-    *teardown = NULL;
-}
+XF86ModuleData i2cModuleData = { &i2cVersRec, i2cSetup, NULL };
 
 static pointer
 i2cSetup(pointer module, pointer opts, int *errmaj, int *errmin) {

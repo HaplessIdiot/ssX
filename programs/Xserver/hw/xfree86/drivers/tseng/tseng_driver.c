@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.45 1999/01/14 01:44:21 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.46 1999/01/17 10:54:06 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -210,7 +210,6 @@ static OptionInfoRec TsengOptions[] =
 
 #ifdef XFree86LOADER
 
-MODULEINITPROTO(tsengModuleInit);
 static MODULESETUPPROTO(tsengSetup);
 
 static XF86ModuleVersionInfo tsengVersRec =
@@ -223,23 +222,16 @@ static XF86ModuleVersionInfo tsengVersRec =
     TSENG_MAJOR_VERSION, TSENG_MINOR_VERSION, TSENG_PATCHLEVEL,
     ABI_CLASS_VIDEODRV,		       /* This is a video driver */
     ABI_VIDEODRV_VERSION,
-    NULL,
+    MOD_CLASS_VIDEODRV,
     {0, 0, 0, 0}
 };
 
 /*
- * This function is the module init function for XFree86 modules.
+ * This is the module init data for XFree86 modules.
  *
- * Its name has to be the driver name followed by ModuleInit()
+ * Its name has to be the driver name followed by ModuleData.
  */
-void
-tsengModuleInit(XF86ModuleVersionInfo ** vers, ModuleSetupProc * setup,
-    ModuleTearDownProc * teardown)
-{
-    *vers = &tsengVersRec;
-    *setup = tsengSetup;
-    *teardown = NULL;
-}
+XF86ModuleData tsengModuleData = { &tsengVersRec, tsengSetup, NULL };
 
 static pointer
 tsengSetup(pointer module, pointer opts, int *errmaj, int *errmin)

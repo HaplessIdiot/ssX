@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.10 1999/01/23 09:55:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.11 1999/01/24 03:13:56 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -99,7 +99,7 @@ static Bool	SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 /* 
  * This contains the functions needed by the server after loading the driver
- * module.  It must be supplied, and gets passed back by the ModuleInit
+ * module.  It must be supplied, and gets passed back by the SetupProc
  * function in the dynamic case.  In the static case, a reference to this
  * is compiled in, and this requires that the name of this DriverRec be
  * an upper-case version of the driver name.
@@ -199,7 +199,6 @@ static const char *i2cSymbols[] = {
 
 #ifdef XFree86LOADER
 
-MODULEINITPROTO(sisModuleInit);
 static MODULESETUPPROTO(sisSetup);
 
 static XF86ModuleVersionInfo sisVersRec =
@@ -212,24 +211,11 @@ static XF86ModuleVersionInfo sisVersRec =
 	SIS_MAJOR_VERSION, SIS_MINOR_VERSION, SIS_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
-	NULL,
+	MOD_CLASS_VIDEODRV,
 	{0,0,0,0}
 };
 
-/*
- * This function is the magic init function for XFree86 modules.
- * It adds the DriverRec to the list of available drivers.
- *
- * Its name has to be the driver name followed by ModuleInit()
- */
-void
-sisModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-		ModuleTearDownProc *teardown)
-{
-    *vers = &sisVersRec;
-    *setup = sisSetup;
-    *teardown = NULL;
-}
+XF86ModuleData sisModuleData = { &sisVersRec, sisSetup, NULL };
 
 pointer
 sisSetup(pointer module, pointer opts, int *errmaj, int *errmin)

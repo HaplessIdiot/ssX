@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 24 January 1999.
+Last modified: 26 January 1999.
 
 
 
@@ -2243,13 +2243,11 @@ experimental and development purposes.
 Symbols exported by the loader (on behalf of the core X server) to
 modules are determined at compile time.  Only those symbols explicitly
 exported are available to modules.  All external symbols of loaded
-modules are exported to other modules, and to the core X server.  Pointers
-to static symbols of modules can be obtained by the core X server and
-by other modules (XXX check this!).  The loader can be requested to
-check for unresolved symbols at any time, and the action to be taken
-for unresolved symbols can be controlled by the caller of the loader.
-Typically the caller identifies which symbols can safely remain unresolved
-and which cannot.
+modules are exported to other modules, and to the core X server.  The
+loader can be requested to check for unresolved symbols at any time,
+and the action to be taken for unresolved symbols can be controlled by
+the caller of the loader.  Typically the caller identifies which symbols
+can safely remain unresolved and which cannot.
 
 
 15.2 Semi-private Loader Interface
@@ -2328,12 +2326,12 @@ XFree86 common layer.
                   The XF86ModReqInfo struct is defined as follows:
 
                     typedef struct {
-                        CARD8       majorversion;  /* MAJOR_UNSPEC */
-                        CARD8       minorversion;  /* MINOR_UNSPEC */
-                        CARD16      patchlevel;    /* PATCH_UNSPEC */
-                        CARD32      abiclass;      /* ABI_CLASS_NONE */
-                        CARD32      abiversion;    /* ABI_VERS_UNSPEC */
-                        char *      abivendor;     /* NULL */
+                        CARD8        majorversion;  /* MAJOR_UNSPEC */
+                        CARD8        minorversion;  /* MINOR_UNSPEC */
+                        CARD16       patchlevel;    /* PATCH_UNSPEC */
+                        const char * abiclass;      /* ABI_CLASS_NONE */
+                        CARD32       abiversion;    /* ABI_VERS_UNSPEC */
+                        const char * moduleclass;   /* MOD_CLASS_NONE */
                     } XF86ModReqInfo;
 
                   The information here is compared against the equivalent
@@ -2352,12 +2350,11 @@ XFree86 common layer.
                                    than this value.  This comparison is only
                                    made if minorversion is specified and
                                    matches.
-                    abiclass     - Must match the module's abiclass.  This
-                                   value is ignored when abivendor is
-                                   specified.
+                    abiclass     - String must match the module's abiclass
+                                   string.
                     abiversion   - Must be consistent with the module's
                                    abiversion (major equal, minor no older).
-                    abivendor    - String must match the module's abivendor
+                    moduleclass  - String must match the module's moduleclass
                                    string.
 
       errmaj      An optional pointer to a variable holding the major part
@@ -2385,19 +2382,19 @@ The module information is contained in the XF86ModuleVersionInfo struct, which
 is defined as follows:
 
   typedef struct {
-      char *   modname;        /* name of module, e.g. "foo" */
-      char *   vendor;         /* vendor specific string */
-      CARD32   _modinfo1_;     /* constant MODINFOSTRING1/2 to find */
-      CARD32   _modinfo2_;     /* infoarea with a binary editor or sign tool */
-      CARD32   xf86version;    /* contains XF86_VERSION_CURRENT */
-      CARD8    majorversion;   /* module-specific major version */
-      CARD8    minorversion;   /* module-specific minor version */
-      CARD16   patchlevel;     /* module-specific patch level */
-      CARD32   abiclass;       /* ABI class that the module uses */
-      CARD32   abiversion;     /* ABI version */
-      char *   abivendor;      /* vendor-defined ABI (overrides abiclass) */
-      CARD32   checksum[4];    /* contains a digital signature of the */
-                               /* version info structure */ 
+      const char * modname;      /* name of module, e.g. "foo" */
+      const char * vendor;       /* vendor specific string */
+      CARD32       _modinfo1_;   /* constant MODINFOSTRING1/2 to find */
+      CARD32       _modinfo2_;   /* infoarea with a binary editor/sign tool */
+      CARD32       xf86version;  /* contains XF86_VERSION_CURRENT */
+      CARD8        majorversion; /* module-specific major version */
+      CARD8        minorversion; /* module-specific minor version */
+      CARD16       patchlevel;   /* module-specific patch level */
+      const char * abiclass;     /* ABI class that the module uses */
+      CARD32       abiversion;   /* ABI version */
+      const char * moduleclass;  /* module class */
+      CARD32       checksum[4];  /* contains a digital signature of the */
+                                 /* version info structure */ 
   } XF86ModuleVersionInfo;
 
 The fields are used as follows:
@@ -2441,11 +2438,11 @@ The fields are used as follows:
 		are no ABI changes, and it should be reset to zero when
 		the minor version is increased.
 
-  abiclass      The ABI class that the module requires.  This should
+  abiclass      The ABI class that the module requires.  The class is
+                specified as a string for easy extensibilty.  It should
 		indicate which (if any) of the X server's built-in ABI
-		classes that the module relies on.  This field is ignored
-		if the abivendor field is set.  Built-in ABI classes
-		currently defined are:
+		classes that the module relies on, or a third-party ABI
+                if appropriate.  Built-in ABI classes currently defined are:
 
                    ABI_CLASS_NONE         no class
                    ABI_CLASS_ANSIC        only requires the ANSI C interfaces
@@ -2454,12 +2451,12 @@ The fields are used as follows:
                    ABI_CLASS_EXTENSION    requires the extension module ABI
                    ABI_CLASS_FONT         requires the font module ABI
 
-  abiversion    The version of abiclass or abivendor that the module
-		requires.  The version consists of major and minor
-		components.  The major version must match and the minor
-                version must be no newer than that provided by the server
-                or parent module.  Version identifiers for the built-in
-                classes currently defined are:
+  abiversion    The version of abiclass that the module requires.  The
+		version consists of major and minor components.  The
+		major version must match and the minor version must be
+		no newer than that provided by the server or parent
+		module.  Version identifiers for the built-in classes
+		currently defined are:
 
                    ABI_ANSIC_VERSION
                    ABI_VIDEODRV_VERSION
@@ -2467,30 +2464,43 @@ The fields are used as follows:
                    ABI_EXTENSION_VERSION
                    ABI_FONT_VERSION
 
-  abivendor     A vendor-defined ABI class.  The class is specified and
-                identified as a string.
+  moduleclass   This is similar to the abiclass field, except that it
+		defines the type of module rather than the ABI it
+		requires.  For example, although all video drivers require
+		the video driver ABI, not all modules that require the
+		video driver ABI are video drivers.  This distinction
+		can be made with the moduleclass.  Currently pre-defined
+		module classes are:
+
+                   MOD_CLASS_NONE
+                   MOD_CLASS_VIDEODRV
+                   MOD_CLASS_XINPUT
+                   MOD_CLASS_FONT
+                   MOD_CLASS_EXTENSION
 
   checksum      Not currently used.
 
 
 The module version information, and the optional SetupProc and TearDownProc
-entry points are found by the loader by locating a function in the module
-called "modnameModuleInit", where "modname" is the canonical name of the
-module, and calling it.  Modules must contain such a function.
+entry points are found by the loader by locating a data object in the
+module called "modnameModuleData", where "modname" is the canonical name
+of the module.  Modules must contain such a data object, and it must be
+declared with global scope, be compile-time initialised, and is of the
+following type:
 
-  void ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-                  ModuleTearDownProc *teardown)
+  typedef struct {
+      XF86ModuleVersionInfo *     vers;
+      ModuleSetupProc             setup;
+      ModuleTearDownProc          teardown;
+  } XF86ModuleData;
 
-    Initialise the module version and entry parameters.  The vers
-    parameter must be initialised.  The other two parameter are optional.
-    This function shouldn't do any more than provide these parameters.
-    There is no guarantee that this function is called each time a given
-    module is loaded when it is loaded more than once.  The function
-    parameters are defined as:
+The vers parameter must be initialised to a pointer to a correctly
+initialised XF86ModuleVersionInfo struct.  The other two parameter are
+optional, and should be initialised to NULL when not required.  The
+other parameters are defined as
 
-      typedef pointer (*ModuleSetupProc)(pointer, pointer, int *, int *);
-
-      typedef void (*ModuleTearDownProc)(pointer);
+  typedef pointer (*ModuleSetupProc)(pointer, pointer, int *, int *);
+  typedef void (*ModuleTearDownProc)(pointer);
 
 
   pointer SetupProc(pointer module, pointer options, int *errmaj, int *errmin)
@@ -3874,24 +3884,16 @@ C.2  Data structures and initialisation:
 
 C.3  Functions
 
-  - For dynamically loaded modules, a ModuleInit() function is required.
-    It is should be the name of the driver prepended to "ModuleInit".
+  - For dynamically loaded modules, a ModuleData varable is required.
+    It is should be the name of the driver prepended to "ModuleData".
     A Setup() function is also required, which calls xf86AddDriver to
     add the driver to the main list of drivers.
 
         #ifdef XFree86LOADER
 
-        MODULEINITPROTO(mgaModuleInit);
         static MODULESETUPPROTO(mgaSetup);
 
-        void
-        zzzModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-                      ModuleTearDownProc *teardown)
-        {
-            *vers = &zzzVersRec;
-            *setup = zzzSetup;
-            *teardown = NULL;
-        }
+        XF86ModuleData zzzModuleData = { &zzzVersRec, zzzSetup, NULL };
 
         static pointer
         zzzSetup(pointer module, pointer opts, int *errmaj, int *errmin)
@@ -4655,4 +4657,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.21 1998/12/06 06:08:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.22 1999/01/24 13:32:31 dawes Exp $

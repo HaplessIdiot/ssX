@@ -1,3 +1,12 @@
+XFree86 3.9Ny (26 January 1999)
+2186. Replace the ModuleInit function with a ModuleData data object.  This
+      allows the loader to get the version and entry points from a module
+      without first executing module code.
+2185. Unify the abiclass and abivendor fields of XF86ModuleVersionInfo,
+      and add a moduleclass field.
+2184. Add a SaveRestoreImage field to the ScrnInfoRec to allow drivers to
+      supply an alternative to the default.
+
 XFree86 3.9Nx (24 January 1999)
 2183. Prevent LoadSubModule() from passing absolute module paths and from
       providing its own module search path.
@@ -27,7 +36,7 @@ XFree86 3.9Nx (24 January 1999)
       support for the 9685 (#2395, Alan Hourihane).
 2167. Add offscreen pixmap support for the Trident Image series (#2395,
       Alan Hourihane).
-2166. Fix some cfb problems that showed up after the previous changes
+2166. Fix some cfb24 problems that showed up after the previous changes
       (#2396, Nozomi Ytow).
 2165. Update the C&T HW cursor defaults to only disable them by default when
       necessary (#2394, David Bateman).
@@ -7147,4 +7156,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.675 1999/01/24 03:13:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.676 1999/01/24 13:32:29 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.9 1999/01/14 13:04:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.10 1999/01/17 10:54:04 dawes Exp $ */
 
 /*
  *
@@ -248,7 +248,6 @@ static const char *ramdacSymbols[] = {
 
 
 
-MODULEINITPROTO(s3virgeModuleInit);
 static MODULESETUPPROTO(s3virgeSetup);
 
 static XF86ModuleVersionInfo S3VVersRec =
@@ -261,24 +260,17 @@ static XF86ModuleVersionInfo S3VVersRec =
     S3VIRGE_VERSION_MAJOR, S3VIRGE_VERSION_MINOR, S3VIRGE_PATCHLEVEL,
     ABI_CLASS_VIDEODRV,		       /* This is a video driver */
     ABI_VIDEODRV_VERSION,
-    NULL,
+    MOD_CLASS_VIDEODRV,
     {0, 0, 0, 0}
 };
 
 
 /*
- * This function is the module init function for XFree86 modules.
+ * This is the module init data for XFree86 modules.
  *
- * Its name has to be the driver name followed by ModuleInit()
+ * Its name has to be the driver name followed by ModuleData.
  */
-void
-s3virgeModuleInit(XF86ModuleVersionInfo ** vers, ModuleSetupProc * setup,
-    ModuleTearDownProc * teardown)
-{
-    *vers = &S3VVersRec;
-    *setup = s3virgeSetup;
-    *teardown = NULL;
-}
+XF86ModuleData s3virgeModuleData = { &S3VVersRec, s3virgeSetup, NULL };
 
 static pointer
 s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)

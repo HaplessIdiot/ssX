@@ -1,9 +1,8 @@
-/* $XFree86: xc/programs/Xserver/XIE/xiemodule.c,v 1.4 1999/01/17 10:53:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/xiemodule.c,v 1.5 1999/01/17 12:29:22 dawes Exp $ */
 
 #include "xf86Module.h"
 #include "XIE.h"		
 
-MODULEINITPROTO(xieModuleInit);
 static MODULESETUPPROTO(xieSetup);
 
 extern void XieInit(INITARGS);
@@ -26,18 +25,11 @@ static XF86ModuleVersionInfo VersRec =
 	1, 0, 0,
 	ABI_CLASS_EXTENSION,
 	ABI_EXTENSION_VERSION,
-	NULL,
+	MOD_CLASS_EXTENSION,
 	{0,0,0,0}
 };
 
-void
-xieModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = xieSetup;
-    *teardown = NULL;
-}
+XF86ModuleData xieModuleData = { &VersRec, xieSetup, NULL };
 
 static pointer
 xieSetup(pointer module, pointer opts, int *errmaj, int *errmin)
