@@ -2120,6 +2120,238 @@ void x86emuOp2_btc_R(u8 X86EMU_UNUSED(op2))
 
 /****************************************************************************
 REMARKS:
+Handles opcode 0x0f,0xbc
+****************************************************************************/
+void x86emuOp2_bsf(u8 X86EMU_UNUSED(op2))
+{
+    int mod, rl, rh;
+    uint srcoffset;
+
+    START_OF_INSTR();
+    DECODE_PRINTF("BSF\n");
+    FETCH_DECODE_MODRM(mod, rh, rl);
+    switch(mod) {
+    case 0:
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+	    u32 srcval, *dstreg;
+
+	    srcoffset = decode_rm00_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_LONG_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_long(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 0; *dstreg < 32; (*dstreg)++)
+		if ((srcval >> *dstreg) & 1) break;
+	} else {
+	    u16 srcval, *dstreg;
+
+	    srcoffset = decode_rm00_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_WORD_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_word(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 0; *dstreg < 16; (*dstreg)++)
+		if ((srcval >> *dstreg) & 1) break;
+	}
+	break;
+    case 1:
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+	    u32 srcval, *dstreg;
+
+	    srcoffset = decode_rm01_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_LONG_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_long(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 0; *dstreg < 32; (*dstreg)++)
+		if ((srcval >> *dstreg) & 1) break;
+	} else {
+	    u16 srcval, *dstreg;
+
+	    srcoffset = decode_rm01_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_WORD_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_word(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 0; *dstreg < 16; (*dstreg)++)
+		if ((srcval >> *dstreg) & 1) break;
+	}
+	break;
+    case 2:
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+	    u32 srcval, *dstreg;
+
+	    srcoffset = decode_rm10_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_LONG_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_long(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 0; *dstreg < 32; (*dstreg)++)
+		if ((srcval >> *dstreg) & 1) break;
+	} else {
+	    u16 srcval, *dstreg;
+
+	    srcoffset = decode_rm10_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_WORD_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_word(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 0; *dstreg < 16; (*dstreg)++)
+		if ((srcval >> *dstreg) & 1) break;
+	}
+	break;
+    case 3:				/* register to register */
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+	    u32 *srcreg, *dstreg;
+
+	    srcreg = DECODE_RM_LONG_REGISTER(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_LONG_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    CONDITIONAL_SET_FLAG(*srcreg == 0, F_ZF);
+	    for(*dstreg = 0; *dstreg < 32; (*dstreg)++)
+		if ((*srcreg >> *dstreg) & 1) break;
+	} else {
+	    u16 *srcreg, *dstreg;
+
+	    srcreg = DECODE_RM_WORD_REGISTER(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_WORD_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    CONDITIONAL_SET_FLAG(*srcreg == 0, F_ZF);
+	    for(*dstreg = 0; *dstreg < 16; (*dstreg)++)
+		if ((*srcreg >> *dstreg) & 1) break;
+	}
+	break;
+    }
+    DECODE_CLEAR_SEGOVR();
+    END_OF_INSTR();
+}
+
+/****************************************************************************
+REMARKS:
+Handles opcode 0x0f,0xbd
+****************************************************************************/
+void x86emuOp2_bsr(u8 X86EMU_UNUSED(op2))
+{
+    int mod, rl, rh;
+    uint srcoffset;
+
+    START_OF_INSTR();
+    DECODE_PRINTF("BSF\n");
+    FETCH_DECODE_MODRM(mod, rh, rl);
+    switch(mod) {
+    case 0:
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+	    u32 srcval, *dstreg;
+
+	    srcoffset = decode_rm00_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_LONG_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_long(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 31; *dstreg > 0; (*dstreg)--)
+		if ((srcval >> *dstreg) & 1) break;
+	} else {
+	    u16 srcval, *dstreg;
+
+	    srcoffset = decode_rm00_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_WORD_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_word(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 15; *dstreg > 0; (*dstreg)--)
+		if ((srcval >> *dstreg) & 1) break;
+	}
+	break;
+    case 1:
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+	    u32 srcval, *dstreg;
+
+	    srcoffset = decode_rm01_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_LONG_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_long(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 31; *dstreg > 0; (*dstreg)--)
+		if ((srcval >> *dstreg) & 1) break;
+	} else {
+	    u16 srcval, *dstreg;
+
+	    srcoffset = decode_rm01_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_WORD_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_word(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 15; *dstreg > 0; (*dstreg)--)
+		if ((srcval >> *dstreg) & 1) break;
+	}
+	break;
+    case 2:
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+	    u32 srcval, *dstreg;
+
+	    srcoffset = decode_rm10_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_LONG_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_long(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 31; *dstreg > 0; (*dstreg)--)
+		if ((srcval >> *dstreg) & 1) break;
+	} else {
+	    u16 srcval, *dstreg;
+
+	    srcoffset = decode_rm10_address(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_WORD_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    srcval = fetch_data_word(srcoffset);
+	    CONDITIONAL_SET_FLAG(srcval == 0, F_ZF);
+	    for(*dstreg = 15; *dstreg > 0; (*dstreg)--)
+		if ((srcval >> *dstreg) & 1) break;
+	}
+	break;
+    case 3:				/* register to register */
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) {
+	    u32 *srcreg, *dstreg;
+
+	    srcreg = DECODE_RM_LONG_REGISTER(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_LONG_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    CONDITIONAL_SET_FLAG(*srcreg == 0, F_ZF);
+	    for(*dstreg = 31; *dstreg > 0; (*dstreg)--)
+		if ((*srcreg >> *dstreg) & 1) break;
+	} else {
+	    u16 *srcreg, *dstreg;
+
+	    srcreg = DECODE_RM_WORD_REGISTER(rl);
+	    DECODE_PRINTF(",");
+	    dstreg = DECODE_RM_WORD_REGISTER(rh);
+	    TRACE_AND_STEP();
+	    CONDITIONAL_SET_FLAG(*srcreg == 0, F_ZF);
+	    for(*dstreg = 15; *dstreg > 0; (*dstreg)--)
+		if ((*srcreg >> *dstreg) & 1) break;
+	}
+	break;
+    }
+    DECODE_CLEAR_SEGOVR();
+    END_OF_INSTR();
+}
+
+/****************************************************************************
+REMARKS:
 Handles opcode 0x0f,0xbe
 ****************************************************************************/
 void x86emuOp2_movsx_byte_R_RM(u8 X86EMU_UNUSED(op2))
@@ -2494,8 +2726,8 @@ void (*x86emu_optab2[256])(u8) =
 /*  0xb9 */ x86emuOp2_illegal_op,
 /*  0xba */ x86emuOp2_btX_I,
 /*  0xbb */ x86emuOp2_btc_R,
-/*  0xbc */ x86emuOp2_illegal_op,  /* TODO: bsf */
-/*  0xbd */ x86emuOp2_illegal_op,  /* TODO: bsr */
+/*  0xbc */ x86emuOp2_bsf,
+/*  0xbd */ x86emuOp2_bsr,
 /*  0xbe */ x86emuOp2_movsx_byte_R_RM,
 /*  0xbf */ x86emuOp2_movsx_word_R_RM,
 

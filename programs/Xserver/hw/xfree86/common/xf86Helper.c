@@ -1557,23 +1557,29 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     *foundEntities = NULL;
 
     if (vendorID == 0) {
-        for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
+	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
+	    Bool foundVendor = FALSE;
 	    for (id = PCIchipsets; id->PCIid != -1; id++) {
-	        if ( (((id->PCIid & 0xFFFF0000) >> 16) == (*ppPci)->vendor) && 
-		     ((id->PCIid & 0x0000FFFF)        == (*ppPci)->chipType)){
-	            ++allocatedInstances;
-	            instances = xnfrealloc(instances,
-				  allocatedInstances * sizeof(struct Inst));
-	            instances[allocatedInstances - 1].pci = *ppPci;
-	            instances[allocatedInstances - 1].dev = NULL;
-	            instances[allocatedInstances - 1].claimed = FALSE;
-	            instances[allocatedInstances - 1].foundHW = TRUE;
-		    instances[allocatedInstances - 1].chip = id->numChipset;
-		    instances[allocatedInstances - 1].screen = 0;
-		    numFound++;
-	        }
+	        if ( (((id->PCIid & 0xFFFF0000) >> 16) == (*ppPci)->vendor)) {
+		    if (!foundVendor) {
+	                ++allocatedInstances;
+			instances = xnfrealloc(instances,
+				     allocatedInstances * sizeof(struct Inst));
+			instances[allocatedInstances - 1].pci = *ppPci;
+			instances[allocatedInstances - 1].dev = NULL;
+			instances[allocatedInstances - 1].claimed = FALSE;
+			instances[allocatedInstances - 1].foundHW = FALSE;
+			instances[allocatedInstances - 1].screen = 0;
+			foundVendor = TRUE;
+		    } 
+		    if ((id->PCIid & 0x0000FFFF) == (*ppPci)->chipType) {
+	               instances[allocatedInstances - 1].foundHW = TRUE;
+		       instances[allocatedInstances - 1].chip = id->numChipset;
+		       numFound++;
+		    }
+		}
 	    }
-        }
+	}
     } else if (vendorID == PCI_VENDOR_GENERIC) {
 	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	    for (id = PCIchipsets; id->PCIid != -1; id++) {
@@ -1617,6 +1623,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	    }
 	}
     }
+
     /*
      * This may be debatable, but if no PCI devices with a matching vendor
      * type is found, return zero now.  It is probably not desirable to
@@ -2504,6 +2511,7 @@ xf86ConfigIsaEntity(ScrnInfoPtr pScrn, int scrnFlag, int entityIndex,
 {
     IsaChipsets *i_id;
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
+    if (!pEnt) return pScrn;
     
     if (!(pEnt->location.type == BUS_ISA)) {
 	xfree(pEnt);
@@ -2540,6 +2548,7 @@ xf86ConfigPciEntity(ScrnInfoPtr pScrn, int scrnFlag, int entityIndex,
 {
     PciChipsets *p_id;
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
+    if (!pEnt) return pScrn;
 
     if (!(pEnt->location.type == BUS_PCI)) {
 	xfree(pEnt);
@@ -2587,6 +2596,7 @@ xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, int entityIndex,
 {
     IsaChipsets *i_id;
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
+    if (!pEnt) return pScrn;
  
     if (!pEnt->active || !(pEnt->location.type == BUS_ISA)) {
         xfree(pEnt);
@@ -2616,6 +2626,7 @@ xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
 {
     PciChipsets *p_id;
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
+    if (!pEnt) return pScrn;
  
     if (!pEnt->active || !(pEnt->location.type == BUS_PCI)) {
         xfree(pEnt);

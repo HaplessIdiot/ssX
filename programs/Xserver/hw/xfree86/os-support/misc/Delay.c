@@ -10,8 +10,16 @@
 void
 xf86UDelay(long usec)
 {
+#if 0
     struct timeval start, interrupt;
+#else
+    int sigio;
     
+    sigio = xf86BlockSIGIO();
+    xf86usleep(usec);
+    xf86UnblockSIGIO(sigio);
+#endif
+#if 0    
     gettimeofday(&start,NULL);
 
     do {
@@ -23,6 +31,6 @@ xf86UDelay(long usec)
 	    break;
 	
     } while (1);
-        
+#endif
 }
 

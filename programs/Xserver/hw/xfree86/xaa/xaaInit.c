@@ -108,7 +108,7 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     XAAScreenPtr pScreenPriv;
     int i;
 #ifdef RENDER
-    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+    PictureScreenPtr    ps = GetPictureScreenIfSet(pScreen);
 #endif
     
     if (XAAGeneration != serverGeneration) {

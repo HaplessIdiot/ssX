@@ -269,7 +269,7 @@ xf86HandleBuiltinMode(ScrnInfoPtr scrp,
 	modep->PrivFlags = cp->PrivFlags;
     } else {
 	if(!scrp->progClock) {
-	    modep->Clock = p->Clock;
+            modep->Clock = p->Clock;
 	    modep->ClockIndex = p->ClockIndex;
 	    modep->SynthClock = p->SynthClock;
 	} else {
@@ -382,7 +382,6 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     /* Scan the mode pool for matching names */
     for (p = scrp->modePool; p != NULL; p = p->next) {
 	if (strcmp(p->name, modep->name) == 0) {
-
 	    /*
 	     * Requested mode is a built-in mode. Don't let the user
 	     * override it.
@@ -1400,7 +1399,9 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 
     lookupNext:
 	status = xf86LookupMode(scrp, p, clockRanges, strategy);
-
+	if (status != MODE_OK) xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(status));
 	if (status == MODE_ERROR) {
 	    ErrorF("xf86ValidateModes: "
 		   "unexpected result from xf86LookupMode()\n");

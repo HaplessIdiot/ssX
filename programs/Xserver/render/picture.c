@@ -38,7 +38,7 @@
 #include "servermd.h"
 #include "picturestr.h"
 
-int		PictureScreenPrivateIndex;
+int		PictureScreenPrivateIndex = -1;
 int		PictureWindowPrivateIndex;
 int		PictureGeneration;
 RESTYPE		PictureType;
@@ -177,7 +177,7 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 PictFormatPtr
 PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual)
 {
-    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+    PictureScreenPtr    ps = GetPictureScreenIfSet(pScreen);
     PictFormatPtr	format;
     int			nformat;
     int			type;
@@ -229,7 +229,7 @@ PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual)
 PictFormatPtr
 PictureMatchFormat (ScreenPtr pScreen, int depth, CARD32 f)
 {
-    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+    PictureScreenPtr    ps = GetPictureScreenIfSet(pScreen);
     PictFormatPtr	format;
     int			nformat;
     int			type;

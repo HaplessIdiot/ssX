@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.16 2000/05/31 09:39:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.18 2000/11/03 18:46:08 eich Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -130,6 +130,7 @@ xf86DoEDID_DDC1(
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     unsigned char *EDID_block = NULL;
     xf86MonPtr tmp = NULL;
+    int sigio;
     /* Default DDC and DDC1 to enabled. */
     Bool noddc = FALSE, noddc1 = FALSE;
     OptionInfoRec options[nDDCOptions];
@@ -142,8 +143,10 @@ xf86DoEDID_DDC1(
     
     if (noddc || noddc1)
 	return NULL;
-
+    
+    sigio = xf86BlockSIGIO();
     EDID_block = EDIDRead_DDC1(pScrn,DDC1SetSpeed,DDC1Read);
+    xf86UnblockSIGIO(sigio);
 
     if (EDID_block){
 	tmp = xf86InterpretEDID(scrnIndex,EDID_block);

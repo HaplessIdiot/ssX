@@ -25,7 +25,8 @@ SRCS = \
 	xf86opt.c \
 	xf86screens.c \
 	xf86servisinit.c \
-	xf86verbose.c
+	xf86verbose.c \
+	sigiostubs.c
 
 OBJS = \
 	fatalerror.o \
@@ -47,8 +48,10 @@ OBJS = \
 	xf86opt.o \
 	xf86screens.o \
 	xf86servisinit.o \
-	xf86verbose.o
+	xf86verbose.o \
+	sigiostubs.o
 
+LinkSourceFile(sigiostubs.c,../os-support/shared)
 NormalLibraryObjectRule()
 NormalLibraryTarget(dummy,$(OBJS))
 

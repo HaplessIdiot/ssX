@@ -2858,6 +2858,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
 			      TrueColor))
 		return FALSE;
+	if (!miSetPixmapDepths ())
+	    return FALSE;
     } else {
 	if (!xf86SetDefaultVisual(pScrn, -1))
 	    return FALSE;

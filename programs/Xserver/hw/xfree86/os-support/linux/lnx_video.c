@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.37 2000/10/17 16:53:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.38 2000/10/28 01:42:27 mvojkovi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -34,6 +34,9 @@
 #include "xf86_OSlib.h"
 #include "xf86OSpriv.h"
 #include "lnx.h"
+#ifdef __alpha__
+#include "xf86Axp.h"
+#endif
 
 #ifdef HAS_MTRR_SUPPORT
 #include <asm/mtrr.h>
@@ -63,7 +66,7 @@ extern void sethae(unsigned long hae);
 # ifdef TEST_JENSEN_CODE 
 #  define isJensen (1)
 # else
-#  define isJensen (!_bus_base())
+#  define isJensen (axpSystem == JENSEN)
 # endif
 
 # define needSparse (_bus_base_sparse() != 0)
@@ -84,11 +87,18 @@ static pointer mapVidMem(int, unsigned long, unsigned long, int);
 static void unmapVidMem(int, pointer, unsigned long);
 #if defined (__alpha__) 
 static pointer mapVidMemSparse(int, unsigned long, unsigned long, int);
+extern axpDevice lnxGetAXP(void);
 static void unmapVidMemSparse(int, pointer, unsigned long);
 # if defined(JENSEN_SUPPORT)
 static pointer mapVidMemJensen(int, unsigned long, unsigned long, int);
 static void unmapVidMemJensen(int, pointer, unsigned long);
 # endif
+static axpDevice axpSystem = -1;
+static Bool needSparse;
+static unsigned long hae_thresh;
+static unsigned long hae_mask;
+static unsigned long bus_base;
+static unsigned long sparse_size;
 #endif
 
 #ifdef HAS_MTRR_SUPPORT
@@ -295,10 +305,19 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 {
 	pVidMem->linearSupported = TRUE;
 #ifdef __alpha__
+	if (axpSystem == -1) {
+	  axpSystem = lnxGetAXP();
+	  if (needSparse = (_bus_base_sparse() > 0)) {
+	    hae_thresh = xf86AXPParams[axpSystem].hae_thresh;
+	    hae_mask = xf86AXPParams[axpSystem].hae_mask;
+	    sparse_size = xf86AXPParams[axpSystem].size;
+	  }
+	  bus_base = _bus_base();
+	}
 	if (isJensen) {
 # ifndef JENSEN_SUPPORT
 	  FatalError("Jensen is not supported any more\n"
-		     "If you are interesetd in fixing Jensen support\n"
+		     "If you are intereseted in fixing Jensen support\n"
 		     "please contact xfree86@xfree86.org\n");
 # else
 	  xf86Msg(X_INFO,"Machine type is Jensen\n");
@@ -334,6 +353,14 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
     pointer base;
     int fd;
     int mapflags = MAP_SHARED; 
+    memType realBase, alignOff;
+
+    realBase = Base & ~(getpagesize() - 1);
+    alignOff = Base - realBase;
+#ifdef DEBUG
+    ErrorF("base: %lx, realBase: %lx, alignOff: %lx \n",
+	   Base,realBase,alignOff);
+#endif
     
 #if defined(__ia64__)
 #ifndef MAP_WRITECOMBINED
@@ -350,31 +377,41 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 
 #if defined(__ia64_)
     /* this will disappear when people upgrade their kernels */
-    if ((fd = open(DEV_MEM, O_RDWR|O_SYNC)) < 0) {
+    if ((fd = open(DEV_MEM, O_RDWR|O_SYNC)) < 0) 
 #else
-    if ((fd = open(DEV_MEM, O_RDWR)) < 0) {
+    if ((fd = open(DEV_MEM, O_RDWR)) < 0)
 #endif
-      FatalError("xf86MapVidMem: failed to open " DEV_MEM " (%s)\n",
-		 strerror(errno));
+    {
+	FatalError("xf86MapVidMem: failed to open " DEV_MEM " (%s)\n",
+		   strerror(errno));
     }
     /* This requires linux-0.99.pl10 or above */
-    base = mmap((caddr_t)0, Size,
-		PROT_READ|PROT_WRITE,
-		mapflags, fd,
-		(off_t)(off_t)Base + BUS_BASE);
+    base = mmap((caddr_t)0, Size + alignOff,
+  		PROT_READ|PROT_WRITE,
+  		mapflags, fd,
+ 		(off_t)(off_t)realBase  + BUS_BASE);
     close(fd);
     if (base == MAP_FAILED) {
-      FatalError("xf86MapVidMem: Could not mmap framebuffer"
-		 " (0x%08x,0x%x) (%s)\n", Base, Size,
-		 strerror(errno));
+        FatalError("xf86MapVidMem: Could not mmap framebuffer"
+		   " (0x%08x,0x%x) (%s)\n", Base, Size,
+		   strerror(errno));
     }
-    return base;
+#ifdef DEBUG
+    ErrorF("base: %lx aligned base: %lx\n",base, base + alignOff);
+#endif
+    return base + alignOff;
 }
-
+    
 static void
 unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
-    munmap((caddr_t)Base, Size);
+    memType alignOff = (memType)Base 
+	- ((memType)Base & ~(getpagesize() - 1));
+    
+#ifdef DEBUG
+    ErrorF("alignment offset: %lx\n",alignOff);
+#endif
+    munmap((caddr_t)((memType)Base - alignOff), (Size + alignOff));
 }
 
 
@@ -561,8 +598,8 @@ mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size, int flags
       lnxBase = mmap((caddr_t)0, 0x100000000,
 		     PROT_READ | PROT_WRITE,
 		     MAP_SHARED, fd,
-		     (off_t) _bus_base());
-      lnxSBase = mmap((caddr_t)0, 0x100000000,
+		     (off_t) bus_base);
+      lnxSBase = mmap((caddr_t)0, 0x400000000,
 		      PROT_READ | PROT_WRITE,
 		      MAP_SHARED, fd,
 		      (off_t) _bus_base_sparse());
@@ -590,8 +627,8 @@ readSparse8(pointer Base, register unsigned long Offset)
 
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     shift = (Offset & 0x3) << 3;
-      if (Offset >= (1UL << 24)) {
-        msb = Offset & 0xf8000000UL;
+      if (Offset >= (hae_thresh)) {
+        msb = Offset & hae_mask;
         Offset -= msb;
 	if (msb_set != msb) {
 	sethae(msb);
@@ -612,8 +649,8 @@ readSparse16(pointer Base, register unsigned long Offset)
 
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
     shift = (Offset & 0x2) << 3;
-    if (Offset >= (1UL << 24)) {
-        msb = Offset & 0xf8000000UL;
+      if (Offset >= hae_thresh) {
+        msb = Offset & hae_mask;
         Offset -= msb;
       if (msb_set != msb) {
 	sethae(msb);
@@ -638,11 +675,11 @@ writeSparse8(int Value, pointer Base, register unsigned long Offset)
     register unsigned int b = Value & 0xffU;
 
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
-    if (Offset >= (1UL << 24)) {
-      msb = Offset & 0xf8000000;
+    if (Offset >= hae_thresh) {
+      msb = Offset & hae_mask;
       Offset -= msb;
       if (msb_set != msb) {
-	sethae(msb);
+	sethae(msb); 
 	msb_set = msb;
       }
     }
@@ -657,8 +694,8 @@ writeSparse16(int Value, pointer Base, register unsigned long Offset)
     register unsigned int w = Value & 0xffffU;
 
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
-    if (Offset >= (1UL << 24)) {
-      msb = Offset & 0xf8000000;
+    if (Offset >= hae_thresh) {
+      msb = Offset & hae_mask;
       Offset -= msb;
       if (msb_set != msb) {
 	sethae(msb);
@@ -686,8 +723,8 @@ writeSparseNB8(int Value, pointer Base, register unsigned long Offset)
     register unsigned int b = Value & 0xffU;
 
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
-    if (Offset >= (1UL << 24)) {
-      msb = Offset & 0xf8000000;
+    if (Offset >= hae_thresh) {
+      msb = Offset & hae_mask;
       Offset -= msb;
       if (msb_set != msb) {
 	sethae(msb);
@@ -704,8 +741,8 @@ writeSparseNB16(int Value, pointer Base, register unsigned long Offset)
     register unsigned int w = Value & 0xffffU;
 
     Offset += (unsigned long)Base - (unsigned long)lnxBase;
-    if (Offset >= (1UL << 24)) {
-      msb = Offset & 0xf8000000;
+    if (Offset >= hae_thresh) {
+      msb = Offset & hae_mask;
       Offset -= msb;
       if (msb_set != msb) {
 	sethae(msb);
