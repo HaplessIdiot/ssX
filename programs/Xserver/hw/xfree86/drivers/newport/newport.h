@@ -1,7 +1,7 @@
 /* 
  * Id: newport.h,v 1.4 2000/11/29 20:58:10 agx Exp $
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.3 2001/05/04 19:05:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.4 2001/11/23 19:50:45 dawes Exp $ */
 
 #ifndef __NEWPORT_H__
 #define __NEWPORT_H__
@@ -32,7 +32,7 @@
 # define DEBUG 1
 #endif
 
-#if DEBUG
+#ifdef DEBUG
 # define TRACE_ENTER(str)       ErrorF("newport: " str " %d\n",pScrn->scrnIndex)
 # define TRACE_EXIT(str)        ErrorF("newport: " str " done\n")
 # define TRACE(str)             ErrorF("newport trace: " str "\n")
