@@ -1,4 +1,71 @@
 XFree86 4.3.99.14 (xx September 2003)
+ 475. APM driver:
+      . improved clock parameter calculation.
+      . Fixed order of initialization of cursor.
+      . Fixed restauration of grapical text mode.
+      . Added YUY2 video format.
+      . Corrected accel framebuffer pitches and max screen height 
+      (BugzillaR #528, Egbert Eich).
+ 474. Moved DisableMMIO() out of the unmap() function, added call to 
+      EnableMMIO() to EnterVT() to work around lockup problems when 
+      switching between two Xserver (BugzillaR #748, Egbert Eich).
+ 473. Fixed problem with text widget in Xaw when widget has a different 
+      depth than the default visual (Bugzilla #745, Wolfram Gloger).
+ 472. Fixed Sig11 when calling X -query with no ipv6 support in kernel 
+      (BugzillaR #737, Egbert Eich).
+ 471. Added support for Sparc64 and AMD64 on FreeBSD.
+      This patch also disables warnings from system headers, fixes some elf
+      relocations also relevant for other platforms and disables translation of
+      KEY_SysReqest and KEY_Break on sparc64. (Bugzilla #739, Eric Anholt).
+ 470. Switched VIA video driver to fillkey helper function (Bugzilla #525,
+      Alan Cox).
+ 469. Fixed CRT modes > FP panel size for siliconmotion (Bugzilla #727, 
+      Hugues Fournier).
+ 468. Fixed xedit coredumps: update counter of free objects when getting an
+      object from the list (BugzillaR #722, Egbert Eich).
+ 467. Fixed definititon of UseInstalledOnCrossCompile so that it never is
+      undefined (Harlod L. Hunt II).
+ 466. Add the 'b' flag to fopen() when opening binary xkm files. This is
+      irrelevant for *nix OSes, but reqired for Cygwin. (Bugzilla #689, 
+      Harold L Hunt II).
+ 465. Cygwin:
+      * MultiWindow Mode: Automatically validate the size of windows that are
+        being resized.  (Earle F. Philhower III)
+      * Safely shutdown the MultiWindow Mode and Clipboard Manager threads on
+        server shutdown.  (Earle F. Philhower III)
+      * MultiWindow Mode - Fix a crash from a string copy bug.  
+        (Earle F. Philhower III)
+      * Add lots of defaults for keyboardlayout.  (Alexander Gottwald)
+      * Add a system tha allows arbitrary commands to be added to the tray menu
+        icon.  (Earle F. Philhower III)
+      * Print the name of the keyboardlayout to aid in adding more layouts. 
+        (Alexander Gottwald)
+      * Stop printing the IDirectDrawSurface4_Blt() failure messages after 10
+        times.  (Harold L Hunt II)
+      * Disable check for pc105 keyboard and just assume that it is present.  
+        This check was causing problems with certain keyboard drivers that 
+        failed to report that a pc105 keyboard was present. 
+	(Alexander Gottwald)
+      * MultiWindow Mode - Add handling for WM_CHANGE_STATE IconicState 
+        messages;
+      minimize the associated Windows window when these messages are
+      received. (Harold L Hunt II).
+      Submitted: (Bugzilla #704, Harold L. Hunt).
+ 464. cygwin.cf:
+      * removed BuildDPS flag.
+      * Changed Alloca flag as Cygwin 1.5.x supports alloca, now.
+      * Use external expat package by default.
+      * Changed XawI18nDefines to utilize improved wide char suoort in 
+      Cygwin 1.5.x. (Bugzilla #699, Harold L. Hunt II). 
+ 463. Fixed C&T panel register setting (Akira Taniguchi, Egbert Eich).
+ 462. Fixing crash on ia64 because of wrong setjmp buffer alignment (Bugzilla
+      #596, John Dennis).
+ 461. Changing ImPS/2 mouse Z-axis range to -8 to 7 (Bugzilla #691, 
+      Matthew W. S. Bell, Egbert Eich).
+ 460. Making sure the compiled xkb config file is found by Xnest if 
+      ProjectRoot is modified (Bugzilla #688, Frank Giessler).
+ 459. Fixing build of machine code .S files on OS/2 (Bugzilla #689, 
+      Frank Giessler).
  458. Import Mesa 5.0.2 (Alan Hourihane).
  457. DRI merge (DRI Project)
       * details to follow..........
@@ -17769,7 +17836,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2867 2003/09/27 13:35:48 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2868 2003/09/28 20:15:48 alanh Exp $
 
 
 

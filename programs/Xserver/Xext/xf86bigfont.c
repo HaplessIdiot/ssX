@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.13 2001/06/30 22:41:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.14 2003/09/24 02:43:13 dawes Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -152,8 +152,14 @@ XFree86BigfontExtensionInit()
 	XF86BigfontReqCode = (unsigned char) extEntry->base;
 #ifdef HAS_SHM
 #ifdef MUST_CHECK_FOR_SHM_SYSCALL
+	/*
+	 * Note: Local-clients will not be optimized without shared memory
+	 * support. Remote-client optimization does not depend on shared
+	 * memory support.  Thus, the extension is still registered even
+	 * when shared memory support is not functional.  
+	 */
 	if (!CheckForShmSyscall()) {
-	    ErrorF(XF86BIGFONTNAME " extension disabled due to lack of shared memory support in the kernel\n");
+	    ErrorF(XF86BIGFONTNAME " extension local-client optimization disabled due to lack of shared memory support in the kernel\n");
 	    return;
 	}
 #endif

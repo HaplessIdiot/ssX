@@ -74,7 +74,8 @@ winMultiWindowGetClassHint (WindowPtr pWin, char **res_name, char **res_class)
 	      return 0;
 	    }
 
-	  strncpy ((*res_name), prop->data, len_name);
+	  /* Add one to len_name to allow copying of trailing 0 */
+	  strncpy ((*res_name), prop->data, len_name + 1);
 
 	  if (len_name == prop->size)
 	    len_name--;
@@ -191,3 +192,93 @@ winMultiWindowGetWindowRole (WindowPtr pWin, char **res_role)
   
   return 0;
 }
+
+
+int
+winMultiWindowGetWMNormalHints (WindowPtr pWin, WinXSizeHints *hints)
+{
+  struct _Window	*pwin;
+  struct _Property	*prop;
+
+  if (!pWin || !hints)
+    {
+      ErrorF ("winMultiWindowGetWMNormalHints - pWin or hints was NULL\n");
+      return 0; 
+    }
+
+  pwin = (struct _Window*) pWin;
+
+  if (pwin->optional)
+    prop = (struct _Property *) pwin->optional->userProps;
+  else
+    prop = NULL;
+  
+  memset (hints, 0, sizeof (WinXSizeHints));
+
+  while (prop)
+    {
+      if (prop->propertyName == XA_WM_NORMAL_HINTS
+	  && prop->data)
+	{
+	  memcpy (hints, prop->data, sizeof (WinXSizeHints));
+	  return 1;
+	}
+      else
+	prop = prop->next;
+    }
+  
+  return 0;
+}
+
+
+int
+winMultiWindowGetWMName (WindowPtr pWin, char **wmName)
+{
+  struct _Window	*pwin;
+  struct _Property	*prop;
+  int			len_name;
+
+  if (!pWin || !wmName)
+    {
+      ErrorF ("winMultiWindowGetClassHint - pWin, res_name, or res_class was "
+	      "NULL\n");
+      return 0;  
+    }
+  
+  pwin = (struct _Window*) pWin;
+
+  if (pwin->optional)
+    prop = (struct _Property *) pwin->optional->userProps;
+  else
+    prop = NULL;
+  
+  *wmName = NULL;
+
+  while (prop)
+    {
+      if (prop->propertyName == XA_WM_NAME
+	  && prop->type == XA_STRING
+	  && prop->data)
+	{
+	  len_name = strlen ((char *) prop->data);
+
+	  (*wmName) = malloc (len_name + 1);
+	  
+	  if (!*wmName)
+	    {
+	      ErrorF ("winMultiWindowGetWMName - *wmName was NULL\n");
+	      return 0;
+	    }
+
+	  /* Add one to len_name to allow copying of trailing 0 */
+	  strncpy ((*wmName), prop->data, len_name+1);
+
+	  return 1;
+	}
+      else
+	prop = prop->next;
+    }
+  
+  return 0;
+}
+

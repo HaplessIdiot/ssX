@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.8 2003/09/11 10:08:38 eich Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -1231,6 +1231,9 @@ viaPutImageG(
                 /*  BitBlt: Draw the colorkey rectangle */
                 if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
                     REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+                    
+                    xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
+#if 0                    
                     /* draw these */
                     /*  FillSolidRects function cause segment fail in SAMM mode
                      *  So I change to use SetupForSolidFill
@@ -1241,14 +1244,7 @@ viaPutImageG(
                                     (CARD32)~0,
                                     REGION_NUM_RECTS(clipBoxes),
                                     REGION_RECTS(clipBoxes));
-#if 0
-                    pVia->AccelInfoRec->SetupForSolidFill(pScrn,pPriv->colorKey,GXcopy,~0);
-                    pbox=REGION_RECTS(clipBoxes);
-                    for(i=REGION_NUM_RECTS(clipBoxes);i;i--,pbox++){
-                        pVia->AccelInfoRec->SubsequentSolidFillRect(pScrn,pbox->x1,pbox->y1,
-                                                                    pbox->x2-pbox->x1,pbox->y2-pbox->y1);
-                    }
-#endif                    
+#endif                                    
                 }
 
                 /*

@@ -51,6 +51,8 @@
 DEFINE_GUID( IID_IDirectDraw4, 0x9c59509a,0x39bd,0x11d1,0x8c,0x4a,0x00,0xc0,0x4f,0xd9,0x30,0xc5 );
 #endif /* IID_IDirectDraw4 */
 
+#define FAIL_MSG_MAX_BLT	10
+
 
 /*
  * Create the primary surface and attach the clipper.
@@ -514,9 +516,24 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
 					    NULL);
 	  if (FAILED (ddrval))
 	    {
-	      ErrorF ("winShadowUpdateDDNL - IDirectDrawSurface4_Blt () "
-		      "failed: %08x\n",
-		      ddrval);
+	      static int	s_iFailCount = 0;
+	      
+	      if (s_iFailCount < FAIL_MSG_MAX_BLT)
+		{
+		  ErrorF ("winShadowUpdateDDNL - IDirectDrawSurface4_Blt () "
+			  "failed: %08x\n",
+			  ddrval);
+		  
+		  ++s_iFailCount;
+
+		  if (s_iFailCount == FAIL_MSG_MAX_BLT)
+		    {
+		      ErrorF ("winShadowUpdateDDNL - IDirectDrawSurface4_Blt "
+			      "failure message maximum (%d) reached.  No "
+			      "more failure messages will be printed.",
+			      FAIL_MSG_MAX_BLT);
+		    }
+		}
 	    }
 	  
 	  /* Get a pointer to the next box */

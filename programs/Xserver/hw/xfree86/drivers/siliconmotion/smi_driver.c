@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.32 2003/08/23 15:03:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.33 2003/09/24 02:43:26 dawes Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -2671,12 +2671,12 @@ SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	new->VPR0C = pSmi->FBOffset >> 3;
 	if (pSmi->rotate)
 	{
-		new->VPR10 = ((((min(pSmi->lcdWidth, pSmi->height) * pSmi->Bpp) >> 3)
+		new->VPR10 = (((( pSmi->height * pSmi->Bpp) >> 3)
 				+ 2) << 16) | ((pSmi->height * pSmi->Bpp) >> 3);
 	}
 	else
 	{
-		new->VPR10 = ((((min(pSmi->lcdWidth, pSmi->width) * pSmi->Bpp) >> 3)
+		new->VPR10 = ((((pSmi->width * pSmi->Bpp) >> 3)
 				+ 2) << 16) | ((pSmi->width * pSmi->Bpp) >> 3);
 	}
 

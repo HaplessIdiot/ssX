@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.52 2003/09/09 03:20:28 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.53 2003/09/21 10:54:13 herrb Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -17,6 +17,9 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.52 2003/09/09 03:20:28 daw
 #endif
 
 #define ProjectRoot 		/usr/X11R6
+
+/* We always want to enable server building */
+#define BuildServer		YES
 
 #ifndef UnixCpp
 #define UnixCpp
@@ -116,6 +119,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.52 2003/09/09 03:20:28 daw
 #define LexCmd                  flex -l
 #define LexLib                  -lfl
 #define HasFlex			YES
+#define HasExpat		YES
 
 /*
  * Cygwin-specific Windows resource compiler command
@@ -151,16 +155,26 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.52 2003/09/09 03:20:28 daw
 # define DefaultCCOptions	/* -ansi -pedantic */ GccWarningOptions
 #endif
 
-# ifndef OptimizedCDebugFlags
-#  define OptimizedCDebugFlags	DefaultGcc2i386Opt
-# endif
+/*
+ * Cygwin 1.5.x now includes alloca
+ */
+#if OSMinorVersion >= 5
+# define AllocateLocalDefines	-DINCLUDE_ALLOCA_H
+#else
+# define AllocateLocalDefines	-DNO_ALLOCA
+#endif
+
+#ifndef OptimizedCDebugFlags
+# define OptimizedCDebugFlags	DefaultGcc2i386Opt
+#endif
 
 #define StandardDefines         -D__i386__ -DWIN32_LEAN_AND_MEAN -DX_LOCALE \
 				-D_X86_ -D__CYGWIN__ -D_XOPEN_SOURCE \
 				-D_POSIX_C_SOURCE=199309L -D_BSD_SOURCE \
-				-D_SVID_SOURCE -D_GNU_SOURCE -DNO_ALLOCA
+				-D_SVID_SOURCE -D_GNU_SOURCE
 
-#define XawI18nDefines          -DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H \
+				-DHAS_ISW_FUNCS -DNO_WIDEC_H
 #define HasWChar32              YES
 #define StandardCppOptions	-traditional
 
@@ -202,7 +216,8 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.52 2003/09/09 03:20:28 daw
 				-DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT \
 				-DDDXOSVERRORF -DDDXOSFATALERROR
 #define XkbServerDefines        -DXKB_ALWAYS_USES_SOFT_REPEAT
-#define ServerExtraDefines      -DGCCUSESGAS XWinServerDefines
+#define ServerExtraDefines      -DGCCUSESGAS XWinServerDefines \
+				AllocateLocalDefines
 #define ConnectionFlags         -DTCPCONN -DUNIXCONN
 #define ExtraLibraries          
 #define InstUidFlags            -m 4711
@@ -289,15 +304,6 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.52 2003/09/09 03:20:28 daw
 #define BuildPlugin		NO
 
 /*
- * DPS is the Adobe Display Postscript (r) library.
- * It seems that we do not yet have a postscript client library
- * to work in conjunction with DPS; the remedy to this may be
- * as simple as flipping a build switch or instaling Ghostscript.
- * In any case, some work needs to be done before DPS will work. 
- */
-#define BuildDPS		NO
-
-/*
  * Doing a loadable server would probably take some extra work.
  */
 #define DoLoadableServer	NO
@@ -328,9 +334,6 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.52 2003/09/09 03:20:28 daw
 #define XF86AFB			NO
 
 #define XF86CardDrivers		/**/
-
-/* We always want to enable server building */
-#define BuildServer			YES
 
 /* Server build rules */
 #ifndef XnestServer

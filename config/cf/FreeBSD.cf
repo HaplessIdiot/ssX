@@ -182,7 +182,13 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if defined(UseInstalled)
 #define DefaultCCOptions	/**/
 #else
-#define DefaultCCOptions	-ansi -pedantic -Dasm=__asm GccWarningOptions
+#if defined(HasGcc3) && HasGcc3
+#define NoSystemWarn		-Wno-system-headers
+#else
+#define NoSystemWarn
+#endif
+#define DefaultCCOptions	-ansi -pedantic NoSystemWarn -Dasm=__asm \
+	GccWarningOptions
 #endif
 #endif
 #ifndef ExtraLibraries
@@ -233,11 +239,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 
 /*
- * 4.1/i386 and 5.0/i386 have the AGP driver.
+ * 4.1/i386 and 5.0/i386,alpha,ia64,amd64 have the AGP driver.
  */
 #ifndef HasAgpGart
 #if defined(i386Architecture) && \
 	(OSMajorVersion >= 5 || (OSMajorVersion == 4 && OSMinorVersion >= 1))
+#define HasAgpGart		YES
+#endif
+#if (defined(AlphaArchitecture) || defined(ia64Architecture) || \
+	defined(x86_64Architecture)) && (OSMajorVersion >= 5)
 #define HasAgpGart		YES
 #endif
 #endif
@@ -246,7 +256,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * SSE and 3DNow will be autodetected, so binutils is the only 
  * requirement for enabling this.  By 4.2 they were all supported.
  */
-#if defined(i386Architecture) && \
+#if defined(x86_64Architecture) || defined(i386Architecture) && \
 	(OSMajorVersion >= 5 || (OSMajorVersion == 4 && OSMinorVersion >= 2))
 # define HasX86Support          YES
 # define HasMMXSupport		YES
@@ -349,11 +359,13 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifdef i386Architecture
 #define ServerExtraDefines GccGasOption XFree86ServerDefines
 #endif
-#ifdef AlphaArchitecture
+#if defined(AlphaArchitecture) || defined(Sparc64Architecture) || \
+	defined(ia64Architecture) || defined(x86_64Architecture)
 #define ServerExtraDefines GccGasOption XFree86ServerDefines -D_XSERVER64
 #endif
 #ifdef Sparc64Architecture
-#define ServerExtraDefines GccGasOption XFree86ServerDefines -D_XSERVER64
+#define AsVISOption		-Av9a
+#define AsOutputArchSize	64
 #endif
 
 #define StandardDefines	-DCSRG_BASED

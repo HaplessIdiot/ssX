@@ -87,7 +87,7 @@ Ctrl+Alt+Backspace exits the X Server
 Alt+F4 exits the X Server
 .SH "SEE ALSO"
 .PP
-X(__miscmansuffix__), Xserver(1), xdm(1), xinit(1)
+X(__miscmansuffix__), Xserver(1), xdm(1), xinit(1), XWinrc(5)
 .SH BUGS
 .I XWin
 and this man page still have many limitations. Some of the more obvious

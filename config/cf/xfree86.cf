@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.459 2003/09/28 20:14:55 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.460 2003/09/29 11:25:16 alanh Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -488,7 +488,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 /* SPARC and UltraSPARC drivers */
 
-#if  defined(SparcArchitecture) && \
+#if  (defined(SparcArchitecture) || defined(Sparc64Architecture)) && \
     !defined(LynxOSArchitecture) && \
     !defined(NetBSDArchitecture) && \
     !defined(OpenBSDArchitecture)

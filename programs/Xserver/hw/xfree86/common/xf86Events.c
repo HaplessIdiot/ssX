@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.154 2003/08/24 17:36:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.155 2003/09/25 13:26:26 pascal Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -627,6 +627,7 @@ xf86PostKbdEvent(unsigned key)
       scanCode = KEY_Pause;       /* pause */
     }
 
+#ifndef __sparc64__
   /*
    * PC keyboards generate separate key codes for
    * Alt+Print and Control+Pause but in the X keyboard model
@@ -637,6 +638,7 @@ xf86PostKbdEvent(unsigned key)
     scanCode = KEY_Print;
   else if (scanCode == KEY_Break)
     scanCode = KEY_Pause;
+#endif
   
   /*
    * and now get some special keysequences

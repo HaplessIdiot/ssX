@@ -38,7 +38,7 @@
 #    define A(s)		Apm##s
 #  endif
 #endif
-#define	DPRINTNAME(s)	do { xf86DrvMsgVerb(pScrn->pScreen->myNum, X_NOTICE, 4, "Apm" #s APM_SUFF_24 APM_SUFF_IOP "\n"); } while (0)
+#define	DPRINTNAME(s)	do { xf86DrvMsgVerb(pScrn->pScreen->myNum, X_NOTICE, 6, "Apm" #s APM_SUFF_24 APM_SUFF_IOP "\n"); } while (0)
 
 #if PSZ == 24
 #undef SETSOURCEXY

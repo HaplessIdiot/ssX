@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.25 2003/07/19 00:23:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.26 2003/09/10 01:04:41 dawes Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -676,7 +676,8 @@ XdmcpBlockHandler(
 	return;
     FD_SET(xdmcpSocket, LastSelectMask);
 #if defined(IPv6) && defined(AF_INET6)
-    FD_SET(xdmcpSocket6, LastSelectMask);
+    if (xdmcpSocket6 >= 0)
+	FD_SET(xdmcpSocket6, LastSelectMask);
 #endif
     if (timeOutTime == 0)
 	return;
@@ -712,7 +713,7 @@ XdmcpWakeupHandler(
 	    FD_CLR(xdmcpSocket, LastSelectMask);
 	} 
 #if defined(IPv6) && defined(AF_INET6)
-	if (FD_ISSET(xdmcpSocket6, LastSelectMask))
+	if (xdmcpSocket6 >= 0 && FD_ISSET(xdmcpSocket6, LastSelectMask))
 	{
 	    receive_packet(xdmcpSocket6);
 	    FD_CLR(xdmcpSocket6, LastSelectMask);

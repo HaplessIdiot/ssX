@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.66 2003/09/23 17:55:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.67 2003/09/24 02:43:33 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -114,7 +114,7 @@ static char freeHandles[MAX_HANDLE] ;
 static int refCount[MAX_HANDLE] ;
 #endif
 
-#if defined(__sparc__) && defined(__GNUC__)
+#if defined(__sparc__) && defined(__GNUC__) && !defined(__FreeBSD__)
 # define SYMFUNCDOT(func) { "." #func, (funcptr)&__sparc_dot_ ## func },
 # if !defined(__OpenBSD__)
 # define SYMFUNCDOT89(func) { "." #func, (funcptr)&func ## _sparcv89 },
@@ -324,7 +324,7 @@ LoaderInit(void)
     LoaderAddSymbols(-1, -1, dixLookupTab ) ;
     LoaderAddSymbols(-1, -1, fontLookupTab ) ;
     LoaderAddSymbols(-1, -1, extLookupTab );
-#ifdef __sparc__
+#if defined(__sparc__) && !defined(__FreeBSD__)
 #ifdef linux
     if (sparcUseHWMulDiv())
 	LoaderAddSymbols(-1, -1, SparcV89LookupTab ) ;

@@ -170,6 +170,8 @@ promIsP1275(void)
 	promP1275 = TRUE;
     else
 	promP1275 = FALSE;
+#elif defined(__FreeBSD__)
+    promP1275 = TRUE;
 #else
 #error Missing promIsP1275() function for this OS
 #endif

@@ -216,7 +216,7 @@ typedef struct {
 typedef struct {
     char*	vendor;	/* Name of manufacturer */
     char*	model;	/* Model name */
-    float	bandwidth;	/* Monitor bandwidth */
+    float	EMPTY;	/* unused, for backward compatibility */
     unsigned char	nhsync;	/* Number of horiz sync ranges */
     XF86VidModeSyncRange*	hsync;	/* Horizontal sync ranges */
     unsigned char	nvsync;	/* Number of vert sync ranges */

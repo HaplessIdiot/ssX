@@ -923,7 +923,7 @@ XawTextInitialize(Widget request, Widget cnew,
     ctx->text.file_insert = NULL;
     ctx->text.search = NULL;
     ctx->text.update = XmuNewScanline(0, 0, 0);
-    ctx->text.gc = DefaultGCOfScreen(XtScreen(ctx));
+    ctx->text.gc = XtGetGC(cnew, 0, 0);
     ctx->text.hasfocus = False;
     ctx->text.margin = ctx->text.r_margin; /* Strucure copy */
     ctx->text.left_margin = ctx->text.r_margin.left;
@@ -3619,6 +3619,7 @@ XawTextDestroy(Widget w)
     XtFree((char *)ctx->text.lt.info);
     XtFree((char *)ctx->text.search);
     XmuDestroyScanline(ctx->text.update);
+    XtReleaseGC((Widget)ctx, ctx->text.gc);
 }
 
 /*

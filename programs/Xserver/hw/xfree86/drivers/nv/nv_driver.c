@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.113 2003/08/23 15:03:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.114 2003/08/23 16:09:18 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -431,9 +431,13 @@ nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 static const OptionInfoRec *
 NVAvailableOptions(int chipid, int busid)
 {
-    if(chipid == 0x12D20018)
-       return RivaAvailableOptions(chipid, busid);
-
+    if(chipid == 0x12D20018) {
+	if (!xf86LoadOneModule("riva128", NULL)) {
+	    return NULL;
+	} else
+	    return RivaAvailableOptions(chipid, busid);
+    }
+    
     return NVOptions;
 }
 
