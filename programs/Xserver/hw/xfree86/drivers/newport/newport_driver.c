@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.1 2000/12/01 19:48:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.2 2000/12/02 15:30:46 tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -684,14 +684,14 @@ NewportHWProbe(unsigned probedIDs[])
 	FILE* cpuinfo;		
 	char line[80];
 	unsigned hasNewport = 0;
-	cpuinfo = xf86fopen("/proc/cpuinfo","r");
-	while(xf86fgets(line,80,cpuinfo) != NULL) {	
-		if(xf86strstr(line, "SGI Indy") != NULL) {
+	cpuinfo = fopen("/proc/cpuinfo","r");
+	while(fgets(line,80,cpuinfo) != NULL) {	
+		if(strstr(line, "SGI Indy") != NULL) {
 			hasNewport = 1;
 			break;
 		}
 	}
-	xf86fclose(cpuinfo);	
+	fclose(cpuinfo);	
 
 	probedIDs[0] = 0;
 	return hasNewport;	
@@ -729,20 +729,20 @@ NewportMapRegs(unsigned cardNum)
 	int fd;
 	pointer base;
 	
-	if ((fd = xf86open("/dev/mem", XF86_O_RDWR)) < 0) {
+	if ((fd = open("/dev/mem", O_RDWR)) < 0) {
 		FatalError("NewportMapRegs: failed to open /dev/mem (%s)\n", \
-			xf86strerror(xf86errno));
+			strerror(errno));
 		return (NewportRegsPtr)NULL;
         }
 
-	base = xf86mmap((pointer)0, sizeof(NewportRegs), \
-			XF86_PROT_READ | XF86_PROT_WRITE, XF86_MAP_SHARED, fd, \
+	base = mmap((pointer)0, sizeof(NewportRegs), \
+			PROT_READ | PROT_WRITE, MAP_SHARED, fd, \
 			NEWPORT_BASE_ADDR0 + cardNum * NEWPORT_BASE_OFFSET);
-	xf86close(fd);
-	if (base == XF86_MAP_FAILED) {
+	close(fd);
+	if (base == MAP_FAILED) {
 		FatalError("NewportMapRegs: Could not mmap NewportRegs (0x%08x,0x%x) (%s)\n", \
 				NEWPORT_BASE_ADDR0 + cardNum * NEWPORT_BASE_OFFSET, \
-				sizeof(NewportRegs), xf86strerror(xf86errno));
+				sizeof(NewportRegs), strerror(errno));
 		return (NewportRegsPtr)NULL;
 	}
 	return (NewportRegsPtr)base;
@@ -752,7 +752,7 @@ NewportMapRegs(unsigned cardNum)
 static Bool
 NewportUnmapRegs(unsigned cardNum)
 {
-	if(xf86munmap( (pointer)(NEWPORT_BASE_ADDR0 + cardNum * NEWPORT_BASE_OFFSET), \
+	if(munmap( (pointer)(NEWPORT_BASE_ADDR0 + cardNum * NEWPORT_BASE_OFFSET), \
 				sizeof(NewportRegs)) == -1) {
 		FatalError("NewportUnmapRegs: Could not munmap NewportRegs\n");
 		return FALSE;

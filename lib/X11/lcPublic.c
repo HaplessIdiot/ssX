@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcPublic.c,v 1.6 2000/02/12 05:43:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcPublic.c,v 1.7 2000/11/28 18:49:47 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -92,7 +92,7 @@ create(
     new = (XLCdPublicMethods) Xmalloc(sizeof(XLCdPublicMethodsRec));
     if (new == NULL)
 	goto err;
-    *new = *((XLCdPublicMethods) methods);
+    memcpy(new,methods,sizeof(XLCdPublicMethodsRec));
     lcd->methods = (XLCdMethods) new;
 
     return lcd;

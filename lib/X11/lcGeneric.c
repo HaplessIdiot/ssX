@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.11 2000/11/28 18:49:45 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.12 2000/11/29 18:12:26 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -72,7 +72,7 @@ create(
     new = (XLCdPublicMethods) Xmalloc(sizeof(XLCdPublicMethodsRec));
     if (new == NULL)
 	goto err;
-    *new = *((XLCdPublicMethods) methods);
+    memcpy(new,methods,sizeof(XLCdPublicMethodsRec));
     lcd->methods = (XLCdMethods) new;
 
     return lcd;

@@ -4,7 +4,7 @@ XCOMM	This file contains compose table file name.
 XCOMM	The first word is the compose table file name and
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM $XFree86: xc/nls/compose.dir,v 1.10 2000/10/27 18:30:49 dawes Exp $
+XCOMM $XFree86: xc/nls/compose.dir,v 1.11 2000/11/14 16:54:46 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -86,6 +86,7 @@ iso8859-1/Compose	es_PY.ISO8859-1
 iso8859-1/Compose	es_SV.ISO8859-1
 iso8859-1/Compose	es_UY.ISO8859-1
 iso8859-1/Compose	es_VE.ISO8859-1
+iso8859-1/Compose	et_EE.ISO8859-1
 iso8859-4/Compose	et_EE.ISO8859-4
 iso8859-13/Compose	et_EE.ISO8859-13
 iso8859-15/Compose	et_EE.ISO8859-15
@@ -290,6 +291,7 @@ iso8859-1/Compose:	es_PY.ISO8859-1
 iso8859-1/Compose:	es_SV.ISO8859-1
 iso8859-1/Compose:	es_UY.ISO8859-1
 iso8859-1/Compose:	es_VE.ISO8859-1
+iso8859-1/Compose:	et_EE.ISO8859-1
 iso8859-4/Compose:	et_EE.ISO8859-4
 iso8859-13/Compose:	et_EE.ISO8859-13
 iso8859-15/Compose:	et_EE.ISO8859-15
@@ -355,6 +357,7 @@ iso8859-4/Compose:	lv_LV.ISO8859-4
 iso8859-13/Compose:	lv_LV.ISO8859-13
 iso8859-13/Compose:	mi_NZ.ISO8859-13
 iso8859-5/Compose:	mk_MK.ISO8859-5
+mk_MK.UTF-8/Compose:	mk_MK.UTF-8
 microsoft-cp1251/Compose:	mk_MK.CP1251
 iso8859-1/Compose:	ms_MY.ISO8859-1
 iso8859-1/Compose:	nl_BE.ISO8859-1

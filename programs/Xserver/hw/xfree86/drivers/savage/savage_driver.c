@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.2 2000/12/02 15:30:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.3 2000/12/04 18:49:59 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -1443,13 +1443,15 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 	/* Disable old MMIO. */
 
 	VGAOUT8(vgaCRIndex, 0x53);
-	VGAOUT8(vgaCRReg, VGAIN8(vgaCRReg) & ~0x10);
+	tmp = VGAIN8(vgaCRReg);
+	VGAOUT8(vgaCRReg, tmp & ~0x10);
 
 	/* We may need TV/panel fixups here.  See s3bios.c line 2904. */
 
 	/* Set FIFO fetch delay. */
 	VGAOUT8(vgaCRIndex, 0x85);
-	VGAOUT8(vgaCRReg, (VGAIN8(vgaCRReg) & 0xf8) | 0x03);
+	tmp = VGAIN8(vgaCRReg);
+	VGAOUT8(vgaCRReg, (tmp & 0xf8) | 0x03);
 
 	/* Patch CR79.  These values are magical. */
 
@@ -1518,7 +1520,8 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 	/* Handle the pitch. */
 
         VGAOUT8(vgaCRIndex, 0x50);
-        VGAOUT8(vgaCRReg, VGAIN8(vgaCRReg) | 0xC1);
+	tmp = VGAIN8(vgaCRReg);
+        VGAOUT8(vgaCRReg, tmp | 0xC1);
 
 	width = (pScrn->displayWidth * (pScrn->bitsPerPixel / 8)) >> 3;
 	VGAOUT16(vgaCRIndex, ((width & 0xff) << 8) | 0x13 );
@@ -1529,7 +1532,8 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
         if( psav->Chipset == S3_SAVAGE2000 )
 	{
 	    VGAOUT8(vgaCRIndex, 0x73);
-	    VGAOUT8(vgaCRReg, VGAIN8(vgaCRReg) & 0xdf );
+	    tmp = VGAIN8(vgaCRReg);
+	    VGAOUT8(vgaCRReg, tmp & 0xdf );
 	}
 	else if( psav->Chipset != S3_SAVAGE_MX )
 	{
@@ -1538,7 +1542,8 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 	    {
 		/* Not SGRAM; disable block write. */
 		VGAOUT8(vgaCRIndex, 0x88);
-		VGAOUT8(vgaCRReg, VGAIN8(vgaCRReg) | 0x10);
+		tmp = VGAIN8(vgaCRReg);
+		VGAOUT8(vgaCRReg, tmp | 0x10);
 	    }
 	}
 
@@ -1767,7 +1772,8 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
     if( graphicsMode && (!psav->NoAccel) )
     {
 	VGAOUT8(vgaCRIndex, 0x50);
-	VGAOUT8(vgaCRReg, VGAIN8(vgaCRReg) | 0xC1);
+	tmp = VGAIN8(vgaCRReg);
+	VGAOUT8(vgaCRReg, tmp | 0xC1);
 	SavageInitialize2DEngine(pScrn);
     }
 

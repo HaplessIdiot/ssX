@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/9 1998/06/29 09:17:20 kaleb $
-XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.10 2000/10/24 18:07:39 dawes Exp $
+XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.11 2000/10/27 18:30:50 dawes Exp $
 
 #ifndef Win32Architecture
 #ifndef OS2Architecture
@@ -51,6 +51,7 @@ ComposeTarget(ko)
 ComposeTarget(koi8-r)
 ComposeTarget(koi8-u)
 ComposeTarget(koi8-c)
+ComposeTarget(mk_MK.UTF-8)
 ComposeTarget(mulelao-1)
 ComposeTarget(th_TH.TACTIS)
 ComposeTarget(vi_VN.tcvn)

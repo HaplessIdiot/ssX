@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.32 2000/11/28 23:43:41 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.33 2000/12/02 01:16:04 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -163,7 +163,9 @@ XCOMM language; however this is clearly incorrect according to ISO8859.
 #endif
 et						et_EE.ISO8859-15
 et_EE						et_EE.ISO8859-15
+et_EE.iso88591					et_EE.ISO8859-1
 et_EE.iso88594					et_EE.ISO8859-4
+et_EE.iso885913					et_EE.ISO8859-13
 et_EE.iso885915					et_EE.ISO8859-15
 eu						eu_ES.ISO8859-1
 eu_ES						eu_ES.ISO8859-1
@@ -682,6 +684,7 @@ XCOMM According to Estonian local standards, ISO8859-4 is not recommended
 XCOMM charset. EVS8:2000 specifies ISO8859-15 as base charset.
 et:						et_EE.ISO8859-15
 et_EE:						et_EE.ISO8859-15
+et_EE.iso88591:					et_EE.ISO8859-1
 et_EE.iso88594:					et_EE.ISO8859-4
 et_EE.iso885913:				et_EE.ISO8859-13
 et_EE.iso885915:				et_EE.ISO8859-15
@@ -1151,7 +1154,7 @@ Spanish_Puerto Rico.1252:			es_PR.iso8859-1
 Spanish_El Salvador.1252:			es_SV.iso8859-1
 Spanish_Uruguay.1252:				es_UY.iso8859-1
 Spanish_Venezuela.1252:				es_VE.iso8859-1
-Estonian_Estonia.1257:				et_EE.iso8859-15
+Estonian_Estonia.1257:				et_EE.iso8859-13
 Basque_Spain.1252:				eu_ES.iso8859-1
 Finnish_Finland.1252:				fi_FI.iso8859-1
 French_Belgium.1252:				fr_BE.iso8859-1

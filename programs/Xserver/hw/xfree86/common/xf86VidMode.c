@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.7 1999/12/03 19:17:23 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.8 1999/12/13 01:39:46 robin Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -294,10 +294,18 @@ VidModeSetViewPort(int scrnIndex, int x, int y)
 	return FALSE;
 
     pScrn = xf86Screens[scrnIndex];
-    xf86SetViewport(pScrn->pScreen, min(0, x), min(0, y));
+    pScrn->frameX0 = min( max(x, 0),
+	                 pScrn->virtualX - pScrn->currentMode->HDisplay );
+    pScrn->frameX1 = pScrn->frameX0 + pScrn->currentMode->HDisplay - 1;
+    pScrn->frameY0 = min( max(y, 0),
+	                 pScrn->virtualY - pScrn->currentMode->VDisplay );
+    pScrn->frameY1 = pScrn->frameY0 + pScrn->currentMode->VDisplay - 1;
+    if (pScrn->AdjustFrame != NULL)
+	(pScrn->AdjustFrame)(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
     return TRUE;
 }
+
 Bool
 VidModeGetViewPort(int scrnIndex, int *x, int *y)
 {
