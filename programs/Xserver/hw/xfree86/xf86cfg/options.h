@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.h,v 1.1 2000/04/04 22:37:01 dawes Exp $
  */
 
 #include "config.h"
@@ -35,4 +35,4 @@
  * Prototypes
  */
 void OptionsPopup(XF86OptionPtr*);
-
+void OptionsCancelAction(Widget, XEvent*, String*, Cardinal*);

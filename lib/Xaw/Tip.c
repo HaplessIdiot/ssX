@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/Tip.c,v 1.3 1999/06/27 17:00:58 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tip.c,v 1.4 1999/07/11 08:49:16 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -405,15 +405,19 @@ TipLayout(XawTipInfo *info)
 
 	height = ext->max_ink_extent.height;
 	if ((nl = index(label, '\n')) != NULL) {
-	    while (nl) {
+	    /*CONSTCOND*/
+	    while (True) {
 		int w = XmbTextEscapement(fset, label, (int)(nl - label));
 
 		if (w > width)
 		    width = w;
+		if (*nl == '\0')
+		    break;
 		label = nl + 1;
 		if (*label)
 		    height += ext->max_ink_extent.height;
-		nl = index(label, '\n');
+		if ((nl = index(label, '\n')) == NULL)
+		    nl = index(label, '\0');
 	    }
 	}
 	else
@@ -422,16 +426,20 @@ TipLayout(XawTipInfo *info)
     else {
 	height = fs->max_bounds.ascent + fs->max_bounds.descent;
 	if ((nl = index(label, '\n')) != NULL) {
-	    while (nl) {
+	    /*CONSTCOND*/
+	    while (True) {
 		int w = info->tip->tip.encoding ?
 		    XTextWidth16(fs, (XChar2b*)label, (int)(nl - label) >> 1) :
 		    XTextWidth(fs, label, (int)(nl - label));
 		if (w > width)
 		    width = w;
+		if (*nl == '\0')
+		    break;
 		label = nl + 1;
 		if (*label)
 		    height += fs->max_bounds.ascent + fs->max_bounds.descent;
-		nl = index(label, '\n');
+		if ((nl = index(label, '\n')) == NULL)
+		    nl = index(label, '\0');
 	    }
 	}
 	else
@@ -544,9 +552,6 @@ static void
 TipTimeoutCallback(XtPointer closure, XtIntervalId *id)
 {
     XawTipInfo *info = (XawTipInfo*)closure;
-    String label = info->tip->tip.label;
-    Boolean international = info->tip->tip.international;
-    unsigned char encoding = info->tip->tip.encoding;
     Arg args[3];
 
     info->tip->tip.label = NULL;
@@ -558,10 +563,7 @@ TipTimeoutCallback(XtPointer closure, XtIntervalId *id)
     XtGetValues(info->widget, args, 3);
 
     if (info->tip->tip.label) {
-	if (label != info->tip->tip.label ||
-	    international != info->tip->tip.international ||
-	    encoding != info->tip->tip.encoding)
-	    TipLayout(info);
+	TipLayout(info);
 	TipPosition(info);
 	XMapRaised(XtDisplay((Widget)info->tip), XtWindow((Widget)info->tip));
 	XtAddGrab(XtParent((Widget)info->tip), True, True);

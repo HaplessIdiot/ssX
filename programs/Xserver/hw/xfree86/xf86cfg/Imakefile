@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.3 2000/04/06 15:48:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.4 2000/04/07 03:57:55 tsi Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -15,6 +15,7 @@ SRCS	=\
 	screen-cfg.c\
 	screen.c\
 	startx.c\
+	vidmode.c\
 	xf86config.c
 
 OBJS	=\
@@ -30,6 +31,7 @@ OBJS	=\
 	screen-cfg.o\
 	screen.o\
 	startx.o\
+	vidmode.o\
 	xf86config.o
 
 PROG	= xf86cfg
@@ -38,7 +40,15 @@ XBMPICS =\
 	card.xbm\
 	keyboard.xbm\
 	monitor.xbm\
-	mouse.xbm
+	mouse.xbm\
+	left.xbm\
+	right.xbm\
+	up.xbm\
+	down.xbm\
+	wider.xbm\
+	narrower.xbm\
+	shorter.xbm\
+	taller.xbm
 
 XPMPICS =\
 	card.xpm\
@@ -49,8 +59,9 @@ XPMPICS =\
 
 AllTarget(ProgramTargetName($(PROG)))
 
-LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) -lxf86config -lXxf86misc \
-		  $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) -lm
+LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) -lxf86config $(XXF86MISCLIB) \
+		  $(XXF86VMLIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
+		  $(XPMLIB) $(XLIB) -lm
 
 NormalProgramTarget($(PROG),$(OBJS),,$(LOCAL_LIBRARIES),)
 InstallProgramWithFlags($(PROG),$(BINDIR),NullParameter)

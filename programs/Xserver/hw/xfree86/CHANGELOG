@@ -1,4 +1,26 @@
 XFree86 4.0b (18 May 2000)
+ 190. Fix building xf86cfg on systems where libxpm isn't linked in
+      implicitly (#3903, Matthieu Herrb).
+ 189. Update the fbdevhw stubs for an interface change (#3902, Matthieu Herrb).
+ 188. Simplify the platform defines in servermd.h to make them more hardware
+      dependent than OS dependent (#3913, Kurt Lidl).
+ 187. Fix a bug in the search/replace dialog in the Xaw text widget (#3896,
+      Paulo Cesar Pereira de Andrade).
+ 186. Xterm patch #133 (#3894, Thomas Dickey).
+ 185. Fixes for the Xaw TipWidget (#3893, Paulo Cesar Pereira de Andrade).
+ 184. Change CTEXT from/to converters to allow processing of "C1" codes
+      (0x80-0x9f) as ordinary characters for "non-standard" encodings
+      (such as UTF-8) (#3891, Ivan Pascal).
+ 183. Add "software" per-key auto-repeat disabling (#3889, Ivan Pascal).
+ 182. Refix fog.c build problem on Alpha (#3888, Dave Gilbert).
+ 181. Add some new things for the VidMode interface in xf86cfg (#3877,
+      Paulo Cesar Pereira de Andrade).
+ 180. Rework most of the look and feel of xf86cfg, and fix some bugs (#3877,
+      3886, 3892, Paulo Cesar Pereira de Andrade).
+ 179. Add a ProjectRoot to Xaw rather than hard-coding it, so that the
+      pixmap code can find pixmaps and bitmaps on non-standard installations
+      (#3877, Paulo Cesar Pereira de Andrade).
+ 178. Fix a bug in the DRI section parsing (David Dawes).
  177. Add support for building shared libraries on BSD/OS (#3876, Kurt Lidl).
  176. Add imake support for automatically determining the version for BSD/OS,
       and update bsdi.cf for the features relevant to the different versions
@@ -10343,4 +10365,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1155 2000/05/17 19:52:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1156 2000/05/18 00:33:17 dawes Exp $

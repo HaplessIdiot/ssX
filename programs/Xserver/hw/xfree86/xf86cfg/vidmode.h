@@ -26,26 +26,38 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen.h,v 1.1 2000/04/04 22:37:02 dawes Exp $
+ * $XFree86$
  */
 
-#include "xf86config.h"
-#include "config.h"
+#ifndef _xf86cfg_vidmode_h
+#define _xf86cfg_vidmode_h
 
-#ifndef _xf86cfg_screen_h
-#define _xf86cfg_screen_h
+#include "xf86config.h"
+#include <X11/extensions/xf86vmode.h>
+
+/*
+ * Types
+ */
+struct _xf86cfgVidMode {
+    XF86ConfMonitorPtr monitor;
+    int screen;
+    int num_infos;
+    XF86VidModeModeInfo **infos;
+};
 
 /*
  * Prototypes
  */
-void AddScreen(xf86cfgDevice*, xf86cfgDevice*);
-void RemoveScreen(xf86cfgDevice*, xf86cfgDevice*);
+Bool VideoModeInitialize(void);
+void VideoModeConfigureStart(void);
+void VideoModeConfigureEnd(void);
+void VidmodeRestoreAction(Widget, XEvent*, String*, Cardinal*);
+void CancelForceAddModeAction(Widget, XEvent*, String*, Cardinal*);
+void CancelTestModeAction(Widget, XEvent*, String*, Cardinal*);
 
-void DrawScreen(Display*, Drawable, int, int, int, int, Bool, int);
-void DrawScreenMask(Display*, Drawable, GC, int, int, int, int, int);
-void CreateScreenWidget(xf86cfgScreen*);
+/*
+ * Initialization
+ */
+extern Widget vtune;
 
-void AdjustScreenUI(void);
-void UpdateScreenUI(void);
-
-#endif /* _xf86cfg_screen_h */
+#endif /* _xf86cfg_vidmode_h */

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.1 2000/04/04 22:36:58 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -56,6 +56,7 @@
 #include "screen.h"
 #include "cards.h"
 #include "options.h"
+#include "vidmode.h"
 
 #define randomize()		srand((unsigned)time((time_t*)NULL))
 #define DefaultXFree86Dir	"/usr/X11R6"
@@ -84,11 +85,15 @@ void SelectLayoutCallback(Widget, XtPointer, XtPointer);
 void DefaultLayoutCallback(Widget, XtPointer, XtPointer);
 void RemoveLayoutCallback(Widget, XtPointer, XtPointer);
 void OptionsCallback(Widget, XtPointer, XtPointer);
-void DrawScreenAction(Widget, XEvent*, String*, Cardinal*);
 xf86cfgDevice *AddDevice(int, XtPointer, int, int);
 static Bool AskXF86Config(void);
-static void ScreenSetup(Bool, Bool);
+void WriteXF86ConfigAction(Widget, XEvent*, String*, Cardinal*);
+static void ScreenSetup(Bool);
 void QuitAction(Widget, XEvent*, String*, Cardinal*);
+static void ErrorCancelAction(Widget, XEvent*, String*, Cardinal*);
+static void QuitCancelAction(Widget, XEvent*, String*, Cardinal*);
+
+extern void CloseAccessXAction(Widget, XEvent*, String*, Cardinal*);
 
 /*
  * Initialization
@@ -103,15 +108,16 @@ Bool xf86config_set = False;
 xf86cfgComputer computer;
 xf86cfgDevice cpu_device;
 Cursor no_cursor;
-static Widget device, menu, popup, commands;
+static Widget device, menu, layoutm, popup, commands;
 static int xpos, ypos;
 int sxpos, sypos;
 static char no_cursor_data[] = { 0,0,0,0, 0,0,0,0 };
-static GC cablegc;
+static GC cablegc, cablegcshadow;
 Atom wm_delete_window;
 
 #define CONFIG_LAYOUT	0
 #define CONFIG_SCREEN	1
+#define CONFIG_MODELINE	2
 static int config_mode = CONFIG_LAYOUT;
 
 static XtActionsRec actions[] = {
@@ -122,8 +128,16 @@ static XtActionsRec actions[] = {
     {"device-popup", DevicePopupMenu},
     {"device-popdown", DevicePopdownMenu},
     {"rename-layout", RenameLayoutAction},
-    {"draw-screen", DrawScreenAction},
+    {"write-config", WriteXF86ConfigAction},
     {"quit", QuitAction},
+    {"vidmode-restore", VidmodeRestoreAction},
+    {"config-cancel", ConfigCancelAction},
+    {"options-cancel", OptionsCancelAction},
+    {"error-cancel", ErrorCancelAction},
+    {"quit-cancel", QuitCancelAction},
+    {"addmode-cancel", CancelForceAddModeAction},
+    {"accessx-close", CloseAccessXAction},
+    {"testmode-cancel", CancelTestModeAction},
 };
 
 static char *device_names[] = {
@@ -157,7 +171,7 @@ int
 main(int argc, char *argv[])
 {
     Widget pane, popup, mouse, keyboard, card, monitor;
-    Widget bottom, sel, sme, help, quit, layopt;
+    Widget bottom, sme, smemodeline, help, quit, layopt;
     XColor color, tmp;
     Pixmap pixmap;
     XGCValues values;
@@ -201,7 +215,7 @@ main(int argc, char *argv[])
 
     pane = XtCreateManagedWidget("pane", panedWidgetClass,
 				 toplevel, NULL, 0);
-    menu = XtCreateManagedWidget("top", menuButtonWidgetClass,
+    menu = XtCreateManagedWidget("topM", menuButtonWidgetClass,
 				 pane, NULL, 0);
     popup = XtCreatePopupShell("menu", simpleMenuWidgetClass,
 			       menu, NULL, 0);
@@ -213,6 +227,10 @@ main(int argc, char *argv[])
 				popup, NULL, 0);
     XtAddCallback(sme, XtNcallback, SetConfigModeCallback,
 		  (XtPointer)CONFIG_SCREEN);
+    smemodeline = XtCreateManagedWidget("modeline", smeBSBObjectClass,
+					popup, NULL, 0);
+    XtAddCallback(smemodeline, XtNcallback, SetConfigModeCallback,
+		  (XtPointer)CONFIG_MODELINE);
 
     commands = XtCreateManagedWidget("commands", formWidgetClass,
 				     pane, NULL, 0);
@@ -234,8 +252,8 @@ main(int argc, char *argv[])
 
     bottom = XtCreateManagedWidget("bottom", formWidgetClass,
 				   pane, NULL, 0);
-    sel = XtCreateManagedWidget("select", menuButtonWidgetClass,
-				bottom, NULL, 0);
+    layoutm = XtCreateManagedWidget("select", menuButtonWidgetClass,
+				    bottom, NULL, 0);
     layout = XtVaCreateManagedWidget("layout", asciiTextWidgetClass,
 				     bottom,
 				     XtNeditType, XawtextEdit,
@@ -271,7 +289,16 @@ main(int argc, char *argv[])
 		     &color, &tmp);
     no_cursor = XCreatePixmapCursor(XtDisplay(toplevel), pixmap, pixmap,
 				    &color, &color, 0, 0);
-    values.line_width = 2;
+
+    XAllocNamedColor(XtDisplay(toplevel), toplevel->core.colormap, "gray55",
+		     &color, &tmp);
+    values.line_width = 3;
+    values.foreground = color.pixel;
+    cablegcshadow = XCreateGC(XtDisplay(toplevel), XtWindow(toplevel),
+			GCForeground | GCLineWidth, &values);
+    XAllocNamedColor(XtDisplay(toplevel), toplevel->core.colormap, "gray85",
+		     &color, &tmp);
+    values.line_width = 1;
     values.foreground = color.pixel;
     cablegc = XCreateGC(XtDisplay(toplevel), XtWindow(toplevel),
 			GCForeground | GCLineWidth, &values);
@@ -284,8 +311,12 @@ main(int argc, char *argv[])
     XtAddEventHandler(work, ExposureMask, False,
 		      ComputerEventHandler, (XtPointer)NULL);
 
+    wm_delete_window = XInternAtom(DPY, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(DPY, XtWindow(toplevel), &wm_delete_window, 1);
+
     StartConfig();
     InitializeDevices();
+    XtSetSensitive(smemodeline, VideoModeInitialize());
     ReadCardsDatabase();
 
     lay = XF86Config->conf_layout_lst;
@@ -322,9 +353,6 @@ main(int argc, char *argv[])
 	}
     }
 
-    wm_delete_window = XInternAtom(DPY, "WM_DELETE_WINDOW", False);
-    XSetWMProtocols(DPY, XtWindow(toplevel), &wm_delete_window, 1);
-
     XtAppMainLoop(appcon);
     if (startedx)
 	endx();
@@ -344,6 +372,21 @@ WriteXF86Config(Widget w, XtPointer user_data, XtPointer call_data)
     write_xf = (int)user_data;
 }
 
+/*ARGSUSED*/
+void
+QuitCancelAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    WriteXF86Config(w, (XtPointer)-1, NULL);
+}
+
+/*ARGSUSED*/
+void
+WriteXF86ConfigAction(Widget w, XEvent *event,
+		      String *params, Cardinal *num_params)
+{
+    WriteXF86Config(w, (XtPointer)True, NULL);
+}
+
 static Bool
 AskXF86Config(void)
 {
@@ -358,6 +401,7 @@ AskXF86Config(void)
 	XawDialogAddButton(dialog, "no", WriteXF86Config, (XtPointer)0);
 	XawDialogAddButton(dialog, "cancel", WriteXF86Config, (XtPointer)-1);
 	XtRealizeWidget(shell_xf);
+	XSetWMProtocols(DPY, XtWindow(shell_xf), &wm_delete_window, 1);
     }
 
     asking_xf = 1;
@@ -377,6 +421,13 @@ void
 PopdownErrorCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     XtPopdown((Widget)user_data);
+}
+
+/*ARGSUSED*/
+void
+ErrorCancelAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    XtPopdown((Widget)w);
 }
 
 /*ARGSUSED*/
@@ -408,6 +459,7 @@ QuitCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		    XawDialogAddButton(dialog, "ok", PopdownErrorCallback,
 				       (XtPointer)shell);
 		    XtRealizeWidget(shell);
+		    XSetWMProtocols(DPY, XtWindow(shell), &wm_delete_window, 1);
 		}
 		XtPopup(shell, XtGrabExclusive);
 		return;
@@ -525,7 +577,8 @@ InitializeDevices(void)
 		card = XF86Config->conf_device_lst;
 		while (card != NULL) {
 		    if (screen->scrn_device == card) {
-			xf86cfgScreen *scr = XtNew(xf86cfgScreen);
+			xf86cfgScreen *scr = (xf86cfgScreen*)
+			    XtCalloc(1, sizeof(xf86cfgScreen));
 			int i;
 
 			for (i = 0; i < computer.num_devices; i++)
@@ -535,11 +588,14 @@ InitializeDevices(void)
 			scr->screen = screen;
 			scr->card = computer.devices[i];
 			scr->monitor = device;
+			scr->refcount = 0;
+			++scr->card->refcount;
+			++scr->monitor->refcount;
 			computer.screens = (xf86cfgScreen**)
 				XtRealloc((XtPointer)computer.screens,
 					  sizeof(xf86cfgScreen*) *
 					  (computer.num_screens + 1));
-			scr->widget = CreateScreenWidget();
+			CreateScreenWidget(scr);
 			scr->type = SCREEN;
 			computer.screens[computer.num_screens++] = scr;
 			SetTip((xf86cfgDevice*)scr);
@@ -548,7 +604,6 @@ InitializeDevices(void)
 		    card = (XF86ConfDevicePtr)(card->list.next);
 		}
 		device->state = USED;
-		break;
 	    }
 	    screen = (XF86ConfScreenPtr)(screen->list.next);
 	}
@@ -568,7 +623,8 @@ AddDevice(int type, XtPointer config, int x, int y)
 	    computer.devices = (xf86cfgDevice**)
 		XtRealloc((XtPointer)computer.devices,
 			  sizeof(xf86cfgDevice*) * (computer.num_devices + 1));
-	    computer.devices[computer.num_devices] = XtNew(xf86cfgDevice);
+	    computer.devices[computer.num_devices] = (xf86cfgDevice*)
+		XtCalloc(1, sizeof(xf86cfgDevice));
 	    computer.devices[computer.num_devices]->config = config;
 	    computer.devices[computer.num_devices]->widget =
 		XtVaCreateManagedWidget(device_names[type], simpleWidgetClass,
@@ -579,6 +635,7 @@ AddDevice(int type, XtPointer config, int x, int y)
 					NULL, 0);
 	    computer.devices[computer.num_devices]->type = type;
 	    computer.devices[computer.num_devices]->state = UNUSED;
+	    computer.devices[computer.num_devices]->refcount = 0;
 	    ++computer.num_devices;
 	    break;
 	default:
@@ -686,7 +743,7 @@ SelectLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		if (config_mode == CONFIG_LAYOUT)
 		    DrawCables();
 		if (config_mode == CONFIG_SCREEN)
-		    ScreenSetup(True, True);
+		    ScreenSetup(True);
 		return;
 	    }
 	    ++num_layouts;
@@ -715,7 +772,7 @@ SelectLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	if (config_mode == CONFIG_LAYOUT)
 	    DrawCables();
 	if (config_mode == CONFIG_SCREEN)
-	    ScreenSetup(True, True);
+	    ScreenSetup(True);
 	return;
     }
 
@@ -764,7 +821,7 @@ SelectLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
     if (config_mode == CONFIG_LAYOUT)
 	DrawCables();
     else if (config_mode == CONFIG_SCREEN)
-	ScreenSetup(True, True);
+	ScreenSetup(True);
 }
 
 /*ARGSUSED*/
@@ -1065,31 +1122,40 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
     int i;
     XF86OptionPtr *options;
 
-    for (i = 0; i < computer.num_devices; i++)
-	if (computer.devices[i]->widget == config)
-	    break;
-
-    if (i >= computer.num_devices) {
-	if (XF86Config->conf_flags == NULL)
-	    XF86Config->conf_flags = (XF86ConfFlagsPtr)
-		XtCalloc(1, sizeof(XF86ConfFlagsRec));
-	options = &(XF86Config->conf_flags->flg_option_lst);
+    if (config_mode == CONFIG_SCREEN) {
+	for (i = 0; i < computer.num_screens; i++)
+	    if (computer.screens[i]->widget == config) {
+		options = &(computer.screens[i]->screen->scrn_option_lst);
+		break;
+	    }
     }
     else {
-	switch (computer.devices[i]->type) {
-	    case MOUSE:
-	    case KEYBOARD:
-		options = (XF86OptionPtr*)&(((XF86ConfInputPtr)
-		    (computer.devices[i]->config))->inp_option_lst);
+	for (i = 0; i < computer.num_devices; i++)
+	    if (computer.devices[i]->widget == config)
 		break;
-	    case CARD:
-		options = (XF86OptionPtr*)&(((XF86ConfDevicePtr)
-		    (computer.devices[i]->config))->dev_option_lst);
-		break;
-	    case MONITOR:
-		options = (XF86OptionPtr*)&(((XF86ConfMonitorPtr)
-		    (computer.devices[i]->config))->mon_option_lst);
-		break;
+
+	if (i >= computer.num_devices) {
+	    if (XF86Config->conf_flags == NULL)
+		XF86Config->conf_flags = (XF86ConfFlagsPtr)
+		    XtCalloc(1, sizeof(XF86ConfFlagsRec));
+	    options = &(XF86Config->conf_flags->flg_option_lst);
+	}
+	else {
+	    switch (computer.devices[i]->type) {
+		case MOUSE:
+		case KEYBOARD:
+		    options = (XF86OptionPtr*)&(((XF86ConfInputPtr)
+			(computer.devices[i]->config))->inp_option_lst);
+		    break;
+		case CARD:
+		    options = (XF86OptionPtr*)&(((XF86ConfDevicePtr)
+			(computer.devices[i]->config))->dev_option_lst);
+		    break;
+		case MONITOR:
+		    options = (XF86OptionPtr*)&(((XF86ConfMonitorPtr)
+			(computer.devices[i]->config))->mon_option_lst);
+		    break;
+	    }
 	}
     }
 
@@ -1110,7 +1176,7 @@ EnableDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	    if (computer.screens[i]->widget == config) {
 		computer.screens[i]->state = USED;
 		computer.screens[i]->card->state = USED;
-		ScreenSetup(False, True);
+		ScreenSetup(False);
 		return;
 	    }
     }
@@ -1144,7 +1210,7 @@ EnableDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		iref = nex;
 		nex = (XF86ConfInputrefPtr)(nex->list.next);
 	    }
-	    nex = XtNew(XF86ConfInputrefRec);
+	    nex = (XF86ConfInputrefPtr)XtCalloc(1, sizeof(XF86ConfInputrefRec));
 	    nex->list.next = NULL;
 	    nex->iref_inputdev = input;
 	    nex->iref_inputdev_str = XtNewString(input->inp_identifier);
@@ -1191,7 +1257,7 @@ DisableDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	    if (computer.screens[i]->widget == config) {
 		computer.screens[i]->state = UNUSED;
 		computer.screens[i]->card->state = UNUSED;
-		ScreenSetup(False, True);
+		ScreenSetup(False);
 		return;
 	    }
     }
@@ -1249,20 +1315,26 @@ RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
 		RemoveScreen(mon = computer.screens[i]->monitor,
 			     dev = computer.screens[i]->card);
+
+/*
 		for (j = 0; j < computer.num_devices; j++) {
 		    if (computer.devices[j] == mon ||
 			computer.devices[j] == dev) {
-			XtDestroyWidget(computer.devices[j]->widget);
-			XtFree((XtPointer)computer.devices[j]);
-			if (--computer.num_devices > j)
-			    memmove(&computer.devices[j],
-				    &computer.devices[j + 1],
-				    (computer.num_devices - j) *
-				    sizeof(xf86cfgDevice*));
-			--j;
+			if (--computer.devices[j]->refcount <= 0) {
+			    XtDestroyWidget(computer.devices[j]->widget);
+			    XtFree((XtPointer)computer.devices[j]);
+			    if (--computer.num_devices > j)
+				memmove(&computer.devices[j],
+					&computer.devices[j + 1],
+					(computer.num_devices - j) *
+					sizeof(xf86cfgDevice*));
+			    --j;
+			}
 		    }
 		}
-		ScreenSetup(False, True);
+*/
+
+		ScreenSetup(False);
 	    }
 	return;
     }
@@ -1285,27 +1357,35 @@ RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 		    if (computer.screens[j]->card == computer.devices[i]) {
 			RemoveScreen(computer.screens[j]->monitor,
 				     computer.devices[i]);
-			break;
+			--j;
 		    }
-		xf86RemoveDevice(XF86Config,
-		    (XF86ConfDevicePtr)(computer.devices[i]->config));
+		if (computer.devices[i]->refcount <= 0)
+		    xf86RemoveDevice(XF86Config,
+			(XF86ConfDevicePtr)(computer.devices[i]->config));
 	    }
 	    else if (computer.devices[i]->type == MONITOR) {
 		for (j = 0; j < computer.num_screens; j++)
 		    if (computer.screens[j]->monitor == computer.devices[i]) {
 			RemoveScreen(computer.devices[i],
 				     computer.screens[j]->card);
-			break;
+			--j;
 		    }
+		if (computer.devices[i]->refcount <= 0)
+		    xf86RemoveMonitor(XF86Config,
+			(XF86ConfMonitorPtr)(computer.devices[i]->config));
 	    }
 
-	    XtDestroyWidget(computer.devices[i]->widget);
-	    XtFree((XtPointer)computer.devices[i]);
-	    if (--computer.num_devices > i)
-		memmove(&computer.devices[i], &computer.devices[i + 1],
-			(computer.num_devices - i) * sizeof(xf86cfgDevice*));
+	    if (computer.devices[i]->refcount <= 0) {
+		XtDestroyWidget(computer.devices[i]->widget);
+		XtFree((XtPointer)computer.devices[i]);
+		if (--computer.num_devices > i)
+		    memmove(&computer.devices[i], &computer.devices[i + 1],
+			    (computer.num_devices - i) * sizeof(xf86cfgDevice*));
 
-	    DrawCables();
+		DrawCables();
+	    }
+
+	    break;
 	}
     }
 }
@@ -1369,7 +1449,7 @@ UnselectDeviceAction(Widget w, XEvent *ev, String *params, Cardinal *num_params)
 	XUndefineCursor(XtDisplay(device), XtWindow(device));
 
 	if (config_mode == CONFIG_SCREEN)
-	    ScreenSetup(False, False);
+	    ScreenSetup(False);
 	device = NULL;
     }
 }
@@ -1516,22 +1596,6 @@ ComputerEventHandler(Widget w, XtPointer closure,
 	DrawCables();
 }
 
-/*ARGSUSED*/
-void
-DrawScreenAction(Widget w, XEvent *ev, String *p, Cardinal *np)
-{
-    int i;
-
-    for (i = 0; i < computer.num_screens; i++)
-	if (computer.screens[i]->widget == w)
-	    break;
-
-    DrawScreen(XtDisplay(w), XtWindow(w), DefaultGC(XtDisplay(w), 0),
-	       0, 0, w->core.width, w->core.height,
-	       i < computer.num_screens && computer.screens[i]->state == USED ?
-	       True : False);
-}
-
 void
 DrawCables(void)
 {
@@ -1577,6 +1641,7 @@ DrawCables(void)
 static void
 DrawCable(Display *display, Window window, int o_x, int o_y, int d_x, int d_y)
 {
+    XDrawLine(display, window, cablegcshadow, o_x, o_y, d_x, d_y);
     XDrawLine(display, window, cablegc, o_x, o_y, d_x, d_y);
 }
 
@@ -1595,13 +1660,35 @@ SetConfigModeCallback(Widget w, XtPointer user_data, XtPointer call_data)
     XtGetValues(w, args, 1);
     XtSetArg(args[0], XtNlabel, ptr);
     XtSetValues(menu, args, 1);
+
+    if (config_mode == CONFIG_LAYOUT) {
+	XtSetArg(args[0], XtNheight, &height);
+	XtGetValues(commands, args, 1);
+	for (i = 0; i < computer.num_devices; i++)
+	    XtUnmapWidget(computer.devices[i]->widget);
+	XtUnmapWidget(commands);
+	XtUnmapWidget(computer.cpu);
+	XtSetSensitive(commands, False);
+	XtSetArg(args[0], XtNheight, 1);
+	XtSetArg(args[1], XtNmin, 1);
+	XtSetArg(args[2], XtNmax, 1);
+	XtSetValues(commands, args, 3);
+    }
+    else if (config_mode == CONFIG_SCREEN) {
+	for (i = 0; i < computer.num_screens; i++)
+	    XtUnmapWidget(computer.screens[i]->widget);
+    }
+    else if (config_mode == CONFIG_MODELINE) {
+	VideoModeConfigureEnd();
+	XtSetSensitive(layout, True);
+	XtSetSensitive(layoutm, True);
+    }
+
     config_mode = mode;
     XClearWindow(XtDisplay(work), XtWindow(work));
     if (mode == CONFIG_LAYOUT) {
 	for (i = 0; i < computer.num_devices; i++)
 	    XtMapWidget(computer.devices[i]->widget);
-	for (i = 0; i < computer.num_screens; i++)
-	    XtUnmapWidget(computer.screens[i]->widget);
 	XtSetArg(args[0], XtNheight, height);
 	XtSetArg(args[1], XtNmin, height);
 	XtSetArg(args[2], XtNmax, height);
@@ -1612,25 +1699,19 @@ SetConfigModeCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	DrawCables();
     }
     else if (mode == CONFIG_SCREEN) {
-	XtSetArg(args[0], XtNheight, &height);
-	XtGetValues(commands, args, 1);
-	for (i = 0; i < computer.num_devices; i++)
-	    XtUnmapWidget(computer.devices[i]->widget);
 	for (i = 0; i < computer.num_screens; i++)
 	    XtMapWidget(computer.screens[i]->widget);
-	XtUnmapWidget(commands);
-	XtUnmapWidget(computer.cpu);
-	XtSetSensitive(commands, False);
-	XtSetArg(args[0], XtNheight, 1);
-	XtSetArg(args[1], XtNmin, 1);
-	XtSetArg(args[2], XtNmax, 1);
-	XtSetValues(commands, args, 3);
-	ScreenSetup(True, False);
+	ScreenSetup(True);
+    }
+    else if (mode == CONFIG_MODELINE) {
+	VideoModeConfigureStart();
+	XtSetSensitive(layout, False);
+	XtSetSensitive(layoutm, False);
     }
 }
 
 static void
-ScreenSetup(Bool check, Bool clear)
+ScreenSetup(Bool check)
 {
     if (check) {
 	int i;
@@ -1644,8 +1725,6 @@ ScreenSetup(Bool check, Bool clear)
 	    AdjustScreenUI();
     }
 
-    if (clear)
-	ClearScreenUI();
     UpdateScreenUI();
     AdjustScreenUI();
 }

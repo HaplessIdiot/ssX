@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.12 1999/06/06 08:48:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.13 1999/07/11 08:49:14 dawes Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -645,8 +645,12 @@ _XawCachePixmap(XawPixmap *pixmap,
     qsort(x_cache->elems, x_cache->num_elems, sizeof(XtPointer), qcmp_x_cache);
 }
 
+#ifndef PROJECT_ROOT
+#define PROJECT_ROOT	"/usr/X11R6"
+#endif
+
 static char *pixmap_path =
-   "%H/%T/%N:/usr/X11R6/include/X11/%T/%N:/usr/include/X11/%T/%N:%N";
+   "%H/%T/%N:%P/include/X11/%T/%N:/usr/X11R6/include/X11/%T/%N:/usr/include/X11/%T/%N:%N";
 
 static Bool
 BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
@@ -665,6 +669,7 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
     {'H',   NULL},
     {'N',   NULL},
     {'T',   "bitmaps"},
+    {'P',   PROJECT_ROOT},
   };
   char *filename;
 
@@ -882,6 +887,7 @@ XPixmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
     {'H',   NULL},
     {'N',   NULL},
     {'T',   "pixmaps"},
+    {'P',   PROJECT_ROOT},
   };
   char *filename;
 

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86config.c,v 1.1 2000/04/04 22:37:03 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -67,7 +67,7 @@ xf86RemoveOption(XF86OptionPtr *options, char *name)
 	if (strcasecmp(opt->opt_name, name) == 0) {
 	    XtFree(opt->opt_name);
 	    XtFree(opt->opt_val);
-/*	    XtFree(opt->opt_comment);*/
+	    XtFree(opt->opt_comment);
 	    if (opt == prev)
 		*options = (XF86OptionPtr)(opt->list.next);
 	    else
@@ -198,6 +198,54 @@ xf86RemoveDevice(XF86ConfigPtr config, XF86ConfDevicePtr device)
     XtFree(dev->dev_comment);
     xf86OptionListFree(dev->dev_option_lst);
     XtFree((XtPointer)dev);
+
+    return (True);
+}
+
+int
+xf86RemoveMonitor(XF86ConfigPtr config, XF86ConfMonitorPtr monitor)
+{
+    XF86ConfMonitorPtr prev, mon = config->conf_monitor_lst;
+    XF86ConfScreenPtr psc, scr = config->conf_screen_lst;
+
+    /* remove from main structure */
+    prev = mon;
+    while (mon != NULL) {
+	if (mon == monitor) {
+	    if (mon == prev)
+		config->conf_monitor_lst = (XF86ConfMonitorPtr)(mon->list.next);
+	    else
+		prev->list.next = mon->list.next;
+	    break;
+	}
+	prev = mon;
+	mon = (XF86ConfMonitorPtr)(mon->list.next);
+    }
+
+    if (mon == NULL)
+	return (False);
+
+    /* remove references */
+    psc = scr;
+    while (scr != NULL) {
+	if (scr->scrn_monitor == monitor) {
+	    xf86RemoveScreen(config, scr);
+	    if (scr == psc)
+		scr = config->conf_screen_lst;
+	    else
+		scr = psc;
+	    continue;
+	}
+	psc = scr;
+	scr = (XF86ConfScreenPtr)(scr->list.next);
+    }
+
+    XtFree(mon->mon_identifier);
+    XtFree(mon->mon_vendor);
+    XtFree(mon->mon_modelname);
+    XtFree(mon->mon_comment);
+    xf86OptionListFree(mon->mon_option_lst);
+    XtFree((XtPointer)mon);
 
     return (True);
 }
@@ -361,9 +409,9 @@ int
 xf86RemoveLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout)
 {
     XF86ConfLayoutPtr prev, lay = config->conf_layout_lst;
-    XF86ConfAdjacencyPtr adj;
-    XF86ConfInactivePtr inac;
-    XF86ConfInputrefPtr iref;
+    XF86ConfAdjacencyPtr adj, nadj;
+    XF86ConfInactivePtr inac, ninac;
+    XF86ConfInputrefPtr iref, niref;
 
     if (config == NULL || layout == NULL)
 	return (False);
@@ -379,24 +427,25 @@ xf86RemoveLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout)
     if (lay == NULL)
 	return (False);
 
-    XtFree(lay->lay_identifier);
-
     adj = lay->lay_adjacency_lst;
     while (adj != NULL) {
+	nadj = (XF86ConfAdjacencyPtr)(adj->list.next);
 	xf86RemoveAdjacency(lay, adj);
-	adj = (XF86ConfAdjacencyPtr)(adj->list.next);
+	adj = nadj;
     }
 
     inac = lay->lay_inactive_lst;
     while (inac != NULL) {
+	ninac = (XF86ConfInactivePtr)(inac->list.next);
 	xf86RemoveInactive(lay, inac);
-	inac = (XF86ConfInactivePtr)(inac->list.next);
+	inac = ninac;
     }
 
     iref = lay->lay_input_lst;
     while (iref != NULL) {
+	niref = (XF86ConfInputrefPtr)(iref->list.next);
 	xf86RemoveInputRef(lay, iref->iref_inputdev);
-	iref = (XF86ConfInputrefPtr)(iref->list.next);
+	iref = niref;
     }
 
     xf86OptionListFree(lay->lay_option_lst);
@@ -405,6 +454,7 @@ xf86RemoveLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout)
 	config->conf_layout_lst = (XF86ConfLayoutPtr)(lay->list.next);
     else
 	prev->list.next = lay->list.next;
+    XtFree(lay->lay_identifier);
     XtFree((XtPointer)lay);
 
     return (True);

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen.c,v 1.1 2000/04/04 22:37:02 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -34,42 +34,123 @@
 #include <X11/Xaw/Simple.h>
 #include "screen.h"
 
+#define CW	1
+#define	CCW	-1
+
 /*
  * Prototypes
  */
-extern void DrawCables(void);
-void ReshapeScreenWidget(Widget);
+void ReshapeScreenWidget(xf86cfgScreen*);
 
 /*
  * Initialization
  */
-extern int sxpos, sypos;
 extern Widget work;
 
 static int rows, columns;	/* number of rows/columns of monitors */
 
+static int mon_width, mon_height;
+static int *mon_widths, *mon_heights;
+
 /*
  * Implementation
  */
-Widget
-CreateScreenWidget(void)
+void
+CreateScreenWidget(xf86cfgScreen *screen)
 {
+    static char *Rotate = "Rotate", *_CW = "CW", *_CCW = "CCW";
+    int rotate = 0;
+    XF86OptionPtr option, options;
     Widget w = XtCreateWidget("screen", simpleWidgetClass,
 			      XtParent(computer.cpu), NULL, 0);
 
-    XtRealizeWidget(w);
-    ReshapeScreenWidget(w);
+    /* When this function is called, the monitor and card fields should have
+     * been already set.
+     */
 
-    return (w);
+    /* This is the only place where xf86cfg is intrusive, and deletes options
+     * added by the user directly in the config file. The "Rotate" option
+     * will be kept in the screen section.
+     */
+    if (screen->monitor != NULL) {
+	options = ((XF86ConfMonitorPtr)(screen->monitor->config))->mon_option_lst;
+	if ((option = xf86FindOption(options, Rotate)) != NULL) {
+	    if (option->opt_val != NULL)
+		rotate = strcasecmp(option->opt_val, _CW) == 0 ? CW :
+			 strcasecmp(option->opt_val, _CCW) == 0 ? CCW : 0;
+	    xf86RemoveOption(&((XF86ConfMonitorPtr)(screen->monitor->config))
+			     ->mon_option_lst, Rotate);
+	}
+    }
+    if (screen->card != NULL) {
+	options = ((XF86ConfDevicePtr)(screen->card->config))->dev_option_lst;
+	if ((option = xf86FindOption(options, Rotate)) != NULL) {
+	    if (option->opt_val != NULL)
+		rotate += strcasecmp(option->opt_val, _CW) == 0 ? CW :
+			  strcasecmp(option->opt_val, _CCW) == 0 ? CCW : 0;
+	    xf86RemoveOption(&((XF86ConfDevicePtr)(screen->card->config))
+			     ->dev_option_lst, Rotate);
+	}
+    }
+
+    options = screen->screen->scrn_option_lst;
+    if ((option = xf86FindOption(options, Rotate)) != NULL) {
+	if (option->opt_val != NULL)
+	    rotate += strcasecmp(option->opt_val, _CW) == 0 ? CW :
+		      strcasecmp(option->opt_val, _CCW) == 0 ? CCW : 0;
+	xf86RemoveOption(&screen->screen->scrn_option_lst, Rotate);
+    }
+
+    rotate = rotate > 0 ? CW : rotate < 0 ? CCW : 0;
+    if (rotate)
+	screen->screen->scrn_option_lst =
+	    xf86addNewOption(screen->screen->scrn_option_lst,
+			     XtNewString(Rotate),
+			     XtNewString(rotate > 0 ? _CW : _CCW));
+    screen->rotate = rotate;
+
+    XtRealizeWidget(w);
+    screen->widget = w;
+    screen->column = screen->row = -1;
+
+    ReshapeScreenWidget(screen);
 }
 
 void
-ReshapeScreenWidget(Widget w)
+ReshapeScreenWidget(xf86cfgScreen *screen)
 {
     Pixmap pixmap;
     XGCValues values;
     GC gc;
+    int x = 0, y = 0, width = screen->rect.width, height = screen->rect.height;
+    Widget w = screen->widget;
 
+    if (screen->state == USED && screen->row >= 0) {
+	if (screen->column == 0)
+	    x = w->core.width - width;
+	else if (screen->column == columns - 1)
+	    x = w->core.width - mon_widths[screen->column];
+	else
+	    x = (w->core.width - mon_widths[screen->column]) +
+		((mon_widths[screen->column] - width) >> 1);
+
+	if (screen->row == 0)
+	    y = w->core.height - height;
+	else if (screen->row == rows - 1)
+	    y = w->core.height - mon_heights[screen->row];
+	else
+	    y = (w->core.height - mon_heights[screen->row]) +
+		((mon_heights[screen->row] - height) >> 1);
+    }
+    else if (screen->rect.width == 0) {
+	width = w->core.width;
+	height = w->core.height;
+    }
+
+    screen->rect.x = x;
+    screen->rect.y = y;
+    screen->rect.width = width;
+    screen->rect.height = height;
     pixmap = XCreatePixmap(XtDisplay(w), XtWindow(w),
 			   w->core.width, w->core.height, 1);
     values.foreground = 0;
@@ -78,10 +159,23 @@ ReshapeScreenWidget(Widget w)
     XFillRectangle(XtDisplay(w), pixmap, gc, 0, 0, w->core.width, w->core.height);
     XSetForeground(XtDisplay(w), gc, 1);
 
-    DrawScreenMask(XtDisplay(w), pixmap, gc, 0, 0, w->core.width, w->core.height);
+    DrawScreenMask(XtDisplay(w), pixmap, gc, x, y, x + width, y + height,
+		   screen->rotate);
     XShapeCombineMask(XtDisplay(w), XtWindow(w), ShapeBounding, 
 		      0, 0, pixmap, ShapeSet);
+
+    /* Do not call XtSetValues, to avoid all extra code for caching pixmaps */
     XFreePixmap(XtDisplay(w), pixmap);
+    if (XtIsRealized(w)) {
+	pixmap = XCreatePixmap(XtDisplay(w), XtWindow(w),
+			       w->core.width, w->core.height,
+			       DefaultDepthOfScreen(XtScreen(w)));
+	DrawScreen(XtDisplay(w), pixmap, x, y, x + width, y + height,
+		   screen->state == USED ? True : False, screen->rotate);
+	XSetWindowBackgroundPixmap(XtDisplay(w), XtWindow(w), pixmap);
+	XClearWindow(XtDisplay(w), XtWindow(w));
+	XFreePixmap(XtDisplay(w), pixmap);
+    }
     XFreeGC(XtDisplay(w), gc);
 }
 
@@ -116,6 +210,9 @@ AddScreen(xf86cfgDevice *mon, xf86cfgDevice *dev)
     adj = (XF86ConfAdjacencyPtr)XtCalloc(1, sizeof(XF86ConfAdjacencyRec));
     adj->adj_screen = screen;
     adj->adj_screen_str = XtNewString(screen_name);
+    if (computer.layout == NULL)
+	computer.layout = XF86Config->conf_layout_lst = (XF86ConfLayoutPtr)
+	    XtCalloc(1, sizeof(XF86ConfLayoutRec));
     computer.layout->lay_adjacency_lst = (XF86ConfAdjacencyPtr)
 	addListItem((GenericListPtr)computer.layout->lay_adjacency_lst,
 		    (GenericListPtr)adj);
@@ -123,12 +220,16 @@ AddScreen(xf86cfgDevice *mon, xf86cfgDevice *dev)
     computer.screens = (xf86cfgScreen**)
 	XtRealloc((XtPointer)computer.screens, sizeof(xf86cfgScreen*) *
 		  (computer.num_screens + 1));
-    computer.screens[computer.num_screens] = XtNew(xf86cfgScreen);
+    computer.screens[computer.num_screens] =
+	(xf86cfgScreen*)XtCalloc(1, sizeof(xf86cfgScreen));
     computer.screens[computer.num_screens]->screen = screen;
     computer.screens[computer.num_screens]->card = dev;
     computer.screens[computer.num_screens]->monitor = mon;
 
-    computer.screens[computer.num_screens]->widget = CreateScreenWidget();
+    ++dev->refcount;
+    ++mon->refcount;
+
+    CreateScreenWidget(computer.screens[computer.num_screens]);
     computer.screens[computer.num_screens]->type = SCREEN;
     SetTip((xf86cfgDevice*)computer.screens[computer.num_screens]);
 
@@ -149,6 +250,8 @@ RemoveScreen(xf86cfgDevice *mon, xf86cfgDevice *dev)
 
 	screen = (XF86ConfScreenPtr)(screen->list.next);
     }
+    --mon->refcount;
+    --dev->refcount;
 
     for (i = 0; i < computer.num_screens; i++) {
 	if (computer.screens[i]->screen == screen) {
@@ -249,18 +352,22 @@ static double lin[] = { 25.0, 70.0, 25.0, 75.0,  5.0, 75.0,  5.0, 80.0,
 			95.0, 80.0, 95.0, 75.0, 75.0, 75.0, 75.0, 70.0 };
 
 void
-DrawScreen(Display *dpy, Drawable win, GC gc, int xs, int ys, int xe, int ye,
-	   Bool active)
+DrawScreen(Display *dpy, Drawable win, int xs, int ys, int xe, int ye,
+	   Bool active, int rotate)
 {
     double xfact, yfact;
     XPoint points[(sizeof(lin) / sizeof(lin[0])) >> 1];
     int i;
-    static GC gray1, gray2, black, red;
+    static GC gray0, gray1, gray2, black, red;
 
     if (black == NULL) {
 	XColor color, exact;
 	XGCValues values;
 
+	XAllocNamedColor(XtDisplay(toplevel), toplevel->core.colormap, "gray95",
+			 &color, &exact);
+	values.foreground = color.pixel;
+	gray0 = XCreateGC(XtDisplay(toplevel), win, GCForeground, &values);
 	XAllocNamedColor(XtDisplay(toplevel), toplevel->core.colormap, "gray75",
 			 &color, &exact);
 	values.foreground = color.pixel;
@@ -285,78 +392,215 @@ DrawScreen(Display *dpy, Drawable win, GC gc, int xs, int ys, int xe, int ye,
 			GCForeground | GCLineWidth | GCCapStyle, &values);
     }
 
-    xfact = (xe - xs) / 100.0;
-    yfact = (ye - ys) / 80.0;
+    if (rotate) {
+	xfact = (xe - xs) / 80.0;
+	yfact = (ye - ys) / 100.0;
+	if (rotate == CW) {
+	    /* outer rectangle */
+	    XFillRectangle(dpy, win, gray1,
+			   oxs * xfact + xs + .5,
+			   oys * yfact + ys + .5,
+			   (oye - oys) * xfact + .5,
+			   (oxe - oxs) * yfact + .5);
+	    XDrawLine(dpy, win, gray2,
+		      xs, ye - 1,
+		      70 * xfact + xs - 1 + .5, ye - 1);
+	    XDrawLine(dpy, win, gray2,
+		      70 * xfact + xs - 1 + .5, ye - 1,
+		      70 * xfact + xs - 1 + .5, ys);
+	    /* inner rectangle */
+	    XFillRectangle(dpy, win, black,
+			   ixs * xfact + xs + .5,
+			   iys * yfact + ys + .5,
+			   (iye - iys) * xfact + .5,
+			   (ixe - ixs) * yfact + .5);
+	    for (i = 0; i < sizeof(points) / sizeof(points[0]); i++) {
+		points[i].x = lin[(i<<1) + 1] * xfact + xs + .5;
+		points[i].y = lin[(i<<1)] * yfact + ys + .5;
+	    }
+	    XFillPolygon(dpy, win, gray2, points, i, Convex, CoordModeOrigin);
+	    XDrawLine(dpy, win, gray0,
+		      (oxe - 10) * xfact + xs + .5, oys * yfact + ys + .5,
+		      xs, oys * yfact + ys + .5);
+	    XDrawLine(dpy, win, gray0,
+		      xs, ys,
+		      xs, xe);
+	    XDrawLine(dpy, win, black,
+		      lin[7] * xfact + xs - 1 + .5, lin[6] * yfact + ys + .5,
+		      lin[9] * xfact + xs - 1 + .5, lin[8] * yfact + ys - 1 + .5);
+	    XDrawLine(dpy, win, black,
+		      lin[9] * xfact + xs - 1 + .5, lin[8] * yfact + ys - 1 + .5,
+		      lin[11] * xfact + xs + .5, lin[10] * yfact + ys - 1 + .5);
+	    XDrawLine(dpy, win, black,
+		      lin[13] * xfact + xs + .5, lin[12] * yfact + ys - 1 + .5,
+		      lin[15] * xfact + xs + .5, lin[14] * yfact + ys - 1 + .5);
 
-    /* outer rectangle */
-    XFillRectangle(dpy, win, gray1,
-		   oxs * xfact + xs,
-		   oys * yfact + ys,
-		   (oxe - oxs) * xfact,
-		   (oye - oys) * yfact);
+	    if (!active) {
+		XDrawLine(dpy, win, red,
+			  iys * xfact, ixs * yfact, iye * xfact, ixe * yfact);
+		XDrawLine(dpy, win, red,
+			  iye * xfact, ixs * yfact, iys * xfact, ixe * yfact);
+	    }
+	}
+	else if (rotate == CCW) {
+	    /* outer rectangle */
+	    XFillRectangle(dpy, win, gray1,
+			   10 * xfact + xs + .5,
+			   oys * yfact + ys + .5,
+			   (oye - oys) * xfact + .5,
+			   (oxe - oxs) * yfact + .5);
 
-    XDrawLine(dpy, win, gray2,
-	      oxs * xfact + xs, oye * yfact + ys - 1,
-	      oxe * xfact + xs - 1, oye * yfact + ys - 1);
+	    XDrawLine(dpy, win, gray2,
+		      10 * xfact + xs + .5, ye - 1,
+		      oxe * xfact + xs - 1 + .5, ye - 1);
+	    XDrawLine(dpy, win, gray2,
+		      xe - 1, ye - 1,
+		      xe - 1, ys);
+	    /* inner rectangle */
+	    XFillRectangle(dpy, win, black,
+			   (ixs + 10) * xfact + xs + .5,
+			   iys * yfact + ys + .5,
+			   (iye - iys) * xfact + .5,
+			   (ixe - ixs) * yfact + .5);
+	    for (i = 0; i < sizeof(points) / sizeof(points[0]); i++) {
+		points[i].x = (-lin[(i<<1) + 1] + 80.0) * xfact + xs + .5;
+		points[i].y = lin[(i<<1)] * yfact + ys + .5;
+	    }
+	    XFillPolygon(dpy, win, gray2, points, i, Convex, CoordModeOrigin);
+	    XDrawLine(dpy, win, gray0,
+		      oxe * xfact + xs + .5, oys * yfact + ys + .5,
+		      (oxs - 10) * xfact + xs + .5, oys * yfact + ys + .5);
+	    XDrawLine(dpy, win, gray0,
+		      (oxs + 10) * xfact + xs + .5, ys,
+		      (oxs + 10) * xfact + xs + .5, xe);
 
-    XDrawLine(dpy, win, gray2,
-	      oxe * xfact + xs - 1, oys * yfact + ys,
-	      oxe * xfact + xs - 1, oye * yfact + ys - 1);
+	    XDrawLine(dpy, win, black,
+		      xs, lin[8] * yfact - 1 + ys + .5,
+		      4 * xfact + xs + .5, lin[8] * yfact - 1 + ys + .5);
+	    XDrawLine(dpy, win, black,
+		      4 * xfact + xs, lin[8] * yfact - 1 + ys + .5,
+		      4 * xfact + xs, lin[3] * yfact - 1 + ys + .5);
+	    XDrawLine(dpy, win, black,
+		      4 * xfact + xs + .5, lin[3] * yfact - 1 + ys + .5,
+		      10 * xfact + xs + .5 - 1, lin[3] * yfact - 1 + ys + .5);
+	    XDrawLine(dpy, win, black,
+		      4 * xfact + xs, lin[0] * yfact - 1 + ys + .5,
+		      4 * xfact + xs, lin[4] * yfact - 1 + ys + .5);
 
-    /* inner rectangle */
-    XFillRectangle(dpy, win, black,
-		   ixs * xfact + xs,
-		   iys * yfact + ys,
-		   (ixe - ixs) * xfact,
-		   (iye - iys) * yfact);
-
-    for (i = 0; i < sizeof(points) / sizeof(points[0]); i++) {
-	points[i].x = lin[i<<1] * xfact + xs;
-	points[i].y = lin[(i<<1) + 1] * yfact + ys;
+	    if (!active) {
+		XDrawLine(dpy, win, red,
+			  (iys + 10) * xfact, ixs * yfact,
+			  (iye + 10) * xfact, ixe * yfact);
+		XDrawLine(dpy, win, red,
+			  (iye + 10) * xfact, ixs * yfact,
+			  (iys + 10) * xfact, ixe * yfact);
+	    }
+	}
     }
+    else {
+	xfact = (xe - xs) / 100.0;
+	yfact = (ye - ys) / 80.0;
 
-    XFillPolygon(dpy, win, gray2, points, i, Convex, CoordModeOrigin);
+	/* outer rectangle */
+	XFillRectangle(dpy, win, gray1,
+		       oxs * xfact + xs + .5,
+		       oys * yfact + ys + .5,
+		       (oxe - oxs) * xfact + .5,
+		       (oye - oys) * yfact + .5);
 
-    XDrawLine(dpy, win, black,
-	      lin[6] * xfact + xs, lin[7] * yfact + ys - 1,
-	      lin[8] * xfact + xs - 1, lin[9] * yfact + ys - 1);
-    XDrawLine(dpy, win, black,
-	      lin[8] * xfact + xs - 1, lin[9] * yfact + ys - 1,
-	      lin[10] * xfact + xs - 1, lin[11] * yfact + ys);
+	XDrawLine(dpy, win, gray2,
+		  oxs * xfact + xs + .5, oye * yfact + ys - 1 + .5,
+		  oxe * xfact + xs - 1 + .5, oye * yfact + ys - 1 + .5);
+	XDrawLine(dpy, win, gray2,
+		  oxe * xfact + xs - 1 + .5, oys * yfact + ys + .5,
+		  oxe * xfact + xs - 1 + .5, oye * yfact + ys - 1 + .5);
 
-    XDrawLine(dpy, win, black,
-	      lin[12] * xfact + xs - 1, lin[13] * yfact + ys,
-	      lin[14] * xfact + xs - 1, lin[15] * yfact + ys);
+	/* inner rectangle */
+	XFillRectangle(dpy, win, black,
+		       ixs * xfact + xs + .5,
+		       iys * yfact + ys + .5,
+		       (ixe - ixs) * xfact + .5,
+		       (iye - iys) * yfact + .5);
 
-    if (!active) {
-	XDrawLine(dpy, win, red,
-		  ixs * xfact, iys * yfact, ixe * xfact, iye * yfact);
-	XDrawLine(dpy, win, red,
-		  ixe * xfact, iys * yfact, ixs * xfact, iye * yfact);
+	for (i = 0; i < sizeof(points) / sizeof(points[0]); i++) {
+	    points[i].x = lin[i<<1] * xfact + xs + .5;
+	    points[i].y = lin[(i<<1) + 1] * yfact + ys + .5;
+	}
+
+	XFillPolygon(dpy, win, gray2, points, i, Convex, CoordModeOrigin);
+
+	XDrawLine(dpy, win, black,
+		  lin[6] * xfact + xs + .5, lin[7] * yfact + ys - 1 + .5,
+		  lin[8] * xfact + xs - 1 + .5, lin[9] * yfact + ys - 1 + .5);
+	XDrawLine(dpy, win, black,
+		  lin[8] * xfact + xs - 1 + .5, lin[9] * yfact + ys - 1 + .5,
+		  lin[10] * xfact + xs - 1 + .5, lin[11] * yfact + ys + .5);
+	XDrawLine(dpy, win, black,
+		  lin[12] * xfact + xs - 1 + .5, lin[13] * yfact + ys + .5,
+		  lin[14] * xfact + xs - 1 + .5, lin[15] * yfact + ys + .5);
+
+	XDrawLine(dpy, win, gray0,
+		  oxe * xfact + xs + .5, oys * yfact + ys + .5,
+		  oxs * xfact + xs + .5, oys * yfact + ys + .5);
+	XDrawLine(dpy, win, gray0,
+		  oxs * xfact + xs + .5, oys * yfact + ys + .5,
+		  oxs * xfact + xs + .5, lin[1] * yfact + ys + .5);
+
+	if (!active) {
+	    XDrawLine(dpy, win, red,
+		      ixs * xfact, iys * yfact, ixe * xfact, iye * yfact);
+	    XDrawLine(dpy, win, red,
+		      ixe * xfact, iys * yfact, ixs * xfact, iye * yfact);
+	}
     }
 }
 
 void
-DrawScreenMask(Display *dpy, Drawable win, GC gc, int xs, int ys, int xe, int ye)
+DrawScreenMask(Display *dpy, Drawable win, GC gc, int xs, int ys, int xe, int ye,
+	       int rotate)
 {
     double xfact, yfact;
     XPoint points[(sizeof(lin) / sizeof(lin[0])) >> 1];
-    int i;
+    int i, x, y, width, height;
 
-    xfact = (xe - xs) / 100.0;
-    yfact = (ye - ys) / 80.0;
+    if (rotate) {
+	xfact = (xe - xs) / 80.0;
+	yfact = (ye - ys) / 100.0;
+	width = (oye - oys) * xfact + .5;
+	height = (oxe - oxs) * yfact + .5;
+	if (rotate == CW) {
+	    x = oxs * xfact + xs + .5;
+	    y = oys * yfact + ys + .5;
+	    for (i = 0; i < sizeof(points) / sizeof(points[0]); i++) {
+		points[i].x = lin[(i<<1) + 1] * xfact + xs + .5;
+		points[i].y = lin[(i<<1)] * yfact + ys + .5;
+	    }
+	}
+	else if (rotate == CCW) {
+	    x = 10 * xfact + xs + .5;
+	    y = oys * yfact + ys + .5;
+	    for (i = 0; i < sizeof(points) / sizeof(points[0]); i++) {
+		points[i].x = (-lin[(i<<1) + 1] + 80.0) * xfact + xs + .5;
+		points[i].y = lin[(i<<1)] * yfact + ys + .5;
+	    }
+	}
+    }
+    else {
+	xfact = (xe - xs) / 100.0;
+	yfact = (ye - ys) / 80.0;
+	x = oxs * xfact + xs + .5;
+	y = oys * yfact + ys + .5;
+	width = (oxe - oxs) * xfact + .5;
+	height = (oye - oys) * yfact + .5;
+	for (i = 0; i < sizeof(points) / sizeof(points[0]); i++) {
+	    points[i].x = lin[(i<<1)] * xfact + xs + .5;
+	    points[i].y = lin[(i<<1) + 1] * yfact + ys + .5;
+	}
+    }
 
     /* rectangle */
-    XFillRectangle(dpy, win, gc,
-		   oxs * xfact + xs,
-		   oys * yfact + ys,
-		   (oxe - oxs) * xfact,
-		   (oye - oys) * yfact);
+    XFillRectangle(dpy, win, gc, x, y, width, height);
 
-    for (i = 0; i < sizeof(points) / sizeof(points[0]); i++) {
-	points[i].x = lin[i<<1] * xfact + xs;
-	points[i].y = lin[(i<<1) + 1] * yfact + ys;
-    }
 
     XFillPolygon(dpy, win, gc, points, i, Convex, CoordModeOrigin);
 }
@@ -366,7 +610,7 @@ AdjustScreenUI(void)
 {
     XF86ConfLayoutPtr lay = computer.layout;
     XF86ConfAdjacencyPtr adj;
-    int i, dx, dy, w, h;
+    int i, dx, dy, x, y, w, h, base = -1;
     double xf, yf;
 
     if (lay == NULL)
@@ -375,6 +619,33 @@ AdjustScreenUI(void)
     adj = lay->lay_adjacency_lst;
 
 #define USED1	-USED
+
+    XtFree((XtPointer)mon_widths);
+    XtFree((XtPointer)mon_heights);
+    mon_widths = (int*)XtCalloc(1, sizeof(int) * columns);
+    mon_heights = (int*)XtCalloc(1, sizeof(int) * rows);
+
+    mon_width = mon_height = 0;
+    for (i = 0; i < computer.num_screens; i++) {
+	if (base == -1 && computer.screens[i]->state == USED)
+	    base = i;
+	if (computer.screens[i]->screen->scrn_monitor->mon_width > mon_width)
+	    mon_width = computer.screens[i]->screen->scrn_monitor->mon_width;
+	if (computer.screens[i]->screen->scrn_monitor->mon_height > mon_height)
+	    mon_height = computer.screens[i]->screen->scrn_monitor->mon_height;
+    }
+    if (base < 0) {
+	for (i = 0; i < computer.num_screens; i++)
+	    ReshapeScreenWidget(computer.screens[i]);
+	return;
+    }
+
+    if (mon_width == 0) {
+	mon_width = 10;
+	mon_height = 8;
+    }
+
+    XtUnmapWidget(work);
 
     while (adj) {
 	xf86cfgScreen *scr, *topscr, *botscr, *lefscr, *rigscr;
@@ -526,22 +797,10 @@ AdjustScreenUI(void)
     w = work->core.width / (columns + 1) - 5;
     h = work->core.height / (rows + 1) - 5;
 
-    /*CONSTCOND*/
-    while (True) {
-	int num = w * 8 - h * 10;
-
-	num = num < 0 ? -num : num;
-	if (num < 6)
-	    break;
-
-	/* factor of drawing is w = 10 and h = 8 */
-	if (w * 8 > h * 10)
-	    w = (double)h * 10. / 8.;
-	else if (w * 8 < h * 10)
-	    h = (double)w * 8. / 10.;
-	else
-	    break;
-    }
+    if (w > h)
+	w = h;
+    else
+	h = w;
 
     dx = (work->core.width - (columns * w)) >> 1;
     dy = (work->core.height - (rows * h)) >> 1;
@@ -553,11 +812,72 @@ AdjustScreenUI(void)
 	Widget z = computer.screens[i]->widget;
 
 	if (computer.screens[i]->state == USED)
-	    XtConfigureWidget(z, z->core.x * xf + dx, z->core.y * yf + dy, w, h, 0);
+	    XtConfigureWidget(z, z->core.x * xf + dx,
+			      z->core.y * yf + dy, w, h, 0);
 	else
 	    XtConfigureWidget(z, z->core.x, z->core.y, w, h, 0);
-	ReshapeScreenWidget(z);
     }
+
+    if (computer.screens[base]->row >= 0) {
+	double xf, yf;
+	int width, height;
+
+	for (i = 0; i < computer.num_screens; i++) {
+	    width = computer.screens[i]->screen->scrn_monitor->mon_width;
+	    height = computer.screens[i]->screen->scrn_monitor->mon_height;
+	    if (width <= 0) {
+		width = mon_width;
+		height = mon_height;
+	    }
+
+	    if (computer.screens[i]->rotate) {
+		xf = (double)width / (double)mon_width * 8. / 10.;
+		yf = (double)height / (double)mon_height;
+	    }
+	    else {
+		xf = (double)width / (double)mon_width;
+		yf = (double)height / (double)mon_height * 8. / 10.;
+	    }
+	    width = computer.screens[i]->widget->core.width * xf;
+	    height = computer.screens[i]->widget->core.height * yf;
+	    if (computer.screens[i]->state == USED) {
+		if (mon_widths[computer.screens[i]->column] < width)
+		    mon_widths[computer.screens[i]->column] = width;
+		if (mon_heights[computer.screens[i]->row] < height)
+		    mon_heights[computer.screens[i]->row] = height;
+	    }
+
+	    /* do it here to avoid recalculation */
+	    computer.screens[i]->rect.width = width;
+	    computer.screens[i]->rect.height = height;
+	}
+    }
+
+    for (i = 0; i < computer.num_screens; i++)
+	ReshapeScreenWidget(computer.screens[i]);
+
+    /* do a new pass, to avoid gaps if the monitors have different
+     * sizes.
+     */
+    if (computer.screens[base]->row >= 0) {
+	x = computer.screens[base]->widget->core.x;
+	y = computer.screens[base]->widget->core.y;
+
+	/* screens representations are already ordered */
+	for (i = base; i < computer.num_screens; i++) {
+	    if (computer.screens[i]->state == UNUSED)
+		continue;
+	    if (computer.screens[i]->column != 0)
+		x += mon_widths[computer.screens[i]->column];
+	    else {
+		x = computer.screens[base]->widget->core.x;
+		if (i != base)
+		    y += mon_heights[computer.screens[i]->row];
+	    }
+	    XtMoveWidget(computer.screens[i]->widget, x, y);
+	}
+    }
+    XtMapWidget(work);
 }
 
 int
@@ -599,7 +919,7 @@ UpdateScreenUI(void)
 	  qcmp_screen);
 
     adj = prev, base = NULL;
-    for (i = p = 0; i < computer.num_screens; p = i, i++) {
+    for (i = p = 0; i < computer.num_screens; i++) {
 	XF86ConfScreenPtr scr = computer.screens[i]->screen;
 
 	if (computer.screens[i]->state == UNUSED)
@@ -609,8 +929,10 @@ UpdateScreenUI(void)
 	adj->adj_scrnum = i;
 	adj->adj_screen = scr;
 	adj->adj_screen_str = XtNewString(scr->scrn_identifier);
-	if (base == NULL)
+	if (base == NULL) {
 	    base = left = adj;
+	    computer.screens[i]->row = computer.screens[i]->column = 0;
+	}
 	else {
 	    int dy = computer.screens[i]->widget->core.y -
 		     computer.screens[p]->widget->core.y;
@@ -620,10 +942,14 @@ UpdateScreenUI(void)
 		adj->adj_where = CONF_ADJ_BELOW;
 		adj->adj_refscreen = XtNewString(left->adj_screen_str);
 		left = adj;
-		cols = 1; 
+		computer.screens[i]->row = rows;
+		computer.screens[i]->column = 0;
+		cols = 1;
 		++rows;
 	    }
 	    else {
+		computer.screens[i]->row = rows - 1;
+		computer.screens[i]->column = cols;
 		adj->adj_where = CONF_ADJ_RIGHTOF;
 		if (++cols > columns)
 		    columns = cols;
@@ -631,6 +957,7 @@ UpdateScreenUI(void)
 	    }
 	}
 	prev = adj;
+	p = i;
     }
 
     adj = lay->lay_adjacency_lst;
@@ -648,16 +975,4 @@ UpdateScreenUI(void)
     }
 
     lay->lay_adjacency_lst = base;
-}
-
-
-void
-ClearScreenUI(void)
-{
-    int i;
-
-    for (i = 0; i < computer.num_screens; i++)
-	XClearArea(XtDisplay(toplevel), XtWindow(computer.screens[i]->widget),
-		   0, 0, computer.screens[i]->widget->core.width,
-		   computer.screens[i]->widget->core.height, True);
 }

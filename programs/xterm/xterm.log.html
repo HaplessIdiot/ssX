@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.50 2000/03/31 20:13:50 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.51 2000/05/18 00:33:21 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_133">Patch #133 - 2000/5/2 - XFree86 4.0a</A>
 <LI><A HREF="#xterm_132">Patch #132 - 2000/4/11 - XFree86 4.0a</A>
 <LI><A HREF="#xterm_131">Patch #131 - 2000/3/3 - XFree86 3.9.18b</A>
 <LI><A HREF="#xterm_130">Patch #130 - 2000/3/1 - XFree86 3.9.18a</A>
@@ -175,6 +176,34 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_133">Patch #133 - 2000/5/2 - XFree86 4.0a</A></H1>
+<ul>
+	<li>add substitutions in autoconf'd Makefile for CPPFLAGS, LDFLAGS and
+	  AWK (reported by Neil Bird).
+
+	<li>correct uninitialized <code>childstat</code> variable from patch
+	  #131 in <code>creat_as()</code> function, which caused logging to not
+	  work on Solaris, whose <code>waitpid()</code> function does not
+	  initialize its parameter.  Add check for EINTR on return from
+	  <code>waitpid()</code> as well (reported by Neil Bird
+	  &lt;neil.bird@rdel.co.uk&gt;).
+
+	<li>remove a redundant check for working <code>setuid()</code> function
+	  introduced in patch #132 (Greg Smith reports that this does not work
+	  as intended on os390).
+
+	<li>change line speed from 9600bd to 38400bd, to accommodate people who
+	  mistakenly use $TERM set to <em>vt100</em>, to reduce the effect of
+	  padding associated with this terminal type.
+
+	<li>add configure script check for IRIX 6.5's redefinition of baud
+	  rates associated with <code>struct termio</code>, to correct a
+	  situation where the baud rate was initialized to zero (reported by
+	  Andrew Isaacson &lt;adi@lcse.umn.edu&gt;).
+
+	<li>remove unused configure script check for VDISABLE.
+</ul>
 
 <H1><A NAME="xterm_132">Patch #132 - 2000/4/11 - XFree86 4.0a</A></H1>
 <ul>
@@ -982,7 +1011,7 @@ longterm plan to allow configuring with Motif libraries.
 
 <H1><A NAME="xterm_107">Patch #107 - 1999/6/12 - XFree86 3.9Pq</A></H1>
 <ul>
-	<li>Two changes from Stephen P Wall &lt;steve_wall@redcom.com&gt;.
+	<li>Two changes from Stephen P Wall.
 	  From his description:
 	<blockquote>
 	The first change is simple - I added ESC[3J to erase the stored lines

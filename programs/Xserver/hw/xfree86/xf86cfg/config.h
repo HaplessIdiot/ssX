@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.2 2000/04/05 18:13:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.3 2000/04/06 15:48:44 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -119,15 +119,18 @@ typedef struct _xf86cfgDevice xf86cfgDevice;
 struct _xf86cfgDevice {
     XtPointer config;
     Widget widget;
-    int type, state;
+    int type, state, refcount;
 };
 
 typedef struct {
     XF86ConfScreenPtr screen;
     Widget widget;
-    int type, state;
+    int type, state, refcount;
     xf86cfgDevice *card;
     xf86cfgDevice *monitor;
+    short row, column;
+    XRectangle rect;
+    short rotate;
 } xf86cfgScreen;
 
 /* this structure is used just to restore
@@ -141,6 +144,12 @@ typedef struct {
     int num_layouts;
 } xf86cfgLayout;
 
+/* The vidmode extension usage is controlled by this structure.
+ * The information is read at startup, and added monitors cannot
+ * be configured, since they are not attached to a particular screen.
+ */
+typedef struct _xf86cfgVidMode xf86cfgVidmode;
+
 typedef struct {
     XF86ConfLayoutPtr layout;	/* current layout */
     Widget cpu;
@@ -150,6 +159,8 @@ typedef struct {
     Cardinal num_screens;
     xf86cfgDevice **devices;
     Cardinal num_devices;
+    xf86cfgVidmode **vidmodes;
+    Cardinal num_vidmodes;
 } xf86cfgComputer;
 
 /*
@@ -164,6 +175,7 @@ void SetTip(xf86cfgDevice*);
 Bool startx(void);
 void endx(void);
 void startaccessx(void);
+void ConfigCancelAction(Widget, XEvent*, String*, Cardinal*);
 
 /*
  * Initialization

@@ -36,7 +36,7 @@
  *  Modifier: Ivan Pascal     The XFree86 Project
  *  Modifier: Bruno Haible    The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.15 2000/02/12 02:54:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.16 2000/02/25 18:27:54 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -568,11 +568,13 @@ cttocs(conv, from, from_left, to, to_left, args, num_args)
 
     while (ctext_len > 0 && buf_len > 0) {
         ch = *ctptr;
+#ifdef notdef
         if (ch == XctCSI) {
             /* do nothing except skip sequence if not recognized */
             if (_XlcParseCT(&ctptr, &ctext_len, NULL))
                 continue;
         }
+#endif
         if (ch == XctESC) {
             ret = _XlcCheckCTSequence(state, &ctptr, &ctext_len);
             if (ret == resOK || ret == resNotInList)
@@ -675,23 +677,27 @@ cstoct(conv, from, from_left, to, to_left, args, num_args)
             ct_len -= length;
         }
     }
-    min_ch = 0x20;
-    max_ch = 0x7f;
+    if (charset->set_size) {
+        min_ch = 0x20;
+        max_ch = 0x7f;
 
-    if (charset->set_size == 94) {
-        max_ch--;
-    if (charset->char_size > 1 || side == XlcGR)
-        min_ch++;
+        if (charset->set_size == 94) {
+            max_ch--;
+        if (charset->char_size > 1 || side == XlcGR)
+            min_ch++;
+        }
     }
 
     while (csstr_len > 0 && ct_len > 0) {
-        ch = *((unsigned char *) csptr) & 0x7f;
-        if (ch < min_ch || ch > max_ch)
-            if (ch != 0x00 && ch != 0x09 && ch != 0x0a && ch != 0x1b) {
-                csptr++;
-                csstr_len--;
-                continue;	/* XXX */
-            }
+        if (charset->set_size) {
+            ch = *((unsigned char *) csptr) & 0x7f;
+            if (ch < min_ch || ch > max_ch)
+                if (ch != 0x00 && ch != 0x09 && ch != 0x0a && ch != 0x1b) {
+                    csptr++;
+                    csstr_len--;
+                    continue;	/* XXX */
+                }
+        }
 
         if (side == XlcGL)
             *ctptr++ = *csptr++ & 0x7f;

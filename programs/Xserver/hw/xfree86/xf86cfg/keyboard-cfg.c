@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.1 2000/04/04 22:36:59 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -243,7 +243,7 @@ KeyboardConfig(XtPointer config)
 	    }
 	    else
 		xf86addNewOption(keyboard->inp_option_lst,
-				 XtNewString(XkbModel), XtNewString(model));
+				 XtNewString(XkbLayout), XtNewString(layout));
 	}
 	if (strcasecmp(keyboard->inp_identifier, ident_string))
 	    xf86RenameInput(XF86Config, keyboard, ident_string);

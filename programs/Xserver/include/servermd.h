@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.37 2000/02/12 03:39:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.38 2000/02/22 01:04:01 mvojkovi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -170,10 +170,7 @@ SOFTWARE.
 #if (defined(sun) && !(defined(i386) && defined(SVR4))) || \
     (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || \
     (defined(__uxp__) && (defined(sparc) || defined(mc68000))) || \
-    (defined(Lynx) && defined(__sparc__)) || \
-    (defined(linux) && defined(__sparc__)) || \
-    ((defined(__NetBSD__) || defined(__OpenBSD__)) && \
-     (defined(__sparc__) || defined(__mc68000__)))
+    defined(__sparc__) || defined(__mc68000__)
 
 #if defined(sun386) || defined(sun5)
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the SUN only */
@@ -363,7 +360,15 @@ SOFTWARE.
 
 #endif /* luna */
 
-#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || (defined(__OpenBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || (defined(linux) && (defined(__i386__) || defined(__alpha__))) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || (defined(Lynx) && defined(__i386__))) || defined(__OS2ELF__) || (defined(__GNU__) && defined(__i386__)) || defined(__QNX__)
+#if	(defined(AMOEBA) && defined(i80386)) || \
+	(defined(SVR4) && defined(i386)) || \
+	defined(__alpha__) || \
+	defined(__i386__) || \
+	defined(__EMX__) || \
+	defined(__OS2ELF__) || \
+	defined(__QNX__) || \
+	defined(MACH386) || \
+	defined(MINIX)
 
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst

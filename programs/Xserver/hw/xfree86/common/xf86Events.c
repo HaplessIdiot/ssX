@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.91 2000/02/12 23:59:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.92 2000/02/13 03:36:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -872,9 +872,14 @@ special:
   /*
    * check for an autorepeat-event
    */
-  if ((down && KeyPressed(keycode)) &&
-      (xf86Info.autoRepeat != AutoRepeatModeOn || keyc->modifierMap[keycode]))
-    return;
+  if (down && KeyPressed(keycode)) {
+      KbdFeedbackClassRec *kbdfeed = ((DeviceIntPtr)xf86Info.pKeyboard)->kbdfeed;
+      if ((xf86Info.autoRepeat != AutoRepeatModeOn) ||
+          keyc->modifierMap[keycode] ||
+          (kbdfeed && !(kbdfeed->ctrl.autoRepeats[keycode>>3] & ( 1<<(keycode&7) ))))
+          return;
+  }
+
 
   xf86Info.lastEventTime = kevent.u.keyButtonPointer.time = GetTimeInMillis();
   /*

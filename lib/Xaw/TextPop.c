@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.14 1999/07/19 13:36:03 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.15 1999/08/28 09:00:27 dawes Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -1095,6 +1095,8 @@ Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
 		return (True);
 	    }
 	}
+	else
+	    ctx->text.insertPos = ipos;
 	count++;
     }
 
