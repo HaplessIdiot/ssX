@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.28 2005/01/26 06:17:56 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.29 2005/03/02 19:17:42 dawes Exp $
 .\"
 .\" Copyright (c) 1994-2005 by The XFree86 Project, Inc.
 .\" All rights reserved.
@@ -697,12 +697,12 @@ This option enables special handling for log files that may be useful when
 debugging certain types of problems.  The values for
 .I logflag
 are
-.B \*qFlush\*q
+.B Flush
 and
-.BR \*qSync\*q .
-.B \*qFlush\*q
+.BR Sync .
+.B Flush
 causes the log file buffer to be flushed after each write.
-.B \*qSync\*q
+.B Sync
 causes the log file buffer to be flushed and the file data to be written
 to the disk after each write.  The default is for neither of these flags to
 be enabled.  Enabling these flags during normal operation may degrade
