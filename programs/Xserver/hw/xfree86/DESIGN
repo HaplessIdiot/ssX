@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 2 August 1998.
+Last modified: 13 August 1998.
 
 
 
@@ -1584,6 +1584,287 @@ The following functions may optionally be provided:
 
       [XXX This needs to be checked and defined properly]
       Report when the view port has actually changed.
+
+
+Section 13: The XFree86 X Video Extension (Xv) Device Dependent Layer
+=====================================================================
+
+ XFree86 offers the X Video Extension which allows clients to treat 
+video as any another primitive and "Put" video into drawables.  
+By default, the extension reports no video adaptors as being 
+available since the DDX layer has not been initialized.  The driver
+can initialize the DDX layer by filling out the XF86VideoInfoRec
+as described later in this document and passing it to the following
+function:
+
+  Bool xf86XVScreenInit(ScreenPtr pScreen,  XF86VideoInfoPtr infoPtr);
+
+After doing this, the extension will report video adaptors as being 
+available, providing the data in the XF86VideoInfoRec was valid.
+xf86XVScreenInit *copies* data from the structure passed to it so
+the driver may free it after the initialization.  At the moment,
+the DDX only supports rendering into Window drawables.  Pixmap
+rendering will be supported after a sufficient survey of suitable
+hardware is completed.  
+
+
+The XF86VideoInfoRec:
+
+     typedef struct {
+	int 			NumAdaptors;
+	XF86VideoAdaptorPtr 	Adaptors;
+     } XF86VideoInfoRec, *XF86VideoInfoPtr;
+
+  The XF86VideoInfoRec is the top level of a hierarchy of structures.
+  "Adaptors" is an array of XF86VideoAdaptorRecs and "NumAdaptors"
+  is the number of elements in that array.
+
+The XF86VideoAdaptorRec:
+
+     typedef struct {
+	unsigned char type; 
+	int flags;
+	char *name;
+	int nEncodings;
+	XF86VideoEncodingPtr pEncodings;  
+	int nFormats;
+	XF86VideoFormatPtr pFormats;  
+	int nPorts;
+	DevUnion *pPortPrivates;
+	PutVideoFuncPtr PutVideo;
+	PutStillFuncPtr PutStill;
+	GetVideoFuncPtr GetVideo;
+	GetStillFuncPtr GetStill;
+	StopVideoFuncPtr StopVideo;
+	ReclipVideoFuncPtr ReclipVideo;
+	SetPortAttributeFuncPtr SetPortAttribute;
+	GetPortAttributeFuncPtr GetPortAttribute;
+	QueryBestSizeFuncPtr QueryBestSize;
+     } XF86VideoAdaptorRec, *XF86VideoAdaptorPtr;
+
+   Each adaptor will have its own XF86VideoAdaptorRec.  The fields are
+   as follows:
+
+     type 
+
+	This can be XvInputMask, XvOutputMask or both OR'd together.  
+	This refers to the target drawable and is similar to a Window's 
+	"class."  XvInputMask indicates that the adaptor can put video 
+	into a drawable.  XvOutputMask indicates that the adaptor can 
+	get video from a drawable.
+
+     flags
+	
+	Currently, the following flags are defined:
+
+	VIDEO_NO_CLIPPING
+
+	   This indicates that the video adaptor does not support
+	   clipping.
+	 
+	VIDEO_INVERT_CLIPLIST
+
+	   This indicates that the video driver requires the clip
+	   list to contain the regions which are obscured rather 
+	   than the regions which are are visible.
+
+     name  
+	
+	The name of the adaptor.
+
+     nEncodings
+     pEncodings
+
+	The number of encodings the adaptor is capable of and pointer 
+	to the XF86VideoEncodingRec array.  The XF86VideoEncodingRec is 
+	described later on.
+
+     nFormats
+     pFormats
+
+	The number of formats the adaptor is capable of and pointer 
+	to the XF86VideoFormatRec array.  The XF86VideoFormatRec is 
+	described later on.
+
+     nPorts
+     pPortPrivates
+
+	The number of ports is the number of separate data streams
+	which the adpator can handle simulateously.  If you have more
+	than one port, the adaptor is expected to be able to render
+	into more than one window at a time.  "pPortPrivates" is
+	an array of pointers or ints - one for each port.  A port's
+	private data will be passed to the driver any time the port
+	is requested to do something like put the video or stop the
+	video.  In the case where there may be many ports, this enables
+	the driver to know which port the request is intended for.
+	Most commonly, this will contain a pointer to the data structure
+	containing information about the port.
+
+
+     PutVideo PutStill GetVideo GetStill StopVideo ReclipVideo
+     SetPortAttribute GetPortAttribute QueryBestSize
+
+	These functions define the DDX->driver interface.  In each
+	case, the pointer "data" is passed to the driver.  This is
+	the port private for that port as described above.  All
+	fields are required except under the following conditions:
+
+	 1). PutVideo and PutStill are not required when the
+	     adaptor type does not contain XvInputMask.
+	 2). GetVideo and GetStill are not required when the
+	     adaptor type does not contatin XvOutputMask.
+	 3). ReclipVideo is not required if the VIDEO_NO_CLIPPING
+	     flag is set.  If you do not provide ReclipVideo, the
+	     VIDEO_NO_CLIPPING flag will be forced.
+
+
+	typedef  void (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
+		short vid_x, short vid_y, short drw_x, short drw_y,
+		short vid_w, short vid_h, short drw_w, short drw_h,
+		pointer data );
+
+	  This indicates that the driver should take a subsection
+	  "vid_w" x "vid_h" at location ("vid_x", "vid_y") from the
+	  video stream and direct it into the rectangle "drw_w" x "drw_h" 
+	  at location (drw_x, drw_y) on the screen, scaling as necessary.
+	  Due to the large variations in capabilities of the various
+	  hardware expected to be used with this extension, it is not
+	  expected that all hardware will be able to do this exactly
+	  as described.  In that case the driver should just do "the 
+	  best it can," scaling as closely to the target rectangle
+	  as it can without rendering outside of it.  In the worst 
+	  case, the driver can opt to just not turn on the video.
+
+
+	typedef  void (* PutStillFuncPtr)( ScrnInfoPtr pScrn, 
+		short vid_x, short vid_y, short drw_x, short drw_y,
+		short vid_w, short vid_h, short drw_w, short drw_h,
+		pointer data );
+
+	  This is same as PutVideo except that the driver should 
+	  place only one frame from the stream on the screen. 
+	
+
+	typedef void (* GetVideoFuncPtr)( ScrnInfoPtr pScrn, 
+		short vid_x, short vid_y, short drw_x, short drw_y,
+		short vid_w, short vid_h, short drw_w, short drw_h,
+		pointer data );
+
+	  This is same as PutVideo except that the driver gets video
+	  from the screen and outputs it.  The driver should do the
+	  best it can to get the requested dimensions correct without
+	  reading from an area larger than requested.
+	
+
+	typedef void (* GetStillFuncPtr)( ScrnInfoPtr pScrn, 
+		short vid_x, short vid_y, short drw_x, short drw_y,
+		short vid_w, short vid_h, short drw_w, short drw_h,
+		pointer data );
+
+	  This is the same as GetVideo except that the driver should
+	  place only one frame from the screen into the output stream.
+
+
+	typedef void (* StopVideoFuncPtr)(ScrnInfoPtr pScrn, 
+			pointer data, Bool exiting);
+
+	  This indicates the the driver should stop displaying the video.
+	  This is used to stop both input and output video.  The "exiting"
+	  field indicates that the video is being stopped because the
+	  server is quiting or switching VTs. 
+
+
+	typedef void (* ReclipVideoFuncPtr)(ScrnInfoPtr pScrn, 
+		RegionPtr clipBoxes, pointer data );
+
+	  This function is optional and will not be used if the  
+	  VIDEO_NO_CLIPPING flag is set.  If this function is not
+	  provided, the VIDEO_NO_CLIPPING flag will be forced.
+	  "ClipBoxes" is an X-Y banded region identical to those
+	  used throughout the server.  If clipping is supported,
+	  this function will be called before any of the Get/Put
+	  functions above.  The clipBoxes represent the visible
+	  portions of area determined by drw_x, drw_y, drw_w and
+	  drw_h in the upcoming Get/Put function.  The boxes are
+	  in screen coordinates, are guaranteed not to overlap and
+	  an empty region will never be passed.  In the case where
+	  the VIDEO_INVERT_CLIPLIST flag is set, clipBoxes will
+	  indicate the areas of the upcoming primitive which are
+	  obscured rather than the areas visible.
+
+
+	typedef int (* SetPortAttributeFuncPtr)(ScrnInfoPtr pScrn,
+		 Atom attribute,INT32 value, pointer data);
+	typedef int (* GetPortAttributeFuncPtr)(ScrnInfoPtr pScrn, 
+		Atom attribute,INT32 *value, pointer data);
+
+	  A port may have particular attributes such as hue,
+	  saturation, brightness or contrast.  Xv clients set and
+	  get these attribute values by sending attribute strings 
+	  (Atoms) to the server.  Such requests end up at these 
+	  driver functions.  It is recommended that the driver provide
+	  at least the following attributes mentioned in the Xv client
+	  library docs:
+		XV_ENCODING
+		XV_HUE
+		XV_SATURATION
+		XV_BRIGHTNESS
+  		XV_CONTRAST
+	  but the driver may recognize as many atoms as it wishes.
+	  If a requested attribute is unknown by the driver it
+	  should return BadMatch.  XV_ENCODING is the attribute
+	  intended to let the client specify which video encoding
+	  the particular port should be using (see the description   
+	  of XF86VideoEncodingRec below).  If the requested 
+	  encoding is unsupported, the driver should return
+	  XvBadEncoding.  Success should be returned otherwise.
+
+
+	typedef void (* QueryBestSizeFuncPtr)(ScrnInfoPtr pScrn, Bool motion,
+		short vid_w, short vid_h, short drw_w, short drw_h, 
+		unsigned int *p_w, unsigned int *p_h, pointer data);
+
+	   QueryBestSize provides the client with a way to query what
+	   the destination dimesions would end up being if they were
+	   to request that an area "vid_w" x "vid_h" from the video  
+	   stream be scaled to rectangle of "drw_w" x "drw_h" on the 
+	   screen. Since it is not expected that all hardware will be 
+	   able to get the target dimensions exactly, it is important 
+	   that the driver provide this function.  The returned dimesions
+	   must be less than or equal to the requested dimension.
+ 
+	
+
+The XF86VideoEncodingRec:
+ 
+     typedef struct {
+	int id;
+	char *name;
+	unsigned short width, height;
+	XvRationalRec rate;
+     } XF86VideoEncodingRec, *XF86VideoEncodingPtr;
+
+   The XF86VideoEncodingRec specifies what encodings the adaptor can
+   support.  Most of this data is just informational and for the client's
+   benefit, and is what will be reported by XvQueryEncodings.  The "id"
+   field is expected to be a unique identifier to allow the client to
+   request a certain encoding via the XV_ENCODING attribute string.
+
+
+The XF86VideoFormatRec:  
+
+
+      typedef struct {
+	char  depth;  
+	short class;
+      } XF86VideoFormatRec, *XF86VideoFormatPtr;
+
+    This specifies what visuals the video is viewable in. "Depth" is
+    the depth of the visual (not bpp).  "Class" is the visual class
+    such as TrueColor, DirectColor or PseudoColor.  Initialization of
+    an adaptor will fail if none of the visuals on that screen are 
+    supported.
 
 
 
@@ -3363,4 +3644,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.3 1998/08/02 05:47:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.4 1998/08/02 06:34:26 dawes Exp $

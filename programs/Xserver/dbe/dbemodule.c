@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dbe/dbemodule.c,v 1.1 1998/07/26 09:56:07 dawes Exp $ */
 
 #include "xf86Module.h"
 
@@ -10,6 +10,7 @@ extern void DbeExtensionInit(INITARGS);
 ExtensionModule dbeExt = {
     DbeExtensionInit,
     "DOUBLE-BUFFER",
+    NULL,
     NULL
 };
 

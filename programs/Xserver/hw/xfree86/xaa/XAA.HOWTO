@@ -169,6 +169,16 @@ descriptions of those primitives below.
       This indicates that the accelerator supports skipping of color keyed
       pixels only when the rop is GXcopy.
 
+    ONLY_LEFT_TO_RIGHT_BITBLT
+
+      This indicates that the hardware only accepts blitting when the
+      x direction is positive.
+
+    ONLY_TWO_BITBLT_DIRECTIONS
+
+      This indicates that the hardware can only cope with blitting when
+      the direction of x is the same as the direction in y.
+
 
 void SetupForScreenToScreenCopy( ScrnInfoPtr pScrn,
 			int xdir, int ydir,
@@ -406,17 +416,24 @@ void SubsequentSolidHorVertLine( ScrnInfoPtr pScrn,
 
     void SubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
-				int srcx, int srcy, int skipleft )
+				int srcx, int srcy, int offset )
 
    
-    Fill a rectangle "w" x "h" at location (x,y).  Srcx and srcy indicate
-    the start of the source pattern in units of pixels.  Skipleft is the
-    number of *bits* to skip on the left edge of the source. Implementation 
-    of the skipleft is manditory.  Some hardware accepts source coordinates 
-    in units of bits which makes implementation of the skipleft trivial,
-    however, it should be noted that the skipleft assumes LSBFIRST 
-    hardware.  For MSBFIRST hardware, the driver may need to implement 
-    the skipleft by hardware clipping.
+    Fill a rectangle "w" x "h" at location (x,y).  The source pitch
+    between scanlines is the framebuffer pitch (pScrn->displayWidth
+    pixels) and srcx and srcy indicate the start of the source pattern 
+    in units of framebuffer pixels. "Offset" indicates the bit offset
+    into the pattern that corresponds to the pixel being painted at
+    "x" on the screen.  Some hardware accepts source coordinates in
+    units of bits which makes implementation of the offset trivial.
+    In that case, the bit address of the source bit corresponding to
+    the pixel painted at (x,y) would be:
+	
+     (srcy * pScrn->displayWidth + srcx) * pScrn->bitsPerPixel + offset
+
+    It should be noted that the offset assumes LSBFIRST hardware.  
+    For MSBFIRST hardware, the driver may need to implement the 
+    offset by bliting only from byte boundaries and hardware clipping.
 
 
 
@@ -1188,4 +1205,4 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.2 1998/07/26 00:38:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.3 1998/08/02 05:17:04 dawes Exp $

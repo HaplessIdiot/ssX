@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.1.2.11 1998/07/19 13:22:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.2 1998/07/25 16:58:47 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -243,7 +243,8 @@ XAAGetImage (
 {
     ScreenPtr pScreen = pDrawable->pScreen;
     XAA_SCREEN_PROLOGUE (pScreen, GetImage);
-    if(xf86Screens[pScreen->myNum]->vtSema && (pDrawable->type == DRAWABLE_WINDOW)) {
+    if(xf86Screens[pScreen->myNum]->vtSema && 
+		(pDrawable->type == DRAWABLE_WINDOW)) {
 	SYNC_CHECK(pDrawable);
     }
     (*pScreen->GetImage) (pDrawable, sx, sy, w, h,
@@ -263,7 +264,8 @@ XAAGetSpans (
 {
     ScreenPtr	    pScreen = pDrawable->pScreen;
     XAA_SCREEN_PROLOGUE (pScreen, GetSpans);
-    if(xf86Screens[pScreen->myNum]->vtSema && (pDrawable->type == DRAWABLE_WINDOW)) {
+    if(xf86Screens[pScreen->myNum]->vtSema && 
+		(pDrawable->type == DRAWABLE_WINDOW)) {
 	SYNC_CHECK(pDrawable);
     }
     (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
@@ -311,9 +313,27 @@ XAASaveAreas (
     int       xorg,
     int       yorg,
     WindowPtr pWin
-)
-{
+){
     ScreenPtr pScreen = pPixmap->drawable.pScreen;
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+
+    if(xf86Screens[pScreen->myNum]->vtSema && infoRec->ReadPixmap) {
+	BoxPtr pbox = REGION_RECTS(prgnSave);
+	int nboxes = REGION_NUM_RECTS(prgnSave);
+	int Bpp =  pPixmap->drawable.bitsPerPixel >> 3;
+	unsigned char *dstp = (unsigned char*)pPixmap->devPrivate.ptr;
+
+	while(nboxes--) {
+	    (*infoRec->ReadPixmap)(infoRec->pScrn,
+		pbox->x1 + xorg, pbox->y1 + yorg, 
+		pbox->x2 - pbox->x1, pbox->y2 - pbox->y1, 
+		dstp + (pPixmap->devKind * pbox->y1) + (pbox->x1 * Bpp),
+		pPixmap->devKind,
+		pPixmap->drawable.bitsPerPixel, pPixmap->drawable.depth);
+	    pbox++;
+	}
+	return;
+    }
     
     XAA_SCREEN_PROLOGUE (pScreen, BackingStoreFuncs.SaveAreas);
     if(xf86Screens[pScreen->myNum]->vtSema) {
@@ -332,9 +352,30 @@ XAARestoreAreas (
     RegionPtr prgnRestore,
     int       xorg,
     int       yorg,
-    WindowPtr pWin )
-{
+    WindowPtr pWin 
+){
     ScreenPtr pScreen = pPixmap->drawable.pScreen;
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+
+    if(xf86Screens[pScreen->myNum]->vtSema && infoRec->WritePixmap &&
+			!(infoRec->WritePixmapFlags & NO_GXCOPY)) {
+	BoxPtr pbox = REGION_RECTS(prgnRestore);
+	int nboxes = REGION_NUM_RECTS(prgnRestore);
+	int Bpp =  pPixmap->drawable.bitsPerPixel >> 3;
+	unsigned char *srcp = (unsigned char*)pPixmap->devPrivate.ptr;
+
+	while(nboxes--) {
+	    (*infoRec->WritePixmap)(infoRec->pScrn, pbox->x1, pbox->y1, 
+		pbox->x2 - pbox->x1, pbox->y2 - pbox->y1, 
+		srcp + (pPixmap->devKind * (pbox->y1 - yorg)) + 
+				((pbox->x1 - xorg) * Bpp), 
+		pPixmap->devKind, GXcopy, ~0, -1, 
+		pPixmap->drawable.bitsPerPixel, pPixmap->drawable.depth);
+	    pbox++;
+	}
+	return;
+    }
+
 
     XAA_SCREEN_PROLOGUE (pScreen, BackingStoreFuncs.RestoreAreas);
     if(xf86Screens[pScreen->myNum]->vtSema) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.18 1998/07/25 16:56:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.19 1998/08/02 05:17:02 dawes Exp $ */
 
 
 
@@ -501,7 +501,7 @@ tseng_init_clockscale(TsengPtr pTseng)
 
     /* nothing to do for 1:1 modes */
     if (pTseng->Bytesperpixel <= 1)
-	return;
+	return;          /* FIXME: should we not do something for 8bpp PIXMUX modes here? */
     if (Is_ET6K)
 	return;
     /* 16-bit ET4000W32p RAMDACs need different treatment than 8-bitters */
@@ -520,12 +520,15 @@ tseng_init_clockscale(TsengPtr pTseng)
     /* 8-bit RAMDACs */
     pTseng->DacInfo.ClockMulFactor = pTseng->Bytesperpixel;	/* 8-bit RAMDAC */
 
+    ErrorF("	tseng_init_clockscale: %d/%d\n",
+        pTseng->DacInfo.ClockMulFactor, pTseng->DacInfo.ClockDivFactor);
     return;
 }
 
 void
 tseng_set_dacspeed(ScrnInfoPtr pScrn)
 {
+    MessageType from;
     TsengPtr pTseng = TsengPTR(pScrn);
 
     /*
@@ -544,18 +547,16 @@ tseng_set_dacspeed(ScrnInfoPtr pScrn)
      * page-mode memory requests.
      */
 
-    int mem_bw;			       /* memory bandwidth */
-    int local_bytesperpixel = pTseng->Bytesperpixel;
+    int dacspeed, mem_bw;
 
     ErrorF("	tseng_set_dacspeed\n");
 
-    /* kludge for 1 and 4bpp modes */
-    if (pTseng->Bytesperpixel < 1)
-	local_bytesperpixel = 1;
+    /* Set the min pixel clock */
+    pTseng->MinClock = 12000;	       /* XXX Guess, need to check this */
 
     /*
-     * First, determine if we can use pixel multiplexing. This will have
-     * impact on the max allowed pixelclock.
+     * For the max pixel clock, we first determine if we can use pixel
+     * multiplexing. This will have impact on the max allowed pixelclock.
      */
 
     switch (pTseng->DacInfo.DacType) {
@@ -568,13 +569,41 @@ tseng_set_dacspeed(ScrnInfoPtr pScrn)
 	    pTseng->DacInfo.pixMuxPossible = TRUE;
 	    pTseng->DacInfo.nonMuxMaxClock = MAX_TSENG_CLOCK;	/* or 75000 ? */
 	}
+	break;
     default:
 	pTseng->DacInfo.pixMuxPossible = FALSE;
 	pTseng->DacInfo.nonMuxMaxClock = MAX_TSENG_CLOCK;
     }
 
-    /* if not set in the XF86Config file, use defaults */
-    if (pScrn->device->dacSpeeds[0] <= 0) {
+    /*
+     * If the user has specified ramdac speed in the XF86Config
+     * file, we respect that setting.
+     */
+    if (pScrn->device->dacSpeeds[0]) {
+	from = X_CONFIG;
+	switch (pScrn->bitsPerPixel) {
+	default:
+	case 1:
+	case 4:
+	case 8:
+	    dacspeed = pScrn->device->dacSpeeds[DAC_BPP8];
+	    break;
+	case 16:
+	    dacspeed = pScrn->device->dacSpeeds[DAC_BPP16];
+	    break;
+	case 24:
+	    dacspeed = pScrn->device->dacSpeeds[DAC_BPP24];
+	    break;
+	case 32:
+	    dacspeed = pScrn->device->dacSpeeds[DAC_BPP32];
+	    break;
+	}
+	/* if a bpp-specific DacSpeed is not defined, use the "default" one (=8bpp) */
+	if (dacspeed == 0)
+	    dacspeed = pScrn->device->dacSpeeds[0];
+    } else {
+	/* first the RAMDAC-related limits */
+	from = X_PROBED;
 	switch (pTseng->DacInfo.DacType) {
 	case CH8398_DAC:
 	case ICS5341_DAC:
@@ -582,34 +611,21 @@ tseng_set_dacspeed(ScrnInfoPtr pScrn)
 	case STG1702_DAC:
 	case STG1703_DAC:
 	    if (pTseng->DacInfo.pixMuxPossible)
-		pScrn->device->dacSpeeds[0] = 135000;
+		dacspeed = 135000;
 	    else
-		pScrn->device->dacSpeeds[0] = MAX_TSENG_CLOCK;
+		dacspeed = MAX_TSENG_CLOCK;
 	    break;
 	case ET6000_DAC:
 	    if (Is_ET6000)
-		pScrn->device->dacSpeeds[0] = 135000;
+		dacspeed = 135000;
 	    else
-		pScrn->device->dacSpeeds[0] = 175000;
+		dacspeed = 175000;
 	    break;
 	default:
-	    pScrn->device->dacSpeeds[0] = MAX_TSENG_CLOCK;
+	    dacspeed = MAX_TSENG_CLOCK;
 	}
-    }
-    if (!Is_ET6K) {
-	mem_bw = 90000;
-	if (pScrn->videoRam > 1024)
-	    mem_bw = 150000;	       /* interleaved DRAM gives 70% more bandwidth */
-
-	/* note that the vga code will scale the maxclock using
-	 * ClockMulFactor and ClockDivFactor, so we have to take this into
-	 * account here.
-	 */
-	pTseng->MaxClock =
-	    min(pScrn->device->dacSpeeds[0],
-	    ((mem_bw / local_bytesperpixel) * pTseng->DacInfo.ClockMulFactor) / pTseng->DacInfo.ClockDivFactor);
-    } else {
-	/* According to Tseng (about the ET6000):
+	/* ... and now take memory bandwidth into account:
+	 * According to Tseng (about the ET6000):
 	 * "Besides the 135 MHz maximum pixel clock frequency, the other limit has to
 	 * do with where you get FIFO breakdown (usually appears as stray horizontal
 	 * lines on the screen). Assuming the accelerator is running steadily doing a
@@ -620,98 +636,32 @@ tseng_set_dacspeed(ScrnInfoPtr pScrn)
 	 * or 014h (depending on the type of MDRAM chips). Also, the FIFO low
 	 * threshold control bit (bit 4 of CFG 41) should be set for modes where
 	 * pixel_clock*(bytes/pixel) > 130 MHz . These limits are for the
-	 * current ET6000 chips. An upcoming revision of the ET6000 [scheduled
-	 * for q3, the ET6100] will raise the pixel clock limit to 175 MHz and
-	 * the pixel_clock*(bytes/pixel) FIFO breakdown limit to about 275 MHz."
+	 * current ET6000 chips. The ET6100 will raise the pixel clock limit
+	 * to 175 MHz and the pixel_clock*(bytes/pixel) FIFO breakdown limit
+	 * to about 275 MHz."
 	 */
-	if (Is_ET6100)		       /* ET6100 */
-	    mem_bw = 280000;	       /* 275000 is _just_ not enough for 1152x864x24 @ 70Hz */
-	else			       /* ET6000 */
-	    mem_bw = 225000;
-	pTseng->MaxClock = min(pScrn->device->dacSpeeds[0], mem_bw / local_bytesperpixel);
-    }
-
-    if (pScrn->device->dacSpeeds[local_bytesperpixel - 1] > 0)
-	pTseng->MaxClock = pScrn->device->dacSpeeds[local_bytesperpixel - 1];
-
-    /* Check that maxClock is not higher than dacSpeed */
-    if (pTseng->MaxClock > pScrn->device->dacSpeeds[0])
-	pTseng->MaxClock = pScrn->device->dacSpeeds[0];
-
-}
-
-void
-tseng_validate_mode(ScrnInfoPtr pScrn, DisplayModePtr mode, Bool verbose)
-{
-    int pixel_clock;
-    int data_clock;
-    int hdiv = 1, hmul = 1;
-    TsengPtr pTseng = TsengPTR(pScrn);
-
-    /*
-     * A true weirdness is that in ET4000Init(), mode->Clock points to the
-     * clock _index_ in the array of clocks (usually 2 for a programmable
-     * clock), while in ET4000Validate() mode->Clock is the actual pixel
-     * clock (in kHZ). In other words, in ET4000Init() you need to use
-     * pScrn->clocks[mode->Clock] to access the clock frequency, while
-     * in ET4000Validate(), mode->Clock is enough.
-     */
-    pixel_clock = pScrn->clock[mode->Clock];
-    data_clock = (pixel_clock * pTseng->DacInfo.ClockMulFactor) / pTseng->DacInfo.ClockDivFactor;
-
-    /*
-     * For programmable clocks, fill in the SynthClock value
-     * and set V_DBLCLK as required for each mode
-     */
-
-    if (pScrn->progClock) {
-	mode->SynthClock = data_clock;
-    }
-    /* nothing more to do for 1 or 4 bpp (pixmux doesn't work anyway) */
-    if (pTseng->Bytesperpixel < 1)
-	return;
-
-    /*
-     * define hdiv and hmul depending on mode, pixel multiplexing and ramdac type
-     */
-    if (mode->Flags & V_PIXMUX) {
-	hdiv *= 2;
-    }
-    hmul *= pTseng->DacInfo.ClockMulFactor;
-    hdiv *= pTseng->DacInfo.ClockDivFactor;
-
-    /*
-     * Modify mode timings accordingly
-     */
-    if (!mode->CrtcHAdjusted) {
-	/* now divide and multiply the horizontal timing parameters as required */
-	mode->CrtcHTotal = (mode->CrtcHTotal * hmul) / hdiv;
-	mode->CrtcHDisplay = (mode->CrtcHDisplay * hmul) / hdiv;
-	mode->CrtcHSyncStart = (mode->CrtcHSyncStart * hmul) / hdiv;
-	mode->CrtcHSyncEnd = (mode->CrtcHSyncEnd * hmul) / hdiv;
-	mode->CrtcHSkew = (mode->CrtcHSkew * hmul) / hdiv;
-	if (pTseng->Bytesperpixel == 3) {
-	    int rgb_skew;
-
-	    /*
-	     * in 24bpp, the position of the BLANK signal determines the
-	     * phase of the R,G and B values. XFree86 sets blanking equal to
-	     * the Sync, so setting the Sync correctly will also set the
-	     * BLANK corectly, and thus also the RGB phase
-	     */
-	    rgb_skew = (mode->CrtcHTotal / 8 - mode->CrtcHSyncEnd / 8 - 1) % 3;
-	    mode->CrtcHSyncEnd += rgb_skew * 8 + 24;
-	    /* HSyncEnd must come BEFORE HTotal */
-	    if (mode->CrtcHSyncEnd > mode->CrtcHTotal)
-		mode->CrtcHSyncEnd -= 24;
-	    /*
-	     * HSyncEnd could now have been moved BEFORE HSyncStart,
-	     * but if that happens, it means you had a sync of only 8
-	     * clocks long. This should not happen
-	     */
+	if (Is_ET6100) {
+		mem_bw = 280000;               /* 275000 is _just_ not enough for 1152x864x24 @ 70Hz */
+	} else if (Is_ET6000) {
+		mem_bw = 225000;
+	} else {
+	    mem_bw = 90000;
+	    if (pScrn->videoRam > 1024)
+		mem_bw = 150000;               /* interleaved DRAM gives 70% more bandwidth */
 	}
-	mode->CrtcHAdjusted = TRUE;
+	/* note that the vga code will scale the maxclock using
+	 * ClockMulFactor and ClockDivFactor, so we have to take this into
+	 * account here.
+	 */
+	pTseng->MaxClock =
+	    min(dacspeed,
+	    ((mem_bw / pTseng->Bytesperpixel) * pTseng->DacInfo.ClockMulFactor) / pTseng->DacInfo.ClockDivFactor);
     }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
+	pTseng->MinClock / 1000);
+    xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
+	pTseng->MaxClock / 1000);
 }
 
 /*
@@ -727,7 +677,7 @@ tseng_validate_mode(ScrnInfoPtr pScrn, DisplayModePtr mode, Bool verbose)
  */
 static unsigned char CMD_GENDAC[] =
 {0x00, 0x20, 0x60, 0x40, 0xFF,
-	 /* gendac and ICS53x1 */ 0x10, 0x30, 0x50, 0x90, 0x70};
+    0x10, 0x30, 0x50, 0x90, 0x70};
 
 static unsigned char CMD_STG170x[] =
 {0x00, 0x08, 0xFF, 0xFF, 0xFF,
@@ -761,23 +711,20 @@ tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, DisplayModePtr mode)
     unsigned char *cmd_dest = NULL;
     int index, dataclock;
     TsengPtr pTseng = TsengPTR(pScrn);
-    int local_bytesperpixel = pTseng->Bytesperpixel;
-
-    if (pTseng->Bytesperpixel < 1)
-	local_bytesperpixel = 1;       /* for 1 and 4bpp */
 
     rgb555 = (pScrn->weight.red == 5 && pScrn->weight.green == 5
-        && pScrn->weight.blue == 5);  /* rgb565 otherwise */
+	&& pScrn->weight.blue == 5);  /* rgb565 otherwise */
     
     /* This is not the good way to find out if we're in 8- or 16-bit RAMDAC
-     * mode It should rather be passed on from the tseng_validate_mode() code.
-     * Right now it'd better agree with what tseng_validate_mode() proposed.
+     * mode It should rather be passed on from the TsengValidMode() code.
+     * Right now it'd better agree with what TsengValidMode() proposed. FIXME
      */
-    dac16bit = (pTseng->DacInfo.DacPort16) && ((local_bytesperpixel > 1) || (mode->Flags & V_PIXMUX));
+    dac16bit = (pTseng->DacInfo.DacPort16)
+	   && ((pTseng->Bytesperpixel > 1) || (mode->Flags & V_PIXMUX));
 
     pTseng->ModeReg.ExtATC &= 0xCF;    /* ATC index 0x16 -- bits-per-PCLK */
     if (Is_ET6K)
-	pTseng->ModeReg.ExtATC |= (local_bytesperpixel - 1) << 4;
+	pTseng->ModeReg.ExtATC |= (pTseng->Bytesperpixel - 1) << 4;
     else if (dac16bit)
 	pTseng->ModeReg.ExtATC |= 0x20;
 
@@ -794,7 +741,7 @@ tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, DisplayModePtr mode)
     case STG1703_DAC:
 	pTseng->ModeReg.pll.cmd_reg &= 0x04;	/* keep 7.5 IRE setup setting */
 	pTseng->ModeReg.pll.cmd_reg |= 0x18;	/* enable ext regs and pixel modes */
-	switch (local_bytesperpixel) {
+	switch (pTseng->Bytesperpixel) {
 	case 2:
 	    if (rgb555)
 		pTseng->ModeReg.pll.cmd_reg |= 0xA0;
@@ -844,7 +791,7 @@ tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     if (cmd_array != NULL) {
-	switch (local_bytesperpixel) {
+	switch (pTseng->Bytesperpixel) {
 	default:
 	case 1:
 	    index = 0;

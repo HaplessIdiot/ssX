@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.1.2.3 1998/07/18 17:54:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.2 1998/07/25 16:57:19 dawes Exp $ */
 
 #ifndef _XF86RAMDAC_H
 #define _XF86RAMDAC_H 1
@@ -13,12 +13,12 @@
 #define PERSCREEN 1
 
 typedef struct _RamDacRegRec {
-/* This is probably the nastiest assumption, we allocate 256 slots for
+/* This is probably the nastiest assumption, we allocate 1024 slots for
  * ramdac registers, should be enough. I've checked IBM and TVP series 
  * and they seem o.k 
  * Then we allocate 768 entries for the DAC - this is standard though.
  */
-    unsigned short DacRegs[0x100];	/* register set */
+    unsigned short DacRegs[0x400];	/* register set */
     unsigned char DAC[0x300];		/* colour map */
 } RamDacRegRec, *RamDacRegRecPtr;
 
@@ -28,21 +28,23 @@ typedef struct _RamDacHWRegRec {
 } RamDacHWRec, *RamDacHWRecPtr;
 
 typedef struct _RamDacRec {
+    CARD32 RamDacType;
+
     unsigned char (*ReadDAC)(
 	ScrnInfoPtr pScrn,
-	unsigned char
+	CARD32
     );
 
     void (*WriteDAC)(
 	ScrnInfoPtr pScrn,
-	unsigned char,
+	CARD32,
 	unsigned char,
 	unsigned char
     );
 
     void (*WriteAddress)(
 	ScrnInfoPtr pScrn,
-	unsigned char
+	CARD32
     );
 
     void (*WriteData)(
@@ -52,7 +54,7 @@ typedef struct _RamDacRec {
 
     void (*ReadAddress)(
 	ScrnInfoPtr pScrn,
-	unsigned char
+	CARD32
     );
 
     unsigned char (*ReadData)(

@@ -24,7 +24,7 @@
  * Permedia2OutIndReg() and Permedia2InIndReg() are used to access 
  * the indirect Permedia2 RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.2 1998/07/25 16:55:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.3 1998/07/31 10:41:22 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,7 +38,7 @@
 
 void
 Permedia2OutIndReg(ScrnInfoPtr pScrn,
-		     unsigned char reg, unsigned char mask, unsigned char data)
+		     CARD32 reg, unsigned char mask, unsigned char data)
 {
   GLINTPtr pGlint = GLINTPTR(pScrn);
   unsigned char tmp = 0x00;
@@ -52,7 +52,7 @@ Permedia2OutIndReg(ScrnInfoPtr pScrn,
 }
 
 unsigned char
-Permedia2InIndReg (ScrnInfoPtr pScrn, unsigned char reg)
+Permedia2InIndReg (ScrnInfoPtr pScrn, CARD32 reg)
 {
   GLINTPtr pGlint = GLINTPTR(pScrn);
   unsigned char ret;
@@ -64,7 +64,7 @@ Permedia2InIndReg (ScrnInfoPtr pScrn, unsigned char reg)
 }
 
 void
-Permedia2WriteAddress (ScrnInfoPtr pScrn, unsigned char index)
+Permedia2WriteAddress (ScrnInfoPtr pScrn, CARD32 index)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
@@ -80,7 +80,7 @@ Permedia2WriteData (ScrnInfoPtr pScrn, unsigned char data)
 }
 
 void
-Permedia2ReadAddress (ScrnInfoPtr pScrn, unsigned char index)
+Permedia2ReadAddress (ScrnInfoPtr pScrn, CARD32 index)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     

@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/63 1997/11/24 16:48:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.20 1998/04/05 02:28:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.21 1998/07/25 08:48:36 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -71,8 +71,8 @@ XF86MISCOBJS = xf86misc.o
 	      $(APPGROUPOBJS) xprint.o $(DPMSOBJS) $(XVOBJS)
 
 XF86INCLUDES = -I$(XF86COMSRC)
-    INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) $(PNRXINCLUDES) \
-		$(XF86INCLUDES)
+    INCLUDES = -I. -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
+		$(PNRXINCLUDES) $(XF86INCLUDES)
     LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
 NormalLibraryObjectRule()

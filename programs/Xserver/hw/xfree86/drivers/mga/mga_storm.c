@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.17 1998/07/31 10:41:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.18 1998/08/02 05:16:59 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -72,6 +72,9 @@ static void MGANAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 static void MGANAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
 				int srcx, int srcy, int skipleft);
+static void MGANAME(SetupForImageRead)(ScrnInfoPtr pScrn, int bpp, int depth);
+static void MGANAME(SubsequentImageReadRect)(ScrnInfoPtr pScrn,
+				int x, int y, int w, int h);  
 
 extern void MGAWriteBitmapColorExpand(ScrnInfoPtr pScrn, int x, int y,
 				int w, int h, unsigned char *src, int srcwidth,
@@ -80,6 +83,7 @@ extern void MGAWriteBitmapColorExpand(ScrnInfoPtr pScrn, int x, int y,
 extern void MGAFillColorExpandRects(ScrnInfoPtr pScrn, int fg, int bg, int rop,
 				unsigned int planemask, int nBox, BoxPtr pBox,
 				int xorg, int yorg, PixmapPtr pPix);
+
 
 Bool
 MGANAME(AccelInit)(ScreenPtr pScreen) 
@@ -145,6 +149,8 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 		MGANAME(SubsequentMono8x8PatternFillTrap);
 
     /* cpu to screen color expansion */
+    /* NOTE: don't disable this without disabling WriteBitmap and
+		FillColorExpandRects */
     infoPtr->CPUToScreenColorExpandFillFlags = 	CPU_TRANSFER_PAD_DWORD |
 					SCANLINE_PAD_DWORD |
 					BIT_ORDER_IN_BYTE_LSBFIRST |
@@ -176,6 +182,16 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->ImageWriteBase = pMga->IOBase;
     infoPtr->SetupForImageWrite = MGANAME(SetupForImageWrite);
     infoPtr->SubsequentImageWriteRect = MGANAME(SubsequentImageWriteRect);
+
+#if 0
+    /* image reads */
+    infoPtr->ImageReadFlags = 	CPU_TRANSFER_PAD_DWORD |
+				SCANLINE_PAD_DWORD;
+    infoPtr->ImageReadRange = 0x1C00;
+    infoPtr->ImageReadBase = pMga->IOBase;
+    infoPtr->SetupForImageRead = MGANAME(SetupForImageRead);
+    infoPtr->SubsequentImageReadRect = MGANAME(SubsequentImageReadRect);
+#endif
 
     /* midrange replacements */
 
@@ -266,8 +282,7 @@ MGAStormSync(ScrnInfoPtr pScrn)
     MGAPtr pMga = MGAPTR(pScrn);
     
     if(pMga->AccelFlags & CLIPPER_ON) {
-	OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);
-    	pMga->AccelFlags &= ~CLIPPER_ON;
+	DISABLE_CLIP();
     } else while(MGAISBUSY());
 
     /* flush cache before a read (mga-1064g 5.1.6) */
@@ -295,11 +310,16 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
         break;
     }
     
-    WAITFIFO(8);
+    WAITFIFO(10);
     OUTREG(MGAREG_PITCH, pScrn->displayWidth);
     OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
     OUTREG(MGAREG_MACCESS, maccess);
-    OUTREG(MGAREG_PLNWT, ~0);
+    pMga->PlaneMask = ~0;
+    OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
+    pMga->FgColor = 1;
+    OUTREG(MGAREG_FCOL, pMga->FgColor);
+    pMga->BgColor = 0;
+    OUTREG(MGAREG_BCOL, pMga->BgColor);
     OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
 
     /* put clipping in a know state */
@@ -331,7 +351,6 @@ MGANAME(SetupForScreenToScreenCopy)(
 
     pMga->AccelInfoRec->SubsequentScreenToScreenCopy = 
 		MGANAME(SubsequentScreenToScreenCopy);
-    REPLICATE(planemask);
     pMga->BltScanDirection = 0;
     if(ydir == -1) pMga->BltScanDirection |= BLIT_UP;
     WAITFIFO(4); 
@@ -347,9 +366,7 @@ MGANAME(SetupForScreenToScreenCopy)(
 			MGADWG_BITBLT | MGADWG_BFCOL);
     }
     OUTREG(MGAREG_SGN, pMga->BltScanDirection);
-#if PSZ != 24
-    OUTREG(MGAREG_PLNWT, planemask);
-#endif
+    SET_PLANEMASK(planemask);
     OUTREG(MGAREG_AR5, ydir * pScrn->displayWidth);
 }
 
@@ -499,13 +516,9 @@ MGANAME(SetupForSolidFill)(
     if(pMga->AccelFlags & TRANSC_SOLID_FILL) 
 	pMga->FilledRectCMD |= MGADWG_TRANSC;
 
-    REPLICATE24(color);
-    REPLICATE(planemask);
     WAITFIFO(3);
-    OUTREG(MGAREG_FCOL, color);
-#if PSZ != 24
-    OUTREG(MGAREG_PLNWT, planemask);
-#endif
+    SET_FOREGROUND(color);
+    SET_PLANEMASK(planemask);
     OUTREG(MGAREG_DWGCTL, pMga->FilledRectCMD);
 }    
 
@@ -599,9 +612,6 @@ MGANAME(SetupForMono8x8PatternFill)(
 
     infoRec->SubsequentMono8x8PatternFillRect = 
 		MGANAME(SubsequentMono8x8PatternFillRect);
-
-    REPLICATE24(fg);
-    REPLICATE(planemask);
     
     if(bg == -1) {
 #if PSZ == 24
@@ -621,15 +631,12 @@ MGANAME(SetupForMono8x8PatternFill)(
         	pMga->PatternRectCMD |= MGAAtype[rop];
 	else
         	pMga->PatternRectCMD |= MGAAtypeNoBLK[rop];
-        REPLICATE24(bg);
 	WAITFIFO(6);
-    	OUTREG(MGAREG_BCOL, bg);
+    	SET_BACKGROUND(bg);
     }
 
-    OUTREG(MGAREG_FCOL, fg);
-#if PSZ != 24
-    OUTREG(MGAREG_PLNWT, planemask);
-#endif
+    SET_FOREGROUND(fg);
+    SET_PLANEMASK(planemask);
     OUTREG(MGAREG_DWGCTL, pMga->PatternRectCMD);
     OUTREG(MGAREG_PAT0, patx);
     OUTREG(MGAREG_PAT1, paty);
@@ -714,9 +721,6 @@ MGANAME(SetupForCPUToScreenColorExpandFill)(
     CARD32 mgaCMD = MGADWG_ILOAD | MGADWG_LINEAR | MGADWG_SGNZERO | 
 			MGADWG_SHIFTZERO | MGADWG_BMONOLEF;
         
-    REPLICATE24(fg);
-    REPLICATE(planemask);
-
     if(bg == -1) {
 #if PSZ == 24
     	if(!RGBEQUAL(fg))
@@ -736,15 +740,12 @@ MGANAME(SetupForCPUToScreenColorExpandFill)(
         	mgaCMD |= MGAAtype[rop];
 	else
         	mgaCMD |= MGAAtypeNoBLK[rop];
-        REPLICATE24(bg);
 	WAITFIFO(4);
-    	OUTREG(MGAREG_BCOL, bg);
+    	SET_BACKGROUND(bg);
     }
 
-    OUTREG(MGAREG_FCOL, fg);
-#if PSZ != 24
-    OUTREG(MGAREG_PLNWT, planemask);
-#endif
+    SET_FOREGROUND(fg);
+    SET_PLANEMASK(planemask);
     OUTREG(MGAREG_DWGCTL, mgaCMD);
 }       
 
@@ -780,12 +781,9 @@ static void MGANAME(SetupForImageWrite)(
 ){
     MGAPtr pMga = MGAPTR(pScrn);
 
-    REPLICATE(planemask);
     WAITFIFO(3);
     OUTREG(MGAREG_AR5, 0);
-#if PSZ != 24
-    OUTREG(MGAREG_PLNWT, planemask);
-#endif
+    SET_PLANEMASK(planemask);
     OUTREG(MGAREG_DWGCTL, MGADWG_ILOAD | MGADWG_BFCOL | MGADWG_SHIFTZERO |
 			MGADWG_SGNZERO | MGAAtypeNoBLK[rop]);
 }
@@ -808,6 +806,36 @@ static void MGANAME(SubsequentImageWriteRect)(
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
+	/*****************\
+	|   Image Reads   |
+	\*****************/
+
+static void MGANAME(SetupForImageRead)(
+    ScrnInfoPtr pScrn, 
+    int bpp, int depth
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+    WAITFIFO(2);
+    OUTREG(MGAREG_AR5, pScrn->displayWidth);
+    OUTREG(MGAREG_DWGCTL, MGADWG_IDUMP | MGADWG_BU32RGB | MGADWG_SHIFTZERO |
+			MGADWG_SGNZERO | 0x000c0000);
+}
+static void MGANAME(SubsequentImageReadRect)(
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+    int start = XYADDRESS(x, y);
+
+    WAITFIFO(6);
+    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_GENERAL);
+    OUTREG(MGAREG_AR0, start + w - 1);
+    OUTREG(MGAREG_AR3, start);
+    OUTREG(MGAREG_FXBNDRY, (w - 1) << 16);
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
+    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
+} 
+
 	/***********************************\
 	|  Screen to Screen Color Expansion |
 	\***********************************/
@@ -823,9 +851,6 @@ MGANAME(SetupForScreenToScreenColorExpandFill)(
     MGAPtr pMga = MGAPTR(pScrn);
     CARD32 mgaCMD = MGADWG_BITBLT | MGADWG_SGNZERO | MGADWG_SHIFTZERO;
         
-    REPLICATE24(fg);
-    REPLICATE(planemask);
-
     if(bg == -1) {
 #if PSZ == 24
     	if(!RGBEQUAL(fg))
@@ -845,15 +870,12 @@ MGANAME(SetupForScreenToScreenColorExpandFill)(
         	mgaCMD |= MGAAtype[rop];
 	else
         	mgaCMD |= MGAAtypeNoBLK[rop];
-        REPLICATE24(bg);
 	WAITFIFO(5);
-    	OUTREG(MGAREG_BCOL, bg);
+    	SET_BACKGROUND(bg);
     }
 
-    OUTREG(MGAREG_FCOL, fg);
-#if PSZ != 24
-    OUTREG(MGAREG_PLNWT, planemask);
-#endif
+    SET_FOREGROUND(fg);
+    SET_PLANEMASK(planemask);
     OUTREG(MGAREG_AR5, pScrn->displayWidth * PSZ);
     OUTREG(MGAREG_DWGCTL, mgaCMD);
 
@@ -928,7 +950,8 @@ MGAWriteBitmapColorExpand(
     CARD32* maxptr;
     int dwords, maxlines, count;
 
-    (*infoRec->SetupForCPUToScreenColorExpandFill)(pScrn, fg, bg, rop, planemask);
+    (*infoRec->SetupForCPUToScreenColorExpandFill)(
+				pScrn, fg, bg, rop, planemask);
 
     w += skipleft;
     x -= skipleft;
@@ -950,7 +973,8 @@ MGAWriteBitmapColorExpand(
 	y += maxlines;
     }
     	
-    (*infoRec->SubsequentCPUToScreenColorExpandFill)(pScrn, x, y, w, h, skipleft);
+    (*infoRec->SubsequentCPUToScreenColorExpandFill)(
+				pScrn, x, y, w, h, skipleft);
 
     while(h--) {
 	destptr = MoveDWORDS(destptr, (CARD32*)src, dwords);
@@ -958,11 +982,8 @@ MGAWriteBitmapColorExpand(
 	if(destptr > maxptr) 
 		destptr = (CARD32*)infoRec->ColorExpandBase;
     }
-
-    pMga->AccelFlags &= ~CLIPPER_ON;
-    WAITFIFO(1);
-    OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);
-    infoRec->NeedToSync = TRUE;
+    DISABLE_CLIP();
+    SET_SYNC_FLAG(infoRec);
 }
 
 
@@ -995,7 +1016,8 @@ MGAFillColorExpandRects(
     } else
     	StippleFunc = XAAStippleScanlineFuncLSBFirst[2];
 
-    (*infoRec->SetupForCPUToScreenColorExpandFill)(pScrn, fg, bg, rop, planemask);
+    (*infoRec->SetupForCPUToScreenColorExpandFill)(
+				pScrn, fg, bg, rop, planemask);
 
     while(nBox--) {
 	dwords = (pBox->x2 - pBox->x1 + 31) >> 5;
@@ -1050,8 +1072,7 @@ MGAFillColorExpandRects(
 
 	pBox++;
     }
-    WAITFIFO(1);
-    OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);
+    DISABLE_CLIP();
     SET_SYNC_FLAG(infoRec);
 }
 

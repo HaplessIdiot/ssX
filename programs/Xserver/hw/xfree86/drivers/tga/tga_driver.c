@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.1.2.3 1998/07/19 14:10:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.2 1998/07/25 16:55:58 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -29,7 +29,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
-
+#include "micmap.h"
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
@@ -644,15 +644,8 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	    }
             TGAMapMem(pScrn);
-#if 0
 	    pTga->RamDac = BTramdacProbe(pScrn, BTramdacs);
-#else
-	    /* We force a BT485 ramdac for now ! */
-	    pTga->RamDac = BT485_RAMDAC;
-#endif
-ErrorF("1\n");
             TGAUnmapMem(pScrn);
-ErrorF("2\n");
 	    if (pTga->RamDac == -1)
 		return FALSE;
 	    break;
@@ -660,7 +653,6 @@ ErrorF("2\n");
 
     /* XXX Set HW cursor use */
 
-ErrorF("3\n");
     /* Set the min pixel clock */
     pTga->MinClock = 16250;	/* XXX Guess, need to check this */
     xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
@@ -795,12 +787,14 @@ ErrorF("3\n");
 	return FALSE;
     }
 
+#if 0
     /* Load XAA if needed */
     if (!pTga->NoAccel || pTga->HWCursor)
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    TGAFreeRec(pScrn);
 	    return FALSE;
 	}
+#endif
 
     return TRUE;
 }
@@ -916,9 +910,7 @@ TGAUnmapMem(ScrnInfoPtr pScrn)
 #endif
 
 #ifdef __alpha__
-ErrorF("31\n");
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->IOBaseDense, 0x10000);
-ErrorF("41\n");
     pTga->IOBaseDense = NULL;
 #endif /* __alpha__ */
 
@@ -1093,24 +1085,30 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /*
      * Reset cfb's visual list.
      */
-    cfbClearVisualTypes();
+    miClearVisualTypes();
 
     /* Setup the visuals we support. */
 
     /*
      * For bpp > 8, the default visuals are not acceptable because we only
      * support TrueColor and not DirectColor.  To deal with this, call
-     * cfbSetVisualTypes for each visual supported.
+     * miSetVisualTypes for each visual supported.
      */
 
     if (pScrn->bitsPerPixel > 8) {
-	if (!cfbSetVisualTypes(pScrn->depth, 1 << TrueColor, pScrn->rgbBits))
+	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
+				pScrn->defaultVisual))
+	    return FALSE;
+    } else {
+	if (!miSetVisualTypes(pScrn->depth,
+			      miGetDefaultVisualMask(pScrn->depth),
+			      pScrn->rgbBits, pScrn->defaultVisual))
 	    return FALSE;
     }
 
     /*
      * Temporarily set the global defaultColorVisualClass to make
-     * cfbInitVisuals do what we want.
+     * miInitVisuals do what we want.
      */
     savedDefaultVisualClass = xf86GetDefaultColorVisualClass();
     xf86SetDefaultColorVisualClass(pScrn->defaultVisual);
@@ -1156,6 +1154,7 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		visual->blueMask = pScrn->mask.blue;
 	    }
 	}
+	RamDacSetGamma(pScrn, TRUE);
     }
 
     if (!pTga->NoAccel) {
@@ -1170,15 +1169,10 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* Initialise cursor functions */
-    if (pTga->HWCursor && 0) {
-	/* Initialise HW cursor functions */
-    } else {
-	/* SW cursor */
-	miDCInitialize (pScreen,
-			(miPointerScreenFuncPtr)xf86GetPointerScreenFuncs());
-    }
+    miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
+
     /* Initialise default colourmap */
-    if (!cfbCreateDefColormap(pScreen))
+    if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
     pTga->CloseScreen = pScreen->CloseScreen;
@@ -1267,6 +1261,7 @@ TGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     TGAPtr pTga = TGAPTR(pScrn);
 
     TGARestore(pScrn);
+    xf86memset(pTga->FbBase, 0, pScrn->videoRam * 1024);
     TGAUnmapMem(pScrn);
     if(pTga->AccelInfoRec)
 	XAADestroyInfoRec(pTga->AccelInfoRec);

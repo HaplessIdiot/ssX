@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaHardCurs.c,v 1.1.2.2 1998/07/11 13:52:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaHardCurs.c,v 1.2 1998/07/25 16:58:46 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -190,15 +190,6 @@ RealizeCursorInterleave0(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
 	}
     }
 
-    if(infoPtr->Flags & HARDWARE_CURSOR_INVERT_MASK) {
-	int count = dwords;
-	CARD32* pntr = DstM;
-	while(count--) {
-	   *pntr = ~(*pntr);
-	    pntr++;
-	}
-    }
-
     if(infoPtr->Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK) {
 	int count = dwords;
 	CARD32* pntr = DstS;
@@ -206,6 +197,19 @@ RealizeCursorInterleave0(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
 	while(count--) {
 	   *pntr &= *pntr2;
 	    pntr++; pntr2++;
+	}
+    }
+
+    /*
+     * Must be _after_ HARDWARE_CURSOR_AND_SOURCE_WITH_MASK to avoid wiping
+     * out entire source mask.
+     */
+    if(infoPtr->Flags & HARDWARE_CURSOR_INVERT_MASK) {
+	int count = dwords;
+	CARD32* pntr = DstM;
+	while(count--) {
+	   *pntr = ~(*pntr);
+	    pntr++;
 	}
     }
 
@@ -247,14 +251,14 @@ RealizeCursorInterleave1(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
     pntr = (unsigned char *)mem;
     count = size;
     while(count) {
-	*pntr++ =  (*DstS&0x01)       | ((*DstM&0x01) << 1) |
-		  ((*DstS&0x02) << 2) | ((*DstM&0x02) << 3) |
-		  ((*DstS&0x04) << 4) | ((*DstM&0x04) << 5) |
-		  ((*DstS&0x08) << 6) | ((*DstM&0x08) << 7);
-	*pntr++ =  (*DstS&0x10)       | ((*DstM&0x10) << 1) |
-		  ((*DstS&0x20) << 2) | ((*DstM&0x20) << 3) |
-		  ((*DstS&0x40) << 4) | ((*DstM&0x40) << 5) |
-		  ((*DstS&0x80) << 6) | ((*DstM&0x80) << 7);
+	*pntr++ = ((*DstS&0x01)     ) | ((*DstM&0x01) << 1) |
+		  ((*DstS&0x02) << 1) | ((*DstM&0x02) << 2) |
+		  ((*DstS&0x04) << 2) | ((*DstM&0x04) << 3) |
+		  ((*DstS&0x08) << 3) | ((*DstM&0x08) << 4);
+	*pntr++ = ((*DstS&0x10) >> 4) | ((*DstM&0x10) >> 3) |
+		  ((*DstS&0x20) >> 3) | ((*DstM&0x20) >> 2) |
+		  ((*DstS&0x40) >> 2) | ((*DstM&0x40) >> 1) |
+		  ((*DstS&0x80) >> 1) | ((*DstM&0x80)     );
 	DstS++;
 	DstM++;
 	count-=2;

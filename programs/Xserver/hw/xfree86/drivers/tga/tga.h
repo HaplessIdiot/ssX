@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.1.2.1 1998/07/18 17:53:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.2 1998/07/25 16:55:57 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -76,10 +76,10 @@ Bool DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool DEC21030AccelInit(ScreenPtr pScreen);
 
 void tgaBTOutIndReg(ScrnInfoPtr pScrn,
-		     unsigned char reg, unsigned char mask, unsigned char data);
-unsigned char tgaBTInIndReg(ScrnInfoPtr pScrn, unsigned char reg);
-void tgaBTWriteAddress(ScrnInfoPtr pScrn, unsigned char index);
-void tgaBTReadAddress(ScrnInfoPtr pScrn, unsigned char index);
+		     CARD32 reg, unsigned char mask, unsigned char data);
+unsigned char tgaBTInIndReg(ScrnInfoPtr pScrn, CARD32 reg);
+void tgaBTWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
+void tgaBTReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void tgaBTWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char tgaBTReadData(ScrnInfoPtr pScrn);
 

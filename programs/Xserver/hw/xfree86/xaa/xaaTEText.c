@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.1.2.2 1998/06/04 17:36:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.2 1998/07/25 16:58:53 dawes Exp $ */
 
 /********************************************************************
 
@@ -258,8 +258,8 @@ XAAGlyphBltTEColorExpansion(
     /* find the size of the box */
     Left = xInit;
     Right = Left + (glyphWidth * nglyph);
-    Top = yInit - FONTASCENT(font);
-    Bottom =  yInit + FONTDESCENT(font);
+    Top = yInit - FONTMAXBOUNDS(font,ascent);
+    Bottom =  yInit + FONTMAXBOUNDS(font,descent);
 
     /* get into the first band that may contain part of our string */
     while(nbox && (Top >= pbox->y2)) {

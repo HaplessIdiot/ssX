@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/record/recordmod.c,v 1.1 1998/07/26 09:56:23 dawes Exp $ */
 
 #include "xf86Module.h"
 
@@ -12,7 +12,8 @@ extern void RecordExtensionInit(INITARGS);
 ExtensionModule recordExt = {
     RecordExtensionInit,
     "RECORD",
-    &noTestExtensions
+    &noTestExtensions,
+    NULL
 };
 
 static XF86ModuleVersionInfo VersRec = {

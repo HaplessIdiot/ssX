@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.5.2.1 1998/07/24 11:36:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.14 1998/07/25 16:56:00 dawes Exp $ */
 
 
 
@@ -106,7 +106,6 @@ extern long W32BackgroundPing;
 extern long W32BackgroundPong;
 extern long W32PatternPing;
 extern long W32PatternPong;
-extern long W32Mix;
 
 extern LongP MemW32ForegroundPing;
 extern LongP MemW32ForegroundPong;
@@ -114,7 +113,6 @@ extern LongP MemW32BackgroundPing;
 extern LongP MemW32BackgroundPong;
 extern LongP MemW32PatternPing;
 extern LongP MemW32PatternPong;
-extern LongP MemW32Mix;		       /* ping-ponging the MIX map is done by XAA */
 
 /*
  * Some exported variables used by several source files. They are all
@@ -122,9 +120,6 @@ extern LongP MemW32Mix;		       /* ping-ponging the MIX map is done by XAA */
  */
 
 extern LongP tsengCPU2ACLBase;
-
-extern long tsengScratchVidBase;
-extern int tsengImageWriteBase;
 
 extern int tseng_powerPerPixel;
 extern int tseng_neg_x_pixel_offset;
@@ -255,5 +250,7 @@ tseng_wait(TsengPtr pTseng, ByteP reg, char *name, unsigned char mask)
 void tseng_init_acl(ScreenPtr pScreen);
 
 Bool TsengXAAInit(ScreenPtr pScreen);
+
+void TsengXAAInit_Colexp(ScrnInfoPtr pScrn);
 
 #endif

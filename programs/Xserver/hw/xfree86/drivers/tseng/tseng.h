@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.19 1998/07/25 16:55:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.20 1998/08/02 05:17:00 dawes Exp $ */
 
 
 
@@ -34,8 +34,29 @@
 /* Drivers using the mi banking wrapper need this */
 #include "mibank.h"
 
+/* All drivers using the mi colormap manipulation need this */
+#include "micmap.h"
+
+/* Needed for the 1 and 4 bpp framebuffers */
+#include "xf1bpp.h"
+#include "xf4bpp.h"
+
+/* Drivers using cfb need this */
+
+#define PSZ 8
+#include "cfb.h"
+#undef PSZ
+
+/* Drivers supporting bpp 16, 24 or 32 with cfb need these */
+
+#include "cfb16.h"
+#include "cfb24.h"
+#include "cfb32.h"
+
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
+#include "xaalocal.h"
+#include "xaacursor.h"
 #include "xf86fbman.h"
 
 #define MAX_TSENG_CLOCK 86000	       /* default max clock for standard boards */
@@ -134,7 +155,6 @@ typedef struct {
     int min, max;	  	       /* MemClk limits */
 } TsengMClkInfoRec, *TsengMclkInfoPtr;
 
-
 typedef struct {
     t_ramdactype DacType;
     Bool NotAttCompat;		       /* avoid treating the RAMDAC as AT&T compatible */
@@ -162,17 +182,17 @@ typedef struct {
     PCITAG PciTag;
     int Save_Divide;
     Bool UsePCIRetry;		       /* Do we use PCI-retry or busy-waiting */
-    Bool NoAccel;		       /* Do we use the XAA acceleration architecture */
+    Bool UseAccel;		       /* Do we use the XAA acceleration architecture */
     Bool HWCursor;		       /* Do we use the hardware cursor (if supported) */
     Bool Linmem_1meg;		       /* Is this a card limited to 1Mb of linear memory */
     Bool UseLinMem;
     Bool SlowDram;
     Bool FastDram;
     Bool MedDram;
-    Bool PCIBurstOn;
-    Bool PCIBurstOff;
-    Bool W32InterleaveOn;
-    Bool W32InterleaveOff;
+    Bool SetPCIBurst;
+    Bool PCIBurst;
+    Bool SetW32Interleave;
+    Bool W32Interleave;
     Bool ShowCache;
     Bool Legend;
     TsengRegRec SavedReg;	       /* saved Tseng registers at server start */
@@ -196,6 +216,15 @@ typedef struct {
     CloseScreenProcPtr CloseScreen;
     int save_divide;
     XAAInfoRecPtr AccelInfoRec;
+    XAACursorInfoPtr CursorInfoRec;
+    CARD32 AccelColorBufferOffset;     /* offset in video memory where FG and BG colors will be stored */
+    CARD32 AccelColorExpandBufferOffsets[3];   /* offset in video memory for ColorExpand buffers */
+    unsigned char * XAAColorExpandBuffers[3];  /* pointers to colorexpand buffers */
+    CARD32 AccelImageWriteBufferOffsets[2];    /* offset in video memory for ImageWrite Buffers */
+    unsigned char * XAAScanlineImageWriteBuffers[2];   /* pointers to ImageWrite Buffers */
+    CARD32 HWCursorBufferOffset;
+    unsigned char *XAAHWCursorBuffer;
+    unsigned char save_ExtCRTC36;      /* save CRTC 0x36 during sequencer resets */
 } TsengRec, *TsengPtr;
 
 #define TsengPTR(p) ((TsengPtr)((p)->driverPrivate))
@@ -214,8 +243,6 @@ typedef struct {
 #define Is_ET6K     ( Is_ET6000 || Is_ET6100 )
 
 #define CHIP_SUPPORTS_LINEAR ( Is_W32i || Is_W32p || Is_ET6K )
-
-void TsengHideCursor(void);
 
 #define DAC_IS_ATT49x ( (pTseng->DacInfo.DacType == ATT20C490_DAC) \
                      || (pTseng->DacInfo.DacType == ATT20C491_DAC) \
@@ -280,12 +307,14 @@ void tseng_setdaccomm(unsigned char comm);
 void Check_Tseng_Ramdac(ScrnInfoPtr pScrn);
 void tseng_init_clockscale(TsengPtr pTseng);
 void tseng_set_dacspeed(ScrnInfoPtr pScrn);
-void tseng_validate_mode(ScrnInfoPtr pScrn, DisplayModePtr mode, Bool verbose);
 void tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
+Bool TsengHWCursorInit(ScreenPtr pScreen);
+
 #ifdef DPMSExtension
-void TsengCrtcDPMSSet(int);
-void TsengHVSyncDPMSSet(int);
+void TsengHVSyncDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
+void TsengCrtcDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
+
 
 #endif
 

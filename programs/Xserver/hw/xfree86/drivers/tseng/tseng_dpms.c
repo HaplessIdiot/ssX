@@ -1,13 +1,11 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.2.2.1 1998/07/24 11:36:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_dpms.c,v 1.6 1998/07/25 16:56:02 dawes Exp $ */
 
 
 
 
 
 #ifdef DPMSExtension
-
-#include "xf86.h"
 
 #include "tseng.h"
 
@@ -21,14 +19,13 @@
  * '97 Harald Nordgård Hansen
  */
 void
-TsengCrtcDPMSSet(Mode)
-    int Mode;
+TsengCrtcDPMSSet(ScrnInfoPtr pScrn,
+    int PowerManagementMode, int flags)
 {
     unsigned char seq1, crtc34;
+    int iobase = VGAHWPTR(pScrn)->IOBase;
 
-    if (!xf86VTSema)
-	return;
-    switch (Mode) {
+    switch (PowerManagementMode) {
     case DPMSModeOn:
     default:
 	/* Screen: On; HSync: On, VSync: On */
@@ -54,9 +51,9 @@ TsengCrtcDPMSSet(Mode)
     outb(0x3C4, 0x01);		       /* Select SEQ1 */
     seq1 |= inb(0x3C5) & ~0x20;
     outb(0x3C5, seq1);
-    outb(vgaIOBase + 4, 0x34);	       /* Select CRTC34 */
-    crtc34 |= inb(vgaIOBase + 5) & ~0x21;
-    outb(vgaIOBase + 5, crtc34);
+    outb(iobase + 4, 0x34);	       /* Select CRTC34 */
+    crtc34 |= inb(iobase + 5) & ~0x21;
+    outb(iobase + 5, crtc34);
 }
 
 /*
@@ -100,62 +97,60 @@ TsengCrtcDPMSSet(Mode)
  * toggle.
  */
 void
-TsengHVSyncDPMSSet(Mode)
-    int Mode;
+TsengHVSyncDPMSSet(ScrnInfoPtr pScrn,
+    int PowerManagementMode, int flags)
 {
     unsigned char seq1, tmpb;
     unsigned int HSync, VSync, HTot, VTot, tmp;
     Bool chgHSync, chgVSync;
-
-    if (!xf86VTSema)
-	return;
+    int iobase = VGAHWPTR(pScrn)->IOBase;
 
     /* Code here to read the current values of HSync through VTot:
      *  HSYNC:
      *    bits 0..7 : CRTC index 0x04
      *    bit 8     : CRTC index 0x3F, bit 4
      */
-    outb(vgaIOBase + 4, 0x04);
-    HSync = inb(vgaIOBase + 5);
-    outb(vgaIOBase + 4, 0x3F);
-    HSync += (inb(vgaIOBase + 5) & 0x10) << 4;
+    outb(iobase + 4, 0x04);
+    HSync = inb(iobase + 5);
+    outb(iobase + 4, 0x3F);
+    HSync += (inb(iobase + 5) & 0x10) << 4;
     /*  VSYNC:
      *    bits 0..7 : CRTC index 0x10
      *    bits 8..9 : CRTC index 0x07 bits 2 (VSYNC bit 8) and 7 (VSYNC bit 9)
      *    bit 10    : CRTC index 0x35 bit 3
      */
-    outb(vgaIOBase + 4, 0x10);
-    VSync = inb(vgaIOBase + 5);
-    outb(vgaIOBase + 4, 0x07);
-    tmp = inb(vgaIOBase + 5);
+    outb(iobase + 4, 0x10);
+    VSync = inb(iobase + 5);
+    outb(iobase + 4, 0x07);
+    tmp = inb(iobase + 5);
     VSync += ((tmp & 0x04) << 6) + ((tmp & 0x80) << 2);
-    outb(vgaIOBase + 4, 0x35);
-    VSync += (inb(vgaIOBase + 5) & 0x08) << 7;
+    outb(iobase + 4, 0x35);
+    VSync += (inb(iobase + 5) & 0x08) << 7;
     /*  HTOT:
      *    bits 0..7 : CRTC index 0x00.
      *    bit 8     : CRTC index 0x3F, bit 0
      */
-    outb(vgaIOBase + 4, 0x00);
-    HTot = inb(vgaIOBase + 5);
-    outb(vgaIOBase + 4, 0x3F);
-    HTot += (inb(vgaIOBase + 5) & 0x01) << 8;
+    outb(iobase + 4, 0x00);
+    HTot = inb(iobase + 5);
+    outb(iobase + 4, 0x3F);
+    HTot += (inb(iobase + 5) & 0x01) << 8;
     /*  VTOT:
      *    bits 0..7 : CRTC index 0x06
      *    bits 8..9 : CRTC index 0x07 bits 0 (VTOT bit 8) and 5 (VTOT bit 9)
      *    bit 10    : CRTC index 0x35 bit 1
      */
-    outb(vgaIOBase + 4, 0x06);
-    VTot = inb(vgaIOBase + 5);
-    outb(vgaIOBase + 4, 0x07);
-    tmp = inb(vgaIOBase + 5);
+    outb(iobase + 4, 0x06);
+    VTot = inb(iobase + 5);
+    outb(iobase + 4, 0x07);
+    tmp = inb(iobase + 5);
     VTot += ((tmp & 0x01) << 8) + ((tmp & 0x20) << 4);
-    outb(vgaIOBase + 4, 0x35);
-    VTot += (inb(vgaIOBase + 5) & 0x02) << 9;
+    outb(iobase + 4, 0x35);
+    VTot += (inb(iobase + 5) & 0x02) << 9;
 
     /* Don't write these unless we have to. */
     chgHSync = chgVSync = FALSE;
 
-    switch (Mode) {
+    switch (PowerManagementMode) {
     case DPMSModeOn:
     default:
 	/* Screen: On; HSync: On, VSync: On */
@@ -224,13 +219,13 @@ TsengHVSyncDPMSSet(Mode)
      *    bit 8     : CRTC index 0x3F, bit 4
      */
     if (chgHSync) {
-	outb(vgaIOBase + 4, 0x04);
+	outb(iobase + 4, 0x04);
 	tmpb = HSync & 0xFF;
-	outb(vgaIOBase + 5, tmpb);
-	outb(vgaIOBase + 4, 0x3F);
+	outb(iobase + 5, tmpb);
+	outb(iobase + 4, 0x3F);
 	tmpb = (HSync & 0x100) >> 4;
-	tmpb |= inb(vgaIOBase + 5) & ~0x10;
-	outb(vgaIOBase + 5, tmpb);
+	tmpb |= inb(iobase + 5) & ~0x10;
+	outb(iobase + 5, tmpb);
     }
     /*  VSYNC:
      *    bits 0..7 : CRTC index 0x10
@@ -238,21 +233,18 @@ TsengHVSyncDPMSSet(Mode)
      *    bit 10    : CRTC index 0x35 bit 3
      */
     if (chgVSync) {
-	outb(vgaIOBase + 4, 0x10);
+	outb(iobase + 4, 0x10);
 	tmpb = VSync & 0xFF;
-	outb(vgaIOBase + 5, tmpb);
-	outb(vgaIOBase + 4, 0x07);
+	outb(iobase + 5, tmpb);
+	outb(iobase + 4, 0x07);
 	tmpb = (VSync & 0x100) >> 6;
 	tmpb |= (VSync & 0x200) >> 2;
-	tmpb |= inb(vgaIOBase + 5) & ~0x84;
-	outb(vgaIOBase + 5, tmpb);
-	outb(vgaIOBase + 4, 0x35);
+	tmpb |= inb(iobase + 5) & ~0x84;
+	outb(iobase + 5, tmpb);
+	outb(iobase + 4, 0x35);
 	tmpb = (VSync & 0x400) >> 7;
-	tmpb |= inb(vgaIOBase + 5) & ~0x08;
-	outb(vgaIOBase + 5, tmpb);
+	tmpb |= inb(iobase + 5) & ~0x08;
+	outb(iobase + 5, tmpb);
     }
 }
-#else
-static int nodpms;
-
 #endif

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.1.2.2 1998/07/18 17:53:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.2 1998/07/25 16:55:50 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -46,7 +46,12 @@ static int
 Shiftbpp(ScrnInfoPtr pScrn, int value)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    int logbytesperaccess = 3;
+    int logbytesperaccess;
+
+    if (pGlint->RamDac == (IBM640_RAMDAC))
+    	logbytesperaccess = 4;
+    else
+    	logbytesperaccess = 3;
 	
     switch (pScrn->bitsPerPixel) {
     case 8:
@@ -82,6 +87,7 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTRegPtr pReg = &pGlint->ModeReg;
     RamDacHWRecPtr pIBM = RAMDACHWPTR(pScrn);
     RamDacRegRecPtr ramdacReg = &pIBM->ModeReg;
+    unsigned char temp;
 
     pReg->glintRegs[0x00] = 0;
     pReg->glintRegs[0x01] = 0;
@@ -135,6 +141,9 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->glintRegs[0x64] = 0x44; /* VTGModeCtl */
     }
 
+    switch (pGlint->RamDac) {
+    case IBM526DB_RAMDAC:
+    case IBM526_RAMDAC:
     {
 	/* Get the programmable clock values */
     	unsigned long m=0,n=0,p=0,c=0;
@@ -154,6 +163,7 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ramdacReg->DacRegs[IBMRGB_pll_ctrl1] = 0x05;
 	ramdacReg->DacRegs[IBMRGB_pll_ctrl2] = 0x00;
 
+	p = 1;
     	clock = IBMramdac526CalculateMNPCForClock(refclock, mode->Clock, 0,
 			pGlint->MinClock, pGlint->MaxClock, &m, &n, &p, &c);
 
@@ -163,7 +173,6 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ramdacReg->DacRegs[IBMRGB_sysclk_p] = p;
 	ramdacReg->DacRegs[IBMRGB_sysclk_c] = c;
     }
-
     ramdacReg->DacRegs[IBMRGB_misc1] = SENS_DSAB_DISABLE | VRAM_SIZE_64;
     ramdacReg->DacRegs[IBMRGB_misc2] = COL_RES_8BIT | PORT_SEL_VRAM | PCLK_SEL_PLL;
     ramdacReg->DacRegs[IBMRGB_misc3] = 0;
@@ -175,7 +184,91 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ramdacReg->DacRegs[IBMRGB_pal_ctrl] = 0;
 
     IBMramdacSetBpp(pScrn, ramdacReg);
+    break;
+    case IBM640_RAMDAC:
+    {
+	/* Get the programmable clock values */
+    	unsigned long m=0,n=0,p=0,c=0;
+    	unsigned long clock;
+	unsigned long refclock;
 
+	refclock = GLINT_DELTA_REF_CLOCK;
+
+    	clock = IBMramdac640CalculateMNPCForClock(refclock, mode->Clock, 1,
+			pGlint->MinClock, pGlint->MaxClock, &m, &n, &p, &c);
+
+	ramdacReg->DacRegs[0x10] = n;
+	ramdacReg->DacRegs[0x11] = m;
+	ramdacReg->DacRegs[0x12] = p<<1;
+	ramdacReg->DacRegs[0x13] = c|0x04;
+	ramdacReg->DacRegs[0x17] = 0; /* Disable AUX PLL */
+    }
+    ramdacReg->DacRegs[0x09] = 0x00; /* Disable Pixel Interleave */
+    ramdacReg->DacRegs[0x0B] = 0x07; /* Turn on VRAM Mode & 8Bit DAC */
+    ramdacReg->DacRegs[0x0D] = 0x06; /* Enable DAC and SHUNT */
+    ramdacReg->DacRegs[0x0E] = 0x07; /* Enable Window Update & autoincrement*/ 
+    ramdacReg->DacRegs[0x0F] = 0x00; /* Disable PwrMan & Sync on Green */
+    ramdacReg->DacRegs[0xF0] = 0xFF; /* VRAM */
+    ramdacReg->DacRegs[0xF1] = 0xFF; /* VRAM */
+    ramdacReg->DacRegs[0xF2] = 0x0F; /* VRAM */
+    
+    pReg->glintRegs[0x64] = 0x04; /* VTGModeCtl */
+    switch (pScrn->depth) {
+	case 8:
+	    ramdacReg->DacRegs[0x02] = 0x00; 
+	    ramdacReg->DacRegs[0x03] = 0x00;
+	    ramdacReg->DacRegs[0x04] = 0x00;
+	    ramdacReg->DacRegs[0x05] = 0x00;
+    	    ramdacReg->DacRegs[0x08] = 0x03; /* 16:1 Mux */
+    	    ramdacReg->DacRegs[0x0A] = 0xC0; /* pll / 8 */
+	    temp = 0x03;
+	    break;
+	case 16:
+	    ramdacReg->DacRegs[0x02] = 0x10; 
+	    ramdacReg->DacRegs[0x03] = 0x11;
+	    ramdacReg->DacRegs[0x04] = 0x00;
+	    ramdacReg->DacRegs[0x05] = 0x00;
+    	    ramdacReg->DacRegs[0x08] = 0x02; /* 8:1 Mux */
+    	    ramdacReg->DacRegs[0x0A] = 0xC0; /* pll / 8 */
+	    temp = 0x05;
+	    break;
+	case 24:
+	    ramdacReg->DacRegs[0x02] = 0x30; 
+	    ramdacReg->DacRegs[0x03] = 0x31;
+	    ramdacReg->DacRegs[0x04] = 0x32;
+	    ramdacReg->DacRegs[0x05] = 0x33;
+    	    ramdacReg->DacRegs[0x08] = 0x01; /* 4:1 Mux */
+    	    ramdacReg->DacRegs[0x0A] = 0xC0; /* pll /8 */
+	    temp = 0x09;
+	    break;
+	case 30: /* 10 bit dac */
+	    ramdacReg->DacRegs[0x02] = 0x30; 
+	    ramdacReg->DacRegs[0x03] = 0x31;
+	    ramdacReg->DacRegs[0x04] = 0x32;
+	    ramdacReg->DacRegs[0x05] = 0x33;
+    	    ramdacReg->DacRegs[0x08] = 0x01; /* 4:1 Mux */
+    	    ramdacReg->DacRegs[0x0A] = 0xC0; /* pll /8 */
+	    temp = 0x0D;
+	    break;
+    }
+	
+    { 
+	int i;
+    	for (i=0x100;i<0x140;i+=4) {
+	    /* Initialize FrameBuffer Window Attribute Table */
+	    ramdacReg->DacRegs[i+0] = temp;
+	    ramdacReg->DacRegs[i+1] = 0x00;
+	    ramdacReg->DacRegs[i+2] = 0x00;
+	    ramdacReg->DacRegs[i+3] = 0x00;
+	    /* Initialize Overlay Window Attribute Table */
+	    ramdacReg->DacRegs[i+100] = 0x00;
+	    ramdacReg->DacRegs[i+101] = 0x00;
+	    ramdacReg->DacRegs[i+102] = 0x00;
+	    ramdacReg->DacRegs[i+103] = 0x44;
+        }
+    }
+    break;
+    }
     return(TRUE);
 }
 

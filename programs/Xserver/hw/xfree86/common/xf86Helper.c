@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.1.2.54 1998/07/24 11:36:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.2 1998/07/25 16:55:06 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -157,9 +157,9 @@ xf86AllocateScrnInfoPrivateIndex(void)
 	pScr = xf86Screens[i];
 	nprivs = (DevUnion *)xnfrealloc(pScr->privates,
 				xf86ScrnInfoPrivateCount * sizeof(DevUnion));
-	pScr->privates = nprivs;
 	/* Zero the new private */
-	nprivs[idx].ptr = NULL;
+	bzero(&nprivs[idx], sizeof(DevUnion));
+	pScr->privates = nprivs;
     }
     return idx;
 }
@@ -196,25 +196,34 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int bpp, int fbbpp,
     if (xf86Bpp > 0) {
 	scrp->pixmapBPP = xf86Bpp;
 	scrp->pixmapBPPFrom = X_CMDLINE;
-    } else if (scrp->confScreen->defaultbpp > 0) {
-	scrp->pixmapBPP = scrp->confScreen->defaultbpp;
-	scrp->pixmapBPPFrom = X_CONFIG;
     }
+
     if (xf86FbBpp > 0) {
 	scrp->bitsPerPixel = xf86FbBpp;
 	scrp->bitsPerPixelFrom = X_CMDLINE;
-    } else if (scrp->confScreen->defaultbpp > 0) {
-	scrp->bitsPerPixel = scrp->confScreen->defaultfbbpp;
-	scrp->bitsPerPixelFrom = X_CONFIG;
     }
+
     if (xf86Depth > 0) {
 	scrp->depth = xf86Depth;
 	scrp->depthFrom = X_CMDLINE;
-    } else if (scrp->confScreen->defaultdepth > 0) {
-	scrp->depth = scrp->confScreen->defaultdepth;
-	scrp->depthFrom = X_CONFIG;
     }
-    
+
+    /* If user doesn't override from commandline, probe the config file */
+    if (xf86Bpp < 0 && xf86FbBpp < 0 && xf86Depth < 0) {
+        if (scrp->confScreen->defaultbpp > 0) {
+	    scrp->pixmapBPP = scrp->confScreen->defaultbpp;
+	    scrp->pixmapBPPFrom = X_CONFIG;
+        }
+        if (scrp->confScreen->defaultbpp > 0) {
+	    scrp->bitsPerPixel = scrp->confScreen->defaultfbbpp;
+	    scrp->bitsPerPixelFrom = X_CONFIG;
+        }
+        if (scrp->confScreen->defaultdepth > 0) {
+	    scrp->depth = scrp->confScreen->defaultdepth;
+	    scrp->depthFrom = X_CONFIG;
+        }
+    }
+
     /* If none of these is set, pick a default */
     if (scrp->bitsPerPixel < 0 && scrp->pixmapBPP < 0 && scrp->depth < 0) {
         if (bpp > 0 || fbbpp > 0 || depth > 0) {
@@ -518,6 +527,9 @@ xf86SetWeight(ScrnInfoPtr scrp, rgb weight, rgb mask)
 	    break;
 	case 24:
 	    scrp->weight.red = scrp->weight.green = scrp->weight.blue = 8;
+	    break;
+	case 30:
+	    scrp->weight.red = scrp->weight.green = scrp->weight.blue = 10;
 	    break;
 	}
     }

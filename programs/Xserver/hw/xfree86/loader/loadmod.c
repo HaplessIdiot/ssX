@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.26 1998/07/25 16:56:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.27 1998/07/26 13:14:28 dawes Exp $ */
 
 /*
  *
@@ -293,6 +293,8 @@ LoadExtension (ExtensionModule *e)
 		{
 			extension[i].initFunc = e->initFunc;
 			extension[i].disablePtr = e->disablePtr;
+			if (e->setupFunc != NULL)
+				e->setupFunc();
 			break;
 		}
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.3 1998/07/31 10:41:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.4 1998/08/02 05:17:07 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -37,6 +37,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     Bool HaveImageWriteRect = FALSE;
     Bool HaveScanlineImageWriteRect = FALSE;
     Bool HaveScreenToScreenColorExpandFill = FALSE;
+    Bool HaveImageReadRect = FALSE;
 
     infoRec->pScrn = pScrn;
     infoRec->NeedToSync = FALSE;
@@ -245,6 +246,16 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
        (infoRec->NumScanlineImageWriteBuffers > 0))
 	HaveScanlineImageWriteRect = TRUE;
 
+    /**** Image Reads ****/
+
+    if(infoRec->SetupForImageRead && infoRec->ImageReadBase &&
+       infoRec->SubsequentImageReadRect) {
+
+	infoRec->ImageReadRange >>= 2;	/* convert to DWORDS */
+	if(infoRec->ImageReadFlags & CPU_TRANSFER_BASE_FIXED)
+	   infoRec->ImageReadRange = 0;
+	HaveImageReadRect = TRUE;	
+    } 
 
     if(HaveScreenToScreenCopy)
 	xf86ErrorF("\tScreen to screen bit blits\n");
@@ -284,6 +295,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     else if(HaveScanlineImageWriteRect)
 	xf86ErrorF("\tScanline Image Writes\n");
 
+    if(HaveImageReadRect)
+	xf86ErrorF("\tImage Reads\n");
 
 
     /************** Mid Level *************/
@@ -796,6 +809,15 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     }
 
 
+    /**** ReadPixmap ****/
+
+    if(infoRec->ReadPixmap) {
+	xf86ErrorF("\tDriver provided ReadPixmap replacement\n");
+    } else if(HaveImageReadRect) {
+	infoRec->ReadPixmap = XAAReadPixmap;
+	infoRec->ReadPixmapFlags = infoRec->ImageReadFlags;
+    } 
+
     /************** GC Level *************/
 
     /**** CopyArea ****/
@@ -805,6 +827,17 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     } else if(infoRec->ScreenToScreenBitBlt) {
 	infoRec->CopyArea = XAACopyArea;
 	infoRec->CopyAreaFlags = infoRec->ScreenToScreenBitBltFlags;
+
+	/* most GC level primitives use one mid-level primitive so
+	   the GC level primitive gets the mid-level primitive flag
+	   and we use that at GC validation time.  But CopyArea uses
+	   more than one mid-level primitive so we have to essentially
+	   do a GC validation every time that primitive is used.
+	   The CopyAreaFlags would only be used for filtering out the
+	   common denominators.  Here we assume that if you don't do
+	   ScreenToScreenBitBlt you aren't going to do the others.
+	   We also assume that ScreenToScreenBitBlt has the least
+	   restrictions. */
     }
 
     if(infoRec->CopyPlane) {
@@ -1038,6 +1071,16 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 			infoRec->SolidFillFlags | GXCOPY_ONLY;
     }
 
+    if(!infoRec->PutImage && (infoRec->WritePixmap || 
+	(infoRec->WriteBitmap && 
+			!(infoRec->WriteBitmapFlags & TRANSPARENCY_ONLY)))) {
+	infoRec->PutImage = XAAPutImage;
+
+	/* See comment for CopyArea above.  But here we make fewer 
+	   assumptions.  The driver can provide the PutImageFlags if
+	   it wants too */
+    }
+
     /************  Validation Functions **************/
 
     if(!infoRec->ValidateCopyArea && infoRec->CopyArea) {
@@ -1059,6 +1102,18 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    infoRec->CopyPlaneMask |= GCForeground | GCBackground;
 	infoRec->ValidateCopyPlane = XAAValidateCopyPlane;
     }
+
+    if(!infoRec->ValidatePutImage && infoRec->PutImage) {
+	infoRec->PutImageMask = GCWhenForced;
+	if(infoRec->PutImageFlags & GXCOPY_ONLY)
+	    infoRec->PutImageMask |= GCFunction;
+	if(infoRec->PutImageFlags & NO_PLANEMASK)
+	    infoRec->PutImageMask |= GCPlaneMask;
+	if(infoRec->PutImageFlags & RGB_EQUAL)
+	    infoRec->PutImageMask |= GCForeground | GCBackground;
+	infoRec->ValidatePutImage = XAAValidatePutImage;
+    }
+
 
     if(!infoRec->ValidatePushPixels && infoRec->PushPixelsSolid) {
 	infoRec->PushPixelsMask = GCFillStyle;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.2 1998/07/25 16:58:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.3 1998/07/31 10:41:33 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -153,6 +153,13 @@ XAAValidateCopyArea(
    GCPtr         pGC,
    unsigned long changes,
    DrawablePtr   pDraw
+);
+
+void
+XAAValidatePutImage(
+   GCPtr         pGC,
+   unsigned long changes,
+   DrawablePtr   pDraw 
 );
 
 void
@@ -829,6 +836,19 @@ XAAFillScanlineColorExpandSpansLSBFirst(
    PixmapPtr pPix
 );
 
+void
+XAAPutImage(
+    DrawablePtr pDraw,
+    GCPtr       pGC,
+    int         depth, 
+    int 	x, 
+    int		y, 
+    int		w, 
+    int		h,
+    int         leftPad,
+    int         format,
+    char        *pImage
+);
 
 void
 XAAFillScanlineColorExpandSpansMSBFirst(
@@ -1437,6 +1457,15 @@ XAAFillPolygonHelper(
     int 	xorg,
     int		yorg,
     XAACacheInfoPtr pCache
+);
+
+void 
+XAAReadPixmap (
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   unsigned char *dst,	
+   int dstwidth,
+   int bpp, int depth
 );
 
  

@@ -1,3 +1,9 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.22 1998/08/02 05:17:00 dawes Exp $ */
+
+
+
+
+
 
 /*
  * ET4/6K acceleration interface.
@@ -10,12 +16,6 @@
  * Glenn Lai.
  *
  */
-
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.21 1998/07/25 16:56:00 dawes Exp $ */
-
-
-
-
 
 /*
  * if NO_OPTIMIZE is set, some optimizations are disabled.
@@ -41,7 +41,6 @@
 
 #include "tseng.h"
 #include "tseng_acl.h"
-#include "tseng_colexp.h"
 #include "tseng_inline.h"
 
 #include "miline.h"
@@ -56,6 +55,7 @@ void TsengW32pSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     int x, int y, int w, int h);
 void Tseng6KSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     int x, int y, int w, int h);
+
 /* void TsengSubsequentFillTrapezoidSolid(); */
 
 void TsengSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
@@ -64,16 +64,27 @@ void TsengSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 void TsengSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
     int x1, int y1, int x2, int y2, int w, int h);
 
+void TsengSetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
+    int patx, int paty, int rop, unsigned int planemask, int trans_color);
+
+void TsengSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
+    int patx, int paty, int x, int y, int w, int h);
+
+void TsengSetupForScanlineImageWrite(ScrnInfoPtr pScrn,
+    int rop, unsigned int planemask, int trans_color, int bpp, int depth);
+
+void TsengSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
+    int x, int y, int w, int h, int skipleft);
+
+void TsengSubsequentImageWriteScanline(ScrnInfoPtr pScrn,
+    int bufno);
+
 #ifdef TODO
-void TsengDoImageWrite();
 
 void TsengSetupForSolidLine(ScrnInfoPtr pScrn,
     int color, int rop, unsigned int planemask);
 void TsengSubsequentBresenhamLine();
 void TsengSubsequentTwoPointLine();
-
-void TsengSetupForFill8x8Pattern();
-void TsengSubsequentFill8x8Pattern();
 
 #endif
 
@@ -82,13 +93,14 @@ void TsengSubsequentFill8x8Pattern();
  * the FbInit() function in the SVGA driver. Do NOT initialize any hardware
  * in here. That belongs in tseng_init_acl().
  */
-Bool 
+Bool
 TsengXAAInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TsengPtr pTseng = TsengPTR(pScrn);
     XAAInfoRecPtr pXAAinfo;
     BoxRec AvailFBArea;
+    int i;
 
     ErrorF("	TsengXAAInit\n");
     pTseng->AccelInfoRec = pXAAinfo = XAACreateInfoRec();
@@ -155,14 +167,11 @@ TsengXAAInit(ScreenPtr pScreen)
      */
 #ifdef ET6K_TRANSPARENCY
     pXAAinfo->CopyAreaFlags = NO_PLANEMASK;
-    pXAAinfo->ImageWriteFlags = NO_PLANEMASK;
     if (!Is_ET6K) {
 	pXAAinfo->CopyAreaFlags |= NO_TRANSPARENCY;
-	pXAAinfo->ImageWriteFlags |= NO_TRANSPARENCY;
     }
 #else
     pXAAinfo->CopyAreaFlags = NO_TRANSPARENCY;
-    pXAAinfo->ImageWriteFlags = NO_TRANSPARENCY;
 #endif
 
     pXAAinfo->SetupForScreenToScreenCopy =
@@ -170,35 +179,56 @@ TsengXAAInit(ScreenPtr pScreen)
     pXAAinfo->SubsequentScreenToScreenCopy =
 	TsengSubsequentScreenToScreenCopy;
 
+    /*
+     * ImageWrite.
+     *
+     * SInce this uses off-screen scanline buffers, it is only of use when
+     * complex ROPs are used. But since the current XAA pixmap cache code
+     * only works when an ImageWrite is provided, the NO_GXCOPY flag is
+     * temporarily disabled.
+     */
 
-#ifdef TODO
-    /* overload XAA ImageWrite function */
-    if (tsengImageWriteBase) {
-	pXAAinfo->DoImageWrite = TsengDoImageWrite;
-	ErrorF("%s %s: XAA/Tseng: Using Tseng-specific ImageWrite\n",
-	    XCONFIG_PROBED, vga256InfoRec.name);
+    if (pTseng->AccelImageWriteBufferOffsets[0]) {
+	pXAAinfo->ScanlineImageWriteFlags =
+	    pXAAinfo->CopyAreaFlags | LEFT_EDGE_CLIPPING /* | NO_GXCOPY */ ;
+	pXAAinfo->NumScanlineImageWriteBuffers = 2;
+	pXAAinfo->SetupForScanlineImageWrite =
+	    TsengSetupForScanlineImageWrite;
+	pXAAinfo->SubsequentScanlineImageWriteRect =
+	    TsengSubsequentScanlineImageWriteRect;
+	pXAAinfo->SubsequentImageWriteScanline =
+	    TsengSubsequentImageWriteScanline;
 
-	/* Offsets in video memory for line buffers. TsengDoImageWrite assumes
-	 * that each line is the screen width (in bytes) + 3 and rounded up to
-	 * the next dword.
+	/* calculate memory addresses from video memory offsets */
+	for (i = 0; i < pXAAinfo->NumScanlineImageWriteBuffers; i++) {
+	    pTseng->XAAScanlineImageWriteBuffers[i] =
+		pTseng->FbBase + pTseng->AccelImageWriteBufferOffsets[i];
+	}
+
+	/*
+	 * for banked memory, translate those addresses to fall in the
+	 * correct aperture. Imagewrite uses aperture #1, which sits at
+	 * pTseng->FbBase + 0x1A000.
 	 */
-	tsengFirstLine = tsengImageWriteBase;
-	tsengSecondLine = tsengFirstLine + ((pTseng->line_width + 6) & ~0x3L);
-
-	if (pTseng->UseLinMem)
-	    tsengFirstLinePntr = (CARD32 *) ((int)vgaLinearBase + tsengFirstLine);
-	else
-	    tsengFirstLinePntr = (CARD32 *) (((int)vgaBase) + 0x1A000L);
-	tsengSecondLinePntr = (CARD32 *) ((int)tsengFirstLinePntr + ((pTseng->line_width + 6) & ~0x3L));
+	if (!pTseng->UseLinMem) {
+	    for (i = 0; i < pXAAinfo->NumScanlineImageWriteBuffers; i++) {
+		pTseng->XAAScanlineImageWriteBuffers[i] =
+		    pTseng->XAAScanlineImageWriteBuffers[i]
+		    - pTseng->AccelImageWriteBufferOffsets[0]
+		    + 0x1A000;
+	    }
+	}
+	pXAAinfo->ScanlineImageWriteBuffers = pTseng->XAAScanlineImageWriteBuffers;
     }
     /*
      * 8x8 pattern tiling not possible on W32/i/p chips in 24bpp mode.
-     * Currently, 24bpp pattern tiling doesn't work at all.
+     * Currently, 24bpp pattern tiling doesn't work at all on those.
      *
-     * On W32 cards, pattern tiling doesn't work as expected.
+     * FIXME: On W32 cards, pattern tiling doesn't work as expected.
      */
-    pXAAinfo->PatternFlags = HARDWARE_PATTERN_ALIGN_64
-	| HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
+    pXAAinfo->Color8x8PatternFillFlags = HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
+
+    pXAAinfo->CachePixelGranularity = 8 * 8;
 
 #ifdef ET6K_TRANSPARENCY
     pXAAinfo->PatternFlags |= HARDWARE_PATTERN_NO_PLANEMASK;
@@ -209,12 +239,12 @@ TsengXAAInit(ScreenPtr pScreen)
 
     /* FIXME! This needs to be fixed for W32 and W32i (it "should work") */
     if ((pScrn->bitsPerPixel != 24) && (Is_W32p || Is_ET6K)) {
-	pXAAinfo->SetupForFill8x8Pattern =
-	    TsengSetupForFill8x8Pattern;
-	pXAAinfo->SubsequentFill8x8Pattern =
-	    TsengSubsequentFill8x8Pattern;
+	pXAAinfo->SetupForColor8x8PatternFill =
+	    TsengSetupForColor8x8PatternFill;
+	pXAAinfo->SubsequentColor8x8PatternFillRect =
+	    TsengSubsequentColor8x8PatternFillRect;
     }
-
+#ifdef TODO
     /*
      * SolidLine.
      *
@@ -225,7 +255,7 @@ TsengXAAInit(ScreenPtr pScreen)
      */
 
     if (Is_W32p || Is_Et6K) {
-        SetupForSolidLine = TsengSetupForSolidLine;
+	SetupForSolidLine = TsengSetupForSolidLine;
 	pXAAinfo->SubsequentSolidBresenhamLine =
 	    TsengSubsequentSolidBresenhamLine;
 	/* ErrorTermBits = min(errorterm_size, delta_major_size, delta_minor_size) */
@@ -238,11 +268,10 @@ TsengXAAInit(ScreenPtr pScreen)
 	xf86GCInfoRec.PolySegmentSolidZeroWidthFlags =
 	    TWO_POINT_LINE_ERROR_TERM;
     }
+#endif
 
     /* set up color expansion acceleration */
-    TsengAccelInit_Colexp();
-
-#endif
+    TsengXAAInit_Colexp(pScrn);
 
     /*
      * For Tseng, we set up some often-used values
@@ -309,7 +338,7 @@ TsengXAAInit(ScreenPtr pScreen)
  * accelerator operation that causes a hardware-blocking (wait-states) until
  * the running operation is done.
  */
-void 
+void
 TsengSync(ScrnInfoPtr pScrn)
 {
     TsengPtr pTseng = TsengPTR(pScrn);
@@ -322,7 +351,7 @@ TsengSync(ScrnInfoPtr pScrn)
  * that sets up the coprocessor for a subsequent batch for solid
  * rectangle fills.
  */
-void 
+void
 TsengSetupForSolidFill(ScrnInfoPtr pScrn,
     int color, int rop, unsigned int planemask)
 {
@@ -368,7 +397,7 @@ TsengSetupForSolidFill(ScrnInfoPtr pScrn,
  * Splitting it up between ET4000 and ET6000 avoids lots of chipset type
  * comparisons.
  */
-void 
+void
 TsengW32pSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     int x, int y, int w, int h)
 {
@@ -396,7 +425,7 @@ TsengW32pSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     START_ACL(pTseng, destaddr);
 }
 
-void 
+void
 TsengW32iSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     int x, int y, int w, int h)
 {
@@ -411,7 +440,7 @@ TsengW32iSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     START_ACL(pTseng, destaddr);
 }
 
-void 
+void
 Tseng6KSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     int x, int y, int w, int h)
 {
@@ -441,7 +470,7 @@ Tseng6KSubsequentSolidFillRect(ScrnInfoPtr pScrn,
  * screen-to-screen copies.
  */
 
-static __inline__ void 
+static __inline__ void
 Tseng_setup_screencopy(TsengPtr pTseng,
     int rop, unsigned int planemask,
     int trans_color, int blit_dir)
@@ -470,7 +499,7 @@ Tseng_setup_screencopy(TsengPtr pTseng,
 
 static int blitxdir, blitydir;
 
-void 
+void
 TsengSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     int xdir, int ydir, int rop,
     unsigned int planemask, int trans_color)
@@ -512,7 +541,7 @@ TsengSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
  * SolidFillRect).
  */
 
-void 
+void
 TsengSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
     int x1, int y1, int x2, int y2,
     int w, int h)
@@ -565,20 +594,17 @@ TsengSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
     START_ACL(pTseng, destaddr);
 }
 
-#ifdef TODO
-
 static int pat_src_addr;
 
-void 
-TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_color)
-    int patternx, patterny;
-    int rop;
-    unsigned int planemask;
-    int trans_color;
+void
+TsengSetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
+    int patx, int paty, int rop, unsigned int planemask, int trans_color)
 {
-    pat_src_addr = FBADDR(pTseng, patternx, patterny);
+    TsengPtr pTseng = TsengPTR(pScrn);
 
-/*  ErrorF("P"); */
+    pat_src_addr = FBADDR(pTseng, patx, paty);
+
+    ErrorF("P");
 
     Tseng_setup_screencopy(pTseng, rop, planemask, trans_color, 0);
 
@@ -601,14 +627,13 @@ TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_color)
     }
 }
 
-void 
-TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
-    int patternx, patterny;
-    int x, y;
-    int w, h;
+void
+TsengSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn,
+    int patx, int paty, int x, int y, int w, int h)
 {
+    TsengPtr pTseng = TsengPTR(pScrn);
     int destaddr = FBADDR(pTseng, x, y);
-    int srcaddr = pat_src_addr + MULBPP(pTseng, patterny * 8 + patternx);
+    int srcaddr = pat_src_addr + MULBPP(pTseng, paty * 8 + patx);
 
     wait_acl_queue(pTseng);
 
@@ -619,12 +644,63 @@ TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
 }
 
 /*
+ * ImageWrite is nothing more than a per-scanline screencopy.
+ */
+
+void 
+TsengSetupForScanlineImageWrite(ScrnInfoPtr pScrn,
+    int rop, unsigned int planemask, int trans_color, int bpp, int depth)
+{
+    TsengPtr pTseng = TsengPTR(pScrn);
+
+/*    ErrorF("IW"); */
+
+    Tseng_setup_screencopy(pTseng, rop, planemask, trans_color, 0);
+
+    *ACL_SOURCE_WRAP = 0x77;	       /* no wrap */
+    *ACL_SOURCE_Y_OFFSET = pTseng->line_width - 1;
+}
+
+static CARD32 iw_dest, iw_skipleft;
+
+void 
+TsengSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
+    int x, int y, int w, int h, int skipleft)
+{
+    TsengPtr pTseng = TsengPTR(pScrn);
+
+/*    ErrorF("r%d",h); */
+
+    iw_dest = y * pTseng->line_width + MULBPP(pTseng, x);
+    iw_skipleft = MULBPP(pTseng, skipleft);
+
+    wait_acl_queue(pTseng);
+    SET_XY(pTseng, w, 1);
+}
+
+void 
+TsengSubsequentImageWriteScanline(ScrnInfoPtr pScrn,
+    int bufno)
+{
+    TsengPtr pTseng = TsengPTR(pScrn);
+
+/*    ErrorF("%d", bufno); */
+
+    wait_acl_queue(pTseng);
+
+    *ACL_SOURCE_ADDRESS = pTseng->AccelImageWriteBufferOffsets[bufno] + iw_skipleft;
+    START_ACL(pTseng, iw_dest);
+    iw_dest += pTseng->line_width;
+}
+
+#ifdef TODO
+/*
  * W32p/ET6000 hardware linedraw code. 
  *
  * TsengSetupForSolidFill() is used as a setup function.
  */
 
-void 
+void
 TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
     int x1, y1;
     int octant;
@@ -699,7 +775,7 @@ TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
  */
 
 #if TSENG_TWOPOINTLINE
-void 
+void
 TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
     int x1, y1;
     int x2, y2;			       /* excl. */
@@ -781,7 +857,7 @@ TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
 #undef DEBUG_TRAP
 
 #ifdef TSENG_TRAPEZOIDS
-void 
+void
 TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, dxR, dyR, eR)
     int ytop;
     int height;
@@ -890,127 +966,5 @@ TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, dxR, 
     START_ACL_6(destaddr);
 }
 #endif
-
-/*
- * XAA ImageWrite replacement. XAA only supports CPU-to-screen ImageWrite,
- * so we have to replace the whole thing by our own code.
- */
-
-/*
- * A simplified version of TsengSubsequentScreenToScreenCopy used by
- * ImageWrite. It blits only one line, and always with xdir = ydir = 1.
- */
-
-void 
-TsengSubsequentScanlineScreenToScreenCopy(LineAddr, skipleft, x, y, w)
-    int LineAddr, skipleft, x, y, w;
-{
-    int destaddr = FBADDR(pTseng, x, y);
-
-    /* tseng chips want x-sizes in bytes, not pixels */
-    skipleft = MULBPP(pTseng, skipleft);
-
-    wait_acl_queue(pTseng);
-
-    SET_XY(w, 1);
-    *ACL_SOURCE_ADDRESS = LineAddr + skipleft;
-    START_ACL(pTseng, destaddr);
-}
-
-/* 
- * xf86DoImageWrite transfers 8, 16, 24 and 32 bpp image data
- * to the image transfer window with dword scanline padding.
- * Based on xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c
- *
- * It assumes that each line is the screen width (in bytes) + 3 and rounded
- * up to the next dword. ie:
- *
- *     (pTseng->line_width + 6) >> 2  dwords.
- *
- * So I guess having two of these lines back to back with the first
- * one starting on a dword boundary should do for all the Tseng's
- * scanline needs.  Then the address of the first line could double
- * as the base for the rest of XAA color expansion uses.
- * Gotta make sure both buffers start on dword boundaries.
- *
- *   (author: Mark Vojkovich)
- */
-
-void
-TsengDoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
-    DrawablePtr pSrc, pDst;
-    int alu;
-    RegionPtr prgnDst;
-    DDXPointPtr pptSrc;
-    unsigned int planemask;
-    int bitPlane;
-{
-    int srcwidth, skipleft, dwords;
-    int x, y, w, h;
-    unsigned char *psrcBase;	       /* start of image */
-    register unsigned char *srcPntr;   /* index into the image */
-    BoxPtr pbox = REGION_RECTS(prgnDst);
-    int nbox = REGION_NUM_RECTS(prgnDst);
-    Bool PlusOne;
-
-    cfbGetByteWidthAndPointer(pSrc, srcwidth, psrcBase);
-
-    /* setup for a left-to-right/top-to-bottom ScreenToScreenCopy */
-    TsengSetupForScreenToScreenCopy(1, 1, alu, planemask, -1);
-
-    for (; nbox; pbox++, pptSrc++, nbox--) {
-	x = pbox->x1;
-	y = pbox->y1;
-	w = pbox->x2 - pbox->x1;
-	h = pbox->y2 - pbox->y1;
-	PlusOne = (h & 0x01);
-	h >>= 1;		       /* h is now linepairs */
-
-	srcPntr = psrcBase + (pptSrc->y * srcwidth) + (pptSrc->x * tseng_bytesperpixel);
-
-	if ((skipleft = (int)srcPntr & 0x03)) {
-	    if (tseng_bytesperpixel == 3) {
-		skipleft = 4 - skipleft;
-		srcPntr = (unsigned char *)(srcPntr - (3 * skipleft));
-	    } else {
-		skipleft /= tseng_bytesperpixel;
-		srcPntr = (unsigned char *)((int)srcPntr & ~0x03);
-	    }
-	}
-	switch (tseng_bytesperpixel) {
-	case 1:
-	    dwords = (w + skipleft + 3) >> 2;
-	    break;
-	case 2:
-	    dwords = (w + skipleft + 1) >> 1;
-	    break;
-	case 3:
-	    dwords = ((w + skipleft + 1) * 3) >> 2;
-	    break;
-	default:
-	    dwords = w;
-	    break;
-	}
-
-	/* WAIT_QUEUE must be done _before_ MoveDWORDS to avoid drawing errors */
-	while (h--) {
-	    WAIT_QUEUE;
-	    MoveDWORDS(tsengFirstLinePntr, srcPntr, dwords);
-	    TsengSubsequentScanlineScreenToScreenCopy(tsengFirstLine, skipleft, x, y++, w);
-	    srcPntr += srcwidth;
-	    WAIT_QUEUE;
-	    MoveDWORDS(tsengSecondLinePntr, srcPntr, dwords);
-	    TsengSubsequentScanlineScreenToScreenCopy(tsengSecondLine, skipleft, x, y++, w);
-	    srcPntr += srcwidth;
-	}
-	if (PlusOne) {
-	    WAIT_QUEUE;
-	    MoveDWORDS(tsengFirstLinePntr, srcPntr, dwords);
-	    TsengSubsequentScanlineScreenToScreenCopy(tsengFirstLine, skipleft, x, y, w);
-	}
-    }
-
-    SET_SYNC_FLAG;
-}
 
 #endif

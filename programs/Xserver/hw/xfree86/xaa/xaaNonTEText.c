@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.1.2.2 1998/06/04 17:36:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.2 1998/07/25 16:58:49 dawes Exp $ */
 
 /********************************************************************
 
@@ -299,11 +299,11 @@ ImageGlyphBltNonTEColorExpansion(
 
     LeftText = xInit + (*ppci)->metrics.leftSideBearing;
     RightText = LeftText + 
-	CollectCharacterInfo(Glyphs, nglyph, ppci, FONTASCENT(font));
+	CollectCharacterInfo(Glyphs, nglyph, ppci, FONTMAXBOUNDS(font,ascent));
     LeftBack = xInit;
     RightBack = LeftBack + width;
-    Top = yInit - FONTASCENT(font);
-    Bottom = yInit + FONTDESCENT(font);
+    Top = yInit - FONTMAXBOUNDS(font,ascent);
+    Bottom = yInit + FONTMAXBOUNDS(font,descent);
     Left = min(LeftText, LeftBack);
     Right = max(RightText, RightBack);
 
@@ -381,9 +381,9 @@ PolyGlyphBltNonTEColorExpansion(
     /* find our text box */
     Left = xInit + (*ppci)->metrics.leftSideBearing;
     Right = Left + 
-	CollectCharacterInfo(Glyphs, nglyph, ppci, FONTASCENT(font));
-    Top = yInit - FONTASCENT(font);
-    Bottom = yInit + FONTDESCENT(font);
+	CollectCharacterInfo(Glyphs, nglyph, ppci, FONTMAXBOUNDS(font, ascent));
+    Top = yInit - FONTMAXBOUNDS(font,ascent);
+    Bottom = yInit + FONTMAXBOUNDS(font,descent);
  
     /* get into the first band that may contain part of our string */
     while(nbox && (Top >= pbox->y2)) {

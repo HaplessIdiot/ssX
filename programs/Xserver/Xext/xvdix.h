@@ -56,29 +56,21 @@ SOFTWARE.
 #include "pixmap.h"
 #include "Xvproto.h"
 
-#ifdef GLOBAL
-#define EXTERNAL
-#define INIT(i) = i
-#else /* GLOBAL */
-#define EXTERNAL extern
-#define INIT(i)
-#endif
+extern int  XvScreenIndex;
+extern unsigned long XvExtensionGeneration;
+extern unsigned long XvScreenGeneration;
+extern unsigned long XvResourceGeneration;
 
-EXTERNAL int  XvScreenIndex;
-EXTERNAL unsigned long XvExtensionGeneration INIT(0);
-EXTERNAL unsigned long XvScreenGeneration INIT(0);
-EXTERNAL unsigned long XvResourceGeneration INIT(0);
+extern int XvReqCode;
+extern int XvEventBase;
+extern int XvErrorBase;
 
-EXTERNAL int XvReqCode;
-EXTERNAL int XvEventBase;
-EXTERNAL int XvErrorBase;
-
-EXTERNAL unsigned long XvRTPort;
-EXTERNAL unsigned long XvRTEncoding;
-EXTERNAL unsigned long XvRTGrab;
-EXTERNAL unsigned long XvRTVideoNotify;
-EXTERNAL unsigned long XvRTVideoNotifyList;
-EXTERNAL unsigned long XvRTPortNotify;
+extern unsigned long XvRTPort;
+extern unsigned long XvRTEncoding;
+extern unsigned long XvRTGrab;
+extern unsigned long XvRTVideoNotify;
+extern unsigned long XvRTVideoNotifyList;
+extern unsigned long XvRTPortNotify;
 
 typedef struct {
   int numerator;
@@ -127,16 +119,27 @@ typedef struct {
   int nPorts;
   struct _XvPortRec *pPorts;
   ScreenPtr pScreen; 
-  int (* ddAllocatePort)();
-  int (* ddFreePort)();
-  int (* ddPutVideo)();
-  int (* ddPutStill)();
-  int (* ddGetVideo)();
-  int (* ddGetStill)();
-  int (* ddStopVideo)();
-  int (* ddSetPortAttribute)();
-  int (* ddGetPortAttribute)();
-  int (* ddQueryBestSize)();
+  int (* ddAllocatePort)(unsigned long, struct _XvPortRec*, 
+				struct _XvPortRec**);
+  int (* ddFreePort)(struct _XvPortRec*);
+  int (* ddPutVideo)(ClientPtr, DrawablePtr,struct _XvPortRec*, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16); 
+  int (* ddPutStill)(ClientPtr, DrawablePtr,struct _XvPortRec*, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16);
+  int (* ddGetVideo)(ClientPtr, DrawablePtr,struct _XvPortRec*, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16);
+  int (* ddGetStill)(ClientPtr, DrawablePtr,struct _XvPortRec*, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16);
+  int (* ddStopVideo)(ClientPtr, struct _XvPortRec*, DrawablePtr);
+  int (* ddSetPortAttribute)(ClientPtr, struct _XvPortRec*, Atom, INT32);
+  int (* ddGetPortAttribute)(ClientPtr, struct _XvPortRec*, Atom, INT32*);
+  int (* ddQueryBestSize)(ClientPtr, struct _XvPortRec*, CARD8,
+   				CARD16, CARD16,CARD16, CARD16, 
+				unsigned int*, unsigned int*);
   DevUnion devPriv;
 } XvAdaptorRec, *XvAdaptorPtr;
 
@@ -167,11 +170,11 @@ typedef struct {
   int version, revision;
   int nAdaptors;
   XvAdaptorPtr pAdaptors;
-  Bool (* DestroyWindow)();
-  Bool (* DestroyPixmap)();
-  Bool (* CloseScreen)();
-  Bool (* ddCloseScreen)();
-  int (* ddQueryAdaptors)();
+  DestroyWindowProcPtr DestroyWindow;
+  DestroyPixmapProcPtr DestroyPixmap;
+  CloseScreenProcPtr CloseScreen;
+  Bool (* ddCloseScreen)(int, ScreenPtr);
+  int (* ddQueryAdaptors)(ScreenPtr, XvAdaptorPtr*, int*);
   DevUnion devPriv;
 } XvScreenRec, *XvScreenPtr;
 
@@ -188,28 +191,38 @@ typedef struct {
 #define _XvBadPort (XvBadPort+XvErrorBase)
 #define _XvBadEncoding (XvBadEncoding+XvErrorBase)
 
-extern int ProcXvDispatch();
-extern int SProcXvDispatch();
+extern int ProcXvDispatch(ClientPtr);
+extern int SProcXvDispatch(ClientPtr);
 
-extern void XvExtensionInit();
-extern int XvScreenInit();
-extern int XvdiValidatePort();
-extern int XvdiSendVideoNotify();
-extern int XvdiSendPortNotify();
-extern int XvdiVideoStopped();
+extern void XvExtensionInit(void);
+extern int XvScreenInit(ScreenPtr);
+extern int XvGetScreenIndex(void);
+extern unsigned long XvGetRTPort(void);
+extern int XvdiSendPortNotify(XvPortPtr, Atom, INT32);
+extern int XvdiVideoStopped(XvPortPtr, int);
 
-extern int XvdiPutVideo();
-extern int XvdiPutStill();
-extern int XvdiGetVideo();
-extern int XvdiGetStill();
-extern int XvdiSelectVideoNotify();
-extern int XvdiSelectPortNotify();
-extern int XvdiSetPortAttribute();
-extern int XvdiGetPortAttribute();
-extern int XvdiAbortVideo();
-extern int XvdiStopVideo();
-extern int XvdiPreemptVideo();
-extern int XvdiMatchPort();
+extern int XvdiPutVideo(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16);
+extern int XvdiPutStill(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16);
+extern int XvdiGetVideo(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16);
+extern int XvdiGetStill(ClientPtr, DrawablePtr, XvPortPtr, GCPtr,
+   				INT16, INT16, CARD16, CARD16, 
+				INT16, INT16, CARD16, CARD16);
+extern int XvdiSelectVideoNotify(ClientPtr, DrawablePtr, BOOL);
+extern int XvdiSelectPortNotify(ClientPtr, XvPortPtr, BOOL);
+extern int XvdiSetPortAttribute(ClientPtr, XvPortPtr, Atom, INT32);
+extern int XvdiGetPortAttribute(ClientPtr, XvPortPtr, Atom, INT32*);
+extern int XvdiStopVideo(ClientPtr, XvPortPtr, DrawablePtr);
+extern int XvdiPreemptVideo(ClientPtr, XvPortPtr, DrawablePtr);
+extern int XvdiMatchPort(XvPortPtr, DrawablePtr);
+extern int XvdiGrabPort(ClientPtr, XvPortPtr, Time, int *);
+extern int XvdiUngrabPort( ClientPtr, XvPortPtr, Time);
+
 
 #if defined(__STDC__) && !defined(UNIXCPP)
 
@@ -221,8 +234,6 @@ extern int XvdiMatchPort();
 
 #endif
 
-#undef EXTERNAL
-#undef INIT
 
 #endif /* XVDIX_H */
 

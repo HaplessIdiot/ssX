@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.24.2.30 1998/07/19 13:22:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.36 1998/07/25 16:56:18 dawes Exp $ */
 
 /*
  *
@@ -77,6 +77,8 @@ extern void* __divlu(long, long);
 extern void* __remlu(long, long);
 extern void* __divq(long, long);
 extern void* __divqu(long, long);
+extern void* __remq(long, long);
+extern void* __remqu(long, long);
 #endif
 
 #if defined(__powerpc__) && defined(Lynx)
@@ -488,6 +490,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(__remlu)
    SYMFUNC(__divq)
    SYMFUNC(__divqu)
+   SYMFUNC(__remq)
+   SYMFUNC(__remqu)
 
    SYMFUNC(_outw)
    SYMFUNC(_outb)

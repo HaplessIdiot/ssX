@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.1.2.3 1998/07/19 13:22:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.2 1998/07/25 16:58:42 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -212,14 +212,125 @@ XAAScreenToScreenBitBlt(
     unsigned int planemask )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    int dirsetup;
 
-    (*infoRec->SetupForScreenToScreenCopy)(pScrn, xdir, ydir, 
-		alu, planemask, -1);
-
-    for(; nbox; pbox++, pptSrc++, nbox--) {
-	(*infoRec->SubsequentScreenToScreenCopy)(pScrn, pptSrc->x, pptSrc->y,
-		pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
+    if ((!(infoRec->CopyAreaFlags & ONLY_TWO_BITBLT_DIRECTIONS)
+    || (xdir == ydir)) &&
+    (!(infoRec->CopyAreaFlags & ONLY_LEFT_TO_RIGHT_BITBLT)
+    || (xdir == 1))) {
+        (*infoRec->SetupForScreenToScreenCopy)(pScrn,
+            xdir, ydir, alu, planemask, -1);
+        for (; nbox; pbox++, pptSrc++, nbox--)
+            (*infoRec->SubsequentScreenToScreenCopy)(pScrn,pptSrc->x, pptSrc->y,
+                pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
+        SET_SYNC_FLAG(infoRec);
+        return;
     }
 
+   if (infoRec->CopyAreaFlags & ONLY_LEFT_TO_RIGHT_BITBLT) {
+        /*
+         * This is the case of a chip that only supports xdir = 1,
+         * with ydir = 1 or ydir = -1, but we have xdir = -1.
+         */
+        (*infoRec->SetupForScreenToScreenCopy)(pScrn,
+            1, ydir, alu, planemask, -1);
+        for (; nbox; pbox++, pptSrc++, nbox--)
+            if (pptSrc->y != pbox->y1 || pptSrc->x >= pbox->x1)
+                /* No problem. Do a xdir = 1 blit instead. */
+                (*infoRec->SubsequentScreenToScreenCopy)(pScrn,
+                    pptSrc->x, pptSrc->y, pbox->x1, pbox->y1,
+                    pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
+            else 
+            {
+                /*
+                 * This is the difficult case. Needs striping into
+                 * non-overlapping horizontal chunks.
+                 */
+                int stripeWidth, w, fullStripes, extra, i;
+                stripeWidth = 16;
+                w = pbox->x2 - pbox->x1;
+                if (pbox->x1 - pptSrc->x < stripeWidth)
+                    stripeWidth = pbox->x1 - pptSrc->x;
+                fullStripes = w / stripeWidth;
+                extra = w % stripeWidth;
+
+                /* First, take care of the little bit on the far right */
+                if (extra)
+                    (*infoRec->SubsequentScreenToScreenCopy)(pScrn,
+                        pptSrc->x + fullStripes * stripeWidth, pptSrc->y,
+                        pbox->x1 + fullStripes * stripeWidth, pbox->y1,
+                        extra, pbox->y2 - pbox->y1);
+
+                /* Now, take care of the rest of the blit */
+                for (i = fullStripes - 1; i >= 0; i--)
+                    (*infoRec->SubsequentScreenToScreenCopy)(pScrn,
+                        pptSrc->x + i * stripeWidth, pptSrc->y,
+                        pbox->x1 + i * stripeWidth, pbox->y1,
+                        stripeWidth, pbox->y2 - pbox->y1);
+            }
+        SET_SYNC_FLAG(infoRec);
+        return;
+    }
+
+    /*
+     * Now the case of a chip that only supports xdir = ydir = 1 or
+     * xdir = ydir = -1, but we have xdir != ydir.
+     */
+    dirsetup = 0;	/* No direction set up yet. */
+    for (; nbox; pbox++, pptSrc++, nbox--) {
+        if (xdir == 1 && pptSrc->y != pbox->y1) {
+            /* Do a xdir = ydir = -1 blit instead. */
+            if (dirsetup != -1) {
+                (*infoRec->SetupForScreenToScreenCopy)(pScrn,
+                    -1, -1, alu, planemask, -1);
+                dirsetup = -1;
+            }
+            (*infoRec->SubsequentScreenToScreenCopy)(pScrn,pptSrc->x, pptSrc->y,
+                pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
+        }
+        else if (xdir == -1 && pptSrc->y != pbox->y1) {
+            /* Do a xdir = ydir = 1 blit instead. */
+            if (dirsetup != 1) {
+                (*infoRec->SetupForScreenToScreenCopy)(pScrn,
+                    1, 1, alu, planemask, -1);
+                dirsetup = 1;
+            }
+            (*infoRec->SubsequentScreenToScreenCopy)(pScrn,pptSrc->x, pptSrc->y,
+                pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
+        }
+        else
+            if (xdir == 1) {
+                /*
+                 * xdir = 1, ydir = -1.
+                 * Perform line-by-line xdir = ydir = 1 blits, going up.
+                 */
+                int i;
+                if (dirsetup != 1) {
+                    (*infoRec->SetupForScreenToScreenCopy)(pScrn,
+                        1, 1, alu, planemask, -1);
+                    dirsetup = 1;
+                }
+                for (i = pbox->y2 - pbox->y1 - 1; i >= 0; i--)
+                    (*infoRec->SubsequentScreenToScreenCopy)(pScrn,
+                        pptSrc->x, pptSrc->y + i, pbox->x1, pbox->y1 + i,
+                        pbox->x2 - pbox->x1, 1);
+            }
+            else {
+                /*
+                 * xdir = -1, ydir = 1.
+                 * Perform line-by-line xdir = ydir = -1 blits, going down.
+                 */
+                int i;
+                if (dirsetup != -1) {
+                    (*infoRec->SetupForScreenToScreenCopy)(pScrn,
+                        -1, -1, alu, planemask, -1);
+                    dirsetup = -1;
+                }
+                for (i = 0; i < pbox->y2 - pbox->y1; i++)
+                    (*infoRec->SubsequentScreenToScreenCopy)(pScrn,
+                        pptSrc->x, pptSrc->y + i, pbox->x1, pbox->y1 + i,
+                        pbox->x2 - pbox->x1, 1);
+            }
+    } /* next box */
     SET_SYNC_FLAG(infoRec);
 }

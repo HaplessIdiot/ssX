@@ -62,87 +62,85 @@ SOFTWARE.
 #include "Xvproto.h"
 #include "xvdix.h"
 
-/* EXTERNAL */
-
-extern void (* ReplySwapVector[256]) ();
-
 /* INTERNAL */
 
-static int ProcXvQueryExtension();
-static int ProcXvQueryAdaptors();
-static int ProcXvQueryEncodings();
-static int ProcXvPutVideo();
-static int ProcXvPutStill();
-static int ProcXvGetVideo();
-static int ProcXvGetStill();
-static int ProcXvGrabPort();
-static int ProcXvUngrabPort();
-static int ProcXvSelectVideoNotify();
-static int ProcXvSelectPortNotify();
-static int ProcXvStopVideo();
-static int ProcXvSetPortAttribute();
-static int ProcXvGetPorAttribute();
-static int ProcXvQueryBestSize();
+static int ProcXvQueryExtension(ClientPtr);
+static int ProcXvQueryAdaptors(ClientPtr);
+static int ProcXvQueryEncodings(ClientPtr);
+static int ProcXvPutVideo(ClientPtr);
+static int ProcXvPutStill(ClientPtr);
+static int ProcXvGetVideo(ClientPtr);
+static int ProcXvGetStill(ClientPtr);
+static int ProcXvGrabPort(ClientPtr);
+static int ProcXvUngrabPort(ClientPtr);
+static int ProcXvSelectVideoNotify(ClientPtr);
+static int ProcXvSelectPortNotify(ClientPtr);
+static int ProcXvStopVideo(ClientPtr);
+static int ProcXvSetPortAttribute(ClientPtr);
+static int ProcXvGetPortAttribute(ClientPtr);
+static int ProcXvQueryBestSize(ClientPtr);
 
-static int SProcXvQueryExtension();
-static int SProcXvQueryAdaptors();
-static int SProcXvQueryEncodings();
-static int SProcXvPutVideo();
-static int SProcXvPutStill();
-static int SProcXvGetVideo();
-static int SProcXvGetStill();
-static int SProcXvGrabPort();
-static int SProcXvUngrabPort();
-static int SProcXvSelectVideoNotify();
-static int SProcXvSelectPortNotify();
-static int SProcXvStopVideo();
-static int SProcXvSetPortAttribute();
-static int SProcXvGetPortAttribute();
-static int SProcXvQueryBestSize();
+static int SProcXvQueryExtension(ClientPtr);
+static int SProcXvQueryAdaptors(ClientPtr);
+static int SProcXvQueryEncodings(ClientPtr);
+static int SProcXvPutVideo(ClientPtr);
+static int SProcXvPutStill(ClientPtr);
+static int SProcXvGetVideo(ClientPtr);
+static int SProcXvGetStill(ClientPtr);
+static int SProcXvGrabPort(ClientPtr);
+static int SProcXvUngrabPort(ClientPtr);
+static int SProcXvSelectVideoNotify(ClientPtr);
+static int SProcXvSelectPortNotify(ClientPtr);
+static int SProcXvStopVideo(ClientPtr);
+static int SProcXvSetPortAttribute(ClientPtr);
+static int SProcXvGetPortAttribute(ClientPtr);
+static int SProcXvQueryBestSize(ClientPtr);
 
-static int SWriteQueryVideoReply();
-static int SWriteAdaptorInfo();
-static int SWriteEncodingInfo();
-static int SWriteFormat();
-static int SWriteGrabPortReply();
-static int SWriteGetPortAttributeReply();
-static int SWriteQueryBestSizeReply();
+static int SWriteQueryAdaptorsReply(ClientPtr, xvQueryAdaptorsReply *);
+static int SWriteQueryExtensionReply(ClientPtr, xvQueryExtensionReply *);
+static int SWriteQueryEncodingsReply(ClientPtr, xvQueryEncodingsReply *);
+static int SWriteAdaptorInfo(ClientPtr, xvAdaptorInfo *);
+static int SWriteEncodingInfo(ClientPtr, xvEncodingInfo *);
+static int SWriteFormat(ClientPtr, xvFormat *);
+static int SWriteGrabPortReply(ClientPtr, xvGrabPortReply *);
+static int SWriteGetPortAttributeReply(ClientPtr, xvGetPortAttributeReply *);
+static int SWriteQueryBestSizeReply(ClientPtr, xvQueryBestSizeReply *);
 
 #define _WriteQueryAdaptorsReply(_c,_d) \
   if ((_c)->swapped) SWriteQueryAdaptorsReply(_c, _d); \
-  else WriteToClient(_c, sz_xvQueryAdaptorsReply, _d)
+  else WriteToClient(_c, sz_xvQueryAdaptorsReply, (char*)_d)
 
 #define _WriteQueryExtensionReply(_c,_d) \
   if ((_c)->swapped) SWriteQueryExtensionReply(_c, _d); \
-  else WriteToClient(_c, sz_xvQueryExtensionReply, _d)
+  else WriteToClient(_c, sz_xvQueryExtensionReply, (char*)_d)
 
 #define _WriteQueryEncodingsReply(_c,_d) \
   if ((_c)->swapped) SWriteQueryEncodingsReply(_c, _d); \
-  else WriteToClient(_c, sz_xvQueryEncodingsReply, _d)
+  else WriteToClient(_c, sz_xvQueryEncodingsReply, (char*)_d)
 
 #define _WriteAdaptorInfo(_c,_d) \
   if ((_c)->swapped) SWriteAdaptorInfo(_c, _d); \
-  else WriteToClient(_c, sz_xvAdaptorInfo, _d)
+  else WriteToClient(_c, sz_xvAdaptorInfo, (char*)_d)
 
 #define _WriteEncodingInfo(_c,_d) \
   if ((_c)->swapped) SWriteEncodingInfo(_c, _d); \
-  else WriteToClient(_c, sz_xvEncodingInfo, _d)
+  else WriteToClient(_c, sz_xvEncodingInfo, (char*)_d)
 
 #define _WriteFormat(_c,_d) \
   if ((_c)->swapped) SWriteFormat(_c, _d); \
-  else WriteToClient(_c, sz_xvFormat, _d)
+  else WriteToClient(_c, sz_xvFormat, (char*)_d)
 
 #define _WriteGrabPortReply(_c,_d) \
   if ((_c)->swapped) SWriteGrabPortReply(_c, _d); \
-  else WriteToClient(_c, sz_xvGrabPortReply, _d)
+  else WriteToClient(_c, sz_xvGrabPortReply, (char*)_d)
 
 #define _WriteGetPortAttributeReply(_c,_d) \
   if ((_c)->swapped) SWriteGetPortAttributeReply(_c, _d); \
-  else WriteToClient(_c, sz_xvGetPortAttributeReply, _d)
+  else WriteToClient(_c, sz_xvGetPortAttributeReply, (char*)_d)
 
 #define _WriteQueryBestSizeReply(_c,_d) \
   if ((_c)->swapped) SWriteQueryBestSizeReply(_c, _d); \
-  else WriteToClient(_c, sz_xvQueryBestSizeReply, _d)
+  else WriteToClient(_c, sz_xvQueryBestSizeReply,(char*) _d)
 
 #define _AllocatePort(_i,_p) \
   ((_p)->id != _i) ? (* (_p)->pAdaptor->ddAllocatePort)(_i,_p,&_p) : Success
@@ -155,8 +153,7 @@ static int SWriteQueryBestSizeReply();
 */
 
 int
-ProcXvDispatch(client)
-register ClientPtr client;
+ProcXvDispatch(ClientPtr client)
 {
   REQUEST(xReq);
 
@@ -195,8 +192,7 @@ register ClientPtr client;
 }
 
 int
-SProcXvDispatch(client)
-register ClientPtr client;
+SProcXvDispatch(ClientPtr client)
 {
   REQUEST(xReq);
 
@@ -235,9 +231,7 @@ register ClientPtr client;
 }
 
 static int
-ProcXvQueryExtension(client)
-register ClientPtr client;
-
+ProcXvQueryExtension(ClientPtr client)
 {
   xvQueryExtensionReply rep;
   REQUEST(xvQueryExtensionReq);
@@ -255,12 +249,9 @@ register ClientPtr client;
 }
 
 static int
-ProcXvQueryAdaptors(client)
-register ClientPtr client;
-
+ProcXvQueryAdaptors(ClientPtr client)
 {
   xvFormat format;
-  xvEncodingInfo einfo;
   xvAdaptorInfo ainfo;
   xvQueryAdaptorsReply rep;
   int totalSize;
@@ -296,7 +287,7 @@ register ClientPtr client;
       return Success;
     }
 
-  (* pxvs->ddQueryAdaptors)(pScreen, &pxvs->nAdaptors, &pxvs->pAdaptors);
+  (* pxvs->ddQueryAdaptors)(pScreen, &pxvs->pAdaptors, &pxvs->nAdaptors);
 
   rep.type = X_Reply;
   rep.sequenceNumber = client->sequence;
@@ -355,9 +346,7 @@ register ClientPtr client;
 }
 
 static int
-ProcXvQueryEncodings(client)
-register ClientPtr client;
-
+ProcXvQueryEncodings(ClientPtr client)
 {
   xvEncodingInfo einfo;
   xvQueryEncodingsReply rep;
@@ -421,9 +410,7 @@ register ClientPtr client;
 }
 
 static int
-ProcXvPutVideo(client)
-register ClientPtr client;
-
+ProcXvPutVideo(ClientPtr client)
 {
   register DrawablePtr pDraw;
   XvPortPtr pPort;
@@ -468,9 +455,7 @@ register ClientPtr client;
 }
 
 static int
-ProcXvPutStill(client)
-register ClientPtr client;
-
+ProcXvPutStill(ClientPtr client)
 {
   register DrawablePtr pDraw;
   XvPortPtr pPort;
@@ -516,9 +501,7 @@ register ClientPtr client;
 
 
 static int
-ProcXvGetVideo(client)
-register ClientPtr client;
-
+ProcXvGetVideo(ClientPtr client)
 {
   register DrawablePtr pDraw;
   XvPortPtr pPort;
@@ -564,9 +547,7 @@ register ClientPtr client;
 
 
 static int
-ProcXvGetStill(client)
-register ClientPtr client;
-
+ProcXvGetStill(ClientPtr client)
 {
   register DrawablePtr pDraw;
   XvPortPtr pPort;
@@ -611,12 +592,9 @@ register ClientPtr client;
 }
 
 static int
-ProcXvSelectVideoNotify(client)
-register ClientPtr client;
-
+ProcXvSelectVideoNotify(ClientPtr client)
 {
   register DrawablePtr pDraw;
-  XvPortPtr pPort;
   REQUEST(xvSelectVideoNotifyReq);
   REQUEST_SIZE_MATCH(xvSelectVideoNotifyReq);
 
@@ -631,9 +609,7 @@ register ClientPtr client;
 }
 
 static int
-ProcXvSelectPortNotify(client)
-register ClientPtr client;
-
+ProcXvSelectPortNotify(ClientPtr client)
 {
   int status;
   XvPortPtr pPort;
@@ -657,9 +633,7 @@ register ClientPtr client;
 }
 
 static int
-ProcXvGrabPort(client)
-register ClientPtr client;
-
+ProcXvGrabPort(ClientPtr client)
 {
   int result, status;
   XvPortPtr pPort;
@@ -698,9 +672,7 @@ register ClientPtr client;
 }
 
 static int
-ProcXvUngrabPort(client)
-register ClientPtr client;
-
+ProcXvUngrabPort(ClientPtr client)
 {
   int status;
   XvPortPtr pPort;
@@ -725,9 +697,7 @@ register ClientPtr client;
 
 
 static int
-ProcXvStopVideo(client)
-register ClientPtr client;
-
+ProcXvStopVideo(ClientPtr client)
 {
   int status;
   register DrawablePtr pDraw;
@@ -758,12 +728,9 @@ register ClientPtr client;
 }
 
 static int
-ProcXvSetPortAttribute(client)
-register ClientPtr client;
-
+ProcXvSetPortAttribute(ClientPtr client)
 {
   int status;
-  register len;
   XvPortPtr pPort;
   REQUEST(xvSetPortAttributeReq);
   REQUEST_SIZE_MATCH(xvSetPortAttributeReq);
@@ -799,11 +766,9 @@ register ClientPtr client;
 }
 
 static int
-ProcXvGetPortAttribute(client)
-register ClientPtr client;
-
+ProcXvGetPortAttribute(ClientPtr client)
 {
-  int value;
+  INT32 value;
   int status;
   XvPortPtr pPort;
   xvGetPortAttributeReply rep;
@@ -846,9 +811,7 @@ register ClientPtr client;
 }
 
 static int
-ProcXvQueryBestSize(client)
-register ClientPtr client;
-
+ProcXvQueryBestSize(ClientPtr client)
 {
   int status;
   unsigned int actual_width, actual_height;
@@ -889,9 +852,7 @@ register ClientPtr client;
 /* Swapped Procs */
 
 static int
-SProcXvQueryExtension(client)
-register ClientPtr client;
-
+SProcXvQueryExtension(ClientPtr client)
 {
   register char n;
   REQUEST(xvQueryExtensionReq);
@@ -900,9 +861,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvQueryAdaptors(client)
-register ClientPtr client;
-
+SProcXvQueryAdaptors(ClientPtr client)
 {
   register char n;
   REQUEST(xvQueryAdaptorsReq);
@@ -912,9 +871,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvQueryEncodings(client)
-register ClientPtr client;
-
+SProcXvQueryEncodings(ClientPtr client)
 {
   register char n;
   REQUEST(xvQueryEncodingsReq);
@@ -924,9 +881,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvGrabPort(client)
-register ClientPtr client;
-
+SProcXvGrabPort(ClientPtr client)
 {
   register char n;
   REQUEST(xvGrabPortReq);
@@ -937,9 +892,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvUngrabPort(client)
-register ClientPtr client;
-
+SProcXvUngrabPort(ClientPtr client)
 {
   register char n;
   REQUEST(xvUngrabPortReq);
@@ -950,9 +903,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvPutVideo(client)
-register ClientPtr client;
-
+SProcXvPutVideo(ClientPtr client)
 {
   register char n;
   REQUEST(xvPutVideoReq);
@@ -972,9 +923,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvPutStill(client)
-register ClientPtr client;
-
+SProcXvPutStill(ClientPtr client)
 {
   register char n;
   REQUEST(xvPutStillReq);
@@ -994,9 +943,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvGetVideo(client)
-register ClientPtr client;
-
+SProcXvGetVideo(ClientPtr client)
 {
   register char n;
   REQUEST(xvGetVideoReq);
@@ -1016,9 +963,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvGetStill(client)
-register ClientPtr client;
-
+SProcXvGetStill(ClientPtr client)
 {
   register char n;
   REQUEST(xvGetStillReq);
@@ -1038,9 +983,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvSelectVideoNotify(client)
-register ClientPtr client;
-
+SProcXvSelectVideoNotify(ClientPtr client)
 {
   register char n;
   REQUEST(xvSelectVideoNotifyReq);
@@ -1050,9 +993,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvSelectPortNotify(client)
-register ClientPtr client;
-
+SProcXvSelectPortNotify(ClientPtr client)
 {
   register char n;
   REQUEST(xvSelectPortNotifyReq);
@@ -1062,9 +1003,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvStopVideo(client)
-register ClientPtr client;
-
+SProcXvStopVideo(ClientPtr client)
 {
   register char n;
   REQUEST(xvStopVideoReq);
@@ -1075,9 +1014,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvSetPortAttribute(client)
-register ClientPtr client;
-
+SProcXvSetPortAttribute(ClientPtr client)
 {
   register char n;
   REQUEST(xvSetPortAttributeReq);
@@ -1088,9 +1025,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvGetPortAttribute(client)
-register ClientPtr client;
-
+SProcXvGetPortAttribute(ClientPtr client)
 {
   register char n;
   REQUEST(xvGetPortAttributeReq);
@@ -1101,9 +1036,7 @@ register ClientPtr client;
 }
 
 static int
-SProcXvQueryBestSize(client)
-register ClientPtr client;
-
+SProcXvQueryBestSize(ClientPtr client)
 {
   register char n;
   REQUEST(xvQueryBestSizeReq);
@@ -1117,11 +1050,10 @@ register ClientPtr client;
 }
 
 static int
-SWriteQueryExtensionReply(client, rep)
-register ClientPtr client;
-xvQueryExtensionReply *rep;
-
-{
+SWriteQueryExtensionReply(
+   ClientPtr client,
+   xvQueryExtensionReply *rep
+){
   register char n;
 
   swaps(&rep->sequenceNumber, n);
@@ -1131,14 +1063,14 @@ xvQueryExtensionReply *rep;
   
   (void)WriteToClient(client, sz_xvQueryExtensionReply, (char *)&rep);
 
+  return Success;
 }
 
 static int
-SWriteQueryAdaptorsReply(client, rep)
-register ClientPtr client;
-xvQueryAdaptorsReply *rep;
-
-{
+SWriteQueryAdaptorsReply(
+   ClientPtr client,
+   xvQueryAdaptorsReply *rep
+){
   register char n;
 
   swaps(&rep->sequenceNumber, n);
@@ -1147,14 +1079,14 @@ xvQueryAdaptorsReply *rep;
   
   (void)WriteToClient(client, sz_xvQueryAdaptorsReply, (char *)&rep);
 
+  return Success;
 }
 
 static int
-SWriteQueryEncodingsReply(client, rep)
-register ClientPtr client;
-xvQueryEncodingsReply *rep;
-
-{
+SWriteQueryEncodingsReply(
+   ClientPtr client,
+   xvQueryEncodingsReply *rep
+){
   register char n;
 
   swaps(&rep->sequenceNumber, n);
@@ -1163,14 +1095,14 @@ xvQueryEncodingsReply *rep;
   
   (void)WriteToClient(client, sz_xvQueryEncodingsReply, (char *)&rep);
 
+  return Success;
 }
 
 static int
-SWriteAdaptorInfo(client, pAdaptor)
-register ClientPtr client;
-xvAdaptorInfo *pAdaptor;
-
-{
+SWriteAdaptorInfo(
+   ClientPtr client,
+   xvAdaptorInfo *pAdaptor
+){
   register char n;
 
   swapl(&pAdaptor->base_id, n);
@@ -1180,14 +1112,14 @@ xvAdaptorInfo *pAdaptor;
 
   (void)WriteToClient(client, sz_xvAdaptorInfo, (char *)pAdaptor);
 
+  return Success;
 }
 
 static int
-SWriteEncodingInfo(client, pEncoding)
-register ClientPtr client;
-xvEncodingInfo *pEncoding;
-
-{
+SWriteEncodingInfo(
+   ClientPtr client,
+   xvEncodingInfo *pEncoding
+){
   register char n;
   
   swapl(&pEncoding->encoding, n);
@@ -1197,26 +1129,28 @@ xvEncodingInfo *pEncoding;
   swapl(&pEncoding->rate.numerator, n);
   swapl(&pEncoding->rate.denominator, n);
   (void)WriteToClient(client, sz_xvEncodingInfo, (char *)pEncoding);
+
+  return Success;
 }
 
 static int
-SWriteFormat(client, pFormat)
-register ClientPtr client;
-xvFormat *pFormat;
-
-{
+SWriteFormat(
+   ClientPtr client,
+   xvFormat *pFormat
+){
   register char n;
 
   swapl(&pFormat->visual, n);
   (void)WriteToClient(client, sz_xvFormat, (char *)pFormat);
+
+  return Success;
 }
 
 static int
-SWriteGrabPortReply(client, rep)
-register ClientPtr client;
-xvGrabPortReply *rep;
-
-{
+SWriteGrabPortReply(
+   ClientPtr client,
+   xvGrabPortReply *rep
+){
   register char n;
 
   swaps(&rep->sequenceNumber, n);
@@ -1224,14 +1158,14 @@ xvGrabPortReply *rep;
 
   (void)WriteToClient(client, sz_xvGrabPortReply, (char *)&rep);
 
+  return Success;
 }
 
 static int
-SWriteGetPortAttributeReply(client, rep)
-register ClientPtr client;
-xvGetPortAttributeReply *rep;
-
-{
+SWriteGetPortAttributeReply(
+   ClientPtr client,
+   xvGetPortAttributeReply *rep
+){
   register char n;
 
   swaps(&rep->sequenceNumber, n);
@@ -1240,14 +1174,14 @@ xvGetPortAttributeReply *rep;
 
   (void)WriteToClient(client, sz_xvGetPortAttributeReply, (char *)&rep);
 
+  return Success;
 }
 
 static int
-SWriteQueryBestSizeReply(client, rep)
-register ClientPtr client;
-xvQueryBestSizeReply *rep;
-
-{
+SWriteQueryBestSizeReply(
+   ClientPtr client,
+   xvQueryBestSizeReply *rep
+){
   register char n;
 
   swaps(&rep->sequenceNumber, n);
@@ -1257,4 +1191,5 @@ xvQueryBestSizeReply *rep;
 
   (void)WriteToClient(client, sz_xvQueryBestSizeReply, (char *)&rep);
 
+  return Success;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.148 1998/07/25 16:54:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.149 1998/07/26 09:56:13 dawes Exp $ */
 
 
 /*
@@ -520,6 +520,7 @@ configServerFlags(XF86ConfFlagsPtr flagsconf)
 #endif
 	    break;
 	}
+	optp = optp->list.next;
     }
     return TRUE;
 }

@@ -24,7 +24,7 @@
  * Permedia2vOutIndReg() and Permedia2vInIndReg() are used to access 
  * the indirect Permedia2v RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2vramdac.c,v 1.1.2.1 1998/07/18 17:53:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2vramdac.c,v 1.2 1998/07/25 16:55:48 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,12 +38,13 @@
 
 void
 Permedia2vOutIndReg(ScrnInfoPtr pScrn,
-		     unsigned char reg, unsigned char mask, unsigned char data)
+		     CARD32 reg, unsigned char mask, unsigned char data)
 {
   GLINTPtr pGlint = GLINTPTR(pScrn);
   unsigned char tmp = 0x00;
 
-  GLINT_SLOW_WRITE_REG (reg&0xff, PM2VDACIndexRegLow);
+  GLINT_SLOW_WRITE_REG(reg&0xff, PM2VDACIndexRegLow);
+  GLINT_SLOW_WRITE_REG((reg>>8) & 0xff, PM2VDACIndexRegHigh);
 
   if (mask != 0x00)
     tmp = GLINT_READ_REG (PM2VDACIndexData) & mask;
@@ -52,12 +53,13 @@ Permedia2vOutIndReg(ScrnInfoPtr pScrn,
 }
 
 unsigned char
-Permedia2vInIndReg (ScrnInfoPtr pScrn, unsigned char reg)
+Permedia2vInIndReg (ScrnInfoPtr pScrn, CARD32 reg)
 {
   GLINTPtr pGlint = GLINTPTR(pScrn);
   unsigned char ret;
 
   GLINT_SLOW_WRITE_REG (reg&0xff, PM2VDACIndexRegLow);
+  GLINT_SLOW_WRITE_REG((reg>>8) & 0xff, PM2VDACIndexRegHigh);
   ret = GLINT_READ_REG (PM2VDACIndexData);
 
   return (ret);

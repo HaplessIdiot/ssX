@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/PEX5/pexmodule.c,v 1.1 1998/07/26 09:56:03 dawes Exp $ */
 
 #include "xf86Module.h"
 #include "PEX.h"
@@ -11,7 +11,9 @@ extern void PexExtensionInit(INITARGS);
 static ExtensionModule pex5Ext = {
     PexExtensionInit,
     PEX_NAME_STRING,
-    NULL};
+    NULL,
+    NULL
+};
 
 static XF86ModuleVersionInfo VersRec =
 {

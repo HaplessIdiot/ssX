@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.1.2.3 1998/07/18 17:54:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.h,v 1.2 1998/07/25 16:57:18 dawes Exp $ */
 
 #include <xf86RamDac.h>
 
@@ -7,6 +7,10 @@ void IBMramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec, RamDacRegRecPtr Ra
 void IBMramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr RamDacRec, RamDacRegRecPtr RamDacRegRec);
 void IBMramdacSetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr RamDacRegRec);
 unsigned long IBMramdac526CalculateMNPCForClock(unsigned long RefClock,
+    unsigned long ReqClock, char IsPixClock, unsigned long MinClock,
+    unsigned long MaxClock, unsigned long *rM, unsigned long *rN,
+    unsigned long *rP, unsigned long *rC);
+unsigned long IBMramdac640CalculateMNPCForClock(unsigned long RefClock,
     unsigned long ReqClock, char IsPixClock, unsigned long MinClock,
     unsigned long MaxClock, unsigned long *rM, unsigned long *rN,
     unsigned long *rP, unsigned long *rC);
@@ -347,6 +351,23 @@ unsigned long IBMramdac526CalculateMNPCForClock(unsigned long RefClock,
 #define		IBM640_AUXPLL	0x04
 #define		IBM640_AUX_HI	0x02
 #define		IBM640_AUX_LO	0x01
+#define RGB640_CURS_X_LOW		0x40
+#define RGB640_CURS_X_HIGH		0x41
+#define RGB640_CURS_Y_LOW		0x42
+#define RGB640_CURS_Y_HIGH		0x43
+#define RGB640_CURS_OFFSETX		0x44
+#define RGB640_CURS_OFFSETY		0x45
+#define RGB640_CURSOR_CONTROL		0x4B
+#define		IBM640_CURS_OFF		0x00
+#define		IBM640_CURS_MODE0	0x01
+#define		IBM640_CURS_MODE1	0x02
+#define		IBM640_CURS_MODE2	0x03
+#define		IBM640_CURS_ADV		0x04
 #define RGB640_VRAM_MASK0		0xf0
 #define RGB640_VRAM_MASK1		0xf1
 #define RGB640_VRAM_MASK2		0xf2
+#define RGB640_CURS_WRITE		0x1000
+#define RGB640_CURS_COL0		0x4800
+#define RGB640_CURS_COL1		0x4801
+#define RGB640_CURS_COL2		0x4802
+#define RGB640_CURS_COL3		0x4803

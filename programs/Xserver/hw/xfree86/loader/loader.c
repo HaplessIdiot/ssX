@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.15.2.13 1998/07/19 13:22:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.22 1998/07/25 16:56:16 dawes Exp $ */
 
 /*
  *
@@ -214,7 +214,7 @@ LoaderInit(void)
 static int
 _GetModuleType(int fd, long offset)
 {
-    unsigned char	buf[10]; /* long enough for the largest magic type */
+    unsigned char	buf[256]; /* long enough for the largest magic type */
 
     if( read(fd,buf,sizeof(buf)) < 0 ) {
 	return -1;

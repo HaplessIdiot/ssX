@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.3 1998/07/31 10:41:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.4 1998/08/02 05:17:05 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -17,8 +17,8 @@
 25                         .
 24                         .
 ---------               --------
-23                         .
-22                         .
+23           ONLY_LEFT_TO_RIGHT_BITBLT
+22           ONLY_TWO_BITBLT_DIRECTIONS
 21           HARDWARE_PATTERN_SCREEN_ORIGIN
 20           TWO_POINT_LINE_NOT_LAST
 19           
@@ -94,6 +94,10 @@
 #define HARDWARE_PATTERN_PROGRAMMED_BITS	0x00010000
 #define HARDWARE_PATTERN_PROGRAMMED_ORIGIN	0x00020000
 #define HARDWARE_PATTERN_SCREEN_ORIGIN		0x00200000
+
+/* copyarea flags */
+#define ONLY_TWO_BITBLT_DIRECTIONS	0x00400000
+#define ONLY_LEFT_TO_RIGHT_BITBLT	0x00800000
 
 /* line flags */
 
@@ -416,6 +420,22 @@ typedef struct _XAAInfoRec {
    int NumScanlineImageWriteBuffers;
    unsigned char **ScanlineImageWriteBuffers;
 
+  /* Image Reads */
+
+   void (*SetupForImageRead) (
+	ScrnInfoPtr pScrn,
+	int bpp, int depth
+   );
+   int ImageReadFlags;
+
+   unsigned char *ImageReadBase;
+   int ImageReadRange;
+
+   void (*SubsequentImageReadRect)(
+	ScrnInfoPtr pScrn,
+	int x, int y, int w, int h
+   );  
+
 
    /***************** Mid Level *****************/
    void (*ScreenToScreenBitBlt)(
@@ -609,6 +629,15 @@ typedef struct _XAAInfoRec {
 	int bpp, int depth
    );
    int WritePixmapFlags;
+
+   void (*ReadPixmap) (
+	ScrnInfoPtr pScrn,
+	int x, int y, int w, int h,
+	unsigned char *dst,	
+	int dstwidth,
+	int bpp, int depth
+   );
+   int ReadPixmapFlags;
 
    /***************** GC Level *****************/
    RegionPtr (*CopyArea)(
@@ -941,6 +970,19 @@ typedef struct _XAAInfoRec {
    );
    int PolyFillArcSolidFlags;
 
+   void (*PutImage)(
+	DrawablePtr pDraw,
+	GCPtr       pGC,
+	int         depth, 
+	int	    x, 
+	int         y, 
+	int	    w, 
+	int	    h,
+	int         leftPad,
+	int         format,
+	char        *pImage
+   );
+   int PutImageFlags;
    
    /* Validation masks */
 

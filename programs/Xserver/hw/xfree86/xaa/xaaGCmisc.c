@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.2 1998/07/25 16:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.3 1998/07/31 10:41:30 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -32,6 +32,24 @@ XAAValidateCopyArea(
 	pGC->ops->CopyArea = infoRec->CopyArea;
    else
 	pGC->ops->CopyArea = XAAFallbackOps.CopyArea;
+}
+
+void
+XAAValidatePutImage(
+   GCPtr         pGC,
+   unsigned long changes,
+   DrawablePtr   pDraw )
+{
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+
+   if(infoRec->PutImage &&
+	CHECK_PLANEMASK(pGC,infoRec->PutImageFlags) &&
+	CHECK_ROP(pGC,infoRec->PutImageFlags) &&
+	CHECK_COLORS(pGC,infoRec->PutImageFlags)
+	)
+	pGC->ops->PutImage = infoRec->PutImage;
+   else
+	pGC->ops->PutImage = XAAFallbackOps.PutImage;
 }
 
 void

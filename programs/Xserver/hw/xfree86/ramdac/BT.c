@@ -23,7 +23,7 @@
  *
  * BT RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.1.2.1 1998/07/18 17:53:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/BT.c,v 1.2 1998/07/25 16:57:17 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -41,7 +41,8 @@ BTramdacRestore(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 
 	/* Here we pass a short, so that we can evaluate a mask too */
 	/* So that the mask is the high byte and the data the low byte */
-	for (i=0;i<0x10;i++) 
+	/* Just the command/status registers */
+	for (i=0x06;i<0x0A;i++) 
 	    (*ramdacPtr->WriteDAC)
 	        (pScrn, i, (ramdacReg->DacRegs[i] & 0xFF00) >> 8, 
 						ramdacReg->DacRegs[i]);
@@ -57,7 +58,8 @@ BTramdacSave(ScrnInfoPtr pScrn, RamDacRecPtr ramdacPtr,
 	for (i=0;i<768;i++)
 	    ramdacReg->DAC[i] = (*ramdacPtr->ReadData)(pScrn);
 
-	for (i=0;i<0x10;i++) 
+	/* Just the command/status registers */
+	for (i=0x06;i<0x0A;i++)
 	    ramdacReg->DacRegs[i] = (*ramdacPtr->ReadDAC)(pScrn, i);
 }
 
@@ -77,7 +79,6 @@ BTramdacProbe(ScrnInfoPtr pScrn, RamDacSupportedInfoRecPtr ramdacs/* , RamDacRec
     (*ramdacPtr->WriteDAC)(pScrn, BT_COMMAND_REG_0, 0x7F, 0x00);
 
     status = (*ramdacPtr->ReadDAC)(pScrn, BT_STATUS_REG);
-ErrorF("0x%x\n",status);
     switch (status) {
 	case 0x40:
 		BTramdac_ID = ATT20C504_RAMDAC;
@@ -89,6 +90,7 @@ ErrorF("0x%x\n",status);
 	case 0x90:
 	case 0xA0:
 	case 0xB0:
+	case 0x28: 	/* This is for the DEC TGA - Questionable ? */
 		BTramdac_ID = BT485_RAMDAC;
 		break;
     }
@@ -102,7 +104,7 @@ ErrorF("0x%x\n",status);
 	return -1;
     } else {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
-		"Attached RAMDAC is %s\n", BTramdacDeviceInfo[BTramdac_ID]);
+		"Attached RAMDAC is %s\n", BTramdacDeviceInfo[BTramdac_ID&0xFFFF]);
     }
 
     for (i=0;ramdacs[i].token != -1;i++) {
@@ -116,7 +118,7 @@ ErrorF("0x%x\n",status);
 	return -1;
     }
 	
-    return BTramdac_ID;
+    return (ramdacPtr->RamDacType == BTramdac_ID);
 }
 
 void
@@ -124,7 +126,7 @@ BTramdacSetBpp(ScrnInfoPtr pScrn, RamDacRegRecPtr ramdacReg)
 {
     /* We need to deal with Direct Colour visuals for 8bpp and other
      * good stuff for colours */
-    switch (pScrn->depth) {
+    switch (pScrn->bitsPerPixel) {
 	case 32:
 	    ramdacReg->DacRegs[BT_COMMAND_REG_1] = 0x10;
 	    break;

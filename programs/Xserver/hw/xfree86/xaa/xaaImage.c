@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.2 1998/07/25 16:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.3 1998/08/02 05:17:06 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -57,6 +57,27 @@ static void MoveDWORDS(
      *(dest + 2) = *(src + 2);
 }
 
+static void MoveDWORDS_FixedSrc(
+   register CARD32* dest,
+   register CARD32* src,
+   register int dwords )
+{
+     while(dwords & ~0x03) {
+	*dest = *src;
+	*(dest + 1) = *src;
+	*(dest + 2) = *src;
+	*(dest + 3) = *src;
+	dest += 4;
+	dwords -= 4;
+     }	
+     if(!dwords) return;
+     *dest = *src;
+     if(dwords == 1) return;
+     *(dest + 1) = *src;
+     if(dwords == 2) return;
+     *(dest + 2) = *src;
+}
+
 void 
 XAAWritePixmap (
    ScrnInfoPtr pScrn,
@@ -103,17 +124,7 @@ XAAWritePixmap (
 
 BAD_ALIGNMENT:
 
-    switch(Bpp) {
-    case 1:	dwords = (w + 3) >> 2;
-		break;
-    case 2:	dwords = (w + 1) >> 1;
-		break;
-    case 3:	dwords = ((w + 1) * 3) >> 2;
-		break;
-    case 4:	dwords = w;
-		break;
-    default: return; 
-    }
+    dwords = ((w * Bpp) + 3) >> 2;
 
     if((infoRec->ImageWriteFlags & CPU_TRANSFER_PAD_QWORD) && 
 						((dwords * h) & 0x01)) {
@@ -237,17 +248,7 @@ XAAWritePixmapScanline (
 
 BAD_ALIGNMENT:
 
-    switch(Bpp) {
-    case 1:	dwords = (w + 3) >> 2;
-		break;
-    case 2:	dwords = (w + 1) >> 1;
-		break;
-    case 3:	dwords = ((w + 1) * 3) >> 2;
-		break;
-    case 4:	dwords = w;
-		break;
-    default: return; 
-    }
+    dwords = ((w * Bpp) + 3) >> 2;
 
     (*infoRec->SetupForScanlineImageWrite)(
 				pScrn, rop, planemask, trans, bpp, depth);
@@ -278,6 +279,176 @@ BAD_ALIGNMENT:
 	base[dwords] = *((CARD32*)src) >> shift;
 	(*infoRec->SubsequentImageWriteScanline)(pScrn, bufferNo);
     }
+
+    SET_SYNC_FLAG(infoRec);
+}
+
+
+void
+XAAPutImage(
+    DrawablePtr pDraw,
+    GCPtr       pGC,
+    int         depth, 
+    int 	x, 
+    int		y, 
+    int		w, 
+    int		h,
+    int         leftPad,
+    int         format,
+    char        *pImage
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    if(!w || !h) return;
+
+    if(((format == ZPixmap) && infoRec->WritePixmap &&
+	     CHECK_ROP(pGC,infoRec->WritePixmapFlags) &&
+	     CHECK_PLANEMASK(pGC,infoRec->WritePixmapFlags) &&
+	     !((infoRec->ImageWriteFlags & NO_GXCOPY) && 
+	     (pGC->alu == GXcopy))) ||
+       ((format == XYBitmap) && infoRec->WriteBitmap &&
+	     CHECK_ROP(pGC,infoRec->WriteBitmapFlags) &&
+	     CHECK_PLANEMASK(pGC,infoRec->WriteBitmapFlags) &&
+	     CHECK_COLORS(pGC,infoRec->WriteBitmapFlags) &&
+	     !(infoRec->WriteBitmapFlags & TRANSPARENCY_ONLY))){
+
+	int MaxBoxes = REGION_NUM_RECTS(pGC->pCompositeClip);
+	BoxPtr pbox, pClipBoxes;
+	int nboxes, srcx, srcy, srcwidth;
+	xRectangle TheRect;
+
+	TheRect.x = pDraw->x + x;
+	TheRect.y = pDraw->y + y;
+	TheRect.width = w;
+	TheRect.height = h; 
+
+	if(MaxBoxes > infoRec->NumPreAllocBoxes) {
+	   pClipBoxes = (BoxPtr)ALLOCATE_LOCAL(MaxBoxes * sizeof(BoxRec));
+	   if(!pClipBoxes) return;	
+	} else pClipBoxes = infoRec->PreAllocBoxes;
+
+	nboxes = 
+	  XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 1, &TheRect);
+	pbox = pClipBoxes;
+
+	if(format == XYBitmap) {
+	    srcwidth = ((leftPad + w + 31) >> 5) << 2;
+	    while(nboxes--) {
+		srcx = pbox->x1 - TheRect.x + leftPad;
+		srcy = pbox->y1 - TheRect.y;
+		(*infoRec->WriteBitmap)(infoRec->pScrn, pbox->x1, pbox->y1, 
+			pbox->x2 - pbox->x1, pbox->y2 - pbox->y1, 
+			(unsigned char*)pImage + 
+				(srcwidth * srcy) + ((srcx >> 5) << 2), 
+			srcwidth, srcx & 31, pGC->fgPixel, pGC->bgPixel,
+	 		pGC->alu, pGC->planemask);
+		pbox++;
+	    }
+        } else {
+	    /* here we assume XImages match the framebuffer.  We will have
+	       to lookup Bpp by depth when this changes */
+	    int Bpp = infoRec->pScrn->bitsPerPixel >> 3;
+	    srcwidth = (((leftPad + w) * Bpp) + 3) & ~0x00000003;
+	    while(nboxes--) {
+		srcx = pbox->x1 - TheRect.x + leftPad;
+		srcy = pbox->y1 - TheRect.y;
+		(*infoRec->WritePixmap)(infoRec->pScrn, pbox->x1, pbox->y1, 
+			pbox->x2 - pbox->x1, pbox->y2 - pbox->y1, 
+			(unsigned char*)pImage + 
+				(srcwidth * srcy) + (srcx * Bpp), 
+			srcwidth, pGC->alu, pGC->planemask, -1, 
+			Bpp << 3, depth);
+		pbox++;
+	    }
+	}
+
+	if(pClipBoxes != infoRec->PreAllocBoxes)
+	   DEALLOCATE_LOCAL(pClipBoxes);
+    } else 
+	XAAFallbackOps.PutImage(pDraw, pGC, depth, x, y, w, h, leftPad, 
+				format, pImage);
+}
+
+
+void 
+XAAReadPixmap (
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   unsigned char *dst,	
+   int dstwidth,	/* bytes */
+   int bpp, int depth
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    int ReadDwords, WriteBytes, Surplus, Bpp = bpp >> 3; 
+    unsigned char *tmp;
+    Bool PlusOne = FALSE;
+    union {
+	CARD32 IntData;
+	unsigned char CharData[4];
+    } extra;
+
+    WriteBytes = w * Bpp;
+    ReadDwords = (WriteBytes + 3) >> 2;
+
+    if((infoRec->ImageReadFlags & CPU_TRANSFER_PAD_QWORD) && 
+				((ReadDwords * h) & 0x01)) {
+	PlusOne = TRUE;
+    } 
+
+
+    (*infoRec->SetupForImageRead)(pScrn, bpp, depth);
+    (*infoRec->SubsequentImageReadRect)(pScrn, x, y, w, h);
+
+    if(ReadDwords > infoRec->ImageWriteRange) {
+	if((Surplus = (ReadDwords << 2) - WriteBytes)) {
+	    ReadDwords--;
+	    while(h--) {
+		if(ReadDwords)
+		    MoveDWORDS_FixedSrc((CARD32*)dst, 
+			(CARD32*)infoRec->ImageReadBase, ReadDwords);
+		extra.IntData = *((CARD32*)infoRec->ImageReadBase);
+		tmp = dst + (ReadDwords << 2); 
+		switch(Surplus) {
+		case 3: tmp[2] = extra.CharData[2];
+		case 2: tmp[1] = extra.CharData[1];
+		case 1: tmp[0] = extra.CharData[0];
+		}
+		dst += dstwidth;
+	    }
+	} else {
+	    while(h--) {
+		MoveDWORDS_FixedSrc((CARD32*)dst, 
+			(CARD32*)infoRec->ImageReadBase, ReadDwords);
+		dst += dstwidth;
+	    }
+	}
+    } else {
+	if((Surplus = (ReadDwords << 2) - WriteBytes)) {
+	    ReadDwords--;
+	    while(h--) {
+		if(ReadDwords)
+		   MoveDWORDS((CARD32*)dst, 
+			(CARD32*)infoRec->ImageReadBase, ReadDwords);
+		extra.IntData = 
+			*((CARD32*)(infoRec->ImageReadBase) + ReadDwords);
+		tmp = dst + (ReadDwords << 2); 
+		switch(Surplus) {
+		case 3: tmp[2] = extra.CharData[2];
+		case 2: tmp[1] = extra.CharData[1];
+		case 1: tmp[0] = extra.CharData[0];
+		}
+		dst += dstwidth;
+	    }
+	} else {
+	    while(h--) {
+		MoveDWORDS((CARD32*)dst, 
+			(CARD32*)infoRec->ImageReadBase, ReadDwords);
+		dst += dstwidth;
+	    }
+	}
+    }
+
+    if(PlusOne) 
+	extra.IntData = *((CARD32*)infoRec->ImageReadBase);
 
     SET_SYNC_FLAG(infoRec);
 }

@@ -1,3 +1,78 @@
+XFree86 3.9Na (14 August 1998)
+1738. Enable mmap support in Xvfb for Linux (#1889, Douglas Ridgway).
+1737. Xv DDX layer for XFree86, and add documentation for it to the DESIGN
+      doc (#1883, 1884, Mark Vojkovich).
+1736. Modify AddScreen() and AllocateScreenPrivateIndex() to initialise new
+      screen devPrivates to zero.
+1735. Ansify the Xv server dix code (#1881, Mark Vojkovich).
+1734. XAA doc update (#1880, Mark Vojkovich).
+1733. Cache the fg, bg and planemask values in the MGA driver and only
+      change them when needed (#1878, Mark Vojkovich).
+1732. Preliminary ImageRead support for the MGA driver (disabled) (#1879,
+      Mark Vojkovich).
+1731. Preliminary ImageRead support (#1878, Mark Vojkovich).
+1730. Use accelerated ImageWrites for PutImage and BackingStore and SaveUnder
+      pixmap restores (#1878, Mark Vojkovich).
+1729. Fix an XAA text rendering bug for rotated text (#1878, Mark Vojkovich).
+1728. Tseng driver updates:
+       - Add DPMS support
+       - Replace some Boolean options with Tristate options
+       - Add ET4000W32p support and the ICS5341 16-bit ramdac support
+       - 1bpp and 4bpp support added (1bpp doesn't work yet)
+       - cleanup mode validation code
+      (#1877, Koen Gadeyne).
+1727. Fix problems using ffs() in the X server on 64bit platforms
+      (specifically Linux/Alpha) (#1876, Raphael Finkel).
+1726. Fix for palette problems with the BT ramdac support in the ramdac
+      module (#1873, Alan Hourihane).
+1725. Export the symbols __remq and __remqu from the loader for Alpha
+      platforms (#1872, Alan Hourihane).
+1724. Fix a 24/32bpp problem with the IBM code in the ramdac module
+      (#1871, Alan Hourihane).
+1723. Change the way the depth/bpp/fbbpp values are selected form the
+      command line and config file to prevent inconsistently mixing values
+      from the two sources (#1868, Alan Hourihane).
+1722. Fix some XAA hw cursor problems:
+       - Apply the HARDWARE_CURSOR_INVERT_MASK flag only after applying
+         HARDWARE_CURSOR_AND_SOURCE_WITH_MASK
+       - Fix the 1-bit interleaving code
+      (#1867, Koen Gadeyne).
+1721. Remove all the (currently unused) colour expansion code from
+      the old branch that replaced some XAA functions.  This should no
+      longer be necessary (#1866, Koen Gadeyne).
+1720. Add XAA hw cursor support for the ET6000 (#1866, Koen Gadeyne).
+1719. Fix some problems that showed up with the glint driver when
+      using a P2 and TX500 card together (#1861, Dirk Hohndel).
+1718. Have the glint driver remove all but one mode since the chipset
+      doesn't support panning (#1859, 1870, Alan Hourihane).
+1717. Update the loader to correctly identify dll ELF modules (#1858,
+      Itai Nahshon).
+1716. Fix an infinite loop in the xf86Config code that can happen with a
+      config file error (#1858, Itai Nahshon).
+1715. Resync the TGA driver with changes elsewhere (#1856, 1874,
+      Alan Hourihane).
+1714. Glint driver updates, including:
+       - HW cursor for IBM 526 and 640 ramdacs
+       - Depth 30 support for the IBM 640
+       - GLINT MX (ELSA Gloria XL) support
+       - More acceleration for the TX/MX chipsets
+       - Fixes for Alpha platforms
+       - Major acceleration updates for Permedia, Permedia2, 500TX and MX chips
+       - Permedia 2v cleanups
+      (#1855, 1857, 1860, 1863, 1864, 1865, 1890, Alan Hourihane).
+1713. Add support for depth 30 to xf86SetWeight() (#1854, Alan Hourihane).
+1712. Reinstate the ONLY_LEFT_TO_RIGHT_BITBLT and ONLY_TWO_BITBLT_DIRECTIONS
+      XAA options (#1853, Alan Hourihane).
+1711. Add support for the IBM 640 ramdac to the ramdac module (#1852,
+      Alan Hourihane).
+1710. Add finer grained offscreen memory management for the accelerator
+      to the Tseng driver to allow as many acceleration features to be
+      enabled as can be supported by the available offscreen memory
+      (#1851, Koen Gadeyne).
+1709. Add XAA scanline colour expansion, screen-to-screen colour expansion,
+      8x8 colour pattern fills, ImageWrite to the Tseng driver (#1851,
+      Koen Gadeyne).
+
 XFree86 3.9N (2 August 1998)
 1708. Fix some XAA problems (#1850, Mark Vojkovich and Koen Gadeyne).
 1707. Rename some of the XAA colour expansion stuff, and update the XAA docs
@@ -6210,4 +6285,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.606 1998/07/31 10:41:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.607 1998/08/02 05:16:52 dawes Exp $
