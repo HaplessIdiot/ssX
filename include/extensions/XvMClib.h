@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XvMClib.h,v 1.4 2001/06/11 23:21:00 mvojkovi Exp $ */
+/* $XFree86: xc/include/extensions/XvMClib.h,v 1.5 2001/06/20 20:09:34 mvojkovi Exp $ */
 
 #ifndef _XVMCLIB_H_
 #define _XVMCLIB_H_
@@ -148,7 +148,6 @@ Status XvMCRenderSurface (
    XvMCSurface *past_surface,
    XvMCSurface *future_surface,
    unsigned int flags,
-   unsigned int scan_order,
    unsigned int num_macroblocks,
    unsigned int first_macroblock,
    XvMCMacroBlockArray *macroblock_array,
@@ -180,43 +179,6 @@ Status XvMCCreateMacroBlocks (
 Status XvMCDestroyMacroBlocks (
    Display *display,
    XvMCMacroBlockArray *block
-);
-
-
-Status XvMCLoadIntraQuantizerMatrix (
-   Display *display,
-   XvMCContext *context,
-   unsigned char matrix[64]
-);
-
-Status XvMCLoadNonIntraQuantizerMatrix (
-   Display *display,
-   XvMCContext *context,
-   unsigned char matrix[64]
-);
-
-Status XvMCLoadChromaIntraQuantizerMatrix (
-   Display *display,
-   XvMCContext *context,
-   unsigned char matrix[64]
-);
-
-Status XvMCLoadChromaNonIntraQuantizerMatrix (
-   Display *display,
-   XvMCContext *context,
-   unsigned char matrix[64]
-);
-
-Status XvMCSetQuantizerScale(
-   Display *display,
-   XvMCContext *context,
-   int scale
-);
-
-Status XvMCSetIntraDCPrecision(
-   Display *display,
-   XvMCContext *context,
-   int prec
 );
 
 XvAttribute *

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.4 2001/04/07 11:04:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmc.c,v 1.5 2001/10/28 03:32:52 tsi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -149,7 +149,6 @@ ProcXvMCListSurfaceTypes(ClientPtr client)
 	surface = adaptor->surfaces[i];
 	info.surface_type_id = surface->surface_type_id;
 	info.chroma_format = surface->chroma_format;
-	info.color_description = surface->color_description;
 	info.max_width = surface->max_width;
 	info.max_height = surface->max_height;
 	info.subpicture_max_width = surface->subpicture_max_width;
