@@ -9,10 +9,10 @@ David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>Last modified on: 16 January 2002
+<Date>Last modified on: 9 November 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.62 2001/06/05 20:12:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.63 2002/01/16 22:35:18 herrb Exp $
 </ident>
 <toc>
 
@@ -31,7 +31,7 @@ The sources for XFree86 are available by anonymous ftp from:
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/&relvers;"
 url="ftp://ftp.XFree86.org/pub/XFree86/&relvers;">
 
-Binaries for NetBSD 1.4 and later are available from:
+Binaries for NetBSD 1.5 and later are available from:
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/&relvers;/binaries/NetBSD"
 url="ftp://ftp.XFree86.org/pub/XFree86/&relvers;/NetBSD">
 
@@ -466,8 +466,18 @@ and <bf/__bsdi__/ for BSD/386.
 <sect> Thanks
 <p>
 Many thanks to all people who contributed to make XFree86 work on
-*BSD, in particular, <bf/David Dawes/,
-<bf/Pace Willison/, <bf/Amancio Hasty/, <bf/Christoph Robitschko/,
-<bf/Nate Williams/, <bf/Rod Grimes/, <bf/Jack Velte/ and <bf/Michael Smith/.
+*BSD, in particular:
+<bf/David Dawes/,
+<bf/Todd Fries/,
+<bf/Rod Grimes/,
+<bf/Charles Hannum/,
+<bf/Amancio Hasty/, 
+<bf/Christoph Robitschko/,
+<bf/Matthias Scheler/,
+<bf/Michael Smith/,
+<bf/Ignatios Souvatzis/,
+<bf/Jack Velte/,
+<bf/Nate Williams/ and
+<bf/Pace Willison/.
 
 </article>
