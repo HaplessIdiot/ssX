@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mp/mp.h,v 1.4 2002/11/08 08:01:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mp.h,v 1.5tsi Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -73,27 +73,27 @@
 
 #if ULONG_MAX > 4294967295UL
   /* sizeof(long) == 8 and sizeof(int) == 4 */
-  #define BNI		unsigned long
-  #define BNS		unsigned int
-  #define MINSLONG	0x8000000000000000UL
-  #define CARRY		0x100000000
-  #define LMASK		0xffffffff00000000UL
-  #define SMASK		0x00000000ffffffffUL
-  #define BNIBITS	64
-  #define BNSBITS	32
-  #ifndef LONG64
-    #define LONG64
-  #endif
+# define BNI		unsigned long
+# define BNS		unsigned int
+# define MINSLONG	0x8000000000000000UL
+# define CARRY		0x100000000
+# define LMASK		0xffffffff00000000UL
+# define SMASK		0x00000000ffffffffUL
+# define BNIBITS	64
+# define BNSBITS	32
+# ifndef LONG64
+#  define LONG64
+# endif
 #else
   /* sizeof(long) == 4 and sizeof(short) == 2 */
-  #define BNI		unsigned long
-  #define BNS		unsigned short
-  #define MINSLONG	0x80000000UL
-  #define CARRY		0x10000
-  #define LMASK		0xffff0000UL
-  #define SMASK		0x0000ffffUL
-  #define BNIBITS	32
-  #define BNSBITS	16
+# define BNI		unsigned long
+# define BNS		unsigned short
+# define MINSLONG	0x80000000UL
+# define CARRY		0x10000
+# define LMASK		0xffff0000UL
+# define SMASK		0x0000ffffUL
+# define BNIBITS	32
+# define BNSBITS	16
 #endif
 
 #ifdef MAX

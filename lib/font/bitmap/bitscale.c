@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.27 2002/09/24 20:52:48 tsi Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.28tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -625,7 +625,7 @@ FindPmfToScale(FontPathElementPtr fpe, FontEntryPtr entry,
 	       the matrix appropriately */
 	    vals->pixel_matrix[0] *= rescale_x;
 	    vals->pixel_matrix[1] *= rescale_x;
-    #ifdef NOTDEF
+#ifdef NOTDEF
 	    /* This would force the pointsize and pixelsize fields in the
 	       FONT property to display as matrices to more accurately
 	       report the font being supplied.  It might also break existing
@@ -633,9 +633,9 @@ FindPmfToScale(FontPathElementPtr fpe, FontEntryPtr entry,
 	    vals->values_supplied =
 		vals->values_supplied & ~(PIXELSIZE_MASK | POINTSIZE_MASK) |
 		PIXELSIZE_ARRAY;
-    #else /* NOTDEF */
+#else /* NOTDEF */
 	    vals->values_supplied = vals->values_supplied & ~POINTSIZE_MASK;
-    #endif /* NOTDEF */
+#endif /* NOTDEF */
 	    /* Recompute and reround the FontScalablePtr values after
 	       rescaling for the new width. */
 	    FontFileCompleteXLFD(vals, vals);

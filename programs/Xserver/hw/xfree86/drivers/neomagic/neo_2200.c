@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.18 2002/10/08 22:14:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.19tsi Exp $ */
 /*
  * The original Precision Insight driver for
  * XFree86 v.3.3 has been sponsored by Red Hat.
@@ -541,7 +541,7 @@ Neo2200SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 #endif
     OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags 
 	   | ((skipleft << 2) & 0x1C));
- #ifdef NEO_DO_CLIPPING
+#ifdef NEO_DO_CLIPPING
     OUTREG(NEOREG_CLIPLT, (y << 16) | (x + skipleft));
     OUTREG(NEOREG_CLIPRB, ((y + h) << 16) | (x + w));
 #endif

@@ -49,7 +49,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.9 2001/11/06 16:11:36 alanh Exp $ */
+/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.10tsi Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -68,24 +68,24 @@ from The Open Group.
 void
 #if NeedVarargsPrototypes
 snfError(char* message, ...)
-      #else
-      snfError (message, va_alist)
-          char* message;
-          va_dcl
-      #endif
-      {
-                  va_list args;
-              
-                  #if NeedVarargsPrototypes
-                          va_start (args, message);
-              #else
-                          va_start (args);
-              #endif
-                      
-                              fprintf(stderr, "SNF Error: ");
-                  vfprintf(stderr, message, args);
-                  va_end (args);
-              }
+#else
+snfError (message, va_alist)
+    char* message;
+    va_dcl
+#endif
+{
+    va_list args;
+
+#if NeedVarargsPrototypes
+    va_start(args, message);
+#else
+    va_start(args);
+#endif
+
+    fprintf(stderr, "SNF Error: ");
+    vfprintf(stderr, message, args);
+    va_end(args);
+}
               
 static void snfUnloadFont(FontPtr pFont);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_xv.c,v 1.4 2001/06/15 21:22:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_xv.c,v 1.5tsi Exp $ */
 /*
 Copyright (C) 2000 The XFree86 Project, Inc.  All Rights Reserved.
 
@@ -115,7 +115,7 @@ void S3VInitVideo(ScreenPtr pScreen)
        && ps3v->XVideo
        )
     {
-	#if 0
+#if 0
 	if((pMga->Overlay8Plus24 /* || dualhead */ || pMga->TexturedVideo) &&
 	   (pScrn->bitsPerPixel != 24))
         {
@@ -123,12 +123,12 @@ void S3VInitVideo(ScreenPtr pScreen)
 	    newAdaptor = MGASetupImageVideoTexture(pScreen);
 	    pMga->TexturedVideo = TRUE;
 	} else {
-	#endif
+#endif
 
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using overlay video\n");
 	    newAdaptor = S3VSetupImageVideoOverlay(pScreen);
 
-	#if 0
+#if 0
 	    pMga->TexturedVideo = FALSE;
 	}*/
 
@@ -136,7 +136,7 @@ void S3VInitVideo(ScreenPtr pScreen)
 	  S3VInitOffscreenImages(pScreen);
 	pMga->BlockHandler = pScreen->BlockHandler;
 	pScreen->BlockHandler = MGABlockHandler;
-	#endif
+#endif
     }
     
 

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.24 2002/04/04 14:05:47 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.26tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -764,9 +764,9 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 				pSmi->shadowFB ? "enabled" : "disabled");
 	}
 
-	#if 1 /* PDR#932 */
+#if 1 /* PDR#932 */
 	if ((pScrn->depth == 8) || (pScrn->depth == 16))
-	#endif /* PDR#932 */
+#endif /* PDR#932 */
 	if ((s = xf86GetOptValString(pSmi->Options, OPTION_ROTATE)))
 	{
 		if(!xf86NameCmp(s, "CW"))
@@ -2341,7 +2341,7 @@ SMI_ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 	if (!pSmi->useBIOS || pSmi->lcd)
 	{
-		#if 1 /* PDR#983 */
+#if 1 /* PDR#983 */
 		if (pSmi->zoomOnLCD)
 		{
 			if (   (mode->HDisplay > pSmi->lcdWidth)
@@ -2353,7 +2353,7 @@ SMI_ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 			}
 		}
 		else
-		#endif
+#endif
 		{
 			if (   (mode->HDisplay != pSmi->lcdWidth)
 				|| (mode->VDisplay != pSmi->lcdHeight)
@@ -2366,7 +2366,7 @@ SMI_ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 	}
 
-	#if 1 /* PDR#944 */
+#if 1 /* PDR#944 */
 	if (pSmi->rotate)
 	{
 		if (   (mode->HDisplay != pSmi->lcdWidth)
@@ -2377,7 +2377,7 @@ SMI_ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 			return(MODE_PANEL);
 		}
 	}
-	#endif
+#endif
 
 	LEAVE_PROC("SMI_ValidMode");
 	return(MODE_OK);
@@ -2859,22 +2859,22 @@ SMI_AdjustFrame(int scrnIndex, int x, int y, int flags)
 	if (SMI_LYNX3D_SERIES(pSmi->Chipset))
 	{
 		Base = (Base + 15) & ~15;
-		#if 1 /* PDR#1058 */
+#if 1 /* PDR#1058 */
 		while ((Base % pSmi->Bpp) > 0)
 		{
 			Base -= 16;
 		}
-		#endif
+#endif
 	}
 	else
 	{
 		Base = (Base + 7) & ~7;
-		#if 1 /* PDR#1058 */
+#if 1 /* PDR#1058 */
 		while ((Base % pSmi->Bpp) > 0)
 		{
 			Base -= 8;
 		}
-		#endif
+#endif
 	}
 
 	WRITE_VPR(pSmi, 0x0C, Base >> 3);
@@ -3098,7 +3098,7 @@ SMI_DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 		return;
 	}
 
-	#if 1 /* PDR#735 */
+#if 1 /* PDR#735 */
 	if (pSmi->pInt10 != NULL)
 	{
 		pSmi->pInt10->ax = 0x4F10;
@@ -3126,19 +3126,19 @@ SMI_DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 		if (pSmi->pInt10->ax == 0x004F)
 		{
 			pSmi->CurrentDPMS = PowerManagementMode;
-			#if 1 /* PDR#835 */
+#if 1 /* PDR#835 */
 			if (PowerManagementMode == DPMSModeOn)
 			{
 				SR01 = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x01);
 				VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x01,
 						SR01 & ~0x20);
 			}
-			#endif
+#endif
 			LEAVE_PROC("SMI_DisplayPowerManagementSet");
 			return;
 		}
 	}
-	#endif
+#endif
 
 	/* Save the current SR registers */
 	if (pSmi->CurrentDPMS == DPMSModeOn)

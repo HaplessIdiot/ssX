@@ -36,6 +36,7 @@
 /*
 ** $Header$
 */
+/* $XFree86$ */
 
 #include "gluos.h"
 #include <stdlib.h>
@@ -609,9 +610,9 @@ void OpenGLSurfaceEvaluator::inDoEvalCoord2(REAL u, REAL v,
 
 
 
-  #ifdef DEBUG
+#ifdef DEBUG
   printf("vertex(%f,%f,%f)\n", retPoint[0],retPoint[1],retPoint[2]);
-  #endif
+#endif
   
 
 

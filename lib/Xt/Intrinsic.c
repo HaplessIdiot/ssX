@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.20 2001/12/14 19:56:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.21tsi Exp $ */
 
 /*
 
@@ -1189,9 +1189,9 @@ static char *ExtractLocaleName(lang)
 #   define STARTCHAR ':'
 #   define ENDCHAR ';'
 #  else
-   /* HPUX 10 */
-    #define ENDCHAR ' '
-   #endif
+    /* HPUX 10 */
+#   define ENDCHAR ' '
+#  endif
 # else
 #  ifdef ultrix
 #   define SKIPCOUNT 2

@@ -31,6 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
+/* $XFree86$ */
 
 /*
  * slicer.c++
@@ -60,7 +61,7 @@
 /*USE_OPTTT is initiated in trimvertex.h*/
 
 #ifdef USE_OPTTT
-	#include <GL/gl.h>
+#	include <GL/gl.h>
 #endif
 
 //#define USE_READ_FLAG //whether to use new or old tesselator
