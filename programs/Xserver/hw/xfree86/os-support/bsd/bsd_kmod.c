@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -18,7 +20,7 @@
  */
 int xf86LoadKernelModule(const char *modName)
 {
-    if (kldload(modName))
+    if (kldload(modName) != -1)
 	return 1;
     else
 	return 0;
