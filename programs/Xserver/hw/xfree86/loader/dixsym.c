@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.54 2003/05/25 03:53:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.55 2003/07/07 16:38:34 alanh Exp $ */
 
 
 /*
@@ -177,6 +177,8 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(DPMSEnabledSwitch)
   SYMVAR(DPMSDisabledSwitch)
   SYMVAR(defaultDPMSEnabled)
+  /* bigreq */
+  SYMVAR(maxBigRequestSize)
 #ifdef XV
   /* XXX These are exported from the DDX, not DIX. */
   SYMVAR(XvScreenInitProc)

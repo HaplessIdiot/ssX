@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.151 2003/06/11 16:06:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.152 2003/06/18 13:35:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -323,6 +323,9 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
     case ACTION_SWITCHSCREEN:
 	if (VTSwitchEnabled && !xf86Info.dontVTSwitch && arg) {
 	    int vtno = *((int *) arg);
+#ifdef SCO
+	    vtno--;
+#endif
 #if defined(QNX4)
 	    xf86Info.vtRequestsPending = vtno;
 #else
@@ -333,8 +336,12 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
 	break;
     case ACTION_SWITCHSCREEN_NEXT:
 	if (VTSwitchEnabled && !xf86Info.dontVTSwitch) {
+#if defined(SCO) /* Shouldn't this be true for (sun) && (i386) && (SVR4) ? */
+	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) < 0)
+#else
 	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno + 1) < 0)
-#if defined(SCO) || (defined(sun) && defined (i386) && defined (SVR4))
+#endif
+#if defined (SCO) || (defined(sun) && defined (i386) && defined (SVR4))
 		if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 0) < 0)
 #else
 		if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 1) < 0)
@@ -343,7 +350,7 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
 	}
 	break;
     case ACTION_SWITCHSCREEN_PREV:
-	if (VTSwitchEnabled && !xf86Info.dontVTSwitch) {
+	if (VTSwitchEnabled && !xf86Info.dontVTSwitch && xf86Info.vtno > 0) {
 	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno - 1) < 0)
 		ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
 	}
@@ -762,9 +769,6 @@ special:
 	    int vtno = specialkey - KEY_F1 + 1;
 	    if (specialkey == KEY_F11 || specialkey == KEY_F12)
 		vtno = specialkey - KEY_F11 + 11;
-#ifdef SCO325
-	    vtno--;
-#endif
 	    if (down)
 		xf86ProcessActionEvent(ACTION_SWITCHSCREEN, (void *) &vtno);
 	    return;

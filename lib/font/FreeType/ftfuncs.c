@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.30 2003/06/12 16:04:51 tsi Exp $ */
 
 #include "fontmisc.h"
 
@@ -1234,13 +1234,15 @@ FreeTypeLoadFont(FTFontPtr *font_return, FTFacePtr face,
         return xrc;
     
     if(entry->name.ndashes == 14) {
-        if(FTPickMapping(entry->name.name, entry->name.length, fileName,
-                         font->instance->face->face, &font->mapping))
-            return BadFontName;
+        xrc = FTPickMapping(entry->name.name, entry->name.length, fileName,
+			    font->instance->face->face, &font->mapping);
+	if (xrc != Successful)
+	    return xrc;
     } else {
-        if(FTPickMapping(0, 0, fileName, 
-                         font->instance->face->face, &font->mapping))
-            return BadFontName;
+        xrc = FTPickMapping(0, 0, fileName, 
+			    font->instance->face->face, &font->mapping);
+	if (xrc != Successful)
+	    return xrc;
     }
     
 

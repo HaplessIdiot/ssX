@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.14 2003/07/04 16:24:28 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -466,23 +466,23 @@ CHIPSAllocateMemory(
 
    pScreen = screenInfo.screens[pScrn->scrnIndex];
 
-   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 16, 
+   new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8, 
    						NULL, NULL, NULL);
 
    if(!new_linear) {
 	int max_size;
 
-	xf86QueryLargestOffscreenLinear(pScreen, &max_size, 16, 
+	xf86QueryLargestOffscreenLinear(pScreen, &max_size, 8, 
 						PRIORITY_EXTREME);
 	
 	if(max_size < size)
 	   return NULL;
 
 	xf86PurgeUnlockedOffscreenAreas(pScreen);
-	new_linear = xf86AllocateOffscreenLinear(pScreen, size, 16, 
+	new_linear = xf86AllocateOffscreenLinear(pScreen, size, 8, 
 						NULL, NULL, NULL);
    }
-
+   
    return new_linear;
 }
 

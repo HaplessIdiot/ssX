@@ -1,4 +1,22 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 314. Fixed Radeon driver so that clone modes survive server reset 
+      (BugzillaR #487, Egbert Eich).
+ 313. Changed behavior of FreeType and Type1 renderer: when no encoding file
+      is found fail with BadFontName instead of using an iso8859-1 encoding
+      (Bugzilla #479, Roland Mainz, Juliusz Chroboczek, Egbert Eich).
+ 312. Fixed screen switching problem on SCO where VT was off by one 
+      (Bugzilla #470, Kean Johnston).
+ 311. S3 driver:
+      . allow only specific displayWidths when acceleration is enabled 
+      . added double_scan support (Egbert Eich).
+ 310. Removed build rules for hp Xserver that was recently removed from 
+      Xserver/Imakefile (Egbert Eich).
+ 309. Fixes for C&T driver: 
+      . switch to SW mouse in doublescan modes.
+      . centered video correctly for all interlaced modes (docs were
+        misleading).
+      . fixed README (Egbert Eich).
+ 308. Fixed a typo in mkfontscale (Bugzilla #491, Juliusz Chroboczek).
  307. A lot of X server prototype cleanups, including fixing an
       inconsistency between the cfbBitBlt and CopyPlane functions 
       exposed by the prototyping (#A.1859, Alexander Stohr).
@@ -17306,7 +17324,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2775 2003/07/15 17:34:52 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2776 2003/07/16 01:38:38 dawes Exp $
 
 
 

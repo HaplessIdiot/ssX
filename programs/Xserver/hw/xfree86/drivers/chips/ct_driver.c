@@ -5767,9 +5767,11 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	     * This handles 1024 and 1280 interlaced modes only. Its 
 	     * pretty arbitrary, but its what C&T recommends
 	     */
+#if 0
 	    if (mode->CrtcHDisplay == 1024)
 		cPtr->OverlaySkewY += 5;
-	    if (mode->CrtcHDisplay == 1280)
+	    else  if (mode->CrtcHDisplay == 1280)
+#endif
 		cPtr->OverlaySkewY *= 2;
 	    
 	}

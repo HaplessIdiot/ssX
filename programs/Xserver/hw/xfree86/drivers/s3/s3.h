@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.15 2002/09/18 17:11:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.17 2003/07/04 16:24:28 eich Exp $ */
 
 
 #ifndef _S3_H
@@ -165,6 +165,7 @@ typedef struct _S3Rec {
 	unsigned char		*imageBuffer;
 	int			imageWidth;
 	int			imageHeight;
+    Bool			hwCursor;
 } S3Rec, *S3Ptr;
 
 #define S3PTR(p)		((S3Ptr)((p)->driverPrivate))

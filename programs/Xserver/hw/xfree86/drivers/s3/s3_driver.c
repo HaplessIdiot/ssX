@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.13 2003/07/04 16:24:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.14 2003/07/07 15:34:25 eich Exp $ */
 
 
 #include "xf86.h"
@@ -245,6 +245,7 @@ static const char *xaaSymbols[] = {
 	NULL
 };
 
+static int s3AccelLinePitches[] = { 640, 800, 1024, 1280, 1600 };
 
 #ifdef XFree86LOADER
 
@@ -710,13 +711,15 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	clockRanges->maxClock = pS3->MaxClock;
 	clockRanges->clockIndex = -1;
 	clockRanges->interlaceAllowed = FALSE;	/* not yet */
-	clockRanges->doubleScanAllowed = FALSE;	/* not yet */
-
+	clockRanges->doubleScanAllowed = TRUE;	/* not yet */
+	
         i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
                               pScrn->display->modes, clockRanges,
-                              NULL, 256, 2048, pScrn->bitsPerPixel,
-                              128, 2048, pScrn->display->virtualX,
-                              pScrn->display->virtualY, pScrn->videoRam * 1024,
+                              pS3->NoAccel ? NULL : s3AccelLinePitches,
+			      256, 2048,
+			      pScrn->bitsPerPixel, 128, 2048,
+			      pScrn->display->virtualX,
+			      pScrn->display->virtualY, pScrn->videoRam * 1024,
                               LOOKUP_BEST_REFRESH);
 
         if (i == -1) {
@@ -1155,6 +1158,7 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pS3->pixMuxShift = S3GetPixMuxShift(pScrn);
 
 	pS3->s3BppDisplayWidth = pScrn->displayWidth * pS3->s3Bpp;
+	pS3->hwCursor = (mode->Flags & V_DBLSCAN) ? FALSE : TRUE;
 	pS3->HDisplay = mode->HDisplay;
 
 	pS3->s3ScissB = ((pScrn->videoRam * 1024) / pS3->s3BppDisplayWidth) - 1;
