@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neomagic.cpp,v 1.5 2000/09/25 23:57:11 mvojkovi Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neomagic.cpp,v 1.6 2000/12/11 20:18:20 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH NEOMAGIC __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -73,7 +73,15 @@ Default: no rotation.
 .BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: off.
-.TP
+.PP
+.B Note
+.br
+On some laptops using the 2160 chipset (MagicGraph 128XD) the
+following options are needed to avoid a lock-up of the graphic engine:
+.nf
+    Option "XaaNoScanlineImageWriteRect"
+    Option "XaaNoScanlineCPUToScreenColorExpandFill"
+.fi
 
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
