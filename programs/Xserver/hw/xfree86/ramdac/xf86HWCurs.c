@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.9 2001/05/09 03:12:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.10 2001/05/18 20:22:31 tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -124,6 +124,9 @@ xf86SetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
     x -= infoPtr->pScrn->frameX0 + ScreenPriv->HotX;
     y -= infoPtr->pScrn->frameY0 + ScreenPriv->HotY;
 
+#ifdef ARGB_CURSOR
+    if (!pCurs->bits->argb || !infoPtr->LoadCursorARGB)
+#endif
     if (!bits) {
 	bits = (*infoPtr->RealizeCursor)(infoPtr, pCurs);
 	pCurs->devPriv[pScreen->myNum] = bits;
@@ -132,6 +135,11 @@ xf86SetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
     if (!(infoPtr->Flags & HARDWARE_CURSOR_UPDATE_UNHIDDEN))
 	(*infoPtr->HideCursor)(infoPtr->pScrn);
 
+#ifdef ARGB_CURSOR
+    if (pCurs->bits->argb && infoPtr->LoadCursorARGB)
+	(*infoPtr->LoadCursorARGB) (infoPtr->pScrn, pCurs);
+    else
+#endif
     if (bits)
 	(*infoPtr->LoadCursorImage)(infoPtr->pScrn, bits);
 
