@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/durango.c,v 1.1 2002/10/11 14:32:58 alanh Exp $ */
 /*
  * $Workfile: durango.c $
  *
@@ -457,6 +457,53 @@ gfx_outd(unsigned short port, unsigned long data)
    __asm__ volatile ("outl %0,%1"::"a" (data), "d"(port));
 }
 
+#elif defined(XFree86Server)
+
+#include <xf86_ansic.h>
+#include <compiler.h>
+#define INB(port) inb(port)
+#define INW(port) inw(port)
+#define IND(port) inl(port)
+#define OUTB(port,data) outb(port, data)
+#define OUTW(port,data) outw(port, data)
+#define OUTD(port,data) outl(port, data)
+
+unsigned char
+gfx_inb(unsigned short port)
+{
+   return inb(port);
+}
+
+unsigned short
+gfx_inw(unsigned short port)
+{
+   return inw(port);
+}
+
+unsigned long
+gfx_ind(unsigned short port)
+{
+   return inl(port);
+}
+
+void
+gfx_outb(unsigned short port, unsigned char data)
+{
+   outb(port, data);
+}
+
+void
+gfx_outw(unsigned short port, unsigned short data)
+{
+   outw(port, data);
+}
+
+void
+gfx_outd(unsigned short port, unsigned long data)
+{
+   outl(port, data);
+}
+
 #else /* else nothing */
 
 unsigned char
@@ -499,16 +546,7 @@ gfx_outd(unsigned short port, unsigned long data)
 }
 #endif
 
-#ifdef XFree86Server
-#include <xf86_ansic.h>
-#include <compiler.h>
-#define INB(port) inb(port)
-#define INW(port) inw(port)
-#define IND(port) inl(port)
-#define OUTB(port,data) outb(port, data)
-#define OUTW(port,data) outw(port, data)
-#define OUTD(port,data) outl(port, data)
-#else
+#ifndef XFree86Server
 #define INB(port) gfx_inb(port)
 #define INW(port) gfx_inw(port)
 #define IND(port) gfx_ind(port)
