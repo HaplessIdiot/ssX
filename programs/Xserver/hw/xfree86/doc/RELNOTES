@@ -798,8 +798,20 @@ source files.
 
       New Features, Enhancements and Updates:
 
-                  item
-                        add details...
+                  Xterm enhancements and updates:
+                        Thomas Dickey
+
+                  Integrate TinyX into the mainline XFree86 build:
+                        X-Oz Technologies
+
+                  Intel i915GM support, dual head i830/i855/i915 support:
+                        Tungsten Grahpics, Alan Hourihane, Keith Whitwell
+
+                  Automatic configuration enhancements:
+                        X-Oz Technologies, David Dawes
+
+                  Distributed Multihead X:
+                        Kevin Martin, Rik Faith
 
       Integration:
 
@@ -814,7 +826,45 @@ source files.
             David H. Dawes.
 
       Patches and other submissions (in alphabetical order):
-            add entries here in alphabetical order...
+            Szilveszter Adam, Tim Adye, Taneem Ahmed, Andrew Aitchison, Raoul
+            Arranz, Zaeem Arshad, Dwayne Bailey, Denis Barbier, Kyle Bateman,
+            J. Scott Berg, Thomas Biege, Dmitry Bolkhovityanov, H Merijn
+            Brand, Peter Breitenlohner, Benjamin Burke, Dale L Busacker, bus-
+            manus, Julian Cable, Mike Castle, David M. Clay, Philip Clayton,
+            Alan Coopersmith, Ricardo Cruz, Michel Dänzer, J. D. Darling,
+            David Dawes, Michael Dawes, Rafael Ávila de Espíndola, Rick De
+            Laet, Josip Deanovic, Angelus Dei, Laurent Deniel, Thomas Dickey,
+            Stefan Dirsch, Charles Dobson, DRI Project, Emmanuel Dreyfus,
+            Boris Dusek, Georgina Economou, Egbert Eich, Bernd Ernesti, Chris
+            Evans, Rik Faith, Adrian Fiechter, Matthew Fischer, FreeType
+            Team, Terry R. Frienrichsen, Christopher Fynn, Hubert Gburzynski,
+            Nicolas George, Frank Giessler, Fred Gleason, Dmitry Golubev,
+            Alexander Gottwald, Herbert Graeber, Miroslav Halas, John Harper,
+            Harshula, John Heasley, Matthieu Herrb, David Holl, Alex Holland,
+            Peng Hongbo, Alan Hourihane, Harold L Hunt II, Alan Iwi, Paul
+            Jarc, Kean Johnston, Nicolas Joly, Mark Kandianis, Kaleb Keith-
+            ley, Chamath Keppitiyagama, Jung-uk Kim, Satoshi Kimura, Michael
+            Knudsen, Vlatko Kosturjak, Alexei Kosut, Anton Kovalenko, Joachim
+            Kuebart, Marc La France, David Laight, Zarick Lau, Pierre Lalet,
+            Michael Lampe, Lanka Linux User Group, Nolan Leake, Werner Lem-
+            berg, Dejan Lesjak, Noah Levitt, Greg Lewis, Bernhard R Link,
+            Jonas Lund, S. Lussos, Torrey T. Lyons, Roland Mainz, N Marci,
+            Kevin Martin, Stephen McCamant, Luke Mewburn, Petr Mladek, Bram
+            Moolenaar, Steve Murphy, Ishikawa MUTSUMI, Radu Octavian, Lee
+            Olsen, Greg Parker, Ivan Pascal, Alexander E. Patrakov, Mike
+            Pechkin, Soós Péter, Zvezdan Petkovic, Alexander Pohoyda, Xie
+            Qian, Bill Randle, Adam J. Richter, Tim Roberts, Bernhard
+            Rosenkraenzer, Andreas Rüden, Steve Rumble, Oleg Safiullin, Ty
+            Sarna, Leo Savernik, Barry Scott, Shantonu Sen, Yu Shao, Andreas
+            Schwab, Matthias Scheler, Dan Shearer, Michael Shell, Paul Shu-
+            pak, Alexander Stohr, Marius Strobl, Mikko Markus Torni, Jess
+            Thrysoee, Izumi Tsutsui, Tungsten Grahpics, Ryan Underwood, Tris-
+            tan Van Berkom, Michael van Elst, Phillip Vandry, Roman Vasylyev,
+            Luc Verhaegen, Rodion Vshevtsov, Mark Vojkovich, Edi Werner,
+            Keith Whitwell, Scot Wilcoxon, Dave Williss, Thomas Winischhofer,
+            Kuang-che Wu, X-Oz Technologies, Chisato Yamauchi, Michael
+            Yaroslavtsev, David Yerger, Su Yong, Hui Yu, Sagi Zeevi, Chris-
+            tian Zietz
 
       Webmaster:
             Georgina O. Economou
@@ -972,7 +1022,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.122 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.123 dawes Exp $
 
 
 $XFree86$
