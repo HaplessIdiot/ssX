@@ -16,8 +16,8 @@ nv \-NVIDIA video driver
 .B nv 
 is an XFree86 driver for NVIDIA video cards.  The driver is fully
 accelerated, and provides support for the following framebuffer depths:
-8, 15, 16 and 24.  All
-visual types are supported for depth 8, and both TrueColor and DirectColor
+8, 15, 16 (except Riva128) and 24.  All
+visual types are supported for depth 8, TrueColor
 visuals are supported for the other depths.  Multi-head configurations
 are supported.
 .SH SUPPORTED HARDWARE
@@ -55,7 +55,18 @@ Disable or enable acceleration.  Default: acceleration is enabled.
 Enable or disable use of on OS-specific fb interface (and is not supported
 on all OSs).  See fbdevhw(__drivermansuffix__) for further information.
 Default: off.
+.TP
+.BI "Option ""Rotate"" ""CW""
+.TP
+.BI "Option ""Rotate"" ""CCW""
+Rotate the display clockwise or counterclockwise.  This mode is unaccelerated.
+Default: no rotation.
+.TP
+.BI "Option ""ShadowFB"" """ boolean """
+Enable or disable use of the shadow framebuffer layer.  See
+shadowfb(4) for further information.  Default: off.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
 .SH AUTHORS
-Authors include: David McKay, Jarno Paananen, Chas Inman, Dave Schmenk
+Authors include: David McKay, Jarno Paananen, Chas Inman, Dave Schmenk, 
+Mark Vojkovich
