@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.19 2001/03/25 05:32:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.20 2001/05/07 21:59:06 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,6 +29,7 @@
 #include "atidga.h"
 #include "atiscreen.h"
 #include "atistruct.h"
+#include "atixv.h"
 
 #include "shadowfb.h"
 #include "xf86cmap.h"
@@ -269,6 +270,9 @@ ATIScreenInit
 
     /* Initialise DPMS support */
     (void)xf86DPMSInit(pScreen, ATISetDPMSMode, 0);
+
+    /* Initialise XVideo support */
+    (void)ATIInitializeXVideo(pScreen, pScreenInfo, pATI);
 
     /* Set pScreen->SaveScreen and wrap CloseScreen vector */
     pScreen->SaveScreen = ATISaveScreen;
