@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.3 1997/07/29 12:07:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.4 1997/07/31 07:16:07 dawes Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -324,25 +324,6 @@ IBMRGBClockSelect(int freq)
 	return(result);
 }
 
-static void
-glintEnableIO(int scrnIndex)
-{
-    /* This is enough to ensure that full I/O is enabled */
-    unsigned pciIOPorts[] = { PCI_MODE1_ADDRESS_REG };
-    int numPciIOPorts = sizeof(pciIOPorts) / sizeof(pciIOPorts[0]);
-
-    xf86ClearIOPortList(scrnIndex);
-    xf86AddIOPorts(scrnIndex, numPciIOPorts, pciIOPorts);
-    xf86EnableIOPorts(scrnIndex);
-}
-
-static void
-glintDisableIO(int scrnIndex)
-{
-    xf86DisableIOPorts(scrnIndex);
-    xf86ClearIOPortList(scrnIndex);
-}
-
 /*
  * glintProbe --
  *      check up whether a GLINT based board is installed
@@ -526,7 +507,6 @@ glintProbe()
 	 *
 	 * to be able to do that we need to enable IO
 	 */
-	glintEnableIO(glintInfoRec.scrnIndex);
 	outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1c); /* base3 */
 	base3copro  = inl(PCI_MODE1_DATA_REG);
 	if( (basecopro & 0x20000) ^ (base3copro & 0x20000) )
@@ -565,7 +545,6 @@ glintProbe()
 	outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x30);
 	outl(PCI_MODE1_DATA_REG,0x0);
 
-	glintDisableIO(glintInfoRec.scrnIndex);
 	/*
 	 * now update our internal structure accordingly
 	 */
@@ -573,12 +552,10 @@ glintProbe()
     }
   }
   if (glintcopro) {
-	glintEnableIO(glintInfoRec.scrnIndex);
 	outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x04);
 	temp = inl(PCI_MODE1_DATA_REG);
        	outl(PCI_MODE1_DATA_REG, temp | 0x04); /* Master enable */
 	temp = inl(PCI_MODE1_DATA_REG);
-	glintDisableIO(glintInfoRec.scrnIndex);
   }
 
   if (coprotype == PCI_CHIP_3DLABS_500TX) {
