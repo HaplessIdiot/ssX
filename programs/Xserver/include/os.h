@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h,v 1.61 94/04/17 20:25:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.2 1994/11/30 20:44:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.3 1994/12/17 10:09:08 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -473,6 +473,20 @@ extern void ErrorF(
 #endif
 );
 
+#ifdef SERVER_LOCK
+extern void LockServer(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void UnlockServer(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+#endif
+
 extern int OsLookupColor(
 #if NeedFunctionPrototypes
     int	/*screen*/,
@@ -485,6 +499,12 @@ extern int OsLookupColor(
 );
 
 extern void OsInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void OsCleanup(
 #if NeedFunctionPrototypes
     void
 #endif

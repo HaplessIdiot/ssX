@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.13 1994/12/11 10:57:42 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.14 1994/12/25 12:36:03 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -119,6 +119,7 @@ Bool clgd6225Lcd= FALSE;
 static int currentGraphicsClock = -1;
 static int currentExternClock = -1;
 
+int vgaRamdacMask = 0x3F;
 Bool vgaPowerSaver = FALSE;
 
 #define new ((vgaHWPtr)vgaNewVideoState)
@@ -640,7 +641,7 @@ vgaHWSave(save, size)
     for (i=0; i<3; i++)
     {
       unsigned char tmp = inb(0x3C9);
-      if (tmp != (~save->DAC[i]&0x3F)) read_error++;
+      if (tmp != (~save->DAC[i] & vgaRamdacMask)) read_error++;
     }
   
     if (read_error)
