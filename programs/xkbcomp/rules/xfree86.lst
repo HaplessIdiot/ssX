@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.48 2002/11/26 01:51:44 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.49 2002/12/13 04:18:03 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -133,6 +133,7 @@
   il		Israeli
   it		Italian
   jp		Japanese
+  kan		Kannada
   la		Latin America
   lt		Lithuanian qwerty "numeric"
   lt_std	Lithuanian azerty standard
@@ -143,6 +144,7 @@
   mt_us		Maltese (US layout)
   no		Norwegian
   ogham		Ogham
+  ori		Oriya
   pl		Polish
   pl2		Polish (qwertz)
   pt		Portuguese
@@ -161,6 +163,7 @@
   syr		Syriac
   tj		Tajik
   tml		Tamil
+  tel		Telugu
   th		Thai
   tr		Turkish 
   tr_f		Turkish (F)
