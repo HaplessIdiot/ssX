@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.42 1999/08/23 06:59:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.43 1999/08/23 09:06:03 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -87,7 +87,7 @@ index.sgml: $(INDEXLIST) indexPre.sgml indexPost.sgml add.sh Imakefile $(SGMLDEP
 	cat indexPre.sgml > index.sgml
 	echo "<!-- This file is auto-generated.  Do not edit! -->" >> index.sgml
 	for i in $(INDEXLIST); do \
-		$(SHELL) ./add.sh $$i; \
+		$(SHELL) add.sh $$i; \
 	done
 	cat indexPost.sgml >> index.sgml
 
