@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.10 2001/03/21 17:02:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.8 2000/12/02 01:16:17 dawes Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -11,14 +11,18 @@
 #include "xf86Pci.h"
 #include "fb.h"
 
-#include "miline.h"
-
 #include "GL/glxtokens.h"
 
 #include "sis.h"
 #include "sis_dri.h"
 
-#include "sis300_accel.h"
+#define BR(x)   (0x8200 | (x) << 2)
+#define SiSIdle \
+  while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
+  while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
+  MMIO_IN16(pSiS->IOBase, 0x8240);
+
+extern Bool drmSiSAgpInit(int driSubFD, int offset, int size);
 
 extern void GlxSetVisualConfigs(
     int nconfigs,
@@ -37,18 +41,18 @@ static char SISClientDriverName[] = "sis";
 
 static Bool SISInitVisualConfigs(ScreenPtr pScreen);
 static Bool SISCreateContext(ScreenPtr pScreen, VisualPtr visual, 
-			      drmContext hwContext, void *pVisualConfigPriv,
-			      DRIContextType contextStore);
+                   drmContext hwContext, void *pVisualConfigPriv,
+                   DRIContextType contextStore);
 static void SISDestroyContext(ScreenPtr pScreen, drmContext hwContext,
-			       DRIContextType contextStore);
+                   DRIContextType contextStore);
 static void SISDRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
-			       DRIContextType readContextType, 
-			       void *readContextStore,
-			       DRIContextType writeContextType, 
-			       void *writeContextStore);
+                   DRIContextType readContextType, 
+                   void *readContextStore,
+                   DRIContextType writeContextType, 
+                   void *writeContextStore);
 static void SISDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void SISDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
-			       RegionPtr prgnSrc, CARD32 index);
+                   RegionPtr prgnSrc, CARD32 index);
 
 void SISLostContext(ScreenPtr pScreen);
 
@@ -76,17 +80,17 @@ SISInitVisualConfigs(ScreenPtr pScreen)
   case 32:
     numConfigs = (useZ16)?8:16;
 
-    if (!(pConfigs = (__GLXvisualConfig*)xcalloc(sizeof(__GLXvisualConfig),
-						   numConfigs))) {
+    if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
+                           numConfigs))) {
       return FALSE;
     }
-    if (!(pSISConfigs = (SISConfigPrivPtr)xcalloc(sizeof(SISConfigPrivRec),
-						    numConfigs))) {
+    if (!(pSISConfigs = (SISConfigPrivPtr)xnfcalloc(sizeof(SISConfigPrivRec),
+                            numConfigs))) {
       xfree(pConfigs);
       return FALSE;
     }
-    if (!(pSISConfigPtrs = (SISConfigPrivPtr*)xcalloc(sizeof(SISConfigPrivPtr),
-							  numConfigs))) {
+    if (!(pSISConfigPtrs = (SISConfigPrivPtr*)xnfcalloc(sizeof(SISConfigPrivPtr),
+                              numConfigs))) {
       xfree(pConfigs);
       xfree(pSISConfigs);
       return FALSE;
@@ -194,9 +198,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
    {
       int major, minor, patch;
       DRIQueryVersion(&major, &minor, &patch);
-      if (major != 4 || minor < 0) {
+      if (major != 3 || minor != 1 || patch < 0) {
          xf86DrvMsg(pScreen->myNum, X_ERROR,
-                    "[drm] SISDRIScreenInit failed (DRI version = %d.%d.%d, expected 4.0.x).  Disabling DRI.\n",
+                    "[drm] SISDRIScreenInit failed (DRI version = %d.%d.%d, expected 3.1.x).  Disabling DRI.\n",
                     major, minor, patch);
          return FALSE;
       }
@@ -210,9 +214,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->clientDriverName = SISClientDriverName;
   pDRIInfo->busIdString = xalloc(64);
   sprintf(pDRIInfo->busIdString, "PCI:%d:%d:%d",
-	  ((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
-	  ((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
-	  ((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
+      ((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
+      ((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
+      ((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
   pDRIInfo->ddxDriverMajorVersion = 0;
   pDRIInfo->ddxDriverMinorVersion = 1;
   pDRIInfo->ddxDriverPatchVersion = 0;
@@ -239,14 +243,14 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   /* For now the mapping works by using a fixed size defined
    * in the SAREA header
    */
-  if (sizeof(XF86DRISAREARec)+sizeof(SISSAREAPriv)>SAREA_MAX) {
+  if (sizeof(XF86DRISAREARec)+sizeof(SISSAREAPriv) > SAREA_MAX) {
     ErrorF("Data does not fit in SAREA\n");
     return FALSE;
   }
   pDRIInfo->SAREASize = SAREA_MAX;
 #endif
 
-  if (!(pSISDRI = (SISDRIPtr)xcalloc(sizeof(SISDRIRec),1))) {
+  if (!(pSISDRI = (SISDRIPtr)xnfcalloc(sizeof(SISDRIRec),1))) {
     DRIDestroyInfoRec(pSIS->pDRIInfo);
     pSIS->pDRIInfo=0;
     return FALSE;
@@ -262,9 +266,6 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->MoveBuffers = SISDRIMoveBuffers;
   pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
-  pDRIInfo->createDummyCtx = TRUE;
-  pDRIInfo->createDummyCtxPriv = FALSE;
-
   if (!DRIScreenInit(pScreen, pDRIInfo, &pSIS->drmSubFD)) {
     xfree(pDRIInfo->devPrivate);
     pDRIInfo->devPrivate=0;
@@ -277,15 +278,15 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   pSISDRI->regs.size = SISIOMAPSIZE;
   pSISDRI->regs.map = 0;
   if (drmAddMap(pSIS->drmSubFD, (drmHandle)pSIS->IOAddress, 
-		pSISDRI->regs.size, DRM_REGISTERS, 0, 
-		&pSISDRI->regs.handle)<0) 
+        pSISDRI->regs.size, DRM_REGISTERS, 0, 
+        &pSISDRI->regs.handle)<0) 
   {
     SISDRICloseScreen(pScreen);
     return FALSE;
   }
 
   xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Registers = 0x%08lx\n",
-	       pSISDRI->regs.handle);
+           pSISDRI->regs.handle);
 
   /* AGP */
   do{
@@ -350,15 +351,15 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     
   /* enable IRQ */
   pSIS->irq = drmGetInterruptFromBusID(pSIS->drmSubFD,
-	       ((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
-	       ((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
-	       ((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
+           ((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
+           ((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
+           ((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
 
   if((drmCtlInstHandler(pSIS->drmSubFD, pSIS->irq)) != 0) 
     {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		 "[drm] failure adding irq %d handler, stereo disabled\n",
-		 pSIS->irq);
+         "[drm] failure adding irq %d handler, stereo disabled\n",
+         pSIS->irq);
       pSIS->irqEnabled = FALSE;
     }
   else
@@ -409,15 +410,15 @@ SISDRICloseScreen(ScreenPtr pScreen)
  */
 static Bool
 SISCreateContext(ScreenPtr pScreen, VisualPtr visual, 
-		  drmContext hwContext, void *pVisualConfigPriv,
-		  DRIContextType contextStore)
+          drmContext hwContext, void *pVisualConfigPriv,
+          DRIContextType contextStore)
 {
   return TRUE;
 }
 
 static void
 SISDestroyContext(ScreenPtr pScreen, drmContext hwContext, 
-		   DRIContextType contextStore)
+           DRIContextType contextStore)
 {
 }
 
@@ -473,8 +474,8 @@ SISDRIFinishScreenInit(ScreenPtr pScreen)
 
 static void
 SISDRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
-		   DRIContextType oldContextType, void *oldContext,
-		   DRIContextType newContextType, void *newContext)
+           DRIContextType oldContextType, void *oldContext,
+           DRIContextType newContextType, void *newContext)
 {
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   SISPtr pSIS = SISPTR(pScrn);
@@ -512,7 +513,7 @@ SISDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
 
 static void
 SISDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
-		   RegionPtr prgnSrc, CARD32 index)
+           RegionPtr prgnSrc, CARD32 index)
 {
   ScreenPtr pScreen = pParent->drawable.pScreen;
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
