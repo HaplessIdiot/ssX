@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.129 2000/02/23 19:16:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.130 2000/03/01 16:00:50 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -122,7 +122,7 @@ Bool xf86QueueAsyncEvent(void (*func)(pointer),pointer arg);
 #endif
  
 /* xf86Configure.c */
-GDevPtr xf86AddDeviceToConfigure(char *driver, pciVideoPtr pVideo,
+GDevPtr xf86AddDeviceToConfigure(const char *driver, pciVideoPtr pVideo,
 				 int chipset);
  
 /* xf86Cursor.c */

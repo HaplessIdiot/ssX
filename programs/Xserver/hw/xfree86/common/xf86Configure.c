@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.23 2000/03/01 16:00:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.25 2000/03/02 21:19:33 alanh Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -92,7 +92,7 @@ GetPciCard(int vendor, int chipType, int *vendor1, int *vendor2, int *card)
  * the caller fill in the rest and/or change it as it sees fit.
  */
 GDevPtr
-xf86AddDeviceToConfigure(char *driver, pciVideoPtr pVideo, int chipset)
+xf86AddDeviceToConfigure(const char *driver, pciVideoPtr pVideo, int chipset)
 {
     int busType, i, j;
 
@@ -133,9 +133,7 @@ xf86AddDeviceToConfigure(char *driver, pciVideoPtr pVideo, int chipset)
 
     /* Fill in what we know, converting the driver name to lower case */
     NewDevice.GDev.driver = xnfalloc(strlen(driver) + 1);
-    for (j = 0;  driver[j];  j++)
-	NewDevice.GDev.driver[j] = tolower(driver[j]);
-    NewDevice.GDev.driver[j] = 0;
+    for (j = 0;  (NewDevice.GDev.driver[j] = tolower(driver[j]));  j++);
 
     if (pVideo) {
 	int vendor1, vendor2, card;
