@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.73 2002/07/07 20:11:51 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.74 2002/09/04 03:09:46 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -66,6 +66,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #define HasVarRun		YES
 #define HasVarDb		YES
+#define VarLibDir		VarDbDirectory
 
 #define InstallXloadSetGID	NO
 
