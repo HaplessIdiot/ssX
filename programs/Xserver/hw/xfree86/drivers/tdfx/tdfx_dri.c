@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.20 2001/04/10 16:08:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.21 2001/04/19 19:54:50 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -132,7 +132,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
     }
     if (i!=numConfigs) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "Incorrect initialization of visuals\n");
+                 "[dri] TDFXInitVisualConfigs: wrong number of visuals\n");
       return FALSE;
     }
     break; /* 16bpp */
@@ -227,7 +227,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
     }
     if (i!=numConfigs) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "Incorrect initialization of visuals\n");
+                 "[dri] TDFXInitVisualConfigs: wrong number of visuals\n");
       return FALSE;
     }
     break;
@@ -279,15 +279,15 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   }
   if (!bppOk) {
     xf86DrvMsg(pScreen->myNum, X_ERROR,
-            "DRI not supported in %d bpp mode, disabling DRI.\n",
+            "[dri] tdfx DRI not supported in %d bpp mode, disabling DRI.\n",
             (pScrn->bitsPerPixel));
     if (pTDFX->ChipType <= PCI_CHIP_VOODOO3) {
       xf86DrvMsg(pScreen->myNum, X_INFO,
-              "To use DRI, invoke the server using 16 bpp "
+              "[dri] To use DRI, invoke the server using 16 bpp "
 	      "(-depth 15 or -depth 16).\n");
     } else {
       xf86DrvMsg(pScreen->myNum, X_INFO,
-              "To use DRI, invoke the server using 16 bpp "
+              "[dri] To use DRI, invoke the server using 16 bpp "
 	      "(-depth 15 or -depth 16)\n"
 	      "\tor 32 bpp (-depth 24 -fbbpp 32).\n");
     }
@@ -311,7 +311,9 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
     DRIQueryVersion(&major, &minor, &patch);
     if (major != 4 || minor < 0) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-                 "TDFXDRIScreenInit failed (DRI version = %d.%d.%d, expected 4.0.x).  Disabling DRI.\n",
+                 "[dri] TDFXDRIScreenInit failed because of a version mismatch.\n"
+                 "[dri] libDRI version is %d.%d.%d but version 4.0.x is needed.\n"
+                 "[dri] Disabling the DRI.\n",
                  major, minor, patch);
       return FALSE;
     }
@@ -320,7 +322,7 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo = DRICreateInfoRec();
   if (!pDRIInfo) {
     xf86DrvMsg(pScreen->myNum, X_ERROR,
-               "DRICreateInfoRect() failed, disabling DRI.\n");
+               "[dri] DRICreateInfoRect() failed, disabling DRI.\n");
     return FALSE;
   }
 
@@ -370,7 +372,8 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
 #endif
 
   if (!(pTDFXDRI = (TDFXDRIPtr)xcalloc(sizeof(TDFXDRIRec),1))) {
-    xf86DrvMsg(pScreen->myNum, X_ERROR, "DRI memory allocation failed, disabling DRI.\n");
+    xf86DrvMsg(pScreen->myNum, X_ERROR,
+               "[dri] DRI memory allocation failed, disabling DRI.\n");
     DRIDestroyInfoRec(pTDFX->pDRIInfo);
     pTDFX->pDRIInfo=0;
     return FALSE;
@@ -398,7 +401,8 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->devPrivate=0;
     DRIDestroyInfoRec(pTDFX->pDRIInfo);
     pTDFX->pDRIInfo=0;
-    xf86DrvMsg(pScreen->myNum, X_ERROR, "DRIScreenInit failed, disabling DRI.\n");
+    xf86DrvMsg(pScreen->myNum, X_ERROR,
+               "[dri] DRIScreenInit failed, disabling DRI.\n");
 
     return FALSE;
   }
@@ -411,7 +415,9 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
             version->version_minor < 0) {
            /* incompatible drm version */
            xf86DrvMsg(pScreen->myNum, X_ERROR,
-                      "TDFXDRIScreenInit failed (DRM version = %d.%d.%d, expected 1.0.x).  Disabling DRI.\n",
+                      "[dri] TDFXDRIScreenInit failed because of a version mismatch.\n"
+                      "[dri] tdfx.o kernel module version is %d.%d.%d but version 1.0.x is needed.\n"
+                      "[dri] Disabling the DRI.\n",
                       version->version_major,
                       version->version_minor,
                       version->version_patchlevel);

@@ -10,10 +10,10 @@
     <author>
         <htmlurl url="http://www.valinux.com/"
           name="VA Linux Systems, Inc."> Professional Services - Graphics.
-    <date>15 March 2001
+    <date>21 April 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.12 2001/03/27 23:15:48 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.13 2001/04/05 19:29:42 dawes Exp $
     </ident>
 
     <toc>
@@ -175,7 +175,8 @@
 	  <item>hit ESC to return to the top-level menu
           <item>Go to <em>Character devices</em>
           <item>Disable <em>Direct Rendering Manager (XFree86 DRI support)</em>
-            since we'll use the DRI module from the XFree86/DRI tree.
+            since we'll use the DRI code from the XFree86/DRI tree and will
+            compile it there.
           <item>Go to <em>/dev/agpgart (AGP Support) (EXPERIMENTAL) (NEW)</em>
 	  <item>Hit SPACE twice to build AGP support into the kernel
           <item>Enable all chipsets' support for AGP
@@ -503,7 +504,7 @@
           <tt>/usr/src/linux-2.4.x</tt>,
           <verb>
           cd ~/DRI-CVS/build/xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel
-          make TREE=/usr/src/linux-2.4
+          make TREE=/usr/src/linux-2.4.x/include
           </verb>
           or alternatively, edit Makefile to include this change.
         <p>
@@ -516,13 +517,16 @@
         The DRI kernel modules are in
         <tt>~/DRI-CVS/build/xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/</tt>.
         <p>
-        To load the appropriate DRI module in your running kernel you can
+        To load the appropriate DRM module in your running kernel you can
         either use ismod and restart your X server or copy the kernel module
         to <tt>/lib/modules/2.4.x/kernel/drivers/char/drm/</tt> then run
         depmod and restart your X server.
         <p>
         Make sure you first unload any older DRI kernel modules that might
         be already loaded.
+        <p>
+        Note that some DRM modules require that the <tt>agpgart</tt> module
+        be loaded first.
         <p>
 
     <sect>Normal Installation and Configuration <p>

@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_state.c,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -60,6 +60,7 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
    GrCmpFnc_t func;
    GrAlphaBlendFnc_t srcRGB, dstRGB, srcA, dstA;
    GrAlpha_t ref = ctx->Color.AlphaRef;
+   const int hasAlpha = ctx->Visual->AlphaBits > 0;
 
    if ( TDFX_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "%s()\n", __FUNCTION__ );
@@ -119,13 +120,13 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
 	 srcRGB = GR_BLEND_ONE_MINUS_SRC_ALPHA;
 	 break;
       case GL_DST_ALPHA:
-	 srcRGB = GR_BLEND_DST_ALPHA;
+	 srcRGB = hasAlpha ? GR_BLEND_DST_ALPHA : GR_BLEND_ONE;
 	 break;
       case GL_ONE_MINUS_DST_ALPHA:
-	 srcRGB = GR_BLEND_ONE_MINUS_DST_ALPHA;
+	 srcRGB = hasAlpha ? GR_BLEND_ONE_MINUS_DST_ALPHA : GR_BLEND_ZERO;
 	 break;
       case GL_SRC_ALPHA_SATURATE:
-	 srcRGB = GR_BLEND_ALPHA_SATURATE;
+	 srcRGB = hasAlpha ? GR_BLEND_ALPHA_SATURATE : GR_BLEND_ZERO;
 	 break;
       default:
 	 srcRGB = GR_BLEND_ONE;
@@ -138,23 +139,23 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
       case GL_ONE:
 	 srcA = GR_BLEND_ONE;
 	 break;
-      case GL_DST_COLOR:
-	 srcA = GR_BLEND_DST_ALPHA;  /* Napalm only */
+      case GL_DST_COLOR:		/* Napalm only */
+	 srcA = hasAlpha ? GR_BLEND_DST_ALPHA : GR_BLEND_ONE;
 	 break;
-      case GL_ONE_MINUS_DST_COLOR:
-	 srcA = GR_BLEND_ONE_MINUS_DST_ALPHA;  /* Napalm only */
+      case GL_ONE_MINUS_DST_COLOR:	/* Napalm only */
+	 srcA = hasAlpha ? GR_BLEND_ONE_MINUS_DST_ALPHA : GR_BLEND_ZERO;
 	 break;
-      case GL_SRC_ALPHA:
-	 srcA = GR_BLEND_SRC_ALPHA;  /* Napalm only */
+      case GL_SRC_ALPHA:		/* Napalm only */
+	 srcA = GR_BLEND_SRC_ALPHA;
 	 break;
-      case GL_ONE_MINUS_SRC_ALPHA:
-	 srcA = GR_BLEND_ONE_MINUS_SRC_ALPHA;  /* Napalm only */
+      case GL_ONE_MINUS_SRC_ALPHA:	/* Napalm only */
+	 srcA = GR_BLEND_ONE_MINUS_SRC_ALPHA;
 	 break;
-      case GL_DST_ALPHA:
-	 srcA = GR_BLEND_DST_ALPHA;  /* Napalm only */
+      case GL_DST_ALPHA:		/* Napalm only */
+	 srcA = hasAlpha ? GR_BLEND_DST_ALPHA : GR_BLEND_ONE;
 	 break;
-      case GL_ONE_MINUS_DST_ALPHA:
-	 srcA = GR_BLEND_ONE_MINUS_DST_ALPHA;  /* Napalm only */
+      case GL_ONE_MINUS_DST_ALPHA:	/* Napalm only */
+	 srcA = hasAlpha ? GR_BLEND_ONE_MINUS_DST_ALPHA : GR_BLEND_ZERO;
 	 break;
       case GL_SRC_ALPHA_SATURATE:
          srcA = GR_BLEND_ONE;
@@ -183,10 +184,10 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
 	 dstRGB = GR_BLEND_ONE_MINUS_SRC_ALPHA;
 	 break;
       case GL_DST_ALPHA:
-	 dstRGB = GR_BLEND_DST_ALPHA;
+	 dstRGB = hasAlpha ? GR_BLEND_DST_ALPHA : GR_BLEND_ONE;
 	 break;
       case GL_ONE_MINUS_DST_ALPHA:
-	 dstRGB = GR_BLEND_ONE_MINUS_DST_ALPHA;
+	 dstRGB = hasAlpha ? GR_BLEND_ONE_MINUS_DST_ALPHA : GR_BLEND_ZERO;
 	 break;
       default:
 	 dstRGB = GR_BLEND_ZERO;
@@ -199,23 +200,23 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
       case GL_ONE:
 	 dstA = GR_BLEND_ONE;
 	 break;
-      case GL_SRC_COLOR:
-	 dstA = GR_BLEND_SRC_ALPHA;  /* Napalm only */
+      case GL_SRC_COLOR:		/* Napalm only */
+	 dstA = GR_BLEND_SRC_ALPHA;
 	 break;
-      case GL_ONE_MINUS_SRC_COLOR:
-	 dstA = GR_BLEND_ONE_MINUS_SRC_ALPHA;  /* Napalm only */
+      case GL_ONE_MINUS_SRC_COLOR:	/* Napalm only */
+	 dstA = GR_BLEND_ONE_MINUS_SRC_ALPHA;
 	 break;
-      case GL_SRC_ALPHA:
-	 dstA = GR_BLEND_SRC_ALPHA;  /* Napalm only */
+      case GL_SRC_ALPHA:		/* Napalm only */
+	 dstA = GR_BLEND_SRC_ALPHA;
 	 break;
-      case GL_ONE_MINUS_SRC_ALPHA:
-	 dstA = GR_BLEND_ONE_MINUS_SRC_ALPHA;  /* Napalm only */
+      case GL_ONE_MINUS_SRC_ALPHA:	/* Napalm only */
+	 dstA = GR_BLEND_ONE_MINUS_SRC_ALPHA;
 	 break;
-      case GL_DST_ALPHA:
-	 dstA = GR_BLEND_DST_ALPHA;  /* Napalm only */
+      case GL_DST_ALPHA:		/* Napalm only */
+	 dstA = hasAlpha ? GR_BLEND_DST_ALPHA : GR_BLEND_ONE;
 	 break;
-      case GL_ONE_MINUS_DST_ALPHA:
-	 dstA = GR_BLEND_ONE_MINUS_DST_ALPHA;  /* Napalm only */
+      case GL_ONE_MINUS_DST_ALPHA:	/* Napalm only */
+	 dstA = hasAlpha ? GR_BLEND_ONE_MINUS_DST_ALPHA : GR_BLEND_ZERO;
 	 break;
       default:
 	 dstA = GR_BLEND_ZERO;

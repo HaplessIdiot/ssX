@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.12 2001/03/21 19:46:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.13 2001/04/10 16:07:59 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -80,8 +80,8 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
     case 8:  /* 8bpp mode is not support */
     case 15: /* FIXME */
     case 24: /* FIXME */
-	xf86DrvMsg(pScreen->myNum, X_WARNING,
-		   "R128DRIScreenInit failed (depth %d not supported).  "
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+		   "[dri] R128DRIScreenInit failed (depth %d not supported).  "
 		   "Disabling DRI.\n", info->CurrentLayout.pixel_code);
 	return FALSE;
 
@@ -200,16 +200,16 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 		pConfigs[i].redSize            = 8;
 		pConfigs[i].greenSize          = 8;
 		pConfigs[i].blueSize           = 8;
-		pConfigs[i].alphaSize          = 8;
+		pConfigs[i].alphaSize          = 0;
 		pConfigs[i].redMask            = 0x00FF0000;
 		pConfigs[i].greenMask          = 0x0000FF00;
 		pConfigs[i].blueMask           = 0x000000FF;
-		pConfigs[i].alphaMask          = 0xFF000000;
+		pConfigs[i].alphaMask          = 0x00000000;
 		if (accum) { /* Simulated in software */
 		    pConfigs[i].accumRedSize   = 16;
 		    pConfigs[i].accumGreenSize = 16;
 		    pConfigs[i].accumBlueSize  = 16;
-		    pConfigs[i].accumAlphaSize = 16;
+		    pConfigs[i].accumAlphaSize = 0;
 		} else {
 		    pConfigs[i].accumRedSize   = 0;
 		    pConfigs[i].accumGreenSize = 0;
@@ -877,7 +877,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
     if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
-		 "R128DRIScreenInit failed (libdri.a too old)\n");
+		 "[dri] R128DRIScreenInit failed (libdri.a too old)\n");
       return FALSE;
     }
 
@@ -885,10 +885,10 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     DRIQueryVersion(&major, &minor, &patch);
     if (major != 4 || minor < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "R128DRIScreenInit failed "
-		   "(DRI version = %d.%d.%d, expected 4.0.x).  "
-		   "Disabling DRI.\n",
-		   major, minor, patch);
+		"[dri] R128DRIScreenInit failed because of a version mismatch.\n"
+		"[dri] libDRI version is %d.%d.%d but version 4.0.x is needed.\n"
+		"[dri] Disabling the DRI.\n",
+		major, minor, patch);
 	return FALSE;
     }
 
@@ -897,6 +897,9 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 	/* These modes are not supported (yet). */
     case 15:
     case 24:
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+		   "[dri] R128DRIScreenInit failed (depth %d not supported).  "
+		   "[dri] Disabling DRI.\n", info->CurrentLayout.pixel_code);
 	return FALSE;
 
 	/* Only 16 and 32 color depths are supports currently. */
@@ -943,7 +946,8 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
      * in the SAREA header
      */
     if (sizeof(XF86DRISAREARec)+sizeof(R128SAREAPriv)>SAREA_MAX) {
-	ErrorF("Data does not fit in SAREA\n");
+        xf86DrvMsg(pScreen->myNum, X_ERROR,
+                   "[dri] Data does not fit in SAREA.  Disabling DRI.\n");
 	return FALSE;
     }
     pDRIInfo->SAREASize = SAREA_MAX;
@@ -969,7 +973,8 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->createDummyCtxPriv = FALSE;
 
     if (!DRIScreenInit(pScreen, pDRIInfo, &info->drmFD)) {
-	xf86DrvMsg(pScreen->myNum, X_ERROR, "DRIScreenInit failed!\n");
+	xf86DrvMsg(pScreen->myNum, X_ERROR,
+                   "[dri] DRIScreenInit failed.  Disabling DRI.\n");
 	xfree(pDRIInfo->devPrivate);
 	pDRIInfo->devPrivate = NULL;
 	DRIDestroyInfoRec(pDRIInfo);
@@ -984,12 +989,12 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 	    version->version_minor < 1) {
 	    /* incompatible drm version */
 	    xf86DrvMsg(pScreen->myNum, X_ERROR,
-		       "R128DRIScreenInit failed "
-		       "(DRM version = %d.%d.%d, expected 2.1.x).  "
-		       "Disabling DRI.\n",
-		       version->version_major,
-		       version->version_minor,
-		       version->version_patchlevel);
+		"[dri] R128DRIScreenInit failed because of a version mismatch.\n"
+		"[dri] r128.o kernel module version is %d.%d.%d but version 2.1.x is needed.\n"
+		"[dri] Disabling the DRI.\n",
+		version->version_major,
+		version->version_minor,
+		version->version_patchlevel);
 	    drmFreeVersion(version);
 	    R128DRICloseScreen(pScreen);
 	    return FALSE;
@@ -1001,9 +1006,9 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     if (!info->IsPCI && !R128DRIAgpInit(info, pScreen)) {
 	info->IsPCI = TRUE;
 	xf86DrvMsg(pScreen->myNum, X_WARNING,
-		   "AGP failed to initialize -- falling back to PCI mode.\n");
+		   "[agp] AGP failed to initialize -- falling back to PCI mode.\n");
 	xf86DrvMsg(pScreen->myNum, X_WARNING,
-		   "Make sure you have the agpgart kernel module loaded.\n");
+		   "[agp] Make sure you have the agpgart kernel module loaded.\n");
     }
 
 				/* Initialize PCIGART */
@@ -1026,7 +1031,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Visual configs initialized\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[dri] Visual configs initialized\n");
 
     return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.6 2001/03/21 16:29:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.7 2001/03/25 05:32:01 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1014,9 +1014,18 @@ int __glXSwapBuffers(__GLXclientState *cl, GLbyte *pc)
     if (pDraw) {
 	__GLXdrawablePrivate *glxPriv;
 
-	glxPriv = __glXGetDrawablePrivate(pDraw, drawId, glxc->modes);
-	if (glxPriv == NULL) {
-	    return __glXBadDrawable;
+	if (glxc) {
+	    glxPriv = __glXGetDrawablePrivate(pDraw, drawId, glxc->modes);
+	    if (glxPriv == NULL) {
+		return __glXBadDrawable;
+	    }
+	}
+	else {
+	    glxPriv = __glXFindDrawablePrivate(drawId);
+	    if (glxPriv == NULL) {
+		/* This is a window we've never seen before, do nothing */
+		return Success;
+	    }
 	}
 
 	if ((*glxPriv->swapBuffers)(glxPriv) == GL_FALSE) {
