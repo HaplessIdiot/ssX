@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.82tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.83 2002/12/01 02:11:17 tsi Exp $ */
 /*
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Parts Copyright 2001, 2002 by Thomas Winischhofer, Vienna, Austria.
@@ -29,14 +29,15 @@
  *
  *	     Thomas Winischhofer <thomas@winischhofer.net>:
  *              - 310/325 series (315/550/650/651/740/M650) support
- *              - new mode switching code for 300 and 310/325 series
+ *		- (possibly incomplete) Xabre (SiS330) support
+ *              - new mode switching code for 300, 310/325 and 330 series
  *              - many fixes for 300/540/630/730 chipsets,
  *              - many fixes for 5597/5598, 6326 and 530/620 chipsets,
  *              - VESA mode switching (deprecated),
  *              - extended CRT2/video bridge handling support,
- *              - dual head support on 300 and 310/325 series
+ *              - dual head support on 300, 310/325 and 330 series
  *              - 650/LVDS (up to 1400x1050), 650/Chrontel 701x support
- *              - 30xB/30xLV/30xLVX video bridge support (300, 310/325 series)
+ *              - 30xB/30xLV/30xLVX video bridge support (300, 310/325, 330 series)
  *              - Xv support for 5597/5598, 6326, 530/620 and 310/325 series
  *              - video overlay enhancements for 300 series
  *              - TV and hi-res support for the 6326
@@ -130,6 +131,7 @@ static void    SiSEnableTurboQueue(ScrnInfoPtr pScrn);
 unsigned char  SISSearchCRT1Rate(DisplayModePtr mode);
 static BOOLEAN SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
 static void    SISWaitVBRetrace(ScrnInfoPtr pScrn);
+static void    SISWaitRetraceCRT2(ScrnInfoPtr pScrn);
 #ifdef CYCLECRT2
 Bool           SISCycleCRT2Type(int scrnIndex, DisplayModePtr mode);
 #endif
@@ -250,11 +252,13 @@ static const char *vgahwSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *miscfbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
     NULL
 };
+#endif
 
 static const char *fbSymbols[] = {
     "fbPictureInit",
@@ -279,14 +283,19 @@ static const char *ddcSymbols[] = {
     "xf86SetDDCproperties",
     "xf86InterpretEDID",
     "xf86DoEDID_DDC1",
+#ifdef SISI2C
+    "xf86DoEDID_DDC2",
+#endif
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *i2cSymbols[] = {
     "xf86I2CBusInit",
     "xf86CreateI2CBusRec",
     NULL
 };
+#endif
 
 static const char *int10Symbols[] = {
     "xf86FreeInt10",
@@ -314,6 +323,7 @@ static const char *vbeSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddMap",
@@ -344,6 +354,7 @@ static const char *driSymbols[] = {
     "GlxSetVisualConfigs",
     NULL
 };
+#endif
 #endif
 
 #ifdef XFree86LOADER
@@ -874,7 +885,8 @@ SISProbe(DriverPtr drv, int flags)
 	if (pEnt->chipset == PCI_CHIP_SIS630 || pEnt->chipset == PCI_CHIP_SIS540 ||
 	    pEnt->chipset == PCI_CHIP_SIS650 || pEnt->chipset == PCI_CHIP_SIS550 ||
 	    pEnt->chipset == PCI_CHIP_SIS315 || pEnt->chipset == PCI_CHIP_SIS315H ||
-	    pEnt->chipset == PCI_CHIP_SIS315PRO || pEnt->chipset == PCI_CHIP_SIS330) {
+	    pEnt->chipset == PCI_CHIP_SIS315PRO || pEnt->chipset == PCI_CHIP_SIS330 ||
+	    pEnt->chipset == PCI_CHIP_SIS300) {
 
 	    SISEntPtr pSiSEnt = NULL;
 	    DevUnion  *pPriv;
@@ -1186,7 +1198,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-           "SiS driver (02/11/27-1) by "
+           "SiS driver (02/12/18-1) by "
 	   "Thomas Winischhofer <thomas@winischhofer.net>\n");
 
     /* Allocate a vgaHWRec */
@@ -1441,7 +1453,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		break;
 	case PCI_CHIP_SIS330:
 		pSiS->sishw_ext.jChipType = SIS_330;
-		pSiS->VGAEngine = SIS_315_VGA;  /* ? */
+		pSiS->VGAEngine = SIS_315_VGA;  
 		break;
 	case PCI_CHIP_SIS530:
 		pSiS->sishw_ext.jChipType = SIS_530;
@@ -1903,9 +1915,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     /* TW: Copy some option settings to entity private */
              pSiSEnt->HWCursor = pSiS->HWCursor;
 	     pSiSEnt->ForceCRT2Type = pSiS->ForceCRT2Type;
+	     pSiSEnt->ForceTVType = pSiS->ForceTVType;
 	     pSiSEnt->TurboQueue = pSiS->TurboQueue;
 	     pSiSEnt->PDC = pSiS->PDC;
 	     pSiSEnt->OptTVStand = pSiS->OptTVStand;
+	     pSiSEnt->NonDefaultPAL = pSiS->NonDefaultPAL;
 	     pSiSEnt->OptTVOver = pSiS->OptTVOver;
 	     pSiSEnt->OptROMUsage = pSiS->OptROMUsage;
 	     pSiSEnt->DSTN = pSiS->DSTN;
@@ -1944,6 +1958,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	          }
 	          pSiS->ForceCRT2Type = pSiSEnt->ForceCRT2Type;
 	     }
+	     if(pSiS->ForceTVType != pSiSEnt->ForceTVType) {
+                  if(pSiS->ForceTVType != -1) {
+		     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		  	"Ignoring inconsistent ForceTVType setting. Master head rules\n");
+	          }
+	          pSiS->ForceTVType = pSiSEnt->ForceTVType;
+	     }
 	     /* We need identical TurboQueue setting */
 	     if(pSiS->TurboQueue != pSiSEnt->TurboQueue) {
 	          pSiS->TurboQueue = pSiSEnt->TurboQueue;
@@ -1973,6 +1994,16 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			pSiSEnt->OptTVStand ? "PAL" : "NTSC");
 	          }
 	          pSiS->OptTVStand = pSiSEnt->OptTVStand;
+	     }
+	     if(pSiS->NonDefaultPAL != pSiSEnt->NonDefaultPAL) {
+                  if(pSiS->NonDefaultPAL != -1) {
+		     xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		  	"Ignoring inconsistent TVStandard setting\n");
+	             xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		        "Master head ruled: TVStandard shall be %s\n",
+			pSiSEnt->NonDefaultPAL ? "PALM" : "PALN");
+		  }
+	          pSiS->NonDefaultPAL = pSiSEnt->NonDefaultPAL;
 	     }
 	     /* We need identical UseROMData setting */
 	     if(pSiS->OptROMUsage != pSiSEnt->OptROMUsage) {
@@ -2439,6 +2470,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         pSiS->VBFlags &= ~(CRT2_TV | CRT2_LCD | CRT2_VGA);
     }
 
+    /* TW: Eventually overrule TV Type (SVIDEO, COMPOSITE, SCART) */
+    if(pSiS->ForceTVType != -1) {
+        if(pSiS->VBFlags & VB_SISBRIDGE) {
+    	   pSiS->VBFlags &= ~(TV_INTERFACE);
+	   pSiS->VBFlags |= pSiS->ForceTVType;
+	}
+    }
+
     /* TW: Handle ForceCRT1 option */
     pSiS->CRT1changed = FALSE;
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
@@ -2512,9 +2551,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* TW: Handle TVStandard option */
     if(pSiS->OptTVStand != -1) {
         if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
-    	   pSiS->VBFlags &= ~(TV_PAL | TV_NTSC);
+    	   pSiS->VBFlags &= ~(TV_PAL | TV_NTSC | TV_PALN | TV_PALM);
     	   if(pSiS->OptTVStand) pSiS->VBFlags |= TV_PAL;
 	   else                 pSiS->VBFlags |= TV_NTSC;
+           if(pSiS->NonDefaultPAL == 1)  pSiS->VBFlags |= TV_PALM;
+	   else if(!pSiS->NonDefaultPAL) pSiS->VBFlags |= TV_PALN;
 	} else if(pSiS->Chipset == PCI_CHIP_SIS6326) {
 	   pSiS->SiS6326Flags &= ~SIS6326_TVPAL;
 	   if(pSiS->OptTVStand) pSiS->SiS6326Flags |= SIS6326_TVPAL;
@@ -3471,7 +3512,11 @@ SiS_SaveFonts(ScrnInfoPtr pScrn)
 {
     SISPtr pSiS = SISPTR(pScrn);
     unsigned char miscOut, attr10, gr4, gr5, gr6, seq2, seq4, scrn;
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
+    CARD8 *vgaIOBase = (CARD8 *)VGAHWPTR(pScrn)->IOBase;
+#else
     pointer vgaIOBase = VGAHWPTR(pScrn)->Base;
+#endif
 
     if (pSiS->fonts != NULL)
 	return;
@@ -3537,7 +3582,11 @@ SiS_RestoreFonts(ScrnInfoPtr pScrn)
 {
     SISPtr pSiS = SISPTR(pScrn);
     unsigned char miscOut, attr10, gr1, gr3, gr4, gr5, gr6, gr8, seq2, seq4, scrn;
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
+    CARD8 *vgaIOBase = (CARD8 *)VGAHWPTR(pScrn)->IOBase;
+#else
     pointer vgaIOBase = VGAHWPTR(pScrn)->Base;
+#endif
 
     if (pSiS->fonts == NULL)
 	return;
@@ -5268,8 +5317,8 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
     SISPtr         pSiS = SISPTR(pScrn);
     unsigned char  usScratchCR30, usScratchCR31;
     unsigned char  usScratchCR32, usScratchCR33;
-    unsigned char  usScratchCR17;
-    int            vbflag;
+    unsigned char  usScratchCR17, usScratchCR38;
+    int            vbflag, temp;
     int 	   crt1rateindex = 0;
 
 #ifdef UNLOCK_ALWAYS
@@ -5283,12 +5332,15 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
     inSISIDXREG(SISCR, 0x31, usScratchCR31);  /* Bridge config */
     usScratchCR32 = pSiS->newCR32;            /* Bridge connection info (use our new value) */
     inSISIDXREG(SISCR, 0x33, usScratchCR33);  /* CRT1 refresh rate index */
+    if(pSiS->VGAEngine == SIS_300_VGA) temp = 0x35;  /* PAL-M, PAL-N selection */
+    else temp = 0x38;
+    inSISIDXREG(SISCR, temp, usScratchCR38);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VBFlags=0x%x\n", pSiS->VBFlags);
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	   "Before: CR30=0x%02x, CR31=0x%02x, CR32=0x%02x, CR33=0x%02x\n",
-              usScratchCR30, usScratchCR31, usScratchCR32, usScratchCR33);
+	   "Before: CR30=0x%02x, CR31=0x%02x, CR32=0x%02x, CR33=0x%02x, CR%02x=0x%02x\n",
+              usScratchCR30, usScratchCR31, usScratchCR32, usScratchCR33, temp, usScratchCR38);
 
     usScratchCR30 = 0;
     usScratchCR31 &= ~0x60;  /* TW: Clear VB_Drivermode & VB_OutputDisable */
@@ -5304,22 +5356,36 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #endif
 
     vbflag = pSiS->VBFlags;
-    switch (vbflag & (CRT2_TV|CRT2_LCD|CRT2_VGA)) {
+    switch(vbflag & (CRT2_TV|CRT2_LCD|CRT2_VGA)) {
       case CRT2_TV:
-        	if (vbflag & TV_HIVISION)
+        	if(vbflag & TV_HIVISION)
 		          	usScratchCR30 |= 0x80;
-		else if (vbflag & TV_SVIDEO)
+		else if(vbflag & TV_SVIDEO)
 				usScratchCR30 |= 0x08;
-		else if (vbflag & TV_AVIDEO)
+		else if(vbflag & TV_AVIDEO)
 				usScratchCR30 |= 0x04;
-		else if (vbflag & TV_SCART)
+		else if(vbflag & TV_SCART)
 				usScratchCR30 |= 0x10;
-		if (vbflag & TV_PAL)
+		else
+			        usScratchCR30 |= 0x08;    /* default: SVIDEO */
+
+		if(vbflag & TV_PAL)
 				usScratchCR31 |= 0x01;
 		else
 				usScratchCR31 &= ~0x01;
-        	usScratchCR30 |= 0x01;    /* Set SimuScanMode  */
+
+		usScratchCR30 |= 0x01;    /* Set SimuScanMode  */
+
+		if(vbflag & (VB_301B | VB_302B | VB_30xLV | VB_30xLVX)) {
+		    if(pSiS->NonDefaultPAL != -1) {
+		        usScratchCR38 &= ~0xC0;
+			if(vbflag & TV_PALM)      usScratchCR38 |= 0x40;
+			else if(vbflag & TV_PALN) usScratchCR38 |= 0x80;
+		    }
+		}
+#if 1  /* COMMENTED FOR TESTING ONLY @@@@ */
 		usScratchCR31 &= ~0x04;   /* Clear NotSimuMode */
+#endif
 		pSiS->SiS_Pr->SiS_CHOverScan = pSiS->UseCHOverScan;
 		if(pSiS->OptTVSOver == 1) {
 			pSiS->SiS_Pr->SiS_CHSOverScan = TRUE;
@@ -5346,14 +5412,19 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
      *    where LCD has to scale, and
      * -) CRT1 will have too low rate
      */
-     if (pSiS->UseVESA) usScratchCR31 &= ~0x40; /* TW: Clear Drivermode */
-     else {
+     if (pSiS->UseVESA) {
+       /* usScratchCR31 |= 0x40;  */ /* TEST (for non-slave mode VESA) @@@@ */
+#if 1  /* COMMENTED FOR TESTING ONLY @@@@@ */
+        usScratchCR31 &= 0x40;  /* TW: Clear Drivermode */
+#endif
+     } else {
         usScratchCR31 |=  0x40;                 /* TW: Set Drivermode */
 	/* TW: When not using VESA, we can calc CRT1 rate in any case */
         crt1rateindex = SISSearchCRT1Rate(mode);
      }
      outSISIDXREG(SISCR, 0x30, usScratchCR30);
      outSISIDXREG(SISCR, 0x31, usScratchCR31);
+     outSISIDXREG(SISCR, temp, usScratchCR38);
 
      pSiS->SiS_Pr->SiS_UseOEM = pSiS->OptUseOEM;
 
@@ -5620,6 +5691,111 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	        setSISIDXREG(SISPART4,0x21,0xF8, val);
 	     }
 	  }
+	  if((val = pSiS->tvxpos) != 0) {
+	     if((val >= -32) && (val <= 32)) {
+		   unsigned char p2_1f,p2_2b,p2_2c,p2_2d,p2_43;
+		   const unsigned char p2_left_ntsc[8][4] = {
+			{ 0x48, 0x63, 0x49, 0xf4 },
+			{ 0x45, 0x60, 0x46, 0xf1 },
+			{ 0x43, 0x6e, 0x44, 0xff },
+			{ 0x40, 0x6b, 0x41, 0xfc },
+			{ 0x3e, 0x69, 0x3f, 0xfa },
+			{ 0x3c, 0x67, 0x3d, 0xf8 },
+			{ 0x39, 0x64, 0x3a, 0xf5 },
+			{ 0x37, 0x62, 0x38, 0xf3 }
+		   };
+		   const unsigned char p2_right_ntsc[8][4] = {
+			{ 0x4b, 0x66, 0x4c, 0xf7 },
+			{ 0x4c, 0x67, 0x4d, 0xf8 },
+			{ 0x4e, 0x69, 0x4f, 0xfa },
+			{ 0x4f, 0x6a, 0x50, 0xfb },
+			{ 0x51, 0x6c, 0x52, 0xfd },
+			{ 0x53, 0x6e, 0x54, 0xff },
+			{ 0x55, 0x60, 0x56, 0xf1 },
+			{ 0x56, 0x61, 0x57, 0xf2 }
+		   };
+		   const unsigned char p2_left_pal[8][4] = {
+			{ 0x5b, 0x66, 0x5c, 0x87 },
+			{ 0x59, 0x64, 0x5a, 0x85 },
+			{ 0x56, 0x61, 0x57, 0x82 },
+			{ 0x53, 0x6e, 0x54, 0x8f },
+			{ 0x50, 0x6b, 0x51, 0x8c },
+			{ 0x4d, 0x68, 0x4e, 0x89 },
+			{ 0x4a, 0x65, 0x4b, 0x86 },
+			{ 0x49, 0x64, 0x4a, 0x85 }
+		   };
+		   const unsigned char p2_right_pal[8][4] = {
+			{ 0x5f, 0x6a, 0x60, 0x8b },
+			{ 0x61, 0x6c, 0x62, 0x8d },
+			{ 0x63, 0x6e, 0x64, 0x8f },
+			{ 0x65, 0x60, 0x66, 0x81 },
+			{ 0x66, 0x61, 0x67, 0x82 },
+			{ 0x68, 0x63, 0x69, 0x84 },
+			{ 0x69, 0x64, 0x6a, 0x85 },
+			{ 0x6b, 0x66, 0x6c, 0x87 }
+		   };
+		   val /= 4;
+#if 0
+		   inSISIDXREG(SISPART2,0x1f,p2_1f);
+		   inSISIDXREG(SISPART2,0x2b,p2_2b);
+		   inSISIDXREG(SISPART2,0x2c,p2_2c);
+		   inSISIDXREG(SISPART2,0x2d,p2_2d);
+		   inSISIDXREG(SISPART2,0x43,p2_43);
+#endif
+		   if(val < 0) {
+		      val = -val;
+		      if(val == 8) val = 7;
+		      if(pSiS->VBFlags & TV_PAL) {
+		         p2_1f = p2_left_pal[val][0];
+		         p2_2b = p2_left_pal[val][1];
+		         p2_2c = p2_left_pal[val][2];
+		         p2_2d = p2_left_pal[val][3];
+		      } else {
+		         p2_1f = p2_left_ntsc[val][0];
+		         p2_2b = p2_left_ntsc[val][1];
+		         p2_2c = p2_left_ntsc[val][2];
+		         p2_2d = p2_left_ntsc[val][3];
+		      }
+		   } else {
+		      if(val == 8) val = 7;
+		      if(pSiS->VBFlags & TV_PAL) {
+		         p2_1f = p2_right_pal[val][0];
+		         p2_2b = p2_right_pal[val][1];
+		         p2_2c = p2_right_pal[val][2];
+		         p2_2d = p2_right_pal[val][3];
+		      } else {
+		         p2_1f = p2_right_ntsc[val][0];
+		         p2_2b = p2_right_ntsc[val][1];
+		         p2_2c = p2_right_ntsc[val][2];
+		         p2_2d = p2_right_ntsc[val][3];
+		      }
+		   }
+		   p2_43 = p2_1f + 3;
+		   SISWaitRetraceCRT2(pScrn);
+	           outSISIDXREG(SISPART2,0x1f,p2_1f);
+		   outSISIDXREG(SISPART2,0x2b,p2_2b);
+		   outSISIDXREG(SISPART2,0x2c,p2_2c);
+		   outSISIDXREG(SISPART2,0x2d,p2_2d);
+		   outSISIDXREG(SISPART2,0x43,p2_43);
+	     }
+	 }
+	 if((val = pSiS->tvypos) != 0) {
+	     if((val >= -32) && (val <= 32)) {
+		   char p2_01, p2_02;
+		   val /= 4;
+		   inSISIDXREG(SISPART2,0x01,p2_01);
+		   inSISIDXREG(SISPART2,0x02,p2_02);
+		   p2_01 += (val * 2);
+		   p2_02 += (val * 2);
+		   while((p2_01 <= 0) || (p2_02 <= 0)) {
+		      p2_01 -= 2;
+		      p2_02 -= 2;
+		   }
+		   SISWaitRetraceCRT2(pScrn);
+		   outSISIDXREG(SISPART2,0x01,p2_01);
+		   outSISIDXREG(SISPART2,0x02,p2_02);
+	     }
+	 }
        }
     }
 

@@ -99,9 +99,8 @@ typedef enum _SIS_CHIP_TYPE {
     SIS_315,
     SIS_315PRO, /* SiS 325 */
     SIS_550,
-    SIS_640,
-    SIS_740,
     SIS_650,
+    SIS_740,
     SIS_330, 
     MAX_SIS_CHIP
 } SIS_CHIP_TYPE;

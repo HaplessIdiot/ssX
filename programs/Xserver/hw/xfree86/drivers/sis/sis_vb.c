@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vb.c,v 1.4 2001/11/30 12:12:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vb.c,v 1.8 2002/11/29 13:52:07 eich Exp $ */
 /*
  * Video bridge detection and configuration for 300 and 310/325 series
  *
@@ -265,8 +265,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
 
 	if(pSiS->VBFlags & (TV_SCART | TV_SVIDEO | TV_AVIDEO | TV_HIVISION)) {
 	   if( (pSiS->Chipset == PCI_CHIP_SIS550) ||   /* TW: ? */
-	       (pSiS->Chipset == PCI_CHIP_SIS650) ||
-	       (pSiS->Chipset == PCI_CHIP_SIS330) ) {  /* TW: ? */
+	       (pSiS->Chipset == PCI_CHIP_SIS650) ) {
 	      inSISIDXREG(SISCR, 0x79, CR79);
 	      if(CR79 & 0x20)
                   pSiS->VBFlags |= TV_PAL;
@@ -280,7 +279,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
 	     	  pSiS->VBFlags |= TV_PAL;
               else
 	          pSiS->VBFlags |= TV_NTSC;
-	   } else {
+	   } else {	/* 315, 330 */
 	      if(SR38 & 0x01)
                   pSiS->VBFlags |= TV_PAL;
  	      else

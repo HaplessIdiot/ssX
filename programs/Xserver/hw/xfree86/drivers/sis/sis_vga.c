@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.8 2001/11/30 12:12:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.14 2002/11/29 13:52:07 eich Exp $ */
 /*
  * Mode setup and video bridge detection
  *
@@ -909,7 +909,7 @@ SISDoSense(ScrnInfoPtr pScrn, int tempbl, int tempbh, int tempcl, int tempch)
     outSISIDXREG(SISPART4,0x11,tempbl);
     temp = tempbh | tempcl;
     setSISIDXREG(SISPART4,0x10,0xe0,temp);
-    usleep(10000);
+    usleep(200000);
     tempch &= 0x7f;
     inSISIDXREG(SISPART4,0x03,temp);
     temp ^= 0x0e;
@@ -926,14 +926,19 @@ void SISSense30x(ScrnInfoPtr pScrn)
     unsigned char testsvhs_tempcl, testsvhs_tempch;
     unsigned char testcvbs_tempbl, testcvbs_tempbh;
     unsigned char testcvbs_tempcl, testcvbs_tempch;
+    unsigned char testvga2_tempbl, testvga2_tempbh;
+    unsigned char testvga2_tempcl, testvga2_tempch;
     int myflag, result;
+    unsigned short temp;
 
     inSISIDXREG(SISPART4,0x0d,backupP4_0d);
     outSISIDXREG(SISPART4,0x0d,(backupP4_0d | 0x04));
 
     if(pSiS->VGAEngine == SIS_315_VGA) {
        if(pSiS->sishw_ext.UseROM) {
-          if(pSiS->BIOS[0xf3] & 0x08) {
+          temp = 0xf3;
+	  if(pSiS->Chipset == PCI_CHIP_SIS330) temp = 0x11b;
+          if(pSiS->BIOS[temp] & 0x08) {
 	      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	          "SiS30x: Video bridge has (unsupported) DVI connector\n");
 	      orSISIDXREG(SISCR, 0x32, 0x80);
@@ -946,23 +951,28 @@ void SISSense30x(ScrnInfoPtr pScrn)
     if(pSiS->VGAEngine == SIS_300_VGA) {
 
         if(pSiS->sishw_ext.UseROM) {
+	   testvga2_tempbh = pSiS->BIOS[0xf9]; testvga2_tempbl = pSiS->BIOS[0xf8];
 	   testsvhs_tempbh = pSiS->BIOS[0xfb]; testsvhs_tempbl = pSiS->BIOS[0xfa];
 	   testcvbs_tempbh = pSiS->BIOS[0xfd]; testcvbs_tempbl = pSiS->BIOS[0xfc];
 	   biosflag = pSiS->BIOS[0xfe];
 	} else {
+	   testvga2_tempbh = 0x00; testvga2_tempbl = 0xd1;
            testsvhs_tempbh = 0x00; testsvhs_tempbl = 0xb9;
 	   testcvbs_tempbh = 0x00; testcvbs_tempbl = 0xb3;
 	   biosflag = 0;
 	}
 	if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
+	   testvga2_tempbh = 0x01; testvga2_tempbl = 0x90;
 	   testsvhs_tempbh = 0x01; testsvhs_tempbl = 0x6b;
 	   testcvbs_tempbh = 0x01; testcvbs_tempbl = 0x74;
 	}
 	inSISIDXREG(SISPART4,0x01,myflag);
 	if(myflag & 0x04) {
+	   testvga2_tempbh = 0x00; testvga2_tempbl = 0xfd;
 	   testsvhs_tempbh = 0x00; testsvhs_tempbl = 0xdd;
 	   testcvbs_tempbh = 0x00; testcvbs_tempbl = 0xee;
 	}
+	testvga2_tempch = 0x0e;	testvga2_tempcl = 0x08;
 	testsvhs_tempch = 0x06;	testsvhs_tempcl = 0x04;
 	testcvbs_tempch = 0x08; testcvbs_tempcl = 0x04;
 
@@ -971,45 +981,142 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	      (pSiS->Chipset == PCI_CHIP_SIS315PRO)) {
 
 	if(pSiS->sishw_ext.UseROM) {
+	   testvga2_tempbh = pSiS->BIOS[0xbe]; testvga2_tempbl = pSiS->BIOS[0xbd];
 	   testsvhs_tempbh = pSiS->BIOS[0xc0]; testsvhs_tempbl = pSiS->BIOS[0xbf];
 	   testcvbs_tempbh = pSiS->BIOS[0xc2]; testcvbs_tempbl = pSiS->BIOS[0xc1];
 	   biosflag = pSiS->BIOS[0xf3];
 	} else {
+	   testvga2_tempbh = 0x00; testvga2_tempbl = 0xd1;
            testsvhs_tempbh = 0x00; testsvhs_tempbl = 0xb9;
 	   testcvbs_tempbh = 0x00; testcvbs_tempbl = 0xb3;
 	   biosflag = 0;
 	}
 	if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
 	   if(pSiS->sishw_ext.UseROM) {
+	      testvga2_tempbh = pSiS->BIOS[0xc4]; testvga2_tempbl = pSiS->BIOS[0xc3];
 	      testsvhs_tempbh = pSiS->BIOS[0xc6]; testsvhs_tempbl = pSiS->BIOS[0xc5];
 	      testcvbs_tempbh = pSiS->BIOS[0xc8]; testcvbs_tempbl = pSiS->BIOS[0xc7];
 	   } else {
+	      testvga2_tempbh = 0x01; testvga2_tempbl = 0x90;
 	      testsvhs_tempbh = 0x01; testsvhs_tempbl = 0x6b;
 	      testcvbs_tempbh = 0x01; testcvbs_tempbl = 0x74;
 	   }
 	}
 	inSISIDXREG(SISPART4,0x01,myflag);
 	if(myflag & 0x04) {
+	   testvga2_tempbh = 0x00; testvga2_tempbl = 0xfd;
 	   testsvhs_tempbh = 0x00; testsvhs_tempbl = 0xdd;
 	   testcvbs_tempbh = 0x00; testcvbs_tempbl = 0xee;
 	}
+	testvga2_tempch = 0x0e;	testvga2_tempcl = 0x08;
 	testsvhs_tempch = 0x06;	testsvhs_tempcl = 0x04;
 	testcvbs_tempch = 0x08; testcvbs_tempcl = 0x04;
 
-    } else {
+    } else if(pSiS->Chipset == PCI_CHIP_SIS330) {
 
-        if(pSiS->sishw_ext.UseROM) {
-	   testsvhs_tempbh = pSiS->BIOS[0xc6]; testsvhs_tempbl = pSiS->BIOS[0xc5];
-	   testcvbs_tempbh = pSiS->BIOS[0xc8]; testcvbs_tempbl = pSiS->BIOS[0xc7];
-	   biosflag = pSiS->BIOS[0xf3];
+	if(pSiS->sishw_ext.UseROM) {
+	   testvga2_tempbh = pSiS->BIOS[0xe6]; testvga2_tempbl = pSiS->BIOS[0xe5];
+	   testsvhs_tempbh = pSiS->BIOS[0xe8]; testsvhs_tempbl = pSiS->BIOS[0xe7];
+	   testcvbs_tempbh = pSiS->BIOS[0xea]; testcvbs_tempbl = pSiS->BIOS[0xe9];
+	   biosflag = pSiS->BIOS[0x11b];
 	} else {
-	   testsvhs_tempbh = 0x02; testsvhs_tempbl = 0x00;
-	   testcvbs_tempbh = 0x01; testcvbs_tempbl = 0x00;
+	   testvga2_tempbh = 0x00; testvga2_tempbl = 0xd1;
+           testsvhs_tempbh = 0x00; testsvhs_tempbl = 0xb9;
+	   testcvbs_tempbh = 0x00; testcvbs_tempbl = 0xb3;
 	   biosflag = 0;
 	}
-	testsvhs_tempch = 0x04;	testsvhs_tempcl = 0x08;
-	testcvbs_tempch = 0x08; testcvbs_tempcl = 0x08;
+	if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
+	   if(pSiS->sishw_ext.UseROM) {
+	      testvga2_tempbh = pSiS->BIOS[0xec]; testvga2_tempbl = pSiS->BIOS[0xeb];
+	      testsvhs_tempbh = pSiS->BIOS[0xee]; testsvhs_tempbl = pSiS->BIOS[0xed];
+	      testcvbs_tempbh = pSiS->BIOS[0xf0]; testcvbs_tempbl = pSiS->BIOS[0xef];
+	   } else {
+	      testvga2_tempbh = 0x01; testvga2_tempbl = 0x90;
+	      testsvhs_tempbh = 0x01; testsvhs_tempbl = 0x6b;
+	      testcvbs_tempbh = 0x01; testcvbs_tempbl = 0x74;
+	   }
+	}
+	inSISIDXREG(SISPART4,0x01,myflag);
+	if(myflag & 0x04) {
+	   testvga2_tempbh = 0x00; testvga2_tempbl = 0xfd;
+	   testsvhs_tempbh = 0x00; testsvhs_tempbl = 0xdd;
+	   testcvbs_tempbh = 0x00; testcvbs_tempbl = 0xee;
+	}
+	testvga2_tempch = 0x0e;	testvga2_tempcl = 0x08;
+	testsvhs_tempch = 0x06;	testsvhs_tempcl = 0x04;
+	testcvbs_tempch = 0x08; testcvbs_tempcl = 0x04;
 
+    } else {  /* 550, 650, 740 */
+
+        if(pSiS->sishw_ext.UseROM) {
+	   testvga2_tempbh = pSiS->BIOS[0xbe]; testvga2_tempbl = pSiS->BIOS[0xbd];
+	   testsvhs_tempbh = pSiS->BIOS[0xc0]; testsvhs_tempbl = pSiS->BIOS[0xbf];
+	   testcvbs_tempbh = pSiS->BIOS[0xc2]; testcvbs_tempbl = pSiS->BIOS[0xc1];
+	   biosflag = pSiS->BIOS[0xf3];
+	} else {
+	   testvga2_tempbh = 0x00; testvga2_tempbl = 0xd1;
+           testsvhs_tempbh = 0x00; testsvhs_tempbl = 0xb9;
+	   testcvbs_tempbh = 0x00; testcvbs_tempbl = 0xb3;
+	   biosflag = 0;
+	}
+	testvga2_tempch = 0x0e;	testvga2_tempcl = 0x08;
+	testsvhs_tempch = 0x06; testsvhs_tempcl = 0x04;
+	testcvbs_tempch = 0x08; testcvbs_tempcl = 0x04;
+
+        /* TW: Different BIOS versions use different values for the 301LV.
+	       These values are from the newest versions 1.10.6? and 1.10.7?.
+	       I have no idea if these values are suitable for the 301B as well.
+	 */
+
+	if(pSiS->VBFlags & (VB_301B|VB_302B|VB_30xLV|VB_30xLVX)) {
+  	   if(pSiS->sishw_ext.UseROM) {
+	      testvga2_tempbh = pSiS->BIOS[0xc4]; testvga2_tempbl = pSiS->BIOS[0xc3];
+	      testsvhs_tempbh = pSiS->BIOS[0xc6]; testsvhs_tempbl = pSiS->BIOS[0xc5];
+	      testcvbs_tempbh = pSiS->BIOS[0xc8]; testcvbs_tempbl = pSiS->BIOS[0xc7];
+	      biosflag = pSiS->BIOS[0xf3];
+	   } else {
+	      testvga2_tempbh = 0x01; testvga2_tempbl = 0x90;
+	      testsvhs_tempbh = 0x02; testsvhs_tempbl = 0x00;
+	      testcvbs_tempbh = 0x01; testcvbs_tempbl = 0x00;
+	      biosflag = 0;
+	   }
+	   testvga2_tempch = 0x0e; testvga2_tempcl = 0x08;
+	   testsvhs_tempch = 0x04; testsvhs_tempcl = 0x08;
+	   testcvbs_tempch = 0x08; testcvbs_tempcl = 0x08;
+	}
+
+    }
+
+    /* TW: No VGA2 or SCART on LV bridges */
+    if(pSiS->VBFlags & (VB_30xLV|VB_30xLVX)) {
+	testvga2_tempbh = testvga2_tempbl = 0x00;
+	testvga2_tempch = testvga2_tempcl = 0x00;
+    }
+
+    if(testvga2_tempch || testvga2_tempcl || testvga2_tempbh || testvga2_tempbl) {
+#ifdef TWDEBUG
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+                "SiS30x: Scanning for VGA2/SCART (%x %x %x %x)\n",
+    		testvga2_tempbh, testvga2_tempbl, testvga2_tempch, testvga2_tempcl);
+#endif
+
+       result = SISDoSense(pScrn, testvga2_tempbl, testvga2_tempbh,
+                               testvga2_tempcl, testvga2_tempch);
+       if(result) {
+           if(biosflag & 0x01) {
+	      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	         "SiS30x: Detected TV connected to SCART output\n");
+	      pSiS->VBFlags |= TV_SCART;
+	      orSISIDXREG(SISCR, 0x32, 0x04);
+	      pSiS->postVBCR32 |= 0x04;
+	   } else if(!(pSiS->VBFlags & (VB_30xLV|VB_30xLVX))) {
+	      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	         "SiS30x: Detected secondary VGA connection\n");
+	      pSiS->VBFlags |= VGA2_CONNECTED;
+	      orSISIDXREG(SISCR, 0x32, 0x10);
+	      pSiS->postVBCR32 |= 0x10;
+	   }
+       }
     }
 
 #ifdef TWDEBUG

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.21 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.26 2002/11/29 13:52:07 eich Exp $ */
 /*
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Parts Copyright 2001, 2002 by Thomas Winischhofer, Vienna, Austria.
@@ -1046,7 +1046,7 @@ SiS301BSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	 if(pSiS->VBFlags & (VB_30xLV|VB_30xLVX))
 	   Part4max = 0x24;
 	 else
-	   Part4max = 0x22;
+	   Part4max = 0x23;
 	 break;
     case SIS_315_VGA:
          Part1max = 0x37; /* 0x23, but we also need 2c-2e, 35-37 */
@@ -1055,7 +1055,7 @@ SiS301BSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	 if(pSiS->VBFlags & (VB_30xLV|VB_30xLVX))
 	   Part4max = 0x24;
 	 else
-	   Part4max = 0x22;
+	   Part4max = 0x23;
 	 break;
     }
 
@@ -1264,11 +1264,12 @@ SiSLVDSChrontelRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     SiS_LockCRT2(pSiS->SiS_Pr, &pSiS->sishw_ext, pSiS->RelIO+0x30);
 }
 
-/* TW: Restore output selection registers (CR30, 31, 33) */
+/* TW: Restore output selection registers (CR30, 31, 33, 35/38) */
 void
 SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
    SISPtr pSiS = SISPTR(pScrn);
+   unsigned char temp=0;
 
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL);
@@ -1277,13 +1278,21 @@ SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg)
    outSISIDXREG(SISCR, 0x30, sisReg->sisRegs3D4[0x30]);
    outSISIDXREG(SISCR, 0x31, sisReg->sisRegs3D4[0x31]);
    outSISIDXREG(SISCR, 0x33, sisReg->sisRegs3D4[0x33]);
+   if(pSiS->Chipset != PCI_CHIP_SIS300) {
+      switch(pSiS->VGAEngine) {
+        case SIS_300_VGA: temp = 0x35; break;
+        case SIS_315_VGA: temp = 0x38; break;
+      }
+      if(temp) {
+         outSISIDXREG(SISCR, temp, sisReg->sisRegs3D4[temp]);
+      }
+   }
 }
 
 unsigned int
 SiSddc1Read(ScrnInfoPtr pScrn)
 {
     SISPtr pSiS = SISPTR(pScrn);
-/*  int vgaIOBase = VGAHWPTR(pScrn)->IOBase + pSiS->IODBase;  */
     unsigned char temp;
 
 #ifdef UNLOCK_ALWAYS
