@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3seg.c,v 3.2 1996/10/03 08:33:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3seg.c,v 3.3 1996/10/06 13:15:24 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -141,17 +141,17 @@ ErrorF("SS %x %x %d",pGC->fgPixel,pGC->bgPixel, nseg);
       pGC->alu = 3;
       WaitIdleEmpty();
       for (i=0; i<nseg; i++) {
-	 pSeg[i].x1 += 20;
-	 pSeg[i].x2 += 20;
-	 pSeg[i].y1 += 20;
-	 pSeg[i].y2 += 20;
+	 pSeg[i].x1 += 0;
+	 pSeg[i].x2 += 0;
+	 pSeg[i].y1 += 10;
+	 pSeg[i].y2 += 10;
       }
       cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
       for (i=0; i<nseg; i++) {
-	 pSeg[i].x1 -= 20;
-	 pSeg[i].x2 -= 20;
-	 pSeg[i].y1 -= 20;
-	 pSeg[i].y2 -= 20;
+	 pSeg[i].x1 -= 0;
+	 pSeg[i].x2 -= 0;
+	 pSeg[i].y1 -= 10;
+	 pSeg[i].y2 -= 10;
       }
       WaitIdleEmpty();
 ErrorF("SS %x %x %d\n",pGC->fgPixel, pGC->bgPixel, nseg);
@@ -330,9 +330,9 @@ if(0)ErrorF("seg alu %2d %2x %2x  col %3d %8x %8x\n",pGC->alu,s3alu[pGC->alu]>>1
 	 xdelta = -((x2-x1) << 20) / (y2-y1);
 	 if (axis == Y_AXIS)
 	    if (xdelta >= 0)
-	       xfixup = 0x80000-1;
+	       xfixup = 0x7ffff;
 	    else
-	       xfixup = 0x7ffff+1;
+	       xfixup = 0x80000;
 	 else
 	    if (xdelta > 0)
 	       xfixup = (xdelta-1) >> 1;
@@ -356,8 +356,10 @@ if(0)ErrorF("S %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %16.12f %16.12f\n"
 	  * we have bresenham parameters and two points. all we have to do now
 	  * is clip and draw.
 	  */
-
+	 
 	 while (nbox--) {
+	    int n,xss,xs,xe,ys,ye;
+	    
 	    oc1 = 0;
 	    oc2 = 0;
 	    OUTCODES(oc1, x1, y1, pbox);
@@ -376,70 +378,97 @@ if(0)ErrorF("S %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %16.12f %16.12f\n"
 	       ;SET_MAJ_AXIS_PCNT((short)len);
 	       ;SET_CMD(cmd2);
 
-#if 1
-	       if (0 && adx == 912 && ady == 570)
 	       if (y1 > y2) {
+		  ys = y1;
+		  xs = x1;
+		  xss = (x1 << 20) + xfixup;
 		  if (pGC->capStyle != CapNotLast)
-		     ErrorF("LXEND0_END1 %8x %d %d\n",x1<<16|x2,x1, x2);
+		     xe = x2;
 		  else if (xdir)
-		     ErrorF("LXEND0_END1 %8x\n",x1<<16|(x2-1),x1, x2-1);
+		     xe = x2 - 1;
 		  else
-		     ErrorF("LXEND0_END1 %8x\n",x1<<16|(x2+1),x1, x2+1);
-		  ErrorF("LDX %8x %8f\n",xdelta,xdelta/(double)(1<<20));
-		  ErrorF("LXSTART %8x %8f\n",(x1 << 20) + xfixup,((x1 << 20) + xfixup)/(double)(1<<20));
-		  ErrorF("LYSTART %8x %d\n",y1,y1);
-		  ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+		     xe = x2 + 1;
 	       } else {
+		  ys = y2;
+		  xe = x1;
+		  xss = (x2 << 20) + xfixup;
 		  if (pGC->capStyle != CapNotLast)
-		     ErrorF("LXEND0_END1 %8x\n",x2<<16|x1,x2, x1);
+		     xs = x2;
 		  else if (xdir)
-		     ErrorF("LXEND0_END1 %8x\n",(x2+1)<<16|x1,x2+1, x1);
+		     x2 = x2 + 1;
 		  else
-		     ErrorF("LXEND0_END1 %8x\n",(x2-1)<<16|x1,x2-1, x1);
-		  ErrorF("LDX %8x\n",xdelta);
-		  ErrorF("LXSTART %8x %8f\n",(x2 << 20) + xfixup,((x2 << 20) + xfixup)/(double)(1<<20));
-		  ErrorF("LYSTART %8x %d\n",y2,y2);
-		  ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
-	       }
-#endif
-	       WaitQueue(5);
-	       if (y1 > y2) {
-		  if (pGC->capStyle != CapNotLast)
-		     SETL_LXEND0_END1(x1, x2);
-		  else if (xdir)
-		     SETL_LXEND0_END1(x1, x2-1);
-		  else
-		     SETL_LXEND0_END1(x1, x2+1);
-		  SETL_LDX(xdelta);
-		  SETL_LXSTART((x1 << 20) + xfixup);
-		  SETL_LYSTART(y1);
-		  SETL_LYCNT((len+1) | xdir);
-	       } else {
-		  if (pGC->capStyle != CapNotLast)
-		     SETL_LXEND0_END1(x2, x1);
-		  else if (xdir)
-		     SETL_LXEND0_END1(x2+1, x1);
-		  else
-		     SETL_LXEND0_END1(x2-1, x1);
-		  SETL_LDX(xdelta);
-		  SETL_LXSTART((x2 << 20) + xfixup);
-		  SETL_LYSTART(y2);
-		  SETL_LYCNT((len+1) | xdir);
+		     xs = x2 - 1;
 	       }
 
+	       /* split long lines 
+		* 
+		* ViRGE vector generator uses DDA instead of bresenham and
+		* for long sloped lines (> 500 scanlines) rounding error can result
+		* in wrong pixels been drawn.  longer lines are splited in 
+		* multple parts and starting points fraction is set so that
+		* parts will join exactly (mostly experimental values)
+		*/
+
+#define LEN 500
+	       if (len <= LEN) { /* use old code to avoid FP stuff for short lines */
+		  if (0 && adx == 999 && ady == 999) {
+		     ErrorF("LXEND0_END1 %8x\n", xs<<16|xe, xs,xe);
+		     ErrorF("LDX %8x\n", xdelta);
+		     ErrorF("LXSTART %8x %8f\n", xss, xss/(double)(1<<20));
+		     ErrorF("LYSTART %8x %d\n",ys,ys);
+		     ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+		  }
+		  WaitQueue(5);
+		  SETL_LXEND0_END1(xs, xe);
+		  SETL_LDX(xdelta);
+		  SETL_LXSTART(xss);
+		  SETL_LYSTART(ys);
+		  SETL_LYCNT((len+1) | xdir);
+	       }
+	       else {
+		  double xd2 = -(double)(x2-x1) / (double)(y2-y1);
+
+		  for (n=0; len>0; n++, len -= LEN) {
+#define NN (0*n)
+#if 0
+		     ErrorF("LXEND0_END1 %8x\n",
+			    (NN+xs + (int)(n * LEN * xd2))<<16 | ( NN+xs + (int)((n+1) * LEN * xd2)-1),
+			    (NN+xs + (int)(n * LEN * xd2)), ( NN+xs + (int)((n+1) * LEN * xd2)-1));
+		     ErrorF("LDX %8x %8f\n",xdelta,xdelta/(double)(1<<20));
+		     ErrorF("LXSTART %8x %8f\n",((NN)<<20) + xss + (int)((n<<20) * (LEN * xd2)),(((NN)<<20) + xss + (int)((n<<20) * (LEN * xd2))) / (double)(1<<20));
+		     ErrorF("LYSTART %8x %d\n",ys - n * LEN,ys - n * LEN);
+		     if (len > LEN)
+			ErrorF("LYCNT %8x %d\n",(LEN+1) | xdir,LEN+1);
+		     else
+			ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+#endif
+		     WaitQueue(5);
+		     SETL_LXEND0_END1((((NN)<<20) + xss + (int)((n<<20) * (LEN * xd2))) >> 20,
+				      len <= LEN ? xe : 
+				      ((((NN)<<20) + xss + (int)(((n+1)<<20) * (LEN * xd2))) >> 20) 
+				      + (xdir ? -1 : 1));
+		     SETL_LDX(xdelta);
+		     SETL_LXSTART(((NN)<<20) + xss + (int)((n<<20) * (LEN * xd2)));
+		     SETL_LYSTART(ys - n * LEN);
+		     if (len > LEN)
+			SETL_LYCNT((LEN+1) | xdir);
+                     else
+			SETL_LYCNT((len+1) | xdir);
+		  }
+	       }
 	       break;
 	    } else if (oc1 & oc2) {
 	       pbox++;
 	    } else {
-
+	       
 	       /*
 		* let the mi helper routine do our work; better than
 		* duplicating code...
 		*/
 	       int   clip1=0, clip2=0; /* clippedness of the endpoints */
-
+	       
 	       int new_x1 = x1, new_y1 = y1, new_x2 = x2, new_y2 = y2;
-
+	       
                if (miZeroClipLine(pbox->x1, pbox->y1,
 				  pbox->x2-1, pbox->y2-1,
 				  &new_x1, &new_y1,
@@ -456,11 +485,13 @@ if(0)ErrorF("S %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %16.12f %16.12f\n"
 		  len = abs(new_x2 - new_x1);
 	       else
 		  len = abs(new_y2 - new_y1);
-
 	       if (clip2 != 0 || pGC->capStyle != CapNotLast)
 		  len++;
+
 	       if (len) {
-		  int new_xstartx;
+		  int xofs,yofs;
+		  double xd2;
+
 		  len = abs(new_y2 - new_y1);
 
 		  ;SET_CURPT((short)new_x1, (short)new_y1);
@@ -468,38 +499,95 @@ if(0)ErrorF("S %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %16.12f %16.12f\n"
 		  ;SET_DESTSTP((short)e2, (short)e1);
 		  ;SET_MAJ_AXIS_PCNT((short)len);
 		  ;SET_CMD(cmd2);
+		  
 		  if (y1 > y2) {
-		     new_xstartx = (x1 << 20) + xfixup + (xdelta * (y1 - new_y1));
-		     new_xstartx += (new_x1 - new_xstartx);
-		  } else {
-		     new_xstartx = (x2 << 20) + xfixup + (xdelta * (y2 - new_y2));
-		     new_xstartx += (new_x2 - new_xstartx);
-		  }					    
-#if 0
-		  if (y1 > y2) {
+		     xss = (new_x1 << 20) + xfixup;
 		     if (pGC->capStyle != CapNotLast)
-			ErrorF("LXEND0_END1 %8x %d %d\n",new_x1<<16|new_x2,new_x1, new_x2);
+			xe = new_x2;
 		     else if (xdir)
-			ErrorF("LXEND0_END1 %8x\n",new_x1<<16|(new_x2-1),new_x1, new_x2-1);
+			xe = new_x2 - 1;
 		     else
-			ErrorF("LXEND0_END1 %8x\n",new_x1<<16|(new_x2+1),new_x1, new_x2+1);
-		     ErrorF("LDX %8x %8f\n",xdelta,xdelta/(double)(1<<20));
-		     ErrorF("LXSTART %8x %8f\n",(new_x1 << 20) + xfixup,((new_x1 << 20) + xfixup)/(double)(1<<20));
-		     ErrorF("LYSTART %8x %d\n",new_y1,new_y1);
-		     ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+			xe = new_x2 + 1;
+		     ys = new_y1;
+		     xs = new_x1;
+		     xofs = x1 - new_x1;
+		     yofs = y1 - new_y1;
 		  } else {
+		     ys = new_y2;
+		     xe = new_x1;
+		     xss = (new_x2 << 20) + xfixup;
 		     if (pGC->capStyle != CapNotLast)
-			ErrorF("LXEND0_END1 %8x\n",new_x2<<16|new_x1,new_x2, new_x1);
+			xs = new_x2;
 		     else if (xdir)
-			ErrorF("LXEND0_END1 %8x\n",(new_x2+1)<<16|new_x1,new_x2+1, new_x1);
+			x2 = new_x2 + 1;
 		     else
-			ErrorF("LXEND0_END1 %8x\n",(new_x2-1)<<16|new_x1,new_x2-1, new_x1);
-		     ErrorF("LDX %8x\n",xdelta);
-		     ErrorF("LXSTART %8x %8f\n",(new_x2 << 20) + xfixup,((new_x2 << 20) + xfixup)/(double)(1<<20));
-		     ErrorF("LYSTART %8x %d\n",new_y2,new_y2);
-		     ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+			xs = new_x2 - 1;
+		     xofs = x2 - new_x2;
+		     yofs = y2 - new_y2;
+		  }		  
+
+		  if (len <= LEN) { /* use old code to avoid FP stuff for short lines */
+		     if (0 && adx == 999 && ady == 999) {
+			ErrorF("LXEND0_END1 %8x\n", xs<<16|xe, xs,xe);
+			ErrorF("LDX %8x\n", xdelta);
+			ErrorF("LXSTART %8x %8f\n", xss, xss/(double)(1<<20));
+			ErrorF("LYSTART %8x %d\n",ys,ys);
+			ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
+		     }
+		     WaitQueue(5);
+		     SETL_LXEND0_END1(xs, xe);
+		     SETL_LDX(xdelta);
+		     if (yofs == 0) 
+			SETL_LXSTART(xss);
+		     else {
+			double xd2 = -(double)(x2-x1) / (double)(y2-y1);
+			if (y1 > y2)
+			   xss = (x1 << 20) + xfixup;
+			else 
+			   xss = (x2 << 20) + xfixup;
+			SETL_LXSTART(xss + (int)((yofs<<20) * xd2));
+		     }
+		     SETL_LYSTART(ys);
+		     SETL_LYCNT((len+1) | xdir);
 		  }
+		  else {
+		     double xd2 = -(double)(x2-x1) / (double)(y2-y1);
+
+		     if (y1 > y2)
+			xss = (x1 << 20) + xfixup;
+		     else 
+			xss = (x2 << 20) + xfixup;
+
+		     for (n=0; len+(new_y1 ==  new_y2) > 0; n++, len -= LEN) {
+#if 0
+			ErrorF("LXEND0_END1 %8x\n",
+			       (NN+xs + (int)((n * LEN + yofs) * xd2))<<16 | ( NN+xs + (int)(((n+1) * LEN + yofs) * xd2)-1),
+			       (NN+xs + (int)((n * LEN + yofs) * xd2)), ( NN+xs + (int)(((n+1) * LEN + yofs) * xd2)-1));
+			ErrorF("LDX %8x %8f\n",xdelta,xdelta/(double)(1<<20));
+			ErrorF("LXSTART %8x %8f\n",((NN)<<20) + xss + (int)(((n * LEN + yofs)<<20) * xd2), (((NN)<<20) + xss + (int)(((n * LEN + yofs)<<20) * xd2)) / (double)(1<<20));
+			ErrorF("LYSTART %8x %d\n",ys - n * LEN,ys - n * LEN);
+			if (len > LEN)
+			   ErrorF("LYCNT %8x %d\n",(LEN+1) | xdir,LEN+1);
+			else
+			   ErrorF("LYCNT %8x %d\n",(len+1) | xdir,len+1);
 #endif
+			WaitQueue(5);
+			SETL_LXEND0_END1(n==0 ? xs : 
+					 (((NN)<<20) + xss + (int)(((n * LEN + yofs)<<20) * xd2)) >> 20,
+					 len <= LEN ? xe : 
+					 ((((NN)<<20) + xss + (int)((((n+1) * LEN + yofs)<<20) * xd2)) >> 20)
+					 + (xdir ? -1 : 1));
+			SETL_LDX(xdelta);
+			SETL_LXSTART(((NN)<<20) + xss + (int)(((n * LEN + yofs)<<20) * xd2));
+			SETL_LYSTART(ys - n * LEN);
+			if (len > LEN)
+			   SETL_LYCNT((LEN+1) | xdir);
+			else
+			   SETL_LYCNT((len+1) | xdir);
+		     }
+		  }
+		  
+#if 0
 		  WaitQueue(5);
 		  if (y1 > y2) {
 		     if (pGC->capStyle != CapNotLast)
@@ -524,6 +612,8 @@ if(0)ErrorF("S %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %16.12f %16.12f\n"
 		     SETL_LYSTART(new_y2);
 		     SETL_LYCNT((len+1) | xdir);
 		  }
+#endif
+
 	       }
 	       pbox++;
 	    }

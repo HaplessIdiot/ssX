@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.17 1996/09/25 14:16:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.18 1996/10/03 08:34:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -51,6 +51,14 @@
 # endif /* __GNUC__ */
 #endif /* !__STDC__ */
 
+#if defined(IODEBUG) && defined(__GNUC__)
+#define outb RealOutb
+#define outw RealOutw
+#define outl RealOutl
+#define inb RealInb
+#define inw RealInw
+#define inl RealInl
+#endif
 
 #ifdef NO_INLINE
 
@@ -1180,6 +1188,22 @@ static int inb(port)
 #define stw_u(v,p)	((unsigned short *)(p)) = (v)
 #define mem_barrier()   /* NOP */
 #endif /* __GNUC__ */
+
+#if defined(IODEBUG) && defined(__GNUC__)
+#undef inb
+#undef inw
+#undef inl
+#undef outb
+#undef outw
+#undef outl
+#define inb(a) __extension__ ({unsigned char __c=RealInb(a); ErrorF("inb(0x%03x) = 0x%02x\t@ line %4d, file %s\n", a, __c, __LINE__, __FILE__);__c;})
+#define inw(a) __extension__ ({unsigned short __c=RealInw(a); ErrorF("inw(0x%03x) = 0x%04x\t@ line %4d, file %s\n", a, __c, __LINE__, __FILE__);__c;})
+#define inl(a) __extension__ ({unsigned long __c=RealInl(a); ErrorF("inl(0x%03x) = 0x%08x\t@ line %4d, file %s\n", a, __c, __LINE__, __FILE__);__c;})
+
+#define outb(a,b) (ErrorF("outb(0x%03x, 0x%02x)\t@ line %4d, file %s\n", a, b, __LINE__, __FILE__),RealOutb(a,b))
+#define outw(a,b) (ErrorF("outw(0x%03x, 0x%04x)\t@ line %4d, file %s\n", a, b, __LINE__, __FILE__),RealOutw(a,b))
+#define outl(a,b) (ErrorF("outl(0x%03x, 0x%08x)\t@ line %4d, file %s\n", a, b, __LINE__, __FILE__),RealOutl(a,b))
+#endif
 
 /*
  *-----------------------------------------------------------------------

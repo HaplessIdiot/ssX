@@ -1,3 +1,21 @@
+XFree86 3.1.2Gk (8 October 1996)
+948. More line/seg fixes for the S3V server (Harald Koenig).
+947. Fix XORing text (and other ROPs) for the S3V server (Harald Koenig).
+946. Force 1-cycle EDO mode for the ViRGE/VX (Harald Koenig).
+945. Disable the font and pixmap caches in the S3V server (not implemented).
+944. Apply 943 to the Mach32 and S3V servers.
+943. Ignore cliping boxes completely above or below the displayed text
+     for the S3, Mach8 and 8514 servers.  This improves performance
+     when a window is partly covered by a shaped window (Hans Nasten).
+942. Resync PC98 Imakefiles, and update documentation (Michio "Karl" Jinbo).
+941. Some LinkKit changes to prevent conflicts between the xf86 and xf98
+     linkkits when doing a combined build/install.
+940. Fix for keycodes/xfree98 (Takefumi Tsukada).
+939. LinkKit support for PC98 servers (Takaaki Nomura).
+938. Fix MGA 24bpp problems (Ansgar Hockmann).
+937. Fix a potential memory interleave problem and spurious warning messages
+     in the Cirrus driver (Corin Anderson).
+
 XFree86 3.1.2Gj (6 October 1996)
 936. Build PEX, XIE as dynamically loaded modules by default where it is
      supported.

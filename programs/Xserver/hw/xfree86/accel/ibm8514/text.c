@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514text.c,v 1.1 94/03/28 21:06:05 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/text.c,v 1.1.1.3 1996/01/03 07:12:47 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -26,6 +26,7 @@
  * Extracted from s3text.c
  * Modified for 8514, Hans Nasten. (nasten@everyware.se)
  */
+/* $XConsortium: text.c /main/2 1995/11/12 16:55:04 kaleb $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -231,15 +232,19 @@ int ibm8514NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    outw (BKGD_COLOR, (short) pGC->bgPixel);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      outw (MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-      outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-      outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-      outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+     /*
+      * Skip all boxes that are completely above or below the text string.
+      */
+     if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+       WaitQueue(4);
+       outw (MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
+       outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
+       outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
+       outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
-      ibm8514PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-						FONTGLYPHS(pGC->font));
-
+       ibm8514PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
+			   FONTGLYPHS(pGC->font));
+     }
    }
 
    WaitQueue(7);
@@ -366,15 +371,19 @@ int ibm8514NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    outw (BKGD_COLOR, (short) pGC->bgPixel);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      outw (MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-      outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-      outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-      outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+     /*
+      * Skip all boxes that are completely above or below the text string.
+      */
+     if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+       WaitQueue(4);
+       outw (MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
+       outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
+       outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
+       outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
-      ibm8514PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-						FONTGLYPHS(pGC->font));
-
+       ibm8514PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
+			   FONTGLYPHS(pGC->font));
+     }
    }
 
    WaitQueue(7);

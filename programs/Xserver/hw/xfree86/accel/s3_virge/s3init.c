@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.3 1996/10/03 08:33:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.4 1996/10/06 13:15:22 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -921,9 +921,14 @@ s3Init(mode)
       outb(vgaCRIndex, 0x36);
       tmp = inb(vgaCRReg);
       if ((tmp & 0x0c) == 0x00) 		/* 1-cycle EDO */
-	 outb(vgaCRReg, tmp | 0x08);		/* 2-cycel EDO */
+	 outb(vgaCRReg, tmp | 0x08);		/* 2-cycle EDO */
    }
 
+   if (S3_ViRGE_VX_SERIES(s3ChipId)) {
+      outb(vgaCRIndex, 0x36);            /* ViRGE/VX requires 1-cycle EDO */
+      tmp = inb(vgaCRReg);               /* for GE operations */
+      outb(vgaCRReg, tmp & ~0x08);
+   }
 
    if (s3MmioMem != NULL)
       s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.7 1995/01/28 16:59:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.8 1996/02/04 09:02:42 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -229,15 +229,20 @@ mach32NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    outw (BKGD_COLOR, (short) pGC->bgPixel);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      outw(EXT_SCISSOR_L, (short)pBox->x1);
-      outw(EXT_SCISSOR_T, (short)pBox->y1);
-      outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
-      outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
+      /*
+       * Skip all boxes that are completely above or below the text string.
+       */
+      if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+         WaitQueue(4);
+         outw(EXT_SCISSOR_L, (short)pBox->x1);
+         outw(EXT_SCISSOR_T, (short)pBox->y1);
+         outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
+         outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 
-      mach32PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-						FONTGLYPHS(pGC->font));
+         mach32PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
+						   FONTGLYPHS(pGC->font));
 
+      }
    }
 
    WaitQueue(8);
@@ -366,15 +371,19 @@ mach32NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    outw (BKGD_COLOR, (short) pGC->bgPixel);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      outw(EXT_SCISSOR_L, (short)pBox->x1);
-      outw(EXT_SCISSOR_T, (short)pBox->y1);
-      outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
-      outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
+      /*
+       * Skip all boxes that are completley above or below the text string.
+       */
+      if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+         WaitQueue(4);
+         outw(EXT_SCISSOR_L, (short)pBox->x1);
+         outw(EXT_SCISSOR_T, (short)pBox->y1);
+         outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
+         outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 
-      mach32PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-						FONTGLYPHS(pGC->font));
-
+         mach32PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
+						  FONTGLYPHS(pGC->font));
+      }
    }
 
    WaitQueue(8);

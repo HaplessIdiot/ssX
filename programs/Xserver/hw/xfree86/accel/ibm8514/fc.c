@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fc.c,v 3.2 1995/01/28 15:51:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fc.c,v 3.3 1996/02/04 09:01:49 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -173,7 +173,10 @@ GCPtr pGC;
 BoxPtr pBox;
 
 {
+int maxAscent, maxDescent;
 
+   maxAscent = FONTMAXBOUNDS(pGC->font, ascent);
+   maxDescent = FONTMAXBOUNDS(pGC->font, descent);
    WaitQueue(5);
    outw(FRGD_COLOR, (short)pGC->fgPixel);
    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
@@ -182,13 +185,18 @@ BoxPtr pBox;
    outw(WRT_MASK, (short)pGC->planemask);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      outw(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-      outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-      outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-      outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+     /*
+      * Skip all boxes that are completely above or below the text string.
+      */
+     if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+       WaitQueue(4);
+       outw(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
+       outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
+       outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
+       outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
-      Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox);
+       Doibm8514CPolyText8(x, y, count, chars, fentry, pGC, pBox);
+     }
    }
 
    WaitQueue(8);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.0 1996/09/26 14:00:31 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.1 1996/09/29 13:40:20 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
@@ -26,9 +26,12 @@ NormalLibraryObjectRule()
 NormalAsmObjectRule()
 NormalRelocatableTarget(mga_drv, $(OBJS))
 
+InstallLinkKitNonExecFile(mga.h,$(LINKKITDIR)/drivers/vga256/mga)
+InstallLinkKitNonExecFile(mgareg.h,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgadriver.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgabitblt.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(mgabank.s,$(LINKKITDIR)/drivers/vga256/mga)
+InstallLinkKitNonExecFile(mga_line.c,$(LINKKITDIR)/drivers/vga256/mga)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/mga)
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.10 1995/07/12 15:35:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.11 1996/02/04 09:02:25 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -243,7 +243,13 @@ mach32GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
      CacheFont8Ptr fentry;
      GCPtr pGC;
      BoxPtr pBox;
+     int numRects;
 {
+   int maxAscent, maxDescent;
+
+   maxAscent = FONTMAXBOUNDS(pGC->font, ascent);
+   maxDescent = FONTMAXBOUNDS(pGC->font, descent);
+
    WaitQueue(5);
    outw(FRGD_COLOR, (short)pGC->fgPixel);
    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
@@ -253,13 +259,18 @@ mach32GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
 
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      outw(EXT_SCISSOR_L, (short)pBox->x1);
-      outw(EXT_SCISSOR_T, (short)pBox->y1);
-      outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
-      outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
+      /*
+       * Skip all boxes that are completley above or below the text string.
+       */
+      if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+         WaitQueue(4);
+         outw(EXT_SCISSOR_L, (short)pBox->x1);
+         outw(EXT_SCISSOR_T, (short)pBox->y1);
+         outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
+         outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 
-      Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox);
+         Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox);
+      }
    }
 
    WaitQueue(9);

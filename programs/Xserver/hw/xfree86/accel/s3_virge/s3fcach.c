@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.1 1996/10/03 08:33:23 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -90,7 +90,7 @@ s3FontCache8Init()
     * If a full-size pixmap expansion area will fit to the right, put it
     * there.
     */
-   if (!OFLG_ISSET(OPTION_NO_PIXMAP_CACHE, &s3InfoRec.options)) {
+   if (0 && !OFLG_ISSET(OPTION_NO_PIXMAP_CACHE, &s3InfoRec.options)) {
     if (s3DisplayWidth - s3InfoRec.virtualX >= MAX_PIXMAP_WIDTH ||
        s3DisplayWidth - s3InfoRec.virtualX >= h) {
       /* use area at right of screen */
@@ -150,7 +150,7 @@ s3FontCache8Init()
     }
    }
 
-   if (OFLG_ISSET(OPTION_NO_FONT_CACHE, &s3InfoRec.options)) {
+   if (1 || OFLG_ISSET(OPTION_NO_FONT_CACHE, &s3InfoRec.options)) {
       if (first)
 	 xf86InitText( NULL, s3NoCPolyText, s3NoCImageText );
    } else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.65 1996/09/29 13:39:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.66 1996/10/06 13:17:35 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -272,6 +272,7 @@ static void *   cirrusSave();
 static void     cirrusRestore();
 static Bool     cirrusScreenInit();
 static void     cirrusAdjust();
+static int      cirrusFindPitchPadding();
 static int      cirrusPitchAdjust();
 static void	cirrusFbInit();
 
@@ -1534,7 +1535,9 @@ cirrusProbe()
        /* Initialize the interleaving variables right now.  The cursor code
 	  (in cir_alloc:CirrusCursorAllocate()) will need to know what the
 	  memory interleave, etc. are to properly allocate the cursor. */
+       int screenPitch;    /* Padded screen pitch */
 
+       screenPitch = cirrusFindPitchPadding();
 
        switch (vgaBitsPerPixel) {
        default:
@@ -1545,7 +1548,7 @@ cirrusProbe()
 	    In fact, it must be one of only a handful of tile sizes.  So
 	    round pitch up to the nearest acceptable tile pitch */
 	 for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	   if (cirrusTilesPerLineTab[i].pitch == vga256InfoRec.displayWidth)
+	   if (cirrusTilesPerLineTab[i].pitch == screenPitch)
 	     break;
 
 	 if (cirrusTilesPerLineTab[i].pitch < 0) {
@@ -1571,8 +1574,7 @@ cirrusProbe()
 	    round pitch up to the nearest acceptable tile pitch */
 	 /* In 16bpp, there are two bytes per pixel */
 	 for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	   if ((cirrusTilesPerLineTab[i].pitch>>1) == 
-	       vga256InfoRec.displayWidth)
+	   if ((cirrusTilesPerLineTab[i].pitch>>1) == screenPitch)
 	     break;
 	 
 	 if (cirrusTilesPerLineTab[i].pitch < 0) {
@@ -1599,8 +1601,7 @@ cirrusProbe()
 	    round pitch up to the nearest acceptable tile pitch */
 	 /* In 24bpp, there are three bytes per pixel */
 	 for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	   if ((cirrusTilesPerLineTab[i].pitch/3) == 
-	       vga256InfoRec.displayWidth)
+	   if ((cirrusTilesPerLineTab[i].pitch/3) == screenPitch)
 	     break;
 	 
 	 if (cirrusTilesPerLineTab[i].pitch < 0) {
@@ -1627,8 +1628,7 @@ cirrusProbe()
 	    round pitch up to the nearest acceptable tile pitch */
 	 /* In 32bpp, there are four bytes per pixel */
 	 for (i = 0; cirrusTilesPerLineTab[i].pitch > 0; i++)
-	   if ((cirrusTilesPerLineTab[i].pitch>>2) == 
-	       vga256InfoRec.displayWidth)
+	   if ((cirrusTilesPerLineTab[i].pitch>>2) == screenPitch)
 	     break;
 
 	 if (cirrusTilesPerLineTab[i].pitch < 0) {
@@ -1687,18 +1687,8 @@ cirrusProbe()
 
 
 
-int cirrusPitchAdjust(void)
+static int cirrusFindPitchPadding(void)
 {
-  /* In the Laguna family, where memory is tiled, each scanline must be
-     an integer number of tiles wide (tile width =  128 or 256
-     bytes).  Furthermore, there are only a few tile pitches
-     allowed.  It just so happens that none of these tile pitches
-     yield a screen byte pitch that is divisible by 3.  The upshot:
-     you can't have 24bpp if the screen pitch is not a multiple of 
-     three -- i.e., if the screen pitch is not an integer number
-     of _pixels_. */
-
-
   /* Find the smallest tile-line-pitch such that the total byte pitch
      is greater than or equal to virtualX*Bpp. */
   int i;
@@ -1716,6 +1706,23 @@ int cirrusPitchAdjust(void)
       bestPitch = cirrusTilesPerLineTab[i].pitch;
       break;
     }
+
+  return bestPitch;
+}
+
+
+int cirrusPitchAdjust(void)
+{
+  /* In the Laguna family, where memory is tiled, each scanline must be
+     an integer number of tiles wide (tile width =  128 or 256
+     bytes).  Furthermore, there are only a few tile pitches
+     allowed.  It just so happens that none of these tile pitches
+     yield a screen byte pitch that is divisible by 3.  The upshot:
+     you can't have 24bpp if the screen pitch is not a multiple of 
+     three -- i.e., if the screen pitch is not an integer number
+     of _pixels_. */
+
+  int bestPitch = cirrusFindPitchPadding();
 
   ErrorF("%s %s: %s: Display width padded to %d bytes.\n",
 	 XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.22 1996/09/01 04:15:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.23 1996/09/22 05:03:17 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -314,6 +314,10 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
      BoxPtr pBox;
      int numRects;
 {
+     int maxAscent, maxDescent;
+
+   maxAscent = FONTMAXBOUNDS(pGC->font, ascent);
+   maxDescent = FONTMAXBOUNDS(pGC->font, descent);
    BLOCK_CURSOR;
    WaitQueue16_32(6,8);
    SET_FRGD_COLOR(pGC->fgPixel);
@@ -331,11 +335,15 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
    }
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-	  SET_SCISSORS((short)pBox->x1, (short)pBox->y1, (short)(pBox->x2 - 1),
-      												(short)(pBox->y2 - 1));
-
-      Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox);
+     /*
+      * Skip all boxes that are completely above or below the text string.
+      */
+     if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+       WaitQueue(4);
+       SET_SCISSORS((short)pBox->x1, (short)pBox->y1, (short)(pBox->x2 - 1),
+		    (short)(pBox->y2 - 1));
+       Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox);
+     }
    }
 
    WaitQueue(4);

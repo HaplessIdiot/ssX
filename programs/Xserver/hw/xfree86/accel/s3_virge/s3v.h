@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.0 1996/10/03 08:54:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.1 1996/10/06 13:15:28 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -118,7 +118,7 @@ extern ScrnInfoRec s3InfoRec;
 extern short s3ChipId;
 extern int s3ChipRev;
 
-#ifndef LINKKIT
+#if !defined(LINKKIT)
 _XFUNCPROTOBEGIN
 
 extern void (*s3ImageReadFunc)(
@@ -1029,7 +1029,6 @@ void s3IBMRGBLoadCursor(
 
 _XFUNCPROTOEND
 
-#endif /* !LINKKIT */
 
 static __inline__ int s3CheckLSPN(int w, int dir)
 {
@@ -1092,5 +1091,6 @@ static __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, in
 		 );
 }
 
+#endif /* !LINKKIT */
 
 #endif /* _S3V_H_ */

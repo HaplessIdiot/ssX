@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.40 1996/09/25 14:16:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.41 1996/10/03 08:34:04 dawes Exp $
 
 
 
@@ -288,9 +288,9 @@ LinkFile(XF86_Mach64.c,Mach64.c)
 LinkFile(xf86IniExt.c,$(SERVERSRC)/mi/miinitext.c)
 LinkFile(xf86MIniExt.c,$(SERVERSRC)/mi/miinitext.c)
 
-InstallLinkKitLibrary(xf86,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(xf86Init.o,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(xf86Init_m.o,$(LINKKITDIR)/lib)
+InstallLinkKitLibrary(xf86,$(LINKKITDIR)/lib86)
+InstallLinkKitNonExecFile(xf86Init.o,$(LINKKITDIR)/lib86)
+InstallLinkKitNonExecFile(xf86Init_m.o,$(LINKKITDIR)/lib86)
 InstallLinkKitNonExecFile(xf86.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86ExtInit.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86Priv.h,$(LINKKITDIR)/include)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.14 1996/09/22 05:03:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.15 1996/09/22 08:47:57 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -279,12 +279,16 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    SET_FRGD_COLOR(pGC->fgPixel);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      SET_SCISSORS((short)pBox->x1, (short)pBox->y1, 
-		(short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
-      s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-		     FONTGLYPHS(pGC->font), pBox);
-
+     /*
+      * Skip all boxes that are completely above or below the text string.
+      */
+     if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+       WaitQueue(4);
+       SET_SCISSORS((short)pBox->x1, (short)pBox->y1, 
+		    (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
+       s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
+		      FONTGLYPHS(pGC->font), pBox);
+     }
    }
 
    WaitQueue(8);
@@ -408,12 +412,16 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    SET_FRGD_COLOR(pGC->fgPixel);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      SET_SCISSORS((short)pBox->x1, (short)pBox->y1, 
-      		(short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
-      s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-		     FONTGLYPHS(pGC->font), pBox);
-
+     /*
+      * Skip all boxes that are completely above or below the text string.
+      */
+     if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+       WaitQueue(4);
+       SET_SCISSORS((short)pBox->x1, (short)pBox->y1, 
+      		    (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
+       s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
+		      FONTGLYPHS(pGC->font), pBox);
+     }
    }
 
    WaitQueue(8);

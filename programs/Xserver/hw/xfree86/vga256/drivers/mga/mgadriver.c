@@ -32,7 +32,7 @@
  *		RAMDAC timing stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.2 1996/10/03 08:46:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.3 1996/10/06 13:18:03 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -558,7 +558,10 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 	/* from DDK3.05/SRC/BIND/CLOCK.C (ansi) */
 
 	if (vgaBitsPerPixel == 24) {
-		ln = 61;
+		if (bpp == 2)	/* 32 bit buswidth = non-interleave = 4:3 */
+			ln = 61;
+		else		/* 64 bit buswidth = interleave     = 8:3 */
+			ln = 57;
 		lm = 62;
 		z = (11000L * (65L - ln)) / ((f_pll / 1000L) * (65L - lm));
 	}
@@ -873,7 +876,7 @@ MGAPitchAdjust()
 		else
                 {
 			MGA.ChipRounding = 128;
-			MGABppShft = 2;
+			MGABppShft = 0;
 			MGADAClong = 0x5F2C1100;    /* interleave */
 			MGAInitDAC[2] = 0x5C;       /* 64 bits */
 		}

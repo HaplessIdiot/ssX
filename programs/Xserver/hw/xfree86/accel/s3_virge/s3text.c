@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.3 1996/10/03 08:33:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.4 1996/10/06 13:15:26 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -45,11 +45,12 @@
 extern unsigned char s3SwapBits[256];
 
 
-__inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r)
+__inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r, alu)
      int x, y;
      int width, height, pwidth;
      unsigned char *pb;
      int clip_l, clip_r;
+     int alu;
 {
    int newwidth;
 
@@ -73,7 +74,7 @@ DBGOUT(0x58);
 #endif
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | INC_Y | INC_X
 		| CMD_ITA_DWORD | MIX_MONO_TRANSP | MIX_MONO_PATT
-		| MIX_CPUDATA | MIX_MONO_SRC | ROP_S);
+		| MIX_CPUDATA | MIX_MONO_SRC | s3alu[alu]);
 DBGOUT(0x59);
 
    {				/* The stipple code */
@@ -229,7 +230,7 @@ ErrorF("gHeight %d -> %d  %d\n",gHeight,gHeight-d,d);
 	      s3SimpleStipple(x + pci->metrics.leftSideBearing,
 			      y - pci->metrics.ascent + d,
 			      gWidth, gHeight, pb, nbyPadGlyph,
-			      pBox->x1, pBox->x2 - 1);
+			      pBox->x1, pBox->x2 - 1, pGC->alu);
 	   }
         }
 	
@@ -253,7 +254,7 @@ unsigned char *pb;
    ;SET_MIX(FSS_FRGDCOL | s3alu[GXcopy], BSS_BKGDCOL | s3alu[GXcopy]);
    ;SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
 
-   s3SimpleStipple(x, y, width, height, pb, pwidth, 0, s3DisplayWidth - 1);
+   s3SimpleStipple(x, y, width, height, pb, pwidth, 0, s3DisplayWidth - 1, GXcopy);
 
    UNBLOCK_CURSOR;
 }
@@ -341,18 +342,23 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    ;SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(2);
+      /*
+       * Skip all boxes that are completely above or below the text string.
+       */
+      if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+         WaitQueue(2);
 DBGOUT(0x5a);
 #if 0
-      ErrorF("CLIP1 %d %d - %d %d\n",(short)pBox->x1, (short)pBox->y1,
-                (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
+         ErrorF("CLIP1 %d %d - %d %d\n",(short)pBox->x1, (short)pBox->y1,
+                   (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
 #endif
-      SETB_CLIP_L_R(pBox->x1, pBox->x2 - 1);
-      SETB_CLIP_T_B(pBox->y1, pBox->y2 - 1);
+         SETB_CLIP_L_R(pBox->x1, pBox->x2 - 1);
+         SETB_CLIP_T_B(pBox->y1, pBox->y2 - 1);
 DBGOUT(0x5b);
-      s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-		     FONTGLYPHS(pGC->font), pBox);
+         s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
+		        FONTGLYPHS(pGC->font), pBox);
 DBGOUT(0x5c);
+      }
    }
 
    WaitQueue(2);
@@ -477,16 +483,20 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    ;SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(2);
+      /*
+       * Skip all boxes that are completely above or below the text string.
+       */
+      if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+         WaitQueue(2);
 #if 0
-      ErrorF("CLIP2 %d %d - %d %d\n",(short)pBox->x1, (short)pBox->y1,
-                (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
+         ErrorF("CLIP2 %d %d - %d %d\n",(short)pBox->x1, (short)pBox->y1,
+                   (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
 #endif
-      SETB_CLIP_L_R(pBox->x1, pBox->x2 - 1);
-      SETB_CLIP_T_B(pBox->y1, pBox->y2 - 1);
-      s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
-		     FONTGLYPHS(pGC->font), pBox);
-
+         SETB_CLIP_L_R(pBox->x1, pBox->x2 - 1);
+         SETB_CLIP_T_B(pBox->y1, pBox->y2 - 1);
+         s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
+		        FONTGLYPHS(pGC->font), pBox);
+      }
    }
 
    WaitQueue(2);

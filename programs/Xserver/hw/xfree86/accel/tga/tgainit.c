@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.2 1996/09/29 13:35:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.3 1996/10/03 08:33:56 dawes Exp $ */
 
 #include "tga.h"
 #include "tga_presets.h"
@@ -56,11 +56,11 @@ tgaCalcCRTCRegs(crtcRegs, mode)
 	/* does allow the user to muck around with the sync settings */
 	/* Trying to retain some familiarity with normal config methods */
 	crtcRegs->h_active = mode->CrtcHDisplay;
-	crtcRegs->h_fporch = mode->CrtcHSyncStart - crtcRegs->h_active;
-	crtcRegs->h_sync   = mode->CrtcHSyncEnd - mode->CrtcHSyncStart;
-	crtcRegs->h_bporch = mode->CrtcHTotal - mode->CrtcHSyncEnd;
+	crtcRegs->h_fporch = (mode->CrtcHSyncStart - mode->CrtcHDisplay) / 4;
+	crtcRegs->h_sync   = (mode->CrtcHSyncEnd - mode->CrtcHSyncStart) / 4;
+	crtcRegs->h_bporch = (mode->CrtcHTotal - mode->CrtcHSyncEnd) / 4;
 	crtcRegs->v_active = mode->CrtcVDisplay;
-	crtcRegs->v_fporch = mode->CrtcVSyncStart - crtcRegs->v_active;
+	crtcRegs->v_fporch = mode->CrtcVSyncStart - mode->CrtcVDisplay;
 	crtcRegs->v_sync   = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
 	crtcRegs->v_bporch = mode->CrtcVTotal - mode->CrtcVSyncEnd;
 

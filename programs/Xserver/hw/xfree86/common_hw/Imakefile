@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.16 1996/05/06 05:57:58 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.17 1996/05/10 12:07:37 dawes Exp $
 
 
 
@@ -41,7 +41,7 @@ ObjectFromAsmSource(IODelay,NullParameter)
 ObjectFromAsmSource(SlowBcopy,NullParameter)
 #endif
 
-InstallLinkKitLibrary(xf86_hw,$(LINKKITDIR)/lib)
+InstallLinkKitLibrary(xf86_hw,$(LINKKITDIR)/lib86)
 InstallLinkKitNonExecFile(xf86_HWlib.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_PCI.h,$(LINKKITDIR)/include)
 
