@@ -35,7 +35,6 @@
 #include "Xv.h"
 
 #include "glint_regs.h"
-#include "pm3_regs.h"
 #include "glint.h"
 
 #ifndef XvExtension
@@ -193,11 +192,7 @@ do {					\
 } while (0)
 
 #define PORTNUM(p) ((int)((p) - &pAPriv->Port[0]))
-#if 0 /* P2 */
 #define BPPSHIFT(g) (2 - (g)->BppShift)	/* Bytes per pixel = 1 << BPPSHIFT(pGlint) */
-#else /* P3 */
-#define BPPSHIFT(g) (2 - (g)->BppShift)	/* Bytes per pixel = 1 << BPPSHIFT(pGlint) */
-#endif
 
 #define DEBUG(x)
 
@@ -847,7 +842,7 @@ PutYUV(PortPrivPtr pPPriv, int BufferBase,
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 5, "PutYUV %08x %08x\n",
 	BufferBase, format));
 
-    if (!nCookies /*|| (GLINT_READ_REG(InFIFOSpace) < 200)*/)
+    if (!nCookies || (GLINT_READ_REG(InFIFOSpace) < 200))
 	return; /* Denial of service fix, N/A for scaler */
 
     CHECKCLIPPING;
@@ -855,13 +850,12 @@ PutYUV(PortPrivPtr pPPriv, int BufferBase,
     GLINT_WRITE_REG(1 << 16, dY);
     GLINT_WRITE_REG(0, RasterizerMode);
     GLINT_WRITE_REG(UNIT_DISABLE, AreaStippleMode);
+    GLINT_WRITE_REG(UNIT_ENABLE, TextureAddressMode);
     GLINT_WRITE_REG(pPPriv->dS, dSdx);
     GLINT_WRITE_REG(0, dSdyDom);
     GLINT_WRITE_REG(0, dTdx);
     GLINT_WRITE_REG(pPPriv->dT, dTdyDom);
-#if 0 /* Permedia2 */
     GLINT_WRITE_REG(BufferBase >> bptshift, PMTextureBaseAddress);
-    GLINT_WRITE_REG(UNIT_ENABLE, TextureAddressMode);
     GLINT_WRITE_REG((bptshift << 19) | pPPriv->BufferPProd, PMTextureMapFormat);
     GLINT_WRITE_REG(format, PMTextureDataFormat);
     GLINT_WRITE_REG((pPPriv->Attribute[5] << 17) | /* FilterMode */
@@ -870,50 +864,25 @@ PutYUV(PortPrivPtr pPPriv, int BufferBase,
     GLINT_WRITE_REG((0 << 4) /* RGB */ |
 		    (3 << 1) /* Copy */ |
 		    UNIT_ENABLE, TextureColorMode);
-
     if (alpha)
 	GLINT_WRITE_REG(pAPriv->dAlphaBlendMode, AlphaBlendMode);
     GLINT_WRITE_REG(pAPriv->dDitherMode, DitherMode);
     GLINT_WRITE_REG(UNIT_DISABLE, LogicalOpMode);
     GLINT_WRITE_REG((alpha << 10) | /* ReadDestination */
 		    pGlint->pprod, FBReadMode);
-#else /* Permedia3,4 */
-    GLINT_WRITE_REG(BufferBase >> bptshift, PM3TextureBaseAddr);
-    GLINT_WRITE_REG(UNIT_ENABLE | 1<<8, PM3TextureApplicationMode);
-    GLINT_WRITE_REG(UNIT_ENABLE | 1<<17 | (11 <<9) | (11<<13), PM3TextureCoordMode);
-    GLINT_WRITE_REG(UNIT_ENABLE | /*format*/ 10 << 1, PM3TextureFilterMode);
-    GLINT_WRITE_REG(2048, PM3TextureMapWidth0);
-    GLINT_WRITE_REG(2048*2048, PM3TextureMapSize);
-    GLINT_WRITE_REG(UNIT_ENABLE | (bptshift << 9) |
-			(11 << 1) | (11 << 5), PM3TextureReadMode0);
-    GLINT_WRITE_REG(UNIT_ENABLE | 1<<30 | (11 << 1) | (11 << 5) | 1<<14, PM3TextureIndexMode0);
-    GLINT_WRITE_REG(pAPriv->dDitherMode, DitherMode);
-    if (alpha) {
-	GLINT_WRITE_REG(pAPriv->dAlphaBlendMode, AlphaBlendMode);
-    	GLINT_WRITE_REG(PM3Config2D_FBWriteEnable |
-		    PM3Config2D_AlphaBlendEnable |
-		    (alpha << 3), PM3Config2D);
-    } else
-    	GLINT_WRITE_REG(PM3Config2D_FBWriteEnable, PM3Config2D);
-#endif
     GLINT_WRITE_REG(0xFFFFFFFF, FBHardwareWriteMask);
     GLINT_WRITE_REG(UNIT_ENABLE, YUVMode);
 
     for (; nCookies--; pCookie++) {
 	GLINT_WAIT(5);
-	GLINT_WRITE_REG(pCookie->s, SStart);
-	GLINT_WRITE_REG(pCookie->t, TStart);
-#if 0 /* Permedia2 */
 	GLINT_WRITE_REG(pCookie->xy, RectangleOrigin);
 	GLINT_WRITE_REG(pCookie->wh, RectangleSize);
+	GLINT_WRITE_REG(pCookie->s, SStart);
+	GLINT_WRITE_REG(pCookie->t, TStart);
         GLINT_WRITE_REG(PrimitiveRectangle |
 			XPositive |
 			YPositive |
 			TextureEnable, Render);
-#else /* Permedia3,4 */
-	GLINT_WRITE_REG(pCookie->xy, PM3RectanglePosition);
-    	GLINT_WRITE_REG(pCookie->wh | PM3Render2D_XPositive | PM3Render2D_YPositive | PM3Render2D_TextureEnable, PM3Render2D);
-#endif
     }
 
     pGlint->x = pGlint->y = -1; /* Force reload */
@@ -922,27 +891,15 @@ PutYUV(PortPrivPtr pPPriv, int BufferBase,
     pGlint->planemask = 0xFFFFFFFF;
 
     GLINT_WAIT(8);
-#if 0 /* P2 */
     GLINT_WRITE_REG(UNIT_DISABLE, TextureAddressMode);
     GLINT_WRITE_REG(pGlint->TexMapFormat, PMTextureMapFormat);
     GLINT_WRITE_REG(UNIT_DISABLE, PMTextureReadMode);
     GLINT_WRITE_REG(UNIT_DISABLE, TextureColorMode);
-#else
-    GLINT_WRITE_REG(UNIT_DISABLE, PM3TextureApplicationMode);
-    GLINT_WRITE_REG(UNIT_DISABLE, PM3TextureCoordMode);
-    GLINT_WRITE_REG(UNIT_DISABLE, PM3TextureFilterMode);
-    GLINT_WRITE_REG(UNIT_DISABLE, PM3TextureReadMode0);
-    GLINT_WRITE_REG(UNIT_DISABLE, PM3TextureIndexMode0);
-#endif
     GLINT_WRITE_REG(UNIT_DISABLE, DitherMode);
-#if 0 /* P2 */
     if (alpha) {
 	GLINT_WRITE_REG(UNIT_DISABLE, AlphaBlendMode);
 	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
     }
-#else
-    GLINT_WRITE_REG(pGlint->PM3_Config2D, PM3Config2D);
-#endif
     GLINT_WRITE_REG(UNIT_DISABLE, YUVMode);
 }
 
@@ -1062,10 +1019,8 @@ BlackOut(PortPrivPtr pPPriv, RegionPtr pRegion)
     CHECKCLIPPING;
 
     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-#if 1
     GLINT_WRITE_REG(pPPriv->BufferPProd, FBReadMode);
     GLINT_WRITE_REG(0x1, FBReadPixel); /* 16 */
-#endif
     GLINT_WRITE_REG(pPPriv->BkgCol, FBBlockColor);
     GLINT_WRITE_REG(pPPriv->BufferBase[0] >> 1 /* 16 */, FBWindowBase);
     GLINT_WRITE_REG(UNIT_DISABLE, LogicalOpMode);
@@ -1095,10 +1050,8 @@ BlackOut(PortPrivPtr pPPriv, RegionPtr pRegion)
     pGlint->ROP = 0xFF;
     GLINT_WAIT(3);
     GLINT_WRITE_REG(0, FBWindowBase);
-#if 1
     GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
     GLINT_WRITE_REG(pGlint->PixelWidth, FBReadPixel);
-#endif
 }
 
 static Bool
@@ -1170,9 +1123,9 @@ GetYUV(PortPrivPtr pPPriv)
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 5, "GetYUV\n"));
 
-    if (!nCookies /*|| (GLINT_READ_REG(InFIFOSpace) < 200) */)
+    if (!nCookies || (GLINT_READ_REG(InFIFOSpace) < 200))
 	return;
-
+    
     GLINT_WAIT(25);
     CHECKCLIPPING;
 
@@ -3025,8 +2978,6 @@ Permedia2VideoInit(ScreenPtr pScreen)
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
-    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA4:
         break;
 
     default:
