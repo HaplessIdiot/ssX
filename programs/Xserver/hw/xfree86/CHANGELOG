@@ -1,4 +1,6 @@
 XFree86 4.4.99.3 (xx March 2004)
+  50. Differentiate left and right modifier keys on Mac OS X 10.3
+      (Kaleb Keithley).
   49. Warning fixes (#6190, Peter Breitenlohner).
 
 XFree86 4.4.99.2 (30 March 2004)
@@ -18780,7 +18782,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3198 2004/03/31 02:39:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3199 2004/03/31 16:37:08 tsi Exp $
 
 
 
