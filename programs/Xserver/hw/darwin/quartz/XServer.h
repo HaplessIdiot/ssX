@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.5 2002/11/15 00:55:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.6 2002/11/20 23:51:58 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -65,7 +65,7 @@
 - (id)init;
 
 - (BOOL)translateEvent:(NSEvent *)anEvent;
-- (BOOL)getMousePosition:(xEvent *)xe;
+- (BOOL)getMousePosition:(xEvent *)xe fromEvent:(NSEvent *)anEvent;
 
 + (void)append:(NSString *)value toEnv:(NSString *)name;
 

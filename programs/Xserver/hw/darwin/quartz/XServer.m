@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.5 2002/11/15 00:55:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.6 2002/11/20 23:51:58 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -223,7 +223,6 @@ static io_connect_t root_port;
 {
     xEvent xe;
     static BOOL mouse1Pressed = NO;
-    BOOL onScreen;
     NSEventType type;
     unsigned int flags;
 
@@ -257,12 +256,9 @@ static io_connect_t root_port;
 
     memset(&xe, 0, sizeof(xe));
 
-    // If the mouse is not on the valid X display area,
-    // we don't send the X server key events.
-    onScreen = [self getMousePosition:&xe];
-
     switch (type) {
         case NSLeftMouseUp:
+            [self getMousePosition:&xe fromEvent:anEvent];
             if (quartzRootless && !mouse1Pressed) {
                 // MouseUp after MouseDown in menu - ignore
                 return NO;
@@ -272,6 +268,7 @@ static io_connect_t root_port;
             xe.u.u.detail = 1;
             break;
         case NSLeftMouseDown:
+            [self getMousePosition:&xe fromEvent:anEvent];
             if (quartzRootless &&
                 ! ([anEvent window] &&
                    [[anEvent window] isKindOfClass:windowClass])) {
@@ -286,6 +283,7 @@ static io_connect_t root_port;
         case NSLeftMouseDragged:
         case NSRightMouseDragged:
         case NSOtherMouseDragged:
+            [self getMousePosition:&xe fromEvent:anEvent];
             xe.u.u.type = MotionNotify;
             break;
         case NSSystemDefined:
@@ -298,18 +296,22 @@ static io_connect_t root_port;
                 return NO; // ignore double events
             mouseState = hwButtons;
 
+            [self getMousePosition:&xe fromEvent:anEvent];
             xe.u.u.type = kXDarwinUpdateButtons;
             xe.u.clientMessage.u.l.longs0 = [anEvent data1];
             xe.u.clientMessage.u.l.longs1 =[anEvent data2];
             break;
         }
         case NSScrollWheel:
+            [self getMousePosition:&xe fromEvent:anEvent];
             xe.u.u.type = kXDarwinScrollWheel;
             xe.u.clientMessage.u.s.shorts0 = [anEvent deltaY];
             break;
         case NSKeyDown:
         case NSKeyUp:
-            if (!onScreen)
+            // If the mouse is not on the valid X display area,
+            // we don't send the X server key events.
+            if (![self getMousePosition:&xe fromEvent:nil])
                 return NO;
             if (type == NSKeyDown)
                 xe.u.u.type = KeyPress;
@@ -318,6 +320,7 @@ static io_connect_t root_port;
             xe.u.u.detail = [anEvent keyCode];
             break;
         case NSFlagsChanged:
+            [self getMousePosition:&xe fromEvent:nil];
             xe.u.u.type = kXDarwinUpdateModifiers;
             xe.u.clientMessage.u.l.longs0 = flags;
             break;
@@ -347,12 +350,27 @@ static io_connect_t root_port;
 }
 
 // Return mouse coordinates, inverting y coordinate.
+// The coordinates are extracted from an event or the current mouse position.
 // For rootless mode, the menu bar is treated as not part of the usable
 // X display area and the cursor position is adjusted accordingly.
 // Returns YES if the cursor is not in the menu bar.
-- (BOOL)getMousePosition:(xEvent *)xe
+- (BOOL)getMousePosition:(xEvent *)xe fromEvent:(NSEvent *)anEvent
 {
-    NSPoint pt = [NSEvent mouseLocation];
+    NSPoint pt;
+
+    if (anEvent) {
+        NSWindow *eventWindow = [anEvent window];
+
+        if (eventWindow) {
+            pt = [anEvent locationInWindow];
+            pt.x += [eventWindow frame].origin.x;
+            pt.y += [eventWindow frame].origin.y;
+        } else {
+            pt = [NSEvent mouseLocation];
+        }
+    } else {
+        pt = [NSEvent mouseLocation];
+    }
 
     xe->u.keyButtonPointer.rootX = (int)(pt.x);
 
@@ -764,7 +782,7 @@ static io_connect_t root_port;
 {
     xEvent xe;
 
-    [self getMousePosition:&xe];
+    [self getMousePosition:&xe fromEvent:nil];
 
     if (show) {
         if (!quartzRootless) {
