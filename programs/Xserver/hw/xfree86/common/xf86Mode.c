@@ -1907,6 +1907,9 @@ PrintModeline(int scrnIndex,DisplayModePtr mode)
     if (mode->Flags & V_NVSYNC) add(&flags, "-vsync");
     if (mode->Flags & V_PCSYNC) add(&flags, "+csync");
     if (mode->Flags & V_NCSYNC) add(&flags, "-csync");
+#if 0
+    if (mode->Flags & V_CLKDIV2) add(&flags, "vclk/2");
+#endif
     xf86DrvMsgVerb(scrnIndex, X_INFO, 3,
 		   "Modeline \"%s\"  %6.2f  %i %i %i %i  %i %i %i %i%s\n",
 		   mode->name, mode->Clock/1000., mode->HDisplay,
