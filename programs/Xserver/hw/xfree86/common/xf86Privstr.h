@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.35 2003/01/15 03:29:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.36 2003/02/09 00:18:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -88,6 +88,7 @@ typedef struct {
     int			lastEventTime;
     Bool		vtRequestsPending;
     Bool		inputPending;
+    Bool		dontVTSwitch;
     Bool		dontZap;
     Bool		dontZoom;
     Bool		notrapSignals;	/* don't exit cleanly - die at fault */

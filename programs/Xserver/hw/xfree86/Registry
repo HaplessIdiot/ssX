@@ -214,6 +214,7 @@ AllowNonLocalXvidtune     B     F    allow non-local VidMode connections
 BlankTime                 I     F    Screen saver timeout (min)
 DisableModInDev           B     F    disallow changing input devs
 DisableVidModeExtension   B     F    disable VidMode extension
+DontVTSwitch              B     F    disable Ctrl-Alt-Fn
 DontZap                   B     F    disable Ctrl-Alt-BS sequence
 DontZoom                  B     F    disable Ctrl-Alt-+/-
 NoTrapSignals             B     F    don't trap signals
@@ -406,4 +407,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.17 2001/04/05 19:29:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.18 2002/04/06 18:31:09 tsi Exp $

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.54 2002/01/17 17:10:37 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.55 2002/10/12 16:06:43 herrb Exp $ 
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -384,7 +384,10 @@ deactivates any active keyboard and mouse grabs.
 .TP 8
 .B Ctrl+Alt+F1...F12
 For BSD and Linux systems with virtual terminal support, these keystroke
-combinations are used to switch to Virtual Console 1 through 12.
+combinations are used to switch to virtual terminals 1 through 12,
+respectively.  This can be disabled with the
+.B DontVTSwitch
+XF86Config(__filemansuffix__) file option.
 .SH SETUP
 .I XFree86
 uses a configuration file called \fBXF86Config\fP for its initial setup.  

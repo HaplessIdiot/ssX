@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.38 2003/01/15 03:29:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.39 2003/02/09 00:18:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -104,6 +104,7 @@ xf86InfoRec xf86Info = {
 	-1,		/* lastEventTime */
 	FALSE,		/* vtRequestsPending */
 	FALSE,		/* inputPending */
+	FALSE,		/* dontVTSwitch */
 	FALSE,		/* dontZap */
 	FALSE,		/* dontZoom */
 	FALSE,		/* notrapSignals */

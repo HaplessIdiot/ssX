@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.67 2003/02/15 15:36:15 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.68 2003/02/16 02:33:11 paulo Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -53,6 +53,7 @@
  *	     of /usr/X11R6/lib/X11.
  *	   Add RAMDAC and Clockchip menu.
  * 27Mar99 Modified for XFree86 4.0 config file format
+ * 06Sep02 Write comment block about 'DontVTSwitch'.
  *
  * Possible enhancements:
  * - Add more standard mode timings (also applies to README.Config). Missing
@@ -1973,6 +1974,12 @@ static char *XF86Config_fontpathchunk_text =
 "# provide a better stack trace in the core dump to aid in debugging\n"
 "\n"
 "#    Option \"NoTrapSignals\"\n"
+"\n"
+"# Uncomment this to disable the <Crtl><Alt><Fn> VT switch sequence\n"
+"# (where n is 1 through 12).  This allows clients to receive these key\n"
+"# events.\n"
+"\n"
+"#    Option \"DontVTSwitch\"\n"
 "\n"
 "# Uncomment this to disable the <Crtl><Alt><BS> server abort sequence\n"
 "# This allows clients to receive this key event.\n"

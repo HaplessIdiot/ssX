@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.266 2003/01/15 03:29:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.267 2003/02/09 00:18:13 dawes Exp $ */
 
 
 /*
@@ -679,6 +679,7 @@ configFiles(XF86ConfFilesPtr fileconf)
 
 typedef enum {
     FLAG_NOTRAPSIGNALS,
+    FLAG_DONTVTSWITCH,
     FLAG_DONTZAP,
     FLAG_DONTZOOM,
     FLAG_DISABLEVIDMODE,
@@ -714,6 +715,8 @@ typedef enum {
    
 static OptionInfoRec FlagOptions[] = {
   { FLAG_NOTRAPSIGNALS,		"NoTrapSignals",		OPTV_BOOLEAN,
+	{0}, FALSE },
+  { FLAG_DONTVTSWITCH,		"DontVTSwitch",			OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_DONTZAP,		"DontZap",			OPTV_BOOLEAN,
 	{0}, FALSE },
@@ -827,6 +830,7 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     xf86ProcessOptions(-1, optp, FlagOptions);
 
     xf86GetOptValBool(FlagOptions, FLAG_NOTRAPSIGNALS, &xf86Info.notrapSignals);
+    xf86GetOptValBool(FlagOptions, FLAG_DONTVTSWITCH, &xf86Info.dontVTSwitch);
     xf86GetOptValBool(FlagOptions, FLAG_DONTZAP, &xf86Info.dontZap);
     xf86GetOptValBool(FlagOptions, FLAG_DONTZOOM, &xf86Info.dontZoom);
 

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.11 2002/11/26 01:59:34 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.12 2003/02/18 15:41:37 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -395,6 +395,16 @@ and drop core where the fault occurred.  The default behaviour is
 for the X server exit cleanly, but still drop a core file.  In
 general you never want to use this option unless you are debugging
 an X server problem and know how to deal with the consequences.
+.TP 7
+.BI "Option \*qDontVTSwitch\*q  \*q" boolean \*q
+This disallows the use of the
+.BI Ctrl+Alt+F n
+sequence (where
+.RI F n
+refers to one of the numbered function keys).  That sequence is normally
+used to switch to another \(oqvirtual terminal\)cq on operating systems
+that have this feature.  When this option is enabled, that key sequence has
+no special meaning and is passed to clients.  Default: off.
 .TP 7
 .BI "Option \*qDontZap\*q  \*q" boolean \*q
 This disallows the use of the

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.142 2003/01/15 03:29:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.143 2003/01/25 21:30:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -104,13 +104,13 @@ extern void  XTestStealMotionData();
 #endif
 
 /*
- * The first of many hack's to get VT switching to work under
+ * The first of many hacks to get VT switching to work under
  * Solaris 2.1 for x86. The basic problem is that Solaris is supposed
  * to be SVR4. It is for the most part, except where the video interface
  * is concerned.  These hacks work around those problems.
- * See the comments for Linux, and SCO. 
+ * See the comments for Linux, and SCO.
  *
- * This is a toggleling variable:
+ * This is a toggling variable:
  *  FALSE = No VT switching keys have been pressed last time around
  *  TRUE  = Possible VT switch Pending
  * (DWH - 12/2/93)
@@ -274,11 +274,11 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
 	break;
     case ACTION_NEXT_MODE:
 	if (!xf86Info.dontZoom)
-		xf86ZoomViewport(xf86Info.currentScreen,  1);
+	    xf86ZoomViewport(xf86Info.currentScreen,  1);
 	break;
     case ACTION_PREV_MODE:
 	if (!xf86Info.dontZoom)
-		xf86ZoomViewport(xf86Info.currentScreen, -1);
+	    xf86ZoomViewport(xf86Info.currentScreen, -1);
 	break;
     case ACTION_DISABLEGRAB:
 	if (!xf86Info.grabInfo.disabled && xf86Info.grabInfo.allowDeactivate) {
@@ -317,28 +317,31 @@ xf86ProcessActionEvent(ActionEvent action, void *arg)
 	break;
 #if !defined(__SOL8__) && (!defined(sun) || defined(i386))
     case ACTION_SWITCHSCREEN:
-	if (arg) {
+	if (VTSwitchEnabled && !xf86Info.dontVTSwitch && arg) {
 	    int vtno = *((int *) arg);
 #if defined(QNX4)
 	    xf86Info.vtRequestsPending = vtno;
 #else
 	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, vtno) < 0)
-        	ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
+		ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
 #endif
 	}
 	break;
     case ACTION_SWITCHSCREEN_NEXT:
-        if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno + 1) < 0)
+	if (VTSwitchEnabled && !xf86Info.dontVTSwitch) {
+	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno + 1) < 0)
 #if defined(SCO) || (defined(sun) && defined (i386) && defined (SVR4))
-          if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 0) < 0)
+		if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 0) < 0)
 #else
-          if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 1) < 0)
+		if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 1) < 0)
 #endif
-            ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
+		    ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
+	}
 	break;
     case ACTION_SWITCHSCREEN_PREV:
-        if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno - 1) < 0)
-            ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
+	if (VTSwitchEnabled && !xf86Info.dontVTSwitch) {
+	    if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno - 1) < 0)
+		ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
 	break;
 #endif
     default:
@@ -652,11 +655,11 @@ special:
       case KEY_7:
       case KEY_8:
       case KEY_9:
-	if (down){
-		int vtno = specialkey - KEY_1 + 1;
-		xf86ProcessActionEvent(ACTION_SWITCHSCREEN, (void *) &vtno);
-		return;
-		}
+	if (VTSwitchEnabled && !xf86Info.dontVTSwitch && down) {
+	    int vtno = specialkey - KEY_1 + 1;
+	    xf86ProcessActionEvent(ACTION_SWITCHSCREEN, (void *) &vtno);
+	    return;
+	}
 	break;
 #endif
 
@@ -678,10 +681,12 @@ special:
       case KEY_F10:
       case KEY_F11:
       case KEY_F12:
+	if ((VTSwitchEnabled && !xf86Info.vtSysreq && !xf86Info.dontVTSwitch)
 #if (defined(CSRG_BASED) && (defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)))
-	if (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT)
+	    && (xf86Info.consType == SYSCONS || xf86Info.consType == PCVT)
 #endif
-	{   int vtno = specialkey - KEY_F1 + 1;
+	   ) {
+	    int vtno = specialkey - KEY_F1 + 1;
 	    if (specialkey == KEY_F11 || specialkey == KEY_F12)
 		vtno = specialkey - KEY_F11 + 11;
 #ifdef SCO325
@@ -689,7 +694,6 @@ special:
 #endif
 	    if (down)
 		xf86ProcessActionEvent(ACTION_SWITCHSCREEN, (void *) &vtno);
-            if (VTSwitchEnabled && !xf86Info.vtSysreq) return;
 	}
 	break;
 #endif /* linux || BSD with VTs */
@@ -710,7 +714,7 @@ special:
      */
 
 #ifdef USE_VT_SYSREQ
-    if (VTSwitchEnabled && xf86Info.vtSysreq)
+    if (VTSwitchEnabled && xf86Info.vtSysreq && !xf86Info.dontVTSwitch)
     {
       switch (specialkey)
       {
