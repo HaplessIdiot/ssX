@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_cursor.c,v 1.2 2000/02/23 04:47:15 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_cursor.c,v 1.3 2001/10/04 18:28:21 alanh Exp $ */
 
 /*
  * Authors:
@@ -122,12 +122,13 @@ I810SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
    int flag;
 
 #if 0
-   DPRINTF("%s %d %d\n"
-		   "--> CURACNTR == 0x%.8x\n"
-		   "--> CURBCNTR == 0x%.8x\n",
-		   __FUNCTION__,x,y,
-		   INREG (0x70080),
-		   INREG (0x700C0));
+   DPRINTF (PFX,
+			"%s %d %d\n"
+			"--> CURACNTR == 0x%.8x\n"
+			"--> CURBCNTR == 0x%.8x\n",
+			__FUNCTION__,x,y,
+			INREG (0x70080),
+			INREG (0x700C0));
 #endif
    /* FIXME: hack to get around disappearing cursor problems.
 	* don't know why this work though. */

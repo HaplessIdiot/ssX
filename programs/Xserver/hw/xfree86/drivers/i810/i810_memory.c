@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.18 2000/12/02 15:25:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.19 2001/10/04 18:28:21 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -105,7 +105,8 @@ int I810AllocateGARTMemory (ScrnInfoPtr pScrn)
 
 		int offset,alloc_size;
 
-		DPRINTF ("size == %luk (%lu bytes == pScrn->videoRam)\n"
+		DPRINTF (PFX,
+				 "size == %luk (%lu bytes == pScrn->videoRam)\n"
 				 "pI810->StolenSize == %luk (%lu bytes)\n",
 				 size/1024,size,
 				 pI810->StolenSize/1024,pI810->StolenSize);
@@ -124,7 +125,8 @@ int I810AllocateGARTMemory (ScrnInfoPtr pScrn)
 			 if ((key = xf86AllocateGARTMemory (pScrn->scrnIndex,alloc_size,0,NULL)) == -1)
 			   return (FALSE);
 
-			 DPRINTF ("alloc_size == %luk (%lu bytes)\n"
+			 DPRINTF (PFX,
+					  "alloc_size == %luk (%lu bytes)\n"
 					  "       key == 0x%.8x\n"
 					  "    offset == 0x%.8x\n",
 					  alloc_size/1024,alloc_size,

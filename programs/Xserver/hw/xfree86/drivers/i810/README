@@ -7,7 +7,8 @@
    * Intel 810 motherboards:
 	i810, 
 	i810-dc100, 
-	i810e.
+	i810e,
+	i830m.
 
 
 2. Features
@@ -21,6 +22,7 @@
    * Robust text mode restore for VT switching.
    * Xv surfaces for YUV Video display and scaling.
    * XvMC hardware motion compensation for MPEG decoding.
+   * Hardware accelerated 3D for i830m
 
 3. Technical Notes
 
@@ -33,7 +35,7 @@
 
 4. Reported Working Video Cards
 
-   * i810, i810-dc100, i810e, i815, i815e.
+   * i810, i810-dc100, i810e, i815, i815e, i830m.
 
 5. Configuration
 

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.22 2001/09/27 08:25:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.23 2001/10/04 18:28:21 alanh Exp $ */
 
 /*
  * Authors:
@@ -33,7 +33,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-/* #define I830_DEBUG */
+/* #define I830DEBUG */
 
 #ifndef _I810_H_
 #define _I810_H_
@@ -68,22 +68,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define I810_MINOR_VERSION 1
 #define I810_PATCHLEVEL 0
 
+#define PFX __FILE__,__LINE__,__FUNCTION__
+
 #ifdef I830DEBUG
 #define MARKER() fprintf(stderr,"\n### %s:%d: >>> %s <<< ###\n\n",__FILE__,__LINE__,__FUNCTION__)
-#define DPRINTF(fmt,args...)											\
-	{																	\
-		fprintf(stderr,													\
-				"\n##############################################\n"	\
-				"*** In function %s, on line %d, in file %s ***\n",		\
-				__FUNCTION__,__LINE__,__FILE__);						\
-		fprintf(stderr,fmt,## args);									\
-		fprintf(stderr,													\
-				"##############################################\n\n");	\
-	}
-#else
+#define DPRINTF DPRINTF_stub
+#else	/* #ifdef I830DEBUG */
 #define MARKER()
-#define DPRINTF(fmt,args...)
-#endif
+/* this is a real ugle hack to get the compiler to optimize the debugging statements into oblivion */
+#define DPRINTF if(0) DPRINTF_stub
+#endif	/* #ifdef I830DEBUG */
 
 #define KB(x) ((x) * 1024)
 #define MB(x) ((x) * KB(1024))
@@ -659,6 +653,7 @@ extern char *i810_outreg_get_addr_name(unsigned int addr, int size);
 extern void i810_outreg_decode_register(unsigned int addr, unsigned int val, int size);
 extern void I830PrintAllRegisters(I830RegPtr i810Reg);
 extern void I830ReadAllRegisters(I810Ptr pI810, I830RegPtr i810Reg);
+void DPRINTF_stub (const char *filename,int line,const char *function,const char *fmt, ...);
 
 /* BIOS debug macro */
 #define xf86ExecX86int10_wrapper(pInt, pScrn) do							\
