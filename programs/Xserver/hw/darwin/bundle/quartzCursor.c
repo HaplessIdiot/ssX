@@ -3,12 +3,14 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.1 2001/04/02 05:18:50 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
 #include "cursorstr.h"
 #include "mipointrst.h"
+
+#include "quartzCursor.h"
 
 #undef AllocCursor
 #define Cursor QD_Cursor
@@ -20,13 +22,23 @@
 #define CURSORHEIGHT 16
 
 typedef struct {
-    int                     cursorMode;
+    int                     qdCursorMode;
+    int                     qdCursorVisible;
+    int                     serverVisible;
+    CursorPtr               latentCursor;
     QueryBestSizeProcPtr    QueryBestSize;
     miPointerSpriteFuncPtr  spriteFuncs;
 } QuartzCursorScreenRec, *QuartzCursorScreenPtr;
 
 static int darwinCursorScreenIndex = -1;
 static unsigned long darwinCursorGeneration = 0;
+
+#define CURSOR_PRIV(pScreen) \
+    ((QuartzCursorScreenPtr)pScreen->devPrivates[darwinCursorScreenIndex].ptr)
+#define HIDE_QD_CURSOR(display, visible) \
+    if (visible) { CGDisplayHideCursor(display); visible = FALSE; }
+#define SHOW_QD_CURSOR(display, visible) \
+    if (! visible) { CGDisplayShowCursor(display); visible = TRUE; }
 
 /*
 ===========================================================================
@@ -45,10 +57,10 @@ QuartzRealizeCursor(
     ScreenPtr pScreen,
     CursorPtr pCursor )
 {
-    int i;
+    int i, width, height;
+    unsigned short rowMask;
     QD_Cursor *curs;
-    QuartzCursorScreenPtr ScreenPriv = (QuartzCursorScreenPtr)
-        pScreen->devPrivates[darwinCursorScreenIndex].ptr;
+    QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
     if(!pCursor || !pCursor->bits)
         return FALSE;
@@ -65,19 +77,25 @@ QuartzRealizeCursor(
 
     // X cursor max size is 32x32 (rowbytes 4).
     // Copy top left 16x16 for now.
-    for (i = 0; i < 16; i++)
-    {
-        curs->data[i] = (pCursor->bits->source[i*4]<<8) |
-                        pCursor->bits->source[i*4+1];
-        curs->mask[i] = (pCursor->bits->mask[i*4]<<8) |
-                        pCursor->bits->mask[i*4+1];
+    memset(curs->data, 0, 16*16 / 8);
+    memset(curs->mask, 0, 16*16 / 8);
+    width = min(pCursor->bits->width,  CURSORWIDTH);
+    height = min(pCursor->bits->height, CURSORHEIGHT);
+    // rowMask: set to 1 for the bits in each row that are in the X cursor
+    rowMask = ~((1 << (16 - width)) - 1);
+
+    for (i = 0; i < height; i++) {
+        curs->data[i] = rowMask & ((pCursor->bits->source[i*4] << 8) |
+                        pCursor->bits->source[i*4+1]);
+        curs->mask[i] = rowMask & ((pCursor->bits->mask[i*4] << 8) |
+                        pCursor->bits->mask[i*4+1]);
     }
     curs->hotSpot.h = pCursor->bits->xhot;
-    if(curs->hotSpot.h >= 16)
-        curs->hotSpot.h = 15;
+    if(curs->hotSpot.h > 16)
+        curs->hotSpot.h = 16;
     curs->hotSpot.v = pCursor->bits->yhot;
-    if(curs->hotSpot.v >= 16)
-        curs->hotSpot.v = 15;
+    if(curs->hotSpot.v > 16)
+        curs->hotSpot.v = 16;
 
     // save the result
     pCursor->devPriv[pScreen->myNum] = (pointer) curs;
@@ -94,8 +112,7 @@ QuartzUnrealizeCursor(
     ScreenPtr pScreen,
     CursorPtr pCursor )
 {
-    QuartzCursorScreenPtr ScreenPriv = (QuartzCursorScreenPtr)
-        pScreen->devPrivates[darwinCursorScreenIndex].ptr;
+    QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
     if ((pCursor->bits->height > CURSORHEIGHT) ||
         (pCursor->bits->width > CURSORWIDTH)) {
@@ -119,40 +136,39 @@ QuartzSetCursor(
     int             x,
     int             y)
 {
-    QD_Cursor *curs;
-    QuartzCursorScreenPtr ScreenPriv = (QuartzCursorScreenPtr)
-        pScreen->devPrivates[darwinCursorScreenIndex].ptr;
+    QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
-    // are we supposed to remove the cursor?
-    if (!pCursor) {
-        if (ScreenPriv->cursorMode == 0)
-            (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, 0, x, y);
-        else
-            CGDisplayHideCursor(kCGDirectMainDisplay);
+    ScreenPriv->latentCursor = pCursor;
+
+    // Don't touch Mac OS cursor if X is hidden!
+    if (! ScreenPriv->serverVisible)
         return;
-    }
 
-    // can we use QuickDraw cursor?
-    if ((pCursor->bits->height <= CURSORHEIGHT) &&
-        (pCursor->bits->width <= CURSORWIDTH)) {
-
-        if (ScreenPriv->cursorMode == 0)    // remove the X cursor
+    if (!pCursor) {
+        // Remove the cursor completely.
+        HIDE_QD_CURSOR(kCGDirectMainDisplay, ScreenPriv->qdCursorVisible);
+        if (! ScreenPriv->qdCursorMode)
             (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, 0, x, y);
+    }
+    else if ((pCursor->bits->height <= CURSORHEIGHT) &&
+             (pCursor->bits->width <= CURSORWIDTH)) {
+        // Cursor is small enough to use QuickDraw directly.
+        QD_Cursor *curs;
 
-        ScreenPriv->cursorMode = 1;
+        if (! ScreenPriv->qdCursorMode)    // remove the X cursor
+            (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, 0, x, y);
+        ScreenPriv->qdCursorMode = TRUE;
+
         curs = (QD_Cursor *) pCursor->devPriv[pScreen->myNum];
         SetCursor(curs);
-        return;
+        SHOW_QD_CURSOR(kCGDirectMainDisplay, ScreenPriv->qdCursorVisible);
     }
-
-    // otherwise we use a software cursor
-    if (ScreenPriv->cursorMode) {
-        // remove the QuickDraw cursor
-        QuartzSetCursor(pScreen, 0, x, y);
+    else {
+        // Cursor is too big for QuickDraw. Use X software cursor.
+        HIDE_QD_CURSOR(kCGDirectMainDisplay, ScreenPriv->qdCursorVisible);
+        ScreenPriv->qdCursorMode = FALSE;
+        (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, pCursor, x, y);
     }
-
-    ScreenPriv->cursorMode = 0;
-    (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, pCursor, x, y);
 }
 
 
@@ -166,11 +182,10 @@ QuartzMoveCursor(
     int         x,
     int         y)
 {
-    QuartzCursorScreenPtr ScreenPriv = (QuartzCursorScreenPtr)
-        pScreen->devPrivates[darwinCursorScreenIndex].ptr;
+    QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
     // only the X cursor needs to be explicitly moved
-    if (!ScreenPriv->cursorMode)
+    if (!ScreenPriv->qdCursorMode)
         (*ScreenPriv->spriteFuncs->MoveCursor)(pScreen, x, y);
 }
 
@@ -220,11 +235,22 @@ QuartzWarpCursor(
 {
     CGDisplayErr            cgErr;
     CGPoint                 cgPoint;
+    int                     neverMoved = TRUE;
 
-    cgPoint = CGPointMake(x, y);
-    cgErr = CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgPoint);
-    if (cgErr != CGDisplayNoErr) {
-        ErrorF("Could not set cursor position with error code 0x%x.\n", cgErr);
+    if (neverMoved) {
+        // Don't move the cursor the first time. This is the jump-to-center 
+        // initialization, and it's annoying because we may still be in MacOS.
+        neverMoved = FALSE;
+        return;
+    }
+
+    if (CURSOR_PRIV(pScreen)->serverVisible) {
+        cgPoint = CGPointMake(x, y);
+        cgErr = CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgPoint);
+        if (cgErr != CGDisplayNoErr) {
+            ErrorF("Could not set cursor position with error code 0x%x.\n",
+                    cgErr);
+        }
     }
     miPointerWarpCursor(pScreen, x, y);
 }
@@ -255,14 +281,14 @@ QuartzCursorQueryBestSize(
    unsigned short   *height,
    ScreenPtr        pScreen)
 {
-    QuartzCursorScreenPtr ScreenPriv = (QuartzCursorScreenPtr)
-        pScreen->devPrivates[darwinCursorScreenIndex].ptr;
+    QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
     if (class == CursorShape) {
         *width = CURSORWIDTH;
         *height = CURSORHEIGHT;
-    } else
+    } else {
         (*ScreenPriv->QueryBestSize)(class, width, height, pScreen);
+    }
 }
 
 
@@ -272,10 +298,10 @@ QuartzCursorQueryBestSize(
  */
 Bool 
 QuartzInitCursor(
-    ScreenPtr	pScreen )
+    ScreenPtr   pScreen )
 {
     QuartzCursorScreenPtr   ScreenPriv;
-    miPointerScreenPtr	    PointPriv;
+    miPointerScreenPtr      PointPriv;
 
     // initialize software cursor handling (always needed as backup)
     if (!miDCInitialize(pScreen, &quartzScreenFuncsRec)) {
@@ -286,13 +312,13 @@ QuartzInitCursor(
     if (darwinCursorGeneration != serverGeneration) {
         if ((darwinCursorScreenIndex = AllocateScreenPrivateIndex()) < 0)
             return FALSE;
-        darwinCursorGeneration = serverGeneration; 	
+        darwinCursorGeneration = serverGeneration;
     }
 
     ScreenPriv = xcalloc( 1, sizeof(QuartzCursorScreenRec) );
     if (!ScreenPriv) return FALSE;
 
-    pScreen->devPrivates[darwinCursorScreenIndex].ptr = (pointer) ScreenPriv;
+    CURSOR_PRIV(pScreen) = ScreenPriv;
 
     // override some screen procedures
     ScreenPriv->QueryBestSize = pScreen->QueryBestSize;
@@ -305,6 +331,36 @@ QuartzInitCursor(
     ScreenPriv->spriteFuncs = PointPriv->spriteFuncs;
     PointPriv->spriteFuncs = &quartzSpriteFuncsRec; 
 
-    ScreenPriv->cursorMode = 1;
+    ScreenPriv->qdCursorMode = 1;
+    ScreenPriv->qdCursorVisible = TRUE;
+    ScreenPriv->latentCursor = NULL;
+    ScreenPriv->serverVisible = FALSE; 
     return TRUE;
+}
+
+
+// X server is hiding. Restore the Aqua cursor.
+void QuartzSuspendXCursor(
+    ScreenPtr pScreen )
+{
+    QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
+
+    InitCursor();	// restore QuickDraw arrow cursor
+    SHOW_QD_CURSOR(kCGDirectMainDisplay, ScreenPriv->qdCursorVisible);
+
+    ScreenPriv->serverVisible = FALSE;
+}
+
+
+// X server is showing. Restore the X cursor.
+void QuartzResumeXCursor(
+    ScreenPtr pScreen,
+    int x,
+    int y )
+{
+    QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
+
+    ScreenPriv->serverVisible = TRUE;
+
+    QuartzSetCursor(pScreen, ScreenPriv->latentCursor, x, y);
 }

@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.16 2001/04/04 05:49:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.17 2001/04/05 06:08:45 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -660,12 +660,12 @@ void ProcessInputEvents(void)
                 }
                 break;
             }
-    
+
             // Special events for Quartz support
             case NX_APPDEFINED:
             if (quartz) {
                 switch (ev.data.compound.subType) {
-    
+
                 // Update modifier state. As opposed to NX_FLAGSCHANGED,
                 // in this case any amount of modifiers may have changed.
                 case kXDarwinUpdateModifiers:
@@ -674,16 +674,20 @@ void ProcessInputEvents(void)
                     xe.u.u.type = KeyPress;
                     DarwinUpdateModifiers(xe, ~old_state & ev.flags);
                     old_state = ev.flags;
-                        break;
-    
-                case kXDarwinShow:
-                    QuartzShow();
                     break;
-                
+
+                case kXDarwinShow:
+                    QuartzShow(ev.location.x, ev.location.y);
+                    // The mouse location will have moved; track it.
+                    xe.u.u.type = MotionNotify;
+                    (darwinPointer->public.processInputProc)
+                        ( &xe, darwinPointer, 1 );
+                    break;
+
                 case kXDarwinHide:
                     QuartzHide();
                     break;
-                
+
                 case kXDarwinQuit:
                     GiveUp(0);
                     break;
@@ -701,7 +705,7 @@ void ProcessInputEvents(void)
                 } // switch (ev.data.compound.subType)
             } // if (quartz)
             break;
-    
+
             default:
                 ErrorF("Unknown event caught: %d\n", ev.type);
                 ErrorF("\tev.type = %d\n", ev.type);
