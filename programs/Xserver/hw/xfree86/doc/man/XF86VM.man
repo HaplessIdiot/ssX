@@ -4,7 +4,7 @@
 .\"
 .\"
 .\" Copyright (c) 1996  Joe Moss, The XFree86 Project
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.11 2002/10/12 16:06:43 herrb Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.12 2002/12/22 00:46:54 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
@@ -349,6 +349,15 @@ the request to switch modes comes from a call to the
 or
 .ZN XF86VidModeSwitchToMode
 functions or from one of the mode switch key sequences.
+.PP
+.RB Note:
+Because of the asynchronous nature of the X protocol, a call to 
+.ZN XFlush
+is needed if the application wants to see the mode change immediately.
+To be informed of the execution status of the request, a
+custom error handler should be installed using
+.ZN XSetErrorHandler
+before calling the mode switching function. 
 .SS "MONITOR FUNCTIONS"
 Information known to the server about the monitor is returned by the
 .ZN XF86VidModeGetMonitor
@@ -410,6 +419,7 @@ XF86VidModeGetPermissions
 functions need to be documented.  In the meantime, check the source
 code for information about how to use them.
 .SH SEE ALSO
-XFree86(1), XF86Config(__filemansuffix__), xvidtune(1)
+XFree86(1), XF86Config(__filemansuffix__), XFlush(3),
+XSetErrorHandler(3), xvidtune(1)
 .SH AUTHORS
 Kaleb Keithley, Jon Tombs, David Dawes, and Joe Moss
