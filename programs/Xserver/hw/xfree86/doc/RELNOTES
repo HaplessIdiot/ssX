@@ -27,7 +27,7 @@
   that they are not modified in any way, and providing that an
   unmodified version of this document is included with the distribution.
 
-  The reasons for making this beta release publically available are to
+  The reasons for making this beta release publicly available are to
   give it the widest possible testing, and also to make support for new
   hardware available.
 
@@ -116,7 +116,7 @@
         testing this version.  If there are problems with the new
         defaults, please report them to us.
 
-     o  Prelminary support has been added for the AT&T 20C409 and AT&T
+     o  Preliminary support has been added for the AT&T 20C409 and AT&T
         20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
         currently does not work.
 
@@ -206,56 +206,56 @@
 
      o  libXt bug fix from the X Consortium's fix-13.
 
+  3.  Installing an XFree86 Beta Release
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.3 1995/11/18 23:49:15 dawes Exp $
-
-
-
-
+  The XFree86 3.1.2A binary beta release is distributed as a upgrade to
+  3.1.2.  It consists of the following files:
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+       BetaReport         Beta test report template form
+       X312A8514.tgz      8514/A server
+       X312AAGX.tgz       AGX server
+       X312AMa32.tgz      Mach 32 server
+       X312AMa64.tgz      Mach 64 server
+       X312AMa8.tgz       Mach 8 server
+       X312AMono.tgz      Mono server
+       X312AP9K.tgz       P9000 server
+       X312ASVGA.tgz      SVGA server
+       X312AVG16.tgz      16 colour VGA server
+       X312AW32.tgz       ET4000/W32 server
+       X312Aupd.tgz       clients/libraries that have changed since 3.1.2
+       postinst.sh        script to run after installing the 3.1.2A binaries
 
 
 
 
+  If you don't already have XFree86 3.1.2 installed, first install that.
+  Then, you will need to get at least one of the XFree86 3.1.2A X
+  servers plus the update set (X312Aupt.tgz), the post-install script,
+  and the BetaReport file.  It is recommended that these be installed in
+  the directory /usr/XFree86-3.1.2A.  The following example is for
+  installing the S3 and Mono servers, and it assumes that the above
+  files are located in /var/tmp:
+
+
+
+               mkdir /usr/XFree86-3.1.2A
+               cd /usr/XFree86-3.1.2A
+               gzip -d < /var/tmp/X312AS3.tgz | tar vxf -
+               gzip -d < /var/tmp/X312AMono.tgz | tar vxf -
+               gzip -d < /var/tmp/X312Aupd.tgz | tar vxf -
+               sh /var/tmp/postinst.sh
 
 
 
 
+  The postinst.sh script makes a backup copy of the 3.1.2 versions you
+  already had installed in /usr/X11R6.  It puts the backups into the
+  /usr/XFree86-3.1.2 directory.  It then links the 3.1.2A versions into
+  /usr/X11R6.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.4 1995/11/19 01:24:49 dawes Exp $
 
 
 
