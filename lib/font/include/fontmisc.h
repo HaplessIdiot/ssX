@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.17tsi Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.18 2005/01/11 23:01:12 tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -84,15 +84,17 @@ extern void Xfree(pointer);
 #endif
 
 #ifndef xalloc
-/* Note:  It's important here that we cast "n", not "(n)", ditto for "s" */
+/* Note:  It's important here that we cast "n", not "(n)";  ditto for "s" */
 #if defined(WORD64) || defined(LONG64)
 #define xalloc(n)     Xalloc((unsigned long)n)
 #define xrealloc(p,n) Xrealloc((pointer)p, (unsigned long)n)
-#define xcalloc(n,s)  Xcalloc((unsigned long)n * (unsigned long)s)
+#define xcalloc(n,s)  Xcalloc(((unsigned long)n) *
+                              ((unsigned long)s))
 #else
 #define xalloc(n)     Xllalloc((unsigned long long)n)
 #define xrealloc(p,n) Xllrealloc((pointer)p, (unsigned long long)n)
-#define xcalloc(n,s)  Xllcalloc((unsigned long long)n * (unsigned long long)s)
+#define xcalloc(n,s)  Xllcalloc(((unsigned long long)n) *
+                                 ((unsigned long long)s))
 #endif
 #define xfree(p)      Xfree((pointer)p)
 #endif
