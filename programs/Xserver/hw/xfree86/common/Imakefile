@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.66 1997/06/29 07:54:30 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.67 1997/06/30 05:49:09 dawes Exp $
 
 
 
@@ -148,7 +148,7 @@ SERVERSRCS = \
 	XF86_TGA.c \
 	XF86_GLINT.c
 
-#ifndef DoLoadableServer
+#if !DoLoadableServer
 XINPUT_DEV_SRCS = \
 	$(JOYSTICK_SRC) \
 	$(WACOM_SRC) \

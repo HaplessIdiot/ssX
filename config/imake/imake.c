@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.16 1997/06/20 09:24:33 hohndel Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.17 1997/06/29 07:54:20 dawes Exp $ */
 
 /*
  * 
@@ -142,6 +142,12 @@ in this Software without prior written authorization from the X Consortium.
  *	#include INCLUDE_IMAKEFILE
  *	<add any global targets like 'clean' and long dependencies>
  */
+#ifdef __FreeBSD__
+/* This needs to be before _POSIX_SOURCE gets defined */
+# include <sys/param.h>
+# include <sys/types.h>
+# include <sys/sysctl.h>
+#endif
 #include <stdio.h>
 #include "Xosdefs.h"
 #ifndef X_NOT_STDC_ENV

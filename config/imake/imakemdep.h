@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.24 1997/01/14 22:12:48 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.25 1997/06/11 12:24:23 dawes Exp $ */
 
 
 /* 
@@ -610,6 +610,35 @@ char *cpp_argv[ARGUMENTS] = {
 # define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"
 # define DEFAULT_OS_TEENY_REV   "r %*d.%*d.%[0-9]" 
 # define DEFAULT_OS_NAME        "srm %[^\n]"
+# if defined(__FreeBSD__)
+/* Use an alternate way to find the teeny version for -STABLE, -SNAP versions */
+#  define DEFAULT_OS_TEENY_REV_FROB(buf, size)				\
+    do {								\
+	if (*buf == 0) {						\
+		int __mib[2];						\
+		size_t __len;						\
+		int __osrel;						\
+									\
+		__mib[0] = CTL_KERN;					\
+		__mib[1] = KERN_OSRELDATE;				\
+		__len = sizeof(__osrel);				\
+		sysctl(__mib, 2, &__osrel, &__len, NULL, 0);		\
+		if (__osrel < 210000) {					\
+			if (__osrel < 199607)				\
+				buf[0] = '0';				\
+			else if (__osrel < 199612)			\
+				buf[0] = '5';				\
+			else if (__osrel == 199612)			\
+				buf[0] = '6';				\
+			else						\
+				buf[0] = '8'; /* guess */		\
+		} else {						\
+			buf[0] = ((__osrel / 1000) % 10) + '0';		\
+		}							\
+		buf[1] = 0;						\
+	}								\
+    } while (0)
+# endif
 #elif defined(__NetBSD__)
 /*
  * uname -r returns "x.y([ABCD...]|_mumble)", e.g.:

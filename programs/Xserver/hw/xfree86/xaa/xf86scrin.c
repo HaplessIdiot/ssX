@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.16 1997/05/03 09:19:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.17 1997/06/03 14:12:33 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -203,8 +203,7 @@ static vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 #else
     xf86AccelInfoRec.FramebufferBase = pbits;
 #endif
-    /* This may not be the right way to get the number of bits of pixel. */
-    xf86AccelInfoRec.BitsPerPixel = (rootdepth + 7) & ~7;
+    xf86AccelInfoRec.BitsPerPixel = PSZ;
     xf86AccelInfoRec.FramebufferWidth = width;
     /* It might be worthwhile to only define 24 bits for 32bpp. */
     xf86AccelInfoRec.FullPlanemask = PMSK;

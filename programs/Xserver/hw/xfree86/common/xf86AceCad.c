@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.1 1997/06/29 07:54:32 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -506,7 +506,7 @@ xf86AceCadControlProc(DeviceIntPtr	device, PtrCtrl *ctrl)
 ** Flushes all pending data from a fd..  (Isn't there a system call to do this
 ** more effeciently?)
 */
-void
+static void
 fdflush(int	fd)
 {
   fd_set readfds;

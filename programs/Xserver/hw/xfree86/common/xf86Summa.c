@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.7 1997/06/25 08:24:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.8 1997/06/30 05:49:10 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -522,7 +522,7 @@ xf86SumControlProc(DeviceIntPtr	device, PtrCtrl *ctrl)
 ** Flushes all pending data from a fd..  (Isn't there a system call to do this
 ** more effeciently?)
 */
-void
+static void
 fdflush(int	fd)
 {
   fd_set readfds;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.15 1997/06/15 07:12:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.16 1997/06/25 08:25:04 hohndel Exp $ */
 
 
 
@@ -301,9 +301,11 @@ LoadModule(module,path)
 				GlxInitVisualsPtr = (GlxInitVisualsType)data;
                                 break; 
 #endif
+#ifdef XINPUT
 			case MAGIC_ADD_XINPUT_DEVICE:
 			        xf86AddDeviceAssoc((DeviceAssocRec *)data);
 				break;
+#endif
 
 			default:
 				ErrorF("Unknown magic action %d\n",magic);
