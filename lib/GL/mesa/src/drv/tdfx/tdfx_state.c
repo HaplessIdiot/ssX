@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_state.c,v 1.2 2001/05/02 15:06:04 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_state.c,v 1.3 2001/08/18 02:51:07 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -1155,12 +1155,14 @@ static void tdfxDDReducedPrimitiveChange( GLcontext *ctx, GLenum prim )
       fxMesa->dirty &= ~TDFX_UPLOAD_CULL;
    }
 
+#if defined(__linux__) || defined(__FreeBSD__)
    tdfxUpdateStipple(ctx);
    if ( fxMesa->dirty & TDFX_UPLOAD_STIPPLE ) {
       fxMesa->Glide.grStipplePattern ( fxMesa->Stipple.Pattern );
       fxMesa->Glide.grStippleMode ( fxMesa->Stipple.Mode );
       fxMesa->dirty &= ~TDFX_UPLOAD_STIPPLE;
    }
+#endif /* __linux__ || __FreeBSD__ */
 }
 
 

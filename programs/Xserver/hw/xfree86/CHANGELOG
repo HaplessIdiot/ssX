@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 350. Resync with DRI CVS trunk (DRI Project).
  349. Move ati driver out of DevelDrivers on PPC platforms (#4952, 
       Michel Dänzer).
  348. SECURITY: set default value of authComplain resource in xdm to true. 
@@ -13963,4 +13964,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1966 2001/10/01 21:40:06 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1967 2001/10/02 08:22:31 alanh Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.11 2001/04/10 16:07:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.12 2001/09/25 14:58:50 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1493,5 +1493,13 @@
 #define R128_CCE_VC_CNTL_PRIM_WALK_LIST          0x00000020
 #define R128_CCE_VC_CNTL_PRIM_WALK_RING          0x00000030
 #define R128_CCE_VC_CNTL_NUM_SHIFT               16
+
+/* hmm copyed blindly (no specs) from radeon.h ... */
+#define R128_RE_TOP_LEFT                  0x26c0
+#       define R128_RE_LEFT_SHIFT         0
+#       define R128_RE_TOP_SHIFT          16
+#define R128_RE_WIDTH_HEIGHT              0x1c44
+#       define R128_RE_WIDTH_SHIFT        0
+#       define R128_RE_HEIGHT_SHIFT       16
 
 #endif
