@@ -81,6 +81,9 @@ It is expected that it will reappear in some form in a future release.
   <item>3.1.2E is based on the first publicly released form of X11R6.1
 	(i.e,. X11R6.1 public patch 1).
   <item>Many updates have been made to the OS/2 port.
+  <item>3.1.2E also includes a first full distribution for Linux/AXP
+	(Linux on DEC Alpha/AXP architecture) with tested servers for
+	S3 and Mach64 cards.
 </itemize>
 <sect1> General X server changes
 <p>
@@ -114,6 +117,10 @@ It is expected that it will reappear in some form in a future release.
 <itemize>
   <item>Support for the ELSA Winner 2000PRO/X rev G and ELSA Gloria-8 (except
 	the GLint 300SX 3D chip) has been added.
+  <item>S3 dashed lines are finally fixed.
+  <item>Fixed some problems with the S3 Trio64V+.
+  <item>Added options "slow_dram" and "slow_edodram" to avoid pixel
+	errors on the display for some broken cards.
 </itemize>
 <sect1> Mach64 server
 <p>
@@ -669,6 +676,14 @@ X312Edoc.tgz       Documentation for 3.1.2E
 </verb>
 </quote>
 
+and for Linux a.out also:
+<quote>
+<verb>
+X312Eprog.tgz      programming libraries and include files
+                   which have changed since 3.1.2D
+</verb>
+</quote>
+
 The following X servers are for PC/AT hardware.  Choose at least one which
 matches your hardware.
 <quote>
@@ -912,7 +927,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.28 1996/05/12 13:10:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.30 1996/05/13 06:55:00 dawes Exp $
 </verb>
 
 </article>
