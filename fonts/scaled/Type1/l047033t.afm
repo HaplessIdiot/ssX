@@ -1,6 +1,6 @@
 StartFontMetrics 3.0
 Comment Copyright Copyright (c) 2001 by Bigelow & Holmes Inc. Instructions copyright (c) 2001 by URW++.
-Comment Creation Date: 10/15/2001
+Comment Creation Date: 11/12/2001
 FontName LuxiMono-Oblique
 FullName Luxi Mono Oblique
 FamilyName Luxi Mono
@@ -12,12 +12,12 @@ UnderlineThickness 72
 Version 1.1000
 Notice Copyright (c) 2001 by Bigelow & Holmes Inc. Instructions copyright (c) 2001 by URW++.
 EncodingScheme FontSpecific
-FontBBox -15 -211 734 945
+FontBBox -15 -211 757 993
 CapHeight 723
 XHeight 530
 Descender -205
 Ascender 723
-StartCharMetrics 233
+StartCharMetrics 310
 C 32 ; WX 600 ; N space ; B 0 0 0 0 ;
 C 33 ; WX 600 ; N exclam ; B 240 0 493 723 ;
 C 34 ; WX 600 ; N quotedbl ; B 245 506 635 771 ;
@@ -125,7 +125,6 @@ C 137 ; WX 600 ; N perthousand ; B 14 0 630 723 ;
 C 138 ; WX 600 ; N Scaron ; B 80 -18 676 940 ;
 C 139 ; WX 600 ; N guilsinglleft ; B 167 48 550 482 ;
 C 140 ; WX 600 ; N OE ; B 72 -18 703 741 ;
-C 142 ; WX 600 ; N Zcaron ; B 72 0 666 940 ;
 C 145 ; WX 600 ; N quoteleft ; B 315 470 520 771 ;
 C 146 ; WX 600 ; N quoteright ; B 328 470 533 771 ;
 C 147 ; WX 600 ; N quotedblleft ; B 214 506 629 771 ;
@@ -135,10 +134,9 @@ C 150 ; WX 600 ; N endash ; B 112 265 608 337 ;
 C 151 ; WX 600 ; N emdash ; B 53 265 665 325 ;
 C 152 ; WX 600 ; N tilde ; B 263 627 611 742 ;
 C 153 ; WX 600 ; N trademark ; B 142 361 729 723 ;
-C 154 ; WX 600 ; N scaron ; B 90 -12 642 783 ;
+C 154 ; WX 600 ; N scaron ; B 90 -12 641 783 ;
 C 155 ; WX 600 ; N guilsinglright ; B 156 48 538 482 ;
 C 156 ; WX 600 ; N oe ; B 68 -12 650 542 ;
-C 158 ; WX 600 ; N zcaron ; B 60 0 632 783 ;
 C 159 ; WX 600 ; N Ydieresis ; B 144 0 731 879 ;
 C 160 ; WX 600 ; N nbspace ; B 0 0 0 0 ;
 C 161 ; WX 600 ; N exclamdown ; B 213 -193 466 530 ;
@@ -155,7 +153,6 @@ C 171 ; WX 600 ; N guillemotleft ; B 93 48 628 482 ;
 C 172 ; WX 600 ; N logicalnot ; B 101 96 619 337 ;
 C 173 ; WX 600 ; N sfthyphen ; B 125 265 595 337 ;
 C 174 ; WX 600 ; N registered ; B 90 -18 655 742 ;
-C 175 ; WX 600 ; N macron ; B 257 626 606 687 ;
 C 176 ; WX 600 ; N degree ; B 275 451 570 742 ;
 C 177 ; WX 600 ; N plusminus ; B 48 0 633 603 ;
 C 178 ; WX 600 ; N twosuperior ; B 196 356 597 742 ;
@@ -163,7 +160,6 @@ C 179 ; WX 600 ; N threesuperior ; B 202 349 603 742 ;
 C 180 ; WX 600 ; N acute ; B 317 626 565 783 ;
 C 181 ; WX 600 ; N mu ; B 55 -193 616 530 ;
 C 182 ; WX 600 ; N paragraph ; B 160 -144 621 729 ;
-C 183 ; WX 600 ; N middot ; B 281 205 426 326 ;
 C 184 ; WX 600 ; N cedilla ; B 175 -211 360 0 ;
 C 185 ; WX 600 ; N onesuperior ; B 201 356 553 741 ;
 C 186 ; WX 600 ; N ordmasculine ; B 181 349 644 741 ;
@@ -205,17 +201,17 @@ C 221 ; WX 600 ; N Yacute ; B 144 0 731 940 ;
 C 222 ; WX 600 ; N Thorn ; B 42 0 634 723 ;
 C 223 ; WX 600 ; N germandbls ; B 30 -12 626 784 ;
 C 224 ; WX 600 ; N agrave ; B 100 -12 592 783 ;
-C 225 ; WX 600 ; N aacute ; B 100 -12 646 783 ;
-C 226 ; WX 600 ; N acircumflex ; B 100 -12 620 783 ;
+C 225 ; WX 600 ; N aacute ; B 100 -12 645 783 ;
+C 226 ; WX 600 ; N acircumflex ; B 100 -12 619 783 ;
 C 227 ; WX 600 ; N atilde ; B 100 -12 624 742 ;
-C 228 ; WX 600 ; N adieresis ; B 100 -12 627 723 ;
+C 228 ; WX 600 ; N adieresis ; B 100 -12 626 723 ;
 C 229 ; WX 600 ; N aring ; B 100 -12 593 848 ;
 C 230 ; WX 600 ; N ae ; B 46 -12 650 542 ;
 C 231 ; WX 600 ; N ccedilla ; B 123 -211 604 542 ;
 C 232 ; WX 600 ; N egrave ; B 113 -12 612 783 ;
 C 233 ; WX 600 ; N eacute ; B 113 -12 635 783 ;
 C 234 ; WX 600 ; N ecircumflex ; B 113 -12 626 783 ;
-C 235 ; WX 600 ; N edieresis ; B 113 -12 630 723 ;
+C 235 ; WX 600 ; N edieresis ; B 113 -12 629 723 ;
 C 236 ; WX 600 ; N igrave ; B 72 0 551 783 ;
 C 237 ; WX 600 ; N iacute ; B 72 0 636 783 ;
 C 238 ; WX 600 ; N icircumflex ; B 72 0 614 783 ;
@@ -226,7 +222,7 @@ C 242 ; WX 600 ; N ograve ; B 101 -12 608 783 ;
 C 243 ; WX 600 ; N oacute ; B 101 -12 615 783 ;
 C 244 ; WX 600 ; N ocircumflex ; B 101 -12 608 783 ;
 C 245 ; WX 600 ; N otilde ; B 101 -12 612 742 ;
-C 246 ; WX 600 ; N odieresis ; B 101 -12 609 723 ;
+C 246 ; WX 600 ; N odieresis ; B 101 -12 608 723 ;
 C 247 ; WX 600 ; N divide ; B 101 0 619 603 ;
 C 248 ; WX 600 ; N oslash ; B 52 -12 655 542 ;
 C 249 ; WX 600 ; N ugrave ; B 121 -12 616 783 ;
@@ -236,20 +232,101 @@ C 252 ; WX 600 ; N udieresis ; B 121 -12 616 723 ;
 C 253 ; WX 600 ; N yacute ; B 96 -193 679 783 ;
 C 254 ; WX 600 ; N thorn ; B -8 -193 613 771 ;
 C 255 ; WX 600 ; N ydieresis ; B 96 -193 679 723 ;
-C -1 ; WX 600 ; N ogonek ; B 195 -181 359 0 ;
-C -1 ; WX 600 ; N periodcentered ; B 281 205 426 326 ;
-C -1 ; WX 600 ; N hungarumlaut ; B 234 626 648 783 ;
-C -1 ; WX 600 ; N minus ; B 101 265 619 337 ;
-C -1 ; WX 600 ; N breve ; B 286 629 623 771 ;
-C -1 ; WX 600 ; N caron ; B 278 626 635 783 ;
-C -1 ; WX 600 ; N fraction ; B 72 -18 672 741 ;
-C -1 ; WX 600 ; N dotaccent ; B 377 627 493 723 ;
-C -1 ; WX 600 ; N lslash ; B 72 0 609 771 ;
+C -1 ; WX 600 ; N dcroat ; B 95 -12 702 771 ;
 C -1 ; WX 600 ; N fl ; B 34 0 664 783 ;
 C -1 ; WX 600 ; N fi ; B 34 0 660 784 ;
 C -1 ; WX 600 ; N dotlessi ; B 72 0 551 530 ;
+C -1 ; WX 600 ; N gbreve ; B 22 -205 676 771 ;
+C -1 ; WX 600 ; N eogonek ; B 113 -181 612 542 ;
+C -1 ; WX 600 ; N edotaccent ; B 113 -12 612 723 ;
+C -1 ; WX 600 ; N lacute ; B 72 0 674 976 ;
+C -1 ; WX 600 ; N ohungarumlaut ; B 101 -12 699 783 ;
+C -1 ; WX 600 ; N lcaron ; B 60 0 694 771 ;
+C -1 ; WX 600 ; N periodcentered ; B 281 205 426 326 ;
+C -1 ; WX 600 ; N sacute ; B 90 -12 620 783 ;
+C -1 ; WX 600 ; N nacute ; B 34 0 612 783 ;
+C -1 ; WX 600 ; N scommaaccent ; B 90 -211 596 542 ;
+C -1 ; WX 600 ; N ccaron ; B 123 -12 670 783 ;
+C -1 ; WX 600 ; N cacute ; B 123 -12 648 783 ;
+C -1 ; WX 600 ; N aogonek ; B 100 -181 592 542 ;
+C -1 ; WX 600 ; N ncaron ; B 34 0 627 783 ;
+C -1 ; WX 600 ; N lslash ; B 72 0 609 771 ;
+C -1 ; WX 600 ; N abreve ; B 100 -12 631 771 ;
+C -1 ; WX 600 ; N racute ; B 36 0 641 783 ;
+C -1 ; WX 600 ; N uring ; B 121 -12 616 848 ;
+C -1 ; WX 600 ; N uhungarumlaut ; B 121 -12 694 783 ;
+C -1 ; WX 600 ; N ecaron ; B 113 -12 657 783 ;
+C -1 ; WX 600 ; N Uogonek ; B 130 -181 714 723 ;
+C -1 ; WX 600 ; N Umacron ; B 130 -18 714 843 ;
+C -1 ; WX 600 ; N Gcommaaccent ; B 97 -211 659 742 ;
+C -1 ; WX 600 ; N Rcommaaccent ; B 42 -211 627 723 ;
+C -1 ; WX 600 ; N Omacron ; B 92 -18 655 843 ;
+C -1 ; WX 600 ; N Ncommaaccent ; B 36 -211 708 723 ;
+C -1 ; WX 600 ; N Lcommaaccent ; B 42 -211 609 723 ;
+C -1 ; WX 600 ; N Kcommaaccent ; B 36 -211 673 723 ;
+C -1 ; WX 600 ; N Iogonek ; B 78 -181 666 723 ;
+C -1 ; WX 600 ; N dcaron ; B 93 -12 755 771 ;
+C -1 ; WX 600 ; N Emacron ; B 36 0 660 843 ;
+C -1 ; WX 600 ; N Tcommaaccent ; B 125 -211 714 723 ;
+C -1 ; WX 600 ; N Amacron ; B 12 0 633 843 ;
+C -1 ; WX 600 ; N Zdotaccent ; B 72 0 666 879 ;
+C -1 ; WX 600 ; N Zcaron ; B 72 0 666 940 ;
+C -1 ; WX 600 ; N Zacute ; B 72 0 666 940 ;
+C -1 ; WX 600 ; N zacute ; B 60 0 622 783 ;
+C -1 ; WX 600 ; N Uhungarumlaut ; B 130 -18 757 940 ;
+C -1 ; WX 600 ; N Uring ; B 130 -18 714 993 ;
+C -1 ; WX 600 ; N zcaron ; B 60 0 632 783 ;
+C -1 ; WX 600 ; N zdotaccent ; B 60 0 622 723 ;
+C -1 ; WX 600 ; N tcaron ; B 148 -12 635 824 ;
+C -1 ; WX 600 ; N minus ; B 101 265 619 337 ;
+C -1 ; WX 600 ; N tcommaaccent ; B 148 -211 601 650 ;
+C -1 ; WX 600 ; N Imacron ; B 78 0 666 843 ;
+C -1 ; WX 600 ; N amacron ; B 100 -12 619 687 ;
+C -1 ; WX 600 ; N Tcaron ; B 125 0 714 940 ;
+C -1 ; WX 600 ; N Scedilla ; B 80 -211 633 741 ;
+C -1 ; WX 600 ; N Sacute ; B 80 -18 654 940 ;
+C -1 ; WX 600 ; N Rcaron ; B 42 0 640 940 ;
+C -1 ; WX 600 ; N Racute ; B 42 0 627 940 ;
+C -1 ; WX 600 ; N Ohungarumlaut ; B 92 -18 724 940 ;
+C -1 ; WX 600 ; N emacron ; B 113 -12 628 687 ;
+C -1 ; WX 600 ; N imacron ; B 72 0 594 687 ;
+C -1 ; WX 600 ; N kcommaaccent ; B 36 -211 640 771 ;
+C -1 ; WX 600 ; N lcommaaccent ; B 72 -211 551 771 ;
+C -1 ; WX 600 ; N ncommaaccent ; B 34 -211 589 542 ;
+C -1 ; WX 600 ; N omacron ; B 101 -12 608 687 ;
+C -1 ; WX 600 ; N Ncaron ; B 36 0 708 940 ;
+C -1 ; WX 600 ; N fraction ; B 72 -18 672 741 ;
+C -1 ; WX 600 ; N Nacute ; B 36 0 708 940 ;
+C -1 ; WX 600 ; N Lcaron ; B 42 0 699 723 ;
+C -1 ; WX 600 ; N Lacute ; B 42 0 609 940 ;
+C -1 ; WX 600 ; N Idotaccent ; B 78 0 666 879 ;
+C -1 ; WX 600 ; N dotaccent ; B 377 627 493 723 ;
 C -1 ; WX 600 ; N ring ; B 336 626 562 848 ;
+C -1 ; WX 600 ; N rcommaaccent ; B 36 -211 641 542 ;
+C -1 ; WX 600 ; N umacron ; B 121 -12 616 687 ;
+C -1 ; WX 600 ; N uogonek ; B 121 -181 616 530 ;
+C -1 ; WX 600 ; N caron ; B 278 626 635 783 ;
+C -1 ; WX 600 ; N breve ; B 286 629 623 771 ;
 C -1 ; WX 600 ; N Lslash ; B 42 0 609 723 ;
+C -1 ; WX 600 ; N hungarumlaut ; B 234 626 648 783 ;
+C -1 ; WX 600 ; N Gbreve ; B 97 -18 682 940 ;
+C -1 ; WX 600 ; N ogonek ; B 195 -181 359 0 ;
+C -1 ; WX 600 ; N macron ; B 257 626 606 687 ;
+C -1 ; WX 600 ; N commaaccent ; B 185 -211 368 -54 ;
+C -1 ; WX 600 ; N Eogonek ; B 36 -181 660 723 ;
+C -1 ; WX 600 ; N Edotaccent ; B 36 0 660 879 ;
+C -1 ; WX 600 ; N Ecaron ; B 36 0 660 940 ;
+C -1 ; WX 600 ; N Dcroat ; B 24 0 656 723 ;
+C -1 ; WX 600 ; N rcaron ; B 36 0 641 783 ;
+C -1 ; WX 600 ; N scedilla ; B 90 -211 596 542 ;
+C -1 ; WX 600 ; N gcommaaccent ; B 22 -205 676 848 ;
+C -1 ; WX 600 ; N Dcaron ; B 24 0 656 940 ;
+C -1 ; WX 600 ; N Ccaron ; B 121 -18 716 940 ;
+C -1 ; WX 600 ; N Cacute ; B 121 -18 694 940 ;
+C -1 ; WX 600 ; N iogonek ; B 72 -181 551 771 ;
+C -1 ; WX 600 ; N Aogonek ; B 12 -181 599 723 ;
+C -1 ; WX 600 ; N Scommaaccent ; B 80 -211 633 741 ;
+C -1 ; WX 600 ; N Abreve ; B 12 0 657 940 ;
 C -1 ; WX 600 ; N .notdef ; B 0 0 0 0 ;
 EndCharMetrics
 EndFontMetrics

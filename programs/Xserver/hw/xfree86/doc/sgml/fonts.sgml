@@ -6,10 +6,10 @@
 
 <title>Fonts in XFree86
 <author>Juliusz Chroboczek, <email/jch@xfree86.org/
-<date>31 October 2001</date>
+<date>26 November 2001</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.13 2001/03/01 00:37:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.14 2001/11/21 21:31:30 dawes Exp $
 </ident>
 
 <toc>
@@ -465,8 +465,9 @@ and reside in the font files
 
 <sect1>The Bigelow &amp; Holmes Luxi family
 
-<p>XFree86 includes the <it/Luxi/ family of scalable fonts, in both TrueType and Type&nbsp;1 format.  This
-family consists of the fonts <it/Luxi Serif/, with XLFD
+<p>XFree86 includes the <it/Luxi/ family of scalable fonts, in both
+TrueType and Type&nbsp;1 format.  This family consists of the fonts
+<it/Luxi Serif/, with XLFD
 <tscreen><verb>
 -b&amp;h-luxi serif-medium-*-normal--*-*-*-*-p-*-*-*
 </verb></tscreen>
@@ -479,12 +480,16 @@ and <it/Luxi Mono/, with XLFD
 -b&amp;h-luxi mono-medium-*-normal--*-*-*-*-m-*-*-*
 </verb></tscreen>
 Each of these fonts comes Roman, oblique, bold and bold oblique variants
-and has glyphs covering the basic ASCII Unicode range, the Latin&nbsp;1
-range, as well as the <it/Extended Latin/ range and some additional
-punctuation characters.  In particular, these fonts include all the
-glyphs needed for ISO&nbsp;8859 parts 1, 2, 3, 4, 9 and 15, as well as
-all the glyphs in the Adobe Standard encoding and the Windows 3.1
-character set.
+The TrueType version have glyphs covering the basic ASCII Unicode
+range, the Latin&nbsp;1 range, as well as the <it/Extended Latin/
+range and some additional punctuation characters.  In particular,
+these fonts include all the glyphs needed for ISO&nbsp;8859 parts 1,
+2, 3, 4, 9, 13 and 15, as well as all the glyphs in the Adobe Standard
+encoding and the Windows 3.1  character set.
+
+The glyph coverage of the Type&nbsp;1 versions is somewhat reduced,
+and only covers ISO&nbsp;8859 parts 1, 2 and 15 as well as the Adobe
+Standard encoding.
 
 The Luxi fonts are original designs by Kris Holmes and Charles 
 Bigelow. Luxi fonts include seriffed, sans serif, and monospaced 

@@ -1,4 +1,12 @@
 XFree86 4.1.99.3 (xx December 2001)
+ 570. Add some missing UNDEFINE lines to the iso8859-11 and tis620-2
+      encoding files (#5065, 5066, Theppitak Karoonboonyanan).
+ 569. Some Luxi font updates:
+       - update the Type 1 versions to fix a UID-related bug and cover more
+         glyphs
+       - update the TTF fonts.scale file to include ISO 8859-13
+       - update the docs to properly reflect the fonts' glyph coverage
+      (#5064, B&H, Juliusz Chroboczek).
  568. Fix "The Open Group" copyright notices to reflect the change in
       post R6.4 licensing (#5093, Mark Snitily, from X11R6.6).
  567. Added debugging helpers (Egbert Eich).
@@ -14325,4 +14333,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2087 2001/12/13 18:01:48 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2088 2001/12/14 19:59:46 dawes Exp $
