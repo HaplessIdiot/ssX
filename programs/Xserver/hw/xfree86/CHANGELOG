@@ -1,4 +1,6 @@
 XFree86 4.0.1Zb (14 December 2000)
+1195. Update the R6.4 INSTALL and RELNOTES docs to include references at
+      the top to the XFree86-specific docs (David Dawes).
 1194. Make it possible to install platform-specific man pages with most
       ix86 builds (David Dawes).
 1193. Add a short man page for the newport driver, update it's sample config
@@ -12082,4 +12084,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1479 2000/12/14 19:29:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1480 2000/12/14 20:59:09 dawes Exp $
