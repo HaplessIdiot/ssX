@@ -67,6 +67,7 @@
  */
 
 /* Mandatory functions */
+static OptionInfoPtr TsengAvailableOptions(int chipid);
 static void TsengIdentify(int flags);
 static Bool TsengProbe(DriverPtr drv, int flags);
 static Bool TsengPreInit(ScrnInfoPtr pScrn, int flags);
@@ -132,6 +133,7 @@ DriverRec TSENG =
 #endif
     TsengIdentify,
     TsengProbe,
+    TsengAvailableOptions,
     NULL,
     0
 };
@@ -338,6 +340,13 @@ TsengPCI2Type(ScrnInfoPtr pScrn, int ChipID)
 	return FALSE;
     }
     return TRUE;
+}
+
+static 
+OptionInfoPtr
+TsengAvailableOptions(int chipid)
+{
+    return TsengOptions;
 }
 
 static void

@@ -180,6 +180,7 @@ TridentAccelInit(ScreenPtr pScreen)
 				TridentSubsequentMono8x8PatternFillRect;
     infoPtr->MonoPatternPitch = 64;
 
+#if 0 /* Not convinced this works 100% yet */
     infoPtr->Color8x8PatternFillFlags = NO_PLANEMASK | 
 					HARDWARE_PATTERN_SCREEN_ORIGIN | 
 					BIT_ORDER_IN_BYTE_MSBFIRST;
@@ -190,6 +191,7 @@ TridentAccelInit(ScreenPtr pScreen)
 				TridentSetupForColor8x8PatternFill;
     infoPtr->SubsequentColor8x8PatternFillRect = 
 				TridentSubsequentColor8x8PatternFillRect;
+#endif
 
     infoPtr->ScanlineCPUToScreenColorExpandFillFlags = NO_PLANEMASK |
 					BIT_ORDER_IN_BYTE_MSBFIRST;

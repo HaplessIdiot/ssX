@@ -69,6 +69,7 @@
 #include "extensions/dpms.h"
 #endif
 
+static OptionInfoPtr SISAvailableOptions(int chipid);
 static void	SISIdentify(int flags);
 static Bool	SISProbe(DriverPtr drv, int flags);
 static Bool	SISPreInit(ScrnInfoPtr pScrn, int flags);
@@ -125,6 +126,7 @@ DriverRec SIS = {
 #endif
     SISIdentify,
     SISProbe,
+    SISAvailableOptions,
     NULL,
     0
 };
@@ -354,6 +356,13 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 	outw(VGA_SEQ_INDEX, 0x0300);	/* End Reset */
 }
 #endif
+
+static 
+OptionInfoPtr
+SISAvailableOptions(int chipid)
+{
+    return SISOptions;
+}
 
 /* Mandatory */
 static void

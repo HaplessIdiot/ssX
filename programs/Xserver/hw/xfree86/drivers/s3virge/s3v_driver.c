@@ -69,6 +69,7 @@ static void S3VDisableMmio(ScrnInfoPtr pScrn);
  */
 
 /* Mandatory functions */
+static OptionInfoPtr S3VAvailableOptions(int chipid);
 static void S3VIdentify(int flags);
 static Bool S3VProbe(DriverPtr drv, int flags);
 static Bool S3VPreInit(ScrnInfoPtr pScrn, int flags);
@@ -138,6 +139,7 @@ DriverRec S3VIRGE =
 #endif
     S3VIdentify,
     S3VProbe,
+    S3VAvailableOptions,
     NULL,
     0
 };
@@ -423,6 +425,13 @@ S3VFreeRec(ScrnInfoPtr pScrn)
 	return;
     xfree(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
+}
+
+static 
+OptionInfoPtr
+S3VAvailableOptions(int chipid)
+{
+    return S3VOptions;
 }
 
 static void

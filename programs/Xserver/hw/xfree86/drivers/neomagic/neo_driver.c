@@ -108,6 +108,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 
 /* Mandatory functions */
+static OptionInfoPtr	NEOAvailableOptions(int chipid);
 static void     NEOIdentify(int flags);
 static Bool     NEOProbe(DriverPtr drv, int flags);
 static Bool     NEOPreInit(ScrnInfoPtr pScrn, int flags);
@@ -171,6 +172,7 @@ DriverRec NEOMAGIC = {
 #endif
     NEOIdentify,
     NEOProbe,
+    NEOAvailableOptions,
     NULL,
     0
 };
@@ -407,6 +409,19 @@ NEOFreeRec(ScrnInfoPtr pScrn)
 	return;
     xfree(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
+}
+
+static
+OptionInfoPtr
+NEOAvailableOptions(int chipid)
+{
+    int vendor = ((chipid & 0xffff0000) >> 16);
+    int chip = (chip & 0x0000ffff);
+
+    if (chip == PCI_CHIP_NM2070)
+	return NEO_2070_Options;
+    else
+    	return NEOOptions;
 }
 
 /* Mandatory */

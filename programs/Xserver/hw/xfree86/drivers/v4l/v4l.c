@@ -29,12 +29,14 @@ typedef unsigned long ulong;
 
 static void     V4LIdentify(int flags);
 static Bool     V4LProbe(DriverPtr drv, int flags);
+static OptionInfoPtr V4LAvailableOptions(int chipid);
 
 DriverRec V4L = {
         40000,
         "Xv driver for video4linux",
         V4LIdentify, /* Identify*/
         V4LProbe, /* Probe */
+	V4LAvailableOptions,
         NULL,
         0
 };    
@@ -449,6 +451,12 @@ V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
 			 pPPriv->cenc,drw_w,drw_h,*p_w,*p_h));
 }
 
+static
+OptionInfoPtr
+V4LAvailableOptions(int chipid)
+{
+    return NULL;
+}
 
 static void
 V4LIdentify(int flags)

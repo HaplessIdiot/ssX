@@ -111,6 +111,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Required Functions: */
 
+static OptionInfoPtr TDFXAvailableOptions(int chipid);
+
 /* Print a driver identifying message. */
 static void TDFXIdentify(int flags);
 
@@ -166,6 +168,7 @@ DriverRec TDFX = {
 #endif
   TDFXIdentify,
   TDFXProbe,
+  TDFXAvailableOptions,
   NULL,
   0
 };
@@ -363,6 +366,13 @@ TDFXFreeRec(ScrnInfoPtr pScrn) {
   if (!pScrn->driverPrivate) return;
   xfree(pScrn->driverPrivate);
   pScrn->driverPrivate=0;
+}
+
+static
+OptionInfoPtr
+TDFXAvailableOptions(int chipid)
+{
+   return TDFXOptions;
 }
 
 /*

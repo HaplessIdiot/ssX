@@ -47,6 +47,7 @@
 /* -------------------------------------------------------------------- */
 /* prototypes                                                           */
 
+static OptionInfoPtr FBDevAvailableOptions(int chipid);
 static void	FBDevIdentify(int flags);
 static Bool	FBDevProbe(DriverPtr drv, int flags);
 static Bool	FBDevPreInit(ScrnInfoPtr pScrn, int flags);
@@ -71,6 +72,7 @@ DriverRec FBDEV = {
 #endif
 	FBDevIdentify,
 	FBDevProbe,
+	FBAvailableOptions,
 	NULL,
 	0
 };
@@ -220,6 +222,12 @@ FBDevFreeRec(ScrnInfoPtr pScrn)
 }
 
 /* -------------------------------------------------------------------- */
+
+static
+OptionInfoPtr(int chipid)
+{
+	return FBDevOptions;
+}
 
 static void
 FBDevIdentify(int flags)
