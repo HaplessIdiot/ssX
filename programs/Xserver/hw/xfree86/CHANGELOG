@@ -1,7 +1,9 @@
 XFree86 3.9Ah (XX April 1998)
-1651. Add FreeType code to lib/font/FreeType, but the build-related
+1653. Add FreeType code to lib/font/FreeType, but the build-related
       things haven't been done yet (David Turner, Robert Wilhelm,
       Werner Lemberg, Mark Leisher, Juliusz Chroboczek).
+1652. Xterm patch 72 activity notification enhancement (#1659, T.E.Dickey).
+1651. Xterm patch 71 buffer overflow fix (#1651, T.E.Dickey).
 1650. Sync I128 server acceleration with 3.3.2 (Robin Cutshaw).
 
 XFree86 3.9Ag (05 April 1998)
