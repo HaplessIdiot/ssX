@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.0 1994/05/21 23:39:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.1 1994/05/29 02:01:48 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -79,3 +79,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.0 1994/05/21 23:39:34 dawes Exp $
  *
 #define CompressManPages        NO
  */
+
+/*
+ * Define to build only those parts of contrib supported by XFree86
+ *
+ */
+#define XF86Contrib
