@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.256 2000/01/18 21:24:55 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.257 2000/01/19 22:37:03 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -104,13 +104,27 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef XF86RAC
 #define XF86RAC			YES
 #endif
+
 /* int10 module */
-#ifndef XF86INT10
-#define XF86INT10               NO
+#ifndef XF86Int10
+#define XF86Int10		YES
 #endif
+
+#ifndef UseX86Emu
+#define UseX86Emu		YES
+#endif
+
 #define X86EMU_GENERIC  1
 #define X86VM           2
 #define X86EMU_OS       3
+
+#ifndef XF86INT10
+#if UseX86Emu
+#define XF86INT10		X86EMU_GENERIC
+#else
+#define XF86INT10		NO
+#endif
+#endif
 
 /*
  * Amiga framebuffer module.

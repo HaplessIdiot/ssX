@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.174 2000/01/09 17:50:30 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.175 2000/01/20 01:40:13 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -595,10 +595,10 @@ XF86DDCLIB = $(XF86SRC)/ddc/LibraryTargetName(ddc)
 #if XF86RAC
 XF86RACLIB = $(XF86SRC)/rac/LibraryTargetName(rac)
 #endif
-#if XF86INT10
+#if XF86INT10 > X86EMU_GENERIC
 XF86INT10LIB = $(XF86OSSRC)/LibraryTargetName(int10)
 #else
-XF86INT10LIB = $(XF86OSSRC)/int10/stub.o
+XF86INT10LIB = $(XF86SRC)/int10/LibraryTargetName(int10)
 #endif
 XF86IDRIVERLIB = $(XF86SRC)/input/LibraryTargetName(idriver)
 #if !DoLoadableServer
