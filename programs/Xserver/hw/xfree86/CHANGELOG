@@ -1,4 +1,5 @@
 XFree86 4.0b (?? April 2000)
+ 132. Add a missing symbol "AllocateColormapPrivateIndex" (Mark Vojkovich). 
  131. Remove Intel 440BX-specific resources from os-support layer
       (Marc La France).
  130. Change ATI driver to mark VGA resources as unused in operating state when
