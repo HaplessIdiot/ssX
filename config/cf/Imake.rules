@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.107 2002/09/19 00:19:19 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.108 2002/10/06 20:27:46 herrb Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -786,6 +786,20 @@ InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
 #endif /* CplusplusProgramTargetHelper */
 
+#ifndef CplusplusProgramTargetHelperNoMan
+#define	CplusplusProgramTargetHelperNoMan(program,srcs,objs,deplib,locallib,syslib) @@\
+ProgramTargetName(program): $(objs) $(deplib)				@@\
+	RemoveTargetProgram($@)						@@\
+	CplusplusLinkRule($@,$(CXXLDOPTIONS),$(objs),locallib $(LDLIBS) syslib) @@\
+									@@\
+CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
+SentinelCplusplusProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+PurifyCplusplusProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+ProofCplusplusProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+									@@\
+InstallProgram(program,$(BINDIR))					@@
+#endif /* CplusplusProgramTargetHelperNoMan */
+
 /*
  * ComplexProgramTarget - generate rules for compiling and linking the 
  * program specified by $(OBJS) and $(SRCS), installing the program and its
@@ -826,7 +840,7 @@ clean::									@@\
  * ComplexProgramTargetNoMan - generate rules for compiling and linking
  * the program specified by $(OBJS) and $(SRCS), installing the program 
  * and generating dependencies.  It should only be used in Imakefiles
- * that describe a single program.
+ * that describe a single program, and have no manual page.
  */
 #ifndef ComplexProgramTargetNoMan
 #define ComplexProgramTargetNoMan(program)				@@\
@@ -842,6 +856,21 @@ LintTarget()								@@\
 clean::									@@\
 	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexProgramTargetNoMan */
+
+#ifndef ComplexCplusplusProgramTarget
+#define	ComplexCplusplusProgramTarget(program)				@@\
+        PROGRAM = program						@@\
+									@@\
+AllTarget(program)							@@\
+									@@\
+CplusplusProgramTargetHelperNoMan(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
+									@@\
+DependTarget()								@@\
+LintTarget()								@@\
+									@@\
+clean::									@@\
+	RemoveFile(ProgramTargetName(program))
+#endif /* ComplexCplusplusProgramTarget */
 
 /*
  * ComplexProgramTarget_1 - generate rules for compiling and linking the
