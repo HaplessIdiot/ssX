@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.249 2001/10/28 03:32:50 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.250 2001/11/02 23:29:28 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -561,7 +561,6 @@ XF86INIT   = $(XF86COMSRC)/xf86Init.o $(XF86COMSRC)/xf86IniExt.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86PARSLIB= $(XF86PARSERSRC)/LibraryTargetName(xf86config)
 XF86OSLIB  = $(XF86OSSRC)/LibraryTargetName(xf86_os)
-XF86HWLIB  = $(XF86HWSRC)/LibraryTargetName(common_hw)
 #if XF86XAA
 XF86XAALIB = $(XF86SRC)/xaa/LibraryTargetName(xaa)
 #endif
