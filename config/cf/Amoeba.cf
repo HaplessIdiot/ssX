@@ -1,4 +1,5 @@
 XCOMM platform:  $XConsortium: Amoeba.cf,v 1.4 94/04/04 13:20:04 dpw Exp $
+XCOMM platform:  $XFree86$
 
 /*  The presence of this configuration file in the X distribution
  *  does not imply full support for the system it describes.
@@ -85,8 +86,9 @@ XCOMM operating system:  OSName
 #define FontDefines             -DFONT_SNF
 #define ConnectionFlags         -DAMTCPCONN -DAMRPCCONN
 #define ServerXdmcpDefines	/* no -DXDMCP */
+#define UseRgbTxt		YES
 #define NdbmDefines		-DSDBM -DNDBM -I$(INCLUDESRC)
-#define DBMLibrary		$(LIBSRC)/sdbm/libsdbm.a
+#define DBMLibrary		/* $(LIBSRC)/sdbm/libsdbm.a */
 
 #if defined(i386Architecture)
 #ifndef AckToolset
