@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbbres.c,v 1.15 94/04/17 20:28:45 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbres.c,v 3.0 1996/06/29 09:05:26 dawes Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -127,7 +127,7 @@ cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1,
 	--len;
 #if PSZ == 24
 #define body_copy \
-	    addrp = (unsigned long *)((unsigned long)addrb & ~0x03); \
+	    addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
 	    switch((unsigned long)addrb & 3){ \
 	    case 0: \
 	      *addrp = ((*addrp)&0xFF000000)|(piQxelXor[0] & 0xFFFFFF); \
@@ -188,7 +188,7 @@ cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1,
 	while(len--)
 	{ 
 #if PSZ == 24
-	    addrp = (unsigned long *)((unsigned long)addrb & ~0x03);
+	    addrp = (PixelType *)((unsigned long)addrb & ~0x03);
 	    switch((unsigned long)addrb & 3){
 	    case 0:
 	      *addrp = (*addrp & (piQxelAnd[0]|0xFF000000))

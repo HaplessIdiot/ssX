@@ -1,5 +1,5 @@
 /* $XConsortium: pgeom.c,v 1.5 94/04/17 20:33:46 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pgeom.c,v 3.0 1996/03/29 22:10:58 dawes Exp $ */
 /**** module pgeom.c ****/
 /******************************************************************************
 
@@ -104,7 +104,7 @@ terms and conditions:
 #include <element.h>
 #include <technq.h>
 #include <difloat.h>
-
+#include <memory.h>
 
 
 /*
@@ -228,8 +228,7 @@ Bool CopyGeomNearestNeighbor(flo, ped, sparms, rparms, tsize, isDefault)
 
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
-     if (!(ped->techPvt=(pointer )
-	XieMalloc(sizeof(pTecGeomNearestNeighborDefRec))))
+     if (!(ped->techPvt = XieMalloc(sizeof(pTecGeomNearestNeighborDefRec))))
 	     FloAllocError(flo, ped->phototag, xieElemGeometry, return(TRUE));
 
      pvt = (pTecGeomNearestNeighborDefPtr)ped->techPvt;
@@ -275,7 +274,7 @@ Bool CopyGeomGaussian(flo, ped, sparms, rparms, tsize, isDefault)
 
      VALIDATE_TECHNIQUE_SIZE(ped->techVec, tsize, isDefault);
 
-     if (!(ped->techPvt=(pointer )XieMalloc(sizeof(pTecGeomGaussianDefRec))))
+     if (!(ped->techPvt=XieMalloc(sizeof(pTecGeomGaussianDefRec))))
 	     FloAllocError(flo, ped->phototag, xieElemGeometry, return(TRUE));
 
      pvt = (pTecGeomGaussianDefPtr)ped->techPvt;

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbhrzvert.c,v 1.8 94/04/17 20:28:51 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbhrzvert.c,v 3.0 1996/06/29 09:05:36 dawes Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -349,7 +349,7 @@ register int len;	/* length of line */
 #if PSZ == 24
     nlwidth <<= PWSH;
     xIdx = x1 & 3;
-    bits = addrl + (y1 * nlwidth) + ((x1*3) >> 2);
+    bits = (PixelType *)(addrl + (y1 * nlwidth) + ((x1*3) >> 2));
 #else
     nlwidth <<= PWSH;
     bits = bits + (y1 * nlwidth) + x1;

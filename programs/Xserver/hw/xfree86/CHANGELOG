@@ -1,3 +1,12 @@
+XFree86 3.1.2En (25 August 1996)
+710. Build/install the xkbui library regardless of whether XF86Setup is
+     being built.
+709. Fix lots of compiler warnings and related problems when building on
+     Alpha (Richard Henderson).
+708. Fix missing function prototype problem in libXi that causes problems
+     on Alpha platforms (Richard Henderson).
+707. XF86Setup updates.
+
 XFree86 3.1.2Em (24 August 1996)
 706. Swap acute and apostrophe keys in de(nodeadkeys) (Michael Rohleder).
 705. ISC documentation udpates (Michael Rohleder).

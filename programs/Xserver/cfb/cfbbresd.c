@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbbresd.c,v 1.16 94/04/17 20:28:45 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbresd.c,v 3.0 1996/06/29 09:05:27 dawes Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -184,7 +184,7 @@ cfbBresD(rrops,
     {
 #if PSZ == 24
 #define body_copy(pix) { \
-	addrp = (unsigned long *)((unsigned long)addrb & ~0x03); \
+	addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
 	switch((unsigned long)addrb & 3){ \
 	case 0: \
 	  *addrp = (*addrp & 0xFF000000)|((pix)[0] & 0xFFFFFF); \
@@ -233,7 +233,7 @@ cfbBresD(rrops,
     else
     {
 #define body_set(and, xor) { \
-	addrp = (unsigned long *)((unsigned long)addrb & ~0x03); \
+	addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
 	switch((unsigned long)addrb & 3){ \
 	case 0: \
 	  *addrp = (*addrp & ((and)[0]|0xFF000000)) ^ ((xor)[0] & 0xFFFFFF); \

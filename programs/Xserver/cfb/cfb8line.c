@@ -1,6 +1,6 @@
 /*
  * $XConsortium: cfb8line.c,v 1.30 95/01/03 15:28:30 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.0 1996/06/29 09:05:23 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -147,7 +147,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #if RROP == GXcopy
 #define body_rop \
-	    addrp = (unsigned long *)((unsigned long)addrb & ~0x03); \
+	    addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
 	    switch((unsigned long)addrb & 3){ \
 	    case 0: \
 	      *addrp = (*addrp & 0xFF000000)|(piQxelXor[0] & 0xFFFFFF); \
@@ -167,7 +167,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #if RROP == GXxor
 #define body_rop \
-	    addrp = (unsigned long *)((unsigned long)addrb & ~0x03); \
+	    addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
 	    switch((unsigned long)addrb & 3){ \
 	    case 0: \
 	      *addrp ^= piQxelXor[0] & 0xFFFFFF; \
@@ -187,7 +187,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #if RROP == GXand
 #define body_rop \
-	    addrp = (unsigned long *)((unsigned long)addrb & ~0x03); \
+	    addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
 	    switch((unsigned long)addrb & 3){ \
 	    case 0: \
 	      *addrp &= piQxelAnd[0] | 0xFF000000; \
@@ -207,7 +207,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #if RROP == GXor
 #define body_rop \
-	    addrp = (unsigned long *)((unsigned long)addrb & ~0x03); \
+	    addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
 	    switch((unsigned long)addrb & 3){ \
 	    case 0: \
 	      *addrp |= piQxelOr[0] & 0xFFFFFF; \
@@ -227,7 +227,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #if RROP == GXset
 #define body_rop \
-	    addrp = (unsigned long *)((unsigned long)addrb & ~0x03); \
+	    addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
 	    switch((unsigned long)addrb & 3){ \
 	    case 0: \
 	      *addrp = (*addrp & (piQxelAnd[0]|0xFF000000)) \
@@ -397,7 +397,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	addrLineEnd = addr + WIDTH_MUL(_y1, nwidth);
 	xOffset = xBase + _x1;
 	addrb = (char *)addrLineEnd + xOffset * 3;
-	addrp = (unsigned long *)((unsigned long)addrb & ~0x03);
+	addrp = (PixelType *)((unsigned long)addrb & ~0x03);
 #else
 	addrp = addr + WIDTH_MUL(_y1, nwidth) + _x1;
 #endif
@@ -423,7 +423,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	addrLineEnd = addr + WIDTH_MUL(Y2, nwidth);
 	xOffset = xBase + X2;
 	addrb = (char *)addrLineEnd + xOffset * 3;
-	addrp = (unsigned long *)((unsigned long)addrb & ~0x03);
+	addrp = (PixelType *)((unsigned long)addrb & ~0x03);
 #else
 	addrp = addr + WIDTH_MUL(Y2, nwidth) + X2;
 #endif
@@ -444,7 +444,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 	addrLineEnd = addr + WIDTH_MUL(y1_or_e1, nwidth);
 	xOffset = xBase + x1_or_len;
 	addrb = (char *)addrLineEnd + xOffset * 3;
-	addrp = (unsigned long *)((unsigned long)addrb & ~0x03);
+	addrp = (PixelType *)((unsigned long)addrb & ~0x03);
 #else
 	addrp = addr + WIDTH_MUL(y1_or_e1, nwidth) + x1_or_len;
 #endif
@@ -644,7 +644,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 #endif
 #endif
 #if PSZ == 24
-	addrp = (unsigned long *)((unsigned long)addrb & ~0x03);
+	addrp = (PixelType *)((unsigned long)addrb & ~0x03);
 #endif
 	}
 #undef body
@@ -686,7 +686,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 # if PSZ == 24
 	    y1_or_e1 = xOffset & 3;
 # else
-	    y1_or_e1 = ((int) addrp) & PIM;
+	    y1_or_e1 = ((long) addrp) & PIM;
 	    addrp = (PixelType *) (((unsigned char *) addrp) - y1_or_e1);
 #if PGSZ == 32
 #  if PWSH != 2
@@ -861,7 +861,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 		}
 	      }
 #else /* GXcopy */
-	      addrp = (unsigned long *)((char *)addrLineEnd + ((xOffset * 3) & ~0x03));
+	      addrp = (PixelType *)((char *)addrLineEnd + ((xOffset * 3) & ~0x03));
 	      if (x1_or_len <= 1){
 		if (x1_or_len)
 		  RROP_SOLID24(addrp, xOffset);
