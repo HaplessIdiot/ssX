@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.13 1997/06/03 14:12:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.14 1999/04/29 09:13:49 dawes Exp $ */
 /*
  * (c) Copyright 1994,1996,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -216,29 +216,6 @@ void os2PostKbdEvent(unsigned scanCode, Bool down)
 	KeySym *keysym;
 	int keycode;
 	static int lockkeys = 0;
-
-	if (xf86Info.serverNumLock &&
-	 ((!xf86Info.numLock && !ModifierDown(ShiftMask)) ||
-	 (xf86Info.numLock && ModifierDown(ShiftMask)))) {
-		/*
-		 * Hardwired numlock handling ... 
-		 * (Some applications break if they have
-		 * these keys double defined, like twm)
-		 */
-		switch (scanCode) {
-		case KEY_KP_7: scanCode = KEY_Home; break; /* curs home */
-		case KEY_KP_8: scanCode = KEY_Up; break; /* curs up */
-		case KEY_KP_9: scanCode = KEY_PgUp; break; /* curs pgup */
-		case KEY_KP_4: scanCode = KEY_Left; break; /* curs left */
-		case KEY_KP_5: scanCode = KEY_Begin; break; /* curs begin */
-		case KEY_KP_6: scanCode = KEY_Right; break; /* curs right */
-		case KEY_KP_1: scanCode = KEY_End; break; /* curs end */
-		case KEY_KP_2: scanCode = KEY_Down; break; /* curs down */
-		case KEY_KP_3: scanCode = KEY_PgDown; break; /* curs pgdown */
-		case KEY_KP_0: scanCode = KEY_Insert; break; /* curs insert */
-		case KEY_KP_Decimal: scanCode = KEY_Delete; break; /* curs delete */
-		}
-	}
 
 	/*
 	 * and now get some special keysequences
