@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_bios.c,v 1.1 1999/07/18 14:50:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_bios.c,v 1.2 1999/07/18 15:37:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -57,7 +57,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
      	 *      as the standard SVR4 /dev/pmem. By default, then used VT
      	 *      is considered the "default" file to open.
      	 */
-	if (Base < 0xFFFFF)
+	if (Base < 0xFFFFF && xf86Info.vtno >= 0)
         	sprintf(solx86_vtname,"/dev/vt%02d",xf86Info.vtno);
 	else
 	{
