@@ -20,24 +20,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#if defined(Linux)
 /* for fwrite_unlocked and fread_unlocked */
 #define _GNU_SOURCE
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <byteswap.h>
-
+#include <sys/types.h>
+#include <netinet/in.h>
 #include "X11/Xos.h"
 
 #include "fonttosfnt.h"
 
 #if !defined(I_LOVE_POSIX) && \
     defined(__GLIBC__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 1
-#define FWRITE fwrite_unlocked
-#define FREAD fread_unlocked
+#define DO_FWRITE fwrite_unlocked
+#define DO_FREAD fread_unlocked
 #else
-#define FWRITE fwrite
-#define FREAD fread
+#define DO_FWRITE fwrite
+#define DO_FREAD fread
 #endif
 
 static int writeDir(FILE*, FontPtr, int, unsigned*);
@@ -126,7 +128,7 @@ static void
 writeBYTE(FILE *out, unsigned char val)
 {
     int rc;
-    rc = FWRITE(&val, 1, 1, out);
+    rc = DO_FWRITE(&val, 1, 1, out);
     if(rc != 1) write_error(rc);
 }
 
@@ -134,7 +136,7 @@ static void
 writeBYTEs(FILE *out, unsigned char *chars, int n)
 {
     int rc;
-    rc = FWRITE(chars, 1, n, out);
+    rc = DO_FWRITE(chars, 1, n, out);
     if(rc != n) write_error(rc);
 }
 
@@ -142,7 +144,7 @@ static void
 writeCHAR(FILE *out, signed char val)
 {
     int rc;
-    rc = FWRITE(&val, 1, 1, out);
+    rc = DO_FWRITE(&val, 1, 1, out);
     if(rc != 1) write_error(rc);
 }
 
@@ -150,16 +152,16 @@ static void
 writeCHARs(FILE *out, signed char *chars, int n)
 {
     int rc;
-    rc = FWRITE(chars, 1, n, out);
+    rc = DO_FWRITE(chars, 1, n, out);
     if(rc != n) write_error(rc);
 }
 
-#if BYTE_ORDER == BIG_ENDIAN
 static void
 writeUSHORT(FILE *out, unsigned short val)
 {
     int rc;
-    rc = FWRITE(&val, 2, 1, out);
+    val = htons(val);
+    rc = DO_FWRITE(&val, 2, 1, out);
     if(rc != 1) write_error(rc);
 }
 
@@ -167,7 +169,8 @@ static void
 writeSHORT(FILE *out, short val)
 {
     int rc;
-    rc = FWRITE(&val, 2, 1, out);
+    val = htons(val);
+    rc = DO_FWRITE(&val, 2, 1, out);
     if(rc != 1) write_error(rc);
 }
 
@@ -175,7 +178,8 @@ static void
 writeULONG(FILE *out, unsigned int val)
 {
     int rc;
-    rc = FWRITE(&val, 4, 1, out);
+    val = htonl(val);
+    rc = DO_FWRITE(&val, 4, 1, out);
     if(rc != 1) write_error(rc);
 }
 
@@ -183,7 +187,8 @@ static void
 writeLONG(FILE *out, int val)
 {
     int rc;
-    rc = FWRITE(&val, 4, 1, out);
+    val = htonl(val);
+    rc = DO_FWRITE(&val, 4, 1, out);
     if(rc != 1) write_error(rc);
 }
 
@@ -192,63 +197,13 @@ readULONG(FILE *out)
 {
     int rc;
     unsigned val;
-    rc = FREAD(&val, 4, 1, out);
+    rc = DO_FREAD(&val, 4, 1, out);
     if(rc != 1) {
         read_error(rc);
         return 0xDEADBEEF;
     }
-    return val;
+    return ntohl(val);
 }
-#else
-static void
-writeUSHORT(FILE *out, unsigned short val)
-{
-    int rc;
-    val = bswap_16(val);
-    rc = FWRITE(&val, 2, 1, out);
-    if(rc != 1) write_error(rc);
-}
-
-static void
-writeSHORT(FILE *out, short val)
-{
-    int rc;
-    val = bswap_16(val);
-    rc = FWRITE(&val, 2, 1, out);
-    if(rc != 1) write_error(rc);
-}
-
-static void
-writeULONG(FILE *out, unsigned int val)
-{
-    int rc;
-    val = bswap_32(val);
-    rc = FWRITE(&val, 4, 1, out);
-    if(rc != 1) write_error(rc);
-}
-
-static void
-writeLONG(FILE *out, int val)
-{
-    int rc;
-    val = bswap_32(val);
-    rc = FWRITE(&val, 4, 1, out);
-    if(rc != 1) write_error(rc);
-}
-
-static unsigned
-readULONG(FILE *out)
-{
-    int rc;
-    unsigned val;
-    rc = FREAD(&val, 4, 1, out);
-    if(rc != 1) {
-        read_error(rc);
-        return 0xDEADBEEF;
-    }
-    return bswap_32(val);
-}
-#endif
 
 int 
 writeFile(char *filename, FontPtr font)
@@ -507,7 +462,7 @@ writehead(FILE* out, FontPtr font)
     return 0;
 }
 
-int
+static int
 outputRaster(FILE *out, char *raster, int width, int height, int stride,
              int bit_aligned)
 {
