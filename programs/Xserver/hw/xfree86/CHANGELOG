@@ -1,4 +1,6 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 163. Add an entry to the i2c module that drivers can call to retrieve an array
+      of all I2C busses associated with a screen (Marc La France).
  162. Fix to prevent PCI and CardBus resets when switching out of the server's
       virtual console (Marc La France).
  161. Change the /dev/ file used on some *BSD's to mmap the framebuffer in DGA
@@ -16938,7 +16940,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2684 2003/05/05 20:42:31 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2685 2003/05/05 20:45:32 tsi Exp $
 
 
 
