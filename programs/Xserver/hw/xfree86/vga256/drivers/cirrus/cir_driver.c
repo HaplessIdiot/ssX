@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.37 1995/06/02 11:19:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.38 1995/07/07 15:44:36 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1157,6 +1157,7 @@ cirrusFbInit()
 
 #ifndef MONOVGA
   int useSpeedUp;
+  Bool pciProbed = FALSE;
 
   useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYWIDTH;
   
@@ -1299,6 +1300,7 @@ cirrusFbInit()
                     int idx = 0;
 		    cirrusUseLinear = FALSE;
                     xf86scanpci();
+                    pciProbed = TRUE;
                     while (pcrp = pci_devp[idx]) {
                     	if (pcrp->_vendor == 0x1013	/* Cirrus Logic */
                     	&& (pcrp->_device & 0xFFF0) == 0x00A0) {
@@ -1362,6 +1364,15 @@ nolinear:
     if (cirrusUseLinear)
         CIRRUS.ChipUseLinearAddressing = TRUE;
 #endif
+
+  if (pciProbed) {
+    /* Re-enable Cirrus I/O */
+    xf86ClearIOPortList(vga256InfoRec.scrnIndex);
+    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
+    xf86AddIOPorts(vga256InfoRec.scrnIndex, sizeof(Cirrus_IOPorts) /
+                    sizeof(Cirrus_IOPorts[0]), Cirrus_IOPorts);
+    xf86EnableIOPorts(vga256InfoRec.scrnIndex);
+  }
 
   CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY
       * (vgaBitsPerPixel / 8);

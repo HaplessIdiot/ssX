@@ -1,4 +1,6 @@
 XFree86 3.1.1Dc (19 July 1995)
+222. Fix(?) server crash when the Cirrus driver auto-detects the linear
+     fb address for PCI cards.
 221. Support for 964+IBM (Hercules Terminator 64) (Harald Koenig).
 220. Disable >8bpp for S3 911 and 924 because it won't work.
 219. Fix some auto-apply problems in xvidtune, and added a restore hot-key "R".
