@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.14tsi Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.15tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -29,14 +29,14 @@ FREETYPEINC = $(FREETYPETOP)/include/freetype
 
 #ifdef DarwinArchitecture
 # if DarwinQuartzSupport
-DEFINES = -DTARGET_API_MAC_CARBON=TRUE Freetype2BuildDefines
+DARWINDEFINES = -DTARGET_API_MAC_CARBON=TRUE
 REQUIREDLIBS = -framework CoreServices -framework ApplicationServices
 # else
-DEFINES = -DDARWIN_NO_CARBON Freetype2BuildDefines
+DARWINDEFINES = -DDARWIN_NO_CARBON
 # endif
-#else
-DEFINES = Freetype2BuildDefines
 #endif
+
+DEFINES = $(DARWINDEFINES) Freetype2BuildDefines -DXFREE86_FT2
 
 INCLUDES = -I. $(FREETYPE2INCLUDES)\
 	-I$(FREETYPESRC)\
