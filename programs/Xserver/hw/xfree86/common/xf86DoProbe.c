@@ -62,11 +62,24 @@ DoProbe()
     /* Call all of the probe functions, reporting the results. */
     for (i = 0; i < xf86NumDrivers; i++) {
 	probeResult = FALSE;
-	if (xf86DriverList[i]->Probe != NULL)
+	if (xf86DriverList[i]->Probe != NULL) {
 	    probeResult = xf86DriverList[i]->Probe(xf86DriverList[i],
-						   PROBE_DETECT);
-	ErrorF("Probe in driver `%s' returns %s\n",
+						   PROBE_DETECTISA);
+	    ErrorF("Probe ISA capabilities in driver `%s' returns %s\n",
 	       xf86DriverList[i]->driverName, BOOLTOSTRING(probeResult));
+	}
+	if (xf86DriverList[i]->Probe != NULL) {
+	    probeResult = xf86DriverList[i]->Probe(xf86DriverList[i],
+						   PROBE_DETECTPCI);
+	    ErrorF("Probe PCI capabilities in driver `%s' returns %s\n",
+	       	    xf86DriverList[i]->driverName, BOOLTOSTRING(probeResult));
+	}
+	if (xf86DriverList[i]->Probe != NULL) {
+	    probeResult = xf86DriverList[i]->Probe(xf86DriverList[i],
+						   PROBE_DETECTFBDEV);
+	    ErrorF("Probe FBDEV capabilities in driver `%s' returns %s\n",
+	       	    xf86DriverList[i]->driverName, BOOLTOSTRING(probeResult));
+	}
 
 	/* If we have a result, then call XXXIdentify function in driver */
 	if (probeResult) {
