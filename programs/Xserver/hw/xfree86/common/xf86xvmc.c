@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xvmc.c,v 1.4 2003/04/23 21:51:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xvmc.c,v 1.5 2003/08/24 17:36:56 dawes Exp $ */
 
 /*
  * Copyright (c) 2001-2003 by The XFree86 Project, Inc.
@@ -226,4 +226,14 @@ Bool xf86XvMCScreenInit(
 	return FALSE;
 
    return TRUE;
+}
+
+XF86MCAdaptorPtr xf86XvMCCreateAdaptorRec (void)
+{
+   return xcalloc(1, sizeof(XF86MCAdaptorRec));
+}
+
+void xf86XvMCDestroyAdaptorRec(XF86MCAdaptorPtr adaptor)
+{
+   xfree(adaptor);
 }
