@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.30 2000/09/28 20:48:01 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.31 2000/10/21 22:26:20 mvojkovi Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1619,8 +1619,6 @@ CARD32 XAAReverseBitOrder(CARD32 data);
 
 #define XAA_GET_PIXMAP_PRIVATE(pix)\
 	(XAAPixmapPtr)((pix)->devPrivates[XAAPixmapIndex].ptr)
-
-#define SET_SYNC_FLAG(infoRec)	infoRec->NeedToSync = TRUE
 
 #define CHECK_RGB_EQUAL(c) (!((((c) >> 8) ^ (c)) & 0xffff))
 

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.2 2000/11/03 09:52:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.3 2000/11/09 03:24:36 martin Exp $ */
 /*
- * Copyright 2000 ATI Technologies Inc., Markham, Ontario, 
+ * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
  *
  * All Rights Reserved.
@@ -20,7 +20,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
+ * NON-INFRINGEMENT.  IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
  * THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
@@ -72,19 +72,19 @@
 
 #define RADEON_IMAGEWRITE 0     /* Turned off by default - slower in accel */
 
-				/* X and server generic header files */
-#include "Xarch.h"
-#include "xf86.h"
-#include "xf86_ansic.h"
-#include "xf86_OSproc.h"
-#include "xf86fbman.h"
+				/* Driver data structures */
+#include "radeon.h"
+#include "radeon_reg.h"
+#ifdef XF86DRI
+#define _XF86DRI_SERVER_
+#include "r128_dri.h"
+#endif
 
 				/* Line support */
 #include "miline.h"
 
-				/* Driver data structures */
-#include "radeon.h"
-#include "radeon_reg.h"
+				/* X and server generic header files */
+#include "xf86.h"
 
 static struct {
     int rop;
@@ -288,22 +288,22 @@ static void RADEONSetupForSolidLine(ScrnInfoPtr pScrn,
    Mark Vojkovich's linetest program, posted 2Jun99 to devel@xfree86.org.]
 */
 static void RADEONSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
-					      int x1, int y1, int x2, int y2,
+					      int xa, int ya, int xb, int yb,
 					      int flags)
 {
     RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
     int           direction   = 0;
 
-    if (x1 < x2) direction |= RADEON_DST_X_DIR_LEFT_TO_RIGHT;
-    if (y1 < y2) direction |= RADEON_DST_Y_DIR_TOP_TO_BOTTOM;
+    if (xa < xb) direction |= RADEON_DST_X_DIR_LEFT_TO_RIGHT;
+    if (ya < yb) direction |= RADEON_DST_Y_DIR_TOP_TO_BOTTOM;
 
     RADEONWaitForFifo(pScrn, 4);
-    OUTREG(RADEON_DST_Y_X,                  (y1 << 16) | x1);
+    OUTREG(RADEON_DST_Y_X,                  (ya << 16) | xa);
     if (!(flags & OMIT_LAST))
 	OUTREG(RADEON_DP_CNTL_XDIR_YDIR_YMAJOR, direction);
-    OUTREG(RADEON_DST_LINE_START,           (y1 << 16) | x1);
-    OUTREG(RADEON_DST_LINE_END,             (y2 << 16) | x2);
+    OUTREG(RADEON_DST_LINE_START,           (ya << 16) | xa);
+    OUTREG(RADEON_DST_LINE_END,             (yb << 16) | xb);
 }
 
 /* Subsequent XAA solid horizontal and vertical lines */
@@ -362,8 +362,8 @@ static void RADEONSetupForDashedLine(ScrnInfoPtr pScrn,
 
 /* Subsequent XAA dashed line. */
 static void RADEONSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn,
-						int x1, int y1,
-						int x2, int y2,
+						int xa, int ya,
+						int xb, int yb,
 						int flags,
 						int phase)
 {
@@ -371,16 +371,16 @@ static void RADEONSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn,
     unsigned char *RADEONMMIO = info->MMIO;
     int           direction   = 0;
 
-    if (x1 < x2) direction |= RADEON_DST_X_DIR_LEFT_TO_RIGHT;
-    if (y1 < y2) direction |= RADEON_DST_Y_DIR_TOP_TO_BOTTOM;
+    if (xa < xb) direction |= RADEON_DST_X_DIR_LEFT_TO_RIGHT;
+    if (ya < yb) direction |= RADEON_DST_Y_DIR_TOP_TO_BOTTOM;
 
     RADEONWaitForFifo(pScrn, 5);
     if (!(flags & OMIT_LAST))
 	OUTREG(RADEON_DP_CNTL_XDIR_YDIR_YMAJOR, direction);
-    OUTREG(RADEON_DST_Y_X,          (y1 << 16) | x1);
+    OUTREG(RADEON_DST_Y_X,          (ya << 16) | xa);
     OUTREG(RADEON_BRUSH_Y_X,        (phase << 16) | phase);
-    OUTREG(RADEON_DST_LINE_START,   (y1 << 16) | x1);
-    OUTREG(RADEON_DST_LINE_END,     (y2 << 16) | x2);
+    OUTREG(RADEON_DST_LINE_START,   (ya << 16) | xa);
+    OUTREG(RADEON_DST_LINE_END,     (yb << 16) | xb);
 }
 
 /* Setup for XAA screen-to-screen copy.
@@ -426,19 +426,19 @@ static void RADEONSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 
 /* Subsequent XAA screen-to-screen copy. */
 static void RADEONSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
-					       int x1, int y1,
-					       int x2, int y2,
+					       int xa, int ya,
+					       int xb, int yb,
 					       int w, int h)
 {
     RADEONInfoPtr info        = RADEONPTR(pScrn);
     unsigned char *RADEONMMIO = info->MMIO;
 
-    if (info->xdir < 0) x1 += w - 1, x2 += w - 1;
-    if (info->ydir < 0) y1 += h - 1, y2 += h - 1;
+    if (info->xdir < 0) xa += w - 1, xb += w - 1;
+    if (info->ydir < 0) ya += h - 1, yb += h - 1;
 
     RADEONWaitForFifo(pScrn, 3);
-    OUTREG(RADEON_SRC_Y_X,          (y1 << 16) | x1);
-    OUTREG(RADEON_DST_Y_X,          (y2 << 16) | x2);
+    OUTREG(RADEON_SRC_Y_X,          (ya << 16) | xa);
+    OUTREG(RADEON_DST_Y_X,          (yb << 16) | xb);
     OUTREG(RADEON_DST_HEIGHT_WIDTH, (h << 16) | w);
 }
 

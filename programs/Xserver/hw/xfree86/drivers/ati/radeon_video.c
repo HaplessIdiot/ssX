@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.2 2000/11/09 03:24:37 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.3 2000/11/09 10:30:54 alanh Exp $ */
 /*
  * Copyright 2000 Stuart R. Anderson and Metro Link, Inc.
  *
@@ -17,7 +17,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.  IN NO EVENT SHALL
  * ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
@@ -47,30 +47,13 @@
  *   thoroughly, although it appears to work.
  */
 
-#include "xf86.h"
-#include "xf86_OSproc.h"
-#include "xf86Resources.h"
-#include "xf86_ansic.h"
-#include "compiler.h"
-#include "xf86PciInfo.h"
-#include "xf86Pci.h"
-#include "xf86fbman.h"
-#include "regionstr.h"
-
-#include "xf86xv.h"
-#include "xf86Cursor.h"
-#include "Xv.h"
-#include "xaalocal.h"
-#include "dixstruct.h"
-#include "fourcc.h"
-
 #include "radeon.h"
 #include "radeon_reg.h"
 
-/*
- * For Debug
-#define OUTREG(addr, val)   { xf86DrvMsgVerb(pScrn->scrnIndex,X_INFO,1,"OUTREG(%s,%x)\n",#addr,val) ;MMIO_OUT32(RADEONMMIO, addr, val);}
-*/
+#include "xf86.h"
+
+#include "Xv.h"
+#include "fourcc.h"
 
 #define OFF_DELAY       250  /* milliseconds */
 #define FREE_DELAY      15000
@@ -730,7 +713,7 @@ RADEONPutImage(
     if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
 	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
 	/* draw these */
-	XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
+	(*info->accel->FillSolidRects)(pScrn, pPriv->colorKey, GXcopy, ~0,
 					REGION_NUM_RECTS(clipBoxes),
 					REGION_RECTS(clipBoxes));
     }

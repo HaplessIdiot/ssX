@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.14 2000/07/21 21:04:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.16 2000/11/03 18:30:49 eich Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -361,9 +361,19 @@ xf86Int10ExecSetup(xf86Int10InfoPtr pInt)
 static int
 do_vm86(xf86Int10InfoPtr pInt)
 {
-    int retval;
+    int retval, signo;
     
+    xf86InterceptSignals(&signo);
     retval = vm86_rep(VM86S);
+    xf86InterceptSignals(NULL);
+
+    if (signo >= 0) {
+	xf86DrvMsg(pInt->scrnIndex, X_ERROR, "vm86() syscall generated signal %d.\n", signo);
+	dump_registers(pInt);
+	dump_code(pInt);
+	stack_trace(pInt);
+	return 0;
+    }
     
     switch (VM86_TYPE(retval)) {
     case VM86_UNKNOWN:
@@ -371,8 +381,9 @@ do_vm86(xf86Int10InfoPtr pInt)
 	break;
     case VM86_STI:
 	xf86DrvMsg(pInt->scrnIndex,X_ERROR,"vm86_sti :-((\n");
-	stack_trace(pInt);
+	dump_registers(pInt);
 	dump_code(pInt);
+	stack_trace(pInt);
 	return 0;
     case VM86_INTx:
 	pInt->num = VM86_ARG(retval);
@@ -380,6 +391,8 @@ do_vm86(xf86Int10InfoPtr pInt)
 	    xf86DrvMsg(pInt->scrnIndex,
 		    X_ERROR,"Unknown vm86_int: 0x%X\n\n",VM86_ARG(retval));
 	    dump_registers(pInt);
+	    dump_code(pInt);
+	    stack_trace(pInt);
 	    return 0;
 	}
 	/* I'm not sure yet what to do if we can handle ints */

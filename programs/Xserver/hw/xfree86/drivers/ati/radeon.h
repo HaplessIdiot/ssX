@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.2 2000/11/09 03:24:36 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.3 2000/11/09 10:30:53 alanh Exp $ */
 /*
- * Copyright 2000 ATI Technologies Inc., Markham, Ontario, 
+ * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
  *
  * All Rights Reserved.
@@ -20,7 +20,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
+ * NON-INFRINGEMENT.  IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
  * THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
@@ -38,51 +38,25 @@
 #ifndef _RADEON_H_
 #define _RADEON_H_
 
-				/* Xv support */
-#include "xf86xv.h"
-#include "Xv.h"
+#include "xf86str.h"
 
-				/* vgahw module (for VC save/restore only) */
-#include "vgaHW.h"
-
-#include "fbdevhw.h"
+				/* PCI support */
+#include "xf86Pci.h"
 
 				/* XAA and Cursor Support */
 #include "xaa.h"
-#include "xaalocal.h"
 #include "xf86Cursor.h"
 
-
-				/* PCI support */
-#include "xf86PciInfo.h"
-#include "xf86Pci.h"
-
-				/* DDC support */
-#include "xf86DDC.h"
-
-				/* VESA support */
-#include "vbe.h"
+				/* Xv support */
+#include "xf86xv.h"
 
 				/* DRI support */
+#undef XF86DRI			/* Not yet */
 #ifdef XF86DRI
-#include "GL/glxint.h"
-#include "xf86drm.h"
-#include "sarea.h"
 #define _XF86DRI_SERVER_
-#include "xf86dri.h"
-#include "dri.h"
-#include "r128_dri.h"
 #include "r128_dripriv.h"
-#include "r128_sarea.h"
-#endif
-
-#ifdef RENDER
-#include "picturestr.h"
-#endif
-
-/* NOTE: Turn off DRI until it is working */
-#ifdef XF86DRI
-#undef XF86DRI
+#include "dri.h"
+#include "GL/glxint.h"
 #endif
 
 #define RADEON_DEBUG    0       /* Turn off debugging output                */
@@ -383,7 +357,7 @@ extern void        RADEONWaitForIdle(ScrnInfoPtr pScrn);
 extern void        RADEONEngineReset(ScrnInfoPtr pScrn);
 extern void        RADEONEngineFlush(ScrnInfoPtr pScrn);
 
-extern int         RADEONINPLL(ScrnInfoPtr pScrn, int addr);
+extern unsigned    RADEONINPLL(ScrnInfoPtr pScrn, int addr);
 extern void        RADEONWaitForVerticalSync(ScrnInfoPtr pScrn);
 
 extern Bool        RADEONAccelInit(ScreenPtr pScreen);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.23 2000/10/17 16:53:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.24 2000/10/26 11:47:45 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1358,7 +1358,6 @@ getValidBIOSBase(PCITAG tag, int num)
     resPtr tmp, avoid;
     resRange range;
     int n = 0;
-    int maxnum = 5;
     CARD32 biosSize, alignment;
 
     if (!xf86PciVideoInfo) return 0;
@@ -1419,17 +1418,12 @@ getValidBIOSBase(PCITAG tag, int num)
 	    return pvp->biosBase;
 	}
     }
-    if (num >= 0 && num <= 5 && pvp->memBase[num]) 
-      maxnum = num;
-    else {
-      num = 0;
-    }
-    for (; num <= maxnum; num++) {
+    if (num >= 0 && num <= 5 &&
+	pvp->memBase[num] && (pvp->size[num] >= biosSize)) {
 	/* then try suggested memBase */
 	/* keep bios size ! */
 	P_M_RANGE(range,TAG(pvp),pvp->memBase[num],biosSize,ResExcMemBlock);
-	if ( pvp->size[num] >= biosSize && xf86IsSubsetOf(range,m)
-	    && ! ChkConflict(&range,avoid,SETUP)) {
+	if (xf86IsSubsetOf(range,m) && !ChkConflict(&range,avoid,SETUP)) {
 	    xf86FreeResList(avoid);
 	    xf86FreeResList(m);
 	    return pvp->memBase[num];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.100 2000/11/03 18:46:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.102 2000/11/16 19:44:54 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2596,7 +2596,7 @@ xf86ConfigActiveIsaEntity(ScrnInfoPtr pScrn, int entityIndex,
 {
     IsaChipsets *i_id;
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
-    if (!pEnt) return pScrn;
+    if (!pEnt) return FALSE;
  
     if (!pEnt->active || !(pEnt->location.type == BUS_ISA)) {
         xfree(pEnt);
@@ -2626,7 +2626,7 @@ xf86ConfigActivePciEntity(ScrnInfoPtr pScrn, int entityIndex,
 {
     PciChipsets *p_id;
     EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
-    if (!pEnt) return pScrn;
+    if (!pEnt) return FALSE;
  
     if (!pEnt->active || !(pEnt->location.type == BUS_PCI)) {
         xfree(pEnt);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.33 2000/10/10 22:35:35 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.34 2000/10/21 22:26:20 mvojkovi Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1327,6 +1327,8 @@ typedef struct _XAAInfoRec {
 #endif
     
 } XAAInfoRec, *XAAInfoRecPtr;
+
+#define SET_SYNC_FLAG(infoRec)	(infoRec)->NeedToSync = TRUE
 
 
 Bool 

@@ -25,14 +25,17 @@
  *
  * Author: Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.1 2000/06/17 00:03:26 martin Exp $
  *
  */
 
 #ifndef _XF86DRI_R128_H_
 #define _XF86DRI_R128_H_
 
-/* WARNING: If you change any of these defines, make sure to change
+#include "X11/Xmd.h"
+
+/*
+ * WARNING: If you change any of these defines, make sure to change
  * the kernel include file as well (r128_drm.h)
  */
 

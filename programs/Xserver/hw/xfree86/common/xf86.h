@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.142 2000/09/19 12:46:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.143 2000/10/30 23:02:10 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -177,6 +177,7 @@ pointer xf86AddInputHandler(int fd, InputHandlerProc proc, pointer data);
 int xf86RemoveInputHandler(pointer handler);
 void xf86DisableInputHandler(pointer handler);
 void xf86EnableInputHandler(pointer handler);
+void xf86InterceptSignals(int *signo);
 
 /* xf86Helper.c */
 

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.1 2000/11/02 16:55:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.2 2000/11/09 03:24:35 martin Exp $ */
 /*
- * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario, 
+ * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
  *                      VA Linux Systems Inc., Fremont, California.
  *
@@ -21,7 +21,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
+ * NON-INFRINGEMENT.  IN NO EVENT SHALL ATI, PRECISION INSIGHT, VA LINUX
  * SYSTEMS AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
@@ -80,23 +80,19 @@
 #define R128_IMAGEWRITE 0       /* Disable ImageWrites - faster in software */
 #define R128_TRAPEZOIDS 0       /* Trapezoids don't work               */
 
-				/* X and server generic header files */
-#include "Xarch.h"
-#include "xf86.h"
-#include "xf86_ansic.h"
-#include "xf86_OSproc.h"
-#include "xf86fbman.h"
+				/* Driver data structures */
+#include "r128.h"
+#include "r128_reg.h"
+#ifdef XF86DRI
+#define _XF86DRI_SERVER_
+#include "r128_dri.h"
+#endif
 
 				/* Line support */
 #include "miline.h"
 
-				/* XAA and cursor support */
-#include "xaa.h"
-#include "xf86Cursor.h"
-
-				/* Driver data structures */
-#include "r128.h"
-#include "r128_reg.h"
+				/* X and server generic header files */
+#include "xf86.h"
 
 static struct {
     int rop;
@@ -498,19 +494,19 @@ static void R128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 
 /* Subsequent XAA screen-to-screen copy. */
 static void R128SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
-					     int x1, int y1,
-					     int x2, int y2,
+					     int xa, int ya,
+					     int xb, int yb,
 					     int w, int h)
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
 
-    if (info->xdir < 0) x1 += w - 1, x2 += w - 1;
-    if (info->ydir < 0) y1 += h - 1, y2 += h - 1;
+    if (info->xdir < 0) xa += w - 1, xb += w - 1;
+    if (info->ydir < 0) ya += h - 1, yb += h - 1;
 
     R128WaitForFifo(pScrn, 3);
-    OUTREG(R128_SRC_Y_X,          (y1 << 16) | x1);
-    OUTREG(R128_DST_Y_X,          (y2 << 16) | x2);
+    OUTREG(R128_SRC_Y_X,          (ya << 16) | xa);
+    OUTREG(R128_DST_Y_X,          (yb << 16) | xb);
     OUTREG(R128_DST_HEIGHT_WIDTH, (h << 16) | w);
 }
 
@@ -965,7 +961,7 @@ void R128EngineInit(ScrnInfoPtr pScrn)
 #ifdef XF86DRI
     /* FIXME: When direct rendering is enabled, we should use the CCE to
        draw 2D commands */
-static void R128CCEAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
+static void R128CCEAccelInit(XAAInfoRecPtr a)
 {
     a->Flags                            = 0;
 
@@ -1076,7 +1072,7 @@ Bool R128AccelInit(ScreenPtr pScreen)
 #ifdef XF86DRI
     /* FIXME: When direct rendering is enabled, we should use the CCE to
        draw 2D commands */
-    if (info->CCE2D) R128CCEAccelInit(pScrn, a);
+    if (info->CCE2D) R128CCEAccelInit(a);
     else
 #endif
 	R128MMIOAccelInit(pScrn, a);

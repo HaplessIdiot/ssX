@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/util.c,v 1.4 1999/02/25 06:01:04 dawes Exp $ */
+/* $XFree86: xc/programs/twm/util.c,v 1.5 2000/10/24 22:45:15 dawes Exp $ */
 
 
 /***********************************************************************
@@ -791,7 +791,7 @@ I18N_FetchName(dpy, w, winname)
     if (!status || !text_prop.value || !text_prop.nitems) return 0;
     if (text_prop.encoding == XA_STRING) {
 	if (!text_prop.value) {*winname = NULL; return 0;}
-	*winname = (char *)strdup(text_prop.value);
+	*winname = (char *)strdup((char *)text_prop.value);
 	XFree(text_prop.value);
 	return 1;
     } else {
@@ -819,7 +819,7 @@ I18N_GetIconName(dpy, w, iconname)
     if (!status || !text_prop.value || !text_prop.nitems) return 0;
     if (text_prop.encoding == XA_STRING) {
 	if (!text_prop.value) {*iconname = NULL; return 0;}
-	*iconname = (char *)strdup(text_prop.value);
+	*iconname = (char *)strdup((char *)text_prop.value);
 	XFree(text_prop.value);
 	return 1;
     } else {

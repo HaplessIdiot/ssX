@@ -24,7 +24,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/common/hwlog.h,v 1.2 2000/06/22 16:59:23 tsi Exp $ */
  
 /* Usage:
  * - use mgaError for error messages. Always write to X error and log file.
@@ -85,8 +85,8 @@ static __inline__ int hwOpenLog(const char *f, char *prefix) { hwlog.prefix=pref
 static __inline__ int hwIsLogReady( void ) { return 0; }
 static __inline__ int hwGetLogLevel( void ) { return -1; }
 static __inline__ int hwLogLevel(int level) { return 0; }
-static __inline__ void hwLog(int level, const char *format, ...) {}
-static __inline__ void hwMsg(int level, const char *format, ...) {}
+static void hwLog(int level, const char *format, ...) {}
+static void hwMsg(int level, const char *format, ...) {}
 
 #define hwCloseLog()
 #define hwSetLogLevel(x)

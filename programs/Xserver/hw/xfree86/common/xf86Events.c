@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.99 2000/11/03 18:46:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.100 2000/11/06 19:24:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1062,13 +1062,29 @@ xf86RemoveEnabledDevice(InputInfoPtr pInfo)
     }
 }
 
+static int *xf86SignalIntercept = NULL;
+
+void
+xf86InterceptSignals(int *signo)
+{
+    if ((xf86SignalIntercept = signo))
+	*signo = -1;
+}
+
 /*
  * xf86SigHandler --
- *    Catch unexpected signals and exit cleanly.
+ *    Catch unexpected signals and exit or continue cleanly.
  */
 void
 xf86SigHandler(int signo)
 {
+  if (xf86SignalIntercept && (*xf86SignalIntercept < 0)) {
+    /* Re-arm handler just in case */
+    (void) signal(signo, xf86SigHandler);
+    *xf86SignalIntercept = signo;
+    return;
+  }
+
   signal(signo,SIG_IGN);
   xf86Info.caughtSignal = TRUE;
 #ifdef XF86BIGFONT

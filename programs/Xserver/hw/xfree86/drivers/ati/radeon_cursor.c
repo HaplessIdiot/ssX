@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.1 2000/11/02 16:55:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.2 2000/11/09 03:24:36 martin Exp $ */
 /*
- * Copyright 2000 ATI Technologies Inc., Markham, Ontario, 
+ * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
  *
  * All Rights Reserved.
@@ -20,7 +20,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NON-INFRINGEMENT. IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
+ * NON-INFRINGEMENT.  IN NO EVENT SHALL ATI, VA LINUX SYSTEMS AND/OR
  * THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
@@ -44,16 +44,12 @@
  *
  */
 
-				/* X and server generic header files */
-#include "Xarch.h"
-#include "xf86.h"
-#include "xf86_ansic.h"
-#include "xf86_OSproc.h"
-#include "xf86fbman.h"
-
 				/* Driver data structures */
 #include "radeon.h"
 #include "radeon_reg.h"
+
+				/* X and server generic header files */
+#include "xf86.h"
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 #define P_SWAP32( a , b )                 \

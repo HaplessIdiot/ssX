@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.41 2000/10/20 14:58:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.43 2000/11/03 18:46:06 eich Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -161,7 +161,7 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
     i = nDevToConfig++;
     DevToConfig =
 	xnfrealloc(DevToConfig, nDevToConfig * sizeof(DevToConfigRec));
-#if 1
+#if 0   /* Doesn't work when a driver detects more than one adapter */
     if (i > 0 && isPrimary) {
         memmove(DevToConfig + 1,DevToConfig,
 	       (nDevToConfig - 1) * sizeof(DevToConfigRec));
@@ -698,9 +698,9 @@ DoConfigure()
     xf86config->conf_modules = configureModuleSection();
     xf86config->conf_flags = configureFlagsSection();
     xf86config->conf_videoadaptor_lst = configureVideoAdaptorSection();
-    xf86config->conf_modes_lst = configureModesSection();
+/*    xf86config->conf_modes_lst = configureModesSection(); */
     xf86config->conf_vendor_lst = configureVendorSection();
-/*    xf86config->conf_dri = configureDRISection();*/
+/*    xf86config->conf_dri = configureDRISection(); */
     xf86config->conf_input_lst = configureInputSection();
     xf86config->conf_layout_lst = configureLayoutSection();
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.38 2000/10/28 01:42:27 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.39 2000/11/16 19:45:04 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -399,7 +399,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 #ifdef DEBUG
     ErrorF("base: %lx aligned base: %lx\n",base, base + alignOff);
 #endif
-    return base + alignOff;
+    return (char *)base + alignOff;
 }
     
 static void
