@@ -115,6 +115,49 @@ typedef struct _Picture		*PicturePtr;
 
 #define PICT_g1		PICT_FORMAT(1,PICT_TYPE_GRAY,0,0,0,0)
 
+/*
+ * When the default visual is writable and not Direct, these control the 
+ * selection of colors allocated for drawing to Pictures.  The default
+ * policy depends on the size of the colormap:
+ *
+ * Size		Defualt Policy
+ * ----------------------------
+ *  < 64	PolicyMono
+ *  < 256	PolicyGray
+ *  256		PolicyColor
+ *
+ * The actual allocation code lives in miindex.c, and so is
+ * austensibly server dependent, but that code does:
+ *
+ * PolicyMono	    Allocate no additional colors, use black and white
+ * PolicyGray	    Allocate 13 gray levels (11 cells used)
+ * PolicyColor	    Allocate a 4x4x4 cube and 13 gray levels (71 cells used)
+ *
+ * Here's a picture to help understand how many colors are
+ * actually allocated (this is just the gray ramp):
+ *
+ *                 gray level
+ * all   0000 1555 2aaa 4000 5555 6aaa 8000 9555 aaaa bfff d555 eaaa ffff
+ * b/w   0000                                                        ffff
+ * 4x4x4                     5555                aaaa
+ * extra      1555 2aaa 4000      6aaa 8000 9555      bfff d555 eaaa
+ *
+ * The default colormap supplies two gray levels (black/white), the
+ * 4x4x4 cube allocates another two and nine more are allocated to fill
+ * in the 13 levels.  When the 4x4x4 cube is not allocated, a total of
+ * 11 cells are allocated.
+ */   
+
+#define PictureCmapPolicyInvalid    -1
+#define PictureCmapPolicyDefault    0
+#define PictureCmapPolicyMono	    1
+#define PictureCmapPolicyGray	    2
+#define PictureCmapPolicyColor	    3
+
+extern int  PictureCmapPolicy;
+
+int	PictureParseCmapPolicy (const char *name);
+
 /* Fixed point updates from Carl Worth, USC, Information Sciences Institute */
 
 #ifdef WIN32
