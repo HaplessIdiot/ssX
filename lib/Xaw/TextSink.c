@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.15 2000/06/15 20:49:58 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.16 2000/09/26 15:56:55 tsi Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -1153,7 +1153,8 @@ _XawTextSinkGetProperty(XawTextPropertyList *list, XrmQuark property)
 {
     if (property != NULLQUARK && list && list->properties) {
 	XawTextProperty **ptr = (XawTextProperty**)
-	    bsearch((void*)property, list->properties, list->num_properties,
+	    bsearch((void*)(long)property,
+		    list->properties, list->num_properties,
 		    sizeof(XawTextProperty*), bcmp_qident);
 
 	if (ptr)
@@ -1489,7 +1490,7 @@ XawTextSinkConvertPropertyList(String name, String spec, Screen *screen,
     String str, tok, tmp;
 
     if (prop_lists) ptr = (XawTextPropertyList**)
-	bsearch((void*)qname, prop_lists, num_prop_lists,
+	bsearch((void*)(long)qname, prop_lists, num_prop_lists,
 		sizeof(XawTextPropertyList*), bcmp_qident);
     if (ptr) {
 	propl = *ptr;
@@ -1722,7 +1723,8 @@ CvtStringToPropertyList(Display *dpy, XrmValue *args, Cardinal *num_args,
     if (w) {
 	XawTextPropertyList **ptr = NULL;
 	if (prop_lists) ptr = (XawTextPropertyList**)
-	    bsearch((void*)XrmStringToQuark(name), prop_lists, num_prop_lists,
+	    bsearch((void*)(long)XrmStringToQuark(name),
+		    prop_lists, num_prop_lists,
 		    sizeof(XawTextPropertyList*), bcmp_qident);
 
 	if (ptr) {
