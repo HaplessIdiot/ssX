@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h,v 1.76 94/04/17 20:10:31 gildea Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.5 1994/12/02 05:38:53 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.6 1994/12/02 07:40:39 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -353,28 +353,30 @@ char *cpp_argv[ARGUMENTS] = {
 	"-Di386",
 	"-DSVR4",
 # endif
-# ifdef ISC
+# ifdef SYSV
 	"-Di386",
+	"-DSYSV",
+#  ifdef ISC
 	"-DISC",
-#  ifdef ISC40
+#   ifdef ISC40
 	"-DISC40",       /* ISC 4.0 */
-#  else
-#   ifdef ISC202
-	"-DISC202",      /* ISC 2.0.2 */
 #   else
-#    ifdef ISC30
-	"-DISC30",       /* ISC 3.0 */
+#    ifdef ISC202
+	"-DISC202",      /* ISC 2.0.2 */
 #    else
+#     ifdef ISC30
+	"-DISC30",       /* ISC 3.0 */
+#     else
 	"-DISC22",       /* ISC 2.2.1 */
+#     endif
 #    endif
 #   endif
 #  endif
-# endif
-# ifdef SCO
-	"-Di386",
+#  ifdef SCO
 	"-DSCO",
-#  ifdef SCO324
+#   ifdef SCO324
 	"-DSCO324",
+#   endif
 #  endif
 # endif
 # ifdef ESIX

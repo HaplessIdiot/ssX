@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.8 94/03/29 15:54:11 gildea Exp $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.1 1994/11/22 02:34:16 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.2 1994/11/27 07:02:04 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
@@ -31,7 +31,8 @@ SimpleProgramTarget(lndir)
 
 InstallNamedProg(xmkmf,xmkmf,$(BINDIR))
 InstallManPage(xmkmf,$(MANDIR))
-#if emxos2
+
+#if defined(OS2Architecture)
 InstallNamedProg(mkdirhier.cmd,mkdirhier.cmd,$(BINDIR))
 #else
 InstallNamedProg(mkdirhier.sh,mkdirhier,$(BINDIR))
@@ -43,7 +44,7 @@ InstallNamedProg(makedepend,makedepend,$(BINDIR))
 #if SystemV || SystemV4
 InstallNamedProg(bsdinst.sh,bsdinst,$(BINDIR))
 #endif
-#if emxos2
+#if defined(OS2Architecture)
 InstallNamedProg(indir.cmd,indir.cmd,$(BINDIR))
 InstallNamedProg(os2inst.cmd,os2inst.cmd,$(BINDIR))
 #endif
