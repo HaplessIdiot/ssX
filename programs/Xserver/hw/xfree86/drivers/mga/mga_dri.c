@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.12 2000/11/13 23:31:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.13 2000/12/01 14:28:57 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -254,9 +254,8 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
 	 pMGAConfigPtrs[i] = &pMGAConfigs[i];
 
       i = 0;
-      depth = 1;
       for (accum = 0; accum <= 1; accum++) {
-         for (stencil = 0; stencil <= 1; stencil++) { 
+         for (depth = 0; depth <= 1; depth++) { /* and stencil */
             for (db=1; db>=0; db--) {
                pConfigs[i].vid = -1;
                pConfigs[i].class = -1;
@@ -286,17 +285,14 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
                   pConfigs[i].doubleBuffer = FALSE;
                pConfigs[i].stereo = FALSE;
                pConfigs[i].bufferSize = 32;
-               if (depth)
-		  if (stencil) 
+               if (depth) {
 		     pConfigs[i].depthSize = 24;
-		  else
-		     pConfigs[i].depthSize = 32;
-               else 
-                  pConfigs[i].depthSize = 0;
-               if (stencil)
-                  pConfigs[i].stencilSize = 8;
-               else
-                  pConfigs[i].stencilSize = 0;
+                     pConfigs[i].stencilSize = 8;
+               }
+               else {
+                     pConfigs[i].depthSize = 0;
+                     pConfigs[i].stencilSize = 0;
+               }
                pConfigs[i].auxBuffers = 0;
                pConfigs[i].level = 0;
                if (accum)
