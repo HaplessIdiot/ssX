@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.16 2002/12/04 21:38:34 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.17 2003/05/08 09:25:34 herrb Exp $
 
 #include <Threads.tmpl>
 
@@ -212,6 +212,18 @@ XCOMM No built-in drivers. This is the usual case.
 #endif
 
 #endif /* BuildXF86DRI */
+
+#if defined(DarwinArchitecture) && BuildAppleDRI
+   APPLEOBJS = appledri.o dri_dispatch.o dri_driver.o dri_glx.o x-list.o x-hash.o
+     DRIOBJS = $(APPLEOBJS:%.o=$(GLXLIBSRC)/apple/%.o)
+    DRIUOBJS = $(APPLEOBJS:%.o=$(GLXLIBSRC)/apple/unshared/%.o)
+    DRIDOBJS = $(APPLEOBJS:%.o=$(GLXLIBSRC)/apple/debugger/%.o)
+    DRIPOBJS = $(APPLEOBJS:%.o=$(GLXLIBSRC)/apple/profiled/%.o)
+
+OTHERREQUIREDLIBS = \
+	XpluginLibrary -framework OpenGL -sub_umbrella OpenGL \
+	-framework ApplicationServices -framework CoreFoundation
+#endif
 
 /*
  * Note: DRIDIRS is empty for !BuildXF86DRI, and DRVSUBDIRS is empty

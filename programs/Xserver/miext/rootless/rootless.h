@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.2 2003/04/30 23:15:35 torrey Exp $ */
 
 #ifndef _ROOTLESS_H
 #define _ROOTLESS_H
@@ -179,7 +179,6 @@ typedef void (*RootlessReshapeFrameProc)
 
 /*
  * Unmap a frame.
- *  Drawing is stopped before this is called.
  *
  *  wid         Frame id
  */
@@ -234,6 +233,18 @@ typedef void (*RootlessUpdateRegionProc)
 typedef void (*RootlessDamageRectsProc)
     (RootlessFrameID wid, int nrects, const BoxRec *rects,
      int shift_x, int shift_y);
+
+/*
+ * Switch the window associated with a frame. (Optional)
+ *  When a framed window is reparented, the frame is resized and set to
+ *  use the new top-level parent. If defined this function will be called
+ *  afterwards for implementation specific bookkeeping.
+ *
+ *  pFrame      Frame whose window has switched
+ *  oldWin      Previous window wrapped by this frame
+ */
+typedef void (*RootlessSwitchWindowProc)
+    (RootlessWindowPtr pFrame, WindowPtr oldWin);
 
 /*
  * Copy bytes. (Optional)
@@ -299,6 +310,9 @@ typedef struct _RootlessFrameProcs {
     RootlessDamageRectsProc DamageRects;
 #endif
 
+    /* Optional frame functions */
+    RootlessSwitchWindowProc SwitchWindow;
+
     /* Optional acceleration functions */
     RootlessCopyBytesProc CopyBytes;
     RootlessFillBytesProc FillBytes;
@@ -306,10 +320,23 @@ typedef struct _RootlessFrameProcs {
 } RootlessFrameProcsRec, *RootlessFrameProcsPtr;
 
 
-// Initialize rootless mode on the given screen.
+/*
+ * Initialize rootless mode on the given screen.
+ */
 Bool RootlessInit(ScreenPtr pScreen, RootlessFrameProcsPtr procs);
 
-// Return the rootless frame for the given window or NULL if it's not framed
-RootlessWindowPtr RootlessFrameForWindow(WindowPtr pWin);
+/*
+ * Return the frame ID for the physical window displaying the given window. 
+ *
+ *  create      If true and the window has no frame, attempt to create one
+ */
+RootlessFrameID RootlessFrameForWindow(WindowPtr pWin, Bool create);
+
+/*
+ *  Return the top-level parent of a window.
+ *   The root is the top-level parent of itself, even though the root is
+ *   not otherwise considered to be a top-level window.
+ */
+WindowPtr TopLevelParent(WindowPtr pWindow);
 
 #endif /* _ROOTLESS_H */

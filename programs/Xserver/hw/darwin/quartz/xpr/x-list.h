@@ -27,7 +27,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-list.h,v 1.1 2003/04/30 23:15:42 torrey Exp $ */
 
 #ifndef X_LIST_H
 #define X_LIST_H 1
@@ -45,30 +45,34 @@ struct x_list_struct {
 # define X_PFX(x) x_ ## x
 #endif
 
-extern void X_PFX (list_free_1) (x_list *node);
-extern x_list *X_PFX (list_prepend) (x_list *lst, void *data);
+#ifndef X_EXTERN
+# define X_EXTERN __private_extern__
+#endif
 
-extern x_list *X_PFX (list_append) (x_list *lst, void *data);
-extern x_list *X_PFX (list_remove) (x_list *lst, void *data);
-extern void X_PFX (list_free) (x_list *lst);
+X_EXTERN void X_PFX (list_free_1) (x_list *node);
+X_EXTERN x_list *X_PFX (list_prepend) (x_list *lst, void *data);
 
-extern x_list *X_PFX (list_copy) (x_list *lst);
-extern x_list *X_PFX (list_reverse) (x_list *lst);
-extern x_list *X_PFX (list_find) (x_list *lst, void *data);
-extern x_list *X_PFX (list_nth) (x_list *lst, int n);
-extern x_list *X_PFX (list_filter) (x_list *src,
-				    int (*pred) (void *item, void *data),
-				    void *data);
-extern x_list *X_PFX (list_map) (x_list *src,
-				 void *(*fun) (void *item, void *data),
-				 void *data);
+X_EXTERN x_list *X_PFX (list_append) (x_list *lst, void *data);
+X_EXTERN x_list *X_PFX (list_remove) (x_list *lst, void *data);
+X_EXTERN void X_PFX (list_free) (x_list *lst);
 
-extern unsigned int X_PFX (list_length) (x_list *lst);
-extern void X_PFX (list_foreach) (x_list *lst, void (*fun)
-				  (void *data, void *user_data),
-				  void *user_data);
+X_EXTERN x_list *X_PFX (list_copy) (x_list *lst);
+X_EXTERN x_list *X_PFX (list_reverse) (x_list *lst);
+X_EXTERN x_list *X_PFX (list_find) (x_list *lst, void *data);
+X_EXTERN x_list *X_PFX (list_nth) (x_list *lst, int n);
+X_EXTERN x_list *X_PFX (list_filter) (x_list *src,
+				      int (*pred) (void *item, void *data),
+				      void *data);
+X_EXTERN x_list *X_PFX (list_map) (x_list *src,
+				   void *(*fun) (void *item, void *data),
+				   void *data);
 
-extern x_list *X_PFX (list_sort) (x_list *lst, int (*less) (const void *,
+X_EXTERN unsigned int X_PFX (list_length) (x_list *lst);
+X_EXTERN void X_PFX (list_foreach) (x_list *lst, void (*fun)
+				    (void *data, void *user_data),
+				    void *user_data);
+
+X_EXTERN x_list *X_PFX (list_sort) (x_list *lst, int (*less) (const void *,
 							    const void *));
 
 #endif /* X_LIST_H */

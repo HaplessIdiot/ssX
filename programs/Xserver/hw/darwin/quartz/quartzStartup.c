@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.3 2003/01/19 06:35:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.4 2003/05/14 05:27:56 torrey Exp $ */
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -121,8 +121,11 @@ static void LoadGlxBundle(void)
     // Choose the bundle to load
     ErrorF("Loading GLX bundle ");
     if (quartzUseAGL) {
-        bundleName = CFSTR("glxAGL.bundle");
-        ErrorF("glxAGL.bundle (using Apple's OpenGL)\n");
+        bundleName = CFStringCreateWithCStringNoCopy(kCFAllocatorDefault,
+                                                     quartzOpenGLBundle,
+                                                     kCFStringEncodingASCII,
+                                                     NULL);
+        ErrorF("%s (using Apple's OpenGL)\n", quartzOpenGLBundle);
     } else {
         bundleName = CFSTR("glxMesa.bundle");
         ErrorF("glxMesa.bundle (using Mesa)\n");

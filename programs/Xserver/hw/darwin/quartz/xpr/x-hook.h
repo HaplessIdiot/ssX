@@ -1,7 +1,7 @@
-/* x-hash.h -- basic hash table class
+/* x-hook.h -- lists of function,data pairs to call.
    $Id$
 
-   Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
+   Copyright (c) 2003 Apple Computer, Inc. All rights reserved.
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation files
@@ -27,36 +27,18 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-hash.h,v 1.1 2003/04/30 23:15:42 torrey Exp $ */
+/* $XFree86: $ */
 
-#ifndef X_HASH_H
-#define X_HASH_H 1
+#ifndef X_HOOK_H
+#define X_HOOK_H 1
 
-typedef struct x_hash_table_struct x_hash_table;
-
-typedef int (x_compare_fun) (const void *a, const void *b);
-typedef unsigned int (x_hash_fun) (const void *k);
-typedef void (x_destroy_fun) (void *x);
-typedef void (x_hash_foreach_fun) (void *k, void *v, void *data);
-
-/* for X_PFX and X_EXTERN */
 #include "x-list.h"
 
-X_EXTERN x_hash_table *X_PFX (hash_table_new) (x_hash_fun *hash,
-					       x_compare_fun *compare,
-					       x_destroy_fun *key_destroy,
-					       x_destroy_fun *value_destroy);
-X_EXTERN void X_PFX (hash_table_free) (x_hash_table *h);
+typedef void x_hook_function (void *arg, void *data);
 
-X_EXTERN unsigned int X_PFX (hash_table_size) (x_hash_table *h);
+X_EXTERN x_list *X_PFX (hook_add) (x_list *lst, x_hook_function *fun, void *data);
+X_EXTERN x_list *X_PFX (hook_remove) (x_list *lst, x_hook_function *fun, void *data);
+X_EXTERN void X_PFX (hook_run) (x_list *lst, void *arg);
+X_EXTERN void X_PFX (hook_free) (x_list *lst);
 
-X_EXTERN void X_PFX (hash_table_insert) (x_hash_table *h, void *k, void *v);
-X_EXTERN void X_PFX (hash_table_replace) (x_hash_table *h, void *k, void *v);
-X_EXTERN void X_PFX (hash_table_remove) (x_hash_table *h, void *k);
-X_EXTERN void *X_PFX (hash_table_lookup) (x_hash_table *h,
-					  void *k, void **k_ret);
-X_EXTERN void X_PFX (hash_table_foreach) (x_hash_table *h,
-					  x_hash_foreach_fun *fun,
-					  void *data);
-
-#endif /* X_HASH_H */
+#endif /* X_HOOK_H */

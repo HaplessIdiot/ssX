@@ -27,7 +27,7 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-hash.c,v 1.1 2003/04/30 23:15:42 torrey Exp $ */
 
 #include "x-hash.h"
 #include "x-list.h"
@@ -140,7 +140,7 @@ hash_table_split (x_hash_table *h)
     free (old);
 }
 
-x_hash_table *
+X_EXTERN x_hash_table *
 X_PFX (hash_table_new) (x_hash_fun *hash,
 			x_compare_fun *compare,
 			x_destroy_fun *key_destroy,
@@ -169,7 +169,7 @@ X_PFX (hash_table_new) (x_hash_fun *hash,
     return h;
 }
 
-void
+X_EXTERN void
 X_PFX (hash_table_free) (x_hash_table *h)
 {
     int n, i;
@@ -194,7 +194,7 @@ X_PFX (hash_table_free) (x_hash_table *h)
     free (h);
 }
 
-unsigned int
+X_EXTERN unsigned int
 X_PFX (hash_table_size) (x_hash_table *h)
 {
     assert (h != NULL);
@@ -249,19 +249,19 @@ hash_table_modify (x_hash_table *h, void *k, void *v, int replace)
     h->total_keys++;
 }
 
-void
+X_EXTERN void
 X_PFX (hash_table_insert) (x_hash_table *h, void *k, void *v)
 {
     hash_table_modify (h, k, v, 0);
 }
 
-void
+X_EXTERN void
 X_PFX (hash_table_replace) (x_hash_table *h, void *k, void *v)
 {
     hash_table_modify (h, k, v, 1);
 }
 
-void
+X_EXTERN void
 X_PFX (hash_table_remove) (x_hash_table *h, void *k)
 {
     unsigned int hash_value;
@@ -289,7 +289,7 @@ X_PFX (hash_table_remove) (x_hash_table *h, void *k)
     }
 }
 
-void *
+X_EXTERN void *
 X_PFX (hash_table_lookup) (x_hash_table *h, void *k, void **k_ret)
 {
     unsigned int hash_value;
@@ -319,7 +319,7 @@ X_PFX (hash_table_lookup) (x_hash_table *h, void *k, void **k_ret)
     return 0;
 }
 
-void
+X_EXTERN void
 X_PFX (hash_table_foreach) (x_hash_table *h,
 			    x_hash_foreach_fun *fun, void *data)
 {

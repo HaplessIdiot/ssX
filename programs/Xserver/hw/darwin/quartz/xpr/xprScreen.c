@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.1 2003/04/30 23:15:44 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "xpr.h"
@@ -35,8 +35,11 @@
 #include "darwin.h"
 #include "aqua.h"
 #include "rootless.h"
+#include "dri.h"
 #include "Xplugin.h"
 
+// Name of GLX bundle for native OpenGL
+const char *quartzOpenGLBundle = "glxCGL.bundle";
 
 /*
  * displayScreenBounds
@@ -154,10 +157,12 @@ AquaDisplayInit(void)
     else
         darwinScreensFound =  1;
 
-    if (xp_init(0) != Success)
+    if (xp_init(XP_IN_BACKGROUND) != Success)
     {
         FatalError("Could not initialize the Xplugin library.");
     }
+
+    AppleDRIExtensionInit();
 }
 
 
@@ -225,6 +230,8 @@ AquaAddScreen(int index, ScreenPtr pScreen)
     dfb->pitch = 0;
     dfb->framebuffer = NULL;
 
+    DRIScreenInit(pScreen);
+
     return TRUE;
 }
 
@@ -250,7 +257,10 @@ AquaSetupScreen(int index, ScreenPtr pScreen)
     quartzUsesNSWindow = FALSE;
 
     // Initialize generic rootless code
-    return xprInit(pScreen);
+    if (!xprInit(pScreen))
+        return FALSE;
+
+    return DRIFinishScreenInit(pScreen);
 }
 
 

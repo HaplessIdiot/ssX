@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.35 2003/04/30 23:24:11 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.36 2003/05/08 05:47:12 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -83,10 +83,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #if DarwinQuartzSupport
 
-# ifndef GlxUseAqua
-#  define GlxUseAqua            YES
-# endif
-
 /*
  * Before Mac OS X 10.1 a number of features were missing or broken.
  */
@@ -115,11 +111,27 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
    XPLIBDIR = XpLibDir
 #  define HasXplugin            YES
 #  define XpluginLibrary        Concat(-L,$(XPLIBDIR)) -lXplugin
+#  ifndef XpIncDir
+#   define XpIncDir             $(SERVERSRC)/hw/darwin/quartz/xpr
+#  endif
+   XPINCDIR = XpIncDir
 # endif
 
 # ifndef HasXplugin
 #  define HasXplugin            NO
 #  define XpluginLibrary        /**/
+# endif
+
+# ifndef BuildAppleDRI
+#  if HasXplugin
+#   define BuildAppleDRI       YES
+#  else
+#   define BuildAppleDRI       NO
+#  endif
+# endif
+
+# if BuildAppleDRI
+#  define GlxExtraDefines -DGLX_DIRECT_RENDERING -DGLX_USE_APPLEGL GlxArchDefines
 # endif
 
 #endif  /* DarwinQuartzSupport */
@@ -220,7 +232,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define BuildXInputLib          YES
 
 /* no Display Power Management extension */
-#define BuildDPMSExt            NO
+#define BuildDPMS               NO
 
 /* no XFree86-Misc extension */
 #define BuildXF86MiscExt        NO

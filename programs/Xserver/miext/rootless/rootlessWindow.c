@@ -48,25 +48,6 @@
 
 
 /*
- * RootlessFrameForWindow
- *  Returns the rootless frame for the given window, or 
- *  NULL if the the window is not inside a frame.
- *  Unrealized windows generally do not have a frame.
- */
-RootlessWindowPtr 
-RootlessFrameForWindow(WindowPtr pWin)
-{
-    WindowPtr top = TopLevelParent(pWin);
-    RootlessWindowPtr winRec;
-
-    if (!top) return NULL;
-    winRec = WINREC(top);
-    if (!winRec) return NULL;
-    return winRec;
-}
-
-
-/*
  * RootlessCreateWindow
  *  For now, don't create a physical window until either the window is
  *  realized, or we really need it (e.g. to attach VRAM surfaces to).
@@ -104,6 +85,26 @@ RootlessCreateWindow(WindowPtr pWin)
 
 
 /*
+ * RootlessDestroyFrame
+ *  Destroy the physical window associated with the given window.
+ */
+static void
+RootlessDestroyFrame(WindowPtr pWin, RootlessWindowPtr winRec)
+{
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+
+    SCREENREC(pScreen)->imp->DestroyFrame(winRec->wid);
+
+#ifdef ROOTLESS_TRACK_DAMAGE
+    REGION_UNINIT(pScreen, &winRec->damage);
+#endif
+
+    xfree(winRec);
+    WINREC(pWin) = NULL;
+}
+
+
+/*
  * RootlessDestroyWindow
  *  Destroy the physical window associated with the given window.
  */
@@ -114,16 +115,7 @@ RootlessDestroyWindow(WindowPtr pWin)
     Bool result;
 
     if (winRec != NULL) {
-        ScreenPtr pScreen = pWin->drawable.pScreen;
-
-        SCREENREC(pScreen)->imp->DestroyFrame(winRec->wid);
-
-#ifdef ROOTLESS_TRACK_DAMAGE
-        REGION_UNINIT(pScreen, &winRec->damage);
-#endif
-
-        xfree(winRec);
-        WINREC(pWin) = NULL;
+        RootlessDestroyFrame(pWin, winRec);
     }
 
     SCREEN_UNWRAP(pWin->drawable.pScreen, DestroyWindow);
@@ -146,7 +138,7 @@ RootlessGetShape(WindowPtr pWin, RegionPtr pShape)
        Translate by borderWidth to get the outside-relative position. */
 
     REGION_INIT(pScreen, pShape, NullBox, 0);
-    REGION_COPY(pScreen, pShape, wBoundingShape (pWin));
+    REGION_COPY(pScreen, pShape, wBoundingShape(pWin));
     REGION_TRANSLATE(pScreen, pShape, pWin->borderWidth, pWin->borderWidth);
 
     return TRUE;
@@ -368,13 +360,14 @@ RootlessEnsureFrame(WindowPtr pWin)
                                               pShape))
     {
         RL_DEBUG_MSG("implementation failed to create frame!\n");
-        xfree (winRec);
+        xfree(winRec);
+        WINREC(pWin) = NULL;
         return NULL;
     }
 
 #ifdef SHAPE
     if (pShape != NULL)
-        REGION_UNINIT (pScreen, &shape);
+        REGION_UNINIT(pScreen, &shape);
 #endif
 
     return winRec;
@@ -422,6 +415,34 @@ RootlessRealizeWindow(WindowPtr pWin)
 
     RL_DEBUG_MSG("realizewindow end\n");
     return result;
+}
+
+
+/*
+ * RootlessFrameForWindow
+ *  Returns the frame ID for the physical window displaying the given window. 
+ *  If CREATE is true and the window has no frame, attempt to create one.
+ */
+RootlessFrameID
+RootlessFrameForWindow(WindowPtr pWin, Bool create)
+{
+    WindowPtr pTopWin;
+    RootlessWindowRec *winRec;
+
+    pTopWin = TopLevelParent(pWin);
+    if (pTopWin == NULL)
+        return NULL;
+
+    winRec = WINREC(pTopWin);
+
+    if (winRec == NULL && create && pWin->drawable.class == InputOutput) {
+        winRec = RootlessEnsureFrame(pTopWin);
+    }
+
+    if (winRec == NULL)
+        return NULL;
+
+    return winRec->wid;
 }
 
 
@@ -620,9 +641,9 @@ RootlessResizeCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg,
     }
 
     /* Don't update - resize will update everything */
-    REGION_UNINIT (pScreen, &rgnDst);
+    REGION_UNINIT(pScreen, &rgnDst);
 
-    fbValidateDrawable (&pWin->drawable);
+    fbValidateDrawable(&pWin->drawable);
 
     RL_DEBUG_MSG("resizecopywindowFB end\n");
 }
@@ -655,7 +676,7 @@ RootlessCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
     REGION_INIT(pScreen, &rgnDst, NullBox, 0);
     REGION_INTERSECT(pScreen, &rgnDst, &pWin->borderClip, prgnSrc);
 
-    extents = REGION_EXTENTS (pScreen, &rgnDst);
+    extents = REGION_EXTENTS(pScreen, &rgnDst);
     area = (extents->x2 - extents->x1) * (extents->y2 - extents->y1);
 
     /* If the area exceeds threshold, use the implementation's
@@ -689,7 +710,7 @@ RootlessCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
                                             dx, dy);
     }
     else {
-        RootlessStartDrawing (pWin);
+        RootlessStartDrawing(pWin);
 
         fbCopyRegion((DrawablePtr) pWin, (DrawablePtr) pWin,
                      0, &rgnDst, dx, dy, fbCopyWindowProc, 0, 0);
@@ -842,7 +863,7 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
                intersection between old and new bounds, so copy
                everything to the right of or below the intersection. */
 
-            RootlessStartDrawing (pWin);
+            RootlessStartDrawing(pWin);
 
             if (code == WIDTH_SMALLER) {
                 copy_rect.x1 = rect.x2;
@@ -889,7 +910,7 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
     else if (gravity) {
         /* The general case. Just copy everything. */
 
-        RootlessStartDrawing (pWin);
+        RootlessStartDrawing(pWin);
 
         gResizeDeathBits = xalloc(winRec->bytesPerRow * winRec->height);
 
@@ -1179,6 +1200,75 @@ RootlessResizeWindow(WindowPtr pWin, int x, int y,
     }
 
     RL_DEBUG_MSG("resizewindow end\n");
+}
+
+
+/*
+ * RootlessReparentWindow
+ *  Called after a window has been reparented. Generally windows are not
+ *  framed until they are mapped. However, a window may be framed early by the
+ *  implementation calling RootlessFrameForWindow. (e.g. this could be needed
+ *  to attach a VRAM surface to it.) If the window is subsequently reparented
+ *  by the window manager before being mapped, we need to give the frame to
+ *  the new top-level window.
+ */
+void
+RootlessReparentWindow(WindowPtr pWin, WindowPtr pPriorParent)
+{
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    RootlessWindowRec *winRec = WINREC(pWin);
+    WindowPtr pTopWin;
+
+    /* Check that window is not top-level now, but used to be. */
+    if (IsRoot(pWin) || IsRoot(pWin->parent)
+	|| IsTopLevel(pWin) || winRec == NULL)
+    {
+	goto out;
+    }
+
+    /* If the formerly top-level window has a frame, we want to give the
+       frame to its new top-level parent. If we can't do that, we'll just
+       have to jettison it... */
+
+    pTopWin = TopLevelParent(pWin);
+    assert(pTopWin != pWin);
+
+    if (WINREC(pTopWin) != NULL) {
+	/* We're screwed. */
+	RootlessDestroyFrame(pWin, winRec);
+    } else {
+	if (!pTopWin->realized && pWin->realized) {
+            SCREENREC(pScreen)->imp->UnmapFrame(winRec->wid);
+	}
+
+	/* Switch the frame record from one to the other. */
+
+	WINREC(pWin) = NULL;
+	WINREC(pTopWin) = winRec;
+
+	RootlessInitializeFrame(pTopWin, winRec);
+	RootlessReshapeFrame(pTopWin);
+
+        SCREENREC(pScreen)->imp->ResizeFrame(winRec->wid, pScreen,
+                                             winRec->x + SCREEN_TO_GLOBAL_X,
+                                             winRec->y + SCREEN_TO_GLOBAL_Y,
+                                             winRec->width, winRec->height,
+                                             RL_GRAVITY_NONE);
+
+        if (SCREENREC(pScreen)->imp->SwitchWindow) {
+            SCREENREC(pScreen)->imp->SwitchWindow(winRec, pWin);
+        }
+
+	if (pTopWin->realized && !pWin->realized)
+	    winRec->is_reorder_pending = TRUE;
+    }
+
+out:
+    if (SCREENREC(pScreen)->ReparentWindow) {
+        SCREEN_UNWRAP(pScreen, ReparentWindow);
+        pScreen->ReparentWindow(pWin, pPriorParent);
+        SCREEN_WRAP(pScreen, ReparentWindow);
+    }
 }
 
 

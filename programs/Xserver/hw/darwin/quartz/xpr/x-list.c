@@ -27,11 +27,12 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/x-list.c,v 1.1 2003/04/30 23:15:42 torrey Exp $ */
 
 #include "x-list.h"
 #include <stdlib.h>
 #include <assert.h>
+#include <pthread.h>
 
 /* Allocate in ~4k blocks */
 #define NODES_PER_BLOCK 508
@@ -44,19 +45,49 @@ struct x_list_block_struct {
 
 static x_list *freelist;
 
-void
-X_PFX (list_free_1) (x_list *node)
-{
-    assert (node != NULL);
+static pthread_mutex_t freelist_lock = PTHREAD_MUTEX_INITIALIZER;
 
+static inline void
+list_free_1 (x_list *node)
+{
     node->next = freelist;
     freelist = node;
 }
 
-x_list *
+X_EXTERN void
+X_PFX (list_free_1) (x_list *node)
+{
+    assert (node != NULL);
+
+    pthread_mutex_lock (&freelist_lock);
+
+    list_free_1 (node);
+
+    pthread_mutex_unlock (&freelist_lock);
+}
+
+X_EXTERN void
+X_PFX (list_free) (x_list *lst)
+{
+    x_list *next;
+
+    pthread_mutex_lock (&freelist_lock);
+
+    for (; lst != NULL; lst = next)
+    {
+	next = lst->next;
+	list_free_1 (lst);
+    }
+
+    pthread_mutex_unlock (&freelist_lock);
+}
+
+X_EXTERN x_list *
 X_PFX (list_prepend) (x_list *lst, void *data)
 {
     x_list *node;
+
+    pthread_mutex_lock (&freelist_lock);
 
     if (freelist == NULL)
     {
@@ -75,13 +106,15 @@ X_PFX (list_prepend) (x_list *lst, void *data)
     node = freelist;
     freelist = node->next;
 
+    pthread_mutex_unlock (&freelist_lock);
+
     node->next = lst;
     node->data = data;
 
     return node;
 }
 
-x_list *
+X_EXTERN x_list *
 X_PFX (list_append) (x_list *lst, void *data)
 {
     x_list *head = lst;
@@ -97,7 +130,7 @@ X_PFX (list_append) (x_list *lst, void *data)
     return head;
 }
 
-x_list *
+X_EXTERN x_list *
 X_PFX (list_reverse) (x_list *lst)
 {
     x_list *head = NULL, *next;
@@ -113,7 +146,7 @@ X_PFX (list_reverse) (x_list *lst)
     return head;
 }
 
-x_list *
+X_EXTERN x_list *
 X_PFX (list_find) (x_list *lst, void *data)
 {
     for (; lst != NULL; lst = lst->next)
@@ -125,7 +158,7 @@ X_PFX (list_find) (x_list *lst, void *data)
     return NULL;
 }
 
-x_list *
+X_EXTERN x_list *
 X_PFX (list_nth) (x_list *lst, int n)
 {
     while (n-- > 0 && lst != NULL)
@@ -134,7 +167,7 @@ X_PFX (list_nth) (x_list *lst, int n)
     return lst;
 }
 
-x_list *
+X_EXTERN x_list *
 X_PFX (list_filter) (x_list *lst,
 		     int (*pred) (void *item, void *data), void *data)
 {
@@ -149,7 +182,7 @@ X_PFX (list_filter) (x_list *lst,
     return X_PFX (list_reverse) (ret);
 }
 
-x_list *
+X_EXTERN x_list *
 X_PFX (list_map) (x_list *lst,
 		  void *(*fun) (void *item, void *data), void *data)
 {
@@ -163,7 +196,7 @@ X_PFX (list_map) (x_list *lst,
     return X_PFX (list_reverse) (ret);
 }
 
-x_list *
+X_EXTERN x_list *
 X_PFX (list_copy) (x_list *lst)
 {
     x_list *copy = NULL;
@@ -176,7 +209,7 @@ X_PFX (list_copy) (x_list *lst)
     return X_PFX (list_reverse) (copy);
 }
 
-x_list *
+X_EXTERN x_list *
 X_PFX (list_remove) (x_list *lst, void *data)
 {
     x_list **ptr, *node;
@@ -197,19 +230,7 @@ X_PFX (list_remove) (x_list *lst, void *data)
     return lst;
 }
 
-void
-X_PFX (list_free) (x_list *lst)
-{
-    x_list *next;
-
-    for (; lst != NULL; lst = next)
-    {
-	next = lst->next;
-	X_PFX (list_free_1) (lst);
-    }
-}
-
-unsigned int
+X_EXTERN unsigned int
 X_PFX (list_length) (x_list *lst)
 {
     unsigned int n;
@@ -221,7 +242,7 @@ X_PFX (list_length) (x_list *lst)
     return n;
 }
 
-void
+X_EXTERN void
 X_PFX (list_foreach) (x_list *lst,
 		      void (*fun) (void *data, void *user_data),
 		      void *user_data)
@@ -284,7 +305,7 @@ list_sort_1 (x_list *lst, int length,
     return out_head;
 }
 
-x_list *
+X_EXTERN x_list *
 X_PFX (list_sort) (x_list *lst, int (*less) (const void *, const void *))
 {
     int length;

@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprFrame.c,v 1.1 2003/04/30 23:15:42 torrey Exp $ */
 
 #include "xpr.h"
 #include "rootless.h"
@@ -165,6 +165,10 @@ xprCreateFrame(RootlessWindowPtr pFrame, ScreenPtr pScreen,
 void
 xprDestroyFrame(RootlessFrameID wid)
 {
+    pthread_mutex_lock (&window_hash_mutex);
+    x_hash_table_remove (window_hash, wid);
+    pthread_mutex_unlock (&window_hash_mutex);
+
     xp_destroy_window((xp_window_id) wid);
 }
 
@@ -325,6 +329,19 @@ xprDamageRects(RootlessFrameID wid, int nrects, const BoxRec *rects,
 
 
 /*
+ * Called after the window associated with a frame has been switched
+ * to a new top-level parent.
+ */
+void
+xprSwitchWindow(RootlessWindowPtr pFrame, WindowPtr oldWin)
+{
+    DeleteProperty(oldWin, xa_native_window_id());
+
+    xprSetNativeProperty(pFrame);
+}
+
+
+/*
  * Copy area in frame to another part of frame.
  *  Used to accelerate scrolling.
  */
@@ -349,6 +366,7 @@ static RootlessFrameProcsRec xprRootlessProcs = {
     xprStopDrawing,
     xprUpdateRegion,
     xprDamageRects,
+    xprSwitchWindow,
     xp_copy_bytes,
     xp_fill_bytes,
     xprCopyWindow
