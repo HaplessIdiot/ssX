@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.7 2001/11/23 19:50:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/appgroup.c,v 1.8 2001/12/14 19:58:48 dawes Exp $ */
 /*
 Copyright 1996, 1998, 2001  The Open Group
 
@@ -277,7 +277,7 @@ void ProcessAttr (pAppGrp, client, attrib_mask, attribs)
 {
     int i;
 
-    for (i = XagNsingleScreen; i <= XagNappGroupLeader; i++) {
+    for (i = 0; i <= XagNappGroupLeader; i++) {
 	switch (attrib_mask & (1 << i)) {
 	case XagSingleScreenMask:
 	    pAppGrp->single_screen = *attribs;
@@ -500,6 +500,9 @@ int ProcXagGetAttr (client)
     pAppGrp = (AppGroupPtr)SecurityLookupIDByType (client, 
 		(XID)stuff->app_group, RT_APPGROUP, SecurityReadAccess);
     if (!pAppGrp) return XagBadAppGroup;
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequence_number = client->sequence;
     rep.default_root = pAppGrp->default_root;
     rep.root_visual = pAppGrp->root_visual;
     rep.default_colormap = pAppGrp->default_colormap;

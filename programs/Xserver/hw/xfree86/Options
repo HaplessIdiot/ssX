@@ -24,7 +24,7 @@
 !! dealings in this Software without prior written authorization from the
 !! XFree86 Project.
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/Options,v 1.6 2001/10/10 05:47:17 paulo Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/Options,v 1.7 2001/11/03 19:04:06 paulo Exp $
 
 !! XAA options
 xaa.XaaNoCPUToScreenColorExpandFill:\
@@ -159,8 +159,7 @@ Rotate the display clockwise or counterclockwise. This mode is unaccelerated. \
 Default: no rotation.
 
 mga.ShadowFB:\
-Enable or disable use of the shadow framebuffer layer. See shadowfb(4) for \
-further information. Default: off.
+Enable or disable use of the shadow framebuffer layer. Default: off. \
 
 mga.SyncOnGreen:\
 Enable or disable combining the sync signals with the green signal. \

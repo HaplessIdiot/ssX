@@ -1,4 +1,16 @@
 XFree86 4.1.99.3 (xx December 2001)
+ 579. Some newport driver cleanups (#5080, Guido Guenther).
+ 578. Fix XagNsingleScreen definition and some related side-effects (#5077,
+      Chris Bare, from X11R6.6).
+ 577. Fix some doc typos, and remove references to the non-existent
+      shadowfb(4) man page (#5076, David Krause).
+ 576. Pitch calculation updates for the r128 driver (#5074, Michel Dänzer).
+ 575. Updates for VMware SVGA programming documentation (#5073,
+      Jeremy (VMware)).
+ 574. Fix cases where makedepend reports the wrong line number and file when
+      an error occurs (#5072, Mark Snitily, from X11R6.6).
+ 573. Fix differences in libXt behaviour when using poll() compared with
+      when using select() (#5071, Chris Bare, from X11R6.6).
  572. Some warning cleanups for Tru64 (#5069, Antti Tapaninen).
  571. Fix a typo in the mt_us keymap entry (#5067, Nerijus Baliunas).
  570. Add some missing UNDEFINE lines to the iso8859-11 and tis620-2
@@ -14335,4 +14347,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2089 2001/12/17 19:25:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2090 2001/12/17 20:00:40 dawes Exp $

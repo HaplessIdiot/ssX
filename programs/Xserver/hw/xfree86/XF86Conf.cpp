@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.41 1999/07/05 12:01:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.43 1999/12/03 19:17:20 eich Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -400,7 +400,7 @@ XCOMM        Flags		"Interlace"
 XCOMM    EndMode
 
 XCOMM If a monitor has DPMS support, that can be indicated here.  This will
-XCOMM enable DPMS when the montor is used with drivers that support it.
+XCOMM enable DPMS when the monitor is used with drivers that support it.
 
 XCOMM    Option	"dpms"
 

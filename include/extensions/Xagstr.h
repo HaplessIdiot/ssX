@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/Xagstr.h,v 1.3 2001/11/23 19:21:30 dawes Exp $ */
+/* $XFree86: xc/include/extensions/Xagstr.h,v 1.4 2001/12/14 19:53:28 dawes Exp $ */
 /*
 Copyright 1996, 1998, 2001  The Open Group
 
@@ -79,7 +79,7 @@ typedef struct {
 #define sz_xXagQueryVersionReply	32
 
 /* Set AppGroup Attributes masks */
-#define XagSingleScreenMask		1 << XagNsingleScreen
+#define XagSingleScreenMask		1 << 0
 #define XagDefaultRootMask		1 << XagNdefaultRoot
 #define XagRootVisualMask		1 << XagNrootVisual
 #define XagDefaultColormapMask		1 << XagNdefaultColormap

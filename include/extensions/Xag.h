@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/Xag.h,v 1.3 2001/07/29 05:01:10 tsi Exp $ */
+/* $XFree86: xc/include/extensions/Xag.h,v 1.4 2001/12/14 19:53:28 dawes Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -42,7 +42,7 @@ from The Open Group.
 #define XagBadAppGroup			0
 #define XagNumberErrors			(XagBadAppGroup + 1)
 
-#define XagNsingleScreen		0
+#define XagNsingleScreen		7
 #define XagNdefaultRoot			1
 #define XagNrootVisual			2
 #define XagNdefaultColormap		3
