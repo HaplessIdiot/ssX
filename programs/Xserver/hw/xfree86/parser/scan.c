@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.31 2004/02/13 23:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.32 2004/06/01 01:23:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -493,25 +493,28 @@ xf86pathIsSafe(const char *path)
 #endif
 #endif
 
-#define BAIL_OUT		do {									\
-							xf86conffree(result);				\
-							return NULL;						\
-						} while (0)
+#define BAIL_OUT		\
+    do {			\
+	xf86conffree(result);	\
+	return NULL;		\
+    } while (0)
 
-#define CHECK_LENGTH	do {									\
-							if (l > PATH_MAX) {					\
-								BAIL_OUT;						\
-							}									\
-						} while (0)
+#define CHECK_LENGTH		\
+    do {			\
+	if (l > PATH_MAX) {	\
+	    BAIL_OUT;		\
+	}			\
+    } while (0)
 
-#define APPEND_STR(s)	do {									\
-							if (strlen(s) + l > PATH_MAX) {		\
-								BAIL_OUT;						\
-							} else {							\
-								strcpy(result + l, s);			\
-								l += strlen(s);					\
-							}									\
-						} while (0)
+#define APPEND_STR(s)			\
+    do {				\
+	if (strlen(s) + l > PATH_MAX) {	\
+	    BAIL_OUT;			\
+	} else {			\
+	    strcpy(result + l, s);	\
+	    l += strlen(s);		\
+	}				\
+    } while (0)
 
 static char *
 DoSubstitution(const char *template, const char *cmdline, const char *projroot,
