@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>29 February 2004
+<date>3 March 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.115 2004/02/24 03:41:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.116 2004/02/28 16:33:43 dawes Exp $
 </ident>
 
 <abstract>
@@ -120,6 +120,24 @@ complete list of changes can be found in the CHANGELOG that is part of
 the XFree86 source tree.  It can also be viewed online at our <url
 name="CVSweb server"
 url="http://cvsweb.xfree86.org/cvsweb/xc/programs/Xserver/hw/xfree86/CHANGELOG?rev=HEAD">.
+
+<sect1>Security Updates
+<p>
+The following security issues have been fixed in this release:
+
+<itemize>
+<item>Fixes for potential integer overflows in font libraries.
+(CAN-2003-0730)
+
+<item>Better pseudo-random number generation for XDM session cookies.
+(CAN-2003-0692)
+
+<item>Check for failure of the pam_setcred() function in xdm session initialization.  (CAN-2003-0690)
+
+<item>Font file buffer overlows.  (CAN-2004-0083, CAN-2004-0084 and
+CAN-2004-0106)
+
+</itemize>
 
 <sect1>Video Driver Enhancements
 

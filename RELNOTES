@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                              29 February 2004
+                                3 March 2004
 
                                   Abstract
 
@@ -75,7 +75,23 @@ source tree.  It can also be viewed online at our CVSweb server
 <URL:http://cvsweb.xfree86.org/cvsweb/xc/pro-
 grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
-2.1  Video Driver Enhancements
+2.1  Security Updates
+
+The following security issues have been fixed in this release:
+
+   o Fixes for potential integer overflows in font libraries.
+     (CAN-2003-0730)
+
+   o Better pseudo-random number generation for XDM session cookies.
+     (CAN-2003-0692)
+
+   o Check for failure of the pam_setcred() function in xdm session initial-
+     ization.  (CAN-2003-0690)
+
+   o Font file buffer overlows.  (CAN-2004-0083, CAN-2004-0084 and
+     CAN-2004-0106)
+
+2.2  Video Driver Enhancements
 
    o Several stability issues with the support for the Intel 830M, 845G,
      852GM, 855GM and 865G integrated graphics chipsets have been fixed.
@@ -113,20 +129,20 @@ grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
    o Various updates and bug fixes have been made to most other drivers.
 
-2.2  Input Driver Enhancements
+2.3  Input Driver Enhancements
 
    o The mouse driver has some support on Linux and FreeBSD for auto-detect-
      ing which device node to use. This makes it unnecessary to supply this
      information in the XF86Config file in most cases.
 
-2.3  IPv6 support
+2.4  IPv6 support
 
 XFree86 4.4 supports IPv6, based on the code contributed by Sun Microsystems,
 Inc. to X.Org. See X.org's document <URL:http://www.x.org/IPV6_Spe-
 cific_Changes.html> for a detailed list of what these changes are and how
 your system is affected by them.
 
-2.3.1  Protocol names and aliases.
+2.4.1  Protocol names and aliases.
 
    o tcp is an alias for both IPv6 and IPv4 transports.
 
@@ -138,7 +154,7 @@ You can force the X server to only listen to IPv4 connections with the X
 -nolisten inet6  command or you can force a IPv6 connection by setting DIS-
 PLAY to inet6/host:0.
 
-2.3.2  XDM
+2.4.2  XDM
 
 The IPv6 XDMCP code is not enabled by default on platforms that don't support
 binding a IPv6 socket to a IPv4 address.
@@ -148,14 +164,14 @@ but a new release of the protocol, XDM-AUTHORIZATION-2 has been designed;
 this though is yet to be  implemented.  By default XFree86 builds do not
 enable the XDM-AUTHORIZATION-1 code.
 
-2.4  X Server and Extension Updates
+2.5  X Server and Extension Updates
 
    o The Mesa version used for OpenGL® 1.3 and DRI driver support has been
      updated to 5.0.2.
 
-2.5  Client and Library Updates
+2.6  Client and Library Updates
 
-2.5.1  Xterm
+2.6.1  Xterm
 
 The user-visible changes to xterm since XFree86 4.3 are:
 
@@ -277,7 +293,7 @@ Modified terminfo/termcap entries:
    o Correct AF/AB strings in termcap for xterm-256color and xterm-88color
      entries.
 
-2.6  I18N and Font Updates
+2.7  I18N and Font Updates
 
    o FreeType2 updated to version 2.1.4.
 
@@ -302,7 +318,7 @@ Modified terminfo/termcap entries:
    o The Bitstream Vera TrueType fonts that Bitstream, Inc donated to the
      GNOME Foundation have been included with this release.
 
-2.7  OS Support Updates
+2.8  OS Support Updates
 
    o On Mac OS X, the appropriate backend drawing code is now dynamically
      loaded at runtime which reduces the X server's memory footprint.  In
@@ -980,7 +996,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.116 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.117 dawes Exp $
 
 
 $XFree86: $
