@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.33 1999/04/18 04:08:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.34 1999/04/25 10:02:08 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1454,23 +1454,6 @@ GLINTMapMem(ScrnInfoPtr pScrn)
     pGlint = GLINTPTR(pScrn);
 
     /*
-     * Disable memory and I/O before mapping the MMIO area.  This avoids
-     * the MMIO area being read during the mapping (which happens on
-     * some SVR4 versions), which will cause a lockup.
-     */
-
-#if 0 /* 500TX doesn't like this - FIX ME */
-    save = pciReadLong(pGlint->PciTag, PCI_CMD_STAT_REG);
-    pciWriteLong(pGlint->PciTag, PCI_CMD_STAT_REG,
-		 save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-    if (pGlint->PciTagGeometry) {
-	saved = pciReadLong(pGlint->PciTagGeometry, PCI_CMD_STAT_REG);
-	pciWriteLong(pGlint->PciTagGeometry, PCI_CMD_STAT_REG,
-		 saved & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-    }
-#endif
-
-    /*
      * Map IO registers to virtual address space
      */ 
     if (pGlint->PciTagGeometry)
@@ -1483,24 +1466,6 @@ GLINTMapMem(ScrnInfoPtr pScrn)
     if (pGlint->IOBase == NULL)
 	return FALSE;
 
-#if defined(SVR4)
-    /*
-     * For some SVR4 versions, a 32-bit read is done for the first
-     * location in each page when the page is first mapped.  If this
-     * is done while memory and I/O are enabled, the result will be
-     * a lockup, so make sure each page is mapped here while it is safe
-     * to do so.
-     */
-    {
-	CARD32 val;
-
-	val = *(volatile CARD32 *)(pGlint->IOBase+0);
-	val = *(volatile CARD32 *)(pGlint->IOBase+0x1000);
-	val = *(volatile CARD32 *)(pGlint->IOBase+0x2000);
-	val = *(volatile CARD32 *)(pGlint->IOBase+0x3000);
-    }
-#endif
-
     if (pGlint->FbMapSize != 0) {
     	pGlint->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pGlint->PciTag,
@@ -1509,15 +1474,6 @@ GLINTMapMem(ScrnInfoPtr pScrn)
         if (pGlint->FbBase == NULL)
 	    return FALSE;
     }
-
-#if 0 /* 500TX doesn't like this - FIX ME */
-    /* Re-enable I/O and memory */
-    pciWriteLong(pGlint->PciTag, PCI_CMD_STAT_REG,
-		 save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-    if (pGlint->PciTagGeometry)
-	pciWriteLong(pGlint->PciTag, PCI_CMD_STAT_REG,
-		 saved | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-#endif
 
   /* Due to bugs in the Glint Delta/Permedia/500TX chips we need to do this */
   /* Bizarre, but it works. */

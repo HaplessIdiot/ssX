@@ -1,4 +1,7 @@
 XFree86 3.9Pk (25 April 1999)
+2782. Move the SVR4-specific handling of mapping memory areas which have
+      read side-effects out of the drivers and into the os-support layer
+      (David Dawes).
 2781. Fix unmap parameters for the SiS driver (David Dawes).
 2780. Fix unmap parameters for the glint driver (#2722, Alan Hourihane).
 2779. Fix the depth 24 visual initialisation (mask, offset) in the
@@ -7878,4 +7881,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.732 1999/04/24 07:36:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.733 1999/04/25 10:01:47 dawes Exp $

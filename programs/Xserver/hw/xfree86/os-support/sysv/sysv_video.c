@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.15 1999/04/11 13:11:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.16 1999/04/18 04:08:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -65,7 +65,8 @@
 struct kd_memloc MapDSC;
 int mmapFd = -2;
 
-int mmapStat(pointer Base, unsigned long Size) {
+static int
+mmapStat(pointer Base, unsigned long Size) {
 
 	int nmmreg,i=0,region=-1;
 	mmapinfo_t *ibuf;
@@ -106,8 +107,9 @@ int mmapStat(pointer Base, unsigned long Size) {
 }
 #endif
 
-Bool
-xf86LinearVidMem()
+
+static Bool
+linearVidMem()
 {
 #ifdef SVR4
 	return TRUE;
@@ -134,8 +136,8 @@ xf86LinearVidMem()
 	return FALSE;
 }
 
-pointer
-xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
+static pointer
+mapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 {
 	pointer base;
 	int fd;
@@ -207,7 +209,8 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 }
 
 /* ARGSUSED */
-void xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
+static void
+unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 #if defined (SVR4)
 	munmap(Base, Size);
@@ -225,6 +228,48 @@ void xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 	return;
 }
 
+#if defined(SVR4) && defined(i386) && !defined(sun)
+/*
+ * For some SVR4 versions, a 32-bit read is done for the first location
+ * in each page when the page is first mapped.  If this is done while
+ * memory access is enabled for regions that have read side-effects,
+ * this can cause unexpected results, including lockups on some hardware.
+ * This function is called to make sure each page is mapped while it is
+ * safe to do so.
+ */
+
+/*
+ * XXX Should get this the correct way (see os/xalloc.c), but since this is
+ * for one platform I'll be lazy.
+ */
+#define X_PAGE_SIZE 4096
+
+static void
+readSideEffects(int ScreenNum, int Flags, pointer Base, unsigned long Size)
+{
+	unsigned long base, end, addr;
+	CARD32 val;
+
+	base = (unsigned long)Base;
+	end = base + Size;
+
+	for (addr = base; addr < end; addr += X_PAGE_SIZE)
+		val = *(volatile CARD32 *)addr;
+}
+#endif
+
+void
+xf86OSInitVidMem(VidMemInfoPtr pVidMem)
+{
+	pVidMem->linearSupported = linearVidMem();
+	pVidMem->mapMem = mapVidMem;
+	pVidMem->unmapMem = unmapVidMem;
+#if defined(SVR4) && defined(i386) && !defined(sun)
+	pVidMem->readSideEffects = readSideEffects;
+#endif
+	pVidMem->initialised = TRUE;
+}
+	
 /***************************************************************************/
 /* I/O Permissions section                                                 */
 /***************************************************************************/

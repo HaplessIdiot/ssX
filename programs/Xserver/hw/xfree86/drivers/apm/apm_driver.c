@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.13 1999/03/23 05:00:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.14 1999/04/18 04:08:31 dawes Exp $ */
 
 
 #include "apm.h"
@@ -936,16 +936,6 @@ ApmMapMem(ScrnInfoPtr pScrn)
 {
     APMDECL(pScrn);
 
-    /*
-     * Disable memory and I/O before mapping the MMIO area.  This avoids
-     * the MMIO area being read during the mapping (which happens on
-     * some SVR4 versions), which will cause a lockup.
-     */
-
-    pApm->saveCmd = pciReadLong(pApm->PciTag, PCI_CMD_STAT_REG);
-    pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG,
-		 pApm->saveCmd & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-
     pApm->LinMap = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pApm->PciTag,
 				 (unsigned long)pApm->LinAddress,
@@ -959,10 +949,6 @@ ApmMapMem(ScrnInfoPtr pScrn)
 	pApm->MemMap = ((char *)pApm->LinMap) + 0xFFEC00;
 	pApm->BltMap = (void *)(((char *)pApm->LinMap) + 0x3F8000);
 
-	/* Re-enable memory */
-	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG,
-		     pApm->saveCmd | PCI_CMD_MEM_ENABLE);
-
 	/*
 	 * Initialize chipset
 	 */
@@ -974,10 +960,6 @@ ApmMapMem(ScrnInfoPtr pScrn)
     }
     else {
 	pApm->FbBase = pApm->LinMap;
-
-	/* Re-enable memory  and I/O */
-	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG,
-		     pApm->saveCmd | PCI_CMD_MEM_ENABLE | PCI_CMD_IO_ENABLE);
 
 	/*
 	 * Initialize chipset
@@ -1013,7 +995,6 @@ ApmUnmapMem(ScrnInfoPtr pScrn)
     }
     else if (pApm->FbBase)
 	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pApm->LinMap, 0x10000);
-    pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, pApm->saveCmd);
 
     return TRUE;
 }

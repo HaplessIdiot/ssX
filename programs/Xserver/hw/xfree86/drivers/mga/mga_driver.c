@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.91 1999/04/24 07:36:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.92 1999/04/25 10:02:11 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1682,56 +1682,27 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 static Bool
 MGAMapMem(ScrnInfoPtr pScrn)
 {
-    CARD32 save;
     MGAPtr pMga;
     int mmioFlags;
 
     pMga = MGAPTR(pScrn);
 
     /*
-     * Disable memory and I/O before mapping the MMIO area.  This avoids
-     * the MMIO area being read during the mapping (which happens on
-     * some SVR4 versions), which will cause a lockup.
-     */
-
-    save = pciReadLong(pMga->PciTag, PCI_CMD_STAT_REG);
-    pciWriteLong(pMga->PciTag, PCI_CMD_STAT_REG,
-		 save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-
-    /*
      * Map IO registers to virtual address space
      */ 
 #if !defined(__alpha__)
-    mmioFlags = VIDMEM_MMIO;
+    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
 #else
     /*
      * For Alpha, we need to map SPARSE memory, since we need
      * byte/short access.
      */
-    mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
+    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_SPARSE;
 #endif
     pMga->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pMga->PciTag,
 				 pMga->IOAddress, 0x4000);
     if (pMga->IOBase == NULL)
 	return FALSE;
-
-#if defined(SVR4)
-    /*
-     * For some SVR4 versions, a 32-bit read is done for the first
-     * location in each page when the page is first mapped.  If this
-     * is done while memory and I/O are enabled, the result will be
-     * a lockup, so make sure each page is mapped here while it is safe
-     * to do so.
-     */
-    {
-	CARD32 val;
-
-	val = *(volatile CARD32 *)(pMga->IOBase+0);
-	val = *(volatile CARD32 *)(pMga->IOBase+0x1000);
-	val = *(volatile CARD32 *)(pMga->IOBase+0x2000);
-	val = *(volatile CARD32 *)(pMga->IOBase+0x3000);
-    }
-#endif
 
 #ifdef __alpha__
     /*
@@ -1755,15 +1726,13 @@ MGAMapMem(ScrnInfoPtr pScrn)
 
     /* Map the ILOAD transfer window if there is one.  We only make
 	DWORD access on DWORD boundaries to this window */
-    if(pMga->ILOADAddress)
-	pMga->ILOADBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
+    if (pMga->ILOADAddress) {
+	pMga->ILOADBase = xf86MapPciMem(pScrn->scrnIndex,
+				VIDMEM_MMIO | VIDMEM_READSIDEEFFECT, 
 				pMga->PciTag, pMga->ILOADAddress, 0x800000);
-    else  pMga->ILOADBase = NULL;
+    } else
+	pMga->ILOADBase = NULL;
 
-
-    /* Re-enable I/O and memory */
-    pciWriteLong(pMga->PciTag, PCI_CMD_STAT_REG,
-		 save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
     return TRUE;
 }
 

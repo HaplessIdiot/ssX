@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.12 1999/04/04 10:59:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.13 1999/04/18 04:08:50 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -939,12 +939,30 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, unsigned long Base,
 {
 	unsigned long hostbase = pciBusAddrToHostAddr(Tag, Base);
 	pointer base;
+	CARD32 save;
 
+	/*
+	 * If there are possible read side-effects, disable memory while
+	 * doing the mapping.
+	 */
+	if (Flags & VIDMEM_READSIDEEFFECT) {
+		save = pciReadLong(Tag, PCI_CMD_STAT_REG);
+		pciWriteLong(Tag, PCI_CMD_STAT_REG,
+			     save & ~PCI_CMD_MEM_ENABLE);
+	}
 	base = xf86MapVidMem(ScreenNum, Flags, hostbase, Size);
 	if (!base)	{
 		FatalError("xf86MapPciMem: Could not mmap PCI memory "
 			   "[base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
 			   Base, hostbase, Size, strerror(errno));
+	}
+	/*
+	 * If read side-effects, do whatever might be needed to prevent
+	 * unintended reads, then restore PCI_CMD_STAT_REG.
+	 */
+	if (Flags & VIDMEM_READSIDEEFFECT) {
+		xf86MapReadSideEffects(ScreenNum, Flags, base, Size);
+		pciWriteLong(Tag, PCI_CMD_STAT_REG, save);
 	}
 	return((pointer)base);
 }

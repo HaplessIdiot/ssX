@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.52 1999/04/25 10:02:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.53 1999/04/25 12:33:49 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1512,16 +1512,6 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
     xf86EnableAccess(&pScrn->Access);
 
     /*
-     * Disable memory and I/O before mapping the MMIO area.  This avoids
-     * the MMIO area being read during the mapping (which happens on
-     * some SVR4 versions), which will cause a lockup.
-     */
-
-    save = pciReadLong(pTrident->PciTag, PCI_CMD_STAT_REG);
-    pciWriteLong(pTrident->PciTag, PCI_CMD_STAT_REG,
-		 save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-
-    /*
      * Map IO registers to virtual address space
      */ 
 #if !defined(__alpha__)
@@ -1537,24 +1527,6 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
 		pTrident->PciTag, pTrident->IOAddress, 0x20000);
     if (pTrident->IOBase == NULL)
 	return FALSE;
-
-#if defined(SVR4)
-    /*
-     * For some SVR4 versions, a 32-bit read is done for the first
-     * location in each page when the page is first mapped.  If this
-     * is done while memory and I/O are enabled, the result will be
-     * a lockup, so make sure each page is mapped here while it is safe
-     * to do so.
-     */
-    {
-	CARD32 val;
-
-	val = *(volatile CARD32 *)(pTrident->IOBase+0);
-	val = *(volatile CARD32 *)(pTrident->IOBase+0x1000);
-	val = *(volatile CARD32 *)(pTrident->IOBase+0x2000);
-	val = *(volatile CARD32 *)(pTrident->IOBase+0x3000);
-    }
-#endif
 
 #ifdef __alpha__
     /*
@@ -1576,17 +1548,6 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
     	if (pTrident->FbBase == NULL)
 	    return FALSE;
     }
-
-    /* Re-enable I/O and memory */
-#if 0
-    pciWriteLong(pTrident->PciTag, PCI_CMD_STAT_REG,
-		 (save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)) |
-			   PCI_CMD_MEM_ENABLE);
-#else
-    pciWriteLong(pTrident->PciTag, PCI_CMD_STAT_REG,
-		 save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-#endif
-
 
 #if 0
     ErrorF("PCI MEM 0x%x\n", pciReadLong(pTrident->PciTag, PCI_CMD_STAT_REG));

@@ -6,7 +6,7 @@
    are subject to change without notice.
 
 
-Last modified: 28 March 1999.
+Last modified: 25 April 1999.
 
 
 Preface
@@ -2309,6 +2309,13 @@ XFree86 common layer.
 		  directly by the XFree86 common layer.  However, it
 		  may be used for application-specific parameter passing
 		  in other situations.
+
+		  When loading "external" modules (modules that don't
+		  have the the standard entry point, for example a
+		  special shared library) the options parameter can be
+		  set to `EXTERN_MODULE' to tell the loader not to reject
+		  the module when it doesn't find the standard entry
+		  point.
 
       modreq      An optional XF86ModReqInfo* containing version/ABI/vendor
 		  information to requirements to check the newly loaded
@@ -4650,4 +4657,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.27 1999/03/20 08:59:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.28 1999/03/28 15:32:17 dawes Exp $
