@@ -9,7 +9,7 @@
  *
  *  supported O/S's:  SVR4, UnixWare, SCO, Solaris,
  *                    FreeBSD, NetBSD, 386BSD, BSDI BSD/386,
- *                    Linux, Mach/386,
+ *                    Linux, Mach/386, ISC
  *                    DOS (WATCOM 9.5 compiler)
  *
  *  compiling:        [g]cc scanpci.c -o scanpci
@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.53 1998/01/11 03:48:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.55 1998/01/11 16:42:00 robin Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -103,8 +103,10 @@
 #define GCCUSESGAS
 #endif
 #endif
-#if defined(SCO)
+#if defined(SCO) || defined(ISC)
+#ifndef ISC
 #include <sys/console.h>
+#endif
 #include <sys/param.h>
 #include <sys/immu.h>
 #include <sys/region.h>
@@ -1637,7 +1639,7 @@ USHORT callgate[3] = {0,0,0};
 void
 enable_os_io()
 {
-#if defined(SVR4) || defined(SCO)
+#if defined(SVR4) || defined(SCO) || defined(ISC)
 #if defined(SI86IOPL)
     sysi86(SI86IOPL, 3);
 #else
@@ -1741,7 +1743,7 @@ enable_os_io()
 void
 disable_os_io()
 {
-#if defined(SVR4) || defined(SCO)
+#if defined(SVR4) || defined(SCO) || defined(ISC)
 #if defined(SI86IOPL)
     sysi86(SI86IOPL, 0);
 #else
