@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.16 2003/09/28 20:15:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.17 2004/06/10 13:08:28 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -73,7 +73,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "i830.h"
 #include "i830_dri.h"
-#include "i830_3d_reg.h"
 
 static char I830KernelDriverName[] = "i915";
 static char I830ClientDriverName[] = "i915";
