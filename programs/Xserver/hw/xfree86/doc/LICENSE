@@ -2,14 +2,14 @@
 
                              The XFree86 Project
 
-                                 March 2001
+                                January 2002
 
 1.  XFree86 License
 
 XFree86 code without an explicit copyright is covered by the following copy-
 right/license:
 
-Copyright (C) 1994-2001 The XFree86 Project, Inc.  All Rights Reserved.
+Copyright (C) 1994-2002 The XFree86 Project, Inc.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,14 @@ Project.
 
 2.  Other Licenses
 
-Portions of code are covered by the following licenses/copyrights:
+Portions of code are covered by the following licenses/copyrights.  See indi-
+vidual files for the copyright dates.
 
-2.1  X Consortium
+2.1  X/MIT Copyrights
 
-Copyright (C) 1996 X Consortium
+2.1.1  X Consortium
+
+Copyright (C) <date> X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +66,29 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 X Window System is a trademark of X Consortium, Inc.
+
+2.1.2  The Open Group
+
+Copyright <date>  The Open Group
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FIT-
+NESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
 
 2.2  Berkeley-based copyrights:
 
@@ -592,7 +618,7 @@ For further information, contact:
 
 info@urwpp.de or design@bigelowandholmes.com
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.9 2001/11/21 21:31:30 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.10 2002/01/08 01:31:05 dawes Exp $
 
 
-$XFree86: xc/config/cf/lnxdoc.rules,v 3.24 2001/11/15 17:36:06 dawes Exp $
+$XFree86: $
