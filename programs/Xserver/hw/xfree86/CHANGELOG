@@ -1,4 +1,9 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 860. Fix byte swapping of the refresh rate argument to RandR's
+      SetScreenConfig request, and fix a 1.0 client compatibility problem
+      with SetScreenConfig (#A.1574, Keith Packard).
+ 859. The i810 driver wasn't releasing control of the agpgart when VT switching
+      away for the 830M and later (David Dawes).
  858. Update Rage 128 and Radeon PCI IDs (Mike Harris).
  857. Fix vertical retrace to not interfere with interrupt handling
       (#5608, Michel Dänzer).
@@ -16280,4 +16285,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2534 2003/02/07 18:08:55 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2535 2003/02/07 20:41:00 martin Exp $
