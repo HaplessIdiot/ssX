@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.29 1999/08/28 09:01:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.30 1999/12/14 02:40:15 robin Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -66,7 +66,11 @@
 #include "xf86OSpriv.h"
 
 #ifdef HAS_MTRR_SUPPORT
+#ifndef __NetBSD__
+#include <sys/memrange.h>
+#else
 #include "memrange.h"
+#endif
 #define X_MTRR_ID "XFree86"
 #endif
 
