@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.9 2002/10/12 00:32:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.10 2002/11/15 00:55:10 torrey Exp $ */
 
 #include "quartz/quartz.h"
 
@@ -81,14 +81,6 @@ void QuartzInitInput(int argc, char **argv) {
 
 void QuartzGiveUp(void) {
     return;	// no message, we are quitting anyway
-}
-
-void QuartzHide(void) {
-    FatalError("QuartzHide called without Quartz support.\n");
-}
-
-void QuartzShow(int x, int y) {
-    FatalError("QuartzShow called without Quartz support.\n");
 }
 
 void QuartzProcessEvent(xEvent *xe) {
