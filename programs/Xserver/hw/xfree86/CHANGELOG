@@ -1,4 +1,9 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 198. Fix some typos in the iso8859-2 Compose file (#4799, Kamil Toman).
+ 197. Add some XKB options to allow the CapsLock behaviour to be easily
+      selected (#4794, Ivan Pascal).
+ 196. Don't reference the log file in the FatalError message if it hasn't
+      been opened yet (#4793, Branden Robinson).
  195. Add Calcomp input driver (#A.554 Martin Kroeker).
  194. Add preliminary 8 bit PseudoColor support to XDarwin full screen Quartz
       mode and fix IOKit mode PseudoColor that was broken by the multi-monitor
@@ -13655,4 +13660,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1907 2001/08/12 00:09:58 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1908 2001/08/12 22:48:41 alanh Exp $
