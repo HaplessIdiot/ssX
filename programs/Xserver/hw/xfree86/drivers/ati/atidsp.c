@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.14 2002/01/16 16:22:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.15 2002/01/29 03:42:27 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -234,7 +234,7 @@ ATIDSPCalculate
 
 #endif /* AVOID_CPIO */
 
-    if (!pATI->OptionCRT && (pATI->LCDPanelID >= 0))
+    if (pATI->OptionPanelDisplay && (pATI->LCDPanelID >= 0))
     {
         /* Compensate for horizontal stretching */
         Multiplier *= pATI->LCDHorizontal;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.45 2002/01/16 16:22:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.46 2002/01/29 03:42:27 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -521,7 +521,7 @@ ATIMach64Calculate
     {
         pMode->Flags &= ~(V_PHSYNC | V_NHSYNC | V_PVSYNC | V_NVSYNC);
 
-        if (!pATI->OptionCRT && (pATI->LCDPanelID >= 0))
+        if (pATI->OptionPanelDisplay && (pATI->LCDPanelID >= 0))
             VDisplay = pATI->LCDVertical;
         else
             VDisplay = pMode->CrtcVDisplay;
@@ -907,7 +907,7 @@ ATIMach64SetDPMSMode
 
     outr(CRTC_GEN_CNTL, crtc_gen_cntl);
 
-    if ((pATI->LCDPanelID >= 0) && !pATI->OptionCRT)
+    if (pATI->OptionPanelDisplay && (pATI->LCDPanelID >= 0))
     {
         CARD32 lcd_index = 0;
 
