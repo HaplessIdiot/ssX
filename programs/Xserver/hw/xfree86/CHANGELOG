@@ -1,4 +1,5 @@
 XFree86 4.0.1c (25 August 2000)
+ 536. Resync DRI code/drivers with the DRI CVS (VA Linux).
  535. Engine polling changes in r128 driver (David Mosberger).
  534. Fix linear memory mapping in ATI driver (Marc La France).
  533. Fix endianness problems in the ATI driver when accessing BIOS images
@@ -11038,4 +11039,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1278 2000/08/24 11:40:21 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1279 2000/08/24 22:20:12 tsi Exp $

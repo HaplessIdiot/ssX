@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.10tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.11 2000/08/24 22:20:08 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -280,7 +280,7 @@ LinkSourceFile(fxvs_tmp.h, $(MESASRCDIR)/src/FX)
          SRCS = $(DRISRCS) $(DRMSRCS) $(TDFXSRCS) $(MESASRCS) $(ASMSRCS)
          OBJS = $(DRIOBJS) $(DRMOBJS) $(TDFXOBJS) $(MESAOBJS) $(ASMOBJS)
 
-REQUIREDLIBS = -lglide3x -lm
+REQUIREDLIBS = -l$(GLIDE3LIBNAME) MathLibrary
 #if !GlxBuiltInTdfx
 REQUIREDLIBS += -L../../../.. -lGL
 #endif

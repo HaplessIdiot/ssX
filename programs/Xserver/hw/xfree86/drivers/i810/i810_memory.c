@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.12 2000/08/04 03:51:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.13 2000/08/15 16:05:36 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -122,12 +122,15 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
       if (!xf86BindGARTMemory(pScrn->scrnIndex, key, tom)) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		    "GART: allocation of %d bytes for DCACHE failed\n", size);
+	 pI810->DcacheKey = -1;
       }	else {
 	 pI810->DcacheMem.Start = tom;
 	 pI810->DcacheMem.Size = size;
 	 pI810->DcacheMem.End = pI810->DcacheMem.Start + pI810->DcacheMem.Size;
 	 tom = pI810->DcacheMem.End;
       }
+   } else {
+      pI810->DcacheKey = -1;
    }
 
    /* Mouse cursor -- The i810 (crazy) needs a physical address in
@@ -145,6 +148,7 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
 				     &physical)) == -1) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		    "No physical memory available for mouse\n");
+      pI810->HwcursKey = -1;
    } else {
       pI810->HwcursOffset= tom;
       pI810->HwcursKey = key;
@@ -152,6 +156,7 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		    "GART: allocation of %d bytes for HW cursor failed\n", 
 		    size);
+	 pI810->HwcursKey = -1;
       }	else {
 	 pI810->CursorPhysical = physical;
 	 pI810->CursorStart = tom;
@@ -271,18 +276,23 @@ I810BindGARTMemory( ScrnInfoPtr pScrn )
 {
    I810Ptr pI810 = I810PTR(pScrn);
 
-   if (xf86AgpGARTSupported() && !pI810->GttBound) {
+   if (xf86AgpGARTSupported() && !pI810->directRenderingEnabled &&
+	!pI810->GttBound) {
       if (!xf86AcquireGART(pScrn->scrnIndex))
 	 return FALSE;
       if (!xf86BindGARTMemory(pScrn->scrnIndex, pI810->VramKey,
 			      pI810->VramOffset))
 	 return FALSE;
-      if (!xf86BindGARTMemory(pScrn->scrnIndex, pI810->DcacheKey,
-			      pI810->DcacheOffset))
-	 return FALSE;
-      if (!xf86BindGARTMemory(pScrn->scrnIndex, pI810->HwcursKey,
-			      pI810->HwcursOffset))
-	 return FALSE;
+      if (pI810->DcacheKey != -1) {
+	 if (!xf86BindGARTMemory(pScrn->scrnIndex, pI810->DcacheKey,
+				 pI810->DcacheOffset))
+	    return FALSE;
+      }
+      if (pI810->HwcursKey != -1) {
+	 if (!xf86BindGARTMemory(pScrn->scrnIndex, pI810->HwcursKey,
+				 pI810->HwcursOffset))
+	    return FALSE;
+      }
       pI810->GttBound = 1;
    }
    return TRUE;
@@ -293,13 +303,18 @@ I810UnbindGARTMemory( ScrnInfoPtr pScrn )
 {
    I810Ptr pI810 = I810PTR(pScrn);
 
-   if (xf86AgpGARTSupported() && pI810->GttBound) {
+   if (xf86AgpGARTSupported() && !pI810->directRenderingEnabled &&
+       pI810->GttBound) {
       if (!xf86UnbindGARTMemory(pScrn->scrnIndex, pI810->VramKey))
 	 return FALSE;
-      if (!xf86UnbindGARTMemory(pScrn->scrnIndex, pI810->DcacheKey))
-	 return FALSE;
-      if (!xf86UnbindGARTMemory(pScrn->scrnIndex, pI810->HwcursKey))
-	 return FALSE;
+      if (pI810->DcacheKey != -1) {
+	 if (!xf86UnbindGARTMemory(pScrn->scrnIndex, pI810->DcacheKey))
+	    return FALSE;
+      }
+      if (pI810->HwcursKey != -1) {
+	 if (!xf86UnbindGARTMemory(pScrn->scrnIndex, pI810->HwcursKey))
+	    return FALSE;
+      }
       if (!xf86ReleaseGART(pScrn->scrnIndex))
 	 return FALSE;
       pI810->GttBound = 0;

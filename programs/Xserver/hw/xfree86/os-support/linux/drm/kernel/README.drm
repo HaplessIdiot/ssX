@@ -1,3 +1,7 @@
+************************************************************
+* For the very latest on DRI development, please see:      *
+*     http://dri.sourceforge.net/                          *
+************************************************************
 
 The Direct Rendering Manager (drm) is a device-independent kernel-level
 device driver that provides support for the XFree86 Direct Rendering
@@ -36,6 +40,7 @@ For specific information about kernel-level support, see:
     A Security Analysis of the Direct Rendering Infrastructure
     http://precisioninsight.com/dr/security.html
 
-
-
-$XFree86$
+************************************************************
+* For the very latest on DRI development, please see:      *
+*     http://dri.sourceforge.net/                          *
+************************************************************

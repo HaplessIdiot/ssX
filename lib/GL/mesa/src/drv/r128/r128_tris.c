@@ -1,4 +1,4 @@
-/* $XFree86$ */ /* -*- c-basic-offset: 4 -*- */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.c,v 1.1 2000/06/17 00:03:08 martin Exp $ */ /* -*- c-basic-offset: 4 -*- */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -33,7 +33,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_xmesa.h"
 #include "r128_context.h"
 #include "r128_lock.h"
@@ -43,10 +42,12 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_tris.h"
 #include "r128_state.h"
 
-static triangle_func tri_tab[0x10];
-static quad_func     quad_tab[0x10];
-static line_func     line_tab[0x10];
-static points_func   points_tab[0x10];
+static struct {
+    points_func   points;
+    line_func     line;
+    triangle_func tri;
+    quad_func     quad;
+} rast_tab[0x10];
 
 #define R128_COLOR(to, from)                                                \
 do {                                                                        \
@@ -89,7 +90,7 @@ do {                                                                        \
 #include "r128_tritmp.h"
 
 /* Initialize the table of points, line and triangle drawing functions */
-void r128TriangleFuncsInit(void)
+void r128DDTriangleFuncsInit(void)
 {
     init();
     init_flat();
@@ -101,82 +102,62 @@ void r128TriangleFuncsInit(void)
     init_twoside_offset_flat();
 }
 
+
+
+/* FIXME: Only enable software fallback for stencil in 16 bpp mode after
+   we have hardware stencil support */
+#define ALL_FALLBACK (DD_MULTIDRAW | DD_SELECT | DD_FEEDBACK | DD_STENCIL)
+#define POINT_FALLBACK (ALL_FALLBACK | DD_POINT_SMOOTH)
+#define LINE_FALLBACK (ALL_FALLBACK | DD_LINE_SMOOTH | DD_LINE_STIPPLE)
+#define TRI_FALLBACK (ALL_FALLBACK | DD_TRI_SMOOTH | DD_TRI_STIPPLE | DD_TRI_UNFILLED)
+#define ANY_FALLBACK (POINT_FALLBACK|LINE_FALLBACK|TRI_FALLBACK)
+
 /* Setup the Point, Line, Triangle and Quad functions based on the
    current rendering state.  Wherever possible, use the hardware to
    render the primitive.  Otherwise, fallback to software rendering. */
-void r128ChooseRenderState(GLcontext *ctx)
+void r128DDChooseRenderState(GLcontext *ctx)
 {
     r128ContextPtr r128ctx = R128_CONTEXT(ctx);
     GLuint         flags   = ctx->TriangleCaps;
+    CARD32 index    = 0;
 
-    /* KW: Includes handling of SWonly rendering:
-     */
-    if (r128ctx->Fallback)
-       return;
+    if (r128ctx->Fallback) {
+	r128ctx->RenderIndex = R128_FALLBACK_BIT;
+	return;
+    }
 
+    if (flags & (DD_FLATSHADE|DD_TRI_LIGHT_TWOSIDE|DD_TRI_OFFSET)) {
+	if (flags & DD_FLATSHADE)               index |= R128_FLAT_BIT;
+	if (flags & DD_TRI_LIGHT_TWOSIDE)       index |= R128_TWOSIDE_BIT;
+	if (flags & DD_TRI_OFFSET)              index |= R128_OFFSET_BIT;
+    }
+
+    r128ctx->PointsFunc = rast_tab[index].points;
+    r128ctx->LineFunc = rast_tab[index].line;
+    r128ctx->TriangleFunc = rast_tab[index].tri;
+    r128ctx->QuadFunc = rast_tab[index].quad;
+
+    r128ctx->RenderIndex = index;
     r128ctx->IndirectTriangles = 0;
 
-    if (flags) {
-	CARD32 index    = 0;
-	CARD32 shared   = 0;
- 	CARD32 fallback = R128_FALLBACK_BIT;
+    if (flags & ANY_FALLBACK) {
+	r128ctx->RenderIndex |= R128_FALLBACK_BIT;
 
-	/* KW: I'd prefer to remove SWfallbackDisable & just use
-	 * R128_FALLBACK_BIT throughout this routine.
-	 */
-  	if (r128ctx->SWfallbackDisable) fallback = 0;
-
-	if (flags & DD_FLATSHADE)               shared |= R128_FLAT_BIT;
-	if (flags & DD_TRI_LIGHT_TWOSIDE)       shared |= R128_TWOSIDE_BIT;
-
-	/* TODO: Fix mesa so that these can be handled in
-	 * r128ctx->Fallback.
-	 */
-	if (flags & (DD_MULTIDRAW |
-		     DD_SELECT    |
-		     DD_FEEDBACK))              shared |= R128_FALLBACK_BIT;
-
-	/* FIXME: Only enable in 16 bpp mode after we have hardware
-           stencil support */
-	if (flags & DD_STENCIL)                 shared |= R128_FALLBACK_BIT;
-
-	/* Setup PointFunc */
-	index = shared;
-	if (flags & DD_POINT_SMOOTH)            index  |= fallback;
-
-	r128ctx->RenderIndex = index;
-	r128ctx->PointsFunc  = points_tab[index];
-	if (index & R128_FALLBACK_BIT)
+	if (flags & POINT_FALLBACK) {
+	    r128ctx->PointsFunc = 0;
 	    r128ctx->IndirectTriangles |= DD_POINT_SW_RASTERIZE;
+	}
 
-	/* Setup LineFunc */
-	index = shared;
-	if (flags & DD_LINE_SMOOTH)             index  |= fallback;
-	if (flags & DD_LINE_STIPPLE)            index  |= fallback;
-
-	r128ctx->RenderIndex |= index;
-	r128ctx->LineFunc     = line_tab[index];
-	if (index & R128_FALLBACK_BIT)
+	if (flags & LINE_FALLBACK) {
+	    r128ctx->LineFunc = 0;
 	    r128ctx->IndirectTriangles |= DD_LINE_SW_RASTERIZE;
+	}
 
-	/* Setup TriangleFunc and QuadFunc */
-	index = shared;
-	if (flags & DD_TRI_OFFSET)              index  |= R128_OFFSET_BIT;
-	if (flags & DD_TRI_SMOOTH)              index  |= fallback;
-	if (flags & DD_TRI_UNFILLED)            index  |= fallback;
-	if (flags & DD_TRI_STIPPLE)             index  |= fallback;
-
-	r128ctx->RenderIndex  |= index;
-	r128ctx->TriangleFunc  = tri_tab[index];
-	r128ctx->QuadFunc      = quad_tab[index];
-	if (index & R128_FALLBACK_BIT)
+	if (flags & TRI_FALLBACK) {
+	    r128ctx->TriangleFunc = 0;
+	    r128ctx->QuadFunc = 0;
 	    r128ctx->IndirectTriangles |= (DD_TRI_SW_RASTERIZE |
 					   DD_QUAD_SW_RASTERIZE);
-    } else if (r128ctx->RenderIndex) {
-	r128ctx->RenderIndex  = 0;
-	r128ctx->PointsFunc   = points_tab[0];
-	r128ctx->LineFunc     = line_tab[0];
-	r128ctx->TriangleFunc = tri_tab[0];
-	r128ctx->QuadFunc     = quad_tab[0];
+	}
     }
 }

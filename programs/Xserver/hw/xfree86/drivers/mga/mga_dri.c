@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.5 2000/06/23 23:43:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.6 2000/08/14 01:01:41 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -143,7 +143,6 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
    switch (pScrn->bitsPerPixel) {
    case 8:
    case 24:
-   case 32:
       break;
    case 16:
       numConfigs = 4;
@@ -170,7 +169,7 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
       depth = 1;
       for (accum = 0; accum <= 1; accum++) {
          for (stencil = 0; stencil <= 0; stencil++) { /* no stencil for now */
-            for (db=0; db<=1; db++) {
+            for (db=1; db>=0; db--) {
                pConfigs[i].vid = -1;
                pConfigs[i].class = -1;
                pConfigs[i].rgba = TRUE;
@@ -208,7 +207,7 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
                   pConfigs[i].stencilSize = 0;
                pConfigs[i].auxBuffers = 0;
                pConfigs[i].level = 0;
-               if (stencil)
+               if (stencil || accum)
                   pConfigs[i].visualRating = GLX_SLOW_VISUAL_EXT;
                else
                   pConfigs[i].visualRating = GLX_NONE_EXT;
@@ -228,6 +227,91 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
          return FALSE;
       }
       break;
+
+   case 32:
+      numConfigs = 4;
+
+      if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
+						     numConfigs))) {
+	 return FALSE;
+      }
+      if (!(pMGAConfigs = (MGAConfigPrivPtr)xnfcalloc(sizeof(MGAConfigPrivRec),
+						      numConfigs))) {
+	 xfree(pConfigs);
+	 return FALSE;
+      }
+      if (!(pMGAConfigPtrs = (MGAConfigPrivPtr*)xnfcalloc(sizeof(MGAConfigPrivPtr),
+							  numConfigs))) {
+	 xfree(pConfigs);
+	 xfree(pMGAConfigs);
+	 return FALSE;
+      }
+      for (i=0; i<numConfigs; i++) 
+	 pMGAConfigPtrs[i] = &pMGAConfigs[i];
+
+      i = 0;
+      depth = 1;
+      for (accum = 0; accum <= 1; accum++) {
+         for (stencil = 0; stencil <= 0; stencil++) { /* no stencil for now */
+            for (db=1; db>=0; db--) {
+               pConfigs[i].vid = -1;
+               pConfigs[i].class = -1;
+               pConfigs[i].rgba = TRUE;
+               pConfigs[i].redSize = 5;
+               pConfigs[i].greenSize = 6;
+               pConfigs[i].blueSize = 5;
+               pConfigs[i].redMask   = 0x00FF0000;
+               pConfigs[i].greenMask = 0x0000FF00;
+               pConfigs[i].blueMask  = 0x000000FF;
+               pConfigs[i].alphaMask = 0;
+               if (accum) {
+                  pConfigs[i].accumRedSize = 16;
+                  pConfigs[i].accumGreenSize = 16;
+                  pConfigs[i].accumBlueSize = 16;
+                  pConfigs[i].accumAlphaSize = 0;
+               } else {
+                  pConfigs[i].accumRedSize = 0;
+                  pConfigs[i].accumGreenSize = 0;
+                  pConfigs[i].accumBlueSize = 0;
+                  pConfigs[i].accumAlphaSize = 0;
+               }
+               if (db)
+                  pConfigs[i].doubleBuffer = TRUE;
+               else
+                  pConfigs[i].doubleBuffer = FALSE;
+               pConfigs[i].stereo = FALSE;
+               pConfigs[i].bufferSize = 32;
+               if (depth)
+                  pConfigs[i].depthSize = 32;
+               else 
+                  pConfigs[i].depthSize = 0;
+               if (stencil)
+                  pConfigs[i].stencilSize = 8;
+               else
+                  pConfigs[i].stencilSize = 0;
+               pConfigs[i].auxBuffers = 0;
+               pConfigs[i].level = 0;
+               if (stencil || accum)
+                  pConfigs[i].visualRating = GLX_SLOW_VISUAL_EXT;
+               else
+                  pConfigs[i].visualRating = GLX_NONE_EXT;
+               pConfigs[i].transparentPixel = 0;
+               pConfigs[i].transparentRed = 0;
+               pConfigs[i].transparentGreen = 0;
+               pConfigs[i].transparentBlue = 0;
+               pConfigs[i].transparentAlpha = 0;
+               pConfigs[i].transparentIndex = 0;
+               i++;
+            }
+         }
+      }
+      if (i != numConfigs) {
+         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                    "[drm] Incorrect initialization of visuals\n");
+         return FALSE;
+      }
+      break;
+
    default:
       ;  /* unexpected bits/pixelx */
    }
@@ -281,9 +365,15 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
       }
    }
 
-   if ((pScrn->bitsPerPixel / 8) != 2) {
       xf86DrvMsg(pScreen->myNum, X_INFO,
-                 "[drm] Direct Rendering only supported in 16 bpp mode\n");
+                 "[drm] bpp: %d depth: %d\n", pScrn->bitsPerPixel, 
+		 pScrn->depth);
+   
+
+   if ((pScrn->bitsPerPixel / 8) != 2 &&
+       (pScrn->bitsPerPixel / 8) != 4) {
+      xf86DrvMsg(pScreen->myNum, X_INFO,
+                 "[drm] Direct Rendering only supported in 16 and 32 bpp modes\n");
       return FALSE;
    }
    
@@ -524,20 +614,14 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
    pMGADRI->frontOffset = 0; /* pMGA->YDstOrg * (pScrn->bitsPerPixel / 8) */
    pMGADRI->backOffset = ((pScrn->virtualY + pMGA->numXAALines + 1) * 
 			  pScrn->displayWidth *
-                          (pScrn->bitsPerPixel / 8) + 4095) & ~0xFFF;
+                          pMGADRI->cpp + 4095) & ~0xFFF;
 
 
    xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] calced backoffset: 0x%x\n",
               pMGADRI->backOffset);
 
 
-#if 0
-   size = 2 * pScrn->virtualX * pScrn->virtualY;
-   pMGADRI->depthOffset = (pMGADRI->backOffset + size + 4095) & ~0xFFF;
-   pMGADRI->textureOffset = pMGADRI->depthOffset + size;
-   pMGADRI->textureSize = pMGA->FbUsableSize - pMGADRI->textureOffset;
-#else
-   size = 2 * pScrn->virtualX * pScrn->virtualY;
+   size = pMGADRI->cpp * pScrn->virtualX * pScrn->virtualY;
    size += 4095;
    size &= ~4095;
    pMGADRI->depthOffset = pMGA->FbUsableSize - size;
@@ -551,7 +635,6 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
       DRICloseScreen(pScreen);
       return FALSE;
    }
-#endif
 
    pMGADRI->mAccess = pMGA->MAccess;
 

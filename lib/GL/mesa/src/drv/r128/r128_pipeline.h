@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_pipeline.h,v 1.1 2000/06/17 00:03:06 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
-                                               Cedar Park, Texas. 
+                                               Cedar Park, Texas.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -35,9 +35,12 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _R128_PIPELINE_H_
 #define _R128_PIPELINE_H_
 
-extern GLboolean r128DDBuildPrecalcPipeline(GLcontext *ctx);
-extern GLuint    r128RegisterPipelineStages(struct gl_pipeline_stage *out,
+extern GLboolean r128DDBuildPrecalcPipeline( GLcontext *ctx );
+extern GLuint r128DDRegisterPipelineStages( struct gl_pipeline_stage *out,
 					    const struct gl_pipeline_stage *in,
-					    GLuint nr);
+					    GLuint nr );
+
+extern void r128DDFastPathInit( void );
+extern void r128DDFastPath( struct vertex_buffer *VB );
 
 #endif /* _R128_PIPELINE_H_ */

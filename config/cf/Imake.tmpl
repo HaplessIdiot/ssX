@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.80 2000/06/14 00:16:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.81 2000/06/25 20:17:28 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -493,6 +493,14 @@ GLIDE2INCDIR = Glide2IncDir
 #endif
 #endif
 GLIDE3INCDIR = Glide3IncDir
+#ifndef Glide3LibName
+#if HasGlide3
+#define Glide3LibName glide3
+#else
+#define Glide3LibName
+#endif
+#endif
+GLIDE3LIBNAME = Glide3LibName
 #ifndef HasTk
 #define HasTk NO
 #endif

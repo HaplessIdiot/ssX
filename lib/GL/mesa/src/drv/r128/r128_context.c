@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.1 2000/06/17 00:03:04 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -35,7 +35,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_xmesa.h"
 #include "r128_context.h"
 #include "r128_cce.h"
@@ -130,6 +129,10 @@ GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
 				  | DD_TRI_LIGHT_TWOSIDE
 				  | DD_TRI_OFFSET);
 
+    /* Ask Mesa to clip fog coordinates for us
+     */
+    glCtx->TriangleCaps |= DD_CLIP_FOG_COORD;
+
     /* Reset Mesa's current 2D texture pointers to the driver's textures */
     glCtx->Shared->DefaultD[2][0].DriverData = NULL;
     glCtx->Shared->DefaultD[2][1].DriverData = NULL;
@@ -166,9 +169,9 @@ GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
     /* Register the fast path */
     if (glCtx->NrPipelineStages)
 	glCtx->NrPipelineStages =
-	    r128RegisterPipelineStages(glCtx->PipelineStage,
-				       glCtx->PipelineStage,
-				       glCtx->NrPipelineStages);
+	    r128DDRegisterPipelineStages(glCtx->PipelineStage,
+					 glCtx->PipelineStage,
+					 glCtx->NrPipelineStages);
 
     r128DDInitState(r128ctx);
 

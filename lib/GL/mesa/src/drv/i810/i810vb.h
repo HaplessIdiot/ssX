@@ -60,6 +60,7 @@ typedef struct {
 union i810_vertex_t {
    i810_vertex v;
    float f[16];
+   GLuint ui[16];
 };
 
 typedef union i810_vertex_t i810Vertex;

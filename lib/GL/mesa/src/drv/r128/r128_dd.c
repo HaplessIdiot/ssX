@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.1 2000/06/17 00:03:05 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -33,7 +33,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_xmesa.h"
 #include "r128_context.h"
 #include "r128_lock.h"
@@ -44,6 +43,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_vb.h"
 #include "r128_pipeline.h"
 #include "r128_dd.h"
+
+#include "extensions.h"
 
 /* Driver entry point for clearing color and ancillary buffers */
 static GLbitfield r128DDClear(GLcontext *ctx, GLbitfield mask, GLboolean all,
@@ -97,7 +98,7 @@ static const GLubyte *r128DDGetString(GLcontext *ctx, GLenum name)
     case GL_VENDOR:
 	return (GLubyte *)"Precision Insight, Inc.";
     case GL_RENDERER:
-	return (GLubyte *)"Mesa DRI Rage128 20000613";
+	return (GLubyte *)"Mesa DRI Rage128 20000630";
     default:
 	return NULL;
     }
@@ -111,7 +112,7 @@ static void r128DDFlush(GLcontext *ctx)
 {
     r128ContextPtr r128ctx = R128_CONTEXT(ctx);
 
-    r128FlushVertices(r128ctx);
+    FLUSH_BATCH(r128ctx);
 
 #if ENABLE_PERF_BOXES
     if (r128ctx->boxes) {
@@ -169,6 +170,13 @@ void r128DDInitExtensions(GLcontext *ctx)
 
     if (getenv("LIBGL_NO_MULTITEXTURE"))
 	gl_extensions_disable(ctx, "GL_ARB_multitexture");
+
+   gl_extensions_disable( ctx, "GL_SGI_color_matrix" );   
+   gl_extensions_disable( ctx, "GL_SGI_color_table" );   
+   gl_extensions_disable( ctx, "GL_SGIX_pixel_texture" );   
+   gl_extensions_disable( ctx, "GL_ARB_texture_cube_map" );   
+   gl_extensions_disable( ctx, "GL_ARB_texture_compression" );   
+   gl_extensions_disable( ctx, "GL_EXT_convolution" );   
 }
 
 /* Initialize the driver's misc functions */

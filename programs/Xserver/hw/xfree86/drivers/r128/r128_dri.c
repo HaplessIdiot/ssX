@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dri.c,v 1.3 2000/06/23 23:43:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dri.c,v 1.4 2000/06/26 05:41:32 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
-                                               Cedar Park, Texas. 
+                                               Cedar Park, Texas.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -237,11 +237,11 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
     R128ConfigPrivPtr pR128Configs     = 0;
     R128ConfigPrivPtr *pR128ConfigPtrs = 0;
     int               i, accum, stencil;
-    
+
     switch (pR128->CurrentLayout.pixel_code) {
     case 8:  /* 8bpp mode is not support */
-    case 15: /* FIXME?? */
-    case 24: /* FIXME?? */
+    case 15: /* FIXME */
+    case 24: /* FIXME */
 	return FALSE;
 
 #define R128_USE_ACCUM   1
@@ -251,7 +251,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	numConfigs = 1;
 	if (R128_USE_ACCUM)   numConfigs *= 2;
 	if (R128_USE_STENCIL) numConfigs *= 2;
-	
+
 	if (!(pConfigs
 	      = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
 					      numConfigs))) {
@@ -270,7 +270,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	    xfree(pR128Configs);
 	    return FALSE;
 	}
-	
+
 	i = 0;
 	for (accum = 0; accum <= R128_USE_ACCUM; accum++) {
 	    for (stencil = 0; stencil <= R128_USE_STENCIL; stencil++) {
@@ -323,7 +323,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	numConfigs = 1;
 	if (R128_USE_ACCUM)   numConfigs *= 2;
 	if (R128_USE_STENCIL) numConfigs *= 2;
-	
+
 	if (!(pConfigs
 	      = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
 					      numConfigs))) {
@@ -342,7 +342,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	    xfree(pR128Configs);
 	    return FALSE;
 	}
-	
+
 	i = 0;
 	for (accum = 0; accum <= R128_USE_ACCUM; accum++) {
 	    for (stencil = 0; stencil <= R128_USE_STENCIL; stencil++) {
@@ -394,7 +394,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	}
 	break;
     }
-    
+
     pR128->numVisualConfigs   = numConfigs;
     pR128->pVisualConfigs     = pConfigs;
     pR128->pVisualConfigsPriv = pR128Configs;
@@ -403,7 +403,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 }
 
 /* Create the Rage 128-specific context information */
-static Bool R128CreateContext(ScreenPtr pScreen, VisualPtr visual, 
+static Bool R128CreateContext(ScreenPtr pScreen, VisualPtr visual,
 			      drmContext hwContext, void *pVisualConfigPriv,
 			      DRIContextType contextStore)
 {
@@ -412,7 +412,7 @@ static Bool R128CreateContext(ScreenPtr pScreen, VisualPtr visual,
 }
 
 /* Destroy the Rage 128-specific context information */
-static void R128DestroyContext(ScreenPtr pScreen, drmContext hwContext, 
+static void R128DestroyContext(ScreenPtr pScreen, drmContext hwContext,
 			       DRIContextType contextStore)
 {
     /* Nothing yet */
@@ -462,7 +462,7 @@ static void R128LeaveServer(ScreenPtr pScreen)
    is currently only used to perform any functions necessary when
    entering or leaving the X server, and in the future might not be
    necessary. */
-static void R128DRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
+static void R128DRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
 			       DRIContextType oldContextType, void *oldContext,
 			       DRIContextType newContextType, void *newContext)
 {
@@ -532,7 +532,7 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
 }
 
 /* Copy the back and depth buffers when the X server moves a window. */
-static void R128DRIMoveBuffers(WindowPtr pWin, DDXPointRec ptOldOrg, 
+static void R128DRIMoveBuffers(WindowPtr pWin, DDXPointRec ptOldOrg,
 			       RegionPtr prgnSrc, CARD32 index)
 {
     ScreenPtr   pScreen = pWin->drawable.pScreen;
@@ -559,7 +559,7 @@ static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
     unsigned long cntl;
     int           s, l;
     int           flags;
-    
+
     if (drmAgpAcquire(pR128->drmFD) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR, "[agp] AGP not available\n");
 	return FALSE;
@@ -675,7 +675,7 @@ static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] Ring read ptr mapped at 0x%08lx\n",
 	       (unsigned long)pR128->ringReadPtr);
-    
+
     if (drmAddMap(pR128->drmFD, pR128->vbStart, pR128->vbMapSize,
 		  DRM_AGP, 0, &pR128->vbHandle) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
@@ -694,7 +694,7 @@ static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] Vertex buffers mapped at 0x%08lx\n",
 	       (unsigned long)pR128->vb);
-    
+
     if (drmAddMap(pR128->drmFD, pR128->indStart, pR128->indMapSize,
 		  DRM_AGP, flags, &pR128->indHandle) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
@@ -713,7 +713,7 @@ static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[agp] Indirect buffers mapped at 0x%08lx\n",
 	       (unsigned long)pR128->ind);
-    
+
     if (drmAddMap(pR128->drmFD, pR128->agpTexStart, pR128->agpTexMapSize,
 		  DRM_AGP, 0, &pR128->agpTexHandle) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
@@ -757,6 +757,15 @@ static Bool R128DRIAgpInit(R128InfoPtr pR128, ScreenPtr pScreen)
     return TRUE;
 }
 
+/* Fake the vertex buffers for PCI cards. */
+static Bool R128DRIPciInit(R128InfoPtr pR128, ScreenPtr pScreen)
+{
+    pR128->vbStart = 0;
+    pR128->vbMapSize = pR128->vbSize*1024*1024;
+
+    return TRUE;
+}
+
 /* Add a map for the MMIO registers that will be accessed by any
    DRI-based clients. */
 static Bool R128DRIMapInit(R128InfoPtr pR128, ScreenPtr pScreen)
@@ -770,11 +779,11 @@ static Bool R128DRIMapInit(R128InfoPtr pR128, ScreenPtr pScreen)
     pR128->registerSize = R128_MMIOSIZE;
     if (drmAddMap(pR128->drmFD, pR128->MMIOAddr, pR128->registerSize,
 		  DRM_REGISTERS, flags, &pR128->registerHandle) < 0) {
-	return FALSE;	
+	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
 	       "[drm] register handle = 0x%08lx\n", pR128->registerHandle);
-    
+
     return TRUE;
 }
 
@@ -811,7 +820,7 @@ static void R128DRICCEInitRingBuffer(ScrnInfoPtr pScrn)
 
     addr = INREG(R128_PM4_BUFFER_ADDR);	/* Force read.  Why?  Because it's
                                            in the examples... */
-    
+
 #if 0
     R128CCEWaitForIdle(pScrn);
 #endif
@@ -989,7 +998,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
                  "R128DRIScreenInit failed (libdri.a too old)\n");
       return FALSE;
     }
-   
+
     /* Check the DRI version */
     DRIQueryVersion(&major, &minor, &patch);
     if (major != 3 || minor != 0 || patch < 0) {
@@ -1039,12 +1048,12 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 					    < R128_MAX_DRAWABLES
 					    ? SAREA_MAX_DRAWABLES
 					    : R128_MAX_DRAWABLES);
-    
+
 #ifdef NOT_DONE
     /* FIXME: Need to extend DRI protocol to pass this size back to
      * client for SAREA mapping that includes a device private record
      */
-    pDRIInfo->SAREASize = 
+    pDRIInfo->SAREASize =
 	((sizeof(XF86DRISAREARec) + 0xfff) & 0x1000); /* round to page */
     /* + shared memory device private rec */
 #else
@@ -1057,7 +1066,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     }
     pDRIInfo->SAREASize = SAREA_MAX;
 #endif
-    
+
     if (!(pR128DRI = (R128DRIPtr)xnfcalloc(sizeof(R128DRIRec),1))) {
 	DRIDestroyInfoRec(pR128->pDRIInfo);
 	pR128->pDRIInfo = NULL;
@@ -1066,7 +1075,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->devPrivate     = pR128DRI;
     pDRIInfo->devPrivateSize = sizeof(R128DRIRec);
     pDRIInfo->contextSize    = sizeof(R128DRIContextRec);
-    
+
     pDRIInfo->CreateContext  = R128CreateContext;
     pDRIInfo->DestroyContext = R128DestroyContext;
     pDRIInfo->SwapContext    = R128DRISwapContext;
@@ -1105,6 +1114,11 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 
 				/* Initialize AGP */
     if (!pR128->IsPCI && !R128DRIAgpInit(pR128, pScreen)) {
+	R128DRICloseScreen(pScreen);
+	return FALSE;
+    }
+				/* Initialize PCI */
+    if (pR128->IsPCI && !R128DRIPciInit(pR128, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
@@ -1158,7 +1172,7 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
     R128InfoPtr      pR128      = R128PTR(pScrn);
     R128SAREAPrivPtr pSAREAPriv;
     R128DRIPtr       pR128DRI;
-    
+
     /* Init and start the CCE */
     R128DRICCEInit(pScrn);
 
@@ -1167,7 +1181,7 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
 
     pR128->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
     /* pR128->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */
-    
+
     pR128DRI                 = (R128DRIPtr)pR128->pDRIInfo->devPrivate;
     pR128DRI->registerHandle = pR128->registerHandle;
     pR128DRI->registerSize   = pR128->registerSize;
@@ -1265,10 +1279,10 @@ void R128DRICloseScreen(ScreenPtr pScreen)
 	pR128->agpMemHandle = 0;
 	drmAgpRelease(pR128->drmFD);
     }
-    
+
 				/* De-allocate all DRI resources */
     DRICloseScreen(pScreen);
-    
+
 				/* De-allocate all DRI data structures */
     if (pR128->pDRIInfo) {
 	if (pR128->pDRIInfo->devPrivate) {

@@ -2,18 +2,20 @@
 <!ENTITY % defs SYSTEM "defs.ent"> %defs;
 ]>
 
-<!-- Created: Mon Feb 28 13:00:00 2000 by brian@precisioninsight.com -->
+<!-- Created: Mon Feb 28 13:00:00 2000 by brianp@valinux.com -->
 <!-- Revised: Fri May 19 09:41:48 2000 by martin@valinux.com -->
+<!-- Revised: Tue Aug 22 14:00:00 2000 by brianp@valinux.com -->
 
   <article>
 
       <title>DRI User Guide
-      <author><htmlurl url="http://www.precisioninsight.com/"
-                       name="Precision Insight, Inc.">
-      <date>18 May 2000
+      <author>
+          <htmlurl url="http://www.valinux.com/"
+            name="VA Linux Systems, Inc."> Professional Services - Graphics.
+      <date>22 August 2000
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.4 2000/03/31 20:13:22 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.5 2000/06/17 00:03:17 martin Exp $
     </ident>
 
     <toc>
@@ -22,8 +24,7 @@
 <p>
       <sect1>Copyright
 <p>
-          <bf>Copyright &copy; 2000 by Precision Insight, Inc.,
-          Cedar Park, Texas.
+          <bf>Copyright &copy; 2000 by VA Linux Systems, Inc.
           All Rights Reserved.</bf>
 <p>
           <bf>Permission is granted to make and distribute verbatim copies 
@@ -50,7 +51,7 @@
 
     <sect>Introduction
 <p>
-        With XFree86 4.0 and Precision Insight's Direct Rendering Interface
+        With XFree86 4.0 and the Direct Rendering Interface
         (DRI), hardware accelerated 3D graphics can be considered a standard
         feature on Linux workstations.
         Support for other operating systems, such as FreeBSD, is underway.
@@ -69,6 +70,10 @@
         DRI download, compilation and installation instructions can be found
         at <htmlurl url="http://dri.sourceforge.net/DRIcompile.html"
            name="http://dri.sourceforge.net/DRIcompile.html">
+      <p>
+        Edits, corrections and updates to this document may be mailed
+        to brianp@valinux.com.
+
 
     <sect>Supported Hardware
 <p>
@@ -83,6 +88,7 @@
         <itemize>
           <item>3dfx:
             <itemize>
+              <item>Voodoo5 5500
               <item>Voodoo3 3500 TV
               <item>Voodoo3 3000 AGP
               <item>Voodoo3 3000 PCI
@@ -120,49 +126,59 @@
         </itemize>
 
       <p>
-        Support for the following hardware is underway:
-	<itemize>
-	  <item>3dfx Voodoo4 and Voodoo5 series
-	</itemize>
+        Support for other hardware is underway.
+      <p>
 
 
     <sect>Prerequisite Software
 <p>
         <itemize>
-          <item>XFree86 4.0
-          <item>For the 3dfx Voodoo3 driver, Linux kernel 2.2.x (later
-                kernels will be supported in
-                the near future, and may be required for some chipsets)
-          <item>For the Matrox G200/G400, Linux kernel 2.3.51, with AGP support
-          <item>For the Intel i810, Linux kernel 2.3.99-pre6, with AGP support
+          <item>The DRI is available in XFree86 4.0 and later.
+          <item>Some hardware drivers require specific versions of the
+                Linux kernel for AGP support, etc.
+                See section 10 for specifics.
+          <item>You <em>DO NOT</em> need to install Mesa separately.
+                The parts of Mesa needed for hardware acceleration are
+                already in the XFree86/DRI project.
         </itemize>
+
+
+    <sect>Kernel Modules
+    <p>
+      3D hardware acceleration requires a DRI kernel module that's
+      specific to your graphics hardware.
+      <P>
+      The DRI kernel module version must exactly match your running kernel
+      version.
+      Since there are so many versions of the kernel, it's difficult to
+      provide precompiled kernel modules.
       <p>
-        Mesa 3.3 (beta) is included with XFree86 4.0; there is no need to
-        download the stand-alone Mesa distribution.
+      While the Linux source tree includes the DRI kernel module sources,
+      the latest DRI kernel sources will be found in the DRI source tree.
+      <p>
+      See the DRI Compilation Guide for information on compiling the DRI
+      kernel modules.
+      <p>
+      XFree86 4.0.1 added automatic kernel module loading to the X server.
+      On Linux, the X server uses modprobe to load kernel modules.
+      The DRM kernel modules should be in /lib/modules/KERNEL-VERSION/misc/
+      for automatic loading to work.
+      <p>
+      Optionally, DRM kernel modules can be loaded manually with insmod
+      prior to starting the X server.
+      <p>
+      You can verify that the kernel module was installed with lsmod,
+      checking the X server startup log, and checking that /proc/dri/0
+      exists. 
 
-
-    <sect>X Server Start-up
-<p>
-        This section describes the steps needed to start the X server with
-        3D acceleration support.
-
-      <sect1>Kernel module
-<p>
-          XFree86 4.0.1 added automatic kernel module loading to the X server.
-          On Linux, the X server uses modprobe to load kernel modules.
-          The DRM kernel modules should be in /lib/modules/KERNEL-VERSION/misc/
-          for automatic loading to work.
-<p>
-          Optionally, DRM kernel modules can be loaded manually with insmod
-          prior to starting the X server.
-<p>
-          You can verify that the kernel module was installed with lsmod,
-          checking the X server startup log, and checking that /proc/dri/0
-          exists. 
-
-      <sect1>XF86Config file
-<p>
-          First, the XF86Config file must load the GLX and DRI modules:
+      <sect>XF86Config file
+      <p>
+        The XFree86 configuration file is usually found in
+        <tt>/etc/X11/XF86Config</tt>.
+        This section describes the parts which must be specially set for
+        the DRI.
+      <p>
+        First, the XF86Config file must load the GLX and DRI modules:
 
         <verb>
 	Section "Module"
@@ -174,140 +190,71 @@
 	EndSection
         </verb>
 
-          Next, the DRI section can be used to restrict access to direct
-          rendering.
+        Next, the DRI section can be used to restrict access to direct
+        rendering.
         <p>
-          If you want all of the users on your system to be able to use
-          direct-rendering, then use a simple DRI section:
+        If you want all of the users on your system to be able to use
+        direct-rendering, then use a simple DRI section:
         <verb>
 	Section "DRI"
 	     Mode 0666
 	EndSection
         </verb>
         <p>
-          This section will allow any user with a current connection to the X
-          server to use direct rendering.
+        This section will allow any user with a current connection to the X
+        server to use direct rendering.
         <p>
-          If you want to restrict the use of direct-rendering to a
-          certain group of users, then create a group for those users by
-          editing the <tt>/etc/group</tt> file on your system.
-          For example, you may want to create a group called <tt>xf86dri</tt>
-          and place two users (e.g., <tt>fred</tt> and <tt>jane</tt>) in
-          that group.
-          To do that, you might add the following line to <tt>/etc/group</tt>:
-
+        If you want to restrict the use of direct-rendering to a
+        certain group of users, then create a group for those users by
+        editing the <tt>/etc/group</tt> file on your system.
+        For example, you may want to create a group called <tt>xf86dri</tt>
+        and place two users (e.g., <tt>fred</tt> and <tt>jane</tt>) in
+        that group.
+        To do that, you might add the following line to <tt>/etc/group</tt>:
         <verb>
         xf86dri:x:8000:fred,jane
         </verb>
-
-          You have to be careful that the group id (8000 in this example)
-          is unique.
+        You have to be careful that the group id (8000 in this example)
+        is unique.
         <p>
-          Then you would use the following DRI section:
-
+        Then you would use the following DRI section:
         <verb>
         Section "DRI"
              Group "xf86dri"
              Mode 0660
         EndSection
         </verb>
+        This would limit access to direct-rendering to those users in the
+        <tt>xf86dri</tt> group (<tt>fred</tt> and <tt>jane</tt> in this
+        example).  When other users tried to use direct rendering, they
+        would fall back to unaccelerated indirect rendering.
+        <p>
+        [Note that there is a known bug in XFree86 4.0 that prevents some
+        changes to the DRI section from taking effect.  Until this bug is
+        fixed, if you change the DRI section, please also remove the
+        <tt>/dev/dri</tt> directory with the <tt>rm -rf /dev/dri</tt>
+        command.]
+        <p>
+        Finally, the XF86Config file needs <tt>Device</tt> and
+        <tt>Screen</tt> sections specific to your hardware.
+        Look in section 10: <em>Hardware-Specific Information and
+        Troubleshooting</em> for details.
 
-          This would limit access to direct-rendering to those users in the
-          <tt>xf86dri</tt> group (<tt>fred</tt> and <tt>jane</tt> in this
-          example).  When other users tried to use direct rendering, they
-          would fall back to unaccelerated indirect rendering.
-        <p>
-          [Note that there is a known bug in XFree86 4.0 that prevents some
-          changes to the DRI section from taking effect.  Until this bug is
-          fixed, if you change the DRI section, please also remove the
-          <tt>/dev/dri</tt> directory with the <tt>rm -rf /dev/dri</tt>
-          command.]
-        <p>
-          Next, the Device section of the XF86Config file must describe your
-          particular hardware.
-        <p>
-          For example, here's the Device section for a 3dfx Voodoo3 card:
-
-        <verb>
-        Section "Device"
-            Identifier  "Voodoo3"
-            VendorName  "3dfx"
-            Driver      "tdfx"
-        EndSection
-        </verb>
-
-        <p>
-          Here's the Device section for a Matrox G400 card:
-        <verb>
-	Section "Device"
-	    Identifier  "G400"
-	    VendorName  "Matrox"
-	    Driver      "mga"
-	    VideoRam    32768
-	EndSection
-        </verb>
-
-        <p>
-          Here's the Device section for an ATI Rage 128 card:
-        <verb>
-	Section "Device"
-	    Identifier  "Rage128"
-	    VendorName  "ATI"
-	    Driver      "r128"
-	EndSection
-        </verb>
-
-          Here's the Device section for an Intel i810 motherboard:
-        <verb>
-	Section "Device"
-	    Identifier  "i810"
-	    VendorName  "Intel"
-	    Driver      "i810"
-	    VideoRam    10000
-	EndSection
-        </verb>
-
-        <p>
-          Finally, the Screen section of the XF86Config file may have to be
-          specially configured as well.
-          For example, Voodoo3 hardware acceleration is only available
-          in 16bpp mode.
-        <verb>
-	Section "Screen"
-	    Identifier  "Screen 1"
-	    Device      "Voodoo3"
-	    Monitor     "High Res Monitor"
-	    DefaultDepth 16
-	    Subsection "Display"
-		Depth       16
-		Modes       "1280x1024" "1024x768" "800x600" "640x480"
-		ViewPort    0 0
-	    EndSubsection
-        EndSection
-        </verb>
-        <p>
-          Replace <em>Voodoo3</em> with <em>G400</em> for Matrox G400.
-        <p>
-          Replace <em>Voodoo3</em> with <em>Rage128</em> for ATI Rage 128.
-        <p>
-          If there are errors in the XF86Config file, the X server will
-          log errors to the file /var/log/XFree86.0.log
-
-      <sect1>Memory usage
+    <sect>Memory usage
 <p>
-          Using the 3D features of a graphics card requires more memory
-          than when it's just used as a 2D device.
-          Double buffering, depth buffering, stencil buffers, textures,
-          etc. all require extra graphics memory.
-          These features may require four times the memory used for a simple
-          2D display.
+        Using the 3D features of a graphics card requires more memory
+        than when it's just used as a 2D device.
+        Double buffering, depth buffering, stencil buffers, textures,
+        etc. all require extra graphics memory.
+        These features may require four times the memory used for a simple
+        2D display.
         <p>
-          If your graphics card doesn't have a lot of memory (less than 16MB,
-          for example), you may have to reduce your screen size and/or
-          color depth in order to use 3D features.
+        If your graphics card doesn't have a lot of memory (less than 16MB,
+        for example), you may have to reduce your screen size and/or
+        color depth in order to use 3D features.
         <p>
-          The documentation included with your card should have information
-          about maximum screen size when using 3D.
+        The documentation included with your card should have information
+        about maximum screen size when using 3D.
 
 
     <sect>Using 3D Acceleration
@@ -445,6 +392,11 @@
 	      Note that this feature is disabled for set-uid programs.
               This variable replaces the <tt/LIBGL_DRIVERS_DIR/ env var used
               in XFree86 4.0.
+            <item>
+              <tt/MESA_DEBUG/, if defined, will cause Mesa-based 3D drivers
+              to print user error messages to stderr.
+              These are errors that you'd otherwise detect by calling
+              <tt>glGetError</tt>.
 	  </enum>
         <p>
           Mesa-based drivers (this includes most of the drivers listed
@@ -458,7 +410,7 @@
          problems.
          See below for additional information for specific hardware.
 
-      <sect1>Starting the X server
+      <sect1>The X Server
 <p>
 	<enum>
 	  <item>
@@ -468,7 +420,8 @@
 	    For 3dfx hardware you should see <tt/tdfx/, for example.
 
 	  <item>
-	    Verify you're running XFree86 4.0 and not an older version.
+	    Verify you're running XFree86 4.0 (or newer) and not an
+            older version.
             If you run <tt/xdpyinfo/ and look for the following line near
             the top:
         <verb>
@@ -614,7 +567,13 @@
         This section presents hardware-specific information for normal
         use and troubleshooting.
 
-      <sect1>3dfx Voodoo3
+      <sect1>3dfx Voodoo3 Series
+<p>
+        <sect2>Dependencies
+<p>
+          The Voodoo3 DRI driver requires a special versions of
+          the 3dfx Glide library.
+          It can be downloaded from the DRI website.
 <p>
         <sect2>Configuration
 <p>
@@ -646,9 +605,10 @@
 	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
             It will be automatically loaded by the Xserver if needed.
           <p>
-	    The DRI 3D driver for the Voodoo3 should be in
+	    The DRI 3D driver for the Voodoo3 hould be in
 	    <tt>/usr/X11R6/lib/modules/dri/tdfx_dri.so</tt>.
             This will be automatically loaded by libGL.so.
+          <p>
 
         <sect2>Troubleshooting
 <p>
@@ -676,7 +636,7 @@
               Zero allows maximum frame rate.
             <item>
               The <tt/glTexEnv/ mode <tt/GL_BLEND/ is not directly supported
-              by the 3dfx hardware.
+              by the Voodoo3 hardware.
               It can be accomplished with a multipass algorithm but it's not
               implemented at this time.
               Applications which use that mode, such as the Performer Town
@@ -687,23 +647,128 @@
 <p>
           <itemize>
             <item>
-              Glide cannot be used directly; only OpenGL-based programs are
-              supported on the Voodoo3.
+              The Glide library cannot be used directly; it's only meant to
+              be used via the tdfx DRI driver.
             <item>
               SSystem has problems because of poorly set near and far
               clipping planes.
               The office.unc Performer model also suffers from this problem.
+            <item>
+              The lowest mipmap level is sometimes miscolored in trilinear-
+              sampled polygons.
           </itemize>
 
 
-      <sect1>Intel i810
+      <sect1>3dfx Voodoo5 Series
+<p>
+        <sect2>Dependencies
+<p>
+          The Voodoo5 DRI driver requires a special versions of
+          the 3dfx Glide library, different than that used for Voodoo3
+          hardware.
+          It can be downloaded from the DRI website.
 <p>
         <sect2>Configuration
 <p>
             Your XF86Config file's device section must specify the
-            <tt>i810</tt> device, and specify a usable amount of video
-            ram to reserve.
+            <tt>tdfx</tt> device:
             <verb>
+        Section "Device"
+            Identifier  "Voodoo5"
+            VendorName  "3dfx"
+            Driver      "tdfx"
+        EndSection
+            </verb>
+            The Screen section should then reference the Voodoo3 device:
+            <verb>
+	Section "Screen"
+	    Identifier  "Screen 1"
+	    Device      "Voodoo5"
+	    Monitor     "High Res Monitor"
+	    DefaultDepth 24
+	    Subsection "Display"
+		Depth       16
+		Modes       "1280x1024" "1024x768" "800x600" "640x480"
+		ViewPort    0 0
+	    EndSubsection
+	    Subsection "Display"
+		Depth       24
+		Modes       "1280x1024" "1024x768" "800x600" "640x480"
+		ViewPort    0 0
+	    EndSubsection
+        EndSection
+            </verb>
+          <p>
+            The kernel module for the Voodoo5 is named <tt>tdfx.o</tt> and
+	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
+            It will be automatically loaded by the Xserver if needed.
+          <p>
+	    The DRI 3D driver for the Voodoo5 hould be in
+	    <tt>/usr/X11R6/lib/modules/dri/tdfx_dri.so</tt>.
+            This will be automatically loaded by libGL.so.
+          <p>
+            The Voodoo5 supports 3D rendering in 16 and 32 bpp modes.
+            When running in 32bpp mode an 8-bit stencil buffer and 24-bit
+            Z (depth) buffer are offered.
+            When running in 32bpp mode only a 16-bit Z (depth) buffer is
+            offered and stencil is implemented in software.
+          <p>
+            A software-based accumulation buffer is available in both
+            16 and 32bpp modes.
+          <p>
+
+        <sect2>Troubleshooting
+<p>
+          <itemize>
+           <item>
+              The <tt>/dev/3dfx</tt> device is not used for DRI; it's only for
+              Glide on older 3dfx hardware.
+           <item>
+              Different versions of Glide are needed for Voodoo3 and Voodoo5.
+              See the DRI website's resources page to download the right
+              version of Glide.
+          </itemize>
+
+        <sect2>Performance
+<p>
+          <itemize>
+            <item>
+              Normally, buffer swapping in double-buffered applications is
+              synchronized to your monitor's refresh rate.
+              This may be overridden by setting the <tt/FX_GLIDE_SWAPINTERNVAL/
+              environment variable.
+              The value of this variable indicates the maximum number of
+              swap buffer commands can be buffered.
+              Zero allows maximum frame rate.
+          </itemize>
+        <sect2>Known Problems
+<p>
+          <itemize>
+            <item>
+              The Glide library cannot be used directly; it's only meant to
+              be used via the tdfx DRI driver.
+            <item>
+              24bpp screen modes are supported by the hardware but not by
+              the current driver.
+          </itemize>
+
+
+      <sect1>Intel i810
+        <p>
+        <sect2>Dependencies
+          <p>
+          A Linux kernel with AGP GART support is required.
+          The 2.2.x kernel series does not have AGP GART support.
+          The 2.4.x test kernels have AGP GART and have been tested
+          with the i810.
+          <p>
+
+        <sect2>Configuration
+          <p>
+          Your XF86Config file's device section must specify the
+          <tt>i810</tt> device, and specify a usable amount of video
+          ram to reserve.
+          <verb>
         Section "Device"
             Identifier  "i810"
             VendorName  "Intel"
@@ -758,16 +823,22 @@
 <p>
 
       <sect1>Matrox G200 and G400
-<p>
+      <p>
+        <sect2>Dependencies
+        <p>
+          A Linux kernel with AGP GART support (such as the 2.4.x test
+          kernels) is needed.
+          <p>
         <sect2>Configuration
-<p>
-            Your XF86Config file's device section must specify the
-            <tt>mga</tt> device:  
-            <verb>
+        <p>
+          Your XF86Config file's device section must specify the
+          <tt>mga</tt> device:  
+          <verb>
         Section "Device"
             Identifier  "MGA"
             VendorName  "Matrox"
             Driver      "mga"
+	    VideoRam    32768
         EndSection
             </verb>
             The Screen section should then reference the MGA device:
@@ -784,6 +855,23 @@
 	    EndSubsection
         EndSection
             </verb>
+            To use a 32bpp screen mode, use this <tt>Screen</tt> section
+            instead:
+            <verb>
+	Section "Screen"
+	    Identifier  "Screen 1"
+	    Device      "MGA"
+	    Monitor     "High Res Monitor"
+	    DefaultDepth 24
+            DefaultFbBpp 32
+	    Subsection "Display"
+		Depth       24
+		Modes       "1280x1024" "1024x768" "800x600" "640x480"
+		ViewPort    0 0
+	    EndSubsection
+        EndSection
+            </verb>
+
           <p>
             The kernel module for the G200/G400 is named <tt>mga.o</tt> and
 	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
@@ -792,17 +880,6 @@
 	    The DRI 3D driver for the G200/G400 should be in
 	    <tt>/usr/X11R6/lib/modules/dri/mga_dri.so</tt>.
             This will be automatically loaded by libGL.so.
-
-        <sect2>Troubleshooting
-<p>
-          <itemize>
-            <item>
-              3D acceleration for the G200 and G400 is only supported in the 16
-              bit/pixel screen mode at this time.  32bpp will be supported
-              in the future.
-              Use <tt/xdpyinfo/ to verify that all your visuals are depth 16.
-              Edit your XF86Config file if needed.
-          </itemize>
 
         <sect2>Performance
 <p>
@@ -815,16 +892,23 @@
 	      Multitexture is currently disabled on the G400 to work
 	      around a hardware lockup bug.  This should be restored in
 	      a subsequent release.
+            <item>
+	      32bpp mode has not been tested on the G400 at this time.
           </itemize>
 
 
       <sect1>ATI Rage 128
-<p>
+      <p>
+        <sect2>Dependencies
+        <p>
+          A Linux kernel with AGP GART support (such as the 2.4.x test
+          kernels) is needed.
+          <p>
         <sect2>Configuration
-<p>
-            Your XF86Config file's device section must specify the
-            <tt>r128</tt> device:
-            <verb>
+        <p>
+          Your XF86Config file's device section must specify the
+          <tt>r128</tt> device:
+          <verb>
         Section "Device"
             Identifier  "Rage128"
             VendorName  "ATI"
@@ -880,7 +964,7 @@
           developed or supported.
 
 
-    <sect>Limitations and Known Bugs
+    <sect>General Limitations and Known Bugs
 <p>
       <sect1>OpenGL
 <p>
@@ -888,7 +972,8 @@
           overlays, stereo, hardware-accelerated indirect rendering.
         <p>
           OpenGL-like functionality is provided with the Mesa library.
-          XFree86 4.0 uses a beta version Mesa 3.3.
+          XFree86 4.0.1 uses Mesa 3.3.
+          Subsequent releases of XFree86 will use newer versions of Mesa.
           When newer versions of Mesa are available, the 3D drivers can
           be updated without reinstalling XFree86 or libGL.so.
 
@@ -898,6 +983,12 @@
           are operational.
         <p>
           The new <tt/glXGetProcAddressARB/ function is fully supported.
+        <p>
+          GLXPixmap rendering is only supported for indirect rendering
+          contexts.  This is a common OpenGL limitation.  Attempting
+          to use a direct rendering context with a GLXPixmap will result
+          in an X protocol error.
+        <p>
 
       <sect1>Signal Handling
 <p>

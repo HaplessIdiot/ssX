@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.h,v 1.1 2000/06/17 00:03:06 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
-                                               Cedar Park, Texas. 
+                                               Cedar Park, Texas.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -60,6 +60,7 @@ typedef struct {
     r128RegionRec       vbRgn;
     unsigned char      *vb;
     int                 vbOffset;
+    int                 vbMapSize;
     int                 vbBufSize;
     drmBufMapPtr        vbBufs;
 

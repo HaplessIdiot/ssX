@@ -26,7 +26,7 @@
  *	9/20/99 rewrite by John Carmack <johnc@idsoftware.com>
  *      13/1/00 port to DRI by Keith Whitwell <keithw@precisioninsight.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.3 2000/06/21 12:11:00 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.4 2000/06/22 16:59:24 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,10 +34,10 @@
 
 #include "mm.h"
 #include "mgalib.h"
-#include "mgadma.h"
 #include "mgatex.h"
 #include "mgalog.h"
 #include "mgaregs.h"
+#include "mgaioctl.h"
 
 #include "simple_list.h"
 
@@ -908,15 +908,27 @@ static void mgaUpdateTextureStage( GLcontext *ctx, int unit )
 				 TD0_alpha_sel_mul);
 		break;
 	case GL_DECAL:
-		*reg = (TD0_color_arg2_fcol | 
-			TD0_color_alpha_currtex |
-			TD0_color_alpha2inv_enable |
-			TD0_color_arg2mul_alpha2 |
-			TD0_color_arg1mul_alpha1 |
-			TD0_color_add_add |
-			TD0_color_sel_add |
-			TD0_alpha_arg2_fcol |
-			TD0_alpha_sel_arg2 );
+		if (unit == 0) 
+			*reg = (TD0_color_arg2_diffuse | 
+				TD0_color_alpha_currtex |
+				TD0_color_alpha2inv_enable |
+				TD0_color_arg2mul_alpha2 |
+				TD0_color_arg1mul_alpha1 |
+				TD0_color_add_add |
+				TD0_color_sel_add |
+				TD0_alpha_arg2_diffuse |
+				TD0_alpha_sel_arg2 );
+		else
+			*reg = (TD0_color_arg2_prevstage | 
+				TD0_color_alpha_currtex |
+				TD0_color_alpha2inv_enable |
+				TD0_color_arg2mul_alpha2 |
+				TD0_color_arg1mul_alpha1 |
+				TD0_color_add_add |
+				TD0_color_sel_add |
+				TD0_alpha_arg2_prevstage |
+				TD0_alpha_sel_arg2 );
+
 		break;
 
 	case GL_ADD:
@@ -1096,8 +1108,8 @@ Driver functions called directly from mesa
 /*
  * mgaTexEnv
  */      
-void mgaTexEnv( GLcontext *ctx, GLenum target, GLenum pname,
-                const GLfloat *param ) 
+void mgaTexEnv( GLcontext *ctx, GLenum target, 
+		GLenum pname, const GLfloat *param ) 
 {
 	mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 	mgaMsg( 10, "mgaTexEnv( %i )\n", pname );
@@ -1106,7 +1118,8 @@ void mgaTexEnv( GLcontext *ctx, GLenum target, GLenum pname,
 	if (pname == GL_TEXTURE_ENV_MODE) {
 		/* force the texture state to be updated */
 		FLUSH_BATCH( MGA_CONTEXT(ctx) );
-		MGA_CONTEXT(ctx)->new_state |= MGA_NEW_TEXTURE;
+		MGA_CONTEXT(ctx)->new_state |= (MGA_NEW_TEXTURE | 
+						MGA_NEW_ALPHA);
 	}
 	else if (pname == GL_TEXTURE_ENV_COLOR)
 	{
@@ -1122,9 +1135,7 @@ void mgaTexEnv( GLcontext *ctx, GLenum target, GLenum pname,
 		c[2] = fc[2];
 		c[3] = fc[3];
 
-		/* No alpha at 16bpp?
-		 */
-		col = mgaPackColor( mmesa->mgaScreen->Attrib,
+		col = mgaPackColor( mmesa->mgaScreen->cpp,
 				    c[0], c[1], c[2], c[3] );
 
   		mmesa->envcolor = (c[3]<<24) | (c[0]<<16) | (c[1]<<8) | (c[2]); 

@@ -386,8 +386,8 @@ static void mga_project_vertices( struct vertex_buffer *VB )
    m[MAT_TX] =   mat->m[MAT_TX] + mmesa->drawX + SUBPIXEL_X;
    m[MAT_SY] = (- mat->m[MAT_SY]);
    m[MAT_TY] = (- mat->m[MAT_TY]) + mmesa->driDrawable->h + mmesa->drawY + SUBPIXEL_Y;
-   m[MAT_SZ] =   mat->m[MAT_SZ] * (1.0 / 0x10000);
-   m[MAT_TZ] =   mat->m[MAT_TZ] * (1.0 / 0x10000);
+   m[MAT_SZ] =   mat->m[MAT_SZ] * mmesa->depth_scale;
+   m[MAT_TZ] =   mat->m[MAT_TZ] * mmesa->depth_scale;
 
    gl_project_v16( mgaVB->verts[VB->CopyStart].f,
 		   mgaVB->verts[mgaVB->last_vert].f,
@@ -409,8 +409,8 @@ static void mga_project_clipped_vertices( struct vertex_buffer *VB )
    m[MAT_TX] =   mat->m[MAT_TX] + mmesa->drawX + SUBPIXEL_X;
    m[MAT_SY] = (- mat->m[MAT_SY]);
    m[MAT_TY] = (- mat->m[MAT_TY]) + mmesa->driDrawable->h + mmesa->drawY - SUBPIXEL_Y;
-   m[MAT_SZ] =   mat->m[MAT_SZ] * (1.0 / 0x10000);
-   m[MAT_TZ] =   mat->m[MAT_TZ] * (1.0 / 0x10000);
+   m[MAT_SZ] =   mat->m[MAT_SZ] * mmesa->depth_scale;
+   m[MAT_TZ] =   mat->m[MAT_TZ] * mmesa->depth_scale;
 
    gl_project_clipped_v16( mgaVB->verts[VB->CopyStart].f,
 			   mgaVB->verts[mgaVB->last_vert].f,

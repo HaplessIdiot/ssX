@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.1 2000/06/17 00:03:06 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -41,7 +41,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_cce.h"
 #include "r128_tris.h"
 #include "r128_vb.h"
-#include "r128_fastpath.h"
+#include "r128_pipeline.h"
 
 #include <sys/mman.h>
 
@@ -108,7 +108,6 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 	    return NULL;
 	}
 	r128Screen->vbOffset     = r128DRIPriv->vbOffset;
-	r128Screen->vbBufSize    = r128DRIPriv->vbBufSize;
 
 	r128Screen->indRgn.handle = r128DRIPriv->indHandle;
 	r128Screen->indRgn.size   = r128DRIPriv->indMapSize;
@@ -155,6 +154,13 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 	    return NULL;
 	}
     }
+
+    /* Allow both AGP and PCI cards to use vertex buffers.  PCI cards use
+     * the ring walker method, ie. the vertex buffer data is actually part
+     * of the command stream.
+     */
+    r128Screen->vbMapSize        = r128DRIPriv->vbMapSize;
+    r128Screen->vbBufSize        = r128DRIPriv->vbBufSize;
 
     r128Screen->deviceID         = r128DRIPriv->deviceID;
 
@@ -231,9 +237,9 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 
     r128InitVertexBuffers(r128Screen);
 
-    r128FastPathInit();
-    r128TriangleFuncsInit();
-    r128SetupInit();
+    r128DDFastPathInit();
+    r128DDTriangleFuncsInit();
+    r128DDSetupInit();
 
     return r128Screen;
 }

@@ -28,17 +28,12 @@
 #define MGATIS_INC
 
 #include "types.h"
+#include "mgaioctl.h"
 
 extern void mgaDDChooseRenderState(GLcontext *ctx);
 extern void mgaDDTrifuncInit( void );
 
 
-/* Todo: 
- *    - Antialiasing (?)
- *    - line and polygon stipple
- *    - stencil 
- */
-#define MGA_ANTIALIAS_BIT   0       /* ignored for now, no fallback */
 #define MGA_FLAT_BIT	    0x1
 #define MGA_OFFSET_BIT	    0x2	
 #define MGA_TWOSIDE_BIT	    0x4	
@@ -54,9 +49,28 @@ static __inline void mga_draw_triangle( mgaContextPtr mmesa,
 				      mgaVertex *v2 )
 {
    mgaUI32 vertsize = mmesa->vertsize;
-   mgaUI32 *wv = mgaAllocVertexDwords( mmesa, 3 * vertsize );
+   mgaUI32 *wv = mgaAllocVertexDwordsInline( mmesa, 3 * vertsize );
    int j;
 
+#if defined (USE_X86_ASM)
+    /* GTH: We can safely assume the vertex stride is some number of
+     * dwords, and thus a "rep movsd" is okay.  The vb pointer is
+     * automagically updated with this instruction, so we don't have
+     * to manually take care of incrementing it.
+     */
+    __asm__ __volatile__( "rep ; movsl"
+			  : "=%c" (j)
+			  : "0" (vertsize), "D" ((long)wv), "S" ((long)v0)
+			  : "memory" );
+    __asm__ __volatile__( "rep ; movsl"
+			  : "=%c" (j)
+			  : "0" (vertsize), "S" ((long)v1)
+			  : "memory" );
+    __asm__ __volatile__( "rep ; movsl"
+			  : "=%c" (j)
+			  : "0" (vertsize), "S" ((long)v2)
+			  : "memory" );
+#else
    for (j = 0 ; j < vertsize ; j++) 
       wv[j] = v0->ui[j];
 
@@ -67,6 +81,7 @@ static __inline void mga_draw_triangle( mgaContextPtr mmesa,
    wv += vertsize;
    for (j = 0 ; j < vertsize ; j++) 
       wv[j] = v2->ui[j];
+#endif
 }
 
 
@@ -77,38 +92,38 @@ static __inline void mga_draw_point( mgaContextPtr mmesa,
    mgaUI32 *wv = mgaAllocVertexDwords( mmesa, 6*vertsize);
    int j;
 
-   *(float *)&wv[0] = tmp->warp1.x - sz;
-   *(float *)&wv[1] = tmp->warp1.y - sz;
+   *(float *)&wv[0] = tmp->v.x - sz;
+   *(float *)&wv[1] = tmp->v.y - sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->warp1.x + sz;
-   *(float *)&wv[1] = tmp->warp1.y - sz;
+   *(float *)&wv[0] = tmp->v.x + sz;
+   *(float *)&wv[1] = tmp->v.y - sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->warp1.x + sz;
-   *(float *)&wv[1] = tmp->warp1.y + sz;
+   *(float *)&wv[0] = tmp->v.x + sz;
+   *(float *)&wv[1] = tmp->v.y + sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->warp1.x + sz;
-   *(float *)&wv[1] = tmp->warp1.y + sz;
+   *(float *)&wv[0] = tmp->v.x + sz;
+   *(float *)&wv[1] = tmp->v.y + sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->warp1.x - sz;
-   *(float *)&wv[1] = tmp->warp1.y + sz;
+   *(float *)&wv[0] = tmp->v.x - sz;
+   *(float *)&wv[1] = tmp->v.y + sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp->warp1.x - sz;
-   *(float *)&wv[1] = tmp->warp1.y - sz;
+   *(float *)&wv[0] = tmp->v.x - sz;
+   *(float *)&wv[1] = tmp->v.y - sz;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp->ui[j];
 }
@@ -124,8 +139,8 @@ static __inline void mga_draw_line( mgaContextPtr mmesa,
    float dx, dy, ix, iy;
    int j;
 
-   dx = tmp0->warp1.x - tmp1->warp1.x;
-   dy = tmp0->warp1.y - tmp1->warp1.y;
+   dx = tmp0->v.x - tmp1->v.x;
+   dy = tmp0->v.y - tmp1->v.y;
 
    ix = width * .5; iy = 0;
   
@@ -136,38 +151,38 @@ static __inline void mga_draw_line( mgaContextPtr mmesa,
       iy = ix; ix = 0;
    }
   
-   *(float *)&wv[0] = tmp0->warp1.x - ix;
-   *(float *)&wv[1] = tmp0->warp1.y - iy;
+   *(float *)&wv[0] = tmp0->v.x - ix;
+   *(float *)&wv[1] = tmp0->v.y - iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp0->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp1->warp1.x + ix;
-   *(float *)&wv[1] = tmp1->warp1.y + iy;
+   *(float *)&wv[0] = tmp1->v.x + ix;
+   *(float *)&wv[1] = tmp1->v.y + iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp1->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp0->warp1.x + ix;
-   *(float *)&wv[1] = tmp0->warp1.y + iy;
+   *(float *)&wv[0] = tmp0->v.x + ix;
+   *(float *)&wv[1] = tmp0->v.y + iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp0->ui[j];
    wv += vertsize;
 	 
-   *(float *)&wv[0] = tmp0->warp1.x - ix;
-   *(float *)&wv[1] = tmp0->warp1.y - iy;
+   *(float *)&wv[0] = tmp0->v.x - ix;
+   *(float *)&wv[1] = tmp0->v.y - iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp0->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp1->warp1.x - ix;
-   *(float *)&wv[1] = tmp1->warp1.y - iy;
+   *(float *)&wv[0] = tmp1->v.x - ix;
+   *(float *)&wv[1] = tmp1->v.y - iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp1->ui[j];
    wv += vertsize;
 
-   *(float *)&wv[0] = tmp1->warp1.x + ix;
-   *(float *)&wv[1] = tmp1->warp1.y + iy;
+   *(float *)&wv[0] = tmp1->v.x + ix;
+   *(float *)&wv[1] = tmp1->v.y + iy;
    for (j = 2 ; j < vertsize ; j++) 
       wv[j] = tmp1->ui[j];
    wv += vertsize;

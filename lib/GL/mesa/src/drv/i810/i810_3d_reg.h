@@ -110,6 +110,8 @@
 #define LCS_LINEWIDTH_SHIFT           12
 #define LCS_LINEWIDTH_0_5       (0x1<<12)
 #define LCS_LINEWIDTH_1_0       (0x2<<12)
+#define LCS_LINEWIDTH_2_0       (0x4<<12)
+#define LCS_LINEWIDTH_3_0       (0x6<<12)
 #define LCS_UPDATE_ALPHA_INTERP (0x1<<11)
 #define LCS_ALPHA_FLAT          (0x0<<10)
 #define LCS_ALPHA_INTERP        (0x1<<10)
@@ -652,5 +654,19 @@ typedef struct {
 
 #define I810PACKCOLOR565(r,g,b) \
   ((((r) & 0xf8) << 8) | (((g) & 0xfc) << 3) | (((b) & 0xf8) >> 3))
+
+
+#define I810_VFMT_T0 (GFX_OP_VERTEX_FMT |	\
+		      VF_TEXCOORD_COUNT_1 |	\
+		      VF_SPEC_FOG_ENABLE |	\
+		      VF_RGBA_ENABLE |		\
+		      VF_XYZW)
+
+#define I810_VFMT_T0T1 (GFX_OP_VERTEX_FMT |	\
+		        VF_TEXCOORD_COUNT_2 |	\
+		        VF_SPEC_FOG_ENABLE |	\
+		        VF_RGBA_ENABLE |	\
+		        VF_XYZW)
+
 
 #endif

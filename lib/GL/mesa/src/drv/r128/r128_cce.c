@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_cce.c,v 1.1 2000/06/17 00:03:04 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_cce.c,v 1.2 2000/06/26 05:41:29 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -33,7 +33,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_xmesa.h"
 #include "r128_context.h"
 #include "r128_lock.h"

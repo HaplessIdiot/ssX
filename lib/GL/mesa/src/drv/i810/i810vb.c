@@ -261,16 +261,17 @@ void i810ChooseRasterSetupFunc(GLcontext *ctx)
   i810ContextPtr imesa = I810_CONTEXT( ctx );
   int funcindex = (I810_WIN_BIT | I810_RGBA_BIT);
 
-  if (ctx->Texture.Enabled & 0xf) {
-      /* This doesn't work for non-RGBA textures
-      if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE)
-	 funcindex &= ~I810_RGBA_BIT;
-      */
-     funcindex |= I810_TEX0_BIT;
-  }
+  imesa->vertsize = 8;
+  imesa->Setup[I810_CTXREG_VF] = I810_VFMT_T0;
 
-  if (ctx->Texture.Enabled & 0xf0)
+  if (ctx->Texture.Enabled & 0xf) 
+     funcindex |= I810_TEX0_BIT;
+  
+  if (ctx->Texture.Enabled & 0xf0) {
      funcindex |= I810_TEX1_BIT;
+     imesa->vertsize = 10;
+     imesa->Setup[I810_CTXREG_VF] = I810_VFMT_T0T1;
+  }
 
   if (ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR)
      funcindex |= I810_SPEC_BIT;

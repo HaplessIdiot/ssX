@@ -14,7 +14,7 @@
 #include "drm.h"
 #include <sys/ioctl.h>
 
-static drmBufPtr i810_get_buffer_ioctl( i810ContextPtr imesa )
+drmBufPtr i810_get_buffer_ioctl( i810ContextPtr imesa )
 {
    drm_i810_dma_t dma;
    drmBufPtr buf;
@@ -43,7 +43,7 @@ static drmBufPtr i810_get_buffer_ioctl( i810ContextPtr imesa )
 
    buf = &(imesa->i810Screen->bufs->list[dma.request_idx]);
    buf->idx = dma.request_idx;
-   buf->used = 0;
+   buf->used = 4;		/* leave room for instruction header */
    buf->total = dma.request_size;
 
    if(imesa->i810Screen->use_copy_buf != 1) 
@@ -428,45 +428,29 @@ void i810FlushVerticesLocked( i810ContextPtr imesa )
 }
 
 
-GLuint *i810AllocDwords( i810ContextPtr imesa, int dwords, GLuint prim )
+GLuint *i810AllocDwords( i810ContextPtr imesa, int dwords )
 {
    GLuint *start;
 
    if (!imesa->vertex_dma_buffer) 
    {
-      if (I810_DEBUG&DEBUG_VERBOSE_IOCTL)
-	 fprintf(stderr, "i810AllocPrimitiveVerts -- get buf\n");
       LOCK_HARDWARE(imesa);
       imesa->vertex_dma_buffer = i810_get_buffer_ioctl( imesa );
-      imesa->vertex_dma_buffer->used = 4;
-      imesa->vertex_prim = prim;
       UNLOCK_HARDWARE(imesa);
    } 
-   else if (imesa->vertex_prim != prim ||
-	    imesa->vertex_dma_buffer->used + dwords * 4 > 
+   else if (imesa->vertex_dma_buffer->used + dwords * 4 > 
 	    imesa->vertex_dma_buffer->total) 
    {
-      if (I810_DEBUG&DEBUG_VERBOSE_IOCTL)
-	 fprintf(stderr, "i810AllocPrimitiveVerts -- flush\n");
-      i810FlushVertices( imesa );
       LOCK_HARDWARE(imesa);
+      i810FlushVerticesLocked( imesa );
       imesa->vertex_dma_buffer = i810_get_buffer_ioctl( imesa );
-      imesa->vertex_dma_buffer->used = 4;
-      imesa->vertex_prim = prim;
       UNLOCK_HARDWARE(imesa);
    }
 
-
-   if (0)
-      fprintf(stderr, "i810AllocPrimitiveVerts %d, buf %d, used %d\n",
-	      dwords, imesa->vertex_dma_buffer->idx,
-	      imesa->vertex_dma_buffer->used);
-      
    start = (GLuint *)((char *)imesa->vertex_dma_buffer->address + 
 		      imesa->vertex_dma_buffer->used);
 
    imesa->vertex_dma_buffer->used += dwords * 4;
-
    return start;
 }
 

@@ -28,41 +28,42 @@
 #include "mgavb.h"
 #include "mgalog.h"
 #include "stages.h"
+#include "mem.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #define TEX0 {					\
-  v->warp2.tu0 = tc0[i][0];			\
-  v->warp2.tv0 = tc0[i][1];			\
+  v->v.tu0 = tc0[i][0];			\
+  v->v.tv0 = tc0[i][1];			\
 }
 
 #define TEX1 {					\
-  v->warp2.tu1 = tc1[i][0];			\
-  v->warp2.tv1 = tc1[i][1];			\
+  v->v.tu1 = tc1[i][0];			\
+  v->v.tv1 = tc1[i][1];			\
 }
 
 #define SPC {					\
   GLubyte *spec = &(VB->Spec[0][i][0]);		\
-  v->warp2.specular.red = spec[0];		\
-  v->warp2.specular.green = spec[1];		\
-  v->warp2.specular.blue = spec[2];		\
+  v->v.specular.red = spec[0];		\
+  v->v.specular.green = spec[1];		\
+  v->v.specular.blue = spec[2];		\
 }
 
 #define FOG {					\
   GLubyte *spec = &(VB->Spec[0][i][0]);		\
-  v->warp2.specular.alpha = spec[3];		\
+  v->v.specular.alpha = spec[3];		\
 }
 
 #define COL {					\
   GLubyte *col = &(VB->Color[0]->data[i][0]);	\
-  v->warp2.color.blue  = col[2];		\
-  v->warp2.color.green = col[1];		\
-  v->warp2.color.red   = col[0];		\
-  v->warp2.color.alpha = col[3];		\
+  v->v.color.blue  = col[2];		\
+  v->v.color.green = col[1];		\
+  v->v.color.red   = col[0];		\
+  v->v.color.alpha = col[3];		\
 }
 
-/* The warp2 code we have doesn't seem to support projective texturing
+/* The v code we have doesn't seem to support projective texturing
  * in the multitexture case.  (Would require another 1/w value for the
  * second set of texcoords).  This may be a problem for the g400.  
  */
@@ -74,19 +75,19 @@
      mmesa->setupdone &= ~MGA_WIN_BIT;			\
      for (i=start; i < end; i++, v++)	{		\
         float oow = 1.0 / tc[i][3];			\
-	v->warp2.rhw *= tc[i][3];			\
-	v->warp2.tu0 *= oow;				\
-	v->warp2.tv0 *= oow;				\
+	v->v.rhw *= tc[i][3];			\
+	v->v.tu0 *= oow;				\
+	v->v.tv0 *= oow;				\
      }							\
   }
 
 
 #define COORD							\
       GLfloat *win = VB->Win.data[i];				\
-      v->warp2.rhw =               win[3];			\
-      v->warp2.z = (1.0/0x10000) * win[2];			\
-      v->warp2.x =                 win[0] + xoffset;		\
-      v->warp2.y =          -      win[1] + yoffset; 
+      v->v.rhw =               win[3];			\
+      v->v.z = depth_scale * win[2];			\
+      v->v.x =                 win[0] + xoffset;		\
+      v->v.y =          -      win[1] + yoffset; 
 
 #define NOP
 
@@ -100,11 +101,12 @@ static void name(struct vertex_buffer *VB, GLuint start, GLuint end)	\
    mgaVertexPtr v;							\
    GLfloat (*tc0)[4];							\
    GLfloat (*tc1)[4];							\
-   GLfloat xoffset = mmesa->drawX + SUBPIXEL_X;				\
-   GLfloat yoffset = mmesa->driDrawable->h + mmesa->drawY + SUBPIXEL_Y;	\
+   const GLfloat depth_scale = mmesa->depth_scale;			\
+   const GLfloat xoffset = mmesa->drawX + SUBPIXEL_X;			\
+   const GLfloat yoffset = mmesa->driDrawable->h + mmesa->drawY + \
+                           SUBPIXEL_Y;	\
    int i;								\
-   (void) xoffset; (void) yoffset;					\
-   if (0) fprintf(stderr, "V");						\
+   (void) xoffset; (void) yoffset; (void) depth_scale;			\
    gl_import_client_data( VB, VB->ctx->RenderFlags,			\
 			  (VB->ClipOrMask				\
 			   ? VEC_WRITABLE|VEC_GOOD_STRIDE		\
@@ -420,6 +422,10 @@ static void FatalError( char *s )
 }
 
 
+#ifndef ALIGN_MALLOC
+#define ALIGN_MALLOC(x,y) malloc(y)
+#define ALIGN_FREE free
+#endif
 
 void mgaDDResizeVB( struct vertex_buffer *VB, GLuint size )
 {
@@ -440,8 +446,8 @@ void mgaDDResizeVB( struct vertex_buffer *VB, GLuint size )
    if (!mvb->clipped_elements.start) 
       FatalError("mga-glx: out of memory !\n");
 
-   free( VB->ClipMask );
-   VB->ClipMask = (GLubyte *)malloc(sizeof(GLubyte) * mvb->size);
+   ALIGN_FREE( VB->ClipMask );
+   VB->ClipMask = (GLubyte *)ALIGN_MALLOC(4, sizeof(GLubyte) * mvb->size);
    if (!VB->ClipMask) 
       FatalError("mga-glx: out of memory !\n");
 
@@ -477,8 +483,8 @@ void mgaDDRegisterVB( struct vertex_buffer *VB )
    if (!mvb->clipped_elements.start) 
       FatalError("mga-glx: out of memory !\n");
 
-   free( VB->ClipMask );
-   VB->ClipMask = (GLubyte *)malloc(sizeof(GLubyte) * mvb->size);
+   ALIGN_FREE( VB->ClipMask );
+   VB->ClipMask = (GLubyte *)ALIGN_MALLOC(4, sizeof(GLubyte) * mvb->size);
    if (!VB->ClipMask) 
       FatalError("mga-glx: out of memory !\n");
 

@@ -28,7 +28,6 @@
  *    Daryll Strauss <daryll@precisioninsight.com>
  *
  */
-/* $XFree86$ */
 
 #include <linux/config.h>
 #include "drmP.h"
@@ -643,11 +642,6 @@ int sis_lock(struct inode *inode, struct file *filp, unsigned int cmd,
 		}
         }
 
-	if (lock.context != sis_res_ctx.handle) {
-		current->counter = 5;
-		current->priority = DEF_PRIORITY/4;
-	}
-
         DRM_DEBUG("%d %s\n", lock.context, ret ? "interrupted" : "has lock");
 
 #if DRM_DMA_HISTOGRAM
@@ -688,11 +682,6 @@ int sis_unlock(struct inode *inode, struct file *filp, unsigned int cmd,
 		}
 	}
 	
-	if (lock.context != sis_res_ctx.handle) {
-		current->counter = 5;
-		current->priority = DEF_PRIORITY;
-	}
-
 	return 0;
 }
 

@@ -328,8 +328,8 @@ static void refresh_projection_matrix( GLcontext *ctx )
    m[MAT_TX] =   mat->m[MAT_TX] + mmesa->drawX + .5;
    m[MAT_SY] = (- mat->m[MAT_SY]);
    m[MAT_TY] = (- mat->m[MAT_TY]) + mmesa->driDrawable->h + mmesa->drawY - .5;
-   m[MAT_SZ] =   mat->m[MAT_SZ] * (1.0 / 0x10000);
-   m[MAT_TZ] =   mat->m[MAT_TZ] * (1.0 / 0x10000);
+   m[MAT_SZ] =   mat->m[MAT_SZ] * mmesa->depth_scale;
+   m[MAT_TZ] =   mat->m[MAT_TZ] * mmesa->depth_scale;
 }
 
 #define CLIP_UBYTE_B 0   

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.18 2000/08/11 17:27:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.19 2000/08/23 22:10:13 tsi Exp $ */
 
 /*
  * Authors:
@@ -1623,6 +1623,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    }
    
 #else
+   pI810->directRenderingEnabled = FALSE;
    if (!I810AllocateGARTMemory( pScrn )) 
      return FALSE;
    I810AllocateFront(pScrn);
@@ -1938,6 +1939,7 @@ I810CloseScreen(int scrnIndex, ScreenPtr pScreen)
     }
 #endif
 
+   if(pScrn->vtSema == TRUE) I810UnbindGARTMemory(pScrn);
    I810Restore(pScrn);
    vgaHWLock(hwp);
    I810UnmapMem(pScrn);

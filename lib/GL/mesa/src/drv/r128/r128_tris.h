@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.h,v 1.1 2000/06/17 00:03:08 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -39,8 +39,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "r128_vb.h"
 
-extern void r128ChooseRenderState(GLcontext *ctx);
-extern void r128TriangleFuncsInit(void);
+extern void r128DDChooseRenderState(GLcontext *ctx);
+extern void r128DDTriangleFuncsInit(void);
 
 #define R128_FLAT_BIT        0x01
 #define R128_OFFSET_BIT      0x02

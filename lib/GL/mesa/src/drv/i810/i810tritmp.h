@@ -1,96 +1,103 @@
 
-static __inline__ void TAG(triangle)( GLcontext *ctx, GLuint e0,
-				      GLuint e1, GLuint e2, GLuint pv )
+static __inline void TAG(triangle)(GLcontext *ctx,
+				   GLuint e0, GLuint e1, GLuint e2,
+				   GLuint pv)
 {
-   i810ContextPtr imesa = I810_CONTEXT(ctx);
-   struct vertex_buffer *VB = ctx->VB;
-   i810VertexPtr i810VB = I810_DRIVER_DATA(VB)->verts;
-   const i810_vertex *v0 = &i810VB[e0].v;  
-   const i810_vertex *v1 = &i810VB[e1].v;  
-   const i810_vertex *v2 = &i810VB[e2].v;  
+   i810ContextPtr        i810ctx   = I810_CONTEXT(ctx);
+   struct vertex_buffer *VB        = ctx->VB;
+   i810VertexPtr         i810verts = I810_DRIVER_DATA(VB)->verts;
+   i810Vertex     *v[3];
 
 #if (IND & I810_OFFSET_BIT)
-   GLfloat offset = ctx->Polygon.OffsetUnits * 1.0/0x10000;
+   GLfloat offset;
+   GLfloat z[3];
 #endif
 
-#if (IND & (I810_FLAT_BIT|I810_TWOSIDE_BIT))
-   int c0 = *(int *)&i810VB[pv].v.color; 
-   int c1 = c0;
-   int c2 = c0;
+#if (IND & (I810_TWOSIDE_BIT | I810_FLAT_BIT))
+   GLuint c[3];
+#endif
+
+   v[0] = &i810verts[e0];
+   v[1] = &i810verts[e1];
+   v[2] = &i810verts[e2];
+
+#if (IND & (I810_TWOSIDE_BIT | I810_FLAT_BIT))
+   c[0] = v[0]->ui[4];
+   c[1] = v[1]->ui[4];
+   c[2] = v[2]->ui[4];
 #endif
 
 
-#if (IND & (I810_TWOSIDE_BIT|I810_OFFSET_BIT)) 
+#if (IND & (I810_TWOSIDE_BIT | I810_OFFSET_BIT))
    {
-      GLfloat ex = v0->x - v2->x;
-      GLfloat ey = v0->y - v2->y;
-      GLfloat fx = v1->x - v2->x;
-      GLfloat fy = v1->y - v2->y;
-      GLfloat c = ex*fy-ey*fx;
-	 
-#if (IND & I810_TWOSIDE_BIT) 
+      GLfloat ex = v[0]->v.x - v[2]->v.x;
+      GLfloat ey = v[0]->v.y - v[2]->v.y;
+      GLfloat fx = v[1]->v.x - v[2]->v.x;
+      GLfloat fy = v[1]->v.y - v[2]->v.y;
+      GLfloat cc  = ex*fy - ey*fx;
+
+#if (IND & I810_TWOSIDE_BIT)
       {
-	 GLuint facing = (c>0.0) ^ ctx->Polygon.FrontBit;
+	 GLuint  facing        = (cc > 0.0) ^ ctx->Polygon.FrontBit;
 	 GLubyte (*vbcolor)[4] = VB->Color[facing]->data;
 	 if (IND & I810_FLAT_BIT) {
-	    I810_COLOR((char *)&c0,vbcolor[pv]);
-	    c2 = c1 = c0;
+	    I810_COLOR((char *)&v[0]->ui[4], vbcolor[pv]);
+	    v[2]->ui[4] = v[1]->ui[4] = v[0]->ui[4];
 	 } else {
-	    I810_COLOR((char *)&c0,vbcolor[e0]);
-	    I810_COLOR((char *)&c1,vbcolor[e1]);
-	    I810_COLOR((char *)&c2,vbcolor[e2]);
+	    I810_COLOR((char *)&v[0]->ui[4], vbcolor[e0]);
+	    I810_COLOR((char *)&v[1]->ui[4], vbcolor[e1]);
+	    I810_COLOR((char *)&v[2]->ui[4], vbcolor[e2]);
 	 }
       }
 #endif
-      
-#if (IND & I810_OFFSET_BIT) 
+
+#if (IND & I810_OFFSET_BIT)
       {
-	 if (c * c > 1e-16) {
-	    GLfloat factor = ctx->Polygon.OffsetFactor;
-	    GLfloat ez = v0->z - v2->z;
-	    GLfloat fz = v1->z - v2->z;
-	    GLfloat a = ey*fz-ez*fy;
-	    GLfloat b = ez*fx-ex*fz;
-	    GLfloat ic = 1.0 / c;
-	    GLfloat ac = a * ic;
-	    GLfloat bc = b * ic;
-	    if (ac<0.0F)  ac = -ac;
-	    if (bc<0.0F)  bc = -bc;
-	    offset += MAX2( ac, bc ) * factor;
+	 offset = ctx->Polygon.OffsetUnits * 1.0/0x10000;
+	 z[0] = v[0]->v.z;
+	 z[1] = v[1]->v.z;
+	 z[2] = v[2]->v.z;
+	 if (cc * cc > 1e-16) {
+	    GLfloat ez     = z[0] - z[2];
+	    GLfloat fz     = z[1] - z[2];
+	    GLfloat a      = ey*fz - ez*fy;
+	    GLfloat b      = ez*fx - ex*fz;
+	    GLfloat ic     = 1.0 / cc;
+	    GLfloat ac     = a * ic;
+	    GLfloat bc     = b * ic;
+	    if (ac < 0.0f) ac = -ac;
+	    if (bc < 0.0f) bc = -bc;
+	    offset += MAX2(ac, bc) * ctx->Polygon.OffsetFactor;
 	 }
+	 v[0]->v.z += offset;
+	 v[1]->v.z += offset;
+	 v[2]->v.z += offset;
       }
 #endif
    }
-#endif  
-
-   
+#elif (IND & I810_FLAT_BIT)
    {
-      i810_vertex *wv = i810AllocTriangles( imesa, 1 );
-      wv[0] = *v0;
-#if (IND & (I810_FLAT_BIT|I810_TWOSIDE_BIT))
-      *((int *)(&wv[0].color)) = c0;
-#endif
-#if (IND & I810_OFFSET_BIT)
-      wv[0].z = v0->z + offset;
-#endif
-
-
-      wv[1] = *v1;
-#if (IND & (I810_FLAT_BIT|I810_TWOSIDE_BIT))
-      *((int *)(&wv[1].color)) = c1;
-#endif
-#if (IND & I810_OFFSET_BIT)
-      wv[1].z = v1->z + offset;
-#endif
-
-      wv[2] = *v2;
-#if (IND & (I810_FLAT_BIT|I810_TWOSIDE_BIT))
-      *((int *)(&wv[2].color)) = c2;
-#endif
-#if (IND & I810_OFFSET_BIT)
-      wv[2].z = v2->z + offset;
-#endif
+      GLuint color = i810verts[pv].ui[4];
+      v[0]->ui[4] = color;
+      v[1]->ui[4] = color;
+      v[2]->ui[4] = color;
    }
+#endif
+
+   i810_draw_triangle( i810ctx, v[0], v[1], v[2] );
+
+#if (IND & I810_OFFSET_BIT)
+   v[0]->v.z = z[0];
+   v[1]->v.z = z[1];
+   v[2]->v.z = z[2];
+#endif
+
+#if (IND & (I810_FLAT_BIT | I810_TWOSIDE_BIT))
+   v[0]->ui[4] = c[0];
+   v[1]->ui[4] = c[1];
+   v[2]->ui[4] = c[2];    
+#endif
+
 }
 
 
@@ -106,31 +113,39 @@ static void TAG(line)( GLcontext *ctx, GLuint v0, GLuint v1, GLuint pv )
 {
    i810ContextPtr imesa = I810_CONTEXT( ctx );
    i810VertexPtr i810VB = I810_DRIVER_DATA(ctx->VB)->verts;
-   int tmp0, tmp1;
-   (void) tmp0; (void) tmp1;
 
+#if (IND & (I810_TWOSIDE_BIT|I810_FLAT_BIT|I810_OFFSET_BIT)) 
+   i810Vertex tmp0 = i810VB[v0];
+   i810Vertex tmp1 = i810VB[v1];
 
-   if (IND & I810_FLAT_BIT) {
-      tmp0 = *(int *)&i810VB[v0].v.color;
-      tmp1 = *(int *)&i810VB[v1].v.color;
-      i810VB[v0].v.color = i810VB[pv].v.color;
-      i810VB[v1].v.color = i810VB[pv].v.color;
-   }      
+   if (IND & I810_TWOSIDE_BIT) {
+      GLubyte (*vbcolor)[4] = ctx->VB->ColorPtr->data;
 
-   if (IND & I810_WIDE_LINE_BIT)
-   {
-      i810_draw_tri_line( imesa, &i810VB[v0].v, &i810VB[v1].v, 
-			  ctx->Line.Width );
-   } 
-   else 
-   {
-      i810_draw_line_line( imesa, &i810VB[v0].v, &i810VB[v1].v );
-   }      
+      if (IND & I810_FLAT_BIT) {
+	 I810_COLOR((char *)&tmp0.v.color,vbcolor[pv]);
+	 *(int *)&tmp1.v.color = *(int *)&tmp0.v.color;
+      } else {
+	 I810_COLOR((char *)&tmp0.v.color,vbcolor[v0]);
+	 I810_COLOR((char *)&tmp1.v.color,vbcolor[v1]);
+      }
 
-   if (IND & I810_FLAT_BIT) {
-      *(int *)&i810VB[v0].v.color = tmp0;
-      *(int *)&i810VB[v1].v.color = tmp1;
-   }      
+   } else if (IND & I810_FLAT_BIT) {
+      *(int *)&tmp0.v.color = *(int *)&i810VB[pv].v.color;
+      *(int *)&tmp1.v.color = *(int *)&i810VB[pv].v.color;
+   }
+
+   /* Relies on precomputed LineZoffset from vbrender.c
+    */
+   if (IND & I810_OFFSET_BIT) {
+      GLfloat offset = ctx->LineZoffset * (1.0 / 0x10000); 
+      tmp0.v.z += offset;
+      tmp1.v.z += offset;
+   }
+
+   i810_draw_line( imesa, &tmp0, &tmp1 );
+#else
+   i810_draw_line( imesa, &i810VB[v0], &i810VB[v1] );
+#endif
 }
 
 
@@ -148,8 +163,19 @@ static void TAG(points)( GLcontext *ctx, GLuint first, GLuint last )
    
    for(i=first;i<=last;i++) {
       if(VB->ClipMask[i]==0) {
-	 i810_vertex *tmp = &i810VB[i].v;
-	 i810_draw_point( imesa, tmp, sz );
+	 if (IND & I810_TWOSIDE_BIT) {	
+	    i810Vertex tmp0 = i810VB[i];
+	    if (IND & I810_TWOSIDE_BIT) {
+	       GLubyte (*vbcolor)[4] = VB->ColorPtr->data;
+	       I810_COLOR((char *)&tmp0.v.color, vbcolor[i]);
+	    }
+	    if (IND & I810_OFFSET_BIT) {
+	       GLfloat offset = ctx->PointZoffset * (1.0 / 0x10000);
+	       tmp0.v.z += offset;
+	    }
+	    i810_draw_point( imesa, &tmp0, sz );
+	 } else
+	    i810_draw_point( imesa, &i810VB[i], sz );
       }
    }
 }

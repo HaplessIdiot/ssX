@@ -1,91 +1,105 @@
 
-static __inline void TAG(triangle)( GLcontext *ctx, GLuint e0,
-				  GLuint e1, GLuint e2, GLuint pv )
+static __inline void TAG(triangle)(GLcontext *ctx,
+				   GLuint e0, GLuint e1, GLuint e2,
+				   GLuint pv)
 {
-   mgaContextPtr mmesa = MGA_CONTEXT( ctx );
-   GLuint vertsize = mmesa->vertsize;
-   mgaUI32 *wv = mgaAllocVertexDwords( mmesa, 3 * vertsize);
-
-   struct vertex_buffer *VB = ctx->VB;
-   mgaVertexPtr mgaVB = MGA_DRIVER_DATA(VB)->verts;
-   const mgaVertex *v[3];
-   int i, j;
+   mgaContextPtr        mmesa   = MGA_CONTEXT(ctx);
+   struct vertex_buffer *VB        = ctx->VB;
+   mgaVertexPtr         mgaverts = MGA_DRIVER_DATA(VB)->verts;
+   mgaVertex     *v[3];
 
 #if (IND & MGA_OFFSET_BIT)
-   GLfloat offset = ctx->Polygon.OffsetUnits * 1.0/0x10000;
+   GLfloat offset;
+   GLfloat z[3];
 #endif
 
-#if (IND & (MGA_FLAT_BIT|MGA_TWOSIDE_BIT))
-   mgaUI32 c[3];
-
-   c[2] = c[1] = c[0] = *(mgaUI32 *)&mgaVB[pv].warp2.color; 
+#if (IND & (MGA_TWOSIDE_BIT | MGA_FLAT_BIT))
+   GLuint c[3];
 #endif
 
-   (void) VB;
+   v[0] = &mgaverts[e0];
+   v[1] = &mgaverts[e1];
+   v[2] = &mgaverts[e2];
 
-   v[0] = &mgaVB[e0];  
-   v[1] = &mgaVB[e1];  
-   v[2] = &mgaVB[e2];  
+#if (IND & (MGA_TWOSIDE_BIT | MGA_FLAT_BIT))
+   c[0] = v[0]->ui[4];
+   c[1] = v[1]->ui[4];
+   c[2] = v[2]->ui[4];
+#endif
 
 
-#if (IND & (MGA_TWOSIDE_BIT|MGA_OFFSET_BIT)) 
+#if (IND & (MGA_TWOSIDE_BIT | MGA_OFFSET_BIT))
    {
-      GLfloat ex = v[0]->warp1.x - v[2]->warp1.x;
-      GLfloat ey = v[0]->warp1.y - v[2]->warp1.y;
-      GLfloat fx = v[1]->warp1.x - v[2]->warp1.x;
-      GLfloat fy = v[1]->warp1.y - v[2]->warp1.y;
-      GLfloat cc = ex*fy-ey*fx;
-	 
-#if (IND & MGA_TWOSIDE_BIT) 
+      GLfloat ex = v[0]->v.x - v[2]->v.x;
+      GLfloat ey = v[0]->v.y - v[2]->v.y;
+      GLfloat fx = v[1]->v.x - v[2]->v.x;
+      GLfloat fy = v[1]->v.y - v[2]->v.y;
+      GLfloat cc  = ex*fy - ey*fx;
+
+#if (IND & MGA_TWOSIDE_BIT)
       {
-	 GLuint facing = (cc>0.0) ^ ctx->Polygon.FrontBit;
+	 GLuint  facing        = (cc > 0.0) ^ ctx->Polygon.FrontBit;
 	 GLubyte (*vbcolor)[4] = VB->Color[facing]->data;
 	 if (IND & MGA_FLAT_BIT) {
-	    MGA_COLOR((char *)&c[0],vbcolor[pv]);
-	    c[2] = c[1] = c[0];
+	    MGA_COLOR((char *)&v[0]->ui[4], vbcolor[pv]);
+	    v[2]->ui[4] = v[1]->ui[4] = v[0]->ui[4];
 	 } else {
-	    MGA_COLOR((char *)&c[0],vbcolor[e0]);
-	    MGA_COLOR((char *)&c[1],vbcolor[e1]);
-	    MGA_COLOR((char *)&c[2],vbcolor[e2]);
+	    MGA_COLOR((char *)&v[0]->ui[4], vbcolor[e0]);
+	    MGA_COLOR((char *)&v[1]->ui[4], vbcolor[e1]);
+	    MGA_COLOR((char *)&v[2]->ui[4], vbcolor[e2]);
 	 }
       }
 #endif
-      
-#if (IND & MGA_OFFSET_BIT) 
-      {
-	 if (cc * cc > 1e-16) {
-	    GLfloat factor = ctx->Polygon.OffsetFactor;
-	    GLfloat ez = v[0]->warp1.z - v[2]->warp1.z;
-	    GLfloat fz = v[1]->warp1.z - v[2]->warp1.z;
-	    GLfloat a = ey*fz-ez*fy;
-	    GLfloat b = ez*fx-ex*fz;
-	    GLfloat ic = 1.0 / cc;
-	    GLfloat ac = a * ic;
-	    GLfloat bc = b * ic;
-	    if (ac<0.0F)  ac = -ac;
-	    if (bc<0.0F)  bc = -bc;
-	    offset += MAX2( ac, bc ) * factor;
-	 }
-      }
-#endif
-   }
-#endif  
 
-   mgaglx.c_triangles++;
-
-   for (j = 0 ; j < 3 ; j++, wv += vertsize) {
-
-      for (i = 0 ; i < vertsize ; i++)
-	 wv[i] = v[j]->ui[i];
-
-#if (IND & (MGA_FLAT_BIT|MGA_TWOSIDE_BIT))
-      wv[4] = c[j];		/* color is the fifth element... */
-#endif
 #if (IND & MGA_OFFSET_BIT)
-      *(float *)&wv[2] = v[j]->warp1.z + offset;
+      {
+	 offset = ctx->Polygon.OffsetUnits * mmesa->depth_scale;
+	 z[0] = v[0]->v.z;
+	 z[1] = v[1]->v.z;
+	 z[2] = v[2]->v.z;
+	 if (cc * cc > 1e-16) {
+	    GLfloat ez     = z[0] - z[2];
+	    GLfloat fz     = z[1] - z[2];
+	    GLfloat a      = ey*fz - ez*fy;
+	    GLfloat b      = ez*fx - ex*fz;
+	    GLfloat ic     = 1.0 / cc;
+	    GLfloat ac     = a * ic;
+	    GLfloat bc     = b * ic;
+	    if (ac < 0.0f) ac = -ac;
+	    if (bc < 0.0f) bc = -bc;
+	    offset += MAX2(ac, bc) * ctx->Polygon.OffsetFactor;
+	 }
+	 v[0]->v.z += offset;
+	 v[1]->v.z += offset;
+	 v[2]->v.z += offset;
+      }
 #endif
    }
+#elif (IND & MGA_FLAT_BIT)
+   {
+      GLuint color = mgaverts[pv].ui[4];
+      v[0]->ui[4] = color;
+      v[1]->ui[4] = color;
+      v[2]->ui[4] = color;
+   }
+#endif
+
+   mga_draw_triangle( mmesa, v[0], v[1], v[2] );
+
+#if (IND & MGA_OFFSET_BIT)
+   v[0]->v.z = z[0];
+   v[1]->v.z = z[1];
+   v[2]->v.z = z[2];
+#endif
+
+#if (IND & (MGA_FLAT_BIT | MGA_TWOSIDE_BIT))
+   v[0]->ui[4] = c[0];
+   v[1]->ui[4] = c[1];
+   v[2]->ui[4] = c[2];    
+#endif
+
 }
+
 
 
 
@@ -103,30 +117,48 @@ static void TAG(line)( GLcontext *ctx, GLuint v0, GLuint v1, GLuint pv )
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
    mgaVertexPtr mgaVB = MGA_DRIVER_DATA(ctx->VB)->verts;
    float width = ctx->Line.Width;
+   GLfloat z0, z1;
+   GLuint c0, c1;
+   mgaVertex *vert0 = &mgaVB[v0];
+   mgaVertex *vert1 = &mgaVB[v1];
 
-   if (IND & (MGA_TWOSIDE_BIT|MGA_FLAT_BIT)) {
-      mgaVertex tmp0 = mgaVB[v0];
-      mgaVertex tmp1 = mgaVB[v1];
 
-      if (IND & MGA_TWOSIDE_BIT) {
-	 GLubyte (*vbcolor)[4] = ctx->VB->ColorPtr->data;
+   if (IND & MGA_TWOSIDE_BIT) {
+      GLubyte (*vbcolor)[4] = ctx->VB->ColorPtr->data;
 
-	 if (IND & MGA_FLAT_BIT) {
- 	    MGA_COLOR((char *)&tmp0.warp1.color,vbcolor[pv]);
-	    *(int *)&tmp1.warp1.color = *(int *)&tmp0.warp1.color;
-	 } else {
-	    MGA_COLOR((char *)&tmp0.warp1.color,vbcolor[v0]);
-	    MGA_COLOR((char *)&tmp1.warp1.color,vbcolor[v1]);
-	 }
-
+      if (IND & MGA_FLAT_BIT) {
+	 MGA_COLOR((char *)&vert0->v.color,vbcolor[pv]);
+	 *(int *)&vert1->v.color = *(int *)&vert0->v.color;
       } else {
-	 *(int *)&tmp0.warp1.color = *(int *)&mgaVB[pv].warp1.color;
-	 *(int *)&tmp1.warp1.color = *(int *)&mgaVB[pv].warp1.color;
+	 MGA_COLOR((char *)&vert0->v.color,vbcolor[v0]);
+	 MGA_COLOR((char *)&vert1->v.color,vbcolor[v1]);
       }
-      mga_draw_line( mmesa, &tmp0, &tmp1, width );
+   } else if (IND & MGA_FLAT_BIT) {
+      c0 = *(GLuint *) &(vert0->v.color);
+      c1 = *(GLuint *) &(vert1->v.color);
+      *(int *)&vert0->v.color = 
+	 *(int *)&vert1->v.color = *(int *)&mgaVB[pv].v.color;
    }
-   else
-      mga_draw_line( mmesa, &mgaVB[v0], &mgaVB[v1], width );
+
+   if (IND & MGA_OFFSET_BIT) {
+      GLfloat offset = ctx->LineZoffset * mmesa->depth_scale; 
+      z0 = vert0->v.z;
+      z1 = vert1->v.z;
+      vert0->v.z += offset;
+      vert1->v.z += offset;
+   }
+
+   mga_draw_line( mmesa, &mgaVB[v0], &mgaVB[v1], width );
+
+   if (IND & MGA_OFFSET_BIT) {
+      vert0->v.z = z0;
+      vert1->v.z = z1;
+   }
+   
+   if ((IND & MGA_FLAT_BIT) && !(IND & MGA_TWOSIDE_BIT)) {
+      *(GLuint *) &(vert0->v.color) = c0;
+      *(GLuint *) &(vert1->v.color) = c1;
+   }
 }
 
 
@@ -140,10 +172,16 @@ static void TAG(points)( GLcontext *ctx, GLuint first, GLuint last )
    
    for(i=first;i<=last;i++) 
       if(VB->ClipMask[i]==0) {
-	 if (IND & MGA_TWOSIDE_BIT) {	
-	    GLubyte (*vbcolor)[4] = VB->ColorPtr->data;
+	 if (IND & (MGA_TWOSIDE_BIT|MGA_OFFSET_BIT)) {	
 	    mgaVertex tmp0 = mgaVB[i];
-	    MGA_COLOR((char *)&tmp0.warp1.color, vbcolor[i]);
+	    if (IND & MGA_TWOSIDE_BIT) {
+	       GLubyte (*vbcolor)[4] = VB->ColorPtr->data;
+	       MGA_COLOR((char *)&tmp0.v.color, vbcolor[i]);
+	    }
+	    if (IND & MGA_OFFSET_BIT) {
+	       GLfloat offset = ctx->PointZoffset * mmesa->depth_scale;
+	       tmp0.v.z += offset;
+	    }
 	    mga_draw_point( mmesa, &tmp0, sz );
 	 } else
 	    mga_draw_point( mmesa, &mgaVB[i], sz );
@@ -157,10 +195,8 @@ static void TAG(init)( void )
 {
    tri_tab[IND] = TAG(triangle);
    quad_tab[IND] = TAG(quad);
-
    line_tab[IND] = TAG(line);
    points_tab[IND] = TAG(points);
-
 }
 
 

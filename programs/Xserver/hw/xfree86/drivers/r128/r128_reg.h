@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.10 2000/06/30 18:27:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.11 2000/07/01 01:40:46 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -843,6 +843,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #       define R128_FPU_COLOR_FLAT        (1 <<  5)
 #       define R128_FPU_COLOR_GOURAUD     (2 <<  5)
 #       define R128_FPU_COLOR_GOURAUD2    (3 <<  5)
+#       define R128_FPU_COLOR_MASK        (3 <<  5)
 #       define R128_FPU_SUB_PIX_2BITS     (0 <<  7)
 #       define R128_FPU_SUB_PIX_4BITS     (1 <<  7)
 #       define R128_FPU_MODE_2D           (0 <<  8)

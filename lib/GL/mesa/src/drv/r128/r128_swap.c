@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_swap.c,v 1.1 2000/06/17 00:03:07 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -33,7 +33,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "r128_init.h"
-#include "r128_mesa.h"
 #include "r128_xmesa.h"
 #include "r128_context.h"
 #include "r128_lock.h"
@@ -82,20 +81,13 @@ static void r128ClearBoxLocked( r128ContextPtr r128ctx,
 
     color = r128PackColor( r128ctx->r128Screen->bpp, r, g, b, 0 );
 
-    /* Temporarily disable Z and stencil buffer and texture mapping modes */
-    R128CCE0( R128_CCE_PACKET0, R128_TEX_CNTL_C, 0 );
-    R128CCE( r128ctx->regs.tex_cntl_c & ~(R128_Z_ENABLE |
-					  R128_STENCIL_ENABLE |
-					  R128_TEXMAP_ENABLE) );
-
     R128CCE3( R128_CCE_PACKET3_CNTL_PAINT_MULTI, 3 );
     R128CCE( R128_GMC_BRUSH_SOLID_COLOR
 	     | dst_bpp
 	     | R128_GMC_SRC_DATATYPE_COLOR
 	     | R128_ROP3_P
-	     | R128_GMC_3D_FCN_EN		/* FIXME?? */
-	     | R128_GMC_CLR_CMP_CNTL_DIS	/* FIXME?? */
-	     | R128_AUX_CLIP_DIS );		/* FIXME?? */
+	     | R128_GMC_CLR_CMP_CNTL_DIS
+	     | R128_GMC_AUX_CLIP_DIS );
     R128CCE( color );
     R128CCE( (x << 16) | y );
     R128CCE( (w << 16) | h );
@@ -145,15 +137,15 @@ void r128PerformanceBoxesLocked( r128ContextPtr r128ctx )
 
     /* Draw bars to represent the utilization of the vertex buffers */
     r128ClearBoxLocked( r128ctx, 4, 16, 252, 4, 32, 32, 32 );
-    t = r128ctx->r128Screen->vbRgn.size / r128ctx->r128Screen->vbBufSize;
+    t = r128ctx->r128Screen->vbMapSize / r128ctx->r128Screen->vbBufSize;
     w = 252 * r128ctx->c_vertexBuffers / t;
     if ( w < 1 ) {
-	w = 1;
+       w = 1;
     }
     if ( r128ctx->c_vertexBuffers > t ) {
-	r128ClearBoxLocked( r128ctx, 4, 16, 252, 4, 255, 32, 32 );
+       r128ClearBoxLocked( r128ctx, 4, 16, 252, 4, 255, 32, 32 );
     } else {
-	r128ClearBoxLocked( r128ctx, 4, 16, w, 4, 196, 128, 128 );
+       r128ClearBoxLocked( r128ctx, 4, 16, w, 4, 196, 128, 128 );
     }
 }
 
@@ -206,6 +198,9 @@ void r128SwapBuffers(r128ContextPtr r128ctx)
     XF86DRIClipRectPtr    c;
     int                   dst_bpp;
 
+    /* Flush any outstanding vertex buffers */
+    FLUSH_BATCH(r128ctx);
+
     switch (r128ctx->r128Screen->bpp) {
     case 8:
 	dst_bpp = R128_GMC_DST_8BPP_CI;
@@ -224,9 +219,6 @@ void r128SwapBuffers(r128ContextPtr r128ctx)
     }
 
     LOCK_HARDWARE(r128ctx);
-
-    /* Flush any outstanding vertex buffers */
-    r128FlushVerticesLocked(r128ctx);
 
     /* Throttle the frame rate -- only allow one pending swap buffers
      * request at a time.

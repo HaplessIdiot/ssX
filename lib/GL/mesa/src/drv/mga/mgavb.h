@@ -46,8 +46,10 @@ typedef struct mga_warp_color_t {
 } mga_warp_color;
 
 
-/* 
- *  vertex type used for the single-warp g200
+
+/*
+ * The vertex structure.  The final tu1/tv1 values only used in multitexture
+ * modes.
  */
 typedef struct mga_warp_vertex_t {
   GLfloat		x,y,z;	        /* coordinates in screen space*/
@@ -55,26 +57,14 @@ typedef struct mga_warp_vertex_t {
   mga_warp_color	color;		/* vertex color */
   mga_warp_color	specular;	/* specular color, alpha is fog */
   GLfloat		tu0,tv0;	/* texture coordinates */
-} mga_warp_vertex1;
-
-/*
- *  vertex type used for the dual-warp g400
- */
-typedef struct mga_warp_vertex2_t {
-  GLfloat		x,y,z;	        /* coordinates in screen space*/
-  GLfloat 		rhw;	        /* reciprocal homogeneous w */
-  mga_warp_color	color;		/* vertex color */
-  mga_warp_color	specular;	/* specular color, alpha is fog */
-  GLfloat		tu0,tv0;	/* texture coordinates */
   GLfloat		tu1,tv1;	/* same for second stage */
-} mga_warp_vertex2;
+} mga_warp_vertex;
 
 
 /* The fastpath code still expects a 16-float stride vertex.
  */
 union mga_vertex_t {
-   mga_warp_vertex1 warp1;	
-   mga_warp_vertex2 warp2;
+   mga_warp_vertex v;	
    float f[16];
    mgaUI32 ui[16];
 };

@@ -83,8 +83,6 @@ static void TAG(emit_unclipped_verts)( struct vertex_buffer *VB )
 	 }
 
 	 if (TYPE & MGA_TEX0_BIT) {
-/*  	    fprintf(stderr, "i %d tex0 %f, %f\n", i,  */
-/*  		    tex0_data[0], tex0_data[1]); */
 	    *(int*)&f[6] = *(int*)&tex0_data[0];
 	    *(int*)&f[7] = *(int*)&tex0_data[1];
 	 }
@@ -126,19 +124,24 @@ static void TAG(build_tri_verts)( mgaContextPtr mmesa,
       O[3] = clip[3];
 
       if (TYPE & MGA_RGBA_BIT) {
-	 GLubyte *col = VEC_ELT(VB->ColorPtr, GLubyte, elt[i]);
+	 GLubyte *color = VEC_ELT(VB->ColorPtr, GLubyte, elt[i]);
+#if defined(USE_X86_ASM)
+	 __asm__ (
+	    "movl (%%edx),%%eax   \n"
+	    "bswap %%eax          \n"
+	    "rorl $8,%%eax        \n"
+	    "movl %%eax,16(%%edi) \n"
+	    :
+	    : "d" (color), "D" (O)
+	    : "%eax" );
+#else
 	 GLubyte *b = (GLubyte *)&O[4];
-	 b[CLIP_UBYTE_R] = col[0];
-	 b[CLIP_UBYTE_G] = col[1];
-	 b[CLIP_UBYTE_B] = col[2];
-	 b[CLIP_UBYTE_A] = col[3];
+	 b[CLIP_UBYTE_B] = color[2];
+	 b[CLIP_UBYTE_G] = color[1];
+	 b[CLIP_UBYTE_R] = color[0];
+	 b[CLIP_UBYTE_A] = color[3];
+#endif
       }
-
-      if (0)
-	 fprintf(stderr, 
-	      "build_tri_vert elt[%d]: %d phys: %x (first_phys %x elt_buf %x\n",
-	      i, elt[i], UNCLIPPED_VERT(elt[i]), 
-	      mmesa->first_vert_phys, (GLuint)mmesa->elt_buf);
 
       *(GLuint *)&O[5] = UNCLIPPED_VERT(elt[i]);
 
@@ -175,8 +178,6 @@ static void TAG(interp)( GLfloat t,
 		  ((GLubyte *)&(I[4])),
 		  ((GLubyte *)&(J[4])));
    }
-
-   if (0) fprintf(stderr, "setting 0x%x to ~0\n", (GLuint)&O[5]);
 
    *(GLuint *)&O[5] = ~0;	/* note that this is a new vertex */
  
@@ -215,10 +216,6 @@ static void TAG(project_and_emit_verts)( mgaContextPtr mmesa,
       const GLfloat *I = &verts[elt[i] * CLIP_STRIDE];
       GLuint tmp = *(GLuint *)&I[5];
 
-      if (0) fprintf(stderr, "elt[%d] (tmp 0x%x %d) %d --> ", i, (GLuint)&I[5],
-	      tmp, elt[i]);
-
-
       if ((elt[i] = tmp) == ~0) 
       {      
 	 GLfloat oow = 1.0/I[3];
@@ -247,7 +244,6 @@ static void TAG(project_and_emit_verts)( mgaContextPtr mmesa,
 
 	 O -= BUFFER_STRIDE;
       }
-      if (0) fprintf(stderr, "0x%x\n", elt[i]);
    }
 
    mmesa->next_vert = O;

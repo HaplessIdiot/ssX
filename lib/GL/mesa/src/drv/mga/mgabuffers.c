@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.c,v 1.2 2000/06/22 16:59:24 tsi Exp $ */
 
 /*
  * Authors:
@@ -37,6 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mgalib.h"
 #include "mgabuffers.h"
 #include "mgastate.h"
+#include "mgaioctl.h"
 
 static void mgaXMesaSetFrontClipRects( mgaContextPtr mmesa )
 {
@@ -47,7 +48,6 @@ static void mgaXMesaSetFrontClipRects( mgaContextPtr mmesa )
    mmesa->drawX = driDrawable->x;
    mmesa->drawY = driDrawable->y;
 
-   mmesa->drawOffset = mmesa->mgaScreen->frontOffset;
    mmesa->Setup[MGA_CTXREG_DSTORG] = mmesa->drawOffset;
    mmesa->dirty |= MGA_UPLOAD_CTX;
    mmesa->dirty |= MGA_UPLOAD_CLIPRECTS;
@@ -71,7 +71,6 @@ static void mgaXMesaSetBackClipRects( mgaContextPtr mmesa )
       mmesa->drawY = driDrawable->backY;
    }
 
-   mmesa->drawOffset = mmesa->mgaScreen->backOffset;
    mmesa->Setup[MGA_CTXREG_DSTORG] = mmesa->drawOffset;
 
    mmesa->dirty |= MGA_UPLOAD_CTX;
@@ -271,6 +270,7 @@ GLboolean mgaDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
    if (mode == GL_FRONT_LEFT) 
    {
       mmesa->drawOffset = mmesa->mgaScreen->frontOffset;
+      mmesa->readOffset = mmesa->mgaScreen->frontOffset;
       mmesa->Setup[MGA_CTXREG_DSTORG] = mmesa->mgaScreen->frontOffset;
       mmesa->dirty |= MGA_UPLOAD_CTX;
       mmesa->draw_buffer = MGA_FRONT;
@@ -280,6 +280,7 @@ GLboolean mgaDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
    else if (mode == GL_BACK_LEFT) 
    {
       mmesa->drawOffset = mmesa->mgaScreen->backOffset;
+      mmesa->readOffset = mmesa->mgaScreen->backOffset;
       mmesa->Setup[MGA_CTXREG_DSTORG] = mmesa->mgaScreen->backOffset;
       mmesa->draw_buffer = MGA_BACK;
       mmesa->dirty |= MGA_UPLOAD_CTX;
@@ -293,25 +294,19 @@ GLboolean mgaDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
    }
 }
 
-/* XXX I don't know whether this is correct, but it at least compiles properly now */
-void mgaDDSetReadBuffer(GLcontext *ctx, GLframebuffer *colorBuffer, GLenum mode)
+void mgaDDSetReadBuffer(GLcontext *ctx, GLframebuffer *buffer,
+			GLenum mode )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
-
-   mmesa->Fallback &= ~MGA_FALLBACK_BUFFER;
 
    if (mode == GL_FRONT_LEFT) 
    {
       mmesa->readOffset = mmesa->mgaScreen->frontOffset;
       mmesa->read_buffer = MGA_FRONT;
    } 
-   else if (mode == GL_BACK_LEFT) 
+   else 
    {
       mmesa->readOffset = mmesa->mgaScreen->backOffset;
       mmesa->read_buffer = MGA_BACK;
-   }
-   else 
-   {
-      mmesa->Fallback |= MGA_FALLBACK_BUFFER;
    }
 }

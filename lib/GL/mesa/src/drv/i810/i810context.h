@@ -54,6 +54,7 @@ typedef struct i810_texture_object_t *i810TextureObjectPtr;
 #define I810_FALLBACK_COLORMASK      0x8  
 #define I810_FALLBACK_STIPPLE        0x10  
 #define I810_FALLBACK_SPECULAR       0x20 
+#define I810_FALLBACK_LOGICOP        0x40
 
 
 
@@ -96,6 +97,7 @@ struct i810_context_t {
     */
    GLuint Setup[I810_CTX_SETUP_SIZE];
    GLuint BufferSetup[I810_DEST_SETUP_SIZE];
+   int vertsize;
    
 
    /* Support for CVA and the fast paths.
