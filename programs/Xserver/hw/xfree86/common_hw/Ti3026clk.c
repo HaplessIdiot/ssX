@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.5 1996/02/04 09:06:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3026clk.c,v 3.6 1996/03/11 12:37:40 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -130,14 +130,15 @@ char which;
 }
 
 #if NeedFunctionPrototypes
-void Ti3026SetClock(long freq, int clk, int bpp, char which)
+static void Ti30XXSetClock(long freq, int clk, int bpp, char which, int buswidth)
 #else
-void
-Ti3026SetClock(freq, clk, bpp, which)
+static void
+Ti30XXSetClock(freq, clk, bpp, which, buswidth)
 long freq;
 int clk;
 int bpp;
 char which;
+int buswidth;
 #endif
 {
    double ffreq;
@@ -199,7 +200,7 @@ char which;
 	  best_n, best_n, best_m, best_m, p);
 #endif
 
-   lk = 64 / 8 / bpp;
+   lk = buswidth / 8 / bpp;
    ln = 65 - 4 * lk;
    lm = 61;
    z = 110000.0 / 4 / freq * (100 *  (65-ln)) / lk  ;
@@ -219,3 +220,33 @@ char which;
 
    s3ProgramTi3026Clock(clk, best_n, best_m, p, ln, lm, lp, lq, which);
 }
+
+
+#if NeedFunctionPrototypes
+void Ti3026SetClock(long freq, int clk, int bpp, char which)
+#else
+void
+Ti3026SetClock(freq, clk, bpp, which)
+long freq;
+int clk;
+int bpp;
+char which;
+#endif
+{
+   Ti30XXSetClock(freq, clk, bpp, which, 64);
+}
+
+#if NeedFunctionPrototypes
+void Ti3030SetClock(long freq, int clk, int bpp, char which)
+#else
+void
+Ti3030SetClock(freq, clk, bpp, which)
+long freq;
+int clk;
+int bpp;
+char which;
+#endif
+{
+   Ti30XXSetClock(freq, clk, bpp, which, 128);
+}
+

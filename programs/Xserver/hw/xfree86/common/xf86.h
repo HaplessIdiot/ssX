@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.32 1996/03/10 12:04:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.33 1996/03/29 22:16:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -381,13 +381,21 @@ unsigned int StrToUL(
 #endif
 );
 
-void xf86Config(
+#ifndef CONFIG_RETURN_TYPE
+#ifdef XF86SETUP
+#define CONFIG_RETURN_TYPE int
+#else
+#define CONFIG_RETURN_TYPE void
+#endif
+#endif
+
+CONFIG_RETURN_TYPE xf86Config(
 #if NeedFunctionPrototypes
     int vtopen
 #endif
 );
 
-void configPointerSection(
+CONFIG_RETURN_TYPE configPointerSection(
 #if NeedFunctionPrototypes
     MouseDevPtr /*mouse_dev*/,
     int /*end_tag*/,

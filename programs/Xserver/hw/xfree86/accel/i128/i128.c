@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.9 1996/02/22 05:11:21 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -31,6 +31,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "Ti302X.h"
+#include "IBMRGB.h"
 
 extern char *xf86VisualNames[];
 extern int defaultColorVisualClass;
@@ -285,7 +286,7 @@ i128Probe()
    /* enable all of the memory mapped windows */
 
    i128io.config1 &= 0xF300201D;
-   i128io.config1 |= 0x00333F00;
+   i128io.config1 |= 0x00333F10;
    outl(iobase + 0x1C, i128io.config1);
 
    i128io.config2 &= 0xFF000000;
@@ -468,11 +469,19 @@ i128Probe()
          return(FALSE);
 
       case IBM528_DAC:
+         /* verify that the ramdac is an IBM528 */
+
+         i128mem.rbase_g_b[IDXH_I] = 0;
+         i128mem.rbase_g_b[IDXL_I] = IBMRGB_id;
+         if (i128mem.rbase_g_b[DATA_I] != 2) {
+            ErrorF("%s: IBM52X Ramdac not found.\n", i128InfoRec.name);
+            return(FALSE);
+         }
+/* Set MClock speed?? */
          i128InfoRec.ramdac = "ibm528";
          OFLG_SET(CLOCK_OPTION_IBMRGB, &i128InfoRec.clockOptions);
-         ErrorF("%s: Ramdac %s not supported.\n",
-		i128InfoRec.name, i128InfoRec.ramdac);
-         return(FALSE);
+
+         break;
 
       default:
          ErrorF("%s: Unknown Ramdac.\n", i128InfoRec.name);
@@ -483,6 +492,7 @@ i128Probe()
       ErrorF("%s %s: Ramdac type: %s\n",
          XCONFIG_PROBED, i128InfoRec.name, i128InfoRec.ramdac);
 
+/* i128io.config2&0x80000000 is obsolete - DAC is always 220 MHZ (for now) */
    if (i128InfoRec.dacSpeed <= 0) {
       if (i128io.config2&0x80000000)
 	 i128InfoRec.dacSpeed = 220000;
@@ -498,7 +508,6 @@ i128Probe()
 	     i128InfoRec.dacSpeed / 1000);
 
    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &i128InfoRec.clockOptions);
-
 
    tx = i128InfoRec.virtualX;
    ty = i128InfoRec.virtualY;
@@ -617,6 +626,170 @@ i128Probe()
    xf86cleanpci();
 
    return TRUE;  /* End of i128Probe() */
+}
+
+
+Bool
+i128ProgramIBMRGB(freq, flags)
+     int   freq;
+     int   flags;
+
+{
+   unsigned char tmp, tmp2, m, n, df, best_m, best_n, best_df, max_n;
+   long f, vrf, outf, best_vrf, best_diff, best_outf, diff;
+   long requested_freq;
+
+#define REF_FREQ	 25175000
+#define MAX_VREF	  3380000
+/* Actually, MIN_VREF can be as low as 1000000;
+ * this allows clock speeds down to 17 MHz      */
+#define MIN_VREF	  1500000
+#define MAX_VCO		220000000
+#define MIN_VCO		 65000000
+
+   if (freq < 25000) {
+       ErrorF("%s %s: Specified dot clock (%.3f) too low for IBM RGB52x",
+	      XCONFIG_PROBED, i128InfoRec.name, freq / 1000.0);
+       return(FALSE);
+   } else if (freq > MAX_VCO) {
+       ErrorF("%s %s: Specified dot clock (%.3f) too high for IBM RGB52x",
+	      XCONFIG_PROBED, i128InfoRec.name, freq / 1000.0);
+       return(FALSE);
+   }
+
+   requested_freq = freq * 1000;
+
+   best_m = best_n = best_df = 0;
+   best_vrf = best_outf = 0;
+   best_diff = requested_freq;  /* worst case */
+
+   for (df=0; df<4; df++) {
+   	max_n = REF_FREQ / MIN_VREF;
+   	if (df < 3)
+   		max_n >>= 1;
+	for (n=2; n<max_n; n++)
+		for (m=65; m<=128; m++) {
+			vrf = REF_FREQ / n;
+			if (df < 3)
+				vrf >>= 1;
+			if ((vrf > MAX_VREF) || (vrf < MIN_VREF))
+				continue;
+
+			f = vrf * m;
+			outf = f;
+			if (df < 2)
+				outf >>= 2 - df;
+			if ((f > MAX_VCO) || (f < MIN_VCO))
+				continue;
+
+			/* outf is a valid freq, pick the closest now */
+
+			if ((diff = (requested_freq - outf)) < 0)
+				diff = -diff;;
+			if (diff < best_diff) {
+				best_diff = diff;
+				best_m = m;
+				best_n = n;
+				best_df = df;
+				best_outf = outf;
+			}
+		}
+   }
+
+   /* do we have an acceptably close frequency? (less than 1% diff) */
+
+   if (best_diff > (requested_freq/100)) {
+       ErrorF("%s %s: Specified dot clock (%.3f) too far (best %.3f) IBM RGB52x",
+	      XCONFIG_PROBED, i128InfoRec.name, requested_freq / 1000.0,
+	      best_outf / 1000.0);
+       return(FALSE);
+   }
+
+   i128mem.rbase_g_b[PEL_MASK] = 0xff;
+
+   i128mem.rbase_g_b[IDXH_I] = 0;
+   i128mem.rbase_g_b[IDXCTL_I] = 0;
+
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc_clock;
+   tmp2 = i128mem.rbase_g_b[DATA_I];
+   i128mem.rbase_g_b[DATA_I] = tmp2 | 0x81;
+
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_m0+4;
+   i128mem.rbase_g_b[DATA_I] = (best_df<<6) | (best_m&0x3f);
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_n0+4;
+   i128mem.rbase_g_b[DATA_I] = best_n;
+
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_pll_ctrl1;
+   tmp2 = i128mem.rbase_g_b[DATA_I];
+   i128mem.rbase_g_b[DATA_I] = (tmp2&0xf8) | 3;  /* 8 M/N pairs in PLL */
+
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_pll_ctrl2;
+   tmp2 = i128mem.rbase_g_b[DATA_I];
+   i128mem.rbase_g_b[DATA_I] = (tmp2&0xf0) | 2;  /* clock number 2 */
+
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc_clock;
+   tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf0;
+   i128mem.rbase_g_b[DATA_I] = tmp2 | ((flags & V_DBLCLK) ? 0x03 : 0x01);
+
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_sync;
+   i128mem.rbase_g_b[DATA_I] = 0x00;  /* Use 0x10 for +Hsync, 0x20 for +Vsync */
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_hsync_pos;
+   i128mem.rbase_g_b[DATA_I] = 0x01;  /* Delay syncs by 1 pclock */
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_pwr_mgmt;
+   i128mem.rbase_g_b[DATA_I] = 0x00;
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_dac_op;
+   tmp2 = 0x02;  /* fast slew */
+   if (i128DACSyncOnGreen) tmp2 |= 0x08;
+   i128mem.rbase_g_b[DATA_I] = tmp2;
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_pal_ctrl;
+   i128mem.rbase_g_b[DATA_I] = 0x00;
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk;
+   i128mem.rbase_g_b[DATA_I] = 0x01;
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc1;
+   tmp2 = i128mem.rbase_g_b[DATA_I] & 0xbc;
+   i128mem.rbase_g_b[DATA_I] = tmp2 | 0x03; /* "tmp2 | 0x01" for IBM524 DAC */
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc2;
+   i128mem.rbase_g_b[DATA_I] = 0x43 | (i128DAC8Bit ? 0x04 : 0x00);
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc3;
+   i128mem.rbase_g_b[DATA_I] = 0x00;
+   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc4;
+   i128mem.rbase_g_b[DATA_I] = 0x00;
+
+   /* ?? There is no write to cursor control register */
+
+   switch (i128InfoRec.depth) {
+   	case 24: /* 32 bit */
+   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_pix_fmt;
+   		tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf8;
+   		i128mem.rbase_g_b[DATA_I] = tmp2 | 0x06;
+   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_32bpp;
+   		i128mem.rbase_g_b[DATA_I] = 0x03;
+   		break;
+	case 16:
+   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_pix_fmt;
+   		tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf8;
+   		i128mem.rbase_g_b[DATA_I] = tmp2 | 0x04;
+   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_16bpp;
+   		i128mem.rbase_g_b[DATA_I] = 0xC7;
+   		break;
+	case 15:
+   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_pix_fmt;
+   		tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf8;
+   		i128mem.rbase_g_b[DATA_I] = tmp2 | 0x04;
+   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_16bpp;
+   		i128mem.rbase_g_b[DATA_I] = 0xC5;
+   		break;
+	default: /* 8 bit */
+   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_pix_fmt;
+   		tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf8;
+   		i128mem.rbase_g_b[DATA_I] = tmp2 | 0x03;
+   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_8bpp;
+   		i128mem.rbase_g_b[DATA_I] = 0x00;
+   		break;
+   }
+
+   usleep(150000);
+   return(TRUE);
 }
 
 

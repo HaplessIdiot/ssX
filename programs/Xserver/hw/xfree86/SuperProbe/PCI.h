@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.2 1996/03/31 11:48:06 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -242,6 +242,7 @@ void xf86writepci(
 #define PCI_CHIP_GD7542		0x1200
 
 /* Trident */
+#define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9420		0x9420
 #define PCI_CHIP_9440		0x9440
 #define PCI_CHIP_9660		0x9660

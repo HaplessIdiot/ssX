@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.7 1995/07/17 12:39:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.8 1996/02/04 08:57:07 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -242,34 +242,36 @@ int Chipset;
 		if (testinx2(CRTC_IDX, 0x35, 0x0F))
 		{
 			config = rdinx(CRTC_IDX, 0x36);
-			if ((config & 0x20) != 0)
+			if ((Chipset == CHIP_S3_911) || 
+			    (Chipset == CHIP_S3_924))
 			{
-				Mem = 512;
+			   if ((config & 0x20) != 0)
+			      Mem = 512;
+			   else
+			      Mem = 1024;
 			}
 			else
 			{
-				if ((Chipset == CHIP_S3_911) || 
-				    (Chipset == CHIP_S3_924))
+				switch((config & 0xE0) >> 5)
 				{
+				case 0:
+					Mem = 4096;
+					break;
+				case 2:
+					Mem = 3072;
+					break;
+				case 3:
+					Mem = 8192;
+					break;
+				case 4:
+					Mem = 2048;
+					break;
+				case 5:
+					Mem = 6144;
+					break;
+				case 6:
 					Mem = 1024;
-				}
-				else
-				{
-					switch((config & 0xC0) >> 6)
-					{
-					case 0:
-						Mem = 4096;
-						break;
-					case 1:
-						Mem = 3072;
-						break;
-					case 2:
-						Mem = 2048;
-						break;
-					case 3:
-						Mem = 1024;
-						break;
-					}
+					break;
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.8 1996/02/04 09:06:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.9 1996/03/29 22:16:30 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board
@@ -33,7 +33,6 @@ static double range[15] = {50.0, 51.0, 53.2, 58.5, 60.7, 64.4, 66.8, 73.5,
 #if 0
 static void prtbinary(unsigned int size, unsigned int val);
 #endif
-static void wait_vb();
 static void wrt_clk_bit(unsigned int value);
 static void s3_init_clock(unsigned long setup,  unsigned short crtcport);
 static void et4000_init_clock(unsigned long setup);
@@ -41,7 +40,6 @@ static void et4000_init_clock(unsigned long setup);
 #if 0
 static void prtbinary();
 #endif
-static void wait_vb();
 static void wrt_clk_bit();
 static void s3_init_clock();
 static void et4000_init_clock();
@@ -178,13 +176,7 @@ int select;
 #if !defined(PC98_PW) && !defined(PC98_PWLB)
    s3_init_clock(((unsigned long)dwv) | (((long)select) << 21), crtcaddr);
 
-   wait_vb();
-   wait_vb();
-   wait_vb();
-   wait_vb();
-   wait_vb();
-   wait_vb();
-   wait_vb();           /* 0.10 second delay... */
+   usleep(20000);      /* 20 ms delay... */
 
 #else
 #ifdef PC98_PW
@@ -224,13 +216,7 @@ int select;
    /* select the clock */
    outb(0x3C2,(inb(0x3CC) & 0xF3) | ((select << 2) & 0x0C));
 
-   wait_vb();
-   wait_vb();
-   wait_vb();
-   wait_vb();
-   wait_vb();
-   wait_vb();
-   wait_vb();           /* 0.10 second delay... */
+   usleep(20000);      /* 20 ms delay... */
 }
 
 
@@ -255,14 +241,6 @@ prtbinary(size, val)
       }
    }
 #endif
-
-static void wait_vb()
-   {
-   while ((inb(crtcaddr+6) & 0x08) == 0)
-      ;
-   while (inb(crtcaddr+6) & 0x08)
-      ;
-   }
 
 
 #if NeedFunctionPrototypes

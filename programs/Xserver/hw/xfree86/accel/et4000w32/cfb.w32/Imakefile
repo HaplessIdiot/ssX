@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/Imakefile,v 3.6 1996/02/04 08:59:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/Imakefile,v 3.7 1996/03/29 22:15:32 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -33,7 +33,6 @@ SRCS =	 cfbgc.c cfbwindow.c \
 	 cfb8lineCO.c cfb8lineX.c cfb8lineG.c cfb8lineCP.c \
 	 cfb8segC.c cfb8segX.c cfb8segG.c cfb8segCS.c \
 	 cfbply1rctC.c cfbply1rctG.c $(PSZSRCS) \
-	 w32zerarcC.c w32zerarcX.c w32zerarcG.c \
 	 w32fillarcC.c w32fillarcG.c \
 	 w32teblt8.c \
 	 w32polypnt.c \
@@ -54,7 +53,6 @@ OBJS =	 cfbgc.o cfbwindow.o \
 	 cfb8lineCO.o cfb8lineX.o cfb8lineG.o cfb8lineCP.o \
 	 cfb8segC.o cfb8segX.o cfb8segG.o cfb8segCS.o \
 	 cfbply1rctC.o cfbply1rctG.o $(PSZOBJS) \
-	 w32zerarcC.o w32zerarcX.o w32zerarcG.o \
 	 w32fillarcC.o w32fillarcG.o \
 	 w32teblt8.o \
 	 w32polypnt.o \

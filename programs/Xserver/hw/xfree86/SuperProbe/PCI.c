@@ -7,7 +7,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.3 1996/03/11 12:34:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.c,v 3.4 1996/03/17 11:28:31 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -118,6 +118,13 @@ xf86scanpci()
 	    if (idx >= MAX_PCI_DEVICES)
 	        continue;
 
+	    /* Ignore non-VGA devices */
+	    if (!((pcr._base_class == PCI_CLASS_PREHISTORIC &&
+		   pcr._sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||
+		  (pcr._base_class == PCI_CLASS_DISPLAY &&
+		   pcrp->_sub_class == PCI_SUBCLASS_DISPLAY_VGA)))
+		continue;
+		  
 	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
                 outpl(0xCF8, 0x00);
@@ -195,6 +202,13 @@ xf86scanpci()
 	    if (idx >= MAX_PCI_DEVICES)
 	        continue;
 
+	    /* Ignore non-VGA devices */
+	    if (!((pcr._base_class == PCI_CLASS_PREHISTORIC &&
+		   pcr._sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||
+		  (pcr._base_class == PCI_CLASS_DISPLAY &&
+		   pcrp->_sub_class == PCI_SUBCLASS_DISPLAY_VGA)))
+		continue;
+		  
 	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
                 outp(0xCF8, 0x00);

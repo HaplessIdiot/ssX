@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.4 1996/02/19 09:50:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.5 1996/02/22 05:12:19 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -42,6 +42,7 @@
 #define INCL_DOSMISC
 #define INCL_DOSPROCESS
 #define INCL_DOSSEMAPHORES
+#define INCL_DOSMODULEMGR
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
@@ -52,12 +53,40 @@ void os2HardErrorNotify();
 void os2KbdMonitorThread();
 void os2KbdBitBucketThread();
 HEV hevPopupPending;
+static BOOL emx_checked = FALSE;
+
+/* from Eberhard to check for the right EMX version */
+static void check_emx (void)
+{
+	ULONG rc;
+	HMODULE hmod;
+	char name[CCHMAXPATH];
+	char fail[9];
+
+	if (_emx_rev < 41) {
+		ErrorF("This program requires emx.dll revision 41 (0.9b fix 02) "
+			"or later.\n");
+		rc = DosLoadModule (fail, sizeof (fail), "emx", &hmod);
+		if (rc == 0) {
+			rc = DosQueryModuleName (hmod, sizeof (name), name);
+			if (rc == 0)
+				ErrorF("Please delete or update `%s'.\n", name);
+			DosFreeModule (hmod);
+		}
+		exit (2);
+        }
+	emx_checked = TRUE;
+}
 
 void xf86OpenConsole()
 {
+    if (!emx_checked)
+	check_emx();
+
     if (serverGeneration == 1)
     {
 	HKBD fd;
+	ULONG drive;
 	ULONG dummy;
 	KBDHWID hwid;
 	APIRET rc;
@@ -113,11 +142,12 @@ void xf86OpenConsole()
 	rc=DosSetPriority(2,3,0,VioTid);
 
 /* Disable hard-errors through DosError */
-	rc = DosSuppressPopUps(0x0001L,'c');     /* Disable popups */
+	rc = DosQuerySysInfo(5,5,&drive,sizeof(drive));
+	rc = DosSuppressPopUps(0x0001L,drive+96);     /* Disable popups */
 	
 	rc = KbdSetCp(0,0,fd);
 	if(rc != 0)
-		FatalError("xf86OpenCOnsole: cannot set keyboard codepage, rc=%d\n",rc);
+		FatalError("xf86OpenConsole: cannot set keyboard codepage, rc=%d\n",rc);
 	rc = KbdGetHWID(&hwid, fd);
 	if (rc == 0) {
 		switch (hwid.idKbd) {
@@ -146,14 +176,16 @@ void xf86OpenConsole()
 void xf86CloseConsole()
 {
 	APIRET rc;
+	ULONG drive;
 
 	if (xf86Info.consoleFd != -1) {
 		KbdClose(xf86Info.consoleFd);
 	}
 	VioSetMode(&OriginalVideoMode,(HVIO)0);
-	rc = DosSuppressPopUps(0x0000L,'c');    /* Reenable popups */
-	rc=DosCloseEventSem(hevPopupPending);
-	rc=VioDeRegister();
+	rc = DosQuerySysInfo(5,5,&drive,sizeof(drive));
+	rc = DosSuppressPopUps(0x0000L,drive+96);    /* Reenable popups */
+	rc = DosCloseEventSem(hevPopupPending);
+	rc = VioDeRegister();
 	return;
 }
 

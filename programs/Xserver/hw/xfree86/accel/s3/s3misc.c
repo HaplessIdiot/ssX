@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.43 1996/03/29 22:16:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.44 1996/03/31 11:48:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -110,6 +110,12 @@ s3Initialize(scr_index, pScreen, argc, argv)
    int i,j,k,ok;
    unsigned char *pat;
    unsigned short dash_test_pattern = 0xac00;
+   Pixel blackPixel;
+
+   if (xf86FlipPixels && s3Bpp == 1)
+      blackPixel = (Pixel) 1;
+   else
+      blackPixel = (Pixel) 0;
 
    s3Unlock();	  /* for restarts */
    
@@ -541,6 +547,15 @@ s3Initialize(scr_index, pScreen, argc, argv)
       if (pat[0] == 0xff && pat[3 * s3Bpp] == 0xff)
 	 break;  /* BITBLT worked */
    }
+   
+   /* clear source and destination patterns on the screen */
+   for(i = 0; i < s3Bpp * 2 * 2; i++)
+      pat[i] = blackPixel;
+   (*s3ImageWriteFunc)(0, 0, 2, 2, (char*)pat, 2 * s3Bpp, 
+		       0, 0, (short) s3alu[GXcopy], ~0);
+   (*s3ImageWriteFunc)(0, 2, 2, 2, (char*)pat, 2 * s3Bpp, 
+		       0, 0, (short) s3alu[GXcopy], ~0);
+
    if (s3Trio32FCBug > 1) {
       ErrorF("%s %s: WARNING: BITBLT malfunction --\n"
 	     "\tplease report to XFree86@XFree86.Org\n",
@@ -625,6 +640,13 @@ s3Initialize(scr_index, pScreen, argc, argv)
       if (ok)
 	 break;  /* dashed line worked */
    }
+
+   /* clear the test region */
+   for(i=0; i<s3Bpp*8; i++) 
+      pat[i] = blackPixel;
+   (*s3ImageWriteFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp,
+		       0, 0, (short) s3alu[GXcopy], ~0);
+
    if (s3_968_DashBug > 1) {
       ErrorF("%s %s: WARNING: S3 968 dashed line malfunction --\n"
 	     "\tplease report to XFree86@XFree86.Org\n",
@@ -636,10 +658,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
    }
    xfree(pat);
 
-   WaitQueue16_32(1,2);
-   S3_OUTW32(FRGD_COLOR, 1);
 
-   WaitQueue(4);
+   WaitQueue16_32(2,3);
+   S3_OUTW32(FRGD_COLOR, 1);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
 
    xf86InitCache(s3CacheMoveBlock);
@@ -1046,12 +1067,11 @@ s3AdjustFrame(int x, int y)
       else if (s3Bpp>2 && (Base & 0x1f) == 0x1a) 
 	 Base = (Base & ~0x1f) | 0x19;
    }
-
    if (S3_964_SERIES(s3ChipId) 
-       && (DAC_IS_TI3025 || DAC_IS_TI3026 || DAC_IS_IBMRGB)) {
+       && (DAC_IS_TI3025 || DAC_IS_TI3026 || DAC_IS_TI3030 || DAC_IS_IBMRGB)) {
       int px, py, a;
       miPointerPosition(&px, &py);
-      if (s3Bpp==1)
+      if (s3Bpp==1 && !DAC_IS_TI3030)
 	 a = 4-1;
       else 
 	 a = 8-1;

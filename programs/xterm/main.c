@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.30 1996/03/17 11:44:05 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.31 1996/03/29 22:20:45 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1142,7 +1142,7 @@ char **argv;
 	d_tio.c_lflag |= ECHOCTL|IEXTEN;
 #endif
 
-#ifdef(USE_TERMIOS) /* { */
+#ifndef USE_TERMIOS /* { */
 	d_tio.c_line = 0;
 #endif /* } */
 

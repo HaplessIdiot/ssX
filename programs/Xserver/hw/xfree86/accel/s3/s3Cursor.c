@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.23 1996/02/20 14:34:15 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.24 1996/03/05 05:42:22 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -140,12 +140,12 @@ s3CursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
-   s3hotX = 0;
-   s3hotY = 0;
    s3BlockCursor = FALSE;
    s3ReloadCursor = FALSE;
    
    if (s3CursGeneration != serverGeneration) {
+      s3hotX = 0;
+      s3hotY = 0;
       if (OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
 	 useSWCursor = TRUE;
 	 miDCInitialize (pScr, &xf86PointerScreenFuncs);

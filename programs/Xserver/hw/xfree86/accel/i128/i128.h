@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.1 1996/02/04 09:01:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.h,v 3.2 1996/02/20 14:33:35 dawes Exp $ */
 
 #ifndef _I128_H_
 #define _I128_H_
@@ -638,18 +638,6 @@ void i128GetImage(
 #endif
 );
 /* i128TiCursor.c */
-void i128OutTiIndReg(
-#if NeedFunctionPrototypes
-    unsigned char,
-    unsigned char,
-    unsigned char 
-#endif
-);
-unsigned char i128InTiIndReg(
-#if NeedFunctionPrototypes
-    unsigned char 
-#endif
-);
 Bool i128TiRealizeCursor(
 #if NeedFunctionPrototypes
     ScreenPtr,
@@ -681,6 +669,45 @@ void i128TiRecolorCursor(
 #endif
 );
 void i128TiLoadCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    CursorPtr,
+    int,
+    int 
+#endif
+);
+/* i128IBMCursor.c */
+Bool i128IBMRealizeCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    CursorPtr 
+#endif
+);
+void i128IBMCursorOn(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void i128IBMCursorOff(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+void i128IBMMoveCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    int,
+    int 
+#endif
+);
+void i128IBMRecolorCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr,
+    CursorPtr,
+    Bool
+#endif
+);
+void i128IBMLoadCursor(
 #if NeedFunctionPrototypes
     ScreenPtr,
     CursorPtr,

@@ -1,0 +1,43 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = t89_driver.c t89_bank.s tgui_curs.c pc98_tgui.c
+
+OBJS = t89_driver.o t89_bank.o tgui_curs.o pc98_tgui.o
+
+DEFINES = -DPSZ=8 -DPC98 -DPC98_TGUI
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/cfb \
+           -I../../trident -I$(FONTINCSRC) \
+           -I$(SERVERSRC)/include -I$(INCLUDESRC) \
+	   -I$(XF86SRC)/vga256/drivers/tvga8900
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(tvga89_drv,$(OBJS))
+
+LinkSourceFile(bank.s,$(XF86SRC)/vga256/drivers/tvga8900)
+LinkSourceFile(t89_driver.c,$(XF86SRC)/vga256/drivers/tvga8900)
+LinkSourceFile(tgui_curs.c,$(XF86SRC)/vga256/drivers/tvga8900)
+
+ObjectFromSpecialAsmSource(t89_bank,bank,NullParameter)
+
+InstallLinkKitNonExecFile(t89_driver.c,$(XF98LINKKITDIR)/drivers/vga256/tvga8900)
+InstallLinkKitNonExecFile(t89_driver.h,$(XF98LINKKITDIR)/drivers/vga256/tvga8900)
+InstallLinkKitNonExecFile(bank.s,$(XF98LINKKITDIR)/drivers/vga256/tvga8900)
+InstallLinkKitNonExecFile(tgui_curs.c,$(XF98LINKKITDIR)/drivers/vga256/tvga8900)
+InstallLinkKitNonExecFile(tgui_drv.h,$(XF98LINKKITDIR)/drivers/vga256/tvga8900)
+InstallLinkKitNonExecFile(tgui_ger.h,$(XF98LINKKITDIR)/drivers/vga256/tvga8900)
+InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers/vga256/tvga8900)
+
+DependTarget()
+

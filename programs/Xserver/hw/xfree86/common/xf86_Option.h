@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.48 1996/03/29 22:16:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.49 1996/03/31 11:48:51 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -200,6 +200,7 @@ typedef struct {
 #define CLOCK_OPTION_TRIDENT    15 /* use programmable clock on TGUI */
 #define CLOCK_OPTION_ATT409     16 /* use ATT20C409 programmable clock */
 #define CLOCK_OPTION_CH8398     17 /* use Chrontel 8398 programmable clock */
+#define CLOCK_OPTION_GLORIA8    18 /* use ELSA Gloria-8 TVP3030/ICS9161 clock */
 
 /*
  * Table to map option strings to tokens.

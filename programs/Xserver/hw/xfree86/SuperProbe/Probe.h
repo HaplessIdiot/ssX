@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.30 1996/03/31 11:48:09 dawes Exp $ */
 
 /*
  * Includes
@@ -324,8 +324,9 @@ extern Chip_Descriptor I128_Descriptor;
 #define DAC_STG1702	45	/* STG 1703 15/16/24-bit DAC w/pixel-mux */
 #define DAC_CH8398	46	/* Chrontel 8398 */
 #define DAC_ATT408	47	/* AT&T 20C408 */
+#define DAC_TVP3030	48	/* TI ViewPoint TVP3030 RAMDAC */
 
-#define DAC_MAX		DAC_ATT408	/* UPDATE THIS! */
+#define DAC_MAX		DAC_TVP3030	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */

@@ -21,7 +21,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: dixstruct.h /main/34 1996/03/01 14:30:42 kaleb $ */
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.3 1996/02/04 09:17:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.4 1996/03/04 05:22:55 dawes Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -61,19 +61,21 @@ typedef enum {ClientStateInitial,
 	      ClientStateRetained,
 	      ClientStateGone} ClientState;
 
-typedef struct _Client {
-    int         index;
-    Mask        clientAsMask;
-    pointer     requestBuffer;
-    pointer     osPrivate;	/* for OS layer, including scheduler */
-    Bool        swapped;
-    void        (*pSwapReplyFunc) (
+typedef void (*ReplySwapPtr) (
 #if NeedNestedPrototypes
 		ClientPtr	/* pClient */,
 		int		/* size */,
 		void *		/* pbuf */
 #endif
 );
+
+typedef struct _Client {
+    int         index;
+    Mask        clientAsMask;
+    pointer     requestBuffer;
+    pointer     osPrivate;	/* for OS layer, including scheduler */
+    Bool        swapped;
+    ReplySwapPtr pSwapReplyFunc;
     XID         errorValue;
     int         sequence;
     int         closeDownMode;

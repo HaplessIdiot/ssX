@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.32 1996/02/04 09:04:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.33 1996/02/20 14:34:14 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -196,6 +196,7 @@ extern int s3_968_DashBug;
 #define SC1148x_M2_DAC    20
 #define SC1148x_M3_DAC    21
 #define ATT20C409_DAC     22
+#define TI3030_DAC        23
 
 #define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
 				 s3RamdacType == ATT20C505_DAC)
@@ -204,6 +205,7 @@ extern int s3_968_DashBug;
 #define DAC_IS_TI3020		(s3RamdacType == TI3020_DAC)
 #define DAC_IS_TI3025		(s3RamdacType == TI3025_DAC)
 #define DAC_IS_TI3026		(s3RamdacType == TI3026_DAC)
+#define DAC_IS_TI3030		(s3RamdacType == TI3030_DAC)
 #define DAC_IS_ATT20C498	(s3RamdacType == ATT20C498_DAC)
 #define DAC_IS_ATT22C498	(s3RamdacType == ATT22C498_DAC)
 #define DAC_IS_ATT498		(DAC_IS_ATT20C498 || DAC_IS_ATT22C498)

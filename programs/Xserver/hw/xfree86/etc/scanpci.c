@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.10 1996/03/31 11:49:08 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -433,6 +433,7 @@ struct pci_vendor_device {
                             { 0x2020, "53C974 SCSI", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1023, "Trident", {
+                            { 0x9320, "TGUI 9320", NF },
                             { 0x9420, "TGUI 9420", NF },
                             { 0x9440, "TGUI 9440", NF },
                             { 0x9660, "TGUI 9660", NF },

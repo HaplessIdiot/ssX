@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.88 1996/03/29 22:15:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.89 1996/03/31 11:48:36 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -348,7 +348,7 @@ s3CleanUp(void)
                     oldS3->Ti3020[TI_TRUE_COLOR_CONTROL]);
       s3OutTiIndReg(TI_MISC_CONTROL, 0x00, oldS3->Ti3020[TI_MISC_CONTROL]);
    }
-   if (DAC_IS_TI3026) {
+   if (DAC_IS_TI3026 || DAC_IS_TI3030) {
       /* select pixel clock PLL as dot clock soure */
       s3OutTi3026IndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_PLL);
 
@@ -359,7 +359,7 @@ s3CleanUp(void)
       s3OutTi3026IndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[5]);
 
       /* wait until PLL is locked */
-      for (tmp=0; tmp<10000; tmp++)
+      for (i=0; i<10000; i++)
 	 if (s3InTi3026IndReg(TI_PIXEL_CLOCK_PLL_DATA) & 0x40) 
 	    break;
 
@@ -374,7 +374,7 @@ s3CleanUp(void)
       s3OutTi3026IndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[5]);
 
       /* wait until PLL is locked */
-      for (tmp=0; tmp<10000; tmp++) 
+      for (i=0; i<10000; i++) 
 	 if (s3InTi3026IndReg(TI_MCLK_PLL_DATA) & 0x40) 
 	    break;
 
@@ -732,7 +732,7 @@ s3Init(mode)
           oldS3->Ti3025[8] = s3InTiIndReg(TI_LOOP_CLOCK_PLL_DATA);  /* P */
           s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[8]);
       }
-      if (DAC_IS_TI3026) {
+      if (DAC_IS_TI3026 || DAC_IS_TI3030) {
 	  for (i=0; i<0x40; i++) 
 	     oldS3->Ti3020[i] = s3InTi3026IndReg(i);
 
@@ -849,10 +849,12 @@ s3Init(mode)
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
-   else if (mode->Flags & V_DBLCLK
+   else if ((mode->Flags & V_DBLCLK)
 	    && (DAC_IS_TI3026) 
-	    && (OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)))
+	    && (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)))
       pixMuxShift =  (s3Bpp <= 2) ? 2 : 1;
+   else if ((mode->Flags & V_DBLCLK) && DAC_IS_TI3030)
+      pixMuxShift =  1;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_IBMRGB)
       pixMuxShift = mode->Flags & V_DBLCLK ? 1 : 0;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025)
@@ -922,6 +924,13 @@ s3Init(mode)
 	 mode->CrtcHSyncStart = mode->CrtcHSyncEnd - 1;
          changed = TRUE;
       }
+      if (DAC_IS_TI3030 && s3Bpp==1) {
+	 /* for 128bit bus we need multiple of 16 8bpp pixels... */
+	 if (mode->CrtcHTotal & 0x0f) {
+	    mode->CrtcHTotal = (mode->CrtcHTotal + 0x0f) & ~0x0f;
+	    changed = TRUE;
+	 }
+      }
       if (changed) {
 	 ErrorF("%s %s: mode line has to be modified ...\n",
 		XCONFIG_PROBED, s3InfoRec.name);
@@ -983,10 +992,14 @@ s3Init(mode)
 	 outb(vgaCRIndex, 0x5C);
 	 outb(vgaCRReg, 0x00);
       }
+      if (s3Bpp == 4) 
+         s3OutTi3026IndReg(TI_LATCH_CONTROL, ~1, 1);  /* 0x06 -> 0x07 */
+      else
+         s3OutTi3026IndReg(TI_LATCH_CONTROL, ~1, 0);  /* 0x06 */
    }
 
-   if(    (DAC_IS_TI3026) 
-       && (OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions))){
+   if(    (DAC_IS_TI3026 || DAC_IS_TI3030) 
+       && (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions))){
       /*
        * for the boards with Ti3026 and external ICD2061A clock chip we
        * need to enable clock doubling, if necessary
@@ -1057,10 +1070,10 @@ s3Init(mode)
 	 (void) (s3ClockSelectFunc)(mode->SynthClock);
       else
          (void) (s3ClockSelectFunc)(mode->Clock);
-
-      if(mode->Flags & V_DBLCLK
-	 && (DAC_IS_TI3026) 
-	 && (OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions))){
+     
+      if ((mode->Flags & V_DBLCLK)
+	 && (DAC_IS_TI3026 || DAC_IS_TI3030) 
+	 && (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions))){
 	 if (s3Bpp <= 2)
 	    Ti3026SetClock(mode->SynthClock / 2, 2, s3Bpp, TI_LOOP_CLOCK);
 	 else 
@@ -2065,7 +2078,7 @@ s3Init(mode)
       outb(0x3C5, tmp2);        /* unblank the screen */
    }  /* DAC_IS_TI3020_SERIES */
 
-   if (DAC_IS_TI3026) {
+   if (DAC_IS_TI3026 || DAC_IS_TI3030) {
       outb(0x3C4, 1);
       tmp2 = inb(0x3C5);
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
@@ -2085,7 +2098,10 @@ s3Init(mode)
       }
 
       outb(vgaCRIndex, 0x65);
-      outb(vgaCRReg, 0);
+      if (DAC_IS_TI3030)
+	 outb(vgaCRReg, 0x80);
+      else
+	 outb(vgaCRReg, 0);
 
       if (s3PixelMultiplexing) {
 	 int vclock,rclock;
@@ -2111,21 +2127,20 @@ s3Init(mode)
 	 } else {
 	    rclock = TI_OCLK_R8;
 	 }
-#if 0  /* TI_MCLK_LCLK_CONTROL is set in the PLL code in */
-	 s3OutTi3026IndReg(TI_MCLK_LCLK_CONTROL, 0xf8, 
-			   (rclock - (vclock >> 3)) & 7);
 
-#endif
 	 outb(vgaCRIndex, 0x66);
 	 tmp = inb(vgaCRReg);
-	 if (mode->Flags & V_DBLCLK
-	     && (DAC_IS_TI3026) 
-	     && (OFLG_SET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)))
+	 if (DAC_IS_TI3030)
+	    tmp |= 0x60;
+	 if ((mode->Flags & V_DBLCLK)
+	     && OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions))
 	    if (s3Bpp <= 2)
 	       outb(vgaCRReg, (tmp & 0xf8) | (rclock-2));
 	    else
 	       outb(vgaCRReg, (tmp & 0xf8) | (rclock-1));
-	 else
+	 else if ((mode->Flags & V_DBLCLK) && DAC_IS_TI3030)
+	    outb(vgaCRReg, (tmp & 0xf8) | (rclock-1));
+	 else 
 	    outb(vgaCRReg, (tmp & 0xf8) | (rclock-0));
 
          /*
@@ -2137,21 +2152,33 @@ s3Init(mode)
 
 	 if (s3InfoRec.depth == 24) {                          /* 24bpp */
 	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_888);
-	    s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3026TC_D24P64);
+	    if (DAC_IS_TI3030)
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3030TC_D24P128);
+	    else
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3026TC_D24P64);
 	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
 	 } else if (s3InfoRec.depth == 16) {                    /* 5-6-5 */
 	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_565);
-	    s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3026TC_D16P64);
+	    if (DAC_IS_TI3030)
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3030TC_D16P128);
+	    else
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3026TC_D16P64);
 	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
 	 } else if (s3InfoRec.depth == 15) {                     /* 5-5-5 */
 	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_555);
-	    s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3026TC_D15P64);
+	    if (DAC_IS_TI3030)
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3030TC_D15P128);
+	    else
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3026TC_D15P64);
 	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
 	 } else {
             /* set mux control 1 and 2 to provide pseudocolor sub-mode 4   */
             /* this provides a 64-bit pixel bus with 8:1 multiplexing      */
             s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_PSEUDO_COLOR);
-            s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3026PC_D8P64);
+	    if (DAC_IS_TI3030)
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3030PC_D8P128);
+	    else
+	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, TI_MUX2_BUS_3026PC_D8P64);
 	 }
 
          /* change to 8-bit DAC and re-route the data path and clocking */
@@ -2184,13 +2211,21 @@ s3Init(mode)
 	    else /* if (s3Bpp == 4) */
 	       outb(vgaCRReg, 0x00);
 	 }
-
+	 if (DAC_IS_TI3030) {
+	    /* set s3 reg53 to parallel addressing by or'ing 0x20     */
+	    outb(vgaCRIndex, 0x53);
+	    tmp = inb(vgaCRReg);
+	    outb(vgaCRReg, tmp | 0x20);
+	 }
       } else {
-         /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
          outb(vgaCRIndex, 0x53);
          tmp = inb(vgaCRReg);
-         outb(vgaCRReg, tmp & 0xDF);
-
+	 if (DAC_IS_TI3030)
+	    /* set s3 reg53 to parallel addressing by or'ing 0x20     */
+	    outb(vgaCRReg, tmp | 0x20);
+	 else
+	    /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
+	    outb(vgaCRReg, tmp & ~0x20);
          /* set s3 reg55 to non-external serial by and'ing 0xF7         */
          outb(vgaCRIndex, 0x55);
          tmp = inb(vgaCRReg);
@@ -2225,7 +2260,7 @@ s3Init(mode)
 
       outb(0x3C4, 1);
       outb(0x3C5, tmp2);        /* unblank the screen */
-   }  /* DAC_IS_TI3026 */
+   }  /* DAC_IS_TI3026 || DAC_IS_TI3030 */
 
    if (DAC_IS_IBMRGB) {
       outb(0x3C4, 1);
@@ -2310,7 +2345,6 @@ s3Init(mode)
          outb(vgaCRIndex, 0x58);
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, (tmp & 0xbf) | s3SAM256);
-/* KTS vvvv */
 
 	 outb(vgaCRIndex, 0x67);
 	 if (s3Bpp == 4)
@@ -2368,7 +2402,6 @@ s3Init(mode)
       outb(0x3C4, 1);
       outb(0x3C5, tmp2);        /* unblank the screen */
    }  /* DAC_IS_IBMRGB */
-/* KTS ^^^^ */
 
    s3InitCursorFlag = TRUE;  /* turn on the cursor during the next load */
 
@@ -2472,7 +2505,7 @@ s3Init(mode)
 	 outb(vgaCRReg, 0x80);
       else if (DAC_IS_TI3025)
 	 outb(vgaCRReg, 0x10);
-      else if (DAC_IS_TI3026)
+      else if (DAC_IS_TI3026 || DAC_IS_TI3030)
 	 outb(vgaCRReg, 0x10);
       else if (DAC_IS_IBMRGB)
 	 outb(vgaCRReg, 0x10);
@@ -2923,7 +2956,7 @@ InitLUT()
 
    if (s3InfoRec.bitsPerPixel > 8 &&
        (DAC_IS_SC15025 || DAC_IS_TI3020_SERIES || DAC_IS_TI3026 
-	|| DAC_IS_IBMRGB)) {
+	|| DAC_IS_TI3030 || DAC_IS_IBMRGB)) {
       int r,g,b;
       int mr,mg,mb;
       int nr=5, ng=5, nb=5;
@@ -2932,7 +2965,7 @@ InitLUT()
 
       if (!LUTInited) {
 	 if (s3Weight == RGB32_888 || DAC_IS_TI3020_SERIES || DAC_IS_TI3026 
-	     || DAC_IS_IBMRGB) {
+	     || DAC_IS_TI3030 || DAC_IS_IBMRGB) {
 	    for(i=0; i<256; i++) {
 	       currents3dac[i].r = xf86rGammaMap[i];
 	       currents3dac[i].g = xf86gGammaMap[i];
@@ -3000,7 +3033,10 @@ s3InitEnvironment()
   */
    WaitQueue16_32(6,7);
 
-   outw32(FRGD_COLOR, 0);
+   if (xf86FlipPixels && s3Bpp == 1)
+      outw32(FRGD_COLOR, 1);
+   else
+      outw32(FRGD_COLOR, 0);
 
    outw(CUR_X, 0);
    outw(CUR_Y, 0);

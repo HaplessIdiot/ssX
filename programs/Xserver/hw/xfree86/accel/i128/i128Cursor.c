@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.1 1996/02/04 09:01:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.2 1996/02/20 14:33:36 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -30,11 +30,18 @@
 
 static Bool i128UnrealizeCursor();
 static void i128SetCursor();
+
 extern Bool i128TiRealizeCursor();
 extern void i128TiCursorOn();
 extern void i128TiCursorOff();
 extern void i128TiLoadCursor();
 extern void i128TiMoveCursor();
+
+extern Bool i128IBMRealizeCursor();
+extern void i128IBMCursorOn();
+extern void i128IBMCursorOff();
+extern void i128IBMLoadCursor();
+extern void i128IBMMoveCursor();
 
 static miPointerSpriteFuncRec i128TiPointerSpriteFuncs =
 {
@@ -44,6 +51,14 @@ static miPointerSpriteFuncRec i128TiPointerSpriteFuncs =
    i128TiMoveCursor,
 };
 
+static miPointerSpriteFuncRec i128IBMPointerSpriteFuncs =
+{
+   i128IBMRealizeCursor,
+   i128UnrealizeCursor,
+   i128SetCursor,
+   i128IBMMoveCursor,
+};
+
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern xf86InfoRec xf86Info;
 
@@ -51,7 +66,7 @@ static int i128CursGeneration = -1;
 static CursorPtr i128SaveCursors[MAXSCREENS];
 static Bool useSWCursor = FALSE;
 
-extern int i128hotX, i128hotY;
+extern int i128hotX, i128hotY, i128RamdacType;
 
 
 Bool
@@ -65,10 +80,14 @@ i128CursorInit(pm, pScr)
    i128ReloadCursor = FALSE;
    
    if (i128CursGeneration != serverGeneration) {
-      if (!(miPointerInitialize(pScr, &i128TiPointerSpriteFuncs,
+      if (!(miPointerInitialize(pScr,
+               i128RamdacType == TI3025_DAC ? &i128TiPointerSpriteFuncs :
+                  &i128IBMPointerSpriteFuncs,
 				&xf86PointerScreenFuncs, FALSE)))
          return FALSE;
-      pScr->RecolorCursor = i128TiRecolorCursor;
+      pScr->RecolorCursor =
+         i128RamdacType == TI3025_DAC ? i128TiRecolorCursor :
+            i128IBMRecolorCursor;
       i128CursGeneration = serverGeneration;
    }
 
@@ -81,7 +100,10 @@ i128ShowCursor()
    if (useSWCursor) 
       return;
 
-   i128TiCursorOn();
+   if (i128RamdacType == TI3025_DAC)
+      i128TiCursorOn();
+   else
+      i128IBMCursorOn();
 }
 
 void
@@ -90,7 +112,10 @@ i128HideCursor()
    if (useSWCursor) 
       return;
 
-   i128TiCursorOff();
+   if (i128RamdacType == TI3025_DAC)
+      i128TiCursorOff();
+   else
+      i128IBMCursorOff();
 }
 
 static Bool
@@ -127,9 +152,12 @@ i128SetCursor(pScr, pCurs, x, y, generateEvent)
    i128hotY = pCurs->bits->yhot;
    i128SaveCursors[index] = pCurs;
 
-   if (!i128BlockCursor)
-      i128TiLoadCursor(pScr, pCurs, x, y);
-   else
+   if (!i128BlockCursor) {
+      if (i128RamdacType == TI3025_DAC)
+         i128TiLoadCursor(pScr, pCurs, x, y);
+      else
+         i128IBMLoadCursor(pScr, pCurs, x, y);
+   } else
       i128ReloadCursor = TRUE;
 }
 
@@ -145,7 +173,10 @@ i128RestoreCursor(pScr)
 
    i128ReloadCursor = FALSE;
    miPointerPosition(&x, &y);
-   i128TiLoadCursor(pScr, i128SaveCursors[index], x, y);
+   if (i128RamdacType == TI3025_DAC)
+      i128TiLoadCursor(pScr, i128SaveCursors[index], x, y);
+   else
+      i128IBMLoadCursor(pScr, i128SaveCursors[index], x, y);
 }
 
 void
@@ -158,7 +189,10 @@ i128RepositionCursor(pScr)
       return;
 
    miPointerPosition(&x, &y);
-   i128TiMoveCursor(pScr, x, y);
+   if (i128RamdacType == TI3025_DAC)
+      i128TiMoveCursor(pScr, x, y);
+   else
+      i128IBMMoveCursor(pScr, x, y);
 }
 
 void

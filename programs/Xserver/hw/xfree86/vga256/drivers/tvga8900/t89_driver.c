@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.33 1996/02/22 05:13:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.34 1996/03/29 22:18:14 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -601,6 +601,9 @@ TVGA8900Probe()
 		break;
 	case TGUI9320LCD:
 		tridentIsTGUI = TRUE;			/* Reports of this works */
+		tridentLinearOK = TRUE;
+		tridentDACtype = TGUIDAC;
+		TVGA8900.ChipHas16bpp = TRUE;
 		tridentTGUIProgrammableClocks = TRUE;
 		break;
 	case TGUI9400CXi:
@@ -1192,7 +1195,8 @@ TVGA8900Restore(restore)
 #endif
 	if (tridentTGUIProgrammableClocks)
 	{
-		outb(0x3C2, restore->VCLK_O);
+		if (TVGAchipset != TGUI9320LCD)
+			outb(0x3C2, restore->VCLK_O);
 		outb(0x43C8, restore->VCLK_A);
 		outb(0x43C9, restore->VCLK_B);
 	}

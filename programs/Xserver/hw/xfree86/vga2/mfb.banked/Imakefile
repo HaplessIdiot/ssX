@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/Imakefile,v 3.3 1995/01/28 17:07:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/Imakefile,v 3.4 1996/02/04 09:12:14 dawes Exp $
 
 
 
@@ -133,5 +133,10 @@ ObjectFromSpecialSource(mfbtileC,mfbtile,-DMROP=Mcopy)
 ObjectFromSpecialSource(mfbtileG,mfbtile,-DMROP=0)
 
 #ifndef OS2Architecture
+#ifndef OS2Architecture
+#else
+depend::
+
+#endif
 DependTarget()
 #endif

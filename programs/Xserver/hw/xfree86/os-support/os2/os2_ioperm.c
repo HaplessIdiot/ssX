@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_ioperm.c,v 3.1 1996/02/19 09:50:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_ioperm.c,v 3.2 1996/03/10 12:06:54 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -65,6 +65,7 @@ int ScreenNum;
 
 HFILE hfd;
 	ULONG dlen;
+	APIRET rc;
 
 	/* no need to call multiple times */
 	if (ioEnabled) return;
@@ -75,18 +76,20 @@ HFILE hfd;
 	   (ULONG)0) != 0) {
 		ErrorF("Error opening fastio$ driver...\n");
 		ErrorF("Please install xf86sup.sys in config.sys!\n");
-		return;
+		exit(42);
 	}
 	callgate[0] = callgate[1] = 0;
 
 /* Get callgate from driver for fast io to ports and other stuff */
 
-	if (DosDevIOCtl(hfd, (ULONG)0x76, (ULONG)0x64,
+	rc = DosDevIOCtl(hfd, (ULONG)0x76, (ULONG)0x64,
 		NULL, 0, NULL,
-		(ULONG*)&callgate[2], sizeof(USHORT), &dlen) != 0) {
-		ErrorF("IOCTL to fastio$ failed!\n");
+		(ULONG*)&callgate[2], sizeof(USHORT), &dlen);
+	if (rc) {
+		ErrorF("xf86-OS/2: EnableIOPorts failed, rc=%d, dlen=%d; emergency exit\n",
+			rc,dlen);
 		DosClose(hfd);
-		return;
+		exit(42);
 	}
 
 /* Calling callgate with function 13 sets IOPL for the program */
@@ -106,6 +109,7 @@ int ScreenNum;
 {
 HFILE hfd;
 	ULONG dlen;
+	APIRET rc;
 
 	/* no need to call multiple times */
 	if (!ioEnabled) return;
@@ -120,10 +124,12 @@ HFILE hfd;
 	}
 	callgate[0] = callgate[1] = 0;
 
-	if (DosDevIOCtl(hfd, (ULONG)0x76, (ULONG)0x64,
+	rc = DosDevIOCtl(hfd, (ULONG)0x76, (ULONG)0x64,
 		NULL, 0, NULL,
-		(ULONG*)&callgate[2], sizeof(USHORT), &dlen) != 0) {
-		ErrorF("IOCTL to fastio$ failed!\n");
+		(ULONG*)&callgate[2], sizeof(USHORT), &dlen);
+	if (rc) {
+		ErrorF("xf86-OS/2: DisableIOPorts failed, rc=%d, dlen=%d\n",
+			rc,dlen);
 		DosClose(hfd);
 		return;
 	}

@@ -1,5 +1,5 @@
 /* $XConsortium: input.h /main/21 1996/01/14 16:45:24 kaleb $ */
-/* $XFree86: xc/programs/Xserver/include/input.h,v 3.1 1996/02/18 12:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/input.h,v 3.2 1996/03/10 12:11:35 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium
@@ -192,6 +192,12 @@ extern int InitAndStartDevices(
 extern void CloseDownDevices(
 #if NeedFunctionPrototypes
     void
+#endif
+);
+
+extern void RemoveDevice(
+#if NeedFunctionPrototypes
+    DeviceIntPtr /*dev*/
 #endif
 );
 

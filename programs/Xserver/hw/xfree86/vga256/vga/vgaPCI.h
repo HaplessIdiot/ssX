@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.4 1996/03/31 11:50:15 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -62,6 +62,7 @@
 #define PCI_CHIP_GD7542		0x1200
 
 /* Trident */
+#define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9420		0x9420
 #define PCI_CHIP_9440		0x9440
 #define PCI_CHIP_9660		0x9660
@@ -161,6 +162,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_NCR_2,	"NCR",	{
 				{0x0000,		NULL}}},
     {PCI_VENDOR_TRIDENT, "Trident", {
+				{PCI_CHIP_9320,		"TGUI 9320"},
 				{PCI_CHIP_9420,		"TGUI 9420"},
 				{PCI_CHIP_9440,		"TGUI 9440"},
 				{PCI_CHIP_9660,		"TGUI 9660"},

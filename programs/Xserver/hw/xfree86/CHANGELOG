@@ -1,3 +1,30 @@
+XFree86 3.1.2Df (15 April 1996)
+488. Changes to xf86Config.c in preparation for XF86Setup sharing this
+     code (Joe Moss).
+487. Prevent SuperProbe from falsely detecting non-VGA PCI devices.
+486. Config/Imake support for building LBX (Holger Veit).
+485. OS/2 updates (Holger Veit and Sebastien Marineau).
+484. Add support for the I128 8MB board with the IBM528 RAMDAC (Robin Cutshaw).
+483. Add prototyping for Xserver/dix, and fix copyright notices in new
+     header files (Thomas E. Dickey).
+482. Replace the vsync wait delays in the ICD2061A code with a 20ms usleep
+     (Harald Koenig).
+481. Ensure that the S3 server clears the screen to black even when
+     '-flipPixels' is used, and erase the S3 HW bug test patterns after
+     completing the tests (Harald Koenig).
+480. Fix incorrect S3 HW cursor offset after VT switching (Harald Koenig).
+479. Fix SuperProbe's memory probing for S3 cards with more than 4MB,
+     and add detection for the TVP3030 RAMDAC (Harald Koenig).
+478. Fix some S3 TVP3026 problems introduced in 3.1.2Dc (Harald Koenig).
+477. Add support to the S3 server for the ELSA Gloria-8 card (except the
+     GLint 300SX 3D chip) (Harald Koenig).
+476. Fix for POSIX termios support in xterm (Matthieu Herrb).
+475. Add -li386 to ServerExtraSysLibs for NetBSD (Matthieu Herrb).
+474. Fix problems when XINPUT isn't defined (Kaleb Keithley).
+473. Fix for TGUI 9320 LCD support (Alan Hourihane).
+472. Imakefile updates for X98, and PCI detection added for TGUI9320
+     (Michio "Karl" Jinbo).
+
 XFree86 3.1.2De (31 March 1996)
 471. Change the default HSkew calculation (Marc Aurele La France).
 470. Add detection of the ATI 264VT, 264VT2 and 264GT to the ati driver,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.6 1996/02/22 05:12:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.7 1996/03/10 12:06:53 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -216,16 +216,16 @@ dummy_timeout.tv_sec=0;
 dummy_timeout.tv_usec=0;
 
 	elapsed=0;
-	      /* Keep a copy bec. select() will     */
-	      /* select() will destroy the bitmasks */
-	if(readfds!=NULL){ XFD_COPYSET(readfds,&read_copy);}
-	if(writefds!=NULL) {XFD_COPYSET(writefds,&write_copy);}
-	if(exceptfds!=NULL) {XFD_COPYSET(exceptfds,&except_copy);}
         j=0;
 	do {
 	     os2CheckPopupPending();
 	     dummy_timeout.tv_sec=0;
 	     dummy_timeout.tv_usec=0;
+	/* Copy the masks bec. select() will destroy them */
+	     if(readfds!=NULL){ XFD_COPYSET(readfds,&read_copy);}
+	     if(writefds!=NULL) {XFD_COPYSET(writefds,&write_copy);}
+	     if(exceptfds!=NULL) {XFD_COPYSET(exceptfds,&except_copy);}
+	/* Now call select() with a timeout of zero */
              i=select(nfds,(readfds!=NULL)?(int *)&read_copy:NULL,
 	     	(writefds!=NULL)?(int *)&write_copy:NULL,
 	     	(exceptfds!=NULL)?(int *)&except_copy:NULL,
@@ -238,7 +238,7 @@ dummy_timeout.tv_usec=0;
 			timeout->tv_sec=time_remaining/1000;
 			timeout->tv_usec=(time_remaining % 1000) *1000;
 		  }
-	/* Put the masks from select() into the original pointers */
+		/* Put the masks from select() into the original pointers */
 	          if(readfds!=NULL) {XFD_COPYSET(&read_copy,readfds);}
 	          if(writefds!=NULL) {XFD_COPYSET(&write_copy,writefds);}
 	          if(exceptfds!=NULL) {XFD_COPYSET(&except_copy,exceptfds);}
@@ -256,9 +256,9 @@ dummy_timeout.tv_usec=0;
                         timeout->tv_usec=(time_remaining % 1000) *1000;
                         }
 		  /* Put the masks from select() into the original pointers */
-	          if(readfds!=NULL) {XFD_COPYSET(&read_copy,readfds);}
-	          if(writefds!=NULL) {XFD_COPYSET(&write_copy,writefds);}
-	          if(exceptfds!=NULL) {XFD_COPYSET(&except_copy,exceptfds);}
+		  if(readfds!=NULL) {FD_ZERO(readfds);}
+		  if(writefds!=NULL) {FD_ZERO(writefds);}
+		  if(exceptfds!=NULL) {FD_ZERO(exceptfds);}
 		  return(0);  /* Not to confuse the networking with mouse/kbd */
 	     }
 		  		   
@@ -271,9 +271,9 @@ if(timeout!=NULL){
         timeout->tv_usec=0;
         }
 		      /* Put the masks from select() into the original pointers */
-if(readfds!=NULL) {XFD_COPYSET(&read_copy,readfds);}
-if(writefds!=NULL) {XFD_COPYSET(&write_copy,writefds);}
-if(exceptfds!=NULL) {XFD_COPYSET(&except_copy,exceptfds);}
+if(readfds!=NULL) {FD_ZERO(readfds);}
+if(writefds!=NULL) {FD_ZERO(writefds);}
+if(exceptfds!=NULL) {FD_ZERO(exceptfds);}
 
 return(0);
 }

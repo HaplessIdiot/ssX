@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.6 1995/12/02 05:05:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.h,v 3.7 1996/02/04 09:04:53 dawes Exp $ */
 
 
 
@@ -24,6 +24,8 @@
 #define  ELSA_WINNER_2000PRO_X	0x942
 #define  ELSA_WINNER_2000AVI	0x943
 #define  ELSA_WINNER_2000PRO_X8	0x94a
+#define  ELSA_GLORIA_4		0x980
+#define  ELSA_GLORIA_8		0x981
 
 typedef struct {
    unsigned short code;

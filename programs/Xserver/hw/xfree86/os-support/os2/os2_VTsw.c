@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.3 1996/02/22 05:12:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.4 1996/03/10 12:06:52 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -98,7 +98,6 @@ void * arg;
    ULONG postCount;
    Bool FirstTime=TRUE;
    int timeout_count;
-   static BOOL ErrRedir=FALSE;
 
 	rc=DosCreateEventSem(NULL,&hevServerHasFocus,0L,FALSE);
 	rc=DosPostEventSem(hevServerHasFocus);
@@ -129,8 +128,7 @@ void * arg;
         if((NotifyType!=65535)&&(!WaitingForAccess)) {
                 rc=DosResetEventSem(hevSwitchRequested,&postCount);
                 xf86Info.vtRequestsPending=TRUE;
-                if (!ErrRedir) { freopen("xf86log.os2","w",stderr); ErrRedir=TRUE; }
- /* Then wait for semaphore to be posted once switch is complete. Wait 20 secs, then kill server */
+/* Then wait for semaphore to be posted once switch is complete. Wait 20 secs, then kill server */
                timeout_count=0;
                rc=DosSetPriority(2,3,0,1);
                      do {
@@ -195,6 +193,7 @@ void os2ServerVideoAccess()
 /* Wait for screen access. This is called at server reset or at server startup */
 /* Here we do some waiting until this session comes in the foreground before *
  * going any further. This is because we may have been started in the bg      */
+
         if(serverGeneration==1){
                 hSwitch=WinQuerySwitchHandle(0,getpid());
                 rc=WinQuerySwitchEntry(hSwitch,&sw);

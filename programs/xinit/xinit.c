@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.10 1996/02/22 05:15:02 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.11 1996/03/10 12:14:20 dawes Exp $ */
 
 /*
 
@@ -41,6 +41,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <setjmp.h>
 
 #ifdef __EMX__
+#define INCL_DOSMODULEMGR
+#include <os2.h>
 #define setpgid(a,b)
 #define setuid(a)
 #define setgid(a)
@@ -236,6 +238,24 @@ main(int argc, char **argv, char **envp)
 	int start_of_client_args, start_of_server_args;
 #ifdef __EMX__
 	envsave = envp;	/* circumvent an EMX problem */
+
+	/* Check whether the system will run at all */
+	if (_emx_rev < 41) {
+		APIRET rc;
+		HMODULE hmod;
+		char name[CCHMAXPATH];
+		char fail[9];
+		fputs ("This program requires emx.dll revision 41 (0.9b fix 02) "
+			"or later.\n", stderr);
+		rc = DosLoadModule (fail, sizeof (fail), "emx", &hmod);
+		if (rc == 0) {
+			rc = DosQueryModuleName (hmod, sizeof (name), name);
+			if (rc == 0)
+				fprintf (stderr, "Please delete or update `%s'.\n", name);
+			DosFreeModule (hmod);
+		}
+		exit (2);
+	}
 #endif
 	program = *argv++;
 	argc--;

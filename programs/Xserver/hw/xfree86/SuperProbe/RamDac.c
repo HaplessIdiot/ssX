@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.20 1996/03/31 11:48:10 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -328,12 +328,12 @@ int *RamDac;
 	Bool Found = FALSE;
 
 	/*
-	 * TI ViewPoint TVP3026 support - Harald Koenig
+	 * TI ViewPoint TVP3026/3030 support - Harald Koenig
 	 *
-	 * The 3026 has 16 direct registers accessed through standard
+	 * The 3026/3030 have 16 direct registers accessed through standard
 	 * VGA registers 0x3C8, 0x3C9, 0x3C6, and 0x3C7.  Bits 0,1 of
 	 * CR55 are used to map these four register to sets of four 
-	 * direct 3026 registers each.  The 00 register set includes 
+	 * direct 3026/3030 registers each.  The 00 register set includes 
 	 * the index register and the 10 register set includes the 
 	 * data register which are used to address indirect registers 
 	 * 0x00-0x3F and 0xFF.  Indirect register 0x3F is the 
@@ -357,14 +357,17 @@ int *RamDac;
 	outp(0x3C8, 0x3F);     /* write ID register index to index register */
 	wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x02);   /* 10 four registers */
 	old4 = inp(0x3C6);     /* read ID register from data register       */
-	if (old4 == 0x26) {
+	if (old4 == 0x26 || old4 == 0x30) {
 	    outp(0x3C6, ~old4);  /* check if ID register is read only */
 	    if (inp(0x3C6) != old4) {
 	        outp(0x3C6, old4);
 	    }
 	    else {
 		Found = TRUE;
-		*RamDac = DAC_TVP3026 | DAC_6_8_PROGRAM;
+		if (old4 == 0x26)
+		   *RamDac = DAC_TVP3026 | DAC_6_8_PROGRAM;
+		else /* old4 == 0x30 */
+		   *RamDac = DAC_TVP3030 | DAC_6_8_PROGRAM;
 		wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x00); /* regular VGA */
 		if (Width8Check())
 		{

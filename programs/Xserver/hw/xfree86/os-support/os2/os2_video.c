@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.2 1996/01/30 15:26:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.3 1996/02/19 09:51:01 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -106,11 +106,15 @@ unsigned long Size;
 	ULONG		plen;
 	DIODtaPkt	dta;
 	ULONG		dlen;
+	static BOOL	ErrRedir = FALSE;
 
 	par.addr	= (ULONG)Base;
 	par.size	= (ULONG)Size;
 	plen 		= sizeof(par);
 	dlen		= sizeof(dta);
+
+	/* First, redirect stderr to file so that video calls do not block */
+	if (!ErrRedir) { freopen("xf86log.os2","w",stderr); ErrRedir=TRUE; }
 
 	open_mmap();
 	if (mapdev == -1)
@@ -152,7 +156,7 @@ unsigned long Size;
 /* If the above mapping function is only called once, then we can store   */
 /* the virtual adress and use it here.... 				  */
 	
-	par.addr	= Base;
+	par.addr	= (ULONG)Base;
 	par.size	= 0xffffffff; /* This is the virtual addres parameter. Set this to ignore */
 	plen 		= sizeof(par);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.11 1996/03/17 11:37:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.12 1996/03/29 22:16:24 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -42,19 +42,38 @@
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
 
-#ifdef XINPUT
 #include "xf86Xinput.h"
-#endif
 
 #include "extnsionst.h"
 #include "extinit.h"
 
+static int xf86MouseProc(
 #if NeedFunctionPrototypes
-static int xf86MouseProc(DeviceIntPtr device, int what);
-static void xf86MouseReadInput(LocalDevicePtr local);
-static LocalDevicePtr xf86MouseAllocate(void);
-static Bool xf86MouseConfig(LocalDevicePtr *array, int inx, int max, LexPtr val);
+    DeviceIntPtr	/* device */,
+    int			/* what */
 #endif
+);
+
+static void xf86MouseReadInput(
+#if NeedFunctionPrototypes
+    LocalDevicePtr	/* local */
+#endif
+);
+
+static LocalDevicePtr xf86MouseAllocate(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+static Bool xf86MouseConfig(
+#if NeedFunctionPrototypes
+    LocalDevicePtr *	/* array */,
+    int 		/* inx */,
+    int			/* max */,
+    LexPtr		/* val */
+#endif
+);
 
 #ifndef MOUSE_PROTOCOL_IN_KERNEL
 /*

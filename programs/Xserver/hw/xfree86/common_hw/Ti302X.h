@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.5 1996/02/04 09:06:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.6 1996/03/11 12:37:41 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -102,6 +102,13 @@
 #define   TI_MUX2_BUS_3026TC_D24P64	0x5c  /* 0x54 ? */
 #define   TI_MUX2_BUS_3026TC_D16P64	0x54
 #define   TI_MUX2_BUS_3026TC_D15P64	0x54
+#define   TI_MUX2_BUS_3030PC_D8P128	0x4d
+#define   TI_MUX2_BUS_3030DC_D24P128	0x5d
+#define   TI_MUX2_BUS_3030DC_D16P128	0x55
+#define   TI_MUX2_BUS_3030DC_D15P128	0x55
+#define   TI_MUX2_BUS_3030TC_D24P128	0x5d
+#define   TI_MUX2_BUS_3030TC_D16P128	0x55
+#define   TI_MUX2_BUS_3030TC_D15P128	0x55
 #define TI_INPUT_CLOCK_SELECT	0x1A
 #define   TI_ICLK_CLK0		0x00
 #define   TI_ICLK_CLK0_DOUBLE	0x10

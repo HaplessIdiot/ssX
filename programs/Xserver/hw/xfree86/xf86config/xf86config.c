@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.27 1996/03/04 05:17:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.28 1996/03/10 12:08:31 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -228,7 +228,7 @@ CONFIGNAME " file is supplied with XFree86; it is configured for a standard\n"
 
 static char *finalcomment_text =
 "File has been written. Take a look at it before running 'startx'. Note that\n"
-"the XF86Config file must be in one of the directories searched by the server\n"
+"the " CONFIGNAME " file must be in one of the directories searched by the server\n"
 "(e.g. " TREEROOTLX ") in order to be used. Within the server press\n"
 "ctrl, alt and '+' simultaneously to cycle video resolutions. Pressing ctrl,\n"
 "alt and backspace simultaneously immediately exits the server (use if\n"
@@ -1090,7 +1090,7 @@ static char *screenintro_text =
 #endif
 "\n"
 "These four server types correspond to the four different \"Screen\" sections in\n"
-"XF86Config (vga2, vga16, svga, accel).\n"
+CONFIGNAME " (vga2, vga16, svga, accel).\n"
 "\n";
 
 #ifndef __EMX__
@@ -1109,7 +1109,7 @@ static char *varlink_text =
 
 static char *deviceintro_text =
 "Now you must give information about your video card. This will be used for\n"
-"the \"Device\" section of your video card in XF86Config.\n"
+"the \"Device\" section of your video card in " CONFIGNAME ".\n"
 "\n";
 
 static char *videomemoryintro_text =
@@ -1345,7 +1345,7 @@ static int exists_dir(char *name) {
 }
 
 void screen_configuration() {
-	int i, c, varlink;
+	int i, c, varlink, np;
 	int usecardscreentype;
 	char s[80];
 
@@ -1608,28 +1608,48 @@ void screen_configuration() {
 
 	printf("%s", ramdaccomment_text);
 
-	for (i = 0; i < NU_RAMDACS; i++)
-		printf("%2d  %-60s%s\n",
-			i + 1, ramdac_name[i], ramdac_id[i]);
+	/* meanwhile there are so many RAMDACs that they do no longer fit on
+	 * on page
+	 */
+	for (np=12, i=0 ;;) {
+		int j;
+		for (j = i; j < i + np && j < NU_RAMDACS; j++)
+			printf("%3d  %-60s%s\n", j+1,
+				ramdac_name[j],
+				ramdac_id[j]);
 
-	printf("\n");
+		printf("\n");
+		if (card_selected != -1)
+			if (card[card_selected].ramdac != NULL)
+				printf("The card definition has Ramdac \"%s\".\n\n",
+					card[card_selected].ramdac);
+		printf("\n");
+		printf("Enter a number to choose the corresponding RAMDAC.\n");
+		printf("Press enter for the next page, q to quit without selection of a RAMDAC.\n");
+		printf("\n");
+		getstring(s);
 
-	if (card_selected != -1)
-		if (card[card_selected].ramdac != NULL)
-			printf("The card definition has Ramdac \"%s\".\n\n",
-				card[card_selected].ramdac);
+		config_ramdac = NULL;
+		if (s[0] == 'q')
+			break;
 
-	printf("Just press enter if you don't want a Ramdac setting.\n");
-	printf("What Ramdac setting do you want (1-%d)? ", NU_RAMDACS);
+		if (strlen(s) > 0) {
+			c = atoi(s)-1;
+			if (c >= 0 && c < NU_RAMDACS) {
+				config_ramdac = ramdac_id[atoi(s)-1];
+				break;
+			}
+		}
+		
+		i += np;
+		if (np==12) np = 18; /* account intro lines only displayed 1st time */
+		if (i >= NU_RAMDACS)
+			i = 0;
+		emptylines();
+	}
 
-	getstring(s);
-	config_ramdac = NULL;
-	if (strlen(s) > 0)
-		config_ramdac = ramdac_id[atoi(s) - 1];
-
-	printf("\n");
 skipramdacselection:
-
+	emptylines();
 	printf("%s", clockchipcomment_text);
 
 	for (i = 0; i < NU_CLOCKCHIPS; i++)
@@ -1869,14 +1889,23 @@ static char *XF86Config_firstchunk_text =
 "# programs take long to start up, try moving the Type1 and Speedo directory\n"
 "# to the end of this list (or comment them out).\n"
 "# \n"
-"\n"
-"    FontPath	\"" TREEROOTLX "/fonts/misc/\"\n"
-"    FontPath	\"" TREEROOTLX "/fonts/75dpi/:unscaled\"\n"
-"    FontPath	\"" TREEROOTLX "/fonts/100dpi/:unscaled\"\n"
-"    FontPath	\"" TREEROOTLX "/fonts/Type1/\"\n"
-"    FontPath	\"" TREEROOTLX "/fonts/Speedo/\"\n"
-"    FontPath	\"" TREEROOTLX "/fonts/75dpi/\"\n"
-"    FontPath	\"" TREEROOTLX "/fonts/100dpi/\"\n"
+"\n";
+
+static char *XF86Config_fontpaths[] = 
+{
+/*	"    FontPath	\"" TREEROOTLX "/fonts/75dpi/\"\n"*/
+	"/fonts/misc/",
+	"/fonts/75dpi/:unscaled",
+	"/fonts/100dpi/:unscaled",
+	"/fonts/Type1/",
+	"/fonts/Speedo/",
+	"/fonts/75dpi/",
+	"/fonts/100dpi/",
+	0 /* end of fontpaths */
+};
+
+static char *XF86Config_fontpathchunk_text =
+
 "\n"
 "EndSection\n"
 "\n"
@@ -2184,6 +2213,29 @@ static char *screensection_text1 =
 "# **********************************************************************\n"
 "\n";
 
+void write_fontpath_section(f)
+	FILE *f;
+{
+	/* this will create the Fontpath lines, but only after checking,
+	 * that the corresponding dir exists (was THE absolute problem
+	 * users had with XFree86/OS2 3.1.2D !)
+	 */
+	int i;
+	char cur[256+20],*colon, *hash;
+
+	for (i=0; XF86Config_fontpaths[i]; i++) {
+		strcpy(cur,TREEROOTLX);
+		strcat(cur,XF86Config_fontpaths[i]);
+		/* remove a ':' */
+		colon = strchr(cur+2,':'); /* OS/2: C:/...:scaled */
+		if (colon) *colon = 0;
+		hash = exists_dir(cur) ? "" : "#";
+		fprintf(f,"%s    FontPath   \"%s%s\"\n",
+			hash,
+			TREEROOTLX,
+			XF86Config_fontpaths[i]);
+	}
+}
 
 void write_XF86Config(filename)
 	char *filename;
@@ -2205,6 +2257,8 @@ void write_XF86Config(filename)
 	}
 
 	fprintf(f, "%s", XF86Config_firstchunk_text);
+	write_fontpath_section(f);
+	fprintf(f, "%s", XF86Config_fontpathchunk_text);
 
 	/*
 	 * Write keyboard section.

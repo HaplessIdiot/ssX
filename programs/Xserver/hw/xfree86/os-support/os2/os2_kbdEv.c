@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.6 1996/02/22 05:12:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.7 1996/03/10 12:06:55 dawes Exp $ */
 /*
  * (c) Copyright 1994,1996 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -244,6 +244,21 @@ void os2PostKbdEvent(scanCode, down)
 	case KEY_BackSpace:
 	    if (!xf86Info.dontZap) GiveUp(0);
 	return;
+
+	case KEY_KP_Minus:   /* Keypad - */
+	    if (!xf86Info.dontZoom) {
+		if (down) xf86ZoomViewport(xf86Info.currentScreen, -1);
+		return;
+	    }
+	    break;
+
+	case KEY_KP_Plus:   /* Keypad + */
+	    if (!xf86Info.dontZoom) {
+		if (down) xf86ZoomViewport(xf86Info.currentScreen,  1);
+		return;
+	    }
+	    break;
+
         }
     }
 
@@ -251,7 +266,7 @@ void os2PostKbdEvent(scanCode, down)
      * window list... handled by keyboard driverand PM if you tell it. This is 
      * what we have done, and thus should never detect this key combo */
     if (ModifierDown(ControlMask) && scanCode==KEY_Escape) {
-         return;
+	/* Nothing to be done for now */
     } else if (ModifierDown(AltLangMask|AltMask) && scanCode==KEY_Escape) {
 	/* same here */
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.5 1996/02/22 05:12:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.6 1996/03/10 12:06:56 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -56,14 +56,14 @@ extern BOOL SwitchedToWPS;
 extern CARD32 LastSwitchTime;
 
 int xf86MouseOff(mouse, doclose)
-MousedevPtr mouse;
+MouseDevPtr mouse;
 Bool doclose;
 {
 	return -1;
 }
 
 void xf86SetMouseSpeed(mouse, old, new, cflag)
-MousedevPtr mouse;
+MouseDevPtr mouse;
 int old;
 int new;
 unsigned cflag;
@@ -71,8 +71,7 @@ unsigned cflag;
 	/* not required */
 }
 
-void xf86OsMouseOption(mouse, token, lex_ptr)
-MousedevPtr mouse;
+void xf86OsMouseOption(token, lex_ptr)
 int token;
 pointer lex_ptr;
 {
@@ -88,7 +87,7 @@ int what;
 	USHORT nbutton,state;
 	unsigned char *map;
 	int i;
-	MousedevPtr mouse = ((DeviceIntPtr) pPointer)->public.devicePrivate;
+	MouseDevPtr priv = (MouseDevPtr)((DeviceIntPtr) pPointer)->public.devicePrivate;
 
 	switch (what) {
 	case DEVICE_INIT: 
@@ -96,7 +95,7 @@ int what;
 		if(hMouse==65535) rc = MouOpen((PSZ)0, &hMouse);
 		if (rc != 0)
 			FatalError("Cannot open mouse, rc=%d\n",rc);
-		xf86Info.mseFd = -1;
+		xf86Info.mouseDev.mseFd = -1;
 
 		/* flush mouse queue */
 		MouFlushQue(hMouse);
@@ -121,10 +120,10 @@ int what;
 		break;
       
 	case DEVICE_ON:
-		/*AddEnabledDevice(xf86Info.mseFd);*/
+		/*AddEnabledDevice(xf86Info.mouseDev.mseFd);*/
 		if(!HandleValid) return(-1);
-		xf86Info.lastButtons = 0;
-		xf86Info.emulateState = 0;
+		xf86Info.mouseDev.lastButtons = 0;
+		xf86Info.mouseDev.emulateState = 0;
 		pPointer->public.on = TRUE;
 		state = 0x300;
 		rc=MouSetDevStatus(&state,hMouse);
@@ -141,11 +140,11 @@ int what;
 		MouSetDevStatus(&state,hMouse);
 		state = 0;
 		MouSetEventMask(&state,hMouse);
-		/*RemoveEnabledDevice(xf86Info.mseFd);*/
+		/*RemoveEnabledDevice(xf86Info.mouseDev.mseFd);*/
 		if (what == DEVICE_CLOSE) {
 			/* MouClose(hMouse);
 			hMouse=65535;
-			xf86Info.mseFd = -1;
+			xf86Info.mouseDev.mseFd = -1;
 		        HandleValid=FALSE;  */ /* Comment out for now as this seems to break server */
 		}
 		break;
@@ -153,7 +152,7 @@ int what;
 	return Success;
 }
 
-void xf86OsMouseEvents(DeviceIntPtr device)
+void xf86OsMouseEvents()
 {
 	MOUEVENTINFO mev;
 	MOUQUEINFO mqif;
@@ -188,7 +187,7 @@ void xf86OsMouseEvents(DeviceIntPtr device)
 			buttons = ((state & 0x06) ? 4 : 0) |
 				  ((state & 0x18) ? 1 : 0) |
 				  ((state & 0x60) ? 2 : 0);
-			xf86PostMseEvent(device, buttons, mev.col, mev.row);
+			xf86PostMseEvent(xf86Info.pMouse, buttons, mev.col, mev.row);
 	}
 	xf86Info.inputPending = TRUE;
 }

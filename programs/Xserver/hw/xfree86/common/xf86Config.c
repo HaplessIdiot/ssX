@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.85 1996/03/17 11:37:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.86 1996/03/29 22:16:10 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,6 +52,16 @@ extern char *getenv();
 #include "XKBsrv.h"
 #endif
 
+#ifdef XF86SETUP
+#include "xfsconf.h"
+#endif
+
+#ifdef NEED_RETURN_VALUE
+#define HANDLE_RETURN(xx)	if (xx == RET_ERROR) return RET_ERROR
+#else
+#define HANDLE_RETURN(xx)	xx
+#endif
+
 #define CONFIG_BUF_LEN     1024
 
 static FILE * configFile   = NULL;
@@ -69,7 +79,13 @@ static int scr_index = 0;
 static int n_monitors = 0;
 static MonPtr monitor_list = NULL;
 static int n_devices = 0;
+#ifndef XF86SETUP
 static GDevPtr device_list = NULL;
+#else
+GDevPtr device_list = NULL;
+int n_scr_devices = 0;
+int scr_devices[10];
+#endif
 
 static int screenno = -100;      /* some little number ... */
 
@@ -91,47 +107,50 @@ char *xf86VisualNames[] = {
     "DirectColor"
 };
 
-static void configFilesSection(
+static CONFIG_RETURN_TYPE configFilesSection(
 #if NeedFunctionPrototypes
     void
 #endif
 );
-static void configServerFlagsSection(
+static CONFIG_RETURN_TYPE configServerFlagsSection(
 #if NeedFunctionPrototypes
     void
 #endif
 );
-static void configKeyboardSection(
+static CONFIG_RETURN_TYPE configKeyboardSection(
 #if NeedFunctionPrototypes
     void
 #endif
 );
-static void configDeviceSection(
+static CONFIG_RETURN_TYPE configDeviceSection(
 #if NeedFunctionPrototypes
     void
 #endif
 );
-static void configScreenSection(
+static CONFIG_RETURN_TYPE configScreenSection(
 #if NeedFunctionPrototypes
     void
 #endif
 );
-static void configDisplaySubsection(
+static CONFIG_RETURN_TYPE configDisplaySubsection(
 #if NeedFunctionPrototypes
     DispPtr disp
 #endif
 );
-static void configMonitorSection(
+static CONFIG_RETURN_TYPE configMonitorSection(
 #if NeedFunctionPrototypes
     void
 #endif
 );
-static void configDynamicModuleSection(
+static CONFIG_RETURN_TYPE configDynamicModuleSection(
 #if NeedFunctionPrototypes
     void
 #endif
 );
-static void findConfigFile(
+#ifndef XF86SETUP
+static
+#endif
+CONFIG_RETURN_TYPE findConfigFile(
 #if NeedFunctionPrototypes
       char *filename,
       FILE **fp
@@ -147,7 +166,7 @@ static int getStringToken(
      SymTabRec tab[]
 #endif
 );
-static void readVerboseMode(
+static CONFIG_RETURN_TYPE readVerboseMode(
 #if NeedFunctionPrototypes
     MonPtr monp
 #endif
@@ -176,7 +195,7 @@ static char * xf86ValidateFontPath(
 #endif
 );
 #ifdef XINPUT
-extern void configExtendedInputSection(
+extern CONFIG_RETURN_TYPE configExtendedInputSection(
 #if NeedFunctionPrototypes
     LexPtr      pval
 #endif
@@ -583,8 +602,13 @@ xf86StringToToken(table, string)
  *      interesting is printed.  Even a pointer to the erroneous place is
  *      printed.  Maybe our e-mail will be less :-)
  */
+#ifdef XF86SETUP
+int
+XF86SetupXF86ConfigError(msg)
+#else
 void
 xf86ConfigError(msg)
+#endif
      char *msg;
 {
   int i,j;
@@ -599,9 +623,14 @@ xf86ConfigError(msg)
       while (((j++)%8) != 0);
   for (i = configStart; i <= configPos; i++) ErrorF("^");
   ErrorF("\n%s\n", msg);
+#ifdef NEED_RETURN_VALUE
+  return RET_ERROR;
+#else
   exit(-1);                 /* simple exit ... */
+#endif
 }
 
+#ifndef XF86SETUP
 void
 xf86DeleteMode(infoptr, dispmp)
 ScrnInfoPtr	infoptr;
@@ -621,12 +650,16 @@ DisplayModePtr	dispmp;
 	xfree(dispmp->name);
 	xfree(dispmp);
 }
+#endif
 
 /*
  * findConfigFile --
  * 	Locate the XF86Config file.  Abort if not found.
  */
-static void
+#ifndef XF86SETUP
+static
+#endif
+CONFIG_RETURN_TYPE
 findConfigFile(filename, fp)
       char *filename;
       FILE **fp;
@@ -784,6 +817,9 @@ findConfigFile(filename, fp)
           xfree(configPaths[idx]);
 #undef configFile
 #undef MAXPTRIES
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
 
 static DisplayModePtr pNew, pLast;
@@ -823,7 +859,7 @@ xf86GetNearestClock(Screen, Frequency)
  *	The vtopen argument was added so that XF86Config information could be
  *	made available before the VT is opened.
  */
-void
+CONFIG_RETURN_TYPE
 xf86Config (vtopen)
      int vtopen;
 {
@@ -848,7 +884,6 @@ xf86Config (vtopen)
    *
    * For SYSV we fork, and send the data back to the parent through a pipe
    */
-
 #if defined(SYSV) || defined(linux)
   if (getuid() != 0) {
     if (pipe(xcpipe))
@@ -860,7 +895,7 @@ xf86Config (vtopen)
       case 0:   /* child */
         close(xcpipe[0]);
         setuid(getuid());  
-        findConfigFile(configPath, &configFile);
+        HANDLE_RETURN(findConfigFile(configPath, &configFile));
         {
           unsigned char pbuf[CONFIG_BUF_LEN];
           int nbytes;
@@ -886,7 +921,7 @@ xf86Config (vtopen)
     }
   }
   else {
-    findConfigFile(configPath, &configFile);
+    HANDLE_RETURN(findConfigFile(configPath, &configFile));
   }
 #else /* ! (SYSV || linux) */
   {
@@ -903,7 +938,7 @@ xf86Config (vtopen)
 #endif /* MINIX */
 #endif /* __EMX__ */
 
-    findConfigFile(configPath, &configFile);
+    HANDLE_RETURN(findConfigFile(configPath, &configFile));
 #if defined(MINIX) || defined(__EMX__)
     /* no need to restore the uid to root */
 #else
@@ -925,27 +960,26 @@ xf86Config (vtopen)
       case SECTION:
 	  if (xf86GetToken(NULL) != STRING)
 	      xf86ConfigError("section name string expected");
-	  
 	  if ( StrCaseCmp(val.str, "files") == 0 ) {
-	      configFilesSection();
+	      HANDLE_RETURN(configFilesSection());
 	  } else if ( StrCaseCmp(val.str, "serverflags") == 0 ) {
-	      configServerFlagsSection();
+	      HANDLE_RETURN(configServerFlagsSection());
 	  } else if ( StrCaseCmp(val.str, "keyboard") == 0 ) {
-	      configKeyboardSection();
+	      HANDLE_RETURN(configKeyboardSection());
 	  } else if ( StrCaseCmp(val.str, "pointer") == 0 ) {
-	      configPointerSection(&xf86Info.mouseDev, ENDSECTION, NULL);
+	      HANDLE_RETURN(configPointerSection(&xf86Info.mouseDev, ENDSECTION, NULL));
 	  } else if ( StrCaseCmp(val.str, "device") == 0 ) {
-	      configDeviceSection();
+	      HANDLE_RETURN(configDeviceSection());
 	  } else if ( StrCaseCmp(val.str, "monitor") == 0 ) {
-	      configMonitorSection();
+	      HANDLE_RETURN(configMonitorSection());
 	  } else if ( StrCaseCmp(val.str, "screen") == 0 ) {
-	      configScreenSection();
+	      HANDLE_RETURN(configScreenSection());
 #ifdef XINPUT
 	  } else if ( StrCaseCmp(val.str, "xinput") == 0 ) {
-	      configExtendedInputSection(&val);
+	      HANDLE_RETURN(configExtendedInputSection(&val));
 #endif
 	  } else if ( StrCaseCmp(val.str, "module") == 0 ) {
-	      configDynamicModuleSection();
+	      HANDLE_RETURN(configDynamicModuleSection());
 	  } else {
 	      xf86ConfigError("not a recognized section name");
 	  }
@@ -961,8 +995,10 @@ xf86Config (vtopen)
   /* These aren't needed after the XF86Config file has been read */
   if (monitor_list)
     xfree(monitor_list);
+#ifndef XF86SETUP
   if (device_list)
     xfree(device_list);
+#endif
   if (modulePath)
       xfree(modulePath);
   
@@ -1042,6 +1078,7 @@ xf86Config (vtopen)
     FatalError("No configured graphics devices");
   }
  }
+#ifndef XF86SETUP
  else	/* if (vtopen) */
  {
   /*
@@ -1071,6 +1108,10 @@ xf86Config (vtopen)
 	}
 
  }
+#endif  /* XF86SETUP */
+#ifdef NEED_RETURN_VALUE
+ return RET_OKAY;
+#endif
 }
 
 static char* prependRoot(char *pathname) 
@@ -1083,7 +1124,7 @@ static char* prependRoot(char *pathname)
 #endif
 }
     
-static void
+static CONFIG_RETURN_TYPE
 configFilesSection()
 {
   int            token;
@@ -1165,9 +1206,12 @@ configFilesSection()
       break;
     }
   }
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
 
-static void
+static CONFIG_RETURN_TYPE
 configServerFlagsSection()
 {
   int            token;
@@ -1213,9 +1257,12 @@ configServerFlagsSection()
       break;
     }
   }
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
 
-static void
+static CONFIG_RETURN_TYPE
 configKeyboardSection()
 {
   int            token, ntoken;
@@ -1395,9 +1442,12 @@ configKeyboardSection()
   {
     xf86ConfigError("No keyboard device given");
   }
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
       
-void
+CONFIG_RETURN_TYPE
 configPointerSection(MouseDevPtr	mouse_dev,
 		     int		end_tag,
 		     char		**devicename) /* used by extended device */
@@ -1621,9 +1671,12 @@ configPointerSection(MouseDevPtr	mouse_dev,
       ErrorF("%sChorded middle button", formatFlag ? ",\n       " : ", ");
     ErrorF("\n");
   }
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
       
-static void
+static CONFIG_RETURN_TYPE
 configDeviceSection()
 {
   int            token;
@@ -1662,6 +1715,7 @@ configDeviceSection()
   devp->POSbase = 0;
   devp->instance = 0;
   devp->BIOSbase = 0;
+  devp->VGAbase = 0;
   devp->MemBase = 0;
   devp->s3Madjust = 0;
   devp->s3Nadjust = 0;
@@ -1945,9 +1999,12 @@ configDeviceSection()
       break;
     }
   }
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
 
-static void
+static CONFIG_RETURN_TYPE
 configMonitorSection()
 {
   int            token;
@@ -2220,9 +2277,12 @@ configMonitorSection()
       break;
     }
   }
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
 
-static void
+static CONFIG_RETURN_TYPE
 configDynamicModuleSection()
 {
     int		token;
@@ -2263,9 +2323,12 @@ configDynamicModuleSection()
 	    break;
 	}    
     }
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
 
-static void
+static CONFIG_RETURN_TYPE
 readVerboseMode(monp)
 MonPtr monp;
 {
@@ -2369,11 +2432,19 @@ MonPtr monp;
   if ( !had_dotclock ) xf86ConfigError("the dotclock is missing");
   if ( !had_htimings ) xf86ConfigError("the horizontal timings are missing");
   if ( !had_vtimings ) xf86ConfigError("the vertical timings are missing");
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
 
 static Bool dummy;
 
-static void
+#ifdef XF86SETUP
+int xf86setup_scrn_ndisps[8];
+DispPtr xf86setup_scrn_displays[8];
+#endif
+
+static CONFIG_RETURN_TYPE
 configScreenSection()
 {
   int i, j;
@@ -2522,6 +2593,10 @@ configScreenSection()
 	  screen->s3BlankDelay = device_list[i].s3BlankDelay;
 	  if (OFLG_ISSET(XCONFIG_VGABASE, &screen->xconfigFlag))
 	    screen->VGAbase = device_list[i].VGAbase;
+#ifdef XF86SETUP
+	  if (n_scr_devices < 10)
+	    scr_devices[n_scr_devices++] = i;
+#endif
           break;
         }
       }
@@ -2666,8 +2741,13 @@ configScreenSection()
         if (OFLG_ISSET(i, &(dispp->xconfigFlag)))
           OFLG_SET(i, &(screen->xconfigFlag));
       }
+#ifdef XF86SETUP
+      xf86setup_scrn_ndisps[driverno-SVGA] = numDisps;
+      xf86setup_scrn_displays[driverno-SVGA] = dispList;
+#else
       /* Don't need them any more */
       xfree(dispList);
+#endif
     }
   
     /* Maybe these should be FatalError() instead? */
@@ -2769,9 +2849,12 @@ configScreenSection()
        }
     }
   }
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
 
-static void
+static CONFIG_RETURN_TYPE
 configDisplaySubsection(disp)
 DispPtr disp;
 {
@@ -2967,6 +3050,9 @@ DispPtr disp;
       break;
     }
   }
+#ifdef NEED_RETURN_VALUE
+  return RET_OKAY;
+#endif
 }
 
 Bool 

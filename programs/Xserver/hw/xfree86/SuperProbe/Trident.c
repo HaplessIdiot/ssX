@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.6 1996/02/04 08:57:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.7 1996/02/12 11:12:18 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -60,6 +60,9 @@ int *Chipset;
 		{
 			switch (pcrp->_device)
 			{
+			case PCI_CHIP_9320:
+				*Chipset = CHIP_TVGA9320;
+				break;
 			case PCI_CHIP_9420:
 				*Chipset = CHIP_TVGA9420;
 				break;

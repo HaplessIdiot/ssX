@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: misc.h,v 1.69 95/03/03 01:54:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.2 1995/03/11 14:19:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.3 1996/01/05 13:19:39 dawes Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -247,7 +247,7 @@ extern void SwapShorts(
 #endif
 );
 
-extern int MakePredeclaredAtoms(
+extern void MakePredeclaredAtoms(
 #if NeedFunctionPrototypes
     void
 #endif

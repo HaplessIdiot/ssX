@@ -1,5 +1,5 @@
 /* OS/2 REXX */
-/* $XFree86: xc/programs/xinit/xinitrc.cmd,v 3.0 1996/02/09 08:22:54 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinitrc.cmd,v 3.1 1996/03/10 12:14:23 dawes Exp $ */
 '@echo off'
 env = 'OS2ENVIRONMENT'
 x11root = VALUE('X11ROOT',,env)
@@ -16,25 +16,24 @@ sysresources  = x11root'\XFree86\lib\X11\xinit\.Xresources'
 sysmodmap     = x11root'\XFree86\lib\X11\xinit\.Xmodmap'
 
 /* merge in defaults */
-
 IF exists(sysresources) THEN
-	xrdb -merge sysresources
+	'xrdb -merge 'sysresources
 
 IF exists(sysmodmap) THEN
-	xmodmap sysmodmap
+	'xmodmap 'sysmodmap
 
 IF exists(userresources) THEN
-	xrdb -merge userresources
+	'xrdb -merge 'userresources
 
 IF exists(usermodmap) THEN
-	xmodmap usermodmap
+	'xmodmap 'usermodmap
 
-/* start some nice programs */
-'start/min/n twm'
+/* start some nice :-) test programs */
 'start/min/n xclock -update 1 -geometry 100x100-1+1'
+'start/min/n xterm -sb -geometry 80x25+0+0 -name login'
 /* 'start/min/n 'xterm -sb -geometry 80x50+494+51 */
 /* 'start/min/n 'xterm -sb -geometry 80x20+494-0 */
-'xterm -sb -geometry 80x66+0+0 -name login'
+'twm'
 
 EXIT
 
