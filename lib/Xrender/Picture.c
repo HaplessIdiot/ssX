@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Picture.c,v 1.4 2000/12/01 21:32:00 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Picture.c,v 1.5 2000/12/05 03:13:30 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -137,7 +137,9 @@ _XRenderSetPictureClipRectangles (Display	    *dpy,
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderSetPictureClipRectangles;
     req->picture = picture;
-    len = ((long) n) << 2;
+    req->xOrigin = xOrigin;
+    req->yOrigin = yOrigin;
+    len = ((long) n) << 1;
     SetReqLen (req, len, 1);
     len <<= 2;
     Data16 (dpy, (short *) rects, len);
