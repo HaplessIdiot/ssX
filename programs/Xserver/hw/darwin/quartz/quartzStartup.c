@@ -4,7 +4,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.2 2003/01/15 02:34:06 torrey Exp $ */
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -120,15 +120,21 @@ static void LoadGlxBundle(void)
     mainBundle = CFBundleGetMainBundle();
 
     // Choose the bundle to load
+    ErrorF("Loading GLX bundle ");
     if (quartzUseAGL) {
         bundleName = CFSTR("glxAGL.bundle");
+        ErrorF("glxAGL.bundle (using Apple's OpenGL)\n");
     } else {
         bundleName = CFSTR("glxMesa.bundle");
+        ErrorF("glxMesa.bundle (using Mesa)\n");
     }
 
     // Look for the appropriate GLX bundle in the main bundle by name
     bundleURL = CFBundleCopyResourceURL(mainBundle, bundleName,
                                         NULL, NULL);
+    if (!bundleURL) {
+        FatalError("Could not find GLX bundle.");
+    }
 
     // Make a bundle instance using the URLRef
     glxBundle = CFBundleCreate(kCFAllocatorDefault, bundleURL);
