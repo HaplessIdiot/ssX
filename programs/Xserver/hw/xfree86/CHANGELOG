@@ -1,4 +1,8 @@
 XFree86 4.2.99.1 (XX June 2002)
+ 171. Fix LIBXML2LIBDIR name clash in lib/Imakefile (#5180, ISHIKAWA Mutsumi).
+ 170. Avoid a problem with setfontdirs when run in some locales (#5179,
+      ISHIKAWA Mutsumi).
+ 169. A little tuning for XtAppPeekEvent() (#5178, Dan McNichol).
  168. Add a command line option to luit to specify the encoding (#5177, 5181,
       Tomohiro Kubota).
  167. A fix for luit's command line argument handling (#5173, Tomohiro Kubota).
@@ -14850,4 +14854,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2237 2002/06/04 20:23:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2238 2002/06/04 21:05:49 dawes Exp $
