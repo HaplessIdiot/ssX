@@ -362,8 +362,7 @@ mach32Probe()
     int                   i, j;
     DisplayModePtr        pMode, pEnd;
     ATIInformationBlock   *info;
-    int                   extra_ram;
-    int                   extra_caches;
+    int                   available_ram;
     Bool                  sw_cursor_supplied;
     OFlagSet              validOptions;
     int                   tx, ty;
@@ -607,9 +606,6 @@ mach32Probe()
 	return(FALSE);
     }
 
-    mach32MaxX = mach32VirtX - 1;
-    mach32MaxY = mach32VirtY - 1 + 256;
-
     if (xf86Verbose) {
 	ErrorF("%s %s: Virtual resolution: %dx%d\n",
 	       OFLG_ISSET(XCONFIG_VIRTUAL, &mach32InfoRec.xconfigFlag) ?
@@ -648,48 +644,48 @@ mach32Probe()
 	      mach32InfoRec.videoRam );
     }
 
-    if (((mach32MaxX+1) * (mach32MaxY+1) * (mach32InfoRec.bitsPerPixel / 8)) >
+    if (((mach32VirtX) * (mach32VirtY) * (mach32InfoRec.bitsPerPixel / 8)) >
 	(mach32InfoRec.videoRam*1024)) {
 	ErrorF("Not enough memory for requested virtual resolution (%dx%d)\n",
 	       mach32VirtX, mach32VirtY);
-	ErrorF("In addition to normal virtual screen size, mach32 X server\n");
-	ErrorF("requires a 1024x256 area of video memory for the caches.\n");
 	xf86DisableIOPorts(mach32InfoRec.scrnIndex);
 	return(FALSE);
     }
 
-			/* Fixup mach32MaxY for larger cache.
+			/* Set values of mach32MaxX and mach32MaxY.
 			 * This must be done here so that cache area and
 			 * scissor limits are set up correctly (this setup
 			 * happens before the pixmap cache is initialized).
 			 */
     
-    extra_ram = mach32InfoRec.videoRam * 1024 -
-        (mach32MaxX + 1) * (mach32MaxY + 1) * (mach32InfoRec.bitsPerPixel / 8);
+    mach32MaxX = mach32VirtX - 1;
+    available_ram = mach32InfoRec.videoRam * 1024;
 
     sw_cursor_supplied = OFLG_ISSET(OPTION_SW_CURSOR, &mach32InfoRec.options);
-
-    if (!sw_cursor_supplied) {
-	if (extra_ram >= MACH32_CURSBYTES)
+    if (!sw_cursor_supplied)
+    {
+	if (available_ram - (mach32VirtX * mach32VirtY) >= MACH32_CURSBYTES)
 	{
-	    extra_ram -= (MACH32_CURSBYTES + 1023) & ~1023;
+	    available_ram -= (MACH32_CURSBYTES + 1023) & ~1023;
 	    mach32InfoRec.videoRam -= (MACH32_CURSBYTES + 1023) / 1024;
 	}
 	else
-	{
+	{ 
 	    OFLG_SET(OPTION_SW_CURSOR, &mach32InfoRec.options);
 	    ErrorF("Warning: Not enough memory to use the hardware cursor.\n");
 	    ErrorF("  Decreasing the virtual Y resolution by 1 will allow\n");
 	    ErrorF("  you to use the hardware cursor.\n");
 	}
     }
+	
     ErrorF("%s %s: Using %s cursor\n", sw_cursor_supplied ? XCONFIG_GIVEN :
 	   XCONFIG_PROBED, mach32InfoRec.name,
 	   OFLG_ISSET(OPTION_SW_CURSOR, &mach32InfoRec.options) ?
 	   "software" : "hardware");
 
-    extra_caches = (extra_ram / (mach32MaxX + 1)) / 256;
-    mach32MaxY += extra_caches * 256;
+    mach32MaxY = available_ram /
+                 (mach32VirtX * (mach32InfoRec.bitsPerPixel / 8)) - 1;
+
     if (mach32MaxY > 1535)
 	  mach32MaxY = 1535;	/* Limitation of 8514 drawing commands */
 	  
