@@ -1,4 +1,8 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 208. SiS driver update:
+      Fixed 1280x960 and 1280x1024 LCD support (SiS 30x)
+      Added Chroma-Keying support to Xv part
+      Added support for Barco iQ R and G series projectors
 
 XFree86 4.3.99.6 (10 June 2003)
  207. Add support for the Mac's KP_Equal key (untested) (David Dawes).
@@ -17055,7 +17059,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2729 2003/06/09 19:59:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2730 2003/06/10 11:08:35 dawes Exp $
 
 
 
