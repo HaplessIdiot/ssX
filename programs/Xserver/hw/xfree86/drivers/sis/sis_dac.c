@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.56 2004/01/23 22:29:04 twini Exp $ */
+/* $XFree86$ */
 /*
  * DAC helper functions (Save/Restore, MemClk, etc)
  *
@@ -82,7 +82,7 @@ static const unsigned short ch701xidx[] = {
       0x1c,0x5f,0x64,0x6f,0x70,0x71,0x72,0x73,0x74,0x76,0x78,0x7d,
       0x67,0x68,0x69,0x6a,0x6b,0x1e,0x00,0x01,0x02,0x04,0x03,0x05,
       0x06,0x07,0x08,0x15,0x1f,0x0c,0x0d,0x0e,0x0f,0x10,0x66
-   };  
+   };
 
 int SiS_compute_vclk(
         int Clock,
@@ -754,7 +754,7 @@ SiS315Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     sisReg->sisMMIO85C0 = MMIO_IN32(pSiS->IOBase, 0x85C0);
 
     /* Save CR registers */
-    for(i = 0x00; i <= 0x7a; i++)  {
+    for(i = 0x00; i <= 0x7c; i++)  {
        inSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
 #ifdef TWDEBUG
        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -1276,66 +1276,11 @@ SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg)
    }
 }
 
-#if 0  /* The following function should take a threshold value
-        * from predefined tables. This is only needed on some
-	* 530 boards, which have an ESS sound device on-board.
-	* However, I don't know how to calculate the index to
-	* be submitted to this function.
-	*/
-unsigned short
-SiS_CalcSpecial530Threshold(ScrnInfoPtr pScrn, DisplayModePtr mode, int index)
-{
-    SISPtr  pSiS = SISPTR(pScrn);
-    static const unsigned char t640x480[3][24] = {
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,A9,   /* b4 - 9d - depth 8 */
-	  0, 0,11,14,14, 0, 0, 0, 0, 0, 0,9D },
-	{ 0, 0, 0, 0, 0,12,15, 0, 0, 0,92,91,   /* 9c - 85 - depth 16 */
-	  0,31,31,31,31, 0, 0, 0, 0, 0, 0,85 },
-	{ 0, 0, 0, 0, 0,17,22,25, 0, 0, 0,79,   /* 84 - ?  - depth 32 */
-	  0,31,31, 0, 0, 0, 0, 0, 0, 0, 0,6d }
-    }
-    static const unsigned char t800x600[3][24] = {
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,61,
-	  0,18,25,30,27,31,31,31, 0, 0, 0, 0 },
-	{55, 0, 0, 0, 0, 9,10,15,18,19, 0, 0,
-	... to be continued
-
-    depthindex = (pSiS->CurrentLayout.bitsPerPixel + 1) >> 3;
-    if(depthindex == 3) return(0);
-    if(depthindex == 4) depthindex--;
-    depthindex--;
-
-    switch(mode->HDisplay) {
-    case 640:
-       if(mode->VDisplay == 480) {
-          return(t640x480[depthindex][index];
-       } else return(0);
-    case 800:
-       if(mode->VDisplay == 600) {
-          return(t800x600[depthindex][index];
-       } else return(0);
-    case 1024:
-       if(mode->VDisplay == 768) {
-          return(t1024x768[depthindex][index];
-       } else return(0);
-    case 1280:
-       if(mode->VDisplay == 1024) {
-          return(t1280x1024[depthindex][index];
-       } else return(0);
-    case 1600:
-       if(mode->VDisplay == 1200) {
-          return(t1600x1200[depthindex][index];
-       } else return(0);
-    default: return(0);
-    }
-}
-#endif
-
 /* Auxiliary function to find real memory clock (in Khz) */
 /* Not for 530/620 if UMA (on these, the mclk is stored in SR10) */
 int
 SiSMclk(SISPtr pSiS)
-{ 
+{
     int mclk;
     unsigned char Num, Denum, Base;
 
@@ -1470,16 +1415,10 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 	int             bytesperpixel = (bpp + 7) / 8;
         float   	magic=0.0, total, crt2used, maxcrt2;
 	int		crt2clock, max=0;
-#ifdef __SUNPRO_C
-#define const
-#endif
         const float     magic300[4] = { 1.2,      1.368421, 2.263158, 1.2};
         const float     magic630[4] = { 1.441177, 1.441177, 2.588235, 1.441177 };
 	const float     magic315[4] = { 1.2,      1.368421, 1.368421, 1.2 };
 	const float     magic550[4] = { 1.441177, 1.441177, 2.588235, 1.441177 };
-#ifdef __SUNPRO_C
-#undef const
-#endif
 	BOOLEAN	        DHM, GetForCRT1;
 
         switch(pSiS->Chipset) {

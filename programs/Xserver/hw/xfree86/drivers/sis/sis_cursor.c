@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.27 2004/01/23 22:29:04 twini Exp $ */
+/* $XFree86$ */
 /*
  * SiS hardware cursor handling
  *
@@ -918,18 +918,13 @@ SiS300UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 	}
 #endif
         break;
-      case PCI_CHIP_SIS330:
-#ifdef SISDUALHEAD
-	if((!pSiS->DualHeadMode) || (!pSiS->SecondHead))
-#endif
-	   if(pSiS->MiscFlags & MISC_TVNTSC1024) return FALSE;
-	/* fall through */
       case PCI_CHIP_SIS550:
       case PCI_CHIP_SIS650:
       case PCI_CHIP_SIS315:
       case PCI_CHIP_SIS315H:
       case PCI_CHIP_SIS315PRO:
       case PCI_CHIP_SIS660:
+      case PCI_CHIP_SIS330:
         if(mode->Flags & V_INTERLACE)
            return FALSE;
 	if((mode->Flags & V_DBLSCAN) && (pCurs->bits->height > 32))
@@ -990,17 +985,12 @@ SiSUseHWCursorARGB(ScreenPtr pScreen, CursorPtr pCurs)
 	}
 #endif
         break;
-      case PCI_CHIP_SIS330:
-#ifdef SISDUALHEAD
-	if((!pSiS->DualHeadMode) || (!pSiS->SecondHead))
-#endif
-	   if(pSiS->MiscFlags & MISC_TVNTSC1024) return FALSE;
-	/* fall through */
       case PCI_CHIP_SIS550:
       case PCI_CHIP_SIS650:
       case PCI_CHIP_SIS315:
       case PCI_CHIP_SIS315H:
       case PCI_CHIP_SIS315PRO:
+      case PCI_CHIP_SIS330:
       case PCI_CHIP_SIS660:
         if(mode->Flags & V_INTERLACE)
            return FALSE;

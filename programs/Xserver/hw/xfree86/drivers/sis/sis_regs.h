@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.27 2004/01/23 22:29:05 twini Exp $ */
+/* $XFree86$ */
 /*
  * Register definitions for old and 300 series
  *
@@ -72,16 +72,16 @@
                       outSISIDXREG(base,idx,__Temp); \
                     } while (0)
 
-#define BITMASK(h,l)    (((unsigned)(1U << ((h)-(l)+1))-1)<<(l))
-#define GENMASK(mask)   BITMASK(1?mask,0?mask)
+#define BITMASK(h,l)    	(((unsigned)(1U << ((h)-(l)+1))-1)<<(l))
+#define GENMASK(mask)   	BITMASK(1?mask,0?mask)
 
 #define GETBITS(var,mask)   	(((var) & GENMASK(mask)) >> (0?mask))
 #define SETBITS(val,mask)   	((val) << (0?mask))
 #define SETBIT(n)       	(1<<(n))
 
-#define GETBITSTR(val,from,to)  ((GETBITS(val,from)) << (0?to))
-#define SETVARBITS(var,val,from,to) (((var)&(~(GENMASK(to)))) | \
-                                    GETBITSTR(val,from,to))
+#define GETBITSTR(val,from,to)  	((GETBITS(val,from)) << (0?to))
+#define SETVARBITS(var,val,from,to) 	(((var)&(~(GENMASK(to)))) | \
+                                    		GETBITSTR(val,from,to))
 #define GETVAR8(var)        ((var)&0xFF)
 #define SETVAR8(var,val)    (var) =  GETVAR8(val)
 
