@@ -26,7 +26,7 @@ typedef struct {
   unsigned int  AGPCmdBufSize;
   unsigned long AGPCmdBufNext;
 #endif
-} SISSAREAPriv;
+} SISSAREAPriv, *SISSAREAPrivPtr;
 
 #define AGPVtxBufNext AGPCmdBufNext
 
@@ -45,19 +45,19 @@ typedef struct {
   int deviceID;
   int width;
   int height;
-  int mem;
+  int mem;				/* unused in Mesa 3 DRI */
   int bytesPerPixel;
-  int priv1;
-  int priv2;
-  int fbOffset;
-  int backOffset;
-  int depthOffset;
-  int textureOffset;
-  int textureSize;
+  int priv1;				/* unused in Mesa 3 DRI */
+  int priv2;				/* unused in Mesa 3 DRI */
+  int fbOffset;				/* unused in Mesa 3 DRI */
+  int backOffset;			/* unused in Mesa 3 DRI */
+  int depthOffset;			/* unused in Mesa 3 DRI */
+  int textureOffset;			/* unused in Mesa 3 DRI */
+  int textureSize;			/* unused in Mesa 3 DRI */
   unsigned int AGPCmdBufOffset;
   unsigned int AGPCmdBufSize;
-  int irqEnabled;
-  unsigned int scrnX, scrnY;
+  int irqEnabled;			/* unused in Mesa 3 DRI */
+  unsigned int scrnX, scrnY;		/* unused in Mesa 3 DRI */
 } SISDRIRec, *SISDRIPtr;
 
 #define AGPVtxBufOffset AGPCmdBufOffset

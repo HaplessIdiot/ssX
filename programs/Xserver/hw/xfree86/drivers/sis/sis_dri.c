@@ -3,6 +3,7 @@
  *  DRI wrapper for 300 and 315 series
  *
  *  Preliminary 315/330 support by Thomas Winischhofer
+ *  Mesa 4/5 changes by Eric Anholt
  *
  *  Taken and modified from tdfx_dri.c, mga_dri.c
  *
@@ -23,6 +24,10 @@
 #include "sis_dri.h"
 #if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,2,99,0,0)
 #include "xf86drmCompat.h"
+#endif
+
+#ifdef SISNEWDRI
+#include "sis_common.h"
 #endif
 
 /* Idle function for 300 series */
@@ -90,7 +95,7 @@ SISInitVisualConfigs(ScreenPtr pScreen)
   SISConfigPrivPtr *pSISConfigPtrs = 0;
   int i, db, z_stencil, accum;
   Bool useZ16 = FALSE;
-  
+
   if(getenv("SIS_FORCE_Z16")) {
      useZ16 = TRUE;
   }
@@ -202,7 +207,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   SISPtr pSIS = SISPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   SISDRIPtr pSISDRI;
-#if 0
+#ifdef SISNEWDRI
   drmVersionPtr version;
 #endif
 
@@ -247,10 +252,19 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
       	((pciConfigPtr)pSIS->PciInfo->thisCard)->busnum,
       	((pciConfigPtr)pSIS->PciInfo->thisCard)->devnum,
       	((pciConfigPtr)pSIS->PciInfo->thisCard)->funcnum);
+  /* Hack to keep old DRI working -- checked for major==1 and
+   * minor==1.
+   */
+#ifdef SISNEWDRI
+  pDRIInfo->ddxDriverMajorVersion = SIS_MAJOR_VERSION;
+  pDRIInfo->ddxDriverMinorVersion = SIS_MINOR_VERSION;
+  pDRIInfo->ddxDriverPatchVersion = SIS_PATCHLEVEL;
+#else
   pDRIInfo->ddxDriverMajorVersion = 0;
   pDRIInfo->ddxDriverMinorVersion = 1;
   pDRIInfo->ddxDriverPatchVersion = 0;
-  
+#endif
+
   pDRIInfo->frameBufferPhysicalAddress = pSIS->FbAddress;
 
   /* TW: This was FbMapSize which is wrong as we must not
@@ -320,23 +334,34 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
      return FALSE;
   }
 
-#if 0
-  /* XXX Check DRM kernel version here */
-  version = drmGetVersion(info->drmFD);
-  if (version) {
-    if (version->version_major != 1 ||
-      version->version_minor < 0) {
+#ifdef SISNEWDRI
+  /* Check DRM kernel version */
+  version = drmGetVersion(pSIS->drmSubFD);
+  if(version) {
+    if(version->version_major != 1 ||
+       version->version_minor < 0) {
       /* incompatible drm version */
       xf86DrvMsg(pScreen->myNum, X_ERROR,
                  "[dri] SISDRIScreenInit failed because of a version mismatch.\n"
-                 "[dri] sis.o kernel module version is %d.%d.%d but version 1.0.x is needed.\n"
-                 "[dri] Disabling the DRI.\n",
+                 "\t[dri] sis.o kernel module version is %d.%d.%d but version 1.0.x is needed.\n"
+                 "\t[dri] Disabling the DRI.\n",
                  version->version_major,
                  version->version_minor,
                  version->version_patchlevel);
       drmFreeVersion(version);
       SISDRICloseScreen(pScreen);
       return FALSE;
+    }
+    if(version->version_minor >= 1) {
+      /* Includes support for framebuffer memory allocation without sisfb */
+      drm_sis_fb_t fb;
+      fb.offset = pSIS->DRIheapstart;
+      fb.size = pSIS->DRIheapend - pSIS->DRIheapstart;
+      drmCommandWrite(pSIS->drmSubFD, DRM_SIS_FB_INIT, &fb, sizeof(fb));
+      xf86DrvMsg(pScreen->myNum, X_INFO,
+                 "[dri] DRI video RAM memory heap: 0x%x to 0x%x (%dKB)\n",
+                 pSIS->DRIheapstart, pSIS->DRIheapend,
+                 (pSIS->DRIheapend - pSIS->DRIheapstart) >> 10);
     }
     drmFreeVersion(version);
   }
@@ -359,6 +384,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     pSIS->agpSize = 0;
     pSIS->agpCmdBufSize = 0;
     pSISDRI->AGPCmdBufSize = 0;
+
+    if(!pSIS->IsAGPCard)
+       break;
     
     if(drmAgpAcquire(pSIS->drmSubFD) < 0) {
        xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpAcquire failed\n");
@@ -368,14 +396,14 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     if(pSIS->VGAEngine == SIS_315_VGA) {
 #ifdef SIS315DRI
        /* Default to 1X agp mode in SIS315 */
-       if(drmAgpEnable(pSIS->drmSubFD, drmAgpGetMode(pSIS->drmSubFD)&~0x00000002) < 0) {
+       if(drmAgpEnable(pSIS->drmSubFD, drmAgpGetMode(pSIS->drmSubFD) & ~0x00000002) < 0) {
           xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpEnable failed\n");
           break;
        }
 #endif
     } else {
        /* TODO: default value is 2x? */
-       if(drmAgpEnable(pSIS->drmSubFD, drmAgpGetMode(pSIS->drmSubFD)&~0x0) < 0) {
+       if(drmAgpEnable(pSIS->drmSubFD, drmAgpGetMode(pSIS->drmSubFD) & ~0x0) < 0) {
           xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpEnable failed\n");
           break;
        }

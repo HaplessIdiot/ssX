@@ -65,6 +65,12 @@
 #include "vstruct.h"
 
 #ifdef XF86DRI
+#undef SISNEWDRI
+#if 0  /* Need to wait for the DRI merge */
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(4,3,99,??,0)
+#define SISNEWDRI
+#endif
+#endif
 #include "xf86drm.h"
 #include "sarea.h"
 #define _XF86DRI_SERVER_
