@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.3 1997/03/17 07:18:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.4 1997/04/08 10:13:27 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -42,15 +42,18 @@ typedef struct {
   unsigned char ET6KMclkM, ET6KMclkN; /* memory clock values */
 #ifdef W32_SUPPORT
   unsigned char SegMapComp;     /* CRTC 0x30 */
+  unsigned char GenPurp;        /* CRTC 0x31 */
   unsigned char VSConf1;        /* CRTC 0x36 */
   unsigned char VSConf2;        /* CRTC 0x37 */
   unsigned char IMAPortCtrl;    /* IMA port control register (0x217B index 0xF7) */
   GenDACstate gendac;
-  Bool Gr_Mode;           /* kludge: true if we're dealing with a graphics mode */
+  Bool Gr_Mode;                 /* kludge: true if we're dealing with a graphics mode */
+  unsigned char ATTdac_cmd;     /* command register for ATT 49x DACs */
 #endif
   unsigned char RCConf;       /* CRTC 0x32 */
   } vgaET4000Rec, *vgaET4000Ptr;
 
+extern vgaVideoChipRec TSENG;
 
 typedef enum {
     TYPE_UNKNOWN = -1,
@@ -64,7 +67,8 @@ typedef enum {
     TYPE_ET4000W32Pb,
     TYPE_ET4000W32Pc,
     TYPE_ET4000W32Pd,
-    TYPE_ET6000
+    TYPE_ET6000,
+    TYPE_ET6300
 } t_tseng_type;
 
 extern t_tseng_type et4000_type;
@@ -91,11 +95,17 @@ typedef enum {
     STG1702_DAC,
     STG1703_DAC,
     ET6000_DAC,
-    CH8398_DAC
+    CH8398_DAC,
+    ET6300_DAC
 } t_ramdactype;
 
 extern t_ramdactype TsengRamdacType;
 extern void Check_Tseng_Ramdac();
+
+#define DAC_IS_ATT49x ( (TsengRamdacType == ATT20C490_DAC) \
+                     || (TsengRamdacType == ATT20C491_DAC) \
+                     || (TsengRamdacType == ATT20C492_DAC) \
+                     || (TsengRamdacType == ATT20C493_DAC) )
 
 /*
  * From tseng_clocks.c

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.h,v 3.1 1996/11/24 09:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.h,v 3.2 1997/01/02 04:38:46 dawes Exp $ */
 
 
 /*
@@ -275,6 +275,24 @@ unsigned int *xf86DrawNonTETextScanlineMSBFirst(
 #endif
     );
 
+unsigned int *xf86DrawNonTETextScanlineFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    NonTEGlyphInfo *glyphinfop,
+    int line,
+    int nglyph
+#endif
+    );
+
+unsigned int *xf86DrawNonTETextScanlineMSBFirstFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    NonTEGlyphInfo *glyphinfop,
+    int line,
+    int nglyph
+#endif
+    );
+
 /*
  * This function is for color expansion for 24bpp pixels with the
  * chip in 8bpp mode, usable when the red, green and blue values
@@ -326,6 +344,48 @@ unsigned int *xf86DrawTextScanline3MSBFirstFixedBase(
     int glyphwidth
 #endif
     );
+
+/*
+ * These functions are for color expansion for 24bpp pixels with the
+ * chip in 8bpp mode, usable when the red, green and blue values
+ * of the colors are equal (grayscale) for NonTE fonts.
+ */
+
+unsigned int *xf86DrawNonTETextScanline3(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    NonTEGlyphInfo *glyphinfop,
+    int line,
+    int nglyph
+#endif
+    );
+
+unsigned int *xf86DrawNonTETextScanline3MSBFirst(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    NonTEGlyphInfo *glyphinfop,
+    int line,
+    int nglyph
+#endif
+);
+
+unsigned int *xf86DrawNonTETextScanline3FixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    NonTEGlyphInfo *glyphinfop,
+    int line,
+    int nglyph
+#endif
+);
+
+unsigned int *xf86DrawNonTETextScanline3MSBFirstFixedBase(
+#if NeedFunctionPrototypes
+    unsigned int *base,
+    NonTEGlyphInfo *glyphinfop,
+    int line,
+    int nglyph
+#endif
+);
 
 /*
  * The following structure is the return type of yet another version

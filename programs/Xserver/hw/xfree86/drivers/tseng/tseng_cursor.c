@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.3 1997/03/17 07:18:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.4 1997/04/08 10:13:30 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
@@ -514,6 +514,7 @@ static void TsengMoveCursor(pScr, x, y)
 
 static unsigned char get_et6000_color_bits(unsigned short col_in, int* badColour)
 {
+#ifdef ONLY_PERFECT_HWCURSOR_COLORS
     switch (col_in >> 12) {   /* extract top four bits */
     case 0x0: /* bit combination "0000" */
     case 0x5: /* bit combination "0101" */
@@ -526,6 +527,9 @@ static unsigned char get_et6000_color_bits(unsigned short col_in, int* badColour
       *badColour = 1;
     }
     return 0;
+#else
+    return col_in >> 14; /* return 2 MSbits for closest matching color */
+#endif
 }
 
 
@@ -541,6 +545,8 @@ static void TsengRecolorCursor(pScr, pCurs, displayed)
 	Bool displayed;
 {
   /*
+    About the precision of color representation in a hardware cursor:
+  
     The ET6000 RAMDAC is only 6 bits per color component in 8bpp mode, so in
     that case you can only be precise up to 6 bits per color. Thus,
     "01010101", "01010100", "01010110", and "01010111" will show EXACTLY the

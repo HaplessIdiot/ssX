@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.1 1997/04/10 11:34:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.2 1997/04/12 13:45:25 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -18,12 +18,6 @@
 #include "mga_reg.h"
 #include "mga_map.h"
 
-/*
- * external functions
- */
-
-void MgaSync();
- 
 /*
  * forward definitions for once only compiled functions.
  */
@@ -838,7 +832,7 @@ MGANAME(SetupForDashedLine)(int fg, int bg, int rop, unsigned int planemask,
     /* handle transparent background */
     int transc = ( bg == -1 );
 
-    MgaSync();
+    MGAStormSync();
 
     /* load the style length part into the SHIFT register */
 

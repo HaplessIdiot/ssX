@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.9 1997/04/08 13:16:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.10 1997/04/12 13:46:47 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -133,8 +133,8 @@ xf86ImageGlyphBltNonTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	width += ppci[i]->metrics.characterWidth +
 	    ppci[i + 1]->metrics.leftSideBearing -
 	    ppci[i]->metrics.leftSideBearing;
-    width += ppci[i]->metrics.characterWidth
-	- ppci[i]->metrics.leftSideBearing;
+    width += ppci[nglyph - 1]->metrics.rightSideBearing
+	- ppci[nglyph - 1]->metrics.leftSideBearing;
 
     x = xInit + (*ppci)->metrics.leftSideBearing + pDrawable->x;
     y = yInit - FONTASCENT(pfont) + pDrawable->y;
@@ -232,8 +232,8 @@ xf86PolyGlyphBltNonTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	width += ppci[i]->metrics.characterWidth +
 	    ppci[i + 1]->metrics.leftSideBearing -
 	    ppci[i]->metrics.leftSideBearing;
-    width += ppci[i]->metrics.characterWidth
-	- ppci[i]->metrics.leftSideBearing;
+    width += ppci[nglyph - 1]->metrics.rightSideBearing
+	- ppci[nglyph - 1]->metrics.leftSideBearing;
 
     x = xInit + (*ppci)->metrics.leftSideBearing + pDrawable->x;
     y = yInit - FONTASCENT(pfont) + pDrawable->y;
@@ -304,6 +304,7 @@ static void DrawTextTEScreenToScreenColorExpand(
 static void DrawTextNonTECPUToScreenColorExpand(
 #if NeedFunctionPrototypes
     int nglyph,
+    int w,
     int h,
     NonTEGlyphInfo *glyphinfop
 #endif
@@ -669,7 +670,7 @@ CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci, maxascent)
 	        ppci[i + 1]->metrics.leftSideBearing -
 	        ppci[i]->metrics.leftSideBearing;
 	else
-	    glyphinfop[i].width = ppci[i]->metrics.characterWidth
+	    glyphinfop[i].width = ppci[i]->metrics.rightSideBearing
 	        - ppci[i]->metrics.leftSideBearing;
 	w += glyphinfop[i].width;
 	glyphinfop[i].firstline = maxascent - ppci[i]->metrics.ascent;
@@ -756,7 +757,6 @@ nglyph, ppci, pglyphBase)
     } else
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
             pGC->bgPixel, pGC->fgPixel, pGC->alu, pGC->planemask);
-
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
         x, y, w, h, 0);
 
@@ -766,7 +766,7 @@ nglyph, ppci, pglyphBase)
             nglyph, w, h, glyphp, glyphwidth);
     else
 #endif
-        DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop);
+        DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, glyphinfop);
 
     DEALLOCATE_LOCAL(glyphinfop);
 }
@@ -871,7 +871,7 @@ nglyph, ppci, pglyphBase)
     int glyphWidth;		       /* Character width in pixels. */
     int glyphWidthBytes;	       /* Character width in bytes (padded). */
     int i;
-
+    
     NonTEGlyphInfo *glyphinfop;
 
     glyphWidth = FONTMAXBOUNDS(pfont, characterWidth);
@@ -903,10 +903,9 @@ nglyph, ppci, pglyphBase)
 
     w = CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci,
         FONTASCENT(pfont));
-    
+
     xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
         -1, pGC->fgPixel, pGC->alu, pGC->planemask);
-
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
         x, y, w, h, 0);
 
@@ -916,7 +915,7 @@ nglyph, ppci, pglyphBase)
             nglyph, w, h, glyphinfop);
     else
 #endif
-        DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop);
+        DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, glyphinfop);
 
     DEALLOCATE_LOCAL(glyphinfop);
 }
@@ -1281,8 +1280,9 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
  * CPU-to-screen color expansion (DWORD padding at the end of scanlines).
  */
 
-static void DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop)
+static void DrawTextNonTECPUToScreenColorExpand(nglyph, w, h, glyphinfop)
     int nglyph;
+    int w;
     int h;
     NonTEGlyphInfo *glyphinfop;
 {
@@ -1299,35 +1299,54 @@ static void DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop)
     );
 
     if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-#if 0
         if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
-            DrawTextScanlineFunc = xf86DrawNonTETextScanline3MSBFirst;
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextScanlineFunc = xf86DrawNonTETextScanline3MSBFirstFixedBase;
+            else
+                DrawTextScanlineFunc = xf86DrawNonTETextScanline3MSBFirst;
         else
-#endif
-            DrawTextScanlineFunc = xf86DrawNonTETextScanlineMSBFirst;
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextScanlineFunc = xf86DrawNonTETextScanlineMSBFirstFixedBase;
+	    else
+                DrawTextScanlineFunc = xf86DrawNonTETextScanlineMSBFirst;
     else
-#if 0
         if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
-            DrawTextScanlineFunc = xf86DrawNonTETextScanline3;
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextScanlineFunc = xf86DrawNonTETextScanline3FixedBase;
+            else
+                DrawTextScanlineFunc = xf86DrawNonTETextScanline3;
         else
-#endif
-            DrawTextScanlineFunc = xf86DrawNonTETextScanline;
+            if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+                DrawTextScanlineFunc = xf86DrawNonTETextScanlineFixedBase;
+            else
+                DrawTextScanlineFunc = xf86DrawNonTETextScanline;
 
     base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
 
     line = 0;
     while (line < h) {
-	base = (unsigned char *)(*DrawTextScanlineFunc)(
-	    (unsigned int *)base, glyphinfop, line, nglyph);
-        if (base >=
-        (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
-            base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+        if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+	    (*DrawTextScanlineFunc)(
+	        (unsigned int *)base, glyphinfop, line, nglyph);
+	else {
+	    base = (unsigned char *)(*DrawTextScanlineFunc)(
+	        (unsigned int *)base, glyphinfop, line, nglyph);
+	    if (base >=
+	    (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+                base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+	}
 	line++;
     }
 
-    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD)
-        if (((long)base - (long)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 4)
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
+        int words;
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            words = ((w * 3 + 31) & ~31) * h / 32;
+        else
+            words = ((w + 31) & ~31) * h / 32;
+        if (words & 1)
             *(unsigned int *)base = 0;
+    }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
         NeedToSync = TRUE;
@@ -1350,9 +1369,32 @@ static void DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop)
     int bitmapwidth;
     int line;
     int offset, endoffset;
+    unsigned int *(*DrawTextScanlineFunc)(
+#if NeedNestedPrototypes
+        unsigned int *base,
+        NonTEGlyphInfo *glyphinfop,
+        int line,
+        int nglyph
+#endif
+    );
+
+    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            DrawTextScanlineFunc = xf86DrawNonTETextScanline3MSBFirst;
+        else
+            DrawTextScanlineFunc = xf86DrawNonTETextScanlineMSBFirst;
+    else
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+            DrawTextScanlineFunc = xf86DrawNonTETextScanline3;
+        else
+            DrawTextScanlineFunc = xf86DrawNonTETextScanline;
+
     /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
     /* in units of pixels. */
-    bitmapwidth = (w + 31) & ~31;
+    if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+        bitmapwidth = ((w + 31) & ~31) * 3;
+    else
+        bitmapwidth = (w + 31) & ~31;
     endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
 
     offset = 0;
@@ -1360,14 +1402,9 @@ static void DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop)
     while (line < h) {
 	if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
 	    xf86AccelInfoRec.Sync();
-        if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-	    xf86DrawNonTETextScanlineMSBFirst((unsigned int *)
-	        (xf86AccelInfoRec.ScratchBufferBase + offset),
-	        glyphinfop, line, nglyph);
-        else
-	    xf86DrawNonTETextScanline((unsigned int *)
-	        (xf86AccelInfoRec.ScratchBufferBase + offset),
-	        glyphinfop, line, nglyph);
+	(*DrawTextScanlineFunc)((unsigned int *)
+	    (xf86AccelInfoRec.ScratchBufferBase + offset),
+	    glyphinfop, line, nglyph);
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
 	    (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8);
 	line++;

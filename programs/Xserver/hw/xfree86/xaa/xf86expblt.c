@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.9 1997/03/10 10:12:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.10 1997/03/18 11:37:18 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -262,6 +262,8 @@ static __inline__ unsigned int reverse_bitorder(data) {
     MAPPEDNAME(xf86DrawTextScanline3)
 #define xf86DrawNonTETextScanline \
     MAPPEDNAME(xf86DrawNonTETextScanline)
+#define xf86DrawNonTETextScanline3 \
+    MAPPEDNAME(xf86DrawNonTETextScanline3)
 #define xf86DrawStippleScanline \
     MAPPEDNAME(xf86DrawStippleScanline)
 
@@ -725,9 +727,6 @@ unsigned int *xf86DrawNonTETextScanline(base, glyphinfop, line, nglyph)
             UINT64_ORLEFTSHIFTEDINT(bits, glyphinfop[i].bitsp[line], shift);
         }
         shift += glyphinfop[i].width;
-        /*
-         * XXX This does not take into account overlapping characters.
-         */
         if (shift >= 32) {
             /* Write a 32-bit word. */
             WRITE_IN_BITORDER(base, 0, UINT64_LOW32(bits));
@@ -797,6 +796,57 @@ unsigned int *xf86DrawTextScanline3(base, glyphp, line, nglyph, glyphwidth)
     return base;
 }
 
+
+unsigned int *xf86DrawNonTETextScanline3(base, glyphinfop, line, nglyph)
+    unsigned int *base;
+    NonTEGlyphInfo *glyphinfop;
+    int line;
+    int nglyph;
+{
+    UINT64_DECLARE(bits);
+    int shift, i;
+
+    UINT64_ASSIGN(bits, 0, 0);
+    shift = 0;
+    i = 0;
+    while (i < nglyph) {
+        /* Check whether the current glyph has bits for this scanline. */
+        if (line >= glyphinfop[i].firstline
+        && line <= glyphinfop[i].lastline) {
+            UINT64_ORLEFTSHIFTEDINT(bits, glyphinfop[i].bitsp[line], shift);
+        }
+        shift += glyphinfop[i].width;
+        if (shift >= 32) {
+            /* Write a 32-bit word. */
+            WRITE_IN_BITORDER3(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
+            base += 3;
+#endif
+            shift -= 32;
+            UINT64_SHIFTRIGHT32(bits);
+        }
+        i++;
+    }
+    if (shift > 0) {
+        WRITE_IN_BITORDER3_FIRSTWORD(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
+        base++;
+#endif
+        if (shift >= 11) {
+            WRITE_IN_BITORDER3_SECONDWORD(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
+            base++;
+#endif
+            if (shift >= 22) {
+                WRITE_IN_BITORDER3_THIRDWORD(base, 0, UINT64_LOW32(bits));
+#ifndef FIXEDBASE
+                base++;
+#endif
+            }
+        }
+    }
+    return base;
+}
 
 /*
  * The functions below write stretches of glyphs for special font widths.

@@ -23,7 +23,7 @@ all chips older than ET4000W32p rev C (ET4000, W32i, W32p rev A and B). hi-
 and truecolor modes are not supported on these chips.
 
 On W32p rev C and D however, all color depths are supported on the supported
-RAMDACs (currently ICS5341 and Chrontel CH8398). These modes are also
+RAMDACs (currently ICS5341, STG170x and Chrontel CH8398). These modes are also
 accelerated. 24bpp sometimes gives wrong colors at this moment. This can be
 overcome by fiddling with the mode timings (shifting the image left or
 right).
@@ -122,7 +122,7 @@ half of the cursor is visible. If you want to use DoubleSCan modes (320x200
 is a popular one), then do not enable the hardware cursor.
 
 
-On some systems, acceleration may cause occasional font corruption. Until
+On some fast systems, acceleration may cause occasional font corruption. Until
 this problem is fixed, font acceleration may be disabled using the following
 in the Device section of your
 <tt>XF86Config</tt>:
@@ -134,9 +134,9 @@ When using accelerated high color-depths (24bpp and 32bpp), high-resolution
 modes (starting somewhere around 800x600) may cause temporary "garbage"
 lines to the right of the screen while the accelerator is busy. The garbage
 should not be persistent: it should go away as soon as the server is left
-alone. This may get fixed in the future. This may also be a bandwidth
-problem, in which case it cannot be resolved (except by not allowing such
-modes at all, which is what is done in the current driver).
+alone. This is a memory bandwidth problem, and thus cannot be resolved
+(except by not allowing such modes at all, which is what is done in the
+current driver).
 
 Ignoring it is one option (it isn't destructive). Disabling acceleration in
 the Device section of the <tt>XF86Config</tt> file is another option: since
@@ -265,7 +265,8 @@ MemBase 0xE0000000. (or a different address) (ET4000W32, ET6000)
         This sets the physical memory base address of the linear
         framebuffer. It must be specified in the Device section. It may be
         required for non-PCI linear addressing configurations, and might be
-        useful for PCI-based systems where auto-detection fails.
+        useful for PCI-based systems where auto-detection fails. However,
+        almost all PCI systems will not need this.
         
         WARNING: defining a bad MemBase may cause serious injury or death
         (to your operating system, of course). Especially defining the
@@ -273,8 +274,27 @@ MemBase 0xE0000000. (or a different address) (ET4000W32, ET6000)
         
         Choosing a suitable MemBase can be quite tricky. If you have no way
         of determining the MemBase your card uses, trying to put it a few Mb
-        behind the system memory is a good first guess. E.g. if you have 16
+        above the system memory is a good first guess. E.g. if you have 16
         Mb of RAM, defining MemBase 0x01400000 (=20M) may work.
+        
+        On most VESA local bus (VLB) boards, there is an additional problem
+        with address decoding. Some motherboards only decode the first 32,
+        64 or 128 MB of address space (a good pointer is to check the amount
+        of DRAM that can be installed on the board: it will at least decode
+        as much address space as it supports DRAM). On such boards, you MUST
+        specify a MemBase inside that range, or the actual address may wrap
+        back onto system memory. That is why the general guideline of
+        putting the MemBase just above the system memory is a sound one: it
+        stands most chance of actually being inside the decoded address
+        range of the board.
+        
+        Some other VLB boards can only map the linear framebuffer above the
+        1GB mark (0x80000000 and up), so you must use a MemBase that is
+        higher or equal to 0x80000000.
+        
+        Unfortunately, there is no easy way to tell what system you have
+        (these details are mostly not in the motherboard manuals). Trial and
+        error is the only road to success here.
         
         There are some limits as to where the linear memory base may be put.
         On any ET4000W32, it must have a 4MB granularity (i.e. it can be put
@@ -676,7 +696,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.19 1997/03/27 08:30:37 hohndel Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.20 1997/04/08 10:12:03 hohndel Exp $ 
 
 
 
