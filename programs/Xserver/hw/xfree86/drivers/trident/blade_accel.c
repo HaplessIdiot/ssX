@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.6 1999/10/14 17:20:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.8 2000/11/03 18:46:13 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -128,10 +128,14 @@ BladeInitializeAccelerator(ScrnInfoPtr pScrn)
     BLADE_OUT(0x21BC, stride);
     BLADE_OUT(0x21C0, stride);
     BLADE_OUT(0x21C4, stride);
+#if 0
+    /* It appears that the driver sometimes misdetects the RAM type, so we
+     * don't force this for now */
     if (pTrident->HasSGRAM)
     	BLADE_OUT(0x2168, 1<<26); /* Enables Block Write if available (SGRAM) */
     else
 	BLADE_OUT(0x2168, 0);
+#endif
     BLADE_OUT(0x216C, 0);
 }
 
