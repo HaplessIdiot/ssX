@@ -1,4 +1,6 @@
 XFree86 4.0.1d (xx October 2000)
+ 744. Preliminary acceleration of the Render extension for Matrox G200/G400
+      (Mark Vojkovich).
  743. Fix ordering of drawable destruction in client-side DRI (Brian Paul).
  742. Update Trident's text acceleration routines (Alan Hourihane).
  741. Destroy unbound window info when a client destroys a context in
@@ -11201,4 +11203,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1337 2000/10/11 15:42:03 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1338 2000/10/11 17:27:29 martin Exp $
