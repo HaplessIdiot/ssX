@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.13 2000/12/01 14:28:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.14 2000/12/11 22:34:55 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -407,9 +407,9 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
    {
       int major, minor, patch;
       DRIQueryVersion(&major, &minor, &patch);
-      if (major != 3 || minor != 0 || patch < 0) {
+      if (major != 3 || minor != 1 || patch < 0) {
          xf86DrvMsg(pScreen->myNum, X_ERROR,
-                    "[drm] MGADRIScreenInit failed (DRI version = %d.%d.%d, expected 3.0.x).  Disabling DRI.\n",
+                    "[drm] MGADRIScreenInit failed (DRI version = %d.%d.%d, expected 3.1.x).  Disabling DRI.\n",
                     major, minor, patch);
          return FALSE;
       }
