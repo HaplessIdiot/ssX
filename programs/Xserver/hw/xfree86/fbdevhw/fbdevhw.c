@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.8 1999/06/13 13:47:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.9 1999/07/18 03:27:01 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -12,7 +12,7 @@
 #include "xf86cmap.h"
 
 #include "fbdevhw.h"
-#include "fb.h"
+#include "fbpriv.h"
 
 #include "asm/page.h"	/* #define for PAGE_* */
 

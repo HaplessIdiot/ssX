@@ -2,7 +2,7 @@
  * copyed from from linux kernel 2.2.4
  * removed internal stuff (#ifdef __KERNEL__)
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fb.h,v 1.2 1999/04/05 12:43:16 hohndel Exp $ */
 
 #ifndef _LINUX_FB_H
 #define _LINUX_FB_H
