@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.1 1999/06/07 13:01:43 faith Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.1 1999/06/14 07:32:07 dawes Exp $
  * 
  */
 
@@ -40,6 +40,14 @@
 # include <unistd.h>
 # include <signal.h>
 # include <fcntl.h>
+#endif
+
+/*
+ * Linux libc5 defines FASYNC, but not O_ASYNC.  Don't know if it is
+ * functional or not.
+ */
+#if defined(FASYNC) && !defined(O_ASYNC)
+#  define O_ASYNC FASYNC
 #endif
 
 int

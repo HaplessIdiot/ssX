@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.41 1999/03/29 06:54:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.42 1999/04/04 08:46:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1088,7 +1088,9 @@ extern void outl(unsigned int a, unsigned char l);
 #  endif
 # endif
 # ifdef SVR4
+#if 0
 #  include <sys/types.h>
+#endif
 #  ifndef __HIGHC__
 #   ifndef __USLC__
 #    define __USLC__

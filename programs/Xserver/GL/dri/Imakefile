@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.2 1999/06/14 07:31:19 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/GL/dri/Imakefile,v 1.13 1999/06/07 12:55:30 faith Exp $
 
 #define IHaveModules
@@ -15,11 +15,11 @@ MOBJ = drimodule.o
      INCLUDES = -I$(SERVERSRC)/include -I$(XTOP)/include -I$(EXTINCSRC) \
 		-I$(XF86OSSRC) -I$(XF86COMSRC) \
 		-I../include -I../glx -I$(LIBSRC)/GL/include \
-		-I../../mi -I$(FONTINCSRC)
+		-I$(SERVERSRC)/mi -I$(FONTINCSRC)
       DEFINES = $(GLX_DEFINES)
 
-LinkSourceFile(xf86dri.h,../../../../lib/GL/dri)
-LinkSourceFile(xf86dristr.h,../../../../lib/GL/dri)
+LinkSourceFile(xf86dri.h,$(LIBSRC)/GL/dri)
+LinkSourceFile(xf86dristr.h,$(LIBSRC)/GL/dri)
 
 ModuleObjectRule()
 LibraryModuleTarget(dri,$(OBJS))
