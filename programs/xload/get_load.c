@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.5 2000/11/14 18:20:39 dawes Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.6 2000/11/15 01:36:17 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -592,7 +592,7 @@ void GetLoadPoint(w, closure, call_data)
 }
 #else /* not __bsdi__ */
 
-#if BSD >= 199306
+#if defined(BSD) && (BSD >= 199306)
 
 void InitLoadPoint()
 {
@@ -707,7 +707,7 @@ void GetLoadPoint(w, closure, call_data)
 
 
 #ifndef KERNEL_LOAD_VARIABLE
-#    if (BSD >= 199103)
+#    if defined(BSD) && (BSD >= 199103)
 #        define KERNEL_LOAD_VARIABLE "_averunnable"
 #    endif /* BSD >= 199103 */
 
