@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.31 1999/12/14 01:33:53 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.32 1999/12/27 01:33:59 robin Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -269,7 +269,6 @@ extern xf86uid_t xf86geteuid(void);
 extern int xf86mknod(const char *, xf86mode_t, xf86dev_t);
 extern int xf86mkdir(const char *, xf86mode_t);
 unsigned int xf86sleep(unsigned int seconds);
-int xf86getpagesize(void);
 
 #else /* XFree86LOADER || NEED_XF86_TYPES */
 #include <unistd.h>
@@ -285,6 +284,7 @@ int xf86getpagesize(void);
  * even for a static server because some OSs don't provide them.
  */
 
+extern int xf86getpagesize(void);
 extern void xf86usleep(unsigned long);
 #ifndef DONT_DEFINE_WRAPPERS
 #undef getpagesize

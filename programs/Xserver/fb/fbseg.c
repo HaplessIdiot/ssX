@@ -1,5 +1,5 @@
 /*
- * $Id: fbseg.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $
+ * $Id: fbseg.c,v 1.2 2000/01/20 01:40:14 tsi Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbseg.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $ */
 
 #include "fb.h"
 #include "miline.h"
@@ -555,7 +555,7 @@ fbSegment (DrawablePtr	pDrawable,
 	   Bool		drawLast,
 	   int		*dashOffset)
 {
-    FbBres	bres;
+    FbBres *	bres;
     FbGCPrivPtr	pPriv = fbGetGCPrivate(pGC);
     RegionPtr	pClip = fbGetCompositeClip(pGC);
     BoxPtr	pBox;

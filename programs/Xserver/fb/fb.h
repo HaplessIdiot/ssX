@@ -1,5 +1,5 @@
 /*
- * $Id: fb.h,v 1.3 1999/12/30 02:33:58 robin Exp $
+ * $Id: fb.h,v 1.4 2000/01/20 01:40:14 tsi Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.2 1999/12/27 01:26:21 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.3 1999/12/30 02:33:58 robin Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -1034,19 +1034,20 @@ fbInitializeBackingStore (ScreenPtr pScreen);
 /*
  * fbseg.c
  */
-typedef void	(*FbBres) (DrawablePtr	pDrawable,
-			   GCPtr	pGC,
-			   int		dashOffset,
-			   int		signdx,
-			   int		signdy,
-			   int		axis,
-			   int		x1,
-			   int		y1,
-			   int		e,
-			   int		e1,
-			   int		e3,
-			   int		len);
+typedef void	FbBres (DrawablePtr	pDrawable,
+			GCPtr		pGC,
+			int		dashOffset,
+			int		signdx,
+			int		signdy,
+			int		axis,
+			int		x1,
+			int		y1,
+			int		e,
+			int		e1,
+			int		e3,
+			int		len);
 
+FbBres fbBresSolid, fbBresDash, fbBresFill, fbBresFillDash;
 /*
  * fbsetsp.c
  */
