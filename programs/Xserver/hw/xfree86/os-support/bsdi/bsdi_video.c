@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.8 1999/04/29 12:24:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.9tsi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -49,9 +49,10 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 
 	if (Base >= 0xA0000)
 	{
-		base = mmap(0, Size, PROT_READ|PROT_WRITE, MAP_FILE,
-			     xf86Info.screenFd,
-			     Base - 0xA0000);
+		base = mmap(0, Size,
+			    (Flags & VIDMEM_READONLY) ?
+			     PROT_READ : (PROT_READ | PROT_WRITE),
+			     MAP_FILE, xf86Info.screenFd, Base - 0xA0000);
 		if (base == MAP_FAILED)
 		{
 		    FatalError("xf86MapVidMem: Could not mmap /dev/vga (%s)\n",

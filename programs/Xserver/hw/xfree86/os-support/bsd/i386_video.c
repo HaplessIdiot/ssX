@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/i386_video.c,v 1.1 2002/08/06 13:08:38 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/i386_video.c,v 1.2tsi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -114,7 +114,7 @@ checkDevMem(Bool warn)
 	if ((fd = open(DEV_MEM, O_RDWR)) >= 0)
 	{
 	    /* Try to map a page at the VGA address */
-	    base = mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
+	    base = mmap((caddr_t)0, 4096, PROT_READ | PROT_WRITE,
 				 MAP_FLAGS, fd, (off_t)0xA0000);
 	
 	    if (base != MAP_FAILED)
@@ -147,7 +147,7 @@ checkDevMem(Bool warn)
 	if ((fd = open(DEV_APERTURE, O_RDWR)) >= 0)
 	{
 	    /* Try to map a page at the VGA address */
-	    base = mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
+	    base = mmap((caddr_t)0, 4096, PROT_READ | PROT_WRITE,
 			     MAP_FLAGS, fd, (off_t)0xA0000);
 	
 	    if (base != MAP_FAILED)
@@ -223,8 +223,10 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 		FatalError("xf86MapVidMem: failed to open %s (%s)\n",
 			   DEV_MEM, strerror(errno));
 	    }
-	    base = mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-				 MAP_FLAGS, devMemFd, (off_t)Base);
+	    base = mmap((caddr_t)0, Size,
+			(flags & VIDMEM_READONLY) ?
+			 PROT_READ : (PROT_READ | PROT_WRITE),
+			MAP_FLAGS, devMemFd, (off_t)Base);
 	    if (base == MAP_FAILED)
 	    {
 		FatalError("%s: could not mmap %s [s=%x,a=%x] (%s)\n",
@@ -240,9 +242,11 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 		FatalError("%s: Address 0x%x outside allowable range\n",
 			   "xf86MapVidMem", Base);
 	}
-	base = mmap(0, Size, PROT_READ|PROT_WRITE, MAP_FLAGS,
-			     xf86Info.screenFd,
-			     (unsigned long)Base - 0xA0000
+	base = mmap(0, Size,
+		    (flags & VIDMEM_READONLY) ?
+		     PROT_READ : (PROT_READ | PROT_WRITE),
+		    MAP_FLAGS, xf86Info.screenFd,
+		    (unsigned long)Base - 0xA0000
 	    );
 	if (base == MAP_FAILED)
 	{
