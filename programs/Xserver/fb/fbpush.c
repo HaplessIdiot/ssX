@@ -119,12 +119,13 @@ fbPushFill (DrawablePtr	pDrawable,
 	FbBits	    *dst;
 	FbStride    dstStride;
 	int	    dstBpp;
+	int	    dstXoff, dstYoff;
 	int	    dstX;
 	int	    dstWidth;
 
-	fbGetDrawable (pDrawable, dst, dstStride, dstBpp);
-	dst = dst + y * dstStride;
-	dstX = x * dstBpp;
+	fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
+	dst = dst + (y + dstYoff) * dstStride;
+	dstX = (x + dstXoff) * dstBpp;
 	dstWidth = width * dstBpp;
 	if (dstBpp == 1)
 	{
@@ -232,8 +233,9 @@ fbPushPixels (GCPtr	    pGC,
     FbStip	*stip;
     FbStride	stipStride;
     int		stipBpp;
+    int		stipXoff, stipYoff; /* Assumed to be zero */
 
-    fbGetStipDrawable (&pBitmap->drawable, stip, stipStride, stipBpp);
+    fbGetStipDrawable (&pBitmap->drawable, stip, stipStride, stipBpp, stipXoff, stipYoff);
 
     fbPushImage (pDrawable, pGC,
 		 stip, stipStride, 0,

@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.231 2001/05/23 08:56:05 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.232 2001/05/28 02:42:26 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -234,6 +234,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
           CFB32 = cfb/ModuleLibraryTargetName(cfb) \
 		  cfb32/ModuleLibraryTargetName(cfb32)
          SHADOW = miext/shadow/ModuleLibraryTargetName(shadow)
+          LAYER = miext/layer/ModuleLibraryTargetName(layer) 
 #else 
             MFB = mfb/LibraryTargetName(mfb)
              FB = fb/LibraryTargetName(fb)
@@ -251,6 +252,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
           CFB32 = cfb/LibraryTargetName(cfb) \
 		  cfb32/LibraryTargetName(cfb32)
          SHADOW = miext/shadow/LibraryTargetName(shadow)
+          LAYER = miext/layer/LibraryTargetName(layer) 
 #endif
 #if BuildLowMem
          LMFCFB = lmfcfb/LibraryTargetName(cfb)
@@ -581,13 +583,14 @@ CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
 SHADOWDIR = miext/shadow
+LAYERDIR = miext/layer
 #if XF86AFB
 AFBDIR = afb
 #endif
 XFREE86DDXDIR  = hw/xfree86
 XF86SERVERSUBDIRS = $(STDDIRS) $(MFBDIR) $(FBDIR) $(AFBDIR) \
 		    $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
-		    $(SHADOWDIR) $(XFREE86DDXDIR) $(DEPDIRS)
+		    $(SHADOWDIR) $(LAYERDIR) $(XFREE86DDXDIR) $(DEPDIRS)
 XF86INIT   = $(XF86COMSRC)/xf86Init.o $(XF86COMSRC)/xf86IniExt.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86PARSLIB= $(XF86PARSERSRC)/LibraryTargetName(xf86config)
@@ -719,6 +722,7 @@ XCOMM
     PSEUDO8DIR = $(KDRIVE)/pseudo8
 #endif
      SHADOWDIR = miext/shadow
+      LAYERDIR = miext/layer
             KD = $(KDRIVE)/LibraryTargetName(kdrive)
        KDFBDEV = $(KDRIVE)/fbdev/LibraryTargetName(fbdev)
 
@@ -737,11 +741,9 @@ XCOMM
        
       KDDIRS = StdKdDirs
 
-     SHADOWDIR = miext/shadow
-     
-   FBDEVDIRS = $(STDDIRS) $(KDDIRS) $(FBDEVDIR) $(SHADOWDIR)
+   FBDEVDIRS = $(STDDIRS) $(KDDIRS) $(FBDEVDIR) $(SHADOWDIR) $(LAYERDIR)
    
-   FBDEVLIBS = PreFbLibs $(FBDEV) KdLibs FbPostFbLibs
+   FBDEVLIBS = PreFbLibs $(FBDEV) $(LAYER) KdLibs FbPostFbLibs
 FBDEVSYSLIBS = StdKdSysLibs
 
 #if HasParallelMake
@@ -816,14 +818,13 @@ XCOMM
          FBDEV = $(FBDEVDIR)/LibraryTargetName(fbdev)
        VESADIR = $(KDRIVE)/vesa
           VESA = $(VESADIR)/LibraryTargetName(vesa)
-     SHADOWDIR = miext/shadow
     TRIDENTDIR = $(KDRIVE)/trident
        TRIDENT = $(TRIDENTDIR)/LibraryTargetName(trident)
 
         KDDIRS = StdKdDirs
   
    TRIDENTDIRS = $(STDDIRS) $(KDDIRS) \
-		 $(FBDEVDIR) $(VESADIR) $(SHADOWDIR) $(TRIDENTDIR)
+		 $(FBDEVDIR) $(VESADIR) $(SHADOWDIR) $(LAYERDIR) $(TRIDENTDIR)
    
    TRIDENTLIBS = PreFbLibs $(TRIDENT) $(FBDEV) $(VESA) KdLibs FbPostFbLibs
 TRIDENTSYSLIBS = StdKdSysLibs
@@ -848,7 +849,6 @@ XCOMM
          FBDEV = $(FBDEVDIR)/LibraryTargetName(fbdev)
        VESADIR = $(KDRIVE)/vesa
           VESA = $(VESADIR)/LibraryTargetName(vesa)
-     SHADOWDIR = miext/shadow
        I810DIR = $(KDRIVE)/i810
           I810 = $(I810DIR)/LibraryTargetName(i810)
 
@@ -1024,9 +1024,7 @@ XCOMM
 
       KDDIRS = StdKdDirs
 
-   SHADOWDIR = miext/shadow
-
-    VESADIRS = $(STDDIRS) $(KDDIRS) $(VESADIR) $(SHADOWDIR)
+    VESADIRS = $(STDDIRS) $(KDDIRS) $(VESADIR) $(SHADOWDIR) $(LAYERDIR)
 
    VESALIBS = PreFbLibs $(VESA) KdLibs FbPostFbLibs
 VESASYSLIBS = StdKdSysLibs
@@ -1264,7 +1262,7 @@ install::
 
 
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
-MIEXTDIRS = $(SHADOWDIR)
+MIEXTDIRS = $(SHADOWDIR) $(LAYERDIR)
 IPLANDIRS = $(IPLAN2P2DIR) $(IPLAN2P4DIR) $(IPLAN2P8DIR)
 DDXDIRS = $(DECWSDDXDIR) $(SUNDDXDIR) $(AMOEBADDXDIR) $(LYNXDDXDIR) \
 	  $(HPDDXDIR) $(XFREE86DDXDIR) $(XWINDDXDIR) $(DARWINDDXDIR) \

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.h,v 1.2 2000/11/20 07:13:07 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.h,v 1.3 2001/01/21 21:19:09 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -75,6 +75,8 @@ typedef struct _FbCompositeOperand {
     FbBits		*line;
     CARD32		offset;
     FbStride		stride;
+    int			xoff;
+    int			yoff;
     int			bpp;
     FbCompositeFetch	fetch;
     FbCompositeFetch	fetcha;

@@ -628,13 +628,13 @@ typedef struct {
 
 #define fbGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivate)
 #ifdef FB_NO_WINDOW_PIXMAPS
-#define fbGetWindowPixmap(d)	fbGetScreenPixmap((d)->pScreen)
+#define fbGetWindowPixmap(d)	fbGetScreenPixmap(((DrawablePtr) (d))->pScreen)
 #else
 #define fbGetWindowPixmap(pWin)	((PixmapPtr)\
 	((WindowPtr) (pWin))->devPrivates[fbWinPrivateIndex].ptr)
 #endif
 
-#define fbGetDrawable(pDrawable, pointer, stride, bpp) { \
+#define fbGetDrawable(pDrawable, pointer, stride, bpp, xoff, yoff) { \
     PixmapPtr   _pPix; \
     if ((pDrawable)->type != DRAWABLE_PIXMAP) \
 	_pPix = fbGetWindowPixmap(pDrawable); \
@@ -643,9 +643,11 @@ typedef struct {
     (pointer) = (FbBits *) _pPix->devPrivate.ptr; \
     (stride) = ((int) _pPix->devKind) / sizeof (FbBits); \
     (bpp) = _pPix->drawable.bitsPerPixel; \
+    (xoff) = _pPix->drawable.x; \
+    (yoff) = _pPix->drawable.y; \
 }
 
-#define fbGetStipDrawable(pDrawable, pointer, stride, bpp) { \
+#define fbGetStipDrawable(pDrawable, pointer, stride, bpp, xoff, yoff) { \
     PixmapPtr   _pPix; \
     if ((pDrawable)->type != DRAWABLE_PIXMAP) \
 	_pPix = fbGetWindowPixmap(pDrawable); \
@@ -654,6 +656,8 @@ typedef struct {
     (pointer) = (FbStip *) _pPix->devPrivate.ptr; \
     (stride) = ((int) _pPix->devKind) / sizeof (FbStip); \
     (bpp) = _pPix->drawable.bitsPerPixel; \
+    (xoff) = _pPix->drawable.x; \
+    (yoff) = _pPix->drawable.y; \
 }
 
 /*

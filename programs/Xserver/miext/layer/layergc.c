@@ -1,0 +1,184 @@
+/*
+ * $XFree86$
+ *
+ * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Keith Packard not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Keith Packard makes no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.
+ *
+ * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include "layerstr.h"
+
+GCFuncs	layerGCFuncs = {
+    layerValidateGC, layerChangeGC, layerCopyGC, layerDestroyGC,
+    layerChangeClip, layerDestroyClip, layerCopyClip
+};
+
+#if 0
+/*
+ * XXX dont need this until this supports 
+ * separate clipping and multiple layers
+ */
+GCOps layerGCOps = {
+    layerFillSpans, layerSetSpans, 
+    layerPutImage, layerCopyArea, 
+    layerCopyPlane, layerPolyPoint, 
+    layerPolylines, layerPolySegment, 
+    layerPolyRectangle, layerPolyArc, 
+    layerFillPolygon, layerPolyFillRect, 
+    layerPolyFillArc, layerPolyText8, 
+    layerPolyText16, layerImageText8, 
+    layerImageText16, layerImageGlyphBlt, 
+    layerPolyGlyphBlt, layerPushPixels,
+#ifdef NEED_LINEHELPER
+    NULL,
+#endif
+    {NULL}		/* devPrivate */
+};
+#endif
+
+Bool
+layerCreateGC (GCPtr pGC)
+{
+    Bool	    ret = TRUE;
+    int		    kind;
+    LayerKindPtr    pLayKind;
+    LayerPtr	    pLayer;
+    ScreenPtr	    pScreen = pGC->pScreen;
+    layerScrPriv(pScreen);
+    layerGCPriv(pGC);
+    
+    /*
+     * XXX this is quite broken, initialize the GC with the
+     * first layer that looks like it might handle this depth,
+     * use kind 0 if none matches.  More thought is clearly needed
+     */
+    pLayKind = &pLayScr->kinds[0];
+    for (pLayer = pLayScr->pLayers; pLayer; pLayer = pLayer->pNext)
+    {
+	if (pLayer->depth == pGC->depth)
+	{
+	    pLayKind = pLayer->pKind;
+	    break;
+	}
+    }
+    pLayGC->pKind = pLayKind;
+    LayerUnwrap (pScreen,pLayGC->pKind,CreateGC);
+    
+    if (!(*pScreen->CreateGC) (pGC))
+	ret = FALSE;
+    LayerWrap (pScreen,pLayKind,CreateGC,layerCreateGC);
+
+    LayerWrap (pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+
+    return ret;
+}
+
+void
+layerValidateGC(GCPtr         pGC,
+		unsigned long changes,
+		DrawablePtr   pDraw)
+{
+    layerGCPriv(pGC);
+    LayerKindPtr    pKind;
+    
+    if (pDraw->type == DRAWABLE_WINDOW)
+    {
+	layerWinPriv ((WindowPtr) pDraw);
+	pKind = layerWinLayer (pLayWin)->pKind;
+    }
+    else
+    {
+	layerScrPriv (pDraw->pScreen);
+	pKind = &pLayScr->kinds[LAYER_FB];
+    }
+    
+    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    if (pKind != pLayGC->pKind)
+    {
+	if (pLayGC->pKind->UnwrapGC)
+	    (*pLayGC->pKind->UnwrapGC) (pGC);
+	if (pKind->WrapGC)
+	    (*pKind->WrapGC) (pGC);
+	pLayGC->pKind = pKind;
+    }
+    
+    (*pGC->funcs->ValidateGC) (pGC, changes, pDraw);
+    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+}
+
+void
+layerDestroyGC(GCPtr pGC)
+{
+    layerGCPriv(pGC);
+    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    (*pGC->funcs->DestroyGC)(pGC);
+    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+}
+
+void
+layerChangeGC (GCPtr		pGC,
+	       unsigned long	mask)
+{
+    layerGCPriv(pGC);
+    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    (*pGC->funcs->ChangeGC) (pGC, mask);
+    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+}
+
+void
+layerCopyGC (GCPtr	    pGCSrc, 
+	     unsigned long  mask,
+	     GCPtr	    pGCDst)
+{
+    layerGCPriv(pGCDst);
+    LayerUnwrap (pGCDst,pLayGC->pKind,funcs);
+    (*pGCDst->funcs->CopyGC) (pGCSrc, mask, pGCDst);
+    LayerWrap(pGCDst,pLayGC->pKind,funcs,&layerGCFuncs);
+}
+
+void
+layerChangeClip (GCPtr	    pGC,
+		 int	    type,
+		 pointer    pvalue,
+		 int	    nrects)
+{
+    layerGCPriv(pGC);
+    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    (*pGC->funcs->ChangeClip) (pGC, type, pvalue, nrects);
+    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+}
+
+void
+layerCopyClip(GCPtr pGCDst, GCPtr pGCSrc)
+{
+    layerGCPriv(pGCDst);
+    LayerUnwrap (pGCDst,pLayGC->pKind,funcs);
+    (*pGCDst->funcs->CopyClip) (pGCSrc, pGCDst);
+    LayerWrap(pGCDst,pLayGC->pKind,funcs,&layerGCFuncs);
+}
+
+void
+layerDestroyClip(GCPtr pGC)
+{
+    layerGCPriv(pGC);
+    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    (*pGC->funcs->DestroyClip) (pGC);
+    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+}
+

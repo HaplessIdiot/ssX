@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.4 2000/12/08 21:42:04 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.5 2001/01/21 21:19:39 tsi Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -60,14 +60,17 @@ static void
 shadowRedisplay (ScreenPtr pScreen)
 {
     shadowScrPriv(pScreen);
-    PixmapPtr	pShadow = (PixmapPtr) pScreen->devPrivate;
-    
-    if (REGION_NOTEMPTY (pScreen, &pScrPriv->damage))
+    shadowBufPtr    pBuf;
+
+    for (pBuf = pScrPriv->pBuf; pBuf; pBuf = pBuf->pNext)
     {
-	REGION_INTERSECT (pScreen, &pScrPriv->damage, &pScrPriv->damage,
-			  &WindowTable[pScreen->myNum]->borderSize);
-	(*pScrPriv->update) (pScreen, pShadow, &pScrPriv->damage);
-	REGION_EMPTY (pScreen, &pScrPriv->damage);
+	if (REGION_NOTEMPTY (pScreen, &pBuf->damage))
+	{
+	    REGION_INTERSECT (pScreen, &pBuf->damage, &pBuf->damage,
+			      &WindowTable[pScreen->myNum]->borderSize);
+	    (*pBuf->update) (pScreen, pBuf);
+	    REGION_EMPTY (pScreen, &pBuf->damage);
+	}
     }
 }
 
@@ -89,11 +92,15 @@ shadowWakeupHandler (pointer data, int i, pointer LastSelectMask)
 static void
 shadowDamageRegion (WindowPtr pWindow, RegionPtr pRegion)
 {
-    ScreenPtr	pScreen = pWindow->drawable.pScreen;
+    ScreenPtr	    pScreen = pWindow->drawable.pScreen;
+    shadowBufPtr    pBuf = shadowFindBuf (pWindow);
     shadowScrPriv (pScreen);
 
-    REGION_UNION (pScreen, &pScrPriv->damage, &pScrPriv->damage, pRegion);
-#undef ALWAYS_DISPLAY
+    if (!pBuf)
+	abort ();
+    
+    REGION_UNION (pScreen, &pBuf->damage, &pBuf->damage, pRegion);
+#define ALWAYS_DISPLAY
 #ifdef ALWAYS_DISPLAY
     shadowRedisplay (pScreen);
 #endif
@@ -154,6 +161,26 @@ shadowCreateGC(GCPtr pGC)
     wrap (pScrPriv, pScreen, CreateGC, shadowCreateGC);
 
     return ret;
+}
+
+void
+shadowWrapGC (GCPtr pGC)
+{
+    shadowGCPriv(pGC);
+    
+    pGCPriv->ops = NULL;
+    pGCPriv->funcs = pGC->funcs;
+    pGC->funcs = &shadowGCFuncs;
+}
+
+void
+shadowUnwrapGC (GCPtr pGC)
+{
+    shadowGCPriv(pGC);
+    
+    pGC->funcs = pGCPriv->funcs;
+    if (pGCPriv->ops)
+	pGC->ops = pGCPriv->ops;
 }
 
 #define SHADOW_GC_OP_PROLOGUE(pGC,pDraw) \
@@ -1324,7 +1351,7 @@ shadowCloseScreen (int i, ScreenPtr pScreen)
 }
 
 Bool
-shadowInit (ScreenPtr pScreen, ShadowUpdateProc update, ShadowWindowProc window)
+shadowSetup (ScreenPtr pScreen)
 {
     shadowScrPrivPtr	pScrPriv;
 #ifdef RENDER
@@ -1346,9 +1373,7 @@ shadowInit (ScreenPtr pScreen, ShadowUpdateProc update, ShadowWindowProc window)
     pScrPriv = (shadowScrPrivPtr) xalloc (sizeof (shadowScrPrivRec));
     if (!pScrPriv)
 	return FALSE;
-    REGION_INIT (pScreen, &pScrPriv->damage, NullBox, 0);
-    pScrPriv->update = update;
-    pScrPriv->window = window;
+
     if (!RegisterBlockAndWakeupHandlers (shadowBlockHandler,
 					 shadowWakeupHandler,
 					 (pointer) pScreen))
@@ -1364,7 +1389,86 @@ shadowInit (ScreenPtr pScreen, ShadowUpdateProc update, ShadowWindowProc window)
     wrap (pScrPriv, ps, Glyphs, shadowGlyphs);
     wrap (pScrPriv, ps, Composite, shadowComposite);
 #endif
+    pScrPriv->pBuf = 0;
 
     pScreen->devPrivates[shadowScrPrivateIndex].ptr = (pointer) pScrPriv;
+    return TRUE;
+}
+
+Bool
+shadowAdd (ScreenPtr	    pScreen,
+	   PixmapPtr	    pPixmap,
+	   ShadowUpdateProc update,
+	   ShadowWindowProc window,
+	   void		    *closure)
+{
+    shadowScrPriv(pScreen);
+    shadowBufPtr    pBuf;
+
+    pBuf = (shadowBufPtr) xalloc (sizeof (shadowBufRec));
+    if (!pBuf)
+	return FALSE;
+    pBuf->pPixmap = pPixmap;
+    pBuf->update = update;
+    pBuf->window = window;
+    REGION_INIT (pScreen, &pBuf->damage, NullBox, 0);
+    pBuf->pNext = pScrPriv->pBuf;
+    pBuf->closure = 0;
+    pScrPriv->pBuf = pBuf;
+    return TRUE;
+}
+
+void
+shadowRemove (ScreenPtr pScreen, PixmapPtr pPixmap)
+{
+    shadowScrPriv(pScreen);
+    shadowBufPtr    pBuf, *pPrev;
+
+    for (pPrev = &pScrPriv->pBuf; pBuf = *pPrev; pPrev = &pBuf->pNext)
+	if (pBuf->pPixmap == pPixmap)
+	{
+	    REGION_UNINIT (pScreen, &pBuf->damage);
+	    *pPrev = pBuf->pNext;
+	    xfree (pBuf);
+	    break;
+	}
+}
+
+shadowBufPtr
+shadowFindBuf (WindowPtr pWindow)
+{
+    ScreenPtr	    pScreen = pWindow->drawable.pScreen;
+    shadowScrPriv(pScreen);
+    shadowBufPtr    pBuf, *pPrev;
+    PixmapPtr	    pPixmap = (*pScreen->GetWindowPixmap) (pWindow);
+
+    for (pPrev = &pScrPriv->pBuf; pBuf = *pPrev; pPrev = &pBuf->pNext)
+    {
+	if (pBuf->pPixmap == pPixmap)
+	{
+	    /*
+	     * Reorder so this one is first next time
+	     */
+	    if (pPrev != &pScrPriv->pBuf)
+	    {
+		*pPrev = pBuf->pNext;
+		pBuf->pNext = pScrPriv->pBuf;
+		pScrPriv->pBuf = pBuf;
+	    }
+	    return pBuf;
+	}
+    }
+    return 0;
+}
+
+Bool
+shadowInit (ScreenPtr pScreen, ShadowUpdateProc update, ShadowWindowProc window)
+{
+    if (!shadowSetup (pScreen))
+	return FALSE;
+    
+    if (!shadowAdd (pScreen, pScreen->devPrivate, update, window, 0))
+	return FALSE;
+
     return TRUE;
 }

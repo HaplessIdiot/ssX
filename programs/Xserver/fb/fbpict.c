@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.7 2001/01/29 15:07:19 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.8 2001/02/09 02:12:17 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -99,6 +99,43 @@ fbIn (CARD32 x, CARD8 y)
     return m|n|o|p;
 }
 
+#define fbComposeGetSolid(pict, bits) { \
+    FbBits	*__bits__; \
+    FbStride	__stride__; \
+    int		__bpp__; \
+    int		__xoff__,__yoff__; \
+\
+    fbGetDrawable((pict)->pDrawable,__bits__,__stride__,__bpp__,__xoff__,__yoff__); \
+    switch (__bpp__) { \
+    case 32: \
+	(bits) = *(CARD32 *) __bits__; \
+	break; \
+    case 24: \
+	(bits) = Fetch24 ((CARD8 *) __bits__); \
+	break; \
+    case 16: \
+	(bits) = *(CARD16 *) __bits__; \
+	(bits) = cvt0565to8888(bits); \
+	break; \
+    default: \
+	return; \
+    } \
+    /* manage missing src alpha */ \
+    if ((pict)->pFormat->direct.alphaMask == 0) \
+	(bits) |= 0xff000000; \
+}
+
+#define fbComposeGetStart(pict,x,y,type,stride,line,mul) {\
+    FbBits	*__bits__; \
+    FbStride	__stride__; \
+    int		__bpp__; \
+    int		__xoff__,__yoff__; \
+\
+    fbGetDrawable((pict)->pDrawable,__bits__,__stride__,__bpp__,__xoff__,__yoff__); \
+    (stride) = __stride__ * sizeof (FbBits) / sizeof (type); \
+    (line) = ((type *) __bits__) + (stride) * ((y) - __yoff__) + (mul) * ((x) - __xoff__); \
+}
+
 /*
  * Naming convention:
  *
@@ -122,43 +159,18 @@ fbCompositeSolidMask_nx8x8888 (CARD8      op,
     CARD32	src, srca;
     CARD32	*dstLine, *dst, d, dstMask;
     CARD8	*maskLine, *mask, m;
-    FbBits	*dstBits, *maskBits, *srcBits;
-    FbStride	dstStride, maskStride, srcStride;
-    int		dstBpp, maskBpp, srcBpp;
+    FbStride	dstStride, maskStride;
     CARD16	w;
 
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    switch (srcBpp) {
-    case 32:
-	src = *(CARD32 *) srcBits;
-	break;
-    case 24:
-	src = Fetch24 ((CARD8 *) srcBits);
-	break;
-    case 16:
-	src = *(CARD16 *) srcBits;
-	src = cvt0565to8888(src);
-	break;
-    default:
-	return;
-    }
-    /* manage missing src alpha */
-    if (pSrc->pFormat->direct.alphaMask == 0)
-	src |= 0xff000000;
+    fbComposeGetSolid(pSrc, src);
+    
     dstMask = FbFullMask (pDst->pDrawable->depth);
     srca = src >> 24;
     if (src == 0)
 	return;
     
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
-    dstLine = (CARD32 *) dstBits;
-    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD32);
-    dstLine += dstStride * yDst + xDst;
-    
-    fbGetDrawable(pMask->pDrawable, maskBits, maskStride, maskBpp);
-    maskLine = (CARD8 *) maskBits;
-    maskStride = maskStride * sizeof (FbBits) / sizeof (CARD8);
-    maskLine += maskStride * yMask + xMask;
+    fbComposeGetStart (pDst, xDst, yDst, CARD32, dstStride, dstLine, 1);
+    fbComposeGetStart (pMask, xMask, yMask, CARD8, maskStride, maskLine, 1);
     
     while (height--)
     {
@@ -205,42 +217,19 @@ fbCompositeSolidMask_nx8888x8888C (CARD8      op,
     CARD32	src, srca;
     CARD32	*dstLine, *dst, d, dstMask;
     CARD32	*maskLine, *mask, ma;
-    FbBits	*dstBits, *maskBits, *srcBits;
-    FbStride	dstStride, maskStride, srcStride;
-    int		dstBpp, maskBpp, srcBpp;
+    FbStride	dstStride, maskStride;
     CARD16	w;
     CARD32	m, n, o, p;
 
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    switch (srcBpp) {
-    case 32:
-	src = *(CARD32 *) srcBits;
-	break;
-    case 24:
-	src = Fetch24 ((CARD8 *) srcBits);
-	break;
-    case 16:
-	src = *(CARD16 *) srcBits;
-	src = cvt0565to8888(src);
-	break;
-    }
-    /* manage missing src alpha */
-    if (pSrc->pFormat->direct.alphaMask == 0)
-	src |= 0xff000000;
+    fbComposeGetSolid(pSrc, src);
+    
     dstMask = FbFullMask (pDst->pDrawable->depth);
     srca = src >> 24;
     if (src == 0)
 	return;
     
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
-    dstLine = (CARD32 *) dstBits;
-    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD32);
-    dstLine += dstStride * yDst + xDst;
-    
-    fbGetDrawable(pMask->pDrawable, maskBits, maskStride, maskBpp);
-    maskLine = (CARD32 *) maskBits;
-    maskStride = maskStride * sizeof (FbBits) / sizeof (CARD32);
-    maskLine += maskStride * yMask + xMask;
+    fbComposeGetStart (pDst, xDst, yDst, CARD32, dstStride, dstLine, 1);
+    fbComposeGetStart (pMask, xMask, yMask, CARD32, maskStride, maskLine, 1);
     
     while (height--)
     {
@@ -302,40 +291,17 @@ fbCompositeSolidMask_nx8x0888 (CARD8      op,
     CARD8	*dstLine, *dst;
     CARD32	d;
     CARD8	*maskLine, *mask, m;
-    FbBits	*dstBits, *maskBits, *srcBits;
-    FbStride	dstStride, maskStride, srcStride;
-    int		dstBpp, maskBpp, srcBpp;
+    FbStride	dstStride, maskStride;
     CARD16	w;
 
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    switch (srcBpp) {
-    case 32:
-	src = *(CARD32 *) srcBits;
-	break;
-    case 24:
-	src = Fetch24 ((CARD8 *) srcBits);
-	break;
-    case 16:
-	src = *(CARD16 *) srcBits;
-	src = cvt0565to8888(src);
-	break;
-    }
-    /* manage missing src alpha */
-    if (pSrc->pFormat->direct.alphaMask == 0)
-	src |= 0xff000000;
+    fbComposeGetSolid(pSrc, src);
+    
     srca = src >> 24;
     if (src == 0)
 	return;
     
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
-    dstLine = (CARD8 *) dstBits;
-    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD8);
-    dstLine += dstStride * yDst + xDst * 3;
-    
-    fbGetDrawable(pMask->pDrawable, maskBits, maskStride, maskBpp);
-    maskLine = (CARD8 *) maskBits;
-    maskStride = maskStride * sizeof (FbBits) / sizeof (CARD8);
-    maskLine += maskStride * yMask + xMask;
+    fbComposeGetStart (pDst, xDst, yDst, CARD8, dstStride, dstLine, 3);
+    fbComposeGetStart (pMask, xMask, yMask, CARD8, maskStride, maskLine, 1);
     
     while (height--)
     {
@@ -387,40 +353,17 @@ fbCompositeSolidMask_nx8x0565 (CARD8      op,
     CARD16	*dstLine, *dst;
     CARD32	d;
     CARD8	*maskLine, *mask, m;
-    FbBits	*dstBits, *maskBits, *srcBits;
-    FbStride	dstStride, maskStride, srcStride;
-    int		dstBpp, maskBpp, srcBpp;
+    FbStride	dstStride, maskStride;
     CARD16	w;
 
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    switch (srcBpp) {
-    case 32:
-	src = *(CARD32 *) srcBits;
-	break;
-    case 24:
-	src = Fetch24 ((CARD8 *) srcBits);
-	break;
-    case 16:
-	src = *(CARD16 *) srcBits;
-	src = cvt0565to8888(src);
-	break;
-    }
-    /* manage missing src alpha */
-    if (pSrc->pFormat->direct.alphaMask == 0)
-	src |= 0xff000000;
+    fbComposeGetSolid(pSrc, src);
+    
     srca = src >> 24;
     if (src == 0)
 	return;
     
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
-    dstLine = (CARD16 *) dstBits;
-    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD16);
-    dstLine += dstStride * yDst + xDst;
-    
-    fbGetDrawable(pMask->pDrawable, maskBits, maskStride, maskBpp);
-    maskLine = (CARD8 *) maskBits;
-    maskStride = maskStride * sizeof (FbBits) / sizeof (CARD8);
-    maskLine += maskStride * yMask + xMask;
+    fbComposeGetStart (pDst, xDst, yDst, CARD16, dstStride, dstLine, 1);
+    fbComposeGetStart (pMask, xMask, yMask, CARD8, maskStride, maskLine, 1);
     
     while (height--)
     {
@@ -471,22 +414,14 @@ fbCompositeSrc_8888x8888 (CARD8      op,
 {
     CARD32	*dstLine, *dst, dstMask;
     CARD32	*srcLine, *src, s;
-    CARD8	a;
-    FbBits	*dstBits, *srcBits;
     FbStride	dstStride, srcStride;
-    int		dstBpp, srcBpp;
+    CARD8	a;
     CARD16	w;
     
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    srcLine = (CARD32 *) srcBits;
-    srcStride = srcStride * sizeof (FbBits) / sizeof (CARD32);
-    srcLine += srcStride * ySrc + xSrc;
-
+    fbComposeGetStart (pDst, xDst, yDst, CARD32, dstStride, dstLine, 1);
+    fbComposeGetStart (pSrc, xSrc, ySrc, CARD32, srcStride, srcLine, 1);
+    
     dstMask = FbFullMask (pDst->pDrawable->depth);
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
-    dstLine = (CARD32 *) dstBits;
-    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD32);
-    dstLine += dstStride * yDst + xDst;
 
     while (height--)
     {
@@ -527,21 +462,12 @@ fbCompositeSrc_8888x0888 (CARD8      op,
     CARD32	d;
     CARD32	*srcLine, *src, s;
     CARD8	a;
-    FbBits	*dstBits, *srcBits;
     FbStride	dstStride, srcStride;
-    int		dstBpp, srcBpp;
     CARD16	w;
     
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    srcLine = (CARD32 *) srcBits;
-    srcStride = srcStride * sizeof (FbBits) / sizeof (CARD32);
-    srcLine += srcStride * ySrc + xSrc;
-
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
-    dstLine = (CARD8 *) dstBits;
-    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD8);
-    dstLine += dstStride * yDst + xDst * 3;
-
+    fbComposeGetStart (pDst, xDst, yDst, CARD8, dstStride, dstLine, 3);
+    fbComposeGetStart (pSrc, xSrc, ySrc, CARD32, srcStride, srcLine, 1);
+    
     while (height--)
     {
 	dst = dstLine;
@@ -585,20 +511,11 @@ fbCompositeSrc_8888x0565 (CARD8      op,
     CARD32	d;
     CARD32	*srcLine, *src, s;
     CARD8	a;
-    FbBits	*dstBits, *srcBits;
     FbStride	dstStride, srcStride;
-    int		dstBpp, srcBpp;
     CARD16	w;
     
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    srcLine = (CARD32 *) srcBits;
-    srcStride = srcStride * sizeof (FbBits) / sizeof (CARD32);
-    srcLine += srcStride * ySrc + xSrc;
-
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
-    dstLine = (CARD16 *) dstBits;
-    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD16);
-    dstLine += dstStride * yDst + xDst;
+    fbComposeGetStart (pSrc, xSrc, ySrc, CARD32, srcStride, srcLine, 1);
+    fbComposeGetStart (pDst, xDst, yDst, CARD16, dstStride, dstLine, 1);
 
     while (height--)
     {
@@ -644,20 +561,12 @@ fbCompositeSrc_0565x0565 (CARD8      op,
 {
     CARD16	*dstLine, *dst;
     CARD16	*srcLine, *src;
-    FbBits	*dstBits, *srcBits;
     FbStride	dstStride, srcStride;
-    int		dstBpp, srcBpp;
     CARD16	w;
     
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    srcLine = (CARD16 *) srcBits;
-    srcStride = srcStride * sizeof (FbBits) / sizeof (CARD16);
-    srcLine += srcStride * ySrc + xSrc;
+    fbComposeGetStart (pSrc, xSrc, ySrc, CARD16, srcStride, srcLine, 1);
 
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
-    dstLine = (CARD16 *) dstBits;
-    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD16);
-    dstLine += dstStride * yDst + xDst;
+    fbComposeGetStart (pDst, xDst, yDst, CARD16, dstStride, dstLine, 1);
 
     while (height--)
     {
@@ -688,22 +597,13 @@ fbCompositeSrcAdd_8000x8000 (CARD8	op,
 {
     CARD8	*dstLine, *dst;
     CARD8	*srcLine, *src;
-    FbBits	*dstBits, *srcBits;
     FbStride	dstStride, srcStride;
-    int		dstBpp, srcBpp;
     CARD8	w;
     CARD8	s, d;
     CARD16	t;
     
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    srcLine = (CARD8 *) srcBits;
-    srcStride = srcStride * sizeof (FbBits) / sizeof (CARD8);
-    srcLine += srcStride * ySrc + xSrc;
-
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
-    dstLine = (CARD8 *) dstBits;
-    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD8);
-    dstLine += dstStride * yDst + xDst;
+    fbComposeGetStart (pSrc, xSrc, ySrc, CARD8, srcStride, srcLine, 1);
+    fbComposeGetStart (pDst, xDst, yDst, CARD8, dstStride, dstLine, 1);
 
     while (height--)
     {
@@ -744,18 +644,20 @@ fbCompositeSrcAdd_1000x1000 (CARD8	op,
     FbBits	*dstBits, *srcBits;
     FbStride	dstStride, srcStride;
     int		dstBpp, srcBpp;
+    int		dstXoff, dstYoff;
+    int		srcXoff, srcYoff;
     
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
+    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp, srcXoff, srcYoff);
 
-    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
+    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp, dstXoff, dstYoff);
 
-    fbBlt (srcBits + srcStride * ySrc,
+    fbBlt (srcBits + srcStride * (ySrc + srcYoff),
 	   srcStride,
-	   xSrc,
+	   xSrc + srcXoff,
 
-	   dstBits + dstStride * yDst,
+	   dstBits + dstStride * (yDst + dstYoff),
 	   dstStride,
-	   xDst,
+	   xDst + dstXoff,
 
 	   width,
 	   height,
@@ -786,24 +688,14 @@ fbCompositeSolidMask_nx1xn (CARD8      op,
     FbStip	*maskBits;
     FbStride	dstStride, maskStride, srcStride;
     int		dstBpp, maskBpp, srcBpp;
+    int		dstXoff, dstYoff;
+    int		maskXoff, maskYoff;
     FbBits	src;
     
-    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
-    switch (srcBpp) {
-    case 32:
-	src = *(CARD32 *) srcBits;
-	break;
-    case 24:
-	src = Fetch24 ((CARD8 *) srcBits);
-	break;
-    case 16:
-	src = *(CARD16 *) srcBits;
-	src = cvt0565to8888(src);
-	break;
-    }
+    fbComposeGetSolid(pSrc, src);
 
-    fbGetStipDrawable (pMask->pDrawable, maskBits, maskStride, maskBpp);
-    fbGetDrawable (pDst->pDrawable, dstBits, dstStride, dstBpp);
+    fbGetStipDrawable (pMask->pDrawable, maskBits, maskStride, maskBpp, maskXoff, maskYoff);
+    fbGetDrawable (pDst->pDrawable, dstBits, dstStride, dstBpp, dstXoff, dstYoff);
 
     switch (dstBpp) {
     case 32:
@@ -817,13 +709,13 @@ fbCompositeSolidMask_nx1xn (CARD8      op,
 
     src = fbReplicatePixel (src, dstBpp);
 
-    fbBltOne (maskBits + maskStride * yMask,
+    fbBltOne (maskBits + maskStride * (yMask + maskYoff),
 	      maskStride,
-	      xMask,
+	      xMask + maskXoff,
 
-	      dstBits + dstStride * yDst,
+	      dstBits + dstStride * (yDst + dstYoff),
 	      dstStride,
-	      xDst * dstBpp,
+	      (xDst + dstXoff) * dstBpp,
 	      dstBpp,
 
 	      width * dstBpp,

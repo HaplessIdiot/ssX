@@ -84,10 +84,10 @@
 
 void
 shadowUpdatePlanar4x8 (ScreenPtr	pScreen,
-		       PixmapPtr	pShadow,
-		       RegionPtr	damage)
+		       shadowBufPtr	pBuf)
 {
-    shadowScrPriv(pScreen);
+    RegionPtr	damage = &pBuf->damage;
+    PixmapPtr	pShadow = pBuf->pPixmap;
     int		nbox = REGION_NUM_RECTS (damage);
     BoxPtr	pbox = REGION_RECTS (damage);
     CARD32	*shaBase, *shaLine, *sha;
@@ -96,6 +96,7 @@ shadowUpdatePlanar4x8 (ScreenPtr	pScreen,
     FbStride	shaStride;
     int		scrBase, scrLine, scr;
     int		shaBpp;
+    int		shaXoff, shaYoff;   /* XXX assumed to be zero */
     int		x, y, w, h, width;
     int         i;
     CARD32	*winBase, *winLine, *win;
@@ -103,7 +104,7 @@ shadowUpdatePlanar4x8 (ScreenPtr	pScreen,
     int		plane;
     CARD32	m1,m2,m3,m4,m5,m6,m7,m8;
 
-    fbGetStipDrawable (&pShadow->drawable, shaBase, shaStride, shaBpp);
+    fbGetStipDrawable (&pShadow->drawable, shaBase, shaStride, shaBpp, shaXoff, shaYoff);
     while (nbox--)
     {
 	x = pbox->x1 * shaBpp;
@@ -131,13 +132,14 @@ shadowUpdatePlanar4x8 (ScreenPtr	pScreen,
 		    i = scrBase + winSize - scr;
 		    if (i <= 0 || scr < scrBase)
 		    {
-			winBase = (CARD32 *) (*pScrPriv->window) (pScreen,
-								  y,
-								  (scr << 4) | (plane),
-								  SHADOW_WINDOW_WRITE,
-								  &winSize);
+			winBase = (CARD32 *) (*pBuf->window) (pScreen,
+							      y,
+							      (scr << 4) | (plane),
+							      SHADOW_WINDOW_WRITE,
+							      &winSize,
+							      pBuf->closure);
 			if(!winBase)
-			return;
+			    return;
 			winSize >>= 2;
 			scrBase = scr;
 			i = winSize;
