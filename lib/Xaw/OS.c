@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/OS.c,v 1.1 1998/12/06 10:44:34 dawes Exp $ */
 
 /* Some OS-dependent utility code */
 
@@ -12,6 +12,8 @@
 
 #if defined(linux)
 #include <asm/page.h>	/* for PAGE_SIZE */
+#define HAS_GETPAGESIZE
+#define HAS_SC_PAGESIZE	/* _SC_PAGESIZE may be an enum for Linux */
 #endif
 
 #if defined(CSRG_BASED)
@@ -32,8 +34,13 @@ _XawGetPageSize()
 
     /* Try each supported method in the preferred order */
 
-#if defined(_SC_PAGESIZE)
+#if defined(_SC_PAGESIZE) || defined(HAS_SC_PAGESIZE)
     pagesize = sysconf(_SC_PAGESIZE);
+#endif
+
+#ifdef _SC_PAGE_SIZE
+    if (pagesize == -1)
+	pagesize = sysconf(_SC_PAGE_SIZE);
 #endif
 
 #ifdef HAS_GETPAGESIZE
