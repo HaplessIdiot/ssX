@@ -1039,7 +1039,6 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	       "VideoRAM: %d kByte (%s)\n", pScrn->videoRam, info->ram->name);
 
 				/* Flat panel (part 2) */
-    if (info->HasPanelRegs) {
 	switch (info->BIOSDisplay) {
 	case R128_BIOS_DISPLAY_FP:
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -1056,6 +1055,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	    break;
 	}
 
+    if (info->HasPanelRegs) {
 				/* Panel width/height overrides */
 	info->PanelXRes = 0;
 	info->PanelYRes = 0;
@@ -1510,9 +1510,11 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 
     if(info->isDFP) {
         R128MapMem(pScrn);
+        info->BIOSDisplay = R128_BIOS_DISPLAY_FP;
         /* validate if DFP really connected. */
         if(!R128GetDFPInfo(pScrn)) {
             info->isDFP = FALSE;
+            info->BIOSDisplay = R128_BIOS_DISPLAY_CRT;
         } else if(!info->isPro2) {
             /* RageProII doesn't support rmx, we can't use native-mode 
                stretching for other non-native modes. It will rely on
@@ -1526,7 +1528,6 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
                 
             }
         }
-        info->BIOSDisplay = R128_BIOS_DISPLAY_FP;
         R128UnmapMem(pScrn);
     }
 
