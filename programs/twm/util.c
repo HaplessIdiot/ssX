@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/util.c,v 1.6 2000/11/18 19:37:26 tsi Exp $ */
+/* $XFree86: xc/programs/twm/util.c,v 1.7 2001/01/17 23:45:08 dawes Exp $ */
 
 
 /***********************************************************************
@@ -786,24 +786,17 @@ I18N_FetchName(dpy, w, winname)
 {
     int    status;
     XTextProperty text_prop;
+    char **list;
+    int    num;
 
     status = XGetWMName(dpy, w, &text_prop);
     if (!status || !text_prop.value || !text_prop.nitems) return 0;
-    if (text_prop.encoding == XA_STRING) {
-	if (!text_prop.value) {*winname = NULL; return 0;}
-	*winname = (char *)strdup((char *)text_prop.value);
-	XFree(text_prop.value);
-	return 1;
-    } else {
-	char **list;
-	int    num;
-	status = XmbTextPropertyToTextList(dpy, &text_prop, &list, &num);
-	if (!num || !*list) return 0;
-	XFree(text_prop.value);
-	*winname = (char *)strdup(*list);
-	XFreeStringList(list);
-	return 1;
-    }
+    status = XmbTextPropertyToTextList(dpy, &text_prop, &list, &num);
+    if (status < Success || !num || !*list) return 0;
+    XFree(text_prop.value);
+    *winname = (char *)strdup(*list);
+    XFreeStringList(list);
+    return 1;
 }
 
 Status
@@ -814,24 +807,17 @@ I18N_GetIconName(dpy, w, iconname)
 {
     int    status;
     XTextProperty text_prop;
+    char **list;
+    int    num;
 	
     status = XGetWMIconName(dpy, w, &text_prop);
     if (!status || !text_prop.value || !text_prop.nitems) return 0;
-    if (text_prop.encoding == XA_STRING) {
-	if (!text_prop.value) {*iconname = NULL; return 0;}
-	*iconname = (char *)strdup((char *)text_prop.value);
-	XFree(text_prop.value);
-	return 1;
-    } else {
-	char **list;
-	int    num;
-	status = XmbTextPropertyToTextList(dpy, &text_prop, &list, &num);
-	if (!num || !*list) return 0;
-	XFree(text_prop.value);
-	*iconname = (char *)strdup(*list);
-	XFreeStringList(list);
-	return 1;
-    }
+    status = XmbTextPropertyToTextList(dpy, &text_prop, &list, &num);
+    if (status < Success || !num || !*list) return 0;
+    XFree(text_prop.value);
+    *iconname = (char *)strdup(*list);
+    XFreeStringList(list);
+    return 1;
 }
 
 /*
