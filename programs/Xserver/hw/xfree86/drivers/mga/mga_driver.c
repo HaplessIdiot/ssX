@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.246 2004/03/31 16:37:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.247tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2800,9 +2800,6 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         mode = (DisplayModePtr)mode->Private;
     }*/
     
-    /* Initialise the ModeReg values */
-    if (!vgaHWInit(pScrn, mode))
-	return FALSE;
     pScrn->vtSema = TRUE;
 
     if (!(*pMga->ModeInit)(pScrn, mode))
@@ -2838,12 +2835,6 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
                 return FALSE;
             }
         }
-    );	 /*MGA_HAL */
-    
-#endif
-
-#ifdef USEMGAHAL
-MGA_HAL(
 
     /*************************** ESC *****************************/
     TmpMgaModeInfo[0] =  *pMga->pMgaModeInfo;
@@ -2860,7 +2851,7 @@ MGA_HAL(
         MGAFillDisplayModeStruct(mode, pMga->pMgaModeInfo);  
     /*************************************************************/
 
-);	/* MGA_HAL */
+    );	/* MGA_HAL */
 #endif
 
 #ifdef XF86DRI

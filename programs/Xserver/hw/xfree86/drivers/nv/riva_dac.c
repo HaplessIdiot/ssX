@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_dac.c,v 1.1 2003/07/31 20:24:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_dac.c,v 1.2tsi Exp $ */
 
 #include "riva_include.h"
 
@@ -51,7 +51,9 @@ RivaDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaRegPtr   pVga;
 
     /*
-     * This will initialize all of the generic VGA registers.
+     * Initialize all of the generic VGA registers.  Don't bother with
+     * VGA_FIX_SYNC_PULSES, given the relevant CRTC settings are overridden
+     * below.  Ditto for the KGA workaround.
      */
     if (!vgaHWInit(pScrn, mode))
         return(FALSE);

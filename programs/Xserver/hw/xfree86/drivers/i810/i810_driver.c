@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.104 2004/06/10 13:08:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.105 2004/06/14 02:51:47 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1798,7 +1798,7 @@ I810ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     * to be blank. Restoring CRTC 3, 5, & 22 to their
     * "theoretical" values corrects the problem. KAO.
     */
-   pVga = &VGAHWPTR(pScrn)->ModeReg;
+   pVga = &hwp->ModeReg;
    pVga->CRTC[3] = (((mode->CrtcHBlankEnd >> 3) - 1) & 0x1F) | 0x80;
    pVga->CRTC[5] = ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x20) << 2)
 	 | (((mode->CrtcHSyncEnd >> 3)) & 0x1F);
@@ -1816,7 +1816,7 @@ I810ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    }
 #endif
 
-   DoRestore(pScrn, &hwp->ModeReg, &pI810->ModeReg, FALSE);
+   DoRestore(pScrn, pVga, &pI810->ModeReg, FALSE);
 
 #ifdef XF86DRI
    if (pI810->directRenderingEnabled) {
