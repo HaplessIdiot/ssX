@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.6 1995/01/28 17:08:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.7 1996/02/04 09:13:19 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -72,126 +72,12 @@
 
 	SEG_TEXT
 
-#if 0	/* Unused. The 1994 databook specifies 32-bit tranfers for 5426/8. */
-
-	ALIGNTEXT4
-
-	GLOBL GLNAME(CirrusTransferText)
-GLNAME(CirrusTransferText):
-
-	PUSH_L	(EBP)
-	MOV_L	(ESP,EBP)
-	PUSH_L	(EBX)
-	PUSH_L	(ECX)
-	PUSH_L	(ESI)
-	PUSH_L	(EDI)
-
-	XOR_L   (EDX,EDX)		/* line = 0 */
-	MOV_B	(DL,CL)			/* shift = 0 */
-	MOV_B	(glyphwidth_arg,CH)
-	MOV_L	(EDX,EAX)		/* dworddata = 0 */
-
-.line_loop:
-	CMP_L	(height_arg,EDX)
-	JGE	(.finished)
-
-	MOV_L	(glyphp_arg,EDI)	/* glyphp */
-	MOV_L	(nglyph_arg,ESI)
-	LEA_L	(REGBISD(EDI,ESI,4,0),ESI) /* &(glyphp[nglyph]) */
-
-.char_loop:
-	CMP_L	(ESI,EDI)
-	JGE 	(.line_finished)
-
-	MOV_L	(REGIND(EDI),EBX)	/* glyphp[chari] */
-	ADD_L	(CONST(4),EDI)		/* glyphp += 4 */
-	MOV_L	(REGBISD(EBX,EDX,4,0),EBX) /* data = glyphp[chari][line] */
-	SHL_L	(CL,EBX)
-	ADD_L	(EBX,EAX)		/* dworddata += data << shift */
-	ADD_B	(CH,CL)			/* shift += glyphwidth */
-	CMP_B	(CONST(16),CL)		/* shift < 16? */
-	JL	(.char_loop)
-
-	/* Write a 16-bit word. */
-	XOR_L	(EBX,EBX)
-	MOV_B	(AL,BL)
-	MOV_B	(REGOFF(BYTE_REVERSED,EBX),AL)
-	MOV_B	(AH,BL)
-	MOV_B	(REGOFF(BYTE_REVERSED,EBX),AH)
-	MOV_L	(vaddr_arg,EBX)
-	SUB_B	(CONST(16),CL)		/* shift -= 16 (blend) */
-	MOV_W	(AX,REGIND(EBX))	/* *(short)vaddr = dworddata */
-	SHR_L	(CONST(16),EAX)		/* dworddata >>= 16 */
-	JMP	(.char_loop)
-
-.line_finished:
-	INC_L	(EDX)			/* line++ */
-	AND_B	(CL,CL)
-	JZ 	(.line_loop)
-
-	/* Make sure last bits of scanline are padded to a byte boundary. */
-	ADD_B	(CONST(7),CL)
-	AND_B	(CONST(24),CL)
-	CMP_B	(CONST(16),CL)		/* extra 16-bit word to write? */
-	JL 	(.line_loop)
-
-	/* Write a 16-bit word. */
-	XOR_L	(EBX,EBX)
-	MOV_B	(AL,BL)
-	MOV_B	(REGOFF(BYTE_REVERSED,EBX),AL)
-	MOV_B	(AH,BL)
-	MOV_B	(REGOFF(BYTE_REVERSED,EBX),AH)
-	MOV_L	(vaddr_arg,EBX)
-	SUB_B	(CONST(16),CL)		/* shift -= 16 */
-	MOV_W	(AX,REGIND(EBX))	/* *(short)vaddr = dworddata */
-	SHR_L	(CONST(16),EAX)		/* dworddata >>= 16 */
-	JMP	(.line_loop)
-
-.finished:
-	/* Handle the last fews bits and alignment. */
-	XOR_L	(EBX,EBX)
-	MOV_B	(AL,BL)
-	MOV_B	(REGOFF(BYTE_REVERSED,EBX),DL)
-	MOV_B	(AH,BL)
-	MOV_B	(REGOFF(BYTE_REVERSED,EBX),DH)
-
-	/* bytes = ((nglyph * glyphwidth + 7) >> 3) * h; */
-	MOV_L	(nglyph_arg,EAX)
-	IMUL_L	(glyphwidth_arg,EAX)
-	ADD_L	(CONST(7),EAX)
-	SHR_L	(CONST(3),EAX)
-	IMUL_L	(height_arg,EAX)
-
-	AND_L	(CONST(0x000000ff),ECX)
-	ADD_B	(CONST(7),CL)
-	SHR_B	(CONST(3),CL)		/* ((shift + 7) >> 3) */
-	SUB_L	(ECX,EAX)		/* bytes - ((shift + 7) >> 3) */
-	/* Make sure we transfer a multiple of 4 bytes in total. */
-	TEST_B	(CONST(2),AL)
-	JZ	(.skipword)
-	MOV_L	(vaddr_arg,EBX)		/* write 16-bit word */
-	MOV_W	(DX,REGIND(EBX))
-	JMP	(.end)
-.skipword:
-	AND_B	(CL,CL)
-	JZ	(.end)			/* if shift != 0 */
-	MOV_L	(vaddr_arg,EBX)
-	MOV_L	(EDX,REGIND(EBX))	/* then write 32-bit word */
-
-.end:
-	POP_L	(EDI)
-	POP_L	(ESI)
-	POP_L	(ECX)
-	POP_L	(EBX)
-	POP_L	(EBP)
-	RET
-
-#endif	/* Unused. */
-
 /*
  * This is version of the above function that exclusively does 32-bit
  * transfers, as required by the 543x (also works on the 5426). It can
  * handle font widths up to 32. 
+ *
+ * September 1996: Changed to use PCI burst accesses.
  */
 
 #define bound_var	REGIND(ESP)
@@ -289,7 +175,7 @@ GLNAME(CirrusTransferText32bit):
 	MOV_L	(vaddr_arg,EBX)
 	ROL_L	(CONST(16),EAX)
 	SUB_B	(CONST(32),CL)		/* shift -= 32 (blend) */
-	MOV_L	(EAX,REGIND(EBX))	/* *vaddr = dworddata */
+	MOV_L	(EAX,REGOFF(4,EBX))	/* *vaddr = dworddata */
 	MOV_L	(CONST(0),EAX)		/* dworddata = 0 */
 	JMP	(.line_loop2)
 
@@ -313,7 +199,7 @@ GLNAME(CirrusTransferText32bit):
 	/* No need to check for alignment, multiple of 32-bit words is */
 	/* guaranteed. */
 	MOV_L	(vaddr_arg,EBX)
-	MOV_L	(EDX,REGIND(EBX))	/* write 32-bit word */
+	MOV_L	(EDX,REGOFF(4,EBX))	/* write 32-bit word */
 
 .end2:
 	ADD_L	(CONST(4),ESP)
@@ -325,244 +211,11 @@ GLNAME(CirrusTransferText32bit):
 	RET
 
 /*
- * This is a version of the 16-bit (5426/8) text transfer routine that
- * assumes 32-bit font data is stored with the leftmost pixel at the highest
- * bit (MSB First). This way the bit order reversal is not required. Fonts can
- * be 'cached' and converted to MSB in system memory, and this function can
- * then be used for writing.
- * 
- */
-
-#if 0	/* Unused. */
-
-	ALIGNTEXT4
-
-	GLOBL GLNAME(CirrusTransferTextMSB)
-GLNAME(CirrusTransferTextMSB):
-
-	PUSH_L	(EBP)
-	MOV_L	(ESP,EBP)
-	PUSH_L	(EBX)
-	PUSH_L	(ECX)
-	PUSH_L	(ESI)
-	PUSH_L	(EDI)
-
-	XOR_L   (EDX,EDX)		/* line = 0 */
-	MOV_B	(DL,CL)			/* shift = 0 */
-	MOV_B	(glyphwidth_arg,CH)
-	MOV_L	(EDX,EAX)		/* dworddata = 0 */
-
-.line_loop3:
-	CMP_L	(height_arg,EDX)
-	JGE	(.finished3)
-
-	MOV_L	(glyphp_arg,EDI)	/* glyphp */
-	MOV_L	(nglyph_arg,ESI)
-	LEA_L	(REGBISD(EDI,ESI,4,0),ESI) /* &(glyphp[nglyph]) */
-
-.char_loop3:
-	CMP_L	(ESI,EDI)
-	JGE 	(.line_finished3)
-
-	MOV_L	(REGIND(EDI),EBX)	/* glyphp[chari] */
-	ADD_L	(CONST(4),EDI)		/* glyphp += 4 */
-	MOV_L	(REGBISD(EBX,EDX,4,0),EBX) /* data = glyphp[chari][line] */
-	SHR_L	(CL,EBX)
-	ADD_L	(EBX,EAX)		/* dworddata += data >> shift */
-	ADD_B	(CH,CL)			/* shift += glyphwidth */
-	CMP_B	(CONST(16),CL)		/* shift < 16? */
-	JL	(.char_loop3)
-
-	/* Write a 16-bit word. */
-	ROL_L	(CONST(16),EAX)
-	MOV_L	(vaddr_arg,EBX)
-	XCHG_B	(AL,AH)
-	SUB_B	(CONST(16),CL)		/* shift -= 16 (blend) */
-	MOV_W	(AX,REGIND(EBX))	/* *(short)vaddr = dworddata */
-	JMP	(.char_loop3)
-
-.line_finished3:
-	INC_L	(EDX)			/* line++ */
-	AND_B	(CL,CL)
-	JZ 	(.line_loop3)
-
-	/* Make sure last bits of scanline are padded to a byte boundary. */
-	ADD_B	(CONST(7),CL)
-	AND_B	(CONST(24),CL)
-	CMP_B	(CONST(16),CL)		/* extra 16-bit word to write? */
-	JL 	(.line_loop3)
-
-	/* Write a 16-bit word. */
-	ROL_L	(CONST(16),EAX)
-	MOV_L	(vaddr_arg,EBX)
-	XCHG_B	(AL,AH)
-	SUB_B	(CONST(16),CL)		/* shift -= 16 */
-	MOV_W	(AX,REGIND(EBX))	/* *(short)vaddr = dworddata */
-	JMP	(.line_loop3)
-
-.finished3:
-	/* Handle the last fews bits and alignment. */
-	ROL_L	(CONST(16),EAX)
-	MOV_B	(AL,DH)
-	MOV_B	(AH,DL)
-	
-	/* bytes = ((nglyph * glyphwidth + 7) >> 3) * h; */
-	MOV_L	(nglyph_arg,EAX)
-	IMUL_L	(glyphwidth_arg,EAX)
-	ADD_L	(CONST(7),EAX)
-	SHR_L	(CONST(3),EAX)
-	IMUL_L	(height_arg,EAX)
-
-	AND_L	(CONST(0x000000ff),ECX)
-	ADD_B	(CONST(7),CL)
-	SHR_B	(CONST(3),CL)		/* ((shift + 7) >> 3) */
-	SUB_L	(ECX,EAX)		/* bytes - ((shift + 7) >> 3) */
-	/* Make sure we transfer a multiple of 4 bytes in total. */
-	TEST_B	(CONST(2),AL)
-	JZ	(.skipword3)
-	MOV_L	(vaddr_arg,EBX)		/* write 16-bit word */
-	MOV_W	(DX,REGIND(EBX))
-	JMP	(.end3)
-.skipword3:
-	AND_B	(CL,CL)
-	JZ	(.end3)			/* if shift != 0 */
-	MOV_L	(vaddr_arg,EBX)
-	MOV_L	(EDX,REGIND(EBX))	/* then write 32-bit word */
-
-.end3:
-	POP_L	(EDI)
-	POP_L	(ESI)
-	POP_L	(ECX)
-	POP_L	(EBX)
-	POP_L	(EBP)
-	RET
-
-#endif /* Unused. */
-
-
-/*
- * This is the MSB version of the 32-bit (5434) text transfer routine.
- */
-
-#if 0	/* Unused. */
-
-	ALIGNTEXT4
-
-	GLOBL GLNAME(CirrusTransferText32bitMSB)
-GLNAME(CirrusTransferText32bitMSB):
-
-	PUSH_L	(EBP)
-	MOV_L	(ESP,EBP)
-	PUSH_L	(EBX)
-	PUSH_L	(ECX)
-	PUSH_L	(ESI)
-	PUSH_L	(EDI)
-	SUB_L	(CONST(4),ESP)		/* one local variable */
-
-	XOR_L   (EDX,EDX)		/* line = 0 */
-	MOV_B	(CONST(0),CL)		/* shift = 0 */
-	MOV_B	(glyphwidth_arg,CH)
-	MOV_L	(EDX,EAX)		/* dworddata = 0 */
-
-.line_loop4:
-	CMP_L	(height_arg,EDX)
-	JGE	(.finished4)
-
-	MOV_L	(glyphp_arg,EDI)	/* glyphp */
-	MOV_L	(nglyph_arg,ESI)
-	LEA_L	(REGBISD(EDI,ESI,4,0),ESI) /* &(glyphp[nglyph]) */
-	MOV_L	(ESI,bound_var)
-
-.char_loop4:
-	CMP_L	(bound_var,EDI)
-	JGE 	(.line_finished4)
-
-	MOV_L	(REGIND(EDI),EBX)	/* glyphp[chari] */
-	MOV_L	(REGBISD(EBX,EDX,4,0),EBX) /* data = glyphp[chari][line] */
-	MOV_L	(EBX,ESI)
-	SHR_L	(CL,EBX)
-	ADD_L	(EBX,EAX)		/* dworddata += data >> shift */
-	ADD_B	(CH,CL)			/* shift += glyphwidth */
-	ADD_L	(CONST(4),EDI)		/* glyphp += 4 */
-	CMP_B	(CONST(32),CL)		/* shift < 32? */
-	JL	(.char_loop4)
-
-	/* At this point, overflow(data >> shift) is equal to */
-	/* ESI << (32 - (shift - glyphwidth)) */
-	MOV_B   (CL,BL)
-	SUB_B	(CH,CL)		/* shift - glyphwidth */
-	NEG_B	(CL)
-	MOV_B	(AL,BH)		/* instr. blended in -- belongs to byteswap */
-	ADD_B	(CONST(32),CL)
-	SHL_L	(CL,ESI)
-	MOV_B	(BL,CL)
-
-	/* Write a 32-bit word. */
-	MOV_B	(AH,BL)			/* do a 32-bit byteswap */
-	SHLD_L	(CONST(16),EAX,EBX)
-	XCHG_B	(BL,BH)
-
-	MOV_L	(vaddr_arg,EAX)
-	SUB_B	(CONST(32),CL)		/* shift -= 32 (blend) */
-	MOV_L	(EBX,REGIND(EAX))	/* *(short)vaddr = dworddata */
-	MOV_L	(ESI,EAX)		/* dworddata = overflow(data << shift) */
-	JMP	(.char_loop4)
-
-.line_finished4:
-	INC_L	(EDX)			/* line++ */
-	AND_B	(CL,CL)
-	JZ 	(.line_loop4)
-
-	/* Make sure last bits of scanline are padded to a byte boundary. */
-	ADD_B	(CONST(7),CL)
-	AND_B	(CONST(56),CL)
-	CMP_B	(CONST(32),CL)		/* extra 32-bit word to write? */
-	JL 	(.line_loop4)
-
-	/* Write a 32-bit word. */
-	/* First do a 32-bit byteswap. Btw. there is an i486 instruction */
-	/* that does exactly that, but the 386 doesn't have it. */
-	MOV_B	(AL,BH)
-	MOV_B	(AH,BL)
-	SHLD_L	(CONST(16),EAX,EBX)
-	XCHG_B	(BL,BH)
-
-	MOV_L	(vaddr_arg,EAX)
-	SUB_B	(CONST(32),CL)		/* shift -= 32 (blend) */
-	MOV_L	(EBX,REGIND(EAX))	/* *vaddr = dworddata */
-	MOV_L	(CONST(0),EAX)		/* dworddata = 0 */
-	JMP	(.line_loop4)
-
-.finished4:
-	/* Handle the last fews bits and alignment. */
-	TEST_B	(CL,CL)
-	JZ	(.end4)
-	MOV_B	(AL,DH)			/* do a 32-bit byteswap */
-	MOV_B	(AH,DL)
-	SHLD_L	(CONST(16),EAX,EDX)
-	XCHG_B	(DL,DH)
-
-	/* No need to check for alignment, multiple of 32-bit words is */
-	/* guaranteed. */
-	MOV_L	(vaddr_arg,EBX)
-	MOV_L	(EDX,REGIND(EBX))	/* write 32-bit word */
-
-.end4:
-	ADD_L	(CONST(4),ESP)
-	POP_L	(EDI)
-	POP_L	(ESI)
-	POP_L	(ECX)
-	POP_L	(EBX)
-	POP_L	(EBP)
-	RET
-
-#endif	/* Unused. */
-
-
-/*
  * This a 32-bit transfer function that checks for special font widths,
  * with fontwidth-specific routines that write stretches of characters
  * efficiently.
+ *
+ * September 1996: Changed to use PCI burst accesses.
  */
 
 #define stretchsize_var REGIND(ESP)
@@ -909,7 +562,7 @@ GLNAME(CirrusTransferText32bitSpecial):
 	SHL_L	(CONST(18),ECX)		/* (byte6 & 0xc0) << 18 */
 	ADD_L	(ECX,EAX)
 	MOV_L	(vaddr_arg,ECX)
-	MOV_L	(EAX,REGIND(ECX))	/* Write dword. */
+	MOV_L	(EAX,REGOFF(4,ECX))	/* Write dword. */
 
 	AND_B	(CONST(0x3c),BL)
 	SHL_L	(CONST(2),EBX)		/* (byte6 & 0x3c) << 2 */
@@ -959,7 +612,7 @@ GLNAME(CirrusTransferText32bitSpecial):
 	SHL_L	(CONST(20),ECX)		/* (byte11 & 0xf0) << 20 */
 	ADD_L	(ECX,EAX)
 	MOV_L	(vaddr_arg,ECX)
-	MOV_L	(EAX,REGIND(ECX))	/* Write dword. */
+	MOV_L	(EAX,REGOFF(8,ECX))	/* Write dword. */
 
 	/* get two bits */
 	AND_B	(CONST(0x0c),BL)
@@ -1011,7 +664,7 @@ GLNAME(CirrusTransferText32bitSpecial):
 	ADD_L	(ECX,EAX)
 	MOV_L	(vaddr_arg,EBX)
 	CMP_L	(CONST(16),ESI)		/* blend */
-	MOV_L	(EAX,REGIND(EBX))	/* Write dword. */
+	MOV_L	(EAX,REGOFF(12,EBX))	/* Write dword. */
 
 	JGE	(.width6loop)
 
@@ -1066,7 +719,7 @@ GLNAME(CirrusTransferText32bitSpecial):
 	SHL_L	(CONST(18),EBX)		/* (byte6 & 0xc0) << 18 */
 	ADD_L	(EBX,EAX)
 	MOV_L	(vaddr_arg,EBX)
-	MOV_L	(EAX,REGIND(EBX))	/* Write dword. */
+	MOV_L	(EAX,REGOFF(16,EBX))	/* Write dword. */
 
 	MOV_L	(ECX,EAX)
 	SHR_L	(CONST(2),EAX)
@@ -1107,7 +760,7 @@ GLNAME(CirrusTransferText32bitSpecial):
 	MOV_B	(REGOFF(BYTE_REVERSED,EBX),AH)
 	MOV_L	(vaddr_arg,EBX)
 	ROL_L	(CONST(16),EAX)
-	MOV_L	(EAX,REGIND(EBX))	/* Write dword. */
+	MOV_L	(EAX,REGOFF(4,EBX))	/* Write dword. */
 
 	SHR_L	(CONST(4),ECX)
 	MOV_L	(ECX,EAX)
@@ -1133,7 +786,7 @@ GLNAME(CirrusTransferText32bitSpecial):
 	MOV_B	(REGOFF(BYTE_REVERSED,EBX),AH)
 	MOV_L	(vaddr_arg,EBX)
 	ROL_L	(CONST(16),EAX)
-	MOV_L	(EAX,REGIND(EBX))	/* Write dword. */
+	MOV_L	(EAX,REGOFF(8,EBX))	/* Write dword. */
 
 	SHR_L	(CONST(8),ECX)
 	MOV_L	(ECX,EAX)

@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.36 1996/08/26 10:49:51 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.37 1996/09/03 06:38:57 dawes Exp $
 
 #Chips & Technologies
 
@@ -101,6 +101,17 @@ LINE     #MemBase 0x02000000		# VLB card that maps to 32Mb
 LINE     #MemBase 0xa0000000		# PCI card that maps to 2560Mb
 LINE     #Option "linear"
 
+NAME Cirrus Logic GD544x
+CHIPSET CL-GD544x
+SERVER SVGA
+NOCLOCKPROBE
+
+NAME Creative Labs Graphics Blaster MA201
+SEE Cirrus Logic GD544x
+
+NAME Creative Labs Graphics Blaster MA202
+SEE Cirrus Logic GD544x
+
 #tested
 NAME Cirrus Logic GD546x
 CHIPSET CL-GD546x
@@ -164,7 +175,7 @@ SEE Cirrus Logic GD543x
 
 NAME STB Nitro 64
 CHIPSET CL-GD5446
-SEE Cirrus Logic GD543x
+SEE Cirrus Logic GD5446
 
 NAME STB Horizon
 CHIPSET CL-GD5426/28
@@ -510,6 +521,9 @@ SEE S3-Trio64V+ (generic)
 NAME VideoLogic GrafixStar 300
 SEE S3-Trio64 (generic)
 
+NAME 2 the Max MAXColor S3 Trio64V+
+SEE S3-Trio64V+ (generic)
+
 # S3-964/968
 
 NAME S3-964 (generic)
@@ -779,6 +793,7 @@ CHIPSET ET6000
 SERVER W32
 
 NAME Diamond Stealth 32
+CLOCKCHIP icd2061a
 SEE ET4000/W32, W32i, W32p (generic)
 
 NAME Cardex Cobra
@@ -798,15 +813,12 @@ NAME Genoa 8900 Phantom 32i
 SEE ET4000/W32, W32i, W32p (generic)
 
 NAME Hercules Dynamite Power
+CLOCKCHIP ics5341
 SEE ET4000/W32, W32i, W32p (generic)
 
 NAME Hercules Dynamite Pro
-CHIPSET ET4000/W32i/p
-SERVER W32
-LINE     #Chipset "et4000w32"
-LINE     #Probable clocks:
-LINE     #Clocks 25 28.32 32.4 35.9 39.9 44.7 31.4 37.5
-LINE     #Clocks 50.0 56.5 64.9 71.9 79.9 89.6 62.8 74.8
+CLOCKCHIP ics5341
+SEE ET4000/W32, W32i, W32p (generic)
 
 NAME LeadTek WinFast S200
 SEE ET4000/W32, W32i, W32p (generic)
@@ -821,6 +833,14 @@ NAME TechWorks Thunderbolt
 SEE ET4000/W32, W32i, W32p (generic)
 
 NAME ViewTop PCI
+SEE ET4000/W32, W32i, W32p (generic)
+
+NAME SNI PC5H W32
+CLOCKCHIP stg1703
+SEE ET4000/W32, W32i, W32p (generic)
+
+NAME SNI Scenic W32
+CLOCKCHIP stg1703
 SEE ET4000/W32, W32i, W32p (generic)
 
 NAME Hercules Dynamite 128/Video
@@ -1113,17 +1133,38 @@ SERVER SVGA
 
 # ARK Logic
 
-NAME Hercules Stingray Pro
+NAME Ark Logic ARK1000PV (generic)
 CHIPSET ARK1000PV
 SERVER SVGA
 
-NAME Hercules Stingray 64
-CHIPSET ARK2000PV
+# For now, treat the VL as a PV.  This may be changed later
+NAME Ark Logic ARK1000VL (generic)
+CHIPSET ARK1000VL
+LINE Chipset "ark1000pv"
 SERVER SVGA
+
+NAME Ark Logic ARK2000PV (generic)
+CHIPSET ARK1000PV
+SERVER SVGA
+
+NAME Ark Logic ARK2000MT (generic)
+CHIPSET ARK1000MT
+SERVER SVGA
+
+NAME Hercules Stingray Pro
+SEE Ark Logic ARK1000PV (generic)
+
+NAME Ocean (octek) VL-VGA-1000
+RAMDAC "att20c490"
+SEE Ark Logic ARK1000VL (generic)
+
+NAME Hercules Stingray 64
+SEE Ark Logic ARK2000PV (generic)
 
 NAME Diamond Stealth64 Graphics 2001 series
 CHIPSET ARK2000PV
 SERVER SVGA
+RAMDAC ics5342
 
 # Oak
 

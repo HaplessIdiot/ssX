@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.9 1996/02/04 09:13:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.10 1996/08/10 13:08:10 dawes Exp $ */
 /*
  
 
@@ -150,7 +150,7 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
        else			/* Screen -> Mem */
 	    {
 /*	    if(NoCirrus || !HAVEBITBLTENGINE() || HAVE543X() || 
-               cirrusChip == CLGD5446) */
+               HAVE754X() || cirrusChip == CLGD5446) */
 	    if (1)	/* ImageRead is unreliable. */
 		 {
 		 fnp = vgaImageRead;

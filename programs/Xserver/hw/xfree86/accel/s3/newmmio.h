@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.2 1996/08/24 12:51:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.3 1996/08/27 03:13:22 dawes Exp $ */
 /***************************************************************************
  * 
  * typedefs and macros for old and new MMIO mode, Trio64V+ and 868/968
@@ -7,6 +7,10 @@
  *	BL	0300296	0.1
  ***************************************************************************/
 
+/* base for S3_OUTW macro  */
+#define S3_NEWMMIO_REGBASE	0x1000000  /* 16MB */
+#define S3_NEWMMIO_REGSIZE	  0x10000  /* 64KB */
+
 #ifdef S3_NEWMMIO
 #include <Xmd.h>
 
@@ -14,8 +18,6 @@
 #define int16	CARD16
 #define int32	CARD32
 
-/* base for S3_OUTW macro  */
-#define S3_NEWMMIO_REGBASE	0x1000000
 #define S3_NEWMMIO_VGABASE	(S3_NEWMMIO_REGBASE + 0x8000)
 
 typedef struct { int16 vendor_ID; int16 device_ID; } pci_id;
@@ -169,7 +171,6 @@ typedef struct {
 } lpbus_regs; 
 
 typedef struct {
-        unsigned char mem[S3_NEWMMIO_REGBASE];
         unsigned char img[0x8000];
         union { pci_conf_regs regs; 
                 char dummy[0x100]; 
@@ -207,35 +208,35 @@ typedef struct {
 #define mmtr	mm_trio_regs *
 
 
-#define SET_WRT_MASK(msk)	((mmtr)s3VideoMem)->pk_enh_regs.regs.wrt_mask = (msk)
-#define SET_RD_MASK(msk)	((mmtr)s3VideoMem)->pk_enh_regs.regs.rd_mask  = (msk)
-#define SET_FRGD_COLOR(col)	((mmtr)s3VideoMem)->pk_enh_regs.regs.frgd_color = (col)
-#define SET_BKGD_COLOR(col)	((mmtr)s3VideoMem)->pk_enh_regs.regs.bkgd_color = (col)
-#define SET_FRGD_MIX(fmix)	((mmtr)s3VideoMem)->enh_regs.regs.fore_mix = (fmix)
-#define SET_BKGD_MIX(bmix)	((mmtr)s3VideoMem)->enh_regs.regs.back_mix = (bmix)
-#define SET_PIX_CNTL(val)	((mmtr)s3VideoMem)->pk_enh_regs.regs.pix_mult = (val) | (MULT_MISC2 << 16)
-#define SET_MIN_AXIS_PCNT(min)	((mmtr)s3VideoMem)->enh_regs.regs.r_reg_data = (min) & 0xffff
-#define SET_MAJ_AXIS_PCNT(maj)	((mmtr)s3VideoMem)->enh_regs.regs.mj_ax_pcnt = (maj)
-#define SET_CURPT(c_x, c_y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.cur_point = ((c_y)&0xffff) | ((c_x) << 16)
-#define SET_CUR_X(c_x)		((mmtr)s3VideoMem)->enh_regs.regs.cur_x = (c_x)
-#define SET_CUR_Y(c_y)		((mmtr)s3VideoMem)->cur_y = (c_y)
-#define SET_DESTSTP(x,y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.dest_stp = ((y)&0xffff) | ((x) << 16)
-#define SET_AXIS_PCNT(maj, min)	((mmtr)s3VideoMem)->pk_enh_regs.regs.axis_pcnt = ((min)&0xffff) | ((maj) << 16)
-#define SET_CMD(c_d) 		{ mem_barrier(); ((mmtr)s3VideoMem)->pk_enh_regs.regs.command = (c_d); }
-#define SET_ERR_TERM(e)		((mmtr)s3VideoMem)->pk_enh_regs.regs.err_term = (e)
+#define SET_WRT_MASK(msk)	((mmtr)s3MmioMem)->pk_enh_regs.regs.wrt_mask = (msk)
+#define SET_RD_MASK(msk)	((mmtr)s3MmioMem)->pk_enh_regs.regs.rd_mask  = (msk)
+#define SET_FRGD_COLOR(col)	((mmtr)s3MmioMem)->pk_enh_regs.regs.frgd_color = (col)
+#define SET_BKGD_COLOR(col)	((mmtr)s3MmioMem)->pk_enh_regs.regs.bkgd_color = (col)
+#define SET_FRGD_MIX(fmix)	((mmtr)s3MmioMem)->enh_regs.regs.fore_mix = (fmix)
+#define SET_BKGD_MIX(bmix)	((mmtr)s3MmioMem)->enh_regs.regs.back_mix = (bmix)
+#define SET_PIX_CNTL(val)	((mmtr)s3MmioMem)->pk_enh_regs.regs.pix_mult = (val) | (MULT_MISC2 << 16)
+#define SET_MIN_AXIS_PCNT(min)	((mmtr)s3MmioMem)->enh_regs.regs.r_reg_data = (min) & 0xffff
+#define SET_MAJ_AXIS_PCNT(maj)	((mmtr)s3MmioMem)->enh_regs.regs.mj_ax_pcnt = (maj)
+#define SET_CURPT(c_x, c_y)	((mmtr)s3MmioMem)->pk_enh_regs.regs.cur_point = ((c_y)&0xffff) | ((c_x) << 16)
+#define SET_CUR_X(c_x)		((mmtr)s3MmioMem)->enh_regs.regs.cur_x = (c_x)
+#define SET_CUR_Y(c_y)		((mmtr)s3MmioMem)->cur_y = (c_y)
+#define SET_DESTSTP(x,y)	((mmtr)s3MmioMem)->pk_enh_regs.regs.dest_stp = ((y)&0xffff) | ((x) << 16)
+#define SET_AXIS_PCNT(maj, min)	((mmtr)s3MmioMem)->pk_enh_regs.regs.axis_pcnt = ((min)&0xffff) | ((maj) << 16)
+#define SET_CMD(c_d) 		{ mem_barrier(); ((mmtr)s3MmioMem)->pk_enh_regs.regs.command = (c_d); }
+#define SET_ERR_TERM(e)		((mmtr)s3MmioMem)->pk_enh_regs.regs.err_term = (e)
 #define SET_SCISSORS(x1,y1,x2,y2) {\
-				((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_topleft  = ((y1)&0xffff) | ((x1) << 16);\
-				((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_botright = ((y2)&0xffff) | ((x2) << 16);\
+				((mmtr)s3MmioMem)->pk_enh_regs.regs.sciss_topleft  = ((y1)&0xffff) | ((x1) << 16);\
+				((mmtr)s3MmioMem)->pk_enh_regs.regs.sciss_botright = ((y2)&0xffff) | ((x2) << 16);\
 				}
-#define SET_SCISSORS_RB(x,y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_botright = ((y)&0xffff) | ((x) << 16)
-#define SET_MULT_MISC(val)	((mmtr)s3VideoMem)->pk_enh_regs.regs.mult_misc = (val)
+#define SET_SCISSORS_RB(x,y)	((mmtr)s3MmioMem)->pk_enh_regs.regs.sciss_botright = ((y)&0xffff) | ((x) << 16)
+#define SET_MULT_MISC(val)	((mmtr)s3MmioMem)->pk_enh_regs.regs.mult_misc = (val)
 
 /*
  * reads from GP_STAT
  */
 #if !defined(__alpha__)
-#define INB_GP_STAT() 	((((mmtr)s3VideoMem)->enh_regs.regs.gp_stat) & 0xff)
-#define INW_GP_STAT() 	((((mmtr)s3VideoMem)->enh_regs.regs.gp_stat))
+#define INB_GP_STAT() 	((((mmtr)s3MmioMem)->enh_regs.regs.gp_stat) & 0xff)
+#define INW_GP_STAT() 	((((mmtr)s3MmioMem)->enh_regs.regs.gp_stat))
 #else
 #define INB_GP_STAT() 	inb(GP_STAT)
 #define INW_GP_STAT() 	inw(GP_STAT)

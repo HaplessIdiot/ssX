@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.13 1996/08/13 11:29:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.14 1996/08/18 01:47:47 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -36,9 +36,10 @@
 extern char *xf86VisualNames[];
 extern int defaultColorVisualClass;
 
-static Bool i128ValidMode(
+int i128ValidMode(
 #if NeedFunctionPrototypes
-    DisplayModePtr
+    DisplayModePtr,
+    Bool
 #endif
 ); 
 
@@ -50,7 +51,7 @@ ScrnInfoRec i128InfoRec =
    -1,				/* int scrnIndex */
    i128Probe,			/* Bool (* Probe)() */
    i128Initialize,		/* Bool (* Init)() */
-   i128ValidMode,		/* void (* ValidMode)() */
+   i128ValidMode,		/* int (* ValidMode)() */
    i128EnterLeaveVT,		/* void (* EnterLeaveVT)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -211,11 +212,11 @@ i128Probe()
    int Num_I128_IOPorts = 2;
    unsigned char n, m, p, mdc;
    float mclk;
-   struct pci_config_reg *pcrp;
+   pciConfigPtr pcrp, *pcrpp;
 
-   xf86scanpci(i128InfoRec.scrnIndex);
+   pcrpp = xf86scanpci(i128InfoRec.scrnIndex);
    i = 0;
-   while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
+   while ((pcrp = pcrpp[i]) != (pciConfigPtr)NULL) {
       if ((pcrp->_device_vendor == I128_DEVICE_ID1) ||
           (pcrp->_device_vendor == I128_DEVICE_ID2))
         break;
@@ -942,9 +943,10 @@ int freq;
  * i128ValidMode --
  *
  */
-static Bool
-i128ValidMode(mode)
+static int
+i128ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: sigmadriv.c,v 1.2 95/06/19 18:14:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.2 1996/02/04 09:09:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/sigma/sigmadriv.c,v 3.3 1996/02/20 14:34:50 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -286,6 +286,10 @@ SIGMAProbe()
    monoInfoRec.virtualY = SIGMA_VDISPLAY;
    /* Must return real display size */
    /* hardcoded in SIGMA */
+
+   /* N.B.: Inform the code above that the framebuffer is banked */
+   monoInfoRec.bankedMono = TRUE;
+
    return(TRUE);
 }
 

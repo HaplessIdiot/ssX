@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.9 1996/03/29 22:17:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.10 1996/06/29 09:08:32 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -111,7 +111,7 @@ static char *	CL64XXIdent();
 static Bool	CL64XXClockSelect();
 static void	CL64XXEnterLeave();
 static Bool	CL64XXInit();
-static Bool	CL64XXValidMode();
+static int	CL64XXValidMode();
 static void *	CL64XXSave();
 static void	CL64XXRestore();
 static void	CL64XXAdjust();
@@ -1141,10 +1141,11 @@ int x, y;
  * CL64XXValidMode --
  *
  */
-static Bool
-CL64XXValidMode(mode)
+static int
+CL64XXValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 

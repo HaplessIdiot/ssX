@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32line.c,v 3.2 1995/01/28 15:50:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32line.c,v 3.3 1996/01/05 06:28:30 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -242,7 +242,7 @@ W32LineSS (pDrawable, pGC, mode, npt, pptInit)
 			if (y1t != y2t)
 			{
 			    WAIT_XY
-			    W32_INIT_BOX(alu, PFILL(pGC->planemask),
+			    W32_INIT_BOX(pGC->alu, PFILL(pGC->planemask),
 					 PFILL(pGC->fgPixel),
 					 (nlwidth << 2) - 1)
 			    W32_BOX(y1t * (nlwidth << 2) + x1, 1, y2t - y1t)
@@ -315,7 +315,7 @@ W32LineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (x1t != x2t)
 		    {
 			WAIT_XY
-			W32_INIT_BOX(alu, PFILL(pGC->planemask),
+			W32_INIT_BOX(pGC->alu, PFILL(pGC->planemask),
 				     PFILL(pGC->fgPixel), 0)
 			W32_BOX(y1 * (nlwidth << 2) + x1t, x2t - x1t, 1)
 		    }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.30 1996/08/13 11:29:29 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.31 1996/08/18 01:47:44 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -58,7 +58,7 @@ ScrnInfoRec vga256InfoRec = {
   -1,			/* int scrnIndex */
   vgaProbe,		/* Bool (* Probe)() */
   vgaScreenInit,	/* Bool (* Init)() */
-  vgaValidMode,		/* Bool (* ValidMode)() */
+  vgaValidMode,		/* int (* ValidMode)() */
   vgaEnterLeaveVT,	/* void (* EnterLeaveVT)() */
   (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
   (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -135,7 +135,8 @@ Bool (* vgaInitFunc)(
 ) = (Bool (*)())NoopDDA;
 Bool (* vgaValidModeFunc)(
 #if NeedFunctionPrototypes
-    DisplayModePtr
+    DisplayModePtr,
+    Bool
 #endif
 ) = (Bool (*)())NoopDDA;
 void * (* vgaSaveFunc)(
@@ -837,16 +838,10 @@ vgaSwitchMode(mode)
  *     Validate a mode for VGA architecture. Also checks the chip driver
  *     to see if the mode can be supported.
  */
-Bool
-vgaValidMode(mode)
+int
+vgaValidMode(mode, verbose)
      DisplayModePtr mode;
+     Bool verbose;
 {
-  if ((vgaValidModeFunc)(mode))
-  {
-    return(TRUE);
-  }
-  else
-  {
-    return(FALSE);
-  }
+  return (vgaValidModeFunc)(mode, verbose);
 }

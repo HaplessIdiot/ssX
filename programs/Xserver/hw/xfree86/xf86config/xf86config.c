@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.31 1996/05/11 12:03:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.32 1996/08/20 12:30:35 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1728,9 +1728,10 @@ skipramdacselection:
 #endif
 		/* compose a line with the real path */
 #ifndef __EMX__
-		strcpy(syscmdline,
-		       "X -probeonly -pn -xf86config "
-		       TEMPORARY_XF86CONFIG_FILENAME " 2>" DUMBCONFIG2);
+		sprintf(syscmdline,
+		       "XF86_%s -probeonly -pn -xf86config "
+		       TEMPORARY_XF86CONFIG_FILENAME " 2>" DUMBCONFIG2,
+		       card[card_selected].server);
 #else
 		/* OS/2 does not have symlinks, so "X" does not exist,
 		 * call the real X server

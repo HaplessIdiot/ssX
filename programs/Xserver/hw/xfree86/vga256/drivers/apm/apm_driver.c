@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.0 1996/09/01 04:47:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.1 1996/09/03 15:12:59 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -80,7 +80,7 @@ static char *   ApmIdent();
 static Bool     ApmClockSelect();
 static void     ApmEnterLeave();
 static Bool     ApmInit();
-static Bool	ApmValidMode();
+static int	ApmValidMode();
 static void *   ApmSave();
 static void     ApmRestore();
 static void     ApmAdjust();
@@ -989,17 +989,19 @@ int x, y;
  * ApmValidMode --
  *
  */
-static Bool
-ApmValidMode(mode)
+static int
+ApmValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
 	/* Check for CRTC timing bits overflow. */
 	if (mode->VTotal > 2047) {
+	    if (verbose)
 		ErrorF("%s %s: %s: Vertical mode timing overflow (%d)\n",
 			XCONFIG_PROBED, vga256InfoRec.name,
 			vga256InfoRec.chipset, mode->VTotal);
-		return FALSE;
+	    return MODE_BAD;
 	}
 
-	return TRUE;
+	return MODE_OK;
 }

@@ -1,4 +1,5 @@
 // $XConsortium: se /main/2 1995/12/07 21:43:26 kaleb $
+// $XFree86$
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -42,9 +43,14 @@ xkb_symbols "basic" {
     modifier_map Control{ Control_L };
     modifier_map Mod3   { Mode_switch };
 };
+
+partial alphanumeric_keys 
+xkb_symbols "Sundeadkeys" {
+    include "se(basic)" // for consistent naming
+};
+
 partial alphanumeric_keys 
 xkb_symbols "nodeadkeys" {
     include "se(basic)" // for consistent naming
 };
-
 

@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.9 1996/06/10 09:15:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.10 1996/06/29 09:08:12 dawes Exp $
  */
 
 #include "X.h"
@@ -76,7 +76,7 @@ static Bool     LegendClockSelect();
  */
 static void     ALIEnterLeave();
 static Bool     ALIInit();	/* 2nd most important routine */
-static Bool     ALIValidMode();
+static int      ALIValidMode();
 static void *   ALISave();
 static void     ALIRestore();
 static void     ALIAdjust();
@@ -591,11 +591,12 @@ ALIAdjust(x, y)
  * ALIValidMode --
  *
  */
-static Bool
-ALIValidMode(mode)
+static int
+ALIValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 
 

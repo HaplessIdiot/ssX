@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.11 1996/06/29 09:08:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.12 1996/09/01 04:47:36 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -205,7 +205,7 @@ static char *   ArkIdent();
 static Bool     ArkClockSelect();
 static void     ArkEnterLeave();
 static Bool     ArkInit();
-static Bool	ArkValidMode();
+static int	ArkValidMode();
 static void *   ArkSave();
 static void     ArkRestore();
 static void     ArkAdjust();
@@ -1669,23 +1669,26 @@ int x, y;
  * ArkValidMode --
  *
  */
-static Bool
-ArkValidMode(mode)
+static int
+ArkValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
 	/* Check for CRTC timing bits overflow. */
 	if (mode->HTotal > 4088) {
+	    if (verbose)
 		ErrorF("%s %s: %s: Horizontal mode timing overflow (%d)\n",
 			XCONFIG_PROBED, vga256InfoRec.name,
 			vga256InfoRec.chipset, mode->HTotal);
-		return FALSE;
+	    return MODE_BAD;
 	}
 	if (mode->VTotal > 2047) {
+	    if(verbose)
 		ErrorF("%s %s: %s: Vertical mode timing overflow (%d)\n",
 			XCONFIG_PROBED, vga256InfoRec.name,
 			vga256InfoRec.chipset, mode->VTotal);
-		return FALSE;
+	    return MODE_BAD;
 	}
 
-	return TRUE;
+	return MODE_OK;
 }

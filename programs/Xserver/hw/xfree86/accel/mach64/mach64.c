@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.50 1996/08/18 01:49:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.51 1996/09/01 04:15:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -89,9 +89,10 @@ extern char *xf86VisualNames[];
 int mach64PixmapIndex;
 #endif
 
-static Bool mach64ValidMode(
+static int mach64ValidMode(
 #if NeedFunctionPrototypes
-    DisplayModePtr
+    DisplayModePtr,
+    Bool
 #endif
 ); 
 
@@ -101,7 +102,7 @@ ScrnInfoRec mach64InfoRec = {
     -1,			/* int scrnIndex */
     mach64Probe,      	/* Bool (* Probe)() */
     mach64Initialize,	/* Bool (* Init)() */
-    mach64ValidMode,	/* Bool (* ValidMode)() */
+    mach64ValidMode,	/* int (* ValidMode)() */
     mach64EnterLeaveVT, /* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -555,12 +556,12 @@ static ATIPCIInformation *
 GetATIPCIInformation()
 {
     static ATIPCIInformation info = { 0, };
-    struct pci_config_reg *pcrp;
+    pciConfigPtr pcrp, *pcrpp;
     Bool found = FALSE;
     int i = 0;
 
-    xf86scanpci(mach64InfoRec.scrnIndex);
-    while (pcrp = pci_devp[i]) {
+    pcrpp = xf86scanpci(mach64InfoRec.scrnIndex);
+    while (pcrp = pcrpp[i]) {
 	if (pcrp->_vendor == PCI_ATI_VENDOR_ID) {
 	    found = TRUE;
 	    switch (pcrp->_device) {
@@ -586,7 +587,7 @@ GetATIPCIInformation()
 		info.ChipType = MACH64_UNKNOWN;
 		break;
 	    }
-	    info.ChipRev = pcrp->_class_revision & 0xFF;
+	    info.ChipRev = pcrp->_rev_id;
 	    info.ApertureBase = pcrp->_base0;
 	    /*
 	     * The docs say check (pcrp->_user_config_0 & 0x04) for BlockIO
@@ -606,7 +607,8 @@ GetATIPCIInformation()
 		    ErrorF("Setting bit 0x04 in PCI userconfig for card %d\n",
 			   pcrp->_cardnum);
 #endif
-		    xf86writepci(mach64InfoRec.scrnIndex, pcrp->_cardnum,
+		    xf86writepci(mach64InfoRec.scrnIndex, pcrp->_bus,
+			pcrp->_cardnum, pcrp->_func,
 			PCI_REG_USERCONFIG, 0x04, 0x04);
 		}
 	    } else {
@@ -1955,9 +1957,10 @@ mach64SwitchMode(mode)
  * mach64ValidMode --
  *
  */
-static Bool
-mach64ValidMode(mode)
+static int
+mach64ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }

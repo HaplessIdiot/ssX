@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.6 1996/02/04 09:00:49 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32vars.c,v 3.7 1996/08/13 11:29:35 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -108,6 +108,9 @@ long W32Foreground;
 long W32Background;
 long W32Pattern;
 long W32Mix;
+long W32MixPong;
+long MixDstPing;
+long MixDstPong;
 
 long W32BltCount;
 long W32BltHop;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32blt.h,v 3.4 1996/02/04 09:00:43 dawes Exp $ */  
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32blt.h,v 3.5 1996/08/13 11:29:31 dawes Exp $ */  
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -49,7 +49,7 @@ glenn@cs.utexas.edu)
 	*ACL_PATTERN_ADDRESS			= W32Pattern; \
 	*MBP0 					= W32Pattern; \
 	*(LongP)W32Buffer 			= MASK; \
-	if (W32p) \
+	if (W32p || W32et6000) \
 	    *ACL_PATTERN_WRAP			= 0x02; \
 	else \
 	{ \
@@ -91,7 +91,7 @@ if (((X) | (Y) != 0)) \
 	*ACL_PATTERN_ADDRESS			= W32Pattern; \
 	*MBP0 					= W32Pattern; \
 	*(LongP)W32Buffer 			= MASK; \
-	if (W32p) \
+	if (W32p || W32et6000) \
 	    *ACL_PATTERN_WRAP			= 0x02; \
 	else \
 	{ \

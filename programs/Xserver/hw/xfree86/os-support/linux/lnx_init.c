@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.4 1996/02/04 09:10:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.5 1996/08/18 01:51:36 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -150,13 +150,6 @@ void xf86OpenConsole()
 		ioctl(i, TIOCNOTTY, 0);
 		close(i);
 	    }
-#ifdef USE_DEV_FB
-	    /* set the controling tty to the new vc */
-	    setsid();
-	    if (ioctl(xf86Info.consoleFd, TIOCSCTTY)) {
-		ErrorF("xf86OpenConsole: TIOCSCTTY failed\n");
-	    }
-#endif
 	}
 
 	/*

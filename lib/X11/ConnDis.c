@@ -1,5 +1,5 @@
-/* $XConsortium: ConnDis.c /main/113 1996/08/19 08:48:39 kaleb $ */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.10 1996/05/10 06:55:06 dawes Exp $ */
+/* $XConsortium: ConnDis.c /main/114 1996/09/06 17:12:49 kaleb $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.11 1996/09/01 04:13:53 dawes Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -289,9 +289,9 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
      */
 
     {
-	int olen = 3 + pprotocol ? strlen(pprotocol) : 0 + 
-		       phostname ? strlen(phostname) : 0 + 
-		       pdpynum   ? strlen(pdpynum)   : 0;
+	int olen = 3 + (pprotocol ? strlen(pprotocol) : 0) + 
+		       (phostname ? strlen(phostname) : 0) + 
+		       (pdpynum   ? strlen(pdpynum)   : 0);
 	if (olen > sizeof addrbuf) address = Xmalloc (olen);
     }
 

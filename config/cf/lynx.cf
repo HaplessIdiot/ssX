@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.6 1996/08/10 13:02:04 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.7 1996/08/16 12:25:00 dawes Exp $
 
 #ifdef i386Architecture
 # define OSName			LynxOS AT
@@ -124,9 +124,9 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.6 1996/08/10 13:02:04 dawes 
 #define LdCombineFlags		-r
 #if HasGcc2
 # ifdef i386Architecture
-#  define OptimizedCDebugFlags	-O -m486
+#  define OptimizedCDebugFlags	-m486 DefaultGcc2i386Opt
 # else
-#  define OptimizedCDebugFlags	-O
+#  define OptimizedCDebugFlags	-O2
 # endif
 #else
 # define OptimizedCDebugFlags	-O
@@ -284,6 +284,8 @@ install.man:: list                                                      @@\
 #endif
 #endif
 
-#ifdef i386Architecture
-# include <xfree86.cf>
+#ifndef i386Architecture
+# define BuildXF86DGA NO
 #endif
+
+#include <xfree86.cf>

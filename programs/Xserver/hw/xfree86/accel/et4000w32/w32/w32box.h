@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32box.h,v 3.5 1996/02/04 09:00:44 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32box.h,v 3.6 1996/08/13 11:29:32 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -21,10 +21,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 Glenn G. Lai
-P.O. Box 4314
-Austin, Tx 78765
-glenn@cs.utexas.edu)
+glennlai@netcom.com
 4/6/94
+8/14/96
 *******************************************************************************/
 /* $XConsortium: w32box.h /main/4 1995/11/12 16:37:44 kaleb $ */
 
@@ -68,9 +67,23 @@ glenn@cs.utexas.edu)
 }
 
 
+#define W32_INIT_HLINE(OP, MASK, COLOR) \
+	W32_INIT_BOX(OP, MASK, COLOR, 0) \
+	*ACL_Y_COUNT = 0;
+
+
+#define W32_HLINE(DST, X) \
+{ \
+    if ((X) != 0) \
+    { \
+	*ACL_X_COUNT = (X - 1) * (PSZ >> 3); \
+	START_ACL(DST) \
+    } \
+}
+
 #define W32_BOX(DST, X, Y) \
 { \
-    if (((X) | (Y) != 0)) \
+    if (((X) | (Y)) != 0) \
     { \
 	SET_XY(X, Y) \
 	START_ACL(DST) \

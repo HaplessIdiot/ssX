@@ -1,5 +1,5 @@
 /* $XConsortium: gen_driver.c /main/6 1996/01/12 12:17:12 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.10 1996/03/29 22:17:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.11 1996/06/29 09:08:47 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -81,7 +81,7 @@ static char *   GenericIdent();
 static Bool     GenericClockSelect();
 static void     GenericEnterLeave();
 static Bool     GenericInit();
-static Bool     GenericValidMode();
+static int      GenericValidMode();
 static void *   GenericSave();
 static void     GenericRestore();
 static void     GenericAdjust();
@@ -373,10 +373,11 @@ int x, y;
  * GenericValidMode --
  *
  */
-static Bool
-GenericValidMode(mode)
+static int
+GenericValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 

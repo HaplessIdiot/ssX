@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.8 1996/03/29 22:15:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.9 1996/08/10 13:06:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -163,14 +163,20 @@ s3StoreColors(pmap, ndef, pdefs)
 	    ilow = i; 
 	 }
       }
-      i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */
-      outb(0x3C0, 0x11 | 0x20);
       currents3dac_border = ilow;
+      if (xf86VTSema 
+#ifdef XFreeXDGA
+	  || (s3InfoRec.directMode & XF86DGADirectGraphics)
+#endif
+         ) {
+         i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */
+         outb(0x3C0, 0x11 | 0x20);
       
-      /* change AR11 border color ... */
-      i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */
-      outb(0x3C0, 0x11 | 0x20);
-      outb(0x3C0, currents3dac_border);
+         /* change AR11 border color ... */
+         i = inb(vgaIOBase + 0x0A);   /* reset flip-flop */
+         outb(0x3C0, 0x11 | 0x20);
+         outb(0x3C0, currents3dac_border);
+      }
       ((vgaHWPtr)vgaNewVideoState)->Attribute[0x11] = currents3dac_border;
    }
    UNBLOCK_CURSOR;

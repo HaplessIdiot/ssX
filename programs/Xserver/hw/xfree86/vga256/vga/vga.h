@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.13 1996/06/29 09:09:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.14 1996/08/16 12:32:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -72,7 +72,7 @@ typedef struct {
   char * (* ChipIdent)();
   void (* ChipEnterLeave)();
   Bool (* ChipInit)();
-  Bool (* ChipValidMode)();
+  int (* ChipValidMode)();
   void * (* ChipSave)();
   void (* ChipRestore)();
   void (* ChipAdjust)();
@@ -119,9 +119,10 @@ extern Bool (* vgaInitFunc)(
     DisplayModePtr
 #endif
 );
-extern Bool (* vgaValidModeFunc)(
+extern int (* vgaValidModeFunc)(
 #if NeedFunctionPrototypes
-    DisplayModePtr
+    DisplayModePtr,
+    Bool
 #endif
 );
 extern void (* vgaEnterLeaveFunc)(
@@ -328,9 +329,10 @@ Bool vgaScreenInit(
 #endif
 );
 
-Bool vgaValidMode(
+int vgaValidMode(
 #if NeedFunctionPrototypes
-    DisplayModePtr
+    DisplayModePtr,
+    Bool
 #endif
 );
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/XF68Conf.cpp,v 3.0 1996/08/21 13:05:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/XF68Conf.cpp,v 3.1 1996/09/03 15:10:58 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -471,30 +471,31 @@ XCOMM     EndSubsection
 XCOMM EndSection
 
 XCOMM Server for the Linux/m68k Frame Buffer Device
+XCOMM Note: DefaultColorDepth, Depth and Virtual aren't used for mode "default"
 
 Section "Screen"
     Driver	"fbdev"
     Device	"Linux/m68k Frame Buffer Device"
     Monitor	"Generic Monitor"
+    DefaultColorDepth 4
     SubSection "Display"
-XCOMM Note: Depth and Virtual aren't used for mode "default"
-        Depth	    1
-        Modes	    "default"
-        Virtual	    1152 900
+	Depth	    1
+	Modes	    "default"
+	Virtual	    1152 900
     EndSubSection
-XCOMM SubSection "Display"
-XCOMM     Depth	    1
-XCOMM     Modes	    "640x480" "800x600"
-XCOMM     Virtual	    1152 900
-XCOMM EndSubSection
-XCOMM SubSection "Display"
-XCOMM     Depth	    4
-XCOMM     Modes	    "640x480" "800x600"
-XCOMM     Virtual	    1152 900
-XCOMM EndSubSection
-XCOMM SubSection "Display"
-XCOMM     Depth	    8
-XCOMM     Modes	    "640x480" "800x600"
-XCOMM     Virtual	    1152 900
-XCOMM EndSubSection
+XCOMM    SubSection "Display"
+XCOMM        Depth	    1
+XCOMM        Modes	    "640x480" "800x600"
+XCOMM        Virtual	    1152 900
+XCOMM    EndSubSection
+XCOMM    SubSection "Display"
+XCOMM        Depth	    4
+XCOMM        Modes	    "640x480" "800x600"
+XCOMM        Virtual	    1152 900
+XCOMM    EndSubSection
+XCOMM    SubSection "Display"
+XCOMM        Depth	    8
+XCOMM        Modes	    "640x480" "800x600"
+XCOMM        Virtual	    1152 900
+XCOMM    EndSubSection
 EndSection

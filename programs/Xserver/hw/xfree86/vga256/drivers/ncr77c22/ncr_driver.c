@@ -1,5 +1,5 @@
 /* $XConsortium: ncr_driver.c /main/6 1996/01/12 12:18:28 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.12 1996/03/29 22:17:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.13 1996/06/29 09:08:55 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -86,7 +86,7 @@ static char *NCRIdent();
 static Bool  NCRClockSelect();
 static void  NCREnterLeave();
 static Bool  NCRInit();
-static Bool  NCRValidMode();
+static int   NCRValidMode();
 static void *NCRSave();
 static void  NCRRestore();
 static void  NCRAdjust();
@@ -621,9 +621,10 @@ NCRAdjust(x, y)
  * NCRValidMode --
  *     Check to see if the mode can be supported on this chip
  */
-static Bool
-NCRValidMode(mode)
+static int
+NCRValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
 #if !defined(MONOVGA) && !defined(XF86VGA16)
 /*
@@ -634,11 +635,11 @@ DisplayModePtr mode;
  */
    if ( (NCRchipset == NCR77C22) &&
         ((mode->HDisplay*mode->VDisplay) > (512*1024)) )
-	return FALSE;
+	return MODE_BAD;
 
 #endif /* !MONOVGA && !XF86VGA16 */
 
 /* Otherwise, the resolution is probably fine */
 
-return TRUE;
+return MODE_OK;
 }

@@ -176,6 +176,9 @@
         X312G9WSN
            WSN-A2F(cirrus)
 
+        X312G9GA9
+           GA-968V4/PCI(S3 968)
+
      OPTIONAL:
 
         X312Gfsrv
@@ -191,10 +194,10 @@
         X312Gf100
            100dpi fonts
 
+
+
         X312Gfcyr
            Cyrillic fonts
-
-
 
         X312Gfscl
            Scalable fonts
@@ -258,9 +261,9 @@
         ``umask'' value of 022.  Typing ``umask 022'' sets it.  Caution:
         If you do not extract the files as user ``root'' with the
         correct umask you may not be able to run XFree86.  The X server
+
         needs special permissions that are only granted to the root
         user.
-
 
         Assuming that the destination directory for XFree86 3.1.2G is
         /usr/X11R6, run the following from wherever all the archive
@@ -325,12 +328,9 @@
         an ET4000 based SVGA card:
 
 
-
-
-
-      cd $XWINHOME/bin
-      rm -f X
-      ln -s XF86_SVGA X
+           cd $XWINHOME/bin
+           rm -f X
+           ln -s XF86_SVGA X
 
 
 

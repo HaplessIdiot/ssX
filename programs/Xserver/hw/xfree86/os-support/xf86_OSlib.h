@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.28 1996/09/03 04:13:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.29 1996/09/03 15:12:31 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -521,10 +521,11 @@ double RInt(
 #endif
 
 /* The Region arg to xf86[Un]Map* */
-#define NUM_REGIONS 3
+#define NUM_REGIONS 4
 #define VGA_REGION 0
 #define LINEAR_REGION 1
 #define EXTENDED_REGION 2
+#define MMIO_REGION 3
 
 #ifndef NO_OSLIB_PROTOTYPES
 /*

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.34 1996/06/29 09:09:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.35 1996/08/16 12:32:48 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -785,7 +785,7 @@ vgaHWSave(save, size)
      int          size;
 {
   int           i,tmp;
-  Bool	        first_time = FALSE;
+  Bool	        first_time = FALSE;  /* Should be static? */
 
   if (save == NULL) {
     tmp = size;

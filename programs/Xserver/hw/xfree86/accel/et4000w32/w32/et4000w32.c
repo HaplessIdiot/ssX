@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.17 1996/08/10 13:05:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.18 1996/08/13 11:29:26 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -50,7 +50,7 @@ static Bool     ET4000W32Probe();
 static char *   ET4000W32Ident();
 static void     ET4000W32EnterLeave();
 static Bool     ET4000W32Init();
-static Bool     ET4000W32ValidMode();
+static int      ET4000W32ValidMode();
 static void *   ET4000W32Save();
 static void     ET4000W32Restore();
 static void     ET4000W32Adjust();
@@ -255,7 +255,7 @@ ET4000W32Probe()
 	   strcmp(et4000w32_id, "et4000w32i_rev_b") == 0 ||
 	   strcmp(et4000w32_id, "et4000w32i_rev_c") == 0;
     W32OrW32i = W32 || W32i;
-    W32p = !W32OrW32i;
+    W32p = !(W32OrW32i || W32et6000);
     W32pa = strcmp(et4000w32_id, "et4000w32_rev_a") == 0;
     W32pCAndLater = W32p && strcmp(et4000w32_id, "et4000w32p_rev_a") != 0
 			 && strcmp(et4000w32_id, "et4000w32p_rev_b") != 0;
@@ -493,6 +493,10 @@ ET4000W32Init(mode)
     W32Pattern = W32Foreground + 16;
     W32Mix = W32Foreground + 24;
 
+    W32MixPong = W32Mix + 504;
+    MixDstPing = W32Mix << 3;
+    MixDstPong = W32MixPong << 3;
+
     RESET_ACL
 
     return et4000w32_initted = TRUE;
@@ -550,10 +554,11 @@ ET4000W32SaveScreen(start_finish)
  * ET4000W32ValidMode --
  *
  */
-static Bool
-ET4000W32ValidMode(mode)
+static int
+ET4000W32ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 

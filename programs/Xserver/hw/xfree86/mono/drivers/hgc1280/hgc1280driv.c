@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hgc1280/hgc1280driv.c,v 3.3 1996/02/04 09:09:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hgc1280/hgc1280driv.c,v 3.4 1996/02/20 14:34:44 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -401,6 +401,9 @@ ErrorF("count=%d\n",cnt);
 
    /* Must return real display size */
    /* hardcoded in HGC1280 */
+
+   monoInfoRec.bankedMono = TRUE;
+
    return(TRUE);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.24 1996/02/20 14:34:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.25 1996/08/11 13:01:52 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -79,9 +79,10 @@ ScreenPtr pScreen
 #endif
 );
 
-Bool monoValidMode(
+int monoValidMode(
 #if NeedFunctionPrototypes
-    DisplayModePtr
+    DisplayModePtr,
+    Bool
 #endif 
 );
 
@@ -96,7 +97,7 @@ ScrnInfoRec monoInfoRec = {
   -1,			/* int scrnIndex */
   monoProbe,		/* Bool (* Probe)() */
   monoScreenInit,	/* Bool (* Init)() */
-  monoValidMode,	/* Bool (* ValidMode)() */
+  monoValidMode,	/* int (* ValidMode)() */
   monoEnterLeaveVT,	/* void (* EnterLeaveVT)(int,int) */
   (void (*)())NoopDDA,	/* void (* EnterLeaveMonitor)(int) */
   (void (*)())NoopDDA,	/* void (* EnterLeaveCursor)(int) */
@@ -666,10 +667,11 @@ monoAdjustFrame(x, y)
     }
 }
 
-Bool
-monoValidMode(mode)
+int
+monoValidMode(mode, verbose)
      DisplayModePtr mode;
+     Bool verbose;
 {
-  /* XXXX Maybe this should return FALSE since no XF86Config modes are used? */
-  return(TRUE);
+  /* Maybe this should return MODE_BAD since no XF86Config modes are used? */
+  return(MODE_OK);
 }

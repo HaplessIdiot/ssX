@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.24 1996/08/16 12:32:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.25 1996/08/18 01:51:54 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -309,6 +309,8 @@ typedef struct
 #else
 #define HAVE543X() (cirrusChip >= CLGD5434 && cirrusChip <= CLGD5436)
 #endif
+
+#define HAVE754X() (cirrusChip >= CLGD7541 && cirrusChip <= CLGD7543)
 
 #define HAVE546X() (cirrusChip == CLGD5462)
 

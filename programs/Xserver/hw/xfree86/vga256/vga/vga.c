@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.56 1996/08/16 12:32:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.57 1996/08/18 01:52:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -215,9 +215,10 @@ Bool (* vgaInitFunc)(
     DisplayModePtr
 #endif
 ) = (Bool (*)())NoopDDA;
-Bool (* vgaValidModeFunc)(
+int (* vgaValidModeFunc)(
 #if NeedFunctionPrototypes
-    DisplayModePtr
+    DisplayModePtr,
+    Bool
 #endif
 ) = (Bool (*)())NoopDDA;
 void * (* vgaSaveFunc)(
@@ -329,7 +330,7 @@ vgaPrintIdent()
   ErrorF("  %s: server for 4-bit colour VGA (Patchlevel %s):\n      ",
          vga256InfoRec.name, vga256InfoRec.patchLevel);
 #else
-  ErrorF("  %s: server for 8-bit colour SVGA (Patchlevel %s):\n      ",
+  ErrorF("  %s: server for SVGA graphics adaptors (Patchlevel %s):\n      ",
          vga256InfoRec.name, vga256InfoRec.patchLevel);
 #endif
 #endif
@@ -918,6 +919,8 @@ vgaProbe()
 
 	/* Free PCI information */
 	xf86cleanpci();
+	vgaPCIInfo->ThisCard = (pciConfigPtr)NULL;
+	vgaPCIInfo->AllCards = (pciConfigPtr *)NULL;
 
 	return TRUE;
       }
@@ -1569,16 +1572,10 @@ vgaSwitchMode(mode)
  *     Validate a mode for VGA architecture. Also checks the chip driver
  *     to see if the mode can be supported.
  */
-Bool
-vgaValidMode(mode)
+int
+vgaValidMode(mode, verbose)
      DisplayModePtr mode;
+     Bool verbose;
 {
-  if ((vgaValidModeFunc)(mode))
-  {
-    return(TRUE);
-  }
-  else
-  {
-    return(FALSE);
-  }
+  return (vgaValidModeFunc)(mode, verbose);
 }

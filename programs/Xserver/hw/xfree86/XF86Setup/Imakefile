@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.7 1996/08/19 13:37:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.8 1996/08/24 12:50:37 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -47,6 +47,11 @@ includes::
 #define XawClientDepLibs /**/
 #endif
 
+#if defined(SVR4Architecture) && defined(SunArchitecture)
+/* Solaris needs this */
+    EXTRASYSLIBS = -ldl
+#endif
+
 #if XF86SetupUsesStaticTkTcl
        TKLIBRARY = StaticLibrary($(TKLIBDIR),$(TKLIBNAME))
       TCLLIBRARY = StaticLibrary($(TCLLIBDIR),$(TCLLIBNAME))
@@ -88,7 +93,7 @@ LinkSourceFile(xf86_Config.h,../common)
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 
-NormalProgramTarget(XF86Setup,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES) $(SYSTEM_LIBRARIES),NullParameter)
+NormalProgramTarget(XF86Setup,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES) $(SYSTEM_LIBRARIES) $(EXTRASYSLIBS),NullParameter)
 InstallProgram(XF86Setup,$(BINDIR))
 DependTarget()
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.57 1996/08/18 01:51:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.58 1996/08/26 10:49:16 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -51,6 +51,8 @@ extern int atoi();
 #include "XIproto.h"
 #include "xf86_Config.h"
 #include "xf86Xinput.h"
+#else
+#include "inputstr.h"
 #endif
 
 #ifdef XTESTEXT1
@@ -285,9 +287,6 @@ InitOutput(pScreenInfo, argc, argv)
 #endif
 #ifdef SIGXCPU
      signal(SIGXCPU,xf86SigHandler);
-#endif
-#ifdef SIGBUS
-     signal(SIGBUS,xf86SigHandler);
 #endif
 #ifdef SIGXFSZ
      signal(SIGXFSZ,xf86SigHandler);

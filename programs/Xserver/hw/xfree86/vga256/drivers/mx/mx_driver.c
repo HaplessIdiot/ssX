@@ -1,5 +1,5 @@
 /* $XConsortium: mx_driver.c /main/6 1996/01/12 12:18:24 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.11 1996/03/29 22:17:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.12 1996/06/29 09:08:52 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -104,7 +104,7 @@ static char *   MXIdent();
 static Bool     MXClockSelect();
 static void     MXEnterLeave();
 static Bool     MXInit();
-static Bool     MXValidMode();
+static int      MXValidMode();
 static void *   MXSave();
 static void     MXRestore();
 static void     MXAdjust();
@@ -743,10 +743,11 @@ unsigned char temp;
  * MXValidMode --
  *
  */
-static Bool
-MXValidMode(mode)
+static int
+MXValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.39 1996/08/24 12:51:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.40 1996/09/01 12:29:50 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -166,6 +166,7 @@ extern int s3BppDisplayWidth;
 extern int s3Weight;
 extern short s3alu[];
 extern pointer s3VideoMem;
+extern pointer s3MmioMem;
 extern pointer vgaBase;
 extern ScreenPtr s3savepScreen;
 extern int s3CursorStartX, s3CursorStartY, s3CursorLines;

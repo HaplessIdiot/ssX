@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.10 1996/09/01 04:48:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.11 1996/09/03 04:14:39 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -84,7 +84,7 @@
 /* SiS */
 #define PCI_CHIP_SG86C201	0x0001
 #define PCI_CHIP_SG86C202	0x0002
-#define PCI_CHIP_SG86C205	0x0005
+#define PCI_CHIP_SG86C205	0x0205
 
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
@@ -118,6 +118,11 @@ typedef struct vgaPCIInformation {
     int ChipRev;
     unsigned long MemBase;
     unsigned long IOBase;
+    int Bus;
+    int Card;
+    int Func;
+    pciConfigPtr ThisCard; /* This isn't valid after calling xf86cleanpci() */
+    pciConfigPtr *AllCards; /* This isn't valid after calling xf86cleanpci() */
 } vgaPCIInformation;
 
 extern vgaPCIInformation *vgaPCIInfo;

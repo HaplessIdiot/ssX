@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.52 1996/08/11 12:45:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.53 1996/08/18 01:47:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -75,9 +75,10 @@ extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
 unsigned short mach32MemorySize = 0;
 extern char *xf86VisualNames[];
 
-static Bool mach32ValidMode(
+static int mach32ValidMode(
 #if NeedFunctionPrototypes 
-    DisplayModePtr 
+    DisplayModePtr,
+    Bool
 #endif
 );
 
@@ -87,7 +88,7 @@ ScrnInfoRec mach32InfoRec = {
     -1,			/* int scrnIndex */
     mach32Probe,      	/* Bool (* Probe)() */
     mach32Initialize,	/* Bool (* Init)() */
-    mach32ValidMode,	/* Bool (* ValidMode)() */
+    mach32ValidMode,	/* int (* ValidMode)() */
     mach32EnterLeaveVT,/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -1298,10 +1299,11 @@ mach32ClockSelect(no)
  * mach32ValidMode --
  *
  */
-static Bool
-mach32ValidMode(mode)
+static int
+mach32ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 

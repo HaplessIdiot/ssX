@@ -145,6 +145,7 @@ using <tt/pkg_add/.
     <tag/X312G9WEP/	WABEP(cirrus)
     <tag/X312G9WBS/	WABS(cirrus)
     <tag/X312G9WSN/	WSN-A2F(cirrus)
+    <tag/X312G9GA9/	GA-968V4/PCI(S3 968)
     </descrip>
 
 <tag/OPTIONAL:/
@@ -740,7 +741,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.31 1996/09/03 04:12:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.32 1996/09/03 15:12:11 dawes Exp $
 
 
 

@@ -10,8 +10,8 @@
 <sect> Available Documentation <p>
 
 <itemize>
-<item> <htmlurl name="Release Notes for XFree86&tm; 3.1.2D (beta version)"
-	url="RELNOTE.html">
+<item> <htmlurl name="Release Notes for XFree86&tm; 3.1.2G (beta version)"
+	url="RELNOTES.html">
 <item> <htmlurl name="README for XFree86&tm; 3.1.2"
 	url="README.html">
 <item> <htmlurl name="Copyright"
@@ -28,11 +28,11 @@
 	url="isc.html">
 <item> <htmlurl name="Information for Linux Users"
 	url="Linux.html">
-<item> <htmlurl name="README for XFree86 3.1.2 on LynxOS"
+<item> <htmlurl name="README for XFree86 3.1.2G on LynxOS"
 	url="LynxOS.html">
 <item> <htmlurl name="README for XFree86 3.1 on Mach"
 	url="Mach.html">
-<item> <htmlurl name="README for XFree86 3.1.2D on NetBSD"
+<item> <htmlurl name="README for XFree86 3.1.2G on NetBSD and OpenBSD"
 	url="NetBSD.html">
 <item> <htmlurl name="README for XFree86 3.1.2D on OS/2"
 	url="OS2.html">
@@ -51,9 +51,9 @@
 <!--
 <item> <htmlurl name="The Hitchhiker's Guide to X386/XFree86 Video Timing"
 	url="VideoModes.html">
--->
 <item> <htmlurl name="Readme for the XFree86 3.1.2 LinkKit"
 	url="LinkKit.html">
+-->
 <item> <htmlurl name="How to add an (S)VGA driver to XFree86"
 	url="VGADriver.html">
 <item> <htmlurl name="Information for using/developing external clock setting programs"
@@ -89,7 +89,7 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.12 1996/08/13 11:30:52 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.13 1996/08/20 12:29:05 dawes Exp $ 
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32fillarc.c,v 3.2 1995/01/28 15:50:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32fillarc.c,v 3.3 1996/02/04 08:59:48 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -38,7 +38,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "mifillarc.h"
 #include "cfbrrop.h"
 #include "mi.h"
-#include "w32.h"
+#include "w32box.h"
 
 /* gcc 1.35 is stupid */
 #if defined(__GNUC__) && defined(mc68020)
@@ -48,7 +48,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 static void
-RROP_NAME(w32FillEllipseSolid) (pDraw, pGC, arc)
+w32FillEllipseSolid (pDraw, pGC, arc)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
@@ -57,7 +57,7 @@ RROP_NAME(w32FillEllipseSolid) (pDraw, pGC, arc)
     STUPID int yk, xk, ym, xm, dx, dy, xorg, yorg;
     miFillArcRec info;
     unsigned long *addrlt, *addrlb;
-    register unsigned long *addrl;
+    register unsigned long *addrl, address;
     register int n;
     int nlwidth;
     RROP_DECLARE
@@ -67,15 +67,17 @@ RROP_NAME(w32FillEllipseSolid) (pDraw, pGC, arc)
     int	nlmiddle;
 
     cfbGetLongWidthAndPointer (pDraw, nlwidth, addrlt)
-    addrlt = 0;
     RROP_FETCH_GC(pGC);
     miFillArcSetup(arc, &info);
     MIFILLARCSETUP();
     xorg += pDraw->x;
     yorg += pDraw->y;
-    addrlb = addrlt;
+
+    addrlb = addrlt = 0;
+
     addrlt += nlwidth * (yorg - y);
     addrlb += nlwidth * (yorg + y + dy);
+
     while (y)
     {
 	addrlt += nlwidth;
@@ -84,44 +86,17 @@ RROP_NAME(w32FillEllipseSolid) (pDraw, pGC, arc)
 	if (!slw)
 	    continue;
 	xpos = xorg - x;
-	addrl = addrlt + (xpos >> PWSH);
-	W32_LONG(addrl)
-	if (((xpos & PIM) + slw) <= PPW)
-	{
-	    maskpartialbits(xpos, slw, startmask);
-	    RROP_SOLID_MASK(addrl,startmask);
-	    if (miFillArcLower(slw))
-	    {
-		addrl = addrlb + (xpos >> PWSH);
-		W32_LONG(addrl)
-		RROP_SOLID_MASK(addrl, startmask);
-	    }
-	    continue;
-	}
-	maskbits(xpos, slw, startmask, endmask, nlmiddle);
-	if (startmask)
-	{
-	    RROP_SOLID_MASK(addrl, startmask);
-	    addrl++;
-	}
-	n = nlmiddle;
-	RROP_SPAN(addrl,n)
 
-	if (endmask)
-	    RROP_SOLID_MASK(addrl, endmask);
+	address = (unsigned long)addrlt + xpos;
+	WAIT_XY
+	W32_HLINE(address, slw)
+
 	if (!miFillArcLower(slw))
 	    continue;
-	addrl = addrlb + (xpos >> PWSH);
-	W32_LONG(addrl)
-	if (startmask)
-	{
-	    RROP_SOLID_MASK(addrl, startmask);
-	    addrl++;
-	}
-	n = nlmiddle;
-	RROP_SPAN(addrl, n);
-	if (endmask)
-	    RROP_SOLID_MASK(addrl, endmask);
+
+	address = (unsigned long)addrlb + xpos;
+	WAIT_XY
+	W32_HLINE(address, slw)
     }
 }
 
@@ -129,29 +104,9 @@ RROP_NAME(w32FillEllipseSolid) (pDraw, pGC, arc)
     if (xr >= xl) \
     { \
 	n = xr - xl + 1; \
-	addrl = addr + (xl >> PWSH); \
-	W32_LONG(addrl) \
-	if (((xl & PIM) + n) <= PPW) \
-	{ \
-	    maskpartialbits(xl, n, startmask); \
-	    RROP_SOLID_MASK(addrl, startmask); \
-	} \
-	else \
-	{ \
-	    maskbits(xl, n, startmask, endmask, n); \
-	    if (startmask) \
-	    { \
-		RROP_SOLID_MASK(addrl, startmask); \
-		addrl++; \
-	    } \
-	    while (n--) \
-	    { \
-		RROP_SOLID(addrl); \
-		++addrl; \
-	    } \
-	    if (endmask) \
-		RROP_SOLID_MASK(addrl, endmask); \
-	} \
+	address  = (unsigned long)addr + xl * (PSZ >> 3); \
+	WAIT_XY \
+	W32_HLINE(address, n) \
     }
 
 #define FILLSLICESPANS(flip,addr) \
@@ -168,7 +123,7 @@ RROP_NAME(w32FillEllipseSolid) (pDraw, pGC, arc)
     }
 
 static void
-RROP_NAME(w32FillArcSliceSolid)(pDraw, pGC, arc)
+w32FillArcSliceSolid(pDraw, pGC, arc)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
@@ -179,21 +134,22 @@ RROP_NAME(w32FillArcSliceSolid)(pDraw, pGC, arc)
     miArcSliceRec slice;
     int xl, xr, xc;
     unsigned long *addrlt, *addrlb;
-    register unsigned long *addrl;
+    register unsigned long *addrl, address;
     register int n;
     int nlwidth;
     RROP_DECLARE
     unsigned long startmask, endmask;
 
     cfbGetLongWidthAndPointer (pDraw, nlwidth, addrlt)
-    addrlt = 0;
     RROP_FETCH_GC(pGC);
     miFillArcSetup(arc, &info);
     miFillArcSliceSetup(arc, &slice, pGC);
     MIFILLARCSETUP();
     xorg += pDraw->x;
     yorg += pDraw->y;
-    addrlb = addrlt;
+
+    addrlb = addrlt = 0;
+
     addrlt += nlwidth * (yorg - y);
     addrlb += nlwidth * (yorg + y + dy);
     slice.edge1.x += pDraw->x;
@@ -219,7 +175,7 @@ RROP_NAME(w32FillArcSliceSolid)(pDraw, pGC, arc)
 }
 
 void
-RROP_NAME(W32PolyFillArcSolid) (pDraw, pGC, narcs, parcs)
+W32PolyFillArcSolid (pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
     GCPtr	pGC;
     int		narcs;
@@ -232,16 +188,28 @@ RROP_NAME(W32PolyFillArcSolid) (pDraw, pGC, narcs, parcs)
     unsigned long *addrlt;
     int nlwidth;
 
+    cfbPrivGCPtr    devPriv;
+
     CHECK_NOOP
 
     cfbGetLongWidthAndPointer (pDraw, nlwidth, addrlt)
     if ((CARD32)addrlt != VGABASE)
     {
-	RROP_NAME(cfbPolyFillArcSolid) (pDraw, pGC, narcs, parcs);
-	return;
+	devPriv = cfbGetGCPrivate(pGC);
+	switch (devPriv->rop)
+	{
+	    case GXcopy:
+		cfbPolyFillArcSolidCopy (pDraw, pGC, narcs, parcs);
+		return;
+	    default:
+		cfbPolyFillArcSolidGeneral (pDraw, pGC, narcs, parcs);
+		return;
+	}
     }
 
     cclip = cfbGetCompositeClip(pGC);
+
+    W32_INIT_HLINE(pGC->alu, PFILL(pGC->planemask), PFILL(pGC->fgPixel))
 
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
@@ -257,12 +225,14 @@ RROP_NAME(W32PolyFillArcSolid) (pDraw, pGC, narcs, parcs)
 	    {
 		if ((arc->angle2 >= FULLCIRCLE) ||
 		    (arc->angle2 <= -FULLCIRCLE))
-		    RROP_NAME(w32FillEllipseSolid)(pDraw, pGC, arc);
+		    w32FillEllipseSolid(pDraw, pGC, arc);
 		else
-		    RROP_NAME(w32FillArcSliceSolid)(pDraw, pGC, arc);
+		    w32FillArcSliceSolid(pDraw, pGC, arc);
 		continue;
 	    }
 	}
+	WAIT_XY
 	miPolyFillArc(pDraw, pGC, 1, arc);
     }
+    WAIT_XY
 }

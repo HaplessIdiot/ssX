@@ -1,3 +1,44 @@
+XFree86 3.1.2Ga (14 September 1996)
+804. Implement s3ValidMode() (Mark Vojkovich).
+803. Modify the ValidMode interface in preparation for some VidMode extension
+     changes.
+802. Fix a problem with the XOpenDisplay buffer overflow fix (item 734 below)
+     (X Consortium, Kaleb Keithley).
+801. Fix FIFO setting for Cirrus Alpine (543x, 5446) cards with 1MB
+     (Harm Hanemaayer).
+800. Modify Cirrus asm code to allow PCI burst accesses (Harm Hanemaayer).
+799. Change default for MvCmd to 'mv -f'.
+798. Redo the xf86PCI code, based on that in FreeBSD-current.
+797. Update xf86PCI code to deal with PCI bridges and multi-function
+     devices (Mihoko Tanaka).
+796. Fix a problem with the Sigma L-View driver (and presumably the same
+     problem in the HGC1280 driver (Norbert Berzen).
+795. Add a "Sundeadkeys" XKB variant for European keyboards.
+794. Change the "es" XKB symbols to match a Spanish keyboard (Jon Tombs).
+793. Update Cards database.
+792. Fix panning problem with some Cirrus cards (Corin Anderson).
+791. Map the S3 MMIO area separately (Harald Koenig).
+790. Don't allow S3  newmmio to be selected for chips that don't support
+     it (Harald Koenig).
+789. Fix for Linux/m68k frame buffer device (Geert Uytterhoeven).
+788. Fix detection of some SiS chips.
+787. Turn on 32-bit mode for TGUI chips.  This allows PCI burst to be
+     turned on by default.  (Alan Hourihane).
+786. Disable 16bpp for the TGUI9320LCD since it doesn't work (Alan Hourihane).
+785. Fix ET6000 problems with the VGA16/Mono servers (Koen Gadeyne).
+784. Speedups for the W32 arc and teblt8 code (Glenn Lai).
+783. Fix W32 line-drawing using the wrong ROP for horizontal and vertical
+     lines (Koen Gadeyne).
+782. Add a new xdm access control keyword "NOBROADCAST" to disable anwsering
+     broadcasts from specified hosts (Kimmo Suominen).
+781. Make xf86config run the correct server by name rather than trying
+     to run 'X' (Holger Veit).
+780. Change default "gb" XKB symbols (James Hawtin).
+779. Config and documentation updates for LynxOS (Thomas Mueller).
+778. Update XF86Setup's device list for LynxOS (Thomas Mueller).
+777. Fix compile problem when XINPUT isn't defined (James Hawtin).
+776. XF86Setup needs to be linked with -ldl on Solaris (James Hawtin).
+
 XFree86 3.1.2G (3 September 1996)
 775. Fixes for some NECS3 server problems (Naofumi Honda).
 774. Fix some XF86Setup typos.

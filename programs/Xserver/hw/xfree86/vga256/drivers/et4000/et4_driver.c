@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.27 1996/06/29 09:08:44 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.28 1996/08/13 11:31:32 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -117,7 +117,7 @@ static Bool     ICD2061AClockSelect();
 #endif
 static void     ET4000EnterLeave();
 static Bool     ET4000Init();
-static Bool     ET4000ValidMode();
+static int      ET4000ValidMode();
 static void *   ET4000Save();
 static void     ET4000Restore();
 static void     ET4000Adjust();
@@ -460,7 +460,7 @@ static Bool
 ET6000Probe()
 {
    int ramtype=0;
-   struct pci_config_reg *pcrp;
+   pciConfigPtr pcrp, *pcrpp;
    Bool found=FALSE;
    int i = 0;
 
@@ -491,8 +491,12 @@ ET6000Probe()
    }
 
 #else
-   xf86scanpci(vga256InfoRec.scrnIndex);
-   while (pcrp = pci_devp[i]) {
+   /* Why is this necessary?? */
+   if (!vgaPCIInfo || !vgaPCIInfo->AllCards)
+      return FALSE;
+   
+   pcrpp = vgaPCIInfo->AllCards;
+   while (pcrp = pcrpp[i]) {
       if (pcrp->_vendor == PCI_TSENG_VENDOR_ID) {
          switch (pcrp->_device) {
          case PCI_ET6000:
@@ -571,7 +575,12 @@ ET6000Probe()
   vga256InfoRec.clock[1] = 28322;
   vga256InfoRec.clock[2] = 31500; /* this one will be reprogrammed */
 #endif
-  /*  vga256InfoRec.dacSpeed = 135000;  doesn't work anyway [kmg] */
+  if (vga256InfoRec.dacSpeed <= 0)
+  {
+    vga256InfoRec.dacSpeed = 135000;
+    vga256InfoRec.maxClock = 135000;
+  }
+
   ErrorF("%s %s: ET6000: Using built-in 135 MHz programmable Clock Chip/RAMDAC\n",
       XCONFIG_PROBED, vga256InfoRec.name);
 
@@ -1061,11 +1070,11 @@ ET4000Restore(restore)
   if (restore->std.NoClock >= 0)
     outw(vgaIOBase + 4, (restore->Compatibility << 8) | 0x34);
   outw(vgaIOBase + 4, (restore->OverflowHigh << 8)  | 0x35);
+#ifndef MONOVGA
 #ifdef W32_SUPPORT  
   if (et4000_type > TYPE_ET4000)
     outw(vgaIOBase + 4, (restore->VSConf2 << 8)  | 0x37);
 #endif
-#ifndef MONOVGA
 #ifdef WHY_WOULD_YOU_RESTRICT_THAT_TO_THIS_OPTION
   if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
 #endif
@@ -1250,7 +1259,10 @@ ET4000Init(mode)
 
 
 
-#ifndef MONOVGA
+#ifdef MONOVGA
+  /* Don't ask me why this is needed on the ET6000 and not on the others */
+  if (et4000_type >= TYPE_ET6000) new->std.Sequencer[1] |= 0x04;
+#else
   new->std.Attribute[16] = 0x01;  /* use the FAST 256 Color Mode */
   new->std.CRTC[19] = vga256InfoRec.virtualX >> 3;
 #endif
@@ -1474,9 +1486,10 @@ ET4000Adjust(x, y)
  * ET4000ValidMode --
  *
  */
-static Bool
-ET4000ValidMode(mode)
+static int 
+ET4000ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }

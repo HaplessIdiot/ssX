@@ -900,7 +900,7 @@ and the following mirror sites:
 -->
 <item>   <htmlurl url="ftp://sunsite.mff.cuni.cz/X11/XFree86"
 	name="ftp://sunsite.mff.cuni.cz/X11/XFree86">
-	(source patches and binaries)
+	(source and binaries)
 <item>   <htmlurl url="ftp://ftp.fee.vutbr.cz/pub/XFree86"
 	name="ftp://ftp.fee.vutbr.cz/pub/XFree86">
 	(source patches and binaries)
@@ -990,7 +990,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.52 1996/08/27 03:13:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.53 1996/09/01 08:33:03 dawes Exp $
 
 
 

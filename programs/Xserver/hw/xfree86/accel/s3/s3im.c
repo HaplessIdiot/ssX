@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.27 1996/08/27 03:13:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.28 1996/09/01 04:15:38 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -1098,7 +1098,7 @@ static int _internal_s3_mskbits[17] =
 
 #ifdef S3_NEWMMIO
 #undef  SET_MULT_MISC
-#define SET_MULT_MISC(val)	((mmtr)s3VideoMem)->pk_enh_regs.regs.mult_misc = (val)
+#define SET_MULT_MISC(val)	((mmtr)s3MmioMem)->pk_enh_regs.regs.mult_misc = (val)
 #endif
 
 static void

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.9 1996/02/04 09:00:42 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.10 1996/08/13 11:29:30 dawes Exp $ */ 
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -169,6 +169,9 @@ extern long W32Foreground;
 extern long W32Background;
 extern long W32Pattern;
 extern long W32Mix;
+extern long W32MixPong;
+extern long MixDstPing;
+extern long MixDstPong;
 
 extern long W32BltCount;
 extern long W32BltHop;
@@ -231,7 +234,7 @@ void figure(char*);
     {*((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + ((X) - 1) * (PSZ >> 3);}
 
 
-/* Must do 0x09 (in one operatoin) for the W32 */
+/* Must do 0x09 (in one operation) for the W32 */
 #define START_ACL(dst) \
 { \
     *(ACL_DESTINATION_ADDRESS) = dst; \

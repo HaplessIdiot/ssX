@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.38 1996/08/11 12:54:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.39 1996/08/18 01:49:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -76,9 +76,10 @@ extern char *xf86VisualNames[];
 
 extern int defaultColorVisualClass;
 
-static Bool p9000ValidMode(
+static int p9000ValidMode(
 #if NeedFunctionPrototypes 
-   DisplayModePtr
+   DisplayModePtr,
+   Bool
 #endif
 );
 
@@ -88,7 +89,7 @@ ScrnInfoRec p9000InfoRec = {
     -1,			/* int scrnIndex */
     p9000Probe,      	/* Bool (* Probe)() */
     p9000Initialize,	/* Bool (* Init)() */
-    p9000ValidMode,	/* Bool (* ValidMode)() */
+    p9000ValidMode,	/* int (* ValidMode)() */
     p9000EnterLeaveVT,	/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -984,10 +985,11 @@ p9000SwitchMode(mode)
  * p9000ValidMode --
  *
  */
-static Bool
-p9000ValidMode(mode)
+static int
+p9000ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32funcs.h,v 3.1 1995/01/28 15:51:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32funcs.h,v 3.2 1996/02/04 09:00:45 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -511,7 +511,7 @@ extern Bool W32InitVisuals(
 );
 /* W32fillarcC.c */
 
-extern void W32PolyFillArcSolidCopy(
+extern void W32PolyFillArcSolid(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/,
@@ -519,16 +519,7 @@ extern void W32PolyFillArcSolidCopy(
     xArc * /*parcs*/
 #endif
 );
-/* W32fillarcG.c */
 
-extern void W32PolyFillArcSolidGeneral(
-#if NeedFunctionPrototypes
-    DrawablePtr /*pDraw*/,
-    GCPtr /*pGC*/,
-    int /*narcs*/,
-    xArc * /*parcs*/
-#endif
-);
 /* W32fillrct.c */
 
 extern void W32FillBoxTileOdd(

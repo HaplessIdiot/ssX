@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.6 1996/01/10 06:09:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.7 1996/05/06 06:00:32 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -288,7 +288,11 @@ Xalloc (amount)
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
+#ifdef FATALERRORS
+ 	FatalError("Xalloc warning: Xalloc(<0) ignored..\n");
+#else
  	ErrorF("Xalloc warning: Xalloc(<0) ignored..\n");
+#endif
  	LOG_ALLOC("Xalloc<0", amount, 0);
 	return (unsigned long *)NULL;
     }
@@ -446,7 +450,11 @@ XNFalloc (amount)
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
+#ifdef FATALERRORS
+	FatalError("Xalloc warning: XNFalloc(<0) ignored..\n");
+#else
 	ErrorF("Xalloc warning: XNFalloc(<0) ignored..\n");
+#endif
  	LOG_ALLOC("XNFalloc<0", amount, 0);
 	return (unsigned long *)NULL;
     }
@@ -499,7 +507,11 @@ Xrealloc (ptr, amount)
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
+#ifdef FATALERRORS
+	FatalError("Xalloc warning: Xrealloc(<0) ignored..\n");
+#else
 	ErrorF("Xalloc warning: Xrealloc(<0) ignored..\n");
+#endif
 	if (ptr)
 		Xfree(ptr);	/* ?? */
 	LOG_REALLOC("Xrealloc<0", ptr, amount, 0);
@@ -512,7 +524,11 @@ Xrealloc (ptr, amount)
 	old_size = ((unsigned long *)ptr)[-2];
 #ifdef XALLOC_DEBUG
 	if (MAGIC != ((unsigned long *)ptr)[-1]) {
+#ifdef FATALERRORS
+		FatalError("Xalloc error: header corrupt in Xrealloc() :-(\n");
+#else
 		ErrorF("Xalloc error: header corrupt in Xrealloc() :-(\n");
+#endif
 		return (unsigned long *)NULL;
 	}
 #endif /* XALLOC_DEBUG */
@@ -570,7 +586,11 @@ Xfree(ptr)
 #ifdef XALLOC_DEBUG
     if (MAGIC != pheader[1]) {
 	/* Diagnostic */
+#ifdef FATALERRORS
+	FatalError("Xalloc error: Header corrupt in Xfree() :-(\n");
+#else
 	ErrorF("Xalloc error: Header corrupt in Xfree() :-(\n");
+#endif
 	return;
     }
 #endif /* XALLOC_DEBUG */
@@ -584,7 +604,11 @@ Xfree(ptr)
 #ifdef SIZE_TAIL
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
+#ifdef FATALERRORS
+		FatalError("Xalloc error: Tail corrupt in Xfree() for small block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
+#else
 		ErrorF("Xalloc error: Tail corrupt in Xfree() for small block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
+#endif
 		return;
 	}
 #endif /* SIZE_TAIL */
@@ -607,7 +631,11 @@ Xfree(ptr)
 #ifdef SIZE_TAIL
 	if (MAGIC2 != ((unsigned long *)((char *)ptr + size))[0]) {
 		/* Diagnostic */
+#ifdef FATALERRORS
+		FatalError("Xalloc error: Tail corrupt in Xfree() for big block (adr=0x%x, val=0x%x)\n",(char *)ptr+size,((unsigned long *)((char *)ptr + size))[0]);
+#else
 		ErrorF("Xalloc error: Tail corrupt in Xfree() for big block (adr=0x%x, val=0x%x)\n",(char *)ptr+size,((unsigned long *)((char *)ptr + size))[0]);
+#endif
 		return;
 	}
 	size += SIZE_TAIL;
@@ -625,7 +653,11 @@ Xfree(ptr)
 #ifdef SIZE_TAIL
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
+#ifdef FATALERRORS
+		FatalError("Xalloc error: Tail corrupt in Xfree() for medium block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
+#else
 		ErrorF("Xalloc error: Tail corrupt in Xfree() for medium block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
+#endif
 		return;
 	}
 #endif /* SIZE_TAIL */

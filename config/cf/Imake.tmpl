@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/r61_main/3 1996/02/02 18:57:32 gildea $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.25 1996/08/26 06:19:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.26 1996/09/01 04:12:48 dawes Exp $
 XCOMM
 
 /*
@@ -702,7 +702,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define MakeCmd make
 #endif
 #ifndef MvCmd
-#define MvCmd mv
+#define MvCmd mv -f
 #endif
 #ifndef RanlibCmd
 #define RanlibCmd ranlib

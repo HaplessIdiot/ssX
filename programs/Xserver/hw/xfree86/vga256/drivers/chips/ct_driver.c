@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.19 1996/08/26 14:48:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.20 1996/09/01 04:47:41 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -177,7 +177,7 @@ static void CHIPSEnterLeave();
 static Bool CHIPSInit();
 static Bool CHIPSInit655xx();
 static Bool CHIPSInitHiQV32();
-static Bool CHIPSValidMode();
+static int  CHIPSValidMode();
 static void *CHIPSSave();
 static void CHIPSRestore();
 static void ctRestore();
@@ -2678,11 +2678,12 @@ CHIPSAdjust(x, y)
  * CHIPSValidMode --
  *
  */
-static Bool
-CHIPSValidMode(mode)
+static int
+CHIPSValidMode(mode, verbose)
     DisplayModePtr mode;
+    Bool verbose;
 {
-    return TRUE;
+    return MODE_OK;
 }
 
 /*

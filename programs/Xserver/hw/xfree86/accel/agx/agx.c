@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.47 1996/08/11 12:37:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.48 1996/08/18 01:47:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -76,9 +76,10 @@ extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
 extern Bool miDCInitialize();
 extern void SetTimeSinceLastInputEvent();
 
-static Bool agxValidMode(
+static int agxValidMode(
 #if NeedFunctionPrototypes
-    DisplayModePtr
+    DisplayModePtr,
+    Bool
 #endif
 ); 
 
@@ -88,7 +89,7 @@ ScrnInfoRec agxInfoRec = {
     -1,			/* int scrnIndex */
     agxProbe,      	/* Bool (* Probe)() */
     agxInit,	        /* Bool (* Init)() */
-    agxValidMode,       /* Bool (* ValidMode)() */
+    agxValidMode,       /* int (* ValidMode)() */
     agxEnterLeaveVT,    /* void (* EnterLeaveVT)() */
     (void(*)())NoopDDA,	/* void (* EnterLeaveMonitor)() */
     (void(*)())NoopDDA,	/* void (* EnterLeaveCursor)() */
@@ -1887,9 +1888,10 @@ agxAdjustFrame(x, y)
  * agxValidMode --
  *
  */
-static Bool
-agxValidMode(mode)
+static int
+agxValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }

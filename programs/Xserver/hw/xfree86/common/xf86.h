@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.40 1996/08/16 12:29:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.41 1996/08/18 01:51:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -125,9 +125,10 @@ typedef struct {
     char         **argv
 #endif
 );
-  Bool           (* ValidMode)(
+  int            (* ValidMode)(
 #if NeedNestedPrototypes
-    DisplayModePtr target
+    DisplayModePtr target,
+    Bool verbose
 #endif
 );
   void           (* EnterLeaveVT)(
@@ -236,10 +237,11 @@ typedef struct {
 #define ENTER       1
 #define LEAVE       0
 
-/* These are the return values of xf86CheckMode() */
+/* These are possible return values for xf86CheckMode() and ValidMode() */
 #define MODE_OK	    0
 #define MODE_HSYNC  1		/* hsync out of range */
 #define MODE_VSYNC  2		/* vsync out of range */
+#define MODE_BAD    255		/* unspecified reason */
 
 /* flags for xf86LookupMode */
 #define LOOKUP_DEFAULT		0	/* Use default mode lookup method */

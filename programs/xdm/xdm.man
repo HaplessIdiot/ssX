@@ -1,5 +1,5 @@
 .\" $XConsortium: xdm.man /main/42 1996/01/15 15:16:40 gildea $
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.4 1996/01/05 13:21:03 dawes Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.5 1996/02/10 10:43:41 dawes Exp $
 .\" Copyright (c) 1988, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -84,6 +84,13 @@ on behalf of the display and
 offer a menu of possible hosts that offer XDMCP display management.
 This feature is useful with X terminals that do not offer a host
 menu themselves.
+.PP
+.I Xdm
+can be configured to ignore BroadcastQuery messages from selected hosts.
+This is useful when you don't want the host to appear in menus produced
+by
+.I chooser
+or X terminals themselves.
 .PP
 Because
 .I xdm
@@ -609,6 +616,11 @@ Preceding either a host name or a pattern with a `!' character
 causes hosts which
 match that entry to be excluded.
 .PP
+To only respond to Direct queries for a host or pattern,
+it can be followed by the optional ``NOBROADCAST'' keyword.
+This can be used to prevent an xdm server from appearing on
+menus based on Broadcast queries.
+.PP
 An Indirect entry also contains a host name or pattern,
 but follows it with a list of
 host names or macros to which indirect queries should be sent.
@@ -648,6 +660,9 @@ Here is an example Xaccess file:
 !xtra.lcs.mit.edu	# disallow direct/broadcast service for xtra
 bambi.ogi.edu	# allow access from this particular display
 *.lcs.mit.edu	# allow access from any display in LCS
+
+*.deshaw.com	NOBROADCAST	# allow only direct access
+*.gw.com			# allow direct and broadcast
 
 #
 # Indirect query entries

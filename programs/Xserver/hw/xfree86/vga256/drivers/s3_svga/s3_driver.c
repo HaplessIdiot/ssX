@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.11 1996/02/04 09:14:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.12 1996/06/29 09:09:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -73,7 +73,7 @@ static char *S3Ident ();
 static Bool S3Probe ();
 static void S3EnterLeave ();
 static Bool S3Init ();
-static Bool S3ValidMode ();
+static int  S3ValidMode ();
 static void *S3Save ();
 static void S3Restore ();
 static void S3Adjust ();
@@ -618,9 +618,10 @@ go_linear()
 }
 #endif
 
-static Bool
-S3ValidMode(mode)
+static int
+S3ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-  return TRUE;
+  return MODE_OK;
 }

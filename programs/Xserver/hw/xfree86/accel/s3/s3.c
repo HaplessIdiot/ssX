@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.142 1996/09/01 12:29:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.143 1996/09/03 15:12:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -74,9 +74,9 @@ void (*vgaSaveScreenFunc)() = vgaHWSaveScreen;
 
 extern int defaultColorVisualClass;
 
-static Bool s3ValidMode(
+static int s3ValidMode(
 #if NeedFunctionPrototypes 
-    DisplayModePtr 
+    DisplayModePtr, Bool  
 #endif
 );
 
@@ -87,7 +87,7 @@ ScrnInfoRec s3InfoRec =
    -1,				/* int scrnIndex */
    s3Probe,			/* Bool (* Probe)() */
    (Bool (*)())NoopDDA,		/* Bool (* Init)() */
-   s3ValidMode,			/* Bool (* ValidMode)() */
+   s3ValidMode,			/* int (* ValidMode)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveVT)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -278,7 +278,6 @@ Bool  s3DACSyncOnGreen = FALSE;
 Bool  s3PCIHack = FALSE;
 Bool  s3PowerSaver = FALSE;
 unsigned char s3LinApOpt;
-int s3LBWindow;
 unsigned char s3SAM256 = 0x00;
 int s3BankSize;
 int s3DisplayWidth;
@@ -286,6 +285,7 @@ pointer vgaBase = NULL;
 pointer vgaBaseLow = NULL;
 pointer vgaBaseHigh = NULL;
 pointer s3VideoMem = NULL;
+pointer s3MmioMem = NULL;
 int s3Trio32FCBug = 0;
 int s3_968_DashBug = 0;
 unsigned long s3MemBase = 0;
@@ -328,6 +328,7 @@ static int maxRawClock = 0;
 static Bool clockDoublingPossible = FALSE;
 int s3AdjustCursorXPos = 0;
 static int s3BiosVendor = UNKNOWN_BIOS;
+static Bool in_s3Probe = TRUE;
 
 #ifdef PC98
 extern Bool	BoardInit();
@@ -610,12 +611,12 @@ S3PCIInformation *
 s3GetPCIInfo()
 {
    static S3PCIInformation info = {0, };
-   struct pci_config_reg *pcrp;
+   pciConfigPtr pcrp, *pcrpp;
    Bool found = FALSE;
    int i = 0;
 
-   xf86scanpci(s3InfoRec.scrnIndex);
-   while (pcrp = pci_devp[i]) {
+   pcrpp = xf86scanpci(s3InfoRec.scrnIndex);
+   while (pcrp = pcrpp[i]) {
       if (pcrp->_vendor == PCI_S3_VENDOR_ID) {
 	 found = TRUE;
 	 switch (pcrp->_device) {
@@ -647,11 +648,13 @@ s3GetPCIInfo()
 	    info.DevID = pcrp->_device;
 	    break;
 	 }
-	 info.ChipRev = pcrp->_class_revision & 0xFF;
+	 info.ChipRev = pcrp->_rev_id;
 	 info.MemBase = pcrp->_base0 & 0xFF800000;
 #ifdef PC98_GA968
-	 xf86writepci(s3InfoRec.scrnIndex, pcrp->_cardnum, 0x04,
-			0x0000FFFF, 0x00000003);
+	 xf86writepci(s3InfoRec.scrnIndex, pcrp->_bus, pcrp->_cardnum,
+			pcrp->_func,
+			PCI_CMD_STAT_REG, PCI_CMD_MASK,
+			PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
 #endif
 	 break;
       }
@@ -684,7 +687,7 @@ s3GetPCIInfo()
       /* map allocated 64MB blocks */
       for (j=0; j<64; j++) map_64m[j] = 0;
       map_64m[63] = 1;  /* don't use the last 64MB area */
-      for (j=0; pcrp = pci_devp[j]; j++) {
+      for (j=0; pcrp = pcrpp[j]; j++) {
 	 if (i != j) {
 	    map_64m[ (pcrp->_base0 >> 26) & 0x3f] = 1;
 	    map_64m[((pcrp->_base0+0x3ffffff) >> 26) & 0x3f] = 1;
@@ -712,8 +715,9 @@ s3GetPCIInfo()
 		probed, s3InfoRec.name);
 	 ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
 		base0, info.MemBase);
-         xf86writepci(s3InfoRec.scrnIndex, pci_devp[i]->_cardnum, 0x10,
-		      ~0L, info.MemBase);
+         xf86writepci(s3InfoRec.scrnIndex, pcrpp[i]->_bus, pcrpp[i]->_cardnum,
+		    pcrpp[i]->_func, PCI_MAP_REG_START, ~0L,
+		    info.MemBase | PCI_MAP_MEMORY | PCI_MAP_MEMORY_TYPE_32BIT);
       }
       s3Port59 = (info.MemBase >> 24) & 0xfc;
       s3Port5A = 0;
@@ -752,6 +756,17 @@ s3GetPCIInfo()
 /*
  * s3Probe -- probe and initialize the hardware driver
  */
+/* moved out of s3Probe() so s3ValidMode() can see them (MArk)*/
+static Bool pixMuxPossible = FALSE;
+static Bool allowPixMuxInterlace = FALSE;
+static Bool allowPixMuxSwitching = FALSE;
+static int nonMuxMaxClock = 0;
+static int nonMuxMaxMemory = 8192;
+static int maxDisplayWidth;
+static int maxDisplayHeight;
+static int pixMuxMinWidth = 1024;
+static int pixMuxMinClock = 0;
+
 Bool
 s3Probe()
 {
@@ -759,7 +774,6 @@ s3Probe()
    unsigned char config, tmp, tmp1;
    int i, j, numClocks;
    int tx, ty;
-   int maxDisplayWidth, maxDisplayHeight;
    OFlagSet validOptions;
    char *card, *serno;
    int card_id, max_pix_clock, max_mem_clock, hwconf;
@@ -785,20 +799,12 @@ s3Probe()
     *   pixMuxWidthOK          - FALSE if pixmux isn't possible because
     *                            there is mode has too small a width
     */
-   Bool pixMuxPossible = FALSE;
-   Bool allowPixMuxInterlace = FALSE;
-   Bool allowPixMuxSwitching = FALSE;
    Bool pixMuxNeeded = FALSE;
-   int pixMuxMinWidth = 1024;
-   int nonMuxMaxClock = 0;
-   int pixMuxMinClock = 0;
-   int nonMuxMaxMemory = 8192;
    Bool pixMuxLimitedWidths = TRUE;
    Bool pixMuxInterlaceOK = TRUE;
    Bool pixMuxWidthOK = TRUE;
    int idx = 0;
    S3PCIInformation *pciInfo = NULL;
-   struct pci_config_reg *pcrp;
 
 #if !defined(PC98) || defined(PC98_GA968)
    /* Do general PCI probe first */
@@ -3767,6 +3773,7 @@ redo_mode_lookup:
       s3InfoRec.displayWidth = s3DisplayWidth;
       s3InfoRec.directMode = XF86DGADirectPresent;
 #endif
+   in_s3Probe = FALSE;
    return TRUE;
 }
 
@@ -3780,16 +3787,17 @@ s3ConnectPCI(vendor, device)
     CARD16 device;
 #endif
 {
-    struct pci_config_reg *pcrp;
+    pciConfigPtr pcrp, *pcrpp;
     unsigned int dev;
 
-    xf86scanpci(s3InfoRec.scrnIndex);
+    pcrpp = xf86scanpci(s3InfoRec.scrnIndex);
 
-    for (dev = 0; (pcrp = pci_devp[dev]) != NULL; dev ++)
+    for (dev = 0; (pcrp = pcrpp[dev]) != NULL; dev ++)
     {
 	if (pcrp->_vendor == vendor && pcrp->_device == device)
 	{
-	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_cardnum, 
+	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_bus, pcrp->_cardnum,
+		pcrp->_func,
 		PCI_CMD_STAT_REG, PCI_CMD_MASK,
 		PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
 	    break;
@@ -3809,16 +3817,17 @@ s3DisconnectPCI(vendor, device)
     CARD16 device;
 #endif
 {
-    struct pci_config_reg *pcrp;
+    pciConfigPtr pcrp, *pcrpp;
     unsigned int dev;
 
     xf86scanpci(s3InfoRec.scrnIndex);
 
-    for (dev = 0; (pcrp = pci_devp[dev]) != NULL; dev ++)
+    for (dev = 0; (pcrp = pcrpp[dev]) != NULL; dev ++)
     {
 	if (pcrp->_vendor == vendor && pcrp->_device == device)
 	{
-	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_cardnum, 
+	    xf86writepci(s3InfoRec.scrnIndex, pcrp->_bus, pcrp->_cardnum,
+		pcrp->_func,
 		PCI_CMD_STAT_REG, PCI_CMD_MASK,
 		0);
 	    break;
@@ -4343,9 +4352,431 @@ STG1703ClockSelect(freq)
    return(result);
 }
 
-static Bool
-s3ValidMode(mode)
-     DisplayModePtr mode;
+/*
+ * Quick way to get s3ValidMode actually doing something
+ * so the new vidmode extension functions can use it.
+ * s3Probe() should be altered to use this... eventually.
+ *			MArk (mvojkovi@ucsd.edu)
+ */
+static int
+s3ValidMode(DisplayModePtr pMode, Bool verbose)
 {
-   return(TRUE);
+    Bool ModeCantPixmux = FALSE;
+
+    if(in_s3Probe)
+	return MODE_OK;
+
+    /* Trivial size tests */
+    if(pMode->HDisplay > maxDisplayWidth) {
+	if(verbose)
+	   ErrorF("%s %s: Width of mode \"%s\" is too large (max is %d)\n",
+		XCONFIG_PROBED, s3InfoRec.name, pMode->name, maxDisplayWidth);
+	return MODE_BAD;
+    } else if(pMode->VDisplay > maxDisplayHeight) {
+	if(verbose)
+	   ErrorF("%s %s: Height of mode \"%s\" is too large (max is %d)\n",
+		XCONFIG_PROBED, s3InfoRec.name, pMode->name, maxDisplayHeight);
+	return MODE_BAD;
+    } else if((pMode->HDisplay * (1 + pMode->VDisplay) * s3Bpp) >
+		 s3InfoRec.videoRam * 1024) {
+	if(verbose)
+	   ErrorF("%s %s: Too little memory for mode \"%s\"\n", XCONFIG_PROBED,
+		s3InfoRec.name, pMode->name);
+	if (!OFLG_ISSET(OPTION_BT485_CURS,  &s3InfoRec.options) &&
+	     !OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options) &&
+	     !OFLG_ISSET(OPTION_TI3026_CURS, &s3InfoRec.options) &&
+	     !OFLG_ISSET(OPTION_IBMRGB_CURS, &s3InfoRec.options) &&
+	     !OFLG_ISSET(OPTION_SW_CURSOR,   &s3InfoRec.options))
+	if(verbose)
+	   ErrorF("%s %s: NB. 1 scan line is required for the hardware "
+		"cursor\n", XCONFIG_PROBED, s3InfoRec.name);
+	return MODE_BAD;
+    } else if(((s3InfoRec.virtualX > 0) && 
+	       (pMode->HDisplay > s3InfoRec.virtualX)) ||
+	       ((s3InfoRec.virtualY > 0) && 
+	       (pMode->VDisplay > s3InfoRec.virtualY))) {
+	if(verbose)
+	  ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+		XCONFIG_PROBED, s3InfoRec.name, pMode->HDisplay,
+		pMode->VDisplay, s3InfoRec.virtualX, s3InfoRec.virtualY);
+	return MODE_BAD;
+    } 
+
+    if (pixMuxPossible) {
+
+	/* Find out if the mode requires pixmux */
+
+ 	if (s3Bpp == 1 && s3ATT498PixMux && !DAC_IS_SDAC &&
+		(S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId))
+		&& !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
+			       &s3InfoRec.clockOptions)) {
+	       if (pMode->Clock > 15) {
+		  pMode->Flags |= V_PIXMUX;
+	       }
+	}
+	else if (s3InfoRec.clock[pMode->Clock] > nonMuxMaxClock) {
+	        pMode->Flags |= V_PIXMUX;
+	}
+	if (s3InfoRec.videoRam > nonMuxMaxMemory) {
+	       pMode->Flags |= V_PIXMUX;
+	}
+	if ((OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+		 OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options)) &&
+		s3InfoRec.virtualX * s3InfoRec.virtualY > 2*1024*1024) {
+	      /* PIXMUX must be used to access more than 2mb memory. */
+	      pMode->Flags |= V_PIXMUX;
+	}
+	
+	/* Find out if the mode can't be used with pixmux */
+
+	if (pMode->HDisplay < pixMuxMinWidth)
+	    ModeCantPixmux = TRUE;
+
+	if ((pMode->Flags & V_INTERLACE) && !allowPixMuxInterlace)
+	    ModeCantPixmux = TRUE;
+
+	if (s3InfoRec.clock[pMode->Clock] < pixMuxMinClock)
+	    ModeCantPixmux = TRUE;
+
+	if (!allowPixMuxSwitching ) {
+
+	    /* set V_PIXMUX if s3UsingPixMux and the mode can do pimux */
+
+	    if (s3UsingPixMux && !ModeCantPixmux)
+		pMode->Flags != V_PIXMUX;
+
+	    /*
+	     * If switching between pixmux and non-pixmux isn't allowed, the
+	     * mode is rejected when:
+	     *
+	     *   1. The initial mode set contains no modes requiring pixmux,
+	     *      but this one needs it.
+	     *
+	     *   2. The initial mode set contains modes requiring pixmux,
+	     *      and this one can't use pixmux.
+	     */
+
+	    if (s3UsingPixMux && ModeCantPixmux) {
+		if (verbose) {
+		   ErrorF("%s %s: Mode \"%s\" can't work with pixel "
+			"multiplexing and is\n",
+			XCONFIG_PROBED, s3InfoRec.name, pMode->name);
+		   ErrorF("\tincompatible with the current modes.\n");
+		}
+		return MODE_BAD;
+	    }
+
+	    if (!s3UsingPixMux && (pMode->Flags & V_PIXMUX)) {
+		if (verbose) {
+		   ErrorF("%s %s: Mode \"%s\" requires pixel multiplexing "
+			"and is\n", XCONFIG_PROBED, s3InfoRec.name,
+			pMode->name);
+		   ErrorF("\tincompatible with in the current mode.\n");
+		}
+		return MODE_BAD;
+	    }
+	}
+
+    }  /* pixMuxPossible */	 
+
+
+   /*
+    * For programmable clocks, fill in the SynthClock value
+    * and set V_DBLCLK as required for each mode
+    */
+
+   pMode->SynthClock = s3InfoRec.clock[pMode->Clock];
+	
+   switch(s3RamdacType) {
+	 case NORMAL_DAC:
+	    /* only suports 8bpp -- nothing to do */
+	    break;
+	 case BT485_DAC:
+	    {
+	       int c;
+
+	       if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
+		   OFLG_ISSET(OPTION_MIRO_MAGIC_S4, &s3InfoRec.options))
+		  c = 85000;
+	       else if (S3_964_SERIES(s3ChipId) && s3Bpp == 4)
+		  c = 90000;
+	       else
+		  c = 67500;
+	       if (pMode->SynthClock > c) {
+		  pMode->SynthClock /= 2;
+		  pMode->Flags |= V_DBLCLK;
+	       }
+	    }
+	    break;
+	 case ATT20C505_DAC:
+	    if (pMode->SynthClock > 90000) {
+	       pMode->SynthClock /= 2;
+	       pMode->Flags |= V_DBLCLK;
+	    }
+	    break;
+	 case TI3020_DAC:
+	    if (pMode->SynthClock > 100000) {
+	       pMode->SynthClock /= 2;
+	       pMode->Flags |= V_DBLCLK;
+	    }
+	    break;
+	 case TI3025_DAC:
+	    if (pMode->SynthClock > 80000) {
+               /* the SynthClock will be divided and clock doubled by the PLL */
+	       pMode->Flags |= V_DBLCLK;
+	    }
+	    break;
+	 case TI3026_DAC:  /* IBMRGB??? */
+	 case TI3030_DAC:
+            if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
+               /*
+                * for the mixed Ti3026/3030 + ICD2061A cases we need to split
+                * at 120MHz; Since the ICD2061A clock code dislikes 120MHz
+                * we already double for that
+                */
+	       if (pMode->SynthClock >= 120000) {
+	          pMode->Flags |= V_DBLCLK;
+	          pMode->SynthClock /= 2;
+	       }
+	    } else {
+	       /*
+	        * use the Ti3026/3030 clock
+	        */
+	       if (pMode->SynthClock > 80000) {
+                  /* 
+                   * the SynthClock will be divided and clock doubled 
+                   * by the PLL 
+                   */
+	          pMode->Flags |= V_DBLCLK;
+	       }
+	    }
+	    break;
+	 case IBMRGB52x_DAC:
+	 case IBMRGB524_DAC:
+	 case IBMRGB525_DAC:
+	 case IBMRGB528_DAC:
+	    if (pMode->SynthClock > 80000 || S3_968_SERIES(s3ChipId)) {
+	       pMode->Flags |= V_DBLCLK;
+	    }
+	    break;
+	 case ATT20C498_DAC:
+	 case ATT22C498_DAC:
+	 case ATT20C409_DAC:
+	 case STG1700_DAC:
+	 case STG1703_DAC:
+	 case S3_SDAC_DAC:
+	    switch (s3Bpp) {
+	    case 1:
+	       /*
+	        * This one depend on pixel multiplexing for 8bpp.
+	        * Although existing code implies it depends on ramdac
+	        * clock doubling instead (are the two tied together?)
+	        * We'll act based on clock doubling changeover at 67500
+	        */
+	       if (( DAC_IS_ATT20C498 && pMode->SynthClock > nonMuxMaxClock) ||
+		   (!DAC_IS_ATT20C498 && pMode->SynthClock > 67500)) {
+		  if (!(DAC_IS_SDAC)) {
+		     pMode->SynthClock /= 2;
+		     pMode->Flags |= V_DBLCLK;
+		  }
+	       }
+	       break;
+	    case 2:
+	       /* No change for 16bpp */
+	       break;
+	    case 4:
+	       pMode->SynthClock *= 2;
+	       break;
+	    }
+	    break;
+	 case S3_TRIO32_DAC:
+	 case S3_TRIO64_DAC:
+	    switch (s3Bpp) {
+	    case 1:
+#if 0  
+	       /* XXXX pMode->SynthClock /= 2 might be better with sr15 &= ~0x40
+		  in s3init.c if screen wouldn't completely blank... */
+	       if (pMode->SynthClock > nonMuxMaxClock) {
+		  pMode->SynthClock /= 2;
+		  pMode->Flags |= V_DBLCLK;
+	       }
+#endif
+	       break;
+	    case 2:
+	    case 4:
+	       /* No change for 16bpp and 24bpp */
+	       break;
+	    }
+	    break;
+	 case ATT20C490_DAC:
+ 	 case SS2410_DAC:    /* just guessing ( based on 490 ) */
+	 case SC1148x_M2_DAC:
+	 case SC1148x_M3_DAC:
+	 case SC15025_DAC:
+	 case S3_GENDAC_DAC:
+	    if (s3Bpp > 1) {
+	       pMode->SynthClock *= s3Bpp;
+	    }
+	    break;
+	 default:
+	    /* Do nothing */
+	    break;
+   }
+         
+   /* Setup the Mode.Private if required */
+   if (S3_964_SERIES(s3ChipId) || S3_968_SERIES(s3ChipId)) {
+	 if (!pMode->PrivSize || !pMode->Private) {
+	    pMode->PrivSize = S3_MODEPRIV_SIZE;
+	    pMode->Private = (INT32 *)xcalloc(sizeof(INT32), S3_MODEPRIV_SIZE);
+	    pMode->Private[0] = 0;
+	 }
+
+     	/* Set default for invert_vclk */
+   	if (!(pMode->Private[0] & (1 << S3_INVERT_VCLK))) {
+	    if (DAC_IS_TI3026 && (s3BiosVendor == DIAMOND_BIOS ||
+				  OFLG_ISSET(OPTION_DIAMOND,
+				  &s3InfoRec.options)))
+	       pMode->Private[S3_INVERT_VCLK] = 1;
+	    else if (DAC_IS_TI3030) 
+	       if ((s3Bpp == 2 && (pMode->Flags & V_DBLCLK)) || s3Bpp == 4)
+		  pMode->Private[S3_INVERT_VCLK] = 1;
+	       else 
+		  pMode->Private[S3_INVERT_VCLK] = 0;
+	    else if (DAC_IS_IBMRGB)
+	       if (s3Bpp == 4) 
+		  pMode->Private[S3_INVERT_VCLK] = 0;
+	       else if (s3BiosVendor == STB_BIOS && s3Bpp == 2 
+			&& s3InfoRec.clock[pMode->Clock] > 125000 
+			&& s3InfoRec.clock[pMode->Clock] < 175000)
+		  pMode->Private[S3_INVERT_VCLK] = 0;
+	       else if ((s3BiosVendor == NUMBER_NINE_BIOS ||
+			 s3BiosVendor == HERCULES_BIOS) &&
+			S3_968_SERIES(s3ChipId))
+		  pMode->Private[S3_INVERT_VCLK] = 0;
+	       else
+		  pMode->Private[S3_INVERT_VCLK] = 1;
+	    else 
+	       pMode->Private[S3_INVERT_VCLK] = 0;
+	    pMode->Private[0] |= 1 << S3_INVERT_VCLK;
+    	}
+
+    	/* Set default for blank_delay */
+    	if (!(pMode->Private[0] & (1 << S3_BLANK_DELAY))) {
+	    pMode->Private[0] |= (1 << S3_BLANK_DELAY);
+	    if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
+	       if ((pMode->Flags & V_DBLCLK) || s3Bpp > 1)
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       else
+		  pMode->Private[S3_BLANK_DELAY] = 0x01;
+	    } else if (DAC_IS_TI3025) {
+	       if (s3Bpp == 1)
+		  if (pMode->Flags & V_DBLCLK)
+		     pMode->Private[S3_BLANK_DELAY] = 0x02;
+		  else
+		     pMode->Private[S3_BLANK_DELAY] = 0x03;
+	       else if (s3Bpp == 2)
+		  if (pMode->Flags & V_DBLCLK)
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+		  else
+		     pMode->Private[S3_BLANK_DELAY] = 0x01;
+	       else /* (s3Bpp == 4) */
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    } else if (DAC_IS_TI3026) {
+	       if (s3BiosVendor == DIAMOND_BIOS 
+                   || OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options)) {
+	          if (s3Bpp == 1) 
+		     pMode->Private[S3_BLANK_DELAY] = 0x72;
+	          else if (s3Bpp == 2) 
+		     pMode->Private[S3_BLANK_DELAY] = 0x73;
+	          else /*if (s3Bpp == 4)*/ 
+		     pMode->Private[S3_BLANK_DELAY] = 0x75;
+	       } else {
+	          if (s3Bpp == 1) 
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+	          else if (s3Bpp == 2) 
+		     pMode->Private[S3_BLANK_DELAY] = 0x01;
+	          else /*if (s3Bpp == 4)*/ 
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       }
+	    } else if (DAC_IS_TI3030){
+	       if (s3Bpp == 1 || (s3Bpp == 2 && !(pMode->Flags & V_DBLCLK)))
+		  pMode->Private[S3_BLANK_DELAY] = 0x01;
+	       else
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    } else if (DAC_IS_IBMRGB) {
+	       if (s3BiosVendor == GENOA_BIOS) {
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       }
+	       else if (s3BiosVendor == STB_BIOS) {
+		  if (s3Bpp == 1 && s3InfoRec.clock[pMode->Clock] > 50000)
+		     pMode->Private[S3_BLANK_DELAY] = 0x55;
+		  else
+		     pMode->Private[S3_BLANK_DELAY] = 0x00;
+	       }
+	       else if (s3BiosVendor == HERCULES_BIOS) {
+		 if (S3_968_SERIES(s3ChipId)) {
+		   pMode->Private[S3_BLANK_DELAY] = 0x00;
+		 }
+		 else {
+		   pMode->Private[S3_BLANK_DELAY] = (4/s3Bpp) - 1;
+		   if (pMode->Flags & V_DBLCLK) 
+		     pMode->Private[S3_BLANK_DELAY] >>= 1; 
+		 }
+	       }
+	       else
+		  pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    } else {
+	       pMode->Private[S3_BLANK_DELAY] = 0x00;
+	    }
+    	}
+	 
+    	/* Set default for early_sc */      
+    	if (!(pMode->Private[0] & (1 << S3_EARLY_SC))) {
+	    pMode->Private[0] |= 1 << S3_EARLY_SC;
+	    if (DAC_IS_TI3025) {
+	       if (OFLG_ISSET(OPTION_NUMBER_NINE,&s3InfoRec.options))
+		  pMode->Private[S3_EARLY_SC] = 1;
+	       else
+		  pMode->Private[S3_EARLY_SC] = 0;
+	    } else if ((DAC_IS_TI3026 || DAC_IS_TI3030)
+		       && OFLG_ISSET(CLOCK_OPTION_ICD2061A,
+				     &s3InfoRec.clockOptions)) {
+	       if (s3Bpp == 2 && (pMode->Flags & V_DBLCLK))
+		  pMode->Private[S3_EARLY_SC] = 1;
+	       else
+		  pMode->Private[S3_EARLY_SC] = 0;
+	    } else if (DAC_IS_TI3026 
+		       && OFLG_ISSET(CLOCK_OPTION_ICD2061A,
+				     &s3InfoRec.clockOptions)) {
+	       if (s3Bpp == 2 && (pMode->Flags & V_DBLCLK))
+		  pMode->Private[S3_EARLY_SC] = 1;
+	       else
+		  pMode->Private[S3_EARLY_SC] = 0;
+	    } else if (DAC_IS_IBMRGB) {
+	       if (s3BiosVendor == GENOA_BIOS) {
+	          pMode->Private[S3_EARLY_SC] = 0;
+	       }
+	       else if (s3BiosVendor == STB_BIOS) {
+		  if (s3Bpp == 2 && s3InfoRec.clock[pMode->Clock] > 125000)
+		     pMode->Private[S3_EARLY_SC] = 0;
+		  else if (s3Bpp == 4)
+		     pMode->Private[S3_EARLY_SC] = 0;
+		  else 
+		     pMode->Private[S3_EARLY_SC] = 1;
+	       }
+	       else if (s3BiosVendor == HERCULES_BIOS) {
+		 if (S3_968_SERIES(s3ChipId))
+		   pMode->Private[S3_EARLY_SC] = 0;
+		 else
+		   pMode->Private[S3_EARLY_SC] = 0;
+	       }
+	       else
+	          pMode->Private[S3_EARLY_SC] = 0;
+	    } else {
+	       pMode->Private[S3_EARLY_SC] = 0;
+	    }
+    	}
+    }
+
+   return MODE_OK;
 }

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: access.c,v 1.15 94/04/17 20:03:32 hersh Exp $
- * $XFree86$
+ * $XFree86: xc/programs/xdm/access.c,v 3.0 1994/06/28 12:32:25 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -54,11 +54,13 @@ in this Software without prior written authorization from the X Consortium.
 #define NEGATE_CHARACTER    '!'
 #define CHOOSER_STRING	    "CHOOSER"
 #define BROADCAST_STRING    "BROADCAST"
+#define NOBROADCAST_STRING  "NOBROADCAST"
 
-#define HOST_ALIAS	0
-#define HOST_ADDRESS	1
-#define HOST_BROADCAST	2
-#define HOST_CHOOSER	3
+#define HOST_ALIAS	    0
+#define HOST_ADDRESS	    1
+#define HOST_BROADCAST	    2
+#define HOST_CHOOSER	    3
+#define HOST_NOBROADCAST    4
 
 typedef struct _hostEntry {
     struct _hostEntry	*next;
@@ -77,6 +79,7 @@ typedef struct _displayEntry {
     struct _displayEntry    *next;
     int			    type;
     int			    notAllowed;
+    int			    notBroadcast;
     int			    chooser;
     union _displayType {
 	char		    *aliasName;
@@ -258,6 +261,10 @@ tryagain:
     {
 	h->type = HOST_BROADCAST;
     }
+    else if (!strcmp (hostOrAlias, NOBROADCAST_STRING))
+    {
+	h->type = HOST_NOBROADCAST;
+    }
     else
     {
 	h->type = HOST_ADDRESS;
@@ -309,6 +316,7 @@ ReadDisplayEntry (file)
     	return NULL;
     d = (DisplayEntry *) malloc (sizeof (DisplayEntry));
     d->notAllowed = 0;
+    d->notBroadcast = 0;
     d->chooser = 0;
     if (*displayOrAlias == ALIAS_CHARACTER)
     {
@@ -385,6 +393,9 @@ ReadDisplayEntry (file)
 	{
 	    FreeHostEntry (h);
 	    d->chooser = 1;
+	} else if (h->type == HOST_NOBROADCAST) {
+	    FreeHostEntry (h);
+	    d->notBroadcast = 1;
 	} else {
 	    *prev = h;
 	    prev = &h->next;
@@ -743,7 +754,8 @@ AcceptableDisplayAddress (clientAddress, connectionType, type)
     }
     if (clientName)
 	free (clientName);
-    return (d != 0) && (d->notAllowed == 0);
+    return (d != 0) && (d->notAllowed == 0)
+	&& (type == BROADCAST_QUERY ? d->notBroadcast == 0 : 1);
 }
 
 #endif /* XDMCP */

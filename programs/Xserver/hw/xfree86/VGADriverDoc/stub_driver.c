@@ -1,5 +1,5 @@
 /* $XConsortium: stub_driver.c /main/5 1995/09/04 19:45:46 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.14 1996/02/04 08:57:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.15 1996/06/29 09:06:24 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -110,7 +110,7 @@ static char *   STUBIdent();
 static Bool     STUBClockSelect();
 static void     STUBEnterLeave();
 static Bool     STUBInit();
-static Bool	STUBValidMode();
+static int	STUBValidMode();
 static void *   STUBSave();
 static void     STUBRestore();
 static void     STUBAdjust();
@@ -805,14 +805,15 @@ STUBFbInit()
 	
 }
 
-static Bool
-STUBValidMode(mode)
+static int
+STUBValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
 	/*
 	 * Code to check if a mode is suitable for the selected chipset.
-	 * In most cases this can just return TRUE.
+	 * In most cases this can just return MODE_OK.
 	 */
 
-	return(TRUE);
+	return(MODE_OK);
 }

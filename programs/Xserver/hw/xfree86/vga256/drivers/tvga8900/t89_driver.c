@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.40 1996/08/23 11:04:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.41 1996/09/01 04:47:54 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -100,6 +100,7 @@ typedef struct {
 	unsigned char VCLK_O;		/* For MiscOutReg		*/
 	unsigned char VCLK_A;		/* For Programmable Clock (low) */
 	unsigned char VCLK_B;		/* For Programmable Clock (hi)  */
+	unsigned char VLBusReg;		/* For VL Bus and 32bit mode 	*/
 	unsigned char MiscExtFunc;	/* For Misc. Ext. Functions     */
 	unsigned char GraphEngReg;	/* For Graphic Engine Control   */
 	unsigned char PCIReg;		/* For PCI Bursts		*/
@@ -119,7 +120,7 @@ static char *TVGA8900Ident();
 static Bool TVGA8900Probe();
 static void TVGA8900EnterLeave();
 static Bool TVGA8900Init();
-static Bool TVGA8900ValidMode();
+static int  TVGA8900ValidMode();
 static void *TVGA8900Save();
 static void TVGA8900Restore();
 static void TVGA8900FbInit();
@@ -598,10 +599,9 @@ TVGA8900Probe()
 		TVGA8900.ChipHas16bpp = TRUE;
 		break;
 	case TGUI9320LCD:
-		tridentIsTGUI = TRUE;			/* Reports of this works */
+		tridentIsTGUI = TRUE;		/* Reports of this works */
 		tridentLinearOK = TRUE;
 		tridentDACtype = TGUIDAC;
-		TVGA8900.ChipHas16bpp = TRUE;
 		TVGA8900.ChipUse2Banks = TRUE;
 		tridentTGUIProgrammableClocks = TRUE;
 		break;
@@ -857,11 +857,7 @@ TVGA8900Probe()
 
 	if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 	{
-		OFLG_SET(OPTION_TGUI_PCI_READ_ON, 
-			&TVGA8900.ChipOptionFlags);
 		OFLG_SET(OPTION_TGUI_PCI_READ_OFF,
-			&TVGA8900.ChipOptionFlags);
-		OFLG_SET(OPTION_TGUI_PCI_WRITE_ON, 
 			&TVGA8900.ChipOptionFlags);
 		OFLG_SET(OPTION_TGUI_PCI_WRITE_OFF,
 			&TVGA8900.ChipOptionFlags);
@@ -1242,6 +1238,7 @@ TVGA8900Restore(restore)
 #ifndef MONOVGA
 		outw(0x3CE, ((restore->MiscExtFunc) << 8) | 0x0F);
 #endif
+		outw(vgaIOBase + 4, ((restore->VLBusReg) << 8) | 0x2A);
 		/*
 	 	* Set the MCLK values....
 	 	*/
@@ -1378,6 +1375,7 @@ TVGA8900Save(save)
 #ifndef MONOVGA
 		outb(0x3CE, 0x0F); save->MiscExtFunc = inb(0x3CF);
 #endif
+		outb(vgaIOBase + 4, 0x2A); save->VLBusReg = inb(vgaIOBase + 5);
 		/*
 		 * Save the MCLK values....
 	 	 */
@@ -1566,8 +1564,11 @@ TVGA8900Init(mode)
 #ifndef MONOVGA
 	if (tridentIsTGUI)
 	{
+		/* Turn on 32 bit mode - applies to VLBus and PCI */
+		outb(vgaIOBase + 4, 0x2A);
+		new->VLBusReg = inb(vgaIOBase + 5) | 0x40; /* 32bit mode */
 		outb(0x3CE, 0x0F);
-		new->MiscExtFunc = inb(0x3CF) | 0x07;
+		new->MiscExtFunc = inb(0x3CF) | 0x07; /* Set Dual Banks */
 	}
 	new->CommandReg = 0x00;		/* DAC Standard colourmap */
 
@@ -1608,19 +1609,11 @@ TVGA8900Init(mode)
 	{
 		outb(vgaIOBase + 4, 0x39);
 		new->PCIReg = inb(vgaIOBase + 5);
-
-		if (OFLG_ISSET(OPTION_TGUI_PCI_READ_ON, 
-					&vga256InfoRec.options))
-			new->PCIReg |= 0x02;
+		/* Turn PCI Burst Read and Write ON - By Default ! */
+		new->PCIReg |= 0x06;
 		if (OFLG_ISSET(OPTION_TGUI_PCI_READ_OFF,
 					&vga256InfoRec.options))
 			new->PCIReg &= 0xFD;
-		/* This defaults to OFF */
-		if (OFLG_ISSET(OPTION_TGUI_PCI_WRITE_ON, 
-					&vga256InfoRec.options))
-			new->PCIReg |= 0x04;
-		else
-			new->PCIReg &= 0xFB;
 		if (OFLG_ISSET(OPTION_TGUI_PCI_WRITE_OFF,
 					&vga256InfoRec.options))
 			new->PCIReg &= 0xFB;
@@ -1730,9 +1723,10 @@ TVGA8900Adjust(x, y)
  * TVGA8900ValidMode --
  *
  */
-static Bool
-TVGA8900ValidMode(mode)
+static int
+TVGA8900ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
 #ifdef MONOVGA
 	if ( (TVGAchipset == TVGA8900C) ||
@@ -1743,10 +1737,11 @@ DisplayModePtr mode;
 	{
 		if (mode->HDisplay > 1152)
 		{
+		    if (verbose)
 			ErrorF("%s %s: Chipset supports a max. width"
 			       " of 1152, Adjust Modes in XF86Config.\n",
 			       XCONFIG_PROBED, vga256InfoRec.name);
-			return(FALSE);
+		    return(MODE_BAD);
 		}
 	}
 #endif
@@ -1755,11 +1750,12 @@ DisplayModePtr mode;
 	{
 		if (mode->Flags & V_INTERLACE)
 		{
+		    if (verbose)
 			ErrorF("%s %s: Chipset does not support Interlaced "
 			       "modes at >8bpp\n", XCONFIG_PROBED, 
 			       vga256InfoRec.name);
-			return FALSE;
+		    return MODE_BAD;
 		}
 	}
-	return TRUE;
+	return MODE_OK;
 }

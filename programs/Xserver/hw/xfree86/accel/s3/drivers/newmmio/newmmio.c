@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.0 1996/08/20 12:27:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.1 1996/09/01 04:15:50 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -85,8 +85,10 @@ NEWMMIO_Probe()
       if (StrCaseCmp(s3InfoRec.chipset, NEWMMIO_Ident(0)))
 	 return(FALSE);
       else {
-	 s3NewMmio = TRUE;
-	 return(TRUE);
+	 /* don't allow "newmmio" for S3 chips which don't support it 
+	    even when specified in the config file, so fall through
+	    for more sanity checks... */
+	 ;
       }
    }
 

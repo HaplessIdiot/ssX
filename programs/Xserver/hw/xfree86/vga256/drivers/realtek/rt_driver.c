@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.4 1996/03/29 22:18:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.5 1996/06/29 09:09:06 dawes Exp $ */
 
 /*************************************************************************/
 
@@ -163,7 +163,7 @@ static char *   RTVGAIdent();
 static Bool     RTVGAClockSelect();
 static void     RTVGAEnterLeave();
 static Bool     RTVGAInit();
-static Bool	RTVGAValidMode();
+static int	RTVGAValidMode();
 static void *   RTVGASave();
 static void     RTVGARestore();
 static void     RTVGAAdjust();
@@ -1248,14 +1248,15 @@ RTVGAFbInit()
 
 #endif
 
-static Bool
-RTVGAValidMode(mode)
+static int
+RTVGAValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
 	/*
 	 * Code to check if a mode is suitable for the selected chipset.
 	 * In most cases this can just return TRUE.
 	 */
 
-	return(TRUE);
+	return(MODE_OK);
 }

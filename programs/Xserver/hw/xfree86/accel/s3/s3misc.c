@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.52 1996/09/01 12:29:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.53 1996/09/03 15:22:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -74,12 +74,12 @@ extern Bool  s3Localbus;
 extern Bool  s3VLB;
 extern Bool  s3LinearAperture;
 extern int s3BankSize;
-extern int s3LBWindow;        /* BL, for Trio64V+ and x68 */
 extern int s3DisplayWidth;
 extern pointer vgaBase;
 extern pointer vgaBaseLow;
 extern pointer vgaBaseHigh;
 extern pointer s3VideoMem;
+extern pointer s3MmioMem;
 extern unsigned char s3Port59;
 extern unsigned char s3Port5A;
 extern unsigned char s3Port31;
@@ -191,7 +191,11 @@ s3Initialize(scr_index, pScreen, argc, argv)
       /* s3Port59/s3Port5A need to be checked/initialized
 	 before s3Init() is called the first time */
 
-      if (xf86LinearVidMem() && S3_801_928_SERIES (s3ChipId)) {
+      if (S3_801_928_SERIES (s3ChipId)
+	  && s3Localbus
+	  && xf86LinearVidMem()
+	  && !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options)
+	  && !OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
 	 if (S3_x64_SERIES(s3ChipId)) 
 	    if (s3InfoRec.MemBase != 0) {
 	       if (s3InfoRec.MemBase & 0x3ffffff) {
@@ -282,14 +286,13 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	     * Normally only 6 bits are set in hw, but the Diamond Stealth
 	     * Pro is different.
 	     */
-	    if (s3NewMmio) 
-			s3LBWindow = 0x1010000; 	/* BL: 16 MB + 64k */
-	    else 
-			s3LBWindow = s3BankSize;
 	    if (s3InfoRec.MemBase != 0) {
 	       addr = (s3InfoRec.MemBase & 0xffc00000);
 	       s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-					  (pointer)addr, s3LBWindow);
+					  (pointer)addr, s3BankSize);
+	       if (s3NewMmio)
+		  s3MmioMem  = xf86MapVidMem(scr_index, MMIO_REGION,
+					     (pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
 	       s3DisableLinear();
 	       outb(vgaCRIndex, 0x5a);
 	       if (S3_x64_SERIES(s3ChipId)) {
@@ -321,7 +324,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     ErrorF("Read LAW as 0x%08X \n", addr);
 	          }
 		  s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-                                             (pointer)addr, s3LBWindow);
+                                             (pointer)addr, s3BankSize);
+		  if (s3NewMmio)
+		     s3MmioMem  = xf86MapVidMem(scr_index, MMIO_REGION,
+						(pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
 		  poker = (long *) s3VideoMem;
 		  if (s3TryAddress(poker, pVal, addr, 1)) {
 		     s3LinearAperture = TRUE;
@@ -338,7 +344,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			       "but linear fb not usable");
 		     }
 		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
-				     s3LBWindow);
+				     s3BankSize);
+		     if (s3NewMmio)
+			xf86UnMapVidMem(scr_index, MMIO_REGION, s3MmioMem,
+					S3_NEWMMIO_REGSIZE);
 		  }
 	       } else {
 #ifdef PC98_PWLB
@@ -346,7 +355,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     unsigned long addr = (PWLB_WinAdd << 16) + 0x400000;
 
 		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-						(pointer)addr, s3LBWindow);
+						(pointer)addr, s3BankSize);
+		     if (s3NewMmio)
+			s3MmioMem = xf86MapVidMem(scr_index, MMIO_REGION,
+						  (pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
 		     poker = (long *) s3VideoMem; 
 
 		     if (s3TryAddress(poker, pVal, addr, 1)) {
@@ -360,7 +372,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     addr = (i << 24);
 
 		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-						(pointer)addr, s3LBWindow);
+						(pointer)addr, s3BankSize);
+		     s3MmioMem = xf86MapVidMem(scr_index, MMIO_REGION,
+						(pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
 		     poker = (long *) s3VideoMem; 
 
 		     if (s3TryAddress(poker, pVal, addr, 1)) {
@@ -375,10 +389,17 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			if (!s3TryAddress(poker, pVal, addr, 2)) {
 			   addr += (0x0C<<20);
 			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
-					   s3VideoMem, s3LBWindow);
+					   s3VideoMem, s3BankSize);
 			   s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 						      (pointer)addr,
-						      s3LBWindow);
+						      s3BankSize);
+			   if (s3NewMmio) {
+			      xf86UnMapVidMem(scr_index, MMIO_REGION,
+					      s3MmioMem, S3_NEWMMIO_REGSIZE);
+			      s3MmioMem = xf86MapVidMem(scr_index, MMIO_REGION,
+							(pointer)(addr+S3_NEWMMIO_REGBASE),
+							S3_NEWMMIO_REGSIZE);
+			   }
 		     
 			   if (s3TryAddress((long *)s3VideoMem, pVal,
 					    addr, 3)) {
@@ -396,10 +417,17 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			    */
 			   addr = (i << 24) | 0x24000000;
 			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
-					   s3VideoMem, s3LBWindow);
+					   s3VideoMem, s3BankSize);
 			   s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 						      (pointer)addr,
-						      s3LBWindow);
+						      s3BankSize);
+			   if (s3NewMmio) {
+			      xf86UnMapVidMem(scr_index, MMIO_REGION,
+					      s3MmioMem, S3_NEWMMIO_REGSIZE);
+			      s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+							 (pointer)(addr+S3_NEWMMIO_REGBASE),
+							 S3_NEWMMIO_REGSIZE);
+			   }
 			   if (s3TryAddress((long *)s3VideoMem, pVal,
 					    addr, 4)) {
 			      ErrorF("%s %s: Local bus LAW is 0x%03Xxxxxx\n", 
@@ -421,7 +449,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			s3EnableLinear();
 		     }
 		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
-				     s3LBWindow);
+				     s3BankSize);
+		     if (s3NewMmio)
+			xf86UnMapVidMem(scr_index, MMIO_REGION, s3MmioMem,
+					S3_NEWMMIO_REGSIZE);
 		  }
 #ifdef PC98_PWLB
 		 }
@@ -451,8 +482,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	 s3VideoMem = vgaBase;
 	 addr = 0xA0000;
 	 if (s3NewMmio)  /* doesn't work without linear mapping (yet?) */
-	    FatalError("%s %s: Chipset \"newmmio\" needs linear framebuffer\n",
+	    ErrorF("%s %s: Chipset \"newmmio\" needs linear framebuffer\n",
 		       XCONFIG_GIVEN, s3InfoRec.name);
+	    ErrorF("\t\tplease specify Chipset \"mmio_928\"\n");
 	 /* If using VGA aperture, set it up */
 	 if (s3BankSize == 0x10000) {
 #ifndef PC98

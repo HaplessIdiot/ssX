@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.21 1996/03/29 22:18:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.22 1996/06/29 09:08:59 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -180,7 +180,7 @@ static char *   OAKIdent();
 static Bool     OAKClockSelect();
 static void     OAKEnterLeave();
 static Bool     OAKInit();
-static Bool     OAKValidMode();
+static int      OAKValidMode();
 static void *   OAKSave();
 static void     OAKRestore();
 static void     OAKAdjust();
@@ -1500,11 +1500,12 @@ OAKAdjust(x, y)
  * OAKValidMode --
  *
  */
-static Bool
-OAKValidMode(mode)
+static int
+OAKValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.23 1996/03/29 22:18:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.24 1996/06/29 09:09:02 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -111,7 +111,7 @@ static char *PVGA1Ident();
 static Bool  PVGA1ClockSelect();
 static void  PVGA1EnterLeave();
 static Bool  PVGA1Init();
-static Bool  PVGA1ValidMode();
+static int   PVGA1ValidMode();
 static void *PVGA1Save();
 static void  PVGA1Restore();
 static void  PVGA1Adjust();
@@ -1203,9 +1203,10 @@ PVGA1Adjust(x, y)
  * PVGA1ValidMode --
  *
  */
-static Bool
-PVGA1ValidMode(mode)
+static int
+PVGA1ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }

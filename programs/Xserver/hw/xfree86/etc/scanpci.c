@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.20 1996/09/01 04:46:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.21 1996/09/03 04:12:48 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -486,8 +486,8 @@ struct pci_vendor_device {
         { 0x1039, "SIS", {
                             { 0x0001, "86C201", NF },
                             { 0x0002, "86C202", NF },
-                            { 0x0005, "86C205", NF },
                             { 0x0008, "85C503", NF },
+                            { 0x0205, "86C205", NF },
                             { 0x0406, "85C501", NF },
                             { 0x0496, "85C496", NF },
                             { 0x0601, "85C601", NF },
@@ -706,7 +706,7 @@ main(int argc, unsigned char *argv[])
     int ch;
 
     if (argc > 2) {
-	printf("Usage: %s [-f] \n");
+	printf("Usage: %s [-f] \n", argv[0]);
 	exit(1);
     }
     while((ch = getopt(argc, argv, "f")) != EOF) {
@@ -715,7 +715,7 @@ main(int argc, unsigned char *argv[])
 		f_flag = 1;
 		break;
 	default :
-		printf("Usage: %s [-f] \n");
+		printf("Usage: %s [-f] \n", argv[0]);
 		exit(1);
         }
     }

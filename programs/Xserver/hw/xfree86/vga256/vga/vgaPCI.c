@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.5 1996/08/16 12:32:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.6 1996/08/18 01:52:54 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -23,12 +23,13 @@ vgaPCIInformation *
 vgaGetPCIInfo()
 {
     vgaPCIInformation *info = NULL;
-    struct pci_config_reg *pcrp;
+    pciConfigPtr pcrp, *pcrpp;
     Bool found = FALSE;
     int i = 0;
 
-    xf86scanpci(vga256InfoRec.scrnIndex);
-    while (pcrp = pci_devp[i]) {
+    pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+
+    while (pcrp = pcrpp[i]) {
 	if ((pcrp->_base_class == PCI_CLASS_PREHISTORIC &&
 	     pcrp->_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||
 	    (pcrp->_base_class == PCI_CLASS_DISPLAY &&
@@ -39,7 +40,12 @@ vgaGetPCIInfo()
 		return NULL;
 	    info->Vendor = pcrp->_vendor;
 	    info->ChipType = pcrp->_device;
-	    info->ChipRev = pcrp->_class_revision & 0xFF;
+	    info->ChipRev = pcrp->_rev_id;
+	    info->Bus = pcrp->_bus;
+	    info->Card = pcrp->_cardnum;
+	    info->Func = pcrp->_func;
+	    info->AllCards = pcrpp;
+	    info->ThisCard = pcrp;
 	    info->MemBase = 0;
 	    info->IOBase = 0;
 
@@ -48,8 +54,11 @@ vgaGetPCIInfo()
 	      info->IOBase = pcrp->_base0;
 	      info->MemBase = pcrp->_base1;
 
-	      xf86writepci(vga256InfoRec.scrnIndex, pcrp->_cardnum,
-			   0x04, 0x0003, 0x0003);
+	      xf86writepci(vga256InfoRec.scrnIndex, pcrp->_bus,
+			   pcrp->_cardnum, pcrp->_func,
+			   PCI_CMD_STAT_REG,
+			   PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE,
+			   PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
 	      break;
 	    }
 

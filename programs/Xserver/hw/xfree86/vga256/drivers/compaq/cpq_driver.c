@@ -1,5 +1,5 @@
 /* $XConsortium: cpq_driver.c /main/6 1996/01/12 12:16:57 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.11 1996/02/22 05:13:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.12 1996/06/29 09:08:35 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -77,7 +77,7 @@ static char *   COMPAQIdent();
 static Bool     COMPAQClockSelect();
 static void     COMPAQEnterLeave();
 static Bool     COMPAQInit();
-static Bool     COMPAQValidMode();
+static int      COMPAQValidMode();
 static void *   COMPAQSave();
 static void     COMPAQRestore();
 static void     COMPAQAdjust();
@@ -462,9 +462,10 @@ int mode;
  * COMPAQValidMode --
  *
  */
-static Bool
-COMPAQValidMode(mode)
+static int
+COMPAQValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }

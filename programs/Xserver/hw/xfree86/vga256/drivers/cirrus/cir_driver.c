@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.61 1996/08/23 11:04:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.62 1996/09/01 04:47:46 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -249,7 +249,7 @@ static char *   cirrusIdent();
 static Bool     cirrusClockSelect();
 static void     cirrusEnterLeave();
 static Bool     cirrusInit();
-static Bool     cirrusValidMode();
+static int      cirrusValidMode();
 static void *   cirrusSave();
 static void     cirrusRestore();
 static Bool     cirrusScreenInit();
@@ -1081,7 +1081,7 @@ cirrusProbe()
 	       vga256InfoRec.videoRam = 512;
 	       }
 	  else 
-	  if (HAVE543X() || cirrusChip == CLGD5446) {
+	  if (HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) {
 	  	/* The scratch register method does not work on the 543x. */
 	  	/* Use the DRAM bandwidth bit and the DRAM bank switching */
 	  	/* bit to figure out the amount of memory. */
@@ -1177,7 +1177,7 @@ cirrusProbe()
 	   * Some cards don't initialise SRF correctly, so do it here if the
 	   * user has specified the videoram amount.
 	   */
-	  if (!HAVE543X())
+	  if (!(HAVE543X() || HAVE754X()))
 	       {
 	       unsigned char SRF = 0;
 	       if (vga256InfoRec.videoRam > 1024)
@@ -1231,7 +1231,7 @@ cirrusProbe()
              /* 5434 rev. E+ supports 60 MHz MCLK in packed-pixel mode. */
              cirrusReprogrammedMCLK = 0x22;
          if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) ||
-         HAVE543X() || cirrusChip == CLGD5446) {
+         HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) {
              outb(0x3c4, 0x1f);
              MCLK = inb(0x3c5) & 0x3f;
              if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
@@ -1366,7 +1366,7 @@ cirrusProbe()
      OFLG_SET(OPTION_PROBE_CLKS, &CIRRUS.ChipOptionFlags);
      OFLG_SET(OPTION_LINEAR, &CIRRUS.ChipOptionFlags);
      if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-	 cirrusChip == CLGD5446) {
+	 HAVE754X() || cirrusChip == CLGD5446) {
          OFLG_SET(OPTION_SLOW_DRAM, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_MED_DRAM, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_FAST_DRAM, &CIRRUS.ChipOptionFlags);
@@ -1382,15 +1382,15 @@ cirrusProbe()
 #endif
      }
      if ((cirrusChip >= CLGD5426 && cirrusChip <= CLGD5429) || HAVE543X() ||
-	 cirrusChip == CLGD5446) {
+	 HAVE754X() || cirrusChip == CLGD5446) {
          OFLG_SET(OPTION_NO_2MB_BANKSEL, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_NO_BITBLT, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_FAVOUR_BITBLT, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_NO_IMAGEBLT, &CIRRUS.ChipOptionFlags);
      }
 #ifdef CIRRUS_SUPPORT_MMIO
-     if (cirrusChip == CLGD5429 || HAVE543X() || cirrusChip == CLGD5446 ||
-	 HAVE546X())
+     if (cirrusChip == CLGD5429 || HAVE543X() || HAVE754X() ||
+	 cirrusChip == CLGD5446 || HAVE546X())
          OFLG_SET(OPTION_MMIO, &CIRRUS.ChipOptionFlags);
 #endif
 
@@ -1581,7 +1581,8 @@ cirrusFbInit()
 
   cirrusUseBLTEngine = FALSE;
   if (cirrusChip == CLGD5426 || cirrusChip == CLGD5428 ||
-      cirrusChip == CLGD5429 || HAVE543X() || cirrusChip == CLGD5446)
+      cirrusChip == CLGD5429 || HAVE543X() || HAVE754X() ||
+      cirrusChip == CLGD5446)
       {
       cirrusUseBLTEngine = TRUE;
       if (OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
@@ -1614,7 +1615,7 @@ cirrusFbInit()
    */
   if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 ||
       cirrusChip == CLGD5428 || cirrusChip == CLGD5429 ||
-      cirrusChip == CLGD5446 || HAVE543X())
+      cirrusChip == CLGD5446 || HAVE543X() || HAVE754X())
       {
       unsigned char SRF, SR1F;
       outb(0x3c4, 0x0f);
@@ -1676,7 +1677,8 @@ cirrusFbInit()
         if (vga256InfoRec.MemBase != 0)
             CIRRUS.ChipLinearBase = vga256InfoRec.MemBase;
         else
-            if (HAVE543X() || cirrusChip == CLGD5446 || HAVE546X()) {
+            if (HAVE543X() || HAVE754X() || cirrusChip == CLGD5446 ||
+		HAVE546X()) {
                 if (cirrusBusType == CIRRUS_BUS_ISA) {
 		    ErrorF("%s %s: %s: Must specify MemBase for ISA bus linear "
 		           "addressing\n", XCONFIG_PROBED,
@@ -1957,7 +1959,8 @@ nolinear:
     /* MMIO is _not_ optional for 546X chips.  But it doesn't hurt anything
        anyway, unless you happen to have about 4GB of RAM */
     /* Register is set in init function. */
-    if (((HAVE543X() || cirrusChip == CLGD5429 || cirrusChip == CLGD5446) && 
+    if (((HAVE543X() || HAVE754X() || cirrusChip == CLGD5429 ||
+	  cirrusChip == CLGD5446) && 
 	OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options)) || HAVE546X()) {
         cirrusUseMMIO = TRUE;
 	
@@ -2303,7 +2306,7 @@ cirrusRestore(restore)
   outb(0x3CE,0x0B);
   outb(0x3CF,restore->GRB);
 
-  if (HAVE543X() || cirrusChip == CLGD5446) {
+  if (HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) {
        outb(0x3ce, 0x0f);
        outb(0x3cf, restore->GRF);
   }
@@ -2331,14 +2334,14 @@ cirrusRestore(restore)
     }
 
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      cirrusChip == CLGD5446)
+      HAVE754X() || cirrusChip == CLGD5446)
        {
        /* Restore the Performance Tuning Register on these chips only. */
        outb(0x3C4,0x16);
        outb(0x3C5,restore->SR16);
        }
 
-  if (HAVE543X() || cirrusChip == CLGD5446) {
+  if (HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) {
        outb(0x3c4, 0x17);
        outb(0x3c5, restore->SR17);
   }
@@ -2350,7 +2353,7 @@ cirrusRestore(restore)
        }
 
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      cirrusChip == CLGD5446) {
+      HAVE754X() || cirrusChip == CLGD5446) {
       outb(0x3c4, 0x1f);	/* MCLK register */
       outb(0x3c5, restore->SR1F);
   }
@@ -2529,7 +2532,7 @@ cirrusSave(save)
   outb(0x3CE,0x0B);		
   save->GRB = inb(0x3CF); 
 
-  if (HAVE543X() || cirrusChip == CLGD5446) {
+  if (HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) {
       outb(0x3ce, 0x0f);
       save->GRF = inb(0x3cf);
   }
@@ -2562,14 +2565,14 @@ cirrusSave(save)
     }  
 
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      cirrusChip == CLGD5446) 
+      HAVE754X() || cirrusChip == CLGD5446) 
        {
        /* Save the Performance Tuning Register on these chips only. */
         outb(0x3C4,0x16);
         save->SR16 = inb(0x3C5);
        }
 
-  if (HAVE543X() || cirrusChip == CLGD5446)
+  if (HAVE543X() || HAVE754X() || cirrusChip == CLGD5446)
        {
        outb(0x3c4,0x17);
        save->SR17 = inb(0x3c5);
@@ -2579,7 +2582,7 @@ cirrusSave(save)
   save->SR1E = inb(0x3C5);
 
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      cirrusChip == CLGD5446) {
+      HAVE754X() || cirrusChip == CLGD5446) {
       outb(0x3c4, 0x1f);		/* Save the MCLK register. */
       save->SR1F = inb(0x3c5);
   }
@@ -2827,7 +2830,8 @@ cirrusInit(mode)
 			  &SR1E, &SRE, &usemclk);
 	}
 	if (usemclk && (cirrusChip == CLGD5428 || cirrusChip == CLGD5429
-			|| HAVE543X() || cirrusChip == CLGD5446)) {
+			|| HAVE543X() || HAVE754X()
+			|| cirrusChip == CLGD5446)) {
 	  new->SR1F |= 0x40;	/* Use MCLK as VLCK. */
 	  SR1E &= 0xfe;	        /* Clear bit 0 of SR1E. */
 	}
@@ -2903,7 +2907,7 @@ cirrusInit(mode)
 
   /* Write sane value to Display Compression Control register, which */
   /* might be corrupted by other chipset probes. */
-  if (HAVE543X() || cirrusChip == CLGD5446) {
+  if (HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) {
     outb(0x3ce, 0x0f);
     new->GRF = inb(0x3cf) & 0xc0;
   }
@@ -2922,14 +2926,14 @@ cirrusInit(mode)
   /* It is vital for correct operation at high dot clocks. */
  
   if ((cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429)
-      || HAVE543X() || cirrusChip == CLGD5446)
+      || HAVE543X() || HAVE754X() || cirrusChip == CLGD5446)
     {
       new->SRF |= 0x20;	/* Enable 64 byte FIFO. */
     }
 
 #ifndef MONOVGA
   if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X() ||
-      cirrusChip == CLGD5446)
+      HAVE754X() || cirrusChip == CLGD5446)
     {
       int fifoshift_5430;
       int pixelrate, bandwidthleft, bandwidthused, percent;
@@ -2978,6 +2982,7 @@ cirrusInit(mode)
 	if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options))
 	  /* Aggressive setting, effectively 16. */
 	  threshold = 0;
+#ifdef USE_OLD_FIFO_VALUES
 	else {
 	  /* Default FIFO setting for 5434. */
 	  threshold = 1;	/* Effectively 17. */
@@ -3006,6 +3011,67 @@ cirrusInit(mode)
 	      threshold = 14;
 	  }
 	}
+#else
+      else {
+	/* Default FIFO setting for 5434. */
+	threshold = 1;	/* Effectively 17. */
+	/* 1MB, MCLK < 55 MHz */
+	if (bandwidthused >= 67500)
+	  threshold = 8;
+	if (bandwidthused >= 77500)
+	  threshold = 12;
+	if (hsyncdelay <= 16)
+	  threshold = 12;
+	if (cirrusDRAMBandwidth >= 110000) {
+	  /* 1MB, MCLK > 55 MHz */
+	  threshold = 1;
+	  if (bandwidthused >= 67500)
+	    threshold = 4;
+	  if (bandwidthused >= 77500)
+	    threshold = 8;
+	  if (hsyncdelay <= 16)
+	    threshold = 10;
+	}
+	if (cirrusDRAMBandwidth >= 165000) {
+	  /* 2MB, MCLK < 55 MHz */
+	  threshold = 1;
+	  if (bandwidthused >= 125000)
+	    threshold = 8;
+	  if (bandwidthused >= 155000)
+	    threshold = 12;
+	  if (hsyncdelay <= 16)
+	    threshold = 12;
+	}
+	if (cirrusDRAMBandwidth >= 220000) {
+	  /* 2MB, MCLK > 55 MHz. */
+	  threshold = 1;
+	  if (bandwidthused >= 125000)
+	    threshold = 4;
+	  if (bandwidthused >= 155000)
+	    threshold = 8;
+	  if (hsyncdelay <= 16)
+	    threshold = 10;
+	}
+	if (OFLG_ISSET(OPTION_FIFO_CONSERV,
+		       &vga256InfoRec.options)) {
+	  threshold = 8;
+	  /* 1MB */
+	  if (bandwidthused >= 67500)
+	    threshold = 12;
+	  if (bandwidthused >= 77500)
+	    threshold = 14;
+	  if (cirrusDRAMBandwidth >= 165000) {
+	    /* 2MB */
+	    threshold = 8;
+	    if (bandwidthused >= 125000)
+	      threshold = 12;
+	    if (bandwidthused >= 155000)
+	      threshold = 14;
+	  }
+	}
+      }
+
+#endif /* USE_OLD_FIFO_VALUES */
 	new->SR16 |= threshold;
       }
       else {
@@ -3223,7 +3289,8 @@ cirrusInit(mode)
 	       new->CR2D = 0x01;
      }
 
-     if (HAVE543X() || cirrusChip == CLGD5429 || cirrusChip == CLGD5446) {
+     if (HAVE543X() || HAVE754X() || cirrusChip == CLGD5429 ||
+	 cirrusChip == CLGD5446) {
           outb(0x3c4, 0x17);
           new->SR17 = inb(0x3c5);
 #ifdef CIRRUS_SUPPORT_MMIO
@@ -3605,6 +3672,7 @@ cirrusAdjust(x, y)
      static char onLeftSide = 0;
 #ifdef MONOVGA
      unsigned char lsb;
+     const int bumpThresh = 4;
 
      /* Remember where X thinks the screen is at. */
      screenStartX = x;
@@ -3628,11 +3696,11 @@ cirrusAdjust(x, y)
 	 pixelsPerTile = wideTiles?64:32;
 
        screenWidth = vga256InfoRec.frameX1 - vga256InfoRec.frameX0;
-       if (*pX < 2) {
+       if (*pX < bumpThresh) {
 	 /* Bumping up against left edge.  Bias screen to left. */
 	 x = (x / pixelsPerTile) * pixelsPerTile;
 	 onLeftSide = 1;
-       } else if (*pX > screenWidth - 2) {
+       } else if (*pX > screenWidth - bumpThresh) {
 	 /* Bumping up against right edge.  Bias screen to right. */
 	 x = ((x+pixelsPerTile-1) / pixelsPerTile) * pixelsPerTile;
 	 onLeftSide = 0;
@@ -3647,7 +3715,7 @@ cirrusAdjust(x, y)
        /* Don't scroll the virtual desktop too far right.  If the desktop
 	  gets aligned with one tile too far right, then you see the screen
 	  wrapped horizontally on the far right of the display. */
-       if (x >= vga256InfoRec.displayWidth - screenWidth)
+       if (x > vga256InfoRec.displayWidth - screenWidth)
 	 x -= pixelsPerTile;
 
        cirrusLgCursorXOffset = screenStartX - x;
@@ -3702,7 +3770,7 @@ cirrusAdjust(x, y)
        /* Don't scroll the virtual desktop too far right.  If the desktop
 	  gets aligned with one tile too far right, then you see the screen
 	  wrapped horizontally on the far right of the display. */
-       if (x >= vga256InfoRec.displayWidth - screenWidth)
+       if (x > vga256InfoRec.displayWidth - screenWidth)
 	 x -= pixelsPerTile;
        
        cirrusLgCursorXOffset = screenStartX - x;
@@ -3743,11 +3811,12 @@ cirrusAdjust(x, y)
  * cirrusValidMode --
  *
  */
-static Bool
-cirrusValidMode(mode)
+static int
+cirrusValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }
 
 

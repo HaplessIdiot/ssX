@@ -1,5 +1,5 @@
 /* $XConsortium: al_driver.c /main/6 1996/01/12 12:16:15 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.10 1996/03/29 22:17:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.11 1996/06/29 09:08:04 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -61,7 +61,7 @@ static char *   AL2101Ident();
 static Bool     AL2101ClockSelect();
 static void     AL2101EnterLeave();
 static Bool     AL2101Init();
-static Bool     AL2101ValidMode();
+static int      AL2101ValidMode();
 static void *   AL2101Save();
 static void     AL2101Restore();
 static void     AL2101Adjust();
@@ -371,9 +371,10 @@ AL2101Adjust(x, y)
  * AL2101ValidMode --
  *
  */
-static Bool
-AL2101ValidMode(mode)
+static int
+AL2101ValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-return TRUE;
+return MODE_OK;
 }

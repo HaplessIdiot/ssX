@@ -47,7 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbgc.c,v 3.2 1995/01/28 15:50:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbgc.c,v 3.3 1996/02/04 08:59:34 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -131,7 +131,7 @@ GCOps	cfbTEOps1Rect = {
     ZeroPolyArc,
     cfbFillPoly1RectCopy,
     cfbPolyFillRect,
-    W32PolyFillArcSolidCopy,
+    W32PolyFillArcSolid,
     miPolyText8,
     miPolyText16,
     miImageText8,
@@ -166,7 +166,7 @@ GCOps	cfbNonTEOps1Rect = {
     ZeroPolyArc,
     cfbFillPoly1RectCopy,
     cfbPolyFillRect,
-    W32PolyFillArcSolidCopy,
+    W32PolyFillArcSolid,
     miPolyText8,
     miPolyText16,
     miImageText8,
@@ -192,7 +192,7 @@ GCOps	cfbTEOps = {
     ZeroPolyArc,
     miFillPolygon,
     cfbPolyFillRect,
-    W32PolyFillArcSolidCopy,
+    W32PolyFillArcSolid,
     miPolyText8,
     miPolyText16,
     miImageText8,
@@ -222,7 +222,7 @@ GCOps	cfbNonTEOps = {
 #endif
     miFillPolygon,
     cfbPolyFillRect,
-    W32PolyFillArcSolidCopy,
+    W32PolyFillArcSolid,
     miPolyText8,
     miPolyText16,
     miImageText8,
@@ -783,16 +783,6 @@ cfbValidateGC(pGC, changes, pDrawable)
 #endif
 	pGC->ops->PolyFillArc = miPolyFillArc;
 	if (pGC->fillStyle == FillSolid)
-	{
-	    switch (devPriv->rop)
-	    {
-	    case GXcopy:
-		pGC->ops->PolyFillArc = W32PolyFillArcSolidCopy;
-		break;
-	    default:
-		pGC->ops->PolyFillArc = W32PolyFillArcSolidGeneral;
-		break;
-	    }
-	}
+	    pGC->ops->PolyFillArc = W32PolyFillArcSolid;
     }
 }

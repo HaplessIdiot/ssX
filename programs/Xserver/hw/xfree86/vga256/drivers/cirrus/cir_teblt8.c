@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.17 1996/02/04 09:13:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.18 1996/08/10 13:08:14 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -271,7 +271,8 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 			CIRRUSBASE());
 	else
 #if 0
-		if (glyphWidth > 16 || HAVE543X() || cirrusChip == CLGD5446)
+		if (glyphWidth > 16 || HAVE543X() ||
+		    HAVE754X() || cirrusChip == CLGD5446)
 			CirrusTransferText32bit(nglyph, h, glyphp, glyphWidth,
 				CIRRUSBASE());
 		else

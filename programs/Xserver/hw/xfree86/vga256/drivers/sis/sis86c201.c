@@ -27,7 +27,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.9 1996/07/08 10:33:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.10 1996/07/08 11:25:21 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -78,7 +78,7 @@ static char *SISIdent();
 static Bool SISProbe();
 static void SISEnterLeave();
 static Bool SISInit();
-static Bool SISValidMode();
+static int  SISValidMode();
 static void *SISSave();
 static void SISRestore();
 static void SISFbInit();
@@ -222,6 +222,10 @@ SISProbe()
 		 */
 		if (!StrCaseCmp(vga256InfoRec.chipset, SISIdent(0)))
 			SISchipset = SIS86C201;
+		else if (!StrCaseCmp(vga256InfoRec.chipset, SISIdent(1)))
+			SISchipset = SIS86C202;
+		else if (!StrCaseCmp(vga256InfoRec.chipset, SISIdent(2)))
+			SISchipset = SIS86C205;
 		else
 			return(FALSE);
     	}
@@ -554,9 +558,10 @@ SISAdjust(x, y)
  * SISValidMode --
  *
  */
-static Bool
-SISValidMode(mode)
+static int
+SISValidMode(mode, verbose)
 DisplayModePtr mode;
+Bool verbose;
 {
-	return TRUE;
+	return MODE_OK;
 }

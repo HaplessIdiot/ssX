@@ -1255,7 +1255,7 @@
   /usr/X11R6, and run the following as root for each file you need:
 
 
-               gzip -d < X312Ffile.tgz | tar vxf -
+               gzip -d < 312Gfile.tgz | tar vxf -
 
 
 
@@ -1268,7 +1268,7 @@
   is to extract the .tgz files with:
 
 
-               gzip -d < X312Ffile.tgz | tar -v -x --unlink -f -
+               gzip -d < 312Gfile.tgz | tar -v -x --unlink -f -
 
 
 
@@ -1277,7 +1277,7 @@
   of doing this is to extract the .tgz files with:
 
 
-               gzip -d < X312Ffile.tgz | cpio -i -v -u -H ustar
+               gzip -d < 312Gfile.tgz | cpio -i -v -u -H ustar
 
 
 

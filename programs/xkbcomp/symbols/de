@@ -1,4 +1,5 @@
 // $XConsortium: de /main/3 1996/01/30 20:30:09 kaleb $
+// $XFree86$
 default partial alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -71,6 +72,28 @@ xkb_symbols "basic" {
     modifier_map Control{ Control_L };
     modifier_map Mod3	{ Mode_switch };
 };
+
+partial alphanumeric_keys 
+xkb_symbols "Sundeadkeys" {
+    // modify the default German layout to use Sun dead keys
+    include "de(basic)"
+    key <TLDE> {	[ SunFA_Circum,	degree		],
+			[   notsign 			]	};
+    key <AE12> {	[ SunFA_Acute,	SunFA_Grave	],
+			[ SunFA_Cedilla			]	};
+    key <AD11> {	[ udiaeresis,	Udiaeresis	],
+			[ SunFA_Diaresis		]	};
+    key <AD12> {	[      plus,	asterisk	],
+			[ SunFA_Tilde,	dead_macron	]	};
+    key <AC10> {	[ odiaeresis,	Odiaeresis	],
+			[ SunFA_Acute			]	};
+    key <AC11> {	[ adiaeresis,	Adiaeresis	],
+			[ SunFA_Circum			]	};
+
+    key <BKSL> {	[ numbersign,	acute		],
+			[ SunFA_Grave			]	};
+};
+
 partial alphanumeric_keys 
 xkb_symbols "nodeadkeys" {
     // modify the default German layout to not have any dead keys

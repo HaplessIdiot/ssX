@@ -6,7 +6,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.3 1996/07/08 10:36:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/nec480/nec480_dr.c,v 3.4 1996/08/14 14:38:24 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -44,7 +44,7 @@ static Bool     NEC480Probe();
 static char *   NEC480Ident();
 static void     NEC480EnterLeave();
 static Bool     NEC480Init();
-static Bool	NEC480ValidMode();
+static int	NEC480ValidMode();
 static void *   NEC480Save();
 static void     NEC480Restore();
 
@@ -364,10 +364,10 @@ NEC480Init(DisplayModePtr mode)
  * NEC480ValidMode --
  *
  */
-static Bool
-NEC480ValidMode(DisplayModePtr mode)
+static int
+NEC480ValidMode(DisplayModePtr mode, Bool verbose)
 {
-	return(TRUE);
+	return(MODE_OK);
 }
 
 union gdc_sync_parm
