@@ -1569,7 +1569,11 @@ MakeMutex($(XPSUBDIRS) $(XPOBJS) $(XPLIBS) $(XPSYSLIBS))
 $(XPOBJS) $(XPLIBS) $(XPSYSLIBS):: $(XPSUBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
+#ifdef DoLoadableServer
+ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS) $(XF86OSLIB),$(XPSYSLIBS))
+#else
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS),$(XPSYSLIBS))
+#endif
 #endif	/* XprtServer */
 
 #if XnestServer
@@ -1649,7 +1653,11 @@ MakeMutex($(XVFBDIRS) $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS))
 $(XVFBOBJS) $(XVFB) $(XVFBLIBS) $(XVFBSYSLIBS):: $(XVFBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
+#ifdef DoLoadableServer
+ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS) $(XF86OSLIB),$(XVFBSYSLIBS))
+#else
 ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS),$(XVFBSYSLIBS))
+#endif
 #endif /* XVirtualFramebufferServer */
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_wrapper.c,v 3.7 1996/12/23 06:50:00 dawes Exp geert $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.1 1997/02/17 11:03:53 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -28,6 +28,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <math.h>
 
 /*
  * This file contains the XFree86 wrappers for libc functions that can be
@@ -99,3 +100,26 @@ xf86getsecs(INT32 * secs, INT32 * usecs)
 	return;
 }
 
+double 
+xf86exp(double x)
+{
+	return(exp(x));
+}
+
+double 
+xf86log(double x)
+{
+	return(log(x));
+}
+
+double 
+xf86pow(double x, double y)
+{
+	return(pow(x,y));
+}
+
+double 
+xf86sqrt(double x)
+{
+	return(sqrt(x));
+}

@@ -81,6 +81,7 @@ terms and conditions:
  */
 
 #include "jinclude.h"
+#include "macro.h"
 
 /* On normal machines we can apply MEMCOPY() and MEMZERO() to sample arrays
  * and coefficient-block arrays.  This won't work on 80x86 because the arrays

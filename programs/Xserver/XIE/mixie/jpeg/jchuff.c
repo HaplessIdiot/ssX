@@ -85,6 +85,7 @@ terms and conditions:
  */
 
 #include "jinclude.h"
+#include "macro.h"
 
 
 /* Static variables to avoid passing 'round extra parameters */

@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.6 94/04/17 20:33:58 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.1 1996/10/03 08:30:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.2 1996/10/06 13:11:42 dawes Exp $ */
 /**** session.c ****/
 /****************************************************************************
 
@@ -92,6 +92,10 @@ terms and conditions:
 
 #include <memory.h>
 #include <technq.h>		/* extern def for technique_init	*/
+
+#ifdef XFree86LOADER
+#include "xf86.h"
+#endif
 
 /* function declarations */
 static	int	XieDispatch(),	/* dispatcher for XIE opcodes */
@@ -351,6 +355,8 @@ static void XieReset (extEntry)
  */
 extern void (*XieInitPtr)(void);
 
+#ifndef XFree86LOADER
+
 int
 #ifndef DLSYM_BUG
 init_module(server_version)
@@ -366,6 +372,18 @@ unsigned long server_version;
 #endif
   return 1;
 }
+#else /* XFree86LOADER */
+
+void
+libxieModuleInit(data,magic)
+    pointer	* data;
+    INT32	* magic;
+{
+    XieInitPtr = XieInit;
+    * magic= MAGIC_DONE;
+    return;
+}
+#endif /* XFree86LOADER */
 #endif /* DYNAMIC_MODULE */
 
 /**** End of session.c ****/

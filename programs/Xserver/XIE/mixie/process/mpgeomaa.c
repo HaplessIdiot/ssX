@@ -1,5 +1,5 @@
 /* $XConsortium: mpgeomaa.c,v 1.8 94/04/17 20:35:18 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpgeomaa.c,v 3.0 1996/02/20 14:32:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpgeomaa.c,v 3.1 1996/08/20 12:24:53 dawes Exp $ */
 /**** module mpgeomaa.c ****/
 /******************************************************************************
 
@@ -1328,7 +1328,9 @@ DO_AAGL	(AAGL_Q, QuadPixel, QuadPixel, int_constant)
 		: 0.0 )
 */
 
+#if !defined(exp) && !defined(pow)
 extern double exp(), pow();
+#endif
 
 
 #define gauss_loop(funcname, iotype, valtype, CONST)			\

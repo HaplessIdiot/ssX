@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.2 1997/02/17 09:46:02 hohndel Exp $ */
 
 
 
@@ -30,6 +30,7 @@
 #include "cursor.h"
 #include "dix.h"
 #include "dixfont.h"
+#include "dixstruct.h"
 #include "misc.h"
 #include "opaque.h"
 #include "os.h"
@@ -37,6 +38,9 @@
 #include "servermd.h"
 #include "scrnintstr.h"
 #include "windowstr.h"
+#include "extension.h"
+#include "extnsionst.h"
+#include "swaprep.h"
 
 extern Bool     Must_have_memory;
 extern WindowPtr *WindowTable;
@@ -55,11 +59,13 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(CreateColormap)
   SYMFUNC(FakeAllocColor)
   SYMFUNC(FakeFreeColor)
+  SYMFUNC(FreeColors)
   SYMFUNC(TellLostMap)
   SYMFUNC(TellGainedMap)
   SYMFUNC(QueryColors)
   /* dispatch.c */
   SYMFUNC(SetInputCheck)
+  SYMVAR(isItTimeToYield)
   /* dixutils.c */
   SYMFUNC(NoopDDA)
   /* events.c */
@@ -68,6 +74,9 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(NewCurrentScreen)
   SYMFUNC(PointerConfinedToScreen)
   SYMFUNC(TryClientEvents)
+  /* extension.c */
+  SYMFUNC(AddExtension)
+  SYMFUNC(StandardMinorOpcode)
   /* gc.c */
   SYMFUNC(CopyGC)
   SYMFUNC(CreateGC)
@@ -78,6 +87,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(GetScratchGC)
   SYMFUNC(ValidateGC)
   /* globals.c */
+  SYMVAR(currentTime)
   SYMVAR(defaultColorVisualClass)
   SYMVAR(globalSerialNumber)
   SYMVAR(screenInfo)
@@ -98,9 +108,17 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(AllocateScreenPrivateIndex)
   /* resource.c */
   SYMFUNC(AddResource)
+  SYMFUNC(CreateNewResourceClass)
   SYMFUNC(CreateNewResourceType)
   SYMFUNC(FakeClientID)
+  SYMFUNC(FreeResourceByType)
   SYMFUNC(LookupIDByType)
+  SYMFUNC(LookupIDByClass)
+  SYMFUNC(LegalNewID)
+  /* swaprep.c */
+  SYMFUNC(CopySwap32Write)
+  SYMFUNC(SwapShorts)
+  SYMFUNC(SwapLongs)
   /* window.c */
   SYMFUNC(GravityTranslate)
   SYMFUNC(MoveWindowInStack)
@@ -133,6 +151,11 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(ScreenSaverTime)
   SYMVAR(TimerFree)
   SYMVAR(TimerSet)
+  /* io.c */
+  SYMFUNC(WriteToClient)
+  /* connection.c */
+  SYMFUNC(IgnoreClient)
+  SYMFUNC(AttendClient)
 
   /* libfont.a */
   SYMFUNC(GetGlyphs)

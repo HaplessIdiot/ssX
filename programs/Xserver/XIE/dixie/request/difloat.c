@@ -1,4 +1,4 @@
-/* $XConsortium: difloat.c,v 1.4 94/04/17 20:33:53 rws Exp $ */
+/* $XConsortium: difloat.c,v 1.5 94/05/10 12:23:32 dpw Exp $ */
 /**** module difloat.c ****/
 /******************************************************************************
 
@@ -89,6 +89,8 @@ terms and conditions:
    *  Server XIE Includes
    */
 #include <difloat.h>
+#include <misc.h>
+#include "macro.h"
 
 /*
  *  routines referenced by other modules.
@@ -103,7 +105,7 @@ double ConvertIEEEtoNative(ieee)
   double exponent;
   double fraction;
   
-  if(!ieee) return(0.0);
+  if(!(ieee & 0x7fffffff)) return(0.0);
   
   sign     = (ieee & ieeeFloatSignMask) == ieeeFloatSignMask ? -1.0 : 1.0;
   exponent = (int)((ieee & ieeeFloatExpMask) >> ieeeFloatExpShift) - 127;

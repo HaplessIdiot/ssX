@@ -53,7 +53,7 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(INSTUIDFLAGS))
  * ExtensionsDynamicModules - compile server extensions as dynamic modules
  */
 #ifndef ExtensionsDynamicModules
-#define ExtensionsDynamicModules	BuildDynamicLoading
+#define ExtensionsDynamicModules	BuildDynamicLoading && !DoLoadableServer
 #endif
 
 #ifndef PexDynamicModule

@@ -205,4 +205,17 @@ terms and conditions:
 		if(!(stuff->input1) || !(stuff->input2) || !(stuff->input3)) \
 		  FloSourceError(flo,tag,stuff->elemType, return(NULL))
 
+/*
+ * if XIE is built as a module, it shouldn't call libc functions.
+ * The following macros should wrap all calls in XIE
+ */
+#ifdef XFree86LOADER
+#define memmove(a,b,c)  xf86memmove(a,b,c)
+#define memcpy(a,b,c)   xf86memcpy(a,b,c)
+#define memset(a,b,c)   xf86memset(a,b,c)
+#define exp(a)		xf86exp(a)
+#define log(a)		xf86log(a)
+#define sqrt(a)		xf86sqrt(a)
+#define pow(a,b)	xf86pow(a,b)
+#endif
 #endif /* end _XIEH_MACRO */

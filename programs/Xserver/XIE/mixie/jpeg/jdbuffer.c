@@ -1,5 +1,5 @@
-/* $XConsortium: jdbuffer.c,v 1.4 94/04/17 20:35:33 rws Exp $ */
-/*** 	jdbuffer.c - transfer data from input strip to decode buffer
+/* $XConsortium: jdbuffer.c /main/5 1995/12/04 15:34:02 dpw $ */
+/*** 	jdbuffer.c - transfer data from input strip to decode buffer */
 
 /****************************************************************************
 
@@ -73,6 +73,7 @@ terms and conditions:
 ****************************************************************************/
 
 #include "jpeg.h"
+#include "macro.h"
 
 /************************************************************************/
 int fill_jpeg_decode_buffer(state)

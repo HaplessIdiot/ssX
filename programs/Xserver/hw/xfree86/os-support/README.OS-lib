@@ -498,10 +498,34 @@ xf86getsecs(INT32 * secs, INT32 * usecs)
 	return;
 }
 
+double 
+xf86exp(double x)
+{
+	return(exp(x));
+}
+
+double 
+xf86log(double x)
+{
+	return(log(x));
+}
+
+double 
+xf86pow(double x, double y)
+{
+	return(pow(x,y));
+}
+
+double 
+xf86sqrt(double x)
+{
+	return(sqrt(x));
+}
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.2 1996/12/23 06:48:59 dawes Exp $
+
+$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.3 1997/02/17 09:46:36 hohndel Exp $
 
 
 

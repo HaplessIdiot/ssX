@@ -1,5 +1,5 @@
 /* $XConsortium: miregion.c,v 1.4 94/04/17 20:34:56 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/miregion.c,v 3.1 1996/08/20 13:16:28 dawes Exp $ */
 /**** module miregion.c ****/
 /******************************************************************************
 
@@ -135,6 +135,7 @@ SOFTWARE.
 #include "gc.h"
 
 #include "microi.h"
+#include "macro.h"
 
 #if defined (__GNUC__) && !defined (NO_INLINES)
 #define INLINE	__inline
