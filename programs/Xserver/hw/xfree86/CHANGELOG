@@ -1,4 +1,40 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 603. Add the missing XKB definition for keysym "ISO_Level3_Lock" (#5526,
+      Séamus Ó Ciardhuáin).
+ 602. XkbSetControls should return True when successful, not False (#A.1385,
+      Stephen Montgomery-Smith).
+ 601. The functions XGetXlibControls and XSetXlibControls must work even if
+      the X server doesn't have the XKB extensions (#5513, Ivan Pascal).
+ 600. Add en_ZA locales (#5512, Berend De Schouwer).
+ 599. Fix shadowfb to not make update callbacks for operations that don't
+      touch offscreen memory, and to not double (or more) update glyph
+      rendering (#5509, Nolan Leake).
+ 598. Change XAA to not sync when it sees RENDER operations that don't
+      touch VRAM, and to try to accelerate Glyphs with Composite if it
+      seems likely that will work (#5509, Nolan Leake).
+ 597. VMware driver updates, including:
+       - Fixed vmwareGetImage to correctly calculate the region to be gotten.
+       - Small cursor bypass optimization.
+       - Fixed race between writing normal registers and writing HWcursor
+         registers.
+       - Fixed small race in the FIFO wrap code that could cause FIFO
+         corruption.
+       - Added temporary offscreen memory manager.
+       - Added compositing (RENDER) acceleration.
+      (#5509, Nolan Leake).
+ 596. Newport driver updates, including:
+       - Add hardware cursor support.
+       - Workaround blank console after VT switch on some newports
+         (based on a patch from Dominik Behr).
+       - Support for the Indigo2 XL (based on a patch from Adrian Schroeter).
+      (#5507, Guido Guenther).
+ 595. Add SGML versions of the XKB config and enhancing docs (#5506,
+      Kamil Toman).
+ 594. Enable SSE, MMX, 3DNow support by default for Linux/x86_64 (#5502,
+      Mike Harris).
+ 593. Replace hard-coded "lib" directory names with LibDirName in Imake.tmpl
+      (#5480, Mike Harris).
+ 592. DRI shouldn't have been enabled for Linux/s390 (#5500, Mike Harris).
  591. Numerous bug, stability, and correctness fixes for the Intel 830/845G
       3D support (#5517, Keith Whitwell).
  590. Numerous bug and stability fixes for the Intel 830/845G 2D and Xv
@@ -15708,4 +15744,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2438 2002/12/10 00:00:36 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2439 2002/12/10 01:26:57 dawes Exp $
