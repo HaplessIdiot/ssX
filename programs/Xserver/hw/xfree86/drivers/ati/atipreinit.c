@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.32 2000/08/28 14:20:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.33 2000/09/26 15:57:09 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -488,6 +488,7 @@ ATIPreInit
 
             case ATI_CHIPSET_MACH64:
             case ATI_CHIPSET_RAGE128:
+            case ATI_CHIPSET_RADEON:
                 pATI->Chipset = ATI_CHIPSET_ATI;
                 break;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.11 2000/08/04 21:07:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.12 2000/08/22 21:54:29 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -466,7 +466,7 @@ ATIMatchClockLine
 
 #ifndef AVOID_CPIO
 
-        /* Only Mach64's and Rage128's can have programmable clocks */
+        /* Only Mach64's and later can have programmable clocks */
         if ((ClockChipIndex >= ATI_CLOCK_MACH64A) &&
             (pATI->Adapter < ATI_ADAPTER_MACH64))
             break;
