@@ -55,7 +55,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/SetLocale.c,v 3.17 2002/05/31 18:45:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/SetLocale.c,v 3.18tsi Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -100,7 +100,7 @@ _Xsetlocale(category, name)
 	name = getenv("LANG");
     if (name && strlen(name) >= MAXLOCALE)
 	name = NULL;
-    if (!name || !*name || !_XOpenLC(name))
+    if (!name || !*name || !_XOpenLC((char *) name))
 	name = "C";
     old_name = xsl_name;
     xsl_name = (char *)name;

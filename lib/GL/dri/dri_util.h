@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.h,v 1.1 2002/02/22 21:32:52 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_util.h,v 1.2tsi Exp $ */
 /**
  * \file dri_util.h
  * DRI utility functions definitions.
@@ -53,7 +53,10 @@
 
 #define CAPI  /* XXX this should be globally defined somewhere */
 
+#if !defined(linux) || defined(__GLIBC__)
 #include <inttypes.h>
+#endif
+#include <sys/types.h>
 #include "glxclient.h"           /* for GLXDrawable */
 #include "xf86dri.h"             /* for XF86DRIClipRectPtr */
 #include "sarea.h"               /* for XF86DRISAREAPtr */
@@ -211,7 +214,7 @@ struct __DRIswapInfoRec {
     /** 
      * Number of swapBuffers operations that have been *completed*. 
      */
-    uint64_t  swap_count;
+    u_int64_t  swap_count;
 
     /*
      * Unadjusted system time of the last buffer swap.  This is the time
@@ -225,7 +228,7 @@ struct __DRIswapInfoRec {
      * swap, it has missed its deadline.  If swap_interval is 0, then the
      * swap deadline is 1 frame after the previous swap.
      */
-    uint64_t  swap_missed_count;
+    u_int64_t  swap_missed_count;
 
     /*
      * Amount of time used by the last swap that missed its deadline.  This

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.h,v 1.2 2002/12/16 16:18:54 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.h,v 1.3tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -38,7 +38,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
+#if !defined(linux) || defined(__GLIBC__)
 #include <inttypes.h>
+#endif
 #include "dri_util.h"
 #include "radeon_common.h"
 #include "texmem.h"
@@ -839,8 +841,8 @@ struct r200_context {
    GLuint vbl_seq;
    GLuint vblank_flags;
 
-   uint64_t swap_ust;
-   uint64_t swap_missed_ust;
+   u_int64_t swap_ust;
+   u_int64_t swap_missed_ust;
 
    GLuint swap_count;
    GLuint swap_missed_count;
