@@ -1,5 +1,5 @@
 /* $XConsortium: privates.c /main/5 1996/06/17 10:56:22 mor $ */
-/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.0 1996/04/15 11:19:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/privates.c,v 3.1 1996/12/23 06:29:48 dawes Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -290,6 +290,7 @@ AllocatePixmapPrivate(pScreen, index2, amount)
 	pScreen->PixmapPrivateSizes[index2] = amount;
 	pScreen->totalPixmapSize += (amount - oldamount);
     }
+    pScreen->totalPixmapSize = BitmapBytePad(pScreen->totalPixmapSize * 8);
     return TRUE;
 }
 #endif

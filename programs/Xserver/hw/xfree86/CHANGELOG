@@ -1,3 +1,29 @@
+XFree86 3.2x (23 January 1997)
+ 357. Fix for XAA bitmap problem which showed up with the C&T driver, and
+      which appears to be related to a compiler bug.  With this fixed,
+      change 339 has been backed out (David Bateman).
+ 356. Update clock limits for the PC98 TGUI server (Akio Morita).
+ 355. PC98 documentation update (Akio Morita).
+ 354. Tseng doc updates (Koen Gadeyne).
+ 353. Add NO_PLANEMASK to the Tseng XAA colorexpansion flags (Koen Gadeyne).
+ 352. LynxOS doc updates (Thomas Mueller).
+ 351. Fix some unaligned access problems with pixmap data that show up on
+      Alpha platforms (Jay Estabrook).
+ 350. Fix a problem with passing the depth/weight specified on the
+      server command line in some situations (Harald Koenig).
+ 349. Add support for the S3 Aurora64V+ programmable clock, which is slightly
+      different from the Trio64 (Harald Koenig).
+ 348. Blank the screen before turning off the sync signals for the WD90C24
+      DPMS support (Brad Bosch).
+ 347. Change 341 was missing, and is now included.
+ 346. Don't accelerate XAA functions which use source bitmap data when
+      the rop is GXclear, GXnoop, and GXset (as well as GXinvert)
+      (Harm Hanemaayer).
+ 345. S3V doc updates (Kevin Brosius).
+ 344. S3 doc updates (Harald Koenig).
+ 343. Remove some experimental code in XF86Setup that was causing it
+      to fail when starting the first server (Joe Moss).
+
 XFree86 3.2w (22 January 1997)
  342. Update the xset man page for the DPMS additions.
  341. Updates to TGUI acceleration, to hopefully fix some problems that

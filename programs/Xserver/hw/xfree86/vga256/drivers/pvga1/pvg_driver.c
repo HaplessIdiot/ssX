@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.29 1996/12/28 08:18:23 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.30 1997/01/19 12:51:18 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -215,17 +215,16 @@ static int NumPVGA1_ExtPorts_WD90C33 =
 static void
 PVGA1lcd24power(int PowerManagementMode)
 {
-  unsigned char sync2;
   static unsigned char lcd_off = 0;
-  unsigned char lock_val, reg_val;
+  unsigned char lock_val, reg_val, seq1, sync2;
   int crt_on; /* allow sync to turn off? */
 
   if (!xf86VTSema) return;
 
+  /* Turn LCD on or off and blank/unblank screen */
   switch (PowerManagementMode)
     {
     case DPMSModeOn:
-      /* HSync: On, VSync: on */
       /* Turn LCD on */
       if (lcd_off) {
 	/* this is a wd90c24 LCD which we have turned off */
@@ -257,23 +256,19 @@ PVGA1lcd24power(int PowerManagementMode)
 	wrinx(vgaIOBase+0x04, 0x34, lock_val); /* restore locks*/
       }
 
-      outb(vgaIOBase + 4, 0x17);
-      sync2 = inb(vgaIOBase + 5);
-      sync2 |= 0x80;			/* enable sync   */
+      /* Unblank Screen */
+      outw(0x3C4, 0x0100);	/* Synchronous Reset */
+      outb(0x3C4, 0x01);	/* Select SEQ1 */
+      seq1 = inb(0x3C5) & ~0x20;
+      outb(0x3C5, seq1);
+      outw(0x3C4, 0x0300);	/* End Reset */
+
       usleep(10000);
-      outb(vgaIOBase + 5, sync2);
       break;
 
     case DPMSModeStandby:
-      /* HSync: Off, VSync: on */
-      /* This may be supported later */
-      break;
     case DPMSModeSuspend:
-      /* HSync: On, VSync: off */
-      /* This may be supported later */
-      break;
     case DPMSModeOff:
-      /* HSync: Off, VSync: off */
       /* Turn LCD off */
       lock_val = rdinx(vgaIOBase+0x04, 0x34);
       /* Unlock FP Reg */
@@ -307,6 +302,42 @@ PVGA1lcd24power(int PowerManagementMode)
 	wrinx(vgaIOBase+0x04, 0x34, lock_val); /* restore locks*/
       }
 
+      /* Blank screen */
+      if (crt_on) {	/* blank only if monitor in use */
+	outw(0x3C4, 0x0100);	/* Synchronous Reset */
+	outb(0x3C4, 0x01);	/* Select SEQ1 */
+	seq1 = inb(0x3C5) | 0x20;
+	outb(0x3C5, seq1);
+	outw(0x3C4, 0x0300);	/* End Reset */
+
+	usleep(10000);
+      }
+
+      break;
+    }
+
+  /* Manipulate HSync and VSync */
+  switch (PowerManagementMode)
+    {
+    case DPMSModeOn:
+      /* Screen: On; HSync: On, VSync: On */
+      outb(vgaIOBase + 4, 0x17);
+      sync2 = inb(vgaIOBase + 5);
+      sync2 |= 0x80;			/* enable sync   */
+      usleep(10000);
+      outb(vgaIOBase + 5, sync2);
+      break;
+
+    case DPMSModeStandby:
+      /* Screen: Off; HSync: Off, VSync: On */
+      /* This may be supported later */
+      break;
+    case DPMSModeSuspend:
+      /* Screen: Off; HSync: On, VSync: Off */
+      /* This may be supported later */
+      break;
+    case DPMSModeOff:
+      /* Screen: Off; HSync: Off, VSync: Off */
       if (crt_on) {	/* disable sync only if monitor in use */
 	outb(vgaIOBase + 4, 0x17);
 	sync2 = inb(vgaIOBase + 5);
