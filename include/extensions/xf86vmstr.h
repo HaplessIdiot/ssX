@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.11 1996/01/16 15:00:36 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.12 1996/01/17 12:44:41 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -40,7 +40,7 @@ from Kaleb S. KEITHLEY
 #define XF86VIDMODENAME "XFree86-VidModeExtension"
 
 #define XF86VIDMODE_MAJOR_VERSION	0	/* current version numbers */
-#define XF86VIDMODE_MINOR_VERSION	5
+#define XF86VIDMODE_MINOR_VERSION	6
 /*
  * major version 0 == uses parameter-to-wire functions in XFree86 libXExExt.
  * major version 1 == uses parameter-to-wire functions hard-coded in xvidtune
@@ -75,9 +75,12 @@ typedef struct _XF86VidModeGetModeLine {
     CARD16	length B16;
     CARD16	screen B16;
     CARD16	pad B16;
-} xXF86VidModeGetModeLineReq, xXF86VidModeGetMonitorReq;
-#define sz_xXF86VidModeGetModeLineReq	8
-#define sz_xXF86VidModeGetMonitorReq	8
+} xXF86VidModeGetModeLineReq,
+  xXF86VidModeGetAllModeLinesReq,
+  xXF86VidModeGetMonitorReq;
+#define sz_xXF86VidModeGetModeLineReq		8
+#define sz_xXF86VidModeGetAllModeLinesReq	8
+#define sz_xXF86VidModeGetMonitorReq		8
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -97,6 +100,34 @@ typedef struct {
     CARD32	privsize B32;
 } xXF86VidModeGetModeLineReply;
 #define sz_xXF86VidModeGetModeLineReply	36
+
+typedef struct {
+    CARD32	dotclock B32;
+    CARD16	hdisplay B16;
+    CARD16	hsyncstart B16;
+    CARD16	hsyncend B16;
+    CARD16	htotal B16;
+    CARD16	vdisplay B16;
+    CARD16	vsyncstart B16;
+    CARD16	vsyncend B16;
+    CARD16	vtotal B16;
+    CARD32	flags B32;
+    CARD32	privsize B32;
+} xXF86VidModeModeInfo;
+
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	modecount B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+} xXF86VidModeGetAllModeLinesReply;
+#define sz_xXF86VidModeGetAllModeLinesReply	32
 
 typedef struct _XF86VidModeModModeLine {
     CARD8	reqType;		/* always XF86VidModeReqCode */

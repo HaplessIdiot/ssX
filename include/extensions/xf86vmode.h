@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.13 1996/01/16 15:00:35 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.14 1996/01/17 12:44:40 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -43,6 +43,7 @@ from Kaleb S. KEITHLEY
 #define X_XF86VidModeSwitchMode		3
 #define X_XF86VidModeGetMonitor		4
 #define X_XF86VidModeLockModeSwitch	5
+#define X_XF86VidModeGetAllModeLines	6
 
 #ifdef XF86VIDMODE_EVENTS
 #define XF86VidModeNotify		0
@@ -80,6 +81,21 @@ typedef struct {
     int			privsize;
     INT32		*private;
 } XF86VidModeModeLine;
+
+typedef struct {
+    unsigned int	dotclock;
+    unsigned short	hdisplay;
+    unsigned short	hsyncstart;
+    unsigned short	hsyncend;
+    unsigned short	htotal;
+    unsigned short	vdisplay;
+    unsigned short	vsyncstart;
+    unsigned short	vsyncend;
+    unsigned short	vtotal;
+    unsigned int	flags;
+    int			privsize;
+    INT32		*private;
+} XF86VidModeModeInfo;
 
 typedef struct {
     float		hi;
@@ -137,6 +153,15 @@ Status XF86VidModeGetModeLine(
     int				/* screen */,
     int*			/* dotclock */,
     XF86VidModeModeLine*	/* modeline */
+#endif
+);
+
+Status XF86VidModeGetAllModeLines(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* screen */,
+    int*			/* modecount */,
+    XF86VidModeModeInfo***	/* modelinesPtr */
 #endif
 );
 
