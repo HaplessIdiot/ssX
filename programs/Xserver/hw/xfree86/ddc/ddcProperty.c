@@ -3,7 +3,7 @@
  * 
  * Copyright 1999 by Andrew C Aitchison <A.C.Aitchison@dpmms.cam.ac.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.3 2000/03/05 23:47:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/ddcProperty.c,v 1.5 2001/02/15 17:31:45 eich Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -92,7 +92,7 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
       ret = xf86RegisterRootWindowProperty(pScrnInfo->scrnIndex,
 					   EDID2Atom, XA_INTEGER, 8, 
 #if 1
-					   256, (unsigned char *)EDID1rawdata
+					   256, (unsigned char *)EDID2rawdata
 #else
 #define EDID2_DUMMY_STRING "Dummy EDID2 property - please insert correct values"
 					   strlen(EDID2_DUMMY_STRING),

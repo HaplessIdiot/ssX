@@ -1,4 +1,22 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 219. Fix setxkbmap bugs, including:
+       - Continue working if the appropriate root window property where the
+         current xkb settings are saved can't be read or interpreted.
+       - Make the -keymap option work.
+       - Update the man page to explain how the "-option" option works.
+       - Add primitive sanity checking for 'map name'.
+      (#4482, Ivan Pascal).
+ 218. Fix a server crash while reading DDC data from EDID2 capable monitors
+      (#4481, Andrew C Aitchison).
+ 217. Updates to Thai support, including:
+       - Fix a bug combining characterw with Shift keys.
+       - Remove the th_TH Compose file so that Thai XIM is/can be(?) activated
+         without needing XSetLocaleModifiers().
+       - A more precise context-sensitive input sequence check using
+         XNStringConversionCallback added. This has been tested with
+         xiterm+thai-1.04pre2. The implementation detail might be changed
+         if found inconsistent with the X11 specification.
+      (#4478, Theppitak Karoonboonyanan).
  216. Update ucs2any.pl, and replace the special map-* files with the
       original mapping files from ftp.unicode.org.  Changes include:
        - A bug has been fixed that caused sometimes the FONT property not
@@ -12597,4 +12615,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1596 2001/02/28 18:58:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1597 2001/03/01 00:37:07 dawes Exp $

@@ -23,7 +23,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/setxkbmap/setxkbmap.c,v 3.3 1999/02/20 15:07:20 hohndel Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,10 +46,16 @@
 #endif
 
 #ifndef DFLT_XKB_CONFIG_ROOT
-#define	DFLT_XKB_CONFIG_ROOT "/usr/X11R6.1/lib/X11/xkb"
+#define	DFLT_XKB_CONFIG_ROOT "/usr/X11R6/lib/X11/xkb"
 #endif
 #ifndef DFLT_XKB_RULES_FILE
-#define	DFLT_XKB_RULES_FILE "rules"
+#define	DFLT_XKB_RULES_FILE "xfree86"
+#endif
+#ifndef DFLT_XKB_LAYOUT
+#define	DFLT_XKB_LAYOUT "us"
+#endif
+#ifndef DFLT_XKB_MODEL
+#define	DFLT_XKB_MODEL "pc101"
 #endif
 
 #define	UNDEFINED	0
@@ -346,6 +352,7 @@ parseArgs(argc,argv)
 {
 int 	i;
 Bool	ok;
+unsigned	present;
 
     ok= True;
     addToList(&szInclPath,&numInclPath,&inclPath,".");
@@ -418,6 +425,21 @@ Bool	ok;
 	    ok= False;
 	}
     }
+
+    present= 0;
+    if (svValue[TYPES_NDX])	present++;
+    if (svValue[COMPAT_NDX])	present++;
+    if (svValue[SYMBOLS_NDX])	present++;
+    if (svValue[KEYCODES_NDX])	present++;
+    if (svValue[GEOMETRY_NDX])	present++;
+    if (svValue[CONFIG_NDX])	present++;
+    if (svValue[MODEL_NDX])	present++;
+    if (svValue[LAYOUT_NDX])	present++;
+    if (svValue[VARIANT_NDX])	present++;
+    if (svValue[KEYMAP_NDX] && present) {
+	ERR("No other components can be specified when a keymap is present\n");
+	return False;
+    }
     return ok;
 }
 
@@ -482,9 +504,13 @@ getServerValues()
 XkbRF_VarDefsRec 	vd;
 char *			tmp= NULL;
 
-    if (!XkbRF_GetNamesProp(dpy,&tmp,&vd)) {
+    if (!XkbRF_GetNamesProp(dpy,&tmp,&vd) || !tmp) {
 	VMSG1(3,"Couldn't interpret %s property\n",_XKB_RF_NAMES_PROP_ATOM);
-	return False;
+        tmp = DFLT_XKB_RULES_FILE;
+        vd.model = DFLT_XKB_MODEL;
+        vd.layout = DFLT_XKB_LAYOUT;
+        VMSG3(3,"Use defaults: rules - '%s' model - '%s' layout - '%s'\n",
+                tmp, vd.model, vd.layout);
     }
     if (tmp)
 	trySetString(RULES_NDX,tmp,FROM_SERVER);
@@ -763,7 +789,55 @@ char *	rfName;
     return True;
 }
 
-#define	ALL_NAMES (XkbGBN_TypesMask|XkbGBN_CompatMapMask|XkbGBN_SymbolsMask|XkbGBN_KeyNamesMask|XkbGBN_GeometryMask)
+/* Primitive sanity check - filter out 'map names' (inside parenthesis) */
+/* that can confuse xkbcomp parser */
+Bool
+#if NeedFunctionPrototypes
+checkName(char *name, char* string)
+#else
+checkName()
+    char *name;
+    char *string;
+#endif
+{
+   char *i = name, *opar = NULL;
+   Bool ret = True;
+
+   if(!name)
+      return True;
+
+   while (*i){
+      if (opar == NULL) {
+         if (*i == '(')
+         opar = i;
+      } else {
+         if ((*i == '(') || (*i == '|') || (*i == '+')) {
+             ret = False;
+             break;
+         }
+         if (*i == ')')
+             opar = NULL;
+      }
+      i++;
+   }
+   if (opar)
+      ret = False;
+   if (!ret) {
+      char c;
+      int n = 1;
+      for(i = opar+1; *i && n; i++) {
+         if (*i == '(') n++;
+         if (*i == ')') n--;
+      }
+      if (*i) i++;
+      c = *i;
+      *i = '\0';
+      ERR1("Illegal map name '%s' ", opar);
+      *i = c;
+      ERR2("in %s name '%s'\n", string, name);
+   }
+   return ret;
+}
 
 Bool
 #if NeedFunctionPrototypes
@@ -772,22 +846,19 @@ applyComponentNames(void)
 applyComponentNames()
 #endif
 {
-unsigned	present;
+    if(!checkName(svValue[TYPES_NDX],    "types"))
+	return False;
+    if(!checkName(svValue[COMPAT_NDX],   "compat"))
+	return False;
+    if(!checkName(svValue[SYMBOLS_NDX],  "symbols"))
+	return False;
+    if(!checkName(svValue[KEYCODES_NDX], "keycodes"))
+	return False;
+    if(!checkName(svValue[GEOMETRY_NDX], "geometry"))
+	return False;
+    if(!checkName(svValue[KEYMAP_NDX],   "keymap"))
+	return False;
 
-    present= 0;
-    if (svValue[TYPES_NDX])	present|= XkbGBN_TypesMask;
-    if (svValue[COMPAT_NDX])	present|= XkbGBN_CompatMapMask;
-    if (svValue[SYMBOLS_NDX])	present|= XkbGBN_SymbolsMask;
-    if (svValue[KEYCODES_NDX])	present|= XkbGBN_KeyNamesMask;
-    if (svValue[GEOMETRY_NDX])	present|= XkbGBN_GeometryMask;
-    if (svValue[KEYMAP_NDX] && present) {
-	ERR("No other components can be specified when a keymap is present\n");
-	return False;
-    }
-    if ((!dpy)&&((present&ALL_NAMES)!=ALL_NAMES)) {
-	ERR("All components must be specified for -t flag\n");
-	return False;
-    }
     if (verbose>5) {
 	MSG("Trying to build keymap using the following components:\n");
 	dumpNames(True,True);
@@ -832,8 +903,8 @@ main(argc,argv)
     svValue[LOCALE_NDX]= setlocale(LC_ALL,svValue[LOCALE_NDX]);
     svSrc[LOCALE_NDX]= FROM_SERVER;
     VMSG1(7,"locale is %s\n",svValue[LOCALE_NDX]);
-    if (dpy && (!getServerValues()))
-	exit(-2);
+    if (dpy)
+        getServerValues();
     if (svValue[CONFIG_NDX] && (!applyConfig(svValue[CONFIG_NDX])))
 	exit(-3);
     if (!applyRules())
