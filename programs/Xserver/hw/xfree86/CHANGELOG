@@ -1,4 +1,8 @@
 XFree86 4.2.99.901 (4 February 2003)
+ 843. The microsoft-win3.1 encoding file wasn't being installed (#A.1569,
+      Mike Harris).
+ 842. Sync the FIFO in the vmware driver after defining an ARGB cursor
+      (#5607, Nolan Leake).
  841. Add missing Num_Lock and Scroll_Lock modifiers to the jp XKB map
       (Chisato Yamauchi).
  840. Change the default cursor theme to "core".
@@ -16252,4 +16256,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2520 2003/02/05 00:54:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2521 2003/02/05 12:43:32 dawes Exp $
