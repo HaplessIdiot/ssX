@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3line.c,v 3.10 1996/09/01 04:15:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.0 1996/09/22 13:25:47 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -143,9 +143,8 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 
    BLOCK_CURSOR;
    WaitQueue16_32(3,5);
-   SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
    SET_WRT_MASK(pGC->planemask);
-   SET_FRGD_COLOR(pGC->fgPixel);
+   SETL_PAT_FG_CLR(pGC->fgPixel);
    /* Fix problem writing to the cursor storage area */
    WaitQueue(2);
    SET_SCISSORS_RB(pDrawable->pScreen->width-1,pDrawable->pScreen->height-1);
@@ -199,11 +198,15 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 		  y1t = max(y1, pbox->y1);
 		  y2t = min(y2, pbox->y2);
 		  if (y1t != y2t) {
-		     WaitQueue(4);
-		     SET_CURPT((short)x1, (short)y1t);
-		     SET_MAJ_AXIS_PCNT((short)(y2t - y1t - 1));
-		     SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR |
-			   WRTDATA | (6 << 5));
+                     /* Since the ViRGE draws from bottom to top, I draw
+                        from x2,y2 to x1,y1, where x2,y2 is skipped. */
+ 		     WaitQueue(8);
+                     SETL_LXEND0_END1((short)x1, (short)x1);
+                     SETL_LDX(0);
+                     SETL_LXSTART(x1 << 20);
+                     SETL_LYSTART(y2t-1);
+                     SETL_LYCNT(y2t-y1t);
+                     SETL_CMD_SET(s3_gcmd | CMD_LINE | s3alu[pGC->alu]);
 		  }
 	       }
 	       nbox--;
@@ -250,11 +253,14 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	       x1t = max(x1, pbox->x1);
 	       x2t = min(x2, pbox->x2);
 	       if (x1t != x2t) {
-		  WaitQueue(4);
-		  SET_CURPT((short)x1t, (short)y1);
-		  SET_MAJ_AXIS_PCNT((short)(x2t - x1t - 1));
-		  SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR |
-			WRTDATA);
+                  WaitQueue(8);
+                  /* Skip x2,y2 */
+                  SETL_LXEND0_END1((short)x2t-1, (short)x1t);
+                  SETL_LDX(0);
+                  SETL_LXSTART(x1t << 20);
+                  SETL_LYSTART(y1);
+                  SETL_LYCNT(0x1);
+                  SETL_CMD_SET(s3_gcmd | CMD_LINE | s3alu[pGC->alu]);
 	       }
 	       nbox--;
 	       pbox++;
@@ -433,10 +439,13 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	     (y2 >= pbox->y1) &&
 	     (x2 < pbox->x2) &&
 	     (y2 < pbox->y2)) {
-	    WaitQueue(4);
-	    SET_CURPT((short)x2, (short)y2);
-	    SET_MAJ_AXIS_PCNT(0);
-	    SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR | WRTDATA);
+            WaitQueue(8);
+            SETL_LXEND0_END1((short)x2, (short)x2);
+            SETL_LDX(0);
+            SETL_LXSTART(x2 << 20);
+            SETL_LYSTART(y2);
+            SETL_LYCNT(1);
+            SETL_CMD_SET(s3_gcmd | CMD_LINE | s3alu[pGC->alu]);
 	    break;
 	 } else
 	    pbox++;

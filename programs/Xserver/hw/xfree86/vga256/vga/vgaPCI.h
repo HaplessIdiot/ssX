@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.14 1996/09/24 13:56:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.15 1996/09/26 14:04:17 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -58,16 +58,17 @@
 #define PCI_CHIP_P9100		0x9100
 
 /* Cirrus Logic */
+#define PCI_CHIP_GD7548		0x0038
 #define PCI_CHIP_GD5430		0x00A0
 #define PCI_CHIP_GD5434_4	0x00A4
 #define PCI_CHIP_GD5434_8	0x00A8
 #define PCI_CHIP_GD5436		0x00AC
 #define PCI_CHIP_GD5446         0x00B8
 #define PCI_CHIP_GD5462		0x00D0
+#define PCI_CHIP_GD5464		0x00D4
 #define PCI_CHIP_GD7541		0x1204
 #define PCI_CHIP_GD7542		0x1200
 #define PCI_CHIP_GD7543		0x1202
-#define PCI_CHIP_GD7548		0x0038
 
 /* Trident */
 #define PCI_CHIP_9320		0x9320
@@ -105,7 +106,9 @@
 #define PCI_CHIP_300SX		0x0001
 
 /* S3 */
+#define PCI_CHIP_VIRGE		0x5631
 #define PCI_CHIP_TRIO		0x8811
+#define PCI_CHIP_VIRGE_VX	0x883D
 #define PCI_CHIP_868		0x8880
 #define PCI_CHIP_928		0x88B0
 #define PCI_CHIP_864_0		0x88C0
@@ -113,7 +116,6 @@
 #define PCI_CHIP_964_0		0x88D0
 #define PCI_CHIP_964_1		0x88D1
 #define PCI_CHIP_968		0x88F0
-#define PCI_CHIP_VIRGE		0x5631
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091
@@ -191,6 +193,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_GD5436,	"GD5436"},
 				{PCI_CHIP_GD5446,       "GD5446"},
 				{PCI_CHIP_GD5462,       "GD5462"},
+				{PCI_CHIP_GD5464,       "GD5464"},
 				{PCI_CHIP_GD7541,	"GD7541"},
 				{PCI_CHIP_GD7542,	"GD7542"},
 				{PCI_CHIP_GD7543,	"GD7543"},
@@ -236,7 +239,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_300SX,	"GLINT 300SX"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_S3,	"S3",	{
+				{PCI_CHIP_VIRGE,	"ViRGE"},
 				{PCI_CHIP_TRIO,		"Trio32/64"},
+				{PCI_CHIP_VIRGE_VX,	"ViRGE/VX"},
 				{PCI_CHIP_868,		"868"},
 				{PCI_CHIP_928,		"928"},
 				{PCI_CHIP_864_0,	"864"},
@@ -244,7 +249,6 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_964_0,	"964"},
 				{PCI_CHIP_964_1,	"964"},
 				{PCI_CHIP_968,		"968"},
-				{PCI_CHIP_VIRGE,	"ViRGE"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ARK,	"ARK Logic", {
 				{PCI_CHIP_1000PV,	"1000PV"},

@@ -16,11 +16,6 @@ XFree86 3.2. This server is still experimental but seems to work well.
 <item>Current Known Problems
 
 <enum>
-<item>VT switching isn't elegant enough. Once the Xserver has started
-you can switch to another VT using the standard key sequence, but when
-switching back to the Xserver's VT the screen is not restored. Executing
-`xrefresh' from your window manager or xterm should clear this up.
-
 <item>Only one modeline is accepted, this will be the first viable one
 that matches other criteria.
 
@@ -55,31 +50,9 @@ have access to the 24plane or the 24plane3D chip.
 The code for the 21030 as yet - has only been tested on DEC's UDB box, better
 known as the Multia, in a Linux environment.
 
-<sect> Known modelines <p>
-Use these ModeLines as a starting point and tune them, although you can
-use xvidtune to adjust these parameters, it may not be as flexible as
-manually editing them for the best display.
-
-ENSURE YOUR MONITOR IS CAPABLE OF THESE RESOLUTIONS BEFORE USING !!!!!!!
-
-<verb>
-ModeLine "1280x1024@72hz" 130    1280 1312 1472 1696 1024 1027 1030 1063
-ModeLine "1280x1024@66hz" 120    1280 1312 1472 1696 1024 1027 1030 1063
-ModeLine "1280x1024@60hz" 108    1280 1324 1508 1708 1024 1027 1030 1056
-ModeLine "1152x900@72hz"  104    1152 1216 1328 1504 900  906  916  960
-ModeLine "1152x900@66hz"  92.98  1152 1172 1304 1504 900  902  906  937
-ModeLine "1024x768@70hz"  75     1024 1048 1184 1328 768  771  777  806
-ModeLine "1024x768@72hz"  74.37  1024 1040 1168 1296 768  769  775  797
-ModeLine "1024x768@60hz"  65     1024 1080 1144 1344 768  775  784  810
-ModeLine "800x600"        50     800  856  976  1040 600  601  607  636
-ModeLine "800x600"        40     800  840  968  1056 600  601  605  628
-ModeLine "640x480"        31     640  664  704  832  480  489  492  520
-ModeLine "640x480"        25.175 640  664  688  700  480  490  492  525
-</verb>
-
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.0 1996/09/22 05:05:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.1 1996/09/25 14:17:28 dawes Exp $
 </verb>
 
 </article>

@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillLG.c,v 3.0 1996/08/16 12:32:02 dawes Exp $ */
 
 
 #include "vga256.h"
@@ -185,6 +185,9 @@ extern void cfb8FillRectStippledUnnatural();
 extern void cfb16FillRectSolidCopy();
 extern void cfb16FillRectSolidGeneral();
 extern void cfb16FillRectTileOdd();
+extern void cfb24FillRectSolidCopy();
+extern void cfb24FillRectSolidGeneral();
+extern void cfb24FillRectTileOdd();
 extern void cfb32FillRectSolidCopy();
 extern void cfb32FillRectSolidGeneral();
 extern void cfb32FillRectTileOdd();
@@ -218,23 +221,26 @@ CirrusLgPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
 #endif
 
-    if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW)
-    {
-    	if (vgaBitsPerPixel == 8) {
-            cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
-            return;
-        }
-    	if (vgaBitsPerPixel == 16) {
-            cfb16PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
-            return;
-        }
-        if (vgaBitsPerPixel == 32) {
-            cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
-            return;
-        }
-        return;
+    if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW) {
+      if (vgaBitsPerPixel == 8) {
+	cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	return;
+      }
+      if (vgaBitsPerPixel == 16) {
+	cfb16PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	return;
+      }
+      if (vgaBitsPerPixel == 24) {
+	cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	return;
+      }
+      if (vgaBitsPerPixel == 32) {
+	cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+	return;
+      }
+      return;
     }
-
+    
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
     prgnClip = priv->pCompositeClip;
 
@@ -257,6 +263,8 @@ CirrusLgPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    BoxFill = vga256FillRectTileOdd;
 	} else if (vgaBitsPerPixel == 16) {
 	    BoxFill = cfb16FillRectTileOdd;
+	} else if (vgaBitsPerPixel == 24) {
+	    BoxFill = cfb24FillRectTileOdd;
 	} else {
 	    BoxFill = cfb32FillRectTileOdd;
 	}
@@ -264,11 +272,6 @@ CirrusLgPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 
 #if (PPW == 4)
     case FillStippled:
-        /*
-         * There's an unresolved conflict between MMIO + linear addressing
-         * and the color expand stipple function (MMIO fills tend to
-         * go wrong).
-         */
 	BoxFill = vga2568FillRectStippledUnnatural;
 	break;
 
@@ -425,6 +428,7 @@ CirrusLgFillRectSolid(pDrawable, pGC, nBox, pBox)
   int pitch, busy, pixshift;
   unsigned long c;
   RROP_DECLARE;
+
   /* We only handle on-screen fills with full planemask. */
   if (vgaBitsPerPixel == 8 && 
       (!xf86VTSema || (pGC->planemask & 0xFF) != 0xFF || 
@@ -440,6 +444,12 @@ CirrusLgFillRectSolid(pDrawable, pGC, nBox, pBox)
     return;
   }
 
+  if (vgaBitsPerPixel == 24 && 
+      (!xf86VTSema || (pGC->planemask & 0xFFFFFF) != 0xFFFFFF ||
+       pDrawable->type != DRAWABLE_WINDOW)) {
+    cfb24FillRectSolidGeneral(pDrawable, pGC, nBox, pBox);
+    return;
+  }
 
   if (vgaBitsPerPixel == 32 && 
       (!xf86VTSema || (pGC->planemask & 0xFFFFFFFF) != 0xFFFFFFFF ||

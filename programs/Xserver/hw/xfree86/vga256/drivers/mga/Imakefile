@@ -1,12 +1,12 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.0 1996/09/26 14:00:31 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
 
 #include <Server.tmpl>
 
-SRCS = mgadriver.c mgabitblt.c mgabank.s
-OBJS = mgadriver.o mgabitblt.o mgabank.o
+SRCS = mgadriver.c mgabitblt.c mgabank.s mga_line.c
+OBJS = mgadriver.o mgabitblt.o mgabank.o mga_line.o
 
 DEFINES = -DPSZ=8
 
@@ -19,6 +19,9 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(INCLUDESRC)
 #endif
 
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 NormalRelocatableTarget(mga_drv, $(OBJS))

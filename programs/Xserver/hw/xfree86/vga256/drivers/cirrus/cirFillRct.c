@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillRct.c,v 3.7 1995/04/09 14:14:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillRct.c,v 3.8 1996/02/04 09:12:55 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -38,6 +38,7 @@ in this Software without prior written authorization from the X Consortium.
  * solid fills, and tiles.
  *
  * Works for 8bpp, and linear framebuffer 16bpp and 32bpp (compiled once).
+ * Support for 24bpp pending.
  */
 
 
@@ -57,6 +58,9 @@ extern void cfb8FillRectStippledUnnatural();
 extern void cfb16FillRectSolidCopy();
 extern void cfb16FillRectSolidGeneral();
 extern void cfb16FillRectTileOdd();
+extern void cfb24FillRectSolidCopy();
+extern void cfb24FillRectSolidGeneral();
+extern void cfb24FillRectTileOdd();
 extern void cfb32FillRectSolidCopy();
 extern void cfb32FillRectSolidGeneral();
 extern void cfb32FillRectTileOdd();
@@ -100,6 +104,10 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
             cfb16PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
             return;
         }
+        if (vgaBitsPerPixel == 24) {
+            cfb24PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+            return;
+        }
         if (vgaBitsPerPixel == 32) {
             cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
             return;
@@ -124,7 +132,9 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	            BoxFill = vga256LowlevFuncs.fillRectSolidCopy;
 	        else if (vgaBitsPerPixel == 16)
 	            BoxFill = cfb16FillRectSolidCopy;
-	        else
+	        else if (vgaBitsPerPixel == 24)
+	            BoxFill = cfb24FillRectSolidCopy;
+		else
 	            BoxFill = cfb32FillRectSolidCopy;
 	    }
 	    break;
@@ -137,6 +147,8 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	            BoxFill = CirrusFillRectSolidGeneral;
 	        else if (vgaBitsPerPixel == 16)
 	            BoxFill = cfb16FillRectSolidGeneral;
+		else if (vgaBitsPerPixel == 24)
+	            BoxFill = cfb24FillRectSolidGeneral;
 	        else
 	            BoxFill = cfb32FillRectSolidGeneral;
 	    }
@@ -161,26 +173,21 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	}
 	else if (vgaBitsPerPixel == 16)
 	    BoxFill = cfb16FillRectTileOdd;
+	else if (vgaBitsPerPixel == 24)
+	    BoxFill = cfb24FillRectTileOdd;
 	else
 	    BoxFill = cfb32FillRectTileOdd;
 	break;
 #if (PPW == 4)
     case FillStippled:
-        /*
-         * There's an unresolved conflict between MMIO + linear addressing
-         * and the color expand stipple function (MMIO fills tend to
-         * go wrong).
-         */
-	if ((cirrusUseMMIO && cirrusUseLinear) ||
-	!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else
 	    BoxFill = CirrusFillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
-	if ((cirrusUseMMIO && cirrusUseLinear) ||
-	!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap)
 	    BoxFill = vga2568FillRectStippledUnnatural;
 	else

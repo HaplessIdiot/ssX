@@ -21,12 +21,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.1 1996/08/21 08:40:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.h,v 3.2 1996/08/24 12:54:13 dawes Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
 #define CT_DEBUG_WAIT 500000
-#define HWCUR_MMIO
 
 extern Bool ctLinearSupport;	       /*linear addressing enable */
 extern Bool ctAccelSupport;	       /*acceleration enable */
@@ -43,16 +42,24 @@ extern unsigned int ctCursorAddress;   /* The address in video ram of cursor */
 extern unsigned int ctBLTPatternAddress;
 extern Bool ctUseMMIO;
 extern unsigned char *ctMMIOBase;
+extern unsigned char *ctBltDataWindow;
 
-extern int ctAluConv[];		       /* Map Alu to Chips ROP */
+extern int ctAluConv[];		       /* Map Alu to Chips ROP source data  */
+extern int ctAluConv2[];       	       /* Map Alu to Chips ROP pattern data */
 
 extern unsigned long ctFrameBufferSize;		/* Frame buffer size */
+
+/* Byte reversal functions */
+extern unsigned char byte_reversed[];
+extern unsigned int byte_reversed3[];
 
 /* 
  * Definitions for IO access to 32 bit ports
  */
-extern unsigned CHIPS_ExtPorts32[];
-#define DR(x) CHIPS_ExtPorts32[x]
+extern int ctReg32MMIO[];
+extern int ctReg32HiQV[];
+#define DR(x) ctReg32MMIO[x]
+#define BR(x) ctReg32HiQV[x]
 
 /*
  * Forward definitions for the functions that make up the driver.    See
@@ -62,16 +69,20 @@ extern unsigned CHIPS_ExtPorts32[];
 /* in ct_blitter.c */
 extern void ctBitBlt();
 extern void ctMMIOBitBlt();
+extern void ctHiQVBitBlt();
 
 /* in ct_BitBlt.c */
 extern void ctcfbDoBitbltCopy();
 extern void ctcfbFillBoxSolid();
+extern void ctcfbCopyPlane1to8();
 
 /* in ct_solid.c */
 extern void ctcfbFillRectSolid();
 extern void ctcfbFillSolidSpansGeneral();
 extern void ctMMIOFillRectSolid();
 extern void ctMMIOFillSolidSpansGeneral();
+extern void ctHiQVFillRectSolid();
+extern void ctHiQVFillSolidSpansGeneral();
 
 /* in ct_blt16.c */
 extern RegionPtr ctcfb16CopyArea();
@@ -84,11 +95,37 @@ extern int ctPCIIOBase();
 /* in ct_FillRct.c */
 extern void ctcfbPolyFillRect();
 
+/* in ct_FillRct.c */
+extern void ctcfbFillRectOpaqueStippled32();
+extern void ctcfbFillRectTransparentStippled32();
+extern void ctMMIOFillRectOpaqueStippled32();
+extern void ctMMIOFillRectTransparentStippled32();
+extern void ctHiQVFillRectOpaqueStippled32();
+extern void ctHiQVFillRectTransparentStippled32();
+
 /* in ct_line.c */
-#ifdef CHIPS_SUPPORT_MMIO
 extern void ctMMIOLineSS();
 extern void ctMMIOSegmentSS();
-#endif
+extern void ctHiQVLineSS();
+extern void ctHiQVSegmentSS();
+
+/* in ct_teblt8.c */
+extern void ctTransferText();
+extern void ctTransferText24();
+extern void ctcfbImageGlyphBlt();
+extern void ctcfbPolyGlyphBlt();
+extern void ctMMIOImageGlyphBlt();
+extern void ctMMIOPolyGlyphBlt();
+extern void ctHiQVImageGlyphBlt();
+extern void ctHiQVPolyGlyphBlt();
+
+/* in ct_colexp.c */
+extern void ctcfbColorExpandStippleFill();
+extern void ctMMIOColorExpandStippleFill();
+extern void ctHiQVColorExpandStippleFill();
+extern void ctcfbBLTWriteBitmap();
+extern void ctMMIOBLTWriteBitmap();
+extern void ctHiQVBLTWriteBitmap();
 
 #define MMIOmeml(x) *(unsigned int *)(ctMMIOBase + x)
 #define MMIOmemw(x) *(unsigned short *)(ctMMIOBase + x)

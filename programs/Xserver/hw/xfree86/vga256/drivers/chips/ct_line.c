@@ -56,7 +56,7 @@ SOFTWARE.
  *   For use with Chips and Technology chipsets
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_line.c,v 3.0 1996/08/11 13:02:49 dawes Exp $ */
 
 #include "site.h"		       /*for VENDOR_RELEASE */
 #include "xf86.h"
@@ -66,8 +66,13 @@ SOFTWARE.
 #include "compiler.h"
 
 #include "ct_lline.h"
-#include "ct_BlitMM.h"
 #include "ct_driver.h"
+
+#ifdef CHIPS_HIQV
+#include "ct_BltHiQV.h"
+#else
+#include "ct_BlitMM.h"
+#endif
 
 /*
  * The following define enables calls to the optimized linear framebuffer
@@ -107,6 +112,24 @@ extern Bool vgaUseLinearAddressing;
  */
 
 void
+#ifdef CHIPS_HIQV
+#ifdef POLYSEGMENT
+ctHiQVSegmentSS(pDrawable, pGC, nseg, pSeg)
+    DrawablePtr pDrawable;
+    GCPtr pGC;
+    int nseg;
+    register xSegment *pSeg;
+
+#else
+ctHiQVLineSS(pDrawable, pGC, mode, npt, pptInit)
+    DrawablePtr pDrawable;
+    GCPtr pGC;
+    int mode;			       /* Origin or Previous */
+    int npt;			       /* number of points */
+    DDXPointPtr pptInit;
+
+#endif
+#else
 #ifdef POLYSEGMENT
 ctMMIOSegmentSS(pDrawable, pGC, nseg, pSeg)
     DrawablePtr pDrawable;
@@ -122,6 +145,7 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
     int npt;			       /* number of points */
     DDXPointPtr pptInit;
 
+#endif
 #endif
 {
     int nboxInit;
@@ -218,7 +242,7 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
     if (vgaBitsPerPixel == 8) {
 	cfbGetLongWidthAndPointer(pDrawable, nlwidth, addrl)
     } else {
-	nlwidth = vga256InfoRec.virtualX / 4;
+	nlwidth = vga256InfoRec.displayWidth / 4;
 	addrl = (unsigned long *)VGABASE;       /* I'm not sure what these values should be yet */
 	}
 #ifdef DEBUG
@@ -245,23 +269,29 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
     ErrorF("%d \n", destpitch);
 #endif
 
+    op = ctAluConv2[alu & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctPATSOLID
+	| ctPATMONO;
+
 /* Wait for BiTBLT to be free, then setup the blit parameters */
     ctBLTWAIT;
-    op = ctAluConv[alu & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctSRCFG;
     ctSETSRCADDR(0x0);
     ctSETPITCH(0x0, destpitch * vgaBytesPerPixel);
 
     switch (vgaBitsPerPixel) {
     case 8:
 	ctSETFGCOLOR8(pGC->fgPixel);
+	ctSETBGCOLOR8(pGC->fgPixel);
 	break;
     case 16:
 	ctSETFGCOLOR16(pGC->fgPixel);
+	ctSETBGCOLOR16(pGC->fgPixel);
 	break;
     case 24:
-	if (ctisHiQV32) {
-	    ctSETFGCOLOR24(pGC->fgPixel);
-	} else {
+#ifdef CHIPS_HIQV
+	ctSETFGCOLOR24(pGC->fgPixel);
+	ctSETBGCOLOR24(pGC->fgPixel);
+#else
+	{
 	    /* The 6554x Blitter can only handle 8/16bpp fills directly,
 	     * Though you can do a grey fill, by a little bit of magic
 	     * with the 8bpp fill */
@@ -279,8 +309,10 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 		return;
 	    } else {
 		ctSETFGCOLOR8(pGC->fgPixel);
+		ctSETBGCOLOR8(pGC->fgPixel);
 	    }
 	}
+#endif
 	break;
     }
 
@@ -362,6 +394,12 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 				 */
 				ctBLTWAIT;
 				ctSETROP(op);
+#ifdef CHIPS_HIQV
+				/* This operation involves colour expansion, */
+				/* so being paranoid, set the monochrome     */
+				/* control register to zero                  */
+				ctSETMONOCTL(0);	
+#endif
 				ctSETDSTADDR(destaddr * vgaBytesPerPixel);
 				ctSETHEIGHTWIDTHGO(height, vgaBytesPerPixel);
 			    } else {
@@ -461,6 +499,9 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 			width = x2t - x1t;
 			ctBLTWAIT;
 			ctSETROP(op);
+#ifdef CHIPS_HIQV
+			ctSETMONOCTL(0);	
+#endif
 			ctSETDSTADDR(destaddr * vgaBytesPerPixel);
 			ctSETHEIGHTWIDTHGO(1, width * vgaBytesPerPixel);
 		    }
@@ -784,6 +825,9 @@ ctMMIOLineSS(pDrawable, pGC, mode, npt, pptInit)
 		else {
 		    ctBLTWAIT;
 		    ctSETROP(op);
+#ifdef CHIPS_HIQV
+		    ctSETMONOCTL(0);	
+#endif
 		    ctSETDSTADDR((y2 * destpitch + x2) * vgaBytesPerPixel);
 		    ctSETHEIGHTWIDTHGO(1, (vgaBitsPerPixel >> 3));
 		}

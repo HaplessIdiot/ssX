@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/01/26 10:56:20 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/wabs/Imakefile,v 3.4 1996/02/09 08:22:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/wabs/Imakefile,v 3.5 1996/08/14 14:39:46 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -29,7 +29,7 @@ SRCS =	 vgagc.c vgawindow.c vgascrinit.c \
 	 vgaply1rctC.c vgaply1rctG.c vgafuncs.c \
 	 SpeedUpBlt.c BitBlt.s BitBlt2.s Box.s Line.s \
 	 VHLine.s vgaBanks.c $(FSRCS) vgaHW.c vga.c vgaCmap.c vgaBank.s \
-	 vgaPCI.c
+	 vgaPCI.c vgatables.c
 
 FOBJS =  fBitBlt.o fFillCopy.o fFillXor.o fFillOr.o fFillAnd.o \
          fFillSet.o vgabres.o vgalineH.o vgalineV.o
@@ -54,7 +54,7 @@ OBJS =   vgagc.o vgawindow.o vgascrinit.o \
 	 vgapush8.o vgaply1rctC.o vgaply1rctG.o $(STIPPLEOBJ) vgafuncs.o \
 	 SpeedUpBlt.o BitBlt.o BitBlt2.o Box.o Line.o \
 	 VHLine.o vgaBanks.o $(FOBJS) vgaHW.o vga.o vgaCmap.o vgaBank.o \
-	 vgaPCI.o
+	 vgaPCI.o vgatables.o
 
    INCLUDES = -I. -I$(XF98COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
@@ -111,6 +111,7 @@ LinkSourceFile(vgarctstp8.c,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgascrinit.c,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgasetsp.c,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgasolid.c,$(XF86SRC)/vga256/vga)
+LinkSourceFile(vgatables.c,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgateblt8.c,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgategblt.c,$(XF86SRC)/vga256/vga)
 LinkSourceFile(vgatile32.c,$(XF86SRC)/vga256/vga)

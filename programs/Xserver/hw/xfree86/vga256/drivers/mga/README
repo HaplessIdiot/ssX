@@ -62,7 +62,7 @@ Configuration:
 If you have a 220 MHz board, you must specify in the XF86Config file the
 following line (near where Videoram or Clocks is commented out).
 
-DACSpeed 	220000
+DACSpeed 	220
 
 If you have more video ram than 2 MB, you MUST specify the amount in the
 following fashion:

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.99 1996/09/01 04:15:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.100 1996/09/14 13:10:00 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -3186,7 +3186,6 @@ xf86LookupMode(target, driver, flags)
   {
     if (!strcmp(p->name, target->name))		/* names equal ? */
     {
-#if 0
       /* First check if the driver objects to the mode */
       if ((driver->ValidMode)(p, xf86Verbose) != MODE_OK)
       {
@@ -3194,7 +3193,6 @@ xf86LookupMode(target, driver, flags)
                 XCONFIG_PROBED,driver->name, target->name );
 	 break;
       }
-#endif
 
       if ((flags & LOOKUP_NO_INTERLACED) && (p->Flags & V_INTERLACE))
       {

@@ -177,6 +177,7 @@ there_is_another_patch()
 	if (force || batch) {
 	    say1("No file to patch.  Skipping...\n");
 	    filearg[0] = savestr(bestguess);
+	    skip_rest_of_patch = TRUE;
 	    return TRUE;
 	}
 	ask1("File to patch: ");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.9 1996/09/25 14:16:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.10 1996/09/26 13:56:04 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -188,6 +188,7 @@ typedef union {
 
 /* Registers */
 #define PCI_REG_USERCONFIG 		0x40
+#define PCI_OPTION_REG	 		0x40
 
 /* PCI Configuration address */
 #define	PCI_MODE1_ADDRESS_REG		0xCF8
@@ -391,11 +392,45 @@ CARD32 pcibusRead(
 #endif
 );
 
+#define pciReadLong(tag, addr) pcibusRead(tag, addr)
+
+CARD16 pciReadWord(
+#if NeedFunctionPrototypes
+	pciTagRec,
+	CARD32
+#endif
+);
+
+CARD8 pciReadByte(
+#if NeedFunctionPrototypes
+	pciTagRec,
+	CARD32
+#endif
+);
+
 void pcibusWrite(
 #if NeedFunctionPrototypes
 	pciTagRec,
 	CARD32,
 	CARD32
+#endif
+);
+
+#define pciWriteLong(tag, addr, data) pcibusWrite(tag, addr, data)
+
+void pciWriteWord(
+#if NeedFunctionPrototypes
+	pciTagRec,
+	CARD32,
+	CARD16
+#endif
+);
+
+void pciWriteByte(
+#if NeedFunctionPrototypes
+	pciTagRec,
+	CARD32,
+	CARD8
 #endif
 );
 

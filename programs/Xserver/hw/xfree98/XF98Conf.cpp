@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.9 1996/05/11 11:49:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.10 1996/08/14 14:33:30 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -430,7 +430,6 @@ XCOMM **********************************************************************
 
 XCOMM Any number of graphics device sections may be present
 
-
 Section "Device"
     Identifier	"EGC16"
     VendorName	"Unknown"
@@ -531,11 +530,19 @@ XCOMM    Option	"fast_dram"
 EndSection
 
 Section "Device"
-    Identifier	"TRIDENT"
+    Identifier	"NECTrident"
     VendorName	"NEC"
-    BoardName	"Trident Cyber9320/TGUI96x0"
+    BoardName	"NEC Trident"
 XCOMM    Option	"Linear"
-    Option	"med_dram"
+XCOMM    Option	"med_dram"
+XCOMM    Option	"hw_cursor"
+Endsection
+
+Section "Device"
+    Identifier	"GA-DRV98"
+    VendorName	"IO DATA"
+    BoardName	"GA-DRV/98"
+XCOMM    Option	"med_dram"
 XCOMM    Option	"hw_cursor"
 Endsection
 
@@ -706,7 +713,8 @@ XCOMM    Device	"NKVNEC"
 XCOMM    Device	"GA98NB1"
 XCOMM    Device	"GA98NB2"
 XCOMM    Device	"GA98NB4"
-XCOMM    Device	"TRIDENT"
+XCOMM    Device	"NECTrident"
+XCOMM    Device	"GA-DRV98"
     Monitor	"Multi sync"
     Subsection "Display"
         Depth	    8

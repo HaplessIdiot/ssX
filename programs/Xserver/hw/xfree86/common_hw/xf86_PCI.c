@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.11 1996/09/15 11:18:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.12 1996/09/26 13:56:03 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -637,6 +637,64 @@ pcibusRead(pciTagRec tag, CARD32 reg)
     return data;
 }
 
+CARD16
+pciReadWord(pciTagRec tag, CARD32 reg)
+{
+    CARD32 addr;
+    CARD16 data = 0;
+
+    if (!tag.cfg1) {
+	return 0xff;
+    }
+
+    switch (pciConfigType) {
+    case 1:
+	addr = tag.cfg1 | (reg & 0xfc);
+	outl(PCI_MODE1_ADDRESS_REG, addr);
+	data = inw(PCI_MODE1_DATA_REG);
+	outl(PCI_MODE1_ADDRESS_REG, 0);
+	break;
+    case 2:
+	addr = tag.cfg2.port | (reg & 0xfc);
+	outb(PCI_MODE2_ENABLE_REG, tag.cfg2.enable);
+	outb(PCI_MODE2_FORWARD_REG, tag.cfg2.forward);
+	data = inw((CARD16)addr);
+	outb(PCI_MODE2_ENABLE_REG, 0);
+	outb(PCI_MODE2_FORWARD_REG, 0);
+	break;
+    }
+    return data;
+}
+
+CARD8
+pciReadByte(pciTagRec tag, CARD32 reg)
+{
+    CARD32 addr;
+    CARD8 data = 0;
+
+    if (!tag.cfg1) {
+	return 0xff;
+    }
+
+    switch (pciConfigType) {
+    case 1:
+	addr = tag.cfg1 | (reg & 0xfc);
+	outl(PCI_MODE1_ADDRESS_REG, addr);
+	data = inb(PCI_MODE1_DATA_REG);
+	outl(PCI_MODE1_ADDRESS_REG, 0);
+	break;
+    case 2:
+	addr = tag.cfg2.port | (reg & 0xfc);
+	outb(PCI_MODE2_ENABLE_REG, tag.cfg2.enable);
+	outb(PCI_MODE2_FORWARD_REG, tag.cfg2.forward);
+	data = inb((CARD16)addr);
+	outb(PCI_MODE2_ENABLE_REG, 0);
+	outb(PCI_MODE2_FORWARD_REG, 0);
+	break;
+    }
+    return data;
+}
+
 void
 pcibusWrite(pciTagRec tag, CARD32 reg, CARD32 data)
 {
@@ -658,6 +716,60 @@ pcibusWrite(pciTagRec tag, CARD32 reg, CARD32 data)
 	outb(PCI_MODE2_ENABLE_REG, tag.cfg2.enable);
 	outb(PCI_MODE2_FORWARD_REG, tag.cfg2.forward);
 	outl((CARD16)addr, data);
+	outb(PCI_MODE2_ENABLE_REG, 0);
+	outb(PCI_MODE2_FORWARD_REG, 0);
+	break;
+    }
+}
+
+void
+pciWriteWord(pciTagRec tag, CARD32 reg, CARD16 data)
+{
+    CARD32 addr;
+
+    if (!tag.cfg1) {
+	return;
+    }
+
+    switch (pciConfigType) {
+    case 1:
+	addr = tag.cfg1 | (reg & 0xfc);
+	outl(PCI_MODE1_ADDRESS_REG, addr);
+	outw(PCI_MODE1_DATA_REG, data);
+	outl(PCI_MODE1_ADDRESS_REG, 0);
+	break;
+    case 2:
+	addr = tag.cfg2.port | (reg & 0xfc);
+	outb(PCI_MODE2_ENABLE_REG, tag.cfg2.enable);
+	outb(PCI_MODE2_FORWARD_REG, tag.cfg2.forward);
+	outw((CARD16)addr, data);
+	outb(PCI_MODE2_ENABLE_REG, 0);
+	outb(PCI_MODE2_FORWARD_REG, 0);
+	break;
+    }
+}
+
+void
+pciWriteByte(pciTagRec tag, CARD32 reg, CARD8 data)
+{
+    CARD32 addr;
+
+    if (!tag.cfg1) {
+	return;
+    }
+
+    switch (pciConfigType) {
+    case 1:
+	addr = tag.cfg1 | (reg & 0xfc);
+	outl(PCI_MODE1_ADDRESS_REG, addr);
+	outb(PCI_MODE1_DATA_REG, data);
+	outl(PCI_MODE1_ADDRESS_REG, 0);
+	break;
+    case 2:
+	addr = tag.cfg2.port | (reg & 0xfc);
+	outb(PCI_MODE2_ENABLE_REG, tag.cfg2.enable);
+	outb(PCI_MODE2_FORWARD_REG, tag.cfg2.forward);
+	outb((CARD16)addr, data);
 	outb(PCI_MODE2_ENABLE_REG, 0);
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;

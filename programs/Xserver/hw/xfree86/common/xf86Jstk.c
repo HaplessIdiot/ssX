@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.12 1996/05/12 11:57:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.13 1996/06/10 09:14:47 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -542,7 +542,11 @@ DeviceAssocRec joystick_assoc =
  * entry point of dynamic loading
  */
 int
+#ifndef __NetBSD__
 init_module(unsigned long	server_version)
+#else
+init_xf86Jstk(unsigned long     server_version)
+#endif
 {
     xf86AddDeviceAssoc(&joystick_assoc);
 

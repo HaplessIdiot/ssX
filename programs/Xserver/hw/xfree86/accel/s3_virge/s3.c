@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.0 1996/09/22 13:25:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.1 1996/09/24 13:54:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -204,6 +204,7 @@ static SymTabRec s3DacTable[] = {
 static SymTabRec s3ChipTable[] = {
    { S3_UNKNOWN,	"unknown" },
    { S3_ViRGE,		"ViRGE" },
+   { S3_ViRGE_VX,	"ViRGE/VX" },
    { -1,		"" },
 };
 
@@ -343,6 +344,9 @@ s3GetPCIInfo()
 	 switch (pcrp->_device) {
 	 case PCI_ViRGE:
 	    info.ChipType = S3_ViRGE;
+	    break;
+	 case PCI_ViRGE_VX:
+	    info.ChipType = S3_ViRGE_VX;
 	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;
@@ -731,6 +735,9 @@ s3Probe()
       if (S3_ViRGE_SERIES(s3ChipId)) {
 	 chipname = "ViRGE";
       }
+      else if (S3_ViRGE_VX_SERIES(s3ChipId)) {
+	 chipname = "ViRGE/VX";
+      }
       ErrorF("%s %s: chipset:   %s rev. %x\n",
 	     XCONFIG_PROBED, s3InfoRec.name, chipname, s3ChipRev);
    }
@@ -862,7 +869,7 @@ s3Probe()
 
    s3Bpp = xf86bpp / 8;
 
-   if (S3_ViRGE_SERIES(s3ChipId)) {
+   if (S3_ANY_ViRGE_SERIES(s3ChipId)) {
       if (s3RamdacType != UNKNOWN_DAC && !DAC_IS_TRIO) {
 	 ErrorF("%s %s: for ViRGE chips you shouldn't specify a Ramdac\n",
 		XCONFIG_PROBED, s3InfoRec.name);
@@ -919,7 +926,7 @@ s3Probe()
 	 chips = "S3 chips other than S3 ViRGE";
 	 break;
       case S3_TRIO64_DAC:
-	 if (!S3_ViRGE_SERIES(s3ChipId))
+	 if (!S3_ANY_ViRGE_SERIES(s3ChipId))
 	    chips = "ViRGE";
 	 break;
       }
@@ -933,7 +940,7 @@ s3Probe()
       }
    }
 
-   if (S3_ViRGE_SERIES(s3ChipId)) {
+   if (S3_ANY_ViRGE_SERIES(s3ChipId)) {
       if (!DAC_IS_TRIO) {
 	 ErrorF("%s %s: for ViRGE chips you shouldn't specify a Ramdac\n",
 		XCONFIG_PROBED, s3InfoRec.name);

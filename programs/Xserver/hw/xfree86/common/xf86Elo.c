@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.12 1996/07/08 10:26:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.13 1996/08/26 10:49:15 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1257,7 +1257,11 @@ DeviceAssocRec elographics_assoc =
  ***************************************************************************
  */
 int
+#ifndef __NetBSD__
 init_module(unsigned long	server_version)
+#else
+init_xf86Elo(unsigned long      server_version)
+#endif
 {
     xf86AddDeviceAssoc(&elographics_assoc);
 

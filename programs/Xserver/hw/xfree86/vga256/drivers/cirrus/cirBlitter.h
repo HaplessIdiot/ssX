@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitter.h,v 3.8 1995/04/09 14:14:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitter.h,v 3.9 1996/02/04 09:12:54 dawes Exp $ */
 
 
 /* Definitions for BitBLT engine communication. */
@@ -14,7 +14,8 @@
 #define SYSTEMSRC		0x04
 #define TRANSPARENCYCOMPARE	0x08
 #define PIXELWIDTH16		0x10
-#define PIXELWIDTH32		0x30	/* 543x only. */
+#define PIXELWIDTH24		0x20	/* 5436/46 only. */
+#define PIXELWIDTH32		0x30	/* 5434/36/46 only. */
 #define PATTERNCOPY		0x40
 #define COLOREXPAND		0x80
 

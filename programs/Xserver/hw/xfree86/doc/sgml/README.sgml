@@ -139,8 +139,8 @@ source distribution for full details.
 
     <tag/PC98:/
 	<itemize>
-	<ITEM>FreeBSD(98) 2.0.5, 2.1
-	<ITEM>NetBSD/pc98 (based on NetBSD 1.1)
+	<ITEM>FreeBSD(98) 2.0.5, 2.1, 2.1.5
+	<ITEM>NetBSD/pc98 (based on NetBSD 1.2)
 	</itemize>
 
     </DESCRIP>
@@ -449,10 +449,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
 </itemize>
 <tag/PC98 support by:  /
 <itemize>
-	<item> Toyonori Fujiura <it>&lt;toyo@center.nitech.ac.jp&gt;</it>,
-	<item> Hiroyuki Aizu <it>&lt;aizu@center.nitech.ac.jp&gt;</it>,
+	<item> Toyonori Fujiura <it>&lt;toyo@ibbsal.or.jp&gt;</it>,
+	<item> Hiroyuki Aizu <it>&lt;aizu@jaist.ac.jp&gt;</it>,
 	<item> Tetsuya Kakefuda <it>&lt;kakefuda@tag.iijnet.or.jp&gt;</it>,
-	<item> Takefumi Tsukada <it>&lt;tsuka@kawalab.dnj.ynu.ac.jp&gt;</it>,
+	<item> Takefumi Tsukada <it>&lt;tsuka@linkt.imasy.or.jp&gt;</it>,
 	<item> H.Komatsuzaki,
 	<item> Naoki Katsurakawa <it>&lt;katsura@prc.tsukuba.ac.jp&gt;</it>,
 	<item> Shuichiro Urata <it>&lt;s-urata@nmit.tmg.nec.co.jp&gt;</it>,
@@ -470,8 +470,13 @@ XFree86 support was integrated into the base X11R6 distribution by:
 	<item> Ishida Kazuo <it>&lt;ishidakz@obp.cl.nec.co.jp&gt;</it>,
 	<item> Takaaki Nomura <it>&lt;tnomura@sfc.keio.ac.jp&gt;</it>,
 	<item> Tadaaki Nagao <it>&lt;nagao@cs.titech.ac.jp&gt;</it>,
-	<item> Minoru Noda <it>&lt;tarda@ce.tokushima-u.ac.jp&gt;</it>,
-	<item> Naofumi Honda <it>&lt;honda@math.hokudai.ac.jp&gt;</it>,
+	<item> Minoru Noda <it>&lt;mnoda@cv.tottori-u.ac.jp&gt;</it>,
+	<item> Naofumi Honda <it>&lt;honda@Kururu.math.hokudai.ac.jp&gt;</it>,
+	<item> Akio Morita <it>&lt;amorita@bird.scphys.kyoto-u.ac.jp&gt;</it>,
+	<item> Takashi Sakamoto <it>&lt;sakamoto@yajima.kuis.kyoto-u.ac.jp&gt;</it>,
+	<item> Yasuhiro Ichikawa <it>&lt;cs94006@mbox.sist.ac.jp&gt;</it>,
+	<item> Kazunori Ueno <it>&lt;g540012@komaba.ecc.u-tokyo.ac.jp&gt;</it>,
+	<item> Yasushi Suzuki <it>&lt;suz@d2.bs1.fc.nec.co.jp&gt;</it>,
 	<item> Masato Yoshida (Contributor of PW805i support)
 </itemize>
 
@@ -991,7 +996,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.54 1996/09/14 13:10:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.55 1996/09/25 14:17:34 dawes Exp $
 
 
 

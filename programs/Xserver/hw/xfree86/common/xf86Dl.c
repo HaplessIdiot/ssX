@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.4 1996/03/29 22:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.5 1996/06/10 09:14:44 dawes Exp $ */
 
 /*    
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
@@ -60,7 +60,7 @@ xf86LoadModule(const char *	file,
 {
     void	*module = NULL;
     char	*dir_elem, *path_elem, *keep;
-    
+
     /* allocate a copy even for the absolute path, for consistency in
      * error reporting/recovery.
      */
@@ -105,11 +105,42 @@ xf86LoadModule(const char *	file,
 	Error((char *)file);
     } else {
 #ifdef PREPEND_UNDERSCORE
+#ifndef __NetBSD__
 	InitModule init_module = (InitModule)dlsym(module, "_init_module");
+#else
+	/* Work around a bug (?) in dlsym() which finds the symbols
+	   globally, instead of inside the specified object.
+	   Here we name the init func after the module's file name */
+	InitModule init_module;
+	char *init_module_name;
+	const char *module_name, *p;
+	int l;
+
+	if (file[0] == '/') {
+	    module_name = rindex(file, '/') + 1;
+	} else {
+	    module_name = &file[0];
+	}
+	/* remove file suffix */
+	p = index(module_name, '.');
+	if (p != NULL) {
+	    l = p - module_name;
+	} else {
+	    l = strlen(module_name);
+	}
+	/* build the symbol name  */
+	init_module_name = (char *)xalloc(7+l);
+	strcpy(init_module_name, "_init_");
+	strncpy(init_module_name + 6, module_name, l);
+	init_module_name[6+l] = '\0';
+
+	init_module = (InitModule)dlsym(module, init_module_name);
+	xfree(init_module_name);
+#endif /* __NetBSD__ */
 #else
 	InitModule init_module = (InitModule)dlsym(module, "init_module");
 #endif
-	
+
 	if (init_module) {
 	   if (!(*init_module)(XF86_VERSION_CURRENT)) {
 		ErrorF("Warning: the module %s doesn't match server "

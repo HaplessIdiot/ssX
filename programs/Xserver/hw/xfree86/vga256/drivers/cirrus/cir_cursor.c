@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.16 1996/08/23 11:04:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.17 1996/09/25 14:18:26 dawes Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -28,6 +28,8 @@
 /*
 #define CIRRUS_DEBUG_CURSOR
 */
+
+#define USE_MBITBLT    1
 
 #include "X.h"
 #include "Xproto.h"
@@ -432,17 +434,27 @@ cirrusLoadCursorToCard (pScr, pCurs, x, y)
     int xStorage, yStorage;
     int cursorWidth, cursorHeight;
 
-    volatile unsigned long *pOP1_opRDRAM, *pOP0_opRDRAM, *pBLTEXT_EX;
+    volatile unsigned long *pOP1_opRDRAM;
+#if USE_MBITBLT
+    volatile unsigned long *pMBLTEXT_EX, *pOP0_opMRDRAM;
+#else
+    volatile unsigned long *pBLTEXT_EX, *pOP0_opRDRAM;
+#endif
     volatile unsigned long *pHOSTDATA;
     volatile unsigned short *pDRAWDEF, *pBLTDEF;
     volatile unsigned char *pQFREE;
 
     /* Point all the MMIO registers to their appropriate addresses */
-    pOP0_opRDRAM = (unsigned long *)(cirrusMMIOBase + 0x520);
     pOP1_opRDRAM = (unsigned long *)(cirrusMMIOBase + 0x540);
     pDRAWDEF = (unsigned short *)(cirrusMMIOBase + 0x584);
     pBLTDEF = (unsigned short *)(cirrusMMIOBase + 0x586);
+#if USE_MBITBLT
+    pOP0_opMRDRAM = (unsigned long *)(cirrusMMIOBase + 0x524);
+    pMBLTEXT_EX = (unsigned long *)(cirrusMMIOBase + 0x720);
+#else
+    pOP0_opRDRAM = (unsigned long *)(cirrusMMIOBase + 0x520);
     pBLTEXT_EX = (unsigned long *)(cirrusMMIOBase + 0x700);
+#endif
     pQFREE = (unsigned char *)(cirrusMMIOBase + 0x404);
     pHOSTDATA = (unsigned long *)(cirrusMMIOBase + 0x800);
 
@@ -460,22 +472,31 @@ cirrusLoadCursorToCard (pScr, pCurs, x, y)
     cursorWidth = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width?256:128;
     cursorHeight = cirrusTilesPerLineTab[cirrusTilesPerLineIndex].width?4:8;
 
+#if !USE_MBITBLT
     if (vgaBitsPerPixel == 16)
       cursorWidth >>= 1;
     if (vgaBitsPerPixel == 32)
       cursorWidth >>= 2;
-
+#endif
 
     /* First, copy our transparent cursor image to the next 1/2 tile boundry */
     /* Destination */
+#if USE_MBITBLT
+    *pOP0_opMRDRAM = (yStorage << 16) | (xStorage+cursorWidth);
+#else
     *pOP0_opRDRAM = (yStorage << 16) | (xStorage+cursorWidth);
+#endif
 
     /* Set the source pitch.  0 means that, worst case, the source is 
        alligned only on a byte boundry */
     *pOP1_opRDRAM = 0;
 
     
+#if USE_MBITBLT
+    *pMBLTEXT_EX = (cursorHeight << 16) | cursorWidth;
+#else
     *pBLTEXT_EX = (cursorHeight << 16) | cursorWidth;
+#endif
 
     for (l = 0; l < cirrusCur.height; l++)
       for (w = 0; w < cirrusCur.width >> 4; w++) 
@@ -484,7 +505,11 @@ cirrusLoadCursorToCard (pScr, pCurs, x, y)
     /* Now, copy the real cursor image */
     
     /* Set the destination */
+#if USE_MBITBLT
+    *pOP0_opMRDRAM = (yStorage << 16) | (xStorage);
+#else
     *pOP0_opRDRAM = (yStorage << 16) | (xStorage);
+#endif
 
     /* Set the source pitch.  0 means that, worst case, the source is 
        alligned only on a byte boundry */
@@ -492,7 +517,11 @@ cirrusLoadCursorToCard (pScr, pCurs, x, y)
 
 
     /* Always copy an entire cursor image to the card. */
+#if USE_MBITBLT
+    *pMBLTEXT_EX = (cursorHeight << 16) | (cursorWidth);
+#else
     *pBLTEXT_EX = (cursorHeight << 16) | (cursorWidth);
+#endif
 
     if (x == 0 && y == 0) {
       pSrcM -= count - 1;

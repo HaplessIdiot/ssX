@@ -27,7 +27,7 @@
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 /* Modified for Chips by David Bateman, <dbateman@ee.uts.edu.au> */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_FillRct.c,v 3.0 1996/08/11 13:02:37 dawes Exp $ */
 
 /*
  * This file contains the high level PolyFillRect function.
@@ -118,9 +118,12 @@ ctcfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     BoxFill = 0;
     switch (pGC->fillStyle) {
     case FillSolid:
-	if (ctUseMMIO)
-	    BoxFill = ctMMIOFillRectSolid;	/* Optimized */
-	else
+	if (ctUseMMIO) {
+	    if (ctisHiQV32)
+	        BoxFill = ctHiQVFillRectSolid;	/* Optimized */
+	    else
+	        BoxFill = ctMMIOFillRectSolid;	/* Optimized */
+	} else
 	    BoxFill = ctcfbFillRectSolid;	/* Optimized */
 	break;
 
@@ -185,10 +188,28 @@ ctcfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
 #if (PPW == 4)
     case FillStippled:
-	BoxFill = vga2568FillRectStippledUnnatural;
+#ifdef CT_POST_312F_ACCL
+	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+							pRotatedPixmap)
+	    BoxFill = vga2568FillRectStippledUnnatural;
+	else {
+	    BoxFill = ctcfbFillRectTransparentStippled32;
+	}
+#else
+	    BoxFill = vga2568FillRectStippledUnnatural;
+#endif
 	break;
     case FillOpaqueStippled:
-	BoxFill = vga2568FillRectStippledUnnatural;
+#ifdef CT_POST_312F_ACCL
+	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+							pRotatedPixmap)
+	    BoxFill = vga2568FillRectStippledUnnatural;
+	else {
+	    BoxFill = ctcfbFillRectOpaqueStippled32;
+	}
+#else
+	    BoxFill = vga2568FillRectStippledUnnatural;
+#endif
 	break;
 #endif
     }

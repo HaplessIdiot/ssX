@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_Blitter.h,v 3.1 1996/08/21 08:40:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_Blitter.h,v 3.2 1996/08/24 12:54:06 dawes Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* registers */
@@ -42,7 +42,9 @@
 
 #define ctPATCOPY               0xF0
 #define ctTOP2BOTTOM            0x100
+#define ctBOTTOM2TOP            0x000
 #define ctLEFT2RIGHT            0x200
+#define ctRIGHT2LEFT            0x000
 #define ctSRCFG                 0x400
 #define ctSRCMONO               0x800
 #define ctPATMONO               0x1000

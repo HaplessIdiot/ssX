@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.5 1995/04/09 14:14:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_orect.c,v 3.6 1996/02/04 09:13:13 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -117,7 +117,7 @@ CirrusPolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
     SETBLTMODE(FORWARDS | COLOREXPAND | PATTERNCOPY | PIXELWIDTH32);
 #endif
     SETROP(cirrus_rop[pGC->alu]);
-    destpitch = vga256InfoRec.virtualX * (PSZ / 8);
+    destpitch = vga256InfoRec.displayWidth * (PSZ / 8);
     SETDESTPITCH(destpitch);
 #if PSZ == 8    
     SETFOREGROUNDCOLOR(pGC->fgPixel);

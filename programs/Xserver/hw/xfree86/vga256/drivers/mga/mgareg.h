@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgareg.h,v 3.0 1996/09/26 14:00:36 dawes Exp $ */
 
 /*
  * mga register file 
@@ -139,7 +139,7 @@
 
 #define MGADWG_SOLID		( 0x01 << 11 )
 
-/* ar register at zero 
+/* ar register at zero */
 
 #define MGADWG_ARZERO		( 0x01 << 12 )
 
@@ -167,5 +167,60 @@
 
 #define MGADWG_PATTERN		( 0x01 << 29 )
 #define MGWDWG_TRANSC		( 0x01 << 30 )
+
+/* MGA registers in PCI config space */
+#define PCI_MGA_INDEX		0x44
+#define PCI_MGA_DATA		0x48
+
+#define RAMDAC_OFFSET		0x3c00
+
+/* TVP3026 direct registers */
+
+#define TVP3026_INDEX		0x00
+#define TVP3026_WADR_PAL	0x00
+#define TVP3026_COL_PAL		0x01
+#define TVP3026_PIX_RD_MSK	0x02
+#define TVP3026_RADR_PAL	0x03
+#define TVP3026_CUR_COL_ADDR	0x04
+#define TVP3026_CUR_COL_DATA	0x05
+#define TVP3026_DATA		0x0a
+#define TVP3026_CUR_RAM		0x0b
+#define TVP3026_CUR_XLOW	0x0c
+#define TVP3026_CUR_XHI		0x0d
+#define TVP3026_CUR_YLOW	0x0e
+#define TVP3026_CUR_YHI		0x0f
+
+/* TVP3026 indirect registers */
+
+#define TVP3026_SILICON_REV	0x01
+#define TVP3026_CURSOR_CTL	0x06
+#define TVP3026_LATCH_CTL	0x0f
+#define TVP3026_TRUE_COLOR_CTL	0x18
+#define TVP3026_MUX_CTL		0x19
+#define TVP3026_CLK_SEL		0x1a
+#define TVP3026_PAL_PAGE	0x1c
+#define TVP3026_GEN_CTL		0x1d
+#define TVP3026_MISC_CTL	0x1e
+#define TVP3026_GEN_IO_CTL	0x2a
+#define TVP3026_GEN_IO_DATA	0x2b
+#define TVP3026_PLL_ADDR	0x2c
+#define TVP3026_PIX_CLK_DATA	0x2d
+#define TVP3026_MEM_CLK_DATA	0x2e
+#define TVP3026_LOAD_CLK_DATA	0x2f
+#define TVP3026_KEY_RED_LOW	0x32
+#define TVP3026_KEY_RED_HI	0x33
+#define TVP3026_KEY_GREEN_LOW	0x34
+#define TVP3026_KEY_GREEN_HI	0x35
+#define TVP3026_KEY_BLUE_LOW	0x36
+#define TVP3026_KEY_BLUE_HI	0x37
+#define TVP3026_KEY_CTL		0x38
+#define TVP3026_MCLK_CTL	0x39
+#define TVP3026_SENSE_TEST	0x3a
+#define TVP3026_TEST_DATA	0x3b
+#define TVP3026_CRC_LSB		0x3c
+#define TVP3026_CRC_MSB		0x3d
+#define TVP3026_CRC_CTL		0x3e
+#define TVP3026_ID		0x3f
+#define TVP3026_RESET		0xff
 
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.20 1996/09/01 04:47:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.21 1996/09/14 13:11:37 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -31,25 +31,14 @@
  */
 
 /*
- * This driver has been collected from the net, having passed through
- * several people. It is NOT a stable or complete driver.
- *
- * The driver code has much obsolete excluded code and has some suspect
- * bits. Notably the extended registers do not seem to ever be unlocked
- * (the code in the EnterLeave function is commented out).
- *
+ * This driver is still worked on, however we believe it to be fairly
+ * stable and complete.
  */
 
-/*
- * These are X and server generic header files.
- */
 #include "X.h"
 #include "input.h"
 #include "screenint.h"
 
-/*
- * These are XFree86-specific header files
- */
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -58,10 +47,6 @@
 #include "xf86_PCI.h"
 #include "vga.h"
 
-/*
- * If the driver makes use of XF86Config 'Option' flags, the following will be
- * required
- */
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
@@ -74,61 +59,74 @@
 #include "extensions/xf86dgastr.h"
 #endif
 
-/*
- * In many cases, this is sufficient for VGA16 support when VGA2 support is
- * already done
- */
-
 #ifdef XF86VGA16
 #define MONOVGA
 #endif
 
-/*
- * This header is required for drivers that implement STUBFbInit(). */
 #if !defined(MONOVGA) && !defined(XF86VGA16)
 #include "vga256.h"
 #endif
 
 #include "ct_driver.h"
 
-/*Chips&Technologies specific variables */
-Bool ctLinearSupport = FALSE;	       /*linear addressing enable */
-Bool ctAccelSupport = FALSE;	       /*acceleration enable */
-Bool ctisHiQV32 = FALSE;	       /*New architecture used in 65550 and 65554 */
-Bool ctHDepth = FALSE;		       /*Chip has 16/24bpp */
+/* Chips&Technologies internal specific variables */
+
+/* Capabilities */
+Bool ctLinearSupport = FALSE;	 /*linear addressing enable */
+Bool ctAccelSupport = FALSE;	 /*acceleration enable */
+Bool ctHDepth = FALSE;		 /*Chip has 16/24bpp */
+
+/* Frame Buffer related */
+unsigned long ctFrameBufferSize = 0;
+
+/* MMIO related */
+Bool ctSupportMMIO = FALSE;
+Bool ctUseMMIO = FALSE;
+unsigned char *ctMMIOBase = NULL;
+
+/* Chip type */
+int ct65545subtype = 0;
+Bool ctisHiQV32 = FALSE;	  /*New architecture used in 65550 and 65554 */
+
+/* Display related */
 Bool ctLCD = TRUE;
 Bool ctCRT = FALSE;
 Bool ctPCI = FALSE;
-Bool ctHWCursor = FALSE;
+/* Panel Types */
 unsigned char ctPanelType = 0;
-int ct65545subtype = 0;
+#define TFT 1
+#define SS 2			       /* STN Types */
+#define DS 4
+#define DD 6
+#define IS_STN(X) X&6
+
+/* Bus related */
 int ctBusType = 0;
-Bool ctXMode = FALSE;		       /* we start with console mode */
-int ctCurrentClock;
-unsigned char ctSWTmp;
+
+/* current Mode */
+Bool ctXMode = FALSE;		  /* we start with console mode */
+
+/* IO Base */
 unsigned char ctVgaIOBaseFlag = 0xFF;
 unsigned int ctCRindex;
 unsigned int ctCRvalue;
+unsigned int ctST01reg;
+
+/* Dummies used to temporarily store values */
 unsigned char ctHorizontalStretch ;
 unsigned char ctVerticalStretch ;
+unsigned char ctSWTmp;
 
+/* HW cursor related */
+Bool ctHWCursor = FALSE;
 extern void CHIPSCursorInit();
 extern void CHIPSRestoreCursor();
 extern void CHIPSWarpCursor();
 extern void CHIPSQueryBestSize();
 extern vgaHWCursorRec vgaHWCursor;
+unsigned int ctCursorAddress = 0;  /* The address in video ram of the cursor */
 
-#define LCD_TEXT_CLK_FREQ 25000	       /* lcd textclock if TYPE_PROGRAMMABLE */
-#define CRT_TEXT_CLK_FREQ 28000        /* crt textclock if TYPE_PROGRAMMABLE */
-
-unsigned int ctCursorAddress = 0;      /* The address in video ram of the cursor */
-
-/* The address in video ram of the tile pattern.  */
-unsigned int ctBLTPatternAddress = 0;
-
-Bool ctSupportMMIO = FALSE;
-Bool ctUseMMIO = FALSE;
-unsigned char *ctMMIOBase = NULL;
+/* Clock related */
 
 typedef struct {
     unsigned char msr;
@@ -136,8 +134,40 @@ typedef struct {
     unsigned char xr33;
     unsigned char fr03;
     int Clock;
-} CHIPSClockReg, *CHIPSClockPtr;
+} ctClockReg, *ctClockPtr;
 
+int ctCurrentClock;
+static unsigned char ctClockType;
+static unsigned char ctConsole_clk[3];
+
+#define TYPE_HW 0x01
+#define TYPE_PROGRAMMABLE 0x02
+#define OLD_STYLE 0x10
+#define NEW_STYLE 0x20
+
+#define LCD_TEXT_CLK_FREQ 25000	    /* lcd textclock if TYPE_PROGRAMMABLE */
+#define CRT_TEXT_CLK_FREQ 28000     /* crt textclock if TYPE_PROGRAMMABLE */
+
+static void ctClockSave();
+static void ctClockLoad();
+static Bool ctClockFind();
+static void ctCalcClock();
+
+
+
+/* Blitter related */
+unsigned int ctBLTPatternAddress = 0; /*address in video ram of tile pattern*/
+unsigned char *ctBltDataWindow = NULL;
+int ctReg32MMIO[]={0x83D0,0x87D0,0x8BD0,0x8FD0,0x93D0,0x97D0,0x9BD0,0x9FD0,
+		   0xA3D0,0xA7D0,0xABD0,0xAFD0,0xB3D0};
+int ctReg32HiQV[]={0x00,0x04,0x08,0x0C,0x10,0x14,0x18,0x1C,0x20};
+int * ctMMIO;
+#ifndef MONOVGA
+extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
+extern GCOps cfb24TEOps1Rect, cfb24TEOps, cfb24NonTEOps1Rect, cfb24NonTEOps;
+#endif
+
+/* Driver data structures. */
 struct {
     int HDisplay;
     int HRetraceStart;
@@ -146,30 +176,19 @@ struct {
     int VDisplay;
 } ctSize;
 
-/*
- * Driver data structures.
- */
 typedef struct {
-    vgaHWRec std;		       /* good old IBM VGA */
-    unsigned char Port_3D6[0xFF];      /* Chips & Technologies Registers */
+    vgaHWRec std;		    /* good old IBM VGA */
+    unsigned char Port_3D6[0xFF];   /* Chips & Technologies Registers */
     unsigned char Port_3D0[0x80];
-    unsigned char Port_3D4[0x80];      /* Storage for the CT specific CRT regs */
-    unsigned int BltReg[0x9];	       /* Storage for the HiQV BitBLT registers */
-    CHIPSClockReg ctClock;
+    unsigned char Port_3D4[0x80];   /* Storage for the CT specific CRT regs */
+    unsigned long BltReg[0xD];	    /* Storage for the HiQV BitBLT registers */
+    ctClockReg ctClock;
     Bool XMode;
-    unsigned char Port_3DA;	       /* Read at Port 3CA */
-    unsigned long Port_83D0;
-    unsigned long Port_A3D0;
-    unsigned long Port_A7D0;
-    unsigned long Port_ABD0;
-    unsigned long Port_B3D0;
+    unsigned char Port_3DA;         /* Read at Port 3CA */
 } vgaCHIPSRec, *vgaCHIPSPtr;
 
-/*
- * Forward definitions for the functions that make up the driver.    See
- * the definitions of these functions for the real scoop.
- */
 
+/* Forward definitions for the functions that make up the driver. */
 static Bool CHIPSProbe();
 static char *CHIPSIdent();
 static Bool CHIPSClockSelect();
@@ -180,27 +199,14 @@ static Bool CHIPSInitHiQV32();
 static int  CHIPSValidMode();
 static void *CHIPSSave();
 static void CHIPSRestore();
-static void ctRestore();
 static void CHIPSAdjust();
 static void CHIPSFbInit();
-#if defined(DEBUG) && defined(CT_HW_DEBUG)
-void ctHWDebug();
-#endif
-
-#if 0				       /*it is not used but leaved for the future */
+#if 0			/*it is not used but leaved for the future */
 static void CHIPSGetMode();
-
 #endif
 
-#ifndef MONOVGA
-extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
-extern GCOps cfb24TEOps1Rect, cfb24TEOps, cfb24NonTEOps1Rect, cfb24NonTEOps;
 
-#endif
-
-/*
- * These are the bank select functions.  There are defined in chips_bank.s
- */
+/* Bank select functions. */
 extern void CHIPSSetRead();
 extern void CHIPSSetWrite();
 extern void CHIPSSetReadWrite();
@@ -208,18 +214,15 @@ extern void CHIPSHiQVSetRead();
 extern void CHIPSHiQVSetWrite();
 extern void CHIPSHiQVSetReadWrite();
 
+/*internal functions */
+static void ctRestore();
 int ctVideoMode();
+#if defined(DEBUG) && defined(CT_HW_DEBUG)
+void ctHWDebug();
+#endif
 
-/*
- * This data structure defines the driver itself.    The data structure is
- * initialized with the functions that make up the driver and some data 
- * that defines how the driver operates.
- */
 vgaVideoChipRec CHIPS =
 {
-	/* 
-	 * Function pointers
-	 */
     CHIPSProbe,
     CHIPSIdent,
     CHIPSEnterLeave,
@@ -229,90 +232,36 @@ vgaVideoChipRec CHIPS =
     CHIPSRestore,
     CHIPSAdjust,
 #if 0
-    CHIPSSaveScreen,		       /* SaveScreen */
+    CHIPSSaveScreen,
 #else
-    vgaHWSaveScreen,                   /* SaveScreen */
+    vgaHWSaveScreen,
 #endif
-    (void (*)())NoopDDA,	       /* CHIPSGetMode */
+    (void (*)())NoopDDA,
     CHIPSFbInit,
-    CHIPSSetRead,		       /* ChipSetRead() */
-    CHIPSSetWrite,		       /* ChipSetWrite() */
-    CHIPSSetReadWrite,		       /* ChipSetRead() */
+    CHIPSSetRead,	
+    CHIPSSetWrite,	
+    CHIPSSetReadWrite,	
 
-    0x10000,			       /* ChipMapSize */
-    0x08000,			       /* ChipSegmentSize */
-	/*
-	 * This is the number of bits by which an address is shifted
-	 * right to determine the bank number for that address.
-	 */
+    0x10000,		
+    0x08000,		
     15,
-	/*
-	 * This is the bitmask used to determine the address within a
-	 * specific bank.
-	 */
     0x7FFF,
-	/*
-	 * These are the bottom and top addresses for reads inside a
-	 * given bank.
-	 */
     0x0000, 0x08000,
-	/*
-	 * And corresponding limits for writes.
-	 */
     0x08000, 0x10000,
-	/*
-	 * Whether this chipset supports a single bank register or
-	 * seperate read and write bank registers.  Almost all chipsets
-	 * support two banks, and two banks are almost always faster
-	 * (Trident 8900C and 9000 are odd exceptions).
-	 */
     TRUE,
-	/*
-	 * If the chipset requires vertical timing numbers to be divided
-	 * by two for interlaced modes, set this to VGA_DIVIDE_VERT.
-	 */
     VGA_DIVIDE_VERT,
-	/*
-	 * This is a dummy initialization for the set of option flags
-	 * that this driver supports.  It gets filled in properly in the
-	 * probe function, if the probe succeeds (assuming the driver
-	 * supports any such flags).
-	 */
     {0,},
-	/*
-	 * This determines the multiple to which the virtual width of
-	 * the display must be rounded for the 256-color server.  This
-	 * will normally be 8, but may be 4 or 16 for some servers.
-	 */
     8,				       /* ChipRounding */
-	/*
-	 * If the driver includes support for a linear-mapped frame buffer
-	 * for the detected configuration this should be set to TRUE in the
-	 * Probe or FbInit function.  In most cases it should be FALSE.
-	 */
     FALSE,			       /* ChipUseLinearAddressing */
     0,				       /* ChipLinearBase */
     0,				       /* ChipLinearSize */
     FALSE,			       /* ChipHas16bpp */
     FALSE,			       /* ChipHas24bpp */
     FALSE,			       /* ChipHas32bpp */
-	/*
-	 * This is a pointer to a list of builtin driver modes.
-	 * This is rarely used, and in must cases, set it to NULL
-	 */
     NULL,
-	/*
-	 * This is a factor that can be used to scale the raw clocks
-	 * to pixel clocks.  This is rarely used, and in most cases, set
-	 * it to 1.
-	 */
     1,
 };
 
-/*
- * This is a convenience macro, so that entries in the driver structure
- * can simply be dereferenced with 'new->xxx'.
- */
 #define new ((vgaCHIPSPtr)vgaNewVideoState)
 
 static unsigned CHIPS_ExtPorts[] =
@@ -325,43 +274,42 @@ static unsigned CHIPS_ExtPorts[] =
     0x3C6,
     0x3C7,
     0x3D0,
-    0x3D6,			       /*Chips & Technologies index, R/W by word */
-    0x3D7,			       /*Chips & Technologies R/W by byte */
+    0x3D6,		           /*Chips & Technologies index, R/W by word */
+    0x3D7,		           /*Chips & Technologies R/W by byte        */
     0x3D8,
   };
 
 unsigned int CHIPS_ExtPorts32[] =
 {
   /*BitBLT */
-    0x83D0,			       /*DR0 src/dest offset */
-    0x87D0,			       /*DR1 BitBlt. address of freeVram? */
+    0x83D0,			       /*DR0 src/dest offset                 */
+    0x87D0,			       /*DR1 BitBlt. address of freeVram?    */
     0x8BD0,			       /*DR2 BitBlt. paintBrush, or tile pat.*/
-    0x8FD0,                            /*DR3*/
-    0x93D0,			       /*DR4 BitBlt. */
-    0x97D0,			       /*DR5 BitBlt. srcAddr, or 0 in VRAM */
-    0x9BD0,			       /*DR6 BitBlt. dest? */
-    0x9FD0,			       /*DR7 BitBlt. width << 16 | height */
-
+    0x8FD0,                            /*DR3                                 */
+    0x93D0,			       /*DR4 BitBlt.                         */
+    0x97D0,			       /*DR5 BitBlt. srcAddr, or 0 in VRAM   */
+    0x9BD0,			       /*DR6 BitBlt. dest?                   */
+    0x9FD0,			       /*DR7 BitBlt. width << 16 | height    */
   /*H/W cursor */
-    0xA3D0,			       /*DR8 write/erase cursor */
-		/*bit 0-1 if 0  cursor is not shown
-		 * if 1  32x32 cursor
-		 * if 2  64x64 cursor
-		 * if 3  128x128 cursor
-		 */
-		/*bit 7 if 1  cursor is not shown */
-		/*bit 9 cursor expansion in X */
-		/*bit 10 cursor expansion in Y */
-    0xA7D0,			       /*DR9 foreGroundCursorColor */
-    0xABD0,			       /*DR0xA backGroundCursorColor */
-    0xAFD0,			       /*DR0xB cursorPosition */
-		/*bit 0-7       x coordinate */
-		/*bit 8-14      0 */
-		/*bit 15        x signum */
-		/*bit 16-23     y coordinate */
-		/*bit 24-30     0 */
-		/*bit 31        y signum */
-    0xB3D0,			       /*DR0xC address of cursor pattern */
+    0xA3D0,			       /*DR8 write/erase cursor              */
+		                       /*bit 0-1 if 0  cursor is not shown
+		                        * if 1  32x32 cursor
+					* if 2  64x64 cursor
+					* if 3  128x128 cursor
+					*/
+                                        /* bit 7 if 1  cursor is not shown   */
+		                        /* bit 9 cursor expansion in X       */
+		                        /* bit 10 cursor expansion in Y      */
+    0xA7D0,			        /* DR9 foreGroundCursorColor         */
+    0xABD0,			        /* DR0xA backGroundCursorColor       */
+    0xAFD0,			        /* DR0xB cursorPosition              */
+		                        /* bit 0-7       x coordinate        */
+		                        /* bit 8-14      0                   */
+		                        /* bit 15        x signum            */
+		                        /* bit 16-23     y coordinate        */
+		                        /* bit 24-30     0                   */
+		                        /* bit 31        y signum            */
+    0xB3D0,			        /* DR0xC address of cursor pattern   */
 };
 
 static int Num_CHIPS_ExtPorts =
@@ -390,19 +338,6 @@ static int Num_CHIPS_ExtPorts32 =
 
 static unsigned char CHIPSchipset;
 
-/*
- * CHIPSIdent --
- *
- * Returns the string name for supported chipset 'n'.  Most drivers only
- * support one chipset, but multiple version may require that the driver
- * identify them individually (e.g. the Trident driver).  The Ident function
- * should return a string if 'n' is valid, or NULL otherwise.  The
- * server will call this function when listing supported chipsets, with 'n' 
- * incrementing from 0, until the function returns NULL.  The 'Probe'
- * function should call this function to get the string name for a chipset
- * and when comparing against an XF86Config-supplied chipset value.  This
- * cuts down on the number of places errors can creep in.
- */
 static char *
 CHIPSIdent(n)
     int n;
@@ -427,18 +362,35 @@ CHIPSIdent(n)
 	return (chipsets[n]);
 }
 
-/*
- * CHIPSClockSelect --
- * 
- * This function selects the dot-clock with index 'no'.  In most cases
- * this is done my setting the correct bits in various registers (generic
- * VGA uses two bits in the Miscellaneous Output Register to select from
- * 4 clocks).    Care must be taken to protect any other bits in these
- * registers by fetching their values and masking off the other bits.
- *
- * This function returns FALSE if the passed index is invalid or if the
- * clock can't be set for some reason.
- */
+#define write_xr(num,val) {outb(0x3D6, num);outb(0x3D7, val);}
+#define read_xr(num,var) {outb(0x3D6, num);var=inb(0x3D7);}
+#define write_fr(num,val) {outb(0x3D0, num);outb(0x3D1, val);}
+#define read_fr(num,var) {outb(0x3D0, num);var=inb(0x3D1);}
+
+static Bool
+CHIPSClockSelect(no)
+    int no;
+{
+    static ctClockReg SaveClock;
+    static ctClockPtr Clock = &SaveClock;
+    ctClockReg TmpClock;
+
+    switch (no) {
+    case CLK_REG_SAVE:
+	ctClockSave(&SaveClock);
+	break;
+
+    case CLK_REG_RESTORE:
+	ctClockLoad(ctClockType, &SaveClock);
+	break;
+
+    default:
+	if (!ctClockFind(ctClockType, no, &TmpClock))
+	    return (FALSE);
+	ctClockLoad(ctClockType, &TmpClock);
+    }
+    return (TRUE);
+}
 
 /*
  * 
@@ -458,74 +410,31 @@ CHIPSIdent(n)
  * 2 < N < 128
  */
 
-#define write_xr(num,val) {outb(0x3D6, num);outb(0x3D7, val);}
-#define read_xr(num,var) {outb(0x3D6, num);var=inb(0x3D7);}
-#define write_fr(num,val) {outb(0x3D0, num);outb(0x3D1, val);}
-#define read_fr(num,var) {outb(0x3D0, num);var=inb(0x3D1);}
-
-static void ctClockSave();
-static void ctClockLoad();
-static Bool ctClockFind();
-static void ctCalcClock();
-
-static unsigned char CHIPSClockType;
-static unsigned char CHIPSconsole_clk[3];
-
-#define TYPE_HW 0x01
-#define TYPE_PROGRAMMABLE 0x02
-#define OLD_STYLE 0x10
-#define NEW_STYLE 0x20
-
-static Bool
-CHIPSClockSelect(no)
-    int no;
-{
-    static CHIPSClockReg SaveClock;
-    static CHIPSClockPtr Clock = &SaveClock;
-    CHIPSClockReg TmpClock;
-
-    switch (no) {
-    case CLK_REG_SAVE:
-	ctClockSave(&SaveClock);
-	break;
-
-    case CLK_REG_RESTORE:
-	ctClockLoad(CHIPSClockType, &SaveClock);
-	break;
-
-    default:
-	if (!ctClockFind(CHIPSClockType, no, &TmpClock))
-	    return (FALSE);
-	ctClockLoad(CHIPSClockType, &TmpClock);
-    }
-    return (TRUE);
-}
-
 static void
 ctClockSave(Clock)
-    CHIPSClockPtr Clock;
+    ctClockPtr Clock;
 {
     unsigned char temp;
 
-    Clock->msr = (inb(0x3CC) & 0x0C) | 1;	/* save the standard VGA clock 
-						 * registers */
+/*?*/Clock->msr = (inb(0x3CC) & 0x0C) /*| 1*/; /* save the standard VGA clock 
+					   * registers */
     if (ctisHiQV32) {
-	read_fr(0x03, Clock->fr03);    /* save alternate clock select reg.      */
-	if (!ctCurrentClock) {	       /* save 65550+ console clock             */
+	read_fr(0x03, Clock->fr03);  /* save alternate clock select reg.  */
+	if (!ctCurrentClock) {	     /* save 65550+ console clock         */
 	    temp = (Clock->fr03 & 0xC) >> 2;
 	    if (temp == 3)
 		temp = 2;
 	    temp = temp << 2;
-	    read_xr(0xC0 + temp, CHIPSconsole_clk[0]);
-	    read_xr(0xC1 + temp, CHIPSconsole_clk[1]);
-	    read_xr(0xC2 + temp, CHIPSconsole_clk[2]);
-	    read_xr(0xC3 + temp, CHIPSconsole_clk[3]);
+	    read_xr(0xC0 + temp, ctConsole_clk[0]);
+	    read_xr(0xC1 + temp, ctConsole_clk[1]);
+	    read_xr(0xC2 + temp, ctConsole_clk[2]);
+	    read_xr(0xC3 + temp, ctConsole_clk[3]);
 	}
     } else {
-	read_xr(0x54, Clock->xr54);    /* save alternate clock select reg.      */
-	read_xr(0x33, Clock->xr33);    /* get status of MCLK/VCLK select reg.   */
+	read_xr(0x54, Clock->xr54);    /* save alternate clock select reg.   */
+	read_xr(0x33, Clock->xr33);    /* get status of MCLK/VCLK select reg.*/
     }
-    Clock->Clock = ctCurrentClock;     /* save current clock frequency          */
+    Clock->Clock = ctCurrentClock;     /* save current clock frequency       */
 #ifdef DEBUG
     ErrorF("saved \n");
 #endif
@@ -533,26 +442,24 @@ ctClockSave(Clock)
 
 static void
 ctClockLoad(Type, Clock)
-    CHIPSClockPtr Clock;
+    ctClockPtr Clock;
 {
     volatile unsigned char temp, temp33, temp54, tempf03;
 
     if (ctisHiQV32) {
-	read_fr(0x03, tempf03);	       /* save alternate clock select reg.    */
+	read_fr(0x03, tempf03);	   /* save alternate clock select reg.  */
     } else {
-	read_xr(0x33, temp33);	       /* get status of MCLK/VCLK select reg  */
+	read_xr(0x33, temp33);	   /* get status of MCLK/VCLK select reg */
 	read_xr(0x54, temp54);
     }
-    /* Only write to soft clock registers if we really need to */
 
+    /* Only write to soft clock registers if we really need to */
     if (Type == TYPE_PROGRAMMABLE) {
 	unsigned char vclk[3];
-
-	/* 
-	 * select fixed clock 0  before tampering with VCLK select
-	 */
+       
+	/* select fixed clock 0  before tampering with VCLK select */
 	temp = inb(0x3CC);
-	outb(0x3C2, (temp & ~0x0C) | 0x01);
+/*?*/	outb(0x3C2, (temp & ~0x0C) /*| 0x01*/);
 	if (ctisHiQV32) {
 	    write_fr(0x03, (tempf03 & ~0x0C) | 0x04);
 	    if (!Clock->Clock) {       /* Hack to load saved console clock */
@@ -560,16 +467,15 @@ ctClockLoad(Type, Clock)
 		if (temp == 3)
 		    temp = 2;
 		temp = temp << 2;
-		write_xr(0xC0 + temp, (CHIPSconsole_clk[0] & 0xFF));
-		write_xr(0xC1 + temp, (CHIPSconsole_clk[1] & 0xFF));
-		write_xr(0xC2 + temp, (CHIPSconsole_clk[2] & 0xFF));
-		write_xr(0xC3 + temp, (CHIPSconsole_clk[3] & 0xFF));
+		write_xr(0xC0 + temp, (ctConsole_clk[0] & 0xFF));
+		write_xr(0xC1 + temp, (ctConsole_clk[1] & 0xFF));
+		write_xr(0xC2 + temp, (ctConsole_clk[2] & 0xFF));
+		write_xr(0xC3 + temp, (ctConsole_clk[3] & 0xFF));
 	    } else {
 		/* 
 		 * Don't use the extra 2 bits in the M, N registers available
 		 *  on the 65550, so write zero to 0xCA 
 		 */
-
 		ctCalcClock(Clock->Clock, vclk);
 		write_xr(0xC8, (vclk[1] & 0xFF));
 		write_xr(0xC9, (vclk[2] & 0xFF));
@@ -581,18 +487,18 @@ ctClockLoad(Type, Clock)
 	    write_xr(0x54, (temp54 & 0xF3) | 0x04);
 	    write_xr(0x33, temp33 & ~0x20);
 	    write_xr(0x30, vclk[0]);
-	    write_xr(0x31, vclk[1]);   /*  restore VCLK regs.   */
+	    write_xr(0x31, vclk[1]);     /* restore VCLK regs.   */
 	    write_xr(0x32, vclk[2]);
 	}
-	usleep(10000);		       /* Let VCO stabilise */
+	usleep(10000);		         /* Let VCO stabilise    */
     }
     temp = inb(0x3CC) & ~0x0C;
-    outb(0x3C2, temp | Clock->msr | 1);		/* restore VGA clock select reg.    */
+/*?*/outb(0x3C2, temp | Clock->msr /*| 1*/); /* restore VGA clock select reg. */
     if (ctisHiQV32) {
 	write_fr(0x03, ((tempf03 & ~0x0C) | (Clock->fr03 & 0x0C)));
     } else {
 	temp33 = (temp33 & ~0x80) | (Clock->xr33 & 0x80);
-	write_xr(0x33, temp33);	       /* restore Select reg.              */
+	write_xr(0x33, temp33);	         /* restore Select reg.           */
 	/* 
 	 * bit 2 and 3 correspond to bit 2 and 3 (clock select reg.) of 0x3C2
 	 * bit 3 and 4 correspond to bit 0 and 1 (extended clock select reg.)
@@ -601,7 +507,6 @@ ctClockLoad(Type, Clock)
 	 */
 	write_xr(0x54, ((temp54 & 0xF3) | (Clock->xr54 & ~0xF3)));
     }
-
     ctCurrentClock = Clock->Clock;
 #ifdef DEBUG
     ErrorF("restored\n");
@@ -612,15 +517,8 @@ static Bool
 ctClockFind(Type, no, Clock)
     unsigned char Type;
     int no;
-    CHIPSClockPtr Clock;
+    ctClockPtr Clock;
 {
-    /* 
-     * N.B.: Thanks to some really gross hacks in the xf86 code,
-     * no==1 should get a 28.322MHz clock.  The clock values are
-     * measured by running a loop waiting for certain states to
-     * arise, and this clock value is used for calibration.  
-     */
-
     if (no > (vga256InfoRec.clocks - 1))
 	return (FALSE);
 
@@ -648,7 +546,7 @@ ctClockFind(Type, no, Clock)
 	}
 	break;
     }
-    Clock->msr |= (inb(0x3CC) & 0xF3) | 1;
+/*?*/  Clock->msr |= (inb(0x3CC) & 0xF3) /*| 1*/;
 
 #ifdef DEBUG
     ErrorF("found\n");
@@ -755,8 +653,8 @@ ctCalcClock(int Clock, unsigned char *vclk)
 	for (N = low_N; N <= high_N; N++) {
 	    double tmp = Fref4PSN / N;
 
-	    for (P = ctisHiQV32 ? 1 : 0; P <= 5; P++) {		/* to force post divisor on
-								 * Toshiba 720CDT */
+	    for (P = ctisHiQV32 ? 1 : 0; P <= 5; P++) {	
+	      /* to force post divisor on Toshiba 720CDT */
 		double Fvco_desired = target * (1 << P);
 		double M_desired = Fvco_desired / tmp;
 
@@ -808,48 +706,6 @@ ctCalcClock(int Clock, unsigned char *vclk)
 #endif
 }
 
-/* Panel Types */
-#define TFT 1
-#define SS 2			       /* STN Types */
-#define DS 4
-#define DD 6
-#define IS_STN(X) X&6
-
-/*
- * CHIPSProbe --
- *
- * This is the function that makes a yes/no decision about whether or not
- * a chipset supported by this driver is present or not.    The server will
- * call each driver's probe function in sequence, until one returns TRUE
- * or they all fail.
- *
- * Pretty much any mechanism can be used to determine the presence of the
- * chipset.  If there is a BIOS signature (e.g. ATI, GVGA), it can be read
- * via /dev/mem on most OSs, but some OSs (e.g. Mach) require special
- * handling, and others (e.g. Amoeba) don't allow reading    the BIOS at
- * all.  Hence, this mechanism is discouraged, if other mechanisms can be
- * found.    If the BIOS-reading mechanism must be used, examine the ATI and
- * GVGA drivers for the special code that is needed.    Note that the BIOS 
- * base should not be assumed to be at 0xC0000 (although most are).  Use
- * 'vga256InfoRec.BIOSbase', which will pick up any changes the user may
- * have specified in the XF86Config file.
- *
- * The preferred mechanism for doing this is via register identification.
- * It is important not only the chipset is detected, but also to
- * ensure that other chipsets will not be falsely detected by the probe
- * (this is difficult, but something that the developer should strive for).  
- * For testing registers, there are a set of utility functions in the 
- * "compiler.h" header file.    A good place to find example probing code is
- * in the SuperProbe program, which uses algorithms from the "vgadoc2.zip"
- * package (available on most PC/vga FTP mirror sites, like ftp.uu.net and
- * wuarchive.wustl.edu).
- *
- * Once the chipset has been successfully detected, then the developer needs 
- * to do some other work to find memory, and clocks, etc, and do any other
- * driver-level data-structure initialization may need to be done.
- */
-unsigned long ctFrameBufferSize = 0;
-
 static Bool
 CHIPSProbe()
 {
@@ -861,30 +717,12 @@ CHIPSProbe()
     ErrorF("CHIPSProbe\n");
 #endif
 
-    /*
-     * Set up I/O ports to be used by this card.  Only do the second
-     * xf86AddIOPorts() if there are non-standard ports for this
-     * chipset.
-     */
     xf86ClearIOPortList(vga256InfoRec.scrnIndex);
     xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
     xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts, CHIPS_ExtPorts);
     xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_CHIPS_ExtPorts32, CHIPS_ExtPorts32);
 
-    /*
-     * First we attempt to figure out if one of the supported chipsets
-     * is present.
-     */
     if (vga256InfoRec.chipset) {
-	/*
-	 * This is the easy case.  The user has specified the
-	 * chipset in the XF86Config file.  All we need to do here
-	 * is a string comparison against each of the supported
-	 * names available from the Ident() function.  If this
-	 * driver supports more than one chipset, there would be
-	 * nested conditionals here (see the Trident and WD drivers
-	 * for examples).
-	 */
 	if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_520))) {
 	    CHIPSchipset = CT_520;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_530))) {
@@ -898,51 +736,41 @@ CHIPSProbe()
 	    CHIPSchipset = CT_545;
 	    ctLinearSupport = TRUE;
 	    ctAccelSupport = TRUE;
-#ifdef CHIPS_SUPPORT_MMIO
 	    ctSupportMMIO = TRUE;
-#endif
 	    ctHDepth = TRUE;
 	    ct65545subtype = 2;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_546))) {
 	    CHIPSchipset = CT_546;
 	    ctLinearSupport = TRUE;
 	    ctAccelSupport = TRUE;
-#ifdef CHIPS_SUPPORT_MMIO
 	    ctSupportMMIO = TRUE;
-#endif
 	    ctHDepth = TRUE;
 	    ct65545subtype = 3;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_548))) {
 	    CHIPSchipset = CT_548;
 	    ctLinearSupport = TRUE;
 	    ctAccelSupport = TRUE;
-#ifdef CHIPS_SUPPORT_MMIO
 	    ctSupportMMIO = TRUE;
-#endif
 	    ctHDepth = TRUE;
 	    ct65545subtype = 4;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_550))) {
 	    CHIPSchipset = CT_550;
 	    ctLinearSupport = TRUE;
-#ifdef CHIPS_SUPPORT_MMIO
 	    ctAccelSupport = TRUE;
 	    ctSupportMMIO = TRUE;
-	    ctUseMMIO = TRUE;	       /* MMIO seems to be usuable on all Buses
-				        * In fact it seems that Blitting can only
-				        * be done with MMIO */
-#endif
+	    ctUseMMIO = TRUE;	     /* MMIO seems to be usuable on all Buses
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
 	    ctHDepth = TRUE;
-	    ctisHiQV32 = TRUE;	       /* Use the new HiQV32 architecture */
+	    ctisHiQV32 = TRUE;	     /* Use the new HiQV32 architecture */
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_554))) {
 	    CHIPSchipset = CT_554;
 	    ctLinearSupport = TRUE;
-#ifdef CHIPS_SUPPORT_MMIO
 	    ctAccelSupport = TRUE;
 	    ctSupportMMIO = TRUE;
-	    ctUseMMIO = TRUE;	       /* MMIO seems to be usuable on all Buses
-				        * In fact it seems that Blitting can only
-				        * be done with MMIO */
-#endif
+	    ctUseMMIO = TRUE;	     /* MMIO seems to be usuable on all Buses
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
 	    ctHDepth = TRUE;
 	    ctisHiQV32 = TRUE;	       /* Use the new HiQV32 architecture */
 	}
@@ -966,23 +794,7 @@ CHIPSProbe()
 	}
 	CHIPSEnterLeave(ENTER);
     } else {
-	/*
-	 * OK.  We have to actually test the hardware.  The
-	 * EnterLeave() function (described below) unlocks access
-	 * to registers that may be locked, and for OSs that require
-	 * it, enables I/O access.  So we do this before we probe,
-	 * even though we don't know for sure that this chipset
-	 * is present.
-	 */
 	CHIPSEnterLeave(ENTER);
-
-	/*
-	 * Here is where all of the probing code should be placed.  
-	 * The best advice is to look at what the other drivers are 
-	 * doing.  If you are lucky, the chipset reference will tell 
-	 * how to do this.  Other resources include SuperProbe/vgadoc2,
-	 * and the Ferraro book.
-	 */
 	temp = rdinx(0x3D6, 0x00);
 	/*
 	 *  Reading 0x103 causes segmentation violation, like 46E8 ???
@@ -1008,9 +820,7 @@ CHIPSProbe()
 	    if ((temp & 0xF8) == 0xD8) {	/*CT65545+ */
 		ctLinearSupport = TRUE;
 		ctAccelSupport = TRUE;
-#ifdef CHIPS_SUPPORT_MMIO
 		ctSupportMMIO = TRUE;
-#endif
 		ctHDepth = TRUE;
 		ct65545subtype = temp & 0x7;
 		switch (ct65545subtype) {
@@ -1023,10 +833,13 @@ CHIPSProbe()
 		default:
 		    CHIPSchipset = CT_545;
 		}
-	        ErrorF("%s %s: ct65545+: chip revision: %i\n",
-		    XCONFIG_PROBED, vga256InfoRec.name, temp & 07);
 	    }
 	}
+	if (CHIPSchipset != 99) {
+	    ErrorF("%s %s: ct65545+: chip revision: %i\n",
+		XCONFIG_PROBED, vga256InfoRec.name, temp & 07);
+	}
+
 	/* At this point the chip could still be a ct65550, so check for
 	 * that. This test needs some looking at */
 	if ((temp != 0) && (CHIPSchipset == 99)) {
@@ -1035,26 +848,22 @@ CHIPSProbe()
 	    if (temp == 0xE0) {
 		CHIPSchipset = CT_550;
 		ctLinearSupport = TRUE;
-#ifdef CHIPS_SUPPORT_MMIO
 		ctAccelSupport = TRUE;
 		ctSupportMMIO = TRUE;
-		ctUseMMIO = TRUE;      /* MMIO seems to be usuable on all Buses
-				        * In fact it seems that Blitting can only
-				        * be done with MMIO */
-#endif
+		ctUseMMIO = TRUE;    /* MMIO seems to be usuable on all Buses
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
 		ctHDepth = TRUE;
 		ctisHiQV32 = TRUE;
 	    }
 	    if (temp == 0xE4) {
 		CHIPSchipset = CT_554;
 		ctLinearSupport = TRUE;
-#ifdef CHIPS_SUPPORT_MMIO
 		ctAccelSupport = TRUE;
 		ctSupportMMIO = TRUE;
-		ctUseMMIO = TRUE;      /* MMIO seems to be usuable on all Buses.
-				        * In fact it seems that Blitting can only
-				        * be done with MMIO */
-#endif
+		ctUseMMIO = TRUE;    /* MMIO seems to be usuable on all Buses.
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
 		ctHDepth = TRUE;
 		ctisHiQV32 = TRUE;
 	    }
@@ -1096,26 +905,12 @@ CHIPSProbe()
 	CHIPS.ChipWriteTop = 0x10000;
 	CHIPS.ChipUse2Banks = FALSE;
     }
-    /* Test whether linear addressing is turned off */
-    if (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) {
-	ErrorF("%s %s: ct65545+: Disabling Linear Addressing\n",
-	    XCONFIG_PROBED, vga256InfoRec.name);
-	ctLinearSupport = FALSE;
-	ctHDepth = FALSE;
 
-	/* Much of the acceleration code wasn't written in a way that
-	 * is usuable without linear addressing. This is a fault of the
-	 * code, the chips actually do support acceleration without
-	 * linear addressing */
-	ctAccelSupport = FALSE;
-    }
     /* memory size */
     if (ctisHiQV32) {
 	if (!vga256InfoRec.videoRam) {
-
 	    /* not given, probe it    */
-
-	    /* XR43: DRAM interface */
+	    /* XR43: DRAM interface   */
 	    /* bit 2-1: memory size   */
 	    /*          0: 1024 kB    */
 	    /*          1: 2048 kB    */
@@ -1143,9 +938,7 @@ CHIPSProbe()
 	}
     } else {
 	if (!vga256InfoRec.videoRam) {
-
 	    /* not given, probe it    */
-
 	    /* XR0F: Software flags 0 */
 	    /* bit 1-0: memory size   */
 	    /*          0: 256 kB     */
@@ -1165,7 +958,6 @@ CHIPSProbe()
 		vga256InfoRec.videoRam = 1024;
 		break;
 	    }
-
 	    ErrorF("%s %s: ct65545+: %d kB VRAM\n", XCONFIG_PROBED,
 		vga256InfoRec.name, vga256InfoRec.videoRam);
 	} else {
@@ -1182,9 +974,9 @@ CHIPSProbe()
 	outb(0x3D6, 0x51);
 	temp = inb(0x3D7);
     }
-    /* XR51 or FR10: DISPLAY TYPE REGISTER */
-    /* XR51[1-0] or FR10[1:0] for ct65550 : PanelType, */
-    /*            0 = Single Panel Single Drive, 3 = Dual Panel Dual Drive */
+    /* XR51 or FR10: DISPLAY TYPE REGISTER                      */
+    /* XR51[1-0] or FR10[1:0] for ct65550 : PanelType,          */
+    /* 0 = Single Panel Single Drive, 3 = Dual Panel Dual Drive */
     switch (temp & 0x3) {
     case 0:
 	if (OFLG_ISSET(OPTION_STN, &vga256InfoRec.options)) {
@@ -1213,9 +1005,9 @@ CHIPSProbe()
 
     /* test LCD */
     if (ctisHiQV32) {
-	/* FR01: DISPLAY TYPE REGISTER */
+	/* FR01: DISPLAY TYPE REGISTER                         */
 	/* FR01[1:0]:   Display Type, 01 = CRT, 10 = FlatPanel */
-	/* LCD */
+	/* LCD                                                 */
 	outb(0x3D0, 0x01);
 	temp = inb(0x3D1);
 	if ((temp & 0x03) == 0x02) {
@@ -1231,9 +1023,9 @@ CHIPSProbe()
 	}
     } else {
 	if (temp & 0x4) {
-	    /* XR51: DISPLAY TYPE REGISTER */
+	    /* XR51: DISPLAY TYPE REGISTER                     */
 	    /* XR51[2]:   Display Type, 0 = CRT, 1 = FlatPanel */
-	    /* LCD */
+	    /* LCD                                             */
 	    ctLCD = TRUE;
 	    ctCRT = FALSE;
 	    ErrorF("%s %s: ct65545+: LCD\n",
@@ -1246,21 +1038,18 @@ CHIPSProbe()
 	}
     }
 
+    /* screen size */
     /* 
      * In LCD mode / dual mode we want to derive the timing values from
      * the ones preset by bios
      */
-
-    /* screen size */
     if (ctLCD) {
 	if (ctisHiQV32) {
 	    /* for 65550 we only need H/VDisplay values for screen size */
 	    unsigned char fr25, tmp1;
-
 #ifdef DEBUG
 	    unsigned char fr26;
 	    char tmp2;
-
 #endif
 	    read_fr(0x25, fr25);
 	    read_fr(0x20, temp);
@@ -1302,7 +1091,8 @@ CHIPSProbe()
 		+ ctSize.HRetraceStart);
 	    read_xr(0x65, tmp1);
 	    read_xr(0x68, temp);
-	    ctSize.VDisplay = ((tmp1 & 0x02) << 7) + ((tmp1 & 0x40) << 3) + temp + 1;
+	    ctSize.VDisplay = ((tmp1 & 0x02) << 7) 
+	      + ((tmp1 & 0x40) << 3) + temp + 1;
 #ifdef DEBUG
 	    ErrorF("x=%i, y=%i; xSync=%i, xSyncEnd=%i, xTotal=%i\n",
 		ctSize.HDisplay, ctSize.VDisplay, ctSize.HRetraceStart,
@@ -1313,6 +1103,8 @@ CHIPSProbe()
 		ctSize.HDisplay, ctSize.VDisplay);
 	}
     }
+
+    /* Frame Buffer */
     if (IS_STN(ctPanelType)) {
 	if (ctisHiQV32) {
 	    outb(0x3D0, 0x1A);	       /*Frame Buffer Ctrl. */
@@ -1337,62 +1129,37 @@ CHIPSProbe()
 	    ErrorF("%s %s: ct65545+: Frame Accelerator Enabled.\n",
 		XCONFIG_PROBED, vga256InfoRec.name);
     }
-    if (vga256InfoRec.videoRam) {
-	CHIPS.ChipLinearSize = vga256InfoRec.videoRam * 1024;
-    }
-    if (vga256InfoRec.MemBase) {
-	CHIPS.ChipLinearBase = vga256InfoRec.MemBase;
-	ErrorF("%s %s: ct65545+: base address is set at 0x%X.\n",
-	    XCONFIG_GIVEN, vga256InfoRec.name, CHIPS.ChipLinearBase);
+
+    /* bus type */
+    if (ctisHiQV32) {
+      outb(0x3D6, 0x08);
+      temp = inb(0x3D7) & 1;
+      if (temp == 1) {
+	temp = 6;
+      } else {
+	temp = 7;
+      }
     } else {
-	ErrorF("%s %s: ct65545+: ", XCONFIG_PROBED, vga256InfoRec.name);
-	if (ctisHiQV32) {
-	    outb(0x3D6, 0x08);
-	    temp = inb(0x3D7) & 1;
-	    if (temp == 1) {
-		temp = 6;
-	    } else {
-		temp = 7;
-	    }
-	} else {
-	    outb(0x3D6, 0x01);
-	    temp = inb(0x3D7) & 7;
-	}
+      outb(0x3D6, 0x01);
+      temp = inb(0x3D7) & 7;
+    }
+    ErrorF("%s %s: ct65545+: ",XCONFIG_PROBED, vga256InfoRec.name);
 	if (temp == 6) {	       /*PCI */
 	    ErrorF("PCI Bus\n");
 	    ctPCI = TRUE;
-	    CHIPS.ChipLinearBase = ctPCIMemBase(ctisHiQV32);
-	    /* If no valid PCI device was found then disable linear
-	     * addressing. This would indicate a faulty PCI device */
-	    if (CHIPS.ChipLinearBase == -1) {
-		ErrorF("%s %s: ct65545+: Disabling Linear Addressing\n",
-		    XCONFIG_PROBED, vga256InfoRec.name);
-		ctLinearSupport = FALSE;
-		ctHDepth = FALSE;
-		ctAccelSupport = FALSE;
-	    }
 	    if ((CHIPSchipset == CT_545) || (CHIPSchipset == CT_546)){
 	      ErrorF("%s %s: ct65545+: 32Bit IO not supported on 65545 PCI.", 
 		     XCONFIG_PROBED, vga256InfoRec.name);
-#ifdef CHIPS_SUPPORT_MMIO
 	      ErrorF("%s %s: ct65545+: Enabling MMIO\n", 
 		     XCONFIG_PROBED, vga256InfoRec.name);
 	      ctSupportMMIO = TRUE;
 	      ctUseMMIO = TRUE;
-#else 
-	      ErrorF("%s %s: ct65545+: Disabling Linear Addressing\n",
-		     XCONFIG_PROBED, vga256InfoRec.name);
-		ctLinearSupport = FALSE;
-		ctHDepth = FALSE;
-		ctAccelSupport = FALSE;
-#endif	
 	    }
-#ifdef CHIPS_SUPPORT_MMIO
 	    /* Turn on the MMIO addressing for 6554x chips with PCI */
-	    if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) && ctSupportMMIO)
+	    if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) 
+		&& ctSupportMMIO)
 		ctUseMMIO = TRUE;
-#endif
-	} else {		       /* XR08: Linear addressing base, not for PCI */
+	} else {   /* XR08: Linear addressing base, not for PCI */
 	    switch (temp) {
 	    case 3:
 		ErrorF("CPU Direct\n");
@@ -1406,6 +1173,40 @@ CHIPSProbe()
 	    default:
 		ErrorF("Unknown Bus\n");
 	    }
+	  }
+
+    /* Test whether linear addressing is turned off */
+    if (OFLG_ISSET(OPTION_NOLINEAR_MODE, &vga256InfoRec.options)) {
+	ErrorF("%s %s: ct65545+: Disabling Linear Addressing\n",
+	    XCONFIG_PROBED, vga256InfoRec.name);
+	ctLinearSupport = FALSE;
+	ctHDepth = FALSE;
+	/* Much of the acceleration code wasn't written in a way that
+	 * is usuable without linear addressing. This is a fault of the
+	 * code, the chips actually do support acceleration without
+	 * linear addressing */
+	ctAccelSupport = FALSE;
+    }
+
+    /* linear base */
+    if (ctLinearSupport) {
+    if (vga256InfoRec.MemBase) {
+	CHIPS.ChipLinearBase = vga256InfoRec.MemBase;
+	ErrorF("%s %s: ct65545+: base address is set at 0x%X.\n",
+	    XCONFIG_GIVEN, vga256InfoRec.name, CHIPS.ChipLinearBase);
+    } else {
+	if(ctPCI){
+	    CHIPS.ChipLinearBase = ctPCIMemBase(ctisHiQV32);
+	    /* If no valid PCI device was found then disable linear
+	     * addressing. This would indicate a faulty PCI device */
+	    if (CHIPS.ChipLinearBase == -1) {
+		ErrorF("%s %s: ct65545+: Disabling Linear Addressing\n",
+		    XCONFIG_PROBED, vga256InfoRec.name);
+		ctLinearSupport = FALSE;
+		ctHDepth = FALSE;
+		ctAccelSupport = FALSE;
+	    }
+	  } else {
 	    if (ctisHiQV32) {
 		outb(0x3D6, 0x6);
 		CHIPS.ChipLinearBase = ((0xFF00 & inl(0x3D6)) << 16);
@@ -1419,6 +1220,7 @@ CHIPSProbe()
 	ErrorF("%s %s: ct65545+: base address is set at 0x%X.\n",
 	    XCONFIG_PROBED, vga256InfoRec.name, CHIPS.ChipLinearBase);
     }
+  }
 
     /* Test whether 16/24 bpp is being used, and bomb out if not
      * using linear addressing */
@@ -1427,6 +1229,7 @@ CHIPSProbe()
 	    XCONFIG_PROBED, vga256InfoRec.name, vgaBitsPerPixel);
 	return (FALSE);
     }
+
     /*Linear addressing */
     if (xf86LinearVidMem() && ctLinearSupport) {
 	CHIPS.ChipUseLinearAddressing = TRUE;
@@ -1443,7 +1246,13 @@ CHIPSProbe()
 		CHIPS.ChipHas24bpp = TRUE;
 	    }
 	}
+	/* linear video Ram size */
+	if (vga256InfoRec.videoRam) {
+	  CHIPS.ChipLinearSize = vga256InfoRec.videoRam * 1024;
+	}
     }
+
+    /* DAC info */
     if (ctisHiQV32) {
 	outb(0x3D6, 0xD0);
 	if (!(inb(0x3D7) & 0x01))
@@ -1456,6 +1265,14 @@ CHIPSProbe()
 		vga256InfoRec.name);
     }
 
+ /* MMIO address offset */
+    if(ctUseMMIO){
+      if(ctisHiQV32)
+	ctMMIO=ctReg32HiQV;
+      else
+	ctMMIO=ctReg32MMIO;
+    }
+    /* Clock type */
     /*
      * Again, if the user has specified the clock values in the XF86Config
      * file, we respect those choices.
@@ -1464,61 +1281,53 @@ CHIPSProbe()
     case CT_520:
     case CT_530:
 	NoClocks = 4;
-	CHIPSClockType = OLD_STYLE | TYPE_HW;
+	ctClockType = OLD_STYLE | TYPE_HW;
 	break;
     default:
 	if ((OFLG_ISSET(OPTION_HW_CLKS, &vga256InfoRec.options) 
 	     && !ctisHiQV32)) {
 	    NoClocks = 5;
-	    CHIPSClockType = NEW_STYLE | TYPE_HW;
+	    ctClockType = NEW_STYLE | TYPE_HW;
 	} else {
-	    NoClocks = 26;
-	    CHIPSClockType = TYPE_PROGRAMMABLE;
+	    NoClocks = 26; /* some number */
+	    ctClockType = TYPE_PROGRAMMABLE;
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
 	}
     }
-    if (!vga256InfoRec.clocks || (CHIPSClockType == TYPE_PROGRAMMABLE)) {
-	/*
-	 * This utility function will probe for the clock values.
-	 * It is passed the number of supported clocks, and a
-	 * pointer to the clock-select function.
-	 */
 
-	if (CHIPSClockType != TYPE_PROGRAMMABLE) {
-	    vga256InfoRec.clocks = NoClocks;
-	    ctCurrentClock = ctGetHWClock(CHIPSClockType);
-	    ErrorF("%s %s: ct65545+: Textmode Clock: %i.\n",
-		XCONFIG_PROBED, vga256InfoRec.name, ctCurrentClock);
-	    vgaGetClocks(NoClocks, CHIPSClockSelect);
-	} else {
-	    if(!vga256InfoRec.clockprog)
-	        vga256InfoRec.clocks = 0;
-	    if(vga256InfoRec.textClockFreq > 0) {
-		ctCurrentClock = vga256InfoRec.textClockFreq;
-		ErrorF("%s %s: ct65545+: using textclock freq: %7.3f.\n",
-		    XCONFIG_GIVEN, vga256InfoRec.name,ctCurrentClock/1000.0);
-	    } else
-		ctCurrentClock = ctisHiQV32 ? 0
-		    : (ctLCD ? LCD_TEXT_CLK_FREQ : CRT_TEXT_CLK_FREQ);
-	    ErrorF("%s %s: ct65545+: using programmable clocks.\n",
-		XCONFIG_PROBED, vga256InfoRec.name);
+    if (ctClockType = TYPE_PROGRAMMABLE) {
+      if(!vga256InfoRec.clockprog)
+	vga256InfoRec.clocks = 0;
+      if(vga256InfoRec.textClockFreq > 0) {
+	ctCurrentClock = vga256InfoRec.textClockFreq;
+	ErrorF("%s %s: ct65545+: using textclock freq: %7.3f.\n",
+	       XCONFIG_GIVEN, vga256InfoRec.name,ctCurrentClock/1000.0);
+      } else
+	ctCurrentClock = ctisHiQV32 ? 0
+	  : (ctLCD ? LCD_TEXT_CLK_FREQ : CRT_TEXT_CLK_FREQ);
+      ErrorF("%s %s: ct65545+: using programmable clocks.\n",
+	     XCONFIG_PROBED, vga256InfoRec.name);
+    } else {  /* TYPE_PROGRAMMABLE */
+      ctCurrentClock = ctGetHWClock(ctClockType);
+      ErrorF("%s %s: ct65545+: Textmode Clock: %i.\n",
+	       XCONFIG_PROBED, vga256InfoRec.name, ctCurrentClock);
+      if (!vga256InfoRec.clocks) {
+	vga256InfoRec.clocks = NoClocks;
+	vgaGetClocks(NoClocks, CHIPSClockSelect);
+      } else { 
+	if (vga256InfoRec.clocks > NoClocks) {
+	  ErrorF("%s %s: %s: Too many Clocks specified in configuration file.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name,
+		 vga256InfoRec.chipset);
+	  ErrorF("\t\tAt most %d clocks may be specified\n",
+		 NoClocks);
+	vga256InfoRec.clocks = NoClocks;
 	}
-    } else if (vga256InfoRec.clocks > NoClocks) {
-	ErrorF("%s %s: %s: Too many Clocks specified in configuration file.\n",
-	    XCONFIG_PROBED, vga256InfoRec.name,
-	    vga256InfoRec.chipset);
-	ErrorF("\t\tAt most %d clocks may be specified\n",
-	    NoClocks);
+      }
     }
-    CHIPS.ChipClockScaleFactor = (ctisHiQV32 ? 1 : vgaBytesPerPixel);
+      CHIPS.ChipClockScaleFactor = (ctisHiQV32 ? 1 : vgaBytesPerPixel);
 
-    /*
-     * It is recommended that you fill in the maximum allowable dot-clock
-     * rate for your chipset.  If you don't do this, the default of
-     * 90MHz will be used; this is likely too high for many chipsets.
-     * This is specified in KHz, so 90Mhz would be 90000 for this
-     * setting.
-     */
+    /* maximal clock */
     switch (CHIPSchipset) {
     case CT_550:
     case CT_554:
@@ -1531,7 +1340,6 @@ CHIPSProbe()
 	    vga256InfoRec.maxClock = 80000;
 	}
 	break;
-
     case CT_546:
     case CT_548:
 	vga256InfoRec.maxClock = 80000;
@@ -1549,16 +1357,9 @@ CHIPSProbe()
 	}
     }
 
-    /*
-     * Last we fill in the remaining data structures.    We specify
-     * the chipset name, using the Ident() function and an appropriate
-     * index.    We set a boolean for whether or not this driver supports
-     * banking for the Monochrome server.    And we set up a list of all
-     * the vendor flags that this driver can make use of.
-     
-     */
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
     vga256InfoRec.bankedMono = FALSE;
+    /* allowed options */
     OFLG_SET(OPTION_LINEAR, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_NOACCEL, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_HW_CLKS, &CHIPS.ChipOptionFlags);
@@ -1572,20 +1373,10 @@ CHIPSProbe()
     OFLG_SET(OPTION_LCD_CENTER, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_MMIO, &CHIPS.ChipOptionFlags);
     OFLG_SET(OPTION_SUSPEND_HACK, &CHIPS.ChipOptionFlags);
+    OFLG_SET(OPTION_SYNC_ON_GREEN, &CHIPS.ChipOptionFlags);
 
     return (TRUE);
 }
-
-/*
- * CHIPSEnterLeave --
- *
- * This function is called when the virtual terminal on which the server
- * is running is entered or left, as well as when the server starts up
- * and is shut down.    Its function is to obtain and relinquish I/O 
- * permissions for the SVGA device.  This includes unlocking access to
- * any registers that may be protected on the chipset, and locking those
- * registers again on exit.
- */
 
 extern Bool ctHWcursorShown;
 static unsigned int ctHWcursorContents;
@@ -1606,24 +1397,28 @@ CHIPSEnterLeave(enter)
 #endif
 
     if (enter) {
+      /* enable IO ports */
 	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
-	if (ctVgaIOBaseFlag == 0xFF)
-	    ctVgaIOBaseFlag = (inb(0x3CC) & 0x01);
-	vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
-	ctCRindex = vgaIOBase + 4;
-	ctCRvalue = vgaIOBase + 5;
+
+      /* handle base for certain IO regs. */
+	if (ctVgaIOBaseFlag == 0xFF){ /*save: suspend/resume might mess it up*/
+	  ctVgaIOBaseFlag = (inb(0x3CC) & 0x01);
+	  vgaIOBase = ctVgaIOBaseFlag ? 0x3D0 : 0x3B0;
+	  ctCRindex = vgaIOBase + 4;
+	  ctCRvalue = vgaIOBase + 5;
+	  ctST01reg = vgaIOBase + 0x0A;
 #ifdef DEBUG
-	if (ctVgaIOBaseFlag)
+	  if (ctVgaIOBaseFlag)
 	    ErrorF("color\n");
-	else
+	  else
 	    ErrorF("monochrome\n");
 #endif
-	/*
-	 * Here we deal with register-level access locks.    This
-	 * is a generic VGA protection; most SVGA chipsets have
-	 * similar register locks for their extended registers
-	 * as well.
-	 */
+	} else {
+	  /* hack: if not 1st time fix it up as it might be messed up by s/r */
+	  temp = inb(0x3CC);
+	  outb(0x3C2, (temp & 0xFE) | ctVgaIOBaseFlag); 
+	}
+
 	/* Unprotect CRTC[0-7] */
 	outb(ctCRindex, 0x11);
 	temp = inb(ctCRvalue);
@@ -1634,24 +1429,22 @@ CHIPSEnterLeave(enter)
 	    outb(0x3D6, 0x15);
 	    if (xr15 == 0xFF)
 		xr15 = inb(0x3D7);
-	    outb(0x3D6, 00);
+	    outb(0x3D7, 00);
 	}
+
+	/* enable HW cursor */
 	if (ctHWcursorShown) {
 	    if (ctisHiQV32) {
 		outb(0x3D6, 0xA0);
 		outb(0x3D7, ctHWcursorContents & 0xFF);
 	    } else {
-#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	      if(!ctUseMMIO){
-#endif
 		HW_DEBUG(0x8);
 		outl(DR(0x8), ctHWcursorContents);
-#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	      } else {
-		HW_DEBUG(0xA3D0);
-		MMIOmeml(0xA3D0) = ctHWcursorContents;
+		HW_DEBUG(ctMMIO[0x8]);
+		MMIOmeml(ctMMIO[0x8]) = ctHWcursorContents;
 	      }
-#endif
 	    }
 	}
     } else {
@@ -1659,27 +1452,29 @@ CHIPSEnterLeave(enter)
 	 * Here undo what was done above.
 	 */
 
+      /* fix things that could be messed up by suspend/resume */
+      temp = inb(0x3CC);
+      outb(0x3C2, (temp & 0xFE) | ctVgaIOBaseFlag); 
+
+      /* disable HW cursor */
 	if (ctHWcursorShown) {
 	    if (ctisHiQV32) {
 		outb(0x3D6, 0xA0);
 		ctHWcursorContents = inb(0x3D7);
 		outb(0x3D7, ctHWcursorContents & 0xF8);
 	    } else {
-#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	      if(!ctUseMMIO){
-#endif
 		HW_DEBUG(0x8);
 		ctHWcursorContents = inl(DR(0x8));
 		outw(DR(0x8), ctHWcursorContents & 0xFFFE);
-#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	      } else {
-		HW_DEBUG(0xA3D0);
-		ctHWcursorContents = MMIOmeml(0xA3D0);
-		MMIOmemw(0xA3D0) = ctHWcursorContents & 0xFFFE;
+		HW_DEBUG(ctMMIO[0x8]);
+		ctHWcursorContents = MMIOmeml(ctMMIO[0x8]);
+		MMIOmemw(ctMMIO[0x8]) = ctHWcursorContents & 0xFFFE;
 	      }
-#endif
 	    }
 	}
+
 	/* Protect CRTC[0-7] */
 	outb(ctCRindex, 0x11);
 	temp = inb(ctCRvalue);
@@ -1688,32 +1483,13 @@ CHIPSEnterLeave(enter)
 	/* group protection */
 	if (!ctisHiQV32) {
 	    outb(0x3D6, 0x15);
-	    outb(0x3D6, xr15);
+	    outb(0x3D7, xr15);
 	}
-	xf86DisableIOPorts(vga256InfoRec.scrnIndex);
+
+      /* disable IO ports */
+      xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     }
 }
-
-/* 
- * If we want to use an external clock setting program, we have to tell 
- * it the clock factor somehow. The simplest way is to use one of the 
- * chips software registers. However we have to restore it for bios.
- */
-#define ctLoadSWFlag      read_xr(0x2B,ctSWTmp);\
-                          write_xr(0x2B,CHIPS.ChipClockScaleFactor);
-#define ctRestoreSWFlag   write_xr(0x2B,ctSWTmp);
-
-/*
- * CHIPSRestore --
- *
- * This function restores a video mode.  It basically writes out all of
- * the registers that have previously been saved in the vgaCHIPSRec data 
- * structure.
- *
- * Note that "Restore" is a little bit incorrect.    This function is also
- * used when the server enters/changes video modes.  The mode definitions 
- * have previously been initialized by the Init() function, below.
- */
 
 static void
 CHIPSRestore(restore)
@@ -1726,6 +1502,7 @@ CHIPSRestore(restore)
     ErrorF("CHIPSRestore\n");
 #endif
 
+    /* set registers that we can program the controller */
     if (ctisHiQV32) {
 	outw(0x3D6, 0x0E);
     } else {
@@ -1733,75 +1510,92 @@ CHIPSRestore(restore)
 	outw(0x3D6, 0x11);
 	outw(0x3D6, 0x15);	       /* unprotect all registers */
     }
-    outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) | ctVgaIOBaseFlag));
+    /* fix things that could be messed up by suspend/resume */
+    outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) 
+		 | ctVgaIOBaseFlag));
     outb(ctCRindex, 0x11);
     tmp = inb(ctCRvalue);
-    outb(ctCRvalue, (tmp & 0x7F));
+    outb(ctCRvalue, (tmp & 0x7F)); /*group 0 protection off */
+
+    /* turn off stretching before setting regs */
+    if (ctisHiQV32) { 
+      ctRestoreStretching(0x00, 0x00);
+    } else {
+      unsigned char tmp55, tmp57;
+      read_xr(0x55,tmp55);
+      read_xr(0x57,tmp57);
+      if((tmp55 & 0x20) || (tmp57 & 0x20)){
+	ctRestoreStretching(tmp55 & (~0x20),	/* disable h-double    */
+			    tmp57 & (~0x20));   /* disable v-stretching*/
+      }
+    }
 
     /* set the clock */
     if (restore->std.NoClock >= 0)
-	ctClockLoad(CHIPSClockType, &restore->ctClock);
+      ctClockLoad(ctClockType, &restore->ctClock);
 
-    /* turn off stretching before setting generic VGA regs*/
-    if (ctisHiQV32) { 
-      ctRestoreStretching(0x00, 0x00);
-      /*ctRestoreStretching(0x00, 0x00);*/
-    } else {
-        unsigned char tmp55, tmp57;
-        read_xr(0x55,tmp55);
-        read_xr(0x57,tmp57);
-        if((tmp55 & 0x20) || (tmp57 & 0x20)){
-	  ctRestoreStretching(tmp55 & (~0x20),		/* disable h-double */
-			      tmp57 & (~0x20)); /* disable v-stretching*/
-	}
+    /* set extended regs */
+    ctRestore(restore);
+/*?*/    /*if (!ctisHiQV32)
+      outw(0x3D6, 0x15);*/	       /* do we have to do this again? */
+
+    /* set generic registers */
+    if (!ctisHiQV32 && (vga256InfoRec.textclock >= 0)) /*for ext. clock prog*/ 
+      vga256InfoRec.textclock = ctScaleClock(ENTER, &vga256InfoRec.textclock);
+    vgaHWRestore((vgaHWPtr) restore);
+    if (!ctisHiQV32 && (vga256InfoRec.textclock >= 0)) 
+      vga256InfoRec.textclock = ctScaleClock(LEAVE, &vga256InfoRec.textclock);
+
+    /* set stretching registers */
+    if (ctisHiQV32) {
+      ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
+      /* why twice ? :
+       * sometimes the console is not well restored even if these registers 
+       * are good, re-write the registers works around it
+       */
+      ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
     }
-
-	ctRestore(restore);
-	if (!ctisHiQV32)
-	    outw(0x3D6, 0x15);	       /* do we have to do this again? */
-	if (!ctisHiQV32)
-	    ctLoadSWFlag;
-	vgaHWRestore((vgaHWPtr) restore);
-	if (ctisHiQV32) {
-	  ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
-	  /* why twice ? :
-           * some times console is not well restored even if these registers 
-	   * are good, re-write the registers works around 
-	   */
-	  ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
-	}
-	else {
-	  ctRestoreStretching(restore->Port_3D6[0x55],restore->Port_3D6[0x57]);
-	}
-	if (!ctisHiQV32)
-	    ctRestoreSWFlag;
+    else {
+      ctRestoreStretching(restore->Port_3D6[0x55],restore->Port_3D6[0x57]);
+    }
+#if 0
 #ifdef IO_DEBUG
 	ErrorF("0x3CC: %X", (unsigned char)inb(0x3CC));
 #endif
-	outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) | ctVgaIOBaseFlag));
+/*?*/    outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) 
+		 | ctVgaIOBaseFlag));
 #ifdef IO_DEBUG
 	ErrorF("-> %X\n", (unsigned char)inb(0x3CC));
 #endif
+#endif
+ /* Flag valid start address, if using CRT extensions */
+    if (ctisHiQV32 && (restore->Port_3D6[0x09] & 0x1) == 0x1) {
+      outb(ctCRindex, 0x40);
+      tmp = inb(ctCRvalue);
+      outb(ctCRvalue, tmp | 0x80);
+    }
 
-	/* Flag valid start address, if using CRT extensions */
-	if (ctisHiQV32 && (restore->Port_3D6[0x09] & 0x1) == 0x1) {
-	    outb(0x3D4, 0x40);
-	    tmp = inb(0x3D5);
-	    outb(0x3D5, tmp | 0x80);
-	}
-
-    outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) | ctVgaIOBaseFlag));
+#if 0
+#ifdef IO_DEBUG
+	ErrorF("0x3CC: %X", (unsigned char)inb(0x3CC));
+#endif
+/*?*/    outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) 
+		 | ctVgaIOBaseFlag));
+#ifdef IO_DEBUG
+	ErrorF("-> %X\n", (unsigned char)inb(0x3CC));
+#endif
+#endif 
+ /* set mode */
     ctXMode = restore->XMode;
 
-    /* debug - dump out all the extended registers... */
 
 #ifdef DEBUG
+    /* debug - dump out all the extended registers... */
     if (ctisHiQV32) {
 	for (i = 0; i < 0xFF; i++) {
 	    outb(0x3D6, i);
 	    ErrorF("XR%X - %X : %X\n", i, restore->Port_3D6[i], inb(0x3D7));
 	}
-
 	for (i = 0; i < 0x80; i++) {
 	    outb(0x3D0, i);
 	    ErrorF("FR%X - %X : %X\n", i, restore->Port_3D0[i], inb(0x3D1));
@@ -1828,44 +1622,54 @@ CHIPSSave(save)
     vgaCHIPSPtr save;
 {
     int i;
+    unsigned char tmp;
 
 #ifdef DEBUG
     ErrorF("CHIPSSave\n");
 #endif
 
+    /* set registers that we can program the controller */
+    /* bank 0 */
     if (ctisHiQV32) {
 	outw(0x3D6, 0x0E);
     } else {
 	outw(0x3D6, 0x10);
 	outw(0x3D6, 0x11);
+	outw(0x3D6, 0x15); /* could be messed up by suspend/resume */
     }
+    /* fix things that could be messed up by suspend/resume */
+    tmp = inb(0x3CC);
+    outb(0x3C2, (tmp & 0xFE) | ctVgaIOBaseFlag); 
+    outb(ctCRindex, 0x11);
+    tmp = inb(ctCRvalue);
+    outb(ctCRvalue, (tmp & 0x7F));
+
+    /* Disable horizontal/vertical stretching   */
     /* now reenable the timing sequencer to catch VSync in ctRestoreStreching*/
     outw(0x3C4, 0x0300);
     if (ctisHiQV32) {
       /* must reset Stretching, because graphic mode must not be change
        * with stretching enable.
-       * vgaHWSave at the first time changes to Graphic mode to save FONT 
-       * and so on .
+       * vgaHWSave changes to Graphic mode to save FONT etc. 
        */
       read_fr(0x40, ctHorizontalStretch);
       read_fr(0x48, ctVerticalStretch);
-      /* Disable horizontal/vertical stretching   */
       ctRestoreStretching(0, 0);
     }
     else {
       read_xr(0x55, ctHorizontalStretch);
       read_xr(0x57, ctVerticalStretch);
-      /* Disable horizontal/vertical stretching   */
       ctRestoreStretching(ctHorizontalStretch & (~0x20),
 			  ctVerticalStretch & (~0x20) );
     }      
 
-    if (!ctisHiQV32)
-	ctLoadSWFlag;
+    /* get generic registers */
     save = (vgaCHIPSPtr) vgaHWSave((vgaHWPtr) save, sizeof(vgaCHIPSRec));
-    if (!ctisHiQV32)
-	ctRestoreSWFlag;
+
+    /* save clock */
     ctClockSave(&save->ctClock);
+
+    /* save extended registers */
     if (ctisHiQV32) {
 	for (i = 0; i < 0xFF; i++) {
 	    outb(0x3D6, i);
@@ -1882,7 +1686,7 @@ CHIPSSave(save)
 #endif
 	}
 	/* these registers are already saved and modified 
-	   stretching is disable as soon as possible.
+	   stretching is disabled as soon as possible.
 	*/
 	save->Port_3D0[0x40] = ctHorizontalStretch ;
 	save->Port_3D0[0x48] = ctVerticalStretch ;
@@ -1896,17 +1700,15 @@ CHIPSSave(save)
 	    ErrorF("CS%X - %X\n", i, save->Port_3D4[i]);
 #endif
 	}
-#ifdef CHIPS_SUPPORT_MMIO
 /*
  * Save the contents of the BitBLT registers for the 65550, if needed
  */
 	if (ctUseMMIO) {
 	    for (i = 0x0; i < 0x9; i++) {
 		save->BltReg[i] = *(volatile unsigned int *)
-		    (ctMMIOBase + 4 * i);
+		    (ctMMIOBase + ctMMIO[i]);
 	    }
 	}
-#endif
     } else {
 	for (i = 0; i < 0x80; i++) {
 	    outb(0x3D6, i);
@@ -1916,46 +1718,26 @@ CHIPSSave(save)
 #endif
 	}
 	/* these registers are already saved and modified 
-	   streching is disable as soon as possible.
+	   streching is disabled as soon as possible.
 	*/
 	save->Port_3D6[0x55] = ctHorizontalStretch ;
 	save->Port_3D6[0x57] = ctVerticalStretch ;
 
-#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
 	if(!ctUseMMIO){ 
-#endif
-	    HW_DEBUG(0x0); save->Port_83D0 = inl(DR(0x0));
-	    HW_DEBUG(0x8); save->Port_A3D0 = inl(DR(0x8));
-	    HW_DEBUG(0x9); save->Port_A7D0 = inl(DR(0x9));
-	    HW_DEBUG(0xA); save->Port_ABD0 = inl(DR(0xA));
-	    HW_DEBUG(0xC); save->Port_B3D0 = inl(DR(0xC));
-#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
+	  for (i=0;i<0xD;i++){
+	    HW_DEBUG(i); save->BltReg[i] = inl(DR(i));
+	  };
 	} else {
-	    HW_DEBUG(0x83D0); save->Port_83D0 = MMIOmeml(0x83D0);
-	    HW_DEBUG(0xA3D0); save->Port_A3D0 = MMIOmeml(0xA3D0);
-	    HW_DEBUG(0xA7D0); save->Port_A7D0 = MMIOmeml(0xA7D0);
-	    HW_DEBUG(0xABD0); save->Port_ABD0 = MMIOmeml(0xABD0);
-	    HW_DEBUG(0xB3D0); save->Port_B3D0 = MMIOmeml(0xB3D0);
+	  for (i=0;i<0xD;i++){
+	    HW_DEBUG(ctMMIO[i]); save->BltReg[i] = MMIOmeml(ctMMIO[i]);
+	  };
 	}
-#endif
     }
+
+    /* get mode */
     save->XMode = ctXMode;
     return ((void *)save);
 }
-
-/*
- * CHIPSInit --
- *
- * This is the most important function (after the Probe) function.  This
- * function fills in the vgaCHIPSRec with all of the register values needed
- * to enable either a 256-color mode (for the color server) or a 16-color
- * mode (for the monochrome server).
- *
- * The 'mode' parameter describes the video mode.    The 'mode' structure 
- * as well as the 'vga256InfoRec' structure can be dereferenced for
- * information that is needed to initialize the mode.    The 'new' macro
- * (see definition above) is used to simply fill in the structure.
- */
 
 /* 
  * Divide the CHIPSInit function into two, because the HiQV32 architecture
@@ -1990,6 +1772,7 @@ CHIPSInit655xx(mode)
     ErrorF("CHIPSInit655xx\n");
 #endif
 
+    /* correct the timings for 16/24 bpp */
     if (vgaBitsPerPixel == 16) {
 	if (!mode->CrtcHAdjusted) {
 	    mode->CrtcHDisplay++;
@@ -2011,23 +1794,35 @@ CHIPSInit655xx(mode)
 	    mode->CrtcHAdjusted = TRUE;
 	}
     }
+
     /* store orig. HSyncStart needed for flat panel mode */
     HSyncStart = mode->CrtcHSyncStart / vgaBytesPerPixel - 16;
     HDisplay = (mode->CrtcHDisplay + 1) / vgaBytesPerPixel;
-    if (!vgaHWInit(mode, sizeof(vgaCHIPSRec))) {
-	ErrorF("bomb 1\n");
-	return (FALSE);
-    }
-    if (!ctClockFind(CHIPSClockType, new->std.NoClock, &new->ctClock)) {
-	ErrorF("bomb 1\n");
-	return (FALSE);
-    }
-    /*
-     * Here all of the other fields of 'new' get filled in, to
-     * handle the SVGA extended registers.  It is also allowable
-     * to override generic registers whenever necessary.
-     */
+    
+    /* fix things that could be messed up by suspend/resume */
+    outb(0x3D6,0x15);
+    tmp = inb(0x3CC);
+    outb(0x3C2, (tmp & 0xFE) | ctVgaIOBaseFlag); 
+    outb(ctCRindex, 0x11);
+    tmp = inb(ctCRvalue);
+    outb(ctCRvalue, (tmp & 0x7F));
 
+    /* generic init */
+    ctScaleClock(ENTER, &mode->Clock);
+    if (!vgaHWInit(mode, sizeof(vgaCHIPSRec))) {
+    ctScaleClock(LEAVE, &mode->Clock);
+      ErrorF("bomb 1\n");
+      return (FALSE);
+    }
+    ctScaleClock(LEAVE, &mode->Clock);
+    
+    /* init clock */
+    if (!ctClockFind(ctClockType, new->std.NoClock, &new->ctClock)) {
+	ErrorF("bomb 1\n");
+	return (FALSE);
+    }
+
+    /* some generic settings */
     new->std.Attribute[0x10] = 0x01;   /* mode */
     new->std.Attribute[0x11] = 0x00;   /* overscan (border) color */
     new->std.Attribute[0x12] = 0x0F;   /* enable all color planes */
@@ -2035,21 +1830,22 @@ CHIPSInit655xx(mode)
 
     new->std.Graphics[0x05] = 0x00;    /* normal read/write mode */
 
+    /* set virtual screen width */
     new->std.CRTC[0x13] = vga256InfoRec.displayWidth >> 3;
     if (vgaBitsPerPixel == 16) {
 	new->std.CRTC[0x13] <<= 1;     /* double the width of the buffer */
     } else if (vgaBitsPerPixel == 24) {
 	new->std.CRTC[0x13] += new->std.CRTC[0x13] << 1;
     }
-    /*
-     *   C&T Specific Registers
-     */
 
+    /* get  C&T Specific Registers */
     for (i = 0; i < 0x80; i++) {
 	outb(0x3D6, i);
 	new->Port_3D6[i] = inb(0x3D7);
     }
 
+    /* set C&T Specific Registers */
+    /* set virtual screen width */
     new->Port_3D6[0x1E] = new->std.CRTC[0x13];	/* alternate offset */
     /*databook is not clear about 0x1E might be needed for 65520/30 */
 
@@ -2072,7 +1868,9 @@ CHIPSInit655xx(mode)
     new->Port_3D6[0x11] = 0;	       /* XR11: High map      */
     new->Port_3D6[0x28] |= 0x10;       /* 256-color video     */
 
+    /* set up extended display timings */
     if (ctCRT) {
+      /* in CRTonly mode this is simple: only set overflow for CR00-CR06 */
 	new->Port_3D6[0x17] = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8)
 	    | ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7)
 	    | ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 6)
@@ -2080,9 +1878,9 @@ CHIPSInit655xx(mode)
 	    | ((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 4)
 	    | (((mode->CrtcHSyncEnd >> 3) & 0x40) >> 1);
     } else {
+      /* horizontal timing registers */
 	/* in LCD/dual mode use saved bios values to derive timing values if
 	 * not told otherwise */
-
 	if (!OFLG_ISSET(OPTION_USE_MODELINE, &vga256InfoRec.options)) {
 	    lcdHTotal = ctSize.HTotal;
 	    lcdHRetraceStart = ctSize.HRetraceStart;
@@ -2129,8 +1927,7 @@ CHIPSInit655xx(mode)
 	  ErrorF("This display configuration might cause problems !\n");
 	  lcdHDisplay = 255;}
 
-	/* Only program the FP timings if needed */
-
+	/* now init register values */
 	new->Port_3D6[0x17] = (((lcdHTotal) & 0x100) >> 8)
 	    | ((lcdHDisplay & 0x100) >> 7)
 	    | ((lcdHRetraceStart & 0x100) >> 6)
@@ -2154,13 +1951,13 @@ CHIPSInit655xx(mode)
 	new->Port_3D6[0x1C] = lcdHDisplay & 0xFF;
 
 	if (OFLG_ISSET(OPTION_USE_MODELINE, &vga256InfoRec.options)) {
-
 	    /* for ext. packed pixel mode on 64520/64530 */
 	    /* no need to rescale: used only in 65530    */
 	    new->Port_3D6[0x21] = lcdHRetraceStart & 0xFF;
 	    new->Port_3D6[0x22] = lcdHRetraceEnd & 0x1F;
 	    new->Port_3D6[0x23] = lcdHTotal & 0xFF;
 
+	    /* vertical timing registers */
 	    lcdVTotal = mode->CrtcVTotal - 2;
 	    lcdVDisplay = ctSize.VDisplay - 1;
 	    lcdVRetraceStart = mode->CrtcVSyncStart;
@@ -2194,6 +1991,7 @@ CHIPSInit655xx(mode)
 	new->Port_3D6[0x55] &= 0xC0;   /* Mask off Polarity bits          */
 	new->Port_3D6[0x55] |= 0x01;   /* enable horizontal-compensation  */
 
+    /* set stretching/centering */	
     if(OFLG_ISSET(OPTION_SUSPEND_HACK, &vga256InfoRec.options)) {
       new->Port_3D6[0x55] =  ctHorizontalStretch ;
       new->Port_3D6[0x57] =  ctVerticalStretch ; 
@@ -2204,11 +2002,10 @@ CHIPSInit655xx(mode)
 	    else if (vgaBitsPerPixel == 24)
 		new->Port_3D6[0x56] = (lcdHDisplay - CrtcHDisplay) >> 1;
 	}
-
 	new->Port_3D6[0x57] = 0x03;    /* enable v-comp disable v-stretch */
 	if (!OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options)) {
-	    new->Port_3D6[0x55] |= 0x20;	/* enable h-comp disable h-double */
-	    new->Port_3D6[0x57] |= 0x60;	/* Enable vertical stretching    */
+	    new->Port_3D6[0x55] |= 0x20;   /* enable h-comp disable h-double */
+	    new->Port_3D6[0x57] |= 0x60;   /* Enable vertical stretching     */
 	    temp = (mode->CrtcVDisplay / (ctSize.VDisplay -
 		    mode->CrtcVDisplay + 1));
 	    if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) 
@@ -2218,6 +2015,7 @@ CHIPSInit655xx(mode)
       }
     }
 
+    /* set video mode */
     new->Port_3D6[0x2B] = ctVideoMode(vgaBitsPerPixel, xf86weight.green,
 	ctLCD ? min(HDisplay, ctSize.HDisplay) : HDisplay);
 
@@ -2225,15 +2023,63 @@ CHIPSInit655xx(mode)
     ErrorF("VESA Mode: %Xh\n", new->Port_3D6[0x2B]);
 #endif
 
+    /* set some linear specific registers */
     if (ctLinearSupport) {
 	/* enable linear addressing  */
 	new->Port_3D6[0x0B] &= 0xFD;   /* dual page clear                */
 	new->Port_3D6[0x0B] |= 0x15;   /* linear mode on                 */
 
 	/* Initialise the HW cursor position */
-	new->Port_B3D0 = vgaBytesPerPixel
-	    * (unsigned long)vga256InfoRec.virtualX;
+	new->BltReg[0x0C] = vgaBytesPerPixel
+	    * (unsigned long)vga256InfoRec.displayWidth;
 
+	/* general setup */
+	new->Port_3D6[0x03] |= 0x03;   /* 32 bit I/O enable etc.          */
+	new->Port_3D6[0x07] = 0xF4;    /* 32 bit I/O port selection       */
+	new->Port_3D6[0x03] |= 0x08;   /* High bandwidth                  */
+	new->Port_3D6[0x40] = 0x01;    /*BitBLT Draw Mode for 8 and 24 bpp */
+
+	/*
+	 * Setup the address to write monchrome source data to, for
+	 * system to the screen colour expansion.
+	 */
+	ctBltDataWindow = vgaLinearBase;
+    }
+
+    /* common general setup */
+    new->Port_3D6[0x52] |= 0x01;       /* Refresh count                   */
+    new->Port_3D6[0x0F] &= 0xEF;       /* not Hi-/True-Colour             */
+    new->Port_3D6[0x02] |= 0x01;       /* 16bit CPU Memory Access         */
+    new->Port_3D6[0x06] &= 0xF3;       /* bpp clear                       */
+
+    /* PCI */
+    if (ctPCI)
+	new->Port_3D6[0x03] |= 0x40;   /*PCI burst */
+    
+    /* sync. polarities */
+    if ((mode->Flags & (V_PHSYNC | V_NHSYNC))
+	&& (mode->Flags & (V_PVSYNC | V_NVSYNC))) {
+	if (mode->Flags & (V_PHSYNC | V_NHSYNC)) {
+	    if (mode->Flags & V_PHSYNC) {
+		new->Port_3D6[0x54] &= 0xBF;	/* FP Hsync positive  */
+		new->Port_3D6[0x55] &= 0xBF;	/* CRT Hsync positive */
+	    } else {
+		new->Port_3D6[0x54] |= 0x40;	/* FP Hsync negative  */
+		new->Port_3D6[0x55] |= 0x40;	/* CRT Hsync negative */
+	    }
+	}
+	if (mode->Flags & (V_PVSYNC | V_NVSYNC)) {
+	    if (mode->Flags & V_PVSYNC) {
+		new->Port_3D6[0x54] &= 0x7F;	/* FP Vsync positive  */
+		new->Port_3D6[0x55] &= 0x7F;	/* CRT Vsync positive */
+	    } else {
+		new->Port_3D6[0x54] |= 0x80;	/* FP Vsync negative  */
+		new->Port_3D6[0x55] |= 0x80;	/* CRT Vsync negative */
+	    }
+	}
+    }
+
+    /* bpp depend */
 	/*XR06: Palette control */
 	/* bit 0: Pixel Data Pin Diag, 0 for flat panel pix. data (def)  */
 	/* bit 1: Internal DAC disable                                   */
@@ -2259,87 +2105,43 @@ CHIPSInit655xx(mode)
 	/*          011, SClk = DClk/8; 100 SClk = DClk/16;              */
 	/* bit 7: TFT data width                                         */
 	/*          0, 16 bit(565RGB); 1, 24bit (888RGB)                 */
-
-	/* general setup */
-
-	new->Port_3D6[0x03] |= 0x03;   /* 32 bit I/O enable etc.          */
-	new->Port_3D6[0x07] = 0xF4;    /* 32 bit I/O port selection       */
-	new->Port_3D6[0x03] |= 0x08;   /* High bandwidth                  */
-	new->Port_3D6[0x40] = 0x01;    /*BitBLT Draw Mode for 8 and 24 bpp */
-    }
-    new->Port_3D6[0x52] |= 0x01;       /* Refresh count                   */
-    new->Port_3D6[0x0F] &= 0xEF;       /* not Hi-/True-Colour             */
-    new->Port_3D6[0x02] |= 0x01;       /* 16bit CPU Memory Access         */
-    new->Port_3D6[0x06] &= 0xF3;       /* bpp clear                       */
-
-    /* PCI */
-
-    if (ctPCI)
-	new->Port_3D6[0x53] |= 0x40;   /*PCI burst */
-
-    /* sync. polarities */
-
-    if ((mode->Flags & (V_PHSYNC | V_NHSYNC))
-	&& (mode->Flags & (V_PVSYNC | V_NVSYNC))) {
-	if (mode->Flags & (V_PHSYNC | V_NHSYNC)) {
-	    if (mode->Flags & V_PHSYNC) {
-		new->Port_3D6[0x54] &= 0xBF;	/* FP Hsync positive */
-		new->Port_3D6[0x55] &= 0xBF;	/* CRT Hsync positive */
-	    } else {
-		new->Port_3D6[0x54] |= 0x40;	/* FP Hsync negative */
-		new->Port_3D6[0x55] |= 0x40;	/* CRT Hsync negative */
-	    }
-	}
-	if (mode->Flags & (V_PVSYNC | V_NVSYNC)) {
-	    if (mode->Flags & V_PVSYNC) {
-		new->Port_3D6[0x54] &= 0x7F;	/* FP Vsync positive */
-		new->Port_3D6[0x54] &= 0x7F;	/* CRT Vsync positive */
-	    } else {
-		new->Port_3D6[0x54] |= 0x80;	/* FP Vsync negative */
-		new->Port_3D6[0x55] |= 0x80;	/* CRT Vsync negative */
-	    }
-	}
-    }
-    /* bpp depend */
-
     if (vgaBitsPerPixel == 16) {
-	new->Port_3D6[0x06] |= 0xC4;   /*15 or 16 bpp colour        */
-	new->Port_3D6[0x0F] |= 0x10;   /*Hi-/True-Colour            */
+	new->Port_3D6[0x06] |= 0xC4;   /*15 or 16 bpp colour         */
+	new->Port_3D6[0x0F] |= 0x10;   /*Hi-/True-Colour             */
 	new->Port_3D6[0x40] = 0x02;    /*BitBLT Draw Mode for 16 bpp */
 	if (xf86weight.green != 5)
-	    new->Port_3D6[0x06] |= 0x08;	/*16bpp                    */
+	    new->Port_3D6[0x06] |= 0x08;	/*16bpp              */
     } else if (vgaBitsPerPixel == 24) {
-	new->Port_3D6[0x06] |= 0xC8;   /*24 bpp colour              */
-	new->Port_3D6[0x0F] |= 0x10;   /*Hi-/True-Colour            */
-	new->Port_3D6[0x50] |= 0x80;   /*24 bit TFT data width      */
+	new->Port_3D6[0x06] |= 0xC8;   /*24 bpp colour               */
+	new->Port_3D6[0x0F] |= 0x10;   /*Hi-/True-Colour             */
+	new->Port_3D6[0x50] |= 0x80;   /*24 bit TFT data width       */
     }
-    /*CRT only */
 
+    /*CRT only: interlaced mode */
     if (!ctLCD) {
-	if (mode->Flags & V_INTERLACE)
-	    new->Port_3D6[0x28] |= 0x20;	/* set interlace         */
-	else
-	    new->Port_3D6[0x28] &= ~0x20;	/* unset interlace      */
+	if (mode->Flags & V_INTERLACE){
+	    new->Port_3D6[0x28] |= 0x20;    /* set interlace         */
+	    new->Port_3D6[0x29] = 
+	      ((((mode->CrtcHDisplay >> 3) - 1) >> 1) 
+		- 6 * vgaBytesPerPixel);    /* heuristical value     */
+	} else
+	    new->Port_3D6[0x28] &= ~0x20;   /* unset interlace       */
     }
-    /* STN specific */
 
+    /* STN specific */
     if (IS_STN(ctPanelType)) {
 	new->Port_3D6[0x50] &= ~0x03;  /* FRC clear                  */
 	new->Port_3D6[0x50] |= 0x01;   /* 16 frame FRC               */
 	new->Port_3D6[0x50] &= ~0x0C;  /* Dither clear               */
 	new->Port_3D6[0x50] |= 0x08;   /* Dither                     */
-#if 0
-	new->Port_3D6[0x51] |= 8;      /* Shift Clock Divide enable  */
-	new->Port_3D6[0x50] &= 0x8F;   /* Clock Divide clear         */
-	new->Port_3D6[0x50] |= 0x10;   /* shift clock = dot clock/2  */
-#endif
 	new->Port_3D6[0x03] |= 0x20;   /* CRT I/F priority           */
 	new->Port_3D6[0x04] |= 0x10;   /* RAS precharge              */
     }
+
     /*chip specific trick */
     /*It's better to say LCD panel specific... */
     switch (ct65545subtype) {
-    case 2:			       /*jet mini *//*DEC HighNote Ultra DSTN */
+    case 2:			  /*jet mini *//*DEC HighNote Ultra DSTN */
 	new->Port_3D6[0x03] |= 0x10;   /* ??    */
 	break;
     case 3:			       /*CT 65546, only for Toshiba */
@@ -2347,20 +2149,22 @@ CHIPSInit655xx(mode)
 	break;
     }
 
+    /* set mode */
     new->XMode = TRUE;		       /*  we want to switch to X */
 
-#ifdef CHIPS_SUPPORT_MMIO
     /*
      * Ugly hack to get MMIO base address.
      * Registers are mapped at linear base address plus offset of
-     * 2Mb for 65545/6/8 with PCI.
+     * 2Mb for 65545/6/8 with PCI. There is a 2Mb range of addresses
+     * reserved by the blitter here. But as we only use a smaller
+     * portion of it, only map 64k. Makes X look smaller, even
+     * though it's not really.
      */
     if (ctUseMMIO && ctMMIOBase == NULL) {
 	ctMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
 	    (pointer) (CHIPS.ChipLinearBase + 0x200000L),
-	    0x200000L);
+	    0x10000L);
     }
-#endif
 
     return (TRUE);
 }
@@ -2381,18 +2185,26 @@ CHIPSInitHiQV32(mode)
     ErrorF("CHIPSInitHiQV32\n");
 #endif
 
+    /* fix things that could be messed up by suspend/resume */
+    tmp = inb(0x3CC);
+    outb(0x3C2, (tmp & 0xFE) | ctVgaIOBaseFlag); 
+    outb(ctCRindex, 0x11);
+    tmp = inb(ctCRvalue);
+    outb(ctCRvalue, (tmp & 0x7F));
+
+    /* generic init */
     if (!vgaHWInit(mode, sizeof(vgaCHIPSRec))) {
 	ErrorF("bomb 1\n");
 	return (FALSE);
     }
-    if (!ctClockFind(CHIPSClockType, new->std.NoClock, &new->ctClock)) {
+
+    /* init clock */
+    if (!ctClockFind(ctClockType, new->std.NoClock, &new->ctClock)) {
 	ErrorF("bomb 1\n");
 	return (FALSE);
     }
-    /*
-     *   C&T Specific Registers
-     */
-
+   
+    /* get C&T Specific Registers */
     for (i = 0; i < 0xFF; i++) {
 	outb(0x3D6, i);
 	new->Port_3D6[i] = inb(0x3D7);
@@ -2412,6 +2224,7 @@ CHIPSInitHiQV32(mode)
      * to override generic registers whenever necessary.
      */
 
+    /* some generic settings */
     new->std.Attribute[0x10] = 0x01;   /* mode */
     new->std.Attribute[0x11] = 0x00;   /* overscan (border) color */
     new->std.Attribute[0x12] = 0x0F;   /* enable all color planes */
@@ -2419,6 +2232,7 @@ CHIPSInitHiQV32(mode)
 
     new->std.Graphics[0x05] = 0x00;    /* normal read/write mode */
 
+    /* set virtual screen width */
     temp = vga256InfoRec.displayWidth >> 3;
     if (vgaBitsPerPixel == 16) {
 	temp <<= 1;		       /* double the width of the buffer */
@@ -2433,35 +2247,35 @@ CHIPSInitHiQV32(mode)
 	new->Port_3D6[0x0A] |= 0x1;
 
     new->Port_3D6[0x09] |= 0x1;	       /* Enable extended CRT registers */
-
-    /* Single map */
-    new->Port_3D6[0x0E] = 0;
-
+    new->Port_3D6[0x0E] = 0;           /* Single map */
     new->Port_3D6[0x40] |= 0x3;	       /* High Resolution. XR40[1] reserved? */
     new->Port_3D6[0x81] &= 0xF8;       /* 256 Color Video */
     new->Port_3D6[0x81] |= 0x2;
     new->Port_3D6[0x80] |= 0x10;       /* Enable cursor output on P0 and P1 */
 
+    /* set mem clk */
     /* Graphics Modes seem to need a Higher MClk, than at Console
      * Force a higher Mclk for now */
     new->Port_3D6[0xCC] = 0x43;
     new->Port_3D6[0xCD] = 0x18;
     new->Port_3D6[0xCE] = 0xA1;
 
-    if (ctLinearSupport) {	       /* Note much acceleration only supported with
-				        * linear addressing */
+    /* linear specific */
+    if (ctLinearSupport) {	       /* Note much acceleration only 
+					* supported with linear addressing */
 	new->Port_3D6[0x0A] |= 0x02;   /* Linear Addressing Mode */
 	new->Port_3D6[0x20] = 0x0;     /*BitBLT Draw Mode for 8 */
 
 	/* Initialise the HW cursor position. What is this for ??? */
 	new->Port_3D6[0xA2] = ((vgaBytesPerPixel
-		* (unsigned long)vga256InfoRec.virtualX) >> 8) & 0xFF;
+		* (unsigned long)vga256InfoRec.displayWidth) >> 8) & 0xFF;
 	new->Port_3D6[0xA3] = ((vgaBytesPerPixel
-		* (unsigned long)vga256InfoRec.virtualX) >> 16) & 0x3F;
+		* (unsigned long)vga256InfoRec.displayWidth) >> 16) & 0x3F;
     }
+
+    /* panel timing */
     /* By default don't set panel timings, but allow it as an option */
     if (OFLG_ISSET(OPTION_USE_MODELINE, &vga256InfoRec.options)) {
-
 	lcdHTotal = (mode->CrtcHTotal >> 3) - 5;
 	lcdHDisplay = (ctSize.HDisplay >> 3) - 1;
 	lcdHRetraceStart = (mode->CrtcHSyncStart >> 3);
@@ -2496,6 +2310,7 @@ CHIPSInitHiQV32(mode)
 	    (((lcdVTotal - lcdVRetraceStart) & 0x700) >> 4);
 	new->Port_3D0[0x37] |= 0x80;
     }
+
     /* Set up the extended CRT registers of the HiQV32 chips */
     new->Port_3D4[0x30] = ((mode->CrtcVTotal - 2) & 0xF00) >> 8;
     new->Port_3D4[0x31] = ((mode->CrtcVDisplay - 1) & 0xF00) >> 8;
@@ -2503,6 +2318,7 @@ CHIPSInitHiQV32(mode)
     new->Port_3D4[0x33] = (mode->CrtcVSyncStart & 0xF00) >> 8;
     new->Port_3D4[0x40] |= 0x80;
 
+    /* centering/stretching */
     if(OFLG_ISSET(OPTION_SUSPEND_HACK, &vga256InfoRec.options)) {
 	new->Port_3D0[0x40] = ctHorizontalStretch ;
 	new->Port_3D0[0x48] = ctVerticalStretch ; 
@@ -2520,6 +2336,11 @@ CHIPSInitHiQV32(mode)
 	new->Port_3D0[0x48] |= 0x2;    /* Enable Vertical centering */
     }
 
+    /* sync on green */
+    if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &vga256InfoRec.options)) 
+      new->Port_3D6[0x82] |=0x02;
+
+    /* software flag */
     /* I've taken a real guess that indx 0xE2 corresponds to 0x2B
      * on older chips. The ct65550 documents specifies this as a
      * software flag, and it appears to change with the mode */
@@ -2531,7 +2352,6 @@ CHIPSInitHiQV32(mode)
 #endif
 
     /* sync. polarities */
-
     if ((mode->Flags & (V_PHSYNC | V_NHSYNC))
 	&& (mode->Flags & (V_PVSYNC | V_NVSYNC))) {
 	if (mode->Flags & (V_PHSYNC | V_NHSYNC)) {
@@ -2547,6 +2367,7 @@ CHIPSInitHiQV32(mode)
 		new->Port_3D0[0x08] |= 0x08;	/* FP Vsync negative */
 	}
     }
+
     /* bpp depend */
     if (vgaBitsPerPixel == 16) {
 	new->Port_3D6[0x81] = (new->Port_3D6[0x81] & 0xF0) | 0x4;
@@ -2560,86 +2381,69 @@ CHIPSInitHiQV32(mode)
 	/* 24bpp colour              */
 	new->Port_3D6[0x20] = 0x20;    /*BitBLT Draw Mode for 24 bpp */
     }
-    /*CRT only */
 
+    /*CRT only */
     if (!ctLCD) {
 	if (mode->Flags & V_INTERLACE)
-	    new->Port_3D4[0x70] |= 0x80;	/* set interlace */
-	else
+	    new->Port_3D4[0x70] = 0x80          /*   set interlace */
+	      | (((((mode->CrtcHDisplay >> 3) - 1) >> 1) - 6) & 0x7F);
+		else
 	    new->Port_3D4[0x70] &= ~0x80;	/* unset interlace */
     }
+
     /* STN specific */
-
     if (IS_STN(ctPanelType)) {
-	new->Port_3D0[0x0B] &= ~0x02;  /* FRC clear                   */
-	new->Port_3D0[0x0B] |= 0x01;   /* 16 frame FRC                */
-	new->Port_3D0[0x0B] |= 8;      /* Dither                      */
-	new->Port_3D0[0x12] |= 1;      /* Shift Clock Divide enable   */
+	new->Port_3D0[0x11] &= ~0x03;	/* FRC clear                    */
+	new->Port_3D0[0x11] |= 0x01;	/* 16 frame FRC                 */
+	new->Port_3D0[0x11] &= ~0x8C;	/* Dither clear                 */
+	new->Port_3D0[0x11] |= 0x84;	/* Dither                       */
+	if (ctPanelType == DD)		/* Shift Clock Mask. Use to get */
+	    new->Port_3D0[0x12] |= 0x4;	/* rid of line in DSTN screens  */
     }
-    new->XMode = TRUE;		       /*  we want to switch to X */
 
-#ifdef CHIPS_SUPPORT_MMIO
+    /* set mode */ 
+    new->XMode = TRUE;			/*  we want to switch to X      */
+
     /*
      * Ugly hack to get MMIO base address.
      * Registers are mapped at linear base address plus offset of
-     * 4 Mb for 65550/4. See note in Probe for explanation of this
-     * weird statement here.
+     * 4 Mb for 65550/4. There is a 4Mb range of addresses
+     * reserved by the blitter here. But as we only use a smaller
+     * portion of it, only map 128k. Makes X look smaller, even
+     * though it's not really.
      */
     if (ctUseMMIO && ctMMIOBase == NULL) {
-	/* ctMMIOBase = (unsigned char *)vgaLinearBase + 0x400000; */
 	ctMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
 	    (pointer) (CHIPS.ChipLinearBase + 0x400000L),
-	    0x400000L);
+	    0x20000L);
+	/*
+	 * Setup the address to write monchrome source data to, for 
+	 * system to the screen colour expansion.
+	 */
+	ctBltDataWindow = ctMMIOBase + 0x10000;
     }
-#endif
 
     return (TRUE);
 }
 
-/*
- * CHIPSAdjust --
- *
- * This function is used to initialize the SVGA Start Address - the first
- * displayed location in the video memory.  This is used to implement the
- * virtual window.
- */
 static void
 CHIPSAdjust(x, y)
     int x, y;
 {
-    /*
-     * The calculation for Base works as follows:
-     *
-     *  (y * virtX) + x ==> the linear starting pixel
-     *
-     * This number is divided by 8 for the monochrome server, because
-     * there are 8 pixels per byte.
-     *
-     * For the color server, it's a bit more complex.    There is 1 pixel
-     * per byte.    In general, the 256-color modes are in word-mode 
-     * (16-bit words).  Word-mode vs byte-mode is will vary based on
-     * the chipset - refer to the chipset databook.  So the pixel address 
-     * must be divided by 2 to get a word address.  In 256-color modes, 
-     * the 4 planes are interleaved (i.e. pixels 0,3,7, etc are adjacent 
-     * on plane 0). The starting address needs to be as an offset into 
-     * plane 0, so the Base address is divided by 4.
-     *
-     * So:
-     *      Monochrome: Base is divided by 8
-     *      Color:
-     *  if in word mode, Base is divided by 8
-     *  if in byte mode, Base is divided by 4
-     *
-     * The generic VGA only supports 16 bits for the Starting Address.
-     * But this is not enough for the extended memory.  SVGA chipsets
-     * will have additional bits in their extended registers, which
-     * must also be set.
-     */
-
     /* MH - looks like we are in byte mode.... */
-    int Base = (y * vga256InfoRec.virtualX + x);
+    int Base = (y * vga256InfoRec.displayWidth + x);
     unsigned char tmp;
 
+    /* fix things that could be messed up by suspend/resume */
+    if(ctisHiQV32)
+      outb(0x3D6,0x15);
+    tmp = inb(0x3CC);
+    outb(0x3C2, (tmp & 0xFE) | ctVgaIOBaseFlag); 
+    outb(ctCRindex, 0x11);
+    tmp = inb(ctCRvalue);
+    outb(ctCRvalue, (tmp & 0x7F));
+
+    /* calculate base bpp dep. */
     switch (vgaBitsPerPixel) {
     case 16:
 	Base >>= 1;
@@ -2651,11 +2455,13 @@ CHIPSAdjust(x, y)
 	Base >>= 2;
 	break;
     }
+
+    /* write base to chip */
     /*
      * These are the generic starting address registers.
      */
-    outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
-    outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
+    outw(ctCRindex, (Base & 0x00FF00) | 0x0C);
+    outw(ctCRindex, ((Base & 0x00FF) << 8) | 0x0D);
 
     /*
      * Here the high-order bits are masked and shifted, and put into
@@ -2666,7 +2472,7 @@ CHIPSAdjust(x, y)
     if (ctisHiQV32) {
 	outb(0x3D6, 0x09);
 	if ((inb(0x3D7) & 0x1) == 0x1)
-	    outw(vgaIOBase + 4, ((Base & 0x0F0000) >> 8) | 0x8000 | 0x40);
+	    outw(ctCRindex, ((Base & 0x0F0000) >> 8) | 0x8000 | 0x40);
     } else {
 	outb(0x3D6, 0x0C);
 	tmp = inb(0x3D7);
@@ -2674,10 +2480,6 @@ CHIPSAdjust(x, y)
     }
 }
 
-/*
- * CHIPSValidMode --
- *
- */
 static int
 CHIPSValidMode(mode, verbose)
     DisplayModePtr mode;
@@ -2686,48 +2488,13 @@ CHIPSValidMode(mode, verbose)
     return MODE_OK;
 }
 
-/*
- * CHIPSGetMode --
- *
- * This function will read the current SVGA register settings and produce
- * a filled-in DisplayModeRec containing the current mode.
- *
- * Note that the is function is NOT used in XFree86 1.3, hence in a real
- * driver you should put 'NoopDDA' in the vgaVideoChipRec structure.    At
- * some point in the future, this function will be used to implement
- * interactive mode setting, and drivers will be required to supply it.
- */
-#if 0
-static void
-CHIPSGetMode(mode)
-    DisplayModePtr mode;
-{
-#ifdef DEBUG
-    fprintf(stderr, "CHIPSGetMode\n");
-#endif
-
-    /*
-     * Fill in the 'mode' stucture based on current register settings.
-     */
-}
-
-#endif
-
-/*
- * CHIPSFbInit --
- *
- * This function is used to initialise chip-specific graphics functions.
- * It can be used to make use of the accelerated features of some chipsets.
- * For most drivers, this function is not required, and 'NoopDDA' is put
- * in the vgaVideoChipRec structure.
- */
 /*adapted from pvg_driver.c and cir_driver.c */
 static void
 CHIPSFbInit()
 {
     int useSpeedUp, size;
 
-    if ((vga256InfoRec.virtualX * vga256InfoRec.virtualY * vgaBytesPerPixel)
+    if ((vga256InfoRec.displayWidth * vga256InfoRec.virtualY * vgaBytesPerPixel)
 	> ((vga256InfoRec.videoRam << 10) - ctFrameBufferSize)) {
 	ErrorF("%s %s: CHIPS: Virtual screen too large.\n",
 	       XCONFIG_PROBED, vga256InfoRec.name);
@@ -2746,11 +2513,6 @@ CHIPSFbInit()
     ErrorF("%s %s: CHIPS: %d bytes off-screen memory available\n",
 	XCONFIG_PROBED, vga256InfoRec.name, size);
 
-    /* For now the blitting code isn't working with the 65550/4. Skip
-     * to the H/W cursor part of FbInit.
-     */
-    if (ctisHiQV32)
-	goto blitbroken;
 
 #ifndef MONOVGA
 
@@ -2762,178 +2524,402 @@ CHIPSFbInit()
 	    XCONFIG_GIVEN : XCONFIG_PROBED,
 	    vga256InfoRec.name, useSpeedUp);
 
-	switch (vgaBitsPerPixel) {
-	case 8:
-	    vga256LowlevFuncs.doBitbltCopy = ctcfbDoBitbltCopy;
-	    vga256LowlevFuncs.vgaBitblt = ctBitBlt;
-	    vga256LowlevFuncs.fillRectSolidCopy = ctcfbFillRectSolid;
-
-	    /* Hook special op. fills (and tiles): */
-	    vga256TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-	    vga256NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-	    vga256TEOps.PolyFillRect = ctcfbPolyFillRect;
-	    vga256NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-
-	    /* Setup the address of the tile in vram. Tile must
-	     * be aligned on a 64 bytes value. Size of the space
-	     * is 32x8xBytesPerPixel */
-	    ctBLTPatternAddress = ctAllocate(256, 0x3F);
-	    if (ctBLTPatternAddress == -1)
-		ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
-		    XCONFIG_PROBED, vga256InfoRec.name);
-
-	    vga256LowlevFuncs.fillBoxSolid = ctcfbFillBoxSolid;
-	    vga256TEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-	    vga256TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-	    vga256LowlevFuncs.fillSolidSpans = ctcfbFillSolidSpansGeneral;
-	    break;
-
-	case 16:
-	    /* There are no corresponding structures to vga256LowlevFuncs for
-	     * 16/24bpp. Hence we have to hook to the cfb functions in a
-	     * similar way to the cirrus driver. For now I've just
-	     * implemented the most basic of blits */
-	    cfb16TEOps1Rect.CopyArea = ctcfb16CopyArea;
-	    cfb16TEOps.CopyArea = ctcfb16CopyArea;
-	    cfb16NonTEOps1Rect.CopyArea = ctcfb16CopyArea;
-	    cfb16NonTEOps.CopyArea = ctcfb16CopyArea;
-
-	    cfb16TEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-	    cfb16TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-	    cfb16NonTEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-	    cfb16NonTEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-	    cfb16TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-	    cfb16TEOps.PolyFillRect = ctcfbPolyFillRect;
-	    cfb16NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-	    cfb16NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-
-	    /* Setup the address of the tile in vram. Tile must
-	     * be aligned on a 128 bytes value. Size of the space
-	     * is 32x8xBytesPerPixel. However tiling code doesn't
-	     * seem to be called by the server. This should be
-	     * investigated */
-	    ctBLTPatternAddress = ctAllocate(512, 0x7F);
-	    if (ctBLTPatternAddress == -1)
-		ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
-		    XCONFIG_PROBED, vga256InfoRec.name);
-	    break;
-
-	case 24:
-	    /* There are no corresponding structures to vga256LowlevFuncs for
-	     * 16/24bpp. Hence we have to hook to the cfb functions in a similar
-	     * way to the cirrus driver. For now I've just implemented the most
-	     * basic of blits */
-
-	    cfb24TEOps1Rect.CopyArea = ctcfb24CopyArea;
-	    cfb24TEOps.CopyArea = ctcfb24CopyArea;
-	    cfb24NonTEOps1Rect.CopyArea = ctcfb24CopyArea;
-	    cfb24NonTEOps.CopyArea = ctcfb24CopyArea;
-
-	    cfb24TEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-	    cfb24TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-	    cfb24NonTEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-	    cfb24NonTEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-	    cfb24TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-	    cfb24TEOps.PolyFillRect = ctcfbPolyFillRect;
-	    cfb24NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-	    cfb24NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-
-	    /* Setup the address of the tile in vram. Tile must
-	     * be aligned on a 256 bytes value. Size of the space
-	     * is 32x8xBytesPerPixel. 24bpp tile file only 
-	     * available on 65550, this is here for use later */
-	    ctBLTPatternAddress = ctAllocate(768, 0xFF);
-	    if (ctBLTPatternAddress == -1)
-		ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
-		    XCONFIG_PROBED, vga256InfoRec.name);
-	    break;
-
-	}
-
-#ifdef CHIPS_SUPPORT_MMIO
-	/* If direct memory access to the blitter registers is available, then
-	 * use it to do the blitting as it is faster. Many blit operation
-	 * are too slow to utilise without MMIO (eg Line acceleration) and so
-	 * are only included here. Note that vgaBase is not initialised at this
-	 * point. So we can't set ctMMIOBase here. It is done in CHIPSInit. */
-
-	if (ctUseMMIO) {
-	    ErrorF("%s %s: CHIPS: Memory mapped I/O selected\n",
-		OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) ?
-		XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
+	if (!ctisHiQV32) {
 	    switch (vgaBitsPerPixel) {
 	    case 8:
-		vga256LowlevFuncs.vgaBitblt = ctMMIOBitBlt;
-		vga256LowlevFuncs.fillRectSolidCopy = ctMMIOFillRectSolid;
-		vga256TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		vga256TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
-		vga256LowlevFuncs.fillSolidSpans = ctMMIOFillSolidSpansGeneral;
+		vga256LowlevFuncs.doBitbltCopy = ctcfbDoBitbltCopy;
+		vga256LowlevFuncs.vgaBitblt = ctBitBlt;
+		vga256LowlevFuncs.fillRectSolidCopy = ctcfbFillRectSolid;
 
-#ifdef CT_LINE_ACCL
-		vga256TEOps1Rect.Polylines = ctMMIOLineSS;
-		vga256NonTEOps1Rect.Polylines = ctMMIOLineSS;
-		vga256TEOps.Polylines = ctMMIOLineSS;
-		vga256NonTEOps.Polylines = ctMMIOLineSS;
-		vga256TEOps1Rect.PolySegment = ctMMIOSegmentSS;
-		vga256NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
-		vga256TEOps.PolySegment = ctMMIOSegmentSS;
-		vga256TEOps.PolySegment = ctMMIOSegmentSS;
+		/* Hook special op. fills (and tiles): */
+		vga256TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		vga256NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		vga256TEOps.PolyFillRect = ctcfbPolyFillRect;
+		vga256NonTEOps.PolyFillRect = ctcfbPolyFillRect;
+
+		vga256LowlevFuncs.fillBoxSolid = ctcfbFillBoxSolid;
+		vga256TEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
+		vga256TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
+		vga256LowlevFuncs.fillSolidSpans = ctcfbFillSolidSpansGeneral;
+	    
+#ifdef CT_POST_312F_ACCL
+		vga256LowlevFuncs.copyPlane1to8 = ctcfbCopyPlane1to8;
+		vga256TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		vga256TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		vga256LowlevFuncs.teGlyphBlt8 = ctcfbImageGlyphBlt;
+		vga256TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		vga256TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
 #endif
+
+		/* Setup the address of the tile in vram. Tile must
+		 * be aligned on a 64 bytes value. Size of the space
+		 * is 32x8xBytesPerPixel */
+		ctBLTPatternAddress = ctAllocate(256, 0x3F);
+		if (ctBLTPatternAddress == -1)
+		ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
+		       XCONFIG_PROBED, vga256InfoRec.name);
+
 		break;
+		
 	    case 16:
-		cfb16TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		cfb16TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
-		cfb16NonTEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		cfb16NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
+		/* There are no corresponding structures to vga256LowlevFuncs
+		 * for 16/24bpp. Hence we have to hook to the cfb functions in
+		 * a similar way to the cirrus driver. For now I've just
+		 * implemented the most basic of blits */
+		cfb16TEOps1Rect.CopyArea = ctcfb16CopyArea;
+		cfb16TEOps.CopyArea = ctcfb16CopyArea;
+		cfb16NonTEOps1Rect.CopyArea = ctcfb16CopyArea;
+		cfb16NonTEOps.CopyArea = ctcfb16CopyArea;
 
-#ifdef CT_LINE_ACCL
-		/* The way of hooking to these should be looked in to.
-		 * see the files ../../../../../cfb24/cfbgc.c and
-		 * ../../../../../cfb24/cfbmskbits.h. It is possible that 
-		 * this isn't always the right way to do this */
+		cfb16TEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
+		cfb16TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
+		cfb16NonTEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
+		cfb16NonTEOps.FillSpans = ctcfbFillSolidSpansGeneral;
+		cfb16TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		cfb16TEOps.PolyFillRect = ctcfbPolyFillRect;
+		cfb16NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		cfb16NonTEOps.PolyFillRect = ctcfbPolyFillRect;
 
-		cfb16TEOps1Rect.Polylines = ctMMIOLineSS;
-		cfb16NonTEOps1Rect.Polylines = ctMMIOLineSS;
-		cfb16TEOps1Rect.PolySegment = ctMMIOSegmentSS;
-		cfb16NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
-
-		cfb16TEOps.Polylines = ctMMIOLineSS;
-		cfb16NonTEOps.Polylines = ctMMIOLineSS;
-		cfb16TEOps.PolySegment = ctMMIOSegmentSS;
-		cfb16TEOps.PolySegment = ctMMIOSegmentSS;
+#ifdef CT_POST_312F_ACCL
+		cfb16TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		cfb16TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		cfb16TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		cfb16TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
 #endif
+
+		/* Setup the address of the tile in vram. Tile must
+		 * be aligned on a 128 bytes value. Size of the space
+		 * is 32x8xBytesPerPixel. However tiling code doesn't
+		 * seem to be called by the server. This should be
+		 * investigated */
+		ctBLTPatternAddress = ctAllocate(512, 0x7F);
+		if (ctBLTPatternAddress == -1)
+		    ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
+			   XCONFIG_PROBED, vga256InfoRec.name);
 		break;
+
 	    case 24:
-		cfb24TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		cfb24TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
-		cfb24NonTEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		cfb24NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
+		/* There are no corresponding structures to vga256LowlevFuncs
+		 * for 16/24bpp. Hence we have to hook to the cfb functions in
+		 * a similar way to the cirrus driver. For now I've just 
+		 * implemented the most basic of blits */
+
+		cfb24TEOps1Rect.CopyArea = ctcfb24CopyArea;
+		cfb24TEOps.CopyArea = ctcfb24CopyArea;
+		cfb24NonTEOps1Rect.CopyArea = ctcfb24CopyArea;
+		cfb24NonTEOps.CopyArea = ctcfb24CopyArea;
+
+		cfb24TEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
+		cfb24TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
+		cfb24NonTEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
+		cfb24NonTEOps.FillSpans = ctcfbFillSolidSpansGeneral;
+		cfb24TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		cfb24TEOps.PolyFillRect = ctcfbPolyFillRect;
+		cfb24NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		cfb24NonTEOps.PolyFillRect = ctcfbPolyFillRect;
+
+#ifdef CT_POST_312F_ACCL
+#if 0 /* These haven't been tested. Not even sure they'd be faster */
+		cfb24TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		cfb24TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
+		cfb24TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
+		cfb24TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
+#endif
+#endif
+		/* Setup the address of the tile in vram. Tile must
+		 * be aligned on a 256 bytes value. Size of the space
+		 * is 32x8xBytesPerPixel. 24bpp tile file only 
+		 * available on 65550, this is here for use later */
+		ctBLTPatternAddress = ctAllocate(768, 0xFF);
+		if (ctBLTPatternAddress == -1)
+		    ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
+			   XCONFIG_PROBED, vga256InfoRec.name);
+		break;
+
+	    }
+
+	    /* If direct memory access to the blitter registers is available,
+	     * then use it to do the blitting as it is faster. Many blit
+	     * operation are too slow to utilise without MMIO (eg Line
+	     * acceleration) and so are only included here. Note that vgaBase
+	     *  is not initialised at this point. So we can't set ctMMIOBase
+	     * here. It is done in CHIPSInit. */
+
+	    if (ctUseMMIO) {
+		ErrorF("%s %s: CHIPS: Memory mapped I/O selected\n",
+		    OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) ?
+		    XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
+		switch (vgaBitsPerPixel) {
+		case 8:
+		    vga256LowlevFuncs.vgaBitblt = ctMMIOBitBlt;
+		    vga256LowlevFuncs.fillRectSolidCopy = ctMMIOFillRectSolid;
+		    vga256TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
+		    vga256TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
+		    vga256LowlevFuncs.fillSolidSpans = ctMMIOFillSolidSpansGeneral;
+
+#ifdef CT_POST_312F_ACCL
+		    vga256TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+		    vga256TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+		    vga256LowlevFuncs.teGlyphBlt8 = ctMMIOImageGlyphBlt;
+		    vga256TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+		    vga256TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+#endif
 
 #ifdef CT_LINE_ACCL
-		/* The way of hooking to these should be looked in to.
-		 * see the files ../../../../../cfb24/cfbgc.c and
-		 * ../../../../../cfb24/cfbmskbits.h. It is possible that 
-		 * this isn't always the right way to do this */
-
-		cfb24TEOps1Rect.Polylines = ctMMIOLineSS;
-		cfb24NonTEOps1Rect.Polylines = ctMMIOLineSS;
-		cfb24TEOps1Rect.PolySegment = ctMMIOSegmentSS;
-		cfb24NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
-
-		cfb24TEOps.Polylines = ctMMIOLineSS;
-		cfb24NonTEOps.Polylines = ctMMIOLineSS;
-		cfb24TEOps.PolySegment = ctMMIOSegmentSS;
-		cfb24TEOps.PolySegment = ctMMIOSegmentSS;
+		    vga256TEOps1Rect.Polylines = ctMMIOLineSS;
+		    vga256NonTEOps1Rect.Polylines = ctMMIOLineSS;
+		    vga256TEOps.Polylines = ctMMIOLineSS;
+		    vga256NonTEOps.Polylines = ctMMIOLineSS;
+		    vga256TEOps1Rect.PolySegment = ctMMIOSegmentSS;
+		    vga256NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
+		    vga256TEOps.PolySegment = ctMMIOSegmentSS;
+		    vga256TEOps.PolySegment = ctMMIOSegmentSS;
 #endif
-		break;
+		    break;
+		case 16:
+		    cfb16TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
+		    cfb16TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
+		    cfb16NonTEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
+		    cfb16NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
+
+#ifdef CT_POST_312F_ACCL
+		    cfb16TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+		    cfb16TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+		    cfb16TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+		    cfb16TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+#endif
+
+#ifdef CT_LINE_ACCL
+		    /* The way of hooking to these should be looked in to.
+		     * see the files ../../../../../cfb24/cfbgc.c and
+		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
+		     * this isn't always the right way to do this */
+
+		    cfb16TEOps1Rect.Polylines = ctMMIOLineSS;
+		    cfb16NonTEOps1Rect.Polylines = ctMMIOLineSS;
+		    cfb16TEOps1Rect.PolySegment = ctMMIOSegmentSS;
+		    cfb16NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
+
+		    cfb16TEOps.Polylines = ctMMIOLineSS;
+		    cfb16NonTEOps.Polylines = ctMMIOLineSS;
+		    cfb16TEOps.PolySegment = ctMMIOSegmentSS;
+		    cfb16TEOps.PolySegment = ctMMIOSegmentSS;
+#endif
+		    break;
+		case 24:
+		    cfb24TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
+		    cfb24TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
+		    cfb24NonTEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
+		    cfb24NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
+
+#ifdef CT_POST_312F_ACCL
+#if 0 /* These haven't been tested. Not even sure they'd be faster */
+		    cfb24TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+		    cfb24TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
+		    cfb24TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+		    cfb24TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
+#endif
+#endif
+
+#ifdef CT_LINE_ACCL
+		    /* The way of hooking to these should be looked in to.
+		     * see the files ../../../../../cfb24/cfbgc.c and
+		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
+		     * this isn't always the right way to do this */
+
+		    cfb24TEOps1Rect.Polylines = ctMMIOLineSS;
+		    cfb24NonTEOps1Rect.Polylines = ctMMIOLineSS;
+		    cfb24TEOps1Rect.PolySegment = ctMMIOSegmentSS;
+		    cfb24NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
+
+		    cfb24TEOps.Polylines = ctMMIOLineSS;
+		    cfb24NonTEOps.Polylines = ctMMIOLineSS;
+		    cfb24TEOps.PolySegment = ctMMIOSegmentSS;
+		    cfb24TEOps.PolySegment = ctMMIOSegmentSS;
+#endif
+		    break;
+		}
 	    }
+	} else {	/* HiQV acceleration support */ 
+#ifdef CT_POST_312F_ACCL
+	    if (ctUseMMIO) {
+		ErrorF("%s %s: CHIPS: Memory mapped I/O selected\n",
+		    OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) ?
+		    XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
+		switch (vgaBitsPerPixel) {
+		case 8:
+		    vga256LowlevFuncs.doBitbltCopy = ctcfbDoBitbltCopy;
+		    vga256LowlevFuncs.vgaBitblt = ctHiQVBitBlt;
+
+		    vga256LowlevFuncs.fillRectSolidCopy = ctHiQVFillRectSolid;
+
+		    vga256LowlevFuncs.fillBoxSolid = ctcfbFillBoxSolid;
+		    vga256TEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
+		    vga256TEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
+		    vga256LowlevFuncs.fillSolidSpans = ctHiQVFillSolidSpansGeneral;
+		    /* Setup the address of the tile in vram. Tile must
+		     * be aligned on a 64 bytes value. Size of the space
+		     * is 32x8xBytesPerPixel */
+		    ctBLTPatternAddress = ctAllocate(256, 0x3F);
+		    if (ctBLTPatternAddress == -1)
+		        ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
+			       XCONFIG_PROBED, vga256InfoRec.name);
+
+#ifdef CT_LINE_ACCL
+		    vga256TEOps1Rect.Polylines = ctHiQVLineSS;
+		    vga256NonTEOps1Rect.Polylines = ctHiQVLineSS;
+		    vga256TEOps.Polylines = ctHiQVLineSS;
+		    vga256NonTEOps.Polylines = ctHiQVLineSS;
+		    vga256TEOps1Rect.PolySegment = ctHiQVSegmentSS;
+		    vga256NonTEOps1Rect.PolySegment = ctHiQVSegmentSS;
+		    vga256TEOps.PolySegment = ctHiQVSegmentSS;
+		    vga256TEOps.PolySegment = ctHiQVSegmentSS;
+#endif
+
+#if 0	/* Untested with the HiQV. Need adaptation */
+		    vga256LowlevFuncs.copyPlane1to8 = ctcfbCopyPlane1to8;
+
+		    /* Hook special op. fills (and tiles): */
+		    vga256TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		    vga256NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		    vga256TEOps.PolyFillRect = ctcfbPolyFillRect;
+		    vga256NonTEOps.PolyFillRect = ctcfbPolyFillRect;
+	    
+		    vga256TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+		    vga256TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+		    vga256LowlevFuncs.teGlyphBlt8 = ctHiQVImageGlyphBlt;
+		    vga256TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+		    vga256TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+
+#endif	/* Untested with the HiQV. Need adaptation */
+		    break;
+		
+		case 16:
+		    /* There are no corresponding structures to vga256LowlevFuncs
+		     * for 16/24bpp. Hence we have to hook to the cfb functions
+		     * in a similar way to the cirrus driver. For now I've just
+		     * implemented the most basic of blits */
+		    cfb16TEOps1Rect.CopyArea = ctcfb16CopyArea;
+		    cfb16TEOps.CopyArea = ctcfb16CopyArea;
+		    cfb16NonTEOps1Rect.CopyArea = ctcfb16CopyArea;
+		    cfb16NonTEOps.CopyArea = ctcfb16CopyArea;
+
+		    cfb16TEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
+		    cfb16TEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
+		    cfb16NonTEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
+		    cfb16NonTEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
+
+		    /* Setup the address of the tile in vram. Tile must
+		     * be aligned on a 128 bytes value. Size of the space
+		     * is 32x8xBytesPerPixel. However tiling code doesn't
+		     * seem to be called by the server. This should be
+		     * investigated */
+		    ctBLTPatternAddress = ctAllocate(512, 0x7F);
+		    if (ctBLTPatternAddress == -1)
+		        ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
+			       XCONFIG_PROBED, vga256InfoRec.name);
+#ifdef CT_LINE_ACCL
+		    /* The way of hooking to these should be looked in to.
+		     * see the files ../../../../../cfb24/cfbgc.c and
+		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
+		     * this isn't always the right way to do this */
+
+		    cfb16TEOps1Rect.Polylines = ctHiQVLineSS;
+		    cfb16NonTEOps1Rect.Polylines = ctHiQVLineSS;
+		    cfb16TEOps1Rect.PolySegment = ctHiQVSegmentSS;
+		    cfb16NonTEOps1Rect.PolySegment = ctHiQVSegmentSS;
+
+		    cfb16TEOps.Polylines = ctHiQVLineSS;
+		    cfb16NonTEOps.Polylines = ctHiQVLineSS;
+		    cfb16TEOps.PolySegment = ctHiQVSegmentSS;
+		    cfb16TEOps.PolySegment = ctHiQVSegmentSS;
+#endif
+
+#if 0	/* Untested with the HiQV. Need adaptation */
+		    cfb16TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		    cfb16TEOps.PolyFillRect = ctcfbPolyFillRect;
+		    cfb16NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		    cfb16NonTEOps.PolyFillRect = ctcfbPolyFillRect;
+
+		    cfb16TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+		    cfb16TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+		    cfb16TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+		    cfb16TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+
+#endif	/* Untested with the HiQV. Need adaptation */
+
+		    break;
+
+		case 24:
+		    /* There are no corresponding structures to vga256LowlevFuncs
+		     * for 16/24bpp. Hence we have to hook to the cfb functions
+		     * in a similar way to the cirrus driver. For now I've
+		     * just implemented the most basic of blits */
+
+		    cfb24TEOps1Rect.CopyArea = ctcfb24CopyArea;
+		    cfb24TEOps.CopyArea = ctcfb24CopyArea;
+		    cfb24NonTEOps1Rect.CopyArea = ctcfb24CopyArea;
+		    cfb24NonTEOps.CopyArea = ctcfb24CopyArea;
+
+		    cfb24TEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
+		    cfb24TEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
+		    cfb24NonTEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
+		    cfb24NonTEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
+
+		    /* Setup the address of the tile in vram. Tile must
+		     * be aligned on a 256 bytes value. Size of the space
+		     * is 32x8xBytesPerPixel. 24bpp tile file only 
+		     * available on 65550, this is here for use later */
+		    ctBLTPatternAddress = ctAllocate(768, 0xFF);
+		    if (ctBLTPatternAddress == -1)
+		        ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
+			       XCONFIG_PROBED, vga256InfoRec.name);
+		    break;
+
+#ifdef CT_LINE_ACCL
+		    /* The way of hooking to these should be looked in to.
+		     * see the files ../../../../../cfb24/cfbgc.c and
+		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
+		     * this isn't always the right way to do this */
+
+		    cfb24TEOps1Rect.Polylines = ctHiQVLineSS;
+		    cfb24NonTEOps1Rect.Polylines = ctHiQVLineSS;
+		    cfb24TEOps1Rect.PolySegment = ctHiQVSegmentSS;
+		    cfb24NonTEOps1Rect.PolySegment = ctHiQVSegmentSS;
+
+		    cfb24TEOps.Polylines = ctHiQVLineSS;
+		    cfb24NonTEOps.Polylines = ctHiQVLineSS;
+		    cfb24TEOps.PolySegment = ctHiQVSegmentSS;
+		    cfb24TEOps.PolySegment = ctHiQVSegmentSS;
+#endif
+
+#if 0	/* Untested with the HiQV. Need adaptation */
+		    cfb24TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		    cfb24TEOps.PolyFillRect = ctcfbPolyFillRect;
+		    cfb24NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
+		    cfb24NonTEOps.PolyFillRect = ctcfbPolyFillRect;
+
+		    cfb24TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+		    cfb24TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
+		    cfb24TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+		    cfb24TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
+
+#endif	/* Untested with the HiQV. Need adaptation */
+
+		}
+	    } else {
+		ErrorF("%s %s: CHIPS: Memory mapped I/O not available\n",
+		       XCONFIG_PROBED, vga256InfoRec.name);
+		ErrorF("%s %s: CHIPS: HiQV acceleration support disabled\n",
+			XCONFIG_PROBED, vga256InfoRec.name); 
+	    }
+#else	/* CT_POST_312F_ACCL */
+	    ErrorF("%s %s: CHIPS: HiQV acceleration support disabled\n",
+		   XCONFIG_PROBED, vga256InfoRec.name); 
+#endif
 	}
-#endif /* CHIPS_SUPPORT_MMIO */
     }
 #endif /* MONOVGA */
-
-    /* Re-entry for 65550/4 broken blitting code. */
-  blitbroken:
 
     /*
      * If hardware cursor is supported, the vgaHWCursor struct should
@@ -2975,13 +2961,14 @@ ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
     /*
      *	be careful timing sequencer must be enabled.
      */
-    tmp = inb(vgaIOBase + 0x0A);     	/* Reset flip-flop */
-    /*outb(0x3C0, 0x00);*/		/* Enables pallete access */
     
-    /* Stretching must disable during VSync */
-    while (((inb(vgaIOBase + 0x0A)) & 0x08) == 0x08){};/* wait VSync off */
+    /* wait for sync */
+    /* Stretching must be disable during VSync */
+    while (((inb(ctST01reg)) & 0x08) == 0x08){};/* wait VSync off */
     /* to be sure we work at start Vsync */
-    while (((inb(vgaIOBase + 0x0A)) & 0x08) == 0 ) {}; /* wait VSync on */
+    while (((inb(ctST01reg)) & 0x08) == 0 ) {}; /* wait VSync on */
+
+    /* write to regs. */
     if (ctisHiQV32) {
         write_fr(0x40, ctHorizontalStretch);
         write_fr(0x48, ctVerticalStretch);
@@ -2990,12 +2977,11 @@ ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
         write_xr(0x55, ctHorizontalStretch);
         write_xr(0x57, ctVerticalStretch);
     }
-    while (((inb(vgaIOBase + 0x0A)) & 0x08) == 0x08){};/* wait VSync off */
+
+    /* wait for sync */
+    while (((inb(ctST01reg)) & 0x08) == 0x08){};/* wait VSync off */
     /* wait one more frame */
-    while ( ((inb(vgaIOBase + 0x0A)) & 0x08) == 0 ) {}; /* wait VSync on */
-    
-    (void)inb(vgaIOBase + 0x0A);     	/* Reset flip-flop */
-    /*outb(0x3C0, 0x20);*/		/* Disable pallete access */ 
+    while ( ((inb(ctST01reg)) & 0x08) == 0 ) {}; /* wait VSync on */
     
     usleep(20000);			/* to be active */
 }
@@ -3009,14 +2995,15 @@ ctRestore(restore)
     unsigned char tmp;
 
     if (ctisHiQV32) {
-#ifdef CHIPS_SUPPORT_MMIO
+      
+      /* save BltRegs */
 	if (ctUseMMIO) {
 	    for (i = 0x0; i < 0x9; i++) {
-		*(unsigned int *)(ctMMIOBase + 4 * i) = restore->BltReg[i];
+		*(unsigned int *)(ctMMIOBase + ctMMIO[i]) = restore->BltReg[i];
 	    }
 	}
-#endif
 
+	/* set extended regs */
 	for (i = 0; i < 0x43; i++) {
 	    outb(0x3D6, i);
 	    if (inb(0x3D7) != restore->Port_3D6[i])
@@ -3029,6 +3016,8 @@ ctRestore(restore)
 		outb(0x3D7, restore->Port_3D6[i]);
 	}
 	/* Don't touch VCLK regs, but fix up MClk */
+	
+	/* set mem clock */
 	outb(0x3D6, 0xCE);	       /* Select Fixed MClk before */
 	tmp = inb(0x3D7);
 	outb(0x3D7, tmp & 0x7F);
@@ -3042,6 +3031,7 @@ ctRestore(restore)
 	if (inb(0x3D7) != restore->Port_3D6[0xCE])
 	    outb(0x3D7, restore->Port_3D6[0xCE]);
 
+	/* set flat panel regs. */
 	for (i = 0xD0; i < 0xFF; i++) {
 	    outb(0x3D6, i);
 	    if (inb(0x3D7) != restore->Port_3D6[i])
@@ -3065,39 +3055,36 @@ ctRestore(restore)
 	    if (inb(0x3D1) != restore->Port_3D0[i])/* only modify if changed */
 		outb(0x3D1, restore->Port_3D0[i]);
 	}
+
+	/* set extended crtc regs. */
 	for (i = 0x30; i < 0x80; i++) {
-	    outb(ctCRindex, i);
-	    if (inb(ctCRvalue) != restore->Port_3D4[i])		/* only modify if changed */
+	  outb(ctCRindex, i);
+	  if (inb(ctCRvalue) != restore->Port_3D4[i]) /* only modify if changed */
 		outb(ctCRvalue, restore->Port_3D4[i]);
 	}
     } else {
-#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
+      /* save BitBlt regs. */
 	if(!ctUseMMIO){
-#endif
-	     HW_DEBUG(0x0); outl(DR(0x0), restore->Port_83D0);
-	     HW_DEBUG(0x8); outl(DR(0x8), restore->Port_A3D0);
-	     HW_DEBUG(0x9); outl(DR(0x9), restore->Port_A7D0);
-	     HW_DEBUG(0xA); outl(DR(0xA), restore->Port_ABD0);
-	     HW_DEBUG(0xC); outl(DR(0xC), restore->Port_B3D0);
-#if defined(CHIPS_SUPPORT_MMIO) && defined(HWCUR_MMIO)
+	  for(i=0;i<0xD;i++){
+	     HW_DEBUG(i); outl(DR(i), restore->BltReg[i]);
+	   };
 	} else {
-	     HW_DEBUG(0x83D0); MMIOmeml(0x83D0) = restore->Port_83D0;
-	     HW_DEBUG(0xA3D0); MMIOmeml(0xA3D0) = restore->Port_A3D0;
-	     HW_DEBUG(0xA7D0); MMIOmeml(0xA7D0) = restore->Port_A7D0;
-	     HW_DEBUG(0xABD0); MMIOmeml(0xABD0) = restore->Port_ABD0;
-	     HW_DEBUG(0xB3D0); MMIOmeml(0xB3D0) = restore->Port_B3D0;
+	  for (i=0;i<0xD;i++){
+	    HW_DEBUG(ctMMIO[i]); MMIOmeml(ctMMIO[i]) = restore->BltReg[i];
+	  }	
 	}
-#endif
+	/* set extended regs. */
 	for (i = 0; i < 0x30; i++) {
 	    outb(0x3D6, i);
 	    if (inb(0x3D7) != restore->Port_3D6[i])
 		outb(0x3D7, restore->Port_3D6[i]);
 	}
+	outw(0x3D6,0x15); /* unprotect just in case ... */
 	/* Don't touch MCLK/VCLK regs. */
 	for (i = 0x34; i < 0x54; i++) {
 	    outb(0x3D6, i);
-	    if (inb(0x3D7) != restore->Port_3D6[i])	/* only modify if changed */
-		outb(0x3D7, restore->Port_3D6[i]);
+	    if (inb(0x3D7) != restore->Port_3D6[i])/* only modify if changed */
+	      outb(0x3D7, restore->Port_3D6[i]);
 	}
 	outb(0x3D6, 0x54);
 	tmp = inb(0x3D7);	       /* restore the non clock bits */
@@ -3109,7 +3096,7 @@ ctRestore(restore)
 	    if (i==0x57) 
 	        continue ;             /* there is restoreStretching */
 	    outb(0x3D6, i);
-	    if (inb(0x3D7) != restore->Port_3D6[i])	/* only modify if changed */
+	    if (inb(0x3D7) != restore->Port_3D6[i])/* only modify if changed */
 	        outb(0x3D7, restore->Port_3D6[i]);
 	}
     }
@@ -3181,3 +3168,41 @@ void ctHWDebug(addr)
   ErrorF("Register/Address: %X\n",addr);
 }
 #endif
+
+int ctScaleClock(enter,clock)
+int *clock;
+Bool enter;
+{
+  static int saveClock;
+  static int saveTextClock;
+
+ if(enter)
+    {
+      if (*clock < MAXCLOCKS){
+	/* save clock */
+	saveClock = vga256InfoRec.clock[*clock];
+	/* scale clock */
+	vga256InfoRec.clock[*clock] /= CHIPS.ChipClockScaleFactor;
+      } else {
+	/* save clock */
+	saveClock = *clock;
+	/* scale clock */
+	*clock /= CHIPS.ChipClockScaleFactor;
+      }
+  } else {
+    if (*clock < MAXCLOCKS)
+      /* restore clock */
+      vga256InfoRec.clock[*clock] = saveClock;
+    else 
+      /* restore clock */
+      *clock = saveClock; 
+    }
+}
+
+	    
+
+
+
+
+
+

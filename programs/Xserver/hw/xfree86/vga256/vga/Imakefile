@@ -5,7 +5,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/12 12:04:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.10 1996/02/04 09:14:47 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.11 1996/08/11 13:03:05 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -30,7 +30,7 @@ SRCS =	 vgagc.c vgawindow.c vgascrinit.c \
 	 vgaply1rctC.c vgaply1rctG.c vgafuncs.c \
 	 SpeedUpBlt.c BitBlt.s BitBlt2.s Box.s Line.s \
 	 VHLine.s vgaBanks.c $(FSRCS) vgaHW.c vga.c vgaCmap.c vgaBank.s \
-	 vgaPCI.c
+	 vgaPCI.c vgatables.c
 
 FOBJS =  fBitBlt.o fFillCopy.o fFillXor.o fFillOr.o fFillAnd.o \
          fFillSet.o vgabres.o vgalineH.o vgalineV.o
@@ -55,7 +55,7 @@ OBJS =   vgagc.o vgawindow.o vgascrinit.o \
 	 vgapush8.o vgaply1rctC.o vgaply1rctG.o $(STIPPLEOBJ) vgafuncs.o \
 	 SpeedUpBlt.o BitBlt.o BitBlt2.o Box.o Line.o \
 	 VHLine.o vgaBanks.o $(FOBJS) vgaHW.o vga.o vgaCmap.o vgaBank.o \
-	 vgaPCI.o
+	 vgaPCI.o vgatables.o
 
    INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \

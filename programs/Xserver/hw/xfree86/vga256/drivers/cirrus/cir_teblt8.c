@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.18 1996/08/10 13:08:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.19 1996/09/14 13:11:47 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -126,7 +126,7 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	/* is compiled only once. */
 	cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
 #else
-	widthDst = vga256InfoRec.virtualX << (vgaBitsPerPixel >> 4);
+	widthDst = vga256InfoRec.displayWidth << (vgaBitsPerPixel >> 4);
 #endif
 
 	/* We only accelerate fonts 32 or less pixels wide. */
@@ -140,6 +140,18 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	if (vgaBitsPerPixel == 16 && (pDrawable->type != DRAWABLE_WINDOW ||
 	!xf86VTSema)) {
 	        cfb16TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+	        	pglyphBase);
+		return;
+	}
+	if (vgaBitsPerPixel == 24 && (pDrawable->type != DRAWABLE_WINDOW ||
+	!xf86VTSema)) {
+	        cfb24TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci,
+	        	pglyphBase);
+		return;
+	}
+	if (vgaBitsPerPixel == 24 && (pDrawable->type != DRAWABLE_WINDOW ||
+	!xf86VTSema)) {
+	        cfb24TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci,
 	        	pglyphBase);
 		return;
 	}
@@ -157,6 +169,10 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	        	break;
 	        case 16 :
 	        	cfb16TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
+	        		ppci, pglyphBase);
+	        	break;
+	        case 24 :
+	        	cfb24TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
 	        		ppci, pglyphBase);
 	        	break;
 	        case 32 :
@@ -188,6 +204,10 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 			break;
 		case 16 :
 			cfb16TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
+				ppci, pglyphBase);
+			break;
+		case 24 :
+			cfb24TEGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
 				ppci, pglyphBase);
 			break;
 		case 32 :
@@ -237,6 +257,7 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		SETBACKGROUNDCOLOR16(pGC->bgPixel);
 		SETFOREGROUNDCOLOR16(pGC->fgPixel);
 		break;
+	case 24 :
 	case 32 :
 		SETBACKGROUNDCOLOR32(pGC->bgPixel);
 		SETFOREGROUNDCOLOR32(pGC->fgPixel);
@@ -250,6 +271,9 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	switch (vgaBitsPerPixel) {
 	case 16 :
 		SETBLTMODE(SYSTEMSRC | COLOREXPAND | PIXELWIDTH16);
+		break;
+	case 24 :
+		SETBLTMODE(SYSTEMSRC | COLOREXPAND | PIXELWIDTH24);
 		break;
 	case 32 :
 		SETBLTMODE(SYSTEMSRC | COLOREXPAND | PIXELWIDTH32);

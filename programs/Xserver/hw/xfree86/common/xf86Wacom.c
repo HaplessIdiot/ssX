@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.17 1996/07/08 10:26:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.18 1996/08/13 11:30:09 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -1600,7 +1600,11 @@ DeviceAssocRec wacom_eraser_assoc =
  ***************************************************************************
  */
 int
+#ifndef __NetBSD__
 init_module(unsigned long	server_version)
+#else
+init_xf86Wacom(unsigned long    server_version)
+#endif
 {
     xf86AddDeviceAssoc(&wacom_stylus_assoc);
     xf86AddDeviceAssoc(&wacom_cursor_assoc);

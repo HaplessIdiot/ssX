@@ -205,11 +205,12 @@ Chipset &dquot;ct65546&dquot; (or some other chip)
 	due to interactions with other drivers in the server. It is
 	possible to force the server to identify a particular chip with
 	this option.  Some later releases of the ct65545, in particular the
-	ct65545A1 and ct65545B1, actually have limitations very similar to
-	those of the 65546. The server is not currently configured to
-	recognise these chips, so the user might wish to force the server
-	to identify their chip as a ct65546 and so have a larger maximum
-	bandwidth.
+	ct65545A1 and ct65545B1, are believed to have limitations very similar
+	to those of the 65546. The server is currently configured to use
+	the 65545 bandwidth, etc for these chips. So the user might wish to
+	force the server to identify their chip as a ct65546 and so have a
+	larger maximum bandwidth. Note that this forces the server to exceed
+	the documented limitations of the chip, so take care.
 </descrip>
 
 <sect> Modelines <p>
@@ -271,32 +272,33 @@ are used in the mode calculations on an LCD. Hence a mode like
 Modeline "640x480@8bpp"   21.000  640    0    0    0   480    0    0    0
 </verb></quote>
 
-will often be sufficient for a laptop screen. It should also be noted that
+will often be sufficient for a laptop screen. Just program the zeroed
+values above to those you would use for a CRT. It should also be noted that
 flat panels often prefer dot clocks that are much slower than CRT's. Below
 you'll find listed below a set of modelines that are in use of a variety
 of machines. These can be used as starting points for new modelines.
 
 <quote><verb>
-Modeline "640x480@8bpp"    21.000  640  688  704  776   480  480  481  486
+Modeline "640x480@8bpp"   21.000  640  688  704  776   480  480  481  486
 Tested on a Sharp PC3020, (640x480 DSTN, 65545A1, 512kByte)
 
-Modeline "640x480@8bpp"    16.000  640  688  704  776   480  480  481  486
-Modeline "640x480@16bpp"   16.000  640  688  704  776   480  480  481  486
-Modeline "640x480@24bpp"   16.330  640  664  760  800   480  490  502  525
+Modeline "640x480@8bpp"   16.000  640  688  704  776   480  480  481  486
+Modeline "640x480@16bpp"  16.000  640  688  704  776   480  480  481  486
+Modeline "640x480@24bpp"  16.330  640  664  760  800   480  490  502  525
 Tested on a Toshiba Satellite T2135CS (640x480 DSTN, 65545??, 1MByte)
 
-Modeline "640x480@8bpp"	   25.175  640  664  760  800   480  491  493  525
-ModeLine "640x480@8bpp"    28.322  640  680  720  864   480  488  491  521
-Modeline "640x480@16bpp"   38.000  640  648  668  808   480  490  502  525
-Modeline "640x480@24bpp"   23.000  640  648  756  809   480  490  502  525
+Modeline "640x480@8bpp"	  25.175  640  664  760  800   480  491  493  525
+ModeLine "640x480@8bpp"   28.322  640  680  720  864   480  488  491  521
+Modeline "640x480@16bpp"  38.000  640  648  668  808   480  490  502  525
+Modeline "640x480@24bpp"  23.000  640  648  756  809   480  490  502  525
 Tested on a Toshiba 400CDT, (640x480 TFT, 65546 1Mbyte)
 
-Modeline "800x600@8bpp"    40.000  800  840  968 1056   600  601  605  628
-Modeline "800x600@16bpp"   36.000  800  840  968 1056   600  601  605  628
+Modeline "800x600@8bpp"   40.000  800  840  968 1056   600  601  605  628
+Modeline "800x600@16bpp"  36.000  800  840  968 1056   600  601  605  628
 Tested on a Sager Narval86 (800x600 DSTN, 65548, 1Mbyte)
 
-Modeline "1024x768@8bpp"   65.000 1024 1032 1176 1344   768  771  777  806
-Modeline "1024x768@16bpp"  65.000 1024 1032 1176 1344   768  771  777  806
+Modeline "1024x768@8bpp"  65.000 1024 1032 1176 1344   768  771  777  806
+Modeline "1024x768@16bpp" 65.000 1024 1032 1176 1344   768  771  777  806
 Tested on a Toshiba 720CDT, (1024x768 TFT, 65550, 2Mbyte)
 </verb></quote>
 
@@ -430,7 +432,7 @@ software.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.3 1996/08/24 12:52:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.4 1996/08/26 14:08:46 dawes Exp $
 </verb>
 
 </article>

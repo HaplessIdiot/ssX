@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.20 1996/08/14 14:36:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.21 1996/09/25 14:36:08 dawes Exp $
 
 
 
@@ -101,7 +101,8 @@ SERVERSRCS = \
 	XF86_P9000.c \
 	XF86_AGX.c \
 	XF86_W32.c \
-	XF86_I128.c
+	XF86_I128.c \
+	XF86_TGA.c
 
 SRCS =	\
 	$(XF86DL_SRC) \
@@ -241,6 +242,7 @@ LinkSourceFile(XF86_AGX.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_Mono.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_P9000.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_S3.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_TGA.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_SVGA.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_VGA16.c,$(XF86SRC)/common)
 LinkSourceFile(XF86_W32.c,$(XF86SRC)/common)

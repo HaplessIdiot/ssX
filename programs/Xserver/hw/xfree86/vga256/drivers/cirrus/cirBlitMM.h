@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.5 1995/04/09 14:14:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.6 1996/02/04 09:12:51 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 /* Using Memory-Mapped I/O. */
@@ -24,9 +24,16 @@
 #define SYSTEMSRC		0x04
 #define TRANSPARENCYCOMPARE	0x08
 #define PIXELWIDTH16		0x10
-#define PIXELWIDTH32		0x30	/* 543x only. */
+#define PIXELWIDTH24		0x20	/* 5436/46 only. */
+#define PIXELWIDTH32		0x30	/* 5434/36/46 only. */
 #define PATTERNCOPY		0x40
 #define COLOREXPAND		0x80
+
+/* Extended BitBLT modes (36/46 only). */
+
+#define SOURCEDWORDGRANULARITY	0x01
+#define INVERTSOURCESENSE	0x02
+#define SOLIDCOLORFILL		0x04
 
 /* MMIO addresses (offset from 0xb8000). */
 
@@ -41,6 +48,7 @@
 #define MMIOBLTWRITEMASK	0x17
 #define MMIOBLTMODE		0x18
 #define MMIOROP			0x1a
+#define MMIOBLTMODEEXT		0x1b
 #define MMIOBLTSTATUS		0x40
 
 extern unsigned char *cirrusMMIOBase;
@@ -75,6 +83,9 @@ extern unsigned char *cirrusMMIOBase;
 
 #define SETBLTMODE(m) \
   *(unsigned char *)(cirrusMMIOBase + MMIOBLTMODE) = m;
+
+#define SETBLTMODEEXT(m) \
+  *(unsigned char *)(cirrusMMIOBase + MMIOBLTMODEEXT) = m;
 
 #define SETBLTWRITEMASK(m) \
   *(unsigned char *)(cirrusMMIOBase + MMIOBLTWRITEMASK) = m;

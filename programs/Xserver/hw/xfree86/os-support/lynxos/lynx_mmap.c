@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_mmap.c,v 3.1 1995/12/09 11:08:12 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -45,12 +45,19 @@ int Len;
 	int mlen;
 
 	mlen = (Offset + Len + 4095) & ~4096;
-	p = smem_create("BIOS-probe", Base, mlen, SM_READ);
+	p = smem_create("BIOS-probe", (char *)Base, mlen, SM_READ);
 	if (p == NULL)
 	{
-		ErrorF("xf86ReadBios: Failed to smem_create Base %x len %x %s \n",
-			Base, mlen, strerror(errno));
-		return(-1);
+		/* check if there is a stale segment around */
+		if (smem_remove("BIOS-probe") == 0) {
+		    ErrorF("xf86ReadBios: removed stale smem_ segment\n");
+		    p = smem_create("BIOS-probe", (char *)Base, mlen, SM_READ);
+		}
+		if (p == NULL) {
+		    ErrorF("xf86ReadBios: Failed to smem_create Base %x len %x %s \n",
+			    Base, mlen, strerror(errno));
+		    return(-1);
+		}
 	}
 	memcpy(Buf, p + Offset, Len);
 	smem_create(NULL, p, 0, SM_DETACH);

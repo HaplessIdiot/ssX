@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.5 1995/04/24 05:24:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.6 1996/02/04 09:13:14 dawes Exp $ */
 
 /*
 
@@ -222,6 +222,13 @@ fSorted)
 	return;
     }
     else
+    if (vgaBitsPerPixel == 24 && (!xf86VTSema ||
+    (pGC->planemask & 0x00FFFFFF) != 0x00FFFFFF)) {
+        cfb24SolidSpansGeneral(pDrawable, pGC,
+                               nInit, pptInit, pwidthInit, fSorted);
+       return;
+    }
+    else
     if (vgaBitsPerPixel == 32 && (!xf86VTSema ||
     (pGC->planemask & 0xFFFFFFFF) != 0xFFFFFFFF)) {
         cfb32SolidSpansGeneral(pDrawable, pGC,
@@ -240,6 +247,10 @@ fSorted)
         else
         if (vgaBitsPerPixel == 16)
     	    cfb16SolidSpansGeneral(pDrawable, pGC,
+                                   nInit, pptInit, pwidthInit, fSorted);
+        else
+        if (vgaBitsPerPixel == 24)
+    	    cfb24SolidSpansGeneral(pDrawable, pGC,
                                    nInit, pptInit, pwidthInit, fSorted);
         else
     	    cfb32SolidSpansGeneral(pDrawable, pGC,
@@ -268,7 +279,7 @@ fSorted)
 
     RROP_FETCH_GC(pGC);
 
-    pitch = vga256InfoRec.virtualX;
+    pitch = vga256InfoRec.displayWidth;
     pixshift = vgaBitsPerPixel >> 4;
     pitch <<= pixshift;
 
@@ -341,6 +352,13 @@ CirrusMMIOFillRectSolid(pDrawable, pGC, nBox, pBox)
 	return;
     }
     else
+    if (vgaBitsPerPixel == 24 && (!xf86VTSema ||
+    (pGC->planemask & 0xFFFFFF) != 0xFFFFFF ||
+    pDrawable->type != DRAWABLE_WINDOW)) {
+    	cfb24FillRectSolidGeneral(pDrawable, pGC, nBox, pBox);
+	return;
+    }
+    else
     if (vgaBitsPerPixel == 32 && (!xf86VTSema ||
     (pGC->planemask & 0xFFFFFFFF) != 0xFFFFFFFF ||
     pDrawable->type != DRAWABLE_WINDOW)) {
@@ -350,7 +368,7 @@ CirrusMMIOFillRectSolid(pDrawable, pGC, nBox, pBox)
 
     RROP_FETCH_GC(pGC);
 
-    pitch = vga256InfoRec.virtualX;
+    pitch = vga256InfoRec.displayWidth;
     pixshift = vgaBitsPerPixel >> 4;
     pitch <<= pixshift;
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_TGA.c,v 3.0 1996/09/22 05:04:59 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -16,7 +16,7 @@ extern ScrnInfoRec tgaInfoRec;
  * is added for using the ramdacs in 2:1 mode.  Increasing this limit
  * could result in damage to your hardware.
  */
-#define TGA_MAX_CLOCK	130000
+#define TGA_MAX_CLOCK	135000
 
 int tgaMaxClock = TGA_MAX_CLOCK;
 

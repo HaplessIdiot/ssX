@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.15 1996/09/14 13:13:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.16 1996/09/24 13:56:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,19 +39,46 @@
 #include "colormapst.h"
 
 #if !defined(MONOVGA) && !defined(XF86VGA16)
-extern void    vgaBitBlt();
-extern void    vgaImageRead();
-extern void    vgaImageWrite();
-extern void    vgaPixBitBlt();
-extern void    vgaImageGlyphBlt();
+extern void    vgaBitBlt(
+#if NeedFunctionPrototypes
+	unsigned char *, unsigned char *,
+	int, int,
+	int, int, int, int, int, int,
+	int, int,
+	int,
+	unsigned long
 #endif
-
-#ifndef MONOVGA
-extern int     vgaListInstalledColormaps();
-extern int     vgaGetInstalledColormaps();
-extern void    vgaStoreColors();
-extern void    vgaInstallColormap();
-extern void    vgaUninstallColormap();
+);
+extern void    vgaImageRead(
+#if NeedFunctionPrototypes
+	unsigned char *, unsigned char *,
+	int, int,
+	int, int, int, int, int, int,
+	int, int,
+	int,
+	unsigned long
+#endif
+);
+extern void    vgaImageWrite(
+#if NeedFunctionPrototypes
+	unsigned char *, unsigned char *,
+	int, int,
+	int, int, int, int, int, int,
+	int, int,
+	int,
+	unsigned long
+#endif
+);
+extern void    vgaPixBitBlt(
+#if NeedFunctionPrototypes
+	unsigned char *, unsigned char *,
+	int, int,
+	int, int, int, int, int, int,
+	int, int,
+	int,
+	unsigned long
+#endif
+);
 #endif
 
 #ifdef MONOVGA
@@ -109,6 +136,12 @@ typedef struct {
   int ChipClockScaleFactor;	    /* Factor to divide raw clocks by */
 } vgaVideoChipRec, *vgaVideoChipPtr;
 
+/* Tables in vgatables.c */
+extern unsigned char byte_reversed[256];
+
+/* All each driver to set a display pitch other than virtualX */
+void vgaSetPitchAdjustHook(int (* ChipPitchAdjust)());
+
 /* Allow each driver to hook the ScreenInit function */
 void vgaSetScreenInitHook(Bool (* ChipScrInit)());
 
@@ -147,10 +180,26 @@ extern void (* vgaAdjustFunc)(
     int
 #endif
 );
-extern void (* vgaSaveScreenFunc)();
-extern void (* vgaSetReadFunc)();
-extern void (* vgaSetWriteFunc)();
-extern void (* vgaSetReadWriteFunc)();
+extern void (* vgaSaveScreenFunc)(
+#if NeedFunctionPrototypes
+	int
+#endif
+);
+extern void (* vgaSetReadFunc)(
+#if NeedFunctionPrototypes
+	int
+#endif
+);
+extern void (* vgaSetWriteFunc)(
+#if NeedFunctionPrototypes
+	int
+#endif
+);
+extern void (* vgaSetReadWriteFunc)(
+#if NeedFunctionPrototypes
+	int
+#endif
+);
 extern int vgaMapSize;
 extern int vgaSegmentSize;
 extern int vgaSegmentShift;
@@ -200,8 +249,6 @@ typedef struct {
 #define BITS_PER_GUN 6
 #define COLORMAP_SIZE 256
 
-extern void vgaImageGlyphBlt();
-extern void vgaDoBitBlt();
 #endif
 
 #define DACDelay \
@@ -370,6 +417,13 @@ int vgaListInstalledColormaps(
 #if NeedFunctionPrototypes
     ScreenPtr pScreen,
     Colormap *pmaps
+#endif
+);
+
+int vgaGetInstalledColormaps(
+#if NeedFunctionPrototypes
+    ScreenPtr pScreen,
+    ColormapPtr *pmaps
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt16.c,v 3.1 1995/01/28 16:11:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt16.c,v 3.2 1996/02/04 09:13:02 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -252,9 +252,9 @@ CirrusBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     cfbGetLongWidthAndPointer (pDst, widthDst, pdstBase)
 #endif
     if (vgaBitsPerPixel == 16)
-        widthSrc = widthDst = vga256InfoRec.virtualX * 2;
+        widthSrc = widthDst = vga256InfoRec.displayWidth * 2;
     else
-        widthSrc = widthDst = vga256InfoRec.virtualX * 4;
+        widthSrc = widthDst = vga256InfoRec.displayWidth * 4;
 
     /* XXX we have to err on the side of safety when both are windows,
      * because we don't know if IncludeInferiors is being used.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/trident/pc98_tgui.c,v 3.1 1996/08/14 14:38:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/trident/pc98_tgui.c,v 3.2 1996/09/15 11:37:25 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -80,7 +80,7 @@ static PC98TGUiTable pc98TGUiTab[]={
   ,{PC98DRV9680, PC98CBus,   0x00f20000, 0x00f00000
       , 45, 0x00af, {108000, 58500, 0, 25175}
     , crtswDRV9680, testDRV}
-  ,{PC98NoExist, PC98Unkown, 0, 0
+  ,{PC98NoExist, PC98Unknown, 0, 0
       , 0, 0, {0, 0, 0, 0}
     , NULL, NULL}};
 
@@ -96,6 +96,8 @@ void GCwrite(unsigned char,unsigned char);
 unsigned char GCread(unsigned char);
 void sw_new(void);
 void sw_old(void);
+void reg_lock(void);
+void reg_unlock(void);
 static void SetRegisters( unsigned char *,unsigned char *,unsigned char *);
 
 Bool BoardInit(void)
@@ -161,7 +163,7 @@ Bool testDRV()
   _outw(0x52e8,0x00ff);
   _outw(0x56e8,0x6fa1);
   _outw(0x5ae8,0x0000);
-  /* coding chip-exist-check here */
+  /* insert chip test code here */
 
   return TRUE;
 }
@@ -231,9 +233,15 @@ void crtswNEC9320(short crtmod)
     crtswNECGen(crtmod);
     _outb(0xfaa, 0x03);
     _outb(0xfab, 0xff);
+    reg_unlock();
+    GCwrite(0x30,0x02 | GCread(0x30));
+    reg_lock();
     crtswTGUiGen(crtmod);
   } else {
     crtswTGUiGen(crtmod);
+    reg_unlock();
+    GCwrite(0x30,~0x02 & GCread(0x30));
+    reg_lock();
     _outb(0xfaa, 0x03);
     _outb(0xfab, 0xfd);
     crtswNECGen(crtmod);
@@ -270,9 +278,7 @@ Bool ChipInit(void)
   outb(0x3c0,0x10);
   outb(0x3c0,0x41);
   
-  sw_new();
-  tmp=SEQread(0x0e);
-  SEQwrite(0x0e,(tmp | 0x80));
+  reg_unlock();
   
   SYNCDACwrite(0x00,0x01);
   GCwrite(0x2f,0x80);
@@ -284,9 +290,7 @@ Bool ChipInit(void)
   CRTCwrite(0x3b,0x21);
   CRTCwrite(0x3c,0x00);
 
-  sw_new();
-  tmp=SEQread(0x0e);
-  SEQwrite(0x0e,(tmp & 0x7f));
+  reg_lock();
   return TRUE;
 }
 
@@ -396,5 +400,18 @@ void sw_old(void)
   unsigned char tmp;
   tmp=SEQread(0x0b);
   SEQwrite(0x0b,tmp);
+  return;
+}
+/* Register Lock/Unlock */
+void reg_lock(void)
+{
+  sw_new();
+  SEQwrite(0x0e,~0x80 & SEQread(0x0e));
+  return;
+}
+void reg_unlock(void)
+{
+  sw_new();
+  SEQwrite(0x0e,0x80 | SEQread(0x0e));
   return;
 }

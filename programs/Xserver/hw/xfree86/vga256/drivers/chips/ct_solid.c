@@ -95,7 +95,7 @@
  * 
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_solid.c,v 3.0 1996/08/11 13:02:55 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -115,7 +115,11 @@
 #include "ct_driver.h"
 
 #ifdef CHIPS_MMIO
+#ifdef CHIPS_HIQV
+#include "ct_BltHiQV.h"
+#else
 #include "ct_BlitMM.h"
+#endif
 #else
 #include "ct_Blitter.h"
 #endif
@@ -127,7 +131,11 @@
  */
 
 #ifdef CHIPS_MMIO
+#ifdef CHIPS_HIQV
+#define _ctcfbFillSolidSpansGeneral ctHiQVFillSolidSpansGeneral
+#else
 #define _ctcfbFillSolidSpansGeneral ctMMIOFillSolidSpansGeneral
+#endif
 #else
 #define _ctcfbFillSolidSpansGeneral ctcfbFillSolidSpansGeneral
 #endif
@@ -203,14 +211,18 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
     switch (vgaBitsPerPixel) {
     case 8:
 	ctSETFGCOLOR8(pGC->fgPixel);
+	ctSETBGCOLOR8(pGC->fgPixel);
 	break;
     case 16:
 	ctSETFGCOLOR16(pGC->fgPixel);
+	ctSETBGCOLOR16(pGC->fgPixel);
 	break;
     case 24:
-	if (ctisHiQV32) {
-	    ctSETFGCOLOR24(pGC->fgPixel);
-	} else {
+#ifdef CHIPS_HIQV
+	ctSETFGCOLOR24(pGC->fgPixel);
+	ctSETBGCOLOR24(pGC->fgPixel);
+#else
+	{
 	    /* The 6554x Blitter can only handle 8/16bpp fills directly,
 	     * Though you can do a grey fill, by a little bit of magic
 	     * with the 8bpp fill */
@@ -225,8 +237,10 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
 		return;
 	    } else {
 		ctSETFGCOLOR8(pGC->fgPixel);
+		ctSETBGCOLOR8(pGC->fgPixel);
 	    }
 	}
+#endif
 	break;
     }
 
@@ -250,7 +264,7 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
 
     RROP_FETCH_GC(pGC);
 
-    pitch = vga256InfoRec.virtualX * vgaBytesPerPixel;
+    pitch = vga256InfoRec.displayWidth * vgaBytesPerPixel;
 
     /*
      * Source bit pattern is irrelevant, background and foregound color
@@ -258,7 +272,8 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
      */
 
     /* Set up the invariant BitBLT parameters. */
-    op = ctAluConv[pGC->alu & 0xf] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctSRCFG;
+    op = ctAluConv2[pGC->alu & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctPATSOLID
+	| ctPATMONO;
     ctSETPITCH(0, pitch);
 
     while (n--) {
@@ -272,6 +287,11 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
 
 	ctBLTWAIT;
 	ctSETROP(op);
+#ifdef CHIPS_HIQV
+	ctSETMONOCTL(0);	/* This operation involves colour expansion, */
+				/* so being paranoid, set the monochrome     */
+				/* control register to zero                  */
+#endif
 	ctSETDSTADDR(destaddr);
 	ctSETHEIGHTWIDTHGO(1, width_in_bytes);
 
@@ -290,7 +310,11 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
  * Command overhead is reduced as far as possible.
  */
 #ifdef CHIPS_MMIO
+#ifdef CHIPS_HIQV
+#define _ctcfbFillRectSolid ctHiQVFillRectSolid
+#else
 #define _ctcfbFillRectSolid ctMMIOFillRectSolid
+#endif
 #else
 #define _ctcfbFillRectSolid ctcfbFillRectSolid
 #endif
@@ -331,19 +355,23 @@ _ctcfbFillRectSolid(pDrawable, pGC, nBox, pBox)
     }
     RROP_FETCH_GC(pGC);
 
-    pitch = vga256InfoRec.virtualX * vgaBytesPerPixel;
+    pitch = vga256InfoRec.displayWidth * vgaBytesPerPixel;
 
     switch (vgaBitsPerPixel) {
     case 8:
 	ctSETFGCOLOR8(pGC->fgPixel);
+	ctSETBGCOLOR8(pGC->fgPixel);
 	break;
     case 16:
 	ctSETFGCOLOR16(pGC->fgPixel);
+	ctSETBGCOLOR16(pGC->fgPixel);
 	break;
     case 24:
-	if (ctisHiQV32) {
+#ifdef CHIPS_HIQV
 	    ctSETFGCOLOR24(pGC->fgPixel);
-	} else {
+	    ctSETBGCOLOR24(pGC->fgPixel);
+#else
+	{
 	    /* The 6554x Blitter can only handle 8/16bpp fills directly,
 	     * Though you can do a grey fill, by a little bit of magic
 	     * with the 8bpp fill */
@@ -357,13 +385,16 @@ _ctcfbFillRectSolid(pDrawable, pGC, nBox, pBox)
 		return;
 	    } else {
 		ctSETFGCOLOR8(pGC->fgPixel);
+		ctSETBGCOLOR8(pGC->fgPixel);
 	    }
 	}
+#endif
 	break;
     }
 
     /* Set up the invariant BitBLT parameters. */
-    op = ctAluConv[pGC->alu & 0xf] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctSRCFG;
+    op = ctAluConv2[pGC->alu & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctPATSOLID
+	| ctPATMONO;
     ctSETPITCH(0, pitch);
 
     while (nBox) {
@@ -375,6 +406,11 @@ _ctcfbFillRectSolid(pDrawable, pGC, nBox, pBox)
 
 	ctBLTWAIT;
 	ctSETROP(op);
+#ifdef CHIPS_HIQV
+	ctSETMONOCTL(0);	/* This operation involves colour expansion, */
+				/* so being paranoid, set the monochrome     */
+				/* control register to zero                  */
+#endif
 	ctSETDSTADDR(destaddr);
 	ctSETHEIGHTWIDTHGO(height, width_in_bytes);
 

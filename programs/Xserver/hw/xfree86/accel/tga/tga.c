@@ -22,7 +22,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.1 1996/09/23 13:27:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.2 1996/09/25 14:16:19 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -140,7 +140,6 @@ static PixmapPtr ppix = NULL;
 int tga_type;
 int tgaDisplayWidth;
 pointer tgaVideoMem = NULL;
-static Bool AlreadyInited = FALSE;
 static tgaCRTCRegRec tgaCRTCRegs;
 volatile unsigned long *VidBase;
 
@@ -298,8 +297,8 @@ tgaProbe()
   xf86ProbeFailed = FALSE;
 
   /* No PixMux yet ! for the BT485 */
-  tgaInfoRec.dacSpeed = 130000; 	/* 135MHz for the Bt485 */
-  tgaInfoRec.maxClock = 130000;		/* 135MHz for the Bt485 */
+  tgaInfoRec.dacSpeed = 135000; 	/* 135MHz for the Bt485 */
+  tgaInfoRec.maxClock = 135000;		/* 135MHz for the Bt485 */
 
   /* Let's grab the basic mode lines */
 #ifdef NOTYET
@@ -416,12 +415,11 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 #ifdef TGA_ACCEL
 	tgaInitGC();
 #endif
-	tgaInit(tgaInfoRec.modes);
 	tgaInitAperture(scr_index);
+	tgaInit(tgaInfoRec.modes);
 	tgaCalcCRTCRegs(&tgaCRTCRegs, tgaInfoRec.modes);
 	tgaSetCRTCRegs(&tgaCRTCRegs);
 	tgaInitEnvironment();
-	AlreadyInited = TRUE;
 
 #ifdef TGA_ACCEL
 	/* NOT THERE YET ! */
@@ -437,7 +435,7 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 		displayResolution = monitorResolution;
 	
 	if (!cfbScreenInit(pScreen,
-			(pointer) VidBase,
+			tgaVideoMem,
 			tgaInfoRec.virtualX, tgaInfoRec.virtualY,
 			displayResolution, displayResolution,
 			tgaInfoRec.displayWidth))
@@ -529,39 +527,36 @@ tgaEnterLeaveVT(enter, screen_idx)
 
 	    tgaCalcCRTCRegs(&tgaCRTCRegs, tgaInfoRec.modes);
 	    tgaSetCRTCRegs(&tgaCRTCRegs);
+	    tgaInit(tgaInfoRec.modes);
 	    tgaInitEnvironment();
 	    tgaRestoreDACvalues();
+	    tgaAdjustFrame(pScr->frameX0, pScr->frameY0);
 
 #ifdef NOTYET
 	    tgaCacheInit(tgaInfoRec.virtualX, tgaInfoRec.virtualY);
 	    tgaFontCache8Init(tgaInfoRec.virtualX, tgaInfoRec.virtualY);
 
 	    tgaRestoreCursor(pScreen);
-	    tgaAdjustFrame(pScr->frameX0, pScr->frameY0);
 
 	    if (LUTissaved) {
 		tgaRestoreLUT(tgasavedLUT);
 		LUTissaved = FALSE;
 		tgaRestoreColor0(pScreen);
 	    }
-#endif
 
 	    if (pspix->devPrivate.ptr != tgaVideoMem && ppix) {
 		pspix->devPrivate.ptr = tgaVideoMem;
-#ifdef NOTYET
 		(tgaImageWriteFunc)(0, 0, pScreen->width, pScreen->height,
 				 ppix->devPrivate.ptr,
 				 PixmapBytePad(pScreen->width,
 					       pScreen->rootDepth),
 				 0, 0, MIX_SRC, ~0);
-#endif
 	    }
+
             if (pScreen) {
-#ifdef NOTYET
                 pScreen->CopyWindow = tgaCopyWindow;
                 pScreen->PaintWindowBackground = tgaPaintWindow;
                 pScreen->PaintWindowBorder = tgaPaintWindow;
-#endif
                 switch (tgaInfoRec.bitsPerPixel) {
                 case 8:
                     pScreen->GetSpans = cfbGetSpans;
@@ -571,26 +566,28 @@ tgaEnterLeaveVT(enter, screen_idx)
 		    break;
 		}
             }
+#endif
 	}
+#ifdef NOTYET
 	if (ppix) {
 	    (pScreen->DestroyPixmap)(ppix);
 	    ppix = NULL;
 	}
+#endif
     } else {
 	xf86MapDisplay(screen_idx, LINEAR_REGION);
+#ifdef NOTYET
 	if (!xf86Exiting) {
 	    ppix = (pScreen->CreatePixmap)(pScreen,
 					   pScreen->width, pScreen->height,
 					   pScreen->rootDepth);
 
 	    if (ppix) {
-#ifdef NOTYET
 		(tgaImageReadFunc)(0, 0, pScreen->width, pScreen->height,
 				ppix->devPrivate.ptr,
 				PixmapBytePad(pScreen->width,
 					      pScreen->rootDepth),
 				0, 0, ~0);
-#endif
 		pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	    }
 
@@ -610,7 +607,6 @@ tgaEnterLeaveVT(enter, screen_idx)
             }
 	}
 
-#ifdef NOTYET
 	tgaCursorOff();
 	tgaSaveLUT(tgasavedLUT);
 	LUTissaved = TRUE;
@@ -851,19 +847,9 @@ void
 tgaAdjustFrame(x, y)
     int x, y;
 {
-
-#ifdef NOT_YET
-
-    int byte_offset = ((x + y*tgaVirtX) *
-                        (tgaInfoRec.bitsPerPixel / 8)) >> 3;
-    tgaCursorOff();
-
-    regw(CRTC_OFF_PITCH, (regr(CRTC_OFF_PITCH) & 0xfff00000) | byte_offset);
-
-    tgaRepositionCursor(savepScreen);
-
-#endif /* NOT_YET */
-
+#if 0
+    xf86MapDisplay(tgaInfoRec.scrnIndex, LINEAR_REGION);
+#endif
 }
 
 /*

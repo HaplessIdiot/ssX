@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.0 1996/09/22 05:04:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.1 1996/09/25 14:16:23 dawes Exp $ */
 
 #include "tga.h"
 #include "tga_presets.h"
@@ -31,6 +31,8 @@ typedef struct {
 	unsigned long tgaRegs[0x200];
 } tgaRegisters;
 static tgaRegisters SR;
+
+static unsigned char *tgaVideoMemSave;
 
 static int tgaInitialized = 0;
 static Bool LUTInited = FALSE;
@@ -175,7 +177,12 @@ void
 tgaCleanUp()
 #endif
 {
+	if (!tgaInitialized)
+		return;
+
 	restoreTGAstate();
+	memcpy(tgaVideoMemSave, (unsigned char *)tgaVideoMem, 0x200000L);
+	memset(tgaVideoMem, 0, 0x200000L);
 }
 
 
@@ -192,6 +199,8 @@ tgaInit(mode)
 
 	if (!tgaInitialized)
 		saveTGAstate();
+
+	memcpy((unsigned char *)tgaVideoMem, tgaVideoMemSave, 0x200000L);
 
 	tgaInitCursorFlag = TRUE;
 	tgaInitialized = 1;
@@ -283,5 +292,11 @@ tgaInitAperture()
 					fb_offset_presets[tga_type]),
 					0x200000L);	/* 2Mbytes */
 
-	VidBase = (volatile unsigned long *)((unsigned char *)tgaVideoMem);
+	tgaVideoMemSave = (unsigned char *)xalloc(0x200000L);
+
+#ifdef XFreeXDGA
+	tgaInfoRec.physBase = (tgaInfoRec.MemBase | 
+					fb_offset_presets[tga_type]);
+	tgaInfoRec.physSize = tgaInfoRec.videoRam * 1024;
+#endif
 }	

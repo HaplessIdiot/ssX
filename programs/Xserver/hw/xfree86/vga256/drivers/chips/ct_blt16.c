@@ -42,7 +42,7 @@
  *    Modified again for use with Chips chipsets
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blt16.c,v 3.0 1996/08/11 13:02:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blt16.c,v 3.1 1996/08/24 12:54:08 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -273,7 +273,7 @@ ctcfbBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     cfbGetLongWidthAndPointer(pSrc, widthSrc, psrcBase);
     cfbGetLongWidthAndPointer(pDst, widthDst, pdstBase);
 #else
-    widthSrc = widthDst = vga256InfoRec.virtualX;
+    widthSrc = widthDst = vga256InfoRec.displayWidth;
     /* Hack!!! I'm assuming that if you get here you want a screen to
      * screen blit.  */
     psrcBase = pdstBase = (unsigned long *)VGABASE;
@@ -409,12 +409,18 @@ ctcfbBppPolyBitblt(pdstBase, psrcBase, widthSrc, widthDst, nbox, pptSrc,
 #endif
 
     for (; nbox; pbox++, pptSrc++, nbox--) {
-	if (ctUseMMIO)
-	    ctMMIOBitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
-		widthSrc, widthDst, pptSrc->x, pptSrc->y,
-		pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-		xdir, ydir, 0x03, planemask);
-	else
+	if (ctUseMMIO) {
+	    if (ctisHiQV32)
+		ctHiQVBitBlt((unsigned char *)psrcBase,
+		    (unsigned char *)pdstBase, widthSrc, widthDst, pptSrc->x,
+		    pptSrc->y, pbox->x1, pbox->y1, pbox->x2 - pbox->x1,
+		    pbox->y2 - pbox->y1, xdir, ydir, 0x03, planemask);
+	    else
+		ctMMIOBitBlt((unsigned char *)psrcBase,
+		    (unsigned char *)pdstBase, widthSrc, widthDst, pptSrc->x,
+		    pptSrc->y, pbox->x1, pbox->y1, pbox->x2 - pbox->x1,
+		    pbox->y2 - pbox->y1, xdir, ydir, 0x03, planemask);
+	} else
 	    ctBitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
 		widthSrc, widthDst, pptSrc->x, pptSrc->y,
 		pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,

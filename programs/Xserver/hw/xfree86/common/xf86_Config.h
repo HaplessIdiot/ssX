@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.53 1996/08/18 01:51:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.54 1996/09/01 04:16:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -417,6 +417,7 @@ static SymTabRec DeviceTab[] = {
   { CLOCKCHIP,	"clockchip" },
   { S3MNADJUST,	"s3mnadjust" },
   { S3MCLK,	"s3mclk" },
+  { S3MCLK,	"mclk" },
   { VGABASEADDR,"vgabase" },
   { S3REFCLK,	"s3refclk" },
   { S3BLANKDELAY,"s3blankdelay" },

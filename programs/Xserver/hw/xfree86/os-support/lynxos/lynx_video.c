@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.1 1995/10/21 11:44:05 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -48,15 +48,38 @@ _SMEMS;
 
 static _SMEMS	smems[MAX_SMEMS];
 
+static void
+smemCleanup()
+{
+	int i;
+
+	for (i = 0; i < MAX_SMEMS; i++) {
+		if (*smems[i].name && smems[i].ptr) {
+			(void)smem_create(NULL, smems[i].ptr, 0, SM_DETACH);
+			(void)smem_remove(smems[i].name);
+			*smems[i].name = '\0';
+			smems[i].ptr = NULL;
+			smems[i].Base = NULL;
+			smems[i].Size = 0;
+		}
+	}
+}
+
 pointer xf86MapVidMem(ScreenNum, Region, Base, Size)
 int ScreenNum;
 int Region;
 pointer Base;
 unsigned long Size;
 {
+	static int once;
 	int	free_slot = -1;
 	int	i;
 
+	if (!once)
+	{
+		atexit(smemCleanup);
+		once = 1;
+	}
 	for (i = 0; i < MAX_SMEMS; i++)
 	{
 		if (!*smems[i].name && free_slot == -1)
@@ -77,9 +100,18 @@ unsigned long Size;
 	smems[i].ptr = smem_create(smems[i].name, Base, Size, SM_READ|SM_WRITE);
 	if (smems[i].ptr == NULL)
 	{
-		*smems[i].name = '\0';
-		FatalError("xf86MapVidMem: failed to smem_create Base %x Size %x (%s)\n",
-			Base, Size, strerror(errno));
+		/* check if there is a stale segment around */
+		if (smem_remove(smems[i].name) == 0) {
+		        ErrorF("xf86MapVidMem: removed stale smem_ segment %s\n",
+		        	smems[i].name);
+			smems[i].ptr = smem_create(smems[i].name, 
+						Base, Size, SM_READ|SM_WRITE);
+		}
+	        if (smems[i].ptr == NULL) {
+			*smems[i].name = '\0';
+			FatalError("xf86MapVidMem: failed to smem_create Base %x Size %x (%s)\n",
+				Base, Size, strerror(errno));
+		}
 	}
 	return smems[i].ptr;
 }
@@ -92,16 +124,12 @@ unsigned long Size;
 {
 	int	i;
 
-	ErrorF("xf86UnMapVidMem: Screen %d Region %d Base %lx Size %lx\n",
-		ScreenNum, Region, Base, Size);
 	for (i = 0; i < MAX_SMEMS; i++)
 	{
-		if (*smems[i].name && smems[i].Base == Base && smems[i].Size == Size)
+		if (*smems[i].name && smems[i].ptr == Base && smems[i].Size == Size)
 		{
-			int x;
-			x = (int) smem_create(smems[i].name, smems[i].ptr, Size, SM_DETACH);
-			ErrorF("xf86UnMapVidMem: %s, %08lx result %x\n", smems[i].name, smems[i].ptr, x);
-			smem_remove(smems[i].name);
+			(void)smem_create(NULL, smems[i].ptr, 0, SM_DETACH);
+			(void)smem_remove(smems[i].name);
 			*smems[i].name = '\0';
 			return;
 		}

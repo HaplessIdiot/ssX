@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/5 1996/01/28 07:49:02 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.9 1996/08/20 12:31:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.10 1996/09/15 11:36:45 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -66,6 +66,8 @@ LinuxDocReadmeTarget(SVR4)
 #endif
 
 /* Hardware docs */
+LinuxDocReadmeTarget(DECtga)
+LinuxDocReadmeTarget(Mach32)
 LinuxDocReadmeTarget(Mach64)
 LinuxDocReadmeTarget(Oak)
 LinuxDocReadmeTarget(P9000)
@@ -102,6 +104,7 @@ LinuxDocTargetLong(VGADriv.sgml,VGADriver.Doc,VGADriver)
 LinkSourceFile(Bsdi.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(CPYRIGHT.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Config.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(DECtga.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(DocIndex.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(FreeBSD.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(INSTALL.sgml,$(XF86SRC)/doc/sgml)
@@ -109,6 +112,7 @@ LinkSourceFile(LinkKit.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Linux.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(LynxOS.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Mach.sgml,$(XF86SRC)/doc/sgml)
+LinkSourceFile(Mach32.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(Mach64.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(NetBSD.sgml,$(XF86SRC)/doc/sgml)
 LinkSourceFile(OS2.sgml,$(XF86SRC)/doc/sgml)
@@ -144,4 +148,3 @@ InstallLinkKitNonExecFile(VGADriver.Doc,$(LINKKITDIR)/VGADriverDoc)
 #endif
 
 LinkFile(OpenBSD.sgml, NetBSD.sgml)
-

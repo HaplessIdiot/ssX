@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.39 1996/09/15 11:25:59 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.40 1996/09/23 13:27:35 dawes Exp $
 
 #Chips & Technologies
 
@@ -1275,6 +1275,11 @@ SERVER SVGA
 NAME Generic VGA compatible
 CHIPSET Generic VGA
 SERVER VGA16
+
+NAME Unsupported VGA compatible
+CHIPSET Generic VGA
+SERVER VGA16
+UNSUPPORTED
 
 # Number 9 I128
 

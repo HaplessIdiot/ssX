@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.20 1996/08/20 12:26:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.21 1996/08/23 11:02:56 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -117,6 +117,7 @@
 #define PCI_964_1		0x88D1
 #define PCI_968			0x88F0
 #define PCI_ViRGE		0x5631
+#define PCI_ViRGE_VX		0x883d
 
 /* Chip tags */
 #define S3_UNKNOWN		 0
@@ -134,6 +135,7 @@
 #define S3_TRIO64		12
 #define S3_TRIO64VPLUS		13
 #define S3_ViRGE		S3_UNKNOWN /* 14 */
+#define S3_ViRGE_VX		S3_UNKNOWN /* 15 */
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6

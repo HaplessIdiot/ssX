@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillSt.c,v 3.11 1996/08/16 12:31:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillSt.c,v 3.12 1996/09/14 13:11:40 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -212,13 +212,13 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 		 */
 		if (width == 16 && height == 16 && 
 		((!(HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) &&
-		vga256InfoRec.virtualX < 2048) ||
+		vga256InfoRec.displayWidth < 2048) ||
 		((HAVE543X() || HAVE754X() || cirrusChip == CLGD5446) && 
-		 vga256InfoRec.virtualX < 4096)))
+		 vga256InfoRec.displayWidth < 4096)))
 			goto tile16x16;
 		if (width == 32 && height == 32 && 
 		(HAVE543X() || HAVE754X() || cirrusChip == 5446) &&
-		vga256InfoRec.virtualX < 2048 && cirrusUseMMIO)
+		vga256InfoRec.displayWidth < 2048 && cirrusUseMMIO)
 			goto tile32x32;
 #if 0	/* broken. */
 		if (width * height >= 500 && (width != 32 || height > 32 ||

@@ -31,6 +31,7 @@
 <item>	AT&amp;T: 2.1, 4.0
 <item>	ISC: 4.0.3
 <item>	NCR: MP-RAS
+<item>	PANIX: 5.0
 </itemize>
 and the following versions of <bf>SVR4.2</bf>:
 <itemize>
@@ -402,7 +403,7 @@ workaround for this problem, and giving us permission to release the
 information.<p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.6 1995/07/21 14:40:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.7 1996/02/04 09:08:25 dawes Exp $
 
 
 

@@ -24,16 +24,14 @@
  *		fixed some problems with PCI probing and mapping
  */
  
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabitblt.c,v 3.0 1996/09/26 14:00:34 dawes Exp $ */
 
 #include "vga256.h"
 #include "mgareg.h"
-
-extern unsigned char* MGAMMIOBase;
-#define OUTREG(a,b) (*(unsigned long*)(MGAMMIOBase+(a)) = (b))
+#include "mga.h"
 
 static void (*stdDoBitbltCopy)();
-static int MGAScrnWidth;
+int MGAScrnWidth;
 
 extern void cfb16DoBitbltCopy(); 
 extern void cfb32DoBitbltCopy();
@@ -79,9 +77,6 @@ int bpp, width;
     OUTREG(MGAREG_PLNWT, 0xFFFFFFFF);
     OUTREG(MGAREG_PITCH, MGAScrnWidth);
     	        
-    OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);  /* (maxX << 16) | minX */
-    OUTREG(MGAREG_YTOP, 0x00000000);  /* minPixelPointer */
-    OUTREG(MGAREG_YBOT, 0x007FFFFF);  /* maxPixelPointer */
 }
 
 
@@ -117,6 +112,9 @@ int widthSrc, xsrc, ysrc, xdst, ydst, w, h, xdir, ydir;
     if(!MGAWaitForBlitter())
         ErrorF("MGA: BitBlt Engine timeout\n");
 
+    OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);  /* (maxX << 16) | minX */
+    OUTREG(MGAREG_YTOP, 0x00000000);  /* minPixelPointer */
+    OUTREG(MGAREG_YBOT, 0x007FFFFF);  /* maxPixelPointer */
     OUTREG(MGAREG_DWGCTL, 0x040C4008);
     OUTREG(MGAREG_FXBNDRY, ((xdst + w - 1) << 16) | xdst);
     OUTREG(MGAREG_AR5, widthSrc);

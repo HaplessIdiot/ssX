@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.59 1996/09/15 11:22:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.60 1996/09/24 13:56:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -241,6 +241,7 @@ void (* vgaAdjustFunc)(
 void (* vgaSaveScreenFunc)() = vgaHWSaveScreen;
 void (* vgaFbInitFunc)() = (void (*)())NoopDDA;
 Bool (* vgaScrInitFunc)() = (Bool (*)())NoopDDA;
+int (* vgaPitchAdjustFunc)() = (int (*)())NoopDDA;
 void (* vgaSetReadFunc)() = (void (*)())NoopDDA;
 void (* vgaSetWriteFunc)() = (void (*)())NoopDDA;
 void (* vgaSetReadWriteFunc)() = (void (*)())NoopDDA;
@@ -667,6 +668,42 @@ vgaProbe()
 	    return(FALSE);
 	  }
 #else
+#ifndef USE_OLD_ROUNDING
+	if (vga256InfoRec.virtualX > 0) {
+	  /* Let the driver have a chance to use a larger screen pitch if
+	     it needs.  This ability is particularly useful for the Cirrus
+	     Laguna family, which uses tiled memory.  Each scanline must be
+	     an integer number of tiles wide, where tiles are 128 or 256
+	     bytes wide.  Furthermore, there are only a few tile pitches
+	     allowed.  It just so happens that none of these tile pitches
+	     yield a screen byte pitch that is divisible by 3.  The upshot:
+	     you can't have 24bpp if the screen pitch is not a multiple of 
+	     three -- i.e., if the screen pitch is not an integer number
+	     of _pixels_. */
+	  if (vgaPitchAdjustFunc != (int (*)())NoopDDA)
+	    vga256InfoRec.displayWidth = (*vgaPitchAdjustFunc)();
+          else {
+	    if (vga256InfoRec.virtualX % rounding) {
+	      vga256InfoRec.displayWidth = vga256InfoRec.virtualX +
+					   (rounding -
+				           (vga256InfoRec.virtualX % rounding));
+	      ErrorF("%s %s: Display width set to %d (a multiple of %d)\n",
+	             XCONFIG_PROBED, vga256InfoRec.name,
+		     vga256InfoRec.displayWidth, rounding);
+	    } else {
+	      vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+	    }
+	  }
+	  if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem)
+	  {
+	    ErrorF("%s: Too little memory for virtual resolution %d %d\n",
+                   vga256InfoRec.name, vga256InfoRec.virtualX,
+                   vga256InfoRec.virtualY);
+            vgaEnterLeaveFunc(LEAVE);
+	    return(FALSE);
+	  }
+	}
+#else
 	if (vga256InfoRec.virtualX > 0 &&
 	    vga256InfoRec.virtualX * vga256InfoRec.virtualY > needmem)
 	  {
@@ -676,6 +713,7 @@ vgaProbe()
             vgaEnterLeaveFunc(LEAVE);
 	    return(FALSE);
 	  }
+#endif
 #endif
 
         maxX = maxY = -1;
@@ -784,6 +822,41 @@ vgaProbe()
 #endif
 
 #ifndef BANKEDMONOVGA
+#ifndef USE_OLD_ROUNDING
+	if (vga256InfoRec.displayWidth < 0) {
+	  /* Let the driver have a chance to use a larger screen pitch if
+	     it needs.  This ability is particularly useful for the Cirrus
+	     Laguna family, which uses tiled memory.  Each scanline must be
+	     an integer number of tiles wide, where tiles are 128 or 256
+	     bytes wide.  Furthermore, there are only a few tile pitches
+	     allowed.  It just so happens that none of these tile pitches
+	     yield a screen byte pitch that is divisible by 3.  The upshot:
+	     you can't have 24bpp if the screen pitch is not a multiple of 
+	     three -- i.e., if the screen pitch is not an integer number
+	     of _pixels_. */
+	  if (vgaPitchAdjustFunc != (int (*)())NoopDDA)
+	    vga256InfoRec.displayWidth = (*vgaPitchAdjustFunc)();
+          else {
+	    if (vga256InfoRec.virtualX % rounding) {
+	      vga256InfoRec.displayWidth = vga256InfoRec.virtualX + (rounding -
+				           (vga256InfoRec.virtualX % rounding));
+	      ErrorF("%s %s: Display width set to %d (a multiple of %d)\n",
+	             XCONFIG_PROBED, vga256InfoRec.name,
+		     vga256InfoRec.displayWidth, rounding);
+	    } else {
+	      vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+	    }
+	  }
+	  if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem)
+	  {
+	    ErrorF("%s: Too little memory for virtual resolution %d %d\n",
+                   vga256InfoRec.name, vga256InfoRec.virtualX,
+                   vga256InfoRec.virtualY);
+            vgaEnterLeaveFunc(LEAVE);
+	    return(FALSE);
+	  }
+	}
+#else
 	if (vga256InfoRec.virtualX % rounding)
 	  {
 	    vga256InfoRec.virtualX -= vga256InfoRec.virtualX % rounding;
@@ -815,6 +888,7 @@ vgaProbe()
           vgaEnterLeaveFunc(LEAVE);
 	  return(FALSE);
 	}
+#endif
 #else
 	if ( vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem) {
 		ErrorF("%s: Too little memory to accomodate display width %i"
@@ -828,8 +902,24 @@ vgaProbe()
 	if ((tx != vga256InfoRec.virtualX) || (ty != vga256InfoRec.virtualY))
             OFLG_CLR(XCONFIG_VIRTUAL,&vga256InfoRec.xconfigFlag);
 
+#ifdef USE_OLD_ROUNDING
 #ifndef BANKEDMONOVGA
-        vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+	/* Let the driver have a chance to use a larger screen pitch if
+	   it needs.  This ability is particularly useful for the Cirrus
+	   Laguna family, which uses tiled memory.  Each scanline must be
+	   an integer number of tiles wide, where tiles are 128 or 256
+	   bytes wide.  Furthermore, there are only a few tile pitches
+	   allowed.  It just so happens that none of these tile pitches
+	   yield a screen byte pitch that is divisible by 3.  The upshot:
+	   you can't have 24bpp if the screen pitch is not a multiple of 
+	   three -- i.e., if the screen pitch is not an integer number
+	   of _pixels_. */
+
+	if (vgaPitchAdjustFunc != (int (*)())NoopDDA)
+	  vga256InfoRec.displayWidth = (*vgaPitchAdjustFunc)();
+        else
+          vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+#endif
 #endif
         if (xf86Verbose)
           ErrorF("%s %s: Virtual resolution set to %dx%d\n",
@@ -841,7 +931,7 @@ vgaProbe()
 #if !defined(XF86VGA16)
 #if !defined(MONOVGA)
 	if ((vga256InfoRec.speedup & ~SPEEDUP_ANYWIDTH) &&
-            vga256InfoRec.virtualX != 1024)
+            vga256InfoRec.displayWidth != 1024)
 	  {
 	    ErrorF(
               "%s %s: SpeedUp code selection modified because virtualX != 1024\n",
@@ -959,6 +1049,16 @@ vgaProbe()
     ErrorF("%s: '%s' is an invalid chipset", vga256InfoRec.name,
 	       vga256InfoRec.chipset);
   return FALSE;
+}
+
+
+/* Allow each driver to optionally set a display pitch other than the
+   (default) virtualX size.  This functionality was added by Corin
+   Anderson while he was bringing up support for 24bpp and the Laguna 
+   family of Cirrus Logic chips. */
+void vgaSetPitchAdjustHook(int (* ChipPitchAdjust)())
+{
+  vgaPitchAdjustFunc = ChipPitchAdjust;
 }
 
 
@@ -1484,13 +1584,13 @@ vgaEnterLeaveVT(enter, screen_idx)
       vgaSaveFunc = (void * (*)())saveDummy;
       vgaRestoreFunc = (void (*)())saveDummy;
       vgaAdjustFunc = (void (*)())saveDummy;
-      vgaSetReadFunc = saveDummy;
-      vgaSetWriteFunc = saveDummy;
-      vgaSetReadWriteFunc = saveDummy;
+      vgaSetReadFunc = (void (*)())saveDummy;
+      vgaSetWriteFunc = (void (*)())saveDummy;
+      vgaSetReadWriteFunc = (void (*)())saveDummy;
 #ifdef XFreeXDGA
       }
 #endif
-       vgaSaveScreenFunc = saveDummy;
+       vgaSaveScreenFunc = (void (*)())saveDummy;
  
       
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.26 1996/09/14 13:11:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.27 1996/09/22 05:06:11 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -154,6 +154,7 @@ extern void CirrusMMIOBLTWriteBitmap();
 
 /* Functions defined in cir_blt16.c: */
 extern RegionPtr Cirrus16CopyArea();
+extern RegionPtr Cirrus24CopyArea();
 extern RegionPtr Cirrus32CopyArea();
 extern void CirrusCopyWindow();
 /* cir_fillsp.c */
@@ -232,6 +233,7 @@ enum {CLGD5420 = 0,
       CLGD5436,
       CLGD5446,
       CLGD5462,
+      CLGD5464,
       CLGD7541,
       CLGD7542,
       CLGD7543,
@@ -321,12 +323,15 @@ typedef struct
 	cirrusChip == CLGD5430 || cirrusChip == CLGD5436 || \
         cirrusChip == CLGD5446)
 
+#define HAVEBLTEXTENSIONS() (cirrusChip == CLGD5436 || \
+	cirrusChip == CLGD5446)
+
 #define SETWRITEMODE(n) \
 	if (n != cirrusWriteModeShadow) { \
 		unsigned char tmp; \
 		cirrusWriteModeShadow = n; \
 		outb(0x3ce, 0x05); \
-		tmp = inb(0x3cf) & 0x20; \
+		tmp = inb(0x3cf) & 0xf8; \
 		outb(0x3cf, tmp | (n)); \
 	}
 

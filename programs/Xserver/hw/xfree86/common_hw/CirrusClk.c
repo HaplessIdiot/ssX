@@ -1,10 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.8 1996/05/06 05:57:50 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.9 1996/08/13 11:30:21 dawes Exp $ */ 
 
 /*
  * Programming of the built-in Cirrus clock generator.
  * Harm Hanemaayer <hhanemaa@cs.ruu.nl>
  *
  * VCO stability criterion code added by Koen Gadeyne (koen.gadeyne@barco.com)
+ * Max clock specification added by Harm Hanemaayer (H.Hanemaayer@inter.nl.net)
  */
 /* $XConsortium: CirrusClk.c /main/6 1995/11/12 19:29:48 kaleb $ */
  
@@ -67,8 +68,9 @@ static cirrusClockRec cirrusClockTab[] = {
  * use the tested clock since others can be unstable.
  */
 
-int CirrusFindClock(freq, num_out, den_out, usemclk_out)
+int CirrusFindClock(freq, max_clock, num_out, den_out, usemclk_out)
 	int freq;
+	int max_clock;
 	int *num_out;
 	int *den_out;
 	int *usemclk_out;
@@ -90,13 +92,21 @@ int CirrusFindClock(freq, num_out, den_out, usemclk_out)
 		}
 	}
 
+	/*
+	 * If max_clock is greater than the MAX_VCO default, ignore
+	 * MAX_VCO. On the other hand, if MAX_VCO is higher than max_clock,
+	 * make use of the higher MAX_VCO value.
+	 */
+	if (MAX_VCO > max_clock)
+		max_clock = MAX_VCO;
+
 	mindiff = freq; 
 	for (n = 0x10; n < 0x7f; n++) {
 		int d;
 		for (d = 0x14; d < 0x3f; d++) {
 			int c, diff;
 			/* Avoid combinations that can be unstable. */
-			if ((VCOVAL(n, d) < MIN_VCO) || (VCOVAL(n, d) > MAX_VCO))
+			if ((VCOVAL(n, d) < MIN_VCO) || (VCOVAL(n, d) > max_clock))
 				continue;
 			c = CLOCKVAL(n, d);
 			diff = abs(c - freq);

@@ -29,7 +29,7 @@
  * Courtesy of Jay Estabrook.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga_regs.h,v 3.0 1996/09/22 05:04:39 dawes Exp $ */
 
 #ifndef TGA_REGS_H
 #define TGA_REGS_H
@@ -128,6 +128,25 @@
 #define	BT463_BLINK_MASK_3	0x020c
 
 #define	BT463_WINDOW_TYPE_BASE	0x0300
+
+/* Raster Operations */
+
+#define MIX_0			0x00
+#define MIX_AND			0x01
+#define MIX_SRC_AND_NOT_DST	0x02
+#define MIX_SRC			0x03
+#define MIX_NOT_SRC_AND_DST	0x04
+#define MIX_DST			0x05
+#define MIX_XOR			0x06
+#define MIX_OR			0x07
+#define MIX_NOR			0x08
+#define MIX_XNOR		0x09
+#define MIX_NOT_DST		0x0A
+#define MIX_SRC_OR_NOT_DST	0x0B
+#define MIX_NOT_SRC		0x0C
+#define MIX_NOT_SRC_OR_DST	0x0D
+#define MIX_NAND		0x0E
+#define MIX_1			0x0F
 
 typedef struct {
 	unsigned char r, g, b;

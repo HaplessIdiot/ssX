@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.15 1996/09/23 13:27:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.16 1996/09/24 13:55:07 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -845,8 +845,8 @@ ArkProbe()
 			m = inb(0x3C9) & 0x7F;
 			n = inb(0x3C9) & 0x7F;
 			ICS5342Mode(FALSE);
-			mclk = ((1431818*(m+2)) / ((n&0x1f)+2) /
-				(1<<(n>>5)) + 50) / 100;
+			mclk = ((1431818 * (m + 2)) / ((n & 0x1f) + 2) /
+				(1 << ((n & 0x60) >> 5)) + 50) / 100;
 			if (vga256InfoRec.s3MClk==0)
 				vga256InfoRec.s3MClk = mclk;
 			if (xf86Verbose)
@@ -1007,6 +1007,7 @@ ArkProbe()
 	OFLG_SET(OPTION_NOACCEL, &ARK.ChipOptionFlags);
 	OFLG_SET(OPTION_SW_CURSOR, &ARK.ChipOptionFlags);
 	OFLG_SET(OPTION_HW_CURSOR, &ARK.ChipOptionFlags);
+	OFLG_SET(OPTION_FIFO_CONSERV, &ARK.ChipOptionFlags);
 #ifndef MONOVGA
 #ifdef XFreeXDGA
 	vga256InfoRec.directMode = XF86DGADirectPresent;
@@ -1039,6 +1040,80 @@ static int ArkMatchXYModePitch(pitch)
 
 
 /*
+ * This function changes the mode timings if required
+ */
+static void ArkChangeModeTimings() {
+	int changed;
+	changed = FALSE;
+	if (vgaBitsPerPixel == 24) {
+		/*
+		 * The HTotal is restricted.
+		 * It must be divisible by 4, but not by 8.
+		 */
+		DisplayModePtr mode, pEnd;
+		mode = vga256InfoRec.modes;
+		pEnd = mode;
+		do {
+			if ((mode->HTotal & 7) != 4) {
+				if (changed == FALSE && xf86Verbose) {
+					ErrorF("%s %s: %s: Modifying HTotal "
+						"for correct 24bpp display\n",
+						XCONFIG_PROBED,
+						vga256InfoRec.name,
+						vga256InfoRec.chipset);
+					changed = TRUE;
+				}
+				ErrorF("%s %s: %s: HTotal of mode \"%s\" "
+					"modified from %d to %d\n",
+					XCONFIG_PROBED, vga256InfoRec.name,
+					vga256InfoRec.chipset, mode->name,
+					mode->HTotal, mode->HTotal | 4);
+				mode->HTotal |= 4;
+				mode->CrtcHTotal |= 4;
+			}
+			mode = mode->next;
+		} while (mode != pEnd);
+	}
+	changed = FALSE;
+	if (vgaHWCursor.Initialized) {
+		/*
+		 * For the hardware cursor to work correctly,
+		 * the HSyncStart must be close (about 16 timing units)
+		 * to HDisplay. By modifying just HSyncStart we do
+		 * increase the length of the horizontal sync pulse,
+		 * but the centering of the screen is unaffected.
+		 */
+		DisplayModePtr mode, pEnd;
+		mode = vga256InfoRec.modes;
+		pEnd = mode;
+		do {
+			if ((mode->HSyncStart - mode->HDisplay) *
+			ARK.ChipClockScaleFactor > 16) {
+				int new_value;
+				if (changed == FALSE && xf86Verbose) {
+					ErrorF("%s %s: %s: Modifying HSync"
+						"Start for hardware cursor\n",
+						XCONFIG_PROBED,
+						vga256InfoRec.name,
+						vga256InfoRec.chipset);
+					changed = TRUE;
+				}
+				new_value = mode->HDisplay + 16;
+				ErrorF("%s %s: %s: HSyncStart of mode \"%s\" "
+					"modified from %d to %d\n",
+					XCONFIG_PROBED, vga256InfoRec.name,
+					vga256InfoRec.chipset, mode->name,
+					mode->HSyncStart, new_value);
+				mode->HSyncStart = new_value;
+				mode->CrtcHSyncStart = new_value;
+			}
+			mode = mode->next;
+		} while (mode != pEnd);
+	}
+}
+
+
+/*
  * ArkFbInit --
  *      enable speedups for the chips that support it
  */
@@ -1055,7 +1130,8 @@ ArkFbInit()
 			vga256InfoRec.chipset, ARK.ChipLinearBase,
 			arkBus == PCI ? "PCI bus" : "VL bus");
 
-	arkDisplayableMemory = vga256InfoRec.virtualX * vga256InfoRec.virtualY
+	arkDisplayableMemory = vga256InfoRec.displayWidth *
+				vga256InfoRec.virtualY
 		* (vgaBitsPerPixel / 8);
 	offscreen_available = vga256InfoRec.videoRam * 1024 -
 		arkDisplayableMemory;
@@ -1104,11 +1180,17 @@ ArkFbInit()
 		}
 	}
 
+	/*
+	 * This seems to be best place for this. In the Probe function,
+	 * the modes haven't been initialized yet.
+	 */
+	ArkChangeModeTimings();
+
 	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
 		if (xf86Verbose)
 			ErrorF("%s %s: %s: Using coprocessor\n",
 				XCONFIG_PROBED, vga256InfoRec.name,
-				vga256InfoRec.chipset, offscreen_available);
+				vga256InfoRec.chipset);
 		arkUseCOP = TRUE;
 		/*
 		 * We only accelerate GXcopy ScreenCopy.
@@ -1284,8 +1366,23 @@ vgaArkPtr restore;
 	if (arkRamdac == ATT490 || arkRamdac == ATT498
 	|| arkRamdac == ZOOMDAC || arkRamdac == STG1700)
 		if (!(arkChip == ARK1000PV && arkRamdac == ZOOMDAC
-		&& vgaBitsPerPixel == 8))
-			xf86setdaccomm(restore->DACCOMMAND);
+		&& vgaBitsPerPixel == 8)) {
+			if (((restore->std.Attribute[0x10] & 0x01) == 0)
+			&& (restore->DACCOMMAND == 0x0F
+			|| restore->DACCOMMAND == 0xFF)) {
+				/*
+				 * When returning to textmode, if the
+				 * DAC command value seems odd, force it
+				 * to a normal value.
+				 */
+				if (arkRamdac = ZOOMDAC)
+				 	xf86setdaccomm(0x04);
+				else
+					xf86setdaccomm(0x00);
+			}
+			else
+				xf86setdaccomm(restore->DACCOMMAND);
+		}
 	if (arkRamdac == STG1700) {
 		xf86dactopel();
 		xf86dactocomm();
@@ -1327,21 +1424,21 @@ vgaArkPtr restore;
 		SETCOLORMIXSELECT(0x0303);	/* Copy source. */
 		SETWRITEPLANEMASK(0xFFFF);
 		if (vgaBitsPerPixel == 24) {
-			SETSTENCILPITCH(vga256InfoRec.virtualX * 3);
-			SETSOURCEPITCH(vga256InfoRec.virtualX * 3);
-			SETDESTPITCH(vga256InfoRec.virtualX * 3);
+			SETSTENCILPITCH(vga256InfoRec.displayWidth * 3);
+			SETSOURCEPITCH(vga256InfoRec.displayWidth * 3);
+			SETDESTPITCH(vga256InfoRec.displayWidth * 3);
 		}
 		else
 		if (vgaBitsPerPixel == 32 && arkChip == ARK1000PV) {
 			/* 32bpp with 16bpp COP pixel units. */
-			SETSTENCILPITCH(vga256InfoRec.virtualX * 2);
-			SETSOURCEPITCH(vga256InfoRec.virtualX * 2);
-			SETDESTPITCH(vga256InfoRec.virtualX * 2);
+			SETSTENCILPITCH(vga256InfoRec.displayWidth * 2);
+			SETSOURCEPITCH(vga256InfoRec.displayWidth * 2);
+			SETDESTPITCH(vga256InfoRec.displayWidth * 2);
 		}
 		else {
-			SETSTENCILPITCH(vga256InfoRec.virtualX);
-			SETSOURCEPITCH(vga256InfoRec.virtualX);
-			SETDESTPITCH(vga256InfoRec.virtualX);
+			SETSTENCILPITCH(vga256InfoRec.displayWidth);
+			SETSOURCEPITCH(vga256InfoRec.displayWidth);
+			SETDESTPITCH(vga256InfoRec.displayWidth);
 		}
 		SETBITMAPCONFIG(LINEARSTENCILADDR | LINEARSOURCEADDR |
 			LINEARDESTADDR);
@@ -1564,7 +1661,7 @@ DisplayModePtr mode;
 	 */
 	{
 		int offset;
-		offset = (vga256InfoRec.virtualX *
+		offset = (vga256InfoRec.displayWidth *
 			vga256InfoRec.bitsPerPixel / 8)	>> 3;
 		/* Bits 0-7 are in generic register */
 		new->std.CRTC[0x13] = offset;
@@ -1597,7 +1694,7 @@ DisplayModePtr mode;
 	 * Set the framebuffer pitch for X-Y (coordinate) mode.
 	 * This currently has no effect.
 	 */
-	xymodepitch = ArkMatchXYModePitch(vga256InfoRec.virtualX);
+	xymodepitch = ArkMatchXYModePitch(vga256InfoRec.displayWidth);
 	new->SR17 &= ~0xC7;
 	if (xymodepitch != -1)
 		new->SR17 |= xymodepitch;
@@ -1690,6 +1787,9 @@ DisplayModePtr mode;
 		val = rdinx(0x3C4, 0x18);
 		if (arkChip == ARK1000PV) {
 			threshold = 4;	/* A guess. */
+			if (OFLG_ISSET(OPTION_FIFO_CONSERV,
+			&vga256InfoRec.options))
+				threshold = 6;
 			val |= 0x08;	/* Enable full FIFO (8-deep). */
 			val &= ~0x07;
 			val |= threshold;
@@ -1699,6 +1799,9 @@ DisplayModePtr mode;
 			if (percentused >= 45)
 				threshold = 20;
 			if (percentused >= 70)
+				threshold = 24;
+			if (OFLG_ISSET(OPTION_FIFO_CONSERV,
+			&vga256InfoRec.options))
 				threshold = 24;
 			val &= 0x40;
 			val |= 0x10;	/* 32-deep FIFO. */

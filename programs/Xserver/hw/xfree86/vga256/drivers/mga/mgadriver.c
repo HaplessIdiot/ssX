@@ -22,9 +22,13 @@
  *			hohndel@XFree86.Org
  *		integrated into XFree86-3.1.2Gg
  *		fixed some problems with PCI probing and mapping
+ *
+ *		David Dawes
+ *			dawes@XFree86.Org
+ *		some cleanups, and fixed some problems
  */
  
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.0 1996/09/26 14:00:35 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -45,6 +49,9 @@
 #include "vga256.h"
 #include "mipointer.h"
 
+#include "mgareg.h"
+#include "mga.h"
+
 extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
 extern GCOps cfb32TEOps1Rect, cfb32TEOps, cfb32NonTEOps1Rect, cfb32NonTEOps;
 extern vgaHWCursorRec vgaHWCursor;
@@ -56,12 +63,8 @@ extern vgaPCIInformation *vgaPCIInfo;
  */
 unsigned long MGAMMIOAddr = 0;
 unsigned char* MGAMMIOBase = NULL;
-int MGAScrnWidth;
-#ifndef USE_OLD_PCI_CODE
+extern int MGAScrnWidth;
 static pciTagRec MGAPciTag;
-#else
-static int MGAPciConfig;
-#endif
 static int MGABppShft;
 static int MGADAClong;
 static unsigned char* MGAInitDAC;
@@ -99,15 +102,16 @@ typedef struct {
  */
 
 static Bool		MGAProbe();
-static char *	MGAIdent();
+static char *		MGAIdent();
 static void		MGAEnterLeave();
 static Bool		MGAInit();
 static Bool		MGAValidMode();
-static void *	MGASave();
+static void *		MGASave();
 static void		MGARestore();
 static void		MGAAdjust();
 static void		MGAFbInit();
-static void 	MGACursorInit();
+static void 		MGACursorInit();
+static int		MGAPitchAdjust();
 
 extern void		MGASetRead();
 extern void		MGASetWrite();
@@ -253,139 +257,145 @@ static int Num_mgaExtPorts =
 	(sizeof(mgaExtPorts)/sizeof(mgaExtPorts[0]));
 
 /*
- * There are the Ti3026 indirect input/output functions
+ * Read/write to the DAC.  This includes both MMIO and PCI config space
+ * methods of accessing the DAC.
  */
 
-static void
-outlPCI(addr, val)
-	CARD32 addr;
-	CARD32 val;
+void
+MGADacWriteByte(reg, val)
+	CARD8 reg;
+	CARD8 val;
 {
-#ifndef USE_OLD_PCI_CODE
-	pcibusWrite(MGAPciTag, addr, val);
+	if (MGAMMIOBase)
+	{
+		*(volatile CARD8 *) (MGAMMIOBase + RAMDAC_OFFSET + reg) = val;
+	}
+	else
+	{
+/* Which is correct ?? */
+#if 0
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		pciWriteByte(MGAPciTag, PCI_MGA_DATA, val);
 #else
-	addr |= MGAPciConfig;
-	
-	if (MGAPciConfig >= PCI_EN)	/* pci config type 1 */
-	{
-		outl(0xCF8, addr);
-		outl(0xCFC, val);
-		outb(0xCF8, 0x00);
-	}
-	else						/* pci config type 2 */
-	{
-		outl(addr, val);
-	}
+		CARD8 offset = reg % 4;
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		pciWriteByte(MGAPciTag, PCI_MGA_DATA + offset, val);
 #endif
+	}
 }
 
-static CARD32
-inlPCI(addr)
-	CARD32 addr;
+void
+MGADacWriteWord(reg, val)
+	CARD8 reg;
+	CARD16 val;
 {
-#ifndef USE_OLD_PCI_CODE
-	return pcibusRead(MGAPciTag, addr);
+	if (MGAMMIOBase)
+	{
+		*(volatile CARD16 *) (MGAMMIOBase + RAMDAC_OFFSET + reg) = val;
+	}
+	else
+	{
+/* Which is correct ?? */
+#if 0
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		pciWriteWord(MGAPciTag, PCI_MGA_DATA, val);
 #else
-	unsigned long val;
+		CARD8 offset = reg % 4;
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		pciWriteWord(MGAPciTag, PCI_MGA_DATA + offset, val);
+#endif
+	}
+}
 
-	addr |= MGAPciConfig;
-	
-	if (MGAPciConfig >= PCI_EN)	/* pci config type 1 */
+void
+MGADacWriteLong(reg, val)
+	CARD8 reg;
+	CARD32 val;
+{
+	if (MGAMMIOBase)
 	{
-		outl(0xCF8, addr);
-		val = inl(0xCFC);
-		outb(0xCF8, 0x00);
+		*(volatile CARD32 *) (MGAMMIOBase + RAMDAC_OFFSET + reg) = val;
 	}
-	else						/* pci config type 2 */
+	else
 	{
-		val = inl(addr);
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		pciWriteLong(MGAPciTag, PCI_MGA_DATA, val);
 	}
-	return val;
-#endif	
+}
+
+CARD8
+MGADacReadByte(reg)
+	CARD8 reg;
+{
+	if (MGAMMIOBase)
+	{
+		return *(volatile CARD8 *) (MGAMMIOBase + RAMDAC_OFFSET + reg);
+	}
+	else
+	{
+/* Which is correct ?? */
+#if 0
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		return pciReadByte(MGAPciTag, PCI_MGA_DATA);
+#else
+		CARD8 offset = reg % 4;
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		return pciReadByte(MGAPciTag, PCI_MGA_DATA + offset);
+#endif
+	}
+}
+
+CARD16
+MGADacReadWord(reg)
+	CARD8 reg;
+{
+	if (MGAMMIOBase)
+	{
+		return *(volatile CARD16 *) (MGAMMIOBase + RAMDAC_OFFSET + reg);
+	}
+	else
+	{
+/* Which is correct ?? */
+#if 0
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		return pciReadWord(MGAPciTag, PCI_MGA_DATA);
+#else
+		CARD8 offset = reg % 4;
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		return pciReadWord(MGAPciTag, PCI_MGA_DATA + offset);
+#endif
+	}
+}
+
+CARD32
+MGADacReadLong(reg)
+	CARD8 reg;
+{
+	if (MGAMMIOBase)
+	{
+		return *(volatile CARD32 *) (MGAMMIOBase + RAMDAC_OFFSET + reg);
+	}
+	else
+	{
+		pciWriteWord(MGAPciTag, PCI_MGA_INDEX, RAMDAC_OFFSET + reg);
+		return pciReadLong(MGAPciTag, PCI_MGA_DATA);
+	}
 }
 
 static void
 outTi3026(reg, val)
-	unsigned char reg, val;
+	CARD8 reg, val;
 {
-	if (MGAMMIOBase)
-	{
-		MGAMMIOBase[0x3C00] = reg;
-		MGAMMIOBase[0x3C0A] = val;
-	}
-#ifndef USE_OLD_PCI_CODE
-	else
-	{
-		CARD32 tmp;
-
-		outb(0x3C8, reg);
-		tmp = pcibusRead(MGAPciTag, 0x44);
-		pcibusWrite(MGAPciTag, 0x44, (tmp & ~0xFFFF) | 0x3C0A);
-		tmp = pcibusRead(MGAPciTag, 0x48);
-		pcibusWrite(MGAPciTag, 0x48,
-			    (tmp & ~0xFF0000) | ((CARD32)val << 16));
-	
-	}
-#else
-	else
-		if (MGAPciConfig >= PCI_EN)	/* pci config type 1 */
-		{
-			outb(0x3C8, reg);
-			outl(0xCF8, MGAPciConfig | 0x44);
-			outw(0xCFC, 0x3C0A);
-			outb(0xCF8, 0x00);
-			outl(0xCF8, MGAPciConfig | 0x48);
-			outb(0xCFE, val);
-			outb(0xCF8, 0x00);
-		}
-		else						/* pci config type 2 */
-		{
-			outb(0x3C8, reg);
-			outw(MGAPciConfig | 0x44, 0x3C0A);
-			outb(MGAPciConfig | 0x4A, val);
-		}
-#endif
+	MGADacWriteByte(TVP3026_INDEX, reg);
+	MGADacWriteByte(TVP3026_DATA, val);
 }
 
-static unsigned char inTi3026(reg)
-unsigned char reg;
+static CARD8
+inTi3026(reg)
+	CARD8 reg;
 {
-	if (MGAMMIOBase)
-	{
-		MGAMMIOBase[0x3C00] = reg;
-		return MGAMMIOBase[0x3C0A];
-	}
-#ifndef USE_OLD_PCI_CODE
-	else
-	{
-		CARD32 tmp;
-
-		outb(0x3C8, reg);
-		tmp = pcibusRead(MGAPciTag, 0x44);
-		pcibusWrite(MGAPciTag, 0x44, (tmp & ~0xFFFF) | 0x3C0A);
-		return (pcibusRead(MGAPciTag, 0x48) >> 16) & 0xFF;
-	}
-#else
-	else
-		if (MGAPciConfig >= PCI_EN)	/* pci config type 1 */
-		{
-			outb(0x3C8, reg);
-			outl(0xCF8, MGAPciConfig | 0x44);
-			outw(0xCFC, 0x3C0A);
-			outb(0xCF8, 0x00);
-			outl(0xCF8, MGAPciConfig | 0x48);
-			val = inb(0xCFE);
-			outb(0xCF8, 0x00);
-		}
-		else						/* pci config type 2 */
-		{
-			outb(0x3C8, reg);
-			outw(MGAPciConfig | 0x44, 0x3C0A);
-			val = inb(MGAPciConfig | 0x4A);
-		}
-	return val;
-#endif
-
+	MGADacWriteByte(TVP3026_INDEX, reg);
+	return MGADacReadByte(TVP3026_DATA);
 }
 
 /*
@@ -540,23 +550,7 @@ MGAProbe()
 	 *	OK. It's MGA Millennium (or something pretty close)
 	 */
 	 
-#ifndef USE_OLD_PCI_CODE
 	MGAPciTag = pcibusTag(pcr->_bus, pcr->_cardnum, pcr->_func);
-#else
-	if (pcr->_configtype == 2)
-	{
-		for (i = 0; i < Num_mgaExtPorts; i++)
-			if (mgaExtPorts[i] >= 0xC000)
-				mgaExtPorts[i] |= pcr->_ioaddr;
-		MGAPciConfig = pcr->_ioaddr;
-	}
-	else
-	{
-		MGAPciConfig = PCI_EN | 
-				(pcr->_pcibuses[pcr->_pcibusidx] << 16) |
-					(pcr->_cardnum << 11);
-	}
-#endif
 
 	/* ajv changes to reflect actual values. see sdk pp 3-2. */
 	/* these masks just get rid of the crap in the lower bits */
@@ -599,7 +593,7 @@ MGAProbe()
 		vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
 	else
 	{
-		/* had to do this - 220000 is a figure that 220 MHz RAMDAC
+		/* had to do this - 220 is a figure that 220 MHz RAMDAC
 			people will have to enter by themselves */
 		vga256InfoRec.maxClock = 175000;
 	}
@@ -617,49 +611,92 @@ MGAProbe()
 	
 	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
 
-	if (vgaBitsPerPixel == 8)
-	{
-		if ((vga256InfoRec.virtualX % 128) && 
-			(vga256InfoRec.videoRam > 2048))
-		{
-			MGABppShft = 1;
-			MGADAClong = 0x5F2C0100;
-			MGADACbpp8[2] = 0x4B;
-		}
-		else
-		{
-			MGABppShft = 0;
-			MGADAClong = 0x5F2C1100;
-		}
-		MGAInitDAC = MGADACbpp8;
-		MGA.ChipRounding = 64;
-	}
-	if (vgaBitsPerPixel == 16)
-	{
-		if ((vga256InfoRec.virtualX % 64) && 
-			(vga256InfoRec.videoRam > 2048))
-		{
-			MGABppShft = 2;
-			MGADAClong = 0x5F2C0100;
-			MGADACbpp16[2] = 0x53;
-		}
-		else
-		{
-			MGABppShft = 1;
-			MGADAClong = 0x5F2C1100;
-		}
-		MGAInitDAC = MGADACbpp16;
-		MGA.ChipRounding = 32;
-	}
-	if (vgaBitsPerPixel == 32)
-	{
-		MGABppShft = 2;
-		MGADAClong = 0x5F2C1100;
-		MGAInitDAC = MGADACbpp32;
-		MGA.ChipRounding = 32;
-	}
+	/* Moved width checking because virtualX isn't set until after
+	   the probing.  Instead, make use of the newly added
+	   PitchAdjust hook, and move the rest to MGAFbInit(). */
+
+	vgaSetPitchAdjustHook(MGAPitchAdjust);
 
 	return(TRUE);
+}
+
+/*
+ * MGAPitchAdjust --
+ *
+ * This function adjusts the display width (pitch) once the virtual
+ * width is known.  It returns the display width.
+ */
+static int
+MGAPitchAdjust()
+{
+	int pitch = 0;
+
+	/* XXX ajv - 512, 576, and 1536 may not be supported
+	   virtual resolutions. see sdk pp 4-59 for more
+	   details. Why anyone would want less than 640 is 
+	   bizarre. (maybe lots of pixels tall?) */
+
+#if 0		
+	int width[] = { 512, 576, 640, 768, 800, 960, 
+			1024, 1152, 1280, 1536, 1600, 1920, 2048, 0 };
+#else
+	int width[] = { 640, 768, 800, 960, 1024, 1152, 1280,
+			1600, 1920, 2048, 0 };
+#endif
+	int i;
+
+	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) &&
+	    !OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
+	{
+		for (i = 0; width[i]; i++)
+		{
+			if (width[i] >= vga256InfoRec.virtualX)
+			{
+				pitch = width[i];
+				break;
+			}
+		}
+		if (pitch != 0)
+		{
+			ErrorF("%s %s: Display width set to %d\n",
+				XCONFIG_PROBED, vga256InfoRec.name, pitch);
+			return pitch;
+		}
+		else
+		{
+			/* Need to handle this better */
+			return 2048;
+		}
+	}
+	else
+	{
+		switch (vgaBitsPerPixel)
+		{
+		case 8:
+			MGA.ChipRounding = 64;
+			break;
+		case 16:
+			MGA.ChipRounding = 32;
+			break;
+		case 32:
+			MGA.ChipRounding = 16;
+			break;
+		}
+
+		if (vga256InfoRec.virtualX % MGA.ChipRounding)
+		{
+			pitch = vga256InfoRec.virtualX + MGA.ChipRounding -
+				(vga256InfoRec.virtualX % MGA.ChipRounding);
+			ErrorF("%s %s: Display width set to %d (a multiple "
+				"of %d)\n", XCONFIG_PROBED, vga256InfoRec.name,
+			pitch, MGA.ChipRounding);
+			return pitch;
+		}
+		else
+		{
+			return vga256InfoRec.virtualX;
+		}
+	}
 }
 
 /*
@@ -671,6 +708,55 @@ MGAProbe()
 static void
 MGAFbInit()
 {
+	switch (vgaBitsPerPixel)
+	{
+	case 8:
+		if ((vga256InfoRec.displayWidth % 128) ||
+			(vga256InfoRec.videoRam <= 2048))
+		{
+			MGABppShft = 1;
+			MGADAClong = 0x5F2C0100;
+			MGADACbpp8[2] = 0x4B;
+		}
+		else
+		{
+			MGABppShft = 0;
+			MGADAClong = 0x5F2C1100;
+		}
+		MGAInitDAC = MGADACbpp8;
+		break;
+	case 16:
+		if ((vga256InfoRec.displayWidth % 64) ||
+			(vga256InfoRec.videoRam <= 2048))
+		{
+			MGABppShft = 2;
+			MGADAClong = 0x5F2C0100;
+			MGADACbpp16[2] = 0x53;
+		}
+		else
+		{
+			MGABppShft = 1;
+			MGADAClong = 0x5F2C1100;
+		}
+		MGAInitDAC = MGADACbpp16;
+		break;
+	case 32:
+		if ((vga256InfoRec.virtualX % 32) ||
+			(vga256InfoRec.videoRam <= 2048))
+		{
+			MGABppShft = 3;
+			MGADAClong = 0x5F2C0100;
+			MGADACbpp32[2] = 0x5B;
+		}
+		else
+		{
+			MGABppShft = 2;
+			MGADAClong = 0x5F2C1100;
+		}
+		MGAInitDAC = MGADACbpp32;
+		break;
+	}
+
 	if (xf86Verbose)
 		ErrorF("%s %s: Using TI 3026 programmable clock\n",
 			XCONFIG_PROBED, vga256InfoRec.name);
@@ -735,42 +821,19 @@ MGAFbInit()
 	
 	if (!OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
 	{
-		/* XXX ajv - 512, 576, and 1536 may not be supported
-		   virtual resolutions. see sdk pp 4-59 for more
-		   details. Why anyone would want less than 640 is 
-		   bizarre. (maybe lots of pixels tall?) */
 
-#if 0		
-		int vX[] = { 512, 576, 640, 768, 800, 960, 
-					 1024, 1152, 1280, 1536, 1600, 1920, 2048, 0 };
-#endif
+		/* width checking moved to MGAPitchAdjust */
 
-		int vX[] = { 640, 768, 800, 960, 1024, 1152, 1280,
-						1600, 1920, 2048, 0 };
-
-		int i;
-
-		int virtualXOk = FALSE;
-		
-		for (i = 0; vX[i]; i++)
-			if (vX[i] == vga256InfoRec.virtualX)
-				virtualXOk = TRUE;
-
-		if (!virtualXOk)
-		{
-			ErrorF("%s %s: Sorry, BitBlt Engine needs virtualX to be one "
-					"of following:\n\t", XCONFIG_PROBED, vga256InfoRec.name);
-			for (i = 0; vX[i+1]; i++)
-				ErrorF("%d, ", vX[i]);
-			ErrorF("%d\n", vX[i]);
-		}
-		else
 		{
 			if (xf86Verbose)
 				ErrorF("%s %s: Using BitBlt Engine\n", XCONFIG_PROBED,
 						vga256InfoRec.name);
 		
 			vga256LowlevFuncs.doBitbltCopy = MGADoBitbltCopy;
+			vga256TEOps1Rect.Polylines = mgaLine;
+			vga256NonTEOps1Rect.Polylines = mgaLine;
+			vga256TEOps.Polylines = mgaLine;
+			vga256NonTEOps.Polylines = mgaLine;
 		
 			cfb16TEOps.CopyArea = MGA16CopyArea;
 			cfb16NonTEOps.CopyArea = MGA16CopyArea;
@@ -782,7 +845,8 @@ MGAFbInit()
 			cfb32TEOps1Rect.CopyArea = MGA32CopyArea;
 			cfb32NonTEOps1Rect.CopyArea = MGA32CopyArea;
 			
-			MGABlitterInit(vgaBitsPerPixel, vga256InfoRec.virtualX);
+			MGABlitterInit(vgaBitsPerPixel,
+					vga256InfoRec.displayWidth);
 			if (!MGAWaitForBlitter())
 				FatalError("MGA: BitBlt Engine timeout\n");
 	
@@ -980,7 +1044,7 @@ vgaMGAPtr restore;
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		outTi3026(MGADACregs[i], restore->DACreg[i]);
 
-	outlPCI(0x40, restore->DAClong);
+	outlPCI(PCI_OPTION_REG, restore->DAClong);
 }
 
 /*

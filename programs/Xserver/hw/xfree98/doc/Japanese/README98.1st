@@ -1,11 +1,11 @@
   XFree86 PC98 General Information
   The XFree86 Project Inc. / X98 CORE TEAM著
-  1996年 2 月  18日
+  1996年 9 月  28日
 
   1.はじめに
 
   XFree86は、NEC PC9801シリーズおよび互換機で動作するFreeBSD(98)、
-  NetBSD/pc98(based on NetBSD 1.1)をサポートします。PC98用サーバは
+  NetBSD/pc98(based on NetBSD 1.2)をサポートします。PC98用サーバは
   XFree86のソースツリーに含まれます。その開発とコードの保守は、The
   XFree86 Project Inc とX98 CORE TEAMが行っています。
 
@@ -37,15 +37,9 @@
 
   o  README98        PC98サーバに関する説明
 
-  o  Install.98      簡単なインストール手順の解説(準備中)
-
   o  XF86Config.98   標準的なPC98用XF86Config
 
-  o  VideoBoards98   対応ビデオボードに関する情報
-
-  o  NetBSD98.doc    NetBSD/pc98に関する追加情報(準備中)
-
-  o  FreeBSD98.doc   FreeBSD(98)に関する追加情報(準備中)
+  o  VideoBoard98    対応ビデオボードに関する情報
 
 
   4.クレジット
@@ -56,11 +50,15 @@
 
   X98 CORE TEAM
 
-  o  会津 宏幸<aizu@center.nitech.ac.jp>
+  o  会津 宏幸<aizu@jaist.ac.jp>
 
   o  石田 和生<ishidakz@obp.cl.nec.co.jp>
 
+  o  市川 康浩<cs94006@mbox.sist.ac.jp>
+
   o  伊藤 和雄<ft4k-itu@asahi-net.or.jp>
+
+  o  上野 和紀<g540012@komaba.ecc.u-tokyo.ac.jp>
 
   o  上野 修一<uenos@ppp.bekkoame.or.jp>
 
@@ -78,23 +76,29 @@
 
   o  H.Komatsuzaki
 
+  o  坂本 崇<sakamoto@yajima.kuis.kyoto-u.ac.jp>
+
   o  佐久間 淳<i931361@jks.is.tsukuba.ac.jp>
 
   o  神保 道夫<karl@pms.nagaokaut.ac.jp>
 
   o  鈴木 孝一郎<ksuzuki@cc.tuat.ac.jp>
 
-  o  塚田 剛文<tsuka@kawalab.dnj.ynu.ac.jp>
+  o  鈴木 康司<suz@d2.bs1.fc.nec.co.jp>
+
+  o  塚田 剛文<tsuka@linkt.imasy.or.jp>
 
   o  永尾 禎啓<nagao@cs.titech.ac.jp>
 
-  o  野田 稔<tarda@ce.tokushima-u.ac.jp>
+  o  野田 稔<mnoda@cv.tottori-u.ac.jp>
 
   o  野村 高明<tnomura@sfc.keio.ac.jp>
 
-  o  藤浦 豊徳<toyo@center.nitech.ac.jp>
+  o  藤浦 豊徳<toyo@ibbsal.or.jp>
 
-  o  本多 尚文<honda@math.hokudai.ac.jp>
+  o  本多 尚文<honda@Kururu.math.hokudai.ac.jp>
+
+  o  森田 昭夫<amorita@bird.scphys.kyoto-u.ac.jp>
 
   o  八色 伸一<QZR00522@niftyserve.or.jp>
 

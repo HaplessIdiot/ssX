@@ -1,5 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.5 1996/09/14 13:13:45 dawes Exp $
-
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF86Setup/Imakefile,v 3.6 1996/09/15 11:28:16 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -48,8 +47,9 @@ includes::
 #define XawClientDepLibs /**/
 #endif
 
-#if defined(SVR4Architecture) && defined(SunArchitecture)
-/* Solaris needs this */
+#if defined(SVR4Architecture) || (defined(LinuxArchitecture) && UseElfFormat)
+/* Some OSs need this, and it should(?) be harmless when not needed */
+/* Not available for Linux x86/a.out and Linux AXP/ECOFF */
     EXTRASYSLIBS = -ldl
 #endif
 
@@ -139,6 +139,7 @@ InstallMultiple($(TCL_FILES),$(XF86SETUPLIBDIR))
 InstallMultiple($(TCLLIB_FILES),$(XF86SETUPLIBDIR)/tcllib)
 InstallMultiple($(PICS_FILES),$(XF86SETUPLIBDIR)/pics)
 InstallManPage(XF86Setup,$(MANDIR))
+
 #endif
 
 #endif
