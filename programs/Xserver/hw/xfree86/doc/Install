@@ -20,7 +20,7 @@ vide a customized version of the GNU tar utility called "extract" and an
 installation script.  We recommend that these be used to install the bina-
 ries.  (The source for this customized version of GNU tar can be found in the
 XFree86 CVS repository's "utils" module, and from our ftp site
-<URL:ftp://ftp.xfree86.org/pub/XFree86/misc/utils-1.1.1.tgz>.)
+<URL:ftp://ftp.xfree86.org/pub/XFree86/misc/utils-1.1.2.tgz>.)
 
 Note: for snapshot releases like this one, binaries are only available for a
 small number of platforms.
