@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.78tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.79 2003/11/03 05:11:48 tsi Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1388,7 +1388,11 @@ MouseReadInput(InputInfoPtr pInfo)
 		      (pBuf[0] & 0x80) >> 3;        /* button 5 */
 	    dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
 	    dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
-	    dz = (char)(pBuf[3] | ((pBuf[3] & 0x08) ? 0xf8 : 0));
+	    /*
+	     * The next cast must be 'signed char' for platforms (like PPC)
+	     * where char defaults to unsigned.
+	     */
+	    dz = (signed char)(pBuf[3] | ((pBuf[3] & 0x08) ? 0xf8 : 0));
 	    if ((pBuf[3] & 0xf8) && ((pBuf[3] & 0xf8) != 0xf8)) {
 		if (pMse->autoProbe) {
 		    SetMouseProto(pMse, PROT_EXPPS2);
@@ -1498,6 +1502,10 @@ MouseReadInput(InputInfoPtr pInfo)
 	    dy = - ((char)(pBuf[2]) + (char)(pBuf[4]));
 	    /* FreeBSD sysmouse sends additional data bytes */
 	    if (pMse->protoPara[4] >= 8) {
+		/*
+		 * These casts must be 'signed char' for platforms (like PPC)
+		 * where char defaults to unsigned.
+		 */
 		dz = ((signed char)(pBuf[5] << 1) +
 		      (signed char)(pBuf[6] << 1)) >> 1;
 		buttons |= (int)(~pBuf[7] & 0x7f) << 3;
