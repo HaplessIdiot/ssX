@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/36 1997/06/16 22:21:03 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.69 1997/06/30 06:31:09 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.70 1997/07/06 05:30:32 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -263,7 +263,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define DlLibrary		/**/
 #endif
 
-#if BuildDynamicLoading
+#if BuildDynamicLoading || DoLoadableServer
 #define ServerExtraSysLibs	DlLibrary
 #else
 #define ServerExtraSysLibs	/**/
