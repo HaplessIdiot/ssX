@@ -1,4 +1,5 @@
 /* $XConsortium: xf86Priv.h,v 1.1 94/03/28 21:23:40 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -25,6 +26,7 @@
 #ifndef _XF86PRIV_H
 #define _XF86PRIV_H
 
+#include "Xproto.h"
 #include "xf86_OSlib.h"
 
 typedef struct {
@@ -33,14 +35,11 @@ typedef struct {
   DevicePtr     pKeyboard;
   int           (* kbdProc)();        /* procedure for initializing */
   void          (* kbdEvents)();      /* proc for processing events */
-#ifndef _MINIX
+#ifndef MINIX
   int           consoleFd;
 #else
   int		kbdFd;
-  char		kbdBuf[16];
-  int		kbdAvail;
-  int		kbdInprogress;
-#endif /* _MINIX */
+#endif /* MINIX */
 #if defined(MACH386) || defined(__OSF__)
   int           kbdFd;
 #endif /* MACH386 || __OSF__ */
@@ -69,11 +68,6 @@ typedef struct {
   int           (* mseProc)();        /* procedure for initializing */
   void          (* mseEvents)();      /* proc for processing events */
   int           mseFd;
-#ifdef _MINIX
-  char		mseBuf[16];
-  int		mseAvail;
-  int		mseInprogress;
-#endif /* _MINIX */
   char          *mseDevice;
   int           mseType;
   int           baudRate;
@@ -100,16 +94,13 @@ typedef struct {
   /* graphics part */
   Bool          sharedMonitor;
   ScreenPtr     currentScreen;
-#if defined(__BSD__) || defined(_MINIX)
+#if defined(__BSD__)
   int           screenFd;	/* fd for memory mapped access to vga card */
 #endif
 #ifdef __BSD__
   int		consType;	/* Which console driver? */
 #endif
-#ifdef _MINIX
-  void		*screenPtrRaw;
-#endif
-#if defined(AMOEBA) || defined(_MINIX)
+#if defined(AMOEBA)
   void		*screenPtr;
 #endif
 
@@ -151,6 +142,8 @@ extern Bool xf86Verbose;
 extern unsigned short xf86MouseCflags[];
 extern Bool xf86SupportedMouseTypes[];
 extern int xf86NumMouseTypes;
+extern int xf86bpp;
+extern xrgb xf86weight;
 
 #endif /* _XF86PRIV_H */
 

@@ -1,4 +1,5 @@
 /* $XConsortium: compiler.h,v 1.1 94/03/28 21:22:35 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -193,7 +194,7 @@ inw(port)
 #endif /* FAKEIT */
 
 #else /* __GNUC__ */
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(MINIX)
 # if defined(__STDC__) && (__STDC__ == 1)
 #  ifndef asm
 #   define asm __asm

@@ -1,4 +1,5 @@
 /* $XConsortium: xf86Io.c,v 1.1 94/03/28 21:23:16 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,7 +62,7 @@ xf86KbdBell(percent, pKeyboard, ctrl, unused)
 #define LED_SCR	IOP_LED_SCROLL
 #endif
 
-#ifdef _MINIX
+#ifdef MINIX
 #define LED_CAP KBD_LEDS_CAPS
 #define LED_NUM KBD_LEDS_NUM
 #define LED_SCR KBD_LEDS_SCROLL
@@ -425,7 +426,7 @@ xf86MseEvents()
   xf86MouseEvents();
 }
 
-#if !defined(AMOEBA) && !(defined (sun) && defined(i386) && defined (SVR4))
+#if !defined(AMOEBA) && !(defined (sun) && defined(i386) && defined (SVR4)) && !defined(MINIX)
 /*
  * These are getting tossed in here until I can think of where
  * they really belong
@@ -438,7 +439,7 @@ GetTimeInMillis()
     gettimeofday(&tp, 0);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
-#endif /* !AMOEBA && !(sun || SVR4) */
+#endif /* !AMOEBA && !(sun || SVR4) && !MINIX */
 
 void
 OsVendorInit()

@@ -1,4 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.2 94/03/31 11:11:56 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -98,9 +99,7 @@ static Bool VTSysreqToggle = FALSE;
 #endif /* !USE_VT_SYSREQ */
 static Bool VTSwitchEnabled = TRUE;   /* Allows run-time disabling for *BSD */
 
-#ifndef _MINIX
 extern long EnabledDevices[];
-#endif
 
 #if defined(CODRV_SUPPORT)
 extern unsigned char xf86CodrvMap[];
@@ -722,7 +721,7 @@ xf86PostKbdEvent(key)
    * normal, non-keypad keys
    */
   if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
-#if !defined(__BSD__) && !defined(MACH386) && !defined(_MINIX) && !defined(__OSF__)
+#if !defined(__BSD__) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
     /*
      * magic ALT_L key on AT84 keyboards for multilingual support
      */
@@ -733,7 +732,7 @@ xf86PostKbdEvent(key)
 	UsePrefix = TRUE;
 	Direction = TRUE;
       }
-#endif /* !MACH386 && !__BSD__ && !_MINIX && !__OSF__ */
+#endif /* !MACH386 && !__BSD__ && !MINIX && !__OSF__ */
   }
 
 
@@ -891,45 +890,6 @@ xf86Wakeup(blockData, err, pReadmask)
      int err;
      pointer pReadmask;
 {
-#ifdef _MINIX
-	struct fwait *fw;
-
-	fw= (struct fwait *)pReadmask;
-	if (fw == NULL || fw->fw_fd == -1)
-	{
-		/* Nothing to do */
-		return;
-	}
-	if (fw->fw_fd ==  xf86Info.kbdFd)
-	{
-		fw->fw_fd= -1;
-		RemoveEnabledDevice(xf86Info.kbdFd);
-		xf86Info.kbdInprogress= FALSE;
-		if (fw->fw_result > 0)
-			xf86Info.kbdAvail= fw->fw_result;
-		/* If fw->fw_result <= 0 we assume that the same will happen
-		 * in the next (synchronous) read
-		 */
-		(xf86Info.kbdEvents)();
-	}
-	else if (fw->fw_fd ==  xf86Info.mseFd)
-	{
-		fw->fw_fd= -1;
-		RemoveEnabledDevice(xf86Info.mseFd);
-		xf86Info.mseInprogress= FALSE;
-		if (fw->fw_result > 0)
-			xf86Info.mseAvail= fw->fw_result;
-		/* If fw->fw_result <= 0 we assume that the same will happen
-		 * in the next (synchronous) read
-		 */
-		(xf86Info.mseEvents)();
-	}
-	else
-	{
-	    /* Apearently some other device got input */
-	    return;
-	}
-#else /* !_MINIX */
 #ifdef	__OSF__
   long kbdDevices[mskcnt];
   long mseDevices[mskcnt];
@@ -966,7 +926,6 @@ xf86Wakeup(blockData, err, pReadmask)
       }
 #endif	/* __OSF__ */
   }
-#endif /* _MINIX */
 
   if (xf86VTSwitchPending()) xf86VTSwitch();
 

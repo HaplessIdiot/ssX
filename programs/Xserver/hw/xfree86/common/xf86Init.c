@@ -1,5 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.2 94/03/28 21:23:10 dpw Exp $
+ * $XFree86$
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,6 +25,7 @@
 
 #include "X.h"
 #include "Xmd.h"
+#include "Xproto.h"
 #include "input.h"
 #include "servermd.h"
 #include "scrnintstr.h"
@@ -48,6 +50,8 @@ Bool xf86Verbose = TRUE;
 Bool xf86fpFlag = FALSE;
 Bool xf86coFlag = FALSE;
 char xf86ConfigFile[PATH_MAX] = "";
+int  xf86bpp = 8;
+xrgb xf86weight = { 5, 6, 5 } ;	/* RGB weighting at 16 bpp */
 
 static void xf86PrintConfig();
 
@@ -84,7 +88,7 @@ InitOutput(pScreenInfo, argc, argv)
 
     xf86OpenConsole();
 
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(MINIX)
     /*
      * If VTInit was set, run that program with consoleFd as stdin and stdout
      */
@@ -112,7 +116,7 @@ InitOutput(pScreenInfo, argc, argv)
           wait(NULL);
       }
     }
-#endif /* !AMOEBA && !_MINIX */
+#endif /* !AMOEBA && !MINIX */
 
     /* Do this after Xconfig is read (it's normally in OsInit()) */
     OsInitColors();
@@ -435,6 +439,40 @@ ddxProcessArgument (argc, argv, i)
     xf86coFlag = TRUE;
     return 0;
   }
+  if (!strcmp(argv[i], "-bpp"))
+  {
+    int bpp;
+    if (++i >= argc)
+      return 0;
+    if (sscanf(argv[i], "%d", &bpp) == 1)
+    {
+      xf86bpp = bpp;
+      return 2;
+    }
+    else
+    {
+      ErrorF("Invalid bpp\n");
+      return 0;
+    }
+  }
+  if (!strcmp(argv[i], "-weight"))
+  {
+    int red, green, blue;
+    if (++i >= argc)
+      return 0;
+    if (sscanf(argv[i], "%1d%1d%1d", &red, &green, &blue) == 3)
+    {
+      xf86weight.red = red;
+      xf86weight.green = green;
+      xf86weight.blue = blue;
+      return 2;
+    }
+    else
+    {
+      ErrorF("Invalid weighting\n");
+      return 0;
+    }
+  }
   return xf86ProcessArgument(argc, argv, i);
 }
 
@@ -455,6 +493,8 @@ ddxUseMsg()
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose               verbose startup messages\n");
   ErrorF("-quiet                 minimal startup messages\n");
+  ErrorF("-bpp n                 set number of bits per pixel. Default: 8\n");
+  ErrorF("-weight nnn            set RGB weighting at 16 bpp.  Default: 565\n");
   ErrorF(
    "-showconfig            show which drivers are included in the server\n");
   xf86UseMsg();

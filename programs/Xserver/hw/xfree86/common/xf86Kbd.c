@@ -1,4 +1,5 @@
 /* $XConsortium: xf86Kbd.c,v 1.1 94/03/28 21:23:22 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -237,13 +238,13 @@ xf86KbdGetMapping (pKeySyms, pModMap)
      CARD8      *pModMap;
 {
   KeySym        *k;
-#if !defined(AMOEBA) && !defined(_MINIX) && !defined(__OSF__)
+#if !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__)
   keymap_t      keymap;
-#endif /* !AMOEBA && !_MINIX && !__OSF__ */
+#endif /* !AMOEBA && !MINIX && !__OSF__ */
   char          type;
   int           i, j;
   
-#if !defined(AMOEBA) && !defined(_MINIX) && !defined(__OSF__)
+#if !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__)
   /*
    * use the keymap, which can be gotten from our oringinal vt??.
    * ( ttymap(1) !!!! )
@@ -266,7 +267,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 	if (k[0] == k[2] && k[1] == k[3]) k[2] = k[3] = NoSymbol;
       }
   }
-#endif /* !AMOEBA && !_MINIX && !__OSF__ */
+#endif /* !AMOEBA && !MINIX && !__OSF__ */
 
   /*
    * Apply the special key mapping specified in Xconfig 
@@ -372,7 +373,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 
     }
   
-#if !defined(AMOEBA) && !defined(_MINIX) && !defined(__OSF__)
+#if !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__)
   xf86Info.kbdType =
     ioctl(xf86Info.consoleFd, KDGKBTYPE, &type) != -1 ? type : KB_101;
 #else

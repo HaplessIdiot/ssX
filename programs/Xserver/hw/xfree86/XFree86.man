@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.3 94/04/11 16:03:13 matt Exp $
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.0 1994/04/29 14:06:06 dawes Exp $
 .TH XFree86 1 "Version 3.0"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -30,6 +30,8 @@ operates under the following operating systems:
 -- Linux
 .br
 -- Amoeba version 5.1
+.br
+-- Minix-386vm version 1.6.25.1
 .ad
 .RE
 .PP
@@ -315,7 +317,7 @@ Marc Evans,        \fIMarc@Synergetics.Com\fP
 Ported to \fBOSF/1\fP.
 .TP 8
 Philip Homburg,    \fIphilip@cs.vu.nl\fP
-Ported to \fBMinix-386\fP.
+Ported to \fBMinix-386vm\fP.
 .TP 8
 Thomas Wolfram,    \fIwolf@prz.tu-berlin.de\fP
 SVR3 shared libraries.

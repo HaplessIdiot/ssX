@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:01:00 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.1 1994/04/28 14:11:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.2 1994/05/04 14:58:03 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -79,6 +79,16 @@ DPI100FONTPATH=\"$(LIBDIR)/fonts/100dpi/\"
 # endif
 #endif
 
+#ifdef MinixArchitecture
+CppFileTarget(Xconfig, Xconfig.cpp,
+    -DRGBPATH=$(RGBPATH) -DMISCFONTPATH=$(MISCFONTPATH)
+    -DUSE_T1FONTS=$(USE_T1FONTS) -DT1FONTPATH=$(T1FONTPATH)
+    -DUSE_SPFONTS=$(USE_SPFONTS) -DSPFONTPATH=$(SPFONTPATH)
+    -DUSE_75FONTS=$(USE_75FONTS) -DDPI75FONTPATH=$(DPI75FONTPATH)
+    -DUSE_100FONTS=$(USE_100FONTS) -DDPI100FONTPATH=$(DPI100FONTPATH)
+    -DMOUSEDEV=$(MOUSEDEV) -DMANPAGE=$(MANPAGE),
+    $(ICONFIGFILES))
+#else
 CppFileTarget(Xconfig, Xconfig.cpp, \
     -DRGBPATH=$(RGBPATH) -DMISCFONTPATH=$(MISCFONTPATH) \
     -DUSE_T1FONTS=$(USE_T1FONTS) -DT1FONTPATH=$(T1FONTPATH) \
@@ -87,6 +97,7 @@ CppFileTarget(Xconfig, Xconfig.cpp, \
     -DUSE_100FONTS=$(USE_100FONTS) -DDPI100FONTPATH=$(DPI100FONTPATH) \
     -DMOUSEDEV=$(MOUSEDEV) -DMANPAGE=$(MANPAGE), \
     $(ICONFIGFILES))
+#endif
 
 InstallManPage(XFree86,$(MANDIR))
 InstallNamedTarget(install.man,Xconfig.man,$(INSTMANFLAGS),$(FILEMANDIR),Xconfig.$(FILEMANSUFFIX))

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.0 1994/05/04 14:59:42 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1090,7 +1090,7 @@ xf86Config (vtopen)
   int            token, scr_index;
   int            i, j;
   Bool           graphFound = FALSE;
-#if defined(SYSV) || defined(linux) || defined(_MINIX)
+#if defined(SYSV) || defined(linux)
   int            xcpipe[2];
 #endif
   static DisplayModePtr pNew, pLast;
@@ -1111,7 +1111,7 @@ xf86Config (vtopen)
    * For SYSV we fork, and send the data back to the parent through a pipe
    */
 
-#if defined(SYSV) || defined(linux) || defined(_MINIX)
+#if defined(SYSV) || defined(linux)
   if (getuid() != 0) {
     if (pipe(xcpipe))
       FatalError("Pipe failed (%s)\n", strerror(errno));
@@ -1154,15 +1154,23 @@ xf86Config (vtopen)
   {
     int real_uid = getuid();
 
+#ifdef MINIX
+    setuid(getuid());
+#else
 #if !defined(SVR4) && !defined(__NetBSD__) && !defined(__FreeBSD__)
     setruid(0);
 #endif
     seteuid(real_uid);
+#endif /* MINIX */
     findConfigFile(configPath, &configFile);
+#ifdef MINIX
+    /* no need to resture the uid to root */
+#else
     seteuid(0);
 #if !defined(SVR4) && !defined(__NetBSD__) && !defined(__FreeBSD__)
     setruid(real_uid);
 #endif
+#endif /* MINIX */
   }
 #endif /* SYSV || linux */
   xf86Info.sharedMonitor = FALSE;
@@ -1415,7 +1423,7 @@ xf86Config (vtopen)
 	    }
 	  else if (pLast)
 	    {
-#if defined(MACH) || defined(AMOEBA) || defined(_MINIX)
+#if defined(MACH) || defined(AMOEBA)
               pNew->name = (char *) xalloc (strlen (pLast->name) + 1);
               strcpy (pNew->name, pLast->name);
 #else
