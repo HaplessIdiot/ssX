@@ -47,6 +47,22 @@ XftDrawCreate (Display   *dpy,
 }
 
 void
+XftDrawChange (XftDraw	*draw,
+	       Drawable	drawable)
+{
+    draw->drawable = drawable;
+    if (draw->render_able)
+    {
+	XRenderPictFormat	    *format;
+	
+	XRenderFreePicture (draw->dpy, draw->render.pict);
+	format = XRenderFindVisualFormat (draw->dpy, draw->visual);
+	draw->render.pict = XRenderCreatePicture (draw->dpy, draw->drawable,
+						  format, 0, 0);
+    }
+}
+
+void
 XftDrawDestroy (XftDraw	*draw)
 {
     if (draw->render_able)
