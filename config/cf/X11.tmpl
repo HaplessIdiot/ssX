@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.147 2002/03/01 22:04:41 keithp Exp $
+XCOMM $XFree86: X11.tmpl,v 1.148 2002/03/01 22:07:57 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1144,7 +1144,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 
 #ifndef MesaUseMMX
-#ifdef HasMMXSupport
+#if HasMMXSupport
 #define MesaUseMMX HasMMXSupport
 #else
 #define MesaUseMMX NO
