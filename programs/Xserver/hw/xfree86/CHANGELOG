@@ -1,4 +1,5 @@
-XFree86 4.0.99.2 (?? February 2001)
+XFree86 4.0.99.2 (?? March 2001)
+ 213. Updates for Hurd support (#A.209, Marcus Brinkmann).
  212. Fix some mis-placed mem_barrier's for Alpha platforms (Jay Estabrook).
  211. Fix a Index/DAC register access in glint PM2v, PM3 driver.
       (#A.319, Romain Dolbeau).
@@ -191,10 +192,8 @@ XFree86 4.0.99.1 (19 February 2001)
       improving detection of them and forcing them to be relocated
       (Marc La France).
  118. Make lndir ignore finder data files on Mac OS X (Matthieu Herrb).
- 117. [SECURITY] complete fix for /tmp race in gccmakedep and makedepend.
-      (Branden Robinson). 
- 116. [SECURITY] fix possible buffer overflow (NOT on stack) in xdm 
-      xdmcp code (patch69 from Red Hat SRPMS).
+ 117. -
+ 116. -
  115. Undo s3virge changes in 4.0.2 for Xv support on ViRGE chipsets since
       they caused problems with plain ViRGE cards.  Xv is still supported
       for the ViRGE DX (#4414, 4430, Kevin Brosius).
@@ -700,7 +699,7 @@ XFree86 4.0.1h (4 December 2000)
 1087. Status doc updates for Neomagic an NVIDIA (#4334, Andrew C. Aitchison,
       Mark Vojkovich).
 1086. Updated Rage 128 DRI support from the DRI CVS (Gareth Hughes, VA Linux).
-1085. Updates for Hurd support (#A.209, Marcus Brinkmann).
+1085. -
 1084. Bump the minor revisions of libXmu (UTF8_STRING) and libX11
       (Xutf8LookupString).
 1083. Fixes for all known bugs in the CompoundText parser and generator,
@@ -12580,4 +12579,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1594 2001/02/27 18:47:23 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1595 2001/02/27 23:04:55 alanh Exp $
