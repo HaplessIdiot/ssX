@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.36 2000/03/01 16:00:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.37 2000/03/08 15:14:48 dawes Exp $ */
 
 
 #include "apm.h"
@@ -440,8 +440,10 @@ ApmProbe(DriverPtr drv, int flags)
 				      NULL, NULL, NULL, NULL, NULL);
 	}
     }
+#if 0	/* This causes problems with -configure? */
     if (DevSections)
 	xfree(DevSections);
+#endif
     return foundScreen;
 }
 
