@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.223 2004/06/02 22:42:53 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.224 2004/06/09 18:30:56 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -390,14 +390,6 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # if defined(i386Architecture)
 #  define BuildLibGlxWithoutPIC	YES
 # endif
-#endif
-
-/*
- * Building the DRM module requires kernel source be installed.  It's safest
- * to just not enable it by default.
- */
-#ifndef BuildXF86DRM
-#define BuildXF86DRM	NO
 #endif
 
 #ifndef HasAgpGart

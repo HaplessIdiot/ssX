@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.473 2004/06/02 22:42:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.474 2004/06/10 18:12:58 alanh Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1229,10 +1229,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #ifndef BuildXF86DRI
 #define BuildXF86DRI	NO
-#endif
-
-#ifndef BuildXF86DRM
-#define BuildXF86DRM	NO
 #endif
 
 #ifndef GlxUseSGISI

@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.257 2004/06/02 22:42:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.258 2004/06/09 18:30:55 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -618,10 +618,8 @@ VENDORMANVERSION = XVendorManVersionString
 #else
 #if     BuildGlxExt && !defined(XFree86Version)
 #undef  BuildXF86DRI
-#undef  BuildXF86DRM
 #undef  BuildXF86DRIDriverSupport
 #define BuildXF86DRI			NO
-#define BuildXF86DRM			NO
 #define BuildXF86DRIDriverSupport	NO
 #endif
 #endif
