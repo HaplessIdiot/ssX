@@ -413,7 +413,7 @@ void
 XftCharSpecRender (Display	    *dpy,
 		   int		    op,
 		   Picture	    src,
-		   XftFont	    *public,
+		   XftFont	    *pub,
 		   Picture	    dst,
 		   int		    srcx, 
 		   int		    srcy,
