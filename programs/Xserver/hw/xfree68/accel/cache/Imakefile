@@ -1,3 +1,7 @@
+
+XCOMM $XFree86: $
+
+
 #include <Server.tmpl>
 
 SRCS = 	xf86bcache.c xf86fcache.c xf86text.c xf86icache.c
