@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.56 1998/02/27 17:09:37 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.58 1998/05/01 12:21:20 robin Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -247,7 +247,7 @@ int pciconfig_read(
           unsigned char len,
           void * buf)
 {
-  return __syscall(__NR_pciconfig_read, bus, dfn, off, len, buf);
+  return syscall(__NR_pciconfig_read, bus, dfn, off, len, buf);
 }
 int pciconfig_write(
           unsigned char bus,
@@ -256,7 +256,7 @@ int pciconfig_write(
           unsigned char len,
           void * buf)
 {
-  return __syscall(__NR_pciconfig_write, bus, dfn, off, len, buf);
+  return syscall(__NR_pciconfig_write, bus, dfn, off, len, buf);
 }
 #else
 Generate compiler error - scanpci unsupported on non-linux alpha platforms
@@ -1110,8 +1110,11 @@ struct pci_vendor_device {
                             { 0x88F0, "968", NF },
                             { 0x8901, "Trio64V2/DX or /GX", NF },
                             { 0x8902, "PLATO/PX", NF },
+                            { 0x8904, "Trio3D", NF },
                             { 0x8A01, "ViRGE/DX or /GX", NF },
                             { 0x8A10, "ViRGE/GX2", NF },
+                            { 0x8A20, "Savage3D (86E391)", NF },
+                            { 0x8A21, "Savage3D (86E390)", NF },
                             { 0x8C01, "ViRGE/MX", NF },
                             { 0x8C02, "ViRGE/MX+", NF },
                             { 0x8C03, "ViRGE/MX+MV", NF },

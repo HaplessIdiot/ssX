@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.2 1998/07/25 16:55:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.3 1998/08/29 05:43:03 dawes Exp $ */
 
 #ifndef _XF86FBMAN_H
 #define _XF86FBMAN_H
@@ -26,7 +26,6 @@ typedef void (*MoveAreaCallbackProcPtr)(FBAreaPtr);
 
 typedef struct {
    ScreenPtr	pScreen;
-   RegionPtr	FullMemory;
    RegionPtr	InitialBoxes;
    RegionPtr	FreeBoxes;
    FBLinkPtr 	UsedAreas;
@@ -37,6 +36,12 @@ typedef struct {
 } FBManager, *FBManagerPtr;
 
 
+
+Bool
+xf86InitFBManagerRegion(
+    ScreenPtr pScreen, 
+    RegionPtr ScreenRegion
+);
 
 Bool
 xf86InitFBManager(

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.5 1998/08/19 07:49:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.6 1998/08/29 05:44:08 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1593,7 +1593,8 @@ XAACacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
         else    	funcNo = 0;
    } else 		funcNo = 2;
 
-   pad = (((pCache->w * bpp) + 31) >> 5) << 2;
+   dwords = ((pCache->w * bpp) + 31) >> 5;
+   pad = dwords << 2;
    dstPtr = data = (unsigned char*)ALLOCATE_LOCAL(pad * pCache->h);
    srcPtr = (unsigned char*)pPix->devPrivate.ptr;
 
@@ -1602,9 +1603,9 @@ XAACacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
    else
 	StippleFunc = XAAStippleScanlineFuncLSBFirst[funcNo];
 
-   dwords = pad << 2;
-   if(dwords > ((pScrn->virtualX + 62) >> 5))
-	dwords = (pScrn->virtualX + 62) >> 5;
+   max = ((pScrn->displayWidth + w - 1) + 31) >> 5;
+   if(dwords > max)
+	dwords = max;
 
    for(i = 0; i < h; i++) {
 	(*StippleFunc)((CARD32*)dstPtr, (CARD32*)srcPtr, 0, w, dwords);
@@ -1625,6 +1626,70 @@ XAACacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
 	pad, bpp, pScrn->depth);
 
    DEALLOCATE_LOCAL(data);
+
+   return pCache;
+}
+
+XAACacheInfoPtr
+XAACachePlanarMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
+{
+   int w = pPix->drawable.width;
+   int h = pPix->drawable.height;
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+   XAAPixmapCachePrivatePtr pCachePriv = 
+	(XAAPixmapCachePrivatePtr)infoRec->PixmapCachePrivate;
+   XAACacheInfoPtr pCache, cacheRoot = NULL;
+   int i, max = 0;
+   int *current;
+
+   if((h <= 128) && (w <= 128)) {
+	if(pCachePriv->Info128) {
+	    cacheRoot = pCachePriv->Info128; 
+	    max = pCachePriv->Num128x128;
+	    current = &pCachePriv->Current128;
+	} else {     
+	    cacheRoot = pCachePriv->InfoPartial;
+	    max = pCachePriv->NumPartial;
+	    current = &pCachePriv->CurrentPartial;
+	}
+   } else if((h <= 256) && (w <= 256)){
+	cacheRoot = pCachePriv->Info256;      
+	max = pCachePriv->Num256x256;
+	current = &pCachePriv->Current256;
+   } else if((h <= 512) && (w <= 526)){
+	cacheRoot = pCachePriv->Info512;      
+	max = pCachePriv->Num512x512;
+	current = &pCachePriv->Current512;
+   } else { /* something's wrong */ 
+	ErrorF("Something's wrong in XAACachePlanarMonoStipple()\n");
+	return pCachePriv->Info128; 
+   }
+
+   pCache = cacheRoot;
+
+   /* lets look for it */
+   for(i = 0; i < max; i++, pCache++) {
+	if((pCache->serialNumber == pPix->drawable.serialNumber) &&
+	    (pCache->fg == -1) && (pCache->bg == -1)) {
+	    pCache->trans_color = -1;
+	    return pCache;
+	}
+   }
+
+   pCache = &cacheRoot[(*current)++];
+   if(*current >= max) *current = 0;
+
+   pCache->serialNumber = pPix->drawable.serialNumber;
+   pCache->trans_color = pCache->bg = pCache->fg = -1;
+   pCache->orig_w = w;  pCache->orig_h = h;
+
+   /* Plane 0 holds the stipple. Plane 1 holds the inverted stipple */
+   (*infoRec->WriteBitmapToCache)(pScrn, pCache->x, pCache->y, 
+	pPix->drawable.width, pPix->drawable.height, pPix->devPrivate.ptr,
+	pPix->devKind, 1, 2);
+   if(!(infoRec->PixmapCacheFlags & DO_NOT_TILE_MONO_DATA) && 
+	((w != pCache->w) || (h != pCache->h)))
+	XAATileCache(pScrn, pCache, w, h);
 
    return pCache;
 }
@@ -2190,10 +2255,18 @@ XAATiledFillChooser(GCPtr pGC)
 	CHECK_ROP(pGC,infoRec->FillSpansCacheBltFlags) &&
 	CHECK_ROPSRC(pGC,infoRec->FillSpansCacheBltFlags) &&
 	CHECK_PLANEMASK(pGC,infoRec->FillSpansCacheBltFlags)) {
+
 	      return DO_CACHE_BLT;
     }
 
-    /* Do image write version here */
+    if(infoRec->PolyFillRectImageWrite && 
+	CHECK_NO_GXCOPY(pGC,infoRec->PolyFillRectImageWriteFlags) &&
+	CHECK_ROP(pGC,infoRec->PolyFillRectImageWriteFlags) &&
+	CHECK_ROPSRC(pGC,infoRec->PolyFillRectImageWriteFlags) &&
+	CHECK_PLANEMASK(pGC,infoRec->PolyFillRectImageWriteFlags)) {
+
+	      return DO_IMAGE_WRITE;
+    }
 
     return 0;
 }

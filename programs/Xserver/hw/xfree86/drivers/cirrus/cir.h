@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.4 1998/09/05 06:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.5 1998/10/06 04:39:35 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -63,14 +63,21 @@ typedef struct {
     int			MaxClock;
     Bool		NoAccel;
     Bool		HWCursor;
-    
-    CIRRegRec		SavedReg;
-    CIRRegRec		ModeReg;
+    Bool		UseMMIO;
     XAAInfoRecPtr       AccelInfoRec;
     xf86CursorInfoPtr   CursorInfoRec;
     DGAInfoPtr          DGAInfo;
     I2CBusPtr		I2CPtr1;
     I2CBusPtr		I2CPtr2;
+    CloseScreenProcPtr  CloseScreen;
+    
+/* Difference from Laguna start here */
+    CIRRegRec		SavedReg;
+    CIRRegRec		ModeReg;
+
+/* XXX For XF86Config based mem configuration */
+    CARD32		SR0F, SR17;
+
 #if 0
     CARD32		BltScanDirection;
     CARD32		FilledRectCMD;
@@ -78,15 +85,16 @@ typedef struct {
     CARD32		PatternRectCMD;
     CARD32		AccelFlags;
 #endif
-    CloseScreenProcPtr  CloseScreen;
 } CIRRec, *CIRPtr;
 
 
 extern Bool CIRHWCursorInit(ScreenPtr pScreen);
 extern Bool CIRXAAInit(ScreenPtr pScreen);
+extern Bool CIRXAAInitMMIO(ScreenPtr pScreen);
 extern Bool CIRDGAInit(ScreenPtr pScreen);
 extern Bool CIRI2CInit(ScreenPtr pScreen);
-extern Bool CirrusSetClock(ScrnInfoPtr pScrn, int freq);
 
+/* CirrusClk.c */
+extern CARD16 CirrusSetClock(ScrnInfoPtr pScrn, int freq);
 
 #endif /* CIR_H */

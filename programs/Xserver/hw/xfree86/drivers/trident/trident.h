@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.1 1998/09/06 13:47:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.2 1998/09/13 05:23:41 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -30,6 +30,8 @@
 #include "xaa.h"
 #include "xf86RamDac.h"
 #include "compiler.h"
+#include "vgaHW.h"
+#include "xf86i2c.h"
 
 typedef struct {
 	unsigned char tridentRegs3x4[0x100];
@@ -46,8 +48,6 @@ typedef struct {
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
     int			Chipset;
-    int			ActualChipset;
-    int			TVGAchipset;
     int			DACtype;
     int			RamDac;
     int                 ChipRev;
@@ -60,19 +60,26 @@ typedef struct {
     unsigned char *     IOBaseDense;
 #endif
     unsigned char *	FbBase;
+    CARD32		IOAccelAddress;
+    unsigned char * 	IOAccel;
     long		FbMapSize;
     Bool		NoAccel;
-    Bool		Dac6Bit;
+    Bool		NoMMIO;
     Bool		HWCursor;
     Bool		UsePCIRetry;
     Bool		NewClockCode;
     Bool		IsCyber;
     Bool		Clipping;
+    Bool		DstEnable;
+    Bool		ROP;
+    Bool		HasSGRAM;
     float		frequency;
     int			MinClock;
     int			MaxClock;
     TRIDENTRegRec	SavedReg;
     TRIDENTRegRec	ModeReg;
+    I2CBusPtr		I2CPtr1;
+    I2CBusPtr		I2CPtr2;
     short		EngineOperation;
     CARD32		AccelFlags;
     CARD32		BltScanDirection;
@@ -88,6 +95,7 @@ void TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 void TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg);
 Bool TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool TridentAccelInit(ScreenPtr pScreen);
+Bool TridentAccelInitMMIO(ScreenPtr pScreen);
 
 void TridentOutIndReg(ScrnInfoPtr pScrn,
 		     CARD32 reg, unsigned char mask, unsigned char data);
@@ -96,6 +104,10 @@ void TridentWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char TridentReadData(ScrnInfoPtr pScrn);
+
+void TGUISetRead(int bank);
+void TGUISetWrite(int bank);
+void TGUISetReadWrite(int bank);
 
 float CalculateMCLK(ScrnInfoPtr pScrn);
 
@@ -122,8 +134,8 @@ float CalculateMCLK(ScrnInfoPtr pScrn);
 #define TGUI96xx	16 /* Backwards compatibility */
 #define TGUI9660	16
 #define TGUI9680	17
-#define TGUI9682	18
-#define TGUI9685	19
+#define PROVIDIA9682	18
+#define PROVIDIA9685	19
 #define CYBER9382	20
 #define CYBER9385	21
 #define CYBER9388	22
@@ -132,19 +144,14 @@ float CalculateMCLK(ScrnInfoPtr pScrn);
 #define IMAGE975	25
 #define IMAGE985	26
 
-/* defines */
-#define IsTGUI9440	(pTrident->TVGAchipset == TGUI9440AGi)
-#define IsTGUI9660	((pTrident->TVGAchipset == TGUI9660))
-#define IsTGUI9680	((pTrident->TVGAchipset == TGUI9680))
-#define IsTGUI9682	((pTrident->TVGAchipset == TGUI9682))
-#define IsTGUI9685	((pTrident->TVGAchipset == TGUI9685))
-#define IsAdvCyber	((pTrident->TVGAchipset == CYBER9382) || \
-			 (pTrident->TVGAchipset == CYBER9385) || \
-			 (pTrident->TVGAchipset == CYBER9388))
-#define Is3Dchip	((pTrident->TVGAchipset == CYBER9397) || \
-			 (pTrident->TVGAchipset == CYBER9520) || \
-			 (pTrident->TVGAchipset == IMAGE975) || \
-			 (pTrident->TVGAchipset == IMAGE985))
+#define HAS_DST_TRANS	((pTrident->Chipset == PROVIDIA9682) || \
+			 (pTrident->Chipset == PROVIDIA9685))
+
+#define Is3Dchip	((pTrident->Chipset == CYBER9388) || \
+			 (pTrident->Chipset == CYBER9397) || \
+			 (pTrident->Chipset == CYBER9520) || \
+			 (pTrident->Chipset == IMAGE975)  || \
+			 (pTrident->Chipset == IMAGE985))
 
 /*
  * Trident DAC's

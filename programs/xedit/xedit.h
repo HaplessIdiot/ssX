@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: contrib/programs/xedit/xedit.h,v 1.3 1998/10/11 11:20:00 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.1 1998/10/25 07:12:17 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -51,33 +51,69 @@ typedef struct _xedit_hints {
     unsigned cur_hint;
 } xedit_hints;
 
+typedef enum {NO_READ, READ_OK, WRITE_OK} FileAccess;
+
+#define CHANGED_BIT	0x01
+#define EXISTS_BIT	0x02
+typedef struct _xedit_flist_item {
+    Widget source, sme;
+    String name;
+    String filename;
+    int flags;
+    FileAccess file_access;
+    XawTextPosition display_position, insert_position;
+} xedit_flist_item;
+
+extern struct _xedit_flist {
+    Widget popup;
+    Pixmap pixmap;
+    xedit_flist_item **itens;
+    Cardinal num_itens;
+} flist;
+
 extern struct _app_resources {
     Boolean enableBackups;
     char *backupNamePrefix;
     char *backupNameSuffix;
     xedit_hints hints;
+    char *changed_pixmap_name;
 } app_resources;
 
-typedef enum {NO_READ, READ_OK, WRITE_OK} FileAccess;
+extern Widget topwindow, textwindow, labelwindow, filenamewindow, messwidget;
+extern Boolean international;
 
 /*	externals in xedit.c 	*/
 
-extern void Feep();
+void Feep(void);
 
 /*	externals in util.c 	*/
 
-extern void   XeditPrintf();
-extern Widget MakeCommandButton();
-extern Widget MakeStringBox();
-extern String GetString();
-extern FileAccess MaybeCreateFile(), CheckFilePermissions();
+void XeditPrintf(char*);
+Widget MakeCommandButton(Widget, char*, XtCallbackProc);
+Widget MakeStringBox(Widget, String, String);
+String GetString(Widget);
+FileAccess MaybeCreateFile(char*), CheckFilePermissions(char*, Boolean*);
+xedit_flist_item *AddTextSource(Widget, String, String, int, FileAccess);
+xedit_flist_item *FindTextSource(Widget, char*);
+Bool KillTextSource(xedit_flist_item*);
+char *ResolveName(char*);
+void DeleteWindow(Widget, XEvent*, String*, Cardinal*);
+void SplitWindow(Widget, XEvent*, String*, Cardinal*);
+void SwitchTextSource(xedit_flist_item*);
+void PopupMenu(Widget, XEvent*, String*, Cardinal*);
+void OtherWindow(Widget, XEvent*, String*, Cardinal*);
+void SwitchSource(Widget, XEvent*, String*, Cardinal*);
+void XeditFocus(Widget, XEvent*, String*, Cardinal*);
 
 /*	externs in commands.c 	*/
 
-extern void DoQuit();
-extern void DoSave();
-extern void DoLoad();
-extern void CancelFindFile(Widget, XEvent*, String*, Cardinal*);
-extern void FindFile(Widget, XEvent*, String*, Cardinal*);
-extern void LoadFile(Widget, XEvent*, String*, Cardinal*);
-extern void FileCompletion(Widget, XEvent*, String*, Cardinal*);
+void DoQuit(Widget, XtPointer, XtPointer);
+void QuitAction(Widget, XEvent*, String*, Cardinal*);
+void DoSave(Widget, XtPointer, XtPointer);
+void SaveFile(Widget, XEvent*, String*, Cardinal*);
+void DoLoad(Widget, XtPointer, XtPointer);
+void CancelFindFile(Widget, XEvent*, String*, Cardinal*);
+void FindFile(Widget, XEvent*, String*, Cardinal*);
+void LoadFile(Widget, XEvent*, String*, Cardinal*);
+void FileCompletion(Widget, XEvent*, String*, Cardinal*);
+void KillFile(Widget, XEvent*, String*, Cardinal*);

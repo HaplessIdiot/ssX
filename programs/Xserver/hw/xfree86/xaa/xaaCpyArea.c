@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.3 1998/08/13 14:46:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.4 1998/08/29 05:44:05 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -44,8 +44,7 @@ XAACopyArea(
 	     CHECK_ROP(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_ROPSRC(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WritePixmapFlags) &&
-	     !((infoRec->ImageWriteFlags & NO_GXCOPY) && 
-	     (pGC->alu == GXcopy))) 
+	     CHECK_NO_GXCOPY(pGC,infoRec->WritePixmapFlags)) 
             return (XAABitBlt( pSrcDrawable, pDstDrawable,
 		pGC, srcx, srcy, width, height, dstx, dsty,
 		XAADoImageWrite, 0L));

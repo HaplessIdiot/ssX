@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.1 1998/09/13 05:23:41 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -39,51 +39,56 @@
 
 #include "xaalocal.h"
 
-int TGUIRops_alu[16] = {
-	TGUIROP_0,
-	TGUIROP_AND,
-	TGUIROP_SRC_AND_NOT_DST,
-	TGUIROP_SRC,
-	TGUIROP_NOT_SRC_AND_DST,
-	TGUIROP_DST,
-	TGUIROP_XOR,
-	TGUIROP_OR,
-	TGUIROP_NOR,
-	TGUIROP_XNOR,
-	TGUIROP_NOT_DST,
-	TGUIROP_SRC_OR_NOT_DST,
-	TGUIROP_NOT_SRC,
-	TGUIROP_NOT_SRC_OR_DST,
-	TGUIROP_NAND,
-	TGUIROP_1
-};
+extern int TGUIRops_alu[];
+extern int TGUIRops_Pixalu[];
 
-int TGUIRops_Pixalu[16] = {
-	TGUIROP_0,
-	TGUIROP_AND_PAT,
-	TGUIROP_PAT_AND_NOT_DST,
-	TGUIROP_PAT,
-	TGUIROP_NOT_PAT_AND_DST,
-	TGUIROP_DST,
-	TGUIROP_XOR_PAT,
-	TGUIROP_OR_PAT,
-	TGUIROP_NOR_PAT,
-	TGUIROP_XNOR_PAT,
-	TGUIROP_NOT_DST,
-	TGUIROP_PAT_OR_NOT_DST,
-	TGUIROP_NOT_PAT,
-	TGUIROP_NOT_PAT_OR_DST,
-	TGUIROP_NAND_PAT,
-	TGUIROP_1
-};
+#ifdef TRIDENT_MMIO
+
+#define MMIONAME(x)			x##MMIO
+
+#define TridentAccelInit		MMIONAME(TridentAccelInit)
+#define TridentInitializeAccelerator	MMIONAME(TridentInitializeAccelerator)
+#define TridentSync			MMIONAME(TridentSync)
+#define TridentSetupForSolidLine	MMIONAME(TridentSetupForSolidLine)
+#define Trident9685SetupForSolidLine	MMIONAME(Trident9685SetupForSolidLine)
+#define TridentSubsequentSolidBresenhamLine \
+			MMIONAME(TridentSubsequentSolidBresenhamLine)
+#define TridentSetupForFillRectSolid 	MMIONAME(TridentSetupForFillRectSolid)
+#define Trident9685SetupForFillRectSolid \
+			MMIONAME(Trident9685SetupForFillRectSolid)
+#define TridentSubsequentFillRectSolid	MMIONAME(TridentSubsequentFillRectSolid)
+#define TridentSetupForScreenToScreenCopy \
+			MMIONAME(TridentSetupForScreenToScreenCopy)
+#define TridentSubsequentScreenToScreenCopy \
+			MMIONAME(TridentSubsequentScreenToScreenCopy)
+#define TridentSetupForScreenToScreenColorExpand \
+			MMIONAME(TridentSetupForScreenToScreenColorExpand)
+#define TridentSubsequentScreenToScreenColorExpand \
+			MMIONAME(TridentSubsequentScreenToScreenColorExpand)
+#define TridentSetClippingRectangle	MMIONAME(TridentSetClippingRectangle)
+#define TridentWritePixmap		MMIONAME(TridentWritePixmap)
+#define TridentSetupForMono8x8PatternFill \
+			MMIONAME(TridentSetupForMono8x8PatternFill)
+#define TridentSubsequentMono8x8PatternFillRect \
+			MMIONAME(TridentSubsequentMono8x8PatternFillRect)
+#define TridentSetupForColor8x8PatternFill \
+			MMIONAME(TridentSetupForColor8x8PatternFill)
+#define TridentSubsequentColor8x8PatternFillRect \
+			MMIONAME(TridentSubsequentColor8x8PatternFillRect)
+
+#endif
 
 static void TridentSync(ScrnInfoPtr pScrn);
 static void TridentSetupForSolidLine(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask);
+static void Trident9685SetupForSolidLine(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void TridentSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
         			int x, int y, int dmaj, int dmin, int e, 
 				int len, int octant);
 static void TridentSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask);
+static void Trident9685SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void TridentSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x,
 				int y, int w, int h);
@@ -95,26 +100,41 @@ static void TridentSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
                                 unsigned int planemask,
 				int transparency_color);
 static void TridentSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
-    				int bg, int fg, int rop,
+    				int fg, int bg, int rop,
     				unsigned int planemask);
 static void TridentSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
-    				int srcx, int srcy, int x, int y, int w, int h);
-static void TridentSetupForImageWrite(ScrnInfoPtr pScrn,
- 				int rop, unsigned int planemask,
-				int transparency_color, int bpp, int depth);
-static void TridentSubsequentImageWrite(ScrnInfoPtr pScrn,
+    				int x, int y, int w, int h, int srcx, int srcy,
+				int offset);
+static void TridentSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
+    				int fg, int bg, int rop,
+    				unsigned int planemask);
+static void TridentSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
 static void TridentSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, 
 				int x2, int y2);
+static void TridentWritePixmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+    				unsigned char *src, int srcwidth, int rop,
+    				unsigned int planemask, int transparency_color,
+    				int bpp, int depth);
+static void TridentSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
+				int patternx, int patterny, int fg, int bg, 
+				int rop, unsigned int planemask);
+static void TridentSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
+				int patternx, int patterny, int x, int y, 
+				int w, int h);
+static void TridentSetupForColor8x8PatternFill(ScrnInfoPtr pScrn, 
+				int patternx, int patterny, 
+				int rop, unsigned int planemask, int trans_col);
+static void TridentSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn, 
+				int patternx, int patterny, int x, int y, 
+				int w, int h);
 
 static void
 TridentInitializeAccelerator(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    pTrident->Clipping = FALSE;
-    TGUI_SRCCLIP_XY(0,0);
-    TGUI_DSTCLIP_XY(4095,2047);
+    CHECKCLIPPING;
     TGUI_OPERMODE(pTrident->EngineOperation);
 }
 
@@ -128,6 +148,7 @@ TridentAccelInit(ScreenPtr pScreen)
 
     pTrident->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
+    if (pScrn->bitsPerPixel == 24) return FALSE; /* Not supported yet */
 
     TridentInitializeAccelerator(pScrn);
 
@@ -135,26 +156,63 @@ TridentAccelInit(ScreenPtr pScreen)
  
     infoPtr->Sync = TridentSync;
 
-#if 0
+#if 0 /* Lines are slower than cfb/mi */
     infoPtr->SolidLineFlags = NO_PLANEMASK;
-    infoPtr->SetupForSolidLine = TridentSetupForSolidLine;
+    if (pTrident->Chipset == PROVIDIA9685)
+    	infoPtr->SetupForSolidLine = Trident9685SetupForSolidLine;
+    else
+    	infoPtr->SetupForSolidLine = TridentSetupForSolidLine;
+    
     infoPtr->SolidBresenhamLineErrorTermBits = 11;
     infoPtr->SubsequentSolidBresenhamLine = TridentSubsequentSolidBresenhamLine;
-    infoPtr->SetClippingRectangle = TridentSetClippingRectangle;
 #endif
 
     infoPtr->SolidFillFlags = NO_PLANEMASK;
-    infoPtr->SetupForSolidFill = TridentSetupForFillRectSolid;
+    if (pTrident->Chipset == PROVIDIA9685)
+    	infoPtr->SetupForSolidFill = Trident9685SetupForFillRectSolid;
+    else
+    	infoPtr->SetupForSolidFill = TridentSetupForFillRectSolid;
     infoPtr->SubsequentSolidFillRect = TridentSubsequentFillRectSolid;
     
-    infoPtr->ScreenToScreenCopyFlags = NO_PLANEMASK | NO_TRANSPARENCY; 
+    infoPtr->ScreenToScreenCopyFlags = NO_PLANEMASK;
+
+    if (!HAS_DST_TRANS) infoPtr->ScreenToScreenCopyFlags |= NO_TRANSPARENCY;
+
     infoPtr->SetupForScreenToScreenCopy = 	
 				TridentSetupForScreenToScreenCopy;
     infoPtr->SubsequentScreenToScreenCopy = 		
 				TridentSubsequentScreenToScreenCopy;
 
+    if (pTrident->Chipset != PROVIDIA9685) {
+        infoPtr->Mono8x8PatternFillFlags =  NO_PLANEMASK | 
+					HARDWARE_PATTERN_SCREEN_ORIGIN | 
+					BIT_ORDER_IN_BYTE_MSBFIRST |
+					NO_TRANSPARENCY;
+
+    	infoPtr->SetupForMono8x8PatternFill =
+				TridentSetupForMono8x8PatternFill;
+        infoPtr->SubsequentMono8x8PatternFillRect = 
+				TridentSubsequentMono8x8PatternFillRect;
+        infoPtr->MonoPatternPitch = 64;
+    }
+
 #if 0
-    infoPtr->ScreenToScreenColorExpandFillFlags = NO_PLANEMASK |NO_TRANSPARENCY; 
+    infoPtr->Color8x8PatternFillFlags = NO_PLANEMASK | 
+					HARDWARE_PATTERN_SCREEN_ORIGIN | 
+					NO_TRANSPARENCY | 
+					BIT_ORDER_IN_BYTE_MSBFIRST;
+
+    infoPtr->SetupForColor8x8PatternFill =
+				TridentSetupForColor8x8PatternFill;
+    infoPtr->SubsequentColor8x8PatternFillRect = 
+				TridentSubsequentColor8x8PatternFillRect;
+#endif
+
+#if 0
+    infoPtr->ScreenToScreenColorExpandFillFlags = NO_PLANEMASK |
+						  NO_TRANSPARENCY |
+						  BIT_ORDER_IN_BYTE_MSBFIRST; 
+
     infoPtr->SetupForScreenToScreenColorExpandFill = 	
 				TridentSetupForScreenToScreenColorExpand;
     infoPtr->SubsequentScreenToScreenColorExpandFill = 		
@@ -162,21 +220,32 @@ TridentAccelInit(ScreenPtr pScreen)
 #endif
 
 #if 0
-    infoPtr->ImageWriteFlags = CPU_TRANSFER_PAD_DWORD |
-			       SCANLINE_PAD_DWORD |
-			       NO_PLANEMASK |
-			       NO_TRANSPARENCY;
-    infoPtr->ImageWriteRange = 0;
-    infoPtr->ImageWriteBase = pTrident->FbBase; 
-    infoPtr->SetupForImageWrite = TridentSetupForImageWrite;
-    infoPtr->SubsequentImageWriteRect = TridentSubsequentImageWrite;
+    infoPtr->CPUToScreenColorExpandFillFlags = CPU_TRANSFER_PAD_DWORD |
+				NO_TRANSPARENCY |
+				SYNC_AFTER_COLOR_EXPAND |
+				BIT_ORDER_IN_BYTE_MSBFIRST |
+			        SCANLINE_PAD_DWORD |
+			        NO_PLANEMASK;
+    infoPtr->ColorExpandRange = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
+    infoPtr->ColorExpandBase = pTrident->FbBase;
+    infoPtr->SetupForCPUToScreenColorExpandFill = 	
+				TridentSetupForCPUToScreenColorExpand;
+    infoPtr->SubsequentCPUToScreenColorExpandFill = 		
+				TridentSubsequentCPUToScreenColorExpand;
 #endif
+
+    infoPtr->WritePixmap = TridentWritePixmap;
+    infoPtr->WritePixmapFlags = NO_PLANEMASK;
+
+    if (!HAS_DST_TRANS) infoPtr->WritePixmapFlags |= NO_TRANSPARENCY;
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = pTrident->FbMapSize / (pScrn->displayWidth * 
-					  pScrn->bitsPerPixel / 8);
+    AvailFBArea.y2 = (pTrident->FbMapSize - 4096) / (pScrn->displayWidth *
+					    pScrn->bitsPerPixel / 8);
+
+    if (AvailFBArea.y2 > 2048) AvailFBArea.y2 = 2047;
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
@@ -187,12 +256,17 @@ static void
 TridentSync(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int count = 0, timeout = 0;
     int busy;
 
+    infoRec->NeedToSync = FALSE;
+
     for (;;) {
 	BLTBUSY(busy);
-	if (busy != GE_BUSY) return;
+	if (busy != GE_BUSY) {
+	    return;
+	}
 	count++;
 	if (count == 10000000) {
 	    ErrorF("Trident: BitBLT engine time-out.\n");
@@ -213,13 +287,24 @@ TridentSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 				unsigned int planemask, int transparency_color)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-
-    CHECKCLIPPING;
+    int dst = 0;
 
     pTrident->BltScanDirection = 0;
     if (xdir < 0) pTrident->BltScanDirection |= XNEG;
     if (ydir < 0) pTrident->BltScanDirection |= YNEG;
-    TGUI_DRAWFLAG(pTrident->BltScanDirection | SCR2SCR);
+
+    if (transparency_color != -1) {
+	pTrident->DstEnable = TRUE;
+	if (pTrident->Chipset == PROVIDIA9685) {
+	    dst = 1<<16;
+	} else {
+    	    TGUI_OPERMODE(pTrident->EngineOperation | DST_ENABLE);
+	}
+	REPLICATE(transparency_color);
+	TGUI_CKEY(transparency_color);
+    }
+
+    TGUI_DRAWFLAG(pTrident->BltScanDirection | SCR2SCR | dst);
     TGUI_FMIX(TGUIRops_alu[rop]);
 }
 
@@ -241,7 +326,15 @@ TridentSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
     TGUI_DEST_XY(x2,y2);
     TGUI_DIM_XY(w,h);
     TGUI_COMMAND(GE_BLT);
-    TridentSync(pScrn);
+    if (!pTrident->UsePCIRetry)
+    	TridentSync(pScrn);
+    CHECKCLIPPING;
+    if (pTrident->DstEnable) {
+	if (pTrident->Chipset != PROVIDIA9685) {
+	    TGUI_OPERMODE(pTrident->EngineOperation);
+	}
+	pTrident->DstEnable = FALSE;
+    }
 }
 
 static void
@@ -266,6 +359,18 @@ TridentSetupForSolidLine(ScrnInfoPtr pScrn, int color,
     TGUI_FMIX(TGUIRops_Pixalu[rop]);
 }
 
+static void
+Trident9685SetupForSolidLine(ScrnInfoPtr pScrn, int color,
+					 int rop, unsigned int planemask)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+
+    REPLICATE(color);
+    TGUI_FPATCOL(color);
+    TGUI_BPATCOL(color);
+    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+}
+
 static void 
 TridentSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
         int x, int y, int dmaj, int dmin, int e, int len, int octant)
@@ -277,11 +382,13 @@ TridentSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
     if (octant & XDECREASING) pTrident->BltScanDirection |= XNEG;
     if (octant & YDECREASING) pTrident->BltScanDirection |= YNEG;
     TGUI_DRAWFLAG(SOLIDFILL | STENCIL | pTrident->BltScanDirection);
-    TGUI_SRC_XY(dmaj,dmin);
+    TGUI_SRC_XY(dmin-dmaj,dmin);
     TGUI_DEST_XY(x,y);
-    TGUI_DIM_XY(e,len);
+    TGUI_DIM_XY(dmin+e,len);
     TGUI_COMMAND(GE_BRESLINE);
-    TridentSync(pScrn);
+    if (!pTrident->UsePCIRetry)
+    	TridentSync(pScrn);
+    CHECKCLIPPING;
 }
 
 static void
@@ -290,12 +397,24 @@ TridentSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    CHECKCLIPPING;
-
     REPLICATE(color);
     TGUI_FCOLOUR(color);
     TGUI_BCOLOUR(color);
     TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_DRAWFLAG(SOLIDFILL | PATMONO);
+}
+
+static void
+Trident9685SetupForFillRectSolid(ScrnInfoPtr pScrn, int color, 
+				    int rop, unsigned int planemask)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+
+    REPLICATE(color);
+    TGUI_FPATCOL(color);
+    TGUI_BPATCOL(color);
+    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_DRAWFLAG(SOLIDFILL | PATMONO);
 }
 
 static void
@@ -305,32 +424,31 @@ TridentSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 
     TGUI_DIM_XY(w,h);
     TGUI_DEST_XY(x,y);
-    TGUI_DRAWFLAG(SOLIDFILL | PATMONO);
     TGUI_COMMAND(GE_BLT);
-    TridentSync(pScrn);
+    if (!pTrident->UsePCIRetry)
+    	TridentSync(pScrn);
+    CHECKCLIPPING;
 }
 
 static void 
 TridentSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
-    int bg, int fg, int rop,
+    int fg, int bg, int rop,
     unsigned int planemask)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    CHECKCLIPPING;
-
     REPLICATE(fg);
-    REPLICATE(bg);
-
     TGUI_FCOLOUR(fg);
+    REPLICATE(bg);
     TGUI_BCOLOUR(bg);
-    TGUI_DRAWFLAG(SCR2SCR | SRCMONO);
+
+    TGUI_DRAWFLAG(SRCMONO | SCR2SCR);
     TGUI_FMIX(TGUIRops_alu[rop]);
 }
 
 static void 
 TridentSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
-    int srcx, int srcy, int x, int y, int w, int h)
+    int x, int y, int w, int h, int srcx, int srcy, int offset)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
@@ -338,30 +456,212 @@ TridentSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
     TGUI_DEST_XY(x,y);
     TGUI_DIM_XY(w,h);
     TGUI_COMMAND(GE_BLT);
-    TridentSync(pScrn);
+    if (!pTrident->UsePCIRetry)
+    	TridentSync(pScrn);
+    CHECKCLIPPING;
 }
 
 static void 
-TridentSetupForImageWrite(ScrnInfoPtr pScrn,
- 	int rop, unsigned int planemask,
- 	int transparency_color, int bpp, int depth)
+TridentSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
+    int fg, int bg, int rop,
+    unsigned int planemask)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    
-    CHECKCLIPPING;
 
-    TGUI_DRAWFLAG(0);
+    REPLICATE(fg);
+    REPLICATE(bg);
+    TGUI_FCOLOUR(fg);
+    TGUI_BCOLOUR(bg);
+
+    if (bg != -1) {
+    	TGUI_DRAWFLAG(SRCMONO);
+    } else {
+	TGUI_DRAWFLAG(SRCMONO | 1<<12);
+    }
     TGUI_SRC_XY(0,0);
     TGUI_FMIX(TGUIRops_alu[rop]);
 }
- 
+
 static void
-TridentSubsequentImageWrite(ScrnInfoPtr pScrn,
+TridentSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 	int x, int y, int w, int h, int skipleft)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
+    TridentSetClippingRectangle(pScrn,x,y,((w+x)*(pScrn->bitsPerPixel>>3))-1,y+h-1);
+
+#if 0
+ErrorF("%d %d %d %d\n",x,y,w,h);
+#endif
+if (w == 0) return;
+if (h == 0) return;
+
     TGUI_DEST_XY(x,y);
     TGUI_DIM_XY(w,h);
     TGUI_COMMAND(GE_BLT);
+}
+
+static void MoveDWORDS(
+   register CARD32* dest,
+   register CARD32* src,
+   register int dwords )
+{
+     while(dwords & ~0x03) {
+	*dest = *src;
+	*(dest + 1) = *(src + 1);
+	*(dest + 2) = *(src + 2);
+	*(dest + 3) = *(src + 3);
+	src += 4;
+	dest += 4;
+	dwords -= 4;
+     }	
+     if (!dwords) return;
+     *dest = *src;
+     dest += 1;
+     src += 1;
+     if (dwords == 1) return;
+     *dest = *src;
+     dest += 1;
+     src += 1;
+     if (dwords == 2) return;
+     *dest = *src;
+     dest += 1;
+     src += 1;
+}
+
+static void
+TridentWritePixmap(
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth,
+    int rop,
+    unsigned int planemask,
+    int transparency_color,
+    int bpp, int depth
+)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    int dst = 0;
+
+    TridentSetClippingRectangle(pScrn,(x*(bpp>>3)),y,((w+x)*(bpp>>3))-1,y+h-1);
+
+    if (w & 7)
+    	w += 8 - (w & 7);
+
+    if (transparency_color != -1) {
+	pTrident->DstEnable = TRUE;
+	if (pTrident->Chipset == PROVIDIA9685) {
+	    dst = 1<<16;
+	} else {
+    	    TGUI_OPERMODE(pTrident->EngineOperation | DST_ENABLE);
+	}
+	REPLICATE(transparency_color);
+	TGUI_CKEY(transparency_color);
+    }
+    TGUI_SRC_XY(0,0);
+    TGUI_FMIX(TGUIRops_alu[rop]);
+    TGUI_DEST_XY(x,y);
+    TGUI_DIM_XY(w,h);
+    if (pTrident->Chipset == PROVIDIA9685) {
+    	TGUI_DRAWFLAG(1<<30 | dst); /* Enable Clipping */
+    } else {
+    	TGUI_DRAWFLAG(0);
+    }
+    TGUI_COMMAND(GE_BLT);
+
+    if (pScrn->bitsPerPixel == 8)
+    	w >>= 2;
+    if (pScrn->bitsPerPixel == 16)
+    	w >>= 1;
+
+    while (h--) {
+	MoveDWORDS((CARD32*)pTrident->FbBase,(CARD32*)src,w);
+	src += srcwidth;
+    }
+
+    if (pTrident->UsePCIRetry)
+    	SET_SYNC_FLAG(infoRec);
+    else 
+    	TridentSync(pScrn);
+
+    if (pTrident->DstEnable) {
+	if (pTrident->Chipset != PROVIDIA9685) {
+	    TGUI_OPERMODE(pTrident->EngineOperation);
+	}
+	pTrident->DstEnable = FALSE;
+    }
+
+    CHECKCLIPPING;
+}
+
+static void 
+TridentSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
+					   int patternx, int patterny, 
+					   int fg, int bg, int rop,
+					   unsigned int planemask)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+
+    REPLICATE(bg);
+    TGUI_BCOLOUR(bg);
+    REPLICATE(fg);
+    TGUI_FCOLOUR(fg);
+    TGUI_DRAWFLAG(PAT2SCR | PATMONO);
+    TGUI_PATLOC(((patterny * pScrn->displayWidth * pScrn->bitsPerPixel / 8) +
+		 (patternx * pScrn->bitsPerPixel / 8)) >> 6);
+    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+}
+
+static void 
+TridentSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 	
+				   int patternx, int patterny,
+				   int x, int y,
+				   int w, int h)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+  
+    TGUI_DEST_XY(x,y);
+    TGUI_DIM_XY(w,h);
+    TGUI_COMMAND(GE_BLT);
+    if (!pTrident->UsePCIRetry)
+    	TridentSync(pScrn);
+    CHECKCLIPPING;
+}
+
+static void 
+TridentSetupForColor8x8PatternFill(ScrnInfoPtr pScrn, 
+					   int patternx, int patterny, 
+					   int rop,
+					   unsigned int planemask,
+					   int trans_col)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+
+    TGUI_PATLOC(((patterny * pScrn->displayWidth * pScrn->bitsPerPixel / 8) +
+		 (patternx * pScrn->bitsPerPixel / 8)) >> 6);
+    if (trans_col == -1) {
+	REPLICATE(trans_col);
+	TGUI_BCOLOUR(trans_col);
+	TGUI_DRAWFLAG(PAT2SCR | 1<<12);
+    } else
+    	TGUI_DRAWFLAG(PAT2SCR);
+    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+}
+
+static void 
+TridentSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn, 	
+				   int patternx, int patterny,
+				   int x, int y,
+				   int w, int h)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+  
+    TGUI_DEST_XY(x,y);
+    TGUI_DIM_XY(w,h);
+    TGUI_COMMAND(GE_BLT);
+    if (!pTrident->UsePCIRetry)
+    	TridentSync(pScrn);
+    CHECKCLIPPING;
 }

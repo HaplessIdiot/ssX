@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.6 1998/08/16 10:24:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.7 1998/10/03 08:42:20 dawes Exp $ */
 
 /*
  * SmeBSB.c - Source code file for BSB Menu Entry object.
@@ -466,9 +466,11 @@ XawSmeBSBSetValues(Widget current, Widget request, Widget cnew,
 
   if (ret_val)
     {
-      GetDefaultSize(cnew,
-		     &entry->rectangle.width, &entry->rectangle.height);
+      Dimension width, height;
+
+      GetDefaultSize(cnew, &width, &height);
       entry->sme_bsb.set_values_area_cleared = True;
+      XtMakeResizeRequest(cnew, width, height, NULL, NULL);
     }
 
   return (ret_val);

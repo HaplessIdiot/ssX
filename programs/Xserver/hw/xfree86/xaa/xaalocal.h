@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.11 1998/10/25 07:12:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.12 1998/11/01 12:36:08 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -18,6 +18,7 @@
 #define DO_CACHE_BLT		0x00000003
 #define DO_COLOR_EXPAND		0x00000004
 #define DO_CACHE_EXPAND		0x00000005
+#define DO_IMAGE_WRITE		0x00000006
 
 
 typedef CARD32 * (*GlyphScanlineFuncPtr)(
@@ -517,7 +518,6 @@ XAAFillColor8x8PatternRects(
    XAACacheInfoPtr pCache
 );
 
-
 void 
 XAAFillCacheBltRects(
    ScrnInfoPtr pScrn,
@@ -528,6 +528,29 @@ XAAFillCacheBltRects(
    int xorg, int yorg,
    XAACacheInfoPtr pCache
 );
+
+void 
+XAAFillCacheExpandRects(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   PixmapPtr pPix
+);
+
+void 
+XAAFillImageWriteRects(
+    ScrnInfoPtr pScrn,
+    int rop,
+    unsigned int planemask,
+    int nBox,
+    BoxPtr pBox,
+    int xorg, int yorg,
+    PixmapPtr pPix
+);
+
 void
 XAAPolyFillRectSolid(
     DrawablePtr pDraw,
@@ -577,15 +600,12 @@ XAAPolyFillRectCacheExpand(
     xRectangle *prectInit
 );
 
-void 
-XAAFillCacheExpandRects(
-   ScrnInfoPtr pScrn,
-   int fg, int bg, int rop,
-   unsigned int planemask,
-   int nBox,
-   BoxPtr pBox,
-   int xorg, int yorg,
-   PixmapPtr pPix
+void
+XAAPolyFillRectImageWrite(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int	nrectFill,
+    xRectangle *prectInit
 );
 
 void
@@ -1355,6 +1375,18 @@ XAARotateMonoPattern(
 
 void XAAComputeDash(GCPtr pGC);
 
+void XAAMoveDWORDS_FixedBase(
+   register CARD32* dest,
+   register CARD32* src,
+   register int dwords 
+);
+
+void XAAMoveDWORDS(
+   register CARD32* dest,
+   register CARD32* src,
+   register int dwords 
+);
+
 
 void
 XAAPolyFillArcSolid(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs);
@@ -1364,6 +1396,9 @@ XAACacheTile(ScrnInfoPtr Scrn, PixmapPtr pPix);
 
 XAACacheInfoPtr
 XAACacheMonoStipple(ScrnInfoPtr Scrn, PixmapPtr pPix);
+
+XAACacheInfoPtr
+XAACachePlanarMonoStipple(ScrnInfoPtr Scrn, PixmapPtr pPix);
 
 XAACacheInfoPtr
 XAACacheStipple(ScrnInfoPtr Scrn, PixmapPtr pPix, int fg, int bg);
@@ -1447,6 +1482,10 @@ CARD32 XAAReverseBitOrder(CARD32 data);
 	(!(flags & RGB_EQUAL) || \
 	(CHECK_RGB_EQUAL(pGC->fgPixel) && CHECK_RGB_EQUAL(pGC->bgPixel)))
 
+#define CHECK_NO_GXCOPY(pGC, flags) \
+	((pGC->alu != GXcopy) || !(flags & NO_GXCOPY) || \
+	((pGC->planemask & infoRec->FullPlanemask) != infoRec->FullPlanemask))
+	
 
 /*
  * Moved XAAPixmapCachePrivate here from xaaPCache.c, since driver

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.25 1998/10/05 13:23:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.26 1998/10/25 07:12:07 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -17,6 +17,7 @@
 #include "xaa.h"
 #include "xf86Cursor.h"
 #include "vgaHW.h"
+#include "colormapst.h"
 
 #if defined(__alpha__)
 #define INREG8(addr) xf86ReadSparse8(pMga->IOBase, (addr))
@@ -77,7 +78,7 @@ typedef struct {
     MessageType ClockFrom;
     MessageType MemClkFrom;
     Bool	SetMemClk;
-    void	(*StoreColors)(ScrnInfoPtr, xColorItem*, int);
+    void	(*LoadPalette)(ScrnInfoPtr, int, int*, LOCO*, short);
     void	(*PreInit)(ScrnInfoPtr);
     void	(*Save)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
     void	(*Restore)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);

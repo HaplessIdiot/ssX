@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.2 1998/07/25 16:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.3 1998/10/25 07:12:13 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -119,6 +119,14 @@ XAAPaintWindow(
 	     (*infoRec->FillCacheBltRects)(infoRec->pScrn, GXcopy, ~0,
 		nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y, pCache);
 	     return;
+	}
+
+	if(infoRec->PolyFillRectImageWrite && 
+		!(infoRec->PolyFillRectImageWriteFlags & NO_GXCOPY)) {
+	    (*infoRec->FillImageWriteRects) (infoRec->pScrn, GXcopy, 
+                   ~0, nBox, pBox, pBgWin->drawable.x, pBgWin->drawable.y,
+                   pPix);
+	    return;
 	}
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.7 1998/10/21 06:12:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.8 1998/11/01 12:35:48 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -196,8 +196,11 @@
 #define PCI_CHIP_968		0x88F0
 #define PCI_CHIP_TRIO64V2_DXGX	0x8901
 #define PCI_CHIP_PLATO_PX	0x8902
+#define PCI_CHIP_Trio3D		0x8904
 #define PCI_CHIP_VIRGE_DXGX	0x8A01
 #define PCI_CHIP_VIRGE_GX2	0x8A10
+#define PCI_CHIP_Savage3D	0x8A20
+#define PCI_CHIP_Savage3D_MV	0x8A21
 #define PCI_CHIP_VIRGE_MX	0x8C01
 #define PCI_CHIP_VIRGE_MXP	0x8C03
 
@@ -382,9 +385,12 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_TRIO64UVP,	"Trio64UV+"},
 				{PCI_CHIP_TRIO64V2_DXGX,"Trio64V2/DX or /GX"},
 				{PCI_CHIP_PLATO_PX,	"PLATO/PX"},
+				{PCI_CHIP_Trio3D,	"Trio3D"},
 				{PCI_CHIP_VIRGE_VX,	"ViRGE/VX"},
 				{PCI_CHIP_VIRGE_DXGX,	"ViRGE/DX or /GX"},
 				{PCI_CHIP_VIRGE_GX2,	"ViRGE/GX2"},
+				{PCI_CHIP_Savage3D,	"Savage3D (86E391)"},
+				{PCI_CHIP_Savage3D_MV,	"Savage3D+MacroVision (86E390)"},
 				{PCI_CHIP_VIRGE_MX,	"ViRGE/MX"},
 				{PCI_CHIP_VIRGE_MXP,	"ViRGE/MX+"},
 				{PCI_CHIP_868,		"868"},

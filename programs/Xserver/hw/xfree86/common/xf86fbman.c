@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.3 1998/08/02 05:16:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.4 1998/08/29 05:43:03 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -22,16 +22,17 @@ static Bool xf86FBCloseScreen(int i, ScreenPtr pScreen);
 static unsigned long xf86FBGeneration = 0;
 int xf86FBScreenIndex = -1;
 
+
 Bool
 xf86InitFBManager(
     ScreenPtr pScreen,  
     BoxPtr FullBox
-)
-{
+){
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-   FBManagerPtr offman;
    RegionRec ScreenRegion;
+   RegionRec FullRegion;
    BoxRec ScreenBox;
+   Bool ret;
 
    ScreenBox.x1 = 0;
    ScreenBox.y1 = 0;
@@ -42,6 +43,34 @@ xf86InitFBManager(
       (FullBox->x2 <  ScreenBox.x2) || (FullBox->y2 <  ScreenBox.y2)) {
 	return FALSE;   
    }
+
+   REGION_INIT(pScreen, &ScreenRegion, &ScreenBox, 1); 
+   REGION_INIT(pScreen, &FullRegion, FullBox, 1); 
+
+   REGION_SUBTRACT(pScreen, &FullRegion, &FullRegion, &ScreenRegion);
+
+   ret = xf86InitFBManagerRegions(pScreen, &FullRegion);
+
+   REGION_UNINIT(pScreen, &ScreenRegion);
+   REGION_UNINIT(pScreen, &FullRegion);
+    
+   return ret;
+}
+
+
+
+
+Bool
+xf86InitFBManagerRegion(
+    ScreenPtr pScreen,  
+    RegionPtr FullRegion
+)
+{
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   FBManagerPtr offman;
+
+   if(REGION_NIL(FullRegion))
+	return FALSE;
 
    if(xf86FBGeneration != serverGeneration) {
 	if((xf86FBScreenIndex = AllocateScreenPrivateIndex()) < 0)
@@ -57,16 +86,11 @@ xf86InitFBManager(
    offman->CloseScreen = pScreen->CloseScreen;
    pScreen->CloseScreen = xf86FBCloseScreen;
 
-   offman->FullMemory = REGION_CREATE(pScreen, FullBox, 1);
    offman->InitialBoxes = REGION_CREATE(pScreen, NULL, 1);
    offman->FreeBoxes = REGION_CREATE(pScreen, NULL, 1);
 
-   REGION_INIT(pScreen, &ScreenRegion, &ScreenBox, 1); 
-
-   REGION_SUBTRACT(pScreen, offman->InitialBoxes, offman->FullMemory,
- 						&ScreenRegion);
-
-   REGION_COPY(pScreen, offman->FreeBoxes, offman->InitialBoxes);
+   REGION_COPY(pScreen, offman->InitialBoxes, FullRegion);
+   REGION_COPY(pScreen, offman->FreeBoxes, FullRegion);
 
    offman->UsedAreas = NULL;
    offman->NumUsedAreas = 0;  
@@ -77,8 +101,6 @@ xf86InitFBManager(
    pScrn->AllocateOffscreenArea = xf86AllocateFBArea;
    pScrn->FreeOffscreenArea = xf86FreeFBArea;
    pScrn->ResizeOffscreenArea = xf86ResizeFBArea;
-
-   REGION_UNINIT(pScreen, &ScreenRegion);
 
    return TRUE;
 } 
@@ -366,7 +388,6 @@ xf86FBCloseScreen (int i, ScreenPtr pScreen)
 	FREE_FBLINK(tmp);
    }
 
-   REGION_DESTROY(pScreen, offman->FullMemory);
    REGION_DESTROY(pScreen, offman->InitialBoxes);
    REGION_DESTROY(pScreen, offman->FreeBoxes);
 

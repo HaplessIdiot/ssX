@@ -1,4 +1,4 @@
-! $XFree86: contrib/programs/xedit/Xedit.ad,v 1.4 1998/10/11 11:20:00 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.1 1998/10/25 07:12:16 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -28,6 +28,7 @@ Use Control-C to paste the selection at CUT_BUFFER0.
 *labelWindow*label:			no file yet
 *labelWindow.min:			18
 *labelWindow.max:			18
+*labelWindow.showGrip:			False
 
 *quit.label:				Quit
 *save.label:				Save
@@ -46,8 +47,8 @@ Use Control-C to paste the selection at CUT_BUFFER0.
 
 *editWindow.autoFill:			False
 *editWindow.scrollVertical:		Always
-*editWindow.showGrip:			False
-*editWindow.enableUndo:			True
+*editWindow.showGrip:			True
+xedit.textSource*enableUndo:		True
 
 *bc_label*label:			Use Control-S and Control-R to Search.
 *bc_label*showGrip:			False
@@ -56,6 +57,14 @@ Use Control-C to paste the selection at CUT_BUFFER0.
 *insertFile*text.width:			141
 *search*searchText.width:		157
 *search*replaceText.width:		157
+
+*fileMenu.BackingStore:			NotUseful
+*fileMenu.menuLabel.vertSpace:		80
+*fileMenu.?.HorizontalMargins:		16
+*fileMenu.label:			File Menu
+*fileMenu.justify:			center
+*fileMenu.menuLabel.height:		250
+*fileMenu.cursor:			left_ptr
 
 *TransientShell*Text.translations: #override \
 c<Key>S:	no-op(r)\n\
@@ -68,12 +77,25 @@ m<Key>I:	no-op(r)
 		   translations, "#override <Map>:")
 
 *baseTranslations: #override \
-<Ctrl>X,<Ctrl>C:	quit()\n\
-<Ctrl>X,<Ctrl>S:	save-file()\n\
-<Ctrl>X,<Ctrl>F:	find-file()
+<Ctrl>X,<Ctrl>C:quit()\n\
+<Ctrl>X,<Ctrl>S:save-file()\n\
+<Ctrl>X,<Ctrl>F:find-file()
 
 *editWindow.translations: #override \
-<Ctrl>X,<Ctrl>U:	undo()
+<Ctrl>X,:<Key>0:delete-window(current)\n\
+<Ctrl>X,:<Key>1:delete-window(other)\n\
+<Ctrl>X,:<Key>2:split-window(vertical)\n\
+<Ctrl>X,:<Key>3:split-window(horizontal)\n\
+<Ctrl>X,!<Key>b:switch-source()\n\
+<Ctrl>X,!<Key>o:other-window()\n\
+<Ctrl>X,!<Key>k:kill-file()\n\
+<Ctrl>X,!<Key>u:undo()\n\
+!<Key>b:	insert-char()\n\
+!<Key>o:	insert-char()\n\
+!<Key>k:	insert-char()\n\
+!<Key>u:	insert-char()\n\
+c<Btn1Down>:	xedit-focus() popup-menu(fileMenu)\n\
+<Btn1Down>:	xedit-focus() select-start()
 
 *filename.translations: #override \
 c<Key>S:	no-op(r)\n\

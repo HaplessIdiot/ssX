@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.2 1998/08/20 13:58:55 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.3 1998/10/03 08:42:01 dawes Exp $ */
 
 /*
  * AsciiText.c - Source code for AsciiText Widget
@@ -61,7 +61,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/AsciiTextP.h>
-#include <X11/Xaw/AsciiSrc.h>
+#include <X11/Xaw/AsciiSrcP.h>
 #include <X11/Xaw/AsciiSink.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/MultiSinkP.h>
@@ -77,6 +77,12 @@ SOFTWARE.
  */
 static void XawAsciiInitialize(Widget, Widget, ArgList, Cardinal*);
 static void XawAsciiDestroy(Widget);
+
+/*
+ * From TextSrc.c
+ */
+void _XawSourceAddText(Widget, Widget);
+void _XawSourceRemoveText(Widget, Widget, Bool);
 
 #define Superclass	(&textClassRec)
 AsciiTextClassRec asciiTextClassRec = {
@@ -263,17 +269,35 @@ XawAsciiInitialize(Widget request, Widget cnew,
   /* This is the main change for internationalization  */
   if (w->simple.international == True)	/* The multi* are international */
     {
-      w->text.source = XtCreateWidget("textSource", multiSrcObjectClass,
-				      cnew, args, *num_args);
-      w->text.sink = XtCreateWidget("textSink", multiSinkObjectClass,
-				    cnew, args, *num_args);
+	if (w->text.sink == NULL)
+	    w->text.sink = XtCreateWidget("textSink", multiSinkObjectClass,
+					  cnew, args, *num_args);
+	else if (!XtIsSubclass(w->text.sink, multiSinkObjectClass))
+	    XtError("Sink object is not a subclass of multiSink");
+
+	if (w->text.source == NULL)
+	    w->text.source = XtCreateWidget("textSource", multiSrcObjectClass,
+					    cnew, args, *num_args);
+	else if (!XtIsSubclass(w->text.source, multiSrcObjectClass))
+	    XtError("Source object is not a subclass of multiSrc");
+	else
+	    _XawSourceAddText(w->text.source, cnew);
   }
   else
     {
-      w->text.source = XtCreateWidget("textSource", asciiSrcObjectClass,
-				      cnew, args, *num_args);
-      w->text.sink = XtCreateWidget("textSink", asciiSinkObjectClass,
-				    cnew, args, *num_args);
+	if (w->text.sink == NULL)
+	    w->text.sink = XtCreateWidget("textSink", asciiSinkObjectClass,
+					  cnew, args, *num_args);
+	else if (!XtIsSubclass(w->text.source, asciiSinkObjectClass))
+	    XtError("Sink object is not a subclass of asciiSink");
+
+	if (w->text.source == NULL)
+	    w->text.source = XtCreateWidget("textSource", asciiSrcObjectClass,
+					    cnew, args, *num_args);
+	else if (!XtIsSubclass(w->text.source, asciiSrcObjectClass))
+	    XtError("Source object is not a subclass of asciiSrc");
+	else
+	    _XawSourceAddText(w->text.source, cnew);
   }
 
   if (XtHeight(w) == DEFAULT_TEXT_HEIGHT)
@@ -305,13 +329,15 @@ XawAsciiInitialize(Widget request, Widget cnew,
 static void 
 XawAsciiDestroy(Widget w)
 {
+    AsciiWidget ascii = (AsciiWidget)w;
+
     /* Disconnect input method */
-  if (((AsciiWidget)w)->simple.international == True)
-    _XawImUnregister(w);
+    if (ascii->simple.international == True)
+	_XawImUnregister(w);
 
-    if (w == XtParent(((AsciiWidget)w)->text.source))
-    XtDestroyWidget(((AsciiWidget)w)->text.source);
+    if (w == XtParent(ascii->text.sink))
+	XtDestroyWidget(ascii->text.sink);
 
-    if (w == XtParent(((AsciiWidget)w)->text.sink))
-    XtDestroyWidget(((AsciiWidget)w)->text.sink);
+    _XawSourceRemoveText(ascii->text.source, w,
+			 w == XtParent(ascii->text.source));
 }

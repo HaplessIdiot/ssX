@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.22 1998/10/06 04:39:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.23 1998/11/01 12:35:53 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -166,12 +166,20 @@ typedef enum {
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
     OPTION_PCI_RETRY,
-    OPTION_NOACCEL
+    OPTION_NOACCEL,
+    OPTION_MMIO,
+    OPTION_NOMMIO,
+    OPTION_MEMCFG1,
+    OPTION_MEMCFG2
 } CIROpts;
 
 static OptionInfoRec CIROptions[] = {
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_TRI,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_MMIO,		"MMIO",		OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_NOMMIO,		"NoMMIO",	OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_MEMCFG1,		"MemCFG1",	OPTV_INTEGER,	{0}, -1 },
+    { OPTION_MEMCFG2,		"MemCFG2",	OPTV_INTEGER,	{0}, -1 },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -428,36 +436,65 @@ CIRProbe(DriverPtr drv, int flags)
  * CIRCountRAM --
  *
  * Counts amount of installed RAM 
+ *
+ * XXX Can use options to configure memory on non-promary cards.
  */
-
-/* XXX We need to get rid of this PIO (MArk) */
 static int
 CIRCountRam(ScrnInfoPtr pScrn)
 {
 	CIRPtr pCir = CIRPTR(pScrn);
+	vgaHWPtr hwp = VGAHWPTR(pScrn);
+	MessageType from;
 	int videoram = 0;
-	int SR0F, SR17;
 
+	/* If using MMIO we must temporary map the
+	   IO ports in order to read/write memory config
+	   registers. */
+	if(pCir->UseMMIO) {
+		/* Map the CIR memory and MMIO areas */
+		pCir->FbMapSize = 1024*1024; /* XX temp */
+		if (!CIRMapMem(pScrn))
+			return 0;
+		vgaHWSetMmioFuncs(hwp, pCir->IOBase, -0x3C0);
+	}
 
-	outb(0x3c4, 0x0f);
-	SR0F = inb(0x3c5);
+        if(pCir->SR0F != (CARD32)-1) {
+		from = X_CONFIG;
+		hwp->writeSeq(hwp, 0x0F, pCir->SR0F);
+	}
+	else {
+		from = X_PROBED;
+		pCir->SR0F = hwp->readSeq(hwp, 0x0F);
+	}
+        xf86DrvMsg(pScrn->scrnIndex, from, "Memory Config reg 1 is 0x%02X\n",
+	       pCir->SR0F);
 
         switch (pCir->Chipset) {
         case PCI_CHIP_GD5446:
 		videoram = 1024;
-		outb(0x3c4, 0x17);
-		SR17 = inb(0x3c5);
-		if ((SR0F & 0x18) == 0x18) {
-			if(SR0F & 0x80) {
-				if(SR17 & 0x80)
+
+		if(pCir->SR17 != (CARD32)-1) {
+			from = X_CONFIG;
+			hwp->writeSeq(hwp, 0x17, pCir->SR17);
+		}
+		else {
+			from = X_PROBED;
+			pCir->SR17 = hwp->readSeq(hwp, 0x17);
+		}
+		xf86DrvMsg(pScrn->scrnIndex, from, "Memory Config reg 2 is 0x%02X\n",
+			pCir->SR17);
+
+		if ((pCir->SR0F & 0x18) == 0x18) {
+			if(pCir->SR0F & 0x80) {
+				if(pCir->SR17 & 0x80)
 					videoram = 2048;
-				else if(SR17 & 0x02)
+				else if(pCir->SR17 & 0x02)
 					videoram = 3072;
 				else
 					videoram = 4096;
 			}
 			else {
-				if((SR17 & 80) == 0)
+				if((pCir->SR17 & 80) == 0)
 					videoram = 2048;
 			}
 		}
@@ -465,12 +502,20 @@ CIRCountRam(ScrnInfoPtr pScrn)
 		
 	case PCI_CHIP_GD5480:
 		videoram = 1024;
-		if ((SR0F & 0x18) == 0x18) {	/* 2 or 4 MB */
+		if ((pCir->SR0F & 0x18) == 0x18) {	/* 2 or 4 MB */
 			videoram *= 2048;
-			if (SR0F & 0x80)	/* Second bank enable */
+			if (pCir->SR0F & 0x80)	/* Second bank enable */
 				videoram = 4096;
 		}
 		break;
+	}
+	/* If using MMIO we must temporary map the
+	   IO ports in order to read/write memory config
+	   registers. */
+	if(pCir->UseMMIO) {
+		/* UNMap the CIR memory and MMIO areas */
+		if (!CIRUnmapMem(pScrn))
+			return 0;
 	}
 	return videoram;
 }
@@ -756,7 +801,40 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     if(pCir->IOAddress != 0) {
         xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
     	       (unsigned long)pCir->IOAddress);
+       	/* Default to MMIO if we have a separate IOAddress and 
+           not in monochrome mode (IO 0x3Bx is not relocated!) */
+        if (pScrn->bitsPerPixel != 1)
+          pCir->UseMMIO = TRUE;
     }
+
+    /* User options can override the MMIO default */
+#if 0
+    /* Will we ever support MMIO on 5446A or older? */
+    if (xf86IsOptionSet(CIROptions, OPTION_MMIO)) {
+        pCir->UseMMIO = TRUE;
+	from = X_CONFIG;
+    }
+#endif
+    if (xf86IsOptionSet(CIROptions, OPTION_NOMMIO)) {
+        pCir->UseMMIO = FALSE;
+	from = X_CONFIG;
+    }
+    if (pCir->UseMMIO) {
+	xf86DrvMsg(pScrn->scrnIndex, from, "Using MMIO\n");
+    }
+
+    /* XXX If UseMMIO == TRUE and for any reason we cannot do MMIO,
+       abort here */
+
+    /* XXX We do not know yet how to configure memory on this card.
+       Use options MemCFG1 and MemCFG2 to set registers SR0F and
+       SR17 before trying to count ram size. */
+
+    pCir->SR0F = (CARD32)-1;
+    pCir->SR17 = (CARD32)-1;
+
+    (void) xf86GetOptValULong(CIROptions, OPTION_MEMCFG1, &pCir->SR0F);
+    (void) xf86GetOptValULong(CIROptions, OPTION_MEMCFG2, &pCir->SR17);
 
     /*
      * If the user has specified the amount of memory in the XF86Config
@@ -1117,12 +1195,29 @@ CIRSave(ScrnInfoPtr pScrn)
 
     vgaHWSave(pScrn, &VGAHWPTR(pScrn)->SavedReg, VGA_SR_ALL);
 
+#if 1
+    pCir->ModeReg.ExtVga[CR1B] = pCir->SavedReg.ExtVga[CR1B] = hwp->readCrtc(hwp, 0x1B);
+    pCir->ModeReg.ExtVga[CR1D] = pCir->SavedReg.ExtVga[CR1D] = hwp->readCrtc(hwp, 0x1D);
+    pCir->ModeReg.ExtVga[SR07] = pCir->SavedReg.ExtVga[SR07] = hwp->readSeq(hwp, 0x07);
+    pCir->ModeReg.ExtVga[SR0E] = pCir->SavedReg.ExtVga[SR0E] = hwp->readSeq(hwp, 0x0E);
+    pCir->ModeReg.ExtVga[SR12] = pCir->SavedReg.ExtVga[SR12] = hwp->readSeq(hwp, 0x12);
+    pCir->ModeReg.ExtVga[SR13] = pCir->SavedReg.ExtVga[SR13] = hwp->readSeq(hwp, 0x13);
+    pCir->ModeReg.ExtVga[SR1E] = pCir->SavedReg.ExtVga[SR1E] = hwp->readSeq(hwp, 0x1E);
+    pCir->ModeReg.ExtVga[GR17] = pCir->SavedReg.ExtVga[GR17] = hwp->readGr(hwp, 0x17);
+    pCir->ModeReg.ExtVga[GR18] = pCir->SavedReg.ExtVga[GR18] = hwp->readGr(hwp, 0x18);
+    /* The first 4 reads are for the pixel mask register. After 4 times that
+       this register is accessed in succession reading/writing this address
+       accesses the HDR. */
+    hwp->readDacMask(hwp); hwp->readDacMask(hwp);
+    hwp->readDacMask(hwp); hwp->readDacMask(hwp); 
+    pCir->ModeReg.ExtVga[HDR ] = pCir->SavedReg.ExtVga[HDR ] = hwp->readDacMask(hwp);
+#else
     outb(hwp->IOBase+4, 0x1B); pCir->ModeReg.ExtVga[CR1B] = pCir->SavedReg.ExtVga[CR1B] = inb(hwp->IOBase + 5);
     outb(hwp->IOBase+4, 0x1D); pCir->ModeReg.ExtVga[CR1D] = pCir->SavedReg.ExtVga[CR1D] = inb(hwp->IOBase + 5);
     outb(0x3C4, 0x07);   pCir->ModeReg.ExtVga[SR07] = pCir->SavedReg.ExtVga[SR07] = inb(0x3C5);
     outb(0x3C4, 0x0E);   pCir->ModeReg.ExtVga[SR0E] = pCir->SavedReg.ExtVga[SR0E] = inb(0x3C5);
-    outb(0x3C4, 0x12);   pCir->ModeReg.ExtVga[SR12] = pCir->SavedReg.ExtVga[SR1E] = inb(0x3C5);
-    outb(0x3C4, 0x13);   pCir->ModeReg.ExtVga[SR13] = pCir->SavedReg.ExtVga[SR1E] = inb(0x3C5);
+    outb(0x3C4, 0x12);   pCir->ModeReg.ExtVga[SR12] = pCir->SavedReg.ExtVga[SR12] = inb(0x3C5);
+    outb(0x3C4, 0x13);   pCir->ModeReg.ExtVga[SR13] = pCir->SavedReg.ExtVga[SR13] = inb(0x3C5);
     outb(0x3C4, 0x1E);   pCir->ModeReg.ExtVga[SR1E] = pCir->SavedReg.ExtVga[SR1E] = inb(0x3C5);
     outb(0x3CE, 0x17);   pCir->ModeReg.ExtVga[GR17] = pCir->SavedReg.ExtVga[GR17] = inb(0x3CF);
     outb(0x3CE, 0x18);   pCir->ModeReg.ExtVga[GR18] = pCir->SavedReg.ExtVga[GR18] = inb(0x3CF);
@@ -1131,18 +1226,27 @@ CIRSave(ScrnInfoPtr pScrn)
        accesses the HDR. */
     inb(0x3C6); inb(0x3C6); inb(0x3C6); inb(0x3C6);
     pCir->ModeReg.ExtVga[HDR ] = pCir->SavedReg.ExtVga[HDR ] = inb(0x3C6);
+#endif
 }
 
 /* XXX */
 static void
 CIRFix1bppColorMap(ScrnInfoPtr pScrn) {
+   vgaHWPtr hwp = VGAHWPTR(pScrn);
 /* In 1 bpp we have color 0 at LUT 0 and color 1 at LUT 0x3f.
    This makes white and black look right (otherwise they were both
    black. I'm sure there's a better way to do that, just lazy to
    search the docs.  */
 
+#if 1
+   hwp->writeDacWriteAddr(hwp, 0x00);
+   hwp->writeDacData(hwp, 0x00); hwp->writeDacData(hwp, 0x00); hwp->writeDacData(hwp, 0x00);
+   hwp->writeDacWriteAddr(hwp, 0x3F);
+   hwp->writeDacData(hwp, 0x3F); hwp->writeDacData(hwp, 0x3F); hwp->writeDacData(hwp, 0x3F);
+#else
    outb(0x3C8, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00);
    outb(0x3C8, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F);
+#endif
 }
 
 
@@ -1226,7 +1330,11 @@ CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* Turn off HW cursor, gamma correction, overscan color protect.  */
     pCir->ModeReg.ExtVga[SR12] = 0;
+#if 1
+    hwp->writeSeq(hwp, 0x12, pCir->ModeReg.ExtVga[SR12]);
+#else
     outw(0x3C4, (pCir->ModeReg.ExtVga[SR12] << 8) | 0x12);
+#endif
 
     if(VDiv2)
         hwp->ModeReg.CRTC[0x17] |= 0x04;
@@ -1239,7 +1347,11 @@ CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     /* Disable DCLK pin driver, interrupts. */
     pCir->ModeReg.ExtVga[GR17] |= 0x08;
     pCir->ModeReg.ExtVga[GR17] &= ~0x04;
+#if 1
+    hwp->writeGr(hwp, 0x17, pCir->ModeReg.ExtVga[GR17]);
+#else
     outw(0x3CE, (pCir->ModeReg.ExtVga[GR17] << 8) | 0x17);
+#endif
 
     vgaReg = &hwp->ModeReg;
 
@@ -1305,13 +1417,28 @@ CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         pCir->ModeReg.ExtVga[GR18] |= 0x20;
     else
         pCir->ModeReg.ExtVga[GR18] &= ~0x20;
+
+#if 1
+    hwp->writeGr(hwp, 0x18, pCir->ModeReg.ExtVga[GR18]);
+#else
     outw(0x3CE, (pCir->ModeReg.ExtVga[GR18] << 8) | 0x18);
+#endif
 
+#if 1
+    hwp->writeMiscOut(hwp, hwp->ModeReg.MiscOutReg);
+#else
     outb(0x3C2, hwp->ModeReg.MiscOutReg);
+#endif
 
+#if 1
+    hwp->writeSeq(hwp, 0x07, pCir->ModeReg.ExtVga[SR07]);
+    hwp->readDacMask(hwp); hwp->readDacMask(hwp); hwp->readDacMask(hwp); hwp->readDacMask(hwp);
+    hwp->writeDacMask(hwp, pCir->ModeReg.ExtVga[HDR ]);
+#else
     outw(0x3C4, (pCir->ModeReg.ExtVga[SR07] << 8) | 0x07);
     inb(0x3C6); inb(0x3C6); inb(0x3C6); inb(0x3C6);
     outb(0x3C6, pCir->ModeReg.ExtVga[HDR ]);
+#endif
 
     width = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
     if(pScrn->bitsPerPixel == 1)
@@ -1322,7 +1449,12 @@ CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pCir->ModeReg.ExtVga[CR1B] |= (width >> (3+4)) & 0x10;
     pCir->ModeReg.ExtVga[CR1B] |= (width >> (3+3)) & 0x40;
     pCir->ModeReg.ExtVga[CR1B] |= 0x22;
+
+#if 1
+    hwp->writeCrtc(hwp, 0x1B, pCir->ModeReg.ExtVga[CR1B]);
+#else
     outw(hwp->IOBase + 4, (pCir->ModeReg.ExtVga[CR1B] << 8) | 0x1B);
+#endif
 
     /* Programme the registers */
     vgaHWRestore(pScrn, &hwp->ModeReg, VGA_SR_MODE | VGA_SR_CMAP);
@@ -1358,6 +1490,22 @@ CIRRestore(ScrnInfoPtr pScrn)
 
     vgaHWProtect(pScrn, TRUE);
 
+#if 1
+    hwp->writeCrtc(hwp, 0x1B, cirReg->ExtVga[CR1B]);
+    hwp->writeCrtc(hwp, 0x1D, cirReg->ExtVga[CR1D]);
+    hwp->writeSeq(hwp, 0x07, cirReg->ExtVga[SR07]);
+    hwp->writeSeq(hwp, 0x0E, cirReg->ExtVga[SR0E]);
+    hwp->writeSeq(hwp, 0x12, cirReg->ExtVga[SR12]);
+    hwp->writeSeq(hwp, 0x13, cirReg->ExtVga[SR13]);
+    hwp->writeSeq(hwp, 0x1E, cirReg->ExtVga[SR1E]);
+    hwp->writeGr(hwp, 0x17, cirReg->ExtVga[GR17]);
+    hwp->writeGr(hwp, 0x18, cirReg->ExtVga[GR18]);
+    /* The first 4 reads are for the pixel mask register. After 4 times that
+       this register is accessed in succession reading/writing this address
+       accesses the HDR. */
+    hwp->readDacMask(hwp); hwp->readDacMask(hwp); hwp->readDacMask(hwp); hwp->readDacMask(hwp);
+    hwp->writeDacMask(hwp, pCir->SavedReg.ExtVga[HDR ]);
+#else
     outw(hwp->IOBase + 4, (cirReg->ExtVga[CR1B] << 8) | 0x1B);
     outw(hwp->IOBase + 4, (cirReg->ExtVga[CR1D] << 8) | 0x1D);
     outw(0x3C4, (cirReg->ExtVga[SR07] << 8) | 0x07);
@@ -1372,8 +1520,12 @@ CIRRestore(ScrnInfoPtr pScrn)
        accesses the HDR. */
     inb(0x3C6); inb(0x3C6); inb(0x3C6); inb(0x3C6);
     outb(0x3C6, pCir->SavedReg.ExtVga[HDR ]);
+#endif
 
-    vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
+    if (xf86IsPrimaryPci(pCir->PciInfo))
+      vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
+    else
+      vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
     vgaHWProtect(pScrn, FALSE);
 }
 
@@ -1401,20 +1553,24 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn = xf86Screens[pScreen->myNum];
 
     hwp = VGAHWPTR(pScrn);
-
-    hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
-
     pCir = CIRPTR(pScrn);
 
-    /* Map the VGA memory and get the VGA IO base */
-    if (!vgaHWMapMem(pScrn))
-	return FALSE;
-
-    vgaHWGetIOBase(hwp);
+    /* Map the VGA memory when the primary video */
+    if (xf86IsPrimaryPci(pCir->PciInfo)) {
+      hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
+      if (!vgaHWMapMem(pScrn))
+	  return FALSE;
+    }
 
     /* Map the CIR memory and MMIO areas */
     if (!CIRMapMem(pScrn))
 	return FALSE;
+
+    if(pCir->UseMMIO) {
+      vgaHWSetMmioFuncs(hwp, pCir->IOBase, -0x3C0);
+    }
+
+    vgaHWGetIOBase(hwp);
 
     /* Save the current state */
     CIRSave(pScrn);
@@ -1553,7 +1709,8 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     if(!pCir->NoAccel) { /* Initialize XAA functions */
-       if(!CIRXAAInit(pScreen))
+       if(!(pCir->UseMMIO ? CIRXAAInitMMIO(pScreen) :
+	                    CIRXAAInit(pScreen)))
           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
               "Could not initialize XAA\n");
     }
@@ -1640,19 +1797,34 @@ CIRAdjustFrame(int scrnIndex, int x, int y, int flags)
         return;
     }
 
+#if 1
+    hwp->writeCrtc(hwp, 0x0C, (Base >> 8) & 0xff);
+    hwp->writeCrtc(hwp, 0x0D, Base & 0xff);
+    tmp = hwp->readCrtc(hwp, 0x1B);
+#else
     outw(hwp->IOBase + 4, (Base & 0x00FF00) | 0x0C);
     outw(hwp->IOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
     outb(hwp->IOBase + 4, 0x1B);
     tmp = inb(hwp->IOBase + 5);
+#endif
     tmp &= 0xF2;
     tmp |= (Base >> 16) & 0x01;
     tmp |= (Base >> 15) & 0x0C;
+#if 1
+    hwp->writeCrtc(hwp, 0x1B, tmp);
+    tmp = hwp->readCrtc(hwp, 0x1D);
+#else
     outb(hwp->IOBase + 5, tmp);
     outb(hwp->IOBase + 4, 0x1D);
     tmp = inb(hwp->IOBase + 5);
+#endif
     tmp &= 0x7F;
     tmp |= (Base >> 12) & 0x80;
+#if 1
+    hwp->writeCrtc(hwp, 0x1D, tmp);
+#else
     outb(hwp->IOBase + 5, tmp);
+#endif
 }
 
 /*
@@ -1776,7 +1948,6 @@ CIRValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     }
 }
 
-
 /* Do screen blanking */
 
 /* Mandatory */
@@ -1786,6 +1957,39 @@ CIRSaveScreen(ScreenPtr pScreen, Bool unblank)
     return vgaHWSaveScreen(pScreen, unblank);
 }
 
+#if 0
+static CARD16
+CirrusSetClock(ScrnInfoPtr pScrn, int freq)
+{
+	int num, den, usemclk;
+	CARD8 tmp;
+	vgaHWPtr hwp = VGAHWPTR(pScrn);
+	CIRPtr pCir = CIRPTR(pScrn);
+
+	ErrorF("CirrusSetClock\n");
+
+	if(!CirrusFindClock(hwp, freq, pCir->MaxClock, &num, &den, &usemclk))
+		return 0;
+
+	ErrorF("CirrusSetClock: nom=%x den=%x usemclk=%x\n",
+		num, den, usemclk);
+
+	/* Set VCLK3. */
+#if 1
+	tmp = hwp->readSeq(hwp, 0x0E);
+	hwp->writeSeq(hwp, 0x0E, (tmp & 0x80) | num);
+	hwp->writeSeq(hwp, 0x1E, den);
+#else
+	outb(0x3c4, 0x0e);
+	tmp = inb(0x3c5);
+	outb(0x3c5, (tmp & 0x80) | num);
+	outb(0x3c4, 0x1e);
+	outb(0x3c5, den);
+#endif
+
+	return (num << 8) | den;
+}
+#endif
 
 /*
  * CIRDisplayPowerManagementSet --
@@ -1797,7 +2001,7 @@ static void
 CIRDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
 {
-	unsigned char seq1, crtcext1;
+	unsigned char sr01, gr0e;
 	vgaHWPtr hwp;
 
 #ifdef CIR_DEBUG
@@ -1814,32 +2018,32 @@ CIRDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	{
 	case DPMSModeOn:
 	    /* Screen: On; HSync: On, VSync: On */
-	    seq1 = 0x00;
-	    crtcext1 = 0x00;
+	    sr01 = 0x00;
+	    gr0e = 0x00;
 	    break;
 	case DPMSModeStandby:
 	    /* Screen: Off; HSync: Off, VSync: On */
-	    seq1 = 0x20;
-	    crtcext1 = 0x10;
+	    sr01 = 0x20;
+	    gr0e = 0x02;
 	    break;
 	case DPMSModeSuspend:
 	    /* Screen: Off; HSync: On, VSync: Off */
-	    seq1 = 0x20;
-	    crtcext1 = 0x20;
+	    sr01 = 0x20;
+	    gr0e = 0x04;
 	    break;
 	case DPMSModeOff:
 	    /* Screen: Off; HSync: Off, VSync: Off */
-	    seq1 = 0x20;
-	    crtcext1 = 0x30;
+	    sr01 = 0x20;
+	    gr0e = 0x06;
 	    break;
+	default:
+	    return;
 	}
-	/* XXX Prefer an implementation that doesn't depend on VGA specifics */
-	outb(0x3C4, 0x01);	/* Select SEQ1 */
-	seq1 |= inb(0x3C5) & ~0x20;
-	outb(0x3C5, seq1);
-	outb(hwp->IOBase + 0xE, 0x01);	/* Select CRTCEXT1 */
-	crtcext1 |= inb(hwp->IOBase + 0xF) & ~0x30;
-	outb(hwp->IOBase + 0xF, crtcext1);
+
+        sr01 |= hwp->readSeq(hwp, 0x01) & ~0x20;
+	hwp->writeSeq(hwp, 0x01, sr01);
+        gr0e |= hwp->readGr(hwp, 0x0E) & ~0x06;
+	hwp->writeGr(hwp, 0x0E, gr0e);
 }
 #endif
 

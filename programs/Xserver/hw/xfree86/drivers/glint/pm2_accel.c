@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.5 1998/09/05 06:36:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.6 1998/09/19 12:14:54 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -200,8 +200,10 @@ Permedia2InitializeEngine(ScrnInfoPtr pScrn)
     pGlint->count = 0;
     pGlint->dy = 1<<16;
     pGlint->dxdom = 0;
-    pGlint->rectxy = 0;
-    pGlint->rectwh = 0;
+    pGlint->x = 0;
+    pGlint->y = 0;
+    pGlint->h = 0;
+    pGlint->w = 0;
     pGlint->ROP = 0xFF;
     GLINT_SLOW_WRITE_REG(0, RectangleSize);
     GLINT_SLOW_WRITE_REG(0, RectangleOrigin);
@@ -339,7 +341,7 @@ Permedia2AccelInit(ScreenPtr pScreen)
     AvailFBArea.y2 = pGlint->FbMapSize / (pScrn->displayWidth * 
 					  pScrn->bitsPerPixel / 8);
 
-    if (AvailFBArea.y2 > 2048) AvailFBArea.y2 = 2048;
+    if (AvailFBArea.y2 > 2047) AvailFBArea.y2 = 2047;
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
@@ -353,13 +355,15 @@ static void Permedia2LoadCoord(
 ){
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
-    if (((h<<16)|w) != pGlint->rectwh) {
-	pGlint->rectwh = (h<<16)|w;
-	GLINT_WRITE_REG((h<<16)|w, RectangleSize);
+    if ((h != pGlint->h) || (w != pGlint->w)) {
+	pGlint->w = w;
+	pGlint->h = h;
+	GLINT_WRITE_REG(((h&0x0FFF)<<16)|(w&0x0FFF), RectangleSize);
     }
-    if (((y<<16)|x) != pGlint->rectxy) {
-	pGlint->rectxy = (y<<16)|x;
-	GLINT_WRITE_REG((y<<16)|x, RectangleOrigin);
+    if ((y != pGlint->y) || (x != pGlint->x)) {
+	pGlint->x = x;
+	pGlint->y = y;
+	GLINT_WRITE_REG(((y&0x0FFF)<<16)|(x&0x0FFF), RectangleOrigin);
     }
 }
 
@@ -996,20 +1000,16 @@ Permedia2SubsequentCPUToScreenColorExpandFill(
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int dwords = ((w + 31) >> 5) * h;
 
-    if (skipleft)
-	Permedia2SetClippingRectangle(pScrn,x+skipleft, y, x+w, y+h);
-    else
-	CHECKCLIPPING;
+    Permedia2SetClippingRectangle(pScrn,x+skipleft, y, x+w, y+h);
+
+    Permedia2LoadCoord(pScrn, x, y, w, h);
 
     if ((pGlint->ROP == GXcopy) && (pGlint->BackGroundColor != -1)) {
-        Permedia2LoadCoord(pScrn, x, y, w, h);
         GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | FastFillEnable, Render);
 	REPLICATE(pGlint->ForeGroundColor)
 	GLINT_WRITE_REG(pGlint->ForeGroundColor, FBBlockColor);
     }
 	
-    GLINT_WAIT(6);
-    Permedia2LoadCoord(pScrn, x, y, w, h);
     GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | SyncOnBitMask |
 					pGlint->FrameBufferReadMode, Render);
     GLINT_WRITE_REG((dwords - 1)<<16 | 0x0D, OutputFIFO);
@@ -1232,13 +1232,13 @@ Permedia2WritePixmap8bpp(
 
 	   if (rop == GXcopy) {
 	     GLINT_WAIT(6);
-             Permedia2LoadCoord(pScrn, (x&0xFFFF)>>pGlint->BppShift, y, 
+             Permedia2LoadCoord(pScrn, x>>pGlint->BppShift, y, 
 				(w+pGlint->bppalign)>>pGlint->BppShift, h);
   	     GLINT_WRITE_REG(align<<29|x<<16|(x+w), PackedDataLimits);
 	     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   } else {
 	     GLINT_WAIT(5);
-             Permedia2LoadCoord(pScrn, x&0xFFFF, y, w, h);
+             Permedia2LoadCoord(pScrn, x, y, w, h);
 	     GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
 	   }
 	   LOADROP(rop);
@@ -1391,13 +1391,13 @@ Permedia2WritePixmap16bpp(
 
 	   if (rop == GXcopy) {
 	     GLINT_WAIT(6);
-             Permedia2LoadCoord(pScrn, (x&0xFFFF)>>pGlint->BppShift, y, 
+             Permedia2LoadCoord(pScrn, x>>pGlint->BppShift, y, 
 				(w+pGlint->bppalign)>>pGlint->BppShift, h);
   	     GLINT_WRITE_REG(align<<29|x<<16|(x+w), PackedDataLimits);
 	     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
 	   } else {
 	     GLINT_WAIT(5);
-             Permedia2LoadCoord(pScrn, x&0xFFFF, y, w, h);
+             Permedia2LoadCoord(pScrn, x, y, w, h);
 	     GLINT_WRITE_REG(UNIT_ENABLE, ColorDDAMode);
 	   }
 	   LOADROP(rop);
@@ -1646,7 +1646,7 @@ Permedia2WritePixmap32bpp(
 		CHECKCLIPPING;
 
 	   GLINT_WAIT(6);
-           Permedia2LoadCoord(pScrn, x&0xFFFF, y, w, h);
+           Permedia2LoadCoord(pScrn, x, y, w, h);
 	   LOADROP(rop);
 	   if (rop == GXcopy) {
 		GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);

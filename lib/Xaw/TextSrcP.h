@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.3 1998/08/20 13:59:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.4 1998/10/03 08:42:28 dawes Exp $ */
 
 #ifndef _XawTextSrcP_h
 #define _XawTextSrcP_h
@@ -101,12 +101,24 @@ typedef struct _TextSrcClassRec {
 
 extern TextSrcClassRec textSrcClassRec;
 
+typedef struct _XawTextUndo XawTextUndo;
+
 /* New fields for the TextSrc object */
 typedef struct {
     /* resources */
-  XawTextEditType	edit_mode;
-  XrmQuark text_format;		/* 2 formats: FMT8BIT for Ascii
-				   FMTWIDE for ISO 10646 */
+    XawTextEditType	edit_mode;
+    XrmQuark text_format;		/* 2 formats: FMT8BIT for Ascii
+					   FMTWIDE for ISO 10646 */
+    XtCallbackList callback;		/* A callback list to call when the
+					   source is changed */
+    Boolean changed;
+    Boolean enable_undo;
+
+    /* private state */
+    Boolean undo_state;			/* to protect undo manipulation */
+    XawTextUndo *undo;
+    WidgetList text;			/* TextWidget's using this source */
+    Cardinal num_text;
 } TextSrcPart;
 
 /* Full instance record */

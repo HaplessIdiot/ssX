@@ -8,7 +8,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.1 1998/11/01 12:35:54 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -81,8 +81,8 @@ int	LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 			     int flags);
 
 /* Internally used functions */
-static void LgRestoreLgRegs(LgPtr pLg, LgRegPtr lgReg);
-static int LgFindLineData(int virtualX, int bpp);
+static void LgRestoreLgRegs(ScrnInfoPtr pScrn, LgRegPtr lgReg);
+static int LgFindLineData(int displayWidth, int bpp);
 
 /* 
  * This contains the functions needed by the server after loading the
@@ -130,7 +130,12 @@ static LgLineDataRec LgLineData[] = {
   {-1, -1, -1}     /* Sentinal to indicate end of table */
 };
   
-
+static int LgLinePitches[4][11] = {
+  /*  8 */ { 640, 1024, 1280, 1664, 2048, 2560, 3328, 4096, 5120, 6656, 0 },
+  /* 16 */ { 320,  512,  640,  832, 1024, 1280, 1664, 2048, 2560, 3328, 0 },
+  /* 24 */ { 213,  341,  426,  554,  682,  853, 1109, 1365, 1706, 2218, 0 },
+  /* 32 */ { 160,  256,  320,  416,  512,  640,  832, 1024, 1280, 1664, 0 } };
+	      
 
 
 static Bool
@@ -196,6 +201,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     ClockRangePtr clockRanges;
     char *mod = NULL;
+    int fbPCIReg, ioPCIReg;
 
 #ifdef LG_DEBUG
     ErrorF("LgPreInit\n");
@@ -388,14 +394,22 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
     pLg->PciTag = pciTag(pLg->PciInfo->bus, pLg->PciInfo->device,
 			 pLg->PciInfo->func);
     
-    /* !!! Maybe the Lg chips have it backward? */
+    /* Cirrus swapped the FB and IO registers in the 5465 (by design). */
+    if (PCI_CHIP_GD5465 == pLg->Chipset) {
+      fbPCIReg = 0;
+      ioPCIReg = 1;
+    } else {
+      fbPCIReg = 1;
+      ioPCIReg = 0;
+    }
+
     /* Find the frame buffer base address */
     if (pScrn->device->MemBase != 0) {
 	pLg->FbAddress = pScrn->device->MemBase;
 	from = X_CONFIG;
     } else {
-	if (pLg->PciInfo->memBase[0] != 0) {
-	    pLg->FbAddress = pLg->PciInfo->memBase[0] & 0xff000000;
+	if (pLg->PciInfo->memBase[fbPCIReg] != 0) {
+	    pLg->FbAddress = pLg->PciInfo->memBase[fbPCIReg] & 0xff000000;
 	    from = X_PROBED;
 	} else {
 	   xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -412,8 +426,8 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	pLg->IOAddress = pScrn->device->IOBase;
 	from = X_CONFIG;
     } else {
-	if (pLg->PciInfo->memBase[1] != 0) {
-	    pLg->IOAddress = pLg->PciInfo->memBase[1] & 0xfffff000;
+	if (pLg->PciInfo->memBase[ioPCIReg] != 0) {
+	    pLg->IOAddress = pLg->PciInfo->memBase[ioPCIReg] & 0xfffff000;
 	    from = X_PROBED;
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -433,7 +447,9 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->videoRam = pScrn->device->videoRam;
 	from = X_CONFIG;
     } else {
+        vgaHWProtect(pScrn, TRUE);
 	pScrn->videoRam = LgCountRam(pScrn);
+        vgaHWProtect(pScrn, FALSE);
 	from = X_PROBED;
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
@@ -518,6 +534,8 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->ClockDivFactor = 1;
     clockRanges->PrivFlags = 0;
 
+    /* Depending upon what sized tiles used, either 128 or 256. */
+    /* Aw, heck.  Just say 128. */
     pLg->Rounding = 128 >> pLg->BppShift;
 
     /*
@@ -527,37 +545,19 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
      * care of this, we don't worry about setting them here.
      */
 
-    /* Select valid modes from those available */
-    if (1 || pLg->NoAccel) {
-	/*
-	 * XXX Assuming min pitch 256, max 2048
-	 * XXX Assuming min height 128, max 2048
-	 */
-	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-			      pScrn->display->modes, clockRanges,
-			      NULL, 256, 2048,
-			      pLg->Rounding * pScrn->bitsPerPixel, 128, 2048,
-			      pScrn->display->virtualX,
-			      pScrn->display->virtualY,
-			      pLg->FbMapSize,
-			      LOOKUP_BEST_REFRESH);
+    i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+			  pScrn->display->modes, clockRanges,
+			  LgLinePitches[pScrn->bitsPerPixel / 8 - 1],
+			  0, 0, 128 * 8,
+			  0, 0, /* Any virtual height is allowed. */
+			  pScrn->display->virtualX,
+			  pScrn->display->virtualY,
+			  pLg->FbMapSize,
+			  LOOKUP_BEST_REFRESH);
     
-    }
-#if 0
- else {
-	/*
-	 * XXX Assuming min height 128, max 2048
-	 */
-	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-			      pScrn->display->modes, clockRanges,
-			      GetAccelPitchValues(pScrn), 0, 0,
-			      pCir->Rounding * pScrn->bitsPerPixel, 128, 2048,
-			      pScrn->display->virtualX,
-			      pScrn->display->virtualY,
-			      pCir->FbMapSize,
-			      LOOKUP_BEST_REFRESH);
-    }
-#endif
+    pLg->lineDataIndex = LgFindLineData(pScrn->displayWidth, 
+					pScrn->bitsPerPixel);
+
     if (i == -1) {
 	LgFreeRec(pScrn);
 	return FALSE;
@@ -694,7 +694,8 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     LgPtr pLg;
     int width;
     Bool VDiv2 = FALSE;
-    int lineDataIndex;
+    CARD16 clockData;
+    LgLineDataPtr lineData;
 
 #ifdef LG_DEBUG
     ErrorF("LgModeInit %d bpp,   %d   %d %d %d %d   %d %d %d %d\n",
@@ -743,7 +744,9 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #ifdef LG_DEBUG
     ErrorF("SynthClock = %d\n", mode->SynthClock);
 #endif
-    CirrusSetClock(pScrn, mode->SynthClock);
+    clockData = CirrusSetClock(pScrn, mode->SynthClock);
+    pLg->ModeReg.ExtVga[SR0E] = (clockData >> 8) & 0xFF;
+    pLg->ModeReg.ExtVga[SR1E] = clockData & 0xFF;
 
     vgaReg = &hwp->ModeReg;
 
@@ -758,19 +761,19 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     
     outb(0x3C2, hwp->ModeReg.MiscOutReg);
 
+    /* ??? Should these be both ...End or ...Start, not one of each? */
     pLg->ModeReg.ExtVga[CR1A] = (((mode->CrtcVSyncStart + 1) & 0x300 ) >> 2)
       | (((mode->CrtcHSyncEnd >> 3) & 0xC0) >> 2);
 
     width = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
     if(pScrn->bitsPerPixel == 1)
        width <<= 2;
-    hwp->ModeReg.CRTC[0x13] = width >> 3;
+    hwp->ModeReg.CRTC[0x13] = (width + 7) >> 3;
     /* Offset extension (see CR13) */
-    pLg->ModeReg.ExtVga[CR1B] &= 0xAF;
-    pLg->ModeReg.ExtVga[CR1B] |= (width >> (3+4)) & 0x10;
-    pLg->ModeReg.ExtVga[CR1B] |= (width >> (3+3)) & 0x40;
+    pLg->ModeReg.ExtVga[CR1B] &= 0xEF;
+    pLg->ModeReg.ExtVga[CR1B] |= (((width + 7) >> 3) & 0x100)?0x10:0x00;
     pLg->ModeReg.ExtVga[CR1B] |= 0x22;
-    outw(hwp->IOBase + 4, (pLg->ModeReg.ExtVga[CR1B] << 8) | 0x1B);
+    pLg->ModeReg.ExtVga[CR1D] = (((width + 7) >> 3) & 0x200)?0x01:0x00;
 
     /* Set the 28th bit to enable extended modes. */
     pLg->ModeReg.VSC = 0x10000000;
@@ -786,147 +789,139 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVSyncStart & 0x0400)?1:0)<<1;
     pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVSyncStart & 0x0400)?1:0)<<0;
 
-    lineDataIndex = LgFindLineData(pScrn->virtualX, pScrn->bitsPerPixel);
-    if (lineDataIndex < 0) {
-      /* Wierd.  We couldn't find a pitch that was satisfactory.
-	 Well, just go with non-tiled memory, I guess. */
+    lineData = &LgLineData[pLg->lineDataIndex];
 
-      /* !!! What should be the values for FORMAT, TILE, etc.? */
-    } else {
-      LgLineDataPtr lineData = &LgLineData[lineDataIndex];
-
-      if (8 == pScrn->bitsPerPixel) {
-	pLg->ModeReg.FORMAT = 0x0000;
-
-	pLg->ModeReg.TILE = lineData->tilesPerLine;
-	pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
-	  (lineData->width << 6);
-	pLg->ModeReg.CONTROL = 0x0000 | (lineData->width << 11);
+    if (8 == pScrn->bitsPerPixel) {
+      pLg->ModeReg.FORMAT = 0x0000;
+      
+      pLg->ModeReg.TILE = lineData->tilesPerLine;
+      pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
+	(lineData->width << 6);
+      pLg->ModeReg.CONTROL = 0x0000 | (lineData->width << 11);
 
 
-	/* There is an optimal FIFO threshold value (lower 5 bits of DTTC)
-	   for every resolution and color depth combination.  We'll hit
-	   the highlights here, and get close for anything that's not 
-	   covered. */
-	if (mode->CrtcHDisplay <= 640) {
-	  /* BAD numbers:  0x1E */
-	  /* GOOD numbers:  0x14 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0014);
-	} else if (mode->CrtcHDisplay <= 800) {
-	  /* BAD numbers:  0x16 */
-	  /* GOOD numbers:  0x13 0x14 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0014);
-	} else if (mode->CrtcHDisplay <= 1024) {
-	  /* BAD numbers:  */
-	  /* GOOD numbers: 0x15 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0015);
-	} else if (mode->CrtcHDisplay <= 1280) {
-	  /* BAD numbers:  */
-	  /* GOOD numbers:  0x16 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0016);
-	} else {
-	  /* BAD numbers:  */
-	  /* GOOD numbers:  */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
-	}
-
-      } else if (16 == pScrn->bitsPerPixel) {
-
-	/* !!! Assume 5-6-5 RGB mode (for now...) */
-	pLg->ModeReg.FORMAT = 0x1400;
-
-	pLg->ModeReg.TILE = lineData->tilesPerLine;
-	pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
-	  (lineData->width << 6);
-	pLg->ModeReg.CONTROL = 0x2000 | (lineData->width << 11);
-
-	if (mode->CrtcHDisplay <= 640) {
-	  /* BAD numbers:  0x12 */
-	  /* GOOD numbers: 0x10 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0010);
-	} else if (mode->CrtcHDisplay <= 800) {
-	  /* BAD numbers:  0x13 */
-	  /* GOOD numbers:  0x11 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0011);
-	} else if (mode->CrtcHDisplay <= 1024) {
-	  /* BAD numbers:  0x14 */
-	  /* GOOD numbers: 0x12  */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0012);
-	} else if (mode->CrtcHDisplay <= 1280) {
-	  /* BAD numbers:   0x08 0x10 */
-	  /* Borderline numbers: 0x12 */
-	  /* GOOD numbers:  0x15 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0015);
-	} else {
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
-	}
-
-      } else if (24 == pScrn->bitsPerPixel) {
-
-	pLg->ModeReg.FORMAT = 0x2400;
-
-	pLg->ModeReg.TILE = lineData->tilesPerLine;
-	pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
-	  (lineData->width << 6);
-	pLg->ModeReg.CONTROL = 0x4000 | (lineData->width << 11);
-
-	
-	if (mode->CrtcHDisplay <= 640) {
-	  /* BAD numbers:   */
-	  /* GOOD numbers:  0x10 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0010);
-	} else if (mode->CrtcHDisplay <= 800) {
-	  /* BAD numbers:   */
-	  /* GOOD numbers:   0x11 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0011);
-	} else if (mode->CrtcHDisplay <= 1024) {
-	  /* BAD numbers:  0x12 0x13 */
-	  /* Borderline numbers:  0x15 */
-	  /* GOOD numbers:  0x17 */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
-	} else if (mode->CrtcHDisplay <= 1280) {
-	  /* BAD numbers:   */
-	  /* GOOD numbers:  0x1E */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x001E);
-	} else {
-	  /* BAD numbers:   */
-	  /* GOOD numbers:  */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0020);
-	}
-
-      } else if (32 == pScrn->bitsPerPixel) {
-
-	pLg->ModeReg.FORMAT = 0x3400;
-	
-	pLg->ModeReg.TILE = lineData->tilesPerLine;
-	pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
-	  (lineData->width << 6);
-	pLg->ModeReg.CONTROL = 0x6000 | (lineData->width << 11);
-
-
-	if (mode->CrtcHDisplay <= 640) {
-	  /* GOOD numbers:  0x0E */
-	  /* BAD numbers:  */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x000E);
-	} else if (mode->CrtcHDisplay <= 800) {
-	  /* GOOD numbers:  0x17 */
-	  /* BAD numbers:  */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
-	} else if (mode->CrtcHDisplay <= 1024) {
-	  /* GOOD numbers: 0x1D */
-	  /* OKAY numbers:  0x15 0x14 0x16 0x18 0x19 */
-	  /* BAD numbers:  0x0E 0x12 0x13 0x0D */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x001D);
-	} else if (mode->CrtcHDisplay <= 1280) {
-	  /* GOOD numbers:  */
-	  /* BAD numbers:  */
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0022); /* 10 */
-	} else {
-	  pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0024);
-	}
+      /* There is an optimal FIFO threshold value (lower 5 bits of DTTC)
+	 for every resolution and color depth combination.  We'll hit
+	 the highlights here, and get close for anything that's not 
+	 covered. */
+      if (mode->CrtcHDisplay <= 640) {
+	/* BAD numbers:  0x1E */
+	/* GOOD numbers:  0x14 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0014);
+      } else if (mode->CrtcHDisplay <= 800) {
+	/* BAD numbers:  0x16 */
+	/* GOOD numbers:  0x13 0x14 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0014);
+      } else if (mode->CrtcHDisplay <= 1024) {
+	/* BAD numbers:  */
+	/* GOOD numbers: 0x15 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0015);
+      } else if (mode->CrtcHDisplay <= 1280) {
+	/* BAD numbers:  */
+	/* GOOD numbers:  0x16 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0016);
       } else {
-	/* ??? What could it be?  Use some sane numbers. */
+	/* BAD numbers:  */
+	/* GOOD numbers:  */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
       }
+
+    } else if (16 == pScrn->bitsPerPixel) {
+
+      /* !!! Assume 5-6-5 RGB mode (for now...) */
+      pLg->ModeReg.FORMAT = 0x1400;
+      
+      pLg->ModeReg.TILE = lineData->tilesPerLine;
+      pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
+	(lineData->width << 6);
+      pLg->ModeReg.CONTROL = 0x2000 | (lineData->width << 11);
+      
+      if (mode->CrtcHDisplay <= 640) {
+	/* BAD numbers:  0x12 */
+	/* GOOD numbers: 0x10 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0010);
+      } else if (mode->CrtcHDisplay <= 800) {
+	/* BAD numbers:  0x13 */
+	/* GOOD numbers:  0x11 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0011);
+      } else if (mode->CrtcHDisplay <= 1024) {
+	/* BAD numbers:  0x14 */
+	/* GOOD numbers: 0x12  */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0012);
+      } else if (mode->CrtcHDisplay <= 1280) {
+	/* BAD numbers:   0x08 0x10 */
+	/* Borderline numbers: 0x12 */
+	/* GOOD numbers:  0x15 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0015);
+      } else {
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
+      }
+      
+    } else if (24 == pScrn->bitsPerPixel) {
+      
+      pLg->ModeReg.FORMAT = 0x2400;
+      
+      pLg->ModeReg.TILE = lineData->tilesPerLine;
+      pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
+	(lineData->width << 6);
+      pLg->ModeReg.CONTROL = 0x4000 | (lineData->width << 11);
+      
+      
+      if (mode->CrtcHDisplay <= 640) {
+	/* BAD numbers:   */
+	/* GOOD numbers:  0x10 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0010);
+      } else if (mode->CrtcHDisplay <= 800) {
+	/* BAD numbers:   */
+	/* GOOD numbers:   0x11 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0011);
+      } else if (mode->CrtcHDisplay <= 1024) {
+	/* BAD numbers:  0x12 0x13 */
+	/* Borderline numbers:  0x15 */
+	/* GOOD numbers:  0x17 */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
+      } else if (mode->CrtcHDisplay <= 1280) {
+	/* BAD numbers:   */
+	/* GOOD numbers:  0x1E */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x001E);
+      } else {
+	/* BAD numbers:   */
+	/* GOOD numbers:  */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0020);
+      }
+      
+    } else if (32 == pScrn->bitsPerPixel) {
+      
+      pLg->ModeReg.FORMAT = 0x3400;
+      
+      pLg->ModeReg.TILE = lineData->tilesPerLine;
+      pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
+	(lineData->width << 6);
+      pLg->ModeReg.CONTROL = 0x6000 | (lineData->width << 11);
+      
+      
+      if (mode->CrtcHDisplay <= 640) {
+	/* GOOD numbers:  0x0E */
+	/* BAD numbers:  */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x000E);
+      } else if (mode->CrtcHDisplay <= 800) {
+	/* GOOD numbers:  0x17 */
+	/* BAD numbers:  */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
+      } else if (mode->CrtcHDisplay <= 1024) {
+	/* GOOD numbers: 0x1D */
+	/* OKAY numbers:  0x15 0x14 0x16 0x18 0x19 */
+	/* BAD numbers:  0x0E 0x12 0x13 0x0D */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x001D);
+      } else if (mode->CrtcHDisplay <= 1280) {
+	/* GOOD numbers:  */
+	/* BAD numbers:  */
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0022); /* 10 */
+      } else {
+	pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0024);
+      }
+    } else {
+      /* ??? What could it be?  Use some sane numbers. */
     }
 
 
@@ -946,7 +941,7 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     /* Write those registers out to the card. */
-    LgRestoreLgRegs(pLg, &pLg->ModeReg);
+    LgRestoreLgRegs(pScrn, &pLg->ModeReg);
     
     /* Programme the registers */
     vgaHWRestore(pScrn, &hwp->ModeReg, VGA_SR_MODE | VGA_SR_CMAP);
@@ -956,9 +951,9 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     return TRUE;
 }
 
-static int LgFindLineData(int virtualX, int bpp) {
+static int LgFindLineData(int displayWidth, int bpp) {
   /* Find the smallest tile-line-pitch such that the total byte pitch
-     is greater than or equal to virtualX*Bpp. */
+     is greater than or equal to displayWidth*Bpp. */
   int i;
 
   /* Some pitch sizes are duplicates in the table.  BUT, the invariant is 
@@ -968,7 +963,7 @@ static int LgFindLineData(int virtualX, int bpp) {
      values are strictly increasing. */
 
   for (i = 0; LgLineData[i].pitch > 0; i++)
-    if (LgLineData[i].pitch >= virtualX*bpp>>3) {
+    if (LgLineData[i].pitch >= displayWidth*bpp>>3) {
       return i;
     }
 
@@ -980,10 +975,31 @@ static int LgFindLineData(int virtualX, int bpp) {
 
 
 static void
-LgRestoreLgRegs(LgPtr pLg, LgRegPtr lgReg) {
+LgRestoreLgRegs(ScrnInfoPtr pScrn, LgRegPtr lgReg) {
   CARD8 *p8;
   CARD16 *p16;
   CARD32 *p32;
+  LgPtr pLg;
+  vgaHWPtr hwp;
+  CARD8 cr1D;
+  
+  pLg = LGPTR(pScrn);
+
+  /* First, VGAish registers. */
+  hwp = VGAHWPTR(pScrn);
+  outw(hwp->IOBase + 4, (lgReg->ExtVga[CR1A] << 8) | 0x1A);
+  outw(hwp->IOBase + 4, (lgReg->ExtVga[CR1B] << 8) | 0x1B);
+  outb(hwp->IOBase+4, 0x1D); 
+  cr1D = inb(hwp->IOBase + 5);
+  cr1D &= ~(0x01);
+  cr1D |= (lgReg->ExtVga[CR1D] & 0x01);
+  outw(hwp->IOBase + 4, (cr1D << 8) | 0x1D);
+  outw(hwp->IOBase + 4, (lgReg->ExtVga[CR1E] << 8) | 0x1E);
+  outw(0x3C4, (lgReg->ExtVga[SR07] << 8) | 0x07);
+  outw(0x3C4, (lgReg->ExtVga[SR0E] << 8) | 0x0E);
+  outw(0x3C4, (lgReg->ExtVga[SR12] << 8) | 0x12);
+  outw(0x3C4, (lgReg->ExtVga[SR13] << 8) | 0x13);
+  outw(0x3C4, (lgReg->ExtVga[SR1E] << 8) | 0x1E);
 
   p16 = (CARD16 *)(pLg->IOBase + 0xC0);
   *p16 = lgReg->FORMAT;
@@ -1035,17 +1051,7 @@ LgRestore(ScrnInfoPtr pScrn)
 
     vgaHWProtect(pScrn, TRUE);
 
-    outw(hwp->IOBase + 4, (lgReg->ExtVga[CR1A] << 8) | 0x1A);
-    outw(hwp->IOBase + 4, (lgReg->ExtVga[CR1B] << 8) | 0x1B);
-    outw(hwp->IOBase + 4, (lgReg->ExtVga[CR1D] << 8) | 0x1D);
-    outw(hwp->IOBase + 4, (lgReg->ExtVga[CR1E] << 8) | 0x1E);
-    outw(0x3C4, (lgReg->ExtVga[SR07] << 8) | 0x07);
-    outw(0x3C4, (lgReg->ExtVga[SR0E] << 8) | 0x0E);
-    outw(0x3C4, (lgReg->ExtVga[SR12] << 8) | 0x12);
-    outw(0x3C4, (lgReg->ExtVga[SR13] << 8) | 0x13);
-    outw(0x3C4, (lgReg->ExtVga[SR1E] << 8) | 0x1E);
-
-    LgRestoreLgRegs(pLg, lgReg);
+    LgRestoreLgRegs(pScrn, lgReg);
 
     vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
     vgaHWProtect(pScrn, FALSE);
@@ -1270,6 +1276,8 @@ LgSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
     return LgModeInit(xf86Screens[scrnIndex], mode);
 }
 
+#define ROUND_DOWN(x, mod) (((x) / (mod)) * (mod))
+#define ROUND_UP(x, mod)   ((((x) + (mod) - 1) / (mod)) * (mod))
 
 /*
  * This function is used to initialize the Start Address - the first
@@ -1279,30 +1287,72 @@ LgSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 void 
 LgAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
-    ScrnInfoPtr pScrn;
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     int Base, tmp;
-    LgPtr pLg;
-    vgaHWPtr hwp;
+    LgPtr pLg = LGPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    int cursorX, cursorY;
+    int middleX, middleY;
+    const LgLineDataPtr lineData = &LgLineData[pLg->lineDataIndex];
+    const int viewportXRes = 
+      (PCI_CHIP_GD5465 == pLg->Chipset) ? (24==pScrn->bitsPerPixel?24:1) :
+      (lineData->width?256:128) / 
+      (24==pScrn->bitsPerPixel?1:(pScrn->bitsPerPixel>>3));
+    const int viewportYRes = 
+      (PCI_CHIP_GD5465 == pLg->Chipset) ? 1 : (24==pScrn->bitsPerPixel?3:1);
 
-    pScrn = xf86Screens[scrnIndex];
-    hwp = VGAHWPTR(pScrn);
-    pLg = LGPTR(pScrn);
+    /* Where's the pointer? */
+    miPointerPosition(&cursorX, &cursorY);
 
-    Base = ((y * pScrn->displayWidth + x) / 8);
-    if(pScrn->bitsPerPixel != 1)
-        Base *= (pScrn->bitsPerPixel/4);
+    /* Where's the middle of the screen?  We want to eventually know
+       which side of the screen the pointer is on. */
+    middleX = (pScrn->frameX1 + pScrn->frameX0) / 2;
+    middleY = (pScrn->frameY1 + pScrn->frameY0) / 2;
+    
+    if (cursorX < middleX) {
+      /* Pointer is on left side of screen.  Round the frame value
+	 down. */
+      pScrn->frameX0 = ROUND_DOWN(pScrn->frameX0, viewportXRes);
+    } else {
+      /* Pointer is on right side of screen.  Round the frame value
+	 up.  A side effect of this rounding up is that we might expose
+	 a part of the screen that's actually on the far /left/ of the
+	 frame buffer.  That's because, although the virtual desktop might
+	 be an integral number of tiles, the display might not.  We'll
+	 just live with this artifact. */
+      pScrn->frameX0 = ROUND_UP(pScrn->frameX0, viewportXRes);
+    }
+    pScrn->frameX1 = pScrn->frameX0 + pScrn->currentMode->HDisplay - 1;
 
-#ifdef LG_DEBUG
-    ErrorF("LgAdjustFrame %d %d 0x%x %d %x\n", x, y, flags, Base, Base);
-#endif
+    if (cursorY < middleY) {
+      pScrn->frameY0 = ROUND_DOWN(pScrn->frameY0, viewportYRes);
+    } else {      
+      pScrn->frameY0 = ROUND_UP(pScrn->frameY0, viewportYRes);
+    }
+    pScrn->frameY1 = pScrn->frameY0 + pScrn->currentMode->VDisplay - 1;
+
+
+    if (x != pScrn->frameX0 || y != pScrn->frameY0) {
+      /* !!! */
+      /* We moved the frame from where xf86SetViewport() placed it.
+	 If we're using a SW cursor, that's okay -- the pointer exists in 
+	 the framebuffer, and those bits are still all aligned.  But
+	 if we're using a HW cursor, then we need to re-align the pointer.
+	 Call SetCursorPosition() with the appropriate new pointer
+	 values, adjusted to be wrt the new frame. */
+
+      x = pScrn->frameX0;
+      y = pScrn->frameY0;
+    }
+
+    /* ??? Will this work for 1bpp?  */
+    Base = (y * lineData->pitch + (x*pScrn->bitsPerPixel/8)) / 4;
 
     if ((Base & ~0x000FFFFF) != 0) {
       /* ??? */
         ErrorF("X11: Internal error: LgAdjustFrame: cannot handle overflow\n");
         return;
     }
-
-    /* !!! More work here! */
 
     outw(hwp->IOBase + 4, (Base & 0x00FF00) | 0x0C);
     outw(hwp->IOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);

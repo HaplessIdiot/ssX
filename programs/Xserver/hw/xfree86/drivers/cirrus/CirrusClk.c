@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CirrusClk.c,v 1.4 1998/10/06 04:39:34 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CirrusClk.c,v 1.5 1998/11/01 12:35:52 dawes Exp $ */ 
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -17,6 +17,7 @@
 #include "xf86_ansic.h"
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
+#include "vgaHW.h"
 
 #include "cir.h"
 
@@ -75,12 +76,12 @@ static cirrusClockRec cirrusClockTab[] = {
  */
 
 static Bool
-CirrusFindClock(int freq, int max_clock,
+CirrusFindClock(vgaHWPtr hwp, int freq, int max_clock,
                 int *num_out, int *den_out,
                 Bool *usemclk_out) {
 	int n, i;
 	int num, den;
-	int ffreq, mindiff;
+	int ffreq, mindiff = 0;
 	int mclk;
 
 	/* Prefer a tested value if it matches within 0.1%. */
@@ -121,14 +122,19 @@ CirrusFindClock(int freq, int max_clock,
 			}
 		}
 	}
+	return FALSE;
 
 foundclock:
 	*num_out = num;
 	*den_out = den;
 
 	/* Calculate the MCLK. */
+#if 1
+	mclk = 14318 * (hwp->readSeq(hwp, 0x1F) & 0x3F) / 8;	/* XXX */
+#else
 	outb(0x3c4, 0x0f);				/* XXX */
 	mclk = 14318 * (inb(0x3c5) & 0x3f) / 8;		/* XXX */
+#endif
 	/*
 	 * Favour MCLK as VLCK if it matches as good as the found clock,
 	 * or if it is within 0.2 MHz of the request clock. A VCLK close
@@ -142,46 +148,34 @@ foundclock:
 	return TRUE;
 }
 
-
-Bool
+CARD16
 CirrusSetClock(ScrnInfoPtr pScrn, int freq)
 {
 	int num, den, usemclk;
-	unsigned char tmp;
-	CIRPtr pCir;
+	CARD8 tmp;
+	vgaHWPtr hwp = VGAHWPTR(pScrn);
+	CIRPtr pCir = CIRPTR(pScrn);
 
 	ErrorF("CirrusSetClock\n");
 
-	pCir = CIRPTR(pScrn);
-
-	CirrusFindClock(freq, pCir->MaxClock, &num, &den, &usemclk);
+	if(!CirrusFindClock(hwp, freq, pCir->MaxClock, &num, &den, &usemclk))
+		return 0;
 
 	ErrorF("CirrusSetClock: nom=%x den=%x usemclk=%x\n",
 		num, den, usemclk);
 
-	/*
-	 * The 'Use MCLK as VCLK' flag is ignored.
-	 * This function is only called during start-up if the
-	 * "probe_clocks" option is specified.
-	 */
-
-	if (PCI_CHIP_GD5462 == pCir->Chipset || 
-	    PCI_CHIP_GD5464 == pCir->Chipset ||
-	    PCI_CHIP_GD5464BD == pCir->Chipset || 
-	    PCI_CHIP_GD5465 == pCir->Chipset) {
-	  /* The numerator and denominator registers are switched 
-	     around in the Laguna chips. */
-	  int t = den;
-	  den = num;
-	  num = t;
-	}
-
-	/* Set VLCK3. */
+	/* Set VCLK3. */
+#if 1
+	tmp = hwp->readSeq(hwp, 0x0E);
+	hwp->writeSeq(hwp, 0x0E, (tmp & 0x80) | num);
+	hwp->writeSeq(hwp, 0x1E, den);
+#else
 	outb(0x3c4, 0x0e);
 	tmp = inb(0x3c5);
 	outb(0x3c5, (tmp & 0x80) | num);
 	outb(0x3c4, 0x1e);
 	outb(0x3c5, den);
+#endif
 
-	return TRUE;
+	return (den << 8) | num;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.5 1998/08/19 07:49:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.6 1998/11/01 12:36:07 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -784,7 +784,210 @@ XAAFillCacheExpandRects(
 }
 
 
+	/******************\
+	|   Image Writes   |
+	\******************/
 
+
+void
+XAAPolyFillRectImageWrite(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int		nrectFill, 	/* number of rectangles to fill */
+    xRectangle	*prectInit   	/* Pointer to first rectangle to fill */
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    int 	MaxBoxes = nrectFill * REGION_NUM_RECTS(pGC->pCompositeClip);
+    BoxPtr	pClipBoxes;
+    int		nboxes;
+    int		xorg = pDraw->x;
+    int		yorg = pDraw->y;
+
+    if(nrectFill <= 0)
+        return;
+
+    if(xorg | yorg) {
+	int n = nrectFill;
+	xRectangle *prect = prectInit;
+
+	while(n--) {
+	    prect->x += xorg;
+	    prect->y += yorg;
+	    prect++;
+	}
+    }
+
+    if(MaxBoxes > infoRec->NumPreAllocBoxes) {
+	pClipBoxes = (BoxPtr)ALLOCATE_LOCAL(MaxBoxes * sizeof(BoxRec));
+	if(!pClipBoxes) return;	
+    } else pClipBoxes = infoRec->PreAllocBoxes;
+    
+    nboxes = XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 
+					nrectFill, prectInit);
+
+    if(nboxes) {
+	(*infoRec->FillImageWriteRects) (infoRec->pScrn, pGC->alu, 
+		pGC->planemask, nboxes, pClipBoxes, 
+		(xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y),
+		pGC->tile.pixmap);
+    }
+   
+    if(pClipBoxes != infoRec->PreAllocBoxes)
+	DEALLOCATE_LOCAL(pClipBoxes);
+}
+
+
+/*  This requires all LEFT_EDGE clipping.  You get too many problems
+    with reading past the edge of the pattern otherwise */
+
+static void
+WriteColumn(
+    ScrnInfoPtr pScrn,
+    unsigned char *pSrc,
+    int x, int y, int w, int h,
+    int xoff, int yoff,
+    int pHeight,
+    int srcwidth,
+    int Bpp
+) {
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    unsigned char *src;
+    Bool PlusOne = FALSE;
+    int skipleft, dwords;
+
+    pSrc += (Bpp * xoff);
+   
+    if((skipleft = (long)pSrc & 0x03L)) {
+        if(Bpp == 3)
+           skipleft = 4 - skipleft;
+        else
+           skipleft /= Bpp;
+
+        x -= skipleft;       
+        w += skipleft;
+        
+        if(Bpp == 3)
+           pSrc -= 3 * skipleft;  
+        else   /* is this Alpha friendly ? */
+           pSrc = (unsigned char*)((long)pSrc & ~0x03L);     
+    }
+
+    src = pSrc + (yoff * srcwidth);
+
+    dwords = ((w * Bpp) + 3) >> 2;
+
+    if((infoRec->ImageWriteFlags & CPU_TRANSFER_PAD_QWORD) && 
+                                                ((dwords * h) & 0x01)) {
+        PlusOne = TRUE;
+    } 
+
+    (*infoRec->SubsequentImageWriteRect)(pScrn, x, y, w, h, skipleft);
+
+    if(dwords > infoRec->ImageWriteRange) {
+        while(h--) {
+            XAAMoveDWORDS_FixedBase((CARD32*)infoRec->ImageWriteBase,
+                (CARD32*)src, dwords);
+            src += srcwidth;
+	    yoff++;
+	    if(yoff >= pHeight) {
+		yoff = 0;
+		src = pSrc;
+	    }
+        }
+    } else {
+        if(srcwidth == (dwords << 2)) {
+           int maxLines = infoRec->ImageWriteRange/dwords;
+	   int step;
+
+	   while(h) {
+		step = pHeight - yoff;
+		if(step > maxLines) step = maxLines;
+		if(step > h) step = h;
+
+                XAAMoveDWORDS((CARD32*)infoRec->ImageWriteBase,
+                        (CARD32*)src, dwords * step);
+
+                src += (srcwidth * step);
+		yoff += step;
+		if(yoff >= pHeight) {
+		    yoff = 0;
+		    src = pSrc;
+		}
+                h -= step;		
+	   }
+        } else {
+            while(h--) {
+                XAAMoveDWORDS((CARD32*)infoRec->ImageWriteBase,
+                        (CARD32*)src, dwords);
+                src += srcwidth;
+		yoff++;
+		if(yoff >= pHeight) {
+		    yoff = 0;
+		    src = pSrc;
+		}
+            }
+        }
+    }
+
+    if(PlusOne) {
+        CARD32* base = (CARD32*)infoRec->ImageWriteBase;
+        *base = 0x00000000;
+    }
+}
+
+void 
+XAAFillImageWriteRects(
+    ScrnInfoPtr pScrn,
+    int rop,
+    unsigned int planemask,
+    int nBox,
+    BoxPtr pBox,
+    int xorg, int yorg,
+    PixmapPtr pPix
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    int x, phaseY, phaseX, height, width, blit_w;
+    int pHeight = pPix->drawable.height;
+    int pWidth = pPix->drawable.width;
+    int Bpp = pPix->drawable.bitsPerPixel >> 3;
+    int srcwidth = pPix->devKind;
+
+    (*infoRec->SetupForImageWrite)(pScrn, rop, planemask, -1,
+		pPix->drawable.bitsPerPixel, pPix->drawable.depth);
+
+    while(nBox--) {
+	x = pBox->x1;
+	phaseY = (pBox->y1 - yorg) % pHeight;
+	if(phaseY < 0) phaseY += pHeight;
+	phaseX = (x - xorg) % pWidth;
+	if(phaseX < 0) phaseX += pWidth;
+	height = pBox->y2 - pBox->y1;
+	width = pBox->x2 - x;
+	
+	while(1) {
+	    blit_w = pWidth - phaseX;
+	    if(blit_w > width) blit_w = width;
+
+	    WriteColumn(pScrn, pPix->devPrivate.ptr, x, pBox->y1, 
+		blit_w, height, phaseX, phaseY, pHeight, srcwidth, Bpp);
+
+	    width -= blit_w;
+	    if(!width) break;
+	    x += blit_w;
+	    phaseX = (phaseX + blit_w) % pWidth;
+	}
+	pBox++;
+    }
+
+    if(infoRec->ImageWriteFlags & SYNC_AFTER_IMAGE_WRITE)
+        (*infoRec->Sync)(pScrn);
+    else SET_SYNC_FLAG(infoRec);
+}
+
+
+	/*************\
+	|  Utilities  |
+	\*************/
 
 int
 XAAGetRectClipBoxes(
@@ -792,8 +995,7 @@ XAAGetRectClipBoxes(
     BoxPtr pboxClippedBase,
     int nrectFill,
     xRectangle *prectInit
-)
-{
+){
     int 	Right, Bottom;
     BoxPtr 	pextent, pboxClipped = pboxClippedBase;
     xRectangle	*prect = prectInit;

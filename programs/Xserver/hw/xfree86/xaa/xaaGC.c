@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.6 1998/10/25 07:12:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.7 1998/11/01 12:36:07 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -39,18 +39,17 @@ XAACreateGC(GCPtr pGC)
 
     XAA_SCREEN_PROLOGUE(pScreen,CreateGC);
 
-    ret = (*pScreen->CreateGC)(pGC);
-	
-    pGCPriv->wrapOps = NULL;
-    pGCPriv->wrapFuncs = pGC->funcs;
-    pGCPriv->XAAOps = &XAAFallbackOps;
-    pGCPriv->flags = 0;
-    pGCPriv->DashLength = 0;
-    pGCPriv->DashPattern = NULL;
-    pGCPriv->changes = 0;
-    /* initialize any other private fields here */
-
-    pGC->funcs = &XAAGCFuncs;
+    if((ret = (*pScreen->CreateGC)(pGC))) {	
+	pGCPriv->wrapOps = NULL;
+	pGCPriv->wrapFuncs = pGC->funcs;
+	pGCPriv->XAAOps = &XAAFallbackOps;
+	pGCPriv->flags = 0;
+	pGCPriv->DashLength = 0;
+	pGCPriv->DashPattern = NULL;
+	pGCPriv->changes = 0;
+	/* initialize any other private fields here */
+	pGC->funcs = &XAAGCFuncs;
+    }
  
     XAA_SCREEN_EPILOGUE(pScreen,CreateGC,XAACreateGC);
 

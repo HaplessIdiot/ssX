@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.9 1998/09/27 04:43:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.10 1998/10/05 13:23:17 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -176,6 +176,9 @@ XAAValidateFillSpans(
 	pGC->ops->PolyFillRect = infoRec->PolyFillRectCacheExpand;
 	pGC->ops->FillPolygon = infoRec->FillPolygonCacheExpand;
 	break;
+   case DO_IMAGE_WRITE:
+	pGC->ops->PolyFillRect = infoRec->PolyFillRectImageWrite;
+	/* fallthrough since we're not supplying spans */
    default: return;
    }
 

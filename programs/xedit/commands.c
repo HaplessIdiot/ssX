@@ -24,10 +24,9 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.2 1998/10/25 11:56:54 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.3 1998/11/01 07:57:48 dawes Exp $ */
 
 #include <X11/Xos.h>
-#include <X11/Xfuncs.h>
 #include "xedit.h"
 #ifdef CRAY
 #include <unistd.h>
@@ -39,16 +38,22 @@
 #include <sys/stat.h>
 #include <X11/Xmu/SysUtil.h>
 
-extern Widget topwindow, textwindow, labelwindow, filenamewindow;
+void ResetSourceChanged(xedit_flist_item*);
+static void ResetDC(Widget, XtPointer, XtPointer);
+static void SourceChanged(Widget, XtPointer, XtPointer);
 
-void ResetSourceChanged();
-
-static void ResetDC();
-
+static Bool AddDoubleClickCallback(Widget, Bool);
+static Bool ReallyDoLoad(char*, char*);
 static char *makeBackupName(String, String, unsigned);
-static Bool ReallyDoLoad(void);
 
-static Boolean double_click = FALSE, source_changed = FALSE;
+extern Widget scratch, texts[3], labels[3];
+static Boolean double_click = FALSE;
+
+#define DC_UNSAVED	1
+#define DC_LOADED	2
+#define DC_CLOBBER	3
+#define DC_KILL		4
+static int dc_state;
 
 /*	Function Name: AddDoubleClickCallback(w)
  *	Description: Adds a callback that will reset the double_click flag
@@ -57,21 +62,27 @@ static Boolean double_click = FALSE, source_changed = FALSE;
  *                 state - If true add the callback, else remove it.
  *	Returns: none.
  */
-
-AddDoubleClickCallback(w, state)
-Widget w;
-Boolean state;
+static Bool
+AddDoubleClickCallback(Widget w, Bool state)
 {
   Arg args[1];
   static XtCallbackRec cb[] = { {NULL, NULL}, {NULL, NULL} };
- 
-  if (state) 
-    cb[0].callback = ResetDC;
-  else
-    cb[0].callback = NULL;
 
-  XtSetArg(args[0], XtNcallback, cb);
-  XtSetValues(w, args, ONE);
+  if (XtIsSubclass(w, asciiSrcObjectClass)) {
+      if (state)
+	  XtAddCallback(w, XtNcallback, ResetDC, NULL);
+      else
+	  XtRemoveCallback(w, XtNcallback, ResetDC, NULL);
+  }
+  else {
+      if (state)
+	  cb[0].callback = ResetDC;
+      else
+	  cb[0].callback = NULL;
+
+      XtSetArg(args[0], XtNcallback, cb);
+      XtSetValues(w, args, ONE);
+  }
 }
   
 /*	Function Name: ResetDC
@@ -83,33 +94,75 @@ Boolean state;
 
 /* ARGSUSED */
 static void
-ResetDC(w, junk, garbage)
-Widget w;
-XtPointer junk, garbage;
+ResetDC(Widget w, XtPointer junk, XtPointer garbage)
 {
   double_click = FALSE;
 
   AddDoubleClickCallback(w, FALSE);
 }
 
+/*ARGSUSED*/
 void
-DoQuit()
+QuitAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  if( double_click || !source_changed ) 
-    exit(0); 
+    DoQuit(w, NULL, NULL);
+}
 
-  XeditPrintf("Unsaved changes. Save them, or Quit again.\n");
-  Feep();
-  double_click = TRUE;
-  AddDoubleClickCallback(textwindow, TRUE);
+/*ARGSUSED*/
+void
+DoQuit(Widget w, XtPointer client_data, XtPointer call_data)
+{
+    unsigned i;
+    Bool source_changed = False;
+
+    if (!double_click || (dc_state && dc_state != DC_UNSAVED)) {
+	for (i = 0; i < flist.num_itens; i++)
+	    if (flist.itens[i]->flags & CHANGED_BIT) {
+		source_changed = True;
+		break;
+	    }
+    }
+    if(!source_changed)
+	exit(0);
+
+    XeditPrintf("Unsaved changes. Save them, or Quit again.\n");
+    Feep();
+    double_click = TRUE;
+    dc_state = DC_UNSAVED;
+    AddDoubleClickCallback(XawTextGetSource(textwindow), True);
 }
 
 static char *
 makeBackupName(String buf, String filename, unsigned len)
 {
-  XmuSnprintf(buf, len, "%s%s%s", app_resources.backupNamePrefix,
-	  filename, app_resources.backupNameSuffix);
-  return (buf);
+    if (app_resources.backupNamePrefix
+	&& strlen(app_resources.backupNamePrefix)) {
+	if (strchr(app_resources.backupNamePrefix, '/'))
+	    XmuSnprintf(buf, len, "%s%s%s", app_resources.backupNamePrefix,
+			filename, app_resources.backupNameSuffix);
+	else {
+	    char fname[BUFSIZ];
+	    char *name, ch;
+
+	    strncpy(fname, filename, sizeof(fname) - 1);
+	    fname[sizeof(fname) - 1] = '\0';
+	    if ((name = strrchr(fname, '/')) != NULL)
+		++name;
+	    else
+		name = filename;
+	    ch = *name;
+	    *name = '\0';
+	    ++name;
+	    XmuSnprintf(buf, len, "%s%s%c%s%s",
+			fname, app_resources.backupNamePrefix, ch, name,
+			app_resources.backupNameSuffix);
+	}
+    }
+    else
+	XmuSnprintf(buf, len, "%s%s",
+		    filename, app_resources.backupNameSuffix);
+
+    return (strcmp(filename, buf) ? buf : NULL);
 }
   
 #if defined(USG) && !defined(CRAY)
@@ -126,50 +179,157 @@ int rename (from, to)
 }
 #endif
 
+/*ARGSUSED*/
 void
-DoSave()
+SaveFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  String filename = GetString(filenamewindow);
-  char buf[BUFSIZ];
+    DoSave(w, NULL, NULL);
+}
 
-  if( (filename == NULL) || (strlen(filename) == 0) ){
-    XeditPrintf("Save:  no filename specified -- nothing saved\n");
-    Feep();
-    return;
-  }
+/*ARGSUSED*/
+void
+DoSave(Widget w, XtPointer client_data, XtPointer call_data)
+{
+    String name = GetString(filenamewindow);
+    String filename = ResolveName(name);
+    char buf[BUFSIZ];
+    FileAccess file_access;
+    xedit_flist_item *item;
+    Boolean exists;
+    Widget source = XawTextGetSource(textwindow);
+
+    if (!filename) {
+	XeditPrintf("Save: Can't resolve pathname -- nothing saved.\n");
+	Feep();
+	return;
+    }
+    else if (*name == '\0') {
+	XeditPrintf("Save: No filename specified -- nothing saved.\n");
+	Feep();
+	return;
+    }
+    item = FindTextSource(NULL, filename);
+    if (item != NULL && item->source != source) {
+	if (!double_click || (dc_state && dc_state != DC_LOADED)) {
+	    XmuSnprintf(buf, sizeof(buf),
+			"Save: file %s is already loaded, "
+			"Save again to unload it -- nothing saved.\n",
+			name);
+	    XeditPrintf(buf);
+	    Feep();
+	    double_click = TRUE;
+	    dc_state = DC_LOADED;
+	    AddDoubleClickCallback(XawTextGetSource(textwindow), True);
+	    return;
+	}
+	KillTextSource(item);
+	item = FindTextSource(source = XawTextGetSource(textwindow), NULL);
+	double_click = FALSE;
+	dc_state = 0;
+    }
+    else if (item && !(item->flags & CHANGED_BIT)) {
+	XeditPrintf("Save: No changes need to be saved.\n");
+	Feep();
+	return; 
+    }
+
+    file_access = CheckFilePermissions(filename, &exists);
+    if (!item || strcmp(item->filename, filename)) {
+	if (file_access == WRITE_OK && exists) {
+	    if (!double_click || (dc_state && dc_state != DC_CLOBBER)) {
+		XmuSnprintf(buf, sizeof(buf),
+			    "Save: file %s already exists, "
+			    "Save again to overwrite it -- nothing saved.\n",
+			    name);
+		XeditPrintf(buf);
+		Feep();
+		double_click = TRUE;
+		dc_state = DC_CLOBBER;
+		AddDoubleClickCallback(XawTextGetSource(textwindow), True);
+		return;
+	    }
+	    double_click = FALSE;
+	    dc_state = 0;
+	}
+	if (!item)
+	    item = FindTextSource(source, NULL);
+    }
   
-  if (app_resources.enableBackups) {
+  if (app_resources.enableBackups && exists) {
     char backup_file[BUFSIZ];
-    makeBackupName(backup_file, filename, sizeof(backup_file));
 
-    if (rename(filename, backup_file) != 0) {
+    if (makeBackupName(backup_file, filename, sizeof(backup_file)) == NULL
+	|| rename(filename, backup_file) != 0) {
 	XmuSnprintf(buf, sizeof(buf),"error backing up file:  %s\n",
-		    backup_file); 
+		    filename); 
       XeditPrintf(buf);
     }
   }
   
-  switch( MaybeCreateFile(filename)) {
+  switch( file_access = MaybeCreateFile(filename)) {
   case NO_READ:
   case READ_OK:
       XmuSnprintf(buf, sizeof(buf),
-		  "File %s could not be opened for writing.\n", filename);
+		  "File %s could not be opened for writing.\n", name);
       Feep();
       break;
   case WRITE_OK:
-      if ( XawAsciiSaveAsFile(XawTextGetSource(textwindow), filename) ) {
+      if ( XawAsciiSaveAsFile(source, filename) ) {
+	  int i;
 	  Arg args[1];
-	  char label_buf[BUFSIZ];
 
-	  XmuSnprintf(buf, sizeof(buf), "Saved file:  %s\n", filename);
-	  XmuSnprintf(label_buf, sizeof(label_buf), "%s       Read - Write",
-		      filename);
-	  ResetSourceChanged(textwindow);
-	  XtSetArg(args[0], XtNlabel, label_buf);
-	  XtSetValues(labelwindow, args, 1);
+	  XmuSnprintf(buf, sizeof(buf), "Saved file:  %s\n", name);
+
+	  if (item && item->source != scratch) {
+	      char label_buf[BUFSIZ];
+
+	      XmuSnprintf(label_buf, sizeof(label_buf),
+			  "%s       Read - Write", name);
+	      XtSetArg(args[0], XtNlabel, label_buf);
+	      for (i = 0; i < 3; i++)
+		  if (XawTextGetSource(texts[i]) == source)
+		      XtSetValues(labels[i], args, 1);
+
+	      XtSetArg(args[0], XtNlabel, filename);
+	      XtSetValues(item->sme, args, 1);
+
+	      XtFree(item->name);
+	      XtFree(item->filename);
+	      item->name = XtNewString(name);
+	      item->filename = XtNewString(filename);
+	      item->flags = EXISTS_BIT;
+	  }
+	  else {
+	      Widget tmp = scratch;
+
+	      if (!item)
+		  item = flist.itens[0];
+	      XtRemoveCallback(item->source, XtNcallback, SourceChanged,
+			       (XtPointer)item);
+	      item->source = scratch =
+		  XtVaCreateWidget("textSource", international ?
+				   multiSrcObjectClass : asciiSrcObjectClass,
+				   topwindow,
+				   XtNtype, XawAsciiFile,
+				   XtNeditType, XawtextEdit,
+				   NULL, NULL);
+
+	      XtSetArg(args[0], XtNtextSource, scratch);
+	      for (i = 0; i < 3; i++)
+		  if (texts[i] != textwindow &&
+		      XawTextGetSource(texts[i]) == tmp)
+		      XtSetValues(texts[i], args, 1);
+
+	      ResetSourceChanged(item);
+
+	      item = AddTextSource(source, name, filename, EXISTS_BIT,
+				   file_access);
+	  }
+	  item->flags |= EXISTS_BIT;
+	  ResetSourceChanged(item);
       }
       else {
-	  XmuSnprintf(buf, sizeof(buf), "Error saving file:  %s\n",  filename);
+	  XmuSnprintf(buf, sizeof(buf), "Error saving file:  %s\n",  name);
 	  Feep();
       }
       break;
@@ -184,39 +344,49 @@ DoSave()
   XeditPrintf(buf);
 }
 
+/*ARGSUSED*/
 void
-DoLoad()
+DoLoad(Widget w, XtPointer client_data, XtPointer call_data)
 {
-    (void)ReallyDoLoad();
+    (void)ReallyDoLoad(GetString(filenamewindow), ResolveName(NULL));
 }
 
 static Bool
-ReallyDoLoad(void)
+ReallyDoLoad(char *name, char *filename)
 {
     Arg args[5];
     Cardinal num_args = 0;
-    String filename = GetString(filenamewindow);
-    char buf[BUFSIZ], label_buf[BUFSIZ];
+    char buf[BUFSIZ];
+    xedit_flist_item *item;
+    Widget source = XawTextGetSource(textwindow);
 
-    if ( source_changed && !double_click) {
-	XeditPrintf("Unsaved changes. Save them, or press Load again.\n");
+    if (!filename) {
+	XeditPrintf("Load: Can't resolve pathname.\n");
 	Feep();
-	double_click = TRUE;
-	AddDoubleClickCallback(textwindow, TRUE);
 	return (False);
     }
-    double_click = FALSE;
-    
-    if ( (filename != NULL)  &&  ((int) strlen(filename) > 0) ) {
-	Boolean exists;
+    else if (*name == '\0') {
+	XeditPrintf("Load: No file specified.\n");
+	Feep();
+	return (False);
+    }
+    if ((item = FindTextSource(NULL, filename)) != NULL) {
+	SwitchTextSource(item);
+	return (True);
+    }
 
-	switch( CheckFilePermissions(filename, &exists) ) {
+    {
+	Boolean exists;
+	int flags;
+	FileAccess file_access;
+
+	switch( file_access = CheckFilePermissions(filename, &exists) ) {
 	case NO_READ:
 	    if (exists)
-		XmuSnprintf(buf, sizeof(buf), "File %s, %s", filename,
+		XmuSnprintf(buf, sizeof(buf), "File %s, %s", name,
 			"exists, and could not be opened for reading.\n");
 	    else
-		XmuSnprintf(buf, sizeof(buf), "File %s %s %s",  filename,
+		XmuSnprintf(buf, sizeof(buf), "File %s %s %s",  name,
 			    "does not exist, and",
 			"the directory could not be opened for writing.\n");
 
@@ -225,17 +395,13 @@ ReallyDoLoad(void)
 	    return (False);
 	case READ_OK:
 	    XtSetArg(args[num_args], XtNeditType, XawtextRead); num_args++;
-	    XmuSnprintf(label_buf, sizeof(label_buf), "%s       READ ONLY",
-			filename);
 	    XmuSnprintf(buf, sizeof(buf), "File %s opened READ ONLY.\n",
-			filename);
+			name);
 	    break;
 	case WRITE_OK:
 	    XtSetArg(args[num_args], XtNeditType, XawtextEdit); num_args++;
-	    XmuSnprintf(label_buf, sizeof(label_buf), "%s       Read - Write",
-			filename);
 	    XmuSnprintf(buf, sizeof(buf), "File %s opened read - write.\n",
-			filename);
+			name);
 	    break;
 	default:
 	    XmuSnprintf(buf, sizeof(buf), "%s %s",
@@ -247,58 +413,145 @@ ReallyDoLoad(void)
 	}
 
 	XeditPrintf(buf);
-	
+
 	if (exists) {
+	    flags = EXISTS_BIT;
 	    XtSetArg(args[num_args], XtNstring, filename); num_args++;
 	}
 	else {
+	    flags = 0;
 	    XtSetArg(args[num_args], XtNstring, NULL); num_args++;
 	}
 
-	XtSetValues( textwindow, args, num_args);
-	
-	num_args = 0;
-	XtSetArg(args[num_args], XtNlabel, label_buf); num_args++;
-	XtSetValues( labelwindow, args, num_args);
-	ResetSourceChanged(textwindow);
-	return (True);
+	source = XtVaCreateWidget("textSource", international ?
+				  multiSrcObjectClass : asciiSrcObjectClass,
+				  topwindow,
+				  XtNtype, XawAsciiFile,
+				  XtNeditType, XawtextEdit,
+				  NULL, NULL);
+	XtSetValues(source, args, num_args);
+
+	item = AddTextSource(source, name, filename, flags, file_access);
+	SwitchTextSource(item);
+	ResetSourceChanged(item);
     }
 
-    XeditPrintf("Load: No file specified.\n");
-    Feep();
-    return (False);
+    return (True);
 }
 
 /*	Function Name: SourceChanged
  *	Description: A callback routine called when the source has changed.
  *	Arguments: w - the text source that has changed.
- *                 junk, garbage - *** UNUSED ***.
+ *		   client_data - xedit_flist_item associated with text buffer.
+ *                 call_data - NULL is unchanged
  *	Returns: none.
  */
-
+/*ARGSUSED*/
 static void
-SourceChanged(w, junk, garbage)
-Widget w;
-XtPointer junk, garbage;
+SourceChanged(Widget w, XtPointer client_data, XtPointer call_data)
 {
-    XtRemoveCallback(w, XtNcallback, SourceChanged, NULL);
-    source_changed = TRUE;
+    xedit_flist_item *item = (xedit_flist_item*)client_data;
+    static Bool first_time = True;
+    Bool changed = (Bool)call_data;
+
+    if (changed) {
+	if (item->flags & CHANGED_BIT)
+	    return;
+	item->flags |= CHANGED_BIT;
+    }
+    else {
+	if (item->flags & CHANGED_BIT)
+	    ResetSourceChanged(item);
+	return;
+    }
+
+    if (first_time) {
+	if (!flist.pixmap && strlen(app_resources.changed_pixmap_name)) {
+	    XrmValue from, to;
+
+	    from.size = strlen(app_resources.changed_pixmap_name);
+	    from.addr = app_resources.changed_pixmap_name;
+	    to.size = sizeof(Pixmap);
+	    to.addr = (XtPointer)&(flist.pixmap);
+
+	    XtConvertAndStore(flist.popup, XtRString, &from, XtRBitmap, &to);
+	}
+	first_time = False;
+    }
+
+    if (flist.pixmap) {
+	Arg args[1];
+	Cardinal num_args;
+	int i;
+
+	num_args = 0;
+	XtSetArg(args[num_args], XtNleftBitmap, flist.pixmap);	++num_args;
+	XtSetValues(item->sme, args, num_args);
+
+	for (i = 0; i < 3; i++)
+	    if (XawTextGetSource(texts[i]) == item->source)
+		XtSetValues(labels[i], args, num_args);
+    }
 }
 
 /*	Function Name: ResetSourceChanged.
  *	Description: Sets the source changed to FALSE, and
  *                   registers a callback to set it to TRUE when
  *                   the source has changed.
- *	Arguments: widget - widget to register the callback on.
+ *	Arguments: item - item with widget to register the callback on.
  *	Returns: none.
  */
 
 void
-ResetSourceChanged(widget)
-Widget widget;
+ResetSourceChanged(xedit_flist_item *item)
 {
-    XtAddCallback(XawTextGetSource(widget), XtNcallback, SourceChanged, NULL);
-    source_changed = FALSE;
+    Arg args[1];
+    Cardinal num_args;
+    int i;
+
+    num_args = 0;
+    XtSetArg(args[num_args], XtNleftBitmap, None);	++num_args;
+    XtSetValues(item->sme, args, num_args);
+
+    for (i = 0; i < 3; i++)
+	if (XawTextGetSource(texts[i]) == item->source)
+	    XtSetValues(labels[i], args, num_args);
+
+    num_args = 0;
+    XtSetArg(args[num_args], XtNsourceChanged, False);	++num_args;
+    XtSetValues(item->source, args, num_args);
+
+    if (XtHasCallbacks(item->source, XtNcallback) != XtCallbackHasSome)
+	XtAddCallback(item->source, XtNcallback, SourceChanged,
+		      (XtPointer)item);
+    item->flags &= ~CHANGED_BIT;
+}
+
+/*ARGSUSED*/
+void
+KillFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    int i;
+    xedit_flist_item *item = FindTextSource(XawTextGetSource(textwindow), NULL);
+
+    if (item->source == scratch) {
+	Feep();
+	return;
+    }
+
+    if (item->flags & CHANGED_BIT) {
+	if (!double_click || (dc_state && dc_state != DC_KILL)) {
+	    XeditPrintf("Kill: Unsaved changes. Kill again to override.\n");
+	    Feep();
+	    double_click = TRUE;
+	    dc_state = DC_KILL;
+	    AddDoubleClickCallback(XawTextGetSource(textwindow), True);
+	    return;
+	}
+	double_click = FALSE;
+	dc_state = 0;
+    }
+    KillTextSource(item);
 }
 
 /*ARGSUSED*/
@@ -312,7 +565,7 @@ FindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void
 LoadFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-    if (ReallyDoLoad())
+    if (ReallyDoLoad(GetString(filenamewindow), ResolveName(NULL)))
 	XtSetKeyboardFocus(topwindow, textwindow);
 }
 
@@ -325,13 +578,11 @@ CancelFindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 }
 
 static Bool
-IsDir(char *dir_name, char *file_name, Bool feep)
+IsDir(char *path, Bool feep)
 {
-    char lname[BUFSIZ], path[BUFSIZ];
+    char lname[BUFSIZ];
     struct stat st;
     int llen;
-
-    XmuSnprintf(path, sizeof(path), "%s/%s", dir_name, file_name);
 
     if ((llen = readlink(path, lname, sizeof(lname) - 1)) > 0) {
 	lname[llen] = '\0';
@@ -472,51 +723,61 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
     len = strlen(file_name);
 
     if ((dir = opendir(dir_name)) != NULL) {
+	char path[BUFSIZ], *pptr;
 	struct dirent *ent;
-	int isdir, first = 1;
+	int isdir, first = 1, bytes;
+
+	XmuSnprintf(path, sizeof(path), "%s/", dir_name);
+	pptr = path + strlen(path);
+	bytes = sizeof(path) - (pptr - path) - 1;
 
 	mlen = 0;
 	match[0] = '\0';
 	(void)readdir(dir);	/* "." */
 	(void)readdir(dir);	/* ".." */
 	while ((ent = readdir(dir)) != NULL) {
-	    if (strlen(ent->d_name) >= len
-		&& strncmp(ent->d_name, file_name, len) == 0) {
+	    unsigned d_namlen = strlen(ent->d_name);
+
+	    if (d_namlen >= len && strncmp(ent->d_name, file_name, len) == 0) {
 		char *tmp = &(ent->d_name[len]), *mat = match;
+		struct stat st;
+
+		strncpy(pptr, ent->d_name, bytes);
+		pptr[bytes] = '\0';
+		if (stat(path, &st) != 0) {
+		    Feep();
+		    continue;
+		}
 
 		if (first) {
 		    strncpy(match, tmp, sizeof(match) - 1);
 		    match[sizeof(match) - 2] = '\0';
 		    mlen = strlen(match);
 		    first = 0;
-#if 0
-		    if (ent->d_type == DT_LNK)
-			isdir = IsDir(dir_name, ent->d_name, True);
+		    if ((st.st_mode & S_IFLNK) == S_IFLNK)
+			isdir = IsDir(path, True);
 		    else
-			isdir = ent->d_type == DT_DIR;
-#endif
+			isdir = (st.st_mode & S_IFDIR) == S_IFDIR;
 		}
 		else {
-		    while (*tmp++ == *mat++)
+		    while (*tmp && *tmp++ == *mat++)
 			;
-		    mlen = mat - match - 1;
+		    mlen = mat - match - (*tmp != '\0' || *mat == '\0');
 		    match[mlen] = '\0';
 		}
 #ifdef SHOW_MATCHES
 		if (show_matches != SM_NEVER) {
 		    Bool is_dir;
 
-#if 0
-		    if (ent->d_type == DT_LNK)
-			is_dir = IsDir(dir_name, ent->d_name, False);
+		    if ((st.st_mode & S_IFLNK) == S_IFLNK)
+			is_dir = IsDir(path, False);
 		    else
-			is_dir = ent->d_type == DT_DIR;
-#endif
+			isdir = (st.st_mode & S_IFDIR) == S_IFDIR;
 		    matches = (char **)XtRealloc((char*)matches, sizeof(char**)
 						 * (n_matches + 1));
-		    buflen += strlen(ent->d_name) + 1;
+		    buflen += d_namlen + 1;
 		    if (is_dir) {
-			matches[n_matches] = XtMalloc(strlen(ent->d_name) + 2);
+			matches[n_matches] = XtMalloc(d_namlen + 2);
 			strcpy(matches[n_matches], ent->d_name);
 			strcat(matches[n_matches], "/");
 			++buflen;

@@ -43,17 +43,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.5 1998/10/03 08:42:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.6 1998/11/01 07:57:46 dawes Exp $ */
 
 #ifndef _SimpleP_h
 #define _SimpleP_h
 
 #include <X11/Xaw/Simple.h>
-
-#ifndef XAWDL_DEFINED
-#define XAWDL_DEFINED
-typedef struct _XawDL XawDisplayList;
-#endif
+#include <X11/Xaw/XawInit.h>
 
 typedef struct {
   Bool	(*change_sensitive)(Widget);

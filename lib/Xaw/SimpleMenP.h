@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *
  */
-/* $XFree86: xc/lib/Xaw/SimpleMenP.h,v 1.5 1998/10/03 08:42:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenP.h,v 1.6 1998/11/01 07:57:45 dawes Exp $ */
 
 /*
  * SimpleMenuP.h - Private Header file for SimpleMenu widget.
@@ -38,11 +38,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/SmeP.h>
 #include <X11/ShellP.h>
-
-#ifndef XAWDL_DEFINED
-#define XAWDL_DEFINED
-typedef struct _XawDL XawDisplayList;
-#endif
+#include <X11/Xaw/XawInit.h>
 
 typedef struct {
   XtPointer extension;		/* For future needs */

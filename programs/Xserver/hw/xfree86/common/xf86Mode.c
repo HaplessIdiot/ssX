@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.7 1998/10/06 05:22:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.8 1998/10/11 10:20:26 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -766,7 +766,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
      * Initialise virtX and virtY if the values are fixed.
      */
     if (virtualY > 0) {
-	if (virtualY > maxHeight) {
+	if (maxHeight > 0 && virtualY > maxHeight) {
 	    xf86DrvMsg(scrp->scrnIndex, X_ERROR,
 		       "Virtual height (%d) is too large for the hardware "
 		       "(max %d)\n", virtualY, maxHeight);

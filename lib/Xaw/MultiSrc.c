@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.11 1998/10/03 08:42:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.12 1998/10/25 07:11:13 dawes Exp $ */
 
 /*
 
@@ -160,15 +160,6 @@ static XtResource resources[] = {
     (XtPointer)BUFSIZ
   },
   {
-    XtNcallback,
-    XtCCallback,
-    XtRCallback,
-    sizeof(XtPointer),
-    offset(callback),
-    XtRCallback,
-    NULL
-  },
-  {
     XtNuseStringInPlace,
     XtCUseStringInPlace,
     XtRBoolean,
@@ -283,7 +274,7 @@ XawMultiSrcInitialize(Widget request, Widget cnew,
   /*
    * Set correct flags (override resources) depending upon widget class
  */
-  src->multi_src.changes = False;
+  src->text_src.changed = False;
   src->multi_src.allocated_string = False;
 
   file = InitStringOrFile(src, src->multi_src.type == XawAsciiFile);
@@ -501,10 +492,6 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 
   if (src->multi_src.use_string_in_place)
     start_piece->text[start_piece->used] = (wchar_t)0;
-
-  src->multi_src.changes = True;
-
-  XtCallCallbacks(w, XtNcallback, NULL);
 
   return (XawEditDone);
 }
@@ -863,8 +850,9 @@ XawMultiSrcSetValues(Widget current, Widget request, Widget cnew,
         LoadPieces(src, file, NULL);
       if (file != NULL)
 	fclose(file);
-      XawTextSetSource(XtParent(cnew), cnew, 0);	/* Tell text widget
-							   what happened */
+      for (i = 0; i < src->text_src.num_text; i++)
+	  /* Tell text widget what happened */
+	  XawTextSetSource(src->text_src.text[i], cnew, 0, 0);
       total_reset = True;
     }
 
@@ -988,7 +976,7 @@ _XawMultiSave(Widget w)
 
   if (src->multi_src.type == XawAsciiFile)
     {
-      if (!src->multi_src.changes) 		/* No changes to save */
+      if (!src->text_src.changed) 		/* No changes to save */
 	return (True);
 
       mb_string = StorePiecesInString(src);
@@ -1001,7 +989,7 @@ _XawMultiSave(Widget w)
               return (False);
 	    }
           XtFree(mb_string);
-          src->multi_src.changes = False;
+          src->text_src.changed = False;
           return (True);
           }
       else
@@ -1038,7 +1026,7 @@ _XawMultiSave(Widget w)
     
       src->multi_src.string = mb_string;
   }
-  src->multi_src.changes = False;
+  src->text_src.changed = False;
 
   return (True);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.5 1998/08/29 05:44:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.6 1998/10/05 13:23:18 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -13,7 +13,7 @@
 #include "xaa.h"
 #include "xaalocal.h"
 
-static void MoveDWORDS_FixedBase(
+void XAAMoveDWORDS_FixedBase(
    register CARD32* dest,
    register CARD32* src,
    register int dwords )
@@ -35,7 +35,7 @@ static void MoveDWORDS_FixedBase(
      *dest = *(src + 2);
 }
 
-static void MoveDWORDS(
+void XAAMoveDWORDS(
    register CARD32* dest,
    register CARD32* src,
    register int dwords )
@@ -57,7 +57,7 @@ static void MoveDWORDS(
      *(dest + 2) = *(src + 2);
 }
 
-static void MoveDWORDS_FixedSrc(
+void XAAMoveDWORDS_FixedSrc(
    register CARD32* dest,
    register CARD32* src,
    register int dwords )
@@ -144,14 +144,14 @@ BAD_ALIGNMENT:
 
     if(dwords > infoRec->ImageWriteRange) {
 	while(h--) {
-	    MoveDWORDS_FixedBase((CARD32*)infoRec->ImageWriteBase,
+	    XAAMoveDWORDS_FixedBase((CARD32*)infoRec->ImageWriteBase,
 		(CARD32*)src, dwords);
 	    src += srcwidth;
 	}
 	if(beCareful) {
 	   int shift = ((long)src & 0x03L) << 3;
 	   if(--dwords)
-		MoveDWORDS_FixedBase((CARD32*)infoRec->ImageWriteBase,
+		XAAMoveDWORDS_FixedBase((CARD32*)infoRec->ImageWriteBase,
 			(CARD32*)src, dwords);
 	   src = (unsigned char*)((long)(src + (dwords << 2)) & ~0x03L);
 	   *((CARD32*)infoRec->ImageWriteBase) = *((CARD32*)src) >> shift;
@@ -161,19 +161,19 @@ BAD_ALIGNMENT:
 	   int decrement = infoRec->ImageWriteRange/dwords;
 
 	   while(h > decrement) {
-		MoveDWORDS((CARD32*)infoRec->ImageWriteBase,
+		XAAMoveDWORDS((CARD32*)infoRec->ImageWriteBase,
 	 		(CARD32*)src, dwords * decrement);
 		src += (srcwidth * decrement);
 		h -= decrement;
 	   }
 	   if(h) {
-		MoveDWORDS((CARD32*)infoRec->ImageWriteBase,
+		XAAMoveDWORDS((CARD32*)infoRec->ImageWriteBase,
 	 		(CARD32*)src, dwords * h);
 		if(beCareful) src += (srcwidth * h);
 	   }
 	} else {
 	    while(h--) {
-		MoveDWORDS((CARD32*)infoRec->ImageWriteBase,
+		XAAMoveDWORDS((CARD32*)infoRec->ImageWriteBase,
 	 		(CARD32*)src, dwords);
 		src += srcwidth;
 	    }
@@ -182,7 +182,7 @@ BAD_ALIGNMENT:
 	if(beCareful) {
 	    int shift = ((long)src & 0x03L) << 3;
 	    if(--dwords)
-		MoveDWORDS((CARD32*)infoRec->ImageWriteBase,
+		XAAMoveDWORDS((CARD32*)infoRec->ImageWriteBase,
 					(CARD32*)src, dwords);
 	    src = (unsigned char*)((long)(src + (dwords << 2)) & ~0x03L);
      
@@ -262,7 +262,7 @@ BAD_ALIGNMENT:
     }
 
     while(h--) {
-	MoveDWORDS(base, (CARD32*)src, dwords);
+	XAAMoveDWORDS(base, (CARD32*)src, dwords);
 	(*infoRec->SubsequentImageWriteScanline)(pScrn, bufferNo++);
 	src += srcwidth;
 	if(bufferNo >= infoRec->NumScanlineImageWriteBuffers)
@@ -273,7 +273,7 @@ BAD_ALIGNMENT:
     if(beCareful) {
 	int shift = ((long)src & 0x03L) << 3;
 	if(--dwords)
-	    MoveDWORDS(base,(CARD32*)src, dwords);
+	    XAAMoveDWORDS(base,(CARD32*)src, dwords);
 	src = (unsigned char*)((long)(src + (dwords << 2)) & ~0x03L);
      
 	base[dwords] = *((CARD32*)src) >> shift;
@@ -304,8 +304,7 @@ XAAPutImage(
 	     CHECK_ROP(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_ROPSRC(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WritePixmapFlags) &&
-	     !((infoRec->ImageWriteFlags & NO_GXCOPY) && 
-	     (pGC->alu == GXcopy))) ||
+	     CHECK_NO_GXCOPY(pGC,infoRec->WritePixmapFlags)) ||
        ((format == XYBitmap) && infoRec->WriteBitmap &&
 	     CHECK_ROP(pGC,infoRec->WriteBitmapFlags) &&
 	     CHECK_ROPSRC(pGC,infoRec->WriteBitmapFlags) &&
@@ -436,7 +435,7 @@ XAAReadPixmap (
 	    ReadDwords--;
 	    while(h--) {
 		if(ReadDwords)
-		    MoveDWORDS_FixedSrc((CARD32*)dst, 
+		    XAAMoveDWORDS_FixedSrc((CARD32*)dst, 
 			(CARD32*)infoRec->ImageReadBase, ReadDwords);
 		extra.IntData = *((CARD32*)infoRec->ImageReadBase);
 		tmp = dst + (ReadDwords << 2); 
@@ -449,7 +448,7 @@ XAAReadPixmap (
 	    }
 	} else {
 	    while(h--) {
-		MoveDWORDS_FixedSrc((CARD32*)dst, 
+		XAAMoveDWORDS_FixedSrc((CARD32*)dst, 
 			(CARD32*)infoRec->ImageReadBase, ReadDwords);
 		dst += dstwidth;
 	    }
@@ -459,7 +458,7 @@ XAAReadPixmap (
 	    ReadDwords--;
 	    while(h--) {
 		if(ReadDwords)
-		   MoveDWORDS((CARD32*)dst, 
+		   XAAMoveDWORDS((CARD32*)dst, 
 			(CARD32*)infoRec->ImageReadBase, ReadDwords);
 		extra.IntData = 
 			*((CARD32*)(infoRec->ImageReadBase) + ReadDwords);
@@ -473,7 +472,7 @@ XAAReadPixmap (
 	    }
 	} else {
 	    while(h--) {
-		MoveDWORDS((CARD32*)dst, 
+		XAAMoveDWORDS((CARD32*)dst, 
 			(CARD32*)infoRec->ImageReadBase, ReadDwords);
 		dst += dstwidth;
 	    }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.10 1998/09/27 04:43:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.11 1998/10/05 13:23:16 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -553,6 +553,18 @@ typedef struct _XAAInfoRec {
    );
    int FillCacheExpandRectsFlags;
 
+   void (*FillImageWriteRects)(
+	ScrnInfoPtr pScrn,
+	int rop,
+	unsigned int planemask,
+	int nBox,
+	BoxPtr pBox,
+	int xorg, int yorg,
+	PixmapPtr pPix
+   );
+   int FillImageWriteRectsFlags;
+   
+
    void (*FillSolidSpans)(
 	ScrnInfoPtr pScrn,
 	int fg, int rop,
@@ -748,6 +760,14 @@ typedef struct _XAAInfoRec {
 	xRectangle *prectInit
    );  
    int PolyFillRectCacheExpandFlags;
+
+   void (*PolyFillRectImageWrite)(
+	DrawablePtr pDraw,
+	GCPtr pGC,
+	int nrectFill, 	
+	xRectangle *prectInit
+   );  
+   int PolyFillRectImageWriteFlags;
 
 
    /** FillSpans **/   

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.32 1998/10/25 07:12:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.33 1998/11/01 12:35:55 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -26,6 +26,13 @@
 #include "mga_reg.h"
 #include "mga_map.h"
 #include "mga_macros.h"
+
+#if 0
+/* To use planar screen->screen expansions instead of linear ones */
+#if PSZ != 24
+#define USE_PLANAR_EXPANSION
+#endif
+#endif
 
 static void MGANAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir,
 				int ydir, int rop, unsigned int planemask,
@@ -69,12 +76,22 @@ static void MGANAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop,
 				int transparency_color, int bpp, int depth);
 static void MGANAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
+#ifdef USE_PLANAR_EXPANSION
+static void MGANAME(SetupForPlanarScreenToScreenColorExpandFill)(
+				ScrnInfoPtr pScrn, int fg, int bg, int rop, 
+				unsigned int planemask);
+static void MGANAME(SubsequentPlanarScreenToScreenColorExpandFill)(
+				ScrnInfoPtr pScrn,
+				int x, int y, int w, int h,
+				int srcx, int srcy, int skipleft);
+#else
 static void MGANAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
 				unsigned int planemask);
 static void MGANAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
 				int srcx, int srcy, int skipleft);
+#endif
 static void MGANAME(SetupForImageRead)(ScrnInfoPtr pScrn, int bpp, int depth);
 static void MGANAME(SubsequentImageReadRect)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h);
@@ -225,11 +242,21 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 		MGANAME(SubsequentCPUToScreenColorExpandFill);
 
     /* screen to screen color expansion */
+#ifdef USE_PLANAR_EXPANSION
+    /* Example of how to use the planar expansions instead. It's slower. */
+    infoPtr->SetupForScreenToScreenColorExpandFill = 
+		MGANAME(SetupForPlanarScreenToScreenColorExpandFill);
+    infoPtr->SubsequentScreenToScreenColorExpandFill = 
+		MGANAME(SubsequentPlanarScreenToScreenColorExpandFill);
+    infoPtr->CacheColorExpandDensity = pScrn->bitsPerPixel;
+    infoPtr->CacheMonoStipple = XAACachePlanarMonoStipple;
+#else
     infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_LSBFIRST;
     infoPtr->SetupForScreenToScreenColorExpandFill = 
 		MGANAME(SetupForScreenToScreenColorExpandFill);
     infoPtr->SubsequentScreenToScreenColorExpandFill = 
 		MGANAME(SubsequentScreenToScreenColorExpandFill);
+#endif
 
 
     /* image writes */
@@ -412,7 +439,7 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
     OUTREG(MGAREG_MACCESS, maccess);
     pMga->PlaneMask = ~0;
-    if(!(pMga->AccelFlags & MGA_NO_PLANEMASK))
+    if(pMga->Chipset != PCI_CHIP_MGAG100)
 	OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
     pMga->FgColor = 1;
     OUTREG(MGAREG_FCOL, pMga->FgColor);
@@ -1097,13 +1124,63 @@ MGANAME(SubsequentDashedTwoPointLine)(
 }
 
 
+#ifdef USE_PLANAR_EXPANSION
 
+	/******************************************\
+	|  Planar Screen to Screen Color Expansion |
+	\******************************************/
 
+static void 
+MGANAME(SetupForPlanarScreenToScreenColorExpandFill)(
+   ScrnInfoPtr pScrn,
+   int fg, int bg, 
+   int rop,
+   unsigned int planemask
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+    CARD32 mgaCMD = pMga->AtypeNoBLK[rop] | MGADWG_BITBLT | 
+				MGADWG_SGNZERO | MGADWG_BPLAN;
+        
+    if(bg == -1) {
+	mgaCMD |= MGADWG_TRANSC;
+	WAITFIFO(4);
+    } else {
+	WAITFIFO(5);
+    	SET_BACKGROUND(bg);
+    }
+
+    SET_FOREGROUND(fg);
+    SET_PLANEMASK(planemask);
+    OUTREG(MGAREG_AR5, pScrn->displayWidth);
+    OUTREG(MGAREG_DWGCTL, mgaCMD);
+}
+
+static void 
+MGANAME(SubsequentPlanarScreenToScreenColorExpandFill)(
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   int srcx, int srcy, 
+   int skipleft
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+    int start, end;
+
+    w--;
+    start = XYADDRESS(srcx, srcy) + skipleft;
+    end = start + w;
+
+    WAITFIFO(4);
+    OUTREG(MGAREG_AR3, start);
+    OUTREG(MGAREG_AR0, end);
+    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
+    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
+}
+
+#else /* USE_PLANAR_EXPANSION */
 
 	/***********************************\
 	|  Screen to Screen Color Expansion |
 	\***********************************/
-
 
 static void 
 MGANAME(SetupForScreenToScreenColorExpandFill)(
@@ -1155,15 +1232,19 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
     MGAPtr pMga = MGAPTR(pScrn);
     int start, end;
 
+    w--;
     start = (XYADDRESS(srcx, srcy) * PSZ) + skipleft;
-    end = start + w - 1;
+    end = start + w;
 
     WAITFIFO(4);
     OUTREG(MGAREG_AR3, start);
     OUTREG(MGAREG_AR0, end);
-    OUTREG(MGAREG_FXBNDRY, ((x + w - 1) << 16) | x);
+    OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
+
+#endif /* USE_PLANAR_EXPANSION */
+
 
 
 #if PSZ == 8

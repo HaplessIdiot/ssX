@@ -33,7 +33,7 @@ xedit \- simple text editor for X
 .I \-toolkitoption
 \&.\|.\|. ] [
 .I filename
-]
+\&.\|.\|. ]
 .SH DESCRIPTION
 .I Xedit
 provides a window consisting of the following four areas:
@@ -41,7 +41,7 @@ provides a window consisting of the following four areas:
 A set of commands that allow you to exit \fIxedit\fP, save the file, or
 load a new file into the edit window.
 .IP "Message Window" 25
-Displays \fIxedit\fP messages. In addition, this window can be used as
+Displays \fIxedit\fP messages. In addition, this window can be also used as
 a scratch pad. 
 .IP "Filename Display"
 Displays the name of the file currently being edited, and whether this file
@@ -56,24 +56,15 @@ options (see
 The order of the command line options is not important.
 .TP 8
 .I filename
-Specifies the file that is to be loaded during start-up. This is the
+Specifies the file(s) that are to be loaded during start-up. This is the
 file which will be edited. If a file is not specified,
 .I xedit
-lets you load a file or create a new file after it has started up.
+lets you load files or create new files after it has started up.
 .SH EDITING
 The Athena Text widget is used for the three sections of this
 application that allow text input.  The characters typed will go to
-the Text widget that the pointer cursor is currently over.  If the
-pointer cursor is not over a text widget then the keypresses will have
-no effect on the application.  This is also true for the special key
-sequences that popup dialog widgets, so typing Control-S in the filename
-widget will enable searching in that widget, not the edit widget.
-.PP
-Both the message window and the edit window will create a scrollbar if
-the text to display is too large to fit in that window.  Horizontal scrolling
-is not allowed by default, but can be turned on through the Text
-widget's resources, see \fIAthena Widget Set\fP for the exact
-resource definition.
+the Text widget that has the input focus, or the Text widget that the pointer
+cursor is currently over.
 .PP
 
 The following keystroke combinations are defined:
@@ -85,7 +76,7 @@ Ctrl-b	Backward Character	Meta-f	Forward Word
 Ctrl-d	Delete Next Character	Meta-i	Insert File
 Ctrl-e	End Of Line	Meta-k	Kill To End Of Paragraph
 Ctrl-f	Forward Character	Meta-q	Form Paragraph
-Ctrl-g	Multiply Reset	Meta-v	Previous Page
+Ctrl-g	Keyboard Reset	Meta-v	Previous Page
 Ctrl-h	Delete Previous Character	Meta-y	Insert Current Selection
 Ctrl-j	Newline And Indent	Meta-z	Scroll One Line Down
 Ctrl-k	Kill To End Of Line	Meta-d	Delete Next Word
@@ -97,11 +88,12 @@ Ctrl-p	Previous Line	Meta->	End Of File
 Ctrl-r	Search/Replace Backward	Meta-]	Forward Paragraph
 Ctrl-s	Search/Replace Forward	Meta-[	Backward Paragraph
 Ctrl-t	Transpose Characters
-Ctrl-u	Multiply by 4	Meta-Delete	Delete Previous Word
+Ctrl-u [\fInumber\fP]	Multiply by 4 or \fInumber\fP	Meta-Delete	Delete Previous Word
 Ctrl-v	Next Page	Meta-Shift Delete	Kill Previous Word
 Ctrl-w	Kill Selection	Meta-Backspace	Delete Previous Word
 Ctrl-y	Unkill	Meta-Shift Backspace	Kill Previous Word
-Ctrl-z	Scroll One Line Up
+Ctrl-z	Scroll One Line Up	Meta-z	Scroll One Line Down
+Ctrl-_	Undo
 .sp
 In addition, the pointer may be used to cut and paste text:
 .ta .5i 2.0i
@@ -120,7 +112,7 @@ In addition, the pointer may be used to cut and paste text:
 .IP Quit 8
 Quits the current editing session. If any changes have not been saved,
 .I xedit 
-displays a warning message, allowing the user to save the file.
+displays a warning message, allowing the user to save them.
 .IP Save 
 If file backups are enabled (see RESOURCES, below)
 .I xedit
@@ -131,9 +123,7 @@ filename is retrieved from the Text widget directly to the right of
 the \fILoad\fP button.
 .IP Load
 Loads the file named in the text widget immediately to the right
-of the this button and displays it in the Edit window.  If the
-currently displayed file has been modified a warning message will ask
-the user to save the changes, or press \fILoad\fP again.
+of the this button and displays it in the Edit window.
 .SH RESOURCES
 For \fIxedit\fP the available resources are:
 .TP 8
@@ -151,6 +141,18 @@ default is that no string shall be prepended.
 .B backupNameSuffix (\fPClass\fB BackupNameSuffix)
 Specifies a string that is to be appended to the backup filename.  The
 default is to use ``.BAK'' as the suffix.
+.TP 8
+.B hints (\fPClass\fB Hints)
+Specifies a list of strings, separated by new lines, that will be
+displayed in the bc_label window.
+.TP 8
+.B hintsInterval (\fPClass \fBInterval)
+Specifies the interval in seconds, which the hint string in the bc_label
+window will be changed.
+.TP 8
+.B changedBitmap (\fPClass \fBChanged)
+Specifies the name of the Bitmap that will be displayed in the fileMenu, when
+the file being edited is changed.
 .SH WIDGETS
 In order to specify resources, it is useful to know the hierarchy of
 the widgets which compose \fIxedit\fR.  In the notation below,
@@ -165,11 +167,11 @@ Xedit  xedit
 			Command  quit
 			Command  save
 			Command  load
-			Text  filename
+			Text     filename
 		Label  bc_label
-		Text  messageWindow
+		Text   messageWindow
 		Label  labelWindow
-		Text  editWindow
+		Text   editWindow
 .fi
 .sp
 .SH ENVIRONMENT
@@ -190,15 +192,18 @@ specifies required resources
 .IR xrdb (1),
 .I "Athena Widget Set"
 .SH RESTRICTIONS
-There is no \fIundo\fP function.
+Xedit is not a replacement to Emacs.
 .SH COPYRIGHT
 Copyright 1988, Digital Equipment Corporation.
 .br
 Copyright 1989, X Consortium
 .br
+Copyright 1998, The XFree86 Project
+.br
 See
 .IR X (1)
 for a full statement of rights and permissions.
-.SH AUTHOR
+.SH AUTHORS
 Chris D. Peterson, MIT X Consortium
-
+.br
+Paulo Cesar Pereira de Andrade, The XFree86 Project

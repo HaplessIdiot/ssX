@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.11 1998/10/10 15:25:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.12 1998/10/25 07:11:12 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -147,15 +147,6 @@ static XtResource resources[] = {
     offset(piece_size),
     XtRImmediate,
     (XtPointer)BUFSIZ
-  },
-  {
-    XtNcallback,
-    XtCCallback,
-    XtRCallback,
-    sizeof(XtPointer),
-    offset(callback),
-    XtRCallback,
-    NULL
   },
   {
     XtNuseStringInPlace,
@@ -313,7 +304,7 @@ XawAsciiSrcInitialize(Widget request, Widget cnew,
     }
 #endif
 
-  src->ascii_src.changes = False;
+  src->text_src.changed = False;
   src->ascii_src.allocated_string = False;
 
   file = InitStringOrFile(src, src->ascii_src.type == XawAsciiFile);
@@ -389,8 +380,6 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 
   start_piece = FindPiece(src, startPos, &start_first);
   end_piece = FindPiece(src, endPos, &end_first);
-
-  src->ascii_src.changes = True;
 
   /*
    * Remove Old Stuff
@@ -492,9 +481,6 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 
   if (src->ascii_src.use_string_in_place)
     start_piece->text[start_piece->used] = '\0';
-
-  /* Call callbacks, we have changed the buffer */
-  XtCallCallbacks(w, XtNcallback, NULL);
 
   return (XawEditDone);
 }
@@ -688,82 +674,88 @@ Search(Widget w, register XawTextPosition position, XawTextScanDirection dir,
 {
   AsciiSrcObject src = (AsciiSrcObject)w;
   register int count = 0;
-  char *ptr;
+  register char *ptr, c;
+  char *str;
   Piece *piece;
   char *buf;
   XawTextPosition first;
-  register char inc;
   int cnt;
-
-  if (dir == XawsdRight)
-    inc = 1;
-  else
-    {
-      inc = -1;
-      if (position == 0)
-	return (XawTextSearchError);
-      position--;
-    }
 
   buf = XtMalloc((unsigned)sizeof(unsigned char) * text->length);
   memcpy(buf, (text->ptr + text->firstPos), (unsigned)text->length);
   piece = FindPiece(src, position, &first);
   ptr = (position - first) + piece->text;
 
-  /*CONSTCOND*/
-  while (True)
-    {
-      if (*ptr == ((dir == XawsdRight) ? *(buf + count)
-		   : *(buf + text->length - count - 1)))
-	{
-	  if (count == (text->length - 1))
-	    break;
-	  else
-	    count++;
-	}
-      else
-	{
-	  if (count != 0)
-	    {
-	      position -= inc * count;
-	      ptr -= inc * count;
-	    }
-	  count = 0;
-	}
-
-      ptr += inc;
-      position += inc;
-
-      while (ptr < piece->text)
-	{
-	  cnt = piece->text - ptr;
-
-	  piece = piece->prev;
-	  if (piece == NULL)		/* Begining of text */
-	    {
-	      XtFree(buf);
-	      return (XawTextSearchError);
-	    }
-	  ptr = piece->text + piece->used - cnt;
-	}
-
-      while (ptr >= (piece->text + piece->used))
-	{
-	  cnt = ptr - (piece->text + piece->used);
-
-	  piece = piece->next;
-	  if (piece == NULL)		/* End of text */
-	    {
-	      XtFree(buf);
-	      return (XawTextSearchError);
-	    }
-	  ptr = piece->text + cnt;
-	}
-    }
+  if (dir == XawsdRight) {
+      str = buf;
+      c = *str;
+      /*CONSTCOND*/
+      while (1) {
+	  if (*ptr++ == c) {
+	      if (++count == text->length)
+		  break;
+	      c = *++str;
+	  }
+	  else if (count) {
+	      ptr -= count;
+	      str -= count;
+	      position -= count;
+	      count = 0;
+	      c = *str;
+	  }
+	  position++;
+	  if (ptr >= (piece->text + piece->used)) {
+	      do {
+		  cnt = ptr - (piece->text + piece->used);
+		  piece = piece->next;
+		  if (piece == NULL) {		/* End of text */
+		      XtFree(buf);
+		      return (XawTextSearchError);
+		  }
+		  ptr = piece->text + cnt;
+	      } while (ptr >= (piece->text + piece->used));
+	  }
+      }
+  }
+  else {
+      if (position == 0) {
+	  XtFree(buf);
+	  return (XawTextSearchError);
+      }
+      str = buf + text->length - 1;
+      c = *str;
+      /*CONSTCOND*/
+      while (1) {
+	  if (*ptr-- == c) {
+	      if (++count == text->length)
+		  break;
+	      c = *--str;
+	  }
+	  else if (count) {
+	      ptr += count;
+	      str += count;
+	      position += count;
+	      count = 0;
+	      c = *str;
+	  }
+	  position--;
+	  if (ptr < piece->text) {
+	      do {
+		  cnt = piece->text - ptr;
+		  piece = piece->prev;
+		  if (piece == NULL) {		/* Begining of text */
+		      XtFree(buf);
+		      return (XawTextSearchError);
+		  }
+		  ptr = piece->text + piece->used - cnt;
+	      } while (ptr < piece->text);
+	  }
+      }
+  }
 
   XtFree(buf);
   if (dir == XawsdLeft)
-    return (position);
+      return (position);
 
   return (position - (text->length - 1));
 }
@@ -819,8 +811,9 @@ XawAsciiSrcSetValues(Widget current, Widget request, Widget cnew,
       LoadPieces(src, file, NULL);   /* load new info into internal buffers */
       if (file != NULL)
 	fclose(file);
-      XawTextSetSource(XtParent(cnew), cnew, 0);	/* Tell text widget
-							   what happened */
+      for (i = 0; i < src->text_src.num_text; i++)
+	  /* Tell text widget what happened */
+	  XawTextSetSource(src->text_src.text[i], cnew, 0, 0);
       total_reset = True;
     }
 
@@ -968,7 +961,7 @@ XawAsciiSave(Widget w)
     {
       char *string;
 
-      if (!src->ascii_src.changes) 		/* No changes to save */
+      if (!src->text_src.changed) 		/* No changes to save */
 	return (True);
 
       string = StorePiecesInString(src);
@@ -989,7 +982,7 @@ XawAsciiSave(Widget w)
 
       src->ascii_src.string = StorePiecesInString(src);
     }
-  src->ascii_src.changes = False;
+  src->text_src.changed = False;
 
   return (True);
 }
@@ -1050,11 +1043,8 @@ XawAsciiSaveAsFile(Widget w, _Xconst char *name)
 Bool
 XawAsciiSourceChanged(Widget w)
 {
-  if (XtIsSubclass(w, multiSrcObjectClass))
-    return (((MultiSrcObject)w)->multi_src.changes);
-
-  if (XtIsSubclass(w, asciiSrcObjectClass))
-    return (((AsciiSrcObject)w)->ascii_src.changes);
+  if (XtIsSubclass(w, textSrcObjectClass))
+      return (((TextSrcObject)w)->textSrc.changed);
 
   XtErrorMsg("bad argument", "asciiSource", "XawError",
 	     "XawAsciiSourceChanged parameter must be an "

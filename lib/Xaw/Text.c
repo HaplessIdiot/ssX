@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.15 1998/10/10 15:25:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.16 1998/10/25 07:11:14 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -124,35 +124,6 @@ unsigned long XawFmtWide = 0L;
 			   (ctx)->text.lt.top,				     \
 			   (ctx)->text.lt.info[ctx->text.lt.lines].position)
 
-#define UNDO_DEPTH	32768	/* ought to be enough for everybody ;-) */
-
-/*
- * Types
- */
-typedef struct {
-    XawTextPosition position;
-    char *buffer;
-    unsigned length;
-    unsigned refcount;
-    unsigned long format;
-} XawTextUndoBuffer;
-
-typedef struct _XawTextUndoList XawTextUndoList;
-struct _XawTextUndoList {
-    XawTextUndoBuffer *left, *right;
-    XawTextUndoList *undo, *redo;
-};
-
-struct _XawTextUndo {
-    XawTextUndoBuffer **undo;
-    unsigned num_undo;
-    XawTextUndoList *list, *pointer, *end_mark, *head;
-    unsigned num_list;
-    XawTextScanDirection dir;
-    XawTextUndoBuffer *l_save, *r_save;
-    XawTextUndoList *u_save;
-};
-
 /*
  * Class Methods
  */
@@ -196,7 +167,6 @@ static void DoSelection(TextWidget, XawTextPosition, Time, Bool);
 static void ExtendSelection(TextWidget, XawTextPosition, Bool);
 static XawTextPosition FindGoodPosition(TextWidget, XawTextPosition);
 static void FlushUpdate(TextWidget ctx);
-static void FreeUndoBuffer(XawTextUndo*);
 static int GetCutBufferNumber(Atom);
 static int GetMaxTextWidth(TextWidget);
 static unsigned int GetWidestLine(TextWidget);
@@ -215,7 +185,6 @@ static void PositionVScrollBar(TextWidget);
 static void _SetSelection(TextWidget, XawTextPosition, XawTextPosition,
 			  Atom*, Cardinal);
 static void TextSinkResize(Widget);
-static void UndoGC(XawTextUndo*);
 static void UpdateTextInRectangle(TextWidget, XRectangle*);
 static void UpdateTextInLine(TextWidget, int, int, int);
 static void VScroll(Widget, XtPointer, XtPointer);
@@ -242,8 +211,10 @@ void _XawTextSetSelection(TextWidget, XawTextPosition, XawTextPosition,
 			  String*, Cardinal);
 void _XawTextVScroll(TextWidget, int);
 void XawTextScroll(TextWidget, int, int);
-Bool _XawTextUndo(TextWidget);
-Bool XawTextToggleUndo(TextWidget);
+
+/* When the new text design be done, this should be in the TextClassPart */
+void _XawTextSourceChanged(Widget, XawTextPosition, XawTextPosition,
+			   XawTextBlock*);
 
 /* Not used by other modules, but were extern on previous versions
  * of the library
@@ -255,6 +226,12 @@ void _XawTextShowPosition(TextWidget);
  * From TextAction.c
  */
 extern void _XawTextZapSelection(TextWidget, XEvent*, Bool);
+
+/*
+ * From TextSrc.c
+ */
+void _XawSourceAddText(Widget, Widget);
+void _XawSourceRemoveText(Widget, Widget, Bool);
 
 /****************************************************************
  *
@@ -429,15 +406,6 @@ static XtResource resources[] = {
     offset(text.auto_fill),
     XtRImmediate,
     (XtPointer)False
-  },
-  {
-      XtNenableUndo,
-      XtCUndo,
-      XtRBoolean,
-      sizeof(Boolean),
-      offset(text.enable_undo),
-      XtRImmediate,
-      (XtPointer)False
   },
   {
     XtNadjustScrollbars,
@@ -737,7 +705,7 @@ CreateVScrollBar(TextWidget ctx)
   ctx->text.r_margin.left += XtWidth(vbar) + XtBorderWidth(vbar);
   if (ctx->text.adjust_scrollbars)
     ctx->text.r_margin.left += XtBorderWidth(vbar);
-  ctx->text.left_margin = ctx->text.r_margin.left;
+  ctx->text.left_margin = ctx->text.margin.left = ctx->text.r_margin.left;
 
   PositionVScrollBar(ctx);
   PositionHScrollBar(ctx);
@@ -771,7 +739,7 @@ DestroyVScrollBar(TextWidget ctx)
   ctx->text.r_margin.left -= XtWidth(vbar) + XtBorderWidth(vbar);
   if (ctx->text.adjust_scrollbars)
     ctx->text.r_margin.left -= XtBorderWidth(vbar);
-  ctx->text.left_margin = ctx->text.r_margin.left;
+  ctx->text.left_margin = ctx->text.margin.left = ctx->text.r_margin.left;
 
   XtDestroyWidget(vbar);
   ctx->text.vbar = NULL;
@@ -875,13 +843,8 @@ XawTextInitialize(Widget request, Widget cnew,
   ctx->text.salt2 = NULL;
   ctx->text.from_left = -1;
 
-  if (ctx->text.enable_undo) {
-      ctx->text.undo = (XawTextUndo*)XtCalloc(1, sizeof(XawTextUndo));
-      ctx->text.undo->dir = XawsdLeft;
-  }
-  else
-      ctx->text.undo = NULL;
-  ctx->text.undo_state = False;
+  ctx->text.selection_state = False;
+  ctx->text.kill_ring = 0;
 
   if (XtHeight(ctx) == DEFAULT_TEXT_HEIGHT)
     {
@@ -2139,31 +2102,33 @@ static void
 _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	      Atom *selections, Cardinal count)
 {
-  XawTextPosition pos;
+    XawTextPosition pos;
+    Cardinal i;
+    TextSrcObject src = (TextSrcObject)ctx->text.source;
 
-  if (left < ctx->text.s.left)
-    {
-      pos = Min(right, ctx->text.s.left);
-      _XawTextNeedsUpdating(ctx, left, pos);
-    }
-  if (left > ctx->text.s.left)
-    {
-      pos = Min(left, ctx->text.s.right);
-      _XawTextNeedsUpdating(ctx, ctx->text.s.left, pos);
-    }
-  if (right < ctx->text.s.right)
-    {
-      pos = Max(right, ctx->text.s.left);
-      _XawTextNeedsUpdating(ctx, pos, ctx->text.s.right);
-    }
-  if (right > ctx->text.s.right)
-    {
-      pos = Max(left, ctx->text.s.right);
-      _XawTextNeedsUpdating(ctx, pos, right);
-    }
+    for (i = 0; i < src->textSrc.num_text; i++) {
+	TextWidget tw = (TextWidget)src->textSrc.text[i];
 
-  ctx->text.s.left = left;
-  ctx->text.s.right = right;
+	if (left < tw->text.s.left) {
+	    pos = Min(right, tw->text.s.left);
+	    _XawTextNeedsUpdating(tw, left, pos);
+	}
+	if (left > tw->text.s.left) {
+	    pos = Min(left, tw->text.s.right);
+	    _XawTextNeedsUpdating(tw, tw->text.s.left, pos);
+	}
+	if (right < tw->text.s.right) {
+	    pos = Max(right, tw->text.s.left);
+	    _XawTextNeedsUpdating(tw, pos, tw->text.s.right);
+	}
+	if (right > tw->text.s.right) {
+	    pos = Max(left, tw->text.s.right);
+	    _XawTextNeedsUpdating(tw, pos, right);
+	}
+
+	tw->text.s.left = left;
+	tw->text.s.right = right;
+    }
 
   SrcSetSelection(ctx->text.source, left, right,
 		  (count == 0) ? None : selections[0]);
@@ -2237,6 +2202,93 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
     XawTextUnsetSelection((Widget)ctx);
 }
 
+void
+_XawTextSourceChanged(Widget w, XawTextPosition left, XawTextPosition right,
+		      XawTextBlock *block)
+{
+    TextWidget ctx = (TextWidget)w;
+    Widget src = ctx->text.source;
+    XawTextPosition update_from, update_to, top;
+    Boolean update_disabled;
+    int delta, line, line_from;
+
+    update_from = left;
+    update_to = XawMax(right, left + block->length);
+    update_to = SrcScan(src, update_to, XawstEOL, XawsdRight, 1, False);
+    if (update_from == update_to)
+	++update_to;		/* Force clear to eol */
+    update_disabled = ctx->text.update_disabled;
+    ctx->text.update_disabled = True;
+    ctx->text.lastPos = XawTextGetLastPosition(ctx);
+    top = ctx->text.lt.info[0].position;
+    delta = block->length - (right - left);
+    ctx->text.clear_to_eol = block->length != 1 || right - left != 0;
+
+    XawTextUnsetSelection((Widget)ctx);
+
+    if (delta) {
+	int i;
+	XmuSegment *seg;
+
+	for (seg = ctx->text.update->segment; seg; seg = seg->next) {
+	    if (seg->x1 > (int)left)
+		break;
+	    else if (seg->x2 > (int)left) {
+		seg->x2 += delta;
+		seg = seg->next;
+		break;
+	    }
+	}
+	for (; seg; seg = seg->next) {
+	    seg->x1 += delta;
+	    seg->x2 += delta;
+	}
+	XmuOptimizeScanline(ctx->text.update);
+
+	for (i = 0; i <= ctx->text.lt.lines; i++)
+	    if (ctx->text.lt.info[i].position > left)
+		break;
+	for (; i <= ctx->text.lt.lines; i++)
+	    ctx->text.lt.info[i].position += delta;
+    }
+
+    if (top != ctx->text.lt.info[0].position) {
+	line_from = line = 0;
+	ctx->text.lt.top = top = SrcScan(src, ctx->text.lt.info[0].position,
+					 XawstEOL, XawsdLeft, 1, False);
+    }
+    else {
+	line_from = line = LineForPosition(ctx, update_from + delta);
+	top = ctx->text.lt.info[line].position;
+    }
+
+    if (line > 0 && ctx->text.wrap == XawtextWrapWord) {
+	--line;
+	top = ctx->text.lt.info[line].position;
+    }
+
+    (void)_BuildLineTable(ctx, top, line);
+
+    if (ctx->text.wrap == XawtextWrapWord) {
+	if (line_from != LineForPosition(ctx, update_from)
+	    || line_from != LineForPosition(ctx, update_to)) {
+	    ctx->text.clear_to_eol = True;
+	    update_from = SrcScan(src, update_from,
+				  XawstWhiteSpace, XawsdLeft, 1, True);
+	    if (update_to >= ctx->text.lastPos)
+		++update_to;
+	}
+    }
+    else if (!ctx->text.clear_to_eol) {
+	if (LineForPosition(ctx, update_from)
+	    != LineForPosition(ctx, update_to))
+	    ctx->text.clear_to_eol = True;
+    }
+
+    _XawTextNeedsUpdating(ctx, update_from, update_to);
+    ctx->text.update_disabled = update_disabled;
+}
+
 /*
  * Function:
  *	_XawTextReplace
@@ -2261,426 +2313,24 @@ int
 _XawTextReplace(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 		XawTextBlock *block)
 {
-  Arg args[1];
-  Widget src;
-  XawTextEditType edit_mode;
-  XawTextPosition update_from, update_to, top;
-  Boolean update_disabled;
-  int delta, error, line, line_from;
-  XawTextUndoBuffer *l_state, *r_state;
-  XawTextUndoList *undo;
-  Bool enable_undo;
+    Arg args[1];
+    Widget src;
+    XawTextEditType edit_mode;
 
-  if (left == right && block->length == 0)
-      return (XawEditDone);
+    if (left == right && block->length == 0)
+	return (XawEditDone);
 
-  src = ctx->text.source;
-  XtSetArg(args[0], XtNeditType, &edit_mode);
-  XtGetValues(src, args, 1);
+    src = ctx->text.source;
+    XtSetArg(args[0], XtNeditType, &edit_mode);
+    XtGetValues(src, args, 1);
 
-  if (edit_mode == XawtextAppend)
-	{
-      if (block->length == 0)
-	  return (XawEditError);
-      ctx->text.insertPos = left = right = ctx->text.lastPos;
-	}
-
-  enable_undo = ctx->text.enable_undo && ctx->text.undo_state == False;
-  if (enable_undo) {
-      unsigned size, total;
-
-      if (ctx->text.undo->l_save) {
-	  l_state = ctx->text.undo->l_save;
-	  ctx->text.undo->l_save = NULL;
-      }
-      else
-	  l_state = XtNew(XawTextUndoBuffer);
-      l_state->refcount = 1;
-      l_state->position = left;
-      if (left < right) {
-	  l_state->buffer = _XawTextGetText(ctx, left, right);
-	  l_state->length = right - left;
-      }
-      else {
-	  l_state->length = 0;
-	  l_state->buffer = NULL;
-      }
-      l_state->format = _XawTextFormat(ctx);
-
-      if (ctx->text.undo->r_save) {
-	  r_state = ctx->text.undo->r_save;
-	  ctx->text.undo->r_save = NULL;
-      }
-      else
-	  r_state = XtNew(XawTextUndoBuffer);
-      r_state->refcount = 1;
-      r_state->position = left;
-      r_state->format = block->format;
-      size = block->format == XawFmtWide ? sizeof(wchar_t) : sizeof(char);
-      total = size * block->length;
-      r_state->length = block->length;
-      if (total) {
-	  r_state->buffer = XtMalloc(total);
-	  memcpy(r_state->buffer, block->ptr, total);
-      }
-      else
-	  r_state->buffer = NULL;
-
-      if (ctx->text.undo->u_save) {
-	  undo = ctx->text.undo->u_save;
-	  ctx->text.undo->u_save = NULL;
-      }
-      else
-	  undo = XtNew(XawTextUndoList);
-      undo->left = l_state;
-      undo->right = r_state;
-      undo->undo = ctx->text.undo->list;
-      undo->redo = NULL;
-  }
-  else {
-      undo = NULL;
-      l_state = r_state = NULL;
-  }
-
-  if ((error = SrcReplace(src, left, right, block)) != 0) {
-      if (enable_undo) {
-	  if (l_state->buffer) {
-	      XtFree(l_state->buffer);
-	      l_state->buffer = NULL;
-	  }
-	  ctx->text.undo->l_save = l_state;
-	  if (r_state->buffer) {
-	      XtFree(r_state->buffer);
-	      r_state->buffer = NULL;
-	  }
-	  ctx->text.undo->r_save = r_state;
-
-	  ctx->text.undo->u_save = undo;
-      }
-      return (error);
-  }
-
-  if (enable_undo) {
-      XawTextUndoList *list = ctx->text.undo->list;
-
-      /* Try to merge the undo buffers */
-      if (list
-	  && list->left->length == 0
-	  && undo->left->length == 0
-	  && undo->right->length == 1
-	  && ctx->text.undo->pointer == ctx->text.undo->list
-	  && list->right->position + list->right->length == undo->right->position
-	  && undo->right->format == list->right->format
-	  && ((undo->right->format == XawFmt8Bit
-	       && undo->right->buffer[0] != XawLF)
-	      || (undo->right->format == XawFmtWide
-		  && *(wchar_t*)(undo->right->buffer) != _Xaw_atowc(XawLF)))
-	  && ((list->right->format == XawFmt8Bit
-	       && list->right->buffer[0] != XawLF)
-	      || (list->right->format == XawFmtWide
-		  && *(wchar_t*)(list->right->buffer) != _Xaw_atowc(XawLF)))) {
-	  unsigned size = list->right->format == XawFmtWide ?
-	      sizeof(wchar_t) : sizeof(char);
-
-	  list->right->buffer = XtRealloc(list->right->buffer,
-					  (list->right->length + 1) * size);
-	  memcpy(list->right->buffer + list->right->length * size,
-		 undo->right->buffer, size);
-	  ++list->right->length;
-
-	  ctx->text.undo->l_save = l_state;
-	  XtFree(r_state->buffer);
-	  ctx->text.undo->r_save = r_state;
-	  ctx->text.undo->u_save = undo;
-
-	  if (ctx->text.undo->num_list >= UNDO_DEPTH)
-	      UndoGC(ctx->text.undo);
-      }
-      else {
-	  ctx->text.undo->undo = (XawTextUndoBuffer**)
-	      XtRealloc((char*)ctx->text.undo->undo,
-			(2 + ctx->text.undo->num_undo)
-			* sizeof(XawTextUndoBuffer));
-	  ctx->text.undo->undo[ctx->text.undo->num_undo++] = l_state;
-	  ctx->text.undo->undo[ctx->text.undo->num_undo++] = r_state;
-
-	  if (ctx->text.undo->list)
-	      ctx->text.undo->list->redo = undo;
-	  else
-	      ctx->text.undo->head = undo;
-
-	  ctx->text.undo->list = ctx->text.undo->pointer =
-	      ctx->text.undo->end_mark = undo;
-
-	  if (++ctx->text.undo->num_list >= UNDO_DEPTH)
-	      UndoGC(ctx->text.undo);
-      }
-      ctx->text.undo->dir = XawsdLeft;
-  }
-
-  update_from = left;
-  update_to = XawMax(right, left + block->length);
-  update_to = SrcScan(src, update_to, XawstEOL, XawsdRight, 1, False);
-  if (update_from == update_to)
-    ++update_to;	/* Force clear to eol if deleting last char(s) */
-  update_disabled = ctx->text.update_disabled;
-  ctx->text.update_disabled = True;
-  ctx->text.lastPos = XawTextGetLastPosition(ctx);
-  top = ctx->text.lt.info[0].position;
-  delta = block->length - (right - left);
-  ctx->text.clear_to_eol = block->length != 1 || right - left != 0;
-
-  XawTextUnsetSelection((Widget)ctx);
-
-  if (delta)
-    {
-      int i;
-      XmuSegment *seg;
-
-      for (seg = ctx->text.update->segment; seg; seg = seg->next)
-    {
-	  if (seg->x1 > (int)left)
-	    break;
-	  else if (seg->x2 > (int)left)
-	    {
-	      seg->x2 += delta;
-	      seg = seg->next;
-	      break;
-	    }
-	}
-      for (; seg; seg = seg->next)
-	{
-	  seg->x1 += delta;
-	  seg->x2 += delta;
-	}
-      XmuOptimizeScanline(ctx->text.update);
-
-      for (i = 0; i <= ctx->text.lt.lines; i++)
-	if (ctx->text.lt.info[i].position > left)
-	  break;
-      for (; i <= ctx->text.lt.lines; i++)
-	ctx->text.lt.info[i].position += delta;
+    if (edit_mode == XawtextAppend) {
+	if (block->length == 0)
+	    return (XawEditError);
+	ctx->text.insertPos = ctx->text.lastPos;
     }
 
-  if (top != ctx->text.lt.info[0].position)
-    {
-      line_from = line = 0;
-      ctx->text.lt.top = top = SrcScan(src, ctx->text.lt.info[0].position,
-				       XawstEOL, XawsdLeft, 1, False);
-    }
-  else
-    {
-      line_from = line = LineForPosition(ctx, update_from + delta);
-      top = ctx->text.lt.info[line].position;
-    }
-
-  if (line > 0 && ctx->text.wrap == XawtextWrapWord)
-    {
-      --line;
-      top = ctx->text.lt.info[line].position;
-    }
-
-  (void)_BuildLineTable(ctx, top, line);
-
-  if (ctx->text.wrap == XawtextWrapWord)
-    {
-      if (line_from != LineForPosition(ctx, update_from)
-	  || line_from != LineForPosition(ctx, update_to))
-	{
-	  ctx->text.clear_to_eol = True;
-	  update_from = SrcScan(src, update_from,
-				XawstWhiteSpace, XawsdLeft, 1, True);
-	  if (update_to >= ctx->text.lastPos)
-	    ++update_to;
-	}
-    }
-  else if (!ctx->text.clear_to_eol)
-    {
-      if (LineForPosition(ctx, update_from)
-	  != LineForPosition(ctx, update_to))
-	ctx->text.clear_to_eol = True;
-    }
-
-  _XawTextNeedsUpdating(ctx, update_from, update_to);
-  ctx->text.update_disabled = update_disabled;
-
-  return (XawEditDone);
-}
-
-Bool
-_XawTextUndo(TextWidget ctx)
-{
-    static wchar_t wnull = 0;
-    XawTextBlock block;
-    XawTextUndoList *list, *nlist;
-    XawTextUndoBuffer *l_state, *r_state;
-
-    if (!ctx->text.enable_undo || !ctx->text.undo->num_undo)
-	return (False);
-
-    list = ctx->text.undo->pointer;
-
-    if (ctx->text.undo->dir == XawsdLeft) {
-	l_state = list->right;
-	r_state = list->left;
-    }
-    else {
-	l_state = list->left;
-	r_state = list->right;
-    }
-
-    block.firstPos = 0;
-    block.length = r_state->length;
-    block.ptr = r_state->buffer ? r_state->buffer : (char*)&wnull;
-    block.format = r_state->format;
-
-    ctx->text.undo_state = True;
-    if (_XawTextReplace(ctx, l_state->position, l_state->position
-			+ l_state->length, &block) != XawEditDone) {
-	ctx->text.undo_state = False;
-	return (False);
-    }
-    ctx->text.undo_state = False;
-
-    ++l_state->refcount;
-    ++r_state->refcount;
-    nlist = XtNew(XawTextUndoList);
-    nlist->left = l_state;
-    nlist->right = r_state;
-    nlist->undo = ctx->text.undo->list;
-    nlist->redo = NULL;
-
-    if (list == ctx->text.undo->list)
-	ctx->text.undo->end_mark = nlist;
-
-    if (ctx->text.undo->dir == XawsdLeft) {
-	if (list->undo == NULL)
-	    ctx->text.undo->dir = XawsdRight;
-	else
-	    list = list->undo;
-    }
-    else {
-	if (list->redo == NULL || list->redo == ctx->text.undo->end_mark)
-	    ctx->text.undo->dir = XawsdLeft;
-	else
-	    list = list->redo;
-    }
-    ctx->text.insertPos = r_state->position + r_state->length;
-    ctx->text.undo->pointer = list;
-    ctx->text.undo->list->redo = nlist;
-    ctx->text.undo->list = nlist;
-
-    if (++ctx->text.undo->num_list >= UNDO_DEPTH)
-	UndoGC(ctx->text.undo);
-
-    return (True);
-}
-
-Bool
-XawTextToggleUndo(TextWidget ctx)
-{
-    if (!ctx->text.enable_undo || !ctx->text.undo->num_undo)
-	return (False);
-
-    if (ctx->text.undo->pointer != ctx->text.undo->list) {
-	if (ctx->text.undo->dir == XawsdLeft) {
-	    if (ctx->text.undo->pointer->redo
-		&& (ctx->text.undo->pointer->redo
-		    != ctx->text.undo->end_mark)) {
-		ctx->text.undo->pointer = ctx->text.undo->pointer->redo;
-		ctx->text.undo->dir = XawsdRight;
-	    }
-	}
-	else {
-	    if (ctx->text.undo->pointer->undo
-		&& (ctx->text.undo->pointer->undo
-		    != ctx->text.undo->head)) {
-		ctx->text.undo->pointer = ctx->text.undo->pointer->undo;
-		ctx->text.undo->dir = XawsdLeft;
-	    }
-	}
-    }
-
-    return (True);
-}
-
-static void
-FreeUndoBuffer(XawTextUndo *undo)
-{
-    unsigned i;
-    XawTextUndoList *head, *del;
-
-    for (i = 0; i < undo->num_undo; i++) {
-	if (undo->undo[i]->buffer)
-	    XtFree(undo->undo[i]->buffer);
-	XtFree((char*)undo->undo[i]);
-    }
-    XtFree((char*)undo->undo);
-    head = undo->head;
-
-    del = head;
-    while (head) {
-	head = head->redo;
-	XtFree((char*)del);
-	del = head;
-    }
-
-    if (undo->l_save) {
-	XtFree((char*)undo->l_save);
-	undo->l_save = NULL;
-    }
-    if (undo->r_save) {
-	XtFree((char*)undo->r_save);
-	undo->r_save = NULL;
-    }
-    if (undo->u_save) {
-	XtFree((char*)undo->u_save);
-	undo->u_save = NULL;
-    }
-
-    undo->list = undo->pointer = undo->head = undo->end_mark = NULL;
-    undo->undo = NULL;
-    undo->dir = XawsdLeft;
-    undo->num_undo = undo->num_list = 0;
-}
-
-static void
-UndoGC(XawTextUndo *undo)
-{
-    unsigned i;
-    XawTextUndoList *head = undo->head, *redo = head->redo;
-
-    if (head == undo->pointer || head == undo->end_mark)
-      return;
-
-    undo->head = redo;
-    redo->undo = NULL;
-
-    --head->left->refcount;
-    if (--head->right->refcount == 0) {
-	for (i = 0; i < undo->num_undo; i+= 2)
-	    if (head->left == undo->undo[i] || head->left == undo->undo[i+1]) {
-		if (head->left == undo->undo[i+1]) {
-		    XawTextUndoBuffer *tmp = redo->left;
-
-		    redo->left = redo->right;
-		    redo->right = tmp;
-		}
-		if (head->left->buffer)
-		    XtFree(head->left->buffer);
-		XtFree((char*)head->left);
-		if (head->right->buffer)
-		    XtFree(head->right->buffer);
-		XtFree((char*)head->right);
-
-		undo->num_undo -= 2;
-		memmove(&undo->undo[i], &undo->undo[i + 2],
-			(undo->num_undo - i) * sizeof(XawTextUndoBuffer*));
-		break;
-	    }
-    }
-    XtFree((char*)head);
-    --undo->num_list;
+    return (SrcReplace(src, left, right, block));
 }
 
 /*
@@ -2703,6 +2353,7 @@ DisplayText(Widget w, XawTextPosition left, XawTextPosition right)
   XmuSegment *seg;
   XmuArea *clip = NULL;
   Bool cleol = ctx->text.clear_to_eol;
+  Bool has_selection = ctx->text.s.right > ctx->text.s.left;
 
   left = left < ctx->text.lt.top ? ctx->text.lt.top : left;
 
@@ -2726,7 +2377,8 @@ DisplayText(Widget w, XawTextPosition left, XawTextPosition right)
 
       if (end > start)
 	{
-	  if (start >= ctx->text.s.right || end <= ctx->text.s.left)
+	  if (!has_selection
+	      || (start >= ctx->text.s.right || end <= ctx->text.s.left))
 	    XawTextSinkDisplayText(ctx->text.sink, x, y, start, end, False);
 	  else if (start >= ctx->text.s.left && end <= ctx->text.s.right)
 	    XawTextSinkDisplayText(ctx->text.sink, x, y, start, end, True);
@@ -3448,7 +3100,7 @@ _XawTextShowPosition(TextWidget ctx)
     {
       ctx->text.left_margin -= hpixels;
       if (ctx->text.left_margin > ctx->text.r_margin.left)
-	ctx->text.left_margin = ctx->text.r_margin.left;
+	ctx->text.left_margin = ctx->text.margin.left = ctx->text.r_margin.left;
 
       if (!visible)
 	{
@@ -3511,10 +3163,6 @@ XawTextDestroy(Widget w)
   XtFree((char *)ctx->text.lt.info);
   XtFree((char *)ctx->text.search);
   XmuDestroyScanline(ctx->text.update);
-  if (ctx->text.enable_undo) {
-      FreeUndoBuffer(ctx->text.undo);
-      XtFree((char*)ctx->text.undo);
-  }
 }
 
 /*
@@ -3553,7 +3201,7 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
 
   if (oldtw->text.r_margin.left != newtw->text.r_margin.left)
     {
-      newtw->text.left_margin = newtw->text.r_margin.left;
+      newtw->text.left_margin = newtw->text.margin.left = newtw->text.r_margin.left;
       if (newtw->text.vbar != NULL)
 	{
 	  newtw->text.left_margin += XtWidth(newtw->text.vbar)
@@ -3593,19 +3241,12 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
       redisplay = True;
     }
 
-  if (oldtw->text.source != newtw->text.source)
-    XawTextSetSource((Widget)newtw, newtw->text.source, newtw->text.lt.top);
-
-  if (oldtw->text.enable_undo != newtw->text.enable_undo) {
-      if (newtw->text.enable_undo) {
-	  newtw->text.undo = (XawTextUndo*)XtCalloc(1, sizeof(XawTextUndo));
-	  newtw->text.undo->dir = XawsdLeft;
-      }
-      else {
-	  FreeUndoBuffer(newtw->text.undo);
-	  XtFree((char*)newtw->text.undo);
-	  newtw->text.undo = NULL;
-      }
+  if (oldtw->text.source != newtw->text.source) {
+      _XawSourceRemoveText(oldtw->text.source, current,
+			   XtParent(oldtw->text.source) == current);
+      _XawSourceAddText(newtw->text.source, cnew);
+      XawTextSetSource((Widget)newtw, newtw->text.source, newtw->text.lt.top,
+		       newtw->text.insertPos);
   }
 
   newtw->text.redisplay_needed = False;
@@ -3614,6 +3255,7 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
 
   if (oldtw->text.wrap != newtw->text.wrap
       || oldtw->text.lt.top != newtw->text.lt.top
+      || oldtw->text.insertPos != newtw->text.insertPos
       || oldtw->text.r_margin.right != newtw->text.r_margin.right
       || oldtw->text.r_margin.top != newtw->text.r_margin.top
       || oldtw->text.sink != newtw->text.sink
@@ -3624,10 +3266,7 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
     }
 
   if (oldtw->text.insertPos != newtw->text.insertPos)
-    {
       newtw->text.showposition = True;
-      redisplay = True;
-    }
 
   _XawTextExecuteUpdate(newtw);
   if (redisplay)
@@ -3740,18 +3379,16 @@ XawTextGetSelectionPos(Widget w, XawTextPosition *left, XawTextPosition *right)
 }
 
 void 
-XawTextSetSource(Widget w, Widget source, XawTextPosition startPos)
+XawTextSetSource(Widget w, Widget source,
+		 XawTextPosition top, XawTextPosition startPos)
 {
   TextWidget ctx = (TextWidget)w;
 
   ctx->text.source = source;
-  ctx->text.lt.top = startPos;
+  ctx->text.lt.top = top;
   ctx->text.s.left = ctx->text.s.right = 0;
   ctx->text.insertPos = startPos;
   ctx->text.lastPos = GETLASTPOS;
-
-  if (ctx->text.enable_undo)
-      FreeUndoBuffer(ctx->text.undo);
 
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, True);
   XawTextDisplay(w);

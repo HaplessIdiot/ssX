@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSrcP.h,v 1.3 1998/08/16 10:24:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrcP.h,v 1.4 1998/10/03 08:42:00 dawes Exp $ */
 
 /*
  * AsciiSrcP.h - Private Header for Ascii Text Source.
@@ -107,8 +107,7 @@ typedef struct _AsciiSrcPart {
   XawTextPosition piece_size;	/* Size of text buffer for each piece */
   Boolean data_compression;	/* compress to minimum memory automatically
 				   on save? */
-  XtCallbackList callback;	/* A callback list to call when the source is
-				   changed */
+  XtPointer pad1;
   Boolean use_string_in_place;	/* Use the string passed in place */
   int ascii_length;		/* length field for ascii string emulation */
 
@@ -118,7 +117,7 @@ typedef struct _AsciiSrcPart {
 
   /* private */
   Boolean	is_tempfile;	  /* Is this a temporary file? */
-  Boolean       changes;	  /* Has this file been edited? */
+  Boolean       pad2;
   Boolean       allocated_string; /* Have I allocated the
 				     string in ascii_src->string? */
   XawTextPosition length; 	/* length of file */

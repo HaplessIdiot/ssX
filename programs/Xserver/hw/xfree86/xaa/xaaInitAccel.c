@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.11 1998/09/27 04:43:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.12 1998/11/01 12:36:07 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -670,6 +670,16 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     }
 
 
+    /**** FillImageWriteRects ****/
+
+    if(infoRec->FillImageWriteRects) {
+	xf86ErrorF("\tDriver provided FillImageWriteRects replacement\n");
+    } else if(HaveImageWriteRect && 
+		(infoRec->ImageWriteFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X) &&
+		(infoRec->ImageWriteFlags & LEFT_EDGE_CLIPPING)) {
+	infoRec->FillImageWriteRects = XAAFillImageWriteRects;
+	infoRec->FillImageWriteRectsFlags = infoRec->ImageWriteFlags;     
+    }
 
     /**** WriteBitmap ****/
 
@@ -974,6 +984,13 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	}
     }
 
+    if(infoRec->FillImageWriteRects) {
+	if(!infoRec->PolyFillRectImageWrite) {
+	    infoRec->PolyFillRectImageWrite = XAAPolyFillRectImageWrite;
+	    infoRec->PolyFillRectImageWriteFlags =
+				infoRec->FillImageWriteRectsFlags;
+	}
+    }
 
     if(infoRec->TEGlyphRenderer &&
 	!(infoRec->TEGlyphRendererFlags & NO_TRANSPARENCY)) {
@@ -1185,13 +1202,16 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     if(!infoRec->ValidateFillSpans && 
 	(infoRec->FillSpansSolid || infoRec->FillSpansMono8x8Pattern ||
 	infoRec->FillSpansColor8x8Pattern || infoRec->FillSpansColorExpand ||
-	infoRec->FillSpansCacheBlt)) {
+	infoRec->FillSpansCacheBlt || infoRec->FillSpansCacheExpand ||
+	infoRec->PolyFillRectImageWrite)) {
 
         int compositeFlags = 	infoRec->FillSpansSolidFlags |
 				infoRec->FillSpansMono8x8PatternFlags |
 				infoRec->FillSpansColor8x8PatternFlags |
 				infoRec->FillSpansColorExpandFlags |
-				infoRec->FillSpansCacheBltFlags;
+				infoRec->FillSpansCacheBltFlags |
+				infoRec->FillSpansCacheExpandFlags |
+				infoRec->PolyFillRectImageWriteFlags;
 
 	infoRec->FillSpansMask = GCFillStyle | GCTile | GCStipple;
 

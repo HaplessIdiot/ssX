@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Paned.c,v 1.5 1998/08/20 13:59:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Paned.c,v 1.6 1998/10/03 08:42:13 dawes Exp $ */
 
 /*
  * Updated and significantly modified from the Athena VPaned Widget.
@@ -146,7 +146,6 @@ static void CreateGrip(Widget);
 static int GetEventLocation(PanedWidget, XEvent*);
 static void GetGCs(Widget);
 static void GetPaneStack(PanedWidget, Bool, Pane*, int*);
-static int GripNumber(PanedWidget);
 static void HandleGrip(Widget, XtPointer, XtPointer);
 static void LoopAndRefigureChildren(PanedWidget, int, Direction, int*);
 static void ManageAndUnmanageGrips(PanedWidget);
@@ -1377,7 +1376,6 @@ CreateGrip(Widget child)
     Arg arglist[2];
     Cardinal num_args = 0;
     Cursor cursor;
-  char name[32];
      
     XtSetArg(arglist[num_args], XtNtranslations, pw->paned.grip_translations);
     num_args++;
@@ -1387,27 +1385,13 @@ CreateGrip(Widget child)
 	else
 	    cursor = pw->paned.h_grip_cursor;
 
-  XmuSnprintf(name, sizeof(name), "grip%d", GripNumber(pw));
     XtSetArg(arglist[num_args], XtNcursor, cursor);
     num_args++;
-  PaneInfo(child)->grip = XtCreateWidget(name, gripWidgetClass, (Widget)pw,
+  PaneInfo(child)->grip = XtCreateWidget("grip", gripWidgetClass, (Widget)pw,
 					   arglist, num_args);
     
     XtAddCallback(PaneInfo(child)->grip, XtNcallback, 
 		HandleGrip, (XtPointer)child);
-}
-
-static int
-GripNumber(PanedWidget pw)
-{
-  unsigned int i;
-  int grips = 1;
-
-  for (i = 0; i < pw->composite.num_children; i++)
-    if (XtIsSubclass(pw->composite.children[i], gripWidgetClass))
-      ++grips;
-
-  return (grips);
 }
 
 /*

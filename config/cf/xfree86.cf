@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.189 1998/10/02 06:15:07 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.190 1998/11/01 12:35:40 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -366,6 +366,9 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef BuildXvLibrary
 #define BuildXvLibrary		YES
 #endif
+#ifndef BuildXantiLibrary
+#define BuildXantiLibrary	YES
+#endif
 
 /* Don't build these two now because the interface hasn't been done yet */
 /*
@@ -427,6 +430,15 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef BuildXvExt
 #define BuildXvExt			YES
 #endif
+
+/*
+ * Build the Antialiased Font Extension 
+ */
+#ifndef BuildXantiExt
+#define BuildXantiExt			YES
+#endif
+
+
 
 #if Malloc0ReturnsNull
 #ifndef XtMalloc0ReturnsNullDefines
