@@ -197,17 +197,17 @@ void     SetOEMLCDData2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
 			USHORT ModeNo, USHORT ModeIdIndex,USHORT RefTableIndex);
 #endif
 
-extern void     SiS_SetReg(USHORT, USHORT, USHORT);
-extern void     SiS_SetRegByte(USHORT, USHORT);
-extern void     SiS_SetRegShort(USHORT, USHORT);
-extern void     SiS_SetRegLong(USHORT, ULONG);
-extern UCHAR    SiS_GetReg(USHORT, USHORT);
-extern UCHAR    SiS_GetRegByte(USHORT);
-extern USHORT   SiS_GetRegShort(USHORT);
-extern ULONG    SiS_GetRegLong(USHORT);
-extern void     SiS_SetRegANDOR(USHORT Port,USHORT Index,USHORT DataAND,USHORT DataOR);
-extern void     SiS_SetRegOR(USHORT Port,USHORT Index,USHORT DataOR);
-extern void     SiS_SetRegAND(USHORT Port,USHORT Index,USHORT DataAND);
+extern void     SiS_SetReg(SISIOADDRESS, USHORT, USHORT);
+extern void     SiS_SetRegByte(SISIOADDRESS, USHORT);
+extern void     SiS_SetRegShort(SISIOADDRESS, USHORT);
+extern void     SiS_SetRegLong(SISIOADDRESS, ULONG);
+extern UCHAR    SiS_GetReg(SISIOADDRESS, USHORT);
+extern UCHAR    SiS_GetRegByte(SISIOADDRESS);
+extern USHORT   SiS_GetRegShort(SISIOADDRESS);
+extern ULONG    SiS_GetRegLong(SISIOADDRESS);
+extern void     SiS_SetRegANDOR(SISIOADDRESS Port,USHORT Index,USHORT DataAND,USHORT DataOR);
+extern void     SiS_SetRegOR(SISIOADDRESS Port,USHORT Index,USHORT DataOR);
+extern void     SiS_SetRegAND(SISIOADDRESS Port,USHORT Index,USHORT DataAND);
 
 extern void     SiS_DisplayOff(SiS_Private *SiS_Pr);
 extern void     SiS_DisplayOn(SiS_Private *SiS_Pr);

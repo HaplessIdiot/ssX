@@ -35,6 +35,7 @@
 #define _VGATYPES_
 
 #ifdef LINUX_XF86
+#include "xf86Version.h"
 #include "xf86Pci.h"
 #endif
 
@@ -84,6 +85,19 @@ typedef UCHAR BOOLEAN;
 
 #ifndef bool
 typedef UCHAR bool;
+#endif
+
+#ifdef LINUX_KERNEL
+typedef unsigned long SISIOADDRESS;
+#endif
+
+#ifdef LINUX_XF86
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,0,0,0)
+typedef unsigned long IOADDRESS;
+typedef unsigned long SISIOADDRESS;
+#else
+typedef IOADDRESS SISIOADDRESS;
+#endif
 #endif
 
 #ifndef LINUX_KERNEL   /* For the linux kernel, this is defined in sisfb.h */
@@ -180,7 +194,7 @@ struct _SIS_HW_INFO
                                  /* of Linear VGA memory */
 
     ULONG  ulVideoMemorySize;    /* size, in bytes, of the memory on the board */
-    ULONG  ulIOAddress;          /* base I/O address of VGA ports (0x3B0) */
+    SISIOADDRESS ulIOAddress;    /* base I/O address of VGA ports (0x3B0) */
     UCHAR  jChipType;            /* Used to Identify SiS Graphics Chip */
                                  /* defined in the data structure type  */
                                  /* "SIS_CHIP_TYPE" */
