@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/Imakefile,v 1.20 2004/06/11 08:41:40 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/Imakefile,v 1.21 2004/06/11 15:27:48 alanh Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -60,10 +60,6 @@ MTRR_DEFINES = -DHAS_MTRR_SUPPORT
 #endif
 
 #if defined(FreeBSDArchitecture)
-#if BuildXF86OldDRMCompat
-COMPATSRC = xf86drmCompat.c
-COMPATOBJ = xf86drmCompat.o
-#endif
 OS_SUBDIR = freebsd
 #elif defined(NetBSDArchitecture)
 OS_SUBDIR = netbsd
@@ -77,14 +73,12 @@ OS_SUBDIR = extensions
 	xf86drmHash.c \
 	xf86drmRandom.c \
 	xf86drmSL.c \
-	$(COMPATSRC) \
 	$(MSRC)
 
  OBJS = xf86drm.o \
 	xf86drmHash.o \
 	xf86drmRandom.o \
 	xf86drmSL.o \
-	$(COMPATOBJ) \
 	$(MOBJ)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
@@ -110,6 +104,5 @@ LinkSourceFile(xf86drm.c,$(XF86OSSRC)/linux/drm)
 LinkSourceFile(xf86drmHash.c,$(XF86OSSRC)/linux/drm)
 LinkSourceFile(xf86drmRandom.c,$(XF86OSSRC)/linux/drm)
 LinkSourceFile(xf86drmSL.c,$(XF86OSSRC)/linux/drm)
-LinkSourceFile(xf86drmCompat.c,$(XF86OSSRC)/linux/drm)
 
 InstallDriverSDKLibraryModule(drm,$(DRIVERSDKMODULEDIR),$(OS_SUBDIR))
