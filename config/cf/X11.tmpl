@@ -253,6 +253,9 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildLoadableXlibI18n
 #define BuildLoadableXlibI18n	(HasDlopen && SharedLibX11)
 #endif
+#ifndef BuildLoadableXlibXcursor
+#define BuildLoadableXlibXcursor (HasDlopen && SharedLibX11)
+#endif
 #ifndef BuildXextLib
 #define BuildXextLib		(BuildLibraries || (BuildLibrariesForXServers && XnestServer))
 #endif
@@ -574,6 +577,10 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildRandRLibrary
 #define BuildRandRLibrary	!BuildServersOnly
+#endif
+
+#ifndef BuildXcursorLibrary
+#define BuildXcursorLibrary	BuildRenderLibrary
 #endif
 
 #ifndef BuildMiscDocs
@@ -1866,6 +1873,21 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildXcursorLibrary
+#ifndef SharedLibXcursor
+#define SharedLibXcursor	HasSharedLibraries
+#endif
+#ifndef NormalLibXcursor
+#define NormalLibXcursor	YES
+#endif
+#ifndef DebugLibXcursor
+#define DebugLibXcursor		NO
+#endif
+#ifndef ProfileLibXcursor
+#define ProfileLibXcursor	NO
+#endif
+#endif
+
 #if BuildGLULibrary
 #ifndef SharedLibGlu
 #define SharedLibGlu		HasSharedLibraries
@@ -2131,6 +2153,16 @@ ProjectUnsharedLibReferences(XRENDER,Xrender,$(XRENDERLIBSRC),XBuildLibDir)
 SharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),SOXRANDRREV,SharedXrandrRev)
 #else
 ProjectUnsharedLibReferences(XRANDR,Xrandr,$(XRANDRLIBSRC),XBuildLibDir)
+#endif
+
+   XCURSORRLIBSRC = $(LIBSRC)/Xcursor
+#if SharedLibXcursor
+#ifndef SharedXcursorRev
+#define SharedXcursorRev 1.0
+#endif
+SharedLibReferences(XCURSOR,Xcursor,$(XCURSORLIBSRC),SOXCURSORREV,SharedXcursorRev)
+#else
+ProjectUnsharedLibReferences(XCURSOR,Xcursor,$(XCURSORLIBSRC),XBuildLibDir)
 #endif
 
 # ifndef SharedLibXfontcache

@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx August 2002)
+ 238. Add Xcursor library.  Make Xlib use it. (Keith Packard)
  237. Fix threaded libraries on Mac OS X 10.2 (A.1229, Marko Karppinen).
  236. Add hardware accelerated GLX to XDarwin (Greg Parker).
  235. Use Imake custom version variables in XDarwin startup message
