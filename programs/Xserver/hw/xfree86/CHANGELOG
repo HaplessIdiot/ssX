@@ -1,4 +1,7 @@
 XFree86 4.4.99.2 (xx March 2004)
+  30. Disable building the old X-TT backend by default, and add a wrapper
+      "xtt" module for compatibility purposes that loads the "freetype" module
+      (David Dawes).
   29. Add formatCommand resource to xman, extend functionality of some key
       bindings (Thomas Dickey).
   28. Xterm fix for Bugzilla #1158 (Andreas Schwab).
@@ -18738,7 +18741,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3182 2004/03/16 01:22:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3183 2004/03/17 00:53:17 dickey Exp $
 
 
 
