@@ -3,10 +3,10 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.8 2001/07/15 01:57:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.9 2001/08/11 23:14:44 torrey Exp $ */
 
 #import "Preferences.h"
-#import "quartzShared.h"
+#import "quartzCommon.h"
 
 @implementation Preferences
 

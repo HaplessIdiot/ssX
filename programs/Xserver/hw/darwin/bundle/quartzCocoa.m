@@ -7,12 +7,12 @@
  * that use X include files to avoid symbol collisions.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.5 2001/04/28 20:42:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.6 2001/07/06 00:37:47 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
 #import "Preferences.h"
-#include "quartzShared.h"
+#include "quartzCommon.h"
 
 extern void FatalError(const char *, ...);
 extern char *display;

@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.33 2001/09/19 02:50:43 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.34 2001/09/20 19:35:10 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -53,13 +53,8 @@ int                     darwinScreenIndex = 0;
 DarwinInputRec          hid;
 int                     darwinEventFD = -1;
 Bool                    quartz = FALSE;
-int                     quartzEventWriteFD = -1;
-int                     quartzStartClients = 1;
-int                     quartzRootless = -1;
-int                     quartzUseSysBeep = 0;
 int                     quartzMouseAccelChange = 1;
 int                     darwinFakeButtons = 0;
-int                     aquaMenuBarHeight = 0;
 
 // location of X11's (0,0) point in global screen coordinates
 int                     darwinMainScreenX = 0;
