@@ -1,4 +1,6 @@
-XFree86 4.0.1d (22 September 2000)
+XFree86 4.0.1d (xx September 2000)
+ 706. Fix typos in Xt man pages (#4156, Carlos Santos).
+ 705. Fix libdps bug (#4154, Juliusz Chroboczek).
  704. Xterm patch #146 (#4144, Thomas Dickey).
  703. Xterm patch #145 (#4140, Thomas Dickey).
  702. Fix 32bpp on the Permedia3 (Sven Luther).
@@ -11151,4 +11153,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1315 2000/09/19 14:12:27 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1316 2000/09/22 10:42:04 alanh Exp $

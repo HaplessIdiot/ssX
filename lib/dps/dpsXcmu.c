@@ -104,7 +104,7 @@ static Bool CheckCube(XColor *, XColor *, XStandardColormap *);
 static Bool CubicCube(XStandardColormap *);
 static Bool GetColorCubeFromProperty(Display *, XVisualInfo *, XStandardColormap *, XStandardColormap **, int *);
 static Bool GetGrayRampFromProperty(Display *, XVisualInfo *, XStandardColormap *, XStandardColormap **, int *);
-static Status XDPSCreateStandardColormaps(Display *, Drawable, Visual *, int, int, int, int, XStandardColormap *, XStandardColormap *, Bool);
+Status XDPSCreateStandardColormaps(Display *, Drawable, Visual *, int, int, int, int, XStandardColormap *, XStandardColormap *, Bool);
 static Status contiguous(unsigned long *, int, int *, unsigned long, int *, int *);
 static XVisualInfo *PickCorrectVisual(Display *, XVisualInfo *, int, Colormap);
 static int FindRampSize(XColor *, XColor *);
@@ -168,7 +168,7 @@ void XDPSGetDefaultColorMaps(
 				       0, 0, 0, 0, colorCube, grayRamp, True);
 }
 
-static Status XDPSCreateStandardColormaps(
+Status XDPSCreateStandardColormaps(
     Display *dpy,
     Drawable drawable,
     Visual *visual,
