@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.32 1996/12/31 04:14:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.33 1997/02/12 08:54:38 hohndel Exp $
 XCOMM
 
 /*
@@ -750,6 +750,30 @@ TCLIBDIR = TclLibDir
 #ifndef RmCmd
 #define RmCmd rm -f
 #endif
+
+/* Module cross-compile stuff */
+#ifndef ModuleCcCmd
+#define ModuleCcCmd CcCmd
+#endif
+#ifndef ModuleCFlags
+#define ModuleCFlags $(CDEBUGFLAGS) $(THREAD_CFLAGS) $(ALLDEFINES)
+#endif
+#ifndef ModuleAsCmd
+#define ModuleAsCmd AsCmd
+#endif
+#ifndef ModuleAsFlags
+#define ModuleAsFlags /**/
+#endif
+#ifndef ModuleLdCmd
+#define ModuleLdCmd LdCmd
+#endif
+#ifndef ModuleLdFlags
+#define ModuleLdFlags /**/
+#endif
+#ifndef ModuleLdCombineFlags
+#define ModuleLdCombineFlags LdCombineFlags
+#endif
+
 #ifndef StandardIncludes	/* for platform-specifics */
 #define StandardIncludes /**/
 #endif
@@ -1078,6 +1102,13 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
               EQN = EqnCmd
              NEQN = NeqnCmd
               COL = ColCmd
+            MODCC = ModuleCcCmd
+        MODCFLAGS = ModuleCFlags
+            MODAS = ModuleAsCmd
+       MODASFLAGS = ModuleAsFlags
+            MODLD = ModuleLdCmd
+       MODLDFLAGS = ModuleLdFlags
+MODLDCOMBINEFLAGS = ModuleLdCombineFlags
 #if HasLatex
             DVIPS = DvipsCmd
             LATEX = LatexCmd

@@ -1,3 +1,29 @@
+XFree86 3.2Ah (23 February 1997)
+ 490. Some a.out loader updates for Linux/a.out (#72, Harald Koenig).
+ 489. Add support for cross compilation of modules in the Imake rules
+      (#71, Holger Veit).
+ 488. Add a subset of xf86stdio functions to libc_wrapper.c (#71, Holger Veit).
+ 487. Make the I128 driver loadable (#65,66,70, Robin Cutshaw).
+ 486. Fix et4000 driver compile problems for vga2 and vga16
+      (#69, Koen Gadeyne).
+ 485. Fix 8x8 patterns for TGUI chips (#68, Alan Hourihane).
+ 484. Fix direct reference to memset() (#67, Harald Nordgard Hansen).
+ 483. Gnu parallel make update for loadable server (#64, H.J. Lu).
+ 482. Include the summasketch support explicitly in xf86Xinput.c when
+      not using dynamic modules (#63, Christer Nilsson).
+ 481. Loader support for OS/2-style a.out (#62, Sebastien Marineau).
+ 480. Fix nested asm calls in tseng_cursor.c (#61, Takaaki Nomura).
+ 479. Add a timeout to the C&T blitter wait loop, and reset the blitter
+      when this happens (#60, David Bateman).
+ 478. Add missing imake patch for massaging the results of parse_utsname()
+      (#57, Chris Demetriou).
+ 477. Don't define DoLoadableServer yet for non-Intel Linux platforms.
+ 476. Don't refer to the PEX init function in loadmod.c when PEXEXT isn't
+      defined (as is the case on Alpha platforms) (#56, Alan Hourihane).
+ 475. Fix references to usleep on SVR4 (#61, Takaaki Nomura).
+ 474. Fix references to snprintf on SVR4 (David Dawes).
+ 473. Fix some compile problems on FreeBSD (David Dawes).
+
 XFree86 3.2Ag (19 February 1997)
  472. Fix Imakefiles and loader problems on OS/2 (#53, Sebastien Marineau).
  471. Fix problems with ISC and the Mach32 module (#55, Michael Rohleder).

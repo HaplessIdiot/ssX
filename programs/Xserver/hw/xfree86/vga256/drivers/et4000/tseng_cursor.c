@@ -98,8 +98,11 @@ Bool TsengCursorInit(pm, pScr)
  */
 
 static void TsengShowCursor() {
+	unsigned char tmp;
+
 	/* Enable the hardware cursor. */
-	outb(ET6Kbase+0x46, (inb(ET6Kbase+0x46) | 0x01));
+	tmp = inb(ET6Kbase+0x46);
+	outb(ET6Kbase+0x46, (tmp | 0x01));
 }
 
 /*
@@ -108,8 +111,11 @@ static void TsengShowCursor() {
  */
 
 void TsengHideCursor() {
+	unsigned char tmp;
+
 	/* Disable the hardware cursor. */
-	outb(ET6Kbase+0x46, (inb(ET6Kbase+0x46) & 0xfe));;
+	tmp = inb(ET6Kbase+0x46);
+	outb(ET6Kbase+0x46, (tmp & 0xfe));;
 }
 
 /*

@@ -4,7 +4,9 @@ XCOMM $XConsortium: Imakefile /main/6 1996/09/28 17:29:26 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/Imakefile,v 3.6 1996/12/23 06:57:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/Imakefile,v 3.7 1997/02/14 12:18:38 hohndel Exp $
+
+#define IHaveModules
 #include <Server.tmpl>
 
 SRCS = et3_driver.c et3_bank.s

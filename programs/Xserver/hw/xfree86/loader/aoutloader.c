@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.1 1997/02/17 16:07:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.2 1997/02/20 10:01:21 hohndel Exp $ */
 
 
 
@@ -26,6 +26,8 @@
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Modified 21/02/97 by Sebastien Marineau to support OS/2 a.out objects
  */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -67,11 +69,12 @@ typedef struct {
     unsigned long strsize;     /* size of string table */
     unsigned char *common;	/* Start address of the common data */
     unsigned long comsize;	/* size of common data */
+    int aout_flavor;               /* "subtype" of aout object */
 } AOUTModuleRec, *AOUTModulePtr;
 
 /*
  * If an relocation is unable to be satisfied, then put it on a list
- * to try later after more odules have been loaded.
+ * to try later after more modules have been loaded.
  */
 typedef struct AOUT_RELOC {
     AOUTModulePtr file;
@@ -171,8 +174,9 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
     common = listCOMMON;
     while (common) {
 	/* Ensure long word alignment */
-	if( common->sym->n_value%4 != 0 )
-	    common->sym->n_value+= 4-(common->sym->n_value%4);
+	if( (common->sym->n_value & (sizeof(long)-1)) != 0 )
+	    common->sym->n_value = (common->sym->n_value + (sizeof(long)-1))
+	       & ~(sizeof(long)-1);
 
 	/* accumulate the sizes */
 	size += common->sym->n_value;
@@ -372,18 +376,25 @@ AOUT_DoRelocations(AOUTModulePtr aoutfile)
  * Perform the actual relocation 
  */
 static void
-AOUT_Relocate(unsigned long *destl, unsigned long val, int type)
+AOUT_Relocate(unsigned long *destl, unsigned long val, int type,
+	      int aout_flavor, int ext)
 {
 #ifdef AOUTDEBUG
-    AOUTDEBUG("AOUT_Relocate %08x -> %08x %s\n",
-	      *destl, val, type == 1 ? "rel" : "abs");
+    AOUTDEBUG("AOUT_Relocate %p : %08x -> %08x %08x %s\n",
+	      destl, *destl, val, *destl + val, type == 1 ? "rel" : "abs");
 #endif
     if (type == 1) {
 	/* relative to PC */
-	*destl -= val;
+	if (aout_flavor == LD_AOUTOBJECT)
+		*destl -= val;
+        else if (aout_flavor == LD_OS2AOUTOBJECT) 
+               *destl = val - *destl - (unsigned long) destl - 4;
     } else {
 	/* absolute */
-	*destl = val;
+	if (ext)
+		*destl += val;
+	else
+		*destl = val;
     }
 }
 
@@ -453,7 +464,12 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 	symval = AOUTGetSymbolValue(aoutfile, symnum);
 	if (symval != 0) {
 	    /* we've got the value */
-	    AOUT_Relocate(destl, symval, rel->r_pcrel);
+            if (aoutfile->aout_flavor == LD_AOUTOBJECT)
+	        AOUT_Relocate(destl, symval, rel->r_pcrel, LD_AOUTOBJECT,
+			      rel->r_extern);
+            else if (aoutfile->aout_flavor == LD_OS2AOUTOBJECT)
+                AOUT_Relocate(destl, symval + *destl, rel->r_pcrel,
+			      LD_OS2AOUTOBJECT, rel->r_extern);
 	} else {
 	    /* The symbol should be undefined */
 	    switch (symtab[symnum].n_type & AOUT_TYPE) {
@@ -480,7 +496,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 	    AOUTDEBUG("  AOUT_TEXT\n");
 #endif
 	    AOUT_Relocate(destl, (unsigned long)aoutfile->text+*destl, 
-			  rel->r_pcrel);
+			  rel->r_pcrel, aoutfile->aout_flavor, rel->r_extern);
 	    return;
 	  case AOUT_DATA:
 #ifdef AOUTDEBUG
@@ -488,7 +504,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 #endif
 	    AOUT_Relocate(destl, (unsigned long)aoutfile->data
 			   + *destl - header->a_text, 
-			  rel->r_pcrel);
+			  rel->r_pcrel, aoutfile->aout_flavor, rel->r_extern);
 	    return;
 	  case AOUT_BSS:
 #ifdef AOUTDEBUG
@@ -496,7 +512,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 #endif
 	    AOUT_Relocate(destl, (unsigned long)aoutfile->bss
 			  + *destl - header->a_text - header->a_data, 
-			  rel->r_pcrel);
+			  rel->r_pcrel, aoutfile->aout_flavor);
 	    return;
 	  default:
 	    ErrorF("AOUT_RelocateEntry():"
@@ -523,7 +539,7 @@ AOUTLoadModule(int modtype,
     AOUTDEBUG("AOUTLoadModule(%d, %s, %d, %d)\n",
 	      modtype, modname, handle, aoutfd);
 #endif
-    if (modtype != LD_AOUTOBJECT) {
+    if ((modtype != LD_AOUTOBJECT) && (modtype != LD_OS2AOUTOBJECT)) {
 	ErrorF( "AOUTLoadModule(): modtype != a.out\n" );
 	return NULL;
     }
@@ -534,6 +550,7 @@ AOUTLoadModule(int modtype,
 
     aoutfile->handle=handle;
     aoutfile->fd=aoutfd;
+    aoutfile->aout_flavor=modtype;
 
     /*
      *  Get the a.out header
@@ -563,7 +580,7 @@ AOUTLoadModule(int modtype,
     }
     /* bss */
     if (header->a_bss != 0) {
-	aoutfile->bss = calloc(1, header->a_data);
+	aoutfile->bss = calloc(1, header->a_bss);
     } else {
 	aoutfile->bss = NULL;
     }

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.21 1996/12/23 06:43:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.22 1996/12/24 08:48:22 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -57,6 +57,9 @@ extern DeviceAssocRec   wacom_eraser_assoc;
 #endif
 #ifdef ELOGRAPHICS_SUPPORT
 extern DeviceAssocRec	elographics_assoc;
+#endif
+#ifdef SUMMASKETCH_SUPPORT
+extern DeviceAssocRec summasketch_assoc;
 #endif
 #endif
 
@@ -191,6 +194,9 @@ xf86ConfigExtendedInputSection(LexPtr       val)
 # endif
 # ifdef ELOGRAPHICS_SUPPORT
   xf86AddDeviceAssoc(&elographics_assoc);
+# endif
+# ifdef SUMMASKETCH_SUPPORT
+  xf86AddDeviceAssoc(&summasketch_assoc);
 # endif
 #endif
 

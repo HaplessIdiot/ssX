@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BltHiQV.h,v 3.4 1997/01/18 06:56:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_BltHiQV.h,v 3.5 1997/02/12 08:56:22 hohndel Exp $ */
 
 /* Definitions for the Chips and Technology BitBLT engine communication. */
 /* These are done using Memory Mapped IO, of the registers */
@@ -61,8 +61,29 @@
   while(*(volatile unsigned int *)(ctMMIOBase + BR(0x4)) & \
 	(0x80000000)){}
 #else
+#if 0
 #define ctBLTWAIT \
   outb(0x3D6,0x20); while(inb(0x3D7)&0x1){}
+#else
+/*
+ * This version resets the blitter if a timeout occurs
+ */
+#define ctBLTWAIT \
+  outb(0x3D6,0x20); {int timeout; \
+                     timeout = 0; \
+		     for (;;) { \
+                         if (!(inb(0x3D7)&0x1)) break; \
+                         timeout++; \
+                         if (timeout == 10000000) { \
+			    unsigned char tmp; \
+                            ErrorF("CHIPS: BitBlt Engine Timeout\n"); \
+			    tmp = inb(0x3D7); \
+			    outb(0x3D7, ((tmp & 0xFD) | 0x2)); \
+			    break; \
+                         } \
+		      } \
+		    }
+#endif
 #endif
 
 #define ctSETROP(op) \

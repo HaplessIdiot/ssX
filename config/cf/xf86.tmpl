@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.11 1996/12/27 06:50:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.12 1997/02/18 04:34:34 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -59,3 +59,34 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.11 1996/12/27 06:50:30 dawes Exp $
 #  define SummaSketchDefines
 # endif
 #endif
+
+/* Module support: These overrides must be here, not in xf86.rules,
+ * because they will replace rules after having seen the first lines
+ * of Imakefile (include <Server.tmpl>)
+ */
+#if defined(IHaveModules) && DoLoadableServer
+
+/* This overrides the ObjCompile in Imake.rules! */
+#undef ObjectCompile
+#define ObjectCompile(options) RemoveFile($@)                           @@\
+	ClearmakeOSName\
+	$(MODCC) $(MODCFLAGS) options -c $*.c
+
+/* This overrides an AssembleObject in xf86.rules or in an os-dependent
+ * rules file (currently only minix.cf)
+ */
+#undef AssembleObject
+#define AssembleObject(flags) CPPOnlyAsm($*,flags)			@@\
+	$(MODAS) $(MODASFLAGS) -o $*.o $*.i				@@\
+	RemoveFile($*.i)
+
+/* This overrides the NormalRelocatableTarget in Imake.rules */
+#undef NormalRelocatableTarget
+#define	NormalRelocatableTarget(objname,objlist)			@@\
+AllTarget(objname.Osuf)							@@\
+									@@\
+objname.Osuf: objlist $(EXTRALIBRARYDEPS)				@@\
+	RemoveFile($@)							@@\
+	$(MODLD) $(MODLDCOMBINEFLAGS) objlist -o $@
+
+#endif /* IHaveModules */

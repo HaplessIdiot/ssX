@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.2 1997/02/17 09:46:01 hohndel Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.3 1997/02/20 10:01:20 hohndel Exp $ */
 
 
 
@@ -11,6 +11,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.2 1997/02/17
 SYS_LIBRARIES=-ldbmalloc
 DBMALLOCDEFINE=-DDBMALLOC
 #endif
+
+EXT_DEFINES = ExtensionDefines
 
 MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 
@@ -34,6 +36,6 @@ NormalAsmObjectRule()
 NormalLibraryObjectRule()
 NormalLibraryTarget(loader,$(OBJS))
 
-SpecialObjectRule(loadmod.o,loadmod.c,$(MODULEDEFINES))
+SpecialObjectRule(loadmod.o,loadmod.c,$(MODULEDEFINES) $(EXT_DEFINES))
 
 DependTarget()

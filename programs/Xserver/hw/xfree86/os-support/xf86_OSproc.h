@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.3 1997/02/18 17:51:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.4 1997/02/19 06:04:06 hohndel Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -429,6 +429,48 @@ void xf86usleep(unsigned long);
 Bool xf86setexternclock(char *, int, int);
 
 int xf86execl();
+
+XF86FILE xf86fopen(const char* fn, const char* mode);
+
+int xf86fclose(XF86FILE f);
+
+int xf86fprintf(/*XF86FILE f, char *s, const char *format, ...*/);
+
+int xf86fscanf(/*XF86FILE f, char *s, const char *format, ...*/);
+
+char *xf86fgets(char *buf, INT32 n, XF86FILE f);
+
+int xf86fputs(char *buf, XF86FILE f);
+
+int xf86fgetc(XF86FILE f);
+
+int xf86fputc(int c,XF86FILE f);
+
+int xf86fflush(XF86FILE f);
+
+size_t xf86fread(void* buf, size_t sz, size_t cnt, XF86FILE f);
+
+size_t xf86fwrite(void* buf, size_t sz, size_t cnt, XF86FILE f);
+
+int xf86fseek(XF86FILE f, long pos, int loc);
+
+long xf86ftell(XF86FILE f);
+
+long xf86fpossize();
+
+int xf86fgetpos(XF86FILE f,XF86FPOS_T pos);
+
+int xf86fsetpos(XF86FILE f,const XF86FPOS_T pos);
+
+void xf86perror(const char *s);
+
+int xf86remove(const char *s);
+
+int xf86rename(const char *old, const char *new);
+
+void xf86rewind(XF86FILE f);
+
+int xf86ffs(int mask);
 
 _XFUNCPROTOEND
 #endif /* NO_OSLIB_PROTOTYPES */

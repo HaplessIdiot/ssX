@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.24 1997/01/28 10:55:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.28 1997/02/14 12:18:57 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -358,7 +358,7 @@ MGAReadBios()
 	if (
 		tmp[ 0 ] != 0x55
 		|| tmp[ 1 ] != 0xaa
-		|| strncmp(( char * )( tmp + 45 ), "MATROX", 6 )
+		|| xf86strncmp(( char * )( tmp + 45 ), "MATROX", 6 )
 	) {
 		ErrorF( "%s %s: Video BIOS info block not detected!" );
 		return;

@@ -1,8 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.7 1996/12/24 02:25:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/Imakefile,v 3.8 1997/02/14 12:18:56 hohndel Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
 
+#define IHaveModules
 #include <Server.tmpl>
 
 #ifdef i386Architecture

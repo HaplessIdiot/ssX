@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/27 1996/12/26 08:52:44 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.57 1997/01/20 12:23:37 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.60 1997/02/18 17:47:47 hohndel Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -170,7 +170,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #if UseElfFormat
 #ifndef DoLoadableServer
+#ifdef i386Architecture
 #define DoLoadableServer	YES
+#else
+#define DoLoadableServer	NO
+#endif
 #endif
 #ifndef BuildDynamicLoading
 #if DoLoadableServer

@@ -22,13 +22,12 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.22 1997/01/24 01:02:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.23 1997/02/11 10:02:00 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
-#define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "Ti302X.h"
 #include "IBMRGB.h"
@@ -46,6 +45,47 @@ int i128ValidMode(
     int
 #endif
 ); 
+
+#if defined(XFree86LOADER)
+
+#define _NO_XF86_PROTOTYPES
+#include "xf86.h"
+
+#define MAX_I128_CLOCK		175000
+
+int i128MaxClock = MAX_I128_CLOCK;
+
+ScrnInfoPtr xf86Screens[] = 
+{
+  &i128InfoRec,
+};
+
+int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
+
+int xf86ScreenNames[] =
+{
+  ACCEL,
+  -1
+};
+
+int i128ValidTokens[] =
+{
+  STATICGRAY,
+  GRAYSCALE,
+  STATICCOLOR,
+  PSEUDOCOLOR,
+  TRUECOLOR,
+  DIRECTCOLOR,
+  MODES,
+  OPTION,
+  VIDEORAM,
+  VIEWPORT,
+  VIRTUAL,
+  CLOCKPROG,
+  INSTANCE,
+  -1
+};
+#endif /* XFree86LOADER */
 
 
 ScrnInfoRec i128InfoRec =
@@ -163,6 +203,38 @@ void (*i128ImageFillFunc)(
     int, int, int, int, char *, int, int, int, int, int, short, unsigned long
 #endif
 );
+
+
+ScrnInfoRec *
+ModuleInit()
+{
+return &i128InfoRec;
+}
+
+
+void
+libi128ModuleInit(data,magic)
+    pointer	* data;
+    INT32	* magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+        * data = (pointer) &i128InfoRec;
+        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+        break;
+    case 1:
+        * data = (pointer) "libmfb.a";
+        * magic= MAGIC_LOAD;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
 
 /*
  * i128PrintIdent -- print identification message
@@ -809,7 +881,7 @@ i128ProgramIBMRGB(freq, flags)
    		break;
    }
 
-   usleep(150000);
+   xf86usleep(150000);
    return(TRUE);
 }
 
@@ -932,7 +1004,7 @@ int freq;
    i128mem.rbase_g_b[INDEX_TI] = TI_OUTPUT_CLOCK_SELECT;
    i128mem.rbase_g_b[DATA_TI] = oclk;
 
-   usleep(150000);
+   xf86usleep(150000);
    return(TRUE);
 }
 

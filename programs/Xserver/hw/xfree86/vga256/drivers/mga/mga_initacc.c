@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.3 1997/01/18 06:56:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_initacc.c,v 3.4 1997/02/14 12:18:56 hohndel Exp $ */
 
 #include "xf86.h"
 #include "vga.h"
@@ -91,12 +91,20 @@ int MgaAccelSwitch(primitive)
 {
     char buf[1000];
     int i;
-    int file = fopen("/tmp/accelswitch", "r");
+    XF86FILE file;
+#ifndef __EMX__
+    file = xf86fopen("/tmp/accelswitch", "r");
+#else
+    /* make it simple on OS/2, can't rely on /tmp, but too lazy to
+     * ask (xf86)getenv("TMP"); don't rely on HPFS
+     */
+    file = xf86fopen("\\accelsw","r");	
+#endif
     if( !file )
         return 1;
     
-    while( fscanf(file, "%s%d", buf, &i) == 2 )
-        if( !strcmp(buf, primitive) ) 
+    while( xf86fscanf(file, "%s%d", buf, &i) == 2 )
+        if( !xf86strcmp(buf, primitive) ) 
             return i;
     
     return 1;

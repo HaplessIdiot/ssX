@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_accel.c,v 3.6 1997/01/24 01:03:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_accel.c,v 3.7 1997/02/10 16:41:08 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -89,6 +89,7 @@ void TGUIAccelInit() {
 				HARDWARE_PATTERN_TRANSPARENCY |
 				HARDWARE_PATTERN_ALIGN_64 |
 				HARDWARE_PATTERN_MONO_TRANSPARENCY |
+				HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |
 				HARDWARE_PATTERN_SCREEN_ORIGIN |
 				PIXMAP_CACHE;
 
@@ -109,9 +110,9 @@ void TGUIAccelInit() {
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
 	       	TGUISubsequentScreenToScreenCopy;
 
-    /* In 16bpp on the 9440 and possibly 96xx, the pattern needs aligning on
-    /* a 128 pixel boundary, we don't deal with this yet ! */
-    if (vgaBitsPerPixel != 16)
+    /* In 16/24/32bpp on the 9440 and 96xx, the pattern needs aligning on
+    /* a 128/256 pixel boundary, we don't deal with this yet ! */
+    if (vgaBitsPerPixel == 8)
     {
     	/* Fill 8x8 Pattern */
     	xf86AccelInfoRec.SetupForFill8x8Pattern = TGUISetupForFill8x8Pattern;
@@ -311,7 +312,7 @@ transparency_color)
 	}
 	TGUI_FMIX(TGUIRops_Pixalu[rop]); /* ROP */
 	TGUI_DRAWFLAG(drawflag | PAT2SCR);
-	TGUI_PATLOC((patterny * vga256InfoRec.displayWidth + patternx) >> 6);
+	TGUI_PATLOC((patterny * vga256InfoRec.displayWidth + (patternx/8)) >> 6);
 }
 
 void TGUISubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
@@ -360,7 +361,7 @@ planemask)
 		TGUI_BCOLOUR(bg);
 	TGUI_FMIX(TGUIRops_Pixalu[rop]); /* ROP */
 	TGUI_DRAWFLAG(drawflag | PATMONO | PAT2SCR);
-	TGUI_PATLOC((patterny * vga256InfoRec.displayWidth + patternx) >> 6);
+	TGUI_PATLOC((patterny * vga256InfoRec.displayWidth + (patternx/8)) >> 6);
 }
 
 void TGUISubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)

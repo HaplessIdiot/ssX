@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.8 1997/01/22 11:08:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.9 1997/02/17 09:47:19 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -49,15 +49,33 @@
 #include "ct_driver.h"
 
 #define ctBLITWAIT \
-     if (ctUseMMIO){ \
-     HW_DEBUG(MR(4)); \
- while((*(volatile unsigned int *)(ctMMIOBase + (ctisHiQV32?0x10:MR(4))))\
- & (ctisHiQV32 ? 0x80000000 : 0x00100000)){}; \
-        } else { \
-	 HW_DEBUG(0x4+2); \
-	 while (inw(DR(0x4)+2) & 0x10) {}; \
-	       };
-
+   if (ctUseMMIO){ \
+      HW_DEBUG(MR(4)); \
+      if (ctisHiQV32){ \
+         outb(0x3D6,0x20); \
+         { \
+             int timeout; \
+             timeout = 0; \
+	     for (;;) { \
+                if (!(inb(0x3D7)&0x1)) break; \
+                timeout++; \
+                if (timeout == 10000000) { \
+		   unsigned char tmp; \
+                   ErrorF("CHIPS: BitBlt Engine Timeout\n"); \
+		   tmp = inb(0x3D7); \
+		   outb(0x3D7, ((tmp & 0xFD) | 0x2)); \
+		   break; \
+                } \
+	     } \
+	 } \
+      } else { \
+         while(*(volatile unsigned int *)(ctMMIOBase + MR(4))\
+         & 0x00100000){}; \
+      } \
+   } else { \
+      HW_DEBUG(0x4+2); \
+      while (inw(DR(0x4)+2) & 0x10) {}; \
+   };
 
 static Bool CHIPSRealizeCursor();
 static Bool CHIPSUnrealizeCursor();
@@ -364,13 +382,7 @@ CHIPSUnrealizeCursor(pScr, pCurs)
 	pCurs->bits->devPriv[pScr->myNum] = 0x0;
     }
     if ((--ctRealizedCursorCount == 0) && xf86VTSema) {/* count down to erase cursor when exit the server */
-	if (ctisHiQV32) {
-	    outb(0x3D6, 0x20);
-	    while (inb(0x3D7) & 0x1) {
-	    };
-	} else {
-	  ctBLITWAIT;
-	}
+	ctBLITWAIT;
 	CHIPSHideCursor();
     }
     return TRUE;
@@ -389,13 +401,7 @@ CHIPSLoadCursorToCard(pScr, pCurs, x, y)
 	return;
 
     /* Check if blitter is active. Mustn't touch the video ram till it is finished */
-    if (ctisHiQV32) {
-	outb(0x3D6, 0x20);
-	while (inb(0x3D7) & 0x1) {
-	};
-    } else {
-      ctBLITWAIT;
-    }
+    ctBLITWAIT;
 
     cursor_image = pCurs->bits->devPriv[index];
     if (ctisWINGINE) {
@@ -522,13 +528,7 @@ CHIPSLoadCursor(pScr, pCurs, x, y)
     /* Position cursor */
     CHIPSMoveCursor(pScr, x, y);
 
-    if (ctisHiQV32) {
-	outb(0x3D6, 0x20);
-	while (inb(0x3D7) & 0x1) {
-	};
-    } else {
-      ctBLITWAIT;
-    }
+    ctBLITWAIT;
 
     /* Turn it on. */
     CHIPSShowCursor();

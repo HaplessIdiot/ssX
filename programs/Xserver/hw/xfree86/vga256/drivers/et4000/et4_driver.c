@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.50 1997/02/16 12:13:39 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.51 1997/02/18 22:26:25 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -99,11 +99,12 @@ extern void     ET4000W32SetReadWrite();
 extern void	TsengAccelInit();
 extern void     ET4000HWSaveScreen();
 
+unsigned char 	tseng_save_divide = 0;
+
+#ifndef MONOVGA
 #include "tseng_cursor.h"
 extern vgaHWCursorRec vgaHWCursor;
 
-unsigned char 	tseng_save_divide = 0;
-#ifndef MONOVGA
 static unsigned char    initialRCConf = 0x70;
 #ifdef W32_SUPPORT
 /* these should be taken from the "Saved" register set instead of this way */
