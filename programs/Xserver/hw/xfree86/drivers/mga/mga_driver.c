@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.212 2001/11/30 12:11:56 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.213 2002/01/04 21:22:32 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1942,7 +1942,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if(pMga->SecondCrtc == TRUE) {
         /* Override on 2nd crtc */
 
-	if (pMga->ChipRev >= 0x80) {	/* G450 */
+	if ((pMga->ChipRev >= 0x80) || (pMga->Chipset == PCI_CHIP_MGAG550)) {
+	    /* G450, G550 */
 	    pMga->MaxClock = 234000;
 	} else {
 	    pMga->MaxClock = 135000;
