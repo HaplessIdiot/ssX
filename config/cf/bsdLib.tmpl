@@ -1,5 +1,5 @@
 XCOMM $XConsortium: bsdLib.tmpl /main/3 1996/09/28 16:09:25 rws $
-XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.3 1996/12/31 04:14:38 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.4 1997/08/26 10:00:41 hohndel Exp $
 
 /*
  * NetBSD/FreeBSD/OpenBSD shared library template
@@ -36,7 +36,7 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #endif
 
 #ifndef XawClientLibs
-#define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
+#define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #endif
 
 #define CplusplusLibC
@@ -45,7 +45,8 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedX11Reqs
 #define SharedOldXReqs	$(LDPRELIB) $(XLIBONLY)
 #define SharedXtReqs	$(LDPRELIB) $(XLIBONLY) $(SMLIB) $(ICELIB)
-#define SharedXawReqs	$(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define SharedXawReqs	$(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
+#define SharedXaw6Reqs	$(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 #define SharedXmuReqs	$(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXextReqs	$(LDPRELIB) $(XLIBONLY)
 #define SharedXiReqs	$(LDPRELIB) $(XLIB)
