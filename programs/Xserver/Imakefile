@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.211 2001/02/16 13:24:05 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.213 2001/03/24 23:08:52 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1137,22 +1137,21 @@ QUARTZOBJS = $(DDXDIR2)/quartzStartup.o
 XDARWINAPPDIR = $(DESTDIR)$(BINDIR)/XDarwin.app/Contents/MacOS
 
 /*
- * IOKit X server
+ * Quartz X server (installed in its application bundle)
  */
-SetUIDServerTarget(XDarwinIOKit,$(DARWINDIRS),$(DARWINOBJS), \
-	$(DARWINLIBS),$(DARWINSYSLIBS))
-
-/*
- * Quartz mode X server
- * (installed in its application bundle)
- */
-SetUIDServerTarget(XDarwin,$(DARWINDIRS),$(QUARTZOBJS), \
+SetUIDServerTarget(XDarwinApp,$(DARWINDIRS),$(QUARTZOBJS), \
 	$(DARWINLIBS) $(DDXDIR2)/LibraryTargetName(XQuartz), \
 	$(DARWINSYSLIBS) $(QUARTZSYSLIBS))
 
 install::
 	mkdir -p $(XDARWINAPPDIR)
-	mv $(DESTDIR)$(BINDIR)/XDarwin $(XDARWINAPPDIR)/XDarwin
+	mv $(DESTDIR)$(BINDIR)/XDarwinApp $(XDARWINAPPDIR)/XDarwin
+
+/*
+ * IOKit X server
+ */
+SetUIDServerTarget(XDarwin,$(DARWINDIRS),$(DARWINOBJS), \
+	$(DARWINLIBS),$(DARWINSYSLIBS))
 
 #else /* !DarwinQuartzSupport */
 

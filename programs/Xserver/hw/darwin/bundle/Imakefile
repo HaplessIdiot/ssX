@@ -24,7 +24,7 @@ CUSTOMVERSION = XFree86CustomVersion
 CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
 
-DEFINES = $(CUSTOMVERDEF)
+DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(DESTDIR)$(BINDIR)
 XDARWINBINDIR = $(DESTDIR)$(BINDIR)/XDarwin.app/Contents/MacOS
 QUARTZSYSLIBS = -framework IOKit -framework ApplicationServices \
 		-framework Cocoa -framework Carbon
@@ -34,9 +34,12 @@ NormalLibraryTarget(XQuartz,$(OBJS))
 
 AllTarget(quartzStartup.o)
 
-InstallScript(XDarwin,$(DESTDIR)$(BINDIR))
+AllTarget(XDarwinStartup)
+NormalProgramTarget(XDarwinStartup,XDarwinStartup.o,NullParameter, \
+	NullParameter,NullParameter)
+InstallProgram(XDarwinStartup,$(DESTDIR)$(BINDIR))
 install::
-	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) XDarwin X)
+	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) XDarwinStartup X)
 
 install::
 	pbxbuild install -target XDarwin DSTROOT=$(DESTDIR)$(BINDIR)
