@@ -28,6 +28,7 @@ in this Software without prior written authorization from the X Consortium.
  * 
  * This widget is used for press-and-hold style buttons.
  */
+/* $XFree86$ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>

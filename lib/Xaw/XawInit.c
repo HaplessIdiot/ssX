@@ -33,6 +33,7 @@ in this Software without prior written authorization from the X Consortium.
  * call this routine from their ClassInitialize procs (this routine may be
  * used as the class init proc).
  */
+/* $XFree86$ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Vendor.h>

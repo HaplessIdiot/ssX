@@ -52,6 +52,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86$ */
 
 #ifndef _XawImP_h
 #define _XawImP_h

@@ -54,6 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86$ */
 
 #include <X11/IntrinsicP.h>
 #include "XawI18n.h"
