@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.140tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.141tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2521,19 +2521,15 @@ depend:: file.c								@@\
 									@@\
 clean::									@@\
 	RemoveFiles(lex.yy.c file.c)
-#endif
+#endif /* LexFilePrefix */
 
 #ifndef LexFileExplicit
-#if HasClearmake		/* provide a place to hang ClearmakeOSName */
 #define LexFileExplicit(file)						@@\
 file.c: file.l								@@\
 	ClearmakeOSName \
 	$(LEX) $(LFLAGS) file.l						@@\
 	$(MV) lex.yy.c file.c
-#else
-#define LexFileExplicit(file) /* the default rule is fine */
-#endif
-#endif
+#endif /* LexFileExplicit */
 
 #ifndef LexFile
 #define LexFile(file)							@@\
@@ -2588,7 +2584,7 @@ file.h file.c: file.y							@@\
 clean::									@@\
 	RemoveFiles(y.tab.c y.tab.h file.h file.c)
 #endif
-#endif /* YaccFile */
+#endif /* YaccFilePrefix */
 
 #ifndef YaccFile
 #if HasGnuMake
