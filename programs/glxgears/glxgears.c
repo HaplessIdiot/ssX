@@ -18,7 +18,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/glxgears/glxgears.c,v 1.1 2001/04/02 21:12:11 dawes Exp $ */
 
 /*
  * This is a port of the infamous "gears" demo to straight GLX (i.e. no GLUT)
@@ -455,7 +455,7 @@ main(int argc, char *argv[])
    Display *dpy;
    Window win;
    GLXContext ctx;
-   char *dpyName = ":0";
+   char *dpyName = NULL;
    GLboolean printInfo = GL_FALSE;
    int i;
 
