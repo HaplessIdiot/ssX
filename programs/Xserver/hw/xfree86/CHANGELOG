@@ -1,3 +1,6 @@
+ 515. Fix mga dri bug that caused some rendering corruption when the dri module
+      was loaded (Mark Vojkovich).
+
 XFree86 4.0.1b (11 August 2000)
  514. Fix the freetype font renderer's handling of True Type Collections
       (.ttc files) (based on #A.123, timecop at japan.co.jp).
@@ -10990,4 +10993,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1267 2000/08/11 19:10:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1268 2000/08/11 21:12:44 dawes Exp $
