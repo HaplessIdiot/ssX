@@ -1,5 +1,5 @@
 /*
- * $Id: DisplayList.c,v 3.1 1998/04/26 17:03:24 robin Exp $
+ * $Id: DisplayList.c,v 3.2 1998/04/28 13:33:32 robin Exp $
  *
  * Copyright (c) 1996 by The XFree86 Project, Inc.
  *
@@ -26,6 +26,8 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
+
+/* $XFree86: $ */
 
 #include <ctype.h>
 #include <string.h>

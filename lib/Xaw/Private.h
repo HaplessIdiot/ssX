@@ -1,5 +1,5 @@
 /*
- * $Id: Private.h,v 3.1 1998/04/26 17:03:27 robin Exp $
+ * $Id: Private.h,v 3.2 1998/04/28 13:33:33 robin Exp $
  *
  * Copyright (c) 1996 by The XFree86 Project, Inc.
  *
@@ -26,6 +26,8 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
+
+/* $XFree86: $ */
 
 #ifndef _XawPrivate_h
 #define _XawPrivate_h
