@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.8 2002/04/17 23:46:59 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.9 2002/08/05 03:56:24 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -955,6 +955,19 @@ Lisp_HostNamestring(LispMac *mac, LispBuiltin *builtin)
  */
 {
     return (LispPathnameField(mac, PATH_HOST, 1));
+}
+
+LispObj *
+Lisp_Pathnamep(LispMac *mac, LispBuiltin *builtin)
+/*
+ pathnamep object
+ */
+{
+    LispObj *object;
+
+    object = ARGUMENT(0);
+
+    return (PATHNAME_P(object) ? T : NIL);
 }
 
 /* XXX only checks if host is a string and only checks the HOME enviroment

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.h,v 1.1 2002/01/30 21:00:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.h,v 1.2 2002/08/05 03:56:24 paulo Exp $ */
 
 #ifndef Lisp_pathname_h
 #define Lisp_pathname_h
@@ -63,6 +63,7 @@ LispObj *Lisp_DirectoryNamestring(LispMac*, LispBuiltin*);/* directory-namestrin
 LispObj *Lisp_EnoughNamestring(LispMac*, LispBuiltin*);	  /* enough-namestring */
 LispObj *Lisp_HostNamestring(LispMac*, LispBuiltin*);	  /* host-namestring */
 LispObj *Lisp_MakePathname(LispMac*, LispBuiltin*);	  /* make-pathname */
+LispObj *Lisp_Pathnamep(LispMac*, LispBuiltin*);	  /* pathnamep */
 LispObj *Lisp_ParseNamestring(LispMac*, LispBuiltin*);	  /* parse-namestring */
 LispObj *Lisp_PathnameHost(LispMac*, LispBuiltin*);	  /* pathname-host */
 LispObj *Lisp_PathnameDevice(LispMac*, LispBuiltin*);	  /* pathname-device */

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.2 2002/07/28 21:34:05 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.3 2002/08/05 03:56:26 paulo Exp $
 ;;
 
 ;;  Uncomment this to run the module in the stand alone command line
@@ -55,14 +55,14 @@
 #-xedit
 (defmacro xedit::WHILE (test &rest body)
     `(loop
-	(unless ,@test (return))
+	(unless (,@test) (return))
 	,@body
     )
 )
 #-xedit
 (defmacro xedit::UNTIL (test &rest body)
     `(loop
-	(when ,@test (return))
+	(when (,@test) (return))
 	,@body
     )
 )
@@ -109,23 +109,19 @@
 	:PROPERTY *PROP-NUMBER*)
 
     ;;  Floating point numbers.
-    (syntoken "([0-9]+\\.[0-9]*)|([0-9]*\\.[0-9]+)(e[+-]?[0-9]+)?[lf]?"
+    (syntoken "(([0-9]+\\.?[0-9]*)|([0-9]*\\.?[0-9]+))(e[+-]?[0-9]+)?[lf]?"
 	:ICASE T
 	:PROPERTY *PROP-NUMBER*)
 
-    ;;  C++ style comments.
-    (syntoken "//.*$"
-	:PROPERTY *PROP-COMMENT*)
+    ;;  Parentheses start rule.
+    (syntoken "\\("
+	:PROPERTY *PROP-PUNCTUATION*
+	:BEGIN :PARENTHESES)
 
-    ;;  Comment start rule.
-    (syntoken "/\\*"
-	:BEGIN :COMMENT
-	:CONTAINED T)
-
-    ;;  Punctuation, match two at the same time if possible, but no more to
-    ;; avoid matching things like /** or ///.
-    (syntoken "[/*+:;=<>,&.!%|^~?-]{1,2}"
-	:PROPERTY *PROP-PUNCTUATION*)
+    ;;  Keys start rule.
+    (syntoken "\\{"
+	:PROPERTY *PROP-PUNCTUATION*
+	:BEGIN :KEYS)
 
     ;;  String start rule.
     (syntoken "\""
@@ -137,25 +133,30 @@
 	:BEGIN :CHARACTER
 	:CONTAINED T)
 
-    ;;  Preprocessor start rule.
-    (syntoken "^[ 	]*#[ 	]*[a-z]+"
-	:BEGIN :PREPROCESSOR
-	:CONTAINED T)
-
-    ;;  Parentheses start rule.
-    (syntoken "\\("
-	:PROPERTY *PROP-PUNCTUATION*
-	:BEGIN :PARENTHESES)
-
     ;;  Brackets start rule.
     (syntoken "\\["
 	:PROPERTY *PROP-PUNCTUATION*
 	:BEGIN :BRACKETS)
 
-    ;;  Keys start rule.
-    (syntoken "\\{"
-	:PROPERTY *PROP-PUNCTUATION*
-	:BEGIN :KEYS)
+    ;;  Preprocessor start rule.
+    (syntoken "^[ 	]*#[ 	]*[a-z]+"
+	:BEGIN :PREPROCESSOR
+	:CONTAINED T)
+
+    ;;  Comment start rule.
+    (syntoken "/\\*"
+	:BEGIN :COMMENT
+	:CONTAINED T)
+
+
+    ;;  C++ style comments.
+    (syntoken "//.*$"
+	:PROPERTY *PROP-COMMENT*)
+
+    ;;  Punctuation, match two at the same time if possible, but no more to
+    ;; avoid matching things like /** or ///.
+    (syntoken "[/*+:;=<>,&.!%|^~?-]{1,2}"
+	:PROPERTY *PROP-PUNCTUATION*)
 
 
     ;;  Rules for comments.
@@ -266,4 +267,5 @@
 	:PROPERTY *PROP-ERROR*)
 )
 
+(compile 'syntax-highlight)
 #+debug (syntax-highlight *C*)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.h,v 1.4 2002/07/16 05:19:39 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.h,v 1.5 2002/08/05 03:56:24 paulo Exp $ */
 
 #ifndef Lisp_string_h
 #define Lisp_string_h
@@ -49,6 +49,7 @@ LispObj *Lisp_CharGreaterp(LispMac*, LispBuiltin*);	  /* char-greaterp */
 LispObj *Lisp_CharNotLessp(LispMac*, LispBuiltin*);	  /* char-not-lessp */
 LispObj *Lisp_CharNotEqual(LispMac*, LispBuiltin*);	  /* char-not-equal */
 LispObj *Lisp_Character(LispMac*, LispBuiltin*);	  /* character */
+LispObj *Lisp_Characterp(LispMac*, LispBuiltin*);	  /* characterp */
 LispObj *Lisp_CharDowncase(LispMac*, LispBuiltin*);	  /* char-downcase */
 LispObj *Lisp_CharInt(LispMac*, LispBuiltin*);		  /* char-int */
 LispObj *Lisp_CharUpcase(LispMac*, LispBuiltin*);	  /* char-upcase */
@@ -57,6 +58,7 @@ LispObj *Lisp_IntChar(LispMac*, LispBuiltin*);		  /* int-char */
 LispObj *Lisp_ParseInteger(LispMac*, LispBuiltin*);	  /* parse-integer */
 LispObj *Lisp_ReadFromString(LispMac*, LispBuiltin*);	  /* read-from-string */
 LispObj *Lisp_String(LispMac*, LispBuiltin*);		  /* string */
+LispObj *Lisp_Stringp(LispMac*, LispBuiltin*);		  /* stringp */
 LispObj *Lisp_StringTrim(LispMac*, LispBuiltin*);	  /* string-trim */
 LispObj *Lisp_StringLeftTrim(LispMac*, LispBuiltin*);	  /* string-left-trim */
 LispObj *Lisp_StringRightTrim(LispMac*, LispBuiltin*);	  /* string-right-trim */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.56 2002/07/28 21:34:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.57 2002/08/05 03:56:24 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -67,7 +67,7 @@
 #define HAS_SC_PAGESIZE
 #endif
 
-#include "private.h"
+#include "bytecode.h"
 
 #include "read.h"
 #include "format.h"
@@ -93,9 +93,6 @@ typedef struct {
 /*
  * Prototypes
  */
-/* run an inline builtin function/macro */
-static LispObj *LispFuncallInline(LispMac*, LispAtom*, LispObj*, int);
-
 static void Lisp__GC(LispMac*, LispObj*, LispObj*);
 
 /* run a user function, to be called only by LispEval */
@@ -105,13 +102,13 @@ static LispObj *LispRunFunMac(LispMac*, LispObj*, LispObj*, int, int);
 LispObj *LispRunSetf(LispMac*, LispArgList*, LispObj*, LispObj*, LispObj*);
 
 /* increases storage size for environment */
-static void LispMoreEnvironment(LispMac*);
+void LispMoreEnvironment(LispMac*);
 
 /* increases storage size for stack of builtin arguments */
-static void LispMoreStack(LispMac*);
+void LispMoreStack(LispMac*);
 
 /* increases storage size for global variables */
-static void LispMoreGlobals(LispMac*, LispPackage*);
+void LispMoreGlobals(LispMac*, LispPackage*);
 
 #ifdef __GNUC__
 static INLINE LispObj *LispDoGetVar(LispMac*, LispObj*);
@@ -131,10 +128,11 @@ static LispObj *LispCheckKeyword(LispMac*, LispObj*);
 
 	/* builtin backquote parsing */
 static LispObj *LispEvalBackquoteObject(LispMac*, LispObj*, int, int);
-static LispObj *LispEvalBackquote(LispMac*, LispObj*, int);
+	/* used also by the bytecode compiler */
+LispObj *LispEvalBackquote(LispMac*, LispObj*, int);
 
 	/* create or change object property */
-static INLINE void LispSetAtomObjectProperty(LispMac*, LispAtom*, LispObj*);
+void LispSetAtomObjectProperty(LispMac*, LispAtom*, LispObj*);
 	/* remove object property */
 static void LispRemAtomObjectProperty(LispMac*, LispAtom*);
 
@@ -175,10 +173,10 @@ static LispObj lispt = {LispTrue_t};
 static LispObj lispunbound = {LispNil_t};
 LispObj *NIL = &lispnil, *T = &lispt, *UNBOUND = &lispunbound;
 
-LispObj *Okey, *Orest, *Ooptional, *Oaux;
+LispObj *Okey, *Orest, *Ooptional, *Oaux, *Olambda;
 
 Atom_id Snil, St;
-Atom_id Slambda, Saux, Skey, Soptional, Srest;
+Atom_id Saux, Skey, Soptional, Srest;
 Atom_id Satom, Ssymbol, Sinteger, Scharacter, Sreal, Sstring, Slist,
 	Scons, Svector, Sarray, Sstruct, Skeyword, Sfunction, Spathname,
 	Srational, Sfloat, Scomplex, Sopaque, Sdefault;
@@ -203,68 +201,6 @@ int LispArgList_t;
 
 LispFile *Stdout, *Stdin, *Stderr;
 
-static LispBuiltinInline lispinlines[] = {
-    {LispFunction, LispICar, "CAR", 1},		/* car list */
-    {LispFunction, LispICdr, "CDR", 1},		/* cdr list */
-    {LispFunction, LispIC_r, "CAAR", 1},	/* caar list */
-    {LispFunction, LispIC_r, "CADR", 1},	/* cadr list */
-    {LispFunction, LispIC_r, "CDAR", 1},	/* cdar list */
-    {LispFunction, LispIC_r, "CDDR", 1},	/* cddr list */
-    {LispFunction, LispIC_r, "CAAAR", 1},	/* caaar list */
-    {LispFunction, LispIC_r, "CAADR", 1},	/* caadr list */
-    {LispFunction, LispIC_r, "CADAR", 1},	/* cadar list */
-    {LispFunction, LispIC_r, "CADDR", 1},	/* caddr list */
-    {LispFunction, LispIC_r, "CDAAR", 1},	/* cdaar list */
-    {LispFunction, LispIC_r, "CDADR", 1},	/* cdadr list */
-    {LispFunction, LispIC_r, "CDDAR", 1},	/* cddar list */
-    {LispFunction, LispIC_r, "CDDDR", 1},	/* cdddr list */
-    {LispFunction, LispIC_r, "CAAAAR", 1},	/* caaaar list */
-    {LispFunction, LispIC_r, "CAAADR", 1},	/* caaadr list */
-    {LispFunction, LispIC_r, "CAADAR", 1},	/* caadar list */
-    {LispFunction, LispIC_r, "CAADDR", 1},	/* caaddr list */
-    {LispFunction, LispIC_r, "CADAAR", 1},	/* cadaar list */
-    {LispFunction, LispIC_r, "CADADR", 1},	/* cadadr list */
-    {LispFunction, LispIC_r, "CADDAR", 1},	/* caddar list */
-    {LispFunction, LispIC_r, "CADDDR", 1},	/* cadddr list */
-    {LispFunction, LispIC_r, "CDAAAR", 1},	/* cdaaar list */
-    {LispFunction, LispIC_r, "CDAADR", 1},	/* cdaadr list */
-    {LispFunction, LispIC_r, "CDADAR", 1},	/* cdadar list */
-    {LispFunction, LispIC_r, "CDADDR", 1},	/* cdaddr list */
-    {LispFunction, LispIC_r, "CDDAAR", 1},	/* cddaar list */
-    {LispFunction, LispIC_r, "CDDADR", 1},	/* cddadr list */
-    {LispFunction, LispIC_r, "CDDDAR", 1},	/* cdddar list */
-    {LispFunction, LispIC_r, "CDDDDR", 1},	/* cddddr list */
-    {LispFunction, LispICar, "FIRST", 1},	/* first list */
-    {LispFunction, LispICdr, "REST", 1},	/* rest list */
-    {LispFunction, LispICons, "CONS", 2},	/* cons car cdr */
-    {LispFunction, LispIList, "LIST", -1},	/* list &rest args */
-    {LispFunction, LispIRplaca, "RPLACA", 2},	/* rplaca place value */
-    {LispFunction, LispIRplacd, "RPLACD", 2},	/* rplacd place value */
-    {LispFunction, LispIAtom, "ATOM", 1},	/* atom object */
-    {LispFunction, LispIConsp, "CONSP", 1},	/* consp object */
-    {LispFunction, LispIListp, "LISTP", 1},	/* listp object */
-    {LispFunction, LispINull, "NOT", 1},	/* not arg */
-    {LispFunction, LispINull, "NULL", 1},	/* null list */
-    {LispFunction, LispIStringp, "STRINGP", 1},	/* stringp object */
-    {LispFunction, LispICharacterp, "CHARACTERP", 1},	/* characterp object */
-    {LispFunction, LispIKeywordp, "KEYWORDP", 1},	/* keywordp object */
-    {LispFunction, LispIComplexp, "COMPLEXP", 1},	/* complexp object */
-    {LispFunction, LispIPathnamep, "PATHNAMEP", 1},	/* pathnamep object */
-    {LispFunction, LispIStreamp, "STREAMP", 1}, /* streamp object */
-    {LispMacro, LispIAnd, "AND", -1},		/* and &rest args */
-    {LispMacro, LispIOr, "OR", -1},		/* or &rest args */
-    {LispFunction, LispIEval, "EVAL", 1},	/* eval form */
-    {LispFunction, LispIEq, "EQ", 2},		/* eq left right */
-    {LispFunction, LispIEql, "EQL", 2},		/* eql left right */
-    {LispFunction, LispIEqual, "EQUAL", 2},	/* equal left right */
-    {LispFunction, LispIEqualp, "EQUALP", 2},	/* equalp left right */
-    {LispFunction, LispILength, "LENGTH", 1},	/* length sequence */
-    {LispMacro, LispIIf, "IF", 2, 3},		/* if test then &optional else */
-    {LispMacro, LispIWhen, "WHEN", 1, -1},	/* when test &rest body */
-    {LispMacro, LispIUnless, "UNLESS", 1, -1},	/* unless test &rest body */
-    {LispMacro, LispIProgn, "PROGN", -1},	/* progn &rest body */
-};
-
 static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Mul, "* &rest numbers"},
     {LispFunction, Lisp_Plus, "+ &rest numbers"},
@@ -282,18 +218,25 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Min, "min number &rest more-numbers"},
     {LispFunction, Lisp_Abs, "abs number"},
     {LispFunction, Lisp_Acons, "acons key datum alist"},
+    {LispFunction, Lisp_Adjoin, "adjoin item list &key key test test-not"},
     {LispFunction, Lisp_AlphaCharP, "alpha-char-p char"},
+    {LispMacro, Lisp_And, "and &rest args", 0, 0, Com_And},
     {LispFunction, Lisp_Append, "append &rest lists"},
     {LispFunction, Lisp_Apply, "apply function arg &rest more-args"},
     {LispFunction, Lisp_Aref, "aref array &rest subscripts"},
     {LispFunction, Lisp_Assoc, "assoc item list &key test test-not key"},
     {LispFunction, Lisp_AssocIf, "assoc-if predicate list &key key"},
     {LispFunction, Lisp_AssocIfNot, "assoc-if-not predicate list &key key"},
-    {LispMacro, Lisp_Block, "block name &rest body"},
+    {LispFunction, Lisp_Atom, "atom object"},
+    {LispMacro, Lisp_Block, "block name &rest body", 0, 0, Com_Block},
     {LispFunction, Lisp_Boundp, "boundp symbol"},
     {LispFunction, Lisp_Butlast, "butlast list &optional count"},
+    {LispFunction, Lisp_Car, "car list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_Car, "first list", 0, 0, Com_C_r},
     {LispMacro, Lisp_Case, "case keyform &rest body"},
     {LispMacro, Lisp_Catch, "catch tag &rest body"},
+    {LispFunction, Lisp_Cdr, "cdr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_Cdr, "rest list", 0, 0, Com_C_r},
     {LispFunction, Lisp_Char, "char string index"},
     {LispFunction, Lisp_Char, "schar simple-string index"},
     {LispFunction, Lisp_CharLess, "char< character &rest more-characters"},
@@ -312,11 +255,45 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_CharInt, "char-int character"},
     {LispFunction, Lisp_CharUpcase, "char-upcase character"},
     {LispFunction, Lisp_Character, "character object"},
+    {LispFunction, Lisp_Characterp, "characterp object"},
     {LispFunction, Lisp_Coerce, "coerce object result-type"},
+    {LispFunction, Lisp_Compile, "compile name &optional definition", 1},
     {LispFunction, Lisp_Complex, "complex realpart &optional imagpart"},
-    {LispMacro, Lisp_Cond, "cond &rest body"},
+    {LispMacro, Lisp_Cond, "cond &rest body", 0, 0, Com_Cond},
+    {LispFunction, Lisp_Cons, "cons car cdr", 0, 0, Com_Cons},
+    {LispFunction, Lisp_Consp, "consp object", 0, 0, Com_Consp},
     {LispFunction, Lisp_Conjugate, "conjugate number"},
+    {LispFunction, Lisp_Complexp, "complexp object"},
+    {LispFunction, Lisp_CopyList, "copy-list list"},
     {LispFunction, Lisp_Close, "close stream &key abort"},
+    {LispFunction, Lisp_C_r, "caar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cadr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cdar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cddr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "caaar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "caadr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cadar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "caddr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cdaar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cdadr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cddar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cdddr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "caaaar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "caaadr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "caadar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "caaddr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cadaar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cadadr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "caddar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cadddr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cdaaar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cdaadr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cdadar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cdaddr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cddaar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cddadr list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cdddar list", 0, 0, Com_C_r},
+    {LispFunction, Lisp_C_r, "cddddr list", 0, 0, Com_C_r},
     {LispMacro, Lisp_Decf, "decf place &optional delta"},
     {LispMacro, Lisp_Defconstant, "defconstant name initial-value &optional documentation"},
     {LispMacro, Lisp_Defmacro, "defmacro name lambda-list &rest body"},
@@ -324,15 +301,19 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Defun, "defun name lambda-list &rest body"},
     {LispMacro, Lisp_Defsetf, "defsetf function lambda-list &rest body"},
     {LispMacro, Lisp_Defvar, "defvar name &optional (initial-value nil bound) documentation"},
+    {LispFunction, Lisp_Delete, "delete item sequence &key from-end test test-not start end count key"},
     {LispFunction, Lisp_DeleteDuplicates, "delete-duplicates sequence &key from-end test test-not start end key"},
+    {LispFunction, Lisp_DeleteIf, "delete-if predicate sequence &key from-end start end count key"},
+    {LispFunction, Lisp_DeleteIfNot, "delete-if-not predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_Denominator, "denominator rational"},
     {LispFunction, Lisp_DigitCharP, "digit-char-p character &optional (radix 10)"},
     {LispFunction, Lisp_Directory, "directory pathname &key all if-cannot-read"},
     {LispFunction, Lisp_DirectoryNamestring, "directory-namestring pathname"},
+    {LispFunction, Lisp_Disassemble, "disassemble function"},
     {LispMacro, Lisp_Do, "do init test &rest body"},
     {LispMacro, Lisp_DoP, "do* init test &rest body"},
     {LispFunction, Lisp_Documentation, "documentation symbol type"},
-    {LispMacro, Lisp_DoList, "dolist init &rest body"},
+    {LispMacro, Lisp_DoList, "dolist init &rest body", 0, 0, Com_Dolist},
     {LispMacro, Lisp_DoTimes, "dotimes init &rest body"},
     {LispMacro, Lisp_DoAllSymbols, "do-all-symbols init &rest body"},
     {LispMacro, Lisp_DoExternalSymbols, "do-external-symbols init &rest body"},
@@ -340,9 +321,15 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Elt, "elt sequence index"},
     {LispFunction, Lisp_Endp, "endp object"},
     {LispFunction, Lisp_EnoughNamestring, "enough-namestring pathname &optional defaults"},
+    {LispFunction, Lisp_Eq, "eq left right", 0, 0, Com_Eq},
+    {LispFunction, Lisp_Eql, "eql left right", 0, 0, Com_Eq},
+    {LispFunction, Lisp_Equal, "equal left right", 0, 0, Com_Eq},
+    {LispFunction, Lisp_Equalp, "equalp left right", 0, 0, Com_Eq},
     {LispFunction, Lisp_Error, "error control-string &rest arguments"},
     {LispFunction, Lisp_Evenp, "evenp integer"},
     {LispFunction, Lisp_Export, "export symbols &optional package"},
+    {LispFunction, Lisp_Eval, "eval form"},
+    {LispFunction, Lisp_Fboundp, "fboundp symbol"},
     {LispFunction, Lisp_FileNamestring, "file-namestring pathname"},
     {LispFunction, Lisp_Fill, "fill sequence item &key start end"},
     {LispFunction, Lisp_FindAllSymbols, "find-all-symbols string-or-symbol"},
@@ -355,8 +342,9 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Gc, "gc &optional car cdr"},
     {LispFunction, Lisp_Gcd, "gcd &rest integers"},
     {LispFunction, Lisp_Get, "get symbol indicator &optional default"},
-    {LispMacro, Lisp_Go, "go tag"},
+    {LispMacro, Lisp_Go, "go tag", 0, 0, Com_Go},
     {LispFunction, Lisp_HostNamestring, "host-namestring pathname"},
+    {LispMacro, Lisp_If, "if test then &optional else", 0, 0, Com_If},
     {LispFunction, Lisp_Imagpart, "imagpart number"},
     {LispMacro, Lisp_InPackage, "in-package name"},
     {LispMacro, Lisp_Incf, "incf place &optional delta"},
@@ -367,13 +355,17 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Intern, "intern string &optional package", 1},
     {LispFunction, Lisp_Intersection, "intersection list1 list2 &key test test-not key"},
     {LispFunction, Lisp_Isqrt, "isqrt natural"},
-    {LispFunction, Lisp_Last, "last list &optional count"},
+    {LispFunction, Lisp_Keywordp, "keywordp object"},
+    {LispFunction, Lisp_Last, "last list &optional count", 0, 0, Com_Last},
     {LispMacro, Lisp_Lambda, "lambda lambda-list &rest body"},
     {LispFunction, Lisp_Lcm, "lcm &rest integers"},
-    {LispMacro, Lisp_Let, "let init &rest body"},
-    {LispMacro, Lisp_LetP, "let* init &rest body"},
+    {LispFunction, Lisp_Length, "length sequence", 0, 0, Com_Length},
+    {LispMacro, Lisp_Let, "let init &rest body", 0, 0, Com_Let},
+    {LispMacro, Lisp_LetP, "let* init &rest body", 0, 0, Com_Letx},
     {LispFunction, Lisp_ListP, "list* object &rest more-objects"},
     {LispFunction, Lisp_ListAllPackages, "list-all-packages"},
+    {LispFunction, Lisp_List, "list &rest args"},
+    {LispFunction, Lisp_Listp, "listp object", 0, 0, Com_Listp},
     {LispFunction, Lisp_Listen, "listen &optional input-stream"},
     {LispFunction, Lisp_Load, "load filename &key verbose print if-does-not-exist"},
     {LispFunction, Lisp_Logand, "logand &rest integers"},
@@ -381,7 +373,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Logior, "logior &rest integers"},
     {LispFunction, Lisp_Lognot, "lognot integer"},
     {LispFunction, Lisp_Logxor, "logxor &rest integers"},
-    {LispMacro, Lisp_Loop, "loop &rest body"},
+    {LispMacro, Lisp_Loop, "loop &rest body", 0, 0, Com_Loop},
     {LispFunction, Lisp_MakeArray, "make-array dimensions &key element-type initial-element initial-contents adjustable fill-pointer displaced-to displaced-index-offset"},
     {LispFunction, Lisp_MakeList, "make-list size &key initial-element"},
     {LispFunction, Lisp_MakePackage, "make-package package-name &key nicknames (use '(\"LISP\"))"},
@@ -400,14 +392,21 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_MultipleValueList, "multiple-value-list form"},
     {LispFunction, Lisp_Nconc, "nconc &rest lists"},
     {LispFunction, Lisp_Nreverse, "nreverse sequence"},
+    {LispFunction, Lisp_NsetDifference, "nset-difference list1 list2 &key test test-not key"},
+    {LispFunction, Lisp_Nsubstitute, "nsubstitute newitem olditem sequence &key from-end test test-not start end count key"},
+    {LispFunction, Lisp_NsubstituteIf, "nsubstitute-if newitem test sequence &key from-end start end count key"},
+    {LispFunction, Lisp_NsubstituteIfNot, "nsubstitute-if-not newitem test sequence &key from-end start end count key"},
     {LispFunction, Lisp_Nth, "nth index list"},
-    {LispFunction, Lisp_Nthcdr, "nthcdr index list"},
+    {LispFunction, Lisp_Nthcdr, "nthcdr index list", 0, 0, Com_Nthcdr},
     {LispFunction, Lisp_Numerator, "numerator rational"},
     {LispFunction, Lisp_Namestring, "namestring pathname"},
-    {LispFunction, Lisp_Numberp, "numberp object"},
+    {LispFunction, Lisp_Null, "not arg", 0, 0, Com_Null},
+    {LispFunction, Lisp_Null, "null list", 0, 0, Com_Null},
+    {LispFunction, Lisp_Numberp, "numberp object", 0, 0, Com_Numberp},
     {LispFunction, Lisp_Oddp, "oddp integer"},
     {LispFunction, Lisp_Open, "open filename &key direction element-type if-exists if-does-not-exist external-format"},
     {LispFunction, Lisp_OpenStreamP, "open-stream-p stream"},
+    {LispMacro, Lisp_Or, "or &rest args", 0, 0, Com_Or},
     {LispFunction, Lisp_OutputStreamP, "output-stream-p stream"},
     {LispFunction, Lisp_PackageName, "package-name package"},
     {LispFunction, Lisp_PackageNicknames, "package-nicknames package"},
@@ -421,6 +420,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_PathnameName, "pathname-name pathname"},
     {LispFunction, Lisp_PathnameType, "pathname-type pathname"},
     {LispFunction, Lisp_PathnameVersion, "pathname-version pathname"},
+    {LispFunction, Lisp_Pathnamep, "pathnamep object"},
     {LispFunction, Lisp_Plusp, "plusp number"},
     {LispMacro, Lisp_Pop, "pop place"},
     {LispFunction, Lisp_Position, "position item sequence &key from-end test test-not start end key"},
@@ -433,9 +433,11 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Proclaim, "proclaim declaration"},
     {LispMacro, Lisp_Prog1, "prog1 first &rest body"},
     {LispMacro, Lisp_Prog2, "prog2 first second &rest body"},
+    {LispMacro, Lisp_Progn, "progn &rest body", 0, 0, Com_Progn},
     {LispMacro, Lisp_Progv, "progv symbols values &rest body"},
     {LispFunction, Lisp_Provide, "provide module"},
     {LispMacro, Lisp_Push, "push item place"},
+    {LispMacro, Lisp_Pushnew, "pushnew item place &key key test test-not"},
     {LispFunction, Lisp_Quit, "quit &optional status"},
     {LispMacro, Lisp_Quote, "quote object"},
     {LispFunction, Lisp_Rational, "rational number"},
@@ -452,21 +454,25 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_RemoveDuplicates, "remove-duplicates sequence &key from-end test test-not start end key"},
     {LispFunction, Lisp_RemoveIf, "remove-if predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_RemoveIfNot, "remove-if-not predicate sequence &key from-end start end count key"},
-    {LispMacro, Lisp_Return, "return &optional result"},
-    {LispMacro, Lisp_ReturnFrom, "return-from name &optional result"},
+    {LispMacro, Lisp_Return, "return &optional result", 0, 0, Com_Return},
+    {LispMacro, Lisp_ReturnFrom, "return-from name &optional result", 0, 0, Com_ReturnFrom},
     {LispFunction, Lisp_Reverse, "reverse sequence"},
+    {LispFunction, Lisp_Rplaca, "rplaca place value", 0, 0, Com_Rplac_},
+    {LispFunction, Lisp_Rplacd, "rplacd place value", 0, 0, Com_Rplac_},
     {LispFunction, Lisp_Search, "search sequence1 sequence2 &key from-end test test-not key start1 start2 end1 end2"},
     {LispFunction, Lisp_Set, "set symbol value"},
     {LispFunction, Lisp_SetDifference, "set-difference list1 list2 &key test test-not key"},
     {LispFunction, Lisp_SetExclusiveOr, "set-exclusive-or list1 list2 &key test test-not key"},
     {LispMacro, Lisp_Setf, "setf &rest form"},
-    {LispMacro, Lisp_SetQ, "setq &rest form"},
+    {LispMacro, Lisp_SetQ, "setq &rest form", 0, 0, Com_Setq},
     {LispFunction, Lisp_Sleep, "sleep seconds"},
     {LispFunction, Lisp_Sort, "sort sequence predicate &key key"},
     {LispFunction, Lisp_Sqrt, "sqrt number"},
     {LispFunction, Lisp_Elt, "svref sequence index"},
     {LispFunction, Lisp_Sort, "stable-sort sequence predicate &key key"},
+    {LispFunction, Lisp_Streamp, "streamp object"},
     {LispFunction, Lisp_String, "string object"},
+    {LispFunction, Lisp_Stringp, "stringp object"},
     {LispFunction, Lisp_StringEqual_, "string= string1 string2 &key start1 end1 start2 end2"},
     {LispFunction, Lisp_StringLess, "string< string1 string2 &key start1 end1 start2 end2"},
     {LispFunction, Lisp_StringGreater, "string> string1 string2 &key start1 end1 start2 end2"},
@@ -493,7 +499,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_SubstituteIfNot, "substitute-if-not newitem test sequence &key from-end start end count key"},
     {LispFunction, Lisp_Symbolp, "symbolp object"},
     {LispFunction, Lisp_SymbolPlist, "symbol-plist symbol"},
-    {LispMacro, Lisp_Tagbody, "tagbody &rest body"},
+    {LispMacro, Lisp_Tagbody, "tagbody &rest body", 0, 0, Com_Tagbody},
     {LispFunction, Lisp_Terpri, "terpri &optional output-stream"},
     {LispFunction, Lisp_Typep, "typep object type"},
     {LispMacro, Lisp_The, "the value-type form"},
@@ -502,9 +508,11 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Truename, "truename pathname"},
     {LispFunction, Lisp_Unexport, "unexport symbols &optional package"},
     {LispFunction, Lisp_Union, "union list1 list2 &key test test-not key"},
+    {LispMacro, Lisp_Unless, "unless test &rest body", 0, 0, Com_Unless},
     {LispFunction, Lisp_UserHomedirPathname, "user-homedir-pathname &optional host"},
     {LispMacro, Lisp_UnwindProtect, "unwind-protect protect &rest cleanup"},
     {LispFunction, Lisp_Vector, "vector &rest objects"},
+    {LispMacro, Lisp_When, "when test &rest body", 0, 0, Com_When},
     {LispFunction, Lisp_WriteChar, "write-char string &optional output-stream"},
     {LispFunction, Lisp_WriteLine, "write-line string &optional output-stream &key start end"},
     {LispFunction, Lisp_WriteString, "write-string string &optional output-stream &key start end"},
@@ -531,8 +539,8 @@ static LispBuiltin extbuiltins[] = {
     {LispFunction, Lisp_Regexp, "regexp object"},
     {LispFunction, Lisp_Setenv, "setenv name value &optional overwrite"},
     {LispFunction, Lisp_Unsetenv, "unsetenv name"},
-    {LispMacro, Lisp_Until, "until test &rest body"},
-    {LispMacro, Lisp_While, "while test &rest body"},
+    {LispMacro, Lisp_Until, "until test &rest body", 0, 0, Com_Until},
+    {LispMacro, Lisp_While, "while test &rest body", 0, 0, Com_While},
 };
 
 /* 2048 bytes if sizeof(LispObj) == 16, actually, an integer object uses
@@ -541,6 +549,10 @@ static LispBuiltin extbuiltins[] = {
  * the range -16 - 111.
  */
 static LispObj LispSmallInts[128];
+
+/* byte code function argument list for functions that don't change it's
+ * &REST argument list. */
+extern LispObj x_cons[8];
 
 /*
  * Implementation
@@ -730,12 +742,12 @@ LispTopLevel(LispMac *mac)
     mac->discard = 0;
     mac->destroyed = 0;
 
-    if (CONS_P(mac->input)) {
+    if (CONS_P(mac->input_list)) {
 	LispUngetInfo **info, *unget = mac->unget[0];
 
-	while (CONS_P(mac->input))
-	    mac->input = CDR(mac->input);
-	SINPUT = mac->input;
+	while (CONS_P(mac->input_list))
+	    mac->input_list = CDR(mac->input_list);
+	SINPUT = mac->input_list;
 	while (mac->nunget > 1)
 	    free(mac->unget[--mac->nunget]);
 	if ((info = realloc(mac->unget, sizeof(LispUngetInfo*))) != NULL)
@@ -865,6 +877,9 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 	 pentry < eentry; pentry++)
 	LispMark(*pentry);
 
+    for (i = 0; i < sizeof(x_cons) / sizeof(x_cons[0]); i++)
+	x_cons[i].mark = LispNil_t;
+
     LispMark(COD);
     LispMark(FRM);
 #ifdef DEBUGGER
@@ -873,20 +888,23 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 #endif
     LispMark(PRO);
     LispMark(DOC);
-    LispMark(mac->input);
-    LispMark(mac->output);
+    LispMark(mac->input_list);
+    LispMark(mac->output_list);
     LispMark(car);
     LispMark(cdr);
 
     for (j = 0; j < objseg.nsegs; j++) {
 	for (entry = objseg.objects[j], last = entry + segsize;
 	     entry < last; entry++) {
-	    if (entry->mark)
+	    if (entry->prot)
+		continue;
+	    else if (entry->mark)
 		entry->mark = LispNil_t;
-	    else  if (!entry->prot) {
+	    else {
 		switch (entry->type) {
 		    case LispString_t:
 			free(THESTR(entry));
+			entry->type = LispCons_t;
 			break;
 		    case LispStream_t:
 			switch (entry->data.stream.type) {
@@ -918,28 +936,43 @@ Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
 			    default:
 				break;
 			}
+			entry->type = LispCons_t;
 			break;
 		    case LispBigInteger_t:
 			mpi_clear(entry->data.mp.integer);
 			free(entry->data.mp.integer);
+			entry->type = LispCons_t;
 			break;
 		    case LispBigRatio_t:
 			mpr_clear(entry->data.mp.ratio);
 			free(entry->data.mp.ratio);
+			entry->type = LispCons_t;
 			break;
 		    case LispLambda_t:
 			if (entry->data.lambda.name->type == LispOpaque_t)
 			    LispFreeArgList(mac, (LispArgList*)
 				entry->data.lambda.name->data.opaque.data);
+			entry->type = LispCons_t;
 			break;
 		    case LispRegex_t:
 			regfree(entry->data.regex.regex);
 			free(entry->data.regex.regex);
+			entry->type = LispCons_t;
+			break;
+		    case LispBytecode_t:
+			free(entry->data.bytecode.bytecode->code);
+			free(entry->data.bytecode.bytecode);
+			entry->type = LispCons_t;
+			break;
+		    case LispCons_t:
+			/* Probably the compiler would not generate code
+			 * to set the memory value to it's current value
+			 * but add this case anyway... */
 			break;
 		    default:
+			entry->type = LispCons_t;
 			break;
 		}
-		entry->type = LispCons_t;
 		CDR(entry) = objseg.freeobj;
 		objseg.freeobj = entry;
 		++objseg.nfree;
@@ -1013,7 +1046,14 @@ LispMused(LispMac *mac, void *pointer)
 {
     int i;
 
-    for (i = 0; i < mac->mem.level; i++)
+    for (i = mac->mem.index; i >= 0; i--)
+	if (mac->mem.mem[i] == pointer) {
+	    mac->mem.mem[i] = NULL;
+	    mac->mem.index = i;
+	    return;
+	}
+
+    for (i = mac->mem.level - 1; i > mac->mem.index; i--)
 	if (mac->mem.mem[i] == pointer) {
 	    mac->mem.mem[i] = NULL;
 	    mac->mem.index = i;
@@ -1090,11 +1130,18 @@ LispFree(LispMac *mac, void *pointer)
 {
     int i;
 
-    for (i = 0; i < mac->mem.level; i++)
+    for (i = mac->mem.index; i >= 0; i--)
 	if (mac->mem.mem[i] == pointer) {
 	    mac->mem.mem[i] = NULL;
 	    mac->mem.index = i;
-	    break;
+	    free(pointer);
+	    return;
+	}
+
+    for (i = mac->mem.level - 1; i > mac->mem.index; i--)
+	if (mac->mem.mem[i] == pointer) {
+	    mac->mem.mem[i] = NULL;
+	    mac->mem.index = i;
 	}
 
     free(pointer);
@@ -1275,7 +1322,7 @@ LispRemAtomAllProperties(LispMac *mac, LispAtom *atom)
     }
 }
 
-static INLINE void
+void
 LispSetAtomObjectProperty(LispMac *mac, LispAtom *atom, LispObj *object)
 {
     if (atom->property == NOPROPERTY)
@@ -1303,13 +1350,42 @@ LispRemAtomObjectProperty(LispMac *mac, LispAtom *atom)
 }
 
 void
+LispSetAtomCompiledProperty(LispMac *mac, LispAtom *atom, LispObj *bytecode)
+{
+    if (atom->property == NOPROPERTY)
+	LispAllocAtomProperty(mac, atom);
+
+    mac->gc.immutablebits = 1;
+    atom->a_function = 0;
+    LispMutable(atom->property->fun.function);
+
+    LispImmutable(bytecode);
+
+    atom->a_compiled = 1;
+    atom->property->fun.function = bytecode;
+}
+
+void
+LispRemAtomCompiledProperty(LispMac *mac, LispAtom *atom)
+{
+    if (atom->a_compiled) {
+	mac->gc.immutablebits = 1;
+	LispMutable(atom->property->fun.function);
+	atom->property->fun.function = NULL;
+	atom->a_compiled = 0;
+	LispFreeArgList(mac, atom->property->alist);
+	atom->property->alist = NULL;
+    }
+}
+
+void
 LispSetAtomFunctionProperty(LispMac *mac, LispAtom *atom, LispObj *function,
 			    LispArgList *alist)
 {
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(mac, atom);
 
-    if (atom->a_function == 0 && atom->a_builtin == 0)
+    if (atom->a_function == 0 && atom->a_builtin == 0 && atom->a_compiled == 0)
 	atom->a_function = 1;
     else {
 	mac->gc.immutablebits = 1;
@@ -1318,8 +1394,11 @@ LispSetAtomFunctionProperty(LispMac *mac, LispAtom *atom, LispObj *function,
 	    atom->a_builtin = 0;
 	    LispFreeArgList(mac, atom->property->alist);
 	}
-	else
+	else {
+	    atom->a_compiled = 0;
 	    LispMutable(atom->property->fun.function);
+	    atom->a_function = 1;
+	}
     }
 
     LispImmutable(function);
@@ -1907,21 +1986,6 @@ LispAddBuiltinFunction(LispMac *mac, LispBuiltin *builtin)
 }
 
 void
-LispAddBuiltinInlineFunction(LispMac *mac, LispBuiltinInline *builtin)
-{
-    LispObj *name;
-    LispAtom *atom;
-
-    name = STATIC_ATOM(builtin->name);
-    atom = name->data.atom;
-    if (atom->property == NOPROPERTY)
-	LispAllocAtomProperty(mac, atom);
-    atom->property->fun.code = builtin;
-    atom->a_inline = 1;
-    LispExportSymbol(mac, name);
-}
-
-void
 LispAllocSeg(LispMac *mac, LispObjSeg *seg, int cellcount)
 {
     unsigned int i;
@@ -2000,10 +2064,26 @@ mark_again:
 	    break;
 	case LispCons_t:
 	    for (; CONS_P(obj) && !obj->mark; obj = CDR(obj)) {
-		if (CAR(obj)->type <= LispAtom_t)
-		    CAR(obj)->mark = LispTrue_t;
-		else
-		    LispMark(CAR(obj));
+		switch (CAR(obj)->type) {
+		    case LispNil_t:
+		    case LispTrue_t:
+		    case LispAtom_t:
+		    case LispCharacter_t:
+		    case LispPackage_t:		/* Protected in Lisp__GC */
+			break;
+		    case LispInteger_t:
+		    case LispReal_t:
+		    case LispString_t:
+		    case LispRatio_t:
+		    case LispOpaque_t:
+		    case LispBigInteger_t:
+		    case LispBigRatio_t:
+			CAR(obj)->mark = LispTrue_t;
+			break;
+		    default:
+			LispMark(CAR(obj));
+			break;
+		}
 		obj->mark = LispTrue_t;
 	    }
 	    if (obj != NIL && !obj->mark)
@@ -2029,6 +2109,10 @@ mark_again:
 	case LispRegex_t:
 	    obj->data.regex.pattern->mark = LispTrue_t;
 	    break;
+	case LispBytecode_t:
+	    obj->mark = LispTrue_t;
+	    obj = obj->data.bytecode.code;
+	    goto mark_again;
 	default:
 	    break;
     }
@@ -2104,6 +2188,10 @@ immutable_again:
 	case LispRegex_t:
 	    obj->data.regex.pattern->prot = LispTrue_t;
 	    break;
+	case LispBytecode_t:
+	    obj->prot = LispTrue_t;
+	    obj = obj->data.bytecode.code;
+	    goto immutable_again;
 	default:
 	    break;
     }
@@ -2179,6 +2267,10 @@ mutable_again:
 	case LispRegex_t:
 	    obj->data.regex.pattern->prot = LispNil_t;
 	    break;
+	case LispBytecode_t:
+	    obj->prot = LispNil_t;
+	    obj = obj->data.bytecode.code;
+	    goto mutable_again;
 	default:
 	    break;
     }
@@ -2318,32 +2410,22 @@ LispNewReal(LispMac *mac, double value)
 }
 
 LispObj *
-LispNewString(LispMac *mac, char *str, long length)
+LispNewString(LispMac *mac, char *str, long length, int alloced)
 {
     char *cstring;
     LispObj *string = LispNew(mac, NIL, NIL);
 
-    cstring = LispMalloc(mac, length + 1);
-    memcpy(cstring, str, length);
-    cstring[length] = '\0';
+    if (alloced)
+	cstring = str;
+    else {
+	cstring = LispMalloc(mac, length + 1);
+	memcpy(cstring, str, length);
+	cstring[length] = '\0';
+    }
+    LispMused(mac, cstring);
+    string->type = LispString_t;
     THESTR(string) = cstring;
     STRLEN(string) = length;
-    /* if allocation did not fail, set the object type */
-    string->type = LispString_t;
-    LispMused(mac, cstring);
-
-    return (string);
-}
-
-LispObj *
-LispNewAllocedString(LispMac *mac, char *str, long length)
-{
-    LispObj *string = LispNew(mac, NIL, NIL);
-
-    string->type = LispString_t;
-    THESTR(string) = str;
-    STRLEN(string) = length;
-    LispMused(mac, str);
 
     return (string);
 }
@@ -2829,7 +2911,7 @@ LispImportSymbol(LispMac *mac, LispObj *symbol)
 	LispDecrementAtomReference(mac, atom);
 	atom->property = symbol->data.atom->property;
 	
-	atom->a_object = atom->a_function = atom->a_builtin = atom->a_inline =
+	atom->a_object = atom->a_function = atom->a_builtin =
 	    atom->a_property = atom->a_defsetf = atom->a_defstruct = 0;
 
 	increment = 1;
@@ -2857,8 +2939,6 @@ LispImportSymbol(LispMac *mac, LispObj *symbol)
 	atom->a_function = 1;
     if (symbol->data.atom->a_builtin)
 	atom->a_builtin = 1;
-    if (symbol->data.atom->a_inline)
-	atom->a_inline = 1;
     if (symbol->data.atom->a_property)
 	atom->a_property = 1;
     if (symbol->data.atom->a_defsetf)
@@ -2903,11 +2983,17 @@ LispGetVar(LispMac *mac, LispObj *atom)
     if (name->constant && name->package == mac->keyword)
 	return (atom);
 
+    /* XXX offset should be stored elsewhere, it is unique, like the string
+     * pointer. Unless a multi-thread interface is implemented (where
+     * multiple stacks would be required, the offset value should be
+     * stored with the string, so that a few cpu cicles could be saved
+     * by initializing the value to -1, and only searching for the symbol
+     * binding if it is not -1, and if no binding is found, because the
+     * lexical scope was left, reset offset to -1. */
+    offset = name->offset;
     id = name->string;
-
     base = mac->env.lex;
     i = mac->env.head - 1;
-    offset = name->offset;
 
     if (offset <= i && (offset >= base || name->dyn) &&
 	mac->env.names[offset] == id)
@@ -2926,11 +3012,11 @@ LispGetVar(LispMac *mac, LispObj *atom)
 	    if (mac->env.names[i] == id) {
 		name->offset = i;
 
-		return (mac->env.values[i]);
-	    }
+	    return (mac->env.values[i]);
+	}
 
 	if (name->a_object) {
-	    /* Check for a symbol defined as special, but not yet bound */
+	    /* Check for a symbol defined as special, but not yet bound. */
 	    if (name->property->value == UNBOUND)
 		return (NULL);
 
@@ -2965,7 +3051,7 @@ LispGetVarAddr(LispMac *mac, LispObj *atom)
     if (name->dyn) {
 	for (; i >= 0; i--)
 	    if (mac->env.names[i] == id)
-		return (&(mac->dyn.values[i]));
+		return (&(mac->env.values[i]));
 
 	if (name->a_object) {
 	    /* Check for a symbol defined as special, but not yet bound */
@@ -3037,10 +3123,11 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
     Atom_id id;
 
     name = atom->data.atom;
+    offset = name->offset;
     id = name->string;
     base = mac->env.lex;
     i = mac->env.head - 1;
-    offset = name->offset;
+
     if (offset <= i && (offset >= base || name->dyn) &&
 	mac->env.names[offset] == id)
 	return (mac->env.values[offset] = obj);
@@ -3486,7 +3573,7 @@ LispEvalBackquoteObject(LispMac *mac, LispObj *argument, int list, int quote)
     return (result);
 }
 
-static LispObj *
+LispObj *
 LispEvalBackquote(LispMac *mac, LispObj *argument, int quote)
 {
     int protect;
@@ -3501,7 +3588,7 @@ LispEvalBackquote(LispMac *mac, LispObj *argument, int quote)
     /* always generate a new list for the result, even if nothing
      * is evaluated. It is not expected to use backqoutes when
      * not required. */
-	
+
     /* reserve a GC protected slot for the result */
     if (protect + 1 >= mac->protect.space)
 	LispMoreProtects(mac);
@@ -3608,7 +3695,7 @@ LispEvalBackquote(LispMac *mac, LispObj *argument, int quote)
     return (result);
 }
 
-static void
+void
 LispMoreEnvironment(LispMac *mac)
 {
     Atom_id *names;
@@ -3644,7 +3731,7 @@ LispMoreStack(LispMac *mac)
     mac->stack.space += 256;
 }
 
-static void
+void
 LispMoreGlobals(LispMac *mac, LispPackage *pack)
 {
     LispObj **pairs = realloc(pack->glb.pairs,
@@ -3688,11 +3775,18 @@ LispMakeEnvironment(LispMac *mac, LispArgList *alist, LispObj *values,
 		    LispObj *name, int eval, int builtin)
 {
     char *desc;
-    int i, base;
+    int i, count, base;
     LispObj **symbols, **defaults, **sforms;
 
 #define BUILTIN_ARGUMENT(value)				\
     mac->stack.values[mac->stack.length++] = value
+
+/* If the index value is from register variables, this
+ * can save some cpu time. Useful for normal arguments
+ * that are the most common, and thus the ones that
+ * consume more time in LispMakeEnvironment. */
+#define BUILTIN_NO_EVAL_ARGUMENT(index, value)		\
+    mac->stack.values[index] = value
 
 #define NORMAL_ARGUMENT(symbol, value)			\
     LispDoAddVar(mac, symbol, value)
@@ -3737,40 +3831,38 @@ LispMakeEnvironment(LispMac *mac, LispArgList *alist, LispObj *values,
 
     /* Normal arguments */
 normal_label:
+    i = 0;
+    count = alist->normals.num_symbols;
     if (builtin) {
 	if (eval) {
-	    for (i = 0;
-		 i < alist->normals.num_symbols && CONS_P(values);
-		 i++, values = CDR(values)) {
+	    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
 		BUILTIN_ARGUMENT(EVAL(CAR(values)));
 	    }
 	}
 	else {
-	    for (i = 0;
-		 i < alist->normals.num_symbols && CONS_P(values);
-		 i++, values = CDR(values)) {
-		BUILTIN_ARGUMENT(CAR(values));
+	    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
+		BUILTIN_NO_EVAL_ARGUMENT(base + i, CAR(values));
 	    }
+	    /* macro BUILTIN_NO_EVAL_ARGUMENT does not update
+	     * mac->stack.length, as there is no risk of GC while
+	     * adding the arguments. */
+	    mac->stack.length += i;
 	}
     }
     else {
 	symbols = alist->normals.symbols;
 	if (eval) {
-	    for (i = 0;
-		 i < alist->normals.num_symbols && CONS_P(values);
-		 i++, values = CDR(values)) {
+	    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
 		NORMAL_ARGUMENT(symbols[i], EVAL(CAR(values)));
 	    }
 	}
 	else {
-	    for (i = 0;
-		 i < alist->normals.num_symbols && CONS_P(values);
-		 i++, values = CDR(values)) {
+	    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
 		NORMAL_ARGUMENT(symbols[i], CAR(values));
 	    }
 	}
     }
-    if (i < alist->normals.num_symbols)
+    if (i < count)
 	LispDestroy(mac, "%s: too few arguments", STROBJ(name));
 
     switch (*desc++) {
@@ -3788,19 +3880,19 @@ normal_label:
 
     /* &OPTIONAL */
 optional_label:
+    i = 0;
+    count = alist->optionals.num_symbols;
     defaults = alist->optionals.defaults;
     sforms = alist->optionals.sforms;
     if (builtin) {
 	if (eval) {
-	    for (i = 0;
-		 i < alist->optionals.num_symbols && CONS_P(values);
-		 i++, values = CDR(values)) {
+	    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
 		BUILTIN_ARGUMENT(EVAL(CAR(values)));
 		if (sforms[i]) {
 		    BUILTIN_ARGUMENT(T);
 		}
 	    }
-	    for (; i < alist->optionals.num_symbols; i++) {
+	    for (; i < count; i++) {
 		if (NCONSTANT_P(defaults[i])) {
 		    BUILTIN_ARGUMENT(EVAL(defaults[i]));
 		}
@@ -3813,15 +3905,13 @@ optional_label:
 	    }
 	}
 	else {
-	    for (i = 0;
-		 i < alist->optionals.num_symbols && CONS_P(values);
-		 i++, values = CDR(values)) {
+	    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
 		BUILTIN_ARGUMENT(CAR(values));
 		if (sforms[i]) {
 		    BUILTIN_ARGUMENT(T);
 		}
 	    }
-	    for (; i < alist->optionals.num_symbols; i++) {
+	    for (; i < count; i++) {
 		BUILTIN_ARGUMENT(defaults[i]);
 		if (sforms[i]) {
 		    BUILTIN_ARGUMENT(NIL);
@@ -3832,15 +3922,13 @@ optional_label:
     else {
 	symbols = alist->optionals.symbols;
 	if (eval) {
-	    for (i = 0;
-		 i < alist->optionals.num_symbols && CONS_P(values);
-		 i++, values = CDR(values)) {
+	    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
 		NORMAL_ARGUMENT(symbols[i], EVAL(CAR(values)));
 		if (sforms[i]) {
 		    NORMAL_ARGUMENT(sforms[i], T);
 		}
 	    }
-	    for (; i < alist->optionals.num_symbols; i++) {
+	    for (; i < count; i++) {
 		/* XXX BUILTIN FUNCTIONS CANNOT HAVE A DEFAULT VALUE THAT
 		 * IS A VALUE OF ANOTHER FUNCTION ARGUMENT. */
 		if (NCONSTANT_P(defaults[i])) {
@@ -3862,15 +3950,13 @@ optional_label:
 	    }
 	}
 	else {
-	    for (i = 0;
-		 i < alist->optionals.num_symbols && CONS_P(values);
-		 i++, values = CDR(values)) {
+	    for (; i < count && CONS_P(values); i++, values = CDR(values)) {
 		NORMAL_ARGUMENT(symbols[i], CAR(values));
 		if (sforms[i]) {
 		    NORMAL_ARGUMENT(sforms[i], T);
 		}
 	    }
-	    for (; i < alist->optionals.num_symbols; i++) {
+	    for (; i < count; i++) {
 		NORMAL_ARGUMENT(symbols[i], defaults[i]);
 		if (sforms[i]) {
 		    NORMAL_ARGUMENT(sforms[i], NIL);
@@ -3893,12 +3979,7 @@ optional_label:
 key_label:
     {
 	int argc, nused;
-	LispObj *val = NIL, *karg, **keys;
-
-	symbols = alist->keys.symbols;
-	defaults = alist->keys.defaults;
-	sforms = alist->keys.sforms;
-	keys = alist->keys.keys;
+	LispObj *val, *karg, **keys;
 
 	/* Count number of remaining arguments */
 	for (karg = values, argc = 0; CONS_P(karg); karg = CDR(karg), argc++) {
@@ -3920,19 +4001,26 @@ key_label:
 	 */
 
 
+	nused = 0;
+	val = NIL;
+	count = alist->keys.num_symbols;
+	symbols = alist->keys.symbols;
+	defaults = alist->keys.defaults;
+	sforms = alist->keys.sforms;
 	if (builtin) {
+
 	    /* Arguments must be created in the declared order */
+	    i = 0;
 	    if (eval) {
-		for (i = nused = 0; i < alist->keys.num_symbols; i++) {
+		for (; i < count; i++) {
 		    for (karg = values; CONS_P(karg); karg = CDDR(karg)) {
 			/* This is only true if both point to the
 			 * same symbol in the keyword package. */
 			if (symbols[i] == CAR(karg)) {
 			    if (karg == values)
 				values = CDDR(values);
-			    val = CADR(karg);
 			    ++nused;
-			    BUILTIN_ARGUMENT(EVAL(val));
+			    BUILTIN_ARGUMENT(EVAL(CADR(karg)));
 			    if (sforms[i]) {
 				BUILTIN_ARGUMENT(T);
 			    }
@@ -3947,14 +4035,13 @@ keyword_builtin_eval_used_label:;
 		}
 	    }
 	    else {
-		for (i = nused = 0; i < alist->keys.num_symbols; i++) {
+		for (; i < count; i++) {
 		    for (karg = values; CONS_P(karg); karg = CDDR(karg)) {
 			if (symbols[i] == CAR(karg)) {
 			    if (karg == values)
 				values = CDDR(values);
-			    val = CADR(karg);
 			    ++nused;
-			    BUILTIN_ARGUMENT(val);
+			    BUILTIN_ARGUMENT(CADR(karg));
 			    if (sforms[i]) {
 				BUILTIN_ARGUMENT(T);
 			    }
@@ -3975,22 +4062,15 @@ keyword_builtin_used_label:;
 		for (karg = values; CONS_P(karg); karg = CDDR(karg)) {
 		    val = CAR(karg);
 		    if (SYMBOL_P(val) && KEYWORD_P(val)) {
-			for (i = 0; i < alist->keys.num_symbols; i++)
-			    if (!keys[i] && symbols[i] == val)
+			for (i = 0; i < count; i++)
+			    if (symbols[i] == val)
 				break;
 		    }
-
-		    else if (val->type == LispQuote_t && SYMBOL_P(val->data.quote)) {
-			for (i = 0; i < alist->keys.num_symbols; i++)
-			    if (keys[i] && ATOMID(keys[i]) == ATOMID(val->data.quote))
-				break;
-		    }
-
 		    else
 			/* Just make the error test true */
-			i = alist->keys.num_symbols;
+			i = count;
 
-		    if (i == alist->keys.num_symbols)
+		    if (i == count)
 			goto invalid_keyword_label;
 		}
 	    }
@@ -4002,13 +4082,14 @@ keyword_builtin_used_label:;
 	    LispObj *symbol;
 	    int offset = mac->env.length;
 
-	    for (nused = 0, karg = values; CONS_P(karg); karg = CDDR(karg)) {
+	    keys = alist->keys.keys;
+	    for (karg = values; CONS_P(karg); karg = CDDR(karg)) {
 		symbol = CAR(karg);
 		if (SYMBOL_P(symbol)) {
 		    /* Must be a keyword, but even if it is a keyword, may
 		     * be a typo, so assume it is correct. If it is not
 		     * in the argument list, it is an error. */
-		    for (i = 0; i < alist->keys.num_symbols; i++) {
+		    for (i = 0; i < count; i++) {
 			if (!keys[i] && symbols[i] == symbol) {
 			    LispAtom *atom = symbol->data.atom;
 
@@ -4033,7 +4114,7 @@ keyword_builtin_used_label:;
 		    }
 
 		    id = ATOMID(val);
-		    for (i = 0; i < alist->keys.num_symbols; i++) {
+		    for (i = 0; i < count; i++) {
 			if (keys[i] && ATOMID(keys[i]) == id) {
 			    LispAtom *atom = val->data.atom;
 
@@ -4047,18 +4128,17 @@ keyword_builtin_used_label:;
 			}
 		    }
 		}
-		if (i == alist->keys.num_symbols) {
+		if (i == count) {
 		    /* Argument specification not found. */
 		    val = symbol;
 		    goto invalid_keyword_label;
 		}
-		val = CADR(karg);
 		++nused;
 		if (eval) {
-		    NORMAL_ARGUMENT(symbols[i], EVAL(val));
+		    NORMAL_ARGUMENT(symbols[i], EVAL(CADR(karg)));
 		}
 		else {
-		    NORMAL_ARGUMENT(symbols[i], val);
+		    NORMAL_ARGUMENT(symbols[i], CADR(karg));
 		}
 		if (sforms[i]) {
 		    NORMAL_ARGUMENT(sforms[i], T);
@@ -4067,10 +4147,10 @@ keyword_duplicated_label:;
 	    }
 
 	    /* Add variables that were not specified in the function call. */
-	    if (nused < alist->keys.num_symbols) {
+	    if (nused < count) {
 		int j;
 
-		for (i = 0; i < alist->keys.num_symbols; i++) {
+		for (i = 0; i < count; i++) {
 		    Atom_id id = ATOMID(symbols[i]);
 
 		    for (j = offset + nused - 1; j >= offset; j--) {
@@ -4081,8 +4161,7 @@ keyword_duplicated_label:;
 		    if (j < offset) {
 			/* Argument not specified. Use default value */
 
-			val = defaults[i];
-			if (eval && NCONSTANT_P(val)) {
+			if (eval && NCONSTANT_P(defaults[i])) {
 			    /* XXX BUILTIN FUNCTIONS CANNOT HAVE A DEFAULT VALUE
 			     * THAT IS A VALUE OF ANOTHER FUNCTION ARGUMENT. */
 			    int head = mac->env.head;
@@ -4090,12 +4169,12 @@ keyword_duplicated_label:;
 
 			    mac->env.lex = base;
 			    mac->env.head = mac->env.length;
-			    NORMAL_ARGUMENT(symbols[i], EVAL(val));
+			    NORMAL_ARGUMENT(symbols[i], EVAL(defaults[i]));
 			    mac->env.head = head;
 			    mac->env.lex = lex;
 			}
 			else {
-			    NORMAL_ARGUMENT(symbols[i], val);
+			    NORMAL_ARGUMENT(symbols[i], defaults[i]);
 			}
 			if (sforms[i]) {
 			    NORMAL_ARGUMENT(sforms[i], NIL);
@@ -4171,9 +4250,11 @@ rest_done:
 
     /* &AUX */
 aux_label:
+    i = 0;
+    count = alist->auxs.num_symbols;
     defaults = alist->auxs.initials;
     if (builtin) {
-	for (i = 0; i < alist->auxs.num_symbols; i++) {
+	for (; i < count; i++) {
 	    if (eval) {
 		BUILTIN_ARGUMENT(EVAL(defaults[i]));
 	    }
@@ -4191,14 +4272,14 @@ aux_label:
 
 	    mac->env.lex = base;
 	    mac->env.head = mac->env.length;
-	    for (i = 0; i < alist->auxs.num_symbols; i++) {
+	    for (; i < count; i++) {
 		NORMAL_ARGUMENT(symbols[i], EVAL(defaults[i]));
 		++mac->env.head;
 	    }
 	    mac->env.lex = lex;
 	}
 	else {
-	    for (i = 0; i < alist->auxs.num_symbols; i++) {
+	    for (; i < count; i++) {
 		NORMAL_ARGUMENT(symbols[i], defaults[i]);
 	    }
 	}
@@ -4216,284 +4297,9 @@ finished_label:
     }
 #undef BULTIN_ARGUMENT
 #undef NORMAL_ARGUMENT
+#undef BUILTIN_NO_EVAL_ARGUMENT
 
     return (base);
-}
-
-static LispObj *
-LispFuncallInline(LispMac *mac, LispAtom *atom, LispObj *arguments, int eval)
-{
-    int protect, num_arguments;
-    LispObj *car, *cdr, *result;
-    LispBuiltinInline *code = atom->property->fun.code;
-
-    /* Check arguments */
-    for (cdr = arguments, num_arguments = 0; CONS_P(cdr); cdr = CDR(cdr))
-	++num_arguments;
-    if (num_arguments != code->num_arguments && code->num_arguments >= 0) {
-	if (code->max_arguments == 0 ||
-	    (code->max_arguments > 0 &&
-	     (num_arguments < code->num_arguments ||
-	      num_arguments > code->max_arguments)))
-	    LispDestroy(mac, "%s: too %s arguments", code->name,
-			num_arguments < code->num_arguments ? "few" : "many");
-    }
-    /* Check if must "really" evaluate arguments */
-    if (code->type == LispMacro)
-	eval = 0;
-    /* If must evaluate arguments */
-    if (eval) {
-	if (num_arguments == 1)
-	    result = EVAL(CAR(arguments));
-	else {
-	    protect = mac->protect.length;
-	    if (num_arguments == 2) {
-		car = EVAL(CAR(arguments));
-		mac->protect.objects[mac->protect.length++] = car;
-		cdr = EVAL(CADR(arguments));
-	    }
-	    else {
-		LispObj *list;
-
-		result = arguments;
-		for (list = result; CONS_P(list); list = CDR(list)) {
-		    if (NCONSTANT_P(CAR(list))) {
-			LispObj *cons;
-
-			list = result;
-			result = cons = CONS(EVAL(CAR(list)), NIL);
-			mac->protect.objects[mac->protect.length++] = result;
-			for (list = CDR(list); CONS_P(list); list = CDR(list)) {
-			    CDR(cons) = CONS(EVAL(CAR(list)), NIL);
-			    cons = CDR(cons);
-			}
-			break;
-		    }
-		}
-	    }
-	}
-    }
-    else {
-	if (num_arguments == 1)
-	    result = CAR(arguments);
-	else if (num_arguments == 2) {
-	    car = CAR(arguments);
-	    cdr = CADR(arguments);
-	}
-	else
-	    result = arguments;
-    }
-
-    /*  If one argument, it is in "result".
-     *  If two arguments, they are in "car" and "cdr".
-     *  If more than two arguments, they are in "result".
-     *  If arguments must be evaluated after the first eval, the case
-     * switch must protect the evaluated arguments.
-     */
-
-    switch (code->code) {
-	case LispICar:
-	case LispICdr:
-	    if (result != NIL) {
-		if (!CONS_P(result))
-		    LispDestroy(mac, "%s: %s is not a list",
-				code->name, STROBJ(car));
-		result = code->code == LispICar ? CAR(result) : CDR(result);
-	    }
-	    break;
-	case LispIC_r: {
-	    char *desc = code->name;
-
-	    while (desc[1] != 'R')
-		++desc;
-	    while (*desc != 'C') {
-		if (result == NIL)
-		    break;
-		if (!CONS_P(result))
-		    LispDestroy(mac, "%s: %s is not a list",
-				code->name, STROBJ(result));
-		result = *desc == 'A' ? CAR(result) : CDR(result);
-		--desc;
-	    }
-	}   break;
-	case LispICons:
-	    result = CONS(car, cdr);
-	    break;
-	case LispIList:
-	    if (eval) {
-		if (num_arguments == 1)
-		    result = CONS(result, NIL);
-		else if (num_arguments == 2)
-		    result = CONS(car, CONS(cdr, NIL));
-	    }
-	    else if (num_arguments < 3)
-		result = arguments;
-	    break;
-	case LispIRplaca:
-	case LispIRplacd:
-	    if (!CONS_P(car))
-		LispDestroy(mac, "%s: %s is not a cons",
-			    code->name, STROBJ(car));
-	    if (code->code == LispIRplaca)
-		CAR(car) = cdr;
-	    else
-		CDR(car) = cdr;
-	    result = car;
-	    break;
-	case LispIAtom:
-	    result = CONS_P(result) ? NIL : T;
-	    break;
-	case LispIConsp:
-	    result = CONS_P(result) ? T : NIL;
-	    break;
-	case LispIListp:
-	    result = CONS_P(result) || result == NIL ? T : NIL;
-	    break;
-	case LispINull:
-	    result = result == NIL ? T : NIL;
-	    break;
-	case LispIStringp:
-	    result = STRING_P(result) ? T : NIL;
-	    break;
-	case LispICharacterp:
-	    result = CHAR_P(result) ? T : NIL;
-	    break;
-	case LispIKeywordp:
-	    result = SYMBOL_P(result) && KEYWORD_P(result) ? T : NIL;
-	    break;
-	case LispIComplexp:
-	    result = COMPLEX_P(result) ? T : NIL;
-	    break;
-	case LispIPathnamep:
-	    result = PATHNAME_P(result) ? T : NIL;
-	    break;
-	case LispIStreamp:
-	    result = STREAM_P(result) ? T : NIL;
-	    break;
-	case LispIAnd:
-	    if (num_arguments == 0)
-		result = T;
-	    else if (num_arguments == 1)
-		result = EVAL(result);
-	    else if (num_arguments == 2) {
-		if ((result = EVAL(car)) != NIL)
-		    result = EVAL(cdr);
-	    }
-	    else {
-		for (cdr = result; CONS_P(cdr); cdr = CDR(cdr))
-		    if ((result = EVAL(CAR(cdr))) == NIL)
-			break;
-	    }
-	    break;
-	case LispIOr:
-	    if (num_arguments == 0)
-		result = NIL;
-	    else if (num_arguments == 1)
-		result = EVAL(result);
-	    else if (num_arguments == 2) {
-		if ((result = EVAL(car)) == NIL)
-		    result = EVAL(cdr);
-	    }
-	    else {
-		for (cdr = result; CONS_P(cdr); cdr = CDR(cdr))
-		    if ((result = EVAL(CAR(cdr))) != NIL)
-			break;
-	    }
-	    break;
-	case LispIEval:
-	    if (eval) {
-		/*  Already evaluated one time, but result is not
-		 * guaranteed to be gc protected. */
-		GC_ENTER();
-
-		GC_PROTECT(result);
-		result = EVAL(result);
-		GC_LEAVE();
-	    }
-	    else
-		result = EVAL(result);
-	    break;
-	case LispIEq:
-	    result = XEQ(car, cdr);
-	    break;
-	case LispIEql:
-	    result = XEQL(car, cdr);
-	    break;
-	case LispIEqual:
-	    result = XEQUAL(car, cdr);
-	    break;
-	case LispIEqualp:
-	    result = XEQUALP(car, cdr);
-	    break;
-	case LispILength:
-	    result = SMALLINT(LispLength(mac, result));
-	    break;
-	case LispIIf:
-	    if (num_arguments == 2) {
-		if ((result = EVAL(car)) != NIL)
-		    result = EVAL(cdr);
-	    }
-	    else {
-		if (EVAL(CAR(arguments)) != NIL)
-		    result = EVAL(CADR(arguments));
-		else
-		    result = EVAL(CAR(CDDR(arguments)));
-	    }
-	    break;
-	case LispIWhen:
-	    if (num_arguments == 1) {
-		(void)EVAL(result);
-		result = NIL;
-	    }
-	    else if (num_arguments == 2) {
-		if (EVAL(car) != NIL)
-		    result = EVAL(cdr);
-	    }
-	    else if (num_arguments > 2) {
-		if (EVAL(CAR(result)) != NIL) {
-		    for (cdr = CDR(result); CONS_P(cdr); cdr = CDR(cdr))
-			result = EVAL(CAR(cdr));
-		}
-		else
-		    result = NIL;
-	    }
-	    break;
-	case LispIUnless:
-	    if (num_arguments == 1) {
-		(void)EVAL(result);
-		result = NIL;
-	    }
-	    else if (num_arguments == 2) {
-		if (EVAL(car) == NIL)
-		    result = EVAL(cdr);
-	    }
-	    else if (num_arguments > 2) {
-		if (EVAL(CAR(result)) == NIL) {
-		    for (cdr = CDR(result); CONS_P(cdr); cdr = CDR(cdr))
-			result = EVAL(CAR(cdr));
-		}
-		else
-		    result = NIL;
-	    }
-	    break;
-	case LispIProgn:
-	    if (num_arguments == 1)
-		result = EVAL(result);
-	    else if (num_arguments == 2) {
-		(void)EVAL(car);
-		result = EVAL(cdr);
-	    }
-	    else {
-		for (cdr = result; CONS_P(cdr); cdr = CDR(cdr))
-		    result = EVAL(CAR(cdr));
-	    }
-	    break;
-    }
-
-    if (eval && num_arguments > 1)
-	mac->protect.length = protect;
-
-    return (result);
 }
 
 LispObj *
@@ -4522,7 +4328,19 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 					   arguments, function, eval, 1);
 		multiple_values = builtin->multiple_values;
 		result = builtin->function(mac, builtin);
-		mac->stack.length = base;
+		mac->stack.base = mac->stack.length = base;
+	    }
+	    else if (atom->a_compiled) {
+		int lex = mac->env.lex;
+		lambda = atom->property->fun.function;
+		alist = atom->property->alist;
+
+		base = LispMakeEnvironment(mac, alist, arguments,
+					   function, eval, 0);
+		multiple_values = 0;
+		result = LispExecuteBytecode(mac, lambda);
+		mac->env.lex = lex;
+		mac->env.head = mac->env.length = base;
 	    }
 	    else if (atom->a_function) {
 		lambda = atom->property->fun.function;
@@ -4536,18 +4354,6 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 					   function, eval, 0);
 		multiple_values = 0;
 		result = LispRunFunMac(mac, function, lambda, macro, base);
-	    }
-	    /* If inline function was not redefined */
-	    else if (atom->a_inline) {
-		result = LispFuncallInline(mac, atom, arguments, eval);
-#ifdef DEBUGGER
-		if (mac->debugging)
-		    LispDebugger(mac, LispDebugCallEnd, function, result);
-#endif
-		if (RETURN_COUNT)
-		    RETURN_COUNT = 0;
-
-		return (result);
 	    }
 	    else if (atom->a_defstruct &&
 		     atom->property->structure.function != STRUCT_NAME) {
@@ -4597,7 +4403,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 	    result = LispRunFunMac(mac, function, lambda, 0, base);
 	    break;
 	case LispCons_t:
-	    if (SYMBOL_P(CAR(function)) && ATOMID(CAR(function)) == Slambda) {
+	    if (CAR(function) == Olambda) {
 		function = EVAL(function);
 		if (function->type == LispLambda_t) {
 		    GC_ENTER();
@@ -4639,14 +4445,9 @@ LispEval(LispMac *mac, LispObj *object)
 
     switch (object->type) {
 	case LispAtom_t:
-	    result = LispDoGetVar(mac, object);
-	    if (result == NULL) {
-		if (KEYWORD_P(object))
-		    result = object;
-		else
-		    LispDestroy(mac, "EVAL: the variable %s is unbound",
-				STROBJ(object));
-	    }
+	    if ((result = LispDoGetVar(mac, object)) == NULL)
+		LispDestroy(mac, "EVAL: the variable %s is unbound",
+			    STROBJ(object));
 	    break;
 	case LispCons_t:
 	    result = LispFuncall(mac, CAR(object), CDR(object), 1);
@@ -5089,6 +4890,7 @@ LispBegin(void)
     mac->key = object->data.package.package;
 
     /* Initialize some static important symbols */
+    Olambda		= STATIC_ATOM("LAMBDA");
     Okey		= STATIC_ATOM("&KEY");
     LispExportSymbol(mac, Okey);
     Orest		= STATIC_ATOM("&REST");
@@ -5113,7 +4915,6 @@ LispBegin(void)
     /* Initialize some static atom ids */
     Snil		= GETATOMID("NIL");
     St			= GETATOMID("T");
-    Slambda		= GETATOMID("LAMBDA");
     Saux		= ATOMID(Oaux);
     Skey		= ATOMID(Okey);
     Soptional		= ATOMID(Ooptional);
@@ -5146,16 +4947,16 @@ LispBegin(void)
     mac->unget[0] = calloc(1, sizeof(LispUngetInfo));
     mac->nunget = 1;
 
-    object = ATOM2("*STANDARD-INPUT*");
+    mac->standard_input = ATOM2("*STANDARD-INPUT*");
     SINPUT = STANDARDSTREAM(Stdin, object, STREAM_READ);
     mac->interactive = 1;
-    LispProclaimSpecial(mac, object, mac->input = SINPUT, NIL);
-    LispExportSymbol(mac, object);
+    LispProclaimSpecial(mac, mac->standard_input, mac->input_list = SINPUT, NIL);
+    LispExportSymbol(mac, mac->standard_input);
 
-    object = ATOM2("*STANDARD-OUTPUT*");
+    mac->standard_output = ATOM2("*STANDARD-OUTPUT*");
     SOUTPUT = STANDARDSTREAM(Stdout, object, STREAM_WRITE);
-    LispProclaimSpecial(mac, object, mac->output = SOUTPUT, NIL);
-    LispExportSymbol(mac, object);
+    LispProclaimSpecial(mac, mac->standard_output, mac->output_list = SOUTPUT, NIL);
+    LispExportSymbol(mac, mac->standard_output);
 
     object = ATOM2("*STANDARD-ERROR*");
     mac->error_stream = STANDARDSTREAM(Stderr, object, STREAM_WRITE);
@@ -5174,6 +4975,7 @@ LispBegin(void)
     /* Reenable gc */
     GCUProtect();
 
+    LispBytecodeInit(mac);
     LispPackageInit(mac);
     LispCoreInit(mac);
     LispMathInit(mac);
@@ -5204,10 +5006,6 @@ LispBegin(void)
     }
     else
 	RUN[0] = RUN[1] = RUN[2] = RES[0] = RES[1] = RES[2] = NIL;
-
-    /* Add LISP inline builtin functions */
-    for (i = 0; i < sizeof(lispinlines) / sizeof(lispinlines[0]); i++)
-	LispAddBuiltinInlineFunction(mac, &lispinlines[i]);
 
     /* Add LISP builtin functions */
     for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)

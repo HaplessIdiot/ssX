@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.7 2002/07/16 05:19:39 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.8 2002/08/05 03:56:24 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
@@ -239,7 +239,12 @@ LispDoWriteObject(LispMac *mac, LispObj *stream, LispObj *object, int paren)
 write_again:
     switch (object->type) {
 	case LispNil_t:
-	    length += LispWriteStr(mac, stream, Snil, 3);
+	    if (object == DOT)
+		length += LispWriteStr(mac, stream, "DOT", 3);
+	    else if (object == UNBOUND)
+		length += LispWriteStr(mac, stream, "UNBOUND", 7);
+	    else
+		length += LispWriteStr(mac, stream, Snil, 3);
 	    break;
 	case LispTrue_t:
 	    length += LispWriteChar(mac, stream, 'T');
@@ -427,6 +432,12 @@ write_again:
 #endif
 	    length += LispWriteChar(mac, stream, '>');
 	    break;
+	case LispBytecode_t:
+	    length += LispWriteStr(mac, stream, "#<BYTECODE ", 11);
+	    length += LispWriteCPointer(mac, stream,
+					object->data.bytecode.bytecode);
+	    length += LispWriteChar(mac, stream, '>');
+	    break;
     }
 
     return (length);
@@ -598,7 +609,7 @@ LispWriteFloat(LispMac *mac, LispObj *stream, LispObj *object)
 {
     double value = object->data.real;
 
-    if (fabs(value) < 1.0E7 && fabs(value) > 1.0E-4)
+    if (value == 0.0 || (fabs(value) < 1.0E7 && fabs(value) > 1.0E-4))
 	return (LispFormatFixedFloat(mac, stream, object, 0, 0, NULL, 0, 0, 0));
 
     return (LispDoFormatExponentialFloat(mac, stream, object, 0, 0, NULL,
@@ -787,7 +798,7 @@ LispFormatInteger(LispMac *mac, LispObj *stream, LispObj *object, int radix,
     }
     /* else, just print the string */
     else
-	LispWriteStr(mac, stream, str + sign, length);
+	LispWriteStr(mac, stream, str + sign, length - sign);
 
     /* if number required more than sizeof(stk) bytes */
     if (str != stk)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.26 2002/07/22 07:26:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.27 2002/08/05 03:56:24 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -72,8 +72,12 @@
 #define	EOLIST	(LispObj*)1	/* end-of-list ")" found in LispRun */
 #define INVALID_P(obj) ((obj) == NULL || (obj) == EOLIST || (obj) == DOT)
 
-#define SINPUT	mac->standard_input
-#define SOUTPUT	mac->standard_output
+#define SINPUT	mac->input
+#define SOUTPUT	mac->output
+#define STANDARD_INPUT					\
+    mac->standard_input->data.atom->property->value
+#define STANDARD_OUTPUT					\
+    mac->standard_output->data.atom->property->value
 #define STANDARDSTREAM(file, desc, flags)	\
 	LispNewStandardStream(mac, file, desc, flags)
 
@@ -87,7 +91,6 @@ typedef struct _LispModule LispModule;
 typedef struct _LispProperty LispProperty;
 typedef struct _LispObjList LispObjList;
 typedef struct _LispStringHash LispStringHash;
-typedef struct _LispBuiltinInline LispBuiltinInline;
 typedef struct _LispCharInfo LispCharInfo;
 
 
@@ -138,38 +141,6 @@ typedef struct _LispArgList {
     char *description;
 } LispArgList;
 
-typedef enum _LispInline {
-    LispICar,
-    LispICdr,
-    LispIC_r,		/* C[AD]{2,4}R */
-    LispICons,
-    LispIList,
-    LispIRplaca,
-    LispIRplacd,
-    LispIAtom,
-    LispIConsp,
-    LispIListp,
-    LispINull,
-    LispIStringp,
-    LispICharacterp,
-    LispIKeywordp,
-    LispIComplexp,
-    LispIPathnamep,
-    LispIStreamp,
-    LispIAnd,
-    LispIOr,
-    LispIEval,
-    LispIEq,
-    LispIEql,
-    LispIEqual,
-    LispIEqualp,
-    LispILength,
-    LispIIf,
-    LispIWhen,
-    LispIUnless,
-    LispIProgn
-} LispInline;
-
 struct _LispProperty {
     /* may be used by multiple packages */
     unsigned int refcount;
@@ -185,8 +156,6 @@ struct _LispProperty {
 	LispObj *function;
 	/* builtin function attached to symbol*/
 	LispBuiltin *builtin;
-	/* very simple builtin functions */
-	LispBuiltinInline *code;
     } fun;
     /* function/macro argument list description */
     LispArgList *alist;
@@ -219,8 +188,8 @@ struct _LispAtom {
     unsigned int a_function : 1;
     /* Property has useful data in fun.builtin field */
     unsigned int a_builtin : 1;
-    /* Property has useful data in fun.code field */
-    unsigned int a_inline : 1;
+    /* Property has useful data in fun.function field */
+    unsigned int a_compiled : 1;
     /* Property has useful data in properties field */
     unsigned int a_property : 1;
     /* Property has useful data in setf field */
@@ -274,6 +243,7 @@ struct _LispStringHash {
 };
 
 typedef enum _LispBlockType {
+    LispBlockNone,	/* no block */
     LispBlockTag,	/* may become "invisible" */
     LispBlockCatch,	/* can be used to jump across function calls */
     LispBlockClosure,	/* hides blocks of type LispBlockTag bellow it */
@@ -371,8 +341,8 @@ struct _LispMac {
     LispOpaque *opqs[STRTBLSZ];
     int opaque;
 
-    LispObj *standard_input, *input;
-    LispObj *standard_output, *output;
+    LispObj *standard_input, *input, *input_list;
+    LispObj *standard_output, *output, *output_list;
     LispObj *error_stream;
     LispUngetInfo **unget;
     int iunget, nunget;
@@ -428,17 +398,6 @@ struct _LispMac {
 #endif
 };
 
-struct _LispBuiltinInline {
-    /* these fields must be set */
-    LispFunType type;
-    LispInline code;
-    char *name;
-    int num_arguments;
-
-    /* optional field, if 0, fixed number of arguments */
-    int max_arguments;
-};
-
 struct _LispCharInfo {
     LispObj character;
     char **names;
@@ -448,8 +407,6 @@ struct _LispCharInfo {
 /*
  * Prototypes
  */
-void LispAddBuiltinInlineFunction(LispMac*, LispBuiltinInline*);
-
 void LispUseArgList(LispMac*, LispArgList*);
 void LispFreeArgList(LispMac*, LispArgList*);
 LispArgList *LispCheckArguments(LispMac*, LispFunType, LispObj*, char*);
@@ -504,6 +461,10 @@ LispObj *LispGetAtomProperty(LispMac*, LispAtom*, LispObj*);
 	/* put value in atom's property list */
 LispObj *LispPutAtomProperty(LispMac*, LispAtom*, LispObj*, LispObj*);
 
+	/* define byte compiled function, or replace definition */
+void LispSetAtomCompiledProperty(LispMac*, LispAtom*, LispObj*);
+	/* remove byte compiled function property */
+void LispRemAtomCompiledProperty(LispMac*, LispAtom*);
 	/* define function, or replace function definition */
 void LispSetAtomFunctionProperty(LispMac*, LispAtom*, LispObj*, LispArgList*);
 	/* remove function property */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.20 2002/07/08 03:54:01 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.21 2002/08/05 03:56:23 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -2076,8 +2076,7 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
 	GC_PROTECT(stream);
     }
     else if (stream == T ||	/* print directly to *standard-output* */
-	     (stream->data.stream.type == LispStreamStandard &&
-	      stream->data.stream.source.file == Stdout))
+	     stream == STANDARD_OUTPUT)
 	stream = NIL;
     else if (!STREAM_P(stream))
 	LispDestroy(mac, "%s: %s is not a stream",

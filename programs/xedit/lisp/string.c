@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.11 2002/07/28 21:34:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.12 2002/08/05 03:56:24 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -323,6 +323,19 @@ Lisp_Character(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Characterp(LispMac *mac, LispBuiltin *builtin)
+/*
+ characterp object
+ */
+{
+    LispObj *object;
+
+    object = ARGUMENT(0);
+
+    return (CHAR_P(object) ? T : NIL);
+}
+
+LispObj *
 Lisp_CharDowncase(LispMac *mac, LispBuiltin *builtin)
 /*
  char-downcase character
@@ -571,6 +584,19 @@ Lisp_String(LispMac *mac, LispBuiltin *builtin)
     object = ARGUMENT(0);
 
     return (LispStringCoerce(mac, builtin, object));
+}
+
+LispObj *
+Lisp_Stringp(LispMac *mac, LispBuiltin *builtin)
+/*
+ stringp object
+ */
+{
+    LispObj *object;
+
+    object = ARGUMENT(0);
+
+    return (STRING_P(object) ? T : NIL);
 }
 
 /* XXX preserve-whitespace is being ignored */
