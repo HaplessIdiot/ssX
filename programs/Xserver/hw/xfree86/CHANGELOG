@@ -1,4 +1,11 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 667. Fixes and updates for XKB keyboard maps:
+      - Add to 'us' keymap backslash key that can be rewritten in other layouts
+        (Bugzilla #976, Børre Gaup).
+      - Fix some keys in Georgian latin keymap (Bugzilla #985, Vano Beridze).
+      - Add Korean keymap (Jungshik Shin).
+      - Add French variant of 'dvorak' keymap (Josselin Mouette).
+      - Fix wrong key type in the 'keymap without special keys' (Ivan Pascal).
  666. Via driver updates:
        - Fix pixmap caches and Xv. The blitter has a 2048 pixel limit so we
          must constrain the pixmap cache.
@@ -18371,7 +18378,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3037 2003/12/17 23:28:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3038 2003/12/18 10:16:11 alanh Exp $
 
 
 
