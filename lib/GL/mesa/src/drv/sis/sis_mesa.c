@@ -43,7 +43,9 @@ sis_RenderStart (GLcontext * ctx)
       sis_StartAGP (ctx);
     }
   
-   /* d2f_once (ctx); */
+#if defined(SIS_DUMP)
+   d2f_once (ctx);
+#endif
 }
 
 void
@@ -645,7 +647,6 @@ sis_DepthMask (GLcontext * ctx, GLboolean flag)
   __GLSiSHardware *prev = &hwcx->prev;
   __GLSiSHardware *current = &hwcx->current;
 
-  /* TODO, in xfree 3.9.18, no ctx->Buffer */
   if (ctx->Visual->StencilBits)
     {
       if (flag || ctx->Stencil.WriteMask)
@@ -753,7 +754,7 @@ sis_Enable (GLcontext * ctx, GLenum cap, GLboolean state)
 #endif
       break;
     case GL_DEPTH_TEST:
-      if (state && xmesa->xm_buffer->gl_buffer->DepthBuffer)
+      if (state && xmesa->xm_buffer->depthbuffer)
 	{
 	  current->hwCapEnable |= MASK_ZTestEnable;
 	}
@@ -1093,7 +1094,7 @@ sis_ColorMask (GLcontext * ctx,
 
 
   if (rmask & gmask & bmask &
-      (!xmesa->xm_visual->gl_visual->AlphaBits | amask))
+      (!ctx->Visual->AlphaBits | amask))
     {
       current->hwCapEnable2 &= ~(MASK_AlphaMaskWriteEnable |
 				 MASK_ColorMaskWriteEnable);
@@ -1354,7 +1355,7 @@ sis_update_drawable_state (GLcontext * ctx)
   current->hwZ &= ~MASK_ZBufferPitch;
   current->hwZ |= xm_buffer->width * z_depth >> 2;
   /* TODO, in xfree 3.9.18, no ctx->Buffer */
-  current->hwOffsetZ = ((DWORD) (ctx->DrawBuffer->DepthBuffer) -
+  current->hwOffsetZ = ((DWORD) (xm_buffer->depthbuffer) -
 		       (DWORD) GET_FbBase (hwcx)) >> 2;
 
   if ((current->hwOffsetZ ^ prev->hwOffsetZ)
@@ -1422,7 +1423,7 @@ sis_GetBufferSize (GLcontext * ctx, GLuint * width, GLuint * height)
 	                        &priv->cbClearPacket);
 	}
 
-      if (xm_buffer->xm_visual->gl_visual->DepthBits)
+      if (ctx->Visual->DepthBits)
 	sis_alloc_z_stencil_buffer (ctx);
 
       switch (hwcx->zFormat)
@@ -1444,7 +1445,7 @@ sis_GetBufferSize (GLcontext * ctx, GLuint * width, GLuint * height)
       current->hwZ &= ~MASK_ZBufferPitch;
       current->hwZ |= xm_buffer->width * z_depth >> 2;
       /* TODO, in xfree 3.9.18, no ctx->Buffer */
-      current->hwOffsetZ = ((DWORD) (ctx->DrawBuffer->DepthBuffer) -
+      current->hwOffsetZ = ((DWORD) (xm_buffer->depthbuffer) -
 			    (DWORD) GET_FbBase (hwcx)) >> 2;
 
       if ((current->hwOffsetZ ^ prev->hwOffsetZ)

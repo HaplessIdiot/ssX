@@ -13,6 +13,18 @@
 #include "vbxform.h"
 #include "types.h"
 
+#if 0
+void *sis_debug_malloc(x){
+  static char buf[2000000];
+  static int count = 0;
+  void *retval;
+  
+  retval = &(buf[count]);
+  count += x;
+  return retval;
+}
+#endif
+
 static XMesaContext XMesa = NULL;  /* Current X/Mesa context pointer */
 
 #ifndef SIS_VERBOSE
@@ -171,6 +183,11 @@ GLboolean XMesaCreateContext(Display *dpy, GLvisual *mesaVis,
 
   driContextPriv->driverPrivate = (void *) c;
   
+  /* TODO, to make VB->Win.data[][2] ranges 0 - 1.0 */
+  /* Fixme, software render, z span seems all 0 */
+  mesaVis->DepthMax = 1;
+  mesaVis->DepthMaxF = 1.0f;
+
   return GL_TRUE;
 }
 
@@ -226,21 +243,11 @@ static XMesaBuffer SISCreateWindowBuffer ( Display *dpy,
     return NULL;
 
   b->xm_context = NULL;
-
   b->xm_visual = xmesa->xm_visual;
   b->display = dpy;
-
-  if (mesaVis->DBflag)
-    {
-      b->db_state = BACK_XIMAGE;
-    }
-  else
-    {
-      b->db_state = 0;
-    }
-
+  b->pixmap_flag = GL_FALSE;
+  b->db_state = mesaVis->DBflag;
   b->gl_buffer = driDrawPriv->mesaBuffer;
-
   b->frontbuffer = driDrawPriv->draw;
 
   /* set 0 for buffer update */
@@ -315,7 +322,7 @@ static void SISDestroyBuffer (XMesaBuffer b)
 #endif
     }
 
-  if (b->gl_buffer->DepthBuffer)
+  if (b->depthbuffer)
     {
       sis_free_z_stencil_buffer (b);
     }

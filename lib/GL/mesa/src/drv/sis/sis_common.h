@@ -4,6 +4,12 @@
 #include "types.h"
 #include "sis_xmesaP.h"
 
+#if 0
+#define free(x)
+#define calloc(x,y) sis_debug_malloc((x)*(y))
+extern void *sis_debug_malloc(int x);
+#endif
+
 #if defined(SIS_DUMP)
 #include "sis_debug.h"
 #endif
@@ -47,10 +53,8 @@ typedef int INT;
 typedef long LONG;
 typedef DWORD *LPDWORD;
 
-/*
- * BitBlt Commands
- */
-#define  Index_SR_Misc_Ctrl11                   0x3e
+/* BitBlt Commands */
+#define  Index_SR_Misc_Ctrl11    0x3e
 #define CMD0_DD_ENABLE      0x06
 #define CMD0_SRC_VIDEO      0x00
 #define CMD0_SRC_CPU        0x10
@@ -121,20 +125,22 @@ typedef struct
 }
 ENGPACKET, *LPENGPACKET;
 
-/* 
- * Hardware Info
- */
+/* Hardware Info */
 #include "sis_reg.h"
 #include "sis_init.h"
 
 typedef struct gl_texture_object GLtextureObject;
 typedef struct gl_texture_image GLtextureImage;
 
+#define VIDEO_TYPE 0
+#define AGP_TYPE 1
+
 typedef struct sis_texure_area
 {
   GLbyte *Data;
   GLenum Format;
-  void *pArea;
+  void *free;
+  GLuint memType;
   GLuint Pitch;
   GLuint Size;
   GLuint texelSize;

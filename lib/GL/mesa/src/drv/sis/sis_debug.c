@@ -1,5 +1,5 @@
 /* 
- * dump HW states, set environment variable SIS_DE1BUG
+ * dump HW states, set environment variable SIS_DEBUG
  * to enable these functions 
  */
 
@@ -9,7 +9,7 @@
 #include "sis_ctx.h"
 #include "sis_mesa.h"
 
-/* for SiS 300 */
+/* for SiS 300/630/540 */
 #define MMIOLength (0x8FFF-0x8800+1)
 #define MMIO3DOffset (0x8800)
 #define FILE_NAME "300.dump"
@@ -20,8 +20,6 @@ char *prevLockFile = NULL;
 int prevLockLine = 0;
 
 DWORD _empty[0x10000];
-
-//#if defined(DEBUG)
 
 void
 dump_agp (void *addr, int dword_count)
@@ -123,16 +121,3 @@ dvidmem (unsigned char *addr, int size)
       close (fh);
     }
 }
-
-/*
-#else
-
-#define dump_agp(a,b) do{}while(0)
-#define d2f() do{}while(0)
-#define d2f_once(a) do{}while(0)
-#define void d2f(a) do{}while(0)
-#define void d2h(a) do{}while(0)
-#define dvidmem(a,b) do{}while(0)
-
-#endif
-*/

@@ -34,7 +34,7 @@
 #if defined(XFree86Server) && !defined(XF86DRI)
 
 static void *
-sis_malloc (__GLSiScontext * hwcx, GLuint size, void **free)
+sis_alloc_fb (__GLSiScontext * hwcx, GLuint size, void **free)
 {
   GLcontext *ctx = hwcx->gc;
   XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
@@ -58,7 +58,7 @@ sis_malloc (__GLSiScontext * hwcx, GLuint size, void **free)
 }
 
 static void
-sis_free (__GLSiScontext * hwcx, void *free)
+sis_free_fb (__GLSiScontext * hwcx, void *free)
 {
   xf86FreeOffscreenArea ((FBAreaPtr) free);
 }
@@ -72,7 +72,7 @@ static int _total_video_memory_used = 0;
 static int _total_video_memory_count = 0;
 
 static void *
-sis_malloc (__GLSiScontext * hwcx, GLuint size, void **free)
+sis_alloc_fb (__GLSiScontext * hwcx, GLuint size, void **free)
 {
   GLcontext *ctx = hwcx->gc;
   XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
@@ -83,25 +83,25 @@ sis_malloc (__GLSiScontext * hwcx, GLuint size, void **free)
 
   fb.context = xmesa->driContextPriv->hHWContext;
   fb.size = size;
-  if(ioctl(hwcx->drmSubFD, SIS_IOCTL_FB_ALLOC, &fb) || !fb.physical)
+  if(ioctl(hwcx->drmSubFD, SIS_IOCTL_FB_ALLOC, &fb) || !fb.offset)
     return NULL;
   *free = (void *)fb.free;
 
   /* debug */
-  /* memset(fb.physical + GET_FbBase(hwcx), 0xff, size); */
+  /* memset(fb.offset + GET_FbBase(hwcx), 0xff, size); */
 
   if (SIS_VERBOSE&VERBOSE_SIS_MEMORY)
   {
-    fprintf(stderr, "sis_malloc: size=%u, offset=%lu, pid=%lu, count=%d\n", 
-           size, (DWORD)fb.physical, (DWORD)getpid(), 
+    fprintf(stderr, "sis_alloc_fb: size=%u, offset=%lu, pid=%lu, count=%d\n", 
+           size, (DWORD)fb.offset, (DWORD)getpid(), 
            ++_total_video_memory_count);
   }
 
-  return (void *)(fb.physical + GET_FbBase(hwcx));
+  return (void *)(fb.offset + GET_FbBase(hwcx));
 }
 
 static void
-sis_free (__GLSiScontext * hwcx, void *free)
+sis_free_fb (__GLSiScontext * hwcx, void *free)
 {
   GLcontext *ctx = hwcx->gc;
   XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
@@ -110,7 +110,7 @@ sis_free (__GLSiScontext * hwcx, void *free)
 
   if (SIS_VERBOSE&VERBOSE_SIS_MEMORY)
   {
-    fprintf(stderr, "sis_free: free=%lu, pid=%lu, count=%d\n", 
+    fprintf(stderr, "sis_free_fb: free=%lu, pid=%lu, count=%d\n", 
             (DWORD)free, (DWORD)getpid(), --_total_video_memory_count);
   }
   
@@ -122,7 +122,7 @@ sis_free (__GLSiScontext * hwcx, void *free)
 #else
 
 static void *
-sis_malloc (__GLSiScontext * hwcx, GLuint size, void **free)
+sis_alloc_fb (__GLSiScontext * hwcx, GLuint size, void **free)
 {
   static char *vidmem_base = 0x400000;
   char *rval = vidmem_base;
@@ -137,7 +137,7 @@ sis_malloc (__GLSiScontext * hwcx, GLuint size, void **free)
 }
 
 static void
-sis_free (__GLSiScontext * hwcx, void *free)
+sis_free_fb (__GLSiScontext * hwcx, void *free)
 {
   return;
 }
@@ -145,6 +145,52 @@ sis_free (__GLSiScontext * hwcx, void *free)
 #endif
 
 #endif
+
+static void *
+sis_alloc_agp (__GLSiScontext * hwcx, GLuint size, void **free)
+{
+  GLcontext *ctx = hwcx->gc;
+  XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+
+  drm_sis_mem_t agp;
+  
+  if(!hwcx->AGPSize)
+    return NULL;
+
+  agp.context = xmesa->driContextPriv->hHWContext;
+  agp.size = size;
+  if(ioctl(hwcx->drmSubFD, SIS_IOCTL_AGP_ALLOC, &agp) || !agp.offset)
+    return NULL;
+  *free = (void *)agp.free;
+
+  if (SIS_VERBOSE&VERBOSE_SIS_MEMORY)
+  {
+    fprintf(stderr, "sis_alloc_agp: size=%u, offset=%lu, pid=%lu, count=%d\n", 
+           size, (DWORD)agp.offset, (DWORD)getpid(), 
+           ++_total_video_memory_count);
+  }
+
+  return (void *)(agp.offset + GET_AGPBase(hwcx));
+}
+
+static void
+sis_free_agp (__GLSiScontext * hwcx, void *free)
+{
+  GLcontext *ctx = hwcx->gc;
+  XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+
+  drm_sis_mem_t agp;
+
+  if (SIS_VERBOSE&VERBOSE_SIS_MEMORY)
+  {
+    fprintf(stderr, "sis_free_agp: free=%lu, pid=%lu, count=%d\n", 
+            (DWORD)free, (DWORD)getpid(), --_total_video_memory_count);
+  }
+  
+  agp.context = xmesa->driContextPriv->hHWContext;
+  agp.free = (unsigned int)free;
+  ioctl(hwcx->drmSubFD, SIS_IOCTL_AGP_FREE, &agp);
+}
 
 /* debug */
 static unsigned int Total_Real_Textures_Used = 0;
@@ -165,19 +211,18 @@ sis_alloc_z_stencil_buffer (GLcontext * ctx)
 
   GLubyte *addr;
 
-  z_depth = (xm_buffer->xm_visual->gl_visual->DepthBits +
-	     xm_buffer->xm_visual->gl_visual->StencilBits) / 8;
+  z_depth = (ctx->Visual->DepthBits + ctx->Visual->StencilBits) / 8;
 
   width2 = ALIGNMENT (xm_buffer->width * z_depth, 4);
 
   totalBytes = xm_buffer->height * width2 + Z_BUFFER_HW_PLUS;
 
-  if (xm_buffer->gl_buffer->DepthBuffer)
+  if (xm_buffer->depthbuffer)
     {
       sis_free_z_stencil_buffer (xm_buffer);
     }
 
-  addr = sis_malloc (hwcx, totalBytes, &priv->zbFree);
+  addr = sis_alloc_fb (hwcx, totalBytes, &priv->zbFree);
   if (!addr)
     {
       fprintf (stderr, "SIS driver : out of video memory\n");
@@ -191,7 +236,7 @@ sis_alloc_z_stencil_buffer (GLcontext * ctx)
 
   addr = (GLubyte *) ALIGNMENT ((GLuint) addr, Z_BUFFER_HW_ALIGNMENT);
 
-  xm_buffer->gl_buffer->DepthBuffer = (void *) addr;
+  xm_buffer->depthbuffer = (void *) addr;
 
   /* software render */
   hwcx->swZBase = addr;
@@ -232,9 +277,9 @@ sis_free_z_stencil_buffer (XMesaBuffer buf)
   sisBufferInfo *priv = (sisBufferInfo *) buf->private;
   __GLSiScontext *hwcx = (__GLSiScontext *) buf->xm_context->private;
 
-  sis_free (hwcx, priv->zbFree);
+  sis_free_fb (hwcx, priv->zbFree);
   priv->zbFree = NULL;
-  buf->gl_buffer->DepthBuffer = NULL;
+  buf->depthbuffer = NULL;
 }
 
 void
@@ -260,7 +305,7 @@ sis_alloc_back_image (GLcontext * ctx, XMesaImage *image, void **free,
   width2 = (depth == 2) ? ALIGNMENT (xm_buffer->width, 2) : xm_buffer->width;
   size = width2 * xm_buffer->height * depth + DRAW_BUFFER_HW_PLUS;
 
-  addr = sis_malloc (hwcx, size, free);
+  addr = sis_alloc_fb (hwcx, size, free);
   if (!addr)
     {
       fprintf (stderr, "SIS driver : out of video memory\n");
@@ -306,7 +351,7 @@ sis_free_back_image (XMesaBuffer buf, XMesaImage *image, void *free)
 {
   __GLSiScontext *hwcx = (__GLSiScontext *) buf->xm_context->private;
 
-  sis_free (hwcx, free);
+  sis_free_fb (hwcx, free);
   image->data = NULL; 
 }
 
@@ -403,13 +448,26 @@ sis_alloc_texture_image (GLcontext * ctx, GLtextureImage * image)
 
   size = image->Width * image->Height * texel_size + TEXTURE_HW_PLUS;
 
-  addr = sis_malloc (hwcx, size, &area->pArea);
-  if (!addr)
-    {
-      fprintf (stderr, "SIS driver : out of video memory\n");
-      sis_fatal_error ();
-      return;
-    }
+  do{
+    addr = sis_alloc_fb (hwcx, size, &area->free);
+    area->memType = VIDEO_TYPE;
+    if(addr) break;
+    
+    /* TODO: swap to agp memory*/
+    /* video memory allocation fails */
+    addr = sis_alloc_agp(hwcx, size, &area->free);
+    area->memType = AGP_TYPE;
+    if(addr) break;
+    
+    /* TODO: swap to system memory */
+  }  
+  while(0);
+
+  if (!addr){
+    fprintf (stderr, "SIS driver : out of video/agp memory\n");
+    sis_fatal_error ();
+    return;
+  }
 
   area->Data = (GLbyte *) ALIGNMENT ((GLuint) addr, TEXTURE_HW_ALIGNMENT);
   area->Pitch = image->Width * texel_size;
@@ -440,7 +498,16 @@ sis_free_texture_image (GLtextureImage * image)
     return;
 
   if (area->Data)
-    sis_free (hwcx, area->pArea);
+    switch(area->memType){
+    case VIDEO_TYPE:  
+      sis_free_fb (hwcx, area->free);
+      break;
+    case AGP_TYPE:  
+      sis_free_agp (hwcx, area->free);
+      break;
+    default:
+      assert(0);
+    }
 
   free (area);
   image->DriverData = NULL;

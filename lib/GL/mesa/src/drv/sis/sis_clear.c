@@ -47,7 +47,7 @@ sis_Clear (GLcontext * ctx, GLbitfield mask, GLboolean all,
    * differs from current draw buffer 
    */
 
-  if ((xm_buffer->xm_visual->gl_visual->StencilBits &&
+  if ((ctx->Visual->StencilBits &&
        ((mask | GL_DEPTH_BUFFER_BIT) ^ (mask | GL_STENCIL_BUFFER_BIT))) 
       || (*(DWORD *) (ctx->Color.ColorMask) != 0xffffffff)
     )
@@ -63,7 +63,7 @@ sis_Clear (GLcontext * ctx, GLbitfield mask, GLboolean all,
     }
   if (mask & (GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT))
     {
-      if (xm_buffer->gl_buffer->DepthBuffer)
+      if (xm_buffer->depthbuffer)
 	sis_clear_z_stencil_buffer (ctx, mask, x1, y1, width1, height1);
       mask &= ~(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
@@ -127,9 +127,9 @@ sis_3D_Clear (GLcontext * ctx, GLbitfield mask,
 
   bClrColor = 0;
   bClrDepth = (mask & GL_DEPTH_BUFFER_BIT) && 
-              (xmesa->xm_visual->gl_visual->DepthBits);
+              (ctx->Visual->DepthBits);
   bClrStencil = (mask & GL_STENCIL_BUFFER_BIT) && 
-                (xmesa->xm_visual->gl_visual->StencilBits);
+                (ctx->Visual->StencilBits);
 
   /* update HW state */
   /* TODO: if enclosing sis_Clear by sis_RenderStart and sis_RenderEnd is
@@ -435,12 +435,12 @@ sis_clear_z_stencil_buffer (GLcontext * ctx, GLbitfield mask,
   XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
   __GLSiScontext *hwcx = (__GLSiScontext *) xmesa->private;
 
-  GLframebuffer *buffer = ctx->DrawBuffer;
+  XMesaBuffer xm_buffer = xmesa->xm_buffer;
   sisBufferInfo *priv = (sisBufferInfo *) xmesa->xm_buffer->private;
 
   /* TODO: check write mask */
 
-  if (!buffer->DepthBuffer)
+  if (!xm_buffer->depthbuffer)
     return;
 
   /* TODO: consider alignment of width, height? */
@@ -554,17 +554,22 @@ sis_swap_buffers (XMesaBuffer b)
 
   /* frame control */
   /* TODO: need lock? */
-  while((*hwcx->FrameCountPtr) - *(DWORD *)(hwcx->IOBase+0x8a2c) 
+  
+#if 1
+  while((*hwcx->FrameCountPtr) - *(DWORD volatile *)(hwcx->IOBase+0x8a2c) 
         > SIS_MAX_FRAME_LENGTH)
   {
+    /*
     DWORD temp = *(DWORD *)(hwcx->IOBase+0x8a2c);
+    */
   }
+#endif
 
   LOCK_HARDWARE ();
-  
+
+  sis_swap_image (b, b->frontbuffer, b->backimage);
   *(DWORD *)(hwcx->IOBase+0x8a2c) = *hwcx->FrameCountPtr;
   (*hwcx->FrameCountPtr)++;  
-  sis_swap_image (b, b->frontbuffer, b->backimage);
    
   UNLOCK_HARDWARE ();
 }
