@@ -1,4 +1,8 @@
 XFree86 4.0.99.3 (11 April 2001)
+ 377. Fixes to the XDarwin application:
+       - Display menubar when started without a splash screen.
+       - Query before quitting from Aqua when started with startx.
+      (Torrey T. Lyons).
  376. Update Japanese localization for XDarwin application (Toshimitsu Tanaka).
  375. Fix byte ordering and static colormap issues with XDarwin server
       on x86 hardware (Rob Braun).
@@ -12934,4 +12938,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1684 2001/04/12 20:09:54 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1685 2001/04/13 06:16:24 torrey Exp $
