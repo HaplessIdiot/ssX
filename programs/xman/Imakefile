@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.22 91/09/09 16:02:18 rws Exp $
-XCOMM $XFree86: xc/programs/xman/Imakefile,v 1.4 2001/06/30 22:41:49 tsi Exp $
+XCOMM $XFree86: xc/programs/xman/Imakefile,v 1.5 2001/11/01 23:35:35 dawes Exp $
 
 #ifdef XmanSearchPath
 XMANSYSPATH = XmanSearchPath
@@ -21,7 +21,8 @@ XCOMM select internal format of manpath configuration file
 MANCONFIGSTYLE = -DMANCONFIGSTYLE_FreeBSD
 #elif defined(LinuxArchitecture)
 MANCONFIGSTYLE = -DMANCONFIGSTYLE_Linux
-#elif defined(OpenBSDArchitecture) || defined(NetBSDArchitecture)
+#elif defined(OpenBSDArchitecture) || defined(NetBSDArchitecture) || \
+    defined(DarwinArchitecture)
 MANCONFIGSTYLE = -DMANCONFIGSTYLE_OpenBSD
 #elif defined(BSDArchitecture)
 MANCONFIGSTYLE = -DMANCONFIGSTYLE_BSD
