@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/globals.c,v 1.3 1999/02/01 12:52:29 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/globals.c,v 1.4 2001/01/17 23:46:28 dawes Exp $ */
 
 #include <X11/ICE/ICEutil.h>
 
@@ -84,3 +84,4 @@ Bool		remote_allowed;
 XtAppContext	appContext;
 Widget		topLevel;
 
+XtSignalId	sig_term_id, sig_usr1_id;
