@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.220 2004/11/07 04:20:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.221 2004/11/07 04:22:50 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -713,7 +713,7 @@ retry:
     }
 
     /*
-     * Sort the drivers to match the requested ording.  Using a slow
+     * Sort the drivers to match the requested ordering.  Using a slow
      * bubble sort.
      */
     for (j = 0; j < xf86NumScreens - 1; j++) {
