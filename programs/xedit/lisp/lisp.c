@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.53 2002/07/08 03:54:01 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.54 2002/07/16 05:19:38 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -349,7 +349,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Loop, "loop &rest body"},
     {LispFunction, Lisp_MakeArray, "make-array dimensions &key element-type initial-element initial-contents adjustable fill-pointer displaced-to displaced-index-offset"},
     {LispFunction, Lisp_MakeList, "make-list size &key initial-element"},
-    {LispFunction, Lisp_MakePackage, "make-package package-name &key nicknames (use '(lisp))"},
+    {LispFunction, Lisp_MakePackage, "make-package package-name &key nicknames (use '(\"LISP\"))"},
     {LispFunction, Lisp_MakePathname, "make-pathname &key host device directory name type version defaults"},
     {LispFunction, Lisp_MakeStringInputStream, "make-string-input-stream string &optional start end"},
     {LispFunction, Lisp_MakeStringOutputStream, "make-string-output-stream &key element-type"},
@@ -389,6 +389,9 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_PathnameVersion, "pathname-version pathname"},
     {LispFunction, Lisp_Pathnamep, "pathnamep object"},
     {LispFunction, Lisp_Plusp, "plusp number"},
+    {LispFunction, Lisp_Position, "position item sequence &key from-end test test-not start end key"},
+    {LispFunction, Lisp_PositionIf, "position-if predicate sequence &key from-end start end key"},
+    {LispFunction, Lisp_PositionIfNot, "position-if-not predicate sequence &key from-end start end key"},
     {LispFunction, Lisp_Prin1, "prin1 object &optional output-stream"},
     {LispFunction, Lisp_Princ, "princ object &optional output-stream"},
     {LispFunction, Lisp_Print, "print object &optional output-stream"},
@@ -414,7 +417,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Remove, "remove item sequence &key from-end test test-not start end count key"},
     {LispFunction, Lisp_RemoveDuplicates, "remove-duplicates sequence &key from-end test test-not start end key"},
     {LispFunction, Lisp_RemoveIf, "remove-if predicate sequence &key from-end start end count key"},
-    {LispFunction, Lisp_RemoveIfNot, "remove-if-not predicate sequence &key from-end test test-not start end count key"},
+    {LispFunction, Lisp_RemoveIfNot, "remove-if-not predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_Cdr, "rest list"},
     {LispMacro, Lisp_Return, "return &optional result"},
     {LispMacro, Lisp_ReturnFrom, "return-from name &optional result"},
@@ -431,6 +434,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Sort, "sort sequence predicate &key key"},
     {LispFunction, Lisp_Sqrt, "sqrt number"},
     {LispFunction, Lisp_Elt, "svref sequence index &aux (length (length sequence))"},
+    {LispFunction, Lisp_Sort, "stable-sort sequence predicate &key key"},
     {LispFunction, Lisp_Streamp, "streamp object"},
     {LispFunction, Lisp_String, "string object"},
     {LispFunction, Lisp_Stringp, "stringp object"},
@@ -1214,10 +1218,10 @@ LispSetAtomObjectProperty(LispMac *mac, LispAtom *atom, LispObj *object)
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(mac, atom);
     else if (atom->watch) {
-	if (atom->object == PACKNAM) {
+	if (atom->object == mac->package) {
 	    if (!PACKAGE_P(object))
 		LispDestroy(mac, "Symbol %s must be a package, not %s",
-			    STRPTR(PACKNAM), STROBJ(object));
+			    STRPTR(mac->package), STROBJ(object));
 	    mac->pack = object->data.package.package;
 	}
     }
@@ -2959,7 +2963,7 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
     LispSetAtomObjectProperty(mac, name, obj);
 
     pack = name->package->data.package.package;
-    if (pack->glb.length + 1 >= pack->glb.space)
+    if (pack->glb.length >= pack->glb.space)
 	LispMoreGlobals(mac, pack);
 
     pack->glb.pairs[pack->glb.length++] = atom;
@@ -3284,6 +3288,7 @@ LispBeginBlock(LispMac *mac, LispObj *tag, LispBlockType type)
     block->type = type;
     memcpy(&(block->tag), tag, sizeof(LispObj));
 
+    block->protect = mac->protect.length;
     block->block_level = mac->block.block_level;
 
     mac->block.block_level = blevel;
@@ -3299,6 +3304,7 @@ LispBeginBlock(LispMac *mac, LispObj *tag, LispBlockType type)
 void
 LispEndBlock(LispMac *mac, LispBlock *block)
 {
+    mac->protect.length = block->protect;
     mac->block.block_level = block->block_level;
 
     if (mac->debugging) {
@@ -3320,8 +3326,9 @@ LispBlockUnwind(LispMac *mac, LispBlock *block)
 
     while (blevel > 0) {
 	unwind = mac->block.block[--blevel];
-	if (unwind->type == LispBlockProtect)
+	if (unwind->type == LispBlockProtect) {
 	    BLOCKJUMP(unwind);
+	}
 	if (unwind == block)
 	    /* jump above unwind block */
 	    break;
@@ -4236,7 +4243,6 @@ LispPrint(LispMac *mac, LispObj *obj, LispObj *stream, int newline)
 void
 LispUpdateResults(LispMac *mac, LispObj *cod, LispObj *res)
 {
-    GCProtect();
     LispSetVar(mac, RUN[2], LispGetVar(mac, RUN[1]));
     LispSetVar(mac, RUN[1], LispGetVar(mac, RUN[0]));
     LispSetVar(mac, RUN[0], cod);
@@ -4244,7 +4250,6 @@ LispUpdateResults(LispMac *mac, LispObj *cod, LispObj *res)
     LispSetVar(mac, RES[2], LispGetVar(mac, RES[1]));
     LispSetVar(mac, RES[1], LispGetVar(mac, RES[0]));
     LispSetVar(mac, RES[0], res);
-    GCUProtect();
 }
 
 /* Needs a rewrite to either allow only one LispMac per process or some
@@ -4396,6 +4401,7 @@ LispMac *
 LispBegin(void)
 {
     int i;
+    LispAtom *atom;
     char results[4];
     LispMac *mac = malloc(sizeof(LispMac));
     LispObj *object, *lisp, *ext;
@@ -4433,7 +4439,7 @@ LispBegin(void)
     minfree = 1024;
 
     bzero((char*)mac, sizeof(LispMac));
-    MOD = FEAT = COD = FRM = DBG = BRK = PRO = DOC = NIL;
+    MOD = COD = FRM = DBG = BRK = PRO = DOC = NIL;
 
     /* allocate initial object cells */
     LispAllocSeg(mac, &objseg, minfree);
@@ -4445,10 +4451,10 @@ LispBegin(void)
 
     /* Initialize package system, the current package is LISP. Order of
      * initialization is very important here */
-    PACKAGE = lisp = LispNewPackage(mac, STRING("LISP"), NIL);
+    lisp = LispNewPackage(mac, STRING("LISP"), NIL);
 
     /* Make LISP package the current one */
-    mac->pack = mac->savepack = PACKAGE->data.package.package;
+    mac->pack = mac->savepack = lisp->data.package.package;
 
     /* Allocate space in LISP package */
     LispMoreGlobals(mac, mac->pack);
@@ -4457,20 +4463,30 @@ LispBegin(void)
     /* Allocate initial space for multiple returns */
     LispMoreReturns(mac);
 
-    /* Now that a package exists, create the very first variable */
-    PACKNAM = ATOM2("*PACKAGE*");
+    /*  Create the first atom, do it "by hand" because macro "PACKAGE"
+     * cannot yet be used. */
+    atom = LispGetPermAtom(mac, "*PACKAGE*");
+    mac->package = atomseg.freeobj;
+    atomseg.freeobj = CDR(atomseg.freeobj);
+    --atomseg.nfree;
+    mac->package->type = LispAtom_t;
+    mac->package->data.atom = atom;
+    atom->object = mac->package;
+    atom->package = lisp;
 
     /* Set package list, to be used by (gc) and (list-all-packages) */
-    PACK = CONS(PACKAGE, NIL);
+    PACK = CONS(lisp, NIL);
 
     /* Make *PACKAGE* a special variable */
-    LispProclaimSpecial(mac, PACKNAM, PACKAGE, NIL);
+    LispProclaimSpecial(mac, mac->package, lisp, NIL);
+
+	/* Value of macro "PACKAGE" is now properly available */
 
     /* Changing *PACKAGE* is like calling (in-package) */
-    PACKNAM->data.atom->watch = 1;
+    mac->package->data.atom->watch = 1;
 
     /* And available to other packages */
-    LispExportSymbol(mac, PACKNAM);
+    LispExportSymbol(mac, mac->package);
 
     /* Initialize stacks */
     LispMoreEnvironment(mac);
@@ -4565,11 +4581,9 @@ LispBegin(void)
     LispProclaimSpecial(mac, mac->modules, MOD, NIL);
     LispExportSymbol(mac, mac->modules);
 
-    FEAT = object = CONS(KEYWORD("UNIX"), NIL);
-    CDR(object) = CONS(KEYWORD("XEDIT"), NIL);
-    /* add more features... object = CDR(object); CDR(object) = ... */
+    object = CONS(KEYWORD("UNIX"), CONS(KEYWORD("XEDIT"), NIL));
     mac->features = ATOM2("*FEATURES*");
-    LispProclaimSpecial(mac, mac->features, FEAT, NIL);
+    LispProclaimSpecial(mac, mac->features, object, NIL);
     LispExportSymbol(mac, mac->features);
 
     /* Reenable gc */
@@ -4611,17 +4625,14 @@ LispBegin(void)
 	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
 
     /* Add LISP functions. File should be renamed to lisp.lsp */
-    EXECUTE("(require \"fun\")");
+    EXECUTE("(require \"lisp\")");
 
-    /* Create EXT package */
+    /* Create and make EXT the current package */
     PACKAGE = ext = LispNewPackage(mac, STRING("EXT"), NIL);
-
-    /* Make EXT the current package */
-    LispSetVar(mac, PACKNAM, PACKAGE);
     mac->pack = mac->savepack = PACKAGE->data.package.package;
 
     /* Update list of packages */
-    PACK = CONS(PACKAGE, PACK);
+    PACK = CONS(ext, PACK);
 
     /* Import LISP external symbols in EXT package */
     LispUsePackage(mac, lisp);
@@ -4630,11 +4641,8 @@ LispBegin(void)
     for (i = 0; i < sizeof(extbuiltins) / sizeof(extbuiltins[0]); i++)
 	LispAddBuiltinFunction(mac, &extbuiltins[i]);
 
-    /* Create USER package */
+    /* Create and make USER the current package */
     PACKAGE = LispNewPackage(mac, STRING("USER"), NIL);
-
-    /* Make USER the current package */
-    LispSetVar(mac, PACKNAM, PACKAGE);
     mac->pack = mac->savepack = PACKAGE->data.package.package;
 
     /* Update list of packages */

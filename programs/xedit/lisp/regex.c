@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.1 2002/07/16 05:19:39 paulo Exp $ */
 
 #include "regex.h"
 #include "private.h"
@@ -91,6 +91,10 @@ Lisp_Regcomp(LispMac *mac, LispBuiltin *builtin)
     extended = ARGUMENT(1);
     pattern = ARGUMENT(0);
 
+    /* Don't generate an error if it is already a compiled regex. */
+    if (REGEX_P(pattern))
+	return (pattern);
+
     ERROR_CHECK_STRING(pattern);
 
 #ifdef REG_EXTENDED
@@ -131,6 +135,7 @@ Lisp_Regexec(LispMac *mac, LispBuiltin *builtin)
  regexec regex string &key count start end notbol noteol
  */
 {
+    GC_ENTER();
     size_t nmatch;
     regmatch_t match[4], *pmatch;
     long start = 0, end, length;
@@ -138,6 +143,7 @@ Lisp_Regexec(LispMac *mac, LispBuiltin *builtin)
     char *string, buffer[128];
     LispObj *result;
     regex_t *regexp;
+    int alloced = 0;
 
     LispObj *regex, *ostring, *count, *ostart, *oend, *notbol, *noteol;
 
@@ -184,17 +190,23 @@ Lisp_Regexec(LispMac *mac, LispBuiltin *builtin)
     if (ostart != NIL || oend != NIL) {
 	LispCheckSequenceStartEnd(mac, builtin, ostring, ostart, oend,
 				  &start, &end, &length);
-	if (start > 0 || end < length) {
-	    char *pointer;
+	if (start > 0) {
+	    if (end == length)
+		string += start;
+	    else {
+		char *pointer;
 
-	    length = end - start;
-	    if (length < sizeof(buffer) - 1)
-		pointer = buffer;
-	    else
-		pointer = LispMalloc(mac, length + 1);
-	    memcpy(pointer, string + start, length);
-	    string = pointer;
-	    string[length] = '\0';
+		length = end - start;
+		if (length < sizeof(buffer) - 1)
+		    pointer = buffer;
+		else {
+		    pointer = LispMalloc(mac, length + 1);
+		    alloced = 1;
+		}
+		memcpy(pointer, string + start, length);
+		string = pointer;
+		string[length] = '\0';
+	    }
 	}
     }
 
@@ -207,23 +219,21 @@ Lisp_Regexec(LispMac *mac, LispBuiltin *builtin)
 
     if (code == 0) {
 	result = NIL;
-	if (nmatch && pmatch[0].rm_eo > pmatch[0].rm_so) {
-	    result = CONS(CONS(INTEGER(pmatch[0].rm_so + start),
-			       INTEGER(pmatch[0].rm_eo + start)),
-			  NIL);
-	    if (nmatch > 1 && pmatch[1].rm_eo > pmatch[1].rm_so) {
+	if (nmatch && pmatch[0].rm_eo >= pmatch[0].rm_so) {
+	    result = CONS(CONS(NIL, NIL), NIL);
+	    GC_PROTECT(result);
+	    CAAR(result) = INTEGER(pmatch[0].rm_so + start);
+	    CDAR(result) = INTEGER(pmatch[0].rm_eo + start);
+	    if (nmatch > 1 && pmatch[1].rm_eo >= pmatch[1].rm_so) {
 		int i;
 		LispObj *cons = result;
-		GC_ENTER();
 
-		GC_PROTECT(result);
 		for (i = 1; i < nmatch && pmatch[i].rm_eo > pmatch[i].rm_so; i++) {
-		    CDR(cons) = CONS(CONS(INTEGER(pmatch[i].rm_so + start),
-					  INTEGER(pmatch[i].rm_eo + start)),
-				     NIL);
+		    CDR(cons) = CONS(CONS(NIL, NIL), NIL);
 		    cons = CDR(cons);
+		    CAAR(cons) = INTEGER(pmatch[i].rm_so + start);
+		    CDAR(cons) = INTEGER(pmatch[i].rm_eo + start);
 		}
-		GC_LEAVE();
 	    }
 	}
     }
@@ -233,12 +243,14 @@ Lisp_Regexec(LispMac *mac, LispBuiltin *builtin)
     if (pmatch != match)
 	LispFree(mac, match);
 
-    if (string != THESTR(ostring) && string != buffer)
+    if (alloced)
 	LispFree(mac, string);
     if (!REGEX_P(regex)) {
 	regfree(regexp);
 	LispFree(mac, regexp);
     }
+
+    GC_LEAVE();
 
     return (result);
 }

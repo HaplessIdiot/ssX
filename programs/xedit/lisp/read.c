@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.15 2002/04/17 23:47:01 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.17 2002/07/16 05:19:39 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -1289,7 +1289,7 @@ LispEvalFeature(LispMac *mac, LispObj *feature)
 
     /* check if specified atom is in the feature list
      * note that all elements of the feature list must be keywords */
-    for (object = FEAT; CONS_P(object); object = CDR(object))
+    for (object = FEATURES; CONS_P(object); object = CDR(object))
 	if (ATOMID(CAR(object)) == test)
 	    return (T);
 

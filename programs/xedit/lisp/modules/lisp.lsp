@@ -27,11 +27,11 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.7 2002/02/12 16:07:56 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/fun.lsp,v 1.8 2002/07/16 05:19:41 paulo Exp $
 ;;
-(provide "fun")
+(provide "lisp")
 
-(in-package lisp)
+(in-package "LISP")
 
 (export '(
     caar cadr cdar cddr

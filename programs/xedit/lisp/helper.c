@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.27 2002/05/23 01:14:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.29 2002/07/16 05:19:38 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -866,7 +866,7 @@ LispLoadFile(LispMac *mac, LispObj *filename,
     EVAL(eval);
     GCUProtect();
 
-    return (result);
+    return (T);
 }
 
 void

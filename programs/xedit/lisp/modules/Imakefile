@@ -15,4 +15,7 @@ InstallMultipleFlags(xt.so,$(LISPDIR),$(INSTINCFLAGS))
 InstallMultipleFlags(xaw.so,$(LISPDIR),$(INSTINCFLAGS))
 #endif
 
-InstallMultipleFlags(fun.lsp,$(LISPDIR),$(INSTINCFLAGS))
+InstallMultipleFlags(lisp.lsp,$(LISPDIR),$(INSTINCFLAGS))
+InstallMultipleFlags(xedit.lsp,$(LISPDIR),$(INSTINCFLAGS))
+InstallMultipleFlags(syntax.lsp,$(LISPDIR),$(INSTINCFLAGS))
+InstallMultipleFlags(progmodes/c.lsp,$(LISPDIR)/progmodes,$(INSTINCFLAGS))

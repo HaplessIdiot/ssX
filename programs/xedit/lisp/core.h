@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.16 2002/05/24 01:08:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.18 2002/07/16 05:19:38 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -106,6 +106,9 @@ LispObj *Lisp_Nth(LispMac*, LispBuiltin*);		/* nth */
 LispObj *Lisp_Nthcdr(LispMac*, LispBuiltin*);		/* nthcdr */
 LispObj *Lisp_Null(LispMac*, LispBuiltin*);		/* null */
 LispObj *Lisp_Or(LispMac*, LispBuiltin*);		/* or */
+LispObj *Lisp_Position(LispMac*, LispBuiltin*);		/* position */
+LispObj *Lisp_PositionIf(LispMac*, LispBuiltin*);	/* position-if */
+LispObj *Lisp_PositionIfNot(LispMac*, LispBuiltin*);	/* position-if-not */
 LispObj *Lisp_Prin1(LispMac*, LispBuiltin*);		/* prin1 */
 LispObj *Lisp_Princ(LispMac*, LispBuiltin*);		/* princ */
 LispObj *Lisp_Print(LispMac*, LispBuiltin*);		/* print */
