@@ -36,7 +36,7 @@
   source.  If you've done it and want to share your binaries, please let
   us know.
 
-  This release has also been tested on NetBSD-current of January, 11th
+  This release has also been tested on NetBSD-current of January, 19th
   1995 with option "COMPAT_10" in the kernel config file.
 
   XFree86 now also builds on NetBSD/sparc. See section ``Building on
@@ -52,11 +52,10 @@
 
   3.  Installing the Binaries
 
-  The binary distribution is composed of a number of split tar archives
-  which are the executables, servers, fonts, libraries, include files,
-  man pages, config files, and the server link kit.  The full
-  distribution takes over 55MB of disk space.  The large archives are
-  split into smaller chunks.
+  The binary distribution is composed of a number of  tar archives which
+  are the executables, servers, fonts, libraries, include files, man
+  pages, config files, and the server link kit.  The full distribution
+  takes over 55MB of disk space.
 
   All archives are now made using the NetBSD package tools. We recommend
   that you install these tools first.  All packages can be installed
@@ -65,78 +64,79 @@
   Note that many clients were moved from the X11R6 distribution to the
   ``contrib'' area. However, they are still distributed with the XFree86
   binary distribution.
-
   The contents of the packages are:
 
 
      REQUIRED:
 
-        doc
+        X311doc
            READMEs and XFree86 specific man pages.
 
-        bin
+        X311bin
            all of the executable X client applications and shared libs
 
-        fonts
+        X311font
            the misc and 75dpi fonts
 
-        lib
+        X311lib
            data files needed at runtime
 
-        config
+        X311cfg
            customizable xinit, xdm, and fs runtime configuration files.
 
         Choose at least one of the following to match your hardware:
 
 
-        SVGA
+        X311svga
            the 8-bit pseudo-color X server for Super VGA cards
 
-        VGA16
+        X311vg16
            the 4-bit pseudo-color X server for VGA & SVGA cards.
 
-        Mono
+        X311mono
            the Monochrome X Server
 
-        8514
+        X3118514
            the X server for IBM 8514/A and compatible boards
 
-        AGX
+        X311agx
            the X server for AGX boards
 
-        Mach8
+        X311mc8
            the X server for ATI Mach8 graphics boards
 
-        Mach32
+        X311mc32
            the X server for ATI Mach32 graphics boards
 
-        Mach64
+        X311mc64
            the X server for ATI Mach64 graphics boards
 
-        P9000
+        X311p900
            the X server for P9000 based boards
 
-        S3 the X server for S3 based boards
+        X311s3
+           the X server for S3 based boards
 
-        W32
+        X311w32
            the X server for et4000w32 based boards
 
 
      OPTIONAL:
 
-        fs the font server with man pages.
+        X311fs
+           the font server with man pages.
 
-        prog
+        X311prog
            the X11 header files and static libraries needed only for
            compiling other X applications
 
-        man
+        X311man
            man pages except XFree86 specific ones in the doc archive
 
-        otherfonts
+        X311xfnt
            the other fonts (100dpi, scaled, Japanese, Chinese, etc)
 
-        linkkit
+        X311link
            X server reconfiguration kit
 
   If this is your first time, then you can safely install all of the
@@ -147,23 +147,11 @@
   3.1.  Installing the packages with pkg_add
 
 
-     1. Concatenate back the multi-part packages you want to install
-        (bin, fonts, linkkit and otherfonts):
+     1. Become ``root''.
 
-           % cat xf86-3.1.1-bin.tar.gz.* > xf86-3.1.1-bin.tar.gz
-           % cat xf86-3.1.1-fonts.tar.gz.* > xf86-3.1.1-fonts.tar.gz
-           % cat xf86-3.1.1-linkkit.tar.gz.* > xf86-3.1.1-linkkit.tar.gz
-           % cat xf86-3.1.1-otherfonts.tar.gz.* > xf86-3.1.1-otherfonts.tar.gz
+     2. For each package that you want to install type:
 
-
-
-     You can remove individual parts once they are cat'd together.
-
-     2. Become ``root''.
-
-     3. For each package that you want to install type:
-
-           # pkg_add xf86-3.1.1-<pkg>.tar.gz
+           # pkg_add <pkg>.tgz
 
 
 
@@ -204,26 +192,29 @@
         files are (replace /usr/X11R6 with wherever you wish them to go
         if that isn't the place):
 
-           cd /usr/X11R6
 
-           cat xf86-3.1.1-bin.tar.gz.* | tar xzf -
-           cat xf86-3.1.1-fonts.tar.gz.* | tar xzf -
-           cat xf86-3.1.1-linkkit.tar.gz.* | tar xzf -
-           cat xf86-3.1.1-other-fonts.tar.gz.* | tar xzf -
 
-           tar xzf xf86-3.1.1-config.tar.gz
-           tar xzf xf86-3.1.1-doc.tar.gz
-           tar xzf xf86-3.1.1-fs.tar.gz
-           tar xzf xf86-3.1.1-lib.tar.gz
-           tar xzf xf86-3.1.1-man.tar.gz
-           tar xzf xf86-3.1.1-man.tar.gz
-           tar xzf xf86-3.1.1-prog.tar.gz
+
+
+      cd /usr/X11R6
+
+      tar xzf X311doc.tgz
+      tar xzf X311bin.tgz
+      tar xzf X311lib.tgz
+      tar xzf X311font.tgz
+      tar xzf X311man.tgz
+
+      tar xzf X311link.tgz
+      tar xzf X311prog.tgz
+      tar xzf X311xfnt.tgz
+      tar xzf X311fs.tgz
+      tar xzf X311cfg.tgz
 
 
 
      And unpack the server(s) you need:
 
-           tar xzf xf86-<server>.tar.gz
+           tar xzf X311<server>.tgz
 
 
 
@@ -270,9 +261,6 @@
               echo 'Adding X shared libraries'
               ldconfig /usr/X11R6/lib
            fi
-
-
-
 
      6. Reboot your machine to take all previous modifications into
         account.
@@ -337,6 +325,9 @@
 
 
 
+
+
+
   6.  Running X
 
   8mb of memory is a recommended minimum for running X.  The server,
@@ -392,6 +383,15 @@
   by anonymous FTP from a number of sites.
 
   If using pccons you get the message:
+
+
+
+
+
+
+
+
+
 
 
   > XFree86 Version 3.1.1 / X Window System
@@ -679,7 +679,7 @@
      o  Rod Grimes and Jack Velte of Walnut Creek Cdrom for use of their
         machines in preparing the FreeBSD binary release.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.7 1995/01/25 11:08:49 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.8 1995/01/27 10:31:27 dawes Exp $
 
 
 
