@@ -1,4 +1,17 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 423. Major update for VMware driver
+      - recoded to use XAA, offscreen memory support, and color expansion code
+      - Add RENDER support
+      - Optimization of HWcursor
+      - Bug fixes for HWcursor in 8bit mode and VT switching
+      (#5423, Nolan Leake, VMware).
+ 422. Updates for shadowfb code
+      - Add RENDER support
+      - support for pre-fb modifications
+      - support for real framebuffers rather than memory based framebuffer
+      - Removal of old fullscreen update code (when VT switching)
+      - fix bug in FillSpans
+      (#5411, #5413, Nolan Leake, VMware).
  421. Clear the list of registered renderers at the start of each new server
       generation, and only print warnings about suffixes with more than
       one registered renderer for the first generation (David Dawes).
@@ -15383,4 +15396,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2346 2002/10/16 17:39:14 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2347 2002/10/16 21:13:34 dawes Exp $

@@ -1,8 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/svga_reg.h,v 1.3 2001/04/25 16:44:58 tsi Exp $ */
 /* **********************************************************
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
- * $Id: svga_reg.h,v 1.4 2001/09/13 08:36:24 alanh Exp $
+ * $Id: svga_reg.h,v 1.5 2002/10/16 22:12:53 alanh Exp $
  * **********************************************************/
 
 /*
@@ -24,20 +23,23 @@
  * Memory and port addresses and fundamental constants
  */
 
-#define SVGA_MAX_WIDTH			2364
-#define SVGA_MAX_HEIGHT			1773
+/*
+ * Note-- MAX_WIDTH and MAX_HEIGHT are largely ignored by the code.  This
+ * isn't such a bad thing for forward compatibility. --Jeremy.
+ */
+#define SVGA_MAX_WIDTH			2360
+#define SVGA_MAX_HEIGHT			1770
+#define SVGA_MAX_BITS_PER_PIXEL		32
 
-#ifdef VMX86_SERVER
-#define SVGA_DEFAULT_MAX_WIDTH		1600
-#define SVGA_DEFAULT_MAX_HEIGHT		1200
-#else
-#define SVGA_DEFAULT_MAX_WIDTH		SVGA_MAX_WIDTH
-#define SVGA_DEFAULT_MAX_HEIGHT		SVGA_MAX_HEIGHT
+#ifndef PAGE_SHIFT
+#define PAGE_SHIFT 12
 #endif
 
-#define SVGA_MAX_BITS_PER_PIXEL		32
-#if SVGA_MAX_WIDTH * SVGA_MAX_HEIGHT * SVGA_MAX_BITS_PER_PIXEL / 8 > \
-    SVGA_FB_MAX_SIZE
+#define SVGA_FB_MAX_SIZE \
+   ((((SVGA_MAX_WIDTH * SVGA_MAX_HEIGHT *                                    \
+       SVGA_MAX_BITS_PER_PIXEL / 8) >> PAGE_SHIFT) + 1) << PAGE_SHIFT)
+
+#if SVGA_FB_MAX_SIZE > SVGA_VRAM_SIZE
 #error "Bad SVGA maximum sizes"
 #endif
 #define SVGA_MAX_PSEUDOCOLOR_DEPTH	8
@@ -101,7 +103,7 @@ enum {
    SVGA_REG_BYTES_PER_LINE = 12,
    SVGA_REG_FB_START = 13,
    SVGA_REG_FB_OFFSET = 14,
-   SVGA_REG_FB_MAX_SIZE = 15,
+   SVGA_REG_VRAM_SIZE = 15,
    SVGA_REG_FB_SIZE = 16,
 
    SVGA_REG_CAPABILITIES = 17,
@@ -127,16 +129,20 @@ enum {
  *  Capabilities
  */
 
-#define	SVGA_CAP_RECT_FILL	 0x0001
-#define	SVGA_CAP_RECT_COPY	 0x0002
-#define	SVGA_CAP_RECT_PAT_FILL   0x0004
-#define	SVGA_CAP_OFFSCREEN       0x0008
-#define	SVGA_CAP_RASTER_OP	 0x0010
-#define	SVGA_CAP_CURSOR		 0x0020
-#define	SVGA_CAP_CURSOR_BYPASS	 0x0040
-#define	SVGA_CAP_CURSOR_BYPASS_2 0x0080
-#define	SVGA_CAP_8BIT_EMULATION  0x0100
-#define SVGA_CAP_ALPHA_CURSOR    0x0200
+#define	SVGA_CAP_NONE               0x0000
+#define	SVGA_CAP_RECT_FILL	    0x0001
+#define	SVGA_CAP_RECT_COPY	    0x0002
+#define	SVGA_CAP_RECT_PAT_FILL      0x0004
+#define	SVGA_CAP_LEGACY_OFFSCREEN   0x0008
+#define	SVGA_CAP_RASTER_OP	    0x0010
+#define	SVGA_CAP_CURSOR		    0x0020
+#define	SVGA_CAP_CURSOR_BYPASS	    0x0040
+#define	SVGA_CAP_CURSOR_BYPASS_2    0x0080
+#define	SVGA_CAP_8BIT_EMULATION     0x0100
+#define SVGA_CAP_ALPHA_CURSOR       0x0200
+#define SVGA_CAP_GLYPH              0x0400
+#define SVGA_CAP_GLYPH_CLIPPING     0x0800
+#define SVGA_CAP_OFFSCREEN_1        0x1000
 
 
 /*
@@ -162,7 +168,8 @@ enum {
 #define SVGA_ROP_UNSUPPORTED    0x10
 
 #define SVGA_NUM_SUPPORTED_ROPS   16
-#define SVGA_ROP_ALL            0x0000ffff
+#define SVGA_ROP_ALL            (MASK(SVGA_NUM_SUPPORTED_ROPS))
+#define SVGA_IS_VALID_ROP(rop)  (rop >= 0 && rop < SVGA_NUM_SUPPORTED_ROPS)
 
 /*
  *  Memory area offsets (viewed as an array of 32-bit words)
@@ -186,23 +193,30 @@ enum {
 #define	 SVGA_MAX_ID	      499
 
 /*
- *  Macros to compute variable length items (sizes in 32-bit words)
+ *  Macros to compute variable length items (sizes in 32-bit words, except
+ *  for SVGA_GLYPH_SCANLINE_SIZE, which is in bytes).
  */
 
 #define SVGA_BITMAP_SIZE(w,h) ((((w)+31) >> 5) * (h))
 #define SVGA_BITMAP_SCANLINE_SIZE(w) (( (w)+31 ) >> 5)
-#define SVGA_PIXMAP_SIZE(w,h,d) ((( ((w)*(d))+31 ) >> 5) * (h))
-#define SVGA_PIXMAP_SCANLINE_SIZE(w,d) (( ((w)*(d))+31 ) >> 5)
+#define SVGA_PIXMAP_SIZE(w,h,bpp) ((( ((w)*(bpp))+31 ) >> 5) * (h))
+#define SVGA_PIXMAP_SCANLINE_SIZE(w,bpp) (( ((w)*(bpp))+31 ) >> 5)
+#define SVGA_GLYPH_SIZE(w,h) ((((((w) + 7) >> 3) * (h)) + 3) >> 2)
+#define SVGA_GLYPH_SCANLINE_SIZE(w) (((w) + 7) >> 3)
 
 /*
  *  Increment from one scanline to the next of a bitmap or pixmap
  */
 #define SVGA_BITMAP_INCREMENT(w) ((( (w)+31 ) >> 5) * sizeof (uint32))
-#define SVGA_PIXMAP_INCREMENT(w,d) ((( ((w)*(d))+31 ) >> 5) * sizeof (uint32))
+#define SVGA_PIXMAP_INCREMENT(w,bpp) ((( ((w)*(bpp))+31 ) >> 5) * sizeof (uint32))
 
 /*
  *  Commands in the command FIFO
  */
+
+#define	 SVGA_CMD_INVALID_CMD		   0
+	 /* FIFO layout:
+            <nothing> (well, undefined) */
 
 #define	 SVGA_CMD_UPDATE		   1
 	 /* FIFO layout:
@@ -297,6 +311,60 @@ enum {
 	   ID, Hotspot X, Hotspot Y, Width, Height,
 	   <scanlines> */
 
-#define	SVGA_CMD_MAX			  23
+#define SVGA_CMD_DRAW_GLYPH               23
+	/* FIFO layout:
+	   X, Y, W, H, FGCOLOR, <stencil buffer> */
+
+#define SVGA_CMD_DRAW_GLYPH_CLIPPED       24
+	/* FIFO layout:
+	   X, Y, W, H, FGCOLOR, <cliprect>, <stencil buffer> */
+
+#define	SVGA_CMD_UPDATE_VERBOSE	          25
+        /* FIFO layout:
+	   X, Y, Width, Height, Reason */
+
+#define SVGA_CMD_SURFACE_FILL             26
+        /* FIFO layout:
+	   color, dstSurfaceOffset, x, y, w, h, rop */
+
+#define SVGA_CMD_SURFACE_COPY             27
+        /* FIFO layout:
+	   srcSurfaceOffset, dstSurfaceOffset, srcX, srcY,
+           destX, destY, w, h, rop */
+
+#define	SVGA_CMD_MAX			  28
+
+/* RECT_ROP_BITMAP_COPY currently has the most (non-data) arguments: 10 */
+#define SVGA_CMD_MAX_ARGS                 10
+
+
+/*
+ * A sync request is sent via a non-zero write to the SVGA_REG_SYNC
+ * register.  In devel builds, the driver will write a specific value
+ * indicating exactly why the sync is necessary
+ */
+enum {
+   SVGA_SYNC_INVALIDREASON = 0,     /* Don't ever write a zero */
+   SVGA_SYNC_GENERIC = 1,           /* Legacy drivers will always write a 1 */
+   SVGA_SYNC_FIFOFULL = 2,          /* Need to drain FIFO for next write */
+   SVGA_SYNC_FB_WRITE = 3,          /* About write to shadow frame buffer (generic) */
+   SVGA_SYNC_FB_BITBLT = 4,         /* Unaccelerated DrvBitBlt */
+   SVGA_SYNC_FB_COPYBITS = 5,       /* Unacclerated DrvCopyBits bits */
+   SVGA_SYNC_FB_FILLPATH = 6,       /* Unacclerated DrvFillPath */
+   SVGA_SYNC_FB_LINETO = 7,         /* Unacclerated DrvLineTo */
+   SVGA_SYNC_FB_PAINT = 8,          /* Unacclerated DrvPaint */
+   SVGA_SYNC_FB_STRETCHBLT = 9,     /* Unacclerated DrvStretchBlt */
+   SVGA_SYNC_FB_STROKEFILL = 10,    /* Unacclerated DrvStrokeAndFillPath */
+   SVGA_SYNC_FB_STROKE = 11,        /* Unacclerated DrvStrokePath */
+   SVGA_SYNC_FB_TEXTOUT = 12,       /* Unacclerated DrvTextOut */
+   SVGA_SYNC_FB_ALPHABLEND = 13,    /* Unacclerated DrvAlphaBlend */
+   SVGA_SYNC_FB_GRADIENT = 14,      /* Unacclerated DrvGradientFill */
+   SVGA_SYNC_FB_PLGBLT = 15,        /* Unacclerated DrvPlgBlt */
+   SVGA_SYNC_FB_STRETCHROP = 16,    /* Unacclerated DrvStretchBltROP */
+   SVGA_SYNC_FB_TRANSPARENT = 17,   /* Unacclerated DrvTransparentBlt */
+   SVGA_SYNC_FB_NEWCURSOR = 18,     /* Defined a new cursor */
+   SVGA_SYNC_FB_SYNCSURFACE = 19,   /* DrvSynchrnoizeSurface call */
+   SVGA_SYNC_FB_NUM_REASONS         /* Total number of reasons */
+};
 
 #endif
