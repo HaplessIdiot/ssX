@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 373. Fix i810/i830 VT switching problems which hang the ring buffer (#4987,
+      #4989, Abraham vd Merwe).
  372. fix a format string problem in lbxproxy, apparently not exploitable 
       (r0gue@vertarmy.org,  Matthieu Herrb).
  371. Fix disappearing cursor in XDarwin rootless mode by falling back to
@@ -13999,4 +14001,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1991 2001/10/18 16:50:20 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1992 2001/10/18 21:01:23 herrb Exp $
