@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.51 2001/07/23 13:15:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.52 2001/08/18 02:51:21 dawes Exp $ */
 
 /*
  *
@@ -46,7 +46,7 @@
 #define TEXT_AMOUNT 16384
 
 /* bytes per plane to save for font data */
-#define FONT_AMOUNT 8192
+#define FONT_AMOUNT (8*8192)
 
 #if 0
 /* Override all of these for now */
