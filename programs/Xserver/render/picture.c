@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.26 2002/09/29 23:39:45 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.27 2002/11/05 05:41:56 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -105,7 +105,8 @@ PictureStoreColors (ColormapPtr pColormap, int ndef, xColorItem *pdef)
 
 	while (nformats--)
 	{
-	    if (format->pColormap == pColormap)
+	    if (format->type == PictTypeIndexed &&
+		format->index.pColormap == pColormap)
 	    {
 		(*ps->UpdateIndexed) (pScreen, format, ndef, pdef);
 		break;
@@ -366,7 +367,7 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 	case PICT_TYPE_COLOR:
 	case PICT_TYPE_GRAY:
 	    pFormats[f].type = PictTypeIndexed;
-	    pFormats[f].pVisual = &pScreen->visuals[PICT_FORMAT_VIS(format)];
+	    pFormats[f].index.pVisual = &pScreen->visuals[PICT_FORMAT_VIS(format)];
 	    break;
 	}
     }
@@ -387,16 +388,16 @@ PictureInitIndexedFormats (ScreenPtr pScreen)
     nformat = ps->nformats;
     while (nformat--)
     {
-	if (format->type == PictTypeIndexed && !format->pColormap)
+	if (format->type == PictTypeIndexed && !format->index.pColormap)
 	{
-	    if (format->pVisual->vid == pScreen->rootVisual)
-		format->pColormap = (ColormapPtr) LookupIDByType(pScreen->defColormap,
-								 RT_COLORMAP);
+	    if (format->index.pVisual->vid == pScreen->rootVisual)
+		format->index.pColormap = (ColormapPtr) LookupIDByType(pScreen->defColormap,
+								       RT_COLORMAP);
 	    else
 	    {
 		if (CreateColormap (FakeClientID (0), pScreen,
-				    format->pVisual,
-				    &format->pColormap, AllocNone,
+				    format->index.pVisual,
+				    &format->index.pColormap, AllocNone,
 				    0) != Success)
 		{
 		    return FALSE;
@@ -475,7 +476,7 @@ PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual)
 	{
 	    if (type == PictTypeIndexed)
 	    {
-		if (format->pVisual == pVisual)
+		if (format->index.pVisual == pVisual)
 		    return format;
 	    }
 	    else
@@ -527,6 +528,8 @@ PictureParseCmapPolicy (const char *name)
 	return PictureCmapPolicyGray;
     else if ( strcmp (name, "color" ) == 0)
 	return PictureCmapPolicyColor;
+    else if ( strcmp (name, "all" ) == 0)
+	return PictureCmapPolicyAll;
     else
 	return PictureCmapPolicyInvalid;
 }
@@ -578,7 +581,7 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 	}
 	if (formats[n].type == PictTypeIndexed)
 	{
-	    if ((formats[n].pVisual->class | DynamicClass) == PseudoColor)
+	    if ((formats[n].index.pVisual->class | DynamicClass) == PseudoColor)
 		type = PICT_TYPE_COLOR;
 	    else
 		type = PICT_TYPE_GRAY;

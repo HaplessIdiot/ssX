@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.12 2002/09/26 02:56:52 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.13 2002/11/03 01:01:30 keithp Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -422,7 +422,7 @@ miRenderColorToPixel (PictFormatPtr format,
 	*pixel = r|g|b|a;
 	break;
     case PictTypeIndexed:
-	pIndexed = (miIndexedPtr) (format->indexed);
+	pIndexed = (miIndexedPtr) (format->index.devPrivate);
 	if (pIndexed->color)
 	{
 	    r = color->red >> 11;
@@ -472,7 +472,7 @@ miRenderPixelToColor (PictFormatPtr format,
 	color->alpha = miFillColor (r, Ones (format->direct.alphaMask));
 	break;
     case PictTypeIndexed:
-	pIndexed = (miIndexedPtr) (format->indexed);
+	pIndexed = (miIndexedPtr) (format->index.devPrivate);
 	pixel = pIndexed->rgba[pixel & (MI_MAX_INDEXED-1)];
 	r = (pixel >> 16) & 0xff;
 	g = (pixel >>  8) & 0xff;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.12 2001/09/07 15:15:31 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.15 2002/09/26 02:56:48 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -2730,7 +2730,7 @@ fbBuildCompositeOperand (PicturePtr	    pPict,
 	op->over = fbStepOver_transform;
 	op->down = fbStepDown_transform;
 	op->set = fbSet_transform;
-        op->indexed = (miIndexedPtr) pPict->pFormat->indexed;
+        op->indexed = (miIndexedPtr) pPict->pFormat->index.devPrivate;
 	op->clip = op[1].clip;
 	
 	return TRUE;
@@ -2754,7 +2754,7 @@ fbBuildCompositeOperand (PicturePtr	    pPict,
 	op->over = fbStepOver_external;
 	op->down = fbStepDown_external;
 	op->set = fbSet_external;
-        op->indexed = (miIndexedPtr) pPict->pFormat->indexed;
+        op->indexed = (miIndexedPtr) pPict->pFormat->index.devPrivate;
 	/* XXX doesn't handle external alpha clips yet */
 	op->clip = op[1].clip;
 	
@@ -2779,7 +2779,7 @@ fbBuildCompositeOperand (PicturePtr	    pPict,
 		op->over = fbStepOver;
 		op->down = fbStepDown;
 		op->set = fbSet;
-		op->indexed = (miIndexedPtr) pPict->pFormat->indexed;
+		op->indexed = (miIndexedPtr) pPict->pFormat->index.devPrivate;
 		op->clip = pPict->pCompositeClip;
 
 		fbGetDrawable (pPict->pDrawable, bits, stride, bpp,

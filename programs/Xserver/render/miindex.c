@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.6 2002/11/05 05:34:40 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.7 2002/11/05 06:05:04 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -34,41 +34,38 @@
 #include "mipict.h"
 #include "colormapst.h"
 
-static unsigned short  CubeLevels[] = { 
-    0x0000, 0x5555, 0xaaaa, 0xffff
-};
+#define NUM_CUBE_LEVELS	4
+#define NUM_GRAY_LEVELS	13
 
-#define NUM_CUBE_LEVELS	(sizeof (CubeLevels) / sizeof (CubeLevels[0]))
-
-static unsigned short  GrayLevels[] = { 
-    0x0000, 0x1555, 0x2aaa,
-    0x4000, 0x5555, 0x6aaa,
-    0x8000, 0x9555, 0xaaaa,
-    0xbfff, 0xd555, 0xeaaa, 0xffff,
-};
-		    
-#define NUM_GRAY_LEVELS	(sizeof (GrayLevels) / sizeof (GrayLevels[0]))
-
-Bool
-miBuildRenderColormap (ColormapPtr  pColormap,
-		       Pixel	    *first,
-		       Pixel	    *last)
+static Bool
+miBuildRenderColormap (ColormapPtr  pColormap, Pixel *pixels, int *nump)
 {
     int		r, g, b;
     unsigned short  red, green, blue;
-    Pixel	pix;
-    int		policy = PictureCmapPolicy;
-    int		num = pColormap->pVisual->ColormapEntries;
+    Pixel	pixel;
+    Bool	used[MI_MAX_INDEXED];
     int		needed;
-
-    if (policy == PictureCmapPolicyDefault)
+    int		policy;
+    int		cube, gray;
+    int		i, n;
+    
+    if (pColormap->mid != pColormap->pScreen->defColormap)
     {
-	if (num >= 256 && (pColormap->pVisual->class|DynamicClass) == PseudoColor)
-	    policy = PictureCmapPolicyColor;
-	else if (num >= 64)
-	    policy = PictureCmapPolicyGray;
-	else
-	    policy = PictureCmapPolicyMono;
+	policy = PictureCmapPolicyAll;
+    }
+    else
+    {
+	int	avail = pColormap->pVisual->ColormapEntries;
+	policy = PictureCmapPolicy;
+	if (policy == PictureCmapPolicyDefault)
+	{
+	    if (avail >= 256 && (pColormap->pVisual->class|DynamicClass) == PseudoColor)
+		policy = PictureCmapPolicyColor;
+	    else if (avail >= 64)
+		policy = PictureCmapPolicyGray;
+	    else
+		policy = PictureCmapPolicyMono;
+	}
     }
     /*
      * Make sure enough cells are free for the chosen policy
@@ -76,6 +73,9 @@ miBuildRenderColormap (ColormapPtr  pColormap,
     for (;;)
     {
 	switch (policy) {
+	case PictureCmapPolicyAll:
+	    needed = 0;
+	    break;
 	case PictureCmapPolicyColor:
 	    needed = 71;
 	    break;
@@ -93,68 +93,95 @@ miBuildRenderColormap (ColormapPtr  pColormap,
     } 
     
     /*
-     * Initialize the search bounds for the mapping code
+     * Compute size of cube and gray ramps
      */
-    if (pColormap->pScreen->whitePixel > pColormap->pScreen->blackPixel)
-    {
-	*first = pColormap->pScreen->blackPixel;
-	*last = pColormap->pScreen->whitePixel;
-    }
-    else
-    {
-	*first = pColormap->pScreen->whitePixel;
-	*last = pColormap->pScreen->blackPixel;
-    }
-    
+    cube = gray = 0;
     switch (policy) {
+    case PictureCmapPolicyAll:
+	/*
+	 * Allocate as big a cube as possible
+	 */
+	if ((pColormap->pVisual->class|DynamicClass) == PseudoColor)
+	{
+	    for (cube = 1; cube * cube * cube < pColormap->pVisual->ColormapEntries; cube++)
+		;
+	    cube--;
+	    if (cube == 1)
+		cube = 0;
+	}
+	else
+	    cube = 0;
+	/*
+	 * Figure out how many gray levels to use so that they
+	 * line up neatly with the cube
+	 */
+	if (cube)
+	{
+	    needed = pColormap->pVisual->ColormapEntries - (cube*cube*cube);
+	    /* levels to fill in with */
+	    gray = needed / (cube - 1);
+	    /* total levels */
+	    gray = (gray + 1) * (cube - 1) + 1;
+	}
+	else
+	    gray = pColormap->pVisual->ColormapEntries;
+	break;
+		
     case PictureCmapPolicyColor:
-	for (r = 0; r < NUM_CUBE_LEVELS; r++)
-	    for (g = 0; g < NUM_CUBE_LEVELS; g++)
-		for (b = 0; b < NUM_CUBE_LEVELS; b++)
-		{
-		    red = CubeLevels[r];
-		    green = CubeLevels[g];
-		    blue = CubeLevels[b];
-		    if (AllocColor (pColormap, &red, &green, 
-				    &blue, &pix, 0) != Success)
-			return FALSE;
-		    if (pix < *first)
-			*first = pix;
-		    if (pix > *last)
-			*last = pix;
-		}
+	cube = NUM_CUBE_LEVELS;
 	/* fall through ... */
     case PictureCmapPolicyGray:
-	for (g = 0; g < NUM_GRAY_LEVELS; g++)
-	{
-	    red = green = blue = GrayLevels[g];
-	    if (AllocColor (pColormap, &red, &green, &blue, &pix, 0) != Success)
-		return FALSE;
-	    if (pix < *first)
-		*first = pix;
-	    if (pix > *last)
-		*last = pix;
-	}
-	/* fall through ... */
+	gray = NUM_GRAY_LEVELS;
+	break;
     case PictureCmapPolicyMono:
+    default:
+	gray = 2;
 	break;
     }
+    
+    memset (used, '\0', pColormap->pVisual->ColormapEntries * sizeof (Bool));
+    for (r = 0; r < cube; r++)
+	for (g = 0; g < cube; g++)
+	    for (b = 0; b < cube; b++)
+	    {
+		red = (r * 65535 + (cube-1)/2) / (cube - 1);
+		green = (g * 65535 + (cube-1)/2) / (cube - 1);
+		blue = (b * 65535 + (cube-1)/2) / (cube - 1);
+		if (AllocColor (pColormap, &red, &green, 
+				&blue, &pixel, 0) != Success)
+		    return FALSE;
+		used[pixel] = TRUE;
+	    }
+    for (g = 0; g < gray; g++)
+    {
+	red = green = blue = (g * 65535 + (gray-1)/2) / (gray - 1);
+	if (AllocColor (pColormap, &red, &green, &blue, &pixel, 0) != Success)
+	    return FALSE;
+	used[pixel] = TRUE;
+    }
+    n = 0;
+    for (i = 0; i < pColormap->pVisual->ColormapEntries; i++)
+	if (used[i])
+	    pixels[n++] = i;
 
+    *nump = n;
+    
     return TRUE;
 }
 
 /* 0 <= red, green, blue < 32 */
 static Pixel
-FindBestColor (miIndexedPtr pIndexed, int first, int num,
+FindBestColor (miIndexedPtr pIndexed, Pixel *pixels, int num,
 	       int red, int green, int blue)
 {
-    Pixel   best = first;
+    Pixel   best = pixels[0];
     int	    bestDist = 1 << 30;
     int	    dist;
     int	    dr, dg, db;
     while (num--)
     {
-	CARD32	v = pIndexed->rgba[first];
+	Pixel	pixel = *pixels++;
+	CARD32	v = pIndexed->rgba[pixel];
 
 	dr = ((v >> 19) & 0x1f);
 	dg = ((v >> 11) & 0x1f);
@@ -166,18 +193,17 @@ FindBestColor (miIndexedPtr pIndexed, int first, int num,
 	if (dist < bestDist)
 	{
 	    bestDist = dist;
-	    best = first;
+	    best = pixel;
 	}
-	first++;
     }
     return best;
 }
 
 /* 0 <= gray < 32768 */
 static Pixel
-FindBestGray (miIndexedPtr pIndexed, int first, int num, int gray)
+FindBestGray (miIndexedPtr pIndexed, Pixel *pixels, int num, int gray)
 {
-    Pixel   best = first;
+    Pixel   best = pixels[0];
     int	    bestDist = 1 << 30;
     int	    dist;
     int	    dr;
@@ -185,7 +211,8 @@ FindBestGray (miIndexedPtr pIndexed, int first, int num, int gray)
     
     while (num--)
     {
-	CARD32	v = pIndexed->rgba[first];
+	Pixel   pixel = *pixels++;
+	CARD32	v = pIndexed->rgba[pixel];
 
 	r = v & 0xff;
 	r = r | (r << 8);
@@ -194,9 +221,8 @@ FindBestGray (miIndexedPtr pIndexed, int first, int num, int gray)
 	if (dist < bestDist)
 	{
 	    bestDist = dist;
-	    best = first;
+	    best = pixel;
 	}
-	first++;
     }
     return best;
 }
@@ -205,48 +231,70 @@ Bool
 miInitIndexed (ScreenPtr	pScreen,
 	       PictFormatPtr	pFormat)
 {
+    ColormapPtr	    pColormap = pFormat->index.pColormap;
+    VisualPtr	    pVisual = pColormap->pVisual;
     miIndexedPtr    pIndexed;
-    Pixel	    first, last;
-    Pixel	    pix[MI_MAX_INDEXED];
+    Pixel	    pixels[MI_MAX_INDEXED];
     xrgb	    rgb[MI_MAX_INDEXED];
+    int		    num;
+    int		    i;
     Pixel	    p, r, g, b;
 
-    if (pFormat->pVisual->ColormapEntries > MI_MAX_INDEXED)
+    if (pVisual->ColormapEntries > MI_MAX_INDEXED)
 	return FALSE;
+    
+    if (pVisual->class & DynamicClass)
+    {
+	if (!miBuildRenderColormap (pColormap, pixels, &num))
+	    return FALSE;
+    }
+    else
+    {
+	num = pVisual->ColormapEntries;
+	for (p = 0; p < num; p++)
+	    pixels[p] = p;
+    }
+    
     pIndexed = xalloc (sizeof (miIndexedRec));
     if (!pIndexed)
 	return FALSE;
-    first = 0;
-    last = pFormat->pVisual->ColormapEntries - 1;
-    if (pFormat->pVisual->class & DynamicClass)
+    
+    pFormat->index.nvalues = num;
+    pFormat->index.pValues = xalloc (num * sizeof (xIndexValue));
+    if (!pFormat->index.pValues)
     {
-	if (!miBuildRenderColormap (pFormat->pColormap, &first, &last))
-	{
-	    xfree (pIndexed);
-	    return FALSE;
-	}
+	xfree (pIndexed);
+	return FALSE;
     }
+    
+    
     /*
      * Build mapping from pixel value to ARGB
      */
-    for (p = 0; p < pFormat->pVisual->ColormapEntries; p++)
-	pix[p] = p;
-    QueryColors (pFormat->pColormap, pFormat->pVisual->ColormapEntries,
-		 pix, rgb);
-    for (p = 0; p < pFormat->pVisual->ColormapEntries; p++)
+    QueryColors (pColormap, num, pixels, rgb);
+    for (i = 0; i < num; i++)
+    {
+	p = pixels[i];
+	pFormat->index.pValues[i].pixel = p;
+	pFormat->index.pValues[i].red   = rgb[i].red;
+	pFormat->index.pValues[i].green = rgb[i].green;
+	pFormat->index.pValues[i].blue  = rgb[i].blue;
+	pFormat->index.pValues[i].alpha = 0xffff;
 	pIndexed->rgba[p] = (0xff000000 |
-			     ((rgb[p].red   & 0xff00) << 8) |
-			     ((rgb[p].green & 0xff00)     ) |
-			     ((rgb[p].blue  & 0xff00) >> 8));
+			     ((rgb[i].red   & 0xff00) << 8) |
+			     ((rgb[i].green & 0xff00)     ) |
+			     ((rgb[i].blue  & 0xff00) >> 8));
+    }
+
     /*
      * Build mapping from RGB to pixel value.  This could probably be
      * done a bit quicker...
      */
-    switch (pFormat->pVisual->class | DynamicClass) {
+    switch (pVisual->class | DynamicClass) {
     case GrayScale:
 	pIndexed->color = FALSE;
 	for (r = 0; r < 32768; r++)
-	    pIndexed->ent[r] = FindBestGray (pIndexed, first, last-first+1, r);
+	    pIndexed->ent[r] = FindBestGray (pIndexed, pixels, num, r);
 	break;
     case PseudoColor:
 	pIndexed->color = TRUE;
@@ -255,12 +303,13 @@ miInitIndexed (ScreenPtr	pScreen,
 	    for (g = 0; g < 32; g++)
 		for (b = 0; b < 32; b++)
 		{
-		    pIndexed->ent[p] = FindBestColor (pIndexed, first, last-first+1, r, g, b);
+		    pIndexed->ent[p] = FindBestColor (pIndexed, pixels, num,
+						      r, g, b);
 		    p++;
 		}
 	break;
     }
-    pFormat->indexed = pIndexed;
+    pFormat->index.devPrivate = pIndexed;
     return TRUE;
 }
 
@@ -268,10 +317,15 @@ void
 miCloseIndexed (ScreenPtr	pScreen,
 		PictFormatPtr	pFormat)
 {
-    if (pFormat->indexed)
+    if (pFormat->index.devPrivate)
     {
-	xfree (pFormat->indexed);
-	pFormat->indexed = 0;
+	xfree (pFormat->index.devPrivate);
+	pFormat->index.devPrivate = 0;
+    }
+    if (pFormat->index.pValues)
+    {
+	xfree (pFormat->index.pValues);
+	pFormat->index.pValues = 0;
     }
 }
 
@@ -281,7 +335,7 @@ miUpdateIndexed (ScreenPtr	pScreen,
 		 int		ndef,
 		 xColorItem	*pdef)
 {
-    miIndexedPtr pIndexed = pFormat->indexed;
+    miIndexedPtr pIndexed = pFormat->index.devPrivate;
 
     if (pIndexed)
     {

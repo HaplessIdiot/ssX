@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.16 2002/11/05 06:05:04 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.17 2002/11/05 23:39:16 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -132,6 +132,7 @@ typedef struct _Picture		*PicturePtr;
  * PolicyMono	    Allocate no additional colors, use black and white
  * PolicyGray	    Allocate 13 gray levels (11 cells used)
  * PolicyColor	    Allocate a 4x4x4 cube and 13 gray levels (71 cells used)
+ * PolicyAll	    Allocate as big a cube as possible, fill with gray (all)
  *
  * Here's a picture to help understand how many colors are
  * actually allocated (this is just the gray ramp):
@@ -153,6 +154,7 @@ typedef struct _Picture		*PicturePtr;
 #define PictureCmapPolicyMono	    1
 #define PictureCmapPolicyGray	    2
 #define PictureCmapPolicyColor	    3
+#define PictureCmapPolicyAll	    4
 
 extern int  PictureCmapPolicy;
 
