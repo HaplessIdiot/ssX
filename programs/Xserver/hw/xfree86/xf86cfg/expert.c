@@ -33,8 +33,10 @@
 #include "xf86config.h"
 #include "options.h"
 #include "screen.h"
+#include "vidmode.h"
 #include "monitor-cfg.h"
 #include <X11/Shell.h>
+#include <X11/CompositeP.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
@@ -258,6 +260,7 @@ static void CreateInput(TreeNode*, XF86ConfInputPtr);
 static void CreateInputField(TreeNode*, Bool);
 static void InputDestroy(TreeNode*);
 static void NewInputCallback(Widget, XtPointer, XtPointer);
+static void InputUpdate(TreeNode*);
 
 static void CreateLayout(TreeNode*, XF86ConfLayoutPtr);
 static void CreateLayoutField(TreeNode*, Bool);
@@ -294,14 +297,19 @@ static void BuffersDestroy(TreeNode*);
 static void NewBuffersCallback(Widget, XtPointer, XtPointer);
 static void BuffersUpdate(TreeNode*);
 
-extern void CreateOptionsShell(void);
 extern void RemoveDeviceCallback(Widget, XtPointer, XtPointer);
+
+/* interface.c */
+extern void InitializeDevices(void);
+extern void SelectLayoutCallback(Widget, XtPointer, XtPointer);
+extern void UpdateMenuDeviceList(int);
+extern void SetConfigModeCallback(Widget, XtPointer, XtPointer);
 
 /*
  * Initialization
  */
 static Widget shell, expert, tree, panner;
-extern Widget work, optionsShell, config;
+extern Widget work, optionsShell, config, layoutp, topMenu;
 extern xf86cfgDevice cpu_device;
 static TreeNode *mainNode, *monitorTree, *screenTree, *layoutTree;
 
@@ -322,34 +330,12 @@ ExpertConfigureStart(void)
 void
 ExpertConfigureEnd(void)
 {
-    int i;
+    int i, save_config_mode = config_mode;
+    Widget sme, layoutsme = NULL;
+    XF86ConfLayoutPtr lay;
 
     XtVaSetValues(optionsShell, XtNtransientFor, toplevel, NULL, 0);
     XtPopdown(shell);
-
-    for (i = 0; i < computer.num_screens; i++) {
-	XF86OptionPtr option, options;
-	int rotate;
-
-	options = computer.screens[i]->screen->scrn_option_lst;
-	if ((option = xf86findOption(options, "Rotate")) != NULL) {
-	    if (option->opt_val != NULL)
-		rotate = strcasecmp(option->opt_val, "CW") == 0 ? 1 :
-			 strcasecmp(option->opt_val, "CCW") == 0 ? -1 : 0;
-	    XtFree(option->opt_val);
-	    option->opt_val = XtNewString(rotate > 0 ? "CW" : "CCW");
-	    computer.screens[i]->rotate = rotate;
-	}
-	else
-	    computer.screens[i]->rotate = 0;
-	UpdateScreenUI();
-	AdjustScreenUI();
-	SetTip((xf86cfgDevice*)computer.screens[i]);
-    }
-    if (XF86Config->conf_flags && XF86Config->conf_flags->flg_option_lst)
-	SetTip(&cpu_device);
-    for (i = 0; i < computer.num_devices; i++)
-	SetTip(computer.devices[i]);
 
     /* Need to do this to avoid all code elsewhere needing to update the
      * "expert" widget tree
@@ -358,6 +344,81 @@ ExpertConfigureEnd(void)
     DestroyTree(mainNode);
     XtDestroyWidget(shell);
     expert = NULL;
+
+    if (save_config_mode != CONFIG_LAYOUT)
+	SetConfigModeCallback(topMenu, (XtPointer)CONFIG_LAYOUT, NULL);
+
+    /* Reset everything as the "expert" interface can do almost anything
+     * to the configuration.
+     */
+    for (i = 0; i < computer.num_screens; i++) {
+	XtDestroyWidget(computer.screens[i]->widget);
+	XtFree((XtPointer)computer.screens[i]);
+    }
+    XtFree((XtPointer)computer.screens);
+    computer.screens = NULL;
+    computer.num_screens = 0;
+
+    for (i = 0; i < computer.num_devices; i++) {
+	XtDestroyWidget(computer.devices[i]->widget);
+	XtFree((XtPointer)computer.devices[i]);
+    }
+    XtFree((XtPointer)computer.devices);
+    computer.devices = NULL;
+    computer.num_devices = 0;
+
+    for (i = 0; i < computer.num_layouts; i++) {
+	XtFree((XtPointer)computer.layouts[i]->position);
+	XtFree((XtPointer)computer.layouts[i]);
+    }
+    XtFree((XtPointer)computer.layouts);
+    computer.layouts = NULL;
+    computer.num_layouts = 0;
+
+    for (i = 0; i < computer.num_vidmodes; i++)
+	XtFree((XtPointer)computer.vidmodes[i]);
+    XtFree((XtPointer)computer.vidmodes);
+    computer.vidmodes = NULL;
+    computer.num_vidmodes = 0;
+
+    /* Reinitialize devices/screens */
+    InitializeDevices();
+    UpdateMenuDeviceList(MOUSE);
+    UpdateMenuDeviceList(KEYBOARD);
+    UpdateMenuDeviceList(CARD);
+    UpdateMenuDeviceList(MONITOR);
+
+    /* Update layout menu */
+    for (i = 0; i < ((CompositeWidget)layoutp)->composite.num_children; i++)
+	XtDestroyWidget(((CompositeWidget)layoutp)->composite.children[i]);
+    lay = XF86Config->conf_layout_lst;
+    while (lay != NULL) {
+	sme = XtVaCreateManagedWidget("sme", smeBSBObjectClass,
+				      layoutp,
+				      XtNlabel, lay->lay_identifier,
+				      XtNmenuName, "options",
+				      XtNleftBitmap, menuPixmap,
+				      NULL, 0);
+	XtAddCallback(sme, XtNcallback, SelectLayoutCallback, (XtPointer)lay);
+	if (layoutsme == NULL)
+	    layoutsme = sme;
+	lay = (XF86ConfLayoutPtr)(lay->list.next);
+    }
+    computer.layout = NULL;
+    SelectLayoutCallback(layoutsme,
+			 XF86Config->conf_layout_lst, NULL);
+
+
+    if (XF86Config->conf_flags && XF86Config->conf_flags->flg_option_lst)
+	SetTip(&cpu_device);
+    for (i = 0; i < computer.num_devices; i++)
+	SetTip(computer.devices[i]);
+
+    /* Reinitialize vidmodes */
+    InitializeVidmodes();
+
+    if (save_config_mode != CONFIG_LAYOUT)
+	SetConfigModeCallback(topMenu, (XtPointer)save_config_mode, NULL);
 }
 
 /*ARGSUSED*/
@@ -465,7 +526,7 @@ UpdateFiles(TreeNode *files)
 static void
 CreateFontPath(TreeNode *fontpath, char *path)
 {
-    TreeNode *prev, *node;
+    TreeNode *prev = NULL, *node;
     Widget w;
 
     if (path == NULL) {
@@ -642,7 +703,7 @@ FontPathCallback(Widget w, XtPointer user_data, XtPointer call_data)
 static void
 CreateModulePath(TreeNode *modulepath, char *path)
 {
-    TreeNode *prev, *node;
+    TreeNode *prev = NULL, *node;
     Widget w;
 
     if (path == NULL) {
@@ -3362,6 +3423,7 @@ CreateInput(TreeNode *parent, XF86ConfInputPtr input)
 	data->input.input = input;
 	node = NewNode(parent, NULL, NULL, parent->node, data);
 	node->destroy = InputDestroy;
+	node->update = InputUpdate;
 	CreateInputField(node, False);
 	if (parent->child == NULL)
 	    parent->child = node;
@@ -3508,6 +3570,20 @@ InputDestroy(TreeNode *node)
 		RemoveDeviceCallback(NULL, NULL, NULL);
 	    }
     }
+}
+
+static void
+InputUpdate(TreeNode *node)
+{
+    char *str;
+
+    /* vendor */
+    XtVaGetValues(node->data->input.text, XtNstring, &str, NULL, 0);
+    XtFree(node->data->input.input->inp_driver);
+    if (*str)
+	node->data->input.input->inp_driver = XtNewString(str);
+    else
+	node->data->input.input->inp_driver = NULL;
 }
 
 /* Layout */

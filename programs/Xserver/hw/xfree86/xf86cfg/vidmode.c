@@ -443,20 +443,8 @@ VideoModeInitialize(void)
 		MINMAJOR, MINMINOR);
 	return (False);
     }
-    else {
-	int i;
-	Display *display = XtDisplay(toplevel);
-
-	computer.num_vidmodes = ScreenCount(display);
-	computer.vidmodes = (xf86cfgVidmode**)
-	    XtMalloc(sizeof(xf86cfgVidmode*) * computer.num_vidmodes);
-	for (i = 0; i < computer.num_vidmodes; i++) {
-
-	    computer.vidmodes[i] = (xf86cfgVidmode*)
-		XtCalloc(1, sizeof(xf86cfgVidmode));
-	    computer.vidmodes[i]->screen = i;
-	}
-    }
+    else
+	InitializeVidmodes();
 
     vtune = XtCreateWidget("vidtune", formWidgetClass,
 			   work, NULL, 0);
@@ -586,6 +574,23 @@ VideoModeInitialize(void)
     XtRealizeWidget(vtune);
 
     return (True);
+}
+
+void
+InitializeVidmodes(void)
+{
+    int i;
+    Display *display = XtDisplay(toplevel);
+
+    computer.num_vidmodes = ScreenCount(display);
+    computer.vidmodes = (xf86cfgVidmode**)
+	XtMalloc(sizeof(xf86cfgVidmode*) * computer.num_vidmodes);
+    for (i = 0; i < computer.num_vidmodes; i++) {
+
+	computer.vidmodes[i] = (xf86cfgVidmode*)
+	    XtCalloc(1, sizeof(xf86cfgVidmode));
+	computer.vidmodes[i]->screen = i;
+    }
 }
 
 void

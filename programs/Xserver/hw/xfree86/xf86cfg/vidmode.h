@@ -54,6 +54,7 @@ void VideoModeConfigureEnd(void);
 void VidmodeRestoreAction(Widget, XEvent*, String*, Cardinal*);
 void CancelAddModeAction(Widget, XEvent*, String*, Cardinal*);
 void CancelTestModeAction(Widget, XEvent*, String*, Cardinal*);
+void InitializeVidmodes(void);
 
 /*
  * Initialization

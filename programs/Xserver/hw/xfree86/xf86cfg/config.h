@@ -94,6 +94,12 @@
 #define	UNUSED			0
 #define	USED			1
 
+#define CONFIG_LAYOUT	0
+#define CONFIG_SCREEN	1
+#define CONFIG_MODELINE	2
+#define CONFIG_ACCESSX	3
+extern int config_mode;
+
 #define CONFPATH	"%A," "%R," \
 			"/etc/X11/%R," "%P/etc/X11/%R," \
 			"%E," "%F," \
