@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.7 94/04/13 18:07:51 rws Exp $
-XCOMM $XFree86: xc/workInProgress/lbx/programs/lbxproxy/Imakefile,v 3.0 1994/06/12 16:44:58 dawes Exp $
+XCOMM $XFree86: xc/workInProgress/lbx/programs/lbxproxy/Imakefile,v 3.1 1995/01/11 03:58:51 dawes Exp $
 
 #include <Server.tmpl>
 #define       IHaveSubdirs
@@ -17,3 +17,5 @@ ServerTarget(lbxproxy,$(SUBDIRS),NullParameter,$(LBXLIBS),$(OTHERLIBS))
 DependSubdirs($(SUBDIRS))
 
 ForceSubdirs($(SUBDIRS))
+
+InstallManPage(lbxproxy,$(MANDIR))
