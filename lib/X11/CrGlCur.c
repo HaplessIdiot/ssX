@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/CrGlCur.c,v 1.3 2001/01/17 19:41:34 dawes Exp $ */
+/* $XFree86: xc/lib/X11/CrGlCur.c,v 1.5 2002/08/29 04:40:34 keithp Exp $ */
 
 #include "Xlibint.h"
 
@@ -103,6 +103,23 @@ fetch_symbol (XModuleType module, char *under_symbol)
     return result;
 }
 
+typedef void	(*NoticeCreateBitmapFunc) (Display	    *dpy,
+					   Pixmap	    pid,
+					   unsigned int width,
+					   unsigned int height);
+
+typedef void	(*NoticePutBitmapFunc) (Display	    *dpy,
+					Drawable    draw,
+					XImage	    *image);
+
+typedef Cursor	(*TryShapeBitmapCursorFunc) (Display	    *dpy,
+					     Pixmap	    source,
+					     Pixmap	    mask,
+					     XColor	    *foreground,
+					     XColor	    *background,
+					     unsigned int   x,
+					     unsigned int   y);
+
 typedef Cursor	(*TryShapeCursorFunc) (Display	    *dpy,
 				       Font	    source_font,
 				       Font	    mask_font,
@@ -111,33 +128,86 @@ typedef Cursor	(*TryShapeCursorFunc) (Display	    *dpy,
 				       XColor _Xconst *foreground,
 				       XColor _Xconst *background);
 
-static Cursor
-try_xcursor (Display	    *dpy,
-	     Font	    source_font,
-	     Font	    mask_font,
-	     unsigned int   source_char,
-	     unsigned int   mask_char,
-	     XColor _Xconst *foreground,
-	     XColor _Xconst *background)
-{
-    static  TryShapeCursorFunc	staticFunc;
-    TryShapeCursorFunc		func;
-    static  Bool		been_here;
-    XModuleType			module;
+static XModuleType  _XcursorModule;
+static Bool	    _XcursorModuleTried;
 
-    _XLockMutex (_Xglobal_lock);
-    if (!been_here)
-    {
-	been_here = True;
-	module = open_library ();
-	if (module)
-	    staticFunc = (TryShapeCursorFunc) fetch_symbol (module, "_XcursorTryShapeCursor");
-    }
-    func = staticFunc;
-    _XUnlockMutex (_Xglobal_lock);
+#define GetFunc(type,name,ret) {\
+    static Bool	    been_here; \
+    static type	    staticFunc; \
+     \
+    _XLockMutex (_Xglobal_lock); \
+    if (!been_here) \
+    { \
+	been_here = True; \
+	if (!_XcursorModuleTried) \
+	{ \
+	    _XcursorModuleTried = True; \
+	    _XcursorModule = open_library (); \
+	} \
+	if (_XcursorModule) \
+	    staticFunc = (type) fetch_symbol (_XcursorModule, "_" name); \
+    } \
+    ret = staticFunc; \
+    _XUnlockMutex (_Xglobal_lock); \
+}
+
+Cursor
+_XTryShapeCursor (Display	    *dpy,
+		  Font		    source_font,
+		  Font		    mask_font,
+		  unsigned int	    source_char,
+		  unsigned int	    mask_char,
+		  XColor _Xconst    *foreground,
+		  XColor _Xconst    *background)
+{
+    TryShapeCursorFunc		func;
+
+    GetFunc (TryShapeCursorFunc, "XcursorTryShapeCursor", func);
     if (func)
 	return (*func) (dpy, source_font, mask_font, source_char, mask_char,
 			foreground, background);
+    return None;
+}
+
+void
+_XNoticeCreateBitmap (Display	    *dpy,
+		      Pixmap	    pid,
+		      unsigned int  width,
+		      unsigned int  height)
+{
+    NoticeCreateBitmapFunc  func;
+
+    GetFunc (NoticeCreateBitmapFunc, "XcursorNoticeCreateBitmap", func);
+    if (func)
+	(*func) (dpy, pid, width, height);
+}
+
+void
+_XNoticePutBitmap (Display	*dpy,
+		   Drawable	draw,
+		   XImage	*image)
+{
+    NoticePutBitmapFunc	func;
+
+    GetFunc (NoticePutBitmapFunc, "XcursorNoticePutBitmap", func);
+    if (func)
+	(*func) (dpy, draw, image);
+}
+
+Cursor
+_XTryShapeBitmapCursor (Display		*dpy,
+			Pixmap		source,
+			Pixmap		mask,
+			XColor		*foreground,
+			XColor		*background,
+			unsigned int	x,
+			unsigned int	y)
+{
+    TryShapeBitmapCursorFunc	func;
+
+    GetFunc (TryShapeBitmapCursorFunc, "XcursorTryShapeBitmapCursor", func);
+    if (func)
+	return (*func) (dpy, source, mask, foreground, background, x, y);
     return None;
 }
 #endif
@@ -155,8 +225,8 @@ Cursor XCreateGlyphCursor(dpy, source_font, mask_font,
     register xCreateGlyphCursorReq *req;
 
 #ifdef USE_DYNAMIC_XCURSOR
-    cid = try_xcursor (dpy, source_font, mask_font, 
-		       source_char, mask_char, foreground, background);
+    cid = _XTryShapeCursor (dpy, source_font, mask_font, 
+			    source_char, mask_char, foreground, background);
     if (cid)
 	return cid;
 #endif
