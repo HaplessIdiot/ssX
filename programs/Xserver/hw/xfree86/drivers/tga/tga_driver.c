@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.26 1999/06/20 05:23:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.27 1999/07/10 12:17:35 dawes Exp $ */
 
 /*  #include "compiler.h" */
 /* everybody includes these */
@@ -366,8 +366,8 @@ TGAProbe(DriverPtr drv, int flags)
 	    pScrn->Probe	 = TGAProbe;
 	    pScrn->PreInit	 = TGAPreInit;
 	    pScrn->ScreenInit	 = TGAScreenInit;
-	    pScrn->SwitchMode	 = TGASwitchMode;
-	    pScrn->AdjustFrame	 = TGAAdjustFrame;
+  	    pScrn->SwitchMode	 = TGASwitchMode;
+  	    pScrn->AdjustFrame	 = TGAAdjustFrame;
 	    pScrn->EnterVT	 = TGAEnterVT;
 	    pScrn->LeaveVT	 = TGALeaveVT;
 	    pScrn->FreeScreen	 = TGAFreeScreen;
@@ -837,13 +837,19 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->interlaceAllowed = FALSE;	/* XXX check this */
     clockRanges->doubleScanAllowed = FALSE;	/* XXX check this */
 
+    if(pScrn->display->virtualX || pScrn->display->virtualY) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "TGA does not support a virtual desktop\n");
+	pScrn->display->virtualX = 0;
+	pScrn->display->virtualY = 0;
+    }
+    
     /*
      * xf86ValidateModes will check that the mode HTotal and VTotal values
      * don't exceed the chipset's limit if pScrn->maxHValue and
      * pScrn->maxVValue are set.  Since our TGAValidMode() already takes
      * care of this, we don't worry about setting them here.
      */
-
     /* Select valid modes from those available */
     /*
      * XXX Assuming min pitch 256, max 2048
@@ -867,11 +873,24 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86PruneDriverModes(pScrn);
 
     if (i == 0 || pScrn->modes == NULL) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
 	TGAFreeRec(pScrn);
 	return FALSE;
     }
 
+    if(i > 1) {
+	DisplayModePtr mp1 = NULL, mp2 = NULL;
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "TGA only supports one mode, using first mode.\n");
+	mp1 = pScrn->modes->next;
+	mp2 = mp1;
+	while(mp1 && mp1->next != mp1) {
+	    mp1 = mp1->next;
+	    xf86DeleteMode(&(pScrn->modes), mp2);
+	    mp2 = mp1;
+	}
+    }
+      
     xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
 
     /* Set the current mode to the first in the list */
@@ -1085,11 +1104,6 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Darken the screen for aesthetic reasons and set the viewport */
     TGASaveScreen(pScreen, FALSE);
-    TGAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
-    /* XXX Fill the screen with black */
-#if 0
-    TGASaveScreen(pScreen, TRUE);
-#endif
 
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -1234,6 +1248,9 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
     }
 
+    /* unblank the screen */
+    TGASaveScreen(pScreen, TRUE);
+    
     /* Done */
     return TRUE;
 }
@@ -1255,10 +1272,11 @@ TGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 static void 
 TGAAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
-    ScrnInfoPtr pScrn;
-    pScrn = xf86Screens[scrnIndex];
+    /* we don't support virtual desktops, because TGA doesn't have the
+       ability to set the start of the visible framebuffer at an arbitrary
+       pixel */
+    return;
 }
-
 
 /*
  * This is called when VT switching back to the X server.  Its job is
@@ -1356,8 +1374,29 @@ TGAValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 /* Mandatory */
 static Bool
 TGASaveScreen(ScreenPtr pScreen, Bool unblank)
+    /* this function should blank the screen when unblank is FALSE and
+       unblank it when unblank is TRUE -- it doesn't actually seem to be
+       used for much though */
 {
-	return TRUE;
+    TGAPtr pTga;
+    ScrnInfoPtr pScrn;
+    int valid_reg = 0;
+
+    pScrn = xf86Screens[pScreen->myNum];
+    pTga = TGAPTR(pScrn);
+    valid_reg = TGA_READ_REG(TGA_VALID_REG);
+    valid_reg &= 0xFFFFFFFC;
+
+    if(unblank == FALSE)
+	valid_reg |= 0x3;
+    else /* this function is sometimes called w/1 || 2 as TRUE */
+	valid_reg |= 0x1;
+
+    TGA_WRITE_REG(valid_reg, TGA_VALID_REG);
+
+/*      ErrorF("TGASaveScreen called\n"); */
+    
+    return TRUE;
 }
 
 
@@ -1413,6 +1452,7 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
        in the cursor framebuffer doesn't seem to work, I get a bunch of junk
        at the beginning...other than that, see tga_cursor.c
        I believe this to be a problem with the linux kernel code.
+       Hmm...this seems to be a 2.0.* problem, 2.2 works ok
      */
 {
   unsigned char *p = NULL;

@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.21 1999/06/12 07:18:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.22 1999/07/19 13:36:30 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -281,6 +281,10 @@ typedef struct _CHIPSRec {
     CHIPSACLRec		Accel;
     unsigned int	HWCursorContents;
     Bool		HWCursorShown;
+    DGAModePtr		DGAModes;
+    int			numDGAModes;
+    Bool		DGAactive;
+    int			DGAViewportStatus;
     CloseScreenProcPtr	CloseScreen;
 #ifdef __arm32__
 #ifdef __NetBSD__
@@ -317,6 +321,9 @@ extern unsigned int ChipsReg32HiQV[];
 
 /* Prototypes */
 
+void CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags);
+Bool CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+
 /* banking */
 int CHIPSSetRead(ScreenPtr pScreen, int bank);
 int CHIPSSetWrite(ScreenPtr pScreen, int bank);
@@ -350,6 +357,9 @@ void CHIPSHWSetMmioFuncs(ScrnInfoPtr pScrn, CARD8 *base, int offset);
 /* ddc */
 extern void chips_ddc1(ScrnInfoPtr pScrn);
 extern Bool chips_i2cInit(ScrnInfoPtr pScrn);
+
+/* dga */
+Bool CHIPSDGAInit(ScreenPtr pScreen);
 
 /* To aid debugging of 32 bit register access we make the following defines */
 /*

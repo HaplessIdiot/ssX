@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.3 1998/08/02 05:17:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.4 1998/11/28 10:43:20 dawes Exp $ */
 
 #include "xaa.h"
 #include "xaalocal.h"
@@ -60,7 +60,7 @@ EXPNAME(XAAFillColorExpandRects)(
    PixmapPtr pPix
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    CARD32 *base = (CARD32*)infoRec->ColorExpandBase;
+    CARD32 *base;
     Bool TwoPass = FALSE, FirstPass = TRUE;
     StippleScanlineProcPtr StippleFunc, FirstFunc, SecondFunc;
     int stipplewidth = pPix->drawable.width;
@@ -115,6 +115,7 @@ SECOND_PASS:
 			pScrn, pBox->x1, pBox->y1,
  			pBox->x2 - pBox->x1, h, 0);
 
+	base = (CARD32*)infoRec->ColorExpandBase;
 
 	srcy = (pBox->y1 - yorg) % stippleheight;
 	if(srcy < 0) srcy += stippleheight;
@@ -123,7 +124,6 @@ SECOND_PASS:
 
 	srcp = (srcwidth * srcy) + src;
 	
-
 #ifndef FIXEDBASE
 	if((dwords * h) <= infoRec->ColorExpandRange) {
 	   while(h--) {
@@ -136,7 +136,6 @@ SECOND_PASS:
 		   srcp = src;
 		}
 	   }
-	   base = (CARD32*)infoRec->ColorExpandBase;
 	} else
 #endif
 	   while(h--) {
@@ -184,7 +183,7 @@ EXPNAME(XAAFillColorExpandSpans)(
    PixmapPtr pPix
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    CARD32 *base = (CARD32*)infoRec->ColorExpandBase;
+    CARD32 *base;
     Bool TwoPass = FALSE, FirstPass = TRUE;
     StippleScanlineProcPtr StippleFunc, FirstFunc, SecondFunc;
     int stipplewidth = pPix->drawable.width;
@@ -239,6 +238,8 @@ SECOND_PASS:
         (*infoRec->SubsequentCPUToScreenColorExpandFill)(pScrn, ppt->x, ppt->y,
  			*pwidth, 1, 0);
 
+	base = (CARD32*)infoRec->ColorExpandBase;
+
 	(*StippleFunc)(base, (CARD32*)srcp, srcx, stipplewidth, dwords);
     
 	if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) 
@@ -282,7 +283,7 @@ EXPNAME(XAAFillScanlineColorExpandRects)(
     int stipplewidth = pPix->drawable.width;
     int stippleheight = pPix->drawable.height;
     int srcwidth = pPix->devKind;
-    int dwords, srcy, srcx, funcNo = 2, bufferNo = 0, h;
+    int dwords, srcy, srcx, funcNo = 2, bufferNo, h;
     unsigned char *src = pPix->devPrivate.ptr;
     unsigned char *srcp;
 
@@ -326,6 +327,7 @@ SECOND_PASS:
         (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 		pScrn, pBox->x1, pBox->y1, pBox->x2 - pBox->x1, h, 0);
 
+	bufferNo = 0;
 
 	srcy = (pBox->y1 - yorg) % stippleheight;
 	if(srcy < 0) srcy += stippleheight;
@@ -379,7 +381,7 @@ EXPNAME(XAAFillScanlineColorExpandSpans)(
     StippleScanlineProcPtr StippleFunc, FirstFunc, SecondFunc;
     int stipplewidth = pPix->drawable.width;
     int stippleheight = pPix->drawable.height;
-    int dwords, srcy, srcx, funcNo = 2, bufferNo = 0;
+    int dwords, srcy, srcx, funcNo = 2;
     unsigned char *srcp;
 
     if(stipplewidth <= 32) {
@@ -430,12 +432,10 @@ SECOND_PASS:
         (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 				pScrn, ppt->x, ppt->y, *pwidth, 1, 0);
 
-	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
+	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
 
 	(*StippleFunc)(base, (CARD32*)srcp, srcx, stipplewidth, dwords);
-	(*infoRec->SubsequentColorExpandScanline)(pScrn, bufferNo++);
-	if(bufferNo >= infoRec->NumScanlineColorExpandBuffers)
-	    bufferNo = 0;
+	(*infoRec->SubsequentColorExpandScanline)(pScrn, 0);
     
 	if(TwoPass) {
 	   if(FirstPass) {

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.13 1999/07/17 05:30:31 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.14 1999/08/01 07:56:54 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -1908,7 +1908,7 @@ bitmapUnloadScalable (FontPtr pFont)
     if(bitmapFont->encoding) {
         nencoding = (pFont->info.lastCol - pFont->info.firstCol + 1) *
 	    (pFont->info.lastRow - pFont->info.firstRow + 1);
-        for(i=0; i<nencoding; i++)
+        for(i=0; i<NUM_SEGMENTS(nencoding); i++)
             xfree(bitmapFont->encoding[i]);
     }
     xfree (bitmapFont->encoding);

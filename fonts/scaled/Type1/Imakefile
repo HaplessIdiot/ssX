@@ -3,19 +3,10 @@ XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 16:52:16 rws Exp $
 
 
 
-XCOMM $XFree86: xc/fonts/scaled/Type1/Imakefile,v 1.5 1999/05/03 12:15:36 dawes Exp $
+XCOMM $XFree86: xc/fonts/scaled/Type1/Imakefile,v 1.6 1999/05/03 13:28:07 dawes Exp $
 
 
-#if BuildLatin2Fonts
-#define IHaveSubdirs
-#endif
 #define PassCDebugFlags /* as nothing */
-
-#if BuildLatin2Fonts
-LATIN2DIR = latin2
-#endif
-
-SUBDIRS = $(LATIN2DIR)
 
 OBJS = UTRG____.pfa UTB_____.pfa UTBI____.pfa UTI_____.pfa \
       cour.pfa courb.pfa courbi.pfa couri.pfa \

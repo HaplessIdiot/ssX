@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.8 1998/01/24 16:58:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.1 1999/08/01 07:20:59 dawes Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -66,16 +66,6 @@ int rivaRendered2D = 0;
 unsigned int rivaOpaqueMonochrome;
 
 /*
- * Buffers.
- */
-#define RIVA_FRONT_BUFFER       0
-#define RIVA_BACK_BUFFER        1
-#define RIVA_DEPTH_BUFFER       2
-#define RIVA_TEXTURE_BUFFER     3
-#define RIVA_CACHE_BUFFER       4
-unsigned rivaBufferOffset[5] = {0, 0, 0, 0, 0};
-
-/*
  * Set scissor clip rect.
  */
 static void NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1,
@@ -87,24 +77,22 @@ static void NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1,
 
     rivaRendered2D = 1;
     RIVA_FIFO_FREE(pNv->riva, Clip, 2);
-    pNv->riva.Clip->TopLeft     = (y1     << 16) | x1;
+    pNv->riva.Clip->TopLeft     = (y1     << 16) | (x1 & 0xffff);
     pNv->riva.Clip->WidthHeight = (height << 16) | width;
 }
 
 static void NVDisableClipping(ScrnInfoPtr pScrn)
 {
-    NVSetClippingRectangle(pScrn, 0, 0, 0x3FFF, 0x3FFF);
+    NVSetClippingRectangle(pScrn, 0, 0, 0x7FFF, 0x7FFF);
 }
 
 /*
  * Set pattern. Internal routine. The upper bits of the colors
  * are the ALPHA bits.  0 == transparency.
  */
-static void NVSetPattern(ScrnInfoPtr pScrn, int clr0, int clr1, int pat0,
+static void NVSetPattern(NVPtr pNv, int clr0, int clr1, int pat0,
                          int pat1)
 {
-    NVPtr pNv = NVPTR(pScrn);
-
     rivaRendered2D = 1;
     RIVA_FIFO_FREE(pNv->riva, Patt, 5);
     pNv->riva.Patt->Shape         = 0; /* 0 = 8X8, 1 = 64X1, 2 = 1X64 */
@@ -118,7 +106,7 @@ static void NVSetPattern(ScrnInfoPtr pScrn, int clr0, int clr1, int pat0,
  * Set ROP.  Translate X rop into ROP3.  Internal routine.
  */
 static int currentRop = -1;
-static void NVSetRopSolid(ScrnInfoPtr pScrn, int rop)
+static void NVSetRopSolid(NVPtr pNv, int rop)
 {
     static int ropTrans[16] = 
     {
@@ -139,12 +127,11 @@ static void NVSetRopSolid(ScrnInfoPtr pScrn, int rop)
         0x77, /* GXnand         */
         0xFF  /* GXset          */
     };
-    NVPtr pNv = NVPTR(pScrn);
     
     if (currentRop != rop)
     {
         if (currentRop > 16)
-            NVSetPattern(pScrn, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+            NVSetPattern(pNv, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
                          0xFFFFFFFF);
         currentRop     = rop;
         rivaRendered2D = 1;
@@ -153,7 +140,7 @@ static void NVSetRopSolid(ScrnInfoPtr pScrn, int rop)
     }
 }
 
-static void NVSetRopPattern(ScrnInfoPtr pScrn, int rop)
+static void NVSetRopPattern(NVPtr pNv, int rop)
 {
     static int ropTrans[16] = 
     {
@@ -174,8 +161,7 @@ static void NVSetRopPattern(ScrnInfoPtr pScrn, int rop)
         0xF3, /* GXnand         */
         0xFF  /* GXset          */
     };
-    NVPtr pNv = NVPTR(pScrn);
-    
+
     if (currentRop != rop + 16)
     {
         currentRop     = rop + 16; /* +16 is important */
@@ -193,7 +179,7 @@ static void NVSetupForSolidFill(ScrnInfoPtr pScrn,
 {
     NVPtr pNv = NVPTR(pScrn);
 
-    NVSetRopSolid(pScrn, rop);
+    NVSetRopSolid(pNv, rop);
     rivaRendered2D = 1;
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 1);
     pNv->riva.Bitmap->Color1A = color;
@@ -205,7 +191,7 @@ static void NVSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     NVPtr pNv = NVPTR(pScrn);
 
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
-    pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y;
+    pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y; 
     pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
 }
 
@@ -218,7 +204,7 @@ static void NVSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
                                          int transparency_color)
 {
     rivaRendered2D = 1;
-    NVSetRopSolid(pScrn, rop);
+    NVSetRopSolid(NVPTR(pScrn), rop);
 }
 
 static void NVSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
@@ -245,7 +231,7 @@ static void NVSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 {
     NVPtr pNv = NVPTR(pScrn);
 
-    NVSetRopPattern(pScrn, rop);
+    NVSetRopPattern(pNv, rop);
     rivaRendered2D = 1;
     if (pScrn->bitsPerPixel == 16 && pScrn->weight.green == 6)
     {
@@ -266,7 +252,7 @@ static void NVSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 	fg |= rivaOpaqueMonochrome;
 	bg  = (bg == -1) ? 0 : bg | rivaOpaqueMonochrome;
     };
-    NVSetPattern(pScrn, bg, fg, patternx, patterny);
+    NVSetPattern(pNv, fg, bg, patternx, patterny);
     RIVA_FIFO_FREE(pNv->riva, Bitmap, 1);
     pNv->riva.Bitmap->Color1A = fg;
 }
@@ -287,6 +273,8 @@ static void NVSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
 /*
  * Synchronise with graphics engine.  Make sure it is idle before returning.
  * Should attempt to yield CPU if busy for awhile.
+ *
+ * Also used in an evil hack with the color expansion
  */
 void NVSync(ScrnInfoPtr pScrn)
 {
@@ -295,7 +283,203 @@ void NVSync(ScrnInfoPtr pScrn)
     while (pNv->riva.Busy(&pNv->riva));
 }
 
+/* Color expansion */
+static void
+NVSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
+                                             int fg, int bg, int rop, 
+                                             unsigned int planemask)
+{
+    NVPtr pNv = NVPTR(pScrn);
 
+    rivaRendered2D = 1;
+
+    NVSetRopSolid(pNv, rop);
+
+    if ( bg == -1 )
+    {
+        /* Transparent case */
+        bg = 0x80000000;
+        pNv->expandFifo = (unsigned char*)&pNv->riva.Bitmap->MonochromeData1C;
+    }
+    else
+    {
+        pNv->expandFifo = (unsigned char*)&pNv->riva.Bitmap->MonochromeData01E;
+        if (pScrn->bitsPerPixel == 16 && pScrn->weight.green == 6)
+        {
+            bg = ((bg & 0x0000F800) << 8)
+               | ((bg & 0x000007E0) << 5)
+               | ((bg & 0x0000001F) << 3)
+               |        0xFF000000;
+        }
+        else
+        {
+            bg  |= rivaOpaqueMonochrome;
+        };
+    }
+    pNv->FgColor = fg;
+    pNv->BgColor = bg;
+}
+
+static void
+NVSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x,
+                                               int y, int w, int h,
+                                               int skipleft)
+{
+    int bw;
+    NVPtr pNv = NVPTR(pScrn);
+    
+    bw = (w + 31) & ~31;
+    pNv->expandWidth = bw >> 5;
+
+    if ( pNv->BgColor == 0x80000000 )
+    {
+        /* Use faster transparent method */
+        RIVA_FIFO_FREE(pNv->riva, Bitmap, 5);
+        pNv->riva.Bitmap->ClipC.TopLeft     = (y << 16) | ((x+skipleft) & 0xFFFF);
+        pNv->riva.Bitmap->ClipC.BottomRight = ((y+h) << 16) | ((x+w)&0xffff);
+        pNv->riva.Bitmap->Color1C           = pNv->FgColor;
+        pNv->riva.Bitmap->WidthHeightC      = (h << 16) | bw;
+        pNv->riva.Bitmap->PointC            = (y << 16) | (x & 0xFFFF);
+    }
+    else
+    {
+        /* Opaque */
+        RIVA_FIFO_FREE(pNv->riva, Bitmap, 7);
+        pNv->riva.Bitmap->ClipE.TopLeft     = (y << 16) | ((x+skipleft) & 0xFFFF);
+        pNv->riva.Bitmap->ClipE.BottomRight = ((y+h) << 16) | ((x+w)&0xffff);
+        pNv->riva.Bitmap->Color0E           = pNv->BgColor;
+        pNv->riva.Bitmap->Color1E           = pNv->FgColor;
+        pNv->riva.Bitmap->WidthHeightInE  = (h << 16) | bw;
+        pNv->riva.Bitmap->WidthHeightOutE = (h << 16) | bw;
+        pNv->riva.Bitmap->PointE          = (y << 16) | (x & 0xFFFF);
+    }
+
+    if ( pNv->expandBuffer == NULL )
+    {
+        /* Using fifo writes, set it up */
+        pNv->expandRows = h;
+	while (pNv->riva.Busy(&pNv->riva));
+        RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
+    }
+}
+
+
+static void
+NVSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
+{
+    NVPtr pNv = NVPTR(pScrn);
+
+    int t = pNv->expandWidth;
+    unsigned int *pbits = (unsigned int*)pNv->expandBuffer;
+    unsigned int *d = (unsigned int*)pNv->expandFifo;
+    
+    while (pNv->riva.Busy(&pNv->riva));
+    while(t >= 4) 
+    {    
+	RIVA_FIFO_FREE(pNv->riva, Bitmap, 4); 
+	d[0] = pbits[0]; /* burst */ 
+	d[1] = pbits[1]; 
+	d[2] = pbits[2]; 
+	d[3] = pbits[3]; 
+	t -= 4; d += 4; pbits += 4; 
+    }
+     
+    while(t--) 
+    {
+	RIVA_FIFO_FREE(pNv->riva, Bitmap, 1); 
+	*d++ = *pbits++; 
+    }
+}
+
+static void
+NVSubsequentColorExpandScanlineFifo(ScrnInfoPtr pScrn, int bufno)
+{
+    NVPtr pNv = NVPTR(pScrn);
+
+    if ( --pNv->expandRows )
+    {
+	while (pNv->riva.Busy(&pNv->riva));
+        RIVA_FIFO_FREE(pNv->riva, Bitmap, pNv->expandWidth);
+    }
+    
+}
+
+
+/* Image writes */
+static void
+NVSetupForScanlineImageWrite(ScrnInfoPtr pScrn, int rop,
+                             unsigned int planemask, int transparency_color,
+                             int bpp, int depth)
+{
+    NVPtr pNv = NVPTR(pScrn);
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Setup\n"
+	       "rop %i\n"
+	       "planemask %i\n"
+	       "transparency_color %i\n"
+	       "bpp %i\n"
+	       "depth %i\n",
+	       rop, planemask, transparency_color, bpp, depth);
+    
+    rivaRendered2D = 1;
+    NVSetRopSolid(pNv, rop);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "-Done\n");
+}
+
+static void
+NVSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn, int x, int y,
+                                   int w, int h, int skipleft)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    int bpp = pScrn->bitsPerPixel/8;
+    int bw = ((w * bpp) + 3) & ~3;
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Subsequent\n"
+	       "x %i\n"
+	       "y %i\n"
+	       "w %i\n"
+	       "h %i\n"
+	       "skip %i\n"
+	       "bw %i\n"
+	       "bpp %i\n",
+	       x, y, w, h, skipleft, bw, bpp);
+
+    pNv->expandWidth = bw >> 2;
+
+    RIVA_FIFO_FREE(pNv->riva, Pixmap, 3);
+    pNv->riva.Pixmap->TopLeft         = (y << 16) | (x & 0xFFFF);
+    pNv->riva.Pixmap->WidthHeight     = (h << 16) | w;
+    pNv->riva.Pixmap->WidthHeightIn   = (h << 16) | w;
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "-Done\n");
+}
+
+
+static void
+NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
+{
+    NVPtr pNv = NVPTR(pScrn);
+
+    int t = pNv->expandWidth;
+    unsigned int *pbits = (unsigned int*)pNv->expandBuffer;
+    unsigned int *d = (unsigned int*)&pNv->riva.Pixmap->Pixels;
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Write %i\n", t);
+    
+    while (pNv->riva.Busy(&pNv->riva));
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Synced\n");
+
+    do
+    {
+	RIVA_FIFO_FREE(pNv->riva, Pixmap, 1); 
+	*d = *pbits++; 
+    }while(--t);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "-Done\n");
+}
+
+
+
+/* Initialize XAA acceleration info */
 Bool
 NVAccelInit(ScreenPtr pScreen) 
 {
@@ -303,100 +487,24 @@ NVAccelInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     NVPtr pNv = NVPTR(pScrn);
     BoxRec AvailFBArea;
-    unsigned surfSize, cacheSize;
     
     pNv->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
 
-
-    /*
-     * Calc surface size and round up to nearest 256 bytes.
-     */
-    surfSize = pScrn->virtualY 
-        * pScrn->displayWidth
-        * pScrn->bitsPerPixel / 8;
-    surfSize = (surfSize + 255) & 0xFFFFFF00;
-    /*
-     * Get a reasonable value for pixmap cache size.
-     */
-    switch (pScrn->bitsPerPixel)
-    {
-        case 8:
-            cacheSize = pScrn->videoRam * 1024 - surfSize;
-            break;
-        case 15:
-        case 16:
-            cacheSize = 128 * pScrn->displayWidth;
-            if ((pScrn->videoRam < 7*1024) && (pScrn->displayWidth < 1024))
-                cacheSize = 0;
-            break;
-        case 24:
-        case 32:
-        default:
-            cacheSize = 256 * pScrn->displayWidth;
-            if (pScrn->videoRam < 15*1024)
-                cacheSize = pScrn->videoRam * 1024 - surfSize;
-            break;
-    }
-    if (cacheSize + surfSize > pScrn->videoRam * 1024)
-        cacheSize = pScrn->videoRam * 1024 - surfSize;
-    /*
-     * Calc surface offsets.
-     */
-    rivaBufferOffset[RIVA_FRONT_BUFFER]   = 0;
-    rivaBufferOffset[RIVA_CACHE_BUFFER]   = rivaBufferOffset[RIVA_FRONT_BUFFER] + surfSize;
-    rivaBufferOffset[RIVA_BACK_BUFFER]    = rivaBufferOffset[RIVA_CACHE_BUFFER] + cacheSize;
-    rivaBufferOffset[RIVA_DEPTH_BUFFER]   = pScrn->videoRam * 1024       - surfSize;
-    rivaBufferOffset[RIVA_TEXTURE_BUFFER] = rivaBufferOffset[RIVA_BACK_BUFFER]  + surfSize;
-    /*
-     * Make sure there are no overlapping surfaces.
-     */
-    if (rivaBufferOffset[RIVA_TEXTURE_BUFFER] > rivaBufferOffset[RIVA_DEPTH_BUFFER])
-    {
-        /*
-         * Overlap back and depth buffer.  Accelerated apps can't have both.
-         */
-        rivaBufferOffset[RIVA_TEXTURE_BUFFER] = rivaBufferOffset[RIVA_BACK_BUFFER];
-        rivaBufferOffset[RIVA_BACK_BUFFER]    = rivaBufferOffset[RIVA_DEPTH_BUFFER];
-        if (rivaBufferOffset[RIVA_TEXTURE_BUFFER] > rivaBufferOffset[RIVA_DEPTH_BUFFER])
-        {
-            /*
-             * Nope, no room.
-             */
-            rivaBufferOffset[RIVA_BACK_BUFFER]  = 0;
-            rivaBufferOffset[RIVA_DEPTH_BUFFER] = 0;
-        }
-    }
-    /*
-     * Check for any room at all.
-     */
-    if (rivaBufferOffset[RIVA_BACK_BUFFER] > rivaBufferOffset[RIVA_DEPTH_BUFFER])
-    {
-        rivaBufferOffset[RIVA_BACK_BUFFER]    = 0;
-        rivaBufferOffset[RIVA_DEPTH_BUFFER]   = 0;
-        rivaBufferOffset[RIVA_TEXTURE_BUFFER] = 0;
-    }
-    
     /* fill out infoPtr here */
 /*    infoPtr->Flags = 	PIXMAP_CACHE | 
 			OFFSCREEN_PIXMAPS |
 			LINEAR_FRAMEBUFFER |
 			MICROSOFT_ZERO_LINE_BIAS;
 */
-    infoPtr->Flags = 	LINEAR_FRAMEBUFFER;
-    /*
-     * Set pixmap cache if enough room.
-     */
-    if (cacheSize > 1024)
-    {
-        infoPtr->Flags |= PIXMAP_CACHE | OFFSCREEN_PIXMAPS;
+    infoPtr->Flags = 	LINEAR_FRAMEBUFFER | PIXMAP_CACHE | OFFSCREEN_PIXMAPS;
 
-        AvailFBArea.x1 = 0;
-        AvailFBArea.y1 = 0;
-        AvailFBArea.x2 = pScrn->displayWidth;
-        AvailFBArea.y2 = pNv->FbUsableSize / (pScrn->displayWidth * pScrn->bitsPerPixel / 8);
-        xf86InitFBManager(pScreen, &AvailFBArea);
-    }
+    /* Initialize pixmap cache */
+    AvailFBArea.x1 = 0;
+    AvailFBArea.y1 = 0;
+    AvailFBArea.x2 = pScrn->displayWidth;
+    AvailFBArea.y2 = pNv->FbUsableSize / (pScrn->displayWidth * pScrn->bitsPerPixel / 8);
+    xf86InitFBManager(pScreen, &AvailFBArea);
     
     /* sync */
     infoPtr->Sync = NVSync;
@@ -413,23 +521,87 @@ NVAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentScreenToScreenCopy = NVSubsequentScreenToScreenCopy;
 
     /* 8x8 mono patterns */
-    infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
-                                       HARDWARE_PATTERN_SCREEN_ORIGIN |
-                                       NO_TRANSPARENCY | NO_PLANEMASK;
+    /*
+     * Set pattern opaque bits based on pixel format.
+     */
+    switch (pScrn->bitsPerPixel)
+    {
+        case 8:
+            rivaOpaqueMonochrome = 0xFFFFFF00;
+            break;
+        case 15:
+        case 16:
+            rivaOpaqueMonochrome = (pScrn->weight.green == 5) ? 0xFFFF8000 : 0xFFFF0000;
+            break;
+        default:
+            rivaOpaqueMonochrome = 0xFF000000;
+    }
+
+    infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_SCREEN_ORIGIN |
+        HARDWARE_PATTERN_PROGRAMMED_BITS | NO_PLANEMASK;
     infoPtr->SetupForMono8x8PatternFill = NVSetupForMono8x8PatternFill;
-    infoPtr->SubsequentMono8x8PatternFillRect = 
-    NVSubsequentMono8x8PatternFillRect;
-/*    infoPtr->SubsequentMono8x8PatternFillTrap = 
+    infoPtr->SubsequentMono8x8PatternFillRect =
+        NVSubsequentMono8x8PatternFillRect;
+    /*infoPtr->SubsequentMono8x8PatternFillTrap = 
       NVSubsequentMono8x8PatternFillTrap; */
 
     /* clipping */
-/*    infoPtr->SetClippingRectangle = NVSetClippingRectangle;
+    infoPtr->SetClippingRectangle = NVSetClippingRectangle;
     infoPtr->DisableClipping = NVDisableClipping;
-    infoPtr->ClippingFlags =    HARDWARE_CLIP_SOLID_FILL |
-				HARDWARE_CLIP_MONO_8x8_FILL |
-				HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;*/
+    infoPtr->ClippingFlags =    /*HARDWARE_CLIP_SOLID_FILL |
+                                  HARDWARE_CLIP_MONO_8x8_FILL | */
+				HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;
 
+    /* Color expansion */
+    infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
+        BIT_ORDER_IN_BYTE_LSBFIRST | NO_PLANEMASK | CPU_TRANSFER_PAD_DWORD |
+        LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+
+    infoPtr->NumScanlineColorExpandBuffers = 1;
+    infoPtr->SetupForScanlineCPUToScreenColorExpandFill =
+        NVSetupForScanlineCPUToScreenColorExpandFill;
+    infoPtr->SubsequentScanlineCPUToScreenColorExpandFill = 
+        NVSubsequentScanlineCPUToScreenColorExpandFill;
+
+    pNv->expandFifo = (unsigned char*)&pNv->riva.Bitmap->MonochromeData01E;
+
+    if ( (pNv->riva.Architecture == 3) || 1 )
+    {
+        /* Riva 128(ZX) can't use direct fifo writes, use buffer */
+        pNv->expandBuffer = xnfalloc((pScrn->virtualX + 62)
+                                     * pScrn->bitsPerPixel / 8);
+        infoPtr->ScanlineColorExpandBuffers = &pNv->expandBuffer;
+        infoPtr->SubsequentColorExpandScanline = 
+            NVSubsequentColorExpandScanline;
+    }
+    else
+    {
+        /* TNT(2) can */
+	pNv->expandBuffer = NULL;
+        infoPtr->ScanlineColorExpandBuffers = &pNv->expandFifo;
+        infoPtr->SubsequentColorExpandScanline = 
+            NVSubsequentColorExpandScanlineFifo;
+    }
 #if 0
+    /* Image writes */
+    infoPtr->ScanlineImageWriteFlags = 	CPU_TRANSFER_PAD_DWORD |
+                                        SCANLINE_PAD_DWORD |
+/*                                        LEFT_EDGE_CLIPPING |
+	                                LEFT_EDGE_CLIPPING_NEGATIVE_X; */
+                                        NO_PLANEMASK | NO_TRANSPARENCY |
+                                        NO_GXCOPY;
+
+    infoPtr->SetupForScanlineImageWrite = NVSetupForScanlineImageWrite;
+    infoPtr->SubsequentScanlineImageWriteRect =
+        NVSubsequentScanlineImageWriteRect;
+    infoPtr->SubsequentImageWriteScanline = NVSubsequentImageWriteScanline;
+    
+    /* We reuse the same buffer as color expansion */
+    infoPtr->NumScanlineImageWriteBuffers = 1;
+    infoPtr->ScanlineImageWriteBuffers = &pNv->expandBuffer;
+#endif    
+#if 0
+    /* Left-overs from mga driver */
     /* solid lines */
     infoPtr->SetupForSolidLine = infoPtr->SetupForSolidFill;
     infoPtr->SubsequentSolidHorVertLine =
@@ -489,26 +661,6 @@ NVAccelInit(ScreenPtr pScreen)
 #endif
     }
 
-    /* image writes */
-    infoPtr->ImageWriteFlags = 	CPU_TRANSFER_PAD_DWORD |
-				SCANLINE_PAD_DWORD |
-				LEFT_EDGE_CLIPPING |
-				LEFT_EDGE_CLIPPING_NEGATIVE_X |
-				SYNC_AFTER_IMAGE_WRITE;
-
-    /* if we're write combining */ 
-    infoPtr->ImageWriteFlags |= NO_GXCOPY;
-
-    if(pNv->ILOADBase) {
-	infoPtr->ImageWriteRange = 0x800000;
-	infoPtr->ImageWriteBase = pNv->ILOADBase;
-    } else {
-	infoPtr->ImageWriteRange = 0x1C00;
-	infoPtr->ImageWriteBase = pNv->IOBase;
-    }
-    infoPtr->SetupForImageWrite = NVNAME(SetupForImageWrite);
-    infoPtr->SubsequentImageWriteRect = NVNAME(SubsequentImageWriteRect);
-
     /* image reads */
     infoPtr->ImageReadFlags = 	CPU_TRANSFER_PAD_DWORD |
 				SCANLINE_PAD_DWORD;
@@ -564,25 +716,9 @@ NVAccelInit(ScreenPtr pScreen)
 	infoPtr->NonTEGlyphRendererFlags |= NO_PLANEMASK;
 	infoPtr->FillCacheBltRectsFlags |= NO_PLANEMASK;
     }
-
-    
-    maxFastBlitMem = (pNv->Interleave ? 4096 : 2048) * 1024;
-
-    if(pNv->FbMapSize > maxFastBlitMem) {
-	pNv->MaxFastBlitY = maxFastBlitMem / (pScrn->displayWidth * PSZ / 8);
-    }
 #endif
 
-    NVSetClippingRectangle(pScrn, 0, 0, 0x3fff, 0x3fff);
+    NVSetClippingRectangle(pScrn, 0, 0, 0x7fff, 0x7fff);
     return(XAAInit(pScreen, infoPtr));
 }
-
-
-
-
-
-
-
-
-
 

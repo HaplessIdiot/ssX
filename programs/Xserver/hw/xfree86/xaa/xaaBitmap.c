@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.3 1998/08/02 05:17:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.4 1998/10/05 13:23:17 dawes Exp $ */
 
 
 #include "xaa.h"
@@ -218,7 +218,7 @@ EXPNAME(XAAWriteBitmapColorExpand)(
 )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    CARD32* base = (CARD32*)infoRec->ColorExpandBase;
+    CARD32* base;
     unsigned char *srcp = src;
     int SecondPassColor = -1;
     int shift = 0, dwords;
@@ -276,6 +276,7 @@ SECOND_PASS:
     (*infoRec->SubsequentCPUToScreenColorExpandFill)(
 					pScrn, x, y, w, h, skipleft);
 
+    base = (CARD32*)infoRec->ColorExpandBase;
 
 #ifndef FIXEDBASE
     if((dwords * h) <= infoRec->ColorExpandRange)
@@ -300,7 +301,6 @@ SECOND_PASS:
 	SecondPassColor = -1;
 	firstFunc = secondFunc;
 	srcp = src;
-	base = (CARD32*)infoRec->ColorExpandBase;
 	goto SECOND_PASS;
     }
 
@@ -378,20 +378,20 @@ EXPNAME(XAAWriteBitmapScanlineColorExpand)(
 #endif
 
 SECOND_PASS:
-    bufferNo = 0;
-    base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
 
     (*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(pScrn, fg, bg, rop, planemask);
     (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 					pScrn, x, y, w, h, skipleft);
 
+    bufferNo = 0;
+
     while(h--) {
+	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
 	(*firstFunc)((CARD32*)srcp, base, dwords, shift);
 	(*infoRec->SubsequentColorExpandScanline)(pScrn, bufferNo++);
 	srcp += srcwidth;
 	if(bufferNo >= infoRec->NumScanlineColorExpandBuffers)
 	    bufferNo = 0;
-	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
     }
 
     if(SecondPassColor != -1) {

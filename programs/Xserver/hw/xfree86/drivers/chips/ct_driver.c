@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.63 1999/07/18 03:26:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.64 1999/07/19 13:36:26 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -128,18 +128,6 @@
 /* Needed for replacement LoadPalette function for Gamma Correction */
 #include "xf86cmap.h"
 
-/* These need to be checked */
-#if 0
-#ifdef XFreeXDGA 
-#include "X.h"
-#include "Xproto.h"
-#include "scrnintstr.h"
-#include "servermd.h"
-#define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
-#endif
-#endif
-
 /* Driver specific headers */
 #include "ct_driver.h"
 
@@ -149,9 +137,6 @@ static Bool     CHIPSProbe(DriverPtr drv, int flags);
 static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool     CHIPSScreenInit(int Index, ScreenPtr pScreen, int argc,
                                   char **argv);
-static Bool     CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode,
-                                  int flags);
-static void     CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags);
 static Bool     CHIPSEnterVT(int scrnIndex, int flags);
 static void     CHIPSLeaveVT(int scrnIndex, int flags);
 static Bool     CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -552,6 +537,7 @@ typedef enum {
     OPTION_SHOWCACHE,
     OPTION_SHADOW_FB,
     OPTION_OVERLAY,
+    OPTION_COLOR_KEY,
     OPTION_FP_CLOCK_8,
     OPTION_FP_CLOCK_16,
     OPTION_FP_CLOCK_24,
@@ -576,10 +562,6 @@ static OptionInfoRec Chips655xxOptions[] = {
     { OPTION_18_BIT_BUS,	"18BitBus",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_FREQ,      {0}, FALSE },
-    { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_FREQ,      {0}, FALSE },
-    { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
-    { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_FREQ,      {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -612,6 +594,7 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_COLOR_KEY,		"ColorKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
@@ -1485,7 +1468,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	  if (pScrn->bitsPerPixel == 16) {
 	    if (cPtr->Flags & ChipsLinearSupport) {
 		cPtr->Flags |= ChipsOverlay8plus16;
-		pScrn->colorKey = TRANSPARENCY_KEY;
+		if(!xf86GetOptValInteger(
+			cPtr->Options, OPTION_COLOR_KEY, &(pScrn->colorKey)))
+		    pScrn->colorKey = TRANSPARENCY_KEY;
 		pScrn->overlayFlags = OVERLAY_8_16_DUALFB;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 			   "PseudoColor overlay enabled.\n");
@@ -1751,14 +1736,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
         cPtr->Flags |= ChipsColorTransparency;
     else
         cPtr->Flags &= ~ChipsColorTransparency;
-
-#if 0
-#ifdef XFreeXDGA 
-    /* Setup DGA */
-    if ( pScrn->depth > 1)
-        vga256InfoRec.directMode = XF86DGADirectPresent;
-#endif
-#endif
 
     /* DAC info */
     if (!((cPtr->readXR(cPtr, 0xD0)) & 0x01))
@@ -2351,14 +2328,6 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	    }
 	}
     }
-
-#if 0
-#ifdef XFreeXDGA 
-    /* Setup DGA */
-    if( pScrn->depth > 1 )
-        vga256InfoRec.directMode = XF86DGADirectPresent;
-#endif
-#endif
 
     cPtr->ClockMulFactor = ((pScrn->bitsPerPixel >= 8) ? bytesPerPixel : 1);
     if (cPtr->ClockMulFactor != 1)
@@ -2963,14 +2932,6 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-#if 0
-#ifdef XFreeXDGA 
-    /* Setup DGA */
-    if( pScrn->depth > 1 )
-        vga256InfoRec.directMode = XF86DGADirectPresent;
-#endif
-#endif
-
     /* DAC info */
     if ((cPtr->readXR(cPtr, 0x06)) & 0x02)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Internal DAC disabled\n");
@@ -3162,19 +3123,6 @@ CHIPSLeaveVT(int scrnIndex, int flags)
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
     /*xf86EnableAccess(pScrn);*/
-#if 0
-#ifdef XFreeXDGA
-    if (vga256InfoRec.directMode&XF86DGADirectGraphics) {
-	/* 
-	 * Disable HW cursor. I hope DGA can't call this function twice
-	 * in a row, without calling EnterVT in between. Otherwise the
-	 * effect will be to hide the cursor, perhaps permanently!!
-	 */
-        chipsHWCursorOff(cPtr);
-	return;
-    }
-#endif
-#endif
 
     /* Invalidate the cached acceleration registers */
     cAcl->planemask = -1;
@@ -3474,6 +3422,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
+    if ((cPtr->Flags & ChipsAccelSupport) && (pScrn->depth >= 8))
+	CHIPSDGAInit(pScreen);
+
     cPtr->HWCursorShown = FALSE;
 
     if (!(cPtr->Flags & ChipsLinearSupport)) {
@@ -3743,7 +3694,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 }
 
 /* Mandatory */
-static Bool
+Bool
 CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     xf86EnableAccess(xf86Screens[scrnIndex]);
@@ -3751,7 +3702,7 @@ CHIPSSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 }
 
 /* Mandatory */
-static void
+void
 CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn;
@@ -3824,15 +3775,6 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
 	cPtr->writeMR(cPtr, 0x24, ((cPtr->FbOffset16 + Base) >> 16) & 0xFF);
     }
     
-#if 0
-#ifdef XFreeXDGA
-    if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
-	/* Wait until vertical retrace is in progress. */
-	while ((cPtr->readST01(cPtr)) & 0x08);
-	while (!(cPtr->readST01(cPtr)) & 0x08);
-    }
-#endif
-#endif
 }
 
 /* Mandatory */
@@ -3854,6 +3796,8 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	xf86DestroyCursorInfoRec(cPtr->CursorInfoRec);
     if (cPtr->ShadowPtr)
 	xfree(cPtr->ShadowPtr);
+    if (cPtr->DGAModes)
+	xfree(cPtr->DGAModes);
     pScrn->vtSema = FALSE;
     pScreen->CloseScreen = cPtr->CloseScreen; /*§§§*/
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);/*§§§*/

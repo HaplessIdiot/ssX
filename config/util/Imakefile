@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/16 1996/11/13 14:43:28 lehors $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.19 1999/04/17 09:08:09 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.20 1999/04/29 09:13:23 dawes Exp $
 
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
@@ -86,10 +86,15 @@ InstallNamedProg(indir.cmd,indir.cmd,$(BINDIR))
 InstallNamedProg(os2inst.cmd,os2inst.cmd,$(BINDIR))
 InstallNamedProg(xmkmf.cmd,xmkmf.cmd,$(BINDIR))
 InstallNamedProg(xmake.cmd,make.cmd,$(BINDIR))
+InstallDriverSDKNamedProg(mkdirhier.cmd,mkdirhier.cmd,$(DRIVERSDKDIR)/config/util)
+InstallDriverSDKNamedProg(indir.cmd,indir.cmd,$(DRIVERSDKDIR)/config/util)
+InstallDriverSDKNamedProg(os2inst.cmd,os2inst.cmd,$(DRIVERSDKDIR)/config/util)
 #else
 InstallNamedProg(xmkmf,xmkmf,$(BINDIR))
 InstallNamedProg(mkdirhier.sh,mkdirhier,$(BINDIR))
 InstallNamedProg(gccmakedep,gccmakedep,$(BINDIR))
+InstallDriverSDKNamedProg(mkdirhier.sh,mkdirhier.sh,$(DRIVERSDKDIR)/config/util)
+InstallDriverSDKNamedProg(gccmakedep,gccmakedep,$(DRIVERSDKDIR)/config/util)
 InstallNamedProg(mergelib,mergelib,$(BINDIR))
 InstallNamedProg(makeg.sh,makeg,$(BINDIR))
 InstallManPage(makeg,$(MANDIR))
@@ -97,7 +102,11 @@ InstallManPage(makeg,$(MANDIR))
 InstallManPage(mkdirhier,$(MANDIR))
 #if UseCCMakeDepend
 InstallNamedProg(makedepend,makedepend,$(BINDIR))
+InstallDriverSDKNamedProg(makedepend,makedepend,$(DRIVERSDKDIR)/config/util)
 #endif
 #if SystemV || SystemV4
 InstallNamedProg(bsdinst.sh,bsdinst,$(BINDIR))
+InstallDriverSDKNamedProg(bsdinst.sh,bsdinst.sh,$(DRIVERSDKDIR)/config/util)
 #endif
+
+InstallDriverSDKNamedProg(revpath,revpath,$(DRIVERSDKDIR)/config/util)

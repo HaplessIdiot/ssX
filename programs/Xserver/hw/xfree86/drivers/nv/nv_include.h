@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_include.h,v 1.2 1999/08/01 12:17:40 dawes Exp $ */
 
 #ifndef __NV_INCLUDE_H__
 #define __NV_INCLUDE_H__
@@ -7,9 +7,7 @@
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86Resources.h"
-
-/* All drivers need this */
-#include "xf86_ansic.h"
+#include "compiler.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"
@@ -46,15 +44,14 @@
 #include "shadowfb.h"
 #include "fbdevhw.h"
 
-
-
 #include "xf86xv.h"
 #include "Xv.h"
 
 #include "vgaHW.h"
 
 #include "xf86Cursor.h"
-#include "compiler.h"
+
+#include "region.h"
 
 #include "nv_const.h"
 #include "nv_type.h"

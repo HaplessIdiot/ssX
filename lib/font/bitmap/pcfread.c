@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.9 1999/07/17 05:30:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.10 1999/08/01 07:56:55 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -861,7 +861,7 @@ pmfReadFont(FontPtr pFont, FontFilePtr file,
 Bail:
     xfree(ink_metrics);
     if(encoding) {
-        for(i=0; i<nencoding; i++)
+        for(i=0; i<NUM_SEGMENTS(nencoding); i++)
             xfree(encoding[i]);
     }
     xfree(encoding);

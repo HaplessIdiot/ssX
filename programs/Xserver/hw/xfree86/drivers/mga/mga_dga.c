@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.9 1999/07/18 08:14:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.10 1999/08/01 07:57:28 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -10,7 +10,6 @@
 #include "mga_bios.h"
 #include "mga.h"
 #include "mga_reg.h"
-#include "mga_macros.h"
 #include "dgaproc.h"
 
 
@@ -262,6 +261,7 @@ MGA_SetMode(
         memcpy(&pMga->CurrentLayout, &SavedLayouts[index], sizeof(MGAFBLayout));
                 
       MGASwitchMode(index, pScrn->currentMode, 0);
+      MGAAdjustFrame(index, pScrn->frameX0, pScrn->frameY0, 0);
       pMga->DGAactive = FALSE;
    } else {
       if(!pMga->DGAactive) {  /* save the old parameters */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/afb/Imakefile,v 3.4 1999/04/17 09:08:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/afb/Imakefile,v 3.5 1999/06/13 13:47:37 dawes Exp $
 XCOMM $XConsortium: Imakefile,v 1.38 94/03/11 18:47:47 dpw Exp $
 #define IHaveModules
 #include <Server.tmpl>
@@ -63,3 +63,7 @@ InstallLibraryModule(afb,$(MODULEDIR),.)
 #ifndef OS2Architecture
 DependTarget()
 #endif
+
+InstallDriverSDKLibraryModule(afb,$(DRIVERSDKMODULEDIR),.)
+
+InstallDriverSDKNonExecFile(afb.h,$(DRIVERSDKINCLUDEDIR))

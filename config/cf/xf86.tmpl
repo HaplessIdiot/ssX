@@ -2,12 +2,13 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.23 1999/06/13 13:46:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.24 1999/07/10 07:24:34 dawes Exp $
 
-#if 0
-#if XF86LinkKit
+#if XF86DriverSDK
+    BUILDMODULEDIR = $(DRIVERSDKMODULEDIR)
+    BUILDMODULETOP = ..
     TOP_INCLUDES = TopIncludes
-   IMAKE_DEFINES = -DXF86LinkKit=1
+   IMAKE_DEFINES = -DXF86DriverSDK=1
 #ifdef UseInstalled
        IMAKE_CMD = $(IMAKE) -DUseInstalled -I$(TOP) -I$(IRULESRC) \
 		   $(IMAKE_DEFINES)
@@ -22,7 +23,6 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.23 1999/06/13 13:46:45 dawes Exp $
 #else
 #define ImakeSubCmdHelper $(IMAKEPREFIX)$(IMAKE) -I$(IMAKETOP) \
 			  -I$(IMAKEPREFIX)$(IRULESRC) $(IMAKE_DEFINES)
-#endif
 #endif
 #endif
 

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.10 1999/08/01 07:20:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.11 1999/08/01 11:55:24 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -131,6 +131,9 @@ static const char *vgahwSymbols[] = {
     "vgaHWFreeHWRec",
     "vgaHWSaveScreen",
     "vgaHWddc1SetSpeed",
+#ifdef DPMSExtension
+    "vgaHWDPMSSet",
+#endif
     NULL
 };
 
@@ -298,7 +301,7 @@ static void
 NVFreeRec(ScrnInfoPtr pScrn)
 {
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVFreeRec\n"));
-
+    
     if (pScrn->driverPrivate == NULL)
         return;
     xfree(pScrn->driverPrivate);
@@ -563,6 +566,9 @@ NVCloseScreen(int scrnIndex, ScreenPtr pScreen)
         xfree(pNv->ShadowPtr);
     if (pNv->DGAModes)
         xfree(pNv->DGAModes);
+    if ( pNv->expandBuffer )
+        xfree(pNv->expandBuffer);
+
 
     pScrn->vtSema = FALSE;
     return TRUE;
@@ -1198,7 +1204,8 @@ NVMapMem(ScrnInfoPtr pScrn)
 {
     NVPtr pNv;
     int mmioFlags;
-
+    CARD32 memsize;
+        
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVMapMem\n"));
     pNv = NVPTR(pScrn);
 
@@ -1230,9 +1237,12 @@ NVMapMem(ScrnInfoPtr pScrn)
 	return FALSE;
 #endif /* __alpha__ */
 
+    
+    memsize = (pNv->FbMapSize + 1024*1024-1) & ~(1024*1024-1);
+        
     pNv->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pNv->PciTag, pNv->FbAddress,
-				 pNv->FbMapSize);
+				 memsize);
     if (pNv->FbBase == NULL)
 	return FALSE;
 
@@ -1270,7 +1280,8 @@ static Bool
 NVUnmapMem(ScrnInfoPtr pScrn)
 {
     NVPtr pNv;
-
+    CARD32 memsize;
+    
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVUnmapMem\n"));
     pNv = NVPTR(pScrn);
 
@@ -1285,7 +1296,8 @@ NVUnmapMem(ScrnInfoPtr pScrn)
     pNv->IOBaseDense = NULL;
 #endif /* __alpha__ */
 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->FbBase, pNv->FbMapSize);
+    memsize = (pNv->FbMapSize + 1024*1024-1) & ~(1024*1024-1);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->FbBase, memsize);
     pNv->FbBase = NULL;
     pNv->FbStart = NULL;
 
@@ -1545,7 +1557,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
 
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Backing store set up\n");
+    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Backing store set up\n"));
 
     /* Initialize software cursor.  
 	Must precede creation of the default colormap */
@@ -1579,6 +1591,12 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     
     if(pNv->ShadowFB)
 	ShadowFBInit(pScreen, NVRefreshArea);
+
+#ifdef DPMSExtension
+    /* Call the vgaHW DPMS function directly.
+       XXX There must be a way to get all the DPMS modes. */
+    xf86DPMSInit(pScreen, vgaHWDPMSSet, 0);
+#endif
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Color maps etc. set up\n"));
     

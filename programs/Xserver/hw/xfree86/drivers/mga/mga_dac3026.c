@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.45 1999/07/18 03:26:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.46 1999/08/01 07:57:27 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -645,14 +645,7 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (pMga->SyncOnGreen)
 	    pReg->DacRegs[index_1d] |= 0x20;
 
-	switch(pMga->Chipset) {
-	case PCI_CHIP_MGA2064:
-	  pReg->Option = 0x402C0100;
-	  break;
-	default:
-	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING ,"No default option for Chipset 0x%x\n", pMga->Chipset);
-	  break;
-	}
+	pReg->Option = 0x402C0100;  /* fine for 2064 and 2164 */
 
 	if (pMga->Interleave)
 	  pReg->Option |= 0x1000;
@@ -663,17 +656,6 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    pReg->Option &= ~0x20000000;
 	else
 	    pReg->Option |= 0x20000000;
-
-	/* now make sure that the refresh counter is set to something
-	   reasonable. Especially secondary cards in multi head configurations
-	   don't get this setup by the BIOS.
-	   A value of 12 seems to work for both 2064 and 2164 */
-	if((pReg->Option & 0x001F0000) == 0) {
-	    pReg->Option |= 0x000C0000;
-#ifdef DEBUG
-	    ErrorF("setting refresh counter 0x%08X\n",pReg->Option);
-#endif
-	}
 
 	pVga->MiscOutReg |= 0x0C; 
 	/* XXX Need to check the first argument */
@@ -1155,6 +1137,9 @@ void MGA3026LoadPalette(
 ){
     MGAPtr pMga = MGAPTR(pScrn);
     int i, index;
+
+    if(pMga->CurrentLayout.Overlay8Plus24 && (pVisual->nplanes != 8))
+	return;
 
     if (pVisual->nplanes == 16) {
 	for(i = 0; i < numColors; i++) {

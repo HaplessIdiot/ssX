@@ -1,0 +1,10 @@
+XCOMM $XFree86$
+
+CppScriptTarget(mkmf,mkmf.cpp,-DCONFIGDIRSPEC=-I$(CONFIGDIR),$(ICONFIGFILES))
+
+InstallDriverSDKNamedNonExec(Imakefile.SDK,Imakefile,$(DRIVERSDKDIR))
+InstallDriverSDKNamedNonExec(site.def.SDK,xf86site.def,$(DRIVERSDKDIR))
+InstallDriverSDKNamedProg(mkmf,mkmf,$(DRIVERSDKDIR))
+#if !HasLinuxDoc
+InstallDriverSDKNonExecFile(README,$(DRIVERSDKDIR))
+#endif

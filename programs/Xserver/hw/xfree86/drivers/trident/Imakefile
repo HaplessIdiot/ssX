@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/Imakefile,v 1.11 1999/04/25 10:02:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/Imakefile,v 1.12 1999/06/13 15:49:05 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the TRIDENT driver.  
 XCOMM
@@ -13,6 +13,9 @@ OBJS = trident_driver.o tridentramdac.o trident_dac.o tridenthelper.o \
        trident_accel.o trident_i2c.o /* trident_bank.o */ \
        image_accel.o blade_accel.o
 
+#if defined(XF86DriverSDK)
+INCLUDES = -I. -I../../include
+#else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa \
@@ -23,6 +26,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
 	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XTOP)/include/extensions
+#endif
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
@@ -35,3 +39,18 @@ ObjectModuleTarget(trident,$(OBJS))
 InstallObjectModule(trident,$(MODULEDIR),drivers)
 
 DependTarget()
+
+InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(blade_accel.c,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(image_accel.c,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(trident.h,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(trident_accel.c,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(trident_bank.c,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(trident_dac.c,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(trident_driver.c,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(trident_i2c.c,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(trident_regs.h,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(tridenthelper.c,$(DRIVERSDKDIR)/drivers/trident)
+InstallDriverSDKNonExecFile(tridentramdac.c,$(DRIVERSDKDIR)/drivers/trident)
+
+InstallDriverSDKObjectModule(trident,$(DRIVERSDKMODULEDIR),drivers)

@@ -11,7 +11,7 @@
 <date> 19th July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.25 1999/07/07 12:05:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.26 1999/07/19 13:36:22 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -294,6 +294,22 @@ TextClockFreq 25.175
 	select a different clock for the server to use when returning to
 	the text console.
 <tag>
+Option "FPClock8"   "65.0"
+Option "FPClock16"  "65.0"
+Option "FPClock24"  "65.0"
+Option "FPClock32"  "65.0"
+</tag>
+	In general the LCD panel clock should be set independently of the
+	modelines supplied. Normally the chips BIOS set the flat panel
+	clock correctly and so the default behaviour with HiQV chipset is
+	to leave the flat panel clock alone, or force it to be 90% of the
+	maximum allowable clock if the current panel clock exceeds the
+	dotclock limitation due to a depth change. This option allows the user
+	to force the server the reprogram the flat panel clock independently
+	of the modeline with HiQV chipset. The four options are for 8bpp or
+	less, 16, 24 or 32bpp LCD panel clocks, where the options above set
+	the clocks to 65MHz.
+<tag>
 Option "MMIO"
 </tag>
 	This has a different effect depending on the hardware on which it
@@ -396,6 +412,13 @@ Option "Overlay"
 	default memory clock that will cause pixel errors with this option.
 	If you get pixel error with this option try using the
 	"<tt>SetMemClk</tt>" to slow the memory clock.
+<tag>
+Option "ColorKey" "255" 
+</tag>
+	Normally the color transparency key for the overlay is the 8bpp lookup
+	table entry 255. This might cause troubles with some applications, and
+	so this option allows the color transparency key to be set to some
+	other value. Legal values are 2 to 255 inclusive.
 <tag>
 Option "XaaNoScreenToScreenCopy",
 Option "XaaNoSolidFillRect",

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.242 1999/07/18 08:34:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.243 1999/08/01 07:56:51 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -834,6 +834,22 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #ifndef ServerOSDefines
 #define ServerOSDefines		XFree86ServerOSDefines
 #endif
+
+#ifndef DriverSDKDir
+#define DriverSDKDir     $(USRLIBDIR)/Server
+#endif
+
+#ifndef DriverSDKModuleDir
+#define DriverSDKModuleDir     $(USRLIBDIR)/Server/modules
+#endif
+
+#ifndef DriverSDKIncludeDir
+#define DriverSDKIncludeDir     $(USRLIBDIR)/Server/include
+#endif
+
+DRIVERSDKDIR = DriverSDKDir
+DRIVERSDKMODULEDIR = DriverSDKModuleDir
+DRIVERSDKINCLUDEDIR = DriverSDKIncludeDir
 
 /*
  * Some commonly refered to directories are defined here.

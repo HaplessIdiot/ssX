@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.7 1999/05/30 03:03:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.8 1999/07/04 06:39:16 dawes Exp $ */
 
 /*
    A CopyPlane function that handles bitmap->screen copies and
@@ -6,7 +6,7 @@
 
    Also, a PushPixels for solid fill styles.
 
-   Written by Mark Vojkovich (mvojkovi@ucsd.edu)
+   Written by Mark Vojkovich (markv@valinux.com)
 
 */
 
@@ -23,6 +23,7 @@
 #include "xf86str.h"
 #include "xaa.h"
 #include "xaalocal.h"
+#include "xaawrap.h"
 
 static void XAACopyPlane1toNColorExpand(DrawablePtr pSrc, DrawablePtr pDst,
 					GCPtr pGC, RegionPtr rgnDst,
@@ -44,7 +45,7 @@ XAACopyPlaneColorExpansion(
     int	dstx, int dsty,
     unsigned long bitPlane 
 ){
-    if((pSrc->type == DRAWABLE_PIXMAP) && !IS_OFFSCREEN_PIXMAP(pSrc)) {
+    if(pSrc->type == DRAWABLE_PIXMAP) {
 	if(pSrc->bitsPerPixel == 1) {
 	   return(XAABitBlt(pSrc, pDst, pGC, srcx, srcy,
 			width, height, dstx, dsty, 
@@ -117,6 +118,9 @@ XAACopyPlaneNtoNColorExpand(
 	offset = 3;
 	mask >>= 24;
     }
+
+    if(IS_OFFSCREEN_PIXMAP(pSrc))
+	SYNC_CHECK(pSrc);
     
     while(numrects--) {	
 	width = pbox->x2 - pbox->x1;
@@ -129,7 +133,8 @@ XAACopyPlaneNtoNColorExpand(
         bzero(data, height * pitch);
 
 	dataPtr = data;
-	srcPtr = (pbox->y1 * srcwidth) + src + (pbox->x1 * Bpp) + offset;
+	srcPtr = ((pbox->y1 + pSrc->y) * srcwidth) + src + 
+			((pbox->x1 + pSrc->x) * Bpp) + offset;
 	while(h--) {
 	    for(i = index = 0; i < width; i++, index += Bpp) {
 	       if(mask & srcPtr[index])

@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.16 1999/07/10 12:17:12 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.17 1999/07/18 08:14:21 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -72,9 +72,9 @@ typedef struct {
    int byteOrder;	/* MSBFirst, LSBFirst */
    int depth;		
    int bitsPerPixel;
-   unsigned long red_mask;
-   unsigned long green_mask;
-   unsigned long blue_mask;
+   unsigned long redMask;
+   unsigned long greenMask;
+   unsigned long blueMask;
    short visualClass;
    int viewportWidth;
    int viewportHeight;

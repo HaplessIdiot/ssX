@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.4 1998/09/13 05:23:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.5 1999/01/26 10:40:47 dawes Exp $ */
 
 
 #include "xaa.h"
@@ -147,7 +147,7 @@ EXPNAME(XAATEGlyphRenderer)(
 )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    CARD32* base = (CARD32*)infoRec->ColorExpandBase;
+    CARD32* base;
     GlyphScanlineFuncPtr GlyphFunc = glyph_scanline_func[glyphWidth - 1];
     int dwords = 0;
 
@@ -176,15 +176,17 @@ EXPNAME(XAATEGlyphRenderer)(
             (*infoRec->SubsequentCPUToScreenColorExpandFill)(
 						pScrn, x, y, width, h, 0);
 
+	    base = (CARD32*)infoRec->ColorExpandBase;
+
 	    while(count--) {	
 		WRITE_BITS(SHIFT_R(glyphs[0][line++],skipleft));
 	    }
     
 	    w -= width;
-	    base = (CARD32*)infoRec->ColorExpandBase;
 	    if((infoRec->CPUToScreenColorExpandFillFlags & 
 						CPU_TRANSFER_PAD_QWORD) &&
 			((((width + 31) >> 5) * h) & 1)) {
+		base = (CARD32*)infoRec->ColorExpandBase;
 		base[0] = 0x00000000;
 	    }
 	    if(!w) goto THE_END;
@@ -199,6 +201,8 @@ EXPNAME(XAATEGlyphRenderer)(
 
     (*infoRec->SubsequentCPUToScreenColorExpandFill)(
 				pScrn, x, y, w, h, skipleft);
+
+    base = (CARD32*)infoRec->ColorExpandBase;
 
 #ifndef FIXEDBASE
     if((((w + 31) >> 5) * h) <= infoRec->ColorExpandRange)
@@ -241,8 +245,7 @@ EXPNAME(XAATEGlyphRenderer3)(
 )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    CARD32* base = (CARD32*)infoRec->ColorExpandBase;
-    CARD32* mem;
+    CARD32 *base, *mem;
     GlyphScanlineFuncPtr GlyphFunc = XAAGlyphScanlineFuncLSBFirst[glyphWidth - 1];
     int dwords = 0;
 
@@ -268,6 +271,9 @@ EXPNAME(XAATEGlyphRenderer3)(
 	    if(width > w) width = w;
             (*infoRec->SubsequentCPUToScreenColorExpandFill)(
 					pScrn, x, y, width, h, 0);
+
+	    base = (CARD32*)infoRec->ColorExpandBase;
+
 	    while(count--) {	
 		bits = SHIFT_R(glyphs[0][line++],skipleft);
 	        if (width >= 22) {
@@ -280,10 +286,10 @@ EXPNAME(XAATEGlyphRenderer3)(
 	    }
 
 	    w -= width;
-	    base = (CARD32*)infoRec->ColorExpandBase;
 	    if((infoRec->CPUToScreenColorExpandFillFlags & 
 						CPU_TRANSFER_PAD_QWORD) &&
 			((((3 * width + 31) >> 5) * h) & 1)) {
+		base = (CARD32*)infoRec->ColorExpandBase;
 		base[0] = 0x00000000;
 	    }
 	    if(!w) goto THE_END;
@@ -297,6 +303,8 @@ EXPNAME(XAATEGlyphRenderer3)(
     if (!mem) return;
 
     (*infoRec->SubsequentCPUToScreenColorExpandFill)(pScrn, x, y, w, h, 0);
+
+    base = (CARD32*)infoRec->ColorExpandBase;
 
 # ifndef FIXEDBASE
     if((((3 * w + 31) >> 5) * h) <= infoRec->ColorExpandRange)
@@ -339,7 +347,7 @@ EXPNAME(XAATEGlyphRendererScanline)(
 )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    int bufferNo = 0;
+    int bufferNo;
     CARD32* base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
     GlyphScanlineFuncPtr GlyphFunc = glyph_scanline_func[glyphWidth - 1];
 
@@ -368,12 +376,14 @@ EXPNAME(XAATEGlyphRendererScanline)(
         (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 					pScrn, x, y, width, h, 0);
 
+	bufferNo = 0;
+
 	while(count--) {	
+	    base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
 	    WRITE_BITS(SHIFT_R(glyphs[0][line++],skipleft));
 	    (*infoRec->SubsequentColorExpandScanline)(pScrn, bufferNo++);
 	    if(bufferNo >= infoRec->NumScanlineColorExpandBuffers)
 	    	bufferNo = 0;
-	    base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
 	}
 
 	w -= width;
@@ -381,22 +391,22 @@ EXPNAME(XAATEGlyphRendererScanline)(
 	glyphs++;
 	x += width;
 	skipleft = 0;	/* nicely aligned again */
-	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
-	bufferNo = 0;
     } 
 
     w += skipleft;
     x -= skipleft;
 
-   (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(	
+    (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(	
 				pScrn, x, y, w, h, skipleft);
 
+    bufferNo = 0;
+
     while(h--) {
+	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
 	(*GlyphFunc)(base, glyphs, startline++, w, glyphWidth);
 	(*infoRec->SubsequentColorExpandScanline)(pScrn, bufferNo++);
 	if(bufferNo >= infoRec->NumScanlineColorExpandBuffers)
 	    bufferNo = 0;
-	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
     }
 
 THE_END:
@@ -413,9 +423,8 @@ EXPNAME(XAATEGlyphRendererScanline3)(
 )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    int bufferNo = 0;
-    CARD32* base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
-    CARD32* mem;
+    int bufferNo;
+    CARD32 *base, *mem;
     GlyphScanlineFuncPtr GlyphFunc = XAAGlyphScanlineFuncLSBFirst[glyphWidth - 1];
 
     if((bg != -1) && 
@@ -442,7 +451,10 @@ EXPNAME(XAATEGlyphRendererScanline3)(
         (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 					pScrn, x, y, width, h, 0);
 
+	bufferNo = 0;
+
 	while(count--) {	
+	    base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
 	    bits = SHIFT_R(glyphs[0][line++],skipleft);
 	    if (width >= 22) {
 		WRITE_BITS3(bits);
@@ -454,7 +466,6 @@ EXPNAME(XAATEGlyphRendererScanline3)(
 	    (*infoRec->SubsequentColorExpandScanline)(pScrn, bufferNo++);
 	    if(bufferNo >= infoRec->NumScanlineColorExpandBuffers)
 	    	bufferNo = 0;
-	    base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
 	}
 
 	w -= width;
@@ -462,8 +473,6 @@ EXPNAME(XAATEGlyphRendererScanline3)(
 	glyphs++;
 	x += width;
 	skipleft = 0;	/* nicely aligned again */
-	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
-	bufferNo = 0;
     } 
 
     w += skipleft;
@@ -474,13 +483,15 @@ EXPNAME(XAATEGlyphRendererScanline3)(
    (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(	
 				pScrn, x, y, w, h, skipleft);
 
+    bufferNo = 0;
+
     while(h--) {
+	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
 	(*GlyphFunc)(mem, glyphs, startline++, w, glyphWidth);
 	DrawTextScanline3(base, mem, w);
 	(*infoRec->SubsequentColorExpandScanline)(pScrn, bufferNo++);
 	if(bufferNo >= infoRec->NumScanlineColorExpandBuffers)
 	    bufferNo = 0;
-	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
     }
 
     DEALLOCATE_LOCAL(mem);
