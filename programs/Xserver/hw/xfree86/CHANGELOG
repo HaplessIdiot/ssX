@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 250. Fix '-configure' crash introduced recently (#4895, Andrew C Aitchison).
  248. Re-write Xvideo support for Permedia3 (Alan Hourihane).
  247. Add Texas Instruments Permedia to Delta attached chips (Alan Hourihane).
  246. Add Permedia4 support (different clock synth) (Jay Estabrook).
@@ -13755,4 +13756,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1918 2001/08/18 02:51:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1919 2001/08/18 11:37:27 alanh Exp $
