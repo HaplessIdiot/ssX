@@ -1,4 +1,5 @@
 XFree86 4.0.99.1 (?? February 2001)
+ 126. Change Freetype2 compilation to pacify makedepend (Marc La France).
  125. Added changes to il (Hebrew) xkb keyboard map (#4459, Tzafrir Cohen).
       Added new by (Belarusian) xkb keyboard map (#4460, Alexander Mikhailian).
       Small additions to fixes A.272 to allow autorepeat control of MouseKeys
@@ -12404,4 +12405,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1574 2001/02/12 04:24:20 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1575 2001/02/12 18:35:26 paulo Exp $

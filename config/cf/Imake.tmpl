@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.93 2001/01/27 18:19:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.94 2001/02/07 23:28:44 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1230,6 +1230,13 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 #endif
+#ifndef DependDefines
+# if UseCCMakedepend || UseGccMakedepend
+#  define DependDefines /**/
+# else
+#  define DependDefines -DUSE_MAKEDEPEND
+# endif
+#endif
 #ifndef DependFlags
 #define DependFlags /**/
 #endif
@@ -1649,7 +1656,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
  * LOCAL_LDFLAGS contains client-specific ld flags flags set in Imakefile
  */
       ALLINCLUDES = $(INCLUDES) $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(STD_INCLUDES)
-       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(THREADS_DEFINES) $(MODULE_DEFINES) $(DEFINES) $(EXTRA_DEFINES)
+       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(THREADS_DEFINES) $(MODULE_DEFINES) $(DEPENDDEFINES) $(DEFINES) $(EXTRA_DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(THREADS_CFLAGS) $(MODULE_CFLAGS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)
          LDPRELIB = LdPreLib
@@ -1677,6 +1684,7 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
      LDSTRIPFLAGS = LdStripFlags
    LDCOMBINEFLAGS = LdCombineFlags
       DEPENDFLAGS = DependFlags
+    DEPENDDEFINES = DependDefines
 
 XCOMM Not sure this belongs here
          TKLIBDIR = TkLibDir
