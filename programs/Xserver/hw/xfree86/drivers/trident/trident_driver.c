@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.115 2000/12/07 18:32:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.116 2000/12/07 18:41:14 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1082,6 +1082,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		       pScrn->depth, pScrn->bitsPerPixel);
 		return FALSE;
 	    }
+	    break;
 	case 15:
 	case 16:
 	    if (pScrn->bitsPerPixel != 16) {
@@ -1090,6 +1091,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		       pScrn->depth, pScrn->bitsPerPixel);
 		return FALSE;
 	    }
+	    break;
 	case 24:
 	    if ((pScrn->bitsPerPixel != 24) || (pScrn->bitsPerPixel != 32)) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
