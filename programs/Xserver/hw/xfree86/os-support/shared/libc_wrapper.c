@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.97 2003/10/02 13:30:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.98 2003/10/07 23:14:55 herrb Exp $ */
 /*
  * Copyright 1997-2003 by The XFree86 Project, Inc.
  *
@@ -484,7 +484,7 @@ xf86mmap(void *start, xf86size_t length, int prot,
     if (flags & XF86_MAP_FIXED)		f |= MAP_FIXED;
     if (flags & XF86_MAP_SHARED)	f |= MAP_SHARED;
     if (flags & XF86_MAP_PRIVATE)	f |= MAP_PRIVATE;
-#ifdef __AMD64__ && defined(linux)
+#if defined(__AMD64__) && defined(linux)
     if (flags & XF86_MAP_32BIT)	        f |= MAP_32BIT;
 #endif
     if (prot  & XF86_PROT_EXEC)		p |= PROT_EXEC;
