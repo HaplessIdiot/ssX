@@ -80,6 +80,8 @@
 	url="Mach64.html">
 <item> <htmlurl name="Information for Matrox Millennium Users"
 	url="MGA.html">
+<item> <htmlurl name="Information for NVidia NV1 / SGS-Thomson Users"
+	url="NV1.html">
 <item> <htmlurl name="Information for Oak Technologies Inc. Chipset Users"
 	url="Oak.html">
 <item> <htmlurl name="XFree86 3.2 P9000 Server Release Notes"
@@ -101,7 +103,7 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.16 1996/10/13 11:19:43 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.17 1996/10/20 13:33:10 dawes Exp $ 
 
 
 

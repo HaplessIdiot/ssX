@@ -142,7 +142,7 @@ Note, items marked with `*' have been added since the last beta release
 <sect1> General
 <p>
 <itemize>
-  <item> XFree86 3.2 includes the X Consortium's X11R6.1.
+  <item>XFree86 3.2 includes the X Consortium's X11R6.1.
   <item>XFree86-3.2 includes a full distribution for Linux/m68k.
   <item>XFree86-3.2 includes a full distribution for Linux/Alpha.
   <item>XFree86-3.2 includes a full distribution for OS/2.
@@ -253,7 +253,7 @@ Note, items marked with `*' have been added since the last beta release
 <p>
 <itemize>
   <item>Support for the S3 Trio64V+.
-  <item>New server (XF86_S3V) for the S3 ViRGE and ViRGE/VX.  Note that this
+  <item>*New server (XF86_S3V) for the S3 ViRGE and ViRGE/VX.  Note that this
 	server is very new, and is considered "beta".  Please report any
 	problems with it.
   <item>Support in the S3 server for the AT&amp;T 20C409 and 20C499 RAMDACs.
@@ -426,6 +426,11 @@ Note, items marked with `*' have been added since the last beta release
   <item>A problem preventing the StaticGray visual from working has been
 	fixed.
 </itemize>
+<sect1> ET3000 driver (VGA16 server)
+<p>
+<itemize>
+  <item>VGA16 support has been added to the ET3000 driver.
+</itemize>
 <sect1> Trident driver (SVGA server)
 <p>
 <itemize>
@@ -475,10 +480,10 @@ Note, items marked with `*' have been added since the last beta release
   <item>A driver for the Alliance ProMotion 6442 has been added (from
 	Alliance Semiconductor). This has not been thoroughly tested.
 </itemize>
-<sect1> NVidia NV1 / SGS Thomson SGT2000 driver (SVGA server)
+<sect1> NVidia NV1 / SGS Thomson STG2000 driver (SVGA server)
 <p>
 <itemize>
-  <item>*A driver for the NV1/SGT2000 has beed added.  This chipset is used
+  <item>*A driver for the NV1/STG2000 has been added.  This chipset is used
 	on the Diamond Edge 3D card.  This is a very new
 	driver, and is considered "beta".  It includes support for
 	8bpp and 16bpp.
@@ -501,7 +506,7 @@ Note, items marked with `*' have been added since the last beta release
   <item>The programmable clock code has been improved to avoid unstable
 	settings.
   <item>*Some FIFO setting problems have been fixed.
-  <item>*Packed 24bpp support has been added fo the 54xx.
+  <item>*Packed 24bpp support has been added for the 54xx.
   <item>*Some problems with 16bpp for a 1MB 5434 have been fixed.
 </itemize>
 <sect1> SiS driver (SVGA server)
@@ -542,11 +547,6 @@ Note, items marked with `*' have been added since the last beta release
 <itemize>
   <item>A problem with snow at high clocks has been fixed.
 </itemize>
-<sect1> ET3000 driver (SVGA server)
-<p>
-<itemize>
-  <item>VGA16 support has been added to the ET3000 driver.
-</itemize>
 <sect1> Compaq AVGA driver (SVGA server)
 <p>
 <itemize>
@@ -565,7 +565,7 @@ Note, items marked with `*' have been added since the last beta release
   <item>Support for most vt220/vt320 escape sequenced has been added to xterm.
   <item>Support for ddterm's escape sequences has been added to xterm.
   <item>The termcap and terminfo entries for xterm have been updated in line
-	with the new features present.  These entries are not comletely
+	with the new features present.  These entries are not completely
 	compatible with earlier versions of xterm.
   <item>xdm's session handling on BSD OSs has been fixed.
   <item>Some buffer overrun problems which can lead to security problems
@@ -835,6 +835,11 @@ X32html.tgz    HTML version of the documentation
 </verb>
 </quote>
 
+NOTE: Be very careful about installing X32cfg.tgz if you have customised
+your xinit and/or xdm config files.  Installing X32cfg.tgz will overwrite
+any existing files.  If you do have customised files, there is no need to
+install X32cfg.tgz.
+
 If you already have a version of XFree86 installed, <bf>MAKE A BACKUP OF</bf>
 <tt>/usr/X11R6</tt> <bf>BEFORE DOING ANYTHING ELSE</bf>.  The standard
 installation procedure will overwrite your existing version of XFree86.
@@ -887,7 +892,7 @@ files with:
 </verb></tscreen>
 
 Once the required <tt>.tgz</tt> files have been extracted, copy the
-<tt>postinst.sh</tt> script to <tt>/var/tmp</tt>, then run go to
+<tt>postinst.sh</tt> script to <tt>/var/tmp</tt>, then go to
 <tt>/usr/X11R6</tt> and run it:
 <tscreen><verb>
 	cd /usr/X11R6
@@ -903,7 +908,7 @@ boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.42 1996/09/14 13:10:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.44 1996/10/21 05:27:45 dawes Exp $
 </verb>
 
 </article>

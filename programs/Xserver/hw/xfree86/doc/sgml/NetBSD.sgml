@@ -11,6 +11,7 @@ Matthieu Herrb
 
 <toc>
 
+<!--
 <p>
 <bf>Important Notice</bf>
 <p>
@@ -24,6 +25,7 @@ If you absolutely need to build a server with particular options,
 please contact me (<htmlurl name="matthieu@laas.fr"
 url="mailto:matthieu@laas.fr">). I'll try to satisfy your request on
 my free time and resources. 
+-->
 
 <sect>What and Where is XFree86?
 
@@ -35,7 +37,7 @@ and performance improvements as well as many bug fixes.  The release
 is available as source patches against the X Consortium X11R6.1 code, as
 well as binary distributions for many architectures.
 
-See the <url url="COPYRIGHT.html" name="Copyright Notice">.
+See the <htmlurl url="COPYRIGHT.html" name="Copyright Notice">.
 
 The sources for XFree86 are available by anonymous ftp from:
 
@@ -794,7 +796,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.37 1996/10/18 15:03:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.38 1996/10/20 13:33:17 dawes Exp $
 
 
 

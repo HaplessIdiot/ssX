@@ -32,7 +32,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.8 1996/10/19 15:16:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.9 1996/10/20 13:34:08 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -771,7 +771,7 @@ int n;
 static Bool
 MGAProbe()
 {
-	pciConfigPtr pcr;
+	pciConfigPtr pcr = NULL;
 	int i;
 
 	/*
@@ -789,7 +789,7 @@ MGAProbe()
 			if (pcr->_device == PCI_CHIP_MGA2064)
 				break;
 	  }
-	}
+	} else return(FALSE);
 	if (!pcr)
 	{
 		if (vga256InfoRec.chipset)

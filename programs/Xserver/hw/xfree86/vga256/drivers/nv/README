@@ -3,8 +3,7 @@ XFree driver for NVidia NV1 / SGS-Thomson STG2000 v1.0
 
 This is the first release of a driver for the above chips. This driver 
 has very basic functionality, and does not use the accelerated features of 
-the chip. The driver has been tested at resolutions of up to 1024x768 @60Hz.
-The ramdac is capable of up to 170Mhz, but my monitor is not :-(
+the chip. 
 
 Notes
 -----
@@ -12,21 +11,17 @@ Notes
 * THE DRIVER DOES NOT SUPPORT THE VIRTUAL DESKTOP FEATURES OF XFREE86 
 This is because the NV1 does not have the necessary hardware to support this
 feature. If you want to change resolutions, you will have to modify your 
-config file. 
-
-* There is support for 8 bpp and 15/16 bpp modes.  Higher modes will
-not be supported in the near future because the NV1 uses 10 bits per
-colour for its true colour mode, instead of the more usual 8. 
+config file. Comment out all but the mode you wish to use.
 
 * The NV1 only supports a 555 RGB Weight in 16 bpp, the hardware does
-not do 565.
+not do 565. You must put a Weight 555 in the Display section.
 
-* The driver works in linear mode only. Banked mode is NOT SUPPORTED,
-though I don't know why you would want it.
-
+* 24/32 bpp mode is not yet supported.
 
 Known Bugs 
 ---------- 
-* Corruption of a few pixels on VC switching in 16 bpp mode. I have not 
-managed to track this one down yet.
+
+* Corruption of a single pixel in 8bpp mode when switching VC's
+
+* The driver should force Weight 555 in 16 bpp mode
 

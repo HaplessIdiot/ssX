@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.44 1996/10/13 11:22:42 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.45 1996/10/20 13:34:19 dawes Exp $
 
 #Chips & Technologies
 
@@ -32,6 +32,7 @@ LINE # Option "STN"
 LINE # Option "no_stretch"
 LINE # Option "no_center"
 LINE # Option "use_modeline"
+LINE # Option "fix_panel_size"
 LINE # videoram 512
 
 NAME Chips & Technologies CT65530
@@ -44,6 +45,8 @@ NAME Chips & Technologies CT65540
 CHIPSET ct65540
 NOCLOCKPROBE
 LINE # Option "ext_fram_buf"
+LINE # Option "hw_clocks"
+LINE # Option "use_18bit_bus"
 LINE # Textclockfreq 25.175
 SEE Chips & Technologies CT65530
 
@@ -52,6 +55,7 @@ CHIPSET ct65545
 NOCLOCKPROBE
 LINE # Option "noaccel"
 LINE # Option "no_bitblt"
+LINE # Option "no_imageblt"
 LINE # Option "sw_cursor"
 LINE # Option "mmio"
 SEE Chips & Technologies CT65540
@@ -67,10 +71,14 @@ SEE Chips & Technologies CT65545
 NAME Chips & Technologies CT65550
 CHIPSET ct65550
 NOCLOCKPROBE
+LINE # Option "ext_fram_buf"
 LINE # Option "noaccel"
 LINE # Option "no_bitblt"
+LINE # Option "no_imageblt"
 LINE # Option "sw_cursor"
-SEE Chips & Technologies CT65540
+LINE # Option "sync_on_green"
+LINE # Textclockfreq 25.175
+SEE Chips & Technologies CT65530
 
 NAME Chips & Technologies CT65554
 CHIPSET ct65554

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.31 1996/09/25 14:15:04 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.32 1996/10/03 08:32:19 dawes Exp $ 
 .TH XFree86 1 "Version 3.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -493,13 +493,31 @@ Frank Dikker,      \fIdikker@cs.utwente.nl\fP
 MX SVGA driver
 .TP 8
 Regis Cridlig,     \fIcridlig@dmi.ens.fr\fP
-Chips & Technology driver
+Chips & Technologies driver
 .TP 8
 Jon Block,         \fIblock@frc.com\fP
-Chips & Technology driver
+Chips & Technologies driver
 .TP 8
 Mike Hollick,      \fIhollick@graphics.cis.upenn.edu\fP
-Chips & Technology driver
+Chips & Technologies driver
+.TP 8
+Nozomi Ytow
+Chips & Technologies driver and cfb24
+.TP 8
+Egbert Eich,       \fIEgbert.Eich@Physik.TH-Darmstadt.DE\fP
+Chips & Technologies driver
+.TP 8
+David Bateman,     \fIdbateman@ee.uts.edu.au\fP
+Chips & Technologies driver
+.TP 8
+Xavier Ducoin,     \fIxavier@rd.lectra.fr\fP
+Chips & Technologies driver
+.TP 8
+Ken Raeburn,       \fIraeburn@raeburn.org\fP
+Chips & Technologies driver
+.TP 8
+Shigehiro Nomura,  \fInomura@sm.sony.co.jp\fP
+Chips & Technologies driver and cfb24
 .TP 8
 Peter Trattler,    \fIpeter@sbox.tu-graz.ac.at\fP
 RealTek SVGA driver

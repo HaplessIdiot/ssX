@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.12 1996/10/17 15:21:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.13 1996/10/17 15:44:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -207,6 +207,8 @@ vgaStoreColors(pmap, ndef, pdefs)
 	    ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN] = overscan;
             if (xf86VTSema
 #ifdef XFreeXDGA
+	        || ((vga256InfoRec.directMode & XF86DGADirectGraphics)
+	            && !(vga256InfoRec.directMode & XF86DGADirectColormap))
 	        || (vga256InfoRec.directMode&XF86DGAHasColormap)
 #endif
 	       )

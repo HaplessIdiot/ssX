@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgapntwin.c,v 3.2 1996/10/18 15:03:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgapntwin.c,v 3.3 1996/10/19 15:16:23 dawes Exp $ */
 
 #include "vga256.h"
 #include "cfb16.h"
@@ -33,17 +33,17 @@ mgaFillBoxSolid (pDrawable, nBox, pBox, pixel)
 		{
 		case 32:
 			cfb32FillBoxSolid(pDrawable, nBox, pBox, pixel);
-			break;
+			return;
 		case 24:
 			cfb24FillBoxSolid(pDrawable, nBox, pBox, pixel);
-			break;
+			return;
 		case 16:
 			cfb16FillBoxSolid(pDrawable, nBox, pBox, pixel);
-			break;
+			return;
 		case 8:
 			vga256FillBoxSolid(pDrawable, nBox, pBox, pixel,
 						0, GXcopy);
-			break;
+			return;
 		}
 	
 	switch(vgaBitsPerPixel)

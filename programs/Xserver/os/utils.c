@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.19 1996/09/01 04:49:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.20 1996/10/17 15:22:22 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -156,7 +156,9 @@ extern int SelectWaitTime;
 #ifdef MEMBUG
 #define MEM_FAIL_SCALE 100000
 long Memory_fail = 0;
-
+#ifdef linux
+#include <stdlib.h>  /* for random() */
+#endif
 #endif
 
 #ifdef sgi

@@ -4,7 +4,7 @@
 
 <title> README for XFree86 3.2 on LynxOS
 <author>Thomas Mueller
-<date>Last modified on: 12 October 1996
+<date>Last modified on: 21 October 1996
 <toc>
 
 <sect>What and Where is XFree86?<p>
@@ -24,8 +24,8 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 Binaries for the 3.2 release on LynxOS AT are available from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current/LynxOS"
-url="ftp://ftp.XFree86.org/pub/XFree86/current/LynxOS">
+<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/LynxOS"
+url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/LynxOS">
  
 The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A FCS'
 and later `LynxOS AT 2.4.0 042696'. XFree86 versions later than 3.1.2
@@ -110,8 +110,8 @@ config, and one X server.
      several executables are set-user-id.  Otherwise the server may
      abort if you unpack it as an ordinary user.
 
-<item> If you have about 80Mb free in the <tt>/usr</tt> partition ``<tt>cd
-     /usr</tt>'' and skip to no. 3.
+<item> If you have about 80Mb free in the <tt>/usr</tt> partition create
+     a directory <tt>/usr/X11R6</tt> and skip to no. 3.
      Otherwise, create a directory on another partition and sym link it into
      <tt>/usr</tt>:
 
@@ -126,6 +126,7 @@ config, and one X server.
      If you are using bash:
 
 <tscreen><verb>
+ # cd /usr/X11R6
  # for i in X32*.tgz; do
  #   gnutar -xzpPf $i
  # done
@@ -133,6 +134,7 @@ config, and one X server.
 
      Else, if you are using csh:
 <tscreen><verb>
+ % cd /usr/X11R6
  % foreach i (X32*.tgz)
  %   gnutar -xzpPf $i
  % end
@@ -144,7 +146,7 @@ config, and one X server.
      have an ET4000 based card you will use the XF86_SVGA server:
 
 <tscreen><verb>
- # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+ # cd /usr/X11R6/bin; rm -f X; ln -s XF86_SVGA X
 </verb></tscreen>
 </enum>
 
@@ -153,6 +155,7 @@ config, and one X server.
 First do numbers 1 and 2 above. Then unpack the required archives:
 
 <tscreen><verb>
+ # cd /usr/X11R6
  # for i in bin fnts lib xicf; do
  #   gnutar -xzpPf  X32$i.tgz
  # done
@@ -165,7 +168,7 @@ based card you will use the XF86_SVGA server:
 
 <tscreen><verb>
  # gnutar -xzpPf X32SVGA.tgz
- # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+ # cd /usr/X11R6/bin; rm -f X; ln -s XF86_SVGA X
 </verb></tscreen>
 
 <sect1>After either Full or Minimal Install above
@@ -578,7 +581,7 @@ few little adjustments to your system:
   <tt>lynx.cf</tt> but it has never been tested.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.8 1996/10/03 08:34:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.9 1996/10/13 11:19:45 dawes Exp $
 
 
 
