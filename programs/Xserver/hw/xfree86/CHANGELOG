@@ -1,4 +1,9 @@
 XFree86 4.0.99.x (xx May 2001)
+ 495. Fix some drivers (including tdfx, r128, radeon, ark, imstt) that weren't
+      respecting the Virtual resolution requested in the config file
+      (David Dawes).
+ 494. Fix some offscreen memory calculation/allocation problems in the
+      tdfx driver (David Dawes).
  493. Fix a bug in localResizeOffscreenLinear when checking widths
       (Alan Hourihane).
  492. Update Japanese localization for XDarwin Dock related fixes
@@ -13182,4 +13187,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1755 2001/05/10 07:49:35 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1756 2001/05/10 10:17:37 alanh Exp $

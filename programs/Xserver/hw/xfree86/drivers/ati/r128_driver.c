@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.26 2001/04/10 16:07:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.27 2001/05/04 19:05:33 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1096,8 +1096,8 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 				   64 * pScrn->bitsPerPixel, /* pitchInc */
 				   128,         /* minHeight */
 				   2048,        /* maxHeight */
-				   pScrn->virtualX,
-				   pScrn->virtualY,
+				   pScrn->display->virtualX,
+				   pScrn->display->virtualY,
 				   info->FbMapSize,
 				   LOOKUP_BEST_REFRESH);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.22 2001/05/02 15:06:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.23 2001/05/04 19:05:33 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1018,8 +1018,8 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn)
 				   64 * pScrn->bitsPerPixel, /* pitchInc */
 				   128,         /* minHeight */
 				   2048,        /* maxHeight */
-				   pScrn->virtualX,
-				   pScrn->virtualY,
+				   pScrn->display->virtualX,
+				   pScrn->display->virtualY,
 				   info->FbMapSize,
 				   LOOKUP_BEST_REFRESH);
 
