@@ -21,6 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+/* $XFree86$ */
 
 /*
  * SPARC assembly code for optimized text rendering.

@@ -7,11 +7,11 @@
 
 
 
-		      The Linux/m68k Frame Buffer Device
+                      The Linux/m68k Frame Buffer Device
 
-	   Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
+           Geert Uytterhoeven (Geert.Uytterhoeven@cs.kuleuven.ac.be)
 
-				  14 May 1997
+                                  14 May 1997
 
 
 
@@ -39,65 +39,65 @@ minor numbers):
 
    o First frame buffer
 
-	   0 = /dev/fb0current
-		 Current resolution
+           0 = /dev/fb0current
+                 Current resolution
 
-	   1 = /dev/fb0autodetect
-		 Default resolution
+           1 = /dev/fb0autodetect
+                 Default resolution
 
-	   2 = /dev/fb0predefined0
-		 Predefined resolution 1
+           2 = /dev/fb0predefined0
+                 Predefined resolution 1
 
-	   ...
+           ...
 
-	   23 = /dev/fb0predefined21
-		 Predefined resolution 22
+           23 = /dev/fb0predefined21
+                 Predefined resolution 22
 
-	   24 = /dev/fb0user0
-		 User defined resolutions 1
+           24 = /dev/fb0user0
+                 User defined resolutions 1
 
-	   ...
-
-
-
-
-The Linux/m68k Frame Buffer Device
+           ...
 
 
 
 
-
-The Linux/m68k Frame Buffer Device
-
+The Linux/m68k Frame Buffer Device                                            1
 
 
-	   31 = /dev/fb0user7
-		 User defined resolutions 8
+
+
+
+The Linux/m68k Frame Buffer Device                                            2
+
+
+
+           31 = /dev/fb0user7
+                 User defined resolutions 8
 
 
    o Second frame buffer
 
-	   32 = /dev/fb1current
-		 Current resolution
+           32 = /dev/fb1current
+                 Current resolution
 
-	   33 = /dev/fb1autodetect
-		 Default resolution
+           33 = /dev/fb1autodetect
+                 Default resolution
 
-	   34 = /dev/fb1predefined0
-		 Predefined resolutions 1
+           34 = /dev/fb1predefined0
+                 Predefined resolutions 1
 
-	   ...
+           ...
 
-	   55 = /dev/fb1predefined21
-		 Predefined resolution 22
+           55 = /dev/fb1predefined21
+                 Predefined resolution 22
 
-	   56 = /dev/fb1user0
-		 User defined resolutions 1
+           56 = /dev/fb1user0
+                 User defined resolutions 1
 
-	   ...
+           ...
 
-	   63 = /dev/fb1user7
-		 User defined resolutions 8
+           63 = /dev/fb1user7
+                 User defined resolutions 8
 
 and so on...
 
@@ -133,11 +133,11 @@ buffer device, e.g.
 
 
 
-The Linux/m68k Frame Buffer Device
+The Linux/m68k Frame Buffer Device                                            3
 
 
 
-	 > /dev/fb0ttlow
+         > /dev/fb0ttlow
 
 
 will switch your video to TT low mode. Note: if you specify a resolution which
@@ -147,7 +147,7 @@ will round it up (if possible) or return an error condition.
 The frame buffer devices are also `normal' memory devices, this means, you can
 read and write their contents. You can, for example, make a screen snapshot by
 
-	 cp /dev/fb0current myfile
+         cp /dev/fb0current myfile
 
 
 There also can be more than one frame buffer at a time, e.g. if you have a
@@ -159,12 +159,12 @@ use /dev/fb0current by default. You can specify an alternative resolution by
 setting the environment variable $FRAMEBUFFER to the path name of a frame
 buffer device, e.g. (for sh/bash users):
 
-	 export FRAMEBUFFER=/dev/fb0multiscan
+         export FRAMEBUFFER=/dev/fb0multiscan
 
 
 or (for csh users):
 
-	 setenv FRAMEBUFFER /dev/fb0multiscan
+         setenv FRAMEBUFFER /dev/fb0multiscan
 
 
 After this the X server will use the multiscan video mode.
@@ -199,7 +199,7 @@ which data structures they work. Here's just a brief overview:
 
 
 
-The Linux/m68k Frame Buffer Device
+The Linux/m68k Frame Buffer Device                                            4
 
 
 
@@ -249,7 +249,7 @@ of XFree68/XFree86 and has 2 modes:
      contains a
 
 
-		  Modes "default"
+                  Modes "default"
 
 
 
@@ -265,7 +265,7 @@ of XFree68/XFree86 and has 2 modes:
 
 
 
-The Linux/m68k Frame Buffer Device
+The Linux/m68k Frame Buffer Device                                            5
 
 
 
@@ -317,7 +317,7 @@ of cycles per second), each pixel is 35242 ps (picoseconds) long:
 
 If the screen resolution is 640x480, it will take
 
-	 640*35.242E-9 s = 22.555E-6 s
+         640*35.242E-9 s = 22.555E-6 s
 
 
 to paint the 640 (xres) pixels on one scanline. But the horizontal retrace also
@@ -331,27 +331,27 @@ takes time (e.g. 272 `pixels'), so a full scanline takes
 
 
 
-The Linux/m68k Frame Buffer Device
+The Linux/m68k Frame Buffer Device                                            6
 
 
 
-	 (640+272)*35.242E-9 s = 32.141E-6 s
+         (640+272)*35.242E-9 s = 32.141E-6 s
 
 
 We'll say that the horizontal scanrate is about 31 kHz:
 
-	 1/(32.141E-6 s) = 31.113E3 Hz
+         1/(32.141E-6 s) = 31.113E3 Hz
 
 
 A full screen counts 480 (yres) lines, but we have to consider the vertical
 retrace too (e.g. 49 `pixels'). So a full screen will take
 
-	 (480+49)*32.141E-6 s = 17.002E-3 s
+         (480+49)*32.141E-6 s = 17.002E-3 s
 
 
 The vertical scanrate is about 59 Hz:
 
-	 1/(17.002E-3 s) = 58.815 Hz
+         1/(17.002E-3 s) = 58.815 Hz
 
 
 This means the screen data is refreshed about 59 times per second. To have a
@@ -397,43 +397,43 @@ vsync length.
 
 
 
-The Linux/m68k Frame Buffer Device
+The Linux/m68k Frame Buffer Device                                            7
 
 
 
        +----------+---------------------------------------------+----------+-------+
-       |	  |		   x				|	   |	   |
-       |	  |		   |upper_margin		|	   |	   |
-       |	  |		   x				|	   |	   |
+       |          |                x                            |          |       |
+       |          |                |upper_margin                |          |       |
+       |          |                x                            |          |       |
        +----------###############################################----------+-------+
-       |	  #		   x				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |   left   #		   |				#  right   | hsync |
-       |  margin  #		   |	   xres 		#  margin  |  len  |
+       |          #                x                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |   left   #                |                            #  right   | hsync |
+       |  margin  #                |       xres                 #  margin  |  len  |
        |<-------->#<---------------+--------------------------->#<-------->|<----->|
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |yres			#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   |				#	   |	   |
-       |	  #		   x				#	   |	   |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |yres                        #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                |                            #          |       |
+       |          #                x                            #          |       |
        +----------###############################################----------+-------+
-       |	  |		   x				|	   |	   |
-       |	  |		   |lower_margin		|	   |	   |
-       |	  |		   x				|	   |	   |
+       |          |                x                            |          |       |
+       |          |                |lower_margin                |          |       |
+       |          |                x                            |          |       |
        +----------+---------------------------------------------+----------+-------+
-       |	  |		   x				|	   |	   |
-       |	  |		   |vsync_len			|	   |	   |
-       |	  |		   x				|	   |	   |
+       |          |                x                            |          |       |
+       |          |                |vsync_len                   |          |       |
+       |          |                x                            |          |       |
        +----------+---------------------------------------------+----------+-------+
 
 The frame buffer device expects all horizontal timings in number of dotclocks
@@ -444,17 +444,17 @@ The frame buffer device expects all horizontal timings in number of dotclocks
 
 An XFree86 mode line consists of the following fields:
 
-	 "800x600"     50      800  856  976 1040    600  637  643  666
-	 < name >     DCF	HR  SH1  SH2  HFL     VR  SV1  SV2  VFL
+         "800x600"     50      800  856  976 1040    600  637  643  666
+         < name >     DCF       HR  SH1  SH2  HFL     VR  SV1  SV2  VFL
 
 
 The frame buffer device uses the following fields:
 
       pixclock
-	    pixel clock in ps (pico seconds)
+            pixel clock in ps (pico seconds)
 
       left_margin
-	    time from sync to picture
+            time from sync to picture
 
 
 
@@ -463,48 +463,48 @@ The frame buffer device uses the following fields:
 
 
 
-The Linux/m68k Frame Buffer Device
+The Linux/m68k Frame Buffer Device                                            8
 
 
 
       right_margin
-	    time from picture to sync
+            time from picture to sync
 
       upper_margin
-	    time from sync to picture
+            time from sync to picture
 
       lower_margin
-	    time from picture to sync
+            time from picture to sync
 
       hsync_len
-	    length of horizontal sync
+            length of horizontal sync
 
       vsync_len
-	    length of vertical sync
+            length of vertical sync
 
       Pixelclock
 
-	       o xfree: in MHz
+               o xfree: in MHz
 
-	       o fb: In Picoseconds (ps)
+               o fb: In Picoseconds (ps)
 
-	       o pixclock = 1000000 / DCF
+               o pixclock = 1000000 / DCF
 
       Horizontal timings
 
-	       o left_margin = HFL - SH2
+               o left_margin = HFL - SH2
 
-	       o right_margin = SH1 - HR
+               o right_margin = SH1 - HR
 
-	       o hsync_len = SH2 - SH1
+               o hsync_len = SH2 - SH1
 
       Vertical timings
 
-	       o upper_margin = VFL - SV2
+               o upper_margin = VFL - SV2
 
-	       o lower_margin = SV1 - VR
+               o lower_margin = SV1 - VR
 
-	       o vsync_len = SV2 - SV1
+               o vsync_len = SV2 - SV1
 
 Good examples for VESA timings can be found in the XFree86 source tree, under
 xc/programs/Xserver/hw/xfree86/doc/modeDB.txt.
@@ -529,25 +529,25 @@ tions, please refer to the following documentation:
 
 
 
-The Linux/m68k Frame Buffer Device
+The Linux/m68k Frame Buffer Device                                            9
 
 
 
-	o linux/Documentation/m68k/framebuffer.txt, which may be more up-to-
-	  date than the document you're reading now
+        o linux/Documentation/m68k/framebuffer.txt, which may be more up-to-
+          date than the document you're reading now
 
-	o linux/include/linux/fb.h
+        o linux/include/linux/fb.h
 
-	o linux/drivers/char/fbmem.c
+        o linux/drivers/char/fbmem.c
 
-	o linux/arch/m68k/*/*fb.c
+        o linux/arch/m68k/*/*fb.c
 
 
 9.  Downloading
 
 All necessary files can be found at
 
-	 ftp://ftp.uni-erlangen.de/pub/Linux/LOCAL/680x0/
+         ftp://ftp.uni-erlangen.de/pub/Linux/LOCAL/680x0/
 
 
 and on its mirrors.
@@ -595,7 +595,7 @@ The frame buffer device abstraction was designed by Martin Schaller.
 
 
 
-The Linux/m68k Frame Buffer Device
+The Linux/m68k Frame Buffer Device                                           10
 
 
 
@@ -665,7 +665,7 @@ The Linux/m68k Frame Buffer Device
 
 
 
-				   CONTENTS
+                                   CONTENTS
 
 
 
@@ -721,7 +721,7 @@ The Linux/m68k Frame Buffer Device
 
 
 
-				       i
+                                       i
 
 
 

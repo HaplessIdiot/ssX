@@ -1,4 +1,8 @@
-Default modes from the late 1998 revision of the VESA standard
+//
+//  Default modes from the late 1998 revision of the VESA standard
+//  
+//  $XFree86$
+
 
 # 640x350 @ 85Hz (VESA) hsync: 37.9kHz
 ModeLine "640x350"    31.5  640  672  736  832    350  382  385  445
