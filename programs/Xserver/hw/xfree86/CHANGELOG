@@ -1,7 +1,9 @@
+XFree86 3.9Nh (5 October 1998)
+1874. Temporary workaround to avoid static server build problem introduced
+      in 3.9Ng.
+1873. Import and merge in X11R6.4 and its first three public patches.
+
 XFree86 3.9Ng (27 September 1998)
-1874. NonTE text optimization for the MGA driver (#2003, Mark Vojkovich).
-1873. Optimise 8x8 opaque fills for MGA G200 so that block mode can be used
-      with SGRAM (#2003, Mark Vojkovich).
 1872. Rewrite the XAA NonTE text code, fixing the handling of overlapping
       characters (#2002, Mark Vojkovich).
 1871. Fix an typo causing a CapNotLast line bug in XAA (#2002, Mark Vojkovich).
@@ -6577,4 +6579,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.629 1998/09/26 08:33:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.630 1998/09/27 04:43:38 dawes Exp $
