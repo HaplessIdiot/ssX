@@ -1,8 +1,8 @@
-XCOMM $TOG: Imakefile /main/15 1997/09/29 11:34:18 kaleb $
+XCOMM $TOG: Imakefile /main/17 1998/05/21 07:51:40 kaleb $
 
 
 
-XCOMM $XFree86: xc/nls/XLC_LOCALE/Imakefile,v 1.7 1997/06/15 07:12:10 dawes Exp $
+XCOMM $XFree86: xc/nls/XLC_LOCALE/Imakefile,v 1.8 1997/11/16 06:17:47 dawes Exp $
 
   WCHAR32 = HasWChar32
    TBLDIR = $(XLOCALEDIR)/tbl_data
@@ -58,6 +58,8 @@ LTarget(iso8859-6)
 LTarget(iso8859-7)
 LTarget(iso8859-8)
 LTarget(iso8859-9)
+LTarget(iso8859-10)
+LTarget(fcd8859-15)
 LTarget(ja)
 LTarget(ja.JIS)
 LTarget(ja.SJIS)
@@ -81,6 +83,8 @@ InstallNonExecFile(tab8859_6,$(TBLDIR))
 InstallNonExecFile(tab8859_7,$(TBLDIR))
 InstallNonExecFile(tab8859_8,$(TBLDIR))
 InstallNonExecFile(tab8859_9,$(TBLDIR))
+InstallNonExecFile(tab8859_10,$(TBLDIR))
+InstallNonExecFile(tab8859_15,$(TBLDIR))
 InstallNonExecFile(jis0208,$(TBLDIR))
 InstallNonExecFile(ksc5601,$(TBLDIR))
 InstallNonExecFile(gb2312,$(TBLDIR))
