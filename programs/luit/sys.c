@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/sys.c,v 1.3 2001/11/22 16:16:35 tsi Exp $ */
+/* $XFree86: xc/programs/luit/sys.c,v 1.4 2001/12/12 00:53:08 dawes Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -51,7 +51,7 @@ THE SOFTWARE.
 
 
 #if (defined(__GLIBC__) && \
-     __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 1)) || \
+     (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 1))) || \
     defined(SVR4)
 #define HAVE_GRANTPT
 #endif
