@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.32 1996/01/05 06:28:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.33 1996/01/06 05:23:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -571,7 +571,6 @@ GetATIPCIInformation()
 	    }
 	    info.ChipRev = pcrp->_class_revision & 0xFF;
 	    info.ApertureBase = pcrp->_base0;
-
 	    /*
 	     * The docs say check (pcrp->_user_config_0 & 0x04) for BlockIO
 	     * but this doesn't seem to be reliable.  Instead check if
@@ -581,6 +580,11 @@ GetATIPCIInformation()
 		info.BlockIO = TRUE;
 		info.IOBase = pcrp->_base1 & (pcrp->_base1 & 0x1 ?
 					      0xfffffffc : 0xfffffff0);
+		/* If the Block I/O bit isn't set in userconfig, set it */
+		if (pcrp->_user_config_0 & 0x04 != 0x04) {
+		    xf86writepci(pcrp->_cardnum, PCI_REG_USERCONFIG,
+				 0x04, 0x04);
+		}
 	    } else {
 		info.BlockIO = FALSE;
 		switch (pcrp->_user_config_0 & 0x03) {

@@ -1,4 +1,4 @@
-/* $XFree86 */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.3 1995/12/02 05:05:34 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -26,6 +26,7 @@
 /*#define DEBUGPCI  1 */
 
 #include <stdio.h>
+#include "os.h"
 #include "compiler.h"
 #include "xf86_PCI.h"
 
@@ -138,6 +139,7 @@ xf86scanpci()
             outl(0xCF8, config_cmd | 0x30); pcr._baserom = inl(0xCFC);
             outl(0xCF8, config_cmd | 0x3C); pcr._max_min_ipin_iline
 								= inl(0xCFC);
+            outl(0xCF8, config_cmd | 0x40); pcr._user_config = inl(0xCFC);
 
             /* check for pci-pci bridges (currently we only know Digital) */
             if ((pcr._vendor == 0x1011) && (pcr._device == 0x0001))
@@ -147,7 +149,7 @@ xf86scanpci()
 	    if (idx >= MAX_PCI_DEVICES)
 	        continue;
 
-	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(
+	    if ((pci_devp[idx] = (struct pci_config_reg *)xalloc(sizeof(
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
                 outl(0xCF8, 0x00);
                 xf86DisableIOPorts(0);
@@ -208,6 +210,7 @@ xf86scanpci()
             pcr._base5 = inl(pcr._ioaddr + 0x24);
             pcr._baserom = inl(pcr._ioaddr + 0x30);
             pcr._max_min_ipin_iline = inl(pcr._ioaddr + 0x3C);
+            pcr._user_config = inl(pcr._ioaddr + 0x40);
 	    outb(0xCFA, 0x00); /* bus 0 for now */
 
             /* check for pci-pci bridges (currently we only know Digital) */
@@ -218,7 +221,7 @@ xf86scanpci()
 	    if (idx >= MAX_PCI_DEVICES)
 	        continue;
 
-	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(
+	    if ((pci_devp[idx] = (struct pci_config_reg *)xalloc(sizeof(
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
                 outb(0xCF8, 0x00);
                 outb(0xCFA, 0x00);
@@ -236,4 +239,116 @@ xf86scanpci()
 
     xf86DisableIOPorts(0);
     xf86ClearIOPortList(0);
+}
+
+void
+xf86writepci(cardnum, reg, mask, value)
+    int cardnum;
+    int reg;
+    unsigned long mask;
+    unsigned long value;
+{
+    unsigned char tmp1, tmp2;
+    unsigned long tmplong1, tmplong2, tmp, config_cmd;
+    unsigned int i, j;
+    unsigned PCI_CtrlIOPorts[] = { 0xCF8, 0xCFA, 0xCFC };
+    int configtype;
+    int Num_PCI_CtrlIOPorts = 3;
+    unsigned PCI_DevIOPorts[16];
+    int Num_PCI_DevIOPorts = 16;
+    unsigned PCI_DevIOAddrPorts[16*16];
+    int Num_PCI_DevIOAddrPorts = 16*16;
+
+    for (i=0; i<16; i++) {
+        PCI_DevIOPorts[i] = 0xC000 + (i*0x0100);
+        for (j=0; j<16; j++)
+            PCI_DevIOAddrPorts[(i*16)+j] = PCI_DevIOPorts[i] + (j*4);
+    }
+
+    xf86ClearIOPortList(0);
+    xf86AddIOPorts(0, Num_PCI_CtrlIOPorts, PCI_CtrlIOPorts);
+    xf86AddIOPorts(0, Num_PCI_DevIOPorts, PCI_DevIOPorts);
+    xf86AddIOPorts(0, Num_PCI_DevIOAddrPorts, PCI_DevIOAddrPorts);
+
+    /* Enable I/O access */
+    xf86EnableIOPorts(0);
+
+    outb(0xCF8, 0x00);
+    outb(0xCFA, 0x00);
+    tmp1 = inb(0xCF8);
+    tmp2 = inb(0xCFA);
+    if ((tmp1 == 0x00) && (tmp2 == 0x00)) {
+	configtype = 2;
+#ifdef DEBUGPCI
+        printf("PCI says configuration type 2\n");
+#endif
+    } else {
+        tmplong1 = inl(0xCF8);
+        outl(0xCF8, PCI_EN);
+        tmplong2 = inl(0xCF8);
+        outl(0xCF8, tmplong1);
+        if (tmplong2 == PCI_EN) {
+	    configtype = 1;
+#ifdef DEBUGPCI
+            printf("PCI says configuration type 1\n");
+#endif
+	} else {
+	    configtype = 0;
+#ifdef DEBUGPCI
+            printf("No PCI !\n");
+#endif
+            xf86DisableIOPorts(0);
+            xf86ClearIOPortList(0);
+	    return;
+	}
+    }
+
+    /* Try pci config 1 probe first */
+
+#ifdef DEBUGPCI
+    printf("\nPCI probing configuration type 1\n");
+#endif
+
+#ifndef DEBUGPCI
+    if (configtype == 1)
+#endif
+    {
+	config_cmd = PCI_EN | (0<<16) | (cardnum<<11);
+
+        outl(0xCF8, config_cmd | reg);
+	tmp = inl(0xCFC) & ~mask;
+	outl(0xCFC, tmp | (value & mask));
+    }
+#ifndef DEBUGPCI
+    if (configtype == 1) {
+        outl(0xCF8, 0x00);
+	return;
+    }
+#endif
+    /* Now try pci config 2 probe (deprecated) */
+
+    outb(0xCF8, 0xF1);
+    outb(0xCFA, 0x00); /* bus 0 for now */
+
+#ifdef DEBUGPCI
+    printf("\nPCI probing configuration type 2\n");
+#endif
+
+    {
+	int ioaddr = 0xC000 + (cardnum * 0x100);
+
+	outb(0xCFA, 0x00); /* bus 0 for now */
+        tmp = inl(ioaddr + reg) & ~mask;
+	outb(0xCFA, 0x00); /* bus 0 for now */
+        outl(ioaddr + reg, tmp | (value & mask));
+	outb(0xCFA, 0x00); /* bus 0 for now */
+
+    }
+
+    outb(0xCF8, 0x00);
+    outb(0xCFA, 0x00);
+
+    xf86DisableIOPorts(0);
+    xf86ClearIOPortList(0);
+    return;
 }

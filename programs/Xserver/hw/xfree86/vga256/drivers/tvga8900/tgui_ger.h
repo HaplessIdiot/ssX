@@ -22,7 +22,7 @@
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.0 1995/12/17 05:04:10 dawes Exp $ */
 
 /* Graphics Engine for 9420/9430 */
 
@@ -31,3 +31,38 @@
 #define GER_BYTE1	0x210D
 #define GER_BYTE2	0x210E
 #define GER_BYTE3	0x210F
+
+/* Graphics Engine for 9440/9660/9680 */
+
+#define GER_STATUS	0x2120		
+#define		GE_BUSY	0x80
+#define GER_OPERMODE	0x2122		/* Byte for 9440, Word for 9660/9680 */
+#define GER_COMMAND	0x2124		
+#define		GE_NOP		0x00	/* No Operation */
+#define		GE_BLT		0x01	/* BitBLT ROP3 only */
+#define		GE_BLT_ROP4	0x02	/* BitBLT ROP4 (9660/9680 only) */
+#define		GE_SCANLINE	0x03	/* Scan Line */
+#define		GE_BRESLINE	0x04	/* Bresenham Line */
+#define		GE_SHVECTOR	0x05	/* Short Vector */
+#define		GE_FASTLINE	0x06	/* Fast Line (9660/9680 only) */
+#define		GE_TRAPEZ	0x07	/* Trapezoidal fill (9660/9680 only) */
+#define		GE_ELLIPSE	0x08	/* Ellipse (9660/9680 only) (RES) */
+#define		GE_ELLIP_FILL	0x09	/* Ellipse Fill (9660/9680 only) (RES)*/
+#define	GER_FMIX	0x2127
+#define GER_DRAWFLAG	0x2128		/* long */
+#define GER_FCOLOUR	0x212C		/* Word for 9440, long for 9660/9680 */
+#define GER_BCOLOUR	0x2130		/* Word for 9440, long for 9660/9680 */
+#define GER_PATLOC	0x2134		/* Word */
+#define GER_DEST_X	0x2138		/* Word */
+#define GER_DEST_Y	0x213A		/* Word */
+#define GER_SRC_X	0x213C		/* Word */
+#define GER_SRC_Y	0x213D		/* Word */
+#define GER_DIM_X	0x2140		/* Word */
+#define GER_DIM_Y	0x2142		/* Word */
+#define GER_PATTERN	0x2180		/* from 0x2180 to 0x21FF */
+
+/* Graphics Engine for 9660/9680 */
+
+/* Routines */
+
+#define WaitIdle()	while (inb(GER_STATUS) & GE_BUSY);
