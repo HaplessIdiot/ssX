@@ -31,7 +31,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86: xc/extras/Xpm/lib/scan.c,v 1.4 2004/09/15 16:00:37 herrb Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/scan.c,v 1.5tsi Exp $ */
 
 /*
  * The code related to FOR_MSW has been added by
@@ -640,7 +640,7 @@ GetImagePixels(image, width, height, pmap)
 		src = &data[XYINDEX(x, y, image)];
 		dst = (char *) &pixel;
 		pixel = 0;
-		for (i = ibu >> 3; --i >= 0;)
+		for (i = ibu >> 3; i-- > 0;)
 		    *dst++ = *src++;
 		XYNORMALIZE(&pixel, image);
 		bits = (x + offset) % ibu;
@@ -660,7 +660,7 @@ GetImagePixels(image, width, height, pmap)
 	    for (x = 0; x < width; x++, iptr++) {
 		pixel = 0;
 		plane = 0;
-		for (i = depth; --i >= 0;) {
+		for (i = depth; i-- > 0;) {
 		    src = &data[XYINDEX(x, y, image) + plane];
 		    dst = (char *) &px;
 		    px = 0;
@@ -683,11 +683,11 @@ GetImagePixels(image, width, height, pmap)
 		src = &data[ZINDEX(x, y, image)];
 		dst = (char *) &px;
 		px = 0;
-		for (i = (ibpp + 7) >> 3; --i >= 0;)
+		for (i = (ibpp + 7) >> 3; i-- > 0;)
 		    *dst++ = *src++;
 		ZNORMALIZE(&px, image);
 		pixel = 0;
-		for (i = sizeof(unsigned long); --i >= 0;)
+		for (i = sizeof(unsigned long); i-- > 0;)
 		    pixel = (pixel << 8) | ((unsigned char *) &px)[i];
 		if (ibpp == 4) {
 		    if (x & 1)

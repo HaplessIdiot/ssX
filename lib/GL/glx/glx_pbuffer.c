@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/glx_pbuffer.c,v 1.2tsi Exp $ */
 /*
  * (C) Copyright IBM Corporation 2004
  * All Rights Reserved.
@@ -276,7 +276,6 @@ CreateDrawable( Display *dpy, const __GLcontextModes * fbconfig,
 		CARD8 glxCode )
 {
    xGLXCreateWindowReq * req;
-   CARD32 * data;
    unsigned int  i;
 
 
@@ -285,7 +284,6 @@ CreateDrawable( Display *dpy, const __GLcontextModes * fbconfig,
 
    LockDisplay(dpy);
    GetReqExtra( GLXCreateWindow, 20 + (8 * i), req );
-   data = (CARD32 *) (req + 1);
 
    req->reqType = __glXSetupForCommand(dpy);
    req->glxCode = glxCode;

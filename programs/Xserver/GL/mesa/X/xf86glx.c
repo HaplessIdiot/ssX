@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glx.c,v 1.4 2004/06/11 08:10:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glx.c,v 1.5tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -106,7 +106,6 @@ void *__glXglDDXExtensionInfo(void) {
 }
 
 static __MESA_screen  MESAScreens[MAXSCREENS];
-static __GLcontext   *MESA_CC        = NULL;
 
 static int                 numConfigs     = 0;
 static __GLXvisualConfig  *visualConfigs  = NULL;
@@ -672,7 +671,6 @@ extern void __MESA_resetExtension(void)
 	MESAScreens[i].num_vis = 0;
     }
     __glDDXScreenInfo.modes = NULL;
-    MESA_CC = NULL;
 }
 
 void __MESA_createBuffer(__GLXdrawablePrivate *glxPriv)
@@ -809,7 +807,6 @@ GLboolean __MESA_destroyContext(__GLcontext *gc)
 GLboolean __MESA_loseCurrent(__GLcontext *gc)
 {
     XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
-    MESA_CC = NULL;
     __glXLastContext = NULL;
     return XMesaLoseCurrent(xmesa);
 }
@@ -822,7 +819,6 @@ GLboolean __MESA_makeCurrent(__GLcontext *gc)
     __MESA_buffer readBuf = (__MESA_buffer)readPriv->private;
     XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
 
-    MESA_CC = gc;
     return XMesaMakeCurrent2(xmesa, drawBuf->xm_buf, readBuf->xm_buf);
 }
 
@@ -838,7 +834,7 @@ GLboolean __MESA_copyContext(__GLcontext *dst, const __GLcontext *src,
 			     GLuint mask)
 {
     XMesaContext xm_dst = (XMesaContext) dst->DriverCtx;
-    const XMesaContext xm_src = (const XMesaContext) src->DriverCtx;
+    const XMesaContext xm_src = (XMesaContext) src->DriverCtx;
     _mesa_copy_context(&xm_src->mesa, &xm_dst->mesa, mask);
     return GL_TRUE;
 }
@@ -846,7 +842,6 @@ GLboolean __MESA_copyContext(__GLcontext *dst, const __GLcontext *src,
 GLboolean __MESA_forceCurrent(__GLcontext *gc)
 {
     XMesaContext xmesa = (XMesaContext) gc->DriverCtx;
-    MESA_CC = gc;
     return XMesaForceCurrent(xmesa);
 }
 

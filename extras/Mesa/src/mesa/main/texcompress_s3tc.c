@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -55,6 +56,7 @@ _mesa_init_texture_s3tc( GLcontext *ctx )
 static GLboolean
 texstore_rgb_dxt1(STORE_PARAMS)
 {
+#if 0
    const GLchan *pixels;
    GLint srcRowStride;
    GLubyte *dst;
@@ -95,13 +97,12 @@ texstore_rgb_dxt1(STORE_PARAMS)
                                         GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
                                         texWidth, (GLubyte *) dstAddr);
 
-#if 0
    compress_dxt1(ctx, srcWidth, srcHeight, srcFormat, pixels, srcRowStride,
                  dst, dstRowStride);
-#endif
 
    if (tempImage)
       _mesa_free((void *) tempImage);
+#endif
 
    return GL_TRUE;
 }
@@ -113,6 +114,7 @@ texstore_rgb_dxt1(STORE_PARAMS)
 static GLboolean
 texstore_rgba_dxt1(STORE_PARAMS)
 {
+#if 0
    const GLchan *pixels;
    GLint srcRowStride;
    GLubyte *dst;
@@ -152,12 +154,11 @@ texstore_rgba_dxt1(STORE_PARAMS)
    dst = _mesa_compressed_image_address(dstXoffset, dstYoffset, 0,
                                         GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
                                         texWidth, (GLubyte *) dstAddr);
-#if 0
    compress_dxt1(ctx, srcWidth, srcHeight, srcFormat, pixels, srcRowStride,
                  dst, dstRowStride);
-#endif
    if (tempImage)
       _mesa_free((void*) tempImage);
+#endif
 
    return GL_TRUE;
 }
@@ -169,6 +170,7 @@ texstore_rgba_dxt1(STORE_PARAMS)
 static GLboolean
 texstore_rgba_dxt3(STORE_PARAMS)
 {
+#if 0
    const GLchan *pixels;
    GLint srcRowStride;
    GLubyte *dst;
@@ -207,12 +209,11 @@ texstore_rgba_dxt3(STORE_PARAMS)
    dst = _mesa_compressed_image_address(dstXoffset, dstYoffset, 0,
                                         GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
                                         texWidth, (GLubyte *) dstAddr);
-#if 0
    compress_rgba_dxt3(ctx, srcWidth, srcHeight, pixels,
                       srcRowStride, dst, dstRowStride);
-#endif
    if (tempImage)
       _mesa_free((void *) tempImage);
+#endif
 
    return GL_TRUE;
 }
@@ -224,6 +225,7 @@ texstore_rgba_dxt3(STORE_PARAMS)
 static GLboolean
 texstore_rgba_dxt5(STORE_PARAMS)
 {
+#if 0
    const GLchan *pixels;
    GLint srcRowStride;
    GLubyte *dst;
@@ -262,12 +264,11 @@ texstore_rgba_dxt5(STORE_PARAMS)
    dst = _mesa_compressed_image_address(dstXoffset, dstYoffset, 0,
                                         GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
                                         texWidth, (GLubyte *) dstAddr);
-#if 0
    compress_rgba_dxt5(ctx, srcWidth, srcHeight, pixels,
                       srcRowStride, dst, dstRowStride);
-#endif
    if (tempImage)
       _mesa_free((void *) tempImage);
+#endif
 
    return GL_TRUE;
 }

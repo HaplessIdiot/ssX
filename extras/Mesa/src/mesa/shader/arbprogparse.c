@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/shader/arbprogparse.c,v 1.2tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -1847,12 +1847,11 @@ static GLuint
 parse_param (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
              struct arb_program *Program)
 {
-   GLuint found, err;
+   GLuint found;
    GLint specified_length;
    char *error_msg;
    struct var_cache *param_var;
 
-   err = 0;
    param_var = parse_string (inst, vc_head, Program, &found);
    Program->Position = parse_position (inst);
 

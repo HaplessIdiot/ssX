@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -304,21 +305,17 @@ typedef unsigned long long Fx64;
 #define FX64_NATIVE 0
 
 typedef struct {
-        unsigned long lo, hi;
+        unsigned lo, hi;
 } Fx64;
 
 #define FX64_MOV32(a, b) a.lo = b
 #define FX64_OR32(a, b)  a.lo |= b
 
-#define FX64_SHL(a, c)                                 \
-   do {                                                \
-       if ((c) >= 32) {                                \
-          a.hi = a.lo << ((c) - 32);                   \
-          a.lo = 0;                                    \
-       } else {                                        \
-          a.hi = (a.hi << (c)) | (a.lo >> (32 - (c))); \
-          a.lo <<= (c);                                \
-       }                                               \
+/* Works only for c < 32, but that's all that's needed here... */
+#define FX64_SHL(a, c)                             \
+   do {                                            \
+      a.hi = (a.hi << (c)) | (a.lo >> (32 - (c))); \
+      a.lo <<= (c);                                \
    } while (0)
 
 #endif /* !__GNUC__ */
