@@ -2169,6 +2169,14 @@ NewCurrentScreen(newScreen, x, y)
 		PanoramiXConfineCursorToWindow(sprite.confineWin, TRUE);
 	    else
 		PanoramiXConfineCursorToWindow(WindowTable[0], TRUE);
+	    /* if the pointer wasn't confined, the DDX won't get 
+	       told of the pointer warp so we reposition it here */
+	    if(!syncEvents.playingEvents)
+		(*sprite.screen->SetCursorPosition)(sprite.screen,
+		    sprite.hotPhys.x + panoramiXdataPtr[0].x - 
+			panoramiXdataPtr[sprite.screen->myNum].x,
+		    sprite.hotPhys.y + panoramiXdataPtr[0].y - 
+			panoramiXdataPtr[sprite.screen->myNum].y, FALSE);
 	}
     } else 
 #endif
@@ -4401,31 +4409,6 @@ WriteEventsToClient(pClient, count, events)
 {
     xEvent    eventTo, *eventFrom;
     int       i;
-
-#if 0
-    if (!noPanoramiXExtension) {
-      switch (events->u.u.type) {
-        case ButtonPress: 
-	case ButtonRelease:
-        case MotionNotify: 
-	case KeyPress: 
-	case KeyRelease:
-             for (i = 0; i < count; i++) {
-		events[i].u.keyButtonPointer.rootX += panoramiXdataPtr[0].x;
-		events[i].u.keyButtonPointer.rootY += panoramiXdataPtr[0].y;
-		if(events[i].u.keyButtonPointer.event == 
-		   				WindowTable[0]->drawable.id) 
-		{
-		   events[i].u.keyButtonPointer.eventX += panoramiXdataPtr[0].x;
-		   events[i].u.keyButtonPointer.eventY += panoramiXdataPtr[0].y;
-		}
-             }
-            break;
-        default :
-            break;
-      } /* case */
-    }
-#endif
 
 #ifdef XKB
     if ((!noXkbExtension)&&(!XkbFilterEvents(pClient, count, events)))
