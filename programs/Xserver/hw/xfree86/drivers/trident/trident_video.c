@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.11 2001/09/24 11:19:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.12 2001/09/24 20:40:15 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -233,7 +233,7 @@ void TRIDENTResetVideo(ScrnInfoPtr pScrn)
     	OUTW(0x3C4, 0x3421);
     	OUTW(0x3C4, 0x3037);
     } else {
-	if (pTrident->Chipset >= PROVIDIA9685) {
+	if (pTrident->Chipset >= PROVIDIA9682) {
     	    OUTB(0x83C8, 0x57);
     	    OUTB(0x83C6, 0xC0);
     	    OUTW(vgaIOBase + 4, 0x24BE); 
@@ -345,7 +345,7 @@ TRIDENTSetupImageVideo(ScreenPtr pScreen)
     xvHUE        = MAKE_ATOM("XV_HUE");
     xvGamma      = MAKE_ATOM("XV_GAMMA");
 
-    if (pTrident->Chipset >= PROVIDIA9685) 
+    if (pTrident->Chipset >= PROVIDIA9682) 
 	pTrident->keyOffset = 0x50;
     else
 	pTrident->keyOffset = 0x30;
