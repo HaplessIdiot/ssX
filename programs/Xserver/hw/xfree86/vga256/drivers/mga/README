@@ -77,11 +77,15 @@ Videoram	8192
 
 Other options:
 
-"nolinear"				- disables linear frame buffer and BitBlt Engine
+
+*** nolinear doesn't currently work
+"nolinear"		- disables linear frame buffer and BitBlt Engine
+
 "noaccel", "no_bitblt"	- turns off BitBlt Engine
 
 Virtual Widths:
 
+*** The driver now should take care of the virtual/display width handling
 The following multiples must be honored for virtual widths to work:
 
 bpp		non-interleave	interleave

@@ -27,7 +27,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.10 1996/07/08 11:25:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.11 1996/09/14 13:13:13 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -364,7 +364,8 @@ SISFbInit()
 	else
 		SIS.ChipUseLinearAddressing = FALSE;
 
-	SISDisplayableMemory = vga256InfoRec.virtualX * vga256InfoRec.virtualY
+	SISDisplayableMemory = vga256InfoRec.displayWidth
+				* vga256InfoRec.virtualY
 				* (vgaBitsPerPixel / 8);
 
 	offscreen_available = vga256InfoRec.videoRam * 1024 - 
@@ -487,7 +488,7 @@ SISInit(mode)
 	 */
 	vgaHWInit(mode, sizeof(vgaSISRec));
   
-	offset = vga256InfoRec.virtualX >>
+	offset = vga256InfoRec.displayWidth >>
 #ifdef MONOVGA
 		(mode->Flags & V_INTERLACE ? 3 : 4);
 #else

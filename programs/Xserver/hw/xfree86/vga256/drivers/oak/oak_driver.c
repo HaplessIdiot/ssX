@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.22 1996/06/29 09:08:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.23 1996/09/14 13:12:45 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -1403,7 +1403,7 @@ OAKInit(mode)
     default:
 #ifndef MONOVGA
 #if 0
-      new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* 3 in byte mode */
+      new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3; /* 3 in byte mode */
 #endif
       /* much clearer as 0x01 than 0x41, seems odd though... */
       new->std.Attribute[16] = 0x01; 
@@ -1464,7 +1464,7 @@ OAKAdjust(x, y)
      int x, y;
 {
   int temp;
-  int Base = (y * vga256InfoRec.virtualX + x ) >> 3;
+  int Base = (y * vga256InfoRec.displayWidth + x ) >> 3;
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
 
@@ -1545,7 +1545,7 @@ OAKFbInit()
       ErrorF ("%s %s: oti087: Offscreen Memory:      %d bytes.\n", 
 	      XCONFIG_PROBED,
 	      vga256InfoRec.name,
-	      (1024*vga256InfoRec.videoRam)-(vga256InfoRec.virtualX*vga256InfoRec.virtualY));
+	      (1024*vga256InfoRec.videoRam)-(vga256InfoRec.displayWidth*vga256InfoRec.virtualY));
       
       
       /* Framebuffer accelerations */
@@ -1553,7 +1553,7 @@ OAKFbInit()
       if ((!OTI_linear) && 
 	  (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)))
 	{
-	  if (vga256InfoRec.virtualX == 1024)
+	  if (vga256InfoRec.displayWidth == 1024)
 	    {
       ErrorF ("%s %s: oti087: Acceleration Status:   ON.\n", 
 		      XCONFIG_PROBED,
@@ -1572,7 +1572,7 @@ OAKFbInit()
 	    }
 	  else
 	    {
-      ErrorF ("%s %s: oti087: Acceleration Status:   Disabled (virtualX != 1024).\n", 
+      ErrorF ("%s %s: oti087: Acceleration Status:   Disabled (displayWidth != 1024).\n", 
 		      XCONFIG_PROBED,
 		      vga256InfoRec.name);
 	    }

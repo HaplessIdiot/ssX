@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.13 1996/09/14 13:13:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.14 1996/09/24 13:55:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -735,7 +735,7 @@ S3Init (mode)
    }
 
    new->std.Attribute[16] = 0x01;	/* use the FAST 256 Color Mode */
-   new->std.CRTC[19] = vga256InfoRec.virtualX >> 3;
+   new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3;
    new->std.CRTC[20] = 0x60;
    new->std.CRTC[23] = 0xAB;
    new->StateControl = 0x00;

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_alloc.c,v 3.0 1996/08/11 13:02:39 dawes Exp $ */
 
 /*
  * This file implements functions a simple allocator of video memory for
@@ -62,7 +62,7 @@ ctInitializeAllocator()
      * Allocate from the top of ram. */
 
     allocatebase = (vga256InfoRec.videoRam<<10) - ctFrameBufferSize;
-    freespace = allocatebase - vga256InfoRec.virtualX *
+    freespace = allocatebase - vga256InfoRec.displayWidth *
 	vga256InfoRec.virtualY * vgaBytesPerPixel;
     currentaddr = allocatebase;
     lastaddr = -1;

@@ -209,9 +209,9 @@
 
      PC98:
 
-        o  FreeBSD(98) 2.0.5, 2.1
+        o  FreeBSD(98) 2.0.5, 2.1, 2.1.5
 
-        o  NetBSD/pc98 (based on NetBSD 1.1)
+        o  NetBSD/pc98 (based on NetBSD 1.2)
 
   4.  Supported video-card chip-sets
 
@@ -552,13 +552,13 @@
 
      PC98 support by:
 
-        o  Toyonori Fujiura <toyo@center.nitech.ac.jp>,
+        o  Toyonori Fujiura <toyo@ibbsal.or.jp>,
 
-        o  Hiroyuki Aizu <aizu@center.nitech.ac.jp>,
+        o  Hiroyuki Aizu <aizu@jaist.ac.jp>,
 
         o  Tetsuya Kakefuda <kakefuda@tag.iijnet.or.jp>,
 
-        o  Takefumi Tsukada <tsuka@kawalab.dnj.ynu.ac.jp>,
+        o  Takefumi Tsukada <tsuka@linkt.imasy.or.jp>,
 
         o  H.Komatsuzaki,
 
@@ -596,9 +596,19 @@
 
         o  Tadaaki Nagao <nagao@cs.titech.ac.jp>,
 
-        o  Minoru Noda <tarda@ce.tokushima-u.ac.jp>,
+        o  Minoru Noda <mnoda@cv.tottori-u.ac.jp>,
 
-        o  Naofumi Honda <honda@math.hokudai.ac.jp>,
+        o  Naofumi Honda <honda@Kururu.math.hokudai.ac.jp>,
+
+        o  Akio Morita <amorita@bird.scphys.kyoto-u.ac.jp>,
+
+        o  Takashi Sakamoto <sakamoto@yajima.kuis.kyoto-u.ac.jp>,
+
+        o  Yasuhiro Ichikawa <cs94006@mbox.sist.ac.jp>,
+
+        o  Kazunori Ueno <g540012@komaba.ecc.u-tokyo.ac.jp>,
+
+        o  Yasushi Suzuki <suz@d2.bs1.fc.nec.co.jp>,
 
         o  Masato Yoshida (Contributor of PW805i support)
 
@@ -646,6 +656,8 @@
 
         o  Craig Groeschel <craig@metrolink.com>
 
+
+
         o  Bryan Feir <jenora@istar.ca>
 
      Mach64 accelerated code by:
@@ -655,8 +667,6 @@
      Mach8, 8514 accelerated code by:
 
         o  Kevin Martin <martin@cs.unc.edu>,
-
-
 
         o  Rik Faith <faith@cs.unc.edu>,
 
@@ -713,6 +723,7 @@
 
         o  Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
 
+
      2 color VGA and non-VGA mono servers by:
 
         o  Pascal Haible <haible@izfm.uni-stuttgart.de>
@@ -721,8 +732,6 @@
 
         o  Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans
            <dje@cygnus.com>.
-
-
 
         o  Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
 
@@ -779,6 +788,8 @@
 
      AL2101 SVGA driver by:
 
+
+
         o  Paolo Severini <lendl@dist.dist.unige.it>
 
      Avance Logic ``ali'' SVGA driver by:
@@ -788,7 +799,6 @@
      Chips & Technology SVGA driver by:
 
         o  Regis Cridlig <cridlig@dmi.ens.fr>
-
 
         o  Jon Block <block@frc.com>
 
@@ -844,6 +854,8 @@
 
      o  Dirk Hohndel <hohndel@XFree86.org>
 
+
+
      o  Rich Murphey <rich@XFree86.org>
 
      o  Jon Tombs <tombs@XFree86.org>
@@ -852,9 +864,6 @@
 
   Mail sent to <Core@XFree86.org> will reach the core team.  Please note
   that support questions should be sent to <XFree86@XFree86.org>.
-
-
-
 
   9.  The XFree86 Project, Inc.
 
@@ -912,6 +921,7 @@
   Email to <BOD@XFree86.org> reaches the board of directors.
 
   Our bylaws have been crafted in such a way to ensure that XFree86 is
+
   and always will be a free software project.  There is no personal
   financial benefit to any member of the Core Team or any other XFree86
   participant.  All assets of the corporation remain with the
@@ -920,7 +930,6 @@
   that by doing this, our corporation will be merely a formalization of
   what we have been doing in the past, rather than something entirely
   new.
-
 
   Here is a list of the organizations and individuals who have provided
   sponsorship to The XFree86 Project, Inc, either by financial
@@ -978,6 +987,7 @@
 
      o  Hercules Computer Technology, Inc. <http://www.hercules.com/>
 
+
      o  Ralf Hockens
 
      o  Dirk Hohndel
@@ -985,8 +995,6 @@
      o  InfoMagic <http://www.infomagic.com/>, Flagstaff, AZ
 
      o  Daniel Kraemer
-
-
 
      o  Frank & Paige McCormick
 
@@ -1045,13 +1053,12 @@
   with the papers.  For more information, contact The XFree86 Project,
   Inc, at <BOD@XFree86.org>
 
+
   10.  Source and binary archive sites
 
   Source patches are available to upgrade X11R6 PL12 from the X
   Consortium to XFree86 3.1.2.  They and binaries for many OSs are
   available via anonymous FTP from:
-
-
 
 
      o  ftp://ftp.XFree86.org/pub/XFree86
@@ -1112,6 +1119,7 @@
         +  ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.2 (NetBSD
            binaries only)
 
+
         +  ftp://ftp.pvv.unit.no/pub/XFree86 (source and binaries)
 
         +  ftp://sunsite.doc.ic.ac.uk/packages/XFree86 (source and
@@ -1145,21 +1153,13 @@
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.55 1996/09/25 14:17:34 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.56 1996/09/29 13:36:40 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
-
-
-
-
-
 
 
 

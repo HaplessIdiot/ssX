@@ -28,6 +28,8 @@
 
      o  NCR: MP-RAS
 
+     o  PANIX: 5.0
+
   and the following versions of SVR4.2:
 
      o  Consensys
@@ -60,8 +62,6 @@
      Esix
         Esix has no keyboard-driven way to switch modes.  There are two
         levels at which this can be handled:
-
-
 
 
         1. There is a kernel tunable that determines which mode is the
@@ -415,7 +415,7 @@
   information.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.7 1996/02/04 09:08:25 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.8 1996/09/29 13:36:41 dawes Exp $
 
 
 

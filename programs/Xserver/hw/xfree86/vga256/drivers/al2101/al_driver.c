@@ -1,5 +1,5 @@
 /* $XConsortium: al_driver.c /main/6 1996/01/12 12:16:15 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.11 1996/06/29 09:08:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.12 1996/09/14 13:11:09 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -345,7 +345,7 @@ AL2101Init(mode)
   new->ReadBank      = 0x00;
   new->WriteBank     = 0x00;
   new->std.CRTC[5] |= 0x60;	/* Hsync skew */
-  new->std.CRTC[19]  = vga256InfoRec.virtualX >> 4;
+  new->std.CRTC[19]  = vga256InfoRec.displayWidth >> 4;
 
   return(TRUE);
 }

@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.10 1996/06/29 09:08:12 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.11 1996/09/14 13:11:15 dawes Exp $
  */
 
 #include "X.h"
@@ -536,8 +536,8 @@ ALIInit(mode)
   if (!vgaHWInit(mode,sizeof(vgaALIRec)))
     return(FALSE);
 
-/*  ErrorF ("vga256InfoRec.virtualX = %d\n", vga256InfoRec.virtualX); */
-  temp = vga256InfoRec.virtualX >> 3;	/* in byte mode */
+/*  ErrorF ("vga256InfoRec.displayWidth = %d\n", vga256InfoRec.displayWidth); */
+  temp = vga256InfoRec.displayWidth >> 3;	/* in byte mode */
   temp1 = inb(vgaIOBase+4);	/* save 3x4 index */
   outb(vgaIOBase+4, 0x1C);	/* get 3x5.1C */
   if (!(inb(vgaIOBase+5) & 1))  temp <<= 1;	/* support 512K DRAM? */
@@ -577,7 +577,7 @@ ALIAdjust(x, y)
 {
   int Base;
 
-  Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+  Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
   outw(vgaIOBase+4, (Base & 0x00FF00) | 0x0C);
   outw(vgaIOBase+4, ((Base & 0x00FF) << 8) | 0x0D);
 

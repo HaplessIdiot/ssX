@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.40 1996/09/23 13:27:35 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.41 1996/09/29 13:41:43 dawes Exp $
 
 #Chips & Technologies
 
@@ -925,7 +925,7 @@ CHIPSET ATI-Mach64
 SERVER Mach64
 NOCLOCKPROBE
 
-NAME ATI Mach64 GT (264GT), Internal RAMDAC
+NAME ATI Mach64 GT (264GT), aka RAGE, Internal RAMDAC
 CHIPSET ATI-Mach64
 SERVER Mach64
 NOCLOCKPROBE
@@ -947,6 +947,9 @@ SEE ATI Mach64 CT (264CT), Internal RAMDAC
 
 NAME ATI Video Xpression
 SEE ATI Mach64 VT (264VT), Internal RAMDAC
+
+NAME ATI 3D Xpression
+SEE ATI Mach64 GT (264GT), aka RAGE, Internal RAMDAC
 
 NAME ATI Win Boost with STG1702 RAMDAC
 SEE ATI Mach64

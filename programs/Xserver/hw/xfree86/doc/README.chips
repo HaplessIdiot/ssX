@@ -196,11 +196,13 @@
         possible to force the server to identify a particular chip with
         this option.  Some later releases of the ct65545, in particular
 
-        the ct65545A1 and ct65545B1, actually have limitations very
-        similar to those of the 65546. The server is not currently
-        configured to recognise these chips, so the user might wish to
-        force the server to identify their chip as a ct65546 and so have
-        a larger maximum bandwidth.
+        the ct65545A1 and ct65545B1, are believed to have limitations
+        very similar to those of the 65546. The server is currently
+        configured to use the 65545 bandwidth, etc for these chips. So
+        the user might wish to force the server to identify their chip
+        as a ct65546 and so have a larger maximum bandwidth. Note that
+        this forces the server to exceed the documented limitations of
+        the chip, so take care.
 
   4.  Modelines
 
@@ -259,15 +261,19 @@
   The ct655xx driver is capable of driving both a CRT and a flat panel
   display. Generally most modelines that work with CRT's will also work
   with the ct655xx driver. If the "use_modeline" option is not
+
   specified, only the clock, polarities, vertical and horizontal sizes
   are used in the mode calculations on an LCD. Hence a mode like
+
+
 
        Modeline "640x480@8bpp"   21.000  640    0    0    0   480    0    0    0
 
 
 
 
-  will often be sufficient for a laptop screen. It should also be noted
+  will often be sufficient for a laptop screen. Just program the zeroed
+  values above to those you would use for a CRT. It should also be noted
   that flat panels often prefer dot clocks that are much slower than
   CRT's. Below you'll find listed below a set of modelines that are in
   use of a variety of machines. These can be used as starting points for
@@ -275,26 +281,26 @@
 
 
 
-       Modeline "640x480@8bpp"    21.000  640  688  704  776   480  480  481  486
+       Modeline "640x480@8bpp"   21.000  640  688  704  776   480  480  481  486
        Tested on a Sharp PC3020, (640x480 DSTN, 65545A1, 512kByte)
 
-       Modeline "640x480@8bpp"    16.000  640  688  704  776   480  480  481  486
-       Modeline "640x480@16bpp"   16.000  640  688  704  776   480  480  481  486
-       Modeline "640x480@24bpp"   16.330  640  664  760  800   480  490  502  525
+       Modeline "640x480@8bpp"   16.000  640  688  704  776   480  480  481  486
+       Modeline "640x480@16bpp"  16.000  640  688  704  776   480  480  481  486
+       Modeline "640x480@24bpp"  16.330  640  664  760  800   480  490  502  525
        Tested on a Toshiba Satellite T2135CS (640x480 DSTN, 65545??, 1MByte)
 
-       Modeline "640x480@8bpp"    25.175  640  664  760  800   480  491  493  525
-       ModeLine "640x480@8bpp"    28.322  640  680  720  864   480  488  491  521
-       Modeline "640x480@16bpp"   38.000  640  648  668  808   480  490  502  525
-       Modeline "640x480@24bpp"   23.000  640  648  756  809   480  490  502  525
+       Modeline "640x480@8bpp"   25.175  640  664  760  800   480  491  493  525
+       ModeLine "640x480@8bpp"   28.322  640  680  720  864   480  488  491  521
+       Modeline "640x480@16bpp"  38.000  640  648  668  808   480  490  502  525
+       Modeline "640x480@24bpp"  23.000  640  648  756  809   480  490  502  525
        Tested on a Toshiba 400CDT, (640x480 TFT, 65546 1Mbyte)
 
-       Modeline "800x600@8bpp"    40.000  800  840  968 1056   600  601  605  628
-       Modeline "800x600@16bpp"   36.000  800  840  968 1056   600  601  605  628
+       Modeline "800x600@8bpp"   40.000  800  840  968 1056   600  601  605  628
+       Modeline "800x600@16bpp"  36.000  800  840  968 1056   600  601  605  628
        Tested on a Sager Narval86 (800x600 DSTN, 65548, 1Mbyte)
 
-       Modeline "1024x768@8bpp"   65.000 1024 1032 1176 1344   768  771  777  806
-       Modeline "1024x768@16bpp"  65.000 1024 1032 1176 1344   768  771  777  806
+       Modeline "1024x768@8bpp"  65.000 1024 1032 1176 1344   768  771  777  806
+       Modeline "1024x768@16bpp" 65.000 1024 1032 1176 1344   768  771  777  806
        Tested on a Toshiba 720CDT, (1024x768 TFT, 65550, 2Mbyte)
 
 
@@ -320,6 +326,7 @@
         of the screen will reside in the same memory as the frame
         accelerator and will therefore be corrupt. Try reducing the
         amount of memory consumed by the mode.
+
 
       There is a video signal, but the screen doesn't sync.
         You are using a mode that your screen cannot handle. If it is a
@@ -385,6 +392,8 @@
         suspend/resume.  Using an 8bpp, the colour will then be
         displayed incorrectly. This shouldn't affect higher depths.
 
+
+
       The right hand edge of the mode isn't visible on the LCD
         This is usually due to a problem with the "lcd-center" option.
         If this option is removed form XF86Config, then the problem
@@ -393,7 +402,6 @@
       I can't start X-windows with 16 or 24bpp
         Firstly, is your machine capable of 16/24bpp with the mode
         specified. You need at least a 65540 to use 16/24bpp, and the
-
         amount of memory used by the mode will be doubled/tripled. The
         correct options to start the server with these modes are
 
@@ -446,15 +454,7 @@
      o  David Bateman
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.4 1996/08/26 14:08:46 dawes Exp $
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.5 1996/09/29 13:36:42 dawes Exp $
 
 
 

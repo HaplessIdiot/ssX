@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.43 1996/09/15 11:20:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.44 1996/09/23 13:27:28 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -828,7 +828,7 @@ TVGA8900Probe()
 	     (TVGAchipset == TVGA9000) ||
 	     (TVGAchipset == TVGA9000i) )
 	{
-		if (vga256InfoRec.virtualX > 1152)
+		if (vga256InfoRec.displayWidth > 1152)
 		{
 			TVGA8900EnterLeave(LEAVE);
 			FatalError("%s %s: Chipset supports a max. width"
@@ -1049,7 +1049,7 @@ TVGA8900FbInit()
 	if (tridentUseLinear)
 		TVGA8900.ChipUseLinearAddressing = TRUE;
 
-	TridentDisplayableMemory = vga256InfoRec.virtualX 
+	TridentDisplayableMemory = vga256InfoRec.displayWidth 
 					* vga256InfoRec.virtualY
 					* (vgaBitsPerPixel / 8);
 
@@ -1485,7 +1485,7 @@ TVGA8900Init(mode)
 		 * Now do Trident-specific stuff.  This one is also
 		 * affected by the x2 requirement.
 		 */
-		offset = vga256InfoRec.virtualX >> 
+		offset = vga256InfoRec.displayWidth >> 
 			(mode->Flags & V_INTERLACE ? 2 : 3);
 	} else {
 #endif
@@ -1498,7 +1498,7 @@ TVGA8900Init(mode)
 		/*
 		 * Now do Trident-specific stuff.
 		 */
-		offset = vga256InfoRec.virtualX >>
+		offset = vga256InfoRec.displayWidth >>
 				(mode->Flags & V_INTERLACE ? 3 : 4);
 
 #ifndef MONOVGA
@@ -1506,17 +1506,17 @@ TVGA8900Init(mode)
 		{
 		case TGUIDAC:
 			if (vgaBitsPerPixel == 8)
-			offset = vga256InfoRec.virtualX >> 3;
+			offset = vga256InfoRec.displayWidth >> 3;
 			if (vgaBitsPerPixel == 16)
-			offset = vga256InfoRec.virtualX >> 2;
+			offset = vga256InfoRec.displayWidth >> 2;
 			if (vgaBitsPerPixel == 32)
-			offset = vga256InfoRec.virtualX >> 1;
+			offset = vga256InfoRec.displayWidth >> 1;
 			break;
 		case TKD8001:
 			if (vgaBitsPerPixel == 16)
-			offset = vga256InfoRec.virtualX >> 3;
+			offset = vga256InfoRec.displayWidth >> 3;
 			if (vgaBitsPerPixel == 32)
-			offset = vga256InfoRec.virtualX >> 2;
+			offset = vga256InfoRec.displayWidth >> 2;
 			break;
 		}
 	}

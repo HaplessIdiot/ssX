@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_blt16.c,v 3.1 1996/09/23 13:27:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_blt16.c,v 3.2 1996/09/24 13:55:04 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -309,7 +309,7 @@ ArkBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
      * pixel addresses (not bytes), except for 24bpp: that is handled
      * in a better place.
      */
-    widthSrc = widthDst = vga256InfoRec.virtualX;
+    widthSrc = widthDst = vga256InfoRec.displayWidth;
 
     /* XXX we have to err on the side of safety when both are windows,
      * because we don't know if IncludeInferiors is being used.

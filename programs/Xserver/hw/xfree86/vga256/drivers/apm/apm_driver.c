@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.1 1996/09/03 15:12:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.2 1996/09/14 13:11:25 dawes Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -595,7 +595,8 @@ ApmFbInit()
 			vga256InfoRec.chipset, APM.ChipLinearBase,
 			apmBus == PCI ? "PCI bus" : "VL bus");
 
-	apmDisplayableMemory = vga256InfoRec.virtualX * vga256InfoRec.virtualY
+	apmDisplayableMemory = vga256InfoRec.displayWidth
+		* vga256InfoRec.virtualY
 		* (vgaBitsPerPixel / 8);
 	offscreen_available = vga256InfoRec.videoRam * 1024 -
 		apmDisplayableMemory;
@@ -852,7 +853,7 @@ DisplayModePtr mode;
 	 */
 	{
 		int offset;
-		offset = (vga256InfoRec.virtualX *
+		offset = (vga256InfoRec.displayWidth *
 			vga256InfoRec.bitsPerPixel / 8)	>> 3;
 		new->std.CRTC[0x13] = offset;
 		/* Bit 8 resides at CR1C bits 7:4. */

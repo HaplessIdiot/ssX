@@ -1,5 +1,5 @@
 /* $XConsortium: mx_driver.c /main/6 1996/01/12 12:18:24 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.12 1996/06/29 09:08:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.13 1996/09/14 13:12:29 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -669,7 +669,7 @@ DisplayModePtr mode;
 	 *	if (new->std.NoClock >= 0)
 	 *		initialize clock-select bits.
 	 */
-	new->std.CRTC[19] = vga256InfoRec.virtualX >> 3;
+	new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3;
 	new->std.CRTC[20] = 0x40; 
 	new->mxa = 0x40;
 	new->mxc = 0xCC;

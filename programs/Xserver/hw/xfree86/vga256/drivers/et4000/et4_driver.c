@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.30 1996/09/15 11:19:28 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.31 1996/09/23 13:27:22 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1264,7 +1264,7 @@ ET4000Init(mode)
   if (et4000_type >= TYPE_ET6000) new->std.Sequencer[1] |= 0x04;
 #else
   new->std.Attribute[16] = 0x01;  /* use the FAST 256 Color Mode */
-  new->std.CRTC[19] = vga256InfoRec.virtualX >> 3;
+  new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3;
 #endif
   new->std.CRTC[20] = 0x60;
   new->std.CRTC[23] = 0xAB;
