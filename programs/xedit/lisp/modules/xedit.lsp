@@ -60,7 +60,7 @@
     ("\\.sgml?$"				"sgml"	. *sgml*)
     ("\\.html?$"				"html"	. *html*)
     ("\\.(man|\\d)$"				"man"	. *man*)
-    ("app-defaults/\\w+|\\u[A-Za-z0-9-_]+\\.ad"	"xrdb"	. *xrdb*)
+    ("app-defaults/\\w+|\\u[A-Za-z0-9_-]+\\.ad"	"xrdb"	. *xrdb*)
 ))
 
 

@@ -27,11 +27,11 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.60 2002/09/15 21:32:20 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.61 2002/09/22 07:09:07 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
-#ifdef sun	/* Don't ask.... */
+#ifdef sun
 #include <strings.h>
 #endif
 #include <ctype.h>

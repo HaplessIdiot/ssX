@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.3 2002/09/22 07:09:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.4 2002/09/23 01:25:39 paulo Exp $ */
 
 
 /*
@@ -79,13 +79,17 @@ somethings TODO:
 	JUMP :END-OF-IF			;; <- this is not required, or even
 	:NIL-RESULT			;;    better, notice the jump after
 	    JUMP :ELSEWHERE		;;    the if and transform it into
-	:END-OF-IF			;;    a JUMP :THERE
-	JUMP :THERE
+	:END-OF-IF			;;    a JUMP :THERE (assuming there
+	JUMP :THERE			;;    (was no jump in the T code).
 
  o Optimize variables that are known to not change it's value, i.e. pseudo
    constants. Loading the value of a constant should be faster than loading
    the current value of a variable; the constant table could fit in the
    processor cache line and needs less calculation to find the object address.
+
+ o Fix some known problems, like when calling return or return-from while
+   building the argument list to a builtin function, or inline of recursive
+   functions.
  */
 
 
@@ -782,7 +786,7 @@ Lisp_Disassemble(LispMac *mac, LispBuiltin *builtin)
 		    goto predicate;
 		case XBC_INV:	strcpy(ptr, "INV");	break;
 		case XBC_NIL:	strcpy(ptr, "NIL");	break;
-		case XBC_T:	strcpy(ptr, "NIL");	break;
+		case XBC_T:	strcpy(ptr, "T");	break;
 		case XBC_CAR:	strcpy(ptr, "CAR");	break;
 		case XBC_CDR:	strcpy(ptr, "CDR");	break;
 		case XBC_RPLACA:strcpy(ptr, "RPLACA");	break;
@@ -2693,22 +2697,6 @@ ExecuteBytecode(register LispMac *mac, register unsigned char *stream)
 
     /* To control gc protected slots */
     int phead, pbase;
-
-    /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-     *  If ALLOW_GOTO_ADDRESS is defined, it will generate a lot of
-     * warnings when compiling with -pedantic -ansi
-     *  Define ANSI_SOURCE or patch this file to disable the warnings.
-     *
-     *  Please don't do it in the official XFree86 version of this file.
-     *
-     *  If ALLOW_GOTO_ADDRESS is not defined it will be in average
-     * 5 to 20% slower (depending on the lisp compiled function, some
-     * stay more time in the bytecode, some functions not...). Timings
-     * tested with GCC 2.95. Maybe newer versions can understand the
-     * "code semantics", and automatically generate the equivalent
-     * code, in which case ALLOW_GOTO_ADDRESS can be undefined.
-     * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-     */
 
 #if defined(__GNUC__) && !defined(ANSI_SOURCE)
 #define ALLOW_GOTO_ADDRESS

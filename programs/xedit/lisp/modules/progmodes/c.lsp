@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.6 2002/09/15 21:32:35 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.7 2002/09/22 07:09:08 paulo Exp $
 ;;
 
 ;;  Uncomment this to run the module in the stand alone command line
@@ -62,16 +62,18 @@
 	)
 	:property *prop-keyword*)
 
-    ;;  Integers.
-    (syntoken "\\<(\\d+|0x\\x+)(u|ul|ull|l|ll|lu|llu)?\\>"
+    ;; Numbers
+    (syntoken
+	(string-concat
+	    "\\<("
+	    ;; Integers
+	    "(\\d+|0x\\x+)(u|ul|ull|l|ll|lu|llu)?|"
+	    ;; Floats
+	    "\\d+\\.?\\d*(e[+-]?\\d+)?[lf]?"
+	    ")\\>")
 	:icase t
-	:property *prop-number*)
-
-    ;;  Floating point numbers.
-    (syntoken "\\<(\\d+\\.?\\d*|\\d*\\.\\d+)(e[+-]?\\d+)?[lf]?\\>"
-	:icase t
-	:property *prop-number*)
-
+	:property *prop-number*
+    )
 
     ;;  Parentheses start rule.
 #+debug-complex

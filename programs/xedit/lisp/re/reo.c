@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.6 2002/09/22 07:09:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.7 2002/09/23 01:25:41 paulo Exp $ */
 
 #include "rep.h"
 
@@ -413,7 +413,7 @@ orec_rng(orec_inf *inf, rec_rng *rng)
 		rng->type = Reb_Range;
 		rng->range.chr = ptr->value.chr;
 		nxt = ptr->next;
-		for (tmp = rng->next; tmp != ptr->next;) {
+		for (tmp = rng->next; tmp != nxt;) {
 		    next = tmp->next;
 		    free(tmp);
 		    tmp = next;
