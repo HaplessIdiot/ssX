@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.90 1999/04/18 12:59:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.91 1999/04/24 07:36:21 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -847,6 +847,13 @@ MGAdoDDC(ScrnInfoPtr pScrn)
     hwp->MapSize = 0x10000;
     if (!vgaHWMapMem(pScrn))
       return NULL;
+  } else {
+    /* XXX Need to write an MGA mode ddc1SetSpeed */
+    if (pMga->DDC1SetSpeed == vgaHWddc1SetSpeed) {
+      pMga->DDC1SetSpeed = NULL;
+      xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+		     "DDC1 disabled - chip not in VGA mode\n");
+    }
   }
 
   /* Save the current state */
@@ -873,9 +880,9 @@ ErrorF("I2C initialized on %p\n",pMga->I2C);
   /* else */
 #endif /* MGAuseI2C */  
   /* Read and output monitor info using DDC1 */
-  if (pMga->ddc1Read) {
+  if (pMga->ddc1Read && pMga->DDC1SetSpeed) {
     MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex,
-					 vgaHWddc1SetSpeed,
+					 pMga->DDC1SetSpeed,
 					 pMga->ddc1Read ) ;
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n", MonInfo);
     xf86PrintEDID( MonInfo );
@@ -886,8 +893,10 @@ ErrorF("I2C initialized on %p\n",pMga->I2C);
   /* Restore previous state and unmap MGA memory and MMIO areas */
   MGARestore(pScrn);
   MGAUnmapMem(pScrn);
-  /* Should we call vgaHWUnmapMem - it isn't used elsewhere in the mga driver ?
-   */
+  /* Unmap vga memory if we mapped it */
+  if (xf86IsPrimaryPci(pMga->PciInfo) && !pMga->FBDev) {
+    vgaHWUnmapMem(pScrn);
+  }
 
   return MonInfo;
 }
@@ -997,20 +1006,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
 		       " (%s) is not supported at depth %d\n",
 		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-	    return FALSE;
-	}
-    }
-
-
-    /*
-     * If the driver can do gamma correction, it should call xf86SetGamma()
-     * here.
-     */
-
-    {
-	Gamma zeros = {0.0, 0.0, 0.0};
-
-	if (!xf86SetGamma(pScrn, zeros)) {
 	    return FALSE;
 	}
     }
@@ -1367,6 +1362,50 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
     (*pMga->PreInit)(pScrn);
 
+    /* Load DDC if we have the code to use it */
+    /* This gives us DDC1 */
+    if (pMga->ddc1Read || pMga->i2cInit) {
+	if (xf86LoadSubModule(pScrn, "ddc")) {
+	  xf86LoaderReqSymLists(ddcSymbols, NULL);
+	} else {
+	  /* ddc module not found, we can do without it */
+	  pMga->ddc1Read = NULL;
+
+	  /* Without DDC, we have no use for the I2C bus */
+	  pMga->i2cInit = NULL;
+	}
+    }
+#if MGAuseI2C    
+    /* - DDC can use I2C bus */
+    /* Load I2C if we have the code to use it */
+    if (pMga->i2cInit) {
+      if ( xf86LoadSubModule(pScrn, "i2c") ) {
+	xf86LoaderReqSymLists(i2cSymbols,NULL);
+      } else {
+	/* i2c module not found, we can do without it */
+	pMga->i2cInit = NULL;
+	pMga->I2C = NULL;
+      }
+    }
+#endif /* MGAuseI2C */
+
+    /* Read and print the Monitor DDC info */
+    pScrn->monitor->DDC = MGAdoDDC(pScrn);
+
+    /*
+     * If the driver can do gamma correction, it should call xf86SetGamma()
+     * here.
+     */
+
+    {
+	Gamma zeros = {0.0, 0.0, 0.0};
+
+	if (!xf86SetGamma(pScrn, zeros)) {
+	    return FALSE;
+	}
+    }
+
+
     /* XXX Set HW cursor use */
 
     /* Set the min pixel clock */
@@ -1631,36 +1670,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
-
-    /* Load DDC if we have the code to use it */
-    /* This gives us DDC1 */
-    if (pMga->ddc1Read || pMga->i2cInit) {
-	if (xf86LoadSubModule(pScrn, "ddc")) {
-	  xf86LoaderReqSymLists(ddcSymbols, NULL);
-	} else {
-	  /* ddc module not found, we can do without it */
-	  pMga->ddc1Read = NULL;
-
-	  /* Without DDC, we have no use for the I2C bus */
-	  pMga->i2cInit = NULL;
-	}
-    }
-#if MGAuseI2C    
-    /* - DDC can use I2C bus */
-    /* Load I2C if we have the code to use it */
-    if (pMga->i2cInit) {
-      if ( xf86LoadSubModule(pScrn, "i2c") ) {
-	xf86LoaderReqSymLists(i2cSymbols,NULL);
-      } else {
-	/* i2c module not found, we can do without it */
-	pMga->i2cInit = NULL;
-	pMga->I2C = NULL;
-      }
-    }
-#endif /* MGAuseI2C */
-
-    /* Read and print the Monitor DDC info */
-    MGAdoDDC(pScrn);
 
     return TRUE;
 }

@@ -1,4 +1,63 @@
 XFree86 3.9Pk (25 April 1999)
+2781. Fix unmap parameters for the SiS driver (David Dawes).
+2780. Fix unmap parameters for the glint driver (#2722, Alan Hourihane).
+2779. Fix the depth 24 visual initialisation (mask, offset) in the
+      Rendition driver (#2720, Martin Cerveny).
+2778. Rework the use of inb/outb in the trident driver, replacing it with
+      MMIO.  Also, don't use the 0xBF000 range for the accelerator registers
+      (#2719, Alan Hourihane).
+2777. Add a -screen option to the xgamma utility so that the gamma of each
+      screen can be changed in Xinerama mode (#2717, Mark Vojkovich).
+2776. Fix all the known problems with the ispell support in xedit (#2716,
+      Paulo Cesar Pereira de Andrade).
+2775. Xaw updates, including improved speed for FindPiece in AsciiSrc.c,
+      add submenu support to the SimpleMenuWidget, add support for text
+      justification to the TextWidget, add an overwrite mode to the
+      TextWidget, make the TextWidget understand negative "multiply" values,
+      add an indent action to the TextWidget, fix a bug in the undo code
+      (#2716, 2721, Paulo Cesar Pereira de Andrade).
+2774. Pcitweak fix for LynxOS, and define NO_MMAP for pre 2.5.0 LynxOS
+      releases (#2715, Thomas Mueller).
+2773. Fix for cirrus hardware cursor on (big endian) PowerPC platform
+      (#2715, Thomas Mueller).
+2772. Experimental DDC support for the Matrox "G" series cards (#2713,
+      Andrew Aitchison).
+2771. Fix a crash in the XAA fill code that happens when
+      Mono8x8PatternFillFlags is set only to HARDWARE_PATTERN_PROGRAMMED_BITS,
+      which affects the TGA driver (#2712, Matt Grossman).
+2770. Replace the default "fixed" (6x13) font with Markus Kuhn's ISO 10646-1
+      version (#2711, Markus Kuhn).
+2769. Import Mark Leisher's ClearlyU BDF fonts (#2707, Mark Leisher).
+2768. Import Mark Leisher's Arabic24 BDF font (#2706, Mark Leisher).
+2767. Initial acceleration for the 24-plane TGA (#2710, Tim Rowley).
+2766. Fix clip bugs in the MGA driver (#2709, Mark Vojkovich).
+2765. Update the `xfsft' TrueType backend to version beta1.1.4.  This includes
+      updates to the `fontenc' interfaces (#2708, Juliusz Chroboczek).
+2764. Fix some #include problems with the rendition driver (#2704, Dejan Ilic).
+2763. Fix a syntax error in the `ru' symbols file (#2703, Peter Novodvorsky).
+2762. Update the xf86SetGamma and xf86SetDpi helpers to use DDC information
+      when it is available, and update the MGA driver to make the DDC
+      information available earlier in the PreInit phase (#2702,
+      Andrew Aitchison).
+2761. Flesh out XF86Setup's config file read and write routines (#2701,
+      Joe Moss).
+2760. Parser fixes (#2700, Joe Moss).
+2759. Remove the out of date references to the sparse map mem functions from
+      the loader (#2699, Matt Grossman).
+2758. Color expansion for the SiS driver, and change the "NoTurboQueue" option
+      to "TurboQueue" (#2696, Juanjo Santamarta).
+2757. Xterm patch #96, including improved logic for bold fonts, improved
+      Unix98 PTY support, and modify initial-erase logic to ensure that the
+      ttyModes resource overrides it (#2695, Thomas Dickey).
+2756. Some #include and warning fixes (#2693, Marc La France).
+2755. On an error, tell user to re-run the server >without< -quiet.  This is
+      generalized to allow the production of error messages to specify the
+      minimum verbosity to be used before reporting a problem (#2693,
+      Marc La France).
+2754. Make -depth 24 produce a more appropriate message when the driver
+      doesn't support it (#2693, Marc La France).
+2753. Reinstate black & white colour options for 1bpp (#2693, Marc La France).
+2752. Fix a typo in XF86Conf.man (#2691, Itai Nahshon).
 2751. Fix the initialisation of some global flags when the config file has
       no ServerFlags section (David Dawes).
 
@@ -7819,4 +7878,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.731 1999/04/18 13:49:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.732 1999/04/24 07:36:11 dawes Exp $

@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.9 1999/01/31 12:45:25 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.10 1999/02/07 06:18:20 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontenc.h"
@@ -248,7 +248,7 @@ find_encoding(const char *fontname, const char *filename,
   }
 #define SPEEDO_RECODE(c) \
   (mapping? \
-   unicode_to_bics(font_encoding_recode(c, mapping)): \
+   unicode_to_bics(font_encoding_recode(c, encoding, mapping)): \
    unicode_to_bics(c))
         
   if((new_name=(char*)xalloc(strlen(encoding_name)))==0)

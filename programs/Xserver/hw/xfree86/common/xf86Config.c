@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.168 1999/04/05 07:13:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.169 1999/04/24 07:36:17 dawes Exp $ */
 
 
 /*
@@ -1509,16 +1509,22 @@ configDisplay(DispPtr displayp, XF86ConfDisplayPtr conf_display)
     int count = 0;
     XF86ModePtr modep;
     
-    displayp->frameX0      = conf_display->disp_frameX0;
-    displayp->frameY0      = conf_display->disp_frameY0;
-    displayp->virtualX     = conf_display->disp_virtualX;
-    displayp->virtualY     = conf_display->disp_virtualY;
-    displayp->depth        = conf_display->disp_depth;
-    displayp->fbbpp        = conf_display->disp_bpp;
-    displayp->weight.red   = conf_display->disp_weight.red;
-    displayp->weight.green = conf_display->disp_weight.green;
-    displayp->weight.blue  = conf_display->disp_weight.blue;
-    displayp->options      = conf_display->disp_option_lst;
+    displayp->frameX0           = conf_display->disp_frameX0;
+    displayp->frameY0           = conf_display->disp_frameY0;
+    displayp->virtualX          = conf_display->disp_virtualX;
+    displayp->virtualY          = conf_display->disp_virtualY;
+    displayp->depth             = conf_display->disp_depth;
+    displayp->fbbpp             = conf_display->disp_bpp;
+    displayp->weight.red        = conf_display->disp_weight.red;
+    displayp->weight.green      = conf_display->disp_weight.green;
+    displayp->weight.blue       = conf_display->disp_weight.blue;
+    displayp->blackColour.red   = conf_display->disp_black.red;
+    displayp->blackColour.green = conf_display->disp_black.green;
+    displayp->blackColour.blue  = conf_display->disp_black.blue;
+    displayp->whiteColour.red   = conf_display->disp_white.red;
+    displayp->whiteColour.green = conf_display->disp_white.green;
+    displayp->whiteColour.blue  = conf_display->disp_white.blue;
+    displayp->options           = conf_display->disp_option_lst;
     if (conf_display->disp_visual) {
 	displayp->defaultVisual = lookupVisual(conf_display->disp_visual);
 	if (displayp->defaultVisual == -1) {

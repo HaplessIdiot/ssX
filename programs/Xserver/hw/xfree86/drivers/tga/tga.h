@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.7 1999/02/07 11:11:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.8 1999/04/17 07:06:57 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -77,8 +77,11 @@ void DEC21030Save(ScrnInfoPtr pScrn, /*vgaRegPtr vgaReg,*/ TGARegPtr tgaReg/*,
 		   Bool saveFonts*/);
 Bool DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
-/* tga_accel.c */
-Bool DEC21030AccelInit(ScreenPtr pScreen);
+/* tga_accel8.c */
+Bool DEC21030AccelInit8(ScreenPtr pScreen);
+
+/* tga_accel32.c */
+Bool DEC21030AccelInit32(ScreenPtr pScreen);
 
 /* BTramdac.c */
 void tgaBTOutIndReg(ScrnInfoPtr pScrn,

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.15 1998/12/06 10:44:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.16 1999/01/11 05:13:11 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -526,14 +526,16 @@ Scan(Widget w, register XawTextPosition position, XawTextScanType type,
 	count = -count;
 	cnt = -cnt;
     }
-    position = XawMax(0, XawMin(position, src->ascii_src.length));
+    position = position > 0 ? (position < src->ascii_src.length ?
+	position : src->ascii_src.length) : 0;
 
     if (type == XawstAll)
 	return (dir == XawsdLeft ? 0 : src->ascii_src.length);
     else if (type == XawstPositions) {
 	position += dir == XawsdRight ? count : -count;
 
-	return (XawMax(0, XawMin(position, src->ascii_src.length)));
+	return (position > 0 ? (position < src->ascii_src.length ?
+		position : src->ascii_src.length) : 0);
     }
     else if (dir == XawsdLeft) {
 	if (position <= 0)
@@ -688,7 +690,7 @@ Scan(Widget w, register XawTextPosition position, XawTextScanType type,
 	position++;
     }
 
-    return (XawMax(0, XawMin(position, src->ascii_src.length)));
+    return (position);
 }
 
 /*
@@ -1487,19 +1489,19 @@ RemovePiece(AsciiSrcObject src, Piece *piece)
 static Piece *
 FindPiece(AsciiSrcObject src, XawTextPosition position, XawTextPosition *first)
 {
-  Piece *old_piece = NULL, *piece = src->ascii_src.first_piece;
-  XawTextPosition temp;
+    Piece *old_piece, *piece;
+    XawTextPosition temp;
 
-  for (temp = 0; piece != NULL; temp += piece->used, piece = piece->next)
-    {
-      *first = temp;
-      old_piece = piece;
+    for (old_piece = NULL, piece = src->ascii_src.first_piece, temp = 0;
+	piece; old_piece = piece, piece = piece->next)
+	if ((temp += piece->used) > position) {
+	    *first = temp - piece->used;
+	    return (piece);
+	}
 
-      if (temp + piece->used > position)
-	return (piece);
-    }
+    *first = temp - (old_piece ? old_piece->used : 0);
 
-  return (old_piece);	/* if we run off the end the return the last piece */
+    return (old_piece);	/* if we run off the end the return the last piece */
 }
     
 /*

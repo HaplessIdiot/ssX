@@ -21,7 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.6 1998/09/06 07:31:58 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftutil.c,v 1.7 1998/10/05 13:22:01 dawes Exp $ */
+
+#ifndef FONTMODULE
+#include <string.h>
+#include <ctype.h>
+#else
+#include "xf86_ansic.h"
+#endif
 
 #include "font.h"
 #include "ttconfig.h"
@@ -202,4 +209,35 @@ ttf_GetEnglishName(TT_Face face, char *name, int nameID)
   return -1;
 }
 
+int
+ttc_checkForTTCName(char *fileName, char **realFileName, int *faceNumber)
+{
+  int length;
+  int fn;
+  int i;
 
+  length=strlen(fileName);
+  if(length<3)
+    return 0;
+
+  if(strcasecmp(fileName+(length-3), ".ttc"))
+    return 0;
+
+  if(fileName[0]==':') {
+    fn=0;
+    i=1;
+    while(isdigit(fileName[i])) {
+      fn*=10;
+      fn+=fileName[i]-'0';
+    }
+    if(fileName[i]==':') {
+      *faceNumber=fn;
+      *realFileName=&(fileName[i+1]);
+      return 1;
+    }
+  }
+
+  *faceNumber=0;
+  *realFileName=fileName;
+  return 1;
+}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_hwcurs.c,v 1.4 1998/09/05 06:36:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_hwcurs.c,v 1.5 1998/11/15 04:30:23 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -228,7 +228,10 @@ CIRHWCursorInit(ScreenPtr pScreen)
 
     infoPtr->MaxWidth = CURSORWIDTH;
     infoPtr->MaxHeight = CURSORHEIGHT;
-    infoPtr->Flags = HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+    infoPtr->Flags = 
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+    		     HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+#endif
 		     HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
 		     HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;
     infoPtr->SetCursorColors = CIRSetCursorColors;

@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.2 1999/04/11 13:10:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.3 1999/04/17 07:05:48 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -22,7 +22,12 @@
 #include "xf86dgastr.h"
 #include "swaprep.h"
 #include "dgaproc.h"
-#include "string.h"
+
+#ifdef EXTMODULE
+#include "xf86_ansic.h"
+#else
+#include <string.h>
+#endif
 
 
 static DISPATCH_PROC(ProcXDGADispatch);

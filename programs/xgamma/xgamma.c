@@ -21,7 +21,7 @@
  * 
  * Written by David Bateman
  */
-/* $XFree86: xc/programs/xgamma/xgamma.c,v 1.2 1999/03/14 14:39:41 dawes Exp $ */
+/* $XFree86: xc/programs/xgamma/xgamma.c,v 1.3 1999/03/21 07:35:38 dawes Exp $ */
 
 #include <stdio.h>
 #include <errno.h>
@@ -52,6 +52,7 @@ Syntax(void)
     fprintf (stderr, "where the available options are:\n");
     fprintf (stderr, "    -display host:dpy       or -d\n");
     fprintf (stderr, "    -quiet                  or -q\n");
+    fprintf (stderr, "    -screen                 or -s\n");
     fprintf (stderr, "    -gamma f.f              Gamma Value\n");
     fprintf (stderr, "    -rgamma f.f             Red Gamma Value\n");
     fprintf (stderr, "    -ggamma f.f             Green Gamma Value\n");
@@ -97,6 +98,7 @@ main(int argc, char *argv[])
     float gam = -1., rgam = -1., ggam = -1., bgam = -1.;
     XF86VidModeGamma gamma;
     Bool quiet = False;
+    int screen = -1;
 
     ProgramName = argv[0];
     for (i = 1; i < argc; i++) {
@@ -109,6 +111,10 @@ main(int argc, char *argv[])
 		continue;
 	    } else if (isabbreviation ("-quiet", arg, 1)) {
 		quiet = True;
+		continue;
+	    } else if (isabbreviation ("-screen", arg, 1)) {
+		if (++i >= argc) Syntax ();
+		screen = atoi(argv[i]);
 		continue;
 	    } else if (isabbreviation ("-gamma", arg, 2)) {
 		if (++i >= argc) Syntax ();
@@ -165,7 +171,8 @@ main(int argc, char *argv[])
 	fprintf (stderr, "%s:  unable to open display '%s'\n",
 		 ProgramName, XDisplayName (displayname));
 	exit(1);
-    }
+    } else if (screen == -1)
+	screen = DefaultScreen(dpy);
 
     if (!XF86VidModeQueryVersion(dpy, &MajorVersion, &MinorVersion)) {
 	fprintf(stderr, "Unable to query video extension version\n");
@@ -188,7 +195,7 @@ main(int argc, char *argv[])
 	exit(2);
     }
 
-    if (!XF86VidModeGetGamma(dpy, DefaultScreen(dpy), &gamma)) {
+    if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
 	fprintf(stderr, "Unable to query gamma correction\n");
 	XCloseDisplay (dpy);
 	exit (2);
@@ -201,11 +208,11 @@ main(int argc, char *argv[])
 	gamma.red = gam;
 	gamma.green = gam;
 	gamma.blue = gam;
-	if (!XF86VidModeSetGamma(dpy, DefaultScreen(dpy), &gamma)) {
+	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
 	    fprintf(stderr, "Unable to set gamma correction\n");
 	    ret = 2;
 	} else {
-	    if (!XF86VidModeGetGamma(dpy, DefaultScreen(dpy), &gamma)) {
+	    if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
 		fprintf(stderr, "Unable to query gamma correction\n");
 		ret = 2;
 	    } else if (!quiet)
@@ -216,11 +223,11 @@ main(int argc, char *argv[])
 	if (rgam >= 0.) gamma.red = rgam;
 	if (ggam >= 0.) gamma.green = ggam;
 	if (bgam >= 0.) gamma.blue = bgam;
-	if (!XF86VidModeSetGamma(dpy, DefaultScreen(dpy), &gamma)) {
+	if (!XF86VidModeSetGamma(dpy, screen, &gamma)) {
 	    fprintf(stderr, "Unable to set gamma correction\n");
 	    ret = 2;
 	} else {
-	    if (!XF86VidModeGetGamma(dpy, DefaultScreen(dpy), &gamma)) {
+	    if (!XF86VidModeGetGamma(dpy, screen, &gamma)) {
 		fprintf(stderr, "Unable to query gamma correction\n");
 		ret = 2;
 	    } else if (!quiet)

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.7 1999/04/11 14:30:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.8 1999/04/15 06:39:02 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -61,11 +61,8 @@ typedef struct {
     unsigned char *     IOBaseDense;
 #endif
     unsigned char *	FbBase;
-    CARD32		IOAccelAddress;
-    unsigned char * 	IOAccel;
     long		FbMapSize;
     Bool		NoAccel;
-    Bool		NoMMIO;
     Bool		HWCursor;
     Bool		UsePCIRetry;
     Bool		UseGERetry;
@@ -77,21 +74,26 @@ typedef struct {
     Bool		HasSGRAM;
     Bool		MUX;
     float		frequency;
+    unsigned char	REGPCIReg;
+    unsigned char	REGNewMode1;
     int			MinClock;
     int			MaxClock;
     int			MUXThreshold;
     int			MCLK;
+    int			bytes;
     TRIDENTRegRec	SavedReg;
     TRIDENTRegRec	ModeReg;
     I2CBusPtr		DDC;
     short		EngineOperation;
     CARD32		AccelFlags;
     CARD32		BltScanDirection;
+    CARD32		PCISTAT;
     RamDacRecPtr	RamDacRec;
     xf86CursorInfoPtr	CursorInfoRec;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
+    unsigned char *	XAAScanlineColorExpandBuffers[1];
 } TRIDENTRec, *TRIDENTPtr;
 
 /* Prototypes */

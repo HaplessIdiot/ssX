@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.1 1999/04/05 07:12:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.2 1999/04/05 08:28:22 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -75,6 +75,9 @@ static void read_modes(
   char *idxname,
   XF86ConfModeLinePtr modes
 );
+
+#define APPEND_ELEMENT	(TCL_APPEND_VALUE|TCL_LIST_ELEMENT)
+
 
 /*
    Implements the xf86config_readfile command which locates and reads
@@ -212,10 +215,14 @@ getsection_keyboard(interp, varpfx)
 
 	Tcl_SetVar2(interp, section, "ServerNumLock",
 		keyboard->keyb_serverNumLock ? "ServerNumLock": "", 0);
-	sprintf(tmpbuf, "%d %d", 
-		(keyboard->keyb_kbdDelay) ? keyboard->keyb_kbdDelay : 500,
-		(keyboard->keyb_kbdRate) ? keyboard->keyb_kbdRate : 30);
-	Tcl_SetVar2(interp, section, "AutoRepeat", tmpbuf, 0);
+	if (keyboard->keyb_kbdDelay) {
+		sprintf(tmpbuf, "%d", keyboard->keyb_kbdDelay);
+		Tcl_SetVar2(interp, section, "AutoRepeat_delay", tmpbuf, 0);
+	}
+	if (keyboard->keyb_kbdRate) {
+		sprintf(tmpbuf, "%d", keyboard->keyb_kbdRate);
+		Tcl_SetVar2(interp, section, "AutoRepeat_rate", tmpbuf, 0);
+	}
 
 	tmpbuf[0] = '\0';
 	for (i = 1; i < 8; i++) {
@@ -357,9 +364,10 @@ getsection_pointer(interp, varpfx)
 	Tcl_SetVar2(interp, section, "Buttons", tmpbuf, 0);
 	Tcl_SetVar2(interp, section, "Emulate3Buttons",
 		pntr->pntr_emulate3Buttons ? "Emulate3Buttons": "", 0);
-	sprintf(tmpbuf, "%d", 
-		pntr->pntr_emulate3Timeout ? pntr->pntr_emulate3Timeout : 50);
-	Tcl_SetVar2(interp, section, "Emulate3Timeout", tmpbuf, 0);
+	if (pntr->pntr_emulate3Timeout) {
+		sprintf(tmpbuf, "%d", pntr->pntr_emulate3Timeout);
+		Tcl_SetVar2(interp, section, "Emulate3Timeout", tmpbuf, 0);
+	}
 
 	switch (pntr->pntr_positiveZ) {
 	case 0:
@@ -395,9 +403,9 @@ getsection_monitor(interp, varpfx)
 {
 	char		section[128];
 	int		i;
-	char		*namebuf, *tmpptr, tmpbuf[32];
+	char		*namebuf, tmpbuf[32];
 	XF86ConfMonitorPtr 	mptr;
-	XF86ConfModeLinePtr	dptr;
+	XF86ConfModesLinkPtr	lptr;
 
 	SECTION_NAME("Monitor");
 	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
@@ -408,7 +416,7 @@ getsection_monitor(interp, varpfx)
 		sprintf(namebuf, "%s_%s", section, mptr->mon_identifier);
 
 		Tcl_SetVar2(interp, section, "Identifiers", mptr->mon_identifier,
-			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+			APPEND_ELEMENT);
 		Tcl_SetVar2(interp, namebuf, "VendorName",
 			StrOrNull(mptr->mon_vendor), 0);
 		Tcl_SetVar2(interp, namebuf, "ModelName",
@@ -424,7 +432,7 @@ getsection_monitor(interp, varpfx)
 		    sprintf(tmpbuf, "%.5g-%.5g", 
 			mptr->mon_hsync[i].lo, mptr->mon_hsync[i].hi);
 		    Tcl_SetVar2(interp, namebuf, "HorizSync", tmpbuf,
-			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+			APPEND_ELEMENT);
 		}
 
 		Tcl_SetVar2(interp, namebuf, "VertRefresh", "", 0);
@@ -433,7 +441,7 @@ getsection_monitor(interp, varpfx)
 		    sprintf(tmpbuf, "%.5g-%.5g", 
 			mptr->mon_vrefresh[i].lo, mptr->mon_vrefresh[i].hi);
 		    Tcl_SetVar2(interp, namebuf, "VertRefresh", tmpbuf,
-			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+			APPEND_ELEMENT);
 		}
 
 		sprintf(tmpbuf, "%.3g %.3g %.3g",
@@ -444,7 +452,11 @@ getsection_monitor(interp, varpfx)
 
 		read_modes  (interp, namebuf, NULL, mptr->mon_modeline_lst);
 		read_options(interp, namebuf, NULL, mptr->mon_option_lst);
-		/* XXX mon_modes_sect_lst */
+		Tcl_SetVar2 (interp, namebuf, "ModeLinks", "", 0);
+		for (lptr = mptr->mon_modes_sect_lst; lptr; lptr = lptr->list.next) {
+			Tcl_SetVar2 (interp, namebuf, "ModeLinks",
+				lptr->ml_modes_str, APPEND_ELEMENT);
+		}
 
 		XtFree(namebuf);
 	}
@@ -473,7 +485,7 @@ getsection_device(interp, varpfx)
 				   + strlen(dptr->dev_identifier) + 10);
 		sprintf(namebuf, "%s_%s", section, dptr->dev_identifier);
 		Tcl_SetVar2(interp, section, "Identifiers", dptr->dev_identifier,
-			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+			APPEND_ELEMENT);
 		Tcl_SetVar2(interp, namebuf, "VendorName",
 			StrOrNull(dptr->dev_vendor), 0);
 		Tcl_SetVar2(interp, namebuf, "BoardName",
@@ -494,9 +506,9 @@ getsection_device(interp, varpfx)
 		   for (i = 1; i < MAXDACSPEEDS; i++) {
 		      if (dptr->dev_dacSpeeds[i]/1000 <= 0)
 			 break;
-		      sprintf(tmpbuf, " %d", dptr->dev_dacSpeeds[i]/1000);
+		      sprintf(tmpbuf, "%d", dptr->dev_dacSpeeds[i]/1000);
 		      Tcl_SetVar2(interp, namebuf, "DacSpeed",
-				  tmpbuf, TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+				  tmpbuf, APPEND_ELEMENT);
 		   }
 		Tcl_SetVar2(interp, namebuf, "VideoRam",
 			NonZeroStr(dptr->dev_videoram,10), 0);
@@ -516,12 +528,12 @@ getsection_device(interp, varpfx)
 		for (i = 0; i < dptr->dev_clocks; i++) {
 			sprintf(tmpbuf, "%.5g ", dptr->dev_clock[i]/1000.0);
 			Tcl_SetVar2(interp, namebuf, "Clocks",
-				tmpbuf, TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+				tmpbuf, APPEND_ELEMENT);
 		}
-		Tcl_SetVar2(interp, namebuf, "ChipID",
-			NonZeroStr(dptr->dev_chipid,16), 0);
-		Tcl_SetVar2(interp, namebuf, "ChipRev",
-			NonZeroStr(dptr->dev_chiprev,16), 0);
+		Tcl_SetVar2(interp, namebuf, "ChipID", (dptr->dev_chipid <1) ?
+			"-1": NonZeroStr(dptr->dev_chipid,16), 0);
+		Tcl_SetVar2(interp, namebuf, "ChipRev", (dptr->dev_chiprev <1) ?
+			"-1": NonZeroStr(dptr->dev_chiprev,16), 0);
 
 		read_options(interp, namebuf, NULL, dptr->dev_option_lst);
 		XtFree(namebuf);
@@ -553,16 +565,31 @@ getsection_screen(interp, varpfx)
 		+ strlen(screen->scrn_identifier) + 2);
 	sprintf(namebuf, "%s_%s", section, screen->scrn_identifier);
 	Tcl_SetVar2(interp, section, "Identifiers", screen->scrn_identifier,
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		APPEND_ELEMENT);
+	Tcl_SetVar2(interp, namebuf, "Identifier",
+		StrOrNull(screen->scrn_identifier), 0);
+	Tcl_SetVar2(interp, namebuf, "Driver",
+		StrOrNull(screen->scrn_obso_driver), 0);
+	sprintf(tmpbuf, "%d", screen->scrn_defaultdepth);
+	Tcl_SetVar2(interp, namebuf, "DefaultDepth", tmpbuf, 0);
+	sprintf(tmpbuf, "%d", screen->scrn_defaultbpp);
+	Tcl_SetVar2(interp, namebuf, "DefaultBPP", tmpbuf, 0);
+	sprintf(tmpbuf, "%d", screen->scrn_defaultfbbpp);
+	Tcl_SetVar2(interp, namebuf, "DefaultFbBPP", tmpbuf, 0);
 	Tcl_SetVar2(interp, namebuf, "Monitor",
-		StrOrNull(screen->scrn_monitor->mon_identifier), 0);
+		StrOrNull(screen->scrn_monitor_str), 0);
 	Tcl_SetVar2(interp, namebuf, "Device",
-		StrOrNull(screen->scrn_device->dev_identifier), 0);
+		StrOrNull(screen->scrn_device_str), 0);
 
+	Tcl_SetVar2(interp, namebuf, "Depths", "", 0);
 	for (disp = screen->scrn_display_lst; disp; disp = disp->list.next) {
 	    depth = disp->disp_depth;
 	    sprintf(tmpbuf, "%d", depth);
+	    Tcl_SetVar2(interp, namebuf, "Depths", tmpbuf, APPEND_ELEMENT);
 	    sprintf(tmpbuf2, "Depth,%d", depth);
+	    Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf, 0);
+	    sprintf(tmpbuf, "%d", disp->disp_bpp);
+	    sprintf(tmpbuf2, "BPP,%d", depth);
 	    Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf, 0);
 
 	    if (disp->disp_frameX0 > 0 || disp->disp_frameX0 > 0) {
@@ -604,15 +631,16 @@ getsection_screen(interp, varpfx)
 	    Tcl_SetVar2(interp, namebuf, tmpbuf2, "", 0);
 	    for (mode = disp->disp_mode_lst; mode; mode = mode->list.next) {
 		Tcl_SetVar2(interp, namebuf, tmpbuf2, mode->mode_name,
-			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+			APPEND_ELEMENT);
 	    }
-	    read_options(interp, namebuf, tmpbuf2, disp->disp_option_lst);
+	    sprintf(tmpbuf, "%d", depth);
+	    read_options(interp, namebuf, tmpbuf, disp->disp_option_lst);
 
 	}
 
+	/* XXX: scrn_adaptor_lst */
 	read_options(interp, namebuf, NULL, screen->scrn_option_lst);
 
-	/* XXX screen no */
 	XtFree(namebuf);
     }
 
@@ -650,8 +678,7 @@ getsection_layout(interp, varpfx)
   Tcl_Interp *interp;
   char *varpfx;
 {
-    char			section[128];
-    char			*namebuf;
+    char			section[128], tmpbuf[16], *namebuf;
     XF86ConfLayoutPtr		lptr;
     XF86ConfAdjacencyPtr	aptr;
     XF86ConfInactivePtr		iptr;
@@ -664,27 +691,29 @@ getsection_layout(interp, varpfx)
 				   + strlen(lptr->lay_identifier) + 2);
 	sprintf(namebuf, "%s_%s", section, lptr->lay_identifier);
 	Tcl_SetVar2(interp, section, "Identifiers", lptr->lay_identifier,
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		APPEND_ELEMENT);
 
+	Tcl_SetVar2(interp, namebuf, "Screens", "", 0);
 	for (aptr = lptr->lay_adjacency_lst; aptr; aptr = aptr->list.next) {
+	    Tcl_SetVar2(interp, namebuf, "Screens",
+		aptr->adj_screen_str, APPEND_ELEMENT);
+	    sprintf(tmpbuf, "%d", aptr->adj_scrnum);
 	    Tcl_SetVar2(interp, namebuf, aptr->adj_screen_str,
-		StrOrNull(aptr->adj_top_str), TCL_LIST_ELEMENT);
+		tmpbuf, TCL_LIST_ELEMENT);
 	    Tcl_SetVar2(interp, namebuf, aptr->adj_screen_str,
-		StrOrNull(aptr->adj_bottom_str),
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		StrOrNull(aptr->adj_top_str), APPEND_ELEMENT);
 	    Tcl_SetVar2(interp, namebuf, aptr->adj_screen_str,
-		StrOrNull(aptr->adj_left_str),
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		StrOrNull(aptr->adj_bottom_str), APPEND_ELEMENT);
 	    Tcl_SetVar2(interp, namebuf, aptr->adj_screen_str,
-		StrOrNull(aptr->adj_right_str),
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		StrOrNull(aptr->adj_left_str), APPEND_ELEMENT);
+	    Tcl_SetVar2(interp, namebuf, aptr->adj_screen_str,
+		StrOrNull(aptr->adj_right_str), APPEND_ELEMENT);
 	}
 	
 	Tcl_SetVar2(interp, namebuf, "InactiveDevices", "", 0);
 	for (iptr = lptr->lay_inactive_lst; iptr; iptr = iptr->list.next) {
 	    Tcl_SetVar2(interp, namebuf, "InactiveDevices",
-		StrOrNull(iptr->inactive_device_str),
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		StrOrNull(iptr->inactive_device_str), APPEND_ELEMENT);
 	}
 	read_options(interp, namebuf, NULL, lptr->lay_option_lst);
 	XtFree(namebuf);
@@ -714,7 +743,7 @@ getsection_vidadptr(interp, varpfx)
 				   + strlen(aptr->va_identifier) + 2);
 	sprintf(namebuf, "%s_%s", section, aptr->va_identifier);
 	Tcl_SetVar2(interp, section, "Identifiers", aptr->va_identifier,
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		APPEND_ELEMENT);
 
 	Tcl_SetVar2(interp, namebuf, "VendorName",
 	    StrOrNull(aptr->va_vendor), 0);
@@ -727,7 +756,7 @@ getsection_vidadptr(interp, varpfx)
 	Tcl_SetVar2(interp, namebuf, "VideoPorts", "", 0);
 	for (pptr = aptr->va_port_lst; pptr; pptr = pptr->list.next) {
 	    Tcl_SetVar2(interp, namebuf, "VideoPorts",
-		StrOrNull(pptr->vp_identifier), TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		StrOrNull(pptr->vp_identifier), APPEND_ELEMENT);
 	    read_options(interp, namebuf, pptr->vp_identifier, pptr->vp_option_lst);
 	}
 	read_options(interp, namebuf, NULL, aptr->va_option_lst);
@@ -757,7 +786,7 @@ getsection_modes(interp, varpfx)
 				   + strlen(mptr->modes_identifier) + 2);
 	sprintf(namebuf, "%s_%s", section, mptr->modes_identifier);
 	Tcl_SetVar2(interp, section, "Identifiers", mptr->modes_identifier,
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		APPEND_ELEMENT);
 	read_modes(interp, namebuf, NULL, mptr->mon_modeline_lst);
     }
     return TCL_OK;
@@ -780,7 +809,7 @@ getsection_vendor(interp, varpfx)
 				   + strlen(vptr->vnd_identifier) + 2);
 	sprintf(namebuf, "%s_%s", section, vptr->vnd_identifier);
 	Tcl_SetVar2(interp, section, "Identifiers", vptr->vnd_identifier,
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		APPEND_ELEMENT);
 	read_options(interp, namebuf, NULL, vptr->vnd_option_lst);
     }
     return TCL_OK;
@@ -805,10 +834,12 @@ read_options(interp, arrname, idxname, opts)
 	snprintf(optbuf, 128, "%s%sOpt:%s", StrOrNull(idxname),
 		(idxname? "_": ""), opts->opt_name);
 	Tcl_SetVar2(interp, arrname, optbuf, opts->opt_val, 0);
-	Tcl_SetVar2(interp, arrname, idxbuf, opts->opt_name,
-			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	Tcl_SetVar2(interp, arrname, idxbuf, opts->opt_name, APPEND_ELEMENT);
     }
 }
+
+#define APPENDVAL(dfmt,var) { sprintf(tmpbuf2,dfmt,(var)); \
+		 Tcl_SetVar2(interp,arrname,modebuf,tmpbuf2,APPEND_ELEMENT); }
 
 static void
 read_modes(interp, arrname, idxname, modes)
@@ -816,9 +847,9 @@ read_modes(interp, arrname, idxname, modes)
   char *arrname, *idxname;
   XF86ConfModeLinePtr modes;
 {
-    char	idxbuf[128];
-    char	modebuf[128];
-    char	tmpbuf[128];
+    char	idxbuf[128], modebuf[128];
+    char	tmpbuf2[16];
+    static 	seqnum = 0;
 
     if (idxname) {
 	snprintf(idxbuf, 128, "%s:Modes", idxname);
@@ -827,44 +858,49 @@ read_modes(interp, arrname, idxname, modes)
     }
     Tcl_SetVar2(interp, arrname, idxbuf, "", 0);
     for ( ; modes; modes = modes->list.next) {
-	snprintf(modebuf, 128, "%s%sMode:%s", StrOrNull(idxname),
-		(idxname? "_": ""), modes->ml_identifier);
-	Tcl_SetVar2(interp, arrname, idxbuf, modes->ml_identifier,
-		TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+	snprintf(modebuf, 128, "%.110s%sMode:%d", StrOrNull(idxname),
+		(idxname? "_": ""), ++seqnum);
+	sprintf(tmpbuf2, "%d", seqnum);
+	Tcl_SetVar2(interp, arrname, idxbuf, tmpbuf2, APPEND_ELEMENT);
+	Tcl_SetVar2(interp, arrname, modebuf, modes->ml_identifier, 0);
 
-	sprintf(tmpbuf, "%.4g %d %d %d %d %d %d %d %d",
-		modes->ml_clock/1000.0,
-		modes->ml_hdisplay, modes->ml_hsyncstart,
-		modes->ml_hsyncend, modes->ml_htotal,
-		modes->ml_vdisplay, modes->ml_vsyncstart,
-		modes->ml_vsyncend, modes->ml_vtotal);
+	APPENDVAL("%.4g", modes->ml_clock/1000.0);
+	APPENDVAL("%d",   modes->ml_hdisplay);
+	APPENDVAL("%d",   modes->ml_hsyncstart);
+	APPENDVAL("%d",   modes->ml_hsyncend);
+	APPENDVAL("%d",   modes->ml_htotal);
+	APPENDVAL("%d",   modes->ml_vdisplay);
+	APPENDVAL("%d",   modes->ml_vsyncstart);
+	APPENDVAL("%d",   modes->ml_vsyncend);
+	APPENDVAL("%d",   modes->ml_vtotal);
 	if (modes->ml_flags & XF86CONF_INTERLACE)
-		strcat(tmpbuf, " Interlace");
+		Tcl_SetVar2(interp, arrname, modebuf, "Interlace", APPEND_ELEMENT);
 	if (modes->ml_flags & XF86CONF_PHSYNC)
-		strcat(tmpbuf, " +HSync");
+		Tcl_SetVar2(interp, arrname, modebuf, "+HSync", APPEND_ELEMENT);
 	if (modes->ml_flags & XF86CONF_NHSYNC)
-		strcat(tmpbuf, " -HSync");
+		Tcl_SetVar2(interp, arrname, modebuf, "-HSync", APPEND_ELEMENT);
 	if (modes->ml_flags & XF86CONF_PVSYNC)
-		strcat(tmpbuf, " +VSync");
+		Tcl_SetVar2(interp, arrname, modebuf, "+VSync", APPEND_ELEMENT);
 	if (modes->ml_flags & XF86CONF_NVSYNC)
-		strcat(tmpbuf, " -VSync");
+		Tcl_SetVar2(interp, arrname, modebuf, "-VSync", APPEND_ELEMENT);
 	if (modes->ml_flags & XF86CONF_CSYNC)
-		strcat(tmpbuf, " Composite");
+		Tcl_SetVar2(interp, arrname, modebuf, "Composite", APPEND_ELEMENT);
 	if (modes->ml_flags & XF86CONF_PCSYNC)
-		strcat(tmpbuf, " +CSync");
+		Tcl_SetVar2(interp, arrname, modebuf, "+CSync", APPEND_ELEMENT);
 	if (modes->ml_flags & XF86CONF_NCSYNC)
-		strcat(tmpbuf, " -CSync");
+		Tcl_SetVar2(interp, arrname, modebuf, "-CSync", APPEND_ELEMENT);
 	if (modes->ml_flags & XF86CONF_DBLSCAN)
-		strcat(tmpbuf, " DoubleScan");
+		Tcl_SetVar2(interp, arrname, modebuf, "DoubleScan", APPEND_ELEMENT);
 	if (modes->ml_flags & XF86CONF_HSKEW) {
-		char buf[10];
-		sprintf(buf, " HSkew %d", modes->ml_hskew);
-		strcat(tmpbuf, buf);
-	    }
-	/* XXX ml_vscan */
-	Tcl_SetVar2(interp, arrname, modebuf, tmpbuf, 0);
+		APPENDVAL("HSkew %d", modes->ml_hskew);
+	}
+	if (modes->ml_vscan) {
+		APPENDVAL("VScan %d", modes->ml_vscan);
+	}
     }
 }
+
+#undef APPENDVAL
 
 static char *
 keymap_type(kptr, keyidx, defstr)

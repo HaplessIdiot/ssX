@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.5 1999/03/14 03:22:28 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.6 1999/04/11 13:11:23 dawes Exp $ */
 
 #include "xedit.h"
 #include <X11/Xaw/SmeBSB.h>
@@ -144,6 +144,7 @@ main(int argc, char *argv[])
   XtAddCallback(XtCreateManagedWidget("ispell", smeBSBObjectClass,
 				      options_popup, NULL, 0),
 		XtNcallback, IspellCallback, NULL);
+  CreateEditPopup();
   
   wm_delete_window = XInternAtom(XtDisplay(topwindow), "WM_DELETE_WINDOW",
 				 False);
@@ -244,6 +245,17 @@ main(int argc, char *argv[])
 	  XeditPrintf(buf);
       }
   }
+
+    if (!flist.pixmap && strlen(app_resources.changed_pixmap_name)) {
+	XrmValue from, to;
+
+	from.size = strlen(app_resources.changed_pixmap_name);
+	from.addr = app_resources.changed_pixmap_name;
+	to.size = sizeof(Pixmap);
+	to.addr = (XtPointer)&(flist.pixmap);
+
+	XtConvertAndStore(flist.popup, XtRString, &from, XtRBitmap, &to);
+    }
 
   if (num_loaded == 0)
       XtSetKeyboardFocus(topwindow, filenamewindow);
@@ -454,13 +466,18 @@ PositionChanged(Widget w, XtPointer client_data, XtPointer call_data)
 	|| ((position_format_mask & p_BIT)
 	    && infos[idx].insert_position != info->insert_position)
 	|| ((position_format_mask & s_BIT)
-	    && infos[idx].last_position != info->last_position)) {
-	int len = 0;
+	    && infos[idx].last_position != info->last_position)
+	|| infos[idx].overwrite_mode != info->overwrite_mode) {
+	int len = 6;
 	Arg args[1];
 	char buffer[256], *str = app_resources.position_format;
 	char fmt_buf[MAX_FMT_LEN + 2], *fmt;
 
 	memcpy(&infos[idx], info, sizeof(XawTextPositionInfo));
+	if (info->overwrite_mode)
+	    strcpy(buffer, "Ovrwt ");
+	else
+	    strcpy(buffer, "      ");
 	while (*str) {
 	    switch (*str) {
 		case '%':

@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.1 1999/04/15 06:40:39 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -40,9 +40,6 @@
 
 #include "xaarop.h"
 #include "xaalocal.h"
-
-extern int TGUIRops_alu[];
-extern int TGUIRops_Pixalu[];
 
 static void BladeSync(ScrnInfoPtr pScrn);
 static void BladeSetupForSolidLine(ScrnInfoPtr pScrn, int color,
@@ -310,7 +307,7 @@ BladeSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 	IMAGE_OUT(0x20, 0x70000000);
     }
 
-    IMAGE_OUT(0x20, 0x90000000 | TGUIRops_alu[rop]);
+    IMAGE_OUT(0x20, 0x90000000 | XAACopyROP[rop]);
 }
 
 static void
@@ -366,7 +363,7 @@ BladeSetupForSolidLine(ScrnInfoPtr pScrn, int color,
     REPLICATE(color);
     TGUI_FCOLOUR(color);
     TGUI_BCOLOUR(color);
-    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_FMIX(XAAPatternROP[rop]);
 }
 
 static void 
@@ -432,7 +429,7 @@ BladeSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
     REPLICATE(fg);
     IMAGE_OUT(0x44, fg);
     IMAGE_OUT(0x48, bg);
-    IMAGE_OUT(0x20, 0x90000000 | TGUIRops_alu[rop]);
+    IMAGE_OUT(0x20, 0x90000000 | XAACopyROP[rop]);
 }
 
 static void 
@@ -470,7 +467,7 @@ BladeSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 	TGUI_DRAWFLAG(SRCMONO | 1<<12);
     }
     TGUI_SRC_XY(0,0);
-    TGUI_FMIX(TGUIRops_alu[rop]);
+    TGUI_FMIX(XAACopyROP[rop]);
 }
 
 static void
@@ -551,7 +548,7 @@ BladeWritePixmap(
     IMAGE_OUT(0x04, 0);
     IMAGE_OUT(0x08, y<<16 | x);
     IMAGE_OUT(0x0C, (y+h-1)<<16 | x+w-1);
-    IMAGE_OUT(0x20, 0x90000000 | TGUIRops_alu[rop]);
+    IMAGE_OUT(0x20, 0x90000000 | XAACopyROP[rop]);
     IMAGE_OUT(0x24, 0x80000000 | 1<<22 | 1<<10 | 1);
 
 #if 0
@@ -592,7 +589,7 @@ BladeSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    IMAGE_OUT(0x20, 0x90000000 | TGUIRops_Pixalu[rop]);
+    IMAGE_OUT(0x20, 0x90000000 | XAAPatternROP[rop]);
     REPLICATE(fg);
     if (bg != -1) {
     REPLICATE(bg);
@@ -644,7 +641,7 @@ BladeSetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 	TGUI_DRAWFLAG(PAT2SCR | 1<<12);
     } else
     	TGUI_DRAWFLAG(PAT2SCR);
-    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_FMIX(XAAPatternROP[rop]);
 }
 
 static void 
@@ -672,7 +669,7 @@ static void BladeSetupForImageWrite(
 ){
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    IMAGE_OUT(0x20, 0x90000000 | TGUIRops_alu[rop]);
+    IMAGE_OUT(0x20, 0x90000000 | XAACopyROP[rop]);
 }
 
 static void BladeSubsequentImageWriteRect(

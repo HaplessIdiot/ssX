@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.2 1999/04/17 07:06:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.3 1999/04/17 07:31:52 dawes Exp $ */
 /*
  * file vmodes.c
  *
@@ -11,6 +11,9 @@
  * includes
  */
 
+#include "xf86.h"
+#include "xf86_ansic.h"
+
 #include "vmodes.h"
 #include "vos.h"
 #include "vramdac.h"
@@ -18,13 +21,6 @@
 #include "v1kregs.h"
 #include "v2kregs.h"
 #include "vvga.h"
-
-#include "xf86.h"
-/*
-#include "xf86_ansic.h"
-*/
-#include <math.h>
-
 
 
 /*

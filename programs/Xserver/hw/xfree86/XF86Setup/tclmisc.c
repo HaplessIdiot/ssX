@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.11 1997/11/22 00:00:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.12 1998/03/27 23:23:06 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -55,9 +55,9 @@ static int (*savErrorFunc)();
 static int errorOccurred;
 static char errMsgBuf[512];
 
-static int miscError(dis, err)
-Display *dis;
-XErrorEvent *err;
+int XF86Misc_Init(Tcl_Interp *interp);
+
+static int miscError(Display *dis, XErrorEvent *err)
 {
 	XGetErrorText(dis, err->error_code, errMsgBuf, 512);
 	errorOccurred = TRUE;
@@ -70,7 +70,7 @@ XErrorEvent *err;
 
 int
 XF86Misc_Init(interp)
-    Tcl_Interp	*interp;
+Tcl_Interp *interp;
 {
 	Tcl_CreateCommand(interp, "xf86misc_getversion",
 		TCL_XF86MiscQueryVersion, (ClientData) NULL,
@@ -227,7 +227,6 @@ TCL_XF86MiscGetSaver(clientData, interp, argc, argv)
     int		argc;
     char	*argv[];
 {
-	int suspendtime, offtime;
 	Tk_Window tkwin;
 
         if (argc != 1) {

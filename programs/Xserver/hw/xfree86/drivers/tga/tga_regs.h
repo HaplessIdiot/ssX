@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.6 1999/02/13 01:13:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.7 1999/04/17 07:07:01 dawes Exp $ */
 
 /* TGA hardware description (minimal)
  *
@@ -105,8 +105,8 @@ do {\
 #define	TGA_ROM_OFFSET			0x0000000
 #define	TGA_REGS_OFFSET			0x0100000
 #define	TGA_8PLANE_FB_OFFSET		0x0200000
-#define	TGA_24PLANE_FB_OFFSET		0x0804000
-#define	TGA_24PLUSZ_FB_OFFSET		0x1004000
+#define	TGA_24PLANE_FB_OFFSET		0x0800000
+#define	TGA_24PLUSZ_FB_OFFSET		0x1000000
 
 #define TGA_FOREGROUND_REG		0x0020
 #define TGA_BACKGROUND_REG		0x0024
@@ -166,6 +166,12 @@ do {\
 
 #define	TGA_BLOCK_COLOR0_REG		0x0140
 #define	TGA_BLOCK_COLOR1_REG		0x0144
+#define	TGA_BLOCK_COLOR2_REG		0x0148
+#define	TGA_BLOCK_COLOR3_REG		0x014c
+#define	TGA_BLOCK_COLOR4_REG		0x0150
+#define	TGA_BLOCK_COLOR5_REG		0x0154
+#define	TGA_BLOCK_COLOR6_REG		0x0158
+#define	TGA_BLOCK_COLOR7_REG		0x015c
 #define	TGA_CLOCK_REG			0x01e8
 #define	TGA_RAMDAC_REG			0x01f0
 #define	TGA_CMD_STAT_REG		0x01f8

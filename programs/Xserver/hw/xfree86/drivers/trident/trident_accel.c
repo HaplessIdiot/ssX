@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.4 1999/01/11 05:13:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.5 1999/01/23 09:55:58 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,45 +38,7 @@
 #include "trident.h"
 
 #include "xaalocal.h"
-
-extern int TGUIRops_alu[];
-extern int TGUIRops_Pixalu[];
-
-#ifdef TRIDENT_MMIO
-
-#define MMIONAME(x)			x##MMIO
-
-#define TridentAccelInit		MMIONAME(TridentAccelInit)
-#define TridentInitializeAccelerator	MMIONAME(TridentInitializeAccelerator)
-#define TridentSync			MMIONAME(TridentSync)
-#define TridentSetupForSolidLine	MMIONAME(TridentSetupForSolidLine)
-#define Trident9685SetupForSolidLine	MMIONAME(Trident9685SetupForSolidLine)
-#define TridentSubsequentSolidBresenhamLine \
-			MMIONAME(TridentSubsequentSolidBresenhamLine)
-#define TridentSetupForFillRectSolid 	MMIONAME(TridentSetupForFillRectSolid)
-#define Trident9685SetupForFillRectSolid \
-			MMIONAME(Trident9685SetupForFillRectSolid)
-#define TridentSubsequentFillRectSolid	MMIONAME(TridentSubsequentFillRectSolid)
-#define TridentSetupForScreenToScreenCopy \
-			MMIONAME(TridentSetupForScreenToScreenCopy)
-#define TridentSubsequentScreenToScreenCopy \
-			MMIONAME(TridentSubsequentScreenToScreenCopy)
-#define TridentSetupForScreenToScreenColorExpand \
-			MMIONAME(TridentSetupForScreenToScreenColorExpand)
-#define TridentSubsequentScreenToScreenColorExpand \
-			MMIONAME(TridentSubsequentScreenToScreenColorExpand)
-#define TridentSetClippingRectangle	MMIONAME(TridentSetClippingRectangle)
-#define TridentWritePixmap		MMIONAME(TridentWritePixmap)
-#define TridentSetupForMono8x8PatternFill \
-			MMIONAME(TridentSetupForMono8x8PatternFill)
-#define TridentSubsequentMono8x8PatternFillRect \
-			MMIONAME(TridentSubsequentMono8x8PatternFillRect)
-#define TridentSetupForColor8x8PatternFill \
-			MMIONAME(TridentSetupForColor8x8PatternFill)
-#define TridentSubsequentColor8x8PatternFillRect \
-			MMIONAME(TridentSubsequentColor8x8PatternFillRect)
-
-#endif
+#include "xaarop.h"
 
 static void TridentSync(ScrnInfoPtr pScrn);
 static void TridentSetupForSolidLine(ScrnInfoPtr pScrn, int color,
@@ -316,7 +278,7 @@ TridentSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     if (pTrident->Chipset == PROVIDIA9685 && rop == GXcopy) dst |= 1<<21;
 
     TGUI_DRAWFLAG(pTrident->BltScanDirection | SCR2SCR | dst);
-    TGUI_FMIX(TGUIRops_alu[rop]);
+    TGUI_FMIX(XAACopyROP[rop]);
 }
 
 static void
@@ -367,7 +329,7 @@ TridentSetupForSolidLine(ScrnInfoPtr pScrn, int color,
     REPLICATE(color);
     TGUI_FCOLOUR(color);
     TGUI_BCOLOUR(color);
-    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_FMIX(XAAPatternROP[rop]);
 }
 
 static void
@@ -379,7 +341,7 @@ Trident9685SetupForSolidLine(ScrnInfoPtr pScrn, int color,
     REPLICATE(color);
     TGUI_FPATCOL(color);
     TGUI_BPATCOL(color);
-    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_FMIX(XAAPatternROP[rop]);
 }
 
 static void 
@@ -412,7 +374,7 @@ TridentSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
     REPLICATE(color);
     TGUI_FCOLOUR(color);
     TGUI_BCOLOUR(color);
-    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_FMIX(XAAPatternROP[rop]);
     if ((pTrident->Chipset == PROVIDIA9682 ||
 	 pTrident->Chipset == TGUI9680) && rop == GXcopy) drawflag = FASTMODE;
     if (pTrident->Chipset == PROVIDIA9685 && rop == GXcopy) drawflag |= 1<<21;
@@ -428,7 +390,7 @@ Trident9685SetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
     REPLICATE(color);
     TGUI_FPATCOL(color);
     TGUI_BPATCOL(color);
-    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_FMIX(XAAPatternROP[rop]);
     TGUI_DRAWFLAG(SOLIDFILL | PATMONO);
 }
 
@@ -458,7 +420,7 @@ TridentSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
     TGUI_BCOLOUR(bg);
 
     TGUI_DRAWFLAG(SRCMONO | SCR2SCR);
-    TGUI_FMIX(TGUIRops_alu[rop]);
+    TGUI_FMIX(XAACopyROP[rop]);
 }
 
 static void 
@@ -499,7 +461,7 @@ TridentSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
     TGUI_BCOLOUR(bg);
     TGUI_SRC_XY(0,0);
     TGUI_DRAWFLAG(drawflag);
-    TGUI_FMIX(TGUIRops_alu[rop]);
+    TGUI_FMIX(XAACopyROP[rop]);
 }
 
 static void
@@ -585,7 +547,7 @@ TridentWritePixmap(
 	TGUI_CKEY(transparency_color);
     }
     TGUI_SRC_XY(0,0);
-    TGUI_FMIX(TGUIRops_alu[rop]);
+    TGUI_FMIX(XAACopyROP[rop]);
     TGUI_DEST_XY(x,y);
     TGUI_DIM_XY(w,h);
     if (pTrident->Chipset == PROVIDIA9685) {
@@ -656,7 +618,7 @@ TridentSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     TGUI_DRAWFLAG(PAT2SCR | PATMONO | drawflag);
     TGUI_PATLOC(((patterny * pScrn->displayWidth * pScrn->bitsPerPixel / 8) +
 		 (patternx * pScrn->bitsPerPixel / 8)) >> 6);
-    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_FMIX(XAAPatternROP[rop]);
 }
 
 static void 
@@ -692,7 +654,7 @@ TridentSetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 	TGUI_DRAWFLAG(PAT2SCR | 1<<12);
     } else
     	TGUI_DRAWFLAG(PAT2SCR);
-    TGUI_FMIX(TGUIRops_Pixalu[rop]);
+    TGUI_FMIX(XAAPatternROP[rop]);
 }
 
 static void 

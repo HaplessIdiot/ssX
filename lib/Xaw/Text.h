@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Text.h,v 1.8 1998/12/06 06:08:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.h,v 1.9 1999/03/21 07:34:29 dawes Exp $ */
 
 #ifndef _XawText_h
 #define _XawText_h
@@ -63,6 +63,9 @@ SOFTWARE.
  bottomMargin	    Margin	     Position		2
  displayPosition    TextPosition     XawTextPosition	0
  insertPosition	    TextPosition     XawTextPosition	0
+ justify	    JustifyMode	     JustifyMode	left
+ leftColumn	    Column	     Column		0
+ rightColumn	    Column	     Column		0
  leftMargin	    Margin	     Position		2
  rightMargin	    Margin	     Position		4
  positionCallback   Callback	     Callback		NULL
@@ -122,6 +125,13 @@ typedef enum {
   XawselectAlphaNumeric
 } XawTextSelectType;
 
+typedef enum {
+    XawjustifyLeft,
+    XawjustifyRight,
+    XawjustifyCenter,
+    XawjustifyFull
+} XawTextJustifyMode;
+
 typedef struct {
     int  firstPos;
     int  length;
@@ -134,6 +144,7 @@ typedef struct {
     int column_number;
     XawTextPosition insert_position;
     XawTextPosition last_position;
+    Boolean overwrite_mode;
 } XawTextPositionInfo;
 
 #include <X11/Xaw/TextSink.h>
@@ -167,6 +178,17 @@ typedef struct {
 #define XtNselectTypes "selectTypes"
 #define XtNtopMargin "topMargin"
 #define XtNwrap "wrap"
+
+#define XtCColumn		"Column"
+#define XtNleftColumn		"leftColumn"
+#define XtNrightColumn		"rightColumn"
+
+#define XtCJustifyMode		XtCJustify
+#define XtNjustifyMode		XtNjustify
+#define XtEtextJustifyLeft	"left"
+#define XtEtextJustifyRight	"right"
+#define XtEtextJustifyCenter	"center"
+#define XtEtextJustifyFull	"full"
 
 #define XtCAutoFill "AutoFill"
 #define XtCSelectTypes "SelectTypes"

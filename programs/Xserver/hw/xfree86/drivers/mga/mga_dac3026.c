@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.40 1999/02/26 02:35:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.41 1999/03/21 07:35:12 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -1231,5 +1231,7 @@ void MGA2064SetupFuncs(ScrnInfoPtr pScrn)
     pMga->Restore = MGA3026Restore;
     pMga->ModeInit = MGA3026Init;
     pMga->ddc1Read = MGA3026_ddc1Read;
+    /* vgaHWddc1SetSpeed will only work if the card is in VGA mode */
+    pMga->DDC1SetSpeed = vgaHWddc1SetSpeed;
     pMga->i2cInit = MGA3026_i2cInit;
 }

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.3 1999/01/26 10:40:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.4 1999/01/31 12:22:01 dawes Exp $ */
 
 /* 3C4 */
 #define BankReg 0x06
@@ -103,7 +103,7 @@ extern int sisReg32MMIO[];
 /* According to SiS 6326 2D programming guide, 16 bits position at   */
 /* 0x82A8 returns queue free. But this don't work, so don't wait     */
 /* anything when turbo-queue is enabled. If there are frequent syncs */
-/* (as XAA does) this should work. But not for xaa_benchmark :-(     */
+/* this should work. But not for xaa_benchmark :-(     */
 
 #define sisBLTWAIT \
   if (!pSiS->TurboQueue) {\

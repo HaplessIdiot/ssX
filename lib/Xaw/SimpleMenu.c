@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.11 1999/04/04 10:05:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.12 1999/04/11 13:10:32 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xmu/SysUtil.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/SimpleMenP.h>
-#include <X11/Xaw/SmeBSB.h>
+#include <X11/Xaw/SmeBSBP.h>
 #include <X11/Xaw/XawInit.h>
 #include "Private.h"
 
@@ -50,6 +50,9 @@ for ((childP) = (SmeObject *)(smw)->composite.children;		\
      (childP) < (SmeObject *)((smw)->composite.children		\
 			      + (smw)->composite.num_children);	\
      (childP)++)
+
+#define	SMW_UNMAPPING	0x01
+#define SMW_POPLEFT	0x02
 
 /*
  * Class Methods
@@ -66,6 +69,9 @@ static void XawSimpleMenuResize(Widget);
 static Boolean XawSimpleMenuSetValues(Widget, Widget, Widget,
 				      ArgList, Cardinal*);
 static Boolean XawSimpleMenuSetValuesHook(Widget, ArgList, Cardinal*);
+static void PopupSubMenu(SimpleMenuWidget);
+static void PopdownSubMenu(SimpleMenuWidget);
+static void PopupCB(Widget, XtPointer, XtPointer);
 
 /*
  * Prototypes
@@ -88,6 +94,7 @@ static void PositionMenu(Widget, XPoint*);
  */
 static void Highlight(Widget, XEvent*, String*, Cardinal*);
 static void Notify(Widget, XEvent*, String*, Cardinal*);
+static void Popdown(Widget, XEvent*, String*, Cardinal*);
 static void PositionMenuAction(Widget, XEvent*, String*, Cardinal*);
 static void Unhighlight(Widget, XEvent*, String*, Cardinal*);
 
@@ -226,7 +233,7 @@ static char defaultTranslations[] =
 "<Enter>:"	"highlight()\n"
 "<Leave>:"	"unhighlight()\n"
 "<BtnMotion>:"	"highlight()\n"
-"<BtnUp>:"	"MenuPopdown() notify() unhighlight()\n"
+"<BtnUp>:"	"popdown() notify() unhighlight()\n"
 ;
 
 static XtActionsRec actionsList[] =
@@ -234,6 +241,7 @@ static XtActionsRec actionsList[] =
   {"notify",            Notify},
   {"highlight",         Highlight},
   {"unhighlight",       Unhighlight},
+  {"popdown",		Popdown},
   {"set-values",	XawSetValuesAction},
   {"get-values",	XawGetValuesAction},
   {"declare",		XawDeclareAction},
@@ -378,6 +386,10 @@ XawSimpleMenuInitialize(Widget request, Widget cnew,
   smw->simple_menu.label = NULL;
   smw->simple_menu.entry_set = NULL;
   smw->simple_menu.recursive_set_values = False;
+  smw->simple_menu.sub_menu = NULL;
+  smw->simple_menu.state = 0;
+
+  XtAddCallback(cnew, XtNpopupCallback, PopupCB, NULL);
 
   if (smw->simple_menu.label_string != NULL)
     CreateLabel(cnew);
@@ -834,16 +846,19 @@ PositionMenuAction(Widget w, XEvent *event,
 static void
 Unhighlight(Widget w, XEvent *event, String *params, Cardinal *num_params)
 { 
-  SimpleMenuWidget smw = (SimpleMenuWidget)w;
+    SimpleMenuWidget smw = (SimpleMenuWidget)w;
     SmeObject entry = smw->simple_menu.entry_set;
-  SmeObjectClass cclass;
  
-  if (entry == NULL)
-    return;
+    if (entry == NULL)
+	return;
 
-    smw->simple_menu.entry_set = NULL;
-  cclass = (SmeObjectClass)entry->object.widget_class;
-  (cclass->sme_class.unhighlight)((Widget)entry);
+    if (!smw->simple_menu.sub_menu) {
+	SmeObjectClass cclass;
+
+	smw->simple_menu.entry_set = NULL;
+	cclass = (SmeObjectClass)entry->object.widget_class;
+	(cclass->sme_class.unhighlight)((Widget)entry);
+    }
 }
 
 /*
@@ -863,33 +878,42 @@ Unhighlight(Widget w, XEvent *event, String *params, Cardinal *num_params)
 static void
 Highlight(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  SimpleMenuWidget smw = (SimpleMenuWidget)w;
+    SimpleMenuWidget smw = (SimpleMenuWidget)w;
     SmeObject entry;
-  SmeObjectClass cclass;
-    
-  if (!XtIsSensitive(w))
-    return;
-    
+
+    if (!XtIsSensitive(w))
+	return;
+
     entry = GetEventEntry(w, event);
 
-  if (entry == smw->simple_menu.entry_set)
-    return;
-
-    Unhighlight(w, event, params, num_params);  
-
-  if (entry == NULL)
-    return;
-
-  if (!XtIsSensitive( (Widget) entry))
-    {
-	smw->simple_menu.entry_set = NULL;
+    if (entry == smw->simple_menu.entry_set)
 	return;
+
+    if (!smw->simple_menu.sub_menu)
+	Unhighlight(w, event, params, num_params);
+
+    if (entry == NULL)
+	return;
+
+    if (!XtIsSensitive((Widget)entry))
+	return;
+
+    if (smw->simple_menu.sub_menu)
+	PopdownSubMenu(smw);
+
+    Unhighlight(w, event, params, num_params);
+
+    if (!(smw->simple_menu.state & SMW_UNMAPPING)) {
+	SmeObjectClass cclass;
+
+	smw->simple_menu.entry_set = entry;
+	cclass = (SmeObjectClass)entry->object.widget_class;
+
+	(cclass->sme_class.highlight)((Widget)entry);
+
+	if (XtIsSubclass((Widget)entry, smeBSBObjectClass))
+	    PopupSubMenu(smw);
     }
-
-    smw->simple_menu.entry_set = entry;
-  cclass = (SmeObjectClass)entry->object.widget_class;
-
-  (cclass->sme_class.highlight)((Widget)entry);
 }
 
 /*
@@ -909,15 +933,19 @@ Highlight(Widget w, XEvent *event, String *params, Cardinal *num_params)
 static void
 Notify(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  SimpleMenuWidget smw = (SimpleMenuWidget)w;
-    SmeObject entry = smw->simple_menu.entry_set;
-  SmeObjectClass cclass;
-    
-  if (entry == NULL || !XtIsSensitive((Widget)entry))
-    return;
-    
-  cclass = (SmeObjectClass) entry->object.widget_class;
-  (cclass->sme_class.notify)((Widget)entry);
+    SimpleMenuWidget smw = (SimpleMenuWidget)w;
+    SmeObject entry;
+    SmeObjectClass cclass;
+
+    /* may be a propagated event from a sub menu, need to check it */
+    if (XtWindow(w) != event->xany.window)
+	return;
+    entry = GetEventEntry(w, event);
+    if (entry == NULL || !XtIsSensitive((Widget)entry))
+	return;
+
+    cclass = (SmeObjectClass) entry->object.widget_class;
+    (cclass->sme_class.notify)((Widget)entry);
 }
 
 /*
@@ -1480,7 +1508,7 @@ GetEventEntry(Widget w, XEvent *event)
   SimpleMenuWidget smw = (SimpleMenuWidget)w;
     SmeObject entry;
     int warp, move;
-    
+
   switch (event->type)
     {
     case MotionNotify:
@@ -1679,4 +1707,110 @@ MakeResizeRequest(Widget w)
           XtGeometryNo)
         break;
     }
+}
+
+static void
+Popdown(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    SimpleMenuWidget smw = (SimpleMenuWidget)w;
+
+    smw->simple_menu.state |= SMW_UNMAPPING;
+    if (smw->simple_menu.sub_menu)
+	PopdownSubMenu(smw);
+    XtCallActionProc(w, "XtMenuPopdown", event, params, *num_params);
+}
+
+static void
+PopupSubMenu(SimpleMenuWidget smw)
+{
+    Arg args[2];
+    Cardinal num_args;
+    Widget menu;
+    SmeBSBObject entry = (SmeBSBObject)smw->simple_menu.entry_set;
+    Position menu_x, menu_y;
+    Dimension menu_width, menu_height;
+    Bool popleft;
+
+    if (entry->sme_bsb.menu_name == NULL)
+	return;
+
+    if ((menu = FindMenu((Widget)smw, entry->sme_bsb.menu_name)) == NULL)
+	return;
+
+    smw->simple_menu.sub_menu = menu;
+
+    if (!XtIsRealized(menu))
+	XtRealizeWidget(menu);
+
+    menu_width = XtWidth(menu) + XtBorderWidth(menu);
+    menu_height = XtHeight(menu) + XtBorderWidth(menu);
+
+    popleft = (smw->simple_menu.state & SMW_POPLEFT) != 0;
+
+    if (popleft) 
+	XtTranslateCoords((Widget)smw, XtX(entry) - (int)XtBorderWidth(entry) -
+			  (int)menu_width - (int)XtBorderWidth(menu),
+			  XtY(entry) - XtBorderWidth(menu), &menu_x, &menu_y);
+    else
+	XtTranslateCoords((Widget)smw, XtWidth(smw), XtY(entry)
+			  - XtBorderWidth(menu), &menu_x, &menu_y);
+
+    if (!popleft && menu_x >= 0) {
+	int scr_width = WidthOfScreen(XtScreen(menu));
+
+	if (menu_x + menu_width > scr_width) {
+	    menu_x -= menu_width + XtWidth(entry) + XtBorderWidth(entry) +
+		      XtBorderWidth(smw);
+	    popleft = True;
+	}
+    }
+    else if (popleft && menu_x < 0) {
+	menu_x = 0;
+	popleft = False;
+    }
+    if (menu_y >= 0) {
+	int scr_height = HeightOfScreen(XtScreen(menu));
+
+	if (menu_y + menu_height > scr_height)
+	    menu_y = scr_height - menu_height;
+    }
+    if (menu_y < 0)
+	menu_y = 0;
+
+    num_args = 0;
+    XtSetArg(args[num_args], XtNx, menu_x);	num_args++;
+    XtSetArg(args[num_args], XtNy, menu_y);	num_args++;
+    XtSetValues(menu, args, num_args);
+
+    if (popleft)
+	((SimpleMenuWidget)menu)->simple_menu.state |= SMW_POPLEFT;
+    else
+	((SimpleMenuWidget)menu)->simple_menu.state &= ~SMW_POPLEFT;
+
+    XtPopup(menu, XtGrabNone);
+}
+
+static void
+PopdownSubMenu(SimpleMenuWidget smw)
+{
+    SimpleMenuWidget menu = (SimpleMenuWidget)smw->simple_menu.sub_menu;
+
+    if (!menu)
+	return;
+
+    menu->simple_menu.state |= SMW_UNMAPPING;
+    PopdownSubMenu(menu);
+
+    XtPopdown((Widget)menu);
+
+    smw->simple_menu.sub_menu = NULL;
+}
+
+/*ARGSUSED*/
+static void
+PopupCB(Widget w, XtPointer client_data, XtPointer call_data)
+{
+    SimpleMenuWidget smw = (SimpleMenuWidget)w;
+
+    smw->simple_menu.state &= ~(SMW_UNMAPPING | SMW_POPLEFT);
 }

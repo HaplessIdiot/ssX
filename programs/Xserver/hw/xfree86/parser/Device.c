@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.5 1999/04/04 08:46:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.6 1999/04/17 07:07:06 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -262,8 +262,9 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 			fprintf (cf, "\tRamDac      \"%s\"\n", ptr->dev_ramdac);
 		if (ptr->dev_dacSpeeds[0] > 0 ) {
 			fprintf (cf, "\tDacSpeed    ");
-			for (i = 0; ptr->dev_dacSpeeds[i] > 0; i++ )
-				fprintf (cf, "%g ", (double)ptr->dev_dacSpeeds[i] / 1000.0 );
+			for (i = 0; i < CONF_MAXDACSPEEDS
+					&& ptr->dev_dacSpeeds[i] > 0; i++ )
+				fprintf (cf, "%g ", (double) (ptr->dev_dacSpeeds[i])/ 1000.0 );
 			fprintf (cf, "\n");
 		}
 		if (ptr->dev_videoram)
@@ -289,7 +290,7 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 			fprintf (cf, "\n");
 		}
 		if (ptr->dev_clocks > 0 ) {
-			fprintf (cf, "\tClocks ");
+			fprintf (cf, "\tClocks      ");
 			for (i = 0; i < ptr->dev_clocks; i++ )
 				fprintf (cf, "%.1f ", (double)ptr->dev_clock[i] / 1000.0 );
 			fprintf (cf, "\n");
@@ -303,7 +304,7 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 					 (double)ptr->dev_memclk / 1000.0);
 		}
 		if (ptr->dev_busid)
-			fprintf (cf, "\tBusID      \"%s\"\n", ptr->dev_busid);
+			fprintf (cf, "\tBusID       \"%s\"\n", ptr->dev_busid);
 		fprintf (cf, "EndSection\n\n");
 		ptr = ptr->list.next;
 	}

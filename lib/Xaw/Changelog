@@ -849,6 +849,55 @@ xedit.c:
    the Replace button, the text in the "Replace with:" field is used.
    If no word is selected in the "Suggestions:" field, this mean that the
    selected word was not found in the ispell dictionary.
-  
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.16 1999/04/04 08:46:01 dawes Exp $
+
+#2716 24 Apr 1999
+-- Xaw --
+ + Minor changes to AsciiSrc.c to try to get more speed in the FindPiece
+   function. Xedit may become very slow when editing files bigger than 1M,
+   and I'm studing ways to get more speed in the Scan and FindPiece functions.
+   The FindPosition function in *Sink.c also can consume a lot of cpu time,
+   and may need some rework.
+ + Added submenus support to the SimpleMenuWidget. This is something essencial
+   to a widget toolkit. Just plugged in the code of a menu widget I wrote some
+   time ago. Xedit uses submenus now. To use it, set the resource menuName
+   of a SmeBSBObject to the name of the submenu.
+ + Added code for text justification to the TextWidget. To use the justification,
+   set the resources autoFill, leftColumn and rightColumn. If autoFill is set,
+   and leftColumn is smaller than rightColumn, an alternate code will be
+   used in the form-paragrpah action, normally triggered with M-Q. The values
+   for justification can be left, right, center and full.
+ + Added a overwrite mode to the TextWidget. The default translation is to
+   press the Insert key, that will toggle the overwrite mode.
+ + Made the TextWidget understand negative values for the multiply. This is
+   like the emacs feature, to indent text to the left. To set a negative value
+   to the multiply, just start the numeric sequence with a '-'. Like  C-U -1.
+ + The code for justification added several new functions to TextAction.c.
+   Functions to tabify, untabify, get block boundaries, verify if a line
+   is completely blank, and strip excess of spaces.
+ + Added a indent action to the TextWidget. The default translation, only
+   used by xedit, is C-X Tab, did this way, to make it fully compatable with
+   emacs, but other translations can be used. The multiply value is used to
+   calculate the amount of spaces to move to the left or right.
+ + Corrected a very hard to find (and reproduce) bug in the undo code, that
+   would easily cause core dumps. The problem would happen when starting
+   editing exactly in the moment the redo automatically reverts to undo.
+ + Added translations for toggling the overwriting mode with the Insert key,
+   and to paste the selection with S-Insert.
+
+-- xedit --
+ + Corrected all the known bugs in the ispell code (including a memory leak).
+   And added a compile time limit of 16 levels of undo, for all the actions,
+   that include Add, Ignore and Replace. 16 levels is more than enough, but
+   more than this can be done with the undo action, but then, only to revert
+   replaced text, to remove added words that the undo code forgot, it is
+   required to edit the personal dictionary file. The code now also understands
+   root/affix combinations, that ispell normally returns when using the
+   -m option. The ispell code should now also work when using the international
+   resource of the edit window.
+ + Added a new file, called options.c, that holds the code for the editMenu,
+   to enabling setting the wrap, autoFill, justify, leftColumn, rightColumn,
+   verticalScroll and horizontalScroll resources of the current edit window.
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.17 1999/04/11 13:10:31 dawes Exp $

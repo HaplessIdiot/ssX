@@ -1,9 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.1 1999/03/21 07:35:04 dawes Exp $ */
 
 #undef DEBUG
 #define FASTER
 #ifdef IOP_ACCESS
-#  if PSZ == 24
+#  if defined(PSZ) && (PSZ == 24)
 #    define A(s)	Apm##s##24##_IOP
 #  else
 #    define A(s)	Apm##s##_IOP
@@ -24,7 +24,7 @@
 #    define DPRINTNAME(s)	do { ErrorF("Apm" #s "_IOP\n"); fflush(stderr); } while (0)
 #  endif
 #else
-#  if PSZ == 24
+#  if defined(PSZ) && (PSZ == 24)
 #    define A(s)	Apm##s##24
 #  else
 #    define A(s)	Apm##s
@@ -143,7 +143,7 @@ A(SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h)
       return;
 
   DPRINTNAME(SubsequentSolidFillRect);
-#if PSZ == 24
+#if defined(PSZ) && (PSZ == 24)
 #  ifndef FASTER
   A(WaitForFifo)(pApm, 4);
 #  else
@@ -203,7 +203,7 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
 #ifndef FASTER
   u32 c = 0;
 #endif
-#if PSZ == 24
+#if defined(PSZ) && (PSZ == 24)
   u16 offset;
 #endif
   u32 sx, dx, sy, dy;
@@ -217,7 +217,7 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
 #ifndef FASTER
     c |= DEC_DIR_X_NEG;
 #endif
-#if PSZ == 24
+#if defined(PSZ) && (PSZ == 24)
     offset = 3*(pScrn->displayWidth + w);
 #endif
     sx = x1+w-1;
@@ -228,7 +228,7 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
 #ifndef FASTER
     c |= DEC_DIR_X_POS;
 #endif
-#if PSZ == 24
+#if defined(PSZ) && (PSZ == 24)
     offset = 3*(pScrn->displayWidth - w);
 #endif
     sx = x1;
@@ -254,7 +254,7 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
     dy = y2;
   }
 
-#if PSZ == 24
+#if defined(PSZ) && (PSZ == 24)
 #  ifndef FASTER
   A(WaitForFifo)(pApm, 5);
 #  else

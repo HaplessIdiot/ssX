@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XFree86: xc/programs/xterm/vttests/title.sh,v 1.1 1999/03/28 15:33:30 dawes Exp $
+# $XFree86: xc/programs/xterm/vttests/title.sh,v 1.2 1999/04/11 13:11:44 dawes Exp $
 #
 # -- Thomas Dickey (1999/3/27)
 # Obtain the current title of the window, set up a simple clock which runs
@@ -34,7 +34,8 @@ read original
 stty $old
 
 # We actually get this terminated by an <esc>backslash, but the backslash
-# is lost.  We'll also lose doublequote characters when restoring the title.
+# is lost.  We may lose doublequote characters when restoring the title,
+# depending on the shell.
 original=`echo "$original" |sed -e 's/^...//' -e 's/.$//'`
 original=${ESC}]2\;"${original}"${SUF}
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.28 1999/04/11 13:10:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.29 1999/04/17 07:06:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -148,6 +148,7 @@ typedef struct {
     int			widthmm;
     int			heightmm;
     pointer		options;
+    pointer		DDC;
 } MonRec, *MonPtr;
 
 /* the list of clock ranges */
@@ -265,6 +266,8 @@ typedef struct {
     int			depth;
     int			fbbpp;
     rgb			weight;
+    rgb			blackColour;
+    rgb			whiteColour;
     int			defaultVisual;
     char **		modes;
     pointer		options;

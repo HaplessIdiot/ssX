@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.30 1999/04/12 14:00:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.31 1999/04/15 06:39:01 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -10,6 +10,8 @@
 
 #ifndef _XF86_PCIINFO_H
 #define _XF86_PCIINFO_H
+
+#include "xf86str.h"
 
 /* PCI Pseudo Vendor */
 #define PCI_VENDOR_GENERIC      0x00FF

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.8 1999/03/29 09:41:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.9 1999/04/05 07:13:18 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -282,6 +282,8 @@ typedef struct
 	int disp_bpp;
 	char *disp_visual;
 	parser_rgb disp_weight;
+	parser_rgb disp_black;
+	parser_rgb disp_white;
 	XF86ModePtr disp_mode_lst;
 	XF86OptionPtr disp_option_lst;
 }

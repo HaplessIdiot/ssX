@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/85 1996/12/09 17:10:53 kaleb $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.38 1999/03/28 15:33:25 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.39 1999/04/11 13:11:38 dawes Exp $
 .\"
 .\"
 .\" Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -2242,6 +2242,8 @@ resize(1), X(1), pty(4), tty(4)
 .br
 \fIXterm Control Sequences\fP
 (this is the file ctlseqs.ms).
+.sp
+http://www.clark.net/pub/dickey/xterm/xterm.html
 .SH BUGS
 .PP
 Large pastes do not work on some systems.  This is not a bug in

@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.21 1999/03/14 03:21:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.22 1999/03/21 07:34:28 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -162,6 +162,10 @@ static void CvtStringToWrapMode(XrmValuePtr, Cardinal*,
 				XrmValuePtr, XrmValuePtr);
 static Boolean CvtWrapModeToString(Display*, XrmValue*, Cardinal*,
 				   XrmValue*, XrmValue*, XtPointer*);
+static Boolean CvtStringToJustifyMode(Display*, XrmValue*, Cardinal*,
+				      XrmValue*, XrmValue*, XtPointer*);
+static Boolean CvtJustifyModeToString(Display*, XrmValue*, Cardinal*,
+				      XrmValue*, XrmValue*, XtPointer*);
 static void DestroyHScrollBar(TextWidget);
 static void DestroyVScrollBar(TextWidget);
 static void DisplayText(Widget, XawTextPosition, XawTextPosition);
@@ -189,7 +193,6 @@ static void PositionHScrollBar(TextWidget);
 static void PositionVScrollBar(TextWidget);
 static int ResolveColumnNumber(TextWidget);
 static int ResolveLineNumber(TextWidget);
-static void SetLineAndColumnNumber(TextWidget, Bool);
 static void _SetSelection(TextWidget, XawTextPosition, XawTextPosition,
 			  Atom*, Cardinal);
 static void TextSinkResize(Widget);
@@ -220,6 +223,7 @@ void _XawTextSetSelection(TextWidget, XawTextPosition, XawTextPosition,
 void _XawTextVScroll(TextWidget, int);
 void XawTextScroll(TextWidget, int, int);
 void _XawTextSetSource(Widget, Widget, XawTextPosition, XawTextPosition);
+void _XawTextSetLineAndColumnNumber(TextWidget, Bool);
 void _XawTextSourceChanged(Widget, XawTextPosition, XawTextPosition,
 			   XawTextBlock*, int);
 
@@ -424,6 +428,33 @@ static XtResource resources[] = {
     XtRCallback,
     NULL
   },
+  {
+    XtNleftColumn,
+    XtCColumn,
+    XtRShort,
+    sizeof(short),
+    offset(text.left_column),
+    XtRImmediate,
+    (XtPointer)0
+  },
+  {
+    XtNrightColumn,
+    XtCColumn,
+    XtRShort,
+    sizeof(short),
+    offset(text.right_column),
+    XtRImmediate,
+    (XtPointer)0
+  },
+  {
+    XtNjustifyMode,
+    XtCJustifyMode,
+    XtRJustifyMode,
+    sizeof(XawTextJustifyMode),
+    offset(text.justify),
+    XtRImmediate,
+    (XtPointer)XawjustifyLeft
+  },
 };
 #undef offset
 
@@ -434,6 +465,7 @@ static XrmQuark QWrapNever, QWrapLine, QWrapWord;
 #ifndef notdef
 static XrmQuark QScrollNever, QScrollWhenNeeded, QScrollAlways;
 #endif
+static XrmQuark QJustifyLeft, QJustifyRight, QJustifyCenter, QJustifyFull;
 
 #ifndef notdef
 /*ARGSUSED*/
@@ -570,6 +602,81 @@ CvtWrapModeToString(Display *dpy, XrmValue *args, Cardinal *num_args,
   return (True);
 }
 
+/*ARGSUSED*/
+static Boolean
+CvtStringToJustifyMode(Display *dpy, XrmValue *args, Cardinal *num_args,
+		       XrmValue *fromVal, XrmValue *toVal, XtPointer *data)
+{
+    XawTextJustifyMode justify;
+    XrmQuark q;
+    char lowerName[8];
+
+    XmuNCopyISOLatin1Lowered(lowerName, (char *)fromVal->addr,
+			   sizeof(lowerName));
+    q = XrmStringToQuark(lowerName);
+
+    if (q == QJustifyLeft)
+	justify = XawjustifyLeft;
+    else if (q == QJustifyRight)
+	justify = XawjustifyRight;
+    else if (q == QJustifyCenter)
+	justify = XawjustifyCenter;
+    else if(q ==  QJustifyFull)
+	justify = XawjustifyFull;
+    else {
+	XtStringConversionWarning((char *)fromVal->addr, XtRJustifyMode);
+	return (False);
+    }
+
+    toVal->size = sizeof(XawTextJustifyMode);
+    *(XawTextJustifyMode *)(toVal->addr) = justify;
+
+    return (True);
+}
+
+
+/*ARGSUSED*/
+static Boolean
+CvtJustifyModeToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+		       XrmValue *fromVal, XrmValue *toVal, XtPointer *data)
+{
+    static char *buffer;
+    Cardinal size;
+
+    switch (*(XawTextJustifyMode *)fromVal->addr) {
+	case XawjustifyLeft:
+	    buffer = XtEtextJustifyLeft;
+	    break;
+	case XawjustifyRight:
+	    buffer = XtEtextJustifyRight;
+	    break;
+	case XawjustifyCenter:
+	    buffer = XtEtextJustifyCenter;
+	    break;
+	case XawjustifyFull:
+	    buffer = XtEtextJustifyFull;
+	    break;
+	default:
+	    XawTypeToStringWarning(dpy, XtRJustifyMode);
+	    toVal->addr = NULL;
+	    toVal->size = 0;
+	    return (False);
+    }
+    size = strlen(buffer) + 1;
+    if (toVal->addr != NULL) {
+	if (toVal->size < size)	{
+	    toVal->size = size;
+	    return (False);
+	}
+	strcpy((char *)toVal->addr, buffer);
+    }
+    else
+	toVal->addr = (XPointer)buffer;
+    toVal->size = sizeof(String);
+
+    return (True);
+}
+
 #undef done
 
 static void
@@ -596,6 +703,14 @@ XawTextClassInitialize(void)
   XtAddConverter(XtRString, XtRScrollMode, CvtStringToScrollMode,
 		 NULL, 0);
   XtSetTypeConverter(XtRScrollMode, XtRString, CvtScrollModeToString,
+		     NULL, 0, XtCacheNone, NULL);
+  QJustifyLeft = XrmPermStringToQuark(XtEtextJustifyLeft);
+  QJustifyRight = XrmPermStringToQuark(XtEtextJustifyRight);
+  QJustifyCenter = XrmPermStringToQuark(XtEtextJustifyCenter);
+  QJustifyFull = XrmPermStringToQuark(XtEtextJustifyFull);
+  XtSetTypeConverter(XtRString, XtRJustifyMode, CvtStringToJustifyMode,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRJustifyMode, XtRString, CvtJustifyModeToString,
 		     NULL, 0, XtCacheNone, NULL);
 }
 
@@ -818,6 +933,7 @@ XawTextInitialize(Widget request, Widget cnew,
   ctx->text.source_changed = SRC_CHANGE_NONE;
 
   ctx->text.kill_ring_ptr = NULL;
+  ctx->text.overwrite = False;
 
   if (XtHeight(ctx) == DEFAULT_TEXT_HEIGHT)
     {
@@ -826,23 +942,15 @@ XawTextInitialize(Widget request, Widget cnew,
 	XtHeight(ctx) += XawTextSinkMaxHeight(ctx->text.sink, 1);
     }
 
-  if (ctx->text.scroll_vert)
+    if (ctx->text.scroll_vert)
 	CreateVScrollBar(ctx);
-  if (ctx->text.scroll_horiz)
-    {
-      if (ctx->text.wrap == XawtextWrapNever)
+    if (ctx->text.scroll_horiz)
 	CreateHScrollBar(ctx);
-      else
-	{
-	  char msg[128];
 
-	  XmuSnprintf(msg, sizeof(msg), "Xaw Text Widget %s:\n %s.",
-		      ctx->core.name,
-		      "Horizontal scrolling not allowed with wrapping active");
-	  XtAppWarning(XtWidgetToApplicationContext(cnew), msg);
-	  ctx->text.scroll_horiz = (XawTextScrollMode)False;
-	}
-    }
+    if (ctx->text.left_column < 0)
+	ctx->text.left_column = 0;
+    if (ctx->text.right_column < 0)
+	ctx->text.right_column = 0;
 }
 
 static void
@@ -867,7 +975,7 @@ XawTextRealize(Widget w, XtValueMask *mask, XSetWindowAttributes *attr)
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, True);
   _XawTextSetScrollBars(ctx);
 
-  SetLineAndColumnNumber(ctx, True);
+  _XawTextSetLineAndColumnNumber(ctx, True);
 }
 
 /* Utility routines for support of Text */
@@ -1469,8 +1577,10 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
       if (vlines < lt->lines)
 	  top = XawMin(lt->info[vlines].position, ctx->text.lastPos);
       else if (ctx->text.wrap == XawtextWrapNever)
-	top = SrcScan(ctx->text.source, lt->top, XawstEOL,
-		      XawsdRight, vlines, True);
+	top = SrcScan(ctx->text.source, SrcScan(ctx->text.source, lt->top,
+						XawstEOL, XawsdRight, vlines,
+						True),
+		      XawstEOL, XawsdLeft, 1, False);
       else
 	{
 	  top = lt->top;
@@ -1993,8 +2103,6 @@ TextLoseSelection(Widget w, Atom *selection)
   int i;
   XawTextSelectionSalt*salt, *prevSalt, *nextSalt;
 
-  _XawTextPrepareToUpdate(ctx);
-
   atomP = ctx->text.s.selections;
   for (i = 0 ; i < ctx->text.s.atom_count; i++, atomP++)
     if ((*selection == *atomP)
@@ -2020,9 +2128,6 @@ TextLoseSelection(Widget w, Atom *selection)
 
   if (ctx->text.s.atom_count == 0)
     ModifySelection(ctx, ctx->text.insertPos, ctx->text.insertPos);
-
-  if (ctx->text.old_insert >= 0) /* Update in progress. */
-    _XawTextExecuteUpdate(ctx);
 
   prevSalt = 0;
   for (salt = ctx->text.salt; salt; salt = nextSalt)
@@ -2132,6 +2237,7 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
     for (i = 0; i < src->textSrc.num_text; i++) {
 	TextWidget tw = (TextWidget)src->textSrc.text[i];
 
+	_XawTextPrepareToUpdate(tw);
 	if (left < tw->text.s.left) {
 	    pos = Min(right, tw->text.s.left);
 	    _XawTextNeedsUpdating(tw, left, pos);
@@ -2151,6 +2257,8 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 
 	tw->text.s.left = left;
 	tw->text.s.right = right;
+	if (tw->text.old_insert >= 0) /* Update in progress. */
+	    _XawTextExecuteUpdate(tw);
     }
 
   SrcSetSelection(ctx->text.source, left, right,
@@ -2225,8 +2333,8 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
     XawTextUnsetSelection((Widget)ctx);
 }
 
-static void
-SetLineAndColumnNumber(TextWidget ctx, Bool force)
+void
+_XawTextSetLineAndColumnNumber(TextWidget ctx, Bool force)
 {
     int line_number = ResolveLineNumber(ctx);
     int column_number = ResolveColumnNumber(ctx);
@@ -2239,6 +2347,7 @@ SetLineAndColumnNumber(TextWidget ctx, Bool force)
 	ctx->text.column_number = info.column_number = column_number;
 	info.insert_position = ctx->text.insertPos;
 	info.last_position = ctx->text.lastPos;
+	info.overwrite_mode = ctx->text.overwrite;
 
 	XtCallCallbacks((Widget)ctx, XtNpositionCallback, (XtPointer)&info);
     }
@@ -3289,7 +3398,7 @@ _XawTextExecuteUpdate(TextWidget ctx)
 
   FlushUpdate(ctx);
   InsertCursor((Widget)ctx, XawisOn);
-  SetLineAndColumnNumber(ctx, False);
+  _XawTextSetLineAndColumnNumber(ctx, False);
   ctx->text.old_insert = -1;
   ctx->text.clear_to_eol = True;
 }
@@ -3404,6 +3513,13 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
       || oldtw->text.sink != newtw->text.sink
       || newtw->text.redisplay_needed)
     {
+	if (oldtw->text.wrap != newtw->text.wrap) {
+	    newtw->text.left_margin = newtw->text.margin.left =
+		newtw->text.r_margin.left;
+	    if (oldtw->text.lt.top == newtw->text.lt.top)
+		newtw->text.lt.top = SrcScan(newtw->text.source, 0, XawstEOL,
+					     XawsdLeft, 1, False);
+	}
       show_lc = True;
       newtw->text.showposition = True;
       newtw->text.source_changed = SRC_CHANGE_OVERLAP;
@@ -3411,8 +3527,13 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
       redisplay = True;
     }
 
+    if (newtw->text.left_column < 0)
+	newtw->text.left_column = 0;
+    if (newtw->text.right_column < 0)
+	newtw->text.right_column = 0;
+
   if (show_lc)
-      SetLineAndColumnNumber(newtw, True);
+      _XawTextSetLineAndColumnNumber(newtw, True);
 
   _XawTextExecuteUpdate(newtw);
   if (redisplay)
@@ -3549,7 +3670,7 @@ _XawTextSetSource(Widget w, Widget source,
   _XawTextBuildLineTable(ctx, top, True);
 
   if (resolve)
-      SetLineAndColumnNumber(ctx, True);
+      _XawTextSetLineAndColumnNumber(ctx, True);
   _XawTextExecuteUpdate(ctx);
 }
 
@@ -3604,7 +3725,7 @@ XawTextSetInsertionPoint(Widget w, XawTextPosition position)
   ctx->text.from_left = -1;
 
   _XawTextExecuteUpdate(ctx);
-  SetLineAndColumnNumber(ctx, False);
+  _XawTextSetLineAndColumnNumber(ctx, False);
 }
 
 XawTextPosition

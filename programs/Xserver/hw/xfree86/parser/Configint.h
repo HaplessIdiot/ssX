@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.7 1999/03/29 09:41:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.8 1999/04/05 07:13:16 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -135,6 +135,10 @@ else\
 "The Virtual keyword must be followed by a width and height value."
 #define WEIGHT_MSG \
 "The Weight keyword must be followed by red, green and blue values."
+#define BLACK_MSG \
+"The Black keyword must be followed by red, green and blue values."
+#define WHITE_MSG \
+"The White keyword must be followed by red, green and blue values."
 #define SCREEN_MSG \
 "The Screen keyword must be followed by an optional number and 1 or 5 \n\tscreen names in quotes."
 #define INPUTDEV_MSG \

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.14 1998/04/26 16:04:34 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.15 1999/04/05 07:12:59 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -165,79 +165,22 @@ static Tk_ArgvInfo argTable[] = {
         (char *) NULL}
 };
 
-extern int	Curses_Init(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
-);
-
-extern int	XF86Other_Init(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
-);
-
-extern int	XF86TkOther_Init(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
-);
-
-extern int	Cards_Init(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
-);
-
-extern int	XF86Config_Init(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
-);
-
-extern int	XF86vid_Init(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
-);
-
-extern int	XF86Misc_Init(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
-);
-
-extern int	XF86Kbd_Init(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
-);
-
-static void	XF86Setup_TclEvalFile(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp,
-	char *filename
-#endif
-);
-
-static void	XF86Setup_TclRunScript(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp,
-	char *filename
-#endif
-);
-
+extern int	Curses_Init(Tcl_Interp *interp);
+extern int	XF86Other_Init(Tcl_Interp *interp);
+extern int	XF86TkOther_Init(Tcl_Interp *interp);
+extern int	Cards_Init(Tcl_Interp *interp);
+extern int	XF86Config_Init(Tcl_Interp *interp);
+extern int	XF86vid_Init(Tcl_Interp *interp);
+extern int	XF86Misc_Init(Tcl_Interp *interp);
+extern int	XF86Kbd_Init(Tcl_Interp *interp);
+static void	XF86Setup_TclEvalFile(Tcl_Interp *interp, char *filename);
+static void	XF86Setup_TclRunScript(Tcl_Interp *interp, char *filename);
 static void	XF86Setup_TkInit(
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
+	Tcl_Interp *interp,
+	char *display,
+	char *appname
 );
-
-static void	kill_server (
-#if NeedFunctionProtoTypes
-	Tcl_Interp *interp
-#endif
-);
+static void	kill_server(Tcl_Interp *interp);
 
 /*
   Runs the commands in the specified file in the lib directory
@@ -336,9 +279,7 @@ XF86Setup_TclRunScript(interp, filename)
 */
 
 void
-main(argc, argv)
-    int		argc;
-    char	**argv;
+main(int argc, char **argv)
 {
     char *tmpptr, *filename, *argv0, tmpbuf[20], buf[128];
     int   Phase2FallBack = 0;
@@ -607,7 +548,7 @@ main(argc, argv)
     exit(1);
 }
 
-void keypress() {
+void keypress(void) {
 /*
  * The parse_database routine (in cards.c) calls keypress() when it
  * finds a problem with the database (after printing an error message)
@@ -639,14 +580,12 @@ void kill_server(interp)
 }
 
 extern int	TkCreateFrame (
-#if NeedFunctionProtoTypes
 	ClientData	clientData,
 	Tcl_Interp	*interp,
 	int		argc,
 	char		**argv,
 	int		toplevel,
 	char		*appName
-#endif
 );
 
 #if TK_MAJOR_VERSION == 4
@@ -654,18 +593,14 @@ extern int	TkPlatformInit (
 #else
 extern int	TkpInit (
 #endif
-#if NeedFunctionProtoTypes
 	Tcl_Interp	*interp
-#endif
 );
 
 extern int	XkbUIWinCmd (
-#if NeedFunctionProtoTypes
 	ClientData	clientData,
 	Tcl_Interp	*interp,
 	int		argc,
 	char		**argv
-#endif
 );
 
 /*

@@ -204,7 +204,6 @@ MuxThreshold              I     V    Multiplexing threshold (kHz)
 NoAccel                   B     V    Disable/enable acceleration
 NoClockChip               B     V    ??
 NoStretch                 B     V    Disable/enable stretching for LCD displays
-NoTurboQueue              B     V    Disable/enable turbo queue
 OnAtExit                  B     V    Leave video signal on when exiting server
 Overlay                   B     V    Enable/disable multi-depth/overlay
 PciBurst                  B     V    Enable/disable PCI burst mode
@@ -221,6 +220,7 @@ STN                       B     V    STN screen type (??)
 SWCursor                  B     V    Enable/disable SW cursor
 SuspendHack               B     V    ??
 SyncOnGreen               B     V    Enable/disable sync on green
+TurboQueue                B     V    Enable/disable turbo queue
 UseFBDev                  B     V    Use the fbdev driver interface
 UseModeLine               B     V    Use Modeline (??)
 W32Interleave             B     V    ??
@@ -302,4 +302,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.8 1999/04/17 07:05:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.9 1999/04/18 13:49:07 dawes Exp $

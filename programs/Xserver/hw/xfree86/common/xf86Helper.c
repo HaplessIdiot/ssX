@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.35 1999/04/15 14:39:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.36 1999/04/18 04:08:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -22,6 +22,7 @@
 #include "xf86_OSlib.h"
 #include "micmap.h"
 #include "xf86PciInfo.h"
+#include "xf86DDC.h"
 
 /* For xf86GetClocks */
 #if defined(CSRG_BASED) || defined(MACH386)
@@ -357,6 +358,10 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 		xf86DrvMsg(scrp->scrnIndex, X_ERROR,
 			"Driver can't support depth 24 pixmap format (%d)\n",
 			PIX24TOBPP(pix24));
+	    else if ((depth24flags & (Support24bppFb | Support32bppFb)) ==
+		     NoDepth24Support)
+		xf86DrvMsg(scrp->scrnIndex, X_ERROR,
+			"Driver can't support depth 24\n");
 	    else
 		xf86DrvMsg(scrp->scrnIndex, X_ERROR,
 			"Can't find fbbpp for depth 24\n");
@@ -652,6 +657,7 @@ Bool
 xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
 {
     MessageType from = X_DEFAULT;
+    xf86MonPtr DDC = (xf86MonPtr)(scrp->monitor->DDC); 
 
     if (TEST_GAMMA(xf86Gamma)) {
 	from = X_CMDLINE;
@@ -663,6 +669,13 @@ xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
 	scrp->gamma.red = SET_GAMMA(scrp->monitor->gamma.red);
 	scrp->gamma.green = SET_GAMMA(scrp->monitor->gamma.green);
 	scrp->gamma.blue = SET_GAMMA(scrp->monitor->gamma.blue);
+    } else if ( DDC && DDC->features.gamma > GAMMA_ZERO ) {
+        from = X_PROBED;
+	scrp->gamma.red = SET_GAMMA(DDC->features.gamma);
+	scrp->gamma.green = SET_GAMMA(DDC->features.gamma);
+	scrp->gamma.blue = SET_GAMMA(DDC->features.gamma);
+	/* EDID structure version 2 gives optional seperate red, green & blue gamma values
+	 * in bytes 0x57-0x59 */
     } else if (TEST_GAMMA(gamma)) {
 	scrp->gamma.red = SET_GAMMA(gamma.red);
 	scrp->gamma.green = SET_GAMMA(gamma.green);
@@ -695,6 +708,7 @@ void
 xf86SetDpi(ScrnInfoPtr pScrn, int x, int y)
 {
     MessageType from = X_DEFAULT;
+    xf86MonPtr DDC = (xf86MonPtr)(pScrn->monitor->DDC); 
 
     /* XXX Maybe there is no need for widthmm/heightmm in ScrnInfoRec */
     pScrn->widthmm = pScrn->monitor->widthmm;
@@ -720,6 +734,27 @@ xf86SetDpi(ScrnInfoPtr pScrn, int x, int y)
 	    pScrn->xDpi = pScrn->yDpi;
 	xf86DrvMsg(pScrn->scrnIndex, from, "Display dimensions: (%d, %d) mm\n",
 		   pScrn->widthmm, pScrn->heightmm);
+    } else if ( DDC && (DDC->features.hsize > 0 || DDC->features.vsize > 0) ) {
+	from = X_PROBED;
+	/* DDC gives display size in mm for individual modes,
+	 * but cm for monitor 
+	 */
+	xf86DrvMsg(pScrn->scrnIndex, from, "Display dimensions: (%d, %d) cm\n",
+		   DDC->features.hsize, DDC->features.vsize );
+	pScrn->widthmm = DDC->features.hsize * 10; /* 10mm in 1cm */
+	pScrn->heightmm = DDC->features.vsize * 10; /* 10mm in 1cm */
+	if (pScrn->widthmm > 0) {
+	   pScrn->xDpi =
+		(int)((double)pScrn->virtualX * MMPERINCH / pScrn->widthmm);
+	}
+	if (pScrn->heightmm > 0) {
+	   pScrn->yDpi =
+		(int)((double)pScrn->virtualY * MMPERINCH / pScrn->heightmm);
+	}
+	if (pScrn->xDpi > 0 && pScrn->yDpi <= 0)
+	    pScrn->yDpi = pScrn->xDpi;
+	if (pScrn->yDpi > 0 && pScrn->xDpi <= 0)
+	    pScrn->xDpi = pScrn->yDpi;
     } else {
 	if (x > 0)
 	    pScrn->xDpi = x;
@@ -910,6 +945,8 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 	    break;
 	case X_ERROR:
 	    s = X_ERROR_STRING;
+	    if (verb <= 0)
+		verb = 1;
 	    break;
 	case X_WARNING:
 	    s = X_WARNING_STRING;
@@ -927,6 +964,21 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 	if (scrnIndex >= 0 && scrnIndex < xf86NumScreens)
 	    ErrorF("%s(%d): ", xf86Screens[scrnIndex]->name, scrnIndex);
 	VErrorF(format, args);
+	if (type == X_ERROR && xf86Verbose < verb) {
+	    ErrorF(X_ERROR_STRING " Please re-run the server with");
+	    switch(--verb) {
+	    case 0:
+		ErrorF("out the '-quiet' command line flag");
+		break;
+	    case 1:
+		ErrorF(" the '-verbose' command line flag");
+		break;
+	    default:
+		ErrorF(" %d '-verbose' command line flags", verb);
+		break;
+	    }
+	    ErrorF(" >before< reporting a problem.\n");
+	}
     }
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.5 1999/03/07 11:40:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.6 1999/03/21 07:35:27 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -101,6 +101,28 @@ parseDisplaySubSection (void)
 			if (xf86GetToken (NULL) != NUMBER)
 				Error (WEIGHT_MSG, NULL);
 			ptr->disp_weight.blue = val.num;
+			break;
+		case BLACK_TOK:
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (BLACK_MSG, NULL);
+			ptr->disp_black.red = val.num;
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (BLACK_MSG, NULL);
+			ptr->disp_black.green = val.num;
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (BLACK_MSG, NULL);
+			ptr->disp_black.blue = val.num;
+			break;
+		case WHITE_TOK:
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (WHITE_MSG, NULL);
+			ptr->disp_white.red = val.num;
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (WHITE_MSG, NULL);
+			ptr->disp_white.green = val.num;
+			if (xf86GetToken (NULL) != NUMBER)
+				Error (WHITE_MSG, NULL);
+			ptr->disp_white.blue = val.num;
 			break;
 		case MODES:
 			{
@@ -315,7 +337,7 @@ printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 			fprintf (cf, "\tIdentifier \"%s\"\n", ptr->scrn_identifier);
 		if (ptr->scrn_obso_driver)
 			fprintf (cf, "\tDriver     \"%s\"\n", ptr->scrn_obso_driver);
-		if (ptr->scrn_device)
+		if (ptr->scrn_device_str)
 			fprintf (cf, "\tDevice     \"%s\"\n", ptr->scrn_device_str);
 		if (ptr->scrn_monitor_str)
 			fprintf (cf, "\tMonitor    \"%s\"\n", ptr->scrn_monitor_str);

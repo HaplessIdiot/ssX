@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.21 1999/04/17 07:31:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.22 1999/04/18 04:08:41 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -523,10 +523,6 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86ReturnOptValBool(TGAOptions, OPTION_PCI_RETRY, FALSE)) {
 	pTga->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
-    }
-    if(pScrn->depth > 8) {
-      pTga->NoAccel = TRUE;
-      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "No acceleration for >8bpp cards yet\n");
     }
 
     /* Find the PCI slot for this screen */
@@ -1170,10 +1166,21 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         switch (pTga->Chipset)
         {
 	case PCI_CHIP_DEC21030:
-
-	  if(DEC21030AccelInit(pScreen) == FALSE) {
+	  if (pScrn->bitsPerPixel == 8) {
+	    if(DEC21030AccelInit8(pScreen) == FALSE) {
+	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			 "XAA Initialization failed\n");
+	      return(FALSE);
+	    }
+	  } else if (pScrn->bitsPerPixel == 32) {
+	    if(DEC21030AccelInit32(pScreen) == FALSE) {
+	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			 "XAA Initialization failed\n");
+	      return(FALSE);
+	    }
+	  } else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "XAA Initialization failed\n");
+		       "Unsupported acceleration depth\n");
 	    return(FALSE);
 	  }
 	  break;

@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.4 1999/04/11 13:11:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.5 1999/04/18 04:08:44 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -23,7 +23,7 @@
 #endif
 #endif
 #include <unistd.h>
-#ifdef ISC
+#if defined(ISC) || defined(Lynx)
 extern char *optarg;
 extern int optind, opterr;
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.5 1999/01/26 10:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.6 1999/04/17 07:06:53 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -13,23 +13,34 @@
 #include "sis.h"
 
 static void SiSSync(ScrnInfoPtr pScrn);
+
 static void SiSSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void SiSSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x,
 				int y, int w, int h);
-static void SiSSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
-				int x1, int y1, int x2,
-				int y2, int w, int h);
+
 static void SiSSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 				int xdir, int ydir, int rop, 
                                 unsigned int planemask,
 				int transparency_color);
+static void SiSSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
+				int x1, int y1, int x2,
+				int y2, int w, int h);
+
 static void SiSSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int fg, int bg, 
 				int rop, unsigned int planemask);
 static void SiSSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, 
 				int patternx, int patterny, int x, int y, 
 				int w, int h);
+
+static void SiSSetupForScreenToScreenColorExpandFill (ScrnInfoPtr pScrn,
+       			int fg, int bg, 
+				int rop, unsigned int planemask);
+
+static void SiSSubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
+				int x, int y, int w, int h,
+				int srcx, int srcy, int offset );
 
 static void
 SiSInitializeAccelerator(ScrnInfoPtr pScrn)
@@ -44,7 +55,7 @@ SiSAccelInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr pSiS = SISPTR(pScrn);
     BoxRec AvailFBArea;
-    int offset=0;
+    int offset;
 
     pSiS->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
@@ -52,10 +63,10 @@ SiSAccelInit(ScreenPtr pScreen)
     SiSInitializeAccelerator(pScrn);
 
     infoPtr->Flags = PIXMAP_CACHE |
+					 SYNC_AFTER_COLOR_EXPAND |
 		     OFFSCREEN_PIXMAPS |
 		     LINEAR_FRAMEBUFFER;
  
-
     infoPtr->Sync = SiSSync;
 
 #if 1
@@ -70,8 +81,13 @@ SiSAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentScreenToScreenCopy = 		
 				SiSSubsequentScreenToScreenCopy;
 
-#if 1 /* now right for 6326 */
-    infoPtr->Mono8x8PatternFillFlags =  NO_PLANEMASK | 
+#if 1
+
+    if (pScrn->bitsPerPixel != 24) {
+	    infoPtr->Mono8x8PatternFillFlags =  GXCOPY_ONLY |
+											CPU_TRANSFER_PAD_DWORD |
+											SCANLINE_PAD_DWORD |
+											NO_PLANEMASK | 
 					HARDWARE_PATTERN_PROGRAMMED_BITS |
 					HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
 					BIT_ORDER_IN_BYTE_MSBFIRST;
@@ -80,11 +96,28 @@ SiSAccelInit(ScreenPtr pScreen)
 				SiSSetupForMono8x8PatternFill;
     infoPtr->SubsequentMono8x8PatternFillRect = 
 				SiSSubsequentMono8x8PatternFillRect;
+	};
+#endif
+
+#if 1
+    if (pScrn->bitsPerPixel != 24) {
+    infoPtr->ScreenToScreenColorExpandFillFlags =  GXCOPY_ONLY | 
+					NO_PLANEMASK | 
+					HARDWARE_PATTERN_PROGRAMMED_BITS |
+					HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+					BIT_ORDER_IN_BYTE_MSBFIRST;
+
+    infoPtr->SetupForScreenToScreenColorExpandFill =
+				SiSSetupForScreenToScreenColorExpandFill;
+    infoPtr->SubsequentScreenToScreenColorExpandFill = 
+				SiSSubsequentScreenToScreenColorExpandFill;
+    };
 #endif
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
+    offset = 0;
     if (pSiS->TurboQueue) offset = 32768;
     if (pSiS->HWCursor) offset = 16384;
     if (pSiS->HWCursor && pSiS->TurboQueue) offset = 65536;
@@ -236,6 +269,7 @@ SiSSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny,
 	sisSETROPFG(0xf0);	/* pat copy */
 	sisSETROPBG(0xcc); 	/* copy */
     }
+    sisBLTWAIT;
     sisSETPITCH(0, dstpitch);    
     sisSETSRCADDR(0);
     patternRegPtr =  (unsigned int *)sisSETPATREG();
@@ -263,6 +297,7 @@ SiSSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patternx,
 	              sisPATFG | sisSRCBG ;
 
     dstaddr = ( y * pScrn->displayWidth + x ) * pScrn->bitsPerPixel / 8;
+    sisBLTWAIT;
     patternRegPtr = sisSETPATREG();
     srcPatternRegPtr = (unsigned char *)pSiS->sisPatternReg ;
     shift = 8-patternx ;
@@ -280,5 +315,75 @@ SiSSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn, int patternx,
     sisSETDSTADDR(dstaddr);
     sisSETHEIGHTWIDTH(h-1, w*(pScrn->bitsPerPixel/8)-1);
     sisSETCMD(op);
-    SiSSync(pScrn);
+/*    SiSSync(pScrn);*/
+}
+/*
+ * setup for screen-to-screen color expansion
+ */
+static void 
+SiSSetupForScreenToScreenColorExpandFill (ScrnInfoPtr pScrn,
+	int fg, int bg, 
+	int rop, unsigned int planemask)
+{
+    SISPtr pSiS = SISPTR(pScrn);
+    int isTransparent = ( bg == -1 );
+
+    /*ErrorF("SISSetupScreenToScreenColorExpand()\n");*/
+
+    /*
+     * check transparency 
+     */
+    /* becareful with rop */
+/*    sisBLTWAIT; */
+    if (isTransparent) {
+	sisSETFGCOLOR(fg);
+	sisSETROPFG(0xf0); 	/* pat copy */
+	sisSETROPBG(0xAA); 	/* dst */
+    } else {
+	sisSETBGCOLOR(bg);
+	sisSETFGCOLOR(fg);
+	sisSETROPFG(0xf0);	/* pat copy */
+	sisSETROPBG(0xcc); 	/* copy */
+    }
+}
+
+/*
+ * executing screen-to-screen color expansion
+ */
+static void 
+SiSSubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
+				int x, int y, int w, int h,
+				int srcx, int srcy, int offset )
+{
+    SISPtr pSiS = SISPTR(pScrn);
+    int destpitch = pScrn->displayWidth * pScrn->bitsPerPixel / 8 ;
+    int srcaddr = srcy * destpitch *  + srcx ;
+    int destaddr = y * destpitch + x * pScrn->bitsPerPixel / 8;
+    int srcpitch ;
+    int ww ;
+    int widthTodo ;
+    int	op ;
+
+    op  = sisCMDCOLEXP | sisTOP2BOTTOM | sisLEFT2RIGHT | sisPATFG | sisSRCBG | sisCMDENHCOLEXP ;
+
+/*    ErrorF("SISSubsequentScreenToScreenColorExpand()\n"); */
+#define maxWidth 144
+    /* can't expand more than maxWidth in one time.
+       it's a work around for scanline greater than maxWidth 
+     */
+    destpitch = pScrn->displayWidth * pScrn->bitsPerPixel / 8 ;
+    srcpitch =  ((w + 31)& ~31) /8 ;
+    sisSETPITCH(srcpitch, destpitch);
+    widthTodo = w ;
+    do { 
+	ww = widthTodo < maxWidth ? widthTodo : maxWidth ;
+	sisSETDSTADDR(destaddr);
+	sisSETSRCADDR(srcaddr);
+	sisSETHEIGHTWIDTH(h-1, ww*(pScrn->bitsPerPixel / 8)-1);
+	sisSETCMD(op);
+	srcaddr += ww ;
+	destaddr += ww*pScrn->bitsPerPixel / 8 ;
+	widthTodo -= ww ;
+    } while ( widthTodo > 0 ) ;
+/*    SiSSync(pScrn); */
 }

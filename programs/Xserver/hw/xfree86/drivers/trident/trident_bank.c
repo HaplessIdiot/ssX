@@ -21,31 +21,31 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_bank.c,v 1.1 1998/11/15 04:30:33 dawes Exp $ */
 
-#include "compiler.h"
+#include "trident_regs.h"
 
 void TVGA8900SetRead(int bank)
 {
-  outw(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+  MMIO_OUTW(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
 }
 void TGUISetRead(int bank)
 {
-  outb(0x3d9, bank & 0xff);
+  MMIO_OUTB(0x3d9, bank & 0xff);
 }
 void TVGA8900SetWrite(int bank)
 {
-  outw(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+  MMIO_OUTW(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
 }
 void TGUISetWrite(int bank)
 {
-  outb(0x3d8, bank & 0xff);
+  MMIO_OUTB(0x3d8, bank & 0xff);
 }
 void TVGA8900SetReadWrite(int bank)
 {
-  outw(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
+  MMIO_OUTW(0x3c4, (((bank & 0xff) ^ 0x02)<<8)|0x0E);
 }
 void TGUISetReadWrite(int bank)
 {
-  outw(0x3d8, (bank & 0xff)<< 8 | bank & 0xff);
+  MMIO_OUTW(0x3d8, (bank & 0xff)<< 8 | bank & 0xff);
 }
