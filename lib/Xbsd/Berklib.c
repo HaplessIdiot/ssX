@@ -1,4 +1,5 @@
 /* $XConsortium: Berklib.c,v 1.24 94/04/17 20:23:08 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987 X Consortium
@@ -67,6 +68,10 @@ from the X Consortium.
 #ifdef SYSV
 #define WANT_FFS
 #define WANT_MEMMOVE
+#ifdef SCO
+/* silly bcopy in SCO does not handle overlaps */
+#define WANT_BFUNCS
+#endif
 #endif
 #endif
 
