@@ -4,7 +4,8 @@ exec rep "$0" "$@"
 
 ;; build-dispatch
 
-;; $Id: build-dispatch,v 1.1 2003/06/30 01:45:10 torrey Exp $
+;; $Id: build-dispatch,v 1.2 2003/10/13 00:30:53 torrey Exp $
+;; $XFree86: $
 
 ;; Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
 
@@ -53,7 +54,7 @@ exec rep "$0" "$@"
 		   (expand-last-match "\\1")))
 	    (string-split "," s)))
 
-  (@ "/* dri_dispatch.h -- built automatically, DO NOT EDIT\n   $%s$ */\n\n" "Id")
+  (@ "/* dri_dispatch.h -- built automatically, DO NOT EDIT\n   $%s$\n   $%s$ */\n\n" "Id" "XFree86: ")
 
   (condition-case nil
       (while t
