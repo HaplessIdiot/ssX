@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.157 2002/01/11 09:48:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.158 2002/01/13 00:15:52 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -231,7 +231,9 @@ typedef enum {
     OPTION_CYBER_SHADOW,
     OPTION_CYBER_STRETCH,
     OPTION_XV_HSYNC,
-    OPTION_XV_VSYNC
+    OPTION_XV_VSYNC,
+    OPTION_XV_BSKEW,
+    OPTION_XV_RSKEW
 } TRIDENTOpts;
 
 static const OptionInfoRec TRIDENTOptions[] = {
