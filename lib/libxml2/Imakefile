@@ -6,7 +6,9 @@
 #define HasSharedData YES
 #define LibName xml2
 #define SoRev SOLIBXML2REV
-#define LibHeaders NO
+#define LibHeaders YES
+#define IncSubdir libxml2
+#define IncSubSubdir libxml
 
 #include <Threads.tmpl>
 
@@ -16,6 +18,12 @@ LIBXML2INC = $(LIBXML2TOP)/include
 
 INCLUDES = -I$(LIBXML2INC) -I$(LIBXML2TOP) -I.
 
+HEADERS=DOCBparser.h HTMLparser.h HTMLtree.h SAX.h catalog.h debugXML.h \
+       encoding.h entities.h globals.h hash.h list.h nanoftp.h nanohttp.h \
+       parser.h parserInternals.h threads.h tree.h uri.h valid.h \
+       xinclude.h xlink.h xmlIO.h xmlerror.h xmlmemory.h xmlversion.h \
+       xmlwin32version.h xpath.h xpathInternals.h xpointer.h
+        
 SRCS = SAX.c entities.c encoding.c error.c parserInternals.c  \
        parser.c tree.c hash.c list.c xmlIO.c xmlmemory.c uri.c  \
        valid.c xlink.c HTMLparser.c HTMLtree.c debugXML.c xpath.c  \
@@ -67,3 +75,33 @@ LinkSourceFile(globals.c,$(LIBXML2SRC))
 LinkSourceFile(threads.c,$(LIBXML2SRC))
 LinkSourceFile(triostr.c,$(LIBXML2SRC))
 LinkSourceFile(trio.c,$(LIBXML2SRC))
+
+LinkSourceFile(DOCBparser.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(HTMLparser.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(HTMLtree.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(SAX.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(catalog.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(debugXML.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(encoding.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(entities.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(globals.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(hash.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(list.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(nanoftp.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(nanohttp.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(parser.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(parserInternals.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(threads.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(tree.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(uri.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(valid.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xinclude.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xlink.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xmlIO.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xmlerror.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xmlmemory.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xmlversion.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xmlwin32version.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xpath.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xpathInternals.h,$(LIBXML2INC)/libxml)
+LinkSourceFile(xpointer.h,$(LIBXML2INC)/libxml)
