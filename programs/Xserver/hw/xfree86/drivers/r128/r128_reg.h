@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.7 2000/05/23 04:47:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.8 2000/06/17 00:03:22 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -167,12 +167,14 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #       define R128_AGP_APER_SIZE_8MB     (0x3e << 0)
 #       define R128_AGP_APER_SIZE_4MB     (0x3f << 0)
 #       define R128_AGP_APER_SIZE_MASK    (0x3f << 0)
+#define R128_AGP_CNTL_B                   0x0b44
 #define R128_AGP_COMMAND                  0x0f58 /* PCI */
 #define R128_AGP_PLL_CNTL                 0x0010 /* PLL */
 #define R128_AGP_STATUS                   0x0f54 /* PCI */
 #       define R128_AGP_1X_MODE           0x01
 #       define R128_AGP_2X_MODE           0x02
-#       define R128_AGP_MODE_MASK         0x03
+#       define R128_AGP_4X_MODE           0x04
+#       define R128_AGP_MODE_MASK         0x07
 #define R128_AMCGPIO_A_REG                0x01a0
 #define R128_AMCGPIO_EN_REG               0x01a8
 #define R128_AMCGPIO_MASK                 0x0194
@@ -202,6 +204,8 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #define R128_AUX3_SC_LEFT                 0x1684
 #define R128_AUX3_SC_RIGHT                0x1688
 #define R128_AUX3_SC_TOP                  0x168c
+#define R128_AUX_WINDOW_HORZ_CNTL         0x02d8
+#define R128_AUX_WINDOW_VERT_CNTL         0x02dc
 
 #define R128_BASE_CODE                    0x0f0b
 #define R128_BIOS_0_SCRATCH               0x0010
@@ -284,6 +288,7 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #       define R128_BUS_WRT_BURST          (1 << 29)
 #       define R128_BUS_READ_BURST         (1 << 30)
 #define R128_BUS_CNTL1                    0x0034
+#	define R128_BUS_WAIT_ON_LOCK_EN    (1 << 4)
 
 #define R128_CACHE_CNTL                   0x1724
 #define R128_CACHE_LINE                   0x0f0c /* PCI */
@@ -479,7 +484,7 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #       define R128_DP_SRC_SOURCE_HOST_DATA   (3    << 24)
 #       define R128_GMC_3D_FCN_EN             (1    << 27)
 #       define R128_GMC_CLR_CMP_CNTL_DIS      (1    << 28)
-#       define R128_AUX_CLIP_DIS              (1    << 29)
+#       define R128_GMC_AUX_CLIP_DIS          (1    << 29)
 #       define R128_GMC_WR_MSK_DIS            (1    << 30)
 #       define R128_GMC_LD_BRUSH_Y_X          (1    << 31)
 #       define R128_ROP3_ZERO             0x00000000
@@ -603,7 +608,11 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #       define R128_VSYNC_INT_AK          (1 <<  2)
 #       define R128_VSYNC_INT             (1 <<  2)
 #define R128_GEN_RESET_CNTL               0x00f0
-#       define R128_SOFT_RESET_GUI        (1 <<  0)
+#       define R128_SOFT_RESET_GUI          (1 <<  0)
+#       define R128_SOFT_RESET_VCLK         (1 <<  8)
+#       define R128_SOFT_RESET_PCLK         (1 <<  9)
+#       define R128_SOFT_RESET_DISPENG_XCLK (1 << 11)
+#       define R128_SOFT_RESET_MEMCTLR_XCLK (1 << 12)
 #define R128_GENENB                       0x03c3 /* VGA */
 #define R128_GENFC_RD                     0x03ca /* VGA */
 #define R128_GENFC_WT                     0x03da /* VGA, 0x03ba */
@@ -662,6 +671,7 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #define R128_HOST_PATH_CNTL               0x0130
 #define R128_HTOTAL_CNTL                  0x0009 /* PLL */
 #define R128_HW_DEBUG                     0x0128
+#define R128_HW_DEBUG2                    0x011c
 
 #define R128_I2C_CNTL_1                   0x0094 /* ? */
 #define R128_INTERRUPT_LINE               0x0f3c /* PCI */
@@ -681,7 +691,8 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #define R128_MAX_LATENCY                  0x0f3f /* PCI */
 #define R128_MCLK_CNTL                    0x000f /* PLL */
 #       define R128_FORCE_GCP             (1 << 16)
-#       define R128_FORCE_PIPE3D_CPP      (1 << 17)
+#       define R128_FORCE_PIPE3D_CP       (1 << 17)
+#       define R128_FORCE_RCP             (1 << 18)
 #define R128_MDGPIO_A_REG                 0x01ac
 #define R128_MDGPIO_EN_REG                0x01b0
 #define R128_MDGPIO_MASK                  0x0198
@@ -715,6 +726,7 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #define R128_PC_GUI_CTLSTAT               0x1748
 #define R128_PC_GUI_MODE                  0x1744
 #       define R128_PC_IGNORE_UNIFY       (1 << 5)
+#define R128_PC_MISC_CNTL                 0x0188
 #define R128_PC_NGUI_CTLSTAT              0x0184
 #       define R128_PC_FLUSH_GUI          (3 << 0)
 #       define R128_PC_RI_GUI             (1 << 2)
@@ -843,6 +855,9 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #define R128_PM4_BUFFER_DL_RPTR           0x0710
 #define R128_PM4_BUFFER_DL_WPTR           0x0714
 #       define R128_PM4_BUFFER_DL_DONE    (1 << 31)
+#define R128_PM4_BUFFER_DL_WPTR_DELAY     0x0718
+#	define R128_PRE_WRITE_TIMER_SHIFT      0
+#	define R128_PRE_WRITE_LIMIT_SHIFT     23
 #define R128_PM4_VC_FPU_SETUP             0x071c
 #       define R128_FRONT_DIR_CW          (0 <<  0)
 #       define R128_FRONT_DIR_CCW         (1 <<  0)
@@ -879,6 +894,10 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #       define R128_WM_SEL_8DW            (0 << 16)
 #       define R128_WM_SEL_16DW           (1 << 16)
 #       define R128_WM_SEL_32DW           (2 << 16)
+#define R128_PM4_VC_DEBUG_CONFIG          0x07a4
+#define R128_PM4_VC_STAT                  0x07a8
+#define R128_PM4_VC_TIMESTAMP0            0x07b0
+#define R128_PM4_VC_TIMESTAMP1            0x07b4
 #define R128_PM4_STAT                     0x07b8
 #       define R128_PM4_FIFOCNT_MASK      0x0fff
 #       define R128_PM4_BUSY              (1 << 16)
@@ -949,6 +968,7 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #       define R128_TEX_MAP_ALPHA_IN_TEXTURE      (1  << 30)
 #       define R128_TEX_CACHE_LINE_SIZE_8QW       (0  << 31)
 #       define R128_TEX_CACHE_LINE_SIZE_4QW       (1  << 31)
+#define R128_SCALE_3D_DATATYPE            0x1a20
 
 #define R128_SETUP_CNTL                   0x1bc4
 #       define R128_DONT_START_TRIANGLE   (1 <<  0)
@@ -1272,6 +1292,7 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #       define R128_STEN_MASK_SHIFT           16
 #       define R128_STEN_WRITE_MASK_SHIFT     24
 #define R128_PLANE_3D_MASK_C              0x1d44
+#define R128_TEX_CACHE_STAT_COUNT         0x1974
 
 
 				/* Constants */

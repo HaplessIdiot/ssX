@@ -1,4 +1,9 @@
 XFree86 4.0g (xx June 2000)
+ 383. Fix glXDestroyContext bug that caused Q3A to use old clip rect info
+      when opening a new window (Kevin Martin).
+ 382. Fix R128 3D driver clear problem which caused R128Pro cards to lock
+      up, and fix dword count on ring-based vertex buffer code for PCI
+      R128 cards (Gareth Hughes).
  381. Possible fix for a problem introduced with item 332 that resulted
       in the first screen's config file data being used for all screens
       (Mark Vojkovich, David Dawes).
@@ -10743,4 +10748,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1212 2000/06/24 18:59:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1213 2000/06/25 20:17:30 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.1 2000/06/17 00:03:07 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_state.c,v 1.2 2000/06/21 12:11:00 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -891,7 +891,6 @@ void r128DDInitState(r128ContextPtr r128ctx)
 	R128_DITHER_INIT_RESET          |
 	R128_SCALE_3D_TEXMAP_SHADE      |
 	R128_SCALE_PIX_REPLICATE        |
-     /* R128_TEX_CACHE_SPLIT            | */
 	R128_ALPHA_COMB_ADD_CLAMP       |
 	R128_FOG_TABLE                  |
 	R128_ALPHA_BLEND_SRC_ONE        |
@@ -915,7 +914,7 @@ void r128DDInitState(r128ContextPtr r128ctx)
 	R128_DP_SRC_SOURCE_MEMORY      |
 	R128_GMC_3D_FCN_EN             |
 	R128_GMC_CLR_CMP_CNTL_DIS      |
-	R128_AUX_CLIP_DIS              |
+	R128_GMC_AUX_CLIP_DIS          |
 	R128_GMC_WR_MSK_DIS;
 
     r128ctx->regs.sc_top_left_c     = 0x00000000;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.1 2000/06/17 00:03:08 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -739,7 +739,7 @@ static void r128UploadSubImage(r128ContextPtr r128ctx,
 	    R128_ROP3_S                    |
 	    R128_DP_SRC_SOURCE_HOST_DATA   |
 	    R128_GMC_CLR_CMP_CNTL_DIS      |
-	    R128_AUX_CLIP_DIS              |
+	    R128_GMC_AUX_CLIP_DIS          |
 	    R128_GMC_WR_MSK_DIS           );
 
     /* DST_OFFSET_PITCH - fixed at the moment until we get better ring

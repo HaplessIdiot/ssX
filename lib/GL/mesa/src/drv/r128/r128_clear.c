@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_clear.c,v 1.1 2000/06/17 00:03:04 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -93,12 +93,6 @@ void r128ClearDepthBuffer(r128ContextPtr r128ctx, GLboolean all,
     R128CCE0(R128_CCE_PACKET0, R128_DP_WRITE_MASK, 0);
     R128CCE(write_mask);
 
-    /* Temporarily disable Z and stencil buffer and texture mapping modes */
-    R128CCE0(R128_CCE_PACKET0, R128_TEX_CNTL_C, 0);
-    R128CCE(r128ctx->regs.tex_cntl_c & ~(R128_Z_ENABLE |
-					 R128_STENCIL_ENABLE |
-					 R128_TEXMAP_ENABLE));
-
     /* Cycle through the clip rects */
     while (nc--) {
 	int x = c[nc].x1;
@@ -124,35 +118,17 @@ void r128ClearDepthBuffer(r128ContextPtr r128ctx, GLboolean all,
 		| dst_bpp
 		| R128_GMC_SRC_DATATYPE_COLOR
 		| R128_ROP3_P
-		| R128_GMC_3D_FCN_EN            /* FIXME?? */
-		| R128_GMC_CLR_CMP_CNTL_DIS     /* FIXME?? */
-		| R128_AUX_CLIP_DIS             /* FIXME?? */
-		| R128_GMC_WR_MSK_DIS);         /* FIXME?? */
+		| R128_GMC_CLR_CMP_CNTL_DIS
+		| R128_GMC_AUX_CLIP_DIS);
 	R128CCE(r128ctx->ClearDepth);
 	R128CCE((x << 16) | y);
 	R128CCE((w << 16) | h);
     }
 
-#if 0
-    /* Set the write mask so that we _only_ clear the Z buffer */
-    R128CCE0(R128_CCE_PACKET0, R128_DP_WRITE_MASK, 0);
-    R128CCE(0xffffffff);
-
-    /* Restore Z and stencil buffer and texture mapping modes */
-    R128CCE0(R128_CCE_PACKET0, R128_TEX_CNTL_C, 0);
-    R128CCE(r128ctx->regs.tex_cntl_c);
-#else
-    /* FIXME: We should be able to optimize this by restoring only the
-       registers that change (above) */
-    /* NOTE: The restore of TEX_CNTL_C and R128_DP_WRITE_MASK is handled by
-    vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv             */
     r128ctx->dirty         |= R128_UPDATE_CONTEXT;
-/*      r128ctx->dirty_context |= R128_CTX_ALL_DIRTY; */
     r128ctx->dirty_context |= (R128_CTX_MISC        |
 			       R128_CTX_ENGINESTATE |
 			       R128_CTX_ALPHASTATE);
-
-#endif
 
     R128CCE_SUBMIT_PACKET();
 
@@ -204,12 +180,6 @@ void r128ClearColorBuffer(r128ContextPtr r128ctx, GLboolean all,
     c  = dPriv->pClipRects;
     nc = dPriv->numClipRects;
 
-    /* Temporarily disable Z and stencil buffer and texture mapping modes */
-    R128CCE0(R128_CCE_PACKET0, R128_TEX_CNTL_C, 0);
-    R128CCE(r128ctx->regs.tex_cntl_c & ~(R128_Z_ENABLE |
-					 R128_STENCIL_ENABLE |
-					 R128_TEXMAP_ENABLE));
-
     /* Cycle through the clip rects */
     while (nc--) {
 	int x = c[nc].x1;
@@ -235,29 +205,17 @@ void r128ClearColorBuffer(r128ContextPtr r128ctx, GLboolean all,
 		| dst_bpp
 		| R128_GMC_SRC_DATATYPE_COLOR
 		| R128_ROP3_P
-		| R128_GMC_3D_FCN_EN            /* FIXME?? */
-		| R128_GMC_CLR_CMP_CNTL_DIS     /* FIXME?? */
-		| R128_AUX_CLIP_DIS);           /* FIXME?? */
+		| R128_GMC_CLR_CMP_CNTL_DIS
+		| R128_GMC_AUX_CLIP_DIS);
 	R128CCE(r128ctx->ClearColor);
 	R128CCE((x << 16) | y);
 	R128CCE((w << 16) | h);
     }
 
-#if 0
-    /* Restore Z and stencil buffer and texture mapping modes */
-    R128CCE0(R128_CCE_PACKET0, R128_TEX_CNTL_C, 0);
-    R128CCE(r128ctx->regs.tex_cntl_c);
-#else
-    /* FIXME: We should be able to optimize this by restoring only the
-       registers that change (above) */
-    /* NOTE: The restore of TEX_CNTL_C is handled by
-    vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv             */
     r128ctx->dirty         |= R128_UPDATE_CONTEXT;
-/*      r128ctx->dirty_context |= R128_CTX_ALL_DIRTY; */
     r128ctx->dirty_context |= (R128_CTX_MISC        |
 			       R128_CTX_ENGINESTATE |
 			       R128_CTX_ALPHASTATE);
-#endif
 
     R128CCE_SUBMIT_PACKET();
 

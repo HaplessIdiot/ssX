@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.11 2000/06/17 00:03:22 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.12 2000/06/25 16:03:44 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -160,7 +160,7 @@ void R128EngineReset(ScrnInfoPtr pScrn)
     clock_cntl_index = INREG(R128_CLOCK_CNTL_INDEX);
     mclk_cntl        = INPLL(pScrn, R128_MCLK_CNTL);
 
-    OUTPLL(R128_MCLK_CNTL, mclk_cntl | R128_FORCE_GCP | R128_FORCE_PIPE3D_CPP);
+    OUTPLL(R128_MCLK_CNTL, mclk_cntl | R128_FORCE_GCP | R128_FORCE_PIPE3D_CP);
 
     gen_reset_cntl   = INREG(R128_GEN_RESET_CNTL);
 
@@ -969,7 +969,7 @@ void R128EngineInit(ScrnInfoPtr pScrn)
 
     info->dp_gui_master_cntl = ((info->datatype << R128_GMC_DST_DATATYPE_SHIFT)
 				| R128_GMC_CLR_CMP_CNTL_DIS
-				| R128_AUX_CLIP_DIS
+				| R128_GMC_AUX_CLIP_DIS
 				| R128_GMC_DST_CLIPPING);
     R128WaitForFifo(pScrn, 1);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
