@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.26 2003/08/16 19:26:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.27 2003/10/29 10:57:47 alanh Exp $ */
 
 #ifndef _XF86DRM_H_
 #define _XF86DRM_H_
@@ -281,6 +281,12 @@ typedef union _drmVBlank {
 	drmVBlankReply reply;
 } drmVBlank, *drmVBlankPtr;
 
+typedef struct _drmSetVersion {
+	int drm_di_major;
+	int drm_di_minor;
+	int drm_dd_major;
+	int drm_dd_minor;
+} drmSetVersion, *drmSetVersionPtr;
 
 
 #define __drm_dummy_lock(lock) (*(__volatile__ unsigned int *)lock)
@@ -505,6 +511,7 @@ extern int           drmGetClient(int fd, int idx, int *auth, int *pid,
 				  int *uid, unsigned long *magic,
 				  unsigned long *iocs);
 extern int           drmGetStats(int fd, drmStatsT *stats);
+extern int           drmSetInterfaceVersion(int fd, drmSetVersion *version);
 extern int           drmCommandNone(int fd, unsigned long drmCommandIndex);
 extern int           drmCommandRead(int fd, unsigned long drmCommandIndex,
                                     void *data, unsigned long size);
