@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_state.c,v 1.6 2003/01/28 22:47:06 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_state.c,v 1.1.1.1tsi Exp $ */
 
 /*
  * Author:
@@ -59,6 +59,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "swrast_setup/swrast_setup.h"
 
 #include "tnl/t_pipeline.h"
+
+#ifndef IEEE_ONE
+static const float floatone = 1.0;
+#define IEEE_ONE (*((const GLuint *)(&floatone)))
+#endif
 
 static __inline__ GLuint i830PackColor(GLuint format, 
 				       GLubyte r, GLubyte g, 
