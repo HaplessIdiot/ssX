@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/x86emu/Imakefile,v 1.4 2004/03/18 07:07:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/x86emu/Imakefile,v 1.5 2004/06/01 00:17:06 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -71,7 +71,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/int10 \
            -I$(XF86OSSRC) \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(X86EMUINCLUDES)
 
-DEFINES=-DHAVE_SYSV_IPC $(X86EMUDEFINES) $(EXTRADEFINES)
+DEFINES = $(X86EMUDEFINES) $(EXTRADEFINES)
 
 #if defined(i386Architecture) || defined (AMD64Architecture)
 EXTRADEFINES=-D_PC
@@ -80,7 +80,7 @@ EXTRADEFINES=-D_PC
 SpecialObjectRule(xf86x86emumodule.o, xf86x86emumodule.c, -DMOD_NAME=x86emu)
 SpecialObjectRule(helper_exec.o, helper_exec.c, -D_X86EMU)
 SpecialObjectRule(xf86int10.o, xf86int10.c, -D_X86EMU -DSHOW_ALL_DEVICES)
-SpecialObjectRule(linux.o, linux.c, -D_X86EMU -DHAVE_SYSV_IPC)
+SpecialObjectRule(linux.o, linux.c, -D_X86EMU)
 
 X86TOPDIR = $(TOP)/extras/x86emu
 X86SRCDIR = $(X86TOPDIR)/src/x86emu

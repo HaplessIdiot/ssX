@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.56tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.57 2004/08/04 16:33:36 tsi Exp $ */
 /*
  * Copyright 1997-2004 by The XFree86 Project, Inc
  * All rights reserved.
@@ -70,6 +70,22 @@
 #  endif
 # endif /* __OS2ELF__ */
 #endif /* IN_MODULE */
+
+#ifndef HAVE_SYSV_IPC
+#define HAVE_SYSV_IPC 1
+#endif
+
+#ifndef HAVE_MMAP
+#ifdef __UNIXOS2__
+#define HAVE_MMAP 0
+#endif
+#ifdef HAS_SVR3_MMAPDRV
+#define HAVE_MMAP 0
+#endif
+#ifndef HAVE_MMAP
+#define HAVE_MMAP 1
+#endif
+#endif
 
 /*
  * The first set of definitions are required both for modules and
@@ -349,9 +365,15 @@ extern void xf86longjmp(xf86jmp_buf env, int val);
 #include <errno.h>
 #include <fcntl.h>
 #include <ctype.h>
-#ifdef HAVE_SYSV_IPC
+#if HAVE_SYSV_IPC
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#endif
+#if HAVE_MMAP
+#include <sys/mman.h>
+#ifndef MAP_FAILED
+#define MAP_FAILED ((caddr_t)-1)
+#endif
 #endif
 #include <sys/stat.h>
 #define stat_t struct stat

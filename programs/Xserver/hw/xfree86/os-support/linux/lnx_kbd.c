@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.7 2004/04/11 20:33:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.8 2004/06/01 00:17:06 dawes Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -70,6 +70,16 @@
 #include "lnx_kbd.h"
 
 #define KBC_TIMEOUT 250        /* Timeout in ms for sending to keyboard controller */
+
+#ifndef KBD_DIRECTHW
+#define KBD_DIRECTHW 0
+#endif
+
+#if !(defined(__alpha__) || defined (__i386__) || defined(__ia64__))
+#undef KBD_DIRECTHW
+#define KBD_DIRECTHW 0
+#endif
+
 
 static KbdProtocolRec protocols[] = {
    {"standard", PROT_STD },
@@ -228,8 +238,7 @@ SetKbdRepeat(InputInfoPtr pInfo, char rad)
   int         rate  = 300;     /* Default rate */
   int         delay = 250;     /* Default delay */
 
-# if defined(__alpha__) || defined (__i386__) || defined(__ia64__)
-
+# if KBD_DIRECTHW
   int i;
   int timeout;
   int         value = 0x7f;    /* Maximum delay with slowest rate */
@@ -258,7 +267,7 @@ SetKbdRepeat(InputInfoPtr pInfo, char rad)
   if(KIOCSRATE_ioctl_ok(rate, delay))	/* sparc? */
     return;
 
-#if defined(__alpha__) || defined (__i386__) || defined(__ia64__)
+#if KBD_DIRECTHW
 
   if (xf86IsPc98())
     return;
@@ -293,7 +302,7 @@ SetKbdRepeat(InputInfoPtr pInfo, char rad)
   usleep(10000);
   outb(0x60, value);
 
-#endif /* __alpha__ || __i386__ || __ia64__ */
+#endif /* KBD_DIRECTHW */
 }
 
 typedef struct {
