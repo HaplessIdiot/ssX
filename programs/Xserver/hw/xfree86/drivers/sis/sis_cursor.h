@@ -36,7 +36,7 @@
  *
  */
 
-#define CS(x)   (0x8500+(x<<2))
+#define CS(x)   (0x8500 + (x << 2))
 
 /* 300 series, CRT1 */
 
@@ -122,17 +122,8 @@
   { \
   unsigned long temp; \
   temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0xFFFF0000; \
+  temp &= 0xF0FF0000; \
   temp |= address; \
-  MMIO_OUT32(pSiS->IOBase,CS(0),temp); \
-  }
-
-#define sis300SetCursorPatternSelect(pat_id)\
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0xF0FFFFFF; \
-  temp |= (pat_id) << 24; \
   MMIO_OUT32(pSiS->IOBase,CS(0),temp); \
   }
 
@@ -220,17 +211,8 @@
   { \
   unsigned long temp; \
   temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xFFFF0000; \
+  temp &= 0xF0FF0000; \
   temp |= address; \
-  MMIO_OUT32(pSiS->IOBase,CS(8),temp); \
-  }
-
-#define sis301SetCursorPatternSelect(pat_id)\
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xF0FFFFFF; \
-  temp |= (pat_id) << 24; \
   MMIO_OUT32(pSiS->IOBase,CS(8),temp); \
   }
 
@@ -246,86 +228,69 @@
   MMIO_IN32(pSiS->IOBase, CS(0)) & 0x40000000;
   
 #define sis310SetCursorStatus(status) \
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0xbfffffff; \
-  temp |= status; \
-  MMIO_OUT32(pSiS->IOBase, CS(0), temp); \
-  }
+  pSiS->HWCursorBackup[0] &= 0xbfffffff; \
+  pSiS->HWCursorBackup[0] |= status; \
+  MMIO_OUT32(pSiS->IOBase, CS(0), pSiS->HWCursorBackup[0]); \
+  MMIO_OUT32(pSiS->IOBase, CS(3), pSiS->HWCursorBackup[3]); \
+  MMIO_OUT32(pSiS->IOBase, CS(4), pSiS->HWCursorBackup[4]);
 
 #define sis310EnableHWCursor()\
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0x0fffffff; \
-  temp |= 0x40000000; \
-  MMIO_OUT32(pSiS->IOBase, CS(0), temp); \
-  }
+  pSiS->HWCursorBackup[0] &= 0x0fffffff; \
+  pSiS->HWCursorBackup[0] |= 0x40000000; \
+  MMIO_OUT32(pSiS->IOBase, CS(0), pSiS->HWCursorBackup[0]); \
+  MMIO_OUT32(pSiS->IOBase, CS(3), pSiS->HWCursorBackup[3]); \
+  MMIO_OUT32(pSiS->IOBase, CS(4), pSiS->HWCursorBackup[4]);
   
 #define sis310EnableHWARGBCursor()\
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0x0FFFFFFF; \
-  temp |= 0xE0000000; \
-  MMIO_OUT32(pSiS->IOBase, CS(0), temp); \
-  }
+  pSiS->HWCursorBackup[0] &= 0x0FFFFFFF; \
+  pSiS->HWCursorBackup[0] |= 0xE0000000; \
+  MMIO_OUT32(pSiS->IOBase, CS(0), pSiS->HWCursorBackup[0]); \
+  MMIO_OUT32(pSiS->IOBase, CS(3), pSiS->HWCursorBackup[3]); \
+  MMIO_OUT32(pSiS->IOBase, CS(4), pSiS->HWCursorBackup[4]);
 
 #define sis310SwitchToMONOCursor() \
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0x4fffffff; \
-  MMIO_OUT32(pSiS->IOBase, CS(0), temp); \
-  }
-  
+  pSiS->HWCursorBackup[0] &= 0x4fffffff; \
+  MMIO_OUT32(pSiS->IOBase, CS(0), pSiS->HWCursorBackup[0]); \
+  MMIO_OUT32(pSiS->IOBase, CS(3), pSiS->HWCursorBackup[3]); \
+  MMIO_OUT32(pSiS->IOBase, CS(4), pSiS->HWCursorBackup[4]);
+
 #define sis310SwitchToRGBCursor() \
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0xBFFFFFFF; \
-  temp |= 0xA0000000; \
-  MMIO_OUT32(pSiS->IOBase, CS(0), temp); \
-  }
-  
+  pSiS->HWCursorBackup[0] &= 0xBFFFFFFF; \
+  pSiS->HWCursorBackup[0] |= 0xA0000000; \
+  MMIO_OUT32(pSiS->IOBase, CS(0), pSiS->HWCursorBackup[0]); \
+  MMIO_OUT32(pSiS->IOBase, CS(3), pSiS->HWCursorBackup[3]); \
+  MMIO_OUT32(pSiS->IOBase, CS(4), pSiS->HWCursorBackup[4]);
+
 #define sis310DisableHWCursor()\
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0xBFFFFFFF; \
-  MMIO_OUT32(pSiS->IOBase, CS(0), temp); \
-  }
+  pSiS->HWCursorBackup[0] &= 0xBFFFFFFF; \
+  MMIO_OUT32(pSiS->IOBase, CS(0), pSiS->HWCursorBackup[0]); \
+  MMIO_OUT32(pSiS->IOBase, CS(3), pSiS->HWCursorBackup[3]); \
+  MMIO_OUT32(pSiS->IOBase, CS(4), pSiS->HWCursorBackup[4]);
   
 #define sis310SetCursorBGColor(color) \
-  MMIO_OUT32(pSiS->IOBase, CS(1), (color));
+  MMIO_OUT32(pSiS->IOBase, CS(1), (color)); \
+  pSiS->HWCursorBackup[1] = color;
 
 #define sis310SetCursorFGColor(color)\
-  MMIO_OUT32(pSiS->IOBase, CS(2), (color));
+  MMIO_OUT32(pSiS->IOBase, CS(2), (color)); \
+  pSiS->HWCursorBackup[2] = color;
 
-#define sis310SetCursorPositionX(x,preset)\
-  MMIO_OUT32(pSiS->IOBase, CS(3), ((x) | ((preset) << 16)));
+#define sis310SetCursorPositionX(x,preset) \
+  pSiS->HWCursorBackup[3] = ((x) | ((preset) << 16)); \
+  MMIO_OUT32(pSiS->IOBase, CS(3), pSiS->HWCursorBackup[3]);
 
-#define sis310SetCursorPositionY(y,preset)\
-  MMIO_OUT32(pSiS->IOBase, CS(4), ((y) | ((preset) << 16)));
+#define sis310SetCursorPositionY(y,preset) \
+  pSiS->HWCursorBackup[4] = ((y) | ((preset) << 16)); \
+  MMIO_OUT32(pSiS->IOBase, CS(4), pSiS->HWCursorBackup[4]);
 
 #define sis310SetCursorAddress(address)\
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0xFFF00000; \
-  temp |= address; \
-  MMIO_OUT32(pSiS->IOBase,CS(0),temp); \
-  }
-
-#define sis310SetCursorPatternSelect(pat_id)\
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(0)); \
-  temp &= 0xF0FFFFFF; \
-  temp |= (pat_id) << 24; \
-  MMIO_OUT32(pSiS->IOBase,CS(0),temp); \
-  }
+  pSiS->HWCursorBackup[0] &= 0xF0F00000; \
+  pSiS->HWCursorBackup[0] |= address; \
+  MMIO_OUT32(pSiS->IOBase, CS(0), pSiS->HWCursorBackup[0]); \
+  MMIO_OUT32(pSiS->IOBase, CS(1), pSiS->HWCursorBackup[1]); \
+  MMIO_OUT32(pSiS->IOBase, CS(2), pSiS->HWCursorBackup[2]); \
+  MMIO_OUT32(pSiS->IOBase, CS(3), pSiS->HWCursorBackup[3]); \
+  MMIO_OUT32(pSiS->IOBase, CS(4), pSiS->HWCursorBackup[4]);
 
 /* 315 series CRT2 */
 
@@ -339,78 +304,62 @@
   MMIO_IN32(pSiS->IOBase, CS(8)) & 0x40000000;
 
 #define sis301SetCursorStatus310(status) \
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xbfffffff; \
-  temp |= status; \
-  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-  }
+  pSiS->HWCursorBackup[8] &= 0xbfffffff; \
+  pSiS->HWCursorBackup[8] |= status; \
+  MMIO_OUT32(pSiS->IOBase, CS(8),  pSiS->HWCursorBackup[8]); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), pSiS->HWCursorBackup[11]); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), pSiS->HWCursorBackup[12]);
 
 #define sis301EnableHWCursor310()\
-  { \
-  unsigned long temp, temp1, temp2; \
-  temp1 = MMIO_IN32(pSiS->IOBase, CS(11)); \
-  temp2 = MMIO_IN32(pSiS->IOBase, CS(12)); \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0x0fffffff; \
-  temp |= 0x40000000; \
-  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-  MMIO_OUT32(pSiS->IOBase, CS(11), temp1); \
-  MMIO_OUT32(pSiS->IOBase, CS(12), temp2); \
-  }
+  pSiS->HWCursorBackup[8] &= 0x0fffffff; \
+  pSiS->HWCursorBackup[8] |= 0x40000000; \
+  MMIO_OUT32(pSiS->IOBase, CS(8),  pSiS->HWCursorBackup[8]); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), pSiS->HWCursorBackup[11]); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), pSiS->HWCursorBackup[12]);
 
 #define sis301EnableHWARGBCursor310()\
-  { \
-  unsigned long temp, temp1, temp2; \
-  temp1 = MMIO_IN32(pSiS->IOBase, CS(11)); \
-  temp2 = MMIO_IN32(pSiS->IOBase, CS(12)); \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0x0FFFFFFF; \
-  temp |= 0xE0000000; \
-  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-  MMIO_OUT32(pSiS->IOBase, CS(11), temp1); \
-  MMIO_OUT32(pSiS->IOBase, CS(12), temp2); \
-  }
+  pSiS->HWCursorBackup[8] &= 0x0FFFFFFF; \
+  pSiS->HWCursorBackup[8] |= 0xE0000000; \
+  MMIO_OUT32(pSiS->IOBase, CS(8),  pSiS->HWCursorBackup[8]); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), pSiS->HWCursorBackup[11]); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), pSiS->HWCursorBackup[12]);
 
 #define sis301SwitchToRGBCursor310() \
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xBFFFFFFF; \
-  temp |= 0xA0000000; \
-  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-  }
+  pSiS->HWCursorBackup[8] &= 0xBFFFFFFF; \
+  pSiS->HWCursorBackup[8] |= 0xA0000000; \
+  MMIO_OUT32(pSiS->IOBase, CS(8),  pSiS->HWCursorBackup[8]); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), pSiS->HWCursorBackup[11]); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), pSiS->HWCursorBackup[12]);
 
 #define sis301SwitchToMONOCursor310() \
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0x4fffffff; \
-  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-  }
+  pSiS->HWCursorBackup[8] &= 0x4fffffff; \
+  MMIO_OUT32(pSiS->IOBase, CS(8),  pSiS->HWCursorBackup[8]); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), pSiS->HWCursorBackup[11]); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), pSiS->HWCursorBackup[12]);
 
 #define sis301DisableHWCursor310()\
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xBFFFFFFF; \
-  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-  }
+  pSiS->HWCursorBackup[8] &= 0xBFFFFFFF; \
+  MMIO_OUT32(pSiS->IOBase, CS(8),  pSiS->HWCursorBackup[8]); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), pSiS->HWCursorBackup[11]); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), pSiS->HWCursorBackup[12]);
 
-#define sis301SetCursorBGColor310(color)\
-  MMIO_OUT32(pSiS->IOBase, CS(9), (color));
-#define sis301SetCursorFGColor310(color)\
-  MMIO_OUT32(pSiS->IOBase, CS(10), (color));
+#define sis301SetCursorBGColor310(color) \
+  MMIO_OUT32(pSiS->IOBase, CS(9), (color)); \
+  pSiS->HWCursorBackup[9] = color;
 
-#define sis301SetCursorPositionX310(x,preset)\
-  MMIO_OUT32(pSiS->IOBase, CS(11), ((x) | ((preset) << 16)));
-#define sis301SetCursorPositionY310(y,preset)\
-  MMIO_OUT32(pSiS->IOBase, CS(12), ((y) | ((preset) << 16)));
+#define sis301SetCursorFGColor310(color) \
+  MMIO_OUT32(pSiS->IOBase, CS(10), (color)); \
+  pSiS->HWCursorBackup[10] = color;
 
-#define sis301SetCursorAddress310(address)\
-  { \
-  unsigned long temp; \
+#define sis301SetCursorPositionX310(x,preset) \
+  pSiS->HWCursorBackup[11] = ((x) | ((preset) << 16)); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), pSiS->HWCursorBackup[11]);
+
+#define sis301SetCursorPositionY310(y,preset) \
+  pSiS->HWCursorBackup[12] = ((y) | ((preset) << 16)); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), pSiS->HWCursorBackup[12]);
+
+#define sis301SetCursorAddress310(address) \
   if(pSiS->sishw_ext.jChipType == SIS_315H) { \
      if(address & 0x10000) { \
         address &= ~0x10000; \
@@ -419,25 +368,18 @@
         andSISIDXREG(SISSR, 0x37, 0x7f); \
      } \
   } \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xFFF00000; \
-  temp |= address; \
-  MMIO_OUT32(pSiS->IOBase,CS(8),temp); \
-  }
-
-#define sis301SetCursorPatternSelect310(pat_id)\
-  { \
-  unsigned long temp; \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xF0FFFFFF; \
-  temp |= (pat_id) << 24; \
-  MMIO_OUT32(pSiS->IOBase,CS(8),temp); \
-  }
+  pSiS->HWCursorBackup[8] &= 0xF0F00000; \
+  pSiS->HWCursorBackup[8] |= address; \
+  MMIO_OUT32(pSiS->IOBase, CS(8),  pSiS->HWCursorBackup[8]);  \
+  MMIO_OUT32(pSiS->IOBase, CS(9),  pSiS->HWCursorBackup[9]);  \
+  MMIO_OUT32(pSiS->IOBase, CS(10), pSiS->HWCursorBackup[10]); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), pSiS->HWCursorBackup[11]); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), pSiS->HWCursorBackup[12]);
 
 /* 330 series CRT2 */
 
 /* Mono cursor engine for CRT2 on SiS330 (Xabre) has bugs
- * and cannot be used!
+ * and cannot be used! Will hang engine.
  */
 
 /* 80000000 = RGB(1) - MONO(0)
@@ -446,65 +388,14 @@
  * 10000000 = "ghost"(1) - Alpha Blend(0)  ?
  */
 
-#define sis301EnableHWCursor330()\
-  { \
-  unsigned long temp, temp1, temp2; \
-  andSISIDXREG(SISCR,0x5b,~0x10); \
-  temp1 = MMIO_IN32(pSiS->IOBase, CS(11)); \
-  temp2 = MMIO_IN32(pSiS->IOBase, CS(12)); \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0x0fffffff; \
-  temp |= 0xE0000000; \
-  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-  MMIO_OUT32(pSiS->IOBase, CS(11), temp1); \
-  MMIO_OUT32(pSiS->IOBase, CS(12), temp2); \
-  orSISIDXREG(SISCR,0x5b,0x10); \
-  }
+#define sis301EnableHWCursor330() \
+  /* andSISIDXREG(SISCR,0x5b,~0x10); */ \
+  pSiS->HWCursorBackup[8] &= 0x0fffffff; \
+  pSiS->HWCursorBackup[8] |= 0xE0000000; \
+  MMIO_OUT32(pSiS->IOBase, CS(8),  pSiS->HWCursorBackup[8]); \
+  MMIO_OUT32(pSiS->IOBase, CS(11), pSiS->HWCursorBackup[11]); \
+  MMIO_OUT32(pSiS->IOBase, CS(12), pSiS->HWCursorBackup[12]); \
+  /* orSISIDXREG(SISCR,0x5b,0x10); */
 
-#define sis301DisableHWCursor330()\
-  { \
-  unsigned long temp; \
-  andSISIDXREG(SISCR,0x5b,~0x10); \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xBFFFFFFF; \
-  MMIO_OUT32(pSiS->IOBase, CS(8), temp); \
-  orSISIDXREG(SISCR,0x5b,0x10); \
-  }
-
-#define sis301SetCursorPositionX330(x,preset)\
-  andSISIDXREG(SISCR,0x5b,~0x10); \
-  MMIO_OUT32(pSiS->IOBase, CS(11), ((x) | ((preset) << 16))); \
-  orSISIDXREG(SISCR,0x5b,0x10);
-
-#define sis301SetCursorPositionY330(y,preset)\
-  andSISIDXREG(SISCR,0x5b,~0x10); \
-  MMIO_OUT32(pSiS->IOBase, CS(12), ((y) | ((preset) << 16))); \
-  orSISIDXREG(SISCR,0x5b,0x10); \
-
-#define sis301SetCursorAddress330(address)\
-  { \
-  unsigned long temp, temp1, temp2; \
-  temp1 = MMIO_IN32(pSiS->IOBase, CS(11)); \
-  temp2 = MMIO_IN32(pSiS->IOBase, CS(12)); \
-  andSISIDXREG(SISCR,0x5b,~0x10); \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xFFF00000; \
-  temp |= address; \
-  MMIO_OUT32(pSiS->IOBase,CS(8),temp); \
-  MMIO_OUT32(pSiS->IOBase, CS(11), temp1); \
-  MMIO_OUT32(pSiS->IOBase, CS(12), temp2); \
-  orSISIDXREG(SISCR,0x5b,0x10); \
-  }
-
-#define sis301SetCursorPatternSelect330(pat_id)\
-  { \
-  unsigned long temp; \
-  andSISIDXREG(SISCR,0x5b,~0x10); \
-  temp = MMIO_IN32(pSiS->IOBase, CS(8)); \
-  temp &= 0xF0FFFFFF; \
-  temp |= (pat_id) << 24; \
-  MMIO_OUT32(pSiS->IOBase,CS(8),temp); \
-  orSISIDXREG(SISCR,0x5b,0x10); \
-  }
 
 

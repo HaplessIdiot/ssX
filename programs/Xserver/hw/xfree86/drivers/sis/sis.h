@@ -42,7 +42,7 @@
 
 #define SISDRIVERVERSIONYEAR    4
 #define SISDRIVERVERSIONMONTH   1
-#define SISDRIVERVERSIONDAY     4
+#define SISDRIVERVERSIONDAY     7
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -550,6 +550,7 @@ typedef struct {
     unsigned char *	FbBase1;
     unsigned long	OnScreenSize1;
     unsigned char       OldMode;
+    int			HWCursorMBufNum, HWCursorCBufNum;
 #ifdef SIS_CP
     SIS_CP_H_ENT
 #endif
@@ -627,7 +628,7 @@ typedef struct {
     Bool		CRT1changed;
     unsigned char       oldCR17, oldCR63, oldSR1F;
     unsigned char       oldCR32, oldCR36, oldCR37;
-    unsigned char       myCR32, myCR36, myCR37;
+    unsigned char       myCR32, myCR36, myCR37, myCR63;
     unsigned char       newCR32;
     unsigned long   	VBFlags;		/* Video bridge configuration */
     unsigned long       VBFlags_backup;         /* Backup for SlaveMode-modes */
@@ -915,6 +916,8 @@ typedef struct {
     int			GammaPBriR, GammaPBriG, GammaPBriB;
     Bool		HideHWCursor;  /* Custom application */
     Bool		HWCursorIsVisible;
+    unsigned long       HWCursorBackup[16];
+    int			HWCursorMBufNum, HWCursorCBufNum;
 #ifdef SISMERGED
     Bool		MergedFB, MergedFBAuto;
     SiSScrn2Rel		CRT2Position;

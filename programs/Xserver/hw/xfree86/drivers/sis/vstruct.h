@@ -301,6 +301,7 @@ typedef struct _SiS_Private
 	BOOLEAN OverruleEMI;
 	UCHAR  EMI_30,EMI_31,EMI_32,EMI_33;
 	UCHAR  PDC;
+	UCHAR  SiS_MyCR63;
 	USHORT SiS_CRT1Mode;
 	USHORT SiS_flag_clearbuffer;
 	int    SiS_RAMType;
@@ -339,11 +340,13 @@ typedef struct _SiS_Private
 	USHORT SiS_DDC_Port;
 	USHORT SiS_DDC_Index;
 	USHORT SiS_DDC_Data;
+	USHORT SiS_DDC_NData;
 	USHORT SiS_DDC_Clk;
-	USHORT SiS_DDC_DataShift;
+	USHORT SiS_DDC_NClk;
 	USHORT SiS_DDC_DeviceAddr;
 	USHORT SiS_DDC_ReadAddr;
 	USHORT SiS_DDC_SecAddr;
+	BOOLEAN SiS_SensibleSR11;
 	USHORT SiS_Panel800x600;
 	USHORT SiS_Panel1024x768;
 	USHORT SiS_Panel1280x1024;

@@ -850,7 +850,7 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     if(pSiS->sishw_ext.jChipType < SIS_661) {
        outSISIDXREG(SISCR, 0x79, sisReg->sisRegs3D4[0x79]);
     }
-    outSISIDXREG(SISCR, 0x63, sisReg->sisRegs3D4[0x63]);
+    outSISIDXREG(SISCR, pSiS->myCR63, sisReg->sisRegs3D4[pSiS->myCR63]);
 
     /* Leave PCI_IO_ENABLE on if accelerators are on (Is this required?) */
     if(sisReg->sisRegs3C4[0x1e] & 0x50) {  /*0x40=2D, 0x10=3D*/
@@ -859,6 +859,9 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     }
 
     /* Restore extended SR registers */
+    if(pSiS->sishw_ext.jChipType >= SIS_661) {
+       sisReg->sisRegs3C4[0x11] &= 0x0f;
+    }
     for(i = 0x06; i <= 0x3F; i++) {
        outSISIDXREG(SISSR, i, sisReg->sisRegs3C4[i]);
     }
@@ -1263,7 +1266,7 @@ SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg)
    }
 
    if(pSiS->VGAEngine == SIS_315_VGA) {
-      outSISIDXREG(SISCR, 0x63, sisReg->sisRegs3D4[0x63]);
+      outSISIDXREG(SISCR, pSiS->myCR63, sisReg->sisRegs3D4[pSiS->myCR63]);
       if(pSiS->sishw_ext.jChipType < SIS_661) {
          outSISIDXREG(SISCR, 0x79, sisReg->sisRegs3D4[0x79]);
       }
