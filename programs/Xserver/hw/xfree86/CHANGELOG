@@ -1,4 +1,6 @@
 XFree86 3.0Ec (19 September 1994)
+316. Fixes for Ti3025 support -- fixes problem with machine lockups, and
+     adds preliminary 16bpp support (Robin Cutshaw).
 315. No longer allow 'Device' in the Keyboard section.  Must now use
      'Protocol'.
 314. Updates to Cirrus BitBLT and fix for tile fill bug (Harm Hanemaayer).
