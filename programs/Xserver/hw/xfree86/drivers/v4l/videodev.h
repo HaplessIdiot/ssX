@@ -7,7 +7,7 @@
  * Used here with the explicit permission of the original author, Alan Cox.
  *				<alan@lxorguk.ukuu.org.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/videodev.h,v 1.5 1999/05/03 14:33:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/videodev.h,v 1.6 1999/05/15 06:24:57 dawes Exp $ */
 
 #include <Xmd.h>
 
@@ -53,7 +53,7 @@ struct video_tuner
 {
 	int tuner;
 	char name[32];
-	ulong rangelow, rangehigh;	/* Tuner range */
+	unsigned long rangelow, rangehigh;	/* Tuner range */
 	CARD32 flags;
 #define VIDEO_TUNER_PAL		1
 #define VIDEO_TUNER_NTSC	2
