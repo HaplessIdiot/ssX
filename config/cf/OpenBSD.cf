@@ -1,7 +1,7 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.109 2004/07/17 17:23:59 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.110 2004/07/17 17:27:34 herrb Exp $
 XCOMM
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -233,9 +233,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #endif
 
-#define GccGasOption 		-DGCCUSESGAS
-#define AsmDefines 		-DUSE_GAS
-
 /* UseElfFormat defaults to YES if __ELF__ set */
 #ifndef UseElfFormat
 # ifdef __ELF__
@@ -244,6 +241,13 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # else
 #  define UseElfFormat NO
 # endif
+#endif
+
+#define GccGasOption 		-DGCCUSESGAS
+#if UseElfFormat
+#define AsmDefines 		-DUSE_GAS
+#else
+#define AsmDefines 		-DUSE_GAS -D__AOUT__
 #endif
 
 /*
