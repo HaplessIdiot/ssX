@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmI810.c,v 1.3 2000/08/24 22:20:17 tsi Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -70,8 +70,8 @@ Bool drmI810InitDma(int driSubFD, drmI810Init *info)
    memset(&init, 0, sizeof(drm_i810_init_t));
 
    init.func = I810_INIT_DMA;
-   init.ring_map_idx = info->ring_map_idx;
-   init.buffer_map_idx = info->buffer_map_idx;
+   init.mmio_offset = info->mmio_offset;
+   init.buffers_offset = info->buffers_offset;
    init.ring_start = info->start;
    init.ring_end = info->end;
    init.ring_size = info->size;

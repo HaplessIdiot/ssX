@@ -27,7 +27,7 @@
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmRadeon.h,v 1.1 2001/01/08 01:07:37 martin Exp $
+ * $XFree86$
  *
  */
 
@@ -43,26 +43,34 @@
 #define DRM_RADEON_DEPTH	0x4
 
 typedef struct {
-    int sarea_priv_offset;
-    int is_pci;
-    int cp_mode;
-    int agp_size;
-    int ring_size;
-    int usec_timeout;
+   int sarea_priv_offset;
+   int is_pci;
+   int cp_mode;
+   int agp_size;
+   int ring_size;
+   int usec_timeout;
 
-    unsigned int fb_bpp;
-    unsigned int front_offset, front_pitch;
-    unsigned int back_offset, back_pitch;
-    unsigned int depth_bpp;
-    unsigned int depth_offset, depth_pitch;
+   unsigned int fb_bpp;
+   unsigned int front_offset, front_pitch;
+   unsigned int back_offset, back_pitch;
+   unsigned int depth_bpp;
+   unsigned int depth_offset, depth_pitch;
 
-    unsigned int fb_offset;
-    unsigned int mmio_offset;
-    unsigned int ring_offset;
-    unsigned int ring_rptr_offset;
-    unsigned int buffers_offset;
-    unsigned int agp_textures_offset;
+   unsigned int fb_offset;
+   unsigned int mmio_offset;
+   unsigned int ring_offset;
+   unsigned int ring_rptr_offset;
+   unsigned int buffers_offset;
+   unsigned int agp_textures_offset;
 } drmRadeonInit;
+
+typedef struct {
+   unsigned int x;
+   unsigned int y;
+   unsigned int width;
+   unsigned int height;
+   void *data;
+} drmRadeonTexImage;
 
 extern int drmRadeonInitCP( int fd, drmRadeonInit *info );
 extern int drmRadeonCleanupCP( int fd );
@@ -78,22 +86,22 @@ extern int drmRadeonFullScreen( int fd, int enable );
 
 extern int drmRadeonSwapBuffers( int fd );
 extern int drmRadeonClear( int fd, unsigned int flags,
-			   int x, int y, int w, int h,
-			   unsigned int clear_color,
-			   unsigned int clear_depth );
+			   unsigned int clear_color, unsigned int clear_depth,
+			   unsigned int color_mask, unsigned int depth_mask,
+			   void *boxes, int nbox );
 
-extern int drmRadeonFlushVertexBuffer( int fd, int prim, int indx,
+extern int drmRadeonFlushVertexBuffer( int fd, int prim, int index,
 				       int count, int discard );
-extern int drmRadeonFlushIndices( int fd, int prim, int indx,
+extern int drmRadeonFlushIndices( int fd, int prim, int index,
 				  int start, int end, int discard );
 
-extern int drmRadeonTextureBlit( int fd, int indx,
-				 int offset, int pitch, int format,
-				 int x, int y, int width, int height );
+extern int drmRadeonLoadTexture( int fd, int offset, int pitch, int format,
+				 int width, int height,
+				 drmRadeonTexImage *image );
 
 extern int drmRadeonPolygonStipple( int fd, unsigned int *mask );
 
-extern int drmRadeonFlushIndirectBuffer( int fd, int indx,
+extern int drmRadeonFlushIndirectBuffer( int fd, int index,
 					 int start, int end, int discard );
 
 #endif

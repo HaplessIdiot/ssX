@@ -27,7 +27,7 @@
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.6 2001/01/08 01:07:37 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.7 2001/01/11 03:37:00 tsi Exp $
  *
  */
 
@@ -82,16 +82,15 @@ extern int drmR128FullScreen( int fd, int enable );
 
 extern int drmR128SwapBuffers( int fd );
 extern int drmR128Clear( int fd, unsigned int flags,
-			 int x, int y, int w, int h,
-			 unsigned int clear_color,
-			 unsigned int clear_depth );
+			 unsigned int clear_color, unsigned int clear_depth,
+			 unsigned int color_mask, unsigned int depth_mask );
 
 extern int drmR128FlushVertexBuffer( int fd, int prim, int indx,
 				     int count, int discard );
 extern int drmR128FlushIndices( int fd, int prim, int indx,
 				int start, int end, int discard );
 
-extern int drmR128TextureBlit( int fd, int indx,
+extern int drmR128TextureBlit( int fd, int index,
 			       int offset, int pitch, int format,
 			       int x, int y, int width, int height );
 
@@ -108,7 +107,7 @@ extern int drmR128ReadDepthPixels( int fd, int n,
 
 extern int drmR128PolygonStipple( int fd, unsigned int *mask );
 
-extern int drmR128FlushIndirectBuffer( int fd, int indx,
+extern int drmR128FlushIndirectBuffer( int fd, int index,
 				       int start, int end, int discard );
 
 #endif

@@ -25,9 +25,9 @@
 typedef struct _drmI810Init {
    unsigned int start; 
    unsigned int end; 
-   unsigned int size; 
-   int ring_map_idx; 
-   int buffer_map_idx; 
+   unsigned int size;
+   unsigned int mmio_offset;
+   unsigned int buffers_offset;
    int sarea_off;
 
    unsigned int front_offset;
