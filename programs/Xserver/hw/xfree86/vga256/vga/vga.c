@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.69 1997/01/08 20:51:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.70 1997/01/18 06:57:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -215,6 +215,7 @@ pointer vgaNewVideoState = NULL;
 pointer vgaBase = NULL;
 pointer vgaVirtBase = NULL;
 pointer vgaLinearBase = NULL;
+pointer vgaLinearOrig = NULL;
 vgaPCIInformation *vgaPCIInfo = NULL;
 Bool vgaDAC8BitComponents = FALSE;
 
@@ -1143,12 +1144,14 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #endif /* PC98_TGUI */
 #endif /* PC98_GANB_WAP || PC98_WSNA || PC98_NKVNEC */
 #endif /* PC98_WAB || PC98_WABEP */
-    if (vgaUseLinearAddressing)
+    if (vgaUseLinearAddressing) {
         vgaLinearBase = xf86MapVidMem(scr_index, LINEAR_REGION,
         			      (pointer)
 				       ((unsigned long)vgaPhysLinearBase),
         			      vgaLinearSize);
 
+        vgaLinearOrig = vgaLinearBase; /* save copy of original base */
+    }
 #ifdef MONOVGA
     if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY >= vgaSegmentSize * 8)
     {                                                     /* ^ mfb bug */
@@ -1369,7 +1372,8 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #if !defined(BANKEDMONOVGA)
     if (vgaBitsPerPixel > 8){
         /* Currently 16/32bpp uses linear addressing. */
-        memset(vgaLinearBase, 0, vga256InfoRec.videoRam * 1024);
+        /* use original linear base from MapVidMem() */
+        memset(vgaLinearOrig, 0, vga256InfoRec.videoRam * 1024);
       }
     else /* 8bpp: */
 #endif

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile.LK /main/11 1996/10/25 21:18:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.37 1997/01/08 20:33:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.38 1997/01/12 10:41:29 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -771,8 +771,9 @@ SetUIDServerTarget(XF98_GA968,$(XF98GA968SUBDIRS),$(XF98GA968OBJS),$(XF98GA968LI
 XCOMM
 XCOMM XFree86 I128 Server
 XCOMM
-XF86I128OBJS = XF86_I128.o
-XF86I128LIBS = $(DRIVERSRC)/LibraryTargetName(i128) $(XF86LIBS) CFBLibs \
+XF86I128OBJS = XF86_I128.o lib/xaa8.o lib/xaa16.o lib/xaa24.o lib/xaa32.o
+XF86I128LIBS = $(DRIVERSRC)/LibraryTargetName(i128) $(XAALIBS) \
+		$(XF86LIBS) CFBLibs \
 		lib/LibraryTargetName(xf86cache)
 XF86I128SYSLIBS = $(SYSLIBS)
 XF86_I128.o: XF86_I128.c $(ICONFIGFILES)

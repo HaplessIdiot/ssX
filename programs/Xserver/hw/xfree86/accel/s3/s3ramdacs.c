@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.8 1997/01/18 06:55:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.9 1997/01/23 11:01:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -3645,6 +3645,13 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
          /* provide pseudocolor VGA          */
          s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0);
       }  /* end of s3PixelMultiplexing */
+
+      if (DAC_IS_IBMRGB528) {
+         /* set s3 reg53 to parallel addressing   */
+         outb(vgaCRIndex, 0x53);
+         tmp = inb(vgaCRReg);
+         outb(vgaCRReg, tmp | 0x20);
+      }
 
 #if 0
       if (OFLG_ISSET(OPTION_IBMRGB_CURS, &s3InfoRec.options)) {

@@ -1,3 +1,20 @@
+XFree86 3.2A (25 January 1997)
+ 372. Fix an optimisation/volatile problem with the I128 accel code
+      (Robin Cutshaw).
+ 371. Fix the clearing of video memory in the SVGA server when the linear
+      base address has been offset (Jay Estabrook).
+ 370. Disable 8x8 pattern acceleration for ET6000 (Harald Nordgerd Hansen).
+ 369. Fix stippled/tiled lines (segments) (Harm Hanemaayer).
+ 368. Update the LinkKit for recent I128 server changes (Takaaki Nomura).
+ 367. Fix display of 8bit characters in xterm (when in VT100 mode)
+      (Thomas E. Dickey).
+ 366. m68k server updates (Geert Uytterhoeven).
+ 365. Matrox doc updates (Andrew Vanderstock).
+ 364. Update Mach64 docs (Kevin Martin).
+ 363. Fix a ELSA Winner 2000PRO/X-8 initialisation problem that shows up
+      after running a certain other X server (Harald Koenig).
+ 362. Fix a PC98 TGUI problem when using XAA colour expansion (Kazunori Ueno).
+
 XFree86 3.2x (23 January 1997)
  361. Remove some XAA debugging messages (David Bateman).
  360. Preliminary I128 bitblt acceleration using XAA (Robin Cutshaw).

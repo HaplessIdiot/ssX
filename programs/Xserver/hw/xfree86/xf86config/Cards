@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.49 1996/12/23 07:04:40 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.50 1997/01/19 12:51:38 dawes Exp $
 
 #Chips & Technologies
 
@@ -35,27 +35,36 @@ LINE # Option "use_modeline"
 LINE # Option "fix_panel_size"
 LINE # videoram 512
 
-NAME Chips & Technologies CT65530
-CHIPSET ct65530
+NAME Chips & Technologies CT65525
+CHIPSET ct65525
 LINE # Option "nolinear"
 LINE # MemBase 0x03b00000
 SEE Chips & Technologies CT65520
 
+NAME Chips & Technologies CT65530
+CHIPSET ct65530
+SEE Chips & Technologies CT65525
+
+NAME Chips & Technologies CT65535
+CHIPSET ct65535
+NOCLOCKPROBE
+LINE # Option "hw_clocks"
+LINE # Textclockfreq 25.175
+SEE Chips & Technologies CT65530
+
 NAME Chips & Technologies CT65540
 CHIPSET ct65540
 NOCLOCKPROBE
-LINE # Option "ext_fram_buf"
-LINE # Option "hw_clocks"
 LINE # Option "use_18bit_bus"
-LINE # Textclockfreq 25.175
-SEE Chips & Technologies CT65530
+SEE Chips & Technologies CT65535
 
 NAME Chips & Technologies CT65545
 CHIPSET ct65545
 NOCLOCKPROBE
 LINE # Option "noaccel"
 LINE # Option "no_bitblt"
-LINE # Option "no_imageblt"
+LINE # Option "xaa_no_color_exp"
+LINE # Option "xaa_benchmark"
 LINE # Option "sw_cursor"
 LINE # Option "mmio"
 SEE Chips & Technologies CT65540
@@ -71,18 +80,39 @@ SEE Chips & Technologies CT65545
 NAME Chips & Technologies CT65550
 CHIPSET ct65550
 NOCLOCKPROBE
-LINE # Option "ext_fram_buf"
 LINE # Option "noaccel"
 LINE # Option "no_bitblt"
-LINE # Option "no_imageblt"
+LINE # Option "xaa_no_color_exp"
+LINE # Option "xaa_benchmark"
 LINE # Option "sw_cursor"
 LINE # Option "sync_on_green"
+LINE # Option "fast_dram"
 LINE # Textclockfreq 25.175
 SEE Chips & Technologies CT65530
 
 NAME Chips & Technologies CT65554
 CHIPSET ct65554
 SEE Chips & Technologies CT65550
+
+NAME Chips & Technologies CT64200
+CHIPSET ct64200
+SERVER SVGA
+LINE # Device section for C&T cards.
+LINE # videoram 1024
+
+NAME Chips & Technologies CT64300
+CHIPSET ct64300
+SERVER SVGA
+LINE # Option "noaccel"
+LINE # Option "no_bitblt"
+LINE # Option "xaa_no_color_exp"
+LINE # Option "xaa_benchmark"
+LINE # Option "sw_cursor"
+LINE # Option "nolinear"
+LINE # MemBase 0x03b00000
+LINE # Option "hw_clocks"
+LINE # Textclockfreq 25.175
+SEE Chips & Technologies CT64200
 
 # Cirrus Logic
 

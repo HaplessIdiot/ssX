@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.2 1996/11/24 09:52:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.3 1996/12/27 06:52:44 dawes Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -22,7 +22,7 @@
  */
 
 
-#define fbdev_PATCHLEVEL "5"
+#define fbdev_PATCHLEVEL "6"
 
 
 #include "X.h"
@@ -140,6 +140,7 @@ ScrnInfoRec fbdevInfoRec = {
     (void (*)())NoopDDA,	/* void (*EnterLeaveCursor)() */
     (void (*)())NoopDDA,	/* void (*AdjustFrame)() */
     (Bool (*)())NoopDDA,	/* void (*SwitchMode)() */
+    (void (*)())NoopDDA,	/* void (*DPMSSet)() */
     fbdevPrintIdent,		/* void (*PrintIdent)() */
     8,				/* int depth */
     {0, },			/* xrgb weight */
@@ -180,6 +181,25 @@ ScrnInfoRec fbdevInfoRec = {
     0,				/* int s3Madjust */
     0,				/* int s3Nadjust */
     0,				/* int s3MClk */
+    0,				/* int chipID */
+    0,				/* int chipRev */
+    0,				/* unsigned long VGAbase */
+    0,				/* int s3RefClk */
+    -1,				/* int s3BlankDelay */
+    0,				/* int textClockFreq */
+    NULL,			/* char *DCConfig */
+    NULL,			/* char *DCOptions */
+#ifdef XFreeXDGA
+    0,				/* int directMode */
+    NULL,			/* void (*setBank)() */
+    0,				/* unsigned long physBase */
+    0,				/* int physSize */
+#endif
+#ifdef XF86SETUP
+    NULL,			/* void *device */
+#endif
+
+
 };
 
 static pointer fbdevVirtBase = NULL;
@@ -1047,10 +1067,6 @@ static Bool fbdevSwitchMode(DisplayModePtr mode)
 {
     struct fb_var_screeninfo var = initscrvar;
     ScreenPtr pScreen = savepScreen;
-    BoxRec pixBox;
-    RegionRec pixReg;
-    DDXPointRec pixPt;
-    PixmapPtr pspix, ppix;
     Bool res = FALSE;
 
     xfree2fbdev(mode, &var);
@@ -1058,34 +1074,13 @@ static Bool fbdevSwitchMode(DisplayModePtr mode)
     var.yoffset = fbdevInfoRec.frameY0;
     var.activate = FB_ACTIVATE_NOW;
 
-    /* Save the screen image */
-    pixBox.x1 = 0; pixBox.x2 = pScreen->width;
-    pixBox.y1 = 0; pixBox.y2 = pScreen->height;
-    pixPt.x = 0; pixPt.y = 0;
-    (pScreen->RegionInit)(&pixReg, &pixBox, 1);
-    if (fbdevPrivateIndexP)
-	pspix = (PixmapPtr)pScreen->devPrivates[*fbdevPrivateIndexP].ptr;
-    else
-	pspix = (PixmapPtr)pScreen->devPrivate;
-    ppix = (pScreen->CreatePixmap)(pScreen, pScreen->width, pScreen->height,
-    				   pScreen->rootDepth);
-    if (ppix)
-	(*fbdevBitBlt)(&pspix->drawable, &ppix->drawable, GXcopy, &pixReg,
-		       &pixPt, ~0);
-
     if (!ioctl(fb_fd, FBIOPUT_VSCREENINFO, &var)) {
 	/* Restore the colormap */
 	fbdevRestoreColors(pScreen);
-	/* restore the screen image */
-	if (ppix)
-	    (*fbdevBitBlt)(&ppix->drawable, &pspix->drawable, GXcopy, &pixReg,
-	    		   &pixPt, ~0);
 	initscrvar.xres = var.xres;
 	initscrvar.yres = var.yres;
 	res = TRUE;
     }
-    if (ppix)
-	(pScreen->DestroyPixmap)(ppix);
 
     return(res);
 }

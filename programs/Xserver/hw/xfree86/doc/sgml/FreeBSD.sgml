@@ -3,43 +3,45 @@
 <article>
 <title> README for XFree86 on FreeBSD
 <author>Rich Murphey, David Dawes
-<date>26 Oct 1996
+<date>25 January 1997
 
 <toc>
  
 <sect>What and Where is XFree86?
 
 <p>
-XFree86 is a port of X11R6.1 that supports several versions of
+XFree86 is a port of X11R6.3 that supports several versions of
 Intel-based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
-and performance improvements as well as many bug fixes.  The release
+and performance improvements as well as many bug fixes.
+
+For further details about this beta release, please refer to the
+<htmlurl name="Release Notes" url="RELNOTES.html">.
+
+<!--
+The release
 is available as source patches against the X Consortium X11R6.1 code, as
 well as binary distributions for many architectures.
+-->
 
 See the <htmlurl url="COPYRIGHT.html" name="Copyright Notice">.
 
+<!--
 The sources for XFree86 are available by anonymous ftp from:
 
 <htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current"
 url="ftp://ftp.XFree86.org/pub/XFree86/current">
+-->
 
+Binaries for XFree86 on FreeBSD 2.1.6, 2.2 and 3.0-current are available from:
 
-Binaries for XFree86 on FreeBSD 2.1.5 are available from:
-
-<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.1.5"
-url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.1.5">
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/beta/"
+url="ftp://ftp.XFree86.org/pub/XFree86/beta/">
 <p>
-<htmlurl name="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.1.5"
-url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.1.5">
-
-Binaries for XFree86 on FreeBSD 2.2-current are available from:
-
-<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-current"
-url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-current">
-<p>
-<htmlurl name="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-current"
-url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-current">
+<!--
+<htmlurl name="ftp://XFree86.cdrom.com/pub/XFree86/beta"
+url="ftp://XFree86.cdrom.com/pub/XFree86/beta">
+-->
 
 Send email to <em/Rich-Murphey@Rice.edu/ or <em/XFree86@XFree86.org/
 if you have comments or suggestions about this file and we'll revise
@@ -52,110 +54,110 @@ If you want to save space, first select which archives you want to
 unpack.  If you can't decide what to pick and you have 52Mb of disk
 space, it's safe to unpack everything.
 
-At a minimum you need to unpack the 'required' <tt/X32*.tgz/
+At a minimum you need to unpack the 'required' <tt/X32A*.tgz/
 archives plus at least one server that matches your vga card.  You'll
 need 13Mb for the minimum required run-time binaries only.
 
 <descrip>
-<tag/Required (10.7Mb):/
+<tag/Required:/
 
 <descrip>
-<tag/X32bin.tgz/
+<tag/X32Abin.tgz/
      all the executable X client applications and shared libs
 
-<tag/X32fnts.tgz/
+<tag/X32Afnts.tgz/
      the misc, 75 dpi and PEX fonts
 
-<tag/X32lib.tgz/
+<tag/X32Alib.tgz/
      data files needed at runtime
 </descrip>
 
 <tag/Required unless you have already customized your configuration files:
 
 <descrip>
-<tag/X32cfg.tgz/
+<tag/X32Acfg.tgz/
      customizable xinit and xdm runtime configuration files
 </descrip>
 
-<tag/Choose at least one server (max 2.5Mb):/
+<tag/Choose at least one server:/
 
 <descrip>
-<tag/X328514.tgz/
+<tag/X32A8514.tgz/
      8-bit color for IBM 8514 and true compatibles.
 
-<tag/X32AGX.tgz/
+<tag/X32AAGX.tgz/
      8 and 16-bit color for AGX and XGA boards.
 
-<tag/X32I128.tgz/
+<tag/X32AI128.tgz/
      8 and 16-bit color for I128 boards.
 
-<tag/X32Ma32.tgz/
+<tag/X32AMa32.tgz/
      8 and 16-bit color for ATI Mach32 boards.
 
-<tag/X32Ma64.tgz/
+<tag/X32AMa64.tgz/
      8, 16 and 32-bit color for ATI Mach64 boards.
 
-<tag/X32Ma8.tgz/
+<tag/X32AMa8.tgz/
      8-bit color for ATI Mach8 boards.
 
-<tag/X32Mono.tgz/
+<tag/X32AMono.tgz/
      1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
-<tag/X32P9K.tgz/
+<tag/X32AP9K.tgz/
      8, 16, and 32-bit color for Weitek P9000 boards (Diamond Viper).
 
-<tag/X32S3.tgz/
+<tag/X32AS3.tgz/
      8, 16 and 32-bit color for S3 boards.
 
-<tag/X32S3V.tgz/
+<tag/X32AS3V.tgz/
      8 and 16-bit color for S3 ViRGE boards.
 
-<tag/X32SVGA.tgz/
+<tag/X32ASVGA.tgz/
      &gt;=8-bit color for Super-VGA cards.
 
-<tag/X32VG16.tgz/
+<tag/X32AVG16.tgz/
      4-bit color for VGA and Super-VGA cards
 
-<tag/X32W32.tgz/
+<tag/X32AW32.tgz/
      8-bit Color for ET4000/W32, /W32i, /W32p and ET6000 cards.
 
-<tag/X329GAN.tgz/
+<tag/X32A9GAN.tgz/
      8-bit color for PC98 GA-98NB/WAP boards
 
-<tag/X329480.tgz/
+<tag/X32A9480.tgz/
      8-bit color for PC98 PEGC
 
-<tag/X329NKV.tgz/
+<tag/X32A9NKV.tgz/
      8-bit color for PC98 NEC-CIRRUS/EPSON NKV/NKV2 boards
 
-<tag/X329WBS.tgz/
+<tag/X32A9WBS.tgz/
      8-bit color for PC98 WAB-S boards
 
-<tag/X329WEP.tgz/
+<tag/X32A9WEP.tgz/
      8-bit color for PC98 WAB-EP boards
 
-<tag/X329WSN.tgz/
+<tag/X32A9WSN.tgz/
      8-bit color for PC98 WSN-A2F boards
 
-<tag/X329EGC.tgz/
+<tag/X32A9EGC.tgz/
      4-bit color for PC98 EGC
 
-<tag/X329TGU.tgz/
+<tag/X32A9TGU.tgz/
      8 and 16-bit color for PC98 Trident Cyber9320/9680 boards
 
-<tag/X329NS3.tgz/
+<tag/X32A9NS3.tgz/
      8 and 16-bit color for PC98 NEC S3 boards
 
-<tag/X329SPW.tgz/
+<tag/X32A9SPW.tgz/
      8 and 16-bit color for PC98 S3 PW/PCSKB boards
 
-<tag/X329LPW.tgz/
+<tag/X32A9LPW.tgz/
      8 and 16-bit color for PC98 S3 PW/LB boards
 
-<tag/X329GA9.tgz/
+<tag/X32A9GA9.tgz/
      8 and 16-bit color for PC98 S3 GA-968 boards
 
-<tag/X32nest.tgz/
+<tag/X32Anest.tgz/
      A nested server running as a client window on another display.
 </descrip>
 
@@ -164,49 +166,45 @@ need 13Mb for the minimum required run-time binaries only.
 <descrip>
 
 <tag/X32doc.tgz/
-     (.6Mb) READMEs
+     READMEs
 
 <tag/X32ps.tgz/
-     (.XMb) READMEs in PostScript
+     READMEs in PostScript
 
 <tag/X32html.tgz/
-     (.XMb) READMEs in HTML
+     READMEs in HTML
 
 <tag/X32man.tgz/
-     (1.8Mb) man pages
+     man pages
 
 <tag/X32f100.tgz/
-     (1.6Mb) 100dpi fonts
+     100dpi fonts
 
 <tag/X32fscl.tgz/
-     (1.7Mb) Speedo and Type1 fonts
+     Speedo and Type1 fonts
 
 <tag/X32fnon.tgz/
-     (3.3Mb) Japanese, Chinese and other non-english fonts
+     Japanese, Chinese and other non-english fonts
 
 <tag/X32fcyr.tgz/
-     (.6Mb) Cyrillic fonts
+     Cyrillic fonts
 
 <tag/X32fsrv.tgz/
-     (.3Mb) the font server and its man page
+     the font server and its man page
 
 <tag/X32prog.tgz/
-     (4.8Mb) config, lib*.a and *.h files needed only for compiling
+     config, lib*.a and *.h files needed only for compiling
 
+<!--
 <tag/X32lkit.tgz/
      (10.8Mb) X server reconfiguration kit
 
 <tag/X32lk98.tgz/
      (14.2Mb) X server reconfiguration kit for PC98 X servers
 
+-->
 </descrip>
 </descrip>
-
-Note that there is no longer a separate xdm archive.  FreeBSD 2.0 and later
-handles this in shared libraries now, so that the xdm binary does not
-itself contain des and there is no more need for us to provide
-separate tar balls.
-
 
 <sect1>Full Install:
 <p>
@@ -243,14 +241,14 @@ separate tar balls.
      If you are using sh (as root usually does):
 
 <tscreen><verb>
- # for i in X32*.tgz; do
+ # for i in X32A*.tgz; do
  #   tar -x -z --unlink -f $i
  # done
 </verb></tscreen>
 
      Else, if you are using csh:
 <tscreen><verb>
- % foreach i (X32*.tgz)
+ % foreach i (X32A*.tgz)
  %   tar -x -z --unlink -f $i
  % end
 </verb></tscreen>
@@ -271,7 +269,7 @@ First do numbers 1, 2 and 4 above. Then unpack the required archives:
 
 <tscreen><verb>
  # for i in bin fnts lib xicf; do
- #   tar -x -z --unlink -f  X32$i.tgz
+ #   tar -x -z --unlink -f  X32A$i.tgz
  # done
 </verb></tscreen>
 
@@ -281,7 +279,7 @@ sets supported by each server.  For example, if you have an ET4000
 based card you will use the XF86_SVGA server:
 
 <tscreen><verb>
- # tar -x -z --unlink -f X32SVGA.tgz
+ # tar -x -z --unlink -f X32ASVGA.tgz
  # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 </verb></tscreen>
 
@@ -428,7 +426,7 @@ and <em/startx/ man pages.
 <sect>Rebuilding Kernels for X
 <p>
 
-The GENERIC FreeBSD 2.1.0, 2.1.5 and 2.2-current kernels support XFree86
+The GENERIC FreeBSD kernels support XFree86
 without any modifications required.  You do not need to make any changes
 to the GENERIC kernel or any kernel configuration which is a superset.
 
@@ -447,7 +445,7 @@ are both required for X support:
  options		UCONSOLE		#X Console support
 </verb></tscreen>
 
-The generic FreeBSD 2.1.0, 2.1.5 and 2.2-current kernels are configured
+The generic FreeBSD kernels are configured
 by default with the syscons driver.  To configure your kernel similarly
 it should have a line like this in <tt>/usr/src/sys/i386/conf/GENERIC</tt>:
 
@@ -489,6 +487,7 @@ S3 cards and serial port COM 4 cannot be installed together on a
 system because the I/O port addresses overlap.
 
 
+<!--
 <sect>Rebuilding XFree86
 <p>
 
@@ -510,8 +509,9 @@ correctly, and then type:
 <tscreen><verb>
  make World
 </verb></tscreen>
+-->
 
-<sect>Building Other X Clients
+<sect>Building X Clients
 <p>
 
 The easiest way to build a new client (X application) is to use
@@ -558,7 +558,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.23 1997/01/24 09:32:07 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.24 1997/01/25 03:21:53 dawes Exp $ 
 
 
 

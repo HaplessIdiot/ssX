@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.42 1997/01/22 10:59:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.43 1997/01/23 11:02:14 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -24,7 +24,7 @@ SUBDIRS = $(SGMLDIR) $(JAPANESEDIR) man
 #if !BuildLinuxDocText
 /* FreeBSD's README is handled separately because of name length limits */
 #ifdef BSD386Architecture
-OSREADME = README.Bsdi
+OSREADME = /* README.Bsdi */
 #endif
 #ifdef FreeBSDArchitecture
 OSREADME = README.FreeBSD
@@ -36,7 +36,7 @@ OSREADME = README.NetBSD
 OSREADME = README.OpenBSD
 #endif
 #ifdef i386MachArchitecture
-OSREADME = README.Mach
+OSREADME = /* README.Mach */
 #endif
 #ifdef LinuxArchitecture
 OSREADME = README.Linux
@@ -68,11 +68,10 @@ OSREADME = README.SOLX86
 OSREADME = README.SVR4
 # endif
 #endif
-#endif /* !BuildLinuxDocText */
-/* There is no .sgml version of README.OS2 yet */
 #ifdef OS2Architecture
 OSREADME = README.OS2
 #endif
+#endif /* !BuildLinuxDocText */
 
 #if XFree86Version % 10
 REPORTFORM = BetaReport

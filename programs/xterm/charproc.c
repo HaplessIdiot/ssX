@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.40 1996/12/24 02:28:06 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.41 1997/01/08 20:52:24 dawes Exp $
  */
 
 /*
@@ -887,8 +887,11 @@ static void VTparse()
 
 	/* We longjmp back to this point in VTReset() */
 	(void)setjmp(vtjmpbuf);
-
+#if OPT_VT52_MODE
 	groundtable = screen->ansi_level ? ansi_table : vt52_table;
+#else
+	groundtable = ansi_table;
+#endif
 	parsestate = groundtable;
 	scstype = 0;
 	private_function = False;
@@ -945,7 +948,14 @@ static void VTparse()
 			*--bptr = c;
 			while(top > 0 && isprint(*cp & 0x7f)) {
 #if OPT_VT52_MODE
-				if (screen->ansi_level <= 1)
+				/*
+				 * Strip output text to 7-bits for VT52.  We
+				 * should do this for VT100 also (which is a
+				 * 7-bit device), but since xterm has been
+				 * doing this for so long we shouldn't change
+				 * this behavior.
+				 */
+				if (screen->ansi_level < 1)
 					*cp &= 0x7f;
 #endif
 				top--;

@@ -4,12 +4,12 @@
 
  <title>Release Notes for XFree86&tm; 3.2A
  <author>The XFree86 Project, Inc
- <date>23 January 1997
+ <date>25 January 1997
 
 <abstract>
 
 This document describes the rationale and conditions of this beta release,
-what is new in the XFree86 beta version 3.2A.  compared with the current
+what is new in the XFree86 beta version 3.2A compared with the current
 release version (3.2), and how to install this beta release.
 
 <!--
@@ -139,6 +139,10 @@ Users running Linux/Elf (on Intel platforms) should note that they will
 need ld.so-1.7.14.  This
 can be found at <url name="tsx-11.mit.edu:pub/linux/packages/GCC"
 url="ftp://tsx-11.mit.edu/pub/linux/packages/GCC">.
+<p>
+Note: Elf is now the only binary type supported for Linux OSs.  This means
+that binaries for ix86/a.out and AXP/ECOFF are not available with this
+release.
 
 <sect> New Features in 3.2A
 <p>
@@ -591,6 +595,12 @@ installation if you have customised your xinit and/or xdm config files.
 Installing X32Acfg.tgz will overwrite any existing files.  If you do have
 customised files, there is no need to install X32Acfg.tgz.
 
+NOTE: The bitmap fonts distributed with this release are compressed using
+gzip rather than compress.  This means that you will probably want to
+remove the old versions (after backing them up).  The Xservers and font
+server in previous releases cannot read gzipped fonts, so keep a copy
+of the old fonts if you wish to run older servers.
+
 The following X servers are for PC/AT hardware.  Choose at least one which
 matches your hardware, as well as the VGA16 server.  The VGA16 server is
 required by the new configuration utility (XF86Setup).
@@ -723,7 +733,7 @@ boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.53 1997/01/24 09:32:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.54 1997/01/25 03:22:07 dawes Exp $
 </verb>
 
 </article>

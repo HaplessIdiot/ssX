@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.1 1997/01/24 01:02:08 dawes Exp $ */
 
 /*
  * Copyright 1997 by Robin Cutshaw <robin@XFree86.Org>
@@ -37,8 +37,8 @@ extern struct i128io i128io;
 extern struct i128mem i128mem;
 extern int i128DisplayWidth;
 extern int i128DeviceType;
-static unsigned long *eng_a;
-static unsigned long *eng_b;
+static volatile unsigned long *eng_a;
+static volatile unsigned long *eng_b;
 static int i128blitdir, i128rop;
 
 short i128alu[16] =

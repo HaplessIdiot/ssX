@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/trident/pc98_tgui.c,v 3.5 1996/12/28 08:20:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/trident/pc98_tgui.c,v 3.6 1997/01/20 12:38:43 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -313,6 +313,7 @@ Bool ChipInit(void)
 
   /* Bus & DRAM Setup */
   CRTCwrite(0x2a, CRTCread(0x2a) | 0x40); /* Local Bus / DRAM Select */
+  CRTCwrite(0x20, 0x30);
   CRTCwrite(0x23, 0xe8); /* DRAM Timing Control */
   CRTCwrite(0x25, 0x0a); /* RAMDAC R/W Timing Control */
   CRTCwrite(0x2f, 0x27); /* Performance Tuning */

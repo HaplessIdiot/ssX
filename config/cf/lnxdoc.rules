@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.6 1996/01/28 07:27:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.7 1997/01/20 12:23:39 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -99,7 +99,10 @@ AllTarget(base.ps)							@@\
 									@@\
 base.ps: sgmlfile							@@\
 	RemoveFile(base.ps)						@@\
-	$(SGMLFMTCMD) -f ps sgmlfile || RemoveFile($@)			@@\
+	@(BASE=`basename sgmlfile .sgml`;\				@@\
+	  set -x;\							@@\
+	  RemoveFile($$BASE.ps);\					@@\
+	  $(SGMLFMTCMD) -f ps sgmlfile && $(MV) $$BASE.ps $@)		@@\
 									@@\
 LinuxDocInstall(base.ps,$(XFREE86PSDOCDIR))				@@\
 									@@\
@@ -115,28 +118,28 @@ AllTarget(textfile)							@@\
 									@@\
 textfile: sgmlfile							@@\
 	RemoveFile(textfile)						@@\
-	RemoveFile(textfile.latin1)					@@\
-	$(SGMLFMTCMD) -f latin1 sgmlfile && $(MV) $@.latin1 $@		@@\
+	@(BASE=`basename sgmlfile .sgml`;\				@@\
+	  set -x;\							@@\
+	  RemoveFile($$BASE.latin1);\					@@\
+	  $(SGMLFMTCMD) -f latin1 sgmlfile && $(MV) $$BASE.latin1 $@)	@@\
 									@@\
 LinuxDocInstall(textfile,$(XFREE86DOCDIR))				@@\
 									@@\
 clean::									@@\
-	RemoveFiles(Concat(_,textfile) textfile)
+	RemoveFiles(textfile)
 #else
 #define LinuxDocSgmlToText(sgmlfile,textfile) /**/
 #endif
 
-/*
- * The 'echo' stuff here is a bit of a hack, but 'set -x' doesn't show
- * what is going on.
- */
 #if BuildLinuxDocHtml
 #define LinuxDocSgmlToHtml(sgmlfile,base)				@@\
 AllTarget(base.html)							@@\
 									@@\
 base.html: sgmlfile							@@\
+	@if [ sgmlfile != base.sgml ]; then $(LN) sgmlfile base.sgml; fi @@\
 	RemoveFiles(base*.html)						@@\
-	$(SGMLFMTCMD) -f html sgmlfile || RemoveFile($@)		@@\
+	$(SGMLFMTCMD) -f html base.sgml || RemoveFile($@)		@@\
+	@if [ sgmlfile != base.sgml ]; then RemoveFile(base.sgml); fi	@@\
 									@@\
 LinuxDocInstallMultiple(base*.html,$(XFREE86HTMLDOCDIR))		@@\
 									@@\
