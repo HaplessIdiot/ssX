@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX January 2002)
+  29. Fix Big Endian hardware cursor bug on GeForce3 (Mark Vojkovich).
   28. Experimental flat panel support in the "nv" driver.  GeForce2 Go
       should work now (Mark Vojkovich).
   27. XDarwinStartup improvements:
@@ -14616,4 +14617,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2164 2002/02/05 19:16:11 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2165 2002/02/06 00:48:29 mvojkovi Exp $
