@@ -22,7 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.3 1997/01/18 07:18:20 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.4 1997/02/16 10:26:46 hohndel Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -91,8 +91,10 @@ void
 FreeZlibBuffer(b)
     ZlibBufferPtr b;
 {
-    if (b->bufbase)
-	free(b->bufbase);
+    if (b->bufbase) {
+	Xfree(b->bufbase);
+	b->bufbase = NULL;
+    }
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $TOG: Error.c /main/39 1997/05/30 11:41:07 root $ */
+/* $TOG: Error.c /main/41 1997/06/21 07:43:23 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Error.c,v 3.5 1997/05/31 13:51:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Error.c,v 3.6 1997/06/22 10:16:53 dawes Exp $ */
 
 /*
 
@@ -541,9 +541,8 @@ XtErrorMsgHandler XtAppSetWarningMsgHandler(app,handler)
 void _XtDefaultError(message)
     String message;
 {
-    extern void exit();
-
-    (void)fprintf(stderr, "%sError: %s\n", XTERROR_PREFIX, message);
+    if (message && *message)
+	(void)fprintf(stderr, "%sError: %s\n", XTERROR_PREFIX, message);
     exit(1);
 }
 

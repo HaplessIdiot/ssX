@@ -1,4 +1,4 @@
-/* $XConsortium: GetKCnt.c,v 11.15 94/04/17 20:19:36 rws Exp $ */
+/* $TOG: GetKCnt.c /main/12 1997/06/22 17:29:31 kaleb $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -29,8 +29,6 @@ in this Software without prior written authorization from the X Consortium.
 #define NEED_REPLIES
 #include "Xlibint.h"
 
-struct kmap {char keys[32];};
-
 XGetKeyboardControl (dpy, state)
     register Display *dpy;
     register XKeyboardState *state;
@@ -48,8 +46,9 @@ XGetKeyboardControl (dpy, state)
     state->bell_duration = rep.bellDuration;
     state->led_mask = rep.ledMask;
     state->global_auto_repeat = rep.globalAutoRepeat;
-    * (struct kmap *) state->auto_repeats = * (struct kmap *) rep.map;
+    memcpy (state->auto_repeats, rep.map, sizeof state->auto_repeats);
     UnlockDisplay(dpy);
     SyncHandle();
+    return 1;
     }
 

@@ -1,4 +1,23 @@
-XFree86 3.9h (25 June 1997)
+XFree86 3.9h (29 June 1997)
+1063. New XInput driver for the AceCad ADVANCEDigitizer (#716, Shane Watts).
+1062. Clean up some problems with the xf86 wrappers (#715, Matthieu Herrb).
+1061. New Xinput driver for MicroTouch TouchPen touch screen (#714,
+      Patrick Lecoanet).
+1060. Changes for E281-2310 and fully compatible controllers in the
+      Elographics driver (#714, Juergen P. Meier).
+1059. Elographics driver updates (#714, Patrick Lecoanet).
+1058. Fix ROP bugs in the svga/s3v driver (#713, Harald Koenig).
+1057. Fix a malloc/free bug which can cause the Xserver to crash when
+      an lbxproxy terminates.
+1056. Change default compression level in lbxproxy (#710, Kaleb Keithley).
+1055. Xt/Error.c update (#708, Kaleb Keithley).
+1054. LibXext cleanups (#707, Kaleb Keithley).
+1053. Config updates (#706, Kaleb Keithley).
+1052. Add PreviousCandidate and MultipleCandidate keysyms (some new Japanese
+      keyboards have these keys) (#705, Kaleb Keithley).
+1051. Fix some xterm bugs (#700, Thomas E. Dickey).
+1050. Initial part of implementing VT100 doublesize characters for xterm
+      (#700, Thomas E. Dickey).
 1049. First stab at adding dlopen() style loader (#712, Matthieu Herrb).
 1048. Add further acceleration to the GLINT server (mostly disabled) (#711,
       Alan Hourihane).
@@ -26,8 +45,8 @@ XFree86 3.9h (25 June 1997)
       functions and fallbacks for non-cachable stippled fills. This also
       allows usage of both CPU->screen and scanline screen->screen color 
       expansion instead of one or the other (#684, Mark Vojkovich).
-1038. Some minor Xlib fixes (#687-690, Kaleb Keithley).
-1037. XKB updates (#674, 675, Kaleb Keithley).
+1038. Some Xlib fixes (#687-690, 695-699, Kaleb Keithley).
+1037. XKB updates (#674, 675, 709, Kaleb Keithley).
 1036. Config updates to make use of change 1033 (#673, Kaleb Keithley).
 1035. Fix a typo in the XKB symbols/hu file and add an entry for it in
       the rules/xfree86.lst file (Peter Soos).
@@ -5010,4 +5029,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.496 1997/06/22 12:20:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.497 1997/06/25 08:24:51 hohndel Exp $
