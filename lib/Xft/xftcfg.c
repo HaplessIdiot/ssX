@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftcfg.c,v 1.2 2000/11/30 06:59:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -36,7 +36,7 @@ char		**XftConfigDirs = XftConfigDefaultDirs;
 static int	XftConfigNdirs;
 
 static XftSubst	*XftSubsts;
-/* #define XFT_DEBUG_EDIT */
+#define XFT_DEBUG_EDIT
 
 Bool
 XftConfigAddDir (char *d)
@@ -414,6 +414,86 @@ _XftConfigEvaluate (XftPattern *p, XftExpr *e)
     return v;
 }
 
+static Bool
+_XftConfigAdd (XftValueList  **head,
+	      XftValueList  *position,
+	      Bool	    append,
+	      XftValue	    value)
+{
+    XftValueList    *new, **prev;
+    
+    new = (XftValueList *) malloc (sizeof (XftValueList));
+    if (!new)
+	goto bail0;
+    
+    if (value.type == XftTypeString)
+    {
+	value.u.s = _XftSaveString (value.u.s);
+	if (!value.u.s)
+	    goto bail1;
+	
+    }
+    new->value = value;
+    new->next = 0;
+
+    if (append)
+    {
+	prev = &position->next;
+    }
+    else
+    {
+	for (prev = head; *prev; prev = &(*prev)->next)
+	{
+	    if (*prev == position)
+		break;
+	}
+#ifdef XFT_DEBUG
+	if (!*prev)
+	    printf ("position not on list\n");
+#endif
+    }
+
+#ifdef XFT_DEBUG_EDIT
+    printf ("%s list before ", append ? "Append" : "Prepend");
+    XftValueListPrint (*head);
+    printf ("\n");
+#endif
+    
+    new->next = *prev;
+    *prev = new;
+    
+#ifdef XFT_DEBUG_EDIT
+    printf ("%s list after ", append ? "Append" : "Prepend");
+    XftValueListPrint (*head);
+    printf ("\n");
+#endif
+    
+    return True;
+    
+bail1:
+    free (new);
+bail0:
+    return False;
+}
+
+static void
+_XftConfigDel (XftValueList	**head,
+	      XftValueList	*position)
+{
+    XftValueList    **prev;
+
+    for (prev = head; *prev; prev = &(*prev)->next)
+    {
+	if (*prev == position)
+	{
+	    *prev = position->next;
+	    position->next = 0;
+	    XftValueListDestroy (position);
+	    break;
+	}
+    }
+}
+
 Bool
 XftConfigSubstitute (XftPattern *p)
 {
@@ -453,7 +533,12 @@ XftConfigSubstitute (XftPattern *p)
 		break;
 	}
 	if (t)
+	{
+#ifdef XFT_DEBUG_EDIT
+	    printf ("No match\n");
+#endif
 	    continue;
+	}
 #ifdef XFT_DEBUG_EDIT
 	printf ("Substitute ");
 	XftSubstPrint (s);
@@ -470,8 +555,8 @@ XftConfigSubstitute (XftPattern *p)
 	    case XftOpAssign:
 		if (t)
 		{
-		    XftValueDestroy (st[i].value->value);
-		    st[i].value->value = v;
+		    _XftConfigAdd (&st[i].elt->values, st[i].value, True, v);
+		    _XftConfigDel (&st[i].elt->values, st[i].value);
 		}
 		else
 		{
@@ -480,10 +565,16 @@ XftConfigSubstitute (XftPattern *p)
 		}
 		break;
 	    case XftOpPrepend:
-		XftPatternAdd (p, e->field, v, False);
+		if (t)
+		    _XftConfigAdd (&st[i].elt->values, st[i].value, False, v);
+		else
+		    XftPatternAdd (p, e->field, v, False);
 		break;
 	    case XftOpAppend:
-		XftPatternAdd (p, e->field, v, True);
+		if (t)
+		    _XftConfigAdd (&st[i].elt->values, st[i].value, True, v);
+		else
+		    XftPatternAdd (p, e->field, v, True);
 		break;
 	    default:
 		break;

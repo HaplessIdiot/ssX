@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.8 2000/12/01 21:32:01 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.9 2000/12/02 10:02:04 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -50,6 +50,10 @@
 /* defaults from resources */
 #define XFT_SCALE	    "scale"	/* double */
 #define XFT_RENDER	    "render"	/* Bool */
+
+/* specific to FreeType rasterizer */
+#define XFT_CHAR_WIDTH	    "charwidth"	/* Int */
+#define XFT_CHAR_HEIGHT	    "charheight"/* Int */
 
 #define XFT_WEIGHT_LIGHT	0
 #define XFT_WEIGHT_MEDIUM	100

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.2 2000/12/02 10:02:05 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -153,6 +153,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     double	    size;
     int		    rgba;
     int		    spacing;
+    int		    char_width;
     Bool	    antialias;
     Bool	    encoded;
     char	    *encoding_name;
@@ -199,6 +200,12 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
 	break;
     default:
 	goto bail0;
+    }
+    
+    if (XftPatternGetInteger (pattern, XFT_CHAR_WIDTH, 
+			      0, &char_width) != XftResultMatch)
+    {
+	char_width = 0;
     }
     
     if (antialias)
@@ -325,6 +332,11 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     font->max_advance_width = face->max_advance_width * font->size / (64 * div);
     
     font->monospace = (face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) != 0;
+    if (char_width)
+    {
+	font->max_advance_width = char_width;
+	font->monospace = True;
+    }
     switch (XftPatternGetInteger (pattern, XFT_SPACING, 0, &spacing)) {
     case XftResultNoMatch:
 	break;
