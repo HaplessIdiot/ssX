@@ -56,6 +56,7 @@ from the X Consortium.
 
 #define XtNindent           "indent"
 #define XtNforceVert        "forceVert"
+#define XtNhalfLines        "halfLines"
 #define XtNmanualFontNormal "manualFontNormal"
 #define XtNmanualFontBold   "manualFontBold"
 #define XtNmanualFontItalic "manualFontItalic"

@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xman/help.c,v 1.3 2000/03/03 23:16:27 dawes Exp $ */
 
 /*
  * xman - X window system manual page display program.
@@ -51,7 +51,7 @@ Boolean
 MakeHelpWidget(void)
 {
 
-  ManpageGlobals * man_globals;	/* The psuedo global structure. */
+  ManpageGlobals * man_globals;	/* The pseudo global structure. */
   
   if (help_widget != NULL)	/* If we already have a help widget. 
 				   then do not create one. */
@@ -90,7 +90,7 @@ MakeHelpWidget(void)
 
 /*	Function Name: OpenHelpfile
  *	Description: opens the helpfile.
- *	Arguments: man_globals - the psuedo globals structure.
+ *	Arguments: man_globals - the pseudo globals structure.
  *	Returns: False if no helpfile was found.
  */
 
