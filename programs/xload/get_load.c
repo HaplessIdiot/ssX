@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.10 2001/07/25 15:05:26 dawes Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.11 2001/08/01 00:45:05 tsi Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -773,10 +773,10 @@ static struct nlist namelist[] = {	    /* namelist for vmunix grubbing */
 };
 #endif /* macII */
 
-static kmem;
+static int kmem;
 static long loadavg_seek;
 
-InitLoadPoint()
+void InitLoadPoint()
 {
 #ifdef macII
     extern nlist();
