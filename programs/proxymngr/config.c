@@ -123,7 +123,7 @@ GetConfig (
     buflen = 0;
     n = strlen (serviceName);
 
-    while (!found && getline (&buf, &buflen, fp))
+    while (!found && getnextline (&buf, &buflen, fp))
     {
 	if (buf[0] == '!')
 	    continue;
