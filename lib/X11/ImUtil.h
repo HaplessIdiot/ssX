@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/ImUtil.h,v 1.1 2003/04/13 19:22:16 dawes Exp $ */
 
 #ifndef _IMUTIL_H_
 #define _IMUTIL_H_
@@ -7,6 +7,12 @@ extern int
 _XGetScanlinePad(
     Display *dpy,
     int depth);
+
+int
+_XGetBitsPerPixel(
+ Display *dpy,
+ int depth);
+
 extern int
 _XSetImage(
     XImage *srcimg,
