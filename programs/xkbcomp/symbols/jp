@@ -1,4 +1,4 @@
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/jp,v 3.0 1996/02/18 03:45:41 dawes Exp $
 //
 // symbols for a Japanese 106 keyboard(by tsuka@kawalab.dnj.ynu.ac.jp)
 default xkb_symbols "jp106" {
@@ -143,7 +143,5 @@ default xkb_symbols "jp106" {
     modifier_map Shift  { Shift_L,Shift_R };
     modifier_map Lock   { Caps_Lock };
     modifier_map Control{ Control_L,Control_R };
-    modifier_map Mod2   { Mode_switch };
-    modifier_map Mod3   { Alt_L,Alt_R,Meta_L,Meta_R};
 };
 
