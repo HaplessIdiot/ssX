@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.48 1998/11/28 10:43:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.49 1998/12/05 14:40:23 dawes Exp $ */
 
 /*
  *
@@ -336,6 +336,9 @@ LOOKUP xfree86LookupTab[] = {
    /* xf86fbman.c */
    SYMFUNC(xf86InitFBManager)
    SYMFUNC(xf86RegisterFreeBoxCallback)
+   SYMFUNC(xf86FreeOffscreenArea)
+   SYMFUNC(xf86AllocateOffscreenArea)
+   SYMFUNC(xf86FBManagerRunning)
 
    /* xf86_8plus24.c */
    SYMFUNC(xf86Overlay8Plus24Init)
