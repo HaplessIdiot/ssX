@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.31 2003/01/18 15:22:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.32 2003/02/05 17:45:29 eich Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -1351,7 +1351,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
   
-    clockRanges = xncfalloc(sizeof(ClockRange),1);
+    clockRanges = xnfcalloc(sizeof(ClockRange),1);
     clockRanges->next = NULL;
     clockRanges->minClock = psav->minClock;
     clockRanges->maxClock = psav->maxClock;

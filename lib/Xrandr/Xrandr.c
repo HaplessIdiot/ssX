@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.10 2002/11/27 05:37:43 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.12 2003/02/05 12:59:13 eich Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  * Copyright © 2002 Hewlett Packard Company, Inc.
@@ -154,18 +154,23 @@ XRRCloseDisplay (Display *dpy, XExtCodes *codes)
     int i;
     XRRScreenConfiguration **configs;
     XExtDisplayInfo *info = XRRFindDisplay (dpy);
+    XRandRInfo *xrri;
+
     LockDisplay(dpy);
     /*
      * free cached data
      */
-    configs = (XRRScreenConfiguration **) info->data;
-    if (configs) {
-      for (i = 0; i < ScreenCount(dpy); i++) {
-	if (configs[i] != NULL) XFree (configs[i]);
-      }
-      XFree (configs);
-    }
+    if (XextHasExtension(info)) {
+	xrri = (XRandRInfo *) info->data;
+	if (xrri) {
+	    configs = xrri->config;
 
+	    for (i = 0; i < ScreenCount(dpy); i++) {
+		if (configs[i] != NULL) XFree (configs[i]);
+	    }
+	    XFree (xrri);
+	}
+    }
     UnlockDisplay(dpy);
     return XextRemoveDisplay (&XRRExtensionInfo, dpy);
 }
