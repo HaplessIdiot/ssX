@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.202 2001/05/18 20:22:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.203 2001/05/25 18:19:13 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2943,8 +2943,19 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!fbdevHWModeInit(pScrn, pScrn->currentMode))
 	    return FALSE;
 	if(pMga->SecondCrtc == FALSE && pMga->HWCursor == TRUE) {
-	  outMGAdac(MGA1064_CURSOR_BASE_ADR_LOW, pMga->FbCursorOffset >> 10);
-	  outMGAdac(MGA1064_CURSOR_BASE_ADR_HI, pMga->FbCursorOffset >> 18);
+	    switch (pMga->Chipset) {
+	    case PCI_CHIP_MGA1064:
+	    case PCI_CHIP_MGAG100:
+	    case PCI_CHIP_MGAG100_PCI:
+	    case PCI_CHIP_MGAG200:
+	    case PCI_CHIP_MGAG200_PCI:
+	    case PCI_CHIP_MGAG400:
+		outMGAdac(MGA1064_CURSOR_BASE_ADR_LOW, pMga->FbCursorOffset >> 10);
+		outMGAdac(MGA1064_CURSOR_BASE_ADR_HI, pMga->FbCursorOffset >> 18);
+		break;
+	    default:
+		break;
+	    }
 	}
 
 	MGAStormEngineInit(pScrn);

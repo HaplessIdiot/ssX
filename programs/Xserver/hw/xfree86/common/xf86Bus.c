@@ -53,16 +53,16 @@ resPtr osRes = NULL;
 resPtr ResRange = NULL;
 
 /* predefined special resources */
-resRange resVgaExclusive[] = {_VGA_EXCLUSIVE, _END};
-resRange resVgaShared[] = {_VGA_SHARED, _END};
-resRange resVgaMemShared[] = {_VGA_SHARED_MEM,_END};
-resRange resVgaIoShared[] = {_VGA_SHARED_IO,_END};
-resRange resVgaUnusedExclusive[] = {_VGA_EXCLUSIVE_UNUSED, _END};
-resRange resVgaUnusedShared[] = {_VGA_SHARED_UNUSED, _END};
-resRange resVgaSparseExclusive[] = {_VGA_EXCLUSIVE_SPARSE, _END};
-resRange resVgaSparseShared[] = {_VGA_SHARED_SPARSE, _END};
-resRange res8514Exclusive[] = {_8514_EXCLUSIVE, _END};
-resRange res8514Shared[] = {_8514_SHARED, _END};
+const resRange resVgaExclusive[] = {_VGA_EXCLUSIVE, _END};
+const resRange resVgaShared[] = {_VGA_SHARED, _END};
+const resRange resVgaMemShared[] = {_VGA_SHARED_MEM,_END};
+const resRange resVgaIoShared[] = {_VGA_SHARED_IO,_END};
+const resRange resVgaUnusedExclusive[] = {_VGA_EXCLUSIVE_UNUSED, _END};
+const resRange resVgaUnusedShared[] = {_VGA_SHARED_UNUSED, _END};
+const resRange resVgaSparseExclusive[] = {_VGA_EXCLUSIVE_SPARSE, _END};
+const resRange resVgaSparseShared[] = {_VGA_SHARED_SPARSE, _END};
+const resRange res8514Exclusive[] = {_8514_EXCLUSIVE, _END};
+const resRange res8514Shared[] = {_8514_SHARED, _END};
 
 /* Flag: do we need RAC ? */
 static Bool needRAC = FALSE;
