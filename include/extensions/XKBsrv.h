@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.15 1999/01/13 08:30:45 dawes Exp $ */
+/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.16 1999/01/31 12:21:16 dawes Exp $ */
 
 #ifndef _XKBSRV_H_
 #define	_XKBSRV_H_
@@ -235,7 +235,7 @@ typedef struct	_XkbSrvLedInfo {
 
 #define XkbAX_KRGMask	 (XkbSlowKeysMask|XkbBounceKeysMask)
 #define	XkbAllFilteredEventsMask \
-			(XkbAccessXKeysMask|XkbRepeatKeysMask|XkbAX_KRGMask)
+	(XkbAccessXKeysMask|XkbRepeatKeysMask|XkbMouseKeysAccelMask|XkbAX_KRGMask)
 
 /***====================================================================***/
 

@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbAccessX.c,v 1.3 1997/01/18 07:18:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbAccessX.c,v 1.4 1999/12/27 00:40:00 robin Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -609,6 +609,11 @@ KeySym *	sym = XkbKeySymsPtr(xkbi->desc,key);
 	if (XkbAX_NeedFeedback(ctrls,XkbAX_BKRejectFBMask))
 	    XkbDDXAccessXBeep(keybd,_BEEP_BOUNCE_REJECT,XkbBounceKeysMask);
 	ignoreKeyEvent = TRUE;
+    }
+
+    if ((ctrls->enabled_ctrls & XkbMouseKeysAccelMask) && 
+					(key == xkbi->mouseKey)) {
+        ignoreKeyEvent = TRUE;
     }
 
     /* Start repeating if necessary.  Stop autorepeating if the user

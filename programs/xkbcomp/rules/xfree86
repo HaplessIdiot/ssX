@@ -4,7 +4,7 @@
 //  Rules for resolving XKB components for use with XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.19 2000/07/27 00:10:33 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.20 2000/08/14 17:47:08 dawes Exp $
 //
 
 ! model 	=	keycodes	geometry
@@ -104,4 +104,9 @@
   ctrl:swapcaps		=	+ctrl(swapcaps)
   ctrl:ctrl_ac		=	+ctrl(ctrl_ac)
   ctrl:ctrl_aa		=	+ctrl(ctrl_aa)
+
+! option		=	compat
+  grp_led:num		=	+leds(num)
+  grp_led:caps		=	+leds(caps)
+  grp_led:scroll	=	+leds(scroll)
 

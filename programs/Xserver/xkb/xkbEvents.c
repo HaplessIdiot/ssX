@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.4 1997/12/14 02:55:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.5 2000/06/13 23:15:52 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS 1
@@ -261,6 +261,10 @@ CARD32 		changedControls;
 	changedControls|= XkbMouseKeysAccelMask;
     if (old->ax_options!=new->ax_options)
 	changedControls|= XkbAccessXKeysMask;
+    if ((old->ax_options^new->ax_options) & XkbAX_SKOptionsMask)
+	changedControls|= XkbStickyKeysMask;
+    if ((old->ax_options^new->ax_options) & XkbAX_FBOptionsMask)
+	changedControls|= XkbAccessXFeedbackMask;
     if ((old->ax_timeout!=new->ax_timeout)||
 	(old->axt_ctrls_mask!=new->axt_ctrls_mask)||
 	(old->axt_ctrls_values!=new->axt_ctrls_values)||

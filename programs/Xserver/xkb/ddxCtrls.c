@@ -1,4 +1,4 @@
-/* $XConsortium: ddxCtrls.c /main/1 1995/11/30 19:22:00 kaleb $ */
+/* $XConsortium: ddxCtrls.c /main/4 1996/02/02 14:39:24 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -36,12 +37,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XI.h"
 
-extern	CARD16	xkbDebugFlags;
-
 void
+#if NeedFunctionPrototypes
+XkbDDXKeybdCtrlProc(DeviceIntPtr dev,KeybdCtrl *ctrl)
+#else
 XkbDDXKeybdCtrlProc(dev,ctrl)
     DeviceIntPtr	dev;
     KeybdCtrl *		ctrl;
+#endif
 {
 int realRepeat;
 
@@ -62,9 +65,14 @@ if (xkbDebugFlags&0x4) {
 
 
 int
+#if NeedFunctionPrototypes
+XkbDDXUsesSoftRepeat(DeviceIntPtr pXDev)
+#else
 XkbDDXUsesSoftRepeat(pXDev)
     DeviceIntPtr pXDev;
+#endif
 {
+#ifndef XKB_ALWAYS_USES_SOFT_REPEAT
     if (pXDev && pXDev->kbdfeed ) {
 	if (pXDev->kbdfeed->ctrl.autoRepeat) {
 	    if (pXDev->key && pXDev->key->xkbInfo) {
@@ -82,15 +90,23 @@ XkbDDXUsesSoftRepeat(pXDev)
 	}
     }
     return 0;
+#else
+    return 1;
+#endif
 }
 
 void
+#if NeedFunctionPrototypes
+XkbDDXChangeControls(DeviceIntPtr dev,XkbControlsPtr old,XkbControlsPtr new)
+#else
 XkbDDXChangeControls(dev,old,new)
     DeviceIntPtr   dev;
     XkbControlsPtr old;
     XkbControlsPtr new;
+#endif
 {
-unsigned	changed;
+unsigned	changed, i;
+unsigned 	char *rep_old, *rep_new, *rep_fb;
 
     changed= new->enabled_ctrls^old->enabled_ctrls;
 #ifdef NOTDEF
@@ -110,6 +126,16 @@ unsigned	changed;
 	}
     }
 #endif
+    for (rep_old = old->per_key_repeat,
+         rep_new = new->per_key_repeat,
+	 rep_fb  = dev->kbdfeed->ctrl.autoRepeats,
+         i = 0; i < XkbPerKeyBitArraySize; i++) {
+        if (rep_old[i] != rep_new[i]) {
+            rep_fb[i] = rep_new[i];
+            changed &= XkbPerKeyRepeatMask;
+        }
+    }
+
     if (changed&XkbPerKeyRepeatMask) {
 	if (dev->kbdfeed->CtrlProc)
 	    (*dev->kbdfeed->CtrlProc)(dev,&dev->kbdfeed->ctrl);

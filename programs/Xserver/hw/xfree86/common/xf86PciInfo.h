@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.69 2000/08/15 22:06:22 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.70 2000/08/25 21:51:05 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -972,6 +972,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_TI_PERMEDIA2,	"Permedia 2",0},
 				{PCI_CHIP_PCI_1130,	"PCI 1130",0},
 				{PCI_CHIP_PCI_1131,	"PCI 1131",0},
+				{0x8019,		"TSB12LV23 IEEE1394/FireWire",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{PCI_VENDOR_SONY, {
@@ -1026,6 +1027,9 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
                                 {0x0001,		"Bandit",0 },
 				{0x0002,		"Grand Central",0 },
 				{0x000E,		"Hydra",0 },
+				{0x0019,		"Keylargo USB",0 },
+				{0x0020,		"Uni-North AGP",0 },
+				{0x0022,		"Keylargo I/O",0 },
 				{0x0000,		NULL,0}}},
 #ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_NEXGEN, {

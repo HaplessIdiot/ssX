@@ -287,9 +287,8 @@ unsigned		merge;
 
     merge= newGC->merge;
     gc= &info->groupCompat[group];
-    if ((gc->fileID<1)||
+    if ((newGC->fileID<1)||
 	((gc->real_mods==newGC->real_mods)&&(gc->vmods==newGC->vmods))) {
-	*gc= *newGC;
 	return True;
     }
     if (((gc->fileID==newGC->fileID)&&(warningLevel>0))||(warningLevel>9)) {
