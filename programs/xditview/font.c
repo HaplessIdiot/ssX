@@ -3,6 +3,7 @@
  *
  * map dvi fonts to X fonts
  */
+/* $XFree86$ */
 
 #include <X11/Xos.h>
 #include <X11/IntrinsicP.h>

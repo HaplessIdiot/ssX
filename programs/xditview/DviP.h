@@ -1,6 +1,7 @@
 /*
  * $XConsortium: DviP.h,v 1.10 92/02/11 01:27:15 keith Exp $
  */
+/* $XFree86$ */
 
 /* 
  * DviP.h - Private definitions for Dvi widget

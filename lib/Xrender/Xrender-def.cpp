@@ -25,3 +25,4 @@ EXPORTS
 	_XRenderFindFormat
 	_XRenderFindVisual
 
+/* $XFree86$ */
