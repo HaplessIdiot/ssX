@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.245 2001/09/04 23:15:58 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.246 2001/09/05 07:12:40 keithp Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1229,6 +1229,15 @@ ServerTarget(XWin,$(XWINDIRS),$(XWINOBJS), \
 
 #endif /* XWinServer */
 
+
+#ifdef DarwinArchitecture
+/*
+ * To allow building even when building the client-side libraries is turned
+ * off, libraries in ProjectRoot are listed as dependencies for some targets.
+ * This causes problems unless we tell make where to find these dependencies.
+ */
+VPATH = $(BUILDLIBDIR):$(USRLIBDIR)
+#endif
 
 #if XDarwinServer
 XCOMM
