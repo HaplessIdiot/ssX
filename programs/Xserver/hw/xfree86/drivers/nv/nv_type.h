@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.22 2001/03/28 01:17:43 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.23 2001/05/04 19:05:42 dawes Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -117,6 +117,7 @@ typedef struct {
     void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
     XF86VideoAdaptorPtr	overlayAdaptor;
     int			videoKey;
+    Bool		FlatPanel;
     OptionInfoPtr	Options;
 } NVRec, *NVPtr;
 
