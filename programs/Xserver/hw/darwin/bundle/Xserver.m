@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.3 2001/03/15 22:24:27 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.4 2001/03/24 23:08:53 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -38,9 +38,11 @@ extern char **envpGlobal;
     if (serverVisible)
         [self hide];
 
-    but = NSRunAlertPanel(@"Quit X server?", 
-                          @"Quitting the X server will terminate any running X Window programs.", 
-                          @"Quit", @"Cancel", nil);
+    but = NSRunAlertPanel(NSLocalizedString(@"Quit X server?",@""),
+                          NSLocalizedString(@"Quitting the X server will terminate any running X Window programs.",@""),
+                          NSLocalizedString(@"Quit",@""),
+                          NSLocalizedString(@"Cancel",@""),
+                          nil);
 
     switch (but) {
         case NSAlertDefaultReturn:		// quit
