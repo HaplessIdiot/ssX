@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.20 94/04/17 19:56:08 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.0 1995/11/12 09:55:40 dawes Exp $ */
 /*
  * misc os utilities
  */
@@ -317,7 +317,7 @@ ProcessCmdLine(argc, argv)
 	}
 #endif
 	else if ( strcmp( argv[i], "-noscale") == 0)
-	    BitmapNoScaledFonts = FALSE;
+	    BitmapNoScaledFonts = TRUE;
 	else
 	    usage();
     }

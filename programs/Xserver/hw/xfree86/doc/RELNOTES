@@ -35,11 +35,128 @@
 
   2.  New Features in 3.1.2A
 
-
-  $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.35 1995/11/04 11:30:09 dawes Exp $
+  2.1.  General X server changes
 
 
+     o  Underscore characters are now ignored in Options and keywords in
+        the XF86Config file.
+
+     o  The built-in X server malloc is used by default.
+
+     o  A new pointer keyword RepeatMiddle has been added to support
+        dual-protocol 3-button mice which repeat the previous button
+        event when the middle button is pressed in Microsoft-compatible
+        mode.  If you've had problems getting the middle button working
+        on your mouse, try this.
+
+  2.2.  Trident driver (SVGA server)
+
+
+     o  Support is included for the TGUI 9440.
+
+  2.3.  Cirrus driver (SVGA server)
+
+
+     o  Support has been added for the CL-GD7543.
+
+     o  The programmable clock code has been improved to avoid unstable
+        settings.
+
+
+
+  2.4.  ARK driver (SVGA server)
+
+
+     o  Preliminary support has been added for the ICS5342
+        RAMDAC/programmable clock, which is used on the Stealth64
+        Graphics 2001 card.  To enable this, add the following lines to
+        the Device section of your XF86Config file:
+
+
+                  Ramdac    "ics5342"
+                  ClockChip "ics5342"
+
+
+
+
+
+     Do not include any Clocks lines in your XF86Config file.
+
+     o  Panning has been fixed for ARK2000PV cards with 2MB of video
+        memory.
+
+  2.5.  WD90C24 driver (SVGA server)
+
+
+     o  A problem with snow at high clocks has been fixed.
+
+  2.6.  S3 server
+
+
+     o  The default InvertVCLK settings have been changed for #9 Motion
+        771 cards and Hercules Terminator 64 Pro cards.  If you have
+        needed to add Invert_VCLK lines to your XF86Config file to avoid
+        screen wrapping with version 3.1.2, please remove them when
+        testing this version.  If there are problems with the new
+        defaults, please report them to us.
+
+  2.7.  Mach32 server
+
+
+     o  Hardware cursor mask problem has been fixed.
+
+  2.8.  Mach64 server
+
+
+     o  Hardware cursor mask problem has been fixed.
+
+     o  Support for the AT&T 20C408 RAMDAC/Clockchip has been added.
+
+     o  Arbitrary clocks can be used on most boards with supported clock
+        chips.  This is enabled with the "program_clocks" option.
+
+  2.9.  ET4000/W32 server
+
+
+     o  Preliminary support has been added for the ICS5341 programmable
+        clock.  To enable this, add the following lines to the Device
+        section of your XF86Config file:
+
+
+                  Ramdac    "ics5341"
+                  ClockChip "ics5341"
+
+
+
+
+
+  2.10.  VGA16 server
+
+
+     o  A problem preventing the StaticGray visual has been fixed.
+
+  2.11.  xf86config utility
+
+
+     o  Incorrect handling of IBM RGB Ramdacs has been fixed.
+
+  2.12.  Client/Library changes
+
+
+     o  xconsole has been updated for Unixware 2.x.
+
+     o  Colour support has been added to xterm.
+
+     o  XNLS support has been added for KOI8-R.
+
+     o  xrdb dynamically allocates string space to avoid overruns.
+
+     o  A memory overrun problem in xterm has been fixed.
+
+     o  An "AllowNullPasswd" resource has been added to xdm.
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.0 1995/11/12 09:52:35 dawes Exp $
 
 
 
@@ -64,3 +181,19 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\n$XFree86$

@@ -697,7 +697,9 @@
 
      ARK Logic SVGA driver by:
 
-        o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>,
+        o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>
+
+        o  Leon Bottou <bottou@laforia.ibp.fr>
 
      AL2101 SVGA driver by:
 
@@ -721,8 +723,8 @@
 
      Video7 SVGA driver by:
 
-        o  Craig Struble <cstruble@acm.vt.edu>
 
+        o  Craig Struble <cstruble@acm.vt.edu>
 
      RealTek SVGA driver by:
 
@@ -788,15 +790,14 @@
         ongoing XFree86 development, largely to consist of new video
         hardware and basic computing facilities.
 
-  The first of these was the primary motivation.  We have held
-
-  discussions with the X Consortium on and off for many months, attempt-
-  ing to find an avenue by which our loosely-organized free software
-  project could be given a voice within the X Consortium.  The bylaws of
-  the Consortium would not recognize such an organization.  After an
-  initial investigation about funding, we decided to form our own corpo-
-  ration to provide the avenue we needed to meet the requirements of the
-  X Consortium bylaws.
+  The first of these was the primary motivation.  We have held discus-
+  sions with the X Consortium on and off for many months, attempting to
+  find an avenue by which our loosely-organized free software project
+  could be given a voice within the X Consortium.  The bylaws of the
+  Consortium would not recognize such an organization.  After an initial
+  investigation about funding, we decided to form our own corporation to
+  provide the avenue we needed to meet the requirements of the X Consor-
+  tium bylaws.
 
   By doing this, we were able to be involved in the beta-test interval
   for X11R6, and have contributed the majority of XFree86 to the X11R6
@@ -854,7 +855,9 @@
   UUNET Communications Services, Inc, deserves special mention.  This
   organization stepped forward and contributed the entire 1994 X Consor-
   tium membership fee on a moment's notice.  This single act ensured
+
   XFree86's involvement in X11R6.
+
 
      o  GUUG -- 1st German Linux Congress
 
@@ -917,10 +920,11 @@
 
      o  Brett Neumeier
 
+
+
      o  Number Nine, Lexington, MA
 
      o  Kazuyuki Okamoto, Japan
-
 
      o  Prime Time Freeware <http://www.ptf.com/>, San Bruno, CA
 
@@ -987,7 +991,6 @@
            (Also via AFS:
            /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.2)
 
-
         +  tsx-11.mit.edu:/pub/linux/packages/X11/XFree86-3.1.2
            <ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.2>
            (Linux binaries and source)
@@ -1050,6 +1053,7 @@
            <ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.2> (source and
            binaries)
 
+
         +  ftp.iij.ad.jp:/pub/X/XFree86/XFree86/3.1.2
            <ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86/3.1.2> (source and
            binaries)
@@ -1073,11 +1077,7 @@
 
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.35 1995/11/04 11:30:09 dawes Exp $
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.36 1995/11/12 09:52:34 dawes Exp $
 
 
 
