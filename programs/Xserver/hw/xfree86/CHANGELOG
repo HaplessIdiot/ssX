@@ -1,4 +1,7 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 296. Set the vmware driver fallback monitor parameters to allow modes
+      one size smaller than the maximum reported screen size.  This allows
+      it to work much better when using automatic configuration (David Dawes).
  295. Bindist installer script improvements:
        - Log the installation.
        - Make backup copies of config files before overwriting them.
@@ -19326,7 +19329,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3406 2005/01/29 23:22:34 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3407 2005/01/30 02:46:08 dawes Exp $
 
 
 
