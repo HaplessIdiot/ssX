@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.18 2001/08/30 21:24:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.19 2001/08/31 07:58:28 alanh Exp $ */
 
 #include "win.h"
 
@@ -36,6 +36,7 @@ int		g_iGCPrivateIndex = -1;
 int		g_iPixmapPrivateIndex = -1;
 unsigned long	g_ulServerGeneration = 0;
 HBITMAP		g_hbmpGarbage = NULL;
+Bool		g_fInitializedDefaultScreens = FALSE;
 
 extern void OsVendorVErrorF (const char *pszFormat, va_list va_args);
 
@@ -57,9 +58,18 @@ winInitializeDefaultScreens (void)
   int                   i;
   DWORD			dwWidth, dwHeight;
 
+  /* Bail out early if default screens have already been initialized */
+  if (g_fInitializedDefaultScreens)
+    return;
+
+  /* Zero the memory used for storing the screen info */
+  ZeroMemory (g_ScreenInfo, MAXSCREENS * sizeof (winScreenInfo));
+
   /* Get default width and height */
   dwWidth = GetSystemMetrics (SM_CXSCREEN);
   dwHeight = GetSystemMetrics (SM_CYSCREEN);
+
+  ErrorF ("winInitializeDefaultScreens () - w %d h %d\n", dwWidth, dwHeight);
 
   /* Set a default DPI, if no parameter was passed */
   if (monitorResolution == 0)
@@ -82,6 +92,9 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].fUseWinKillKey = WIN_DEFAULT_WIN_KILL;
       g_ScreenInfo[i].fUseUnixKillKey = WIN_DEFAULT_UNIX_KILL;
     }
+
+  /* Signal that the default screens have been initialized */
+  g_fInitializedDefaultScreens = TRUE;
 }
 
 DWORD
@@ -129,14 +142,22 @@ void
 OsVendorInit (void)
 {
 #ifdef DDXOSVERRORF
-    if (!OsVendorVErrorFProc)
-	OsVendorVErrorFProc = OsVendorVErrorF;
+  if (!OsVendorVErrorFProc)
+    OsVendorVErrorFProc = OsVendorVErrorF;
 #endif
 
   /* Add a default screen if no screens were specified */
   if (g_iNumScreens == 0)
     {
-      /* Add a screen 0 using the defaults set by 
+      /* 
+       * We need to initialize default screens if no arguments
+       * were processed.  Otherwise, the default screens would
+       * already have been initialized by ddxProcessArgument ().
+       */
+      winInitializeDefaultScreens ();
+
+      /*
+       * Add a screen 0 using the defaults set by 
        * winInitializeDefaultScreens () and any additional parameters
        * processed by ddxProcessArgument ().
        */

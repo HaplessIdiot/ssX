@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.8 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.9 2001/08/31 07:58:28 alanh Exp $ */
 
 #include "win.h"
 
@@ -245,8 +245,10 @@ winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
   if (!pScreenPriv->fCursor)
       ShowCursor (TRUE);
 
+#if 0
   /* Remove our window from the clipboard viewer chain */
   ChangeClipboardChain (pScreenPriv->hwndScreen, pScreenPriv->hwndNextViewer);
+#endif
 
   /* Kill our window */
   if (pScreenPriv->hwndScreen)

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.17 2001/08/30 21:24:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.18 2001/08/31 07:58:28 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -327,6 +327,8 @@ typedef struct
 
   /* Clipboard support */
   HWND			hwndNextViewer;
+  void			*display;
+  int			window;
 
   /* Layer support */
   DWORD			dwLayerKind;
