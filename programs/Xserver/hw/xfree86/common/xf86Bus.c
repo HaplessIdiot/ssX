@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.62 2001/05/28 14:21:54 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.63 2001/06/02 15:21:50 dawes Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -53,16 +53,16 @@ resPtr osRes = NULL;
 resPtr ResRange = NULL;
 
 /* predefined special resources */
-const resRange resVgaExclusive[] = {_VGA_EXCLUSIVE, _END};
-const resRange resVgaShared[] = {_VGA_SHARED, _END};
-const resRange resVgaMemShared[] = {_VGA_SHARED_MEM,_END};
-const resRange resVgaIoShared[] = {_VGA_SHARED_IO,_END};
-const resRange resVgaUnusedExclusive[] = {_VGA_EXCLUSIVE_UNUSED, _END};
-const resRange resVgaUnusedShared[] = {_VGA_SHARED_UNUSED, _END};
-const resRange resVgaSparseExclusive[] = {_VGA_EXCLUSIVE_SPARSE, _END};
-const resRange resVgaSparseShared[] = {_VGA_SHARED_SPARSE, _END};
-const resRange res8514Exclusive[] = {_8514_EXCLUSIVE, _END};
-const resRange res8514Shared[] = {_8514_SHARED, _END};
+resRange resVgaExclusive[] = {_VGA_EXCLUSIVE, _END};
+resRange resVgaShared[] = {_VGA_SHARED, _END};
+resRange resVgaMemShared[] = {_VGA_SHARED_MEM,_END};
+resRange resVgaIoShared[] = {_VGA_SHARED_IO,_END};
+resRange resVgaUnusedExclusive[] = {_VGA_EXCLUSIVE_UNUSED, _END};
+resRange resVgaUnusedShared[] = {_VGA_SHARED_UNUSED, _END};
+resRange resVgaSparseExclusive[] = {_VGA_EXCLUSIVE_SPARSE, _END};
+resRange resVgaSparseShared[] = {_VGA_SHARED_SPARSE, _END};
+resRange res8514Exclusive[] = {_8514_EXCLUSIVE, _END};
+resRange res8514Shared[] = {_8514_SHARED, _END};
 
 /* Flag: do we need RAC ? */
 static Bool needRAC = FALSE;
