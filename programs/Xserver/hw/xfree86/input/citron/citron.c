@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.1 2000/11/02 02:51:20 dawes Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -190,7 +190,7 @@ static int      debug_level = 0;
 #define WAIT(t)												\
     err = xf86WaitForInput(-1, ((t) * 1000));				\
     if (err == -1) {										\
-	ErrorF("Citron select error : %s\n", strerror(errno));	\
+	ErrorF("Citron select error\n");	\
 	return !Success;										\
     }
 #else
