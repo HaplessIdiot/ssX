@@ -74,7 +74,6 @@ xf86SetDDCproperties(ScrnInfoPtr pScrnInfo, xf86MonPtr DDC)
 
     } else if (DDC->ver.version == 2) {
       if ( (EDID2rawdata = xalloc(256*sizeof(CARD8)))==NULL ) {
-	xfree(EDID2rawdata);
 	return FALSE;
       }
       for (i=0; i<256; i++) {
