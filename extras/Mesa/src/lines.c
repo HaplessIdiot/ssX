@@ -557,6 +557,7 @@ static void general_flat_rgba_line( GLcontext *ctx,
                                     GLuint vert0, GLuint vert1, GLuint pvert )
 {
    const GLubyte *color = ctx->VB->ColorPtr->data[pvert];
+   GLuint count;
    PB_SET_COLOR( ctx->PB, color[0], color[1], color[2], color[3] );
 
    if (ctx->Line.StippleFlag) {
@@ -565,7 +566,10 @@ static void general_flat_rgba_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define WIDE 1
 #define STIPPLE 1
-#define PLOT(X,Y)  PB_WRITE_PIXEL(ctx->PB, X, Y, Z);
+#define PLOT(X,Y) 				\
+	PB_WRITE_PIXEL(ctx->PB, X, Y, Z);	\
+	count = ctx->PB->count;			\
+	CHECK_FULL(count);
 #include "linetemp.h"
    }
    else {
@@ -585,7 +589,10 @@ static void general_flat_rgba_line( GLcontext *ctx,
 #define INTERP_XY 1
 #define INTERP_Z 1
 #define WIDE 1
-#define PLOT(X,Y) PB_WRITE_PIXEL(ctx->PB, X, Y, Z);
+#define PLOT(X,Y) 				\
+	PB_WRITE_PIXEL(ctx->PB, X, Y, Z);	\
+	count = ctx->PB->count;			\
+	CHECK_FULL(count);
 #include "linetemp.h"
       }
    }
