@@ -1,4 +1,18 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 869. Change initMouseHW() to always return TRUE, which restores the older
+      more graceful behaviour (Egbert Eich).
+ 868. Revert the DestroyContext, GarbageCollectDrawables reording in
+      dri_util.c, and instead check if the drawable is known to the DRI
+      client code before calling XF86DRIGetDrawableInfo (Egbert Eich).
+ 867. Fix some scaling problems with the updated whiteglass cursor icons,
+      fixing some incorrect hotspots (Kevin Puetz).
+ 866. The sunffb driver was treating a function with a void return value
+      as if it had a Bool return value.  This causes the driver to fail
+      in some cases (#A.1588, Ferris McCormick).
+ 865. Add private keysyms for the new XKB actions (XFree86 special keys),
+      and move those actions to an XKB compatibility map.  This fixes
+      side-effects (loss of auto-repeat and mousekeys functionality) of
+      the way this was implemented previously (#5610, Ivan Pascal).
  864. Fix an X server crash with the "freetype" module when displaying
       kochi-mincho.ttf at a size of 18 pixels or higher (Chisato Yamauchi).
  863. Fix segfault in XkbInitKeyboardDeviceStruct() (David Dawes).
@@ -16305,4 +16319,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2539 2003/02/09 02:28:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2540 2003/02/09 02:44:43 dawes Exp $
