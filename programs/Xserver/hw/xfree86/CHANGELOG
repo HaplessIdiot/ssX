@@ -1,3 +1,19 @@
+XFree86 3.1.2Af (23 December 1995)
+168. Modify the Joystick code to auto-detect the centre values at startup
+     if they are not given the XF86Config (this assumes that the Joystick
+     is centred when first enabled).
+167. Add XInput Joystick support for FreeBSD 2.x.
+166. Remove the strict membase checking for "orchid_p9000" in the P9000
+     server so that the correct membase can be specified for some other
+     types of P9000 cards which are not explicitly supported.
+165. Fix problem with the trident driver in the VGA16 server (Alan Hourihane).
+164. XF86Config(4/5) man page additions for the XInput section
+     (Frederic Lepied).
+163. Update xfree98/Imakefile (Takefumi Tsukada).
+162. Remove the "no_ti3026_curs" option again.
+161. Updates for xdpyinfo's Imakefile and the Xinput code for ISC
+     (Michael Rohleder).
+
 XFree86 3.1.2Ae (23 December 1995)
 160. A new document called QuickStart.doc which is a quick-start guide
      to XFree86 setup (Joe Moss).

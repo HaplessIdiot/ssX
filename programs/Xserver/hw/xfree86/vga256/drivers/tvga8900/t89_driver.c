@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.16 1995/12/17 05:04:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.17 1995/12/23 09:39:54 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -750,6 +750,7 @@ TVGA8900Probe()
 		ErrorF("%s Card Type is %s\n",XCONFIG_PROBED,CardType);
 
 		tridentLinearOK = TRUE;		/* All TGUI cards have Linear */
+#ifndef MONOVGA
 		TVGA8900.ChipUse2Banks = TRUE;	/* All TGUI's have 2 Banks */
 		TVGA8900.ChipSetRead = TGUISetRead;
 		TVGA8900.ChipSetWrite = TGUISetWrite;
@@ -757,6 +758,7 @@ TVGA8900Probe()
 #if 0
 		TVGA8900.ChipHas16bpp = TRUE;	/* 16bpp and 32bpp */
 		TVGA8900.ChipHas32bpp = TRUE;
+#endif
 #endif
 	}
 

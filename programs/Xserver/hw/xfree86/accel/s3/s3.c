@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.110 1995/12/21 11:44:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.111 1995/12/23 09:38:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -838,7 +838,6 @@ s3Probe()
    OFLG_SET(OPTION_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_NO_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_TI3026_CURS, &validOptions);
-   OFLG_SET(OPTION_NO_TI3026_CURS, &validOptions);
    OFLG_SET(OPTION_IBMRGB_CURS, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
    OFLG_SET(OPTION_DAC_6_BIT, &validOptions);

@@ -1,5 +1,5 @@
 /* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.41 1995/12/09 11:06:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.42 1995/12/17 04:59:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1313,7 +1313,7 @@ agxInit (scr_index, pScreen, argc, argv)
     * Need to set the color, origin, and size.  Then draw.
     */
 #ifndef DIRTY_STARTUP
-   if(agxInfoRec.bitsPerPixel == 8)         
+   if(agxInfoRec.bitsPerPixel == 8 && xf86FlipPixels)         
       agxImageClear(1);
    else
       agxImageClear(0);

@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2B (beta version)
  <author>The XFree86 Project, Inc
- <date>23 December 1995
+ <date>26 December 1995
 
 
 <abstract>
@@ -56,7 +56,33 @@ our usual support address.
 <sect1> General X server changes
 <p>
 <itemize>
-  <item>ADD SOMETHING HERE ??
+  <item>A new extension called XFree86-DGA is now provided.  This allows
+	a client program to get direct access to the video card's memory.
+	This is currently only implemented for the S3 and Mach64 servers
+	and the Cirrus and Trident drivers of the SVGA server.
+  <item>An implementation of the XInput extension is now included.  It
+	has support for the following devices:
+	<itemize>
+	  <item>Joystick (Linux-only at the moment)
+	  <item>Wacom tablet (Wacom IV protocol only)
+	  <item>Elographics touchscreen
+	</itemize>
+	Refer to the XF86Config(4/5) manual page for configuration details.
+  <item>The default black and white pixel values are now black = 0 and
+	white = 1 for all servers.  This may be swapped with the
+	`-flipPixels' command-line option.
+</itemize>
+<sect1> PC98 support
+<p>
+<itemize>
+  <item>Support has been added for PC98 machines.  These are Intel based
+	machines which are common in Japan.
+  <item>Initial release of the PC98 NEC(S3) server. This server is based on
+	the PC-AT S3 server.
+  <item>Initial release of the PC98 SKB-PowerWindow(S3) server. This server is
+	based on the PC-AT S3 server.
+  <item>Initial release of the PC98 PowerWindowLB(S3) server. This server
+	is based on the PC-AT S3 server.
 </itemize>
 <sect1> Trident driver (SVGA server)
 <p>
@@ -71,17 +97,64 @@ our usual support address.
 <sect1> ARK driver (SVGA server)
 <p>
 <itemize>
-  <item>No changes -- say something about it the ics5342 not working.
+  <item>No changes since 3.1.2A.  The ICS5342 clock support (required
+	for the Diamond Stealth64 Graphics 2001 series) reportedly
+	doesn't work.
 </itemize>
 <sect1> S3 server
 <p>
 <itemize>
-  <item>ADD SOMETHING HERE
+  <item>Workaround for the hardware bug in some new Trio32 chips that
+	causes font corruption.  To enable this workaround, add the following
+	line to the Device section of your XF86Config:
+	<tscreen><verb>
+	Option "trio32_fc_bug"
+	</verb></tscreen>
+  <item>Support for S3 and Bt485 HW cursor in doublescan modes.
+  <item>Fix positioning of IBM RGB Ramdac HW cursor in interlace and
+	doublescan modes (the cursor shape still isn't correct).
+  <item>Fixed detection of Trio64V+ cards.
+  <item>Improved linear fb detection for PCI cards.  In particular this
+	should allow most Trio64V+ cards to use the linear fb, which
+	seems to prevent a lot of the lockups that have been reported.
+  <item>Support for the ELSA Elsa Winner2000PRO/X-2,4 Rev.G which uses
+	an ICS9161A clock chip as well as the Ti3026 RAMDAC (clock
+	doubling not supported yet).
+  <item>The AT&amp;T20C409 RAMDAC now supported at clocks up to 135MHz
+	in 8bpp mode.
 </itemize>
 <sect1> Mach64 server
 <p>
 <itemize>
-  <item>ADD SOMETHING HERE
+  <item>The Mach64 CT (also known as the 264CT, or 215CT22200) chip is now
+	supported.  This chip has a integrated RAMDAC and clockchip, and
+	is used on some Graphics Xpression and WinBoost cards.
+  <item>The Mach64 GX-F (GX rev 3) is now supported.
+  <item>The IBM RGB514 RAMDAC is now supported (as used on the ATI
+	Graphics Turbo Pro 1600).
+  <item>The memory base should now be correctly detected for VLB cards.
+	If you've needed to add a `MemBase' line to your XF86Config for
+	previous versions, please try removing it, and let us know if there
+	are any problems.
+  <item>Cursor colour problems at 16bpp/32bpp mode with some RAMDACs have
+	been fixed.
+  <item>Errors in detecting some RAMDACs (like the CH8398) should now be
+	fixed.
+  <item>8 bit-per-RGB mode (when running at 8bpp) is now default for
+	RAMDACs that support it.
+  <item>Known problems with this version of the Mach64 server are:
+	<itemize>
+	  <item>The Background colour is not correctly set after exiting
+		the server when using a GPT1600 card.
+	  <item>VT switching does not work for cards with the CH8398 and
+		AT&amp;T20C409 RAMDACs.
+	  <item>The background colour of the cursor in xterms for the
+		CH8398 and T&amp;T20C409 RAMDACs is blue instead of
+		black in 16bpp and 32bpp modes.
+	  <item>When using the software cursor, after switching to the
+		console and back, it leaves ``droppings'' when entering
+		and exiting windows (this bug is also present in 3.1.2).
+	</itemize>
 </itemize>
 <sect1> ET4000/W32 server
 <p>
@@ -95,15 +168,15 @@ our usual support address.
 	It is currently only supported by the VGA16 and Mono servers.
 	Support for 256 colour operation is being worked on.
 </itemize>
-<sect1> SuperProbe
-<p>
-<itemize>
-  <item>ADD SOMETHING HERE
-</itemize>
 <sect1> Client/Library changes
 <p>
 <itemize>
-  <item>ADD SOMETHING HERE ??
+  <item>The following new clients have been added:
+	<itemize>
+	  <item>dga -- a test program for the XFree86-DGA extension.
+	  <item>xsetmode, xsetpointer -- programs for use with the XInput
+		extension.
+	</itemize>
 </itemize>
 <p>
 
@@ -258,6 +331,9 @@ The XFree86 3.1.2B binary beta release is distributed as a upgrade to
 <tag/X312BSVGA.tgz/	SVGA server
 <tag/X312BVG16.tgz/	16 colour VGA server
 <tag/X312BW32.tgz/	ET4000/W32 server
+<tag/X312B9NS3.tgz/	PC98 NEC(S3) server
+<tag/X312B9SPW.tgz/	PC98 PCSKB-PowerWindow(S3) server
+<tag/X312B9LPW.tgz/	PC98 PowerWindowLB(S3) server
 <tag/X312Bupd.tgz/	clients/libraries that have changed since 3.1.2
 <tag/postinst.sh/	script to run after installing the 3.1.2B binaries
 </descrip>
@@ -276,10 +352,16 @@ X312BP9K.tgz	   P9000 server
 X312BSVGA.tgz	   SVGA server
 X312BVG16.tgz	   16 colour VGA server
 X312BW32.tgz	   ET4000/W32 server
+X312B9NS3.tgz	   PC98 NEC(S3) server (*)
+X312B9SPW.tgz	   PC98 PCSKB-PowerWindow(S3) server (*)
+X312B9LPW.tgz	   PC98 PowerWindowLB(S3) server (*)
 X312Bupd.tgz	   clients/libraries that have changed since 3.1.2
 postinst.sh	   script to run after installing the 3.1.2B binaries
 </verb>
 </quote>
+(*)Note: The PC98 servers are for use only on PC98 machines (if you don't
+know what a PC98 machine is, you don't need these).  Binaries for these
+are available only for FreeBSD and NetBSD.
 
 If you don't already have XFree86 3.1.2 installed, first install that.
 If you have already installed 3.1.2A, that's fine.
@@ -310,7 +392,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.7 1995/12/16 08:20:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.8 1995/12/23 09:39:09 dawes Exp $
 </verb>
 
 </article>

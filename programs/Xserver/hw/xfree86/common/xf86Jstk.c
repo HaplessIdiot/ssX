@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.0 1995/12/23 09:38:54 dawes Exp $ */
 
 static const char rcs_id[] = "Id: xf86Jstk.c,v 1.1 1995/12/20 14:02:12 lepied Exp";
 
@@ -187,7 +187,9 @@ int /*doclose*/
 extern int xf86JoystickOn(
 #ifdef NeedFunctionPrototypes
 char * /*name*/,
-int * /*timeout*/
+int * /*timeout*/,
+int * /*centerX*/,
+int * /*centerY*/
 #endif
 );
 
@@ -286,7 +288,7 @@ xf86JstkConfig(LocalDevicePtr     dev,
 		priv->jstkMinX, priv->jstkMinY, priv->jstkCenterX, priv->jstkCenterY,
 		priv->jstkDelta));
 
-  if (xf86verbose) {
+  if (xf86Verbose) {
     ErrorF("%s %s : timeout=%d port=%s maxx=%d maxy=%d minx=%d miny=%d "
 	   "centerx=%d centery=%d delta=%d\n", XCONFIG_GIVEN, dev->name,
 	   priv->jstkTimeout, priv->jstkDevice, priv->jstkMaxX, priv->jstkMaxY,
@@ -440,7 +442,9 @@ xf86JstkProc(pJstk, what)
       
     case DEVICE_ON:
       priv->jstkFd = jstkfd = xf86JoystickOn(priv->jstkDevice,
-                                             &(priv->jstkTimeout));
+                                             &(priv->jstkTimeout),
+					     &(priv->jstkCenterX),
+					     &(priv->jstkCenterY));
 
       DBG(1, ErrorF("xf86JstkProc  pJstk=0x%x what=ON name=%s\n", pJstk,
                     priv->jstkDevice));

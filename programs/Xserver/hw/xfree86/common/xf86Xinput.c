@@ -22,14 +22,14 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.0 1995/12/23 09:38:57 dawes Exp $ */
 
 static const char rcs_id[] = "Id: xf86Xinput.c,v 1.1 1995/12/20 14:00:01 lepied Exp";
 
 #include "XI.h"
 #include "XIproto.h"
-#include "osdep.h"
 #include "xf86.h"
+#include "osdep.h"
 #include "xf86Priv.h"
 #include "xf86Xinput.h"
 #include "xf86_Config.h"

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.43 1995/12/09 11:07:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.44 1995/12/17 05:02:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -844,7 +844,10 @@ mach32Initialize (scr_index, pScreen, argc, argv)
      * Need to set the color, origin, and size.  Then draw.
      */
     WaitQueue(6);
-    outw(FRGD_COLOR, 1);
+    if (xf86bpp == 8 && xf86FlipPixels)
+	outw(FRGD_COLOR, 1);
+    else
+	outw(FRGD_COLOR, 0);
     outw(CUR_X, 0);
     outw(CUR_Y, 0);
     outw(MAJ_AXIS_PCNT, mach32MaxX);

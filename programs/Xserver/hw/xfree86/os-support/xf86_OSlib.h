@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.18 1995/07/01 10:49:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.19 1995/12/23 09:39:20 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -130,6 +130,11 @@
 #  define CLEARDTR_SUPPORT
 #  define POSIX_TTY
 # endif /* SVR4 */
+
+# ifdef ISC
+#  include <termios.h>
+#  define POSIX_TTY
+# endif
 
 # if defined(sun) && defined (i386) && defined (SVR4)
 #  define USE_VT_SYSREQ

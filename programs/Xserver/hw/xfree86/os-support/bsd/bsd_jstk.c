@@ -1,4 +1,3 @@
-/* Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp */
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
  *                                                                            
@@ -22,16 +21,17 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.0 1995/12/23 09:39:24 dawes Exp $ */
+/* Modified for FreeBSD by David Dawes <dawes@XFree86.org> */
 
-static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
+/* $XFree86$ */
 
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
-#include <linux/joystick.h>
+#include <machine/joystick.h>
 #include <fcntl.h>
-#include <sys/ioctl.h>
+
+#define JS_RETURN sizeof(struct joystick)
 
 extern int errno;
 
@@ -45,13 +45,15 @@ extern int errno;
  */
 
 int
-xf86JoystickOn(char * name, int *timeout, *centerX, *centerY)
+xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
 {
   int   status;
-  struct JS_DATA_TYPE   js;
+  int   changed = 0;
+  int   timeinmicros;
+  struct joystick	js;
   
 #ifdef DEBUG
-  ErrorF("xf86JoystickOn %s\n", name);
+  ErrorF("xf86JoystickOn: %s\n", name);
 #endif
   
   if ((status = open(name, O_RDWR | O_NDELAY)) < 0)
@@ -61,9 +63,24 @@ xf86JoystickOn(char * name, int *timeout, *centerX, *centerY)
       return -1;
     }
 
-  *timeout = 50;
+  if (*timeout == 0) {
+    /* Use the current setting */
+    ioctl(status, JOY_GETTIMEOUT, &timeinmicros);
+    *timeout = timeinmicros / 1000;
+    if (*timeout == 0)
+      *timeout = 1;
+    changed = 1;
+  }
+  /* Maximum allowed timeout in the FreeBSD driver is 10ms */
+  if (*timeout > 10) {
+    *timeout = 10;
+    changed = 1;
+  }
   
-  ErrorF("xf86JoystickOn: Timeout value changed to %d\n", *timeout);
+  if (changed)
+    ErrorF("xf86JoystickOn: Timeout value changed to %d\n", *timeout);
+
+  timeinmicros = *timeout * 1000;
 
   /* Assume the joystick is centred when this is called */
   read(status, &js, JS_RETURN);
@@ -75,7 +92,7 @@ xf86JoystickOn(char * name, int *timeout, *centerX, *centerY)
     *centerY = js.y;
     ErrorF("xf86JoystickOn: CenterY set to %d\n", *centerY);
   }
-  
+
   return status;
 }
 
@@ -133,7 +150,7 @@ int     *x;
 int     *y;
 int     *buttons;
 {
-  struct JS_DATA_TYPE   js;
+  struct joystick	js;
   int                   status;
   
   status = read(fd, &js, JS_RETURN);
@@ -146,9 +163,13 @@ int     *buttons;
   
   *x = js.x;
   *y = js.y;
-  *buttons = js.buttons;
+  *buttons = js.b1 | (js.b2 << 1);
+#ifdef DEBUG
+  ErrorF("xf86JoystickGetState: x = %d, y = %d, buttons = %d\n", *x, *y,
+	 *buttons);
+#endif
   
   return 1;
 }
 
-/* end of lnx_jstk.c */
+/* end of bsd_jstk.c */

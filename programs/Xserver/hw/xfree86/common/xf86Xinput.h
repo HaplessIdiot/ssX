@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.0 1995/12/23 09:38:59 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -35,6 +35,9 @@
 #define XI86_NO_OPEN_ON_INIT    1 /* open the device only when needed */
 #define XI86_CONFIGURED         2 /* the device has been configured */
 
+#ifdef PRIVATE
+#undef PRIVATE
+#endif
 #define PRIVATE(dev) (((LocalDevicePtr)((dev)->public.devicePrivate))->private)
 
 typedef struct _LocalDeviceRec {  

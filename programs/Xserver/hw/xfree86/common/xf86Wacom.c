@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.0 1995/12/23 09:38:56 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -643,15 +643,23 @@ xf86WcmOpen(LocalDevicePtr	local)
   termios_tty.c_cc[VINTR] = 0;
   termios_tty.c_cc[VQUIT] = 0;
   termios_tty.c_cc[VERASE] = 0;
+#ifdef VWERASE
   termios_tty.c_cc[VWERASE] = 0;
+#endif
+#ifdef VREPRINT
   termios_tty.c_cc[VREPRINT] = 0;
+#endif
   termios_tty.c_cc[VKILL] = 0;
   termios_tty.c_cc[VEOF] = 0;
   termios_tty.c_cc[VEOL] = 0;
   termios_tty.c_cc[VEOL2] = 0;
   termios_tty.c_cc[VSUSP] = 0;
+#ifdef VDISCARD
   termios_tty.c_cc[VDISCARD] = 0;
+#endif
+#ifdef VLNEXT
   termios_tty.c_cc[VLNEXT] = 0; 
+#endif
 	
   termios_tty.c_cc[VMIN] = 1 ;
   termios_tty.c_cc[VTIME] = 10 ;

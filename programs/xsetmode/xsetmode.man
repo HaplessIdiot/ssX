@@ -1,0 +1,15 @@
+.\" $XFree86$
+.\"
+.TH xsetmode 1 "Release 6" "X Version 11"
+.SH NAME
+xsetmode \- set the mode for an X Input device
+.SH SYNOPSIS
+.B xsetmode
+.I device-name
+.B ABSOLUTE
+|
+.B RELATIVE
+.SH DESCRIPTION
+Xsetmode sets the mode of an XInput device to either absolute or relative.
+.SH AUTHOR
+Frederic Lepied

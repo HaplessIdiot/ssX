@@ -1,5 +1,5 @@
 /* $XConsortium: p9000orchid.c,v 1.2 94/11/21 22:38:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.4 1995/07/12 15:35:56 dawes Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -137,14 +137,19 @@ p9000OrchidValidate()
   /* Lets be safe... */
   p9000MaxClock = P9000_MAX_ORCHID_CLOCK;
 
+#if 0
   if ((p9000InfoRec.MemBase != 0xC0000000) &&
       (p9000InfoRec.MemBase != 0xD0000000) &&
       (p9000InfoRec.MemBase != 0xE0000000))
+#else
+  if (p9000InfoRec.MemBase == 0)
+#endif
     {
       ErrorF("%s: MemBase must be specified with Orchid P9000!\n",
 	     p9000InfoRec.name);
-      ErrorF("\tCheck your dip switches 6 and 7.\n");
-      ErrorF("\tValid values are 0xC0000000, 0xD0000000, and 0xE0000000.\n");
+      ErrorF("\tIf using a genuine Orchid card:\n");
+      ErrorF("\t\tCheck your dip switches 6 and 7.\n");
+      ErrorF("\t\tValid values are 0xC0000000, 0xD0000000, and 0xE0000000.\n");
       return(FALSE);
     }
   return(TRUE);

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.29 1995/12/17 05:03:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.30 1995/12/23 09:38:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1392,7 +1392,10 @@ mach64Initialize (scr_index, pScreen, argc, argv)
      * Need to set the color, origin, and size.  Then draw.
      */
     WaitQueue(4);
-    regw(DP_FRGD_CLR, 1);
+    if (xf86bpp == 8 && xf86FlipPixels)
+	regw(DP_FRGD_CLR, 1);
+    else
+	regw(DP_FRGD_CLR, 0);
     regw(DST_Y_X, 0);
     regw(DST_CNTL, 0x03);
     regw(DST_HEIGHT_WIDTH, ((mach64VirtX << 16) | mach64VirtY));

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.41 1995/12/23 09:39:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.42 1995/12/23 10:36:47 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -105,7 +105,6 @@ typedef struct {
 #define OPTION_TI3026_CURS	57 /* Use 3026 RAMDAC cursor (default) */
 #define OPTION_IBMRGB_CURS	58 /* Use IBM RGB52x RAMDAC cursor (default) */
 #define OPTION_DAC_6_BIT	59 /* 6-bit DAC operation */
-#define OPTION_NO_TI3026_CURS	60 /* Use 3026 RAMDAC cursor (default) */
 
 /* Vendor specific options */
 #define OPTION_SPEA_MERCURY	70 /* pixmux for SPEA Mercury (S3) */
@@ -266,7 +265,6 @@ OptFlagRec xf86_OptionTab[] = {
   { "bt482_curs",	OPTION_BT482_CURS },
   { "s3_964_bt485_vclk",OPTION_S3_964_BT485_VCLK },
   { "dac_6_bit",	OPTION_DAC_6_BIT },
-  { "no_ti3026_curs",	OPTION_NO_TI3026_CURS },
 
   { "spea_mercury",	OPTION_SPEA_MERCURY },
   { "number_nine",	OPTION_NUMBER_NINE },
@@ -353,7 +351,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "s3_trio64",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "ti3026",		CLOCK_OPTION_TI3026 },    /* TI3026 */
-  { "ibm_rgb514",	CLOCK_OPTION_IBMRGB },    /* IBM RGB524 */
+  { "ibm_rgb514",	CLOCK_OPTION_IBMRGB },    /* IBM RGB514 */
   { "ibm_rgb524",	CLOCK_OPTION_IBMRGB },    /* IBM RGB524 */
   { "ibm_rgb525",	CLOCK_OPTION_IBMRGB },    /* IBM RGB525 */
   { "ibm_rgb528",	CLOCK_OPTION_IBMRGB },    /* IBM RGB528 */

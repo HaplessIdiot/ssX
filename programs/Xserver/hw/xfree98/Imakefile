@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/Imakefile,v 3.0 1995/12/17 10:04:37 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -15,15 +15,14 @@ VGA16SCREEN = vga16
 ACCELDIRS = accel
 #endif
 
-SCREENS = $(VGA16SCREEN) $(VGA256SCREEN)
-
-#if XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer || \
-    XF98WABSServer    || XF98SVGAServer   || XF98EGCServer    || \
-    XF98NECS3Server   || XF98PWSKBServer  || XF98PWLBServer
-PC98DIRS = common common_hw os-support
+#if !defined(OsfArchitecture) && !defined(AmoebaArchitecture)
+SUPERPROBE = SuperProbe
 #endif
 
-SUBDIRS = $(PC98DIRS) $(SCREENS) $(ACCELDIRS) etc
+SCREENS = $(VGA16SCREEN) $(VGA256SCREEN)
+
+SUBDIRS = common common_hw os-support $(SCREENS) $(ACCELDIRS) doc \
+          reconfig xf86config etc LinkKit VGADriverDoc $(SUPERPROBE)
 
 #ifndef OS2Architecture
 XF86CONFIG = XF86Config
@@ -45,38 +44,44 @@ T1FONTPATH=\"$(LIBDIR)/fonts/Type1/\"
 SPFONTPATH=\"$(LIBDIR)/fonts/Speedo/\"
 DPI75FONTPATH=\"$(LIBDIR)/fonts/75dpi/\"
 DPI100FONTPATH=\"$(LIBDIR)/fonts/100dpi/\"
+DPI75USFONTPATH=\"$(LIBDIR)/fonts/75dpi/:unscaled\"
+DPI100USFONTPATH=\"$(LIBDIR)/fonts/100dpi/:unscaled\"
 
-#if Build75Dpi
+#if Build75DpiFonts
   USE_75FONTS="    FontPath"
 #else
   USE_75FONTS="XCOMM    FontPath"
 #endif
-#if Build100Dpi
+#if Build100DpiFonts
   USE_100FONTS=FontPath
 #else
   USE_100FONTS="XCOMM    FontPath"
 #endif
-#if BuildSpeedo
+#if BuildSpeedoFonts
   USE_SPFONTS="    FontPath"
 #else
   USE_SPFONTS="XCOMM    FontPath"
 #endif
-#if BuildType1
+#if BuildType1Fonts
   USE_T1FONTS="    FontPath"
 #else
   USE_T1FONTS="XCOMM    FontPath"
 #endif
 
-#if defined(i386BsdArchitecture)
-  MOUSEDEV=\"/dev/com1\"
-#else
-# ifdef LinuxArchitecture
+#ifdef FreeBSDArchitecture
   MOUSEDEV=\"/dev/mouse\"
+#else
+# if defined(i386BsdArchitecture)
+  MOUSEDEV=\"/dev/com1\"
 # else
-#  ifdef i386ScoArchitecture
-  MOUSEDEV=\"/dev/tty1a\"
+#  ifdef LinuxArchitecture
+  MOUSEDEV=\"/dev/mouse\"
 #  else
+#   ifdef i386ScoArchitecture
+  MOUSEDEV=\"/dev/tty1a\"
+#   else
   MOUSEDEV=\"/dev/tty00\"
+#   endif
 #  endif
 # endif
 #endif
@@ -88,6 +93,7 @@ CppFileTarget($(XF86CONFIG), XF86Conf.cpp,
     -DUSE_SPFONTS=$(USE_SPFONTS) -DSPFONTPATH=$(SPFONTPATH)
     -DUSE_75FONTS=$(USE_75FONTS) -DDPI75FONTPATH=$(DPI75FONTPATH)
     -DUSE_100FONTS=$(USE_100FONTS) -DDPI100FONTPATH=$(DPI100FONTPATH)
+    -DDPI75USFONTPATH=$(DPI75USFONTPATH) -DDPI100USFONTPATH=$(DPI100USFONTPATH)
     -DMOUSEDEV=$(MOUSEDEV) -DMANPAGE=$(MANPAGE),
     $(ICONFIGFILES))
 #else
@@ -97,6 +103,8 @@ CppFileTarget($(XF86CONFIG), XF86Conf.cpp, \
     -DUSE_SPFONTS=$(USE_SPFONTS) -DSPFONTPATH=$(SPFONTPATH) \
     -DUSE_75FONTS=$(USE_75FONTS) -DDPI75FONTPATH=$(DPI75FONTPATH) \
     -DUSE_100FONTS=$(USE_100FONTS) -DDPI100FONTPATH=$(DPI100FONTPATH) \
+    -DDPI75USFONTPATH=$(DPI75USFONTPATH) \
+    -DDPI100USFONTPATH=$(DPI100USFONTPATH) \
     -DMOUSEDEV=$(MOUSEDEV) -DMANPAGE=$(MANPAGE), \
     $(ICONFIGFILES))
 #endif

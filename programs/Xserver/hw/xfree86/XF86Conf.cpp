@@ -1,5 +1,5 @@
 XCOMM $XConsortium: XF86Conf.cpp,v 1.5 95/01/16 13:16:10 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.13 1995/07/05 12:37:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.14 1995/11/16 11:04:10 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -149,6 +149,62 @@ XCOMM ChordMiddle is an option for some 3-button Logitech mice
 XCOMM    ChordMiddle
 
 EndSection
+
+
+XCOMM **********************************************************************
+XCOMM Xinput section -- this is optional and is required only if you
+XCOMM are using extended input devices.  This is for example only.  Refer
+XCOMM to the XF86Config man page for a description of the options.
+XCOMM **********************************************************************
+XCOMM
+XCOMM Section "Xinput"
+XCOMM    SubSection "WacomStylus"
+XCOMM        Port "/dev/ttyS1"
+XCOMM        DeviceName "Wacom"
+XCOMM    EndSubSection
+XCOMM    SubSection "WacomCursor"
+XCOMM    EndSubSection
+XCOMM    SubSection "WacomEraser"
+XCOMM    EndSubSection
+XCOMM
+XCOMM    SubSection "Elographics"
+XCOMM        Port "/dev/ttyS1"
+XCOMM        DeviceName "Elo"
+XCOMM        MinimumXPosition 300
+XCOMM        MaximumXPosition 3500
+XCOMM        MinimumYPosition 300
+XCOMM        MaximumYPosition 3500
+XCOMM        Screen 0
+XCOMM        UntouchDelay 10
+XCOMM        ReportDelay 10
+XCOMM    EndSubSection
+XCOMM   
+XCOMM    SubSection "Joystick"
+XCOMM        Port "/dev/joy0"
+XCOMM        DeviceName "Joystick"
+XCOMM        TimeOut 10
+XCOMM        MinimumXPosition 100
+XCOMM        MaximumXPosition 1300
+XCOMM        MinimumYPosition 100
+XCOMM        MaximumYPosition 1100
+XCOMM        # CenterX 700
+XCOMM        # CenterY 600
+XCOMM        Delta 20
+XCOMM    EndSubSection
+XCOMM   
+XCOMM    SubSection "Joystick2"
+XCOMM        Port "/dev/joy1"
+XCOMM        DeviceName "Joystick2"
+XCOMM        TimeOut 10
+XCOMM        MinimumXPosition 100
+XCOMM        MaximumXPosition 1300
+XCOMM        MinimumYPosition 100
+XCOMM        MaximumYPosition 1100
+XCOMM        # CenterX 700
+XCOMM        # CenterY 600
+XCOMM        Delta 20
+XCOMM    EndSubSection
+XCOMM EndSection
 
 
 XCOMM **********************************************************************
