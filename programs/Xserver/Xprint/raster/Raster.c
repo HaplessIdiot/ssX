@@ -31,7 +31,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.6 2001/10/28 03:32:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.8 2001/12/02 13:35:28 herrb Exp $ */
 
 /*******************************************************************
 **
@@ -1383,11 +1383,11 @@ RasterCloseScreen(
 static void SigchldHndlr (int dummy)
 {
     int   status, w;
+    int   olderrno = errno;
     struct sigaction act;
     sigfillset(&act.sa_mask);
     act.sa_flags = 0;
     act.sa_handler = SigchldHndlr;
-    int olderrno = errno;
 
     w = wait (&status);
 
