@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.45 2002/02/19 11:09:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.46 2002/09/17 01:15:09 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -988,6 +988,13 @@ EnqueueEvent(xE, device, count)
     xEvent		*qxE;
 
     NoticeTime(xE);
+
+#ifdef XKB
+    /* Fix for key repeating bug. */
+    if (xE->u.u.type == KeyRelease)
+	AccessXCancelRepeatKey(device->key->xkbInfo, xE->u.u.detail);
+#endif
+
     if (DeviceEventCallback)
     {
 	DeviceEventInfoRec eventinfo;
