@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.240 2003/10/15 16:29:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.241 2003/10/26 12:17:17 herrb Exp $ */
 
 /*
  *
@@ -94,12 +94,6 @@
      ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 3)))
 #define HAS_GLIBC_SIGSETJMP 1
 #endif
-#endif
-
-#ifdef __FreeBSD__
-/* XXX used in drmOpen(). This should change to use a less os-specific
- * method. */
-int sysctlbyname(const char *, void *, size_t *, void *, size_t);
 #endif
 
 #if defined(__alpha__)
@@ -1090,7 +1084,6 @@ LOOKUP xfree86LookupTab[] = {
 #endif
 
 #ifdef __FreeBSD__
-    SYMFUNC(sysctlbyname)
 #if defined(__sparc__)
     SYMFUNC(_Qp_qtos)
     SYMFUNC(_Qp_qtod)
