@@ -1,4 +1,6 @@
 XFree86 3.2Ao (18 March 1997)
+ 582. Fix several problems with loader and static server that were caused
+      by change 567 (Dirk Hohndel).
  581. Fix bad 400x300 mode line (#165, Koen Gadeyne).
  580. Finer W32 chipset detection (#165, Koen Gadeyne).
  579. Tseng documentation updates (#165, Koen Gadeyne).
@@ -4186,4 +4188,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.431 1997/03/15 06:57:40 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.432 1997/03/17 07:17:46 hohndel Exp $

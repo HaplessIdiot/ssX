@@ -118,7 +118,8 @@ extern int s3DetectELSA(
 			char **pserno,
 			int *max_pix_clock, 
 			int *max_mem_clock,
-			int *hwconf
+			int *hwconf,
+			char **modes
 #endif
 			);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3ELSA.c,v 1.2 1997/02/17 09:47:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3ELSA.c,v 1.3 1997/02/17 14:23:07 hohndel Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -78,7 +78,7 @@ static __inline__ void shift_out(int b) {
    outb(0x3d5,j); outb(0x3d5,j); outb(0x3d5,j); outb(0x3d5,j); 
 } 
 
-static __inline__ int shift_in() 
+static __inline__ int shift_in()
 { 
    int i,j; 
    outb(0x3d4,0x5c); i = inb(0x3d5) & 0xaf; 
@@ -328,7 +328,8 @@ void main()
 
 #else
 int s3DetectELSA(int BIOSbase, char **pcard, char **pserno, 
-		 int *max_pix_clock, int *max_mem_clock, int *hwconfig)
+		 int *max_pix_clock, int *max_mem_clock, int *hwconfig,
+		 char **modes)
 {
    int i;
    int ndata;
@@ -362,29 +363,47 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
    for (i=0; elsa_board_types[i].code; i++)
       if (elsa_board_types[i].code == eedata->board_code) break;
 
-#ifndef XFree86LOADER
-   /*
-    * at this point we don't support sprintf from within modules
-    */
    if (pcard) {
       *pcard  = (char*) xalloc(80);
       if (elsa_board_types[i].code)
-	 sprintf(*pcard,"%s detected",elsa_board_types[i].name);
+	 xf86sprintf(*pcard,"%s detected",elsa_board_types[i].name);
       else 
-	 sprintf(*pcard,"unknown ELSA Winner board code %04x detected, please report\n"
+	 xf86sprintf(*pcard,"unknown ELSA Winner board code %04x detected, please report\n"
 		 , eedata->board_code);
+   }
+
+   if (modes) {
+      char *p;
+      p = *modes  = (char*) xalloc(80 * ((ndata-9-26)/9 +1));
+      *p = '\0';
+      for (i= 26; i<ndata-9; i+=9) {
+	 eetim  = (elsa_eeprom_timing_t *) (data + i);
+	 if (ELSA_ET_VM_VALID(eetim))
+	    xf86sprintf(p,"\t\"%dx%dx%d\" \t %7.3f   %4d %4d %4d %4d   %4d %4d %4d %4d\n"
+		    ,ELSA_TIM_xres(*eetim),ELSA_TIM_yres(*eetim),ELSA_TIM_bpp(*eetim)
+		    ,(ELSA_TIM_pixfrq4(*eetim)*4)/1000.0
+		    ,ELSA_TIM_xres(*eetim)
+		    ,ELSA_TIM_xres(*eetim)+ELSA_TIM_hfp(*eetim)
+		    ,ELSA_TIM_xres(*eetim)+ELSA_TIM_hfp(*eetim)+ELSA_TIM_hsw(*eetim)
+		    ,ELSA_TIM_htot(*eetim)
+		    ,ELSA_TIM_yres(*eetim)
+		    ,ELSA_TIM_yres(*eetim)+ELSA_TIM_vfp(*eetim)
+		    ,ELSA_TIM_yres(*eetim)+ELSA_TIM_vfp(*eetim)+ELSA_TIM_vsw(*eetim)
+		    ,ELSA_TIM_vtot(*eetim)
+		    );
+	 p += xf86strlen(p);
+      }   
    }
 
    if (pserno) {
       *pserno = (char*) xalloc(20);
       serno = (eedata->serno_h<<16) | eedata->serno_l;
-      sprintf(*pserno,"%c-%04ld.%03ld.%03ld",
+      xf86sprintf(*pserno,"%c-%04ld.%03ld.%03ld",
 	      (char)('A' + ((serno>>27) & 0x0f)),
 	      ((serno>>17) & 0x3ff) | ((serno>>21) & 0x400),
 	      (serno & 0x1ffff) / 1000,
 	      (serno & 0x1ffff) % 1000);
    }
-#endif
 
    if (max_pix_clock) 
       *max_pix_clock = eedata->max_pixclock * 4;

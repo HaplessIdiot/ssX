@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3probe.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3probe.c,v 1.2 1997/02/27 13:59:48 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -718,6 +718,7 @@ Bool S3Probe()
    /* ELSA_W1000PRO isn't really required any more */
    OFLG_SET(OPTION_ELSA_W1000PRO, &s3InfoRec.ChipOptionFlags);
    OFLG_SET(OPTION_ELSA_W2000PRO, &s3InfoRec.ChipOptionFlags);
+   OFLG_SET(OPTION_ELSA_W2000PRO_X8, &s3InfoRec.ChipOptionFlags);
    OFLG_SET(OPTION_DIAMOND, &s3InfoRec.ChipOptionFlags);
    OFLG_SET(OPTION_GENOA, &s3InfoRec.ChipOptionFlags);
    OFLG_SET(OPTION_STB, &s3InfoRec.ChipOptionFlags);

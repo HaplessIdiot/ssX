@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3ramdacs.c,v 1.2 1997/02/16 10:27:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3ramdacs.c,v 1.3 1997/02/17 09:47:51 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -57,6 +57,8 @@ extern int pixMuxMinWidth;
 extern int pixMuxMinClock;
 extern Bool pixMuxLimitedWidths;
 static unsigned char *find_bios_string(int, char *, char *);
+static int s3DetectMIRO_20SV_Rev();
+static void Probe_ELSA();
 
 static Bool NORMAL_Probe();
 static Bool S3_TRIO32_Probe();
@@ -281,6 +283,7 @@ static Bool BT485_Probe()
 
     Bool found = FALSE;
     unsigned char tmp, tmp2, saveCR43;
+    int card_id;
 
     /*quick check*/
     if (!S3_928_ONLY(s3ChipId) && !S3_964_SERIES(s3ChipId))
@@ -297,6 +300,14 @@ static Bool BT485_Probe()
        found = TRUE;
        ErrorF("%s %s: Detected a BrookTree Bt485 RAMDAC\n",
                     XCONFIG_PROBED, vga256InfoRec.name);
+
+       card_id = s3DetectMIRO_20SV_Rev(vga256InfoRec.BIOSbase);
+       if (card_id > 1) {
+	  ErrorF("%s %s: MIRO 20SV Rev.2 or newer detected.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  if (!OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &vga256InfoRec.options))
+	     ErrorF("\tplease use Option \"s3_964_bt485_vclk\"\n");
+       }
 
        /* If it is a Bt485 and no clockchip is specified in the 
          XF86Config, set clockchips for SPEA Mercury / Mercury P64 */
@@ -3182,6 +3193,7 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 
 static Bool IBMRGB52x_Probe(int type)
 {
+    Bool found = FALSE;
     int ibm_id;
 	 
     if (!S3_964_SERIES(s3ChipId) && !S3_968_SERIES(s3ChipId))
@@ -3194,29 +3206,30 @@ static Bool IBMRGB52x_Probe(int type)
 	       if(type == IBMRGB525_DAC) {
 	         ErrorF("%s %s: Detected an IBM RGB525 ramdac rev. %x\n",
 		      XCONFIG_PROBED, vga256InfoRec.name, ibm_id&0xff);
-	         return TRUE;
+	         found = TRUE;
                }
 	       break;
 	    case 2:
 	       if(type == IBMRGB524_DAC) {
 		  ErrorF("%s %s: Detected an IBM RGB524 ramdac rev. %x\n",
 			 XCONFIG_PROBED, vga256InfoRec.name, ibm_id&0xff);
-		  return TRUE;
+		  found = TRUE;
 	       }
 	       break;
 	    case 0x102:
 	       if(type == IBMRGB528_DAC) {
 	          ErrorF("%s %s: Detected an IBM RGB528 ramdac rev. %x\n",
 		      XCONFIG_PROBED, vga256InfoRec.name, ibm_id&0xff);
-		  return TRUE;
+		  found = TRUE;
                }
 	       break;
 	    default:
 	       break;
 	}
     }
+    Probe_ELSA();
 
-    return FALSE;
+    return found;
 }
 
 static Bool IBMRGB524_Probe()
@@ -3345,6 +3358,10 @@ static int IBMRGB52x_PreInit()
 	 if (!vga256InfoRec.s3RefClk)
 	    vga256InfoRec.s3RefClk = 16000;
       }
+      else if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &vga256InfoRec.options)) {
+	 if (!vga256InfoRec.s3RefClk)
+	    vga256InfoRec.s3RefClk = 28322;
+      }
       else if (find_bios_string(vga256InfoRec.BIOSbase,
 				"Hercules Graphite Terminator",NULL) != NULL) {
 	 if (s3BiosVendor == UNKNOWN_BIOS) 
@@ -3450,7 +3467,15 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
       blank = inb(0x3C5);
       outb(0x3C5, blank | 0x20); /* blank the screen */
 
-      if (mode->Flags & V_DBLCLK)
+      if (DAC_IS_IBMRGB528) {
+	 if (vga256InfoRec.clock[mode->Clock] <=  110000)
+	    s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x01);
+	 else if (vga256InfoRec.clock[mode->Clock] <=  220000)
+	    s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
+	 else
+	    s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x05);
+      }
+      else if (mode->Flags & V_DBLCLK)
 	 s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x03);
       else
 	 s3OutIBMRGBIndReg(IBMRGB_misc_clock, 0xf0, 0x01);
@@ -3468,8 +3493,12 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~8, s3DACSyncOnGreen ? 8 : 0);
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~2, 1 /* fast slew */ ? 2 : 0);
       s3OutIBMRGBIndReg(IBMRGB_pal_ctrl, 0, 0);
-      /* set VRAM size to 64 bit and disable VRAM mask */
-      s3OutIBMRGBIndReg(IBMRGB_misc1, ~0x43, 1);
+
+      /* set VRAM size to 128/64 bit and disable VRAM mask */
+      if (DAC_IS_IBMRGB528)
+	 s3OutIBMRGBIndReg(IBMRGB_misc1, ~0x43, 3);
+      else
+	 s3OutIBMRGBIndReg(IBMRGB_misc1, ~0x43, 1);
       if (s3DAC8Bit)
 	 s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0x47);
       else
@@ -3481,14 +3510,17 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 #else
       outb(vgaCRIndex, 0x22);
       tmp = inb(vgaCRReg);
-      if (s3Bpp == 1 && S3_968_SERIES(s3ChipId))
+      if (s3Bpp == 1 && S3_968_SERIES(s3ChipId) && !DAC_IS_IBMRGB528)
 	 outb(vgaCRReg, tmp | 8);
       else 
 	 outb(vgaCRReg, tmp & ~8);
 #endif
 
       outb(vgaCRIndex, 0x65);
-      outb(vgaCRReg, 0);
+      if (DAC_IS_IBMRGB528)
+	 outb(vgaCRReg, 0x80);
+      else
+	 outb(vgaCRReg, 0);
 
       if (s3PixelMultiplexing) {
 	 outb(vgaCRIndex, 0x40);
@@ -3513,7 +3545,20 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
 
 	 outb(vgaCRIndex, 0x66);
 	 tmp = inb(vgaCRReg) & 0xf8;
-	 if (!S3_968_SERIES(s3ChipId)) {
+	 if (DAC_IS_IBMRGB528) {
+	    int tmp2;
+	    tmp = tmp & 0x80 | 0x60;   /* 128 bit SID mode */
+	    if (vga256InfoRec.clock[mode->Clock] <= 110000) tmp2 = 3;
+	    else if (vga256InfoRec.clock[mode->Clock] <= 220000) tmp2 = 2;
+	    else tmp2 = 1;
+	    if (s3Bpp == 2) tmp2--;
+	    else if (s3Bpp == 4) {
+	       if (tmp2 >= 2) tmp2 -= 2;
+	       else tmp2 = 0;
+	    }
+	    tmp |= tmp2;
+	 }
+	 else if (!S3_968_SERIES(s3ChipId)) {
 	   if (s3Bpp == 1) tmp |= 3;
 	   else if (s3Bpp == 2) tmp |= 2;
 	   else /* if (s3Bpp == 4) */ tmp |= 1;
@@ -3529,7 +3574,12 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
          outb(vgaCRReg, tmp);
 
 	 outb(vgaCRIndex, 0x67);
-	 if (s3Bpp == 4)
+	 if (DAC_IS_IBMRGB528)
+	    if (s3Bpp == 1)
+	       outb(vgaCRReg, 0x01);
+	    else
+	       outb(vgaCRReg, 0x00);
+	 else if (s3Bpp == 4)
 	    outb(vgaCRReg, 0x00);
 	 else
 	    if (S3_968_SERIES(s3ChipId))
@@ -3559,6 +3609,13 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
          /* provide pseudocolor VGA          */
          s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0);
       }  /* end of s3PixelMultiplexing */
+
+      if (DAC_IS_IBMRGB528) {
+         /* set s3 reg53 to parallel addressing   */
+         outb(vgaCRIndex, 0x53);
+         tmp = inb(vgaCRReg);
+         outb(vgaCRReg, tmp | 0x20);
+      }
 
 #if 0
       if (OFLG_ISSET(OPTION_IBMRGB_CURS, &vga256InfoRec.options)) {
@@ -4605,3 +4662,129 @@ static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
 
 
 
+static int s3DetectMIRO_20SV_Rev(int BIOSbase)
+{
+   char *match1 = "miroCRYSTAL\37720SV", *match2 = "Rev.";
+   unsigned char *p;
+
+   if ((p = find_bios_string(BIOSbase,match1,match2)) != NULL) {
+      if (s3BiosVendor == UNKNOWN_BIOS) 
+	 s3BiosVendor = MIRO_BIOS;
+      if (*p >= '0' && *p <= '9')
+	 return *p - '0';
+   }
+   return -1;
+}
+
+
+static void Probe_ELSA()
+{
+   char *card, *serno, *elsa_modes;
+   int card_id, max_pix_clock, max_mem_clock, hwconf;
+   static int only_once=0;
+
+   if (!only_once) 
+      return;
+   only_once = 1;
+
+   card_id = s3DetectELSA(vga256InfoRec.BIOSbase, &card, &serno, &max_pix_clock,
+			  &max_mem_clock, &hwconf, &elsa_modes);
+   if (card_id > 0) {
+      if (s3BiosVendor == UNKNOWN_BIOS) 
+	 s3BiosVendor = ELSA_BIOS;
+      if (xf86Verbose) {
+         ErrorF("%s %s: card: %s, Ser.No. %s\n",
+	        XCONFIG_PROBED, vga256InfoRec.name, card, serno);
+	 if (elsa_modes && *elsa_modes)
+	    ErrorF("%s %s: video modes stores in ELSA EEPROM:\n%s",
+		   XCONFIG_PROBED, vga256InfoRec.name, elsa_modes);
+      }
+      xfree(card);
+      xfree(serno);
+      xfree(elsa_modes);
+      
+      if (vga256InfoRec.dacSpeed <= 0)
+	 vga256InfoRec.dacSpeed = max_pix_clock;
+      
+      do {
+	 switch (card_id) {
+	 case ELSA_WINNER_1000AVI:
+	 case ELSA_WINNER_1000PRO:
+	    /* This option isn't required at the moment */
+	    OFLG_SET(OPTION_ELSA_W1000PRO,  &vga256InfoRec.options);
+	    /* fallthrough */
+	 case ELSA_WINNER_1000:
+	 case ELSA_WINNER_1000VL:
+	 case ELSA_WINNER_1000PCI:
+	 case ELSA_WINNER_1000ISA:
+	    if ((s3Ramdacs[S3_SDAC_DAC].DacProbe)()) {
+	       s3RamdacType = S3_SDAC_DAC;
+	       continue;	/* SDAC detected, don't set ICD2061A clock */
+	    }
+            if((s3Ramdacs[ATT20C409_DAC].DacProbe)())
+	       s3RamdacType = ATT20C409_DAC;
+	    /* if ATT20C409 is detected, the clockchip is 
+	     * already set apropriately 
+	     */
+	    /* otherwise it's a STG1700,20C498, or SC15025 and will get 
+	       detected later.  The clockchip ICD2061A will get set at
+	       the at the end of this loop */
+	    break;
+	 case ELSA_WINNER_2000PRO:
+	    OFLG_SET(OPTION_ELSA_W2000PRO,  &vga256InfoRec.options);
+	    break;
+	 case ELSA_WINNER_2000PRO_X8:
+	    OFLG_SET(OPTION_ELSA_W2000PRO_X8,  &vga256InfoRec.options);
+	    continue;		/* use IBM RGB528 clock, don't set ICD2061A flags */
+	 case ELSA_WINNER_2000:
+	 case ELSA_WINNER_2000VL:
+	 case ELSA_WINNER_2000PCI:
+	    break;		/* set ICD2061A clock chip */
+	 case ELSA_GLORIA_8:
+	    if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
+	       FatalError("%s %s: for the ELSA Gloria-8 card you should not "
+			  "specify a clock chip!\n",XCONFIG_GIVEN, vga256InfoRec.name);
+	    }
+	    OFLG_SET(CLOCK_OPTION_GLORIA8, &vga256InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+	    s3ClockChipProbed = XCONFIG_PROBED;
+	    /* fall through ... */
+
+	 case ELSA_WINNER_2000AVI:
+	 case ELSA_WINNER_2000PRO_X:
+	 case ELSA_GLORIA_4:
+	    if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&vga256InfoRec.options)) {
+	       ErrorF("%s %s: for Ti3026/3030 RAMDACs you must not specify "
+		      "Option \"elsa_w2000pro\"\n",XCONFIG_PROBED, vga256InfoRec.name);
+	       OFLG_CLR(OPTION_ELSA_W2000PRO, &vga256InfoRec.options);
+	    }
+	    if ((card_id==ELSA_WINNER_2000PRO_X) && (hwconf & 2)) {
+	       /*
+	        * this version of the Winner 2000PRO/X has an external ICS9161A
+	        * clockchip, so set ICD2061A flag
+	        */
+               if (xf86Verbose)
+	          ErrorF("%s %s: Rev. G Winner 2000PRO/X with external " 
+			 "clockchip detected\n",XCONFIG_PROBED, vga256InfoRec.name);
+	       break;
+	    } else {
+	       continue;
+            }
+	 case ELSA_WINNER_1000PRO_TRIO32:
+	 case ELSA_WINNER_1000PRO_TRIO64:
+	 case ELSA_WINNER_1000PRO_X:
+	 default: 
+	    continue;		/* unknown card_id, don't set ICD2061A flags */
+	 }
+
+	 /* a known ELSA card_id was returned, set ICD 2061A clock support 
+	    if there is no ClockChip specified in XF86Config */
+
+	 if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
+	    OFLG_SET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+	    s3ClockChipProbed = XCONFIG_PROBED;
+	 }
+      } while (0);
+   }
+}
