@@ -292,7 +292,7 @@ static void SyntheticMotion(int x, int y);
 static void PostNewCursor(void);
 
 static Bool
-PanoramiXSetCursorPosition(
+XineramaSetCursorPosition(
     int x, 
     int y, 
     Bool generateEvent
@@ -335,7 +335,7 @@ PanoramiXSetCursorPosition(
 
 
 static void
-PanoramiXConstrainCursor(void)
+XineramaConstrainCursor(void)
 {
     ScreenPtr pScreen = sprite.screen;
     BoxRec newBox = sprite.physLimits;
@@ -351,7 +351,7 @@ PanoramiXConstrainCursor(void)
 }
 
 static void
-PanoramiXCheckPhysLimits(
+XineramaCheckPhysLimits(
     CursorPtr cursor,
     Bool generateEvents
 ){
@@ -382,18 +382,18 @@ PanoramiXCheckPhysLimits(
 
     if((new.x != sprite.hotPhys.x) || (new.y != sprite.hotPhys.y))
     {
-	PanoramiXSetCursorPosition (new.x, new.y, generateEvents);
+	XineramaSetCursorPosition (new.x, new.y, generateEvents);
 	if (!generateEvents)
 	    SyntheticMotion(new.x, new.y);
     }
 
     /* Tell DDX what the limits are */
-    PanoramiXConstrainCursor();
+    XineramaConstrainCursor();
 }
 
 
 static Bool
-PanoramiXSetWindowPntrs(WindowPtr pWin)
+XineramaSetWindowPntrs(WindowPtr pWin)
 {
     if(pWin == WindowTable[0]) {
 	    memcpy(sprite.windows, WindowTable, 
@@ -417,7 +417,7 @@ PanoramiXSetWindowPntrs(WindowPtr pWin)
 }
 
 static void
-PanoramiXCheckVirtualMotion(
+XineramaCheckVirtualMotion(
    QdEventPtr qe,
    WindowPtr pWin
 ){
@@ -435,7 +435,7 @@ PanoramiXCheckVirtualMotion(
 	int x, y, off_x, off_y, i;
 	BoxRec lims;
 
-	if(!PanoramiXSetWindowPntrs(pWin))
+	if(!XineramaSetWindowPntrs(pWin))
 	    return;
 
 	i = PanoramiXNumScreens - 1;
@@ -484,7 +484,7 @@ PanoramiXCheckVirtualMotion(
 
 
 static Bool
-PanoramiXCheckMotion(xEvent *xE)
+XineramaCheckMotion(xEvent *xE)
 {
     WindowPtr prevSpriteWin = sprite.win;
 
@@ -516,7 +516,7 @@ PanoramiXCheckMotion(xEvent *xE)
 	if ((sprite.hotPhys.x != XE_KBPTR.rootX) ||
 	    (sprite.hotPhys.y != XE_KBPTR.rootY))
 	{
-	    PanoramiXSetCursorPosition(
+	    XineramaSetCursorPosition(
 			sprite.hotPhys.x, sprite.hotPhys.y, FALSE);
 	}
 	XE_KBPTR.rootX = sprite.hot.x;
@@ -540,19 +540,19 @@ PanoramiXCheckMotion(xEvent *xE)
 
 
 static void
-PanoramiXConfineCursorToWindow(WindowPtr pWin, Bool generateEvents)
+XineramaConfineCursorToWindow(WindowPtr pWin, Bool generateEvents)
 {
 
     if (syncEvents.playingEvents)
     {
-	PanoramiXCheckVirtualMotion((QdEventPtr)NULL, pWin);
+	XineramaCheckVirtualMotion((QdEventPtr)NULL, pWin);
 	SyntheticMotion(sprite.hot.x, sprite.hot.y);
     }
     else
     {
 	int x, y, off_x, off_y, i;
 
-	if(!PanoramiXSetWindowPntrs(pWin))
+	if(!XineramaSetWindowPntrs(pWin))
 	    return;
 
 	i = PanoramiXNumScreens - 1;
@@ -586,19 +586,19 @@ PanoramiXConfineCursorToWindow(WindowPtr pWin, Bool generateEvents)
 	sprite.confined = FALSE;
 	sprite.confineWin = (pWin == WindowTable[0]) ? NullWindow : pWin;
 
-	PanoramiXCheckPhysLimits(sprite.current, generateEvents);
+	XineramaCheckPhysLimits(sprite.current, generateEvents);
     }
 }
 
 
 static void
-PanoramiXChangeToCursor(CursorPtr cursor)
+XineramaChangeToCursor(CursorPtr cursor)
 {
     if (cursor != sprite.current)
     {
 	if ((sprite.current->bits->xhot != cursor->bits->xhot) ||
 		(sprite.current->bits->yhot != cursor->bits->yhot))
-	    PanoramiXCheckPhysLimits(cursor, FALSE);
+	    XineramaCheckPhysLimits(cursor, FALSE);
     	(*sprite.screen->DisplayCursor)(sprite.screen, cursor);
 	sprite.current = cursor;
     }
@@ -772,7 +772,7 @@ CheckVirtualMotion(qe, pWin)
 {
 #ifdef PANORAMIX
     if(!noPanoramiXExtension) {
-	PanoramiXCheckVirtualMotion(qe, pWin);
+	XineramaCheckVirtualMotion(qe, pWin);
 	return;
     }
 #endif
@@ -826,7 +826,7 @@ ConfineCursorToWindow(pWin, generateEvents, confineToScreen)
 
 #ifdef PANORAMIX
     if(!noPanoramiXExtension) {
-	PanoramiXConfineCursorToWindow(pWin, generateEvents);
+	XineramaConfineCursorToWindow(pWin, generateEvents);
 	return;
     }	
 #endif
@@ -864,7 +864,7 @@ ChangeToCursor(cursor)
 {
 #ifdef PANORAMIX
     if(!noPanoramiXExtension) {
-	PanoramiXChangeToCursor(cursor);
+	XineramaChangeToCursor(cursor);
 	return;
     }
 #endif
@@ -1710,7 +1710,7 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab, mskidx)
 
 #ifdef PANORAMIX
 static int 
-PanoramiXTryClientEventsResult(
+XineramaTryClientEventsResult(
     ClientPtr client,
     GrabPtr grab,
     Mask mask, 
@@ -1743,7 +1743,7 @@ MaybeDeliverEventsToClient(pWin, pEvents, count, filter, dontClient)
 	    return 0;
 #ifdef PANORAMIX
 	if(!noPanoramiXExtension && pWin->drawable.pScreen->myNum) 
-	    return PanoramiXTryClientEventsResult(
+	    return XineramaTryClientEventsResult(
 			wClient(pWin), NullGrab, pWin->eventMask, filter);
 #endif
 	return TryClientEvents(wClient(pWin), pEvents, count,
@@ -1757,7 +1757,7 @@ MaybeDeliverEventsToClient(pWin, pEvents, count, filter, dontClient)
 		return 0;
 #ifdef PANORAMIX
 	    if(!noPanoramiXExtension && pWin->drawable.pScreen->myNum) 
-	      return PanoramiXTryClientEventsResult(
+	      return XineramaTryClientEventsResult(
 			rClient(other), NullGrab, other->mask, filter);
 #endif
 	    return TryClientEvents(rClient(other), pEvents, count,
@@ -1947,7 +1947,7 @@ PointInBorderSize(WindowPtr pWin, int x, int y)
 	return TRUE;
 
 #ifdef PANORAMIX
-    if(!noPanoramiXExtension && PanoramiXSetWindowPntrs(pWin)) {
+    if(!noPanoramiXExtension && XineramaSetWindowPntrs(pWin)) {
 	int i;
 
 	for(i = 1; i < PanoramiXNumScreens; i++) {
@@ -2022,7 +2022,7 @@ CheckMotion(xE)
 
 #ifdef PANORAMIX
     if(!noPanoramiXExtension)
-	return PanoramiXCheckMotion(xE);
+	return XineramaCheckMotion(xE);
 #endif
 
     if (xE && !syncEvents.playingEvents)
@@ -2157,9 +2157,9 @@ NewCurrentScreen(newScreen, x, y)
 	    sprite.screen = newScreen;
 	    /* Make sure we tell the DDX to update its copy of the screen */
 	    if(sprite.confineWin)
-		PanoramiXConfineCursorToWindow(sprite.confineWin, TRUE);
+		XineramaConfineCursorToWindow(sprite.confineWin, TRUE);
 	    else
-		PanoramiXConfineCursorToWindow(WindowTable[0], TRUE);
+		XineramaConfineCursorToWindow(WindowTable[0], TRUE);
 	    /* if the pointer wasn't confined, the DDX won't get 
 	       told of the pointer warp so we reposition it here */
 	    if(!syncEvents.playingEvents)
@@ -2178,7 +2178,7 @@ NewCurrentScreen(newScreen, x, y)
 #ifdef PANORAMIX
 
 static Bool
-PanoramiXPointInWindowIsVisible(
+XineramaPointInWindowIsVisible(
     WindowPtr pWin,
     int x,
     int y
@@ -2193,7 +2193,7 @@ PanoramiXPointInWindowIsVisible(
     if (POINT_IN_REGION(pScreen, &pWin->borderClip, x, y, &box))
         return TRUE;
     
-    if(!PanoramiXSetWindowPntrs(pWin)) return FALSE;
+    if(!XineramaSetWindowPntrs(pWin)) return FALSE;
 
     xoff = x + panoramiXdataPtr[0].x;  
     yoff = y + panoramiXdataPtr[0].y;  
@@ -2213,7 +2213,7 @@ PanoramiXPointInWindowIsVisible(
 }
 
 static int
-PanoramiXWarpPointer(ClientPtr client)
+XineramaWarpPointer(ClientPtr client)
 {
     WindowPtr	dest = NULL;
     int		x, y;
@@ -2251,7 +2251,7 @@ PanoramiXWarpPointer(ClientPtr client)
 	     winX + stuff->srcX + (int)stuff->srcWidth < x) ||
 	    (stuff->srcHeight != 0 &&
 	     winY + stuff->srcY + (int)stuff->srcHeight < y) ||
-	    !PanoramiXPointInWindowIsVisible(source, x, y))
+	    !XineramaPointInWindowIsVisible(source, x, y))
 	    return Success;
     }
     if (dest) {
@@ -2277,7 +2277,7 @@ PanoramiXWarpPointer(ClientPtr client)
     if (sprite.hotShape)
 	ConfineToShape(sprite.hotShape, &x, &y);
 
-    PanoramiXSetCursorPosition(x, y, TRUE);
+    XineramaSetCursorPosition(x, y, TRUE);
 
     return Success;
 }
@@ -2299,7 +2299,7 @@ ProcWarpPointer(client)
 
 #ifdef PANORAMIX
     if(!noPanoramiXExtension)
-	return PanoramiXWarpPointer(client);
+	return XineramaWarpPointer(client);
 #endif
 
     if (stuff->dstWid != None)
@@ -2382,7 +2382,7 @@ BorderSizeNotEmpty(WindowPtr pWin)
 	return TRUE;
 
 #ifdef PANORAMIX
-     if(!noPanoramiXExtension && PanoramiXSetWindowPntrs(pWin)) {
+     if(!noPanoramiXExtension && XineramaSetWindowPntrs(pWin)) {
 	int i;
 
 	for(i = 1; i < PanoramiXNumScreens; i++) {
