@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.1 2002/09/08 02:29:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.2 2002/09/11 19:54:52 tsi Exp $ */
 
 #include "rep.h"
 
@@ -550,6 +550,7 @@ orec_pat_cse(orec_inf *inf, rec_pat *pat)
 		}
 		break;
 	    case Rep_CaseLiteral:
+		tofree = NULL;
 		str[length++] = ptr->data.cse.lower;
 		str[length++] = ptr->data.cse.upper;
 		break;
@@ -560,7 +561,7 @@ orec_pat_cse(orec_inf *inf, rec_pat *pat)
 		length += len;
 		break;
 	    default:
-		tofree = NIL;
+		tofree = NULL;
 		break;
 	}
 	if (tofree)
