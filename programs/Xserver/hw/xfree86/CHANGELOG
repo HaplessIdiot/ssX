@@ -1,4 +1,5 @@
 XFree86 4.0a (xx March 2000)
+  35. Fix DDC bug (John McCorquodale).
   34. Fix minClock and maxClock determination in ATI driver (Marc La France).
   33. A first step at allowing -configure to deal with more than one device per
       driver (Marc La France).
@@ -10093,4 +10094,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1099 2000/03/22 04:25:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1100 2000/03/22 21:19:21 tsi Exp $
