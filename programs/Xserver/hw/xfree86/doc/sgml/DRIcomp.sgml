@@ -13,7 +13,7 @@
     <date>21 April 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.17 2002/02/22 21:45:13 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.18 2002/11/25 12:58:56 tsi Exp $
     </ident>
 
     <toc>
@@ -209,7 +209,7 @@
 
         <sect1>Intel Pentium III Features <p>
 
-            The Pentium III SSE (Katmai) instructions are used in
+            The Pentium III SSE instructions are used in
             optimized vertex transformation functions in the Mesa-based
             DRI drivers.
             On Linux, SSE requires a recent kernel (such as 2.4.0-test11

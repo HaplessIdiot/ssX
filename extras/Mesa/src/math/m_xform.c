@@ -1,4 +1,4 @@
-/* $Id: m_xform.c,v 1.1 2002/02/22 17:14:12 dawes Exp $ */
+/* $Id: m_xform.c,v 1.2 2002/11/26 01:04:20 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -190,7 +190,7 @@ void _mesa_transform_point_sz( GLfloat Q[4], const GLfloat M[16],
 /*
  * This is called only once.  It initializes several tables with pointers
  * to optimized transformation functions.  This is where we can test for
- * AMD 3Dnow! capability, Intel Katmai, etc. and hook in the right code.
+ * AMD 3Dnow! capability, Intel SSE, etc. and hook in the right code.
  */
 void
 _math_init_transformation( void )
