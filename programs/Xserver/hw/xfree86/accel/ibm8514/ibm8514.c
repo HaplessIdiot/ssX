@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.1 94/03/28 21:02:54 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -67,9 +68,11 @@ ScrnInfoRec ibm8514InfoRec = {
     (Bool (*)())NoopDDA,/* Bool (* SwitchMode)() */
     ibm8514PrintIdent,  /* void (* PrintIdent)() */
     8,			/* int depth */
+    {0, 0, 0},          /* xrgb weight */
     8,			/* int bitsPerPixel */
     PseudoColor,       	/* int defaultVisual */
     -1, -1,		/* int virtualX,virtualY */
+    -1,                 /* displayWidth */
     -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
     {0, },	       	/* OFlagSet options */
     {0, },	       	/* OFlagSet clockOptions */
