@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.48 1999/06/27 14:08:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.49 1999/07/06 11:38:52 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -133,6 +133,11 @@ typedef struct dirent DIRENTRY;
 #include <sys/types.h>
 #endif
 #include <sys/wait.h>
+#endif
+#endif
+#ifdef Lynx
+#if !defined(S_IFIFO) && defined(S_IFFIFO)
+#define S_IFIFO S_IFFIFO
 #endif
 #endif
 

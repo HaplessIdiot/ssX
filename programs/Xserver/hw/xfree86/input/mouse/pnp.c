@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.3 1999/05/23 04:26:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.4 1999/06/05 15:55:27 dawes Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
@@ -240,8 +240,8 @@ pnpgets(InputInfoPtr pInfo, char *buf)
 
     if ((i = xf86GetSerialModemState(pInfo->fd)) == -1)
 	return 0;
-    i |= TIOCM_DTR;		/* DTR = 1 */
-    i &= ~TIOCM_RTS;		/* RTS = 0 */
+    i |= XF86_M_DTR;		/* DTR = 1 */
+    i &= ~XF86_M_RTS;		/* RTS = 0 */
     if (xf86SetSerialModemState(pInfo->fd, i) == -1)
 	goto disconnect_idle;
     usleep(200000);
@@ -251,7 +251,7 @@ pnpgets(InputInfoPtr pInfo, char *buf)
 
     /* wait for respose */
     xf86FlushInput(pInfo->fd);
-    i = TIOCM_DTR | TIOCM_RTS;	/* DTR = 1, RTS = 1 */
+    i = XF86_M_DTR | XF86_M_RTS;	/* DTR = 1, RTS = 1 */
     xf86SerialModemSetBits(pInfo->fd, i);
 
     /* try to read something */
@@ -298,7 +298,7 @@ pnpgets(InputInfoPtr pInfo, char *buf)
      * respond to the PnP enumeration procedure.
      */
 disconnect_idle:
-    i = TIOCM_DTR | TIOCM_RTS;		/* DTR = 1, RTS = 1 */
+    i = XF86_M_DTR | XF86_M_RTS;		/* DTR = 1, RTS = 1 */
     xf86SerialModemSetBits(pInfo->fd, i);
 connect_idle:
     return 0;

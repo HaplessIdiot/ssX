@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.19 1999/05/29 14:41:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.20 1999/06/05 15:55:31 dawes Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc.
  *
@@ -263,7 +263,12 @@ xf86OpenSerial (pointer options)
 		return (-1);
 	}
 
+#ifndef Lynx
 	SYSCALL (fd = open (dev, O_RDWR | O_NONBLOCK | O_EXCL));
+#else
+	/* O_EXCL yields an EEXIST on LynxOS */
+	SYSCALL (fd = open (dev, O_RDWR | O_NONBLOCK));
+#endif
 	if (fd == -1)
 	{
 		xf86Msg (X_ERROR,
@@ -463,8 +468,12 @@ xf86SetSerial (int fd, pointer options)
 	if ((xf86SetBoolOption (options, "ClearDTR", FALSE)))
 	{
 #ifdef CLEARDTR_SUPPORT
+# if !defined(Lynx) || defined(TIOCMBIC)
 		val = TIOCM_DTR;
 		SYSCALL (ioctl(fd, TIOCMBIC, &val));
+# else
+		SYSCALL (ioctl(fd, TIOCCDTR, NULL));
+# endif
 #else
 		xf86Msg (X_WARNING,
 			 "Option ClearDTR not supported on this OS\n");
@@ -679,6 +688,9 @@ xf86SetSerialModemState(int fd, int state)
 	if (!isatty(fd))
 		return 0;
 
+#ifndef TIOCMGET
+	return -1;
+#else
 	if (!osStateMask)
 		osStateMask = getOsStateMask();
 
@@ -693,6 +705,7 @@ xf86SetSerialModemState(int fd, int state)
 		return -1;
 	else
 		return 0;
+#endif
 }
 
 int
@@ -708,10 +721,14 @@ xf86GetSerialModemState(int fd)
 	if (!isatty(fd))
 		return 0;
 
+#ifndef TIOCMGET
+	return -1;
+#else
 	SYSCALL((ret = ioctl(fd, TIOCMGET, &s)));
 	if (ret < 0)
 		return -1;
 	return os2xfState(s);
+#endif
 }
 
 int
@@ -727,9 +744,13 @@ xf86SerialModemSetBits(int fd, int bits)
 	if (!isatty(fd))
 		return 0;
 
+#ifndef TIOCMGET
+	return -1;
+#else
 	s = xf2osState(bits);
 	SYSCALL((ret = ioctl(fd, TIOCMBIS, &s)));
 	return ret;
+#endif
 }
 
 int
@@ -745,7 +766,11 @@ xf86SerialModemClearBits(int fd, int bits)
 	if (!isatty(fd))
 		return 0;
 
+#ifndef TIOCMGET
+	return -1;
+#else
 	s = xf2osState(bits);
 	SYSCALL((ret = ioctl(fd, TIOCMBIC, &s)));
 	return ret;
+#endif
 }
