@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.13 2001/06/25 08:12:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.14 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -175,6 +175,10 @@ ddxProcessArgument (int argc, char *argv[], int i)
       fFirstTime = FALSE;
     }
   
+  /* Set a default DPI */
+  if (monitorResolution == 0)
+	monitorResolution = WIN_DEFAULT_DPI;
+
   /*
    * Look for the '-screen scr_num width height' argument
    */
@@ -228,10 +232,6 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  return 0;
 	}
 
-      /* Set a default DPI, if no parameter was passed */
-      if (monitorResolution == 0)
-	monitorResolution = WIN_DEFAULT_DPI;
-	  
       /* Calculate the screen width and height in millimeters */
       g_ScreenInfo[nScreenNum].dwWidth_mm
 	= (g_ScreenInfo[nScreenNum].dwWidth
