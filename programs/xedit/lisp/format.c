@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.28tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.29tsi Exp $ */
 
 #include "lisp/io.h"
 #include "lisp/write.h"
@@ -596,9 +596,9 @@ static void
 format_in_radix(LispObj *stream, LispObj *object, int radix, FmtArgs *args)
 {
     if (INTEGERP(object)) {
-	int i, check, atsign, collon, mincol, padchar, commachar, commainterval;
+	int i, atsign, collon, mincol, padchar, commachar, commainterval;
 
-	i = check = (radix == 0);
+	i = (radix == 0);
 	atsign = args->atsign;
 	collon = args->collon;
 	if (radix == 0) {

@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/printerfont.c,v 1.4 2001/01/17 19:43:30 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/printerfont.c,v 1.5tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -154,26 +154,22 @@ PrinterFontListNextFontOrAlias(pointer client, FontPathElementPtr fpe,
     return BadFontName;
 }
 
-typedef int (*IntFunc) (void);
-static int  printer_font_type;
-
 void
 PrinterFontRegisterFpeFunctions (void)
 {
-    /* what is the use of printer font type? */
-    printer_font_type = RegisterFPEFunctions(PrinterFontNameCheck,
-					  PrinterFontInitFPE,
-					  FontFileFreeFPE,
-					  FontFileResetFPE,
-					  PrinterFontOpenFont,
-					  FontFileCloseFont,
-					  PrinterFontListFonts,
-					  PrinterFontStartListFontsWithInfo,
-					  PrinterFontListNextFontWithInfo,
-					  NULL,
-					  NULL,
-					  NULL,
-					  PrinterFontStartListFontsAndAliases,
-					  PrinterFontListNextFontOrAlias,
-					  FontFileEmptyBitmapSource);
+    RegisterFPEFunctions(PrinterFontNameCheck,
+			 PrinterFontInitFPE,
+			 FontFileFreeFPE,
+			 FontFileResetFPE,
+			 PrinterFontOpenFont,
+			 FontFileCloseFont,
+			 PrinterFontListFonts,
+			 PrinterFontStartListFontsWithInfo,
+			 PrinterFontListNextFontWithInfo,
+			 NULL,
+			 NULL,
+			 NULL,
+			 PrinterFontStartListFontsAndAliases,
+			 PrinterFontListNextFontOrAlias,
+			 FontFileEmptyBitmapSource);
 }

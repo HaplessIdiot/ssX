@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Converters.c,v 3.13 2002/06/03 20:59:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Converters.c,v 3.14tsi Exp $ */
 
 /*
 
@@ -1634,7 +1634,7 @@ Boolean XtCvtStringToCommandArgArray(dpy, args, num_args, fromVal, toVal,
     XtPointer	*closure_ret;
 {
     String *strarray, *ptr;
-    char *src, *src_str;
+    char *src;
     char *dst, *dst_str;
     char *start;
     int tokens, len;
@@ -1645,7 +1645,7 @@ Boolean XtCvtStringToCommandArgArray(dpy, args, num_args, fromVal, toVal,
             "String to CommandArgArray conversion needs no extra arguments",
             (String *)NULL, (Cardinal *)NULL);
 
-    src = src_str = fromVal->addr;
+    src = fromVal->addr;
     dst = dst_str = __XtMalloc((unsigned) strlen(src) + 1);
     tokens = 0;
 

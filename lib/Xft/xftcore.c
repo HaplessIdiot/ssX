@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcore.c,v 1.12 2003/02/13 03:17:43 dawes Exp $
+ * $XFree86: xc/lib/Xft/xftcore.c,v 1.13tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -918,10 +918,8 @@ _XftGlyphDefault (Display *dpy, XftFont   *public)
     XftFontInt	    *font = (XftFontInt *) public;
     FT_UInt	    missing[XFT_NMISSING];
     int		    nmissing;
-    FcBool	    glyphs_loaded = FcFalse;
 
-    if (XftFontCheckGlyph (dpy, public, FcTrue, 0, missing, &nmissing))
-	glyphs_loaded = FcTrue;
+    XftFontCheckGlyph (dpy, public, FcTrue, 0, missing, &nmissing);
     if (nmissing)
 	XftFontLoadGlyphs (dpy, public, FcTrue, missing, nmissing);
     return font->glyphs[0];

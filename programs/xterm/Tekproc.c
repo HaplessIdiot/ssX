@@ -3,7 +3,7 @@
  *
  * Warning, there be crufty dragons here.
  */
-/* $XFree86: xc/programs/xterm/Tekproc.c,v 3.42 2003/03/23 02:01:38 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/Tekproc.c,v 3.43tsi Exp $ */
 
 /*
 
@@ -756,7 +756,6 @@ static int
 Tinput(void)
 {
     register TScreen *screen = &term->screen;
-    register int i;
     register TekLink *tek;
 
     if (Tpushback > Tpushb)
@@ -831,9 +830,7 @@ Tinput(void)
 
 #else /* VMS */
 		XFD_COPYSET(&Select_mask, &Tselect_mask);
-		if ((i = Select(max_plus1,
-				&Tselect_mask, NULL, NULL,
-				NULL)) < 0) {
+		if (Select(max_plus1, &Tselect_mask, NULL, NULL, NULL) < 0) {
 		    if (errno != EINTR)
 			SysError(ERROR_TSELECT);
 		    continue;

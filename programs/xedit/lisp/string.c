@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.24tsi Exp $ */
 
 #include "lisp/helper.h"
 #include "lisp/read.h"
@@ -549,9 +549,8 @@ Lisp_MakeString(LispBuiltin *builtin)
     long length;
     char *string, initial;
 
-    LispObj *size, *initial_element, *element_type;
+    LispObj *size, *initial_element;
 
-    element_type = ARGUMENT(2);
     initial_element = ARGUMENT(1);
     size = ARGUMENT(0);
 
@@ -731,10 +730,8 @@ Lisp_ReadFromString(LispBuiltin *builtin)
     LispObj *stream, *result;
     long length, start, end, bytes_read;
 
-    LispObj *ostring, *eof_error_p, *eof_value,
-	    *ostart, *oend, *preserve_white_space;
+    LispObj *ostring, *eof_error_p, *eof_value, *ostart, *oend;
 
-    preserve_white_space = ARGUMENT(5);
     oend = ARGUMENT(4);
     ostart = ARGUMENT(3);
     eof_value = ARGUMENT(2);

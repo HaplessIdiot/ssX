@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/KeyBind.c,v 1.6 2003/04/13 19:22:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/KeyBind.c,v 1.7tsi Exp $ */
 
 /* Beware, here be monsters (still under construction... - JG */
 
@@ -470,7 +470,7 @@ UCSConvertCase( register unsigned code,
     *upper = code;
 
     /* Basic Latin and Latin-1 Supplement, U+0000 to U+00FF */
-    if (code >= 0x0000 && code <= 0x00ff) {
+    if (code <= 0x00ff) {
         if (code >= 0x0041 && code <= 0x005a)
             *lower += 0x20;
         else if (code >= 0x0061 && code <= 0x007a)

@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.44 2002/01/04 23:04:17 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.46tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2499,7 +2499,9 @@ static int
 InsertNewLineAndBackupInternal(TextWidget ctx)
 {
     int count, error = XawEditDone, mult = MULT(ctx);
+#ifndef OLDXAW
     XawTextPosition position;
+#endif
     XawTextBlock text;
     char buf[32];
 
@@ -2526,8 +2528,10 @@ InsertNewLineAndBackupInternal(TextWidget ctx)
 	    text.ptr[count] = XawLF;
     }
 
+#ifndef OLDXAW
     position = SrcScan(ctx->text.source, ctx->text.insertPos,
 		       XawstEOL, XawsdLeft, 1, False);
+#endif
     if (_XawTextReplace(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
 	XBell( XtDisplay(ctx), 50);
 	error = XawEditError;

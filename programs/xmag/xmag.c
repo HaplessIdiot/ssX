@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmag/xmag.c,v 1.11 2003/01/19 04:44:45 paulo Exp $ */
+/* $XFree86: xc/programs/xmag/xmag.c,v 1.12tsi Exp $ */
 
 
 #include <stdlib.h>		/* for exit() and abs() */
@@ -70,8 +70,6 @@ typedef struct {
   Dimension width, height;
   Widget    scaleShell, scaleInstance, pixShell, pixLabel, cmapWinList [2];
   } hlStruct, *hlPtr;
-
-static XtIntervalId hlId;
 
 
 
@@ -734,7 +732,7 @@ StartRootPtrGrab(int new, 	/* do we cretate a new scale instance? */
   XtAddRawEventHandler
     (root, PointerMotionMask|ButtonPressMask|ButtonReleaseMask, 
      True, DragEH, (XtPointer)hlData);
-  hlId = XtAppAddTimeOut(app, HLINTERVAL, HighlightTO, (XtPointer)hlData);
+  (void) XtAppAddTimeOut(app, HLINTERVAL, HighlightTO, (XtPointer)hlData);
 }
 
 
@@ -924,7 +922,7 @@ GetMinIntensity(hlPtr data)
 
 
 
-static Widget pane1, pane2, pane3, cclose, replace, new, select_w, paste, label;
+static Widget pane1, pane2, pane3, cclose, replace, new, select_w, paste;
 
 /*
  * PopupNewScale() -- Create and popup a new scale composite.
@@ -958,8 +956,8 @@ PopupNewScale(hlPtr data)
   paste = XtCreateManagedWidget("paste", commandWidgetClass, pane2,
 			      (Arg *) NULL, 0);
   XtAddCallback(paste, XtNcallback, PasteCB, (XtPointer)data);
-  label = XtCreateManagedWidget("helpLabel", labelWidgetClass, pane2,
-				(Arg *) NULL, 0);
+  (void) XtCreateManagedWidget("helpLabel", labelWidgetClass, pane2,
+			       (Arg *) NULL, 0);
   pane3 = XtCreateManagedWidget("pane2", panedWidgetClass, pane1,
 				(Arg *) NULL, 0);
   data->scaleInstance = 

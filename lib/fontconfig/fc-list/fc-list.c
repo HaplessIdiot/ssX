@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/fc-list/fc-list.c,v 1.5 2002/06/30 23:45:40 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/fc-list/fc-list.c,v 1.6tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -61,20 +61,25 @@ extern int optind, opterr, optopt;
 
 static void usage (char *program)
 {
-    fprintf (stderr, "usage: %s [-vV?] [--verbose] [--version] [--help] [pattern] {element ...} \n",
+#if HAVE_GETOPT_LONG || HAVE_GETOPT
+    fprintf (stderr,
+	     "usage: %s [-V?] [--version] [--help] [pattern] {element ...} \n",
 	     program);
     fprintf (stderr, "List fonts matching [pattern]\n");
     fprintf (stderr, "\n");
-    fprintf (stderr, "  -v, --verbose        display status information while busy\n");
-    fprintf (stderr, "  -V, --version        display font config version and exit\n");
+    fprintf (stderr,
+	     "  -V, --version        display font config version and exit\n");
     fprintf (stderr, "  -?, --help           display this help and exit\n");
+#else
+    fprintf (stderr, "usage: %s [pattern] {element ...} \n", program);
+    fprintf (stderr, "List fonts matching [pattern]\n");
+#endif
     exit (1);
 }
 
 int
 main (int argc, char **argv)
 {
-    int		verbose = 0;
     int		i;
     FcObjectSet *os = 0;
     FcFontSet	*fs;
@@ -94,7 +99,7 @@ main (int argc, char **argv)
 		     FC_MAJOR, FC_MINOR, FC_REVISION);
 	    exit (0);
 	case 'v':
-	    verbose = 1;
+	    /* Ignore */
 	    break;
 	default:
 	    usage (argv[0]);

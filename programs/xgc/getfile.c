@@ -2,7 +2,7 @@
 ** getfilename.c
 **
 */
-/* $XFree86: xc/programs/xgc/getfile.c,v 1.3 2000/02/17 14:00:35 dawes Exp $ */
+/* $XFree86: xc/programs/xgc/getfile.c,v 1.4tsi Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -31,7 +31,6 @@ get_filename(
 {
   static Widget popupform;	/* form inside shell */
   static Widget label;		/* "Filename :" */
-  static Widget cancel;		/* command, select to cancel */
 
   Window dummy1, dummy2;
   int x1,y1,x2,y2;
@@ -135,8 +134,8 @@ get_filename(
   cancelargs[0].value = (XtArgVal) filename_text_widget;
   cancelargs[1].value = (XtArgVal) cancelcallbacklist;
 
-  cancel = XtCreateManagedWidget("Cancel",commandWidgetClass,popupform,
-				 cancelargs,XtNumber(cancelargs));
+  (void) XtCreateManagedWidget("Cancel",commandWidgetClass,popupform,
+			       cancelargs,XtNumber(cancelargs));
 
   /* Bring up the popup.  When the user presses cancel or the return key,
   ** the function kill_popup_shell (below) will be called to remove it. */

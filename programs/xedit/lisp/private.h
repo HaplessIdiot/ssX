@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.39tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.40tsi Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -55,10 +55,10 @@
 #define MULTIPLE_VALUES_LIMIT	127
 #define MAX_STACK_DEPTH		16384
 
-#define FEATURES						\
-    lisp__data.features->data.atom->a_object ?			\
-	lisp__data.features->data.atom->property->value :	\
-	NIL
+#define FEATURES							\
+    (lisp__data.features->data.atom->a_object ?				\
+	(LispObj *)lisp__data.features->data.atom->property->value :	\
+	NIL)
 #define PACK	lisp__data.packlist
 #define PACKAGE	lisp__data.package->data.atom->property->value
 #define MOD	lisp__data.modlist

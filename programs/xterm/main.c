@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.166 2003/05/19 00:47:32 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.167tsi Exp $ */
 
 /* main.c */
 
@@ -2820,6 +2820,7 @@ spawn(void)
 #else /* !USE_ANY_SYSV_TERMIO && !USE_POSIX_TERMIOS */
 		initial_erase = sg.sg_erase;
 #endif /* USE_ANY_SYSV_TERMIO */
+		(void)rc;
 		TRACE(("%s initial_erase:%d (from /dev/tty)\n",
 		       rc == 0 ? "OK" : "FAIL",
 		       initial_erase));
@@ -3524,6 +3525,7 @@ spawn(void)
 		sg.sg_erase = initial_erase;
 		rc = ioctl(tty, TIOCSETP, (char *) &sg);
 #endif /* USE_ANY_SYSV_TERMIO */
+		(void)old_erase;
 		TRACE(("%s setting erase to %d (was %d)\n",
 		       rc ? "FAIL" : "OK", initial_erase, old_erase));
 	    }
@@ -3679,6 +3681,7 @@ spawn(void)
 		    (void) setutent();
 		}
 	    }
+	    (void)utret;
 #if OPT_TRACE
 	    if (!utret)
 		TRACE(("getutid: NULL\n"));

@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/choose.c,v 1.4 2001/01/17 23:46:28 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/choose.c,v 1.5tsi Exp $ */
 
 #include "xsm.h"
 #include "saveutil.h"
@@ -584,7 +584,6 @@ ChooseSessionBreakLockXtProc(Widget w, XtPointer client_data,
     }
     else
     {
-	char *id;
 	int longest;
 
 	XtVaSetValues (chooseSessionMessageLabel,
@@ -593,7 +592,7 @@ ChooseSessionBreakLockXtProc(Widget w, XtPointer client_data,
 
 	name = sessionNamesShort[current->list_index];
 
-	id = GetLockId (name);
+	(void) GetLockId (name);
 
 	UnlockSession (name);
 

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.18 2003/02/21 03:13:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.19tsi Exp $ */
 
 /*
 **++ 
@@ -1346,7 +1346,6 @@ XPointer	client_data;
 {
     Xic		    ic = (Xic)client_data;
     KeySym 	    symbol;
-    int 	    wcount;
     int 	    isc_mode; /* Thai Input Sequence Check mode */
     unsigned char   previous_char; /* Last inputted Thai char */
     unsigned char   new_char;
@@ -1366,8 +1365,8 @@ XPointer	client_data;
 
     if (!IC_IscMode(ic)) InitIscMode(ic);
 
-    wcount = XwcLookupString((XIC)ic, &ev->xkey,
-                            wbuf, sizeof(wbuf)/sizeof(wbuf[0]), &symbol, NULL);
+    XwcLookupString((XIC)ic, &ev->xkey, wbuf, sizeof(wbuf) / sizeof(wbuf[0]),
+		    &symbol, NULL);
 
     if ((ev->xkey.state & (AllMods & ~ShiftMask)) ||
          ((symbol >> 8 == 0xFF) &&

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBBind.c,v 3.17 2003/04/14 02:25:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBBind.c,v 3.18tsi Exp $ */
 
 	/* the new monsters ate the old ones */
 
@@ -767,11 +767,9 @@ XLookupString (event, buffer, nbytes, keysym, status)
     int rtrnLen;
     unsigned int new_mods;
     Display *dpy = event->display;
-    XkbDescPtr	xkb;
 
     if (keysym==NULL)
 	keysym= &dummy;
-    xkb= dpy->xkb_info->desc;
     if (!XkbLookupKeySym(dpy,event->keycode,event->state, &new_mods,keysym))
 	return 0;
     new_mods= (event->state&(~new_mods));

@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.8 2001/01/17 23:46:11 dawes Exp $ */
+/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.9tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -67,7 +67,6 @@ static char *fileTypeExt[] = {
 };
 #endif
 
-static	unsigned	inputFormat= INPUT_UNKNOWN;
 static	unsigned	outputFormat= WANT_DEFAULT;
 static	char *		wantLocale= "C";
 static	char *		rootDir;
@@ -77,7 +76,9 @@ static	char *		outputFont= NULL;
 static	char *		inDpyName,*outDpyName;
 static	Display *	inDpy;
 static	Display *	outDpy;
+#ifdef NOTYET
 static	Bool		computeDflts= False;
+#endif
 static	XKBPrintArgs	args;
 	unsigned	warningLevel= 5;
 	Bool		synch;
@@ -186,7 +187,9 @@ register int i;
 	}
 #endif
 	else if (strcmp(argv[i],"-dflts")==0) {
+#ifdef NOTYET
 	    computeDflts= True;
+#endif
 	    uWarning("Compute defaults not implemented yet\n");
 	}
 	else if (strcmp(argv[i],"-diffs")==0) {
@@ -441,19 +444,17 @@ register int i;
 	return False;
     }
     else if (uStringEqual(inputFile,"-")) {
-	inputFormat= INPUT_XKM;
+	/* Nothing */
     }
     else if (strchr(inputFile,':')==0) {
 	int	len= strlen(inputFile);
 	if ((len>4)&&(strcmp(&inputFile[len-4],".xkm")==0)) {
-	    inputFormat= INPUT_XKM;
+	    /* Nothing */
 	}
 	else {
 	    FILE *file;
 	    file= fopen(inputFile,"r");
 	    if (file) {
-		if (XkmProbe(file))	inputFormat= INPUT_XKM;
-		else			inputFormat= INPUT_XKB;
 		fclose(file);
 	    }
 	    else {
@@ -465,7 +466,6 @@ register int i;
     else {
 	inDpyName= inputFile;
 	inputFile= NULL;
-	inputFormat= INPUT_XKM;
     }
 
     if (outputFormat==WANT_DEFAULT)

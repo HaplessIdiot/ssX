@@ -43,7 +43,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/objects.h,v 1.13 2002/02/18 20:51:57 herrb Exp $ */
+/* $XFree86: xc/lib/font/Type1/objects.h,v 1.14tsi Exp $ */
 /*SHARED*/
  
 /*END SHARED*/
@@ -285,18 +285,6 @@ struct xobject {
  
 /*END SHARED*/
 /*SHARED*/
-#define IfTrace0(condition,model)
-#define IfTrace1(condition,model,arg0)
-#define IfTrace2(condition,model,arg0,arg1)
-#define IfTrace3(condition,model,arg0,arg1,arg2)
-#define IfTrace4(condition,model,arg0,arg1,arg2,arg3)
-#define IfTrace5(condition,model,arg0,arg1,arg2,arg3,arg4)
-#define IfTrace6(condition,model,arg0,arg1,arg2,arg3,arg4,arg5)
- 
-#if 0
-void Trace0();
-char *Trace1(),*Trace2(),*Trace3(),*Trace4(),*Trace5(),*Trace6();
-#endif
  
 #ifdef GLOBALS
  

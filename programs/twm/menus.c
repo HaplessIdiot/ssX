@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.17 2003/04/03 16:27:24 dawes Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.18tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -1007,7 +1007,7 @@ PopUpMenu (menu, x, y, center)
     int x, y;
     Bool center;
 {
-    int WindowNameOffset, WindowNameCount;
+    int WindowNameCount;
     TwmWindow **WindowNames;
     TwmWindow *tmp_win2,*tmp_win3;
     int i;
@@ -1033,8 +1033,6 @@ PopUpMenu (menu, x, y, center)
 	menu->mapped = NEVER_MAPPED;
   	AddToMenu(menu, "TWM Windows", NULLSTR, NULL, F_TITLE,NULLSTR,NULLSTR);
   
-        WindowNameOffset=(char *)Scr->TwmRoot.next->name -
-                               (char *)Scr->TwmRoot.next;
         for(tmp_win = Scr->TwmRoot.next , WindowNameCount=0;
             tmp_win != NULL;
             tmp_win = tmp_win->next)
@@ -1239,17 +1237,22 @@ resizeFromCenter(w, tmp_win)
      Window w;
      TwmWindow *tmp_win;
 {
-  int lastx, lasty, width, height, bw2;
-  int namelen;
+  int lastx, lasty, bw2;
   XEvent event;
+#if 0
+  int namelen;
+  int width, height;
 
   namelen = strlen (tmp_win->name);
+#endif
   bw2 = tmp_win->frame_bw * 2;
   AddingW = tmp_win->attr.width + bw2;
   AddingH = tmp_win->attr.height + tmp_win->title_height + bw2;
+#if 0
   width = (SIZE_HINDENT + MyFont_TextWidth (&Scr->SizeFont,
 					     tmp_win->name, namelen));
   height = Scr->SizeFont.height + SIZE_VINDENT * 2;
+#endif
   XGetGeometry(dpy, w, &JunkRoot, &origDragX, &origDragY,
 	       (unsigned int *)&DragWidth, (unsigned int *)&DragHeight, 
 	       &JunkBW, &JunkDepth);
@@ -1258,7 +1261,7 @@ resizeFromCenter(w, tmp_win)
   XQueryPointer (dpy, Scr->Root, &JunkRoot, 
 		 &JunkChild, &JunkX, &JunkY,
 		 &AddingX, &AddingY, &JunkMask);
-/*****
+#if 0
   Scr->SizeStringOffset = width +
     MyFont_TextWidth(&Scr->SizeFont, ": ", 2);
   XResizeWindow (dpy, Scr->SizeWindow, Scr->SizeStringOffset +
@@ -1266,16 +1269,16 @@ resizeFromCenter(w, tmp_win)
   MyFont_DrawImageString (dpy, Scr->SizeWindow, &Scr->SizeFont, Scr->NormalGC,
 		    width, SIZE_VINDENT + Scr->SizeFont.ascent,
 		    ": ", 2);
-*****/
+#endif
   lastx = -10000;
   lasty = -10000;
-/*****
+#if 0
   MoveOutline(Scr->Root,
 	      origDragX - JunkBW, origDragY - JunkBW,
 	      DragWidth * JunkBW, DragHeight * JunkBW,
 	      tmp_win->frame_bw,
 	      tmp_win->title_height);
-*****/
+#endif
   MenuStartResize(tmp_win, origDragX, origDragY, DragWidth, DragHeight);
   while (TRUE)
     {

@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.25 2003/04/13 19:22:19 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.26tsi Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -631,6 +631,7 @@ extern void _XFlushGCCache(Display *dpy, GC gc);
     if (dpy->bufptr + (n) > dpy->bufmax) \
         _XFlush (dpy); \
     ptr = (type) dpy->bufptr; \
+    (void)ptr; \
     dpy->bufptr += (n);
 
 #ifdef WORD64

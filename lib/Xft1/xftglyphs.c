@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.14 2001/11/17 08:22:45 keithp Exp $
+ * $XFree86: xc/lib/Xft1/xftglyphs.c,v 1.2tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -58,7 +58,6 @@ XftGlyphLoad (Display		*dpy,
     Glyph	    g;
     unsigned char   bufLocal[4096];
     unsigned char   *bufBitmap = bufLocal;
-    unsigned char   *b;
     int		    bufSize = sizeof (bufLocal);
     int		    size, pitch;
     unsigned char   bufLocalRgba[4096];
@@ -67,7 +66,6 @@ XftGlyphLoad (Display		*dpy,
     int		    sizergba, pitchrgba, widthrgba;
     int		    width;
     int		    height;
-    int		    i;
     int		    left, right, top, bottom;
     int		    hmul = 1;
     int		    vmul = 1;
@@ -232,8 +230,7 @@ XftGlyphLoad (Display		*dpy,
 	    FT_Outline_Translate ( &glyph->outline, -left*hmul, -bottom*vmul );
 
 	    FT_Outline_Get_Bitmap( _XftFTlibrary, &glyph->outline, &ftbit );
-	    i = size;
-	    b = (unsigned char *) bufBitmap;
+
 	    /*
 	     * swap bit order around
 	     */

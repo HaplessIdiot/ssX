@@ -18,7 +18,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.14 2001/10/28 03:32:25 tsi Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.15tsi Exp $ */
 
 
 /* TO DO ****
@@ -3305,7 +3305,7 @@ preformatted_filter(void)
 	int sect=0,subsect=0,bulpair=0,osubsect=0;
 	int title=1;
 	int oscnt=-1;
-	int empty=0,oempty;
+	int empty=0;
 	int fcont=0;
 	int Pnew=0,I0;
 	float s_avg=0.0;
@@ -3403,7 +3403,7 @@ preformatted_filter(void)
 		/**** for each ordinary line... *****/
 
 		/*** skip over global indentation */
-		oempty=empty; empty=(linelen==0);
+		empty=(linelen==0);
 		if (empty) {ncnt++; continue;}
 
 		/*** strip out per-page titles ***/
@@ -5232,8 +5232,6 @@ main(int argc, char *argv[])
 	int helplen=0;
 	int desclen;
 	char **argvch;	/* remapped argv */
-	char *argvbuf;
-	char *processing = "stdin";
 /*	FILE *macros; -- interpret -man macros? */
 
 	char strgetopt[80];
@@ -5306,7 +5304,7 @@ main(int argc, char *argv[])
 	/* (GNU probably has a reusable function to do this...) */
 	/* deep six getopt in favor of integrated long names + letters? */
 	argvch = malloc(argc * sizeof(char*));
-	p = argvbuf = malloc(argc*3 * sizeof(char));	/* either -<char>'\0' or no space used */
+	p = malloc(argc*3 * sizeof(char));	/* either -<char>'\0' or no space used */
 	for (i=0; i<argc; i++) argvch[i]=argv[i];	/* need argvch[0] for getopt? */
 	argv0 = mystrdup(argv[0]);
 	for (i=1; i<argc; i++) {
@@ -5420,8 +5418,6 @@ main(int argc, char *argv[])
 
 	/* read from given file name(s) */
 	if (optind<argc) {
-		processing = argvch[optind];
-
 		if (!fname) {	/* if no name given, create from file name */
 			/* take name from tail of path */
 			if ((p=strrchr(argvch[optind],'/'))!=NULL) p++; else p=argvch[optind];

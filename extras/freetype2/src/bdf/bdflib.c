@@ -20,6 +20,7 @@
  * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
  * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+/* $XFree86$ */
 
   /*************************************************************************/
   /*                                                                       */
@@ -641,7 +642,7 @@
   {
     _bdf_line_func_t  cb;
     unsigned long     lineno;
-    int               n, res, done, refill, bytes, hold;
+    int               n, done, refill, bytes, hold;
     char              *ls, *le, *pp, *pe, *hp;
     char              *buf = 0;
     FT_Memory         memory = stream->memory;
@@ -661,7 +662,7 @@
     lineno = 1;
     buf[0] = 0;
 
-    res = done = 0;
+    done = 0;
     pp = ls = le = buf;
 
     bytes = 65536L;
@@ -1443,7 +1444,6 @@
     unsigned char*     bp;
     unsigned long      i, slen, nibbles;
 
-    _bdf_line_func_t*  next;
     _bdf_parse_t*      p;
     bdf_glyph_t*       glyph;
     bdf_font_t*        font;
@@ -1454,7 +1454,6 @@
     FT_UNUSED( lineno );        /* only used in debug mode */
 
 
-    next = (_bdf_line_func_t *)call_data;
     p    = (_bdf_parse_t *)    client_data;
 
     font   = p->font;

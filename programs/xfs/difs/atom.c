@@ -50,7 +50,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)atom.c	4.1	5/2/91
  *
  */
-/* $XFree86: xc/programs/xfs/difs/atom.c,v 3.3 2001/01/17 23:45:28 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/atom.c,v 3.4tsi Exp $ */
 
 #include "misc.h"
 #include "fsresource.h"
@@ -106,9 +106,12 @@ MakeAtom(char *string, unsigned int len, Bool makeit)
 	nd = (NodePtr) fsalloc(sizeof(NodeRec));
 	if (!nd)
 	    return BAD_RESOURCE;
+#if FSA_LAST_PREDEFINED > 0
 	if (lastAtom < FSA_LAST_PREDEFINED) {
 	    nd->string = string;
-	} else {
+	} else
+#endif
+	{
 	    nd->string = (char *) fsalloc(len + 1);
 	    if (!nd->string) {
 		fsfree(nd);

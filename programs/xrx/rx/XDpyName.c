@@ -26,6 +26,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
+/* $XFree86$ */
 
 #ifdef XP_UNIX
 #include "RxPlugin.h"		/* for PluginGlobal */
@@ -326,8 +327,10 @@ Bool		 *replyReadyRet;
 	    GetProxyAddrReply 	*reply = 
 		(GetProxyAddrReply *) (replyWait->reply);
 
+#if 0 /* No-op */
 	    CHECK_AT_LEAST_SIZE (iceConn, PMOPCODE, opcode,
 		length, SIZEOF (pmGetProxyAddrReplyMsg), IceFatalToProtocol);
+#endif
 
 	    IceReadCompleteMessage (iceConn, SIZEOF (pmGetProxyAddrReplyMsg),
 		pmGetProxyAddrReplyMsg, pMsg, pStart);

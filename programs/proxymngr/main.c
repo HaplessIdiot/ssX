@@ -25,7 +25,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/proxymngr/main.c,v 1.6 2001/12/14 20:01:01 dawes Exp $ */
+/* $XFree86: xc/programs/proxymngr/main.c,v 1.7tsi Exp $ */
 
 #include <stdlib.h>
 #include "pmint.h"
@@ -84,12 +84,11 @@ void
 SetCloseOnExec (fd)
     int	fd;
 {
-    int ret;
 #ifdef F_SETFD
 #ifdef FD_CLOEXEC
-    ret = fcntl (fd, F_SETFD, FD_CLOEXEC);
+    (void) fcntl (fd, F_SETFD, FD_CLOEXEC);
 #else
-    ret = fcntl (fd, F_SETFD, 1);
+    (void) fcntl (fd, F_SETFD, 1);
 #endif /* FD_CLOEXEC */
 #endif /* F_SETFD */
 }
@@ -430,8 +429,10 @@ Bool		 swap;
 	char			*authName = NULL, *authData = NULL;
 	int			authLen;
 
+#if 0 /* No-op */
 	CHECK_AT_LEAST_SIZE (iceConn, pmConn->pmOpcode, opcode,
 	    length, SIZEOF (pmGetProxyAddrMsg), IceFatalToProtocol);
+#endif
 
 	IceReadCompleteMessage (iceConn, SIZEOF (pmGetProxyAddrMsg),
 	    pmGetProxyAddrMsg, pMsg, pStart);
@@ -562,8 +563,10 @@ Bool		 swap;
 	char		*authName;
 	char		*authData;
 
+#if 0 /* No-op */
 	CHECK_AT_LEAST_SIZE (iceConn, pmConn->pmOpcode, opcode,
 	    length, SIZEOF (pmStartProxyMsg), IceFatalToProtocol);
+#endif
 
 	IceReadCompleteMessage (iceConn, SIZEOF (pmStartProxyMsg),
 	    pmStartProxyMsg, pMsg, pStart);
@@ -633,8 +636,10 @@ Bool		 swap;
 	char			*pData, *pStart;
 	char			*addr = NULL, *error = NULL;
 
+#if 0 /* No-op */
 	CHECK_AT_LEAST_SIZE (iceConn, pmConn->pmOpcode, opcode,
 	    length, SIZEOF (pmGetProxyAddrReplyMsg), IceFatalToProtocol);
+#endif
 
 	IceReadCompleteMessage (iceConn, SIZEOF (pmGetProxyAddrReplyMsg),
 	    pmGetProxyAddrReplyMsg, pMsg, pStart);

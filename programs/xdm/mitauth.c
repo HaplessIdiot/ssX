@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/mitauth.c,v 1.3 2001/01/17 23:45:21 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/mitauth.c,v 1.4tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -45,14 +45,12 @@ from The Open Group.
 
 # define AUTH_DATA_LEN	16	/* bytes of authorization data */
 static char	auth_name[256];
-static int	auth_name_len;
 
 void
 MitInitAuth (unsigned short name_len, char *name)
 {
     if (name_len > 256)
 	name_len = 256;
-    auth_name_len = name_len;
     memmove( auth_name, name, name_len);
 }
 

@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.142 2003/05/19 00:47:31 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.143tsi Exp $ */
 
 /*
 
@@ -5401,7 +5401,6 @@ xim_real_init(void)
 	XVaNestedList p_list;
 	XPoint spot =
 	{0, 0};
-	XFontSetExtents *extents;
 	XFontStruct **fonts;
 	char **font_name_list;
 
@@ -5425,7 +5424,7 @@ xim_real_init(void)
 	    XCloseIM(xim);
 	    return;
 	}
-	extents = XExtentsOfFontSet(term->screen.fs);
+	(void) XExtentsOfFontSet(term->screen.fs);
 	j = XFontsOfFontSet(term->screen.fs, &fonts, &font_name_list);
 	for (i = 0, term->screen.fs_ascent = 0; i < j; i++) {
 	    if (term->screen.fs_ascent < (*fonts)->ascent)

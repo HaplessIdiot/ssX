@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmodmap/xmodmap.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/xmodmap/xmodmap.c,v 1.8tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -236,7 +236,7 @@ main(int argc, char *argv[])
 	      case '3':
 	      case '4':
 	      case '5': {
-		  char *cmd = "clear modX";
+		  char cmd[11] = "clear modX";
 		  cmd[9] = arg[1];
 		  process_line (cmd);
 		  continue;

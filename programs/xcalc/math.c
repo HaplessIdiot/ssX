@@ -1,5 +1,5 @@
 /* $XConsortium: math.c,v 1.17 91/07/25 17:51:34 rws Exp $ 
- * $XFree86: xc/programs/xcalc/math.c,v 1.4 2001/08/27 23:35:11 dawes Exp $ 
+ * $XFree86: xc/programs/xcalc/math.c,v 1.5tsi Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -96,10 +96,8 @@ static int entered=1;  /* true if display contains a valid number.
 static int lift_enabled = 0;	/* for rpn mode only */
 
 static int CLR    =0;  /* CLR clears display.  if 1, clears acc, also */
-static int OFF    =0;  /* once clears mem, twice quits */
 static int Dpoint=0;  /* to prevent using decimal pt twice in a # */
 static int clrdisp=1;  /* if true clears display before entering # */
-static int accset =0;
 static int lastop =kCLR;
 static int memop  =kCLR;
 static int exponent=0;
@@ -159,7 +157,6 @@ int pre_op(keynum)
     }
 
     if (keynum != kCLR) CLR=0;
-    if (keynum != kOFF) OFF=0;
     return(0);
 }
 
@@ -845,7 +842,7 @@ offf(void)
   if (rpn)
       for (i=1; i < XCALC_MEMORY; i++)
 	  mem[i]=0.0;
-  accset=exponent=Dpoint=0;
+  exponent=Dpoint=0;
   DrawDisplay();
 }
 

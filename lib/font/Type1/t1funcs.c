@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.29 2002/10/30 23:17:36 alanh Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.30tsi Exp $ */
 
 /*
 
@@ -204,7 +204,6 @@ CIDOpenScalable (FontPathElementPtr fpe,
                 glyph,
                 scan,
                 image;
-    int pad,wordsize;     /* scan & image in bits                         */
     long *pool;           /* memory pool for ximager objects              */
     int size;             /* for memory size calculations                 */
     struct XYspace *S;    /* coordinate space for character               */
@@ -227,8 +226,9 @@ CIDOpenScalable (FontPathElementPtr fpe,
 #endif
 #if defined(CID_ALL_CHARS)
     char *cf;
-#endif
+#else
     long sAscent, sDescent;
+#endif
 
     /* check the font name */
     len = strlen(fileName);
@@ -324,9 +324,6 @@ CIDOpenScalable (FontPathElementPtr fpe,
     rc = CheckFSFormat(format, fmask, &bit, &byte, &scan, &glyph, &image);
     if (rc != Successful)
         return rc;
-
-    pad                = glyph * 8;
-    wordsize           = scan * 8;
 
 #define  PAD(bits, pad)  (((bits)+(pad)-1)&-(pad))
 
@@ -461,8 +458,10 @@ CIDOpenScalable (FontPathElementPtr fpe,
     /* CID-keyed are not constant-width fonts.                      */
     pFont->info.constantWidth = 0;
 
+#ifndef CID_ALL_CHARS
     sAscent = CIDFontP->CIDfontInfoP[CIDFONTBBOX].value.data.arrayP[3].data.integer;
     sDescent = -CIDFontP->CIDfontInfoP[CIDFONTBBOX].value.data.arrayP[1].data.integer;
+#endif
 
     if (strncmp(entry->name.name, "-bogus", 6)) {
 #ifdef CID_ALL_CHARS
@@ -948,7 +947,7 @@ CIDGetGlyphs(FontPtr pFont,
 	     unsigned long *glyphCount, /* RETURN */
 	     CharInfoPtr *glyphs)	/* RETURN */
 {
-    unsigned int firstRow, numRows, code, char_row, char_col;
+    unsigned int code, char_row, char_col;
     CharInfoPtr *glyphsBase;
     register unsigned int c;
     CharInfoPtr pci;
@@ -1040,8 +1039,6 @@ CIDGetGlyphs(FontPtr pFont,
         break;
 
     case TwoD16Bit:
-        firstRow = pFont->info.firstRow;
-        numRows = pFont->info.lastRow - firstRow + 1;
         while (count--) {
             char_row = (*chars++);
             char_col = (*chars++);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.86 2003/04/27 18:17:33 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.87tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -3180,10 +3180,8 @@ LispGetVarPack(LispObj *symbol)
     int ii;
     char *string;
     LispAtom *atom;
-    LispProperty *property;
 
     string = ATOMID(symbol);
-    property = symbol->data.atom->property;
     ii = STRHASH(string);
 
     atom = lisp__data.pack->atoms[ii];
@@ -4860,15 +4858,13 @@ LispRunFunMac(LispObj *name, LispObj *code, int macro, int base)
 
     if (!macro) {
 	int lex = lisp__data.env.lex;
-	int did_jump = 1, *pdid_jump;
-	LispObj **pcode, **presult;
+	int did_jump = 1;
 	LispBlock *block;
 
 	block = LispBeginBlock(name, LispBlockClosure);
 	lisp__data.env.lex = base;
 	if (setjmp(block->jmp) == 0) {
-	    for (pcode = &code, presult = &result, pdid_jump = &did_jump;
-		 CONSP(code); code = CDR(code))
+	    for (; CONSP(code); code = CDR(code))
 		result = EVAL(CAR(code));
 	    did_jump = 0;
 	}

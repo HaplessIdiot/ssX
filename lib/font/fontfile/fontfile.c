@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.15 2001/12/14 19:56:51 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.16tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -1048,26 +1048,22 @@ FontFileListNextFontOrAlias(pointer client, FontPathElementPtr fpe,
     return ret;
 }
 
-
-typedef int (*IntFunc) (void);
-static int  font_file_type;
-
 void
 FontFileRegisterLocalFpeFunctions (void)
 {
-    font_file_type = RegisterFPEFunctions(FontFileNameCheck,
-					  FontFileInitFPE,
-					  FontFileFreeFPE,
-					  FontFileResetFPE,
-					  FontFileOpenFont,
-					  FontFileCloseFont,
-					  FontFileListFonts,
-					  FontFileStartListFontsWithInfo,
-					  FontFileListNextFontWithInfo,
-					  NULL,
-					  NULL,
-					  NULL,
-					  FontFileStartListFontsAndAliases,
-					  FontFileListNextFontOrAlias,
-					  FontFileEmptyBitmapSource);
+    RegisterFPEFunctions(FontFileNameCheck,
+			 FontFileInitFPE,
+			 FontFileFreeFPE,
+			 FontFileResetFPE,
+			 FontFileOpenFont,
+			 FontFileCloseFont,
+			 FontFileListFonts,
+			 FontFileStartListFontsWithInfo,
+			 FontFileListNextFontWithInfo,
+			 NULL,
+			 NULL,
+			 NULL,
+			 FontFileStartListFontsAndAliases,
+			 FontFileListNextFontOrAlias,
+			 FontFileEmptyBitmapSource);
 }

@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.30 2002/05/31 18:46:10 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.31tsi Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -341,7 +341,7 @@ IOError(Display *dpy)
 {
     if (child_pid > 0)
 	kill(child_pid, SIGTERM);
-    (*ioerror)(dpy);
+    return (*ioerror)(dpy);
 }
 #endif
 

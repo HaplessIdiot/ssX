@@ -54,7 +54,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.60 2002/12/27 21:05:23 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.61tsi Exp $ */
 
 /* screen.c */
 
@@ -1128,7 +1128,6 @@ ScreenResize(TScreen * screen,
 	     int height,
 	     unsigned *flags)
 {
-    int code;
     int rows, cols;
     int border = 2 * screen->border;
     int move_down_by;
@@ -1264,8 +1263,8 @@ ScreenResize(TScreen * screen,
     ts.ws_xpixel = width;
     ts.ws_ypixel = height;
 #endif
-    code = SET_TTYSIZE(screen->respond, ts);
-    TRACE(("return %d from SET_TTYSIZE %dx%d\n", code, rows, cols));
+    TRACE(("return %d from SET_TTYSIZE %dx%d\n",
+	  SET_TTYSIZE(screen->respond, ts), rows, cols));
 
 #if defined(SIGWINCH) && defined(USE_STRUCT_TTYSIZE)
     if (screen->pid > 1) {

@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imInsClbk.c,v 3.1 2001/01/17 19:41:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imInsClbk.c,v 3.2tsi Exp $ */
 
 #include	<X11/Xatom.h>
 #define NEED_EVENTS
@@ -100,7 +100,6 @@ _XimFilterPropertyNotify( display, window, event, client_data )
     Atom		ims, actual_type, *atoms;
     int			actual_format;
     unsigned long	nitems, bytes_after;
-    Window		ims_window;
     int			ii;
     XIM			xim;
     Bool		flag = False;
@@ -124,7 +123,7 @@ _XimFilterPropertyNotify( display, window, event, client_data )
 
     lock = True;
     for( ii = 0; ii < nitems; ii++, atoms ) {
-	if((ims_window = XGetSelectionOwner (display, atoms[ii]))) {
+	if(XGetSelectionOwner (display, atoms[ii])) {
 	    for( icb = callback_list; icb; icb = icb->next ) {
 		if( !icb->call  &&  !icb->destroy ) {
 		    xim = (*icb->lcd->methods->open_im)( icb->lcd, display,
