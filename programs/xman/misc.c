@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/misc.c,v 1.2 2000/03/03 20:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/xman/misc.c,v 1.3 2000/03/03 23:16:28 dawes Exp $ */
 
 /*
  * xman - X window system manual page display program.
@@ -184,7 +184,7 @@ FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num)
   temp = CreateManpageName(entry, 0, 0);
   sprintf(man_globals->manpage_title, "The current manual page is: %s.", temp);
   XtFree(temp);
-  
+
   ParseEntry(entry, path, section, page);
 
 /*
@@ -364,13 +364,6 @@ Format(ManpageGlobals * man_globals, char * entry)
   Position x,y;			/* location to pop up the
 				   "would you like to save" widget. */
 
-  Popup(XtParent(man_globals->standby), XtGrabExclusive);
-  while ( !XCheckTypedWindowEvent(XtDisplay(man_globals->standby), 
-				  XtWindow(man_globals->standby), 
-				  Expose, &event) );
-  XtDispatchEvent( &event );
-  XFlush(XtDisplay(man_globals->standby));
-
   if ( !UncompressUnformatted(man_globals, entry, filename) ) {
     /* We Really could not find it, this should never happen, yea right. */
     sprintf(error_buf, "Could not open manual page, %s", entry);
@@ -379,9 +372,45 @@ Format(ManpageGlobals * man_globals, char * entry)
     return(NULL);
   }
 
+  if ((file = fopen(filename, "r")) != NULL) {
+    char line[BUFSIZ];
+
+    if (fgets(line, sizeof(line), file) != NULL) {
+	if (strncmp(line, ".so ", 4) == 0) {
+	  line[strlen(line) - 1] = '\0';
+	  fclose(file);
+	  unlink(filename);
+	  if (line[4] != '/') {
+	    char *ptr = NULL;
+
+	    strcpy(tmp, entry);
+	    if ((ptr = rindex(tmp, '/')) != NULL) {
+	      *ptr = '\0';
+	      if ((ptr = rindex(tmp, '/')) != NULL)
+		ptr[1] = '\0';
+	    }
+	  }
+	  else
+	    *tmp = '\0';
+	  sprintf(filename, "%s%s", tmp, line + 4);
+
+	  return (Format(man_globals, filename));
+	}
+    }
+    fclose(file);
+  }
+
+  Popup(XtParent(man_globals->standby), XtGrabExclusive);
+  while ( !XCheckTypedWindowEvent(XtDisplay(man_globals->standby), 
+				  XtWindow(man_globals->standby), 
+				  Expose, &event) );
+  XtDispatchEvent( &event );
+  XFlush(XtDisplay(man_globals->standby));
+
   strcpy(tmp,MANTEMP);		          /* Get a temp file. */
   (void) mktemp(tmp);
   strcpy(man_globals->tempfile, tmp);
+
   ParseEntry(entry, path, NULL, NULL);
 
   sprintf(cmdbuf,"cd %s ; %s %s %s > %s %s", path, TBL,

@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/man.c,v 1.2 2000/03/03 20:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/xman/man.c,v 1.3 2000/03/03 23:16:27 dawes Exp $ */
 
 
 #include "globals.h"
@@ -94,21 +94,25 @@ Man(void)
  * SYSMANPATH and LOCALMANPATH.
  */
 
-  ptr = getenv("MANPATH");
-  if (ptr == NULL || streq(ptr , "") ) {
+  /* if MANPATH variable ends in ':'. So, should extend it's value to the
+   * default search path.
+   */
+
+  *manpath = '\0';
+  if ((ptr = getenv("MANPATH")) != NULL)
+    strcpy(manpath, ptr);
+  if (ptr == NULL || streq(ptr , "") || ptr[strlen(ptr) - 1] == ':') {
     lang = getenv("LANG");
 #ifdef MANCONF
-    if (!ReadManConfig(manpath))
+    if (!ReadManConfig(manpath + strlen(manpath)))
 #endif
     {
-      strcpy(manpath, SYSMANPATH);
+      strcat(manpath, SYSMANPATH);
 #ifdef LOCALMANPATH
       strcat(manpath, ":");
       strcat(manpath, LOCALMANPATH);
 #endif
     }
-  } else {
-    strcpy(manpath, ptr);
   }
 
 /*
@@ -188,6 +192,8 @@ Man(void)
  * realloc manual to be minimum space necessary.
  */
 
+  if (sect == 0)
+    PrintError("No manual pages found.");
   manual = (Manual *) XtRealloc( (char *) manual, (sizeof(Manual) * sect));
   if (manual == NULL) 
     PrintError("Could not allocate memory for manual sections.");
@@ -246,20 +252,28 @@ SortList(SectionList ** list)
  *  Second step
  *
  *  Move items with duplicate labels right next to each other.
+ *
+ *  Changed to keep the order of the list entries unchanged.
  */
 
-  local = *list;
-  for ( local = *list ; local->next != NULL ; local = local->next) {
-    inner = local->next;
-    while ( inner != NULL) {
-      if ( streq(inner->label, local->label) && (inner != local->next)) {
-	last->next = inner->next; /* Move it to directly follow local. */
-	inner->next = local->next;
-	local->next = inner;
-	inner = last;		/* just so that we keep marching down the
-				   tree (this keeps us from looping). */
+  for (local = *list; local->next != NULL; local = local->next) {
+    head = local;
+    old = inner = local->next;
+    while (inner != NULL) {
+      if (streq(inner->label, local->label)) {
+	if (old != inner) {
+	  old->next = inner->next;
+	  last = inner->next;
+	  inner->next = head->next;
+	  head->next = inner;
+	  head = inner;
+	  old = inner = last;
+	  continue;
+	}
+	else
+	  head = inner;
       }
-      last = inner;
+      old = inner;
       inner = inner->next;
     }
   }
@@ -405,7 +419,7 @@ ReadCurrentSection(Manual * local_manual, char * path)
   register int nalloc;
   char full_name[BUFSIZ], *ptr;
 
-  if((dir = opendir(path)) == NULL) {	
+  if((dir = opendir(path)) == NULL) {
 #ifdef DEBUG
     sprintf(error_buf,"Can't open directory %s", path);
     PopupWarning(NULL, error_buf);
@@ -417,7 +431,7 @@ ReadCurrentSection(Manual * local_manual, char * path)
  * Remove the compression extension from the path name.
  */
 
-  if ( (ptr = rindex(path, '.')) != NULL) 
+  if ( (ptr = rindex(path, '.')) != NULL) {
 #if !defined(SCO) && !defined(ISC)
     if (streq(ptr + 1, COMPRESSION_EXTENSION)) 
 #else
@@ -428,6 +442,7 @@ ReadCurrentSection(Manual * local_manual, char * path)
     else if (streq(ptr + 1, GZIP_EXTENSION))
       *ptr = '\0';
 #endif
+  }
   
   nentries = local_manual->nentries;
   nalloc = local_manual->nalloc;
@@ -454,7 +469,7 @@ ReadCurrentSection(Manual * local_manual, char * path)
  * Remove the compression extension from the entry name.
  */
 
-    if ( (ptr = rindex(full_name, '.')) != NULL) 
+    if ( (ptr = rindex(full_name, '.')) != NULL) {
 #if !defined(SCO) && !defined(ISC)
       if (streq(ptr + 1, COMPRESSION_EXTENSION)) 
 #else
@@ -465,6 +480,7 @@ ReadCurrentSection(Manual * local_manual, char * path)
       else if (streq(ptr + 1, GZIP_EXTENSION))
 	*ptr = '\0';
 #endif
+    }
     local_manual->entries[nentries] = StrAlloc(full_name);
     local_manual->entries_less_paths[nentries] = 
       rindex(local_manual->entries[nentries], '/');

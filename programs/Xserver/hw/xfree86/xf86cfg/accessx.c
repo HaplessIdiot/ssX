@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.1 2000/04/04 22:36:56 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/accessx.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
  */
 
 #include "config.h"
@@ -35,19 +35,53 @@
 #include <signal.h>
 #include <X11/XKBlib.h>
 #include <X11/Shell.h>
+#include <X11/Xaw/Command.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
+#include <X11/Xaw/Scrollbar.h>
+#include <X11/Xaw/Toggle.h>
 #include "keyboard-cfg.h"
+
+#define MAX_TIMEOUT		20
+#define MAX_MOUSE_SPEED		500
+#define MAX_MOUSE_TIME		4
+#define MAX_MOUSE_DELAY		2.09
+#define MAX_REPEAT_RATE		8.04
+#define MAX_REPEAT_DELAY	6.04
+#define MAX_SLOW_TIME		4
+#define MAX_BOUNCE_TIME		4
+
+/*
+ * Types
+ */
+typedef struct {
+    Widget label, number, scroller;
+    double min, max, value, resolution;
+    Bool integer;
+} Scale;
 
 /*
  * Initialization
  */
-static Widget shell;
+static Widget shell, accessx, enable, timeoutToggle, form, apply;
+static Widget sticky, stickyAuto, stickyBeep;
+static Widget mouse;
+static Widget repeat;
+static Widget slowToggle, slowPressed, slowAccepted;
+static Widget bounceToggle;
+static Scale *timeout, *mouseSpeed, *mouseTime, *mouseDelay, *slow,
+	*repeatRate, *repeatDelay, *bounce;
+extern Widget work;
 
 /*
  * Prototypes
  */
-void CreateAccessXDialog(void);
+static void CreateAccessXHelpDialog(void);
+static void EnableCallback(Widget, XtPointer, XtPointer);
+static void ScaleEnableCallback(Widget, XtPointer, XtPointer);
+static void ScaleJumpCallback(Widget, XtPointer, XtPointer);
+
+static void ApplyCallback(Widget, XtPointer, XtPointer);
 
 /*
  * Implementation
@@ -69,11 +103,11 @@ startaccessx(void)
     xkb_info->xkb->ctrls->mk_curve = 0;
     XkbSetControls(DPY, XkbAllControlsMask, xkb_info->xkb);
     UpdateKeyboard(True);
-    CreateAccessXDialog();
+    CreateAccessXHelpDialog();
 }
 
 void
-CreateAccessXDialog()
+CreateAccessXHelpDialog()
 {
     Widget form;
 
@@ -110,4 +144,544 @@ void
 CloseAccessXAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     XtPopdown(shell);
+}
+
+static void
+AccessXInitialize(void)
+{
+    static int first = 1;
+    Arg args[1];
+    Boolean state;
+    Widget stickyForm, mouseForm, repeatForm, slowForm, bounceForm;
+    float val;
+
+    if (!first)
+	return;
+    first = 0;
+
+    InitializeKeyboard();
+
+    XkbGetControls(DPY, XkbAllControlsMask, xkb_info->xkb);
+    if (xkb_info->xkb->ctrls == NULL)
+	xkb_info->xkb->ctrls = (XkbControlsPtr)
+	    XtCalloc(1, sizeof(XkbControlsRec));
+
+    timeout = XtNew(Scale);
+    accessx = XtCreateWidget("accessxForm", formWidgetClass, work, NULL, 0);
+    enable = XtVaCreateManagedWidget("enable", toggleWidgetClass, accessx,
+				     XtNstate,
+				     (xkb_info->xkb->ctrls->enabled_ctrls &
+				      (XkbAccessXKeysMask | XkbStickyKeysMask |
+				       XkbMouseKeysMask | XkbMouseKeysAccelMask |
+				       XkbRepeatKeysMask | XkbSlowKeysMask |
+				       XkbBounceKeysMask)) != 0, NULL, 0);
+
+    apply = XtCreateManagedWidget("apply", commandWidgetClass, accessx, NULL, 0);
+    XtAddCallback(apply, XtNcallback, ApplyCallback, NULL);
+
+    form = XtCreateManagedWidget("Accessx", formWidgetClass, accessx, NULL, 0);
+    XtAddCallback(enable, XtNcallback, EnableCallback, (XtPointer)form);
+    timeoutToggle = XtVaCreateManagedWidget("timeoutToggle", toggleWidgetClass,
+					    form, XtNstate,
+					    xkb_info->xkb->ctrls->ax_timeout > 60
+					    && xkb_info->xkb->ctrls->ax_timeout
+					    < 30000, NULL, 0);
+    XtAddCallback(timeoutToggle, XtNcallback, ScaleEnableCallback,
+		  (XtPointer)timeout);
+    timeout->label = XtCreateManagedWidget("timeoutLabel", labelWidgetClass,
+					   form, NULL, 0);
+    timeout->number = XtCreateManagedWidget("timeoutNumber", labelWidgetClass,
+					    form, NULL, 0);
+    timeout->scroller = XtCreateManagedWidget("timeoutScroller",
+					      scrollbarWidgetClass,
+					      form, NULL, 0);
+    XtAddCallback(timeout->scroller, XtNjumpProc, ScaleJumpCallback,
+		  (XtPointer)timeout);
+    timeout->min = 1;
+    timeout->max = MAX_TIMEOUT;
+    timeout->resolution = 1;
+    timeout->integer = True;
+
+    sticky = XtVaCreateManagedWidget("sticky", toggleWidgetClass, form,
+				     XtNstate,
+				     (xkb_info->xkb->ctrls->enabled_ctrls &
+				      XkbStickyKeysMask) != 0, NULL, 0);
+    stickyForm = XtCreateManagedWidget("stickyForm", formWidgetClass,
+				       form, NULL, 0);
+    XtAddCallback(sticky, XtNcallback, EnableCallback, (XtPointer)stickyForm);
+    stickyAuto = XtVaCreateManagedWidget("auto", toggleWidgetClass, stickyForm,
+					 XtNstate,
+					 (xkb_info->xkb->ctrls->ax_options &
+					  XkbAX_LatchToLockMask) == 0, NULL, 0);
+    stickyBeep = XtVaCreateManagedWidget("beep", toggleWidgetClass, stickyForm,
+					 XtNstate,
+					 (xkb_info->xkb->ctrls->ax_options &
+					  XkbAX_StickyKeysFBMask) != 0, NULL, 0);
+
+    mouse = XtVaCreateManagedWidget("mouseKeys", toggleWidgetClass, form,
+				    XtNstate,
+				    (xkb_info->xkb->ctrls->enabled_ctrls &
+				     (XkbMouseKeysMask | XkbMouseKeysAccelMask))
+				    != 0, NULL, 0);
+    mouseForm = XtCreateManagedWidget("mouseForm", formWidgetClass,
+				      form, NULL, 0);
+    XtAddCallback(mouse, XtNcallback, EnableCallback, (XtPointer)mouseForm);
+    mouseSpeed = XtNew(Scale);
+    mouseSpeed->label = XtCreateManagedWidget("speedLabel", labelWidgetClass,
+					      mouseForm, NULL, 0);
+    mouseSpeed->number = XtCreateManagedWidget("speedNumber", labelWidgetClass,
+					      mouseForm, NULL, 0);
+    mouseSpeed->scroller = XtCreateManagedWidget("speedScroller",
+						 scrollbarWidgetClass,
+						 mouseForm, NULL, 0);
+    XtAddCallback(mouseSpeed->scroller, XtNjumpProc, ScaleJumpCallback,
+		  (XtPointer)mouseSpeed);
+    mouseSpeed->min = 10;
+    mouseSpeed->max = MAX_MOUSE_SPEED;
+    mouseSpeed->resolution = 10;
+    mouseSpeed->integer = True;
+    mouseTime = XtNew(Scale);
+    mouseTime->label = XtCreateManagedWidget("timeLabel", labelWidgetClass,
+					     mouseForm, NULL, 0);
+    mouseTime->number = XtCreateManagedWidget("timeNumber", labelWidgetClass,
+					      mouseForm, NULL, 0);
+    mouseTime->scroller = XtCreateManagedWidget("timeScroller",
+						scrollbarWidgetClass,
+						mouseForm, NULL, 0);
+    XtAddCallback(mouseTime->scroller, XtNjumpProc, ScaleJumpCallback,
+		  (XtPointer)mouseTime);
+    mouseTime->min = .1;
+    mouseTime->max = MAX_MOUSE_TIME;
+    mouseTime->resolution = .1;
+    mouseTime->integer = False;
+    mouseDelay = XtNew(Scale);
+    mouseDelay->label = XtCreateManagedWidget("delayLabel", labelWidgetClass,
+					      mouseForm, NULL, 0);
+    mouseDelay->number = XtCreateManagedWidget("delayNumber", labelWidgetClass,
+					       mouseForm, NULL, 0);
+    mouseDelay->scroller = XtCreateManagedWidget("delayScroller",
+						 scrollbarWidgetClass,
+						 mouseForm, NULL, 0);
+    XtAddCallback(mouseDelay->scroller, XtNjumpProc, ScaleJumpCallback,
+		  (XtPointer)mouseDelay);
+    mouseDelay->min = .1;
+    mouseDelay->max = MAX_MOUSE_DELAY;
+    mouseDelay->resolution = .1;
+    mouseDelay->integer = False;
+
+    repeat = XtVaCreateManagedWidget("repeatKeys", toggleWidgetClass, form,
+				     XtNstate,
+				    (xkb_info->xkb->ctrls->enabled_ctrls &
+				     XkbRepeatKeysMask) != 0, NULL, 0);
+    repeatForm = XtCreateManagedWidget("repeatForm", formWidgetClass,
+				       form, NULL, 0);
+    XtAddCallback(repeat, XtNcallback, EnableCallback, (XtPointer)repeatForm);
+    repeatRate = XtNew(Scale);
+    repeatRate->label = XtCreateManagedWidget("rateLabel", labelWidgetClass,
+					      repeatForm, NULL, 0);
+    repeatRate->number = XtCreateManagedWidget("rateNumber", labelWidgetClass,
+					       repeatForm, NULL, 0);
+    repeatRate->scroller = XtCreateManagedWidget("rateScroller",
+						 scrollbarWidgetClass,
+						 repeatForm, NULL, 0);
+    XtAddCallback(repeatRate->scroller, XtNjumpProc, ScaleJumpCallback,
+		  (XtPointer)repeatRate);
+    repeatRate->min = .05;
+    repeatRate->max = MAX_REPEAT_RATE;
+    repeatRate->resolution = .05;
+    repeatRate->integer = False;
+    repeatDelay = XtNew(Scale);
+    repeatDelay->label = XtCreateManagedWidget("delayLabel", labelWidgetClass,
+					      repeatForm, NULL, 0);
+    repeatDelay->number = XtCreateManagedWidget("delayNumber", labelWidgetClass,
+					       repeatForm, NULL, 0);
+    repeatDelay->scroller = XtCreateManagedWidget("delayScroller",
+						 scrollbarWidgetClass,
+						 repeatForm, NULL, 0);
+    XtAddCallback(repeatDelay->scroller, XtNjumpProc, ScaleJumpCallback,
+		  (XtPointer)repeatDelay);
+    repeatDelay->min = .05;
+    repeatDelay->max = MAX_REPEAT_DELAY;
+    repeatDelay->resolution = .05;
+    repeatDelay->integer = False;
+
+    slowToggle = XtVaCreateManagedWidget("slow", toggleWidgetClass,
+					 form, XtNstate,
+					 (xkb_info->xkb->ctrls->enabled_ctrls &
+					 XkbSlowKeysMask) != 0, NULL, 0);
+    slowForm = XtCreateManagedWidget("slowForm", formWidgetClass,
+				     form, NULL, 0);
+    XtAddCallback(slowToggle, XtNcallback, EnableCallback, (XtPointer)slowForm);
+    XtCreateManagedWidget("beep", labelWidgetClass, slowForm, NULL, 0);
+    slowPressed = XtVaCreateManagedWidget("pressed", toggleWidgetClass,
+					  slowForm, XtNstate,
+					  (xkb_info->xkb->ctrls->ax_options &
+					  XkbAX_SKPressFBMask) != 0,
+					  NULL, 0);
+    slowAccepted = XtVaCreateManagedWidget("accepted", toggleWidgetClass,
+					   slowForm, XtNstate,
+					   (xkb_info->xkb->ctrls->ax_options &
+					   XkbAX_SKAcceptFBMask) != 0,
+					   NULL, 0);
+    slow = XtNew(Scale);
+    slow->label = XtCreateManagedWidget("slowLabel", labelWidgetClass,
+					slowForm, NULL, 0);
+    slow->number = XtCreateManagedWidget("slowNumber", labelWidgetClass,
+					  slowForm, NULL, 0);
+    slow->scroller = XtCreateManagedWidget("slowScroller",
+					   scrollbarWidgetClass,
+					   slowForm, NULL, 0);
+    XtAddCallback(slow->scroller, XtNjumpProc, ScaleJumpCallback,
+		  (XtPointer)slow);
+    slow->min = 0.1;
+    slow->max = MAX_SLOW_TIME;
+    slow->resolution = 0.1;
+    slow->integer = False;
+
+    bounceToggle = XtVaCreateManagedWidget("bounce", toggleWidgetClass,
+					   form, XtNstate,
+					   (xkb_info->xkb->ctrls->enabled_ctrls &
+					   XkbBounceKeysMask) != 0,
+					   NULL, 0);
+    bounceForm = XtCreateManagedWidget("bounceForm", formWidgetClass,
+				     form, NULL, 0);
+    XtAddCallback(bounceToggle, XtNcallback, EnableCallback, (XtPointer)bounceForm);
+    bounce = XtNew(Scale);
+    bounce->label = XtCreateManagedWidget("bounceLabel", labelWidgetClass,
+					bounceForm, NULL, 0);
+    bounce->number = XtCreateManagedWidget("bounceNumber", labelWidgetClass,
+					  bounceForm, NULL, 0);
+    bounce->scroller = XtCreateManagedWidget("bounceScroller",
+					   scrollbarWidgetClass,
+					   bounceForm, NULL, 0);
+    XtAddCallback(bounce->scroller, XtNjumpProc, ScaleJumpCallback,
+		  (XtPointer)bounce);
+    bounce->min = 0.1;
+    bounce->max = MAX_BOUNCE_TIME;
+    bounce->resolution = 0.1;
+    bounce->integer = False;
+
+    XtRealizeWidget(accessx);
+
+    XtSetArg(args[0], XtNstate, &state);
+    XtGetValues(timeoutToggle, args, 1);
+    ScaleEnableCallback(enable, (XtPointer)timeout, (XtPointer)(int)state);
+    if (xkb_info->xkb->ctrls->ax_timeout > 60)
+	val = (float)(xkb_info->xkb->ctrls->ax_timeout - 60) /
+	      (float)(MAX_TIMEOUT * 60);
+    else
+	val = 0;
+    ScaleJumpCallback(timeout->scroller, (XtPointer)timeout, (XtPointer)&val);
+
+    XtSetArg(args[0], XtNstate, &state);
+    XtGetValues(sticky, args, 1);
+    EnableCallback(sticky, (XtPointer)stickyForm, (XtPointer)(int)state);
+
+    XtSetArg(args[0], XtNstate, &state);
+    XtGetValues(mouse, args, 1);
+    EnableCallback(mouse, (XtPointer)mouseForm, (XtPointer)(int)state);
+    if (xkb_info->xkb->ctrls->mk_interval > 10)
+	val = (float)(xkb_info->xkb->ctrls->mk_interval - 10) /
+	      (float)MAX_MOUSE_SPEED;
+    else
+	val = 10.0 / (float)MAX_MOUSE_SPEED;
+    ScaleJumpCallback(mouseSpeed->scroller, (XtPointer)mouseSpeed,
+		      (XtPointer)&val);
+    if (xkb_info->xkb->ctrls->mk_time_to_max > 10)
+	val = (float)(xkb_info->xkb->ctrls->mk_time_to_max - 10) /
+	      (float)(MAX_MOUSE_TIME * 100);
+    else
+	val = 10.0 / (float)(MAX_MOUSE_TIME * 100);
+    ScaleJumpCallback(mouseTime->scroller, (XtPointer)mouseTime,
+		      (XtPointer)&val);
+    if (xkb_info->xkb->ctrls->mk_delay > 10)
+	val = (float)(xkb_info->xkb->ctrls->mk_delay - 10) /
+	      (float)(MAX_MOUSE_DELAY * 100);
+    else
+	val = 10.0 / (float)(MAX_MOUSE_DELAY * 100);
+    ScaleJumpCallback(mouseDelay->scroller, (XtPointer)mouseDelay,
+		      (XtPointer)&val);
+
+    XtSetArg(args[0], XtNstate, &state);
+    XtGetValues(repeat, args, 1);
+    EnableCallback(repeat, (XtPointer)repeatForm, (XtPointer)(int)state);
+    if (xkb_info->xkb->ctrls->repeat_interval > 5)
+	val = (float)(xkb_info->xkb->ctrls->repeat_interval - 5) /
+	      (float)(MAX_REPEAT_RATE * 1000);
+    else
+	val = 5.0 / (float)(MAX_REPEAT_RATE * 1000);
+    ScaleJumpCallback(repeatRate->scroller, (XtPointer)repeatRate,
+		      (XtPointer)&val);
+    if (xkb_info->xkb->ctrls->repeat_delay > 5)
+	val = (float)(xkb_info->xkb->ctrls->repeat_delay - 5) /
+	      (float)(MAX_REPEAT_DELAY * 1000);
+    else
+	val = 5.0 / (float)(MAX_REPEAT_DELAY * 1000);
+    ScaleJumpCallback(repeatDelay->scroller, (XtPointer)repeatDelay,
+		      (XtPointer)&val);
+
+    XtSetArg(args[0], XtNstate, &state);
+    XtGetValues(slowToggle, args, 1);
+    EnableCallback(slowToggle, (XtPointer)slowForm, (XtPointer)(int)state);
+    if (xkb_info->xkb->ctrls->slow_keys_delay > 10)
+	val = (float)(xkb_info->xkb->ctrls->repeat_delay - 10) /
+	      (float)(MAX_SLOW_TIME * 1000);
+    else
+	val = 10.0 / (float)(MAX_SLOW_TIME * 1000);
+    ScaleJumpCallback(slow->scroller, (XtPointer)slow, (XtPointer)&val);
+
+    XtSetArg(args[0], XtNstate, &state);
+    XtGetValues(bounceToggle, args, 1);
+    EnableCallback(bounceToggle, (XtPointer)bounceForm, (XtPointer)(int)state);
+    if (xkb_info->xkb->ctrls->debounce_delay > 10)
+	val = (float)(xkb_info->xkb->ctrls->debounce_delay - 10) /
+	      (float)(MAX_BOUNCE_TIME * 1000);
+    else
+	val = 10.0 / (float)(MAX_BOUNCE_TIME * 1000);
+    ScaleJumpCallback(bounce->scroller, (XtPointer)bounce, (XtPointer)&val);
+
+    XtSetArg(args[0], XtNstate, &state);
+    XtGetValues(enable, args, 1);
+    EnableCallback(enable, (XtPointer)form, (XtPointer)(int)state);
+}
+
+void
+AccessXConfigureStart(void)
+{
+    AccessXInitialize();
+
+    XtMapWidget(accessx);
+}
+
+void
+AccessXConfigureEnd(void)
+{
+    XtUnmapWidget(accessx);
+}
+
+/*ARGSUSED*/
+static void
+EnableCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    XtSetSensitive((XtPointer)user_data, (int)call_data);
+}
+
+/*ARGSUSED*/
+static void
+ScaleEnableCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    Scale *scale = (Scale*)user_data;
+
+    XtSetSensitive(scale->label, (int)call_data);
+    XtSetSensitive(scale->number, (int)call_data);
+    XtSetSensitive(scale->scroller, (int)call_data);
+}
+
+static void
+ScaleJumpCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    Scale *scale = (Scale*)user_data;
+    float percent = *(float *)call_data, timeout = percent * scale->max;
+    int x;
+    char str[8];
+    Arg args[1];
+
+    if (timeout >= scale->max - scale->min)
+	timeout = scale->max - scale->min;
+
+    if (scale->integer) {
+	int tm = timeout + scale->min;
+
+	tm -= tm % (int)scale->resolution;
+	XmuSnprintf(str, sizeof(str), "%i", tm);
+	scale->value = tm;
+    }
+    else {
+	long tm = (timeout + scale->min) * 1e+6;
+
+	tm -= tm % (long)(scale->resolution * 1e+6);
+	scale->value = (double)tm / 1e+6;
+	XmuSnprintf(str, sizeof(str), "%f", scale->value);
+    }
+
+    XtSetArg(args[0], XtNlabel, str);
+    XtSetValues(scale->number, args, 1);
+    x = w->core.x + w->core.border_width;
+    x += ((double)(w->core.width - scale->number->core.width) / scale->max) * timeout;
+    XtMoveWidget(scale->number, x, scale->number->core.y);
+    XawScrollbarSetThumb(w, timeout / (scale->max - scale->min),
+			 scale->resolution / (scale->max - scale->min));
+}
+
+/*ARGSUSED*/
+static void
+ApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    Arg args[1];
+    Boolean state;
+
+    XkbGetControls(DPY, XkbAllControlsMask, xkb_info->xkb);
+
+    /* Enable AccessX */
+    XtSetArg(args[0], XtNstate, &state);
+    XtGetValues(enable, args, 1);
+    if (state) {
+	xkb_info->xkb->ctrls->enabled_ctrls |= XkbAccessXKeysMask;
+	xkb_info->config.initial_ctrls |= XkbAccessXKeysMask;
+
+	/* Timeout */
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(timeoutToggle, args, 1);
+	if (state)
+	    xkb_info->config.ax_timeout =
+	    xkb_info->xkb->ctrls->ax_timeout = timeout->value * 60;
+	else
+	    xkb_info->config.ax_timeout =
+	    xkb_info->xkb->ctrls->ax_timeout = 0;
+
+	/* Enable StickyKeys */
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(sticky, args, 1);
+	if (state) {
+	    xkb_info->config.initial_ctrls |= XkbStickyKeysMask;
+	    xkb_info->xkb->ctrls->enabled_ctrls |= XkbStickyKeysMask;
+	}
+	else {
+	    xkb_info->config.initial_ctrls &= ~XkbStickyKeysMask;
+	    xkb_info->xkb->ctrls->enabled_ctrls &= ~XkbStickyKeysMask;
+	}
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(stickyAuto, args, 1);
+	if (state) {
+	    xkb_info->config.initial_opts &= ~XkbAX_TwoKeysMask;
+	    xkb_info->config.initial_opts &= ~XkbAX_LatchToLockMask;
+	    xkb_info->xkb->ctrls->ax_options &= ~XkbAX_TwoKeysMask;
+	    xkb_info->xkb->ctrls->ax_options &= ~XkbAX_LatchToLockMask;
+	}
+	else {
+	    xkb_info->config.initial_opts &= ~XkbAX_TwoKeysMask;
+	    xkb_info->config.initial_opts |= XkbAX_LatchToLockMask;
+	    xkb_info->xkb->ctrls->ax_options &= ~XkbAX_TwoKeysMask;
+	    xkb_info->xkb->ctrls->ax_options |= XkbAX_LatchToLockMask;
+	}
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(stickyBeep, args, 1);
+	if (state) {
+	    xkb_info->config.initial_opts |= XkbAX_StickyKeysFBMask;
+	    xkb_info->xkb->ctrls->ax_options |= XkbAX_StickyKeysFBMask;
+	}
+	else {
+	    xkb_info->config.initial_opts &= ~XkbAX_StickyKeysFBMask;
+	    xkb_info->xkb->ctrls->ax_options &= ~XkbAX_StickyKeysFBMask;
+	}
+
+	/* Enable MouseKeys */
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(mouse, args, 1);
+	if (state) {
+	    xkb_info->config.initial_ctrls |=  XkbMouseKeysMask |
+						  XkbMouseKeysAccelMask;
+	    xkb_info->xkb->ctrls->enabled_ctrls |= XkbMouseKeysMask |
+						   XkbMouseKeysAccelMask;
+	    xkb_info->config.mk_delay =
+	    xkb_info->xkb->ctrls->mk_delay = mouseDelay->value * 100;
+	    xkb_info->config.mk_interval =
+	    xkb_info->xkb->ctrls->mk_interval = mouseSpeed->value;
+	    xkb_info->config.mk_time_to_max =
+	    xkb_info->xkb->ctrls->mk_time_to_max = mouseTime->value * 100;
+/*	    xkb_info->xkb->ctrls->mk_max_speed = 500;
+	    xkb_info->xkb->ctrls->mk_curve = 0;*/
+	}
+	else {
+	    xkb_info->config.initial_ctrls &= ~(XkbMouseKeysMask |
+						   XkbMouseKeysAccelMask);
+	    xkb_info->xkb->ctrls->enabled_ctrls &= ~(XkbMouseKeysMask |
+						     XkbMouseKeysAccelMask);
+	}
+
+	/* Enable RepeatKeys */
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(repeat, args, 1);
+	if (state) {
+	    xkb_info->config.initial_ctrls |= XkbRepeatKeysMask;
+	    xkb_info->xkb->ctrls->enabled_ctrls |= XkbRepeatKeysMask;
+	    xkb_info->config.repeat_interval =
+	    xkb_info->xkb->ctrls->repeat_interval = repeatRate->value * 1000;
+	    xkb_info->config.repeat_delay =
+	    xkb_info->xkb->ctrls->repeat_delay = repeatDelay->value * 1000;
+	}
+	else {
+	    xkb_info->config.initial_ctrls &= ~XkbRepeatKeysMask;
+	    xkb_info->xkb->ctrls->enabled_ctrls &= ~XkbRepeatKeysMask;
+	}
+
+	/* Enable SlowKeys */
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(slowToggle, args, 1);
+	if (state) {
+	    xkb_info->config.initial_ctrls |= XkbSlowKeysMask;
+	    xkb_info->xkb->ctrls->enabled_ctrls |= XkbSlowKeysMask;
+	    xkb_info->config.slow_keys_delay =
+	    xkb_info->xkb->ctrls->slow_keys_delay = slow->value * 1000;
+	}
+	else {
+	    xkb_info->config.initial_ctrls &= ~XkbSlowKeysMask;
+	    xkb_info->xkb->ctrls->enabled_ctrls &= ~XkbSlowKeysMask;
+	}
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(slowPressed, args, 1);
+	if (state) {
+	    xkb_info->config.initial_opts |= XkbAX_SKPressFBMask;
+	    xkb_info->xkb->ctrls->ax_options |= XkbAX_SKPressFBMask;
+	}
+	else {
+	    xkb_info->config.initial_opts &= ~XkbAX_SKPressFBMask;
+	    xkb_info->xkb->ctrls->ax_options &= ~XkbAX_SKPressFBMask;
+	}
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(slowAccepted, args, 1);
+	if (state) {
+	    xkb_info->config.initial_opts |= XkbAX_SKAcceptFBMask;
+	    xkb_info->xkb->ctrls->ax_options |= XkbAX_SKAcceptFBMask;
+	}
+	else {
+	    xkb_info->config.initial_opts &= ~XkbAX_SKAcceptFBMask;
+	    xkb_info->xkb->ctrls->ax_options &= ~XkbAX_SKAcceptFBMask;
+	}
+
+	/* Enable BounceKeys */
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(repeat, args, 1);
+	if (state) {
+	    xkb_info->config.initial_ctrls |= XkbBounceKeysMask;
+	    xkb_info->xkb->ctrls->enabled_ctrls |= XkbBounceKeysMask;
+	    xkb_info->config.debounce_delay =
+	    xkb_info->xkb->ctrls->debounce_delay = bounce->value * 1000;
+	}
+	else {
+	    xkb_info->config.initial_ctrls &= ~XkbBounceKeysMask;
+	    xkb_info->xkb->ctrls->enabled_ctrls &= ~XkbBounceKeysMask;
+	}
+    }
+    else {
+	xkb_info->config.initial_ctrls &=
+	~(XkbAccessXKeysMask | XkbStickyKeysMask | XkbMouseKeysMask |
+	  XkbMouseKeysAccelMask | XkbRepeatKeysMask | XkbSlowKeysMask |
+	  XkbBounceKeysMask);
+	xkb_info->config.initial_opts &=
+	~(XkbAX_TwoKeysMask | XkbAX_LatchToLockMask | XkbAX_StickyKeysFBMask |
+	  XkbAX_SKPressFBMask | XkbAX_SKAcceptFBMask);
+
+	xkb_info->xkb->ctrls->enabled_ctrls &=
+	~(XkbAccessXKeysMask | XkbStickyKeysMask | XkbMouseKeysMask |
+	  XkbMouseKeysAccelMask | XkbRepeatKeysMask | XkbSlowKeysMask |
+	  XkbBounceKeysMask);
+	xkb_info->xkb->ctrls->ax_options &=
+	~(XkbAX_TwoKeysMask | XkbAX_LatchToLockMask | XkbAX_StickyKeysFBMask |
+	  XkbAX_SKPressFBMask | XkbAX_SKAcceptFBMask);
+    }
+
+    XkbSetControls(DPY, XkbAllControlsMask, xkb_info->xkb);
+    XSync(DPY, False);
+    UpdateKeyboard(True);
 }

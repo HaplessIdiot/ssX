@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.12 1999/05/30 03:03:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.13 1999/06/06 08:48:18 dawes Exp $ */
 
 /* INTERNATIONALIZATION:
 
@@ -84,10 +84,10 @@ char _XawDefaultTextTranslations[] =
 "m<Key>Y:"		"kill-ring-yank()\n"
 #endif
 "m<Key>Z:"		"scroll-one-line-down()\n"
-"~s m<Key>D:"		"kill-word(alnum)\n"
-"s m<Key>D:"		"delete-next-word(alnum)\n"
-"~s m<Key>H:"		"backward-kill-word(alnum)\n"
-"s m<Key>H:"		"delete-previous-word(alnum)\n"
+"~s m<Key>d:"		"kill-word(alnum)\n"
+"s m<Key>d:"		"delete-next-word(alnum)\n"
+"~s m<Key>h:"		"backward-kill-word(alnum)\n"
+"s m<Key>h:"		"delete-previous-word(alnum)\n"
 ":m<Key>\\<:"		"beginning-of-file()\n"
 ":m<Key>\\>:"		"end-of-file()\n"
 ":m<Key>]:"		"forward-paragraph()\n"

@@ -1,4 +1,4 @@
-/* $XConsortium: ddxFakeMtn.c /main/1 1995/11/30 19:22:06 kaleb $ */
+/* $XConsortium: ddxFakeMtn.c /main/2 1996/01/01 10:55:18 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -36,35 +36,102 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XI.h"
 
-extern	CARD16	xkbDebugFlags;
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
+
+#include "mipointer.h"
+#include "mipointrst.h"
+
+extern	WindowPtr GetSpriteWindow(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+
+extern void NewCurrentScreen(
+#if NeedFunctionPrototypes
+    ScreenPtr	/* newScreen */,
+    int		/* x */,
+    int		/* y */
+#endif
+);
 
 void
+#if NeedFunctionPrototypes
+XkbDDXFakePointerMotion(unsigned flags,int x,int y)
+#else
 XkbDDXFakePointerMotion(flags,x,y)
     unsigned	flags;
     int 	x;
     int 	y;
+#endif
 {
-extern	WindowPtr GetSpriteWindow();
-ScreenPtr	   pScreen;
 int 		   oldX,oldY;
-xEvent	ev;
+ScreenPtr	   pScreen, oldScreen;
 
-    pScreen= GetSpriteWindow()->drawable.pScreen;
-    GetSpritePosition(&oldX,&oldY);
-    if (flags&XkbSA_MoveAbsoluteX)
-	 oldX=  x;
-    else oldX+= x;
-    if (flags&XkbSA_MoveAbsoluteY)
-	 oldY=  y;
-    else oldY+= y;
+    GetSpritePosition(&oldX, &oldY);
+    pScreen = oldScreen = GetSpriteWindow()->drawable.pScreen;
 
-    if (oldX<0)				oldX= 0;
-    else if (oldX>=pScreen->width)	oldX= pScreen->width-1;
-    if (oldY<0)				oldY= 0;
-    else if (oldY>=pScreen->height)	oldY= pScreen->height-1;
+#ifdef PANORAMIX
+    if (!noPanoramiXExtension) {
+	BoxRec box;
+	int i;
 
+	if(!POINT_IN_REGION(pScreen, &XineramaScreenRegions[pScreen->myNum],
+							    oldX, oldY, &box)) {
+	    FOR_NSCREENS(i) {
+		if(i == pScreen->myNum)
+		    continue;
+		if(POINT_IN_REGION(pScreen, &XineramaScreenRegions[i],
+				   oldX, oldY, &box)) {
+		    pScreen = screenInfo.screens[i];
+		    break;
+		}
+	    }
+	}
+	oldScreen = pScreen;
+
+	if (flags&XkbSA_MoveAbsoluteX)
+	     oldX=  x;
+	else oldX+= x;
+	if (flags&XkbSA_MoveAbsoluteY)
+	     oldY=  y;
+	else oldY+= y;
+
+	if(!POINT_IN_REGION(pScreen, &XineramaScreenRegions[pScreen->myNum],
+							    oldX, oldY, &box)) {
+	    FOR_NSCREENS(i) {
+		if(i == pScreen->myNum)
+		    continue;
+		if(POINT_IN_REGION(pScreen, &XineramaScreenRegions[i],
+				   oldX, oldY, &box)) {
+		    pScreen = screenInfo.screens[i];
+		    break;
+		}
+	    }
+	}
+	oldX -= panoramiXdataPtr[pScreen->myNum].x;
+	oldY -= panoramiXdataPtr[pScreen->myNum].y;
+    }
+    else
+#endif
+    {
+	if (flags&XkbSA_MoveAbsoluteX)
+	     oldX=  x;
+	else oldX+= x;
+	if (flags&XkbSA_MoveAbsoluteY)
+	     oldY=  y;
+	else oldY+= y;
+
+#define GetScreenPrivate(s) ((miPointerScreenPtr) ((s)->devPrivates[miPointerScreenIndex].ptr))	
+	(*(GetScreenPrivate(oldScreen))->screenFuncs->CursorOffScreen)
+	    (&pScreen, &oldX, &oldY);
+    }
+
+    if (pScreen != oldScreen)
+	NewCurrentScreen(pScreen, oldX, oldY);
     if (pScreen->SetCursorPosition)
 	(*pScreen->SetCursorPosition)(pScreen, oldX, oldY, TRUE);
-    return;
 }
-

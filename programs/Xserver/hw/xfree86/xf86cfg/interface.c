@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.1 2000/04/04 22:36:58 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -57,6 +57,7 @@
 #include "cards.h"
 #include "options.h"
 #include "vidmode.h"
+#include "help.h"
 
 #define randomize()		srand((unsigned)time((time_t*)NULL))
 #define DefaultXFree86Dir	"/usr/X11R6"
@@ -86,13 +87,16 @@ void DefaultLayoutCallback(Widget, XtPointer, XtPointer);
 void RemoveLayoutCallback(Widget, XtPointer, XtPointer);
 void OptionsCallback(Widget, XtPointer, XtPointer);
 xf86cfgDevice *AddDevice(int, XtPointer, int, int);
-static Bool AskXF86Config(void);
-void WriteXF86ConfigAction(Widget, XEvent*, String*, Cardinal*);
+static Bool AskConfig(void);
+void WriteConfigAction(Widget, XEvent*, String*, Cardinal*);
 static void ScreenSetup(Bool);
 void QuitAction(Widget, XEvent*, String*, Cardinal*);
 static void ErrorCancelAction(Widget, XEvent*, String*, Cardinal*);
 static void QuitCancelAction(Widget, XEvent*, String*, Cardinal*);
+static void HelpCallback(Widget, XtPointer, XtPointer);
 
+extern void AccessXConfigureStart(void);
+extern void AccessXConfigureEnd(void);
 extern void CloseAccessXAction(Widget, XEvent*, String*, Cardinal*);
 
 /*
@@ -118,6 +122,7 @@ Atom wm_delete_window;
 #define CONFIG_LAYOUT	0
 #define CONFIG_SCREEN	1
 #define CONFIG_MODELINE	2
+#define CONFIG_ACCESSX	3
 static int config_mode = CONFIG_LAYOUT;
 
 static XtActionsRec actions[] = {
@@ -128,7 +133,7 @@ static XtActionsRec actions[] = {
     {"device-popup", DevicePopupMenu},
     {"device-popdown", DevicePopdownMenu},
     {"rename-layout", RenameLayoutAction},
-    {"write-config", WriteXF86ConfigAction},
+    {"write-config", WriteConfigAction},
     {"quit", QuitAction},
     {"vidmode-restore", VidmodeRestoreAction},
     {"config-cancel", ConfigCancelAction},
@@ -138,6 +143,7 @@ static XtActionsRec actions[] = {
     {"addmode-cancel", CancelForceAddModeAction},
     {"accessx-close", CloseAccessXAction},
     {"testmode-cancel", CancelTestModeAction},
+    {"help-close", HelpCancelAction},
 };
 
 static char *device_names[] = {
@@ -231,6 +237,10 @@ main(int argc, char *argv[])
 					popup, NULL, 0);
     XtAddCallback(smemodeline, XtNcallback, SetConfigModeCallback,
 		  (XtPointer)CONFIG_MODELINE);
+    sme = XtCreateManagedWidget("accessx", smeBSBObjectClass,
+				popup, NULL, 0);
+    XtAddCallback(sme, XtNcallback, SetConfigModeCallback,
+		  (XtPointer)CONFIG_ACCESSX);
 
     commands = XtCreateManagedWidget("commands", formWidgetClass,
 				     pane, NULL, 0);
@@ -265,6 +275,7 @@ main(int argc, char *argv[])
     XtAddCallback(sme, XtNcallback, SelectLayoutCallback, NULL);
     help = XtCreateManagedWidget("help", commandWidgetClass,
 				 bottom, NULL, 0);
+    XtAddCallback(help, XtNcallback, HelpCallback, NULL);
     quit = XtCreateManagedWidget("quit", commandWidgetClass,
 				 bottom, NULL, 0);
     XtAddCallback(quit, XtNcallback, QuitCallback, NULL);
@@ -360,60 +371,104 @@ main(int argc, char *argv[])
     return (0);
 }
 
-static Widget shell_xf;
-static int write_xf, asking_xf;
+static Widget shell_cf;
+static int write_cf, asking_cf;
+static int cf_state = 0;
+#define	CF_XF86Config	1
+#define	CF_XKBConfig	2
+#define CF_First	CF_XF86Config
+#define CF_Last		CF_XKBConfig
 
 /*ARGSUSED*/
 static void
-WriteXF86Config(Widget w, XtPointer user_data, XtPointer call_data)
+WriteConfig(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    asking_xf = 0;
-    XtPopdown(shell_xf);
-    write_xf = (int)user_data;
+    asking_cf = 0;
+    XtPopdown(shell_cf);
+    write_cf = (int)user_data;
 }
 
 /*ARGSUSED*/
 void
 QuitCancelAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-    WriteXF86Config(w, (XtPointer)-1, NULL);
+    WriteConfig(w, (XtPointer)-1, NULL);
 }
 
 /*ARGSUSED*/
 void
-WriteXF86ConfigAction(Widget w, XEvent *event,
-		      String *params, Cardinal *num_params)
+WriteConfigAction(Widget w, XEvent *event,
+		  String *params, Cardinal *num_params)
 {
-    WriteXF86Config(w, (XtPointer)True, NULL);
+    WriteConfig(w, (XtPointer)True, NULL);
 }
 
 static Bool
-AskXF86Config(void)
+AskConfig(void)
 {
     static Widget dialog;
 
-    if (shell_xf == NULL) {
-	shell_xf = XtCreatePopupShell("quit", transientShellWidgetClass,
+    if (shell_cf == NULL) {
+	Arg args[1];
+	char *l, *label;
+
+	shell_cf = XtCreatePopupShell("quit", transientShellWidgetClass,
 				      toplevel, NULL, 0);
-	dialog = XtVaCreateManagedWidget("ask", dialogWidgetClass, shell_xf,
+	dialog = XtVaCreateManagedWidget("ask", dialogWidgetClass, shell_cf,
 					 XtNvalue, XF86Config_path, NULL, 0);
-	XawDialogAddButton(dialog, "yes", WriteXF86Config, (XtPointer)1);
-	XawDialogAddButton(dialog, "no", WriteXF86Config, (XtPointer)0);
-	XawDialogAddButton(dialog, "cancel", WriteXF86Config, (XtPointer)-1);
-	XtRealizeWidget(shell_xf);
-	XSetWMProtocols(DPY, XtWindow(shell_xf), &wm_delete_window, 1);
+	XawDialogAddButton(dialog, "yes", WriteConfig, (XtPointer)1);
+	XawDialogAddButton(dialog, "no", WriteConfig, (XtPointer)0);
+	XawDialogAddButton(dialog, "cancel", WriteConfig, (XtPointer)-1);
+	XtRealizeWidget(shell_cf);
+	XSetWMProtocols(DPY, XtWindow(shell_cf), &wm_delete_window, 1);
+	XtSetArg(args[0], XtNlabel, &l);
+	XtGetValues(dialog, args, 1);
+	label = XtMalloc(strlen(l) + 12);
+	strcpy(label, "XF86Config\n");
+	strcat(label, l);
+	XtSetArg(args[0], XtNlabel, label);
+	XtSetValues(dialog, args, 1);
+	XtFree(label);
+    }
+    else {
+	Arg args[2];
+	Cardinal num_args = 0;
+	char *l, *label, *str = "";
+
+	XtSetArg(args[0], XtNlabel, &l);
+	XtGetValues(dialog, args, 1);
+	switch (cf_state) {
+	    case CF_XF86Config:
+		str = "XF86Config";
+	    case CF_XKBConfig:
+		str = "XKB";
+		XtSetArg(args[num_args], XtNvalue, XkbConfigDir XkbConfigFile);
+		++num_args;
+		break;
+	}
+	l = strchr(l, '\n');
+	if (l != NULL) {
+	    label = XtMalloc(strlen(str) + strlen(l) + 1);
+	    strcpy(label, str);
+	    strcat(label, l);
+	    XtSetArg(args[num_args], XtNlabel, label);
+	    ++num_args;
+	}
+	XtSetValues(dialog, args, num_args);
+	if (l != NULL)
+	    XtFree(label);
     }
 
-    asking_xf = 1;
+    asking_cf = 1;
 
-    XtPopup(shell_xf, XtGrabExclusive);
-    while (asking_xf)
-	XtAppProcessEvent(XtWidgetToApplicationContext(shell_xf), XtIMAll);
+    XtPopup(shell_cf, XtGrabExclusive);
+    while (asking_cf)
+	XtAppProcessEvent(XtWidgetToApplicationContext(shell_cf), XtIMAll);
 
-    if (write_xf > 0)
+    if (write_cf > 0)
 	XF86Config_path = XawDialogGetValueString(dialog);
 
-    return (write_xf);
+    return (write_cf);
 }
 
 /*ARGSUSED*/
@@ -441,33 +496,46 @@ QuitAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void
 QuitCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    switch (AskXF86Config()) {
-	case 0:
-	    break;
-	case 1:
-	    if (xf86WriteConfigFile(XF86Config_path, XF86Config) == 0) {
-		static Widget shell;
+    for (cf_state = CF_First; cf_state <= CF_Last; cf_state++) {
+	if (cf_state == CF_XKBConfig && xkb_info == NULL)
+	    continue;
+	
+	switch (AskConfig()) {
+	    case 0:
+		break;
+	    case 1:
+		if ((cf_state == CF_XF86Config &&
+		     !xf86WriteConfigFile(XF86Config_path, XF86Config)) ||
+		    (cf_state == CF_XKBConfig &&
+		     !WriteXKBConfiguration(XkbConfigDir XkbConfigFile,
+					    &xkb_info->config))) {
+		    static Widget shell;
 
-		if (shell == NULL) {
-		    Widget dialog;
+		    if (shell == NULL) {
+			Widget dialog;
 
-		    shell = XtCreatePopupShell("error", transientShellWidgetClass,
-					       toplevel, NULL, 0);
-		    dialog = XtVaCreateManagedWidget("notice", dialogWidgetClass,
-						     shell, XtNvalue, NULL,
-						     NULL, 0);
-		    XawDialogAddButton(dialog, "ok", PopdownErrorCallback,
-				       (XtPointer)shell);
-		    XtRealizeWidget(shell);
-		    XSetWMProtocols(DPY, XtWindow(shell), &wm_delete_window, 1);
+			shell = XtCreatePopupShell("error",
+				transientShellWidgetClass,
+				toplevel, NULL, 0);
+			dialog = XtVaCreateManagedWidget("notice",
+				 dialogWidgetClass,
+				 shell, XtNvalue, NULL,
+				 NULL, 0);
+			XawDialogAddButton(dialog, "ok", PopdownErrorCallback,
+					   (XtPointer)shell);
+			XtRealizeWidget(shell);
+			XSetWMProtocols(DPY, XtWindow(shell),
+					&wm_delete_window, 1);
+		    }
+		    XtPopup(shell, XtGrabExclusive);
+		    return;
 		}
-		XtPopup(shell, XtGrabExclusive);
+		break;
+	    default:
 		return;
-	    }
-	    break;
-	default:
-	    return;
+	}
     }
+
     endx();
     exit(0);
 }
@@ -645,6 +713,29 @@ AddDevice(int type, XtPointer config, int x, int y)
     }
 
     return (computer.devices[computer.num_devices - 1]);
+}
+
+/*ARGSUSED*/
+static void
+HelpCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    char *topic = NULL;
+
+    switch (config_mode) {
+	case CONFIG_LAYOUT:
+	    topic = HELP_DEVICES;
+	    break;
+	case CONFIG_SCREEN:
+	    topic = HELP_SCREEN;
+	    break;
+	case CONFIG_MODELINE:
+	    topic = HELP_MODELINE;
+	    break;
+	case CONFIG_ACCESSX:
+	    topic = HELP_ACCESSX;
+	    break;
+    }
+    Help(topic);
 }
 
 void
@@ -1160,10 +1251,31 @@ OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
     }
 
     OptionsPopup(options);
-    if (i >= computer.num_devices)
-	SetTip(&cpu_device);
-    else
-	SetTip(computer.devices[i]);
+    if (config_mode == CONFIG_SCREEN) {
+	XF86OptionPtr option, options;
+	int rotate;
+
+	options = computer.screens[i]->screen->scrn_option_lst;
+	if ((option = xf86FindOption(options, "Rotate")) != NULL) {
+	    if (option->opt_val != NULL)
+		rotate = strcasecmp(option->opt_val, "CW") == 0 ? 1 :
+			 strcasecmp(option->opt_val, "CCW") == 0 ? -1 : 0;
+	    XtFree(option->opt_val);
+	    option->opt_val = XtNewString(rotate > 0 ? "CW" : "CCW");
+	    computer.screens[i]->rotate = rotate;
+	}
+	else
+	    computer.screens[i]->rotate = 0;
+	UpdateScreenUI();
+	AdjustScreenUI();
+	SetTip((xf86cfgDevice*)computer.screens[i]);
+    }
+    else {
+	if (i >= computer.num_devices)
+	    SetTip(&cpu_device);
+	else
+	    SetTip(computer.devices[i]);
+    }
 }
 
 void
@@ -1683,6 +1795,11 @@ SetConfigModeCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	XtSetSensitive(layout, True);
 	XtSetSensitive(layoutm, True);
     }
+    else if (config_mode == CONFIG_ACCESSX) {
+	AccessXConfigureEnd();
+	XtSetSensitive(layout, True);
+	XtSetSensitive(layoutm, True);
+    }
 
     config_mode = mode;
     XClearWindow(XtDisplay(work), XtWindow(work));
@@ -1705,6 +1822,11 @@ SetConfigModeCallback(Widget w, XtPointer user_data, XtPointer call_data)
     }
     else if (mode == CONFIG_MODELINE) {
 	VideoModeConfigureStart();
+	XtSetSensitive(layout, False);
+	XtSetSensitive(layoutm, False);
+    }
+    else if (mode == CONFIG_ACCESSX) {
+	AccessXConfigureStart();
 	XtSetSensitive(layout, False);
 	XtSetSensitive(layoutm, False);
     }

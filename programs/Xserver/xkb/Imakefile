@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/12 1997/07/16 14:51:50 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/xkb/Imakefile,v 3.11 1997/07/19 05:43:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/xkb/Imakefile,v 3.12 1999/04/17 09:08:51 dawes Exp $
 #define SGIHyperOpt
 #include <Server.tmpl>
 
@@ -40,7 +40,8 @@ XKB_DDXDEFS = XkbServerDefines
 	    xkmread.o xkbtext.o xkbfmisc.o xkberrs.o xkbout.o maprules.o \
 	    XKBMisc.o XKBMAlloc.o XKBAlloc.o XKBGAlloc.o \
 	    $(XKBXI_OBJS) $(DDX_OBJS)
-   INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+   INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/Xext \
+	      -I$(SERVERSRC)/mi
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
 DEFINES = -DXKB_IN_SERVER $(EXTRA_ALLOC_DEFINES) $(XKB_DDXDEFS)

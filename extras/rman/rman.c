@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.7 2000/05/23 04:47:35 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.8 2000/06/13 02:28:27 dawes Exp $ */
 
 
 /* TO DO ****
@@ -5390,7 +5390,7 @@ main(int argc, char *argv[])
 			exit(0);
 
 		   case 'v': /*case '?':*/
-			printf("PolyglotMan v" POLYGLOTMANVERSION " of $Date: 2000/06/13 02:28:27 $\n");
+			printf("PolyglotMan v" POLYGLOTMANVERSION "\n");
 			exit(0);
 
 		   default:

@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/search.c,v 1.2 2000/03/03 20:02:25 dawes Exp $ */
+/* $XFree86: xc/programs/xman/search.c,v 1.3 2000/03/03 23:16:28 dawes Exp $ */
 
 
 #include "globals.h"
@@ -149,7 +149,7 @@ ManpageGlobals * man_globals)
 FILE *
 DoSearch(ManpageGlobals * man_globals, int type)
 {
-  char cmdbuf[BUFSIZ],*mantmp,*manpath;
+  char cmdbuf[BUFSIZ],*mantmp;
   char tmp[BUFSIZ],path[BUFSIZ];
   char string_buf[BUFSIZ], cmp_str[BUFSIZ], error_buf[BUFSIZ];
   char * search_string = SearchString(man_globals);
@@ -174,24 +174,6 @@ DoSearch(ManpageGlobals * man_globals, int type)
   strcpy(tmp, MANTEMP);		/* get a temp file. */
   (void) mktemp(tmp);
   mantmp = tmp;
-
-  /* set the command */
-
-  manpath=getenv("MANPATH");
-  if (manpath == NULL || streq(manpath,"") ) {
-#ifdef MANCONF
-    if (!ReadManConfig(path))
-#endif
-    {
-      strcpy(path,SYSMANPATH);
-#ifdef LOCALMANPATH
-      strcat(path,":");
-      strcat(path,LOCALMANPATH);
-#endif
-    }
-  } else {
-    strcpy(path,manpath);
-  }
 
   if (type == APROPOS) {
     char label[BUFSIZ];

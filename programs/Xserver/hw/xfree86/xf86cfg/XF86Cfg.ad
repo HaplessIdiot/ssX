@@ -26,7 +26,7 @@
 !!
 !! Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.1 2000/04/04 22:36:56 dawes Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/XF86Cfg.ad,v 1.2 2000/05/18 16:29:59 dawes Exp $
 !!
 
 *Form.background:			gray85
@@ -38,7 +38,7 @@
 *Command.foreground:			gray20
 *Command.borderWidth:			0
 *Command.displayList:\
-foreground	gray40;\
+foreground	gray60;\
 lines		1,-1,-1,-1,-1,1;\
 foreground	gray90;\
 lines		-1,0,0,0,0,-1
@@ -197,6 +197,7 @@ lines		-1,0,0,0,0,-1
 *topM*layout.label:		Configure Layout
 *topM*screen.label:		Configure Screen
 *topM*modeline.label:		Configure Modeline
+*topM*accessx.label:		Configure AccessX
 *topM.showGrip:			False
 *work.showGrip:			False
 
@@ -811,6 +812,204 @@ your monitor is not rotated.
 .xf86cfg.error.minHeight:		50
 .xf86cfg.error.maxHeight:		50
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! accessx
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*Accessx*Label.background:		white
+*Accessx*Label.justify:			left
+*Accessx*Label.internalHeight:		0
+*Accessx*Label.internalWidth:		0
+*Accessx*Label.foreground:		gray35
+*Accessx*Toggle.internalHeight:		0
+*Accessx.Toggle.internalWidth:		18
+*Accessx.Toggle.justify:		left
+*Accessx.Toggle.foreground:		gray30
+*Accessx.Toggle.background:		white
+*Accessx*Toggle.highlightThickness:	0
+*Accessx.Toggle.foreground:		rgb:f/7/7
+*Accessx.Toggle.displayList:\
+foreground	white;\
+points		0,0,-1,0;\
+foreground	rgb:f/7/7;\
+fill-poly	0,2,0,-3,8,6
+*Accessx.Toggle.translations: \
+<Btn1Down>,<Btn1Up>: toggle() notify()\n\
+<Enter>: set-values(1, displayList, "foreground white;points 0,0,-1,0;fill-poly 0,1,10,6,0,-2;foreground rgb:7/7/f;fill-poly 0,2,0,-3,8,6")\n\
+<Leave>: set-values(1, displayList, "foreground white;points 0,0,-1,0;foreground rgb:f/7/7;fill-poly 0,2,0,-3,8,6")
+*Accessx.Form.borderWidth:		1
+*Accessx.Form.borderColor:		rgb:f/7/7
+*Accessx.Form.vertDistance:		0
+*Accessx.Form.defaultDistance:		2
+*Accessx.borderWidth:			0
+*accessxForm.background:		white
+*Accessx*Form.background:		white
+*Accessx.background:			white
+*accessxForm.enable.label:		Enable AccessX
+*accessxForm.enable.width:		208
+*accessxForm.apply.fromHoriz:		enable
+*accessxForm.apply.label:		Apply changes
+*accessxForm.Accessx.fromVert:		enable
+*Accessx.timeoutToggle.background:	white
+*Accessx.timeoutToggle.foreground:	rgb:7/7/f
+*Accessx.timeoutToggle.displayList:\
+foreground	rgb:a/a/f;\
+lines		1,-1,-1,-1,-1,1;\
+foreground	rgb:2/2/a;\
+lines		-1,0,0,0,0,-1
+
+*Accessx.Form.Toggle.background:	white
+*Accessx.Form.Toggle.foreground:	rgb:7/7/f
+*Accessx.Form.Toggle.displayList:\
+foreground	rgb:a/a/f;\
+lines		1,-1,-1,-1,-1,1;\
+foreground	rgb:2/2/a;\
+lines		-1,0,0,0,0,-1
+*Accessx.Form.Toggle.translations: \
+<Btn1Down>,<Btn1Up>: toggle() notify()\n\
+<Enter>: set-values(1, displayList, "foreground rgb:a/a/f;lines 1,-1,-1,-1,-1,1;foreground rgb:2/2/a;lines -1,0,0,0,0,-1;foreground rgb:f/7/7;draw-rect 1,1,-2,-2")\n\
+<Leave>: set-values(1, displayList, "foreground rgb:a/a/f;lines 1,-1,-1,-1,-1,1;foreground rgb:2/2/a;lines -1,0,0,0,0,-1")
+
+*Accessx.timeoutToggle.internalWidth:	4
+*Accessx.timeoutToggle.translations:\
+<Btn1Down>,<Btn1Up>:	toggle() notify()
+*Accessx.timeoutToggle.internalWidth:	4
+*Accessx.timeoutToggle.internalHeight:	1
+*Accessx.timeoutToggle.vertDistance:	6
+*Accessx.timeoutToggle.label:		Time Out
+*Accessx.timeoutLabel.fromHoriz:	timeoutToggle
+*Accessx.timeoutLabel.vertDistance:	7
+*Accessx.timeoutLabel.label:		Time (min)
+*Accessx.Label.background:		white
+*Accessx.timeoutNumber.vertDistance:	1
+*Accessx.timeoutNumber.fromHoriz:	timeoutLabel
+*Accessx.timeoutNumber.font:		6x9
+*Accessx.timeoutNumber.label:		??
+*Accessx.timeoutScroller.fromVert:	timeoutNumber
+*Accessx.timeoutScroller.fromHoriz:	timeoutLabel
+*Accessx.timeoutScroller.width:		133
+*Accessx.timeoutScroller.horizDistance:	31
+*Accessx*Scrollbar.vertDistance:	0
+*Accessx*Scrollbar.orientation:		horizontal
+*Accessx*Scrollbar.thumb:		black
+*Accessx*Scrollbar.height:		8
+*Accessx*Scrollbar.minimumThumb:	5
+*Accessx*Scrollbar.borderWidth:		1
+*Accessx*Scrollbar.borderColor:		gray70
+*Accessx*Scrollbar.foreground:		rgb:f/7/7
+*Accessx*Scrollbar.background:		gray95
+*Accessx*Scrollbar.displayList:\
+foreground	gray80;\
+lines		1,-1,-1,-1,-1,1;\
+foreground	gray90;\
+lines		-1,0,0,0,0,-1
+*Accessx.sticky.fromVert:		timeoutToggle
+*Accessx.sticky.vertDistance:		6
+*Accessx.sticky.label:			Enable StickyKeys
+*Accessx.sticky.width:			304
+*Accessx.stickyForm.fromVert:		sticky
+*Accessx.stickyForm.Toggle.width:	148
+*Accessx.stickyForm.Toggle.internalHeight:	1
+*Accessx.stickyForm.auto.label:		Auto off
+*Accessx.stickyForm.beep.fromHoriz:	auto
+*Accessx.stickyForm.beep.label:		Modifiers beep
+*Accessx.mouseKeys.fromVert:		stickyForm
+*Accessx.mouseKeys.width:		304
+*Accessx.mouseKeys.vertDistance:	6
+*Accessx.mouseKeys.label:		Enable MouseKeys
+*Accessx.mouseForm.fromVert:		mouseKeys
+*Accessx.mouseForm.speedLabel.vertDistance:	7
+*Accessx.mouseForm.speedLabel.label:	Peak speed (pixels/sec)
+*Accessx.mouseForm.speedNumber.fromHoriz:	speedLabel
+*Accessx.mouseForm.speedNumber.font:	6x9
+*Accessx.mouseForm.speedNumber.label:		???
+*Accessx.mouseForm.speedScroller.fromHoriz:	speedLabel
+*Accessx.mouseForm.speedScroller.fromVert:	speedNumber
+*Accessx.mouseForm.speedScroller.width:		133
+*Accessx.mouseForm.timeLabel.fromVert:	speedScroller
+*Accessx.mouseForm.timeLabel.label:	Time to peak (sec)
+*Accessx.mouseForm.timeLabel.vertDistance:	7
+*Accessx.mouseForm.timeNumber.label:	???
+*Accessx.mouseForm.timeNumber.fromVert:	speedScroller
+*Accessx.mouseForm.timeNumber.fromHoriz:	timeLabel
+*Accessx.mouseForm.timeNumber.font:	6x9
+*Accessx.mouseForm.timeScroller.fromHoriz:	timeLabel
+*Accessx.mouseForm.timeScroller.fromVert:	timeNumber
+*Accessx.mouseForm.timeScroller.width:	133
+*Accessx.mouseForm.timeScroller.horizDistance:	37
+*Accessx.mouseForm.delayLabel.fromVert:	timeScroller
+*Accessx.mouseForm.delayLabel.label:	Motion delay (sec)
+*Accessx.mouseForm.delayLabel.vertDistance:	7
+*Accessx.mouseForm.delayNumber.label:	???
+*Accessx.mouseForm.delayNumber.fromVert:	timeScroller
+*Accessx.mouseForm.delayNumber.fromHoriz:	delayLabel
+*Accessx.mouseForm.delayNumber.font:	6x9
+*Accessx.mouseForm.delayScroller.fromHoriz:	delayLabel
+*Accessx.mouseForm.delayScroller.fromVert:	delayNumber
+*Accessx.mouseForm.delayScroller.width:	133
+*Accessx.mouseForm.delayScroller.horizDistance:	37
+*Accessx.repeatKeys.fromVert:		mouseForm
+*Accessx.repeatKeys.width:		304
+*Accessx.repeatKeys.vertDistance:	6
+*Accessx.repeatKeys.label:		Enable RepeatKeys
+*Accessx.repeatForm.fromVert:		repeatKeys
+*Accessx.repeatForm.rateLabel.vertDistance:	7
+*Accessx.repeatForm.rateLabel.label:	Repeat rate (sec/key)
+*Accessx.repeatForm.rateNumber.fromHoriz:	rateLabel
+*Accessx.repeatForm.rateNumber.font:	6x9
+*Accessx.repeatForm.rateNumber.label:	????
+*Accessx.repeatForm.rateScroller.fromHoriz:	rateLabel
+*Accessx.repeatForm.rateScroller.fromVert:	rateNumber
+*Accessx.repeatForm.rateScroller.width:	133
+*Accessx.repeatForm.rateScroller.horizDistance:	16
+*Accessx.repeatForm.delayLabel.fromVert:	rateScroller
+*Accessx.repeatForm.delayLabel.label:	Repeat delay (sec)
+*Accessx.repeatForm.delayLabel.vertDistance:	7
+*Accessx.repeatForm.delayNumber.label:	????
+*Accessx.repeatForm.delayNumber.fromVert:	rateScroller
+*Accessx.repeatForm.delayNumber.fromHoriz:	delayLabel
+*Accessx.repeatForm.delayNumber.font:	6x9
+*Accessx.repeatForm.delayScroller.fromHoriz:	delayLabel
+*Accessx.repeatForm.delayScroller.fromVert:	delayNumber
+*Accessx.repeatForm.delayScroller.width:	133
+*Accessx.repeatForm.delayScroller.horizDistance:	37
+*Accessx.slow.fromVert:			repeatForm
+*Accessx.slow.vertDistance:		6
+*Accessx.slow.label:			Enable SlowKeys
+*Accessx.slow.width:			304
+*Accessx.slowForm.fromVert:		slow
+*Accessx.slowForm.Toggle.horizDistance:	4
+*Accessx.slowForm.Toggle.internalWidth:	4
+*Accessx.slowForm.Toggle.internalHeight:	1
+*Accessx.slowForm.beep.label:		Beep when key is
+*Accessx.slowForm.pressed.fromHoriz:	beep
+*Accessx.slowForm.pressed.label:	pressed
+*Accessx.slowForm.accepted.fromHoriz:	pressed
+*Accessx.slowForm.accepted.label:	accepted
+*Accessx.slowForm.slowLabel.fromVert:	accepted
+*Accessx.slowForm.slowLabel.label:	Key delay (sec)
+*Accessx.slowForm.slowLabel.vertDistance:	7
+*Accessx.slowForm.slowNumber.label:	???
+*Accessx.slowForm.slowNumber.fromVert:	accepted
+*Accessx.slowForm.slowNumber.fromHoriz:	slowLabel
+*Accessx.slowForm.slowNumber.font:	6x9
+*Accessx.slowForm.slowScroller.fromHoriz:	slowLabel
+*Accessx.slowForm.slowScroller.fromVert:	slowNumber
+*Accessx.slowForm.slowScroller.width:	133
+*Accessx.slowForm.slowScroller.horizDistance:	58
+*Accessx.bounce.fromVert:		slowForm
+*Accessx.bounce.vertDistance:		6
+*Accessx.bounce.label:			Enable BounceKeys
+*Accessx.bounce.width:			304
+*Accessx.bounceForm.fromVert:		bounce
+*Accessx.bounceForm.bounceLabel.label:	Debounce time (sec)
+*Accessx.bounceForm.bounceLabel.vertDistance:	7
+*Accessx.bounceForm.bounceNumber.label:	???
+*Accessx.bounceForm.bounceNumber.fromHoriz:	bounceLabel
+*Accessx.bounceForm.bounceNumber.font:	6x9
+*Accessx.bounceForm.bounceScroller.fromHoriz:	bounceLabel
+*Accessx.bounceForm.bounceScroller.fromVert:	bounceNumber
+*Accessx.bounceForm.bounceScroller.width:	133
+*Accessx.bounceForm.bounceScroller.horizDistance:	30
 
 *accessx.geometry:			220x253
 *accessx.minWidth:			220
@@ -1010,3 +1209,83 @@ foreground	red;\
 font		-*-helvetica-bold-o-*-*-8-*-*-*-*-*-*-1;\
 draw-string	12,21, "Button";\
 draw-string	9,30, "Release"
+
+*help*text.properties:\
+default?family=Times&weight=Medium&slant=R&pixelsize=12&registry=ISO8859&encoding=1,\
+b?weight=Bold,\
+strong?weight=Bold,\
+i?slant=I,\
+em?slant=I,\
+address?slant=I,\
+h1?pixelsize=24&weight=Bold,\
+h2?pixelsize=20&weight=Bold,\
+h3?pixelsize=17&weight=Bold,\
+h4?pixelsize=14&weight=Bold,\
+h5?pixelsize=12&weight=Bold,\
+h6?pixelsize=10&weight=Bold,\
+pre?family=Courier&pixelsize=10,\
+kbd?family=Courier&pixelsize=10,\
+code?family=Courier&pixelsize=10,\
+samp?family=Courier&pixelsize=10,\
+tt?family=Courier&pixelsize=10
+*help*close.min:	18
+*help*close.max:	18
+*help*close.showGrip:	False
+*help*wrap:		word
+.xf86cfg.help.geometry:		320x369
+.xf86cfg.help.translations:	#override \
+<Message>WM_PROTOCOLS:	help-close()
+*help*text.translations:\
+<Key>Up:	scroll-one-line-down()\n\
+<Key>Down:	scroll-one-line-up()\n\
+<Key>Next:	next-page()\n\
+<Key>Prior:	previous-page()\n\
+<Key>space:	next-page()\n\
+<Key>BackSpace:	previous-page()\n\
+<Key>Home:	beginning-of-file()\n\
+<Key>End:	end-of-file()
+*help*text*displayCaret:	False
+*help*text.leftMargin:		10
+*help*text.rightMargin:		10
+
+*help.helpDevices:\
+<h2>Configuring devices</h2>\
+You can arrange the icons pressing the <i>left mouse button</i> \
+and dragging them.\
+<p>\
+To configure a device, press the <i>right mouse button</i> and choose the \
+<tt>configure</tt> option.\
+
+*help.helpScreen:\
+<h2>Configuring screens</h2>\
+You can drag the monitors to set the screen layout form <b>Xinerama</b> \
+pressing the <i>left mouse button</i> and moving them.\
+<p>\
+Press the <i>right mouse button</i> to set configure or set options for \
+the given screen.
+
+*help.helpModeline:\
+<h2>Configuring modelines</h2>\
+<b><font size=+1 color=red>The controls here may damage your \
+monitor.</font></b> \
+<p>\
+You can safelly skip this stage of the configuration process.\
+<p>\
+When not running in <b>Xinerama</b> mode, you can configure modelines \
+for every configured monitor. Set the <b>Auto</b> toggle to see the changes \
+while the <i>control buttons</i> are pressed.\
+<p>\
+Note that the <i>arrow</i> buttons are repeaters. Press they only once \
+and they will show the changes in the <i>text labels</i>.\
+<p>\
+<font color=forestgreen>Press <b>ESC</b> if the monitor goes out of sync.</font>
+
+*help.helpAccessX:\
+<h2>Configuring accessx</h2>\
+This interface is expected to allow customizing most of the <b>accessx</b> \
+options.\
+<p>\
+Press in the <b>Enable ???</b> label to set specific options.\
+<p>\
+<font color=red>Note</font>: currently, if you press the \
+<tt><b>Apply changes</b></tt> button there is no way to undo your changes.</font>

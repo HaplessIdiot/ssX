@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.1 2000/04/04 22:36:56 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -267,6 +267,10 @@ CardFilterAction(Widget w, XEvent *ev, String *params, Cardinal *num_params)
 	    XtFree(old_cards[old_ncards]);
 	XtFree((char*)old_cards);
     }
+
+    /* force relayout */
+    XtUnmanageChild(list);
+    XtManageChild(list);
 }
 
 void

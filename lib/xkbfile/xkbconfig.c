@@ -274,6 +274,7 @@ int	ch;
 #define	_XkbCF_InternalMods		35
 
 #define	_XkbCF_GroupsWrap		36
+#define	_XkbCF_InitialFeedback		37
 
 static Bool
 #if NeedFunctionPrototypes
@@ -343,6 +344,10 @@ AddAXTimeoutOptByName(rtrn,name,opts_rtrn)
 	*opts_rtrn= XkbAX_IndicatorFBMask;
     else if (_XkbStrCaseCmp(name,"stickykeys")==0)
 	*opts_rtrn= XkbAX_StickyKeysFBMask;
+    else if (_XkbStrCaseCmp(name,"twokeys")==0)
+	*opts_rtrn= XkbAX_TwoKeysMask;
+    else if (_XkbStrCaseCmp(name,"latchtolock")==0)
+	*opts_rtrn= XkbAX_LatchToLockMask;
     else if (_XkbStrCaseCmp(name,"slowkeysrelease")==0)
 	*opts_rtrn= XkbAX_SKReleaseFBMask;
     else if (_XkbStrCaseCmp(name,"slowkeysreject")==0)
@@ -524,9 +529,9 @@ int			tok;
 XkbCFScanResultRec	val;
 char **			str;
 int			merge;
-unsigned long *		ctrls;
-unsigned short *	opts;
-int *			pival;
+unsigned long *		ctrls, ctrls_mask;
+unsigned short *	opts, opts_mask;
+int *			pival, sign;
 int			onoff;
 XkbConfigUnboundModPtr	last;
 unsigned		what;
@@ -611,7 +616,6 @@ unsigned		what;
 	    break;
 	case _XkbCF_InitialCtrls:
 	    rtrn->defined|= XkbCF_InitialCtrls;
-	    opts= NULL;
 	    ctrls= NULL;
 	    if (tok==XkbCF_PlusEquals)
 		ctrls= &rtrn->initial_ctrls;
@@ -636,9 +640,10 @@ unsigned		what;
 		    rtrn->error= XkbCF_ExpectedControl;
 		    return False;
 		}
-		if (!AddCtrlByName(rtrn,val.str,ctrls)) {
+		if (!AddCtrlByName(rtrn,val.str,&ctrls_mask)) {
 		    return False;
 		}
+		*ctrls |= ctrls_mask;
 		tok= XkbCFScan(file,&val,rtrn);
 		if ((tok!=XkbCF_EOL)&&(tok!=XkbCF_EOF)&&(tok!=XkbCF_Semi)) {
 		    if (tok!=XkbCF_Plus) {
@@ -651,18 +656,6 @@ unsigned		what;
 	    break;
 	case _XkbCF_AccessXTimeoutCtrlsOn:
 	case _XkbCF_AccessXTimeoutCtrlsOff:
-	case _XkbCF_AccessXTimeoutOptsOff:
-	case _XkbCF_AccessXTimeoutOptsOn:
-	    if (field->field_id==_XkbCF_AccessXTimeoutOptsOff)
-		field->field_id= _XkbCF_AccessXTimeoutCtrlsOff;
-	    else if (field->field_id==_XkbCF_AccessXTimeoutCtrlsOn)
-		field->field_id= _XkbCF_AccessXTimeoutCtrlsOn;
-
-	    if (field->field_id==_XkbCF_AccessXTimeoutCtrlsOff)
-		rtrn->defined|= XkbCF_AccessXTimeoutCtrlsOff;
-	    else if (field->field_id==_XkbCF_AccessXTimeoutCtrlsOn)
-		rtrn->defined|= XkbCF_AccessXTimeoutCtrlsOn;
-
 	    opts= NULL;
 	    if (tok==XkbCF_MinusEquals) {
 		ctrls= &rtrn->axt_ctrls_ignore;
@@ -697,9 +690,10 @@ unsigned		what;
 		    rtrn->error= XkbCF_ExpectedControl;
 		    return False;
 		}
-		if (!AddCtrlByName(rtrn,val.str,ctrls)) {
-		    if (!AddAXTimeoutOptByName(rtrn,val.str,opts))
+		if (!AddCtrlByName(rtrn,val.str,&ctrls_mask)) {
+		    if (!AddAXTimeoutOptByName(rtrn,val.str,&opts_mask))
 			return False;
+		    *opts |= opts_mask;
 		    if (field->field_id==_XkbCF_AccessXTimeoutCtrlsOff) {
 			rtrn->defined|= XkbCF_AccessXTimeoutOptsOff;
 			if (rtrn->replace_axt_ctrls_off)
@@ -711,6 +705,94 @@ unsigned		what;
 			    rtrn->replace_axt_opts_on= True;
 		    }
 		}
+		else
+		    *ctrls |= ctrls_mask;
+		tok= XkbCFScan(file,&val,rtrn);
+		if ((tok!=XkbCF_EOL)&&(tok!=XkbCF_EOF)&&(tok!=XkbCF_Semi)) {
+		    if (tok!=XkbCF_Plus) {
+			rtrn->error= XkbCF_ExpectedOperator;
+			return False;
+		    }
+		    tok= XkbCFScan(file,&val,rtrn);
+		}
+	    }
+	    break;
+	case _XkbCF_InitialFeedback:
+	    rtrn->defined|= XkbCF_InitialOpts;
+	    opts= NULL;
+	    if (tok==XkbCF_PlusEquals)
+		opts= &rtrn->initial_opts;
+	    else if (tok==XkbCF_MinusEquals)
+		opts= &rtrn->initial_opts_clear;
+	    else if (tok==XkbCF_Equals) {
+		opts= &rtrn->initial_opts;
+		rtrn->replace_initial_opts= True;
+		*opts= 0;
+	    }
+	    else {
+		rtrn->error= XkbCF_MissingEquals;
+		goto BAILOUT;
+	    }
+	    tok= XkbCFScan(file,&val,rtrn);
+	    if ((tok==XkbCF_EOL)||(tok==XkbCF_Semi)||(tok==XkbCF_EOF)) {
+		rtrn->error= XkbCF_ExpectedAXOption;
+		return False;
+	    }
+	    while ((tok!=XkbCF_EOL)&&(tok!=XkbCF_Semi)&&(tok!=XkbCF_EOF)) {
+		if ((tok!=XkbCF_Ident)&&(tok!=XkbCF_String)) {
+		    rtrn->error= XkbCF_ExpectedAXOption;
+		    return False;
+		}
+		if (!AddAXTimeoutOptByName(rtrn,val.str,&opts_mask)) {
+		    return False;
+		}
+		*opts |= opts_mask;
+		tok= XkbCFScan(file,&val,rtrn);
+		if ((tok!=XkbCF_EOL)&&(tok!=XkbCF_EOF)&&(tok!=XkbCF_Semi)) {
+		    if (tok!=XkbCF_Plus) {
+			rtrn->error= XkbCF_ExpectedOperator;
+			return False;
+		    }
+		    tok= XkbCFScan(file,&val,rtrn);
+		}
+	    }
+	    break;
+	case _XkbCF_AccessXTimeoutOptsOff:
+	case _XkbCF_AccessXTimeoutOptsOn:
+	    opts= NULL;
+	    if (tok==XkbCF_MinusEquals)
+		opts= &rtrn->axt_opts_ignore;
+	    else if ((tok==XkbCF_PlusEquals)||(tok==XkbCF_Equals)) {
+		if (field->field_id==_XkbCF_AccessXTimeoutOptsOff) {
+		    opts= &rtrn->axt_opts_off;
+		    if (tok==XkbCF_Equals)
+			rtrn->replace_axt_opts_off= True;
+		}
+		else {
+		    opts= &rtrn->axt_opts_on;
+		    if (tok==XkbCF_Equals)
+			rtrn->replace_axt_opts_on= True;
+		}
+		*opts = 0;
+	    }
+	    else {
+		rtrn->error= XkbCF_MissingEquals;
+		goto BAILOUT;
+	    }
+	    tok= XkbCFScan(file,&val,rtrn);
+	    if ((tok==XkbCF_EOL)||(tok==XkbCF_Semi)||(tok==XkbCF_EOF)) {
+		rtrn->error= XkbCF_ExpectedControl;
+		return False;
+	    }
+	    while ((tok!=XkbCF_EOL)&&(tok!=XkbCF_Semi)&&(tok!=XkbCF_EOF)) {
+		if ((tok!=XkbCF_Ident)&&(tok!=XkbCF_String)) {
+		    rtrn->error= XkbCF_ExpectedControl;
+		    return False;
+		}
+		if (!AddAXTimeoutOptByName(rtrn,val.str,&opts_mask))
+		    return False;
+		*opts |= opts_mask;
+
 		tok= XkbCFScan(file,&val,rtrn);
 		if ((tok!=XkbCF_EOL)&&(tok!=XkbCF_EOF)&&(tok!=XkbCF_Semi)) {
 		    if (tok!=XkbCF_Plus) {
@@ -772,6 +854,13 @@ unsigned		what;
 		goto BAILOUT;
 	    }
 	    tok= XkbCFScan(file,&val,rtrn);
+	    if (tok == XkbCF_Minus && field->field_id == _XkbCF_MouseKeysCurve) {
+		/* This can be a negative value */
+		tok = XkbCFScan(file,&val,rtrn);
+		sign = -1;
+	    }
+	    else
+		sign = 1;
 	    if (tok!=XkbCF_Integer) {
 		Bool ok= False;
 		if ((onoff)&&(tok==XkbCF_Ident)&&(val.str!=NULL)) {
@@ -789,7 +878,7 @@ unsigned		what;
 		    goto BAILOUT;
 		}
 	    }
-	    *pival= val.ival;
+	    *pival= val.ival * sign;
 	    rtrn->defined|= XkbCF_AccessXTimeout;
 	    tok= XkbCFScan(file,&val,rtrn);
 	    if ((tok!=XkbCF_EOL)&&(tok!=XkbCF_Semi)&&(tok!=XkbCF_EOF)) {
@@ -1120,13 +1209,18 @@ static XkbConfigFieldRec _XkbCFDfltFields[] = {
 	{ "axtctrlson",	_XkbCF_AccessXTimeoutCtrlsOn },
 	{ "accessxtimeoutctrlsoff",_XkbCF_AccessXTimeoutCtrlsOff },
 	{ "axtctrlsoff",_XkbCF_AccessXTimeoutCtrlsOff },
+	{ "accessxtimeoutfeedbackon", _XkbCF_AccessXTimeoutOptsOn },
+	{ "axtfeedbackon", _XkbCF_AccessXTimeoutOptsOn },
+	{ "accessxtimeoutfeedbackoff", _XkbCF_AccessXTimeoutOptsOff },
+	{ "axtfeedbackoff", _XkbCF_AccessXTimeoutOptsOff },
 	{ "ignorelockmods",_XkbCF_IgnoreLockMods },
 	{ "ignorelockmodifiers",_XkbCF_IgnoreLockMods },
 	{ "ignoregrouplock",_XkbCF_IgnoreGroupLock },
 	{ "internalmods",_XkbCF_InternalMods },
 	{ "internalmodifiers",_XkbCF_InternalMods },
 	{ "outofrangegroups",_XkbCF_GroupsWrap },
-	{ "groups", _XkbCF_GroupsWrap }
+	{ "groups", _XkbCF_GroupsWrap },
+	{ "feedback", _XkbCF_InitialFeedback },
 };
 #define	_XkbCFNumDfltFields (sizeof(_XkbCFDfltFields)/sizeof(XkbConfigFieldRec))
 
@@ -1344,6 +1438,7 @@ BAILOUT:
     return False;
 }
 
+/*ARGSUSED*/
 void
 #if NeedFunctionPrototypes
 XkbCFReportError(FILE *file,char *name,int error,int line)
@@ -1387,8 +1482,14 @@ char *	msg;
 	default:
 	    msg= "unknown error on line %d"; break;
     }
+#ifndef XKB_IN_SERVER
     fprintf(file,msg,line);
     if (name)	fprintf(file," of %s\n",name);
     else	fprintf(file,"\n");
+#else
+    ErrorF(msg,line);
+    if (name)	ErrorF(" of %s\n",name);
+    else	ErrorF("\n");
+#endif
     return;
 }

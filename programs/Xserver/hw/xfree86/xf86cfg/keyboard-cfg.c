@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.1 2000/04/04 22:36:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -224,26 +224,30 @@ KeyboardConfig(XtPointer config)
 		!= NULL) {
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(model);
-/*		XtFree(option->opt_comment);*/
+		XtFree(option->opt_comment);
 	    }
-	    else {
+/*	    else {
 		if (keyboard->inp_option_lst == NULL)
 		    keyboard->inp_option_lst = xf86NewOption(XtNewString(XkbModel),
 							     XtNewString(model));
 		else
 		    xf86addNewOption(keyboard->inp_option_lst,
 				     XtNewString(XkbModel), XtNewString(model));
-	    }
+	    }*/
+	    XtFree(xkb_info->config.model);
+	    xkb_info->config.model = XtNewString(model);
 
 	    if ((option = xf86FindOption(keyboard->inp_option_lst, XkbLayout))
 		!= NULL) {
 		XtFree(option->opt_val);
 		option->opt_val = XtNewString(layout);
-/*		XtFree(option->opt_comment);*/
+		XtFree(option->opt_comment);
 	    }
-	    else
+	    /*else
 		xf86addNewOption(keyboard->inp_option_lst,
-				 XtNewString(XkbLayout), XtNewString(layout));
+				 XtNewString(XkbLayout), XtNewString(layout));*/
+	    XtFree(xkb_info->config.layout);
+	    xkb_info->config.layout = XtNewString(layout);
 	}
 	if (strcasecmp(keyboard->inp_identifier, ident_string))
 	    xf86RenameInput(XF86Config, keyboard, ident_string);
@@ -306,6 +310,10 @@ InitializeKeyboard(void)
     static int first = 1;
     XkbRF_RulesPtr list;
     int i, timeout = 5;
+    XF86ConfInputPtr keyboard = XF86Config->conf_input_lst;
+    XF86OptionPtr option;
+    char name[PATH_MAX];
+    FILE *file;
 
     if (!first)
 	return;
@@ -320,7 +328,7 @@ InitializeKeyboard(void)
 
     xkb_info = XtNew(XkbInfo);
     xkb_info->conf = NULL;
-    xkb_infos = (XkbInfo**)XtMalloc(sizeof(XkbInfo*));
+    xkb_infos = (XkbInfo**)XtCalloc(1, sizeof(XkbInfo*));
     num_xkb_infos = 1;
     xkb_infos[0] = xkb_info;
 
@@ -396,6 +404,236 @@ InitializeKeyboard(void)
     xkb_option.nelem = i;
 
     XkbRF_Free(list, True);
+
+    /* Load configuration */
+    XmuSnprintf(name, sizeof(name), "%s%s", XkbConfigDir, XkbConfigFile);
+    file = fopen(name, "r");
+/*    if ((file = fopen(name, "r")) == NULL) {
+	strcpy(name, XkbConfigFile);
+	file = fopen(name, "r");
+    }*/
+    if (file != NULL) {
+	if (XkbCFParse(file, XkbCFDflts, xkb_info->xkb, &xkb_info->config) == 0) {
+	    fprintf(stderr, "Error parsing config file: ");
+	    XkbCFReportError(stderr, name, xkb_info->config.error,
+			     xkb_info->config.line);
+	}
+	fclose(file);
+    }
+
+    /* XXX Assumes the first keyboard is the core keyboard */
+    while (keyboard != NULL) {
+	if (strcasecmp(keyboard->inp_driver, "keyboard") == 0)
+	    break;
+	keyboard = (XF86ConfInputPtr)(keyboard->list.next);
+    }
+    if (keyboard == NULL)
+	return;
+
+    if (xkb_info->config.model != NULL)
+	xkb_info->defs.model = xkb_info->config.model;
+    else if ((option = xf86FindOption(keyboard->inp_option_lst, "XkbModel"))
+	!= NULL)
+	xkb_info->defs.model = option->opt_val;
+    else
+	xkb_info->defs.model = xkb_model.name[0];
+
+    if (xkb_info->config.layout != NULL)
+	xkb_info->defs.layout = xkb_info->config.layout;
+    else if ((option = xf86FindOption(keyboard->inp_option_lst, "XkbLayout"))
+	!= NULL)
+	xkb_info->defs.layout = option->opt_val;
+    else
+	xkb_info->defs.layout = xkb_layout.name[0];
+}
+
+static xf86ConfigSymTabRec ax_controls[] =
+{
+    {XkbRepeatKeysMask,	     "RepeatKeys"},
+    {XkbSlowKeysMask,	     "SlowKeys"},
+    {XkbBounceKeysMask,	     "BounceKeys"},
+    {XkbStickyKeysMask,	     "StickyKeys"},
+    {XkbMouseKeysMask,	     "MouseKeys"},
+    {XkbMouseKeysAccelMask,  "MouseKeysAccel"},
+    {XkbAccessXKeysMask,     "AccessxKeys"},
+    {XkbAccessXTimeoutMask,  "AccessxTimeout"},
+    {XkbAccessXFeedbackMask, "AccessxFeedback"},
+    {XkbAudibleBellMask,     "AudibleBell"},
+    {XkbOverlay1Mask,	     "Overlay1"},
+    {XkbOverlay2Mask,	     "Overlay2"},
+    {XkbIgnoreGroupLockMask, "IgnoreGroupLock"},
+    {-1,		     ""},
+};
+
+static xf86ConfigSymTabRec ax_feedback[] =
+{
+    {XkbAX_SKPressFBMask,    "SlowKeysPress"},
+    {XkbAX_SKAcceptFBMask,   "SlowKeysAccept"},
+    {XkbAX_FeatureFBMask,    "Feature"},
+    {XkbAX_SlowWarnFBMask,   "SlowWarn"},
+    {XkbAX_IndicatorFBMask,  "Indicator"},
+    {XkbAX_StickyKeysFBMask, "StickyKeys"},
+    {XkbAX_TwoKeysMask,	     "TwoKeys"},
+    {XkbAX_LatchToLockMask,  "LatchToLock"},
+    {XkbAX_SKReleaseFBMask,  "SlowKeysRelease"},
+    {XkbAX_SKRejectFBMask,   "SlowkeysReject"},
+    {XkbAX_BKRejectFBMask,   "BounceKeysReject"},
+    {XkbAX_DumbBellFBMask,   "DumbBell"},
+    {-1,		     ""},
+};
+
+Bool
+WriteXKBConfiguration(char *filename, XkbConfigRtrnPtr conf)
+{
+    FILE *fp;
+    int i, count;
+
+    if (filename == NULL || conf == NULL ||
+	(fp = fopen(filename, "w")) == NULL)
+	return (False);
+
+    if (conf->rules_file != NULL)
+	fprintf(fp, "Rules			 =	%s\n",
+		conf->rules_file);
+    if (conf->model != NULL)
+	fprintf(fp, "Model			 =	%s\n",
+		conf->model);
+    if (conf->layout != NULL)
+	fprintf(fp, "Layout			 =	%s\n",
+		conf->layout);
+    if (conf->variant != NULL)
+	fprintf(fp, "Variant			 =	%s\n",
+		conf->variant);
+    if (conf->options != NULL)
+	fprintf(fp, "Options			 =	%s\n",
+		conf->options);
+    if (conf->keymap != NULL)
+	fprintf(fp, "Keymap			 =	%s\n",
+		conf->keymap);
+    if (conf->keycodes != NULL)
+	fprintf(fp, "Keycodes		 =	%s\n",
+		conf->keycodes);
+    if (conf->geometry != NULL)
+	fprintf(fp, "Geometry		 =	%s\n",
+		conf->geometry);
+    if (conf->phys_symbols != NULL)
+	fprintf(fp, "RealSymbols		 =	%s\n",
+		conf->phys_symbols);
+    if (conf->symbols != NULL)
+	fprintf(fp, "Symbols			 =	%s\n",
+		conf->symbols);
+    if (conf->types != NULL)
+	fprintf(fp, "Types			 =	%s\n",
+		conf->types);
+    if (conf->compat != NULL)
+	fprintf(fp, "Compat			 =	%s\n",
+		conf->compat);
+
+    if (conf->click_volume > 0)
+	fprintf(fp, "ClickVolume		 =	%d\n",
+		conf->click_volume);
+    if (conf->bell_volume > 0)
+	fprintf(fp, "BellVolume		 =	%d\n",
+		conf->bell_volume);
+    if (conf->bell_pitch > 0)
+	fprintf(fp, "BellPitch		 =	%d\n",
+		conf->bell_pitch);
+    if (conf->bell_duration > 0)
+	fprintf(fp, "BellDuration		 =	%d\n",
+		conf->bell_duration);
+
+    if (conf->repeat_delay > 0)
+	fprintf(fp, "RepeatDelay		 =	%d\n",
+		conf->repeat_delay);
+    if (conf->repeat_interval > 0)
+	fprintf(fp, "RepeatInterval		 =	%d\n",
+		conf->repeat_interval);
+
+    if (conf->slow_keys_delay > 0)
+	fprintf(fp, "SlowKeysDelay		 =	%d\n",
+		conf->slow_keys_delay);
+
+    if (conf->debounce_delay > 0)
+	fprintf(fp, "DebounceDelay		 =	%d\n",
+		conf->debounce_delay);
+
+    if (conf->mk_delay > 0)
+	fprintf(fp, "MouseKeysDelay		 =	%d\n",
+		conf->mk_delay);
+    if (conf->mk_interval > 0)
+	fprintf(fp, "MouseKeysInterval	 =	%d\n",
+		conf->mk_interval);
+    if (conf->mk_time_to_max > 0)
+	fprintf(fp, "MouseKeysTimeToMax	 =	%d\n",
+		conf->mk_time_to_max);
+    fprintf(fp, "MouseKeysCurve		 =	%d\n", conf->mk_curve);
+
+    fprintf(fp, "AccessXTimeout		 =	%d\n", conf->ax_timeout);
+    if (conf->initial_ctrls != 0) {
+	fprintf(fp, "Controls		%c=	",
+		conf->replace_initial_ctrls ? ' ' : '+');
+	for (i = count = 0; *ax_controls[i].name; i++)
+	    if ((conf->initial_ctrls & ax_controls[i].token)
+		== ax_controls[i].token)
+		fprintf(fp, "%s%s", count++ ? " + " : "",
+			ax_controls[i].name);
+	fprintf(fp, "\n");
+    }
+    if (conf->axt_ctrls_on != 0) {
+	fprintf(fp, "AcessXTimeoutCtrlsOn	%c=	",
+		conf->replace_axt_ctrls_on ? ' ' : '+');
+	for (i = count = 0; *ax_controls[i].name; i++)
+	    if ((conf->axt_ctrls_on & ax_controls[i].token)
+		== ax_controls[i].token)
+		fprintf(fp, "%s%s", count++ ? " + " : "",
+			ax_controls[i].name);
+	fprintf(fp, "\n");
+    }
+    if (conf->axt_ctrls_off != 0) {
+	fprintf(fp, "AcessXTimeoutCtrlsOff	%c=	",
+		conf->replace_axt_ctrls_off ? ' ' : '-');
+	for (i = count = 0; *ax_controls[i].name; i++)
+	    if ((conf->axt_ctrls_off & ax_controls[i].token)
+		== ax_controls[i].token)
+		fprintf(fp, "%s%s", count++ ? " + " : "",
+			ax_controls[i].name);
+	fprintf(fp, "\n");
+    }
+
+    if (conf->initial_opts != 0) {
+	fprintf(fp, "Feedback		%c=	",
+		conf->replace_initial_opts ? ' ' : '+');
+	for (i = count = 0; *ax_feedback[i].name; i++)
+	    if ((conf->initial_opts & ax_feedback[i].token)
+		== ax_feedback[i].token)
+		fprintf(fp, "%s%s", count++ ? " + " : "",
+			ax_feedback[i].name);
+	fprintf(fp, "\n");
+    }
+    if (conf->axt_opts_on != 0) {
+	fprintf(fp, "AcessXTimeoutFeedbackOn	%c=	",
+		conf->replace_axt_opts_on ? ' ' : '+');
+	for (i = count = 0; *ax_controls[i].name; i++)
+	    if ((conf->axt_opts_on & ax_feedback[i].token)
+		== ax_feedback[i].token)
+		fprintf(fp, "%s%s", count++ ? " + " : "",
+			ax_feedback[i].name);
+	fprintf(fp, "\n");
+    }
+    if (conf->axt_opts_off != 0) {
+	fprintf(fp, "AcessXTimeoutFeedbackOff%c=	",
+		conf->replace_axt_opts_off ? ' ' : '-');
+	for (i = count = 0; *ax_feedback[i].name; i++)
+	    if ((conf->axt_opts_off & ax_feedback[i].token)
+		== ax_feedback[i].token)
+		fprintf(fp, "%s%s", count++ ? " + " : "",
+			ax_feedback[i].name);
+	fprintf(fp, "\n");
+    }
+
+    fclose(fp);
+
+    return (True);
 }
 
 void

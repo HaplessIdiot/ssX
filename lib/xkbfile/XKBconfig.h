@@ -93,6 +93,7 @@ typedef struct _XkbConfigUnboundMod {
 #define	XkbCF_AccessXTimeoutOptsOn	(1L<<7)
 #define	XkbCF_AccessXTimeoutOptsOff	(1L<<8)
 #define	XkbCF_GroupsWrap		(1L<<9)
+#define	XkbCF_InitialOpts		(1L<<10)
 
 typedef struct _XkbConfigRtrn {
 	unsigned		defined;
@@ -122,6 +123,10 @@ typedef struct _XkbConfigRtrn {
 	Bool			replace_initial_ctrls;
 	unsigned long		initial_ctrls;
 	unsigned long		initial_ctrls_clear;
+
+	Bool			replace_initial_opts;
+	unsigned long		initial_opts;
+	unsigned long		initial_opts_clear;
 
 	XkbConfigModInfoRec	initial_mods;
 	XkbConfigModInfoRec	internal_mods;

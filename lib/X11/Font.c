@@ -28,7 +28,7 @@ sale, use or other dealings in this Software without prior written
 authorization from the X Consortium and the XFree86 Project.
 
 */
-/* $XFree86: xc/lib/X11/Font.c,v 1.7 2000/05/25 22:08:45 mvojkovi Exp $ */
+/* $XFree86: xc/lib/X11/Font.c,v 1.8 2000/06/13 02:28:28 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -83,7 +83,7 @@ static XFontStruct *_XF86BigfontQueryFont(
 #endif
 );
 
-static void _XF86BigfontFreeFontMetrics(
+void _XF86BigfontFreeFontMetrics(
 #if NeedFunctionPrototypes
     XFontStruct*	/* fs */
 #endif
@@ -657,7 +657,7 @@ _XF86BigfontQueryFont (dpy, extcodes, fid, seq)
     return fs;
 }
 
-static void
+void
 _XF86BigfontFreeFontMetrics (fs)
     XFontStruct *fs;
 {
