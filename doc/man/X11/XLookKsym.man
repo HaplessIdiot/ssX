@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XLookKsym.man,v 1.2 2001/01/27 18:20:01 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -154,7 +154,7 @@ XRefreshKeyboardMapping(\^\fIevent_map\fP\^)
 .br
       XMappingEvent *\fIevent_map\fP\^;
 .LP
-int XLookupString(\^\fIevent_struct\fP, \fIbuffer_return\fP,\
+int XLookupString(\^\fIevent_struct\fP, \fIbuffer_return\fP,
  \fIbytes_buffer\fP, \fIkeysym_return\fP, \fIstatus_in_out\fP\^)
 .br
       XKeyEvent *\fIevent_struct\fP\^;

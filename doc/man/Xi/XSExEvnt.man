@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xi/XSExEvnt.man,v 1.2 2001/01/27 18:20:21 dawes Exp $
 .\"
 .\"
 .\" Copyright ([\d,\s]*) by Hewlett-Packard Company, Ardent Computer, 
@@ -42,8 +42,8 @@ Specifies the device from which the events are to be sent.
 .TP 12
 .I destination
 Specifies the window the event is to be sent to.  You can pass window id,
-\fIPointerWindow\fP, \
-or \
+\fIPointerWindow\fP,
+or
 \fIInputFocus\fP.
 .TP 12
 .I propagate

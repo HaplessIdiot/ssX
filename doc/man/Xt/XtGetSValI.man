@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtGetSValI.man,v 1.2 2001/01/27 18:20:27 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -130,7 +130,7 @@
 .SH NAME
 XtGetSelectionValueIncremental, XtGetSelectionValuesIncremental \- obtain selection values
 .SH SYNTAX
-void XtGetSelectionValueIncremental(\fIw\fP, \fIselection\fP, \fItarget\fP, \
+void XtGetSelectionValueIncremental(\fIw\fP, \fIselection\fP, \fItarget\fP,
 \fIcallback\fP, \fIclient_data\fP, \fItime\fP)
 .br
       Widget \fIw\fP;
@@ -145,7 +145,7 @@ void XtGetSelectionValueIncremental(\fIw\fP, \fIselection\fP, \fItarget\fP, \
 .br
       Time \fItime\fP;
 .LP
-void XtGetSelectionValuesIncremental(\fIw\fP, \fIselection\fP, \fItargets\fP, \
+void XtGetSelectionValuesIncremental(\fIw\fP, \fIselection\fP, \fItargets\fP,
 \fIcount\fP, \fIcallback\fP, \fIclient_data\fP, \fItime\fP)
 .br
       Widget \fIw\fP;

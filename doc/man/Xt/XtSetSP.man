@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtSetSP.man,v 1.2 2001/01/27 18:20:29 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -130,7 +130,7 @@
 .SH NAME
 XtSetSelectionParameters \- specify target parameters for a selection request with a single target
 .SH SYNTAX
-void XtSetSelectionParameters(\fIrequestor\fP, \fIselection\fP, \fItype\fP, \
+void XtSetSelectionParameters(\fIrequestor\fP, \fIselection\fP, \fItype\fP,
 \fIvalue\fP, \fIlength\fP, \fIformat\fP)
 .br
       Widget \fIrequestor\fP;

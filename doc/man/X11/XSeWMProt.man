@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XSeWMProt.man,v 1.2 2001/01/27 18:20:05 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -144,7 +144,7 @@
 .SH NAME
 XSetWMProtocols, XGetWMProtocols \- set or read a window's WM__PROTOCOLS property
 .SH SYNTAX
-Status XSetWMProtocols\^(\^\fIdisplay\fP, \fIw\fP, \fIprotocols\fP, \
+Status XSetWMProtocols\^(\^\fIdisplay\fP, \fIw\fP, \fIprotocols\fP,
 \fIcount\fP\^)
 .br
       Display *\fIdisplay\fP\^;
@@ -155,7 +155,7 @@ Status XSetWMProtocols\^(\^\fIdisplay\fP, \fIw\fP, \fIprotocols\fP, \
 .br
       int \fIcount\fP\^;
 .LP
-Status XGetWMProtocols\^(\^\fIdisplay\fP, \fIw\fP, \fIprotocols_return\fP, \
+Status XGetWMProtocols\^(\^\fIdisplay\fP, \fIw\fP, \fIprotocols_return\fP,
 \fIcount_return\fP\^)
 .br
       Display *\fIdisplay\fP\^;

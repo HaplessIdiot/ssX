@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtAllocGC.man,v 1.2 2001/01/27 18:20:23 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -130,7 +130,7 @@
 .SH NAME
 XtAllocateGC \- obtain a sharable GC with modifiable fields
 .SH SYNTAX
-GC XtAllocateGC(\fIw\fP, \fIdepth\fP, \fIvalue_mask\fP, \fIvalues\fP, \
+GC XtAllocateGC(\fIw\fP, \fIdepth\fP, \fIvalue_mask\fP, \fIvalues\fP,
 \fIdynamic_mask\fP, \fIunused_mask\fP)
 .br
       Widget \fIw\fP;

@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtErr.man,v 1.2 2001/01/27 18:20:25 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -148,7 +148,7 @@ void XtWarning(\fImessage\fP)
 .SH ARGUMENTS
 .IP \fImessage\fP 1i
 Specifies the nonfatal error message that is to be reported.
-.ds Ha fatal error procedure, which should not return, \
+.ds Ha fatal error procedure, which should not return,
 or the nonfatal error procedure, which usually returns
 .IP \fIhandler\fP 1i
 Specifies the new \*(Ha.
