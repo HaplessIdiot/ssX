@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/StrToJust.c,v 1.1.1.1.12.2 1998/05/16 09:05:27 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToJust.c,v 1.2 1998/06/28 08:59:59 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include "Converters.h"
@@ -48,7 +48,7 @@ XmuCvtStringToJustify(args, num_args, fromVal, toVal)
     static int		haveQuarks;
     XrmQuark    q;
     char	*s = (char *) fromVal->addr;
-    char        lowerName[1000];
+    char        lowerName[32];
 
     if (s == NULL) return;
 
@@ -59,7 +59,7 @@ XmuCvtStringToJustify(args, num_args, fromVal, toVal)
 	haveQuarks = 1;
     }
 
-    _XmuNCopyISOLatin1Lowered(lowerName, s, sizeof(lowerName));
+    XmuNCopyISOLatin1Lowered(lowerName, s, sizeof(lowerName));
 
     q = XrmStringToQuark(lowerName);
 
@@ -72,5 +72,6 @@ XmuCvtStringToJustify(args, num_args, fromVal, toVal)
 
     toVal->size = 0;
     toVal->addr = NULL;
+    XtStringConversionWarning((char *)fromVal->addr, XtRJustify);
     XtStringConversionWarning((char *) fromVal->addr, XtRJustify);
 }

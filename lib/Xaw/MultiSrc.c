@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.4 1998/06/28 08:41:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.5 1998/06/28 11:23:47 dawes Exp $ */
 
 /*
 
@@ -190,6 +190,8 @@ MultiSrcClassRec multiSrcClassRec = {
 
 WidgetClass multiSrcObjectClass = (WidgetClass)&multiSrcClassRec;
 
+static XrmQuark XtQEstring, XtQEfile;
+
 /************************************************************
  *
  * Semi-Public Interfaces.
@@ -206,7 +208,9 @@ static void
 ClassInitialize()
 {
   XawInitializeWidgetSet();
-  XtAddConverter( XtRString, XtRMultiType, CvtStringToMultiType,
+  XtQEstring = XrmPermStringToQuark(XtEstring);
+  XtQEfile   = XrmPermStringToQuark(XtEfile);
+  XtAddConverter(XtRString, XtRMultiType, CvtStringToMultiType,
 		 NULL, (Cardinal) 0);
 }
 
@@ -1429,30 +1433,22 @@ CvtStringToMultiType(args, num_args, fromVal, toVal)
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
 {
-  static XawAsciiType type;
-  static XrmQuark  XtQEstring = NULLQUARK;
-  static XrmQuark  XtQEfile;
+  static XawAsciiType type = XawAsciiString;
+  static XrmQuark XtQEfile;
   XrmQuark q;
-  char lowerName[BUFSIZ];
+  char lowerName[32];
 
-  if (XtQEstring == NULLQUARK) {
-    XtQEstring = XrmPermStringToQuark(XtEstring);
-    XtQEfile   = XrmPermStringToQuark(XtEfile);
-  }
-
-  if (strlen((char *) fromVal->addr) >= sizeof(lowerName)) {
-    XtStringConversionWarning((char *) fromVal->addr, XtRAsciiType);
-    return;
-  }
-  XmuCopyISOLatin1Lowered(lowerName, (char *) fromVal->addr);
+  XmuNCopyISOLatin1Lowered(lowerName, (char *)fromVal->addr,
+			   sizeof(lowerName));
   q = XrmStringToQuark(lowerName);
 
-  if (q == XtQEstring) type = XawAsciiString;
-  if (q == XtQEfile)  type = XawAsciiFile;
-  if (q == XtQEstring || q == XtQEfile) {
-    (*toVal).size = sizeof(XawAsciiType);
-    (*toVal).addr = (XPointer) &type;
-    return;
-  }
-  XtStringConversionWarning((char *) fromVal->addr, XtRAsciiType);
+  if (q == XtQEstring)
+    type = XawAsciiString;
+  if (q == XtQEfile)
+    type = XawAsciiFile;
+  else
+    XtStringConversionWarning((char *)fromVal->addr, XtRAsciiType);
+
+  (*toVal).size = sizeof(XawAsciiType);
+  (*toVal).addr = (XPointer) &type;
 }

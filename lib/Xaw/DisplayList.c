@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.4 1998/06/28 11:23:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.5 1998/06/28 11:30:05 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <X11/IntrinsicP.h>
 #include <X11/CoreP.h>
+#include <X11/Xmu/SysUtil.h>
 #include "Private.h"
 
 /*
@@ -236,20 +237,19 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
     {
       lp = cp;
       cp = read_token(cp, fname, sizeof(fname), &status);
-      if (status == DLEOF)
-	break;
-      if (status != DLNAME && status != DLEND)
+
+      if (status != DLNAME && status != DLEND && status != DLEOF)
 	{
 	  char msg[256];
 
-	  snprintf(msg, sizeof(msg),
-		   "Error parsing displayList at \"%s\"", lp);
+	  XmuSnprintf(msg, sizeof(msg),
+		      "Error parsing displayList at \"%s\"", lp);
 	  XtAppWarning(XtDisplayToApplicationContext(DisplayOfScreen(screen)),
 		       msg);
 	  XawDestroyDisplayList(dlist);
 	  return (NULL);
 	}
-      fp = fname; 
+      fp = fname;
       while (1)
 	{
 	  fp = strchr(fp, ':');
@@ -259,15 +259,15 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 	}
       if (fp)
 	{
-	  snprintf(cname, fp - fname + 1, fname);
+	  XmuSnprintf(cname, fp - fname + 1, fname);
 	  bcopy(fp + 1, fname, strlen(fp));
 	  lc = cname[0] ? XawGetDisplayListClass(cname) : xlibc;
 	  if (!lc)
 	    {
 	      char msg[256];
 
-	      snprintf(msg, sizeof(msg),
-		       "Cannot find displayList class \"%s\"", cname);
+	      XmuSnprintf(msg, sizeof(msg),
+			  "Cannot find displayList class \"%s\"", cname);
 	      XtAppWarning(XtDisplayToApplicationContext
 			   (DisplayOfScreen(screen)), msg);
 	      XawDestroyDisplayList(dlist);
@@ -277,12 +277,15 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
       else
 	lc = xlibc;
 
+      if (status == DLEOF && !fname[0])
+	break;
+
       if ((info = _XawFindDLInfo(lc, fname)) == NULL)
 	{
 	  char msg[256];
 
-	  snprintf(msg, sizeof(msg),
-		   "Cannot find displayList procedure \"%s\"", fname);
+	  XmuSnprintf(msg, sizeof(msg),
+		      "Cannot find displayList procedure \"%s\"", fname);
 	  XtAppWarning(XtDisplayToApplicationContext(DisplayOfScreen(screen)),
 		       msg);
 	  XawDestroyDisplayList(dlist);
@@ -320,8 +323,8 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 	    {
 	      char msg[256];
 
-	      snprintf(msg, sizeof(msg),
-		       "Error parsing displayList at \"%s\"", lp);
+	      XmuSnprintf(msg, sizeof(msg),
+			  "Error parsing displayList at \"%s\"", lp);
 	      XtAppWarning(XtDisplayToApplicationContext
 			   (DisplayOfScreen(screen)), msg);
 	      XawDestroyDisplayList(dlist);

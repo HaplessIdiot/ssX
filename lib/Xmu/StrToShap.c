@@ -74,7 +74,7 @@ Boolean XmuCvtStringToShapeStyle(dpy, args, num_args, from, toVal, data)
     {
 	int style = 0;
 	char ch, *p = (char*)from->addr;
-	while (ch = *p++) {
+	while ((ch = *p++) != 0) {
 	    if (ch >= '0' && ch <= '9') {
 		style *= 10;
 		style += ch - '0';

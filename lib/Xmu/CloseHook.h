@@ -36,6 +36,7 @@ in this Software without prior written authorization from the X Consortium.
 #define _XMU_CLOSEHOOK_H_
 
 #include <X11/Xfuncproto.h>
+#include <X11/Xlibint.h>
 
 typedef XPointer CloseHook;
 

@@ -46,6 +46,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/Misc.h>
 #include <X11/Xaw/ToggleP.h>
+#include <X11/Xmu/SysUtil.h>
 
 /****************************************************************
  *
@@ -372,8 +373,9 @@ Widget w1, w2;
   ToggleWidget tw2 = (ToggleWidget) w2;
 
   if ( (tw1->toggle.radio_group != NULL) || (tw2->toggle.radio_group != NULL) ) {
-    (void) sprintf(error_buf, "%s %s", "Toggle Widget Error - Attempting",
-	    "to create a new toggle group, when one already exists.");
+    (void)XmuSnprintf(error_buf, sizeof(error_buf), "%s %s",
+		     "Toggle Widget Error - Attempting",
+		     "to create a new toggle group, when one already exists.");
     XtWarning(error_buf);
   }
 

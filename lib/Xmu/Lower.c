@@ -27,11 +27,21 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/Lower.c,v 1.1.1.1.12.2 1998/05/19 13:29:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lower.c,v 1.2 1998/06/28 08:59:57 dawes Exp $ */
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
 #include <X11/Xmu/CharSet.h>
+
+#include <stdio.h>
+
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#define Va_start(a,b) va_start(a,b)
+#else
+#include <varargs.h>
+#define Va_start(a,b) va_start(a)
+#endif
 
 /*
  * ISO Latin-1 case conversion routine
@@ -124,62 +134,69 @@ int XmuCompareISOLatin1 (first, second)
 }
 
 #if NeedFunctionPrototypes
-void _XmuNCopyISOLatin1Lowered(char *dst, _Xconst char *src, int size)
+void XmuNCopyISOLatin1Lowered(char *dst, _Xconst char *src, register int size)
 #else
-void _XmuNCopyISOLatin1Lowered(dst, src, size)
+void XmuNCopyISOLatin1Lowered(dst, src, size)
     char *dst, *src;
-    int size;
+    register int size;
 #endif
 {
-    register unsigned char *dest, *source;
-    int bytes;
+  register unsigned char *dest, *source;
+  register int c;
 
-    if (size <= 0)
-	return;
-
-    for (dest = (unsigned char *)dst, source = (unsigned char *)src, bytes = 0;
-	 *source && bytes < size - 1;
-	 source++, dest++, bytes++)
+  if (size > 0)
     {
-	if ((*source >= XK_A) && (*source <= XK_Z))
-	    *dest = *source + (XK_a - XK_A);
-	else if ((*source >= XK_Agrave) && (*source <= XK_Odiaeresis))
-	    *dest = *source + (XK_agrave - XK_Agrave);
-	else if ((*source >= XK_Ooblique) && (*source <= XK_Thorn))
-	    *dest = *source + (XK_oslash - XK_Ooblique);
-	else
-	    *dest = *source;
+      for (dest = (unsigned char *)dst, source = (unsigned char *)src;
+	   (c = *source) && size > 1;
+	   source++, dest++, size--)
+	{
+	  if (c >= XK_A && c <= XK_Z)
+	    *dest = c + (XK_a - XK_A);
+	  else if (c >= XK_Agrave && c <= XK_Odiaeresis)
+	    *dest = c + (XK_agrave - XK_Agrave);
+	  else if (c >= XK_Ooblique && c <= XK_Thorn)
+	    *dest = c + (XK_oslash - XK_Ooblique);
+	  else
+	    *dest = c;
+	}
+      *dest = '\0';
     }
-    *dest = '\0';
 }
 
-#if NeedFunctionPrototypes
-void _XmuNCopyISOLatin1Uppered(char *dst, _Xconst char *src, int size)
-#else
-void _XmuNCopyISOLatin1Uppered(dst, src, size)
-    char *dst, *src;
-    int size;
+#if NeedVarargsPrototypes
+int
+XmuSnprintf(char *str, int size, char *fmt, ...)
+#else 
+/* VARARGS3 */
+int
+XmuSnprintf(str, size, fmt, va_alist)
+     char *str, *fmt;
+     int size;
+     va_dcl
 #endif
 {
-    register unsigned char *dest, *source;
-    int bytes;
+  va_list ap;
+  int retval;
 
-    if (size <= 0)
-	return;
+  if (size <= 0)
+    return (size);
 
-    for (dest = (unsigned char *)dst, source = (unsigned char *)src, bytes = 0;
-	 *source && bytes < size - 1;
-	 source++, dest++, bytes++)
+  Va_start(ap, fmt);
+
+#ifndef HAS_SNPRINTF
+  retval = vsprintf(str, fmt, ap);
+  if (retval >= size)
     {
-	if ((*source >= XK_a) && (*source <= XK_z))
-	    *dest = *source - (XK_a - XK_A);
-	else if ((*source >= XK_agrave) && (*source <= XK_odiaeresis))
-	    *dest = *source - (XK_agrave - XK_Agrave);
-	else if ((*source >= XK_slash) && (*source <= XK_thorn))
-	    *dest = *source - (XK_oslash - XK_Ooblique);
-	else
-	    *dest = *source;
+      fprintf(stderr, "WARNING: buffer overflow detected!\n");
+      fflush(stderr);
+      abort();
     }
-    *dest = '\0';
+#else
+  retval = vsnprintf(str, size, fmt, ap);
+#endif
+
+  va_end(ap);
+
+  return (retval);
 }
 

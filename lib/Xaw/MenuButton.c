@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  */
 
-/* $XFree86: xc/lib/Xaw/MenuButton.c,v 3.2 1998/06/28 11:02:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MenuButton.c,v 3.3 1998/06/28 11:23:47 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -55,6 +55,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/MenuButtoP.h>
 
 #include "XawAlloc.h"
+
+#include <X11/Xmu/SysUtil.h>
 
 #include "Private.h"
 
@@ -181,16 +183,10 @@ Cardinal * num_params;
 
   if (menu == NULL) {
     char error_buf[BUFSIZ];
-    char *err1 = "MenuButton: Could not find menu widget named ";
-    char *perr;
-    int len;
-
-    len = strlen(err1) + strlen(mbw->menu_button.menu_name) + 1 + 1;
-    perr = XtStackAlloc(len, error_buf);
-    if (perr == NULL) return;
-    sprintf(perr, "%s%s.", err1, mbw->menu_button.menu_name);
-    XtAppWarning(XtWidgetToApplicationContext(w), perr);
-    XtStackFree(perr, error_buf);
+    (void)XmuSnprintf(error_buf, sizeof(error_buf), "MenuButton: %s %s.",
+		      "Could not find menu widget named",
+		      mbw->menu_button.menu_name);
+    XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
     return;
   }
   if (!XtIsRealized(menu))

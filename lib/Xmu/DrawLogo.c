@@ -1,4 +1,4 @@
-/* $XConsortium: DrawLogo.c,v 1.4 94/04/17 20:16:03 rws Exp $ */
+/* $XConsortium: DrawLogo.c,v 1.5 94/07/05 14:57:15 gildea Exp $ */
 
 /*
 
@@ -38,7 +38,7 @@ in this Software without prior written authorization from the X Consortium.
  *  if it is tiny.  Also makes the various linear elements of
  *  the logo line up as well as possible considering rasterization.
  */
-
+void
 XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
     Display *dpy;
     Drawable drawable;
@@ -46,9 +46,8 @@ XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
     int x, y;
     unsigned int width, height;
 {
-
     unsigned int size;
-    int d11, d21, d31;
+    int thin, gap, d31;
     XPoint poly[4];
 
     XFillRectangle(dpy, drawable, gcBack, x, y, width, height);
@@ -62,18 +61,23 @@ XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
     y += (height - size) >> 1;
 
 /*    
+ * Draw what will be the thin strokes.
+ *
  *           ----- 
  *          /    /
  *         /    /
  *        /    /
  *       /    /
  *      /____/
+ *           d
+ *
+ * Point d is 9/44 (~1/5) of the way across.
  */
 
-    d11 = (size / 11);
-    if (d11 < 1) d11 = 1;
-    d21 = (d11+3) / 4;
-    d31 = d11 + d11 + d21;
+    thin = (size / 11);
+    if (thin < 1) thin = 1;
+    gap = (thin+3) / 4;
+    d31 = thin + thin + gap;
     poly[0].x = x + size;              poly[0].y = y;
     poly[1].x = x + size-d31;          poly[1].y = y;
     poly[2].x = x + 0;                 poly[2].y = y + size;
@@ -81,6 +85,8 @@ XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
     XFillPolygon(dpy, drawable, gcFore, poly, 4, Convex, CoordModeOrigin);
 
 /*    
+ * Erase area not needed for lower thin stroke.
+ *
  *           ------ 
  *          /     /
  *         /  __ /
@@ -96,6 +102,8 @@ XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
     XFillPolygon(dpy, drawable, gcBack, poly, 4, Convex, CoordModeOrigin);
 
 /*    
+ * Erase area not needed for upper thin stroke.
+ *
  *           ------ 
  *          /  /  /
  *         /--/  /
@@ -111,6 +119,10 @@ XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
     XFillPolygon(dpy, drawable, gcBack, poly, 4, Convex, CoordModeOrigin);
 
 /*
+ * Draw thick stroke.
+ * Point b is 1/4 of the way across.
+ *
+ *      b
  * -----
  * \    \
  *  \    \
@@ -126,6 +138,8 @@ XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
     XFillPolygon(dpy, drawable, gcFore, poly, 4, Convex, CoordModeOrigin);
 
 /*    
+ * Erase to create gap.
+ *
  *          /
  *         /
  *        /
@@ -133,9 +147,9 @@ XmuDrawLogo(dpy, drawable, gcFore, gcBack, x, y, width, height)
  *      /
  */
 
-    poly[0].x = x + size- d11;        poly[0].y = y;
-    poly[1].x = x + size-( d11+d21);  poly[1].y = y;
-    poly[2].x = x + d11;              poly[2].y = y + size;
-    poly[3].x = x + d11 + d21;        poly[3].y = y + size;
+    poly[0].x = x + size- thin;        poly[0].y = y;
+    poly[1].x = x + size-( thin+gap);  poly[1].y = y;
+    poly[2].x = x + thin;              poly[2].y = y + size;
+    poly[3].x = x + thin + gap;        poly[3].y = y + size;
     XFillPolygon(dpy, drawable, gcBack, poly, 4, Convex, CoordModeOrigin);
 }

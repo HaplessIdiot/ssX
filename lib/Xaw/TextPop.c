@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.2 1998/06/28 08:41:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.3 1998/06/28 11:23:52 dawes Exp $ */
 
 /************************************************************
  *
@@ -61,6 +61,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xmu/CharSet.h>
+#include <X11/Xmu/SysUtil.h>
 #include "XawI18n.h"
 #include <stdio.h>
 #include <X11/Xos.h>		/* for O_RDONLY */
@@ -238,7 +239,7 @@ XtPointer call_data;		/* unused */
   char buf[BUFSIZ], msg[BUFSIZ];
   Widget temp_widget;
 
-  (void) sprintf(buf, "%s.%s", FORM_NAME, TEXT_NAME);
+  (void)XmuSnprintf(buf, sizeof(buf), "%s.%s", FORM_NAME, TEXT_NAME);
   if ( (temp_widget = XtNameToWidget(ctx->text.file_insert, buf)) == NULL ) {
     (void) strcpy(msg, 
 	   "*** Error: Could not get text widget from file insert popup");
@@ -249,7 +250,8 @@ XtPointer call_data;		/* unused */
       return;
     }
     else
-      (void) sprintf( msg, "*** Error: %s ***", strerror(errno));
+      (void)XmuSnprintf(msg, sizeof(msg), "*** Error: %s ***",
+			strerror(errno));
 
   (void)SetResourceByName(ctx->text.file_insert, 
 			  LABEL_NAME, XtNlabel, (XtArgVal) msg);
@@ -527,9 +529,9 @@ Cardinal * num_params;
 #endif
 
   if ( (*num_params < 1) || (*num_params > 2) ) {
-    (void) sprintf(buf, "%s %s\n%s", SEARCH_HEADER, 
-	    "This action must have only", 
-	    "one or two parameters");
+    (void)XmuSnprintf(buf, sizeof(buf), "%s %s\n%s", SEARCH_HEADER, 
+		      "This action must have only", 
+		      "one or two parameters");
     XtAppWarning(XtWidgetToApplicationContext(w), buf);
     return;
   }
@@ -554,9 +556,9 @@ Cardinal * num_params;
     dir = XawsdRight;
     break;
   default:
-    (void) sprintf(buf, "%s %s\n%s", SEARCH_HEADER, 
-	    "The first parameter must be",
-	    "Either 'backward' or 'forward'");
+    (void)XmuSnprintf(buf, sizeof(buf), "%s %s\n%s", SEARCH_HEADER, 
+		      "The first parameter must be",
+		      "Either 'backward' or 'forward'");
     XtAppWarning(XtWidgetToApplicationContext(w), buf);
     return;
   }
@@ -809,8 +811,6 @@ DoSearch(search)
 struct SearchAndReplace * search;
 {
   char msg[BUFSIZ];
-  char *pmsg;
-  int len;
   Widget tw = XtParent(search->search_popup);
   XawTextPosition pos;
   XawTextScanDirection dir;
@@ -834,20 +834,11 @@ struct SearchAndReplace * search;
    /* The Raw string in find.ptr may be WC I can't use here, so I re - call 
    GetString to get a tame version. */
 
-  if (pos == XawTextSearchError) {
-    char *msg1 = "Could not find string ``";
-    char *msg2 = "''.";
-    len = strlen(msg1) + strlen(msg2) +
-		strlen(GetString( search->search_text )) + 1;
-    pmsg = XtStackAlloc(len, msg);
-    if (pmsg != NULL) {
-      (void) sprintf( pmsg, "%s%s%s", msg1, GetString( search->search_text ),
-			msg2);
-    } else {
-      pmsg = msg;
-      (void) sprintf( pmsg, "Could not find string");
-    }
-  } else {
+  if (pos == XawTextSearchError)
+    (void)XmuSnprintf(msg, sizeof(msg),
+		      "Could not find string ``%s''.",
+		      GetString(search->search_text));
+  else {
     if (dir == XawsdRight)
       XawTextSetInsertionPoint( tw, pos + text.length);
     else
@@ -859,8 +850,7 @@ struct SearchAndReplace * search;
   }
   
   XawTextUnsetSelection(tw);
-  SetSearchLabels(search, pmsg, "", TRUE);
-  XtStackFree(pmsg, msg);
+  SetSearchLabels(search, msg, "", TRUE);
   return(FALSE);
 }
 
@@ -987,26 +977,14 @@ Boolean once_only, show_current;
       if ( (new_pos == XawTextSearchError) ) {
 	if (count == 0) {
 	  char msg[BUFSIZ];
-	  char *pmsg;
-	  int len;
-	  char *msg1 = "*** Error: Could not find string ``";
-	  char *msg2 = "''. ***";
 
              /* The Raw string in find.ptr may be WC I can't use here, 
 		so I call GetString to get a tame version.*/
 
-	  len = strlen(msg1) + strlen(msg2) +
-		strlen(GetString( search->search_text )) + 1;
-	  pmsg = XtStackAlloc(len, msg);
-	  if (pmsg != NULL) {
-	    (void) sprintf( pmsg, "%s%s%s", msg1,
-				GetString( search->search_text ), msg2);
-	  } else {
-	    pmsg = msg;
-	    (void) sprintf(pmsg, "*** Error: Could not find string ***");
-	  }
-	  SetSearchLabels(search, pmsg, "", TRUE);
-	  XtStackFree(pmsg, msg);
+	  (void)XmuSnprintf(msg, sizeof(msg),
+			    "*** Error: Could not find string ``%s''. ***",
+			    GetString( search->search_text ));
+	  SetSearchLabels(search, msg, "", TRUE);
 	  return(FALSE);
 	}
 	else
@@ -1029,22 +1007,10 @@ Boolean once_only, show_current;
 
     if (XawTextReplace(tw, pos, end_pos, &replace) != XawEditDone) {
       char msg[BUFSIZ];
-      char *pmsg;
-      int len;
-      char *msg1 = "' with '";
-      char *msg2 = "'. ***";
 
-      len = 1 + strlen(msg1) + strlen(msg2) + strlen(find.ptr) +
-		strlen(replace.ptr) + 1;
-      pmsg = XtStackAlloc(len, msg);
-      if (pmsg != NULL) {
-	(void) sprintf( pmsg, "`%s%s%s%s", find.ptr, msg1, replace.ptr, msg2);
-      } else {
-	pmsg = msg;
-	(void) sprintf(pmsg, "string ***");
-      }
+      (void)XmuSnprintf(msg, sizeof(msg),
+			"'%s' with '%s'. ***", find.ptr, replace.ptr);
       SetSearchLabels(search, "*** Error while replacing", msg, TRUE);
-      XtStackFree(pmsg, msg);
       return(FALSE);
     }      
 
@@ -1195,20 +1161,13 @@ XtArgVal value;
 {
   Widget temp_widget;
   char buf[BUFSIZ];
-  char *pbuf;
-  int len;
 
-  len = strlen(FORM_NAME) + strlen(name) + 2;
-  pbuf = XtStackAlloc(len, buf);
-  if (pbuf == NULL) return FALSE;
-  (void) sprintf(pbuf, "%s.%s", FORM_NAME, name);
+  (void)XmuSnprintf(buf, sizeof(buf), "%s.%s", FORM_NAME, name);
 
-  if ( (temp_widget = XtNameToWidget(shell, pbuf)) != NULL) {
+  if ( (temp_widget = XtNameToWidget(shell, buf)) != NULL) {
     SetResource(temp_widget, res_name, value);
-    XtStackFree(pbuf, buf);
     return(TRUE);
   }
-  XtStackFree(pbuf, buf);
   return(FALSE);
 }
 
@@ -1432,7 +1391,7 @@ static void WMProtocols(w, event, params, num_params)
 
 	Widget cancel;
 	char descendant[DISMISS_NAME_LEN + 2];
-	(void) sprintf(descendant, "*%s", DISMISS_NAME);
+	(void)XmuSnprintf(descendant, sizeof(descendant), "*%s", DISMISS_NAME);
 	cancel = XtNameToWidget(w, descendant);
 	if (cancel) XtCallCallbacks(cancel, XtNcallback, (XtPointer)NULL);
     }

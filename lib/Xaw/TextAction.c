@@ -33,6 +33,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/Misc.h>
 #include <X11/Xmu/StdSel.h>		/* for XmuConvertStandardSelection */
 #include <X11/Xmu/Atoms.h>		/* for XA_COMPOUND_TEXT */
+#include <X11/Xmu/SysUtil.h>
 #include <X11/Xaw/TextP.h>
 #include <X11/Xaw/MultiSrcP.h>
 #include <X11/Xaw/XawImP.h>
@@ -1819,8 +1820,9 @@ Cardinal* num_params;
 
   if ( ( mult = atoi( params[0] ) ) == 0 ) {
       char buf[ BUFSIZ ];
-      sprintf(buf, "%s %s", "Xaw Text Widget: multiply() argument",
-	    "must be a number greater than zero, or 'Reset'." );
+      XmuSnprintf(buf, sizeof(buf),
+		  "%s %s", "Xaw Text Widget: multiply() argument",
+		  "must be a number greater than zero, or 'Reset'.");
       XtAppError( XtWidgetToApplicationContext( w ), buf );
       XBell( XtDisplay( w ), 50 );
       return;

@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/StrToBS.c,v 1.1.1.1.12.2 1998/05/16 09:05:27 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToBS.c,v 1.2 1998/06/28 08:59:57 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include "Converters.h"
@@ -44,7 +44,7 @@ XmuCvtStringToBackingStore (args, num_args, fromVal, toVal)
     XrmValuePtr fromVal;
     XrmValuePtr toVal;
 {
-    char	lowerString[1024];
+    char	lowerString[32];
     XrmQuark	q;
     static int	backingStoreType;
     static XrmQuark XtQEnotUseful, XtQEwhenMapped, XtQEalways, XtQEdefault;
@@ -63,8 +63,8 @@ XmuCvtStringToBackingStore (args, num_args, fromVal, toVal)
 	XtQEdefault = XrmStringToQuark(lowerString);
 	haveQuarks = 1;
     }
-    _XmuNCopyISOLatin1Lowered (lowerString, (char *) fromVal->addr,
-				sizeof(lowerString));
+    XmuNCopyISOLatin1Lowered (lowerString, (char *) fromVal->addr,
+			      sizeof(lowerString));
     q = XrmStringToQuark (lowerString);
     if (q == XtQEnotUseful) {
 	backingStoreType = NotUseful;

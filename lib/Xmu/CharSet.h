@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/CharSet.h,v 1.1.1.1.12.1 1998/05/16 09:05:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CharSet.h,v 1.2 1998/06/28 08:59:55 dawes Exp $ */
 
 /*
  * The interfaces described by this header file are for miscellaneous utilities
@@ -62,16 +62,7 @@ extern int XmuCompareISOLatin1(
 #endif
 );
 
-/* These are for internal use only, and are implementation dependent */
-extern void _XmuNCopyISOLatin1Lowered(
-#if NeedFunctionPrototypes
-    char *		/* dst_return */,
-    _Xconst char *	/* src */,
-    int			/* size */
-#endif
-);
-
-extern void _XmuNCopyISOLatin1Uppered(
+extern void XmuNCopyISOLatin1Lowered(
 #if NeedFunctionPrototypes
     char *		/* dst_return */,
     _Xconst char *	/* src */,

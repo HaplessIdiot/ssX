@@ -119,6 +119,14 @@ SOFTWARE.
 #define XtCBitmap "Bitmap"
 #endif
 
+#ifndef XtNlabelX
+#define XtNlabelX "labelX"
+#endif
+
+#ifndef XtNlabelY
+#define XtNlabelY "labelY"
+#endif
+
 /* Class record constants */
 
 extern WidgetClass labelWidgetClass;

@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xmu/StrToOrnt.c,v 1.1.1.1.12.2 1998/05/16 09:05:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToOrnt.c,v 1.2 1998/06/28 08:59:59 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -51,21 +51,22 @@ XmuCvtStringToOrientation(args, num_args, fromVal, toVal)
     static	XrmQuark  XtQEvertical;
     static	int	  haveQuarks = 0;
     XrmQuark	q;
-    char	lowerName[1000];
+    char	lowerName[32];
 
     if (!haveQuarks) {
 	XtQEhorizontal = XrmPermStringToQuark(XtEhorizontal);
 	XtQEvertical   = XrmPermStringToQuark(XtEvertical);
 	haveQuarks = 1;
     }
-    _XmuNCopyISOLatin1Lowered(lowerName, (char *) fromVal->addr,
-				sizeof(lowerName));
+    XmuNCopyISOLatin1Lowered(lowerName, (char *) fromVal->addr,
+			     sizeof(lowerName));
     q = XrmStringToQuark(lowerName);
     if (q == XtQEhorizontal) {
     	orient = XtorientHorizontal;
 	done(&orient, XtOrientation);
 	return;
     }
+    XtStringConversionWarning((char *) fromVal->addr, XtROrientation);
     if (q == XtQEvertical) {
     	orient = XtorientVertical;
 	done(&orient, XtOrientation);

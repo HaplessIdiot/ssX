@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.4 1998/06/28 11:02:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.5 1998/06/28 11:30:04 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -35,6 +35,7 @@
 #include <X11/StringDefs.h>
 #include <X11/CoreP.h>
 #include <X11/Constraint.h>
+#include <X11/Xmu/SysUtil.h>
 #include "Private.h"
 
 #ifdef __EMX__
@@ -290,8 +291,8 @@ get_token(XawEvalInfo *info)
   {
     char msg[256];
 
-    snprintf(msg, sizeof(msg),
-	     "evaluate(): bad token \"%c\" at \"%s\"", ch, info->cp - 1);
+    XmuSnprintf(msg, sizeof(msg),
+		"evaluate(): bad token \"%c\" at \"%s\"", ch, info->cp - 1);
 
     XtAppWarning(XtWidgetToApplicationContext(info->widget), msg);
   }
@@ -346,8 +347,8 @@ prim(XawEvalInfo *info)
 	  char msg[256];
 
 	  info->token = ERROR;
-	  snprintf(msg, sizeof(msg),
-		   "evaluate(): expecting ), at \"%s\"", info->lp);
+	  XmuSnprintf(msg, sizeof(msg),
+		      "evaluate(): expecting ), at \"%s\"", info->lp);
 	  XtAppWarning(XtWidgetToApplicationContext(info->widget), msg);
 	  return (False);
 	}
@@ -359,8 +360,8 @@ prim(XawEvalInfo *info)
 	char msg[256];
 
 	info->token = ERROR;
-	snprintf(msg, sizeof(msg),
-		 "evaluate(): sintax error, at \"%s\"", info->lp);
+	XmuSnprintf(msg, sizeof(msg),
+		    "evaluate(): sintax error, at \"%s\"", info->lp);
 	XtAppWarning(XtWidgetToApplicationContext(info->widget), msg);
       } return (False);
     }
@@ -409,7 +410,8 @@ XawSetValuesAction(Widget w, XEvent *event,
 	{
 	  char msg[256];
 
-	  snprintf(msg, sizeof(msg), "set-values(): bad resource name \"%s\"",
+	  XmuSnprintf(msg, sizeof(msg),
+		      "set-values(): bad resource name \"%s\"",
 		   params[count]);
 	  XtAppWarning(XtWidgetToApplicationContext(w), msg);
           continue;
@@ -430,9 +432,9 @@ XawSetValuesAction(Widget w, XEvent *event,
 	  {
 	    char msg[256];
 
-	    snprintf(msg, sizeof(msg),
-		     "set-values(): bad resource size for \"%s\"",
-		     params[count]);
+	    XmuSnprintf(msg, sizeof(msg),
+			"set-values(): bad resource size for \"%s\"",
+			params[count]);
 	    XtAppWarning(XtWidgetToApplicationContext(w), msg);
 	  } continue;
 	}
@@ -567,7 +569,8 @@ XawConvertActionRes(XawActionResList *list, Widget w, String name)
     {
       char msg[256];
 
-      snprintf(msg, sizeof(msg), "convert(): bad resource name \"\%s\"", name);
+      XmuSnprintf(msg, sizeof(msg),
+		  "convert(): bad resource name \"%s\"", name);
       XtAppWarning(XtWidgetToApplicationContext(w), msg);
       return (NULL);
     }
@@ -597,8 +600,8 @@ XawConvertActionRes(XawActionResList *list, Widget w, String name)
       {
         char msg[256];
 
-        snprintf(msg, sizeof(msg), "convert(): bad resource size for \"%s\"",
-		 name);
+        XmuSnprintf(msg, sizeof(msg),
+		    "convert(): bad resource size for \"%s\"", name);
 	XtAppWarning(XtWidgetToApplicationContext(w), name);
       } return (NULL);
     }
@@ -623,17 +626,17 @@ XawPrintActionErrorMsg(String action_name, Widget w,
   char msg[1024];
   int size, index;
 
-  size = snprintf(msg, sizeof(msg), "%s(): bad number of parameters.\n\t(",
-		  action_name, action_name);
+  size = XmuSnprintf(msg, sizeof(msg), "%s(): bad number of parameters.\n\t(",
+		     action_name, action_name);
 
   index = 0;
   while (index < *num_params - 1 && size < sizeof(msg))
-    size += snprintf(&msg[size], sizeof(msg) - size, "%s, ",
-		     params[index++]); 
+    size += XmuSnprintf(&msg[size], sizeof(msg) - size, "%s, ",
+			params[index++]); 
   if (*num_params)
-    snprintf(&msg[size], sizeof(msg) - size, "%s)", params[index]);
+    XmuSnprintf(&msg[size], sizeof(msg) - size, "%s)", params[index]);
   else
-    snprintf(&msg[size], sizeof(msg) - size, ")");
+    XmuSnprintf(&msg[size], sizeof(msg) - size, ")");
   XtAppWarning(XtWidgetToApplicationContext(w), msg);
 }
 
@@ -876,8 +879,8 @@ XawDeclareActionVar(XawActionVarList *list, String name, String value)
     {
       char msg[256];
 
-      snprintf(msg, sizeof(msg), "declare(): variable name must begin with "
-	       "\'%c\', at %s = %s", XAW_PRIV_VAR_PREFIX, name, value);
+      XmuSnprintf(msg, sizeof(msg), "declare(): variable name must begin with "
+		  "\'%c\', at %s = %s", XAW_PRIV_VAR_PREFIX, name, value);
       XtAppWarning(XtWidgetToApplicationContext(list->widget), msg);
       return;
     }

@@ -81,7 +81,8 @@ Status XmuVisualStandardColormaps(dpy, screen, visualid, depth, replace,
     int			n;
     long		vinfo_mask;
     XVisualInfo		vinfo_template, *vinfo;
-        
+
+    status = 0;
     vinfo_template.screen = screen;
     vinfo_template.visualid = visualid;
     vinfo_template.depth = depth;

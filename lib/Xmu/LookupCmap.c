@@ -37,7 +37,11 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xutil.h>
 #include <X11/Xmu/StdCmap.h>
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
 extern char *malloc();
+#endif
 static Status lookup();
 
 /*

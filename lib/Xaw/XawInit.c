@@ -37,6 +37,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Intrinsic.h>
 #include <X11/Vendor.h>
 #include <X11/Xaw/XawInit.h>
+#include "Private.h"
 
 void XawInitializeWidgetSet ()
 {

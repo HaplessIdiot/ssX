@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.1 1998/06/28 11:23:48 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.2 1998/06/28 11:30:06 dawes Exp $ */
 
 #if DO_SYSLOG
 #include <sys/types.h>
@@ -755,7 +755,8 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 			  &hotX, &hotY) == BitmapSuccess)
     {
       pixmap = XCreatePixmapFromBitmapData(DisplayOfScreen(screen),
-					   RootWindowOfScreen(screen), data,
+					   RootWindowOfScreen(screen),
+					   (char *)data,
 					   width, height, fg, bg, depth);
       if (data)
 	XFree(data);

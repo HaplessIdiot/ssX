@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.3 1998/06/28 11:02:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.4 1998/06/28 11:23:49 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -47,7 +47,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/Cardinals.h>
 
 #include <X11/Xmu/Initer.h>
-#include <X11/Xmu/CharSet.h>
+#include <X11/Xmu/SysUtil.h>
 
 #include "XawAlloc.h"
 
@@ -632,7 +632,7 @@ Cardinal * num_params;
 
   if (*num_params != 1) {
     char error_buf[BUFSIZ];
-    (void) sprintf(error_buf, "%s %s",
+    (void)XmuSnprintf(error_buf, sizeof(error_buf), "%s %s",
 	    "Xaw - SimpleMenuWidget: position menu action expects only one",
 	    "parameter which is the name of the menu.");
     XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
@@ -641,17 +641,10 @@ Cardinal * num_params;
 
   if ( (menu = FindMenu(w, params[0])) == NULL) {
     char error_buf[BUFSIZ];
-    char *err1 = "Xaw - SimpleMenuWidget: could not find menu named: ";
-    char *perr;
-    int len;
-
-    len = strlen(err1) + strlen(params[0]) + 2 + 1;
-    perr = XtStackAlloc(len, error_buf);
-    if (perr == NULL)
-	return;
-    sprintf(perr, "%s'%s'", err1, params[0]);
-    XtAppWarning(XtWidgetToApplicationContext(w), perr);
-    XtStackFree(perr, error_buf);
+    (void)XmuSnprintf(error_buf, sizeof(error_buf), "%s '%s'",
+		      "Xaw - SimpleMenuWidget: could not find menu named: ",
+		      params[0]);
+    XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
     return;
   }
   
@@ -870,9 +863,10 @@ Widget w;
 	 (smw->simple_menu.label != NULL) ) {
 	char error_buf[BUFSIZ];
 
-	(void) sprintf(error_buf, "Xaw Simple Menu Widget: %s or %s, %s",
-		"label string is NULL", "label already exists", 
-		"no label is being created.");
+	(void)XmuSnprintf(error_buf, sizeof(error_buf),
+			  "Xaw Simple Menu Widget: %s or %s, %s",
+			  "label string is NULL", "label already exists", 
+			  "no label is being created.");
 	XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
 	return;
     }
@@ -1142,8 +1136,9 @@ XPoint * location;
 	if (XQueryPointer(XtDisplay(w), XtWindow(w), &junk1, &junk2, 
 			  &root_x, &root_y, &junkX, &junkY, &junkM) == FALSE) {
 	    char error_buf[BUFSIZ];
-	    (void) sprintf(error_buf, "%s %s", "Xaw Simple Menu Widget:",
-		    "Could not find location of mouse pointer");
+	    (void)XmuSnprintf(error_buf, sizeof(error_buf),
+			      "%s %s", "Xaw Simple Menu Widget:",
+			      "Could not find location of mouse pointer");
 	    XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
 	    return;
 	}
@@ -1406,7 +1401,7 @@ CalculateNewSize(w, width_return, height_return)
   int width_kid, height_kid;
   int width, height, tmp_w, tmp_h, max_dim;
   short vadd, hadd;
-  int n, columns, insert_pos;
+  int n, columns, insert_pos, test_h;
   Boolean try_layout = False;
 
   hadd = xaw->simple_menu.left_margin + xaw->simple_menu.right_margin;
@@ -1425,7 +1420,7 @@ CalculateNewSize(w, width_return, height_return)
     max_dim = XtHeight(w);
   max_dim -= vadd;
 
-  width = height = tmp_w = tmp_h = n = 0;
+  width = height = tmp_w = tmp_h = n = test_h = 0;
   columns = 1;
   for (i = xaw->simple_menu.label ? 1 : 0;
        i < xaw->composite.num_children;
@@ -1436,6 +1431,14 @@ CalculateNewSize(w, width_return, height_return)
 	continue;
       width_kid = XtWidth(kid);
       height_kid = XtHeight(kid);
+
+      if (try_layout)
+	{
+	  if (!test_h)
+	    test_h = height_kid;
+	  else if (test_h != height_kid)
+	    try_layout = False;
+	}
 
       if (n && (height + height_kid > max_dim))
 	{
@@ -1453,7 +1456,7 @@ CalculateNewSize(w, width_return, height_return)
       ++n;
     }
 
-  insert_pos = height + vadd + xaw->simple_menu.bottom_margin;
+  insert_pos = height + vadd;
   height = tmp_h + vadd;
   width += tmp_w + hadd;
 
@@ -1467,10 +1470,10 @@ CalculateNewSize(w, width_return, height_return)
     {
       int space;
 
-      kid = xaw->composite.children[xaw->composite.num_children - 1];
-      space = height - insert_pos - XtHeight(kid);
+      space = height - insert_pos - vadd;
+      space -= (space % test_h) * columns;
 
-      if (space > XtHeight(kid) * columns)
+      if (space > test_h * columns)
 	{
 	  *height_return -= space / columns;
 	  CalculateNewSize(w, width_return, height_return);
