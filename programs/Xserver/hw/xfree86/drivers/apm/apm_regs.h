@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.3 1999/08/28 09:00:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.4 1999/09/27 06:29:37 dawes Exp $ */
 
 
 
@@ -25,17 +25,26 @@
 #define MIN(a,b)	((a) < (b) ? (a) : (b))
 #endif
 /* Memory mapped access to extended registers */
-#define RDXB_M(addr)     (*(volatile unsigned char  *)(pApm->MemMap+(addr)))
-#define RDXW_M(addr)     (*(volatile unsigned short *)(pApm->MemMap+(addr)))
-#define RDXL_M(addr)     (*(volatile unsigned int   *)(pApm->MemMap+(addr)))
+#define RDXB_M(addr)     (MMIO_IN8 (pApm->MemMap, (addr)))
+#define RDXW_M(addr)     (MMIO_IN16(pApm->MemMap, (addr)))
+#define RDXL_M(addr)     (MMIO_IN32(pApm->MemMap, (addr)))
 #define WRXB_M(addr,val)  do { if (check08((addr), (val))) { \
-			*(volatile unsigned char  *)(pApm->MemMap+(addr)) = (val);	\
+			MMIO_OUT8 (pApm->MemMap, (addr), (val));	\
+			/*xf86DrvMsg(xf86Screens[pApm->pScreen->myNum]->scrnIndex, X_INFO, \
+				    "File %s, line %d,	%02X <-       %02X\n", \
+				    __FILE__, __LINE__, (addr), (val) & 255); */\
 			curr08[MIN((addr), 0x80)] = (val); }} while (0)
 #define WRXW_M(addr,val)  do { if (check16((addr), (val))) { \
-			*(volatile unsigned short *)(pApm->MemMap+(addr)) = (val);	\
+			MMIO_OUT16(pApm->MemMap, (addr), (val));	\
+			/*xf86DrvMsg(xf86Screens[pApm->pScreen->myNum]->scrnIndex, X_INFO, \
+				    "File %s, line %d,	%02X <-     %04X\n", \
+				    __FILE__, __LINE__, (addr), (val)&65535); */\
 			curr16[MIN(((addr) / 2), 0x40)] = (val); }} while (0)
 #define WRXL_M(addr,val)  do { if (check32((addr), (val))) { \
-			*(volatile unsigned int   *)(pApm->MemMap+(addr)) = (val);	\
+			MMIO_OUT32(pApm->MemMap, (addr), (val));	\
+			/*xf86DrvMsg(xf86Screens[pApm->pScreen->myNum]->scrnIndex, X_INFO, \
+				    "File %s, line %d,	%02X <- %08X\n", \
+				    __FILE__, __LINE__, (addr), (val)); */\
 			curr32[MIN(((addr) / 4), 0x20)] = (val); }} while (0)
 
 /* IO port access to extended registers */
@@ -91,6 +100,7 @@
 #define ApmReadDacData()	APMVGAB(0x3C9)
 
 #define STATUS()			(RDXL(0x1fc))
+#define STATUS_IOP()			(RDXL_IOP(0x1fc))
 #define STATUS_FIFO			(0x0f)
 #define STATUS_HOSTBLTBUSY		(1 << 8)
 #define STATUS_ENGINEBUSY		(1 << 10)

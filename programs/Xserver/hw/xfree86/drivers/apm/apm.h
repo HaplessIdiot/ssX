@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.7 1999/08/28 09:00:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.9 2000/02/08 13:13:10 eich Exp $ */
 
 
 /* Everything using inb/outb, etc needs "compiler.h" */
@@ -63,6 +63,9 @@
 /* DDC support */
 #include "xf86DDC.h"
 
+#include "xf86xv.h"
+#include "Xv.h"
+
 #ifdef TRUE
 #undef TRUE
 #endif
@@ -100,8 +103,9 @@ typedef struct {
 typedef struct {
     int			displayWidth, displayHeight;
     int			bitsPerPixel, bytesPerScanline;
-    int			Scanlines;
+    int			depth, Scanlines;
     unsigned int	Setup_DEC;
+    DisplayModePtr	pMode;
 } ApmFBLayout;
 
 #define APM_CACHE_NUMBER	32
@@ -123,7 +127,7 @@ typedef struct {
     Bool		UnlockCalled;
     int			xbase;
     unsigned char	savedSR10;
-    unsigned char	d9, db;
+    unsigned char	c9, d9, db;
     unsigned long	saveCmd;
     pointer		FontInfo;
     Bool		hwCursor;
@@ -134,10 +138,9 @@ typedef struct {
     Bool		NoAccel;  /* Do we use XAA acceleration architecture */
     int			MinClock;                        /* Min ramdac clock */
     int			MaxClock;                        /* Max ramdac clock */
-    int			apmMMIO_Init;
     ApmFBLayout		CurrentLayout, SavedLayout;
     EntityInfoPtr	pEnt;
-    XAAInfoRecPtr	AccelInfoRec;
+    XAAInfoRecPtr	AccelInfoRec, DGAXAAInfo;
     xf86CursorInfoPtr	CursorInfoRec;
     int			DGAactive, numDGAModes;
     DGAModePtr		DGAModes;
@@ -145,6 +148,7 @@ typedef struct {
     int			OffscreenReserved;
     int			blitxdir, blitydir;
     Bool		apmTransparency, apmClip, ShadowFB, I2C;
+    int			rop, Bg8x8, Fg8x8;
     I2CBusPtr		I2CPtr;
     struct ApmStippleCacheRec {
 	XAACacheInfoRec		apmStippleCache;
@@ -156,8 +160,27 @@ typedef struct {
     ScreenPtr		pScreen;
     int			Generation;
     int			apmLock, pixelStride, RushY[7], CopyMode;
+    int			PutImageStride;
     Bool		(*DestroyPixmap)(PixmapPtr);
     PixmapPtr		(*CreatePixmap)(ScreenPtr, int, int, int);
+    void (*SetupForSolidFill)(ScrnInfoPtr pScrn, int color, int rop,
+					unsigned int planemask);
+    void (*SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y,
+				       int w, int h);
+    void (*SetupForSolidFill24)(ScrnInfoPtr pScrn, int color, int rop,
+					unsigned int planemask);
+    void (*SubsequentSolidFillRect24)(ScrnInfoPtr pScrn, int x, int y,
+				       int w, int h);
+    void (*SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
+					  int rop, unsigned int planemask,
+                                          int transparency_color);
+    void (*SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
+					    int x2, int y2, int w, int h);
+    void (*SetupForScreenToScreenCopy24)(ScrnInfoPtr pScrn, int xdir, int ydir,
+					  int rop, unsigned int planemask,
+                                          int transparency_color);
+    void (*SubsequentScreenToScreenCopy24)(ScrnInfoPtr pScrn, int x1, int y1,
+					    int x2, int y2, int w, int h);
     int			MemClk;
     unsigned char	*ShadowPtr;
     int			ShadowPitch;
@@ -165,6 +188,9 @@ typedef struct {
     memType		ScratchMemPtr, ScratchMemEnd;
     int			ScratchMemWidth;
     CARD32		color;
+    XF86VideoAdaptorPtr	adaptor;
+    int			timerIsOn;
+    Time		offTime;
 } ApmRec, *ApmPtr;
 
 #define curr		((unsigned char *)pApm->regcurr)
@@ -204,12 +230,14 @@ typedef struct {
 extern int	ApmHWCursorInit(ScreenPtr pScreen);
 extern int	ApmDGAInit(ScreenPtr pScreen);
 extern int	ApmAccelInit(ScreenPtr pScreen);
-extern Bool	ApmI2CInit(ScreenPtr pScreen);
+extern Bool	ApmI2CInit(ScrnInfoPtr pScrn);
 extern void	XFree86RushExtensionInit(ScreenPtr pScreen);
-extern void	ApmCheckMMIO_Init(ScrnInfoPtr pScrn);
-extern void	ApmCheckMMIO_Init_IOP(ScrnInfoPtr pScrn);
-extern void	ApmCheckMMIO_Init24(ScrnInfoPtr pScrn);
-extern void	ApmCheckMMIO_Init24_IOP(ScrnInfoPtr pScrn);
+extern void	ApmInitVideo(ScreenPtr pScreen);
+extern void	ApmInitVideo_IOP(ScreenPtr pScreen);
+extern void	ApmSetupXAAInfo(ApmPtr pApm, XAAInfoRecPtr pXAAinfo);
+extern Bool     ApmSwitchMode(int scrnIndex, DisplayModePtr mode,
+                                  int flags);
+extern void     ApmAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 extern int	ApmPixmapIndex;
 #define APM_GET_PIXMAP_PRIVATE(pix)\

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_i2c.c,v 1.1 1999/03/21 07:35:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_i2c.c,v 1.2 1999/08/28 09:00:59 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -18,11 +18,14 @@ WaitForFifo(ApmPtr pApm, int slots)
 #define MAXLOOP 1000000
 
     for(i = 0; i < MAXLOOP; i++) {
-      if ((STATUS() & STATUS_FIFO) >= slots)
+      if ((STATUS_IOP() & STATUS_FIFO) >= slots)
 	break;
     }
     if (i == MAXLOOP) {
-      FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", STATUS());
+      unsigned int status = STATUS_IOP();
+
+      WRXB_IOP(0x1FF, 0);
+      FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", status);
     }
   }
 }
@@ -30,33 +33,42 @@ WaitForFifo(ApmPtr pApm, int slots)
 static void
 ApmI2CPutBits(I2CBusPtr b, int clock,  int data)
 {
-    unsigned int reg;
+    unsigned int	reg;
+    unsigned char	lock;
     ApmPtr pApm = ((ApmPtr)b->DriverPrivate.ptr);
 
+    lock = rdinx(0x3C4, 0x10);
+    wrinx(0x3C4, 0x10, 0x12);
     WaitForFifo(pApm, 2);
-    reg = (RDXB(0xD0) & 0x07) | 0x60;
+    reg = (RDXB_IOP(0xD0) & 0x07) | 0x60;
     if(clock) reg |= 0x08;
     if(data)  reg |= 0x10;
-    WRXB(0xD0, reg);
+    WRXB_IOP(0xD0, reg);
+    if (lock)
+	wrinx(0x3C4, 0x10, 0);
 }
 
 static void
 ApmI2CGetBits(I2CBusPtr b, int *clock, int *data)
 {
-    unsigned int reg;
+    unsigned int	reg;
+    unsigned char	lock;
     ApmPtr pApm = ((ApmPtr)b->DriverPrivate.ptr);
 
+    lock = rdinx(0x3C4, 0x10);
+    wrinx(0x3C4, 0x10, 0x12);
     WaitForFifo(pApm, 2);
-    WRXB(0xD0, RDXB(0xD0) & 0x07);
-    reg = STATUS();
+    WRXB_IOP(0xD0, RDXB(0xD0) & 0x07);
+    reg = STATUS_IOP();
     *clock = (reg & STATUS_SCL) != 0;
     *data  = (reg & STATUS_SDA) != 0;
+    if (lock)
+	wrinx(0x3C4, 0x10, 0);
 }
 
 Bool 
-ApmI2CInit(ScreenPtr pScreen)
+ApmI2CInit(ScrnInfoPtr pScrn)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     APMDECL(pScrn);
     I2CBusPtr I2CPtr;
 

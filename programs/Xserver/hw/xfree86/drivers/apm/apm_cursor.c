@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.9 1999/08/28 09:00:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.10 1999/09/27 06:29:35 dawes Exp $ */
 
 
 #include "X.h"
@@ -45,8 +45,12 @@ WaitForFifo(ApmPtr pApm, int slots)
       if ((STATUS() & STATUS_FIFO) >= slots)
 	break;
     }
-    if (i == MAXLOOP && !xf86ServerIsExiting()) {
-      FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", STATUS());
+    if (i == MAXLOOP) {
+      unsigned int status = STATUS();
+
+      WRXB(0x1FF, 0);
+      if (!xf86ServerIsExiting())
+	FatalError("Hung in WaitForFifo() (Status = 0x%08X)\n", status);
     }
   }
 }
