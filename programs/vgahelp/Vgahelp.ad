@@ -11,14 +11,14 @@
 *VTotal-form.fromVert: VSyncEnd-form
 *Flags-form.fromVert: HTotal-form
 *Buttons-form.fromVert: Flags-form
-*Left.fromVert: HTotal-scrollbar
-*Right.fromVert: HTotal-scrollbar
-*Thiner.fromVert: HTotal-scrollbar
-*Wider.fromVert: HTotal-scrollbar
-*Up.fromVert: VTotal-scrollbar
-*Down.fromVert: VTotal-scrollbar
-*Shorter.fromVert: VTotal-scrollbar
-*Higher.fromVert: VTotal-scrollbar
+*Left-button.fromVert: HTotal-scrollbar
+*Right-button.fromVert: HTotal-scrollbar
+*Narrower-button.fromVert: HTotal-scrollbar
+*Wider-button.fromVert: HTotal-scrollbar
+*Up-button.fromVert: VTotal-scrollbar
+*Down-button.fromVert: VTotal-scrollbar
+*Shorter-button.fromVert: VTotal-scrollbar
+*Taller-button.fromVert: VTotal-scrollbar
 *HDisplay-text.fromHoriz: HDisplay-label
 *HSyncStart-text.fromHoriz: HSyncStart-label
 *HSyncStart-scrollbar.fromVert: HSyncStart-label
@@ -26,9 +26,9 @@
 *HSyncEnd-text.fromHoriz: HSyncEnd-label
 *HSyncEnd-scrollbar.fromVert: HSyncEnd-label
 *HSyncEnd-scrollbar.orientation: horizontal
-*Right.fromHoriz: Left
-*Wider.fromHoriz: Right
-*Thiner.fromHoriz: Wider
+*Right-button.fromHoriz: Left-button
+*Wider-button.fromHoriz: Right-button
+*Narrower-button.fromHoriz: Wider-button
 *HTotal-text.fromHoriz: HTotal-label
 *HTotal-scrollbar.fromVert: HTotal-label
 *HTotal-scrollbar.orientation: horizontal
@@ -56,9 +56,9 @@
 *VSyncStart-label.label: VSyncStart:
 *VSyncEnd-label.label: VSyncEnd:
 *VTotal-label.label: VTotal:
-*Down.fromHoriz: Up
-*Shorter.fromHoriz: Down
-*Higher.fromHoriz: Shorter
+*Down-button.fromHoriz: Up-button
+*Shorter-button.fromHoriz: Down-button
+*Taller-button.fromHoriz: Shorter-button
 *Flags-label.label: Flags (hex):
 *Flags-text.borderWidth: 1
 *Flags-text*editType: edit
@@ -75,6 +75,14 @@
 *Restore-button.label: Restore
 *Test-button.label: Test
 *Apply-button.label: Apply
+*Left-button.label: Left
+*Right-button.label: Right
+*Wider-button.label: Wider
+*Narrower-button.label: Narrower
+*Up-button.label: Up
+*Down-button.label: Down
+*Shorter-button.label: Shorter
+*Taller-button.label: Taller
 *Abort.label: Abort Test Now
 *testingMessage.label: Mode test current in progress\n\n     Please wait
 *WarnLabel.label: WARNING     WARNING    WARNING    WARNING    WARNING\

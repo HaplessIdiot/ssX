@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.4 1995/06/04 13:32:31 dawes Exp $ */
+/* $XFree86: xc/programs/vgahelp/vgahelp.c,v 3.5 1995/06/05 14:17:19 dawes Exp $ */
 
 /*
 
@@ -756,31 +756,27 @@ static void CreateHierarchy(top)
 		"HTotal-scrollbar");
 
     w = XtVaCreateManagedWidget(
-                                     "Left",
+                                     "Left-button",
                                      commandWidgetClass,
                                      forms[3],
-                                     XtNlabel, "Left",
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)HSyncStart);
     w = XtVaCreateManagedWidget(
-                                     "Right",
+                                     "Right-button",
                                      commandWidgetClass,
                                      forms[3],
-                                     XtNlabel, "Right",
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)-HSyncStart);
     w=  XtVaCreateManagedWidget(
-                                     "Wider",
+                                     "Wider-button",
                                      commandWidgetClass,
                                      forms[3],
-                                     XtNlabel, "Wider",
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)-HTotal);
     w = XtVaCreateManagedWidget(
-                                     "Thiner",
+                                     "Narrower-button",
                                      commandWidgetClass,
                                      forms[3],
-                                     XtNlabel, "Narrower",
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)HTotal);
     CreateTyp (forms[4], VDisplay, "VDisplay-label", "VDisplay-text", NULL);
@@ -791,31 +787,27 @@ static void CreateHierarchy(top)
     CreateTyp (forms[7], VTotal, "VTotal-label", "VTotal-text", 
 		"VTotal-scrollbar");
     w = XtVaCreateManagedWidget(
-                                     "Up",
+                                     "Up-button",
                                      commandWidgetClass,
                                      forms[7],
-                                     XtNlabel, "Up",
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)VSyncStart);
     w = XtVaCreateManagedWidget(
-                                     "Down",
+                                     "Down-button",
                                      commandWidgetClass,
                                      forms[7],
-                                     XtNlabel, "Down",
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)-VSyncStart);   
     w=  XtVaCreateManagedWidget(
-                                     "Shorter",
+                                     "Shorter-button",
                                      commandWidgetClass,
                                      forms[7],
-                                     XtNlabel, "Shorter",
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)VTotal);   
     w = XtVaCreateManagedWidget(
-                                     "Higher",
+                                     "Taller-button",
                                      commandWidgetClass,
                                      forms[7],
-                                     XtNlabel, "Higher",
                                      NULL);
     XtAddCallback (w, XtNcallback, AdjustCB, (XtPointer)-VTotal);
    
