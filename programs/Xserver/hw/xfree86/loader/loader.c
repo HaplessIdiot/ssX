@@ -89,10 +89,16 @@ static int refCount[MAX_HANDLE] ;
 
 #if defined(__sparc__) && defined(__GNUC__)
 # define SYMFUNCDOT(func) { "." #func, (funcptr)&__sparc_dot_ ## func },
+# if !defined(__OpenBSD__)
 # define SYMFUNCDOT89(func) { "." #func, (funcptr)&func ## _sparcv89 },
 # define DEFFUNCDOT(func) 					\
 extern void __sparc_dot_ ## func (void) __asm__ ("." #func);	\
 extern void func ## _sparcv89 (void);
+# else
+# define SYMFUNCDOT(func) { "." #func, (funcptr)&__sparc_dot_ ## func },
+# define DEFFUNCDOT(func) 					\
+extern void __sparc_dot_ ## func (void) __asm__ ("." #func);
+#endif
 DEFFUNCDOT(rem)
 DEFFUNCDOT(urem)
 DEFFUNCDOT(mul)

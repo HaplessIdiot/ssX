@@ -48,9 +48,11 @@ XCOMM generic linux PCI driver (using /proc/bus/pci, requires kernel 2.2)
 PCIDRVRSRC = linuxPci.c
 PCIDRVROBJ = linuxPci.o
 
-#elif defined(OpenBSDArchitecture) && defined(PpcArchitecture)
+#elif defined(OpenBSDArchitecture) && \
+	(defined(PpcArchitecture) || \
+	defined(Sparc64Architecture))
 
-XCOMM OpenBSD/powerpc
+XCOMM OpenBSD/powerpc and OpenBSD/sparc64
 
 PCIDRVRSRC = freebsdPci.c
 PCIDRVROBJ = freebsdPci.o
