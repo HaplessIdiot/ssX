@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.76 2003/09/17 03:46:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.77 2003/10/02 13:30:01 eich Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -877,8 +877,9 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     InputInfoPtr pInfo;
     MouseDevPtr pMse;
     mousePrivPtr mPriv;
-    MessageType from = X_DEFAULT;
+    MessageType protocolFrom = X_DEFAULT, deviceFrom = X_CONFIG;
     const char *protocol, *osProt = NULL;
+    const char *device;
     MouseProtocolID protocolID;
     MouseProtocolPtr pProto;
     Bool detected;
@@ -928,10 +929,10 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     /* Find the protocol type. */
     protocol = xf86SetStrOption(dev->commonOptions, "Protocol", NULL);
     if (protocol) {
-	from = X_CONFIG;
+	protocolFrom = X_CONFIG;
     } else if (osInfo->DefaultProtocol) {
 	protocol = osInfo->DefaultProtocol();
-	from = X_DEFAULT;
+	protocolFrom = X_DEFAULT;
     }
     if (!protocol) {
 	xf86Msg(X_ERROR, "%s: No Protocol specified\n", pInfo->name);
@@ -959,6 +960,16 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	     * and call its PreInit. */
 	    if (osInfo->CheckProtocol
 		&& osInfo->CheckProtocol(protocol)) {
+		if (!xf86CheckStrOption(dev->commonOptions, "Device", NULL) &&
+		    HAVE_FIND_DEVICE && osInfo->FindDevice) {
+		    xf86Msg(X_WARNING, "%s: No Device specified, "
+			    "looking for one...\n", pInfo->name);
+		    if (!osInfo->FindDevice(pInfo, protocol, 0)) {
+			xf86Msg(X_ERROR, "%s: Cannot find which device "
+				"to use.\n", pInfo->name);
+		    } else
+			deviceFrom = X_PROBED;
+		}
 		if (osInfo->PreInit) {
 		    osInfo->PreInit(pInfo, protocol, 0);
 		}
@@ -980,8 +991,24 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	}
     } while (!detected);
     
-    
-    xf86Msg(from, "%s: Protocol: \"%s\"\n", pInfo->name, protocol);
+    if (!xf86CheckStrOption(dev->commonOptions, "Device", NULL) &&
+	HAVE_FIND_DEVICE && osInfo->FindDevice) {
+	xf86Msg(X_WARNING, "%s: No Device specified, looking for one...\n",
+		pInfo->name);
+	if (!osInfo->FindDevice(pInfo, protocol, 0)) {
+	    xf86Msg(X_ERROR, "%s: Cannot find which device to use.\n",
+		    pInfo->name);
+	} else {
+	    deviceFrom = X_PROBED;
+	    xf86MarkOptionUsedByName(dev->commonOptions, "Device");
+	}
+    }
+
+    device = xf86CheckStrOption(dev->commonOptions, "Device", NULL);
+    if (device)
+	xf86Msg(deviceFrom, "%s: Device: \"%s\"\n", pInfo->name, device);
+	
+    xf86Msg(protocolFrom, "%s: Protocol: \"%s\"\n", pInfo->name, protocol);
     if (!(pProto = GetProtocol(protocolID)))
 	return pInfo;
 
@@ -2948,6 +2975,12 @@ autoOSProtocol(InputInfoPtr pInfo, int *protoPara)
 	}
     }
 #endif
+    if (!name && HAVE_GUESS_PROTOCOL && osInfo->GuessProtocol) {
+	name = osInfo->GuessProtocol(pInfo, 0);
+	if (name)
+	    protocolID = ProtocolNameToID(name);
+    }
+
     if (name) {
 	pMse->protocolID = protocolID;
     }

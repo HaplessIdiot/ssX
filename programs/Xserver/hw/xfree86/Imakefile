@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.84 2003/08/10 16:39:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.85 2003/08/31 12:59:58 tsi Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -92,7 +92,7 @@ SUBDIRS = os-support common $(I2CDIR) $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
 	  drivers $(LOADERDIR) $(VGAHWDIR) $(FBDEVHWDIR) $(RAMDACDIR) \
 	  $(RACDIR) $(DDCDIR) $(INPUTDIR) $(INT10DIR) $(VBEDIR) parser \
           scanpci doc dummylib $(XF86CFGDIRS) etc $(DRIVERSDK) \
-	  $(XF8_32WIDDIR)
+	  $(XF8_32WIDDIR) getconfig
 
 #if !defined(OS2Architecture) && !defined(cygwinArchitecture)
 XF86CONFIG = XF86Config
@@ -101,7 +101,9 @@ XF98CONFIG = XF98Config
 XF86CONFIG = XF86Conf
 #endif
 
-all:: $(XF86CONFIG) $(XF98CONFIG) xf86Build.h
+SAMPLE_CONFIG_FILES = $(XF86CONFIG) $(XF98CONFIG)
+
+all:: $(SAMPLE_CONFIG_FILES) xf86Build.h
 
 CHANGELOGFILE = CHANGELOG
 
@@ -203,6 +205,7 @@ CppFileTarget($(XF98CONFIG), XF98Conf.cpp, \
     -DLINUXMOUSEDEV=$(LINUXMOUSEDEV) \
     -DMANPAGE=$(MANPAGE) '-DMODULEPATH="$(MODULEDIR)"', \
     $(ICONFIGFILES))
+
 InstallDriverSDKNonExecFile($(XF86CONFIG),$(DRIVERSDKDIR))
 InstallDriverSDKNonExecFile($(XF98CONFIG),$(DRIVERSDKDIR))
 

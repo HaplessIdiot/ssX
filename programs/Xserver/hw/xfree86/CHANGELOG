@@ -1,4 +1,35 @@
 XFree86 4.3.99.14 (xx October 2003)
+ 486. Add "automatic configuration" support for the XFree86 server, allowing
+      it to be started in a useful way without an XF86Config file.
+       - Add support to the config file parser for processing internally
+         supplied configuration data.
+       - Modify the algorithm for finding core input devices to maximise the
+         likelihood that they will be found.
+       - Add a FindDevice function to the OSMouse interface, allowing
+         an OS-specific function to be called to find the mouse device when
+         none is specified in the configuration.  Implementations included for
+         Linux and FreeBSD.
+       - Add a GuessProtocol function to the OSMouse interface, allowing
+         an OS-specific function to be called as a fallback when the mouse
+         protocol can't otherwise be detected.  Implementation included for
+         Linux.
+       - Bump the OSMouse interface version to 1.1 with the addition of the
+         above two functions.
+       - An interface for calling an external utility "getconfig" to generate
+         some configuration data.  Implementation of getconfig included.
+       - Generate a default internal configuration, autodetecting as much
+         as possible, with reasonable fallbacks.
+       - Recognise "DefaultDepth" and "DefaultFbbpp" options in the Device
+         section.
+       - Add a "TargetRefreshRate" option to help prevent modes with too
+         high a resolution (and poor refresh rate) being used as the default.
+       - Use DDC-probed mode timings to estimate the monitor parameters when
+         the DDC-probed information doesn't include a DS_RANGES property.
+         This should improve the reliability of monitor auto-detection.
+      (David Dawes, X-Oz Technologies).
+ 485. Add functions for checking option values without marking them as "used"
+      (David Dawes).
+ 484. Add missing xf86ReplaceRealOption() function (David Dawes).
  483. Added support for Siliconmotion Cougar3DR chip (Bugzilla #754, 
       Chris Edgington).
  482. Cygwin:
@@ -17873,7 +17904,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2872 2003/10/07 22:47:08 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2873 2003/10/08 11:12:53 eich Exp $
 
 
 

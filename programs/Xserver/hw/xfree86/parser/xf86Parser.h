@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.31 2003/08/22 03:36:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.32 2003/08/24 17:37:09 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -444,6 +444,7 @@ xf86ConfigSymTabRec, *xf86ConfigSymTabPtr;
  */
 extern const char *xf86openConfigFile (const char *, const char *,
 					const char *);
+extern void xf86setBuiltinConfig(const char *config[]);
 extern XF86ConfigPtr xf86readConfigFile (void);
 extern void xf86closeConfigFile (void);
 extern void xf86freeConfig (XF86ConfigPtr p);

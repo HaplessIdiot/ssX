@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.152 2003/08/24 19:58:02 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.153 2003/10/02 13:29:55 eich Exp $
 
 
 
@@ -97,6 +97,7 @@ SRCS =	\
 	xf86noBus.c \
 	xf86IniExt.c \
 	xf86Config.c \
+	xf86AutoConfig.c \
 	xf86Cursor.c \
 	xf86DGA.c \
 	xf86DPMS.c \
@@ -136,6 +137,7 @@ OBJS = \
 	xf86fbBus.o \
 	xf86noBus.o \
 	xf86Config.o \
+	xf86AutoConfig.o \
 	xf86Cursor.o \
 	xf86DGA.o \
 	xf86DPMS.o \
@@ -198,6 +200,7 @@ EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
     DRIVERS = XF86CardDrivers
    IDRIVERS = XInputDrivers
 XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"' \
+		 -DBINDIR='"$(BINDIR)"' \
 		 -DDRIVERS='"$(DRIVERS)"' \
 		 -DIDRIVERS='"$(IDRIVERS)"'
 XF86CONFIGFILE = XConfigFile
@@ -211,6 +214,7 @@ SpecialCObjectRule(xf86Bus,NullParameter,$(BUGMSG) $(VGAINCLUDES))
 SpecialCObjectRule(xf86Init,$(ICONFIGFILES),$(OSNAMEDEF) $(BUILDERMSG) $(BUGMSG) $(CUSTOMVERDEF) $(XORGREL_DEF) $(EXT_DEFINES) $(BETADEFS) $(MDEBUGDEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES) $(MDEBUGDEFS))
 SpecialCObjectRule(xf86Globals,$(ICONFIGFILES),$(EXT_DEFINES) $(MODPATHDEFINES) $(LOGDEFINES))
+SpecialCObjectRule(xf86AutoConfig,$(ICONFIGFILES),$(XCONFIGDEFINES))
 SpecialCObjectRule(xf86Config,$(ICONFIGFILES),$(XCONFIGDEFINES))
 SpecialCObjectRule(xf86Configure,$(ICONFIGFILES),$(XCONFIGUREDEFINES))
 
