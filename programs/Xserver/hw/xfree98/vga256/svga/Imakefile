@@ -1,0 +1,11 @@
+
+
+
+
+
+
+
+
+#define VGADEFINES -DPC98_SVGA
+
+#include "../Imakefile.vga"
