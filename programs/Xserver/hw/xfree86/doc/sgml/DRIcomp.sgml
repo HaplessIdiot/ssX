@@ -1,7 +1,9 @@
-<!doctype linuxdoc system>
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
+
 <!-- Created: Sun Mar 12 13:00:00 2000 by brian@precisioninsight.com -->
 <!-- Revised: Fri May 19 09:36:02 2000 by martin@valinux.com -->
-<!-- $Id: DRIcomp.sgml,v 1.2 2000/06/17 02:00:19 dawes Exp $ -->
 
   <article>
 
@@ -12,15 +14,13 @@
       <date>18 May 2000
         
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.1 2000/06/17 00:03:17 martin Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.2 2000/06/17 02:00:19 dawes Exp $
     </ident>
 
     <toc>
 
-    <sect>Preamble
-
-      <sect1>Copyright
-        <p>
+    <sect>Preamble <p>
+      <sect1>Copyright <p>
           <bf>Copyright &copy; 2000 by Precision Insight, Inc.,
           Cedar Park, Texas.
           All Rights Reserved.</bf>
@@ -29,8 +29,7 @@
           of this document provided the copyright notice and this permission
           notice are preserved on all copies.</bf>
           
-      <sect1>Trademarks
-        <p>
+      <sect1>Trademarks <p>
           OpenGL is a registered trademark and SGI is a trademark of
           Silicon Graphics, Inc.
           Unix is a registered trademark of The Open Group.
@@ -48,8 +47,7 @@
           respective owners.
 
 
-    <sect>Introduction
-      <p>
+    <sect>Introduction <p>
         This document describes how to download, compile and install the
         DRI project.
         This information is intended for experienced Linux developers.
@@ -59,8 +57,7 @@
         to brian@precisioninsight.com.
 
 
-    <sect>Prerequisites
-      <p>
+    <sect>Prerequisites <p>
         You'll need the following:
         <itemize>
           <item>At least 400MB of free disk space.  More is needed if you want
@@ -106,8 +103,7 @@
         </itemize>
 
 
-    <sect>Kernel preparation
-      <p>
+    <sect>Kernel preparation <p>
         You may have to upgrade your Linux kernel in order to use the DRI.
         This is because you need a kernel version which supports AGP.
         Building a new Linux kernel can be difficult for beginners but
@@ -185,8 +181,7 @@
         Now reboot to use this new kernel.
 
 
-    <sect>Downloading the XFree86/DRI CVS Sources
-      <p>
+    <sect>Downloading the XFree86/DRI CVS Sources <p>
         The DRI project is hosted by VA Linux Systems'
         <htmlurl url="http://sourceforge.net/project/?group_id=387"
         name="SourceForge">.
@@ -199,8 +194,7 @@
         that you may submit non-anonymous bug reports and can participate
         in the mailing lists.
 
-      <sect1>Anonymous CVS download:
-      <p>
+      <sect1>Anonymous CVS download: <p>
         <enum>
           <item>Create a directory to store the CVS files:
             <p>
@@ -225,8 +219,7 @@
         </enum>
 
 
-      <sect1>Registered CVS download:
-      <p>
+      <sect1>Registered CVS download: <p>
         <enum>
           <item>Create a directory to store the CVS files:
             <p>
@@ -257,8 +250,7 @@
         </enum>
 
 
-    <sect>Updating your CVS sources
-      <p>
+    <sect>Updating your CVS sources <p>
         In the future you'll want to occasionally update your local copy of
         the DRI source code to get the latest changes.
         This can be done with:
@@ -270,9 +262,8 @@
         most recent trunk sources to be fetched, not branch sources.
 
 
-    <sect>Compiling the XFree86/DRI tree
-      <sect1>Make a build tree
-        <p>
+    <sect>Compiling the XFree86/DRI tree <p>
+      <sect1>Make a build tree <p>
           Rather than placing object files and library files right in the
           source tree, they're instead put into a parallel <em>build</em> tree.
           The build tree is made with the <tt>lndir</tt> command:
@@ -290,8 +281,7 @@
           Advanced users may have several build trees for compiling and
           testing with different options.
 
-      <sect1>Edit the host.def file
-        <p>
+      <sect1>Edit the host.def file <p>
           The <tt>~/DRI-CVS/build/xc/config/cf/host.def</tt> file is used
           to configure the XFree86 build process.
           You can change it to customize your build options or make adjustments
@@ -335,8 +325,7 @@
           line in <tt>host.def</tt>.
         <p>
 
-      <sect1>Compile
-        <p>
+      <sect1>Compile <p>
           To compile the complete DRI tree:
           <verb>
             cd ~/DRI-CVS/build/xc/
@@ -354,8 +343,7 @@
           Building will take some time so you may want to go check your
           email or visit slashdot.
 
-      <sect1>Check for compilation errors
-        <p>
+      <sect1>Check for compilation errors <p>
           Using your text editor, examine <tt>World.LOG</tt> for errors
           by searching for the pattern <tt>***</tt>.
         <p>
@@ -391,13 +379,11 @@
           important that the whole tree will build first.
 
 
-    <sect>Installing
-      <p>
+    <sect>Installing <p>
         After the DRI tree has been compiled you can install the XFree86
         headers, libraries, programs, etc for testing.
 
-      <sect1>X Installation
-	<p>
+      <sect1>X Installation <p>
 	  As mentioned above, the install directory is specified by the
 	  <tt>ProjectRoot</tt> variable in the <tt>host.def</tt> file.
 	  Create that directory now if it doesn't already exist:
@@ -428,8 +414,7 @@
 	  It's possible to run and test the X server directly from the
 	  build directory but it's a bit error prone.
 
-      <sect1>Update Locale Information
-        <p>
+      <sect1>Update Locale Information <p>
           To update your X locale information do the following:
           <verb>
              cd ~/DRI-CVS/build/xc/nls
@@ -440,8 +425,7 @@
           This will prevent a locale error message from being printed
           when you run Xlib programs.
 
-    <sect>X Server Configuration
-      <p>
+    <sect>X Server Configuration <p>
         If your X server is currently running you'll have to stop it
         and return to a virtual terminal.
       <p>
@@ -479,8 +463,7 @@
         </verb>
       <p>
 
-    <sect>X Server Start-up
-      <p>
+    <sect>X Server Start-up <p>
         The X server can be started with:
       <p>
         <verb>

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.62 2000/03/21 19:57:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.63 2000/04/05 18:13:46 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -12,7 +12,7 @@ SGMLDEPENDS = defs.ent
 MANSGMLDEPENDS = mdefs.ent
   INDEXLIST = README.sgml RELNOTES.sgml Status.sgml LICENSE.sgml Install.sgml \
 	      DESIGN.sgml \
-	      mouse.sgml fonts.sgml DRI.sgml \
+	      mouse.sgml fonts.sgml DRI.sgml DRIcomp.sgml \
 	      isc.sgml LynxOS.sgml NetBSD.sgml OpenBSD.sgml OS2note.sgml \
               apm.sgml ati.sgml chips.sgml cyrix.sgml DECtga.sgml \
 	      i740.sgml i810.sgml \
@@ -111,6 +111,7 @@ LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
 LinuxDocTarget(xinput)
 #endif
 LinuxDocReadmeTarget(DRI)
+LinuxDocReadmeTarget(DRIcomp)
 
 SGMLMANDEFS=-D__drivermansuffix__='"$(DRIVERMANSUFFIX)"' \
 	    -D__filemansuffix__='"$(FILEMANSUFFIX)"' \
