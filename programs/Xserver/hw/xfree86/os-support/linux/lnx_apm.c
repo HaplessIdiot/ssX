@@ -1,4 +1,4 @@
-/* $XFree86: Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.1 2000/02/08 13:13:30 eich Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -49,6 +49,8 @@ static struct {
     { APM_SUSPEND_FAILED, XF86_APM_SUSPEND_FAILED }
 };
 
+#define numApmEvents (sizeof(LinuxToXF86) / sizeof(LinuxToXF86[0]))
+
 /*
  * APM is still under construction.
  * I'm not sure if the places where I initialize/deinitialize
@@ -72,12 +74,15 @@ lnxPMGetEventFromOs(int fd, pmEvent *events, int num)
     }
 #endif
     n = read( fd, linuxEvents, num * sizeof(apm_event_t) ) / sizeof(apm_event_t);
-    for (i =0; i<n; i++)
-	for (j = 0;; j++)
+    for (i = 0; i < n; i++) {
+	for (j = 0; j < numApmEvents; j++)
 	    if (LinuxToXF86[j].apmLinux == linuxEvents[i]) {
 		events[i] = LinuxToXF86[j].xf86;
 		break;
 	    }
+	if (j == numApmEvents)
+	    events[i] = XF86_APM_UNKNOWN;
+    }
     return n;
 }
 

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.c,v 1.12 95/04/05 19:58:47 kaleb Exp $
- *	$XFree86: xc/programs/xterm/data.c,v 3.17 1999/09/27 06:30:19 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.c,v 3.18 2000/02/08 17:19:33 dawes Exp $
  */
 
 /*
@@ -94,6 +94,8 @@ int waitingForTrackInfo = 0;
 EventMode eventMode = NORMAL;
 
 #if OPT_WIDE_CHARS
+char defaultUTF8[2] = { '0', 0 };
+
 const unsigned short dec2ucs[32] = {
 	0x25ae		/* black vertical rectangle			*/,
 	0x25c6		/* black diamond				*/,

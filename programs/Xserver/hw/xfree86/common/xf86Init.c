@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.145 2000/02/08 13:13:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.146 2000/02/09 15:47:49 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1102,7 +1102,10 @@ OsVendorFatalError()
  *	Process device-dependent command line args. Returns 0 if argument is
  *      not device dependent, otherwise Count of number of elements of argv
  *      that are part of a device dependent commandline option.
+ *
  */
+
+
 
 /* ARGSUSED */
 int
@@ -1159,10 +1162,10 @@ ddxProcessArgument(int argc, char **argv, int i)
     if (!argv[i + 1])
       return 0;
     if (getuid() != 0 && !xf86PathIsSafe(argv[i + 1])) {
-      ErrorF("\nInvalid argument for -xf86config\n"
+      FatalError("\nInvalid argument for -xf86config\n"
 	  "\tFor non-root users, the file specified with -xf86config must be\n"
-	  "\ta relative path and must not contain any \"..\" elements.\n\n");
-      return 0;
+	  "\ta relative path and must not contain any \"..\" elements.\n"
+	  "\tUsing default XF86Config search path.\n\n");
     }
     xf86ConfigFile = argv[i + 1];
     return 2;
@@ -1460,7 +1463,8 @@ ddxUseMsg()
   }
   else
   {
-    ErrorF("-xf86config file       specify a configuration file (must be relative)\n");
+    ErrorF("-xf86config file       specify a configuration file, relative to the\n");
+    ErrorF("                       XF86Config search path, only root can use absolute\n");
   }
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose [n]           verbose startup messages\n");

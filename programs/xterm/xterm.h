@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.52 2000/01/29 18:58:41 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.53 2000/02/08 17:19:45 dawes Exp $ */
 
 /************************************************************
 
@@ -684,6 +684,7 @@ extern void resetXtermGC (TScreen *screen, int flags, Bool hilite);
 extern void scrolling_copy_area (TScreen *screen, int firstline, int nlines, int amount);
 extern void set_keyboard_type (xtermKeyboardType type, Bool set);
 extern void toggle_keyboard_type (xtermKeyboardType type);
+extern void update_keyboard_type (void);
 extern void xtermScroll (TScreen *screen, int amount);
 
 #if OPT_ISO_COLORS

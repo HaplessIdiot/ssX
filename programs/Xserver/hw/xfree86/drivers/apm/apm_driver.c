@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.21 1999/09/27 06:29:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.26 2000/01/30 01:15:48 alanh Exp $ */
 
 
 #include "apm.h"
@@ -1308,6 +1308,16 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ApmRegPtr	ApmReg = &pApm->ModeReg;
     vgaHWPtr	hwp;
 
+    if (xf86IsPc98()) {
+	/*
+	 * Set Color Mode
+	 */
+	char tmp;
+	tmp = ApmReadMiscOut();
+	ApmWriteMiscOut( 0x0F | tmp );
+	outb(0xfac, 0xff);
+   }
+
     /* set clockIndex to "2" for programmable clocks */
     if (pScrn->progClock)
 	mode->ClockIndex = 2;
@@ -1436,9 +1446,6 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     /* ICICICICI */
     ApmRestore(pScrn, &hwp->ModeReg, ApmReg);
-
-    if (xf86IsPc98())
-	outb(0xfac, 0xff);
 
     return TRUE;
 }

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.41.2.1 1998/06/03 15:49:51 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.44 1999/11/19 13:54:10 hohndel Exp $ 
 .TH XFree86 1 "Version 4.0"  "XFree86"
 .SH NAME
 XFree86 - X11R6 X server
@@ -225,8 +225,10 @@ stderr (more than the default).
 Same as \fB\-showconfig\fP.
 .TP 8
 .B \-xf86config \fIfile\fP
-Read the server configuration from \fIfile\fP.  This option is only available
-when the server is run as root (i.e, with real-uid 0).
+Read the server configuration from \fIfile\fP.  This option will work
+for any file when the server is run as root (i.e, with real-uid 0), or
+for files relative to a directory in the config search path for all
+other users. 
 .TP 8
 .B \-keeptty
 Prevent the server from detaching its initial controlling terminal.  This
@@ -259,6 +261,12 @@ manual page for more information.
 .SH FILES
 .TP 30
 /etc/XF86Config
+Server configuration file
+.TP 30
+/etc/X11/XF86Config
+Server configuration file
+.TP 30
+/usr/X11R6/etc/XF86Config
 Server configuration file
 .TP 30
 <XRoot>/lib/X11/XF86Config.\fIhostname\fP

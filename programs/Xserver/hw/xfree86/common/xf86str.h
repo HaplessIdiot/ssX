@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.59 2000/01/21 01:12:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.64 2000/02/08 13:13:06 eich Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -440,6 +440,7 @@ typedef enum {
 /* Power management events: so far we only support APM */
 
 typedef enum {
+    XF86_APM_UNKNOWN = -1,
     XF86_APM_SYS_STANDBY,
     XF86_APM_SYS_SUSPEND,
     XF86_APM_CRITICAL_SUSPEND,

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.63 1999/09/25 14:36:55 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.65 1999/11/19 13:54:10 hohndel Exp $
 .TH XF86Config 4/5 "Version 4.0"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -14,6 +14,8 @@ places:
 .in 8
 .nf
 /etc/XF86Config
+/etc/X11/XF86Config
+/usr/X11R6/etc/XF86Config
 <XRoot>/lib/X11/XF86Config.\fIhostname\fP
 <XRoot>/lib/X11/XF86Config
 .fi

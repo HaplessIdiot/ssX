@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.48 2000/01/18 16:36:02 tsi Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.49 2000/02/08 17:19:44 dawes Exp $
  */
 
 /*
@@ -1893,6 +1893,15 @@ int char2lower(int ch)
 	return ch;
 }
 
+void update_keyboard_type(void)
+{
+    update_old_fkeys();
+    update_hp_fkeys();
+    update_sco_fkeys();
+    update_sun_fkeys();
+    update_sun_kbd();
+}
+
 void set_keyboard_type(xtermKeyboardType type, Bool set)
 {
     xtermKeyboardType save = term->keyboard.type;
@@ -1904,9 +1913,7 @@ void set_keyboard_type(xtermKeyboardType type, Bool set)
     }
 
     if (save != term->keyboard.type) {
-	update_hp_fkeys();
-	update_sun_fkeys();
-	update_sun_kbd();
+	update_keyboard_type();
     }
 }
 
@@ -1921,9 +1928,7 @@ void toggle_keyboard_type(xtermKeyboardType type)
     }
 
     if (save != term->keyboard.type) {
-	update_hp_fkeys();
-	update_sun_fkeys();
-	update_sun_kbd();
+	update_keyboard_type();
     }
 }
 
@@ -1933,7 +1938,8 @@ void init_keyboard_type(xtermKeyboardType type, Bool set)
 
     if (set) {
 	if (wasSet) {
-	    fprintf(stderr, "Conflicting keyboard type option\n");
+	    fprintf(stderr, "Conflicting keyboard type option (%d/%d)\n",
+		    term->keyboard.type, type);
 	}
 	term->keyboard.type = type;
 	wasSet = True;

@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.106 2000/01/29 18:58:39 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.107 2000/02/08 17:19:36 dawes Exp $ */
 
 
 /* main.c */
@@ -1717,6 +1717,20 @@ main (int argc, char *argv[])
 	    }
 	    break;
 	}
+
+#if OPT_WIDE_CHARS
+	/* Test whether UTF-8 mode should be active by default */
+	{
+	    char *s;
+
+	    if ((s = getenv("LC_ALL")) ||
+		(s = getenv("LC_CTYPE")) ||
+		(s = getenv("LANG"))) {
+		if (strstr(s, "UTF-8"))
+		    defaultUTF8[0] = '2';
+	    }
+	}
+#endif
 
 	SetupMenus(toplevel, &form_top, &menu_top);
 

@@ -3,7 +3,7 @@
 !
 !
 !
-! $XFree86: xc/programs/xterm/XTerm.ad,v 3.12 1999/11/19 13:55:14 hohndel Exp $
+! $XFree86: xc/programs/xterm/XTerm.ad,v 3.13 1999/12/30 02:05:49 robin Exp $
 
 XTerm.JoinSession:False
 
@@ -25,9 +25,11 @@ XTerm.JoinSession:False
 *mainMenu*backarrow key*Label: Backarrow Key
 *mainMenu*num-lock*Label: Alt/NumLock Modifiers
 *mainMenu*meta-esc*Label: Meta Sends Escape
+*mainMenu*old function-keys*Label: Old Function-Keys
 *mainMenu*sun function-keys*Label: Sun Function-Keys
 *mainMenu*sun keyboard*Label: VT220 Keyboard
 *mainMenu*hp function-keys*Label: HP Function-Keys
+*mainMenu*sco function-keys*Label: SCO Function-Keys
 *mainMenu*suspend*Label:  Send STOP Signal
 *mainMenu*continue*Label:  Send CONT Signal
 *mainMenu*interrupt*Label:  Send INT Signal
