@@ -1,5 +1,5 @@
 /*
- * @(#)$RCSfile: xkbInit.c,v $ $Revision: 3.4 $ (DEC) $Date: 1996/02/09 10:18:01 $
+ * @(#)RCSfile: xkbInit.c,v  Revision: 1.1.1.6  (DEC) Date: 1996/02/09 09:44:58 
  */
 /* $XConsortium: xkbInit.c /main/13 1996/02/05 09:59:15 dpw $ */
 /************************************************************

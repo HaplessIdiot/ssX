@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.7 1996/01/30 15:25:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.8 1996/02/04 09:06:28 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -293,7 +293,10 @@ xf86MouseProtocol(rBuf, nBytes)
      *         that bit is supposed to be always on, but nobody told
      *         Microsoft...)
      */
-    if (pBufP != 0 && xf86Info.mseType != P_PS2 &&
+    if (pBufP != 0 &&
+#ifndef __NetBSD__
+	xf86Info.mseType != P_PS2 &&
+#endif
 	((rBuf[i] & proto[xf86Info.mseType][2]) != proto[xf86Info.mseType][3]
 	 || rBuf[i] == 0x80))
       {
@@ -404,11 +407,15 @@ xf86MouseProtocol(rBuf, nBytes)
       break;
       
     case P_BM:              /* BusMouse */
+#ifdef __NetBSD__
+    case P_PS2:
+#endif
       buttons = (~pBuf[0]) & 0x07;
       dx =   (char)pBuf[1];
       dy = - (char)pBuf[2];
       break;
 
+#ifndef __NetBSD__
     case P_PS2:		    /* PS/2 mouse */
       buttons = (pBuf[0] & 0x04) >> 1 |       /* Middle */
 	        (pBuf[0] & 0x02) >> 1 |       /* Right */
@@ -416,6 +423,7 @@ xf86MouseProtocol(rBuf, nBytes)
       dx = (pBuf[0] & 0x10) ?    pBuf[1]-256  :  pBuf[1];
       dy = (pBuf[0] & 0x20) ?  -(pBuf[2]-256) : -pBuf[2];
       break;
+#endif
     }
 
     xf86PostMseEvent(buttons, dx, dy);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.2 1996/01/31 11:47:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.3 1996/02/04 09:15:45 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -411,6 +411,14 @@ XCOMM    VideoRam	2048
 EndSection
 
 Section "Device"
+    Identifier	"WABEP"
+    VendorName	"MELCO"
+    BoardName	"WAB-EP"
+    Chipset	"clgd5428"
+    Option	"med_dram"
+EndSection
+
+Section "Device"
     Identifier  "GA98NB1"
     VendorName  "IO DATA"
     BoardName   "GA-98NBI"
@@ -613,6 +621,7 @@ XCOMM The colour SVGA-based PC98 server
 Section "Screen"
     Driver	"svga"
     Device	"WAB"
+XCOMM    Device	"WABEP"
 XCOMM    Device	"NEC480"
 XCOMM    Device	"WAP"
 XCOMM    Device	"NKV_NECCIR"

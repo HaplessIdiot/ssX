@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.6 1996/02/04 09:06:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.7 1996/02/09 08:20:30 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -57,6 +57,7 @@
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
 #include "atKeynames.h"
+#include "xf86Version.h"
 #endif
 
 #include "osdep.h"
@@ -1260,12 +1261,19 @@ DeviceAssocRec wacom_eraser_assoc =
  *
  ***************************************************************************
  */
-void
-init_module()
+int
+init_module(unsigned long	server_version)
 {
     AddDeviceAssoc(&wacom_stylus_assoc);
     AddDeviceAssoc(&wacom_cursor_assoc);
     AddDeviceAssoc(&wacom_eraser_assoc);
+
+    if (server_version != XF86_VERSION_CURRENT) {
+	ErrorF("Warning : Wacom module compiled for version%s\n", XF86_VERSION);
+	return 0;
+    } else {
+	return 1;
+    }
 }
 #endif
 

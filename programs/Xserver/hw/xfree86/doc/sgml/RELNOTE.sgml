@@ -2,16 +2,18 @@
 
  <article>
 
- <title>Release Notes for XFree86&tm; 3.1.2B (beta version)
+ <title>Release Notes for XFree86&tm; 3.1.2D (beta version)
  <author>The XFree86 Project, Inc
- <date>28 December 1995
+ <date>11 February 1996
 
 
 <abstract>
 
 This document describes the rationale and conditions of this beta release,
-what is new in the XFree86 beta versions 3.1.2B and 3.1.2A compared with
-the current release version 3.1.2, and how to install this beta release.
+what is new in the XFree86 beta versions 3.1.2D, 3.1.2B and 3.1.2A
+compared with the current release version 3.1.2, and how to install this
+beta release.  Note: version 3.1.2C was an internal-only release, but
+it will appear in source form in the X Consortium's X11R6.1 release.
 
 </abstract>
 
@@ -31,7 +33,7 @@ url="mailto:XFree86@XFree86.org">.
 
 The X servers included in beta releases have a built-in expiry date.
 The reason for this is to try to prevent them from persisting beyond the
-date of the next release.  The expiry date for 3.1.2B is 1 April 1996.
+date of the next release.  The expiry date for 3.1.2D is 1 June 1996.
 
 The XFree86 binary beta releases may be freely redistributed providing that
 they are not modified in any way, and providing that an unmodified version
@@ -54,9 +56,23 @@ our usual support address.
 
 <url name="The XFree86 FAQ" url="http://www.xfree86.org/FAQ"> contains
 a section about the current beta version.  It includes a regularly
-updated list of known problems.
+updated list of known problems.  If you are having problems with the
+current beta version, please look here first.
 
-<sect> New Features in 3.1.2C
+<sect> 3.1.2D and X11R6.1
+<p>
+XFree86 3.1.2D is based on the X Consortium's X11R6.1 release (which has
+not yet been publicly released).  For this reason, 3.1.2D is distributed
+as a complete release rather than an upgrade release.  R6.1 is an update to
+R6, and is intended to be compatible with R6 at the source and protocol
+levels.  Binaries should be upward-compatible.  X11R6.1 includes
+some new Xserver extensions: DOUBLE-BUFFER, XKEYBOARD and RECORD.  LBX
+has been dropped from R6.1, and as such, has been dropped from XFree86 too.
+It is expected that it will reappear in some form in a future release.
+<p>
+<sect> New Features in 3.1.2D
+<sect1> General
+<p>
 <sect1> PC98 Support
 <p>
 <itemize>
@@ -452,7 +468,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.16 1996/01/21 01:49:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.17 1996/01/30 15:26:08 dawes Exp $
 </verb>
 
 </article>

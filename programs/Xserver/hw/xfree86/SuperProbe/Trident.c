@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.5 1995/06/10 12:53:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Trident.c,v 3.6 1996/02/04 08:57:10 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -51,6 +51,41 @@ int *Chipset;
 {
         Bool result = FALSE;
 	Byte chip, old, old1, val;
+	int i = 0;
+
+	if (!NoPCI)
+	{
+	    while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
+		if (pcrp->_vendor == PCI_VENDOR_TRIDENT)
+		{
+			switch (pcrp->_device)
+			{
+			case PCI_CHIP_9420:
+				*Chipset = CHIP_TVGA9420;
+				break;
+			case PCI_CHIP_9440:
+				*Chipset = CHIP_TVGA9440;
+				break;
+			case PCI_CHIP_9660:
+				*Chipset = CHIP_TVGA9660;
+				break;
+			case PCI_CHIP_9680:
+				*Chipset = CHIP_TVGA9680;
+				break;
+			case PCI_CHIP_9682:
+				*Chipset = CHIP_TVGA9682;
+				break;
+			default:
+				Chip_data = chip;
+				*Chipset = CHIP_TVGA_UNK;
+				break;
+			}
+			PCIProbed = TRUE;
+			return(TRUE);
+		}
+		i++;
+	    }
+	}
 
 	Ports[0] = CRTC_IDX;
 	Ports[1] = CRTC_REG;

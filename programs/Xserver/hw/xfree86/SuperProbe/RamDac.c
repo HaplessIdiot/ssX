@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.15 1996/02/04 08:57:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.16 1996/02/09 08:20:12 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -771,16 +771,20 @@ int *RamDac;
 	case 0x08:  case 0x09:  case 0x0A:  case 0x0B:
 	case 0x0C:  case 0x0D:  case 0x0E:  case 0x0F:
 		*RamDac = DAC_ATI_CT_ET;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x10:
 		*RamDac = DAC_IBMRGB525;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x20:
 		*RamDac = DAC_ATI68875;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x27:
 	case 0x57:
 		*RamDac = DAC_TVP3025;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x30:
 		*RamDac = DAC_STANDARD;
@@ -803,33 +807,45 @@ int *RamDac;
 	case 0x50:
 	case 0x51:
 		*RamDac = DAC_ATI68860;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x60:
 		*RamDac = DAC_STG1700;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x61:
 		*RamDac = DAC_ATT498;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x70:
 		*RamDac = DAC_STG1702;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x71:
 		*RamDac = DAC_SIERRA24;
 		break;
 	case 0x72:
 		*RamDac = DAC_ATT498;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x73:
 		*RamDac = DAC_STG1703;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x74:
 		*RamDac = DAC_CH8398;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	case 0x75:
 		*RamDac = DAC_ATT408;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	default:
 		break;
+	}
+	if (Width8Check())
+	{
+		*RamDac |= DAC_8BIT;
 	}
 
 	DisableIOPorts(2, Port);

@@ -324,13 +324,6 @@ If your mouse does not work try using <tt>kermit</tt> or <tt>tip</tt>
 to connect to the mouse serial port and verify that it does indeed
 generate characters.
 
-<sect1> Configuring a PS/2 mouse for XFree86 on NetBSD
-
-<p>
-The NetBSD pms mouse driver handles PS/2 style mice as
-Busmouse. Specify the protocol `busmouse' in the mouse section of your
-<tt/XF86Config/ file if you're using a PS/2 mouse.
-
 <sect> Running X
 
 <p>
@@ -650,7 +643,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.18 1996/01/28 07:30:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.19 1996/02/04 09:08:15 dawes Exp $
 
 
 

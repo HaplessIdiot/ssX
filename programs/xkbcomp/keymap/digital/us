@@ -27,10 +27,7 @@
 //authorization from Digital Equipment Corporation.
 //
 // HISTORY
-// $Log: us,v $
-// Revision 1.1  1996/02/04 07:40:37  dawes
-// Initial revision
-//
+// Log
 // Revision 1.1.6.2  1995/10/25  21:00:53  William_Walker
 // 	Add pc104-key support
 // 	[1995/10/23  15:46:24  William_Walker]
@@ -43,9 +40,9 @@
 // 	New file.  I love keymaps.
 // 	[1995/06/05  18:14:04  William_Walker]
 // 
-// $EndLog$
+// EndLog
 // 
-// @(#)$RCSfile: us,v $ $Revision: 1.1 $ (DEC) $Date: 1996/02/04 07:40:37 $
+// @(#)RCSfile: us  Revision: /main/1  (DEC) Date: 1996/02/02 14:21:15 
 // 
 
 // **************************************************************

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.74 1996/02/09 08:20:23 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.75 1996/02/10 10:39:59 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -890,7 +890,7 @@ xf86Config (vtopen)
 	  break;
 	  
       case MODULE:
-#ifdef DYNAMIC_MODULES
+#ifdef DYNAMIC_MODULE
 	  {
 	      void	*(*xf86LoadModule(const char*));
 	      

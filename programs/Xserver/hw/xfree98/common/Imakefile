@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 10:50:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.8 1996/02/04 09:16:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.9 1996/02/09 08:21:46 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -32,18 +32,37 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/common/Imakefile,v 3.8 1996/02/04
 #if BuildXInputExt
  XF86_XINPUT_SRC = xf86Xinput.c
  XF86_XINPUT_OBJ = xf86Xinput.o
-# if JoystickSupport
-    JOYSTICK_SRC = xf86Jstk.c
-    JOYSTICK_OBJ = xf86Jstk.o
+# if ! BuildDynamicLoading
+    XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines
+#  if JoystickSupport
+      JOYSTICK_SRC = xf86Jstk.c
+      JOYSTICK_OBJ = xf86Jstk.o
+#  endif
+#  if WacomSupport
+         WACOM_SRC = xf86Wacom.c
+         WACOM_OBJ = xf86Wacom.o
+#  endif
+#  if ElographicsSupport
+   ELOGRAPHICS_SRC = xf86Elo.c
+   ELOGRAPHICS_OBJ = xf86Elo.o
+#  endif
+# else
+ SHARED_CFLAGS = PositionIndependentCFlags -DDYNAMIC_MODULE
+#  if JoystickSupport
+#   ifdef LinuxArchitecture
+   ARCH_JSTK = ../os-support/linux/lnx_jstk.o
+#   endif
+#   if defined(FreeBSDArchitecture)
+   ARCH_JSTK = ../os-support/bsd/bsd_jstk.o
+#   endif
+#  endif
 # endif
-# if WacomSupport
-       WACOM_SRC = xf86Wacom.c
-       WACOM_OBJ = xf86Wacom.o
-# endif
-# if ElographicsSupport
- ELOGRAPHICS_SRC = xf86Elo.c
- ELOGRAPHICS_OBJ = xf86Elo.o
-# endif
+#endif
+
+#if BuildDynamicLoading
+ XF86DL_SRC = xf86Dl.c
+ XF86DL_OBJ = xf86Dl.o
+MODULEDEFINES = -DDYNAMIC_MODULES
 #endif
 
 SERVERSRCS = \
@@ -62,6 +81,7 @@ SERVERSRCS = \
 	XF86_I128.c
 
 SRCS =	\
+	$(XF86DL_SRC) \
 	$(XCONFIGSRC).c \
 	xf86IniExt.c \
 	xf86MIniExt.c \
@@ -82,6 +102,7 @@ SRCS =	\
 	$(SERVERSRCS)
 
 OBJS = \
+	$(XF86DL_OBJ) \
 	$(XCONFIGSRC).o \
 	xf86Cursor.o \
 	$(XKBDDXOBJ) \
@@ -110,9 +131,9 @@ OFILES = \
    OSVENDOR = OSVendor
   OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
 CONSDEFINES = XFree86ConsoleDefines
-/* 823132800 is Thu Feb  1 00:00:00 1996 GMT */
 /* 828316800 is Mon Apr  1 00:00:00 1996 GMT */
-EXP_DEFINES = -DEXPIRY_TIME=828316800
+/* 833587200 is Sat Jun  1 00:00:00 1996 GMT */
+EXP_DEFINES = -DEXPIRY_TIME=833587200
 
     DEFINES = $(XCONFIGDEFINES) $(CONSDEFINES) -DPC98
 
@@ -125,9 +146,34 @@ XF86SCREENFLAGS = $(VGA16BUILD) $(VGA16MONOBUILD)
 all:: $(OFILES)
 
 #ifdef BuildXInputExt
+# if !BuildDynamicLoading
 SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES))
+# else
+SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES) -DDYNAMIC_MODULE)
+#  if JoystickSupport
+SpecialObjectRule(xf86Jstk.o,xf86Jstk.c,$(SHARED_CFLAGS))
+DynamicModuleTarget(xf86Jstk.so,xf86Jstk.o $(ARCH_JSTK))
+#   ifndef DontInstallPC98Version
+InstallProgram(xf86Jstk.so,$(BINDIR))
+#   endif
+#  endif
+#  if WacomSupport
+SpecialObjectRule(xf86Wacom.o,xf86Wacom.c,$(SHARED_CFLAGS))
+DynamicModuleTarget(xf86Wacom.so,xf86Wacom.o)
+#   ifndef DontInstallPC98Version
+InstallProgram(xf86Wacom.so,$(BINDIR))
+#   endif
+#  endif
+#  if ElographicsSupport
+SpecialObjectRule(xf86Elo.o,xf86Elo.c,$(SHARED_CFLAGS))
+DynamicModuleTarget(xf86Elo.so,xf86Elo.o)
+#   ifndef DontInstallPC98Version
+InstallProgram(xf86Elo.so,$(BINDIR))
+#   endif
+#  endif
+# endif
 #endif
-SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"')
+SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' $(MODULEDEFINES))
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(EXP_DEFINES))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
 #if XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer ||\

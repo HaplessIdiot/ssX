@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/83 1995/12/15 14:06:17 gildea $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.3 1995/09/23 07:09:31 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.4 1996/01/05 13:23:15 dawes Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -636,8 +636,8 @@ should be worked around.  See the \fB\-cu\fP option for details.
 The default is ``false.''
 .TP 8
 .B "colorMode (\fPclass\fB ColorMode)"
-Specifies whether or not recognition of ANSI color change escape sequences
-should be enabled.
+Specifies whether or not recognition of ANSI (ISO 6429)
+color change escape sequences should be enabled.
 .TP 8
 .B "colorBDMode (\fPclass\fB ColorMode)"
 Specifies whether characters with the bold attribute should be displayed in
@@ -666,6 +666,25 @@ disables all colors, including underlining.
 .B "color7 (\fPclass\fB Foreground)"
 These specify the colors for the ISO 6429 extension.  The defaults are,
 respectively, black, red, green, yellow, blue, magenta, cyan, and white.
+If \fIcolorMode\fP is not active,
+the resources \fIcolor0\fP through \fIcolor6\fP
+are interpreted differently:
+.RS
+.TP 8
+.B "color0\fP text foreground"
+.TP 8
+.B "color1\fP text background"
+.TP 8
+.B "color2\fP text cursor"
+.TP 8
+.B "color3\fP mouse foreground"
+.TP 8
+.B "color4\fP mouse background"
+.TP 8
+.B "color5\fP Tektronix foreground"
+.TP 8
+.B "color6\fP Tektronix background"
+.RE
 .TP 8
 .B "color8 (\fPclass\fB Foreground)"
 .TP 8
@@ -700,7 +719,7 @@ underlined.  It may be desirable to disable underlining when color is being
 used for the underline attribute.
 .TP 8
 .B "dynamicColors (\fPclass\fB DynamicColors)"
-Sepcifies whether or not escape sequences to change colors assigned to
+Specifies whether or not escape sequences to change colors assigned to
 different attributes are recognized.
 .TP 8
 .B "background (\fPclass\fB Background)"
@@ -1192,7 +1211,7 @@ Clicking button two moves the display to a position in the saved text
 that corresponds to the pointer's position in the scrollbar.
 .PP
 .PP
-Unlike the VT102 window, the Tektronix window dows not allow the copying of
+Unlike the VT102 window, the Tektronix window does not allow the copying of
 text.
 It does allow Tektronix GIN mode, and in this mode
 the cursor will change from an arrow to a cross.
@@ -1399,6 +1418,12 @@ actions are provided for using within the \fIvt100\fP or \fItek4014\fP
 This action rings the keyboard bell at the specified percentage
 above or below the base volume.
 .TP 8
+.B "create-menu(\fIm/v/f/t\fP)"
+This action creates one of the menus used by \fIxterm\fP,
+if it has not been previously created.
+The parameter values are the menu names:
+\fImainMenu\fP, \fIvtMenu\fP, \fIfontMenu\fP, \fItekMenu\fP, respectively.
+.TP 8
 .B "ignore()"
 This action ignores the event but checks for special pointer position
 escape sequences.
@@ -1449,6 +1474,10 @@ should only be bound to Motion events.
 This action puts the currently selected text into all of the selections or 
 cutbuffers specified by \fIdestname\fP.
 .TP 8
+.B "select-set()"
+This action stores text that corresponds to the current selection,
+without affecting the selection mode.
+.TP 8
 .B "select-cursor-start()"
 This action is similar to \fBselect-start\fP except that it begins the
 selection at the current text cursor position.
@@ -1497,6 +1526,9 @@ the other direction.
 .B "allow-send-events(\fIon/off/toggle\fP)"
 This action set or toggles the \fBallowSendEvents\fP resource and is also
 invoked by the \fBallowsends\fP entry in \fImainMenu\fP.
+.TP
+.B "set-logging()"
+This action toggles the state of the logging option.
 .TP 8
 .B "redraw()"
 This action redraws the window and is also invoked by the
@@ -1631,6 +1663,35 @@ It is also invoked from the \fItekcopy\fP entry in \fItekMenu\fP.
 .TP 8
 .B "visual-bell()"
 This action flashes the window quickly.
+.TP 8
+.B "dired-button()"
+Handles a button event (other than press and release)
+by echoing the event's position
+(i.e., character line and column) in the following format:
+.sp
+.in +8
+^X ESC G <line+' '> <col+' '>
+.in -8
+.TP 8
+.B "vi-button()"
+Handles a button event (other than press and release)
+by echoing a control sequence computed from the event's line number
+in the screen relative to the current line:
+.sp
+.in +8
+ESC ^P
+.in -8
+or
+.in +8
+ESC ^N
+.in -8
+.sp
+according to whether the event is before, or after the current line,
+respectively.
+The ^N (or ^P) is repeated once for each line that the event differs
+from the current line.
+The control sequence is omitted altogether if the button event is on the
+current line.
 .PP
 The Tektronix window also has the following action:
 .TP 8

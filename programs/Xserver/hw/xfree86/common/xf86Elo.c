@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.4 1996/02/04 09:06:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.5 1996/02/09 08:20:26 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -85,6 +85,7 @@
 #include "xf86Procs.h"
 #include "xf86Xinput.h"
 #include "xf86_Config.h"
+#include "xf86Version.h"
 #endif
 
 #include "os.h"
@@ -1196,9 +1197,16 @@ DeviceAssocRec elographics_assoc =
  *
  ***************************************************************************
  */
-void
-init_module()
+int
+init_module(unsigned long	server_version)
 {
     AddDeviceAssoc(&elographics_assoc);
+
+    if (server_version != XF86_VERSION_CURRENT) {
+	ErrorF("Warning : Elographics module compiled for version%s\n", XF86_VERSION);
+	return 0;
+    } else {
+	return 1;
+    }
 }
 #endif

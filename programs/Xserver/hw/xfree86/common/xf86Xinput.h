@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.2 1996/01/14 13:35:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.3 1996/02/04 09:06:26 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -103,21 +103,21 @@ extern	int		DeviceValuator;
 
 extern int
 IsCorePointer(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 	      DeviceIntPtr /*dev*/
 #endif
 );
 
 extern int
 IsCoreKeyboard(
-#ifdef NeedFunctionPrototypes
+#if NeedFunctionPrototypes
 	       DeviceIntPtr /*dev*/
 #endif
 );
 
 void
 PostMotionEvent(
-#ifdef NeedVarargsPrototypes
+#if NeedVarargsPrototypes
 		DeviceIntPtr	/*device*/,
 		int		/*is_absolute*/,
 		int		/*first_valuator*/,
@@ -128,7 +128,7 @@ PostMotionEvent(
 
 void
 PostProximityEvent(
-#ifdef NeedVarargsPrototypes
+#if NeedVarargsPrototypes
 		   DeviceIntPtr	/*device*/,
 		   int		/*is_in*/,
 		   int		/*first_valuator*/,
@@ -139,13 +139,20 @@ PostProximityEvent(
 
 void
 PostButtonEvent(
-#ifdef NeedVarargsPrototypes
+#if NeedVarargsPrototypes
 		DeviceIntPtr	/*device*/,
 		int		/*button*/,
 		int		/*is_down*/,
 		int		/*first_valuator*/,
 		int		/*num_valuators*/,
 		...
+#endif
+);
+
+void
+AddDeviceAssoc(
+#if NeedFunctionPrototypes
+		DeviceAssocPtr	/*assoc*/
 #endif
 );
 

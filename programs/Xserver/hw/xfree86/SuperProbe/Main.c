@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.8 1996/01/26 09:09:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.9 1996/02/04 08:56:49 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -37,6 +37,9 @@ Bool Verbose = FALSE;
 Long Chip_data = (Long)~0;
 Byte *Bios_Base = (Byte *)0;
 Bool NoBIOS = FALSE;
+Bool NoPCI = FALSE;
+Bool PCIProbed = FALSE;
+struct pci_config_reg *pcrp;
 
 static Bool No16Bits = FALSE;
 static Bool Exclusions = FALSE;
@@ -53,6 +56,7 @@ static Chip_Descriptor *SVGA_Descriptors[] = {
     &Genoa_Descriptor,
     &UMC_Descriptor,
     &Trident_Descriptor,
+    &SiS_Descriptor,
     &ATI_Descriptor,
     &Ahead_Descriptor,
     &NCR_Descriptor,
@@ -454,6 +458,10 @@ char *argv[];
 	    }
 	    Bios_Base = (Byte *)StrToUL(argv[i]);
 	}
+	else if (strncmp(argv[i], "-no_pci", 7) == 0)
+	{
+	    NoPCI = TRUE;
+	}
 	else if (strncmp(argv[i], "-no_bios", 8) == 0)
 	{
 	    NoBIOS = TRUE;
@@ -488,6 +496,7 @@ char *argv[];
 	    printf("\t-no_bios\tDon't read BIOS & assume EGA/VGA as primary\n");
 	    printf("\t-no_dac\t\tDon't probe for RAMDAC type\n");
 	    printf("\t-no_mem\t\tDon't probe for video memory\n");
+	    printf("\t-no_pci\t\tDon't probe the PCI bus\n");
 	    printf("\t-info\t\tPrint a list of the capabilities of %s\n",
 		   MyName);
 	    printf("\nRefer to the manual page '%s.1' for complete details\n",
@@ -585,6 +594,11 @@ char *argv[];
 	    printf("BIOS Base address = 0x%X\n\n", (int)Bios_Base);
 	}
 	fflush(stdout);
+    }
+
+    if (!NoPCI)
+    {
+	xf86scanpci();
     }
 
     if ((!NoBIOS) && (!NoEGA))

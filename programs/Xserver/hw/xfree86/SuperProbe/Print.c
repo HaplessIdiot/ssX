@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.26 1996/02/04 08:57:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.27 1996/02/09 08:20:10 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -117,7 +117,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Trident LCD9100B", "Trident 9200CXr", "Trident LCD9320", 
 		  "Trident 9400CXi", "Trident GUI 9420", "Trident GUI 9420DGi",
                   "Trident GUI 9440AGi", "Trident GUI 9660", 
-                  "Trident GUI 9680"},
+                  "Trident GUI 9680", "Trident GUI 9682 (3D)"},
 /* Tseng */	{ "Tseng (chipset unknown)",
 		  "Tseng ET3000", "Tseng ET4000", 
 		  "Tseng ET4000/W32", "Tseng ET4000/W32i", 
@@ -146,6 +146,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 /* Weitek */	{ "Weitek (chipset unknown)",
 		  "Weitek 5086", "Weitek 5186", "Weitek 5286" },
 /* Yamaha */	{ "Yamaha 6388 VPDC" },
+/* SiS */	{ "Silicon Integrated Systems (chipset unknown)",
+                  "Silicon Integrated Systems SG86C201" },
 };
 
 static CONST char *Herc_Names[] = 
@@ -204,16 +206,16 @@ struct RamDac_Name RamDac_Names[] =
 	{ "RGB528", 
 	  "IBM RGB528 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
 	{ "STG1703", "STG1703 15/16/24-bit DAC w/pixel-mux,clock" },
-	{ "20C409", "AT&T 20C409 15/16/24-bit DAC" },
+	{ "20C409", "AT&T 20C409 15/16/24-bit DAC w/clock" },
 	{ "20C499", "AT&T 20C499 15/16/24-bit DAC" },
 	{ "TKD8001", "Trident Built-In 15/16/24-bit DAC" },
 	{ "TGUIDAC", "Trident Built-In 15/16/24-bit DAC" },
-	{ "Integrated", "ATI Mach64CT/ET integrated 15/16/24/32-bit DAC" },
+	{ "Integrated", "ATI Mach64CT/ET integrated 15/16/24/32-bit DAC w/clock" },
 	{ "MU9C1880", "Music 9C1880"},
 	{ "IMSG174", "Inmos G-174" },
 	{ "STG1702", "STG1702 15/16/24-bit DAC w/cursor,pixel-mux" },
-	{ "CH8398", "Chrontel 8398 15/16/24-bit DACC"},
-	{ "40C408", "AT&T 40C408 15/16/24-bit DAC" },
+	{ "CH8398", "Chrontel 8398 15/16/24-bit DAC w/clock"},
+	{ "20C408", "AT&T 20C408 15/16/24-bit DAC w/clock" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 
@@ -231,7 +233,9 @@ int Chipset;
 {
 	int vendor = SVGA_VENDOR(Chipset);
 	int chip = SVGA_CHIP(Chipset);
-	printf("\tChipset: %s\n", SVGA_Names[vendor][chip]);
+	printf("\tChipset: %s %s\n",
+		SVGA_Names[vendor][chip],
+		(PCIProbed ? "(PCI Probed)" : "(Port Probed)"));
 	if ((!chip) && (~Chip_data))
 	{
 		printf("\t\tSignature data: %x (please report)\n", 

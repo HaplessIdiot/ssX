@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.27 1996/02/04 09:14:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.28 1996/02/09 08:21:26 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -825,7 +825,7 @@ TVGA8900Probe()
 
 	if (tridentHWCursorType)
 	{
-		OFLG_SET(OPTION_SW_CURSOR, &TVGA8900.ChipOptionFlags);
+		OFLG_SET(OPTION_HW_CURSOR, &TVGA8900.ChipOptionFlags);
 	}
 
 #ifdef XFreeXDGA
@@ -1055,7 +1055,7 @@ TVGA8900FbInit()
 
 	if (tridentHWCursorType)
 	{
-	  if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
+	  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
 	  {
 		if (offscreen_available < 1024)
 			ErrorF("%s %s: Not enough off-screen video"
@@ -1564,7 +1564,7 @@ TVGA8900Init(mode)
 
 #ifndef MONOVGA
 	if (tridentHWCursorType)
-	  if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options))
+	  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
 		new->std.Attribute[17] = 0x00; /* Black overscan */
 
 	if ( (TVGAchipset == TVGA8900D) ||

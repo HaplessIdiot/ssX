@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.13 1996/01/30 15:25:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.14 1996/02/04 09:06:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -85,9 +85,9 @@ xf86KbdLeds ()
 #ifdef XKB
   if (!noXkbExtension) {
     XkbEventCauseRec cause;
-    XkbSetCauseUnknown(&cause);
-    XkbUpdateIndicators(xf86Info.pKeyboard,XkbAllIndicatorsMask,False,NULL,
-			&cause);
+   XkbSetCauseUnknown(&cause);
+    XkbUpdateIndicators((DeviceIntPtr)xf86Info.pKeyboard,
+			XkbAllIndicatorsMask, False, NULL, &cause);
     return;
   }
 #endif
@@ -240,7 +240,7 @@ Bool init;
           break;
         }
 #endif /* INHERIT_LOCK_STATE */
-      xf86KbdLeds();
+      xf86SetKbdLeds(leds);
 #endif /* LED_CAP */
 
       if      (xf86Info.kbdDelay <= 375) rad = 0x00;
@@ -281,7 +281,12 @@ xf86KbdProc (pKeyboard, what)
 
     xf86KbdGetMapping(&keySyms, modMap);
     
+
+#ifndef XKB
     defaultKeyboardControl.leds = xf86GetKbdLeds();
+#else
+    defaultKeyboardControl.leds = 0;
+#endif
 
     /*
      * Perform final initialization of the system private keyboard

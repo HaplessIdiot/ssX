@@ -26,11 +26,14 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.25 1996/02/04 08:57:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.26 1996/02/09 08:20:11 dawes Exp $ */
 
 /*
  * Includes
  */
+
+#include "PCI.h"
+
 #if defined(__STDC__) && defined(__GNUC__)
 #define inline __inline__
 #endif
@@ -163,6 +166,7 @@ Bool Probe_CT __STDCARGS((int *));
 Bool Probe_Video7 __STDCARGS((int *));
 Bool Probe_Genoa __STDCARGS((int *));
 Bool Probe_Trident __STDCARGS((int *));
+Bool Probe_SiS __STDCARGS((int *));
 Bool Probe_Oak __STDCARGS((int *));
 Bool Probe_Cirrus __STDCARGS((int *));
 Bool Probe_Cirrus54 __STDCARGS((int *));
@@ -196,6 +200,9 @@ void Print_CoProc_Name __STDCARGS((int));
 /*
  * Globals
  */
+extern struct pci_config_reg *pcrp;
+extern Bool NoPCI;
+extern Bool PCIProbed;
 extern char MyName[];
 extern Word vgaIOBase;
 extern Bool Verbose;
@@ -222,6 +229,7 @@ extern Chip_Descriptor Primus_Descriptor;
 extern Chip_Descriptor RealTek_Descriptor;
 extern Chip_Descriptor S3_Descriptor;
 extern Chip_Descriptor Trident_Descriptor;
+extern Chip_Descriptor SiS_Descriptor;
 extern Chip_Descriptor Tseng_Descriptor;
 extern Chip_Descriptor UMC_Descriptor;
 extern Chip_Descriptor Video7_Descriptor;
@@ -385,8 +393,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_WD		19
 #define V_WEITEK	20
 #define V_YAMAHA	21
+#define V_SIS		22
 
-#define NUM_VENDORS	21
+#define NUM_VENDORS	22
 #define CHPS_PER_VENDOR	30
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
@@ -527,6 +536,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_TVGA9440	SVGA_TYPE(V_TRIDENT,15)	/* Trident GUI9440AGi	*/
 #define CHIP_TVGA9660	SVGA_TYPE(V_TRIDENT,16)	/* Trident GUI9660	*/
 #define CHIP_TVGA9680	SVGA_TYPE(V_TRIDENT,17) /* Trident GUI9680	*/
+#define CHIP_TVGA9682	SVGA_TYPE(V_TRIDENT,18) /* Trident GUI9682	*/
+#define CHIP_SIS_UNK	SVGA_TYPE(V_SIS,0)	/* SiS unknown		*/
+#define CHIP_SIS86C201	SVGA_TYPE(V_SIS,1)	/* SiS SG86C201		*/
 #define CHIP_TSENG_UNK	SVGA_TYPE(V_TSENG,0)	/* Tseng unknown	*/
 #define CHIP_ET3000	SVGA_TYPE(V_TSENG,1)	/* Tseng ET3000		*/
 #define CHIP_ET4000	SVGA_TYPE(V_TSENG,2)	/* Tseng ET4000		*/

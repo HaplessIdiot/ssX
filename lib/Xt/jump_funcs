@@ -1,5 +1,5 @@
 # $XConsortium: jump_funcs,v 1.4 95/06/30 18:48:53 kaleb Exp $
-# $XFree86: xc/lib/Xt/jump_funcs,v 3.2 1995/01/28 15:44:02 dawes Exp $
+# $XFree86: xc/lib/Xt/jump_funcs,v 3.3 1995/07/01 10:45:12 dawes Exp $
 #
 00000000 T _XtAppAddActionHook  libXt          ActionHook
 00000000 T _XtRemoveActionHook  libXt          ActionHook
@@ -671,3 +671,26 @@
 00000000 T _XTestFakeProximityEvent libXtst        XTest
 00000000 T _XTestFakeDeviceMotionEvent libXtst        XTest
 00000000 T _XTestGrabControl    libXtst        XTest
+00000000 T _XdbeQueryExtension  libXext        Xdbe
+00000000 T _XdbeAllocateBackBufferName libXext        Xdbe
+00000000 T _XdbeDeallocateBackBufferName libXext        Xdbe
+00000000 T _XdbeSwapBuffers     libXext        Xdbe
+00000000 T _XdbeBeginIdiom      libXext        Xdbe
+00000000 T _XdbeEndIdiom        libXext        Xdbe
+00000000 T _XdbeGetVisualInfo   libXext        Xdbe
+00000000 T _XdbeFreeVisualInfo  libXext        Xdbe
+00000000 T _XdbeGetBackBufferAttributes libXext        Xdbe
+00000000 T _XRecordIdBaseMask   libXtst        XRecord
+00000000 T _XRecordQueryVersion libXtst        XRecord
+00000000 T _XRecordCreateContext libXtst        XRecord
+00000000 T _XRecordAllocRange   libXtst        XRecord
+00000000 T _XRecordRegisterClients libXtst        XRecord
+00000000 T _XRecordUnregisterClients libXtst        XRecord
+00000000 T _XRecordGetContext   libXtst        XRecord
+00000000 T _XRecordFreeState    libXtst        XRecord
+00000000 T _XRecordFreeData     libXtst        XRecord
+00000000 T _XRecordEnableContext libXtst        XRecord
+00000000 T _XRecordEnableContextAsync libXtst        XRecord
+00000000 T _XRecordProcessReplies libXtst        XRecord
+00000000 T _XRecordDisableContext libXtst        XRecord
+00000000 T _XRecordFreeContext  libXtst        XRecord

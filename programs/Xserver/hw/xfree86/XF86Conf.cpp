@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.21 1996/01/31 11:46:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.22 1996/02/04 08:56:05 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -195,8 +195,10 @@ XCOMM        Port "/dev/ttyS1"
 XCOMM        DeviceName "Wacom"
 XCOMM    EndSubSection
 XCOMM    SubSection "WacomCursor"
+XCOMM        Port "/dev/ttyS1"
 XCOMM    EndSubSection
 XCOMM    SubSection "WacomEraser"
+XCOMM        Port "/dev/ttyS1"
 XCOMM    EndSubSection
 XCOMM
 XCOMM    SubSection "Elographics"

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.7 1996/01/10 05:44:20 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.8 1996/01/24 22:05:02 dawes Exp $
  */
 
 /*
@@ -528,10 +528,11 @@ typedef struct _Misc {
     Boolean tekSmall;	/* start tek window in small size */
     Boolean appcursorDefault;
     Boolean appkeypadDefault;
+#if XtSpecificationRelease >= 6
     char* input_method;
     char* preedit_type;
     Boolean open_im;
-    Boolean shared_ic;
+#endif
     Boolean dynamicColors;
 } Misc;
 

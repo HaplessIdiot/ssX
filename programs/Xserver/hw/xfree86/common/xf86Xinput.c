@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.3 1996/02/04 09:06:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.4 1996/02/09 08:20:32 dawes Exp $ */
 
 #include "XI.h"
 #include "XIproto.h"
@@ -126,7 +126,7 @@ configExtendedInputSection(LexPtr       val)
   int           token;
   extern int    xf86GetToken(SymTabRec tab[]);
 
-#ifdef DYNAMIC_MODULE
+#ifndef DYNAMIC_MODULE
 # ifdef JOYSTICK_SUPPORT
   AddDeviceAssoc(&joystick_assoc);
 # endif
