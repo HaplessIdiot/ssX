@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef _ColorSelectionBox_h
 #define _ColorSelectionBox_h
@@ -117,7 +118,9 @@
 #define XtNokCallback "okCallback"
 #define XtNapplyCallback "applyCallback"
 #define XtNresetCallback "resetCallback"
+#ifndef XtNcancelCallback
 #define XtNcancelCallback "cancelCallback"
+#endif
 #define XtNvalueChangedCallback "valueChangedCallback"
 
 /* New resource types */
@@ -149,13 +152,6 @@ typedef struct _ColorSelectionBoxRec *ColorSelectionBoxWidget;
 
 /* Convenience routine */
 
-#ifdef _NO_PROTO
-
-extern Boolean CSBSetColor();
-extern void CSBGetColor();
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -169,7 +165,9 @@ extern Boolean CSBSetColor(Widget w, CSBColorSpace space, double c1,
 extern void CSBGetColor(Widget w, CSBColorSpace space, float *c1,
 			float *c2, float *c3, float *c4);
 
-#endif /* _NO_PROTO */
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" }
+#endif
 
 #endif /* _ColorSelectionBox_h */
 /* DON'T ADD ANYTHING AFTER THIS #endif */

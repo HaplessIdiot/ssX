@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef _FontSampler_h
 #define _FontSampler_h
@@ -90,15 +91,7 @@ extern WidgetClass fontSamplerWidgetClass;
 
 typedef struct _FontSamplerRec *FontSamplerWidget;
 
-#ifdef _NO_PROTO
-
-extern void FSBCancelSampler();
-
-#else /* _NO_PROTO */
-
 extern void FSBCancelSampler(Widget w);
-
-#endif /* _NO_PROTO */
 
 #endif /* _FontSampler_h */
 /* DON'T ADD ANYTHING AFTER THIS #endif */

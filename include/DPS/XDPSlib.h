@@ -34,16 +34,15 @@
  *
  * Author: Adobe Systems Incorporated and Digital Equipment Corporation
  */
+/* $XFree86$ */
  
 #ifndef _XDPSlib_h
 #define _XDPSlib_h
 
-#ifndef _NO_PROTO
 #undef _XEVENT_
-#endif
 
 #include <X11/Xlib.h>
-#include "DPS/XDPS.h"
+#include <DPS/XDPS.h>
 #include <X11/Xutil.h>
 
 /*

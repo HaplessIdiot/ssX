@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef PSWPRIV_H
 #define PSWPRIV_H
@@ -131,18 +132,16 @@ extern FILE *header;
 extern boolean noUserNames;  	/* -n flag */
 extern char *currentPSWName;
 extern char *hfile;
+extern char *ifile;
 extern char *ifile;		/* input file name for error messages */
 extern char *ofile;
 extern char *prog;
+extern char *special_h;		/* -f option */
 extern char *string_temp;	/* buffer of that size for scanning strings */
 extern char headid[];
-#if 0
-extern char yytext[];
-#else
-extern char *yytext;
-#endif
 extern int bigFile;
 extern int doANSI;		/* -a flag */
+extern int errorCount;
 extern int maxstring;		/* max PS string length to scan (-s) */
 extern int lexdebug;		/* debug flag for lexer */
 extern int errorCount;		/* non-fatal errs */

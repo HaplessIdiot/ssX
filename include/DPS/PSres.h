@@ -35,6 +35,10 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
+
+#ifndef _PSres_h
+#define _PSres_h
 
 extern char *PSResFontOutline, *PSResFontPrebuilt, *PSResFontAFM,
 	*PSResFontBDF, *PSResFontFamily, *PSResFontBDFSizes,
@@ -42,22 +46,6 @@ extern char *PSResFontOutline, *PSResFontPrebuilt, *PSResFontAFM,
 
 typedef enum {PSSaveReturnValues, PSSaveByType, PSSaveEverything}
 	PSResourceSavePolicy;
-
-#ifdef _NO_PROTO
-
-extern int ListPSResourceFiles();
-extern int ListPSResourceTypes();
-extern void FreePSResourceStorage();
-extern void SetPSResourcePolicy();
-typedef int (*PSResourceEnumerator)();
-extern void EnumeratePSResourceFiles();
-extern int CheckPSResourceTime();
-typedef char *(*PSResMallocProc)();
-typedef char *(*PSResReallocProc)();
-typedef void (*PSResFreeProc)();
-typedef void (*PSResFileWarningHandlerProc)();
-
-#else /* _NO_PROTO */
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -108,8 +96,6 @@ typedef void (*PSResFileWarningHandlerProc)(char *fileNamem, char *extraInfo);
 }
 #endif
 
-#endif /* _NO_PROTO */
-
 extern PSResMallocProc PSResMalloc;
 
 extern PSResReallocProc PSResRealloc;
@@ -117,3 +103,5 @@ extern PSResReallocProc PSResRealloc;
 extern PSResFreeProc PSResFree;
 
 extern PSResFileWarningHandlerProc PSResFileWarningHandler;
+
+#endif /* _PSres_h */

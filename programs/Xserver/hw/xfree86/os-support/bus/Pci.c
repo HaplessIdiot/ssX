@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.26 2000/05/31 07:15:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.27 2000/06/06 18:07:38 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -624,6 +624,7 @@ pciGenFindNext(void)
 {
   unsigned long devid, tmp;
   unsigned char base_class, sub_class, sec_bus, pri_bus;
+  Bool speculativeProbe = FALSE;
   
 #ifdef DEBUGPCI
 ErrorF("pciGenFindNext\n");

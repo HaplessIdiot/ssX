@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -70,12 +71,12 @@
 #include <Xm/RowColumn.h>
 #include <DPS/dpsXclient.h>
 #include <DPS/dpsops.h>
-#include "DPS/dpsXcommon.h"
-#include "DPS/dpsXshare.h"
-#include "DPS/FontSBP.h"
+#include <DPS/dpsXcommon.h>
+#include <DPS/dpsXshare.h>
+#include <DPS/FontSBP.h>
 #include "FSBwraps.h"
 #include "FontSBI.h"
-#include "DPS/FontSamplP.h"
+#include <DPS/FontSamplP.h>
 
 #if 0
 /* This is not in Xos.h for some reason */
@@ -103,8 +104,10 @@ static float defaultSizeList[] = {
 #define SAMPLER_DEFAULT_SIZE 24.0
 #endif /* SAMPLER_DEFAULT_SIZE */
 
-static Boolean DisplayAllWorkProc(), DisplaySelectedWorkProc(),
-	DisplaySelectedFamilyWorkProc(), DisplayFilteredWorkProc();
+static Boolean DisplayAllWorkProc(XtPointer client_data);
+static Boolean DisplaySelectedWorkProc(XtPointer client_data);
+static Boolean DisplaySelectedFamilyWorkProc(XtPointer client_data);
+static Boolean DisplayFilteredWorkProc(XtPointer client_data);
 
 #define Offset(field) XtOffsetOf(FontSamplerRec, sampler.field)
 
@@ -186,10 +189,16 @@ static XtResource resources[] = {
 
 /* Forward declarations */
 
-static void ClassInitialize(), ClassPartInitialize(), Initialize(), Destroy(),
-	ChangeManaged(), Resize(), ClickAction(), Cancel();
-static Boolean SetValues();
-static XtGeometryResult GeometryManager();
+static Boolean SetValues(Widget old, Widget req, Widget new, ArgList args, Cardinal *num_args);
+static XtGeometryResult GeometryManager(Widget w, XtWidgetGeometry *desired, XtWidgetGeometry *allowed);
+static void Cancel(Widget w);
+static void ChangeManaged(Widget w);
+static void ClassInitialize(void);
+static void ClassPartInitialize(WidgetClass widget_class);
+static void ClickAction(Widget widget, XEvent *event, String *params, Cardinal *num_params);
+static void Destroy(Widget widget);
+static void Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args);
+static void Resize(Widget widget);
 
 static XtActionsRec actions[] = {
     {"FSBClickAction", ClickAction}
@@ -269,15 +278,19 @@ FontSamplerClassRec fontSamplerClassRec = {
 WidgetClass fontSamplerWidgetClass =
 	(WidgetClass) &fontSamplerClassRec;
 
-typedef Boolean (*MatchProc)();
+struct _FilterRec;
 
-typedef struct {
+typedef Boolean (*MatchProc)(String name, struct _FilterRec *filter);
+
+typedef struct _FilterRec {
     char *name;
     char *particles[9];
     MatchProc special;
 } FilterRec;
 
-static Boolean MatchRoman(), MatchMedium(), MatchBlack();
+static Boolean MatchRoman(String name, FilterRec *filter);
+static Boolean MatchMedium(String name, FilterRec *filter);
+static Boolean MatchBlack(String name, FilterRec *filter);
 
 FilterRec filters[] = {
     {"roman",		{"Roman", NULL}, MatchRoman},
@@ -316,15 +329,12 @@ FilterRec filters[] = {
 
 static int class_indices[] = {TYPE_FILTERS, WIDTH_FILTERS, WEIGHT_FILTERS, -1};
 
-static void ShowLabel(s, string)
-    FontSamplerWidget s;
-    XmString string;
+static void ShowLabel(FontSamplerWidget s, XmString string)
 {
     XtVaSetValues(s->sampler.font_label_child, XmNlabelString, string, NULL);
 }
 
-static void UnhighlightFont(s)
-    FontSamplerWidget s;
+static void UnhighlightFont(FontSamplerWidget s)
 {
     DisplayedFontRec *d = s->sampler.highlighted_font;
 
@@ -334,8 +344,7 @@ static void UnhighlightFont(s)
 	      d->l-1, d->t-1);
 }
 
-static void HighlightFont(s)
-    FontSamplerWidget s;
+static void HighlightFont(FontSamplerWidget s)
 {
     DisplayedFontRec *d = s->sampler.highlighted_font;
     FontRec *f = d->font;
@@ -356,11 +365,11 @@ static void HighlightFont(s)
 
 /* ARGSUSED */
 
-static void ClickAction(widget, event, params, num_params)
-    Widget widget;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+static void ClickAction(
+    Widget widget,
+    XEvent *event,
+    String *params,
+    Cardinal *num_params)
 {
     XButtonEvent *b = (XButtonEvent *) event;
     DisplayedFontRec *f;
@@ -400,9 +409,11 @@ static void ClickAction(widget, event, params, num_params)
     }
 }
     
-static void UpdateDisplayedFontRecs(info, newHeight, oldHeight, newWidth)
-    DisplayRecord *info;
-    Position newHeight, oldHeight, newWidth;
+static void UpdateDisplayedFontRecs(
+    DisplayRecord *info,
+    Position newHeight,
+    Position oldHeight,
+    Position newWidth)
 {
     float *m = info->sampler->sampler.invctm;
     float h, w;
@@ -425,11 +436,11 @@ static void UpdateDisplayedFontRecs(info, newHeight, oldHeight, newWidth)
 
 /* ARGSUSED */
 
-static void ResizeEventHandler(widget, clientData, event, continueToDispatch)
-    Widget widget;
-    XtPointer clientData;
-    XEvent *event;
-    Boolean *continueToDispatch;
+static void ResizeEventHandler(
+    Widget widget,
+    XtPointer clientData,
+    XEvent *event,
+    Boolean *continueToDispatch)
 {
     Dimension clip_width, clip_height, new_width, new_height,
 	    area_width, area_height;
@@ -504,13 +515,12 @@ static void ResizeEventHandler(widget, clientData, event, continueToDispatch)
     }
 }
 
-static void ClassInitialize()
+static void ClassInitialize(void)
 {
     XtInitializeWidgetClass(fontSelectionBoxWidgetClass);
 }
 
-static void ClassPartInitialize(widget_class)
-    WidgetClass widget_class;
+static void ClassPartInitialize(WidgetClass widget_class)
 {
     register FontSamplerWidgetClass wc =
 	    (FontSamplerWidgetClass) widget_class;
@@ -522,8 +532,7 @@ static void ClassPartInitialize(widget_class)
     }
 }
 
-static void FreeDisplayInfo(info)
-    DisplayRecord *info;
+static void FreeDisplayInfo(DisplayRecord *info)
 {
     DisplayedFontRec *f;
     DisplayedTextRec *t;
@@ -548,17 +557,14 @@ static void FreeDisplayInfo(info)
     XtFree((char *) info);
 }
 
-static Boolean IsSet(widget)
-    Widget widget;
+static Boolean IsSet(Widget widget)
 {
     return XmToggleButtonGadgetGetState(widget);
 }
 
 /* ARGSUSED */
 
-static void DisplayCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void DisplayCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     XtAppContext app;
     float h, w;
@@ -666,8 +672,7 @@ static void DisplayCallback(widget, clientData, callData)
     }
 }
 
-static void FinishUpDisplaying(s)
-    FontSamplerWidget s;
+static void FinishUpDisplaying(FontSamplerWidget s)
 {
     XtSetSensitive(s->sampler.stop_button_child, False);
     s->sampler.current_display_proc = None;
@@ -675,9 +680,7 @@ static void FinishUpDisplaying(s)
 
 /* ARGSUSED */
 
-static void FilterCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void FilterCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     FontSamplerWidget s = (FontSamplerWidget) clientData;
     
@@ -696,9 +699,7 @@ static void FilterCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void TextCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void TextCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     FontSamplerWidget s = (FontSamplerWidget) clientData;
     DisplayedTextRec *t;
@@ -717,9 +718,7 @@ static void TextCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void StopCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void StopCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     FontSamplerWidget s = (FontSamplerWidget) clientData;
 
@@ -731,9 +730,7 @@ static void StopCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void DismissCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void DismissCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     FontSamplerWidget s = (FontSamplerWidget) clientData;
 
@@ -749,9 +746,7 @@ static void DismissCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void PopdownCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void PopdownCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     FontSamplerWidget s =
 	    (FontSamplerWidget)
@@ -764,9 +759,7 @@ static void PopdownCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void ExposeCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ExposeCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     XmDrawingAreaCallbackStruct *da = (XmDrawingAreaCallbackStruct *) callData;
     XExposeEvent *ev = (XExposeEvent *) da->event;
@@ -782,9 +775,7 @@ static void ExposeCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void ClearCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ClearCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     int j;
     FontSamplerWidget s = (FontSamplerWidget) clientData;
@@ -801,9 +792,7 @@ static void ClearCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void SizeSelect(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void SizeSelect(Widget widget, XtPointer clientData, XtPointer callData)
 {
     FontSamplerWidget s = (FontSamplerWidget) clientData;
     String value;
@@ -847,9 +836,7 @@ static Boolean changingSize = False;
 
 /* ARGSUSED */
 
-static void TextVerify(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void TextVerify(Widget widget, XtPointer clientData, XtPointer callData)
 {
     int i;
     XmTextVerifyPtr v = (XmTextVerifyPtr) callData;
@@ -887,9 +874,7 @@ static void TextVerify(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void SetSize(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void SetSize(Widget widget, XtPointer clientData, XtPointer callData)
 {
     char buf[20], *ch;
     FontSamplerWidget s = (FontSamplerWidget) clientData;
@@ -902,9 +887,7 @@ static void SetSize(widget, clientData, callData)
     changingSize = False;
 }
 
-static void CreateSizeMenu(s, destroyOldChildren)
-    FontSamplerWidget s;
-    Boolean destroyOldChildren;
+static void CreateSizeMenu(FontSamplerWidget s, Boolean destroyOldChildren)
 {
     Arg args[20];
     int i, j;
@@ -920,7 +903,7 @@ static void CreateSizeMenu(s, destroyOldChildren)
 		    XtNnumChildren, &num_children, NULL);
 
 	/* Don't destroy first child ("other") */
-	for (j = 1; j < num_children; j++) XtDestroyWidget(children[j]);
+	for (j = 1; (Cardinal)j < num_children; j++) XtDestroyWidget(children[j]);
 
 	sizes = (Widget *) XtMalloc((s->sampler.size_count+1) *
 				    sizeof(Widget));
@@ -949,8 +932,7 @@ static void CreateSizeMenu(s, destroyOldChildren)
     XtFree((char *) sizes);
 }
 
-static void CreateFilters(s)
-    FontSamplerWidget s;
+static void CreateFilters(FontSamplerWidget s)
 {
     FilterRec *f;
     int i;
@@ -980,8 +962,7 @@ static void CreateFilters(s)
     }
 }
 
-static void CreateChildren(s)
-    FontSamplerWidget s;
+static void CreateChildren(FontSamplerWidget s)
 {
     Arg args[20];
     int i;
@@ -1221,10 +1202,10 @@ static void CreateChildren(s)
 
 /* ARGSUSED */
 
-static void Initialize(request, new, args, num_args)
-    Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
+static void Initialize(
+    Widget request, Widget new,
+    ArgList args,
+    Cardinal *num_args)
 {
     FontSamplerWidget sampler = (FontSamplerWidget) new;
 
@@ -1268,8 +1249,7 @@ static void Initialize(request, new, args, num_args)
     CreateChildren(sampler);
 }
 
-static void AdvanceInfoToNextFont(info)
-    DisplayRecord *info;
+static void AdvanceInfoToNextFont(DisplayRecord *info)
 {	
     if (info->current_font->blend_data != NULL) {
 	if (info->current_blend == NULL) {
@@ -1288,8 +1268,7 @@ static void AdvanceInfoToNextFont(info)
     }
 }
 
-static Boolean ShowFont(info)
-    DisplayRecord *info;
+static Boolean ShowFont(DisplayRecord *info)
 {
     float width, left, right, top, bottom;
     FontRec *f = info->current_font;
@@ -1389,8 +1368,7 @@ static Boolean ShowFont(info)
     return True;
 }
 
-static Boolean DisplayAllWorkProc(client_data)
-    XtPointer client_data;
+static Boolean DisplayAllWorkProc(XtPointer client_data)
 {
     DisplayRecord *info = (DisplayRecord *) client_data;
     FontSamplerWidget s = info->sampler;
@@ -1417,8 +1395,7 @@ static Boolean DisplayAllWorkProc(client_data)
     return False;
 }
 
-static Boolean DisplaySelectedWorkProc(client_data)
-    XtPointer client_data;
+static Boolean DisplaySelectedWorkProc(XtPointer client_data)
 {
     DisplayRecord *info = (DisplayRecord *) client_data;
     FontSamplerWidget s = info->sampler;
@@ -1435,8 +1412,7 @@ static Boolean DisplaySelectedWorkProc(client_data)
     return True;
 }
 
-static Boolean DisplaySelectedFamilyWorkProc(client_data)
-    XtPointer client_data;
+static Boolean DisplaySelectedFamilyWorkProc(XtPointer client_data)
 {
     DisplayRecord *info = (DisplayRecord *) client_data;
     FontSamplerWidget s = info->sampler;
@@ -1474,9 +1450,7 @@ static Boolean DisplaySelectedFamilyWorkProc(client_data)
 
 /* ARGSUSED */
 
-static Boolean MatchRoman(name, filter)
-    String name;
-    FilterRec *filter;
+static Boolean MatchRoman(String name, FilterRec *filter)
 {
     FilterRec *f;
     char *ch, **search, *start;
@@ -1500,9 +1474,7 @@ static Boolean MatchRoman(name, filter)
     return True;
 }
 
-static Boolean MatchMedium(name, filter)
-    String name;
-    FilterRec *filter;
+static Boolean MatchMedium(String name, FilterRec *filter)
 {
     FilterRec *f;
     char *ch, **search, *start;
@@ -1539,9 +1511,7 @@ static Boolean MatchMedium(name, filter)
     return True;
 }
 
-static Boolean MatchBlack(name, filter)
-    String name;
-    FilterRec *filter;
+static Boolean MatchBlack(String name, FilterRec *filter)
 {
     char *ch, **search, *start;
     int len;
@@ -1574,8 +1544,7 @@ static Boolean MatchBlack(name, filter)
     return False;
 }
 
-static void UpdateFilters(s)
-    FontSamplerWidget s;
+static void UpdateFilters(FontSamplerWidget s)
 {
     int i;
 
@@ -1589,10 +1558,10 @@ static void UpdateFilters(s)
 	    XmTextFieldGetString(s->sampler.filter_text_child);
 }
 
-static Boolean FontMatchesFilters(font, blend, s)
-    FontRec *font;
-    BlendRec *blend;
-    FontSamplerWidget s;
+static Boolean FontMatchesFilters(
+    FontRec *font,
+    BlendRec *blend,
+    FontSamplerWidget s)
 {
     int *cl, i;
     FilterRec *f;
@@ -1661,8 +1630,7 @@ NEXT_CLASS: ;
     return (ch != NULL);
 }
 
-static Boolean DisplayFilteredWorkProc(client_data)
-    XtPointer client_data;
+static Boolean DisplayFilteredWorkProc(XtPointer client_data)
 {
     DisplayRecord *info = (DisplayRecord *) client_data;
     FontSamplerWidget s = info->sampler;
@@ -1692,8 +1660,7 @@ static Boolean DisplayFilteredWorkProc(client_data)
     return False;
 }
 
-static void Destroy(widget)
-    Widget widget;
+static void Destroy(Widget widget)
 {
     FontSamplerWidget s = (FontSamplerWidget) widget;
 
@@ -1714,8 +1681,7 @@ static void Destroy(widget)
     XtFree((char *) s->sampler.filter_flags);
 }
 
-static void Resize(widget)
-    Widget widget;
+static void Resize(Widget widget)
 {
     FontSamplerWidget s = (FontSamplerWidget) widget;
 
@@ -1724,9 +1690,9 @@ static void Resize(widget)
 
 /* ARGSUSED */
 
-static XtGeometryResult GeometryManager(w, desired, allowed)
-    Widget w;
-    XtWidgetGeometry *desired, *allowed;
+static XtGeometryResult GeometryManager(
+    Widget w,
+    XtWidgetGeometry *desired, XtWidgetGeometry *allowed)
 {
 #define WANTS(flag) (desired->request_mode & flag)
 
@@ -1744,8 +1710,7 @@ static XtGeometryResult GeometryManager(w, desired, allowed)
 #undef WANTS
 }
 
-static void ChangeManaged(w)
-    Widget w;
+static void ChangeManaged(Widget w)
 {
     FontSamplerWidget s = (FontSamplerWidget) w;
 
@@ -1755,10 +1720,10 @@ static void ChangeManaged(w)
 
 /* ARGSUSED */
 
-static Boolean SetValues(old, req, new, args, num_args)
-    Widget old, req, new;
-    ArgList args;
-    Cardinal *num_args;
+static Boolean SetValues(
+    Widget old, Widget req, Widget new,
+    ArgList args,
+    Cardinal *num_args)
 {
     FontSamplerWidget olds = (FontSamplerWidget) old;
     FontSamplerWidget news = (FontSamplerWidget) new;
@@ -1814,8 +1779,7 @@ static Boolean SetValues(old, req, new, args, num_args)
 #undef NE
 }
 
-static void Cancel(w)
-    Widget w;
+static void Cancel(Widget w)
 {
     FontSamplerWidget s = (FontSamplerWidget) w;
 
@@ -1824,8 +1788,7 @@ static void Cancel(w)
     }
 }    
 
-void FSBCancelSampler(w)
-    Widget w;
+void FSBCancelSampler(Widget w)
 {
     XtCheckSubclass(w, fontSamplerWidgetClass, NULL);
 
@@ -1833,8 +1796,7 @@ void FSBCancelSampler(w)
 }
 
 #ifdef NO_STRSTR_AVAILABLE
-String strstr(s1, s2)
-    register String s1, s2;
+String strstr(String s1, String s2)
 {
     register int len1, len2;
 

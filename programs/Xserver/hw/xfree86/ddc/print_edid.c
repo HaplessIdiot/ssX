@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.8 2000/04/19 15:48:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.11 2000/05/31 07:15:01 eich Exp $ */
 
 /* print_edid.c: print out all information retrieved from display device 
  * 
@@ -40,11 +40,9 @@ xf86PrintEDID(xf86MonPtr m)
 static void
 print_vendor(int scrnIndex, struct vendor *c)
 {
-    xf86DrvMsg(scrnIndex,X_INFO,"Manufacturer: %s  ",&c->name);
-    xf86ErrorF("Model: %x ",c->prod_id);
-    xf86ErrorF("Serial#: %u  ",c->serial);
-    xf86ErrorF("Year: %u ",c->year);
-    xf86ErrorF("Week: %u\n",c->week);
+    xf86DrvMsg(scrnIndex, X_INFO, "Manufacturer: %s  Model: %x  Serial#: %u\n",
+	&c->name, c->prod_id, c->serial);
+    xf86DrvMsg(scrnIndex, X_INFO, "Year: %u  Week: %u\n", c->year, c->week);
 }
   
 static void
@@ -76,7 +74,7 @@ static void
 print_input_features(int scrnIndex, struct disp_features *c)
 {
     if (DIGITAL(c->input_type))
-	xf86DrvMsg(scrnIndex,X_INFO,"Digital Display Input, ");
+	xf86DrvMsg(scrnIndex,X_INFO,"Digital Display Input\n");
     else {
 	xf86DrvMsg(scrnIndex,X_INFO,"Analog Display Input,  ");
 	xf86ErrorF("Input Voltage Level: ");
@@ -115,13 +113,13 @@ print_input_features(int scrnIndex, struct disp_features *c)
 static void 
 print_dpms_features(int scrnIndex, struct disp_features *c)
 {
-    if (c->dpms) {
-	xf86DrvMsg(scrnIndex,X_INFO,"DPMS capabilities:  ");
-	if (DPMS_STANDBY(c->dpms)) xf86ErrorF("StandBy ");
-	if (DPMS_SUSPEND(c->dpms)) xf86ErrorF("Suspend ");
-	if (DPMS_OFF(c->dpms)) xf86ErrorF("Off ");
-    } else 
-	xf86DrvMsg(scrnIndex,X_INFO,"No DPMS capabilities specified");
+     if (c->dpms) {
+	 xf86DrvMsg(scrnIndex,X_INFO,"DPMS capabilities:");
+	 if (DPMS_STANDBY(c->dpms)) xf86ErrorF(" StandBy");
+	 if (DPMS_SUSPEND(c->dpms)) xf86ErrorF(" Suspend");
+	 if (DPMS_OFF(c->dpms)) xf86ErrorF(" Off");
+     } else 
+	 xf86DrvMsg(scrnIndex,X_INFO,"No DPMS capabilities specified");
     switch (c->display_type){
     case DISP_MONO:
 	xf86ErrorF("; Monochorome/GrayScale Display\n");

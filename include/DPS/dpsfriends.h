@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef	DPSFRIENDS_H
 #define	DPSFRIENDS_H
@@ -396,25 +397,6 @@ typedef struct {
 
 /*=== PROCEDURES ===*/
 
-#ifdef _NO_PROTO
-
-extern void DPSAwaitReturnValues();
-extern void DPSUpdateNameMap();
-extern void DPSBinObjSeqWrite();
-extern DPSContext DPSPrivCurrentContext();
-extern void DPSWriteStringChars();
-extern void DPSWriteNumString();
-extern void DPSWriteTypedObjectArray();
-extern void DPSSetResultTable();
-extern void DPSMapNames();
-extern char *DPSNameFromIndex();
-extern DPSContextExtensionRec *DPSGetContextExtensionRec();
-extern void DPSAddContextExtensionRec();
-extern DPSContextExtensionRec *DPSRemoveContextExtensionRec();
-extern int DPSGenerateExtensionRecID();
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -485,7 +467,5 @@ extern int DPSGenerateExtensionRecID(void);
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-#endif /* _NO_PROTO */
 
 #endif /* DPSFRIENDS_H */

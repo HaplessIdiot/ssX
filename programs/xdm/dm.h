@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.14 1998/10/10 15:25:32 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.17 2000/05/31 07:15:11 eich Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -415,7 +415,9 @@ extern void LoadSessionResources (struct display *d);
 extern void ReinitResources (void);
 
 /* in session.c */
+#ifdef USE_PAM
 extern pam_handle_t *thepamh(void);
+#endif
 extern char **defaultEnv (void);
 extern char **systemEnv (struct display *d, char *user, char *home);
 extern int PingServer(struct display *d, Display *alternateDpy);

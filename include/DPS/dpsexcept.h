@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 /*
 Original version: Jeffrey Mogul, Stanford, 18 February 1983
@@ -163,17 +164,6 @@ extern _Exc_Buf *_Exc_Header;	/* global exception chain header */
 
 /* Exported Procedures */
 
-#ifdef _NO_PROTO
-
-extern void DPSRaise();
-extern void DPSCantHappen();
-#if 0
-extern int setjmp();
-extern void longjmp();
-#endif /* 0 */
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -240,8 +230,6 @@ extern void longjmp(jmp_buf buf, int value);
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-#endif /* _NO_PROTO */
 
 /* In-line Procedures */
 

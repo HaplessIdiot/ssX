@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.14 2000/04/17 16:29:56 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.16 2000/05/31 09:39:45 eich Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -106,7 +106,13 @@ static unsigned char * DDCRead_DDC2(
     int len
 );
 
-OptionInfoRec DDCOptions[] = {
+typedef enum {
+    DDCOPT_NODDC1,
+    DDCOPT_NODDC2,
+    DDCOPT_NODDC
+} DDCOpts;
+
+static OptionInfoRec DDCOptions[] = {
     { DDCOPT_NODDC1,	"NoDDC1",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC2,	"NoDDC2",	OPTV_BOOLEAN,	{0},	FALSE },
     { DDCOPT_NODDC,	"NoDDC",	OPTV_BOOLEAN,	{0},	FALSE },

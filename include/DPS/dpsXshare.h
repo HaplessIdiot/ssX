@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef DPS_X_SHARE_H
 #define DPS_X_SHARE_H
@@ -62,41 +63,6 @@ typedef unsigned int DPSGState;
 #define XDPSContextDrawable		(1L<<1)
 #define XDPSContextRGBMap		(1L<<2)
 #define XDPSContextGrayMap		(1L<<3)
-
-#ifdef _NO_PROTO
-
-extern void XDPSRegisterContext();
-extern DPSContext XDPSGetSharedContext();
-extern void XDPSDestroySharedContext();
-extern void XDPSUnregisterContext();
-extern void XDPSFreeDisplayInfo();
-extern int XDPSChainTextContext();
-extern int XDPSSetContextDepth();
-extern int XDPSSetContextDrawable();
-extern int XDPSSetContextRGBMap();
-extern int XDPSSetContextGrayMap();
-extern int XDPSSetContextParameters();
-extern int XDPSPushContextParameters();
-extern int XDPSPopContextParameters();
-extern int XDPSCaptureContextGState();
-extern int XDPSUpdateContextGState();
-extern int XDPSFreeContextGState();
-extern int XDPSSetContextGState();
-extern int XDPSPushContextGState();
-extern int XDPSPopContextGState();
-extern Bool XDPSExtensionPresent();
-extern int PSDefineAsUserObj();
-extern int DPSDefineAsUserObj();
-extern void PSRedefineUserObj();
-extern void DPSRedefineUserObj();
-extern void PSUndefineUserObj();
-extern void DPSUndefineUserObj();
-extern int PSReserveUserObjIndices();
-extern int DPSReserveUserObjIndices();
-extern void PSReturnUserObjIndices();
-extern void DPSReturnUserObjIndices();
-
-#else /* _NO_PROTO */
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -264,7 +230,7 @@ extern Bool XDPSExtensionPresent(Display *display);
 /* Define, redefine, and undefine user objects.  In all cases the DPS versions
    take a context and the PS versions don't */
 
-extern int PSDefineAsUserObj();
+extern int PSDefineAsUserObj(void);
 extern int DPSDefineAsUserObj(DPSContext context);
 
 extern void PSRedefineUserObj(int userObj);
@@ -284,7 +250,5 @@ extern void DPSReturnUserObjIndices(DPSContext context, int start, int number);
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-#endif /* _NO_PROTO */
 
 #endif /* DPS_X_SHARE_H */

@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef _ColorSelectionBoxP_H
 #define _ColorSelectionBoxP_H
@@ -142,13 +143,6 @@ typedef struct _ColorSelectionBoxRec {
     ColorSelectionBoxPart	csb;
 } ColorSelectionBoxRec;
 
-#ifdef _NO_PROTO
-
-typedef Boolean (*CSBSetColorProc) ();
-typedef void (*CSBGetColorProc) ();
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -165,7 +159,6 @@ typedef void (*CSBGetColorProc) (Widget w, CSBColorSpace space, float *c1,
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-#endif /* _NO_PROTO */
 
 #define InheritSetColor ((CSBSetColorProc) _XtInherit)
 #define InheritGetColor ((CSBGetColorProc) _XtInherit)

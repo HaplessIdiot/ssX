@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxopts.c,v 1.2 1998/12/20 11:57:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxopts.c,v 1.3 2000/05/18 23:46:24 dawes Exp $ */
 
 #ifdef OPTDEBUG
 #include <stdio.h>
@@ -303,7 +303,8 @@ ZlibParse(LbxNegOptsPtr   pno,
     if (level < 1 || level > 9)
 	return (-1);
 
-    pno->streamOpts.streamCompInit = ZlibInit;
+    pno->streamOpts.streamCompInit =
+	(LbxStreamCompHandle (*)(int, pointer))ZlibInit;
     pno->streamOpts.streamCompArg = (pointer)(long)level;
     pno->streamOpts.streamCompStuffInput = ZlibStuffInput;
     pno->streamOpts.streamCompInputAvail = ZlibInputAvail;
@@ -312,7 +313,8 @@ ZlibParse(LbxNegOptsPtr   pno,
     pno->streamOpts.streamCompWriteV = ZlibWriteV;
     pno->streamOpts.streamCompOn = ZlibCompressOn;
     pno->streamOpts.streamCompOff = ZlibCompressOff;
-    pno->streamOpts.streamCompFreeHandle = ZlibFree;
+    pno->streamOpts.streamCompFreeHandle =
+	(void (*)(LbxStreamCompHandle))ZlibFree;
 
     return (0);
 }
@@ -434,8 +436,8 @@ LbxImageCompOpt (Bool	         pixmap,
 	return (1);
     }
 
-    myIndices = (char *) xalloc (numMethods);
-    hisIndices = (char *) xalloc (numMethods);
+    myIndices = (unsigned char *) xalloc (numMethods);
+    hisIndices = (unsigned char *) xalloc (numMethods);
 
     if (!myIndices || !hisIndices)
     {

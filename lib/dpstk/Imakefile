@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dpstk/Imakefile,v 1.4 2000/04/05 18:13:22 dawes Exp $
+XCOMM $XFree86: xc/lib/dpstk/Imakefile,v 1.5 2000/05/23 19:32:52 dawes Exp $
 
 #define DoNormalLib NormalLibDpsTk
 #define DoSharedLib SharedLibDpsTk
@@ -49,7 +49,7 @@ OBJS = 	XDPSpwraps.o XDPSswraps.o XDPSshare.o XDPSpreview.o \
 .SUFFIXES: .psw
 
 .psw.c :
-	RunProgram(PSWRAP,-a -o $*.c -h $*.h $<)
+	RunProgram(PSWRAP,-o $*.c -a -f $*.h -h $*.h $<)
 
 includes:: $(SRCS)
 

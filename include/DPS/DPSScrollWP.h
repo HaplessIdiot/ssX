@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef _DPSScrolledWindowP_H
 #define _DPSScrolledWindowP_H
@@ -159,29 +160,6 @@ typedef struct _DPSScrolledWindowRec {
    scratch:  Used to hold temporary copies of rectangle lists.
 */
 
-#ifdef _NO_PROTO
-
-typedef void (*DSWSetScaleProc) ();
-typedef void (*DSWScrollPointProc) ();
-typedef void (*DSWScrollByProc) ();
-typedef void (*DSWScrollToProc) ();
-typedef void (*DSWSetScaleAndScrollProc) ();
-typedef void (*DSWConvertXToPSProc) ();
-typedef void (*DSWConvertPSToXProc) ();
-typedef void (*DSWAddToDirtyAreaProc) ();
-typedef Boolean (*DSWTakeFeedbackPixmapProc) ();
-typedef Boolean (*DSWGiveFeedbackPixmapProc) ();
-typedef void (*DSWStartFeedbackDrawingProc) ();
-typedef void (*DSWEndFeedbackDrawingProc) ();
-typedef void (*DSWSetFeedbackDirtyAreaProc) ();
-typedef void (*DSWFinishPendingDrawingProc) ();
-typedef void (*DSWAbortPendingDrawingProc) ();
-typedef void (*DSWGetDrawingInfoProc) ();
-typedef void (*DSWUpdateDrawingProc) ();
-typedef void (*DSWGetScrollInfoProc)();
-
-#else /* _NO_PROTO */
-
 #if defined(__cplusplus) || defined(c_plusplus)
 typedef "C" {
 #endif
@@ -226,7 +204,6 @@ typedef void (*DSWGetScrollInfoProc) (Widget w, int *h_value, int *h_size,
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-#endif /* _NO_PROTO */
 
 #define InheritSetScale ((DSWSetScaleProc) _XtInherit)
 #define InheritScrollPoint ((DSWScrollPointProc) _XtInherit)

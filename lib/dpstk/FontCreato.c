@@ -35,6 +35,10 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
+
+#include <stdio.h>
+#include <ctype.h>
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -106,10 +110,13 @@ static XtResource resources[] = {
 
 /* Forward declarations */
 
-static void ClassInitialize(), Initialize(), Destroy(),
-	ChangeManaged(), Resize();
-static Boolean SetValues();
-static XtGeometryResult GeometryManager();
+static Boolean SetValues(Widget old, Widget req, Widget new, ArgList args, Cardinal *num_args);
+static XtGeometryResult GeometryManager(Widget w, XtWidgetGeometry *desired, XtWidgetGeometry *allowed);
+static void ChangeManaged(Widget w);
+static void ClassInitialize(void);
+static void Destroy(Widget widget);
+static void Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args);
+static void Resize(Widget widget);
 
 FontCreatorClassRec fontCreatorClassRec = {
     /* Core class part */
@@ -184,7 +191,7 @@ FontCreatorClassRec fontCreatorClassRec = {
 WidgetClass fontCreatorWidgetClass =
 	(WidgetClass) &fontCreatorClassRec;
  
-static void ClassInitialize()
+static void ClassInitialize(void)
 {
     XtInitializeWidgetClass(fontSelectionBoxWidgetClass);
 
@@ -194,9 +201,9 @@ static void ClassInitialize()
 
 /* ARGSUSED */
 
-static void ResizePreview(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ResizePreview(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     Dimension height;
     Cardinal depth;
@@ -220,8 +227,7 @@ static void ResizePreview(widget, clientData, callData)
     XDPSUpdateContextGState(fc->creator.fsb->fsb.context, fc->creator.gstate);
 }
 
-static void DrawMM(fc)
-    FontCreatorWidget fc;
+static void DrawMM(FontCreatorWidget fc)
 {
     int i, j;
     String str;
@@ -280,9 +286,9 @@ static void DrawMM(fc)
 
 /* ARGSUSED */
 
-static void DrawMMCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void DrawMMCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
 
@@ -291,9 +297,9 @@ static void DrawMMCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void ExposeCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ExposeCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
     XmDrawingAreaCallbackStruct *dac =
@@ -314,8 +320,7 @@ static void ExposeCallback(widget, clientData, callData)
     DrawMM(fc);
 }
 
-static void SetUpBlendList(fc)
-    FontCreatorWidget fc;
+static void SetUpBlendList(FontCreatorWidget fc)
 {
     XmString *CSblends;
     int count, i;
@@ -349,10 +354,7 @@ static void SetUpBlendList(fc)
     if (f->blend_count != 0) XtFree((XtPointer) CSblends);
 }
 
-static void CalcCarryValues(fc, oldf, carry_values)
-    FontCreatorWidget fc;
-    FontRec *oldf;
-    int *carry_values;
+static void CalcCarryValues(FontCreatorWidget fc, FontRec *oldf, int *carry_values)
 {
     FontRec *f = fc->creator.font;
     BlendDataRec *bd = f->blend_data, *oldbd = oldf->blend_data;
@@ -370,15 +372,12 @@ static void CalcCarryValues(fc, oldf, carry_values)
     }
 }
 
-static void SetUpAxisLabels(fc, oldf, carry_values)
-    FontCreatorWidget fc;
-    FontRec *oldf;
-    int *carry_values;
+static void SetUpAxisLabels(FontCreatorWidget fc, FontRec *oldf, int *carry_values)
 {
     int i;
     char buf[20];
     XmString cs;
-    BlendDataRec *bd = fc->creator.font->blend_data, *oldbd;
+    BlendDataRec *bd = fc->creator.font->blend_data, *oldbd = 0;
     char *value;
 
     if (oldf != NULL) oldbd = oldf->blend_data;
@@ -426,8 +425,7 @@ static void SetUpAxisLabels(fc, oldf, carry_values)
     }
 }
 
-static void ManageAxes(fc)
-    FontCreatorWidget fc;
+static void ManageAxes(FontCreatorWidget fc)
 {
     Widget w[5*MAX_AXES];
     int i, j;
@@ -460,8 +458,7 @@ static void ManageAxes(fc)
     fc->creator.managed_axes = fc->creator.font->blend_data->num_axes;
 }
 
-static void SetScaleValues(fc)
-    FontCreatorWidget fc;
+static void SetScaleValues(FontCreatorWidget fc)
 {
     int val;
     char buf[32];
@@ -476,9 +473,7 @@ static void SetScaleValues(fc)
     }
 }
 
-static void SetUpAxes(fc, oldf)
-    FontCreatorWidget fc;
-    FontRec *oldf;
+static void SetUpAxes(FontCreatorWidget fc, FontRec *oldf)
 {
     int carry_values[MAX_AXES];
 
@@ -490,9 +485,9 @@ static void SetUpAxes(fc, oldf)
 
 /* ARGSUSED */
 
-static void FaceSelect(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void FaceSelect(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     XmListCallbackStruct *listCB = (XmListCallbackStruct *) callData;
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
@@ -521,9 +516,7 @@ static void FaceSelect(widget, clientData, callData)
     DrawMM(fc);
 }
 
-static void HandleSelectedBlend(fc, n)
-    FontCreatorWidget fc;
-    int n;
+static void HandleSelectedBlend(FontCreatorWidget fc, int n)
 {
     BlendDataRec *bd = fc->creator.font->blend_data;
     BlendRec *b;
@@ -547,9 +540,9 @@ static void HandleSelectedBlend(fc, n)
 
 /* ARGSUSED */
 
-static void BlendSelect(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void BlendSelect(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     XmListCallbackStruct *listCB = (XmListCallbackStruct *) callData;
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
@@ -563,9 +556,9 @@ static void BlendSelect(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void SetValue(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void SetValue(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     XmScaleCallbackStruct *scaleData = (XmScaleCallbackStruct *) callData;
     Widget text = (Widget) clientData;
@@ -577,9 +570,9 @@ static void SetValue(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void SetScale(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void SetScale(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     Widget scale = (Widget) clientData;
     char *value;
@@ -601,16 +594,14 @@ static void SetScale(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void DeleteMessage(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void DeleteMessage(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     XtDestroyWidget(widget);
 }
 
-static void PutUpDialog(fc, name)
-    FontCreatorWidget fc;
-    char *name;
+static void PutUpDialog(FontCreatorWidget fc, char *name)
 {
     Widget message, w;
 
@@ -624,34 +615,27 @@ static void PutUpDialog(fc, name)
     XtManageChild(message);
 }
 
-static void NoName(fc)
-    FontCreatorWidget fc;
+static void NoName(FontCreatorWidget fc)
 {
     PutUpDialog(fc, "noNameMessage");
 }
 
-static void UsedName(fc)
-    FontCreatorWidget fc;
+static void UsedName(FontCreatorWidget fc)
 {
     PutUpDialog(fc, "usedNameMessage");
 }
 
-static void SomeUsedName(fc)
-    FontCreatorWidget fc;
+static void SomeUsedName(FontCreatorWidget fc)
 {
     PutUpDialog(fc, "someUsedNameMessage");
 }
 
-static void NoSuchName(fc)
-    FontCreatorWidget fc;
+static void NoSuchName(FontCreatorWidget fc)
 {
     PutUpDialog(fc, "noSuchNameMessage");
 }
 
-static Boolean DoAdd(fc, f, name)
-    FontCreatorWidget fc;
-    FontRec *f;
-    String name;
+static Boolean DoAdd(FontCreatorWidget fc, FontRec *f, String name)
 {
     char *spaceName;
     BlendRec *b, *newb, **last;
@@ -699,9 +683,9 @@ static Boolean DoAdd(fc, f, name)
 
 /* ARGSUSED */
 
-static void AddCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void AddCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
     char *value;
@@ -731,10 +715,7 @@ static void AddCallback(widget, clientData, callData)
     } else if (DoAdd(fc, fc->creator.font, value)) UsedName(fc);
 }
 
-static Boolean DoReplace(fc, f, name)
-    FontCreatorWidget fc;
-    FontRec *f;
-    String name;
+static Boolean DoReplace(FontCreatorWidget fc, FontRec *f, String name)
 {
     BlendDataRec *bd = f->blend_data;
     BlendRec *b;
@@ -760,9 +741,9 @@ static Boolean DoReplace(fc, f, name)
 
 /* ARGSUSED */
 
-static void ReplaceCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ReplaceCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
     char *value;
@@ -792,10 +773,7 @@ static void ReplaceCallback(widget, clientData, callData)
     } else if (DoReplace(fc, fc->creator.font, value)) NoSuchName(fc);
 }
 
-static Boolean DoDelete(fc, f, name)
-    FontCreatorWidget fc;
-    FontRec *f;
-    String name;
+static Boolean DoDelete(FontCreatorWidget fc, FontRec *f, String name)
 {
     BlendDataRec *bd = f->blend_data;
     BlendRec *b, *oldb;
@@ -823,9 +801,9 @@ static Boolean DoDelete(fc, f, name)
 
 /* ARGSUSED */
 
-static void DeleteCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void DeleteCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
     char *value;
@@ -851,9 +829,9 @@ static void DeleteCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void UnmanageOptions(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void UnmanageOptions(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
 
@@ -862,9 +840,9 @@ static void UnmanageOptions(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void ShowOptions(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ShowOptions(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
 
@@ -873,9 +851,9 @@ static void ShowOptions(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void GenerateCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void GenerateCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
     BlendDataRec *bd = fc->creator.font->blend_data;
@@ -902,9 +880,9 @@ static void GenerateCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void DismissCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void DismissCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
 
@@ -914,9 +892,9 @@ static void DismissCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void SizeChanged(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void SizeChanged(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     String value;
     FontCreatorWidget fc = (FontCreatorWidget) clientData;
@@ -963,9 +941,9 @@ static Boolean changingSize = False;
 
 /* ARGSUSED */
 
-static void SizeSelect(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void SizeSelect(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     String value;
     Widget option;
@@ -988,9 +966,9 @@ static void SizeSelect(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void TextVerify(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void TextVerify(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     XmTextVerifyPtr v = (XmTextVerifyPtr) callData;
     char ch, *cp;
@@ -1028,9 +1006,9 @@ static void TextVerify(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void SetSize(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void SetSize(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     char buf[20];
     char *ch;
@@ -1046,10 +1024,7 @@ static void SetSize(widget, clientData, callData)
 
 /* This makes sure the selected item is visible */
 
-static void ListSelectPos(w, pos, notify)
-    Widget w;
-    int pos;
-    Boolean notify;
+static void ListSelectPos(Widget w, int pos, Boolean notify)
 {
     int topPos, items, visible;
 
@@ -1067,9 +1042,9 @@ static void ListSelectPos(w, pos, notify)
     XtVaSetValues(w, XmNtopItemPosition, topPos, NULL);
 }
 
-static void CreateSizeMenu(fc, destroyOldChildren)
-    FontCreatorWidget fc;
-    Boolean destroyOldChildren;
+static void CreateSizeMenu(
+    FontCreatorWidget fc,
+    Boolean destroyOldChildren)
 {
     Arg args[20];
     int i, j;
@@ -1085,7 +1060,7 @@ static void CreateSizeMenu(fc, destroyOldChildren)
 		      XtNnumChildren, &num_children, NULL);
 	
 	/* Don't destroy first child ("other") */
-	for (j = 1; j < num_children; j++) XtDestroyWidget(children[j]);
+	for (j = 1; (Cardinal)j < num_children; j++) XtDestroyWidget(children[j]);
 
 	sizes = (Widget *) XtMalloc((fc->creator.size_count+1) *
 				    sizeof(Widget));
@@ -1117,8 +1092,7 @@ static void CreateSizeMenu(fc, destroyOldChildren)
     XtFree((char *) sizes);
 }
 
-static void CreateChildren(fc)
-    FontCreatorWidget fc;
+static void CreateChildren(FontCreatorWidget fc)
 {
     Arg args[20];
     int i, j;
@@ -1419,10 +1393,10 @@ static void CreateChildren(fc)
 
 /* ARGSUSED */
 
-static void Initialize(request, new, args, num_args)
-    Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
+static void Initialize(
+    Widget request, Widget new,
+    ArgList args,
+    Cardinal *num_args)
 {
     FontCreatorWidget fc = (FontCreatorWidget) new;
 
@@ -1468,11 +1442,9 @@ static void Initialize(request, new, args, num_args)
 		  XmNvalueChangedCallback, SizeChanged, (XtPointer) fc);
 }
 
-static void SelectBlend(fc, cur_b)
-    FontCreatorWidget fc;
-    BlendRec *cur_b;
+static void SelectBlend(FontCreatorWidget fc, BlendRec *cur_b)
 {
-    int i, cur;
+    int i, cur = 0;
     BlendRec *b;
     int *selectList, selectCount;
 
@@ -1495,9 +1467,7 @@ static void SelectBlend(fc, cur_b)
     HandleSelectedBlend(fc, cur);
 }
 
-void _FSBSetCreatorFamily(w, ff)
-    Widget w;
-    FontFamilyRec *ff;
+void _FSBSetCreatorFamily(Widget w, FontFamilyRec *ff)
 {
     FontCreatorWidget fc = (FontCreatorWidget) w;
     int i, count = 0, cur = 1;
@@ -1555,8 +1525,7 @@ void _FSBSetCreatorFamily(w, ff)
     DrawMM(fc);
 }
     
-static void Destroy(widget)
-    Widget widget;
+static void Destroy(Widget widget)
 {
     FontCreatorWidget fc = (FontCreatorWidget) widget;
 
@@ -1566,8 +1535,7 @@ static void Destroy(widget)
     }
 }
 
-static void Resize(widget)
-    Widget widget;
+static void Resize(Widget widget)
 {
     FontCreatorWidget fc = (FontCreatorWidget) widget;
 
@@ -1576,10 +1544,10 @@ static void Resize(widget)
 
 /* ARGSUSED */
 
-static Boolean SetValues(old, req, new, args, num_args)
-    Widget old, req, new;
-    ArgList args;
-    Cardinal *num_args;
+static Boolean SetValues(
+    Widget old, Widget req, Widget new,
+    ArgList args,
+    Cardinal *num_args)
 {
     FontCreatorWidget oldfc = (FontCreatorWidget) old;
     FontCreatorWidget newfc = (FontCreatorWidget) new;
@@ -1613,9 +1581,9 @@ static Boolean SetValues(old, req, new, args, num_args)
 
 /* ARGSUSED */
 
-static XtGeometryResult GeometryManager(w, desired, allowed)
-    Widget w;
-    XtWidgetGeometry *desired, *allowed;
+static XtGeometryResult GeometryManager(
+    Widget w,
+    XtWidgetGeometry *desired, XtWidgetGeometry *allowed)
 {
 #define WANTS(flag) (desired->request_mode & flag)
 
@@ -1633,8 +1601,7 @@ static XtGeometryResult GeometryManager(w, desired, allowed)
 #undef WANTS
 }
 
-static void ChangeManaged(w)
-    Widget w;
+static void ChangeManaged(Widget w)
 {
     FontCreatorWidget fc = (FontCreatorWidget) w;
 

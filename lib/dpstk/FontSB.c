@@ -35,8 +35,10 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <math.h>
@@ -66,14 +68,14 @@
 #include <Xm/MessageB.h>
 #include <DPS/dpsXclient.h>
 #include "dpsXcommonI.h"
-#include "DPS/dpsXcommon.h"
-#include "DPS/dpsXshare.h"
+#include <DPS/dpsXcommon.h>
+#include <DPS/dpsXshare.h>
 #include <DPS/PSres.h>
-#include "DPS/FontSBP.h"
+#include <DPS/FontSBP.h>
 #include "FSBwraps.h"
 #include "FontSBI.h"
-#include "DPS/FontSample.h"
-#include "DPS/FontCreato.h"
+#include <DPS/FontSample.h>
+#include <DPS/FontCreato.h>
 #include <pwd.h>
 
 #define PATH_BUF_SIZE 1024
@@ -241,20 +243,40 @@ static XtResource resources[] = {
 
 /* Forward declarations */
 
-static void ClassInitialize(), ClassPartInitialize(), Initialize(), Destroy(),
-	ChangeManaged(), Resize(),
-	SetFontName(), SetFontFamilyFace(), SetFontSize(), RefreshFontList(),
-	GetFamilyList(), GetFaceList(), UndefUnusedFonts(),
-	FontNameToFamilyFace(), FontFamilyFaceToName(),
-	GetTextDimensions(), WriteBlends(), ReadBlends(),
-	SetFontFamilyFaceBlend(), FontNameToFamilyFaceBlend(),
-	FontFamilyFaceBlendToName(), GetBlendList(),
-	GetBlendInfo(), FreeFontRec(), DisplayFontFamilies(),
-	SetUpCurrentSelections();
-static Boolean SetValues(), DownloadFontName(), MatchFontFace(),
-	Verify(), ChangeBlends();
-static XtGeometryResult GeometryManager();
-static String FindAFM(), FindFontFile();
+static Boolean ChangeBlends(Widget w, String base_name, String blend_name, FSBBlendAction action, int *axis_values, float *axis_percents);
+static Boolean DownloadFontName(Widget w, String name);
+static Boolean MatchFontFace(Widget w, String old_face, String new_family, String *new_face);
+static Boolean SetValues(Widget old, Widget req, Widget new, ArgList args, Cardinal *num_args);
+static Boolean Verify(FontSelectionBoxWidget fsb, FSBValidateCallbackRec *cb, String afm, Boolean doIt);
+static String FindAFM(Widget w, String name);
+static String FindFontFile(Widget w, String name);
+static XtGeometryResult GeometryManager(Widget w, XtWidgetGeometry *desired, XtWidgetGeometry *allowed);
+static void ChangeManaged(Widget w);
+static void ClassInitialize(void);
+static void ClassPartInitialize(WidgetClass widget_class);
+static void Destroy(Widget widget);
+static void DisplayFontFamilies(FontSelectionBoxWidget fsb);
+static void FontFamilyFaceBlendToName(Widget w, String family, String face, String blend, String *font_name);
+static void FontFamilyFaceToName(Widget w, String family, String face, String *font_name);
+static void FontNameToFamilyFace(Widget w, String font_name, String *family, String *face);
+static void FontNameToFamilyFaceBlend(Widget w, String font_name, String *family, String *face, String *blend);
+static void FreeFontRec(FontRec *f);
+static void GetBlendInfo(Widget w, String name, int *num_axes_return, int *num_designs_return, String **axis_names_return, float **blend_positions_return, int **blend_map_count_return, int **blend_design_coords_return, float **blend_normalized_coords_return);
+static void GetBlendList(Widget w, String name, int *count_return, String **blend_return, String **font_name_return, float **axis_values_return);
+static void GetFaceList(Widget w, String family, int *count, String **face_list, String **font_list);
+static void GetFamilyList(Widget w, int *count, String **list);
+static void GetTextDimensions(Widget w, String text, String font, double size, double x, double y, float *dx, float *dy, float *left, float *right, float *top, float *bottom);
+static void Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args);
+static void ReadBlends(FontSelectionBoxWidget fsb);
+static void RefreshFontList(Widget w);
+static void Resize(Widget widget);
+static void SetFontFamilyFace(Widget w, String family, String face, Bool family_multiple, Bool face_multiple);
+static void SetFontFamilyFaceBlend(Widget w, String family, String face, String blend, Bool family_multiple, Bool face_multiple);
+static void SetFontName(Widget w, String name, Bool name_multiple);
+static void SetFontSize(Widget w, double size, Bool size_multiple);
+static void SetUpCurrentSelections(FontSelectionBoxWidget fsb);
+static void UndefUnusedFonts(Widget w);
+static void WriteBlends(FontSelectionBoxWidget fsb);
 
 FontSelectionBoxClassRec fontSelectionBoxClassRec = {
     /* Core class part */
@@ -351,12 +373,13 @@ WidgetClass fontSelectionBoxWidgetClass =
 
 /* ARGSUSED */
 
-static Boolean CvtStringToFloatList(dpy, args, num_args, from, to, data)
-    Display *dpy;
-    XrmValuePtr args;
-    Cardinal *num_args;
-    XrmValuePtr from, to;
-    XtPointer *data;
+static Boolean CvtStringToFloatList(
+    Display *dpy,
+    XrmValuePtr args,
+    Cardinal *num_args,
+    XrmValuePtr from,
+    XrmValuePtr to,
+    XtPointer *data)
 {
     register int i, count = 1;
     register char *ch, *start = from->addr;
@@ -403,12 +426,12 @@ static Boolean CvtStringToFloatList(dpy, args, num_args, from, to, data)
 
 /* ARGSUSED */
 
-static void FloatListDestructor(app, to, converter_data, args, num_args)
-    XtAppContext app;
-    XrmValuePtr to;
-    XtPointer converter_data;
-    XrmValuePtr args;
-    Cardinal *num_args;
+static void FloatListDestructor(
+    XtAppContext app,
+    XrmValuePtr to,
+    XtPointer converter_data,
+    XrmValuePtr args,
+    Cardinal *num_args)
 {
     float *list = (float *) to->addr;
 
@@ -416,9 +439,7 @@ static void FloatListDestructor(app, to, converter_data, args, num_args)
     XtFree((XtPointer) list);
 }
 
-XmString _FSBCreateSharedCS(str, w)
-    String str;
-    Widget w;
+XmString _FSBCreateSharedCS(String str, Widget w)
 {
     XrmValue src, dst;
     XmString result;
@@ -434,10 +455,7 @@ XmString _FSBCreateSharedCS(str, w)
     } else return NULL;
 }
  
-static Boolean ScanFloat(src, f, past)
-    char *src;
-    float *f;
-    char **past;
+static Boolean ScanFloat(char *src, float *f, char **past)
 {
     char buf[20], *ch;
     int countDecimals;
@@ -458,10 +476,7 @@ static Boolean ScanFloat(src, f, past)
     return True;
 }
 
-static Boolean ScanInt(src, i, past)
-    char *src;
-    int *i;
-    char **past;
+static Boolean ScanInt(char *src, int *i, char **past)
 {
     char buf[20], *ch;
 
@@ -474,7 +489,7 @@ static Boolean ScanInt(src, i, past)
     return True;
 }
 
-static void ClassInitialize()
+static void ClassInitialize(void)
 {
     /* Register a converter for string to int list */
 
@@ -485,8 +500,7 @@ static void ClassInitialize()
     CSempty = UnsharedCS("");
 }
 
-static void ClassPartInitialize(widget_class)
-    WidgetClass widget_class;
+static void ClassPartInitialize(WidgetClass widget_class)
 {
     register FontSelectionBoxWidgetClass wc =
 	    (FontSelectionBoxWidgetClass) widget_class;
@@ -590,10 +604,9 @@ static int missingFoundryLen[] = {
 
 /* I wish we didn't have to do this! */
 
-static void MungeFontNames(name, family, fullname, weight,
-			   familyReturn, fullnameReturn, faceReturn)
-    String name, family, fullname, weight;
-    String *familyReturn, *fullnameReturn, *faceReturn;
+static void MungeFontNames(
+    String name, String family, String fullname, String weight,
+    String *familyReturn, String *fullnameReturn, String *faceReturn)
 {
     register char *src, *dst, prev;
     char buf[256];
@@ -785,8 +798,7 @@ static int striplen[] = {6, 6, 9, 4, 9, 4, 10, 8, 0};
 
 #define STEMPELINDEX 7
 
-static Boolean CreateSortKey(family, key)
-    register String family, key;
+static Boolean CreateSortKey(String family, String key)
 {
     char newkey[256];
     int len = strlen(family);
@@ -822,8 +834,7 @@ static Boolean CreateSortKey(family, key)
 
 #define SKIP_SPACE(buf) while (*buf == ' ' || *buf == '\t') buf++;
 
-static int CountAxes(buf)
-    char *buf;
+static int CountAxes(char *buf)
 {
     int count = 0;
 
@@ -838,10 +849,10 @@ static int CountAxes(buf)
     return count;
 }
 
-static Boolean ParseBlendPositions(buf, blendPos, axes, designs)
-    char *buf;
-    float *blendPos;
-    int *axes, *designs;
+static Boolean ParseBlendPositions(
+    char *buf,
+    float *blendPos,
+    int *axes, int *designs)
 {
     int i, j = 0;
     float f;
@@ -865,13 +876,12 @@ static Boolean ParseBlendPositions(buf, blendPos, axes, designs)
     return False;
 }
 
-static Boolean ParseBlendMap(buf, breakCount, blendBreak,
-			     blendBreakValue, axes)
-    char *buf;
-    int *breakCount;
-    int *blendBreak;
-    float *blendBreakValue;
-    int *axes;
+static Boolean ParseBlendMap(
+    char *buf,
+    int *breakCount,
+    int *blendBreak,
+    float *blendBreakValue,
+    int *axes)
 {
     int i, j = 0;
     int n;
@@ -917,10 +927,10 @@ static Boolean ParseBlendMap(buf, breakCount, blendBreak,
     return False;
 }
 
-static Boolean ParseAxisNames(axes, buf, names)
-    int axes;
-    char *buf;
-    char *names[];
+static Boolean ParseAxisNames(
+    int axes,
+    char *buf,
+    char *names[])
 {
     int i = 0;
 
@@ -940,15 +950,16 @@ static Boolean ParseAxisNames(axes, buf, names)
 }	
 #undef SKIP_SPACE
 
-static void GetPSFontInfo(fsb, name, axes, designs, axisNames,
-			  blendPos, breakCount,
-			  blendBreak, blendBreakValue)
-    FontSelectionBoxWidget fsb;
-    char *name;
-    int *axes, *designs;
-    char *axisNames;
-    int *breakCount, *blendBreak;
-    float *blendBreakValue, *blendPos;
+static void GetPSFontInfo(
+    FontSelectionBoxWidget fsb,
+    char *name,
+    int *axes,
+    int *designs,
+    char *axisNames,
+    float *blendPos,
+    int *breakCount,
+    int *blendBreak,
+    float *blendBreakValue)
 {
     int entries;
     char **names, **data;
@@ -993,12 +1004,11 @@ static void GetPSFontInfo(fsb, name, axes, designs, axisNames,
     }
 }
 
-static void AddFontRecord(fsb, serverNum, name, family,
-			  fullname, weight, resident)
-    FontSelectionBoxWidget fsb;
-    int serverNum;
-    String name, family, fullname, weight;
-    Boolean resident;
+static void AddFontRecord(
+    FontSelectionBoxWidget fsb,
+    int serverNum,
+    String name, String family, String fullname, String weight,
+    Boolean resident)
 {
     FontFamilyRec *ff;
     FontRec *f;
@@ -1143,8 +1153,7 @@ static void AddFontRecord(fsb, serverNum, name, family,
     ff->font_count++;
 }
 
-static void SortFontNames(ff)
-    FontFamilyRec *ff;
+static void SortFontNames(FontFamilyRec *ff)
 {
     FontRec *f, *highest, **prev, **highestPrev;
     FontRec *newFontList = NULL;
@@ -1168,8 +1177,7 @@ static void SortFontNames(ff)
     ff->fonts = newFontList;
 }
 
-static void SortFontFamilies(fsb)
-    FontSelectionBoxWidget fsb;
+static void SortFontFamilies(FontSelectionBoxWidget fsb)
 {
     FontFamilyRec *ff, *highest, **prev, **highestPrev;
     FontFamilyRec *newFamilyList = NULL;
@@ -1196,9 +1204,9 @@ static void SortFontFamilies(fsb)
     fsb->fsb.known_families = newFamilyList;
 }
 
-static void AddFamily(fsb, family, fonts, weight, fullname, name)
-    FontSelectionBoxWidget fsb;
-    char *family, *fonts, *weight, *fullname, *name;
+static void AddFamily(
+    FontSelectionBoxWidget fsb,
+    char *family, char *fonts, char *weight, char *fullname, char *name)
 {
     int j;
     char *ch;
@@ -1236,8 +1244,7 @@ static void AddFamily(fsb, family, fonts, weight, fullname, name)
     }
 }
 
-static void GetFontNames(fsb)
-    FontSelectionBoxWidget fsb;
+static void GetFontNames(FontSelectionBoxWidget fsb)
 {
     int i;
     char name[256], family[256], fullname[256], weight[256];
@@ -1280,20 +1287,17 @@ static void GetFontNames(fsb)
     ReadBlends(fsb);
 }
 
-static void SensitizeReset(fsb)
-    FontSelectionBoxWidget fsb;
+static void SensitizeReset(FontSelectionBoxWidget fsb)
 {
     XtSetSensitive(fsb->fsb.reset_button_child, True);
 }
 
-static void DesensitizeReset(fsb)
-    FontSelectionBoxWidget fsb;
+static void DesensitizeReset(FontSelectionBoxWidget fsb)
 {
     XtSetSensitive(fsb->fsb.reset_button_child, False);
 }
 
-static void ManageFamilyMultiple(fsb)
-    FontSelectionBoxWidget fsb;
+static void ManageFamilyMultiple(FontSelectionBoxWidget fsb)
 {
     XtManageChild(fsb->fsb.family_multiple_label_child);
 
@@ -1301,8 +1305,7 @@ static void ManageFamilyMultiple(fsb)
 		  XmNtopWidget, fsb->fsb.family_multiple_label_child, NULL);
 }
 
-static void ManageFaceMultiple(fsb)
-    FontSelectionBoxWidget fsb;
+static void ManageFaceMultiple(FontSelectionBoxWidget fsb)
 {
     XtManageChild(fsb->fsb.face_multiple_label_child);
 
@@ -1310,8 +1313,7 @@ static void ManageFaceMultiple(fsb)
 		  XmNtopWidget, fsb->fsb.face_multiple_label_child, NULL);
 }
 
-static void ManageMultipleMaster(fsb)
-    FontSelectionBoxWidget fsb;
+static void ManageMultipleMaster(FontSelectionBoxWidget fsb)
 {
     XtManageChild(fsb->fsb.multiple_master_button_child);
 
@@ -1320,14 +1322,12 @@ static void ManageMultipleMaster(fsb)
 		  NULL);
 }
 
-static void ManageSizeMultiple(fsb)
-    FontSelectionBoxWidget fsb;
+static void ManageSizeMultiple(FontSelectionBoxWidget fsb)
 {
     XtManageChild(fsb->fsb.size_multiple_label_child);
 }
 
-static void UnmanageFamilyMultiple(fsb)
-    FontSelectionBoxWidget fsb;
+static void UnmanageFamilyMultiple(FontSelectionBoxWidget fsb)
 {
     XtVaSetValues(XtParent(fsb->fsb.family_scrolled_list_child),
 		  XmNtopWidget, fsb->fsb.family_label_child, NULL);
@@ -1335,8 +1335,7 @@ static void UnmanageFamilyMultiple(fsb)
     XtUnmanageChild(fsb->fsb.family_multiple_label_child);
 }
 
-static void UnmanageFaceMultiple(fsb)
-    FontSelectionBoxWidget fsb;
+static void UnmanageFaceMultiple(FontSelectionBoxWidget fsb)
 {
     XtVaSetValues(XtParent(fsb->fsb.face_scrolled_list_child),
 		  XmNtopWidget, fsb->fsb.face_label_child, NULL);
@@ -1344,8 +1343,7 @@ static void UnmanageFaceMultiple(fsb)
     XtUnmanageChild(fsb->fsb.face_multiple_label_child);
 }
 
-static void UnmanageMultipleMaster(fsb)
-    FontSelectionBoxWidget fsb;
+static void UnmanageMultipleMaster(FontSelectionBoxWidget fsb)
 {
     XtUnmanageChild(fsb->fsb.multiple_master_button_child);
 
@@ -1353,19 +1351,18 @@ static void UnmanageMultipleMaster(fsb)
 		  XmNbottomWidget, fsb->fsb.size_text_field_child, NULL);
 }
 
-static void UnmanageSizeMultiple(fsb)
-    FontSelectionBoxWidget fsb;
+static void UnmanageSizeMultiple(FontSelectionBoxWidget fsb)
 {
     XtUnmanageChild(fsb->fsb.size_multiple_label_child);
 }
 
 /* Callbacks for subwidgets */
 
-static Boolean DownloadFont(fsb, name, ctxt, make_shared)
-    FontSelectionBoxWidget fsb;
-    String name;
-    DPSContext ctxt;
-    Boolean make_shared;
+static Boolean DownloadFont(
+    FontSelectionBoxWidget fsb,
+    String name,
+    DPSContext ctxt,
+    Boolean make_shared)
 {
     int count;
     char **names, **files;
@@ -1423,14 +1420,15 @@ Magic end of data line )))))))))) 99#2 2#99 <xyz> // 7gsad,32h4ghNmndFgj2\n";
 #undef BUFLEN
 }
 
-static void UndefSomeUnusedFonts(fsb, all)
-    FontSelectionBoxWidget fsb;
-    Boolean all;
+static void UndefSomeUnusedFonts(
+    FontSelectionBoxWidget fsb,
+    Boolean all)
 {
     FontRec *f, *nextf, **start;
     int i;
 
-    if (!all && fsb->fsb.pending_delete_count < fsb->fsb.max_pending_deletes) {
+    if (!all
+     && (Cardinal)fsb->fsb.pending_delete_count < fsb->fsb.max_pending_deletes) {
 	return;
     }
 
@@ -1438,7 +1436,7 @@ static void UndefSomeUnusedFonts(fsb, all)
     else {
 	/* Skip to the end of the ones we're keeping */
 	f = fsb->fsb.pending_delete_font;
-	for (i = 1; f != NULL && i < fsb->fsb.max_pending_deletes; i++) {
+	for (i = 1; f != NULL && (Cardinal)i < fsb->fsb.max_pending_deletes; i++) {
 	    f = f->pending_delete_next;
 	}
 	if (f == NULL) return;
@@ -1462,17 +1460,16 @@ static void UndefSomeUnusedFonts(fsb, all)
     }
 }
 
-static void UndefUnusedFonts(w)
-    Widget w;
+static void UndefUnusedFonts(Widget w)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
 
     UndefSomeUnusedFonts(fsb, True);
 }
 
-Boolean _FSBDownloadFontIfNecessary(f, fsb)
-    FontRec *f;
-    FontSelectionBoxWidget fsb;
+Boolean _FSBDownloadFontIfNecessary(
+    FontRec *f,
+    FontSelectionBoxWidget fsb)
 {
     Boolean shared;
 
@@ -1505,9 +1502,9 @@ Boolean _FSBDownloadFontIfNecessary(f, fsb)
     return True;
 }
 
-static void DoPreview(fsb, override)
-    FontSelectionBoxWidget fsb;
-    Boolean override;
+static void DoPreview(
+    FontSelectionBoxWidget fsb,
+    Boolean override)
 {
     int i, n;
     int *selectList, selectCount;
@@ -1606,8 +1603,7 @@ static void DoPreview(fsb, override)
     }
 }
 
-static void DoValueChangedCallback(fsb)
-    FontSelectionBoxWidget fsb;
+static void DoValueChangedCallback(FontSelectionBoxWidget fsb)
 {
     String afm = NULL;
     FSBValidateCallbackRec cb;
@@ -1624,8 +1620,7 @@ static void DoValueChangedCallback(fsb)
     XtCallCallbackList((Widget) fsb, fsb->fsb.value_changed_callback, &cb);
 }
 
-static void ValueChanged(fsb)
-    FontSelectionBoxWidget fsb;
+static void ValueChanged(FontSelectionBoxWidget fsb)
 {
     if (fsb->fsb.auto_preview) DoPreview(fsb, False);
     DoValueChangedCallback(fsb);
@@ -1633,9 +1628,9 @@ static void ValueChanged(fsb)
 
 /* ARGSUSED */
 
-static void PreviewText(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void PreviewText(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
     XmAnyCallbackStruct *cb = (XmAnyCallbackStruct *) callData;
@@ -1657,9 +1652,9 @@ static void PreviewText(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void PreviewCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void PreviewCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
 
@@ -1668,17 +1663,16 @@ static void PreviewCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void DismissSamplerCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void DismissSamplerCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
 
     fsb->fsb.show_sampler = False;
 }
 
-static void ShowSampler(fsb)
-    FontSelectionBoxWidget fsb;
+static void ShowSampler(FontSelectionBoxWidget fsb)
 {
     int i;
     Arg args[2];
@@ -1714,8 +1708,7 @@ static void ShowSampler(fsb)
     fsb->fsb.show_sampler = True;
 }
 
-static void ShowCreator(fsb)
-    FontSelectionBoxWidget fsb;
+static void ShowCreator(FontSelectionBoxWidget fsb)
 {
     int i;
     Arg args[2];
@@ -1752,9 +1745,9 @@ static void ShowCreator(fsb)
 
 /* ARGSUSED */
 
-static void ShowCreatorCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ShowCreatorCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
 
@@ -1763,9 +1756,9 @@ static void ShowCreatorCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void ShowSamplerCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ShowSamplerCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
 
@@ -1774,9 +1767,9 @@ static void ShowSamplerCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void PreviewDoubleClick(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void PreviewDoubleClick(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
 
@@ -1785,9 +1778,9 @@ static void PreviewDoubleClick(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void ResizePreview(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ResizePreview(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     Dimension height;
     Cardinal depth;
@@ -1810,10 +1803,10 @@ static void ResizePreview(widget, clientData, callData)
     XDPSUpdateContextGState(fsb->fsb.context, fsb->fsb.gstate);
 }
 
-static String FindAFMRecursive(w, name, recur)
-    Widget w;
-    String name;
-    Boolean recur;
+static String FindAFMRecursive(
+    Widget w,
+    String name,
+    Boolean recur)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     int count;
@@ -1844,17 +1837,15 @@ static String FindAFMRecursive(w, name, recur)
     return ret;
 }
 
-static String FindAFM(w, name)
-    Widget w;
-    String name;
+static String FindAFM(Widget w, String name)
 {
     return FindAFMRecursive(w, name, True);
 }
 
-static String FindFontFileRecursive(w, name, recur)
-    Widget w;
-    String name;
-    Boolean recur;
+static String FindFontFileRecursive(
+    Widget w,
+    String name,
+    Boolean recur)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     int count;
@@ -1885,18 +1876,16 @@ static String FindFontFileRecursive(w, name, recur)
     return ret;
 }
 
-static String FindFontFile(w, name)
-    Widget w;
-    String name;
+static String FindFontFile(Widget w, String name)
 {
     return FindFontFileRecursive(w, name, True);
 }
 
-static Boolean Verify(fsb, cb, afm, doIt)
-    FontSelectionBoxWidget fsb;
-    FSBValidateCallbackRec *cb;
-    String afm;
-    Boolean doIt;
+static Boolean Verify(
+    FontSelectionBoxWidget fsb,
+    FSBValidateCallbackRec *cb,
+    String afm,
+    Boolean doIt)
 {
     char *chSize;
     int i;
@@ -1971,10 +1960,10 @@ static Boolean Verify(fsb, cb, afm, doIt)
     return cb->doit;
 }
 
-static Boolean VerifyAndCallback(fsb, reason, callback)
-    FontSelectionBoxWidget fsb;
-    FSBCallbackReason reason;
-    XtCallbackList callback;
+static Boolean VerifyAndCallback(
+    FontSelectionBoxWidget fsb,
+    FSBCallbackReason reason,
+    XtCallbackList callback)
 {
     String afm = NULL;
     FSBValidateCallbackRec cb;
@@ -2025,7 +2014,7 @@ static Boolean VerifyAndCallback(fsb, reason, callback)
 	if (fsb->fsb.make_fonts_shared) {
 	    fsb->fsb.currently_previewed = NULL;
 	}
-	UndefUnusedFonts(fsb);
+	UndefUnusedFonts((Widget)fsb);
 	fsb->fsb.currently_previewed = fsave;
 	face = fsb->fsb.currently_selected_face;
 	if (face != NULL && !face->resident) {
@@ -2046,9 +2035,9 @@ static Boolean VerifyAndCallback(fsb, reason, callback)
 
 /* ARGSUSED */
 
-static void OKCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void OKCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
 
@@ -2061,9 +2050,9 @@ static void OKCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void ApplyCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ApplyCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
 
@@ -2072,9 +2061,9 @@ static void ApplyCallback(widget, clientData, callData)
     DesensitizeReset(fsb);
 }
 
-static void ResetFSB(fsb, reason)
-    FontSelectionBoxWidget fsb;
-    FSBCallbackReason reason;
+static void ResetFSB(
+    FontSelectionBoxWidget fsb,
+    FSBCallbackReason reason)
 {
     FSBCallbackRec cb;
     int i;
@@ -2082,7 +2071,7 @@ static void ResetFSB(fsb, reason)
     fsb->fsb.currently_previewed = NULL;
     fsb->fsb.currently_previewed_size = fsb->fsb.currently_selected_size = 0.0;
     SetUpCurrentSelections(fsb);
-    if (fsb->fsb.undef_unused_fonts) UndefUnusedFonts(fsb);
+    if (fsb->fsb.undef_unused_fonts) UndefUnusedFonts((Widget)fsb);
 
     cb.reason = reason;
     if (fsb->fsb.font_family_multiple) {
@@ -2148,9 +2137,9 @@ static void ResetFSB(fsb, reason)
 
 /* ARGSUSED */
 
-static void ResetCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void ResetCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
 
@@ -2160,9 +2149,9 @@ static void ResetCallback(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void CancelCallback(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void CancelCallback(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
 
@@ -2183,9 +2172,9 @@ static Boolean changingSize = False;
 
 /* ARGSUSED */
 
-static void SizeSelect(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void SizeSelect(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     String value;
     Widget option;
@@ -2219,9 +2208,9 @@ static void SizeSelect(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void TextVerify(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void TextVerify(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     int i;
     XmTextVerifyPtr v = (XmTextVerifyPtr) callData;
@@ -2270,9 +2259,9 @@ static void TextVerify(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void SetSize(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void SetSize(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     char buf[20];
     char *ch;
@@ -2296,10 +2285,10 @@ static void SetSize(widget, clientData, callData)
 
 /* This makes sure the selected item is visible */
 
-static void ListSelectPos(w, pos, notify)
-    Widget w;
-    int pos;
-    Boolean notify;
+static void ListSelectPos(
+    Widget w,
+    int pos,
+    Boolean notify)
 {
     int topPos, items, visible;
 
@@ -2320,8 +2309,7 @@ static void ListSelectPos(w, pos, notify)
 Corporation, Maynard, Massachusetts, and the Massachusetts Institute of
 Technology, Cambridge, Massachusetts. */
 
-static String GetRootDirName(buf)
-     String buf;
+static String GetRootDirName(String buf)
 {
 #ifndef X_NOT_POSIX
      uid_t uid;
@@ -2360,11 +2348,11 @@ static String GetRootDirName(buf)
      return buf;
 }
 
-static void WriteBlendLine(f, family, face, blend, name, axes, p)
-    FILE *f;
-    String family, face, blend, name;
-    int axes;
-    float *p;
+static void WriteBlendLine(
+    FILE *f,
+    String family, String face, String blend, String name,
+    int axes,
+    float *p)
 {
     register char *ch;
     int i;
@@ -2396,8 +2384,7 @@ static void WriteBlendLine(f, family, face, blend, name, axes, p)
     (void) putc('\n', f);
 }
 
-static void WriteBlends(fsb)
-    FontSelectionBoxWidget fsb;
+static void WriteBlends(FontSelectionBoxWidget fsb)
 {
     FontFamilyRec *ff;
     FontRec *f;
@@ -2437,9 +2424,9 @@ static void WriteBlends(fsb)
     fsb->fsb.blends_changed = False;
 }
 
-static Boolean ParseBlendLine(buf, family, face, blend, name, p)
-    String buf, family, face, blend, name;
-    float *p;
+static Boolean ParseBlendLine(
+    String buf, String family, String face, String blend, String name,
+    float *p)
 {
     char *src, *dst;
     int i;
@@ -2492,8 +2479,7 @@ static Boolean ParseBlendLine(buf, family, face, blend, name, p)
     return True;
 }
 
-static void ReadBlends(fsb)
-    FontSelectionBoxWidget fsb;
+static void ReadBlends(FontSelectionBoxWidget fsb)
 {
     String blendEnv;
     char homeDir[PATH_BUF_SIZE];
@@ -2504,7 +2490,7 @@ static void ReadBlends(fsb)
     char *cfamily, *cface;
     float p[MAX_AXES];
     FontRec *f;
-    FontFamilyRec *ff;
+    FontFamilyRec *ff = 0;
     BlendRec *b, *newb, **lastb;
     char *spaceBlend;	    
     char *lastFamily = NULL;
@@ -2574,9 +2560,9 @@ static void ReadBlends(fsb)
     }
 }
 
-static void SetUpFaceList(fsb, ff)
-    FontSelectionBoxWidget fsb;
-    FontFamilyRec *ff;
+static void SetUpFaceList(
+    FontSelectionBoxWidget fsb,
+    FontFamilyRec *ff)
 {
     FontRec *f;
     BlendRec *b;
@@ -2614,18 +2600,18 @@ static void SetUpFaceList(fsb, ff)
 
 /* ARGSUSED */
 
-static void DeleteMessage(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void DeleteMessage(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     XtDestroyWidget(widget);
 }
 
-static void FlushFont(fsb, font)
-    FontSelectionBoxWidget fsb;
-    FontRec *font;
+static void FlushFont(
+    FontSelectionBoxWidget fsb,
+    FontRec *font)
 {
-    FontRec *f, *f1;
+    FontRec *f = 0, *f1;
     FontFamilyRec *ff, *ff1;
     Boolean previewedFamily = False;
 
@@ -2693,17 +2679,17 @@ FOUND_BOGUS:
     }
 }
 
-extern void _FSBFlushFont(fsb, font)
-    FontSelectionBoxWidget fsb;
-    FontRec *font;
+void _FSBFlushFont(
+    FontSelectionBoxWidget fsb,
+    FontRec *font)
 {
     if (font == fsb->fsb.currently_previewed) _FSBBogusFont(fsb, font);
     else FlushFont(fsb, font);
 }
 
-extern void _FSBBogusFont(fsb, font)
-    FontSelectionBoxWidget fsb;
-    FontRec *font;
+void _FSBBogusFont(
+    FontSelectionBoxWidget fsb,
+    FontRec *font)
 {
     Widget message, w;
 
@@ -2721,9 +2707,9 @@ extern void _FSBBogusFont(fsb, font)
     FlushFont(fsb, font);
 }
 
-void _FSBSetUpFaceList(fsb, redisplay)
-    FontSelectionBoxWidget fsb;
-    Bool redisplay;
+void _FSBSetUpFaceList(
+    FontSelectionBoxWidget fsb,
+    Bool redisplay)
 {
     FontRec *f;
     BlendRec *b;
@@ -2774,9 +2760,9 @@ static String categories[][6] = {
 
 static String extraNormalFaces[] = {"Demi", "Semibold", NULL};
 
-static int MatchFaceName(rec, gaveUp)
-    FSBFaceSelectCallbackRec *rec;
-    Boolean *gaveUp;
+static int MatchFaceName(
+    FSBFaceSelectCallbackRec *rec,
+    Boolean *gaveUp)
 {
     int i, j, k, face;
 #define PIECEMAX 10
@@ -2955,9 +2941,9 @@ GIVE_UP:
     return 0;
 }
 
-static void GetInitialFace(fsb, ff)
-    FontSelectionBoxWidget fsb;
-    FontFamilyRec *ff;
+static void GetInitialFace(
+    FontSelectionBoxWidget fsb,
+    FontFamilyRec *ff)
 {
     FSBFaceSelectCallbackRec rec;
     String *faces;
@@ -3002,9 +2988,9 @@ static void GetInitialFace(fsb, ff)
 
 /* ARGSUSED */
 
-static void FamilySelect(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void FamilySelect(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     XmListCallbackStruct *listCB = (XmListCallbackStruct *) callData;
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
@@ -3029,9 +3015,9 @@ static void FamilySelect(widget, clientData, callData)
 
 /* ARGSUSED */
 
-static void FaceSelect(widget, clientData, callData)
-    Widget widget;
-    XtPointer clientData, callData;
+static void FaceSelect(
+    Widget widget,
+    XtPointer clientData, XtPointer callData)
 {
     XmListCallbackStruct *listCB = (XmListCallbackStruct *) callData;
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) clientData;
@@ -3068,9 +3054,9 @@ static void FaceSelect(widget, clientData, callData)
     ValueChanged(fsb);
 }
 
-static void CreateSizeMenu(fsb, destroyOldChildren)
-    FontSelectionBoxWidget fsb;
-    Boolean destroyOldChildren;
+static void CreateSizeMenu(
+    FontSelectionBoxWidget fsb,
+    Boolean destroyOldChildren)
 {
     Arg args[20];
     int i, j;
@@ -3086,7 +3072,7 @@ static void CreateSizeMenu(fsb, destroyOldChildren)
 		      XtNnumChildren, &num_children, NULL);
 
 	/* Don't destroy first child ("other") */
-	for (j = 1; j < num_children; j++) XtDestroyWidget(children[j]);
+	for (j = 1; (Cardinal)j < num_children; j++) XtDestroyWidget(children[j]);
 
 	sizes = (Widget *) XtMalloc((fsb->fsb.size_count+1) * sizeof(Widget));
 	sizes[0] = children[0];
@@ -3114,8 +3100,7 @@ static void CreateSizeMenu(fsb, destroyOldChildren)
     XtFree((char *) sizes);
 }
 
-static void CreateChildren(fsb)
-    FontSelectionBoxWidget fsb;
+static void CreateChildren(FontSelectionBoxWidget fsb)
 {
     Arg args[20];
     int i;
@@ -3358,8 +3343,7 @@ static void CreateChildren(fsb)
     XtSetValues(form, args, i);
 }
 
-static void DisplayFontFamilies(fsb)
-    FontSelectionBoxWidget fsb;
+static void DisplayFontFamilies(FontSelectionBoxWidget fsb)
 {
     FontFamilyRec *ff;
     XmString *CSlist, *str;
@@ -3378,8 +3362,7 @@ static void DisplayFontFamilies(fsb)
     XtFree((char *) CSlist);
 }
 
-static void SetUpCurrentFontFromName(fsb)
-    FontSelectionBoxWidget fsb;
+static void SetUpCurrentFontFromName(FontSelectionBoxWidget fsb)
 {
     FontFamilyRec *ff;
     FontRec *f;
@@ -3466,8 +3449,7 @@ static void SetUpCurrentFontFromName(fsb)
     XmListAddItem(fsb->fsb.face_scrolled_list_child, CSempty, 1);
 }
 
-static void SetUpCurrentFontFromFamilyFace(fsb)
-    FontSelectionBoxWidget fsb;
+static void SetUpCurrentFontFromFamilyFace(FontSelectionBoxWidget fsb)
 {
     FontFamilyRec *ff;
     FontRec *f;
@@ -3560,15 +3542,13 @@ static void SetUpCurrentFontFromFamilyFace(fsb)
     if (f == NULL && !fsb->fsb.font_face_multiple) GetInitialFace(fsb, ff);
 }
 
-static void SetUpCurrentFont(fsb)
-    FontSelectionBoxWidget fsb;
+static void SetUpCurrentFont(FontSelectionBoxWidget fsb)
 {
     if (fsb->fsb.use_font_name) SetUpCurrentFontFromName(fsb);
     else SetUpCurrentFontFromFamilyFace(fsb);
 }
 
-static void SetUpCurrentSize(fsb)
-    FontSelectionBoxWidget fsb;
+static void SetUpCurrentSize(FontSelectionBoxWidget fsb)
 {
     char buf[20];
 
@@ -3590,8 +3570,7 @@ static void SetUpCurrentSize(fsb)
     changingSize = False;
 }
 
-static void SetUpCurrentSelections(fsb)
-    FontSelectionBoxWidget fsb;
+static void SetUpCurrentSelections(FontSelectionBoxWidget fsb)
 {
     SetUpCurrentFont(fsb);
     SetUpCurrentSize(fsb);
@@ -3601,10 +3580,10 @@ static void SetUpCurrentSelections(fsb)
 
 /* ARGSUSED */
 
-static void Initialize(request, new, args, num_args)
-    Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
+static void Initialize(
+    Widget request, Widget new,
+    ArgList args,
+    Cardinal *num_args)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) new;
     Bool inited;
@@ -3704,8 +3683,7 @@ static void Initialize(request, new, args, num_args)
     if (fsb->fsb.show_sampler) ShowSampler(fsb);
 }
 
-static void FreeFontRec(f)
-    FontRec *f;
+static void FreeFontRec(FontRec *f)
 {
     BlendDataRec *bd;
     BlendRec *b, *next_b;
@@ -3724,8 +3702,8 @@ static void FreeFontRec(f)
     XtFree(f->full_name);
 }
 
-static void FreeFontLists(fsb)
-    FontSelectionBoxWidget fsb;
+static void FreeFontLists(
+    FontSelectionBoxWidget fsb)
 {
     FontFamilyRec *ff, *next_ff;
     FontRec *f, *next_f;
@@ -3746,8 +3724,7 @@ static void FreeFontLists(fsb)
     fsb->fsb.known_families = NULL;
 }
 
-static void Destroy(widget)
-    Widget widget;
+static void Destroy(Widget widget)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) widget;
 
@@ -3766,8 +3743,7 @@ static void Destroy(widget)
     FreeFontLists(fsb);
 }
 
-static void Resize(widget)
-    Widget widget;
+static void Resize(Widget widget)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) widget;
 
@@ -3776,10 +3752,10 @@ static void Resize(widget)
 
 /* ARGSUSED */
 
-static Boolean SetValues(old, req, new, args, num_args)
-    Widget old, req, new;
-    ArgList args;
-    Cardinal *num_args;
+static Boolean SetValues(
+    Widget old, Widget req, Widget new,
+    ArgList args,
+    Cardinal *num_args)
 {
     FontSelectionBoxWidget oldfsb = (FontSelectionBoxWidget) old;
     FontSelectionBoxWidget newfsb = (FontSelectionBoxWidget) new;
@@ -3878,7 +3854,7 @@ static Boolean SetValues(old, req, new, args, num_args)
     }	
 
     if (refreshLists) {
-	UndefUnusedFonts(newfsb);
+	UndefUnusedFonts((Widget)newfsb);
 	newfsb->fsb.pending_delete_font = NULL;
 	newfsb->fsb.pending_delete_count = 0;
 	FreeFontLists(newfsb);
@@ -3934,9 +3910,9 @@ static Boolean SetValues(old, req, new, args, num_args)
 
 /* ARGSUSED */
 
-static XtGeometryResult GeometryManager(w, desired, allowed)
-    Widget w;
-    XtWidgetGeometry *desired, *allowed;
+static XtGeometryResult GeometryManager(
+    Widget w,
+    XtWidgetGeometry *desired, XtWidgetGeometry *allowed)
 {
 #define WANTS(flag) (desired->request_mode & flag)
 
@@ -3954,8 +3930,7 @@ static XtGeometryResult GeometryManager(w, desired, allowed)
 #undef WANTS
 }
 
-static void ChangeManaged(w)
-    Widget w;
+static void ChangeManaged(Widget w)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
 
@@ -3963,19 +3938,19 @@ static void ChangeManaged(w)
     w->core.height = fsb->composite.children[0]->core.height;
 }
 
-static void SetFontName(w, name, name_multiple)
-    Widget w;
-    String name;
-    Bool name_multiple;
+static void SetFontName(
+    Widget w,
+    String name,
+    Bool name_multiple)
 {
     XtVaSetValues(w, XtNfontName, name, XtNuseFontName, True,
 		  XtNfontNameMultiple, name_multiple, NULL);
 }
 
-void FSBSetFontName(w, name, name_multiple)
-    Widget w;
-    String name;
-    Bool name_multiple;
+void FSBSetFontName(
+    Widget w,
+    String name,
+    Bool name_multiple)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -3983,10 +3958,10 @@ void FSBSetFontName(w, name, name_multiple)
 	    (w, name, name_multiple);
 }
 
-static void SetFontFamilyFace(w, family, face, family_multiple, face_multiple)
-    Widget w;
-    String family, face;
-    Bool family_multiple, face_multiple;
+static void SetFontFamilyFace(
+    Widget w,
+    String family, String face,
+    Bool family_multiple, Bool face_multiple)
 {
     XtVaSetValues(w, XtNfontFamily, family, XtNfontFace, face,
 		  XtNuseFontName, False,
@@ -3994,10 +3969,10 @@ static void SetFontFamilyFace(w, family, face, family_multiple, face_multiple)
 		  XtNfontFaceMultiple, face_multiple, NULL);
 }
 
-void FSBSetFontFamilyFace(w, family, face, family_multiple, face_multiple)
-    Widget w;
-    String family, face;
-    Bool family_multiple, face_multiple;
+void FSBSetFontFamilyFace(
+    Widget w,
+    String family, String face,
+    Bool family_multiple, Bool face_multiple)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4006,10 +3981,10 @@ void FSBSetFontFamilyFace(w, family, face, family_multiple, face_multiple)
 	    (w, family, face, family_multiple, face_multiple);
 }
 
-static void SetFontSize(w, size, size_multiple)
-    Widget w;
-    double size;
-    Bool size_multiple;
+static void SetFontSize(
+    Widget w,
+    double size,
+    Bool size_multiple)
 {
     int i;
     Arg args[2];
@@ -4029,10 +4004,10 @@ static void SetFontSize(w, size, size_multiple)
     XtSetValues(w, args, i);
 }
 
-void FSBSetFontSize(w, size, size_multiple)
-    Widget w;
-    double size;
-    Bool size_multiple;
+void FSBSetFontSize(
+    Widget w,
+    double size,
+    Bool size_multiple)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4040,12 +4015,11 @@ void FSBSetFontSize(w, size, size_multiple)
 	    (w, size, size_multiple);
 }
 
-static void RefreshFontList(w)
-    Widget w;
+static void RefreshFontList(Widget w)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
 
-    UndefUnusedFonts(fsb);
+    UndefUnusedFonts((Widget)fsb);
     fsb->fsb.pending_delete_font = NULL;
     fsb->fsb.pending_delete_count = 0;
     FreeFontLists(fsb);
@@ -4055,8 +4029,8 @@ static void RefreshFontList(w)
     SetUpCurrentSelections(fsb);
 }
 
-void FSBRefreshFontList(w)
-    Widget w;
+void FSBRefreshFontList(
+    Widget w)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4064,10 +4038,10 @@ void FSBRefreshFontList(w)
        XtClass(w))->fsb_class.refresh_font_list) (w);
 }
 
-static void GetFamilyList(w, count, list)
-    Widget w;
-    int *count;
-    String **list;
+static void GetFamilyList(
+    Widget w,
+    int *count,
+    String **list)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     String *buf;
@@ -4081,10 +4055,10 @@ static void GetFamilyList(w, count, list)
     }
 }
 
-void FSBGetFamilyList(w, count, list)
-    Widget w;
-    int *count;
-    String **list;
+void FSBGetFamilyList(
+    Widget w,
+    int *count,
+    String **list)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4092,11 +4066,11 @@ void FSBGetFamilyList(w, count, list)
        XtClass(w))->fsb_class.get_family_list) (w, count, list);
 }
 
-static void GetFaceList(w, family, count, face_list, font_list)
-    Widget w;
-    String family;
-    int *count;
-    String **face_list, **font_list;
+static void GetFaceList(
+    Widget w,
+    String family,
+    int *count,
+    String **face_list, String **font_list)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     String *buf1, *buf2;
@@ -4124,11 +4098,11 @@ static void GetFaceList(w, family, count, face_list, font_list)
     }
 }
 
-void FSBGetFaceList(w, family, count_return, face_list, font_list)
-    Widget w;
-    String family;
-    int *count_return;
-    String **face_list, **font_list;
+void FSBGetFaceList(
+    Widget w,
+    String family,
+    int *count_return,
+    String **face_list, String **font_list)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4137,8 +4111,8 @@ void FSBGetFaceList(w, family, count_return, face_list, font_list)
 					      face_list, font_list);
 }
 
-void FSBUndefineUnusedFonts(w)
-    Widget w;
+void FSBUndefineUnusedFonts(
+    Widget w)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4146,9 +4120,7 @@ void FSBUndefineUnusedFonts(w)
        XtClass(w))->fsb_class.undef_unused_fonts) (w);
 }
 
-static Boolean DownloadFontName(w, name)
-    Widget w;
-    String name;
+static Boolean DownloadFontName(Widget w, String name)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     FontFamilyRec *ff;
@@ -4180,9 +4152,9 @@ static Boolean DownloadFontName(w, name)
 			fsb->fsb.make_fonts_shared);
 }
 
-Boolean FSBDownloadFontName(w, name)
-    Widget w;
-    String name;
+Boolean FSBDownloadFontName(
+    Widget w,
+    String name)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4191,10 +4163,10 @@ Boolean FSBDownloadFontName(w, name)
        XtClass(w))->fsb_class.download_font_name) (w, name);
 }
 
-static Boolean MatchFontFace(w, old_face, new_family, new_face)
-    Widget w;
-    String old_face, new_family;
-    String *new_face;
+static Boolean MatchFontFace(
+    Widget w,
+    String old_face, String new_family,
+    String *new_face)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     FSBFaceSelectCallbackRec rec;
@@ -4229,10 +4201,10 @@ static Boolean MatchFontFace(w, old_face, new_family, new_face)
     return !retVal;
 }
 
-Boolean FSBMatchFontFace(w, old_face, new_family, new_face)
-    Widget w;
-    String old_face, new_family;
-    String *new_face;
+Boolean FSBMatchFontFace(
+    Widget w,
+    String old_face, String new_family,
+    String *new_face)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4241,10 +4213,10 @@ Boolean FSBMatchFontFace(w, old_face, new_family, new_face)
 						new_family, new_face);
 }
 
-static void FontNameToFamilyFaceBlend(w, font_name, family, face, blend)
-    Widget w;
-    String font_name;
-    String *family, *face, *blend;
+static void FontNameToFamilyFaceBlend(
+    Widget w,
+    String font_name,
+    String *family, String *face, String *blend)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     FontFamilyRec *ff;
@@ -4278,20 +4250,20 @@ static void FontNameToFamilyFaceBlend(w, font_name, family, face, blend)
     *blend = NULL;
 }
 
-static void FontNameToFamilyFace(w, font_name, family, face)
-    Widget w;
-    String font_name;
-    String *family, *face;
+static void FontNameToFamilyFace(
+    Widget w,
+    String font_name,
+    String *family, String *face)
 {
     String blend;
 
     FontNameToFamilyFaceBlend(w, font_name, family, face, &blend);
 }
 
-void FSBFontNameToFamilyFace(w, font_name, family, face)
-    Widget w;
-    String font_name;
-    String *family, *face;
+void FSBFontNameToFamilyFace(
+    Widget w,
+    String font_name,
+    String *family, String *face)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4300,10 +4272,10 @@ void FSBFontNameToFamilyFace(w, font_name, family, face)
 							 family, face);
 }
 
-static void FontFamilyFaceBlendToName(w, family, face, blend, font_name)
-    Widget w;
-    String family, face, blend;
-    String *font_name;
+static void FontFamilyFaceBlendToName(
+    Widget w,
+    String family, String face, String blend,
+    String *font_name)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     FontFamilyRec *ff;
@@ -4347,18 +4319,18 @@ static void FontFamilyFaceBlendToName(w, family, face, blend, font_name)
     *font_name = NULL;
 }
 
-static void FontFamilyFaceToName(w, family, face, font_name)
-    Widget w;
-    String family, face;
-    String *font_name;
+static void FontFamilyFaceToName(
+    Widget w,
+    String family, String face,
+    String *font_name)
 {
     FontFamilyFaceBlendToName(w, family, face, NULL, font_name);
 }
 
-void FSBFontFamilyFaceToName(w, family, face, font_name)
-    Widget w;
-    String family, face;
-    String *font_name;
+void FSBFontFamilyFaceToName(
+    Widget w,
+    String family, String face,
+    String *font_name)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4367,9 +4339,9 @@ void FSBFontFamilyFaceToName(w, family, face, font_name)
 							 font_name);
 }
 
-String FSBFindAFM(w, font_name)
-    Widget w;
-    String font_name;
+String FSBFindAFM(
+    Widget w,
+    String font_name)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4377,9 +4349,9 @@ String FSBFindAFM(w, font_name)
 	    fsb_class.find_afm) (w, font_name);
 }
 
-String FSBFindFontFile(w, font_name)
-    Widget w;
-    String font_name;
+String FSBFindFontFile(
+    Widget w,
+    String font_name)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4387,12 +4359,11 @@ String FSBFindFontFile(w, font_name)
 	    fsb_class.find_font_file) (w, font_name);
 }
 
-static void GetTextDimensions(w, text, font, size, x, y, dx, dy,
-			      left, right, top, bottom)
-    Widget w;
-    String text, font;
-    double size, x, y;
-    float *dx, *dy, *left, *right, *top, *bottom;
+static void GetTextDimensions(
+    Widget w,
+    String text, String font,
+    double size, double x, double y,
+    float *dx, float *dy, float *left, float *right, float *top, float *bottom)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     int bogusFont;
@@ -4401,12 +4372,11 @@ static void GetTextDimensions(w, text, font, size, x, y, dx, dy,
 			   dx, dy, left, right, top, bottom, &bogusFont);
 }
 
-void FSBGetTextDimensions(w, text, font, size, x, y, dx, dy,
-			  left, right, top, bottom)
-    Widget w;
-    String text, font;
-    double size, x, y;
-    float *dx, *dy, *left, *right, *top, *bottom;
+void FSBGetTextDimensions(
+    Widget w,
+    String text, String font,
+    double size, double x, double y,
+    float *dx, float *dy, float *left, float *right, float *top, float *bottom)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4415,11 +4385,13 @@ void FSBGetTextDimensions(w, text, font, size, x, y, dx, dy,
 					dx, dy, left, right, top, bottom);
 }
 
-static void SetFontFamilyFaceBlend(w, family, face, blend,
-				   family_multiple, face_multiple)
-    Widget w;
-    String family, face, blend;
-    Bool family_multiple, face_multiple;
+static void SetFontFamilyFaceBlend(
+    Widget w,
+    String family,
+    String face,
+    String blend,
+    Bool family_multiple,
+    Bool face_multiple)
 {
     XtVaSetValues(w, XtNfontFamily, family, XtNfontFace, face,
 		  XtNfontBlend, blend, XtNuseFontName, False,
@@ -4427,11 +4399,13 @@ static void SetFontFamilyFaceBlend(w, family, face, blend,
 		  XtNfontFaceMultiple, face_multiple, NULL);
 }
 
-void FSBSetFontFamilyFaceBlend(w, font_family, font_face, font_blend,
-			       font_family_multiple, font_face_multiple)
-    Widget w;
-    String font_family, font_face, font_blend;
-    Bool font_family_multiple, font_face_multiple;
+void FSBSetFontFamilyFaceBlend(
+    Widget w,
+    String font_family,
+    String font_face,
+    String font_blend,
+    Bool font_family_multiple,
+    Bool font_face_multiple)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4442,10 +4416,12 @@ void FSBSetFontFamilyFaceBlend(w, font_family, font_face, font_blend,
 					       font_face_multiple);
 }
 
-void FSBFontNameToFamilyFaceBlend(w, font_name, family, face, blend)
-    Widget w;
-    String font_name;
-    String *family, *face, *blend;
+void FSBFontNameToFamilyFaceBlend(
+    Widget w,
+    String font_name,
+    String *family,
+    String *face,
+    String *blend)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4454,10 +4430,12 @@ void FSBFontNameToFamilyFaceBlend(w, font_name, family, face, blend)
 						   face, blend);
 }
     
-void FSBFontFamilyFaceBlendToName(w, family, face, blend, font_name)
-    Widget w;
-    String family, face, blend;
-    String *font_name;
+void FSBFontFamilyFaceBlendToName(
+    Widget w,
+    String family,
+    String face,
+    String blend,
+    String *font_name)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4466,13 +4444,13 @@ void FSBFontFamilyFaceBlendToName(w, family, face, blend, font_name)
 						   blend, font_name);
 }
 
-static void GetBlendList(w, name, count_return, blend_return,
-			 font_name_return, axis_values_return)
-    Widget w;
-    String name;
-    int *count_return;
-    String **blend_return, **font_name_return;
-    float **axis_values_return;
+static void GetBlendList(
+    Widget w,
+    String name,
+    int *count_return,
+    String **blend_return,
+    String **font_name_return,
+    float **axis_values_return)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     String *buf1, *buf2;
@@ -4511,13 +4489,13 @@ static void GetBlendList(w, name, count_return, blend_return,
     }
 }
 
-void FSBGetBlendList(w, name, count_return, blend_return,
-		     font_name_return, axis_values_return)
-    Widget w;
-    String name;
-    int *count_return;
-    String **blend_return, **font_name_return;
-    float **axis_values_return;
+void FSBGetBlendList(
+    Widget w,
+    String name,
+    int *count_return,
+    String **blend_return,
+    String **font_name_return,
+    float **axis_values_return)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4526,17 +4504,16 @@ void FSBGetBlendList(w, name, count_return, blend_return,
 				   font_name_return, axis_values_return);
 }
 
-static void GetBlendInfo(w, name, num_axes_return, num_designs_return,
-			 axis_names_return, blend_positions_return,
-			 blend_map_count_return, blend_design_coords_return,
-			 blend_normalized_coords_return)
-    Widget w;
-    String name;
-    int *num_axes_return, *num_designs_return;
-    String **axis_names_return;
-    float **blend_positions_return;
-    int **blend_map_count_return, **blend_design_coords_return;
-    float **blend_normalized_coords_return;
+static void GetBlendInfo(
+    Widget w,
+    String name,
+    int *num_axes_return,
+    int *num_designs_return,
+    String **axis_names_return,
+    float **blend_positions_return,
+    int **blend_map_count_return,
+    int **blend_design_coords_return,
+    float **blend_normalized_coords_return)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     FontFamilyRec *ff;
@@ -4605,17 +4582,16 @@ FOUND_IT:
     }
 }
 
-void FSBGetBlendInfo(w, name, num_axes_return, num_designs_return,
-		     axis_names_return, blend_positions_return,
-		     blend_map_count_return, blend_design_coords_return,
-		     blend_normalized_coords_return)
-    Widget w;
-    String name;
-    int *num_axes_return, *num_designs_return;
-    String **axis_names_return;
-    float **blend_positions_return;
-    int **blend_map_count_return, **blend_design_coords_return;
-    float **blend_normalized_coords_return;
+void FSBGetBlendInfo(
+    Widget w,
+    String name,
+    int *num_axes_return,
+    int *num_designs_return,
+    String **axis_names_return,
+    float **blend_positions_return,
+    int **blend_map_count_return,
+    int **blend_design_coords_return,
+    float **blend_normalized_coords_return)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4628,13 +4604,13 @@ void FSBGetBlendInfo(w, name, num_axes_return, num_designs_return,
 				   blend_normalized_coords_return);
 }
 
-static Boolean ChangeBlends(w, base_name, blend_name, action, axis_values,
-			axis_percents)
-    Widget w;
-    String base_name, blend_name;
-    FSBBlendAction action;
-    int *axis_values;
-    float *axis_percents;
+static Boolean ChangeBlends(
+    Widget w,
+    String base_name,
+    String blend_name,
+    FSBBlendAction action,
+    int *axis_values,
+    float *axis_percents)
 {
     FontSelectionBoxWidget fsb = (FontSelectionBoxWidget) w;
     FontFamilyRec *ff;
@@ -4743,13 +4719,13 @@ FOUND_BASE:
     return True;
 }
 
-Boolean FSBChangeBlends(w, base_name, blend_name, action, axis_values,
-			axis_percents)
-    Widget w;
-    String base_name, blend_name;
-    FSBBlendAction action;
-    int *axis_values;
-    float *axis_percents;
+Boolean FSBChangeBlends(
+    Widget w,
+    String base_name,
+    String blend_name,
+    FSBBlendAction action,
+    int *axis_values,
+    float *axis_percents)
 {
     XtCheckSubclass(w, fontSelectionBoxWidgetClass, NULL);
 
@@ -4758,9 +4734,9 @@ Boolean FSBChangeBlends(w, base_name, blend_name, action, axis_values,
 				    axis_values, axis_percents);
 }
 
-void _FSBSetCurrentFont(fsb, name)
-    FontSelectionBoxWidget fsb;
-    String name;
+void _FSBSetCurrentFont(
+    FontSelectionBoxWidget fsb,
+    String name)
 {
     FontFamilyRec *ff;
     FontRec *f;
@@ -4806,10 +4782,10 @@ FOUND_NAME:
     DoPreview(fsb, False);
 }
 
-float _FSBNormalize(val, bd, i)
-    int val;
-    BlendDataRec *bd;
-    int i;
+float _FSBNormalize(
+    int val,
+    BlendDataRec *bd,
+    int i)
 {
     int j;
     int lessBreak, moreBreak;
@@ -4887,10 +4863,10 @@ int _FSBUnnormalize(val, bd, i)
 	    (moreBreak - lessBreak) + lessBreak + 0.5;
 }
 
-String _FSBGenFontName(name, val, bd)
-    String name;
-    int *val;
-    BlendDataRec *bd;
+String _FSBGenFontName(
+    String name,
+    int *val,
+    BlendDataRec *bd)
 {
     char nameBuf[256];
     int i;
@@ -4906,4 +4882,3 @@ String _FSBGenFontName(name, val, bd)
 
     return Canonical(nameBuf);
 }
-

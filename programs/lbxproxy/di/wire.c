@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.7 1998/12/20 11:58:07 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.8 1999/12/27 00:40:02 robin Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -135,16 +135,16 @@ WriteReqToServer(client, len, buf, checkLargeRequest)
 	delta_out_attempts++;
 #endif
 
-	if ((diffs = LBXDeltaMinDiffs(&server->outdeltas, buf, len,
-			     min(MAXBYTESDIFF, (len - sz_xLbxDeltaReq) >> 1),
+	if ((diffs = LBXDeltaMinDiffs(&server->outdeltas, (unsigned char *)buf,
+			len, min(MAXBYTESDIFF, (len - sz_xLbxDeltaReq) >> 1),
 				      &cindex)) >= 0) {
 
 #ifdef LBX_STATS
 	    delta_out_hits++;
 #endif
 
-	    LBXEncodeDelta(&server->outdeltas, buf, diffs, cindex,
-			   &server->tempdeltabuf[sz_xLbxDeltaReq]);
+	    LBXEncodeDelta(&server->outdeltas, (unsigned char *)buf, diffs,
+			   cindex, &server->tempdeltabuf[sz_xLbxDeltaReq]);
 	    p->reqType = server->lbxReq;
 	    p->lbxReqType = X_LbxDelta;
 	    p->diffs = diffs;
@@ -155,7 +155,7 @@ WriteReqToServer(client, len, buf, checkLargeRequest)
 	    WriteToServer(client, newlen, (char *) p, TRUE, checkLargeRequest);
 	    written = TRUE;
 	}
-	LBXAddDeltaOut(&server->outdeltas, buf, len);
+	LBXAddDeltaOut(&server->outdeltas, (unsigned char *)buf, len);
     }
     if (!written) {
 #ifdef BIGREQS
@@ -860,8 +860,10 @@ ServerProcStandardEvent(sc)
 #endif
 
 	/* Note that LBXDecodeDelta decodes and adds current msg to the cache */
-	len = LBXDecodeDelta(&server->indeltas, ((char *) rep) + sz_xLbxDeltaReq,
-			     delta->diffs, delta->cindex, &rep);
+	len = LBXDecodeDelta(&server->indeltas,
+			     (xLbxDiffItem *)((char *) rep + sz_xLbxDeltaReq),
+			     delta->diffs, delta->cindex,
+			     (unsigned char **)&rep);
 
 	/* Make local copy in case someone writes to the request buffer */
 	memcpy(server->tempdeltabuf, (char *) rep, len);
@@ -877,7 +879,7 @@ ServerProcStandardEvent(sc)
 	delta_in_attempts++;
 #endif
 
-	LBXAddDeltaIn(&server->indeltas, (char *) rep, len);
+	LBXAddDeltaIn(&server->indeltas, (unsigned char *) rep, len);
     }
     if (rep->generic.type == server->lbxEvent &&
 	rep->generic.data1 != LbxMotionDeltaEvent) {

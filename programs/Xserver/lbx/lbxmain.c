@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.6 1998/10/04 09:39:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.7 2000/05/18 23:46:24 dawes Exp $ */
  
 #include <sys/types.h>
 #define NEED_REPLIES
@@ -375,16 +375,16 @@ LbxComposeDelta(LbxProxyPtr	 proxy,
     int		 n;
     xLbxDeltaReq *p = (xLbxDeltaReq *)buf;
 
-    diffs = LBXDeltaMinDiffs(&proxy->outdeltas, reply, len,
+    diffs = LBXDeltaMinDiffs(&proxy->outdeltas, (unsigned char *)reply, len,
 			     min(MAXBYTESDIFF, (len - sz_xLbxDeltaReq) >> 1),
 			     &cindex);
     if (diffs < 0) {
-	LBXAddDeltaOut(&proxy->outdeltas, reply, len);
+	LBXAddDeltaOut(&proxy->outdeltas, (unsigned char *)reply, len);
 	return 0;
     }
-    LBXEncodeDelta(&proxy->outdeltas, reply, diffs, cindex,
-		   &buf[sz_xLbxDeltaReq]);
-    LBXAddDeltaOut(&proxy->outdeltas, reply, len);
+    LBXEncodeDelta(&proxy->outdeltas, (unsigned char *)reply, diffs, cindex,
+		   (unsigned char *)(&buf[sz_xLbxDeltaReq]));
+    LBXAddDeltaOut(&proxy->outdeltas, (unsigned char *)reply, len);
     p->reqType = LbxEventCode;
     p->lbxReqType = LbxDeltaEvent;
     p->diffs = diffs;

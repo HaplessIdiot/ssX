@@ -34,6 +34,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 defineps PSclientsync()
 	clientsync
@@ -59,7 +60,7 @@ defineps PSsetXgcdrawablecolor(int gc, draw, x, y, colorInfo[12])
 	gc draw x y colorInfo setXgcdrawablecolor
 endps
 
-defineps PSsetXoffset(short x, y)
+defineps PSsetXoffset(int x, y)
 	x y setXoffset
 endps
 
