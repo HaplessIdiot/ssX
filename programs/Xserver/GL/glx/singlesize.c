@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/singlesize.c,v 1.6 2003/11/06 18:37:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/singlesize.c,v 1.7tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -35,6 +35,7 @@
 */
 
 #include <GL/gl.h>
+#include "glxserver.h"
 #include "singlesize.h"
 
 /*
