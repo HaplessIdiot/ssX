@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.2 2000/02/18 12:20:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.8 2001/11/30 12:12:01 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -556,9 +556,9 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (!pSiS->NoAccel) {
         pReg->sisRegs3C4[0x1E] |= 0x42;
         if (pSiS->TurboQueue)  {    /* set Turbo Queue as 512k */
-            temp = ((pScrn->videoRam/64)-4);
+            temp = ((pScrn->videoRam/64) - 8);
             pReg->sisRegs3C4[0x26] = temp & 0xFF;
-            pReg->sisRegs3C4[0x27] = ((temp >> 8) & 3) || 0xF0;
+            pReg->sisRegs3C4[0x27] = ((temp >> 8) & 3) | 0xF0;
         }
     }
 

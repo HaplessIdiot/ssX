@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.68 2001/10/01 13:44:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.69 2001/11/30 12:12:00 eich Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -1591,11 +1591,13 @@ SISSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     SISPtr pSiS = SISPTR(pScrn);
+#if 0
     if ((pSiS->Chipset == PCI_CHIP_SIS300) ||
             (pSiS->Chipset == PCI_CHIP_SIS630) ||
             (pSiS->Chipset == PCI_CHIP_SIS540))
         return SiSSetMode(xf86Screens[scrnIndex], mode);
     else
+#endif
         return SISModeInit(xf86Screens[scrnIndex], mode);
 }
 
@@ -1700,7 +1702,7 @@ SISEnterVT(int scrnIndex, int flags)
         DRIUnlock(pScreen);
     }
 #endif
-
+#if 0
     /* Should we re-save the text mode on each VT enter? */
     if((pSiS->Chipset == PCI_CHIP_SIS300) ||
             (pSiS->Chipset == PCI_CHIP_SIS630) ||
@@ -1710,6 +1712,7 @@ SISEnterVT(int scrnIndex, int flags)
            return FALSE;
     } 
     else
+#endif
         if (!SISModeInit(pScrn, pScrn->currentMode))
             return FALSE;
     

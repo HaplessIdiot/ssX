@@ -1,4 +1,9 @@
 XFree86 4.1.99.3 (xx December 2001)
+ 586. Minor bugfix to SiS driver, restructured VT switching code 
+      (Egbert Eich).
+ 585. Attempt to fix flickering in 24bpp on Trident CyberBladeXPAi1
+      (Egbert Eich).
+ 584. Fixed UTF8lib support (Mike Fabian).
  583. Re-instate makedepend's recognition of backslash line terminations
       (Marc La France).
  582. Add proper reference counting to the XvMCContext so that destroying
@@ -14357,4 +14362,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2092 2001/12/18 04:23:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2093 2001/12/19 15:15:48 tsi Exp $
