@@ -42,23 +42,6 @@
 #include <X11/Xaw/Command.h>
 #include <X11/Shell.h>
 
-#define CONFPATH	"%A," "%R," \
-			"/etc/X11/%R," "%P/etc/X11/%R," \
-			"%E," "%F," \
-			"/etc/X11/%F," "%P/etc/X11/%F," \
-			"%D/%X," \
-			"/etc/X11/%X-%M," "/etc/X11/%X," "/etc/%X," \
-			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
-			"%P/etc/X11/%X," \
-			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
-			"%P/lib/X11/%X"
-#define USER_CONFPATH	"/etc/X11/%S," "%P/etc/X11/%S," \
-                        "/etc/X11/%G," "%P/etc/X11/%G," \
-			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
-			"%P/etc/X11/%X," \
-			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
-			"%P/lib/X11/%X"
-
 /*
  * Prototypes
  */

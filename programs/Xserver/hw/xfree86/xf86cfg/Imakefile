@@ -1,10 +1,15 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.8 2000/10/23 12:10:17 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.10 2000/11/30 20:55:16 paulo Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
 #if DoLoadableServer
 LDSRCS	= libc_wrapper.c loader.c
 LDOBJS	= libc_wrapper.o loader.o
+#endif
+
+#if HasNCurses
+TEXTSRC	= text-mode.c
+TEXTOBJ	= text-mode.o
 #endif
 
 SRCS	=\
@@ -24,6 +29,7 @@ SRCS	=\
 	screen.c\
 	startx.c\
 	stubs.c\
+	$(TEXTSRC)\
 	vidmode.c\
 	xf86config.c
 
@@ -44,6 +50,7 @@ OBJS	=\
 	screen.o\
 	startx.o\
 	stubs.o\
+	$(TEXTOBJ)\
 	vidmode.o\
 	xf86config.o
 
@@ -80,7 +87,13 @@ INCLUDES       = -I../common -I../loader -I$(XF86OSSRC) \
 WRAPPERDEFINES = -DSELF_CONTAINED_WRAPPER
 #endif
 
-DEFINES        = -DXF86CONFIG=\"XConfigFile\" $(MODULEDEFINES)
+#if HasNCurses
+CURSESLIB = NCursesLibName
+CURSESDEFINES  = -DHAS_NCURSES
+#endif
+
+DEFINES        = -DXF86CONFIG=\"XConfigFile\" $(MODULEDEFINES) \
+		 $(CURSESDEFINES)
 
 #if HasDlopen
 DLLIB = DlLibrary
@@ -88,7 +101,7 @@ DLLIB = DlLibrary
 
 LOCAL_LIBRARIES = $(XKBUILIB) $(XKBFILELIB) -lxf86config $(XXF86MISCLIB) \
 		  $(XXF86VMLIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
-		  $(XPMLIB) $(LOADERLIB) $(DLLIB) $(XLIB) -lm
+		  $(XPMLIB) $(LOADERLIB) $(DLLIB) $(XLIB) $(CURSESLIB) -lm
 
 NormalProgramTarget($(PROG),$(OBJS),,$(LOCAL_LIBRARIES),)
 InstallProgramWithFlags($(PROG),$(BINDIR),NullParameter)
