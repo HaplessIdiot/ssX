@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.99 1996/09/01 12:29:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.0 1996/09/22 13:25:46 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -888,7 +888,8 @@ s3Init(mode)
    }
 
 
-   s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);
+   if (s3MmioMem != NULL)
+      s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);
 
    vgaProtect(FALSE);
 

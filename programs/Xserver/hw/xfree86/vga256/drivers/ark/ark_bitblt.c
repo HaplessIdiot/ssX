@@ -22,8 +22,9 @@
  * Written by Harm Hanemaayer (H.Hanemaayer@inter.nl.net).
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_bitblt.c,v 3.0 1996/09/22 05:05:49 dawes Exp $ */
 
+#include "compiler.h"
 #include "vga256.h"
 #include "xf86.h"
 #include "vga.h"

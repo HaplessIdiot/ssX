@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.3 1996/08/27 03:13:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/newmmio.h,v 3.0 1996/09/22 13:25:12 dawes Exp $ */
 /***************************************************************************
  *
  * typedefs and macros for MMIO mode, S3 ViRGE
@@ -521,23 +521,6 @@ typedef struct {
 #define SETL3_CLIP(x1,y1,x2,y2) { SETL3_CLIP_L_R(x1,x2); SETL3_CLIP_T_B(y1,y2); }
 #define SETT3_CLIP(x1,y1,x2,y2) { SETT3_CLIP_L_R(x1,x2); SETT3_CLIP_T_B(y1,y2); }
 
-#define SETB_BLT(sx,sy, dx,dy, w,h, inc_x)  \
-			if (((inc_x) == INC_X && (sx) > (dx) \
-			     && (w)+1 >= s3bltbug_width1 && (w)+1 <= s3bltbug_width2) || \
-			    ((inc_x) != INC_X && (sx) < (dx) \
-			     && (w)+1 >= s3bltbug_width1 && (w)+1 <= s3bltbug_width2)) { \
-			   WaitQueue(5); \
-			   SETL_CLIP_L_R(dx,dx+w); \
-			   SETB_RSRC_XY(sx,sy); \
-			   SETB_RWIDTH_HEIGHT(s3bltbug_width2,h); \
-			   SETB_RDEST_XY(dx,dy); \
-			   SETL_CLIP_L_R(0,s3DisplayWidth-1); \
-			} else { \
-			   WaitQueue(3); \
-			   SETB_RSRC_XY(sx,sy); \
-			   SETB_RWIDTH_HEIGHT(w,h); \
-			   SETB_RDEST_XY(dx,dy); \
-			}
 
 
 #define DBGOUT(p) /* outb(0x3bc,p) */

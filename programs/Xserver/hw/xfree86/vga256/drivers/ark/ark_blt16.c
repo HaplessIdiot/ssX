@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_blt16.c,v 3.0 1996/09/22 05:05:50 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -235,6 +235,16 @@ ArkCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
+    if (((DrawablePtr)pwinRoot)->type != DRAWABLE_WINDOW) {
+    	if (vgaBitsPerPixel == 16)
+    		cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
+    	else if (vgaBitsPerPixel == 24)
+    		cfb24CopyWindow(pWin, ptOldOrg, prgnSrc);
+    	else if (vgaBitsPerPixel == 32)
+    		cfb32CopyWindow(pWin, ptOldOrg, prgnSrc);
+    	return;
+    }
+
     REGION_INIT(pWin->drawable.pScreen, &rgnDst, NullBox, 0);
 
     dx = ptOldOrg.x - pWin->drawable.x;
@@ -438,7 +448,6 @@ BoxPtr pbox;
 int xdir, ydir;
 {
 	unsigned int srcaddr, destaddr;
-	int i;
 
 	for (; nbox; pbox++, pptSrc++, nbox--) {
 		int x, y, x1, y1, w, h, dir;

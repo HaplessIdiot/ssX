@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.42 1996/09/14 13:13:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.43 1996/09/15 11:20:35 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -477,6 +477,8 @@ TVGA8900Probe()
 			 */
 			outb(0x3C4, 0x0B);	/* Restore value of 0x0B */
 			outb(0x3C5, temp);
+			outb(0x3C4, 0x0E);
+			outb(0x3C5, origVal);
 	  		TVGA8900EnterLeave(LEAVE);
 	  		return(FALSE);
 		}

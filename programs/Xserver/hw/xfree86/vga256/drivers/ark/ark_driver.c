@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.13 1996/09/14 13:11:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.14 1996/09/22 05:05:53 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -365,6 +365,7 @@ static int arkDacPathWidth, arkMultiplexingThreshold;
 static int arkUse8bitColorComponents;
 static int arkDisplayableMemory;
 static int arkUseCOP;
+static int arkDRAMBandwidth;
 unsigned char *arkMMIOBase = NULL;
 
 static SymTabRec chipsets[] = {
@@ -521,7 +522,8 @@ ArkProbe()
 {
 	int maxclock8bpp, maxclock16bpp, maxclock24bpp, maxclock32bpp;
 	char *clockprobed = XCONFIG_GIVEN;
-	int DRAM_bandwidth, bandwidth_limit;
+	int bandwidth_limit;
+	char *ramdac_given_or_probed;
 
 	/*
 	 * Set up I/O ports to be used by this card.  Only do the second
@@ -647,6 +649,32 @@ ArkProbe()
 	else
 		arkRamdac = -1;
 
+	/*
+	 * Try to auto-detect the RAMDAC if we can.
+	 */
+	ramdac_given_or_probed = XCONFIG_GIVEN;
+	if (arkRamdac == -1) {
+		int man_id, dev_id;
+		xf86dactopel();
+		xf86dactocomm();
+		inb(0x3C6);		/* Skip command register. */
+		man_id = inb(0x3C6);	/* Manufacturer ID. */
+		dev_id = inb(0x3C6);	/* Device ID. */
+		if (man_id == 0x84 && dev_id == 0x98) {
+			arkRamdac = ZOOMDAC;
+			ramdac_given_or_probed = XCONFIG_PROBED;
+		}
+	}
+	if (arkRamdac != -1)
+		ErrorF("%s %s: %s: ramdac %s\n",
+			ramdac_given_or_probed, vga256InfoRec.name,
+			vga256InfoRec.chipset,
+			xf86TokenToString(ramdacs, arkRamdac));
+
+	/*
+	 * Set up the maximum dot clocks supported at each depth
+	 * by the RAMDAC.
+	 */
 	maxclock8bpp = 0;
 	maxclock16bpp = 0;
 	maxclock24bpp = 0;
@@ -703,10 +731,12 @@ ArkProbe()
 #endif
 		if (arkChip == ARK1000PV) {
 			/* Uses only 8-bit path to 16-bit RAMDAC. */
-			if (vga256InfoRec.dacSpeed >= 135000)
-				maxclock16bpp = 67500;
-			else	/* 110 MHz rated. */
-				maxclock16bpp = 55000;
+			if (xf86weight.green == 6)
+				/* Only 5-6-5 16bpp supported. */
+				if (vga256InfoRec.dacSpeed >= 135000)
+					maxclock16bpp = 67500;
+				else	/* 110 MHz rated. */
+					maxclock16bpp = 55000;
 			maxclock24bpp = maxclock8bpp / 3;
 			maxclock32bpp = maxclock8bpp / 4;
 			break;
@@ -852,19 +882,19 @@ ArkProbe()
 	 * XF86Config file; otherwise assume 60 MHz.
 	 */
 	if (vga256InfoRec.s3MClk != 0)
-		DRAM_bandwidth = vga256InfoRec.s3MClk * 2;
+		arkDRAMBandwidth = vga256InfoRec.s3MClk * 2;
 	else
-		DRAM_bandwidth = 120000;	/* Assume 60 MHz, 120 MB/s */
+		arkDRAMBandwidth = 120000;	/* Assume 60 MHz, 120 MB/s */
 	if ((arkChip == ARK2000PV || arkChip == ARK2000MT)
 	    && vga256InfoRec.videoRam >= 2048)
 		/* 64-bit DRAM bus. */
-		DRAM_bandwidth *= 2;
+		arkDRAMBandwidth *= 2;
 	/*
 	 * Calculate highest acceptable DRAM bandwidth in Mbytes/s
 	 * to be taken up by screen refresh. Satisfies
 	 * total bandwidth >= refresh bandwidth * 1.1
 	 */
-	bandwidth_limit = (DRAM_bandwidth * 100) / 110;
+	bandwidth_limit = (arkDRAMBandwidth * 100) / 110;
 	if (maxclock8bpp > bandwidth_limit)
 		maxclock8bpp = bandwidth_limit;
 	if (maxclock16bpp > bandwidth_limit / 2)
@@ -1213,6 +1243,7 @@ vgaArkPtr restore;
 	|| arkRamdac == ZOOMDAC || arkRamdac == STG1700)
 		xf86setdaccomm(restore->DACCOMMAND);
 	if (arkRamdac == STG1700) {
+		xf86dactopel();
 		xf86dactocomm();
 		inb(0x3C6);		/* Skip command reg. */
 		outb(0x3C6, 0x03);	/* Index low. */
@@ -1335,6 +1366,7 @@ vgaArkPtr save;
 	|| arkRamdac == ZOOMDAC || arkRamdac == STG1700)
 		save->DACCOMMAND = xf86getdaccomm();
 	if (arkRamdac == STG1700) {
+		xf86dactopel();
 		xf86dactocomm();
 		inb(0x3C6);		/* Skip command reg. */
 		outb(0x3C6, 0x03);	/* Index low. */
@@ -1593,6 +1625,10 @@ DisplayModePtr mode;
 	{
 		int threshold;
 		unsigned char val;
+		int bandwidthused, percentused;
+		bandwidthused = vga256InfoRec.clock[mode->Clock] *
+			vgaBitsPerPixel / 8;
+		percentused = bandwidthused * 100 / arkDRAMBandwidth;
 		val = rdinx(0x3C4, 0x18);
 		if (arkChip == ARK1000PV) {
 			threshold = 4;	/* A guess. */
@@ -1602,6 +1638,10 @@ DisplayModePtr mode;
 		}
 		if (arkChip == ARK2000PV || arkChip == ARK2000MT) {
 			threshold = 12;	/* A guess. */
+			if (percentused >= 45)
+				threshold = 20;
+			if (percentused >= 70)
+				threshold = 24;
 			val &= 0x40;
 			val |= 0x10;	/* 32-deep FIFO. */
 			val |= (threshold & 0x0E) >> 1;
@@ -1651,11 +1691,6 @@ DisplayModePtr mode;
 			/* 5-6-5 RGB. */
 			new->DACCOMMAND = 0xC0;
 		if (vgaBitsPerPixel == 24)
-			/*
-			 * 8-8-8 truecolor; there seems to be a one-byte
-			 * framebuffer displacement resulting in wrong colors.
-			 * This may be a peculiarity of the DAC.
-			 */
 			new->DACCOMMAND = 0xE0;
 	}
 	if (arkRamdac == ATT498 || arkRamdac == ZOOMDAC) {

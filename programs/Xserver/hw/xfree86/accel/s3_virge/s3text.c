@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.13 1996/09/01 04:15:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.0 1996/09/22 13:25:57 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -46,46 +46,79 @@
 extern unsigned char s3SwapBits[256];
 
 
-__inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth)
-int x, y;
-int  width, height, pwidth;
-unsigned char *pb;
+__inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r)
+     int x, y;
+     int width, height, pwidth;
+     unsigned char *pb;
+     int clip_l, clip_r;
 {
-	    WaitQueue(3);
+   int newwidth, lspn;
+   newwidth = width;
+
+   lspn = (width * s3Bpp) & 63;  /* scanline width in bytes modulo 64*/
+
+   if (s3Bpp == 1) {
+      if (lspn <= 8*1)
+	 newwidth += 16;
+      else if (lspn <= 16*1)
+	 newwidth += 8;
+   } else if (s3Bpp == 2) {
+      if (lspn <= 4*2)
+	 newwidth += 8;
+      else if (lspn <= 8*2)
+	 newwidth += 4;
+   } else {  /* s3Bpp == 3 */
+      if (lspn <= 3*3) 
+	 newwidth += 6;
+      else if (lspn <= 6*3)
+	 newwidth += 3;
+   }
+
+   if (newwidth != width) {
+      WaitQueue(5);
+      SETB_CLIP_L_R(max(clip_l,x), min(clip_r,x + width-1));
+   }
+   else {
+      WaitQueue(3);
+   }
+	    
 DBGOUT(0x56);
-	    SETB_RDEST_XY((short) x, (short) y);
-	    SETB_RWIDTH_HEIGHT((short) (width - 1), (short)(height));
+   SETB_RDEST_XY((short) x, (short) y);
+   SETB_RWIDTH_HEIGHT((short) (newwidth - 1), (short)(height));
 DBGOUT(0x57);
-	    WaitIdle();
+   WaitIdle();
 DBGOUT(0x58);
 #if 0
-ErrorF("s3SimpleStipple IN_SUBSYS_STAT %x cmd %x x/y %d %d w/h %d %d\n",IN_SUBSYS_STAT(),s3_gcmd | CMD_BITBLT | INC_Y | INC_X | CMD_ITA_DWORD | MIX_MONO_TRANSP | MIX_MONO_PATT | MIX_CPUDATA | MIX_MONO_SRC | ROP_S, x,y,width,height); /* usleep(100000); */
+   ErrorF("s3SimpleStipple IN_SUBSYS_STAT %x cmd %x x/y %d %d w/h %d %d\n",IN_SUBSYS_STAT(),s3_gcmd | CMD_BITBLT | INC_Y | INC_X | CMD_ITA_DWORD | MIX_MONO_TRANSP | MIX_MONO_PATT | MIX_CPUDATA | MIX_MONO_SRC | ROP_S, x,y,width,height); /* usleep(100000); */
 #endif
-	    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | INC_Y | INC_X
-			 | CMD_ITA_DWORD | MIX_MONO_TRANSP | MIX_MONO_PATT
-			 | MIX_CPUDATA | MIX_MONO_SRC | ROP_S);
+   SETB_CMD_SET(s3_gcmd | CMD_BITBLT | INC_Y | INC_X
+		| CMD_ITA_DWORD | MIX_MONO_TRANSP | MIX_MONO_PATT
+		| MIX_CPUDATA | MIX_MONO_SRC | ROP_S);
 DBGOUT(0x59);
 
-	    { /* The stipple code */
+   {				/* The stipple code */
 #define SWPBIT(s) (s3SwapBits[pb[(s)]])
 
-	       int i, h, pix, n=0;
-	       unsigned int getbuf;
+      int i, h, pix, n=0;
+      unsigned int getbuf;
 
-	       for (h = 0; h < height; h++) {
-		  pix = 0;
+      for (h = 0; h < height; h++) {
+	 pix = 0;
 
-		  for (i = 0; i < width; i += 32) {
+	 for (i = 0; i < newwidth; i += 32) {
 DBGOUT(0x80 | n++);
-		     getbuf = SWPBIT(pix+3)<<24 | SWPBIT(pix+2)<<16
-			|     SWPBIT(pix+1)<< 8 | SWPBIT(pix+0)<< 0;
-		     *IMG_TRANS = getbuf;
-		     pix += 4;
-		  }
-		  pb += pwidth;
-	       }
-	    }
+	    getbuf = SWPBIT(pix+3)<<24 | SWPBIT(pix+2)<<16
+	       |     SWPBIT(pix+1)<< 8 | SWPBIT(pix+0)<< 0;
+	    *IMG_TRANS = getbuf;
+	    pix += 4;
+	 }
+	 pb += pwidth;
+      }
+   }
 DBGOUT(0x5f);
+   if (newwidth != width) {
+      SETB_CLIP_L_R(clip_l, clip_r);
+   }
 }
 
 /*
@@ -214,7 +247,8 @@ ErrorF("gHeight %d -> %d  %d\n",gHeight,gHeight-d,d);
 
 	      s3SimpleStipple(x + pci->metrics.leftSideBearing,
 			      y - pci->metrics.ascent + d,
-			      gWidth, gHeight, pb, nbyPadGlyph);
+			      gWidth, gHeight, pb, nbyPadGlyph,
+			      pBox->x1, pBox->x2 - 1);
 	   }
         }
 	
@@ -238,7 +272,7 @@ unsigned char *pb;
    ;SET_MIX(FSS_FRGDCOL | s3alu[GXcopy], BSS_BKGDCOL | s3alu[GXcopy]);
    ;SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
 
-   s3SimpleStipple(x, y, width, height, pb, pwidth);
+   s3SimpleStipple(x, y, width, height, pb, pwidth, 0, s3DisplayWidth - 1);
 
    UNBLOCK_CURSOR;
 }

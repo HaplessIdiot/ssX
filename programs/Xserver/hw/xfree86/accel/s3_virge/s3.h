@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.41 1996/09/14 13:09:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.h,v 3.0 1996/09/22 13:25:16 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -1030,5 +1030,68 @@ void s3IBMRGBLoadCursor(
 _XFUNCPROTOEND
 
 #endif /* !LINKKIT */
-#endif /* _S3_H_ */
 
+
+extern __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, int inc_x)
+{
+   int newwidth, lspn;
+int n1;
+   extern int s3Bpp;
+
+   newwidth = w+1;
+   lspn = ((w+1) * s3Bpp) & 63;  /* scanline width in bytes modulo 64*/
+
+   if (s3Bpp == 1) {
+      if (lspn <= 8*1)
+	 newwidth += 16;
+      else if (lspn <= 16*1)
+	 newwidth += 8;
+   } else if (s3Bpp == 2) {
+      if (lspn <= 4*2)
+	 newwidth += 8;
+      else if (lspn <= 8*2)
+	 newwidth += 4;
+   } else {  /* s3Bpp == 3 */
+      if (lspn <= 3*3) 
+	 newwidth += 6;
+      else if (lspn <= 6*3)
+	 newwidth += 3;
+   }
+   n1=newwidth;
+
+   if (((inc_x) == INC_X && (sx) > (dx)
+	&& newwidth >= s3bltbug_width1 && newwidth <= s3bltbug_width2) ||
+       ((inc_x) != INC_X && (sx) < (dx)
+	&& newwidth >= s3bltbug_width1 && newwidth <= s3bltbug_width2)) {
+      if (newwidth < s3bltbug_width2)
+	 newwidth = s3bltbug_width2;
+   }
+
+   if (newwidth != w+1) {
+      WaitQueue(5);
+      if (inc_x == INC_X) {
+	 SETB_CLIP_L_R(dx, dx+w);
+      } else {
+	 SETB_CLIP_L_R(dx-w, dx);
+      }
+      SETB_RSRC_XY(sx, sy);
+      SETB_RWIDTH_HEIGHT(newwidth-1, h);
+      SETB_RDEST_XY(dx, dy);
+      SETB_CLIP_L_R(0, s3DisplayWidth-1);
+   }
+   else {
+      WaitQueue(3);
+      SETB_RSRC_XY(sx, sy);
+      SETB_RWIDTH_HEIGHT(w, h);
+      SETB_RDEST_XY(dx, dy);
+   }
+   if (0) ErrorF("wh %d,%d\ts %d,%d\td %d,%d\tix %d\tn %d %d %d\tc %d,%d\n"
+		 ,w+1,h ,sx,sy ,dx,dy
+		 ,inc_x==INC_X
+		 ,w+1,n1,newwidth
+		 ,(inc_x == INC_X) ? dx : dx-w, (inc_x == INC_X) ? dx+w : dx
+		 );
+}
+
+
+#endif /* _S3_H_ */

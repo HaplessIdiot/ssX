@@ -22,7 +22,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.0 1996/09/22 05:04:33 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -334,10 +334,10 @@ tgaProbe()
 		{
 			tgaInfoRec.virtualX = pMode->HDisplay;
 			tgaInfoRec.virtualY = pMode->VDisplay;
+			pModeInited = TRUE; /* We have a mode - only 1 supported */
 		}
 #endif
 		pMode = pMode->next;
-		pModeInited = TRUE; /* We have a mode - only 1 supported */
 	}
   } while (pModeInited == FALSE); /* (pMode != pEnd); */
 

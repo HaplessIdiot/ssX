@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.32 1996/08/20 12:30:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.33 1996/09/14 13:13:40 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -63,7 +63,7 @@
  * - The card database doesn't include most of the entries in previous
  *   databases.
  *
- * Send comments to hhanemaa@cs.ruu.nl.
+ * Send comments to H.Hanemaayer@inter.nl.net.
  *
  * Things to keep up-to-date:
  * - Accelerated server names.
@@ -167,9 +167,12 @@ int config_numberofclockslines;
 char *config_clocksline[MAX_CLOCKS_LINES];
 char *config_modesline8bpp;
 char *config_modesline16bpp;
+char *config_modesline24bpp;
 char *config_modesline32bpp;
+int config_virtual;		/* 1 (yes) or 0 (no) */
 int config_virtualx8bpp, config_virtualy8bpp;
 int config_virtualx16bpp, config_virtualy16bpp;
+int config_virtualx24bpp, config_virtualy24bpp;
 int config_virtualx32bpp, config_virtualy32bpp;
 char *config_ramdac;
 char *config_dacspeed;
@@ -1082,8 +1085,8 @@ static char *screenintro_text =
 " 2  The XF86_VGA16 server. This is a 16-color VGA server that should work on\n"
 "    any VGA-compatible card.\n"
 " 3  The XF86_SVGA server. This is a 256 color SVGA server that supports\n"
-"    a number of SVGA chipsets. It is accelerated on some Cirrus and WD\n"
-"    chipsets; it supports 16/32-bit color on certain Cirrus configurations.\n"
+"    a number of SVGA chipsets. On some chipsets it is accelerated or\n"
+"    supports higher color depths.\n"
 " 4  The accelerated servers. These include XF86_S3, XF86_Mach32, XF86_Mach8,\n"
 #if XFREE86_VERSION >= 311
 "    XF86_8514, XF86_P9000, XF86_AGX, XF86_W32, XF86_Mach64 and XF86_I128.\n"
@@ -1152,10 +1155,10 @@ static char *ramdaccomment_text =
 "table of RAMDAC types:\n"
 "\n";
 
-#define NU_RAMDACS 23
+#define NU_RAMDACS 24
 
 static char *ramdac_name[NU_RAMDACS] = {
-	"AT&T 20C490 (S3 and AGX servers)",
+	"AT&T 20C490 (S3 and AGX servers, ARK driver)",
 	"AT&T 20C498/21C498/22C498 (S3, autodetected)",
 	"AT&T 20C409/20C499 (S3, autodetected)",
 	"AT&T 20C505 (S3)",
@@ -1180,8 +1183,9 @@ static char *ramdac_name[NU_RAMDACS] = {
 	"IBM RGB 525 (S3, autodetected)",
 	"IBM RGB 526 (S3)",
 	"IBM RGB 528 (S3, autodetected)",
-	"ICS5342 (S3, Ark)",
+	"ICS5342 (S3, ARK)",
 	"ICS5341 (W32)",
+	"IC Works w30C516 ZoomDac (ARK)",
 	"Normal DAC"
 };
 
@@ -1190,7 +1194,7 @@ static char *ramdac_id[NU_RAMDACS] = {
 	"bt485", "sc15025", "s3gendac", "s3_sdac", "stg1700","stg1703",
 	"ti3020", "ti3025", "ti3026", "ibm_rgb514", "ibm_rgb524",
 	"ibm_rgb525", "ibm_rgb526", "ibm_rgb528", "ics5342", "ics5341",
-	"normal"
+	"zoomdac", "normal"
 };
 
 static char *clockchipcomment_text =
@@ -1262,20 +1266,29 @@ static char *modesorderintro_text =
 "\n";
 
 static char *modesorder_text2 =
-"Note that 16bpp and 32bpp are only supported on a few configurations.\n"
+"Note that 16, 24 and 32bpp are only supported on a few configurations.\n"
 "Modes that cannot be supported due to monitor or clock constraints will\n"
 "be automatically skipped by the server.\n"
 "\n"
 " 1  Change the modes for 8pp (256 colors)\n"
 " 2  Change the modes for 16bpp (32K/64K colors)\n"
-" 3  Change the modes for 32bpp (24-bit color)\n"
-" 4  The modes are OK, continue.\n"
+" 3  Change the modes for 24bpp (24-bit color, packed pixel)\n"
+" 4  Change the modes for 32bpp (24-bit color)\n"
+" 5  The modes are OK, continue.\n"
 "\n";
 
 static char *modeslist_text =
 "Please type the digits corresponding to the modes that you want to select.\n"
 "For example, 432 selects \"1024x768\" \"800x600\" \"640x480\", with a\n"
 "default mode of 1024x768.\n"
+"\n";
+
+static char *virtual_text =
+"You can have a virtual screen (desktop), which is screen area that is larger\n"
+"than the physical screen and which is panned by moving the mouse to the edge\n"
+"of the screen. If you don't want virtual desktop at a certain resolution,\n"
+"you cannot have modes listed that are larger. Each color depth can have a\n"
+"differently-sized virtual screen\n"
 "\n";
 
 #if XFREE86_VERSION >= 311
@@ -1505,9 +1518,12 @@ void screen_configuration() {
 	 */
 	config_modesline8bpp =
 	config_modesline16bpp =
+	config_modesline24bpp =
 	config_modesline32bpp = "\"640x480\"";
-	config_virtualx8bpp = config_virtualx16bpp = config_virtualx32bpp =
-	config_virtualy8bpp = config_virtualy16bpp = config_virtualy32bpp = 0;
+	config_virtualx8bpp = config_virtualx16bpp = config_virtualx24bpp =
+	config_virtualx32bpp =
+	config_virtualy8bpp = config_virtualy16bpp = config_virtualy24bpp =
+	config_virtualy32bpp = 0;
 	if (config_videomemory >= 4096) {
 		config_virtualx8bpp = 1600;
 		config_virtualy8bpp = 1280;
@@ -1524,16 +1540,21 @@ void screen_configuration() {
 			config_virtualy16bpp = 1280;
 		}
 		if (config_screentype == 4) {
+			config_virtualx24bpp = 1152;
+			config_virtualy24bpp = 900;
 			config_virtualx32bpp = 1024;
 			config_virtualy32bpp = 768;
 		}
 		else {
+			config_virtualx24bpp = 1280;
+			config_virtualy24bpp = 1024;
 			config_virtualx32bpp = 1152;
 			config_virtualy32bpp = 900;
 		}
 		/* Add 1600x1280 */
 		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
 		config_modesline16bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
+		config_modesline24bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
 		config_modesline32bpp = "\"640x480\" \"800x600\" \"1024x768\"";
 	}
 	else
@@ -1559,10 +1580,20 @@ void screen_configuration() {
 			config_virtualx16bpp = 1152;
 			config_virtualy16bpp = 900;
 		}
+		config_virtualx24bpp = 800;
+		config_virtualy24bpp = 600;
+		if (config_videomemory >= 2048 + 256) {
+			config_virtualx24bpp = 1024;
+			config_virtualy24bpp = 768;
+		}
 		config_virtualx32bpp = 800;
 		config_virtualy32bpp = 600;
 		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\" \"1280x1024\"";
 		config_modesline16bpp = "\"640x480\" \"800x600\" \"1024x768\"";
+		if (config_videomemory >= 2048 + 256)
+			config_modesline24bpp = "\"640x480\" \"800x600\" \"1024x768\"";
+		else
+			config_modesline24bpp = "\"640x480\" \"800x600\"";
 		config_modesline32bpp = "\"640x480\" \"800x600\"";
 	}
 	else
@@ -1581,10 +1612,13 @@ void screen_configuration() {
 		}
 		config_virtualx16bpp = 800; /* Forget about cache space;  */
 		config_virtualy16bpp = 600; /* it's small enough as it is. */
+		config_virtualx24bpp = 640;
+		config_virtualy24bpp = 480;
 		config_virtualx32bpp = 640;
 		config_virtualy32bpp = 400;
 		config_modesline8bpp = "\"640x480\" \"800x600\" \"1024x768\"";
 		config_modesline16bpp = "\"640x480\" \"800x600\"";
+		config_modesline24bpp = "\"640x480\"";
 		config_modesline32bpp = "\"640x400\"";
 	}
 	else
@@ -1791,11 +1825,12 @@ skipclockprobing:
 	 */
 	if (config_screentype == 1 || config_screentype == 2)
 		return;
-
+	
 	/*
 	 * Configure the modes order.
 	 */
-	 for (;;) {
+	config_virtual = 0;
+	for (;;) {
 	 	char modes[128];
 
 		emptylines();
@@ -1803,6 +1838,7 @@ skipclockprobing:
 		printf("%s", modesorderintro_text);
 		printf("%s for 8bpp\n", config_modesline8bpp);
 		printf("%s for 16bpp\n", config_modesline16bpp);
+		printf("%s for 24bpp\n", config_modesline24bpp);
 		printf("%s for 32bpp\n", config_modesline32bpp);
 		printf("\n");
 		printf("%s", modesorder_text2);
@@ -1812,7 +1848,7 @@ skipclockprobing:
 		printf("\n");
 
 		c = atoi(s) - 1;
-		if (c < 0 || c >= 3)
+		if (c < 0 || c >= 4)
 			break;
 
 		printf("Select modes from the following list:\n\n");
@@ -1847,10 +1883,22 @@ skipclockprobing:
 			strcpy(config_modesline16bpp, modes);
 			break;
 		case 2 :
+			config_modesline24bpp = malloc(strlen(modes) + 1);
+			strcpy(config_modesline24bpp, modes);
+			break;
+		case 3 :
 			config_modesline32bpp = malloc(strlen(modes) + 1);
 			strcpy(config_modesline32bpp, modes);
 			break;
 		}
+
+		printf("%s", virtual_text);
+
+		printf("Please answer the following question with either 'y' or 'n'.\n");
+		printf("Do you want a virtual screen that is larger than the physical screen?");
+		getstring(s);
+		if (answerisyes(s))
+			config_virtual = 1;
 	}
 }
 
@@ -2489,7 +2537,7 @@ void write_XF86Config(filename)
 	/*
 	 * SVGA screen section.
 	 */
-	if (config_screentype == 3)
+	if (config_screentype == 3) {
 		fprintf(f, 
 			"# The Colour SVGA server\n"
 			"\n"
@@ -2504,32 +2552,48 @@ void write_XF86Config(filename)
 			"        # Omit the Modes line for the \"Generic VGA\" device\n"
 			"        Modes       %s\n"
 			"        ViewPort    0 0\n"
-			"        # Use Virtual 320 200 for Generic VGA\n"
-			"        Virtual     %d %d\n"
+			"        # Use Virtual 320 200 for Generic VGA\n",
+			config_deviceidentifier,
+			config_monitoridentifier,
+			config_modesline8bpp);
+		if (config_virtual)
+			fprintf(f, "        Virtual     %d %d\n",
+				config_virtualx8bpp, config_virtualy8bpp);
+		fprintf(f, 
 			"    EndSubsection\n"
 			"    Subsection \"Display\"\n"
 			"        Depth       16\n"
 			"        Modes       %s\n"
-			"        ViewPort    0 0\n"
-			"        Virtual     %d %d\n"
+			"        ViewPort    0 0\n",
+			config_modesline16bpp);
+		if (config_virtual)
+			fprintf(f, "        Virtual     %d %d\n",
+				config_virtualx16bpp, config_virtualy16bpp);
+		fprintf(f, 
+			"    EndSubsection\n"
+			"    Subsection \"Display\"\n"
+			"        Depth       24\n"
+			"        Modes       %s\n"
+			"        ViewPort    0 0\n",
+			config_modesline24bpp);
+		if (config_virtual)
+			fprintf(f, "        Virtual     %d %d\n",
+				config_virtualx24bpp, config_virtualy24bpp);
+		fprintf(f, 
 			"    EndSubsection\n"
 			"    Subsection \"Display\"\n"
 			"        Depth       32\n"
 			"        Modes       %s\n"
-			"        ViewPort    0 0\n"
-			"        Virtual     %d %d\n"
+			"        ViewPort    0 0\n",
+			config_modesline32bpp);
+		if (config_virtual)
+			fprintf(f, "        Virtual     %d %d\n",
+				config_virtualx32bpp, config_virtualy32bpp);
+		fprintf(f, 
 			"    EndSubsection\n"
 			"EndSection\n"
-			"\n",
-			config_deviceidentifier,
-			config_monitoridentifier,
-			config_modesline8bpp,
-			config_virtualx8bpp, config_virtualy8bpp,
-			config_modesline16bpp,
-			config_virtualx16bpp, config_virtualy16bpp,
-			config_modesline32bpp,
- 			config_virtualx32bpp, config_virtualy32bpp
-		);
+			"\n");
+	}
 	else
 		/*
 		 * If the default server is not the SVGA server, generate
@@ -2640,32 +2704,47 @@ void write_XF86Config(filename)
 		"    Subsection \"Display\"\n"
 		"        Depth       8\n"
 		"        Modes       %s\n"
-		"        ViewPort    0 0\n"
-		"        Virtual     %d %d\n"
+		"        ViewPort    0 0\n",
+		config_deviceidentifier,
+		config_monitoridentifier,
+		config_modesline8bpp);
+	if (config_virtual)
+		fprintf(f, "        Virtual     %d %d\n",
+			config_virtualx8bpp, config_virtualy8bpp);
+	fprintf(f, 
 		"    EndSubsection\n"
 		"    Subsection \"Display\"\n"
 		"        Depth       16\n"
 		"        Modes       %s\n"
-		"        ViewPort    0 0\n"
-		"        Virtual     %d %d\n"
+		"        ViewPort    0 0\n",
+		config_modesline16bpp);
+	if (config_virtual)
+		fprintf(f, "        Virtual     %d %d\n",
+			config_virtualx16bpp, config_virtualy16bpp);
+	fprintf(f, 
+		"    EndSubsection\n"
+		"    Subsection \"Display\"\n"
+		"        Depth       24\n"
+		"        Modes       %s\n"
+		"        ViewPort    0 0\n",
+		config_modesline24bpp);
+	if (config_virtual)
+		fprintf(f, "        Virtual     %d %d\n",
+			config_virtualx24bpp, config_virtualy24bpp);
+	fprintf(f, 
 		"    EndSubsection\n"
 		"    Subsection \"Display\"\n"
 		"        Depth       32\n"
 		"        Modes       %s\n"
-		"        ViewPort    0 0\n"
-		"        Virtual     %d %d\n"
+		"        ViewPort    0 0\n",
+		config_modesline32bpp);
+	if (config_virtual)
+		fprintf(f, "        Virtual     %d %d\n",
+			config_virtualx32bpp, config_virtualy32bpp);
+	fprintf(f, 
 		"    EndSubsection\n"
 		"EndSection\n"
-		"\n",
-		config_deviceidentifier,
-		config_monitoridentifier,
-		config_modesline8bpp,
-		config_virtualx8bpp, config_virtualy8bpp,
-		config_modesline16bpp,
-		config_virtualx16bpp, config_virtualy16bpp,
-		config_modesline32bpp,
-		config_virtualx32bpp, config_virtualy32bpp
-	);
+		"\n");
 
 	fclose(f);
 }

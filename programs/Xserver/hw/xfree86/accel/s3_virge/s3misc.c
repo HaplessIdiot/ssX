@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.53 1996/09/03 15:22:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.0 1996/09/22 13:25:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -249,7 +249,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	       s3LinApOpt=0x17;
 	    }
 	    s3BankSize = s3InfoRec.videoRam * 1024;
-	    s3EnableLinear();
+	    if (s3MmioMem != NULL)
+	       s3EnableLinear();
 
 	    /*
 	     * XXXX This is for debugging only.  It attempts to find

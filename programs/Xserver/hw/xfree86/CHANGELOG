@@ -1,4 +1,25 @@
 XFree86 3.1.2Gc (22 September 1996)
+834. Rename ViRGE driver from s3_generic to s3_virge (Dirk Hohndel).
+833. Don't reference uninitialised s3MmioMem in ViRGE server (Harald Koenig
+     and Dirk Hohndel).
+832. Don't do S3 bug tests for 928 and earlier (Harald Koenig).
+831. ViRGE fixes, including BITBLT and text clipping (Harald Koenig). 
+830. Updates to the Cards file for Cirrus and Ark (Harm Hanemaayer).
+829. xf86config updates, including 24bpp support, and making "virtual"
+     optional (Harm Hanemaayer).
+828. Fix trident probe so that it restores all registers it touches
+     (Harm Hanemaayer).
+827. ARK driver updates, including: auto-detect the ZoomDAC and print out
+     the RAMDAC type, use DRAM bandwidth for CRT FIFO setting, don't allow
+     5-5-5 weight for 16bpp with 1000PV and ZoomDAC, and add sanity check
+     for off-screen CopyWindow (Harm Hanemaayer).
+826. Fix a typo in the TGA server that could cause it to think it has found
+     a valid mode (Alan Hourihane).
+825. Don't try to use -ldl for XF86Setup on non-ELF Linux (Harald Koenig).
+824. Add "slow_dram" option for the W32 server to fix some problems with
+     older cards (Dirk Hohndel).
+
+XFree86 3.1.2Gc (22 September 1996)
 823. XKB data file updates for jp106/jp (Takaaki Nomura).
 822. S3 Virge server (preliminary version) (Harald Koenig).
 821. ARK driver updates, including basic BitBlt acceleration, improved

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.29 1996/09/14 13:12:10 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.30 1996/09/15 11:19:28 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1317,7 +1317,8 @@ ET4000Init(mode)
    * (those 135 MHz ramdac's...)
    */
    if (et4000_type > TYPE_ET4000) {
-     new->Compatibility = (initialCompatibility & 0x7F) | 0x80;
+     if (! OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
+       new->Compatibility = (initialCompatibility & 0x7F) | 0x80;
      new->VSConf2 = initialVSConf2;
      if (vga256InfoRec.clock[mode->Clock] > 80000)
        new->VSConf2 = (new->VSConf2 & 0x7f) | 0x80;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.55 1996/09/15 11:18:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.56 1996/09/22 05:03:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -564,189 +564,191 @@ s3Initialize(scr_index, pScreen, argc, argv)
    s3ImageInit();
 
 
-   /* now testing Trio32 BITBLT bug 
-    * using a 2*2 pixel pattern BLT from (0,0) to (0,2) */
+   if (S3_x64_SERIES(s3ChipId)) { /* avoid bogus bug messages for old chips */
 
-   pat = (unsigned char*) xcalloc(s3Bpp, 2 * 2);
+      /* now testing Trio32 BITBLT bug 
+       * using a 2*2 pixel pattern BLT from (0,0) to (0,2) */
+
+      pat = (unsigned char*) xcalloc(s3Bpp, 2 * 2);
    
-   /* init source pattern:   2*2 pixel checker pattern (glyph source) */
-   pat[0 * s3Bpp] = pat[3 * s3Bpp] = 0;
-   pat[1 * s3Bpp] = pat[2 * s3Bpp] = 1;
-   (*s3ImageWriteFunc)(0, 0, 2, 2, (char*)pat, 2 * s3Bpp, 
-		       0, 0, (short) s3alu[GXcopy], ~0);
+      /* init source pattern:   2*2 pixel checker pattern (glyph source) */
+      pat[0 * s3Bpp] = pat[3 * s3Bpp] = 0;
+      pat[1 * s3Bpp] = pat[2 * s3Bpp] = 1;
+      (*s3ImageWriteFunc)(0, 0, 2, 2, (char*)pat, 2 * s3Bpp, 
+			  0, 0, (short) s3alu[GXcopy], ~0);
    
-   /* first test original BITBLT; then workaround */
-   for (s3Trio32FCBug = 0; s3Trio32FCBug < 2; s3Trio32FCBug++) {
+      /* first test original BITBLT; then workaround */
+      for (s3Trio32FCBug = 0; s3Trio32FCBug < 2; s3Trio32FCBug++) {
 
-      /* init destination (all bits set) */
-      for(i = 0; i < s3Bpp * 2 * 2; i++) 
-	 pat[i] = (char)0xff;
-      s3ImageWriteNoMem(0, 2, 2, 2, (char*)pat, 2 * s3Bpp,
-			0, 0, (short) s3alu[GXcopy], ~0);
+	 /* init destination (all bits set) */
+	 for(i = 0; i < s3Bpp * 2 * 2; i++) 
+	    pat[i] = (char)0xff;
+	 s3ImageWriteNoMem(0, 2, 2, 2, (char*)pat, 2 * s3Bpp,
+			   0, 0, (short) s3alu[GXcopy], ~0);
 
-      BLOCK_CURSOR;
+	 BLOCK_CURSOR;
 
-      if (s3Trio32FCBug) {
-	 WaitQueue16_32(2, 3);
-	 SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
-	 SET_BKGD_COLOR(0);
-      } else {
-	 WaitQueue(1);
-	 SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
-      }
+	 if (s3Trio32FCBug) {
+	    WaitQueue16_32(2, 3);
+	    SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
+	    SET_BKGD_COLOR(0);
+	 } else {
+	    WaitQueue(1);
+	    SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
+	 }
 
-      WaitQueue16_32(3, 6);
-      SET_FRGD_COLOR(1);
-      SET_RD_MASK(1);
-      SET_WRT_MASK(~0);
+	 WaitQueue16_32(3, 6);
+	 SET_FRGD_COLOR(1);
+	 SET_RD_MASK(1);
+	 SET_WRT_MASK(~0);
 
-      WaitQueue(5);
-      SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
-      SET_FRGD_MIX(FSS_FRGDCOL | MIX_SRC);
-	  SET_CURPT(0,0);
+	 WaitQueue(5);
+	 SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
+	 SET_FRGD_MIX(FSS_FRGDCOL | MIX_SRC);
+	 SET_CURPT(0,0);
 	 
-      WaitQueue(5);
-	  SET_DESTSTP(0,2);
-      SET_AXIS_PCNT(1, 1);
+	 WaitQueue(5);
+	 SET_DESTSTP(0,2);
+	 SET_AXIS_PCNT(1, 1);
 
-      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	 SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
-      /* read back the destination */
-      WaitIdle();
-      (*s3ImageReadFunc)(0, 2, 2, 2, (char*)pat, 2 * s3Bpp, 0, 0, ~0);
+	 /* read back the destination */
+	 WaitIdle();
+	 (*s3ImageReadFunc)(0, 2, 2, 2, (char*)pat, 2 * s3Bpp, 0, 0, ~0);
 
 #ifdef DEBUG_TRI32_BITBLT_TEST
-      for(i = 0; i < s3Bpp * 2 * 2; i++)
-	 ErrorF("%s %s: BITBLT %2d %02x\n",
-		XCONFIG_PROBED, s3InfoRec.name, i, pat[i]&0xff);
-      ErrorF("\n");
+	 for(i = 0; i < s3Bpp * 2 * 2; i++)
+	    ErrorF("%s %s: BITBLT %2d %02x\n",
+		   XCONFIG_PROBED, s3InfoRec.name, i, pat[i]&0xff);
+	 ErrorF("\n");
 
-      ErrorF("%s %s:            ",
-	     XCONFIG_PROBED, s3InfoRec.name);
-      for(i=k=0; i<8; i++)
-	 for(j=0; j<s3Bpp; j++,k++)
-	    ErrorF(" %02x", (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)));
-      ErrorF("\n\n");
+	 ErrorF("%s %s:            ",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 for(i=k=0; i<8; i++)
+	    for(j=0; j<s3Bpp; j++,k++)
+	       ErrorF(" %02x", (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)));
+	 ErrorF("\n\n");
 #endif
-      if (pat[0] == 0xff && pat[3 * s3Bpp] == 0xff)
-	 break;  /* BITBLT worked */
-   }
-   
-   /* clear source and destination patterns on the screen */
-   for(i = 0; i < s3Bpp * 2 * 2; i++)
-      pat[i] = blackPixel;
-   (*s3ImageWriteFunc)(0, 0, 2, 2, (char*)pat, 2 * s3Bpp, 
-		       0, 0, (short) s3alu[GXcopy], ~0);
-   (*s3ImageWriteFunc)(0, 2, 2, 2, (char*)pat, 2 * s3Bpp, 
-		       0, 0, (short) s3alu[GXcopy], ~0);
-
-   if (s3Trio32FCBug > 1) {
-      ErrorF("%s %s: WARNING: BITBLT malfunction --\n"
-	     "\tplease report to XFree86@XFree86.Org\n",
-	     XCONFIG_PROBED, s3InfoRec.name);
-   }
-   else if (s3Trio32FCBug) {
-      ErrorF("%s %s: BITBLT malfunction, using workaround code\n",
-	     XCONFIG_PROBED, s3InfoRec.name);
-   }
-   xfree(pat);
-
-   /* restore read mask */
-   WaitQueue16_32(1, 2);
-   SET_RD_MASK(0);
-
-
-
-   /* now testing S3 968 dashed line bug :-(
-    * using an 8 pixel line (0,0) to (7,0) */
-
-   pat = (unsigned char*) xcalloc(s3Bpp, 8);
-
-   /* first test original dashed line code (MIX_DST); 
-    * then workaround ( MIX_OR zero) */
-   
-   for (s3_968_DashBug = 0; s3_968_DashBug < 2; s3_968_DashBug++) {
-      
-      /* init region with backgound pattern */
-      for(i=0; i<s3Bpp*8; i++) 
-	 pat[i] = i;
-      (*s3ImageWriteFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp,
-			  0, 0, (short) s3alu[GXcopy], ~0);
-      
-      /* read back the destination */
-      WaitIdle();
-      (*s3ImageReadFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp, 0, 0, ~0);
-
-      BLOCK_CURSOR;
-      WaitQueue16_32(3,4);
-      SET_FRGD_MIX(FSS_FRGDCOL | MIX_XOR);
-      if (s3_968_DashBug) {
-	 SET_BKGD_COLOR(0);
-	 SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
+	 if (pat[0] == 0xff && pat[3 * s3Bpp] == 0xff)
+	    break;		/* BITBLT worked */
       }
-      else {
-	 SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
-      }      
+   
+      /* clear source and destination patterns on the screen */
+      for(i = 0; i < s3Bpp * 2 * 2; i++)
+	 pat[i] = blackPixel;
+      (*s3ImageWriteFunc)(0, 0, 2, 2, (char*)pat, 2 * s3Bpp, 
+			  0, 0, (short) s3alu[GXcopy], ~0);
+      (*s3ImageWriteFunc)(0, 2, 2, 2, (char*)pat, 2 * s3Bpp, 
+			  0, 0, (short) s3alu[GXcopy], ~0);
 
-      WaitQueue16_32(4,6);
-      SET_WRT_MASK(~0);
-      SET_FRGD_COLOR(~0);
-      SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
+      if (s3Trio32FCBug > 1) {
+	 ErrorF("%s %s: WARNING: BITBLT malfunction --\n"
+		"\tplease report to XFree86@XFree86.Org\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+      }
+      else if (s3Trio32FCBug) {
+	 ErrorF("%s %s: BITBLT malfunction, using workaround code\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+      }
+      xfree(pat);
+
+      /* restore read mask */
+      WaitQueue16_32(1, 2);
+      SET_RD_MASK(0);
+
+
+
+      /* now testing S3 968 dashed line bug :-(
+       * using an 8 pixel line (0,0) to (7,0) */
+
+      pat = (unsigned char*) xcalloc(s3Bpp, 8);
+
+      /* first test original dashed line code (MIX_DST); 
+       * then workaround ( MIX_OR zero) */
+   
+      for (s3_968_DashBug = 0; s3_968_DashBug < 2; s3_968_DashBug++) {
       
-      WaitQueue(7);
-	  SET_CURPT(0,0);
-      SET_MAJ_AXIS_PCNT(8-1);
-      SET_DESTSTP(2*(0-8), 2*0);
-      SET_ERR_TERM(2*0 - 8 -1);
-      SET_CMD(CMD_LINE | DRAW | LASTPIX | PLANAR | INC_X | INC_Y  |
-	      PCDATA | _16BIT | WRTDATA);
-      SET_PIX_TRANS_W(dash_test_pattern);
+	 /* init region with backgound pattern */
+	 for(i=0; i<s3Bpp*8; i++) 
+	    pat[i] = i;
+	 (*s3ImageWriteFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp,
+			     0, 0, (short) s3alu[GXcopy], ~0);
       
-      /* read back the destination */
-      WaitIdle();
-      (*s3ImageReadFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp, 0, 0, ~0);
+	 /* read back the destination */
+	 WaitIdle();
+	 (*s3ImageReadFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp, 0, 0, ~0);
+
+	 BLOCK_CURSOR;
+	 WaitQueue16_32(3,4);
+	 SET_FRGD_MIX(FSS_FRGDCOL | MIX_XOR);
+	 if (s3_968_DashBug) {
+	    SET_BKGD_COLOR(0);
+	    SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
+	 }
+	 else {
+	    SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
+	 }      
+
+	 WaitQueue16_32(4,6);
+	 SET_WRT_MASK(~0);
+	 SET_FRGD_COLOR(~0);
+	 SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
+      
+	 WaitQueue(7);
+	 SET_CURPT(0,0);
+	 SET_MAJ_AXIS_PCNT(8-1);
+	 SET_DESTSTP(2*(0-8), 2*0);
+	 SET_ERR_TERM(2*0 - 8 -1);
+	 SET_CMD(CMD_LINE | DRAW | LASTPIX | PLANAR | INC_X | INC_Y  |
+		 PCDATA | _16BIT | WRTDATA);
+	 SET_PIX_TRANS_W(dash_test_pattern);
+      
+	 /* read back the destination */
+	 WaitIdle();
+	 (*s3ImageReadFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp, 0, 0, ~0);
 
 #ifdef DEBUG_968_DASH_TEST
-      ErrorF("%s %s: DASH968 %d  ",
-	     XCONFIG_PROBED, s3InfoRec.name,s3_968_DashBug);
-      for(i = 0; i < s3Bpp * 8; i++)
-	 ErrorF(" %02x", pat[i]&0xff);
-      ErrorF("\n");
+	 ErrorF("%s %s: DASH968 %d  ",
+		XCONFIG_PROBED, s3InfoRec.name,s3_968_DashBug);
+	 for(i = 0; i < s3Bpp * 8; i++)
+	    ErrorF(" %02x", pat[i]&0xff);
+	 ErrorF("\n");
 
-      ErrorF("%s %s:            ",
-	     XCONFIG_PROBED, s3InfoRec.name);
-      for(i=k=0; i<8; i++)
-	 for(j=0; j<s3Bpp; j++,k++)
-	    ErrorF(" %02x", (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)));
-      ErrorF("\n\n");
+	 ErrorF("%s %s:            ",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 for(i=k=0; i<8; i++)
+	    for(j=0; j<s3Bpp; j++,k++)
+	       ErrorF(" %02x", (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)));
+	 ErrorF("\n\n");
 #endif
 
-      ok = 1;
-      for(i=k=0; i<8; i++)
-	 for(j=0; j<s3Bpp; j++,k++)
-	    if (pat[k] != (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)))
-	       ok = 0;
-      if (ok)
-	 break;  /* dashed line worked */
-   }
+	 ok = 1;
+	 for(i=k=0; i<8; i++)
+	    for(j=0; j<s3Bpp; j++,k++)
+	       if (pat[k] != (k ^ ((dash_test_pattern & (1<<(15-i))) ? 0xff : 0)))
+		  ok = 0;
+	 if (ok)
+	    break;		/* dashed line worked */
+      }
 
-   /* clear the test region */
-   for(i=0; i<s3Bpp*8; i++) 
-      pat[i] = blackPixel;
-   (*s3ImageWriteFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp,
-		       0, 0, (short) s3alu[GXcopy], ~0);
+      /* clear the test region */
+      for(i=0; i<s3Bpp*8; i++) 
+	 pat[i] = blackPixel;
+      (*s3ImageWriteFunc)(0, 0, 8, 1, (char*)pat, 8 * s3Bpp,
+			  0, 0, (short) s3alu[GXcopy], ~0);
 
-   if (s3_968_DashBug > 1) {
-      ErrorF("%s %s: WARNING: S3 968 dashed line malfunction --\n"
-	     "\tplease report to XFree86@XFree86.Org\n",
-	     XCONFIG_PROBED, s3InfoRec.name);
+      if (s3_968_DashBug > 1) {
+	 ErrorF("%s %s: WARNING: S3 968 dashed line malfunction --\n"
+		"\tplease report to XFree86@XFree86.Org\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+      }
+      else if (s3_968_DashBug) {
+	 ErrorF("%s %s: S3 968 dashed line malfunction, using workaround code\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+      }
+      xfree(pat);
    }
-   else if (s3_968_DashBug) {
-      ErrorF("%s %s: S3 968 dashed line malfunction, using workaround code\n",
-	     XCONFIG_PROBED, s3InfoRec.name);
-   }
-   xfree(pat);
-
 
    WaitQueue16_32(3,4);
    SET_FRGD_COLOR(1);

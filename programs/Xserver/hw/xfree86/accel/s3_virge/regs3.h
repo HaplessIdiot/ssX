@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.21 1996/08/23 11:02:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/regs3.h,v 3.0 1996/09/22 13:25:14 dawes Exp $ */
 /*
  * regs3.h
  *
@@ -284,14 +284,14 @@
 LUTENTRY;
 
 /* Wait until "v" queue entries are free */
-#define	WaitQueue(v)	do {int i=10000; while ((((IN_SUBSYS_STAT() >> 8) & 0x1f) < v) && i--); } while(0)
+#define	WaitQueue(v)	do {int i=100000; while ((((IN_SUBSYS_STAT() >> 8) & 0x1f) < v) && i--); } while(0)
 
 /* Wait until GP is idle and queue is empty */
 #define	WaitIdleEmpty() \
-   do { int i=1000; while (((IN_SUBSYS_STAT() ^ 0x3000) & 0x3f00) && i--); } while (0)
+   do { int i=100000; while (((IN_SUBSYS_STAT() ^ 0x3000) & 0x3f00) && i--); } while (0)
 
 /* Wait until GP is idle */
-#define WaitIdle() do { int i=1000; while (!(IN_SUBSYS_STAT() & 0x2000) && i--) ; } while (0)
+#define WaitIdle() do { int i=100000; while (!(IN_SUBSYS_STAT() & 0x2000) && i--) ; } while (0)
 
 #ifndef NULL
 #define NULL	0

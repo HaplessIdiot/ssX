@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.38 1996/09/14 13:13:38 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.39 1996/09/15 11:25:59 dawes Exp $
 
 #Chips & Technologies
 
@@ -98,7 +98,6 @@ LINE     #MemBase 0x00e00000		# ISA card that maps to 14Mb
 LINE     #MemBase 0x04000000		# VLB card that maps to 64Mb
 LINE     #MemBase 0x80000000		# VLB card that maps to 2048Mb
 LINE     #MemBase 0x02000000		# VLB card that maps to 32Mb
-LINE     #MemBase 0xa0000000		# PCI card that maps to 2560Mb
 LINE     #Option "linear"
 
 NAME Cirrus Logic GD544x
@@ -169,11 +168,11 @@ NAME Intel 5430
 CHIPSET CL-GD5430
 SEE Cirrus Logic GD543x
 
-NAME STB Nitro
+NAME STB Nitro (64)
 CHIPSET CL-GD5434
 SEE Cirrus Logic GD543x
 
-NAME STB Nitro 64
+NAME STB Nitro 64 Video
 CHIPSET CL-GD5446
 SEE Cirrus Logic GD544x
 
@@ -181,9 +180,9 @@ NAME STB Horizon
 CHIPSET CL-GD5426/28
 SEE Cirrus Logic GD542x
 
-#NAME STB Horizon Video (not supported??)
-#CHIPSET CL-GD5440
-#SEE Cirrus Logic GD543x
+NAME STB Horizon Video
+CHIPSET CL-GD5440
+SEE Cirrus Logic GD544x
 
 NAME Genoa 8500VL(-28)
 CHIPSET CL-GD5426/28
@@ -223,10 +222,16 @@ SEE Cirrus Logic GD543x
 NAME Cirrus Logic GD62xx (laptop)
 CHIPSET CL-GD6205/15/25/35
 SERVER SVGA
+NOCLOCKPROBE
 
 NAME Cirrus Logic GD64xx (laptop)
 CHIPSET CL-GD6420/6440
 SERVER SVGA
+
+NAME Cirrus Logic GD754x (laptop)
+CHIPSET CL-GD7541/42/43/48
+SERVER SVGA
+NOCLOCKPROBE
 
 # S3 801/805
 
@@ -1154,17 +1159,25 @@ SERVER SVGA
 NAME Hercules Stingray Pro
 SEE Ark Logic ARK1000PV (generic)
 
+NAME Hercules Stingray Pro/V
+SEE Ark Logic ARK1000PV (generic)
+
 NAME Ocean (octek) VL-VGA-1000
-RAMDAC "att20c490"
+RAMDAC att20c490
 SEE Ark Logic ARK1000VL (generic)
 
-NAME Hercules Stingray 64
+NAME Hercules Stingray 64/V with ZoomDAC
 SEE Ark Logic ARK2000PV (generic)
+
+NAME Hercules Stingray 64/V with ICS5342
+CHIPSET ARK2000MT
+RAMDAC ics5342
+SERVER SVGA
 
 NAME Diamond Stealth64 Graphics 2001 series
 CHIPSET ARK2000PV
-SERVER SVGA
 RAMDAC ics5342
+SERVER SVGA
 
 # Oak
 
