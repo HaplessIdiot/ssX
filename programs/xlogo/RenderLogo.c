@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/DrawLogo.c,v 1.7 2001/01/17 19:42:54 dawes Exp $ */
+/* $XFree86: RenderLogo.c,v 1.1 2002/05/23 23:53:59 keithp Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -153,7 +153,11 @@ intersect(XLineDouble *l1, XLineDouble *l2, XPointDouble *intersection)
 
     check = m2 * intersection->y + b2;
     if (fabs(check - intersection->x) > (1/(double)(1<<16))) {
+#ifdef __GNUC__
 	fprintf(stderr, "%s: intersection is off by: %f\n", __FUNCTION__, fabs(check - intersection->x));
+#else
+	fprintf(stderr, "intersect: intersection is off by %f\n", fabs(check - instersection->x));
+#endif
     }
 }
 
