@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.14 2003/01/18 15:22:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.15 2003/01/26 04:08:50 dawes Exp $ */
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
  *
@@ -611,7 +611,8 @@ ps2SendPacket(InputInfoPtr pInfo, unsigned char *bytes, int len)
 		return FALSE;
 
 	    /* Some mice accidently enter wrap mode during init */
-	    if (c == *(bytes + i)) /* wrap mode */
+	    if (c == *(bytes + i)    /* wrap mode */
+		&& (*(bytes + i) != 0xEC)) /* avoid recursion */
 		ps2DisableWrapMode(pInfo);
 
 	    return FALSE;
