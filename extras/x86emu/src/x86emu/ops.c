@@ -70,7 +70,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86: xc/extras/x86emu/src/x86emu/ops.c,v 1.2 2000/01/23 04:32:42 dawes Exp $ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/ops.c,v 1.4 2000/04/17 16:29:45 eich Exp $ */
 
 #include "x86emu/x86emui.h"
 
@@ -9643,7 +9643,7 @@ void x86emuOp_call_near_IMM(u8 X86EMU_UNUSED(op1))
 	DECODE_PRINTF("CALL\t");
 	ip = (s16) fetch_word_imm();
 	ip += (s16) M.x86.R_IP;    /* CHECK SIGN */
-	DECODE_PRINTF2("%04x\n", ip);
+	DECODE_PRINTF2("%04x\n", (u16)ip);
 	CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, ip, "");
     TRACE_AND_STEP();
     push_word(M.x86.R_IP);
@@ -9664,7 +9664,7 @@ void x86emuOp_jump_near_IMM(u8 X86EMU_UNUSED(op1))
     DECODE_PRINTF("JMP\t");
     ip = (s16)fetch_word_imm();
     ip += (s16)M.x86.R_IP;
-    DECODE_PRINTF2("%04x\n", ip);
+    DECODE_PRINTF2("%04x\n", (u16)ip);
     TRACE_AND_STEP();
     M.x86.R_IP = (u16)ip;
     DECODE_CLEAR_SEGOVR();
