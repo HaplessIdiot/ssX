@@ -1,4 +1,7 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 289. Twisting fontfile.c and fontdir.c to be able to pass all fonts (bitmap
+      and scaleable) to the scalable renderer as this one can deal with 
+      XLFD names (Bugzilla #475, Juliusz Chroboczek). PLEASE TEST!
  288. Changing PS/2 mouse resolution to 8 counts/mm as some broken mice have
       problems with other values (W. uses 8) (Egbert Eich).
  287. Fixing mode setting by BIOS. Wrong clock selection in MiscOut register
@@ -17256,7 +17259,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2766 2003/07/04 16:24:25 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2767 2003/07/07 15:34:23 eich Exp $
 
 
 
