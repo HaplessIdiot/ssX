@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.26 2003/10/09 11:45:26 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.27 2003/11/14 02:45:24 dawes Exp $
 
 // "standard" XFree86 codes
 // It seems that the "default" must be the first entry in the file.
@@ -81,9 +81,9 @@ xkb_keycodes "basic" {
     <RCTL> = 109;
     <RALT> = 113;
     // Microsoft keyboard extra keys
-    <LMTA> = 115;
-    <RMTA> = 116;
-    <COMP> = 117;
+    <LWIN> = 115;
+    <RWIN> = 116;
+    <MENU> = 117;
 
     <ESC>  =   9;
     <FK01> =  67;
@@ -319,7 +319,11 @@ xkb_keycodes "basic" {
     <K75> =   220;		// <I5C>
     <K76> =   221;		// <I5D>
    
+    // Solaris compatibility
 
+    alias <LMTA> = <LWIN>;
+    alias <RMTA> = <RWIN>;
+    alias <COMP> = <MENU>;
     alias <POWR> = <I0C>;
     alias <MUTE> = <I0D>;
     alias <VOL-> = <I0E>;
