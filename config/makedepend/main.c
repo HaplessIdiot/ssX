@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.13 1998/10/02 06:15:22 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.14 1998/10/05 13:21:49 dawes Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -401,7 +401,7 @@ main(int argc, char *argv[])
 #endif
 #else
 	sig_act.sa_handler = catch;
-#ifdef _POSIX_SOURCE
+#if defined(_POSIX_SOURCE) || !defined(X_NOT_POSIX)
 	sigemptyset(&sig_act.sa_mask);
 	sigaddset(&sig_act.sa_mask, SIGINT);
 	sigaddset(&sig_act.sa_mask, SIGQUIT);
