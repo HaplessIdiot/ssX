@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.64 2000/06/23 19:04:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.65 2000/06/30 17:15:11 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -466,6 +466,13 @@
 #define PCI_CHIP_GEFORCE256     0x0100
 #define PCI_CHIP_GEFORCEDDR     0x0101
 #define PCI_CHIP_QUADRO         0x0103
+#define PCI_CHIP_GEFORCE2MX     0x0110
+#define PCI_CHIP_GEFORCE2MXDDR  0x0111
+#define PCI_CHIP_QUADRO2MXR     0x0113
+#define PCI_CHIP_GEFORCE2GTS    0x0150
+#define PCI_CHIP_GEFORCE2GTS_1  0x0151
+#define PCI_CHIP_GEFORCE2GTS_2  0x0152
+#define PCI_CHIP_QUADRO2PRO     0x0153
 
 /* NVIDIA & SGS */
 #define PCI_CHIP_RIVA128	0x0018
@@ -1155,6 +1162,13 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_GEFORCE256,	"GeForce 256",0},
 				{PCI_CHIP_GEFORCEDDR,	"GeForce DDR",0},
 				{PCI_CHIP_QUADRO,	"Quadro",0},
+				{PCI_CHIP_GEFORCE2MX,	"GeForce2 MX",0},
+				{PCI_CHIP_GEFORCE2MXDDR,"GeForce2 MX DDR",0},
+				{PCI_CHIP_QUADRO2MXR,	"GeForce2 MXR",0},
+				{PCI_CHIP_GEFORCE2GTS,	"GeForce2 GTS",0},
+				{PCI_CHIP_GEFORCE2GTS_1,"GeForce2 GTS (rev 1)",0},
+				{PCI_CHIP_GEFORCE2GTS_2,"GeForce2 GTS (rev 2)",0},
+				{PCI_CHIP_QUADRO2PRO,	"Quadro 2 Pro",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IMS, {
