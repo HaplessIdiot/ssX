@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.72tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.73 2000/03/22 16:02:22 tsi Exp $ */
 
 #include "cfb24_32.h"
 #include "cfb8_32.h"
@@ -88,7 +88,6 @@ static Bool	GLINTPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	GLINTScreenInit(int Index, ScreenPtr pScreen, int argc,
 			      char **argv);
 static Bool	GLINTEnterVT(int scrnIndex, int flags);
-static Bool	GLINTEnterVTFBDev(int scrnIndex, int flags);
 static void	GLINTLeaveVT(int scrnIndex, int flags);
 static Bool	GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool	GLINTSaveScreen(ScreenPtr pScreen, int mode);
@@ -297,6 +296,7 @@ static const char *vbeSymbols[] = {
 
 static const char *fbdevHWSymbols[] = {
 	"fbdevHWInit",
+	"fbdevHWFreeRec",
 	"fbdevHWProbe",
 	"fbdevHWFreeRec",
 	"fbdevHWGetName",
@@ -687,6 +687,7 @@ GLINTProbe(DriverPtr drv, int flags)
 		    pScrn->ScreenInit	 = GLINTScreenInit;
 		    pScrn->SwitchMode	 = GLINTSwitchMode;
 		    pScrn->FreeScreen	 = GLINTFreeScreen;
+		    pScrn->EnterVT	 = GLINTEnterVT;
 		}
 	    }
     	}
@@ -725,6 +726,7 @@ GLINTProbe(DriverPtr drv, int flags)
 	    pScrn->ScreenInit	 = GLINTScreenInit;
 	    pScrn->SwitchMode	 = GLINTSwitchMode;
 	    pScrn->FreeScreen	 = GLINTFreeScreen;
+	    pScrn->EnterVT	 = GLINTEnterVT;
 	}
 
     }
@@ -1088,7 +1090,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
         from = X_CONFIG;
 	
 	pScrn->AdjustFrame	= fbdevHWAdjustFrame;
-	pScrn->EnterVT		= GLINTEnterVTFBDev;
 	pScrn->LeaveVT		= fbdevHWLeaveVT;
 	pScrn->ValidMode	= fbdevHWValidMode;
 	
@@ -1098,7 +1099,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
         from = X_PROBED;
 	
 	pScrn->AdjustFrame	= GLINTAdjustFrame;
-	pScrn->EnterVT		= GLINTEnterVT;
 	pScrn->LeaveVT		= GLINTLeaveVT;
 	pScrn->ValidMode	= GLINTValidMode;
 
@@ -1757,11 +1757,13 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    mod = "xf24_32bpp";
 	break;
     case 32:
-	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
-	    mod = "xf8_32bpp";
-	} else {
-	    mod = "fb";
-	}
+	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR)
+	    if (xf86LoadSubModule(pScrn, "xf8_32bpp") == NULL) {
+		GLINTFreeRec(pScrn);
+		return FALSE;
+	    } else
+		xf86LoaderReqSymLists(xf8_32bppSymbols,NULL);
+	mod = "cfb32";
 	break;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
@@ -2698,22 +2700,16 @@ static Bool
 GLINTEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-
-    /* Should we re-save the text mode on each VT enter? */
-    if (!GLINTModeInit(pScrn, pScrn->currentMode))
-	return FALSE;
-
-    return TRUE;
-}
-
-static Bool
-GLINTEnterVTFBDev(int scrnIndex, int flags)
-{
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
-    TRACE_ENTER("GLINTEnterVTFBDev");
-    fbdevHWEnterVT(scrnIndex, flags);
+    TRACE_ENTER("GLINTEnterVT");
+
+    if (pGlint->FBDev)
+    	fbdevHWEnterVT(scrnIndex, flags);
+    else
+    	/* Should we re-save the text mode on each VT enter? */
+    	if (!GLINTModeInit(pScrn, pScrn->currentMode))
+		return FALSE;
 
     if (!pGlint->NoAccel) {
     	switch (pGlint->Chipset) {
@@ -2836,7 +2832,7 @@ GLINTFreeScreen(int scrnIndex, int flags)
     GLINTPtr pGlint = GLINTPTR(pScrn);
 
     TRACE_ENTER("GLINTFreeScreen");
-    if (pGlint->FBDev && xf86LoaderCheckSymbol("fbdevHWFreeRec"))
+    if ((pGlint->FBDev || FBDevProbed) && xf86LoaderCheckSymbol("fbdevHWFreeRec"))
 	fbdevHWFreeRec(xf86Screens[scrnIndex]);
     if (pGlint->VGAcore && xf86LoaderCheckSymbol("vgaHWFreeHWRec"))
     	vgaHWFreeHWRec(xf86Screens[scrnIndex]);

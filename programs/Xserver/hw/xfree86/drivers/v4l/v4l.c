@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.8 1999/06/06 14:06:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.16 2000/02/22 02:00:54 mvojkovi Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -553,16 +553,20 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
     DevUnion *Private;
     XF86VideoAdaptorPtr *VAR = NULL;
     XF86VideoEncodingPtr enc;
-    char dev[16];
+    char dev[18];
     int  fd,i,nenc;
 
     DEBUG(xf86Msg(X_INFO, "v4l: init start\n"));
 
     for (i = 0; i < 4; i++) {
-	sprintf(dev,"/dev/video%d",i);
+	sprintf(dev, "/dev/video%d", i);
 	fd = open(dev, O_RDWR, 0);
-	if (fd == -1)
-	    break;
+	if (fd == -1) {
+	    sprintf(dev, "/dev/v4l/video%d", i);
+	    fd = open(dev, O_RDWR, 0);
+	    if (fd == -1)
+		break;
+	}
 	if (NULL == (enc = V4LBuildEncodings(fd,&nenc)))
 	    break;
 	

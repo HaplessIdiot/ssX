@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.37 1999/07/06 11:38:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.38 1999/12/28 13:47:43 robin Exp $ */
 
 /*
  *
@@ -390,6 +390,15 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 
     if(read(fd,ptr,size)!=size)
 	FatalError("\n_LoaderFileToMem() read() failed: %s\n",strerror(errno));
+
+#if defined(linux) && defined(__powerpc__) 
+    { 
+	int i; 
+	for (i = 0; i < size; i += 16) 
+	    ppc_flush_icache(ptr+i); 
+	ppc_flush_icache(ptr+size-1); 
+    } 
+#endif
 
 #ifdef DEBUGMEM
     ErrorF("=%lx\n",ptr);

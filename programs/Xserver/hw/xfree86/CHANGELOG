@@ -1,4 +1,43 @@
 XFree86 4.0a (31 March 2000)
+  73. Change xf86LoadModules() so that it doesn't quit at the first module
+      that fails to load (David Dawes).
+  72. SIGIO doesn't work on Linux pipes, so diasble it for input devices
+      which are pipes (#3835, Keith Packard).
+  71. Bring the SDK support up to date (#3834, David Bateman).
+  70. Fix an Xlib problem that causes an application crash when inputting
+      cyrillic symbols with the koi8-r locale (and other locales with
+      long esc-sequences) (#3833, Ivan Pascal, #A.15, Serguei Poliakov).
+  69. Fixes for S3 Trio3D/2X:
+       - flickering for some cards (bad FIFO setting from bios).
+       - workaround for 8MB ram (ramdac can access only 4MB).
+       - adjust clock limits which have been too low.
+      (#3832, Harald Koenig).
+  68. Fix v4l problem with a function being called after the module is
+      unloaded (#3831, gbritton@light-brigade.mit.edu).
+  67. Fixes for the PPC icache flushing code (#3830, Kostas Gewrgiou).
+  66. Fix for /tmp race installing man pages on OpenBSD (#3829,
+      Matthieu Herrb).
+  65. Fix problems building the Xsun and XsunMono servers on
+      NetBSD-current/sparc (#3828, Matthieu Herrb).
+  64. Add a comment to site.def about how to move the /etc/X11 contents to
+      a directory under ProjectRoot (#3827, R Horn).
+  63. Fix an Xaw bug that shows up when usingn c-mode with xedit on Linux
+      (#3824, Paulo Cesar Pereira de Andrade).
+  62. Enable devfs support for the v4l driver (based on #3823,
+      Christopher Sekiya).
+  61. Update for README.FreeBSD (#3822, Kazutaka Yokota).
+  60. Bump the video driver ABI major version because of interface changes
+      (now 1.0).
+  59. Disable SilkenMouse when IO/MEM resource sharing means that it cannot
+      be reliably used (#382o, Keith Packard and Egbert Eich).
+  58. Fix DGA 1.0 compatibility for mouse events and SetViewport behaviour
+      (#3820, Keith Packard).
+  57. Fix the Linux APM code so that the X server doesn't hang the machine
+      on suspend (#3820, Keith Packard and Egbert Eich).
+  56. Fix problems that break Overlay support in the glint driver (#3818,
+      Michel Dänzer).
+  55. Possible fix for AvailableOptions function and submodule loading
+      for the cirrus driver (David Dawes).
   54. Add an entry for the GeForce to the Cards file (#A.6, Oliver Lau).
   53. Fix pswrap build problem when cross compiling (#3815, Jim Gettys).
   52. Fix a typo in itsy.cf (#3814, Jim Gettys).
@@ -10136,4 +10175,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1110 2000/03/30 19:52:00 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1111 2000/03/31 20:13:14 dawes Exp $

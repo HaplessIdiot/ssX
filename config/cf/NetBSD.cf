@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.80 2000/02/29 03:08:55 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.81 2000/03/21 19:56:57 dawes Exp $
 
 
 #ifndef OSName
@@ -133,14 +133,14 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *
  * Disabled for NetBSD/vax until I figure out the scheme. --CS 
  */
-#if ((OSMajorVersion > 0) && \
-     !defined(AlphaArchitecture) && !defined(MipsArchitecture)) || \
-    UseElfFormat
-#if !defined(Arm32Architecture) && !defined(VaxArchitecture)
+#if (OSMajorVersion > 0) && defined(i386Architecture)
 #  ifndef DoLoadableServer
 #  define DoLoadableServer	YES
 #  endif
-#endif
+#else
+#  ifndef DoLoadableServer
+#  define DoLoadableServer	NO
+#  endif
 #endif
 
 #if UseElfFormat
@@ -190,16 +190,20 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  endif
 # endif
 #else
-# if defined(AlphaArchitecture)
-#  define ServerExtraDefines GccGasOption -D_XSERVER64
+# if defined(SparcArchitecture)
+#  define ServerExtraDefines XFree86ServerDefines
 # else
-#  ifdef Arm32Architecture
-#   define ServerExtraDefines GccGasOption XFree86ServerDefines
-#   ifndef XFree86ConsoleDefines
-#    define XFree86ConsoleDefines -DPCCONS_SUPPORT
-#   endif
+#  if defined(AlphaArchitecture)
+#   define ServerExtraDefines GccGasOption -D_XSERVER64
 #  else
-#  define ServerExtraDefines GccGasOption
+#   ifdef Arm32Architecture
+#    define ServerExtraDefines GccGasOption XFree86ServerDefines
+#    ifndef XFree86ConsoleDefines
+#     define XFree86ConsoleDefines -DPCCONS_SUPPORT
+#    endif
+#   else
+#   define ServerExtraDefines GccGasOption
+#  endif
 # endif
 #endif
 #endif
@@ -446,6 +450,10 @@ InstallManPageAliasesBase(file,destdir,aliases)
 #ifndef UseRgbTxt
 #define UseRgbTxt	YES
 #endif
+#define BuildXF86VidModeExt	NO
+#define BuildXF86DGA		NO
+#define BuildXInputExt		NO
+#include <xfree86.cf>
 #endif
 
 /*

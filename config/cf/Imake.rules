@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.69 2000/03/21 23:17:09 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.70 2000/03/22 21:23:30 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2745,6 +2745,9 @@ NamedTargetSubdirs(includes,dirs,including,NullParameter,includes)
  */
 #ifndef InstallDriverSDKObjectModule
 #define InstallDriverSDKObjectModule(module,dest,subdir)
+#endif
+#ifndef InstallDriverSDKObjectSubModule
+#define InstallDriverSDKObjectSubModule(module,dest,subdir)
 #endif
 
 

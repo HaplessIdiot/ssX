@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.133 2000/02/23 19:21:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.135 2000/03/12 21:16:07 mvojkovi Exp $ */
 
 /*
  *
@@ -284,6 +284,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86FindPciClass)
    SYMFUNC(xf86RegisterStateChangeNotificationCallback)
    SYMFUNC(xf86DeregisterStateChangeNotificationCallback)
+   SYMFUNC(xf86NoSharedResources)
 #ifdef async
    SYMFUNC(xf86QueueAsyncEvent)
 #endif

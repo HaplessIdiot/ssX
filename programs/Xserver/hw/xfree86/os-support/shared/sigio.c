@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.8 2000/02/08 17:19:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.9 2000/03/02 16:07:53 martin Exp $
  * 
  */
 
@@ -108,6 +108,16 @@ xf86SIGIO (int sig)
 }
 
 int
+xf86IsPipe (int fd)
+{
+    struct stat	buf;
+    
+    if (fstat (fd, &buf) < 0)
+	return 0;
+    return S_ISFIFO(buf.st_mode);
+}
+
+int
 xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *closure)
 {
     struct sigaction sa;
@@ -118,19 +128,8 @@ xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *closure)
     {
 	if (!xf86SigIOFuncs[i].f)
 	{
-	    sigemptyset(&sa.sa_mask);
-	    sigaddset(&sa.sa_mask, SIGIO);
-	    sa.sa_flags   = 0;
-	    sa.sa_handler = xf86SIGIO;
-	    sigaction(SIGIO, &sa, &osa);
-	    xf86SigIOFuncs[i].fd = fd;
-	    xf86SigIOFuncs[i].closure = closure;
-	    xf86SigIOFuncs[i].f = f;
-	    if (i >= xf86SigIOMax)
-		xf86SigIOMax = i+1;
-	    if (fd >= xf86SigIOMaxFd)
-		xf86SigIOMaxFd = fd + 1;
-	    FD_SET (fd, &xf86SigIOMask);
+	    if (xf86IsPipe (fd))
+		return 0;
 	    if (fcntl(fd, F_SETOWN, getpid()) == -1) {
 #ifdef XFree86Server
 		xf86Msg(X_WARNING, "fcntl(%d, F_SETOWN): %s\n", 
@@ -151,6 +150,19 @@ xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *closure)
 #endif
 		return 0;
 	    }
+	    sigemptyset(&sa.sa_mask);
+	    sigaddset(&sa.sa_mask, SIGIO);
+	    sa.sa_flags   = 0;
+	    sa.sa_handler = xf86SIGIO;
+	    sigaction(SIGIO, &sa, &osa);
+	    xf86SigIOFuncs[i].fd = fd;
+	    xf86SigIOFuncs[i].closure = closure;
+	    xf86SigIOFuncs[i].f = f;
+	    if (i >= xf86SigIOMax)
+		xf86SigIOMax = i+1;
+	    if (fd >= xf86SigIOMaxFd)
+		xf86SigIOMaxFd = fd + 1;
+	    FD_SET (fd, &xf86SigIOMask);
 	    return 1;
 	}
  	/* Allow overwriting of the closure and callback */

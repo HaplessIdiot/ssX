@@ -1,4 +1,5 @@
 ! $XConsortium: XConsole.ad,v 1.3 94/02/09 19:44:01 gildea Exp $
+! $XFree86$
 *allowShellResize:		true
 XConsole.translations:		#override\
 	<MapNotify>:		Deiconified()	\n\
@@ -14,8 +15,8 @@ XConsole.baseTranslations:		#override\
 *text.baseTranslations:		#override\
 	Ctrl<KeyPress>C:	Clear()	\n\
 	<KeyPress>Clear:	Clear()
-*text.scrollVertical:		whenNeeded
-*text.scrollHorizontal:		whenNeeded
+*text.scrollVertical:		Always
+*text.scrollHorizontal:		Never
 *text.width:			400
 *text.height:			70
 *text.allowResize:		true

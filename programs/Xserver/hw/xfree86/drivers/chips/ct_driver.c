@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.83 2000/03/05 16:59:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.84 2000/03/06 23:54:08 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -3742,9 +3742,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
-#ifdef ENABLE_SILKEN_MOUSE
-	xf86SetSilkenMouse(pScreen);
-#endif
 
 	/* Initialise cursor functions */
 	miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
@@ -3933,6 +3930,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     racflag |= (RAC_FB | RAC_VIEWPORT);
     /* XXX Check if I/O and Mem flags need to be the same. */
     pScrn->racIoFlags = pScrn->racMemFlags = racflag;
+#ifdef ENABLE_SILKEN_MOUSE
+	xf86SetSilkenMouse(pScreen);
+#endif
     
     pScreen->SaveScreen = CHIPSSaveScreen;
 
