@@ -34,10 +34,10 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpDoc.c,v 1.2 2000/09/26 15:56:57 tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpDoc.c,v 1.3 2001/01/17 19:43:01 dawes Exp $ */
 
-#include "Printstr.h"
-#include "Xlibint.h"
+#include <X11/extensions/Printstr.h>
+#include <X11/Xlibint.h>
 #include "XpExtUtil.h"
 
 typedef struct {

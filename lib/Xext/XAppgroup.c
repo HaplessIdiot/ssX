@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xext/XAppgroup.c,v 1.8 2001/07/25 15:04:50 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XAppgroup.c,v 1.9 2001/12/14 19:54:59 dawes Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -38,10 +38,10 @@ in this Software without prior written authorization from The Open Group.
 
 #define NEED_EVENTS
 #define NEED_REPLIES
-#include "Xlibint.h"
-#include "Xagstr.h"
-#include "Xext.h"
-#include "extutil.h"
+#include <X11/Xlibint.h>
+#include <X11/extensions/Xagstr.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 
 #include <stdarg.h>
 

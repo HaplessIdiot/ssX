@@ -50,15 +50,15 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xext/XSync.c,v 1.4 2001/01/17 19:42:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XSync.c,v 1.5 2001/12/14 19:55:01 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS
 #define NEED_REPLIES
-#include "Xlibint.h"
-#include "Xext.h"
-#include "extutil.h"
-#include "syncstr.h"
+#include <X11/Xlibint.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/syncstr.h>
 
 static XExtensionInfo _sync_info_data;
 static XExtensionInfo *sync_info = &_sync_info_data;

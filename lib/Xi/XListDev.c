@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XListDev.c,v 3.3 2001/10/28 03:32:39 tsi Exp $ */
+/* $XFree86: xc/lib/Xi/XListDev.c,v 3.4 2001/12/14 19:55:19 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -56,11 +56,11 @@ SOFTWARE.
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include "Xlibint.h"
-#include "XIproto.h"
-#include "XI.h"
-#include "XInput.h"
-#include "extutil.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
+#include <X11/Xlibint.h>
+#include <X11/extensions/XInput.h>
+#include <X11/extensions/extutil.h>
 #include "XIint.h"
 
 XDeviceInfo 

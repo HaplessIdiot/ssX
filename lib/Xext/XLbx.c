@@ -22,16 +22,16 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
-/* $XFree86: xc/lib/Xext/XLbx.c,v 1.2 1999/07/12 05:57:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XLbx.c,v 1.3 2001/01/17 19:42:46 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <stdio.h>
-#include "Xlibint.h"
-#include "XLbx.h"
-#include "lbxstr.h"
-#include "Xext.h"
-#include "extutil.h"
+#include <X11/Xlibint.h>
+#include <X11/extensions/XLbx.h>
+#include <X11/extensions/lbxstr.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 
 static XExtensionInfo _lbx_info_data;
 static XExtensionInfo *lbx_info = &_lbx_info_data;

@@ -30,16 +30,16 @@
  *     Xlib DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/lib/Xext/Xdbe.c,v 3.4 2001/04/01 14:00:01 tsi Exp $ */
+/* $XFree86: xc/lib/Xext/Xdbe.c,v 3.5 2001/07/25 15:04:50 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <stdio.h>
 #include <X11/Xlibint.h>
-#include "Xext.h"
-#include "extutil.h"
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 #define NEED_DBE_PROTOCOL
-#include "Xdbe.h"
+#include <X11/extensions/Xdbe.h>
 
 static XExtensionInfo _dbe_info_data;
 static XExtensionInfo *dbe_info = &_dbe_info_data;

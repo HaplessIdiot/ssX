@@ -25,14 +25,15 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+/* $XFree86$ */
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
 #include "region.h"			/* in Xlib sources */
-#include "Xext.h"			/* in ../include */
-#include "extutil.h"			/* in ../include */
-#include "shapestr.h"			/* in ../include */
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/shapestr.h>
 
 static XExtensionInfo _shape_info_data;
 static XExtensionInfo *shape_info = &_shape_info_data;

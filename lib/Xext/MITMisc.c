@@ -24,15 +24,16 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *
  */
+/* $XFree86$ */
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
 #define NEED_REPLIES
-#include "Xlibint.h"
-#include "MITMisc.h"
-#include "mitmiscstr.h"
-#include "Xext.h"
-#include "extutil.h"
+#include <X11/Xlibint.h>
+#include <X11/extensions/MITMisc.h>
+#include <X11/extensions/mitmiscstr.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 
 static XExtensionInfo _mit_info_data;
 static XExtensionInfo *mit_info = &_mit_info_data;

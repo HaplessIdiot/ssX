@@ -34,15 +34,15 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpJob.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/Xp/XpJob.c,v 1.5 2002/04/10 16:20:07 tsi Exp $ */
 
 #if defined(sun) && defined(i386) && defined(SVR4) && !defined(__EXTENSIONS__)
 #define __EXTENSIONS__
 #endif
 
-#include "Printstr.h"
-#include "Xlibint.h"
-#include "X11/Xos.h"
+#include <X11/extensions/Printstr.h>
+#include <X11/Xlibint.h>
+#include <X11/Xos.h>
 #include "XpExtUtil.h"
 #include <limits.h>
 #ifndef WIN32

@@ -25,18 +25,18 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Bob Scheifler and Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xext/XShm.c,v 1.3 2001/01/17 19:42:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XShm.c,v 1.4 2001/12/14 19:55:00 dawes Exp $ */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <stdio.h>
-#include "Xlibint.h"
-#include "XShm.h"
-#include "shmstr.h"
-#include "Xext.h"
-#include "extutil.h"
+#include <X11/Xlibint.h>
+#include <X11/extensions/XShm.h>
+#include <X11/extensions/shmstr.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 
 static XExtensionInfo _shm_info_data;
 static XExtensionInfo *shm_info = &_shm_info_data;

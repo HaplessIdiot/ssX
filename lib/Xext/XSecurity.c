@@ -24,13 +24,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xext/XSecurity.c,v 1.3 2001/01/17 19:42:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/XSecurity.c,v 1.4 2001/12/14 19:55:00 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <stdio.h>
-#include "Xext.h"
-#include "extutil.h"
-#include "securstr.h"
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/securstr.h>
 
 static XExtensionInfo _Security_info_data;
 static XExtensionInfo *Security_info = &_Security_info_data;

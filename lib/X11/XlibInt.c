@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.30 2001/12/14 19:54:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.31 2002/05/31 18:45:42 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -38,7 +38,7 @@ from The Open Group.
 #include "Xlibint.h"
 #include <X11/Xpoll.h>
 #include <X11/Xtrans.h>
-#include "xcmiscstr.h"
+#include <X11/extensions/xcmiscstr.h>
 #include <stdio.h>
 
 #ifdef XTHREADS

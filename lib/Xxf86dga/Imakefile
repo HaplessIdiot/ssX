@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xxf86dga/Imakefile,v 3.1 1998/12/20 11:57:13 dawes Exp $
+XCOMM $XFree86: xc/lib/Xxf86dga/Imakefile,v 3.3 2002/09/16 18:05:26 eich Exp $
 #define DoNormalLib NormalLibXxf86dga
 #define DoSharedLib SharedLibXxf86dga
 #define DoExtraLib SharedLibXxf86dga
@@ -22,7 +22,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
       DEFINES = $(ALLOC_DEFINES)
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
          SRCS = $(XF86DGASRCS)
          OBJS = $(XF86DGAOBJS)
      LINTLIBS = $(LINTXLIB)

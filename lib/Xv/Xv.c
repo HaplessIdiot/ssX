@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xv/Xv.c,v 1.14 2000/05/25 20:47:39 mvojkovi Exp $ */
+/* $XFree86: xc/lib/Xv/Xv.c,v 1.15 2001/05/11 08:23:22 alanh Exp $ */
 /*
 ** File: 
 **
@@ -52,9 +52,9 @@ SOFTWARE.
 
 #include <stdio.h>
 #include "Xvlibint.h"
-#include "Xext.h"
-#include "extutil.h"
-#include "XShm.h"
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
+#include <X11/extensions/XShm.h>
 
 static XExtensionInfo _xv_info_data;
 static XExtensionInfo *xv_info = &_xv_info_data;

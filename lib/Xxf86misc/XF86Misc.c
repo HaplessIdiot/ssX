@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.8 2001/08/15 16:25:20 paulo Exp $ */
+/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.10 2002/04/04 14:05:35 eich Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -8,10 +8,10 @@
 
 #define NEED_EVENTS
 #define NEED_REPLIES
-#include "Xlibint.h"
-#include "xf86mscstr.h"
-#include "Xext.h"
-#include "extutil.h"
+#include <X11/Xlibint.h>
+#include <X11/extensions/xf86mscstr.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/extutil.h>
 
 static XExtensionInfo _xf86misc_info_data;
 static XExtensionInfo *xf86misc_info = &_xf86misc_info_data;
