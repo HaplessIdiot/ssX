@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.20 2001/10/23 06:10:31 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.21 2001/10/26 06:13:59 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -222,9 +222,6 @@ static Bool QuartzFSAddScreen(
         return FALSE;
     }
 
-    dfb->pixelInfo.bitsPerComponent = CGDisplayBitsPerSample(cgID);
-    dfb->pixelInfo.componentCount = CGDisplaySamplesPerPixel(cgID);
-
     // Don't need to flip y-coordinate as CoreGraphics treats (0, 0)
     // as the top left of main screen.
     bounds = CGDisplayBounds(cgID);
@@ -234,6 +231,7 @@ static Bool QuartzFSAddScreen(
     dfb->height = bounds.size.height;
     dfb->pitch = CGDisplayBytesPerRow(cgID);
     dfb->bitsPerPixel = CGDisplayBitsPerPixel(cgID);
+    dfb->pixelInfo.componentCount = CGDisplaySamplesPerPixel(cgID);
 
     if (dfb->bitsPerPixel == 8) {
         if (CGDisplayCanSetPalette(cgID)) {
@@ -241,9 +239,11 @@ static Bool QuartzFSAddScreen(
         } else {
             dfb->pixelInfo.pixelType = kIOFixedCLUTPixels;
         }
+        dfb->pixelInfo.bitsPerComponent = 8;
         dfb->colorBitsPerPixel = 8;
     } else {
         dfb->pixelInfo.pixelType = kIORGBDirectPixels;
+        dfb->pixelInfo.bitsPerComponent = CGDisplayBitsPerSample(cgID);
         dfb->colorBitsPerPixel = (dfb->pixelInfo.componentCount * 
                                   dfb->pixelInfo.bitsPerComponent);
     }
