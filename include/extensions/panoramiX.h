@@ -150,7 +150,7 @@ typedef struct _PanoramiXDepth {
         for ( pPanoramiXFreeCmap = PanoramiXCmapRoot->next, \
 	      pPanoramiXFreeCmapback = PanoramiXCmapRoot; \
 	      pPanoramiXFreeCmap;  \
-              pPanoramiXFreeCmap = pPanoramiXFreeCmap->next ) { \
+              pPanoramiXFreeCmap = pPanoramiXFreeCmapback->next ) { \
          if (pPanoramiXFreeCmap->FreeMe){ \
             pPanoramiXFreeCmapback->next = pPanoramiXFreeCmap->next; \
             Xfree(pPanoramiXFreeCmap); \
@@ -163,7 +163,7 @@ typedef struct _PanoramiXDepth {
         for ( pPanoramiXFreePmap = PanoramiXPmapRoot->next, \
 	      pPanoramiXFreePmapback = PanoramiXPmapRoot; \
 	      pPanoramiXFreePmap; \
-              pPanoramiXFreePmap = pPanoramiXFreePmap->next ) { \
+              pPanoramiXFreePmap = pPanoramiXFreePmapback->next ) { \
          if (pPanoramiXFreePmap->FreeMe){ \
             pPanoramiXFreePmapback->next = pPanoramiXFreePmap->next; \
             Xfree(pPanoramiXFreePmap); \
@@ -176,7 +176,7 @@ typedef struct _PanoramiXDepth {
         for ( pPanoramiXFreeWin = PanoramiXWinRoot->next, \
 	      pPanoramiXFreeWinback = PanoramiXWinRoot; \
 	      pPanoramiXFreeWin; \
-              pPanoramiXFreeWin = pPanoramiXFreeWin->next ) { \
+              pPanoramiXFreeWin = pPanoramiXFreeWinback->next ) { \
          if (pPanoramiXFreeWin->FreeMe){ \
             pPanoramiXFreeWinback->next = pPanoramiXFreeWin->next; \
             Xfree(pPanoramiXFreeWin); \
@@ -189,7 +189,7 @@ typedef struct _PanoramiXDepth {
         for ( pPanoramiXFreeGC = PanoramiXGCRoot->next, \
 	      pPanoramiXFreeGCback = PanoramiXGCRoot; \
 	      pPanoramiXFreeGC; \
-              pPanoramiXFreeGC = pPanoramiXFreeGC->next ) { \
+              pPanoramiXFreeGC = pPanoramiXFreeGCback->next ) { \
          if (pPanoramiXFreeGC->FreeMe){ \
             pPanoramiXFreeGCback->next = pPanoramiXFreeGC->next; \
             Xfree(pPanoramiXFreeGC); \

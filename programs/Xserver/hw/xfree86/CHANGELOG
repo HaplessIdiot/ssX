@@ -1,4 +1,5 @@
 XFree86 3.9Nu (15 January 1999)
+2144. Fix a bug in PANORAMIX_FREE() which was referencing just freed data.
 2143. Merge the pandix/panmi code into dix and mi, and enable building
       the Xinerama (panoramiX) extension by default (#2377-2381,
       Alan Hourihane).
@@ -7075,4 +7076,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.662 1999/01/13 03:19:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.663 1999/01/13 08:30:57 dawes Exp $
