@@ -1,5 +1,5 @@
 /* $XConsortium: cir_bltC.c,v 1.2 94/04/17 20:32:32 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.0 1994/06/05 06:00:21 dawes Exp $ */
 /*
  
 
@@ -159,7 +159,7 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
   else 
        if (CHECKSCREEN(pdstBase)) /* Mem -> Screen */
 	    {
-	    if(NoCirrus || !HAVEBITBLTENGINE()) 
+	    if(NoCirrus || !HAVEBITBLTENGINE() || HAVE543X()) 
 		 {
 		 fnp = vgaImageWrite;
 		 }
@@ -294,13 +294,14 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 extern void cfbCopyPlane1to8();
 
 void CirrusCopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
-planemask)
+planemask, bitplane)
 	DrawablePtr pSrcDrawable;
 	DrawablePtr pDstDrawable;
 	int rop;
 	unsigned long planemask;
 	RegionPtr prgnDst;
 	DDXPointPtr pptSrc;
+	int bitplane;	/* Unused. */
 {
     unsigned long *psrcBase, *pdstBase;
     int	widthSrc, widthDst;
@@ -314,7 +315,7 @@ planemask)
 
     if (!CHECKSCREEN(pdstBase) || cfb8StippleRRop != GXcopy) {
     	cfbCopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
-    		planemask);
+    		planemask, 1);
     	return;
     }
 
@@ -349,7 +350,7 @@ planemask)
 		RegionRec reg;
 		(*pDstDrawable->pScreen->RegionInit)(&reg, pbox - 1, 1);
 		cfbCopyPlane1to8(pSrcDrawable, pDstDrawable, rop,
-			&reg, pptSrc - 1, planemask);
+			&reg, pptSrc - 1, planemask, 1);
 		(*pDstDrawable->pScreen->RegionUninit)(&reg);
 	}
     }

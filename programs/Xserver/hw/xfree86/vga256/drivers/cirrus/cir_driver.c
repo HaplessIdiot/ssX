@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.2 1994/05/31 08:14:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.3 1994/06/05 06:00:24 dawes Exp $ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -590,7 +590,7 @@ cirrusProbe()
 	       break;
 
 	     default:
-	       ErrorF("Unknown Cirrus chipset: type 0x%02, rev %d\n", id, rev);
+	       ErrorF("Unknown Cirrus chipset: type 0x%02x, rev %d\n", id, rev);
 	       cirrusEnterLeave(LEAVE);
 	       return(FALSE);
 	       break;
@@ -888,7 +888,7 @@ cirrusFbInit()
     cfbTEOps1Rect.PolyGlyphBlt = CirrusPolyGlyphBlt;
     cfbTEOps.PolyGlyphBlt = CirrusPolyGlyphBlt;
     /* Disable accelerated text blit functions for the 543x chips, */
-    /* which require exclusively 32-bit transfers. It may work though. */
+    /* which require exclusively 32-bit transfers. */
     if (!HAVE543X()) {
 	cfbLowlevFuncs.teGlyphBlt8 = CirrusImageGlyphBlt;
 	cfbTEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
@@ -920,7 +920,7 @@ cirrusFbInit()
         ErrorF ("%s %s: Using BitBLT engine\n",
 	    XCONFIG_PROBED, cirrusIdent (cirrusChip) );
 #ifdef CIRRUS_INCLUDE_COPYPLANE1TO8	    
-	cfbLowlevFuncs.CopyPlane1to8 = CirrusCopyPlane1to8;
+	cfbLowlevFuncs.copyPlane1to8 = CirrusCopyPlane1to8;
 #endif	
     }
   }

@@ -1,4 +1,5 @@
 /* $XConsortium: cfbfuncs.c,v 1.1 94/03/28 21:44:47 dpw Exp $ */
+/* $XFree86$ */
 /*
  * cfbfuncs.c
  *
@@ -21,5 +22,6 @@ CfbfuncRec cfbLowlevFuncs = {
     cfbLineSS,
     vgacfbFillBoxSolid,
     cfbTEGlyphBlt8,
+    cfbCopyPlane1to8,
 };
 
