@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 408. Fix a NativeGDI problem on Cygwin/XFree86 (#5007, Harold Hunt).
  407. Fix for threaded libraries (Marc La France).
  406. Finish removal of SuperProbe (Marc La France).
  405. A rather large number of warning fixes throughout (Marc La France).
@@ -14044,4 +14045,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2002 2001/10/28 03:33:13 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2003 2001/10/28 03:38:42 tsi Exp $

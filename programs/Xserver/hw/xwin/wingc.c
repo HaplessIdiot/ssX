@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.7 2001/10/22 15:21:11 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.8 2001/10/23 08:32:05 alanh Exp $ */
 
 #include "win.h"
 
@@ -147,6 +147,9 @@ winValidateGCNativeGDI (GCPtr pGC,
   HBITMAP		hbmpOrig = NULL;
   PixmapPtr		pPixmap = NULL;
   winPrivPixmapPtr	pPixmapPriv = NULL;
+  RGBQUAD		rgbColors[2] = {{0, 0, 0, 0}, {0, 0, 0, 0}};
+  PixmapPtr		pStipple = NULL;
+  winPrivPixmapPtr	pStipplePriv = NULL;
   DEBUG_FN_NAME("winValidateGC");
   DEBUGVARS;
   DEBUGPROC_MSG;
@@ -196,7 +199,39 @@ winValidateGCNativeGDI (GCPtr pGC,
 	  
 	case FillStippled:
 	  ErrorF ("winValidateGC - DRAWABLE_PIXMAP - FillStippled\n");
+	  /*
+	   * NOTE: Setting the brush color has no effect on DIB fills.
+	   * You need to set the stipple bitmap's color table instead.
+	   */
+#if 1
+	  if (pGC->fgPixel)
+	    {
+	      int		i = 1;
+	      rgbColors[i].rgbRed = 255;
+	      rgbColors[i].rgbGreen = 255;
+	      rgbColors[i].rgbBlue = 255;
+	    }
+	  else
+	    {
+	      int		i = 0;
+	      rgbColors[i].rgbRed = 255;
+	      rgbColors[i].rgbGreen = 255;
+	      rgbColors[i].rgbBlue = 255;
+	    }
+	  /* Get stipple and privates pointers */
+	  pStipple = pGC->stipple;
+	  pStipplePriv = winGetPixmapPriv (pStipple);
 
+	  /* Select the stipple bitmap */
+	  hbmpOrig = SelectObject (pGCPriv->hdcMem, pStipplePriv->hBitmap);
+
+	  /* Set the stipple color table */
+	  SetDIBColorTable (pGCPriv->hdcMem, 0, 2, rgbColors);
+
+	  /* Pop the stipple out of the hdc */
+	  SelectObject (pGCPriv->hdcMem, hbmpOrig);
+	  
+#else
 	  /* Set the foreground color for the stipple fill */
 	  if (pGC->fgPixel == 0x1)
 	    {
@@ -211,6 +246,7 @@ winValidateGCNativeGDI (GCPtr pGC,
 	      SetTextColor (pGCPriv->hdcMem, RGB(0x00, 0x00, 0x00));
 	    }
 	  SetBkColor (pGCPriv->hdcMem, RGB(0x00, 0x00, 0x00));
+#endif
 	  break;
 	  
 	case FillOpaqueStippled:
