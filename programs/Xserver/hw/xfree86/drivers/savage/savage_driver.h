@@ -1,16 +1,16 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.h,v 1.3 2000/12/07 20:26:22 dawes Exp $ */
+/* $xFree86: $ */
 
 #ifndef SAVAGE_VGAHWMMIO_H
 #define SAVAGE_VGAHWMMIO_H
 
+#include "xf86_ansic.h"
+#include "compiler.h"
 #include "vgaHW.h"
 #include "xf86.h"
 #include "xf86Resources.h"
-#include "xf86_ansic.h"
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 #include "xf86_OSproc.h"
-#include "compiler.h"
 #include "xf86Cursor.h"
 #include "mipointer.h"
 #include "micmap.h"
@@ -18,13 +18,14 @@
 #include "xf86cmap.h"
 #include "vbe.h"
 #include "xaa.h"
+#include "xf86xv.h"
 
 #include "savage_regs.h"
 
 #define VGAIN8(addr) MMIO_IN8(psav->MapBase+0x8000, addr)
 #define VGAIN16(addr) MMIO_IN16(psav->MapBase+0x8000, addr)
 #define VGAIN(addr) MMIO_IN32(psav->MapBase+0x8000, addr)
-
+ 
 #define VGAOUT8(addr,val) MMIO_OUT8(psav->MapBase+0x8000, addr, val)
 #define VGAOUT16(addr,val) MMIO_OUT16(psav->MapBase+0x8000, addr, val)
 #define VGAOUT(addr,val) MMIO_OUT32(psav->MapBase+0x8000, addr, val)
@@ -77,6 +78,7 @@ typedef struct _Savage {
     Bool		STREAMSRunning;
     int			Bpp, Bpl, ScissB;
     unsigned		PlaneMask;
+    I2CBusPtr		I2C;
 
     int			videoRambytes;
     int			videoRamKbytes;
@@ -110,16 +112,14 @@ typedef struct _Savage {
     Bool		fifo_conservative;
     Bool		fifo_moderate;
     Bool		fifo_aggressive;
-    Bool		slow_edodram;
-    Bool		slow_dram;
-    Bool		fast_dram;
-    Bool		fpm_vram;
-    Bool		early_ras_precharge;
     Bool		hwcursor;
     Bool		NoAccel;
     Bool		shadowFB;
     Bool		UseBIOS;
     int			rotate;
+    double		LCDClock;
+    int			StatusDelay;
+    Bool		StatusHack;
 
     CloseScreenProcPtr	CloseScreen;
     pciVideoPtr		PciInfo;
@@ -151,6 +151,7 @@ typedef struct _Savage {
     unsigned int	SavedGbd;
     unsigned int	SavedSbdOffset;
     unsigned int	SavedSbd;
+    Bool		Entering;
 
     /* Support for Int10 processing */
     xf86Int10InfoPtr	pInt10;
@@ -161,7 +162,26 @@ typedef struct _Savage {
     unsigned long	cobSize;	/* size in bytes */
     unsigned long	cobOffset;	/* offset in frame buffer */
 
+    /* Support for DGA */
+    int			numDGAModes;
+    DGAModePtr		DGAModes;
+    Bool		DGAactive;
+    int			DGAViewportStatus;
+
+    /* Support for XVideo */
+
+    unsigned int	videoFlags;
+    unsigned int	blendBase;
+    int			videoFourCC;
+    XF86VideoAdaptorPtr	adaptor;
+    int			VideoZoomMax;
+
 } SavageRec, *SavagePtr;
+
+/* Video flags. */
+
+#define VF_STREAMS_ON	0x0001
+
 
 /* Shortcuts.  These depend on a local symbol "psav". */
 
@@ -184,12 +204,19 @@ Bool SavageSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 /* In savage_cursor.c. */
 
 Bool SavageHWCursorInit(ScreenPtr pScreen);
+void SavageShowCursor(ScrnInfoPtr);
+void SavageHideCursor(ScrnInfoPtr);
 
 /* In savage_accel.c. */
 
 Bool SavageInitAccel(ScreenPtr);
 void SavageInitialize2DEngine(ScrnInfoPtr);
 void SavageSetGBD(ScrnInfoPtr);
+void SavageAccelSync(ScrnInfoPtr);
+
+/* In savage_i2c.c. */
+
+Bool SavageI2CInit(ScrnInfoPtr pScrn);
 
 /* In savage_shadow.c */
 
@@ -212,6 +239,10 @@ unsigned short SavageGetBIOSModes(
     int iDepth,
     SavageModeEntryPtr s3vModeTable );
 
+
+/* In savage_video.c */
+
+void SavageInitVideo( ScreenPtr pScreen );
 
 #endif /* SAVAGE_VGAHWMMIO_H */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.50 2001/01/06 20:19:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.51 2001/01/16 23:46:29 herrb Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -611,7 +611,12 @@ configureDDCMonitorSection (int screennum)
 	    case DT:
 	    case DS_STD_TIMINGS:
 	    case DS_WHITE_P:
+	      break;
 	    case DS_NAME:
+	      xfree(ptr->mon_modelname);
+	      ptr->mon_modelname = 
+		strdup((char*)(ConfiguredMonitor->det_mon[i].section.name));
+	      break;
 	    case DS_ASCII_STR:
 	    case DS_SERIAL:
 		break;

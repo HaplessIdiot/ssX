@@ -1,4 +1,4 @@
-/* $Id: glxinfo.c,v 1.2 2000/09/26 15:57:23 tsi Exp $ */
+/* Id: glxinfo.c,v 1.10 2000/05/08 14:53:57 brianp Exp $ */
 
 /*
  * Copyright (C) 1999  Brian Paul   All Rights Reserved.
@@ -20,7 +20,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/glxinfo/glxinfo.c,v 1.2 2000/09/26 15:57:23 tsi Exp $ */
 
 /*
  * This program is a work-alike of the IRIX glxinfo program.
@@ -45,6 +45,7 @@
 
 #include <GL/glx.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 
@@ -502,12 +503,20 @@ print_visual_info(Display *dpy, int scrnum, InfoMode mode)
 int
 main(int argc, char *argv[])
 {
-   char *displayName = ":0";
+   char *displayName, *envdisplay;
    Display *dpy;
    int numScreens, scrnum;
    InfoMode mode = Normal;
    int i;
 
+   if ((envdisplay = getenv("DISPLAY")) == NULL) {
+	   displayName = ":0";
+   } else {
+	   displayName = strchr(envdisplay, '=');
+	   if (displayName == NULL || *(++displayName) == '\0') {
+		   displayName = ":0";
+	   } /* else displayName points to the value */
+   }
    for (i = 1; i < argc; i++) {
       if (strcmp(argv[i], "-display") == 0 && i + 1 < argc) {
          displayName = argv[i + 1];
