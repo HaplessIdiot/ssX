@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.48 2003/02/24 04:24:17 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.49 2003/03/03 03:28:49 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -561,8 +561,11 @@ FindDistName()
 				2)
 					DistName="Linux-ix86-glibc22"
 					;;
+				3)
+					DistName="Linux-ix86-glibc23"
+					;;
 				*)
-					Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-ix86-glibc22"
+					Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-ix86-glibc23"
 					;;
 				esac
 				;;
