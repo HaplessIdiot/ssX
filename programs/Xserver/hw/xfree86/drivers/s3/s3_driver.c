@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.2 2001/07/02 21:50:07 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.3 2001/08/15 11:54:27 tsi Exp $ */
 
 
 #include "xf86.h"
@@ -501,6 +501,7 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	pS3->FBAddress = pS3->PciInfo->memBase[0];
+	pScrn->memPhysBase = pS3->FBAddress;
 	if (pS3->S3NewMMIO)
 		pS3->IOAddress = pS3->FBAddress + S3_NEWMMIO_REGBASE;
 

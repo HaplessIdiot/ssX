@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.134 2001/08/07 07:04:46 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.135 2001/08/18 11:37:30 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -3058,6 +3058,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 #endif
 
+    pScrn->memPhysBase = pGlint->FbAddress;
     pScrn->fbOffset = 0;
 
     pGlint->CloseScreen = pScreen->CloseScreen;
