@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xsetpointer/xsetpointer.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/xsetpointer/xsetpointer.c,v 3.7 2003/05/27 22:27:10 tsi Exp $ */
 
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
@@ -63,7 +63,6 @@ main(int argc, char * argv[])
   char          **extensions;
   XDeviceInfo   *devices;
   Display       *dpy;
-  unsigned long screen;
   int		list = 0;
   
   if (argc != 2) {
@@ -85,8 +84,6 @@ main(int argc, char * argv[])
 #ifdef DEBUG
   printf("connected to %s\n", XDisplayString(dpy));
 #endif
-
-  screen = DefaultScreen(dpy);
 
   extensions = XListExtensions(dpy, &num_extensions);
   for (loop = 0; loop < num_extensions &&
