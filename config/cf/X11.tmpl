@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.154 2002/04/04 14:05:33 eich Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.156 2002/05/13 17:44:03 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2697,7 +2697,7 @@ ProjectUnsharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),XBuildLibDir)
 #if UseInstalled
 FREETYPE2INCDIR=$(INCDIR)/freetype2
 #else
-FREETYPE2INCDIR=$(TOP_X_INCLUDES)/freetype2
+FREETYPE2INCDIR=$(BUILDINCDIR)/freetype2
 #endif
 
 #else /* BuildFreetype2Library */
@@ -2968,7 +2968,7 @@ ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),XBuildLib
 #if UseInstalled
 FONTCONFIGINCDIR=$(INCDIR)
 #else
-FONTCONFIGINCDIR=$(TOP_X_INCLUDES)
+FONTCONFIGINCDIR=$(BUILDINCDIR)
 #endif
 
 #else /* BuildFontconfigLibrary */
