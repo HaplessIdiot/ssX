@@ -1,4 +1,5 @@
 XFree86 3.9.18a (24 February 2000)
+3847. Fix a segfault introduced by the workaround in 3546 below.
 3846. Fix big endian problems in XAA stipple code (Michel Dänzer).
 3845. Fix xf86MatchPciInstances() to not cause r128 to report detection of
       other ATI adapters to -probe (Marc La France).
