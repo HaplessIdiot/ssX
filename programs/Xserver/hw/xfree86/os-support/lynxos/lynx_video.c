@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.10 1999/04/04 08:46:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.11 1999/04/18 04:08:53 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -251,4 +251,10 @@ ppcPciIoMap(int bus)
 }
 
 #endif
+
+void
+xf86MapReadSideEffects(int ScreenNum, int Flags, pointer Base,
+	unsigned long Size)
+{
+}
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.10 1999/02/01 11:56:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.11 1999/04/18 04:08:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -218,3 +218,10 @@ void xf86EnableInterrupts()
 	}
 	return;
 }
+
+void
+xf86MapReadSideEffects(int ScreenNum, int Flags, pointer Base,
+	unsigned long Size)
+{
+}
+
