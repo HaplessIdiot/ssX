@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.5 2000/11/21 23:10:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.6 2000/11/28 17:25:12 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -94,11 +94,13 @@
 #include "xf86PciInfo.h"
 #include "xf86RAC.h"
 #include "xf86cmap.h"
+#include "xf86xv.h"
 #include "vbe.h"
 
 				/* fbdevhw & vgahw */
 #include "fbdevhw.h"
 #include "vgaHW.h"
+#include "dixstruct.h"
 
 #ifndef MAX
 #define MAX(a,b) ((a)>(b)?(a):(b))
@@ -139,7 +141,9 @@ typedef enum {
   OPTION_PANEL_WIDTH,
   OPTION_PANEL_HEIGHT,
   OPTION_PROG_FP_REGS,
-  OPTION_FBDEV
+  OPTION_FBDEV,
+  OPTION_VIDEO_KEY,
+  OPTION_SHOW_CACHE
 } R128Opts;
 
 OptionInfoRec R128Options[] = {
@@ -167,6 +171,8 @@ OptionInfoRec R128Options[] = {
   { OPTION_PANEL_HEIGHT, "PanelHeight",      OPTV_INTEGER, {0}, FALSE },
   { OPTION_PROG_FP_REGS, "ProgramFPRegs",    OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_FBDEV,        "UseFBDev",         OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_VIDEO_KEY,    "VideoKey",         OPTV_INTEGER, {0}, FALSE },
+  { OPTION_SHOW_CACHE,   "ShowCache",        OPTV_BOOLEAN, {0}, FALSE },
   { -1,                  NULL,               OPTV_NONE,    {0}, FALSE }
 };
 
@@ -1326,6 +1332,18 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 
     if (!R128PreInitWeight(pScrn))    goto fail;
 
+    if(xf86GetOptValInteger(R128Options, OPTION_VIDEO_KEY, &(info->videoKey))) {
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
+                                info->videoKey);
+    } else {
+        info->videoKey = 0x1E; 
+    }
+
+    if (xf86ReturnOptValBool(R128Options, OPTION_SHOW_CACHE, FALSE)) {
+        info->showCache = TRUE;
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
+    }
+
     if (xf86ReturnOptValBool(R128Options, OPTION_FBDEV, FALSE)) {
 	info->FBDev = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -1436,6 +1454,22 @@ static void R128LoadPalette(ScrnInfoPtr pScrn, int numColors,
 	    g   = colors[idx].green;
 	    OUTPAL(idx, r, g, b);
 	}
+    }
+}
+
+static void
+R128BlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
+{
+    ScreenPtr   pScreen = screenInfo.screens[i]; 
+    ScrnInfoPtr pScrn   = xf86Screens[i];
+    R128InfoPtr info    = R128PTR(pScrn);
+    
+    pScreen->BlockHandler = info->BlockHandler;
+    (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
+    pScreen->BlockHandler = R128BlockHandler;
+    
+    if(info->VideoTimerCallback) {
+        (*info->VideoTimerCallback)(pScrn, currentTime.milliseconds);
     }
 }
 
@@ -1842,6 +1876,9 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering disabled\n");
     }
 #endif
+
+    info->BlockHandler = pScreen->BlockHandler;
+    pScreen->BlockHandler = R128BlockHandler;
 
     return TRUE;
 }
@@ -2697,6 +2734,9 @@ void R128AdjustFrame(int scrnIndex, int x, int y, int flags)
     unsigned char *R128MMIO = info->MMIO;
     int           Base;
 
+    if(info->showCache && y && pScrn->vtSema)
+        y += pScrn->virtualY - 1;
+
     Base = y * info->CurrentLayout.displayWidth + x;
 
     switch (info->CurrentLayout.pixel_code) {
@@ -2813,9 +2853,16 @@ static Bool R128CloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     if (info->DGAModes)          xfree(info->DGAModes);
     info->DGAModes               = NULL;
+    
+    if (info->adaptor) {
+        xfree(info->adaptor->pPortPrivates[0].ptr);
+	xf86XVFreeVideoAdaptorRec(info->adaptor);
+	info->adaptor = NULL;
+    }
 
     pScrn->vtSema = FALSE;
 
+    pScreen->BlockHandler = info->BlockHandler;
     pScreen->CloseScreen = info->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
