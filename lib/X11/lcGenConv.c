@@ -35,7 +35,7 @@
  *  2000  
  *  Modifier: Ivan Pascal      The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.25 2002/04/10 16:20:05 tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.26 2002/11/01 09:10:37 alanh Exp $ */
 
 /*
  * A generic locale loader for all kinds of ISO-2022 based codesets.
@@ -660,7 +660,7 @@ _XlcGetCodeSetFromCharSet(
             }
 
             if (glyph_index_tmp != *glyph_index) {
-		if (ctextseg->charset == charset) {
+		if (ctextseg && ctextseg->charset == charset) {
 		    goto end_loop;
                 }
             }
