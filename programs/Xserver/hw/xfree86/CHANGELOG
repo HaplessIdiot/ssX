@@ -1,4 +1,5 @@
 XFree86 4.4.99.4 (xx April 2004)
+  85. Fix for Xv resolution loss problem with Matrox cards (Michael Lampe).
   84. Don't call VBESetGetDACPaletteFormat() in the vesa driver for
       modes with depth > 8.  This fixes a problem with a Toshiba R100
       laptop (Jonas Lund).
@@ -18874,7 +18875,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3233 2004/04/23 17:56:04 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3234 2004/04/25 14:22:54 dawes Exp $
 
 
 
