@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.3 1994/09/25 12:28:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.4 1994/09/27 10:28:29 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -91,7 +91,7 @@ ScrnInfoRec vga256InfoRec = {
   FALSE,		/* Bool bankedMono */
   "ET4000W32",		/* char *name */
   {0, 0, 0},		/* RgbRec blackColour */ 
-  {0x3F, 0x3F, 0x3F},	/* RgbRec whiteColour */ 
+  {0xFF, 0xFF, 0xFF},	/* RgbRec whiteColour */ 
   vga256ValidTokens,	/* int *validTokens */
   ET4000W32_PATCH_LEVEL,/* char *patchLevel */
   0,			/* int IObase */
@@ -154,6 +154,7 @@ extern vgaVideoChipPtr Drivers[];
 /*
  *	Wrap the chip-level restore function in a protect/unprotect.
  */
+static w32_mode = FALSE;
 void
 vgaRestore(mode)
      pointer mode;
@@ -161,7 +162,8 @@ vgaRestore(mode)
     vgaProtect(TRUE);
     (vgaRestoreFunc)(mode);
     vgaProtect(FALSE);
-    (*vgaSaveScreenFunc)(SS_FINISH);
+    if (w32_mode)
+	(*vgaSaveScreenFunc)(SS_FINISH);
 }
 
 /*
@@ -409,7 +411,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
   vgaRestore(vgaNewVideoState);
 
 #ifndef DIRTY_STARTUP
-  vgaSaveScreen(NULL, FALSE); /* blank the screen */
+  W32SaveScreen(NULL, FALSE); /* blank the screen */
 #endif
   (vgaAdjustFunc)(vga256InfoRec.frameX0, vga256InfoRec.frameY0);
 
@@ -454,7 +456,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 
 
 #ifndef DIRTY_STARTUP
-    vgaSaveScreen(NULL, TRUE); /* unblank the screen */
+    W32SaveScreen(NULL, TRUE); /* unblank the screen */
 
   /* Fill the screen with black pixels */
     if (serverGeneration == 1)
@@ -498,6 +500,7 @@ vgaEnterLeaveVT(enter, screen_idx)
 
   if (enter)
     {
+      w32_mode = TRUE;
       xf86MapDisplay(screen_idx, VGA_REGION);
 
       (vgaEnterLeaveFunc)(ENTER);
@@ -545,6 +548,7 @@ vgaEnterLeaveVT(enter, screen_idx)
     }
   else
     {
+      w32_mode = FALSE;
       /* Make sure IO isn't disabled (by other drivers) */    
       xf86MapDisplay(screen_idx, VGA_REGION);
 

@@ -73,7 +73,7 @@ Section "Device"
     VendorName "Diamond"
     BoardName "viper"
     Chipset "vipervlb"
-    Clocks 135 120 110 103 100 85 49
+    Clocks 135 120 110 103 100 85 49 # Choose clocks to suit your modes
     Videoram 2048
 EndSection
 
@@ -218,6 +218,23 @@ Section "Device"
     Option "no_wait_state"
     Option "fast_dram"
     Videoram 1024
+EndSection
+
+#From: haw30@eng.amdahl.com (Henry A Worth )
+#Date: Tue, 27 Sep 94 22:10:01 PDT
+Section "Device"
+    Identifier "Hercules Graphite VL Pro HG720"
+    VendorName "Hercules"
+    BoardName  "Graphite VL Pro"
+    Chipset    "AGX-015"
+    Clocks 25.2  28.3  32.5  36.0  40.0  45.0  50.4  65.0
+           70.0  75.0  80.0  85.0  0.00  0.00  0.00  0.00
+           0.00  0.00  0.00  0.00  0.00  90.0  100   130
+           0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+    Videoram   2048
+    RamDac     "herc_dual_dac"
+    Option     "dac_8_bit"
+    Option     "no_wait_state"
 EndSection
 
 #From: Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
@@ -414,6 +431,18 @@ Section        "Device"
     Option     "dac_8_bit"
 EndSection
 
+#From: adrian@dragons.demon.co.uk (Adrian Joseph)
+#Date: Tue, 27 Sep 1994 23:43:35 +0200 (BST)
+Section "Device"
+    Identifier "Orchid P9000 VLB"
+    VendorName "Orchid"
+    BoardName "P9000 VLB"
+    Chipset "orchid_p9000"
+    Clocks 25.175 25.20 28.32 45 50 65 75 80
+    Videoram 2048
+    Membase 0xE0000000
+EndSection
+
 #Date: Sun, 18 Sep 1994 16:00:53 +1000
 #From: Stephen Hocking <sysseh@devetir.qld.gov.au>
 Section "Device"
@@ -452,6 +481,21 @@ Section "Device"
     Option "no_wait_state"
     Option "fifo_moderate"
     Videoram 2048
+EndSection
+
+#From: haw30@eng.amdahl.com (Henry A Worth )
+#Date: Tue, 27 Sep 94 22:10:01 PDT
+Section "Device"
+    Identifier "Spider Black Widow Plus"
+    VendorName "Spider"
+    BoardName  "Black Widow Plus"
+    Chipset    "AGX-016"
+    Clocks 25.2  28.3  39.9  72.2  50.0  76.9  36.1  44.8
+           89.0  119.8 79.9  31.5 110.0  64.9  74.9  94.9
+    Videoram   2048
+    RamDac     "SC15025"
+    Option     "dac_8_bit"
+    Option     "no_wait_state"
 EndSection
 
 #From: Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
@@ -501,4 +545,4 @@ EndSection
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.0 1994/09/26 15:32:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.1 1994/09/27 14:19:09 dawes Exp $

@@ -943,6 +943,24 @@ Section "Monitor"
     EndMode
 EndSection
  
+#From: haw30@eng.amdahl.com (Henry A Worth )
+#Date: Tue, 27 Sep 94 22:10:01 PDT
+Section "Monitor"
+    Identifier "ViewSonic-7"
+    VendorName "ViewSonic"
+    ModelName "ViewSonic-7"
+    BandWidth 110
+    HorizSync 30.0-64.0
+    VertRefresh 50.0-90.0
+    ModeLine "1152x900" 85 1152 1218 1328 1456 900 902 912 943
+    ModeLine "1024x768" 80 1024 1032 1216 1344 768 768 773 805
+    ModeLine "1024x768" 75 1024 1048 1184 1328 768 771 777 802
+    ModeLine "1024x768" 65 1024 1032 1208 1288 768 768 773 798 
+    ModeLine "800x600"  45  800  808  920 1000 600 605 615 635
+    ModeLine "640x480"  30  640  664  728  800 480 484 490 507
+    ModeLine "640x480"  28  640  664  728  792 480 484 490 505
+EndSection
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.0 1994/09/26 15:33:02 dawes Exp $
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.1 1994/09/27 10:30:28 dawes Exp $

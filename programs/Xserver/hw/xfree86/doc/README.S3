@@ -45,6 +45,12 @@ might work for you, too.
                         RamDac    "s3gendac"
 
 
+        S3 805, Diamond SS2410 RAMDAC, ICD2061A Clockchip
+                Diamond Stealth 24 VLB
+ 
+                        8 bpp only
+
+
         S3 928, Sierra SC15025 RAMDAC, ICD2061A Clockchip
                 ELSA Winner 1000 ISA/EISA ("TwinBus", not Winner1000ISA!!)
                 ELSA Winner 1000 VL
@@ -94,8 +100,6 @@ might work for you, too.
                         
                         8 bpp only  
 
-                        Supports RGB with sync-on-green
-
                         Option "number_nine"
 
                         The "dac_8_bit" option is recommended.
@@ -120,6 +124,12 @@ might work for you, too.
                         8, 15/16 and 24(32) bpp
 
 
+        S3 864, STG1700 RAMDAC, ICD2061A Clockchip
+                Actix GraphicsENGINE 64 VLB/2MB
+
+                        8, 15/16 (and probably 24(32)) bpp
+
+
         S3 864, 20C498 RAMDAC, ICS2595 Clockchip
                 SPEA MirageP64 2MB DRAM
 
@@ -137,6 +147,12 @@ might work for you, too.
 
         S3 964, AT&T 20C505 RAMDAC, ICD2061A Clockchip
                 Miro Crystal 20SV PCI
+
+                        8, 16, 24(32) bpp
+
+
+        S3 964, AT&T Bt485 RAMDAC, ICD2061A Clockchip
+                Diamond Stealth 64
 
                         8, 16, 24(32) bpp
 
@@ -220,4 +236,4 @@ SC15025-8      ==>  DacSpeed  80
 ATT20C490-80   ==>  DacSpeed  80
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.2 1994/09/27 10:30:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.3 1994/09/27 14:19:12 dawes Exp $

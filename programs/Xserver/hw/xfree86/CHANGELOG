@@ -1,3 +1,11 @@
+XFree86 3.1 (29 September 1994)
+400. --- Code freeze ---
+399. Fix slow server death and VT switching problems with W32 server
+     (Glenn Lai).
+398. Fix problem with the W32 server not being installed set-uid (Hans Nasten).
+397. Fix problem with LinkKit Imakefile (Matthieu Herrb).
+396. Documentation updates.
+
 XFree86 3.0Z (27 September 1994)
 395. Fix mouse access problem when server resets while not in the active VT
      (Orest Zborowski).

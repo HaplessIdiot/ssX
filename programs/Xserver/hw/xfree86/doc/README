@@ -7,19 +7,21 @@ Contents
     2) What's new in XFree86 3.1?
     3) Systems XFree86 has been tested on
     4) Supported video-card chip-sets
-    5) Where to get more information
-    6) Credits
-    7) The XFree86 Project, Inc.
-    8) Contact information
-    9) Source and binary archive sites
+    5) Important Changes
+    6) Where to get more information
+    7) Credits
+    8) The XFree86 Project, Inc.
+    9) Contact information
+   10) Source and binary archive sites
 
 1 - What is XFree86?
 --------------------
-  XFree86 is a port of X11R6 that supports several versions of Intel-based
-Unix and Unix-like operating systems.  This release consists of many new
-features and performance improvements as well as many bug fixes.  The
-release is available as source patches against the X Consortium X11R6 code,
-as well as binary distributions for many architectures.
+  XFree86 is a added-value pack for X11R6 that supports several versions
+  of Intel-based Unix and Unix-like operating systems.  XFree86-3.0 was
+part of the X11R6 core distribution.  This release XFree86-3.1 consists of
+many new features and performance improvements as well as many bug fixes.
+The release is available as source patches against the X Consortium X11R6
+code, as well as binary distributions for many architectures.
 
 
 2 - What's new in XFree86 3.1?
@@ -29,7 +31,10 @@ May 1994:
 
     1) XFree86 is now based on X11R6, including shared library support for
        SVR4, Linux, FreeBSD and NetBSD.
-    2) New configuration file format.
+    2) New configuration file format.  One of the biggest changes that you
+       will notice with the new XFree86 version is that the old Xconfig
+       file has been replaced by an XF86Config file.For further details,
+       see the `Important Changes' section below.
     3) Support is included for the X Image Extension (XIE).
     4) A new accelerated server for boards based on the Weitek P9000
        chipset.
@@ -111,7 +116,7 @@ At this time, XFree86 3.1 supports the following accelerated chipsets:
 The Cirrus and Western Digital accelerators are supported in the SVGA
 server; the other chipsets each have their own server.  A list of some
 cards which the accelerated servers have been tested is included in the
-files AccelCards, Devices, and some of the chipset-specifid README files.
+files AccelCards, Devices, and some of the chipset-specific README files.
 They may well work on other cards, but we cannot guarantee it.
   
 In addition, the following SVGA chipsets are supported:
@@ -156,9 +161,49 @@ size is limited to approximately 800x600.
 
 NOTE: The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards are
       NOT supported, even though they use the ET4000.  The Stealth 32 which
-      uses the ET4000/W32p is also not supported.
+      uses the ET4000/W32p is also not supported.  Historically the
+      information required for this support was only available under
+      non-disclosure.  As of September 27, 1994, Diamond has verbally
+      agreed to provide The XFree86 Project, Inc. with detailed information
+      about Diamond products.  This should permit us to better support
+      these in future versions of XFree86.
 
-5 - Where to get more information
+
+5 - Important Changes
+---------------------
+  There are a number of important user-visible changes between
+XFree86 2.1.1 and XFree86 3.1.  The first is the default install location.
+The XFree86 distribution is now installed by default under /usr/X11R6
+instead of /usr/X386.  This moves away from the now out-dated "X386" name,
+and it also makes it possible for both versions to co-exist.
+
+The next major change is related to the server configuration file.  The old
+Xconfig file has been replaced in XFree86 3.1 by an XF86Config file.  This
+is more than just a name change.  The new XF86Config file uses a format
+that is quite different from the old Xconfig file.  The new format is more
+structured, logical, and extendable than the old format.  We realise that
+the transition to this new format won't be without problems.  To help in
+this transition we have provided a program (`reconfig') to convert the old
+Xconfig format into the new XF86Config format.  This doesn't provide a
+perfect conversion mostly because the new format contains more information
+than the old format.  Some manual editing will always be required.  One of
+the new types of information the XF86Config contains is a description of
+the monitor(s) you are using.  This addition allows the servers to check
+that the video modes are within the specifications of the monitor.
+
+For information about the new config file format and how to use it, refer
+to the XF86Config(4/5) and reconfig(1) manual pages, and the README.Config
+file which can be found in /usr/X11R6/lib/X11/doc.
+
+Another change related to the config file is the locations the servers look
+for it in.  In previous releases the servers would look in places which
+could be specified by the user.  This raised a number of security concerns.
+To address these, the server now only looks in places which are normally
+under the control of the system administrator.  For further details, refer
+to the XFree86(1) manual page.
+
+
+6 - Where to get more information
 ---------------------------------
   Additional documentation is available in the XFree86(1), XF86Config(4/5),
 XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1) and XF86_Accel(1) manual pages.
@@ -173,7 +218,7 @@ assistance.
 
 Documentation on SVGA driver development can be found in the directory
 /usr/X11R6/lib/Server/VGADriverDoc in the binary distribution, and in the
-directory xc/progrmas/Xserver/hw/xfree86/VGADriverDoc in the source
+directory xc/programs/Xserver/hw/xfree86/VGADriverDoc in the source
 distribution.
 
 If you are totally at a loss, you can contact the XFree86 Core Team at
@@ -185,7 +230,7 @@ be answered there. The answers to common questions are found in the
 corresponding FAQ.
 
 
-6 - Credits
+7 - Credits
 -----------
 XFree86 was originally put together by:
        David Dawes <dawes@XFree86.org>
@@ -231,6 +276,7 @@ Mach 386 support by:
        Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
 Linux support by:
        Orest Zborowski <orestz@eskimo.com>
+       Dirk Hohndel <hohndel@XFree86.org>
 SCO Unix support by:
        David McCullough <davidm@stallion.oz.au>
 Amoeba support by:
@@ -263,6 +309,7 @@ S3 accelerated code by:
        Leonard N. Zubkoff <lnz@dandelion.com>
        Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
        Bernhard Bender <br@elsa.mhs.compuserve.com>
+       Dirk Hohndel <hohndel@XFree86.org>
 Mach32 accelerated code by:
        Kevin Martin <martin@cs.unc.edu>
        Rik Faith <faith@cs.unc.edu>
@@ -324,7 +371,7 @@ Other contributors:
 
        and an entire horde of beta-testers around the world!
 
-7 - Contact information
+8 - Contact information
 -----------------------
 Ongoing development planning and support is coordinated by the XFree86
 Core Team.  At this time the Core Team consists of (in alphabetical order):
@@ -339,7 +386,7 @@ Core Team.  At this time the Core Team consists of (in alphabetical order):
 
 Mail sent to <Core@XFree86.org> will reach the core team.
 
-8 - The XFree86 Project, Inc.
+9 - The XFree86 Project, Inc.
 -----------------------------
 The XFree86 Project, Inc, has been founded to accomplish two major goals:
 
@@ -427,7 +474,7 @@ involvement in X11R6.
         S.u.S.E, GmbH, Fuerth, Germany
         Tekelec Airtronic GmbH, Muenchen, Germany
         Unifix Software GmbH, Braunschweig, Germany
-        Paul Vixie, CA
+        Vixie Enterprises, La Honda, CA
         Walnut Creek CDROM, Concord, CA
         Xtreme s.a.s., Livorno, Italy
 
@@ -436,7 +483,7 @@ and/or equipment.  Such contributions should be tax-deductible; we will
 know for certain when the lawyers get finished with the papers.  For more 
 information, contact The XFree86 Project, Inc, at <BOD@XFree86.org>
 
-9 - Source and binary archive sites
+10 - Source and binary archive sites
 -----------------------------------
   Source patches are available to upgrade X11R6 PL5 from the X Consortium
 to XFree86 3.1.  They and binaries for many OSs are available via anonymous
@@ -453,7 +500,7 @@ and the following mirror sites:
     tsx-11.mit.edu:/pub/linux/packages/X11   (Linux binaries only)
     ftp.eecs.umich.edu:/BSD/Xfree86          (source and binaries)
     sunsite.unc.edu:/pub/X11/XFree86         (source and binaries)
-    abode.ccd.bnl.gov:/pub/XFree86           (Solaris binaries)
+    abode.ccd.bnl.gov:/pub/XFree86           (Solaris, SVR4, SCO binaries)
 
     Europe:
     ftp.fee.vutbr.cz:/pub/XFree86            (source and binaries)
@@ -485,6 +532,6 @@ older releases as well.  Each binary distribution will contain a README
 file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
-27 September 1994
+28 September 1994
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.0 1994/09/24 15:13:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.2 1994/09/27 14:19:10 dawes Exp $

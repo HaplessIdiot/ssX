@@ -32,6 +32,9 @@ NOTE - Refer to the appropriate OS-specific README file before attempting
     - XFree86-3.1.diff.gz       (a patch for everything outside of
                                  xc/programs/Xserver/hw/xfree86/)
 
+    - XFree86-contrib-3.1.diff.gz   (an optional patch for some of the
+                                     X Consortium's "contrib" distribution)
+
     - The full XFree86 source tree requires about 110MB.  An additional
       110MB (more for OSs without shared libraries) is required to build
       everything.  About 45-55MB (for OSs with shared libraries) is required
@@ -57,6 +60,32 @@ NOTE - Refer to the appropriate OS-specific README file before attempting
       about 40-45MB of disk space.  The files/directories required to do
       this are listed in the ServersOnly file (which can be found in the
       same directory as this file).
+
+    - The XFree86-3.1-contrib.diff.gz patch provides patches to a small
+      part of the X Consortium's contrib distribution.  It mostly covers
+      those clients which were in the core distribution of X11R5, but were
+      moved to the contrib distribution for X11R6.  To use this patch, you
+      need to have the following files/directories from the final X
+      Consortium contrib release (not the initial contrib-0 version):
+
+          contrib/Imakefile
+          contrib/programs/Imakefile
+          contrib/programs/ico/
+          contrib/programs/listres/
+          contrib/programs/showfont/
+          contrib/programs/viewres/
+          contrib/programs/xbiff/
+          contrib/programs/xcalc/
+          contrib/programs/xditview/
+          contrib/programs/xedit/
+          contrib/programs/xev/
+          contrib/programs/xeyes/
+          contrib/programs/xfontsel/
+          contrib/programs/xgc/
+          contrib/programs/xload/
+          contrib/programs/xman/
+          contrib/programs/xmessage/
+
         
 2. Starting from the stock X Consortium PL5 distribution, go to the
    directory above your 'xc' directory, and run:
@@ -74,6 +103,11 @@ NOTE - Refer to the appropriate OS-specific README file before attempting
 
    If you are patching a tree that you've previously used, make sure you run
    'make clean' from the 'xc' directory before applying the diffs.
+
+   If you are using the patch for the contrib code, go to the directory
+   above your 'contrib' directory, and run:
+
+      gzip -d < XFree86-3.1-contrib-diff.gz | patch -p -E
 
 3. Read through config/cf/xf86site.def.  Set the various parameters to suit
    your configuration.  If it is your first build, you should set
@@ -136,6 +170,12 @@ NOTE - Refer to the appropriate OS-specific README file before attempting
    To install the binary Link Kit (in /usr/X11R6/lib/Server), run:
 
      make install.linkkit
+
+6. To build the subset of the contrib release supported by XFree86, make
+   sure that you have first built and installed the core distribution.
+   Then go to the 'contrib' directory and run 'xmkmf -a; make'.  When that
+   is completed you can do a 'make install' and a 'make install.man'.
+
 
 2 - Using and configuring XFree86
 ---------------------------------
@@ -246,4 +286,4 @@ following:
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.1 1994/09/25 12:29:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.2 1994/09/26 15:32:59 dawes Exp $

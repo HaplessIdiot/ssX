@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.11 1994/09/13 15:07:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.12 1994/09/25 12:26:22 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -132,7 +132,7 @@ XF86SVGAOBJS = XF86_SVGA.o vga256Conf.o
 XF86SVGALIBS = $(VGADRIVERSRC)/libdriver256.a $(DRIVERSRC)/libvga256.a \
                $(XF86LIBS) CFBLibs
 XF86SVGASYSLIBS = $(SYSLIBS)
-VGADRIVERS = XF86Vga256Drivers
+VGADRIVERS = XF86SvgaDrivers
 ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),confvga256.sh,$(VGADRIVERS))
 XF86_SVGA.o: XF86_SVGA.c $(ICONFIGFILES)
 SetUIDServerTarget(XF86_SVGA,$(XF86SVGASUBDIRS),$(XF86SVGAOBJS),$(XF86SVGALIBS),$(XF86SVGASYSLIBS))
