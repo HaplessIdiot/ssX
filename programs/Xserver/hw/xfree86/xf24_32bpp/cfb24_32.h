@@ -20,6 +20,7 @@ extern int cfb24_32PixmapIndex;
 typedef struct {
    PixmapPtr		pix;
    Bool			freePrivate;
+   Bool			isRefPix;
 } cfb24_32PixmapRec, *cfb24_32PixmapPtr;
 
 RegionPtr
