@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.220 94/08/30 17:25:36 matt Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.4 1994/09/24 15:09:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.5 1994/11/22 02:33:02 dawes Exp $
 XCOMM
 
 /*
@@ -1003,9 +1003,6 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
      LDSTRIPFLAGS = LdStripFlags
    LDCOMBINEFLAGS = LdCombineFlags
       DEPENDFLAGS = DependFlags
-#ifdef PostIncDir
-  DEPEND_INCLUDES = Concat(-I,PostIncDir)
-#endif
 
         MACROFILE = MacroFile
            RM_CMD = $(RM)
