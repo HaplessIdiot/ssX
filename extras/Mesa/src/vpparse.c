@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.0.1
@@ -339,7 +339,7 @@ IsProgRegister(GLuint r)
 static GLuint
 IsInputRegister(GLuint r)
 {
-   return (GLuint) (r >= VP_INPUT_REG_START && r <= VP_INPUT_REG_END);
+   return (GLuint) (/* r >= VP_INPUT_REG_START && */ r <= VP_INPUT_REG_END);
 }
 
 static GLuint

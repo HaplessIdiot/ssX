@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/xm_dd.c,v 1.7 2003/01/16 19:13:08 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_dd.c,v 1.8tsi Exp $ */
 
 #include "glxheader.h"
 #include "context.h"
@@ -151,7 +151,7 @@ set_buffer( GLcontext *ctx, GLframebuffer *buffer, GLuint bufferBit )
       ASSERT(target->db_state);
       if (target->backpixmap) {
          /* back buffer is a pixmape */
-         target->buffer = target->backpixmap; /* incompatible types? */
+         target->buffer = (XMesaDrawable)target->backpixmap;
       }
       else if (target->backimage) {
          /* back buffer is an XImage */
@@ -426,6 +426,7 @@ clear_24bit_ximage( GLcontext *ctx, GLboolean all,
    const GLubyte r = xmesa->clearcolor[0];
    const GLubyte g = xmesa->clearcolor[1];
    const GLubyte b = xmesa->clearcolor[2];
+#if 0	/* See below */
    register GLuint clearPixel;
    if (xmesa->swapbytes) {
       clearPixel = (b << 16) | (g << 8) | r;
@@ -433,6 +434,7 @@ clear_24bit_ximage( GLcontext *ctx, GLboolean all,
    else {
       clearPixel = (r << 16) | (g << 8) | b;
    }
+#endif
 
    if (all) {
       if (r==g && g==b) {

@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.0.1
@@ -626,6 +626,7 @@ _mesa_transfer_teximage(GLcontext *ctx, GLuint dimensions,
                                          srcFormat, srcType,
                                          srcPacking, srcAddr,
                                          dstAddr);
+         (void)b;
          assert(b);
       }
       else if (dimensions == 2) {
@@ -637,6 +638,7 @@ _mesa_transfer_teximage(GLcontext *ctx, GLuint dimensions,
                                          srcFormat, srcType,
                                          srcPacking, srcAddr,
                                          dstAddr);
+         (void)b;
          assert(b);
       }
       else {
@@ -647,6 +649,7 @@ _mesa_transfer_teximage(GLcontext *ctx, GLuint dimensions,
                                       dstRowStridePixels, dstImageStridePixels,
                                       srcFormat, srcType,
                                       srcPacking, srcAddr, dstAddr);
+         (void)b;
          assert(b);
       }
    }
@@ -1275,14 +1278,12 @@ _mesa_test_proxy_teximage(GLcontext *ctx, GLenum target, GLint level,
                           GLint width, GLint height, GLint depth, GLint border)
 {
    struct gl_texture_unit *texUnit;
-   struct gl_texture_object *texObj;
    struct gl_texture_image *texImage;
 
    (void) format;
    (void) type;
 
    texUnit = &ctx->Texture.Unit[ctx->Texture.CurrentUnit];
-   texObj = _mesa_select_tex_object(ctx, texUnit, target);
    texImage = _mesa_select_tex_image(ctx, texUnit, target, level);
 
    /* We always pass.
@@ -1635,9 +1636,7 @@ make_2d_mipmap(const struct gl_texture_format *format, GLint border,
    const GLint dstRowStride = bpt * dstWidth;
    const GLubyte *srcA, *srcB;
    GLubyte *dst;
-   GLint row, colStride;
-
-   colStride = (srcWidth == dstWidth) ? 1 : 2;
+   GLint row;
 
    /* Compute src and dst pointers, skipping any border */
    srcA = srcPtr + border * ((srcWidth + 1) * bpt);

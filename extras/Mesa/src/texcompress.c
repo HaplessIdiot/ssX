@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.0.1
@@ -90,15 +90,17 @@ _mesa_compressed_texture_size( GLcontext *ctx,
 GLint
 _mesa_compressed_row_stride(GLenum format, GLsizei width)
 {
+#if 0
    GLint bytesPerTile, stride;
-
-   switch (format) {
-   default:
-      return 0;
-   }
 
    stride = ((width + 3) / 4) * bytesPerTile;
    return stride;
+#else
+   (void) format;
+   (void) width;
+
+   return 0;
+#endif
 }
 
 
@@ -116,6 +118,7 @@ _mesa_compressed_image_address(GLint col, GLint row, GLint img,
                                GLenum format,
                                GLsizei width, const GLubyte *image)
 {
+#if 0
    GLint bytesPerTile, stride;
    GLubyte *addr;
 
@@ -123,15 +126,19 @@ _mesa_compressed_image_address(GLint col, GLint row, GLint img,
    ASSERT((col & 3) == 0);
    (void) img;
 
-   switch (format) {
-   default:
-      return 0;
-   }
-
    stride = ((width + 3) / 4) * bytesPerTile;
 
    addr = (GLubyte *) image + (row / 4) * stride + (col / 4) * bytesPerTile;
    return addr;
+#else
+   (void) col;
+   (void) row;
+   (void) img;
+   (void) format;
+   (void) image;
+
+   return (GLubyte *)0;
+#endif
 }
 
 

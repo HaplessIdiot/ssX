@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.0.2
@@ -40,7 +41,7 @@ struct extension {
    void (*notify)( GLcontext *, GLboolean );
 };
 
-#define F(x) (int)&(((struct gl_extensions *)0)->x)
+#define F(x) (int)(unsigned long)&(((struct gl_extensions *)0)->x)
 #define ON GL_TRUE
 #define OFF GL_FALSE
 

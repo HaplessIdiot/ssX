@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  5.0.2
@@ -1167,10 +1168,8 @@ subtexture_error_check( GLcontext *ctx, GLuint dimensions,
 
    if (destTex->IsCompressed) {
       const struct gl_texture_unit *texUnit;
-      const struct gl_texture_object *texObj;
       const struct gl_texture_image *texImage;
       texUnit = &ctx->Texture.Unit[ctx->Texture.CurrentUnit];
-      texObj = _mesa_select_tex_object(ctx, texUnit, target);
       texImage = _mesa_select_tex_image(ctx, texUnit, target, level);
 
       if (target == GL_TEXTURE_2D || target == GL_PROXY_TEXTURE_2D) {
@@ -2209,7 +2208,6 @@ _mesa_CopyTexSubImage1D( GLenum target, GLint level,
                          GLint xoffset, GLint x, GLint y, GLsizei width )
 {
    struct gl_texture_unit *texUnit;
-   struct gl_texture_object *texObj;
    struct gl_texture_image *texImage;
    GLsizei postConvWidth = width;
    GET_CURRENT_CONTEXT(ctx);
@@ -2226,7 +2224,6 @@ _mesa_CopyTexSubImage1D( GLenum target, GLint level,
       return;
 
    texUnit = &ctx->Texture.Unit[ctx->Texture.CurrentUnit];
-   texObj = _mesa_select_tex_object(ctx, texUnit, target);
    texImage = _mesa_select_tex_image(ctx, texUnit, target, level);
 
    /* If we have a border, xoffset=-1 is legal.  Bias by border width */
@@ -2245,7 +2242,6 @@ _mesa_CopyTexSubImage2D( GLenum target, GLint level,
                          GLint x, GLint y, GLsizei width, GLsizei height )
 {
    struct gl_texture_unit *texUnit;
-   struct gl_texture_object *texObj;
    struct gl_texture_image *texImage;
    GLsizei postConvWidth = width, postConvHeight = height;
    GET_CURRENT_CONTEXT(ctx);
@@ -2262,7 +2258,6 @@ _mesa_CopyTexSubImage2D( GLenum target, GLint level,
       return;
 
    texUnit = &ctx->Texture.Unit[ctx->Texture.CurrentUnit];
-   texObj = _mesa_select_tex_object(ctx, texUnit, target);
    texImage = _mesa_select_tex_image(ctx, texUnit, target, level);
 
    /* If we have a border, xoffset=-1 is legal.  Bias by border width */
@@ -2283,7 +2278,6 @@ _mesa_CopyTexSubImage3D( GLenum target, GLint level,
                          GLint x, GLint y, GLsizei width, GLsizei height )
 {
    struct gl_texture_unit *texUnit;
-   struct gl_texture_object *texObj;
    struct gl_texture_image *texImage;
    GLsizei postConvWidth = width, postConvHeight = height;
    GET_CURRENT_CONTEXT(ctx);
@@ -2300,7 +2294,6 @@ _mesa_CopyTexSubImage3D( GLenum target, GLint level,
       return;
 
    texUnit = &ctx->Texture.Unit[ctx->Texture.CurrentUnit];
-   texObj = _mesa_select_tex_object(ctx, texUnit, target);
    texImage = _mesa_select_tex_image(ctx, texUnit, target, level);
 
    /* If we have a border, xoffset=-1 is legal.  Bias by border width */
@@ -2334,7 +2327,6 @@ compressed_texture_error_check(GLcontext *ctx, GLint dimensions,
                                GLsizei height, GLsizei depth, GLint border,
                                GLsizei imageSize)
 {
-   GLboolean isProxy = GL_FALSE;
    GLint expectedSize, maxLevels = 0, maxTextureSize;
 
    if (dimensions == 1) {
@@ -2344,7 +2336,6 @@ compressed_texture_error_check(GLcontext *ctx, GLint dimensions,
    else if (dimensions == 2) {
       if (target == GL_PROXY_TEXTURE_2D) {
          maxLevels = ctx->Const.MaxTextureLevels;
-         isProxy = GL_TRUE;
       }
       else if (target == GL_TEXTURE_2D) {
          maxLevels = ctx->Const.MaxTextureLevels;
@@ -2353,7 +2344,6 @@ compressed_texture_error_check(GLcontext *ctx, GLint dimensions,
          if (!ctx->Extensions.ARB_texture_cube_map)
             return GL_INVALID_ENUM; /*target*/
          maxLevels = ctx->Const.MaxCubeTextureLevels;
-         isProxy = GL_TRUE;
       }
       else if (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB &&
                target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB) {
@@ -2417,7 +2407,6 @@ compressed_subtexture_error_check(GLcontext *ctx, GLint dimensions,
                                   GLsizei width, GLsizei height, GLsizei depth,
                                   GLenum format, GLsizei imageSize)
 {
-   GLboolean isProxy = GL_FALSE;
    GLint expectedSize, maxLevels = 0, maxTextureSize;
 
    if (dimensions == 1) {
@@ -2427,7 +2416,6 @@ compressed_subtexture_error_check(GLcontext *ctx, GLint dimensions,
    else if (dimensions == 2) {
       if (target == GL_PROXY_TEXTURE_2D) {
          maxLevels = ctx->Const.MaxTextureLevels;
-         isProxy = GL_TRUE;
       }
       else if (target == GL_TEXTURE_2D) {
          maxLevels = ctx->Const.MaxTextureLevels;
@@ -2436,7 +2424,6 @@ compressed_subtexture_error_check(GLcontext *ctx, GLint dimensions,
          if (!ctx->Extensions.ARB_texture_cube_map)
             return GL_INVALID_ENUM; /*target*/
          maxLevels = ctx->Const.MaxCubeTextureLevels;
-         isProxy = GL_TRUE;
       }
       else if (target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB &&
                target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB) {
