@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.7 2001/06/08 19:36:35 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.8 2001/07/16 05:04:05 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1107,6 +1107,15 @@ fbFetch_a2b2g2r2 (FbCompositeOperand *op)
     return a|r|g|b;
 }
 
+CARD32
+fbFetch_c8 (FbCompositeOperand *op)
+{
+    FbBits  *line = op->line; CARD32 offset = op->offset;
+    CARD32   pixel = ((CARD8 *) line)[offset>>3];
+
+    return op->indexed->rgba[pixel];
+}
+
 #define Fetch8(l,o)    (((CARD8 *) (l))[(o) >> 3])
 #if IMAGE_BYTE_ORDER == MSBFirst
 #define Fetch4(l,o)    ((o) & 2 ? Fetch8(l,o) & 0xf : Fetch8(l,o) >> 4)
@@ -1191,6 +1200,15 @@ fbFetch_a1b1g1r1 (FbCompositeOperand *op)
 }
 
 CARD32
+fbFetch_c4 (FbCompositeOperand *op)
+{
+    FbBits  *line = op->line; CARD32 offset = op->offset;
+    CARD32  pixel = Fetch4(line, offset);
+
+    return op->indexed->rgba[pixel];
+}
+
+CARD32
 fbFetcha_a1 (FbCompositeOperand *op)
 {
     FbBits  *line = op->line; CARD32 offset = op->offset;
@@ -1226,6 +1244,21 @@ fbFetch_a1 (FbCompositeOperand *op)
     a |= a << 2;
     a |= a << 4;
     return a << 24;
+}
+
+CARD32
+fbFetch_g1 (FbCompositeOperand *op)
+{
+    FbBits  *line = op->line; CARD32 offset = op->offset;
+    CARD32  pixel = ((CARD32 *)line)[offset >> 5];
+    CARD32  a;
+#if BITMAP_BIT_ORDER == MSBFirst
+    a = pixel >> (0x1f - offset & 0x1f);
+#else
+    a = pixel >> (offset & 0x1f);
+#endif
+    a = a & 1;
+    return op->indexed->rgba[a];
 }
 
 /*
@@ -1409,6 +1442,22 @@ fbStore_a2r2g2b2 (FbCompositeOperand *op, CARD32 value)
 	      ((b >> 6)       ));
 }
 
+void
+fbStore_c8 (FbCompositeOperand *op, CARD32 value)
+{
+    FbBits  *line = op->line; CARD32 offset = op->offset;
+    CARD8   *pixel = ((CARD8 *) line) + (offset >> 3);
+    *pixel = miIndexToEnt24(op->indexed,value);
+}
+
+void
+fbStore_g8 (FbCompositeOperand *op, CARD32 value)
+{
+    FbBits  *line = op->line; CARD32 offset = op->offset;
+    CARD8   *pixel = ((CARD8 *) line) + (offset >> 3);
+    *pixel = miIndexToEntY24(op->indexed,value);
+}
+
 #define Store8(l,o,v)  (((CARD8 *) l)[(o) >> 3] = (v))
 #if IMAGE_BYTE_ORDER == MSBFirst
 #define Store4(l,o,v)  Store8(l,o,((o) & 2 ? \
@@ -1480,6 +1529,26 @@ fbStore_a1b1g1r1 (FbCompositeOperand *op, CARD32 value)
 }
 
 void
+fbStore_c4 (FbCompositeOperand *op, CARD32 value)
+{
+    FbBits  *line = op->line; CARD32 offset = op->offset;
+    CARD32  pixel;
+    
+    pixel = miIndexToEnt24(op->indexed,value);
+    Store4(line,offset,pixel);
+}
+
+void
+fbStore_g4 (FbCompositeOperand *op, CARD32 value)
+{
+    FbBits  *line = op->line; CARD32 offset = op->offset;
+    CARD32  pixel;
+    
+    pixel = miIndexToEntY24(op->indexed,value);
+    Store4(line,offset,pixel);
+}
+
+void
 fbStore_a1 (FbCompositeOperand *op, CARD32 value)
 {
     FbBits  *line = op->line; CARD32 offset = op->offset;
@@ -1487,6 +1556,17 @@ fbStore_a1 (FbCompositeOperand *op, CARD32 value)
     CARD32  mask = FbStipMask(offset & 0x1f, 1);
 
     value = value & 0x80000000 ? mask : 0;
+    *pixel = (*pixel & ~mask) | value;
+}
+
+void
+fbStore_g1 (FbCompositeOperand *op, CARD32 value)
+{
+    FbBits  *line = op->line; CARD32 offset = op->offset;
+    CARD32  *pixel = ((CARD32 *) line) + (offset >> 5);
+    CARD32  mask = FbStipMask(offset & 0x1f, 1);
+
+    value = miIndexToEntY24(op->indexed,value) ? mask : 0;
     *pixel = (*pixel & ~mask) | value;
 }
 
@@ -1538,6 +1618,8 @@ FbAccessMap fbAccessMap[] = {
     PICT_r3g3b2,	fbFetch_r3g3b2,		fbFetch_r3g3b2,		fbStore_r3g3b2,
     PICT_b2g3r3,	fbFetch_b2g3r3,		fbFetch_b2g3r3,		fbStore_b2g3r3,
     PICT_a2r2g2b2,	fbFetch_a2r2g2b2,	fbFetch_a2r2g2b2,	fbStore_a2r2g2b2,
+    PICT_c8,		fbFetch_c8,		fbFetch_c8,		fbStore_c8,
+    PICT_g8,		fbFetch_c8,		fbFetch_c8,		fbStore_g8,
 
     /* 4bpp formats */
     PICT_a4,		fbFetch_a4,		fbFetcha_a4,		fbStore_a4,
@@ -1545,9 +1627,12 @@ FbAccessMap fbAccessMap[] = {
     PICT_b1g2r1,	fbFetch_b1g2r1,		fbFetch_b1g2r1,		fbStore_b1g2r1,
     PICT_a1r1g1b1,	fbFetch_a1r1g1b1,	fbFetch_a1r1g1b1,	fbStore_a1r1g1b1,
     PICT_a1b1g1r1,	fbFetch_a1b1g1r1,	fbFetch_a1b1g1r1,	fbStore_a1b1g1r1,
+    PICT_c4,		fbFetch_c4,		fbFetch_c4,		fbStore_c4,
+    PICT_g4,		fbFetch_c4,		fbFetch_c4,		fbStore_g4,
 
     /* 1bpp formats */
     PICT_a1,		fbFetch_a1,		fbFetcha_a1,		fbStore_a1,
+    PICT_g1,		fbFetch_g1,		fbFetch_g1,		fbStore_g1,
 };
 #define NumAccessMap (sizeof fbAccessMap / sizeof fbAccessMap[0])
 
@@ -1565,6 +1650,7 @@ fbBuildOneCompositeOperand (PicturePtr		pPict,
 	    op->fetch = fbAccessMap[i].fetch;
 	    op->fetcha = fbAccessMap[i].fetcha;
 	    op->store = fbAccessMap[i].store;
+	    op->indexed = (miIndexedPtr) pPict->pFormat->indexed;
 	    fbGetDrawable (pPict->pDrawable, op->line, op->stride, op->bpp,
 			   op->xoff, op->yoff);
 	    if (pPict->repeat && pPict->pDrawable->width == 1 && 
