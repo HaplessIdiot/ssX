@@ -20,7 +20,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/os/secauth.c,v 1.6 2000/05/25 15:23:54 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/os/secauth.c,v 1.7 2000/06/13 23:15:52 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -42,7 +42,7 @@ AuthCheckSitePolicy(
     ClientPtr	client,
     char	**reason)
 {
-    unsigned char *policy = *(unsigned char**)dataP;
+    CARD8	*policy = *(CARD8 **)dataP;
     int		length;
     Bool	permit;
     int		nPolicies;
@@ -82,7 +82,7 @@ AuthCheckSitePolicy(
 	    {
 		char *testPolicy = sitePolicies[sitePolicy];
 		if ((strLen == strlen(testPolicy)) &&
-		    (strncmp(policy, testPolicy, strLen) == 0))
+		    (strncmp((char *)policy, testPolicy, strLen) == 0))
 		{
 		    found = TRUE; /* need to continue parsing the policy... */
 		    break;
@@ -102,7 +102,7 @@ AuthCheckSitePolicy(
     }
 
     *data_lengthP = length;
-    *dataP = policy;
+    *dataP = (char *)policy;
     return TRUE;
 }
 
