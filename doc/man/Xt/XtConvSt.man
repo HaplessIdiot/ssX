@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtConvSt.man,v 1.2 2001/01/27 18:20:25 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -130,7 +130,7 @@
 .SH NAME
 XtConvertAndStore, XtCallConverter \- invoke resource converters
 .SH SYNTAX
-Boolean XtConvertAndStore(\fIwidget\fP, \fIfrom_type\fP, \fIfrom\fP, \
+Boolean XtConvertAndStore(\fIwidget\fP, \fIfrom_type\fP, \fIfrom\fP,
 \fIto_type\fP, \fIto_in_out\fP)
 .br
     Widget \fIwidget\fP;
@@ -143,7 +143,7 @@ Boolean XtConvertAndStore(\fIwidget\fP, \fIfrom_type\fP, \fIfrom\fP, \
 .br
     XrmValuePtr \fIto_in_out\fP;
 .LP
-void XtCallConverter(\fIdpy\fP, \fIconverter\fP, \fIargs\fP, \
+void XtCallConverter(\fIdpy\fP, \fIconverter\fP, \fIargs\fP,
 \fInum_args\fP, \fIfrom\fP, \fIto_in_out\fP, \fIcache_ref_return\fP)
 .br
     Display* \fIdpy\fP;

@@ -26,7 +26,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtCreWin.man,v 1.2 2001/01/27 18:20:25 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -131,7 +131,7 @@
 .SH NAME
 XtCreateWindow \- window creation convenience function
 .SH SYNTAX
-void XtCreateWindow(\fIw\fP, \fIwindow_class\fP, \fIvisual\fP, \
+void XtCreateWindow(\fIw\fP, \fIwindow_class\fP, \fIvisual\fP,
 \fIvalue_mask\fP, \fIattributes\fP)
 .br
       Widget \fIw\fP;

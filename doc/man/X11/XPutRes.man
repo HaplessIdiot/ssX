@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XPutRes.man,v 1.2 2001/01/27 18:20:02 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -154,7 +154,7 @@ void XrmPutResource\^(\^\fIdatabase\fP, \fIspecifier\fP, \fItype\fP, \fIvalue\fP
 .br
      XrmValue *\fIvalue\fP\^;
 .LP
-void XrmQPutResource\^(\^\fIdatabase\fP, \fIbindings\fP, \fIquarks\fP, \
+void XrmQPutResource\^(\^\fIdatabase\fP, \fIbindings\fP, \fIquarks\fP,
 \fItype\fP, \fIvalue\fP\^)
 .br
      XrmDatabase *\fIdatabase\fP\^;
@@ -175,7 +175,7 @@ void XrmPutStringResource\^(\^\fIdatabase\fP, \fIspecifier\fP, \fIvalue\fP\^)
 .br
      char *\fIvalue\fP\^;
 .LP
-void XrmQPutStringResource\^(\^\fIdatabase\fP, \fIbindings\fP, \fIquarks\fP, \
+void XrmQPutStringResource\^(\^\fIdatabase\fP, \fIbindings\fP, \fIquarks\fP,
 \fIvalue\fP\^)
 .br
      XrmDatabase *\fIdatabase\fP\^;

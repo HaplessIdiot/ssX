@@ -26,7 +26,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtGetRList.man,v 1.2 2001/01/27 18:20:27 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -139,7 +139,7 @@ void XtGetResourceList(\fIclass\fP, \fIresources_return\fP, \fInum_resources_ret
 .br
       Cardinal *\fInum_resources_return\fP;
 .LP
-void XtGetConstraintResourceList(\fIclass\fP, \fIresources_return\fP, \
+void XtGetConstraintResourceList(\fIclass\fP, \fIresources_return\fP,
 \fInum_resources_return\fP);
 .br
       WidgetClass \fIclass\fP;

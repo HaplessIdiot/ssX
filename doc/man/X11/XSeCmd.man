@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XSeCmd.man,v 1.2 2001/01/27 18:20:04 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -154,7 +154,7 @@ XSetCommand\^(\^\fIdisplay\fP, \fIw\fP, \fIargv\fP, \fIargc\fP\^)
 .br
       int \fIargc\fP\^;
 .LP
-Status XGetCommand\^(\^\fIdisplay\fP, \fIw\fP, \fIargv_return\fP, \
+Status XGetCommand\^(\^\fIdisplay\fP, \fIw\fP, \fIargv_return\fP,
 \fIargc_return\fP\^)
 .br
       Display *\fIdisplay\fP\^;

@@ -26,7 +26,7 @@
 .\" other dealing in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtGetSVal.man,v 1.2 2001/01/27 18:20:27 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -131,7 +131,7 @@
 .SH NAME
 XtGetSelectionValue, XtGetSelectionValues \- obtain selection values
 .SH SYNTAX
-void XtGetSelectionValue(\fIw\fP, \fIselection\fP, \fItarget\fP, \
+void XtGetSelectionValue(\fIw\fP, \fIselection\fP, \fItarget\fP,
 \fIcallback\fP, \fIclient_data\fP, \fItime\fP)
 .br
       Widget \fIw\fP;
@@ -146,7 +146,7 @@ void XtGetSelectionValue(\fIw\fP, \fIselection\fP, \fItarget\fP, \
 .br
       Time \fItime\fP;
 .LP
-void XtGetSelectionValues(\fIw\fP, \fIselection\fP, \fItargets\fP, \
+void XtGetSelectionValues(\fIw\fP, \fIselection\fP, \fItargets\fP,
 \fIcount\fP, \fIcallback\fP, \fIclient_data\fP, \fItime\fP)
 .br
       Widget \fIw\fP;

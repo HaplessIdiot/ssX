@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XInitial.man,v 1.2 2001/01/27 18:20:00 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -146,7 +146,7 @@ XrmInitialize, XrmParseCommand, XrmValue, XrmOptionKind, XrmOptionDescRec \- ini
 .SH SYNTAX
 void XrmInitialize\^(\|);
 .LP
-void XrmParseCommand\^(\^\fIdatabase\fP\^, \^\fItable\fP\^, \^\fItable_count\fP\^, \
+void XrmParseCommand\^(\^\fIdatabase\fP\^, \^\fItable\fP\^, \^\fItable_count\fP\^,
 \^\fIname\fP\^, \^\fIargc_in_out\fP\^, \^\fIargv_in_out\fP\^)
 .br
       XrmDatabase *\fIdatabase\fP\^;

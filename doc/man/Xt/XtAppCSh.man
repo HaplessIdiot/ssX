@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtAppCSh.man,v 1.2 2001/01/27 18:20:23 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -130,8 +130,8 @@
 .SH NAME
 XtAppCreateShell, XtVaAppCreateShell \- create top-level widget instance
 .SH SYNTAX
-Widget XtAppCreateShell(\fIapplication_name\fP, \
-\fIapplication_class\fP, \fIwidget_class\fP, \fIdisplay\fP, \
+Widget XtAppCreateShell(\fIapplication_name\fP,
+\fIapplication_class\fP, \fIwidget_class\fP, \fIdisplay\fP,
 \fIargs\fP, \fInum_args\fP)
 .br
       String \fIapplication_name\fP;
@@ -146,7 +146,7 @@ Widget XtAppCreateShell(\fIapplication_name\fP, \
 .br
       Cardinal \fInum_args\fP;
 .LP
-Widget XtVaAppCreateShell(\fIapplication_name\fP, \
+Widget XtVaAppCreateShell(\fIapplication_name\fP,
 \fIapplication_class\fP, \fIwidget_class\fP, \fIdisplay\fP, ...)
 .br
       String \fIapplication_name\fP;

@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XTextExt.man,v 1.2 2001/01/27 18:20:06 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -144,7 +144,7 @@
 .SH NAME
 XTextExtents, XTextExtents16, XQueryTextExtents, XQueryTextExtents16 \- compute or query text extents
 .SH SYNTAX
-XTextExtents\^(\^\fIfont_struct\fP\^, \fIstring\fP\^, \fInchars\fP\^, \
+XTextExtents\^(\^\fIfont_struct\fP\^, \fIstring\fP\^, \fInchars\fP\^,
 \fIdirection_return\fP, \fIfont_ascent_return\fP,
 .br
               \fIfont_descent_return\fP, \fIoverall_return\fP\^)
@@ -162,7 +162,7 @@ XTextExtents\^(\^\fIfont_struct\fP\^, \fIstring\fP\^, \fInchars\fP\^, \
       XCharStruct *\fIoverall_return\fP\^;
 
 .LP
-XTextExtents16\^(\^\fIfont_struct\fP\^, \fIstring\fP\^, \fInchars\fP\^, \
+XTextExtents16\^(\^\fIfont_struct\fP\^, \fIstring\fP\^, \fInchars\fP\^,
 \fIdirection_return\fP, \fIfont_ascent_return\fP, 
 .br
                 \fIfont_descent_return\fP, \fIoverall_return\fP\^)
@@ -180,7 +180,7 @@ XTextExtents16\^(\^\fIfont_struct\fP\^, \fIstring\fP\^, \fInchars\fP\^, \
       XCharStruct *\fIoverall_return\fP\^;
 
 .LP
-XQueryTextExtents\^(\^\fIdisplay\fP, \fIfont_ID\fP, \fIstring\fP, \
+XQueryTextExtents\^(\^\fIdisplay\fP, \fIfont_ID\fP, \fIstring\fP,
 \fInchars\fP, \fIdirection_return\fP, \fIfont_ascent_return\fP, 
 .br
                     \fIfont_descent_return\fP, \fIoverall_return\fP\^)
@@ -199,7 +199,7 @@ XQueryTextExtents\^(\^\fIdisplay\fP, \fIfont_ID\fP, \fIstring\fP, \
 .br
       XCharStruct *\fIoverall_return\fP\^;
 .LP
-XQueryTextExtents16\^(\^\fIdisplay\fP, \fIfont_ID\fP, \fIstring\fP, \
+XQueryTextExtents16\^(\^\fIdisplay\fP, \fIfont_ID\fP, \fIstring\fP,
 \fInchars\fP, \fIdirection_return\fP, \fIfont_ascent_return\fP, 
 .br
                         \fIfont_descent_return\fP, \fIoverall_return\fP\^)

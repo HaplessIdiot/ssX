@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XCKMping.man,v 1.2 2001/01/27 18:19:56 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -168,7 +168,7 @@ KeySym *XGetKeyboardMapping(\^\fIdisplay\fP, \fIfirst_keycode\fP, \fIkeycode_cou
 .br
       int *\fIkeysyms_per_keycode_return\fP\^;
 .LP
-XDisplayKeycodes\^(\^\fIdisplay\fP\^, \fImin_keycodes_return\fP\^, \
+XDisplayKeycodes\^(\^\fIdisplay\fP\^, \fImin_keycodes_return\fP\^,
 \fImax_keycodes_return\fP\^)
 .br
         Display *\^\fIdisplay\fP\^;
@@ -190,7 +190,7 @@ XModifierKeymap *XNewModifiermap(\^\fImax_keys_per_mod\fP\^)
 .br
         int \fImax_keys_per_mod\fP\^;
 .LP
-XModifierKeymap *XInsertModifiermapEntry\^(\^\fImodmap\fP, \
+XModifierKeymap *XInsertModifiermapEntry\^(\^\fImodmap\fP,
 \fIkeycode_entry\fP, \fImodifier\fP\^)
 .br
      XModifierKeymap *\fImodmap\fP\^;
@@ -199,7 +199,7 @@ XModifierKeymap *XInsertModifiermapEntry\^(\^\fImodmap\fP, \
 .br
      int \fImodifier\fP\^;
 .LP
-XModifierKeymap *XDeleteModifiermapEntry\^(\^\fImodmap\fP, \
+XModifierKeymap *XDeleteModifiermapEntry\^(\^\fImodmap\fP,
 \fIkeycode_entry\fP, \fImodifier\fP\^)
 .br
      XModifierKeymap *\fImodmap\fP\^;

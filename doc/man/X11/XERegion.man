@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XERegion.man,v 1.2 2001/01/27 18:19:58 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -179,7 +179,7 @@ Specify the two regions.
 .ns
 .IP \fIheight\fP 1i
 Specify the width and height\*(Wh.
-.ds Xy , which define the point \
+.ds Xy , which define the point
 or the coordinates of the upper-left corner of the rectangle
 .IP \fIx\fP 1i
 .br

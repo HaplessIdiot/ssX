@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XSeWMCWin.man,v 1.2 2001/01/27 18:20:05 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -144,7 +144,7 @@
 .SH NAME
 XSetWMColormapWindows, XGetWMColormapWindows \- set or read a window's WM_COLORMAP_WINDOWS property
 .SH SYNTAX
-Status XSetWMColormapWindows\^(\^\fIdisplay\fP, \fIw\fP, \
+Status XSetWMColormapWindows\^(\^\fIdisplay\fP, \fIw\fP,
 \fIcolormap_windows\fP, \fIcount\fP\^)
 .br
       Display *\fIdisplay\fP\^;
@@ -155,7 +155,7 @@ Status XSetWMColormapWindows\^(\^\fIdisplay\fP, \fIw\fP, \
 .br
       int \fIcount\fP\^;
 .LP
-Status XGetWMColormapWindows\^(\^\fIdisplay\fP, \fIw\fP, \
+Status XGetWMColormapWindows\^(\^\fIdisplay\fP, \fIw\fP,
 \fIcolormap_windows_return\fP, \fIcount_return\fP\^)
 .br
       Display *\fIdisplay\fP\^;

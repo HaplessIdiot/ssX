@@ -26,7 +26,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtOwnSel.man,v 1.2 2001/01/27 18:20:28 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -131,7 +131,7 @@
 .SH NAME
 XtOwnSelection, XtOwnSelectionIncremental, XtDisownSelection \- set selection owner
 .SH SYNTAX
-Boolean XtOwnSelection(\fIw\fP, \fIselection\fP, \fItime\fP, \
+Boolean XtOwnSelection(\fIw\fP, \fIselection\fP, \fItime\fP,
 \fIconvert_proc\fP, \fIlose_selection\fP, \fIdone_proc\fP)
 .br
       Widget \fIw\fP;
@@ -146,8 +146,8 @@ Boolean XtOwnSelection(\fIw\fP, \fIselection\fP, \fItime\fP, \
 .br
       XtSelectionDoneProc \fIdone_proc\fP;
 .LP
-Boolean XtOwnSelectionIncremental(\fIw\fP, \fIselection\fP, \fItime\fP, \
-\fIconvert_callback\fP, \fIlose_callback\fP, \fIdone_callback\fP, \
+Boolean XtOwnSelectionIncremental(\fIw\fP, \fIselection\fP, \fItime\fP,
+\fIconvert_callback\fP, \fIlose_callback\fP, \fIdone_callback\fP,
 \fIcancel_callback\fP, \fIclient_data\fP)
 .br
       Widget \fIw\fP;

@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XCopyArea.man,v 1.2 2001/01/27 18:19:57 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -174,7 +174,7 @@ XCopyPlane\^(\^\fIdisplay\fP, \fIsrc\fP\^, \fIdest\fP\^, \fIgc\fP\^, \fIsrc_x\fP
 .br
       unsigned long \fIplane\fP\^;
 .SH ARGUMENTS
-.ds Dx , which are relative to the origin of the destination rectangle \
+.ds Dx , which are relative to the origin of the destination rectangle
 and specify its upper-left corner
 .IP \fIdest_x\fP 1i
 .br
@@ -200,7 +200,7 @@ Specify the source and destination rectangles to be combined.
 Specify the x and y coordinates, 
 which are relative to the origin of the source rectangle
 and specify its upper-left corner.
-.ds Wh , which are the dimensions of both the source \
+.ds Wh , which are the dimensions of both the source
 and destination rectangles
 .IP \fIwidth\fP 1i
 .br

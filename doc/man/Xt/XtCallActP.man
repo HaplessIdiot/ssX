@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtCallActP.man,v 1.2 2001/01/27 18:20:24 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -130,7 +130,7 @@
 .SH NAME
 XtCallActionProc \- invoke an action procedure directly
 .SH SYNTAX
-void XtCallActionProc(\fIwidget\fP, \fIaction\fP, \fIevent\fP, \
+void XtCallActionProc(\fIwidget\fP, \fIaction\fP, \fIevent\fP,
 \fIparams\fP, \fInum_params\fP)
 .br
       Widget \fIwidget\fP;

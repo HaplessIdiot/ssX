@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XIcWin.man,v 1.2 2001/01/27 18:20:00 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -160,7 +160,7 @@ Status XWithdrawWindow\^(\^\fIdisplay\fP, \fIw\fP, \fIscreen_number\fP\^)
 .br
       int \fIscreen_number\fP\^;
 .LP
-Status XReconfigureWMWindow\^(\^\fIdisplay\fP, \fIw\fP, \fIscreen_number\fP, \
+Status XReconfigureWMWindow\^(\^\fIdisplay\fP, \fIw\fP, \fIscreen_number\fP,
 \fIvalue_mask\fP, \fIvalues\fP\^)
 .br
       Display *\fIdisplay\fP\^;

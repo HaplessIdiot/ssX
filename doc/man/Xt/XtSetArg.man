@@ -26,7 +26,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtSetArg.man,v 1.2 2001/01/27 18:20:29 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -139,7 +139,7 @@ XtSetArg(\fIarg\fP, \fIname\fP, \fIvalue\fP)
 .br
       XtArgVal \fIvalue\fP;
 .LP
-ArgList XtMergeArgLists(\fIargs1\fP, \fInum_args1\fP, \fIargs2\fP, \
+ArgList XtMergeArgLists(\fIargs1\fP, \fInum_args1\fP, \fIargs2\fP,
 \fInum_args2\fP)
 .br
      ArgList \fIargs1\fP;

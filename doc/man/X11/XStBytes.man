@@ -40,7 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XStBytes.man,v 1.2 2001/01/27 18:20:05 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -183,7 +183,7 @@ XRotateBuffers\^(\^\fIdisplay\fP, \fIrotate\fP\^)
 .br
       int \fIrotate\fP\^;
 .SH ARGUMENTS
-.ds Fn in which you want to store the bytes \
+.ds Fn in which you want to store the bytes
 or from which you want the stored data returned
 .IP \fIbuffer\fP 1i
 Specifies the buffer \*(Fn.

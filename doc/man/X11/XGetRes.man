@@ -41,7 +41,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/X11/XGetRes.man,v 1.2 2001/01/27 18:19:59 dawes Exp $
 .\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
@@ -146,7 +146,7 @@
 .SH NAME
 XrmGetResource, XrmQGetResource, XrmQGetSearchList, XrmQGetSearchResource \- retrieve database resources and search lists
 .SH SYNTAX
-Bool XrmGetResource\^(\^\fIdatabase\fP, \fIstr_name\fP, \fIstr_class\fP, \
+Bool XrmGetResource\^(\^\fIdatabase\fP, \fIstr_name\fP, \fIstr_class\fP,
 \fIstr_type_return\fP, \fIvalue_return\fP\^)
 .br
      XrmDatabase \fIdatabase\fP\^;
@@ -159,7 +159,7 @@ Bool XrmGetResource\^(\^\fIdatabase\fP, \fIstr_name\fP, \fIstr_class\fP, \
 .br
      XrmValue *\fIvalue_return\fP\^; 
 .LP
-Bool XrmQGetResource\^(\^\fIdatabase\fP, \fIquark_name\fP, \fIquark_class\fP, \
+Bool XrmQGetResource\^(\^\fIdatabase\fP, \fIquark_name\fP, \fIquark_class\fP,
 \fIquark_type_return\fP, \fIvalue_return\fP\^)
 .br
      XrmDatabase \fIdatabase\fP\^;
@@ -174,7 +174,7 @@ Bool XrmQGetResource\^(\^\fIdatabase\fP, \fIquark_name\fP, \fIquark_class\fP, \
 .LP
 typedef XrmHashTable *XrmSearchList;
 .sp
-Bool XrmQGetSearchList\^(\^\fIdatabase\fP, \fInames\fP, \fIclasses\fP, \
+Bool XrmQGetSearchList\^(\^\fIdatabase\fP, \fInames\fP, \fIclasses\fP,
 \fIlist_return\fP, \fIlist_length\fP\^)
 .br
      XrmDatabase \fIdatabase\fP\^;
@@ -187,7 +187,7 @@ Bool XrmQGetSearchList\^(\^\fIdatabase\fP, \fInames\fP, \fIclasses\fP, \
 .br
      int \fIlist_length\fP\^;
 .LP
-Bool XrmQGetSearchResource\^(\^\fIlist\fP, \fIname\fP, \fIclass\fP, \
+Bool XrmQGetSearchResource\^(\^\fIlist\fP, \fIname\fP, \fIclass\fP,
 \fItype_return\fP, \fIvalue_return\fP\^)
 .br
      XrmSearchList \fIlist\fP\^;

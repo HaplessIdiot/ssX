@@ -25,7 +25,7 @@
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/doc/man/Xt/XtGrabKey.man,v 1.2 2001/01/27 18:20:27 dawes Exp $
 .\"
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
@@ -130,7 +130,7 @@
 .SH NAME
 XtGrabKey, XtUngrabKey, XtGrabKeyboard, XtUngrabKeyboard, XtGrabButton, XtUngrabButton, XtGrabPointer, XtUngrabPointer \- manage grabs
 .SH SYNTAX
-void XtGrabKey(\fIwidget\fP, \fIkeycode\fP, \fImodifiers\fP, \
+void XtGrabKey(\fIwidget\fP, \fIkeycode\fP, \fImodifiers\fP,
 \fIowner_events\fP, \fIpointer_mode\fP, \fIkeyboard_mode\fP)
 .br
       Widget \fIwidget\fP;
@@ -153,7 +153,7 @@ void XtUngrabKey(\fIwidget\fP, \fIkeycode\fP, \fImodifiers\fP)
 .br
       Modifiers \fImodifiers\fP;
 .LP
-int XtGrabKeyboard(\fIwidget\fP, \fIowner_events\fP, \fIpointer_mode\fP, \
+int XtGrabKeyboard(\fIwidget\fP, \fIowner_events\fP, \fIpointer_mode\fP,
 \fIkeyboard_mode\fP, \fItime\fP)
 .br
       Widget \fIwidget\fP;
@@ -172,8 +172,8 @@ void XtUngrabKeyboard(\fIwidget\fP, \fItime\fP)
 .br
       Time \fItime\fP;
 .LP
-void XtGrabButton(\fIwidget\fP, \fIbutton\fP, \fImodifiers\fP, \
-\fIowner_events\fP, \fIevent_mask\fP, \fIpointer_mode\fP, \fIkeyboard_mode\fP, \
+void XtGrabButton(\fIwidget\fP, \fIbutton\fP, \fImodifiers\fP,
+\fIowner_events\fP, \fIevent_mask\fP, \fIpointer_mode\fP, \fIkeyboard_mode\fP,
 \fIconfine_to\fP, \fIcursor\fP)
 .br
       Widget \fIwidget\fP;
@@ -202,8 +202,8 @@ void XtUngrabButton(\fIwidget\fP, \fIbutton\fP, \fImodifiers\fP)
 .br
       Modifiers \fImodifiers\fP;
 .LP
-int XtGrabPointer(\fIwidget\fP, \fIowner_events\fP, \fIevent_mask\fP, \
-\fIpointer_mode\fP, \fIkeyboard_mode\fP, \fIconfine_to\fP, \fIcursor\fP, \
+int XtGrabPointer(\fIwidget\fP, \fIowner_events\fP, \fIevent_mask\fP,
+\fIpointer_mode\fP, \fIkeyboard_mode\fP, \fIconfine_to\fP, \fIcursor\fP,
 \fItime\fP)
 .br
       Widget \fIwidget\fP;
