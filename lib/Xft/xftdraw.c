@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.7 2000/12/06 18:03:24 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.8 2000/12/08 07:51:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -212,23 +212,37 @@ XftDrawCorePrepare (XftDraw	*draw,
 		    XftColor	*color,
 		    XftFont	*font)
 {
-    XGCValues	    gcv;
 
     if (!draw->core_set)
     {
+	XGCValues	    gcv;
+	unsigned long	    mask;
 	draw->core_set = True;
 
 	draw->core.fg = color->pixel;
 	gcv.foreground = draw->core.fg;
+	mask = GCForeground;
+	if (font)
+	{
+	    draw->core.font = font->u.core.font->fid;
+	    gcv.font = draw->core.font;
+	    mask |= GCFont;
+	}
 	draw->core.draw_gc = XCreateGC (draw->dpy, draw->drawable, 
-					GCForeground, &gcv);
+					mask, &gcv);
 	if (draw->clip)
 	    XSetRegion (draw->dpy, draw->core.draw_gc, draw->clip);
     }
     if (draw->core.fg != color->pixel)
-	XSetForeground (draw->dpy, draw->core.draw_gc, color->pixel);
-    if (font && gcv.font != font->u.core.font->fid)
-	XSetFont (draw->dpy, draw->core.draw_gc, font->u.core.font->fid);
+    {
+	draw->core.fg = color->pixel;
+	XSetForeground (draw->dpy, draw->core.draw_gc, draw->core.fg);
+    }
+    if (font && draw->core.font != font->u.core.font->fid)
+    {
+	draw->core.font = font->u.core.font->fid;
+	XSetFont (draw->dpy, draw->core.draw_gc, draw->core.font);
+    }
     return True;
 }
 

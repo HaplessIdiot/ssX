@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.11 2000/12/07 23:57:28 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.12 2000/12/08 07:51:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -56,6 +56,7 @@ struct _XftDraw {
     struct {
 	GC		draw_gc;
 	unsigned long	fg;
+	Font		font;
     } core;
 };
 
@@ -290,6 +291,9 @@ XftDrawCorePrepare (XftDraw	*draw,
 
 /* xftextent.c */
 /* xftfont.c */
+int
+_XftFontDebug (void);
+    
 /* xftfreetype.c */
 XftPattern *
 XftFreeTypeQuery (const char *file, int id, int *count);
