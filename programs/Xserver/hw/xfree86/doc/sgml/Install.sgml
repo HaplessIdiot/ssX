@@ -9,7 +9,7 @@
 <date>23 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.18 2004/02/24 03:41:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.19 2004/06/09 18:24:01 dawes Exp $
 </ident>
 
 <abstract>
@@ -25,6 +25,11 @@ How to install XFree86.
 This document contains information about installing the XFree86 binaries
 provided by The XFree86 Project.
 
+<![ %nobindist [
+<bf>NOTE:No binary distributions are provided for this snapshot.  This
+documentation is for reference only.</bf>
+]]>
+
 <p>
 The XFree86 binaries that we provide for UNIX-like OS's (Linux, the
 BSDs, Solaris, etc) are packaged in a platform-independent gzipped tar
@@ -37,9 +42,11 @@ and from our <url name="ftp site"
 url="ftp://ftp.xfree86.org/pub/XFree86/misc/utils-&utilsvers;.tgz">.)
 
 <![ %snapshot [
+<![ %havebindist [
 <p>
 Note: for snapshot releases like this one, binaries are only available for
 a small number of platforms.
+]]>
 ]]>
 
 

@@ -13,10 +13,10 @@
 
 <title>README for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
-<date>23 February 2004
+<date>14 January 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.142 2004/06/09 18:24:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.143 2004/12/08 22:27:11 dawes Exp $
 </ident>
 
 <abstract>
@@ -136,13 +136,14 @@ in that document, please contact us with details at
 <sect>Pointers to additional information
 <p>
 
+<![ %docsonline [
 The documentation for this release can be found online at the <url
 name="XFree86 web site" url="http://www.xfree86.org/&relvers;/">.
+]]>
 Documentation for the latest release version can always be found <url
-name="here" url="http://www.xfree86.org/current/">, and documentation
-for the latest pre-release snapshot can be found <url name="here"
-url="http://www.xfree86.org/snapshot/">.  Checking those last two links
-is a good way of finding out the latest available versions of XFree86.
+name="here" url="http://www.xfree86.org/current/"><![ %docsonline [, and
+documentation for the latest pre-release snapshot can be found <url
+name="here" url="http://www.xfree86.org/snapshot/">]]>.
 
 Information about binary distributions and the attendant installation
 instructions can be found in the <htmlurl name="Installation Document"
@@ -154,12 +155,12 @@ can be found in the <htmlurl name="Versions Document" url="Versions.html">.
 Additional information may be available at the <url
 name="XFree86 web site" url="http://www.xfree86.org/">, and pointers to
 other information are available at the <url name="XFree86 support page"
-url="http://www.xfree86.org/support.html">.
+url="http://www.xfree86.org/sos/">.
 
 <sect>The Public Mailing Lists
 <p>
 Current information about the XFree86 public mailing lists can be found
-at our <url name="web site" url="http://www.xfree86.org/lists.html">.
+at our <url name="web site" url="http://www.xfree86.org/sos/lists.html">.
 
 <sect1>CVS Commit
 <p>
@@ -194,15 +195,17 @@ ensure that they are included in future releases.  New works should be
 discussed on our <email>devel@XFree86.org</email> list prior to submission.
 
 Current information about the XFree86 development process can be found
-at our <url name="web site" url="http://www.xfree86.org/developer.html">.
+at our <url name="web site" url="http://www.xfree86.org/developer/">.
 
 <sect>How to get XFree86 &relvers;
 <p>
 <![ %snapshot; [
+<![ %havebindist; [
 XFree86 &relvers; can be found at the <url name="XFree86 ftp server"
 url="ftp://ftp.xfree86.org/pub/XFree86/snapshots/&relvers;/">, and at
 mirrors of this server.  This snapshot is available primarily in binary
 form for several popular platforms.
+]]>
 ]]>
 
 <![ %release; [

@@ -1,23 +1,23 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.38 2004/02/17 22:32:31 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.39 2004/02/24 03:41:40 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
 <!-- XFree86 version string -->
-<!ENTITY relvers CDATA "4.4.0">
-<!ENTITY prevrelvers CDATA "4.3.0">
-<!ENTITY fullrelvers CDATA "4.4.0">
-<!ENTITY prevfullrelvers CDATA "4.3.0">
-<!ENTITY nextfullrelvers CDATA "4.5.0">
-<!ENTITY nextfullreldate CDATA "mid-late 2004">
-<!ENTITY nextupdrelvers CDATA "4.4.1">
-<!ENTITY srcvers CDATA "440">
-<!ENTITY prevsrcvers CDATA "430">
-<!ENTITY fullsrcvers CDATA "440">
-<!ENTITY prevfullsrcvers CDATA "430">
-<!ENTITY whichfullrel CDATA "seventh">
+<!ENTITY relvers CDATA "4.4.99.21">
+<!ENTITY prevrelvers CDATA "4.4.0">
+<!ENTITY fullrelvers CDATA "4.5.0">
+<!ENTITY prevfullrelvers CDATA "4.4.0">
+<!ENTITY nextfullrelvers CDATA "4.6.0">
+<!ENTITY nextfullreldate CDATA "not scheduled">
+<!ENTITY nextupdrelvers CDATA "4.5.1">
+<!ENTITY srcvers CDATA "450">
+<!ENTITY prevsrcvers CDATA "440">
+<!ENTITY fullsrcvers CDATA "450">
+<!ENTITY prevfullsrcvers CDATA "440">
+<!ENTITY whichfullrel CDATA "eighth">
 <!ENTITY whichupdaterel CDATA "none">
-<!ENTITY reltag CDATA "xf-4_4_0">
-<!ENTITY relbranchtag CDATA "xf-4_4-branch">
+<!ENTITY reltag CDATA "xf-4_4_99_21">
+<!ENTITY relbranchtag CDATA "xf-4_5-branch">
 <!ENTITY rcnum CDATA "0">
 
 <!-- Version of the most recent 3.3.x release -->
@@ -30,20 +30,23 @@
 <!ENTITY utilsvers CDATA "1.1.2">
 
 <!-- xtest version strings -->
-<!ENTITY xtestvers CDATA "4.0.6">
+<!ENTITY xtestvers CDATA "4.0.9">
 
 <!-- These should be set according to which snapshot/release this is -->
-<!ENTITY % firstsnap 'IGNORE'>
+<!ENTITY % firstsnap 'INCLUDE'>
 <!ENTITY % latersnap 'IGNORE'>
-<!ENTITY % snapshot 'IGNORE'>
-<!ENTITY % notsnapshot 'INCLUDE'>
+<!ENTITY % snapshot 'INCLUDE'>
+<!ENTITY % havebindist 'IGNORE'>
+<!ENTITY % nobindist 'INCLUDE'>
+<!ENTITY % docsonline 'IGNORE'>
+<!ENTITY % notsnapshot 'IGNORE'>
 <!ENTITY % relcandidate 'IGNORE'>
-<!ENTITY % release 'INCLUDE'>
+<!ENTITY % release 'IGNORE'>
 <!ENTITY % firstrel 'IGNORE'>
 <!ENTITY % earlyrel 'IGNORE'>
 <!ENTITY % laterrel 'INCLUDE'>
-<!ENTITY % fullrel 'INCLUDE'>
-<!ENTITY % fullbinaries 'INCLUDE'>
+<!ENTITY % fullrel 'IGNORE'>
+<!ENTITY % fullbinaries 'IGNORE'>
 <!ENTITY % updaterel 'IGNORE'>
 <!ENTITY % prevrelwasupdate 'IGNORE'>
 
