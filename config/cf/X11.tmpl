@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.277 2005/03/01 03:48:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.278 2005/03/29 15:55:49 tsi Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -4574,7 +4574,7 @@ file.ps: src								@@\
 
 #ifndef InstallDoc
 #define InstallDoc(name,deps)						@@\
-install::								@@\
+install:: deps								@@\
 	MakeDir($(DESTDIR)$(DOCPSDIR))					@@\
 	@if [ -f name.ps -a X$(NOPS) = X ]; then set -x; \		@@\
 	  $(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) name.ps \		@@\

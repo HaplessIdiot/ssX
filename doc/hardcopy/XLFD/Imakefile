@@ -1,0 +1,4 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(xlfd,xlfd.PS.gz)
+

@@ -1,0 +1,5 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(intr.idx,intr.idx.PS.gz)
+InstallHardcopyDoc(intrinsics,intrinsics.PS.gz)
+

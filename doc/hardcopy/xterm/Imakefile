@@ -1,0 +1,4 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(ctlseqs,ctlseqs.PS.gz)
+

@@ -1,0 +1,6 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(xv-protocol-v2,xv-protocol-v2.PS)
+
+InstallDoc(video,video.txt)
+LinkFile(video.txt,video)

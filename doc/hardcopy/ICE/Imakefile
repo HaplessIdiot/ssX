@@ -1,0 +1,5 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(ICElib,ICElib.PS.gz)
+InstallHardcopyDoc(ice,ice.PS.gz)
+

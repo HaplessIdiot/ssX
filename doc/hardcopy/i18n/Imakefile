@@ -1,0 +1,6 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(Framework,Framework.PS.gz)
+InstallHardcopyDoc(LocaleDB,LocaleDB.PS.gz)
+InstallHardcopyDoc(Trans,Trans.PS.gz)
+

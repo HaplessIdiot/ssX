@@ -1,0 +1,5 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(icccm,icccm.PS.gz)
+InstallHardcopyDoc(icccm.idx,icccm.idx.PS.gz)
+

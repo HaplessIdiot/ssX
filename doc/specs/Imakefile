@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/doc/specs/Imakefile,v 1.13 2005/01/15 04:34:12 dawes Exp $
+XCOMM $XFree86: xc/doc/specs/Imakefile,v 1.14tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -14,7 +14,6 @@ SUBDIRS = BDF CTEXT FSProtocol GL ICCCM ICE PM Render SM X11 XDMCP \
 AllTarget(specindex.html)
 
 MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
 
 #if defined(AvoidGroffHtmlBug) && AvoidGroffHtmlBug
 SPECINDEXDEFS = -DICE_PDF_ONLY -DICCCM_PDF_ONLY

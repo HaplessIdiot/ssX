@@ -1,0 +1,5 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(widg.idx,widg.idx.PS.gz)
+InstallHardcopyDoc(widgets,widgets.PS.gz)
+

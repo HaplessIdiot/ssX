@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.26 2005/03/01 03:55:36 dawes Exp $
+XCOMM $XFree86: xc/doc/specs/programs/Imakefile,v 1.27tsi Exp $
 /*
  * Copyright (c) 2000-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -284,3 +284,5 @@ MakeSimpleDoc(man,man.$(MANNEWSUFFIX))
 
 InstallRoffDoc(man)
 
+clean::
+	RemoveFile(man.$(MANSRCSUFFIX))
