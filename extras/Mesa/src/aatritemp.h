@@ -354,6 +354,10 @@
             startX--;
          }
 
+         if (startX > ctx->DrawBuffer->Xmax) {
+            startX = ctx->DrawBuffer->Xmax;
+         }
+
          /* enter interior of triangle */
          ix = startX;
          count = 0;

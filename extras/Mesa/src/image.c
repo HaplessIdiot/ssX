@@ -1863,8 +1863,7 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
          stride = 2;
          break;
       case GL_INTENSITY:
-         redIndex = 0;
-         greenIndex = blueIndex = alphaIndex = -1;
+         redIndex = greenIndex = blueIndex = alphaIndex = 0;
          stride = 1;
          break;
       case GL_RGB:

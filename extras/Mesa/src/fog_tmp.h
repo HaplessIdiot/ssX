@@ -251,6 +251,7 @@ static void TAG(fog_rgba_vertices)( struct vertex_buffer *VB,
 		  CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(out[i][2], t);
 
 	       }
+               out[i][3] = in[3];
 	    }
 	 }
 	 break;
@@ -269,6 +270,7 @@ static void TAG(fog_rgba_vertices)( struct vertex_buffer *VB,
 	       t = f * UBYTE_COLOR_TO_FLOAT_COLOR(in[2]) + (1.0F-f)*bFog;
 	       CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(out[i][2], t);
 	    }
+            out[i][3] = in[3];
 	 }
 	 break;
       case GL_EXP2:
@@ -287,6 +289,7 @@ static void TAG(fog_rgba_vertices)( struct vertex_buffer *VB,
 	       t = f * UBYTE_COLOR_TO_FLOAT_COLOR(in[2]) + (1.0F-f)*bFog;
 	       CLAMPED_FLOAT_COLOR_TO_UBYTE_COLOR(out[i][2], t);
 	    }
+            out[i][3] = in[3];
 	 }
 	 break;
 	 default:
