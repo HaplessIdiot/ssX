@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.7 1999/05/23 14:38:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.8 1999/05/30 14:04:23 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -172,8 +172,8 @@ printServerFlagsSection (FILE * f, XF86ConfFlagsPtr flags)
 	fprintf (f, "EndSection\n\n");
 }
 
-XF86OptionPtr
-addNewOption (XF86OptionPtr head, char *name, char *val)
+static XF86OptionPtr
+addNewOption2 (XF86OptionPtr head, char *name, char *val, int used)
 {
 	XF86OptionPtr new, old = NULL;
 
@@ -184,13 +184,19 @@ addNewOption (XF86OptionPtr head, char *name, char *val)
 		new = xf86confmalloc (sizeof (XF86OptionRec));
 	new->opt_name = name;
 	new->opt_val = val;
-	new->opt_used = 0;
+	new->opt_used = used;
 	new->list.next = NULL;
 
 	if (old == NULL)
 		return ((XF86OptionPtr) addListItem ((glp) head, (glp) new));
 	else
 		return head;
+}
+
+XF86OptionPtr
+addNewOption (XF86OptionPtr head, char *name, char *val)
+{
+	return addNewOption2(head, name, val, 0);
 }
 
 void
@@ -313,7 +319,7 @@ FindOptionValue (XF86OptionPtr list, const char *name)
 }
 
 XF86OptionPtr
-OptionListCreate( const char **options, int count )
+OptionListCreate( const char **options, int count, int used )
 {
 	XF86OptionPtr p = NULL;
 	char *t1, *t2;
@@ -338,7 +344,7 @@ OptionListCreate( const char **options, int count )
 		t2 = xf86confmalloc (sizeof (char) *
 				(strlen (options[i + 1]) + 1));
 		strcpy (t2, options[i + 1]);
-		p = addNewOption (p, t1, t2);
+		p = addNewOption2 (p, t1, t2, used);
 	}
 
 	return (p);

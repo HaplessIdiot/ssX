@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.18 1999/05/09 06:06:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.19 1999/05/29 14:41:52 dawes Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc.
  *
@@ -586,9 +586,166 @@ xf86SerialSendBreak (int fd, int duration)
 }
 
 int
-xf86FlushInput(fd)
-int fd;
+xf86FlushInput(int fd)
 {
 	return tcflush(fd, TCIFLUSH);
 }
 
+static struct states {
+	int xf;
+	int os;
+} modemStates[] = {
+#ifdef TIOCM_LE
+	{ XF86_M_LE, TIOCM_LE },
+#endif
+#ifdef TIOCM_DTR
+	{ XF86_M_DTR, TIOCM_DTR },
+#endif
+#ifdef TIOCM_RTS
+	{ XF86_M_RTS, TIOCM_RTS },
+#endif
+#ifdef TIOCM_ST
+	{ XF86_M_ST, TIOCM_ST },
+#endif
+#ifdef TIOCM_SR
+	{ XF86_M_SR, TIOCM_SR },
+#endif
+#ifdef TIOCM_CTS
+	{ XF86_M_CTS, TIOCM_CTS },
+#endif
+#ifdef TIOCM_CAR
+	{ XF86_M_CAR, TIOCM_CAR },
+#elif defined(TIOCM_CD)
+	{ XF86_M_CAR, TIOCM_CD },
+#endif
+#ifdef TIOCM_RNG
+	{ XF86_M_RNG, TIOCM_RNG },
+#elif defined(TIOCM_RI)
+	{ XF86_M_CAR, TIOCM_RI },
+#endif
+#ifdef TIOCM_DSR
+	{ XF86_M_DSR, TIOCM_DSR },
+#endif
+};
+
+static int numStates = sizeof(modemStates) / sizeof(modemStates[0]);
+
+static int
+xf2osState(int state)
+{
+	int i;
+	int ret = 0;
+
+	for (i = 0; i < numStates; i++)
+		if (state & modemStates[i].xf)
+			ret |= modemStates[i].os;
+	return ret;
+}
+
+static int
+os2xfState(int state)
+{
+	int i;
+	int ret = 0;
+
+	for (i = 0; i < numStates; i++)
+		if (state & modemStates[i].os)
+			ret |= modemStates[i].xf;
+	return ret;
+}
+
+static int
+getOsStateMask(void)
+{
+	int i;
+	int ret = 0;
+	for (i = 0; i < numStates; i++)
+		ret |= modemStates[i].os;
+	return ret;
+}
+
+static int osStateMask = 0;
+
+int
+xf86SetSerialModemState(int fd, int state)
+{
+	int ret;
+	int s;
+
+	if (fd < 0)
+		return -1;
+
+	/* Don't try to set parameters for non-tty devices. */
+	if (!isatty(fd))
+		return 0;
+
+	if (!osStateMask)
+		osStateMask = getOsStateMask();
+
+	state = xf2osState(state);
+	SYSCALL((ret = ioctl(fd, TIOCMGET, &s)));
+	if (ret < 0)
+		return -1;
+	s &= ~osStateMask;
+	s |= state;
+	SYSCALL((ret = ioctl(fd, TIOCMSET, &s)));
+	if (ret < 0)
+		return -1;
+	else
+		return 0;
+}
+
+int
+xf86GetSerialModemState(int fd)
+{
+	int ret;
+	int s;
+
+	if (fd < 0)
+		return -1;
+
+	/* Don't try to set parameters for non-tty devices. */
+	if (!isatty(fd))
+		return 0;
+
+	SYSCALL((ret = ioctl(fd, TIOCMGET, &s)));
+	if (ret < 0)
+		return -1;
+	return os2xfState(s);
+}
+
+int
+xf86SerialModemSetBits(int fd, int bits)
+{
+	int ret;
+	int s;
+
+	if (fd < 0)
+		return -1;
+
+	/* Don't try to set parameters for non-tty devices. */
+	if (!isatty(fd))
+		return 0;
+
+	s = xf2osState(bits);
+	SYSCALL((ret = ioctl(fd, TIOCMBIS, &s)));
+	return ret;
+}
+
+int
+xf86SerialModemClearBits(int fd, int bits)
+{
+	int ret;
+	int s;
+
+	if (fd < 0)
+		return -1;
+
+	/* Don't try to set parameters for non-tty devices. */
+	if (!isatty(fd))
+		return 0;
+
+	s = xf2osState(bits);
+	SYSCALL((ret = ioctl(fd, TIOCMBIC, &s)));
+	return ret;
+}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.4 1999/05/22 08:40:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.5 1999/05/23 04:26:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -96,7 +96,6 @@ typedef struct _MouseDevRec {
     PostMseEventProc	PostEvent;
     MouseCommonOptProc	CommonOptions;
     DeviceIntPtr	device;
-    int			mseFd;
     const char *	mseDevice;
     const char *	protocol;
     int			protocolID;

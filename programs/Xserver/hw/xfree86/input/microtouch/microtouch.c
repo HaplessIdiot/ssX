@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.7 1999/04/04 07:03:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.8 1999/05/15 12:10:30 dawes Exp $ */
 
 #define _microtouch_C_
 /*****************************************************************************
@@ -152,7 +152,7 @@ SetupProc(	pointer module,
 		goto SetupProc_fail;
 
 	defaults = xf86OptionListCreate (default_options,
-				  (sizeof (default_options) / sizeof (default_options[0])));
+				  (sizeof (default_options) / sizeof (default_options[0])), 0);
 	merged = xf86OptionListMerge (defaults, options);
 
 	xf86OptionListReport( merged );
@@ -522,9 +522,9 @@ QueryHardware (MuTPrivatePtr priv, int *errmaj, int *errmin)
 	*errmaj = LDR_NOHARDWARE;
 
 	fallback = xf86OptionListCreate (fallback_options,
-				(sizeof (fallback_options) / sizeof (fallback_options[0])));
+				(sizeof (fallback_options) / sizeof (fallback_options[0])), 0);
 	normal = xf86OptionListCreate (default_options,
-				  (sizeof (default_options) / sizeof (default_options[0])));
+				  (sizeof (default_options) / sizeof (default_options[0])), 0);
 
 	priv->cs7flag = TRUE;
 	if (!xf86MuTSendCommand ( (unsigned char *)MuT_RESET, priv))

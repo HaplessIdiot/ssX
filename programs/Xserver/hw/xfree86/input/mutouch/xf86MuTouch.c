@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.3 1999/05/15 12:10:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.4 1999/05/23 06:33:49 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1478,7 +1478,7 @@ Plug(pointer	module,
   char			*type, *dev, *tmp;
   
   defaults = xf86OptionListCreate(default_options,
-				  sizeof(default_options)/sizeof(default_options[0]));
+				  sizeof(default_options)/sizeof(default_options[0]), 0);
   merged = xf86OptionListMerge(defaults, options);
   xf86OptionListReport(merged);
 

@@ -1,3 +1,7 @@
+XFree86 3.9Pq (6 June 1999)
+2700. Update the serial PnP mouse support for the revised mouse driver
+      (David Dawes).
+
 XFree86 3.9Pp (30 May 1999)
 2699. Xterm patch #104 (#2836, Thomas Dickey).
 2698. Doc updates for the s3virge driver, and cleanup register debugging
@@ -8082,4 +8086,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.762 1999/05/30 14:04:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.763 1999/05/30 14:40:58 dawes Exp $

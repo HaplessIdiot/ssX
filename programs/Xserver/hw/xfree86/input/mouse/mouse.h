@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.5 1999/05/22 09:59:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.h,v 1.6 1999/05/23 04:26:06 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -46,5 +46,8 @@ typedef struct {
 /* mouse proto flags */
 #define MPF_NONE		0x00
 #define MPF_SAFE		0x01
+
+/* pnp.c */
+int MouseGetPnpProtocol(InputInfoPtr pInfo);
 
 #endif /* _X_MOUSE_H */

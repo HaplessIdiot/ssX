@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Optrec.h,v 1.4 1999/05/09 06:06:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Optrec.h,v 1.5 1999/05/23 14:38:09 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -66,7 +66,7 @@ XF86OptionPtr NewOption(char *name, char *value);
 XF86OptionPtr NextOption(XF86OptionPtr list);
 XF86OptionPtr FindOption(XF86OptionPtr list, const char *name);
 char *FindOptionValue(XF86OptionPtr list, const char *name);
-XF86OptionPtr OptionListCreate(const char **options, int count);
+XF86OptionPtr OptionListCreate(const char **options, int count, int used);
 XF86OptionPtr OptionListMerge(XF86OptionPtr head, XF86OptionPtr tail);
 int FindOptionBoolean(XF86OptionPtr list, char *name, int default_val);
 char *ConfigStrdup (const char *s);

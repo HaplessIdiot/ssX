@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.93 1999/05/09 15:17:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.94 1999/05/22 09:59:51 dawes Exp $ */
 
 /*
  *
@@ -212,6 +212,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86WaitForInput)
    SYMFUNC(xf86SerialSendBreak)
    SYMFUNC(xf86FlushInput)
+   SYMFUNC(xf86SetSerialModemState)
+   SYMFUNC(xf86GetSerialModemState)
+   SYMFUNC(xf86SerialModemSetBits)
+   SYMFUNC(xf86SerialModemClearBits)
 #ifdef NEW_INPUT
    SYMFUNC(xf86OSMouseInit)
 #endif
