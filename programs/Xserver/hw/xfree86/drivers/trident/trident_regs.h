@@ -89,12 +89,20 @@
 #define TVinterface 0xC0
 #define TVMode 0xC1
 #define ClockControl 0xCF
+#define PreEndControl 0x56
+#define PreEndFetch 0x57
+
 
 /* 3CE */
 #define MiscExtFunc 0x0F
 #define MiscIntContReg 0x2F
 #define CyberControl 0x30
 #define CyberEnhance 0x31
+#define FPConfig     0x34
+#define VertStretch  0x52
+#define HorStretch   0x53
+#define BiosMode     0x5c
+#define BiosReg      0x5d
 
 /* Graphics Engine for 9420/9430 */
 
@@ -209,15 +217,15 @@
 		((((CARD32)(y)&0xFFFF) << 16) | ((CARD32)(x) & 0xffff))
 
 #define TRIDENT_WRITE_REG(v,r)					\
-        (*(volatile CARD32 *)((char*)pTrident->IOBase+(r)) = (v))
+        MMIO_OUT32(pTrident->IOBase,(r),(v))
 
 #define TRIDENT_READ_REG(r) \
-	*(volatile CARD32 *)((char*)pTrident->IOBase+(r))
+        MMIO_IN32(pTrident->IOBase,(r))
 
 #define OUTB(addr, data) \
 { \
 	if (IsPciCard && UseMMIO) { \
-	    (*(volatile CARD8 *)(pTrident->IOBase + (addr)) = (data)); \
+            MMIO_OUT8(pTrident->IOBase, addr, data); \
 	} else { \
 	    outb(addr, data); \
 	} \
@@ -225,12 +233,12 @@
 #define OUTW(addr, data) \
 { \
 	if (IsPciCard && UseMMIO) { \
-	    (*(volatile CARD16 *)(pTrident->IOBase + (addr)) = (data)); \
+            MMIO_OUT16(pTrident->IOBase, addr, data); \
 	} else { \
 	    outw(addr, data); \
 	} \
 }
-#define INB(addr) ((IsPciCard && UseMMIO) ? *(volatile CARD8 *)(pTrident->IOBase + addr) : inb(addr))
+#define INB(addr) ((IsPciCard && UseMMIO) ? MMIO_IN8(pTrident->IOBase, addr) : inb(addr))
 
 #define OUTW_3C4(reg) \
     	OUTW(0x3C4, (tridentReg->tridentRegs3C4[reg])<<8 | (reg))
@@ -249,85 +257,98 @@
     	tridentReg->tridentRegs3CE[reg] = INB(0x3CF);
 
 #define BLTBUSY(b) \
-	(b = (*(volatile CARD8 *)(pTrident->IOBase+GER_STATUS)) & GE_BUSY)
+	(b = MMIO_IN8(pTrident->IOBase,GER_STATUS) & GE_BUSY)
 #define OLDBLTBUSY(b) \
-	(b = (*(volatile CARD8 *)(pTrident->IOBase+OLDGER_STATUS))&GE_BUSY)
+	(b = MMIO_IN8(pTrident->IOBase,OLDGER_STATUS) & GE_BUSY)
 #define IMAGE_STATUS(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + IMAGE_GE_STATUS) = (c))
+	MMIO_OUT32(pTrident->IOBase, IMAGE_GE_STATUS, (c))
 #define TGUI_STATUS(c) \
-	(*(volatile CARD8 *)(pTrident->IOBase + GER_STATUS) = (c))
+	MMIO_OUT8(pTrident->IOBase, GER_STATUS, (c))
 #define OLDTGUI_STATUS(c) \
-	(*(volatile CARD8 *)(pTrident->IOBase + OLDGER_STATUS) = (c))
+	MMIO_OUT8(pTrident->IOBase, OLDGER_STATUS, (c))
 #define TGUI_OPERMODE(c) \
-	(*(volatile CARD16 *)(pTrident->IOBase + GER_OPERMODE) = (c))
+	MMIO_OUT16(pTrident->IOBase, GER_OPERMODE, (c))
 /* XXX */
 #define OLDTGUI_OPERMODE(c) \
 	{ \
-		*(CARD16 *)(pTrident->IOBase + OLDGER_MWIDTH) = \
-			            vga256InfoRec.displayWidth - 1; \
-		*(CARD8 *)(pTrident->IOBase + OLDGER_MFORMAT) = c; \
+		MMIO_OUT16(pTrident->IOBase, OLDGER_MWIDTH, \
+			            vga256InfoRec.displayWidth - 1); \
+		MMIO_OUT8(pTrident->IOBase, OLDGER_MFORMAT, (c)); \
 	}
 #define TGUI_FCOLOUR(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_FCOLOUR) = (c))
+	MMIO_OUT32(pTrident->IOBase, GER_FCOLOUR, (c))
 #define TGUI_FPATCOL(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_FPATCOL) = (c))
+	MMIO_OUT32(pTrident->IOBase, GER_FPATCOL, (c))
 #define OLDTGUI_FCOLOUR(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + OLDGER_FCOLOUR) = (c))
+	MMIO_OUT32(pTrident->IOBase, OLDGER_FCOLOUR, (c))
 #define TGUI_BCOLOUR(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_BCOLOUR) = (c))
+	MMIO_OUT32(pTrident->IOBase, GER_BCOLOUR, (c))
 #define TGUI_BPATCOL(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_BPATCOL) = (c))
+	MMIO_OUT32(pTrident->IOBase, GER_BPATCOL, (c))
 #define OLDTGUI_BCOLOUR(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + OLDGER_BCOLOUR) = (c))
+	MMIO_OUT32(pTrident->IOBase, OLDGER_BCOLOUR, (c))
 #define IMAGE_DRAWENV(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + IMAGE_GE_DRAWENV) = (c))
+	MMIO_OUT32(pTrident->IOBase, IMAGE_GE_DRAWENV, (c))
 #define TGUI_DRAWFLAG(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_DRAWFLAG) = (c))
+	MMIO_OUT32(pTrident->IOBase, GER_DRAWFLAG, (c))
 #define OLDTGUI_STYLE(c) \
-	(*(volatile CARD16 *)(pTrident->IOBase + OLDGER_STYLE) = (c))
+	MMIO_OUT16(pTrident->IOBase, OLDGER_STYLE, (c))
 #define TGUI_FMIX(c) \
-	(*(volatile CARD8 *)(pTrident->IOBase + GER_FMIX) = (c))
+	MMIO_OUT8(pTrident->IOBase, GER_FMIX, (c))
 #define OLDTGUI_FMIX(c) \
-	(*(volatile CARD8 *)(pTrident->IOBase + OLDGER_FMIX) = (c))
+	MMIO_OUT8(pTrident->IOBase, OLDGER_FMIX, (c))
 #define OLDTGUI_BMIX(c) \
-	(*(volatile CARD8 *)(pTrident->IOBase + OLDGER_BMIX) = (c))
+	MMIO_OUT8(pTrident->IOBase, OLDGER_BMIX, (c))
 #define TGUI_DIM_XY(w,h) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_DIM_XY) = XY_MERGE((w)-1,(h)-1))
+	MMIO_OUT32(pTrident->IOBase, GER_DIM_XY, XY_MERGE((w)-1,(h)-1))
 #define TGUI_STYLE(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_STYLE) = (c))
+	MMIO_OUT32(pTrident->IOBase, GER_STYLE, (c))
 #define OLDTGUI_DIMXY(w,h) \
-	(*(volatile CARD32 *)(pTrident->IOBase + OLDGER_DIMXY) = XY_MERGE((w)-1,(h)-1))
+	MMIO_OUT32(pTrident->IOBase, OLDGER_DIMXY, XY_MERGE((w)-1,(h)-1))
 #define TGUI_SRC_XY(x,y) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_SRC_XY) = XY_MERGE(x,y))
+	MMIO_OUT32(pTrident->IOBase, GER_SRC_XY, XY_MERGE(x,y))
 #define TGUI_DEST_XY(x,y) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_DEST_XY) = XY_MERGE(x,y))
+	MMIO_OUT32(pTrident->IOBase, GER_DEST_XY, XY_MERGE(x,y))
 #define OLDTGUI_DESTXY(x,y) \
-	(*(volatile CARD32 *)(pTrident->IOBase + OLDGER_DESTXY) = XY_MERGE(x,y))
+	MMIO_OUT32(pTrident->IOBase, OLDGER_DESTXY, XY_MERGE(x,y))
 #define OLDTGUI_DESTLINEAR(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + OLDGER_DESTLINEAR) = (c))
+	MMIO_OUT32(pTrident->IOBase, OLDGER_DESTLINEAR, (c))
 #define TGUI_SRCCLIP_XY(x,y) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_SRCCLIP_XY) = XY_MERGE(x,y))
+	MMIO_OUT32(pTrident->IOBase, GER_SRCCLIP_XY, XY_MERGE(x,y))
 #define TGUI_DSTCLIP_XY(x,y) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_DSTCLIP_XY) = XY_MERGE(x,y))
+	MMIO_OUT32(pTrident->IOBase, GER_DSTCLIP_XY, XY_MERGE(x,y))
 #define TGUI_PATLOC(addr) \
-	(*(volatile CARD16 *)(pTrident->IOBase + GER_PATLOC) = (addr))
+	MMIO_OUT16(pTrident->IOBase, GER_PATLOC, (addr))
 #define TGUI_CKEY(c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + GER_CKEY) = (c))
+	MMIO_OUT32(pTrident->IOBase, GER_CKEY, (c))
 #define IMAGEBUSY(b) \
-	(b = (*(volatile CARD32 *)(pTrident->IOBase+IMAGE_GE_STATUS)) & 0xF0000000)
+	(b = MMIO_IN32(pTrident->IOBase,IMAGE_GE_STATUS) & 0xF0000000)
 #define BLADEBUSY(b) \
-	(b = (*(volatile CARD32 *)(pTrident->IOBase+BLADE_GE_STATUS)) & 0xFE800000)
+	(b = MMIO_IN32(pTrident->IOBase,BLADE_GE_STATUS) & 0xFE800000)
 #define IMAGE_OUT(addr, c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + addr) = (c))
+	MMIO_OUT32(pTrident->IOBase, addr, (c))
 #define BLADE_OUT(addr, c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + addr) = (c))
+	MMIO_OUT32(pTrident->IOBase, addr, (c))
 #define TGUI_OUTL(addr, c) \
-	(*(volatile CARD32 *)(pTrident->IOBase + addr) = (c))
+	MMIO_OUT32(pTrident->IOBase, addr, (c))
 #define TGUI_COMMAND(c) \
-	(*(volatile CARD8 *)(pTrident->IOBase + GER_COMMAND) = (c))
+	MMIO_OUT8(pTrident->IOBase, GER_COMMAND, (c))
 #define OLDTGUI_COMMAND(c) \
 	do { \
 		OLDTGUI_OPERMODE(GE_OP); \
 		OLDTGUISync(); \
-		*(volatile CARD32 *)(pTrident->IOBase + OLDGER_COMMAND) = (c); \
+		MMIO_OUT32(pTrident->IOBase, OLDGER_COMMAND, (c)); \
 	} while (0)
+
+/* Cyber FP support */
+#define SHADOW_ENABLE(oldval) \
+        do {\
+	       OUTB(0x3CE, CyberControl); \
+	       oldval = INB(0x3CF);\
+	       OUTB(0x3CF,oldval | (1 << 6));\
+        } while (0)
+#define SHADOW_RESTORE(val) \
+        do {\
+               OUTB(0x3CE, CyberControl); \
+	       OUTB(0x3CF,tmp); \
+        } while (0);

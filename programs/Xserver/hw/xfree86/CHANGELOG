@@ -1,3 +1,7 @@
+ 227. Fixed FP chipset handling in Trident driver. LCD-CRT switching
+      should work now (Egbert Eich).
+ 226. Modified device detection on PCI bus to handle Host-to-PCI bridges
+      better (Egbert Eich).
  225. Fix i810 driver so it advertises 32bpp pixmaps in depth 24 like the
       rest of the drivers do (Mark Vojkovich).
  224. Added a call ioperm() to to allow vm86 to execute in/out calls
