@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.32 94/04/09 21:46:51 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.0 1994/05/21 23:39:26 dawes Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -66,6 +66,7 @@ ibm.cf \
 linux.cf \
 luna.cf \
 macII.cf \
+mach.cf \
 minix.cf \
 moto.cf \
 ncr.cf \
