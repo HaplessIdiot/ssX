@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 107. Fix fatal bug in XAA's N-to-N CopyPlane acceleration (Elliot Lee).
  106. Add RandR support to the Kdrive PCMCIA driver (Alan Hourihane).
  105. Fix SharedLibGL to SharedLibGlx in cygwin.rules and some Cygwin/XFree86
       fixes including enabling backing store. (#4770, #4771 Harold Hunt).
@@ -13505,4 +13506,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1852 2001/06/20 12:55:21 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1853 2001/06/20 21:53:28 alanh Exp $
