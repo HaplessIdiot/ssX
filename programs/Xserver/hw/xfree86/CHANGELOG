@@ -1,4 +1,5 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 470. Fix backing store in Rage 128 and Radeon drivers (Kevin Martin).
  469. Fix Mono8x8 code in savage driver, needed ROP_NEEDS_SOURCE, also
       add NO_PLANEMASK to ScreenToScreen as code doesn't handle that case
       (Alan Hourihane).
@@ -15479,4 +15480,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2382 2002/11/08 17:41:06 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2383 2002/11/08 18:03:28 alanh Exp $

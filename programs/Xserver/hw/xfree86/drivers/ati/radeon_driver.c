@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.69 2002/10/30 15:57:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.70 2002/11/01 19:10:20 keithp Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -3817,13 +3817,6 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
-				/* Backing store setup */
-    miInitializeBackingStore(pScreen);
-    xf86SetBackingStore(pScreen);
-
-				/* Set Silken Mouse */
-    xf86SetSilkenMouse(pScreen);
-
 				/* Acceleration setup */
     if (!xf86ReturnOptValBool(info->Options, OPTION_NOACCEL, FALSE)) {
 	if (RADEONAccelInit(pScreen)) {
@@ -3846,6 +3839,13 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 				/* DGA setup */
     RADEONDGAInit(pScreen);
+
+				/* Backing store setup */
+    miInitializeBackingStore(pScreen);
+    xf86SetBackingStore(pScreen);
+
+				/* Set Silken Mouse */
+    xf86SetSilkenMouse(pScreen);
 
 				/* Cursor setup */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
