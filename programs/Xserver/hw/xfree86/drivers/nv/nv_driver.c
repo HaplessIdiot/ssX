@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.70 2001/07/25 00:39:11 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.71 2001/08/07 07:04:49 keithp Exp $ */
 
 #include "nv_include.h"
 
@@ -890,7 +890,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 
     pNv->Primary = xf86IsPrimaryPci(pNv->PciInfo);
 
-#ifndef __alpha__
+#if !defined(__alpha__) && !defined(__powerpc__)
     /* Initialize the card through int10 interface if needed */
 #if 0
      if ( !pNv->Primary &&)
@@ -1286,8 +1286,11 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	
     pNv->FbMapSize = pScrn->videoRam * 1024;
 
+#if !defined(__powerpc__)
     /* Read and print the Monitor DDC info */
     pScrn->monitor->DDC = NVdoDDC(pScrn);
+#endif
+
 #if 0
     /*
      * This code was for testing. It will be removed as soon
@@ -1615,6 +1618,18 @@ NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     if ( pNv->Restore )
         (*pNv->Restore)(pScrn, vgaReg, nvReg, FALSE);
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    /* turn on LFB swapping */
+    {
+	unsigned char tmp;
+
+	VGA_WR08(pNv->riva.PCIO, 0x3d4, 0x46);
+	tmp = VGA_RD08(pNv->riva.PCIO, 0x3d5);
+	tmp |= (1 << 7);
+	VGA_WR08(pNv->riva.PCIO, 0x3d5, tmp);
+    }
+#endif
 
     NVResetGraphics(pScrn);
 
@@ -1949,7 +1964,14 @@ NVSave(ScrnInfoPtr pScrn)
     vgaRegPtr vgaReg = &pVga->SavedReg;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVSave\n"));
+#if defined(__powerpc__)
+    /* temporary hack to get around PowerMac's inability to save
+     * vga fonts and cmap, will find a better solution later
+     */
+    vgaHWSave(pScrn, vgaReg, VGA_SR_MODE);
+#else
     vgaHWSave(pScrn, vgaReg, VGA_SR_CMAP|VGA_SR_MODE|VGA_SR_FONTS);
+#endif
     pNv->riva.UnloadStateExt(&pNv->riva, nvReg);
 }
 

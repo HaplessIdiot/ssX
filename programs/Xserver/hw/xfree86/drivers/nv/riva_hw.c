@@ -36,13 +36,14 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.15 2001/08/17 13:27:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.16 2001/09/07 01:28:35 mvojkovi Exp $ */
 
 #include "nv_local.h"
-#include "riva_hw.h"
-#include "riva_tbl.h"
 #include "compiler.h"
 #include "nv_include.h"
+#include "riva_hw.h"
+#include "riva_tbl.h"
+
 /*
  * This file is an OS-agnostic file used to make RIVA 128 and RIVA TNT
  * operate identically (except TNT has more memory and better 3D quality.
@@ -1922,6 +1923,11 @@ static void nv10GetConfig
 )
 {
     RIVA_HW_INST *chip = &pNv->riva;
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    /* turn on big endian register access */
+    chip->PMC[0x00000004/4] = 0x01000001;
+#endif
 
     /*
      * Fill in chip configuration.
