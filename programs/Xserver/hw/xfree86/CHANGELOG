@@ -1,4 +1,9 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 374. Add support for th_TH.UTF-8. with XIM (#5336, Theppitak Karoonboonyanan).
+ 373. Fix some bugs in the Thai XIM:
+       - excessive '(' char when switching XKB keyboard group
+       - ineffective Ctrl-<key> and Alt-<key>
+      (#5335, Theppitak Karoonboonyanan).
  372. Add an X server command line flag (-br) to make the default root window
       solid black (#5334, Jens Owen).
  371. Add support for th_TH.ISO-8859-11 (#5327, Theppitak Karoonboonyanan).
@@ -15265,4 +15270,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2329 2002/10/08 22:44:04 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2330 2002/10/08 23:55:18 dawes Exp $
