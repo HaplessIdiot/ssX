@@ -1,4 +1,13 @@
 XFree86 3.9c (xx May 1997)
+ 824. Fix typos in NetBSD.cf and OpenBSD.cf (#491, Takaaki Nomura).
+ 823. Update sun.cf with the version numbers of more recent Sun ProWorks
+      compilers (#489, William Austin).
+ 822. TOG fix for the lib/X11 -xrm buffer overflow (#487, Kaleb Keithley).
+ 821. XInput doc updates (#486, Frederic Lepied).
+ 820. Fix SuperProbe's memory size detection for the ATI 264VT-B, 264GT-B,
+      264LT and above, and fix SuperProbe's detection of the 264LT
+      (#481, Marc Aurele La France).
+ 819. New entries for the Monitors db (#478, collected by Andrew Vanderstock).
  818. Enable building support for the NetBSD/OpenBSD/Solaris aperture
       drivers by default.
  817. Have postinst.sh optionally install a link in /usr/bin to rstartd.
@@ -4611,4 +4620,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.473 1997/05/19 10:04:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.474 1997/05/21 15:17:02 dawes Exp $

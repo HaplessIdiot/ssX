@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.13 1997/01/22 11:07:57 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.14 1997/05/21 15:17:09 dawes Exp $
 #
 # postinst.sh (for XFree86 3.2A)
 #
@@ -124,12 +124,12 @@ if [ -f /usr/X11R6/bin/rstartd ]; then
 fi
 
 case `uname` in
-	FreeBSD)
+	FreeBSD|NetBSD|OpenBSD)
 		echo ""
 		echo "Running ldconfig"
 		/sbin/ldconfig -m /usr/X11R6/lib
 		;;
-	Linux|NetBSD|OpenBSD)
+	Linux)
 		echo ""
 		echo "You may need to reboot (or run ldconfig) before the"
 		echo "newly installed shared libraries can be used."

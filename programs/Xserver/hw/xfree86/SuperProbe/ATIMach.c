@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.10 1997/03/27 18:38:14 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -311,23 +311,12 @@ int Chipset;
 				break;
 			}
 		} else {
-			switch (tmp & 0x0000000F)
-			{
-			case 0x03:
-				Mem = 2048;
-				break;
-			case 0x07:
-				Mem = 4096;
-				break;
-			case 0x09:
-				Mem = 6144;
-				break;
-			case 0x0B:
-				Mem = 8192;
-				break;
-			default:
-				break;
-			}
+			if ((tmp &= 0x0000000F) < 8)
+				Mem = (tmp + 1) * 512;
+			else if (tmp < 12)
+				Mem = (tmp - 3) * 1024;
+			else
+				Mem = (tmp - 7) * 2048;
 		}
 		DisableIOPorts(1, &ATIMach64MEM_INFO);
 	}

@@ -94,6 +94,7 @@ Note: Not all systems listed here have been tested with the current release.
 	<ITEM>LynxOS AT 2.3.0, 2.4.0, 2.5.0
 	<ITEM>LynxOS microSPARC 2.4.0 2.5.0
 	<ITEM>LynxOS PowerPC 2.4.0, 2.5.0
+	<ITEM>OS/2 Warp 3 FP5/17/22, Warp 4 -/FP1
 	</itemize>	
 
     <tag/PC98:/
@@ -616,6 +617,12 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item>Leonard N. Zubkoff <it>&lt;lnz@dandelion.com&gt;</it>
 </itemize>
 
+<tag/ViRGE SVGA driver by:  /
+<itemize>
+       <item>Sebastien Marineau <it>&lt;marineau@genie.uottawa.ca&gt;</it>,
+       <item>Harald Koenig <it>&lt;koenig@tat.physik.uni-tuebingen.de&gt;</it>
+</itemize>
+
 <tag/Tseng ET4000 and ET6000 SVGA driver by:  /
 <itemize>
        <item>[Unknown authors]
@@ -1039,7 +1046,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.80 1997/05/17 12:02:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.81 1997/05/18 12:12:10 dawes Exp $
 
 
 

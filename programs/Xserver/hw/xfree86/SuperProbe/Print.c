@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.53 1997/05/06 11:53:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.54 1997/05/21 15:17:05 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -185,8 +185,9 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Alliance Semiconductor ProMotion 6422",
 		  "Alliance Semiconductor ProMotion AT24" },
 /* Matrox */	{ "Matrox (chipset unknown)",
+		  "Matrox Atlas",
 		  "Matrox Millennium",
-		  "Matrox Atlas" },
+		  "Matrox Mystique" },
 /* Sigma Designs */	{ "Sigma Designs (chipset unknown)",
 		  "Sigma Designs REALmagic64/GX (SD 6425)" },
 };
@@ -268,7 +269,9 @@ struct RamDac_Name RamDac_Names[] =
 	{ "ICS5341",
 	  "ICS5341 SDAC 15/16/24-bit DAC w/pixel-mux w/clock-PLL" },
 	{ "ICS5301",
-	  "ICS5301 GENDAC 15/16/24-bit DAC w/clock-PLL" }
+	  "ICS5301 GENDAC 15/16/24-bit DAC w/clock-PLL" },
+	{ "MGA1064SG",
+	  "Matrox Mystique built-in DAC w/clock" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 

@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.30 1997/05/14 08:04:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.31 1997/05/21 15:17:06 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -1157,6 +1157,8 @@ int *RamDac;
 			*RamDac = DAC_BT485;
 		if (Chipset == CHIP_MGA2064W)
 			*RamDac = DAC_TVP3026;
+		if (Chipset == CHIP_MGA1064SG)
+			*RamDac = DAC_MGA1064SG;
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	}

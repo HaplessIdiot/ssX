@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.26 1997/04/08 10:14:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.27 1997/04/13 13:57:23 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -86,6 +86,7 @@
 #endif
 
 /* Matrox */
+#define PCI_CHIP_MGA2085	0x0518
 #define PCI_CHIP_MGA2064	0x0519
 #define PCI_CHIP_MGA1064	0x051a
 
@@ -239,6 +240,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 #endif
 				{0x0000,		NULL}}},
     {PCI_VENDOR_MATROX,	"Matrox", {
+				{PCI_CHIP_MGA2085,	"MGA 2085PX"},
 				{PCI_CHIP_MGA2064,	"MGA 2064W"},
 				{PCI_CHIP_MGA1064,	"MGA 1064SG"},
 				{0x0000,		NULL}}},

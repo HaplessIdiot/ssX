@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: sun.cf /main/161 1997/04/17 14:11:29 barstow $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.32 1997/05/03 09:14:38 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.33 1997/05/21 15:16:58 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -76,16 +76,19 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #if HasSunC 
 # ifndef CCompilerMajorVersion
-#  define CCompilerMajorVersion 2
+#  define CCompilerMajorVersion 3
+#  define DefaultCDebugFlags	-xO3
+#  define OptimizedCDebugFlags	-xO3
 # endif
 #endif
 
 #if HasSunCplusplus
 # ifndef HasCplusplus
 #  define HasCplusplus YES
+#  define OptimizedCplusplusDebugFlags	-xO3
 # endif
 # ifndef CplusplusCompilerMajorVersion
-#  define CplusplusCompilerMajorVersion 3
+#  define CplusplusCompilerMajorVersion	4
 # endif
 #endif
 
