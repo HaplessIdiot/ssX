@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.11 2002/07/24 19:06:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.13 2002/11/25 14:05:03 eich Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -89,7 +89,8 @@ static int	    pciNumDomains = 0;
  * which don't have as many hoses.
  */
 #if 0
-# define FORCE_HIGH_DOMAINS MAX_DOMAINS /* assign domains downward from here */#endif
+# define FORCE_HIGH_DOMAINS MAX_DOMAINS /* assign domains downward from here */
+#endif
 
 /*
  * If FORCE_HIGH_DOMAINS is set, make sure it's not larger than the
