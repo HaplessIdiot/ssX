@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.30 1999/01/03 03:58:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.31 1999/01/12 06:24:23 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -36,9 +36,12 @@ extern Bool xf86bsEnableFlag;
 extern Bool xf86bsDisableFlag;
 extern char *xf86LayoutName;
 extern char *xf86ScreenName;
+#ifdef KEEPBPP
 extern int xf86Bpp;
+#endif
 extern int xf86FbBpp;
 extern int xf86Depth;
+extern Pix24Flags xf86Pix24;
 extern rgb xf86Weight;
 extern Bool xf86FlipPixels;
 extern Bool xf86BestRefresh;
@@ -51,6 +54,7 @@ extern Bool xf86ShowUnresolved;
 extern xf86InfoRec xf86Info;
 extern char *xf86ModulePath;
 extern serverLayoutRec xf86ConfigLayout;
+extern Pix24Flags xf86ConfigPix24;
 
 extern unsigned short xf86MouseCflags[];
 extern Bool xf86SupportedMouseTypes[];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.85 1999/01/11 05:13:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.86 1999/01/12 06:24:22 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -80,6 +80,18 @@ static char *baseModules[] = {
 };
 #endif
 
+/* Common pixmap formats */
+
+static PixmapFormatRec formats[MAXFORMATS] = {
+	{ 1,	1,	BITMAP_SCANLINE_PAD },
+	{ 4,	8,	BITMAP_SCANLINE_PAD },
+	{ 8,	8,	BITMAP_SCANLINE_PAD },
+	{ 15,	16,	BITMAP_SCANLINE_PAD },
+	{ 16,	16,	BITMAP_SCANLINE_PAD },
+	{ 24,	32,	BITMAP_SCANLINE_PAD }
+};
+static int numFormats = 6;
+
 /*
  * InitOutput --
  *	Initialize screenInfo for all actually accessible framebuffers.
@@ -91,14 +103,15 @@ void
 InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 {
   int                    i, j, k, scr_index;
-  static int             numFormats = 0;
-  static PixmapFormatRec formats[MAXFORMATS];
   static unsigned long   generation = 0;
 #ifdef XFree86LOADER
   char                   **modulelist;
   pointer                *optionlist;
 #endif
   screenLayoutPtr	 layout;
+  Pix24Flags		 screenpix24, pix24;
+  MessageType		 pix24From = X_DEFAULT;
+  Bool			 pix24Fail = FALSE;
 
 #ifdef __EMX__
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
@@ -404,6 +417,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * level.  Should we die here?  Or just delete the offending screens?
      * Also, should this be done for -probeonly?
      */
+    screenpix24 = Pix24DontCare;
     for (i = 0; i < xf86NumScreens; i++) {
 	if (xf86Screens[i]->imageByteOrder !=
 	    xf86Screens[0]->imageByteOrder)
@@ -418,9 +432,42 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	    xf86Screens[0]->bitmapBitOrder)
 	    FatalError("Inconsistent display bitmapBitOrder.  Exiting\n");
 
-	/*
-	 * Collect pixmap formats
-	 */
+	/* Determine the depth 24 pixmap format the screens would like */
+	if (xf86Screens[i]->pixmap24 != Pix24DontCare) {
+	    if (screenpix24 == Pix24DontCare)
+		screenpix24 = xf86Screens[i]->pixmap24;
+	    else if (screenpix24 != xf86Screens[i]->pixmap24)
+		FatalError("Inconsistent depth 24 pixmap format.  Exiting\n");
+	}
+    }
+    /* check if screenpix24 is consistent with xf86Pix24/xf86ConfigPix24 */
+    if (xf86Pix24 != Pix24DontCare) {
+	pix24 = xf86Pix24;
+	pix24From = X_CMDLINE;
+	if (screenpix24 != Pix24DontCare && screenpix24 != xf86Pix24)
+	    pix24Fail = TRUE;
+    } else if (xf86ConfigPix24 != Pix24DontCare) {
+	pix24 = xf86ConfigPix24;
+	pix24From = X_CONFIG;
+	if (screenpix24 != Pix24DontCare && screenpix24 != xf86ConfigPix24)
+	    pix24Fail = TRUE;
+    } else if (screenpix24 != Pix24DontCare) {
+	pix24 = screenpix24;
+	pix24From = X_PROBED;
+    } else
+	pix24 = Pix24Use32;
+
+    if (pix24Fail)
+	FatalError("Screen(s) can't use the required depth 24 pixmap format"
+		   " (%d).  Exiting\n", PIX24TOBPP(pix24));
+
+    /* Initialise the depth 24 format */
+    for (j = 0; j < numFormats && formats[j].depth != 24; j++)
+	;
+    formats[j].bitsPerPixel = PIX24TOBPP(pix24);
+
+    /* Collect additional formats */
+    for (i = 0; i < xf86NumScreens; i++) {
 	for (j = 0; j < xf86Screens[i]->numFormats; j++) {
 	    for (k = 0; ; k++) {
 		if (k >= numFormats) {
@@ -443,6 +490,15 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	}
     }
 
+    /* If a screen uses depth 24, show what the pixmap format is */
+    for (i = 0; i < xf86NumScreens; i++) {
+	if (xf86Screens[i]->depth == 24) {
+	    xf86Msg(pix24From, "Depth 24 pixmap format is %d bpp\n",
+		    PIX24TOBPP(pix24));
+	    break;
+	}
+    }
+    
 #ifdef XKB
     xf86InitXkb();
 #endif
@@ -837,6 +893,13 @@ ddxProcessArgument(int argc, char **argv, int i)
   }
   if (!strcmp(argv[i], "-bpp"))
   {
+#ifndef KEEP_BPP
+    if (++i >= argc)
+      return 0;
+    ErrorF("The -bpp option is no longer supported."
+	   "  Use -depth and/or -fbbpp\n");
+    return 2;
+#else
     int bpp;
     if (++i >= argc)
       return 0;
@@ -850,6 +913,17 @@ ddxProcessArgument(int argc, char **argv, int i)
       ErrorF("Invalid bpp\n");
       return 0;
     }
+#endif
+  }
+  if (!strcmp(argv[i], "-pixmap24"))
+  {
+    xf86Pix24 = Pix24Use24;
+    return 1;
+  }
+  if (!strcmp(argv[i], "-pixmap32"))
+  {
+    xf86Pix24 = Pix24Use32;
+    return 1;
   }
   if (!strcmp(argv[i], "-fbbpp"))
   {
@@ -957,7 +1031,11 @@ ddxUseMsg()
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose               verbose startup messages\n");
   ErrorF("-quiet                 minimal startup messages\n");
+#ifdef KEEP_BPP
   ErrorF("-bpp n                 set number of bits per pixel. Default: 8\n");
+#endif
+  ErrorF("-pixmap24              use 24bpp pixmaps for depth 24\n");
+  ErrorF("-pixmap32              use 32bpp pixmaps for depth 24\n");
   ErrorF("-fbbpp n               set bpp for the framebuffer. Default: 8\n");
   ErrorF("-depth n               set colour depth. Default: 8\n");
   ErrorF("-gamma f               set gamma value (0.1 < f < 10.0) Default: 1.0\n");

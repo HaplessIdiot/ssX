@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.83 1998/11/22 10:37:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.84 1999/01/03 03:58:27 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -36,6 +36,9 @@ extern const unsigned char byte_reversed[256];
 	while (0)
 
 #define BOOLTOSTRING(b) ((b) ? "TRUE" : "FALSE")
+
+#define PIX24TOBPP(p) (((p) == Pix24Use24) ? 24 : \
+			(((p) == Pix24Use32) ? 32 : 0))
 
 /* Function Prototypes */
 #ifndef _NO_XF86_PROTOTYPES
@@ -104,7 +107,7 @@ void xf86DeleteDriver(int drvIndex);
 ScrnInfoPtr xf86AllocateScreen(DriverPtr drv, int flags);
 void xf86DeleteScreen(int scrnIndex, int flags);
 int xf86AllocateScrnInfoPrivateIndex(void);
-void xf86ResetScrnInfoPrivates(void);
+Bool xf86AddPixFormat(ScrnInfoPtr pScrn, int depth, int bpp, int pad);
 Bool xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int bpp, int fbbpp,
 		     int depth24flags);
 void xf86PrintDepthBpp(ScrnInfoPtr scrp);
@@ -147,6 +150,8 @@ void xf86GetClocks(ScrnInfoPtr pScrn, int num,
 const char *xf86GetVisualName(int visual);
 int xf86GetVerbosity(void);
 int xf86GetBpp(void);
+Pix24Flags xf86GetPix24(void);
+Pix24Flags xf86GetConfigPix24(void);
 int xf86GetDepth(void);
 rgb xf86GetWeight(void);
 Gamma xf86GetGamma(void);

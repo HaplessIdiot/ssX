@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.1.2.10 1998/06/22 13:53:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.2 1998/07/25 16:57:14 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -43,7 +43,7 @@ static xf86ConfigSymTabRec DisplayTab[] =
 	{BLACK_TOK, "black"},
 	{WHITE_TOK, "white"},
 	{DEPTH, "depth"},
-	{BPP, "bpp"},
+	{BPP, "fbbpp"},
 	{WEIGHT, "weight"},
 	{OPTION, "option"},
 	{-1, ""},
@@ -329,7 +329,7 @@ printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 			}
 			if (dptr->disp_bpp)
 			{
-				fprintf (cf, "\t\tBPP       %d\n", dptr->disp_bpp);
+				fprintf (cf, "\t\tFbBPP     %d\n", dptr->disp_bpp);
 			}
 			if (dptr->disp_visual)
 			{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.155 1998/12/20 13:16:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.156 1999/01/12 06:24:20 dawes Exp $ */
 
 
 /*
@@ -395,7 +395,8 @@ typedef enum {
     FLAG_SAVER_BLANKTIME,
     FLAG_DPMS_STANDBYTIME,
     FLAG_DPMS_SUSPENDTIME,
-    FLAG_DPMS_OFFTIME
+    FLAG_DPMS_OFFTIME,
+    FLAG_PIXMAP
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -430,6 +431,8 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_DPMS_SUSPENDTIME,	"SuspendTime",			OPTV_INTEGER,
 	{0}, FALSE },
   { FLAG_DPMS_OFFTIME,		"OffTime",			OPTV_INTEGER,
+	{0}, FALSE },
+  { FLAG_PIXMAP,		"Pixmap",			OPTV_INTEGER,
 	{0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
 	{0}, FALSE }
@@ -511,6 +514,21 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	DPMSOffTime = defaultDPMSOffTime = i * MILLI_PER_MIN;
 #endif
 
+    i = -1;
+    xf86GetOptValInteger(FlagOptions, FLAG_PIXMAP, &i);
+    switch (i) {
+    case 24:
+	xf86ConfigPix24 = Pix24Use24;
+	break;
+    case 32:
+	xf86ConfigPix24 = Pix24Use32;
+	break;
+    case -1:
+	break;
+    default:
+	xf86ConfigError("Pixmap option's value (%d) must be 24 or 32\n", i);
+	return FALSE;
+    }
     return TRUE;
 }
 
@@ -1366,6 +1384,7 @@ configDisplay(DispPtr displayp, XF86ConfDisplayPtr conf_display)
     displayp->virtualX     = conf_display->disp_virtualX;
     displayp->virtualY     = conf_display->disp_virtualY;
     displayp->depth        = conf_display->disp_depth;
+    displayp->fbbpp        = conf_display->disp_bpp;
     displayp->weight.red   = conf_display->disp_weight.red;
     displayp->weight.green = conf_display->disp_weight.green;
     displayp->weight.blue  = conf_display->disp_weight.blue;

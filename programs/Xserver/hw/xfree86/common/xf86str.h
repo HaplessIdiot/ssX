@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.12 1998/12/20 13:16:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.13 1999/01/12 06:24:23 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -254,7 +254,7 @@ typedef struct {
     int			virtualX;
     int			virtualY;
     int			depth;
-    int			bpp;
+    int			fbbpp;
     rgb			weight;
     int			defaultVisual;
     char **		modes;
@@ -307,6 +307,13 @@ typedef enum {
     X_INFO,			/* Informational message */
     X_NONE			/* No prefix */
 } MessageType;
+
+/* flags for depth 24 pixmap options */
+typedef enum {
+    Pix24DontCare = 0,
+    Pix24Use24,
+    Pix24Use32
+} Pix24Flags;
 
 /*
  * The driver list struct.  This contains the information required for each
@@ -376,7 +383,10 @@ typedef struct _ScrnInfoRec {
     PixmapFormatRec	fbFormat;
 
     int			bitsPerPixel;		/* fb bpp */
+#ifndef KEEP_BPP
     int			pixmapBPP;		/* bpp of default visual */
+#endif
+    Pix24Flags		pixmap24;		/* pixmap pref for depth 24 */
     int			depth;			/* depth of default visual */
     MessageType		depthFrom;		/* set from config? */
     MessageType		bitsPerPixelFrom;	/* set from config? */
@@ -518,8 +528,8 @@ typedef enum {
     Support32bppFb		= 0x02,	/* 32bpp framebuffer supported */
     SupportConvert24to32	= 0x04,	/* Can convert 24bpp pixmap to 32bpp */
     SupportConvert32to24	= 0x08,	/* Can convert 32bpp pixmap to 24bpp */
-    ForceConvert24to32		= 0x10, /* Force 24bpp pixmap to 32bpp conv */
-    ForceConvert32to24		= 0x20	/* Force 32bpp pixmap to 24bpp conv */
+    PreferConvert24to32		= 0x10, /* prefer 24bpp pixmap to 32bpp conv */
+    PreferConvert32to24		= 0x20	/* prefer 32bpp pixmap to 24bpp conv */
 } Depth24Flags;
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.50 1998/12/07 06:56:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.51 1999/01/03 03:58:46 dawes Exp $ */
 
 /*
  *
@@ -242,6 +242,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86AllocateScreen)
    SYMFUNC(xf86DeleteScreen)
    SYMFUNC(xf86AllocateScrnInfoPrivateIndex)
+   SYMFUNC(xf86AddPixFormat)
    SYMFUNC(xf86SetDepthBpp)
    SYMFUNC(xf86PrintDepthBpp)
    SYMFUNC(xf86SetWeight)
@@ -269,6 +270,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetVerbosity)
    SYMFUNC(xf86GetVisualName)
    SYMFUNC(xf86GetBpp)
+   SYMFUNC(xf86GetPix24)
+   SYMFUNC(xf86GetConfigPix24)
    SYMFUNC(xf86GetDepth)
    SYMFUNC(xf86GetWeight)
    SYMFUNC(xf86GetGamma)
