@@ -220,7 +220,7 @@
      5. If you want to be able to format the XFree86 documentation
         (which is now in LinuxDoc/SGML form), you will need to get and
         install linuxdoc-sgml-1.1.tar.gz plus the patches which can be
-        found on ftp.xfree86.org:/pub/XFree86/3.1.1/LinuxDoc
+        found on ftp.xfree86.org:/pub/XFree86/3.1.1/Linuxdoc
         (ftp://ftp.xfree86.org/pub/XFree86/3.1.1/Linuxdoc).  Check in
         the xf86site.def file and uncomment the appropriate Linuxdoc
         options.
@@ -312,7 +312,7 @@
   (LinkKit.html) file.
 
   $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.6 1995/01/28 16:01:30 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.7 1995/01/30 03:37:10 dawes Exp $
 
 
 

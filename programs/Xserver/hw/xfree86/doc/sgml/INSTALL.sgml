@@ -206,7 +206,7 @@ and other sites archiving GNU source.)
 <item> If you want to be able to format the XFree86 documentation
    (which is now in LinuxDoc/SGML form), you will need to get and install
    linuxdoc-sgml-1.1.tar.gz plus the patches which can be found on
-   <url name="ftp.xfree86.org:/pub/XFree86/3.1.1/LinuxDoc"
+   <url name="ftp.xfree86.org:/pub/XFree86/3.1.1/Linuxdoc"
     url="ftp://ftp.xfree86.org/pub/XFree86/3.1.1/Linuxdoc">.  Check
    in the <tt/xf86site.def/ file and uncomment the appropriate Linuxdoc
    options.
@@ -295,7 +295,7 @@ name="README.LinkKit"> file.
 
 <verb>
 $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.5 1995/01/25 11:51:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.6 1995/01/28 16:01:30 dawes Exp $
 </verb>
 
 </article>
