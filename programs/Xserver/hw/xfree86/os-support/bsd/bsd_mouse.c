@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.17 2000/12/18 15:52:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.18 2001/02/03 19:33:05 herrb Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -16,7 +16,11 @@
 #include <dev/wscons/wsconsio.h>
 #endif
 #ifdef USBMOUSE_SUPPORT
+#ifdef HAS_LIB_USB_HID
+#include <usbhid.h>
+#else
 #include "usb.h"
+#endif
 
 #define HUP_GENERIC_DESKTOP     0x0001
 #define HUP_BUTTON              0x0009

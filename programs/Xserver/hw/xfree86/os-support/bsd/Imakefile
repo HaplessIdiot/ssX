@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.48 2001/09/18 20:49:39 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.49 2001/09/19 19:51:33 herrb Exp $
 
 #include <Server.tmpl>
 
@@ -63,14 +63,18 @@ MTRRDEFINES = -DHAS_MTRR_BUILTIN
 #endif
 
 #if UsbMouseSupport
-USBMOUSEDEFINES = -DUSBMOUSE_SUPPORT
+USBMOUSEDEFINES1 = -DUSBMOUSE_SUPPORT
 #if !HasLibUsb
 LIBUSBINCLUDES = -Ilibusb
 #define IHaveSubdirs
 SUBDIRS = libusb
+#else
+#if HasLibUsbHid
+USBMOUSEDEFINES2 = -DHAS_LIB_USB_HID
 #endif
 #endif
-
+#endif
+USBMOUSEDEFINES = $(USBMOUSEDEFINES1) $(USBMOUSEDEFINES2)
 
 #if (defined(OpenBSDArchitecture) || defined(NetBSDArchitecture)) && defined(i386Architecture)
 # if !defined(HasApmKqueue) || !HasApmKqueue
