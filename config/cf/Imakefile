@@ -1,10 +1,12 @@
 XCOMM $XConsortium: Imakefile,v 1.32 94/04/09 21:46:51 rws Exp $
+XCOMM $XFree86$
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
 #endif
 
 DEFFILES = \
+xf86site.def \
 site.def
 
 RULEFILES = \
@@ -21,6 +23,7 @@ osfLib.rules \
 sgiLib.rules \
 sunLib.rules \
 sv4Lib.rules \
+sv3Lib.rules \
 xf86.rules
 
 TMPLFILES = \
@@ -39,7 +42,8 @@ ibmLib.tmpl \
 necLib.tmpl \
 osfLib.tmpl \
 sunLib.tmpl \
-sv4Lib.tmpl
+sv4Lib.tmpl \
+sv3Lib.tmpl
 
 CFFILES = \
 Imake.cf \
@@ -62,6 +66,7 @@ ibm.cf \
 linux.cf \
 luna.cf \
 macII.cf \
+minix.cf \
 moto.cf \
 ncr.cf \
 nec.cf \
@@ -73,6 +78,8 @@ sgi.cf \
 sony.cf \
 sun.cf \
 svr4.cf \
+svr3.cf \
+sco.cf \
 ultrix.cf \
 usl.cf \
 x386.cf \
