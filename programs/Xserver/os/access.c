@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.35 2001/11/06 16:11:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.36 2001/11/16 16:47:57 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -473,7 +473,9 @@ DefineSelf (int fd)
 	
     struct	sockaddr_in	*inetaddr;
     struct sockaddr_in broad_addr;
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
     _Xgethostbynameparams hparams;
+#endif
 
     /* Why not use gethostname()?  Well, at least on my system, I've had to
      * make an ugly kernel patch to get a name longer than 8 characters, and
@@ -914,7 +916,9 @@ ResetHosts (char *display)
 #endif /* SECURE_RPC */
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	{
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
 	    _Xgethostbynameparams hparams;
+#endif
 
     	    /* host name */
     	    if ((family == FamilyInternet &&

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.12 2001/07/25 15:04:43 dawes Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.13 2001/10/28 03:32:29 tsi Exp $ */
 
 /*
  * Author: Ralph Mor, X Consortium
@@ -112,10 +112,9 @@ static char *hex_table[] = {	/* for generating client IDs */
 
 char *
 SmsGenerateClientID (smsConn)
-
-SmsConn smsConn;
-
+    SmsConn smsConn;
 {
+#if defined(TCPCONN) || defined(STREAMSCONN)
     char hostname[256];
     char address[14];
     char temp[256];
@@ -125,13 +124,14 @@ SmsConn smsConn;
     if (gethostname (hostname, sizeof (hostname)))
 	return (NULL);
 
-#if defined(TCPCONN) || defined(STREAMSCONN)
     {
     char* inet_addr;
     char temp[4], *ptr1, *ptr2;
     unsigned char decimal[4];
     int i, len;
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
     _Xgethostbynameparams hparams;
+#endif
     struct hostent *hostp;
 
     if ((hostp = _XGethostbyname (hostname,hparams)) != NULL)
@@ -157,9 +157,6 @@ SmsConn smsConn;
     for (i = 0; i < 4; i++)
 	strcat (address, hex_table[decimal[i]]);
     }
-#else
-    return (NULL);
-#endif
 
     sprintf (temp, "1%s%.13ld%.10ld%.4d", address, time((Time_t*)0),
         (long)getpid(), sequence);
@@ -171,4 +168,7 @@ SmsConn smsConn;
 	strcpy (id, temp);
 
     return (id);
+#else
+    return (NULL);
+#endif
 }
