@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.91 2000/02/15 13:51:38 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.92 2000/03/21 19:56:54 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -478,7 +478,7 @@ InstallManPageAliasesBase(file,destdir,aliases)
  * A hack to work around an optimisation problem with the compiler on
  * FreeBSD 4.0-current in late 1999/early 2000.
  */
-#if OSMajorVersion == 4 && OSMinorVersion == 0 && OSTeenyVersion == 0
+#if OSMajorVersion >= 4
 #define FreeBSDGccOptBug
 #endif
 

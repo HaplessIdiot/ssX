@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.77 2000/05/11 18:14:06 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.78 2000/05/18 00:33:16 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -592,6 +592,15 @@ TCLIBDIR = TclLibDir
 #else
 #define VarLibDir /var/lib
 #endif
+#endif
+
+/*
+ * SystemUsrLibDir is independent of ProjectRoot.  It is used primarily
+ * to allow links for shared libraries in /usr/lib for compliance to
+ * various standards (e.g., Linux/OpenGL).
+ */
+#ifndef SystemUsrLibDir
+#define SystemUsrLibDir /usr/lib
 #endif
 
 #ifndef ShLibDir
@@ -1307,6 +1316,7 @@ TCLIBDIR = TclLibDir
           INCROOT = IncRoot		/* base of where to put header files */
         USRLIBDIR = UsrLibDir		/* nonshared libraries */
         VARLIBDIR = VarLibDir		/* xdm runtime files */
+  SYSTEMUSRLIBDIR = SystemUsrLibDir	/* system's "/usr/lib" */
          SHLIBDIR = ShLibDir            /* shared libraries */
        LINTLIBDIR = LintlibDir		/* lint libraries */
           MANPATH = ManPath		/* top of manual page tree */

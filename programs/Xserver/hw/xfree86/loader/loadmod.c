@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.51 2000/03/18 19:30:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.52 2000/04/05 18:13:50 dawes Exp $ */
 
 /*
  *
@@ -723,35 +723,6 @@ LoadSubModule(ModuleDescPtr parent, const char *module,
 	}
 	return submod;
 }
-
-#if 0
-void
-LoadExtension (ExtensionModule *e)
-{
-	int i;
-
-	if (e == NULL)
-		return;
-	xf86MsgVerb(X_INFO, 2, "Loading extension %s\n", e->name);
-
-	for (i = 0; extension[i].name != NULL; i++)
-	{
-		if (strcmp (extension[i].name, e->name) == 0)
-		{
-			extension[i].initFunc = e->initFunc;
-			extension[i].disablePtr = e->disablePtr;
-			if (e->setupFunc != NULL)
-				e->setupFunc();
-			break;
-		}
-	}
-	if (extension[i].name == NULL)
-	{
-		xf86MsgVerb(X_WARNING, 0,
-			"Extension \"%s\" is not recognised\n", e->name);
-	}
-}
-#endif
 
 ModuleDescPtr
 DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
