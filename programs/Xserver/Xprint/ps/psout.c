@@ -1,4 +1,4 @@
-/* $Xorg: psout.c,v 1.5 2000/08/17 19:48:11 cpqbld Exp $ */
+/* $Xorg: psout.c,v 1.6 2000/11/08 17:20:06 pookie Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.6 1999/12/13 02:13:03 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.c,v 1.7 2001/01/17 22:36:32 dawes Exp $ */
 
 /*      
  * For XFree86 3.3.3:  
@@ -140,6 +140,7 @@ typedef struct PsOutRec_
   int         NDownloads;
   int         MxDownloads;
   char      **Downloads;
+  Bool        isRaw;
 } PsOutRec;
 
 /*
@@ -560,7 +561,7 @@ S_SetPageDevice(PsOutPtr self, int orient, int count, int plex, int res,
 
 PsOutPtr
 PsOut_BeginFile(FILE *fp, int orient, int count, int plex, int res,
-                int wd, int ht)
+                int wd, int ht, Bool raw)
 {
   int  i;
 /*
@@ -570,27 +571,30 @@ PsOut_BeginFile(FILE *fp, int orient, int count, int plex, int res,
   psout = (PsOutPtr)xalloc(sizeof(PsOutRec));
   memset(psout, 0, sizeof(PsOutRec));
   psout->Fp = fp;
+  psout->isRaw = raw;
   pagenum = 0;
 
+  if (!raw) {
 /*
  *  Output PostScript header
  */
-  S_Comment(psout, "%!PS-Adobe-3.0 EPSF-3.0");
-  S_Comment(psout, "%%Creator: The Open Group PostScript Print Server");
-  /*### BoundingBox ###*/
-  S_Comment(psout, "%%EndComments");
-  S_Comment(psout, "%%BeginProlog");
-  S_Comment(psout, "%%BeginProcSet: XServer_PS_Functions");
-  S_OutDefs(psout, S_StandardDefs);
-  S_OutDefs(psout, S_CompositeDefs);
-  S_Comment(psout, "%%EndProcSet");
-  S_Comment(psout, "%%EndProlog");
-  S_Comment(psout, "%%BeginSetup");
-  /* set document level page attributes */
-  S_SetPageDevice(psout, orient, count, plex, res, wd, ht, 0);
-  S_Comment(psout, "%%Pages: atend");
-  S_OutDefs(psout, S_SetupDefs);
-  S_Comment(psout, "%%EndSetup");
+      S_Comment(psout, "%!PS-Adobe-3.0 EPSF-3.0");
+      S_Comment(psout, "%%Creator: The Open Group PostScript Print Server");
+      /*### BoundingBox ###*/
+      S_Comment(psout, "%%EndComments");
+      S_Comment(psout, "%%BeginProlog");
+      S_Comment(psout, "%%BeginProcSet: XServer_PS_Functions");
+      S_OutDefs(psout, S_StandardDefs);
+      S_OutDefs(psout, S_CompositeDefs);
+      S_Comment(psout, "%%EndProcSet");
+      S_Comment(psout, "%%EndProlog");
+      S_Comment(psout, "%%BeginSetup");
+      /* set document level page attributes */
+      S_SetPageDevice(psout, orient, count, plex, res, wd, ht, 0);
+      S_Comment(psout, "%%Pages: atend");
+      S_OutDefs(psout, S_SetupDefs);
+      S_Comment(psout, "%%EndSetup");
+  }
 /*
  *  Initialize the structure
  */
@@ -613,10 +617,12 @@ PsOut_EndFile(PsOutPtr self, int closeFile)
   char coms[50];
   int  i;
 
-  S_Comment(self,"%%Trailer");
-  sprintf(coms,"%%%%Pages: %d",pagenum);
-  S_Comment(self, coms);
-  S_Comment(self, "%%EOF");
+  if (!self->isRaw) {
+      S_Comment(self,"%%Trailer");
+      sprintf(coms,"%%%%Pages: %d",pagenum);
+      S_Comment(self, coms);
+      S_Comment(self, "%%EOF");
+  }
   if( self->NDashes && self->Dashes ) xfree(self->Dashes);
   if( self->FontName ) xfree(self->FontName);
   if( self->Patterns ) xfree(self->Patterns);
