@@ -27,7 +27,7 @@
  *	DESCRIPTION
  *		Public include file for X Color Management System
  */
-/* $XFree86: xc/lib/X11/Xcms.h,v 1.5 2001/01/17 19:41:49 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xcms.h,v 1.6 2003/04/13 19:22:19 dawes Exp $ */
 #ifndef _XCMS_H_
 #define _XCMS_H_
 
@@ -271,21 +271,21 @@ typedef Status (*XcmsConversionProc)(XcmsCCC, XcmsColor *, unsigned int,
  *       Until this is reworked, it's probably best to leave it unprotoized.
  *       The code works regardless.
  */
-#ifdef XCMS_CONVERSION_HARDWARE
-typedef Status (*XcmsConversionProc)( /* using device-dependent version */
+typedef Status (*XcmsDDConversionProc)( /* using device-dependent version */
     XcmsCCC             /* ccc */,
     XcmsColor*          /* pcolors_in_out */,
     unsigned int        /* ncolors */,
     Bool*               /* pCompressed */
     );
-#else
-typedef Status (*XcmsConversionProc)( /* using device-independent version */
+
+typedef Status (*XcmsDIConversionProc)( /* using device-independent version */
     XcmsCCC             /* ccc */,
     XcmsColor*          /* white_point */,
     XcmsColor*          /* pcolors_in_out */,
     unsigned int        /* ncolors */
     );
-#endif
+
+typedef XcmsDIConversionProc XcmsConversionProc;
 typedef XcmsConversionProc *XcmsFuncListPtr;
 
 typedef int (*XcmsParseStringProc)(	/* Color String Parsing Proc */
