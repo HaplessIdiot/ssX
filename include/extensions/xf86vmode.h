@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.23 1997/11/16 06:17:34 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.24 1998/10/02 07:39:18 dawes Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -51,7 +51,18 @@ from Kaleb S. KEITHLEY
 #define X_XF86VidModeSwitchToMode	10
 #define X_XF86VidModeGetViewPort	11
 #define X_XF86VidModeSetViewPort	12
+/* new for version 2.x of this extension */
 #define X_XF86VidModeGetDotClocks	13
+#define X_XF86VidModeSetClientVersion	14
+#if 0
+#define X_XF86VidModeGetModeLine	15
+#define X_XF86VidModeModModeLine	16
+#define X_XF86VidModeGetAllModeLines	17
+#define X_XF86VidModeAddModeLine	17
+#define X_XF86VidModeDeleteModeLine	18
+#define X_XF86VidModeValidateModeLine	20
+#define X_XF86VidModeSwitchToMode	21
+#endif
 
 #define CLKFLAG_PROGRAMABLE		1
 
@@ -154,131 +165,105 @@ typedef struct {
 _XFUNCPROTOBEGIN
 
 Bool XF86VidModeQueryVersion(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* majorVersion */,
     int*		/* minorVersion */
-#endif
 );
 
 Bool XF86VidModeQueryExtension(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int*		/* event_base */,
     int*		/* error_base */
-#endif
+);
+
+Bool XF86VidModeSetClientVersion(
+    Display*		/* dpy */
 );
 
 Bool XF86VidModeGetModeLine(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
     int*			/* dotclock */,
     XF86VidModeModeLine*	/* modeline */
-#endif
 );
 
 Bool XF86VidModeGetAllModeLines(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
     int*			/* modecount */,
     XF86VidModeModeInfo***	/* modelinesPtr */
-#endif
 );
 
 Bool XF86VidModeAddModeLine(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
     XF86VidModeModeInfo*	/* new modeline */,
     XF86VidModeModeInfo*	/* after modeline */
-#endif
 );
 
 Bool XF86VidModeDeleteModeLine(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
     XF86VidModeModeInfo*	/* modeline */
-#endif
 );
 
 Bool XF86VidModeModModeLine(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
     XF86VidModeModeLine*	/* modeline */
-#endif
 );
 
 Status XF86VidModeValidateModeLine(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
     XF86VidModeModeInfo*	/* modeline */
-#endif
 );
 
 Bool XF86VidModeSwitchMode(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     int			/* zoom */
-#endif
 );
 
 Bool XF86VidModeSwitchToMode(
-#if NeedFunctionPrototypes
     Display*			/* dpy */,
     int				/* screen */,
     XF86VidModeModeInfo*	/* modeline */
-#endif
 );
 
 Bool XF86VidModeLockModeSwitch(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     int			/* lock */
-#endif
 );
 
 Bool XF86VidModeGetMonitor(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     XF86VidModeMonitor*	/* monitor */
-#endif
 );
 
 Bool XF86VidModeGetViewPort(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     int*		/* x return */,
     int*		/* y return */
-#endif
 );
 
 Bool XF86VidModeSetViewPort(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     int			/* x */,
     int			/* y */
-#endif
 );
 
 Bool XF86VidModeGetDotClocks(
-#if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
     int*		/* flags return */,
     int*		/* number of clocks return */,
     int*		/* max dot clock return */,
     int**		/* clocks return */
-#endif
 );
 
 _XFUNCPROTOEND

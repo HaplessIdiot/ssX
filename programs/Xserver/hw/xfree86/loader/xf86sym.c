@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.69 1999/03/01 02:15:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.70 1999/03/06 13:12:43 dawes Exp $ */
 
 /*
  *
@@ -45,6 +45,7 @@
 #include "xf86cmap.h"
 #include "xf86fbman.h"
 #include "dgaproc.h"
+#include "vidmodeproc.h"
 #include "loader.h"
 #define DONT_DEFINE_WRAPPERS
 #include "xf86_ansic.h"
@@ -301,6 +302,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ServerIsExiting)
    SYMFUNC(xf86ServerIsResetting)
    SYMFUNC(xf86CaughtSignal)
+   SYMFUNC(xf86GetVidModeAllowNonLocal)
+   SYMFUNC(xf86GetVidModeEnabled)
    SYMFUNC(xf86GetClocks)
    SYMFUNC(xf86LoadSubModule)
    SYMFUNC(xf86LoaderReqSymLists)
@@ -374,6 +377,33 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86xv.c */
    SYMFUNC(xf86XVScreenInit)
+
+   /* xf86VidMode.c */
+   SYMFUNC(VidModeExtensionInit)
+   SYMFUNC(VidModeGetCurrentModeline)
+   SYMFUNC(VidModeGetFirstModeline)
+   SYMFUNC(VidModeGetNextModeline)
+   SYMFUNC(VidModeDeleteModeline)
+   SYMFUNC(VidModeZoomViewport)
+   SYMFUNC(VidModeGetViewPort)
+   SYMFUNC(VidModeSetViewPort)
+   SYMFUNC(VidModeSwitchMode)
+   SYMFUNC(VidModeLockZoom)
+   SYMFUNC(VidModeGetMonitor)
+   SYMFUNC(VidModeCheckModeClock)
+   SYMFUNC(VidModeGetNumOfClocks)
+   SYMFUNC(VidModeGetClocks)
+   SYMFUNC(VidModeCheckModeForMonitor)
+   SYMFUNC(VidModeCheckModeForDriver)
+   SYMFUNC(VidModeSetCrtcForMode)
+   SYMFUNC(VidModeAddModeline)
+   SYMFUNC(VidModeGetDotClock)
+   SYMFUNC(VidModeGetNumOfModes)
+   SYMFUNC(VidModeCreateMode)
+   SYMFUNC(VidModeCopyMode)
+   SYMFUNC(VidModeGetModeValue)
+   SYMFUNC(VidModeSetModeValue)
+   SYMFUNC(VidModeGetMonitorValue)
 
    /* Misc */
    SYMFUNC(GetTimeInMillis)

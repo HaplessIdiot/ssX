@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.92 1999/02/14 13:17:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.93 1999/02/28 11:19:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -157,6 +157,8 @@ const char *xf86GetServerName(void);
 Bool xf86ServerIsExiting(void);
 Bool xf86ServerIsResetting(void);
 Bool xf86CaughtSignal(void);
+Bool xf86GetVidModeAllowNonLocal(void);
+Bool xf86GetVidModeEnabled(void);
 pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
 void xf86LoaderReqSymLists(const char **, ...);
 void xf86LoaderReqSymbols(const char *, ...);
@@ -201,6 +203,10 @@ void xf86ShowClockRanges(ScrnInfoPtr scrp, ClockRangePtr clockRanges);
 /* xf86Option.c */
 
 void xf86CollectOptions(ScrnInfoPtr pScrn, pointer extraOpts);
+
+/* xf86VidModeExtentionInit.c */
+
+Bool VidModeExtensionInit(ScreenPtr pScreen);
 
 #endif /* _NO_XF86_PROTOTYPES */
 

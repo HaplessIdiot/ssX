@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.20 1997/07/06 12:08:34 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.21 1998/10/02 07:39:19 dawes Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -39,12 +39,13 @@ from Kaleb S. KEITHLEY
 
 #define XF86VIDMODENAME "XFree86-VidModeExtension"
 
-#define XF86VIDMODE_MAJOR_VERSION	0	/* current version numbers */
-#define XF86VIDMODE_MINOR_VERSION	9
+#define XF86VIDMODE_MAJOR_VERSION	2	/* current version numbers */
+#define XF86VIDMODE_MINOR_VERSION	0
 /*
  * major version 0 == uses parameter-to-wire functions in XFree86 libXxf86vm.
  * major version 1 == uses parameter-to-wire functions hard-coded in xvidtune
  *                    client.
+ * major version 2 == uses new protocol version in XFree86 4.0.
  */
 
 typedef struct _XF86VidModeQueryVersion {
@@ -110,6 +111,26 @@ typedef struct {
 } xXF86VidModeGetModeLineReply;
 #define sz_xXF86VidModeGetModeLineReply	52
 
+/* 0.x version */
+typedef struct {
+    BYTE	type;			/* X_Reply */
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	dotclock B32;
+    CARD16	hdisplay B16;
+    CARD16	hsyncstart B16;
+    CARD16	hsyncend B16;
+    CARD16	htotal B16;
+    CARD16	vdisplay B16;
+    CARD16	vsyncstart B16;
+    CARD16	vsyncend B16;
+    CARD16	vtotal B16;
+    CARD32	flags B32;
+    CARD32	privsize B32;
+} xXF86OldVidModeGetModeLineReply;
+#define sz_xXF86OldVidModeGetModeLineReply	36
+
 typedef struct {
     CARD32	dotclock B32;
     CARD16	hdisplay B16;
@@ -121,10 +142,28 @@ typedef struct {
     CARD16	vsyncstart B16;
     CARD16	vsyncend B16;
     CARD16	vtotal B16;
-    CARD16	reserved1 B16;
+    CARD16	pad1 B16;
     CARD32	flags B32;
+    CARD32	reserved1 B32;
+    CARD32	reserved2 B32;
+    CARD32	reserved3 B32;
     CARD32	privsize B32;
 } xXF86VidModeModeInfo;
+
+/* 0.x version */
+typedef struct {
+    CARD32	dotclock B32;
+    CARD16	hdisplay B16;
+    CARD16	hsyncstart B16;
+    CARD16	hsyncend B16;
+    CARD16	htotal B16;
+    CARD16	vdisplay B16;
+    CARD16	vsyncstart B16;
+    CARD16	vsyncend B16;
+    CARD16	vtotal B16;
+    CARD32	flags B32;
+    CARD32	privsize B32;
+} xXF86OldVidModeModeInfo;
 
 typedef struct {
     BYTE	type;			/* X_Reply */
@@ -157,6 +196,9 @@ typedef struct _XF86VidModeAddModeLine {
     CARD16	vtotal B16;
     CARD16	pad1 B16;
     CARD32	flags B32;
+    CARD32	reserved1 B32;
+    CARD32	reserved2 B32;
+    CARD32	reserved3 B32;
     CARD32	privsize B32;
     CARD32	after_dotclock B32;
     CARD16	after_hdisplay B16;
@@ -170,8 +212,41 @@ typedef struct _XF86VidModeAddModeLine {
     CARD16	after_vtotal B16;
     CARD16	pad2 B16;
     CARD32	after_flags B32;
+    CARD32	reserved4 B32;
+    CARD32	reserved5 B32;
+    CARD32	reserved6 B32;
 } xXF86VidModeAddModeLineReq;
-#define sz_xXF86VidModeAddModeLineReq	68
+#define sz_xXF86VidModeAddModeLineReq	92
+
+/* 0.x version */
+typedef struct _XF86OldVidModeAddModeLine {
+    CARD8	reqType;		/* always XF86VidModeReqCode */
+    CARD8	xf86vidmodeReqType;	/* always X_XF86VidModeAddMode */
+    CARD16	length B16;
+    CARD32	screen B32;		/* could be CARD16 but need the pad */
+    CARD32	dotclock B32;
+    CARD16	hdisplay B16;
+    CARD16	hsyncstart B16;
+    CARD16	hsyncend B16;
+    CARD16	htotal B16;
+    CARD16	vdisplay B16;
+    CARD16	vsyncstart B16;
+    CARD16	vsyncend B16;
+    CARD16	vtotal B16;
+    CARD32	flags B32;
+    CARD32	privsize B32;
+    CARD32	after_dotclock B32;
+    CARD16	after_hdisplay B16;
+    CARD16	after_hsyncstart B16;
+    CARD16	after_hsyncend B16;
+    CARD16	after_htotal B16;
+    CARD16	after_vdisplay B16;
+    CARD16	after_vsyncstart B16;
+    CARD16	after_vsyncend B16;
+    CARD16	after_vtotal B16;
+    CARD32	after_flags B32;
+} xXF86OldVidModeAddModeLineReq;
+#define sz_xXF86OldVidModeAddModeLineReq	60
 
 typedef struct _XF86VidModeModModeLine {
     CARD8	reqType;		/* always XF86VidModeReqCode */
@@ -189,9 +264,31 @@ typedef struct _XF86VidModeModModeLine {
     CARD16	vtotal B16;
     CARD16	pad1 B16;
     CARD32	flags B32;
+    CARD32	reserved1 B32;
+    CARD32	reserved2 B32;
+    CARD32	reserved3 B32;
     CARD32	privsize B32;
 } xXF86VidModeModModeLineReq;
-#define sz_xXF86VidModeModModeLineReq	36
+#define sz_xXF86VidModeModModeLineReq	48
+
+/* 0.x version */
+typedef struct _XF86OldVidModeModModeLine {
+    CARD8	reqType;		/* always XF86OldVidModeReqCode */
+    CARD8	xf86vidmodeReqType;	/* always X_XF86OldVidModeModModeLine */
+    CARD16	length B16;
+    CARD32	screen B32;		/* could be CARD16 but need the pad */
+    CARD16	hdisplay B16;
+    CARD16	hsyncstart B16;
+    CARD16	hsyncend B16;
+    CARD16	htotal B16;
+    CARD16	vdisplay B16;
+    CARD16	vsyncstart B16;
+    CARD16	vsyncend B16;
+    CARD16	vtotal B16;
+    CARD32	flags B32;
+    CARD32	privsize B32;
+} xXF86OldVidModeModModeLineReq;
+#define sz_xXF86OldVidModeModModeLineReq	32
 
 typedef struct _XF86VidModeValidateModeLine {
     CARD8	reqType;		/* always XF86VidModeReqCode */
@@ -210,13 +307,40 @@ typedef struct _XF86VidModeValidateModeLine {
     CARD16	vtotal B16;
     CARD16	pad1 B16;
     CARD32	flags B32;
+    CARD32	reserved1 B32;
+    CARD32	reserved2 B32;
+    CARD32	reserved3 B32;
     CARD32	privsize B32;
 } xXF86VidModeDeleteModeLineReq,
   xXF86VidModeValidateModeLineReq,
   xXF86VidModeSwitchToModeReq;
-#define sz_xXF86VidModeDeleteModeLineReq	40
-#define sz_xXF86VidModeValidateModeLineReq	40
-#define sz_xXF86VidModeSwitchToModeReq		40
+#define sz_xXF86VidModeDeleteModeLineReq	52
+#define sz_xXF86VidModeValidateModeLineReq	52
+#define sz_xXF86VidModeSwitchToModeReq		52
+
+/* 0.x version */
+typedef struct _XF86OldVidModeValidateModeLine {
+    CARD8	reqType;		/* always XF86OldVidModeReqCode */
+    CARD8	xf86vidmodeReqType;
+    CARD16	length B16;
+    CARD32	screen B32;		/* could be CARD16 but need the pad */
+    CARD32	dotclock B32;
+    CARD16	hdisplay B16;
+    CARD16	hsyncstart B16;
+    CARD16	hsyncend B16;
+    CARD16	htotal B16;
+    CARD16	vdisplay B16;
+    CARD16	vsyncstart B16;
+    CARD16	vsyncend B16;
+    CARD16	vtotal B16;
+    CARD32	flags B32;
+    CARD32	privsize B32;
+} xXF86OldVidModeDeleteModeLineReq,
+  xXF86OldVidModeValidateModeLineReq,
+  xXF86OldVidModeSwitchToModeReq;
+#define sz_xXF86OldVidModeDeleteModeLineReq	36
+#define sz_xXF86OldVidModeValidateModeLineReq	36
+#define sz_xXF86OldVidModeSwitchToModeReq	36
 
 typedef struct _XF86VidModeSwitchMode {
     CARD8	reqType;		/* always XF86VidModeReqCode */
@@ -305,5 +429,14 @@ typedef struct {
     CARD32	pad4 B32;
 } xXF86VidModeGetDotClocksReply;
 #define sz_xXF86VidModeGetDotClocksReply	32
+
+typedef struct _XF86VidModeSetClientVersion {
+    CARD8	reqType;		/* always XF86VidModeReqCode */
+    CARD8	xf86vidmodeReqType;
+    CARD16	length B16;
+    CARD16	major B16;
+    CARD16	minor B16;
+} xXF86VidModeSetClientVersionReq;
+#define sz_xXF86VidModeSetClientVersionReq	8
 
 #endif /* _XF86VIDMODESTR_H_ */

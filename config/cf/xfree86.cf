@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.206 1999/03/01 02:13:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.207 1999/03/06 13:12:17 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -411,14 +411,14 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define BuildGLXLibrary		YES
 #endif
 
-/* Don't build these two now because the interface hasn't been done yet */
 /*
  * Build the XFree86-VidMode extension
  */
 #ifndef BuildXF86VidModeExt
-#define BuildXF86VidModeExt		NO
+#define BuildXF86VidModeExt		YES
 #endif
 
+/* Don't build this now because the interface hasn't been done yet */
 /*
  * Build the XFree86-Misc extension
  */
@@ -622,7 +622,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /* Server defines required for all OSs */
 #ifndef XFree86ServerDefines
-#define XFree86ServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH LinkKitDefines XFree86DGADefines XFree86LoaderDefines -DXFree86Server
+#define XFree86ServerDefines	-DAVOID_GLYPHBLT -DPIXPRIV -DSINGLEDEPTH LinkKitDefines XFree86DGADefines XFree86LoaderDefines -DXFree86Server VidModeExtensionDefines
 #endif
 
 #ifndef XFree86ServerOSDefines

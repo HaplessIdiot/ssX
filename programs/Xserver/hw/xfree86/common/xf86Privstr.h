@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.7 1999/01/31 12:21:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.8 1999/02/28 11:19:33 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -191,6 +191,16 @@ typedef struct {
     Bool		Enabled;
     int			Flags;
 } DPMSRec, *DPMSPtr;
+#endif
+
+#ifdef XF86VIDMODE
+/* Private info for Video Mode Extentsion */
+typedef struct {
+    DisplayModePtr	First;
+    DisplayModePtr	Next;
+    int			Flags;
+    CloseScreenProcPtr	CloseScreen;
+} VidModeRec, *VidModePtr;
 #endif
 
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.88 1999/02/12 22:51:54 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.89 1999/02/19 21:26:59 hohndel Exp $
 
 
 
@@ -92,6 +92,7 @@ SRCS =	\
 	xf86Mouse.c \
 	$(PNPMOUSESRCS) \
 	xf86Option.c \
+	xf86VidMode.c \
 	xf86fbman.c \
 	xf86xv.c \
 	xf86cmap.c\
@@ -117,6 +118,7 @@ OBJS = \
 	xf86Mouse.o \
 	$(PNPMOUSEOBJS) \
 	xf86Option.o \
+	xf86VidMode.o \
 	xf86fbman.o \
 	xf86xv.o \
 	xf86cmap.o\

@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.22 1997/05/26 15:34:57 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.23 1997/07/06 12:08:35 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -68,7 +68,7 @@ static char *xf86vidmode_extension_name = XF86VIDMODENAME;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display();
+static XEXT_CLOSE_DISPLAY_PROTO(close_display);
 static /* const */ XExtensionHooks xf86vidmode_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */
@@ -97,7 +97,8 @@ static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xf86vidmode_info)
  *                                                                           *
  *****************************************************************************/
 
-Bool XF86VidModeQueryExtension (dpy, event_basep, error_basep)
+Bool
+XF86VidModeQueryExtension (dpy, event_basep, error_basep)
     Display *dpy;
     int *event_basep, *error_basep;
 {
@@ -112,7 +113,8 @@ Bool XF86VidModeQueryExtension (dpy, event_basep, error_basep)
     }
 }
 
-Bool XF86VidModeQueryVersion(dpy, majorVersion, minorVersion)
+Bool
+XF86VidModeQueryVersion(dpy, majorVersion, minorVersion)
     Display* dpy;
     int* majorVersion; 
     int* minorVersion;
@@ -136,10 +138,32 @@ Bool XF86VidModeQueryVersion(dpy, majorVersion, minorVersion)
     *minorVersion = rep.minorVersion;
     UnlockDisplay(dpy);
     SyncHandle();
+    if (*majorVersion >= 2)
+	XF86VidModeSetClientVersion(dpy);
     return True;
 }
 
-Bool XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
+Bool
+XF86VidModeSetClientVersion(Display *dpy)
+{
+    XExtDisplayInfo *info = find_display(dpy);
+    xXF86VidModeSetClientVersionReq *req;
+
+    XF86VidModeCheckExtension(dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetClientVersion, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86vidmodeReqType = X_XF86VidModeSetClientVersion;
+    req->major = XF86VIDMODE_MAJOR_VERSION;
+    req->minor = XF86VIDMODE_MINOR_VERSION;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool
+XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     Display* dpy;
     int screen;
     int* dotclock; 
@@ -189,7 +213,8 @@ Bool XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     return True;
 }
 
-Bool XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
+Bool
+XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
     Display* dpy;
     int screen;
     int* modecount; 
@@ -286,7 +311,8 @@ Bool XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
     return True;
 }
 
-Bool XF86VidModeAddModeLine (dpy, screen, newmodeline, aftermodeline)
+Bool
+XF86VidModeAddModeLine (dpy, screen, newmodeline, aftermodeline)
     Display *dpy;
     int screen;
     XF86VidModeModeInfo* newmodeline;
@@ -349,7 +375,8 @@ Bool XF86VidModeAddModeLine (dpy, screen, newmodeline, aftermodeline)
     return True;
 }
 
-Bool XF86VidModeDeleteModeLine (dpy, screen, modeline)
+Bool
+XF86VidModeDeleteModeLine (dpy, screen, modeline)
     Display *dpy;
     int screen;
     XF86VidModeModeInfo* modeline;
@@ -386,7 +413,8 @@ Bool XF86VidModeDeleteModeLine (dpy, screen, modeline)
     return True;
 }
 
-Bool XF86VidModeModModeLine (dpy, screen, modeline)
+Bool
+XF86VidModeModModeLine (dpy, screen, modeline)
     Display *dpy;
     int screen;
     XF86VidModeModeLine* modeline;
@@ -422,7 +450,8 @@ Bool XF86VidModeModModeLine (dpy, screen, modeline)
     return True;
 }
 
-Status XF86VidModeValidateModeLine (dpy, screen, modeline)
+Status
+XF86VidModeValidateModeLine (dpy, screen, modeline)
     Display *dpy;
     int screen;
     XF86VidModeModeInfo* modeline;
@@ -465,7 +494,8 @@ Status XF86VidModeValidateModeLine (dpy, screen, modeline)
     return rep.status;
 }
 
-Bool XF86VidModeSwitchMode(dpy, screen, zoom)
+Bool
+XF86VidModeSwitchMode(dpy, screen, zoom)
     Display* dpy;
     int screen;
     int zoom;
@@ -486,7 +516,8 @@ Bool XF86VidModeSwitchMode(dpy, screen, zoom)
     return True;
 }
     
-Bool XF86VidModeSwitchToMode(dpy, screen, modeline)
+Bool
+XF86VidModeSwitchToMode(dpy, screen, modeline)
     Display* dpy;
     int screen;
     XF86VidModeModeInfo* modeline;
@@ -546,7 +577,8 @@ Bool XF86VidModeSwitchToMode(dpy, screen, modeline)
     return True;
 }
     
-Bool XF86VidModeLockModeSwitch(dpy, screen, lock)
+Bool
+XF86VidModeLockModeSwitch(dpy, screen, lock)
     Display* dpy;
     int screen;
     int lock;
@@ -567,7 +599,8 @@ Bool XF86VidModeLockModeSwitch(dpy, screen, lock)
     return True;
 }
     
-Bool XF86VidModeGetMonitor(dpy, screen, monitor)
+Bool
+XF86VidModeGetMonitor(dpy, screen, monitor)
     Display* dpy;
     int screen;
     XF86VidModeMonitor* monitor;
@@ -659,7 +692,8 @@ Bool XF86VidModeGetMonitor(dpy, screen, monitor)
     return True;
 }
 
-Bool XF86VidModeGetViewPort(dpy, screen, x, y)
+Bool
+XF86VidModeGetViewPort(dpy, screen, x, y)
     Display* dpy;
     int screen;
     int *x, *y;
@@ -711,7 +745,8 @@ Bool XF86VidModeGetViewPort(dpy, screen, x, y)
     return True;
 }
 
-Bool XF86VidModeSetViewPort(dpy, screen, x, y)
+Bool
+XF86VidModeSetViewPort(dpy, screen, x, y)
     Display* dpy;
     int screen;
     int x, y;
@@ -734,7 +769,8 @@ Bool XF86VidModeSetViewPort(dpy, screen, x, y)
     return True;
 }
 
-Bool XF86VidModeGetDotClocks(dpy, screen,
+Bool
+XF86VidModeGetDotClocks(dpy, screen,
 	    flagsPtr, numclocksPtr, maxclocksPtr, clocksPtr)
     Display* dpy;
     int screen;

@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.100 1999/02/14 13:04:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.101 1999/03/06 13:12:31 dawes Exp $ */
 
 /*
- * Copyright 1991-1998 by The XFree86 Project, Inc.
+ * Copyright 1991-1999 by The XFree86 Project, Inc.
  *
  * Loosely based on code bearing the following copyright:
  *

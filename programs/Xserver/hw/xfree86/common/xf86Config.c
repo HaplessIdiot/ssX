@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.160 1999/01/26 10:40:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.161 1999/02/12 22:51:56 hohndel Exp $ */
 
 
 /*
@@ -463,8 +463,7 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     if (xf86VidModeEnabled) {
 	xf86GetOptValBool(FlagOptions, FLAG_DISABLEVIDMODE,
 			  &xf86Info.vidModeEnabled);
-	if (xf86IsOptionSet(FlagOptions, FLAG_DISABLEVIDMODE))
-	    xf86Info.vidModeEnabled = !xf86Info.vidModeEnabled;
+	xf86Info.vidModeEnabled = !xf86Info.vidModeEnabled;
     } else
 	xf86Info.vidModeEnabled = xf86VidModeEnabled;
     if (!xf86VidModeAllowNonLocal)

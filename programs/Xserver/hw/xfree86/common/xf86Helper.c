@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.28 1999/02/12 22:51:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.29 1999/03/06 13:12:31 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1760,6 +1760,20 @@ Bool
 xf86CaughtSignal()
 {
     return xf86Info.caughtSignal;
+}
+
+
+Bool
+xf86GetVidModeAllowNonLocal()
+{
+  return xf86Info.vidModeAllowNonLocal;
+}
+
+
+Bool
+xf86GetVidModeEnabled()
+{
+  return xf86Info.vidModeEnabled;
 }
 
 
