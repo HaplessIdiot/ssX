@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.7 1994/06/12 16:30:14 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.8 1994/06/18 16:11:26 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -41,7 +41,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.7 1994/06/12 16:30:14 dawes
 #define LexCmd			flex -l
 #define LexLib			-lfl
 #define PreProcessCmd		CcCmd -E
-#define PostIncDir		`gcc --print | sed 's/libgcc.a/include/'`
+#define PostIncDir		`gcc -print-libgcc-file-name | sed 's/libgcc.a/include/'`
 #define LdCombineFlags		-r
 #define OptimizedCDebugFlags	-O2 -m486
 #define AsmDefines		-DUSE_GAS

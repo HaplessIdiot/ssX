@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.2 94/03/31 11:37:29 gildea Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.2 1994/06/09 10:41:13 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.3 1994/06/18 16:11:31 dawes Exp $
 
 /*
  * Linux shared library rules (DLL version)
@@ -61,7 +61,7 @@ DLL_BINDIR = /usr/dll/bin
  *  JUMP_GOTSIZE_Xfoo = 4096				<adjust if necessary>
  *  JUMP_STUBNAMES_Xfoo = libXfoo			<and others>
  *  JUMP_STUBS_IMPORT_Xfoo = /usr/lib/libc.sa		<and others>
- *  JUMP_LDLIBS_Xfoo = `$(CC) --print` -lc		<and others>
+ *  JUMP_LDLIBS_Xfoo = `$(CC) -print-libgcc-file-name` -lc <and others>
  *
  * To create a complex "host", you need to add
  *  JUMP_SIBARS_Xt = jump/libXbar.a~			<and others>
@@ -79,7 +79,7 @@ DLL_BINDIR = /usr/dll/bin
 #ifndef UseInstalled
 XCOMM These are only needed to build the server
 
-JUMP_LDLIBS_libc = `$(CC) --print` -lc
+JUMP_LDLIBS_libc = `$(CC) -print-libgcc-file-name` -lc
 
 XCOMM libX11.so (X11, SM, ICE)
 JUMP_ROOT_X11 = $(XLIBSRC)
