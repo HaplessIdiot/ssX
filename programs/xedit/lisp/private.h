@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.9 2001/10/06 01:02:02 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.10 2001/10/06 02:40:31 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -63,6 +63,7 @@
 #define RES	mac->reslist
 #define DBG	mac->dbglist
 #define BRK	mac->brklist
+#define PRO	mac->prolist
 
 /*
  * Types
@@ -127,7 +128,7 @@ struct _LispMac {
     LispString *strs[STRTBLSZ];
     LispOpaque *opqs[STRTBLSZ];
     int opaque;
-    jmp_buf jmp;
+    sigjmp_buf jmp;
     struct {
 	unsigned stream_level;
 	unsigned stream_size;
@@ -163,6 +164,7 @@ struct _LispMac {
     LispObj *reslist[3];	/* *, **, and *** */
     LispObj *dbglist;		/* debug information */
     LispObj *brklist;		/* breakpoints information */
+    LispObj *prolist;		/* protect objects list */
 
 #ifdef SIGNALRETURNSINT
     int (*sigint)(int);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.4 2001/09/29 04:46:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.5 2001/09/30 20:32:01 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,14 +59,15 @@ typedef struct {
 
 typedef struct {
     LispMac *mac;
-    LispObj *callback;
-    LispObj *argument;		/* XXX must be gc protected outside here */
+    LispObj *data;
+    /* data is => (list* widget callback argument) */
 } CallbackArgs;
 
 /*
  * Prototypes
  */
 int xtLoadModule(LispMac*);
+void _LispXtCleanupCallback(Widget, XtPointer, XtPointer);
 
 void _LispXtCallback(Widget, XtPointer, XtPointer);
 LispObj *Lisp_XtAddCallback(LispMac*, LispObj*, char*);
@@ -75,6 +76,7 @@ LispObj *Lisp_XtAppMainLoop(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtCreateWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtCreateManagedWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtCreatePopupShell(LispMac*, LispObj*, char*);
+LispObj *Lisp_XtDestroyWidget(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtGetValues(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtPopup(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtPopdown(LispMac*, LispObj*, char*);
@@ -163,18 +165,30 @@ _LispXtCallback(Widget w, XtPointer user_data, XtPointer call_data)
     LispObj *code;
 
     GCPRO();
-    code = CONS(QUOTE(args->callback), CONS(OPAQUE(w, xtWidget_t),
-		CONS(args->argument, CONS(OPAQUE(call_data, 0), NIL))));
+
+		/* callback name */               /* reall caller */
+    code = CONS(QUOTE(CDR(CDR(args->data))), CONS(OPAQUE(w, xtWidget_t),
+		CONS(CAR(CDR(args->data)), CONS(OPAQUE(call_data, 0), NIL))));
+		     /* user arguments */
     GCUPRO();
 
     (void)Lisp_Funcall(mac, code, "FUNCALL");
+}
+
+void
+_LispXtCleanupCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    CallbackArgs *args = (CallbackArgs*)user_data;
+    LispMac *mac = args->mac;
+
+    UPROTECT(CAR(args->data), args->data);
 }
 
 LispObj *
 Lisp_XtAddCallback(LispMac *mac, LispObj *list, char *fname)
 {
     CallbackArgs *arguments;
-    LispObj *widget, *name, *callback, *args;
+    LispObj *widget, *name, *callback, *args, *data;
 
     widget = CAR(list);
     if (!CHECKO(widget, xtWidget_t))
@@ -196,20 +210,21 @@ Lisp_XtAddCallback(LispMac *mac, LispObj *list, char *fname)
     GCProtect();
     if (list == NIL)
 	args = list;
-    else {
+    else
 	args = QUOTE(CAR(list));
-	PROTECT(args);
-    }
-    PROTECT(callback);
+
+    data = CONS(widget, CONS(args, callback));
+    PROTECT(widget, data);
     GCUProtect();
 
     arguments = XtNew(CallbackArgs);
     arguments->mac = mac;
-    arguments->callback = callback;
-    arguments->argument = args;
+    arguments->data = data;
 
     XtAddCallback((Widget)(widget->data.opaque.data), name->data.atom,
 		  _LispXtCallback, (XtPointer)arguments);
+    XtAddCallback((Widget)(widget->data.opaque.data), XtNdestroyCallback,
+		  _LispXtCleanupCallback, (XtPointer)arguments);
 
     return (NIL);
 }
@@ -222,6 +237,7 @@ Lisp_XtAppInitialize(LispMac *mac, LispObj *list, char *fname)
     Widget shell;
     int zero = 0;
     Resources *resources = NULL;
+    String *fallback = NULL;
 
     if (CAR(list)->type != LispAtom_t)
 	LispDestroy(mac, "expecting atom, at %s", fname);
@@ -234,8 +250,34 @@ Lisp_XtAppInitialize(LispMac *mac, LispObj *list, char *fname)
     }
     cname = CAR(list)->data.atom;
 
+    /* check if fallback resources given */
+    if (list != NIL && CDR(list)->type == LispCons_t &&
+	CDR(CDR(list))->type == LispCons_t) {
+	int count;
+	LispObj *ptr, *obj = CAR(CDR(CDR(list)));
+
+	if (obj->type != LispCons_t)
+	    LispDestroy(mac, "expecting string list, at %s", fname);
+
+	for (ptr = obj, count = 0; ptr->type == LispCons_t;
+	     ptr = CDR(ptr), count++)
+	    if (CAR(ptr)->type != LispString_t)
+		LispDestroy(mac, "%s is not a string, at %s",
+			    LispStrObj(mac, CAR(ptr)), fname);
+
+	/* fallback resources was correctly specified */
+	fallback = LispMalloc(mac, sizeof(String) * (count + 1));
+	for (ptr = obj, count = 0; ptr->type == LispCons_t;
+	     ptr = CDR(ptr), count++)
+	    fallback[count] = CAR(ptr)->data.atom;
+	fallback[count] = NULL;
+    }
+
     GCProtect();
-    shell = XtAppInitialize(&appcon, cname, NULL, 0, &zero, NULL, NULL, NULL, 0);
+    shell = XtAppInitialize(&appcon, cname, NULL, 0, &zero, NULL,
+			    fallback, NULL, 0);
+    if (fallback)
+	LispFree(mac, fallback);
     (void)LispSetVariable(mac, ATOM(app), OPAQUE(appcon, xtAppContext_t),
 			  fname, 0);
     GCUProtect();
@@ -293,6 +335,22 @@ Lisp_XtRealizeWidget(LispMac *mac, LispObj *list, char *fname)
 	(void)XSetWMProtocols(XtDisplay(widget), XtWindow(widget),
 			      &delete_window, 1);
     }
+
+    return (NIL);
+}
+
+LispObj *
+Lisp_XtDestroyWidget(LispMac *mac, LispObj *list, char *fname)
+{
+    Widget widget;
+
+    if (!CHECKO(CAR(list), xtWidget_t))
+	LispDestroy(mac,
+		    "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    widget = (Widget)(CAR(list)->data.opaque.data);
+    XtDestroyWidget(widget);
 
     return (NIL);
 }
