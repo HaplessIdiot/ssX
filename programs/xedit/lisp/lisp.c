@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.13 2001/10/04 04:38:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.14 2001/10/06 01:02:01 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -45,7 +45,6 @@
  * Prototypes
  */
 LispObj *LispRunFunMac(LispMac*, LispObj*, LispObj*);
-void LispTopLevel(LispMac*);
 
 static int LispGet(LispMac*);
 static int LispUnget(LispMac*);

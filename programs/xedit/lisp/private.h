@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.8 2001/10/04 04:38:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.9 2001/10/06 01:02:02 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -203,5 +203,6 @@ LispBlock *LispBeginBlock(LispMac*, LispObj*, int);
 void LispEndBlock(LispMac*, LispBlock*);
 
 void LispUpdateResults(LispMac*, LispObj*, LispObj*);
+void LispTopLevel(LispMac*);
 
 #endif /* Lisp_private_h */
