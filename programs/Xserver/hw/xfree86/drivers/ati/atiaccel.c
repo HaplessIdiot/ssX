@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.6 2001/05/07 21:59:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiaccel.c,v 1.7 2001/07/19 14:19:40 tsi Exp $ */
 /*
  * Copyright 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -40,8 +40,7 @@ ATIInitializeAcceleration
     ATIPtr      pATI
 )
 {
-    BoxRec       ScreenArea;
-    unsigned int nScanlines, maxScanlines = 32767;
+    int maxScanlines = 32767, maxPixelArea, PixelArea;
 
     if (pATI->OptionAccel)
     {
@@ -59,16 +58,16 @@ ATIInitializeAcceleration
         }
     }
 
-    ScreenArea.x1 = ScreenArea.y1 = 0;
-    ScreenArea.x2 = pATI->displayWidth;
-    nScanlines = pScreenInfo->videoRam * 1024 * 8 / pATI->displayWidth /
-        pATI->bitsPerPixel;
-    if (nScanlines > maxScanlines)
-        nScanlines = maxScanlines;
-    ScreenArea.y2 = (short int)nScanlines;
-    xf86InitFBManager(pScreen, &ScreenArea);
+    if (!pATI->BankInfo.BankSize)
+    {
+        maxPixelArea = maxScanlines * pScreenInfo->displayWidth;
+        PixelArea = pScreenInfo->videoRam * 1024 * 8 / pATI->bitsPerPixel;
+        if (PixelArea > maxPixelArea)
+            PixelArea = maxPixelArea;
+        xf86InitFBManagerArea(pScreen, PixelArea, 2);
+    }
 
-    if (XAAInit(pScreen, pATI->pXAAInfo))
+    if (!pATI->OptionAccel || XAAInit(pScreen, pATI->pXAAInfo))
         return TRUE;
 
     XAADestroyInfoRec(pATI->pXAAInfo);

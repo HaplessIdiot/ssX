@@ -44,7 +44,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.9 2001/01/06 20:58:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.10 2001/08/06 20:51:16 dawes Exp $ */
 
 /*
  * This thing originated from an idea of Edwin Goei and his bank switching
@@ -2522,8 +2522,8 @@ miScanLineWidth(
     if (ysize == 1)
         return (int)width;
 
-    maxBitsPerScanline = (((unsigned long)(-1) >> 1) - minBitsPerScanline) /
-                          (ysize - 1);
+    maxBitsPerScanline =
+        (((unsigned long)(-1) >> 1) - minBitsPerScanline) / (ysize - 1);
     while (nBitsPerScanline <= maxBitsPerScanline)
     {
         unsigned long BankBase, BankUnit;
@@ -2561,7 +2561,7 @@ miScanLineWidth(
             if (BankBase != BankUnit)
                 continue;
 
-            if (!(nBitsPerBank % x))
+            if (!(nBitsPerScanline % x))
                 return (int)width;
 
             BankBase = ((nBitsPerScanline - minBitsPerScanline) /
