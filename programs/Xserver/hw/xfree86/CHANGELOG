@@ -1,4 +1,13 @@
 XFree86 4.2.99.1 (XX June 2002)
+ 180. Fix Xv endianess problem with the Radeon driver (#5207, Guido Guenther).
+ 179. Updates to the Finnish xkb map, including:
+       - add ISO-8859-15 missing symbols ([zZsS]caron)
+       - reorganize some special symbols (such as paragraph, cent, division)
+       - map AltGr+SPCE as space, nobreakspace comes way too often by accident
+       - minor white space/comment cleanups
+      (#5197, Marko Myllynen).
+ 178. Add an option to the r128 driver for enabling DMA for Xv image transfers
+      (#5195, Michel Dänzer).
  177. Make the 'distclean' target remove depend files (#5194,
       Carlos A M dos Santos).
  176. Fix bad usage of "UseInstalled" in FreeBSD.cf (#5192,
@@ -14874,4 +14883,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2240 2002/06/04 22:19:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2241 2002/06/04 22:50:56 dawes Exp $

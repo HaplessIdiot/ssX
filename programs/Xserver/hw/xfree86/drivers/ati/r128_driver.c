@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.60 2002/04/29 04:15:53 anderson Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.61 2002/05/14 20:02:33 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -125,6 +125,7 @@ typedef enum {
   OPTION_DAC_6BIT,
   OPTION_DAC_8BIT,
 #ifdef XF86DRI
+  OPTION_XV_DMA,
   OPTION_IS_PCI,
   OPTION_CCE_PIO,
   OPTION_NO_SECURITY,
@@ -153,6 +154,7 @@ const OptionInfoRec R128Options[] = {
   { OPTION_DAC_6BIT,     "Dac6Bit",          OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_DAC_8BIT,     "Dac8Bit",          OPTV_BOOLEAN, {0}, TRUE  },
 #ifdef XF86DRI
+  { OPTION_XV_DMA,       "DMAForXv",         OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_IS_PCI,       "ForcePCIMode",     OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_CCE_PIO,      "CCEPIOMode",       OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_NO_SECURITY,  "CCENoSecurity",    OPTV_BOOLEAN, {0}, FALSE },
@@ -1067,6 +1069,11 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     }
 
 #ifdef XF86DRI
+				/* DMA for Xv */
+    if (info->DMAForXv = xf86ReturnOptValBool(info->Options, OPTION_XV_DMA, FALSE)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Will try to use DMA for Xv image transfers\n");
+    }
+
 				/* AGP/PCI */
     if (xf86ReturnOptValBool(info->Options, OPTION_IS_PCI, FALSE)) {
 	info->IsPCI = TRUE;

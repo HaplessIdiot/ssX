@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.19 2001/08/09 19:14:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.20 2001/10/02 11:44:16 alanh Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -511,7 +511,7 @@ R128DMA(
     drmDMAReq req;
 
     /* Verify conditions and bail out as early as possible */
-    if (!info->directRenderingEnabled)
+    if (!info->directRenderingEnabled || !info->DMAForXv)
         return FALSE;
 
     if ((hpass = min(h,(BUFSIZE/w))) == 0)

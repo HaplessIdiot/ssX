@@ -24,7 +24,7 @@
 !! dealings in this Software without prior written authorization from the
 !! XFree86 Project.
 !!
-!! $XFree86: xc/programs/Xserver/hw/xfree86/Options,v 1.7 2001/11/03 19:04:06 paulo Exp $
+!! $XFree86: xc/programs/Xserver/hw/xfree86/Options,v 1.8 2001/12/17 20:52:29 dawes Exp $
 
 !! XAA options
 xaa.XaaNoCPUToScreenColorExpandFill:\
@@ -265,6 +265,11 @@ Default: determined using BIOS.
 r128.UseFBDev:\
 Enable or disable use of on OS-specific fb interface (and is not supported \
 on all OSs). See fbdevhw(4) for further information. Default: off.
+
+r128.DMAForXv:\
+Try or don't try to use DMA for Xv image transfers. This will reduce CPU \
+usage when playing big videos like DVDs, but may cause instabilities. \
+Default: off.
 
 !! NeoMagic options
 
