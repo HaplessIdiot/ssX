@@ -1,4 +1,6 @@
 XFree86 4.3.99.2 (xx March 2003)
+  32. Fix drag lock when using a mouse button greater than 4
+      (Bugzilla #51, Paul Elliott)
   31. Fix lockup on server shutdown/restart with the radeon driver
       (Bugzilla #94, Michel Dänzer).
   30. Add missing symbols to reference list that show up when DRI is not
@@ -16589,4 +16591,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2607 2003/04/03 10:56:28 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2608 2003/04/03 12:46:25 alanh Exp $
