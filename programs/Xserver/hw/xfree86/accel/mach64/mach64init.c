@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.24tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.25 1997/03/27 18:38:48 hohndel Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -825,13 +825,9 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
 	    P = 0;
 	    postDiv = 3;
 	    ext_div = 1;
-	} else if (Q > 51) {
+	} else if (Q > 42.5) {
 	    P = 2;
 	    postDiv = 4;
-	} else if (Q > 42.5) {
-	    P = 1;
-	    postDiv = 5;
-	    ext_div = 1;
 	} else if (Q > 31.875) {
 	    P = 2;
 	    postDiv = 6;
@@ -1312,7 +1308,7 @@ mach64GetCTClock(i)
 	if ((inb(ioCLOCK_CNTL + 2) >> (4 + i)) & 0x01) {
 	    switch (postDiv) {
 	    case 0: P = 3;  break;
-	    case 1: P = 5;  break;
+	    case 1: P = 2;  break; /* Unknown */
 	    case 2: P = 6;  break;
 	    case 3: P = 12; break;
 	    }

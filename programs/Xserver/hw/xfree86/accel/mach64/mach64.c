@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.73 1997/04/12 13:44:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.74 1997/05/03 09:16:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -821,7 +821,7 @@ mach64PrintCTPLL()
 	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x10)) {
 	switch (pll[VCLK_POST_DIV] & VCLK0_POST) {
 	case 0: P = 3; break;
-	case 1: P = 5; break;
+	case 1: P = 2; break; /* Unknown */
 	case 2: P = 6; break;
 	case 3: P = 12; break;
 	}
@@ -835,7 +835,7 @@ mach64PrintCTPLL()
 	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x20)) {
 	switch ((pll[VCLK_POST_DIV] & VCLK1_POST) >> 2) {
 	case 0: P = 3; break;
-	case 1: P = 5; break;
+	case 1: P = 2; break; /* Unknown */
 	case 2: P = 6; break;
 	case 3: P = 12; break;
 	}
@@ -849,7 +849,7 @@ mach64PrintCTPLL()
 	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x40)) {
 	switch ((pll[VCLK_POST_DIV] & VCLK2_POST) >> 4) {
 	case 0: P = 3; break;
-	case 1: P = 5; break;
+	case 1: P = 2; break; /* Unknown */
 	case 2: P = 6; break;
 	case 3: P = 12; break;
 	}
@@ -863,7 +863,7 @@ mach64PrintCTPLL()
 	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x80)) {
 	switch ((pll[VCLK_POST_DIV] & VCLK3_POST) >> 6) {
 	case 0: P = 3; break;
-	case 1: P = 5; break;
+	case 1: P = 2; break; /* Unknown */
 	case 2: P = 6; break;
 	case 3: P = 12; break;
 	}
@@ -1630,8 +1630,8 @@ mach64Probe()
 	}
     }
 
-#ifdef DPMSExtension
     if (OFLG_ISSET(OPTION_POWER_SAVER, &mach64InfoRec.options))
+#ifdef DPMSExtension
 	DPMSEnabled = TRUE;
 #endif
 
