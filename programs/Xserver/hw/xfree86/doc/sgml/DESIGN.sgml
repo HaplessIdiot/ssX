@@ -3582,7 +3582,9 @@ typedef struct {
 	The number of encodings the adaptor is capable of and pointer
 	to the &s.code;XF86VideoEncodingRec&e.code; array.  The
 	&s.code;XF86VideoEncodingRec&e.code; is described later on.
-	Encodings are required unless the driver only supports images.
+	For drivers that only support XvImages there should be an encoding
+	named "XV_IMAGE" and the width and height should specify
+	the maximum size source image supported.
 
      </quote>
 

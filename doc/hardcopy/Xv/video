@@ -56,7 +56,11 @@ alternate colorspaces (XvImages) in the following way.
   XvImages may be displayed with XvPutImage() or XvShmPutImage().
 
   The Port attributes of the port specified in the Xv(Shm)PutImage
-  command will be valid for the image operation when applicable. 
+  command will be valid for the image operation when applicable.
+
+  There will be a port encoding with the name "XV_IMAGE".  The
+  width and height of that encoding will indicate the maximum
+  source image size.
 
 typedef struct {
   int id;                      /* Unique descriptor for the format */
