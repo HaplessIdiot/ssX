@@ -1,4 +1,11 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 372. Add an X server command line flag (-br) to make the default root window
+      solid black (#5334, Jens Owen).
+ 371. Add support for th_TH.ISO-8859-11 (#5327, Theppitak Karoonboonyanan).
+ 370. Use pci_alloc_consistent/pci_free_consistent instead of the
+      local page alloc/free functions in the i810 and i830 DRM drivers
+      (#5323, Arjan van de Ven).
+ 369. Fix some non-POSIX usage of tail, expand and sort (#5322, Paul Eggert).
  368. Fix bug in PCI code for Solaris/SPARC (Marc La France).
  367. When enabling PCI adapters, also enable their bus mastering capability;
       Consequently, deprecate xf86EnablePciBusMaster() (Marc La France).
@@ -15258,4 +15265,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2328 2002/10/08 22:13:59 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2329 2002/10/08 22:44:04 tsi Exp $
