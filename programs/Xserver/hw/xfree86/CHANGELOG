@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX May 2002)
+ 143. Due to bugs in the CyberBladei7/i1 series that cause offset problems,
+      we're disabling the hardware cursor (for now) (Alan Hourihane).
  142. Fix Xft-def.cpp file for Cygwin/XFree86 (#5283, Harold Hunt).
  141. Server support for OpenBSD/sparc64 (Jason Wright, Matthieu Herrb).
  140. Alignment fixes for Xvideo on the Permedia3 (Alan Hourihane).
@@ -14803,4 +14805,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2221 2002/05/22 21:38:21 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2222 2002/05/25 12:03:11 alanh Exp $
