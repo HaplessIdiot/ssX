@@ -1,4 +1,5 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 540. Improve xkbcomp's key types auto-recognition (Ivan Pascal).
  539. Add support for multi-threaded direct GLX rendering with AppleDRI
       (John Harper).
  538. Fix a problem in Xlib that was cause by the ANSI prototype cleanups
@@ -18068,7 +18069,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2916 2003/10/30 21:54:58 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2917 2003/10/31 02:22:08 torrey Exp $
 
 
 
