@@ -2,7 +2,7 @@ XFree86 4.2.99.1 (XX January 2002)
    3. Fix invalid code caused by a memcpy() macro being split by a directive
       (#5150, Sami Farin).
    2. Fix incorrect symbol prefixing with Xlib's i18n modules on Solaris
-      (David Dawes).
+      (Keith Packard, David Dawes).
    1. Don't try to print mode names when the name is NULL (David Dawes).
 
 XFree86 4.2.0 (18 January 2002)
@@ -14562,4 +14562,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2145 2002/01/22 22:26:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2146 2002/01/22 22:36:08 dawes Exp $
