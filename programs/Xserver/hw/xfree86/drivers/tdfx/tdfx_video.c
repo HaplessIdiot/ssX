@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.3 2000/12/06 15:35:23 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.4 2000/12/08 17:14:26 dawes Exp $ */
 
 /* Adapted from ../mga/mga_video.c */
 
@@ -212,7 +212,7 @@ TDFXSetupImageVideo(ScreenPtr pScreen)
     adapt->nPorts = TDFX_MAX_PORTS;
     adapt->nAttributes = 0;
     adapt->pAttributes = NULL;
-    adapt->nImages = 3;
+    adapt->nImages = NUM_IMAGES;
     adapt->pImages = Images;
 
     /* XXX For now all I'm implementing is PutImage so that programs like OMS
