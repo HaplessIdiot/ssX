@@ -1,4 +1,4 @@
-XFree86 3.1.1Ac (4 June 1995)
+XFree86 3.1.1Ac (5 June 1995)
 115. Vgahelp client enhancements (Jon Tombs).
 114. Fix core dump in fslsfonts when no fontserver is specified
      (Matthieu Herrb).
