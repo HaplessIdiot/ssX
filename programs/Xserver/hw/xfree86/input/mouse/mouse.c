@@ -496,6 +496,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
     pMse->protocol = protocol;
     pMse->protocolID = protocolID;
+    pMse->oldProtocolID = protocolID;  /* hack */
     pMse->class = ProtocolIDToClass(protocolID);
 
     /* Collect the options, and process the common options. */
@@ -529,7 +530,11 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	xf86Msg(X_CONFIG, "%s: SampleRate: %d\n", pInfo->name,
 		pMse->sampleRate);
     }
-
+    pMse->baudRate = xf86SetIntOption(pInfo->options, "BaudRate", 0);
+    if (pMse->baudRate) {
+	xf86Msg(X_CONFIG, "%s: BaudRate: %d\n", pInfo->name,
+		pMse->baudRate);
+    }
     pMse->resolution = xf86SetIntOption(pInfo->options, "Resolution", 0);
     if (pMse->resolution) {
 	xf86Msg(X_CONFIG, "%s: Resolution: %d\n", pInfo->name,
@@ -706,9 +711,31 @@ SetupMouse(InputInfoPtr pInfo)
 	    return FALSE;
 	}
     }
-    
+    /*
+     * If protocol has changed fetch the default options
+     * for the new protocol.
+     */
+    if (pMse->oldProtocolID != pMse->protocolID) {
+	pointer tmp = NULL;
+	if (mouseProtocols[pMse->protocolID].defaults)
+	    tmp = xf86OptionListCreate(
+		mouseProtocols[pMse->protocolID].defaults, -1, 0);
+	pInfo->options = xf86OptionListMerge(pInfo->options, tmp);
+	/* baudrate is not explicitely set: fetch the default one */
+	if (!pMse->baudRate)
+	    pMse->baudRate = xf86SetIntOption(pInfo->options, "BaudRate", 0);
+	pMse->oldProtocolID = pMse->protocolID; /* hack */
+    }
+    /*
+     * Write the baudrate back th the option list so that the serial
+     * interface code can access the new value.
+     */
+    if (pMse->baudRate)
+	xf86ReplaceIntOption(pInfo->options, "BaudRate", pMse->baudRate);
+
     /* Set the port parameters. */
-    xf86SetSerial(pInfo->fd, pInfo->options);
+    if (!automatic)
+	xf86SetSerial(pInfo->fd, pInfo->options);
     param = NULL;
     paramlen = 0;
     switch (pMse->protocolID) {
@@ -717,7 +744,7 @@ SetupMouse(InputInfoPtr pInfo)
 	 * The baud rate selection command must be sent at the current
 	 * baud rate; try all likely settings.
 	 */
-	speed = xf86SetIntOption(pInfo->options, "BaudRate", 0);
+	speed = pMse->baudRate;
 	switch (speed) {
 	case 9600:
 	    s = "*q";
@@ -772,7 +799,7 @@ SetupMouse(InputInfoPtr pInfo)
 	break;
 
     case PROT_LOGIMAN:
-	speed = xf86SetIntOption(pInfo->options, "BaudRate", 0);
+	speed = pMse->baudRate;
 	switch (speed) {
 	case 9600:
 	    s = "*q";
@@ -1012,12 +1039,6 @@ MouseReadInput(InputInfoPtr pInfo)
      */
     XisbBlockDuration(pMse->buffer, -1);
 
-#ifdef EXTMOUSEDEBUG2
-    ErrorF("received %d bytes",nBytes);
-    for ( i=0; i < nBytes; i++)
-    	ErrorF(" %02x",pMse->buffer[i]);
-    ErrorF("\n");
-#endif
     while ((c = XisbRead(pMse->buffer)) >= 0) {
 	u = (unsigned char)c;
 	if (pBufP >= pMse->protoPara[4]) {
@@ -1113,6 +1134,15 @@ MouseReadInput(InputInfoPtr pInfo)
 	 */
 	pBuf[pBufP++] = u;
 	if (pBufP != pMse->protoPara[4]) continue;
+#ifdef EXTMOUSEDEBUG2
+	{
+	    int i;
+	    ErrorF("received %d bytes",pBufP);
+	    for ( i=0; i < pBufP; i++)
+		ErrorF(" %02x",pBuf[i]);
+	    ErrorF("\n");
+	}
+#endif
 
 	/*
 	 * Hack for resyncing: We check here for a package that is:

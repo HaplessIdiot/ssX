@@ -95,7 +95,6 @@ TsengXAAInit(ScreenPtr pScreen)
     TsengPtr pTseng = TsengPTR(pScrn);
     XAAInfoRecPtr pXAAinfo;
     BoxRec AvailFBArea;
-    int i;
 
     PDEBUG("	TsengXAAInit\n");
     pTseng->AccelInfoRec = pXAAinfo = XAACreateInfoRec();
@@ -155,7 +154,7 @@ TsengXAAInit(ScreenPtr pScreen)
 #endif
 #endif
 
-#if 0 /*1*/
+#if 1
     /*
      * SceenToScreenCopy (BitBLT).
      * 
@@ -364,12 +363,14 @@ TsengXAAInit(ScreenPtr pScreen)
      * Init ping-pong registers.
      * This might be obsoleted by the BACKGROUND_OPERATIONS flag.
      */
-    tsengMemFg = MemW32ForegroundPing;
-    tsengFg = W32ForegroundPing;
-    tsengMemBg = MemW32BackgroundPing;
-    tsengBg = W32BackgroundPing;
-    tsengMemPat = MemW32PatternPing;
-    tsengPat = W32PatternPing;
+    pTseng->tsengFg = 0;
+    pTseng->tsengBg = 16;
+    pTseng->tsengPat = 32;
+
+    /* for register write optimisation */
+    pTseng->tseng_old_dir = -1;
+    pTseng->old_x = 0;
+    pTseng->old_y = 0;
 
     /*
      * Finally, we set up the video memory space available to the pixmap
@@ -426,7 +427,7 @@ TsengSetupForSolidFill(ScrnInfoPtr pScrn,
 
 /*    ErrorF("S"); */
 
-    PINGPONG();
+    PINGPONG(pTseng);
 
     wait_acl_queue(pTseng);
 
@@ -477,7 +478,7 @@ TsengW32pSubsequentSolidFillRect(ScrnInfoPtr pScrn,
      * here without calling the SetupFor... code again, and the
      * ACL_SOURCE_ADDRESS will be wrong.
      */
-    ACL_SOURCE_ADDRESS(tsengFg);
+    ACL_SOURCE_ADDRESS(pTseng->AccelColorBufferOffset + pTseng->tsengFg);
 
     SET_XYDIR(0);   /* FIXME: not needed with separate setupforsolidline */
 
@@ -510,7 +511,7 @@ Tseng6KSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     wait_acl_queue(pTseng);
 
     /* see comment in TsengW32pSubsequentFillRectSolid */
-    ACL_SOURCE_ADDRESS(tsengFg);
+    ACL_SOURCE_ADDRESS(pTseng->AccelColorBufferOffset + pTseng->tsengFg);
 
     /* if XYDIR is not reset here, drawing a hardware line in between
      * blitting, with the same ROP, color, etc will not cause a call to
@@ -804,9 +805,10 @@ TsengSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
     /* make sure colors are rendered correctly if >8bpp */
     if (octant & XDECREASING) {
 	destaddr += pTseng->Bytesperpixel - 1;
-	ACL_SOURCE_ADDRESS(tsengFg + pTseng->neg_x_pixel_offset);
+	ACL_SOURCE_ADDRESS(pTseng->AccelColorBufferOffset 
+			   + pTseng->tsengFg + pTseng->neg_x_pixel_offset);
     } else
-	ACL_SOURCE_ADDRESS(tsengFg);
+	ACL_SOURCE_ADDRESS(pTseng->AccelColorBufferOffset + pTseng->tsengFg);
 
     SET_XYDIR(xydir);
 

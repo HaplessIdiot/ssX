@@ -99,6 +99,7 @@ typedef struct _MouseDevRec {
     const char *	mseDevice;
     const char *	protocol;
     int			protocolID;
+    int                 oldProtocolID; /* hack */
     int			class;
     int			mseModel;
     int			baudRate;
