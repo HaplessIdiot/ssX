@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: VTparse.h,v 1.6 92/09/15 15:28:31 gildea Exp $
+ *	$XFree86$
  */
 
 /*
