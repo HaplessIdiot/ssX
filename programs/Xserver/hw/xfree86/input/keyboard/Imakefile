@@ -1,0 +1,12 @@
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/Imakefile,v 1.3 1999/08/14 10:50:02 dawes Exp $
+
+#define IHaveModules
+#include <Server.tmpl>
+
+DRIVER = keyboard
+
+#if !defined(XF86DriverSDK)
+CppManTarget($(DRIVER),)
+InstallModuleManPage($(DRIVER))
+#endif
+

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.67 2000/02/29 15:24:12 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.68 2000/03/02 17:52:49 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -618,7 +618,7 @@ TCLIBDIR = TclLibDir
 #define DriverManDefs -D__drivermansuffix__=$(DRIVERMANSUFFIX)
 #endif
 #ifndef ExtraManDefs
-#define ExtraManDefs /**/
+#define ExtraManDefs -D__projectroot__=$(PROJECTROOT)
 #endif
 
 #ifndef LogDirectory

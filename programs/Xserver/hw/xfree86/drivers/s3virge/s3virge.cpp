@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.3 1999/07/10 12:17:34 dawes Exp $
-.TH s3virge __drivermansuffix__ "Version 3.9.16"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.4 1999/08/22 13:04:27 dawes Exp $
+.TH s3virge __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 s3virge \- S3 ViRGE video driver
 .SH SYNOPSIS
