@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.36 2002/02/27 06:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.37 2002/03/01 16:42:44 tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -96,7 +96,7 @@ static INLINE LispObj *LispFeval(LispMac*, LispObj*);
 static LispObj *LispRunFunMac(LispMac*, LispObj*, LispObj*, int);
 
 /* expands and executes a setf method, to be called only by Lisp_Setf */
-LispObj *LispRunSetf(LispMac*, LispObj*, LispObj*, LispObj*);
+LispObj *LispRunSetf(LispMac*, LispArgList*, LispObj*, LispObj*, LispObj*);
 
 /* increases storage size for environment */
 static void LispMoreEnvironment(LispMac*);
@@ -112,18 +112,18 @@ static void LispMoreDynamics(LispMac*);
 
 #ifdef __GNUC__
 static INLINE LispObj *LispDoGetVar(LispMac*, LispObj*);
-static INLINE void LispDoAddVar(LispMac*, LispObj*, LispObj*);
 #endif
+static INLINE void LispDoAddVar(LispMac*, LispObj*, LispObj*);
 
 /* Helper for importing symbol(s) functions,
  * Search for the specified object in the current package */
 static INLINE LispObj *LispGetVarPack(LispMac*, LispObj*);
 
 /* create environment for function call */
-static void LispMakeEnvironment(LispMac*, LispObj*, LispObj*, LispObj*, int);
+static void LispMakeEnvironment(LispMac*, LispArgList*, LispObj*, LispObj*, int);
 
 	/* if not already in keyword package, move atom to keyword package */
-static void LispCheckKeyword(LispMac*, LispObj*);
+static LispObj *LispCheckKeyword(LispMac*, LispObj*);
 
 	/* builtin backquote parsing */
 static LispObj *LispEvalBackquoteObject(LispMac*, LispObj*, int, int);
@@ -188,6 +188,8 @@ LispProperty *NOPROPERTY = &noproperty;
 static int segsize, minfree, numseg;
 static int nfree, nobjs;
 int pagesize, gcpro;
+
+int LispArgList_t;
 
 LispFile *Stdout, *Stdin, *Stderr;
 
@@ -822,6 +824,11 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 			mpr_clear(entry->data.mp.ratio);
 			free(entry->data.mp.ratio);
 			break;
+		    case LispLambda_t:
+			if (entry->data.lambda.name->type == LispOpaque_t)
+			    LispFreeArgList(mac, (LispArgList*)
+				entry->data.lambda.name->data.opaque.data);
+			break;
 		    default:
 			break;
 		}
@@ -1167,14 +1174,11 @@ LispRemAtomObjectProperty(LispMac *mac, LispAtom *atom)
 	atom->a_object = 0;
 	atom->property->value = NULL;
     }
-#ifdef DEBUG
-    else
-	LispDestroy(mac, "internal error at REMOVE-OBJECT-PROPERTY");
-#endif
 }
 
 void
-LispSetAtomFunctionProperty(LispMac *mac, LispAtom *atom, LispObj *function)
+LispSetAtomFunctionProperty(LispMac *mac, LispAtom *atom, LispObj *function,
+			    LispArgList *alist)
 {
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(mac, atom);
@@ -1186,6 +1190,7 @@ LispSetAtomFunctionProperty(LispMac *mac, LispAtom *atom, LispObj *function)
 	if (atom->a_builtin) {
 	    LispMutable(atom->property->fun.builtin->description);
 	    atom->a_builtin = 0;
+	    LispFreeArgList(mac, atom->property->alist);
 	}
 	else
 	    LispMutable(atom->property->fun.function);
@@ -1194,6 +1199,7 @@ LispSetAtomFunctionProperty(LispMac *mac, LispAtom *atom, LispObj *function)
     LispImmutable(function);
 
     atom->property->fun.function = function;
+    atom->property->alist = alist;
 }
 
 void
@@ -1204,15 +1210,14 @@ LispRemAtomFunctionProperty(LispMac *mac, LispAtom *atom)
 	LispMutable(atom->property->fun.function);
 	atom->property->fun.function = NULL;
 	atom->a_function = 0;
+	LispFreeArgList(mac, atom->property->alist);
+	atom->property->alist = NULL;
     }
-#if 0
-    else
-	LispDestroy(mac, "internal error at REMOVE-FUNCTION-PROPERTY");
-#endif
 }
 
 void
-LispSetAtomBuiltinProperty(LispMac *mac, LispAtom *atom, LispBuiltin *builtin)
+LispSetAtomBuiltinProperty(LispMac *mac, LispAtom *atom, LispBuiltin *builtin,
+			   LispArgList *alist)
 {
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(mac, atom);
@@ -1224,6 +1229,7 @@ LispSetAtomBuiltinProperty(LispMac *mac, LispAtom *atom, LispBuiltin *builtin)
 	if (atom->a_function) {
 	    LispMutable(atom->property->fun.function);
 	    atom->a_function = 0;
+	    LispFreeArgList(mac, atom->property->alist);
 	}
 	else
 	    LispMutable(atom->property->fun.builtin->description);
@@ -1232,6 +1238,7 @@ LispSetAtomBuiltinProperty(LispMac *mac, LispAtom *atom, LispBuiltin *builtin)
     LispImmutable(builtin->description);
 
     atom->property->fun.builtin = builtin;
+    atom->property->alist = alist;
 }
 
 void
@@ -1242,15 +1249,14 @@ LispRemAtomBuiltinProperty(LispMac *mac, LispAtom *atom)
 	LispMutable(atom->property->fun.builtin->description);
 	atom->property->fun.function = NULL;
 	atom->a_builtin = 0;
+	LispFreeArgList(mac, atom->property->alist);
+	atom->property->alist = NULL;
     }
-#ifdef DEBUG
-    else
-	LispDestroy(mac, "internal error at REMOVE-BUILTIN-PROPERTY");
-#endif
 }
 
 void
-LispSetAtomSetfProperty(LispMac *mac, LispAtom *atom, LispObj *setf)
+LispSetAtomSetfProperty(LispMac *mac, LispAtom *atom, LispObj *setf,
+			LispArgList *alist)
 {
     if (atom->property == NOPROPERTY)
 	LispAllocAtomProperty(mac, atom);
@@ -1258,12 +1264,14 @@ LispSetAtomSetfProperty(LispMac *mac, LispAtom *atom, LispObj *setf)
     if (atom->a_defsetf) {
 	mac->gc.immutablebits = 1;
 	LispMutable(atom->property->setf);
+	LispFreeArgList(mac, atom->property->salist);
     }
+
+    LispImmutable(setf);
 
     atom->a_defsetf = 1;
     atom->property->setf = setf;
-
-    LispImmutable(setf);
+    atom->property->salist = alist;
 }
 
 void
@@ -1274,11 +1282,9 @@ LispRemAtomSetfProperty(LispMac *mac, LispAtom *atom)
 	LispMutable(atom->property->setf);
 	atom->property->setf = NULL;
 	atom->a_defsetf = 0;
+	LispFreeArgList(mac, atom->property->salist);
+	atom->property->salist = NULL;
     }
-#ifdef DEBUG
-    else
-	LispDestroy(mac, "internal error at REMOVE-SETF-PROPERTY");
-#endif
 }
 
 void
@@ -1311,10 +1317,6 @@ LispRemAtomStructProperty(LispMac *mac, LispAtom *atom)
 	atom->property->structure.definition = NULL;
 	atom->a_defstruct = 0;
     }
-#ifdef DEBUG
-    else
-	LispDestroy(mac, "internal error at REMOVE-STRUCTURE-PROPERTY");
-#endif
 }
 
 LispAtom *
@@ -1379,17 +1381,63 @@ LispPutAtomProperty(LispMac *mac, LispAtom *atom, LispObj *key, LispObj *val)
  *	(defun my-function (... &key key1 key2 key3 ...)
  * key1, key2, and key3 will be in the keyword package
  */
-static void
+static LispObj *
 LispCheckKeyword(LispMac *mac, LispObj *keyword)
 {
     if (KEYWORD_P(keyword))
-	return;
+	return (keyword);
 
-    (void)KEYWORD(STRPTR(keyword));
+    return (KEYWORD(STRPTR(keyword)));
 }
 
 void
-LispCheckArguments(LispMac *mac, LispFunType type, LispObj *args, char *name)
+LispUseArgList(LispMac *mac, LispArgList *alist)
+{
+    if (alist->normals.num_symbols)
+	LispMused(mac, alist->normals.symbols);
+    if (alist->optionals.num_symbols) {
+	LispMused(mac, alist->optionals.symbols);
+	LispMused(mac, alist->optionals.defaults);
+	LispMused(mac, alist->optionals.sforms);
+    }
+    if (alist->keys.num_symbols) {
+	LispMused(mac, alist->keys.symbols);
+	LispMused(mac, alist->keys.defaults);
+	LispMused(mac, alist->keys.sforms);
+	LispMused(mac, alist->keys.keys);
+    }
+    if (alist->auxs.num_symbols) {
+	LispMused(mac, alist->auxs.symbols);
+	LispMused(mac, alist->auxs.initials);
+    }
+    LispMused(mac, alist);
+}
+
+void
+LispFreeArgList(LispMac *mac, LispArgList *alist)
+{
+    if (alist->normals.num_symbols)
+	LispFree(mac, alist->normals.symbols);
+    if (alist->optionals.num_symbols) {
+	LispFree(mac, alist->optionals.symbols);
+	LispFree(mac, alist->optionals.defaults);
+	LispFree(mac, alist->optionals.sforms);
+    }
+    if (alist->keys.num_symbols) {
+	LispFree(mac, alist->keys.symbols);
+	LispFree(mac, alist->keys.defaults);
+	LispFree(mac, alist->keys.sforms);
+	LispFree(mac, alist->keys.keys);
+    }
+    if (alist->auxs.num_symbols) {
+	LispFree(mac, alist->auxs.symbols);
+	LispFree(mac, alist->auxs.initials);
+    }
+    LispFree(mac, alist);
+}
+
+LispArgList *
+LispCheckArguments(LispMac *mac, LispFunType type, LispObj *list, char *name)
 {
     static char *types[4] = {"LAMBDA-LIST", "FUNCTION", "MACRO", "SETF-METHOD"};
     static char *fnames[4] = {"LAMBDA", "DEFUN", "DEFMACRO", "DEFSETF"};
@@ -1398,113 +1446,286 @@ LispCheckArguments(LispMac *mac, LispFunType type, LispObj *args, char *name)
 #define IREST		2
 #define IAUX		3
     static char *keys[4] = {"&KEY", "&OPTIONAL", "&REST", "&AUX"};
-    LispObj *obj;
-    int rest, optional, key, aux;
+    int rest, optional, key, aux, count;
+    LispArgList *alist;
+    LispObj *spec, *sform, *defval;
+    char description[8], *desc;
 
+/* If LispRealloc fails, the previous memory will be released
+ * in LispTopLevel, unless LispMused was called on the pointer */
+#define REALLOC_OBJECTS(pointer, count)		\
+    pointer = LispRealloc(mac, pointer, (count) * sizeof(LispObj*))
+
+    alist = LispCalloc(mac, 1, sizeof(LispArgList));
+    if (!CONS_P(list)) {
+	if (list != NIL)
+	    LispDestroy(mac, "%s %s: %s cannot be a %s argument list",
+			fnames[type], name, STROBJ(list), types[type]);
+	alist->description = GETATOMID("");
+
+	return (alist);
+    }
+
+    description[0] = '\0';
+    desc = description;
     rest = optional = key = aux = 0;
-    if (CONS_P(args)) {
-	for(; CONS_P(args); args = CDR(args)) {
-	    obj = CAR(args);
+    for (; CONS_P(list); list = CDR(list)) {
+	spec = CAR(list);
 
-	    if (CONS_P(obj)) {
-		if (aux) {
-		    if (!SYMBOL_P(CAR(obj)) ||
-			(CDR(obj) != NIL && CDR(CDR(obj)) != NIL))
-			LispDestroy(mac,
-				    "%s %s: bad &AUX argument %s",
-				    fnames[type], name, LispStrObj(mac, obj));
+	if (CONS_P(spec)) {
+	    if (aux) {
+		if (!SYMBOL_P(CAR(spec)) ||
+		    (CDR(spec) != NIL && CDDR(spec) != NIL))
+		    LispDestroy(mac, "%s %s: bad &AUX argument %s",
+				fnames[type], name, STROBJ(spec));
+		defval = CDR(spec) != NIL ? CADR(spec) : NIL;
+		count = alist->auxs.num_symbols;
+		REALLOC_OBJECTS(alist->auxs.symbols, count + 1);
+		REALLOC_OBJECTS(alist->auxs.initials, count + 1);
+		alist->auxs.symbols[count] = CAR(spec);
+		alist->auxs.initials[count] = defval;
+		++alist->auxs.num_symbols;
+		if (count == 0)
+		    *desc++ = 'a';
+		++alist->num_arguments;
+	    }
+	    else if (rest)
+		LispDestroy(mac, "%s %s: syntax error parsing %s",
+			    fnames[type], name, keys[IREST]);
+	    else if (key) {
+		LispObj *akey = CAR(spec);
+
+		defval = NIL;
+		sform = NULL;
+		if (CONS_P(akey)) {
+		    /* check for special case, as in:
+		     *	(defun a (&key ((key name) 'default-value)) name)
+		     *	(a 'key 'test)	=> TEST
+		     *	(a)		=> DEFAULT-VALUE
+		     */
+		    if (!SYMBOL_P(CAR(akey)) || !CONS_P(CDR(akey)) ||
+			!SYMBOL_P(CADR(akey)) || CDDR(akey) != NIL ||
+			(CDR(spec) != NIL && CDDR(spec) != NIL))
+			LispDestroy(mac, "%s %s: bad special &KEY %s",
+				    fnames[type], name, STROBJ(spec));
+		    if (CDR(spec) != NIL)
+			defval = CADR(spec);
+		    spec = CADR(akey);
+		    akey = CAR(akey);
 		}
-		else if ((key || optional) && !rest) {
-		    if (key && CONS_P(CAR(obj))) {
-			/* check for special case, as in:
-			 *  (defun a (&key ((key name) 'default-value)) name)
-			 *  (a 'key 'test)  => TEST
-			 *  (a) 	    => DEFAULT-VALUE
-			 */
-			if (!SYMBOL_P(CAR(CAR(obj))) ||
-			    !CONS_P(CDR(CAR(obj))) ||
-			    !SYMBOL_P(CAR(CDR(CAR(obj)))) ||
-			    (CDR(CDR(CAR(obj))) != NIL &&
-			     CDR(CDR(CDR(CAR(obj))))))
-			    LispDestroy(mac, "%s %s: bad special &KEY %s",
-					fnames[type], name, STROBJ(obj));
-		    }
-		    /* is this a default value? */
-		    else if (!SYMBOL_P(CAR(obj)))
+		else {
+		    akey = NULL;
+
+		    if (!SYMBOL_P(CAR(spec)))
 			LispDestroy(mac,
 				    "%s %s: %s cannot be a %s argument name",
 				    fnames[type], name,
-				    STROBJ(CAR(obj)), types[type]);
+				    STROBJ(CAR(spec)), types[type]);
 		    /* check if default value provided, and optionally a `svar' */
-		    else if (CDR(obj) != NIL &&
-			     (!CONS_P(CDR(obj)) ||
-			      (CDR(CDR(obj)) != NIL &&
-			       (!SYMBOL_P(CAR(CDR(CDR(obj)))) ||
-				CDR(CDR(CDR(obj))) != NIL))))
-			LispDestroy(mac,
-				    "%s %s: bad argument specification %s",
-				    fnames[type], name, STROBJ(obj));
-		    else if (key)
-			/* add to keyword package */
-			LispCheckKeyword(mac, CAR(obj));
+		    else if (CDR(spec) != NIL && (!CONS_P(CDR(spec)) ||
+			      (CDDR(spec) != NIL &&
+			       (!SYMBOL_P(CAR(CDDR(spec))) ||
+				CDR(CDDR(spec)) != NIL))))
+			LispDestroy(mac, "%s %s: bad argument specification %s",
+				    fnames[type], name, STROBJ(spec));
+		    if (CONS_P(CDR(spec))) {
+			defval = CADR(spec);
+			if (CONS_P(CDDR(spec)))
+			    sform = CAR(CDDR(spec));
+		    }
+		    /* Add to keyword package, and set the keyword in the
+		     * argument list, so that a function argument keyword
+		     * will reference the same object, and make comparison
+		     * simpler. */
+		    spec = LispCheckKeyword(mac, CAR(spec));
 		}
-		else
-		    LispDestroy(mac, "%s %s: bad argument specification %s",
-				fnames[type], name, STROBJ(obj));
-	    }
-	    else if (!SYMBOL_P(obj) || KEYWORD_P(obj))
-		LispDestroy(mac, "%s %s: %s cannot be a %s argument",
-			    fnames[type], name, STROBJ(obj), types[type]);
-	    else if (STRPTR(obj)[0] == '&') {
-		Atom_id atom = ATOMID(obj);
 
+		count = alist->keys.num_symbols;
+		REALLOC_OBJECTS(alist->keys.keys, count + 1);
+		REALLOC_OBJECTS(alist->keys.defaults, count + 1);
+		REALLOC_OBJECTS(alist->keys.sforms, count + 1);
+		REALLOC_OBJECTS(alist->keys.symbols, count + 1);
+		alist->keys.symbols[count] = spec;
+		alist->keys.defaults[count] = defval;
+		alist->keys.sforms[count] = sform;
+		alist->keys.keys[count] = akey;
+		++alist->keys.num_symbols;
+		if (count == 0)
+		    *desc++ = 'k';
+		++alist->num_arguments;
+	    }
+	    else if (optional) {
+		defval = NIL;
+		sform = NULL;
+
+		if (!SYMBOL_P(CAR(spec)))
+		    LispDestroy(mac,
+				"%s %s: %s cannot be a %s argument name",
+				fnames[type], name,
+				STROBJ(CAR(spec)), types[type]);
+		/* check if default value provided, and optionally a `svar' */
+		else if (CDR(spec) != NIL && (!CONS_P(CDR(spec)) ||
+			  (CDDR(spec) != NIL &&
+			   (!SYMBOL_P(CAR(CDDR(spec))) ||
+			    CDR(CDDR(spec)) != NIL))))
+		    LispDestroy(mac, "%s %s: bad argument specification %s",
+				fnames[type], name, STROBJ(spec));
+		if (CONS_P(CDR(spec))) {
+		    defval = CADR(spec);
+		    if (CONS_P(CDDR(spec)))
+			sform = CAR(CDDR(spec));
+		}
+		spec = CAR(spec);
+
+		count = alist->optionals.num_symbols;
+		REALLOC_OBJECTS(alist->optionals.symbols, count + 1);
+		REALLOC_OBJECTS(alist->optionals.defaults, count + 1);
+		REALLOC_OBJECTS(alist->optionals.sforms, count + 1);
+		alist->optionals.symbols[count] = spec;
+		alist->optionals.defaults[count] = defval;
+		alist->optionals.sforms[count] = sform;
+		++alist->optionals.num_symbols;
+		if (count == 0)
+		    *desc++ = 'o';
+		++alist->num_arguments;
+	    }
+
+	    /* Normal arguments cannot have default value */
+	    else
+		LispDestroy(mac, "%s %s: syntax error parsing %s",
+			    fnames[type], name, STROBJ(spec));
+	}
+
+	/* spec must be an atom, excluding keywords */
+	else if (!SYMBOL_P(spec) || KEYWORD_P(spec))
+	    LispDestroy(mac, "%s %s: %s cannot be a %s argument",
+			fnames[type], name, STROBJ(spec), types[type]);
+	else {
+	    Atom_id atom = ATOMID(spec);
+
+	    if (atom[0] == '&') {
 		if (atom == Srest) {
-		    if (rest || aux ||
-			CDR(args) == NIL || !SYMBOL_P(CAR(CDR(args))))
+		    if (rest || aux || CDR(list) == NIL || !SYMBOL_P(CADR(list))
+			/* only &aux allowed after &rest */
+			|| (CDDR(list) != NIL && !SYMBOL_P(CAR(CDDR(list))) &&
+			    STRPTR(CAR(CDDR(list))) != Saux))
 			LispDestroy(mac, "%s %s: syntax error parsing %s",
-				    fnames[type], name, STRPTR(obj));
+				    fnames[type], name, STRPTR(spec));
 		    if (key)
 			LispDestroy(mac, "%s %s: %s not allowed after %s",
 				    fnames[type], name, keys[IREST], keys[IKEY]);
 		    rest = 1;
+		    continue;
 		}
+
 		else if (atom == Skey) {
 		    if (rest || aux)
 			LispDestroy(mac, "%s %s: %s not allowed after %s",
-				    fnames[type], name, STRPTR(obj),
+				    fnames[type], name, STRPTR(spec),
 				    rest ? keys[IREST] : keys[IAUX]);
 		    key = 1;
+		    continue;
 		}
+
 		else if (atom == Soptional) {
-		    if (rest || optional || aux)
+		    if (rest || optional || aux || key)
 			LispDestroy(mac, "%s %s: %s not allowed after %s",
-				    fnames[type], name, STRPTR(obj),
-				    rest ? keys[IREST] : optional ?
-				    keys[IOPTIONAL] : keys[IAUX]);
+				    fnames[type], name, STRPTR(spec),
+				    rest ? keys[IREST] :
+					optional ?
+					keys[IOPTIONAL] :
+					    aux ? keys[IAUX] : keys[IKEY]);
 		    optional = 1;
+		    continue;
 		}
+
 		else if (atom == Saux) {
 		    /* &AUX must be the last keyword parameter */
 		    if (aux)
 			LispDestroy(mac, "%s %s: syntax error parsing %s",
-				    fnames[type], name, STRPTR(obj));
+				    fnames[type], name, STRPTR(spec));
 		    aux = 1;
+		    continue;
 		}
+
+		/* Untill more lambda-list keywords supported, don't allow
+		 * argument names starting with the '&' character */
 		else
 		    LispDestroy(mac, "%s %s: %s not allowed/implemented",
-				fnames[type], name, STRPTR(obj));
+				fnames[type], name, STRPTR(spec));
 	    }
-	    else if (key)
-		/* add to keyword package */
-		LispCheckKeyword(mac, obj);
+
+	    /* Add argument to alist */
+	    if (aux) {
+		count = alist->auxs.num_symbols;
+		REALLOC_OBJECTS(alist->auxs.symbols, count + 1);
+		REALLOC_OBJECTS(alist->auxs.initials, count + 1);
+		alist->auxs.symbols[count] = spec;
+		alist->auxs.initials[count] = NIL;
+		++alist->auxs.num_symbols;
+		if (count == 0)
+		    *desc++ = 'a';
+		++alist->num_arguments;
+	    }
+	    else if (rest) {
+		alist->rest = spec;
+		*desc++ = 'r';
+		++alist->num_arguments;
+	    }
+	    else if (key) {
+		/* Add to keyword package, and set the keyword in the
+		 * argument list, so that a function argument keyword
+		 * will reference the same object, and make comparison
+		 * simpler. */
+		spec = LispCheckKeyword(mac, spec);
+		count = alist->keys.num_symbols;
+		REALLOC_OBJECTS(alist->keys.keys, count + 1);
+		REALLOC_OBJECTS(alist->keys.defaults, count + 1);
+		REALLOC_OBJECTS(alist->keys.sforms, count + 1);
+		REALLOC_OBJECTS(alist->keys.symbols, count + 1);
+		alist->keys.symbols[count] = spec;
+		alist->keys.defaults[count] = NIL;
+		alist->keys.sforms[count] = NULL;
+		alist->keys.keys[count] = NULL;
+		++alist->keys.num_symbols;
+		if (count == 0)
+		    *desc++ = 'k';
+		++alist->num_arguments;
+	    }
+	    else if (optional) {
+		count = alist->optionals.num_symbols;
+		REALLOC_OBJECTS(alist->optionals.symbols, count + 1);
+		REALLOC_OBJECTS(alist->optionals.defaults, count + 1);
+		REALLOC_OBJECTS(alist->optionals.sforms, count + 1);
+		alist->optionals.symbols[count] = spec;
+		alist->optionals.defaults[count] = NIL;
+		alist->optionals.sforms[count] = NULL;
+		++alist->optionals.num_symbols;
+		if (count == 0)
+		    *desc++ = 'o';
+		++alist->num_arguments;
+	    }
+	    else {
+		count = alist->normals.num_symbols;
+		REALLOC_OBJECTS(alist->normals.symbols, count + 1);
+		alist->normals.symbols[count] = spec;
+		++alist->normals.num_symbols;
+		if (count == 0)
+		    *desc++ = '.';
+		++alist->num_arguments;
+	    }
 	}
-	if (args != NIL)
-	    LispDestroy(mac, "%s %s: %s cannot end %s arguments",
-			fnames[type], name, STROBJ(args), types[type]);
     }
-    else if (args != NIL)
-	LispDestroy(mac, "%s %s: %s cannot be a %s argument",
-		    fnames[type], name, STROBJ(args), types[type]);
+
+    /* Check for dotted argument list */
+    if (list != NIL)
+	LispDestroy(mac, "%s %s: %s cannot end %s arguments",
+		    fnames[type], name, STROBJ(list), types[type]);
+
+    *desc = '\0';
+    alist->description = LispGetAtomString(mac, description, 0);
+
+    return (alist);
 }
 
 void
@@ -1515,6 +1736,7 @@ LispAddBuiltinFunction(LispMac *mac, LispBuiltin *builtin)
     static int first = 1;
     LispObj *name, *obj, *list, *cons, *code;
     LispAtom *atom;
+    LispArgList *alist;
     int length = mac->protect.length;
 
     if (first) {
@@ -1545,9 +1767,10 @@ LispAddBuiltinFunction(LispMac *mac, LispBuiltin *builtin)
     LispPopInput(mac, &stream);
 
     atom = name->data.atom;
-    LispCheckArguments(mac, builtin->type, CDR(list), atom->string);
+    alist = LispCheckArguments(mac, builtin->type, CDR(list), atom->string);
     builtin->description = list;
-    LispSetAtomBuiltinProperty(mac, atom, builtin);
+    LispSetAtomBuiltinProperty(mac, atom, builtin, alist);
+    LispUseArgList(mac, alist);
 
     /* Make function a extern symbol, unless told to not do so */
     if (!builtin->internal)
@@ -1603,8 +1826,7 @@ mark_again:
 	case LispTrue_t:	/* only T (should) has this type */
 	    return;
 	case LispLambda_t:
-	    if (obj->data.lambda.name != NIL)
-		obj->data.lambda.name->mark = LispTrue_t;
+	    obj->data.lambda.name->mark = LispTrue_t;
 	    obj->mark = LispTrue_t;
 	    obj = obj->data.lambda.code;
 	    goto mark_again;
@@ -1681,8 +1903,7 @@ immutable_again:
 	case LispTrue_t:	/* only T (should) has this type */
 	    return;
 	case LispLambda_t:
-	    if (obj->data.lambda.name != NIL)
-		obj->data.lambda.name->prot = LispTrue_t;
+	    obj->data.lambda.name->prot = LispTrue_t;
 	    obj->prot = LispTrue_t;
 	    obj = obj->data.lambda.code;
 	    goto immutable_again;
@@ -1754,8 +1975,7 @@ mutable_again:
 	case LispTrue_t:	/* only T (should) has this type */
 	    return;
 	case LispLambda_t:
-	    if (obj->data.lambda.name != NIL)
-		obj->data.lambda.name->prot = LispNil_t;
+	    obj->data.lambda.name->prot = LispNil_t;
 	    obj->prot = LispNil_t;
 	    obj = obj->data.lambda.code;
 	    goto mutable_again;
@@ -2556,10 +2776,12 @@ LispUnsetVar(LispMac *mac, LispObj *atom)
     }
 }
 
-#ifdef __GNUC__
 LispObj *
 LispAddVar(LispMac *mac, LispObj *atom, LispObj *obj)
 {
+    if (mac->env.length >= mac->env.space)
+	LispMoreEnvironment(mac);
+
     LispDoAddVar(mac, atom, obj);
 
     return (obj);
@@ -2567,11 +2789,6 @@ LispAddVar(LispMac *mac, LispObj *atom, LispObj *obj)
 
 static INLINE void
 LispDoAddVar(LispMac *mac, LispObj *atom, LispObj *obj)
-#else
-#define LispDoAddVar LispAddVar
-LispObj *
-LispAddVar(LispMac *mac, LispObj *atom, LispObj *obj)
-#endif
 {
     if (atom->data.atom->dyn) {
 	if (mac->dyn.length >= mac->dyn.space)
@@ -2581,14 +2798,8 @@ LispAddVar(LispMac *mac, LispObj *atom, LispObj *obj)
 	mac->dyn.names[mac->dyn.length++] = atom;
     }
 
-    if (mac->env.length >= mac->env.space)
-	LispMoreEnvironment(mac);
-
     mac->env.values[mac->env.length] = obj;
     mac->env.names[mac->env.length++] = atom;
-#ifndef __GNUC__
-    return (obj);
-#endif
 }
 
 LispObj *
@@ -3202,315 +3413,270 @@ LispMoreProtects(LispMac *mac)
 }
 
 static void
-LispMakeEnvironment(LispMac *mac, LispObj *desc, LispObj *values,
+LispMakeEnvironment(LispMac *mac, LispArgList *alist, LispObj *values,
 		    LispObj *name, int eval)
 {
-    Atom_id atom;
-    int base, head;
-    int rest, optional, key, aux, varset, nkey, ncvt;
-    LispObj *arg, *spec, *list, *val, *keyp, *restp, *auxp, *karg;
+#define FEVAL(object)	LispFeval(mac, object)
+    char *desc;
+    int i, base;
+    LispObj **symbols, **defaults, **sforms;
 
-    head = mac->env.head;
     base = mac->env.length;
 
-    arg = values;
-    rest = optional = key = aux = 0;
-    for (list = desc; CONS_P(list); list = CDR(list)) {
-	spec = CAR(list);
-
-	/* check for special lambda list keywords */
-	if (SYMBOL_P(spec)) {
-	    atom = ATOMID(spec);
-	    if (atom[0] == '&') {
-		if (atom == Srest) {
-		    restp = CDR(list);
-		    rest = 1;
-		    break;
-		}
-		else if (atom == Soptional) {
-		    optional = 1;
-		    continue;
-		}
-		else if (atom == Skey) {
-		    nkey = ncvt = 0;
-		    keyp = CDR(list);
-		    for (karg = arg; CONS_P(karg); karg = CDR(karg))
-			++nkey;
-		    if (nkey & 1)
-			LispDestroy(mac, "%s: &KEY needs arguments as pairs",
-				    STROBJ(name));
-		    nkey >>= 1;
-		    karg = arg;
-		    key = 1;
-		    continue;
-		}
-		else if (atom == Saux) {
-		    auxp = CDR(list);
-		    aux = 1;
-		    break;
-		}
-	    }
-	    /* else just add to environment */
-	}
-
-	/* &OPTIONAL */
-	if (optional) {
-	    if (CONS_P(arg)) {
-		val = CAR(arg);
-
-		/* Update argument pointer */
-		arg = CDR(arg);
-
-		if (eval)
-		    val = LispFeval(mac, val);
-		LispDoAddVar(mac, spec, val);
-
-		/* Check for sval form */
-		if (CONS_P(spec) && CONS_P(CDR(spec)) && CONS_P(CDDR(spec)))
-		    LispDoAddVar(mac, CAR(CDDR(spec)), T);
-	    }
-	    else {
-		/* Don't need to set val to NIL */
-
-		if (CONS_P(spec)) {
-		    /* &OPTIONAL variable with default value */
-		    val = CADR(spec);
-		    if (eval && !CONSTANT_P(val)) {
-			mac->env.lex = base;
-			mac->env.head = mac->env.length;
-			val = EVAL(val);
-			mac->env.head = head;
-		    }
-		    LispDoAddVar(mac, CAR(spec), val);
-		}
-		else
-		    /* No default value */
-		    LispDoAddVar(mac, spec, NIL);
-
-		/* Check for sval form */
-		if (CONS_P(spec) && CONS_P(CDR(spec)) && CONS_P(CDDR(spec)))
-		    LispDoAddVar(mac, CAR(CDDR(spec)), NIL);
-	    }
-	}
-
-	/* &KEY */
-	else if (key) {
-	    LispObj *keylist, *compar, *keyvar, *defval;
-
-	    varset = 0;
-	    keylist = karg;
-
-	    if (CONS_P(spec)) {
-		defval = CAR(CDR(spec));
-		spec = CAR(spec);
-	    }
-	    else
-		defval = NIL;
-
-	    if (CONS_P(spec)) {
-		/* keyword may be in the format 'name */
-		keyvar = CAR(CDR(spec));
-		spec = CAR(spec);
-		atom = ATOMID(spec);
-		for (; CONS_P(keylist); keylist = CDR(keylist)) {
-		    compar = CAR(keylist);
-
-		    if (compar->type == LispQuote_t) {
-			compar = compar->data.quote;
-			if (SYMBOL_P(compar) && ATOMID(compar) == atom) {
-			    if (!CONS_P(CDR(keylist)))
-				LispDestroy(mac, "%s: expecting '%s value",
-					    STROBJ(name), STRPTR(spec));
-			    val = CADR(keylist);
-			    varset = 1;
-			    ++ncvt;
-			    break;
-			}
-		    }
-		    else if (!KEYWORD_P(compar))
-			LispDestroy(mac, "%s: &KEY needs arguments as pairs",
-				    STROBJ(name));
-		    keylist = CDR(keylist);
-		}
-	    }
-	    else {
-		/* keyword must be in the format :name */
-		keyvar = spec;
-		atom = ATOMID(spec);
-		for (; CONS_P(keylist); keylist = CDR(keylist)) {
-		    compar = CAR(keylist);
-
-		    if (KEYWORD_P(compar)) {
-			if (ATOMID(compar) == atom) {
-			    if (!CONS_P(CDR(keylist)))
-				LispDestroy(mac, "%s: expecting :%s value",
-					    STROBJ(name), STRPTR(spec));
-			    val = CADR(keylist);
-			    varset = 1;
-			    ++ncvt;
-			    break;
-			}
-		    }
-		    else if (compar->type != LispQuote_t)
-			LispDestroy(mac, "%s: &KEY needs arguments as pairs",
-				    STROBJ(name));
-		    keylist = CDR(keylist);
-		}
-	    }
-
-	    if (varset) {
-		if (eval)
-		    val = LispFeval(mac, val);
-		LispDoAddVar(mac, keyvar, val);
-	    }
-	    else {
-		/* parameter not specified */
-		if (eval && !CONSTANT_P(defval)) {
-		    if (CONS_P(spec)) {
-			mac->env.lex = base;
-			mac->env.head = mac->env.length;
-			defval = EVAL(defval);
-			mac->env.head = head;
-		    }
-		    else
-			defval = EVAL(defval);
-		}
-		LispDoAddVar(mac, keyvar, defval);
-	    }
-
-	    /* Update argument pointer */
-	    if (CONS_P(arg))
-		arg = CDR(CDR(arg));
-
-	    /* Check for sval form */
-	    if (CONS_P(spec) && CONS_P(CDR(spec)) && CONS_P(CDDR(spec)))
-		LispDoAddVar(mac, CAR(CDDR(spec)), varset ? T : NIL);
-	}
-
-	else {
-	    if (!CONS_P(arg))
-		LispDestroy(mac, "%s: too few arguments", STROBJ(name));
-
-	    val = CAR(arg);
-	    if (eval)
-		val = LispFeval(mac, val);
-	    LispDoAddVar(mac, spec, val);
-
-	    /* Update argument pointer */
-	    arg = CDR(arg);
-	}
+    /* Check only normal arguments, dynamic rebound variables are not common */
+    if (mac->env.length + alist->num_arguments > mac->env.space) {
+	do
+	    LispMoreEnvironment(mac);
+	while (mac->env.length + alist->num_arguments >= mac->env.space);
     }
 
-    /* &REST */
-    if (rest) {
-	if (!eval || !CONS_P(arg))
-	    LispDoAddVar(mac, CAR(restp), arg);
-	else {
-	    for (list = arg; CONS_P(list); list = CDR(list))
-		if (NCONSTANT_P(CAR(list)))
-		    break;
-
-	    if (CONS_P(list)) {
-		LispObj *cons;
-
-		val = LispFeval(mac, CAR(arg));
-		LispDoAddVar(mac, CAR(restp), cons = CONS(val, NIL));
-
-		for (arg = CDR(arg); CONS_P(arg); arg = CDR(arg)) {
-		    val = LispFeval(mac, CAR(arg));
-		    CDR(cons) = CONS(val, NIL);
-		    cons = CDR(cons);
-		}
-	    }
-	    else
-		/* list of constants, don't allocate new cells */
-		LispDoAddVar(mac, CAR(restp), arg);
-	}
-
-	if (CDR(restp) != NIL) {
-	    auxp = CDR(CDR(restp));
-	    aux = 1;
-	}
+    desc = alist->description;
+    switch (*desc++) {
+	case '.':
+	    goto normal_label;
+	case 'o':
+	    goto optional_label;
+	case 'k':
+	    goto key_label;
+	case 'r':
+	    goto rest_label;
+	case 'a':
+	    goto aux_label;
+	default:
+	    goto done_label;
     }
-    else if (CONS_P(arg))
-	LispDestroy(mac, "%s: too many arguments", STROBJ(name));
 
-    /* &AUX */
-    if (aux) {
-	/* allow using the variables defined here */
+    /* Normal arguments */
+normal_label:
+    symbols = alist->normals.symbols;
+    for (i = 0; i < alist->normals.num_symbols; i++) {
+	if (!CONS_P(values))
+	    LispDestroy(mac, "%s: too few arguments", STROBJ(name));
 	if (eval)
-	    mac->env.lex = base;
-
-	for (; CONS_P(auxp); auxp = CDR(auxp)) {
-	    spec = CAR(auxp);
-
-	    if (CONS_P(spec)) {
-		val = CAR(CDR(spec));
-		if (eval) {
-		    mac->env.head = mac->env.length;
-		    val = LispFeval(mac, val);
-		}
-		LispDoAddVar(mac, CAR(spec), val);
-	    }
-	    else
-		LispDoAddVar(mac, spec, NIL);
-	}
+	    LispDoAddVar(mac, symbols[i], FEVAL(CAR(values)));
+	else
+	    LispDoAddVar(mac, symbols[i], CAR(values));
+	values = CDR(values);
+    }
+    switch (*desc++) {
+	case 'o':
+	    goto optional_label;
+	case 'k':
+	    goto key_label;
+	case 'r':
+	    goto rest_label;
+	case 'a':
+	    goto aux_label;
+	default:
+	    goto done_label;
     }
 
-    if (key && ncvt < nkey) {
-	/* an incorrect parameter may have been specified */
-	int found;
-	LispObj *keylist, *compar, *keywords;
+    /* &OPTIONAL */
+optional_label:
+    symbols = alist->optionals.symbols;
+    defaults = alist->optionals.defaults;
+    sforms = alist->optionals.sforms;
+    for (i = 0; i < alist->optionals.num_symbols; i++) {
+	if (CONS_P(values)) {
+	    if (eval)
+		LispDoAddVar(mac, symbols[i], FEVAL(CAR(values)));
+	    else
+		LispDoAddVar(mac, symbols[i], CAR(values));
+	    if (sforms[i])
+		LispDoAddVar(mac, sforms[i], T);
+	    values = CDR(values);
+	}
+	else {
+	    if (eval && NCONSTANT_P(defaults[i])) {
+		int head = mac->env.head;
 
-	for (keylist = karg; CONS_P(keylist); keylist = CDR(keylist)) {
-	    compar = CAR(keylist);
-
-	    found = 0;
-	    for (keywords = keyp; CONS_P(keywords);
-		 keywords = CDR(keywords)) {
-		spec = CAR(keywords);
-
-		if (aux && SYMBOL_P(spec) && ATOMID(spec) == Saux)
-		    /* if &AUX in the list... */
-		    break;
-
-		if (CONS_P(spec))
-		    /* if has default value */
-		    spec = CAR(spec);
-
-		arg = compar;
-		if (CONS_P(spec)) {
-		    spec = CAR(spec);
-		    if (arg->type == LispQuote_t) {
-			arg = compar->data.quote;
-			if (!SYMBOL_P(arg))
-			    break;
-			if (ATOMID(arg) == ATOMID(spec)) {
-			    found = 1;
-			    break;
-			}
-		    }
-		}
-		else {
-		    if (KEYWORD_P(arg)) {
-			if (ATOMID(arg) == ATOMID(spec)) {
-			    found = 1;
-			    break;
-			}
-		    }
-		}
+		mac->env.lex = base;
+		mac->env.head = mac->env.length;
+		LispDoAddVar(mac, symbols[i],
+			     FEVAL(defaults[i]));
+		mac->env.head = head;
 	    }
-	    if (!found) {
+	    else
+		LispDoAddVar(mac, symbols[i], defaults[i]);
+	    if (sforms[i])
+		LispDoAddVar(mac, sforms[i], NIL);
+	}
+    }
+    switch (*desc++) {
+	case 'k':
+	    goto key_label;
+	case 'r':
+	    goto rest_label;
+	case 'a':
+	    goto aux_label;
+	default:
+	    goto done_label;
+    }
+
+    /* &KEY */
+key_label:
+    {
+	int varset;
+	LispObj *val, *karg, **keys;
+
+	symbols = alist->keys.symbols;
+	defaults = alist->keys.defaults;
+	sforms = alist->keys.sforms;
+	keys = alist->keys.keys;
+
+	/* Count arguments and check if seens correctly specified */
+	for (karg = values; CONS_P(karg); karg = CDR(karg)) {
+	    val = CAR(karg);
+	    if (KEYWORD_P(val)) {
+		for (i = 0; i < alist->keys.num_symbols; i++)
+		    if (!keys[i] && symbols[i] == val)
+			break;
+	    }
+
+	    else if (val->type == LispQuote_t && SYMBOL_P(val->data.quote)) {
+		for (i = 0; i < alist->keys.num_symbols; i++)
+		    if (keys[i] && ATOMID(keys[i]) == ATOMID(val->data.quote))
+			break;
+	    }
+
+	    else
+		/* Just make the error test true */
+		i = alist->keys.num_symbols;
+
+	    if (i == alist->keys.num_symbols) {
+		/* If not in argument specification list... */
 		char function_name[36];
 
 		strcpy(function_name, STROBJ(name));
 		LispDestroy(mac, "%s: %s is an invalid keyword",
-			    function_name, STROBJ(compar));
+			    function_name, STROBJ(val));
 	    }
-	    keylist = CDR(keylist);
+
+	    karg = CDR(karg);
+	    if (!CONS_P(karg))
+		LispDestroy(mac, "%s: &KEY needs arguments as pairs",
+			    STROBJ(name));
+	}
+
+	/* Add variables */
+	for (i = 0; i < alist->keys.num_symbols; i++) {
+	    val = defaults[i];
+	    varset = 0;
+	    if (keys[i]) {
+		Atom_id atom = ATOMID(keys[i]);
+
+		/* Special keyword specification, need to compare ATOMID
+		 * and keyword specification must be a quoted object */
+		for (karg = values; CONS_P(karg); karg = CDR(karg)) {
+		    val = CAR(karg);
+		    if (val->type == LispQuote_t &&
+			SYMBOL_P(val->data.quote) &&
+			atom == ATOMID(val->data.quote)) {
+			val = CADR(karg);
+			varset = 1;
+			break;
+		    }
+		    karg = CDR(karg);
+		}
+	    }
+
+	    else {
+		/* Normal keyword specification, can compare object pointers,
+		 * as they point to the same object in the keyword package */
+		for (karg = values; CONS_P(karg); karg = CDR(karg)) {
+		    /* Don't check if argument is a valid keyword or
+		     * special quoted keyword */
+		    if (symbols[i] == CAR(karg)) {
+			val = CADR(karg);
+			varset = 1;
+			break;
+		    }
+		    karg = CDR(karg);
+		}
+	    }
+
+	    /* Add the variable to environment */
+	    if (varset) {
+		if (eval)
+		    LispDoAddVar(mac, symbols[i], FEVAL(val));
+		else
+		    LispDoAddVar(mac, symbols[i], val);
+		if (sforms[i])
+		    LispDoAddVar(mac, sforms[i], T);
+	    }
+	    else {
+		if (eval && NCONSTANT_P(val)) {
+		    int head = mac->env.head;
+
+		    mac->env.lex = base;
+		    mac->env.head = mac->env.length;
+		    LispDoAddVar(mac, symbols[i], FEVAL(val));
+		    mac->env.head = head;
+		}
+		else
+		    LispDoAddVar(mac, symbols[i], val);
+		if (sforms[i])
+		    LispDoAddVar(mac, sforms[i], NIL);
+	    }
 	}
     }
+    if (*desc == 'a') {
+	/* &KEY uses all remaining arguments */
+	values = NIL;
+	goto aux_label;
+    }
+    goto finished_label;
 
+    /* &REST */
+rest_label:
+    if (!eval || !CONS_P(values))
+	LispDoAddVar(mac, alist->rest, values);
+    else {
+	LispObj *list;
+
+	for (list = values; CONS_P(list); list = CDR(list))
+	    if (NCONSTANT_P(CAR(list))) {
+		LispObj *cons;
+
+		LispDoAddVar(mac, alist->rest,
+			     cons = CONS(FEVAL(CAR(values)), NIL));
+		values = CDR(values);
+		for (; CONS_P(values); values = CDR(values)) {
+		    CDR(cons) = CONS(FEVAL(CAR(values)), NIL);
+		    cons = CDR(cons);
+		}
+		goto rest_done;
+	    }
+
+	/* list of constants, don't allocate new cells */
+	LispDoAddVar(mac, alist->rest, values);
+    }
+rest_done:
+    if (*desc != 'a')
+	goto finished_label;
+
+    /* &AUX */
+aux_label:
+    /* allow using the variables defined here */
+    if (eval)
+	mac->env.lex = base;
+
+    symbols = alist->auxs.symbols;
+    defaults = alist->auxs.initials;
+    for (i = 0; i < alist->auxs.num_symbols; i++) {
+	if (eval) {
+	    mac->env.head = mac->env.length;
+	    LispDoAddVar(mac, symbols[i], FEVAL(defaults[i]));
+	}
+	else
+	    LispDoAddVar(mac, symbols[i], defaults[i]);
+    }
+
+done_label:
+    if (CONS_P(values))
+	LispDestroy(mac, "%s: too many arguments", STROBJ(name));
+
+finished_label:
     /* setup stack offsets */
     mac->env.base = base;
     mac->env.head = mac->env.length;
@@ -3520,14 +3686,15 @@ static LispObj *
 LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 {
     LispAtom *atom;
+    LispArgList *alist;
     LispBuiltin *builtin;
     LispObj *lambda, *result;
     int head, lex, length, dyn, macro;
 
     /* Save state */
-    head = mac->env.head,
-    lex = mac->env.lex,
-    length = mac->env.length,
+    head = mac->env.head;
+    lex = mac->env.lex;
+    length = mac->env.length;
     dyn = mac->dyn.length;
 
     if (mac->debugging)
@@ -3540,7 +3707,7 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 		builtin = atom->property->fun.builtin;
 
 		macro = builtin->type == LispMacro;
-		LispMakeEnvironment(mac, CDR(builtin->description),
+		LispMakeEnvironment(mac, atom->property->alist,
 				    arguments, function, eval && !macro);
 		if (!macro)
 		    mac->env.lex = length;
@@ -3551,13 +3718,13 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 		lambda = atom->property->fun.function;
 		macro = lambda->data.lambda.type == LispMacro;
 
-		lambda = lambda->data.lambda.code;
-		LispMakeEnvironment(mac, CAR(lambda),
+		lambda = CDR(lambda->data.lambda.code);
+		LispMakeEnvironment(mac, atom->property->alist,
 				    arguments, function, eval && !macro);
 		if (!macro)
 		    mac->env.lex = length;
 
-		result = LispRunFunMac(mac, function, CDR(lambda), macro);
+		result = LispRunFunMac(mac, function, lambda, macro);
 	    }
 	    else if (atom->a_defstruct &&
 		     atom->property->structure.function != STRUCT_NAME) {
@@ -3571,11 +3738,11 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 		builtin = atom->property->fun.builtin;
 
 		if (eval)
-		    LispMakeEnvironment(mac, CDR(builtin->description),
+		    LispMakeEnvironment(mac, atom->property->alist,
 					CONS(QUOTE(function), arguments),
 					function, 1);
 		else
-		    LispMakeEnvironment(mac, CDR(builtin->description),
+		    LispMakeEnvironment(mac, atom->property->alist,
 					CONS(function, arguments),
 					function, 0);
 		mac->env.lex = length;
@@ -3589,12 +3756,12 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 	    }
 	    break;
 	case LispLambda_t:
-	    lambda = function->data.lambda.code;
-	    function = function->data.lambda.name;
-	    LispMakeEnvironment(mac, CAR(lambda), arguments, function, eval);
+	    lambda = CDR(function->data.lambda.code);
+	    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
+	    LispMakeEnvironment(mac, alist, arguments, function, eval);
 	    mac->env.lex = length;
 
-	    result = LispRunFunMac(mac, function, CDR(lambda), 0);
+	    result = LispRunFunMac(mac, function, lambda, 0);
 	    break;
 	case LispCons_t:
 	    if (SYMBOL_P(CAR(function)) && ATOMID(CAR(function)) == Slambda) {
@@ -3605,12 +3772,12 @@ LispFuncall(LispMac *mac, LispObj *function, LispObj *arguments, int eval)
 		    cod = COD;
 		    COD = CONS(function, COD);
 
-		    lambda = function->data.lambda.code;
-		    LispMakeEnvironment(mac, CAR(lambda),
-					arguments, NIL, eval);
+		    lambda = CDR(function->data.lambda.code);
+		    alist = (LispArgList*)function->data.lambda.name->data.opaque.data;
+		    LispMakeEnvironment(mac, alist, arguments, NIL, eval);
 		    mac->env.lex = length;
 
-		    result = LispRunFunMac(mac, NIL, CDR(lambda), 0);
+		    result = LispRunFunMac(mac, NIL, lambda, 0);
 
 		    COD = cod;
 		    break;
@@ -3729,23 +3896,23 @@ LispRunFunMac(LispMac *mac, LispObj *name, LispObj *code, int macro)
 }
 
 LispObj *
-LispRunSetf(LispMac *mac, LispObj *setf, LispObj *place, LispObj *value)
+LispRunSetf(LispMac *mac, LispArgList *alist,
+	    LispObj *setf, LispObj *place, LispObj *value)
 {
-    LispObj *description, *store, *code, *expression, *result;
+    LispObj *store, *code, *expression, *result;
     int head = mac->env.head,
 	lex = mac->env.lex,
 	length = mac->env.length,
 	dyn = mac->dyn.length;
 
     code = setf->data.lambda.code;
-    description = CAAR(code);
     store = CDAR(code);
     code = CDR(code);
 
     if (NCONSTANT_P(value))
 	value = EVAL(value);
     LispAddVar(mac, CAR(store), QUOTE(value));
-    LispMakeEnvironment(mac, description, CDR(place), Oexpand_setf_method, 0);
+    LispMakeEnvironment(mac, alist, CDR(place), Oexpand_setf_method, 0);
 
     /* build expansion macro */
     expression = NIL;
@@ -4112,6 +4279,8 @@ LispBegin(int argc, char *argv[])
     Scomplex		= GETATOMID("COMPLEX");
     Sopaque		= GETATOMID("OPAQUE");
     Sdefault		= GETATOMID("DEFAULT");
+
+    LispArgList_t	= LispRegisterOpaqueType(mac, "LispArgList*");
 
     mac->unget = malloc(sizeof(LispUngetInfo*));
     mac->unget[0] = calloc(1, sizeof(LispUngetInfo));

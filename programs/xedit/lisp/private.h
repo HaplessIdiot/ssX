@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.20 2002/02/15 07:20:25 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.21 2002/02/27 06:56:36 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -84,6 +84,53 @@ typedef struct _LispProperty LispProperty;
 typedef struct _LispObjList LispObjList;
 typedef struct _LispStringHash LispStringHash;
 
+/* Normal function/macro arguments */
+typedef struct _LispNormalArgs {
+    int num_symbols;
+    LispObj **symbols;		/* symbol names */
+} LispNormalArgs;
+
+/* &optional function/macro arguments */
+typedef struct _LispOptionalArgs {
+    int num_symbols;
+    LispObj **symbols;		/* symbol names */
+    LispObj **defaults;		/* default values, when unspecifed */
+    LispObj **sforms;		/* T if variable specified, NIL otherwise */
+} LispOptionalArgs;
+
+/* &key function/macro arguments */
+typedef struct _LispKeyArgs {
+    int num_symbols;
+    LispObj **symbols;		/* symbol names */
+    LispObj **defaults;		/* default values */
+    LispObj **sforms;		/* T if variable specified, NIL otherwise */
+    LispObj **keys;		/* key names, for special keywords */
+} LispKeyArgs;
+
+/* &aux function/macro arguments */
+typedef struct _LispAuxArgs {
+    int num_symbols;
+    LispObj **symbols;		/* symbol names */
+    LispObj **initials;		/* initial values */
+} LispAuxArgs;
+
+/* characters in the field description have the format:
+ *	'.'	normals has a list of normal arguments
+ *	'o'	optionals has a list of &optional arguments
+ *	'k'	keys has a list of &key arguments
+ *	'r'	rest is a valid pointer to a &rest symbol
+ *	'a'	auxs has a list of &aux arguments
+ */
+typedef struct _LispArgList {
+    LispNormalArgs normals;
+    LispOptionalArgs optionals;
+    LispKeyArgs keys;
+    LispObj *rest;
+    LispAuxArgs auxs;
+    int num_arguments;
+    char *description;
+} LispArgList;
+
 struct _LispProperty {
     /* may be used by multiple packages */
     unsigned int refcount;
@@ -100,12 +147,16 @@ struct _LispProperty {
 	/* builtin function attached to symbol*/
 	LispBuiltin *builtin;
     } fun;
+    /* function/macro argument list description */
+    LispArgList *alist;
 
     /* symbol properties list */
     LispObj *properties;
 
     /* setf method */
     LispObj *setf;
+    /* setf argument list description */
+    LispArgList *salist;
 
     /* structure information */
     struct {
@@ -322,7 +373,9 @@ struct _LispMac {
 /*
  * Prototypes
  */
-void LispCheckArguments(LispMac*, LispFunType, LispObj*, char*);
+void LispUseArgList(LispMac*, LispArgList*);
+void LispFreeArgList(LispMac*, LispArgList*);
+LispArgList *LispCheckArguments(LispMac*, LispFunType, LispObj*, char*);
 
 LispObj *LispGetDoc(LispMac*, LispObj*);
 LispObj *LispGetVar(LispMac*, LispObj*);
@@ -370,15 +423,15 @@ LispObj *LispGetAtomProperty(LispMac*, LispAtom*, LispObj*);
 LispObj *LispPutAtomProperty(LispMac*, LispAtom*, LispObj*, LispObj*);
 
 	/* define function, or replace function definition */
-void LispSetAtomFunctionProperty(LispMac*, LispAtom*, LispObj*);
+void LispSetAtomFunctionProperty(LispMac*, LispAtom*, LispObj*, LispArgList*);
 	/* remove function property */
 void LispRemAtomFunctionProperty(LispMac*, LispAtom*);
 	/* define builtin, or replace builtin definition */
-void LispSetAtomBuiltinProperty(LispMac*, LispAtom*, LispBuiltin*);
+void LispSetAtomBuiltinProperty(LispMac*, LispAtom*, LispBuiltin*, LispArgList*);
 	/* remove builtin property */
 void LispRemAtomBuiltinProperty(LispMac*, LispAtom*);
 	/* define setf macro, or replace current definition */
-void LispSetAtomSetfProperty(LispMac*, LispAtom*, LispObj*);
+void LispSetAtomSetfProperty(LispMac*, LispAtom*, LispObj*, LispArgList*);
 	/* remove setf macro */
 void LispRemAtomSetfProperty(LispMac*, LispAtom*);
 	/* create or change structure property */
@@ -402,5 +455,8 @@ LispObj *LispGetDocumentation(LispMac*, LispObj*, LispDocType_t);
 
 /* increases storage size for temporarily protected data */
 void LispMoreProtects(LispMac*);
+
+/* Initialization */
+extern int LispArgList_t;
 
 #endif /* Lisp_private_h */

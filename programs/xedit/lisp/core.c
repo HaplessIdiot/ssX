@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.25 2002/02/27 06:56:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.26 2002/03/01 16:42:43 tsi Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -39,7 +39,7 @@
 /*
  * Prototypes
  */
-extern LispObj *LispRunSetf(LispMac*, LispObj*, LispObj*, LispObj*);
+extern LispObj *LispRunSetf(LispMac*, LispArgList*, LispObj*, LispObj*, LispObj*);
 
 /*
  * Initialization
@@ -570,6 +570,8 @@ Lisp_Defmacro(LispMac *mac, LispBuiltin *builtin)
  defmacro name lambda-list &rest body
  */
 {
+    LispArgList *alist;
+
     LispObj *lambda, *name, *lambda_list, *body;
 
     body = ARGUMENT(2);
@@ -581,7 +583,7 @@ Lisp_Defmacro(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: bad MACRO name %s",
 		    STRFUN(builtin), STROBJ(name));
 
-    LispCheckArguments(mac, LispMacro, lambda_list, STRPTR(name));
+    alist = LispCheckArguments(mac, LispMacro, lambda_list, STRPTR(name));
 
     if (CONS_P(body) && STRING_P(CAR(body))) {
 	LispAddDocumentation(mac, name, CAR(body), LispDocFunction);
@@ -600,7 +602,8 @@ Lisp_Defmacro(LispMac *mac, LispBuiltin *builtin)
 	LispRemAtomBuiltinProperty(mac, name->data.atom);
     }
 
-    LispSetAtomFunctionProperty(mac, name->data.atom, lambda);
+    LispSetAtomFunctionProperty(mac, name->data.atom, lambda, alist);
+    LispUseArgList(mac, alist);
 
     return (name);
 }
@@ -611,6 +614,8 @@ Lisp_Defun(LispMac *mac, LispBuiltin *builtin)
  defun name lambda-list &rest body
  */
 {
+    LispArgList *alist;
+
     LispObj *lambda, *name, *lambda_list, *body;
 
     body = ARGUMENT(2);
@@ -622,7 +627,7 @@ Lisp_Defun(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: bad FUNCTION name %s",
 		    STRFUN(builtin), STROBJ(name));
 
-    LispCheckArguments(mac, LispFunction, lambda_list, STRPTR(name));
+    alist = LispCheckArguments(mac, LispFunction, lambda_list, STRPTR(name));
 
     if (CONS_P(body) && STRING_P(CAR(body))) {
 	LispAddDocumentation(mac, name, CAR(body), LispDocFunction);
@@ -640,7 +645,8 @@ Lisp_Defun(LispMac *mac, LispBuiltin *builtin)
 
 	LispRemAtomBuiltinProperty(mac, name->data.atom);
     }
-    LispSetAtomFunctionProperty(mac, name->data.atom, lambda);
+    LispSetAtomFunctionProperty(mac, name->data.atom, lambda, alist);
+    LispUseArgList(mac, alist);
 
     return (name);
 }
@@ -651,6 +657,7 @@ Lisp_Defsetf(LispMac *mac, LispBuiltin *builtin)
  defsetf function lambda-list &rest body
  */
 {
+    LispArgList *alist;
     LispObj *obj;
     LispObj *lambda, *function, *lambda_list, *store, *body;
 
@@ -670,12 +677,12 @@ Lisp_Defsetf(LispMac *mac, LispBuiltin *builtin)
 	if (body != NIL)
 	    LispAddDocumentation(mac, function, CAR(body), LispDocSetf);
 
-	LispSetAtomSetfProperty(mac, function->data.atom, lambda_list);
+	LispSetAtomSetfProperty(mac, function->data.atom, lambda_list, NULL);
 
 	return (function);
-     }
+    }
 
-    LispCheckArguments(mac, LispSetf, lambda_list, STRPTR(function));
+    alist = LispCheckArguments(mac, LispSetf, lambda_list, STRPTR(function));
 
     store = CAR(body);
     if (!CONS_P(store))
@@ -696,7 +703,8 @@ Lisp_Defsetf(LispMac *mac, LispBuiltin *builtin)
     GCProtect();
     lambda = LispNewLambda(mac, function, lambda_list, body, LispSetf);
     GCUProtect();
-    LispSetAtomSetfProperty(mac, function->data.atom, lambda);
+    LispSetAtomSetfProperty(mac, function->data.atom, lambda, alist);
+    LispUseArgList(mac, alist);
 
     return (function);
 }
@@ -1151,17 +1159,21 @@ Lisp_Lambda(LispMac *mac, LispBuiltin *builtin)
  lambda lambda-list &rest body
  */
 {
+    LispArgList *alist;
+
     LispObj *lambda, *lambda_list, *body;
 
     body = ARGUMENT(1);
     lambda_list = ARGUMENT(0);
     MACRO_ARGUMENT2();
 
-    LispCheckArguments(mac, LispLambda, lambda_list, "...");
+    alist = LispCheckArguments(mac, LispLambda, lambda_list, Slambda);
 
     GCProtect();
-    lambda = LispNewLambda(mac, NIL, lambda_list, body, LispLambda);
+    lambda = LispNewLambda(mac, OPAQUE(alist, LispArgList_t),
+			   lambda_list, body, LispLambda);
     GCUProtect();
+    LispUseArgList(mac, alist);
 
     return (lambda);
 }
@@ -2803,7 +2815,8 @@ Lisp_Setf(LispMac *mac, LispBuiltin *builtin)
 		mac->protect.length = length;
 	    }
 	    else
-		result = LispRunSetf(mac, setf, place, result);
+		result = LispRunSetf(mac, atom->property->salist,
+				     setf, place, result);
 	}
 	else
 	    goto invalid_place;
