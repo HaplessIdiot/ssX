@@ -23,12 +23,12 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsio.h,v 1.3 1999/12/13 02:52:53 robin Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.h,v 1.4 1999/12/27 01:14:11 robin Exp $ */
 
 #ifndef	_FSIO_H_
 #define	_FSIO_H_
 
-#define DEBUG
+#undef DEBUG
 #define	REQUEST_LOG_SIZE	100
 
 typedef struct _fs_fpe_alternate {
