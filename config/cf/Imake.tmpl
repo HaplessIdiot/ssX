@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.107 2001/09/29 17:38:41 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.108 2001/10/02 06:38:37 paulo Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -659,6 +659,10 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef UseGccMakeDepend		/* use slowish but correct gcc -M */
 #define UseGccMakeDepend NO
+#endif
+
+#ifndef CaseSensitiveFileSystem
+#define CaseSensitiveFileSystem YES
 #endif
 
 /* DefaultUsrBin is independent of ProjectRoot.

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.30 2001/09/19 16:20:26 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.31 2001/10/04 20:02:32 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -88,6 +88,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.30 2001/09/19 16:20:26 ala
 #define UseGccMakeDepend	NO
 #define ThreadedX               YES
 #define HasThreadSafeAPI        YES
+#define CaseSensitiveFileSystem NO
 
 #define LnCmd                   ln -s
 #ifndef CcCmd
