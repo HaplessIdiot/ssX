@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.1 1994/05/31 08:16:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.2 1994/06/18 16:28:53 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -59,9 +59,12 @@ unsigned short chip_id;
 #define S3_911_SERIES     ((chip_id&0xf0)==0x80)
 #define S3_801_SERIES     ((chip_id&0xf0)==0xa0)
 #define S3_928_SERIES     ((chip_id&0xf0)==0x90)
-#define S3_801_928_SERIES (S3_801_SERIES||S3_928_SERIES)
-#define S3_8XX_9XX_SERIES (S3_911_SERIES||S3_801_928_SERIES)
-#define S3_ANY_SERIES     (S3_8XX_9XX_SERIES)
+#define S3_864_SERIES     ((chip_id&0xf0)==0xc0)
+#define S3_964_SERIES     ((chip_id&0xf0)==0xd0)
+#define S3_x64_SERIES     (S3_864_SERIES|S3_964_SERIES)
+#define S3_801_928_SERIES (S3_801_SERIES||S3_928_SERIES|S3_x64_SERIES)
+#define S3_8XX_9XX_SERIES (S3_911_SERIES||S3_801_928_SERIES|S3_x64_SERIES)
+#define S3_ANY_SERIES     (S3_8XX_9XX_SERIES|S3_x64_SERIES)
 
 
 static Bool S3ClockSelect ();
@@ -230,6 +233,9 @@ S3Probe ()
       return(FALSE);
    }
 
+      if (S3_864_SERIES ) ErrorF ("S3 chipset is in Vision864.\n");
+      else if (S3_964_SERIES ) ErrorF ("S3 chipset is in Vision964.\n");
+      else 
       if (S3_801_928_SERIES ) {
          ErrorF ("S3 chipset is in the 801 or 928 series.\n");
          if (S3_801_SERIES ) {

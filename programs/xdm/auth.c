@@ -1,5 +1,5 @@
 /* $XConsortium: auth.c,v 1.55 94/06/03 16:34:12 mor Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.1 1994/05/22 00:02:03 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.2 1994/06/09 10:56:10 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -61,7 +61,7 @@ from the X Consortium.
 #include <sys/utsname.h>
 #endif
 
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) && defined(i386)
 # include <sys/stream.h>
 # ifdef ISC
 #  include <stropts.h>
@@ -70,7 +70,7 @@ from the X Consortium.
 # ifdef ESIX
 #  include <lan/net_ioctl.h>
 # endif /* ESIX */
-#endif /* SYSV386 */
+#endif /* i386 */
 
 #ifdef SVR4
 # include <netdb.h>

@@ -1,5 +1,5 @@
 /* $XConsortium: daemon.c,v 1.14 94/04/17 20:03:35 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.0 1994/04/28 12:44:50 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -123,7 +123,7 @@ BecomeDaemon ()
     close (1);
     close (2);
 
-#ifndef SYSV386
+#if !((defined(SYSV) || defined(SVR4)) && defined(i386))
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
 #if defined(USG) && defined(TCCLRCTTY)
 	int zero = 0;
