@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.49 1999/12/27 00:11:55 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.50 1999/12/27 00:39:53 robin Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -79,6 +79,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -106,7 +107,7 @@
 #endif
 
 /*
- * Define this to have /etc/XF86Config prompted for as the default
+ * Define this to have /etc/X11/XF86Config prompted for as the default
  * location to write the XF86Config file to.
  */
 #define PREFER_XF86CONFIG_IN_ETC
@@ -2310,9 +2311,7 @@ write_XF86Config(char *filename)
 	if (!config_emulate3buttons)
 		fprintf(f, "#");
 	fprintf(f, "    Option \"Emulate3Buttons\"\n");
-	if (!config_emulate3buttons)
-		fprintf(f, "#");
-	fprintf(f, "    Option \"Emulate3Timeout\"    50\n\n");
+	fprintf(f, "#    Option \"Emulate3Timeout\"    \"50\"\n\n");
 	fprintf(f, "# ChordMiddle is an option for some 3-button Logitech mice\n\n");
 	if (!config_chordmiddle)
 		fprintf(f, "#");
@@ -2581,6 +2580,22 @@ path_check(void) {
 }
 
 
+static void
+configdir_check()
+{
+	/* /etc/X11 may not exist on some systems */
+#ifndef __EMX__
+	if (getuid() == 0) {
+		struct stat buf;
+		if (stat("/etc/X11", &buf) == -1 && errno == ENOENT)
+			mkdir("/etc/X11", 0777);
+		if (stat(TREEROOTCFG, &buf) == -1 && errno == ENOENT)
+			mkdir(TREEROOTCFG, 0777);
+	}
+#endif
+}
+
+
 /*
  * Program entry point.
  */
@@ -2598,6 +2613,10 @@ main(int argc, char *argv[]) {
 	emptylines();
 
 	path_check();
+
+	emptylines();
+
+	configdir_check();
 
 	emptylines();
 
