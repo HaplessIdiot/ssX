@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.c,v 1.8 2002/01/16 16:22:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.c,v 1.9tsi Exp $ */
 /*
  * Copyright 2000 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -387,8 +387,8 @@ ATIDGAAddModes
 Bool
 ATIDGAInit
 (
-    ScrnInfoPtr pScreenInfo,
     ScreenPtr   pScreen,
+    ScrnInfoPtr pScreenInfo,
     ATIPtr      pATI
 )
 {

@@ -34,14 +34,14 @@ this is a heavy modified version of the V1.2.2 original siliconmotion driver.
   XV_SATURATION, XV_HUE, XV_COLORKEY, XV_INTERLACED
   XV_CAPTURE_BRIGHTNESS can be used to set brightness in the capture device
 - bug fixes
-- tries not to use acceleration functions (if USE_XAA = 0)
+- tries not to use acceleration functions
 - interlaced video for double vertical resolution
 
 Author of changes: Corvin Zahn <zahn@zac.de>
 Date:   2.11.2001
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.9 2003/01/12 03:55:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.10tsi Exp $ */
 
 #include "smi.h"
 #include "smi_video.h"
@@ -79,20 +79,8 @@ The default value can be set with the driver option Interlaced
 
 #define MAKE_ATOM(a)	MakeAtom(a, sizeof(a) - 1, TRUE)
 
-#if defined(XvExtension) && SMI_USE_VIDEO
-
-/* USE_XAA = 1: use XAA functions for color key rectangle fill,
-   USE_XAA = 0: use xf86XVFillKeyHelper for color key rectangle fill,
-                needs common/xf86xv.c >= 1.30,
-		      common/xf86xv.h >= 1.22,
-                      loader/xf86sym.c >= 1.194 */
-#define USE_XAA 1
-
+#if SMI_USE_VIDEO
 #include "dixstruct.h"
-#if USE_XAA
-#include "xaa.h"
-#include "xaalocal.h"
-#endif
 
 
 static int SMI_AddEncoding(XF86VideoEncodingPtr enc, int i,
@@ -125,7 +113,6 @@ static int SMI_QueryImageAttributes(ScrnInfoPtr pScrn,
 		int id, unsigned short *width, unsigned short *height,
 		int *picthes, int *offsets);
 
-static Bool RegionsEqual(RegionPtr A, RegionPtr B);
 static Bool SMI_ClipVideo(ScrnInfoPtr pScrn, BoxPtr dst,
 		INT32 *x1, INT32 *y1, INT32 *x2, INT32 *y2,
 		RegionPtr reg, INT32 width, INT32 height);
@@ -1247,17 +1234,12 @@ SMI_PutVideo(
     vid_address = (pPort->area->box.y1 * fbPitch);
 
     DEBUG((VERBLEV, "test RegionsEqual\n"));
-    if (!RegionsEqual(&pPort->clip, clipBoxes))
+    if (!REGION_EQUAL(pScrn->pScreen, &pPort->clip, clipBoxes))
     {
 	DEBUG((VERBLEV, "RegionCopy\n"));
-        REGION_COPY(pScreen, &pPort->clip, clipBoxes);
-#if USE_XAA
-        XAAFillSolidRects(pScrn, pPort->Attribute[XV_COLORKEY], GXcopy, ~0,
-				REGION_NUM_RECTS(clipBoxes), REGION_RECTS(clipBoxes));
-#else
+        REGION_COPY(pScrn->pScreen, &pPort->clip, clipBoxes);
 	DEBUG((VERBLEV, "FillKey\n"));
 	xf86XVFillKeyHelper(pScrn->pScreen, pPort->Attribute[XV_COLORKEY], clipBoxes);
-#endif
 
 	}
 
@@ -1653,16 +1635,11 @@ SMI_PutImage(
 			break;
 	}
 
-    if (!RegionsEqual(&pPort->clip, clipBoxes))
+    if (!REGION_EQUAL(pScrn->pScreen, &pPort->clip, clipBoxes))
 	{
-        REGION_COPY(pScreen, &pPort->clip, clipBoxes);
-#if USE_XAA
-        XAAFillSolidRects(pScrn, pPort->Attribute[XV_COLORKEY], GXcopy, ~0,
-				REGION_NUM_RECTS(clipBoxes), REGION_RECTS(clipBoxes));
-#else
-	/*aaa*/
-	return(BadAlloc);
-#endif
+        REGION_COPY(pScrn->pScreen, &pPort->clip, clipBoxes);
+	xf86XVFillKeyHelper(pScrn->pScreen, pPort->Attribute[XV_COLORKEY],
+			    clipBoxes);
 	}
 
 	SMI_DisplayVideo(pScrn, id, offset, width, height, dstPitch, x1, y1, x2, y2,
@@ -1790,51 +1767,6 @@ SMI_WaitForSync(
 	VerticalRetraceWait();
 }
 #endif
-
-static Bool
-RegionsEqual(
-	RegionPtr	A,
-	RegionPtr	B
-)
-{
-	int *dataA, *dataB;
-	int num;
-
-	ENTER_PROC("RegionsEqual");
-
-	num = REGION_NUM_RECTS(A);
-	if (num != REGION_NUM_RECTS(B))
-	{
-		LEAVE_PROC("RegionsEqual");
-		return(FALSE);
-	}
-
-	if (   (A->extents.x1 != B->extents.x1)
-		|| (A->extents.y1 != B->extents.y1)
-		|| (A->extents.x2 != B->extents.x2)
-		|| (A->extents.y2 != B->extents.y2)
-	)
-	{
-		LEAVE_PROC("RegionsEqual");
-		return(FALSE);
-	}
-
-	dataA = (int*) REGION_RECTS(A);
-	dataB = (int*) REGION_RECTS(B);
-
-	while (num--)
-	{
-		if ((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-		{
-			return(FALSE);
-		}
-		dataA += 2;
-		dataB += 2;
-	}
-
-	LEAVE_PROC("RegionsEqual");
-	return(TRUE);
-}
 
 static Bool
 SMI_ClipVideo(
@@ -2472,13 +2404,8 @@ SMI_DisplaySurface(
 	dstBox.x2 -= surface->pScrn->frameX0;
 	dstBox.y2 -= surface->pScrn->frameY0;
 
-#if USE_XAA
-    XAAFillSolidRects(surface->pScrn, pPort->Attribute[XV_COLORKEY], GXcopy, ~0,
-			REGION_NUM_RECTS(clipBoxes), REGION_RECTS(clipBoxes));
-#else
-	/*aaa*/
-	return(BadAlloc);
-#endif
+	xf86XVFillKeyHelper(surface->pScrn->pScreen,
+			    pPort->Attribute[XV_COLORKEY], clipBoxes);
 
 	SMI_ResetVideo(surface->pScrn);
 	SMI_DisplayVideo(surface->pScrn, surface->id, surface->offsets[0],
@@ -2543,6 +2470,6 @@ SMI_SetSurfaceAttribute(
 	return(SMI_SetPortAttribute(pScrn, attr, value,
 			(pointer) pSmi->ptrAdaptor->pPortPrivates[0].ptr));
 }
-#else /* XvExtension */
+#else /* SMI_USE_VIDEO */
 void SMI_InitVideo(ScreenPtr pScreen) {}
 #endif

@@ -22,7 +22,7 @@
  * Authors: Alan Hourihane, alanh@fairlite.demon.co.uk
  *          Sven Luther <luther@dpt-info.u-strasbg.fr>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.10 2002/05/17 17:13:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.11tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -51,11 +51,6 @@
 #define CLIENT_VIDEO_ON	0x04
 
 #define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
-
-#ifndef XvExtension
-void Permedia3InitVideo(ScreenPtr pScreen) {}
-void Permedia3ResetVideo(ScrnInfoPtr pScrn) {}
-#else
 
 static XF86VideoAdaptorPtr Permedia3SetupImageVideo(ScreenPtr);
 static void Permedia3InitOffscreenImages(ScreenPtr);
@@ -344,35 +339,6 @@ Permedia3SetupImageVideo(ScreenPtr pScreen)
     return adapt;
 }
 
-
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-    int *dataA, *dataB;
-    int num;
-
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-	return FALSE;
-
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-	return FALSE;
-
-    dataA = (int*)REGION_RECTS(A);
-    dataB = (int*)REGION_RECTS(B);
-
-    while(num--) {
-	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	   return FALSE;
-	dataA += 2; 
-	dataB += 2;
-    }
-
-    return TRUE;
-}
 
 static void 
 Permedia3StopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
@@ -951,7 +917,8 @@ Permedia3PutImage(
 	HWCopyYV12(pScrn, buf, width, height);
 
     /* paint the color key */
-    if(pPriv->autopaintColorKey && !RegionsEqual(&pPriv->clip, clipBoxes)) {
+    if(pPriv->autopaintColorKey &&
+       !REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
     	/* update cliplist */
         REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
 #if 0
@@ -1314,5 +1281,3 @@ Permedia3VideoTimerCallback(ScrnInfoPtr pScrn, Time time)
     } else  /* shouldn't get here */
 	pGlint->VideoTimerCallback = NULL;
 }
-
-#endif  /* !XvExtension */

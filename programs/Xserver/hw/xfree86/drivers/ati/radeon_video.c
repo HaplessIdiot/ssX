@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.25 2003/04/06 20:07:34 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.26tsi Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
@@ -21,11 +21,6 @@
 #define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
 
 extern int gRADEONEntityIndex;
-
-#ifndef XvExtension
-void RADEONInitVideo(ScreenPtr pScreen) {}
-void RADEONResetVideo(ScrnInfoPtr Pscrn) {}
-#else
 
 static void RADEONInitOffscreenImages(ScreenPtr);
 
@@ -77,16 +72,12 @@ typedef struct {
 void RADEONInitVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    RADEONInfoPtr info  = RADEONPTR(pScrn);
     XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
     XF86VideoAdaptorPtr newAdaptor = NULL;
     int num_adaptors;
 
-    if(info->accel && info->accel->FillSolidRects) 
-    {
-	newAdaptor = RADEONSetupImageVideo(pScreen);
-	RADEONInitOffscreenImages(pScreen);
-    }
+    newAdaptor = RADEONSetupImageVideo(pScreen);
+    RADEONInitOffscreenImages(pScreen);
     num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
 
     if(newAdaptor) {
@@ -550,127 +541,6 @@ RADEONSetupImageVideo(ScreenPtr pScreen)
     return adapt;
 }
 
-/* I really should stick this in miregion */
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-    int *dataA, *dataB;
-    int num;
-
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-	return FALSE;
-
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-	return FALSE;
-
-    dataA = (pointer)REGION_RECTS(A);
-    dataB = (pointer)REGION_RECTS(B);
-
-    while(num--) {
-	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	   return FALSE;
-	dataA += 2;
-	dataB += 2;
-    }
-
-    return TRUE;
-}
-
-
-/* RADEONClipVideo -
-
-   Takes the dst box in standard X BoxRec form (top and left
-   edges inclusive, bottom and right exclusive).  The new dst
-   box is returned.  The source boundaries are given (xa, ya
-   inclusive, xb, yb exclusive) and returned are the new source
-   boundaries in 16.16 fixed point.
-*/
-
-#define DummyScreen screenInfo.screens[0]
-
-static Bool
-RADEONClipVideo(
-  BoxPtr dst,
-  INT32 *xa,
-  INT32 *xb,
-  INT32 *ya,
-  INT32 *yb,
-  RegionPtr reg,
-  INT32 width,
-  INT32 height
-){
-    INT32 vscale, hscale, delta;
-    BoxPtr extents = REGION_EXTENTS(DummyScreen, reg);
-    int diff;
-
-    hscale = ((*xb - *xa) << 16) / (dst->x2 - dst->x1);
-    vscale = ((*yb - *ya) << 16) / (dst->y2 - dst->y1);
-
-    *xa <<= 16; *xb <<= 16;
-    *ya <<= 16; *yb <<= 16;
-
-    diff = extents->x1 - dst->x1;
-    if(diff > 0) {
-	dst->x1 = extents->x1;
-	*xa += diff * hscale;
-    }
-    diff = dst->x2 - extents->x2;
-    if(diff > 0) {
-	dst->x2 = extents->x2;
-	*xb -= diff * hscale;
-    }
-    diff = extents->y1 - dst->y1;
-    if(diff > 0) {
-	dst->y1 = extents->y1;
-	*ya += diff * vscale;
-    }
-    diff = dst->y2 - extents->y2;
-    if(diff > 0) {
-	dst->y2 = extents->y2;
-	*yb -= diff * vscale;
-    }
-
-    if(*xa < 0) {
-	diff =  (- *xa + hscale - 1)/ hscale;
-	dst->x1 += diff;
-	*xa += diff * hscale;
-    }
-    delta = *xb - (width << 16);
-    if(delta > 0) {
-	diff = (delta + hscale - 1)/ hscale;
-	dst->x2 -= diff;
-	*xb -= diff * hscale;
-    }
-    if(*xa >= *xb) return FALSE;
-
-    if(*ya < 0) {
-	diff =  (- *ya + vscale - 1)/ vscale;
-	dst->y1 += diff;
-	*ya += diff * vscale;
-    }
-    delta = *yb - (height << 16);
-    if(delta > 0) {
-	diff = (delta + vscale - 1)/ vscale;
-	dst->y2 -= diff;
-	*yb -= diff * vscale;
-    }
-    if(*ya >= *yb) return FALSE;
-
-    if((dst->x1 != extents->x1) || (dst->x2 != extents->x2) ||
-       (dst->y1 != extents->y1) || (dst->y2 != extents->y2))
-    {
-	RegionRec clipReg;
-	REGION_INIT(DummyScreen, &clipReg, dst, 1);
-	REGION_INTERSECT(DummyScreen, reg, reg, &clipReg);
-	REGION_UNINIT(DummyScreen, &clipReg);
-    }
-    return TRUE;
-}
-
 static void
 RADEONStopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
 {
@@ -684,8 +554,6 @@ RADEONStopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	RADEONWaitForFifo(pScrn, 2);
 	OUTREG(RADEON_OV0_SCALE_CNTL, 0);
-	if (info->cursor_start)
-	    xf86ForceHWCursor (pScrn->pScreen, FALSE);
      }
      if(info->videoLinear) {
 	xf86FreeOffscreenLinear(info->videoLinear);
@@ -1188,7 +1056,8 @@ RADEONPutImage(
    dstBox.y1 = drw_y;
    dstBox.y2 = drw_y + drw_h;
 
-   if(!RADEONClipVideo(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, width, height))
+   if(!xf86XVClipVideoHelper(&dstBox, &xa, &xb, &ya, &yb,
+			     clipBoxes, width, height))
 	return Success;
 
    dstBox.x1 -= pScrn->frameX0;
@@ -1280,19 +1149,13 @@ RADEONPutImage(
 #endif
 
     /* update cliplist */
-    if(!RegionsEqual(&pPriv->clip, clipBoxes)) 
+    if(!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) 
     {
-	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
 	/* draw these */
 	if(pPriv->autopaint_colorkey)
-	    (*info->accel->FillSolidRects)(pScrn, pPriv->colorKey, GXcopy,
-					   (CARD32)~0,
-					   REGION_NUM_RECTS(clipBoxes),
-					   REGION_RECTS(clipBoxes));
+	    xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
     }
-
-    if (info->cursor_start && !(pPriv->videoStatus & CLIENT_VIDEO_ON))
-	xf86ForceHWCursor (pScrn->pScreen, TRUE);
 
     RADEONDisplayVideo(pScrn, id, offset, offset, width, height, dstPitch,
 		     xa, xb, ya, &dstBox, src_w, src_h, drw_w, drw_h);
@@ -1358,8 +1221,6 @@ RADEONVideoTimerCallback(ScrnInfoPtr pScrn, Time now)
 	    if(pPriv->offTime < now) {
 		unsigned char *RADEONMMIO = info->MMIO;
 		OUTREG(RADEON_OV0_SCALE_CNTL, 0);
-		if (info->cursor_start && pPriv->videoStatus & CLIENT_VIDEO_ON)
-		    xf86ForceHWCursor (pScrn->pScreen, FALSE);
 		pPriv->videoStatus = FREE_TIMER;
 		pPriv->freeTime = now + FREE_DELAY;
 	    }
@@ -1369,8 +1230,6 @@ RADEONVideoTimerCallback(ScrnInfoPtr pScrn, Time now)
 		   xf86FreeOffscreenLinear(info->videoLinear);
 		   info->videoLinear = NULL;
 		}
-		if (info->cursor_start && pPriv->videoStatus & CLIENT_VIDEO_ON)
-		    xf86ForceHWCursor (pScrn->pScreen, FALSE);
 		pPriv->videoStatus = 0;
 		info->VideoTimerCallback = NULL;
 	    }
@@ -1525,8 +1384,8 @@ RADEONDisplaySurface(
     dstBox.y1 = drw_y;
     dstBox.y2 = drw_y + drw_h;
 
-    if (!RADEONClipVideo(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, 
-			surface->width, surface->height))
+    if (!xf86XVClipVideoHelper(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, 
+			       surface->width, surface->height))
 	return Success;
 
     dstBox.x1 -= pScrn->frameX0;
@@ -1542,18 +1401,13 @@ RADEONDisplaySurface(
 		       xa, xb, ya, &dstBox, src_w, src_h, drw_w, drw_h);
 
     if (portPriv->autopaint_colorkey)
-	(*info->accel->FillSolidRects)(pScrn, portPriv->colorKey, GXcopy,
-				       (CARD32)~0,
-				       REGION_NUM_RECTS(clipBoxes),
-				       REGION_RECTS(clipBoxes));
+	xf86XVFillKeyHelper(pScrn->pScreen, portPriv->colorKey, clipBoxes);
 
     pPriv->isOn = TRUE;
     /* we've prempted the XvImage stream so set its free timer */
     if (portPriv->videoStatus & CLIENT_VIDEO_ON) {
 	REGION_EMPTY(pScrn->pScreen, &portPriv->clip);   
 	UpdateCurrentTime();
-	if (info->cursor_start)
-	    xf86ForceHWCursor (pScrn->pScreen, FALSE);
 	portPriv->videoStatus = FREE_TIMER;
 	portPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
 	info->VideoTimerCallback = RADEONVideoTimerCallback;
@@ -1590,5 +1444,3 @@ RADEONInitOffscreenImages(ScreenPtr pScreen)
 
     xf86XVRegisterOffscreenImages(pScreen, offscreenImages, 1);
 }
-
-#endif  /* !XvExtension */

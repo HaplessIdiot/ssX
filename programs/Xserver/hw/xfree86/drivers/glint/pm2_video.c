@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.22 2001/08/18 11:41:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.23tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -35,15 +35,6 @@
 
 #include "glint_regs.h"
 #include "glint.h"
-
-#ifndef XvExtension
-
-void Permedia2VideoInit(ScreenPtr pScreen) {}
-void Permedia2VideoUninit(ScrnInfoPtr pScrn) {}
-void Permedia2VideoEnterVT(ScrnInfoPtr pScrn) {}
-void Permedia2VideoLeaveVT(ScrnInfoPtr pScrn) {}
-
-#else
 
 #undef MIN
 #undef ABS
@@ -3200,5 +3191,3 @@ Permedia2VideoInit(ScreenPtr pScreen)
 	DeleteAdaptorPriv(pAPriv);
     }
 }
-
-#endif /* XvExtension */

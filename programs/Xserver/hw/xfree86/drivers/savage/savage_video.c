@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.12 2003/04/07 16:23:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.13tsi Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -16,11 +16,6 @@
 #define CLIENT_VIDEO_ON	0x04
 
 #define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
-
-#ifndef XvExtension
-void SavageInitVideo(ScreenPtr pScreen) {}
-void SavageResetVideo(ScrnInfoPtr pScrn) {}
-#else
 
 void myOUTREG( SavagePtr psav, unsigned long offset, unsigned long value );
 
@@ -887,36 +882,6 @@ SavageSetupImageVideo(ScreenPtr pScreen)
 }
 
 
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-    int *dataA, *dataB;
-    int num;
-
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-	return FALSE;
-
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-	return FALSE;
-
-    dataA = (int*)REGION_RECTS(A);
-    dataB = (int*)REGION_RECTS(B);
-
-    while(num--) {
-	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	   return FALSE;
-	dataA += 2; 
-	dataB += 2;
-    }
-
-    return TRUE;
-}
-
-
 /* SavageClipVideo -  
 
    Takes the dst box in standard X BoxRec form (top and left
@@ -1553,12 +1518,10 @@ SavagePutImage(
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
     /* update cliplist */
-    if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
-	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+    if(!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
+	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
 	/* draw these */
-	XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0, 
-					REGION_NUM_RECTS(clipBoxes),
-					REGION_RECTS(clipBoxes));
+	xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
     }
 
     pPriv->videoStatus = CLIENT_VIDEO_ON;
@@ -1812,9 +1775,7 @@ SavageDisplaySurface(
 	     surface->width, surface->height, surface->pitches[0],
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
-    XAAFillSolidRects(pScrn, portPriv->colorKey, GXcopy, ~0, 
-                                        REGION_NUM_RECTS(clipBoxes),
-                                        REGION_RECTS(clipBoxes));
+    xf86XVFillKeyHelper(pScrn->pScreen, portPriv->colorKey, clipBoxes);
 
     pPriv->isOn = TRUE;
 #if 0
@@ -1954,5 +1915,3 @@ static void InitStreamsForExpansion(ScrnInfoPtr pScrn)
        ((PanelSizeY - (psav->YExp1 * ViewPortHeight) / psav->YExp2) / 2);
 
 }  /* InitStreamsForExpansionPM */
-
-#endif /* XvExtension */

@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.66 2002/12/09 11:32:48 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.67tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -94,10 +94,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "picturestr.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
 #include "Xv.h"
-#endif
 
 /*
  * Driver data structures.
@@ -1081,7 +1079,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 		       "Valid options are \"CW\" or \"CCW\"\n");
       }
     }
-#ifdef XvExtension
+
     if(xf86GetOptValInteger(nPtr->Options,
 			    OPTION_VIDEO_KEY, &(nPtr->videoKey))) {
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
@@ -1112,8 +1110,6 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Valid options are  0..2\n");
         }
     }
-#endif /* XvExtension */
-
 
     if (height_480
 	&& (nPtr->NeoPanelWidth == 800 || nPtr->NeoPanelWidth == 1024)) {
@@ -1414,10 +1410,10 @@ NEOEnterVT(int scrnIndex, int flags)
     /* Should we re-save the text mode on each VT enter? */
     if(!neoModeInit(pScrn, pScrn->currentMode))
       return FALSE;
-#ifdef XvExtension
+
     if (nPtr->video)
 	NEOResetVideo(pScrn);
-#endif
+
     if (nPtr->NeoHWCursorShown) 
 	NeoShowCursor(pScrn);
     NEOAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);    
@@ -1661,7 +1657,6 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  xf86DrvMsg(pScrn->scrnIndex,X_INFO,
 		     "Acceleration disabled when not using MMIO\n");
 
-#ifdef XvExtension
 	if (nPtr->overlay > 0){
 	    if (nPtr->overlay > freespace){
 		xf86DrvMsg(pScrn->scrnIndex,X_INFO,
@@ -1676,7 +1671,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Overlay at 0x%x\n",
 		       nPtr->overlay_offset);
 	}
-#endif /* XvExtension */
+
 	nAcl->cacheStart = currentaddr - freespace;
 	nAcl->cacheEnd = currentaddr;
 	freespace = 0;
@@ -2895,7 +2890,6 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     }
     
-#ifdef XvExtension
     if (!noLcdStretch &&
 	(NeoNew->PanelDispCntlReg1 & 0x02))  {
 	if (mode->HDisplay != nPtr->NeoPanelWidth)
@@ -2906,7 +2900,6 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	nPtr->videoHZoom = 1.0;
 	nPtr->videoVZoom = 1.0;
     }
-#endif
 
     if (mode->VDisplay < 480) {
 	NeoStd->Sequencer[1] |= 0x8;

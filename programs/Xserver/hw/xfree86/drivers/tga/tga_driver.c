@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.57 2001/08/07 07:04:52 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.58tsi Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -69,10 +69,8 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
 #include "Xv.h"
-#endif
 
 static const OptionInfoRec * TGAAvailableOptions(int chipid, int busid);
 static void	TGAIdentify(int flags);
@@ -193,7 +191,6 @@ static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAAGCIndex",
     "XAAInit",
-    "XAAScreenIndex",
     NULL
 };
 
@@ -1419,7 +1416,6 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if(xf86DPMSInit(pScreen, TGADisplayPowerManagementSet, 0) == FALSE)
       ErrorF("DPMS initialization failed!\n");
 
-#ifdef XvExtension
     {
       XF86VideoAdaptorPtr *ptr;
       int n;
@@ -1434,7 +1430,6 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       }
 
     }
-#endif
     
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.85 2003/01/12 03:55:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.86tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -283,7 +283,6 @@ static const char *xaaSymbols[] = {
     "XAACopyROP_PM",
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
-    "XAAFillSolidRects",
     "XAAHelpPatternROP",
     "XAAHelpSolidROP",
     "XAAInit",
@@ -2661,19 +2660,7 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   if(xf86DPMSInit(pScreen, S3VDisplayPowerManagementSet, 0) == FALSE)
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed!\n");
   
-#ifndef XvExtension
-    {
-	XF86VideoAdaptorPtr *ptr;
-	int n;
-
-	n = xf86XVListGenericAdaptors(pScrn,&ptr);
-	if (n) {
-	    xf86XVScreenInit(pScreen, ptr, n);
-	}
-    }
-#else
-    S3VInitVideo(pScreen);
-#endif
+  S3VInitVideo(pScreen);
  
     /* Report any unused options (only for the first generation) */
   if (serverGeneration == 1) {

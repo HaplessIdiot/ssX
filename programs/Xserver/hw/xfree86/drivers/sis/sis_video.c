@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.9 2003/01/29 15:42:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.10tsi Exp $ */
 /*
  * Xv driver for SiS 300 and 310/325 series.
  *
@@ -782,35 +782,6 @@ SISSetupImageVideo(ScreenPtr pScreen)
     SISResetVideo(pScrn);
 
     return adapt;
-}
-
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-    int *dataA, *dataB;
-    int num;
-
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-    return FALSE;
-
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-    return FALSE;
-
-    dataA = (int*)REGION_RECTS(A);
-    dataB = (int*)REGION_RECTS(B);
-
-    while(num--) {
-      if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-        return FALSE;
-      dataA += 2;
-      dataB += 2;
-    }
-
-    return TRUE;
 }
 
 static int
@@ -1987,15 +1958,13 @@ SISPutImage(
 
    /* update cliplist */
    if(pPriv->autopaintColorKey &&
-        (pPriv->grabbedByV4L || !RegionsEqual(&pPriv->clip, clipBoxes))) {
+        (pPriv->grabbedByV4L ||
+	 !REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes))) {
      /* We always paint colorkey for V4L */
      if (!pPriv->grabbedByV4L)
-     	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+     	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
      /* draw these */
-     /* xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes); - for X4.2 */
-     XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
-                    REGION_NUM_RECTS(clipBoxes),
-                    REGION_RECTS(clipBoxes));
+     xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
    }
 
    pPriv->currentBuf ^= 1;
@@ -2252,11 +2221,8 @@ SISDisplaySurface (
 
    SISDisplayVideo(pScrn, pPriv);
 
-   if(pPriv->autopaintColorKey) {
-   	XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
-                    REGION_NUM_RECTS(clipBoxes),
-                    REGION_RECTS(clipBoxes));
-   }
+   if(pPriv->autopaintColorKey)
+	xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
 
    pPriv->videoStatus = CLIENT_VIDEO_ON;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.122 2002/11/25 14:04:58 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.123tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -695,7 +695,6 @@ static const char *fbSymbols[] = {
 static const char *xaaSymbols[] = {
     "XAACreateInfoRec",
     "XAADestroyInfoRec",
-    "XAAFillSolidRects" ,
     "XAAInit",
     "XAAInitDualFramebufferOverlay",
     "XAAStippleScanlineFuncMSBFirst",

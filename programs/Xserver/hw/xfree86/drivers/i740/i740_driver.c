@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.40 2003/02/17 16:52:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.41tsi Exp $ */
 
 /*
  * Authors:
@@ -1698,18 +1698,6 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   xf86DPMSInit(pScreen, I740DisplayPowerManagementSet, 0);
 
-#if 0 /*def XvExtension*/
-  {
-    XF86VideoAdaptorPtr *ptr;
-    int n;
-    
-    n = xf86XVListGenericAdaptors(pScrn,&ptr);
-    if (n) {
-      xf86XVScreenInit(pScreen, ptr, n);
-    }
-  }
-#endif
-
   memset(&(pI740->FbMemBox), 0, sizeof(BoxRec));
   pI740->FbMemBox.x1=0;
   pI740->FbMemBox.x2=pScrn->displayWidth;
@@ -1744,11 +1732,8 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   if (serverGeneration == 1)
     xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
 
-#ifdef XvExtension
-  { /* Overlay */
-    I740InitVideo(pScreen); pI740->OverlayStart = pI740->CursorStart + 1024;
-  }
-#endif /*XvExtension*/
+  /* Overlay */
+  I740InitVideo(pScreen); pI740->OverlayStart = pI740->CursorStart + 1024;
 
   return TRUE;
 }

@@ -1,4 +1,23 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 136. Fix bug that prevented fbman from using the last partial scanline of a
+      Mach64 framebuffer (Marc La France).
+ 135. Make ATI Mach64 FIFO cache integrity testing optional (Marc La France).
+ 134. Export ATI Mach64 hardware overlay as an XVideo adaptor (derived from
+      GATOS project, Egbert Eich, Marc La France).
+ 133. Reorganise ATI Mach64 support into separate source files
+      (Marc La France).
+ 132. Refine atimisc's decoding of the panel mode on server entry in an attempt
+      to reduce the effect of atyfb bugs (Marc La France).
+ 131. Make Rage128 and Radeon XVideo available even when 2D acceleration is
+      disabled (Marc La France).
+ 130. There is no longer any need to require hardware cursors during Rage128
+      and Radeon XVideo displays (Marc La France).
+ 129. Initialise v4l's XVideo adaptors last (Marc La France).
+ 128. Reduce cut&paste effects by adding more helpers to Xv
+      (derived from #5645, Björn Augustsson, Marc La France).
+ 127. Centralise a region comparison primitive into 'mi' and use it instead of
+      local definitions throughout the server (Marc La France).
+ 126. DPMSExtension & XvExtension driver cleanups (Marc La France).
  125. Add missing tests for vtSema to xaa 'Picture' functions.
       These missing checks caused strange behavior with some drivers
       when RENDER extension requests were made while X was switched away.
@@ -16843,7 +16862,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2653 2003/04/23 14:18:33 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2654 2003/04/23 18:35:29 eich Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.20 2002/01/29 03:42:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.21tsi Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -41,7 +41,7 @@
  * Mark Vojkovich, Huw D M Davies, Andrew C Aitchison, Ani Joshi,
  * Kostas Gewrgiou, Jakub Jelinek, David S. Miller, A E Lawrence,
  * Linus Torvalds, William Blew, Ignacio Garcia Etxebarria, Patrick Chase,
- * Vladimir Dergachev
+ * Vladimir Dergachev, Egbert Eich
  *
  * ... and, many, many others from around the world.
  *

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.28 2003/02/05 17:45:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.29tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -149,13 +149,11 @@ typedef enum
 	OPTION_HWCURSOR,
 	OPTION_SHADOW_FB,
 	OPTION_ROTATE,
-#ifdef XvExtension
 	OPTION_VIDEOKEY,
 	OPTION_BYTESWAP,
-    /* CZ 26.10.2001: interlaced video */
-    OPTION_INTERLACED,
-    /* end CZ */
-#endif
+	/* CZ 26.10.2001: interlaced video */
+	OPTION_INTERLACED,
+	/* end CZ */
 	OPTION_USEBIOS,
 	OPTION_ZOOMONLCD,
 	NUMBER_OF_OPTIONS
@@ -164,28 +162,26 @@ typedef enum
 
 static const OptionInfoRec SMIOptions[] =
 {
-   { OPTION_PCI_BURST,		 "pci_burst",		  OPTV_BOOLEAN, {0}, FALSE },
-   { OPTION_FIFO_CONSERV,	 "fifo_conservative", OPTV_BOOLEAN, {0}, FALSE },
-   { OPTION_FIFO_MODERATE,	 "fifo_moderate",	  OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_PCI_BURST,	     "pci_burst",	  OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_FIFO_CONSERV,    "fifo_conservative", OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_FIFO_MODERATE,   "fifo_moderate",	  OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_FIFO_AGGRESSIVE, "fifo_aggressive",	  OPTV_BOOLEAN, {0}, FALSE },
-   { OPTION_PCI_RETRY,		 "pci_retry",		  OPTV_BOOLEAN, {0}, FALSE },
-   { OPTION_NOACCEL,		 "NoAccel",			  OPTV_BOOLEAN, {0}, FALSE },
-   { OPTION_MCLK,			 "set_mclk",		  OPTV_FREQ,	{0}, FALSE },
-   { OPTION_SHOWCACHE,		 "show_cache",		  OPTV_BOOLEAN, {0}, FALSE },
-   { OPTION_HWCURSOR,		 "HWCursor",		  OPTV_BOOLEAN, {0}, FALSE },
-   { OPTION_SWCURSOR,		 "SWCursor",		  OPTV_BOOLEAN, {0}, FALSE },
-   { OPTION_SHADOW_FB,		 "ShadowFB",		  OPTV_BOOLEAN, {0}, FALSE },
-   { OPTION_ROTATE,			 "Rotate",			  OPTV_ANYSTR,  {0}, FALSE },
-#ifdef XvExtension
-   { OPTION_VIDEOKEY,		 "VideoKey",		  OPTV_INTEGER, {0}, FALSE },
-   { OPTION_BYTESWAP,		 "ByteSwap",		  OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_PCI_RETRY,	     "pci_retry",	  OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_NOACCEL,	     "NoAccel",		  OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_MCLK,	     "set_mclk",	  OPTV_FREQ,	{0}, FALSE },
+   { OPTION_SHOWCACHE,	     "show_cache",	  OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_HWCURSOR,	     "HWCursor",	  OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_SWCURSOR,	     "SWCursor",	  OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_SHADOW_FB,	     "ShadowFB",	  OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_ROTATE,	     "Rotate",		  OPTV_ANYSTR,  {0}, FALSE },
+   { OPTION_VIDEOKEY,	     "VideoKey",	  OPTV_INTEGER, {0}, FALSE },
+   { OPTION_BYTESWAP,	     "ByteSwap",	  OPTV_BOOLEAN, {0}, FALSE },
     /* CZ 26.10.2001: interlaced video */
-   { OPTION_INTERLACED,      "Interlaced",        OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_INTERLACED,	     "Interlaced",        OPTV_BOOLEAN, {0}, FALSE },
    /* end CZ */
-#endif
-   { OPTION_USEBIOS,		 "UseBIOS",			  OPTV_BOOLEAN,	{0}, FALSE },
-   { OPTION_ZOOMONLCD,		 "ZoomOnLCD",		  OPTV_BOOLEAN,	{0}, FALSE },
-   { -1,					 NULL,				  OPTV_NONE,	{0}, FALSE }
+   { OPTION_USEBIOS,	     "UseBIOS",		  OPTV_BOOLEAN,	{0}, FALSE },
+   { OPTION_ZOOMONLCD,	     "ZoomOnLCD",	  OPTV_BOOLEAN,	{0}, FALSE },
+   { -1,		     NULL,		  OPTV_NONE,	{0}, FALSE }
 };
 
 /*
@@ -223,10 +219,8 @@ static const char *xaaSymbols[] =
 	"XAACreateInfoRec",
 	"XAADestroyInfoRec",
 	"XAAFallbackOps",
-	"XAAFillSolidRects",
 	"XAAInit",
 	"XAAPatternROP",
-	"XAAScreenIndex",
 	NULL
 };
 
@@ -792,7 +786,6 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		}
 	}
 
-#ifdef XvExtension
 	if (xf86GetOptValInteger(pSmi->Options, OPTION_VIDEOKEY, &pSmi->videoKey))
 	{
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: Video key set to "
@@ -815,18 +808,17 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		pSmi->ByteSwap = FALSE;
 	}
 
-    /* CZ 26.10.2001: interlaced video */
-    if (xf86ReturnOptValBool(pSmi->Options, OPTION_INTERLACED, FALSE))
-    {
-        pSmi->interlaced = TRUE;
-        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: Interlaced enabled.\n");
-    }
-    else
-    {
-        pSmi->interlaced = FALSE;
-    }
-    /* end CZ */
-#endif
+	/* CZ 26.10.2001: interlaced video */
+	if (xf86ReturnOptValBool(pSmi->Options, OPTION_INTERLACED, FALSE))
+	{
+		pSmi->interlaced = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: Interlaced enabled.\n");
+	}
+	else
+	{
+		pSmi->interlaced = FALSE;
+	}
+	/* end CZ */
 
 	if (xf86GetOptValBool(pSmi->Options, OPTION_USEBIOS, &pSmi->useBIOS))
 	{
@@ -2093,7 +2085,7 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		numLines = maxLines;
 	    } else {
 		/* CZ 3.11.2001: What does the following code? see also smi_video.c aaa line 1226 */
-/*#if defined(XvExtension) && SMI_USE_VIDEO */
+/*#if SMI_USE_VIDEO */
 #if 0
 		numLines = ((pSmi->FBReserved - pSmi->width * pSmi->Bpp
 			     * pSmi->height) * 25 / 100 + pSmi->width
@@ -2786,7 +2778,6 @@ SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen)
 		xf86FreeInt10(pSmi->pInt10);
 		pSmi->pInt10 = NULL;
 	}
-#ifdef XvExtension
 	if (pSmi->ptrAdaptor != NULL)
 	{
 		xfree(pSmi->ptrAdaptor);
@@ -2795,7 +2786,6 @@ SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen)
 	{
 		pScreen->BlockHandler = pSmi->BlockHandler;
 	}
-#endif
 	if (pSmi->I2C != NULL)
 	{
 		xf86DestroyI2CBusRec(pSmi->I2C, FALSE, TRUE);

@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.21 2001/12/04 21:17:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.22tsi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -397,36 +397,6 @@ I810SetupImageVideo(ScreenPtr pScreen)
     I810ResetVideo(pScrn);
 
     return adapt;
-}
-
-
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-    int *dataA, *dataB;
-    int num;
-
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-	return FALSE;
-
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-	return FALSE;
-
-    dataA = (int*)REGION_RECTS(A);
-    dataB = (int*)REGION_RECTS(B);
-
-    while(num--) {
-	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	   return FALSE;
-	dataA += 2; 
-	dataB += 2;
-    }
-
-    return TRUE;
 }
 
 
@@ -1057,12 +1027,10 @@ I810PutImage(
     }
 
     /* update cliplist */
-    if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
-	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+    if(!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
+	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
 	/* draw these */
-	XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0, 
-					REGION_NUM_RECTS(clipBoxes),
-					REGION_RECTS(clipBoxes));
+	xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
     }
 
 
@@ -1352,9 +1320,7 @@ I810DisplaySurface(
 		     surface->pitches[0], x1, y1, x2, y2, &dstBox,
 		     src_w, src_h, drw_w, drw_h);
 
-    XAAFillSolidRects(pScrn, pI810Priv->colorKey, GXcopy, ~0,
-		      REGION_NUM_RECTS(clipBoxes),
-		      REGION_RECTS(clipBoxes));
+    xf86XVFillKeyHelper(pScrn->pScreen, pI810Priv->colorKey, clipBoxes);
 
     pPriv->isOn = TRUE;
     /* we've prempted the XvImage stream so set its free timer */

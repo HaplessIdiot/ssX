@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.42 2002/01/25 21:56:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.43tsi Exp $ */
 
 #define EXPERIMENTAL
 
@@ -62,10 +62,8 @@
 #define _LG_PRIVATE_
 #include "lg.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
 #include "Xv.h"
-#endif
 
 /*
  * Forward definitions for the functions that make up the driver.
@@ -1487,7 +1485,6 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pScrn->memPhysBase = pCir->FbAddress;
 	pScrn->fbOffset = 0;
 
-#ifdef XvExtension
 	{
 		XF86VideoAdaptorPtr *ptr;
 		int n;
@@ -1496,7 +1493,6 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		if (n)
 			xf86XVScreenInit(pScreen, ptr, n);
 	}
-#endif
 
 	/*
 	 * Wrap the CloseScreen vector and set SaveScreen.

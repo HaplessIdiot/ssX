@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.31 2002/12/22 18:54:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.32tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -407,37 +407,6 @@ TRIDENTSetupImageVideo(ScreenPtr pScreen)
 }
 
 
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
-{
-    int *dataA, *dataB;
-    int num;
-
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-	return FALSE;
-
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-	return FALSE;
-
-    dataA = (int*)REGION_RECTS(A);
-    dataB = (int*)REGION_RECTS(B);
-
-    while(num--) {
-	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	   return FALSE;
-	dataA += 2; 
-	dataB += 2;
-    }
-
-    return TRUE;
-}
-
-#define DummyScreen screenInfo.screens[0]
-
 static void 
 TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 {
@@ -614,55 +583,6 @@ TRIDENTQueryBestSize(
   if(*p_w > 16384) *p_w = 16384;
 }
 
-
-static void
-TRIDENTCopyData(
-  unsigned char *src,
-  unsigned char *dst,
-  int srcPitch,
-  int dstPitch,
-  int h,
-  int w
-){
-    w <<= 1;
-    while(h--) {
-	memcpy(dst, src, w);
-	src += srcPitch;
-	dst += dstPitch;
-    }
-}
-
-static void
-TRIDENTCopyMungedData(
-   unsigned char *src1,
-   unsigned char *src2,
-   unsigned char *src3,
-   unsigned char *dst1,
-   int srcPitch,
-   int srcPitch2,
-   int dstPitch,
-   int h,
-   int w
-){
-   CARD32 *dst = (CARD32*)dst1;
-   int i, j;
-
-   dstPitch >>= 2;
-   w >>= 1;
-
-   for(j = 0; j < h; j++) {
-	for(i = 0; i < w; i++) {
-	    dst[i] = src1[i << 1] | (src1[(i << 1) + 1] << 16) |
-		     (src3[i] << 8) | (src2[i] << 24);
-	}
-	dst += dstPitch;
-	src1 += srcPitch;
-	if(j & 1) {
-	    src2 += srcPitch2;
-	    src3 += srcPitch2;
-	}
-   }
-}
 
 static FBLinearPtr
 TRIDENTAllocateMemory(
@@ -961,23 +881,23 @@ TRIDENTPutImage(
 	   offset3 = tmp;
 	}
 	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
-	TRIDENTCopyMungedData(buf + (top * srcPitch) + (left >> 1), 
-			  buf + offset2, buf + offset3, dst_start,
-			  srcPitch, srcPitch2, dstPitch, nlines, npixels);
+	xf86XVCopyYUV12ToPacked(buf + (top * srcPitch) + (left >> 1), 
+				buf + offset2, buf + offset3, dst_start,
+				srcPitch, srcPitch2, dstPitch, nlines, npixels);
 	break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:
     default:
 	buf += (top * srcPitch) + left;
 	nlines = ((y2 + 0xffff) >> 16) - top;
-	TRIDENTCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
+	xf86XVCopyPacked(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
         break;
     }
 
     /* update cliplist */
-    if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
+    if(!REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) {
     	/* update cliplist */
-        REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
+        REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
         xf86XVFillKeyHelper(pScrn->pScreen, pPriv->colorKey, clipBoxes);
     }
 

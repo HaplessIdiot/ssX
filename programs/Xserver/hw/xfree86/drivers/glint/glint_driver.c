@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.155 2003/02/17 00:00:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.156tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -236,11 +236,9 @@ static const char *xf8_32bppSymbols[] = {
 static const char *xaaSymbols[] = {
     "XAACreateInfoRec",
     "XAADestroyInfoRec",
-    "XAAFillSolidRects",
     "XAAInit",
     "XAAPolyLines",
     "XAAPolySegment",
-    "XAAScreenIndex",
     NULL
 };
 

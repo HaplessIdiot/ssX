@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.85 2003/01/29 15:42:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.86tsi Exp $ */
 /*
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Parts Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
@@ -83,10 +83,8 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
 #include "Xv.h"
-#endif
 
 #ifdef XF86DRI
 #include "dri.h"
@@ -234,7 +232,6 @@ static const char *xaaSymbols[] = {
     "XAACopyROP",
     "XAACreateInfoRec",
     "XAADestroyInfoRec",
-    "XAAFillSolidRects",
     "XAAHelpPatternROP",
     "XAAInit",
     NULL
@@ -4811,7 +4808,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->memPhysBase = pSiS->FbAddress;
     pScrn->fbOffset = 0;
 
-#ifdef XvExtension
     if(!pSiS->NoXvideo) {
 #ifdef SISDUALHEAD
         /* TW: On chipsets with only one overlay, we support
@@ -4877,7 +4873,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			"HW Xv not supported in Xinerama mode\n");
         }
     }
-#endif
 
 #ifdef XF86DRI
     if(pSiS->directRenderingEnabled) {

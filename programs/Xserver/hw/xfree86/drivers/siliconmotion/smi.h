@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.12tsi Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
@@ -64,10 +64,8 @@ authorization from the XFree86 Project and Silicon Motion.
 #include "xf86int10.h"
 #include "vbe.h"
 
-#ifdef XvExtension
-#	include "xf86xv.h"
-#	include "Xv.h"
-#endif
+#include "xf86xv.h"
+#include "Xv.h"
 
 /******************************************************************************/
 /*			D E F I N I T I O N S				      */
@@ -241,17 +239,15 @@ typedef struct
 
 	void (*PointerMoved)(int index, int x, int y);
 
-#ifdef XvExtension
 	int			videoKey;	/* Video chroma key */
 	Bool			ByteSwap;	/* Byte swap for ZV port */
-    Bool        interlaced;   /* True: Interlaced Video */
+	Bool			interlaced;	/* True: Interlaced Video */
 	/* XvExtension */
 	XF86VideoAdaptorPtr	ptrAdaptor;	/* Pointer to VideoAdapter
 						   structure */
 	void (*BlockHandler)(int i, pointer blockData, pointer pTimeout,
 						 pointer pReadMask);
-    GCPtr videoGC;
-#endif
+	GCPtr			videoGC;
 	OptionInfoPtr		Options;
         CARD8 DACmask;
 } SMIRec, *SMIPtr;

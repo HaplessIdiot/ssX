@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atixv.h,v 1.3tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 2001 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,18 +21,20 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIXV_H___
-#define ___ATIXV_H___ 1
+#ifndef ___ATIMACH64XV_H___
+#define ___ATIMACH64XV_H___ 1
 
 #include "atipriv.h"
 #include "atiproto.h"
 
 #include "xf86str.h"
+#include "xf86xv.h"
 
-extern void ATIXVPreInit        FunctionPrototype((ATIPtr));
-extern Bool ATIInitializeXVideo FunctionPrototype((ScreenPtr, ScrnInfoPtr,
-                                                   ATIPtr));
-extern void ATICloseXVideo      FunctionPrototype((ScreenPtr, ScrnInfoPtr,
-                                                   ATIPtr));
+extern int  ATIMach64XVInitialiseAdaptor
+            FunctionPrototype((ScreenPtr, ScrnInfoPtr, ATIPtr,
+                              XF86VideoAdaptorPtr **));
 
-#endif /* ___ATIXV_H___ */
+extern void ATIMach64CloseXVideo
+            FunctionPrototype((ScreenPtr, ScrnInfoPtr, ATIPtr));
+
+#endif /* ___ATIMACH64XV_H___ */

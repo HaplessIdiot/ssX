@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.176 2003/02/11 03:41:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.177tsi Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -64,9 +64,7 @@
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 
-#ifdef XvExtension
 #include "xf86xv.h"
-#endif
 
 static const OptionInfoRec * TRIDENTAvailableOptions(int chipid, int busid);
 static void	TRIDENTIdentify(int flags);
@@ -480,10 +478,8 @@ static const char *xaaSymbols[] = {
     "XAACopyROP",
     "XAACreateInfoRec",
     "XAADestroyInfoRec",
-    "XAAFillSolidRects",
     "XAAInit",
     "XAAPatternROP",
-    "XAAScreenIndex",
     NULL
 };
 
@@ -3050,10 +3046,8 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn->memPhysBase = pTrident->FbAddress;
     pScrn->fbOffset = 0;
 
-#ifdef XvExtension
     if (pTrident->Chipset >= TGUI9660)
 	TRIDENTInitVideo(pScreen);
-#endif
 
     pTrident->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = TRIDENTCloseScreen;

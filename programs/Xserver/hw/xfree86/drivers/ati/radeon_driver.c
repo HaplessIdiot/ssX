@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.94tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.95tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -4576,9 +4576,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			     | CMAP_RELOAD_ON_MODE_SWITCH)) return FALSE;
 
 				/* DPMS setup */
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, RADEONDisplayPowerManagementSet, 0);
-#endif
 
     RADEONInitVideo(pScreen);
 

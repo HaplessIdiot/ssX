@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.231 2003/01/29 19:29:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.232tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -272,10 +272,8 @@ static const char *xaaSymbols[] = {
     "XAACreateInfoRec",
     "XAADestroyInfoRec",
     "XAAFallbackOps",
-    "XAAFillSolidRects",
     "XAAInit",
     "XAAMoveDWORDS",
-    "XAAScreenIndex",
     "XAA_888_plus_PICT_a8_to_8888",
     NULL
 };
