@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.8 2000/07/13 21:31:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.9 2000/07/26 01:52:23 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -200,6 +200,8 @@ int10_read_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem)
 	xf86DrvMsg(scrnIndex,X_ERROR,"Cannot read V_BIOS (2)\n");
 	return FALSE;
     }
+    if (bios_checksum(vbiosMem, size))
+	xf86DrvMsg(scrnIndex, X_WARNING, "Bad V_BIOS checksum\n");
 
     return TRUE;
 }
