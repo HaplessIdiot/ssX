@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.20 1999/06/05 15:55:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.21 1999/07/10 07:24:53 dawes Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc.
  *
@@ -597,7 +597,23 @@ xf86SerialSendBreak (int fd, int duration)
 int
 xf86FlushInput(int fd)
 {
-	return tcflush(fd, TCIFLUSH);
+	fd_set fds;
+	struct timeval timeout;
+	char c[4];
+
+	if (tcflush(fd, TCIFLUSH) == 0)
+		return 0;
+
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	FD_ZERO(&fds);
+	FD_SET(fd, &fds);
+	while (select(FD_SETSIZE, &fds, NULL, NULL, &timeout) > 0) {
+		read(fd, &c, sizeof(c));
+		FD_ZERO(&fds);
+		FD_SET(fd, &fds);
+	}
+	return 0;
 }
 
 static struct states {

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.58 1999/07/17 05:30:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.59 1999/07/19 13:36:10 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -77,12 +77,16 @@ LOADERDIR = loader
 INPUTDIR = input
 #endif
 
+#if DoLoadableServer
+DRIVERSDK = sdk
+#endif
+
 SUBDIRS = os-support common $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
           $(XF8_32BPPDIR) $(XF8_16BPPDIR) $(XF24_32BPPDIR) $(SHADOWFBDIR) \
 	  drivers $(LOADERDIR) $(VGAHWDIR) $(FBDEVHWDIR) $(RAMDACDIR) \
 	  $(RACDIR) $(I2CDIR) $(DDCDIR) $(INPUTDIR) parser \
           scanpci doc xf86config $(XF86SETUPDIR) etc \
-          $(SUPERPROBE)
+          $(SUPERPROBE) $(DRIVERSDK)
 
 #ifndef OS2Architecture
 XF86CONFIG = XF86Config
@@ -145,6 +149,8 @@ CppFileTarget($(XF86CONFIG), XF86Conf.cpp,
     -DDPI75USFONTPATH=$(DPI75USFONTPATH) -DDPI100USFONTPATH=$(DPI100USFONTPATH)
     -DMANPAGE=$(MANPAGE) -DMODULEPATH=\"$(MODULEDIR)\",
     $(ICONFIGFILES))
+
+InstallDriverSDKNonExecFile($(XF86CONFIG),$(DRIVERSDKDIR))
 #else
 CppFileTarget($(XF86CONFIG), XF86Conf.cpp, \
     -DRGBPATH=$(RGBPATH) -DMISCFONTPATH=$(MISCFONTPATH) \
@@ -174,12 +180,16 @@ CppFileTarget($(XF98CONFIG), XF98Conf.cpp, \
     -DLINUXMOUSEDEV=$(LINUXMOUSEDEV) \
     -DMANPAGE=$(MANPAGE) -DMODULEPATH=\"$(MODULEDIR)\", \
     $(ICONFIGFILES))
+InstallDriverSDKNonExecFile($(XF86CONFIG),$(DRIVERSDKDIR))
+InstallDriverSDKNonExecFile($(XF98CONFIG),$(DRIVERSDKDIR))
 #endif
 
 InstallManPage(XFree86,$(MANDIR))
 InstallGenManPageLong(XF86Conf,$(FILEMANDIR),XF86Config,$(FILEMANSUFFIX))
 InstallNamedNonExec($(XF86CONFIG),XF86Config.eg,$(LIBDIR))
 InstallNamedNonExec($(XF98CONFIG),XF86Config.98,$(LIBDIR))
+
+InstallDriverSDKNamedNonExec($(XF86CONFIG),XF86Config.eg,$(DRIVERSDKDIR))
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

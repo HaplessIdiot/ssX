@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/71 1997/11/17 10:00:11 msr $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.20 1999/04/17 09:08:27 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.21 1999/05/15 06:24:50 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -261,3 +261,14 @@ InstallLibraryModule($(CFBNAME),$(MODULEDIR),.)
 DependTarget()
 #endif
 
+
+InstallDriverSDKLibraryModule($(CFBNAME),$(DRIVERSDKMODULEDIR),.)
+
+#if PixelSize == 8
+InstallDriverSDKNonExecFile(cfb.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(cfb16.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(cfb24.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(cfb32.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(cfbmap.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(cfbunmap.h,$(DRIVERSDKINCLUDEDIR))
+#endif

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.166 1999/06/27 14:07:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.167 1999/07/05 04:23:14 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -625,6 +625,9 @@ $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS):: $(XF86SERVERSUBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
 SetUIDServerTarget(XFree86,$(XF86SERVERSUBDIRS),$(XF86SERVEROBJS),$(XF86SERVERLIBS),$(XF86SERVERSYSLIBS))
+#if DoLoadableServer
+ServerDriverSDKTarget(XFree86)
+#endif
 #ifndef ServerToInstall
 #define ServerToInstall XFree86
 #endif

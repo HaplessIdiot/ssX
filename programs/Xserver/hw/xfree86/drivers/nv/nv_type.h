@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.2 1999/08/01 12:17:41 dawes Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -59,7 +59,6 @@ typedef struct {
     int                 SrcOrg;
     CARD32              IOAddress;
     CARD32              FbAddress;
-    CARD32              ILOADAddress;
     int                 FbBaseReg;
     unsigned char *     IOBase;
 #ifdef __alpha__
@@ -84,7 +83,6 @@ typedef struct {
     int                 MemClk;
     int                 MinClock;
     int                 MaxClock;
-    int                 MaxFastBlitY;
     CARD32              BltScanDirection;
     CARD32              FilledRectCMD;
     CARD32              SolidLineCMD;
@@ -115,6 +113,11 @@ typedef struct {
     I2CBusPtr           I2C;*/
     Bool                FBDev;
     int                 colorKey;
+    /* Color expansion */
+    unsigned char       *expandBuffer;
+    unsigned char       *expandFifo;
+    int                 expandWidth;
+    int                 expandRows;
 } NVRec, *NVPtr;
 
 #define NVPTR(p) ((NVPtr)((p)->driverPrivate))

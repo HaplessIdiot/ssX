@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ddc/Imakefile,v 1.3 1999/01/31 12:21:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ddc/Imakefile,v 1.4 1999/04/17 09:08:34 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -20,3 +20,9 @@ InstallLibraryModule(ddc,$(MODULEDIR),.)
 
 DependTarget()
 
+
+InstallDriverSDKLibraryModule(ddc,$(DRIVERSDKMODULEDIR),.)
+
+InstallDriverSDKNonExecFile(edid.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(vdif.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(xf86DDC.h,$(DRIVERSDKINCLUDEDIR))

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.108 1999/07/11 11:10:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.109 1999/08/01 07:57:28 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -208,7 +208,8 @@ typedef enum {
     OPTION_FBDEV,
     OPTION_COLOR_KEY,
     OPTION_SET_MCLK,
-    OPTION_OVERCLOCK_MEM
+    OPTION_OVERCLOCK_MEM,
+    OPTION_ROTATE
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -226,6 +227,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_COLOR_KEY,		"ColorKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,	{0}, FALSE },
     { OPTION_OVERCLOCK_MEM,	"OverclockMem",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1157,6 +1159,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 		       pScrn->rgbBits);
 	}
     }
+
+
     from = X_DEFAULT;
     pMga->HWCursor = TRUE;
     /*
@@ -1234,7 +1238,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pMga->OverclockMem = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Overclocking memory\n");
     }
-
     if (pMga->FBDev) {
 	/* check for linux framebuffer device */
 	if (!xf86LoadSubModule(pScrn, "fbdevhw"))
@@ -1248,6 +1251,31 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->LeaveVT       = fbdevHWLeaveVT;
 	pScrn->ValidMode     = fbdevHWValidMode;
     }
+    pMga->Rotate = 0;
+    if ((s = xf86GetOptValString(MGAOptions, OPTION_ROTATE))) {
+      if(!xf86NameCmp(s, "CW")) {
+	pMga->ShadowFB = TRUE;
+	pMga->NoAccel = TRUE;
+	pMga->HWCursor = FALSE;
+	pMga->Rotate = 1;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Rotating screen clockwise - acceleration disabled\n");
+      } else
+      if(!xf86NameCmp(s, "CCW")) {
+	pMga->ShadowFB = TRUE;
+	pMga->NoAccel = TRUE;
+	pMga->HWCursor = FALSE;
+	pMga->Rotate = -1;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Rotating screen counter clockwise - acceleration disabled\n");
+      } else {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"\"%s\" is not a valid value for Option \"Rotate\"\n", s);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		"Valid options are \"CW\" or \"CCW\"\n");
+      }
+    }
+
 
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
@@ -2053,33 +2081,6 @@ MGARestore(ScrnInfoPtr pScrn)
 }
 
 
-static void
-MGARefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
-{
-    MGAPtr pMga = MGAPTR(pScrn);
-    int width, height, Bpp, FBPitch;
-    unsigned char *src, *dst;
-   
-    Bpp = pScrn->bitsPerPixel >> 3;
-    FBPitch = pScrn->displayWidth * Bpp;
-
-    while(num--) {
-	width = (pbox->x2 - pbox->x1) * Bpp;
-	height = pbox->y2 - pbox->y1;
-	src = pMga->ShadowPtr + (pbox->y1 * pMga->ShadowPitch) + 
-						(pbox->x1 * Bpp);
-	dst = pMga->FbStart + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
-
-	while(height--) {
-	    memcpy(dst, src, width);
-	    dst += FBPitch;
-	    src += pMga->ShadowPitch;
-	}
-	
-	pbox++;
-    }
-} 
-
 /* Mandatory */
 
 /* This gets called at the start of each server generation */
@@ -2094,6 +2095,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int ret;
     VisualPtr visual;
     unsigned char *FBStart;
+    int width, height, displayWidth;
 
     /* 
      * First get the ScrnInfoRec
@@ -2184,11 +2186,21 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * pScreen fields.
      */
 
+    width = pScrn->virtualX;
+    height = pScrn->virtualY;
+    displayWidth = pScrn->displayWidth;
+
+
+    if(pMga->Rotate) {
+	height = pScrn->virtualX;
+	width = pScrn->virtualY;
+    }
+
     if(pMga->ShadowFB) {
-	pMga->ShadowPitch = 
-		((pScrn->virtualX * pScrn->bitsPerPixel >> 3) + 3) & ~3L;
-	pMga->ShadowPtr = xalloc(pMga->ShadowPitch * pScrn->virtualY);
-	FBStart = pMga->ShadowPtr;
+ 	pMga->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * width);
+        pMga->ShadowPtr = xalloc(pMga->ShadowPitch * height);
+	displayWidth = pMga->ShadowPitch / (pScrn->bitsPerPixel >> 3);
+        FBStart = pMga->ShadowPtr;
     } else {
 	pMga->ShadowPtr = NULL;
 	FBStart = pMga->FbStart;
@@ -2197,39 +2209,39 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     switch (pScrn->bitsPerPixel) {
     case 8:
 	ret = cfbScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+			width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 16:
 	ret = cfb16ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+			width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 24:
 	if (pix24bpp == 24)
 	    ret = cfb24ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+			width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	else
 	    ret = cfb24_32ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+			width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 32:
 	if(pMga->Overlay8Plus24)
 	    ret = cfb8_32ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+			width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	else 
 	    ret = cfb32ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+			width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
@@ -2288,8 +2300,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	Must follow initialization of the default colormap */
     if(!xf86HandleColormaps(pScreen, 256, 8, 
 	(pMga->FBDev ? fbdevHWLoadPalette : MGAdac->LoadPalette), NULL,
-	(pMga->Overlay8Plus24 ? 0 : CMAP_PALETTED_TRUECOLOR) |
-			CMAP_RELOAD_ON_MODE_SWITCH))	
+	CMAP_PALETTED_TRUECOLOR | CMAP_RELOAD_ON_MODE_SWITCH))	
 	return FALSE;
 
     if(pMga->Overlay8Plus24) { /* Must come after colormap initialization */
@@ -2297,8 +2308,20 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
     }
 
-    if(pMga->ShadowFB)
-	ShadowFBInit(pScreen, MGARefreshArea);
+    if(pMga->ShadowFB) {
+	RefreshAreaFuncPtr refreshArea = MGARefreshArea;
+
+	if(pMga->Rotate) {
+	   switch(pScrn->bitsPerPixel) {
+	   case 8:	refreshArea = MGARefreshArea8;	break;
+	   case 16:	refreshArea = MGARefreshArea16;	break;
+	   case 24:	refreshArea = MGARefreshArea24;	break;
+	   case 32:	refreshArea = MGARefreshArea32;	break;
+	   }
+	}
+
+	ShadowFBInit(pScreen, refreshArea);
+    }
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);

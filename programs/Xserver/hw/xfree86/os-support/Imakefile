@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.27 1999/05/14 14:11:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.28 1999/06/14 07:31:56 dawes Exp $
 
 
 
@@ -114,3 +114,8 @@ ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
 
+
+InstallDriverSDKNonExecFile(xf86_OSproc.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(xf86_ansic.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(xf86_libc.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(xf86drm.h,$(DRIVERSDKINCLUDEDIR))

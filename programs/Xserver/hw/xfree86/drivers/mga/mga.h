@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.44 1999/07/18 03:26:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.45 1999/08/01 07:57:27 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -191,6 +191,7 @@ typedef struct {
     Bool		FBDev;
     int			colorKey;
     int			fifoCount;
+    int			Rotate;
     MGAFBLayout		CurrentLayout;
 } MGARec, *MGAPtr;
 
@@ -233,5 +234,11 @@ Bool Mga32AccelInit(ScreenPtr pScreen);
 void MGAPolyArcThinSolid(DrawablePtr, GCPtr, int, xArc*);
 
 Bool MGADGAInit(ScreenPtr pScreen);
+
+void MGARefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void MGARefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void MGARefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void MGARefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void MGARefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 
 #endif

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.62 1999/07/04 08:30:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.63 1999/07/05 04:23:12 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1588,9 +1588,7 @@ XCOMM rules for building in SUBDIRS - do not edit
 
 InstallSubdirs($(SUBDIRS))
 InstallManSubdirs($(SUBDIRS))
-#if 0
-InstallLinkKitSubdirs($(SUBDIRS))
-#endif
+InstallDriverSDKSubdirs($(SUBDIRS))
 CleanSubdirs($(SUBDIRS))
 TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
@@ -1613,10 +1611,8 @@ install::
 install.man::
 	@echo "install.man in $(CURRENT_DIR) done"
 
-#if 0
-install.linkkit::
-	@echo "install.linkkit in $(CURRENT_DIR) done"
-#endif
+install.sdk::
+	@echo "install.sdk in $(CURRENT_DIR) done"
 
 Makefiles::
 

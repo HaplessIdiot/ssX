@@ -1,3 +1,30 @@
+XFree86 3.9.15b (15 August 1999)
+2951. Remove the Latin2 Type1 fonts.
+2950. Change the RGB mask names in the DGA structures (#3120, Mark Vojkovich).
+2949. More acceleration and bug fixes for the NV driver (#3119,
+      Jarno Paananen).
+2948. Change some things in the XAA color expansion code to facilitate
+      rendering into DMA buffers (#3118, Mark Vojkovich).
+2947. Fix a 64 bit problem with the xf24_32bpp layer (#3117, Mark Vojkovich).
+2946. Modify XF86FlushInput() to work for non-tty devices, which is required
+      for PS/2 mice with Linux 2.2.x kernels (#3114, Kazutaka Yokota).
+2945. Support for rotating the virtual desktop for the MGA driver using
+      the shadowfb (#3113, 3116, Mark Vojkovich).
+2944. Fix a colormap problem with DGA when initialized from an 8+24 mode with
+      the MGA driver (#3112, Mark Vojkovich).
+2943. Fix multihead on the MGA-2164W (#3111, Mark Vojkovich).
+2942. XAA speedups for planar copies in some cases (#3110, Mark Vojkovich).
+2941. Add a driver SDK which performs a similar function to the old LinkKit,
+      but for the loadable server (#3105, David Bateman).
+2940. C&T doc update and xgamma man page update (#3105, David Bateman).
+2939. Add an option to the C&T driver to allow the user to select the
+      transparency key when using the overlay (#3105, David Bateman).
+2938. Add DGA2 support to the C&T driver (#3105, David Bateman).
+2937. Fix a bug in the bitmap font code introduced in 3.9.15a (#3101,
+      Juliusz Chroboczek).
+2936. Some TGA driver cleanups, including a SaveScreen function and code to
+      disallow virtual desktops in a nicer way (#3100, Matt Grossman).
+
 XFree86 3.9.15a (1 August 1999)
 2935. Fix the RAC usage in the nv driver to allow multi-head to work
       (#3093, Itai Nahshon).
@@ -11,7 +38,7 @@ XFree86 3.9.15a (1 August 1999)
 2931. Add SuperProbe for NetBSD 1.4 wscons (#3083, Matthias Drochner).
 2930. Fix button and modifier key state problems in DGA (#3082,
       Mark Vojkovich).
-2929. Avoid a possible segsegmentation fault in "xsm" which, for example, 
+2929. Avoid a possible segmentation fault in "xsm" which, for example, 
       occurs local hostname can't be resolved (#3073, Matthias Scheler).
 2928. ATI driver updates, including:
         - Add preliminary panel support.
@@ -8536,4 +8563,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.810 1999/08/01 07:57:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.811 1999/08/01 11:55:15 dawes Exp $

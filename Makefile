@@ -1,5 +1,5 @@
 # $TOG: Makefile /main/37 1998/02/17 14:30:04 kaleb $
-# $XFree86: xc/Makefile,v 3.13 1998/12/20 11:56:08 dawes Exp $
+# $XFree86: xc/Makefile,v 3.14 1999/04/15 01:29:11 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -176,7 +176,7 @@ external.ln:
 	    $(MAKE_CMD) $@
 includes:
 	    $(MAKE_CMD) $@
-install.linkkit:
+install.sdk:
 	    $(MAKE_CMD) $@
 install.ln:
 	    $(MAKE_CMD) $@

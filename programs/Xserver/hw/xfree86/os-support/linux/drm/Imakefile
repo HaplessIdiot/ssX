@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/Imakefile,v 1.1 1999/06/14 07:32:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/Imakefile,v 1.2 1999/06/27 14:08:19 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/Imakefile,v 1.5 1999/06/17 21:45:24 faith Exp $
 
 #define IHaveModules
@@ -39,3 +39,5 @@ DependSubdirs($(SUBDIRS))
 #endif
 
 
+
+InstallDriverSDKLibraryModule(drm,$(DRIVERSDKMODULEDIR),linux)

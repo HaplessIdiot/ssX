@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.2 1999/06/14 07:31:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.3 1999/06/14 12:02:04 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/GL/dri/Imakefile,v 1.13 1999/06/07 12:55:30 faith Exp $
 
 #define IHaveModules
@@ -26,3 +26,9 @@ LibraryModuleTarget(dri,$(OBJS))
 InstallLibraryModule(dri,$(MODULEDIR),extensions)
 
 DependTarget()
+
+InstallDriverSDKLibraryModule(dri,$(DRIVERSDKMODULEDIR),extensions)
+
+InstallDriverSDKNonExecFile(dri.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(sarea.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(xf86dri.h,$(DRIVERSDKINCLUDEDIR))

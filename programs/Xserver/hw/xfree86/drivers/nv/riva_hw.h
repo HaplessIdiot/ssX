@@ -36,10 +36,10 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/riva_hw.h,v 1.1.2.4 1999/04/21 07:21:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.1 1999/08/01 07:21:01 dawes Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
-#define RIVA_SW_VERSION 0x00010000
+#define RIVA_SW_VERSION 0x00010001
 
 /***************************************************************************\
 *                                                                           *
@@ -247,6 +247,7 @@ typedef struct _riva_hw_inst
     unsigned LockUnlockIndex;
     unsigned VBlankBit;
     unsigned FifoFreeCount;
+    unsigned FifoEmptyCount;
     /*
      * Non-FIFO registers.
      */

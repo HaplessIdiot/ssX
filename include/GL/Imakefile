@@ -1,5 +1,5 @@
 
-XCOMM $XFree86: xc/include/GL/Imakefile,v 1.4 1999/06/14 07:23:27 dawes Exp $
+XCOMM $XFree86: xc/include/GL/Imakefile,v 1.5 1999/06/27 14:07:19 dawes Exp $
 XCOMM $PI: xc/include/GL/Imakefile,v 1.7 1999/06/24 03:11:32 faith Exp $
 
 #if BuildGLXLibrary
@@ -12,3 +12,6 @@ all::
 
 BuildIncludes($(HEADERS),GL,..)
 InstallMultipleFlags($(HEADERS),$(INCDIR)/GL,$(INSTINCFLAGS))
+
+InstallDriverSDKNonExecFile(glxint.h,$(DRIVERSDKINCLUDEDIR)/GL)
+InstallDriverSDKNonExecFile(glxtokens.h,$(DRIVERSDKINCLUDEDIR)/GL)

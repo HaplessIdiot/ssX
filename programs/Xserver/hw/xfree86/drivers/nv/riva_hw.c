@@ -36,30 +36,31 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/riva_hw.c,v 1.1.2.5 1999/05/24 21:28:24 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.1 1999/08/01 07:21:00 dawes Exp $ */
 
 #include "riva_hw.h"
 #include "riva_tbl.h"
+/*#include "nv_local.h" */
 #include "compiler.h"
 /*
  * This file is an OS-agnostic file used to make RIVA 128 and RIVA TNT
  * operate identically (except TNT has more memory and better 3D quality.
  */
-
 static int nv3Busy
 (
     RIVA_HW_INST *chip
 )
 {
-    return ((!(chip->PFIFO[0x00001214/4] & 0x10)) | (chip->PGRAPH[0x000006B0/4] & 0x01));
+    return ((chip->FIFO[5] < chip->FifoEmptyCount) || (chip->PGRAPH[0x000006B0/4] & 0x01));
 }
 static int nv4Busy
 (
     RIVA_HW_INST *chip
 )
 {
-    return ((!(chip->PFIFO[0x00001214/4] & 0x10)) | (chip->PGRAPH[0x00000700/4] & 0x01));
+    return ((chip->FIFO[5] < chip->FifoEmptyCount) || (chip->PGRAPH[0x00000700/4] & 0x01));
 }
+
 static int ShowHideCursor
 (
     RIVA_HW_INST *chip,
@@ -164,7 +165,7 @@ typedef struct {
 static int nv3_iterate(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_arb_info *ainfo)
 {
     int iter = 0;
-    int tmp, t;
+    int tmp;
     int vfsize, mfsize, gfsize;
     int mburst_size = 32;
     int mmisses, gmisses, vmisses;
@@ -348,7 +349,6 @@ static int nv3_iterate(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_arb_i
 }
 static char nv3_arb(nv3_fifo_info * res_info, nv3_sim_state * state,  nv3_arb_info *ainfo) 
 {
-    int  g, v, not_done;
     long ens, vns, mns, gns;
     int mmisses, gmisses, vmisses, eburst_size, mburst_size;
     int refresh_cycle;
@@ -445,9 +445,6 @@ static char nv3_arb(nv3_fifo_info * res_info, nv3_sim_state * state,  nv3_arb_in
     }
     else
     {
-#ifdef nARBDEBUG
-        ErrorF("** Non-converged!\n");
-#endif
         res_info->graphics_lwm = 256;
         res_info->video_lwm = 128;
         res_info->graphics_burst_size = 64;
@@ -460,7 +457,6 @@ static char nv3_arb(nv3_fifo_info * res_info, nv3_sim_state * state,  nv3_arb_in
 static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_arb_info *ainfo)
 {
     int done, g,v, p;
-    int priority, gburst_size, vburst_size;
     
     done = 0;
     for (p=0; p < 2; p++)
@@ -485,7 +481,6 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
  Done:
     return done;
 }
-
 static void nv3CalcArbitration 
 (
     nv3_fifo_info * res_info,
@@ -534,7 +529,7 @@ static void nv3CalcArbitration
         res_info->valid = ainfo.converged;
     }
 }
-void nv3UpdateArbitrationSettings
+static void nv3UpdateArbitrationSettings
 (
     unsigned      VClk, 
     unsigned      pixelDepth, 
@@ -583,10 +578,10 @@ static void nv4CalcArbitration
     nv4_sim_state *arb
 )
 {
-    int data, m,n,p, pagemiss, cas,width, video_enable, color_key_enable, bpp, align;
+    int data, pagemiss, cas,width, video_enable, color_key_enable, bpp, align;
     int nvclks, mclks, pclks, vpagemiss, crtpagemiss, vbs;
     int found, mclk_extra, mclk_loop, cbs, m1, p1;
-    int xtal_freq, mclk_freq, pclk_freq, nvclk_freq, mp_enable;
+    int mclk_freq, pclk_freq, nvclk_freq, mp_enable;
     int us_m, us_n, us_p, video_drain_rate, crtc_drain_rate;
     int vpm_us, us_video, vlwm, video_fill_us, cpm_us, us_crt,clwm;
     int craw, vraw;
@@ -628,6 +623,7 @@ static void nv4CalcArbitration
     nvclks += 0;
     pclks += 0;
     found = 0;
+    vbs = 0;
     while (found != 1)
     {
         fifo->valid = 1;
@@ -784,7 +780,7 @@ static int CalcVClock
     unsigned lowM, highM, highP;
     unsigned DeltaNew, DeltaOld;
     unsigned VClk, Freq;
-    unsigned M, N, O, P;
+    unsigned M, N, P;
     
     DeltaOld = 0xFFFFFFFF;
 
@@ -828,11 +824,7 @@ static int CalcVClock
             }
         }
     }
-
-    if (DeltaOld == 0xFFFFFFFF)
-        FatalError("RIVA ERROR: did not generate good VClk\n");
-
-    return DeltaOld != 0xFFFFFFFF;
+    return (DeltaOld != 0xFFFFFFFF);
 }
 /*
  * Calculate extended mode parameters (SVGA) and save in a 
@@ -871,10 +863,6 @@ static void CalcStateExt
     CalcVClock(dotClock, hDisplaySize < 512,  /* double scan? */
                &VClk, &m, &n, &p, chip);
 
-#ifdef ARBDEBUG
-    ErrorF("** VClk is %d\n", VClk);
-#endif
-
     switch (chip->Architecture)
     {
         case 3:
@@ -892,12 +880,6 @@ static void CalcStateExt
                             | 0x1000;
             state->general  = 0x00000100;
             state->repaint1 = hDisplaySize < 1280 ? 0x06 : 0x02;
-#ifdef ARBDEBUG
-    ErrorF("** %2d bpp; burst: 0x%02x  lwm: 0x%02x\n",
-           state->bpp,
-           state->arbitration0,
-           state->arbitration1);
-#endif
             break;
         case 4:
             nv4UpdateArbitrationSettings(VClk, 
@@ -912,14 +894,6 @@ static void CalcStateExt
             state->config   = 0x00001114;
             state->general  = bpp == 16 ? 0x00101100 : 0x00100100;
             state->repaint1 = hDisplaySize < 1280 ? 0x04 : 0x00;
-#ifdef ARBDEBUG
-    ErrorF("** %2d bpp; %4dx%-4d; burst: 0x%02x  lwm: 0x%02x\n",
-           state->bpp,
-           state->width,
-           state->height,
-           state->arbitration0,
-           state->arbitration1);
-#endif
             break;
     }
     state->vpll     = (p << 16) | (n << 8) | m;
@@ -1083,13 +1057,10 @@ static void LoadStateExt
      */
     chip->CurrentState = state;
     /*
-     * Reset FIFO free count.
+     * Reset FIFO free and empty counts.
      */
-    chip->FifoFreeCount = 0;
-
-#ifdef ARBDEBUG
-    ErrorF("** Set\n");
-#endif
+    chip->FifoFreeCount  = 0;
+    chip->FifoEmptyCount = chip->FIFO[5]; /* Free count from first subchannel */
 }
 static void UnloadStateExt
 (
@@ -1162,7 +1133,7 @@ static void SetStartAddress
     outb(0x3D5, offset >> 8);
     outb(0x3D4, 0x19);
     tmp = inb(0x3D5);
-    outb(0x3D5, (offset >> 16) & 0x0F | (tmp & 0xF0));
+    outb(0x3D5, ((offset >> 16) & 0x0F) | (tmp & 0xF0));
     /*
      * 4 pixel pan register.
      */
@@ -1221,7 +1192,7 @@ static void nv4SetSurfaces3D
 *                                                                            *
 \****************************************************************************/
 
-void nv3GetConfig
+static void nv3GetConfig
 (
     RIVA_HW_INST *chip
 )
@@ -1297,7 +1268,7 @@ void nv3GetConfig
     chip->SetSurfaces2D   = nv3SetSurfaces2D;
     chip->SetSurfaces3D   = nv3SetSurfaces3D;
 }
-void nv4GetConfig
+static void nv4GetConfig
 (
     RIVA_HW_INST *chip
 )

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.9 1999/07/10 12:17:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.10 1999/07/18 08:14:23 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -309,9 +309,9 @@ XDGAMode* XDGAQueryModes(
 		modes[i].byteOrder = info.byte_order;
 		modes[i].depth = info.depth;
 		modes[i].bitsPerPixel = info.bpp;
-		modes[i].red_mask = info.red_mask;
-		modes[i].green_mask = info.green_mask;
-		modes[i].blue_mask = info.blue_mask;
+		modes[i].redMask = info.red_mask;
+		modes[i].greenMask = info.green_mask;
+		modes[i].blueMask = info.blue_mask;
 		modes[i].visualClass = info.visual_class;
 		modes[i].viewportWidth = info.viewport_width;
 		modes[i].viewportHeight = info.viewport_height;
@@ -387,9 +387,9 @@ XDGASetMode(
 		dev->mode.byteOrder = info.byte_order;
 		dev->mode.depth = info.depth;
 		dev->mode.bitsPerPixel = info.bpp;
-		dev->mode.red_mask = info.red_mask;
-		dev->mode.green_mask = info.green_mask;
-		dev->mode.blue_mask = info.blue_mask;
+		dev->mode.redMask = info.red_mask;
+		dev->mode.greenMask = info.green_mask;
+		dev->mode.blueMask = info.blue_mask;
 		dev->mode.visualClass = info.visual_class;
 		dev->mode.viewportWidth = info.viewport_width;
 		dev->mode.viewportHeight = info.viewport_height;

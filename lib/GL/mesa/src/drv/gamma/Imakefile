@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.1 1999/06/14 07:31:11 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.2 1999/06/27 14:07:29 dawes Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.6 1999/06/21 05:13:55 martin Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -52,3 +52,5 @@ InstallDynamicModule($(LIBNAME),$(MODULEDIR),.)
 #endif
 
 DependTarget()
+
+InstallDriverSDKDynamicModule($(LIBNAME),$(DRIVERSDKMODULEDIR),.)

@@ -223,6 +223,7 @@ PciBurst                  B     V    Enable/disable PCI burst mode
 PciRetry                  B     V    Enable/disable PCI retries
 ProbeClocks               B     V    Force probe for non-programmable clocks
 RGBbits                   I     V    Number of significant bits per rgb
+Rotate                    S     V    Rotate the virtual display (CW or CCW)
 SetLCDClk                 Q     V    Set LCD clock (MHz)
 SetMclk                   Q     V    Set Memory Clock (MHz)
 ShadowFB                  B     V    Enable shadow framebuffer layer
@@ -315,4 +316,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.12 1999/06/20 08:41:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.13 1999/07/06 11:38:09 dawes Exp $

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.27 1999/05/23 05:02:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.28 1999/06/27 14:08:18 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -99,3 +99,7 @@ LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
 
 DependTarget()
+
+#if 0
+InstallDriverSDKDynamicModule(bsd_jstk.o,$(DRIVERSDKMODULEDIR))
+#endif
