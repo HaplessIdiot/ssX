@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.11 1999/10/26 15:58:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.12 1999/11/02 16:16:36 tsi Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -271,7 +271,6 @@ ATICRTCPreInit
             pATIHW->horz_stretching = inl(pATI->CPIO_HORZ_STRETCHING);
             pATIHW->vert_stretching = inl(pATI->CPIO_VERT_STRETCHING);
             pATIHW->lcd_gen_ctrl = inl(pATI->CPIO_LCD_GEN_CTRL);
-            pATIHW->power_management = inl(pATI->CPIO_POWER_MANAGEMENT);
         }
         else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                     (pATI->Chip == ATI_CHIP_264XL) ||
@@ -286,15 +285,6 @@ ATICRTCPreInit
             pATIHW->lcd_gen_ctrl = ATIGetLTProLCDReg(LCD_GEN_CNTL);
             pATIHW->horz_stretching = ATIGetLTProLCDReg(LCD_HORZ_STRETCHING);
             pATIHW->vert_stretching = ATIGetLTProLCDReg(LCD_VERT_STRETCHING);
-            pATIHW->power_management = ATIGetLTProLCDReg(LCD_POWER_MANAGEMENT);
-            if (pATI->Chip > ATI_CHIP_264LTPRO)
-                pATIHW->power_management_2 =
-                    ATIGetLTProLCDReg(LCD_POWER_MANAGEMENT_2) &
-                        ~(LCD_XCLK_DISP_PM_EN | LCD_XCLK_GUI_PM_EN |
-                          LCD_MCLK_PM_EN | LCD_PM_DYN_XCLK_EN |
-                          LCD_PM_XCLK_ALWAYS | LCD_PCI_ACC_DIS |
-                          LCD_PM_DYN_XCLK_DISP | LCD_PM_DYN_XCLK_GUI |
-                          LCD_PM_DYN_XCLK_HOST);
             outl(pATI->CPIO_LCD_INDEX, lcd_index);
         }
 
@@ -304,9 +294,6 @@ ATICRTCPreInit
               CRTC_RW_SELECT | USE_SHADOWED_VEND | USE_SHADOWED_ROWCUR |
               SHADOW_EN | SHADOW_RW_EN);
         pATIHW->lcd_gen_ctrl |= DONT_SHADOW_VPAR | LOCK_8DOT;
-
-        /* Disable power management */
-        pATIHW->power_management &= ~PWR_MGT_ON;
 
         if (pATI->OptionCRT)
         {
@@ -478,7 +465,6 @@ ATICRTCSave
             pATIHW->horz_stretching = inl(pATI->CPIO_HORZ_STRETCHING);
             pATIHW->vert_stretching = inl(pATI->CPIO_VERT_STRETCHING);
             pATIHW->lcd_gen_ctrl = inl(pATI->CPIO_LCD_GEN_CTRL);
-            pATIHW->power_management = inl(pATI->CPIO_POWER_MANAGEMENT);
 
             /* Set up to save non-shadow registers */
             outl(pATI->CPIO_LCD_GEN_CTRL, pATIHW->lcd_gen_ctrl &
@@ -494,10 +480,6 @@ ATICRTCSave
             pATIHW->horz_stretching = ATIGetLTProLCDReg(LCD_HORZ_STRETCHING);
             pATIHW->vert_stretching = ATIGetLTProLCDReg(LCD_VERT_STRETCHING);
             pATIHW->ext_vert_stretch = ATIGetLTProLCDReg(LCD_EXT_VERT_STRETCH);
-            pATIHW->power_management = ATIGetLTProLCDReg(LCD_POWER_MANAGEMENT);
-            if (pATI->Chip > ATI_CHIP_264LTPRO)
-                pATIHW->power_management_2 =
-                    ATIGetLTProLCDReg(LCD_POWER_MANAGEMENT_2);
 
             /* Set up to save non-shadow registers */
             ATIPutLTProLCDReg(LCD_GEN_CNTL, pATIHW->lcd_gen_ctrl &
@@ -995,7 +977,6 @@ ATICRTCSet
             outl(pATI->CPIO_LCD_GEN_CTRL, pATIHW->lcd_gen_ctrl);
             outl(pATI->CPIO_HORZ_STRETCHING, pATIHW->horz_stretching);
             outl(pATI->CPIO_VERT_STRETCHING, pATIHW->vert_stretching);
-            outl(pATI->CPIO_POWER_MANAGEMENT, pATIHW->power_management);
         }
         else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                     (pATI->Chip == ATI_CHIP_264XL) ||
@@ -1005,10 +986,6 @@ ATICRTCSet
             ATIPutLTProLCDReg(LCD_HORZ_STRETCHING, pATIHW->horz_stretching);
             ATIPutLTProLCDReg(LCD_VERT_STRETCHING, pATIHW->vert_stretching);
             ATIPutLTProLCDReg(LCD_EXT_VERT_STRETCH, pATIHW->ext_vert_stretch);
-            ATIPutLTProLCDReg(LCD_POWER_MANAGEMENT, pATIHW->power_management);
-            if (pATI->Chip > ATI_CHIP_264LTPRO)
-                ATIPutLTProLCDReg(LCD_POWER_MANAGEMENT_2,
-                    pATIHW->power_management_2);
             outl(pATI->CPIO_LCD_INDEX, pATIHW->lcd_index);
         }
     }

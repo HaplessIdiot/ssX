@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.7 1999/10/26 15:58:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.8 1999/11/02 16:16:39 tsi Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -69,8 +69,7 @@ typedef struct _ATIHWRec
 
     /* LCD registers */
     CARD32 lcd_index, config_panel, lcd_gen_ctrl,
-           horz_stretching, vert_stretching, ext_vert_stretch,
-           power_management, power_management_2;
+           horz_stretching, vert_stretching, ext_vert_stretch;
 
     /* Shadow VGA CRTC registers */
     CARD8 shadow_vga[25];
@@ -145,8 +144,7 @@ typedef struct _ATIRec
            CPIO_MEM_VGA_WP_SEL, CPIO_MEM_VGA_RP_SEL,
            CPIO_DAC_REGS, CPIO_DAC_CNTL,
            CPIO_HORZ_STRETCHING, CPIO_VERT_STRETCHING,
-           CPIO_GEN_TEST_CNTL, CPIO_LCD_GEN_CTRL,
-           CPIO_POWER_MANAGEMENT, CPIO_CONFIG_CNTL;
+           CPIO_GEN_TEST_CNTL, CPIO_LCD_GEN_CTRL, CPIO_CONFIG_CNTL;
 
     /*
      * DAC-related definitions.

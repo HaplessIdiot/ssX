@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.8 1999/10/26 15:58:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.9 1999/11/02 16:16:37 tsi Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -543,7 +543,6 @@ ATIPreInit
                     pATI->CPIO_HORZ_STRETCHING = ATIIOPort(HORZ_STRETCHING);
                     pATI->CPIO_VERT_STRETCHING = ATIIOPort(VERT_STRETCHING);
                     pATI->CPIO_LCD_GEN_CTRL = ATIIOPort(LCD_GEN_CTRL);
-                    pATI->CPIO_POWER_MANAGEMENT = ATIIOPort(POWER_MANAGEMENT);
 
                     IOValue2 = inl(pATI->CPIO_LCD_GEN_CTRL);
                 }
