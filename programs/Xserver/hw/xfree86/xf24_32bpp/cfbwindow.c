@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbwindow.c,v 1.2 1999/02/28 11:19:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbwindow.c,v 1.3 2003/07/16 01:38:49 dawes Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -76,8 +76,6 @@ cfb24_32ChangeWindowAttributes(
 
     return TRUE;
 }
-
-extern WindowPtr *WindowTable;
 
 void 
 cfb24_32CopyWindow(

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.42 2003/08/23 15:03:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.43 2003/08/23 16:09:20 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -374,7 +374,7 @@ ResetBCI2K( SavagePtr psav )
 	! (ALT_STATUS_WORD0 & 0x00200000)
     )
     {
-	ErrorF( "Resetting BCI, stat = %08x...\n", ALT_STATUS_WORD0);
+	ErrorF( "Resetting BCI, stat = %08lx...\n", ALT_STATUS_WORD0);
 	/* Turn off BCI */
 	OUTREG( 0x48c18, cob & ~8 );
 	usleep(10000);
@@ -2132,7 +2132,7 @@ static Bool SavageMapMMIO(ScrnInfoPtr pScrn)
     }
 
     xf86DrvMsg( pScrn->scrnIndex, X_PROBED,
-	"mapping MMIO @ 0x%x with size 0x%x\n",
+	"mapping MMIO @ 0x%lx with size 0x%x\n",
 	psav->MmioBase, SAVAGE_NEWMMIO_REGSIZE);
 
     psav->MapBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, psav->PciTag,
@@ -2166,7 +2166,7 @@ static Bool SavageMapFB(ScrnInfoPtr pScrn)
     TRACE(("SavageMapFB()\n"));
 
     xf86DrvMsg( pScrn->scrnIndex, X_PROBED,
-	"mapping framebuffer @ 0x%x with size 0x%x\n", 
+	"mapping framebuffer @ 0x%lx with size 0x%x\n", 
 	psav->FrameBufferBase, psav->videoRambytes);
 
     if (psav->videoRambytes) {
@@ -2252,7 +2252,7 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 	    (psav->FBBase + psav->CursorKByte*1024 + 4096 - 32);
 	
 	xf86DrvMsg( pScrn->scrnIndex, X_PROBED,
-		    "Shadow area physical %08x, linear %08x\n",
+		    "Shadow area physical %08lx, linear %p\n",
 		    psav->ShadowPhysical, psav->ShadowVirtual );
 
 	psav->WaitQueue = ShadowWait1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.18 2001/02/22 23:17:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.20 2003/09/11 10:08:38 eich Exp $ */
 
 /*
  *
@@ -274,10 +274,10 @@ unsigned long address;
     if (entry) {
 	const char *module, *section;
 #if defined(__alpha__) || defined(__ia64__)
-	ErrorF("0x%016lx %s+%lx\n", entry->address, entry->name,
+	ErrorF("0x%016lx %s+%lx\n", (unsigned long)entry->address, entry->name,
 		   address - (unsigned long) entry->address);
 #else
-	ErrorF("0x%x %s+%x\n", entry->address, entry->name,
+	ErrorF("0x%lx %s+%lx\n", (unsigned long)entry->address, entry->name,
 		   address - (unsigned long) entry->address);
 #endif
 
@@ -294,9 +294,9 @@ LoaderPrintItem(itemPtr pItem)
     if (pItem) {
 	const char *module, *section;
 #if defined(__alpha__) || defined(__ia64__)
-	ErrorF("0x%016lx %s\n", pItem->address, pItem->name);
+	ErrorF("0x%016lx %s\n", (unsigned long)pItem->address, pItem->name);
 #else
-	ErrorF("0x%lx %s\n", pItem->address, pItem->name);
+	ErrorF("0x%lx %s\n", (unsigned long)pItem->address, pItem->name);
 #endif
 	if ( _LoaderAddressToSection((unsigned long)pItem->address,
 				     &module, &section) )

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_merge.c,v 1.2 2002/09/18 21:25:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_merge.c,v 1.3 2003/08/23 15:03:03 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -204,7 +204,7 @@ GenerateModeList(ScrnInfoPtr pScrn, char* str,
                         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
                             "Mode: \"%s\" is not a supported mode for monitor 2\n",mode1->name);
                         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-                            "Skipping clone mode \"%s\".\n");
+                            "Skipping clone mode \"%s\".\n", mode1->name);
                         mode1 = NULL;
                     } else {
                         result = CopyModeNLink(pScrn,result,mode1,mode2,sr);

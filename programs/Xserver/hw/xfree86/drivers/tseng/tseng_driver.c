@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.93 2003/08/23 16:09:21 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.94 2003/08/29 21:07:57 tsi Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1404,10 +1404,10 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 	/* check for possible errors in given linear base address */
 	if ((pTseng->LinFbAddress & (~pTseng->LinFbAddressMask)) != 0) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		"MemBase out of range. Must be <= 0x%x on 0x%x boundary.\n",
+		"MemBase out of range. Must be <= 0x%lx on 0x%lx boundary.\n",
 		pTseng->LinFbAddressMask, ~(pTseng->LinFbAddressMask | 0xFF000000) + 1);
 	    pTseng->LinFbAddress &= ~pTseng->LinFbAddressMask;
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "    Clipping MemBase to: 0x%x.\n",
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "    Clipping MemBase to: 0x%lx.\n",
 		pTseng->LinFbAddress);
 	    range[0].rBegin = pTseng->LinFbAddress;
 	    range[0].rEnd = pTseng->LinFbAddress + 16 * 1024 * 1024;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.5 2002/09/18 17:11:47 tsi Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA
 X11R6 Changes Copyright (c) 1994 by Robert Chesler of Absol-Puter, Hudson, NH.
@@ -376,7 +376,7 @@ void DEC_XTRAPInit()
         (XETrapType  = CreateNewResourceType(XETrapDestroyEnv)) == 0L)
     {
         ErrorF("%s:  Setup can't create new resource type (%d,%d,%d)\n",
-          XTrapExtName, a,XETrapClass,XETrapType);
+          XTrapExtName, (int)a,(int)XETrapClass,(int)XETrapType);
         return;
     }
     /* initialize the GetAvailable info reply here */

@@ -39,12 +39,13 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_helper.c,v 1.2 2000/04/19 16:57:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_helper.c,v 1.4 2002/11/06 11:38:59 alanh Exp $ */
 
 #include "cyrix.h"
 #include "vgaHW.h"
 #include "xf86_ansic.h"
 #include "compiler.h"
+#include "xf86.h"
 
 #define CYRIXmarkLinesDirty { \
                                int k = 0; \
@@ -58,7 +59,7 @@ static void CYRIXresetVGA(ScrnInfoPtr pScrn, unsigned long vgaIOBase);
 
 void  Cyrix1bppColorMap(ScrnInfoPtr pScrn)
 {	/* use dedicated color map routines on new chipsets in 8bpp */
-	ErrorF("%s: Cyrix 1BPP is only a stub for now.\n", X_PROBED);
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Cyrix 1BPP is only a stub for now.\n");
 	return;
 }
 

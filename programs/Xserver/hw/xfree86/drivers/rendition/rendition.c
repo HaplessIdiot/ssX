@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.55 2003/08/23 15:03:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.56 2003/08/23 16:09:18 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -637,7 +637,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     /* I do not get the IO base addres <ml> */
     /* XXX Is this still true?  If so, the wrong base is being checked */
     xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-	       "Rendition %s @ %x/%x\n",
+	       "Rendition %s @ %lx/%lx\n",
 	       renditionChipsets[pRendition->board.chip==V1000_DEVICE ? 0:1]
 	       .name,
 	       pRendition->PciInfo->ioBase[1],

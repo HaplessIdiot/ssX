@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.31 2003/07/25 01:17:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.32 2003/08/23 15:03:13 dawes Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -938,7 +938,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	pSmi->PIOBase = hwp->PIOOffset;
 
 	xf86ErrorFVerb(VERBLEV, "\tSMI_PreInit vgaCRIndex=%x, vgaIOBase=%x, "
-			"MMIOBase=%x\n", vgaCRIndex, vgaIOBase, hwp->MMIOBase);
+			"MMIOBase=%p\n", vgaCRIndex, vgaIOBase, hwp->MMIOBase);
 
 	/* Next go on to detect amount of installed ram */
 	config = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x71);
@@ -1798,15 +1798,15 @@ SMI_MapMem(ScrnInfoPtr pScrn)
 			break;
 	}
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV,
-			"Physical MMIO at 0x%08X\n", memBase);
+			"Physical MMIO at 0x%08lX\n", (unsigned long)memBase);
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV,
-			"Logical MMIO at 0x%08X - 0x%08X\n", pSmi->MapBase,
+			"Logical MMIO at %p - %p\n", pSmi->MapBase,
 			pSmi->MapBase + pSmi->MapSize - 1);
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV,
-			"DPR=0x%08X, VPR=0x%08X, IOBase=0x%08X\n", pSmi->DPRBase,
-			pSmi->VPRBase, pSmi->IOBase);
+			"DPR=%p, VPR=%p, IOBase=%p\n",
+			pSmi->DPRBase, pSmi->VPRBase, pSmi->IOBase);
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV,
-			"DataPort=0x%08X - 0x%08X\n", pSmi->DataPortBase,
+			"DataPort=%p - %p\n", pSmi->DataPortBase,
 			pSmi->DataPortBase + pSmi->DataPortSize - 1);
 
 	/* Map the frame buffer */
@@ -1833,9 +1833,9 @@ SMI_MapMem(ScrnInfoPtr pScrn)
 	}
 	pSmi->FBOffset = pScrn->fbOffset = 0;
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV,
-			"Physical frame buffer at 0x%08X\n", pScrn->memPhysBase);
+			"Physical frame buffer at 0x%08lX\n", pScrn->memPhysBase);
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV,
-			"Logical frame buffer at 0x%08X - 0x%08X\n", pSmi->FBBase,
+			"Logical frame buffer at %p - %p\n", pSmi->FBBase,
 			pSmi->FBBase + pSmi->videoRAMBytes - 1);
 
 	SMI_EnableMmio(pScrn);
@@ -1859,8 +1859,10 @@ SMI_MapMem(ScrnInfoPtr pScrn)
 	{
 		pSmi->FBReserved = pSmi->videoRAMBytes - 2048;
 	}
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Cursor Offset: %08X Reserved: %08X\n",
-			pSmi->FBCursorOffset, pSmi->FBReserved);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			"Cursor Offset: %08lX Reserved: %08lX\n",
+			(unsigned long)pSmi->FBCursorOffset,
+			(unsigned long)pSmi->FBReserved);
 
 	pSmi->lcd = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x31) & 0x01;
 	if (VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x30) & 0x01)
@@ -2243,9 +2245,12 @@ SMI_InternalScreenInit(int scrnIndex, ScreenPtr pScreen)
 		pSmi->FBReserved &= ~0x15;
 		WRITE_VPR(pSmi, 0x0C, (pSmi->FBOffset = pSmi->FBReserved) >> 3);
 
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Shadow: width=%d height=%d "
-				"offset=0x%08X pitch=0x%08X\n", pSmi->ShadowWidth,
-				pSmi->ShadowHeight, pSmi->FBOffset, pSmi->ShadowPitch);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+				"Shadow: width=%d height=%d "
+				"offset=0x%08lX pitch=0x%08X\n",
+				pSmi->ShadowWidth, pSmi->ShadowHeight,
+				(unsigned long)pSmi->FBOffset,
+				pSmi->ShadowPitch);
 	}
 	else
 	{
@@ -3037,21 +3042,21 @@ SMI_PrintRegs(ScrnInfoPtr pScrn)
 	for (i = 0x00; i <= 0x44; i += 4)
 	{
 		if ((i & 0xF) == 0x0) xf86ErrorFVerb(VERBLEV, "\n%02X|", i);
-		xf86ErrorFVerb(VERBLEV, " %08X", READ_DPR(pSmi, i));
+		xf86ErrorFVerb(VERBLEV, " %08lX", READ_DPR(pSmi, i));
 	}
 
 	xf86ErrorFVerb(VERBLEV, "\n\nVPR    x0       x4       x8       xC");
 	for (i = 0x00; i <= 0x60; i += 4)
 	{
 		if ((i & 0xF) == 0x0) xf86ErrorFVerb(VERBLEV, "\n%02X|", i);
-		xf86ErrorFVerb(VERBLEV, " %08X", READ_VPR(pSmi, i));
+		xf86ErrorFVerb(VERBLEV, " %08lX", READ_VPR(pSmi, i));
 	}
 
 	xf86ErrorFVerb(VERBLEV, "\n\nCPR    x0       x4       x8       xC");
 	for (i = 0x00; i <= 0x18; i += 4)
 	{
 		if ((i & 0xF) == 0x0) xf86ErrorFVerb(VERBLEV, "\n%02X|", i);
-		xf86ErrorFVerb(VERBLEV, " %08X", READ_CPR(pSmi, i));
+		xf86ErrorFVerb(VERBLEV, " %08lX", READ_CPR(pSmi, i));
 	}
 
 	xf86ErrorFVerb(VERBLEV, "\n\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.17 2003/04/23 21:51:47 tsi Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -828,7 +828,7 @@ TDFXDisplayVideoOverlay(
     pTDFX->writeLong(pTDFX, VIDDESKTOPOVERLAYSTRIDE, pTDFX->ModeReg.stride);
     pTDFX->writeLong(pTDFX, SST_3D_LEFTOVERLAYBUF, offset & ~3);
     pTDFX->writeLong(pTDFX, VIDINADDR0, offset & ~3);
-    TDFXTRACE("TDFXDisplayVideoOverlay: done, offset=0x%x\n");
+    TDFXTRACE("TDFXDisplayVideoOverlay: done, offset=0x%x\n", offset);
 }
 
 

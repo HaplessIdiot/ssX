@@ -173,7 +173,7 @@ vm86_GP_fault(xf86Int10InfoPtr pInt)
 
     case 0x0f:
 	xf86DrvMsg(pInt->scrnIndex, X_ERROR,
-	    "CPU 0x0f Trap at CS:EIP=0x%4.4x:0x%8.8x\n", X86_CS, X86_EIP);
+	    "CPU 0x0f Trap at CS:EIP=0x%4.4x:0x%8.8lx\n", X86_CS, X86_EIP);
 	goto op0ferr;
 
     default:

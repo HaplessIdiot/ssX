@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.158 2003/04/30 00:30:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.159 2003/08/26 15:22:17 tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1377,7 +1377,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	if (pGlint->MultiPciInfo[0]->memBase[2]) {
 	    pGlint->FbAddress = pGlint->MultiPciInfo[0]->memBase[2];
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
-		"FrameBuffer used from first rasterizer chip at 0x%x\n", 
+		"FrameBuffer used from first rasterizer chip at 0x%lx\n", 
 				pGlint->MultiPciInfo[0]->memBase[2]);
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 	
@@ -1669,7 +1669,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
+    xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %ld kByte\n",
 		   pGlint->FbMapSize / 1024);
 
     /* The ramdac module should be loaded here when needed */
@@ -3675,7 +3675,8 @@ void
 GLINT_VERB_WRITE_REG(GLINTPtr pGlint, CARD32 v, int r, char *file, int line)
 {
     if (xf86GetVerbosity() > 2)
-	ErrorF("[0x%04x] <- 0x%08x (%s, %d)\n",	r, v, file, line);
+	ErrorF("[0x%04x] <- 0x%08lx (%s, %d)\n",
+		r, (unsigned long)v, file, line);
     *(volatile CARD32 *)((char *) pGlint->IOBase + pGlint->IOOffset + r) = v;
 }
 
@@ -3686,7 +3687,8 @@ GLINT_VERB_READ_REG(GLINTPtr pGlint, CARD32 r, char *file, int line)
 	*(volatile CARD32 *)((char *) pGlint->IOBase + pGlint->IOOffset + r);
 
     if (xf86GetVerbosity() > 2)
-	ErrorF("[0x%04x] -> 0x%08x (%s, %d)\n", r, v, file, line);
+	ErrorF("[0x%04lx] -> 0x%08lx (%s, %d)\n", (unsigned long)r,
+		(unsigned long)v, file, line);
     return v;
 }
 #endif

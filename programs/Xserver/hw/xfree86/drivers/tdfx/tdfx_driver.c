@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.99 2003/08/23 16:09:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.100 2003/09/21 01:20:20 dawes Exp $ */
 
 /*
  * Authors:
@@ -485,8 +485,8 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
 
     /* Some information about the timing register (for later debugging) */
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-               "DRAMINIT1 read 0x%x, programming 0x%x (not Banshee)\n",
-	       pTDFX->readLong(pTDFX, DRAMINIT1), dramInit1);
+               "DRAMINIT1 read 0x%x, programming 0x%lx (not Banshee)\n",
+	       pTDFX->readLong(pTDFX, DRAMINIT1), (unsigned long)dramInit1);
 
     /* 
      * Here we don't whack the timing register on the Banshee boards as the
@@ -513,7 +513,7 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
 	} else if ( (dramInit0_strap & SST_SGRAM_TYPE) == SST_SGRAM_TYPE_16MBIT) {
 	  partSize = 16;
 	} else {
-	  ErrorF("Invalid sgram type = 0x%x",
+	  ErrorF("Invalid sgram type = 0x%lx",
 		 (dramInit0_strap & SST_SGRAM_TYPE) << SST_SGRAM_TYPE_SHIFT );
 	  return 0;
 	}
@@ -525,8 +525,10 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
       banks=((dramInit0_strap&BIT(30))==0) ? 2 : 4;
       vmemSize=nChips*partSize*banks;
     }
-    TDFXTRACEREG("dramInit0 = %x dramInit1 = %x\n", dramInit0_strap, dramInit1_strap);
-    TDFXTRACEREG("MemConfig %d chips %d size %d total\n", nChips, partSize, vmemSize);
+    TDFXTRACEREG("dramInit0 = %lx dramInit1 = %lx\n",
+		(unsigned long)dramInit0_strap, (unsigned long)dramInit1_strap);
+    TDFXTRACEREG("MemConfig %d chips %ld size %ld total\n", (int)nChips,
+		(unsigned long)partSize, (unsigned long)vmemSize);
 
     /*
       disable block writes for SDRAM
@@ -598,8 +600,9 @@ static void
 TDFXInitChips(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
-  int i, v, cfgbits, initbits;
-  int mem0base, mem1base, mem0size, mem0bits, mem1size, mem1bits;
+  int i, v;
+  unsigned long cfgbits, initbits;
+  unsigned long mem0base, mem1base, mem0size, mem0bits, mem1size, mem1bits;
 
   pTDFX=TDFXPTR(pScrn);
   cfgbits=pciReadLong(pTDFX->PciTag[0], CFG_PCI_DECODE);
@@ -888,7 +891,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 
   /* Multiple by two because tiled access requires more address space */
   pTDFX->FbMapSize = pScrn->videoRam*1024*2;
-  xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte Mapping %d kByte\n",
+  xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte Mapping %ld kByte\n",
 	     pScrn->videoRam, pTDFX->FbMapSize/1024);
 
   /* Since we can do gamma correction, we call xf86SetGamma */

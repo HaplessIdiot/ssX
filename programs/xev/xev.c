@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xev/xev.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/xev/xev.c,v 1.11 2003/08/26 15:42:10 tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -142,7 +142,7 @@ do_KeyPress (XEvent *eventp)
     str[nbytes] = '\0';
     printf ("    XLookupString gives %d bytes: ", nbytes);
     if (nbytes > 0) {
-        dump (str, nbytes);
+        dump ((unsigned char *)str, nbytes);
         printf (" \"%s\"\n", str);
     } else {
     	printf ("\n");
@@ -152,7 +152,7 @@ do_KeyPress (XEvent *eventp)
     if (e->type == KeyPress && xic) {
         printf ("    XmbLookupString gives %d bytes: ", nmbbytes);
         if (nmbbytes > 0) {
-           dump (buf, nmbbytes);
+           dump ((unsigned char *)buf, nmbbytes);
            printf (" \"%s\"\n", buf);
         } else {
     	   printf ("\n");
@@ -769,7 +769,7 @@ main (int argc, char **argv)
 		if (++i >= argc) usage ();
 		sscanf(argv[i], "0x%lx", &w);
 		if (!w)
-		    sscanf(argv[i], "%ld", &w);
+		    sscanf(argv[i], "%lu", &w);
 		if (!w)
 		    usage ();
 		continue;

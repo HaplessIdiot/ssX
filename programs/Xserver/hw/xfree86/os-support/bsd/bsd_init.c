@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.16 2001/02/03 19:33:05 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.20 2003/06/30 16:52:57 eich Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -461,7 +461,7 @@ xf86OpenSyscons()
 	    xf86Msg(X_PROBED, "Using syscons driver with X support");
 	    if (syscons_version >= 0x100)
 	    {
-		xf86ErrorF(" (version %d.%d)\n", syscons_version >> 8,
+		xf86ErrorF(" (version %ld.%ld)\n", syscons_version >> 8,
 			   syscons_version & 0xFF);
 	    }
 	    else

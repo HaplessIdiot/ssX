@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.13 2003/09/11 10:08:37 eich Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -2163,7 +2163,7 @@ static Bool VIAMapMMIO(ScrnInfoPtr pScrn)
     pVia->MmioBase = pVia->PciInfo->memBase[1];
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-               "mapping MMIO @ 0x%x with size 0x%x\n",
+               "mapping MMIO @ 0x%lx with size 0x%x\n",
                pVia->MmioBase, VIA_MMIO_REGSIZE);
 
     pVia->MapBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, pVia->PciTag,
@@ -2172,7 +2172,7 @@ static Bool VIAMapMMIO(ScrnInfoPtr pScrn)
     pBIOSInfo->MapBase = pVia->MapBase;
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-               "mapping BitBlt MMIO @ 0x%x with size 0x%x\n",
+               "mapping BitBlt MMIO @ 0x%lx with size 0x%x\n",
                pVia->MmioBase + VIA_MMIO_BLTBASE, VIA_MMIO_BLTSIZE);
 
     pVia->BltBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, pVia->PciTag,
@@ -2206,7 +2206,7 @@ static Bool VIAMapFB(ScrnInfoPtr pScrn)
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VIAMapFB\n"));
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-               "mapping framebuffer @ 0x%x with size 0x%x\n",
+               "mapping framebuffer @ 0x%lx with size 0x%lx\n",
                pVia->FrameBufferBase, pVia->videoRambytes);
 
     if (pVia->videoRambytes) {
@@ -2228,7 +2228,7 @@ static Bool VIAMapFB(ScrnInfoPtr pScrn)
         pVia->FBFreeEnd = pVia->videoRambytes;
 
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-                   "Frame buffer start: 0x%x, free start: 0x%x end: 0x%x\n",
+                   "Frame buffer start: %p, free start: 0x%x end: 0x%x\n",
                    pVia->FBStart, pVia->FBFreeStart, pVia->FBFreeEnd);
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.103 2003/07/24 13:50:23 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.104 2003/08/23 15:02:54 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -448,15 +448,15 @@ RADEONPostInt10Check(ScrnInfoPtr pScrn, void *ptr)
 	 (((CardTmp >> 8) & 0xff) != ((CardTmp >> 24) & 0xff)))) {
 	/* Restore the saved registers */
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Restoring MEM_CNTL (%08x), setting to %08x\n",
-		   CardTmp, pSave->MEM_CNTL);
+		   "Restoring MEM_CNTL (%08lx), setting to %08lx\n",
+		   (unsigned long)CardTmp, (unsigned long)pSave->MEM_CNTL);
 	OUTREG(RADEON_MEM_CNTL, pSave->MEM_CNTL);
 
 	CardTmp = INREG(RADEON_CONFIG_MEMSIZE);
 	if (CardTmp != pSave->MEMSIZE) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		       "Restoring CONFIG_MEMSIZE (%08x), setting to %08x\n",
-		       CardTmp, pSave->MEMSIZE);
+		       "Restoring CONFIG_MEMSIZE (%08lx), setting to %08lx\n",
+		       (unsigned long)CardTmp, (unsigned long)pSave->MEMSIZE);
 	    OUTREG(RADEON_CONFIG_MEMSIZE, pSave->MEMSIZE);
 	}
     }
@@ -464,8 +464,9 @@ RADEONPostInt10Check(ScrnInfoPtr pScrn, void *ptr)
     CardTmp = INREG(RADEON_MPP_TB_CONFIG);
     if ((CardTmp & 0xff000000u) != (pSave->MPP_TB_CONFIG & 0xff000000u)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	           "Restoring MPP_TB_CONFIG<31:24> (%02x), setting to %02x\n",
-	 	   CardTmp >> 24, pSave->MPP_TB_CONFIG >> 24);
+	           "Restoring MPP_TB_CONFIG<31:24> (%02lx), setting to %02lx\n",
+	 	   (unsigned long)CardTmp >> 24,
+		   (unsigned long)pSave->MPP_TB_CONFIG >> 24);
 	CardTmp &= 0x00ffffffu;
 	CardTmp |= (pSave->MPP_TB_CONFIG & 0xff000000u);
 	OUTREG(RADEON_MPP_TB_CONFIG, CardTmp);
@@ -1969,7 +1970,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     pScrn->memPhysBase = info->LinearAddr;
     if (dev->MemBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Linear address override, using 0x%08x instead of 0x%08x\n",
+		   "Linear address override, using 0x%08lx instead of 0x%08lx\n",
 		   dev->MemBase,
 		   info->LinearAddr);
 	info->LinearAddr = dev->MemBase;
@@ -1987,7 +1988,7 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
     info->BIOSAddr    = info->PciInfo->biosBase & 0xfffe0000;
     if (dev->BiosBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "BIOS address override, using 0x%08x instead of 0x%08x\n",
+		   "BIOS address override, using 0x%08lx instead of 0x%08lx\n",
 		   dev->BiosBase,
 		   info->BIOSAddr);
 	info->BIOSAddr = dev->BiosBase;
@@ -2966,7 +2967,7 @@ static int RADEONValidateCloneModes(ScrnInfoPtr pScrn)
 	    else count++;
 	    clone_mode_names[0] = xnfalloc(strlen(s)+1);
 	    sprintf(clone_mode_names[0], "%dx%d", tmp_hdisplay, tmp_vdisplay);
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Clone mode %s in config file is used\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Clone mode %s in config file is used\n", clone_mode_names[0]);
 	}
     }
 
@@ -3662,7 +3663,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     info->MMIOAddr   = info->PciInfo->memBase[2] & 0xffffff00;
     if (info->pEnt->device->IOBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "MMIO address override, using 0x%08x instead of 0x%08x\n",
+		   "MMIO address override, using 0x%08lx instead of 0x%08lx\n",
 		   info->pEnt->device->IOBase,
 		   info->MMIOAddr);
 	info->MMIOAddr = info->pEnt->device->IOBase;
@@ -4462,7 +4463,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    int  width, height;
 
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		       "Using hardware cursor (scanline %d)\n",
+		       "Using hardware cursor (scanline %ld)\n",
 		       info->cursor_start / pScrn->displayWidth
 		       / info->CurrentLayout.pixel_bytes);
 	    if (xf86QueryLargestOffscreenArea(pScreen, &width, &height,
@@ -4861,7 +4862,7 @@ static void RADEONRestorePLLRegisters(ScrnInfoPtr pScrn,
 	      | RADEON_PPLL_ATOMIC_UPDATE_EN
 	      | RADEON_PPLL_VGA_ATOMIC_UPDATE_EN));
 
-    xf86DrvMsg(0, X_INFO, "Wrote: rd=%d, fd=%d, pd=%d\n",
+    xf86DrvMsg(0, X_INFO, "Wrote: rd=%ld, fd=%ld, pd=%ld\n",
 	       restore->ppll_ref_div & RADEON_PPLL_REF_DIV_MASK,
 	       restore->ppll_div_3 & RADEON_PPLL_FB3_DIV_MASK,
 	       (restore->ppll_div_3 & RADEON_PPLL_POST3_DIV_MASK) >> 16);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.33 2003/04/03 16:52:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.34 2003/07/09 01:45:22 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -328,7 +328,7 @@ static Bool GLINTDRIAgpInit(ScreenPtr pScreen)
       return FALSE;
    }
    xf86DrvMsg( pScreen->myNum, X_INFO,
-	       "[agp] %d kB allocated with handle 0x%08x\n",
+	       "[agp] %d kB allocated with handle 0x%08lx\n",
 	       pGlint->agp.size/1024, pGlint->agp.handle );
 
    if ( drmAgpBind( pGlint->drmSubFD, pGlint->agp.handle, 0 ) < 0 ) {
@@ -358,7 +358,7 @@ static Bool GLINTDRIAgpInit(ScreenPtr pScreen)
       return FALSE;
    }
    xf86DrvMsg( pScreen->myNum, X_INFO,
-	       "[agp] DMA buffers mapped at 0x%08lx\n", pGlint->buffers.map);
+	       "[agp] DMA buffers mapped at %p\n", pGlint->buffers.map);
 
    count = drmAddBufs( pGlint->drmSubFD,
 		       GLINT_DRI_BUF_COUNT, GLINT_DRI_BUF_SIZE,

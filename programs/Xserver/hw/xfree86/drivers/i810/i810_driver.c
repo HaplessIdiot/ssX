@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.88 2003/09/15 02:46:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.89 2003/09/21 01:20:19 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1540,7 +1540,7 @@ I810CalcVCLK(ScrnInfoPtr pScrn, double freq)
    i810Reg->VideoClk2_DivisorSel = (p_best << 4);
 
    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-		  "Setting dot clock to %.1lf MHz " "[ 0x%x 0x%x 0x%x ] "
+		  "Setting dot clock to %.1f MHz " "[ 0x%x 0x%x 0x%x ] "
 		  "[ %d %d %d ]\n", CALC_VCLK(m_best, n_best, p_best),
 		  i810Reg->VideoClk2_M, i810Reg->VideoClk2_N,
 		  i810Reg->VideoClk2_DivisorSel, m_best, n_best, p_best);

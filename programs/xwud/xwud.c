@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwud/xwud.c,v 3.6 2001/07/25 15:05:31 dawes Exp $ */
+/* $XFree86: xc/programs/xwud/xwud.c,v 3.7 2001/12/14 20:02:35 dawes Exp $ */
 
 /* xwud - marginally useful raster image undumper */
 
@@ -397,7 +397,7 @@ main(int argc, char *argv[])
 	    mask |= VisualIDMask;
 	    sscanf(vis, "0x%lx", &vinfo.visualid);
 	    if (!vinfo.visualid)
-	      sscanf(vis, "%ld", &vinfo.visualid);
+	      sscanf(vis, "%lu", &vinfo.visualid);
 	    if (!vinfo.visualid)
 	      Error("invalid visual specifier");
 	}

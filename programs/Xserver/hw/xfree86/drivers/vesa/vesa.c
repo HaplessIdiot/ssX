@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.36 2003/01/23 17:20:46 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.37 2003/08/23 16:09:22 dawes Exp $
  */
 
 #include "vesa.h"
@@ -1194,7 +1194,7 @@ VESAMapVidMem(ScrnInfoPtr pScrn)
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, DEBUG_VERB,
 		   "virtual address = %p,\n"
-		   "\tphysical address = %p, size = %d\n",
+		   "\tphysical address = 0x%lx, size = %ld\n",
 		   pVesa->base, pScrn->memPhysBase, pVesa->mapSize);
 
     return (pVesa->base != NULL);

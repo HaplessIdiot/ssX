@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.21 2000/11/28 20:59:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.23 2001/12/13 18:01:50 eich Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -335,8 +335,8 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
       VGAOUT8(vgaCRReg, tmp & ~0x02);
       usleep(10000);
 
-      xf86ErrorFVerb(VERBLEV, "	S3VGEReset sub_stat=%x \n", 
-   	IN_SUBSYS_STAT()
+      xf86ErrorFVerb(VERBLEV, "	S3VGEReset sub_stat=%lx \n", 
+   	(unsigned long)IN_SUBSYS_STAT()
 	);
 
       if (!from_timeout) 

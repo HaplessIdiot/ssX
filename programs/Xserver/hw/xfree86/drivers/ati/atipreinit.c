@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.68 2003/08/23 15:02:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.69 2003/08/23 17:10:42 tsi Exp $ */
 /*
  * Copyright 1999 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1463,7 +1463,7 @@ ATIPreInit
 
     if (pATI->CPIO_VGAWonder)
         xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-            "VGA Wonder registers at I/O port 0x%04X.\n",
+            "VGA Wonder registers at I/O port 0x%04lX.\n",
             pATI->CPIO_VGAWonder);
 
     if (pATI->Coprocessor != ATI_CHIP_NONE)
@@ -1549,8 +1549,8 @@ ATIPreInit
     {
         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
             "Driver does not support weight %d%d%d for depth %d.\n",
-            pScreenInfo->weight.red, pScreenInfo->weight.green,
-            pScreenInfo->weight.blue, pScreenInfo->depth);
+            (int)pScreenInfo->weight.red, (int)pScreenInfo->weight.green,
+            (int)pScreenInfo->weight.blue, pScreenInfo->depth);
         ATILock(pATI);
         ATIPrintNoiseIfRequested(pATI, BIOS, BIOSSize);
         ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
@@ -2418,7 +2418,7 @@ ATIPreInit
                     {
                         xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                             "Unable to register %d MB linear aperture at"
-                            " 0x%08X.\n", pATI->LinearSize >> 10,
+                            " 0x%08lX.\n", pATI->LinearSize >> 10,
                             pATI->LinearBase);
 
                         pATI->LinearSize = 0;
@@ -2467,7 +2467,7 @@ ATIPreInit
                     pATI->CursorBase = pATI->LinearBase + pATI->CursorOffset;
 
                     xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-                        "Storing hardware cursor image at 0x%08X.\n",
+                        "Storing hardware cursor image at 0x%08lX.\n",
                         pATI->CursorBase);
                 }
 
@@ -2522,7 +2522,7 @@ ATIPreInit
                         (AcceleratorVideoRAM + PageSize) & ~PageSize;
 
                     xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-                        "Using %d MB linear aperture at 0x%08X.\n",
+                        "Using %d MB linear aperture at 0x%08lX.\n",
                         pATI->LinearSize >> 20, pATI->LinearBase);
 
                     /* Only mmap what is needed */
@@ -2615,14 +2615,14 @@ ATIPreInit
         if (pATI->Block0Base)
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-                "Using Block 0 MMIO aperture at 0x%08X.\n", pATI->Block0Base);
+                "Using Block 0 MMIO aperture at 0x%08lX.\n", pATI->Block0Base);
 
             /* Set Block1 MMIO address if supported */
             if (pATI->Chip >= ATI_CHIP_264VT)
             {
                 pATI->Block1Base = pATI->Block0Base - 0x00000400U;
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-                    "Using Block 1 MMIO aperture at 0x%08X.\n",
+                    "Using Block 1 MMIO aperture at 0x%08lX.\n",
                     pATI->Block1Base);
             }
         }
@@ -3419,7 +3419,7 @@ ATIPreInit
         else if ((pMode->HDisplay & ~pATI->AdjustMask) / pScreenInfo->xInc)
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "Mode \"%s\" cannot scroll to bottom right corner of virtual"
-                " resolution.\n Horizontal dimension not a multiple of %d.\n",
+                " resolution.\n Horizontal dimension not a multiple of %ld.\n",
                 pMode->name, ~pATI->AdjustMask + 1);
     } while ((pMode = pMode->next) != pScreenInfo->modes);
 

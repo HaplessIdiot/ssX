@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.8 2001/08/01 00:44:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.31 2003/09/04 15:32:44 twini Exp $ */
 /*
  * SiS driver option evaluation
  *
@@ -460,7 +460,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     if(xf86GetOptValULong(pSiS->Options, OPTION_MAXXFBMEM,
                                 &pSiS->maxxfbmem)) {
             xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-                    "MaxXFBMem: Framebuffer memory shall be limited to %d KB\n",
+                    "MaxXFBMem: Framebuffer memory shall be limited to %ld KB\n",
 		    pSiS->maxxfbmem);
 	    pSiS->maxxfbmem *= 1024;
     }
