@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.53 2000/10/24 22:45:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.54 2001/01/17 22:37:06 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -153,6 +153,7 @@ extern void ScreenSaverExtensionInit (INITARGS);
 #endif
 #ifdef XV
 extern void XvExtensionInit(INITARGS);
+extern void XvMCExtensionInit(INITARGS);
 #endif
 #ifdef XIE
 extern void XieInit(INITARGS);
@@ -276,6 +277,7 @@ InitExtensions(argc, argv)
 #endif
 #ifdef XV
     XvExtensionInit();
+    XvMCExtensionInit();
 #endif
 #ifdef XIE
     XieInit();
