@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.49tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.50 2003/11/03 05:12:00 tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -931,7 +931,7 @@ DefineSelf (int fd)
 	     */
 	    if (len == 4 && 
 		addr[0] == 127 && addr[1] == 0 &&
-		addr[2] == 0 && addr[2] == 1) 
+		addr[2] == 0 && addr[3] == 1) 
 		continue;
 	    XdmcpRegisterConnection(family, (char *)addr, len);
 	    if ((ifr->ifa_flags & IFF_BROADCAST) &&
