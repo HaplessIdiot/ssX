@@ -1,4 +1,10 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 511. Add locale entries for Sami (#5055, Børre Gaup).
+ 510. Fix XProcessInternalConnection man page duplication (#5040, Chris Bare,
+      from X11R6.6).
+ 509. Minor xrx Imakefile fix (#5038, Chris Bare, from X11R6.6).
+ 508. Remove outdated xc/fonts/encodings/large/README (#5033,
+      Juliusz Chroboczek).
  507. Enable XVideo support for the SuperSavage (#5031, Tim Roberts).
  506. Add some missing locale entries (#5026, Mike Harris).
  505. s3virge driver updates, including:
@@ -14209,4 +14215,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2055 2001/11/21 22:32:50 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2056 2001/11/21 22:42:57 dawes Exp $
