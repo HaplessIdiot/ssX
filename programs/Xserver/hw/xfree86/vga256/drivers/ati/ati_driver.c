@@ -1,4 +1,5 @@
 /* $XConsortium: ati_driver.c,v 1.1 94/03/28 21:47:44 dpw Exp $ */
+/* $XFree86$ */
 /*
  * This is the X11R5 xf86 driver for ATI VGA WONDER video adapters.  At
  * present, this drive works best with ATI VGA WONDER PLUS and ATI VGA
