@@ -1,0 +1,179 @@
+// $XConsortium: ca /main/2 1995/12/07 21:41:09 kaleb $
+partial default xkb_symbols "basic" {
+     
+     // Describes the differences between a very simple en_US
+     // keyboard and a very simple Canadian keybaord
+
+    name[Group1]= "Canadian";
+
+    // Alphanumeric section
+    key <TLDE> {
+		type[Group1]= "THREE_LEVEL",
+		symbols[Group1]= [ slash, backslash, bar ],
+		symbols[Group2]= [ NoSymbol, hyphen ]
+		// SHOULD BE A SOFT HYPHEN
+    };
+    key <AE04> {	[	  4,	dollar		],	
+			[onequarter,    currency	]	};
+    key <AE06> {	[	  6,	question	],	
+			[threequarters,  fiveeighths	]	};
+    key <AE07> {	
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]= [ 7,	ampersand, 	braceleft 	],
+		symbols[Group2]= [ 7,   seveneighths			]
+    };
+    key <AE08> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]= [ 8,	asterisk,	braceright 	],
+		symbols[Group2]= [ 8,	trademark			]
+    };
+    key <AE09> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]= [ 9,	parenleft,	bracketleft	],
+		symbols[Group2]= [ 9,	plusminus ]
+    };
+    key <AE10> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]= [ 0,	parenright,	bracketright	],
+		symbols[Group2]= [ 0,	parenright,	bracketright	],
+    };
+    key <AE11> {	
+		symbols[Group1]= [ minus,	underscore		],	
+		symbols[Group2]= [ minus,	questiondown		] 
+    };
+    key <AE12> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]= [ equal, plus, notsign			],
+		symbols[Group2]= [ dead_cedilla, dead_ogonek		]
+    };
+    key <AD11> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[ dead_circumflex, dead_diaeresis, dead_grave ],
+		symbols[Group2]=[ NoSymbol, dead_abovering ]
+    };
+    key <AD12> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[ ccedilla, Ccedilla, asciitilde ],
+		symbols[Group2]=[ dead_tilde, dead_macron ]
+    };
+    key <AC08> {	[	  k,	K		],	
+			[  	  kra			]	};
+    key <AC10> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]= [ semicolon, colon, degree ],
+		symbols[Group2]= [ dead_acute, dead_doubleacute ]
+    };
+    key <AC11> {	[    egrave,    Egrave		],	
+			[  NoSymbol,	dead_caron	]	};
+    key <BKSL> {        [    agrave,    Agrave          ],      
+                        [  NoSymbol,	dead_breve      ]       };
+
+    
+    key <LSGT> {	[    ugrave,	Ugrave		],
+			[    ugrave,	brokenbar	]	};
+    key <AB01> {
+		type="THREE_LEVEL",
+		symbols[Group1]= [ z, Z, guillemotleft ]
+		symbols[Group2]= [ z, Z, guillemotleft ]
+    };
+    key <AB02> {
+		type="THREE_LEVEL",
+		symbols[Group1]= [ x, X, guillemotright ]
+		symbols[Group2]= [ x, X, guillemotright ]
+    };
+    key <AB04> {	[	  v,	V		],	
+			[leftdoublequotemark,quoteleft	]	};
+    key <AB05> {	[	  b,	B		],	
+			[rightdoublequotemark,quoteright]	};
+    key <AB08> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]= [ comma, apostrophe, less ],
+		symbols[Group2]= [ horizconnector, multiply ]
+    };
+    key <AB09> {
+		type[Group1]= "THREE_LEVEL",
+		symbols[Group1]= [ period, quotedbl, greater ],
+		symbols[Group2]= [ periodcentered, division ]
+    };
+    key <AB10> {	[    eacute,	Eacute		],	
+			[    NoSymbol, 	dead_abovedot	]	};
+    key <RCTL> {        [ ISO_Level3_Shift              ]       };
+    key <TLDE> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[slash, backslash,bar],
+		symbols[Group2]=[dead_diaeresis      ]
+		};
+    key <AE07> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[7, ampersand,braceleft],
+		symbols[Group2]=[seveneighths          ]
+		};
+    key <AE08> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[8, asterisk,braceright],
+		symbols[Group2]=[trademark             ]
+		};
+    key <AE09> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[9, parenleft,bracketleft],
+		symbols[Group2]=[plusminus     		 ]
+		};
+    key <AE10> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[0, parenright,bracketright],
+		symbols[Group2]=[                          ]
+		};
+    key <AE12> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[equal, plus,notsign],
+		symbols[Group2]=[dead_cedilla,dead_ogonek]
+		};
+    key <AD11> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[dead_circumflex,dead_diaeresis,dead_grave],
+                symbols[Group2]=[dead_abovering]
+		};
+    key <AD12> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[ccedilla,Ccedilla,asciitilde],
+                symbols[Group2]=[dead_tilde,dead_macron]
+		};
+    key <AC10> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[semicolon,colon,degree],
+                symbols[Group2]=[dead_acute,dead_doubleacute]
+		};
+    key <AB01> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[z,Z,guillemotleft],
+                symbols[Group2]=[                 ]
+		};
+    key <AB02> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[x,X,guillemotright],
+                symbols[Group2]=[                  ]
+		};
+    key <AB08> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[comma,apostrophe,less],
+                symbols[Group2]=[horizconnector,multiply]
+		};
+    key <AB09> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[period,quotedbl,greater],
+                symbols[Group2]=[periodcentered,division]
+		};
+    key <SPCE> {
+		type[Group1]="THREE_LEVEL",
+		symbols[Group1]=[space,space,nobreakspace],
+		};
+    // End alphanumeric section
+
+    // begin modifier mappings
+
+    modifier_map Shift  { Shift_L };
+    modifier_map Lock   { Caps_Lock };
+    modifier_map Control{ Control_L };
+    modifier_map Mod3   { Mode_switch };
+};
+

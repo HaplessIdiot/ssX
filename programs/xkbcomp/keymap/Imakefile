@@ -1,0 +1,12 @@
+XCOMM $XConsortium: Imakefile /main/2 1995/12/07 21:37:47 kaleb $
+
+#ifdef DebugXKB
+      TESTDATA = test_ovl test_pc test_sun5
+#endif
+     DATAFILES = STEPnote linux sgi us_sun4 us_sun5 \
+		$(TESTDATA)
+
+all::
+
+InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/keymap)
+DependTarget()
