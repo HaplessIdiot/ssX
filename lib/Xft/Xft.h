@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.25 2002/05/24 05:54:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.28 2002/08/31 18:08:10 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -229,7 +229,7 @@ XftDrawStringUtf8 (XftDraw	*d,
 void
 XftDrawStringUtf16 (XftDraw	*draw,
 		    XftColor	*color,
-		    XftFont	*public,
+		    XftFont	*pub,
 		    int		x,
 		    int		y,
 		    FcChar8	*string,
