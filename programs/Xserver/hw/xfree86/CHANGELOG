@@ -1,4 +1,21 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 903. Fix some bugs with Xft drawing to non-Render enabled servers:
+       - Drawing monochrome glyphs had an infinite loop.
+       - XftGlyphSpecCore failed to render some glyphs, leading to application
+         crashes from uninitialized values.
+       (#A.1608, Keith Packard, reported by Nalin Dahyabhai).
+ 902. Fix the <BKSL> key in the "winkeys" variants of the Russian and
+      Ukrainian XKB maps (#5624, Leon Kanter).
+ 901. Install the XKB README files (#5623, Ivan Pascal).
+ 900. Add the numeric keys row to the pc/us symbols map (#5622, Ivan Pascal).
+ 899. Resync with DRI mesa-4-0-4 branch:
+       - Fix DOT3 texture combine env in the r200 driver (Ian Romanick).
+       - Fix SW TCL path in the radeon driver (Felix Kühling).
+       - Don't assert for FLUSH_STORED_VERTICES if a glBegin hasn't been
+         emitted (Alan Hourihane).
+ 898. Another update to the fix for the client-side DRI cleanup code that
+      should fix references to freed data, an fix a potential memory leak
+      (Leif Delgass).
  897. Fix the behaviour of XLookupString() when XKB is enabled in Xlib
       but not the server.  This fixes an xtest XRebindKeysym() failure
       (David Dawes).
@@ -16378,4 +16395,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2555 2003/02/15 06:46:30 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2556 2003/02/15 20:32:08 dawes Exp $
