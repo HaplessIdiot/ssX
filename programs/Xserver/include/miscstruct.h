@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/miscstruct.h,v 3.2 2001/01/17 22:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/miscstruct.h,v 3.3 2001/12/14 19:59:55 dawes Exp $ */
 
 #ifndef MISCSTRUCT_H
 #define MISCSTRUCT_H 1
@@ -63,11 +63,7 @@ typedef union _DevUnion {
     pointer		ptr;
     long		val;
     unsigned long	uval;
-    pointer		(*fptr)(
-#if NeedFunctionPrototypes
-                        void
-#endif
-                        );
+    pointer		(*fptr)(void);
 } DevUnion;
 
 #endif /* MISCSTRUCT_H */

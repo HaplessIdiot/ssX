@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.42 2002/05/31 18:46:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.43 2002/12/24 17:42:59 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -109,467 +109,197 @@ extern Bool OsDelayInitColors;
 extern void (*OsVendorVErrorFProc)(const char *, va_list args);
 
 extern int WaitForSomething(
-#if NeedFunctionPrototypes
     int* /*pClientsReady*/
-#endif
 );
 
 #ifdef LBX
 #define ReadRequestFromClient(client)   ((client)->readRequest(client))
-extern int StandardReadRequestFromClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern int StandardReadRequestFromClient(ClientPtr /*client*/);
 
-extern int ClientConnectionNumber(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern int ClientConnectionNumber(ClientPtr /*client*/);
 #else
-extern int ReadRequestFromClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern int ReadRequestFromClient(ClientPtr /*client*/);
 #endif /* LBX */
 
 extern Bool InsertFakeRequest(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/,
-    char* /*data*/,
-    int /*count*/
-#endif
-);
+    ClientPtr /*client*/, 
+    char* /*data*/, 
+    int /*count*/);
 
-extern void ResetCurrentRequest(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern void ResetCurrentRequest(ClientPtr /*client*/);
 
-extern void FlushAllOutput(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void FlushAllOutput(void);
 
-extern void FlushIfCriticalOutputPending(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void FlushIfCriticalOutputPending(void);
 
-extern void SetCriticalOutputPending(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void SetCriticalOutputPending(void);
 
-extern int WriteToClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*who*/,
-    int /*count*/,
-    char* /*buf*/
-#endif
-);
+extern int WriteToClient(ClientPtr /*who*/, int /*count*/, char* /*buf*/);
 
-extern void ResetOsBuffers(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void ResetOsBuffers(void);
 
-extern void InitConnectionLimits(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void InitConnectionLimits(void);
 
-extern void CreateWellKnownSockets(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void CreateWellKnownSockets(void);
 
-extern void ResetWellKnownSockets(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void ResetWellKnownSockets(void);
 
-extern void CloseWellKnownConnections(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void CloseWellKnownConnections(void);
 
-extern XID
-AuthorizationIDOfClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern XID AuthorizationIDOfClient(ClientPtr /*client*/);
 
 extern char *ClientAuthorized(
-#if NeedFunctionPrototypes
     ClientPtr /*client*/,
     unsigned int /*proto_n*/,
     char* /*auth_proto*/,
     unsigned int /*string_n*/,
-    char* /*auth_string*/
-#endif
-);
+    char* /*auth_string*/);
 
 extern Bool EstablishNewConnections(
-#if NeedFunctionPrototypes
     ClientPtr /*clientUnused*/,
-    pointer /*closure*/
-#endif
-);
+    pointer /*closure*/);
 
-extern void CheckConnections(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void CheckConnections(void);
 
-extern void CloseDownConnection(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern void CloseDownConnection(ClientPtr /*client*/);
 
-extern void AddEnabledDevice(
-#if NeedFunctionPrototypes
-    int /*fd*/
-#endif
-);
+extern void AddEnabledDevice(int /*fd*/);
 
-extern void RemoveEnabledDevice(
-#if NeedFunctionPrototypes
-    int /*fd*/
-#endif
-);
+extern void RemoveEnabledDevice(int /*fd*/);
 
-extern void OnlyListenToOneClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern void OnlyListenToOneClient(ClientPtr /*client*/);
 
-extern void ListenToAllClients(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void ListenToAllClients(void);
 
-extern void IgnoreClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern void IgnoreClient(ClientPtr /*client*/);
 
-extern void AttendClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern void AttendClient(ClientPtr /*client*/);
 
-extern void MakeClientGrabImpervious(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern void MakeClientGrabImpervious(ClientPtr /*client*/);
 
-extern void MakeClientGrabPervious(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/
-#endif
-);
+extern void MakeClientGrabPervious(ClientPtr /*client*/);
 
 #ifdef LBX
-extern void CloseDownFileDescriptor(
-#if NeedFunctionPrototypes
-    ClientPtr /* client */
-#endif
-);
+extern void CloseDownFileDescriptor(ClientPtr /* client */);
 #endif
 
-extern void AvailableClientInput(
-#if NeedFunctionPrototypes
-    ClientPtr /* client */
-#endif
-);
+extern void AvailableClientInput(ClientPtr /* client */);
 
-extern void Error(
-#if NeedFunctionPrototypes
-    char* /*str*/
-#endif
-);
+extern void Error(char* /*str*/);
 
-extern CARD32 GetTimeInMillis(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern CARD32 GetTimeInMillis(void);
 
 extern void AdjustWaitForDelay(
-#if NeedFunctionPrototypes
     pointer /*waitTime*/,
-    unsigned long /*newdelay*/
-#endif
-);
+    unsigned long /*newdelay*/);
 
 typedef	struct _OsTimerRec *OsTimerPtr;
 
 typedef CARD32 (*OsTimerCallback)(
-#if NeedFunctionPrototypes
     OsTimerPtr /* timer */,
     CARD32 /* time */,
-    pointer /* arg */
-#endif
-);
+    pointer /* arg */);
 
-extern void TimerInit(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void TimerInit(void);
 
-extern Bool TimerForce(
-#if NeedFunctionPrototypes
-    OsTimerPtr /* timer */
-#endif
-);
+extern Bool TimerForce(OsTimerPtr /* timer */);
 
 #define TimerAbsolute (1<<0)
 #define TimerForceOld (1<<1)
 
 extern OsTimerPtr TimerSet(
-#if NeedFunctionPrototypes
     OsTimerPtr /* timer */,
     int /* flags */,
     CARD32 /* millis */,
     OsTimerCallback /* func */,
-    pointer /* arg */
-#endif
-);
+    pointer /* arg */);
 
-extern void TimerCheck(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void TimerCheck(void);
 
-extern void TimerCancel(
-#if NeedFunctionPrototypes
-    OsTimerPtr /* pTimer */
-#endif
-);
+extern void TimerCancel(OsTimerPtr /* pTimer */);
 
-extern void TimerFree(
-#if NeedFunctionPrototypes
-    OsTimerPtr /* pTimer */
-#endif
-);
+extern void TimerFree(OsTimerPtr /* pTimer */);
 
-extern SIGVAL AutoResetServer(
-#if NeedFunctionPrototypes
-    int /*sig*/
-#endif
-);
+extern SIGVAL AutoResetServer(int /*sig*/);
 
-extern SIGVAL GiveUp(
-#if NeedFunctionPrototypes
-    int /*sig*/
-#endif
-);
+extern SIGVAL GiveUp(int /*sig*/);
 
-extern void UseMsg(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void UseMsg(void);
 
-extern void ProcessCommandLine(
-#if NeedFunctionPrototypes
-    int /*argc*/,
-    char* /*argv*/[]
-#endif
-);
+extern void ProcessCommandLine(int /*argc*/, char* /*argv*/[]);
 
-extern pointer Xalloc(
-#if NeedFunctionPrototypes
-    unsigned long /*amount*/
-#endif
-);
+extern int set_font_authorizations(
+    char ** /* authorizations */, 
+    int * /*authlen */, 
+    pointer /* client */);
 
-extern pointer XNFalloc(
-#if NeedFunctionPrototypes
-    unsigned long /*amount*/
-#endif
-);
+extern pointer Xalloc(unsigned long /*amount*/);
 
-extern pointer Xcalloc(
-#if NeedFunctionPrototypes
-    unsigned long /*amount*/
-#endif
-);
+extern pointer XNFalloc(unsigned long /*amount*/);
 
-extern pointer XNFcalloc(
-#if NeedFunctionPrototypes
-    unsigned long /*amount*/
-#endif
-);
+extern pointer Xcalloc(unsigned long /*amount*/);
 
-extern pointer Xrealloc(
-#if NeedFunctionPrototypes
-    pointer /*ptr*/,
-    unsigned long /*amount*/
-#endif
-);
+extern pointer XNFcalloc(unsigned long /*amount*/);
 
-extern pointer XNFrealloc(
-#if NeedFunctionPrototypes
-    pointer /*ptr*/,
-    unsigned long /*amount*/
-#endif
-);
+extern pointer Xrealloc(pointer /*ptr*/, unsigned long /*amount*/);
 
-extern void Xfree(
-#if NeedFunctionPrototypes
-    pointer /*ptr*/
-#endif
-);
+extern pointer XNFrealloc(pointer /*ptr*/, unsigned long /*amount*/);
 
-extern void OsInitAllocator(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void Xfree(pointer /*ptr*/);
+
+extern void OsInitAllocator(void);
 
 extern char *Xstrdup(const char *s);
 extern char *XNFstrdup(const char *s);
 
-typedef SIGVAL (*OsSigHandlerPtr)(
-#if NeedFunctionPrototypes
-    int /* sig */
-#endif
-);
+typedef SIGVAL (*OsSigHandlerPtr)(int /* sig */);
 
-extern OsSigHandlerPtr OsSignal(
-#if NeedFunctionPrototypes
-    int /* sig */,
-    OsSigHandlerPtr /* handler */
-#endif
-);
+extern OsSigHandlerPtr OsSignal(int /* sig */, OsSigHandlerPtr /* handler */);
 
 extern int auditTrailLevel;
 
-extern void AuditPrefix(
-#if NeedFunctionPrototypes
-    const char *
-#endif
-);
+extern void AuditPrefix(const char *);
 
-extern void AuditF(
-#if NeedVarargsPrototypes
-    const char* /*f*/,
-    ...
-#endif
-);
+extern void AuditF(const char* /*f*/, ...);
 
-extern void FatalError(
-#if NeedVarargsPrototypes
-    const char* /*f*/,
-    ...
-#endif
-)
+extern void FatalError(const char* /*f*/, ...)
 #if defined(__GNUC__) && \
     ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
 __attribute((noreturn))
 #endif
 ;
 
-extern void ErrorF(
-#if NeedVarargsPrototypes
-    const char* /*f*/,
-    ...
-#endif
-);
+extern void ErrorF(const char* /*f*/, ...);
 
-#if NeedVarargsPrototypes
 extern void VErrorF(const char *f, va_list args);
-#endif
 
 #ifdef SERVER_LOCK
-extern void LockServer(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void LockServer(void);
 
-extern void UnlockServer(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void UnlockServer(void);
 #endif
 
 extern int OsLookupColor(
-#if NeedFunctionPrototypes
     int	/*screen*/,
     char * /*name*/,
     unsigned /*len*/,
     unsigned short * /*pred*/,
     unsigned short * /*pgreen*/,
-    unsigned short * /*pblue*/
-#endif
-);
+    unsigned short * /*pblue*/);
 
-extern void OsInit(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void OsInit(void);
 
-extern void OsCleanup(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void OsCleanup(void);
 
-extern void OsVendorFatalError(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void OsVendorFatalError(void);
 
-extern void OsVendorInit(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void OsVendorInit(void);
 
-extern int OsInitColors(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern int OsInitColors(void);
 
-void OsBlockSignals (
-#if NeedFunctionPrototypes
-		     void
-#endif		     
-		     );
+void OsBlockSignals (void);
 
-void OsReleaseSignals (
-#if NeedFunctionPrototypes
-		     void
-#endif		     
-		     );
+void OsReleaseSignals (void);
 
 #if !defined(WIN32) && !defined(__UNIXOS2__)
 extern int System(char *);
@@ -585,137 +315,63 @@ extern void CheckUserParameters(int argc, char **argv, char **envp);
 extern void CheckUserAuthorization(void);
 
 extern int AddHost(
-#if NeedFunctionPrototypes
     ClientPtr	/*client*/,
     int         /*family*/,
     unsigned    /*length*/,
-    pointer     /*pAddr*/
-#endif
-);
+    pointer     /*pAddr*/);
 
 extern Bool ForEachHostInFamily (
-#if NeedFunctionPrototypes
     int	    /*family*/,
     Bool    (* /*func*/ )(
-#if NeedNestedPrototypes
             unsigned char * /* addr */,
             short           /* len */,
-            pointer         /* closure */
-#endif
-            ),
-    pointer /*closure*/
-#endif
-);
+            pointer         /* closure */),
+    pointer /*closure*/);
 
 extern int RemoveHost(
-#if NeedFunctionPrototypes
     ClientPtr	/*client*/,
     int         /*family*/,
     unsigned    /*length*/,
-    pointer     /*pAddr*/
-#endif
-);
+    pointer     /*pAddr*/);
 
 extern int GetHosts(
-#if NeedFunctionPrototypes
     pointer * /*data*/,
     int	    * /*pnHosts*/,
     int	    * /*pLen*/,
-    BOOL    * /*pEnabled*/
-#endif
-);
+    BOOL    * /*pEnabled*/);
 
 typedef struct sockaddr * sockaddrPtr;
 
-extern int InvalidHost(
-#if NeedFunctionPrototypes
-    sockaddrPtr /*saddr*/,
-    int		/*len*/
-#endif
-);
+extern int InvalidHost(sockaddrPtr /*saddr*/, int /*len*/);
 
-extern int LocalClient(
-#if NeedFunctionPrototypes
-    ClientPtr /* client */
-#endif
-);
+extern int LocalClient(ClientPtr /* client */);
 
 extern int LocalClientCred(ClientPtr, int *, int *);
 
-extern int ChangeAccessControl(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/,
-    int /*fEnabled*/
-#endif
-);
+extern int ChangeAccessControl(ClientPtr /*client*/, int /*fEnabled*/);
 
-extern int GetAccessControl(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern int GetAccessControl(void);
 
 
-extern void AddLocalHosts(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void AddLocalHosts(void);
 
-extern void ResetHosts(
-#if NeedFunctionPrototypes
-    char *display
-#endif
-);
+extern void ResetHosts(char *display);
 
-extern void EnableLocalHost(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void EnableLocalHost(void);
 
-extern void DisableLocalHost(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void DisableLocalHost(void);
 
-extern void AccessUsingXdmcp(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void AccessUsingXdmcp(void);
 
-extern void DefineSelf(
-#if NeedFunctionPrototypes
-    int /*fd*/
-#endif
-);
+extern void DefineSelf(int /*fd*/);
 
-extern void AugmentSelf(
-#if NeedFunctionPrototypes
-    pointer /*from*/,
-    int /*len*/
-#endif
-);
+extern void AugmentSelf(pointer /*from*/, int /*len*/);
 
-extern void InitAuthorization(
-#if NeedFunctionPrototypes
-    char * /*filename*/
-#endif
-);
+extern void InitAuthorization(char * /*filename*/);
 
-extern int LoadAuthorization(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+/* extern int LoadAuthorization(void); */
 
-extern void RegisterAuthorizations(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void RegisterAuthorizations(void);
 
 extern XID AuthorizationToID (
 	unsigned short	name_length,
@@ -731,21 +387,15 @@ extern int AuthorizationFromID (
 	char		**datap);
 
 extern XID CheckAuthorization(
-#if NeedFunctionPrototypes
     unsigned int /*namelength*/,
     char * /*name*/,
     unsigned int /*datalength*/,
     char * /*data*/,
     ClientPtr /*client*/,
     char ** /*reason*/
-#endif
 );
 
-extern void ResetAuthorization(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+extern void ResetAuthorization(void);
 
 extern int RemoveAuthorization (
     unsigned short	name_length,
@@ -754,41 +404,24 @@ extern int RemoveAuthorization (
     char		*data);
 
 extern int AddAuthorization(
-#if NeedFunctionPrototypes
     unsigned int	/*name_length*/,
     char *		/*name*/,
     unsigned int	/*data_length*/,
-    char *		/*data*/
-#endif
-);
+    char *		/*data*/);
 
 extern XID GenerateAuthorization(
-#if NeedFunctionPrototypes
     unsigned int   /* name_length */,
     char	*  /* name */,
     unsigned int   /* data_length */,
     char	*  /* data */,
     unsigned int * /* data_length_return */,
-    char	** /* data_return */
-#endif
-);
+    char	** /* data_return */);
 
 #ifdef COMMANDLINE_CHALLENGED_OPERATING_SYSTEMS
-extern void ExpandCommandLine(
-#if NeedFunctionPrototypes
-    int * /*pargc*/,
-    char *** /*pargv*/
-#endif
-);
+extern void ExpandCommandLine(int * /*pargc*/, char *** /*pargv*/);
 #endif
 
-extern int ddxProcessArgument(
-#if NeedFunctionPrototypes
-    int /*argc*/,
-    char * /*argv*/ [],
-    int /*i*/
-#endif
-);
+extern int ddxProcessArgument(int /*argc*/, char * /*argv*/ [], int /*i*/);
 
 extern void ddxUseMsg(void);
 
@@ -796,17 +429,9 @@ extern void ddxUseMsg(void);
  *  idiom processing stuff
  */
 
-xReqPtr PeekNextRequest(
-#if NeedFunctionPrototypes
-    xReqPtr req, ClientPtr client, Bool readmore
-#endif
-);
+extern xReqPtr PeekNextRequest(xReqPtr req, ClientPtr client, Bool readmore);
 
-void SkipRequests(
-#if NeedFunctionPrototypes
-    xReqPtr req, ClientPtr client, int numskipped
-#endif
-);
+extern void SkipRequests(xReqPtr req, ClientPtr client, int numskipped);
 
 /* int ReqLen(xReq *req, ClientPtr client)
  * Given a pointer to a *complete* request, return its length in bytes.

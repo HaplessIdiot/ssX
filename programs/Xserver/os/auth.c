@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.11 2002/05/31 18:46:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/auth.c,v 1.12 2002/12/09 02:56:03 dawes Exp $ */
 
 /*
  * authorization hooks for the server
@@ -128,7 +128,7 @@ InitAuthorization (char *file_name)
     authorization_file = file_name;
 }
 
-int
+static int
 LoadAuthorization (void)
 {
     FILE    *f;

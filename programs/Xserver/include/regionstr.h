@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.8 2003/04/23 21:51:53 tsi Exp $ */
 
 #ifndef REGIONSTRUCT_H
 #define REGIONSTRUCT_H
@@ -298,153 +298,90 @@ extern RegDataRec miBrokenData;
 /* moved from mi.h */
 
 extern RegionPtr miRegionCreate(
-#if NeedFunctionPrototypes
     BoxPtr /*rect*/,
-    int /*size*/
-#endif
-);
+    int /*size*/);
 
 extern void miRegionInit(
-#if NeedFunctionPrototypes
     RegionPtr /*pReg*/,
     BoxPtr /*rect*/,
-    int /*size*/
-#endif
-);
+    int /*size*/);
 
 extern void miRegionDestroy(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
+    RegionPtr /*pReg*/);
 
 extern void miRegionUninit(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
+    RegionPtr /*pReg*/);
 
 extern Bool miRegionCopy(
-#if NeedFunctionPrototypes
     RegionPtr /*dst*/,
-    RegionPtr /*src*/
-#endif
-);
+    RegionPtr /*src*/);
 
 extern Bool miIntersect(
-#if NeedFunctionPrototypes
     RegionPtr /*newReg*/,
     RegionPtr /*reg1*/,
-    RegionPtr /*reg2*/
-#endif
-);
+    RegionPtr /*reg2*/);
 
 extern Bool miUnion(
-#if NeedFunctionPrototypes
     RegionPtr /*newReg*/,
     RegionPtr /*reg1*/,
-    RegionPtr /*reg2*/
-#endif
-);
+    RegionPtr /*reg2*/);
 
 extern Bool miRegionAppend(
-#if NeedFunctionPrototypes
     RegionPtr /*dstrgn*/,
-    RegionPtr /*rgn*/
-#endif
-);
+    RegionPtr /*rgn*/);
 
 extern Bool miRegionValidate(
-#if NeedFunctionPrototypes
     RegionPtr /*badreg*/,
-    Bool * /*pOverlap*/
-#endif
-);
+    Bool * /*pOverlap*/);
 
 extern RegionPtr miRectsToRegion(
-#if NeedFunctionPrototypes
     int /*nrects*/,
     xRectanglePtr /*prect*/,
-    int /*ctype*/
-#endif
-);
+    int /*ctype*/);
 
 extern Bool miSubtract(
-#if NeedFunctionPrototypes
     RegionPtr /*regD*/,
     RegionPtr /*regM*/,
-    RegionPtr /*regS*/
-#endif
-);
+    RegionPtr /*regS*/);
 
 extern Bool miInverse(
-#if NeedFunctionPrototypes
     RegionPtr /*newReg*/,
     RegionPtr /*reg1*/,
-    BoxPtr /*invRect*/
-#endif
-);
+    BoxPtr /*invRect*/);
 
 extern int miRectIn(
-#if NeedFunctionPrototypes
     RegionPtr /*region*/,
-    BoxPtr /*prect*/
-#endif
-);
+    BoxPtr /*prect*/);
 
 extern void miTranslateRegion(
-#if NeedFunctionPrototypes
     RegionPtr /*pReg*/,
     int /*x*/,
-    int /*y*/
-#endif
-);
+    int /*y*/);
 
 extern void miRegionReset(
-#if NeedFunctionPrototypes
     RegionPtr /*pReg*/,
-    BoxPtr /*pBox*/
-#endif
-);
+    BoxPtr /*pBox*/);
 
 extern Bool miRegionBreak(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
+    RegionPtr /*pReg*/);
 
 extern Bool miPointInRegion(
-#if NeedFunctionPrototypes
     RegionPtr /*pReg*/,
     int /*x*/,
     int /*y*/,
-    BoxPtr /*box*/
-#endif
-);
+    BoxPtr /*box*/);
 
 extern Bool miRegionEqual(
-#if NeedFunctionPrototypes
     RegionPtr /*pReg1*/,
-    RegionPtr /*pReg2*/
-#endif
-);
+    RegionPtr /*pReg2*/);
 
 extern Bool miRegionNotEmpty(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
+    RegionPtr /*pReg*/);
 
 extern void miRegionEmpty(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
+    RegionPtr /*pReg*/);
 
 extern BoxPtr miRegionExtents(
-#if NeedFunctionPrototypes
-    RegionPtr /*pReg*/
-#endif
-);
+    RegionPtr /*pReg*/);
 
 #endif /* REGIONSTRUCT_H */

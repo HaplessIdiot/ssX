@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.16 2001/12/14 20:00:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.17 2002/05/31 18:46:06 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -215,6 +215,8 @@ extern int StandardFlushClient(
     char* /*extraBuf*/,
     int /*extraCount*/
 );
+extern int LbxFlushClient(ClientPtr /*who*/, OsCommPtr /*oc*/, 
+    char */*extraBuf*/, int /*extraCount*/);
 #else
 extern int FlushClient(
     ClientPtr /*who*/,

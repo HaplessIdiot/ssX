@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.19 2001/11/06 16:11:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.21 2002/03/11 16:22:28 keithp Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -104,149 +104,67 @@ static void XdmcpSelectHost(
     int			host_len,
     ARRAY8Ptr		AuthenticationName);
 
-static void get_xdmcp_sock(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+static void get_xdmcp_sock(void);
 
-static void send_query_msg(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+static void send_query_msg(void);
 
 static void recv_willing_msg(
-#if NeedFunctionPrototypes
     struct sockaddr_in */*from*/,
     int /*fromlen*/,
-    unsigned /*length*/
-#endif
-);
+    unsigned /*length*/);
 
-static void send_request_msg(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+static void send_request_msg(void);
 
-static void recv_accept_msg(
-#if NeedFunctionPrototypes
-    unsigned /*length*/
-#endif
-);
+static void recv_accept_msg(unsigned /*length*/);
 
-static void recv_decline_msg(
-#if NeedFunctionPrototypes
-    unsigned /*length*/
-#endif
-);
+static void recv_decline_msg(unsigned /*length*/);
 
-static void send_manage_msg(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+static void send_manage_msg(void);
 
-static void recv_refuse_msg(
-#if NeedFunctionPrototypes
-    unsigned /*length*/
-#endif
-);
+static void recv_refuse_msg(unsigned /*length*/);
 
-static void recv_failed_msg(
-#if NeedFunctionPrototypes
-    unsigned /*length*/
-#endif
-);
+static void recv_failed_msg(unsigned /*length*/);
 
-static void send_keepalive_msg(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+static void send_keepalive_msg(void);
 
-static void recv_alive_msg(
-#if NeedFunctionPrototypes
-    unsigned /*length*/
-#endif
-);
+static void recv_alive_msg(unsigned /*length*/);
 
 static void XdmcpFatal(
-#if NeedFunctionPrototypes
     char */*type*/,
-    ARRAY8Ptr /*status*/
-#endif
-);
-
-static void XdmcpWarning(
-#if NeedFunctionPrototypes
-    char */*str*/
-#endif
-);
+    ARRAY8Ptr /*status*/);
+ 
+static void XdmcpWarning(char */*str*/);
 
 static void get_manager_by_name(
-#if NeedFunctionPrototypes
     int /*argc*/,
     char **/*argv*/,
-    int /*i*/
-#endif
-);
+    int /*i*/);
 
 static void get_fromaddr_by_name(int /*argc*/, char **/*argv*/, int /*i*/);
 
-static void receive_packet(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+static void receive_packet(void);
 
-static void send_packet(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+static void send_packet(void);
 
-extern void XdmcpDeadSession(
-#if NeedFunctionPrototypes
-    char */*reason*/
-#endif
-);
+extern void XdmcpDeadSession(char */*reason*/);
 
-static void timeout(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+static void timeout(void);
 
-static void restart(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
+static void restart(void);
 
 static void XdmcpBlockHandler(
-#if NeedFunctionPrototypes
     pointer /*data*/,
     struct timeval **/*wt*/,
-    pointer /*LastSelectMask*/
-#endif
-);
+    pointer /*LastSelectMask*/);
 
 static void XdmcpWakeupHandler(
-#if NeedFunctionPrototypes
     pointer /*data*/,
     int /*i*/,
-    pointer /*LastSelectMask*/
-#endif
-);
+    pointer /*LastSelectMask*/);
 
 void XdmcpRegisterManufacturerDisplayID(
-#if NeedFunctionPrototypes
     char    * /*name*/,
-    int	    /*length*/
-#endif
-);
+    int	    /*length*/);
 
 
 static short	xdm_udp_port = XDM_UDP_PORT;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.26 2002/05/31 18:46:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.27 2002/06/17 08:04:18 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -95,7 +95,7 @@ extern void xf86WrapperInit(void);
 #endif
 
 void
-OsInit()
+OsInit(void)
 {
     static Bool been_here = FALSE;
     static char* admpath = ADMPATH;
@@ -226,7 +226,7 @@ OsInit()
 }
 
 void
-OsCleanup()
+OsCleanup(void)
 {
 #ifdef SERVER_LOCK
     UnlockServer();

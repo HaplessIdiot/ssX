@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.84 2002/11/05 05:34:38 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.85 2002/12/24 17:43:00 tsi Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -166,6 +166,8 @@ int userdefinedfontpath = 0;
 
 char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
+extern int dispatchExceptionAtReset;
+
 OsSigHandlerPtr
 OsSignal(sig, handler)
     int sig;
@@ -235,7 +237,7 @@ static Bool nolock = FALSE;
  *      the lock file containing the PID.
  */
 void
-LockServer()
+LockServer(void)
 {
   char tmp[PATH_MAX], pid_str[12];
   int lfd, i, haslock, l_pid, t;
@@ -372,7 +374,7 @@ LockServer()
  *      Remove the server lock file.
  */
 void
-UnlockServer()
+UnlockServer(void)
 {
   if (nolock) return;
 
@@ -390,8 +392,7 @@ UnlockServer()
 
 /*ARGSUSED*/
 SIGVAL
-AutoResetServer (sig)
-    int sig;
+AutoResetServer (int sig)
 {
     int olderrno = errno;
 
@@ -411,8 +412,7 @@ AutoResetServer (sig)
 
 /*ARGSUSED*/
 SIGVAL
-GiveUp(sig)
-    int sig;
+GiveUp(int sig)
 {
     int olderrno = errno;
 
@@ -426,11 +426,11 @@ GiveUp(sig)
 }
 
 #ifdef __GNUC__
-static void AbortServer() __attribute__((noreturn));
+static void AbortServer(void) __attribute__((noreturn));
 #endif
 
 static void
-AbortServer()
+AbortServer(void) 
 {
     OsCleanup();
     AbortDDX();
@@ -441,15 +441,14 @@ AbortServer()
 }
 
 void
-Error(str)
-    char *str;
+Error(char *str)
 {
     perror(str);
 }
 
 #ifndef DDXTIME
 CARD32
-GetTimeInMillis()
+GetTimeInMillis(void)
 {
     struct timeval  tp;
 
@@ -459,9 +458,7 @@ GetTimeInMillis()
 #endif
 
 void
-AdjustWaitForDelay (waitTime, newdelay)
-    pointer	    waitTime;
-    unsigned long   newdelay;
+AdjustWaitForDelay (pointer waitTime, unsigned long newdelay)
 {
     static struct timeval   delay_val;
     struct timeval	    **wt = (struct timeval **) waitTime;
@@ -484,7 +481,7 @@ AdjustWaitForDelay (waitTime, newdelay)
     }
 }
 
-void UseMsg()
+void UseMsg(void)
 {
 #if !defined(AIXrt) && !defined(AIX386)
     ErrorF("use: X [:<display>] [option]\n");
@@ -579,8 +576,8 @@ void UseMsg()
  *  not contain a "/" and not start with a "-".
  *                                            --kvajk
  */
-int VerifyDisplayName( d )
-char *d;
+static int 
+VerifyDisplayName(const char *d)
 {
     if ( d == (char *)0 ) return( 0 );  /*  null  */
     if ( *d == '\0' ) return( 0 );  /*  empty  */
@@ -596,10 +593,7 @@ char *d;
  * argc or any of the strings pointed to by argv.
  */
 void
-ProcessCommandLine ( argc, argv )
-int	argc;
-char	*argv[];
-
+ProcessCommandLine(int argc, char *argv[])
 {
     int i, skip;
 
@@ -824,8 +818,6 @@ char	*argv[];
 	}
 	else if ( strcmp( argv[i], "-noreset") == 0)
 	{
-	    extern char dispatchExceptionAtReset;
-
 	    dispatchExceptionAtReset = 0;
 	}
 	else if ( strcmp( argv[i], "-p") == 0)
@@ -863,8 +855,6 @@ char	*argv[];
 	}
 	else if ( strcmp( argv[i], "-terminate") == 0)
 	{
-	    extern char dispatchExceptionAtReset;
-	    
 	    dispatchExceptionAtReset = DE_TERMINATE;
 	}
 	else if ( strcmp( argv[i], "-to") == 0)
@@ -993,15 +983,11 @@ char	*argv[];
 
 #ifdef COMMANDLINE_CHALLENGED_OPERATING_SYSTEMS
 static void
-InsertFileIntoCommandLine(resargc, resargv, prefix_argc, prefix_argv,
-			  filename, suffix_argc, suffix_argv)
-    int *resargc;
-    char ***resargv;
-    int prefix_argc;
-    char **prefix_argv;
-    char *filename;
-    int suffix_argc;
-    char **suffix_argv;
+InsertFileIntoCommandLine(
+    int *resargc, char ***resargv, 
+    int prefix_argc, char **prefix_argv,
+    char *filename, 
+    int suffix_argc, char **suffix_argv)
 {
     struct stat     st;
     FILE           *f;
@@ -1084,9 +1070,7 @@ InsertFileIntoCommandLine(resargc, resargv, prefix_argc, prefix_argv,
 
 
 void
-ExpandCommandLine(pargc, pargv)
-    int *pargc;
-    char ***pargv;
+ExpandCommandLine(int *pargc, char ***pargv)
 {
     int i;
 
@@ -1112,10 +1096,7 @@ ExpandCommandLine(pargc, pargv)
 /* Implement a simple-minded font authorization scheme.  The authorization
    name is "hp-hostname-1", the contents are simply the host name. */
 int
-set_font_authorizations(authorizations, authlen, client)
-char **authorizations;
-int *authlen;
-pointer client;
+set_font_authorizations(char **authorizations, int *authlen, pointer client)
 {
 #define AUTHORIZATION_NAME "hp-hostname-1"
 #if defined(TCPCONN) || defined(STREAMSCONN)
@@ -1172,8 +1153,7 @@ pointer client;
 #ifndef INTERNAL_MALLOC
 
 void * 
-Xalloc (amount)
-    unsigned long amount;
+Xalloc(unsigned long amount)
 {
     register pointer  ptr;
 	
@@ -1201,8 +1181,7 @@ Xalloc (amount)
  *****************/
 
 void *
-XNFalloc (amount)
-    unsigned long amount;
+XNFalloc(unsigned long amount)
 {
     register pointer ptr;
 
@@ -1225,8 +1204,7 @@ XNFalloc (amount)
  *****************/
 
 void *
-Xcalloc (amount)
-    unsigned long   amount;
+Xcalloc(unsigned long amount)
 {
     unsigned long   *ret;
 
@@ -1241,8 +1219,7 @@ Xcalloc (amount)
  *****************/
 
 void *
-XNFcalloc (amount)
-    unsigned long   amount;
+XNFcalloc(unsigned long amount)
 {
     unsigned long   *ret;
 
@@ -1259,9 +1236,7 @@ XNFcalloc (amount)
  *****************/
 
 void *
-Xrealloc (ptr, amount)
-    register pointer ptr;
-    unsigned long amount;
+Xrealloc(pointer ptr, unsigned long amount)
 {
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&
@@ -1292,9 +1267,7 @@ Xrealloc (ptr, amount)
  *****************/
 
 void *
-XNFrealloc (ptr, amount)
-    register pointer ptr;
-    unsigned long amount;
+XNFrealloc(pointer ptr, unsigned long amount)
 {
     if (( ptr = (pointer)Xrealloc( ptr, amount ) ) == NULL)
     {
@@ -1310,15 +1283,14 @@ XNFrealloc (ptr, amount)
  *****************/    
 
 void
-Xfree(ptr)
-    register pointer ptr;
+Xfree(pointer ptr)
 {
     if (ptr)
 	free((char *)ptr); 
 }
 
 void
-OsInitAllocator ()
+OsInitAllocator (void)
 {
 #ifdef MEMBUG
     static int	been_here;
@@ -1363,8 +1335,7 @@ XNFstrdup(const char *s)
 
 
 void
-AuditPrefix(f)
-    const char *f;
+AuditPrefix(const char *f)
 {
     time_t tm;
     char *autime, *s;
@@ -1425,9 +1396,7 @@ FatalError(const char *f, ...)
 }
 
 void
-VErrorF(f, args)
-    const char *f;
-    va_list args;
+VErrorF(const char *f, va_list args)
 {
 #ifdef AIXV3
     if (SyncOn)
@@ -1444,6 +1413,7 @@ VErrorF(f, args)
 #endif /* AIXV3 */
 }
 
+#if 0
 void
 VFatalError(const char *msg, va_list args)
 {
@@ -1455,6 +1425,7 @@ VFatalError(const char *msg, va_list args)
     AbortServer();
     /*NOTREACHED*/
 }
+#endif
 
 void
 ErrorF(const char * f, ...)
@@ -1480,7 +1451,7 @@ Bool		SmartScheduleTimerStopped;
 #define SMART_SCHEDULE_TIMER		ITIMER_REAL
 #endif
 
-void
+static void
 SmartScheduleStopTimer (void)
 {
 #ifdef SMART_SCHEDULE_POSSIBLE
@@ -1512,7 +1483,7 @@ SmartScheduleStartTimer (void)
 }
 
 #ifdef SMART_SCHEDULE_POSSIBLE
-void
+static void
 SmartScheduleTimer (int sig)
 {
     int olderrno = errno;
@@ -1624,8 +1595,7 @@ OsReleaseSignals (void)
  */
 
 int
-System(command)
-    char *command;
+System(char *command)
 {
     int pid, p;
 #ifdef SIGCHLD
@@ -1673,9 +1643,7 @@ static struct pid {
 } *pidlist;
 
 pointer
-Popen(command, type)
-    char *command;
-    char *type;
+Popen(char *command, char *type)
 {
     struct pid *cur;
     FILE *iop;
@@ -1748,8 +1716,7 @@ Popen(command, type)
 }
 
 int
-Pclose(iop)
-    pointer iop;
+Pclose(pointer iop)
 {
     struct pid *cur, *last;
     int pstat;
@@ -2007,7 +1974,7 @@ CheckUserParameters(int argc, char **argv, char **envp)
 #endif /* USE_PAM */
 
 void
-CheckUserAuthorization()
+CheckUserAuthorization(void)
 {
 #ifdef USE_PAM
     static struct pam_conv conv = {

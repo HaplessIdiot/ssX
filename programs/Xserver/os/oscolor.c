@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.7 2001/12/14 20:00:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.8 2002/05/31 18:46:06 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -73,7 +73,7 @@ int rgb_dbm = 0;
 extern void CopyISOLatin1Lowered();
 
 int
-OsInitColors()
+OsInitColors(void)
 {
     if (!rgb_dbm)
     {
@@ -93,12 +93,8 @@ OsInitColors()
 
 /*ARGSUSED*/
 int
-OsLookupColor(screen, name, len, pred, pgreen, pblue)
-    int		screen;
-    char	*name;
-    unsigned	len;
-    unsigned short	*pred, *pgreen, *pblue;
-
+OsLookupColor(int screen, char *name, unsigned int len, 
+    unsigned short *pred, unsigned short *pgreen, unsigned short *pblue)
 {
     datum		dbent;
     RGB			rgb;
@@ -170,10 +166,7 @@ static dbEntryPtr hashTab[HASHSIZE];
 
 
 static dbEntryPtr
-lookup(name, len, create)
-     char *name;
-     int  len;
-     Bool create;
+lookup(char *name, int len, Bool create)
 {
   unsigned int h = 0, g;
   dbEntryPtr   entry, *prev = NULL;
@@ -212,7 +205,7 @@ lookup(name, len, create)
 
 
 Bool
-OsInitColors()
+OsInitColors(void)
 {
   FILE       *rgb;
   char       *path;
@@ -281,12 +274,8 @@ OsInitColors()
 
 
 Bool
-OsLookupColor(screen, name, len, pred, pgreen, pblue)
-    int		   screen;
-    char	   *name;
-    unsigned	   len;
-    unsigned short *pred, *pgreen, *pblue;
-
+OsLookupColor(int screen, char *name, unsigned int len, 
+    unsigned short *pred, unsigned short *pgreen, unsigned short *pblue)
 {
   dbEntryPtr entry;
 
