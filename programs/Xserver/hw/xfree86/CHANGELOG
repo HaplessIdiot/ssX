@@ -1,4 +1,5 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 318. Add glxgears (Brian Paul).
  317. glxinfo needs libGLU (Marc La France).
  316. Rage128 fix to Cards database (Marc La France).
  315. Minor fix to PCI resource overlap handling (Marc La France).
@@ -12781,4 +12782,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1651 2001/03/31 01:57:17 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1652 2001/04/01 14:00:04 tsi Exp $

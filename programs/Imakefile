@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2000/08/17 19:47:01 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Imakefile,v 3.41 2001/03/21 17:36:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.42 2001/04/01 14:00:03 tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -80,7 +80,7 @@ XFINDPROXYSRCDIR = xfindproxy
 #endif
 
 #if BuildGLXLibrary && BuildGLULibrary
-      GLXINFODIR = glxinfo
+      GLXCLIENTDIRS = glxinfo glxgears
 #endif
 
 #if BuildServersOnly || !BuildClients
@@ -106,7 +106,7 @@ SUBDIRS = \
 	$(XTERMSRCDIR) $(XVIDTUNESRCDIR) xwd xwininfo xwud \
 	$(XPMCLIENTDIRS) $(XVINFOSRCDIR) \
 	$(XSSRCDIR) $(XASSRCDIR) $(LBXPROXYSRCDIR) $(SCRIPTSDIR) \
-	$(GLXINFODIR) $(XFTCACHEDIR)
+	$(GLXCLIENTDIRS) $(XFTCACHEDIR)
 #endif
 
 MakeSubdirs($(SUBDIRS))
