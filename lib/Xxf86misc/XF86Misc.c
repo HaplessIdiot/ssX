@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.10 2002/04/04 14:05:35 eich Exp $ */
+/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.11 2002/10/16 00:37:34 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -26,7 +26,8 @@ static char *xf86misc_extension_name = XF86MISCNAME;
  *                                                                           *
  *****************************************************************************/
 
-static int close_display();
+static int close_display(Display *dpy, XExtCodes *codes);
+
 static /* const */ XExtensionHooks xf86misc_extension_hooks = {
     NULL,				/* create_gc */
     NULL,				/* copy_gc */
@@ -282,3 +283,74 @@ int XF86MiscSetGrabKeysState(dpy, enable)
     SyncHandle();
     return rep.status;
 }
+
+Bool XF86MiscGetFilePaths(dpy, filpaths)
+    Display* dpy;
+    XF86MiscFilePaths *filpaths;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86MiscGetFilePathsReply rep;
+    xXF86MiscGetFilePathsReq *req;
+
+    XF86MiscCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86MiscGetFilePaths, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86miscReqType = X_XF86MiscGetFilePaths;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+
+    if (rep.configlen) {
+        if (!(filpaths->configfile = Xcalloc(rep.configlen + 1, 1))) {
+            _XEatData(dpy, ((rep.configlen+3) & ~3) + ((rep.modulelen+3) & ~3)
+			    + ((rep.loglen+3) & ~3));
+            return False;
+        }
+    }
+
+    if (rep.modulelen) {
+        if (!(filpaths->modulepath = Xcalloc(rep.modulelen + 1, 1))) {
+            _XEatData(dpy, ((rep.configlen+3) & ~3) + ((rep.modulelen+3) & ~3)
+			    + ((rep.loglen+3) & ~3));
+            if (filpaths->configfile)
+		    Xfree(filpaths->configfile);
+            return False;
+        }
+    }
+
+    if (rep.loglen) {
+        if (!(filpaths->logfile = Xcalloc(rep.loglen + 1, 1))) {
+            _XEatData(dpy, ((rep.configlen+3) & ~3) + ((rep.modulelen+3) & ~3)
+			    + ((rep.loglen+3) & ~3));
+            if (filpaths->configfile)
+		    Xfree(filpaths->configfile);
+            if (filpaths->modulepath)
+		    Xfree(filpaths->modulepath);
+            return False;
+        }
+    }
+
+    if (rep.configlen)
+        _XReadPad(dpy, filpaths->configfile, rep.configlen);
+    else
+	filpaths->configfile = "";
+
+    if (rep.modulelen)
+        _XReadPad(dpy, filpaths->modulepath, rep.modulelen);
+    else
+	filpaths->modulepath = "";
+
+    if (rep.loglen)
+        _XReadPad(dpy, filpaths->logfile, rep.loglen);
+    else
+	filpaths->logfile = "";
+
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
