@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.41 1994/09/25 12:28:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.42 1994/09/26 15:31:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1595,7 +1595,7 @@ s3Probe()
       } while (pMode != pEnd);
    }
    if (DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES) {
-      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) && s3Bpp == 1)
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) || s3Bpp > 1)
 	 s3DAC8Bit = TRUE;
       if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &s3InfoRec.options)) {
 	 s3DACSyncOnGreen = TRUE;
@@ -1606,11 +1606,11 @@ s3Probe()
    }
 
    if (DAC_IS_ATT490 || DAC_IS_SC15025 || DAC_IS_ATT498 || DAC_IS_STG1700) {
-      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) && s3Bpp == 1)
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) || s3Bpp > 1)
          s3DAC8Bit = TRUE;
    }
 
-   if (s3DAC8Bit && xf86Verbose)
+   if (s3DAC8Bit && xf86Verbose && s3InfoRec.bitsPerPixel == 8)
       ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",
          XCONFIG_GIVEN, s3InfoRec.name);
 
