@@ -1,4 +1,6 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 210. Fix page size issues that prevented the mmap()'ing of SBUS devices
+      (Marc La France).
  209. Fixes for the following problems on OS/2:
        - long startup delay of xinit
        - recovery from hard-error popups
@@ -17068,7 +17070,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2731 2003/06/10 16:46:33 twini Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2732 2003/06/10 17:03:51 dawes Exp $
 
 
 
