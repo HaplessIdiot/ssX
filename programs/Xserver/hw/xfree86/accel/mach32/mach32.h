@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.11 1995/01/28 16:58:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.12 1996/02/04 09:02:17 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -69,6 +69,7 @@ extern Bool mach32Use4MbAperture;
 extern Bool mach32DAC8Bit;
 
 extern int mach32Ramdac;
+extern int mach32RamdacSubType;
 extern int mach32BusType;
 
 /* == 0 --> no boundary crossing on this line */
