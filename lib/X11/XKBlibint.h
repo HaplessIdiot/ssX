@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/X11/XKBlibint.h,v 3.3 1997/06/22 10:16:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBlibint.h,v 3.4 2001/01/17 19:41:49 dawes Exp $ */
 
 #ifndef _XKBLIBINT_H_
 #define	_XKBLIBINT_H_
@@ -149,7 +149,11 @@ extern	void _XkbReloadDpy(
 extern KeySym _XKeycodeToKeysym(
 #if NeedFunctionPrototypes
     Display*		/* display */,
+#if NeedWidePrototypes
+    unsigned int	/* keycode */,
+#else
     KeyCode		/* keycode */,
+#endif
     int			/* index */
 #endif
 );

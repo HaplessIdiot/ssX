@@ -1,4 +1,6 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 111. Fix some function definition conflicts from Xlib cleanup when X_LOCALE
+      or NeedWidePrototypes is set (Torrey T. Lyons).
  110. Resync the BSD drm modules with the DRI trunk (Eric Anholt).
  109. Resync the Linux drm modules with the DRI trunk.  Includes:
        - Add 2nd arg for DRM_FREE (Keith Whitwell).
@@ -16791,4 +16793,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2643 2003/04/17 19:05:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2644 2003/04/17 19:12:00 dawes Exp $
