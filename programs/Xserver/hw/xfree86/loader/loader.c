@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.7 1997/02/24 17:46:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.8 1997/02/25 14:21:11 hohndel Exp $ */
 
 
 
@@ -57,7 +57,7 @@
 #endif
 
 #ifdef __EMX__
-void * os2_calloc(size_t,size_t);
+void * os2loader_calloc(size_t,size_t);
 #endif
 
 #ifdef HANDLE_IN_HASH_ENTRY
@@ -193,7 +193,7 @@ ErrorF("=NULL\n",ptr);
 if( (ptr=(char *)calloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
 #else
-if( (ptr=(char *)os2_calloc(size,1)) == NULL )
+if( (ptr=(char *)os2loader_calloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
 #endif
 
@@ -401,6 +401,10 @@ while( read(arfd,&hdr,sizeof(struct ar_hdr)) ) {
 	    slash = strchr(hdr.ar_name,' ');
 	} 
 	/* XXX lots to do with long name in the form #1/ */
+        /* SM: Make sure we do not overwrite other parts of struct */
+        
+	if((slash - hdr.ar_name) > sizeof(hdr.ar_name)) 
+                slash = hdr.ar_name + sizeof(hdr.ar_name) -1;
 	*slash='\000';
 
 	if( (modtype=_GetModuleType(arfd,offset)) < 0 ) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.5 1997/02/25 14:21:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.6 1997/02/27 13:58:45 hohndel Exp $ */
 
 
 
@@ -165,7 +165,8 @@ LoadModule(module,path)
 
 	keep = dir_elem = (char *) xcalloc(1, strlen(path) + 1);
 	path_elem = (char *) xcalloc(1, strlen(path) + 2);
-	strcpy(dir_elem, path);
+	*dir_elem = ',';
+	strcpy(dir_elem+1, path);
 
 	/* 
 	 * if the module name is not a full pathname, we need to
