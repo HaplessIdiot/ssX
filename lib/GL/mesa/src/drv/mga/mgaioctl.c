@@ -25,7 +25,7 @@
  *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.16 2002/12/16 16:18:52 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.17 2003/09/28 20:15:16 alanh Exp $ */
 
 #include "mtypes.h"
 #include "macros.h"
@@ -321,7 +321,7 @@ static void mgaWaitForFrameCompletion( mgaContextPtr mmesa )
 /*
  * Copy the back buffer to the front buffer.
  */
-void mgaSwapBuffers( __DRIdrawablePrivate *dPriv )
+void mgaCopyBuffer( const __DRIdrawablePrivate *dPriv )
 {
    mgaContextPtr mmesa;
    XF86DRIClipRectPtr pbox;

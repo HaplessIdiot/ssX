@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.7 2003/03/26 20:43:51 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.8 2003/09/28 20:15:29 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -75,6 +75,7 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
 {
    radeonScreenPtr screen;
    RADEONDRIPtr dri_priv = (RADEONDRIPtr)sPriv->pDevPriv;
+   unsigned char *RADEONMMIO;
 
    if ( ! driCheckDriDdxDrmVersions( sPriv, "Radeon", 4, 0, 4, 0, 1, 3 ) )
       return NULL;
@@ -133,6 +134,8 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
       return NULL;
    }
 
+   RADEONMMIO = screen->mmio.map;
+
    screen->status.handle = dri_priv->statusHandle;
    screen->status.size   = dri_priv->statusSize;
    if ( drmMap( sPriv->fd,
@@ -157,8 +160,6 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
    }
 
    if ( dri_priv->gartTexHandle && dri_priv->gartTexMapSize ) {
-      unsigned char *RADEONMMIO = screen->mmio.map;
-
       screen->gartTextures.handle = dri_priv->gartTexHandle;
       screen->gartTextures.size   = dri_priv->gartTexMapSize;
       if ( drmMap( sPriv->fd,
@@ -199,6 +200,18 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
    screen->cpp = dri_priv->bpp / 8;
    screen->AGPMode = dri_priv->AGPMode;
 
+   screen->fbLocation	= ( INREG( RADEON_MC_FB_LOCATION ) & 0xffff ) << 16;
+
+   if ( sPriv->drmMinor >= 10 ) {
+      drmRadeonSetParam sp;
+
+      sp.param = RADEON_SETPARAM_FB_LOCATION;
+      sp.value = screen->fbLocation;
+
+      drmCommandWrite( sPriv->fd, DRM_RADEON_SETPARAM,
+		       &sp, sizeof( sp ) );
+   }
+
    screen->frontOffset	= dri_priv->frontOffset;
    screen->frontPitch	= dri_priv->frontPitch;
    screen->backOffset	= dri_priv->backOffset;
@@ -206,7 +219,8 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
    screen->depthOffset	= dri_priv->depthOffset;
    screen->depthPitch	= dri_priv->depthPitch;
 
-   screen->texOffset[RADEON_CARD_HEAP] = dri_priv->textureOffset;
+   screen->texOffset[RADEON_CARD_HEAP] = dri_priv->textureOffset
+				       + screen->fbLocation;
    screen->texSize[RADEON_CARD_HEAP] = dri_priv->textureSize;
    screen->logTexGranularity[RADEON_CARD_HEAP] =
       dri_priv->log2TexGran;

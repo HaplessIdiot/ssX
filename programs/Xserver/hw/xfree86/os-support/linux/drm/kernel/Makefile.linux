@@ -11,7 +11,7 @@
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.40 2003/08/17 17:12:25 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.41 2003/09/28 20:16:06 alanh Exp $
 #
 
 #
@@ -59,15 +59,16 @@ DRM_MODULES ?= $(MODULE_LIST)
 # These definitions are for handling dependencies in the out of kernel build.
 
 DRMTEMPLATES =  drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
-                drm_drv.h drm_fops.h drm_init.h drm_ioctl.h \
+                drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_irq.h \
                 drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h
 
-DRMSHARED =     drm_sarea.h
-DRMHEADERS =    drm.h drmP.h $(DRMSHARED)
+DRMSHARED =     drm.h drm_sarea.h
+DRMHEADERS =    drmP.h $(DRMSHARED)
 
 GAMMAHEADERS =  gamma.h gamma_context.h gamma_drm.h gamma_drv.h gamma_lists.h \
                 gamma_old_dma.h gamma_lock.h $(DRMHEADERS) $(DRMTEMPLATES)
 TDFXHEADERS =   tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
+TDFXSHARED =    tdfx.h
 R128HEADERS =   r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 R128SHARED =    r128.h r128_drv.h r128_drm.h r128_cce.c r128_state.c r128_irq.c
 RADEONHEADERS = radeon.h radeon_drv.h radeon_drm.h $(DRMHEADERS) \
@@ -80,9 +81,11 @@ MGASHARED =     mga.h mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
                 mga_ucode.h mga_warp.c
 I810HEADERS =   i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 I830HEADERS =   i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
-SISHEADERS=     sis_drv.h sis_drm.h $(DRMHEADERS)
+SISHEADERS=     sis.h sis_drv.h sis_drm.h $(DRMHEADERS)
+SISSHARED=      sis.h sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
 
-SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED)
+SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
+	$(SISSHARED) $(TDFXSHARED)
 
 PROGS = dristat drmstat
 

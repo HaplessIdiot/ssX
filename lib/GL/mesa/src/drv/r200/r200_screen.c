@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.4 2003/05/08 09:25:35 herrb Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.5 2003/09/28 20:15:24 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -76,6 +76,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 {
    r200ScreenPtr screen;
    RADEONDRIPtr dri_priv = (RADEONDRIPtr)sPriv->pDevPriv;
+   unsigned char *RADEONMMIO;
 
    if ( ! driCheckDriDdxDrmVersions( sPriv, "R200", 4, 0, 4, 0, 1, 5 ) )
       return NULL;
@@ -168,6 +169,8 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
       return NULL;
    }
 
+   RADEONMMIO = screen->mmio.map;
+
    screen->status.handle = dri_priv->statusHandle;
    screen->status.size   = dri_priv->statusSize;
    if ( drmMap( sPriv->fd,
@@ -192,8 +195,6 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
    }
 
    if ( dri_priv->gartTexHandle && dri_priv->gartTexMapSize ) {
-      unsigned char *RADEONMMIO = screen->mmio.map;
-
       screen->gartTextures.handle = dri_priv->gartTexHandle;
       screen->gartTextures.size   = dri_priv->gartTexMapSize;
       if ( drmMap( sPriv->fd,
@@ -216,6 +217,18 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
    screen->cpp = dri_priv->bpp / 8;
    screen->AGPMode = dri_priv->AGPMode;
 
+   screen->fbLocation	= ( INREG( RADEON_MC_FB_LOCATION ) & 0xffff ) << 16;
+
+   if ( sPriv->drmMinor >= 10 ) {
+      drmRadeonSetParam sp;
+
+      sp.param = RADEON_SETPARAM_FB_LOCATION;
+      sp.value = screen->fbLocation;
+
+      drmCommandWrite( sPriv->fd, DRM_RADEON_SETPARAM,
+		       &sp, sizeof( sp ) );
+   }
+
    screen->frontOffset	= dri_priv->frontOffset;
    screen->frontPitch	= dri_priv->frontPitch;
    screen->backOffset	= dri_priv->backOffset;
@@ -223,7 +236,8 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
    screen->depthOffset	= dri_priv->depthOffset;
    screen->depthPitch	= dri_priv->depthPitch;
 
-   screen->texOffset[RADEON_CARD_HEAP] = dri_priv->textureOffset;
+   screen->texOffset[RADEON_CARD_HEAP] = dri_priv->textureOffset
+				       + screen->fbLocation;
    screen->texSize[RADEON_CARD_HEAP] = dri_priv->textureSize;
    screen->logTexGranularity[RADEON_CARD_HEAP] =
       dri_priv->log2TexGran;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state_init.c,v 1.4 2003/02/22 06:21:11 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state_init.c,v 1.5 2003/09/28 20:15:25 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -363,7 +363,7 @@ void r200InitState( r200ContextPtr rmesa )
 					    R200_DST_BLEND_GL_ZERO );
 
    rmesa->hw.ctx.cmd[CTX_RB3D_DEPTHOFFSET] =
-      rmesa->r200Screen->depthOffset;
+      rmesa->r200Screen->depthOffset + rmesa->r200Screen->fbLocation;
 
    rmesa->hw.ctx.cmd[CTX_RB3D_DEPTHPITCH] = 
       ((rmesa->r200Screen->depthPitch &
@@ -470,7 +470,8 @@ void r200InitState( r200ContextPtr rmesa )
          ((i << R200_TXFORMAT_ST_ROUTE_SHIFT) |  /* <-- note i */
           (2 << R200_TXFORMAT_WIDTH_SHIFT) |
           (2 << R200_TXFORMAT_HEIGHT_SHIFT));
-      rmesa->hw.tex[i].cmd[TEX_PP_TXOFFSET] = 0;
+      rmesa->hw.tex[i].cmd[TEX_PP_TXOFFSET] =
+	  rmesa->r200Screen->texOffset[RADEON_CARD_HEAP];
       rmesa->hw.tex[i].cmd[TEX_PP_BORDER_COLOR] = 0;
       rmesa->hw.tex[i].cmd[TEX_PP_TXFORMAT_X] =
          (/* R200_TEXCOORD_PROJ | */

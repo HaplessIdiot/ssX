@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.12 2003/04/22 13:55:50 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/Imakefile,v 1.13 2003/09/28 20:16:02 alanh Exp $
 
 XCOMM This is a kludge until we determine how best to build the
 XCOMM kernel-specific device driver.  This allows us to continue
@@ -19,6 +19,7 @@ all::
 	@echo 'Use "make -f Makefile.bsd" to manually build the modules'
 #endif
 
+LinkSourceFile(drm.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(drm_sarea.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(mga.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(mga_dma.c,$(XF86OSSRC)/shared/drm/kernel)
@@ -47,3 +48,4 @@ LinkSourceFile(sis_drv.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(sis_ds.c,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(sis_ds.h,$(XF86OSSRC)/shared/drm/kernel)
 LinkSourceFile(sis_mm.c,$(XF86OSSRC)/shared/drm/kernel)
+LinkSourceFile(tdfx.h,$(XF86OSSRC)/shared/drm/kernel)

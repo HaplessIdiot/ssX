@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.19 2003/03/26 20:43:49 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.20 2003/09/28 20:15:16 alanh Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -278,6 +278,7 @@ static const char * const card_extensions[] =
 {
    "GL_ARB_multisample",
    "GL_ARB_texture_compression",
+   "GL_EXT_blend_logic_op",
    "GL_EXT_fog_coord",
    /* paletted_textures currently doesn't work, but we could fix them later */
 #if 0
@@ -583,6 +584,24 @@ mgaDestroyBuffer(__DRIdrawablePrivate *driDrawPriv)
    _mesa_destroy_framebuffer((GLframebuffer *) (driDrawPriv->driverPrivate));
 }
 
+static void
+mgaSwapBuffers(__DRIdrawablePrivate *dPriv)
+{
+   if (dPriv->driContextPriv && dPriv->driContextPriv->driverPrivate) {
+      mgaContextPtr mmesa;
+      GLcontext *ctx;
+      mmesa = (mgaContextPtr) dPriv->driContextPriv->driverPrivate;
+      ctx = mmesa->glCtx;
+
+      if (ctx->Visual.doubleBufferMode) {
+         _mesa_notifySwapBuffers( ctx );
+         mgaCopyBuffer( dPriv );
+      }
+   } else {
+      /* XXX this shouldn't be an error but we can't handle it for now */
+      _mesa_problem(NULL, "%s: drawable has no context!\n", __FUNCTION__);
+   }
+}
 
 static GLboolean
 mgaUnbindContext(__DRIcontextPrivate *driContextPriv)

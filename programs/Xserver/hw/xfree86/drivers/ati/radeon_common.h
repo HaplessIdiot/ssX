@@ -31,7 +31,7 @@
  * Converted to common header format:
  *   Jens Owen <jens@tungstengraphics.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_common.h,v 1.3 2003/09/28 20:15:55 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_common.h,v 1.4 2003/11/10 18:41:22 tsi Exp $
  *
  */
 
@@ -71,6 +71,7 @@
 #define DRM_RADEON_IRQ_EMIT               0x16
 #define DRM_RADEON_IRQ_WAIT               0x17
 #define DRM_RADEON_CP_RESUME              0x18
+#define DRM_RADEON_SETPARAM               0x19
 #define DRM_RADEON_MAX_DRM_COMMAND_INDEX  0x39
 
 
@@ -159,7 +160,7 @@ typedef struct {
 } drmRadeonTexImage;
 
 typedef struct {
-        int offset;
+        unsigned int offset;
         int pitch;
         int format;
         int width;                      /* Texture image coordinates */
@@ -443,6 +444,18 @@ typedef struct drm_radeon_irq_emit {
 typedef struct drm_radeon_irq_wait {
 	int irq_seq;
 } drmRadeonIrqWait;
+
+
+/* 1.10: Clients tell the DRM where they think the framebuffer is located in
+ * the card's address space, via a new generic ioctl to set parameters
+ */
+
+typedef struct drm_radeon_set_param {
+	unsigned int param;
+	int64_t      value;
+} drmRadeonSetParam;
+
+#define RADEON_SETPARAM_FB_LOCATION     1
 
 
 #endif

@@ -28,7 +28,7 @@
  *    Kevin E. Martin <kem@users.sourceforge.net>
  *    Gareth Hughes <gareth@nvidia.com>
  */
-/* $XFree86:$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/common/texmem.h,v 1.1 2003/09/28 20:15:07 alanh Exp $ */
 
 /** \file texmem.h
  * Public interface to the DRI texture memory management routines.
@@ -289,5 +289,7 @@ void driInitTextureObjects( GLcontext *ctx, driTextureObject * swapped,
 
 GLboolean driValidateTextureHeaps( driTexHeap * const * texture_heaps,
     unsigned nr_heaps, const driTextureObject * swapped );
+
+extern void driCalculateTextureFirstLastLevel( driTextureObject * t );
 
 #endif /* DRI_TEXMEM_H */

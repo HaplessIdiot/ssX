@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.15 2003/03/26 20:43:49 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.16 2003/09/28 20:15:18 alanh Exp $ */
 
 #include "mgacontext.h"
 #include "mgavb.h"
@@ -121,8 +121,8 @@ static struct {
 #define IMPORT_FLOAT_COLORS mga_import_float_colors
 #define IMPORT_FLOAT_SPEC_COLORS mga_import_float_spec_colors
 
-#define INTERP_VERTEX setup_tab[MGA_CONTEXT(ctx)->SetupIndex].interp
-#define COPY_PV_VERTEX setup_tab[MGA_CONTEXT(ctx)->SetupIndex].copy_pv
+#define INTERP_VERTEX setup_tab[mmesa->SetupIndex].interp
+#define COPY_PV_VERTEX setup_tab[mmesa->SetupIndex].copy_pv
 
 
 /***********************************************************************
