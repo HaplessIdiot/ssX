@@ -379,8 +379,6 @@ static int DRM(clients_info)(char *buf, char **start, off_t offset,
 
 #if DRM_DEBUG_CODE
 
-#define DRM_VMA_VERBOSE 0
-
 static int DRM(_vma_info)(char *buf, char **start, off_t offset, int request,
 			  int *eof, void *data)
 {
@@ -388,13 +386,6 @@ static int DRM(_vma_info)(char *buf, char **start, off_t offset, int request,
 	int                   len  = 0;
 	drm_vma_entry_t	      *pt;
 	struct vm_area_struct *vma;
-#if DRM_VMA_VERBOSE
-	unsigned long	      i;
-	unsigned long	      address;
-	pgd_t		      *pgd;
-	pmd_t		      *pmd;
-	pte_t		      *pte;
-#endif
 #if defined(__i386__)
 	unsigned int	      pgprot;
 #endif
@@ -438,31 +429,6 @@ static int DRM(_vma_info)(char *buf, char **start, off_t offset, int request,
 			       pgprot & _PAGE_GLOBAL   ? 'g' : 'l' );
 #endif
 		DRM_PROC_PRINT("\n");
-#if 0
-		for (i = vma->vm_start; i < vma->vm_end; i += PAGE_SIZE) {
-			pgd = pgd_offset(vma->vm_mm, i);
-			pmd = pmd_offset(pgd, i);
-			preempt_disable();
-			pte = pte_offset_map(pmd, i);
-			if (pte_present(*pte)) {
-				address = __pa(pte_page(*pte))
-					+ (i & (PAGE_SIZE-1));
-				DRM_PROC_PRINT("      0x%08lx -> 0x%08lx"
-					       " %c%c%c%c%c\n",
-					       i,
-					       address,
-					       pte_read(*pte)  ? 'r' : '-',
-					       pte_write(*pte) ? 'w' : '-',
-					       pte_exec(*pte)  ? 'x' : '-',
-					       pte_dirty(*pte) ? 'd' : '-',
-					       pte_young(*pte) ? 'a' : '-' );
-			} else {
-				DRM_PROC_PRINT("      0x%08lx\n", i);
-			}
-			pte_unmap(pte);
-			preempt_enable();
-		}
-#endif
 	}
 
 	if (len > request + offset) return request;

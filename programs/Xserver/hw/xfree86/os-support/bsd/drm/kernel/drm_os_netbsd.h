@@ -20,6 +20,7 @@
 #include <sys/lkm.h>
 /* For TIOCSPGRP/TIOCGPGRP */
 #include <sys/ttycom.h>
+#include <sys/endian.h>
 
 #include <uvm/uvm.h>
 
@@ -94,7 +95,6 @@ extern const int DRM(M_DRM) = M_DEVBUF;
 #endif /* __NetBSD_Version__ */
 #define DRM_MALLOC(size)	malloc( size, DRM(M_DRM), M_NOWAIT )
 #define DRM_FREE(pt,size)		free( pt, DRM(M_DRM) )
-#define DRM_VTOPHYS(addr)	vtophys(addr)
 
 #define DRM_READ8(map, offset)		bus_space_read_1(  (map)->iot, (map)->ioh, (offset) )
 #define DRM_READ32(map, offset)		bus_space_read_4(  (map)->iot, (map)->ioh, (offset) )
@@ -173,10 +173,21 @@ while (!condition) {						\
 #define DRM_GET_USER_UNCHECKED(val, uaddr)			\
 	((val) = fuword(uaddr), 0)
 
-#define DRM_WRITEMEMORYBARRIER( map )					\
-	bus_space_barrier((map)->iot, (map)->ioh, 0, (map)->size, 0);
-#define DRM_READMEMORYBARRIER( map )					\
-	bus_space_barrier((map)->iot, (map)->ioh, 0, (map)->size, BUS_SPACE_BARRIER_READ);
+/* DRM_READMEMORYBARRIER() prevents reordering of reads.
+ * DRM_WRITEMEMORYBARRIER() prevents reordering of writes.
+ * DRM_MEMORYBARRIER() prevents reordering of reads and writes.
+ */
+#if defined(__i386__)
+#define DRM_READMEMORYBARRIER()		__asm __volatile( \
+					"lock; addl $0,0(%%esp)" : : : "memory");
+#define DRM_WRITEMEMORYBARRIER()	__asm __volatile("" : : : "memory");
+#define DRM_MEMORYBARRIER()		__asm __volatile( \
+					"lock; addl $0,0(%%esp)" : : : "memory");
+#elif defined(__alpha__)
+#define DRM_READMEMORYBARRIER()		alpha_mb();
+#define DRM_WRITEMEMORYBARRIER()	alpha_wmb();
+#define DRM_MEMORYBARRIER()		alpha_mb();
+#endif
 
 #define DRM_WAKEUP(w) wakeup((void *)w)
 #define DRM_WAKEUP_INT(w) wakeup(w)
@@ -192,7 +203,8 @@ typedef struct drm_chipinfo
 	char *name;
 } drm_chipinfo_t;
 
-#define cpu_to_le32(x) (x)	/* FIXME */
+#define cpu_to_le32(x) htole32(x)
+#define le32_to_cpu(x) le32toh(x)
 
 typedef u_int32_t dma_addr_t;
 typedef volatile long atomic_t;
@@ -310,11 +322,6 @@ do { \
   snprintf(buf, sizeof(buf), fmt, ##arg);	\
   error = SYSCTL_OUT(req, buf, strlen(buf));	\
   if (error) return error;
-
-#define DRM_SYSCTL_PRINT_RET(ret, fmt, arg...)	\
-  snprintf(buf, sizeof(buf), fmt, ##arg);	\
-  error = SYSCTL_OUT(req, buf, strlen(buf));	\
-  if (error) { ret; return error; }
 
 
 #define DRM_FIND_MAP(dest, o)						\
