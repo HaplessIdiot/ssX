@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.7 2000/12/20 21:16:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.8 2000/12/20 21:41:06 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -419,6 +419,9 @@ TDFXQueryBestSize(
   unsigned int *p_w, unsigned int *p_h,
   pointer data
 ){
+   if(vid_w > drw_w) drw_w = vid_w;
+   if(vid_h > drw_h) drw_h = vid_h;
+   
   *p_w = drw_w;
   *p_h = drw_h;
 }
