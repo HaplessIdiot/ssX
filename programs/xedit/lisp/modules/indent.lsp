@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.1 2002/11/02 22:58:10 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.2 2002/11/10 16:29:11 paulo Exp $
 ;;
 
 (provide "indent")
@@ -1337,13 +1337,6 @@
 
 	    ;; ind-cache will be T if at least one change was done
 	    (and ind-cache (go :ind-process))
-
-#+debug	    (progn
-		(dolist (item ind-state)
-		    (format t "~A~%" item)
-		)
-		(format t "~%")
-	    )
 
 	    ;; Start of file reached
 	    (or ind-startp (go :ind-read))

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.12 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.13 2002/11/10 16:29:04 paulo Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
@@ -112,12 +112,6 @@ LispObj *LispPathnameField(int, int);
  probe-file pathname
  */
 LispObj *LispProbeFile(LispBuiltin*, int);
-
-/*
- read-char &optional input-stream (eof-error-p t) eof-value recursive-p
- read-char-no-hang &optional input-stream (eof-error-p t) eof-value recursive-p
- */
-LispObj *LispReadChar(LispBuiltin*, int);
 
 /*
  write-string string &optional output-stream &key start end

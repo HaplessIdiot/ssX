@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.2 2002/10/06 17:11:48 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.3 2002/10/20 05:58:55 paulo Exp $
 ;;
 
 (require "syntax")
@@ -191,171 +191,98 @@
 
 
 	;; This version isn't also optimal, but it's performance is
-	;; acceptable, could be simplified and handle better usage of
-	;; some characters.
+	;; acceptable.
 (defsyntax *lisp-mode* :main nil nil nil
-    ;;	Higlight all list CARs that looks like a function call
-    (syntoken "\\(\\s*[A-Za-z0-9_+/<=>*%@-]+[?!()]*(\\s|$)"
+    ;; highlight car and parenthesis
+    (syntoken "\\(+\\s*[][{}A-Za-z0-9!$%&/<=>?^~*:+-]*\\)*"
 	:property *prop-keyword*)
+    (syntoken "\\)+" :property *prop-keyword*)
 
-    ;;  NIL and T
-    (syntoken "\\<(nil|t)\\>"
-	:icase t
+    ;; nil and t
+    (syntoken "\\<(nil|t)\\>" :icase t :property *prop-special*)
+
+    (syntoken "|" :nospec t :begin :unreadable :contained t)
+
+    ;; keywords
+    (syntoken ":[][{}A-Za-z0-9!$%&/<=>^~+-]+" :property *prop-constant*)
+
+    ;; special symbol.
+    (syntoken "\\*[][{}A-Za-z_0-9!$%&7=?^~+-]+\\*"
 	:property *prop-special*)
 
-    ;;  Single parentheses.
-    (syntoken "[()]"
-	:property *prop-punctuation*)
+    ;; special identifiers
+    (syntoken "&(aux|key|optional|rest)\\>" :icase t :property *prop-constant*)
 
-    (syntoken "|"
-	:nospec t
-	:begin :unreadable
-	:contained t)
-
-    ;;  Lisp keywords.
-    (syntoken ":[A-Za-z_0-9-]+"
-	:property *prop-constant*)
-
-    ;;  Show these also as constants.
-    (syntoken "&(aux|key|optional|rest)\\>"
-	:icase t
-	:property *prop-constant*)
-
-    ;;  Special symbol.
-    (syntoken "\\*[A-Za-z_0-9-]+\\*"
-	:property *prop-special*)
-
-    ;;  Numbers.
-    (syntoken "(\\<|[+-]?)(\\d+\\.?(\\d*([SsFfDdLlEe][+-]?\\d+)?)?)"
+    ;; numbers
+    (syntoken "(\\<|[+-])(\\d+\\.?(\\d*([SsFfDdLlEe][+-]?\\d+)?)?)"
 	:property *prop-number*)
 
-    ;;  Character constants.
-    (syntoken "#\\\\(\\W|\\w+(-\\w+)?)"
-	:property *prop-constant*)
+    ;; characters
+    (syntoken "#\\\\(\\W|\\w+(-\\w+)?)" :property *prop-constant*)
 
-    ;;  One line comments.
-    (syntoken ";"
-	:begin :simple-comment
-	:contained t)
+    ;; quotes
+    (syntoken "[`'.]|,@?" :property *prop-quote*)
 
-    ;;  Package names
-    (syntoken "[A-Za-z_0-9-]+::?"
-	:property *prop-package*)
+    ;; package names
+    (syntoken "[A-Za-z_0-9-]+::?" :property *prop-package*)
 
-    ;;  Any symbol, this rule does not change text properties, it is defined
-    ;; just to take precedence over conflicting ones.
-    (syntoken "[A-Za-z_0-9-]+")
+    ;; read time evaluation
+    (syntoken "#\\d+#" :property *prop-preprocessor*)
+    (syntoken "#([+'cCsS-]|\\d+[aA=])?" :begin :preprocessor :contained t)
 
-    ;;  Rule to start a string.
-    (syntoken "\""
-	:nospec t
-	:begin :string
-	:contained t)
+    (syntoken "\\c" :property *prop-control*)
 
-    ;;  Quote.
-    (syntoken "[`'.]|,@?"
-	:property *prop-quote*)
 
-    ;;  Read time conditionals, evaluations and functions.
-    (syntoken "#\\s*([+'cCsS-]|\\d+[aA])?"
-	:begin :preprocessor
-	:contained t)
-
-    ;;  Multiline comments.
-    (syntoken "#|"
-	:nospec t
-	:begin :comment
-	:contained t)
-
-    ;; Define a syntax table just to highlight a few tokens...
     (syntable :simple-comment *prop-comment* nil
-	;;  Return to previous state.
-	(syntoken "$"
-	    :switch -1)
-
-	(syntoken "XXX|FIXME|TODO"
-	    :property *prop-annotation*)
+	(syntoken "$" :switch -1)
+	(syntoken "XXX|FIXME|TODO" :property *prop-annotation*)
     )
 
-    ;;  Rules for strings.
-    (syntable :string *prop-string* nil
-	;;  Ignore escaped characters, this includes \".
+    (syntable :comment *prop-comment* nil
+	;; comments can nest
+	(syntoken "#|" :nospec t :begin :comment)
+	;;  return to previous state
+	(syntoken "|#" :nospec t :switch -1)
+	(syntoken "XXX|FIXME|TODO" :property *prop-annotation*)
+    )
+
+    (syntable :unreadable *prop-unreadable* nil
+	;; ignore escaped characters
 	(syntoken "\\\\.")
-
-	;;  Rule to finish a string.
-	(syntoken "\""
-	    :nospec t
-	    :switch -1)
+	(syntoken "|" :nospec t :switch -1)
     )
 
-    ;;  Rules for "conditionals"
+    (syntable :string *prop-string* nil
+	;; ignore escaped characters
+	(syntoken "\\\\.")
+	(syntoken "\"" :nospec t :switch -1)
+    )
+
     (syntable :preprocessor *prop-preprocessor* nil
-	(synaugment :comments-and-strings)
+	;; a symbol
+	(syntoken "[][{}A-Za-z0-9!$%&/<=>^~+-]+" :switch -1)
 
-	;;  Any reasonable symbol.
-	(syntoken "[A-Za-z0-9_+/<=>*%@-]+"
-	    :switch -1)
-
-	;;  A conditional expression.
-	(syntoken "("
-	    :nospec t
-	    :begin :preprocessor-expression
-	    :contained t)
+	;; conditional expression
+	(syntoken "(" :nospec t :begin :preprocessor-expression :contained t)
 
 	(syntable :preprocessor-expression *prop-preprocessor* nil
-	    (synaugment :comments-and-strings)
-
-	    ;;  Recursive rule.
-	    (syntoken "("
-		:nospec t
-		:begin :preprocessor-recursive
-		:contained t)
-
-	    (syntoken ")"
-		:nospec t
-		:switch -2)
+	    ;; recursive
+	    (syntoken "(" :nospec t :begin :preprocessor-recursive :contained t)
+	    (syntoken ")" :nospec t :switch -2)
 
 	    (syntable :preprocessor-recursive *prop-preprocessor* nil
-		(synaugment :comments-and-strings)
-		(syntoken "("
-		    :nospec t
+		(syntoken "(" :nospec t
 		    :begin :preprocessor-recursive
 		    :contained t)
+		(syntoken ")" :nospec t :switch -1)
 
-		(syntoken ")"
-		    :nospec t
-		    :switch -1)
+		(synaugment :comments-and-strings)
 	    )
+
+	    (synaugment :comments-and-strings)
 	)
-    )
 
-    ;;  Rules for multiline comments.
-    (syntable :comment *prop-comment* nil
-	;;  Multiline comments can nest.
-	(syntoken "#|"
-	    :nospec t
-	    :begin :comment)
-
-	;;  Return to previous state.
-	(syntoken "|#"
-	    :nospec t
-	    :switch -1)
-
-	(syntoken "XXX|FIXME|TODO"
-	    :property *prop-annotation*)
-    )
-
-    (syntoken "\\c"
-	:property *prop-control*)
-
-    ;;  Rules for "unreadable" symbols.
-    (syntable :unreadable *prop-unreadable* nil
-	;;  Ignore escaped characters, this includes \|.
-	(syntoken "\\\\.")
-
-	(syntoken "|"
-	    :nospec t
-	    :switch -1)
+	(synaugment :comments-and-strings)
     )
 
     (syntable :comments-and-strings nil nil
@@ -363,4 +290,6 @@
 	(syntoken "#|" :nospec t :begin :comment :contained t)
 	(syntoken ";" :begin :simple-comment :contained t)
     )
+
+    (synaugment :comments-and-strings)
 )

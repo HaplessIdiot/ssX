@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.32 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.33 2002/11/10 16:29:06 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -379,8 +379,6 @@ struct _LispMac {
     void (*sigint)(int);
     void (*sigfpe)(int);
 #endif
-
-    int discard;		/* just discard #.EXP */
 
     int destroyed;		/* reached LispDestroy, used by unwind-protect */
     int running;		/* there is somewhere to siglongjmp */

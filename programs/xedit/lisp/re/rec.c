@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/rec.c,v 1.1 2002/09/08 02:29:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/rec.c,v 1.2 2002/09/22 07:09:09 paulo Exp $ */
 
 #include "rep.h"
 
@@ -51,10 +51,6 @@ typedef struct _irec_info {
 
     int ngrps;			/* Number of groups, for backreference */
 
-    /* Information used while compiling a range of characters */
-    rec_pat *rpat;
-    rec_rng *rbas, *rprv;
-
     int ecode;
 } irec_info;
 
@@ -77,7 +73,6 @@ static void irec_close_group(irec_info*);
 static void irec_range(irec_info*);
 static void irec_range_single(irec_info*, int);
 static void irec_range_complex(irec_info*, int, int);
-static void irec_range_add(irec_info*, rec_rng*);
 static void irec_escape(irec_info*);
 static void irec_simple_repetition(irec_info*, rec_rep_t);
 static void irec_complex_repetition(irec_info*);
@@ -85,7 +80,6 @@ static void irec_add_repetition(irec_info*, rec_rep*);
 static void irec_free(irec_info*);
 static void irec_free_grp(rec_grp*);
 static void irec_free_pats(rec_pat*);
-static void irec_free_rngs(rec_rng*);
 
 
 /*
@@ -98,8 +92,13 @@ irec_comp(const char *pattern, const char *endp, int flags, int *ecode)
     rec_alt *alt;
     irec_info inf;
 
-    if (pattern == NULL) {
+    if (pattern == NULL || endp < pattern) {
 	*ecode = RE_INVARG;
+	return (NULL);
+    }
+
+    if (endp == pattern) {
+	*ecode = RE_EMPTY;
 	return (NULL);
     }
 
@@ -114,9 +113,8 @@ irec_comp(const char *pattern, const char *endp, int flags, int *ecode)
     inf.flags = flags;
     inf.alt = inf.palt = alt;
     inf.pgrp = NULL;
-    inf.ppat = inf.rpat = NULL;
+    inf.ppat = NULL;
     inf.nparens = inf.ngrps = 0;
-    inf.rprv = inf.rbas = NULL;
     inf.ecode = 0;
 
     if (flags & RE_NOSPEC) {
@@ -483,10 +481,8 @@ irec_range(irec_info *inf)
 {
     int count;
     rec_pat *pat;
-    rec_rng_t type;
-    rec_rng *bptr, *iptr, *jptr, *pptr;
+    rec_rng *rng;
     int not = inf->ptr[0] == '^';
-    unsigned char ltmp0, utmp0, ltmp1, utmp1;
 
     if (not)
 	++inf->ptr;
@@ -497,9 +493,20 @@ irec_range(irec_info *inf)
 	return;
     }
 
+    rng = calloc(1, sizeof(rec_rng));
+    if (pat == NULL) {
+	free(pat);
+	inf->ecode = RE_ESPACE;
+	return;
+    }
+
+    pat->data.rng = rng;
     pat->type = not ? Rep_RangeNot : Rep_Range;
-    inf->rprv = inf->rbas = NULL;
-    inf->rpat = pat;
+    if ((pat->prev = inf->ppat) != NULL)
+	inf->ppat->next = pat;
+    else
+	inf->palt->pat = pat;
+    inf->ppat = pat;
 
     /* First pass, add everything seen */
     for (count = 0; inf->ecode == 0; count++) {
@@ -540,382 +547,38 @@ irec_range(irec_info *inf)
 
     /* Skip ] */
     ++inf->ptr;
-
-    if (inf->ecode)
-	return;
-
-    /* Sort/join ranges. Bubble sort, precedence order in sorting:
-     *	o <range-before-single>
-     *	o <case-sensitive-before-case-insensitive>
-     *	o <smallest-first-or-single-character-value>
-     */
-    for (iptr = pat->data.rng; iptr; iptr = iptr->next) {
-	for (bptr = pptr = iptr, jptr = bptr->next; jptr;) {
-	    if (bptr->type == jptr->type) {
-		switch (bptr->type) {
-		    case Reb_Single:
-		    case Reb_CaseSingle:
-			/* Matching same character more than once */
-			if (bptr->value.chr == jptr->value.chr) {
-			    pptr->next = jptr->next;
-			    free(jptr);
-			    jptr = pptr;
-			}
-			else if (jptr->value.chr < bptr->value.chr) {
-			    /* Sort */
-			    ltmp0 = jptr->value.cse.lower;
-			    utmp0 = jptr->value.cse.upper;
-			    jptr->value.cse.lower = bptr->value.cse.lower;
-			    jptr->value.cse.upper = bptr->value.cse.upper;
-			    bptr->value.cse.lower = ltmp0;
-			    bptr->value.cse.upper = utmp0;
-			    /* Continue as sorted value may be merged */
-			    continue;
-			}
-			/* Convert sequential characters to a range */
-			if (bptr->value.chr < jptr->value.chr &&
-			    bptr->value.chr == jptr->value.chr + 1) {
-			    if (bptr->type == Reb_Single) {
-				bptr->type = Reb_Range;
-				bptr->range.chr = jptr->value.chr;
-			    }
-			    else {
-				bptr->type = Reb_CaseRange;
-				bptr->range.cse.lower = jptr->value.cse.lower;
-				bptr->range.cse.upper = jptr->value.cse.upper;
-			    }
-			    pptr->next = jptr->next;
-			    free(jptr);
-			    jptr = pptr;
-			}
-			break;
-		    case Reb_Range:
-		    case Reb_CaseRange:
-			if (jptr->range.chr < bptr->value.chr)
-			    /* If last of jptr < first of bptr */
-			    goto swap_range;
-			else if ((jptr->range.chr >= bptr->value.chr &&
-				  jptr->value.chr <= bptr->range.chr) ||
-				 (bptr->range.chr >= jptr->value.chr &&
-				  jptr->value.chr <= bptr->value.chr)) {
-			    /* If ranges overlap */
-			    ltmp0 = MIN(bptr->value.cse.lower,
-					jptr->value.cse.lower);
-			    utmp0 = MAX(bptr->value.cse.upper,
-					jptr->value.cse.upper);
-			    bptr->value.cse.lower = ltmp0;
-			    bptr->value.cse.upper = utmp0;
-			    pptr->next = jptr->next;
-			    free(jptr);
-			    jptr = pptr;
-			}
-			break;
-		}
-		goto increment_range;
-	    }
-	    else {	/* bptr->type != jptr->type */
-		switch (bptr->type) {
-		    case Reb_Single:
-			/* Reb_Singles are the last entries */
-			goto swap_range;
-
-		    case Reb_CaseSingle:
-			if (jptr->type == Reb_Range)
-			    /* Single matches last */
-			    goto swap_range;
-			if (jptr->type == Reb_Single)
-			    /* If cannot merge and sorted */
-			    goto increment_range;
-			/* jptr->type == Reb_CaseRange */
-			goto swap_range;
-
-		    case Reb_Range:
-			if (jptr->type == Reb_Single) {
-			    if (bptr->value.chr >= jptr->value.chr &&
-				bptr->value.chr <= jptr->range.chr) {
-				/* Overlap */
-				pptr->next = jptr->next;
-				free(jptr);
-				jptr = pptr;
-			    }
-			    /*  Check if single character match can augment
-			     * the range.
-			     *  Do check without risky math since both values
-			     * are unsigned. */
-			    else if ((jptr->value.chr < bptr->value.chr &&
-				      jptr->value.chr + 1 == bptr->value.chr) ||
-				     (jptr->value.chr > bptr->range.chr &&
-				      jptr->value.chr - 1 == bptr->range.chr)) {
-				ltmp0 = MIN(bptr->value.chr, jptr->value.chr);
-				utmp0 = MAX(bptr->range.chr, jptr->value.chr);
-				bptr->value.chr = ltmp0;
-				bptr->range.chr = utmp0;
-				pptr->next = jptr->next;
-				free(jptr);
-				jptr = pptr;
-			    }
-			    /* Already in the correct order */
-			    goto increment_range;
-			}
-			else if (jptr->type == Reb_CaseRange)
-			    /*  Ranges before singles, and case sensitive
-			     * before case insensitive */
-			    goto swap_range;
-			/* jptr->type == Reb_CaseSingle */
-			goto increment_range;
-
-		    case Reb_CaseRange:
-			if (jptr->type == Reb_Range)
-			    /* If already sorted */
-			    goto increment_range;
-			if (jptr->type == Reb_Single)
-			    /* If cannot merge but sorted */
-			    goto increment_range;
-
-			/* jptr->type == Reb_CaseSingle */
-			if (bptr->value.chr <= jptr->value.chr &&
-			    bptr->range.chr >= jptr->value.chr) {
-			    /* Overlap */
-			    pptr->next = jptr->next;
-			    free(jptr);
-			    jptr = pptr;
-			}
-			/*  Check if single character match can augment
-			 * the range.
-			 *  Do check without risky math since both values
-			 * are unsigned. */
-			else if ((jptr->value.chr < bptr->value.chr &&
-				  jptr->value.chr + 1 == bptr->value.chr) ||
-				 (jptr->value.chr > bptr->range.chr &&
-				  jptr->value.chr - 1 == bptr->range.chr)) {
-			    ltmp0 = MIN(bptr->value.cse.lower,
-					jptr->value.cse.lower);
-			    ltmp1 = MAX(bptr->value.cse.lower,
-					jptr->value.cse.lower);
-			    utmp0 = MIN(bptr->range.cse.upper,
-					jptr->value.cse.upper);
-			    utmp1 = MAX(bptr->range.cse.upper,
-					jptr->value.cse.upper);
-			    bptr->value.cse.lower = ltmp0;
-			    bptr->value.cse.upper = utmp0;
-			    bptr->range.cse.lower = ltmp1;
-			    bptr->range.cse.upper = utmp1;
-			    pptr->next = jptr->next;
-			    free(jptr);
-			    jptr = pptr;
-			}
-			goto increment_range;
-		}
-	    }
-
-swap_range:
-	    type = jptr->type;
-	    ltmp0 = jptr->value.cse.lower;
-	    utmp0 = jptr->value.cse.upper;
-	    ltmp1 = jptr->range.cse.lower;
-	    utmp1 = jptr->range.cse.upper;
-	    jptr->type = bptr->type;
-	    jptr->value.cse.lower = bptr->value.cse.lower;
-	    jptr->value.cse.upper = bptr->value.cse.upper;
-	    jptr->range.cse.lower = bptr->range.cse.lower;
-	    jptr->range.cse.upper = bptr->range.cse.upper;
-	    bptr->type = type;
-	    bptr->value.cse.lower = ltmp0;
-	    bptr->value.cse.upper = utmp0;
-	    bptr->range.cse.lower = ltmp1;
-	    bptr->range.cse.upper = utmp1;
-	    jptr = bptr->next;
-	    continue;
-
-increment_range:
-	    pptr = jptr;
-	    jptr = jptr->next;
-	}
-    }
-
-    /* Final checking */
-    bptr = pat->data.rng;
-
-    if (bptr->next == NULL) {
-	/* If only one character in range, change type */
-	if (bptr->type == Reb_Single) {
-	    ltmp0 = bptr->value.chr;
-	    free(bptr);
-	    pat->type = not ? Rep_LiteralNot : Rep_Literal;
-	    pat->data.chr = ltmp0;
-	}
-	else if (bptr->type == Reb_CaseSingle) {
-	    ltmp0 = bptr->value.cse.lower;
-	    utmp0 = bptr->value.cse.upper;
-	    free(bptr);
-	    pat->type = not ? Rep_CaseLiteralNot : Rep_CaseLiteral;
-	    pat->data.cse.lower = ltmp0;
-	    pat->data.cse.upper = utmp0;
-	}
-	/* Try to simplify some common patterns */
-	else if (bptr->type == Rep_Range) {
-	    if (bptr->value.chr == '0') {
-		if (bptr->range.chr == '7') {
-		    free(bptr);
-		    pat->type = Rep_Odigit;
-		}
-		else if (bptr->range.chr == '9') {
-		    free(bptr);
-		    pat->type = Rep_Digit;
-		}
-	    }
-	}
-    }
 }
 
 static void
 irec_range_single(irec_info *inf, int value)
 {
-    rec_rng *rng;
-    int cse = (inf->flags & RE_ICASE) && (islower(value) || isupper(value));
+    if (value >= 0 && value <= 255)
+	inf->ppat->data.rng->range[value] = 1;
 
-    rng = calloc(1, sizeof(rec_rng));
-    if (rng == NULL) {
-	inf->ecode = RE_ESPACE;
-	return;
+    if (inf->flags & RE_ICASE) {
+	if (islower(value)) {
+	    value = toupper(value);
+	    if (value >= 0 && value <= 255)
+		inf->ppat->data.rng->range[value] = 1;
+	}
+	else if (isupper(value)) {
+	    value = tolower(value);
+	    if (value >= 0 && value <= 255)
+		inf->ppat->data.rng->range[value] = 1;
+	}
     }
-
-    if (cse) {
-	rng->type = Reb_CaseSingle;
-	rng->value.cse.lower = tolower(value);
-	rng->value.cse.upper = toupper(value);
-    }
-    else {
-	rng->type = Reb_Single;
-	rng->value.chr = value;
-    }
-
-    irec_range_add(inf, rng);
 }
 
 static void
 irec_range_complex(irec_info *inf, int chrf, int chrt)
 {
-    int done;
-    rec_rng *rng;
-
     if (chrf > chrt) {
 	inf->ecode = RE_ERANGE;
 	return;
     }
-    else if (chrf == chrt) {
+
+    for (; chrf <= chrt; chrf++)
 	irec_range_single(inf, chrf);
-	return;
-    }
-
-    if (inf->flags & RE_ICASE) {
-	/* Case sensitive range, create subranges with appropriate values */
-	int cse, inc;
-	unsigned char chr;
-
-	for (chr = chrf, done = 0; !done; chr = chrf) {
-	    cse = islower(chr) || isupper(chr);
-
-	    rng = calloc(1, sizeof(rec_rng));
-	    if (rng == NULL) {
-		inf->ecode = RE_ESPACE;
-		return;
-	    }
-
-	    if (cse) {
-		/* While character has boths cases */
-		for (inc = 0;; chrf++) {
-		    if (!islower(chrf) && !isupper(chrf)) {
-			inc = 1;
-			break;
-		    }
-		    else if (chrf == chrt)
-			break;
-		}
-		if (inc)
-		    --chrf;
-		if (chrf == chr) {
-		    rng->type = Reb_CaseSingle;
-		    rng->value.cse.lower = tolower(chr);
-		    rng->value.cse.upper = toupper(chr);
-		}
-		else {
-		    rng->type = Reb_CaseRange;
-		    rng->value.cse.lower = tolower(chr);
-		    rng->value.cse.upper = toupper(chr);
-		    rng->range.cse.lower = tolower(chrf);
-		    rng->range.cse.upper = toupper(chrf);
-		}
-		if (inc)
-		    ++chrf;
-		else if (chrf == chrt)
-		    done = 1;
-	    }
-	    else {
-		/* While character is case insensitive */
-		for (inc = 0;; chrf++) {
-		    if (islower(chrf) || isupper(chrf)) {
-			inc = 1;
-			break;
-		    }
-		    else if (chrf == chrt)
-			break;
-		}
-		if (inc)
-		    --chrf;
-		if (chrf == chr) {
-		    rng->type = Reb_Single;
-		    rng->value.chr = chr;
-		}
-		else {
-		    rng->type = Reb_Range;
-		    rng->value.chr = chr;
-		    rng->range.chr = chrf;
-		}
-		if (inc)
-		    ++chrf;
-		else if (chrf == chrt)
-		    done = 1;
-	    }
-	    irec_range_add(inf, rng);
-	}
-    }
-    else {
-	/* Just add range */
-	rng = calloc(1, sizeof(rec_rng));
-	if (rng == NULL) {
-	    inf->ecode = RE_ESPACE;
-	    return;
-	}
-
-	rng->type = Reb_Range;
-	rng->value.chr = chrf;
-	rng->range.chr = chrt;
-
-	irec_range_add(inf, rng);
-    }
-}
-
-static void
-irec_range_add(irec_info *inf, rec_rng *rng)
-{
-    if (inf->rprv == NULL) {
-	/* First range element */
-	if (inf->ppat) {
-	    inf->rpat->prev = inf->ppat;
-	    inf->ppat->next = inf->rpat;
-	}
-	else
-	    inf->palt->pat = inf->rpat;
-	inf->ppat = inf->rpat;
-	inf->rpat->data.rng = inf->rbas = inf->rprv = rng;
-	inf->rpat = NULL;
-    }
-    else {
-	/* Add new range to list */
-	inf->rprv->next = rng;
-	inf->rprv = rng;
-    }
 }
 
 static void
@@ -933,6 +596,9 @@ irec_escape(irec_info *inf)
 	case 'o':
 	    irec_simple_pattern(inf, Rep_Odigit);
 	    break;
+	case 'O':
+	    irec_simple_pattern(inf, Rep_OdigitNot);
+	    break;
 	case 'd':
 	    irec_simple_pattern(inf, Rep_Digit);
 	    break;
@@ -941,6 +607,9 @@ irec_escape(irec_info *inf)
 	    break;
 	case 'x':
 	    irec_simple_pattern(inf, Rep_Xdigit);
+	    break;
+	case 'X':
+	    irec_simple_pattern(inf, Rep_XdigitNot);
 	    break;
 	case 's':
 	    irec_simple_pattern(inf, Rep_Space);
@@ -968,6 +637,9 @@ irec_escape(irec_info *inf)
 	    break;
 	case 'c':
 	    irec_simple_pattern(inf, Rep_Control);
+	    break;
+	case 'C':
+	    irec_simple_pattern(inf, Rep_ControlNot);
 	    break;
 	case '<':
 	    irec_simple_pattern(inf, Rep_Bow);
@@ -1309,8 +981,6 @@ irec_add_repetition(irec_info *inf, rec_rep *rep)
 static void
 irec_free(irec_info *inf)
 {
-    if (inf->rpat)
-	free(inf->rpat);
     irec_free_alt(inf->alt);
 }
 
@@ -1334,26 +1004,12 @@ irec_free_pats(rec_pat *pat)
 	    free(pat->rep);
 	rect = pat->type;
 	if (rect == Rep_Range || rect == Rep_RangeNot)
-	    irec_free_rngs(pat->data.rng);
+	    free(pat->data.rng);
 	else if (rect == Rep_Group)
 	    irec_free_grp(pat->data.grp);
 	else if (rect == Rep_StringList)
 	    orec_free_stl(pat->data.stl);
-	else if (rect == Rep_BitRange || rect == Rep_BitRangeNot)
-	    free(pat->data.rbm);
 	free(pat);
 	pat = next;
-    }
-}
-
-static void
-irec_free_rngs(rec_rng *rng)
-{
-    rec_rng *next;
-
-    while (rng) {
-	next = rng->next;
-	free(rng);
-	rng = next;
     }
 }

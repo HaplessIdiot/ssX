@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.12 2002/11/13 05:39:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.13 2002/11/13 05:44:49 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -386,7 +386,7 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
     LispPopInput(&execute_stream);
 
     returns = NIL;
-    if (RETURN_COUNT) {
+    if (RETURN_COUNT > 0) {
 	GC_PROTECT(result);
 	returns = _cod = CONS(RETURN(0), NIL);
 	GC_PROTECT(returns);
@@ -396,9 +396,11 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
 	}
     }
     LispUpdateResults(code, result);
-    XeditPrint(output, result);
-    for (; CONSP(returns); returns = CDR(returns))
-	XeditPrint(output, CAR(returns));
+    if (RETURN_COUNT >= 0) {
+	XeditPrint(output, result);
+	for (; CONSP(returns); returns = CDR(returns))
+	    XeditPrint(output, CAR(returns));
+    }
 
     if (alloced)
 	LispFree(string);

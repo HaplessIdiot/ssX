@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.68 2002/11/12 06:05:08 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.69 2002/11/13 04:35:46 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -764,7 +764,6 @@ LispTopLevel(void)
 	lisp__data.block.block = NULL;
     }
 
-    lisp__data.discard = 0;
     lisp__data.destroyed = 0;
 
     if (CONSP(lisp__data.input_list)) {
@@ -4884,8 +4883,9 @@ LispMachine(void)
 		    LispDestroy("dot allowed only on lists");
 		obj = EVAL(cod);
 		if (lisp__data.interactive) {
-		    LispPrint(obj, NIL, 1);
-		    if (RETURN_COUNT) {
+		    if (RETURN_COUNT >= 0)
+			LispPrint(obj, NIL, 1);
+		    if (RETURN_COUNT > 0) {
 			int i;
 
 			for (i = 0; i < RETURN_COUNT; i++)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.56 2002/11/10 23:21:59 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.57 2002/11/13 04:35:45 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -2601,7 +2601,7 @@ Lisp_MultipleValueBind(LispBuiltin *builtin)
 	symbol = CAR(symbols);
 	CHECK_SYMBOL(symbol);
 	CHECK_CONSTANT(symbol);
-	if (i >= 0)
+	if (i >= 0 && i < RETURN_COUNT)
 	    value = RETURN(i);
 	else if (i < 0)
 	    value = result;
@@ -2633,6 +2633,9 @@ Lisp_MultipleValueList(LispBuiltin *builtin)
     form = ARGUMENT(0);
 
     result = EVAL(form);
+
+    if (RETURN_COUNT < 0)
+	return (NIL);
 
     result = cons = CONS(result, NIL);
     GC_PROTECT(result);
@@ -2672,7 +2675,7 @@ Lisp_MultipleValueSetq(LispBuiltin *builtin)
 	symbol = CAR(symbols);
 	CHECK_SYMBOL(symbol);
 	CHECK_CONSTANT(symbol);
-	if (i < RETURN_COUNT)
+	if (i < RETURN_COUNT && RETURN_COUNT > 0)
 	    value = RETURN(i);
 	else
 	    value = NIL;
@@ -5511,10 +5514,10 @@ Lisp_Values(LispBuiltin *builtin)
 	     count--, i++, objects = CDR(objects))
 	    RETURN(i) = CAR(objects);
     }
-    else
-	/* XXX must set a flag telling that no result was generated at this
-	       level, maybe setting RETURN_COUNT to -1? */
+    else {
+	RETURN_COUNT = -1;
 	result = NIL;
+    }
 
     return (result);
 }

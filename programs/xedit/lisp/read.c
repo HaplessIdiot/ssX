@@ -27,38 +27,79 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.23 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.24 2002/11/10 16:29:06 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
 #include "package.h"
+#include <fcntl.h>
+
+/* This should be visible only in read.c, but if an error is generated,
+ * the current code in write.c will print it as #<ERROR> */
+#define LABEL_BIT_COUNT		8
+#define LABEL_BIT_MASK		0xff
+#define MAX_LABEL_VALUE		((1 << (sizeof(long) * 8 - 9)) - 1)
+#define READLABEL(label)						\
+    (LispObj*)(((label) << LABEL_BIT_COUNT) | READLABEL_MASK)
+#define READLABELP(object)						\
+    (((unsigned long)(object) & LABEL_BIT_MASK) == READLABEL_MASK)
+#define READLABEL_VALUE(object)						\
+    ((long)(object) >> LABEL_BIT_COUNT)
+
+/*
+ * Types
+ */
+typedef struct _object_info {
+    long label;		/* the read label of this object */
+    LispObj *object;	/* the resulting object */
+    long num_circles;	/* references to object before it was completely read */
+} object_info;
+
+typedef struct _read_info {
+    int level;		/* level of open parentheses */
+
+    int nodot;		/* flag set when reading a "special" list */
+
+    int discard;	/* flag used when reading an unavailable feature */
+
+    long circle_count;	/* if non zero, must resolve some labels */
+
+    /* information for #<number>= and #<number># */
+    object_info *objects;
+    long num_objects;
+} read_info;
 
 /*
  * Protypes
  */
+static LispObj *LispReadChar(LispBuiltin*, int);
+
+static void LispReadFixCircle(LispObj*, read_info*);
+static LispObj *LispReadLabelCircle(LispObj*, read_info*);
+static LispObj *LispDoRead(read_info*);
 static int LispSkipWhiteSpace(void);
-static LispObj *LispReadList(void);
-static LispObj *LispReadQuote(void);
-static LispObj *LispReadBackquote(void);
-static LispObj *LispReadCommaquote(void);
-static LispObj *LispReadObject(int);
+static LispObj *LispReadList(read_info*);
+static LispObj *LispReadQuote(read_info*);
+static LispObj *LispReadBackquote(read_info*);
+static LispObj *LispReadCommaquote(read_info*);
+static LispObj *LispReadObject(int, read_info*);
 static LispObj *LispParseAtom(char*, char*, int, int);
 static LispObj *LispParseNumber(char*, int);
 static int StringInRadix(char*, int, int);
 static int AtomSeparator(int, int, int);
-static LispObj *LispReadVector(void);
-static LispObj *LispReadMacro(void);
-static LispObj *LispReadFunction(void);
-static LispObj *LispReadRational(int);
-static LispObj *LispReadCharacter(void);
+static LispObj *LispReadVector(read_info*);
+static LispObj *LispReadMacro(read_info*);
+static LispObj *LispReadFunction(read_info*);
+static LispObj *LispReadRational(int, read_info*);
+static LispObj *LispReadCharacter(read_info*);
 static void LispSkipComment(void);
-static LispObj *LispReadEval(void);
-static LispObj *LispReadComplex(void);
-static LispObj *LispReadPathname(void);
-static LispObj *LispReadStruct(void);
-static LispObj *LispReadMacroArg(void);
-static LispObj *LispReadArray(long);
-static LispObj *LispReadFeature(int);
+static LispObj *LispReadEval(read_info*);
+static LispObj *LispReadComplex(read_info*);
+static LispObj *LispReadPathname(read_info*);
+static LispObj *LispReadStruct(read_info*);
+static LispObj *LispReadMacroArg(read_info*);
+static LispObj *LispReadArray(long, read_info*);
+static LispObj *LispReadFeature(int, read_info*);
 static LispObj *LispEvalFeature(LispObj*);
 
 /*
@@ -133,229 +174,36 @@ LispCharInfo LispChars[256] = {
     {Char_Rs},
     {Char_Us},
     {Char_Sp},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
     {Char_Del},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL},
-    {NULL}
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL},
+    {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}, {NULL}
+    
 };
 
 Atom_id Sand, Sor, Snot;
@@ -365,14 +213,386 @@ Atom_id Sand, Sor, Snot;
  * Implementation
  */
 LispObj *
+Lisp_Read(LispBuiltin *builtin)
+/*
+ read &optional input-stream (eof-error-p t) eof-value recursive-p
+ */
+{
+    LispObj *result;
+
+    LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
+
+    recursive_p = ARGUMENT(3);
+    eof_value = ARGUMENT(2);
+    eof_error_p = ARGUMENT(1);
+    input_stream = ARGUMENT(0);
+
+    if (input_stream != NIL) {
+	CHECK_STREAM(input_stream);
+	else if (!input_stream->data.stream.readable)
+	    LispDestroy("%s: stream %s is not readable",
+			STRFUN(builtin), STROBJ(input_stream));
+	LispPushInput(input_stream);
+    }
+    else if (CONSP(lisp__data.input_list)) {
+	input_stream = STANDARD_INPUT;
+	LispPushInput(input_stream);
+    }
+
+    result = LispRead();
+    if (result == EOLIST)
+	LispDestroy("%s: object cannot start with #\\)", STRFUN(builtin));
+    else if (result == DOT)
+	LispDestroy("dot allowed only on lists");
+    if (input_stream != NIL)
+	LispPopInput(input_stream);
+
+    if (result == NULL) {
+	if (eof_error_p != NIL)
+	    LispDestroy("%s: EOF reading stream %s",
+			STRFUN(builtin), STROBJ(input_stream));
+	else
+	    result = eof_value;
+    }
+
+    return (result);
+}
+
+static LispObj *
+LispReadChar(LispBuiltin *builtin, int nohang)
+{
+    int character;
+    LispObj *result;
+
+    LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
+
+    recursive_p = ARGUMENT(3);
+    eof_value = ARGUMENT(2);
+    eof_error_p = ARGUMENT(1);
+    input_stream = ARGUMENT(0);
+
+    if (input_stream != NIL) {
+	CHECK_STREAM(input_stream);
+    }
+    else
+	input_stream = lisp__data.input;
+
+    result = eof_value;
+    character = EOF;
+
+    if (input_stream->data.stream.readable) {
+	LispFile *file = NULL;
+
+	switch (input_stream->data.stream.type) {
+	    case LispStreamStandard:
+	    case LispStreamFile:
+		file = FSTREAMP(input_stream);
+		break;
+	    case LispStreamPipe:
+		file = IPSTREAMP(input_stream);
+		break;
+	    case LispStreamString:
+		character = LispSgetc(SSTREAMP(input_stream));
+		break;
+	    default:
+		break;
+	}
+	if (file != NULL) {
+	    if (file->available || file->offset < file->length)
+		character = LispFgetc(file);
+	    else {
+		if (nohang && !file->nonblock) {
+		    if (fcntl(file->descriptor, F_SETFL, O_NONBLOCK) < 0)
+			LispDestroy("%s: fcntl(%d): %s",
+				    STRFUN(builtin), file->descriptor,
+				    strerror(errno));
+		    file->nonblock = 1;
+		}
+		else if (!nohang && file->nonblock) {
+		    if (fcntl(file->descriptor, F_SETFL, 0) < 0)
+			LispDestroy("%s: fcntl(%d): %s",
+				    STRFUN(builtin), file->descriptor,
+				    strerror(errno));
+		    file->nonblock = 0;
+		}
+		if (nohang) {
+		    unsigned char ch;
+
+		    if (read(file->descriptor, &ch, 1) == 1)
+			character = ch;
+		    else if (errno == EAGAIN)
+			return (NIL);	/* XXX no character available */
+		    else
+			character = EOF;
+		}
+		else
+		    character = LispFgetc(file);
+	    }
+	}
+    }
+    else
+	LispDestroy("%s: stream %s is unreadable",
+		    STRFUN(builtin), STROBJ(input_stream));
+
+    if (character == EOF) {
+	if (eof_error_p != NIL)
+	    LispDestroy("%s: EOF reading stream %s",
+			STRFUN(builtin), STROBJ(input_stream));
+
+	return (eof_value);
+    }
+
+    return (SCHAR(character));
+}
+
+LispObj *
+Lisp_ReadChar(LispBuiltin *builtin)
+/*
+ read-char &optional input-stream (eof-error-p t) eof-value recursive-p
+ */
+{
+    return (LispReadChar(builtin, 0));
+}
+
+LispObj *
+Lisp_ReadCharNoHang(LispBuiltin *builtin)
+/*
+ read-char-no-hang &optional input-stream (eof-error-p t) eof-value recursive-p
+ */
+{
+    return (LispReadChar(builtin, 1));
+}
+
+LispObj *
+Lisp_ReadLine(LispBuiltin *builtin)
+/*
+ read-line &optional input-stream (eof-error-p t) eof-value recursive-p
+ */
+{
+    char *string;
+    int ch, length;
+    LispObj *result, *status = NIL;
+
+    LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
+
+    recursive_p = ARGUMENT(3);
+    eof_value = ARGUMENT(2);
+    eof_error_p = ARGUMENT(1);
+    input_stream = ARGUMENT(0);
+
+    if (input_stream == NIL)
+	input_stream = STANDARD_INPUT;
+    else {
+	CHECK_STREAM(input_stream);
+    }
+
+    result = eof_value;
+    string = NULL;
+    length = 0;
+
+    if (!input_stream->data.stream.readable)
+	LispDestroy("%s: stream %s is unreadable",
+		    STRFUN(builtin), STROBJ(input_stream));
+    if (input_stream->data.stream.type == LispStreamString) {
+	char *start, *end, *ptr;
+
+	if (SSTREAMP(input_stream)->input >=
+	    SSTREAMP(input_stream)->length) {
+	    if (eof_error_p != NIL)
+		LispDestroy("%s: EOS found reading %s",
+			    STRFUN(builtin), STROBJ(input_stream));
+
+	    status = T;
+	    result = eof_value;
+	    goto read_line_done;
+	}
+
+	start = SSTREAMP(input_stream)->string +
+		SSTREAMP(input_stream)->input;
+	end = SSTREAMP(input_stream)->string +
+	      SSTREAMP(input_stream)->length;
+	/* Search for a newline */
+	for (ptr = start; *ptr != '\n' && ptr < end; ptr++)
+	    ;
+	if (ptr == end)
+	    status = T;
+	length = ptr - start;
+	string = LispMalloc(length + 1);
+	memcpy(string, start, length);
+	string[length] = '\0';
+	result = LSTRING2(string, length);
+	/* macro LSTRING2 does not make a copy of it's arguments, and
+	 * calls LispMused on it. */
+	SSTREAMP(input_stream)->input += length + (status == NIL);
+    }
+    else /*if (input_stream->data.stream.type == LispStreamFile ||
+	     input_stream->data.stream.type == LispStreamStandard ||
+	     input_stream->data.stream.type == LispStreamPipe)*/ {
+	LispFile *file;
+
+	if (input_stream->data.stream.type == LispStreamPipe)
+	    file = IPSTREAMP(input_stream);
+	else
+	    file = FSTREAMP(input_stream);
+
+	if (file->nonblock) {
+	    if (fcntl(file->descriptor, F_SETFL, 0) < 0)
+		LispDestroy("%s: fcntl: %s",
+			    STRFUN(builtin), strerror(errno));
+	    file->nonblock = 0;
+	}
+
+	while (1) {
+	    ch = LispFgetc(file);
+	    if (ch == EOF) {
+		if (length)
+		    break;
+		if (eof_error_p != NIL)
+		    LispDestroy("%s: EOF found reading %s",
+				STRFUN(builtin), STROBJ(input_stream));
+		if (string)
+		    LispFree(string);
+
+		status = T;
+		result = eof_value;
+		goto read_line_done;
+	    }
+	    else if (ch == '\n')
+		break;
+	    else if ((length % 64) == 0)
+		string = LispRealloc(string, length + 64);
+	    string[length++] = ch;
+	}
+	if (string) {
+	    if ((length % 64) == 0)
+		string = LispRealloc(string, length + 1);
+	    string[length] = '\0';
+	    result = LSTRING2(string, length);
+	}
+	else
+	    result = STRING("");
+    }
+
+read_line_done:
+    RETURN(0) = status;
+    RETURN_COUNT = 1;
+
+    return (result);
+}
+
+LispObj *
 LispRead(void)
+{
+    read_info info;
+    LispObj *result;
+
+    info.nodot = 0;
+    info.discard = 0;
+    info.circle_count = 0;
+    info.objects = NULL;
+    info.num_objects = 0;
+
+    result = LispDoRead(&info);
+
+    /* fix circular/shared lists, note that this is done when returning to
+     * the toplevel, so, if some circular/shared reference was evaluated,
+     * it should have generated an expected error */
+    if (info.num_objects) {
+	if (info.circle_count)
+	    LispReadFixCircle(result, &info);
+	LispFree(info.objects);
+    }
+
+    return (result);
+}
+
+static void
+LispReadFixCircle(LispObj *object, read_info *info)
+{
+fix_again:
+    switch (OBJECT_TYPE(object)) {
+	case LispCons_t:
+	    for (; CONSP(object); object = CDR(object)) {
+		if (READLABELP(CAR(object)))
+		    CAR(object) = LispReadLabelCircle(CAR(object), info);
+		else
+		    LispReadFixCircle(CAR(object), info);
+	    }
+	    break;
+	case LispArray_t:
+	    if (READLABELP(object->data.array.list))
+		object->data.array.list =
+		    LispReadLabelCircle(object->data.array.list, info);
+	    else {
+		object = object->data.array.list;
+		goto fix_again;
+	    }
+	    break;
+	case LispStruct_t:
+	    if (READLABELP(object->data.struc.fields))
+		object->data.struc.fields =
+		    LispReadLabelCircle(object->data.struc.fields, info);
+	    else {
+		object = object->data.struc.fields;
+		goto fix_again;
+	    }
+	    break;
+	case LispQuote_t:
+	case LispBackquote_t:
+	    if (READLABELP(object->data.quote))
+		object->data.quote =
+		    LispReadLabelCircle(object->data.quote, info);
+	    else {
+		object = object->data.quote;
+		goto fix_again;
+	    }
+	    break;
+	case LispComma_t:
+	    if (READLABELP(object->data.comma.eval))
+		object->data.comma.eval =
+		    LispReadLabelCircle(object->data.comma.eval, info);
+	    else {
+		object = object->data.comma.eval;
+		goto fix_again;
+	    }
+	    break;
+	case LispLambda_t:
+	    if (READLABELP(object->data.lambda.code))
+		object->data.lambda.code =
+		    LispReadLabelCircle(object->data.lambda.code, info);
+	    else {
+		object = object->data.lambda.code;
+		goto fix_again;
+	    }
+	    break;
+	default:
+	    break;
+    }
+}
+
+static LispObj *
+LispReadLabelCircle(LispObj *label, read_info *info)
+{
+    long i, value = READLABEL_VALUE(label);
+
+    for (i = 0; i < info->num_objects; i++)
+	if (info->objects[i].label == value)
+	    return (info->objects[i].object);
+
+    LispDestroy("READ: internal error");
+    /*NOTREACHED*/
+    return (label);
+}
+
+static LispObj *
+LispDoRead(read_info *info)
 {
     LispObj *object, *code = COD;
     int ch = LispSkipWhiteSpace();
 
     switch (ch) {
 	case '(':
-	    object = LispReadList();
+	    object = LispReadList(info);
 	    break;
 	case ')':
 	    for (ch = LispGet(); ch != EOF && ch != '\n'; ch = LispGet()) {
@@ -385,96 +605,116 @@ LispRead(void)
 	case EOF:
 	    return (NULL);
 	case '\'':
-	    object = LispReadQuote();
+	    object = LispReadQuote(info);
 	    break;
 	case '`':
-	    object = LispReadBackquote();
+	    object = LispReadBackquote(info);
 	    break;
 	case ',':
-	    object = LispReadCommaquote();
+	    object = LispReadCommaquote(info);
 	    break;
 	case '#':
-	    object = LispReadMacro();
-	    /* Don't "link" EOLIST to COD, this may happen if
-	     * a multiline comment is the last token in a form. */
-	    if (INVALIDP(object))
-		return (object);
+	    object = LispReadMacro(info);
 	    break;
 	default:
 	    LispUnget(ch);
-	    object = LispReadObject(0);
+	    object = LispReadObject(0, info);
 	    break;
     }
 
-    /* keep data gc protected while recursing, when returning to the first
-     * call, COD will point to a single copy of the form to be evaluated */
+    if (!POINTERP(object) || INVALIDP(object))
+	return (object);
+
     if (code == NIL)
 	COD = object;
     else
+	/* XXX This should only happen if a recursive read happened,
+	 * and probably should be triggered as an error, unless specified
+	 * to not do so. Recursive reads works as the read data isn't
+	 * buffered at the read layer.
+	 * FIXME The interpreter must be redesigned in it's current
+	 * read/eval loop to use the builtin function read. */
 	COD = CONS(COD, object);
 
     return (object);
 }
 
 static LispObj *
-LispReadMacro(void)
+LispReadMacro(read_info *info)
 {
+    LispObj *result = NULL;
     int ch = LispGet();
 
     switch (ch) {
 	case '(':
-	    return (LispReadVector());
+	    result = LispReadVector(info);
+	    break;
 	case '\'':
-	    return (LispReadFunction());
+	   result = LispReadFunction(info);
+	   break;
 	case 'b':
 	case 'B':
-	    return (LispReadRational(2));
+	    result = LispReadRational(2, info);
+	    break;
 	case 'o':
 	case 'O':
-	    return (LispReadRational(8));
+	    result = LispReadRational(8, info);
+	    break;
 	case 'x':
 	case 'X':
-	    return (LispReadRational(16));
+	    result = LispReadRational(16, info);
+	    break;
 	case '\\':
-	    return (LispReadCharacter());
+	    result = LispReadCharacter(info);
+	    break;
 	case '|':
 	    LispSkipComment();
-	    return (LispRead());
+	    result = LispDoRead(info);
+	    break;
 	case '.':	/* eval when compiling */
 	case ',':	/* eval when loading */
-	    return (LispReadEval());
+	    result = LispReadEval(info);
+	    break;
 	case 'c':
 	case 'C':
-	    return (LispReadComplex());
+	    result = LispReadComplex(info);
+	    break;
 	case 'p':
 	case 'P':
-	    return (LispReadPathname());
+	    result = LispReadPathname(info);
+	    break;
 	case 's':
 	case 'S':
-	    return (LispReadStruct());
+	    result = LispReadStruct(info);
+	    break;
 	case '+':
-	    return (LispReadFeature(1));
+	    result = LispReadFeature(1, info);
+	    break;
 	case '-':
-	    return (LispReadFeature(0));
+	    result = LispReadFeature(0, info);
+	    break;
 	case ':':
 	    /* Uninterned symbol */
-	    return (LispReadObject(1));
+	    result = LispReadObject(1, info);
+	    break;
 	default:
 	    if (isdigit(ch)) {
 		LispUnget(ch);
-		return (LispReadMacroArg());
+		result = LispReadMacroArg(info);
 	    }
-	    if (!lisp__data.discard)
+	    else if (!info->discard)
 		LispDestroy("READ: undefined dispatch macro character #%c", ch);
+	    break;
     }
 
-    return (NIL);
+    return (result);
 }
 
 static LispObj *
-LispReadMacroArg(void)
+LispReadMacroArg(read_info *info)
 {
-    long integer;
+    LispObj *result = NIL;
+    long i, integer;
     int ch;
 
     /* skip leading zeros */
@@ -494,19 +734,15 @@ LispReadMacroArg(void)
 	    ch = LispGet();
 	    if (!isdigit(ch))
 		break;
-	    if (len + 1 >= sizeof(stk)) {
-		if (lisp__data.discard)
-		    continue;
+	    if (len + 1 >= sizeof(stk))
 		LispDestroy("READ: number is not a fixnum");
-	    }
 	    stk[len++] = ch;
 	}
 	stk[len] = '\0';
 	integer = strtol(stk, &str, 10);
-	if (*str || errno == ERANGE) {
-	    if (!lisp__data.discard)
-		LispDestroy("READ: number is not a fixnum");
-	}
+	/* number is positive because sign is not processed here */
+	if (*str || errno == ERANGE || integer > MOST_POSITIVE_FIXNUM)
+	    LispDestroy("READ: number is not a fixnum");
     }
     else
 	integer = 0;
@@ -518,22 +754,76 @@ LispReadMacroArg(void)
 		/* LispReadArray and LispReadList expect
 		 * the '(' being already read  */
 		if ((ch = LispSkipWhiteSpace()) != '(') {
-		    if (lisp__data.discard)
+		    if (info->discard)
 			return (ch == EOF ? NULL : NIL);
 		    LispDestroy("READ: bad array specification");
 		}
-		return (LispReadVector());
+		result = LispReadVector(info);
 	    }
-	    return (LispReadArray(integer));
+	    else
+		result = LispReadArray(integer, info);
+	    break;
 	case 'r':
 	case 'R':
-	    return (LispReadRational(integer));
+	    result = LispReadRational(integer, info);
+	    break;
+	case '=':
+	    if (integer > MAX_LABEL_VALUE)
+		LispDestroy("READ: number is not a fixnum");
+	    if (!info->discard) {
+		long num_objects = info->num_objects;
+
+		/* check for duplicated label */
+		for (i = 0; i < info->num_objects; i++) {
+		    if (info->objects[i].label == integer)
+			LispDestroy("READ: label #%ld# defined more than once",
+				    integer);
+		}
+		info->objects = LispRealloc(info->objects,
+					    sizeof(object_info) *
+					    (num_objects + 1));
+		/* if this label is referenced it is a shared/circular object */
+		info->objects[num_objects].label = integer;
+		info->objects[num_objects].object = NULL;
+		info->objects[num_objects].num_circles = 0;
+		++info->num_objects;
+		result = LispDoRead(info);
+		if (READLABELP(result) && READLABEL_VALUE(result) == integer)
+		    LispDestroy("incorrect syntax #%ld= #%ld#",
+				integer, integer);
+		/* any reference to it now is not shared/circular */
+		info->objects[num_objects].object = result;
+	    }
+	    else
+		result = LispDoRead(info);
+	    break;
+	case '#':
+	    if (integer > MAX_LABEL_VALUE)
+		LispDestroy("READ: number is not a fixnum");
+	    if (!info->discard) {
+		/* search object */
+		for (i = 0; i < info->num_objects; i++) {
+		    if (info->objects[i].label == integer) {
+			result = info->objects[i].object;
+			if (result == NULL) {
+			    ++info->objects[i].num_circles;
+			    ++info->circle_count;
+			    result = READLABEL(integer);
+			}
+			break;
+		    }
+		}
+		if (i == info->num_objects)
+		    LispDestroy("READ: undefined label #%ld#", integer);
+	    }
+	    break;
 	default:
-	    if (!lisp__data.discard)
+	    if (!info->discard)
 		LispDestroy("READ: undefined dispatch macro character #%c", ch);
+	    break;
     }
 
-    return (NIL);
+    return (result);
 }
 
 static int
@@ -559,52 +849,45 @@ LispSkipWhiteSpace(void)
 
 /* any data in the format '(' FORM ')' is read here */
 static LispObj *
-LispReadList(void)
+LispReadList(read_info *info)
 {
     GC_ENTER();
     LispObj *result, *cons, *object;
     int dot = 0;
 
+    ++info->level;
     /* check for () */
-    object = LispRead();
-    if (object == EOLIST)
-	return (NIL);
+    object = LispDoRead(info);
+    if (object == EOLIST) {
+	--info->level;
 
-    if (object == DOT) {
-	if (!lisp__data.discard)
-	    LispDestroy("READ: illegal start of dotted list");
 	return (NIL);
     }
+
+    if (object == DOT)
+	LispDestroy("READ: illegal start of dotted list");
 
     result = cons = CONS(object, NIL);
 
     /* make sure GC will not release data being read */
     GC_PROTECT(result);
 
-    while ((object = LispRead()) != EOLIST) {
+    while ((object = LispDoRead(info)) != EOLIST) {
 	if (object == NULL)
 	    LispDestroy("READ: unexpected end of input");
 	if (object == DOT) {
+	    if (info->nodot == info->level)
+		LispDestroy("READ: dotted list not allowed");
 	    /* this is a dotted list */
-	    if (dot) {
-		if (!lisp__data.discard)
-		    LispDestroy("READ: more than one . in list");
-		GC_LEAVE();
-
-		return (NIL);
-	    }
+	    if (dot)
+		LispDestroy("READ: more than one . in list");
 	    dot = 1;
 	}
 	else {
 	    if (dot) {
 		/* only one object after a dot */
-		if (++dot > 2) {
-		    if (!lisp__data.discard)
-			LispDestroy("READ: more than one object after . in list");
-		    GC_LEAVE();
-
-		    return (NIL);
-		}
+		if (++dot > 2)
+		    LispDestroy("READ: more than one object after . in list");
 		RPLACD(cons, object);
 	    }
 	    else {
@@ -615,51 +898,45 @@ LispReadList(void)
     }
 
     /* this will happen if last list element was a dot */
-    if (dot == 1) {
-	if (!lisp__data.discard)
-	    LispDestroy("READ: illegal end of dotted list");
-	GC_LEAVE();
+    if (dot == 1)
+	LispDestroy("READ: illegal end of dotted list");
 
-	return (NIL);
-    }
-
+    --info->level;
     GC_LEAVE();
 
     return (result);
 }
 
 static LispObj *
-LispReadQuote(void)
+LispReadQuote(read_info *info)
 {
-    LispObj *quote = LispRead();
+    LispObj *quote = LispDoRead(info), *result;
 
-    if (INVALIDP(quote)) {
-	if (lisp__data.discard)
-	    return (NULL);
+    if (INVALIDP(quote))
 	LispDestroy("READ: illegal quoted object");
-    }
 
-    return (QUOTE(quote));
+    result = QUOTE(quote);
+
+    return (result);
 }
 
 static LispObj *
-LispReadBackquote(void)
+LispReadBackquote(read_info *info)
 {
-    LispObj *backquote = LispRead();
+    LispObj *backquote = LispDoRead(info), *result;
 
-    if (INVALIDP(backquote)) {
-	if (lisp__data.discard)
-	    return (NULL);
+    if (INVALIDP(backquote))
 	LispDestroy("READ: illegal back-quoted object");
-    }
 
-    return (BACKQUOTE(backquote));
+    result = BACKQUOTE(backquote);
+
+    return (result);
 }
 
 static LispObj *
-LispReadCommaquote(void)
+LispReadCommaquote(read_info *info)
 {
-    LispObj *comma;
+    LispObj *comma, *result;
     int atlist = LispGet();
 
     if (atlist == EOF)
@@ -667,18 +944,17 @@ LispReadCommaquote(void)
     else if (atlist != '@' && atlist != '.')
 	LispUnget(atlist);
 
-    comma = LispRead();
+    comma = LispDoRead(info);
     if (comma == DOT) {
 	atlist = '@';
-	comma = LispRead();
+	comma = LispDoRead(info);
     }
-    if (INVALIDP(comma)) {
-	if (lisp__data.discard)
-	    return (NULL);
+    if (INVALIDP(comma))
 	LispDestroy("READ: illegal comma-quoted object");
-    }
 
-    return (COMMA(comma, atlist == '@' || atlist == '.'));
+    result = COMMA(comma, atlist == '@' || atlist == '.');
+
+    return (result);
 }
 
 /*
@@ -686,7 +962,7 @@ LispReadCommaquote(void)
  * and also put the code for reading atoms, numbers and strings together.
  */
 static LispObj *
-LispReadObject(int unintern)
+LispReadObject(int unintern, read_info *info)
 {
     LispObj *object;
     char stk[128], *string, *package, *symbol;
@@ -781,7 +1057,7 @@ LispReadObject(int unintern)
 	string[length++] = ch;
     }
 
-    if (lisp__data.discard) {
+    if (info->discard) {
 	if (string != stk)
 	    LispFree(string);
 
@@ -1154,30 +1430,35 @@ AtomSeparator(int ch, int check_space, int check_backslash)
 }
 
 static LispObj *
-LispReadVector(void)
+LispReadVector(read_info *info)
 {
-    LispObj *object;
     LispObj *objects;
+    int nodot = info->nodot;
 
-    objects = LispReadList();
+    info->nodot = info->level + 1;
+    objects = LispReadList(info);
+    info->nodot = nodot;
 
-    if (lisp__data.discard)
-	return (NULL);
-
-    for (object = objects; CONSP(object); object = CDR(object))
-	;
-    if (object != NIL)
-	LispDestroy("READ: vector cannot be a dotted list");
+    if (info->discard)
+	return (objects);
 
     return (VECTOR(objects));
 }
 
+/* XXX The interpreter probably needs a new object type, a function reference
+ * must evaluate to itself, returning a quoted symbol isn't correct as the
+ * returned value may be evaluated more than once. */
 static LispObj *
-LispReadFunction(void)
+LispReadFunction(read_info *info)
 {
-    LispObj *function = LispRead();
+    int nodot = info->nodot;
+    LispObj *function;
 
-    if (lisp__data.discard)
+    info->nodot = info->level + 1;
+    function = LispDoRead(info);
+    info->nodot = nodot;
+
+    if (info->discard)
 	return (function);
 
     if (INVALIDP(function)) 
@@ -1195,7 +1476,7 @@ LispReadFunction(void)
 }
 
 static LispObj *
-LispReadRational(int radix)
+LispReadRational(int radix, read_info *info)
 {
     LispObj *number;
     int ch, len, size;
@@ -1219,7 +1500,7 @@ LispReadRational(int radix)
 	    ch != '+' && ch != '-' && ch != '/') {
 	    if (str != stk)
 		LispFree(str);
-	    if (!lisp__data.discard)
+	    if (!info->discard)
 		LispDestroy("READ: bad character %c for rational number", ch);
 	}
 	if (len + 1 >= size) {
@@ -1236,7 +1517,7 @@ LispReadRational(int radix)
 	str[len++] = ch;
     }
 
-    if (lisp__data.discard) {
+    if (info->discard) {
 	if (str != stk)
 	    LispFree(str);
 
@@ -1256,7 +1537,7 @@ LispReadRational(int radix)
 }
 
 static LispObj *
-LispReadCharacter(void)
+LispReadCharacter(read_info *info)
 {
     long c;
     int ch, len;
@@ -1303,7 +1584,7 @@ LispReadCharacter(void)
 	}
 
 	if (!found) {
-	    if (lisp__data.discard)
+	    if (info->discard)
 		return (NIL);
 	    LispDestroy("READ: unkwnown character %s", stk);
 	}
@@ -1338,11 +1619,16 @@ LispSkipComment(void)
 }
 
 static LispObj *
-LispReadEval(void)
+LispReadEval(read_info *info)
 {
-    LispObj *code = LispRead();
+    int nodot = info->nodot;
+    LispObj *code;
 
-    if (lisp__data.discard)
+    info->nodot = info->level + 1;
+    code = LispDoRead(info);
+    info->nodot = nodot;
+
+    if (info->discard)
 	return (code);
 
     if (INVALIDP(code))
@@ -1352,13 +1638,18 @@ LispReadEval(void)
 }
 
 static LispObj *
-LispReadComplex(void)
+LispReadComplex(read_info *info)
 {
     GC_ENTER();
-    LispObj *number, *arguments = LispRead();
+    int nodot = info->nodot;
+    LispObj *number, *arguments;
+
+    info->nodot = info->level + 1;
+    arguments = LispDoRead(info);
+    info->nodot = nodot;
 
     /* form read */
-    if (lisp__data.discard)
+    if (info->discard)
 	return (arguments);
 
     if (INVALIDP(arguments) || !CONSP(arguments))
@@ -1372,68 +1663,83 @@ LispReadComplex(void)
 }
 
 static LispObj *
-LispReadPathname(void)
+LispReadPathname(read_info *info)
 {
     GC_ENTER();
-    LispObj *path = LispRead();
+    int nodot = info->nodot;
+    LispObj *path, *arguments;
+
+    info->nodot = info->level + 1;
+    arguments = LispDoRead(info);
+    info->nodot = nodot;
 
     /* form read */
-    if (lisp__data.discard)
-	return (path);
+    if (info->discard)
+	return (arguments);
 
-    if (INVALIDP(path))
+    if (INVALIDP(arguments))
 	LispDestroy("READ: invalid pathname specification");
 
-    GC_PROTECT(path);
-    path = APPLY1(Oparse_namestring, path);
+    GC_PROTECT(arguments);
+    path = APPLY1(Oparse_namestring, arguments);
     GC_LEAVE();
 
     return (path);
 }
 
 static LispObj *
-LispReadStruct(void)
+LispReadStruct(read_info *info)
 {
     GC_ENTER();
-    int len;
+    int len, nodot = info->nodot;
     char stk[128], *str;
-    LispObj *struc, *arguments = LispRead();
+    LispObj *struc, *fields;
+
+    info->nodot = info->level + 1;
+    fields = LispDoRead(info);
+    info->nodot = nodot;
 
     /* form read */
-    if (lisp__data.discard)
-	return (arguments);
+    if (info->discard)
+	return (fields);
 
-    if (INVALIDP(arguments) || !CONSP(arguments) || !SYMBOLP(CAR(arguments)))
+    if (INVALIDP(fields) || !CONSP(fields) || !SYMBOLP(CAR(fields)))
 	LispDestroy("READ: invalid structure specification");
 
-    GC_PROTECT(arguments);
+    GC_PROTECT(fields);
 
-    len = strlen(ATOMID(CAR(arguments)));
+    len = strlen(ATOMID(CAR(fields)));
 	   /* MAKE- */
     if (len + 6 > sizeof(stk))
 	str = LispMalloc(len + 6);
     else
 	str = stk;
-    sprintf(str, "MAKE-%s", ATOMID(CAR(arguments)));
-    RPLACA(arguments, ATOM(str));
+    sprintf(str, "MAKE-%s", ATOMID(CAR(fields)));
+    RPLACA(fields, ATOM(str));
     if (str != stk)
 	LispFree(str);
-    struc = APPLY(Omake_struct, arguments);
+    struc = APPLY(Omake_struct, fields);
     GC_LEAVE();
 
     return (struc);
 }
 
+/* XXX This is broken, needs a rewritten as soon as true vector/arrays be
+ * implemented. */
 static LispObj *
-LispReadArray(long dimensions)
+LispReadArray(long dimensions, read_info *info)
 {
     GC_ENTER();
     long count;
-    LispObj *arguments, *initial, *dim, *cons;
-    LispObj *data = LispRead();
+    int nodot = info->nodot;
+    LispObj *arguments, *initial, *dim, *cons, *array, *data;
+
+    info->nodot = info->level + 1;
+    data = LispDoRead(info);
+    info->nodot = nodot;
 
     /* form read */
-    if (lisp__data.discard)
+    if (info->discard)
 	return (data);
 
     if (INVALIDP(data))
@@ -1470,49 +1776,53 @@ LispReadArray(long dimensions)
 
     arguments = CONS(dim, CONS(initial, CONS(data, NIL)));
     GC_PROTECT(arguments);
-    data = APPLY(Omake_array, arguments);
+    array = APPLY(Omake_array, arguments);
     GC_LEAVE();
 
-    return (data);
+    return (array);
 }
 
 static LispObj *
-LispReadFeature(int with)
+LispReadFeature(int with, read_info *info)
 {
     LispObj *status;
-    LispObj *feature = LispRead();
+    LispObj *feature = LispDoRead(info);
 
     /* form read */
-    if (lisp__data.discard)
+    if (info->discard)
 	return (feature);
 
     if (INVALIDP(feature))
 	LispDestroy("READ: invalid feature specification");
 
+    /* paranoia check, features must be a list, possibly empty */
+    if (!CONSP(FEATURES) && FEATURES != NIL)
+	LispDestroy("READ: %s is not a list", STROBJ(FEATURES));
+
     status = LispEvalFeature(feature);
 
     if (with) {
 	if (status == T)
-	    return (LispRead());
+	    return (LispDoRead(info));
 
 	/* need to use the field discard because the following expression
 	 * may be #.FORM or #,FORM or any other form that may generate
 	 * side effects */
-	lisp__data.discard = 1;
-	LispRead();
-	lisp__data.discard = 0;
+	info->discard = 1;
+	LispDoRead(info);
+	info->discard = 0;
 
-	return (LispRead());
+	return (LispDoRead(info));
     }
 
     if (status == NIL)
-	return (LispRead());
+	return (LispDoRead(info));
 
-    lisp__data.discard = 1;
-    LispRead();
-    lisp__data.discard = 0;
+    info->discard = 1;
+    LispDoRead(info);
+    info->discard = 0;
 
-    return (LispRead());
+    return (LispDoRead(info));
 }
 
 /*
@@ -1566,11 +1876,13 @@ LispEvalFeature(LispObj *feature)
 
     test = ATOMID(feature);
 
-    /* check if specified atom is in the feature list
-     * note that all elements of the feature list must be keywords */
-    for (object = FEATURES; CONSP(object); object = CDR(object))
+    for (object = FEATURES; CONSP(object); object = CDR(object)) {
+	/* paranoia check, elements in the feature list must ge keywords */
+	if (!KEYWORDP(CAR(object)))
+	    LispDestroy("READ: %s is not a keyword", STROBJ(CAR(object)));
 	if (ATOMID(CAR(object)) == test)
 	    return (T);
+    }
 
     /* unknown feature */
     return (NIL);

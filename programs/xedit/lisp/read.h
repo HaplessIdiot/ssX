@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.h,v 1.1 2002/01/30 21:00:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.h,v 1.2 2002/11/08 08:00:57 paulo Exp $ */
 
 #ifndef Lisp_read_h
 #define Lisp_read_h
@@ -38,5 +38,10 @@
  * Prototypes
  */
 LispObj *LispRead(void);
+
+LispObj *Lisp_Read(LispBuiltin*);
+LispObj *Lisp_ReadChar(LispBuiltin*);
+LispObj *Lisp_ReadCharNoHang(LispBuiltin*);
+LispObj *Lisp_ReadLine(LispBuiltin*);
 
 #endif /* Lisp_read_h */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.37 2002/11/10 23:21:59 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.38 2002/11/13 04:35:46 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -147,7 +147,9 @@ typedef struct _LispMac LispMac;
 #define NIL			(LispObj*)0x00000001
 #define T			(LispObj*)0x00000011
 #define DOT			(LispObj*)0x00000021
-#define	EOLIST			(LispObj*)0x00000031	/* unmatched ')' */
+/* unmatched ')' */
+#define	EOLIST			(LispObj*)0x00000031
+#define READLABEL_MASK		0x00000041
 #define INVALIDP(object)						\
     ((object) == NULL || (object) == EOLIST || (object) == DOT)
 
