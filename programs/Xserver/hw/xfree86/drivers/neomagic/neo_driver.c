@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.30 2000/08/04 16:13:32 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.32 2000/09/19 12:46:17 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -70,14 +70,9 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* All drivers using the mi colormap manipulation need this */
 #include "micmap.h"
 
-/* If using cfb, cfb.h is required. */
-#define PSZ 8
-#include "cfb.h"  
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
+#include "xf86cmap.h"
+
+#include "fb.h"
 
 /* Needed by Resources Access Control (RAC) */
 #include "xf86RAC.h"
@@ -327,11 +322,8 @@ static const char *vgahwSymbols[] = {
     NULL
 };
 
-static const char *cfbSymbols[] = {
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb24_32ScreenInit",
+static const char *fbSymbols[] = {
+    "fbScreenInit",
     NULL
 };
 
@@ -414,7 +406,7 @@ neoSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols,
 			  ramdacSymbols, shadowSymbols,
 			  ddcSymbols, vbeSymbols, i2cSymbols, NULL);
 	/*
@@ -600,11 +592,9 @@ Bool
 NEOPreInit(ScrnInfoPtr pScrn, int flags)
 {
     ClockRangePtr clockRanges;
-    char *mod = NULL;
     int i;
     NEOPtr nPtr;
     vgaHWPtr hwp;
-    const char *reqSym = NULL;
     int bppSupport = NoDepth24Support;
     int videoRam = 896;
     int maxClock = 65000;
@@ -612,6 +602,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     int CursorOff = 0x100;
     int linearSize = 1024;
     int maxWidth = 1024;
+    int maxHeight = 1024;
     unsigned char type, display;
     int w;
     int apertureSize;
@@ -760,6 +751,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x100;
 	linearSize = 1024;
 	maxWidth   = 1024;
+	maxHeight  = 1024;
 	break;
     case NM2090:
     case NM2093:
@@ -771,6 +763,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x100;
 	linearSize = 2048;
 	maxWidth   = 1024;
+	maxHeight  = 1024;
 	break;
     case NM2097:
 	bppSupport = Support24bppFb | Support32bppFb |
@@ -781,6 +774,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x100;
 	linearSize = 2048;
 	maxWidth   = 1024;
+	maxHeight  = 1024;
 	break;
     case NM2160:
 	bppSupport = Support24bppFb | Support32bppFb |
@@ -791,6 +785,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x100;
 	linearSize = 2048;
 	maxWidth   = 1024;
+	maxHeight  = 1024;
 	break;
     case NM2200:
 	bppSupport = Support24bppFb | Support32bppFb |
@@ -801,6 +796,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x1000;
 	linearSize = 4096;
 	maxWidth   = 1280;
+	maxHeight  = 2048;  /* ???? */
 	break;
     case NM2230:
 	bppSupport = Support24bppFb | Support32bppFb |
@@ -811,6 +807,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x1000;
 	linearSize = 4096;
 	maxWidth   = 1280;
+	maxHeight  = 2048;  /* ???? */
 	break;
     case NM2360:
 	bppSupport = Support24bppFb | Support32bppFb |
@@ -821,6 +818,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x1000;
 	linearSize = 4096;
 	maxWidth   = 1280;
+	maxHeight  = 2048;  /* ???? */
 	break;
     case NM2380:
 	bppSupport = Support24bppFb | Support32bppFb |
@@ -831,6 +829,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	CursorOff  = 0x1000;
 	linearSize = 4096;
 	maxWidth   = 1280;
+	maxHeight  = 2048;  /* ???? */
 	break;
     }
 
@@ -871,6 +870,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Check that the returned depth is one we support */
 	switch (pScrn->depth) {
 	case 8:
+	case 15:
 	case 16:
 	    break;
 	case 24:
@@ -907,17 +907,8 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    if (!xf86SetDefaultVisual(pScrn, -1)) {
+    if (!xf86SetDefaultVisual(pScrn, -1)) 
 	return FALSE;
-    } else {
-	/* We don't currently support DirectColor at > 8bpp */
-	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		       " (%s) is not supported at depth %d\n",
-		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-	    return FALSE;
-	}
-    }
 
     if (pScrn->depth > 1) {
 	Gamma zeros = {0.0, 0.0, 0.0};
@@ -945,6 +936,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     xf86GetOptValBool(nPtr->Options, OPTION_LCD_CENTER,&nPtr->lcdCenter);
     xf86GetOptValBool(nPtr->Options, OPTION_LCD_STRETCH,&nPtr->noLcdStretch);
     xf86GetOptValBool(nPtr->Options, OPTION_SHADOW_FB,&nPtr->shadowFB);
+    nPtr->onPciBurst = TRUE;
     xf86GetOptValBool(nPtr->Options, OPTION_PCI_BURST,&nPtr->onPciBurst);
     xf86GetOptValBool(nPtr->Options,
 		      OPTION_PROG_LCD_MODE_REGS,&nPtr->progLcdRegs);
@@ -1163,15 +1155,17 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     /*
      * For external displays, limit the width to 1024 pixels or less.
      */
-    i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+    {
+       i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			  pScrn->display->modes, clockRanges,
 			  NULL, 256, maxWidth,(8 * pScrn->bitsPerPixel),/*§§§*/
-			  128, 2048, pScrn->display->virtualX,
+			  128, maxHeight, pScrn->display->virtualX,
 			  pScrn->display->virtualY, apertureSize,
 			  LOOKUP_BEST_REFRESH);
 
-    if (i == -1)
-	RETURN;
+       if (i == -1)
+           RETURN;
+    }
 
     /* Prune the modes marked as invalid */
     xf86PruneDriverModes(pScrn);
@@ -1200,31 +1194,11 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     /* If monitor resolution is set on the command line, use it */
     xf86SetDpi(pScrn, 0, 0);
 
-    /* Load bpp-specific modules */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	mod = "cfb";
-	reqSym = "cfbScreenInit";
-	break;
-    case 16:
-	mod = "cfb16";
-	reqSym = "cfb16ScreenInit";
-	break;
-    case 24:
-	if (pix24bpp == 24) {
-	    mod = "cfb24";
-	    reqSym = "cfb24ScreenInit";
-	} else {
-	    mod = "xf24_32bpp";
-	    reqSym = "cfb24_32ScreenInit";
-	}
-	break;
-    }
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	RETURN;
     }
 
-    xf86LoaderReqSymbols(reqSym, NULL);
+    xf86LoaderReqSymbols("fbScreenInit", NULL);
 
     if (!nPtr->noLinear) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) 
@@ -1278,6 +1252,39 @@ NEOLeaveVT(int scrnIndex, int flags)
     neoRestore(pScrn, &(VGAHWPTR(pScrn))->SavedReg, &nPtr->NeoSavedReg, TRUE);
     neoLock(pScrn);
     
+}
+
+static void
+NEOLoadPalette(
+   ScrnInfoPtr pScrn,
+   int numColors,
+   int *indices,
+   LOCO *colors,
+   VisualPtr pVisual
+){
+   int i, index, shift, Gshift;
+   vgaHWPtr hwp = VGAHWPTR(pScrn);
+
+   switch(pScrn->depth) {
+   case 15:	
+	shift = Gshift = 1;
+	break;
+   case 16:
+	shift = 0; 
+        Gshift = 0;
+	break;
+   default:
+	shift = Gshift = 0;
+	break;
+   }
+
+   for(i = 0; i < numColors; i++) {
+        index = indices[i];
+        hwp->writeDacWriteAddr(hwp, index);
+        hwp->writeDacData(hwp, colors[index].red << shift);
+        hwp->writeDacData(hwp, colors[index].green << Gshift);
+        hwp->writeDacData(hwp, colors[index].blue << shift);
+   } 
 }
 
 /* Mandatory */
@@ -1342,22 +1349,10 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     
     /* Setup the visuals we support. */
     
-    /*
-     * For bpp > 8, the default visuals are not acceptable because we only
-     * support TrueColor and not DirectColor.  To deal with this, call
-     * miSetVisualTypes for each visual supported.
-     */
-
-    if (pScrn->depth > 8) {
-	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-			      pScrn->defaultVisual))
-	    return FALSE;
-    } else {
-	if (!miSetVisualTypes(pScrn->depth,
-			      miGetDefaultVisualMask(pScrn->depth),
-			      pScrn->rgbBits, pScrn->defaultVisual))
-	    return FALSE;
-    }
+    if (!miSetVisualTypes(pScrn->depth,
+      		      miGetDefaultVisualMask(pScrn->depth),
+		      pScrn->rgbBits, pScrn->defaultVisual))
+         return FALSE;
 
     /*
      * Temporarily set the global defaultColorVisualClass to make
@@ -1391,42 +1386,11 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	FBStart = nPtr->NeoFbBase;
     }
 
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	ret = cfbScreenInit(pScreen, FBStart,
-			    width,height,
+    ret = fbScreenInit(pScreen, FBStart,
+			    width, height,
 			    pScrn->xDpi, pScrn->yDpi,
-			    displayWidth);
-	break;
-    case 16:
-	ret = cfb16ScreenInit(pScreen, FBStart,
-			      width,height,
-			      pScrn->xDpi, pScrn->yDpi,
-			      displayWidth);
-	break;
-    case 24:
-	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, FBStart,
-				  width,height,
-				  pScrn->xDpi, pScrn->yDpi,
-				  displayWidth);
-	else
-	    ret = cfb24_32ScreenInit(pScreen, FBStart,
-				     width,height,
-				     pScrn->xDpi, pScrn->yDpi,
-				     displayWidth);
-	break;
-    default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in NEOScreenInit\n",
-		   pScrn->bitsPerPixel);
-	ret = FALSE;
-	break;
-    }
+			    displayWidth, pScrn->bitsPerPixel);
 
-#if 0
-    xf86SetDefaultColorVisualClass(savedDefaultVisualClass);
-#endif
     if (!ret)
 	return FALSE;
 
@@ -1561,6 +1525,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			   "Hardware cursor initialization failed\n");
 		return FALSE;
 	    }
+	    nAcl->UseHWCursor = TRUE;
 	    nPtr->NeoHWCursorInitialized = TRUE;
 	} else
 	    nAcl->UseHWCursor = FALSE;
@@ -1590,7 +1555,9 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if(!miCreateDefColormap(pScreen))
 	return FALSE;
 
-    if (!vgaHWHandleColormaps(pScreen))
+    if (!xf86HandleColormaps(pScreen, 256, pScrn->rgbBits,
+                         NEOLoadPalette, NULL, 
+                         CMAP_PALETTED_TRUECOLOR | CMAP_RELOAD_ON_MODE_SWITCH))
 	return FALSE;
 
     if (pScrn->bitsPerPixel == 8)
@@ -2180,7 +2147,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
     /*
      * This function handles restoring the generic VGA registers.  */
     vgaHWRestore(pScrn, VgaReg,
-		 VGA_SR_MODE | VGA_SR_CMAP | (restoreFonts ? VGA_SR_FONTS : 0));
+		 VGA_SR_MODE | (restoreFonts ? VGA_SR_FONTS : 0));
 
     VGAwGR(0x0E, restore->ExtCRTDispAddr);
     VGAwGR(0x0F, restore->ExtCRTOffset);
@@ -2302,7 +2269,6 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
-    int i;
     int hoffset, voffset;
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     NeoRegPtr NeoNew = &nPtr->NeoModeReg;
@@ -2337,36 +2303,16 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	NeoNew->ExtColorModeSelect = 0x11;
 	break;
     case 15 :
+        NeoNew->ExtColorModeSelect = 0x12;
+	NeoStd->CRTC[0x13] = pScrn->displayWidth >> 2;
+	NeoNew->ExtCRTOffset   = pScrn->displayWidth >> 10;
+        break;
     case 16 :
-	if ((pScrn->weight.red == 5) &&
-	    (pScrn->weight.green == 5) &&
-	    (pScrn->weight.blue == 5)) {
-	    /* 15bpp */
-	    for (i = 0; i < 64; i++) {
-		NeoStd->DAC[i*3+0] = i << 1;
-		NeoStd->DAC[i*3+1] = i << 1;
-		NeoStd->DAC[i*3+2] = i << 1;
-	    }
-	    NeoNew->ExtColorModeSelect = 0x12;
-	} else {
-	    /* 16bpp */
-	    for (i = 0; i < 64; i++) {
-		NeoStd->DAC[i*3+0] = i << 1;
-		NeoStd->DAC[i*3+1] = i;
-		NeoStd->DAC[i*3+2] = i << 1;
-	    }
-	    NeoNew->ExtColorModeSelect = 0x13;
-	}
-	/* 15bpp & 16bpp */
+        NeoNew->ExtColorModeSelect = 0x13;
 	NeoStd->CRTC[0x13] = pScrn->displayWidth >> 2;
 	NeoNew->ExtCRTOffset   = pScrn->displayWidth >> 10;
 	break;
     case 24 :
-	for (i = 0; i < 256; i++) {
-	    NeoStd->DAC[i*3+0] = i;
-	    NeoStd->DAC[i*3+1] = i;
-	    NeoStd->DAC[i*3+2] = i;
-	}
 	NeoStd->CRTC[0x13] = (pScrn->displayWidth * 3) >> 3;
 	NeoNew->ExtCRTOffset   = (pScrn->displayWidth * 3) >> 11;
 	NeoNew->ExtColorModeSelect = 0x14;
@@ -2383,7 +2329,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         | (((mode->CrtcVSyncStart) & 0x400) >> 8 )
           | (((mode->CrtcVSyncStart) & 0x400) >> 7 );
 
-    /* Disable read/write bursts if requested. */
+    /* Fast write bursts on unless disabled. */
     if (nPtr->onPciBurst) {
 	NeoNew->SysIfaceCntl1 = 0x30; 
     } else {
@@ -2457,7 +2403,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
     NeoNew->PanelDispCntlReg2 = 0x00;
     NeoNew->PanelDispCntlReg3 = 0x00;
-    nAcl->UseHWCursor = TRUE;
+    nAcl->NoCursorMode = FALSE;
 
     if ((!nPtr->noLcdStretch) &&
 	(NeoNew->PanelDispCntlReg1 & 0x02)) {
@@ -2477,7 +2423,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    case  800 :
 	    case 1024 :
 		NeoNew->PanelDispCntlReg2 |= 0xC6;
-		nAcl->UseHWCursor = FALSE;
+		nAcl->NoCursorMode = TRUE;
 		break;
 	    default   :
 		/* No stretching in these modes. */
@@ -2488,7 +2434,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    }
 	}
     } else if (mode->Flags & V_DBLSCAN) {
-	nAcl->UseHWCursor = FALSE;
+	nAcl->NoCursorMode = TRUE;
     }
 
     /*

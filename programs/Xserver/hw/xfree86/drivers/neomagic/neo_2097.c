@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2097.c,v 1.1 1999/04/17 07:06:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2097.c,v 1.3 2000/09/19 12:46:17 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -87,6 +87,12 @@ static void Neo2097SubsequentMono8x8PatternFill(ScrnInfoPtr pScrn,
 						int patterny, 
 						int x, int y,
 						int w, int h);
+static void Neo2097SetupForScanlineImageWrite(ScrnInfoPtr pScrn, int rop,
+                                unsigned int planemask,
+                                int transparency_color, int bpp, int depth);
+static void Neo2097SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
+                                int x, int y, int w, int h, int skipleft);
+static void Neo2097SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int num);
 
 
 
@@ -117,6 +123,7 @@ Neo2097AccelInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
+    int lines;
     BoxRec AvailFBArea;
 
     nPtr->AccelInfoRec = infoPtr = XAACreateInfoRec();
@@ -125,11 +132,11 @@ Neo2097AccelInit(ScreenPtr pScreen)
     /*
      * Set up the main acceleration flags.
      */
-    infoPtr->Flags |= LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
-    if(nAcl->cacheEnd > nAcl->cacheStart) infoPtr->Flags = PIXMAP_CACHE;
-#if 0
-    infoPtr->PixmapCacheFlags |= DO_NOT_BLIT_STIPPLES;
-#endif
+    infoPtr->Flags = LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
+    if(nAcl->cacheEnd > nAcl->cacheStart) infoPtr->Flags |= PIXMAP_CACHE;
+
+    infoPtr->PixmapCacheFlags = DO_NOT_BLIT_STIPPLES;
+
     /* sync */
     infoPtr->Sync = Neo2097Sync;
 
@@ -154,7 +161,6 @@ Neo2097AccelInit(ScreenPtr pScreen)
      * padding. Fortunately the graphics engine doesn't choke if we
      * transfer up to 3 bytes more than it wants.
      */
-#if 1
     infoPtr->ScanlineColorExpandBuffers =
 	(unsigned char **)xnfalloc(sizeof(char*));
     infoPtr->ScanlineColorExpandBuffers[0] = (unsigned char *)(nPtr->NeoMMIOBase + 0x100000);
@@ -168,16 +174,34 @@ Neo2097AccelInit(ScreenPtr pScreen)
 	Neo2097SubsequentScanlineCPUToScreenColorExpandFill;
     infoPtr->SubsequentColorExpandScanline =
 	Neo2097SubsequentColorExpandScanline;
-#endif
+
+#if 0
     /* 8x8 pattern fills */
     infoPtr->Mono8x8PatternFillFlags = NO_PLANEMASK
 	| HARDWARE_PATTERN_PROGRAMMED_ORIGIN
-	|BIT_ORDER_IN_BYTE_MSBFIRST;
+	| BIT_ORDER_IN_BYTE_MSBFIRST;
     
     infoPtr->SetupForMono8x8PatternFill = 
 	Neo2097SetupForMono8x8PatternFill;
     infoPtr->SubsequentMono8x8PatternFillRect = 
 	Neo2097SubsequentMono8x8PatternFill;
+#endif
+
+    /* image writes */
+    infoPtr->ScanlineImageWriteFlags =  CPU_TRANSFER_PAD_DWORD |
+                                        SCANLINE_PAD_DWORD |
+					NO_TRANSPARENCY |
+					NO_PLANEMASK;
+
+    infoPtr->SetupForScanlineImageWrite = 
+                Neo2097SetupForScanlineImageWrite;
+    infoPtr->SubsequentScanlineImageWriteRect = 
+                Neo2097SubsequentScanlineImageWriteRect;
+    infoPtr->SubsequentImageWriteScanline = 
+                Neo2097SubsequentImageWriteScanline;
+    infoPtr->NumScanlineImageWriteBuffers = 1;  
+    infoPtr->ScanlineImageWriteBuffers = infoPtr->ScanlineColorExpandBuffers;
+
 
     /*
      * Setup some global variables
@@ -215,15 +239,21 @@ Neo2097AccelInit(ScreenPtr pScreen)
 	return FALSE;
     }
 
+    lines =  nAcl->cacheEnd /
+      (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
+    if(lines > 1024) lines = 1024;
+
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = nAcl->cacheEnd /
-      (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
+    AvailFBArea.y2 = lines;
     xf86InitFBManager(pScreen, &AvailFBArea); 
 
-    return(XAAInit(pScreen, infoPtr));
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+               "Using %i scanlines of offscreen memory for pixmap caching\n",
+	        lines - pScrn->virtualY);
 
+    return(XAAInit(pScreen, infoPtr));
 }
 
 static void
@@ -240,17 +270,12 @@ Neo2097SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
 				  unsigned int planemask,
 				  int trans_color)
 {
-    NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
 
     nAcl->tmpBltCntlFlags = (nAcl->BltCntlFlags  |
 			     NEO_BC3_SKIP_MAPPING |
 			     NEO_BC3_DST_XY_ADDR  |
 			     NEO_BC3_SRC_XY_ADDR  | neo2097Rop[rop]);
-
-    /* set blt control */
-    WAIT_ENGINE_IDLE();
-    OUTREG(NEOREG_BLTCNTL, nAcl->BltCntlFlags);
 }
 
 static void
@@ -398,33 +423,31 @@ Neo2097SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 
     if (bg == -1) {
 	/* transparent setup */
-	nAcl->tmpBltCntlFlags = ( nAcl->BltCntlFlags  |
+	nAcl->tmpBltCntlFlags = ( nAcl->BltCntlFlags    |
 		                   NEO_BC0_SRC_MONO     |
 		                   NEO_BC0_FILL_PAT     |
 		                   NEO_BC0_SRC_TRANS    |
 		                   NEO_BC3_SKIP_MAPPING |
+		                   NEO_BC3_SRC_XY_ADDR  |
 		                   NEO_BC3_DST_XY_ADDR  | neo2097Rop[rop]);
 
 	WAIT_ENGINE_IDLE();
 	OUTREG(NEOREG_FGCOLOR, fg |= (fg << nAcl->ColorShiftAmt));
-	OUTREG(NEOREG_SRCSTARTOFF, 
-	    (patterny*pScrn->displayWidth*pScrn->bitsPerPixel + patternx)
-              >> 3);
+	OUTREG(NEOREG_SRCSTARTOFF, (patterny << 16) | patternx);
     }
     else {
 	/* opaque setup */
-	nAcl->tmpBltCntlFlags = ( nAcl->BltCntlFlags  |
+	nAcl->tmpBltCntlFlags = ( nAcl->BltCntlFlags    |
 		                   NEO_BC0_SRC_MONO     |
 		                   NEO_BC0_FILL_PAT     |
 		                   NEO_BC3_SKIP_MAPPING |
+		                   NEO_BC3_SRC_XY_ADDR  |
 		                   NEO_BC3_DST_XY_ADDR  | neo2097Rop[rop]);
 
 	WAIT_ENGINE_IDLE();
 	OUTREG(NEOREG_FGCOLOR, fg |= (fg << nAcl->ColorShiftAmt));
 	OUTREG(NEOREG_BGCOLOR, bg |= (bg << nAcl->ColorShiftAmt));
-	OUTREG(NEOREG_SRCSTARTOFF, 
-	    (patterny*pScrn->displayWidth*pScrn->bitsPerPixel + patternx)
-              >> 3);
+	OUTREG(NEOREG_SRCSTARTOFF, (patterny << 16) | patternx);
     }
 }
 
@@ -443,10 +466,51 @@ Neo2097SubsequentMono8x8PatternFill(ScrnInfoPtr pScrn,
 
     WAIT_ENGINE_IDLE();
     OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags | (patterny << 20));
-    OUTREG(NEOREG_SRCBITOFF, patternx);
+/*   OUTREG(NEOREG_SRCBITOFF, patternx);  Bad Register */
     OUTREG(NEOREG_DSTSTARTOFF, (y<<16) | (x & 0xffff));
     OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
 }
 
+
+static void 
+Neo2097SetupForScanlineImageWrite(        
+   ScrnInfoPtr pScrn,
+   int rop,
+   unsigned int planemask,
+   int transparency_color,
+   int bpp, int depth
+){
+    NEOACLPtr nAcl = NEOACLPTR(pScrn);
+
+    nAcl->tmpBltCntlFlags = (nAcl->BltCntlFlags   |
+			     NEO_BC0_SYS_TO_VID   |
+                             NEO_BC3_SKIP_MAPPING |
+                             NEO_BC3_DST_XY_ADDR  | neo2097Rop[rop]);
+}
+
+
+static void 
+Neo2097SubsequentScanlineImageWriteRect(
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   int skipleft
+){
+    NEOPtr nPtr = NEOPTR(pScrn);
+    NEOACLPtr nAcl = NEOACLPTR(pScrn);
+
+    WAIT_ENGINE_IDLE();
+    OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags);
+    OUTREG(NEOREG_SRCSTARTOFF, 0);
+    OUTREG(NEOREG_DSTSTARTOFF, (y << 16) | (x & 0xffff));
+    OUTREG(NEOREG_XYEXT, (h << 16) | w);
+}
+
+static void
+Neo2097SubsequentImageWriteScanline(
+    ScrnInfoPtr pScrn,
+    int bufno
+){
+    /* should I be checking for fifo slots here ? */
+}
 
 

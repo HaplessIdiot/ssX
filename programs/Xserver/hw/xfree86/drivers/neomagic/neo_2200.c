@@ -1,4 +1,4 @@
-/**********************************************************************
+/********************************************************************
 Copyright 1998, 1999 by Precision Insight, Inc., Cedar Park, Texas.
 
                         All Rights Reserved
@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.5 2000/06/15 01:26:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.8 2000/09/19 12:46:17 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -119,6 +119,7 @@ Neo2200AccelInit(ScreenPtr pScreen)
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
     BoxRec AvailFBArea;
+    int lines;
 
     nPtr->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
@@ -126,8 +127,8 @@ Neo2200AccelInit(ScreenPtr pScreen)
     /*
      * Set up the main acceleration flags.
      */
-    infoPtr->Flags |= LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
-    if(nAcl->cacheEnd > nAcl->cacheStart) infoPtr->Flags = PIXMAP_CACHE;
+    infoPtr->Flags = LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
+    if(nAcl->cacheEnd > nAcl->cacheStart) infoPtr->Flags |= PIXMAP_CACHE;
 #if 0
     infoPtr->PixmapCacheFlags |= DO_NOT_BLIT_STIPPLES;
 #endif
@@ -173,7 +174,7 @@ Neo2200AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentColorExpandScanline =
 	Neo2200SubsequentColorExpandScanline;
 
-
+#if 0
     /* 8x8 pattern fills */
     infoPtr->Mono8x8PatternFillFlags = NO_PLANEMASK
 	| HARDWARE_PATTERN_PROGRAMMED_ORIGIN
@@ -183,6 +184,7 @@ Neo2200AccelInit(ScreenPtr pScreen)
 	Neo2200SetupForMono8x8PatternFill;
     infoPtr->SubsequentMono8x8PatternFillRect = 
 	Neo2200SubsequentMono8x8PatternFill;
+#endif
 
     /*
      * Setup some global variables
@@ -238,15 +240,21 @@ Neo2200AccelInit(ScreenPtr pScreen)
 	return FALSE;
     }
 
+    lines =  nAcl->cacheEnd /
+      (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
+    if(lines > 2048) lines = 2048;
+
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = nAcl->cacheEnd /
-      (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
+    AvailFBArea.y2 = lines;
     xf86InitFBManager(pScreen, &AvailFBArea); 
 
-    return(XAAInit(pScreen, infoPtr));
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+               "Using %i scanlines of offscreen memory for pixmap caching\n",
+                lines - pScrn->virtualY);
 
+    return(XAAInit(pScreen, infoPtr));
 }
 
 static void

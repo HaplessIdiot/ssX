@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2090.c,v 1.1 1999/04/17 07:06:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2090.c,v 1.3 2000/09/19 12:46:17 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -102,6 +102,7 @@ Neo2090AccelInit(ScreenPtr pScreen)
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
     BoxRec AvailFBArea;
+    int lines;
 
     nPtr->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
@@ -109,8 +110,8 @@ Neo2090AccelInit(ScreenPtr pScreen)
     /*
      * Set up the main acceleration flags.
      */
-    infoPtr->Flags |= LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
-    if(nAcl->cacheEnd > nAcl->cacheStart) infoPtr->Flags = PIXMAP_CACHE;
+    infoPtr->Flags = LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
+    if(nAcl->cacheEnd > nAcl->cacheStart) infoPtr->Flags |= PIXMAP_CACHE;
 #if 0
     infoPtr->PixmapCacheFlags |= DO_NOT_BLIT_STIPPLES;
 #endif
@@ -196,15 +197,21 @@ Neo2090AccelInit(ScreenPtr pScreen)
 
     nAcl->BltCntlFlags |= NEO_BC3_FIFO_EN;
 
+    lines =  nAcl->cacheEnd /
+      (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
+    if(lines > 1024) lines = 1024;
+
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = nAcl->cacheEnd /
-      (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
+    AvailFBArea.y2 = lines;
     xf86InitFBManager(pScreen, &AvailFBArea); 
 
-    return(XAAInit(pScreen, infoPtr));
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+               "Using %i scanlines of offscreen memory for pixmap caching\n",
+                lines - pScrn->virtualY);
 
+    return(XAAInit(pScreen, infoPtr));
 }
 
 static void

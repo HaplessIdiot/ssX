@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_dga.c,v 1.1 2000/06/22 18:09:37 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -33,6 +33,7 @@
 #include "neo.h"
 #include "neo_reg.h"
 #include "dgaproc.h"
+#include "vgaHW.h"
 
 static Bool NEO_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
 					int *, int *, int *);
@@ -70,28 +71,28 @@ NEODGAInit(ScreenPtr pScreen)
    DGAModePtr modes = NULL, newmodes = NULL, currentMode;
    DisplayModePtr pMode, firstMode;
    int Bpp = pScrn->bitsPerPixel >> 3;
-   int num = 0;
-   Bool oneMore;
+   int num = 0, imlines, pixlines;
+
+   imlines =  (pScrn->videoRam * 1024) /
+      (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
+
+   if(pNEO->NeoChipset < NM2200) {
+	pixlines = (imlines > 1024) ? 1024 : imlines;
+   } else {
+	pixlines = (imlines > 2048) ? 2048 : imlines;
+   }
 
    pMode = firstMode = pScrn->modes;
 
    while(pMode) {
 
-	if(0 /*pScrn->displayWidth != pMode->HDisplay*/) {
-	    newmodes = xrealloc(modes, (num + 2) * sizeof(DGAModeRec));
-	    oneMore = TRUE;
-	} else {
-	    newmodes = xrealloc(modes, (num + 1) * sizeof(DGAModeRec));
-	    oneMore = FALSE;
-	}
+	newmodes = xrealloc(modes, (num + 1) * sizeof(DGAModeRec));
 
 	if(!newmodes) {
 	   xfree(modes);
 	   return FALSE;
 	}
 	modes = newmodes;
-
-SECOND_PASS:
 
 	currentMode = modes + num;
 	num++;
@@ -118,32 +119,16 @@ SECOND_PASS:
 	currentMode->offset = 0;
 	currentMode->address = pNEO->NeoFbBase;
 
-	if(oneMore) { /* first one is narrow width */
-	    currentMode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;
-	    currentMode->imageWidth = pMode->HDisplay;
-	    currentMode->imageHeight =  pMode->VDisplay;
-	    currentMode->pixmapWidth = currentMode->imageWidth;
-	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
-					currentMode->viewportWidth;
-	    /* this might need to get clamped to some maximum */
-	    currentMode->maxViewportY = currentMode->imageHeight -
-					currentMode->viewportHeight;
-	    oneMore = FALSE;
-	    goto SECOND_PASS;
-	} else {
-	    currentMode->bytesPerScanline = 
+	currentMode->bytesPerScanline = 
 			((pScrn->displayWidth * Bpp) + 3) & ~3L;
-	    currentMode->imageWidth = pScrn->displayWidth;
-	    currentMode->imageHeight =  pMode->VDisplay;
-	    currentMode->pixmapWidth = currentMode->imageWidth;
-	    currentMode->pixmapHeight = currentMode->imageHeight;
-	    currentMode->maxViewportX = currentMode->imageWidth - 
+	currentMode->imageWidth = pScrn->displayWidth;
+	currentMode->imageHeight =  imlines;
+	currentMode->pixmapWidth = currentMode->imageWidth;
+	currentMode->pixmapHeight = pixlines;
+	currentMode->maxViewportX = currentMode->imageWidth - 
 					currentMode->viewportWidth;
-	    /* this might need to get clamped to some maximum */
-	    currentMode->maxViewportY = currentMode->imageHeight -
+	currentMode->maxViewportY = currentMode->imageHeight -
 					currentMode->viewportHeight;
-	}	    
 
 	pMode = pMode->next;
 	if(pMode == firstMode)
@@ -156,32 +141,28 @@ SECOND_PASS:
    return DGAInit(pScreen, &NEODGAFuncs, modes, num);  
 }
 
+static DisplayModePtr NEOSavedDGAModes[MAXSCREENS];
 
 static Bool
 NEO_SetMode(
    ScrnInfoPtr pScrn,
    DGAModePtr pMode
 ){
-   static int OldDisplayWidth[MAXSCREENS];
    int index = pScrn->pScreen->myNum;
    NEOPtr pNEO = NEOPTR(pScrn);
 
    if(!pMode) { /* restore the original mode */
-	/* put the ScreenParameters back */
-	
-	pScrn->displayWidth = OldDisplayWidth[index];
-	
-        NEOSwitchMode(index, pScrn->currentMode, 0);
-	pNEO->DGAactive = FALSE;
+ 	if(pNEO->DGAactive) {	
+	    pScrn->currentMode = NEOSavedDGAModes[index];
+            NEOSwitchMode(index, pScrn->currentMode, 0);
+	    NEOAdjustFrame(index, 0, 0, 0);
+ 	    pNEO->DGAactive = FALSE;
+	}
    } else {
 	if(!pNEO->DGAactive) {  /* save the old parameters */
-	    OldDisplayWidth[index] = pScrn->displayWidth;
-
+	    NEOSavedDGAModes[index] = pScrn->currentMode;
 	    pNEO->DGAactive = TRUE;
 	}
-
-	pScrn->displayWidth = pMode->bytesPerScanline / 
-			      (pMode->bitsPerPixel >> 3);
 
         NEOSwitchMode(index, pMode->mode, 0);
    }
@@ -205,9 +186,14 @@ NEO_SetViewport(
    int flags
 ){
    NEOPtr pNEO = NEOPTR(pScrn);
+   vgaHWPtr hwp = VGAHWPTR(pScrn);
 
    NEOAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
-   pNEO->DGAViewportStatus = 0;  /* NEOAdjustFrame loops until finished */
+   /* wait for retrace */
+   while((hwp->readST01(hwp) & 0x08));
+   while(!(hwp->readST01(hwp) & 0x08));
+
+   pNEO->DGAViewportStatus = 0;  
 }
 
 static void 
