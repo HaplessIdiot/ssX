@@ -206,6 +206,8 @@ _XftDefaultInit (Display *dpy)
 	goto bail1;
     if (!_XftDefaultInitInteger (dpy, pat, XFT_RGBA))
 	goto bail1;
+    if (!_XftDefaultInitBool (dpy, pat, XFT_ANTIALIAS))
+	goto bail1;
     
     return pat;
     
@@ -328,6 +330,12 @@ XftDefaultSubstitute (Display *dpy, int screen, XftPattern *pattern)
 	XftPatternAddBool (pattern, XFT_CORE,
 			   XftDefaultGetBool (dpy, XFT_CORE, screen, 
 					      !XftDefaultHasRender (dpy)));
+    }
+    if (XftPatternGet (pattern, XFT_ANTIALIAS, 0, &v) == XftResultNoMatch)
+    {
+	XftPatternAddBool (pattern, XFT_ANTIALIAS,
+			   XftDefaultGetBool (dpy, XFT_ANTIALIAS, screen,
+					      True));
     }
     if (XftPatternGet (pattern, XFT_RGBA, 0, &v) == XftResultNoMatch)
     {
