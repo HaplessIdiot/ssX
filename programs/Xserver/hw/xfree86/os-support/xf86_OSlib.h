@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.0 1994/04/29 14:08:52 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -64,9 +64,9 @@
 #  include <sys/proc.h>
 #  include <sys/tss.h>
 #  include <sys/sysi86.h>
-#  ifdef SVR4
+#  if defined(SVR4) && !defined(sun)
 #   include <sys/seg.h>
-#  endif /* SVR4 */
+#  endif /* SVR4 && !sun */
 #  include <sys/v86.h>
 #  if defined(sun) && defined (i386) && defined (SVR4)
 #    include <sys/psw.h>
@@ -83,7 +83,9 @@
 #endif
 
 # define HAS_USL_VTS
-# include <sys/emap.h>
+# if !defined(sun)
+#  include <sys/emap.h>
+# endif
 # if defined(SCO)
 #  include <sys/vtkd.h>
 #  include <sys/console.h>
