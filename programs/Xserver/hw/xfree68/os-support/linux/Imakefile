@@ -3,17 +3,17 @@ XCOMM $XConsortium: Imakefile /main/2 1996/10/19 19:10:59 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/os-support/linux/Imakefile,v 3.4 1997/06/03 14:11:11 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/os-support/linux/Imakefile,v 3.5.2.1 1998/06/03 15:49:47 dawes Exp $
 #include <Server.tmpl>
 
 #if BuildXInputExt
 # if JoystickSupport
 	JOYSTICK_SRC = lnx_jstk.c
 # endif
-# if BuildDynamicLoading
+# if DoLoadableServer
 SHARED_CFLAGS = PositionIndependentCFlags
 # else
-#  if JoystickSupport && !DoLoadableServer
+#  if JoystickSupport
 	JOYSTICK_OBJ = lnx_jstk.o
 #  endif
 # endif
@@ -37,12 +37,6 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
 #if BuildXInputExt
-# if BuildDynamicLoading
-#  if JoystickSupport
-AllTarget(lnx_jstk.o)
-SpecialObjectRule(lnx_jstk.o,lnx_jstk.c,$(SHARED_CFLAGS))
-#  endif
-# endif
 # if DoLoadableServer
 #  if JoystickSupport
 AllTarget(lnx_jstk.o)
