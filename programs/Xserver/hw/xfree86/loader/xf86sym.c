@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.10 1997/02/24 17:47:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.11 1997/02/25 14:21:13 hohndel Exp $ */
 
 
 
@@ -38,6 +38,7 @@
 #include "xf86_HWlib.h"
 #include "xf86_OSlib.h"
 #include "xf86_PCI.h"
+#include "xf86_Config.h"
 #include "CirrusClk.h"
 #include "vga.h"
 
@@ -109,6 +110,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(S3gendacSetClock)
    SYMFUNC(STG1703SetClock)
    SYMFUNC(ET6000SetClock)
+   SYMFUNC(S3AuroraSetClock)
    SYMFUNC(commonCalcClock)
    SYMFUNC(xf86scanpci)
    SYMFUNC(xf86writepci)
@@ -127,6 +129,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(Et4000AltICD2061SetClock)
    SYMFUNC(ET4000stg1703SetClock)
    SYMFUNC(ET4000gendacSetClock)
+   SYMFUNC(xf86DisableInterrupts)
+   SYMFUNC(xf86EnableInterrupts)
 
 
    SYMFUNC(pciWriteWord)
@@ -230,6 +234,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86xaaloaded)
    SYMVAR(xf86ProbeOnly)
    SYMVAR(vgaDrivers)
+   SYMVAR(TimingTab)
 
   { 0, 0 },
 

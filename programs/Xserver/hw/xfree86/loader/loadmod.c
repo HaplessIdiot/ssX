@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.4 1997/02/23 09:25:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.5 1997/02/25 14:21:12 hohndel Exp $ */
 
 
 
@@ -108,6 +108,45 @@ FindModule(module,dir)
 	return(NULL);
 }
 
+void CheckVersion(module, data, cnt)
+	char* module;
+	XF86ModuleVersionInfo* data;
+	int cnt;
+{
+	switch (cnt) {
+	case 0:
+		/* okay */
+		break;
+	case -1:
+		/* no initfunc */
+		ErrorF("LoadModule: Module %s does not have a ModuleInit routine. Please fix\n",
+			module);
+		return;
+	default:
+		/* not first item */
+		ErrorF("LoadModule: ModuleInit of %s doesn't return MAGIC_VERSION as first data item. Please fix module!\n",
+			module);
+	}
+
+	if (xf86Verbose) {
+		char ver[8];
+		ErrorF("\tModule %s: vendor=\"%s\"\n",
+			data->modname ? data->modname : "UNKNOWN!",
+			data->vendor ? data->vendor : "UNKNOWN!");
+		ErrorF("\t  compiled for 0x%x, module version = 0x%x\n",
+			data->xf86version, 
+			data->modversion);
+#if NOTYET
+		if (data->checksum) {
+			/* verify the checksum field */
+			/* TO BE DONE */
+		} else {
+			ErrorF("\t*** Checksum field is 0 - this module is untrusted!\n");
+		}
+#endif
+	}
+}
+
 LoadModule(module,path)
 	char	* module;
 	char	* path;
@@ -115,6 +154,7 @@ LoadModule(module,path)
 	void	(*initfunc)() = NULL;
 	pointer	  data;
 	INT32	  magic;
+	int	  version, cnt;
 
 	char	* dir_elem;
 	char	* found = NULL;
@@ -178,10 +218,14 @@ LoadModule(module,path)
 	    p=name;
 	initfunc = (void (*)())LoaderSymbol(p);
 	xfree(name);
+
+	version = 0;
 	if( initfunc )
 	{
 		do
 		{
+			cnt = 0;
+
 			initfunc(&data,&magic);
 			switch(magic)
 			{
@@ -212,12 +256,22 @@ LoadModule(module,path)
 				XieInitPtr = (void((*)()))data;
 				break;
 #endif
+			case MAGIC_VERSION:
+				version++;
+				CheckVersion(module,(XF86ModuleVersionInfo*)data,cnt);
+				break;
+
 			default:
 				ErrorF("Unknown magic action %d\n",magic);
 				break;
 			}
+			cnt++;
 		}
 		while(magic != MAGIC_DONE);
+	} else
+	{
+		/* no initfunc, complain */
+		CheckVersion(module,0,-1);
 	}
 	xfree(found);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.2 1997/02/18 17:51:43 hohndel Exp $ */
 
 
 
@@ -45,6 +45,9 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miRectIn)
    SYMFUNC(miZeroLineScreenIndex)
    SYMFUNC(miZeroClipLine)
+   SYMFUNC(miZeroDashLine)
+   SYMFUNC(miClearDrawable)
+   SYMFUNC(miPolyPoint)
    SYMFUNC(miStepDash)
    SYMFUNC(miEmptyBox)
    SYMFUNC(miEmptyData)
@@ -91,8 +94,10 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miRectAlloc)
    SYMFUNC(miInitializeBackingStore)
    SYMFUNC(miCopyPlane)
+   SYMFUNC(miCopyArea)
    SYMFUNC(miCreateScreenResources)
    SYMFUNC(miGetImage)
+   SYMFUNC(miPutImage)
    SYMFUNC(miPushPixels)
    SYMFUNC(miPointerInitialize)
    SYMFUNC(miPointerPosition)

@@ -54,16 +54,14 @@
 #define S3_924_ONLY(chip)       (chip==0x82)
 #define S3_911_SERIES(chip)     ((chip&0xf0)==0x80)
 #define S3_801_SERIES(chip)     ((chip&0xf0)==0xa0)
-#define S3_805_I_SERIES(chip)   ((chip&0xf8)==0xa8) 
+#define S3_805_I_SERIES(chip)   ((chip&0xf8)==0xa8)  
 #define S3_801_REV_C(chip)      (S3_801_SERIES(chip) && ((chip) & 0x07) >= 2)
 #define S3_928_P(chip)          ((chip&0xf0)==0xb0)
 #define S3_928_ONLY(chip)       ((chip&0xd0)==0x90)  
 #define S3_928_REV_E(chip)      (S3_928_ONLY(chip) && ((chip) & 0x0F) >= 4)
-#define S3_801_928_SERIES(chip) (S3_801_SERIES(chip) || 	\
-				 S3_928_ONLY(chip) || 		\
-				 S3_x64_SERIES(chip))
-#define S3_8XX_9XX_SERIES(chip) (S3_911_SERIES(chip) ||		\
-				 S3_801_928_SERIES(chip))
+#define S3_801_928_SERIES(chip) (S3_801_SERIES(chip) || S3_928_ONLY(chip) || \
+				S3_x64_SERIES(chip))
+#define S3_8XX_9XX_SERIES(chip) (S3_911_SERIES(chip)||S3_801_928_SERIES(chip))
 #define S3_864_SERIES(chip)     ((chip&0xf0)==0xc0)
 #define S3_964_SERIES(chip)     ((chip&0xf0)==0xd0)
 #define S3_866_SERIES(chip)     ((chip&0xfff0)==0x80e0)
@@ -76,27 +74,34 @@
 #undef S3_964_SERIES
 #define S3_964_SERIES(chip)     (((chip&0xf0)==0xd0) || S3_968_SERIES(chip))
 #define S3_x66_SERIES(chip)     S3_866_SERIES(chip)
-#define S3_x68_SERIES(chip)     ((chip&0x9ff0)==0x90e0) 
-#define S3_x6x_SERIES(chip)     ((chip&0x8ff0)==0x80e0) 
+#define S3_x68_SERIES(chip)     ((chip&0x9ff0)==0x90e0)  
+#define S3_x6x_SERIES(chip)     ((chip&0x8ff0)==0x80e0)  
 #define S3_TRIO32_SERIES(chip)  ((chip&0xfff0)==0x10e0)
-#define S3_TRIO64_SERIES(chip)  ((chip&0xfff0)==0x11e0)
-#define S3_TRIO64V_SERIES(chip) (S3_TRIO64_SERIES(chip) && 	\
-				(s3ChipRev & 0x400) == 0x400)
-#define S3_TRIOxx_SERIES(chip)  ((chip&0xfef0)==0x10e0)  
+#define S3_TRIO64_SERIES(chip)  ((chip&0xfff0)==0x11e0 || 	\
+				S3_TRIO64UVP_SERIES(chip) || 	\
+				S3_AURORA64VP_SERIES(chip) ||	\
+				S3_TRIO64V2_SERIES(chip))
+#define S3_TRIO64V_SERIES(chip) (S3_TRIO64_SERIES(chip) && (s3ChipRev & 0x400))
+#define S3_AURORA64VP_SERIES(chip)  ((chip&0xfff0)==0x12e0)
+#define S3_TRIO64UVP_SERIES(chip)  ((chip&0xfff0)==0x14e0)
+#define S3_TRIO64V2_SERIES(chip)  ((chip&0xfff0)==0x1e0)
+#define S3_TRIOxx_SERIES(chip)  (S3_TRIO32_SERIES(chip) || \
+				 S3_TRIO64_SERIES(chip) || \
+				 S3_TRIO64UVP_SERIES(chip))
 #define S3_ViRGE_SERIES(chip)   ((chip&0xfff0)==0x31e0)
-#define S3_x64_SERIES(chip)	(((chip&0xe0)==0xc0) || 	\
-				 S3_x6x_SERIES(chip) ||		\
-				 S3_TRIOxx_SERIES(chip))
+#define S3_x64_SERIES(chip)	(((chip&0xe0)==0xc0) || S3_x6x_SERIES(chip) || \
+				S3_TRIOxx_SERIES(chip))
 #define S3_928_SERIES(chip)     (S3_928_ONLY(chip) || S3_x64_SERIES(chip))
-#define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || 	\
-				 S3_x64_SERIES(chip) || 	\
-				 S3_x66_SERIES(chip) || 	\
-				 S3_x68_SERIES(chip))		
-
+#define S3_ANY_SERIES(chip)     (S3_8XX_9XX_SERIES(chip) || 		\
+				S3_x64_SERIES(chip) || S3_x66_SERIES(chip) || \
+				S3_x68_SERIES(chip))
 
 /* PCI data */
 #define PCI_S3_VENDOR_ID	0x5333
 #define PCI_TRIO_32_64		0x8811
+#define PCI_AURORA64VP          0x8812
+#define PCI_TRIO64UVP           0x8814
+#define PCI_TRIO64V2            0x8901
 #define PCI_928			0x88B0
 #define PCI_864_0		0x88C0
 #define PCI_864_1		0x88C1
@@ -124,6 +129,10 @@
 #define S3_TRIO64VPLUS		13
 #define S3_ViRGE		14 
 #define S3_ViRGE_VX		15 
+#define S3_TRIO64UVP            16
+#define S3_AURORA64VP           17
+#define S3_TRIO64V2             18
+
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6
@@ -148,12 +157,19 @@
 #define	ROM_PAGE_SEL	0x46e8
 #define	CUR_Y		0x82e8
 #define	CUR_X		0x86e8
+#define	CUR_Y2		0x82ea
+#define	CUR_X2		0x86ea
 #define	DESTY_AXSTP	0x8ae8
 #define	DESTX_DIASTP	0x8ee8
+#define	DESTY_AXSTP2	0x8aea
+#define	DESTX_DIASTP2	0x8eea
 #define	ERR_TERM	0x92e8
+#define	ERR_TERM2	0x92ea
 #define	MAJ_AXIS_PCNT	0x96e8
+#define	MAJ_AXIS_PCNT2	0x96ea
 #define	GP_STAT		0x9ae8
 #define	CMD		0x9ae8
+#define	CMD2		0x9aea
 #define	SHORT_STROKE	0x9ee8
 #define	BKGD_COLOR	0xa2e8
 #define	FRGD_COLOR	0xa6e8
@@ -173,12 +189,19 @@
 #define	ROM_PAGE_SEL	0x46
 #define	CUR_Y		0x82e8
 #define	CUR_X		0x86e8
+#define	CUR_Y2		0x82ea
+#define	CUR_X2		0x86ea
 #define	DESTY_AXSTP	0x8ae8
 #define	DESTX_DIASTP	0x8ee8
+#define	DESTY_AXSTP2	0x8aea
+#define	DESTX_DIASTP2	0x8eea
 #define	ERR_TERM	0x92e8
+#define	ERR_TERM2	0x92ea
 #define	MAJ_AXIS_PCNT	0x96e8
+#define	MAJ_AXIS_PCNT2	0x96ea
 #define	GP_STAT		0x9a
 #define	CMD		0x9ae8
+#define	CMD2		0x9aea
 #define	SHORT_STROKE	0x9ee8
 #define	BKGD_COLOR	0xa2e8
 #define	FRGD_COLOR	0xa6e8
@@ -312,6 +335,7 @@
 #define	CMD_OP_MSK	0xf000
 #define	BYTSEQ		0x1000
 #define	_16BIT		0x0200
+#define	_32BIT		0x0400
 #define	PCDATA		0x0100
 #define	INC_Y		0x0080
 #define	YMAJAXIS	0x0040
@@ -489,18 +513,28 @@ typedef struct {
 	SET_CUR_X(cur_x); 		\
 	SET_CUR_Y(cur_y); 		\
   }
+  #define SET_CURPT2(cur_x, cur_y) { 	\
+	SET_CUR_X2(cur_x); 		\
+	SET_CUR_Y2(cur_y); 		\
+  }
   #define SET_DESTSTP(x,y) { 		\
 	S3_OUTW(DESTX_DIASTP, x);	\
 	S3_OUTW(DESTY_AXSTP, y);	\
+  }
+  #define SET_DESTSTP2(x,y) { 		\
+	S3_OUTW(DESTX_DIASTP2, x);	\
+	S3_OUTW(DESTY_AXSTP2, y);	\
   }
   #define SET_AXIS_PCNT(maj, min)	{		\
 	S3_OUTW(MAJ_AXIS_PCNT, maj);			\
 	S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (min));	\
   }
   #define SET_MAJ_AXIS_PCNT(maj)  S3_OUTW(MAJ_AXIS_PCNT, maj)
+  #define SET_MAJ_AXIS_PCNT2(maj)  S3_OUTW(MAJ_AXIS_PCNT2, maj)
   #define SET_MIN_AXIS_PCNT(min)  S3_OUTW(MULTIFUNC_CNTL,MIN_AXIS_PCNT | (min))
 
   #define SET_CMD(cmd)		  S3_OUTW(CMD, cmd)
+  #define SET_CMD2(cmd)		  S3_OUTW(CMD2, cmd)
 
   #define SET_SCISSORS_RB(x,y) {			\
 	S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (x)); 	\
@@ -515,6 +549,7 @@ typedef struct {
   }
 
   #define SET_ERR_TERM(err)	S3_OUTW(ERR_TERM, err)
+  #define SET_ERR_TERM2(err)	S3_OUTW(ERR_TERM2, err)
 
   #define INB_GP_STAT() 		inb(GP_STAT)
   #define INW_GP_STAT() 		inw(GP_STAT)

@@ -234,6 +234,12 @@ Bool S3Probe()
 	    chipname = "Trio32";
 	 } else if (S3_TRIO64V_SERIES(s3ChipId)) {
 	    chipname = "Trio64V+";
+	 } else if (S3_TRIO64UVP_SERIES(s3ChipId)) {
+	    chipname = "Trio64UV+ (preliminary support; please report)";
+	 } else if (S3_AURORA64VP_SERIES(s3ChipId)) {
+	    chipname = "Aurora64V+ (preliminary support; please report)";
+	 } else if (S3_TRIO64V2_SERIES(s3ChipId /* , s3ChipRev */)) {
+	    chipname = "Trio64V2 (preliminary support (135MHz only); please report)";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
 	    chipname = "Trio64";
 	 }
@@ -625,10 +631,13 @@ Bool S3Probe()
 
 
 	/* Is this correct?  (MArk) */
-   if(DAC_IS_TRIO || DAC_IS_SDAC || DAC_IS_GENDAC || DAC_IS_SC1148x || 
-	OFLG_ISSET(OPTION_DAC_6_BIT, &vga256InfoRec.options))
-	s3DAC8Bit = FALSE;
-   else OFLG_SET(OPTION_DAC_8_BIT, &vga256InfoRec.options);
+   if((DAC_IS_SC15025 || DAC_IS_ATT498 || DAC_IS_STG1700 || DAC_IS_ATT20C409 ||
+	DAC_IS_ATT490 || DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES || 
+	DAC_IS_TI3026 || DAC_IS_TI3030 || DAC_IS_IBMRGB) && 
+	!OFLG_ISSET(OPTION_DAC_6_BIT, &vga256InfoRec.options)) {
+	s3DAC8Bit = TRUE;
+   	OFLG_SET(OPTION_DAC_8_BIT, &vga256InfoRec.options);
+    }
    
 
    if (OFLG_ISSET(OPTION_DAC_8_BIT, &vga256InfoRec.options) && !s3DAC8Bit) {

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mibitblt.c /main/55 1996/08/01 19:25:20 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.0 1996/06/10 09:17:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.1 1996/12/23 07:09:43 dawes Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -61,6 +61,11 @@ SOFTWARE.
 #include "regionstr.h"
 #include "Xmd.h"
 #include "servermd.h"
+
+#ifdef XFree86LOADER
+#define memset(a,b,c) xf86memset(a,b,c)
+extern int xf86bpp;
+#endif
 
 /* MICOPYAREA -- public entry for the CopyArea request 
  * For each rectangle in the source region
@@ -347,10 +352,17 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		 */
 		bit = (pixel >> planeNum) & 1;
 		/* XXX assuming bit order == byte order */
+#ifndef XFree86LOADER
 #if BITMAP_BIT_ORDER == LSBFirst
 		bit <<= k;
 #else
 		bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
+#endif
+#else
+		if( xf86bpp >= 8 ) /* LSBFirst */
+			bit <<= k;
+		else
+			bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
 #endif
 		*pOut |= (OUT_TYPE) bit;
 		k++;
@@ -701,7 +713,6 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pDst)
 			  (unsigned long *)pDst);
     }
 }
-
 
 /* MIPUTIMAGE -- public entry for the PutImage request
  * Here we benefit from knowing the format of the bits pointed to by pImage,

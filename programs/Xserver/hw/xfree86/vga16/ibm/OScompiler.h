@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.4 1996/02/04 09:11:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.5 1996/12/23 06:52:34 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -33,7 +33,11 @@
 b/**/
 #endif
 
+#ifdef XFree86LOADER
+#define MOVE( src, dst, length ) xf86memcpy( dst, src, length)
+#else
 #define MOVE( src, dst, length ) memcpy( dst, src, length)
+#endif
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))

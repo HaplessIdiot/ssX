@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3accel.c,v 3.3 1997/01/14 22:21:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3accel.c,v 1.2 1997/02/16 10:27:24 hohndel Exp $ */
 
 /*
  *
@@ -30,6 +30,7 @@ void S3SubsequentFillRectSolid();
 void S3SubsequentBresenhamLine();
 void S3SetupForFill8x8Pattern();
 void S3SubsequentFill8x8Pattern();
+void S3SubsequentFillTrapezoidSolid();
 
 void S3AccelInit() {
 
@@ -62,7 +63,13 @@ void S3AccelInit() {
        xf86AccelInfoRec.SetupForFill8x8Pattern = S3SetupForFill8x8Pattern;
        xf86AccelInfoRec.SubsequentFill8x8Pattern = S3SubsequentFill8x8Pattern;
     }
-   
+
+#if 0   
+    /* Trapezoidal fills */
+    if(S3_x68_SERIES(s3ChipId) || S3_TRIO64V_SERIES(s3ChipId)) 
+    	xf86AccelInfoRec.SubsequentFillTrapezoidSolid =
+		 		S3SubsequentFillTrapezoidSolid; 
+#endif
 
     /* pixmap cache */    
     xf86AccelInfoRec.PixmapCacheMemoryStart =
@@ -97,14 +104,15 @@ transparency_color)
     unsigned planemask;
     int transparency_color;
 {
-    BltDirection = CMD_BITBLT | DRAW | PLANAR | WRTDATA;
+    BltDirection = CMD_BITBLT | DRAW | WRTDATA;
 
     if(xdir == 1) BltDirection |= INC_X;
     if(ydir == 1) BltDirection |= INC_Y;
    
     BLOCK_CURSOR;
     WaitQueue16_32(3,4);
-    SET_MIX(FSS_BITBLT | s3alu[rop],BSS_BKGDCOL | MIX_SRC);
+    SET_PIX_CNTL(0);
+    SET_FRGD_MIX(FSS_BITBLT | s3alu[rop]);
     SET_WRT_MASK(planemask);
 }
 
@@ -141,7 +149,8 @@ void S3SetupForFillRectSolid(color, rop, planemask)
     unsigned planemask;
 {
     BLOCK_CURSOR;
-    WaitQueue16_32(3,5);
+    WaitQueue16_32(4,6);
+    SET_PIX_CNTL(0);
     SET_FRGD_COLOR(color);
     SET_FRGD_MIX(FSS_FRGDCOL | s3alu[rop]);
     SET_WRT_MASK(planemask);
@@ -153,7 +162,7 @@ void S3SubsequentFillRectSolid(x, y, w, h)
     WaitQueue(5);
     SET_CURPT((short)x, (short)y);
     SET_AXIS_PCNT(w - 1, h - 1);
-    SET_CMD(CMD_RECT | DRAW | INC_X | INC_Y | PLANAR | WRTDATA);
+    SET_CMD(CMD_RECT | DRAW | INC_X | INC_Y  | WRTDATA);
 }
 
 	/***********************\
@@ -168,7 +177,7 @@ void S3SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
     unsigned short cmd;
 
     if(e1) { 
-	cmd = CMD_LINE | DRAW | PLANAR | WRTDATA | LASTPIX;
+	cmd = CMD_LINE | DRAW | WRTDATA | LASTPIX;
 
     	if(octant & YMAJOR) cmd |= YMAJAXIS;
     	if(!(octant & XDECREASING)) cmd |= INC_X;
@@ -182,10 +191,10 @@ void S3SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
    	SET_CMD(cmd);
     } else { /* vertical line */
    	if(octant & YDECREASING)   
-   	    cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | WRTDATA | (2 << 5);
+   	    cmd = CMD_LINE | DRAW | LINETYPE | WRTDATA | VECDIR_090;
         else 
-	    cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | WRTDATA | (6 << 5);
-        
+	    cmd = CMD_LINE | DRAW | LINETYPE | WRTDATA | VECDIR_270;
+   
      	WaitQueue(4);
     	SET_CURPT((short)x1, (short)y1);
     	SET_MAJ_AXIS_PCNT(length - 1);
@@ -199,13 +208,14 @@ void S3SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 	| 	8x8 Fill Patterns	|
 	\*******************************/
 
-/* this is broken? (MArk) */
+/* not really working */
 void S3SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
     int patternx, patterny, rop, planemask, trans_col;
 {
     BLOCK_CURSOR;
     WaitQueue16_32(3,4);
-    SET_MIX(FSS_BITBLT | s3alu[rop],BSS_BKGDCOL | MIX_SRC);
+    SET_PIX_CNTL(0);
+    SET_FRGD_MIX(FSS_BITBLT | s3alu[rop]);
     SET_WRT_MASK(planemask);
 }
 
@@ -213,11 +223,23 @@ void S3SubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
     int patternx, patterny, x, y, w, h;
 {
     WaitQueue(7);
-/* I don't know about this (MArk) */
     SET_CURPT((short)patternx, (short)patterny); 
     SET_DESTSTP((short)x, (short)y);
     SET_AXIS_PCNT(w - 1, h - 1);
-    SET_CMD(CMD_PFILL | DRAW | INC_Y | INC_X | PLANAR | WRTDATA);
+    SET_CMD(CMD_PFILL | DRAW | INC_Y | INC_X | WRTDATA);
 }
 
+
+	/*******************************\
+	|	Trapezoidal fills	|
+	\*******************************/
+
+void S3SubsequentFillTrapezoidSolid(ytop, h, left, dxL, dyL, eL,
+					     right, dxR, dyR, eR)
+   int ytop, h, left, dxL, dyL, eL, right, dxR, dyR, eR;
+{
+
+
+
+}
 

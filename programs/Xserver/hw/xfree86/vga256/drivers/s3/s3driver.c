@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3driver.c,v 1.4 1997/02/17 09:47:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3driver.c,v 1.5 1997/02/25 14:22:57 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -129,7 +129,7 @@ Bool  s3Localbus = FALSE;
 Bool  s3VLB = FALSE;
 Bool  s3Trio32FCBug = FALSE;
 Bool  s3_968_DashBug = FALSE;
-Bool  s3DAC8Bit = TRUE;
+Bool  s3DAC8Bit = FALSE;
 Bool  s3DACSyncOnGreen = FALSE;
 Bool  s3PixelMultiplexing = FALSE;
 Bool  s3Bt485PixMux = FALSE;
