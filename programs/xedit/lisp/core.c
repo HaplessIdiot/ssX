@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.11 2001/10/11 06:34:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.12 2001/10/15 07:05:51 paulo Exp $ */
 
 #include "core.h"
 #include "helper.h"
@@ -253,12 +253,10 @@ Lisp_Append(LispMac *mac, LispObj *list, char *fname)
 	    if (CDR(list) != NIL)
 		LispDestroy(mac, ExpectingListAt, fname);
 	}
+	GCProtect();
 	if (res == NIL) {
-	    /* link res to FRM to protect from GC */
-	    GCProtect();
 	    res = cdr = CONS(CAR(obj), CDR(obj));
 	    FRM = CONS(res, FRM);
-	    GCUProtect();
 	}
 	else {
 	    if (CDR(cdr)->type == LispCons_t) {
@@ -274,6 +272,7 @@ Lisp_Append(LispMac *mac, LispObj *list, char *fname)
 		CDR(cdr) = obj;
 	    cdr = CDR(cdr);
 	}
+	GCUProtect();
     }
     FRM = frm;
 

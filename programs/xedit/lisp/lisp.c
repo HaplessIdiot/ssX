@@ -1232,12 +1232,12 @@ LispGetVarCons(LispMac *mac, LispObj *atom)
 
     for (env = ENV; env != LEX; env = CDR(env))
 	if (CAAR(env)->data.atom == name)
-	    return (CAR(ENV));
+	    return (CAR(env));
 
     if (LEX != NIL) {
 	for (env = GLB; env != NIL; env = CDR(env))
 	    if (CAAR(env)->data.atom == name)
-		return (CAR(ENV));
+		return (CAR(env));
     }
 
     /* if returns NULL, variable is unbound */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.6 2001/10/10 07:02:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.7 2001/10/15 07:05:53 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -194,17 +194,18 @@ _LispXtCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     CallbackArgs *args = (CallbackArgs*)user_data;
     LispMac *mac = args->mac;
-    LispObj *code;
+    LispObj *code, *frm = FRM;
 
     GCProtect();
-
 		/* callback name */               /* reall caller */
     code = CONS(QUOTE(CDR(CDR(args->data))), CONS(OPAQUE(w, xtWidget_t),
 		CONS(CAR(CDR(args->data)), CONS(OPAQUE(call_data, 0), NIL))));
 		     /* user arguments */
+    FRM = CONS(code, FRM);
     GCUProtect();
 
     (void)Lisp_Funcall(mac, code, "FUNCALL");
+    FRM = frm;
 }
 
 void

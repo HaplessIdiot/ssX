@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.1 2001/10/10 07:02:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.2 2001/10/15 07:05:53 paulo Exp $ */
 
 #include <stdlib.h>
 #include <libpq-fe.h>
@@ -551,7 +551,7 @@ Lisp_PQnfields(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_PQnotifies(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *res;
+    LispObj *res, *code, *frm = FRM;
     PGconn *conn;
     PGnotify *notifies;
 
@@ -563,11 +563,16 @@ Lisp_PQnotifies(LispMac *mac, LispObj *list, char *fname)
     if ((notifies = PQnotifies(conn)) == NULL)
 	return (NIL);
 
-    res = EVAL(CONS(ATOM("MAKE-PG-NOTIFY"),
-		      CONS(ATOM(":RELNAME"),
-			   CONS(STRING(notifies->relname),
-				CONS(ATOM(":BE-PID"),
-				     CONS(REAL(notifies->be_pid), NIL))))));
+    GCProtect();
+    code = CONS(ATOM("MAKE-PG-NOTIFY"),
+		  CONS(ATOM(":RELNAME"),
+		       CONS(STRING(notifies->relname),
+			    CONS(ATOM(":BE-PID"),
+				 CONS(REAL(notifies->be_pid), NIL)))));
+    FRM = CONS(code, FRM);
+    GCUProtect();
+    res = EVAL(code);
+    FRM = frm;
 
     free(notifies);
 
