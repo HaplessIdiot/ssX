@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.32 2003/10/19 18:53:49 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.33 2003/10/24 16:32:26 dawes Exp $ */
 
 #include "fontmisc.h"
 
@@ -172,6 +172,7 @@ FreeTypeOpenFace(FTFacePtr *facep, char *FTFileName, char *realFileName, int fac
     if(face == NULL) {
         return AllocError;
     }
+    memset(face, 0, sizeof(FTFaceRec));
 
     face->filename = (char*)xalloc(strlen(FTFileName)+1);
     if(face->filename == NULL) {
@@ -179,9 +180,6 @@ FreeTypeOpenFace(FTFacePtr *facep, char *FTFileName, char *realFileName, int fac
         return AllocError;
     }
     strcpy(face->filename, FTFileName);
-
-    face->instances = NULL;
-    face->active_instance = NULL;
 
     ftrc = FT_New_Face(ftypeLibrary, realFileName, faceNumber, &face->face);
     if(ftrc != 0) {
@@ -424,7 +422,6 @@ FreeTypeOpenInstance(FTInstancePtr *instance_return, FTFacePtr face,
     ftrc = FT_New_Size(instance->face->face, &instance->size);
     if(ftrc != 0) {
         ErrorF("FreeType: couldn't create size object: %d\n", ftrc);
-        FreeTypeFreeFace(instance->face);
         xfree(instance);
         return FTtoXReturnCode(ftrc);
     }
@@ -437,13 +434,14 @@ FreeTypeOpenInstance(FTInstancePtr *instance_return, FTFacePtr face,
     } else {
         int xsize, ysize;
         xrc = FTFindSize(face->face, trans, &xsize, &ysize);
-        if(xrc != Successful)
+        if(xrc != Successful) {
+            xfree(instance);
             return xrc;
+        }
         ftrc = FT_Set_Pixel_Sizes(instance->face->face, xsize, ysize);
     }
     if(ftrc != 0) {
         FT_Done_Size(instance->size);
-        FreeTypeFreeFace(instance->face);
         xfree(instance);
         return FTtoXReturnCode(ftrc);
     }
@@ -460,6 +458,8 @@ static void
 FreeTypeFreeInstance(FTInstancePtr instance)
 {
     FTInstancePtr otherInstance;
+
+    if( instance == NULL ) return;
 
     if(instance->face->active_instance == instance)
         instance->face->active_instance = NULL;
@@ -590,7 +590,7 @@ FreeTypeInstanceGetGlyph(unsigned idx, int flags, CharInfoPtr *g, FTInstancePtr 
         return xrc;
 
     if(!found || (*available)[segment][offset] == FT_AVAILABLE_NO) {
-        *g = 0;
+        *g = NULL;
         return Successful;
     } 
 
@@ -638,11 +638,11 @@ FreeTypeInstanceGetGlyphMetrics(unsigned idx, int flags,
     if(xrc != Successful)
         return xrc;
     if(!found) {
-        *metrics = 0;
+        *metrics = NULL;
         return Successful;
     }
     if( instance->available[segment][offset] == FT_AVAILABLE_NO ) {
-        *metrics = 0;
+        *metrics = NULL;
         return Successful;
     } 
 
@@ -2394,11 +2394,11 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
 		 char *FTFileName, FontScalablePtr vals, FontEntryPtr entry,
                  FontBitmapFormatPtr bmfmt, FT_Int32 load_flags, 
 		 struct TTCapInfo *tmp_ttcap, char *dynStrTTCapCodeRange,
-		 int ttcap_spacing, int *zero_code )
+		 int ttcap_spacing )
 {
     int xrc;
     FTNormalisedTransformationRec trans;
-    int spacing,actual_spacing;
+    int spacing, actual_spacing, zero_code;
     long  lastCode, firstCode;
 
     ft_get_trans_from_vals(vals,&trans);
@@ -2452,15 +2452,13 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
     font->ranges = 0;
     if(font->nranges) {
         font->ranges = (fsRange*)xalloc(vals->nranges*sizeof(fsRange));
-        if(font->ranges == NULL) {
-            /* FreeTypeFreeFont(font); */
+        if(font->ranges == NULL) 
             return AllocError;
-        }
         memcpy((char*)font->ranges, (char*)vals->ranges,
                vals->nranges*sizeof(fsRange));
     }
 
-    *zero_code=-1;
+    zero_code=-1;
     if(info) {
         firstCode = 0;
         lastCode = 0xFFFFL;
@@ -2478,7 +2476,7 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
             info->firstCol =
                 (info->firstRow || info->lastRow) ? 0 : (firstCode & 0xFF);
             info->lastCol = info->lastRow ? 0xFF : (lastCode & 0xFF);
-	    if ( firstCode == 0 ) *zero_code=0;
+	    if ( firstCode == 0 ) zero_code=0;
         } else {
             /* matrix indexing */
             info->firstRow = font->mapping.mapping->encoding->first;
@@ -2487,7 +2485,7 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
             info->firstCol = font->mapping.mapping->encoding->first_col;
             info->lastCol = MIN(font->mapping.mapping->encoding->row_size-1, 
                                 lastCode<0x100?lastCode:0xFF);
-	    if( info->firstRow == 0 && info->firstCol == 0 ) *zero_code=0;
+	    if( info->firstRow == 0 && info->firstCol == 0 ) zero_code=0;
         }
 
         /* firstCode and lastCode are not valid in case of a matrix
@@ -2503,6 +2501,17 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
 			    font->ranges, font->nranges);
     }
     font->info = info;
+
+    /* zero code is frequently used. */
+    if ( zero_code < 0 ) {
+	/* The fontenc should have the information of DefaultCh.
+	   But we do not have such a information.
+	   So we cannot but set 0. */
+	font->zero_idx = 0;
+    }
+    else
+	font->zero_idx = FTRemap(face->face, 
+				 &font->mapping, zero_code);
 
 #ifdef DEFAULT_VERY_LAZY
     if( !( tmp_ttcap->flags & TTCAP_DISABLE_DEFAULT_VERY_LAZY ) )
@@ -2522,10 +2531,7 @@ FreeTypeLoadFont(FTFontPtr font, FontInfoPtr info, FTFacePtr face,
     xrc = FreeTypeOpenInstance(&font->instance, face,
                                FTFileName, &trans, actual_spacing, bmfmt,
 			       tmp_ttcap, load_flags );
-    if(xrc != Successful)
-        return xrc;
-    
-    return Successful;
+    return xrc;
 }
 
 static void
@@ -2755,7 +2761,7 @@ FreeTypeLoadXFont(char *fileName,
     int upm, minLsb, maxRsb, ascent, descent, width, averageWidth;
     double scale, base_width, base_height;
     Bool orig_is_matrix_unit;
-    int face_number, ttcap_spacing, zero_code;
+    int face_number, ttcap_spacing;
     struct TTCapInfo tmp_ttcap;
     struct TTCapInfo *ins_ttcap;
     FT_Int32 load_flags = FT_LOAD_DEFAULT;	/* orig: FT_LOAD_RENDER | FT_LOAD_MONOCHROME */
@@ -2768,6 +2774,7 @@ FreeTypeLoadXFont(char *fileName,
         xrc = AllocError;
         goto quit;
     }
+    memset(font, 0, sizeof(FTFontRec));
 
     xrc = FreeTypeSetUpTTCap(fileName, vals, 
 			     &dynStrRealFileName, &dynStrFTFileName,
@@ -2813,7 +2820,7 @@ FreeTypeLoadXFont(char *fileName,
 
     xrc = FreeTypeLoadFont(font, info, face, dynStrFTFileName, vals, entry, bmfmt,
 			   load_flags, &tmp_ttcap, dynStrTTCapCodeRange, 
-			   ttcap_spacing, &zero_code);
+			   ttcap_spacing );
     if(xrc != Successful) {
         goto quit;
     }
@@ -3091,17 +3098,6 @@ FreeTypeLoadXFont(char *fileName,
 	instance->averageWidth = averageWidth;
 	instance->rawAverageWidth = rawAverageWidth;
 
-	/* zero code is frequently used. */
-	if ( zero_code < 0 ) {
-	    /* The fontenc should have the information of DefaultCh.
-	       But we do not have such a information.
-	       So we cannot but set 0. */
-	    font->zero_idx = 0;
-	}
-	else
-	    font->zero_idx = FTRemap(font->instance->face->face, 
-				     &font->mapping, zero_code);
-
 	/* Check code 0 */
 	if( FreeTypeInstanceGetGlyph(font->zero_idx, 0, &tmpglyph, font->instance) != Successful
 	    || tmpglyph == NULL)
@@ -3175,12 +3171,6 @@ FreeTypeLoadXFont(char *fileName,
 	averageWidth = instance->averageWidth;
 	rawAverageWidth = instance->rawAverageWidth;
 
-	/* zero code is frequently used. */
-	if ( zero_code < 0 )
-	    font->zero_idx = 0;
-	else
-	    font->zero_idx = FTRemap(font->instance->face->face, 
-				     &font->mapping, zero_code);
     }
 
     /*
@@ -3265,8 +3255,10 @@ FreeTypeLoadXFont(char *fileName,
     if ( dynStrFTFileName ) xfree(dynStrFTFileName);
     if ( dynStrRealFileName ) xfree(dynStrRealFileName);
     if ( xrc != Successful ) {
-	if( face ) FreeTypeFreeFace(face);
-	if( font ) FreeTypeFreeFont(font);
+	if( font ){
+	    if( face && font->instance == NULL ) FreeTypeFreeFace(face);
+	    FreeTypeFreeFont(font);
+	}
     }
     return xrc;
 }

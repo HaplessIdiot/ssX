@@ -1,4 +1,10 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 525. Update libfreetype-xtt2 to version 1.0d:
+       - Fixed server crash caused by loading fonts for which encoding file
+         does not exist.
+       - Some fixes for minor bugs when handling errors.
+       - Some minor cleanups.
+      (Chisato Yamauchi, After-XTT Project).
  524. Export strl{cat,cpy} functions to the server modules and provide 
       an implementation for the systems that don't have them. (Matthieu 
       Herrb).
@@ -18037,7 +18043,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2903 2003/10/25 13:25:07 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2904 2003/10/26 12:17:15 herrb Exp $
 
 
 
