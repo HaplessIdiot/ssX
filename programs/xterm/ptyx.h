@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.93 2002/05/24 20:14:23 keithp Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.94 2002/06/01 00:54:49 dickey Exp $ */
 
 /*
  * Copyright 1999,2000,2001,2002 by Thomas E. Dickey
@@ -124,7 +124,7 @@
 #define USE_PTY_DEVICE 1
 #define USE_PTY_SEARCH 1
 
-#if defined(__osf__) || (defined(linux) && defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 1))
+#if defined(__osf__) || (defined(linux) && defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 1)) || defined(__NetBSD__)
 #undef USE_PTY_DEVICE
 #undef USE_PTY_SEARCH
 #define USE_PTS_DEVICE 1
