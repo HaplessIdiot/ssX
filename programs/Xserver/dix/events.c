@@ -47,8 +47,8 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.75 94/04/17 20:26:33 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: events.c,v 5.76 94/08/16 13:45:06 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.0 1994/06/22 05:12:42 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1682,7 +1682,9 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
 	else
 	    tempGrab.modifiersDetail.exact =
 #ifdef XKB
-		grab->modifierDevice->key->xkbInfo->grabState;
+		noXkbExtension ?
+		    grab->modifierDevice->key->state :
+		    grab->modifierDevice->key->xkbInfo->grabState;
 #else
 		grab->modifierDevice->key->state;
 #endif
@@ -1693,9 +1695,12 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
 		&grab->confineTo->borderSize))))
 	{
 #ifdef XKB
-	    xE->u.keyButtonPointer.state &= 0x1f00;
-	    xE->u.keyButtonPointer.state |=
-		grab->modifierDevice->key->xkbInfo->grabState & 0xe0ff;
+	    if (!noXkbExtension)
+	    {
+		xE->u.keyButtonPointer.state &= 0x1f00;
+		xE->u.keyButtonPointer.state |=
+		    grab->modifierDevice->key->xkbInfo->grabState & 0xe0ff;
+	    }
 #endif
 	    (*device->ActivateGrab)(device, grab, currentTime, TRUE);
  
@@ -1940,10 +1945,10 @@ ProcessKeyboardEvent (xE, keybd, count)
 		if (!modifiers)
 		{
 		    xE->u.u.type = KeyRelease;
-		    ProcessKeyboardEvent(xE, keybd, count);
+		    (*keybd->public.processInputProc)(xE, keybd, count);
 		    xE->u.u.type = KeyPress;
 		    /* release can have side effects, don't fall through */
-		    ProcessKeyboardEvent(xE, keybd, count);
+		    (*keybd->public.processInputProc)(xE, keybd, count);
 		}
 		return;
 	    }
@@ -2016,7 +2021,9 @@ ProcessPointerEvent (xE, mouse, count)
 	NoticeTime(xE)
     xE->u.keyButtonPointer.state = (butc->state |
 #ifdef XKB
-				    inputInfo.keyboard->key->xkbInfo->grabState
+				(noXkbExtension ?
+				   inputInfo.keyboard->key->state :
+				   inputInfo.keyboard->key->xkbInfo->grabState)
 #else
 				    inputInfo.keyboard->key->state
 #endif
@@ -2333,11 +2340,14 @@ EnterLeaveEvent(type, mode, detail, pWin, child)
 	event.u.enterLeave.flags = event.u.keyButtonPointer.sameScreen ?
 					    ELFlagSameScreen : 0;
 #ifdef XKB
-	event.u.enterLeave.state = mouse->button->state & 0x1f00;
-	event.u.enterLeave.state |= (keybd->key->xkbInfo->grabState & 0xe0ff);
-#else
-	event.u.enterLeave.state = keybd->key->state | mouse->button->state;
+	if (!noXkbExtension)
+	{
+	    event.u.enterLeave.state = mouse->button->state & 0x1f00;
+	    event.u.enterLeave.state |= (keybd->key->xkbInfo->grabState & 0xe0ff);
+	}
+	else
 #endif
+	event.u.enterLeave.state = keybd->key->state | mouse->button->state;
 	event.u.enterLeave.mode = mode;
 	focus = keybd->focus->win;
 	if ((focus != NoneWin) &&
@@ -3118,7 +3128,7 @@ ProcSendEvent(client)
     if ( ! ((stuff->event.u.u.type > X_Reply &&
 	     stuff->event.u.u.type < LASTEvent) || 
 	    (stuff->event.u.u.type >= EXTENSION_EVENT_BASE &&
-	     stuff->event.u.u.type < lastEvent)))
+	     stuff->event.u.u.type < (unsigned)lastEvent)))
     {
 	client->errorValue = stuff->event.u.u.type;
 	return BadValue;
@@ -3581,18 +3591,20 @@ WriteEventsToClient(pClient, count, events)
 	    (*EventSwapVector[eventFrom->u.u.type & 0177])
 		(eventFrom, &eventTo);
 #ifdef XKB
-	    (void)XkbFilterWriteEvents(pClient, 1, (char *)&eventTo);
-#else
-	    (void)WriteToClient(pClient, sizeof(xEvent), (char *)&eventTo);
+	    if (!noXkbExtension)
+		(void)XkbFilterWriteEvents(pClient, 1, (char *)&eventTo);
+	    else
 #endif
+	    (void)WriteToClient(pClient, sizeof(xEvent), (char *)&eventTo);
 	}
     }
     else
     {
 #ifdef XKB
-	(void)XkbFilterWriteEvents(pClient, count, events);
-#else
-	(void)WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
+	if (!noXkbExtension)
+	    (void)XkbFilterWriteEvents(pClient, count, events);
+	else
 #endif
+	(void)WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
     }
 }
