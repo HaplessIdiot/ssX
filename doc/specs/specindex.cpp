@@ -88,6 +88,7 @@
     <li><a href="fontlib.html">X Font Library (fontlib)</a> <a href="../PDF/fontlib.pdf">[PDF]</a></li>
     <li><a href="xmu.html">Xmu Library</a> <a href="../PDF/xmu.pdf">[PDF]</a></li>
     <li><a href="intrinsics.html">X Toolkit Intrinsics (Xt)</a> <a href="../PDF/intrinsics.pdf">[PDF]</a></li>
+    <li>XPM (X Pixmap) Library <a href="../PDF/xpm.pdf">[PDF]</a></li>
   </ul>
 
   <h3>Formats and Encodings</h3>
@@ -124,7 +125,7 @@
     <li><a href="ctlseqs.html">Xterm control sequences</a> <a href="../PDF/ctlseqs.pdf">[PDF]</a></li>
   </ul>
 
-  <!-- $XFree86: xc/doc/specs/specindex.html,v 1.5 2003/12/06 19:24:38 dawes Exp $ -->
+  <!-- $XFree86: xc/doc/specs/specindex.cpp,v 1.1 2005/01/14 04:25:13 dawes Exp $ -->
 </body>
 </html>
  
