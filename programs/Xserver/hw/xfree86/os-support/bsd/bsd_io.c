@@ -1,4 +1,5 @@
 /* $XConsortium: bsd_io.c,v 1.1 94/03/28 21:28:06 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
