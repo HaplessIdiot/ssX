@@ -247,7 +247,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 
     /* Read and parse the config file */
-    if (!xf86DoProbe) {
+    if (!xf86DoProbe && !xf86DoConfigure) {
       if (!xf86HandleConfigFile()) {
 	xf86Msg(X_ERROR, "Error from xf86HandleConfigFile()\n");
 	return;
@@ -341,6 +341,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     if (xf86DoProbe)
 	DoProbe();
+
+    if (xf86DoConfigure)
+	DoConfigure();
 
     /* Initialise the resource broker */
     xf86ResourceBrokerInit();
@@ -1418,6 +1421,11 @@ ddxProcessArgument(int argc, char **argv, int i)
 #if 0
     DoProbe(argc, argv, i);
 #endif
+    return 1;
+  }
+  if (!strcmp(argv[i], "-configure"))
+  {
+    xf86DoConfigure = TRUE;
     return 1;
   }
   /* OS-specific processing */

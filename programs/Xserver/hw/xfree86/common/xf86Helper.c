@@ -1449,7 +1449,7 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
     confScreenPtr screensecptr;
     int i,j;
     
-if (xf86DoProbe) return 1;
+if (xf86DoProbe || xf86DoConfigure) return 1;
 
     /*
      * This is a very important function that matches the device sections
@@ -1653,7 +1653,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	xfree(instances);
 	return 0;
     }
-    if (xf86DoProbe) return 1;
+    if (xf86DoProbe || xf86DoConfigure) return 1;
 #ifdef DEBUG
     ErrorF("%s instances found: %d\n", driverName, allocatedInstances);
 #endif
@@ -1833,7 +1833,7 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     int *retEntities = NULL;
 
     /* For now, bail here when xf86DoProbe is set. */
-    if (xf86DoProbe)
+    if (xf86DoProbe || xf86DoConfigure)
 	return 0;
 
     for (i = 0; i < numDevs; i++) {

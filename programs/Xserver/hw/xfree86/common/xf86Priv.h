@@ -87,6 +87,7 @@ extern int xf86Verbose;                 /* verbosity level */
 extern int xf86LogVerbose;		/* log file verbosity level */
 extern Bool xf86ProbeOnly;
 extern Bool xf86DoProbe;
+extern Bool xf86DoConfigure;
 
 #ifndef DEFAULT_VERBOSE
 #define DEFAULT_VERBOSE		1
@@ -148,6 +149,7 @@ void DoScanPci(int argc, char **argv, int i);
 /* xf86DoProbe.c */
 void DoProbeArgs(int argc, char **argv, int i);
 void DoProbe(void);
+void DoConfigure(void);
 
 /* xf86Events.c */
 

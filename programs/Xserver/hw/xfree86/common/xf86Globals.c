@@ -150,6 +150,7 @@ Bool xf86Resetting = FALSE;
 Bool xf86Initialising = FALSE;
 Bool xf86ProbeFailed = FALSE;
 Bool xf86DoProbe = FALSE;
+Bool xf86DoConfigure = FALSE;
 #ifdef XFree86LOADER
 DriverPtr *xf86DriverList = NULL;
 int xf86NumDrivers = 0;
