@@ -1,11 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.7 2001/01/24 00:06:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.8 2001/02/02 21:37:59 herrb Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
 XCOMM LinkSourceFile(xf86Helper.c,../xfree86/common)
-
-SUBDIRS = utils
 
 SRCS =	darwin.c \
         darwinKeyboard.c \
@@ -29,7 +27,10 @@ CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
 
 #if DarwinQuartzSupport
+SUBDIRS = bundle utils
 QUARTZDEF = -DDARWIN_WITH_QUARTZ
+#else
+SUBDIRS = utils
 #endif
 
 DEFINES = $(CUSTOMVERDEF) $(QUARTZDEF)

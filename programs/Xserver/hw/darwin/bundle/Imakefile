@@ -1,0 +1,32 @@
+#include <Server.tmpl>
+
+SRCS =	Preferences.m \
+        XApplication.m \
+        Xserver.m
+
+OBJS =	Preferences.o \
+        XApplication.o \
+        Xserver.o
+
+INCLUDES = -I.
+
+#if defined(XFree86CustomVersion)
+CUSTOMVERSION = XFree86CustomVersion
+CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
+#endif
+
+DEFINES = $(CUSTOMVERDEF)
+XDARWINBINDIR = XDarwin.app/Contents/MacOS/
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(XQuartz,$(OBJS))
+
+install::
+	pbxbuild install -target XDarwin
+	-(cd $(DESTDIR)$(BINDIR); mkdir -p $(XDARWINBINDIR); mv Xdarwin $(XDARWINBINDIR))
+	InstallProgram(Xdarwin, $(DESTDIR)$(BINDIR))
+
+clean::
+	pbxbuild "clean" -target XDarwin
+
+DependTarget()

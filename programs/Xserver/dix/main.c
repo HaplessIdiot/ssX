@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.31 2000/11/30 23:30:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.33 2001/02/16 13:24:07 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -260,6 +260,13 @@ main(argc, argv, envp)
     int		i, j, k, error;
     char	*xauthfile;
     HWEventQueueType	alwaysCheckForInput[2];
+
+    /* Quartz support on Mac OS X requires that the Cocoa event loop be in
+     * the main thread. This allows the X server main to be called again
+     * from another thread. */
+#if defined(__DARWIN__) && defined(DARWIN_WITH_QUARTZ)
+    DarwinHandleGUI(argc, argv, envp);
+#endif
 
     /* Notice if we're restarted.  Probably this is because we jumped through
      * an uninitialized pointer */

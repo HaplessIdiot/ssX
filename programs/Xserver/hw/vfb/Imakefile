@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.5 2000/08/17 19:48:38 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.25 2001/01/17 22:36:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.26 2001/01/24 00:06:11 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -12,7 +12,7 @@ SHMDEF = -DHAS_SHM
 #endif
 
 XCOMM add more architectures here as we discover them
-#if defined(HPArchitecture) || (defined(SparcArchitecture) && !defined(LynxOSArchitecture)) || SystemV4 || defined(OSF1Architecture) || defined(i386BsdArchitecture) || defined(LinuxArchitecture)
+#if defined(HPArchitecture) || (defined(SparcArchitecture) && !defined(LynxOSArchitecture)) || SystemV4 || defined(OSF1Architecture) || defined(i386BsdArchitecture) || defined(LinuxArchitecture) || defined(DarwinArchitecture)
 MMAPDEF = -DHAS_MMAP
 #endif
 

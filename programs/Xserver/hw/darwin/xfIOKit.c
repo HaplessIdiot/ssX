@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.1 2001/01/14 16:44:55 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.2 2001/01/23 21:14:26 herrb Exp $ */
 
 #define NDEBUG 1
 
@@ -205,7 +205,11 @@ static void SetupFBandHID(void)
     kr = IOServiceOpen( service, mach_task_self(),
                         kIOFBServerConnectType, &dfb.fbService );
     if (kr != KERN_SUCCESS)
-        FatalError("failed to connect as window server!\nMake sure you have quit the Mac OS X window server.\n");
+#ifdef DARWIN_WITH_QUARTZ
+        FatalError("Failed to connect as window server!\nQuit the Mac OS X window server or use the -quartz option.\n");
+#else
+        FatalError("Failed to connect as window server!\nMake sure you have quit the Mac OS X window server.\n");
+#endif
 
     IOObjectRelease( service );
     IOObjectRelease( iter );

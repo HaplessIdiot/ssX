@@ -9,17 +9,10 @@
 
 #include "X11/Xproto.h"
 #include "screenint.h"
+#include "quartzShared.h"
 
-// NX_APPDEFINED event subtypes for special commands
-enum {
-  kXServerUpdateModifiers,
-  kXServerShow,
-  kXServerHide,
-  kXServerQuit
-};
-
-Bool QuartzAddScreen(ScreenPtr screen);
 void QuartzOsVendorInit(void);
+Bool QuartzAddScreen(ScreenPtr screen);
 void QuartzGiveUp(void);
 void QuartzHide(void);
 void QuartzShow(void);
