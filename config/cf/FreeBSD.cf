@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.73 1998/03/22 03:55:26 robin Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.74 1998/07/25 05:57:13 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -283,6 +283,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #define DefaultUserPath		/bin:/usr/bin:/sbin:/usr/sbin:$(BINDIR):/usr/gnu/bin:/usr/local/bin
 #define DefaultSystemPath	/bin:/usr/bin:/sbin:/usr/sbin:$(BINDIR)
+#ifndef SystemManDirectory
+#define SystemManDirectory	/usr/share/man
+#endif
 
 #define InstKmemFlags	-g kmem -m 2755
 

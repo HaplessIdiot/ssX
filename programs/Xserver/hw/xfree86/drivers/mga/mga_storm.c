@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.16 1998/07/25 16:55:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.17 1998/07/31 10:41:26 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -35,9 +35,9 @@ static void MGANAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn,
 static void MGANAME(SubsequentScreenToScreenCopy_FastBlit)(ScrnInfoPtr pScrn,
 				int srcX, int srcY, int dstX, int dstY,
 				int w, int h);
-static void MGANAME(SetupForColorExpandFill)(ScrnInfoPtr pScrn, int fg,
+static void MGANAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
 				int bg, int rop, unsigned int planemask);
-static void MGANAME(SubsequentColorExpandFillRect)(ScrnInfoPtr pScrn,
+static void MGANAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
 static void MGANAME(SetupForSolidFill)(ScrnInfoPtr pScrn, int color, int rop,
 					unsigned int planemask);
@@ -66,10 +66,10 @@ static void MGANAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop,
 				int transparency_color, int bpp, int depth);
 static void MGANAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
-static void MGANAME(SetupForScreenToScreenColorExpandCopy)(ScrnInfoPtr pScrn,
+static void MGANAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
 				unsigned int planemask);
-static void MGANAME(SubsequentScreenToScreenColorExpandCopy)(ScrnInfoPtr pScrn,
+static void MGANAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
 				int srcx, int srcy, int skipleft);
 
@@ -145,7 +145,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 		MGANAME(SubsequentMono8x8PatternFillTrap);
 
     /* cpu to screen color expansion */
-    infoPtr->ColorExpandFillFlags = 	CPU_TRANSFER_PAD_DWORD |
+    infoPtr->CPUToScreenColorExpandFillFlags = 	CPU_TRANSFER_PAD_DWORD |
 					SCANLINE_PAD_DWORD |
 					BIT_ORDER_IN_BYTE_LSBFIRST |
 					LEFT_EDGE_CLIPPING |
@@ -153,17 +153,17 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 					SYNC_AFTER_COLOR_EXPAND;
     infoPtr->ColorExpandRange = 0x1C00;
     infoPtr->ColorExpandBase = pMga->IOBase;
-    infoPtr->SetupForColorExpandFill =
-		MGANAME(SetupForColorExpandFill);
-    infoPtr->SubsequentColorExpandFillRect =
-		MGANAME(SubsequentColorExpandFillRect);
+    infoPtr->SetupForCPUToScreenColorExpandFill =
+		MGANAME(SetupForCPUToScreenColorExpandFill);
+    infoPtr->SubsequentCPUToScreenColorExpandFill =
+		MGANAME(SubsequentCPUToScreenColorExpandFill);
 
     /* screen to screen color expansion */
-    infoPtr->ScreenToScreenColorExpandCopyFlags = BIT_ORDER_IN_BYTE_LSBFIRST;
-    infoPtr->SetupForScreenToScreenColorExpandCopy = 
-		MGANAME(SetupForScreenToScreenColorExpandCopy);
-    infoPtr->SubsequentScreenToScreenColorExpandCopy = 
-		MGANAME(SubsequentScreenToScreenColorExpandCopy);
+    infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_LSBFIRST;
+    infoPtr->SetupForScreenToScreenColorExpandFill = 
+		MGANAME(SetupForScreenToScreenColorExpandFill);
+    infoPtr->SubsequentScreenToScreenColorExpandFill = 
+		MGANAME(SubsequentScreenToScreenColorExpandFill);
 
 
     /* image writes */
@@ -185,13 +185,13 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 #if PSZ == 24
     infoPtr->ImageWriteFlags |= NO_PLANEMASK;
     infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
-    infoPtr->ColorExpandFillFlags |= NO_PLANEMASK;
+    infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
     infoPtr->WriteBitmapFlags |= NO_PLANEMASK;
     infoPtr->SolidFillFlags |= NO_PLANEMASK;
     infoPtr->SolidLineFlags |= NO_PLANEMASK;
     infoPtr->Mono8x8PatternFillFlags |= NO_PLANEMASK; 
     infoPtr->FillColorExpandRectsFlags |= NO_PLANEMASK; 
-    infoPtr->ScreenToScreenColorExpandCopyFlags |= NO_PLANEMASK;
+    infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
 #endif
 
     
@@ -703,7 +703,7 @@ MGANAME(SubsequentMono8x8PatternFillTrap)(
 
 
 static void 
-MGANAME(SetupForColorExpandFill)(
+MGANAME(SetupForCPUToScreenColorExpandFill)(
 	ScrnInfoPtr pScrn,
 	int fg, int bg,
 	int rop,
@@ -749,7 +749,7 @@ MGANAME(SetupForColorExpandFill)(
 }       
 
 static void 
-MGANAME(SubsequentColorExpandFillRect)(
+MGANAME(SubsequentCPUToScreenColorExpandFill)(
 	ScrnInfoPtr pScrn,
 	int x, int y, int w, int h,
 	int skipleft
@@ -814,7 +814,7 @@ static void MGANAME(SubsequentImageWriteRect)(
 
 
 static void 
-MGANAME(SetupForScreenToScreenColorExpandCopy)(
+MGANAME(SetupForScreenToScreenColorExpandFill)(
    ScrnInfoPtr pScrn,
    int fg, int bg, 
    int rop,
@@ -860,7 +860,7 @@ MGANAME(SetupForScreenToScreenColorExpandCopy)(
 }
 
 static void 
-MGANAME(SubsequentScreenToScreenColorExpandCopy)(
+MGANAME(SubsequentScreenToScreenColorExpandFill)(
    ScrnInfoPtr pScrn,
    int x, int y, int w, int h,
    int srcx, int srcy, 
@@ -928,7 +928,7 @@ MGAWriteBitmapColorExpand(
     CARD32* maxptr;
     int dwords, maxlines, count;
 
-    (*infoRec->SetupForColorExpandFill)(pScrn, fg, bg, rop, planemask);
+    (*infoRec->SetupForCPUToScreenColorExpandFill)(pScrn, fg, bg, rop, planemask);
 
     w += skipleft;
     x -= skipleft;
@@ -937,7 +937,7 @@ MGAWriteBitmapColorExpand(
     maxptr = destptr + infoRec->ColorExpandRange - dwords;
      
     while(h > maxlines) {
-    	(*infoRec->SubsequentColorExpandFillRect)
+    	(*infoRec->SubsequentCPUToScreenColorExpandFill)
 			(pScrn, x, y, w, maxlines, skipleft);
 	count = maxlines;
 	while(count--) {
@@ -950,7 +950,7 @@ MGAWriteBitmapColorExpand(
 	y += maxlines;
     }
     	
-    (*infoRec->SubsequentColorExpandFillRect)(pScrn, x, y, w, h, skipleft);
+    (*infoRec->SubsequentCPUToScreenColorExpandFill)(pScrn, x, y, w, h, skipleft);
 
     while(h--) {
 	destptr = MoveDWORDS(destptr, (CARD32*)src, dwords);
@@ -995,7 +995,7 @@ MGAFillColorExpandRects(
     } else
     	StippleFunc = XAAStippleScanlineFuncLSBFirst[2];
 
-    (*infoRec->SetupForColorExpandFill)(pScrn, fg, bg, rop, planemask);
+    (*infoRec->SetupForCPUToScreenColorExpandFill)(pScrn, fg, bg, rop, planemask);
 
     while(nBox--) {
 	dwords = (pBox->x2 - pBox->x1 + 31) >> 5;
@@ -1013,7 +1013,7 @@ MGAFillColorExpandRects(
 	srcp = (srcwidth * srcy) + src;
 
 	while(h > maxlines) {
-           (*infoRec->SubsequentColorExpandFillRect)(pScrn, 
+           (*infoRec->SubsequentCPUToScreenColorExpandFill)(pScrn, 
 			pBox->x1, y, pBox->x2 - pBox->x1, maxlines, 0);
 	   count = maxlines;
 	   while(count--) {
@@ -1032,7 +1032,7 @@ MGAFillColorExpandRects(
 	   y += maxlines;
 	} 
 
-      	(*infoRec->SubsequentColorExpandFillRect)(pScrn, 
+      	(*infoRec->SubsequentCPUToScreenColorExpandFill)(pScrn, 
 			pBox->x1, y , pBox->x2 - pBox->x1, h, 0);
 
 	while(h--) {

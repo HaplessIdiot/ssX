@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.5.2.2 1998/07/18 17:53:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.11 1998/07/25 16:55:39 dawes Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -225,7 +225,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 	}
     } else {
 	if (cPtr->Flags & ChipsLinearSupport) {
-	    xf86memcpy((unsigned char *)cPtr->FbBase + cAcl->CursorAddress,
+	    memcpy((unsigned char *)cPtr->FbBase + cAcl->CursorAddress,
 			src, cPtr->CursorInfoRec->MaxWidth * 
 			cPtr->CursorInfoRec->MaxHeight / 4);
 	} else {
@@ -247,7 +247,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 		else
 		    CHIPSSetWrite(pScrn->pScreen,
 					    (int)(cAcl->CursorAddress >> 16));
-	    xf86memcpy((unsigned char *)cPtr->FbBase + (cAcl->CursorAddress &
+	    memcpy((unsigned char *)cPtr->FbBase + (cAcl->CursorAddress &
 			0xFFFF), src,  cPtr->CursorInfoRec->MaxWidth * 
 			cPtr->CursorInfoRec->MaxHeight / 4);
 	}

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.11.2.3 1998/07/24 11:36:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.19 1998/07/25 16:55:59 dawes Exp $ */
 
 
 
@@ -111,7 +111,9 @@ typedef struct {
     unsigned char w_idx;
     unsigned char r_idx;
     unsigned char timingctrl;	       /* for STG170x */
-    unsigned char MClkM, MClkN;
+    unsigned char MClkM;
+    unsigned char dummy;   /* FIXME!!! : someone overwrites saved MClkN without this */
+    unsigned char MClkN;        /* PLL M/N values for MemClk programming */
 } PllState;
 
 typedef struct {
@@ -124,6 +126,14 @@ typedef struct {
     PllState pll;		       /* registers in GenDAC-like RAMDAC/clockchips */
     unsigned char ATTdac_cmd;	       /* command register for ATT 49x DACs */
 } TsengRegRec, *TsengRegPtr;
+
+typedef struct {
+    Bool Programmable;	      	       /* MemClk is programmable if set */
+    Bool Set;			       /* reprogram MClk if TRUE */
+    int MemClk;                        /* MemClk value in kHz */
+    int min, max;	  	       /* MemClk limits */
+} TsengMClkInfoRec, *TsengMclkInfoPtr;
+
 
 typedef struct {
     t_ramdactype DacType;
@@ -139,6 +149,15 @@ typedef struct {
 } TsengDacInfoRec, *TsengDacInfoPtr;
 
 typedef struct {
+    /* we'll put variables that we want to access _fast_ at the beginning (just a hunch) */
+    unsigned char cache_SegSelL, cache_SegSelH;  /* for tseng_bank.c */
+    int Bytesperpixel;		       /* a shorthand for the XAA code */
+    Bool need_wait_acl;		       /* always need a full "WAIT" for ACL finish */
+    int line_width;		       /* framebuffer width in bytes per scanline */
+    int planemask_mask;		       /* mask for active bits in planemask */
+    int neg_x_pixel_offset;
+    int powerPerPixel;		       /* power-of-2 version of bytesperpixel */
+    /* normal stuff starts here */
     pciVideoPtr PciInfo;
     PCITAG PciTag;
     int Save_Divide;
@@ -169,21 +188,14 @@ typedef struct {
     miBankInfoRec BankInfo;
     CARD32 IOAddress;		       /* PCI config space base address for ET6000 */
     CARD32 MMIOBase;
-    int Bytesperpixel;		       /* a shorthand for the XAA code */
-    Bool SetMClk;		       /* reprogram MClk if TRUE */
-    int MemClk;
     int MinClock;
     int MaxClock;
     TsengDacInfoRec DacInfo;
+    TsengMClkInfoRec MClkInfo;
     t_clockchip_type ClockChip;
     CloseScreenProcPtr CloseScreen;
     int save_divide;
     XAAInfoRecPtr AccelInfoRec;
-    Bool need_wait_acl;		       /* always need a full "WAIT" for ACL finish */
-    int line_width;		       /* framebuffer width in bytes per scanline */
-    int planemask_mask;		       /* mask for active bits in planemask */
-    int neg_x_pixel_offset;
-    int powerPerPixel;		       /* power-of-2 version of bytesperpixel */
 } TsengRec, *TsengPtr;
 
 #define TsengPTR(p) ((TsengPtr)((p)->driverPrivate))
@@ -252,7 +264,7 @@ int ET4000W32SetReadWrite(ScreenPtr pScrn, unsigned int iBank);
  * From tseng_clocks.c
  */
 
-Bool Tseng_check_clockchip(ScrnInfoPtr pScrn, TsengPtr pTseng);
+Bool Tseng_check_clockchip(ScrnInfoPtr pScrn);
 Bool Tseng_ET4000ClockSelect(int no);
 Bool Tseng_LegendClockSelect(int no);
 Bool Tseng_ET6000ClockSelect(int freq);
@@ -265,11 +277,11 @@ unsigned char tseng_dactocomm(void);
 unsigned char tseng_getdaccomm(void);
 void tseng_setdaccomm(unsigned char comm);
 
-void Check_Tseng_Ramdac(ScrnInfoPtr pScrn, TsengPtr pTseng);
+void Check_Tseng_Ramdac(ScrnInfoPtr pScrn);
 void tseng_init_clockscale(TsengPtr pTseng);
-void tseng_set_dacspeed(ScrnInfoPtr pScrn, TsengPtr pTseng);
-void tseng_validate_mode(ScrnInfoPtr pScrn, TsengPtr pTseng, DisplayModePtr mode, Bool verbose);
-void tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, TsengPtr pTseng, DisplayModePtr mode);
+void tseng_set_dacspeed(ScrnInfoPtr pScrn);
+void tseng_validate_mode(ScrnInfoPtr pScrn, DisplayModePtr mode, Bool verbose);
+void tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 #ifdef DPMSExtension
 void TsengCrtcDPMSSet(int);

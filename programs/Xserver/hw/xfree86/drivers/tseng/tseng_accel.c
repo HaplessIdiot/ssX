@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.9.2.1 1998/07/24 11:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.21 1998/07/25 16:56:00 dawes Exp $ */
 
 
 
@@ -47,6 +47,7 @@
 #include "miline.h"
 
 void TsengSync(ScrnInfoPtr pScrn);
+
 void TsengSetupForSolidFill(ScrnInfoPtr pScrn,
     int color, int rop, unsigned int planemask);
 void TsengW32iSubsequentSolidFillRect(ScrnInfoPtr pScrn,
@@ -55,7 +56,6 @@ void TsengW32pSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     int x, int y, int w, int h);
 void Tseng6KSubsequentSolidFillRect(ScrnInfoPtr pScrn,
     int x, int y, int w, int h);
-
 /* void TsengSubsequentFillTrapezoidSolid(); */
 
 void TsengSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
@@ -67,6 +67,8 @@ void TsengSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 #ifdef TODO
 void TsengDoImageWrite();
 
+void TsengSetupForSolidLine(ScrnInfoPtr pScrn,
+    int color, int rop, unsigned int planemask);
 void TsengSubsequentBresenhamLine();
 void TsengSubsequentTwoPointLine();
 
@@ -115,8 +117,7 @@ TsengXAAInit(ScreenPtr pScreen)
     pTseng->line_width = pScrn->displayWidth * pTseng->Bytesperpixel;
 
     /*
-     * We want to set up the SolidFillRect primitive for filling a solid
-     * rectangle.
+     * SolidFillRect.
      *
      * The W32 and W32i chips don't have a register to set the amount of
      * bytes per pixel, and hence they don't skip 1 byte in each 4-byte word
@@ -146,11 +147,11 @@ TsengXAAInit(ScreenPtr pScreen)
 #endif
 
     /*
-     * We also want to set up the ScreenToScreenCopy (BitBLT) primitive for
-     * copying a rectangular area from one location on the screen to
-     * another. First we set up the restrictions. We support EITHER a
-     * planemask OR TRANSPARENCY, but not both (they use the same Pattern
-     * map).
+     * SceenToScreenCopy (BitBLT).
+     * 
+     * Restrictions: On ET6000, we support EITHER a planemask OR
+     * TRANSPARENCY, but not both (they use the same Pattern map).
+     * All other chips can't do TRANSPARENCY at all.
      */
 #ifdef ET6K_TRANSPARENCY
     pXAAinfo->CopyAreaFlags = NO_PLANEMASK;
@@ -168,6 +169,7 @@ TsengXAAInit(ScreenPtr pScreen)
 	TsengSetupForScreenToScreenCopy;
     pXAAinfo->SubsequentScreenToScreenCopy =
 	TsengSubsequentScreenToScreenCopy;
+
 
 #ifdef TODO
     /* overload XAA ImageWrite function */
@@ -212,8 +214,9 @@ TsengXAAInit(ScreenPtr pScreen)
 	pXAAinfo->SubsequentFill8x8Pattern =
 	    TsengSubsequentFill8x8Pattern;
     }
+
     /*
-     * Setup hardware-line-drawing code.
+     * SolidLine.
      *
      * We use Bresenham by preference, because it supports hardware clipping
      * (using the error term). TwoPointLines() is implemented, but not used,
@@ -222,7 +225,9 @@ TsengXAAInit(ScreenPtr pScreen)
      */
 
     if (Is_W32p || Is_Et6K) {
-	pXAAinfo->SubsequentBresenhamLine = TsengSubsequentBresenhamLine;
+        SetupForSolidLine = TsengSetupForSolidLine;
+	pXAAinfo->SubsequentSolidBresenhamLine =
+	    TsengSubsequentSolidBresenhamLine;
 	/* ErrorTermBits = min(errorterm_size, delta_major_size, delta_minor_size) */
 	pXAAinfo->ErrorTermBits = 11;
 #if TSENG_TWOPOINTLINE
@@ -233,6 +238,7 @@ TsengXAAInit(ScreenPtr pScreen)
 	xf86GCInfoRec.PolySegmentSolidZeroWidthFlags =
 	    TWO_POINT_LINE_ERROR_TERM;
     }
+
     /* set up color expansion acceleration */
     TsengAccelInit_Colexp();
 

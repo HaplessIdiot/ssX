@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.10.2.43 1998/07/24 11:36:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.33 1998/07/25 16:55:52 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1608,18 +1608,12 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * function.  If not, the visuals will need to be setup before calling
      * a fb ScreenInit() function and fixed up after.
      *
-     * XXX NOTE: cfbScreenInit() will not result in the default visual
-     * being set correctly when there is a screen-specific value given
-     * in the config file as opposed to a global value given on the
-     * command line.  Saving and restoring 'defaultColorVisualClass'
-     * around the fb's ScreenInit() solves this problem.
-     *
      * For most PC hardware at depths >= 8, the defaults that cfb uses
      * are not appropriate.  In this driver, we fixup the visuals after.
      */
 
     /*
-     * Reset cfb's visual list.
+     * Reset the visual list.
      */
     miClearVisualTypes();
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.7.2.6 1998/07/24 11:36:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.21 1998/07/25 16:55:38 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -93,9 +93,9 @@ static void CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir,
 static void CTNAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn,
 				int srcX, int srcY, int dstX, int dstY,
 				int w, int h);
-static void CTNAME(SetupForColorExpandFill)(ScrnInfoPtr pScrn, int fg,
+static void CTNAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
 				int bg, int rop, unsigned int planemask);
-static void CTNAME(SubsequentColorExpandFillRect)(ScrnInfoPtr pScrn,
+static void CTNAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
 static void CTNAME(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
 				int patx, int paty, int fg, int bg,
@@ -259,25 +259,25 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
      */
 
 #ifdef CHIPS_HIQV 
-    infoPtr->ColorExpandFillFlags =
+    infoPtr->CPUToScreenColorExpandFillFlags =
 	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_QWORD |
 	LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X;
         
     if (pScrn->bitsPerPixel == 24) 
-	infoPtr->ColorExpandFillFlags |= NO_PLANEMASK;
+	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
 #else
-    infoPtr->ColorExpandFillFlags =
+    infoPtr->CPUToScreenColorExpandFillFlags =
 	BIT_ORDER_IN_BYTE_MSBFIRST | CPU_TRANSFER_PAD_DWORD;
 
     if (pScrn->bitsPerPixel == 24) 
-	infoPtr->ColorExpandFillFlags |= TRIPLE_BITS_24BPP |
+	infoPtr->CPUToScreenColorExpandFillFlags |= TRIPLE_BITS_24BPP |
 	    RGB_EQUAL | NO_PLANEMASK;
 #endif
 
 #ifdef CHIPS_COLOREXPANDFILL
-    infoPtr->SetupForColorExpandFill = CTNAME(SetupForColorExpandFill);
-    infoPtr->SubsequentColorExpandFillRect =
-		CTNAME(SubsequentColorExpandFillRect);
+    infoPtr->SetupForCPUToScreenColorExpandFill = CTNAME(SetupForCPUToScreenColorExpandFill);
+    infoPtr->SubsequentCPUToScreenColorExpandFill =
+		CTNAME(SubsequentCPUToScreenColorExpandFill);
 #endif  /* CHIPS_COLOREXPANDFILL */
 
     infoPtr->ColorExpandBase = (unsigned char *)cAcl->BltDataWindow;
@@ -422,7 +422,7 @@ CTNAME(32SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
     ctBLTWAIT;
-    xf86memset((unsigned char *)cPtr->FbBase + cAcl->ScratchAddress, 0xAA, 8);
+    memset((unsigned char *)cPtr->FbBase + cAcl->ScratchAddress, 0xAA, 8);
     ctSETFGCOLOR16((color & 0xFFFF));
     ctSETBGCOLOR16(((color >> 16) & 0xFFFF));
     ctSETROP(ChipsAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT |
@@ -756,7 +756,7 @@ CTNAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int srcX, int srcY,
 
 
 static void 
-CTNAME(SetupForColorExpandFill)(ScrnInfoPtr pScrn, int fg,
+CTNAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
 				int bg, int rop, unsigned int planemask)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -826,7 +826,7 @@ CTNAME(SetupForColorExpandFill)(ScrnInfoPtr pScrn, int fg,
 }
 
 static void
-CTNAME(SubsequentColorExpandFillRect)(ScrnInfoPtr pScrn,
+CTNAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);

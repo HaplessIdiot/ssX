@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.3.2.2 1998/07/24 11:36:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.7 1998/07/25 16:56:01 dawes Exp $ */
 
 
 
@@ -31,9 +31,10 @@ static SymTabRec TsengClockChips[] =
 };
 
 Bool
-Tseng_check_clockchip(ScrnInfoPtr pScrn, TsengPtr pTseng)
+Tseng_check_clockchip(ScrnInfoPtr pScrn)
 {
     MessageType from;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     ErrorF("	Tseng_check_clockchip\n");
 
