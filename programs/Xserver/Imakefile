@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.298 2004/05/28 07:44:00 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.299 2004/06/02 22:42:55 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -1330,17 +1330,6 @@ SetUIDServerTarget(XDarwin,$(DARWINDIRS),$(DARWINOBJS), \
 
 #if DarwinQuartzSupport
 
-/*
- * Quartz modes load a GLX extension dynamically, so we can't build it in.
- */
-AQUAEXTENSIONS = $(OTHEREXTS) $(RANDRLIB) $(RENDERLIB)
-#if !BuildXinerama
-#define AquaPostFbLibs NoMfbBarePostFbLibs $(AQUAEXTENSIONS)
-#else
-#define AquaPostFbLibs $(AQUAEXTENSIONS) NoMfbBarePostFbLibs $(AQUAEXTENSIONS)
-#endif
-QUARTZEXTLIBS = MiExtLibs $(FB) AquaPostFbLibs $(DARWINDDXDIR)/LibraryTargetName(darwin)
-
 QUARTZDIR = $(DARWINDDXDIR)/quartz
 QUARTZLIB = $(QUARTZDIR)/LibraryTargetName(XQuartz)
 QUARTZSYSLIBS = -framework ApplicationServices -framework Cocoa \
@@ -1360,7 +1349,7 @@ XDARWINAPPDIR = /Applications/XDarwin.app/Contents
  * Quartz X server (installed in its application bundle)
  */
 SetUIDServerTarget(XDarwinApp,$(DARWINDIRS),$(DARWINOBJS), \
-	$(DARWINLIBS) $(QUARTZLIB) $(QUARTZEXTLIBS), \
+	$(DARWINLIBS) $(QUARTZLIB) $(DARWINEXTLIBS), \
 	$(DARWINSYSLIBS) $(QUARTZSYSLIBS) -u _miDCInitialize)
 
 install::
