@@ -1,4 +1,10 @@
 XFree86 4.4.99.3 (xx March 2004)
+  59. Cleanup the via driver's primary DDC/EDID retrieval:
+      - Remove NoDDCValue entirely (also adapts the manpage now).
+      - Comment out ddc1 and ddc1Read, as this is broken.
+      - Replace ddc2Read with xf86DoEDID_DDC2.
+      - Replace manually setting ranges for xf86SetDDCproperties.
+      (Bugzilla #812, Luc Verhaegen).
   58. Fix OS/2 build problems that showed up after removing the include::
       target dependencies (Bugzilla #1318, Frank Giessler).
   57. Fix some path-related issues on OS/2 with xman and xf86cfg
@@ -18813,7 +18819,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3207 2004/04/03 21:42:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3208 2004/04/03 21:45:53 dawes Exp $
 
 
 

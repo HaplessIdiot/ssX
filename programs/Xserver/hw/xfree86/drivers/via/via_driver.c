@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.31 2004/03/29 16:25:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.32 2004/04/03 21:39:55 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -148,7 +148,6 @@ typedef enum {
     OPTION_TVENCODER,
     OPTION_REFRESH,
     OPTION_DISABLEVQ,
-    OPTION_NODDCVALUE,
     OPTION_CAP0_DEINTERLACE,
     OPTION_CAP1_DEINTERLACE,
     OPTION_CAP0_FIELDSWAP,
@@ -179,7 +178,6 @@ static OptionInfoRec VIAOptions[] =
     {OPTION_TVENCODER,  "TVEncoder",    OPTV_ANYSTR,  {0}, FALSE},
     {OPTION_REFRESH,    "Refresh",      OPTV_INTEGER, {0}, FALSE},
     {OPTION_DISABLEVQ,  "DisableVQ",    OPTV_BOOLEAN, {0}, FALSE},
-    {OPTION_NODDCVALUE, "NoDDCValue",   OPTV_BOOLEAN, {0}, FALSE},
     {OPTION_CAP0_DEINTERLACE, "Cap0Deinterlace",    OPTV_ANYSTR,  {0}, FALSE},
     {OPTION_CAP1_DEINTERLACE, "Cap1Deinterlace",    OPTV_ANYSTR,  {0}, FALSE},
     {OPTION_CAP0_FIELDSWAP, "Cap0FieldSwap",    OPTV_BOOLEAN,  {0}, FALSE},
@@ -222,7 +220,6 @@ static const char *vbeSymbols[] = {
 };
 
 static const char *ddcSymbols[] = {
-    "xf86InterpretEDID",
     "xf86PrintEDID",
     "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
@@ -616,7 +613,8 @@ static int LookupChipID(PciChipsets* pset, int ChipID)
 
 } /* LookupChipID */
 
-
+#if 0
+/* see VIAddc1 */
 static unsigned int
 VIAddc1Read(ScrnInfoPtr pScrn)
 {
@@ -631,54 +629,36 @@ VIAddc1Read(ScrnInfoPtr pScrn)
     tmp = VGAIN8(0x3c5);
     return ((unsigned int) ((tmp & 0x08) >> 3));
 }
+#endif
 
-static Bool
-VIAddc1(int scrnIndex)
+static xf86MonPtr
+VIAddc1(int scrnIndex, VIAPtr pVia)
 {
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    VIAPtr pVia = VIAPTR(pScrn);
+#if 0
+    /* broken on cle266 & km400. see bug 812. */
+
     xf86MonPtr pMon;
     CARD8 tmp;
-    Bool success = FALSE;
+
+    DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "VIAddc1\n"));
 
     /* initialize chipset */
     VGAOUT8(0x3c4, 0x26);
     tmp = VGAIN8(0x3c5);
+    
     VGAOUT8(0x3c4, 0x26);
     VGAOUT8(0x3c5, (tmp | 0x11));
-
-    if ((pMon = xf86PrintEDID(
-        xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,VIAddc1Read))) != NULL)
-        success = TRUE;
-    xf86SetDDCproperties(pScrn,pMon);
+    
+    pMon = xf86DoEDID_DDC1(scrnIndex, vgaHWddc1SetSpeed, VIAddc1Read);
 
     /* undo initialization */
     VGAOUT8(0x3c4, 0x26);
     VGAOUT8(0x3c5, tmp);
-    return success;
-}
-
-static Bool
-VIAddc2(int scrnIndex)
-{
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    VIAPtr pVia = VIAPTR(pScrn);
-    xf86MonPtr pMon;
-    CARD8 tmp;
-    Bool success = FALSE;
-
-    VGAOUT8(0x3c4, 0x26);
-    tmp = VGAIN8(0x3c5);
-    pMon = xf86DoEDID_DDC2(pScrn->scrnIndex, pVia->I2C_Port1);
-    if (pMon)
-        success = TRUE;
-    pVia->DDC1 =  pMon;
-    xf86PrintEDID(pMon);
-    xf86SetDDCproperties(pScrn, pMon);
-    VGAOUT8(0x3c4, 0x26);
-    VGAOUT8(0x3c5, tmp);
-
-    return success;
+    
+    return pMon;
+#else
+    return NULL;
+#endif
 }
 
 static void
@@ -1038,16 +1018,6 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
         else {
             xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option \"%s\" can't recognize!, Active Device by default.\n", s);
         }
-    }
-
-    /* NoDDCValue Option */
-    if (xf86ReturnOptValBool(VIAOptions, OPTION_NODDCVALUE, FALSE)) {
-        pVia->NoDDCValue = TRUE;
-        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-         "Option: Not using DDC probed value to set HorizSync & VertRefresh\n");
-    }
-    else {
-        pVia->NoDDCValue = FALSE;
     }
 
     /* LCDDualEdge Option */
@@ -1422,44 +1392,20 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if (!xf86LoadSubModule(pScrn, "ddc")) {
-        VIAFreeRec(pScrn);
-        return FALSE;
+	VIAFreeRec(pScrn);
+	return FALSE;
     }
     else {
-        xf86MonPtr pMon = NULL;
-
-        xf86LoaderReqSymLists(ddcSymbols, NULL);
-        if ((pVia->pVbe)
-            && ((pMon = xf86PrintEDID(vbeDoEDID(pVia->pVbe, NULL))) != NULL)) {
-            pVia->DDC1 = pMon;
-            xf86SetDDCproperties(pScrn,pMon);
-        }
-        else if (!VIAddc2(pScrn->scrnIndex)) {
-            VIAddc1(pScrn->scrnIndex);
-        }
-    }
-
-    /* Reset HorizSync & VertRefresh Rang Using DDC Value */
-    if (pVia->DDC1 && !pVia->NoDDCValue) {
-        int i;
-        int h = 0;
-        int v = 0;
-
-        for (i = 0; i < DET_TIMINGS; i++) {
-            if (pVia->DDC1->det_mon[i].type == DS_RANGES) {
-                pScrn->monitor->hsync[h].lo
-                    = pVia->DDC1->det_mon[i].section.ranges.min_h;
-                pScrn->monitor->hsync[h++].hi
-                    = pVia->DDC1->det_mon[i].section.ranges.max_h;
-                pScrn->monitor->vrefresh[v].lo
-                    = pVia->DDC1->det_mon[i].section.ranges.min_v;
-                pScrn->monitor->vrefresh[v++].hi
-                    = pVia->DDC1->det_mon[i].section.ranges.max_v;
-                break;
-            }
-        }
-        pScrn->monitor->nHsync = h;
-        pScrn->monitor->nVrefresh = v;
+	xf86LoaderReqSymLists(ddcSymbols, NULL);
+	
+	if (!(pVia->pVbe && ((pVia->DDC1 = vbeDoEDID(pVia->pVbe, NULL)))))
+	    if (!(pVia->DDC1 = xf86DoEDID_DDC2(pScrn->scrnIndex, pVia->I2C_Port1)))
+		pVia->DDC1 = VIAddc1(pScrn->scrnIndex, pVia);
+		    
+	if (pVia->DDC1) {
+	    xf86PrintEDID(pVia->DDC1);
+	    xf86SetDDCproperties(pScrn, pVia->DDC1);
+	}
     }
 
     /*

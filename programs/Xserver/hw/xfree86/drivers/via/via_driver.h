@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.h,v 1.13 2004/02/08 17:57:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.h,v 1.14 2004/04/03 21:39:55 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -267,7 +267,6 @@ typedef struct _VIA {
     Bool                hwcursor;
     Bool                NoAccel;
     Bool                shadowFB;
-    Bool                NoDDCValue;
     int                 rotate;
 
     CloseScreenProcPtr  CloseScreen;
