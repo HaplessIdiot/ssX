@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.27 1997/06/15 07:12:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.28 1997/06/25 08:24:59 hohndel Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -129,6 +129,7 @@ typedef struct
     int			oldTiltX;	/* previous tilt in x direction */
     int			oldTiltY;	/* previous tilt in y direction */    
     int			oldButtons;	/* previous buttons state */
+    int			oldProximity;	/* previous proximity */
 } WacomDeviceRec, *WacomDevicePtr;
 
 typedef struct _WacomCommonRec 
@@ -148,7 +149,8 @@ typedef struct _WacomCommonRec
     int			wcmPktLength;	/* length of a packet */
     unsigned char	wcmData[9];	/* data read on the device */
     Bool		wcmHasEraser;	/* True if an eraser has been configured */
-    int			wcmOldProximity; /* previous proximity */
+    Bool		wcmStylusSide;	/* eraser or stylus ? */
+    Bool		wcmStylusProximity; /* the stylus is in proximity ? */
 } WacomCommonRec, *WacomCommonPtr;
 
 /******************************************************************************
@@ -759,6 +761,42 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 		  x, y, z,
 		  is_button ? "true" : "false", buttons));
 
+    /* check for device type (STYLUS, ERASER or CURSOR) */
+
+    if (is_stylus) {
+	/* handle eraser and stylus distinction */
+	if (common->wcmHasEraser && !common->wcmStylusSide) {
+	    if (DEVICE_ID(priv->flags) != ERASER_ID)
+		return;
+	    DBG(7, ErrorF("=> Eraser\n"));
+	    /* the eraser is reported as button 4 and 5 */
+	    buttons = buttons - 4;
+	} else {
+	    if (DEVICE_ID(priv->flags) != STYLUS_ID)
+		return;
+	    DBG(7, ErrorF("=> Stylus\n"));
+	    /* report the eraser as button 3 of the stylus */
+	    if (!common->wcmStylusSide) {
+		buttons = (buttons == 5) ? 3 : 0;
+	    }
+	}
+	
+	/* handle tilt values only for stylus */
+	if (HANDLE_TILT(common)) {
+	    tx = (common->wcmData[7] & TILT_BITS);
+	    ty = (common->wcmData[8] & TILT_BITS);
+	    if (common->wcmData[7] & TILT_SIGN_BIT)
+		tx = - (~(tx-1) & 0x7f);
+	    if (common->wcmData[8] & TILT_SIGN_BIT)
+		ty = - (~(ty-1) & 0x7f);
+	}
+    }
+    else {
+	if (DEVICE_ID(priv->flags) != CURSOR_ID)
+	    return;	
+	DBG(7, ErrorF("=> Cursor\n"));
+    }
+      
     /* Translate coordinates according to Top and Bottom points
      * if we are outside the zone do as a ProximityOut event.
      */
@@ -790,53 +828,6 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	y = 0;
     }
     
-    if (is_stylus) {
-	/* handle tilt values only for stylus */
-	if (HANDLE_TILT(common)) {
-	    tx = (common->wcmData[7] & TILT_BITS);
-	    ty = (common->wcmData[8] & TILT_BITS);
-	    if (common->wcmData[7] & TILT_SIGN_BIT)
-		tx = - (~(tx-1) & 0x7f);
-	    if (common->wcmData[8] & TILT_SIGN_BIT)
-		ty = - (~(ty-1) & 0x7f);
-	}
-	
-	/*
-	* The eraser is reported as button 4 and 5 of the stylus.
-	* if we haven't an independent device for the eraser
-	* report the button as button 3 of the stylus.
-	*/
-	if ((buttons > 3) && common->wcmHasEraser &&
-	    ((is_proximity && !common->wcmOldProximity && buttons == 4) ||
-	     (common->wcmOldProximity == ERASER_PROX))) {
-	    if (DEVICE_ID(priv->flags) != ERASER_ID)
-		return;
-	    DBG(10, ErrorF("Eraser\n"));
-	} else {
-	    /*
-	    * When we are out of proximity with the eraser the
-	    * button 4 isn't reported so we must check the
-	    * previous proximity device.
-	    */
-	    if (common->wcmHasEraser && !is_proximity &&
-		(common->wcmOldProximity == ERASER_PROX)) {
-		if (DEVICE_ID(priv->flags) != ERASER_ID)
-		    return;
-		DBG(10, ErrorF("Eraser\n"));
-	    }
-	    else {
-		if (DEVICE_ID(priv->flags) != STYLUS_ID)
-		    return;
-		DBG(10, ErrorF("Stylus\n"));
-	    }
-	}
-    }
-    else {
-	if (DEVICE_ID(priv->flags) != CURSOR_ID)
-	    return;	
-	DBG(10, ErrorF("Cursor\n"));
-    }
-      
     DBG(6, ErrorF("[%s] prox=%s\tx=%d\ty=%d\tz=%d\tbutton=%s\tbuttons=%d\n",
 		  is_stylus ? "stylus" : "cursor",
 		  is_proximity ? "true" : "false",
@@ -861,41 +852,16 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	rty = ty - priv->oldTiltY;
     }
 
-    /* coordonates are ready we can send events */
+    /* coordinates are ready we can send events */
     if (is_proximity) {
 
-	if (!common->wcmOldProximity) {
+	if (!priv->oldProximity) {
 	    xf86PostProximityEvent(local->dev, 1, 0, 5, rx, ry, z, tx, ty);
 
 	    priv->flags |= FIRST_TOUCH_FLAG;
 	    DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG set\n"));
-		    
-	    /* handle the two sides switches in the stylus */
-	    if (is_stylus && (buttons == 4)) {
-		common->wcmOldProximity = ERASER_PROX;
-	    }
-	    else {
-		common->wcmOldProximity = OTHER_PROX;
-	    }
-	}      
-
-	/* The stylus reports button 4 for the second side
-	* switch and button 4/5 for the eraser tip. We know
-	* how to choose when we come in proximity for the
-	* first time. If we are in proximity and button 4 then
-	* we have the eraser else we have the second side
-	* switch.
-	*/
-	if (is_stylus && buttons > 3) {
-	    if (buttons == 4) {
-		buttons = (common->wcmOldProximity == ERASER_PROX) ? 0 : 4;
-	    }
-	    else {
-		if (common->wcmOldProximity == ERASER_PROX && buttons == 5)
-		    buttons = ((DEVICE_ID(priv->flags) == ERASER_ID) ? 1 : 3);
-	    }
 	}
-		
+
 	DBG(4, ErrorF("xf86WcmReadInput %s rx=%d ry=%d rz=%d priv->oldButtons=%d\n",
 		      is_stylus ? "stylus" : "cursor", rx, ry, rz, priv->oldButtons));
     
@@ -931,6 +897,7 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	priv->oldZ = z;
 	priv->oldTiltX = tx;
 	priv->oldTiltY = ty;
+	priv->oldProximity = 1;
     }
     else { /* !PROXIMITY */
 	/* reports button up when the device has been down and becomes out of proximity */
@@ -954,12 +921,12 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 				 is_absolute, 0, 5,
 				 0, 0, buttons, rtx, rty);
 	    }
-	    if (common->wcmOldProximity) {
+	    if (priv->oldProximity) {
 		xf86PostProximityEvent(local->dev, 0, 0, 5, rx, ry, rz,
 				       rtx, rty);
 	    }
 	}
-	common->wcmOldProximity = 0;
+	priv->oldProximity = 0;
     }
 }
 
@@ -1043,7 +1010,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	bit 1  P2
 	bit 0  P1
 
-	byte 7 and 8 are optional and present only
+	byte 8 and 9 are optional and present only
 	in tilt mode.
 
 	Byte 8
@@ -1102,6 +1069,22 @@ xf86WcmReadInput(LocalDevicePtr         local)
 
 	    buttons = (common->wcmData[3] & BUTTONS_BITS) >> 3;
 
+	    /* The stylus reports button 4 for the second side
+	     * switch and button 4/5 for the eraser tip. We know
+	     * how to choose when we come in proximity for the
+	     * first time. If we are in proximity and button 4 then
+	     * we have the eraser else we have the second side
+	     * switch.
+	     */
+	    if (is_stylus) {
+		if (!common->wcmStylusProximity && is_proximity) {
+		    common->wcmStylusSide = (buttons != 4);
+		}
+		DBG(8, ErrorF("xf86WcmReadInput %s side\n",
+			      common->wcmStylusSide ? "stylus" : "eraser"));
+		common->wcmStylusProximity = is_proximity;
+	    }
+	    
 	    for(idx=0; idx<common->wcmNumDevices; idx++) {
 		DBG(7, ErrorF("xf86WcmReadInput trying to send to %s\n",
 			      common->wcmDevices[idx]->name));
@@ -1759,6 +1742,7 @@ xf86WcmAllocate(char *  name,
     priv->oldTiltX = -1;		/* previous tilt in x direction */
     priv->oldTiltY = -1;		/* previous tilt in y direction */
     priv->oldButtons = 0;		/* previous buttons state */
+    priv->oldProximity = 0;		/* previous proximity */
     priv->topX = 0;			/* X top */
     priv->topY = 0;			/* Y top */
     priv->bottomX = 0;			/* X bottom */
@@ -1766,6 +1750,7 @@ xf86WcmAllocate(char *  name,
     priv->factorX = 0.0;		/* X factor */
     priv->factorY = 0.0;		/* Y factor */
     priv->common = common;		/* common info pointer */
+    priv->oldProximity = 0;		/* previous proximity */
     
     common->wcmDevice = "";		/* device file name */
 #if defined(sun) && !defined(i386)
@@ -1775,7 +1760,6 @@ xf86WcmAllocate(char *  name,
 	ErrorF("xf86WcmOpen port changed to '%s'\n", common->wcmDevice);
     }
 #endif
-    common->wcmOldProximity = 0;	/* previous proximity */
     common->wcmSuppress = -1;		/* transmit position if increment is superior */
     common->wcmFlags = 0;		/* various flags */
     common->wcmDevices = (LocalDevicePtr*) xalloc(sizeof(LocalDevicePtr));
@@ -1790,7 +1774,9 @@ xf86WcmAllocate(char *  name,
     common->wcmResolY = 1270;		/* Y resolution in points/inch */
     common->wcmResolZ = 1270;		/* Z resolution in points/inch */
     common->wcmHasEraser = (flag & ERASER_ID) ? TRUE : FALSE;	/* True if an eraser has been configured */
-
+    common->wcmStylusSide = TRUE;	/* eraser or stylus ? */
+    common->wcmStylusProximity = FALSE;	/* a stylus is in proximity ? */
+    
     return local;
 }
 
@@ -1963,5 +1949,9 @@ xf86WacomModuleInit(data, magic)
 }
 #endif
 
-      
+/*
+ * Local variables:
+ * change-log-default-name: "~/xinput.log"
+ * End:
+ */
 /* end of xf86Wacom.c */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.1 1997/07/29 13:25:49 hohndel Exp $ */
 /*
  * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -269,7 +269,7 @@ ATISave(void *data)
             /* Save VGA registers */
             ATIVGASave(save);
 
-            if (ATIChip >= ATI_CHIP_264CT)
+            if (ATIChip >= ATI_CHIP_88800GXC)
             {
                 save->crtc_off_pitch = inl(ATIIOPortCRTC_OFF_PITCH);
                 save->config_cntl = inl(ATIIOPortCONFIG_CNTL);
@@ -480,7 +480,7 @@ ATIInit(DisplayModePtr mode)
             if (ATIChipHasVGAWonder)
                 ATIVGAWonderInit(mode);
 
-            if (ATIChip >= ATI_CHIP_264CT)
+            if (ATIChip >= ATI_CHIP_88800GXC)
             {
                 ATINewHWPtr->crtc_gen_cntl = inl(ATIIOPortCRTC_GEN_CNTL) &
                     ~(CRTC_DBL_SCAN_EN | CRTC_INTERLACE_EN |
@@ -574,6 +574,10 @@ ATIRestore(void *data)
         case ATI_CRTC_VGA:
             ATISetVGAIOBase(restore->std.MiscOutReg);
 
+            if (ATIChip >= ATI_CHIP_88800GXC)
+                outl(ATIIOPortCRTC_GEN_CNTL,
+                    restore->crtc_gen_cntl & ~CRTC_EN);
+
             /* Start sequencer reset */
             PutReg(SEQX, 0x00U, 0x00U);
 
@@ -589,11 +593,14 @@ ATIRestore(void *data)
             /* Load VGA device */
             ATIVGARestore(restore);
 
-            if (ATIChip >= ATI_CHIP_264CT)
+            if (ATIChip >= ATI_CHIP_88800GXC)
             {
                 outl(ATIIOPortCRTC_GEN_CNTL, restore->crtc_gen_cntl);
-                outl(ATIIOPortCRTC_OFF_PITCH, restore->crtc_off_pitch);
-                outl(ATIIOPortCONFIG_CNTL, restore->config_cntl);
+                if (ATIChip >= ATI_CHIP_264CT)
+                {
+                    outl(ATIIOPortCRTC_OFF_PITCH, restore->crtc_off_pitch);
+                    outl(ATIIOPortCONFIG_CNTL, restore->config_cntl);
+                }
             }
 
             /* Give LUT access to CRTC */

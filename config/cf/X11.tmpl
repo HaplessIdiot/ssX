@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.16 1997/08/12 12:01:52 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.17 1997/09/09 10:27:34 hohndel Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1726,6 +1726,9 @@ all::   Concat(subdir,.dir)						@@\
 									@@\
 Concat(subdir,.dir):							@@\
 	$(XKBCOMPCMD) -lfhlpR -o Concat(subdir,.dir) '*'		@@\
+									@@\
+clean::									@@\
+	RemoveFile(Concat(subdir,.dir))					@@\
 									@@\
 InstallTarget(install,Concat(subdir,.dir),$(INSTDATFLAGS),basedir)
 #endif

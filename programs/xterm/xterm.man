@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/85 1996/12/09 17:10:53 kaleb $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.18 1997/09/30 04:51:14 hohndel Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.19 1997/10/13 17:17:00 hohndel Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -1173,7 +1173,7 @@ This entry invokes the \fBset-visualbell(toggle)\fP action.
 This entry invokes the \fBset-marginbell(toggle)\fP action.
 .TP 8
 .B "altscreen (\fPclass\fB SmeBSB)"
-This entry is currently disabled.
+This entry invokes the \fBset-altscreen(toggle)\fP action.
 .TP 8
 .B "activeicon (\fPclass\fB SMeBSB)"
 This entry toggles active icons on and off if this feature was

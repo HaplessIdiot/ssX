@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.10 1997/08/26 10:01:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.11 1997/09/09 10:27:54 hohndel Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -29,6 +29,19 @@ xf86DoBitBlt(
 
 void
 xf86DoImageWrite(
+#if NeedFunctionPrototypes
+    DrawablePtr	    pSrc, 
+    DrawablePtr	    pDst,
+    int		    alu,
+    RegionPtr	    prgnDst,
+    DDXPointPtr	    pptSrc,
+    unsigned int    planemask,
+    int		    bitPlane
+#endif
+);
+
+void
+xf86ScanlineDoImageWrite(
 #if NeedFunctionPrototypes
     DrawablePtr	    pSrc, 
     DrawablePtr	    pDst,

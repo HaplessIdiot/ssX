@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.83 1997/07/31 07:16:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.84 1997/08/26 10:00:59 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -560,7 +560,11 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
 	break;
    case MACH64_GT_ID:
    case MACH64_GU_ID:
+   case MACH64_GB_ID:
+   case MACH64_GD_ID:
+   case MACH64_GI_ID:
    case MACH64_GP_ID:
+   case MACH64_GQ_ID:
 	info.ChipType = MACH64_GT;
 	break;
    default:
@@ -741,7 +745,11 @@ GetATIPCIInformation()
 		break;
 	    case PCI_MACH64_GT:
 	    case PCI_MACH64_GU:
+	    case PCI_MACH64_GB:
+	    case PCI_MACH64_GD:
+	    case PCI_MACH64_GI:
 	    case PCI_MACH64_GP:
+	    case PCI_MACH64_GQ:
 		info.ChipType = MACH64_GT;
 		break;
 	    default:

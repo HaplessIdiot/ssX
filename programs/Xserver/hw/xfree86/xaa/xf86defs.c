@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.12 1997/09/19 08:30:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.13 1997/09/25 07:31:15 hohndel Exp $ */
 
 
 #include "windowstr.h"
@@ -82,6 +82,7 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* SubsequentFillTrapezoidSolid() */
     NULL,	/* SetupForScreenToScreenCopy() */
     NULL,	/* SubsequentScreenToScreenCopy() */
+    NULL,	/* SubsequentScanlineScreenToScreenCopy() */
     NULL,	/* SubsequentBresenhamLine() */
     NULL,	/* SubsequentTwoPointLine() */
     NULL,	/* SetClippingRectangle() */
@@ -131,7 +132,8 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     0, 		/* PatternFlags */
     NULL,	/* ImageWriteBase */
     0,		/* ImageWriteRange */
-    0		/* ImageWriteFlags */
+    0,		/* ImageWriteFlags */
+    0		/* ImageWriteOffset */
 };
 
 XAACursorInfoRecType XAACursorInfoRec = {

@@ -1,5 +1,5 @@
 XCOMM site:  $XConsortium: site.def /main/revisionist/4 1996/12/31 08:02:07 kaleb $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.18 1997/02/12 08:54:41 hohndel Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.19 1997/06/22 10:16:48 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -33,6 +33,18 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.18 1997/02/12 08:54:41 hohndel 
 
 
 #ifdef BeforeVendorCF
+
+#if defined(NetBSDArchitecture) && defined(Arm32Architecture)
+/*
+ * Our kernel is 1.2C, but at user-level we're still 1.2 -JJK
+ */
+#define OSTeenyVersion 0
+
+/*
+ * This causes a problem with the X server, so I'm disabling it for now. -JJK
+ */
+#define BuildXKB              NO
+#endif
 
 /*
  * Include this for easy XFree86 customisations

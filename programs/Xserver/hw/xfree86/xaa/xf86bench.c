@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.6 1997/02/17 09:48:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.7 1997/04/12 13:46:43 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -369,6 +369,15 @@ static void ScanlineScreenToScreenColorExpand400()
     }
 }
 
+static void ScanlineScreenToScreenCopy400()
+{
+    int i;
+    xf86AccelInfoRec.SetupForScreenToScreenCopy(1, 1, GXcopy, ~0, -1);
+    for (i = 0; i < 2; i++)
+        xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy(
+            0, 0, i, i, 400);
+}   
+
 static void ScreenToScreenColorExpand10()
 {
     int i;
@@ -434,6 +443,10 @@ xf86Bench()
     if (xf86AccelInfoRec.SubsequentScreenToScreenColorExpand) {
         DoBench("10x10 screen-to-screen color expand", 10 * 10 * 200,
             ScreenToScreenColorExpand10);
+    }
+    if (xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy) {
+	DoBench("400x1 scanline screen-to-screen copy", 400 * 1,
+	    ScanlineScreenToScreenCopy400);
     }
 
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.25 1997/09/15 07:18:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.26 1997/09/30 04:51:04 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -645,29 +645,39 @@ xf86InitializeAcceleration(pScreen)
 	            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         }
 
+    if(!xf86AccelInfoRec.DoImageWrite) {
 
-    if(xf86AccelInfoRec.ImageWriteFlags & CPU_TRANSFER_BASE_FIXED)
-	xf86AccelInfoRec.ImageWriteRange = 0;
-    else /* change to dwords */
-	xf86AccelInfoRec.ImageWriteRange >>= 2;
+	if (xf86AccelInfoRec.SetupForImageWrite && 
+	    xf86AccelInfoRec.SubsequentImageWrite) {
 
-    if(!xf86AccelInfoRec.ImageWriteBase)
-	xf86AccelInfoRec.ImageWriteBase = (pointer)xf86AccelInfoRec.FramebufferBase;
+    	    if(xf86AccelInfoRec.ImageWriteFlags & CPU_TRANSFER_BASE_FIXED)
+		xf86AccelInfoRec.ImageWriteRange = 0;
+    	    else /* change to dwords */
+		xf86AccelInfoRec.ImageWriteRange >>= 2;
+    
+	    if(!xf86AccelInfoRec.ImageWriteBase)
+		xf86AccelInfoRec.ImageWriteBase = 
+				(pointer)xf86AccelInfoRec.FramebufferBase;
 
-    if(!xf86AccelInfoRec.DoImageWrite &&
-	xf86AccelInfoRec.SetupForImageWrite && 
-	xf86AccelInfoRec.SubsequentImageWrite &&
-	xf86AccelInfoRec.ImageWriteBase) {
-
-	/* In the case when we offer 32 bit pixmaps with 24 bit
-	   framebuffers, we'll have to add additional logic here */
+	    /* In the case when we offer 32 bit pixmaps with 24 bit
+	       framebuffers, we'll have to add additional logic here */
   
-	xf86AccelInfoRec.DoImageWrite = xf86DoImageWrite;
-           
+	    xf86AccelInfoRec.DoImageWrite = xf86DoImageWrite;
+	}
+
+	if (xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy &&
+	    xf86AccelInfoRec.ImageWriteRange &&
+	    xf86AccelInfoRec.ImageWriteOffset) {
+	
+	    /* In the case when we offer 32 bit pixmaps with 24 bit
+	       framebuffers, we'll have to add additional logic here */
+
+	    xf86AccelInfoRec.DoImageWrite = xf86ScanlineDoImageWrite;
+	}
+
 	if (xf86Verbose && xf86AccelInfoRec.DoImageWrite)
            ErrorF("%s %s: XAA: Accelerated image transfers\n",
 	           XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
-
     }
 
 do_not_touch_xf86AccelInfoRec:

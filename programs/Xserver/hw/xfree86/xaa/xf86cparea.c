@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.4 1997/09/09 10:27:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.5 1997/10/13 17:16:51 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -572,6 +572,113 @@ BAD_ALIGNMENT:
     	xf86AccelInfoRec.Sync();
 }
 
+void
+xf86ScanlineDoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
+    DrawablePtr	    pSrc, pDst;
+    int		    alu;
+    RegionPtr	    prgnDst;
+    DDXPointPtr	    pptSrc;
+    unsigned int    planemask;
+    int		    bitPlane;
+{
+    int srcwidth, skipleft, dwords;
+    int x,y,w,h;
+    unsigned char* psrcBase;			/* start of image */
+    register unsigned char* srcPntr;		/* index into the image */
+    int Bpp = xf86bpp >> 3;
+    BoxPtr pbox = REGION_RECTS(prgnDst);
+    int nbox = REGION_NUM_RECTS(prgnDst);
+    Bool PlusOne;
+    int FirstLine = xf86AccelInfoRec.ImageWriteOffset;
+    int SecondLine = (xf86AccelInfoRec.ImageWriteRange / 2) + FirstLine;
+    CARD32 *FirstLinePntr = 
+		(CARD32 *)(xf86AccelInfoRec.FramebufferBase + FirstLine);
+    CARD32 *SecondLinePntr = 
+		(CARD32*)(xf86AccelInfoRec.FramebufferBase + SecondLine);
+
+    cfbGetByteWidthAndPointer(pSrc, srcwidth, psrcBase);
+
+    /* setup for a left-to-right/top-to-bottom ScreenToScreenCopy */
+    xf86AccelInfoRec.SetupForScreenToScreenCopy(1, 1, alu, planemask, -1);
+
+    for(; nbox; pbox++, pptSrc++, nbox--) {
+	x = pbox->x1;
+	y = pbox->y1;
+	w = pbox->x2 - pbox->x1;
+	h = pbox->y2 - pbox->y1;
+	PlusOne = (h & 0x01);
+	h >>= 1;	/* h is now linepairs */
+
+        srcPntr = psrcBase + (pptSrc->y * srcwidth) + (pptSrc->x * Bpp);
+
+	if((skipleft = (int)srcPntr & 0x03)) {
+	    if(!(xf86AccelInfoRec.ImageWriteFlags & LEFT_EDGE_CLIPPING)) {
+		skipleft = 0;
+		goto BAD_ALIGNMENT_SCANLINE;
+	    }
+	    if(Bpp == 3)
+		skipleft = 4 - skipleft;
+	    else
+		skipleft /= Bpp;
+
+	    if ((x < skipleft) && !(xf86AccelInfoRec.ImageWriteFlags &
+				  LEFT_EDGE_CLIPPING_NEGATIVE_X)) {
+		skipleft = 0;
+		goto BAD_ALIGNMENT_SCANLINE;
+	    }
+	    x -= skipleft;
+	    w += skipleft;
+
+	    if (Bpp == 3)
+	    	srcPntr = (unsigned char*)(srcPntr - (3*skipleft));  
+	    else
+	    	srcPntr = (unsigned char*)((int)srcPntr & ~0x03);     
+	}
+
+BAD_ALIGNMENT_SCANLINE:
+	
+	switch(Bpp) {
+	   case 1:	dwords = (w + 3) >> 2;
+			break;
+	   case 2:	dwords = (w + 1) >> 1;
+			break;
+	   case 3:	dwords = ((w + 1) * 3) >> 2;
+			break;
+	   default:	dwords = w;
+			break;
+	}
+
+	if (dwords > (xf86AccelInfoRec.ImageWriteRange / 2)) {
+		ErrorF("ImageWriteRange too small - truncating, errors.\n");
+		dwords = xf86AccelInfoRec.ImageWriteRange / 2;
+	}
+
+	while(h--){
+	   MoveDWORDS(FirstLinePntr,(CARD32*)srcPntr,dwords);
+           xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy(
+					FirstLine, skipleft, x, y++, w);
+	   if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+		xf86AccelInfoRec.Sync();
+	   srcPntr += srcwidth;
+	   MoveDWORDS(SecondLinePntr,(CARD32*)srcPntr,dwords);
+           xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy(
+					SecondLine, skipleft, x, y++, w);
+	   if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+		xf86AccelInfoRec.Sync();
+	   srcPntr += srcwidth;
+	}
+	if(PlusOne) {
+	   MoveDWORDS(FirstLinePntr,(CARD32*)srcPntr,dwords);
+           xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy(
+					FirstLine, skipleft, x, y, w);
+	   if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+		xf86AccelInfoRec.Sync();
+	}
+    }
+
+    if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+    	SET_SYNC_FLAG;
+}
 
 extern WindowPtr *WindowTable;
 

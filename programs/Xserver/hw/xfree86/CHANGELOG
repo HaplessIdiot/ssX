@@ -1,3 +1,42 @@
+XFree86 3.9t (25 October 1997)
+1332. Fix text restore problem on some Avance Logic cards (#1072, Thomas
+      Dreibholz).
+1331. WriteBitmap code for MGA driver (#1069, Mark Vojkovich, Radek Kapitan).
+1330. Add a clean rule to remove XKB's .dir files. Add support for newer 3D
+      Rage III adapters to SuperProbe, the Mach64 server and the ATI driver.
+      Fix misuse of DirtyStartup define. Fix Mach64 mode restoration problems
+      in ATI driver. Fix 8MB linear aperture problem in ATI driver. Fix
+      typo's in drivers/s3* Imakefiles. Fix banking globals when a linear
+      aperture is used. Retrofit 3.3.1 vgaPCI code into 3.9s. (#1065,
+      Marc La France).
+1329. Add support for the Microsoft Intellimouse in the XFree86-Misc
+      Extension and XF86Setup (#1063,1064, Takaaki Nomura, Joe Moss).
+1328. Add Scanline ImageWrite support to XAA (#1062, Alan Hourihane).
+1327. Missing Millennium II AGP fixes (#1058, Brian Wainscott).
+1326. XAA hw cursor fix. Delay cursor restoration until after the saved screen 
+      is restored (#1057, Mark Vojkovich).
+1325. Fix server to print the clock scale instead of effective clocks when
+      useing a clockchip (#1056, Krajcsovits Gyorgy).
+1324. Correct eraser/stylus detection in wacom driver (#1055, Frederic Lepied).
+1323. Fixes for APM driver. HW lines/HW clipping. ROP support. Text accel now
+      uses PAD_DWORD. Bugfix for WaitForFifo() (lost serial interrupts) and 
+      ApmSync() (various errors). HW cursor now uses XAA interface. Combined 
+      write for many registers (x+y in one longword etc.) (#1054, Henrik
+      Harmsen).
+1322. xterm fixes. Correct a minor placement problem with the right scrollbar.
+      Implement a new set of control sequences for switching between the
+      normal and alternate VT100 screens. Implement the alternate-screen menu
+      entry (#1053, Thomas Dickey).
+1321. Add some resonable limit for when a trapezoid fill is used rather than 
+      using spans (#1051, Mark Vojkovich).
+1320. Add bindist decription files for an OpenBSD/sparc binary distribution
+      (#1045, Matthieu Herrb).
+1319. Some fixes and additions to the PCI databases (#1046,1050, Dejan Ilic).
+1318. Add 543x cirrus driver for PowerPC, fix some LynxOS related problems
+      (#1044, Thomas Mueller).
+1317. Add support for ViRGE/GX2 to SuperProbe (Dirk Hohndel).
+1316. Add support for ViRGE/GX2 to SVGA and S3V server (#1041, Harald Koenig).
+
 XFree86 3.9s (15 October 1997)
 1315. Fix segmentation fault in glint driver when server is started with a
       card without GLINT/PERMEDIA chip (Stefan Dirsch).
@@ -5438,4 +5477,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.537 1997/10/13 17:16:31 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.538 1997/10/14 20:30:35 hohndel Exp $

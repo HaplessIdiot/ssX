@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/Imakefile,v 3.10 1996/09/15 11:16:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/Imakefile,v 3.11 1996/12/23 06:35:13 dawes Exp $
 
 
 
@@ -22,7 +22,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	   -I$(XF86SRC)/vga256/enhanced \
 	   -I$(XF86SRC)/vga256/vga
 
-#if DirtyStartup
+#ifdef DirtyStartup
 STARTUPDEFINES = -DDIRTY_STARTUP
 #endif
 

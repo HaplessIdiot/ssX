@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/regs3v.h,v 1.5 1997/04/17 08:17:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/regs3v.h,v 1.6 1997/06/29 07:54:34 dawes Exp $ */
 
 /* regs3v.h
  *
@@ -68,12 +68,14 @@
 #define PCI_ViRGE		0x5631
 #define PCI_ViRGE_VX		0x883D
 #define PCI_ViRGE_DXGX 		0x8A01
+#define PCI_ViRGE_GX2 		0x8A10
 
 /* Chip tags */
 #define S3_UNKNOWN		 0
 #define S3_ViRGE		 1
 #define S3_ViRGE_VX		 2
 #define S3_ViRGE_DXGX		 3
+#define S3_ViRGE_GX2		 4
 
 
 /* VESA Approved Register Definitions */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.102 1997/09/19 08:30:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.103 1997/10/13 17:16:50 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -85,15 +85,15 @@ extern void mfbDoBitbltTwoBanksCopyInverted();
 void (*ourmfbDoBitbltCopy)();
 void (*ourmfbDoBitbltCopyInverted)();
 unsigned long useSpeedUp = 0;
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__arm32__)
 extern void speedupvga256TEGlyphBlt8();
 extern void speedupvga2568FillRectOpaqueStippled32();
 extern void speedupvga2568FillRectTransparentStippled32();
-#else /* !__alpha__ */
+#else /* !defined(__alpha__) && !defined(__powerpc__) && !defined(__arm32__) */
 extern void vga256TEGlyphBlt8();
 extern void vga2568FillRectOpaqueStippled32();
 extern void vga2568FillRectTransparentStippled32();
-#endif /* !__alpha__ */
+#endif /* !defined(__alpha__) && !defined(__powerpc__) && !defined(__arm32__) */
 extern void OneBankvgaBitBlt();
 
 extern Bool xf86Exiting, xf86Resetting;
@@ -675,20 +675,28 @@ vgaProbe()
 	  vga256InfoRec.maxClock *= Drivers[i]->ChipClockDivFactor;
 	  vga256InfoRec.maxClock /= Drivers[i]->ChipClockMulFactor;
 	  if (xf86Verbose) {
-	    ErrorF("%s %s: Effective pixel clocks available:\n",
-		   XCONFIG_PROBED, vga256InfoRec.name);
-	    for (j=0; j < vga256InfoRec.clocks; j++)
-	    {
-	      if ((j % 8) == 0)
-	      {
-		if (j != 0)
-		  ErrorF("\n");
-	        ErrorF("%s %s: pixel clocks:", XCONFIG_PROBED,
-		       vga256InfoRec.name);
-	      }
-	      ErrorF(" %6.2f", (double)vga256InfoRec.clock[j] / 1000.0);
+	    if(OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
+			  &vga256InfoRec.clockOptions)) {
+	       ErrorF("%s %s: Synthetic clocks scaled by %d/%d.\n",
+		      XCONFIG_PROBED, vga256InfoRec.name,
+		      Drivers[i]->ChipClockMulFactor,
+		      Drivers[i]->ChipClockDivFactor);
+	    } else {
+	       ErrorF("%s %s: Effective pixel clocks available:\n",
+		      XCONFIG_PROBED, vga256InfoRec.name);
+	       for (j=0; j < vga256InfoRec.clocks; j++)
+		 {
+		    if ((j % 8) == 0)
+		      {
+			 if (j != 0)
+			   ErrorF("\n");
+			 ErrorF("%s %s: pixel clocks:", XCONFIG_PROBED,
+				vga256InfoRec.name);
+		      }
+		    ErrorF(" %6.2f", (double)vga256InfoRec.clock[j] / 1000.0);
+		 }
+	       ErrorF("\n");
 	    }
-	    ErrorF("\n");
 	  }
 	}
 
@@ -1002,7 +1010,7 @@ vgaProbe()
 #ifdef XFreeXDGA
 	  if (vgaUseLinearAddressing) {
 	      vga256InfoRec.physBase = vgaPhysLinearBase;
-	      vga256InfoRec.physSize = vga256InfoRec.videoRam * 1024;
+	      vga256InfoRec.physSize = vgaLinearSize;
 	  } else {
 	      vga256InfoRec.physBase =
                   vga256InfoRec.VGAbase + Drivers[i]->ChipWriteBottom;
@@ -1161,8 +1169,13 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
       vgaWriteBottom = vgaLinearBase;
       vgaWriteTop = (void *)((unsigned int)vgaLinearSize
       			    + (unsigned long)vgaLinearBase);
-      vgaSegmentSize = vgaLinearSize;	/* override */
-      vgaSegmentMask = vgaLinearSize - 1;
+      vgaSegmentSize = 1;	/* Must be a power of two */
+      vgaSegmentShift = 0;
+      while (vgaSegmentSize < vgaLinearSize) {
+	vgaSegmentSize <<= 1;
+	vgaSegmentShift++;
+      }
+      vgaSegmentMask = vgaSegmentSize - 1;
       vgaSetReadFunc = (void (*)())NoopDDA;
       vgaSetWriteFunc = (void (*)())NoopDDA;
       vgaSetReadWriteFunc = (void (*)())NoopDDA;
@@ -1238,7 +1251,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 #ifdef XFree86LOADER		/* { */
 	if (vgaBitsPerPixel == 8)
 	    if (!xf86ccdXAAScreenInit(pScreen,
-		     (pointer) vgaVirtBase,
+		     (pointer) (vgaUseLinearAddressing ? vgaLinearBase : vgaVirtBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
 		     displayResolution, displayResolution,
@@ -1287,8 +1300,8 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 			     displayResolution, displayResolution,
 			     vga256InfoRec.displayWidth))
     		  return(FALSE);
-    	break;
 #endif /* XFree86LOADER */	/* } */
+       break;
     }
 
   pScreen->whitePixel = 1;
@@ -1411,7 +1424,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
             else
             {
                 /* Set the bank, then clear it */
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__arm32__)
 		if (xf86bpp == 4)
 			vgaPhysPtr=vga16SetWrite(vgaVirtPtr);
 		else
@@ -1541,13 +1554,6 @@ vgaEnterLeaveVT(enter, screen_idx)
       {
 	ScrnInfoPtr pScr = XF86SCRNINFO(pScreen);
 
-	if (vgaHWCursor.Initialized)
-	{
-	  vgaHWCursor.Init(0, pScreen);
-	  vgaHWCursor.Restore(pScreen);
-	  vgaAdjustFunc(pScr->frameX0, pScr->frameY0);
-	}
-
         if ((pointer)pspix->devPrivate.ptr != (pointer)vgaVirtBase && ppix)
         {
           if (vgaBitsPerPixel <= 8)
@@ -1590,6 +1596,14 @@ vgaEnterLeaveVT(enter, screen_idx)
 	          &pixReg, &pixPt, 0xFFFFFFFF);
 #endif
         }
+
+	if (vgaHWCursor.Initialized)
+	{
+	  vgaHWCursor.Init(0, pScreen);
+	  vgaHWCursor.Restore(pScreen);
+	  vgaAdjustFunc(pScr->frameX0, pScr->frameY0);
+	}
+
       }
       if (ppix) {
         (pScreen->DestroyPixmap)(ppix);

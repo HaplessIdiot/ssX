@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.33 1997/07/31 07:16:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.34 1997/08/26 10:01:02 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -287,6 +287,7 @@ static SymTabRec s3ChipTable[] = {
    { S3_ViRGE,		"ViRGE" },
    { S3_ViRGE_VX,	"ViRGE/VX" },
    { S3_ViRGE_DXGX,	"ViRGE/DX or /GX" },
+   { S3_ViRGE_GX2,	"ViRGE/GX2" },
    { -1,		"" },
 };
 
@@ -467,6 +468,9 @@ s3GetPCIInfo()
 	    break;
 	 case PCI_ViRGE_DXGX:
 	    info.ChipType = S3_ViRGE_DXGX;
+	    break;
+	 case PCI_ViRGE_GX2:
+	    info.ChipType = S3_ViRGE_GX2;
 	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.13 1996/12/23 06:56:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_colexp.c,v 1.1 1997/03/06 23:15:21 hohndel Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -699,7 +699,7 @@ masksdone:
 
 #ifdef AVOID_ASM_ROUTINES
 
-static void CirrusColorExpandWriteStippleSpans(destp, leftmask, leftbcount,
+static void CirrusColorExpandWriteStippleSpans(destp, stippleleftmask, leftbcount,
 midlcount, rightbcount, stipplerightmask, h, stippleword, destpitch)
 	unsigned char *destp;
 	int stippleleftmask, leftbcount, midlcount, rightbcount;
@@ -726,7 +726,7 @@ midlcount, rightbcount, stipplerightmask, h, stippleword, destpitch)
 			*destp = stippleleftmask;
 			*(destp + 1) = stippleword >> 16;
 			*(destp + 2) = stippleword >> 24;
-			destp + = 3;
+			destp += 3;
 			break;
 		case 4 :
 			*destp = stippleleftmask;

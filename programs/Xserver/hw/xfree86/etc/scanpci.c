@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.48 1997/09/25 07:31:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.49 1997/09/25 16:13:59 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -769,6 +769,8 @@ struct pci_vendor_device {
                             { 0xC822, "82C822", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x104A, "SGS Thomson", {
+                            { 0x0008, "STG2000", NF },
+                            { 0x0009, "STG1764", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x104B, "BusLogic", {
                             { 0x0140, "946C 01", NF },
@@ -836,6 +838,10 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x10DC, "CERN", {
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x10DE, "NVidia", {
+                            { 0x0008, "NV1", NF },
+                            { 0x0009, "DAC64", NF },
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x10E0, "IMS", {
                             { 0x8849, "8849", NF },
                             { 0x0000, (char *)NULL, NF } } },
@@ -846,6 +852,7 @@ struct pci_vendor_device {
         { 0x10EA, "Intergraphics", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x10EC, "Realtek", {
+                            { 0x8029, "8029", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1101, "Initio Corp", {
                             { 0x0000, (char *)NULL, NF } } },
@@ -896,6 +903,9 @@ struct pci_vendor_device {
                             { 0x6401, "REALmagic64/GX (SD 6425)", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1281, "YOKOGAWA", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x12D2, "NVidia/SGS-Thomson", {
+                            { 0x0018, "Riva128", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x12d2, "NVIDIA/SGS-Thomson", {
                             { 0x0018, "RIVA 128", NF },

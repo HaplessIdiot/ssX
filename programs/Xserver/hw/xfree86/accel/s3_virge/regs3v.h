@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/regs3v.h,v 3.4 1996/12/27 07:02:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/regs3v.h,v 3.5 1997/03/22 09:35:13 hohndel Exp $ */
 /*
  * regs3v.h
  *
@@ -41,7 +41,7 @@
 
 #define S3_ViRGE_SERIES(chip)      (chip==PCI_ViRGE)
 #define S3_ViRGE_VX_SERIES(chip)   (chip==PCI_ViRGE_VX)
-#define S3_ViRGE_DXGX_SERIES(chip) (chip==PCI_ViRGE_DXGX)
+#define S3_ViRGE_DXGX_SERIES(chip) (chip==PCI_ViRGE_DXGX | chip==PCI_ViRGE_GX2)
 #define S3_ANY_ViRGE_SERIES(chip) (    S3_ViRGE_SERIES(chip)		\
 				    || S3_ViRGE_VX_SERIES(chip)		\
 				    || S3_ViRGE_DXGX_SERIES(chip))
@@ -52,12 +52,14 @@
 #define PCI_ViRGE		0x5631
 #define PCI_ViRGE_VX		0x883D
 #define PCI_ViRGE_DXGX		0x8A01
+#define PCI_ViRGE_GX2		0x8A10
 
 /* Chip tags */
 #define S3_UNKNOWN		 0
 #define S3_ViRGE		 1
 #define S3_ViRGE_VX		 2
 #define S3_ViRGE_DXGX		 3
+#define S3_ViRGE_GX2		 4
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x03c6

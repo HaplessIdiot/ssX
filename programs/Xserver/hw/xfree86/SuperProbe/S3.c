@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.18 1997/03/22 09:34:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.19 1997/03/24 16:29:15 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -134,6 +134,10 @@ int *Chipset;
 				   *Chipset = CHIP_S3_ViRGE_GX;
 				else
 				   *Chipset = CHIP_S3_ViRGE_DX;
+				break;
+			case PCI_CHIP_ViRGE_GX2:
+			        PCIProbed = TRUE;
+				*Chipset = CHIP_S3_ViRGE_GX2;
 				break;
 			case PCI_CHIP_ViRGE_VX:
 			        PCIProbed = TRUE;
@@ -344,6 +348,8 @@ int *Chipset;
 				 *Chipset = CHIP_S3_ViRGE_GX;
 			      else
 				 *Chipset = CHIP_S3_ViRGE_DX;
+			   else if (chip_id == 0x8a10)
+			      *Chipset = CHIP_S3_ViRGE_GX2;
 			   else {
 			      Chip_data = rev;
 			      Chip_data = (Chip_data << 16) | chip_id;

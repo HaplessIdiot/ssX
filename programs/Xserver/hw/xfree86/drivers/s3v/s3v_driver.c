@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.13 1997/07/29 12:08:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_driver.c,v 1.14 1997/08/26 10:01:24 hohndel Exp $ */
 
 /*
  *
@@ -152,7 +152,8 @@ SymTabRec s3vChipTable[] = {
    { S3_UNKNOWN,   "unknown"},
    { S3_ViRGE,     "ViRGE"}, 
    { S3_ViRGE_VX,  "ViRGE/VX"},
-   { S3_ViRGE_DXGX,  "ViRGE/DXGX"},
+   { S3_ViRGE_DXGX,"ViRGE/DXGX"},
+   { S3_ViRGE_GX2, "ViRGE/GX2"},
    { -1,           ""},
    };
 
@@ -396,7 +397,7 @@ unsigned char tmp, cr3a, cr53, cr66, cr67;
 
    outb(vgaCRIndex, 0x33);
    outb(vgaCRReg, restore->CR33);
-   if (s3vPriv.chip == S3_ViRGE_DXGX) {
+   if (s3vPriv.chip == S3_ViRGE_DXGX || s3vPriv.chip == S3_ViRGE_GX2) {
       outb(vgaCRIndex, 0x86);
       outb(vgaCRReg, restore->CR86);
       outb(vgaCRIndex, 0x90);
@@ -587,7 +588,7 @@ unsigned char cr3a, cr53, cr66;
 
    outb(vgaCRIndex, 0x33);             
    save->CR33 = inb(vgaCRReg);
-   if (s3vPriv.chip == S3_ViRGE_DXGX) {
+   if (s3vPriv.chip == S3_ViRGE_DXGX || s3vPriv.chip == S3_ViRGE_GX2) {
       outb(vgaCRIndex, 0x86);
       save->CR86 = inb(vgaCRReg);
       outb(vgaCRIndex, 0x90);
@@ -746,7 +747,8 @@ DisplayModePtr pMode, pEnd;
    if (pciInfo)
       if(pciInfo->ChipType != S3_ViRGE && 
          pciInfo->ChipType != S3_ViRGE_VX &&
-	 pciInfo->ChipType != S3_ViRGE_DXGX){
+	 pciInfo->ChipType != S3_ViRGE_DXGX &&
+	 pciInfo->ChipType != S3_ViRGE_GX2){
 	 if (xf86Verbose > 1)
 	    ErrorF("%s %s: S3V: Unsupported (non-ViRGE) S3 chipset detected!\n", 
 		   XCONFIG_PROBED, vga256InfoRec.name);
@@ -884,7 +886,7 @@ DisplayModePtr pMode, pEnd;
       if (vga256InfoRec.dacSpeeds[2] <= 0) vga256InfoRec.dacSpeeds[2] = 135000;
       if (vga256InfoRec.dacSpeeds[3] <= 0) vga256InfoRec.dacSpeeds[3] = 135000;
    }
-   else if (s3vPriv.chip == S3_ViRGE_DXGX) {
+   else if (s3vPriv.chip == S3_ViRGE_DXGX || s3vPriv.chip == S3_ViRGE_GX2) {
       if (vga256InfoRec.dacSpeeds[0] <= 0) vga256InfoRec.dacSpeeds[0] = 170000;
       if (vga256InfoRec.dacSpeeds[1] <= 0) vga256InfoRec.dacSpeeds[1] = 170000;
       if (vga256InfoRec.dacSpeeds[2] <= 0) vga256InfoRec.dacSpeeds[2] = 135000;
@@ -1388,7 +1390,7 @@ int i, j;
 
 
    new->CR33 = 0x20;
-   if (s3vPriv.chip == S3_ViRGE_DXGX) {
+   if (s3vPriv.chip == S3_ViRGE_DXGX || s3vPriv.chip == S3_ViRGE_GX2) {
       new->CR86 = 0x80;  /* disable DAC power saving to avoid bright left edge */
       new->CR90 = 0x00;  /* disable the stream display fetch length control */
    }

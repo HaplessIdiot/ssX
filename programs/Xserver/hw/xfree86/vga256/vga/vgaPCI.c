@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.15 1997/08/26 10:01:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.16 1997/09/09 10:27:52 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -26,13 +26,14 @@ vgaGetPCIInfo()
     pciConfigPtr pcrp, *pcrpp;
     Bool found = FALSE;
     int i = 0;
+    CARD32 membase2;
 
     pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
 
     if (!pcrpp)
 	return NULL;
 
-    while (pcrp = pcrpp[i]) {
+    while ((pcrp = pcrpp[i])) {
 #if !defined(PC98_TGUI) && !defined(PC98_MGA)
 	if ((pcrp->_base_class == PCI_CLASS_PREHISTORIC &&
 	     pcrp->_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||
@@ -63,11 +64,15 @@ vgaGetPCIInfo()
 	    info->AllCards = pcrpp;
 	    info->ThisCard = pcrp;
 	    info->MemBase = 0;
+	    info->MMIOBase = 0;
 	    info->IOBase = 0;
+	    membase2 = 0;
 
 	    if (pcrp->_base0) {
 		if (pcrp->_base0 & 1)
 		    info->IOBase = pcrp->_base0 & 0xFFFFFFFC;
+		else if (pcrp->_base0 & 0x3FFF0)
+		    info->MMIOBase = pcrp->_base0 & 0xFFFFFFF0;
 		else
 		    info->MemBase = pcrp->_base0 & 0xFFFFFFF0;
 	    }
@@ -75,41 +80,71 @@ vgaGetPCIInfo()
 		if (pcrp->_base1 & 1) {
 		    if (!info->IOBase)
 			info->IOBase = pcrp->_base1 & 0xFFFFFFFC;
-		} else
+		} else if (pcrp->_base1 & 0x3FFF0) {
+		    if (!info->MMIOBase)
+			info->MMIOBase = pcrp->_base1 & 0xFFFFFFF0;
+		} else {
 		    if (!info->MemBase)
 			info->MemBase = pcrp->_base1 & 0xFFFFFFF0;
+		    else
+			membase2 = pcrp->_base1 & 0xFFFFFFF0;
+		}
 	    }
 	    if (pcrp->_base2) {
 		if (pcrp->_base2 & 1) {
 		    if (!info->IOBase)
 			info->IOBase = pcrp->_base2 & 0xFFFFFFFC;
-		} else
+		} else if (pcrp->_base2 &0x3FFF0) {
+		    if (!info->MMIOBase)
+			info->MMIOBase = pcrp->_base2 & 0xFFFFFFF0;
+		} else {
 		    if (!info->MemBase)
 			info->MemBase = pcrp->_base2 & 0xFFFFFFF0;
+		    else if (!membase2)
+			membase2 = pcrp->_base2 & 0XFFFFFFF0;
+		}
 	    }
 	    if (pcrp->_base3) {
 		if (pcrp->_base3 & 1) {
 		    if (!info->IOBase)
 			info->IOBase = pcrp->_base3 & 0xFFFFFFFC;
-		} else
+		} else if (pcrp->_base3 &0x3FFF0) {
+		    if (!info->MMIOBase)
+			info->MMIOBase = pcrp->_base3 & 0xFFFFFFF0;
+		} else {
 		    if (!info->MemBase)
 			info->MemBase = pcrp->_base3 & 0xFFFFFFF0;
+		    else if (!membase2)
+			membase2 = pcrp->_base3 & 0XFFFFFFF0;
+		}
 	    }
 	    if (pcrp->_base4) {
 		if (pcrp->_base4 & 1) {
 		    if (!info->IOBase)
 			info->IOBase = pcrp->_base4 & 0xFFFFFFFC;
-		} else
+		} else if (pcrp->_base4 &0x3FFF0) {
+		    if (!info->MMIOBase)
+			info->MMIOBase = pcrp->_base4 & 0xFFFFFFF0;
+		} else {
 		    if (!info->MemBase)
 			info->MemBase = pcrp->_base4 & 0xFFFFFFF0;
+		    else if (!membase2)
+			membase2 = pcrp->_base4 & 0XFFFFFFF0;
+		}
 	    }
 	    if (pcrp->_base5) {
 		if (pcrp->_base5 & 1) {
 		    if (!info->IOBase)
 			info->IOBase = pcrp->_base5 & 0xFFFFFFFC;
-		} else
+		} else if (pcrp->_base5 &0x3FFF0) {
+		    if (!info->MMIOBase)
+			info->MMIOBase = pcrp->_base5 & 0xFFFFFFF0;
+		} else {
 		    if (!info->MemBase)
 			info->MemBase = pcrp->_base5 & 0xFFFFFFF0;
+		    else if (!membase2)
+			membase2 = pcrp->_base5 & 0XFFFFFFF0;
+		}
 	    }
 	    break;
 	}
@@ -149,10 +184,13 @@ vgaGetPCIInfo()
 
 	if (info->MemBase)
 	    ErrorF(", Memory @ 0x%08x", info->MemBase);
+	if (membase2)
+	    ErrorF(", 0x%08x", membase2);
+	if (info->MMIOBase)
+	    ErrorF(", MMIO @ 0x%08x", info->MMIOBase);
 	if (info->IOBase)
 	    ErrorF(", I/O @ 0x%04x", info->IOBase);
 	ErrorF("\n");
     }
     return info;
 }
-

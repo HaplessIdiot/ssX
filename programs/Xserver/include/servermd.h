@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h /main/58 1996/12/02 10:22:09 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.23 1997/07/10 08:17:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.24 1997/08/26 10:01:48 hohndel Exp $ */
 
 /*
  * Machine dependent values:
@@ -131,6 +131,27 @@ SOFTWARE.
 #define FAST_UNALIGNED_READS
 
 #endif /* vax */
+
+#ifdef __arm32__
+
+#define IMAGE_BYTE_ORDER        LSBFirst
+
+# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
+#  define BITMAP_BIT_ORDER      MSBFirst
+# else
+#  define BITMAP_BIT_ORDER      LSBFirst
+# endif
+
+# if defined(XF86MONOVGA) || defined(XF86VGA16)
+#  define BITMAP_SCANLINE_UNIT  8
+# endif
+
+#define GLYPHPADBYTES           4
+#define GETLEFTBITS_ALIGNMENT   1
+#define LARGE_INSTRUCTION_CACHE
+#define AVOID_MEMORY_READ
+
+#endif /* __arm32__ */
 
 #if (defined(Lynx) && defined(__powerpc__))
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.8 1997/03/27 18:40:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.9 1997/07/10 08:17:41 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -33,11 +33,11 @@ extern void *vgaReadTop;
 extern void *vgaWriteBottom;
 extern void *vgaWriteTop;
 extern Bool vgaReadFlag, vgaWriteFlag;
-#if defined(__alpha__) || defined(__powerpc__)
+#if defined(__alpha__) || defined(__powerpc__) || defined(__arm32__)
 extern unsigned long writeseg;
-#else /* __alpha__ */
+#else /* defined(__alpha__) || defined(__powerpc__) || defined(__arm32__) */
 extern void *writeseg;
-#endif /* __alpha__ */
+#endif /* defined(__alpha__) || defined(__powerpc__) || defined(__arm32__) */
 
 /* vgaBank.s or vgaBankc.c */
 
@@ -47,7 +47,7 @@ void *vgaSetReadWrite(
 #endif
 );
 
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__arm32__)
 void *vga16SetReadWrite(
 #if NeedFunctionPrototypes
     void *
@@ -73,7 +73,7 @@ void *vgaSetRead(
 #endif
 );
 
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__arm32__)
 void *vga16SetRead(
 #if NeedFunctionPrototypes
     void *
@@ -99,7 +99,7 @@ void *vgaSetWrite(
 #endif
 );
 
-#if !defined(__alpha__) && !defined(__powerpc__)
+#if !defined(__alpha__) && !defined(__powerpc__) && !defined(__arm32__)
 void *vga16SetWrite(
 #if NeedFunctionPrototypes
     void *

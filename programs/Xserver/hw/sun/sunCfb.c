@@ -1,6 +1,6 @@
 
 /* $XConsortium: sunCfb.c /main/20 1996/10/31 14:24:08 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.5 1996/12/23 06:30:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.6 1997/08/26 10:00:48 hohndel Exp $ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -285,18 +285,19 @@ Bool sunTCXInit (screen, pScreen, argc, argv)
 
 #if !defined(i386) && !defined(__bsdi__) /* { */
 
-#ifdef SVR4
+#ifdef SVR4 /* { */
 #include <sys/cg2reg.h>
 #else
-#ifndef CSRG_BASED
+#ifndef CSRG_BASED /* { */
 #include <pixrect/cg2reg.h>
 #else
-#if defined(__sparc__) || defined(__sparc)
+#if defined(__sparc__) || defined(__sparc) /* { */
 #include <machine/cgtworeg.h>
 #else
 #include <machine/cg2reg.h>
-#endif
-#endif
+#endif /* } */
+#endif /* } */
+#endif /* } */
 
 typedef struct {
     struct cg2memfb	mem;

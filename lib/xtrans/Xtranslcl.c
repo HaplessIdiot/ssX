@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c /main/27 1996/09/28 16:50:14 rws $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.22 1997/07/06 05:30:38 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.23 1997/07/19 05:43:05 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -161,7 +161,7 @@ char		*peer_sun_path;
     sunaddr->sun_family = AF_UNIX;
 
     strcpy (sunaddr->sun_path, sun_path);
-#ifdef BSD44SOCKETS
+#if defined(BSD44SOCKETS) && !defined(Lynx)
     sunaddr->sun_len = strlen (sunaddr->sun_path);
 #endif
 
@@ -184,7 +184,7 @@ char		*peer_sun_path;
     p_sunaddr->sun_family = AF_UNIX;
 
     strcpy (p_sunaddr->sun_path, peer_sun_path);
-#ifdef BSD44SOCKETS
+#if defined(BSD44SOCKETS) && !defined(Lynx)
     p_sunaddr->sun_len = strlen (p_sunaddr->sun_path);
 #endif
 
@@ -587,7 +587,7 @@ int		*status;
 
     sunaddr->sun_family=AF_UNIX;
     strcpy(sunaddr->sun_path,buf);
-#ifdef BSD44SOCKETS
+#if defined(BSD44SOCKETS) && !defined(Lynx)
     sunaddr->sun_len=strlen(sunaddr->sun_path);
 #endif
 

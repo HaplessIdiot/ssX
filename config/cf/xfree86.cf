@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.169 1997/07/29 12:07:16 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.170 1997/09/19 11:24:28 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -191,11 +191,36 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 #if !XF86LoaderServer
 # ifndef XF86SvgaDrivers
-#  define XF86SvgaDrivers	/* cirrus */ vga
+#  define XF86SvgaDrivers	cirrus vga
 # endif
 # ifndef XF86SVGAServer
 #  define XF86SVGAServer	YES
 # endif
+#endif
+#endif
+
+/*
+ * For Arm32/SHARK platforms, the default is to build all X servers which
+ * are supported on this platform.
+ */
+#ifdef Arm32Architecture
+#ifndef XF86SVGAServer
+#define XF86SVGAServer		YES
+#endif
+#ifndef XF86VGA16Server
+#define XF86VGA16Server		YES
+#endif
+#ifndef XF86MonoServer
+#define XF86MonoServer		YES
+#endif
+#ifndef XF86SvgaDrivers
+#define XF86SvgaDrivers		chips igs vga
+#endif
+#ifndef XF86Vga16Drivers
+#define XF86Vga16Drivers		vga
+#endif
+#ifndef XF86Vga2Drivers
+#define XF86Vga2Drivers		vga
 #endif
 #endif
 
@@ -519,7 +544,10 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #  define XF86CardDrivers	trident mga s3v
 # else
 #  if defined(ppcArchitecture) && defined(LynxOSArchitecture)
-#   define XF86CardDrivers	/* cirrus */ vga
+#   define XF86CardDrivers	cirrus vga
+#  else
+#  ifdef Arm32Architecture
+#   define XF86CardDrivers	chips igs vga
 #  else
 #   define XF86CardDrivers	nv tseng et3000 wd gvga ati sis trident \
 				cirrus ncr compaq mga oak al2101 ali \

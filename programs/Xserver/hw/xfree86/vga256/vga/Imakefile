@@ -5,7 +5,7 @@ XCOMM $XConsortium: Imakefile /main/10 1996/10/25 10:34:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.16tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.17 1997/03/27 18:40:02 hohndel Exp $
 #include <Server.tmpl>
 
 #ifdef i386Architecture
@@ -74,7 +74,7 @@ OBJS =   vgagc.o vgawindow.o vgascrinit.o \
    LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/llib-los.ln \
 	     ../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln
 
-#if DirtyStartup
+#ifdef DirtyStartup
 STARTUPDEFINES = -DDIRTY_STARTUP
 #endif
 

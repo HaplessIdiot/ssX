@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.16 1997/05/03 09:19:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.17 1997/08/15 07:19:25 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -21,6 +21,7 @@
 #define LINE_PATTERN_MSBFIRST_MSBJUSTIFIED	0x1000000
 #define LINE_PATTERN_MSBFIRST_LSBJUSTIFIED	0x2000000
 #define DELAYED_SYNC				0x4000000
+#define LINE_PATTERN_ONLY_TRANSPARENCY		0x8000000
 
 /* AccelInfoRec hardware pattern flags */
 
@@ -769,6 +770,15 @@ typedef struct {
         int h
 #endif
     );
+    void (*SubsequentScanlineScreenToScreenCopy)(
+#if NeedNestedPrototypes
+	int LineAddr,
+	int skipleft,
+	int x,
+	int y,
+	int w
+#endif
+    );
     void (*SubsequentBresenhamLine)(
 #if NeedNestedPrototypes
         int x1,
@@ -1034,6 +1044,7 @@ typedef struct {
     unsigned int *ImageWriteBase;
     int ImageWriteRange;
     int ImageWriteFlags;
+    int ImageWriteOffset;
 } xf86AccelInfoRecType;
 
 extern xf86AccelInfoRecType xf86AccelInfoRec;

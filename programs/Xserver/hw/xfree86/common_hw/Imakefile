@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.25 1997/04/08 10:12:01 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.26 1997/07/10 08:17:24 hohndel Exp $
 
 #include <Server.tmpl>
 
@@ -15,7 +15,7 @@ IOOBJ=glibcAxpIo.o
 XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c $(IOSRC)
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o $(IOOBJ)
 #else
-#if defined(ArcArchitecture) || defined(ppcArchitecture)
+#if defined(ArcArchitecture) || defined(ppcArchitecture) || defined(Arm32Architecture)
 XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c $(IOSRC)
 XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o $(IOOBJ)
 #else
@@ -42,7 +42,7 @@ NormalAsmObjectRule()
 
 NormalLibraryTarget(xf86_hw,$(OBJS))
 
-#if !(defined(LinuxArchitecture) && defined(AlphaArchitecture)) && !defined(ArcArchitecture) && !defined(ppcArchitecture)
+#if !(defined(LinuxArchitecture) && defined(AlphaArchitecture)) && !defined(ArcArchitecture) && !defined(ppcArchitecture) && !defined(Arm32Architecture)
 ObjectFromAsmSource(BUSmemcpy,NullParameter)
 ObjectFromAsmSource(IODelay,NullParameter)
 ObjectFromAsmSource(SlowBcopy,NullParameter)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.35 1997/09/29 08:40:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.36 1997/10/13 17:16:50 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -31,6 +31,8 @@
 #define PCI_VENDOR_UMC		0x1060
 #define PCI_VENDOR_NVIDIA	0x10DE
 #define PCI_VENDOR_ALLIANCE	0x1142
+#define PCI_VENDOR_NVIDIA_SGS	0x12d2
+#define PCI_VENDOR_SIGMADESIGNS 0x1236
 #define PCI_VENDOR_RENDITION	0x1163
 #define PCI_VENDOR_3DLABS	0x3D3D
 #define PCI_VENDOR_S3		0x5333
@@ -45,10 +47,14 @@
 #define PCI_CHIP_MACH64ET	0x4554
 #define PCI_CHIP_MACH64VT	0x5654
 #define PCI_CHIP_MACH64VU	0x5655
-#define PCI_CHIP_MACH64GP	0x4750
 #define PCI_CHIP_MACH64GT	0x4754
 #define PCI_CHIP_MACH64GU	0x4755
 #define PCI_CHIP_MACH64LT	0x4C47
+#define PCI_CHIP_MACH64GB	0x4742
+#define PCI_CHIP_MACH64GD	0x4744
+#define PCI_CHIP_MACH64GI	0x4749
+#define PCI_CHIP_MACH64GP	0x4750
+#define PCI_CHIP_MACH64GQ	0x4751
 
 /* Avance Logic */
 #define PCI_CHIP_ALG2301	0x2301
@@ -81,16 +87,15 @@
 #define PCI_CHIP_GD7541		0x1204
 #define PCI_CHIP_GD7542		0x1200
 #define PCI_CHIP_GD7543		0x1202
+#define PCI_CHIP_GD7541         0x1204
 
 /* Trident */
 #define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9420		0x9420
 #define PCI_CHIP_9440		0x9440
 #define PCI_CHIP_9660		0x9660
-#if 0
 #define PCI_CHIP_9680		0x9680
 #define PCI_CHIP_9682		0x9682
-#endif
 
 /* Matrox */
 #define PCI_CHIP_MGA2085	0x0518
@@ -124,6 +129,9 @@
 #define PCI_CHIP_NV1		0x0008
 #define PCI_CHIP_DAC64		0x0009
 
+/* NVIDIA & SGS */
+#define PCI_CHIP_RIVA128        0x0018
+
 /* Alliance Semiconductor */
 #define PCI_CHIP_AP6410		0x3210
 #define PCI_CHIP_AP6422		0x6422
@@ -147,6 +155,7 @@
 #define PCI_CHIP_PLATO_PX	0x8902
 #define PCI_CHIP_VIRGE_VX	0x883D
 #define PCI_CHIP_VIRGE_DXGX	0x8A01
+#define PCI_CHIP_VIRGE_GX2	0x8A10
 #define PCI_CHIP_868		0x8880
 #define PCI_CHIP_928		0x88B0
 #define PCI_CHIP_864_0		0x88C0
@@ -162,14 +171,15 @@
 #define PCI_CHIP_2000MI		0xA0A9
 
 /* Increase this as required */
-#define MAX_DEV_PER_VENDOR 16
+#define MAX_DEV_PER_VENDOR 20
 
 typedef struct vgaPCIInformation {
     int Vendor;
     int ChipType;
     int ChipRev;
-    unsigned long MemBase;
-    unsigned long IOBase;
+    CARD32 MemBase;
+    CARD32 MMIOBase;
+    CARD32 IOBase;
     int Bus;
     int Card;
     int Func;
@@ -208,10 +218,14 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_MACH64ET,	"Mach64 ET"},
 				{PCI_CHIP_MACH64VT,	"Mach64 VT"},
 				{PCI_CHIP_MACH64VU,	"Mach64 VT"},
-				{PCI_CHIP_MACH64GP,	"Mach64 GT"},
 				{PCI_CHIP_MACH64GT,	"Mach64 GT"},
 				{PCI_CHIP_MACH64GU,	"Mach64 GT"},
 				{PCI_CHIP_MACH64LT,	"Mach64 LT"},
+				{PCI_CHIP_MACH64GB,	"Mach64 GT"},
+				{PCI_CHIP_MACH64GD,	"Mach64 GT"},
+				{PCI_CHIP_MACH64GI,	"Mach64 GT"},
+				{PCI_CHIP_MACH64GP,	"Mach64 GT"},
+				{PCI_CHIP_MACH64GQ,	"Mach64 GT"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_AVANCE,	"Avance Logic",	{
 				{PCI_CHIP_ALG2301,	"ALG2301"},
@@ -291,6 +305,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_NVIDIA,	"NVidia",	{
 				{PCI_CHIP_NV1,		"NV1"},
 				{0x0000,		NULL}}},
+    {PCI_VENDOR_NVIDIA_SGS,	"NVidia/SGS-Thomson",	{
+				{PCI_CHIP_RIVA128,	"Riva128"},
+				{0x0000,		NULL}}},
     {PCI_VENDOR_ALLIANCE, "Alliance Semiconductor", {
 				{PCI_CHIP_AP6410,	"ProMotion 6410"},
 				{PCI_CHIP_AP6422,	"ProMotion 6422"},
@@ -314,6 +331,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_PLATO_PX,	"PLATO/PX"},
 				{PCI_CHIP_VIRGE_VX,	"ViRGE/VX"},
 				{PCI_CHIP_VIRGE_DXGX,	"ViRGE/DX or /GX"},
+				{PCI_CHIP_VIRGE_GX2,	"ViRGE/GX2"},
 				{PCI_CHIP_868,		"868"},
 				{PCI_CHIP_928,		"928"},
 				{PCI_CHIP_864_0,	"864"},

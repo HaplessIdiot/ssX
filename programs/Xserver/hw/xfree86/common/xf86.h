@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.65 1997/07/29 12:07:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.66 1997/08/26 10:01:04 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -371,7 +371,7 @@ extern int xf86ismonotype;
  * SpeedUp routines which are not dependent on the screen virtual resolution
  */
 #ifndef SPEEDUP_ANYWIDTH
-#define SPEEDUP_ANYWIDTH	(SPEEDUP_FILLRECT | SPEEDUP_BITBLT | \
+#  define SPEEDUP_ANYWIDTH	(SPEEDUP_FILLRECT | SPEEDUP_BITBLT | \
                                  SPEEDUP_LINE | SPEEDUP_FILLBOX)
 #endif
 
@@ -379,7 +379,7 @@ extern int xf86ismonotype;
  * SpeedUp routines which are not dependent on ET4000
  */
 #ifndef SPEEDUP_ANYCHIPSET
-#define SPEEDUP_ANYCHIPSET	(SPEEDUP_TEGBLT8 | SPEEDUP_RECTSTIP)
+#  define SPEEDUP_ANYCHIPSET	(SPEEDUP_TEGBLT8 | SPEEDUP_RECTSTIP)
 #endif
 
 /* All SpeedUps */
@@ -751,7 +751,7 @@ void xf86SetupMouse(
 void xf86MouseProtocol(
 #if NeedFunctionPrototypes
     DeviceIntPtr device,
-    unsigned char *rBuf,
+    signed char *rBuf,
     int nBytes
 #endif
 );

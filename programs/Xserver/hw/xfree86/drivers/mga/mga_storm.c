@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.6 1997/07/29 12:08:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.7 1997/10/01 05:51:32 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -25,6 +25,8 @@
 void MGAStormAccelInit();
 void MGAStormSync();
 void MGAStormEngineInit();
+
+void MGAWriteBitmap();
 
 /*
  * forward definitions for the functions in this file.
@@ -80,6 +82,11 @@ void MGANAME(AccelInit)()
                              TWO_POINT_LINE_NOT_LAST |
 			     /* LINE_PATTERN_MSBFIRST_DECREASING | */
                              NO_SYNC_AFTER_CPU_COLOR_EXPAND;
+    /*
+     * Currently, no ScreenToScreenCopy for this chip -- why?
+     */
+    if( MGAchipset == PCI_CHIP_MGA2164_AGP ) 
+      xf86AccelInfoRec.Flags &= ~PIXMAP_CACHE;
 
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
                              HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
@@ -199,6 +206,11 @@ void MGANAME(AccelInit)()
     xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
     			MGANAME(Subsequent8x8PatternColorExpand);
      
+    /* 
+     * replacements
+     */
+    xf86AccelInfoRec.WriteBitmap = MGAWriteBitmap;
+
     /*
      * Finally, we set up the video memory space available to the pixmap
      * cache. In this case, all memory from the end of the virtual screen

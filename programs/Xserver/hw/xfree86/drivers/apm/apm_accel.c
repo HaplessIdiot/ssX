@@ -1,18 +1,16 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.1 1997/06/25 08:25:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.2 1997/07/06 13:12:09 dawes Exp $ */
 
 
 /*
   Created 1997-06-08 by Henrik Harmsen (hch@cd.chalmers.se or Henrik.Harmsen@erv.ericsson.se)
 
-    Does (for 8, 16 and 32 bpp modes):
+  Does (for 8, 16 and 32 bpp modes):
     - Filled rectangles
     - Screen-screen bitblts
-    - Host-screen color expand bitblts (text accel)
-
-    TODO:
-    - transparency and ROP for filled rect and blitblts
-    - screen-screen color expansion.
-    - more XAA stuff.
+    - Host-screen color expand bitblts (text acceleration)
+    - Line drawing
+    
+  See apm_driver.c for more info.
 */
 
 #include "vga256.h"
@@ -23,14 +21,18 @@
 #include "xf86_HWlib.h"
 #include "xf86Version.h"
 #include "vga.h"
+#include "miline.h"
 #include "../../xaa/xf86xaa.h"
 #include "apm.h"
+
 
 /* Defines */
 #define MAXLOOP 1000000
 
+
 /* Exported functions */
 void ApmAccelInit(void);
+
 
 /* Local functions */
 static void ApmSync(void);
@@ -45,18 +47,67 @@ static void ApmSetupForScreenToScreenColorExpand(int bg, int fg, int rop,
                                                  unsigned int planemask);
 static void ApmSubsequentScreenToScreenColorExpand(int srcx, int srcy, int x, 
                                                    int y, int w, int h);
-static void WaitForFifo(void);
+static void ApmSubsequentBresenhamLine(int x1, int y1, int octant, int err, int e1, int e2, int length);
+static void ApmSetClippingRectangle(int x1, int y1, int x2, int y2);
+
 static void Dump(void* start, u32 len);
+
 
 /* Statics */
 static int blitxdir, blitydir;
 static u32 apmBitsPerPixel_DEC;
 static u32 apmScreenWidth_DEC;
-static int Transparency;
+static int apmTransparency;
+static int apmClip = FALSE;
+
+
+/* Translation from X ROP's to APM ROP's. */
+static unsigned char apmROP[] = {
+  0,
+  0x88,
+  0x44,
+  0xCC,
+  0x22,
+  0xAA,
+  0x66,
+  0xEE,
+  0x11,
+  0x99,
+  0x55,
+  0xDD,
+  0x33,
+  0xBB,
+  0x77,
+  0xFF
+};
+
 
 /* Globals */
 int apmMMIO_Init = FALSE;
 volatile u8* apmRegBase = NULL;
+
+
+/* Inline functions */
+static __inline__ void
+WaitForFifo(int slots)
+{
+  volatile int i;
+
+  for(i = 0; i < MAXLOOP; i++) { 
+    if ((STATUS() & STATUS_FIFO) >= slots)
+      break;
+  }
+  if (i == MAXLOOP)
+    FatalError("Hung in WaitForFifo()\n");
+}
+
+static __inline__ void
+ApmCheckMMIO_InitFast(void)
+{
+  if (!apmMMIO_Init)
+    ApmCheckMMIO_Init();
+}
+
 
 /*********************************************************************************************/
 
@@ -64,12 +115,13 @@ void
 ApmAccelInit(void) 
 {
   xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE | 
-    NO_PLANEMASK; /* COP_FRAMEBUFFER_CONCURRENCY */
+    NO_PLANEMASK | COP_FRAMEBUFFER_CONCURRENCY | HARDWARE_CLIP_LINE |
+    DELAYED_SYNC;
 
   xf86AccelInfoRec.Sync = ApmSync;
 
   /* Accelerated filled rectangles */
-  xf86GCInfoRec.PolyFillRectSolidFlags = GXCOPY_ONLY | NO_PLANEMASK;
+  xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;
   xf86AccelInfoRec.SetupForFillRectSolid = ApmSetupForFillRectSolid;
   xf86AccelInfoRec.SubsequentFillRectSolid = ApmSubsequentFillRectSolid;
 
@@ -77,10 +129,10 @@ ApmAccelInit(void)
   xf86AccelInfoRec.SetupForCPUToScreenColorExpand = ApmSetupForCPUToScreenColorExpand;
   xf86AccelInfoRec.SubsequentCPUToScreenColorExpand = ApmSubsequentCPUToScreenColorExpand;
   xf86AccelInfoRec.CPUToScreenColorExpandRange = 30*1024;
-  xf86AccelInfoRec.ColorExpandFlags = GXCOPY_ONLY | 
-    VIDEO_SOURCE_GRANULARITY_PIXEL |
-    NO_PLANEMASK | SCANLINE_PAD_BYTE | CPU_TRANSFER_PAD_QWORD
-    | BIT_ORDER_IN_BYTE_MSBFIRST;
+  xf86AccelInfoRec.ColorExpandFlags = VIDEO_SOURCE_GRANULARITY_PIXEL |
+    NO_PLANEMASK | SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD
+    | BIT_ORDER_IN_BYTE_MSBFIRST | LEFT_EDGE_CLIPPING |
+    LEFT_EDGE_CLIPPING_NEGATIVE_X;
 
 #if 0
   /* Since this code is not used yet, I cannot test it */
@@ -92,12 +144,16 @@ ApmAccelInit(void)
 #endif
 
   /* Accelerated screen-screen bitblts */
-  xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY | GXCOPY_ONLY | 
-    NO_PLANEMASK;
+  xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK | NO_TRANSPARENCY;
   xf86AccelInfoRec.SetupForScreenToScreenCopy =
     ApmSetupForScreenToScreenCopy;
   xf86AccelInfoRec.SubsequentScreenToScreenCopy =
     ApmSubsequentScreenToScreenCopy;
+
+  /* Accelerated Line drawing */
+  xf86AccelInfoRec.SubsequentBresenhamLine = ApmSubsequentBresenhamLine;
+  xf86AccelInfoRec.SetClippingRectangle = ApmSetClippingRectangle;
+  xf86AccelInfoRec.ErrorTermBits = 15;
 
   /* Pixmap cache setup */
   xf86AccelInfoRec.PixmapCacheMemoryStart =
@@ -109,127 +165,119 @@ ApmAccelInit(void)
 }
 
 static void 
-ApmSync(void) 
-{
-  volatile int i;
-  for(i = 0; i < MAXLOOP; i++) { 
-    if (!(STATUS() & (STATUS_HOSTBLTBUSY | STATUS_ENGINEBUSY)))
-      break;
-  }
-  if (i == MAXLOOP)
-    FatalError("AT3D: Hung in ApmSync()\n");
-}
-
-static void 
 ApmSetupForFillRectSolid(int color, int rop, unsigned int planemask)
 {
-  ApmCheckMMIO_Init();
-  WaitForFifo(); /* This is so we don't get hung on the bus */
+  ApmCheckMMIO_InitFast();
+  WaitForFifo(3);
+  SETCLIP_CTRL(0);
   SETFOREGROUNDCOLOR(color);
+  SETROP(apmROP[rop]);
 }
 
 static void 
 ApmSubsequentFillRectSolid(int x, int y, int w, int h)
 {
-  u32 control;
+  u32 c;
 
-  WaitForFifo(); /* This is so we don't get hung on the bus */
-
-  SETDESTX(x);
-  SETDESTY(y);
-  SETWIDTH(w);
-  SETHEIGHT(h);
-
-  if (h == 1)
-    control = DEC_OP_STRIP; /* Slightly faster op for this case (?) */
-  else
-    control = DEC_OP_RECT;
-
-  SETDEC(DEC_START | control | apmScreenWidth_DEC | apmBitsPerPixel_DEC);
+  WaitForFifo(3);
+  SETDESTXY(x,y);
+  SETWIDTHHEIGHT(w,h);
+  SETDEC(DEC_START | DEC_OP_RECT | apmScreenWidth_DEC | apmBitsPerPixel_DEC);
 }
 
 static void 
 ApmSetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned int planemask,
                               int transparency_color)
 {
-  ApmCheckMMIO_Init();
+  ApmCheckMMIO_InitFast();
   blitxdir = xdir;
   blitydir = ydir;
+  WaitForFifo(2);
+  SETCLIP_CTRL(0);
+  SETROP(apmROP[rop]);
 }
 
 static void 
 ApmSubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w, int h)
 {
-  u32 cx, cy;
+  u32 c = 0;
+  u32 sx, dx, sy, dy;
 
-  WaitForFifo(); /* This is so we don't get hung on the bus */
+  WaitForFifo(4);
 
   if (blitxdir < 0)
   {
-    cx = DEC_DIR_X_NEG;
-    SETSOURCEX(x1+w-1);
-    SETDESTX(x2+w-1);
+    c |= DEC_DIR_X_NEG;
+    sx = x1+w-1;
+    dx = x2+w-1;
   }
   else
   {
-    cx = DEC_DIR_X_POS;
-    SETSOURCEX(x1);
-    SETDESTX(x2);
+    c |= DEC_DIR_X_POS;
+    sx = x1;
+    dx = x2;
   }
 
   if (blitydir < 0)
   {
-    cy = DEC_DIR_Y_NEG;
-    SETSOURCEY(y1+h-1);
-    SETDESTY(y2+h-1);
+    c |= DEC_DIR_Y_NEG;
+    sy = y1+h-1;
+    dy = y2+h-1;
   }
   else
   {
-    cy = DEC_DIR_Y_POS;
-    SETSOURCEY(y1);
-    SETDESTY(y2);
+    c |= DEC_DIR_Y_POS;
+    sy = y1;
+    dy = y2;
   }
 
-  SETWIDTH(w);
-  SETHEIGHT(h);
+  SETSOURCEXY(sx,sy);
+  SETDESTXY(dx,dy);
+  SETWIDTHHEIGHT(w,h);
 
-  SETDEC(DEC_START | DEC_OP_BLT | cx | cy | apmScreenWidth_DEC | apmBitsPerPixel_DEC);
-  ApmSync();
+  SETDEC(DEC_START | DEC_OP_BLT | c | apmScreenWidth_DEC | apmBitsPerPixel_DEC);
+
 }
 
 static void 
 ApmSetupForCPUToScreenColorExpand(int bg, int fg, int rop, unsigned int planemask)
 {
-  ApmCheckMMIO_Init();
-  WaitForFifo(); /* This is so we don't get hung on the bus */
-  SETFOREGROUNDCOLOR(fg);
-  Transparency = FALSE;
+  ApmCheckMMIO_InitFast();
+  WaitForFifo(3);
   if (bg == -1)
   {
-    Transparency = TRUE;
-    bg = fg+1; /* In this case the bg color should just be different from the fg color */
+    SETFOREGROUNDCOLOR(fg);
+    SETBACKGROUNDCOLOR(fg+1);
+    apmTransparency = TRUE;
   }
-  SETBACKGROUNDCOLOR(bg);
+  else
+  {
+    SETFOREGROUNDCOLOR(fg);
+    SETBACKGROUNDCOLOR(bg);
+    apmTransparency = FALSE;
+  }
+  SETROP(apmROP[rop]);
 }
 
 static void 
 ApmSubsequentCPUToScreenColorExpand(int x, int y, int w, int h, int skipleft)
 {
-  u32 control;
+  u32 c;
+  WaitForFifo(7);
 
-  WaitForFifo(); /* This is so we don't get hung on the bus */
+  SETCLIP_LEFTTOP(x+skipleft, y);
+  SETCLIP_RIGHTBOT(x+w-1, y+h-1);
+  SETCLIP_CTRL(0x01);
   SETSOURCEX(0); /* According to manual, it just has to be zero */
-  SETDESTX(x);
-  SETDESTY(y);
-  SETWIDTH(w);
-  SETHEIGHT(h);
+  SETDESTXY(x, y);
+  SETWIDTHHEIGHT((w + 31) & ~31, h);
 
-  control = DEC_OP_HOSTBLT_HOST2SCREEN | DEC_SOURCE_LINEAR | DEC_SOURCE_CONTIG | DEC_SOURCE_MONOCHROME;
+  c = DEC_OP_HOSTBLT_HOST2SCREEN | DEC_SOURCE_LINEAR | DEC_SOURCE_CONTIG | DEC_SOURCE_MONOCHROME;
 
-  if (Transparency)
-    control |= DEC_SOURCE_TRANSPARENCY;
+  if (apmTransparency)
+    c |= DEC_SOURCE_TRANSPARENCY;
 
-  SETDEC(DEC_START | control | apmScreenWidth_DEC | apmBitsPerPixel_DEC);
+  SETDEC(DEC_START | c | apmScreenWidth_DEC | apmBitsPerPixel_DEC);
 }
 
 
@@ -237,28 +285,65 @@ static void
 ApmSetupForScreenToScreenColorExpand(int bg, int fg, int rop,
                                      unsigned int planemask)
 {
+  /* To be written... */
 }
 
 static void 
 ApmSubsequentScreenToScreenColorExpand(int srcx, int srcy, int x, 
                                        int y, int w, int h)
 {
+  /* To be written... */
 }
 
-
-static void
-WaitForFifo(void)
+static void 
+ApmSubsequentBresenhamLine(int x1, int y1, int octant, int err, int e1, int e2, int length)
 {
-  volatile int i;
+  u32 c = 0;
 
-  for(i = 0; i < MAXLOOP; i++) { 
-    if (STATUS() & STATUS_FIFO)
-      break;
-  }
-  if (i == MAXLOOP)
-    FatalError("AT3D: Hung in WaitForFifo()\n");
+  WaitForFifo(5);
+  SETDESTXY(x1,y1);
+  SETWIDTH(length);
+  SETDDA_ERRORTERM(err);
+  SETDDA_ADSTEP(e1,e2);
+
+  if (octant & XDECREASING)
+    c |= DEC_DIR_X_NEG;
+  else
+    c |= DEC_DIR_X_POS;
+
+  if (octant & YDECREASING)
+    c |= DEC_DIR_Y_NEG;
+  else
+    c |= DEC_DIR_Y_POS;
+    
+  if (octant & YMAJOR)
+    c |= DEC_MAJORAXIS_Y;
+  else
+    c |= DEC_MAJORAXIS_X;
+
+  SETDEC(DEC_START | DEC_OP_VECT_ENDP | c | apmScreenWidth_DEC | apmBitsPerPixel_DEC);
+
+  if (apmClip)
+  {
+    WaitForFifo(1);
+    apmClip = FALSE;
+    SETCLIP_CTRL(0);
+  }    
 }
 
+static void 
+ApmSetClippingRectangle(int x1, int y1, int x2, int y2)
+{
+  WaitForFifo(3);
+  SETCLIP_LEFTTOP(x1,y1);
+  SETCLIP_RIGHTBOT(x2,y2);
+  SETCLIP_CTRL(0x01);
+  apmClip = TRUE;
+}
+
+/* This function is a f*cking kludge since I could not get MMIO to
+   work if I initialized in one of the functions in apm_driver.c (like
+   preferrably ApmFbInit()... */
 void
 ApmCheckMMIO_Init(void)
 {
@@ -266,18 +351,6 @@ ApmCheckMMIO_Init(void)
   {
     apmMMIO_Init = TRUE;
     wrinx(0x3C4, 0x1b, 0x24); /* Enable memory mapping */
-
-#if 0
-    map = APM.ChipLinearBase + 6*1024*1024 - 64*1024;
-    apmRegBase = xf86MapVidMem(vga256InfoRec.scrnIndex, MMIO_REGION, 
-      (pointer)(map), 64*1024);
-
-    if(apmRegBase == NULL) 
-      FatalError("AT3D: Cannot map MMIO registers!\n");
-
-    ErrorF("MMIO: Mapping %x to %x\n", map, apmRegBase);
-#endif
-
 
     apmRegBase = (u8*)vgaLinearBase + APM.ChipLinearSize - 2*1024;
 
@@ -337,6 +410,22 @@ ApmCheckMMIO_Init(void)
 
   }
 }
+
+static void 
+ApmSync(void) 
+{
+  volatile u32 i, stat;
+
+  for(i = 0; i < MAXLOOP; i++) { 
+    stat = STATUS();
+    if ((!(stat & (STATUS_HOSTBLTBUSY | STATUS_ENGINEBUSY))) &&
+        ((stat & STATUS_FIFO) >= 8))
+      break;
+  }
+  if (i == MAXLOOP)
+    FatalError("Hung in ApmSync()\n");
+}
+
 
 static void
 Dump(void* start, u32 len)

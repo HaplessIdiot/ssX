@@ -2,26 +2,21 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.7 1997/07/29 12:07:55 hohndel Exp $ */
-
-/*
-  TODO (also see apm_accel.c)
-
-  Add 24 bpp support
-
-  New code for max dotclock?
-    Hercules says: Do not let the video dot clock * bytes per pixel
-    go above the available memory bandwidth which is around 200MB/s.
-    Then how come the manual says it is OK to use a 144MHz vclk in 16
-    bit for 1280x1024? That is something like 290MB/s...? Hmm...
-    It can't be double indexed mode either, since that doesn't exist 
-    for anything but 8 bit...
-*/
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.8 1997/08/26 10:01:08 hohndel Exp $ */
 
 /* 
+   This is the Alliance Promotion driver. It can be used with
+   6422, AT24 and AT3D. Currently, it seems accelerated support 
+   and hardware cursor only works on AT3D.
+   Using this driver requires no chipset, clocks or videoram line
+   in the device section, all that is automatically set up.
+
+   History:
+   --------
+
    Created by Kent Hamilton for Xfree86 from source from Alliance
 
-   Modified 1997-06 by Henrik Harmsen (hch@cd.chalmers.se, 
+   Modified 1997-06 by Henrik Harmsen (hch@cd.chalmers.se or 
                                        Henrik.Harmsen@erv.ericsson.se)
      - Added support for AT3D
      - Acceleration added for 8,16,32bpp: (for AT3D and AT24)
@@ -40,6 +35,35 @@
        screen-screen bitblts. This forced me to put an ApmSync() at 
        the end of ApmSubsequentScreenToScreenCopy() which makes
        me unhappy... But: Better it works than not...
+
+   Modified 1997-10-19 by Henrik Harmsen
+     - HW line drawing.
+     - HW clipping.
+     - Added support for ROP's.
+     - Text acceleration now lots faster and support for accelerated
+       proportional text. (Uses SCANLINE_PAD_DWORD + clipping).
+     - Combined write for many register writes gives good 
+       general speedup. (write x+y as a single 32 bit entity, rather
+       obvious, really...:-)
+     - Now waits for correct number of free slots in FIFO before
+       issuing writes to the card.
+       This seems to have eliminated the last instances of dropped
+       interrupts from serial IO and no more lost packets in PPP :-)
+     - Converted cursor support to use XAA interface.
+     - Fixed ApmSync(). Finally removed call to ApmSync at end of
+       ApmSubsequentScreenToScreenCopy() :-)
+
+   TODO
+     - 24 bpp support
+     - AT24 clock programming needs improvement
+     - pci retry?
+     - New code for max dotclock?
+       Hercules says: Do not let the video dot clock * bytes per pixel
+       go above the available memory bandwidth which is around 200MB/s.
+       Then how come the manual says it is OK to use a 144MHz vclk in 16
+       bit for 1280x1024? That is something like 290MB/s...? Hmm...
+       It can't be double indexed mode either, since that doesn't exist 
+       for anything but 8 bit...
 */
 
 #include <math.h>
@@ -260,7 +284,6 @@ static int Num_Apm_ExtPorts = (sizeof(Apm_ExtPorts)/sizeof(Apm_ExtPorts[0]));
 #define PCI	1
 
 static int apmChip, apmBus;
-static int apmDisplayableMemory;
 static int apmDPMS;
 static int apmAccelSupported;
 u32 apm_xbase;
@@ -379,6 +402,11 @@ ApmProbe(void)
       ApmEnterLeave(ENTER);
     else
       return FALSE;
+    if (apmChip >= AT24)
+    {
+      apmDPMS = TRUE;
+      apmAccelSupported = TRUE;
+    }
   }
   else
   {
@@ -486,7 +514,7 @@ ApmProbe(void)
                 break;
            case 24:
                 vga256InfoRec.maxClock = 75000; /* Hmm. */
-              break;
+                break;
            case 32:
                 vga256InfoRec.maxClock = 94500;
                 break;
@@ -533,8 +561,7 @@ ApmProbe(void)
 
   vga256InfoRec.videoRam -= 34; /* We're going to use the last 34 kilobytes 
                                    for memory mapped registers, host->screen 
-                                   bitblts and storage for the hardware 
-                                   cursor */
+                                   bitblts and HW cursor */
  
   /*
    * Last we fill in the remaining data structures.  We specify
@@ -566,34 +593,11 @@ ApmFbInit(void)
            vga256InfoRec.chipset, APM.ChipLinearBase,
            apmBus == PCI ? "PCI bus" : "VL bus");
 
-  apmDisplayableMemory = vga256InfoRec.displayWidth
-    * vga256InfoRec.virtualY
-    * (vgaBitsPerPixel / 8);
-  offscreen_available = vga256InfoRec.videoRam * 1024 -
-    apmDisplayableMemory;
-
-  if (xf86Verbose)
-    ErrorF("%s %s: %s: %d bytes off-screen video memory available\n",
-           XCONFIG_PROBED, vga256InfoRec.name,
-           vga256InfoRec.chipset, offscreen_available);
-
   if (apmAccelSupported && !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
     ApmAccelInit();
 
-  if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) 
-  {
-    apmCursorWidth = 64;
-    apmCursorHeight = 64;
-    vgaHWCursor.Initialized = TRUE;
-    vgaHWCursor.Init = ApmCursorInit;
-    vgaHWCursor.Restore = ApmRestoreCursor;
-    vgaHWCursor.Warp = ApmWarpCursor;
-    vgaHWCursor.QueryBestSize = ApmQueryBestSize;
-    if (xf86Verbose)
-      ErrorF("%s %s: %s: Using hardware cursor\n",
-             XCONFIG_PROBED, vga256InfoRec.name,
-             vga256InfoRec.chipset);
-  }
+  if (apmAccelSupported && !OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) 
+    ApmCursorInit();
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.46 1997/07/12 11:32:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.47 1997/07/19 05:43:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -212,7 +212,7 @@ static CARD32 buttonTimer(
  * the mouse reports both pressed at the same time ...
  */
 
-static char stateTab[48][3] = {
+static signed char stateTab[48][3] = {
 
 /* nothing pressed */
   {  0,  0,  0 },	
@@ -1189,9 +1189,9 @@ xf86PostMseEvent(device, buttons, dx, dy)
        * is the reverse of the button mapping reported to the server.
        */
       if (private->mseType == P_MMHIT)
-	change = buttons ^ hitachMap[private->lastButtons];
+        change = buttons ^ hitachMap[private->lastButtons];
       else
-	change = buttons ^ reverseMap[private->lastButtons];
+        change = buttons ^ reverseMap[private->lastButtons];
       while (change)
 	{
 	  id = ffs(change);
@@ -1202,7 +1202,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
                     XE_POINTER);
 # else
 	    xf86PostButtonEvent(device, 0, id, (buttons&(1<<(id-1))), 0, 0);
-# endif
+#endif
 	}
 #endif
     }

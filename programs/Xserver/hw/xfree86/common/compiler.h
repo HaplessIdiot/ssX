@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.26 1997/07/29 12:07:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.27 1997/08/26 10:01:03 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -263,7 +263,7 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #endif
 
 #else /* defined(linux) && defined(__alpha__) */
-#if defined(__mips__)
+#if defined(__mips__) || defined(__arm32__)
 
 unsigned int IOPortBase;  /* Memory mapped I/O port area */
 
@@ -313,6 +313,7 @@ inl(port)
 }
 
 
+#if defined(__mips__)
 static __inline__ unsigned long ldq_u(unsigned long * r11)
 {
 	unsigned long r1;
@@ -359,8 +360,20 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 			((unsigned char *)(p)+1) = ((v) >> 8)
 
 #define mem_barrier()   /* NOP */
+#endif /* defined(mips) */
 
-#else /* defined(mips) */
+#if defined(__arm32__)
+#define ldq_u(p)	(*((unsigned long  *)(p)))
+#define ldl_u(p)	(*((unsigned int   *)(p)))
+#define ldw_u(p)	(*((unsigned short *)(p)))
+#define stq_u(v,p)	((unsigned long  *)(p)) = (v)
+#define stl_u(v,p)	((unsigned int   *)(p)) = (v)
+#define stw_u(v,p)	((unsigned short *)(p)) = (v)
+#define mem_barrier()   /* NOP */
+#define write_mem_barrier()   /* NOP */
+#endif /* defined(arm32) */
+
+#else /* defined(mips) || defined(arm32) */
 
 #if defined(Lynx) && defined(__powerpc__)
 
@@ -380,7 +393,7 @@ _LE_to_BE_short(unsigned short val)
 
 extern unsigned char *ioBase;
 
-static __inline__ volatile void
+static __inline__ void
 eieio()
 {
 	__asm__ __volatile__ ("eieio");
@@ -391,7 +404,7 @@ outb(port, value)
 short port;
 unsigned char value;
 {
-	*(unsigned char *)(ioBase + port) = value; eieio();
+	*(volatile unsigned char *)(ioBase + port) = value; eieio();
 }
 
 static __inline__ void
@@ -399,7 +412,7 @@ outw(port, value)
 short port;
 unsigned short value;
 {
-	*(unsigned short *)(ioBase + port) = _LE_to_BE_short(value); eieio();
+	*(volatile unsigned short *)(ioBase + port) = _LE_to_BE_short(value); eieio();
 }
 
 static __inline__ void
@@ -407,7 +420,7 @@ outl(port, value)
 short port;
 unsigned long value;
 {
-	*(unsigned long *)(ioBase + port) = _LE_to_BE_long(value); eieio();
+	*(volatile unsigned long *)(ioBase + port) = _LE_to_BE_long(value); eieio();
 }
 
 static __inline__ unsigned char
@@ -416,7 +429,7 @@ short port;
 {
 	unsigned char val;
 
-	val = *((unsigned char *)(ioBase + port)); eieio();
+	val = *((volatile unsigned char *)(ioBase + port)); eieio();
 	return(val);
 }
 
@@ -426,7 +439,7 @@ short port;
 {
 	unsigned short val;
 
-	val = *((unsigned short *)(ioBase + port)); eieio();
+	val = *((volatile unsigned short *)(ioBase + port)); eieio();
 	val = _LE_to_BE_short(val);
 	return(val);
 }
@@ -437,27 +450,18 @@ short port;
 {
 	unsigned long val;
 
-	val = *((unsigned long *)(ioBase + port)); eieio();
+	val = *((volatile unsigned long *)(ioBase + port)); eieio();
 	val = _LE_to_BE_long(val);
 	return(val);
 }
 
 #define ldq_u(p)	ldl_u(p)
-#define ldl_u(p)	((*(unsigned char *)(p))	| \
-			(*((unsigned char *)(p)+1)<<8)	| \
-			(*((unsigned char *)(p)+2)<<16)	| \
-			(*((unsigned char *)(p)+3)<<24))
-#define ldw_u(p)	((*(unsigned char *)(p)) | (*((unsigned char *)(p)+1)<<8))
+#define ldl_u(p)	_LE_to_BE_long(*(p))
+#define ldw_u(p)	_LE_to_BE_short(*(p))
 
 #define stq_u(v,p)	stl_u(v,p)
-/* ?? */
-#define stl_u(v,p)	(*(unsigned char *)(p)) = (v); \
-			(*((unsigned char *)(p)+1)) = ((v) >> 8);  \
-			(*((unsigned char *)(p)+2)) = ((v) >> 16); \
-			(*((unsigned char *)(p)+3)) = ((v) >> 24)
-
-#define stw_u(v,p)	(*(unsigned char *)(p)) = (v); \
-			(*((unsigned char *)(p)+1)) = ((v) >> 8)
+#define stl_u(v,p)	(*(unsigned long *)(p)) = _LE_to_BE_long(v)
+#define stw_u(v,p)	(*(unsigned short *)(p)) = _LE_to_BE_short(v)
 
 #define mem_barrier()   __asm__ __volatile__("eieio")
 /* is this correct... ? */

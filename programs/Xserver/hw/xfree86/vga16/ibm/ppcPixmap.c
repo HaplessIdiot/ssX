@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixmap.c,v 3.3 1996/12/23 06:53:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixmap.c,v 3.4 1997/03/13 15:11:18 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -86,7 +86,7 @@ ppcCreatePixmap( pScreen, width, height, depth )
     int		height ;
     int		depth ;
 {
-    register PixmapPtr pPixmap ;
+    register PixmapPtr pPixmap  = (PixmapPtr)NULL;
     int size ;
 
     TRACE(("ppcCreatePixmap(pScreen=0x%x, width=%d, height=%d, depth=%d)\n", pScreen, width, height, depth)) ;

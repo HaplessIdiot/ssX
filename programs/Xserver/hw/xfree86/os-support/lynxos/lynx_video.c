@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.4 1997/07/10 08:17:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.5 1997/08/26 10:01:37 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -215,7 +215,8 @@ int ScreenNum;
 	if (!IOEnabled)
 		return;
 
-        if (--IOEnabled == 0) {
+        if (IOEnabled) {
+        	IOEnabled = 0;
         	smem_create(NULL, (char *) ioBase, 0, SM_DETACH);
         	smem_remove("IOBASE");
         	ioBase = NULL;

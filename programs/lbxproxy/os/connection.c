@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c /main/26 1996/12/04 17:39:19 rws $ */
+/* $XConsortium: connection.c /main/27 1996/12/26 18:53:34 rws $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -315,7 +315,7 @@ open_unix_socket ()
 #endif
     strcpy (unsock.sun_path, X_UNIX_PATH);
     strcat (unsock.sun_path, display);
-#ifdef BSD44SOCKETS
+#if defined(BSD44SOCKETS) && !defined(Lynx)
     unsock.sun_len = strlen(unsock.sun_path);
 #endif
 #ifdef hpux
@@ -1918,7 +1918,9 @@ OnlyListenToOneClient(client)
 	    FD_SET(connection, &ClientsWithInput);
 	}
 	XFD_UNSET(&SavedClientsWithInput, &GrabImperviousClients);
+	FD_CLR(connection, &AllSockets);
 	XFD_COPYSET(&AllSockets, &SavedAllSockets);
+	FD_CLR(connection, &AllClients);
 	XFD_COPYSET(&AllClients, &SavedAllClients);
 	XFD_UNSET(&AllSockets, &AllClients);
 	XFD_ANDSET(&AllClients, &AllClients, &GrabImperviousClients);

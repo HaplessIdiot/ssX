@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.8 1997/05/18 13:58:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.9 1997/07/26 12:59:04 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -400,7 +400,7 @@ TCL_XF86MiscSetKbdSettings(clientData, interp, argc, argv)
 static char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
 			    "Logitech", "BusMouse", "Mouseman", "PS/2",
 			    "MMHitTab", "GlidePoint", "IntelliMouse",
-			    "Unknown", "Xqueue", "OSMouse" };
+			    "Xqueue", "OSMouse" };
 #define MSETABLESIZE	(sizeof(msetable)/sizeof(char *))
 
 /*

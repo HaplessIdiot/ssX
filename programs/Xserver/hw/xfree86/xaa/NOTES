@@ -644,6 +644,11 @@ Flags
     Indicates that hardware dashed lines only support pattern lengths
     that are a power of two.
 
+    LINE_PATTERN_ONLY_TRANSPARENCY
+
+    Indicates that the hardware dashed lines only support the foreground
+    colors.
+
     LINE_PATTERN_MSBFIRST_INCREASING
     LINE_PATTERN_MSBFIRST_DECREASING
 
@@ -894,6 +899,13 @@ SubsequentImageWrite(x, y, w, h, skipleft)
     left edge (0 - 3).  This is used in cases of unfavorable source
     alignment.
 
+SubsequentScanlineScreenToScreenCopy(LineAddr, skipleft, x, y, w)
+
+    This sets up for a scanline by scanline image transfer. If the
+    driver supports left edge clipping, then the skipleft parameter
+    specifies the number of pixels to be skipped on the left edge
+    (0 - 3). This is used in cases of unfavourable source alignment.
+
 ImageWriteFlags
     
     In addition to the regular planemask/rop restrictions, the
@@ -909,15 +921,25 @@ ImageWriteFlags
     ImageWrites should only be used for the more complicated rops.
     This is useful in the case where accelerator assisted image transfers
     are not faster than the unaccelerated versions for simple copies. 
+    Note: When using the Scanline version of ImageWrite the
+    CPU_TRANSFER_BASE_FIXED is currently unsupported.
 
 ImageWriteBase
 ImageWriteRange
+ImageWriteOffset
 
     This is often, but not necessarily, the same window defined by the 
     CPUToScreenColorExpandBase and Range.  ImageWrites may be
     suboptimal if this range is not at least as large as the 
     framebuffer width. By default ImageWriteBase is set to 
     FramebufferBase if not defined.
+
+    When using the ScanlineScreenToScreenCopy, the ImageWriteRange must
+    be a large buffer in video memory, from testing about four scanlines
+    should be sufficient. (needs furthur testing).
+    ImageWriteOffset should be set as the (x * y) offset into the frame
+    buffer for the copy, similar to ImageWriteBase. ImageWriteBase is
+    not used in the Scanline version.
 
 SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
 
@@ -1879,4 +1901,4 @@ Mach64 server provided a baseline for what to implement first.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES,v 3.15 1997/08/15 07:19:22 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/NOTES,v 3.16 1997/09/30 04:51:03 hohndel Exp $

@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.19 1997/09/29 08:40:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.20 1997/10/01 05:51:31 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -836,6 +836,7 @@ MGAProbe()
 	{
 	case PCI_CHIP_MGA2064:
 	case PCI_CHIP_MGA2164:
+	case PCI_CHIP_MGA2164_AGP:
 		MGA3026RamdacInit();
 		break;
 	case PCI_CHIP_MGA1064:
@@ -985,6 +986,7 @@ MGAPitchAdjust()
 
 		case PCI_CHIP_MGA2064:
 		case PCI_CHIP_MGA2164:	/* XXX - may need to be with 1064 */
+	        case PCI_CHIP_MGA2164_AGP:
 		default:
 			pWidth = &width[0];
 			break;
@@ -1301,6 +1303,7 @@ DisplayModePtr mode;
 	{
 	case PCI_CHIP_MGA2064:
 	case PCI_CHIP_MGA2164:
+	case PCI_CHIP_MGA2164_AGP:
 		return MGA3026Init(mode);
 	case PCI_CHIP_MGA1064:                               
 		return MGA1064Init(mode);
@@ -1326,6 +1329,7 @@ vgaHWPtr restore;
 	{
 	case PCI_CHIP_MGA2064:
 	case PCI_CHIP_MGA2164:
+	case PCI_CHIP_MGA2164_AGP:
 		MGA3026Restore(restore);
 		break;
 	case PCI_CHIP_MGA1064:
@@ -1353,6 +1357,7 @@ vgaHWPtr save;
 	{
 	case PCI_CHIP_MGA2064:
 	case PCI_CHIP_MGA2164:
+	case PCI_CHIP_MGA2164_AGP:
 		return (void *)MGA3026Save(save);
 	case PCI_CHIP_MGA1064:
 		return (void *)MGA1064Save(save);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.1 1997/07/29 13:25:47 hohndel Exp $ */
 /*
  * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -68,7 +68,7 @@ CARD16 ATIChipVersion = 0, ATIChipFoundry = 0;
 CARD8 ATIChipHasSUBSYS_CNTL = FALSE;
 CARD8 ATIChipHasVGAWonder   = FALSE;
 const char *ATIFoundryNames[] =
-    { "SGS", "NEC", "KCS", "UMC", "4", "5", "6", "7" };
+    { "SGS", "NEC", "KCS", "UMC", "4", "5", "6", "UMC" };
 
 /*
  * ATIMach32ChipID --
@@ -212,9 +212,17 @@ ATIMach64ChipID(const CARD16 ExpectedChipType)
             ATIChip = ATI_CHIP_264LT;
             break;
 
+        case 0x00C7U:
+        case 0x00C9U:
+        case 0x00CEU:
         case 0x00CFU:
+        case 0x00D0U:
             ATIChipType = 0x4750U;
+        case 0x4742U:
+        case 0x4744U:
+        case 0x4749U:
         case 0x4750U:
+        case 0x4751U:
             ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
             ATIChip = ATI_CHIP_264GT3;
             break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/std_mseEv.c,v 3.0 1996/03/10 12:07:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/std_mseEv.c,v 3.1 1996/12/23 06:51:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -37,7 +37,7 @@
 void xf86MouseEvents(mouse)
     MouseDevPtr	mouse;
 {
-	unsigned char rBuf[64];
+	signed char rBuf[64];
 	int nBytes;
 
 	if ((nBytes = read(mouse->mseFd, (char *)rBuf, sizeof(rBuf))) > 0)

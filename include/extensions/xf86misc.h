@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86misc.h,v 3.6 1997/01/18 06:51:26 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86misc.h,v 3.7 1997/02/14 10:29:45 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -41,6 +41,7 @@
 #define MTYPE_PS_2		6
 #define MTYPE_MMHIT		7
 #define MTYPE_GLIDEPOINT	8
+#define MTYPE_MSINTELLIMOUSE	9
 #define MTYPE_XQUEUE		10
 #define MTYPE_OSMOUSE		11
 

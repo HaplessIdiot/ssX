@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.24 1997/07/06 05:30:44 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.25 1997/08/15 07:19:15 hohndel Exp $ */ 
 /*
  * PCI Probe
  *
@@ -220,9 +220,12 @@ void xf86writepci(
 #define PCI_VENDOR_MATROX	0x102B
 #define PCI_VENDOR_CHIPSTECH	0x102C
 #define PCI_VENDOR_SIS		0x1039
+#define PCI_VENDOR_SGS          0x104A
 #define PCI_VENDOR_NUMNINE	0x105D
 #define PCI_VENDOR_UMC		0x1060
+#define PCI_VENDOR_NVIDIA       0x10DE
 #define PCI_VENDOR_ALLIANCE	0x1142
+#define PCI_VENDOR_NVIDIA_SGS   0x12d2
 #define PCI_VENDOR_RENDITION	0x1163
 #define PCI_VENDOR_SIGMADESIGNS	0x1236
 #define PCI_VENDOR_S3		0x5333
@@ -241,7 +244,11 @@ void xf86writepci(
 #define PCI_CHIP_MACH64CT	0x4354
 #define PCI_CHIP_MACH64ET	0x4554
 #define PCI_CHIP_MACH64VT	0x5654
+#define PCI_CHIP_MACH64VU       0x5655
+#define PCI_CHIP_MACH64GP       0x4750
 #define PCI_CHIP_MACH64GT	0x4754
+#define PCI_CHIP_MACH64GU       0x4755
+#define PCI_CHIP_MACH64LT       0x4C47
 
 /* Avance Logic */
 #define PCI_CHIP_ALG2301	0x2301
@@ -265,8 +272,12 @@ void xf86writepci(
 #define PCI_CHIP_GD5434_8	0x00A8
 #define PCI_CHIP_GD5436		0x00AC
 #define PCI_CHIP_GD5446		0x00B8
+#define PCI_CHIP_GD5480         0x00BC
 #define PCI_CHIP_GD5462		0x00D0
 #define PCI_CHIP_GD5464		0x00D4
+#define PCI_CHIP_GD5464BD       0x00D5
+#define PCI_CHIP_GD5465         0x00D6
+#define PCI_CHIP_GD7541         0x1204
 #define PCI_CHIP_GD7542		0x1200
 #define PCI_CHIP_GD7543		0x1202
 #define PCI_CHIP_GD7541		0x1204
@@ -281,11 +292,27 @@ void xf86writepci(
 
 /* Chips & Tech */
 #define PCI_CHIP_65545		0x00D8
+#define PCI_CHIP_65548          0x00DC
+#define PCI_CHIP_65550          0x00E0
+#define PCI_CHIP_65554          0x00E4
+#define PCI_CHIP_65555          0x00E5
+#define PCI_CHIP_68554          0x00F4
 
 /* SiS */
 #define PCI_CHIP_SG86C201	0x0001
 #define PCI_CHIP_SG86C202	0x0002
 #define PCI_CHIP_SG86C205	0x0205
+
+/* SGS */
+#define PCI_CHIP_STG2000        0x0008
+#define PCI_CHIP_STG1764        0x0009
+
+/* NVIDIA */
+#define PCI_CHIP_NV1            0x0008
+#define PCI_CHIP_DAC64          0x0009
+
+/* NVIDIA & SGS */
+#define PCI_CHIP_RIVA128        0x0018
 
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
@@ -320,6 +347,7 @@ void xf86writepci(
 #define PCI_CHIP_ViRGE		0x5631
 #define PCI_CHIP_ViRGE_VX	0x883D
 #define PCI_CHIP_ViRGE_DXGX	0x8A01
+#define PCI_CHIP_ViRGE_GX2	0x8A10
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091

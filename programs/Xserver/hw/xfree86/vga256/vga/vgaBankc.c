@@ -1,7 +1,7 @@
 /*
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBankc.c,v 3.1 1997/03/27 18:40:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBankc.c,v 3.2 1997/04/12 13:46:38 hohndel Exp $ */
 
 /*
  * Because a modern VGA has more than 128kBytes (which are mappable into the
@@ -355,4 +355,5 @@ vgaSetVidPage(page)
      register int page;
 {
   (vgaSetReadWriteFunc)(page);
+  return;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillSt.c,v 1.2 1997/04/10 11:34:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillSt.c,v 1.3 1997/04/13 13:57:10 hohndel Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -84,8 +84,13 @@ void CirrusFillRectOpaqueStippled32(pDrawable, pGC, nBox, pBox)
 		else {
 			/* Special raster op. */
 			/* Let cfb do this one. */
+#if !defined(__powerpc__)
 			speedupvga2568FillRectOpaqueStippled32(
 				pDrawable, pGC, 1, pBox);
+#else
+			vga2568FillRectOpaqueStippled32(
+				pDrawable, pGC, 1, pBox);
+#endif
 		}
 	}
 }
@@ -128,8 +133,13 @@ void CirrusFillRectTransparentStippled32(pDrawable, pGC, nBox, pBox)
 		else {
 			/* Special raster op. */
 			/* Let cfb do this one. */
+#if !defined(__powerpc__)
 			speedupvga2568FillRectTransparentStippled32(
 				pDrawable, pGC, 1, pBox);
+#else
+			vga2568FillRectTransparentStippled32(
+				pDrawable, pGC, 1, pBox);
+#endif
 		}
 	}
 }
