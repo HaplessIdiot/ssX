@@ -1,4 +1,5 @@
 /* $XConsortium: Xlib.h,v 11.236 94/05/14 15:38:16 rws Exp $ */
+/* $XFree86$ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
