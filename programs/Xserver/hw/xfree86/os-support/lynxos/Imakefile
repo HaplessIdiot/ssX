@@ -1,4 +1,4 @@
-XCOMM $XConsortium: $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 SRCS = lynx_init.c lynx_video.c IO_utils.c lynx_io.c lynx_mmap.c mapVT_noop.c \
