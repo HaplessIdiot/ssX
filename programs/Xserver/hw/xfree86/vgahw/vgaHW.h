@@ -175,6 +175,11 @@ typedef struct _vgaHWRec {
 
 #define OVERSCAN 0x11		/* Index of OverScan register */
 
+/* Flags that define how overscan correction should take place */
+#define KGA_FIX_OVERSCAN  1   /* overcan correction required */
+#define KGA_ENABLE_ON_ZERO 2  /* if possible enable display at beginning */
+                              /* of next scanline/frame                  */
+
 #define BIT_PLANE 3		/* Which plane we write to in mono mode */
 #define BITS_PER_GUN 6
 #define COLORMAP_SIZE 256
@@ -217,5 +222,8 @@ void vgaHWUnlock(vgaHWPtr hwp);
 void vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
 Bool vgaHWHandleColormaps(ScreenPtr pScreen);
 void vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, xf86ddcSpeed speed);
-
+CARD32 vgaHWHBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits, 
+	       unsigned int Flags);
+CARD32 vgaHWVBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits, 
+	       unsigned int Flags);
 #endif /* _VGAHW_H */
