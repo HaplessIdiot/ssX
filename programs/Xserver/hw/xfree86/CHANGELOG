@@ -1,4 +1,6 @@
-XFree86 4.4.99.13 (xx August 2004)
+XFree86 4.4.99.14 (xx September 2004)
+
+XFree86 4.4.99.13 (12 September 2004)
  181. Add support for i2c and Maven for the mga driver, providing DDC and
       DPMS support for the second head (Bugzilla #1098, Ryan Underwood).
  180. Fix a synchronization problem with luit's handling of tty settings
@@ -19095,7 +19097,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3312 2004/09/08 16:19:35 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3313 2004/09/11 01:33:04 dawes Exp $
 
 
 
