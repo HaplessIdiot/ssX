@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.143 2003/01/25 21:30:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.144 2003/02/20 04:05:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -655,10 +655,12 @@ special:
       case KEY_7:
       case KEY_8:
       case KEY_9:
-	if (VTSwitchEnabled && !xf86Info.dontVTSwitch && down) {
+	if (VTSwitchEnabled && !xf86Info.dontVTSwitch) {
+	  if (down) {
 	    int vtno = specialkey - KEY_1 + 1;
 	    xf86ProcessActionEvent(ACTION_SWITCHSCREEN, (void *) &vtno);
-	    return;
+	  }
+	  return;
 	}
 	break;
 #endif
@@ -694,6 +696,7 @@ special:
 #endif
 	    if (down)
 		xf86ProcessActionEvent(ACTION_SWITCHSCREEN, (void *) &vtno);
+	    return;
 	}
 	break;
 #endif /* linux || BSD with VTs */
