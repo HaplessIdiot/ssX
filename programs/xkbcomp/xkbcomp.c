@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.16 2002/05/31 18:46:13 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.17 2002/06/05 00:00:37 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -673,6 +673,7 @@ Status		status;
     uSetDebugFile(NullString);
     uSetErrorFile(NullString);
 
+    XkbInitIncludePath();
     if (!parseArgs(argc,argv))
 	exit(1);
 #ifdef DEBUG
@@ -687,7 +688,7 @@ Status		status;
 	uSetPostErrorMessage(postErrorMsg);
     file= NULL;
     XkbInitAtoms(NULL);
-    XkbInitIncludePath();
+    XkbAddDefaultDirectoriesToPath();
     if (xkblist) {
 	Bool	gotSome;
 	gotSome= GenerateListing(outputFile);

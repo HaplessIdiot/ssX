@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xkbcomp/xkbpath.h,v 1.3 2002/07/01 02:26:01 tsi Exp $ */
 
 #ifndef _XKBPATH_H_
 #define _XKBPATH_H_ 1
@@ -34,6 +34,10 @@ extern	Bool	XkbInitIncludePath(
 );
 
 extern	void	XkbClearIncludePath(
+	void
+);
+
+extern	void	XkbAddDefaultDirectoriesToPath(
 	void
 );
 
