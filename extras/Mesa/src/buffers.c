@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2
+ * Version:  4.0.3
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -257,23 +257,11 @@ _mesa_DrawBuffer( GLenum mode )
    }
 
    /*
-    * If we get here there can't have been an error.
-    * Now see if device driver can implement the drawing to the target
-    * buffer(s).  The driver may not be able to do GL_FRONT_AND_BACK mode
-    * for example.  We'll take care of that in the core code by looping
-    * over the individual buffers.
+    * If we get here there can't have been an error.  Now tell the
+    * device driver about it.  
     */
    ASSERT(ctx->Driver.SetDrawBuffer);
-   if ( (*ctx->Driver.SetDrawBuffer)(ctx, ctx->Color.DriverDrawBuffer) ) {
-      /* All OK, the driver will do all buffer writes */
-      ctx->Color.MultiDrawBuffer = GL_FALSE;
-   }
-   else {
-      /* We'll have to loop over the multiple draw buffer targets */
-      ctx->Color.MultiDrawBuffer = GL_TRUE;
-      /* Set drawing buffer to front for now */
-      (void) (*ctx->Driver.SetDrawBuffer)(ctx, GL_FRONT_LEFT);
-   }
+   (*ctx->Driver.SetDrawBuffer)(ctx, ctx->Color.DriverDrawBuffer);
 
    ctx->Color.DrawBuffer = mode;
    ctx->NewState |= _NEW_COLOR;
@@ -363,8 +351,7 @@ _mesa_ResizeBuffersMESA( void )
          (*ctx->Driver.GetBufferSize)( buffer, &buf_width, &buf_height );
 
          /* see if size of device driver's color buffer (window) has changed */
-         if (buffer->Width == (GLint) buf_width &&
-             buffer->Height == (GLint) buf_height)
+         if (buffer->Width == buf_width && buffer->Height == buf_height)
             return; /* size is as expected */
 
          buffer->Width = buf_width;
@@ -381,8 +368,7 @@ _mesa_ResizeBuffersMESA( void )
          (*ctx->Driver.GetBufferSize)( buffer, &buf_width, &buf_height );
 
          /* see if size of device driver's color buffer (window) has changed */
-         if (buffer->Width == (GLint) buf_width &&
-             buffer->Height == (GLint) buf_height)
+         if (buffer->Width == buf_width && buffer->Height == buf_height)
             return; /* size is as expected */
 
          buffer->Width = buf_width;

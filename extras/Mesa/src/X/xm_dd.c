@@ -1,6 +1,6 @@
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2
+ * Version:  4.0.3
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X/xm_dd.c,v 1.2 2002/02/26 23:37:31 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X/xm_dd.c,v 1.3 2002/09/09 21:07:28 dawes Exp $ */
 
 #include "glxheader.h"
 #include "context.h"
@@ -59,19 +59,20 @@ get_buffer_size( GLframebuffer *buffer, GLuint *width, GLuint *height )
     */
    const XMesaBuffer xmBuffer = (XMesaBuffer) buffer;
    unsigned int winwidth, winheight;
-#ifndef XFree86Server
+#ifdef XFree86Server
+   /* XFree86 GLX renderer */
+   winwidth = xmBuffer->frontbuffer->width;
+   winheight = xmBuffer->frontbuffer->height;
+#else
    Window root;
    int winx, winy;
    unsigned int bw, d;
 
    _glthread_LOCK_MUTEX(_xmesa_lock);
+   XSync(xmBuffer->xm_visual->display, 0); /* added for Chromium */
    XGetGeometry( xmBuffer->xm_visual->display, xmBuffer->frontbuffer, &root,
 		 &winx, &winy, &winwidth, &winheight, &bw, &d );
    _glthread_UNLOCK_MUTEX(_xmesa_lock);
-#else
-   /* XFree86 GLX renderer */
-   winwidth = xmBuffer->frontbuffer->width;
-   winheight = xmBuffer->frontbuffer->height;
 #endif
 
    (void)kernel8;		/* Muffle compiler */
@@ -113,9 +114,7 @@ flush( GLcontext *ctx )
 }
 
 
-
-
-static GLboolean
+static void
 set_draw_buffer( GLcontext *ctx, GLenum mode )
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
@@ -123,7 +122,6 @@ set_draw_buffer( GLcontext *ctx, GLenum mode )
       /* write to front buffer */
       xmesa->xm_buffer->buffer = xmesa->xm_buffer->frontbuffer;
       xmesa_update_span_funcs(ctx);
-      return GL_TRUE;
    }
    else if (mode==GL_BACK_LEFT && xmesa->xm_buffer->db_state) {
       /* write to back buffer */
@@ -139,10 +137,11 @@ set_draw_buffer( GLcontext *ctx, GLenum mode )
          xmesa->xm_buffer->buffer = xmesa->xm_buffer->frontbuffer;
       }
       xmesa_update_span_funcs(ctx);
-      return GL_TRUE;
    }
    else {
-      return GL_FALSE;
+      /* the swrast->_RasterMask MULTI_DRAW_BIT will be set and
+       * we'll fall back to swrast to draw points/lines/triangles.
+       */
    }
 }
 

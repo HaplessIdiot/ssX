@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2
+ * Version:  4.0.3
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -977,7 +977,7 @@ copytexture_error_check( GLcontext *ctx, GLuint dimensions,
          _mesa_error( ctx, GL_INVALID_ENUM, "glCopyTexImage2D(target)" );
          return GL_TRUE;
       }
-      if (target == GL_PROXY_TEXTURE_2D && target == GL_TEXTURE_2D)
+      if (target == GL_TEXTURE_2D)
          maxLevels = ctx->Const.MaxTextureLevels;
       else
          maxLevels = ctx->Const.MaxCubeTextureLevels;
@@ -1075,7 +1075,7 @@ copytexsubimage_error_check( GLcontext *ctx, GLuint dimensions,
          _mesa_error( ctx, GL_INVALID_ENUM, "glCopyTexSubImage2D(target)" );
          return GL_TRUE;
       }
-      if (target == GL_PROXY_TEXTURE_2D && target == GL_TEXTURE_2D)
+      if (target == GL_TEXTURE_2D)
          maxLevels = ctx->Const.MaxTextureLevels;
       else
          maxLevels = ctx->Const.MaxCubeTextureLevels;
@@ -1221,7 +1221,7 @@ _mesa_GetTexImage( GLenum target, GLint level, GLenum format,
       return;
    }
 
-   if (_mesa_sizeof_type(type) <= 0) {
+   if (_mesa_sizeof_packed_type(type) <= 0) {
       _mesa_error( ctx, GL_INVALID_ENUM, "glGetTexImage(type)" );
       return;
    }

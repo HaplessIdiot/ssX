@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -138,7 +138,7 @@ __inline END_FAST_MATH(unsigned short x)
 /* The mac float really is a float, with the same precision as a
  * single precision 387 float.
  */
-#if defined(macintosh)
+#if defined(macintosh) || defined(__powerpc__)
 #define HAVE_FAST_MATH
 #endif
 
@@ -199,7 +199,8 @@ do {						\
 
 
 #if defined(__i386__) || defined(__sparc__) || defined(__s390x__) || \
-    ( defined(__alpha__) && ( defined( __IEEE_FLOAT ) || !defined( VMS ) ) )
+    defined(__powerpc__) || \
+    ( defined(__alpha__) && ( defined(__IEEE_FLOAT) || !defined(VMS) ) )
 #define USE_IEEE
 #endif
 
@@ -430,7 +431,7 @@ static INLINE int iceil(float f)
 
 /* Convert GLubyte in [0,255] to GLfloat in [0.0,1.0] */
 extern float _mesa_ubyte_to_float_color_tab[256];
-#define UBYTE_TO_FLOAT(u) _mesa_ubyte_to_float_color_tab[u]
+#define UBYTE_TO_FLOAT(u) _mesa_ubyte_to_float_color_tab[(unsigned int)u]
 
 /* Convert GLfloat in [0.0,1.0] to GLubyte in [0,255] */
 #define FLOAT_TO_UBYTE(X)	((GLubyte) (GLint) (((X)) * 255.0F))

@@ -1,6 +1,6 @@
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2
+ * Version:  4.0.3
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -35,6 +35,7 @@
 
 #include "glheader.h"
 #include "GL/osmesa.h"
+#include "buffers.h"
 #include "context.h"
 #include "colormac.h"
 #include "depth.h"
@@ -478,6 +479,10 @@ OSMesaMakeCurrent( OSMesaContext ctx, void *buffer, GLenum type,
       ctx->gl_ctx.Scissor.Width = width;
       ctx->gl_ctx.Scissor.Height = height;
    }
+   else {
+      /* this will make ensure we recognize the new buffer size */
+      _mesa_ResizeBuffersMESA();
+   }
 
    return GL_TRUE;
 }
@@ -665,15 +670,11 @@ do {									\
 
 
 
-static GLboolean set_draw_buffer( GLcontext *ctx, GLenum mode )
+static void set_draw_buffer( GLcontext *ctx, GLenum mode )
 {
+   /* A no-op since there's only one color buffer! */
    (void) ctx;
-   if (mode==GL_FRONT_LEFT) {
-      return GL_TRUE;
-   }
-   else {
-      return GL_FALSE;
-   }
+   (void) mode;
 }
 
 
@@ -1779,6 +1780,7 @@ osmesa_choose_line_function( GLcontext *ctx )
        osmesa->format != OSMESA_BGRA &&
        osmesa->format != OSMESA_ARGB)     return NULL;
 
+
    if (swrast->_RasterMask==DEPTH_BIT
        && ctx->Depth.Func==GL_LESS
        && ctx->Depth.Mask==GL_TRUE
@@ -1928,6 +1930,9 @@ osmesa_choose_triangle_function( GLcontext *ctx )
    if (osmesa->format != OSMESA_RGBA &&
        osmesa->format != OSMESA_BGRA &&
        osmesa->format != OSMESA_ARGB)   return (swrast_tri_func) NULL;
+   if (ctx->Polygon.CullFlag && 
+       ctx->Polygon.CullFaceMode == GL_FRONT_AND_BACK)
+                                        return (swrast_tri_func) NULL;
 
    if (swrast->_RasterMask == DEPTH_BIT &&
        ctx->Depth.Func == GL_LESS &&

@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -44,6 +44,11 @@ _mesa_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
 extern void
 _mesa_free_texture_object( struct gl_shared_state *shared,
                            struct gl_texture_object *t );
+
+
+extern void
+_mesa_copy_texture_object( struct gl_texture_object *dest,
+                           const struct gl_texture_object *src );
 
 
 extern void

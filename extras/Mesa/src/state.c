@@ -800,7 +800,7 @@ update_texture_state( GLcontext *ctx )
       }
 
       {
-	 GLuint flag = texUnit->_ReallyEnabled << (i * 4);
+	 GLuint flag = texUnit->_ReallyEnabled << (i * NUM_TEXTURE_TARGETS);
 	 ctx->Texture._ReallyEnabled |= flag;
       }
 
@@ -860,7 +860,7 @@ void _mesa_update_state( GLcontext *ctx )
    const GLuint oldneedeyecoords = ctx->_NeedEyeCoords;
 
    if (MESA_VERBOSE & VERBOSE_STATE)
-      _mesa_print_state("", new_state);
+      _mesa_print_state("_mesa_update_state", new_state);
 
    if (new_state & _NEW_MODELVIEW)
       _math_matrix_analyse( &ctx->ModelView );

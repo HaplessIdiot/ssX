@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2
+ * Version:  4.0.3
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -65,7 +65,7 @@
 #define SERVER_MINOR_VERSION 4
 
 /* This is appended onto the glXGetClient/ServerString version strings. */
-#define MESA_GLX_VERSION "Mesa 4.0.2"
+#define MESA_GLX_VERSION "Mesa 4.0.3"
 
 /* Who implemented this GLX? */
 #define VENDOR "Brian Paul"
@@ -1341,8 +1341,10 @@ static void
 Fake_glXCopyContext( Display *dpy, GLXContext src, GLXContext dst,
                      unsigned long mask )
 {
-   XMesaContext xm_src = (XMesaContext) src;
-   XMesaContext xm_dst = (XMesaContext) dst;
+   struct fake_glx_context *fakeSrc = (struct fake_glx_context *) src;
+   struct fake_glx_context *fakeDst = (struct fake_glx_context *) dst;
+   XMesaContext xm_src = fakeSrc->xmesaContext;
+   XMesaContext xm_dst = fakeDst->xmesaContext;
    (void) dpy;
    _mesa_copy_context( xm_src->gl_ctx, xm_dst->gl_ctx, (GLuint) mask );
 }
@@ -1790,7 +1792,11 @@ Fake_glXGetFBConfigAttrib( Display *dpy, GLXFBConfig config,
          *value = False; /* XXX ??? */
          break;
       case GLX_X_VISUAL_TYPE:
+#if defined(__cplusplus) || defined(c_plusplus)
+         switch (v->vishandle->c_class) {
+#else
          switch (v->vishandle->class) {
+#endif
             case GrayScale:
                *value = GLX_GRAY_SCALE;
                break;

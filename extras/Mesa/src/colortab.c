@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -212,6 +212,14 @@ _mesa_ColorTable( GLenum target, GLenum internalFormat,
          texObj = texUnit->Current3D;
          table = &texObj->Palette;
          break;
+      case GL_TEXTURE_CUBE_MAP_ARB:
+         if (!ctx->Extensions.ARB_texture_cube_map) {
+            _mesa_error(ctx, GL_INVALID_ENUM, "glColorTable(target)");
+            return;
+         }
+         texObj = texUnit->CurrentCubeMap;
+         table = &texObj->Palette;
+         break;
       case GL_PROXY_TEXTURE_1D:
          texObj = ctx->Texture.Proxy1D;
          table = &texObj->Palette;
@@ -226,6 +234,14 @@ _mesa_ColorTable( GLenum target, GLenum internalFormat,
          texObj = ctx->Texture.Proxy3D;
          table = &texObj->Palette;
          proxy = GL_TRUE;
+         break;
+      case GL_PROXY_TEXTURE_CUBE_MAP_ARB:
+         if (!ctx->Extensions.ARB_texture_cube_map) {
+            _mesa_error(ctx, GL_INVALID_ENUM, "glColorTable(target)");
+            return;
+         }
+         texObj = ctx->Texture.ProxyCubeMap;
+         table = &texObj->Palette;
          break;
       case GL_SHARED_TEXTURE_PALETTE_EXT:
          table = &ctx->Texture.Palette;
@@ -455,6 +471,14 @@ _mesa_ColorSubTable( GLenum target, GLsizei start,
          texObj = texUnit->Current3D;
          table = &texObj->Palette;
          break;
+      case GL_TEXTURE_CUBE_MAP_ARB:
+         if (!ctx->Extensions.ARB_texture_cube_map) {
+            _mesa_error(ctx, GL_INVALID_ENUM, "glColorSubTable(target)");
+            return;
+         }
+         texObj = texUnit->CurrentCubeMap;
+         table = &texObj->Palette;
+         break;
       case GL_SHARED_TEXTURE_PALETTE_EXT:
          table = &ctx->Texture.Palette;
          break;
@@ -652,6 +676,13 @@ _mesa_GetColorTable( GLenum target, GLenum format,
          break;
       case GL_TEXTURE_3D:
          table = &texUnit->Current3D->Palette;
+         break;
+      case GL_TEXTURE_CUBE_MAP_ARB:
+         if (!ctx->Extensions.ARB_texture_cube_map) {
+            _mesa_error(ctx, GL_INVALID_ENUM, "glGetColorTable(target)");
+            return;
+         }
+         table = &texUnit->CurrentCubeMap->Palette;
          break;
       case GL_SHARED_TEXTURE_PALETTE_EXT:
          table = &ctx->Texture.Palette;
@@ -927,6 +958,14 @@ _mesa_GetColorTableParameterfv( GLenum target, GLenum pname, GLfloat *params )
       case GL_TEXTURE_3D:
          table = &texUnit->Current3D->Palette;
          break;
+      case GL_TEXTURE_CUBE_MAP_ARB:
+         if (!ctx->Extensions.ARB_texture_cube_map) {
+            _mesa_error(ctx, GL_INVALID_ENUM,
+                        "glGetColorTableParameterfv(target)");
+            return;
+         }
+         table = &texUnit->CurrentCubeMap->Palette;
+         break;
       case GL_PROXY_TEXTURE_1D:
          table = &ctx->Texture.Proxy1D->Palette;
          break;
@@ -935,6 +974,14 @@ _mesa_GetColorTableParameterfv( GLenum target, GLenum pname, GLfloat *params )
          break;
       case GL_PROXY_TEXTURE_3D:
          table = &ctx->Texture.Proxy3D->Palette;
+         break;
+      case GL_PROXY_TEXTURE_CUBE_MAP_ARB:
+         if (!ctx->Extensions.ARB_texture_cube_map) {
+            _mesa_error(ctx, GL_INVALID_ENUM,
+                        "glGetColorTableParameterfv(target)");
+            return;
+         }
+         table = &ctx->Texture.ProxyCubeMap->Palette;
          break;
       case GL_SHARED_TEXTURE_PALETTE_EXT:
          table = &ctx->Texture.Palette;
@@ -1057,6 +1104,14 @@ _mesa_GetColorTableParameteriv( GLenum target, GLenum pname, GLint *params )
       case GL_TEXTURE_3D:
          table = &texUnit->Current3D->Palette;
          break;
+      case GL_TEXTURE_CUBE_MAP_ARB:
+         if (!ctx->Extensions.ARB_texture_cube_map) {
+            _mesa_error(ctx, GL_INVALID_ENUM,
+                        "glGetColorTableParameteriv(target)");
+            return;
+         }
+         table = &texUnit->CurrentCubeMap->Palette;
+         break;
       case GL_PROXY_TEXTURE_1D:
          table = &ctx->Texture.Proxy1D->Palette;
          break;
@@ -1065,6 +1120,14 @@ _mesa_GetColorTableParameteriv( GLenum target, GLenum pname, GLint *params )
          break;
       case GL_PROXY_TEXTURE_3D:
          table = &ctx->Texture.Proxy3D->Palette;
+         break;
+      case GL_PROXY_TEXTURE_CUBE_MAP_ARB:
+         if (!ctx->Extensions.ARB_texture_cube_map) {
+            _mesa_error(ctx, GL_INVALID_ENUM,
+                        "glGetColorTableParameteriv(target)");
+            return;
+         }
+         table = &ctx->Texture.ProxyCubeMap->Palette;
          break;
       case GL_SHARED_TEXTURE_PALETTE_EXT:
          table = &ctx->Texture.Palette;

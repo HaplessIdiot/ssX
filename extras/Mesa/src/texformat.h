@@ -69,7 +69,7 @@ enum _format {
     *
     * NOTE: Because these are based on the GLchan datatype, one cannot
     * assume 8 bits per channel with these formats.  If you require
-    * GLubyte per channel, use one of the hardware formats below.
+    * GLubyte per channel, use one of the hardware formats above.
     */
    MESA_FORMAT_RGBA,
    MESA_FORMAT_RGB,

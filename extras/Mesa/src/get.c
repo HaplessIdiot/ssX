@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2
+ * Version:  4.0.3
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -967,6 +967,9 @@ _mesa_GetBooleanv( GLenum pname, GLboolean *params )
          break;
       case GL_EDGE_FLAG_ARRAY_STRIDE:
          *params = INT_TO_BOOL(ctx->Array.EdgeFlag.Stride);
+         break;
+      case GL_EDGE_FLAG_ARRAY_COUNT_EXT:
+         *params = INT_TO_BOOL(0);
          break;
 
       /* GL_ARB_multitexture */
@@ -5365,8 +5368,8 @@ _mesa_GetString( GLenum name )
    GET_CURRENT_CONTEXT(ctx);
    static const char *vendor = "Brian Paul";
    static const char *renderer = "Mesa";
-   static const char *version_1_2 = "1.2 Mesa 4.0.2";
-   static const char *version_1_3 = "1.3 Mesa 4.0.2";
+   static const char *version_1_2 = "1.2 Mesa 4.0.3";
+   static const char *version_1_3 = "1.3 Mesa 4.0.3";
 
    ASSERT_OUTSIDE_BEGIN_END_WITH_RETVAL(ctx, 0);
 
