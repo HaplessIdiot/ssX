@@ -9,7 +9,7 @@
 <date>18 December 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.90 2003/12/31 05:09:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.91 2003/12/31 06:04:48 dawes Exp $
 </ident>
 
 <abstract>
@@ -404,6 +404,11 @@ scroll-back(1, page-2)
 <item>Various GNU/Hurd support updates.
 
 <item>Experimental support added for GNU/KFreeBSD and GNU/KNetBSD systems.
+
+<item>SCO OpenServer support updates.  XFree86 4.4 now works on Release
+5.0.7 with Maintenance Pack 1, or on prior releases through Release
+5.0.4.  Please consult the <htmlurl name="README.SCO" url="SCO.html">
+file for details.
 
 </itemize>
 
@@ -1011,6 +1016,12 @@ please contact
 <bf>THIS IS A SAMPLE/DRAFT OF HOW A CREDITS SECTION IN THE XFREE86 RELEASE
 NOTES MIGHT LOOK</bf>
 
+This section lists the credits for the XFree86 &relvers; release.  For
+a more detailed breakdown, refer to the CHANGELOG file in the XFree86
+source tree, the <url name="cvs-commit archives"
+url="http://www.mail-archive.com/cvs-commit@xfree86.org/maillist.html">,
+or the 'cvs log' information for individual source files.
+
 <descrip>
 <tag>New Features, Enhancements and Updates:</tag>
   <descrip>
@@ -1029,6 +1040,7 @@ NOTES MIGHT LOOK</bf>
   <tag>Mac OS X enhancements:</tag>Torrey T. Lyons, John Harper.
   <tag>GNU/Hurd updates and preliminary GNU/KFreeBSD and GNU/KNetBSD
 	support:</tag> Robert Millan.
+  <tag>SCO support updates:</tag>Kean Johnston.
   </descrip>
 <tag>Integration:</tag>
   <descrip>
