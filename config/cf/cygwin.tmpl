@@ -1,5 +1,5 @@
 XCOMM $XConsortium: WinLib.tmpl,v 1.1 94/01/08 18:32:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.11 2002/10/01 14:31:36 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.12 2002/10/17 08:18:18 alanh Exp $
 
 #if UseCygIPC
 #define SharedX11Reqs -lcygipc
@@ -35,6 +35,7 @@ XCOMM #define SharedXfontReqs $(LDPRELIB) $(XLIB)
 #define SharedXmuuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXrandrReqs $(LDPRELIB) $(XRENDERLIB) $(XLIB)
 #define SharedXcursorReqs $(LDPRELIB) $(XRENDERLIB) $(XLIB) 
+#define SharedXfixesReqs $(LDPRELIB) $(XLIB)
 
 
 #ifndef FixupLibReferences
