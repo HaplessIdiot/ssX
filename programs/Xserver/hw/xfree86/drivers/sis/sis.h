@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   9
-#define SISDRIVERVERSIONDAY     25
+#define SISDRIVERVERSIONDAY     26
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -143,7 +143,7 @@ typedef unsigned long IOADDRESS;
 #define PCI_CHIP_SIS330 		0x0330
 #endif
 #ifndef PCI_CHIP_SIS660
-#define PCI_CHIP_SIS660 		0x6330	/* 660_VGA and 760_VGA (obviously DOA) */
+#define PCI_CHIP_SIS660 		0x6330	/* 660_VGA and 760_VGA (for future use) */
 #endif
 
 #define SIS_NAME                "SIS"
@@ -207,8 +207,6 @@ typedef unsigned long IOADDRESS;
 #define VB_CHRONTEL             0x02000000
 #define VB_301LV                0x04000000
 #define VB_302LV                0x08000000
-#define VB_30xLV                VB_301LV
-#define VB_30xLVX               VB_302LV
 #define VB_301C			0x10000000
 #define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV| \
 				 VB_LVDS|VB_CHRONTEL)
@@ -242,29 +240,14 @@ typedef unsigned long IOADDRESS;
 #define VB_LCD_CUSTOM  		0x40000000
 #define VB_LCD_EXPANDING	0x80000000
 
-#define SIS_MODE_SIMU 		0		/* PresetMode argument */
+/* PresetMode argument */
+#define SIS_MODE_SIMU 		0
 #define SIS_MODE_CRT1 		1
 #define SIS_MODE_CRT2 		2
-
 
 /* pSiS->MiscFlags */
 #define MISC_CRT1OVERLAY	0x00000001  /* Current display mode supports overlay */
 #define MISC_PANELLINKSCALER    0x00000002  /* Panel link is currently scaling */
-
-/* More or less useful macros (although we often use pSiS->VGAEngine instead) */
-#define SIS_IS_300_CHIPSET    	(pSiS->Chipset == PCI_CHIP_SIS300) || \
-	     		       	(pSiS->Chipset == PCI_CHIP_SIS630) || \
-	     			(pSiS->Chipset == PCI_CHIP_SIS540) || \
-				(pSiS->Chipset == PCI_CHIP_SIS730)
-
-#define SIS_IS_315_CHIPSET    	(pSiS->Chipset == PCI_CHIP_SIS315) || \
-	     		       	(pSiS->Chipset == PCI_CHIP_SIS315H) || \
-	     			(pSiS->Chipset == PCI_CHIP_SIS315PRO) || \
-				(pSiS->Chipset == PCI_CHIP_SIS550) || \
-				(pSiS->Chipset == PCI_CHIP_SIS650) || \
-				(pSiS->Chipset == PCI_CHIP_SIS330) || \
-				(pSiS->Chipset == PCI_CHIP_SIS660) || \
-				(pSiS->Chipset == PCI_CHIP_SIS760)
 
 /* SiS6326Flags */
 #define SIS6326_HASTV		0x00000001
@@ -297,16 +280,16 @@ typedef unsigned char UChar;
 #define SIS_315_VGA 4   /* Includes Xabre; see ChipFlags */
 
 /* oldChipset */
-#define OC_UNKNOWN  0
-#define OC_SIS86201 1
-#define OC_SIS86202 2
-#define OC_SIS6205A 3
-#define OC_SIS6205B 4
-#define OC_SIS82204 5
-#define OC_SIS6205C 6
-#define OC_SIS6225  7
-#define OC_SIS5597  8
-#define OC_SIS6326  9
+#define OC_UNKNOWN   0
+#define OC_SIS86201  1
+#define OC_SIS86202  2
+#define OC_SIS6205A  3
+#define OC_SIS6205B  4
+#define OC_SIS82204  5
+#define OC_SIS6205C  6
+#define OC_SIS6225   7
+#define OC_SIS5597   8
+#define OC_SIS6326   9
 #define OC_SIS530A  11
 #define OC_SIS530B  12
 #define OC_SIS620   13
@@ -335,7 +318,6 @@ typedef unsigned char UChar;
 #define SiSCF_XabreCore    0x00010000
 #define SiSCF_Glamour3     0x40000000
 #define SiSCF_Integrated   0x80000000
-
 
 /* SiS Direct Xv-API */
 #define SiS_SD_IS300SERIES    0x00000001

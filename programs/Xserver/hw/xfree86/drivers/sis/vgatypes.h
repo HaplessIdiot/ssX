@@ -86,13 +86,13 @@ typedef UCHAR BOOLEAN;
 typedef UCHAR bool;
 #endif
 
-#ifndef LINUX_KERNEL   /* For kernel, this is defined in sisfb.h */
+#ifndef LINUX_KERNEL   /* For the linux kernel, this is defined in sisfb.h */
 #ifndef SIS_CHIP_TYPE
 typedef enum _SIS_CHIP_TYPE {
     SIS_VGALegacy = 0,
 #ifdef LINUX_XF86
-    SIS_530,	/* TW */
-    SIS_OLD,	/* TW */
+    SIS_530,
+    SIS_OLD,
 #endif
     SIS_300,
     SIS_630,

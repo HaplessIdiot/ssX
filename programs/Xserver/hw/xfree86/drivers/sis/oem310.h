@@ -393,7 +393,7 @@ const UCHAR SiS310_TVPhaseIncr2[3][2][4] =
  }
 };
 
-/* OEM data for Compaq Presario 3045US */
+/* OEM data for Compaq Presario 3045US/Inventec */
 static const SiS_LCDDataStruct  SiS310_ExtCompaq1280x1024Data[] =
 {
 	{  211,  60,1024, 501,1688,1066},
