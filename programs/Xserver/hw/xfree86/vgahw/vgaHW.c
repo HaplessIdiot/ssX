@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.44 2001/01/21 21:19:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.46 2001/02/15 18:31:22 eich Exp $ */
 
 /*
  *
@@ -155,67 +155,68 @@ static CARD8 defaultDAC[768] =
 static void
 stdWriteCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
 {
-    outb(hwp->IOBase + VGA_CRTC_INDEX_OFFSET, index);
-    outb(hwp->IOBase + VGA_CRTC_DATA_OFFSET, value);
+    outb(hwp->IOBase + hwp->PIOOffset + VGA_CRTC_INDEX_OFFSET, index);
+    outb(hwp->IOBase + hwp->PIOOffset + VGA_CRTC_DATA_OFFSET, value);
+ErrorF("hwp->IOBase is 0x%04x, hwp->PIOOffset is 0x%04x\n", hwp->IOBase, hwp->PIOOffset);
 }
 
 static CARD8
 stdReadCrtc(vgaHWPtr hwp, CARD8 index)
 {
-    outb(hwp->IOBase + VGA_CRTC_INDEX_OFFSET, index);
-    return inb(hwp->IOBase + VGA_CRTC_DATA_OFFSET);
+    outb(hwp->IOBase + hwp->PIOOffset + VGA_CRTC_INDEX_OFFSET, index);
+    return inb(hwp->IOBase + hwp->PIOOffset + VGA_CRTC_DATA_OFFSET);
 }
 
 static void
 stdWriteGr(vgaHWPtr hwp, CARD8 index, CARD8 value)
 {
-    outb(VGA_GRAPH_INDEX, index);
-    outb(VGA_GRAPH_DATA, value);
+    outb(hwp->PIOOffset + VGA_GRAPH_INDEX, index);
+    outb(hwp->PIOOffset + VGA_GRAPH_DATA, value);
 }
 
 static CARD8
 stdReadGr(vgaHWPtr hwp, CARD8 index)
 {
-    outb(VGA_GRAPH_INDEX, index);
-    return inb(VGA_GRAPH_DATA);
+    outb(hwp->PIOOffset + VGA_GRAPH_INDEX, index);
+    return inb(hwp->PIOOffset + VGA_GRAPH_DATA);
 }
 
 static void
 stdWriteSeq(vgaHWPtr hwp, CARD8 index, CARD8 value)
 {
-    outb(VGA_SEQ_INDEX, index);
-    outb(VGA_SEQ_DATA, value);
+    outb(hwp->PIOOffset + VGA_SEQ_INDEX, index);
+    outb(hwp->PIOOffset + VGA_SEQ_DATA, value);
 }
 
 static CARD8
 stdReadSeq(vgaHWPtr hwp, CARD8 index)
 {
-    outb(VGA_SEQ_INDEX, index);
-    return inb(VGA_SEQ_DATA);
+    outb(hwp->PIOOffset + VGA_SEQ_INDEX, index);
+    return inb(hwp->PIOOffset + VGA_SEQ_DATA);
 }
 
 static CARD8
 stdReadST00(vgaHWPtr hwp)
 {
-    return inb(VGA_IN_STAT_0);
+    return inb(hwp->PIOOffset + VGA_IN_STAT_0);
 }
 
 static CARD8
 stdReadST01(vgaHWPtr hwp)
 {
-    return inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
+    return inb(hwp->IOBase + hwp->PIOOffset + VGA_IN_STAT_1_OFFSET);
 }
 
 static CARD8
 stdReadFCR(vgaHWPtr hwp)
 {
-    return inb(VGA_FEATURE_R);
+    return inb(hwp->PIOOffset + VGA_FEATURE_R);
 }
 
 static void
 stdWriteFCR(vgaHWPtr hwp, CARD8 value)
 {
-    outb(hwp->IOBase + VGA_FEATURE_W_OFFSET,value);
+    outb(hwp->IOBase + hwp->PIOOffset + VGA_FEATURE_W_OFFSET,value);
 }
 
 static void
@@ -228,9 +229,9 @@ stdWriteAttr(vgaHWPtr hwp, CARD8 index, CARD8 value)
     else
 	index |= 0x20;
 
-    tmp = inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
-    outb(VGA_ATTR_INDEX, index);
-    outb(VGA_ATTR_DATA_W, value);
+    tmp = inb(hwp->IOBase + hwp->PIOOffset + VGA_IN_STAT_1_OFFSET);
+    outb(hwp->PIOOffset + VGA_ATTR_INDEX, index);
+    outb(hwp->PIOOffset + VGA_ATTR_DATA_W, value);
 }
 
 static CARD8
@@ -243,21 +244,21 @@ stdReadAttr(vgaHWPtr hwp, CARD8 index)
     else
 	index |= 0x20;
 
-    tmp = inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
-    outb(VGA_ATTR_INDEX, index);
-    return inb(VGA_ATTR_DATA_R);
+    tmp = inb(hwp->IOBase + hwp->PIOOffset + VGA_IN_STAT_1_OFFSET);
+    outb(hwp->PIOOffset + VGA_ATTR_INDEX, index);
+    return inb(hwp->PIOOffset + VGA_ATTR_DATA_R);
 }
 
 static void
 stdWriteMiscOut(vgaHWPtr hwp, CARD8 value)
 {
-    outb(VGA_MISC_OUT_W, value);
+    outb(hwp->PIOOffset + VGA_MISC_OUT_W, value);
 }
 
 static CARD8
 stdReadMiscOut(vgaHWPtr hwp)
 {
-    return inb(VGA_MISC_OUT_R);
+    return inb(hwp->PIOOffset + VGA_MISC_OUT_R);
 }
 
 static void
@@ -265,8 +266,8 @@ stdEnablePalette(vgaHWPtr hwp)
 {
     CARD8 tmp;
 
-    tmp = inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
-    outb(VGA_ATTR_INDEX, 0x00);
+    tmp = inb(hwp->IOBase + hwp->PIOOffset + VGA_IN_STAT_1_OFFSET);
+    outb(hwp->PIOOffset + VGA_ATTR_INDEX, 0x00);
     hwp->paletteEnabled = TRUE;
 }
 
@@ -275,45 +276,57 @@ stdDisablePalette(vgaHWPtr hwp)
 {
     CARD8 tmp;
 
-    tmp = inb(hwp->IOBase + VGA_IN_STAT_1_OFFSET);
-    outb(VGA_ATTR_INDEX, 0x20);
+    tmp = inb(hwp->IOBase + hwp->PIOOffset + VGA_IN_STAT_1_OFFSET);
+    outb(hwp->PIOOffset + VGA_ATTR_INDEX, 0x20);
     hwp->paletteEnabled = FALSE;
 }
 
 static void
 stdWriteDacMask(vgaHWPtr hwp, CARD8 value)
 {
-    outb(VGA_DAC_MASK, value);
+    outb(hwp->PIOOffset + VGA_DAC_MASK, value);
 }
 
 static CARD8
 stdReadDacMask(vgaHWPtr hwp)
 {
-    return inb(VGA_DAC_MASK);
+    return inb(hwp->PIOOffset + VGA_DAC_MASK);
 }
 
 static void
 stdWriteDacReadAddr(vgaHWPtr hwp, CARD8 value)
 {
-    outb(VGA_DAC_READ_ADDR, value);
+    outb(hwp->PIOOffset + VGA_DAC_READ_ADDR, value);
 }
 
 static void
 stdWriteDacWriteAddr(vgaHWPtr hwp, CARD8 value)
 {
-    outb(VGA_DAC_WRITE_ADDR, value);
+    outb(hwp->PIOOffset + VGA_DAC_WRITE_ADDR, value);
 }
 
 static void
 stdWriteDacData(vgaHWPtr hwp, CARD8 value)
 {
-    outb(VGA_DAC_DATA, value);
+    outb(hwp->PIOOffset + VGA_DAC_DATA, value);
 }
 
 static CARD8
 stdReadDacData(vgaHWPtr hwp)
 {
-    return inb(VGA_DAC_DATA);
+    return inb(hwp->PIOOffset + VGA_DAC_DATA);
+}
+
+static CARD8
+stdReadEnable(vgaHWPtr hwp)
+{
+    return inb(hwp->PIOOffset + VGA_ENABLE);
+}
+
+static void
+stdWriteEnable(vgaHWPtr hwp, CARD8 value)
+{
+    outb(hwp->PIOOffset + VGA_ENABLE, value);
 }
 
 void
@@ -341,6 +354,9 @@ vgaHWSetStdFuncs(vgaHWPtr hwp)
     hwp->writeDacReadAddr	= stdWriteDacReadAddr;
     hwp->writeDacData		= stdWriteDacData;
     hwp->readDacData		= stdReadDacData;
+    hwp->PIOOffset		= 0;
+    hwp->readEnable		= stdReadEnable;
+    hwp->writeEnable		= stdWriteEnable;
 }
 
 /*
@@ -516,6 +532,18 @@ mmioReadDacData(vgaHWPtr hwp)
     return minb(VGA_DAC_DATA);
 }
 
+static CARD8
+mmioReadEnable(vgaHWPtr hwp)
+{
+    return minb(VGA_ENABLE);
+}
+
+static void
+mmioWriteEnable(vgaHWPtr hwp, CARD8 value)
+{
+    moutb(VGA_ENABLE, value);
+}
+
 void
 vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *base, int offset)
 {
@@ -543,6 +571,8 @@ vgaHWSetMmioFuncs(vgaHWPtr hwp, CARD8 *base, int offset)
     hwp->readDacData		= mmioReadDacData;
     hwp->MMIOBase		= base;
     hwp->MMIOOffset		= offset;
+    hwp->readEnable		= mmioReadEnable;
+    hwp->writeEnable		= mmioWriteEnable;
 }
 
 /*
@@ -1787,6 +1817,7 @@ vgaHWGetIndex()
 void
 vgaHWGetIOBase(vgaHWPtr hwp)
 {
+ErrorF("vgaHWGetIOBase: hwp->IOBase is 0x%04x, hwp->PIOOffset is 0x%04x\n", hwp->IOBase, hwp->PIOOffset);
     hwp->IOBase = (hwp->readMiscOut(hwp) & 0x01) ?
 				VGA_IOBASE_COLOR : VGA_IOBASE_MONO;
 }
@@ -1804,6 +1835,20 @@ vgaHWUnlock(vgaHWPtr hwp)
 {
     /* Unprotect CRTC[0-7] */
      hwp->writeCrtc(hwp, 0x11, hwp->readCrtc(hwp, 0x11) | 0x80);
+}
+
+
+void
+vgaHWEnable(vgaHWPtr hwp)
+{
+    hwp->writeEnable(hwp, hwp->readEnable(hwp) | 0x01);
+}
+
+
+void
+vgaHWDisable(vgaHWPtr hwp)
+{
+    hwp->writeEnable(hwp, hwp->readEnable(hwp) & ~0x01);
 }
 
 

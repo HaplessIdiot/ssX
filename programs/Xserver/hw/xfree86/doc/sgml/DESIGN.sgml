@@ -27,7 +27,7 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 2 December 2000
+<date>Last modified 1 May 2001
 
 
 
@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.39 2000/12/04 18:49:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.40 2000/12/27 04:57:08 dawes Exp $
 </ident>
 
 
@@ -5774,7 +5774,15 @@ programming the standard VGA registers, and for handling VGA colourmaps.
       &s.code;hwp&e.code; with the standard VGA set of functions.  This
       is called by &s.code;vgaHWGetHWRec()&e.code;, so there is usually
       no need to call this explicitly.  The register access functions
-      are described below.
+      are described below.  If the registers are shadows in some other
+      port I/O space (for example a PCI I/O region), these functions
+      can be used to access the shadowed registers if
+      &s.code;hwp-&gt;PIOOffset&e.code; is initialised with
+      &s.code;offset&e.code;, calculated in such a way that when the
+      standard VGA I/O port value is added to it the correct offset into
+      the PIO area results.  This value is initalised to zero in
+      &s.code;vgaHWGetHWRec()&e.code;.  (Note: the PIOOffset functionality
+      is present in XFree86 4.1.0 and later.)
 
     </quote>
 
@@ -5858,6 +5866,20 @@ programming the standard VGA registers, and for handling VGA colourmaps.
       &s.code;vgaHW.h&e.code; that does the same thing, and this may be
       used when the vgahw module is not loaded (for example, in the
       &s.code;ChipProbe()&e.code; function).
+
+    </quote>
+
+    &s.code;void vgaHWEnable(vgaHWPtr hwp)&e.code;
+    <quote><p>
+      This function enables the VGA subsystem.  (Note, this function is
+      present in XFree86 4.1.0 and later.).
+
+    </quote>
+
+    &s.code;void vgaHWDisable(vgaHWPtr hwp)&e.code;
+    <quote><p>
+      This function disables the VGA subsystem.  (Note, this function is
+      present in XFree86 4.1.0 and later.).
 
     </quote>
 
@@ -6186,6 +6208,20 @@ programming the standard VGA registers, and for handling VGA colourmaps.
     &s.code;CARD8 readDacData(vgaHWptr hwp)&e.code;
     <quote><p>
       Return the value read from the DAC Data register.
+
+    </quote>
+
+    &s.code;CARD8 readEnable(vgaHWptr hwp)&e.code;
+    <quote><p>
+      Return the value read from the VGA Enable register.  (Note: This
+      function is present in XFree86 4.1.0 and later.)
+
+    </quote>
+
+    &s.code;void writeEnable(vgaHWPtr hwp, CARD8 value)&e.code;
+    <quote><p>
+      Write &s.code;value&e.code; to the VGA Enable register.  (Note: This
+      function is present in XFree86 4.1.0 and later.)
 
     </quote>
   </quote>
