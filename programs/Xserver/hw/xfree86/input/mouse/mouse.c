@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.48 2001/11/30 12:12:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.49 2001/12/10 23:02:33 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1967,6 +1967,7 @@ MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
 		emuWheelDelta = pMse->wheelInertia;
 		emuWheelButton = pMse->positiveX;
 	    }
+	    emuWheelButtonMask = 1 << (emuWheelButton - 1);
 	    while (abs(pMse->wheelXDistance) > pMse->wheelInertia) {
 		pMse->wheelXDistance -= emuWheelDelta;
 
