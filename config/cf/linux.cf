@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.153 2000/12/06 20:39:46 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.154 2000/12/11 19:42:55 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -307,6 +307,40 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #    endif
 #  else
 #    define HasKatmaiSupport		NO
+#  endif
+#endif
+
+/*
+ * Support for MMX isn't present in the Assembler used in Red Hat 4.2, so
+ * don't enable it for libc5 as a reasonable default.
+ */
+#ifndef HasMMXSupport
+#  ifdef i386Architecture
+#    if (LinuxCLibMajorVersion > 5)
+#      define HasMMXSupport		YES
+#    else
+#      define HasMMXSupport		NO
+#    endif
+#  else
+#    define HasMMXSupport		NO
+#  endif
+#endif
+
+/*
+ * Support for 3DNow isn't present in the Assembler used in Red Hat 4.2, so
+ * don't enable it for libc5 as a reasonable default.
+ *
+ * XXX This is preliminary.
+ */
+#ifndef Has3DNowSupport
+#  ifdef i386Architecture
+#    if (LinuxCLibMajorVersion > 5)
+#      define Has3DNowSupport		YES
+#    else
+#      define Has3DNowSupport		NO
+#    endif
+#  else
+#    define Has3DNowSupport		NO
 #  endif
 #endif
 

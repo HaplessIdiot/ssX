@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.334 2000/12/08 22:45:44 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.335 2000/12/12 17:04:45 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1234,6 +1234,28 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #  define Egcs112Bug YES
 # else
 #  define Egcs112Bug NO
+# endif
+#endif
+
+#ifdef i386Architecture
+# ifndef HasMMXSupport
+#  define HasMMXSupport YES
+# endif
+# ifndef HasKatmaiSupport
+#  define HasKatmaiSupport NO
+# endif
+# ifndef Has3DNowSupport
+#  define Has3DNowSupport NO
+# endif
+#else
+# ifndef HasMMXSupport
+#  define HasMMXSupport NO
+# endif
+# ifndef HasKatmaiSupport
+#  define HasKatmaiSupport NO
+# endif
+# ifndef Has3DNowSupport
+#  define Has3DNowSupport NO
 # endif
 #endif
 

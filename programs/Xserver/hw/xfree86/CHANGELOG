@@ -1,4 +1,7 @@
 XFree86 4.0.1Za (12 December 2000)
+1174. Set defaults for Mesa's x86 CPU-specific asm options, and make it
+      possible to build with MMX disabled for systems with older assemblers
+      (David Dawes).
 1173. Fix some R128 DRI bugs:
        - Fix depth span functions (was causing rendering errors for windows
          not at (0,0)).
@@ -12042,4 +12045,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1467 2000/12/11 20:48:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1468 2000/12/12 17:18:58 dawes Exp $

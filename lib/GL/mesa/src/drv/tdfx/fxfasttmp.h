@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxfasttmp.h,v 1.2 2000/11/13 23:31:32 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxfasttmp.h,v 1.3 2000/12/08 19:36:23 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -330,8 +330,8 @@ static void TAG(fx_init_fastpath) (struct fx_fast_tab * tab)
     tab->project_vertices = TAG(fx_project_vertices);
     tab->project_clipped_vertices = TAG(fx_project_clipped_vertices);
 
-#if defined(USE_3DNOW_ASM)
-    if (gl_x86_cpu_features & GL_CPU_3Dnow) {
+#if 0 && defined(USE_3DNOW_ASM)
+    if (gl_x86_cpu_features & X86_FEATURE_3DNOW) {
         extern void TAG(fx_3dnow_project_vertices) (GLfloat * first,
                                                     GLfloat * last,
                                                     const GLfloat * mat,

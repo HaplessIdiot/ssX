@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.87 2000/12/08 16:37:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.88 2000/12/08 22:58:06 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -849,6 +849,31 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define PexCCOptions DefaultCCOptions
 #endif
 #endif
+
+#ifndef MesaUseMMX
+#ifdef HasMMXSupport
+#define MesaUseMMX HasMMXSupport
+#else
+#define MesaUseMMX NO
+#endif
+#endif
+
+#ifndef MesaUse3DNow
+#ifdef Has3DNowSupport
+#define MesaUse3DNow Has3DNowSupport
+#else
+#define MesaUse3DNow NO
+#endif
+#endif
+
+#ifndef MesaUseKatmai
+#ifdef HasKatmaiSupport
+#define MesaUseKatmai HasKatmaiSupport
+#else
+#define MesaUseKatmai NO
+#endif
+#endif
+
 #ifndef DefaultFSConfigFile
 #define DefaultFSConfigFile $(LIBDIR)/fs/config
 #endif
