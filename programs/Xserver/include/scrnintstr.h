@@ -942,8 +942,8 @@ typedef struct _Screen {
 
 #ifdef PIXPRIV
     int			PixmapPrivateLen;
-    unsigned		*PixmapPrivateSizes;
-    unsigned		totalPixmapSize;
+    unsigned int		*PixmapPrivateSizes;
+    unsigned int		totalPixmapSize;
 #endif
 
     MarkWindowProcPtr		MarkWindow;

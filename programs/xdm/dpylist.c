@@ -240,6 +240,7 @@ NewDisplay (char *name, char *class)
     d->openTimeout = 0;
     d->startAttempts = 0;
     d->startTries = 0;
+    d->lastCrash = 0;
     d->terminateServer = 0;
     d->grabTimeout = 0;
 #ifdef XDMCP

@@ -311,6 +311,7 @@ ShmDestroyPixmap (PixmapPtr pPixmap)
 	if (shmdesc)
 	    ShmDetachSegment ((pointer) shmdesc, pPixmap->drawable.id);
     }
+    
     pScreen->DestroyPixmap = destroyPixmap[pScreen->myNum];
     ret = (*pScreen->DestroyPixmap) (pPixmap);
     destroyPixmap[pScreen->myNum] = pScreen->DestroyPixmap;

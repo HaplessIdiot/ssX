@@ -75,6 +75,7 @@ SOFTWARE.
 #include "servermd.h"
 #include "OScompiler.h"
 #include "ibmTrace.h"
+#include "scrnintstr.h"
 
 PixmapPtr
 xf4bppCreatePixmap( pScreen, width, height, depth )
@@ -85,14 +86,15 @@ xf4bppCreatePixmap( pScreen, width, height, depth )
 {
     register PixmapPtr pPixmap  = (PixmapPtr)NULL;
     int size ;
-
+    
     TRACE(("xf4bppCreatePixmap(pScreen=0x%x, width=%d, height=%d, depth=%d)\n", pScreen, width, height, depth)) ;
 
     if ( depth > 8 )
 	return (PixmapPtr) NULL ;
 
     size = PixmapBytePad(width, depth);
-    pPixmap = xalloc( sizeof (PixmapRec) + (height * size) ) ;
+    pPixmap = AllocatePixmap (pScreen, (height * size));
+    
     if ( !pPixmap )
 	return (PixmapPtr) NULL ;
     pPixmap->drawable.type = DRAWABLE_PIXMAP ;
@@ -109,8 +111,12 @@ xf4bppCreatePixmap( pScreen, width, height, depth )
     pPixmap->devKind = size;
     pPixmap->refcnt = 1 ;
     size = height * pPixmap->devKind ;
-
+#ifdef PIXPRIV
+    pPixmap->devPrivate.ptr = (pointer) (((CARD8*)pPixmap)
+					 + pScreen->totalPixmapSize);
+#else
     pPixmap->devPrivate.ptr = (pointer) (pPixmap + 1);
+#endif
     bzero( (char *) pPixmap->devPrivate.ptr, size ) ;
     return pPixmap ;
 }

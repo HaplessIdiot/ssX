@@ -113,8 +113,15 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (mode->CrtcVDisplay > 480)
 	    pReg->tridentRegs3CE[CyberEnhance] |= 0x10;
 	OUTB(0x3CE, CyberControl);
-	if (!pTrident->CyberShadow)
-	    pReg->tridentRegs3CE[CyberControl] = INB(0x3CF) & 0x7E;
+	pReg->tridentRegs3CE[CyberControl] = INB(0x3CF);
+	if (pTrident->CyberShadowSet) {
+	    ErrorF("Shadow set\n");
+	    if (pTrident->CyberShadow) {
+		ErrorF("Shadow set\n");
+		pReg->tridentRegs3CE[CyberControl] |= 0x81;
+	    } else
+		pReg->tridentRegs3CE[CyberControl] &= 0x7E;
+	}
     }
 
     /* Defaults for all trident chipsets follows */

@@ -638,6 +638,34 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
 		(unsigned long)pCir->IOAddress);
 
+	/*
+	 * If the user has specified the amount of memory in the XF86Config
+	 * file, we respect that setting.
+	 */
+	if (pCir->pEnt->device->videoRam != 0) {
+		pScrn->videoRam = pCir->pEnt->device->videoRam;
+		from = X_CONFIG;
+	} else {
+		pScrn->videoRam = LgCountRam(pScrn);
+		from = X_PROBED;
+	}
+	if (2048 == pScrn->videoRam) {
+		/* Two-way interleaving */
+		pCir->chip.lg->memInterleave = 0x40;
+	} else if (4096 == pScrn->videoRam || 8192 == pScrn->videoRam) {
+		/* Four-way interleaving */
+		pCir->chip.lg->memInterleave = 0x80;
+	} else {
+		/* One-way interleaving */
+		pCir->chip.lg->memInterleave = 0x00;
+	}
+
+	xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
+				pScrn->videoRam);
+
+	pCir->FbMapSize = pScrn->videoRam * 1024;
+	pCir->IoMapSize = 0x4000;	/* 16K for moment,  will increase */
+
 	pScrn->racIoFlags =   RAC_COLORMAP 
 #ifndef EXPERIMENTAL
 	  | RAC_VIEWPORT
@@ -713,34 +741,6 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	    pCir->HWCursor = FALSE;
 	}
 	
-	/*
-	 * If the user has specified the amount of memory in the XF86Config
-	 * file, we respect that setting.
-	 */
-	if (pCir->pEnt->device->videoRam != 0) {
-		pScrn->videoRam = pCir->pEnt->device->videoRam;
-		from = X_CONFIG;
-	} else {
-		pScrn->videoRam = LgCountRam(pScrn);
-		from = X_PROBED;
-	}
-	if (2048 == pScrn->videoRam) {
-		/* Two-way interleaving */
-		pCir->chip.lg->memInterleave = 0x40;
-	} else if (4096 == pScrn->videoRam || 8192 == pScrn->videoRam) {
-		/* Four-way interleaving */
-		pCir->chip.lg->memInterleave = 0x80;
-	} else {
-		/* One-way interleaving */
-		pCir->chip.lg->memInterleave = 0x00;
-	}
-
-	xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
-				pScrn->videoRam);
-
-	pCir->FbMapSize = pScrn->videoRam * 1024;
-	pCir->IoMapSize = 0x4000;	/* 16K for moment,  will increase */
-
 	/* We use a programamble clock */
 	pScrn->progClock = TRUE;
 

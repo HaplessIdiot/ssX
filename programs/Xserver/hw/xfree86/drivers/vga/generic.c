@@ -104,11 +104,13 @@ DriverRec VGA =
 };
 
 typedef enum {
-    OPTION_SHADOW_FB
+    OPTION_SHADOW_FB,
+    OPTION_VGA_CLOCKS
 } GenericOpts;
 
 static OptionInfoRec GenericOptions[] = {
     { OPTION_SHADOW_FB,         "ShadowFB",     OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_VGA_CLOCKS,        "VGAClocks",    OPTV_BOOLEAN,   {0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
 };
 
@@ -598,8 +600,11 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
         for (i = 0;  i < pScreenInfo->numClocks;  i++)
             pScreenInfo->clock[i] = pEnt->device->clock[i];
         From = X_CONFIG;
-    }
-    else
+    } else  if (xf86ReturnOptValBool(GenericOptions,OPTION_VGA_CLOCKS,FALSE)) {
+        pScreenInfo->numClocks = 2;
+        pScreenInfo->clock[0] = 25175;
+        pScreenInfo->clock[1] = 28322;
+    } else
     {
         xf86GetClocks(pScreenInfo, 4, GenericClockSelect, GenericProtect,
             GenericBlankScreen, VGAHW_GET_IOBASE() + 0x0A, 0x08, 1, 28322);

@@ -386,7 +386,6 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	    if (p->type & M_T_BUILTIN) 
 		return xf86HandleBuiltinMode(scrp, p,modep, clockRanges,
 					     allowDiv2);
-
 	    /* Skip over previously rejected modes */
 	    if (p->status != MODE_OK) {
 		if (!found)
@@ -1128,6 +1127,17 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    scrp->monitor->hsync[0].lo = 28;
 	    scrp->monitor->hsync[0].hi = 33;
 	    scrp->monitor->nHsync = 1;
+	} else {
+	  for (i = 0; i < scrp->monitor->nHsync; i++)
+	    if (scrp->monitor->hsync[i].lo == scrp->monitor->hsync[i].hi)
+	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			 "%s: Using hsync value of %f kHz\n",
+			 scrp->monitor->hsync[i].lo);
+	    else
+	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			 "%s: Using hsync range of %f-%f kHz\n",
+			 scrp->monitor->hsync[i].lo,
+			 scrp->monitor->hsync[i].hi);
 	}
 	if (scrp->monitor->nVrefresh <= 0) {
 	    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
@@ -1136,6 +1146,17 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    scrp->monitor->vrefresh[0].lo = 43;
 	    scrp->monitor->vrefresh[0].hi = 72;
 	    scrp->monitor->nVrefresh = 1;
+	} else {
+	  for (i = 0; i < scrp->monitor->nVrefresh; i++)
+	    if (scrp->monitor->vrefresh[i].lo == scrp->monitor->vrefresh[i].hi)
+	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			 "%s: Using vrefresh value of %f Hz\n",
+			 scrp->monitor->vrefresh[i].lo);
+	    else
+	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			 "%s: Using vrefresh range of %f-%f Hz\n",
+			 scrp->monitor->vrefresh[i].lo,
+			 scrp->monitor->vrefresh[i].hi);
 	}
     }
 
@@ -1315,7 +1336,6 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    endp = &new->next;
 	}
     }
-
     /* Lookup each mode */
     for (p = scrp->modes; ; p = p->next) {
 	/*
@@ -1323,6 +1343,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	 * unconsidered modePool members until one survives validation.  This
 	 * is done in decreasing order by mode pixel area.
 	 */
+
 	if (p == NULL) {
 	    if (numModes > 0)
 		break;
@@ -1362,8 +1383,10 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    *endp = last = p;
 	    endp = &p->next;
 	}
+
     lookupNext:
 	status = xf86LookupMode(scrp, p, clockRanges, strategy);
+
 	if (status == MODE_ERROR) {
 	    ErrorF("xf86ValidateModes: "
 		   "unexpected result from xf86LookupMode()\n");
