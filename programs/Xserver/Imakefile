@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.296 2003/11/23 06:47:00 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.297 2004/01/12 21:43:19 herrb Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1225,8 +1225,9 @@ SHADOWDIR = miext/shadow
 ROOTLESSDIR = miext/rootless
 DARWINDDXDIR = hw/darwin
 DARWINDIRS = $(STDDIRS) $(FBDIR) $(SHADOWDIR) $(DARWINDDXDIR) $(DEPDIRS)
+DARWINOBJS = $(DARWINDDXDIR)/miinitext.o
 DARWINLIBS = PreFbLibs $(DARWINDDXDIR)/LibraryTargetName(darwin)
-DARWINEXTLIBS = MiExtLibs FbPostFbLibs
+DARWINEXTLIBS = MiExtLibs FbPostFbLibs $(DARWINDDXDIR)/LibraryTargetName(darwin)
 DARWINSYSLIBS = $(FONTLIBS) $(SYSLIBS) -framework IOKit
 IOKITLIB = $(DARWINDDXDIR)/iokit/LibraryTargetName(iokit)
 
@@ -1247,7 +1248,7 @@ AQUAEXTENSIONS = $(OTHEREXTS) $(RANDRLIB) $(RENDERLIB)
 #else
 #define AquaPostFbLibs $(AQUAEXTENSIONS) NoMfbBarePostFbLibs $(AQUAEXTENSIONS)
 #endif
-QUARTZEXTLIBS = MiExtLibs $(FB) AquaPostFbLibs
+QUARTZEXTLIBS = MiExtLibs $(FB) AquaPostFbLibs $(DARWINDDXDIR)/LibraryTargetName(darwin)
 
 QUARTZDIR = $(DARWINDDXDIR)/quartz
 QUARTZLIB = $(QUARTZDIR)/LibraryTargetName(XQuartz)
@@ -1267,7 +1268,7 @@ XDARWINAPPDIR = /Applications/XDarwin.app/Contents
 /*
  * Quartz X server (installed in its application bundle)
  */
-SetUIDServerTarget(XDarwinApp,$(DARWINDIRS),$(QUARTZOBJS), \
+SetUIDServerTarget(XDarwinApp,$(DARWINDIRS),$(DARWINOBJS), \
 	$(DARWINLIBS) $(QUARTZLIB) $(QUARTZEXTLIBS), \
 	$(DARWINSYSLIBS) $(QUARTZSYSLIBS) -u _miDCInitialize)
 
