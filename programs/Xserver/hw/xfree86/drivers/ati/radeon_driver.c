@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.120tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.121tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -5193,13 +5193,6 @@ static void RADEONRestorePalette(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 
     if (!restore->palette_valid) return;
 
-    PAL_SELECT(1);
-    OUTPAL_START(0);
-    for (i = 0; i < 256; i++) {
-	RADEONWaitForFifo(pScrn, 32); /* delay */
-	OUTPAL_NEXT_CARD32(restore->palette2[i]);
-    }
-
     PAL_SELECT(0);
     OUTPAL_START(0);
     for (i = 0; i < 256; i++) {
@@ -5207,6 +5200,27 @@ static void RADEONRestorePalette(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 	OUTPAL_NEXT_CARD32(restore->palette[i]);
     }
 }
+
+#if 1
+#define RADEONRestorePalette2(pScrn, restore)	/* Nullify */
+#else
+/* This causes hangs on some Radeon's.  Why? */
+static void RADEONRestorePalette2(ScrnInfoPtr pScrn, RADEONSavePtr restore)
+{
+    RADEONInfoPtr  info       = RADEONPTR(pScrn);
+    unsigned char *RADEONMMIO = info->MMIO;
+    int            i;
+
+    if (!restore->palette_valid) return;
+
+    PAL_SELECT(1);
+    OUTPAL_START(0);
+    for (i = 0; i < 256; i++) {
+	RADEONWaitForFifo(pScrn, 32); /* delay */
+	OUTPAL_NEXT_CARD32(restore->palette2[i]);
+    }
+}
+#endif
 
 /* Write out state to define a new video mode */
 static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
@@ -5217,6 +5231,7 @@ static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 
     /* For Non-dual head card, we don't have private field in the Entity */
     if (!info->HasCRTC2) {
+	RADEONRestorePalette(pScrn, restore);
 	RADEONRestoreCommonRegisters(pScrn, restore);
 	RADEONRestoreCrtcRegisters(pScrn, restore);
 	RADEONRestoreFPRegisters(pScrn, restore);
@@ -5236,6 +5251,7 @@ static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
      * we may get a blank screen.
      */
     if (info->IsSecondary) {
+	RADEONRestorePalette2(pScrn, restore);
 	if (!pRADEONEnt->RestorePrimary  && !info->IsSwitching)
 	    RADEONRestoreCommonRegisters(pScrn, restore);
 	RADEONRestoreCrtc2Registers(pScrn, restore);
@@ -5251,6 +5267,7 @@ static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 	    RADEONRestoreCrtcRegisters(pScrn, &restore0);
 	    RADEONRestoreFPRegisters(pScrn, &restore0);
 	    RADEONRestorePLLRegisters(pScrn, &restore0);
+	    RADEONRestorePalette(pScrn, restore);
 	    pRADEONEnt->IsSecondaryRestored = FALSE;
 	}
     } else {
@@ -5258,6 +5275,7 @@ static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 	    RADEONRestoreCommonRegisters(pScrn, restore);
 
 	if (info->Clone) {
+	    RADEONRestorePalette2(pScrn, restore);
 	    RADEONRestoreCrtc2Registers(pScrn, restore);
 	    RADEONRestorePLL2Registers(pScrn, restore);
 	}
@@ -5269,13 +5287,12 @@ static void RADEONRestoreMode(ScrnInfoPtr pScrn, RADEONSavePtr restore)
 	    RADEONRestoreCrtcRegisters(pScrn, restore);
 	    RADEONRestoreFPRegisters(pScrn, restore);
 	    RADEONRestorePLLRegisters(pScrn, restore);
+	    RADEONRestorePalette(pScrn, restore);
 	} else {
 	    memcpy(&restore0, restore, sizeof(restore0));
 	    pRADEONEnt->RestorePrimary = TRUE;
 	}
     }
-
-    RADEONRestorePalette(pScrn, &info->SavedReg);
 }
 
 /* Read common registers */
