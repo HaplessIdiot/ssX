@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.284 2005/01/28 16:56:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.285 2005/02/03 02:01:14 dawes Exp $ */
 
 
 /*
@@ -7002,6 +7002,10 @@ xf86ProcessConfiguration()
     int i;
 
     pConfig = ConfigHandleToConfigRead(DEFAULT_CONFIG);
+    if (!pConfig) {
+	xf86Msg(X_ERROR, "No configuration to process.\n");
+	return CONFIG_PARSE_ERROR;
+    }
 
     /*
      * Convert the information contained in the parser structures into our

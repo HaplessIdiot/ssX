@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.225 2005/01/26 18:22:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.226 2005/01/28 02:11:19 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -496,9 +496,11 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	}
     }
 
-    if (xf86ProcessConfiguration() != CONFIG_OK) {
-	xf86Msg(X_ERROR, "Error processing configuration data.\n");
-	return;
+    if (!xf86DoProbe && !xf86DoConfigure) {
+	if (xf86ProcessConfiguration() != CONFIG_OK) {
+	    xf86Msg(X_ERROR, "Error processing configuration data.\n");
+	    return;
+	}
     }
 
 #ifdef XFree86LOADER
