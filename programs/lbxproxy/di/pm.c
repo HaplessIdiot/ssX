@@ -21,7 +21,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.6 2001/08/01 00:45:00 tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -406,12 +406,8 @@ PMprocessMessages (iceConn, clientData, opcode, length,
 		 * Connect to this server and send a GetProxyAddrReply msg.
 		 */
 		if (!ConnectToServer (display_name)) {
-		    char msg [100];
-
-		    (void) sprintf (msg, 
-				    "could not connect to '%s'", 
-				    display_name);
-		    FatalError(msg);
+		    FatalError ("could not connect to '%s'", 
+				display_name);
 		}
 	    }
 	    else
