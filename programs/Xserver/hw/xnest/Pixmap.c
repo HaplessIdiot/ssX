@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Pixmap.c,v 3.3 2001/10/28 03:34:11 tsi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -38,7 +38,7 @@ PixmapPtr xnestCreatePixmap(pScreen, width, height, depth)
 {
   PixmapPtr pPixmap;
 
-  pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec) + sizeof(xnestPrivPixmap));
+  pPixmap = AllocatePixmap(pScreen, sizeof(xnestPrivPixmap));
   if (!pPixmap)
     return NullPixmap;
   pPixmap->drawable.type = DRAWABLE_PIXMAP;
@@ -54,7 +54,12 @@ PixmapPtr xnestCreatePixmap(pScreen, width, height, depth)
   pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
   pPixmap->refcnt = 1;
   pPixmap->devKind = PixmapBytePad(width, depth);
+#ifdef PIXPRIV
+  pPixmap->devPrivate.ptr = (pointer)((char *)pPixmap +
+				      pScreen->totalPixmapSize);
+#else
   pPixmap->devPrivate.ptr = (pointer)(pPixmap + 1);
+#endif
   if (width && height)
       xnestPixmapPriv(pPixmap)->pixmap = 
 	  XCreatePixmap(xnestDisplay, 
