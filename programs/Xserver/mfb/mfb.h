@@ -51,7 +51,7 @@ SOFTWARE.
 
 
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.2 1997/01/14 22:22:44 dawes Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -1275,3 +1275,13 @@ than a switch on the rop per item (span or rectangle.)
 #define MFB_EQWHOLEWORD_INVERT  ^=~0
 #define MFB_OP_WHITE    /* nothing */
 #define MFB_OP_BLACK    ~
+
+/*
+ * if MFB is built as a module, it shouldn't call libc functions.
+ * The following macros should wrap all calls in MFB
+ */
+#ifdef XFree86LOADER
+#define memmove(a,b,c)	xf86memmove(a,b,c)
+#define memcpy(a,b,c)	xf86memcpy(a,b,c)
+#define memset(a,b,c)	xf86memset(a,b,c)
+#endif
