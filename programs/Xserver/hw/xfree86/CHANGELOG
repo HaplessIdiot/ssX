@@ -253,6 +253,9 @@ XFree86 4.X.Ya (?? January 2001)
    2. Fix 64 bit DGA bug (Mark Vojkovich).
    1. Rewrite DRI back buffer handling to minimize the impact on 2D
       performance (Mark Vojkovich).
+   0. Fix incorrect driverName fields in the cyrix, i810 and sis drivers.
+      This was causing 'XFree86 -configure' to get the driver name wrong
+      (David Dawes).
 
 XFree86 4.0.2 (18 December 2000)
 1211. Fix a problem introduced recently when using the "ps/2" protocol for
@@ -12370,4 +12373,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1558 2001/02/06 19:27:01 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1559 2001/02/07 21:46:08 herrb Exp $
