@@ -26,7 +26,7 @@ Equipment Corporation.
 
 /* Massively rewritten by Mark Vojkovich <markv@valinux.com> */
 
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.27 2000/04/08 19:18:54 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.28 2001/01/17 22:13:15 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -627,7 +627,9 @@ int PanoramiXTranslateCoords(ClientPtr client)
 		 */
 		&& (!wBoundingShape(pWin) ||
 		    POINT_IN_REGION(pWin->drawable.pScreen, 
-					&pWin->borderSize, x, y, &box))
+					wBoundingShape(pWin), 
+					x - pWin->drawable.x, 
+					y - pWin->drawable.y, &box))
 #endif
 		)
             {
