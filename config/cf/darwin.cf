@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.46 2003/11/18 19:00:14 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.47 2004/01/01 17:15:14 herrb Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -154,6 +154,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #if OSMajorVersion >= 7
 # define CppCmd                 /usr/bin/cpp3
+# define StandardCppOptions     -traditional -D__GNUC__
 #else
 # define CppCmd                 /usr/bin/cpp
 #endif
@@ -237,6 +238,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef InstallXserverSetUID
 # define InstallXserverSetUID   NO
 #endif
+
+/* disable XKB by default as it can cause problems */
+#define DfltDisableXKB          YES
 
 /* no direct graphics extension */
 #define BuildXF86DGA            NO
