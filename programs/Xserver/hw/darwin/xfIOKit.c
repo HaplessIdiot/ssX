@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.4 2001/04/01 07:12:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.5 2001/04/02 05:39:36 torrey Exp $ */
 
 #define NDEBUG 1
 
@@ -325,6 +325,13 @@ static void SetupFBandHID(void)
     kr = IOFBGetPixelInformation( dfb.fbService, displayMode, displayDepth,
                                   kIOFBSystemAperture, &dfb.pixelInfo );
     kern_assert( kr );
+
+#ifdef __i386__
+    /* x86 in 8bit mode currently needs fixed color map... */
+    if( dfb.pixelInfo.bitsPerComponent == 8 ) {
+        dfb.pixelInfo.pixelType = kIOFixedCLUTPixels;
+    }
+#endif
 
 #ifdef OLD_POWERBOOK_G3
     if (dfb.pixelInfo.pixelType == kIOCLUTPixels)

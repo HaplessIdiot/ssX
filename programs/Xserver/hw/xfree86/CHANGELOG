@@ -1,4 +1,6 @@
 XFree86 4.0.99.3 (11 April 2001)
+ 375. Fix byte ordering and static colormap issues with XDarwin server
+      on x86 hardware (Rob Braun).
  374. Fix problems with XDarwin hardware cursor support in Quartz mode
       (Gregory Parker).
  373. Resync with DRI CVS trunk (VA Linux Systems).
@@ -12931,4 +12933,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1682 2001/04/10 16:07:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1683 2001/04/11 08:34:17 torrey Exp $

@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.17 2001/04/05 06:08:45 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.18 2001/04/11 08:34:18 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -29,6 +29,7 @@
 #include <IOKit/hidsystem/ev_keymap.h>
 
 #include "darwin.h"
+#include "darwinClut8.h"
 #include "bundle/quartz.h"
 #include "xfIOKit.h"
 
@@ -140,6 +141,7 @@ static Bool DarwinAddScreen(
 {
     int         bitsPerRGB, i;
     VisualPtr   visual;
+    ColormapPtr pmap;
 
     /* Communicate the information about our initialized screen back to X. */
     bitsPerRGB = dfb.pixelInfo.bitsPerComponent;
@@ -198,8 +200,7 @@ static Bool DarwinAddScreen(
         return FALSE;
     }
 
-    // set the RGB order correctly for TrueColor, it is byte swapped by X
-    // FIXME: make work on x86 darwin if it ever gets buildable
+    // set the RGB order correctly for TrueColor
     if (dfb.bitsPerPixel > 8) {
         for (i = 0, visual = pScreen->visuals;  // someday we may have more than 1
             i < pScreen->numVisuals; i++, visual++) {
@@ -242,6 +243,21 @@ static Bool DarwinAddScreen(
     // set pScreen->blackPixel / pScreen->white
     if (!miCreateDefColormap( pScreen )) {
         return FALSE;
+    }
+
+    /* Set the colormap to the statically defined one if we're in 8 bit
+     * mode and we're using a fixed color map.  Essentially this translates
+     * to Darwin/x86 in 8-bit mode.
+     */
+    if( (dfb.colorBitsPerPixel == 8) && 
+                (dfb.pixelInfo.pixelType == kIOFixedCLUTPixels) ) {
+        pmap = miInstalledMaps[pScreen->myNum];
+        visual = pmap->pVisual;
+        for( i = 0; i < visual->ColormapEntries; i++ ) {
+            pmap->red[i].co.local.red   = darwinClut8[i].red;
+            pmap->red[i].co.local.green = darwinClut8[i].green;
+            pmap->red[i].co.local.blue  = darwinClut8[i].blue;
+        }
     }
 
     return TRUE;
@@ -290,9 +306,11 @@ static int DarwinMouseProc(
         case DEVICE_INIT:
             pPointer->public.on = FALSE;
 
+            // Set button map. Darwin uses 2 for right and 3 for center.
+            // Reverse these to correspond to typical X usage.
             map[1] = 1;
-            map[2] = 2;
-            map[3] = 3;
+            map[2] = 3;
+            map[3] = 2;
             map[4] = 4;
             map[5] = 5;
             InitPointerDeviceStruct( (DevicePtr)pPointer,
@@ -503,8 +521,13 @@ void ProcessInputEvents(void)
                 (darwinPointer->public.processInputProc)
                     ( &xe, darwinPointer, 1 );
                 break;
-    
+
+#ifdef __i386__
+            // x86 drivers currently reverse mouse up and down
+            case NX_LMOUSEUP:
+#else
             case NX_LMOUSEDOWN:
+#endif
                 // Mimic multi-button mouse with Command and Option
                 if (darwinFakeButtons && 
                     ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
@@ -527,7 +550,11 @@ void ProcessInputEvents(void)
                 }
                 break;
     
+#ifdef __i386__
+            case NX_LMOUSEDOWN:
+#else
             case NX_LMOUSEUP:
+#endif
                 // Mimic multi-button mouse with Command and Option
                 if (darwinFakeButtons &&
                     ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
@@ -628,9 +655,15 @@ void ProcessInputEvents(void)
                         if (hwDelta & (1 << i)) {
                             xe.u.u.detail = i + 1;
                             if (hwButtons & (1 << i)) {
+#ifdef __i386__
+                                xe.u.u.type = ButtonRelease;
+                            } else {
+                                xe.u.u.type = ButtonPress;
+#else
                                 xe.u.u.type = ButtonPress;
                             } else {
                                 xe.u.u.type = ButtonRelease;
+#endif
                             }
                             (darwinPointer->public.processInputProc)
                                     ( &xe, darwinPointer, 1 );

@@ -177,6 +177,7 @@
 			children = (
 				018F40F3003E1916CE6F79C2,
 				021D6BA9003E1BACCE6F79C2,
+				3E74E03600863F047F000001,
 				018F40F6003E1974CE6F79C2,
 			);
 			isa = PBXGroup;
@@ -648,6 +649,11 @@
 		3576829A0077B8F17F000001 = {
 			isa = PBXFileReference;
 			path = quartzCursor.c;
+			refType = 4;
+		};
+		3E74E03600863F047F000001 = {
+			isa = PBXFileReference;
+			path = darwinClut8.h;
 			refType = 4;
 		};
 		43B962CE00617089416877C2 = {
