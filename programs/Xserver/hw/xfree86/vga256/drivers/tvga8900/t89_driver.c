@@ -1128,6 +1128,9 @@ TVGA8900Probe()
 static void TVGA8900DisplayPowerManagementSet(PowerManagementMode)
 int PowerManagementMode;
 {
+#ifdef Control
+#undef Control		/* stupid define in vt.h on LynxOS */
+#endif
 	unsigned char Control;
 	if (!xf86VTSema) return;
 	outb(0x3CE, 0x23); /* Read DPMS Control */

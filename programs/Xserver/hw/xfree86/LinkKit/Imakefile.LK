@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile.LK /main/11 1996/10/25 21:18:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.38 1997/01/12 10:41:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.39 1997/01/25 04:16:28 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -86,7 +86,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.38 1997/
             DIX = lib/LibraryTargetName(dix)
              MI = lib/LibraryTargetName(mi)
         XPSTUBS = lib/LibraryTargetName(xpstubs)
+#ifndef HasGzipLibrary
            ZLIB = lib/LibraryTargetName(z)
+#else
+           ZLIB = GzipLibrary
+#endif
            FONT = lib/LibraryTargetName(font)
         XAALIBS = lib/LibraryTargetName(xaa)
         XAAOBJS = lib/xaavga256.o lib/xaa16.o lib/xaa24.o lib/xaa32.o

@@ -1,4 +1,6 @@
 XFree86 3.2Ac (12 February 1997)
+ 430. Fix problem with system #define Control on LynxOS (Thomas Mueller).
+ 429. FreeBSD 2.2 doesn't need libz (Takaaki Nomura).
  428. Another attempt at left edge clipping for HiQV chips (still disabled 
       by default) (David Bateman).
  427. DPMS in C&T is now enabled even when no monitor is detect (David Bateman).
@@ -33,7 +35,7 @@ XFree86 3.2Ab (11 February 1997)
  403. DPMS support for the Trident driver (Alan Hourihane).
  402. 24/32bpp support for Trident chipsets (Alan Hourihane).
  401. Trident support for the Alpha platform (Alan Hourihane).
- 400. Add DPMS to W32/ET6000 driver of the SVGA server (Harald Nordgerd Hansen).
+ 400. Add DPMS to et4000 driver of the SVGA server (Harald Nordgerd Hansen).
  399. Fixes and addition to the acceleration for W32 and ET6000 (Koen Gadeyne).
  398. Chrontel RAMDAC support for W32 in SVGA server (Kurt Olsen).
  397. Hardware Linedraw support for ET6000 and ET4000W32p (Koen Gadeyne).
