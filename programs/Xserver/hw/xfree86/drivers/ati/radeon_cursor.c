@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.18 2002/12/16 16:19:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.19 2003/01/17 19:54:03 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -51,24 +51,6 @@
 
 				/* X and server generic header files */
 #include "xf86.h"
-
-#if X_BYTE_ORDER == X_BIG_ENDIAN
-#define P_SWAP32(a, b)							\
-do {									\
-    ((char *)a)[0] = ((char *)b)[3];					\
-    ((char *)a)[1] = ((char *)b)[2];					\
-    ((char *)a)[2] = ((char *)b)[1];					\
-    ((char *)a)[3] = ((char *)b)[0];					\
-} while (0)
-
-#define P_SWAP16(a, b)							\
-do {									\
-    ((char *)a)[0] = ((char *)b)[1];					\
-    ((char *)a)[1] = ((char *)b)[0];					\
-    ((char *)a)[2] = ((char *)b)[3];					\
-    ((char *)a)[3] = ((char *)b)[2];					\
-} while (0)
-#endif
 
 
 /* Set cursor foreground and background colors */
@@ -215,6 +197,12 @@ static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
     int            y;
     CARD32         save1      = 0;
     CARD32         save2      = 0;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    CARD32         surface_cntl = INREG(RADEON_SURFACE_CNTL);
+
+    OUTREG(RADEON_SURFACE_CNTL, surface_cntl & ~(RADEON_NONSURF_AP0_SWP_16BPP
+						 | RADEON_NONSURF_AP0_SWP_32BPP));
+#endif
 
     if (!info->IsSecondary) {
 	save1 = INREG(RADEON_CRTC_GEN_CNTL);
@@ -241,49 +229,13 @@ static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 #ifdef ARGB_CURSOR
     info->cursor_argb = FALSE;
 #endif
-#if X_BYTE_ORDER == X_BIG_ENDIAN
-    switch(info->CurrentLayout.pixel_bytes) {
-    case 4:
-    case 3:
-	for (y = 0; y < 64; y++) {
-	    P_SWAP32(d,s);
-	    d++; s++;
-	    P_SWAP32(d,s);
-	    d++; s++;
-	    P_SWAP32(d,s);
-	    d++; s++;
-	    P_SWAP32(d,s);
-	    d++; s++;
-	}
-	break;
-    case 2:
-	for (y = 0; y < 64; y++) {
-	    P_SWAP16(d,s);
-	    d++; s++;
-	    P_SWAP16(d,s);
-	    d++; s++;
-	    P_SWAP16(d,s);
-	    d++; s++;
-	    P_SWAP16(d,s);
-	    d++; s++;
-	}
-	break;
-    default:
-	for (y = 0; y < 64; y++) {
-	    *d++ = *s++;
-	    *d++ = *s++;
-	    *d++ = *s++;
-	    *d++ = *s++;
-	}
-    }
-#else
+
     for (y = 0; y < 64; y++) {
 	*d++ = *s++;
 	*d++ = *s++;
 	*d++ = *s++;
 	*d++ = *s++;
     }
-#endif
 
     /* Set the area after the cursor to be all transparent so that we
        won't display corrupted cursors on the screen */
@@ -299,6 +251,11 @@ static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
 
     if (info->IsSecondary || info->Clone)
 	OUTREG(RADEON_CRTC2_GEN_CNTL, save2);
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    /* restore byte swapping */
+    OUTREG(RADEON_SURFACE_CNTL, surface_cntl);
+#endif
 }
 
 /* Hide hardware cursor. */
@@ -362,6 +319,12 @@ static void RADEONLoadCursorARGB (ScrnInfoPtr pScrn, CursorPtr pCurs)
     CARD32         save2      = 0;
     CARD32	  *image = pCurs->bits->argb;
     CARD32	  *i;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    CARD32         surface_cntl = INREG(RADEON_SURFACE_CNTL);
+
+    OUTREG(RADEON_SURFACE_CNTL, (surface_cntl | RADEON_NONSURF_AP0_SWP_32BPP)
+				& ~RADEON_NONSURF_AP0_SWP_16BPP	);
+#endif
 
     if (!image)
 	return;	/* XXX can't happen */
@@ -421,6 +384,11 @@ static void RADEONLoadCursorARGB (ScrnInfoPtr pScrn, CursorPtr pCurs)
 
     if (info->IsSecondary || info->Clone)
 	OUTREG(RADEON_CRTC2_GEN_CNTL, save2);
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    /* restore byte swapping */
+    OUTREG(RADEON_SURFACE_CNTL, surface_cntl);
+#endif
 }
 
 #endif

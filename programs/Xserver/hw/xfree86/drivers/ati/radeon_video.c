@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.21 2002/12/16 16:19:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.22 2003/01/17 19:54:03 martin Exp $ */
 
 #include "radeon.h"
 #include "radeon_macros.h"
@@ -1141,6 +1141,13 @@ RADEONPutImage(
    int top, left, npixels, nlines, bpp;
    BoxRec dstBox;
    CARD32 tmp;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+   unsigned char *RADEONMMIO = info->MMIO;
+   CARD32 surface_cntl = INREG(RADEON_SURFACE_CNTL);
+
+   OUTREG(RADEON_SURFACE_CNTL, (surface_cntl | 
+		RADEON_NONSURF_AP0_SWP_32BPP) & ~RADEON_NONSURF_AP0_SWP_16BPP);
+#endif
 
    /*
     * s2offset, s3offset - byte offsets into U and V plane of the
@@ -1235,24 +1242,13 @@ RADEONPutImage(
 	   s3offset = tmp;
 	}
 	nlines = ((((yb + 0xffff) >> 16) + 1) & ~1) - top;
-	{
-
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-       unsigned char *RADEONMMIO = info->MMIO;
-	CARD32 surface_cntl;
-
-	surface_cntl = INREG(RADEON_SURFACE_CNTL);
-	OUTREG(RADEON_SURFACE_CNTL, (surface_cntl | 
-		RADEON_NONSURF_AP0_SWP_32BPP) & ~RADEON_NONSURF_AP0_SWP_16BPP);
+	OUTREG(RADEON_SURFACE_CNTL, (surface_cntl | RADEON_NONSURF_AP0_SWP_32BPP)
+				    & ~RADEON_NONSURF_AP0_SWP_16BPP);
 #endif
 	RADEONCopyMungedData(buf + (top * srcPitch) + left, buf + s2offset,
-			   buf + s3offset, dst_start, srcPitch, srcPitch2,
-			   dstPitch, nlines, npixels);
-#if X_BYTE_ORDER == X_BIG_ENDIAN
-	/* restore byte swapping */
-	OUTREG(RADEON_SURFACE_CNTL, surface_cntl);
-#endif
-	}
+			     buf + s3offset, dst_start, srcPitch, srcPitch2,
+			     dstPitch, nlines, npixels);
 	break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:
@@ -1261,10 +1257,18 @@ RADEONPutImage(
 	buf += (top * srcPitch) + left;
 	nlines = ((yb + 0xffff) >> 16) - top;
 	dst_start += left;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	OUTREG(RADEON_SURFACE_CNTL, surface_cntl & ~(RADEON_NONSURF_AP0_SWP_32BPP
+						   | RADEON_NONSURF_AP0_SWP_16BPP));
+#endif
 	RADEONCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
 	break;
     }
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    /* restore byte swapping */
+    OUTREG(RADEON_SURFACE_CNTL, surface_cntl);
+#endif
 
     /* update cliplist */
     if(!RegionsEqual(&pPriv->clip, clipBoxes)) 

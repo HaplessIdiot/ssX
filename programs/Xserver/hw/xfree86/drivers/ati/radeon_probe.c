@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.21 2003/01/16 16:09:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.22 2003/01/17 19:54:03 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -103,11 +103,11 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_R300_AD, "ATI Radeon 9500 AD (AGP)" },
     { PCI_CHIP_R300_AE, "ATI Radeon 9500 AE (AGP)" },
     { PCI_CHIP_R300_AF, "ATI Radeon 9500 AF (AGP)" },
-    { PCI_CHIP_R300_AG, "ATI Radeon 9500 AG (AGP)" },
+    { PCI_CHIP_R300_AG, "ATI FireGL Z1/X1 AG (AGP)" },
     { PCI_CHIP_R300_ND, "ATI Radeon 9700 Pro ND (AGP)" },
-    { PCI_CHIP_R300_NE, "ATI Radeon 9500 Pro NE (AGP)" },
+    { PCI_CHIP_R300_NE, "ATI Radeon 9700/9500Pro NE (AGP)" },
     { PCI_CHIP_R300_NF, "ATI Radeon 9700 NF (AGP)" },
-    { PCI_CHIP_R300_NG, "ATI Radeon 9700 NG (AGP)" },
+    { PCI_CHIP_R300_NG, "ATI FireGL X1 NG (AGP)" },
     { -1,                 NULL }
 };
 

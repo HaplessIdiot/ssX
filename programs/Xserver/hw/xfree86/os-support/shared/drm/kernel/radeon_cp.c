@@ -36,11 +36,6 @@
 
 #define RADEON_FIFO_DEBUG	0
 
-#if defined(__alpha__) || defined(__powerpc__)
-# define PCIGART_ENABLED
-#else
-# undef PCIGART_ENABLED
-#endif
 
 
 /* CP microcode (from ATI) */
@@ -989,17 +984,6 @@ static int radeon_do_init_cp( drm_device_t *dev, drm_radeon_init_t *init )
 	memset( dev_priv, 0, sizeof(drm_radeon_private_t) );
 
 	dev_priv->is_pci = init->is_pci;
-
-#if !defined(PCIGART_ENABLED)
-	/* PCI support is not 100% working, so we disable it here.
-	 */
-	if ( dev_priv->is_pci ) {
-		DRM_ERROR( "PCI GART not yet supported for Radeon!\n" );
-		dev->dev_private = (void *)dev_priv;
-		radeon_do_cleanup_cp(dev);
-		return DRM_ERR(EINVAL);
-	}
-#endif
 
 	if ( dev_priv->is_pci && !dev->sg ) {
 		DRM_ERROR( "PCI GART memory not allocated!\n" );

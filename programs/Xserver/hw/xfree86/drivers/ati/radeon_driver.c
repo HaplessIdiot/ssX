@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.81tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.82 2003/01/29 15:17:34 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -52,7 +52,7 @@
  * This server does not yet support these XFree86 4.0 features:
  * !!!! FIXME !!!!
  *   DDC1 & DDC2
- *   shadowfb (Note: dri uses shadow for another purpose in radeon_dri.c)
+ *   shadowfb (Note: dri uses shadowfb for another purpose in radeon_dri.c)
  *   overlay planes
  *
  * Modified by Marc Aurele La France (tsi@xfree86.org) for ATI driver merge.
@@ -322,9 +322,8 @@ static const char *driSymbols[] = {
     NULL
 };
 
-static const char *driShadowSymbols[] = {
-    "shadowAdd",
-    "shadowSetup",
+static const char *driShadowFBSymbols[] = {
+    "ShadowFBInit2",
     NULL
 };
 #endif
@@ -368,7 +367,7 @@ void RADEONLoaderRefSymLists(void)
 #ifdef XF86DRI
 			  drmSymbols,
 			  driSymbols,
-			  driShadowSymbols,
+			  driShadowFBSymbols,
 #endif
 			  fbdevHWSymbols,
 			  vbeSymbols,
@@ -3082,25 +3081,22 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 					      OPTION_NO_BACKBUFFER, 
 					      FALSE);
 
-    if (!xf86LoadSubModule(pScrn, "shadow")) {
+    if (info->noBackBuffer) {
+	info->allowPageFlip = 0;
+    } else if (!xf86LoadSubModule(pScrn, "shadowfb")) {
 	info->allowPageFlip = 0;
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Couldn't load shadowfb module: disabling page flipping\n");
-    } else if (info->noBackBuffer) {
-	info->allowPageFlip = 0;
+		   "Couldn't load shadowfb module:\n");
     } else {
-	xf86LoaderReqSymLists(driShadowSymbols, NULL);
+	xf86LoaderReqSymLists(driShadowFBSymbols, NULL);
 
-	if ((info->allowPageFlip = xf86ReturnOptValBool(info->Options,
-							OPTION_PAGE_FLIP,
-							FALSE))) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		       "Page flipping enabled\n");
-	} else {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		       "Disabling page flipping\n");
-	}
+	info->allowPageFlip = xf86ReturnOptValBool(info->Options,
+						   OPTION_PAGE_FLIP,
+						   FALSE);
     }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Page flipping %sabled\n",
+	       info->allowPageFlip ? "en" : "dis");
 
     return TRUE;
 }
@@ -3122,9 +3118,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
 {
     RADEONInfoPtr     info;
     xf86Int10InfoPtr  pInt10 = NULL;
-#if 1 /* def __alpha__ */
     void *int10_save = NULL;
-#endif
     
     RADEONTRACE(("RADEONPreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;
@@ -5103,6 +5097,11 @@ static Bool RADEONInitCrtc2Registers(ScrnInfoPtr pScrn, RADEONSavePtr save,
 				     RADEON_FP2_PANEL_FORMAT |
 				     RADEON_FP2_ON);
 
+	if (pScrn->rgbBits == 8) 
+	    save->fp2_gen_cntl |= RADEON_FP2_PANEL_FORMAT; /* 24 bit format */
+	else
+	    save->fp2_gen_cntl &= ~RADEON_FP2_PANEL_FORMAT;/* 18 bit format */
+
 	/* FIXME: When there are two DFPs, the 2nd DFP is driven by the
 	 *        external TMDS transmitter.  It may have a problem at
 	 *        high dot clock for certain panels.  Since we don't
@@ -5208,10 +5207,10 @@ static void RADEONInitFPRegisters(ScrnInfoPtr pScrn, RADEONSavePtr orig,
     save->fp_gen_cntl |= (RADEON_FP_CRTC_DONT_SHADOW_VPAR |
 			  RADEON_FP_CRTC_DONT_SHADOW_HEND );
 
-    if (pScrn->rgbBits == 8)
-	save->fp2_gen_cntl |=  RADEON_FP2_PANEL_FORMAT; /* 24 bit format */
+    if (pScrn->rgbBits == 8) 
+        save->fp_gen_cntl |= RADEON_FP_PANEL_FORMAT;  /* 24 bit format */
     else
-	save->fp2_gen_cntl &= ~RADEON_FP2_PANEL_FORMAT; /* 18 bit format */
+        save->fp_gen_cntl &= ~RADEON_FP_PANEL_FORMAT;/* 18 bit format */
 
     save->lvds_gen_cntl = orig->lvds_gen_cntl;
     save->lvds_pll_cntl = orig->lvds_pll_cntl;

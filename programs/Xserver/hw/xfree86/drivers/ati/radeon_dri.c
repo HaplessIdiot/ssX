@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.24 2002/12/17 03:16:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.25 2003/01/15 04:44:35 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -49,18 +49,12 @@
 #include "xf86PciInfo.h"
 
 
-#include "shadow.h"
+#include "shadowfb.h"
 				/* GLX/DRI/DRM definitions */
 #define _XF86DRI_SERVER_
 #include "GL/glxtokens.h"
 #include "sarea.h"
 #include "radeon_sarea.h"
-
-#if defined(__alpha__) || defined(__powerpc__)
-# define PCIGART_ENABLED
-#else
-# undef PCIGART_ENABLED
-#endif
 
 /* HACK - for now, put this here... */
 /* Alpha - this may need to be a variable to handle UP1x00 vs TITAN */
@@ -80,7 +74,7 @@ static void RADEONDRITransitionTo3d(ScreenPtr pScreen);
 static void RADEONDRITransitionMultiToSingle3d(ScreenPtr pScreen);
 static void RADEONDRITransitionSingleToMulti3d(ScreenPtr pScreen);
 
-static void RADEONDRIShadowUpdate(ScreenPtr pScreen, shadowBufPtr pBuf);
+static void RADEONDRIRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 
 /* Initialize the visual configs that are supported by the hardware.
  * These are combined with the visual configs that the indirect
@@ -885,7 +879,6 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
     return TRUE;
 }
 
-#if defined(PCIGART_ENABLED)
 /* Initialize the PCIGART state.  Request memory for use in PCI space,
  * and initialize the Radeon registers to point to that memory.
  */
@@ -989,7 +982,6 @@ static Bool RADEONDRIPciInit(RADEONInfoPtr info, ScreenPtr pScreen)
 
     return TRUE;
 }
-#endif
 
 /* Add a map for the MMIO registers that will be accessed by any
  * DRI-based clients.
@@ -1094,15 +1086,11 @@ static Bool RADEONDRIBufInit(RADEONInfoPtr info, ScreenPtr pScreen)
 {
 				/* Initialize vertex buffers */
     if (info->IsPCI) {
-#if !defined(PCIGART_ENABLED)
-	return TRUE;
-#else
 	info->bufNumBufs = drmAddBufs(info->drmFD,
 				      info->bufMapSize / RADEON_BUFFER_SIZE,
 				      RADEON_BUFFER_SIZE,
 				      DRM_SG_BUFFER,
 				      info->bufStart);
-#endif
     } else {
 	info->bufNumBufs = drmAddBufs(info->drmFD,
 				      info->bufMapSize / RADEON_BUFFER_SIZE,
@@ -1417,30 +1405,21 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 	drmFreeVersion(version);
     }
 
-#if !defined(PCIGART_ENABLED)
 				/* Initialize AGP */
     if (!info->IsPCI && !RADEONDRIAgpInit(info, pScreen)) {
-	RADEONDRICloseScreen(pScreen);
-	return FALSE;
-    }
-
-				/* Initialize PCI */
-    if (info->IsPCI) {
-	xf86DrvMsg(pScreen->myNum, X_ERROR, "[dri] PCI cards not yet "
-		   "supported.  Disabling DRI.\n");
-	RADEONDRICloseScreen(pScreen);
-	return FALSE;
-    }
-#else
-				/* Initialize AGP */
-    if (!info->IsPCI && !RADEONDRIAgpInit(info, pScreen)) {
+#if defined(__alpha__) || defined(__powerpc__)
 	info->IsPCI = TRUE;
 	xf86DrvMsg(pScreen->myNum, X_WARNING,
 		   "[agp] AGP failed to initialize "
 		   "-- falling back to PCI mode.\n");
 	xf86DrvMsg(pScreen->myNum, X_WARNING,
-		   "[agp] Make sure you have the agpgart kernel module "
-		   "loaded.\n");
+		   "[agp] If this is an AGP card, you may want to make sure "
+		   "the agpgart\nkernel module is loaded before the radeon "
+		   "kernel module.\n");
+#else
+	RADEONDRICloseScreen(pScreen);
+	return FALSE;
+#endif
     }
 
 				/* Initialize PCI */
@@ -1448,7 +1427,6 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 	RADEONDRICloseScreen(pScreen);
 	return FALSE;
     }
-#endif
 
 				/* DRIScreenInit doesn't add all the
 				 * common mappings.  Add additional
@@ -1570,10 +1548,9 @@ Bool RADEONDRIFinishScreenInit(ScreenPtr pScreen)
     pRADEONDRI->perctx_sarea_size = info->perctx_sarea_size;
 #endif
 
-    /* Have shadow run only while there is 3d active */
+    /* Have shadowfb run only while there is 3d active. */
     if (info->allowPageFlip /* && info->drmMinor >= 3 */) {
-	shadowSetup (pScreen);
-	shadowAdd( pScreen, 0, RADEONDRIShadowUpdate, 0, 0, 0 );
+	ShadowFBInit2( pScreen, NULL, RADEONDRIRefreshArea, FALSE );
     } else {
        info->allowPageFlip = 0;
     }
@@ -1699,11 +1676,11 @@ static Bool RADEONDRICloseFullScreen(ScreenPtr pScreen)
  */
 
 
-/* Use the miext/shadow module to maintain a list of dirty rectangles.
+/* Use the shadowfb module to maintain a list of dirty rectangles.
  * These are blitted to the back buffer to keep both buffers clean
  * during page-flipping when the 3d application isn't fullscreen.
  *
- * Unlike most use of the shadow code, both buffers are in video memory.
+ * Unlike most use of the shadowfb code, both buffers are in video memory.
  *
  * An alternative to this would be to organize for all on-screen drawing
  * operations to be duplicated for the two buffers.  That might be
@@ -1711,18 +1688,11 @@ static Bool RADEONDRICloseFullScreen(ScreenPtr pScreen)
  */
 
 
-/* This should be done *before* XAA syncs or fires its buffer.
- * Otherwise will have to fire it again???
- */
-static void RADEONDRIShadowUpdate(ScreenPtr pScreen, shadowBufPtr pBuf)
+static void RADEONDRIRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
-    ScrnInfoPtr         pScrn      = xf86Screens[pScreen->myNum];
     RADEONInfoPtr       info       = RADEONPTR(pScrn);
-    RegionPtr           damage     = &pBuf->damage;
     int                 i;
-    int                 num        = REGION_NUM_RECTS(damage);
-    BoxPtr              pbox       = REGION_RECTS(damage);
-    RADEONSAREAPrivPtr  pSAREAPriv = DRIGetSAREAPrivate(pScreen);
+    RADEONSAREAPrivPtr  pSAREAPriv = DRIGetSAREAPrivate(pScrn->pScreen);
 
     /* Don't want to do this when no 3d is active and pages are
      * right-way-round
@@ -1735,13 +1705,16 @@ static void RADEONDRIShadowUpdate(ScreenPtr pScreen, shadowBufPtr pBuf)
 					       (CARD32)(-1), -1);
 
     for (i = 0 ; i < num ; i++, pbox++) {
-	(*info->accel->SubsequentScreenToScreenCopy)(pScrn,
-						     pbox->x1,
-						     pbox->y1,
-						     pbox->x1 + info->backX,
-						     pbox->y1 + info->backY,
-						     pbox->x2 - pbox->x1 + 1,
-						     pbox->y2 - pbox->y1 + 1);
+	int x1 = max(pbox->x1, 0), x2 = min(pbox->x2, pScrn->virtualX-1);
+	int y1 = max(pbox->y1, 0), y2 = min(pbox->y2, pScrn->virtualY-1);
+
+	if (x1 <= x2 && y1 <= y2) {
+	    (*info->accel->SubsequentScreenToScreenCopy)(pScrn, x1, y1,
+							 x1 + info->backX,
+							 y1 + info->backY,
+							 x2 - x1 + 1,
+							 y2 - y1 + 1);
+	}
     }
 }
 
@@ -1771,6 +1744,10 @@ static void RADEONEnablePageFlip(ScreenPtr pScreen)
 
 static void RADEONDisablePageFlip(ScreenPtr pScreen)
 {
+    /* Tell the clients not to pageflip.  How?
+     *   -- Field in sarea, plus bumping the window counters.
+     *   -- DRM needs to cope with Front-to-Back swapbuffers.
+     */
     RADEONSAREAPrivPtr  pSAREAPriv = DRIGetSAREAPrivate(pScreen);
 
     pSAREAPriv->pfAllowPageFlip = 0;
@@ -1778,10 +1755,6 @@ static void RADEONDisablePageFlip(ScreenPtr pScreen)
 
 static void RADEONDRITransitionSingleToMulti3d(ScreenPtr pScreen)
 {
-    /* Tell the clients not to pageflip.  How?
-     *   -- Field in sarea, plus bumping the window counters.
-     *   -- DRM needs to cope with Front-to-Back swapbuffers.
-     */
     RADEONDisablePageFlip(pScreen);
 }
 
