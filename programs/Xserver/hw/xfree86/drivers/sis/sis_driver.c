@@ -2506,10 +2506,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		         }
 		         if(sisfbversion >= 0x01050A) {
 		            /* We can trust the pdc value if sisfb is of recent version */
-		            pSiS->donttrustpdc = FALSE;
+		            if(pSiS->VGAEngine == SIS_300_VGA) pSiS->donttrustpdc = FALSE;
 		            if(sisfbversion >= 0x01050B) {
-		               /* As of 1.5.11, sisfb saved the register for us */
-		      	       pSiS->sisfbpdc = mysisfbinfo.sisfb_lcdpdc;
+			       if(pSiS->VGAEngine == SIS_300_VGA) {
+		                  /* As of 1.5.11, sisfb saved the register for us (300 series) */
+		      	          pSiS->sisfbpdc = mysisfbinfo.sisfb_lcdpdc;
+			       }
 		            }
 		            if(sisfbversion >= 0x01050E) {
 		               if(pSiS->VGAEngine == SIS_315_VGA) {
@@ -2518,6 +2520,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			       if(sisfbversion >= 0x01060D) {
 			          pSiS->sisfbscalelcd = mysisfbinfo.sisfb_scalelcd;
 				  pSiS->sisfbspecialtiming = mysisfbinfo.sisfb_specialtiming;
+			       }
+			       if(sisfbversion >= 0x010610) {
+			          if(pSiS->VGAEngine == SIS_315_VGA) {
+				     pSiS->donttrustpdc = FALSE;
+				     pSiS->sisfbpdc = mysisfbinfo.sisfb_lcdpdc;
+				  }
 			       }
 		            }
 		         }
@@ -3949,7 +3957,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     pSiS->sishw_ext.pdc = 0;
 
     if(pSiS->VGAEngine == SIS_300_VGA) {
-
         if(pSiS->VBFlags & (VB_LVDS | VB_30xBDH)) {
 	   /* Save the current PDC if the panel is used at the moment.
 	    * This seems by far the safest way to find out about it.
@@ -3960,19 +3967,19 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	   if(pSiS->sisfbpdc) {
 	      pSiS->sishw_ext.pdc = pSiS->sisfbpdc;
 	   } else {
-	     if(!(pSiS->donttrustpdc)) {
-	       unsigned char tmp;
-	       inSISIDXREG(SISCR, 0x30, tmp);
-	       if(tmp & 0x20) {
-	         inSISIDXREG(SISPART1, 0x13, pSiS->sishw_ext.pdc);
-               } else {
+	      if(!(pSiS->donttrustpdc)) {
+	         unsigned char tmp;
+	         inSISIDXREG(SISCR, 0x30, tmp);
+	         if(tmp & 0x20) {
+	            inSISIDXREG(SISPART1, 0x13, pSiS->sishw_ext.pdc);
+                 } else {
+	           xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	       	       "Unable to detect LCD PanelDelayCompensation, LCD is not active\n");
+	         }
+	      } else {
 	         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	       	     "Unable to detect LCD PanelDelayCompensation, LCD is not active\n");
-	       }
-	     } else {
-	       xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	       	  "Unable to detect LCD PanelDelayCompensation, please update sisfb\n");
-	     }
+	       	     "Unable to detect LCD PanelDelayCompensation, please update sisfb\n");
+	      }
 	   }
 	   pSiS->sishw_ext.pdc &= 0x3c;
 	   if(pSiS->sishw_ext.pdc) {
@@ -4032,6 +4039,36 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	            "Using LCD Panel Delay Compensation %d\n", pSiS->PDC);
 	    }
 	}
+    }
+
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       if(pSiS->VBFlags & (VB_301LV | VB_302LV)) {
+	  /* Save the current PDC if the panel is used at the moment.
+	   * This seems by far the safest way to find out about it.
+	   */
+	  if(pSiS->sisfbpdc) {
+	     pSiS->sishw_ext.pdc = pSiS->sisfbpdc;
+	  } else {
+	     if(!(pSiS->donttrustpdc)) {
+	        unsigned char tmp;
+	        inSISIDXREG(SISCR, 0x30, tmp);
+	        if(tmp & 0x20) {
+	           inSISIDXREG(SISPART1, 0x2D, pSiS->sishw_ext.pdc);
+                } else {
+	           xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	      	       "Unable to detect LCD PanelDelayCompensation, LCD is not active\n");
+	        }
+	     } else {
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	      	    "Unable to detect LCD PanelDelayCompensation, please update sisfb\n");
+	     }
+	  }
+	  if(pSiS->sishw_ext.pdc) {
+	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	      	  "Detected LCD PanelDelayCompensation %d\n",
+		  pSiS->sishw_ext.pdc);
+	  }
+       }
     }
 
 #ifdef SISDUALHEAD

@@ -649,7 +649,7 @@ SiS_SetGroup1(SiS_Private *SiS_Pr,USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeNo,
 		}
 		if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCD) {
 		   if(HwDeviceExtension->pdc) {
-			temp = HwDeviceExtension->pdc & 0x3c;
+		      temp = HwDeviceExtension->pdc & 0x3c;
 		   }
 		}
 	   }
@@ -694,6 +694,14 @@ SiS_SetGroup1(SiS_Private *SiS_Pr,USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeNo,
 		   }
 		} else {  /* LV (550/301LV checks ROM byte, other LV BIOSes do not) */
 		   tempbl = 0xF0;
+		}
+		if(SiS_Pr->SiS_VBInfo & (SetCRT2ToLCD|SetCRT2ToLCDA)) {
+		   if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
+		      if(HwDeviceExtension->pdc) {
+		         temp = HwDeviceExtension->pdc;
+		         tempbl = 0;
+		      }
+		   }
 		}
 	   } else {
 	        if(HwDeviceExtension->jChipType == SIS_740) {
@@ -11409,6 +11417,8 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
      BOOLEAN gotitfrompci = FALSE;
 
      if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_PanelCustom) return;
+
+     if(HwDeviceExtension->pdc) return;
 
      /* This is a piece of typical SiS crap: They code the OEM LCD
       * delay into the code, at none defined place in the BIOS.
