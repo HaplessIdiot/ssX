@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.39 2002/01/23 18:48:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.40 2002/01/29 18:04:30 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -896,6 +896,9 @@ FBDevWindowLinear(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     FBDevPtr fPtr = FBDEVPTR(pScrn);
+
+    if (!pScrn->vtSema)
+      return NULL;
 
     if (fPtr->lineLength)
       *size = fPtr->lineLength;
