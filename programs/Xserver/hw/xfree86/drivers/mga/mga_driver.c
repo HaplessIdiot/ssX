@@ -1,4 +1,4 @@
-/* $XConsortium: mgadriver.c /main/12 1996/10/28 05:13:26 kaleb $ */
+/* $XConsortium: mga_driver.c /main/12 1996/10/28 05:13:26 kaleb $ */
 /*
  * MGA Millennium (MGA2064W) with Ti3026 RAMDAC driver v.1.1
  *
@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mgadriver.c,v 1.1 1997/03/06 23:16:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mgadriver.c,v 1.2 1997/03/10 10:12:05 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -65,8 +65,8 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-#include "mgabios.h"
-#include "mgareg.h"
+#include "mga_bios.h"
+#include "mga_reg.h"
 #include "mga.h"
 
 /* Uncomment the next line to force a 60 MHz MCLK - AT YOUR OWN RISK! */
@@ -1311,7 +1311,7 @@ MGAFbInit()
 		 * now call the new acc interface
 		 */
 		MGAusefbitblt = !(MGABios.FeatFlag & 0x00000001);
-		MGAAccelInit();
+		MGAStormAccelInit();
 	}
 }
 
@@ -1524,7 +1524,7 @@ vgaMGAPtr restore;
 #endif		 
 
 	MGAWaitForBlitter();
-	MGAEngineInit();
+	MGAStormEngineInit();
 
 	vgaProtect(FALSE);
 }

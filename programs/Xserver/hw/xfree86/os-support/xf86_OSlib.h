@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.37 1997/02/23 09:25:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.38 1997/02/23 10:00:30 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -53,7 +53,12 @@
 /**************************************************************************/
 #if defined(SYSV) || defined(SVR4)
 # ifdef SCO325
-#  define _SVID3
+#  ifndef _SVID3
+#   define _SVID3
+#  endif
+#  ifndef _NO_STATIC
+#   define _NO_STATIC
+#  endif
 # endif
 # if defined(sun) && defined(i386) && defined(SVR4)
 #  /* Fix for Solaris ANSI compilation */

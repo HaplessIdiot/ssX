@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSrc.c,v 1.6 94/04/17 20:12:25 kaleb Exp $ */
+/* $XConsortium: MultiSrc.c,v 1.8 95/01/24 22:29:08 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -62,9 +62,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h>
 #include <X11/Xfuncs.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/MultiSrcP.h>
@@ -73,6 +70,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/CharSet.h>
 #include "XawI18n.h"
 #include <X11/Xos.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <errno.h>
 
 /****************************************************************
  *
@@ -125,10 +125,6 @@ static void (MyWStrncpy)();
 extern char *tmpnam();
 #ifdef X_NOT_STDC_ENV
 extern int errno; 
-#endif
-#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)))
-extern int sys_nerr;
-extern char* sys_errlist[];
 #endif
 
 #ifdef X_NOT_POSIX
@@ -737,6 +733,7 @@ SetValues(current, request, new, args, num_args)
   
   if ( string_set || (old_src->multi_src.type != src->multi_src.type) ) {
     RemoveOldStringOrFile(old_src, string_set);
+    src->multi_src.allocated_string = old_src->multi_src.allocated_string;
     file = InitStringOrFile(src, string_set);
 
     /* Load pieces does this logic for us, but it shouldn't.  Its messy.*/
@@ -1133,9 +1130,6 @@ InitStringOrFile(src, newString)
     case XawtextAppend:
     case XawtextEdit:
 	if (src->multi_src.string == NULL) {
-
-            if ( src->multi_src.allocated_string )
-                XtFree( src->multi_src.string );
             src->multi_src.allocated_string = False;
 	    src->multi_src.string = fileName;
 
@@ -1156,9 +1150,10 @@ InitStringOrFile(src, newString)
      * .string first check .allocated_string and free it - plumbing Sheeran.
      */
     if (newString || src->multi_src.is_tempfile) {
+	String temp = XtNewString(src->multi_src.string);
 	if ( src->multi_src.allocated_string )
             XtFree( src->multi_src.string );
-	src->multi_src.string = XtNewString(src->multi_src.string);
+	src->multi_src.string = temp;
 	src->multi_src.allocated_string = TRUE;
     }
     
@@ -1170,19 +1165,9 @@ InitStringOrFile(src, newString)
 	} else {
 	    String params[2];
 	    Cardinal num_params = 2;
-	    char msg[11];
 	    
 	    params[0] = src->multi_src.string;
-#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4))
-	    if (errno <= sys_nerr)
-		params[1] = sys_errlist[errno];
-	    else {
-		sprintf(msg, "errno=%.4d", errno);
-		params[1] = msg;
-	    }
-#else
-	    params[1] = msg;
-#endif
+	    params[1] = strerror(errno);
 	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)src),
 			    "openError", "multiSourceCreate", "XawWarning",
 			    "Cannot open file %s; %s", params, &num_params);

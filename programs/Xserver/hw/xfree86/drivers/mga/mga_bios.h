@@ -1,8 +1,8 @@
-/* $XConsortium: mgabios.h /main/2 1996/10/28 04:48:23 kaleb $ */
-#ifndef MGABIOS_H
-#define MGABIOS_H
+/* $XConsortium: mga_bios.h /main/2 1996/10/28 04:48:23 kaleb $ */
+#ifndef MGA_BIOS_H
+#define MGA_BIOS_H
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabios.h,v 3.2 1996/12/27 07:05:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_bios.h,v 1.1 1997/03/06 23:16:02 hohndel Exp $ */
 
 /*
  * MGABiosInfo - This struct describes the video BIOS info block.
