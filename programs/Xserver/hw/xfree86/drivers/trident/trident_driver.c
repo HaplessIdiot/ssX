@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.183 2003/09/24 02:43:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.184 2003/10/30 13:38:01 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2073,12 +2073,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     if (pTrident->pEnt->device->videoRam != 0) {
 	pScrn->videoRam = pTrident->pEnt->device->videoRam;
 	from = X_CONFIG;
-
-	/* Due to only 12bits of cursor location, if user has overriden
-	 * disable the cursor automatically */
-	if (pTrident->Chipset >= CYBER9397 && pTrident->Chipset < CYBERBLADEE4)
-		if (pTrident->pEnt->device->videoRam > 4096)
-			pTrident->HWCursor = FALSE;
     } else {
       if (pTrident->Chipset == CYBER9525DVD) {
 	pScrn->videoRam = 2560;
@@ -2101,19 +2095,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
   	    pScrn->videoRam = 1024;
   	    break;
 	case 0x04: 
-	    /* 
-	     * 8MB, but - hw cursor can't store above 4MB
-	     * This only affects Image series chipsets, but for
-	     * some reason, reports suggest that the 9397DVD isn't
-	     * affected. XXX needs furthur investigation !
-	     */
-	    if (pTrident->HWCursor && (pTrident->Chipset != CYBER9397DVD) &&
-	      			    (pTrident->Chipset < CYBERBLADEE4)) {
-	    	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
-		       "Found 8MB board, using 4MB\n");
-	    	pScrn->videoRam = 4096;
-	    } else
-	    	pScrn->videoRam = 8192;
+	    pScrn->videoRam = 8192;
 	    break;
  	case 0x06: /* XP */
  	    pScrn->videoRam = 10240;
