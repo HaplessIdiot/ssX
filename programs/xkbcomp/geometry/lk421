@@ -1,0 +1,95 @@
+// $XConsortium $
+xkb_geometry "lk421"
+
+description	= "Digital LK421 Keyboard";
+width		= 340;
+height		= 160;
+
+shape.cornerRadius = 1;
+
+shape "NORM" { primary = { [18,19] }, { [3,2], [15,16] } };
+shape "TLDE" { primary = { [28,19] }, { [3,2], [25,16] } };
+shape "BKSP" { primary = { [46,19] }, { [3,2], [43,16] } };
+shape "TABK" { primary = { [37,19] }, { [3,2], [34,16] } };
+shape "CTRL" { primary = { [46,19] }, { [3,2], [43,16] } };
+shape "RTRN" { primary = { [46,19] }, { [3,2], [43,16] } };
+shape "SHFT" { primary = { [56,19] }, { [3,2], [53,16] } };
+shape "MODK" { primary = { [37,19] }, { [3,2], [34,16] } };
+shape "SPCE" { primary = { [132,19] },{ [3,2], [129,16]} };
+
+section.left	= 17;
+row.left	= 1;
+key.shape	= "NORM";
+key.gap		=  1;
+
+text.color      = "black";
+text "Logo" {left = 20; top = 10; text="digital\n"; };
+
+section "Function" {
+    top = 30;
+    row {
+	top = 1;
+	keys {    <FK01>, <FK02>, <FK03>, <FK04>, <FK05>, 
+		{ <FK06>, 20 }, <FK07>, <FK08>, <FK09>, <FK10>,
+		{ <LEFT>, 20 }, <DOWN>, <UP>, <RGHT>
+	};
+    };
+};
+
+section "Alpha" {
+    top = 50;
+    row {
+	top = 1;
+	keys {  { <TLDE>, "TLDE" }, 
+		<AE01>, <AE02>, <AE03>, <AE04>, <AE05>, <AE06>, 
+		<AE07>, <AE08>, <AE09>, <AE10>, <AE11>, <AE12>, 
+		{ <BKSP>, "BKSP" }
+	};
+    };
+    row {
+	top = 21;
+	keys {	{ <TAB>, "TABK" },
+		<AD01>, <AD02>, <AD03>, <AD04>, <AD05>, <AD06>, 
+		<AD07>, <AD08>, <AD09>, <AD10>, <AD11>, <AD12>, 
+		<BKSL>, <AB00>
+	};
+
+    };
+    row {
+	top = 41;
+        left= -4;
+	keys { 	{ <LCTL>, "CTRL" },
+		<AC01>, <AC02>, <AC03>, <AC04>, <AC05>, <AC06>, 
+		<AC07>, <AC08>, <AC09>, <AC10>, <AC11>, 
+		{ <RTRN>, "RTRN" }
+	};
+    };
+    row {
+	top = 61;
+        left= -4;
+	keys { 	{ <LFSH>, "SHFT" },
+		<AB01>, <AB02>, <AB03>, <AB04>, <AB05>, <AB06>, 
+		<AB07>, <AB08>, <AB09>, <AB10>,
+		{ <RTSH>, "SHFT" }
+	};
+    };
+    solid "ExtendKey" {
+        top= 81;
+        left= 1;
+        shape= "NORM";
+        color= "grey20";
+    };
+    text.top = 89;
+    text.color = "black";
+    text "ExtendLabel" {left = 6; text="Ext\nend"; };
+
+    row {
+	top = 81;
+	left= 19;
+	key.shape = "MODK";
+	keys { 	{ <LCMP>, "NORM" }, <LALT>,
+		{ <SPCE>, "SPCE" },
+		<RALT>, <RCMP> 
+	};
+    };
+};

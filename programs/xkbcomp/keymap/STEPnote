@@ -1,0 +1,21 @@
+// $XConsortium: STEPnote /main/2 1995/12/07 21:37:59 kaleb $
+default xkb_keymap "STEPnote" {
+    xkb_keycodes	{ include "xfree86"	};
+    xkb_types		{ include "default"	};
+    xkb_compatibility	{ include "default"	};
+    xkb_symbols 	{ include "us(pc102)"	};
+    xkb_geometry 	{ include "STEPnote"	};
+};
+hidden xkb_keymap "test" {
+    xkb_keycodes	{ include "xfree86"	};
+    xkb_types		{ include "default"	};
+    partial xkb_compatibility	{ include "default"	};
+    xkb_symbols 	{ 
+    	include "us(pc102)"	
+	key <FK01> {
+	    actions[Group1]= [ Message(report=all,data="test") ]
+	};
+	key <CAPS> {	[ Control_L ]	};
+    };
+    xkb_geometry 	{ include "STEPnote"	};
+};

@@ -1,0 +1,21 @@
+// $XConsortium: fr_CH /main/2 1995/12/07 21:42:37 kaleb $
+partial default xkb_symbols "basic" {
+
+    // Describes the differences between a very simple US/ASCII
+    // keyboard and a very simple Swiss/French keybaord
+
+    include "de_CH(basic)"
+    name[Group1]= "Swiss French";
+
+    override key <AD11> {
+	[ egrave,	udiaeresis	],
+	[ bracketleft			]
+    };
+    override key <AC10> {
+	[ eacute,	odiaeresis	]
+    };
+    override key <AC11> {
+	[ agrave,	adiaeresis	],
+	[  braceleft			]
+    };
+};

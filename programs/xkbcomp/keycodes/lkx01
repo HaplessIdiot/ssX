@@ -1,0 +1,182 @@
+// $XConsortium $
+// @DEC_COPYRIGHT@
+//
+// HISTORY
+// $Log: lkx01,v $
+// Revision 1.1  1996/01/03 07:40:43  dawes
+// Initial revision
+//
+// Revision 1.1.2.2  1994/10/31  15:21:41  William_Walker
+// 	New experimental version.
+// 	[1994/10/31  14:47:30  William_Walker]
+//
+// $EndLog$
+// 
+// @(#)$RCSfile: lkx01,v $ $Revision: 1.1 $ (DEC) $Date: 1996/01/03 07:40:43 $
+// 
+// Keycodes and indicators for the lk201, lk401, and lk421 keyboards.
+//
+xkb_keycodes "common" {
+
+    minimum	= 85;
+    maximum	= 251;
+
+    // "Function" keys
+    <FK01>	= 86;
+    <FK02>	= 87;
+    <FK03>	= 88;
+    <FK04>	= 89;
+    <FK05>	= 90;
+    <FK06>	= 100;
+    <FK07>	= 101;
+    <FK08>	= 102;
+    <FK09>	= 103;
+    <FK10>	= 104;
+    <FK11>	= 113;
+    <FK12>	= 114;
+    <FK13>	= 115;
+    <FK14>	= 116;
+    <FK17>	= 128;
+    <FK18>	= 129;
+    <FK19>	= 130;
+    <FK20>	= 131;
+
+    // "Editing" keys
+    <HELP>	= 124;
+    <DO>	= 125;
+
+    <FIND>	= 138;
+    <INS>	= 139;
+    <DELE>	= 140;
+    <SELE>	= 141;
+    <PGUP>	= 142;
+    <PGDN>	= 143;
+
+    <UP>	= 170;
+    <LEFT>	= 167;
+    <DOWN>	= 169;
+    <RGHT>	= 168;
+
+    // "Keypad" keys
+    <KPF1>	= 161;
+    <KPF2>	= 162;
+    <KPF3>	= 163;
+    <KPF4>	= 164;
+
+    <KP7>	= 157;
+    <KP8>	= 158;
+    <KP9>	= 159;
+    <KPSU>	= 160;
+
+    <KP4>	= 153;
+    <KP5>	= 154;
+    <KP6>	= 155;
+    <KPCO>	= 156;
+
+    <KP1>	= 150;
+    <KP2>	= 151;
+    <KP3>	= 152;
+    <KPEN>	= 149;
+
+    <KP0>	= 146;
+    <KPDL>	= 148;
+
+    // "Alphanumeric" keys
+    <TLDE>	= 191;
+    <AE01>	= 192;
+    <AE02>	= 197;
+    <AE03>	= 203;
+    <AE04>	= 208;
+    <AE05>	= 214;
+    <AE06>	= 219;
+    <AE07>	= 224;
+    <AE08>	= 229;
+    <AE09>	= 234;
+    <AE10>	= 239;
+    <AE11>	= 249;
+    <AE12>	= 245;
+    <BKSP>	= 188;
+
+    <TAB>	= 190;
+    <AD01>	= 193;
+    <AD02>	= 198;
+    <AD03>	= 204;
+    <AD04>	= 209;
+    <AD05>	= 215;
+    <AD06>	= 220;
+    <AD07>	= 225;
+    <AD08>	= 230;
+    <AD09>	= 235;
+    <AD10>	= 240;
+    <AD11>	= 250;
+    <AD12>	= 246;
+    <RTRN>	= 189;
+
+    <LCTL>	= 175;
+    <CAPS>	= 176;
+    <AC01>	= 194;
+    <AC02>	= 199;
+    <AC03>	= 205;
+    <AC04>	= 210;
+    <AC05>	= 216;
+    <AC06>	= 221;
+    <AC07>	= 226;
+    <AC08>	= 231;
+    <AC09>	= 236;
+    <AC10>	= 242;
+    <AC11>	= 251;
+    <BKSL>	= 247;
+
+    <LFSH>	= 174;
+    <LSGT>	= 201;
+    <AB01>	= 195;
+    <AB02>	= 200;
+    <AB03>	= 206;
+    <AB04>	= 211;
+    <AB05>	= 217;
+    <AB06>	= 222;
+    <AB07>	= 227;
+    <AB08>	= 232;
+    <AB09>	= 237;
+    <AB10>	= 243;
+    <RTSH>	= 171;
+
+    <SPCE>	= 212;
+};
+
+xkb_keycodes "lk201" {
+
+    include "lkx01(common)"
+
+    <LALT>	= 177; // Treat the Compose key as the left Alt key.
+
+    // Indicators
+    indicator 8 = "Lock";
+    indicator 4 = "Hold Screen";
+    indicator 1 = "Compose";
+    indicator 3 = "Wait";
+};
+
+xkb_keycodes "lk401" {
+
+    include	"lkx01(common)"
+
+    <LCMP>	= 177;
+    <LALT>	= 172;
+    <RALT>	= 178;
+    <RCMP>	= 173;
+
+    // Indicators
+    indicator 8 = "Caps Lock";
+    indicator 4 = "Scroll Lock";
+};
+
+xkb_keycodes "lk421" {
+
+    include	"lkx01(common)"
+
+    <LCMP>	= 177;
+    <LALT>	= 172;
+    <RALT>	= 178;
+    <RCMP>	= 173;
+};

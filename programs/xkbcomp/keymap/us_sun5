@@ -1,0 +1,7 @@
+// $XConsortium: us_sun5 /main/2 1995/12/07 21:38:52 kaleb $
+default xkb_keymap "sun5 US layout" {
+    xkb_keycodes	{ include "sun(type5)"	};
+    xkb_types		{ include "default"	};
+    xkb_compatibility	{ include "default"	};
+    xkb_symbols 	{ include "us(sun5)"	};
+};

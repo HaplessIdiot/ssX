@@ -1,0 +1,28 @@
+// $XConsortium: gb /main/2 1995/12/07 21:42:44 kaleb $
+partial default xkb_symbols "basic" {
+
+    // Describes the differences between a very simple en_US
+    // keyboard and a very simple U.K. keybaord
+
+    name[Group1]= "Great Britain";
+
+    key <TLDE> {	[           grave,         notsign      ],	
+    			[	      bar,             bar	]	};
+    key <LSGT> {	[       backslash,	 brokenbar  	],	
+			[	      bar,	 brokenbar	]	};
+    key <AE02> {	[               2,        quotedbl     	]	};
+    key <AE03> {	[               3,        sterling     	]	};
+    key <AC11> {	[      apostrophe,              at 	]	};
+    key <BKSL> {	[      numbersign,      asciitilde	]	};
+
+    // End alphanumeric section
+    
+    // begin modifier mappings
+    
+    modifier_map Shift  { Shift_L };
+    modifier_map Lock   { Caps_Lock };
+    modifier_map Control{ Control_L };
+    modifier_map Mod3   { Mode_switch };
+};
+
+

@@ -1,0 +1,170 @@
+// $XConsortium $
+default xkb_keymap "indigo_us" {
+    xkb_keycodes	{ include "sgi(indigo)"	};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{ include "us(pc101)"		};
+    xkb_geometry	{ include "sgi101"		};
+};
+xkb_keymap "indy_us" {
+    xkb_keycodes	{ include "sgi(indy)"	};
+    xkb_types		{ include "complete"	};
+    xkb_compatibility	{ include "complete"	};
+    xkb_symbols 	{ include "us(pc101)"	};
+    xkb_geometry 	{ include "sgi101"	};
+};
+xkb_keymap "indigo_en_US" {
+    xkb_keycodes	{ include "sgi(indigo)"	};
+    xkb_types		{ include "complete"	};
+    xkb_compatibility	{ include "complete"	};
+    xkb_symbols 	{ include "en_US(pc102)"};
+    xkb_geometry 	{ include "sgi102"	};
+};
+xkb_keymap "indy_en_US" {
+    xkb_keycodes	{ include "sgi(indy)"	};
+    xkb_types		{ include "complete"	};
+    xkb_compatibility	{ include "complete"	};
+    xkb_symbols 	{ include "en_US(pc102)"};
+    xkb_geometry 	{ include "sgi102"	};
+};
+
+xkb_keymap "indigo_de"	{
+    xkb_keycodes	{ include "sgi(indigo)"	};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{
+	include "en_US(pc102)"
+	override "de"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indy_de"	{
+    xkb_keycodes	{ include "sgi(indy)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols	"en_US(pc102)+de" { 
+	include "en_US(pc102)"
+	override "de"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indigo_fr"	{
+    xkb_keycodes	{ include "sgi(indigo)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{ 
+	include "en_US(pc102)"
+	override "fr"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indy_fr"	{
+    xkb_keycodes	{ include "sgi(indy)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{
+	include "en_US(pc102)"
+	override "fr"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indigo_th"	{
+    xkb_keycodes	{ include "sgi(indigo)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{ 
+	include "en_US(pc102)"
+	override "th"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indy_th"	{
+    xkb_keycodes	{ include "sgi(indy)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{ 
+	include "en_US(pc102)"
+	override "th"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indigo_de_CH"	{
+    xkb_keycodes	{ include "sgi(indigo)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{ 
+	include "en_US(pc102)"
+	override "de_CH"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indy_de_CH"	{
+    xkb_keycodes	{ include "sgi(indy)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{
+	include "en_US(pc102)"
+	override "de_CH"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indigo_fr_CH"	{
+    xkb_keycodes	{ include "sgi(indigo)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{
+	include "en_US(pc102)"
+	override "fr_CH"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indy_fr_CH"	{
+    xkb_keycodes	{ include "sgi(indy)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{ 
+	include "en_US(pc102)"	
+	override "fr_CH"	
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indigo_be" {
+    xkb_keycodes	{ include "sgi(indigo)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{
+	include "en_US(pc102)"
+	override "be"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indy_be" {
+    xkb_keycodes	{ include "sgi(indy)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols	"indy_be" {
+	include "en_US(pc102)"
+	override "be"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indigo_se" {
+    xkb_keycodes	{ include "sgi(indigo)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols		{
+	include "en_US(pc102)"
+	override "se"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};
+xkb_keymap "indy_se" {
+    xkb_keycodes	{ include "sgi(indy)"		};
+    xkb_types		{ include "complete"		};
+    xkb_compatibility	{ include "complete"		};
+    xkb_symbols	"indy_se" {
+	include "en_US(pc102)"
+	override "se"
+    };
+    xkb_geometry 	{ include "sgi102"		};
+};

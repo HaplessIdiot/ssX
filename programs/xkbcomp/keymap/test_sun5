@@ -1,0 +1,23 @@
+// $XConsortium: test_sun5 /main/2 1995/12/07 21:38:37 kaleb $
+hidden default xkb_keymap "3 level 3 group test" {
+    xkb_keycodes	{ include "sun(type5)"	};
+    xkb_types		{ include "complete"	};
+    xkb_compatibility	{ include "complete"	};
+    xkb_symbols { 
+    include "us(sun5)"
+	override key <DELE> {
+	    type= "CTRL+ALT",
+	    symbols[Group1]= [ Delete, Terminate_Server ]
+	};
+	override key <RTSH> {
+	    symbols[Group1]= [ ISO_Level3_Latch ]
+	};
+	override key <FK10> {
+	    type= "THREE_LEVEL",
+	    symbols[Group1]= [ a, A, ordfeminine ],
+	    symbols[Group2]= [ o, O, masculine ],
+	    symbols[Group3]= [ u, U, mu ]
+	};
+	override modifier_map Mod3   { ISO_Level3_Latch };
+    };
+};

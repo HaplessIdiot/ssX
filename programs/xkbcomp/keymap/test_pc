@@ -1,0 +1,41 @@
+// $XConsortium: test_pc /main/2 1995/12/07 21:38:30 kaleb $
+hidden default xkb_keymap "3level3group" {
+    xkb_keycodes	{ include "sgi(indy)"	};
+    xkb_types		{ include "default"	};
+    xkb_compatibility	{ include "default"	};
+    xkb_symbols { 
+	key <NMLK> {
+	    symbols[Group1]= [ Num_Lock, Pointer_EnableKeys ]
+	};
+	key <KP5> {
+	    symbols[Group1]= [ Pointer_Button2, KP_5 ]
+	};
+	key <RTSH> {
+	    symbols[Group1]= [ ISO_Level3_Latch ]
+	};
+	override modifier_map Mod5   { ISO_Level3_Latch };
+	augment "en_US(pc102)"	
+	override key <FK10> {
+	    redirectGroups= Group2,
+	    repeating= yes,
+	    type= "THREE_LEVEL",
+	    symbols[Group1]= [ a, A, ordfeminine ],
+	    symbols[Group2]= [ o, O, masculine ],
+	    symbols[Group3]= [ u, U ],
+	    type[Group3]= "TWO_LEVEL"
+	};
+	override key <DELE> {
+	    type= "PC_BREAK",
+	    symbols[Group1]= [ Delete, Terminate_Server ],
+	    actions[Group1]= [  
+		Message( data= "Delete", report=release ),
+		Message( data= "Die!", report=press, !genKeyEvent ) 
+	    ]
+	};
+	augment key <AC00> { 
+	    symbols[Group1]= [ ISO_Emphasize ], 
+	    actions[Group1]= [ Message( data= "Yes!", report=all ) ]
+	};
+    };
+    xkb_geometry 	{ include "pc101-NG(swapped)"	};
+};

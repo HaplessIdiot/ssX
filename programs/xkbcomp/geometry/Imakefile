@@ -1,0 +1,11 @@
+XCOMM $XConsortium: Imakefile /main/2 1995/12/07 21:34:34 kaleb $
+
+      TESTDATA = 
+     DATAFILES = STEPnote kinesis pc101-NG sgi101 sgi102 \
+		microsoft \
+		$(TESTDATA)
+
+all::
+
+InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/geometry)
+DependTarget()
