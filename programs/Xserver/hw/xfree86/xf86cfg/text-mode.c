@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.16 2002/06/03 21:22:11 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.18 2002/11/18 05:24:18 paulo Exp $
  */
 
 #include <stdio.h>
@@ -1091,8 +1091,6 @@ CardConfig(void)
 	"mga",
 	"neomagic",
 	"nv",
-	"r128",
-	"radeon",
 	"rendition",
 	"s3",
 	"s3virge",
