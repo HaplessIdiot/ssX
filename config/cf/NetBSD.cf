@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: NetBSD.cf,v 1.3 2000/08/17 19:41:46 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.114 2003/10/11 10:07:10 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.115 2003/10/18 21:00:51 herrb Exp $
 
 
 #ifndef OSName
@@ -178,7 +178,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  *
  * Disabled for NetBSD/vax until I figure out the scheme. --CS 
  */
-#if (OSMajorVersion > 0) && defined(i386Architecture)
+#if ((OSMajorVersion > 0) && defined(i386Architecture)) || \
+    defined(PpcArchitecture)
 #  ifndef DoLoadableServer
 #  define DoLoadableServer	YES
 #  endif
