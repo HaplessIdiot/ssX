@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.19 2003/02/18 21:30:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.20 2003/07/16 01:38:54 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -339,17 +339,6 @@ extern void mfbBlackSolidFS(
 #endif
 );
 
-extern void mfbNoopFS(
-#if NeedFunctionPrototypes
-    DrawablePtr /*pDrawable*/,
-    GCPtr /*pGC*/,
-    int /*nInit*/,
-    DDXPointPtr /*pptInit*/,
-    int * /*pwidthInit*/,
-    int /*fSorted*/
-#endif
-);
-
 extern void mfbWhiteSolidFS(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
@@ -660,19 +649,7 @@ extern void mfbStippleWhiteArea(
     PixmapPtr /*pstipple*/
 #endif
 );
-/* mfbpgbblak.c */
 
-extern void mfbPolyGlyphBltNoop(
-#if NeedFunctionPrototypes
-    DrawablePtr /*pDrawable*/,
-    GCPtr /*pGC*/,
-    int /*x*/,
-    int /*y*/,
-    unsigned int /*nglyph*/,
-    CharInfoPtr * /*ppci*/,
-    pointer /*pglyphBase*/
-#endif
-);
 /* mfbpgbinv.c */
 
 extern void mfbPolyGlyphBltBlack(
@@ -787,18 +764,7 @@ extern void mfbFillPolyInvert(
     DDXPointPtr /*ptsIn*/
 #endif
 );
-/* mfbplywhite.c */
 
-extern void mfbFillPolyNoop(
-#if NeedFunctionPrototypes
-    DrawablePtr /*pDrawable*/,
-    GCPtr /*pGC*/,
-    int /*shape*/,
-    int /*mode*/,
-    int /*count*/,
-    DDXPointPtr /*ptsIn*/
-#endif
-);
 /* mfbpntwin.c */
 
 extern void mfbFillPolyWhite(
