@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.308tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.309 2005/02/07 01:38:23 tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -453,7 +453,7 @@ SUNLIBS = hw/sun/LibraryTargetName(sun) CFB8Libs
 SUNSYSLIBS = $(FONTLIBS) $(WIDECHARSYSLIB) $(SYSLIBS)
 SetUIDServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS), \
 	$(SUNLIBS),$(SUNSYSLIBS))
-#ifndef ServerToInstall
+#if !defined(ServerToInstall) && (!defined(XF86Server) || !XF86Server)
 #define ServerToInstall Xsun
 #endif
 #endif /* XsunServer */
@@ -482,7 +482,7 @@ SUN24OBJS = hw/sun/sunInitMulti.o
 SUN24LIBS = hw/sun/LibraryTargetName(sun) CFBLibs
 SetUIDServerTarget(Xsun24,$(SUN24DIRS),$(SUN24OBJS), \
 	$(SUN24LIBS),$(FONTLIBS) $(SYSLIBS))
-#ifndef ServerToInstall
+#if !defined(ServerToInstall) && (!defined(XF86Server) || !XF86Server)
 #define ServerToInstall Xsun24
 #endif
 #endif /* Xsun24Server */
@@ -503,7 +503,7 @@ SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o
 SUNMLIBS = hw/sun/LibraryTargetName(sun) MFBLibs
 SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
 	$(SUNMLIBS),$(FONTLIBS) $(SYSLIBS))
-#ifndef ServerToInstall
+#if !defined(ServerToInstall) && (!defined(XF86Server) || !XF86Server)
 #define ServerToInstall XsunMono
 #endif
 #endif /* XsunMonoServer */
