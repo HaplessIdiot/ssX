@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.44 2000/01/25 18:37:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.45 2000/01/29 17:17:07 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -458,11 +458,7 @@ InitExtensions(argc, argv)
     for (i = 0; staticExtensions[i].name; i++)
 	LoadExtension(&staticExtensions[i], TRUE);
 
-    /*
-     * XXX Need to add code here to sort the list of extension modules
-     * based on the dependencies fields.
-     */
-
+    /* Sort the extensions according the init dependencies. */
     LoaderSortExtensions();
 
     for (i = 0; ExtensionModuleList[i].name != NULL; i++) {
