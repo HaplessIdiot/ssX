@@ -60,7 +60,7 @@ in this Software without prior written authorization from The Open Group.
  * 11-Nov-90 Dave Sternlicht            Adding SaveColors
  * 10-Oct-90 David M. Sternlicht        Storing saved colors on root
  *
- * $XFree86: xc/programs/twm/gram.y,v 3.6tsi Exp $
+ * $XFree86: xc/programs/twm/gram.y,v 3.7tsi Exp $
  *
  ***********************************************************************/
 
@@ -124,7 +124,7 @@ extern int yylineno;
 %type <ptr> string
 %type <num> pixmap_list cursor_list color_list save_color_list stmt
 %type <num> win_color_list iconm_list win_list icon_list function menu
-%type <num> noarg sarg error narg squeeze
+%type <num> noarg sarg error narg squeeze color_entry
 %type <num> action button number signed_number full fullkey
 
 %start twmrc 

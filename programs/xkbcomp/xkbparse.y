@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbparse.y,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbparse.y,v 3.11tsi Exp $ */
 
 %token
 	END_OF_FILE	0
@@ -443,7 +443,6 @@ IndicatorNameDecl:	INDICATOR Integer EQUALS Expr SEMI
 
 ShapeDecl	:	SHAPE String OBRACE OutlineList CBRACE SEMI
 			{ $$= ShapeDeclCreate($2,(OutlineDef *)&$4->common); }
-		;
 		|	SHAPE String OBRACE CoordList CBRACE SEMI
 			{ 
 			    OutlineDef *outlines;
@@ -506,7 +505,7 @@ OverlayKeyList	:	OverlayKeyList COMMA OverlayKey
 			{ 
 			    $$= (OverlayKeyDef *)
 				AppendStmt(&$1->common,&$3->common);
-			};
+			}
 		|	OverlayKey
 			{ $$= $1; }
 		;
