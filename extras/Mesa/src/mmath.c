@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -28,6 +28,7 @@
 #include "all.h"
 #else
 #include "glheader.h"
+#include "macros.h"
 #include "mmath.h"
 #endif
 
