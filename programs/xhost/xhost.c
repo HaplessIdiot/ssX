@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.12 2000/08/10 17:40:41 dawes Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.13 2001/01/17 23:45:35 dawes Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -595,7 +595,9 @@ get_hostname(XHostAddress *ha)
 	static char netname[512];
 	int len;
 #ifdef SECURE_RPC
-	int uid, gid, gidlen, gidlist[NGROUPS_MAX];
+	int gidlen;
+	uid_t uid;
+	gid_t gid, gidlist[NGROUPS_MAX];
 #endif
 
 	if (ha->length < sizeof(netname) - 1)

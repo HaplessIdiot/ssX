@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.39 2000/12/13 00:45:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.40 2001/01/06 20:58:06 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -641,7 +641,12 @@ ATIPreInit
 
         /* Set MMIO address from PCI configuration space, if available */
         if ((pATI->Block0Base = pVideo->memBase[2]))
-           pATI->Block0Base += 0x0400U;
+        {
+            if (pATI->Block0Base >= (CARD32)(-1 << pVideo->size[2]))
+                pATI->Block0Base = 0;
+            else
+                pATI->Block0Base += 0x0400U;
+        }
     }
 
     pScreenInfo->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_VIEWPORT;

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.2 1998/12/13 07:37:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.3 2001/01/17 22:37:12 dawes Exp $ */
 
 /*
  * SUN-DES-1 authentication mechanism
@@ -114,10 +114,11 @@ bad1:
 static XID  rpc_id = (XID) ~0L;
 
 static Bool
-CheckNetName (addr, len, closure)
-    unsigned char    *addr;
-    int		    len;
-    pointer	    closure;
+CheckNetName (
+    unsigned char    *addr,
+    short	    len,
+    pointer	    closure
+)
 {
     return (len == strlen ((char *) closure) &&
 	    strncmp ((char *) addr, (char *) closure, len) == 0);
@@ -142,14 +143,11 @@ SecureRPCCheck (data_length, data, client, reason)
 	    sprintf(rpc_error, "Unable to authenticate secure RPC client (why=%d)", why);
 	    *reason = rpc_error;
 	} else {
-	    if (ForEachHostInFamily (FamilyNetname, CheckNetName,
-				     (pointer) fullname))
+	    if (ForEachHostInFamily (FamilyNetname, CheckNetName, fullname))
 		return rpc_id;
-	    else {
-		sprintf(rpc_error, "Principal \"%s\" is not authorized to connect",
+	    sprintf(rpc_error, "Principal \"%s\" is not authorized to connect",
 			fullname);
-		*reason = rpc_error;
-	    }
+	    *reason = rpc_error;
 	}
     }
     return (XID) ~0L;

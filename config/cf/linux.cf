@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.158 2001/01/15 20:56:14 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.159 2001/01/17 16:22:32 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -360,6 +360,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 
 /*
+ * libGLU doesn't build correctly on a libc5 system.
+ */
+#if !defined(BuildGLULibrary) && (LinuxCLibMajorVersion < 6)
+# define BuildGLULibrary		NO
+#endif
+
+/*
  * The Rush extension support.
  */
 #ifndef BuildXF86RushExt
@@ -609,7 +616,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # define OptimizedCDebugFlags  	-O3
 # define LinuxMachineDefines	-D__arm__ -U__arm -Uarm
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
-# define ServerExtraDefines	-DGCCUSEGAS XFree86ServerDefines
+# define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #endif /* Arm32Achitecture */
 
 #ifdef ia64Architecture

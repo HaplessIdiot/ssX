@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.25 2000/10/23 21:16:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.26 2001/01/17 22:36:34 dawes Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -1221,7 +1221,7 @@ extern void cfbZeroPolyArcSS8Xor(
     xArc * /*parcs*/
 );
 
-#if !defined(SINGLEDEPTH) && PSZ != 8 || defined(FORCE_SEPARATE_PRIVATE)
+#if (!defined(SINGLEDEPTH) && PSZ != 8) || defined(FORCE_SEPARATE_PRIVATE)
 
 #define CFB_NEED_SCREEN_PRIVATE
 

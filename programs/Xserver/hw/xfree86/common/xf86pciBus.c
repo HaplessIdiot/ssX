@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.29 2001/01/06 20:19:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.30 2001/01/26 10:35:28 alanh Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -175,50 +175,63 @@ FindPCIVideoInfo(void)
 	    if ((PCISHAREDIOCLASSES(baseclass, subclass))
 		&& (pcrp->pci_command & PCI_CMD_IO_ENABLE) &&
 		(pcrp->pci_prog_if == 0)) {
-		if (primaryBus.type == BUS_NONE) {
-		    /* assumption: primary bus is always VGA */
-	            primaryBus.type = BUS_PCI;
-	            primaryBus.id.pci.bus = pcrp->busnum;
-		    primaryBus.id.pci.device = pcrp->devnum;
-		    primaryBus.id.pci.func = pcrp->funcnum;
-		} else if (primaryBus.type < BUS_last) {
-		    xf86Msg(X_NOTICE, "More than one primary device found\n");
-		    primaryBus.type ^= (BusType)(-1);
+
+		/*
+		 * Attempt to ensure that VGA is actually routed to this
+		 * adapter on entry.  This needs to be fixed when we finally
+		 * grok host bridges (and multiple bus trees).
+		 */
+		j = info->bus;
+		while (j > 0) {
+		    PciBusPtr pBus = xf86PciBus;
+		    while (pBus && j != pBus->secondary)
+			pBus = pBus->next;
+		    if (!pBus || !(pBus->brcontrol & PCI_PCI_BRIDGE_VGA_EN))
+			break;
+		    j = pBus->brbus;
+		}
+		if (j <= 0) {
+		    if (primaryBus.type == BUS_NONE) {
+			/* assumption: primary bus is always VGA */
+			primaryBus.type = BUS_PCI;
+			primaryBus.id.pci.bus = pcrp->busnum;
+			primaryBus.id.pci.device = pcrp->devnum;
+			primaryBus.id.pci.func = pcrp->funcnum;
+		    } else if (primaryBus.type < BUS_last) {
+			xf86Msg(X_NOTICE,
+			    "More than one primary device found\n");
+			primaryBus.type ^= (BusType)(-1);
+		    }
 		}
 	    }
 	    
 	    for (j = 0; j < 6; j++) {
 		info->memBase[j] = 0;
 		info->ioBase[j] = 0;
-		if (PCINONSYSTEMCLASSES(info->class, info->subclass)) {
-		    info->size[j]  = pciGetBaseSize(pcrp->tag, j, TRUE, 
-						    &info->validSize);
+		if (PCINONSYSTEMCLASSES(baseclass, subclass)) {
+		    info->size[j] =
+			pciGetBaseSize(pcrp->tag, j, TRUE, &info->validSize);
 		} else {
 		    info->size[j] = pcrp->basesize[j];
 		    info->validSize = pcrp->minBasesize;
 		}
-		/* pciGetBaseSize(pcrp->tag, j, FALSE, NULL) */
 		info->type[j] = 0;
 	    }
 
-	    if (!(pcrp->pci_base0) && info->size[0]
-		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
-		pcrp->pci_base0 = pciCheckForBrokenBase(pcrp->tag,0);
-	    if (!(pcrp->pci_base1) && info->size[1]
-		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
-		pcrp->pci_base1 = pciCheckForBrokenBase(pcrp->tag,1);
-	    if (!(pcrp->pci_base2) && info->size[2]
-		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
-		pcrp->pci_base2 = pciCheckForBrokenBase(pcrp->tag,2);
-	    if (!(pcrp->pci_base3) && info->size[3]
-		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
-		pcrp->pci_base3 = pciCheckForBrokenBase(pcrp->tag,3);
-	    if (!(pcrp->pci_base4) && info->size[4]
-		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
-		pcrp->pci_base4 = pciCheckForBrokenBase(pcrp->tag,4);
-	    if (!(pcrp->pci_base5) && info->size[5]
-		&& PCINONSYSTEMCLASSES(info->class, info->subclass))
-		pcrp->pci_base5 = pciCheckForBrokenBase(pcrp->tag,5);
+	    if (PCINONSYSTEMCLASSES(baseclass, subclass)) {
+		if (!pcrp->pci_base0 && info->size[0])
+		    pcrp->pci_base0 = pciCheckForBrokenBase(pcrp->tag, 0);
+		if (!pcrp->pci_base1 && info->size[1])
+		    pcrp->pci_base1 = pciCheckForBrokenBase(pcrp->tag, 1);
+		if (!pcrp->pci_base2 && info->size[2])
+		    pcrp->pci_base2 = pciCheckForBrokenBase(pcrp->tag, 2);
+		if (!pcrp->pci_base3 && info->size[3])
+		    pcrp->pci_base3 = pciCheckForBrokenBase(pcrp->tag, 3);
+		if (!pcrp->pci_base4 && info->size[4])
+		    pcrp->pci_base4 = pciCheckForBrokenBase(pcrp->tag, 4);
+		if (!pcrp->pci_base5 && info->size[5])
+		    pcrp->pci_base5 = pciCheckForBrokenBase(pcrp->tag, 5);
+	    }
 	    
 	    /*
 	     * 64-bit base addresses are checked for and avoided.
@@ -1695,6 +1708,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->brdev = pcrp->devnum;
 		PciBus->brfunc = pcrp->funcnum;
 		PciBus->subclass = sub_class;
+		PciBus->brcontrol = PCI_PCI_BRIDGE_VGA_EN;
 		xf86MsgVerb(X_INFO,3,"PCI-to-ISA bridge:\n");
 		break;
 	    case PCI_SUBCLASS_BRIDGE_HOST:
@@ -1703,6 +1717,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->primary = -1;
 		PciBus->secondary = -1; /* to be set below */
 		PciBus->subclass = sub_class;
+		PciBus->brcontrol = PCI_PCI_BRIDGE_VGA_EN;
 		PciBus->preferred_io = xf86ExtractTypeFromList(
 		    xf86PciBusAccWindowsFromOS(),ResIo);
 		PciBus->preferred_mem = xf86ExtractTypeFromList(
@@ -1911,7 +1926,7 @@ ValidatePci(void)
      */
     while ((pvp = xf86PciVideoInfo[n++])) {
 	resPtr res_mp = NULL, res_m_io = NULL;
-	resPtr NonSys = NULL;
+	resPtr NonSys;
 	resPtr tmp, avoid = NULL;
 
 	if (!pvp->validate) continue;
@@ -2777,7 +2792,7 @@ getPciClassFlags(pciConfigPtr *pcrpp)
 
 /*
  * xf86FindPciVendorDevice() xf86FindPciClass(): These functions
- * are ment to be used by the pci bios emulation. Some bioses
+ * are meant to be used by the pci bios emulation. Some bioses
  * need to see if there are _other_ chips of the same type around
  * so by setting pvp_exclude one pci device can be explicitely
  * _excluded if required.

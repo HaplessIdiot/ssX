@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.180 2001/01/11 03:37:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.181 2001/01/21 21:19:37 tsi Exp $ */
 
 /*
  *
@@ -121,7 +121,6 @@ extern long __umoddi3(long, long);
 #endif
 
 #if defined(__powerpc__) && (defined(Lynx) || defined(linux))
-void eieio();
 void _restf14();
 void _restf17();
 void _restf18();
@@ -163,14 +162,6 @@ extern void outl(unsigned short, unsigned int);
 extern unsigned int inb(unsigned short);
 extern unsigned int inw(unsigned short);
 extern unsigned int inl(unsigned short);
-extern unsigned long ldq_u(void *);
-extern unsigned long ldl_u(void *);
-extern unsigned short ldw_u(void *);
-extern void stl_u(unsigned long, void *);
-extern void stq_u(unsigned long, void *);
-extern void stw_u(unsigned short, void *);
-extern void mem_barrier(void);
-extern void write_mem_barrier(void);
 extern void stl_brx(unsigned long, volatile unsigned char *, int);
 extern void stw_brx(unsigned short, volatile unsigned char *, int);
 extern unsigned long ldl_brx(volatile unsigned char *, int);
