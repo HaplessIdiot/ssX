@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.31 2001/10/28 03:34:07 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.33 2001/11/30 12:12:04 eich Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -597,7 +597,7 @@ AskConfig(void)
 	XSetWMProtocols(DPY, XtWindow(shell_cf), &wm_delete_window, 1);
 	XtSetArg(args[0], XtNlabel, &l);
 	XtGetValues(dialog, args, 1);
-	label = XtMalloc(len = (strlen(l) + strlen(XF86CONFIG) + 1));
+	label = XtMalloc(len = (strlen(l) + strlen(XF86CONFIG) + 2));
 	XmuSnprintf(label, len, "%s\n", XF86CONFIG);
 	strcat(label, l);
 	XtSetArg(args[0], XtNlabel, label);
