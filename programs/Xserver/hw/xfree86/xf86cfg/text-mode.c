@@ -26,13 +26,13 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.2 2000/12/08 22:06:22 paulo Exp $
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <curses.h>
+#include <ncurses.h>
 #include <ctype.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XKBstr.h>
@@ -1203,7 +1203,7 @@ CardConfig(void)
 	if (entry) {
 	    for (i = 0; i < NumCardsEntry; i++)
 		if (strcasecmp(CardsDB[i]->name, entry->name) == 0) {
-		    def = i;
+		    def = i + 1;
 		    break;
 		}
 	    /* make sure entry is set to null again */
