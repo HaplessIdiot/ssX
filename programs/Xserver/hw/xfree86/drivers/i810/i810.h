@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.36 2002/11/25 14:04:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.37 2002/12/10 01:27:04 dawes Exp $ */
 
 /*
  * Authors:
@@ -251,6 +251,7 @@ typedef struct _I810Rec {
    int configured_device;
 
    Bool showCache;
+   Bool noAccel;
 } I810Rec;
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))
