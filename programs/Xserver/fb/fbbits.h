@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.7 2000/02/23 20:29:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.9 2001/01/17 07:40:01 keithp Exp $ */
 
 /*
  * This file defines functions for drawing some primitives using
@@ -771,7 +771,9 @@ POLYLINE (DrawablePtr	pDrawable,
 		{
 		    if (pGC->capStyle != CapNotLast && 
 			pt2 != *((INT32 *) ptsOrig))
-			*bits = FbDoRRop (*bits, and, xor);
+		    {
+			RROP(bits,and,xor);
+		    }
 		    return;
 		}
 		pt1 = pt2;
