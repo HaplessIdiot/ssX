@@ -1,4 +1,5 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 544. Update XDarwin to use fb and support Render (Torrey Lyons).
  543. Back out sunleo conversion to fb.  This driver is too heavily dependent
       on cfb32 for a simple fb conversion (Marc La France).
  542. Miscellaneous build/warning fixes (Marc La France).
@@ -13275,4 +13276,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1778 2001/05/16 20:08:34 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1779 2001/05/18 16:03:06 tsi Exp $
