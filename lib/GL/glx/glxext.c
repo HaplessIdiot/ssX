@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.14 2002/02/22 21:32:53 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.15tsi Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -344,12 +344,13 @@ static Bool AllocAndFetchScreenConfigs(Display *dpy, __GLXdisplayPrivate *priv)
 	if (!_XReply(dpy, (xReply*) &reply, 0, False)) {
 	    /* Something is busted. Punt. */
 	    UnlockDisplay(dpy);
+	    SyncHandle();
 	    FreeScreenConfigs(priv);
 	    return GL_FALSE;
 	}
-	UnlockDisplay(dpy);
 	if (!reply.numVisuals) {
 	    /* This screen does not support GL rendering */
+	    UnlockDisplay(dpy);
 	    continue;
 	}
 
@@ -358,6 +359,8 @@ static Bool AllocAndFetchScreenConfigs(Display *dpy, __GLXdisplayPrivate *priv)
 	if ((nprops < __GLX_MIN_CONFIG_PROPS) ||
 	    (nprops > __GLX_MAX_CONFIG_PROPS)) {
 	    /* Huh?  Not in protocol defined limits.  Punt */
+	    UnlockDisplay(dpy);
+	    SyncHandle();
 	    FreeScreenConfigs(priv);
 	    return GL_FALSE;
 	}
@@ -367,6 +370,8 @@ static Bool AllocAndFetchScreenConfigs(Display *dpy, __GLXdisplayPrivate *priv)
 	    Xmalloc(reply.numVisuals * sizeof(__GLXvisualConfig));
 	psc->numConfigs = reply.numVisuals;
 	if (!psc->configs) {
+	    UnlockDisplay(dpy);
+	    SyncHandle();
 	    FreeScreenConfigs(priv);
 	    return GL_FALSE;
 	}
@@ -444,6 +449,7 @@ static Bool AllocAndFetchScreenConfigs(Display *dpy, __GLXdisplayPrivate *priv)
 	if (props != buf) {
 	    Xfree((char *)props);
 	}
+	UnlockDisplay(dpy);
 
 #ifdef GLX_DIRECT_RENDERING
 	/* Initialize the direct rendering per screen data and functions */

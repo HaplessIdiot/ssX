@@ -1,4 +1,6 @@
 XFree86 4.2.99.4 (20 January 2003)
+ 767. Fix GLX library mis-use of LockDisplay()/UnlockDisplay() sequences
+      (reported by Alexis Vartanian).
  766. Fix XDarwin's rootless mode with 16-bit color (Apple).
  765. Allow UTF8 conversion to work for Japanese locales (#A.1527,
       Etsushi Kato).
@@ -16084,4 +16086,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2485 2003/01/20 04:18:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2486 2003/01/20 05:42:50 torrey Exp $
