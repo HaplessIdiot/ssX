@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.275 2003/10/07 22:00:51 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.276 2003/10/08 14:58:26 dawes Exp $ */
 
 
 /*
@@ -44,8 +44,6 @@
  *      Egbert Eich <eich@XFree86.Org>
  *      ... and others
  */
-
-/* $DHD: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 1.16 2003/09/20 01:36:56 dawes Exp $ */
 
 #ifdef XF86DRI
 #include <sys/types.h>
