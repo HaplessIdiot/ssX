@@ -6,7 +6,7 @@
  * February 2001  Created
  * March 3, 2001  Restructured as generic rootless mode
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessScreen.c,v 1.2 2002/04/03 00:06:32 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessScreen.c,v 1.3 2002/10/16 21:13:33 dawes Exp $ */
 
 
 #include "mi.h"
@@ -59,16 +59,52 @@ RootlessGetImage(DrawablePtr pDrawable, int sx, int sy, int w, int h,
     SCREEN_UNWRAP(pScreen, GetImage);
 
     if (pDrawable->type == DRAWABLE_WINDOW) {
+        int x0, y0, x1, y1;
+        RootlessWindowRec *winRec;
+
         // Many apps use GetImage to sync with the visible frame buffer
         // FIXME: entire screen or just window or all screens?
         RootlessRedisplayScreen(pScreen);
 
         // RedisplayScreen stops drawing, so we need to start it again
         RootlessStartDrawing((WindowPtr)pDrawable);
+
+        /* Check that we have some place to read from. */
+        winRec = WINREC (TopLevelParent ((WindowPtr) pDrawable));
+        if (winRec == NULL)
+            goto out;
+
+        /* Clip to top-level window bounds. */
+        /* FIXME: fbGetImage uses the width parameter to calculate the
+           stride of the destination pixmap. If w is clipped, the data
+           returned will be garbage, although we will not crash. */
+
+        x0 = pDrawable->x + sx;
+        y0 = pDrawable->y + sy;
+        x1 = x0 + w;
+        y1 = y0 + h;
+
+        if (x0 < winRec->frame.x)
+            x0 = winRec->frame.x;
+        if (y0 < winRec->frame.y)
+            y0 = winRec->frame.y;
+        if (x1 > winRec->frame.x + winRec->frame.w)
+            x1 = winRec->frame.x + winRec->frame.w;
+        if (y1 > winRec->frame.y + winRec->frame.h)
+            y1 = winRec->frame.y + winRec->frame.h;
+
+        sx = x0 - pDrawable->x;
+        sy = y0 - pDrawable->y;
+        w = x1 - x0;
+        h = y1 - y0;
+
+        if (w <= 0 || h <= 0)
+            goto out;
     }
 
     pScreen->GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
 
+out:
     SCREEN_WRAP(pScreen, GetImage);
 }
 
