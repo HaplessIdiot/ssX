@@ -8,6 +8,7 @@ XFree86 4.4.99.8 (xx June 2004)
     - Add video blitter as second Xv adaptor (M650/651 and later)
     - Add hotplug support (including LCD)
     - Add preliminary support for SiS340
+    These changes are covered by the SiS driver license. See sis_driver.c.
  137. Fixes and updates for XKB keymaps:
     - Update Serbian keymap with new variant (Bugzilla #1176, Zvezdan Petkovic).
     - Add Genius KB-12e model to inet keymap (Ricardo Cruz).
@@ -19010,7 +19011,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3281 2004/06/19 13:55:05 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3282 2004/06/21 00:47:14 twini Exp $
 
 
 
