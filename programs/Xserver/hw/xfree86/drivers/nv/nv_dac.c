@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.33 2003/06/23 21:38:42 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.34 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -183,18 +183,28 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        nvReg->pixel |= (1 << 7);
        nvReg->scale |= (1 << 8) ;
     }
+
+    nvReg->vpll = nvReg->pll;
+    nvReg->vpll2 = nvReg->pll;
+    nvReg->vpllB = nvReg->pllB;
+    nvReg->vpll2B = nvReg->pllB;
+
     if(pNv->CRTCnumber) {
        nvReg->head  = pNv->PCRTC0[0x00000860/4] & ~0x00001000;
        nvReg->head2 = pNv->PCRTC0[0x00002860/4] | 0x00001000;
        nvReg->crtcOwner = 3;
        nvReg->pllsel |= 0x20000800;
-       nvReg->vpll2 = nvReg->vpll;
+       nvReg->vpll = pNv->PRAMDAC0[0x0508/4];
+       if(pNv->twoStagePLL) 
+          nvReg->vpllB = pNv->PRAMDAC0[0x0578/4];
     } else 
     if(pNv->twoHeads) {
        nvReg->head  =  pNv->PCRTC0[0x00000860/4] | 0x00001000;
        nvReg->head2 =  pNv->PCRTC0[0x00002860/4] & ~0x00001000;
        nvReg->crtcOwner = 0;
-       nvReg->vpll2 = pNv->PRAMDAC0[0x00000520/4];
+       nvReg->vpll2 = pNv->PRAMDAC0[0x0520/4];
+       if(pNv->twoStagePLL) 
+          nvReg->vpll2B = pNv->PRAMDAC0[0x057C/4];
     }
 
     nvReg->cursorConfig = 0x00000100;
@@ -221,9 +231,6 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         }
     } else
        nvReg->cursorConfig |= 0x02000000;
-
-    nvReg->vpllB = 0;
-    nvReg->vpll2B = 0;
 
     return (TRUE);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.41 2003/06/23 21:38:42 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.42 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -47,6 +47,8 @@ typedef struct _riva_hw_state
     U032 horiz;
     U032 arbitration0;
     U032 arbitration1;
+    U032 pll;
+    U032 pllB;
     U032 vpll;
     U032 vpll2;
     U032 vpllB;
@@ -145,6 +147,7 @@ typedef struct {
     Bool                alphaCursor;
     unsigned char       DDCBase;
     Bool                twoHeads;
+    Bool                twoStagePLL;
 
     CARD32              dmaPut;
     CARD32              dmaCurrent;
