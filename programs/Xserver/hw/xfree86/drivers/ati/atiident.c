@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.c,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,78 +21,84 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
 #include "atiident.h"
-#include "atiutil.h"
-#include "vga.h"
-#include "xf86_OSproc.h"
-#include "xf86Priv.h"
+#include "ativersion.h"
 
-#define XCONFIG_FLAGS_ONLY
-#include "xf86_Config.h"
-
-CARD8 ATIChipSet = ATI_CHIPSET_ATI;
-
-char *ATIChipSetNames[] =
+const char *ATIChipsetNames[] =
 {
-    "ati",              /* "Full-blown" ATI support */
-    "ativga",           /* Don't use ATI accelerator */
-    "ibmvga",           /* Generic VGA */
-#if 0
-    "ibm8514",          /* IBM 8514/A */
+    "ati",
+    "ativga",
+    "ibmvga",
+    "ibm8514",
+    "vgawonder",
+    "mach8",
+    "mach32",
+    "mach64"
+};
+
+static SymTabRec ATIPublicChipsetNames[] =
+{
+    {ATI_CHIPSET_ATI, "ati"},
+    {ATI_CHIPSET_ATIVGA, "ativga"},
+#ifdef __MAYBE_NOT__
+    {ATI_CHIPSET_IBMVGA, "ibmvga"},
 #endif
+#ifdef __NOT_YET__
+    {ATI_CHIPSET_IBM8514, "ibm8514"},
+#endif
+    {-1, NULL}
 };
 
 /*
- * ATIIdent --
+ * ATIIdentify --
  *
- * Returns a string name for this driver or NULL.
+ * Print the driver's list of chipset names.
  */
-char *
-ATIIdent(int n)
+void
+ATIIdentify
+(
+    int flags
+)
 {
-#if 1
-    /* For now, don't advertise non-default chipset names */
-    if (n != ATI_CHIPSET_ATI)
-#else
-    if ((n < 0) || (n >= NumberOf(ATIChipSetNames)))
-#endif
-        return NULL;
-    else
-        return ATIChipSetNames[n];
+    xf86PrintChipsets(ATI_NAME,
+        "ATI driver (version " ATI_VERSION_NAME ") for chipsets",
+        ATIPublicChipsetNames);
 }
 
 /*
  * ATIIdentProbe --
  *
  * This function determines if the user specified a chipset name acceptable to
- * this driver, and, if so, sets ATIChipSet accordingly.
+ * the driver.  It returns an ATIChipsetType or -1.
  */
-Bool
-ATIIdentProbe(void)
+int
+ATIIdentProbe
+(
+    const char *ChipsetName
+)
 {
-    int Index;
-    static const char *LegacyNames[] =
-        {"vgawonder", "mach8", "mach32", "mach64"};
+    int              Chipset;
 
-    /* Let ATIProbe continue if no chipset is specified */
-    if (!vga256InfoRec.chipset)
-        return TRUE;
+    static SymTabRec SpecificNames[] =
+    {
+        {ATI_CHIPSET_VGAWONDER, "vgawonder"},
+#ifdef __NOT_YET__
+        {ATI_CHIPSET_MACH8, "mach8"},
+#endif
+        {ATI_CHIPSET_MACH32, "mach32"},
+        {ATI_CHIPSET_MACH64, "mach64"},
+        {-1, NULL}
+    };
 
-    for (;  ATIChipSet < NumberOf(ATIChipSetNames);  ATIChipSet++)
-        if (!StrCaseCmp(vga256InfoRec.chipset, ATIChipSetNames[ATIChipSet]))
-            return TRUE;
+    /* If no Chipset specification, default to "ati" */
+    if (!ChipsetName || !*ChipsetName)
+        return ATI_CHIPSET_ATI;
 
-    /* Reset to default */
-    ATIChipSet = ATI_CHIPSET_ATI;
+    Chipset = xf86StringToToken(ATIPublicChipsetNames, ChipsetName);
+    if (Chipset != -1)
+        return Chipset;
 
-    /* Check for some other chipset names that need changing */
-    for (Index = 0;  StrCaseCmp(vga256InfoRec.chipset, LegacyNames[Index]);  )
-        if (++Index >= NumberOf(LegacyNames))
-            return FALSE;
-
-    if (xf86Verbose)
-        ErrorF("XF86Config ChipSet specification changed from \"%s\" to"
-               " \"%s\".\n", LegacyNames[Index], ATIChipSetNames[ATIChipSet]);
-    OFLG_CLR(XCONFIG_CHIPSET, &vga256InfoRec.xconfigFlag);
-    return TRUE;
+    /* Check for some other chipset names */
+    return xf86StringToToken(SpecificNames, ChipsetName);
 }

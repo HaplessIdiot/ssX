@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,9 +24,21 @@
 #ifndef ___ATICONSOLE_H___
 #define ___ATICONSOLE_H___ 1
 
+#include "atipriv.h"
 #include "atiproto.h"
-#include "misc.h"
+#include "xf86str.h"
 
-extern void ATIEnterLeave FunctionPrototype((const Bool));
+extern Bool ATISaveScreen    FunctionPrototype((ScreenPtr, int));
+
+extern Bool ATIEnterGraphics FunctionPrototype((ScreenPtr, ScrnInfoPtr,
+                                                ATIPtr));
+extern void ATILeaveGraphics FunctionPrototype((ScrnInfoPtr, ATIPtr));
+
+extern Bool ATISwitchMode    FunctionPrototype((int, DisplayModePtr, int));
+
+extern Bool ATIEnterVT       FunctionPrototype((int, int));
+extern void ATILeaveVT       FunctionPrototype((int, int));
+
+extern void ATIFreeScreen    FunctionPrototype((int, int));
 
 #endif /* ___ATICONSOLE_H___ */

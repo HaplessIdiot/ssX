@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -25,16 +25,23 @@
 #define ___ATIIDENT_H___ 1
 
 #include "atiproto.h"
-#include "misc.h"
 
-#define ATI_CHIPSET_ATI		0
-#define ATI_CHIPSET_ATIVGA	1
-#define ATI_CHIPSET_IBMVGA	2
-#define ATI_CHIPSET_IBM8514	3	/* ? */
-extern CARD8 ATIChipSet;
-extern char * ATIChipSetNames[];
+typedef enum
+{
+    ATI_CHIPSET_ATI,
+    ATI_CHIPSET_ATIVGA,
+    ATI_CHIPSET_IBMVGA,
+    ATI_CHIPSET_IBM8514,
+    ATI_CHIPSET_VGAWONDER,
+    ATI_CHIPSET_MACH8,
+    ATI_CHIPSET_MACH32,
+    ATI_CHIPSET_MACH64,
+    ATI_CHIPSET_MAX             /* Must be last */
+} ATIChipsetType;
 
-extern char * ATIIdent      FunctionPrototype((int));
-extern Bool   ATIIdentProbe FunctionPrototype((void));
+extern const char *ATIChipsetNames[];
+
+extern void ATIIdentify   FunctionPrototype((int));
+extern int  ATIIdentProbe FunctionPrototype((const char *));
 
 #endif /* ___ATIIDENT_H___ */

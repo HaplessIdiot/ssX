@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.37 1999/06/14 07:31:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.38 1999/06/27 14:08:16 dawes Exp $ */
 
 
 
@@ -246,6 +246,7 @@ struct xf86stat {
 #define setbuf(FP,cp)		xf86setbuf(FP,cp)
 #define setvbuf(FP,cp,i,I)	xf86setvbuf(FP,cp,i,I)
 #define sin(d)			xf86sin(d)
+#define snprintf		xf86snprintf
 #define sprintf			xf86sprintf
 #define sqrt(d)			xf86sqrt(d)
 #define sscanf			xf86sscanf
@@ -276,6 +277,7 @@ struct xf86stat {
 #define toupper(i)		xf86toupper(i)
 #define ungetc(i,FP)		xf86ungetc(i,FP)
 #define vfprintf		xf86vfprintf
+#define vsnprintf		xf86vsnprintf
 #define vsprintf		xf86vsprintf
 /* XXX Disable assert as if NDEBUG was defined */
 /* Some X headers defined this away too */

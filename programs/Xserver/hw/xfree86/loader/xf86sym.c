@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.102 1999/07/04 06:39:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.103 1999/07/05 12:12:05 dawes Exp $ */
 
 /*
  *
@@ -236,9 +236,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86CheckPciSlot)
    SYMFUNC(xf86ClaimPciSlot)
    SYMFUNC(xf86GetPciVideoInfo)
-#if 0
    SYMFUNC(xf86GetPciConfigInfo)
-#endif
    SYMFUNC(xf86ClaimIsaSlot)
    SYMFUNC(xf86ParsePciBusString)
    SYMFUNC(xf86ComparePciBusString)
@@ -347,6 +345,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetFlipPixels)
    SYMFUNC(xf86GetServerName)
    SYMFUNC(xf86ServerIsExiting)
+   SYMFUNC(xf86ServerIsOnlyProbing)
    SYMFUNC(xf86ServerIsResetting)
    SYMFUNC(xf86CaughtSignal)
    SYMFUNC(xf86GetVidModeAllowNonLocal)
@@ -567,6 +566,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(LoadFont)
    SYMFUNC(LoaderReqSymbols)
    SYMFUNC(LoaderReqSymLists)
+   SYMFUNC(LoaderRefSymbols)
    SYMFUNC(LoaderRefSymLists)
    SYMFUNC(UnloadSubModule)
    SYMFUNC(LoaderSymbol)
@@ -670,6 +670,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86setbuf)
    SYMFUNC(xf86setvbuf)
    SYMFUNC(xf86sin)
+   SYMFUNC(xf86snprintf)
    SYMFUNC(xf86sprintf)
    SYMFUNC(xf86sqrt)
    SYMFUNC(xf86sscanf)
@@ -698,6 +699,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86toupper)
    SYMFUNC(xf86ungetc)
    SYMFUNC(xf86vfprintf)
+   SYMFUNC(xf86vsnprintf)
    SYMFUNC(xf86vsprintf)
   
 /* non-ANSI C functions */
@@ -853,5 +855,3 @@ LOOKUP xfree86LookupTab[] = {
   { 0, 0 },
 
 };
-
-

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.13 1999/06/12 07:18:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.14 1999/06/12 17:30:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -13,6 +13,7 @@
 #define _XF86PRIVSTR_H
 
 #include "Xproto.h"
+#include "xf86Pci.h"
 #ifdef XINPUT
 #endif
 

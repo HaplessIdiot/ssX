@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.17 1999/05/29 14:41:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.18 1999/05/30 03:03:28 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -24,9 +24,9 @@ int
 xf86GetNearestClock(ScrnInfoPtr scrp, int freq, Bool allowDiv2,
     int DivFactor, int MulFactor, int *divider)
 {
-    int nearestClock = 0;
+    int nearestClock = 0, nearestDiv = 1;
     int minimumGap = abs(freq - scrp->clock[0]);
-    int i, j, k;
+    int i, j, k, gap;
 
     if (allowDiv2)
 	k = 2;
@@ -39,10 +39,12 @@ xf86GetNearestClock(ScrnInfoPtr scrp, int freq, Bool allowDiv2,
     
     for (i = 0;  i < scrp->numClocks;  i++) {
 	for (j = 1; j <= k; j++) {
-	    int gap = abs((freq * j) - ((scrp->clock[i] * DivFactor) / MulFactor));
-	    if (gap < minimumGap) {
-	    	minimumGap = gap;
-	    	nearestClock = i;
+	    gap = abs((freq * j) - ((scrp->clock[i] * DivFactor) / MulFactor));
+	    if ((gap < minimumGap) ||
+		((gap == minimumGap) && (j < nearestDiv))) {
+		minimumGap = gap;
+		nearestClock = i;
+		nearestDiv = j;
 		if (divider != NULL)
 		    *divider = (j - 1) * V_CLKDIV2;
 	    }

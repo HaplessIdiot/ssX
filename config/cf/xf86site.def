@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.141 1999/06/12 15:36:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.142 1999/07/04 08:31:01 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -221,9 +221,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.141 1999/06/12 15:36:57 dawes Exp 
 
 /*
  * Which drivers to build.  When building a static server, each of these
- * will be included in it.
+ * will be included in it.  When building the loadable server each of these
+ * modules will be built.
  *
-#define XF86CardDrivers		mga glint vga
+#define XF86CardDrivers		mga glint tga s3virge sis rendition neomagic \
+				cirrus tseng trident chips \
+				GlideDriver fbdev \
+				ati vga XF86ExtraCardDrivers
  */
 
 /*

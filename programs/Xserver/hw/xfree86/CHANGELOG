@@ -1,4 +1,27 @@
-XFree86 3.9Pw (x July 1999)
+XFree86 3.9Pw (6 July 1999)
+2835. Fix for GetBlock() (#2974, Egbert Eich).
+2834. Remove the test for SHAREDIOCLASS when creating a pciAccessInfoRec for
+      a device (#2974, Egbert Eich).
+2833. Modified BIOS ROM handling, doing validation only on demand (#2974,
+      Egbert Eich).
+2832. Add a ChangeGamma function to the ScrnInfoRec, which allows drivers to
+      optionally provide a function to do this instead of the default one
+      provided by the colormap layer (#2972, Mark Vojkovich).
+2831. Sis driver memclock fixes (#2971, Bart Oldeman, Juanjo Santamarta).
+2830. Add snprintf() and vsnprintf() to libc emulation (#2970, Marc La France).
+2829. Increase array size in PciInfo data (#2970, Marc La France).
+2828. Add a LoaderRefSymbols() function (#2970, Marc La France).
+2827. When matching fixed clocks, prefer non-CLKDIV2 modes over CLKDIV2 modes
+      (#2970, Marc La France).
+2826. Reinstate xf86GetPciConfigInfo() and some warning fixes (#2970,
+      Marc La France).
+2825. Build libXext and libX11 client-side libraries when also building
+      GLX, despite BuildServersOnly (#2970, Marc La France).
+2824. Update ATI doc (#2970, Marc La France).
+2823. ATI driver from 3.3.3.1 (rac interface is preliminary, no LCD panel
+      or Rage 128 support yet) (#2970, Marc La France).
+2822. Fix Ukrainian_GHE_with_upturn double definition error (#2969,
+      Peter Novodvorsky).
 2822. Updates to the xf86config utility for the 4.0 config file format
       (#2968, Matthieu Herrb).
 2821. Add default rules to allow easy compilation of .c files to assembler.
@@ -8317,4 +8340,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.790 1999/07/05 04:23:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.791 1999/07/05 12:12:00 dawes Exp $

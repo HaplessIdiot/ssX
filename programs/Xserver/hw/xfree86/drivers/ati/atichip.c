@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.3 1998/03/20 21:06:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.4tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,14 +21,15 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
 #include "atibus.h"
 #include "atichip.h"
 #include "atiio.h"
+#include "ativersion.h"
 
 /*
  * Chip-related definitions.
  */
-CARD8 ATIChip = ATI_CHIP_NONE;
 const char *ATIChipNames[] =
 {
     "Unknown",
@@ -66,13 +67,10 @@ const char *ATIChipNames[] =
     "ATI 3D Rage IIc",
     "ATI 3D Rage Pro",
     "ATI 3D Rage LT Pro",
+    "ATI 3D Rage XL or XC",
     "ATI unknown Mach64",
 };
 
-CARD16 ATIChipType = 0, ATIChipClass = 0, ATIChipRevision = 0;
-CARD16 ATIChipVersion = 0, ATIChipFoundry = 0;
-CARD8 ATIChipHasSUBSYS_CNTL = FALSE;
-CARD8 ATIChipHasVGAWonder   = FALSE;
 const char *ATIFoundryNames[] =
     { "SGS", "NEC", "KCS", "UMC", "4", "5", "6", "UMC" };
 
@@ -82,34 +80,38 @@ const char *ATIFoundryNames[] =
  * Set variables whose value is dependent upon an 68800's CHIP_ID register.
  */
 void
-ATIMach32ChipID(void)
+ATIMach32ChipID
+(
+    ATIPtr pATI
+)
 {
-    CARD16 IO_Value = inw(CHIP_ID);
-    ATIChipType     = GetBits(IO_Value, CHIP_CODE_0 | CHIP_CODE_1);
-    ATIChipClass    = GetBits(IO_Value, CHIP_CLASS);
-    ATIChipRevision = GetBits(IO_Value, CHIP_REV);
-    if (IO_Value == 0xFFFFU)
-        IO_Value = 0;
-    switch (GetBits(IO_Value, CHIP_CODE_0 | CHIP_CODE_1))
+    CARD16 IOValue     = inw(CHIP_ID);
+    pATI->ChipType     = GetBits(IOValue, CHIP_CODE_0 | CHIP_CODE_1);
+    pATI->ChipClass    = GetBits(IOValue, CHIP_CLASS);
+    pATI->ChipRevision = GetBits(IOValue, CHIP_REV);
+    pATI->ChipRev      = pATI->ChipRevision;
+    if (IOValue == 0xFFFFU)
+        IOValue = 0;
+    switch (GetBits(IOValue, CHIP_CODE_0 | CHIP_CODE_1))
     {
-        case 0x0000U:
-            ATIChip = ATI_CHIP_68800_3;
+        case OldChipID('A', 'A'):
+            pATI->Chip = ATI_CHIP_68800_3;
             break;
 
-        case 0x02F7U:
-            ATIChip = ATI_CHIP_68800_6;
+        case OldChipID('X', 'X'):
+            pATI->Chip = ATI_CHIP_68800_6;
             break;
 
-        case 0x0177U:
-            ATIChip = ATI_CHIP_68800LX;
+        case OldChipID('L', 'X'):
+            pATI->Chip = ATI_CHIP_68800LX;
             break;
 
-        case 0x0017U:
-            ATIChip = ATI_CHIP_68800AX;
+        case OldChipID('A', 'X'):
+            pATI->Chip = ATI_CHIP_68800AX;
             break;
 
         default:
-            ATIChip = ATI_CHIP_68800;
+            pATI->Chip = ATI_CHIP_68800;
             break;
     }
 }
@@ -121,191 +123,310 @@ ATIMach32ChipID(void)
  * register.
  */
 void
-ATIMach64ChipID(const CARD16 ExpectedChipType)
+ATIMach64ChipID
+(
+    ATIPtr       pATI,
+    const CARD16 ExpectedChipType
+)
 {
-    CARD32 IO_Value = inl(ATIIOPort(CONFIG_CHIP_ID));
-    ATIChipType     = GetBits(IO_Value, 0xFFFFU);
-    ATIChipClass    = GetBits(IO_Value, CFG_CHIP_CLASS);
-    ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REV);
-    ATIChipVersion  = GetBits(IO_Value, CFG_CHIP_VERSION);
-    ATIChipFoundry  = GetBits(IO_Value, CFG_CHIP_FOUNDRY);
-    switch (ATIChipType)
+    CARD32 IOValue     = inl(ATIIOPort(CONFIG_CHIP_ID));
+    pATI->ChipType     = GetBits(IOValue, 0xFFFFU);
+    pATI->ChipClass    = GetBits(IOValue, CFG_CHIP_CLASS);
+    pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REV);
+    pATI->ChipVersion  = GetBits(IOValue, CFG_CHIP_VERSION);
+    pATI->ChipFoundry  = GetBits(IOValue, CFG_CHIP_FOUNDRY);
+    pATI->ChipRev      = pATI->ChipRevision;
+    switch (pATI->ChipType)
     {
-        case 0x00D7U:
-            ATIChipType = 0x4758U;
-        case 0x4758U:
-            switch (ATIChipRevision)
+        case OldChipID('G', 'X'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'X'):
+            switch (pATI->ChipRevision)
             {
                 case 0x00U:
-                    ATIChip = ATI_CHIP_88800GXC;
+                    pATI->Chip = ATI_CHIP_88800GXC;
                     break;
 
                 case 0x01U:
-                    ATIChip = ATI_CHIP_88800GXD;
+                    pATI->Chip = ATI_CHIP_88800GXD;
                     break;
 
                 case 0x02U:
-                    ATIChip = ATI_CHIP_88800GXE;
+                    pATI->Chip = ATI_CHIP_88800GXE;
                     break;
 
                 case 0x03U:
-                    ATIChip = ATI_CHIP_88800GXF;
+                    pATI->Chip = ATI_CHIP_88800GXF;
                     break;
 
                 default:
-                    ATIChip = ATI_CHIP_88800GX;
+                    pATI->Chip = ATI_CHIP_88800GX;
                     break;
             }
             break;
 
-        case 0x0057U:
-            ATIChipType = 0x4358U;
-        case 0x4358U:
-            ATIChip = ATI_CHIP_88800CX;
+        case OldChipID('C', 'X'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('C', 'X'):
+            pATI->Chip = ATI_CHIP_88800CX;
             break;
 
-        case 0x0053U:
-            ATIChipType = 0x4354U;
-        case 0x4354U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264CT;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('C', 'T'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('C', 'T'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264CT;
+            pATI->BusType = ATI_BUS_PCI;
             break;
 
-        case 0x0093U:
-            ATIChipType = 0x4554U;
-        case 0x4554U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264ET;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('E', 'T'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('E', 'T'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264ET;
+            pATI->BusType = ATI_BUS_PCI;
             break;
 
-        case 0x02B3U:
-            ATIChipType = 0x5654U;
-        case 0x5654U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264VT;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('V', 'T'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('V', 'T'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264VT;
+            pATI->BusType = ATI_BUS_PCI;
             /* Some early GT's are detected as VT's */
-            if (ExpectedChipType && (ATIChipType != ExpectedChipType))
+            if (ExpectedChipType && (pATI->ChipType != ExpectedChipType))
             {
-                if (ExpectedChipType == 0x4754U)
-                    ATIChip = ATI_CHIP_264GT;
+                if (ExpectedChipType == NewChipID('G', 'T'))
+                    pATI->Chip = ATI_CHIP_264GT;
                 else
-                    ErrorF("Mach64 chip type probe discrepancy detected:\n"
-                           " PCI=0x%04X;  CHIP_ID=0x%04X.\n",
-                           ExpectedChipType, ATIChipType);
+                    xf86Msg(X_WARNING,
+                            ATI_NAME ":  Mach64 chip type probe discrepancy"
+                            " detected:  PCI=0x%04X;  CHIP_ID=0x%04X.\n",
+                            ExpectedChipType, pATI->ChipType);
             }
-            else if (ATIChipVersion)
-                ATIChip = ATI_CHIP_264VTB;
+            else if (pATI->ChipVersion)
+                pATI->Chip = ATI_CHIP_264VTB;
             break;
 
-        case 0x00D3U:
-            ATIChipType = 0x4754U;
-        case 0x4754U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIBusType = ATI_BUS_PCI;
-            if (!ATIChipVersion)
-                ATIChip = ATI_CHIP_264GT;
+        case OldChipID('G', 'T'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'T'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->BusType = ATI_BUS_PCI;
+            if (!pATI->ChipVersion)
+                pATI->Chip = ATI_CHIP_264GT;
             else
-                ATIChip = ATI_CHIP_264GTB;
+                pATI->Chip = ATI_CHIP_264GTB;
             break;
 
-        case 0x02B4U:
-            ATIChipType = 0x5655U;
-        case 0x5655U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264VT3;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('V', 'U'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('V', 'U'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264VT3;
+            pATI->BusType = ATI_BUS_PCI;
             break;
 
-        case 0x00D4U:
-            ATIChipType = 0x4755U;
-        case 0x4755U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264GTDVD;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('G', 'U'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'U'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264GTDVD;
+            pATI->BusType = ATI_BUS_PCI;
             break;
 
-        case 0x0166U:
-            ATIChipType = 0x4C47U;
-        case 0x4C47U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264LT;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('L', 'G'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('L', 'G'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264LT;
+            pATI->BusType = ATI_BUS_PCI;
             break;
 
-        case 0x0315U:
-            ATIChipType = 0x5656U;
-        case 0x5656U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264VT4;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('V', 'V'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('V', 'V'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264VT4;
+            pATI->BusType = ATI_BUS_PCI;
             break;
 
-        case 0x00D5U:
-            ATIChipType = 0x4756U;
-        case 0x4756U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264GT2C;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('G', 'V'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'V'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264GT2C;
+            pATI->BusType = ATI_BUS_PCI;
             break;
 
-        case 0x00D6U:
-        case 0x00D9U:
-            ATIChipType = 0x4757U;
-        case 0x4757U:
-        case 0x475AU:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264GT2C;
-            ATIBusType = ATI_BUS_AGP;
+        case OldChipID('G', 'W'):
+        case OldChipID('G', 'Z'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'W'):
+        case NewChipID('G', 'Z'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264GT2C;
+            pATI->BusType = ATI_BUS_AGP;
             break;
 
-        case 0x00CEU:
-        case 0x00CFU:
-        case 0x00D0U:
-            ATIChipType = 0x4750U;
-        case 0x4749U:
-        case 0x4750U:
-        case 0x4751U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264GTPRO;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('G', 'I'):
+        case OldChipID('G', 'P'):
+        case OldChipID('G', 'Q'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'I'):
+        case NewChipID('G', 'P'):
+        case NewChipID('G', 'Q'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264GTPRO;
+            pATI->BusType = ATI_BUS_PCI;
             break;
 
-        case 0x00C7U:
-        case 0x00C9U:
-            ATIChipType = 0x4742U;
-        case 0x4742U:
-        case 0x4744U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264GTPRO;
-            ATIBusType = ATI_BUS_AGP;
+        case OldChipID('G', 'B'):
+        case OldChipID('G', 'D'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'B'):
+        case NewChipID('G', 'D'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264GTPRO;
+            pATI->BusType = ATI_BUS_AGP;
             break;
 
-        case 0x0168U:
-        case 0x016FU:
-            ATIChipType = 0x4C50U;
-        case 0x4C49U:
-        case 0x4C50U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264LTPRO;
-            ATIBusType = ATI_BUS_PCI;
+        case OldChipID('L', 'I'):
+        case OldChipID('L', 'P'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('L', 'I'):
+        case NewChipID('L', 'P'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264LTPRO;
+            pATI->BusType = ATI_BUS_PCI;
             break;
 
-        case 0x0161U:
-        case 0x0163U:
-            ATIChipType = 0x4C42U;
-        case 0x4C42U:
-        case 0x4C44U:
-            ATIChipRevision = GetBits(IO_Value, CFG_CHIP_REVISION);
-            ATIChip = ATI_CHIP_264LTPRO;
-            ATIBusType = ATI_BUS_AGP;
+        case OldChipID('L', 'B'):
+        case OldChipID('L', 'D'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('L', 'B'):
+        case NewChipID('L', 'D'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264LTPRO;
+            pATI->BusType = ATI_BUS_AGP;
+            break;
+
+        case OldChipID('G', 'O'):
+        case OldChipID('G', 'R'):
+        case OldChipID('G', 'S'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'O'):
+        case NewChipID('G', 'R'):
+        case NewChipID('G', 'S'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264XL;
+            pATI->BusType = ATI_BUS_PCI;
+            break;
+
+        case OldChipID('G', 'M'):
+        case OldChipID('G', 'N'):
+            pATI->ChipType = OldToNewChipID(pATI->ChipType);
+        case NewChipID('G', 'M'):
+        case NewChipID('G', 'N'):
+            pATI->ChipRevision = GetBits(IOValue, CFG_CHIP_REVISION);
+            pATI->Chip = ATI_CHIP_264XL;
+            pATI->BusType = ATI_BUS_AGP;
             break;
 
         default:
-            ATIChip = ATI_CHIP_Mach64;
-            ATIBusType = ATI_BUS_PCI;
+            pATI->Chip = ATI_CHIP_Mach64;
             break;
+    }
+}
+
+/*
+ * ATIPCIChip --
+ *
+ * This returns the ATI_CHIP_* value (generally) associated with a particular
+ * ChipID/ChipRev combination.
+ */
+ATIChipType
+ATIChipID
+(
+    const CARD16 ChipID,
+    const CARD8  ChipRev
+)
+{
+    switch (ChipID)
+    {
+        case OldChipID('A', 'A'):  case NewChipID('A', 'A'):
+            return ATI_CHIP_68800_3;
+
+        case OldChipID('X', 'X'):  case NewChipID('X', 'X'):
+            return ATI_CHIP_68800_6;
+
+        case OldChipID('L', 'X'):  case NewChipID('L', 'X'):
+            return ATI_CHIP_68800LX;
+
+        case OldChipID('A', 'X'):  case NewChipID('A', 'X'):
+            return ATI_CHIP_68800AX;
+
+        case OldChipID('G', 'X'):  case NewChipID('G', 'X'):
+            return ATI_CHIP_88800GX;
+
+        case OldChipID('C', 'X'):  case NewChipID('C', 'X'):
+            return ATI_CHIP_88800CX;
+
+        case OldChipID('C', 'T'):  case NewChipID('C', 'T'):
+            return ATI_CHIP_264CT;
+
+        case OldChipID('E', 'T'):  case NewChipID('E', 'T'):
+            return ATI_CHIP_264ET;
+
+        case OldChipID('V', 'T'):  case NewChipID('V', 'T'):
+            /* For simplicity, ignore ChipID discrepancy that can occur here */
+            if (!(ChipRev & GetBits(CFG_CHIP_VERSION, CFG_CHIP_REV)))
+                return ATI_CHIP_264VT;
+            return ATI_CHIP_264VTB;
+
+        case OldChipID('G', 'T'):  case NewChipID('G', 'T'):
+            if (!(ChipRev & GetBits(CFG_CHIP_VERSION, CFG_CHIP_REV)))
+                return ATI_CHIP_264GT;
+            return ATI_CHIP_264GTB;
+
+        case OldChipID('V', 'U'):  case NewChipID('V', 'U'):
+            return ATI_CHIP_264VT3;
+
+        case OldChipID('G', 'U'):  case NewChipID('G', 'U'):
+            return ATI_CHIP_264GTDVD;
+
+        case OldChipID('L', 'G'):  case NewChipID('L', 'G'):
+            return ATI_CHIP_264LT;
+
+        case OldChipID('V', 'V'):  case NewChipID('V', 'V'):
+            return ATI_CHIP_264VT4;
+
+        case OldChipID('G', 'V'):  case NewChipID('G', 'V'):
+        case OldChipID('G', 'W'):  case NewChipID('G', 'W'):
+        case OldChipID('G', 'Z'):  case NewChipID('G', 'Z'):
+            return ATI_CHIP_264GT2C;
+
+        case OldChipID('G', 'B'):  case NewChipID('G', 'B'):
+        case OldChipID('G', 'D'):  case NewChipID('G', 'D'):
+        case OldChipID('G', 'I'):  case NewChipID('G', 'I'):
+        case OldChipID('G', 'P'):  case NewChipID('G', 'P'):
+        case OldChipID('G', 'Q'):  case NewChipID('G', 'Q'):
+            return ATI_CHIP_264GTPRO;
+
+        case OldChipID('L', 'B'):  case NewChipID('L', 'B'):
+        case OldChipID('L', 'D'):  case NewChipID('L', 'D'):
+        case OldChipID('L', 'I'):  case NewChipID('L', 'I'):
+        case OldChipID('L', 'P'):  case NewChipID('L', 'P'):
+            return ATI_CHIP_264LTPRO;
+
+        case OldChipID('G', 'M'):  case NewChipID('G', 'M'):
+        case OldChipID('G', 'N'):  case NewChipID('G', 'N'):
+        case OldChipID('G', 'O'):  case NewChipID('G', 'O'):
+        case OldChipID('G', 'R'):  case NewChipID('G', 'R'):
+        case OldChipID('G', 'S'):  case NewChipID('G', 'S'):
+            return ATI_CHIP_264XL;
+
+        default:
+            return ATI_CHIP_Mach64;
     }
 }

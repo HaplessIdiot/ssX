@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,24 +21,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
+#include "atiadapter.h"
+#include "atibus.h"
+#include "atistruct.h"
 #include "atividmem.h"
-#include "misc.h"
-
-/*
- * The number of banks and planes the driver needs to deal with when saving or
- * setting a video mode.
- */
-unsigned int ATICurrentBanks, ATIMaximumBanks, ATICurrentPlanes;
-
-/*
- * The amount of video memory that is on the adapter, as opposed to the amount
- * to be made available to the server.
- */
-int ATIvideoRam;
-
-CARD8 ATIUsingSmallApertures = FALSE;
-
-CARD8 ATIMemoryType = 0;
 
 /* Memory types for 68800's and 88800GX's */
 const char *ATIMemoryTypeNames_Mach[] =
@@ -78,3 +65,86 @@ const char *ATIMemoryTypeNames_264xT[] =
     "Unknown video memory type",
     "Unknown video memory type"
 };
+
+/*
+ * ATIMapApertures --
+ *
+ * This function maps all apertures used by the driver.
+ */
+Bool
+ATIMapApertures
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI
+)
+{
+    if (pATI->Mapped)
+        return TRUE;
+
+    /* Map VGA aperture */
+    if (pATI->VGAAdapter != ATI_ADAPTER_VGA)
+    {
+        pATI->pBank = xf86MapVidMem(pScreenInfo->scrnIndex, VIDMEM_MMIO,
+            0x000A0000U, 0x00010000U);
+        if (!pATI->pBank)
+            return FALSE;
+        pATI->pMemory =
+            pATI->BankInfo.pBankA =
+            pATI->BankInfo.pBankB = pATI->pBank;
+    }
+
+    /* Map linear aperture */
+    if (pATI->LinearBase)
+    {
+        if ((pATI->BusType == ATI_BUS_PCI) && (pATI->BusType == ATI_BUS_AGP))
+            pATI->pMemory = xf86MapPciMem(pScreenInfo->scrnIndex,
+                VIDMEM_FRAMEBUFFER,
+                ((pciConfigPtr)(pATI->PCIInfo->thisCard))->tag,
+                pATI->LinearBase, pATI->LinearSize);
+        else
+            pATI->pMemory = xf86MapVidMem(pScreenInfo->scrnIndex,
+                VIDMEM_FRAMEBUFFER, pATI->LinearBase, pATI->LinearSize);
+        if (!pATI->pMemory)
+        {
+            if (pATI->pBank)
+            {
+                xf86UnMapVidMem(pScreenInfo->scrnIndex, pATI->pBank,
+                    0x00010000U);
+                pATI->pBank = NULL;
+            }
+            return FALSE;
+        }
+    }
+
+    pATI->Mapped = TRUE;
+    return TRUE;
+}
+
+/*
+ * ATIUnmapApertures --
+ *
+ * This function unmaps all apertures used by the driver.
+ */
+void
+ATIUnmapApertures
+(
+    ScrnInfoPtr pScreenInfo,
+    ATIPtr      pATI
+)
+{
+    if (!pATI->Mapped)
+        return;
+    pATI->Mapped = FALSE;
+
+    /* Unmap linear aperture */
+    if (pATI->pMemory != pATI->pBank)
+        xf86UnMapVidMem(pScreenInfo->scrnIndex, pATI->pMemory,
+            pATI->LinearSize);
+
+    /* Unmap VGA aperture */
+    if (pATI->pBank)
+        xf86UnMapVidMem(pScreenInfo->scrnIndex, pATI->pBank, 0x00010000U);
+
+    pATI->pMemory = pATI->pBank = NULL;
+    return;
+}

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -25,14 +25,17 @@
 #define ___ATIDAC_H___ 1
 
 #include "aticrtc.h"
+#include "atiio.h"
+#include "colormapst.h"
 
 /*
  * RAMDAC-related definitions.
  */
-#define ATI_DAC_MAX_TYPE                GetBits(DACTYPE, DACTYPE)
-#define ATI_DAC_MAX_SUBTYPE             GetBits(BIOS_INIT_DAC_SUBTYPE, \
-                                                BIOS_INIT_DAC_SUBTYPE)
+#define ATI_DAC_MAX_TYPE                MaxBits(DACTYPE)
+#define ATI_DAC_MAX_SUBTYPE             MaxBits(BIOS_INIT_DAC_SUBTYPE)
+
 #define ATI_DAC(_Type, _Subtype)        (((_Type) << 4) | (_Subtype))
+
 #define ATI_DAC_ATI68830                ATI_DAC(0x0U, 0x0U)
 #define ATI_DAC_SC11483                 ATI_DAC(0x1U, 0x0U)
 #define ATI_DAC_ATI68875                ATI_DAC(0x2U, 0x0U)
@@ -58,7 +61,6 @@
 #define ATI_DAC_IBMRGB514               ATI_DAC(0x9U, 0x0U)
 #define ATI_DAC_UNKNOWN                 ATI_DAC((ATI_DAC_MAX_TYPE << 2) + 3, \
                                                 ATI_DAC_MAX_SUBTYPE)
-extern CARD16 ATIDac;
 typedef struct
 {
         const int DACType;
@@ -66,12 +68,21 @@ typedef struct
 } DACRec;
 extern const DACRec ATIDACDescriptors[];
 
-extern CARD8 ATIGetMach64DACCmdReg FunctionPrototype((void));
+#define DACDelay                              \
+    do                                        \
+    {                                         \
+        (void)inb(GENS1(pATI->CPIO_VGABase)); \
+        (void)inb(GENS1(pATI->CPIO_VGABase)); \
+    } while(0)
 
-extern void ATISetDACIOPorts FunctionPrototype((CARD8));
+extern void  ATISetDACIOPorts FunctionPrototype((ATIPtr, ATICRTCType));
+extern CARD8 ATIGetDACCmdReg  FunctionPrototype((ATIPtr));
 
-extern void ATIDACSave    FunctionPrototype((ATIHWPtr));
-extern void ATIDACInit    FunctionPrototype((DisplayModePtr));
-extern void ATIDACRestore FunctionPrototype((ATIHWPtr));
+extern void  ATIDACPreInit FunctionPrototype((ScrnInfoPtr, ATIHWPtr));
+extern void  ATIDACSave    FunctionPrototype((ATIPtr, ATIHWPtr));
+extern void  ATIDACSet     FunctionPrototype((ATIPtr, ATIHWPtr));
+
+extern void  ATILoadPalette FunctionPrototype((ScrnInfoPtr, int, int *, LOCO *,
+                                               short));
 
 #endif /* ___ATIDAC_H___ */

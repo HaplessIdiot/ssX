@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,9 +24,11 @@
 #ifndef ___ATIADJUST_H___
 #define ___ATIADJUST_H___ 1
 
+#include "atipriv.h"
 #include "atiproto.h"
+#include "xf86str.h"
 
-extern void ATIAdjustInit FunctionPrototype((void));
-extern void ATIAdjust     FunctionPrototype((int, int));
+extern void ATIAdjustPreInit FunctionPrototype((ScrnInfoPtr, ATIPtr));
+extern void ATIAdjustFrame   FunctionPrototype((int, int, int, int));
 
 #endif /* ___ATIADJUST_H___ */

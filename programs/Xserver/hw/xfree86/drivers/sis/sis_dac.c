@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.9 1999/05/15 12:10:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.10 1999/06/20 15:02:55 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -678,12 +678,11 @@ SiSMclk()
     read_xr(MemClock1,Denum);
     mclk=mclk/((Denum & 0x0f)+1);
 
-#if 0 
-    /* Divider. Don't seems to work for mclk */
+    /* Divider. Don't seems to work for mclk with some cards ? */
     if ( (Num & 0x80)!=0 ) { 
          mclk = mclk*2;
     }
-#endif
+
     /* Post-scaler. Values depends on SR13 bit 7  */
     outb(VGA_SEQ_INDEX, ClockBase); 
     Base = inb(VGA_SEQ_DATA);
@@ -702,13 +701,14 @@ SiSMclk()
     return(mclk);
 }
 
-/***** Only for SiS 5597 / 6326 *****/
 /* Returns estimated memory bandwidth in Kbits/sec (for dotclock defaults)        */
-/* Currently, a very rough estimate (4 cycles / read ; 2 for fast_vram) */
-int sisMemBandWidth(ScrnInfoPtr pScrn)
-{ int band;
+/* Currently, a very rough estimate (2 cycles / read ; 1 for fast_vram), with 70% to allow for */
+int
+sisMemBandWidth(ScrnInfoPtr pScrn)
+{
   SISPtr pSiS = SISPTR(pScrn);
   SISRegPtr pReg = &pSiS->ModeReg;
+    int band;
 
    if (pSiS->MemClock)  
      band=pSiS->MemClock; 
@@ -716,11 +716,19 @@ int sisMemBandWidth(ScrnInfoPtr pScrn)
      band=SiSMclk();
 
    if (((pReg->sisRegs3C4[Mode64] >> 1) & 3) == 0) /* Only 1 bank Vram */
-     band = (band * 8);
-   else
      band = (band * 16);
+    else
+	band = (band * 32);
 
-   if ((pReg->sisRegs3C4[ExtMiscCont5] & 0xC0) == 0xC0) band=band*2;
+    if (pSiS->FastVram) {
+	band=band*2;
+    } else {
+	if (((pReg->sisRegs3C4[ExtMiscCont5]) & 0xC0) == 0xC0) band=band*2;
+    };
      
-   return(band);
+    /* Check AGP 2x Transfer Rate */
+    if (((pReg->sisRegs3C4[ExtConfStatus0]) & 0x30) == 0x30) band=band*2;
+
+    return(band*7/10);
 }
+

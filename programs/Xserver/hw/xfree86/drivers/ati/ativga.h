@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,11 +24,17 @@
 #ifndef ___ATIVGA_H___
 #define ___ATIVGA_H___ 1
 
-#include "aticrtc.h"
-#include "xf86.h"
+#include "atipriv.h"
+#include "atiproto.h"
+#include "xf86str.h"
 
-extern void ATIVGASave    FunctionPrototype((ATIHWPtr));
-extern void ATIVGAInit    FunctionPrototype((DisplayModePtr));
-extern void ATIVGARestore FunctionPrototype((ATIHWPtr));
+extern void ATIVGAPreInit    FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                ATIHWPtr));
+extern void ATIVGASave       FunctionPrototype((ATIPtr, ATIHWPtr));
+extern void ATIVGACalculate  FunctionPrototype((ATIPtr, ATIHWPtr,
+                                                DisplayModePtr));
+extern void ATIVGASet        FunctionPrototype((ATIPtr, ATIHWPtr));
+
+extern void ATIVGASaveScreen FunctionPrototype((ATIPtr, int));
 
 #endif /* ___ATIVGA_H___ */

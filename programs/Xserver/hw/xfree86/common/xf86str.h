@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.42 1999/06/27 14:07:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.43 1999/07/04 06:38:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -718,6 +718,7 @@ typedef struct _ScrnInfoRec {
 					    SaveRestoreFlags what);
     int			(*SetDGAMode)(int scrnIndex, int num, 
 					DGADevicePtr devRet);
+    int			(*ChangeGamma)(int scrnIndex, Gamma gamma);
     /*
      * This can be used when the minor ABI version is incremented.
      * The NUM_* parameter must be reduced appropriately to keep the

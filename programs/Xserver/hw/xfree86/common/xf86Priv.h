@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.51 1999/06/27 14:07:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.52 1999/07/04 06:38:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -129,6 +129,7 @@ void xf86ClearEntityListForScreen(int scrnIndex);
 ScrnInfoPtr xf86FindScreenForEntity(int entityIndex);
 extern void xf86PostPreInit(void);
 extern void xf86PostScreenInit(void);
+extern memType getValidBIOSBase(PCITAG tag, int num);
 
 /* xf86Config.c */
 

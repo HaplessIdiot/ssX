@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.5 1999/06/12 07:18:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.6 1999/07/04 06:38:51 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -78,6 +78,7 @@ typedef struct pci_io {
     xf86AccessRec memAccess;
     pciSave save;
     pciSave restore;
+    Bool ctrl;
 } pciAccRec, *pciAccPtr;
 
 typedef struct {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.15 1999/04/11 13:10:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.16 1999/06/27 09:20:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -171,6 +171,7 @@ void LoaderFreeDirList(char **);
 void LoaderErrorMsg(const char *, const char *, int, int);
 void LoadExtension(ExtensionModule *);
 void LoaderRefSymLists(const char **, ...);
+void LoaderRefSymbols(const char *, ...);
 void LoaderReqSymLists(const char **, ...);
 void LoaderReqSymbols(const char *, ...);
 int LoaderCheckUnresolved(int);

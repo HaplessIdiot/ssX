@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.35 1999/03/21 07:35:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.36 1999/03/28 15:32:54 dawes Exp $ */
 
 /*
  *
@@ -608,6 +608,24 @@ SymInList(symlist *list, char *sym)
 	    return 1;
 
     return 0;
+}
+
+void
+LoaderRefSymbols(const char *sym0, ...)
+{
+    va_list ap;
+    const char *s;
+
+    if (sym0 == NULL)
+        return;
+
+    va_start(ap, sym0);
+    s = sym0;
+    do {
+        AppendSymbol(&refList, s);
+        s = va_arg(ap, const char *);
+    } while (s != NULL);
+    va_end(ap);
 }
 
 void

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,47 +24,60 @@
 #ifndef ___ATIBANK_H___
 #define ___ATIBANK_H___ 1
 
+#include "atipriv.h"
 #include "atiproto.h"
+#include "mibank.h"
 
 /*
- * This is the type of all banking functions.  After all, this isn't COBOL...
+ * Banking definitions.
  */
-typedef void BankFunction FunctionPrototype((int));
 
 /*
- * These are the bank select functions.  There are several sets of them,
- * starting with generic ones.
+ * Bank selection function for VGA Wonder V3 adapters (which are
+ * single-banked).
  */
-extern BankFunction ATISetRead,
-                    ATISetWrite,
-                    ATISetReadWrite;
+#define ATIV3SetRead     ATIV3SetReadWrite
+#define ATIV3SetWrite    ATIV3SetReadWrite
+extern miBankProc        ATIV3SetReadWrite;
+
 /*
- * These are the bank selection functions for V3 adapters.
+ * Bank selection functions for VGA Wonder V4 and V5 adapters.
  */
-extern BankFunction ATIV3SetRead,
-                    ATIV3SetWrite,
-                    ATIV3SetReadWrite;
+extern miBankProc        ATIV4V5SetRead,
+                         ATIV4V5SetWrite,
+                         ATIV4V5SetReadWrite;
+
 /*
- * These are the bank selection functions for V4 and V5 adapters.
+ * Bank selection functions for 28800-x, 68800-x and 88800 based adapters.
  */
-extern BankFunction ATIV4V5SetRead,
-                    ATIV4V5SetWrite,
-                    ATIV4V5SetReadWrite;
+extern miBankProc        ATIx8800SetRead,
+                         ATIx8800SetWrite,
+                         ATIx8800SetReadWrite;
+
 /*
- * These are the bank selection functions for a Mach64's small dual paged
- * apertures.
+ * Bank selection functions used to simulate a banked VGA aperture with a
+ * Mach64's small dual paged apertures.  There are two sets of these:  one for
+ * packed modes, and one for planar modes.
  */
-extern BankFunction ATIMach64SetReadPacked,
-                    ATIMach64SetWritePacked,
-                    ATIMach64SetReadWritePacked;
-extern BankFunction ATIMach64SetReadPlanar,
-                    ATIMach64SetWritePlanar,
-                    ATIMach64SetReadWritePlanar;
+extern miBankProc        ATIMach64SetReadPacked,
+                         ATIMach64SetWritePacked,
+                         ATIMach64SetReadWritePacked;
+extern miBankProc        ATIMach64SetReadPlanar,
+                         ATIMach64SetWritePlanar,
+                         ATIMach64SetReadWritePlanar;
+
 /*
- * Unfortunately, the above banking functions cannot be called directly from
- * this module.
+ * The CRT save/restore code also needs a separate banking interface that can
+ * used before ATIScreenInit() is called.
  */
-extern BankFunction ATISelectBank;
-extern BankFunction *ATISelectBankFunction;
+
+typedef void ATIBankProc FunctionPrototype((ATIPtr, unsigned int));
+typedef ATIBankProc     *ATIBankProcPtr;
+
+extern ATIBankProc       ATIV3SetBank,
+                         ATIV4V5SetBank,
+                         ATIx8800SetBank,
+                         ATIMach64SetBankPacked,
+                         ATIMach64SetBankPlanar;
 
 #endif /* ___ATIBANK_H___ */

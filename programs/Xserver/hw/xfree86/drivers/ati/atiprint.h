@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.h,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,14 +24,14 @@
 #ifndef ___ATIPRINT_H___
 #define ___ATIPRINT_H___ 1
 
+#include "atipriv.h"
 #include "atiproto.h"
-#include "xf86.h"
+#include "xf86str.h"
 
-extern void ATIPrintBIOS       FunctionPrototype((const CARD8 *,
-                                                  const unsigned int,
-                                                  const unsigned int));
-extern void ATIPrintRegisters  FunctionPrototype((void));
-extern void ATIPrintMode       FunctionPrototype((DisplayModePtr));
-extern void ATIPrintMemoryType FunctionPrototype((const char *));
+extern void ATIPrintBIOS      FunctionPrototype((ATIPtr, const CARD8 *,
+                                                 const unsigned int,
+                                                 const unsigned int));
+extern void ATIPrintRegisters FunctionPrototype((ATIPtr));
+extern void ATIPrintMode      FunctionPrototype((DisplayModePtr));
 
 #endif /* ___ATIPRINT_H___ */

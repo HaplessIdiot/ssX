@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiutil.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiutil.c,v 1.2tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -36,21 +36,54 @@
  * using the specified rounding (floor, nearest or ceiling).
  */
 int
-ATIDivide(int Numerator, int Denominator, int Shift, const int RoundingKind)
+ATIDivide
+(
+    int       Numerator,
+    int       Denominator,
+    int       Shift,
+    const int RoundingKind
+)
 {
-    int Multiplier, Divider;
+    int Multiplier, Divider, Remainder;
     int Rounding = 0;                           /* Default to floor */
 
-    /* Deal with right shifts */
-    if (Shift < 0)
+#define MaxInt ((int)((unsigned int)(-1) >> 2))
+
+    /* Filter out largest common divider */
+    Multiplier = Numerator;
+    Divider = Denominator;
+    while ((Remainder = Multiplier % Divider))
     {
-        Divider = (Numerator - 1) ^ Numerator;
-        Multiplier = 1 << (-Shift);
-        if (Divider > Multiplier)
-            Divider = Multiplier;
-        Numerator /= Divider;
-        Denominator *= Multiplier / Divider;
-        Shift = 0;
+        Multiplier = Divider;
+        Divider = Remainder;
+    }
+    Numerator /= Divider;
+    Denominator /= Divider;
+
+    /* Deal with left shifts but try to keep the denominator even */
+    if (Denominator & 1)
+    {
+        if (Denominator <= MaxInt)
+        {
+            Denominator <<= 1;
+            Shift++;
+        }
+    }
+    else while ((Shift > 0) && !(Denominator & 3))
+    {
+        Denominator >>= 1;
+        Shift--;
+    }
+
+    /* Deal with right shifts */
+    while (Shift < 0)
+    {
+        if ((Numerator & 1) && (Denominator <= MaxInt))
+            Denominator <<= 1;
+        else
+            Numerator >>= 1;
+
+        Shift++;
     }
 
     if (!RoundingKind)                          /* Nearest */

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.26 1999/06/27 09:20:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.27 1999/06/27 14:08:16 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -193,6 +193,7 @@ extern int xf86setbuf(XF86FILE*,char*);
 extern int xf86setvbuf(XF86FILE*,char*,int,xf86size_t);
 extern double xf86sin(double);
 extern int xf86sprintf(char*,const char*,...);
+extern int xf86snprintf(char*,xf86size_t,const char*,...);
 extern double xf86sqrt(double);
 #ifdef HAVE_VSSCANF
 extern int xf86sscanf(char*,const char*,...);
@@ -228,6 +229,7 @@ extern int xf86toupper(int);
 extern int xf86ungetc(int,XF86FILE*);
 extern int xf86vfprintf(XF86FILE*,const char*,va_list);
 extern int xf86vsprintf(char*,const char*,va_list);
+extern int xf86vsnprintf(char*,xf86size_t,const char*,va_list);
 
 extern int xf86open(const char*, int,...);
 extern int xf86close(int);

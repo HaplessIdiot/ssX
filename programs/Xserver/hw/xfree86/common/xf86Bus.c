@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.30 1999/06/27 14:07:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.31 1999/07/04 06:38:50 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -459,6 +459,8 @@ fixPciSizeInfo(int entityIndex)
  * If the slot requested is already in use, return -1.
  * Otherwise, claim the slot for the screen requesting it.
  */
+static void disablePciBios(PCITAG tag);
+
 int
 xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 		 int chipset, GDevPtr dev, Bool active)
@@ -489,11 +491,11 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 		&& (*ppaccp)->funcnum == func) {
 		p->access->fallback = &(*ppaccp)->io_memAccess;
 		p->access->pAccess = &(*ppaccp)->io_memAccess;
+ 		(*ppaccp)->ctrl = TRUE; /* mark control if not already */
 		break;
 	    }
 	    ppaccp++;
 	}
-	/* This should not happen ! */
 	if (!ppaccp || !*ppaccp) {
 	    p->access->fallback = &AccessNULL;
 	    p->access->pAccess = &AccessNULL;
@@ -506,6 +508,10 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	    pbap = pbap->next;
 	}
 	fixPciSizeInfo(num);
+
+	/* in case bios is enabled disable it */
+	disablePciBios(pciTag(bus,device,func));
+	
  	return num;
     } else
  	return -1;
@@ -520,7 +526,6 @@ xf86GetPciVideoInfo()
     return xf86PciVideoInfo;
 }
 
-#if 0 
 /*
  * Get the full xf86scanpci data.
  * XXX This function may be removed, so don't rely on it.
@@ -530,7 +535,6 @@ xf86GetPciConfigInfo()
 {
     return xf86PciInfo;
 }
-#endif
 
 /*
  * Determine what bus type the busID string represents.  The start of the
@@ -892,7 +896,9 @@ initPciState(void)
 
     while ((pvp = xf86PciVideoInfo[i]) != NULL) {
   	i++;
+#if 0 /*EE*/
  	if (PCISHAREDIOCLASSES(pvp->class, pvp->subclass)) {
+#endif
   	    j++;
   	    xf86PciAccInfo = xnfrealloc(xf86PciAccInfo,
   					sizeof(pciAccPtr) * (j + 1));
@@ -913,8 +919,14 @@ initPciState(void)
 	    pcaccp->memAccess.AccessDisable = pciMemAccessDisable;
 	    pcaccp->memAccess.AccessEnable = pciMemAccessEnable;
 	    pcaccp->memAccess.arg = &pcaccp->arg;
+ 	    if (PCISHAREDIOCLASSES(pvp->class, pvp->subclass))
+ 		pcaccp->ctrl = TRUE;
+ 	    else
+ 		pcaccp->ctrl = FALSE;
  	    savePciState(pcaccp->arg.tag, &pcaccp->save);
+#if 0 /*EE*/
 	}
+#endif
     }
 }
 
@@ -1034,6 +1046,8 @@ PciStateEnter(void)
 
     while ((paccp = xf86PciAccInfo[i]) != NULL) {
 	i++;
+ 	if (!paccp->ctrl)
+ 	    continue;
 	savePciState(paccp->arg.tag, &paccp->save);
 	restorePciState(paccp->arg.tag, &paccp->restore);
     }
@@ -1062,6 +1076,8 @@ PciStateLeave(void)
 
     while ((paccp = xf86PciAccInfo[i]) != NULL) {
 	i++;
+	if (!paccp->ctrl)
+	    continue;
 	savePciState(paccp->arg.tag, &paccp->restore);
 	restorePciState(paccp->arg.tag, &paccp->save);
     }
@@ -1089,8 +1105,16 @@ DisablePciAccess(void)
 
     while ((paccp = xf86PciAccInfo[i]) != NULL) {
 	i++;
+	if (!paccp->ctrl) /* disable devices that are under control initially*/
+	    continue;
 	pciIo_MemAccessDisable(paccp->io_memAccess.arg);
     }
+}
+
+static void
+disablePciBios(PCITAG tag)
+{
+    pciSetBitsLong(tag, PCI_CMD_BIOS_REG, PCI_CMD_BIOS_ENABLE, 0);
 }
 
 static void
@@ -2234,7 +2258,7 @@ ValidatePci(void)
 	Sys = NULL;
 	m = n;
 	while ((pvp1 = xf86PciVideoInfo[m++])) {
-	    if (!pvp->validate) continue;
+	    if (!pvp1->validate) continue;
 	    for (i = 0; i<6; i++) {
 		if (pvp1->ioBase[i]) {
 		    RANGE(range,pvp1->ioBase[i],
@@ -2248,12 +2272,24 @@ ValidatePci(void)
 		    Sys = xf86AddResToList(Sys,&range,-1);
 		}
 	    }
-	    if (pvp1->biosBase) {
-		RANGE(range, pvp1->biosBase,
-		      pvp1->biosBase + (1 << pvp1->biosSize) - 1,
-		      ResExcMemBlock);
-		Sys = xf86AddResToList(Sys,&range,-1);
+            /*
+	     * if bus and device of pvp and pvp1 are identical, and both
+	     * have a bios base we assume both bioses are actually the
+	     * same.
+	     */
+#if 0  /*EE*/
+	    if (pvp1->biosBase
+#ifdef COMMON_BIOS /*EE*/
+		&& (pvp->bus != pvp1->bus || pvp->device != pvp1->device 
+		|| !pvp->biosBase)
+#endif
+		) {
+		    RANGE(range, pvp1->biosBase,
+			  pvp1->biosBase + (1 << pvp1->biosSize) - 1,
+			  ResExcMemBlock);
+		    Sys = xf86AddResToList(Sys,&range,-1);
 	    }
+#endif
 	}
 #ifdef DEBUG
 	xf86MsgVerb(X_INFO, 3,"Sys:\n");
@@ -2313,17 +2349,18 @@ ValidatePci(void)
 		    own = xf86AddResToList(own,&range,-1);
 		}
 	    }
+#if 0 /*EE*/
 	    if (pvp->biosBase) {
 		RANGE(range, pvp->biosBase,
 		      pvp->biosBase + (1 << pvp->biosSize) - 1,
 		      ResExcMemBlock);
 		own = xf86AddResToList(own,&range,-1);
 	    }
+#endif
 #ifdef DEBUG
 	xf86MsgVerb(X_INFO, 3,"own:\n");
 	xf86PrintResList(3,own);
 #endif
-
 	    if (pvp->ioBase[i]) {
 		RANGE(range,pvp->ioBase[i],
 		      pvp->ioBase[i] + (1 << pvp->size[i]) - 1,
@@ -2366,15 +2403,13 @@ ValidatePci(void)
 	    }
 	    xf86FreeResList(own);
 	}
+#if 0 /*EE*/
 	if (pvp->biosBase) {
 	    RANGE(range, pvp->biosBase,
 		  pvp->biosBase + (1 << pvp->biosSize) - 1,
 		  ResExcMemBlock);
-	    if (range.rBegin >= start_m && range.rEnd <= end_m
-		&& ! ChkConflict(&range,avoid,SETUP)
-		&& ! ChkConflict(&range,Sys,SETUP))
-		continue;
-	    if (range.rBegin >= start_mp && range.rEnd <= end_mp
+	    if (((range.rBegin >= start_m && range.rEnd <= end_m) ||
+		(range.rBegin >= start_mp && range.rEnd <= end_mp))
 		&& ! ChkConflict(&range,avoid,SETUP)
 		&& ! ChkConflict(&range,Sys,SETUP))
 		continue;
@@ -2386,6 +2421,7 @@ ValidatePci(void)
 #endif
 	    fixPciResource(6, 0, pvp, range.type);
 	}
+#endif
 	xf86FreeResList(avoid);
 	xf86FreeResList(Sys);
     }
@@ -2832,6 +2868,7 @@ xf86GetBlock(long type, memType size,
 {
     memType min, max, tmp;
     resRange r = {ResEnd,0,0};
+    resPtr res_range = ResRange;
     
     if (!size) return r;
     if (window_end < window_start || (window_end - window_start) < (size - 1)) {
@@ -2842,14 +2879,14 @@ xf86GetBlock(long type, memType size,
     }
     type = (type & ~ResExtMask & ~ResNoAvoid) | ResBlock;
     
-    while (ResRange) {
-	if (type & ResRange->res_type & ResPhysMask) {
-	    if (ResRange->block_begin > window_start)
-		min = ResRange->block_begin;
+    while (res_range) {
+	if (type & res_range->res_type & ResPhysMask) {
+	    if (res_range->block_begin > window_start)
+		min = res_range->block_begin;
 	    else
 		min = window_start;
-	    if (ResRange->block_end < window_end)
-		max = ResRange->block_end;
+	    if (res_range->block_end < window_end)
+		max = res_range->block_end;
 	    else
 		max = window_end;
 	    min = ALIGN(min,align_mask);
@@ -2866,7 +2903,7 @@ xf86GetBlock(long type, memType size,
 		min = ALIGN(tmp,align_mask);
 	    }
 	}
-	ResRange = ResRange->next;
+	res_range = res_range->next;
     }
     RANGE(r,0,0,ResEnd);
     return r;
@@ -3595,7 +3632,10 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 	if (pbp->secondary == pvp->bus) {
 	    if (type & ResMem) {
 		if (((p_type & PCI_MAP_MEMORY_CACHABLE)
-		     || (res_n == 0xff)) /* bios should also be prefetchable */
+#if 0 /*EE*/
+		     || (res_n == 0xff)
+#endif
+		     ) /* bios should also be prefetchable */
 		    && pbp->pmem) {
 		    start_w = pbp->pmem->block_begin;
 		    end_w = MIN(end_w,pbp->pmem->block_end);
@@ -3634,7 +3674,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     if (!alignment)
 	alignment = (1 << (*p_size)) - 1;
 #ifdef DEBUG
-    ErrorF("base: 0x%lx alignment: 0x%lx size: 0x%x\n",
+    ErrorF("base: 0x%lx alignment: 0x%lx size: 0x%lx\n",
 	   (*p_base),alignment,(*p_size));
 #endif
     range = xf86GetBlock(type,alignment + 1, start_w, end_w,
@@ -3761,3 +3801,81 @@ xf86SetOperatingState(resList list, int entityIndex, int mask)
     
     return r_fail;
 }
+
+memType
+getValidBIOSBase(PCITAG tag, int num)
+{
+    pciVideoPtr pvp;
+    PciBusPtr pbp, pbp1;
+    memType start_mp = 0, start_m = 0;
+    memType end_mp, end_m;
+    resPtr tmp, avoid;
+    resRange range;
+    int n = 0;
+
+    if (!xf86PciVideoInfo) return 0;
+    
+    while ((pvp = xf86PciVideoInfo[n++])) {
+	if (pciTag(pvp->bus,pvp->device,pvp->func) == tag)
+	    break;
+    }
+    if (!pvp) return 0;
+    avoid = NULL;
+    end_m = PCI_MEMBASE_LENGTH_MAX;
+    end_mp = PCI_MEMBASE_LENGTH_MAX;
+    pbp = pbp1 = xf86PciBus;
+    while (pbp) {
+	if (pbp->secondary == pvp->bus) {
+	    if (pbp->pmem) {
+		start_mp = pbp->pmem->block_begin;
+		end_mp = MIN(end_mp,pbp->pmem->block_end);
+	    }
+	    if (pbp->mem) {
+		start_m = pbp->mem->block_begin;
+		end_m = MIN(end_m,pbp->mem->block_end);
+	    }
+	}
+	while (pbp1) {
+	    if (pbp1->primary == pvp->bus) {
+		tmp = xf86DupResList(pbp1->pmem);
+		avoid = xf86JoinResLists(avoid,tmp);
+		tmp = xf86DupResList(pbp1->mem);
+		    avoid = xf86JoinResLists(avoid,tmp);
+		    tmp = xf86DupResList(pbp1->io);
+		    avoid = xf86JoinResLists(avoid,tmp);
+	    }
+	    pbp1 = pbp1->next;
+	}	
+	pbp = pbp->next;
+    }	
+
+    if (pvp->biosBase) { /* try biosBase first */
+	RANGE(range, pvp->biosBase,
+	      pvp->biosBase + (1 << pvp->biosSize) - 1,
+	      ResExcMemBlock);
+	if (((range.rBegin >= start_m && range.rEnd <= end_m) ||
+	     (range.rBegin >= start_mp && range.rEnd <= end_mp))
+	    && ! ChkConflict(&range,avoid,SETUP)) {
+	    xf86FreeResList(avoid);
+	    return pvp->biosBase;
+	}
+    }
+    if (num >= 0 && num <= 5 && pvp->memBase[num]) {
+    /* then try suggested memBase */
+	RANGE(range, pvp->memBase[num],
+	      pvp->memBase[num] + (1 << pvp->biosSize) - 1,
+	      ResExcMemBlock);  /* keep bios size ! */
+	if (((range.rBegin >= start_m && range.rEnd <= end_m) ||
+	     (range.rBegin >= start_mp && range.rEnd <= end_mp))
+	    && ! ChkConflict(&range,avoid,SETUP)) {
+	    xf86FreeResList(avoid);
+	    return pvp->memBase[num];
+	}
+    }
+
+    range = xf86GetBlock(ResExcMemBlock, pvp->biosSize,start_m,end_m,
+			 (1 << pvp->biosSize) -1, avoid);
+    xf86FreeResList(avoid);
+    return range.rBase;
+}
+

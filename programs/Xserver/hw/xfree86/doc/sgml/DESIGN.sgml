@@ -27,7 +27,7 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 1 July 1999
+<date>Last modified 6 July 1999
 
 
 <p>
@@ -4263,6 +4263,17 @@ the server, and may also be used from within modules.
 
   </quote>
 
+  &s.code;void LoaderRefSymbols(const char *sym0, ...)&e.code;
+  <quote><p>
+    This function is like &s.code;LoaderRefSymLists()&e.code; except
+    that its arguments are symbols rather than lists of symbols.  This
+    function is more convenient when single functions are to be registered,
+    especially when the single function might depend on runtime factors.
+    The end of the argument list is indicated by a &s.code;NULL&e.code;
+    argument.
+
+  </quote>
+
   &s.code;int LoaderCheckUnresolved(int delayflag)&e.code;
   <quote><p>
     This function checks for unresolved symbols.  It generates warnings
@@ -6855,7 +6866,7 @@ ZZZFreeScreen(int scrnIndex, int flags)
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.2 1999/07/01 13:50:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.3 1999/07/04 13:18:24 dawes Exp $
 </verb>
 
 </article>

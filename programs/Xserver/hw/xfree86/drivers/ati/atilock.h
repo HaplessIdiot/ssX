@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscrinit.h,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.h,v 1.0tsi Exp $ */
 /*
- * Copyright 1997,1998 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,13 +21,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATISCRINIT_H___
-#define ___ATISCRINIT_H___ 1
+#ifndef ___ATILOCK_H___
+#define ___ATILOCK_H___ 1
 
+#include "atipriv.h"
 #include "atiproto.h"
-#include "screenint.h"
 
-extern Bool ATIScreenInit
-            FunctionPrototype((ScreenPtr, pointer, int, int, int, int, int));
+extern void ATIUnlock FunctionPrototype((ATIPtr));
+extern void ATILock   FunctionPrototype((ATIPtr));
 
-#endif /* ___ATISCRINIT_H___ */
+#endif /* ___ATILOCK_H___ */

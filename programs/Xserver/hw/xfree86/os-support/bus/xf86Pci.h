@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.18 1999/06/13 07:11:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.19 1999/07/04 06:39:15 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -102,6 +102,7 @@
 #define	PCI_CMD_STEPPING_ENABLE		0x80
 #define	PCI_CMD_SERR_ENABLE		0x100
 #define	PCI_CMD_BACKTOBACK_ENABLE	0x200
+#define	PCI_CMD_BIOS_ENABLE             0x01
 
 /* base class */
 #define PCI_CLASS_REG			0x08
