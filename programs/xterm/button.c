@@ -50,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.50 2000/09/22 10:42:06 alanh Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.51 2000/09/26 15:57:26 tsi Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -770,6 +770,7 @@ void HandleKeyboardSelectEnd(
 }
 
 #if OPT_WIDE_CHARS
+#ifndef X_HAVE_UTF8_STRING
 static Atom XA_UTF8_STRING(Display *dpy)
 {
     static AtomPtr p = NULL;
@@ -778,6 +779,7 @@ static Atom XA_UTF8_STRING(Display *dpy)
 	p = XmuMakeAtom("UTF8_STRING");
     return XmuInternAtom(dpy, p);
 }
+#endif
 #endif
 
 struct _SelectionList {
