@@ -1,5 +1,5 @@
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/us,v 1.5 2003/10/25 13:24:05 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/us,v 1.6 2003/10/31 14:32:05 pascal Exp $
 
 default
 partial hidden alphanumeric_keys modifier_keys 
@@ -60,6 +60,7 @@ xkb_symbols "basic" {
     key <AB09> {	[    period,	greater		]	};
     key <AB10> {	[     slash,	question	]	};
 
+    key <BKSL> {	[ backslash,         bar	]	};
     // End alphanumeric section
 };
 
@@ -115,4 +116,6 @@ xkb_symbols "intl" {
     key <AB09> { [    period,    greater, dead_abovedot,       dead_caron ] };
     key <AB10> { [     slash,   question,  questiondown,        dead_hook ] };
     key <BKSL> { [ backslash,        bar,       notsign,        brokenbar ] };
+
+    include "level3(ralt_switch_multikey)"
 };

@@ -1593,6 +1593,12 @@
       <variantList>
         <variant>
           <configItem>
+            <name>fr</name>
+            <description>French</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
             <name>no</name>
             <description>Norwegian</description>
             <description xml:lang="bg">норвежка</description>
@@ -2466,6 +2472,13 @@
         <description xml:lang="tr">Güney Hint dili</description>
         <description xml:lang="uk">Канадська</description>
         <description xml:lang="zh_CN">埃纳德</description>
+      </configItem>
+      <variantList/>
+    </layout>
+    <layout>
+      <configItem>
+        <name>ko</name>
+        <description>Korean</description>
       </configItem>
       <variantList/>
     </layout>

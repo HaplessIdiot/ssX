@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/expr.c,v 3.5 2001/01/17 23:45:43 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/expr.c,v 3.7 2003/08/06 14:04:05 eich Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -245,6 +245,7 @@ static LookupEntry modIndexNames[] = {
 	{	"mod3",		Mod3MapIndex	},
 	{	"mod4",		Mod4MapIndex	},
 	{	"mod5",		Mod5MapIndex	},
+	{	"none",		XkbNoModifier	},
 	{	NULL,		0		}
 };
 
