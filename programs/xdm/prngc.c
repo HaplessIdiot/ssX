@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xdm/prngc.c,v 1.2 2003/09/24 21:35:05 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/prngc.c,v 1.3 2003/10/17 21:23:07 herrb Exp $ */
 /*
  * Copyright (c) 1995,1999 Theo de Raadt.  All rights reserved.
  * Copyright (c) 2001-2002 Damien Miller.  All rights reserved.
@@ -43,6 +43,10 @@
 
 #include "dm_auth.h"
 #include "dm_error.h"
+
+#ifndef INADDR_LOOPBACK
+#define INADDR_LOOPBACK 0x7F000001U
+#endif
 
 static ssize_t atomicio(ssize_t (*)(), int, void *, size_t);
 
