@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.14 2001/08/12 00:10:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.15 2001/09/06 05:08:11 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -221,11 +221,11 @@ static Bool QuartzFSAddScreen(
     dfb->pixelInfo.bitsPerComponent = CGDisplayBitsPerSample(cgID);
     dfb->pixelInfo.componentCount = CGDisplaySamplesPerPixel(cgID);
 
+    // Don't need to flip y-coordinate as CoreGraphics treats (0, 0)
+    // as the top left of main screen.
     bounds = CGDisplayBounds(cgID);
     dfb->x = bounds.origin.x;
-    // flip so (0, 0) is top left of main screen
-    dfb->y = CGDisplayBounds(kCGDirectMainDisplay).size.height - 
-                bounds.size.height - bounds.origin.y;
+    dfb->y = bounds.origin.y;
     dfb->width  = bounds.size.width;
     dfb->height = bounds.size.height;
     dfb->pitch = CGDisplayBytesPerRow(cgID);

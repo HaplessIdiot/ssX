@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.23 2001/09/17 03:08:40 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.24 2001/09/19 01:44:41 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -41,6 +41,7 @@ static void childDone(int sig);
 static NSPortMessage *signalMessage;
 static pid_t clientPID;
 static Xserver *oneXserver;
+static NSRect aquaMenuBarBox;
 
 
 @implementation Xserver
@@ -256,24 +257,10 @@ static Xserver *oneXserver;
 
     ev->location.x = (int)(pt.x);
 
-    if (quartzRootless) {
-        NSRect mainFrame = [[NSScreen mainScreen] frame];
-
-        if (pt.y < NSHeight(mainFrame) - aquaMenuBarHeight) {
-            // below the menu bar
-            ev->location.y = NSHeight(mainFrame) - aquaMenuBarHeight -
-                             (int)(pt.y);
-            return YES;
-        } else if (NSMouseInRect(pt, [[NSScreen mainScreen] frame], NO)) {
-            // in the menu bar
-            ev->location.y = aquaMenuBarHeight;
-            return NO;
-        } else {
-            // above the bottom of the menu bar, but not in it
-            ev->location.y = NSHeight([[NSScreen mainScreen] frame]) -
-                                (int)(pt.y);
-            return YES;
-        }
+    if (quartzRootless && NSMouseInRect(pt, aquaMenuBarBox, NO)) {
+        // mouse in menu bar - tell X11 that it's just below instead
+        ev->location.y = aquaMenuBarHeight;
+        return NO;
     } else {
         ev->location.y = NSHeight([[NSScreen mainScreen] frame]) - (int)(pt.y);
         return YES;
@@ -328,6 +315,10 @@ static Xserver *oneXserver;
     if (quartzRootless) {
         aquaMenuBarHeight = NSHeight([[NSScreen mainScreen] frame]) -
                             NSMaxY([[NSScreen mainScreen] visibleFrame]);
+        aquaMenuBarBox =
+            NSMakeRect(0, NSMaxY([[NSScreen mainScreen] visibleFrame]) + 1,
+                       NSWidth([[NSScreen mainScreen] frame]),
+                       aquaMenuBarHeight);
     }
 
     // Start the X server thread

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.6 2001/08/01 05:34:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.7 2001/08/06 04:14:36 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -52,15 +52,23 @@ int DarwinModifierStringToNXKey(const char *string);
 
 #define MIN_KEYCODE XkbMinLegalKeyCode     // unfortunately, this isn't 0...
 
-// Global variables from darwin.c
+/*
+ * Global variables from darwin.c
+ */
 extern int              darwinScreenIndex; // index into pScreen.devPrivates
 extern int              darwinScreensFound;
 extern DarwinInputRec   hid;
 extern int              darwinEventFD;
 extern Bool             quartz;
+
+// parameters read from the command line or user preferences
 extern UInt32           darwinDesiredWidth, darwinDesiredHeight;
 extern IOIndex          darwinDesiredDepth;
 extern SInt32           darwinDesiredRefresh;
 extern UInt32           darwinScreenNumber;
+
+// location of X11's (0,0) point in global screen coordinates
+extern int              darwinMainScreenX;
+extern int              darwinMainScreenY;
 
 #endif	/* _DARWIN_H */
