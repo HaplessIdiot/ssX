@@ -27,11 +27,20 @@
    copyright holders shall not be used in advertising or otherwise to
    promote the sale, use or other dealings in this Software without
    prior written authorization. */
-/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.2 2003/08/12 00:28:57 torrey Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_dispatch.c,v 1.3 2003/10/31 02:22:12 torrey Exp $ */
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLContext.h>
 
+/* We use Apple's GL headers, but as of Panther its glext.h
+   did not define the following. */
+#ifndef GL_ARB_vertex_buffer_object
+#include <stddef.h>
+typedef ptrdiff_t GLintptrARB;
+typedef ptrdiff_t GLsizeiptrARB;
+#endif
+
+#define GLAPIENTRYP *
 #include "glapi.h"
 #include "glapitable.h"
 #include "glxclient.h"

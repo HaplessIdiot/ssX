@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.4 2004/03/18 07:06:20 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.5 2004/04/05 02:33:08 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -19,14 +19,12 @@ LinkSourceFile(x-hash.h,$(XPRDIR))
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
-#if !GlxUseSGISI
      DRI_SRCS = dri_glx.c dri_driver.c dri_dispatch.c x-hash.c x-list.c
      DRI_OBJS = dri_glx.o dri_driver.o dri_dispatch.o x-hash.o x-list.o
      DRI_INCS = -I. -I$(GLXLIBSRC)/glx -I$(INCLUDESRC) -I$(INCLUDESRC)/GL \
                 -I$(XINCLUDESRC) -I$(SERVERSRC)/GL/dri -I$(XPINCDIR) \
-                -I$(MESASRCDIR)/include -I$(MESASRCDIR)/src \
+                -I$(MESASRCDIR)/include -I$(MESASRCDIR)/src/mesa/glapi \
                 -I$(GLXLIBSRC)/include
-#endif
 
            AS = /System/Library/Frameworks/ApplicationServices.framework
 

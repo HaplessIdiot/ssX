@@ -3,10 +3,10 @@
 ;; dri_dispatch.defs
 
 ;; $Id$
-;; $XFree86: xc/lib/GL/apple/dri_dispatch.defs,v 1.4 2003/11/25 00:23:03 torrey Exp $
+;; $XFree86: xc/lib/GL/apple/dri_dispatch.defs,v 1.5 2004/01/16 22:39:56 torrey Exp $
 
 ;; Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
-;; Copyright (c) 2003 Torrey T. Lyons. All rights reserved.
+;; Copyright (c) 2003-2004 Torrey T. Lyons. All rights reserved.
 
 ;; Permission is hereby granted, free of charge, to any person
 ;; obtaining a copy of this software and associated documentation files
@@ -713,6 +713,63 @@
 (void GetFenceivNV -1 "GLuint fence, GLenum pname, GLint * params")
 (void FinishFenceNV -1 "GLuint fence")
 (void SetFenceNV -1 "GLuint fence, GLenum condition")
+(void VertexAttrib4bvARB 497 "GLuint index, const GLbyte * v")
+(void VertexAttrib4ivARB 499 "GLuint index, const GLint * v")
+(void VertexAttrib4ubvARB 500 "GLuint index, const GLubyte * v")
+(void VertexAttrib4usvARB 501 "GLuint index, const GLushort * v")
+(void VertexAttrib4uivARB 502 "GLuint index, const GLuint * v")
+(void VertexAttrib4NbvARB 505 "GLuint index, const GLbyte * v")
+(void VertexAttrib4NsvARB 498 "GLuint index, const GLshort * v")
+(void VertexAttrib4NivARB 507 "GLuint index, const GLint * v")
+(void VertexAttrib4NusvARB 509 "GLuint index, const GLushort * v")
+(void VertexAttrib4NuivARB 510 "GLuint index, const GLuint * v")
+(void VertexAttribPointerARB 511 "GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid * pointer")
+(void EnableVertexAttribArrayARB 512 "GLuint index")
+(void DisableVertexAttribArrayARB 513 "GLuint index")
+(void ProgramStringARB 530 "GLenum target, GLenum format, GLsizei len, const GLvoid * string")
+(void ProgramEnvParameter4dARB 518 "GLenum target, GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w")
+(void ProgramEnvParameter4dvARB 519 "GLenum target, GLuint index, const GLdouble * params")
+(void ProgramEnvParameter4fARB 520 "GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w")
+(void ProgramEnvParameter4fvARB 521 "GLenum target, GLuint index, const GLfloat * params")
+(void ProgramLocalParameter4dARB 522 "GLenum target, GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w")
+(void ProgramLocalParameter4dvARB 523 "GLenum target, GLuint index, const GLdouble * params")
+(void ProgramLocalParameter4fARB 524 "GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w")
+(void ProgramLocalParameter4fvARB 525 "GLenum target, GLuint index, const GLfloat * params")
+(void GetProgramEnvParameterdvARB 526 "GLenum target, GLuint index, GLdouble * params")
+(void GetProgramEnvParameterfvARB 527 "GLenum target, GLuint index, GLfloat * params")
+(void GetProgramLocalParameterdvARB 528 "GLenum target, GLuint index, GLdouble * params")
+(void GetProgramLocalParameterfvARB 529 "GLenum target, GLuint index, GLfloat * params")
+(void GetProgramivARB 532 "GLenum target, GLenum pname, GLint * params")
+(void GetProgramStringARB 531 "GLenum target, GLenum pname, GLvoid * string")
+(void ProgramNamedParameter4fNV -1 "GLuint id, GLsizei len, const GLubyte * name, GLfloat x, GLfloat y, GLfloat z, GLfloat w")
+(void ProgramNamedParameter4dNV -1 "GLuint id, GLsizei len, const GLubyte * name, GLdouble x, GLdouble y, GLdouble z, GLdouble w")
+(void ProgramNamedParameter4fvNV -1 "GLuint id, GLsizei len, const GLubyte * name, const GLfloat * v")
+(void ProgramNamedParameter4dvNV -1 "GLuint id, GLsizei len, const GLubyte * name, const GLdouble * v")
+(void GetProgramNamedParameterfvNV -1 "GLuint id, GLsizei len, const GLubyte * name, GLfloat * params")
+(void GetProgramNamedParameterdvNV -1 "GLuint id, GLsizei len, const GLubyte * name, GLdouble * params")
+(void BindBufferARB -1 "GLenum target, GLuint buffer")
+(void BufferDataARB -1 "GLenum target, GLsizeiptrARB size, const GLvoid * data, GLenum usage")
+(void BufferSubDataARB -1 "GLenum target, GLintptrARB offset, GLsizeiptrARB size, const GLvoid * data")
+(void DeleteBuffersARB -1 "GLsizei n, const GLuint * buffer")
+(void GenBuffersARB -1 "GLsizei n, GLuint * buffer")
+(void GetBufferParameterivARB -1 "GLenum target, GLenum pname, GLint * params")
+(void GetBufferPointervARB -1 "GLenum target, GLenum pname, GLvoid ** params")
+(void GetBufferSubDataARB -1 "GLenum target, GLintptrARB offset, GLsizeiptrARB size, void * data")
+(GLboolean IsBufferARB -1 "GLuint buffer")
+(void* MapBufferARB -1 "GLenum target, GLenum access")
+(GLboolean UnmapBufferARB -1 "GLenum target")
+(void DepthBoundsEXT -1 "GLclampd zmin, GLclampd zmax")
+;; OpenGL.framework defines these, but doesn't have dispatch slots for them
+;; (void GenQueriesARB -1 "GLsizei n, GLuint * ids")
+;; (void DeleteQueriesARB -1 "GLsizei n, const GLuint * ids")
+;  (GLboolean IsQueryARB -1 "GLuint id")
+;; (void BeginQueryARB -1 "GLenum target, GLuint id")
+;; (void EndQueryARB -1 "GLenum target")
+;; (void GetQueryivARB -1 "GLenum target, GLenum pname, GLint * params")
+;; (void GetQueryObjectivARB -1 "GLuint id, GLenum pname, GLint * params")
+;; (void GetQueryObjectuivARB -1 "GLuint id, GLenum pname, GLuint * params")
+(void MultiModeDrawArraysIBM -1 "const GLenum * mode, const GLint * first, const GLsizei * count, GLsizei primcount, GLint modestride")
+(void MultiModeDrawElementsIBM -1 "const GLenum * mode, const GLsizei * count, GLenum type, const GLvoid * const * indices, GLsizei primcount, GLint modestride")
 
 ;; Entry points that exist in standard XFree86 libGL, but aren't in the
 ;; Mesa dispatch table, and aren't in OpenGL.framework
@@ -757,3 +814,14 @@
 (void TexSubImage1DEXT -1 "GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid * pixels" TexSubImage1D)
 (void TexSubImage2DEXT -1 "GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid * pixels" TexSubImage2D)
 (void TexSubImage3DEXT -1 "GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid * pixels" TexSubImage3D)
+(void BindBuffer -1 "GLenum target, GLuint buffer" BindBufferARB)
+(void BufferData -1 "GLenum target, GLsizeiptrARB size, const GLvoid * data, GLenum usage" BufferDataARB)
+(void BufferSubData -1 "GLenum target, GLintptrARB offset, GLsizeiptrARB size, const GLvoid * data" BufferDataARB)
+(void DeleteBuffers -1 "GLsizei n, const GLuint * buffer" DeleteBuffersARB)
+(void GenBuffers -1 "GLsizei n, GLuint * buffer" GenBuffersARB)
+(void GetBufferParameteriv -1 "GLenum target, GLenum pname, GLint * params" GetBufferParameterivARB)
+(void GetBufferPointerv -1 "GLenum target, GLenum pname, GLvoid ** params" GetBufferPointervARB)
+(void GetBufferSubData -1 "GLenum target, GLintptrARB offset, GLsizeiptrARB size, void * data" GetBufferSubDataARB)
+(GLboolean IsBuffer -1 "GLuint buffer" IsBufferARB)
+(void* MapBuffer -1 "GLenum target, GLenum access" MapBufferARB)
+(GLboolean UnmapBuffer -1 "GLenum target" UnmapBufferARB)
