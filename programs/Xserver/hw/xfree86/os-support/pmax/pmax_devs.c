@@ -69,7 +69,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_devs.c,v 1.1.2.1 1998/06/09 14:41:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_devs.c,v 1.2 1998/07/25 16:56:55 dawes Exp $ */
 
 #include "X.h"
 
@@ -124,7 +124,7 @@ xf86MouseOn(MouseDevPtr mouse)
 {
 	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
-		if (xf86AllowMouseOpenFail) {
+		if (xf86Info.allowMouseOpenFail) {
 			xf86Msg(X_WARNING,
 				"Cannot open mouse (%s) - Continuing...\n",
 				strerror(errno));

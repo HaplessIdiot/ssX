@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.3 1998/08/02 05:17:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyph.c,v 1.4 1998/09/13 05:23:55 dawes Exp $ */
 
 
 #include "xaa.h"
@@ -16,8 +16,6 @@ static CARD32 *DrawTETextScanlineGeneric(CARD32 *base, unsigned int **glyphp,
 					int line, int width, int glyphwidth);
 static CARD32 *DrawTETextScanlineWidth7(CARD32 *base, unsigned int **glyphp,
 					int line, int width, int glyphwidth);
-static CARD32 *DrawTETextScanlineWidth9(CARD32 *base, unsigned int **glyphp,
-					int line, int width, int glyphwidth);
 static CARD32 *DrawTETextScanlineWidth10(CARD32 *base, unsigned int **glyphp,
 					int line, int width, int glyphwidth);
 static CARD32 *DrawTETextScanlineWidth12(CARD32 *base, unsigned int **glyphp,
@@ -33,21 +31,45 @@ static CARD32 *DrawTETextScanlineWidth24(CARD32 *base, unsigned int **glyphp,
 
 
 #ifdef USEASSEMBLER
-# ifdef MSBFIRST
+# ifdef FIXEDBASE
+#  ifdef MSBFIRST
+CARD32 *DrawTETextScanlineWidth6PMSBFirstFixedBase(CARD32 *base,
+		unsigned int **glyphp, int line, int width, int glyphwidth);
+CARD32 *DrawTETextScanlineWidth8PMSBFirstFixedBase(CARD32 *base,
+		unsigned int **glyphp, int line, int width, int glyphwidth);
+CARD32 *DrawTETextScanlineWidth9PMSBFirstFixedBase(CARD32 *base,
+		unsigned int **glyphp, int line, int width, int glyphwidth);
+#  else
+CARD32 *DrawTETextScanlineWidth6PLSBFirstFixedBase(CARD32 *base,
+		unsigned int **glyphp, int line, int width, int glyphwidth);
+CARD32 *DrawTETextScanlineWidth8PLSBFirstFixedBase(CARD32 *base,
+		unsigned int **glyphp, int line, int width, int glyphwidth);
+CARD32 *DrawTETextScanlineWidth9PLSBFirstFixedBase(CARD32 *base,
+		unsigned int **glyphp, int line, int width, int glyphwidth);
+#  endif
+# else
+#  ifdef MSBFIRST
 CARD32 *DrawTETextScanlineWidth6PMSBFirst(CARD32 *base, unsigned int **glyphp,
 					int line, int width, int glyphwidth);
 CARD32 *DrawTETextScanlineWidth8PMSBFirst(CARD32 *base, unsigned int **glyphp,
 					int line, int width, int glyphwidth);
-# else
+CARD32 *DrawTETextScanlineWidth9PMSBFirst(CARD32 *base, unsigned int **glyphp,
+					int line, int width, int glyphwidth);
+#  else
 CARD32 *DrawTETextScanlineWidth6PLSBFirst(CARD32 *base, unsigned int **glyphp,
 					int line, int width, int glyphwidth);
 CARD32 *DrawTETextScanlineWidth8PLSBFirst(CARD32 *base, unsigned int **glyphp,
 					int line, int width, int glyphwidth);
+CARD32 *DrawTETextScanlineWidth9PLSBFirst(CARD32 *base, unsigned int **glyphp,
+					int line, int width, int glyphwidth);
+#  endif
 # endif
 #else
 static CARD32 *DrawTETextScanlineWidth6(CARD32 *base, unsigned int **glyphp,
 					int line, int width, int glyphwidth);
 static CARD32 *DrawTETextScanlineWidth8(CARD32 *base, unsigned int **glyphp,
+					int line, int width, int glyphwidth);
+static CARD32 *DrawTETextScanlineWidth9(CARD32 *base, unsigned int **glyphp,
 					int line, int width, int glyphwidth);
 #endif
 
@@ -60,25 +82,36 @@ GlyphScanlineFuncPtr glyph_scanline_func[32] = {
    DrawTETextScanlineGeneric, DrawTETextScanlineGeneric,
    DrawTETextScanlineGeneric, 
 #ifdef USEASSEMBLER
-# ifdef MSBFIRST
-   DrawTETextScanlineWidth6PMSBFirst, 
-# else
-   DrawTETextScanlineWidth6PLSBFirst, 
-# endif
-#else
-   DrawTETextScanlineWidth6, 
-#endif
+# ifdef FIXEDBASE
+#  ifdef MSBFIRST
+   DrawTETextScanlineWidth6PMSBFirstFixedBase, 
    DrawTETextScanlineWidth7, 
-#ifdef USEASSEMBLER
-# ifdef MSBFIRST
-   DrawTETextScanlineWidth8PMSBFirst, 
+   DrawTETextScanlineWidth8PMSBFirstFixedBase, 
+   DrawTETextScanlineWidth9PMSBFirstFixedBase, 
+#  else
+   DrawTETextScanlineWidth6PLSBFirstFixedBase, 
+   DrawTETextScanlineWidth7, 
+   DrawTETextScanlineWidth8PLSBFirstFixedBase, 
+   DrawTETextScanlineWidth9PLSBFirstFixedBase, 
+#  endif
 # else
+#  ifdef MSBFIRST
+   DrawTETextScanlineWidth6PMSBFirst, 
+   DrawTETextScanlineWidth7, 
+   DrawTETextScanlineWidth8PMSBFirst, 
+   DrawTETextScanlineWidth9PMSBFirst, 
+#  else
+   DrawTETextScanlineWidth6PLSBFirst, 
+   DrawTETextScanlineWidth7, 
    DrawTETextScanlineWidth8PLSBFirst, 
+   DrawTETextScanlineWidth9PLSBFirst, 
+#  endif
 # endif
 #else
-   DrawTETextScanlineWidth8, 
+   DrawTETextScanlineWidth6, DrawTETextScanlineWidth7, 
+   DrawTETextScanlineWidth8, DrawTETextScanlineWidth9, 
 #endif
-   DrawTETextScanlineWidth9, DrawTETextScanlineWidth10, 
+   DrawTETextScanlineWidth10, 
    DrawTETextScanlineGeneric, DrawTETextScanlineWidth12,
    DrawTETextScanlineGeneric, DrawTETextScanlineWidth14, 
    DrawTETextScanlineGeneric, DrawTETextScanlineWidth16,
@@ -692,7 +725,7 @@ DrawTETextScanlineWidth8(
 }
 #endif
 
-
+#ifndef USEASSEMBLER
 static CARD32* 
 DrawTETextScanlineWidth9(
     CARD32 *base,
@@ -767,10 +800,7 @@ DrawTETextScanlineWidth9(
     }
     return base;
 }
-
-
-
-
+#endif
 
 static CARD32* 
 DrawTETextScanlineWidth10(

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.10 1999/01/17 10:54:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.11 1999/01/26 05:54:05 dawes Exp $ */
 
 /*
  *
@@ -74,6 +74,12 @@ extern void commonCalcClock(long freq, int min_m, int min_n1,
 extern Bool S3VAccelInit(ScreenPtr pScreen);
 extern Bool S3VAccelInit32(ScreenPtr pScreen);
 
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
+ 
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
@@ -232,6 +238,7 @@ static const char *cfbSymbols[] = {
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb24ScreenInit",
+    "cfb24_32ScreenInit",
     "cfb32ScreenInit",
     NULL
 };
@@ -527,7 +534,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb |
+				SupportConvert32to24 | PreferConvert32to24)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
@@ -546,6 +554,10 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -1247,8 +1259,13 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	reqSym = "cfb16ScreenInit";
 	break;
     case 24:
-	mod = "cfb24";
-	reqSym = "cfb24ScreenInit";
+	if (pix24bpp == 24) {
+	    mod = "cfb24";
+	    reqSym = "cfb24ScreenInit";
+	} else {
+	    mod = "xf24_32bpp";
+	    reqSym = "cfb24_32ScreenInit";
+	}
 	break;
     case 32:
 	mod = "cfb32";
@@ -2066,7 +2083,13 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, ps3v->FBStart,
+	if (pix24bpp ==24)
+	    ret = cfb24ScreenInit(pScreen, ps3v->FBStart,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	else
+	    ret = cfb24_32ScreenInit(pScreen, ps3v->FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);

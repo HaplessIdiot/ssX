@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_tty.c,v 1.1 1998/12/13 07:37:47 dawes Exp $ */
 /*
  * INTEL DG/UX RELEASE 4.20 MU03
  * Copyright 1997 Takis Psarogiannakopoulos Cambridge,UK
@@ -101,7 +101,7 @@ unsigned cflag;
 
 	if (tcsetattr(mouse->mseFd, TCSADRAIN, &tty) < 0)
 	{
-		if (xf86AllowMouseOpenFail) {
+		if (xf86Info.allowMouseOpenFail) {
 			ErrorF("Unable to set status of mouse fd (%s) - Continuing...\n",
 			       strerror(errno));
 			return;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.6 1998/12/20 13:16:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.7 1999/01/14 13:04:08 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -342,7 +342,7 @@ MouseDevPtr mouse;
       switch (mouse->mseType) {
 
       case PROT_AUTO:
-	if (!xf86AllowMouseOpenFail)
+	if (!xf86Info.allowMouseOpenFail)
 	  FatalError("xf86SetupMouse: Cannot determine the mouse protocol\n");
 	else
 	  ErrorF("xf86SetupMouse: Cannot determine the mouse protocol\n");

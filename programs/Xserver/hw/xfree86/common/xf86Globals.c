@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.7 1999/01/14 01:44:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.8 1999/01/24 03:13:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -127,12 +127,13 @@ xf86InfoRec xf86Info = {
 	FALSE,		/* vidModeAllowNonLocal */
 	FALSE,		/* miscModInDevEnabled */
 	FALSE,		/* miscModInDevAllowNonLocal */
-	PCIProbe1	/* pciFlags */
+	PCIProbe1,	/* pciFlags */
+	Pix24DontCare,	/* pixmap24 */
+	X_DEFAULT	/* pix24From */
 };
 const char *xf86ModulePath = DEFAULT_MODULE_PATH;
 MessageType xf86ModPathFrom = X_DEFAULT;
 serverLayoutRec xf86ConfigLayout = {NULL, };
-Pix24Flags xf86ConfigPix24 = Pix24DontCare;
 XF86ConfigPtr xf86configptr = NULL;
 Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
@@ -141,7 +142,6 @@ Bool xf86ProbeFailed = FALSE;
 DriverPtr *xf86DriverList = NULL;
 int xf86NumDrivers = 0;
 #endif
-PciProbeType xf86PCIFlags = PCIProbe1;
 int xf86NumScreens = 0;
 
 const char *xf86VisualNames[] = {
@@ -172,8 +172,6 @@ Bool xf86FlipPixels = FALSE;
 Gamma xf86Gamma = {0.0, 0.0, 0.0};
 Bool xf86ShowUnresolved = DEFAULT_UNRESOLVED;
 Bool xf86BestRefresh = DEFAULT_BEST_REFRESH;
-
-/* Parameters set either from the command line or the config file */
 Bool xf86AllowMouseOpenFail = FALSE;
 #ifdef XF86VIDMODE
 Bool xf86VidModeEnabled = TRUE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_io.c,v 3.8.4.2 1998/06/04 17:35:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_io.c,v 3.9 1998/07/25 16:56:32 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -167,7 +167,7 @@ MouseDevPtr mouse;
 	if ((err = iop_mousecontrol(&iopcap, msetype, mouse->baudRate,
 				    mouse->sampleRate)) != STD_OK)
 	{
-		if (xf86AllowMouseOpenFail) {
+		if (xf86Info.allowMouseOpenFail) {
 			ErrorF("iop_mousecontrol failed (%s) - Continuing...\n",
 				err_why(err));
 			return(-2);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.9.4.2 1998/06/04 17:35:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.10 1998/07/25 16:56:48 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -183,7 +183,7 @@ MouseDevPtr mouse;
 		if ((mseFd = mouse->mseFd =
 			open(mouse->mseDevice, O_RDWR)) < 0)
 		{
-			if (xf86AllowMouseOpenFail) {
+			if (xf86Info.allowMouseOpenFail) {
 				ErrorF("Cannot open mouse (%s) - Continuing...\n",
 					strerror(errno));
 				return;

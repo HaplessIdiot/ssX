@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.158 1999/01/13 08:31:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.159 1999/01/24 03:13:52 dawes Exp $ */
 
 
 /*
@@ -434,6 +434,7 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 {
     XF86OptionPtr optp, tmp;
     int i;
+    Pix24Flags pix24 = Pix24DontCare;
 
     /*
      * Merge the ServerLayout and ServerFlags options.  The former have
@@ -457,33 +458,49 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     xf86GetOptValBool(FlagOptions, FLAG_DONTZOOM, &xf86Info.dontZoom);
 
 #ifdef XF86VIDMODE
-    xf86GetOptValBool(FlagOptions, FLAG_DISABLEVIDMODE, &xf86VidModeEnabled);
-    if (xf86IsOptionSet(FlagOptions, FLAG_DISABLEVIDMODE))
-	xf86VidModeEnabled = !xf86VidModeEnabled;
-    xf86GetOptValBool(FlagOptions, FLAG_ALLOWNONLOCAL,
-			&xf86VidModeAllowNonLocal);
+    if (xf86VidModeEnabled) {
+	xf86GetOptValBool(FlagOptions, FLAG_DISABLEVIDMODE,
+			  &xf86Info.vidModeEnabled);
+	if (xf86IsOptionSet(FlagOptions, FLAG_DISABLEVIDMODE))
+	    xf86Info.vidModeEnabled = !xf86Info.vidModeEnabled;
+    } else
+	xf86Info.vidModeEnabled = xf86VidModeEnabled;
+    if (!xf86VidModeAllowNonLocal)
+	xf86GetOptValBool(FlagOptions, FLAG_ALLOWNONLOCAL,
+			  &xf86Info.vidModeAllowNonLocal);
+    else
+	xf86Info.vidModeAllowNonLocal = xf86VidModeAllowNonLocal;
 #endif
 
 #ifdef XF86MISC
-    xf86GetOptValBool(FlagOptions, FLAG_DISABLEMODINDEV,
-			xf86MiscModInDevEnabled);
-    if (xf86IsOptionSet(FlagOptions, FLAG_DISABLEMODINDEV))
-	xf86MiscModInDevEnabled = !xf86MiscModInDevEnabled;
-    xf86GetOptValBool(FlagOptions, FLAG_MODINDEVALLOWNONLOCAL,
-			xf86MiscModInDevAllowNonLocal);
+    if (xf86MiscModInDevEnabled) {
+	xf86GetOptValBool(FlagOptions, FLAG_DISABLEMODINDEV,
+			  &xf86Info.miscModInDevEnabled);
+	if (xf86IsOptionSet(FlagOptions, FLAG_DISABLEMODINDEV))
+	    xf86Info.miscModInDevEnabled = !xf86Info.miscModInDevEnabled;
+    } else
+	xf86Info.miscModInDevEnabled = xf86MiscModInDevEnabled;
+    if (!xf86MiscModInDevAllowNonLocal)
+	xf86GetOptValBool(FlagOptions, FLAG_MODINDEVALLOWNONLOCAL,
+			  &xf86Info.miscModInDevAllowNonLocal);
+    else
+	xf86Info.miscModInDevAllowNonLocal = xf86MiscModInDevAllowNonLocal;
 #endif
 
-    xf86GetOptValBool(FlagOptions, FLAG_ALLOWMOUSEOPENFAIL,
-			&xf86AllowMouseOpenFail);
+    if (!xf86AllowMouseOpenFail)
+	xf86GetOptValBool(FlagOptions, FLAG_ALLOWMOUSEOPENFAIL,
+			  &xf86Info.allowMouseOpenFail);
+    else
+	xf86Info.allowMouseOpenFail = xf86AllowMouseOpenFail;
 
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIPROBE1))
-	xf86PCIFlags = PCIProbe1;
+	xf86Info.pciFlags = PCIProbe1;
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIPROBE2))
-	xf86PCIFlags = PCIProbe2;
+	xf86Info.pciFlags = PCIProbe2;
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCECONFIG1))
-	xf86PCIFlags = PCIForceConfig1;
+	xf86Info.pciFlags = PCIForceConfig1;
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCECONFIG2))
-	xf86PCIFlags = PCIForceConfig2;
+	xf86Info.pciFlags = PCIForceConfig2;
 
     i = -1;
     xf86GetOptValInteger(FlagOptions, FLAG_SAVER_BLANKTIME, &i);
@@ -509,16 +526,26 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     xf86GetOptValInteger(FlagOptions, FLAG_PIXMAP, &i);
     switch (i) {
     case 24:
-	xf86ConfigPix24 = Pix24Use24;
+	pix24 = Pix24Use24;
 	break;
     case 32:
-	xf86ConfigPix24 = Pix24Use32;
+	pix24 = Pix24Use32;
 	break;
     case -1:
 	break;
     default:
 	xf86ConfigError("Pixmap option's value (%d) must be 24 or 32\n", i);
 	return FALSE;
+    }
+    if (xf86Pix24 != Pix24DontCare) {
+	xf86Info.pixmap24 = xf86Pix24;
+	xf86Info.pix24From = X_CMDLINE;
+    } else if (pix24 != Pix24DontCare) {
+	xf86Info.pixmap24 = pix24;
+	xf86Info.pix24From = X_CONFIG;
+    } else {
+	xf86Info.pixmap24 = Pix24DontCare;
+	xf86Info.pix24From = X_DEFAULT;
     }
     return TRUE;
 }

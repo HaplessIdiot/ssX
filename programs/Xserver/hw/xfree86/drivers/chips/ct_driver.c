@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.48 1999/01/23 09:55:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.49 1999/01/26 05:54:00 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -109,6 +109,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb24_32.h"
 
 /* Needed for the 1 and 4 bpp framebuffers */
 #include "xf1bpp.h"
@@ -187,6 +188,12 @@ static void     chipsHWCursorOn(CHIPSPtr cPtr);
 static void     chipsHWCursorOff(CHIPSPtr cPtr);
 static void     chipsFixResume(ScrnInfoPtr pScrn);
 
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
+ 
 /*
  * Initialise some arrays that are used in multiple instances of the
  * acceleration code. Set them up here as its a convenient place to do it.
@@ -611,6 +618,7 @@ static const char *cfbSymbols[] = {
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb24ScreenInit",
+    "cfb24_32ScreenInit",
     "cfb32ScreenInit",
     NULL
 };
@@ -1191,8 +1199,13 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	reqSym = "cfb16ScreenInit";
 	break;
     case 24:
-	mod = "cfb24";
-	reqSym = "cfb24ScreenInit";
+	if (pix24bpp == 24) {
+	    mod = "cfb24";
+	    reqSym = "cfb24ScreenInit";
+	} else {
+	    mod = "xf24_32bpp";
+	    reqSym = "cfb24_32ScreenInit";
+	}
 	break;
     case 32:
 	mod = "cfb32";
@@ -1257,7 +1270,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     pScrn->monitor = pScrn->confScreen->monitor;
 
     /* All HiQV chips support 16/24/32 bpp */
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb))
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb |
+				SupportConvert32to24 | PreferConvert32to24))
 	return FALSE;
     else {
 	/* Check that the returned depth is one we support */
@@ -1279,6 +1293,10 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	}
     }
     xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -1852,9 +1870,10 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     pScrn->monitor = pScrn->confScreen->monitor;
 
     if (cPtr->Flags & ChipsHDepthSupport)
-	i = xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb );
+	i = xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb |
+				SupportConvert32to24 | PreferConvert32to24);
     else
-	i = xf86SetDepthBpp(pScrn, 8, 8, 8, NoDepth24Support );
+	i = xf86SetDepthBpp(pScrn, 8, 8, 8, NoDepth24Support);
 
     if (!i)
 	return FALSE;
@@ -1881,6 +1900,10 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -2235,9 +2258,10 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     pScrn->monitor = pScrn->confScreen->monitor;
 
     if (cPtr->Flags & ChipsHDepthSupport)
-	i = xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb );
+	i = xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb |
+				SupportConvert32to24 | PreferConvert32to24);
     else
-	i = xf86SetDepthBpp(pScrn, 8, 8, 8, NoDepth24Support );
+	i = xf86SetDepthBpp(pScrn, 8, 8, 8, NoDepth24Support);
 
     if (!i)
 	return FALSE;
@@ -2263,6 +2287,10 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	}
     }
     xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -2999,7 +3027,13 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, cPtr->FbBase,
+	if (pix24bpp == 24)
+	    ret = cfb24ScreenInit(pScreen, cPtr->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	else
+	    ret = cfb24_32ScreenInit(pScreen, cPtr->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);

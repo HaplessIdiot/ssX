@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.23 1999/01/24 13:32:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.24 1999/01/26 05:53:58 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -245,20 +245,14 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 {
     int i;
     DispPtr disp;
-    Pix24Flags pix24 = Pix24DontCare;
+    Pix24Flags pix24 = xf86Info.pixmap24;
     Bool nomatch = FALSE;
 
     scrp->bitsPerPixel = -1;
     scrp->depth = -1;
     scrp->pixmap24 = Pix24DontCare;
     scrp->bitsPerPixelFrom = X_DEFAULT;
-    scrp->pixmapBPPFrom = X_DEFAULT;
     scrp->depthFrom = X_DEFAULT;
-
-    if (xf86Pix24 != Pix24DontCare) {
-	pix24 = xf86Pix24;
-	scrp->pixmapBPPFrom = X_CMDLINE;
-    }
 
     if (xf86FbBpp > 0) {
 	scrp->bitsPerPixel = xf86FbBpp;
@@ -268,13 +262,6 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
     if (xf86Depth > 0) {
 	scrp->depth = xf86Depth;
 	scrp->depthFrom = X_CMDLINE;
-    }
-
-    /* If user doesn't override from commandline, probe the config file */
-
-    if (xf86Pix24 == Pix24DontCare && xf86ConfigPix24 != Pix24DontCare) {
-	pix24 = xf86ConfigPix24;
-	scrp->pixmapBPPFrom = X_CONFIG;
     }
 
     if (xf86FbBpp < 0 && xf86Depth < 0) {
@@ -422,11 +409,9 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
     /* set scrp->pixmap24 if the driver isn't flexible */
     if (scrp->bitsPerPixel == 24 && !DO_PIX32FOR24(depth24flags)) {
 	scrp->pixmap24 = Pix24Use24;
-	scrp->pixmapBPPFrom = X_PROBED;
     }
     if (scrp->bitsPerPixel == 32 && !DO_PIX24FOR32(depth24flags)) {
 	scrp->pixmap24 = Pix24Use32;
-	scrp->pixmapBPPFrom = X_PROBED;
     }
 
     /*
@@ -1716,14 +1701,7 @@ xf86GetVerbosity()
 Pix24Flags
 xf86GetPix24()
 {
-    return xf86Pix24;
-}
-
-
-Pix24Flags
-xf86GetConfigPix24()
-{
-    return xf86ConfigPix24;
+    return xf86Info.pixmap24;
 }
 
 

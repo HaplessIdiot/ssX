@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.1 1999/01/23 09:55:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.2 1999/01/24 03:13:56 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -299,6 +299,9 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->sisRegs3C2[0x00] = inb(0x3CC) | 0x0C;
     }
 
+    outb(0x3C4, ExtMiscCont5);
+    pReg->sisRegs3C4[ExtMiscCont5] = inb(0x3C5)/* | 0xC0 block writes */;
+
     if (!pSiS->NoAccel) {
     	outb(0x3C4, GraphEng);
     	pReg->sisRegs3C4[GraphEng] = inb(0x3C5) | 0x40;
@@ -306,7 +309,10 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	    pReg->sisRegs3C4[GraphEng] |= 0x80;
 	    outb(0x3C4, ExtMiscCont9);
     	    pReg->sisRegs3C4[ExtMiscCont9] = inb(0x3C5) & 0xFC; /* All Queue for 2D */
-    	    pReg->sisRegs3C4[TurboQueueBase] = (pScrn->videoRam/32) - 1;
+	    if (pSiS->HWCursor) 
+    	    	pReg->sisRegs3C4[TurboQueueBase] = (pScrn->videoRam/32) - 2;
+	    else
+    	    	pReg->sisRegs3C4[TurboQueueBase] = (pScrn->videoRam/32) - 1;
 	}
 	outb(0x3C4, Mode64);
     	pReg->sisRegs3C4[Mode64] = inb(0x3C5) | 0x80;
@@ -342,6 +348,7 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	}
     }
 
+    outw(0x3C4, (sisReg->sisRegs3C4[ExtMiscCont5] << 8) | ExtMiscCont5);
     outw(0x3C4, (sisReg->sisRegs3C4[BankReg] << 8) | BankReg);
     outw(0x3C4, (sisReg->sisRegs3C4[LinearAdd0] << 8) | LinearAdd0);
     outw(0x3C4, (sisReg->sisRegs3C4[LinearAdd1] << 8) | LinearAdd1);
@@ -385,6 +392,8 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     sisReg->sisRegs3x4[Offset] = inb(0x3C5);
     outb(0x3C4, CRTCOff);
     sisReg->sisRegs3C4[CRTCOff] = inb(0x3C5);
+    outb(0x3C4, ExtMiscCont5);
+    sisReg->sisRegs3C4[ExtMiscCont5] = inb(0x3C5);
 
     sisReg->sisRegs3C2[0x00] = inb(0x3CC);
     outb(0x3C4, ClockBase);
@@ -412,153 +421,168 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     outw(0x3C4, (temp << 8) | 0x05); /* Relock Registers */
 }
 
-#if 0
 static void 
-TridentShowCursor(ScrnInfoPtr pScrn) 
+SiSShowCursor(ScrnInfoPtr pScrn) 
 {
-    int vgaIOBase;
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    unsigned char temp, temp2;
 
-    /* 64x64 */
-    outw(vgaIOBase + 4, 0xC150);
+    outb(0x3C4, 0x05); /* Unlock Registers */
+    temp2 = inb(0x3C5);
+    outw(0x3C4, 0x8605);
+
+    outb(0x3C4, 0x06); temp = inb(0x3C5);
+    outb(0x3C5, temp | 0x40);
+
+    outw(0x3C4, (temp2 << 8) | 0x05);
 }
 
 static void 
-TridentHideCursor(ScrnInfoPtr pScrn) {
-    int vgaIOBase;
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+SiSHideCursor(ScrnInfoPtr pScrn) {
+    unsigned char temp, temp2;
 
-    outw(vgaIOBase + 4, 0x4150);
+    outb(0x3C4, 0x05); /* Unlock Registers */
+    temp2 = inb(0x3C5);
+    outw(0x3C4, 0x8605);
+
+    outb(0x3C4, 0x06); temp = inb(0x3C5);
+    outb(0x3C5, temp & 0xBF);
+
+    outw(0x3C4, (temp2 << 8) | 0x05);
 }
 
 static void 
-TridentSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
+SiSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-    int vgaIOBase;
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    unsigned char temp, temp2;
+
+    outb(0x3C4, 0x05); /* Unlock Registers */
+    temp2 = inb(0x3C5);
+    outw(0x3C4, 0x8605);
 
     if (x < 0) {
-    	outw(vgaIOBase + 4, (-x)<<8 | 0x46);
+    	outw(0x3C4, (-x)<<8 | 0x1C);
 	x = 0;
     } else
-    	outw(vgaIOBase + 4, 0x0046);
+    	outw(0x3C4, 0x001C);
  
     if (y < 0) {
-    	outw(vgaIOBase + 4, (-y)<<8 | 0x47);
+    	outw(0x3C4, (-y)<<8 | 0x1F);
 	y = 0;
     } else
-    	outw(vgaIOBase + 4, 0x0047);
+    	outw(0x3C4, 0x001F);
 
-    outw(vgaIOBase + 4, (x&0xFF)<<8 | 0x40);
-    outw(vgaIOBase + 4, (x&0xFF00)  | 0x41);
-    outw(vgaIOBase + 4, (y&0xFF)<<8 | 0x42);
-    outw(vgaIOBase + 4, (y&0xFF00)  | 0x43);
+    outw(0x3C4, (x&0xFF)<<8 | 0x1A);
+    outw(0x3C4, (x&0xFF00)  | 0x1B);
+    outw(0x3C4, (y&0xFF)<<8 | 0x1D);
+    outw(0x3C4, (y&0xFF00)  | 0x1E);
+
+    outw(0x3C4, (temp2 << 8) | 0x05);
 }
 
 static void
-TridentSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
+SiSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
-    int vgaIOBase;
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    unsigned char temp, temp2;
 
-    outw(vgaIOBase + 4, (fg & 0x000000FF)<<8  | 0x48);
-    outw(vgaIOBase + 4, (fg & 0x0000FF00)     | 0x49);
-    outw(vgaIOBase + 4, (fg & 0x00FF0000)>>8  | 0x4A);
-    outw(vgaIOBase + 4, (fg & 0xFF000000)>>16 | 0x4B);
-    outw(vgaIOBase + 4, (bg & 0x000000FF)<<8  | 0x4C);
-    outw(vgaIOBase + 4, (bg & 0x0000FF00)     | 0x4D);
-    outw(vgaIOBase + 4, (bg & 0x00FF0000)>>8  | 0x4E);
-    outw(vgaIOBase + 4, (bg & 0xFF000000)>>16 | 0x4F);
+    outb(0x3C4, 0x05); /* Unlock Registers */
+    temp2 = inb(0x3C5);
+    outw(0x3C4, 0x8605);
+
+    outw(0x3C4, (fg & 0x000000FF)<<8  | 0x17);
+    outw(0x3C4, (fg & 0x0000FF00)     | 0x18);
+    outw(0x3C4, (fg & 0x00FF0000)>>8  | 0x19);
+    outw(0x3C4, (bg & 0x000000FF)<<8  | 0x14);
+    outw(0x3C4, (bg & 0x0000FF00)     | 0x15);
+    outw(0x3C4, (bg & 0x00FF0000)>>8  | 0x16);
+
+    outw(0x3C4, (temp2 << 8) | 0x05);
 }
 
 static void
-TridentLoadCursorImage(
+SiSLoadCursorImage(
     ScrnInfoPtr pScrn, 
     unsigned char *src
 )
 {
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int vgaIOBase;
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    SISPtr pSiS = SISPTR(pScrn);
+    int cursoraddress = ((pScrn->videoRam * 1024) - 16384) / 262144;
+    unsigned char temp, temp2;
 
-    memcpy((unsigned char *)pTrident->FbBase + (pScrn->videoRam * 1024) - 4096,
-			src, pTrident->CursorInfoRec->MaxWidth * 
-			pTrident->CursorInfoRec->MaxHeight / 4);
+    outb(0x3C4, 0x05); /* Unlock Registers */
+    temp2 = inb(0x3C5);
+    outw(0x3C4, 0x8605);
 
-    outw(vgaIOBase + 4, (((pScrn->videoRam-4) & 0xFF) << 8) | 0x44);
-    outw(vgaIOBase + 4, ((pScrn->videoRam-4) & 0xFF00) | 0x45);
+    memcpy((unsigned char *)pSiS->FbBase + (pScrn->videoRam * 1024) - 16384,
+			src, pSiS->CursorInfoRec->MaxWidth * 
+			pSiS->CursorInfoRec->MaxHeight / 4);
+
+    outb(0x3C4, 0x38); temp = inb(0x3C5);
+    outb(0x3C5, (temp & 0x0F) | (cursoraddress << 4));
+    outb(0x3C4, 0x1E); temp = inb(0x3C5); outb(0x3C5, temp & 0xF7);
+
+    outw(0x3C4, (temp2 << 8) | 0x05);
 }
 
 static Bool 
-TridentUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
+SiSUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    
-    if (pTrident->MUX && pScrn->bitsPerPixel == 8) return FALSE;
-
+    SISPtr pSiS = SISPTR(pScrn);
     return TRUE;
 }
 
 Bool 
-TridentHWCursorInit(ScreenPtr pScreen)
+SiSHWCursorInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    SISPtr pSiS = SISPTR(pScrn);
     xf86CursorInfoPtr infoPtr;
+#if 0
     int memory = pScrn->displayWidth * pScrn->virtualY * pScrn->bitsPerPixel/8;
 
-    if (memory > (pScrn->videoRam * 1024 - 4096)) return FALSE;
+    if (memory > (pScrn->videoRam * 1024 - 16384)) return FALSE;
+#endif
     infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
 
-    pTrident->CursorInfoRec = infoPtr;
+    pSiS->CursorInfoRec = infoPtr;
 
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;
-    infoPtr->Flags = HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
-		HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
-		HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_32;
-    infoPtr->SetCursorColors = TridentSetCursorColors;
-    infoPtr->SetCursorPosition = TridentSetCursorPosition;
-    infoPtr->LoadCursorImage = TridentLoadCursorImage;
-    infoPtr->HideCursor = TridentHideCursor;
-    infoPtr->ShowCursor = TridentShowCursor;
-    infoPtr->UseHWCursor = TridentUseHWCursor;
+    infoPtr->Flags = 
+		HARDWARE_CURSOR_INVERT_MASK |
+		HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+		HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+		HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
+    infoPtr->SetCursorColors = SiSSetCursorColors;
+    infoPtr->SetCursorPosition = SiSSetCursorPosition;
+    infoPtr->LoadCursorImage = SiSLoadCursorImage;
+    infoPtr->HideCursor = SiSHideCursor;
+    infoPtr->ShowCursor = SiSShowCursor;
+    infoPtr->UseHWCursor = SiSUseHWCursor;
 
     return(xf86InitCursor(pScreen, infoPtr));
 }
 
 unsigned int
-Tridentddc1Read(ScrnInfoPtr pScrn)
+SiSddc1Read(ScrnInfoPtr pScrn)
 {
-    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    SISPtr pSiS = SISPTR(pScrn);
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-    unsigned char temp;
+    unsigned char temp, temp2;
 
-    /* New mode */
-    outb(0x3C4, 0x0B); inb(0x3C5);
-
-    outb(vgaIOBase + 4, NewMode1);
-    temp = inb(vgaIOBase + 5);
-    outb(vgaIOBase + 5, temp | 0x80);
-
-    /* Define SDA as input */
-    outw(vgaIOBase + 4, (0x04 << 8) | I2C);
-
-    outw(vgaIOBase + 4, (temp << 8) | NewMode1);
+    outb(0x3C4, 0x05); /* Unlock Registers */
+    temp2 = inb(0x3C5);
+    outw(0x3C4, 0x8605);
 
     /* Wait until vertical retrace is in progress. */
     while (inb(vgaIOBase + 0xA) & 0x08);
     while (!(inb(vgaIOBase + 0xA) & 0x08));
 
     /* Get the result */
-    outb(vgaIOBase + 4, I2C);
-    return ( inb(vgaIOBase + 5) & 0x01 );
+    outb(0x3C4, 0x11); temp = inb(0x3C5);
+
+    outw(0x3C4, (temp2 << 8) | 0x05);
+
+    return ((temp & 0x02)>>1);
 }
-#endif

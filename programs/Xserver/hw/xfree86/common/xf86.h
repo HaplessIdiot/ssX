@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.86 1999/01/14 01:44:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.87 1999/01/17 11:25:19 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -150,7 +150,6 @@ void xf86GetClocks(ScrnInfoPtr pScrn, int num,
 const char *xf86GetVisualName(int visual);
 int xf86GetVerbosity(void);
 Pix24Flags xf86GetPix24(void);
-Pix24Flags xf86GetConfigPix24(void);
 int xf86GetDepth(void);
 rgb xf86GetWeight(void);
 Gamma xf86GetGamma(void);
@@ -171,8 +170,8 @@ void xf86SetBackingStore(ScreenPtr pScreen);
 
 /* xf86Init.c */
 
-PixmapFormatPtr xf86GetPixFormat(int depth);
-int xf86GetBppFromDepth(int depth);
+PixmapFormatPtr xf86GetPixFormat(ScrnInfoPtr pScrn, int depth);
+int xf86GetBppFromDepth(ScrnInfoPtr pScrn, int depth);
 
 /* xf86Mode.c */
 

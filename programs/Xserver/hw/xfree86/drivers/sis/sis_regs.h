@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.1 1999/01/23 09:55:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.2 1999/01/24 03:13:56 dawes Exp $ */
 
 /* 3C4 */
 #define BankReg 0x06
@@ -45,6 +45,7 @@
 #define XR2A 0x2A
 #define XR2B 0x2B
 #define TurboQueueBase 0x2C
+#define ExtMiscCont5 0x34
 #define ExtMiscCont9 0x3C
 
 /* 3x4 */

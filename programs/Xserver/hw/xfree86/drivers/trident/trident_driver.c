@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.41 1999/01/23 09:55:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.42 1999/01/26 05:54:07 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -36,6 +36,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb24_32.h"
 #include "xf1bpp.h"
 #include "xf4bpp.h"
 #include "mibank.h"
@@ -93,6 +94,12 @@ static void	TRIDENTSave(ScrnInfoPtr pScrn);
 static void	TRIDENTRestore(ScrnInfoPtr pScrn);
 static Bool	TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
+ 
 #define VERSION 4000
 #define TRIDENT_NAME "TRIDENT"
 #define TRIDENT_DRIVER_NAME "trident"
@@ -392,6 +399,7 @@ static const char *fbSymbols[] = {
     "cfb16ScreenInit",
     "cfb24ScreenInit",
     "cfb32ScreenInit",
+    "cfb24_32ScreenInit",
     NULL
 };
 
@@ -770,7 +778,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * Our preference for depth 24 is 24bpp, so tell it that too.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb | Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb | Support32bppFb |
+				SupportConvert32to24 | PreferConvert32to24)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
@@ -790,6 +799,12 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
+
+    xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -1366,8 +1381,13 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     case 24:
 	pTrident->EngineOperation |= 0x03;
-	mod = "cfb24";
-	Sym = "cfb24ScreenInit";
+	if (pix24bpp == 24) {
+	    mod = "cfb24";
+	    Sym = "cfb24ScreenInit";
+	} else {
+	    mod = "xf24_32bpp";
+	    Sym = "cfb24_32ScreenInit";
+	}
 	break;
     case 32:
 	pTrident->EngineOperation |= 0x02;
@@ -1800,7 +1820,12 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
+	if (pix24bpp == 24)
+	    ret = cfb24ScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
+			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+			pScrn->displayWidth);
+	else
+	    ret = cfb24_32ScreenInit(pScreen, pTrident->FbBase, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.4 1998/12/05 14:40:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.5 1998/12/20 13:16:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -178,7 +178,8 @@ typedef struct {
 						 * changed */
     Bool		miscModInDevAllowNonLocal;
     PciProbeType	pciFlags;
-
+    Pix24Flags		pixmap24;
+    MessageType		pix24From;
 } xf86InfoRec, *xf86InfoPtr;
 
 

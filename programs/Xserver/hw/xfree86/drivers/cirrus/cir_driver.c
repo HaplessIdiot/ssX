@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.29 1999/01/17 10:54:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.30 1999/01/26 05:54:02 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -51,6 +51,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb24_32.h"
 
 /* These need to be checked */
 #if 0
@@ -116,6 +117,13 @@ Bool	CIRUnmapMem(ScrnInfoPtr pScrn);
 static void	CIRSave(ScrnInfoPtr pScrn);
 static void	CIRRestore(ScrnInfoPtr pScrn);
 static Bool	CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
+
 #define VERSION 4000
 #define CIR_NAME "CIRRUS"
 #define CIR_DRIVER_NAME "cirrus"
@@ -606,7 +614,8 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb |
+				SupportConvert32to24 | PreferConvert32to24)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
@@ -627,6 +636,10 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -1002,7 +1015,11 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     case 4:  mod = "xf4bpp";  break;
     case 8:  mod = "cfb";     break;
     case 16: mod = "cfb16";   break;
-    case 24: mod = "cfb24";   break;
+    case 24: if (pix24bpp == 24)
+		mod = "cfb24";
+	     else
+		mod = "xf24_32bpp";
+	     break;
     case 32: mod = "cfb32";   break;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
@@ -1661,7 +1678,13 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, pCir->FbBase,
+	if (pix24bpp == 24)
+	    ret = cfb24ScreenInit(pScreen, pCir->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	else
+	    ret = cfb24_32ScreenInit(pScreen, pCir->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);

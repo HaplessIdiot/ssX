@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.46 1999/01/17 10:54:06 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.47 1999/01/26 05:54:08 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -53,6 +53,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb24_32.h"
 
 /*** Chip-specific includes ***/
 
@@ -98,6 +99,12 @@ static void TsengLock(void);
 
 static Bool ET4000DetailedProbe(t_tseng_type * chiptype, t_w32_revid * rev);
 
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
+ 
 #define VERSION 4000
 #define TSENG_NAME "TSENG"
 #define TSENG_DRIVER_NAME "tseng"
@@ -1508,7 +1515,8 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * Our preference for depth 24 is 24bpp, so tell it that too.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb |
+				SupportConvert32to24 | PreferConvert32to24)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
@@ -1572,6 +1580,10 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     if (pScrn->bitsPerPixel > 8)
 	pTseng->Bytesperpixel = pScrn->bitsPerPixel / 8;
@@ -1728,7 +1740,10 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	mod = "cfb16";
 	break;
     case 24:
-	mod = "cfb24";
+	if (pix24bpp == 24)
+	    mod = "cfb24";
+	else
+	    mod = "xf24_32bpp";
 	break;
     case 32:
 	mod = "cfb32";
@@ -1969,9 +1984,12 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
-	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-	    pScrn->displayWidth);
+	    ret = cfb24ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
+		pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+		pScrn->displayWidth);
+	    ret = cfb24_32ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,
+		pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+		pScrn->displayWidth);
 	break;
     case 32:
 	ret = cfb32ScreenInit(pScreen, pTseng->FbBase, pScrn->virtualX,

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.11 1999/01/24 03:13:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.12 1999/01/26 05:54:06 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -33,6 +33,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb24_32.h"
 #include "xf1bpp.h"
 #include "xf4bpp.h"
 #include "mibank.h"
@@ -90,6 +91,12 @@ static void	SISSave(ScrnInfoPtr pScrn);
 static void	SISRestore(ScrnInfoPtr pScrn);
 static Bool	SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
+ 
 #define VERSION 4000
 #define SIS_NAME "SIS"
 #define SIS_DRIVER_NAME "sis"
@@ -176,6 +183,7 @@ static const char *fbSymbols[] = {
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb24ScreenInit",
+    "cfb24_32ScreenInit",
     "cfb32ScreenInit",
     NULL
 };
@@ -266,51 +274,54 @@ SISFreeRec(ScrnInfoPtr pScrn)
 static void 
 SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
-    unsigned char DPMSCont, PMCont, temp;
+	unsigned char extDDC_PCR;
+	unsigned char crtc17;
+	unsigned char seq1;
+        int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-#if 0
-    xf86AddControlledResource(pScrn,IO);
-    xf86EnableAccess(&pScrn->Access);
+#ifdef DEBUG
+	ErrorF("SISDisplayPowerManagementSet(%d)\n",PowerManagementMode);
 #endif
-
-    outb(0x3C4, 0x0E);
-    temp = inb(0x3C5);
-    outb(0x3C5, 0xC2);
-    outb(0x83C8, 0x04); /* Read DPMS Control */
-	PMCont = inb(0x83C6) & 0xFC;
-	outb(0x3CE, 0x23);
-	DPMSCont = inb(0x3CF) & 0xFC;
+	outb(vgaIOBase + 4, 0x17);
+	crtc17 = inb(vgaIOBase + 5);
+	outb(0x3C4, 0x11);
+	extDDC_PCR = inb(0x3C5) & ~0xC0;
 	switch (PowerManagementMode)
 	{
 	case DPMSModeOn:
-		/* Screen: On, HSync: On, VSync: On */
-		PMCont |= 0x03;
-		DPMSCont |= 0x00;
-		break;
+	    /* HSync: On, VSync: On */
+	    seq1 = 0x00 ;
+	    crtc17 |= 0x80;
+	    break;
 	case DPMSModeStandby:
-		/* Screen: Off, HSync: Off, VSync: On */
-		PMCont |= 0x02;
-		DPMSCont |= 0x01;
-		break;
+	    /* HSync: Off, VSync: On */
+	    seq1 = 0x20 ;
+	    extDDC_PCR |= 0x40;
+	    break;
 	case DPMSModeSuspend:
-		/* Screen: Off, HSync: On, VSync: Off */
-		PMCont |= 0x02;
-		DPMSCont |= 0x02;
-		break;
+	    /* HSync: On, VSync: Off */
+	    seq1 = 0x20 ;
+	    extDDC_PCR |= 0x80;
+	    break;
 	case DPMSModeOff:
-		/* Screen: Off, HSync: Off, VSync: Off */
-		PMCont |= 0x00;
-		DPMSCont |= 0x03;
-		break;
+	    /* HSync: Off, VSync: Off */
+	    seq1 = 0x20 ;
+	    extDDC_PCR |= 0xC0;
+	    /* DPMSModeOff is not supported with ModeStandby | ModeSuspend  */
+            /* need same as the generic VGA function */
+	    crtc17 &= ~0x80;
+	    break;
 	}
-	outb(0x3CF, DPMSCont);
-	outb(0x83C8, 0x04);
-	outb(0x83C6, PMCont);
-	outw(0x3C4, (temp<<8) | 0x0E);
-
-#if 0
-    xf86DelControlledResource(&pScrn->Access, FALSE);
-#endif
+	outw(0x3C4, 0x0100);	/* Synchronous Reset */
+	outb(0x3C4, 0x01);	/* Select SEQ1 */
+	seq1 |= inb(0x3C5) & ~0x20;
+	outb(0x3C5, seq1);
+	usleep(10000);
+	outb(vgaIOBase + 4, 0x17);
+	outb(vgaIOBase + 5, crtc17);
+	outb(0x3C4, 0x11);
+	outb(0x3C5, extDDC_PCR);
+	outw(0x3C4, 0x0300);	/* End Reset */
 }
 #endif
 
@@ -554,7 +565,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * Our preference for depth 24 is 24bpp, so tell it that too.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb | Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb | Support32bppFb |
+				SupportConvert32to24 | PreferConvert32to24)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
@@ -574,6 +586,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
     }
+
+    xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -676,6 +694,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     pSiS->TurboQueue = FALSE; /* For now */
     pSiS->PciInfo = *pciList;
+    pSiS->ddc1Read = SiSddc1Read;
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
@@ -1057,8 +1076,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	Sym = "cfb16ScreenInit";
 	break;
     case 24:
-	mod = "cfb24";
-	Sym = "cfb24ScreenInit";
+	if (pix24bpp == 24) {
+	    mod = "cfb24";
+	    Sym = "cfb24ScreenInit";
+	} else {
+	    mod = "xf24_32bpp";
+	    Sym = "cfb24_32ScreenInit";
+	}
 	break;
     case 32:
 	mod = "cfb32";
@@ -1096,6 +1120,19 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
         xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
+
+    /* Load DDC if needed */
+    /* This gives us DDC1 - we should be able to get DDC2B using i2c */
+    if (!xf86LoadSubModule(pScrn, "ddc")) {
+	SISFreeRec(pScrn);
+	return FALSE;
+    }
+    xf86LoaderReqSymLists(ddcSymbols, NULL);
+
+    /* Initialize DDC1 if possible */
+    if (pSiS->ddc1Read) 
+	xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,pSiS->ddc1Read ) );
+
 
     return TRUE;
 }
@@ -1437,7 +1474,12 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+	if (pix24bpp == 24)
+	    ret = cfb24ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
+			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
+			pScrn->displayWidth);
+	else
+	    ret = cfb24_32ScreenInit(pScreen, pSiS->FbBase, pScrn->virtualX,
 			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi, 
 			pScrn->displayWidth);
 	break;
@@ -1484,10 +1526,8 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
 
-#if 0
     if (pSiS->HWCursor)
 	SiSHWCursorInit(pScreen);
-#endif
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
@@ -1542,8 +1582,33 @@ SISAdjustFrame(int scrnIndex, int x, int y, int flags)
     hwp = VGAHWPTR(pScrn);
     pSiS = SISPTR(pScrn);
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-}
 
+    if (pScrn->bitsPerPixel < 8) {
+	base = (y * pScrn->displayWidth + x + 3) >> 3;
+    } else {
+	base = y * pScrn->displayWidth + x ;
+	/* calculate base bpp dep. */
+	switch (pScrn->bitsPerPixel) {
+	  case 16:
+	    base >>= 1;
+	    break;
+	  case 24:
+	    base = ((base * 3)) >> 2;
+	    base -= base % 6;
+	    break;
+	  default:       /* 8bpp */
+	    base >>= 2;
+	    break;
+    	}
+    }
+
+    outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C);
+    outw(vgaIOBase + 4, ((base & 0x00FF) << 8) | 0x0D);
+
+    outb(0x3C4, 0x27); temp = inb(0x3C5) & 0xF0;
+    temp |= (base & 0x0F0000) >> 16;
+    outb(0x3C5, temp);
+}
 
 /*
  * This is called when VT switching back to the X server.  Its job is

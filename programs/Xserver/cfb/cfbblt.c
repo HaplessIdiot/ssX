@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.5 1999/01/23 09:55:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.6 1999/01/24 14:23:29 dawes Exp $ */
 
 /*
 
@@ -745,7 +745,7 @@ pdst++;
 		    pdst -= nl & (UNROLL - 1);
 
 #if PSZ == 24 && MROP == 0
-#define BodyOdd(n) pdst[n-1] = DoMergeRop24u(psrc[n-1], pdst[n-1], ((int)pdst -(n - 1) - pdstBase) % 3);
+#define BodyOdd(n) pdst[n-1] = DoMergeRop24u(psrc[n-1], pdst[n-1], ((int)(pdst - (n - 1) -pdstBase)) % 3);
 #else /* !(PSZ == 24 && MROP == 0) */
 #define BodyOdd(n) pdst[n-1] = MROP_SOLID (psrc[n-1], pdst[n-1]);
 #endif /* PSZ == 24 && MROP == 0 */

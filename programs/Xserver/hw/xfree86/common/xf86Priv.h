@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.32 1999/01/13 03:19:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.33 1999/01/24 03:13:54 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -60,7 +60,6 @@ extern Pix24Flags xf86ConfigPix24;
 extern unsigned short xf86MouseCflags[];
 extern Bool xf86SupportedMouseTypes[];
 extern int xf86NumMouseTypes;
-extern PciProbeType xf86PCIFlags;
 
 #ifdef XFree86LOADER
 extern DriverPtr *xf86DriverList;

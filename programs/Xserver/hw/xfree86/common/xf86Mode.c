@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.10 1999/01/14 13:04:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.11 1999/01/17 11:25:20 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -730,7 +730,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     if (scrp->depth > 4)
 	BankFormat = &scrp->fbFormat;
     else
-	BankFormat = xf86GetPixFormat(scrp->depth);
+	BankFormat = xf86GetPixFormat(scrp, scrp->depth);
 
     bitsPerPixel = scrp->fbFormat.bitsPerPixel;
     pixmapPad = scrp->fbFormat.scanlinePad;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.16 1999/01/14 13:04:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.17 1999/01/26 05:53:59 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -397,7 +397,6 @@ typedef struct _ScrnInfoRec {
     int			depth;			/* depth of default visual */
     MessageType		depthFrom;		/* set from config? */
     MessageType		bitsPerPixelFrom;	/* set from config? */
-    MessageType		pixmapBPPFrom;		/* set from config? */
     rgb			weight;			/* r/g/b weights */
     rgb			mask;			/* rgb masks */
     rgb			offset;			/* rgb offsets */

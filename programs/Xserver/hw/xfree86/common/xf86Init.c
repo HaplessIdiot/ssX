@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.94 1999/01/24 03:13:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.95 1999/01/24 13:32:34 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -91,6 +91,7 @@ static PixmapFormatRec formats[MAXFORMATS] = {
 	{ 24,	32,	BITMAP_SCANLINE_PAD }
 };
 static int numFormats = 6;
+static Bool formatsDone = FALSE;
 
 /*
  * InitOutput --
@@ -443,16 +444,11 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 		FatalError("Inconsistent depth 24 pixmap format.  Exiting\n");
 	}
     }
-    /* check if screenpix24 is consistent with xf86Pix24/xf86ConfigPix24 */
-    if (xf86Pix24 != Pix24DontCare) {
-	pix24 = xf86Pix24;
-	pix24From = X_CMDLINE;
-	if (screenpix24 != Pix24DontCare && screenpix24 != xf86Pix24)
-	    pix24Fail = TRUE;
-    } else if (xf86ConfigPix24 != Pix24DontCare) {
-	pix24 = xf86ConfigPix24;
-	pix24From = X_CONFIG;
-	if (screenpix24 != Pix24DontCare && screenpix24 != xf86ConfigPix24)
+    /* check if screenpix24 is consistent with the config/cmdline */
+    if (xf86Info.pixmap24 != Pix24DontCare) {
+	pix24 = xf86Info.pixmap24;
+	pix24From = xf86Info.pix24From;
+	if (screenpix24 != Pix24DontCare && screenpix24 != xf86Info.pixmap24)
 	    pix24Fail = TRUE;
     } else if (screenpix24 != Pix24DontCare) {
 	pix24 = screenpix24;
@@ -492,6 +488,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	    }
 	}
     }
+    formatsDone = TRUE;
 
     /* If a screen uses depth 24, show what the pixmap format is */
     for (i = 0; i < xf86NumScreens; i++) {
@@ -1169,28 +1166,61 @@ xf86LoadModules(char **list, pointer *optlist)
 }
 #endif
 
+/* Pixmap format stuff */
+
 PixmapFormatPtr
-xf86GetPixFormat(int depth)
+xf86GetPixFormat(ScrnInfoPtr pScrn, int depth)
 {
     int i;
+    static PixmapFormatRec format;	/* XXX not reentrant */
 
+    /*
+     * When the formats[] list initialisation isn't complete, check the
+     * depth 24 pixmap config/cmdline options and screen-specified formats.
+     */
+
+    if (!formatsDone) {
+	if (depth == 24) {
+	    Pix24Flags pix24 = Pix24DontCare;
+
+	    format.depth = 24;
+	    format.scanlinePad = BITMAP_SCANLINE_PAD;
+	    if (xf86Info.pixmap24 != Pix24DontCare)
+		pix24 = xf86Info.pixmap24;
+	    else if (pScrn->pixmap24 != Pix24DontCare)
+		pix24 = pScrn->pixmap24;
+	    if (pix24 == Pix24Use24)
+		format.bitsPerPixel = 24;
+	    else
+		format.bitsPerPixel = 32;
+	    return &format;
+	}
+    }
+	
     for (i = 0; i < numFormats; i++)
 	if (formats[i].depth == depth)
 	   break;
-
     if (i != numFormats)
 	return &formats[i];
-    else
-	return NULL;
+    else if (!formatsDone) {
+	/* Check for screen-specified formats */
+	for (i = 0; i < pScrn->numFormats; i++)
+	    if (pScrn->formats[i].depth == depth)
+		break;
+	if (i != pScrn->numFormats)
+	    return &pScrn->formats[i];
+	else
+	    return NULL;
+    }
 }
 
 int
-xf86GetBppFromDepth(int depth)
+xf86GetBppFromDepth(ScrnInfoPtr pScrn, int depth)
 {
     PixmapFormatPtr format;
 
    
-    format = xf86GetPixFormat(depth);
+    format = xf86GetPixFormat(pScrn, depth);
     if (format)
 	return format->bitsPerPixel;
     else
