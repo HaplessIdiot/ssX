@@ -8,10 +8,10 @@ XCOMM
 
 SRCS = mga_driver.c mga_hwcurs.c /* mga_cmap.c */ mga_dac3026.c mga_dacG.c \
        mga_storm8.c mga_storm16.c mga_storm24.c mga_storm32.c mga_arc.c \
-       mga_dga.c mga_shadow.c
+       mga_dga.c mga_shadow.c mga_video.c
 OBJS = mga_driver.o mga_hwcurs.o /* mga_cmap.o */ mga_dac3026.o mga_dacG.o \
        mga_storm8.o mga_storm16.o mga_storm24.o mga_storm32.o mga_arc.o \
-       mga_dga.o mga_shadow.o
+       mga_dga.o mga_shadow.o mga_video.o
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
@@ -62,6 +62,7 @@ InstallDriverSDKNonExecFile(mga_map.h,$(DRIVERSDKDIR)/drivers/mga)
 InstallDriverSDKNonExecFile(mga_reg.h,$(DRIVERSDKDIR)/drivers/mga)
 InstallDriverSDKNonExecFile(mga_shadow.c,$(DRIVERSDKDIR)/drivers/mga)
 InstallDriverSDKNonExecFile(mga_storm.c,$(DRIVERSDKDIR)/drivers/mga)
+InstallDriverSDKNonExecFile(mga_video.c,$(DRIVERSDKDIR)/drivers/mga)
 
 InstallDriverSDKObjectModule(mga,$(DRIVERSDKMODULEDIR),drivers)
 
