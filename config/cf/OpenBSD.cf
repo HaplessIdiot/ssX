@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.95 2003/10/26 12:17:14 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.96 2003/11/11 00:27:09 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -60,6 +60,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef HasKrbIV
 # if OSMajorVersion == 2 || OSMajorVersion == 3 && OSMinorVersion < 3
 #  define HasKrbIV		YES
+#  if OSMajorVersion == 2 && OSMinorVersion <= 8
+#   define KrbIVLibraries	-lkrb -lkafs -ldes
+#  endif
 # else
    /* Kerberos IV was removed after OpenBSD 3.3 */
 #  define HasKrbIV		NO
