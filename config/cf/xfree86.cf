@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.411 2002/10/15 01:47:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.412 2002/10/30 12:51:23 alanh Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -764,8 +764,8 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 /* Pure PCI drivers should go first */
 # ifndef XF86CardDrivers
 #  define XF86CardDrivers	mga tdfx glint s3 s3virge rendition tga ati \
-				savage nv DevelDrivers siliconmotion vga \
-				XF86OSCardDrivers XF86ExtraCardDrivers
+				savage nv cirrus DevelDrivers siliconmotion  \
+				vga XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 # ifndef DriDrivers
 #  define DriDrivers		gamma tdfx mga r128 radeon r200 /*sis*/
