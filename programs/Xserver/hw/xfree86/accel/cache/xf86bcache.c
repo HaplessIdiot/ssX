@@ -1,4 +1,5 @@
 /* $XConsortium: xf86bcache.c,v 1.1 94/03/28 21:02:09 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Based on the S3 block allocator code in XFree86-2.0 by Jon Tombs.
  * The original copyright is reproduced below.
@@ -74,7 +75,7 @@ static void xf86showcache();
 #endif
 
 static void (*xf86CacheMoveBlockFunc)();
-static struct CachePoolRec *xf86PoolList;
+static struct CachePoolRec *xf86PoolList = NULL;
 
 /*
  * Init the static pointers.
@@ -86,7 +87,6 @@ void (*CacheMoveBlockFunc)();
 {
 
     xf86CacheMoveBlockFunc = CacheMoveBlockFunc;
-    xf86PoolList = NULL;
 
 }
 
@@ -169,10 +169,13 @@ unsigned int Id;
  *   This keeps the free space at the right hand end.
  */
 
+#ifdef __STDC__
+void xf86ReleaseToCachePool( CachePool Pool, CacheBlock Block )
+#else
 void xf86ReleaseToCachePool( Pool, Block )
 CachePool Pool;
 CacheBlock Block;
-
+#endif
 {
   bitMapBlockPtr line, tmpb;
   bitMapRowPtr bptr, tmpr;
