@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbSwap.c,v 3.2 2001/08/23 14:33:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbSwap.c,v 3.3 2003/07/16 01:39:10 dawes Exp $ */
 
 #include "stdio.h"
 #include "X.h"
@@ -37,39 +37,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBstr.h"
 #include "extnsionst.h"
 #include "xkb.h"
-
-#if NeedFunctionPrototypes
-#define	PROC_EXTERN(pfunc)	extern int pfunc(ClientPtr)
-#else
-#define	PROC_EXTERN(pfunc)	extern int pfunc()
-#endif
-
-PROC_EXTERN(ProcXkbUseExtension);
-PROC_EXTERN(ProcXkbSelectEvents);
-PROC_EXTERN(ProcXkbBell);
-PROC_EXTERN(ProcXkbGetState);
-PROC_EXTERN(ProcXkbLatchLockState);
-PROC_EXTERN(ProcXkbGetControls);
-PROC_EXTERN(ProcXkbSetControls);
-PROC_EXTERN(ProcXkbGetMap);
-PROC_EXTERN(ProcXkbSetMap);
-PROC_EXTERN(ProcXkbGetCompatMap);
-PROC_EXTERN(ProcXkbSetCompatMap);
-PROC_EXTERN(ProcXkbGetIndicatorState);
-PROC_EXTERN(ProcXkbGetIndicatorMap);
-PROC_EXTERN(ProcXkbSetIndicatorMap);
-PROC_EXTERN(ProcXkbGetNamedIndicator);
-PROC_EXTERN(ProcXkbSetNamedIndicator);
-PROC_EXTERN(ProcXkbGetNames);
-PROC_EXTERN(ProcXkbSetNames);
-PROC_EXTERN(ProcXkbGetGeometry);
-PROC_EXTERN(ProcXkbSetGeometry);
-PROC_EXTERN(ProcXkbPerClientFlags);
-PROC_EXTERN(ProcXkbListComponents);
-PROC_EXTERN(ProcXkbGetKbdByName);
-PROC_EXTERN(ProcXkbGetDeviceInfo);
-PROC_EXTERN(ProcXkbSetDeviceInfo);
-PROC_EXTERN(ProcXkbSetDebuggingFlags);
 
 	/*
 	 * REQUEST SWAPPING
