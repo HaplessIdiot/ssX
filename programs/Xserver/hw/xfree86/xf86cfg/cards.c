@@ -26,9 +26,10 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.1 2000/04/04 22:36:57 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/cards.c,v 1.2 2001/07/02 20:47:05 paulo Exp $
  */
 
+#define CARDS_PRIVATE
 #include "cards.h"
 
 /* return values from ReadCardsLine. */
@@ -54,6 +55,8 @@
 static int ReadCardsLine(FILE*, char*);	/* must have 256 bytes */
 static int CompareCards(_Xconst void *left, _Xconst void *right);
 static int BCompareCards(_Xconst void *left, _Xconst void *right);
+static void DoReadCardsDatabase(void);
+static char **DoFilterCardNames(char *pattern, int *result);
 
 /*
  * Initialization
@@ -66,8 +69,144 @@ int NumCardsEntry;
 /*
  * Implementation
  */
+#ifdef USE_MODULES
+pciVendorDeviceInfo *xf86PCIVendorInfo;
+SymTabPtr xf86PCIVendorNameInfo;
+#endif
+
+#ifdef USE_MODULES
+void
+InitializePciInfo(void)
+{
+    xf86PCIVendorInfo = xf86PCIVendorInfoData;
+    xf86PCIVendorNameInfo = xf86PCIVendorNameInfoData;
+}
+
+void
+CheckChipsets(xf86cfgModuleOptions *opts, int *err)
+{
+    int i, j, count;
+    SymTabPtr chips = opts->chipsets;
+    char *chipsets_supported;
+
+    for (i = 0; xf86PCIVendorInfoData[i].VendorID; i++)
+	if (opts->vendor == xf86PCIVendorInfoData[i].VendorID)
+	    break;
+
+    if (!xf86PCIVendorInfoData[i].VendorID) {
+	printf("    WARNING No such vendor 0x%x\n", opts->vendor);
+	++*err;
+	if (chips) {
+	    while (chips->name) {
+		printf("    WARNING Cannot verify chipset %s\n", chips->name);
+		++chips;
+		++*err;
+	    }
+	}
+	else
+	    *err += 10;
+	return;
+    }
+
+    if (!chips) {
+	printf("    WARNING No chipsets specified.\n");
+	++*err;
+	return;
+    }
+
+    for (count = 0; xf86PCIVendorInfoData[i].Device[count].DeviceName; count++)
+	;
+    chipsets_supported = (char*)XtCalloc(1, count);
+
+    while (chips->name) {
+	for (j = 0; xf86PCIVendorInfoData[i].Device[j].DeviceName; j++)
+	    if (chips->token == xf86PCIVendorInfoData[i].Device[j].DeviceID)
+		break;	
+	if (!xf86PCIVendorInfoData[i].Device[j].DeviceName) {
+	    printf("    WARNING chipset \"%s\" not in list.\n", chips->name);
+	    ++*err;
+	}
+	else
+	    chipsets_supported[j] = 1;
+	++chips;
+    }
+
+    for (j = 0; j < count; j++) {
+	if (!chipsets_supported[j]) {
+	    printf("    NOTICE chipset \"%s\" not listed as supported.\n",
+		   xf86PCIVendorInfoData[i].Device[j].DeviceName);
+	    ++*err;	/* Not really an error? */
+	}
+    }
+
+    XtFree(chipsets_supported);
+}
+#endif
+
 void
 ReadCardsDatabase(void)
+{
+#ifdef USE_MODULES
+    if (!nomodules) {
+	int i, j;
+	char name[256];
+	_Xconst char *vendor, *device;
+	CardsEntry *entry = NULL;
+	xf86cfgModuleOptions *opts = module_options;
+
+	/* Only list cards that have a driver installed */
+	while (opts) {
+	    if (opts->chipsets) {
+		SymTabPtr chips = opts->chipsets;
+
+		while (chips->name) {
+		    vendor = opts->name;
+		    device = chips->name;
+
+		    for (i = 0; xf86PCIVendorInfoData[i].VendorID; i++)
+			if (opts->vendor == xf86PCIVendorInfoData[i].VendorID)
+			    break;
+		    if (xf86PCIVendorInfoData[i].VendorID) {
+			for (j = 0; xf86PCIVendorNameInfoData[j].name; j++)
+			    if (xf86PCIVendorNameInfoData[j].token == opts->vendor) {
+				vendor = xf86PCIVendorNameInfoData[j].name;
+				break;
+			    }
+
+			for (j = 0; xf86PCIVendorInfoData[i].Device[j].DeviceName; j++)
+			    if (chips->token == xf86PCIVendorInfoData[i].Device[j].DeviceID)
+				break;
+
+			if (xf86PCIVendorInfoData[i].Device[j].DeviceName)
+			    device = xf86PCIVendorInfoData[i].Device[j].DeviceName;
+		    }
+		    entry = (CardsEntry*)XtCalloc(1, sizeof(CardsEntry));
+		    if (NumCardsEntry % 16 == 0) {
+			CardsDB = (CardsEntry**)XtRealloc((XtPointer)CardsDB,
+				sizeof(CardsEntry*) * (NumCardsEntry + 16));
+		    }
+		    CardsDB[NumCardsEntry++] = entry;
+		    XmuSnprintf(name, sizeof(name), "%s %s", vendor, device);
+		    entry->name = XtNewString(name);
+
+		    /* XXX no private copy of strings */
+		    entry->chipset = (char*)chips->name;
+		    entry->driver = opts->name;
+
+		    ++chips;
+		}
+	    }
+	    opts = opts->next;
+	}
+	qsort(CardsDB, NumCardsEntry, sizeof(CardsEntry*), CompareCards);
+    }
+    else
+#endif
+	DoReadCardsDatabase();
+}
+
+static void
+DoReadCardsDatabase(void)
 {
     char buffer[256];
     FILE *fp = fopen(Cards, "r");
@@ -283,6 +422,36 @@ GetCardNames(int *result)
 char **
 FilterCardNames(char *pattern, int *result)
 {
+#ifdef USE_MODULES
+    if (!nomodules) {
+	char **cards = NULL;
+	int i, ncards = 0;
+
+	for (i = 0; i < NumCardsEntry; i++) {
+	    if (strstr(CardsDB[i]->name, pattern) == NULL)
+		continue;
+	    if (ncards % 16 == 0) {
+		if ((cards = (char**)realloc(cards, sizeof(char*) *
+					     (ncards + 16))) == NULL) {
+		    fprintf(stderr, "Out of memory.\n");
+		    exit(1);
+		}
+	    }
+	    cards[ncards] = strdup(CardsDB[i]->name);
+	    ++ncards;
+	}
+
+	*result = ncards;
+
+	return (cards);
+    }
+#endif
+    return (DoFilterCardNames(pattern, result));
+}
+
+static char **
+DoFilterCardNames(char *pattern, int *result)
+{
     FILE *fp;
     char **cards = NULL;
     int len, ncards = 0;
@@ -416,49 +585,11 @@ ReadCardsLine(FILE *fp, char *value)
 static int
 CompareCards(_Xconst void *left, _Xconst void *right)
 {
-    return strcmp((*(CardsEntry**)left)->name, (*(CardsEntry**)right)->name);
+    return strcasecmp((*(CardsEntry**)left)->name, (*(CardsEntry**)right)->name);
 }
 
 static int
 BCompareCards(_Xconst void *name, _Xconst void *card)
 {
-  return (strcmp((char*)name, (*(CardsEntry**)card)->name));
+  return (strcasecmp((char*)name, (*(CardsEntry**)card)->name));
 }
-
-#ifdef TEST_CARDS
-int
-main(int argc, char *argv[])
-{
-    int i;
-
-    chdir("/usr/X11R6");
-    ReadCardsDatabase();
-
-    for (i = 0; i < NumCardsEntry; i++) {
-	CardsEntry *entry = CardsDB[i];
-
-	printf("name: %s\n", entry->name);
-	if (entry->chipset)
-	    printf("chipset: %s\n", entry->chipset);
-	if (entry->server)
-	    printf("server: %s\n", entry->server);
-	if (entry->driver)
-	    printf("driver: %s\n", entry->driver);
-	if (entry->ramdac)
-	    printf("%s\n", entry->ramdac);
-	if (entry->clockchip)
-	    printf("%s\n", entry->clockchip);
-	if (entry->dacspeed)
-	    printf("%s\n", entry->dacspeed);
-	if (entry->flags & F_NOCLOCKPROBE)
-	    printf("NOCLOCKPROBE\n");
-	if (entry->flags & F_UNSUPPORTED)
-	    printf("UNSUPPORTED\n");
-	if (entry->lines)
-	    printf("%s\n", entry->lines);
-	printf("\n");
-    }
-
-    return (0);
-}
-#endif /* TEST_CARDS */

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.8 2001/05/25 21:43:16 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.9 2001/06/30 10:43:17 paulo Exp $
  */
 
 #include "options.h"
@@ -67,7 +67,7 @@ static Widget add, remov, update, list, name, value;
 static char *option_str;
 static int option_index, popped = False;
 static char *Options = "lib/X11/Options";
-static XrmDatabase xrm;
+XrmDatabase options_xrm;
 #ifdef USE_MODULES
 static Widget modList, optList, desc, modOptionsShell, labelType;
 static char *module_sel;
@@ -648,25 +648,35 @@ UpdateOption(Widget w, XtPointer user_data, XtPointer call_data)
     XtSetSensitive(update, True);
 }
 
-char *
-GetOptionDescription(char *module, char *option)
+Bool
+InitializeOptionsDatabase(void)
 {
     static int first = 1;
-    char *type;
-    XrmValue value;
-    char query[256];
+    static Bool result = True;
 
     if (first) {
 	first = 0;
 	XrmInitialize();
-	if ((xrm = XrmGetFileDatabase(Options)) == (XrmDatabase)0) {
+	if ((options_xrm = XrmGetFileDatabase(Options)) == (XrmDatabase)0) {
 	    fprintf(stderr, "Cannot open '%s' database.\n", Options);
-	    return (NULL);
+	    return (result = False);
 	}
     }
 
+    return (result);
+}
+
+char *
+GetOptionDescription(char *module, char *option)
+{
+    char *type;
+    XrmValue value;
+    char query[256];
+
+    InitializeOptionsDatabase();
+
     XmuSnprintf(query, sizeof(query), "%s.%s", module, option);
-    if (XrmGetResource(xrm, query, "Module.Option", &type, &value))
+    if (XrmGetResource(options_xrm, query, "Module.Option", &type, &value))
 	return ((char*)value.addr);
 
     return (NULL);

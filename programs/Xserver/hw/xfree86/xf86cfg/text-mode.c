@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.10 2001/04/22 08:36:31 herrb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.11 2001/05/21 22:21:57 paulo Exp $
  */
 
 #include <stdio.h>
@@ -40,6 +40,7 @@
 #include "cards.h"
 #include "config.h"
 #include "xf86config.h"
+#include "loader.h"
 
 #define XKB_RULES_DIR "/usr/X11R6/lib/X11/xkb/rules"
 
@@ -79,14 +80,6 @@ static XF86ConfAdjacencyPtr CopyAdjacency(XF86ConfAdjacencyPtr);
 static XF86ConfInputrefPtr CopyInputref(XF86ConfInputrefPtr);
 static XF86ConfInactivePtr CopyInactive(XF86ConfInactivePtr);
 static void FreeLayout(XF86ConfLayoutPtr);
-
-#ifdef USE_MODULES
-extern void LoaderInit(void);
-extern void LoaderSetPath(char*);
-extern char **LoaderListDirs(char**, char**);
-
-extern int xf86Verbose;
-#endif
 
 extern int string_to_parser_range(char*, parser_range*, int);
 #define PARSER_RANGE_SIZE	256
@@ -130,6 +123,10 @@ TextMode(void)
     static int first = 1;
     int i, choice = CONF_MOUSE;
 
+#ifdef USE_MODULES
+    if (!nomodules)
+	LoaderInitializeOptions();
+#endif
     initscr();
     noecho();
     nonl();
@@ -1057,13 +1054,6 @@ CardConfig(void)
     CardsEntry *entry = NULL;
     static char **drivers;
     static int ndrivers;
-#ifdef USE_MODULES
-    static char *path = NULL, *modules = "lib/modules";
-    const char *subdirs[] = {
-	"drivers",
-	NULL
-    };
-#endif
     static char *xdrivers[] = {
 	"apm",
 	"ark",
@@ -1095,19 +1085,19 @@ CardConfig(void)
 
 #ifdef USE_MODULES
     if (!nomodules) {
-	if (XF86Module_path == NULL) {
-	    XF86Module_path = XtMalloc(strlen(XFree86Dir) + strlen(modules) + 2);
-	    sprintf(XF86Module_path, "%s/%s", XFree86Dir, modules);
-	}
+	xf86cfgModuleOptions *opts = module_options;
 
-	if (drivers == NULL) {
-	    xf86Verbose = 0;
-	    LoaderInit();
-	    path = XtNewString(XF86Module_path);
-	    LoaderSetPath(path);
-	    drivers = LoaderListDirs((char**)subdirs, NULL);
-	    for (; drivers[ndrivers]; ndrivers++)
-		;
+	drivers = NULL;
+	ndrivers = 0;
+	while (opts) {
+	    if (opts->chipsets) {
+		++ndrivers;
+		drivers = (char**)XtRealloc((XtPointer)drivers,
+					    ndrivers * sizeof(char*));
+		/* XXX no private copy */
+		drivers[ndrivers - 1] = opts->name;
+	    }
+	    opts = opts->next;
 	}
     }
     else

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.10 2001/03/29 16:54:30 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.11 2001/05/21 22:21:57 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -217,6 +217,8 @@ extern xf86cfgComputer computer;
 extern Atom wm_delete_window;
 extern Display *DPY;
 extern Pixmap menuPixmap;
-extern Bool nomodules;
+#ifdef USE_MODULES
+extern int nomodules;
+#endif
 
 #endif /* _xf86cfg_config_h */
