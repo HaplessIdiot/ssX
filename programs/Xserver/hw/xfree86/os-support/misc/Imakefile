@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.15 2004/03/05 04:02:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.16 2004/04/05 02:33:15 dawes Exp $
 
 
 
@@ -47,7 +47,13 @@ ObjectFromAsmSource(SlowBcopy,NullParameter)
 #endif
 
 #if defined(SunArchitecture)
+#if defined(SparcArchitecture)
+#if defined(UseGas)
+ASMOPTS = -Av8plus
+#else
 ASMOPTS = -xarch=v8plus
+#endif
+#endif
 ObjectFromAsmSource(PortIO,NullParameter)
 #endif
 
