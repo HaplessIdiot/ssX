@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.55 2002/05/14 17:59:45 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.56 2002/05/31 16:31:20 dawes Exp $ */
 
 /*
  * 
@@ -1255,6 +1255,7 @@ get_gcc(char *cmd)
      defined(__NetBSD__) || \
      defined(__OpenBSD__) || \
      defined(__FreeBSD__) || \
+     defined(__APPLE__) || \
      defined(__GNU__)
 	"/usr/bin/cc",	/* for Linux PostIncDir */
 # endif
