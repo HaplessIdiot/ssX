@@ -23,12 +23,12 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsio.h,v 1.2 1999/07/17 05:30:37 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.h,v 1.3 1999/12/13 02:52:53 robin Exp $ */
 
 #ifndef	_FSIO_H_
 #define	_FSIO_H_
 
-#undef DEBUG
+#define DEBUG
 #define	REQUEST_LOG_SIZE	100
 
 typedef struct _fs_fpe_alternate {
@@ -69,17 +69,28 @@ typedef struct _fs_buf {
 #define FS_PENDING_REPLY	0x08	    /* waiting for a reply */
 #define FS_GIVE_UP		0x10	    /* font server declared useless */
 #define FS_COMPLETE_REPLY	0x20	    /* complete reply ready */
+#define FS_RECONNECTING		0x40
+
+#define FS_CONN_UNCONNECTED	0
+#define FS_CONN_CONNECTING	1
+#define FS_CONN_CONNECTED	2
+#define FS_CONN_SENT_PREFIX	3
+#define FS_CONN_RECV_INIT	4
+#define FS_CONN_SENT_CAT    	5
+#define FS_CONN_RUNNING		6
 
 /* FS specific font FontPathElement data */
 typedef struct _fs_fpe_data {
     FSFpePtr	next;		/* list of all active fs fpes */
-    int         fs_fd;		/* < 0 when not connected */
+    int         fs_fd;		/* < 0 when not running */
+    int		fs_conn_state;	/* connection state */
     int         current_seq;
     char       *servername;
-    char       *requestedname;	/* client's name for this connection */
+    Bool	has_catalogues;
 
     int         generation;
     int         numAlts;
+    int		alternate;	/* which alternate is in use +1 */
     int		fsMajorVersion; /* font server major version number */
     FSFpeAltPtr alts;
 
@@ -96,13 +107,11 @@ typedef struct _fs_fpe_data {
     FSBufRec	inBuf;		/* reply queue */
     long	inNeed;		/* amount needed for reply */
 
-    int		attemptReconnect;
-
     CARD32	blockState;
     CARD32	blockedReplyTime;	/* time to abort blocked read */
     CARD32	brokenWriteTime;	/* time to retry broken write */
+    CARD32	blockedConnectTime;	/* time to abort blocked connect */
     CARD32	brokenConnectionTime;	/* time to retry broken connection */
-    CARD32	socketTime;		/* creation time of socket */
     
     FSBlockDataPtr  blockedRequests;
     
@@ -121,7 +130,6 @@ typedef struct _fs_fpe_data {
 #define FSIO_BLOCK  0
 #define FSIO_ERROR  -1
 
-extern FSFpePtr _fs_open_server ( char *servername );
 extern Bool _fs_reopen_server ( FSFpePtr conn );
 extern int _fs_write ( FSFpePtr conn, char *data, long size );
 extern int _fs_write_pad ( FSFpePtr conn, char *data, long len );
@@ -142,9 +150,11 @@ extern void _fs_mark_block (FSFpePtr conn, CARD32 mask);
 extern void _fs_unmark_block (FSFpePtr conn, CARD32 mask);
 extern void _fs_done_read (FSFpePtr conn, long size);
 extern void _fs_io_reinit (FSFpePtr conn);
-extern void _fs_free_conn (FSFpePtr conn);
 extern int  _fs_start_read (FSFpePtr conn, long size, char **buf);
 extern Bool _fs_io_init (FSFpePtr conn);
+extern void _fs_io_fini (FSFpePtr conn);
+extern int  _fs_poll_connect (XtransConnInfo trans_conn, int timeout);
+extern XtransConnInfo	_fs_connect(char *servername, int *ret);
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
