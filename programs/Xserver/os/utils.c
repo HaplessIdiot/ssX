@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.79 2001/12/14 20:00:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.80 2002/01/15 01:33:54 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -1783,9 +1783,11 @@ Pclose(iop)
 /*
  * Disallow stdout or stderr as pipes?  It's possible to block the X server
  * when piping stdout+stderr to a pipe.
+ *
+ * Don't enable this because it looks like it's going to cause problems.
  */
 #ifndef NO_OUTPUT_PIPES
-#define NO_OUTPUT_PIPES 1
+#define NO_OUTPUT_PIPES 0
 #endif
 
 
