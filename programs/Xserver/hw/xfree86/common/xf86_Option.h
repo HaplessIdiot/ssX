@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.31 1995/07/21 14:40:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.32 1995/10/21 11:39:50 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -156,8 +156,8 @@ typedef struct {
 #define CLOCK_OPTION_TI3026     11 /* use TI3026 programmable clocks */
 #define CLOCK_OPTION_IBMRGB     12 /* use IBM RGB52x programmable clocks */
 #define CLOCK_OPTION_STG1703    13 /* use STG1703 programmable clocks */
-
-#define CLOCK_OPTION_ICS5341    11 /* use ICS 5341 programmable clocks (ET4000W32p) */
+#define CLOCK_OPTION_ICS5341    14 /* use ICS 5341 (ET4000W32p) */
+#define CLOCK_OPTION_TRIDENT    15 /* use programmable clock on TGUI */
 
 /*
  * Table to map option strings to tokens.
@@ -289,7 +289,8 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "cirrus",		CLOCK_OPTION_CIRRUS }, 	  /* Cirrus built-in */
   { "ch8391",		CLOCK_OPTION_CH8391 }, 	  /* Chrontel 8391  */
   { "stg1703",		CLOCK_OPTION_STG1703 },   /* STG1703 */
-  { "ics5341",		CLOCK_OPTION_ICS5341 },   /* ET4000 W32p version of S3 SDAC/ICS5340 */
+  { "ics5341",		CLOCK_OPTION_ICS5341 },   /* ET4000 W32p version of S3 SDAC/ICS5341 */
+  { "tgui",		CLOCK_OPTION_TRIDENT },   /* Trident TGUI built-in */
   { "",			-1 },
 };
 

@@ -237,6 +237,9 @@
      Tseng
         ET4000/W32, ET4000/W32i, ET4000/W32p
 
+     Oak Technologies Inc
+        OTI087
+
   The Cirrus, Western Digital and Oak accelerators are supported in the
   SVGA server; the other chipsets each have their own server.  A list of
   some cards which the accelerated servers have been tested is included
@@ -261,7 +264,6 @@
 
      Trident
         TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000,
-
         TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX, TVGA9420
 
      ATI
@@ -325,6 +327,7 @@
   which uses the ET4000/W32p is also not fully supported.  The Weitek
   9100 and 9130 chipsets are not supported (these are used on the
   Diamond Viper Pro and Viper SE boards).  Most other Diamond boards
+
   will work with this release of XFree86.  Diamond is now actively
   supporting The XFree86 Project, Inc.
 
@@ -390,9 +393,9 @@
 
   If you are totally at a loss, you can contact the XFree86 Support Team
   at <XFree86@XFree86.Org>.  Before doing so, please make sure that you
+
   are using the latest release of XFree86.  Check the versions listed on
   ftp.xfree86.org:/pub/XFree86 <ftp://ftp.xfree86.org/pub/XFree86>.
-
 
   There is a Usenet news group comp.windows.x.i386unix that contains
   mostly discussions about XFree86 and related topics. Many questions
@@ -455,10 +458,11 @@
 
      o  Kees Verstoep <versto@cs.vu.nl>
 
+
+
      o  Paul Vixie <paul@vix.com>
 
      o  Mark Weaver <Mark_Weaver@brown.edu>
-
 
      o  David Wexelblat <dwex@XFree86.org>
 
@@ -521,10 +525,10 @@
 
      ISC SVR3 support by:
 
+
         o  Michael Rohleder <michael.rohleder@stadt-frankfurt.de>
 
      LynxOS AT support by:
-
 
         o  Thomas Mueller <tm@systrix.de>
 
@@ -562,6 +566,8 @@
 
         o  Bernhard Bender <br@elsa.mhs.compuserve.com>
 
+        o  Joe Moss <joe@morton.rain.com>
+
      Mach32 accelerated code by:
 
         o  Kevin Martin <martin@cs.unc.edu>,
@@ -584,13 +590,13 @@
 
         o  Rik Faith <faith@cs.unc.edu>,
 
+
+
         o  Tiago Gons <tiago@comosjn.hobby.nl>,
 
         o  Hans Nasten <nasten@everyware.se>,
 
         o  Scott Laird <lair@midway.uchicago.edu>
-
-
 
      Cirrus accelerated code by:
 
@@ -650,6 +656,7 @@
         o  Brad Bosch <brad@lachman.com>
 
      Trident SVGA driver by:
+
 
         o  Alan Hourihane <alanh@fairlite.demon.co.uk>
 
@@ -716,13 +723,12 @@
 
      RealTek SVGA driver by:
 
+
         o  Peter Trattler <peter@sbox.tu-graz.ac.at>
 
      Apollo Mono driver by:
 
         o  Hamish Coleman <hamish@zot.apana.org.au>
-
-
 
      XFree86-VidModeExtension and xvidtune client by:
 
@@ -783,12 +789,12 @@
   The first of these was the primary motivation.  We have held discus-
   sions with the X Consortium on and off for many months, attempting to
   find an avenue by which our loosely-organized free software project
+
   could be given a voice within the X Consortium.  The bylaws of the
   Consortium would not recognize such an organization.  After an initial
   investigation about funding, we decided to form our own corporation to
   provide the avenue we needed to meet the requirements of the X Consor-
   tium bylaws.
-
 
   By doing this, we were able to be involved in the beta-test interval
   for X11R6, and have contributed the majority of XFree86 to the X11R6
@@ -847,6 +853,7 @@
   organization stepped forward and contributed the entire 1994 X Consor-
   tium membership fee on a moment's notice.  This single act ensured
   XFree86's involvement in X11R6.
+
 
 
      o  GUUG -- 1st German Linux Congress
@@ -914,13 +921,12 @@
 
      o  Kazuyuki Okamoto, Japan
 
+
      o  Prime Time Freeware <http://www.ptf.com/>, San Bruno, CA
 
      o  Red Hat Software <http://www.redhat.com/>, Chapel Hill, NC
 
      o  Norbert Reithinger
-
-
 
      o  SPEA Software AG, Starnberg, Germany
 
@@ -981,13 +987,13 @@
            (Also via AFS:
            /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.2)
 
+
         +  tsx-11.mit.edu:/pub/linux/packages/X11/XFree86-3.1.2
            <ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.2>
            (Linux binaries and source)
 
         +  ref.tfs.com:/pub/mirrors/XFree86
            <ftp://ref.tfs.com/pub/mirrors/XFree86> (source patches and
-
            FreeBSD binaries)
 
         +  ftp.eecs.umich.edu:/BSD/XFree86/3.1.2
@@ -1053,7 +1059,6 @@
 
         +  ftp.nectec.or.th:/pub/mirrors/XFree86/3.1.2
            <ftp://ftp.nectec.or.th/pub/mirrors/XFree86/3.1.2> (source
-
            patches and binaries)
 
 
@@ -1068,12 +1073,7 @@
 
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.33 1995/09/17 06:31:58 dawes Exp $
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.34 1995/10/21 11:43:28 dawes Exp $
 
 
 
