@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.43 2004/02/13 23:58:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.44 2005/01/26 05:31:48 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -229,7 +229,6 @@ xf86InfoRec xf86Info = {
 	FALSE,		/* pc98 */
 #endif
 	TRUE,		/* pmFlag */
-	LogNone,	/* syncLog */
 	0,		/* estimateSizesAggressively */
 	FALSE,		/* kbdCustomKeycodes */
 	FALSE,		/* disableRandR */
