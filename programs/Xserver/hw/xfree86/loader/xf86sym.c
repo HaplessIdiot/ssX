@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.218 2002/10/20 21:48:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.220 2002/11/25 14:05:03 eich Exp $ */
 
 /*
  *
@@ -99,12 +99,14 @@ extern void* __remqu(long, long);
 #endif
 
 #if defined(__GNUC__)
+extern long __div64(long, long);
 extern long __divdf3(long, long);
 extern long __divdi3(long, long);
 extern long __divsf3(long, long);
 extern long __divsi3(long, long);
 extern long __moddi3(long, long);
 extern long __modsi3(long, long);
+extern long __mul64(long, long);
 extern long __muldf3(long, long);
 extern long __muldi3(long, long);
 extern long __mulsf3(long, long);
@@ -113,12 +115,14 @@ extern long __udivdi3(long, long);
 extern long __udivsi3(long, long);
 extern long __umoddi3(long, long);
 extern long __umodsi3(long, long);
+#pragma weak __div64
 #pragma weak __divdf3
 #pragma weak __divdi3
 #pragma weak __divsf3
 #pragma weak __divsi3
 #pragma weak __moddi3
 #pragma weak __modsi3
+#pragma weak __mul64
 #pragma weak __muldf3
 #pragma weak __muldi3
 #pragma weak __mulsf3
@@ -1007,12 +1011,14 @@ LOOKUP xfree86LookupTab[] = {
 # endif
 #endif
 #if defined(__GNUC__)
+   SYMFUNC(__div64)
    SYMFUNC(__divdf3)
    SYMFUNC(__divdi3)
    SYMFUNC(__divsf3)
    SYMFUNC(__divsi3)
    SYMFUNC(__moddi3)
    SYMFUNC(__modsi3)
+   SYMFUNC(__mul64)
    SYMFUNC(__muldf3)
    SYMFUNC(__muldi3)
    SYMFUNC(__mulsf3)
