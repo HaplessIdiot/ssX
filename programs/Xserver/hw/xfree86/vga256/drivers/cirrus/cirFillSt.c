@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fillst.c,v 1.1 94/03/28 21:49:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.1 1994/05/15 03:02:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillst.c,v 3.2 1994/06/05 06:00:28 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -31,19 +31,8 @@
  * functions.
  */
 
-#include "X.h"
-#include "Xmd.h"
-#include "servermd.h"
-#include "gcstruct.h"
-#include "window.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "windowstr.h"
-
-#include "cfb.h"
-#include "cfbmskbits.h"
+#include "vga256.h"
 #include "cfbrrop.h"
-#include "cfb8bit.h"	/* For cfb8StippleRRop. */
 #include "mergerop.h"
 #include "vgaBank.h"
 #include "xf86.h"
@@ -102,7 +91,7 @@ void CirrusFillRectOpaqueStippled32(pDrawable, pGC, nBox, pBox)
 		else {
 			/* Special raster op. */
 			/* Let cfb do this one. */
-			speedupcfb8FillRectOpaqueStippled32(
+			speedupvga2568FillRectOpaqueStippled32(
 				pDrawable, pGC, 1, pBox);
 		}
 	}
@@ -147,7 +136,7 @@ void CirrusFillRectTransparentStippled32(pDrawable, pGC, nBox, pBox)
 		else {
 			/* Special raster op. */
 			/* Let cfb do this one. */
-			speedupcfb8FillRectTransparentStippled32(
+			speedupvga2568FillRectTransparentStippled32(
 				pDrawable, pGC, 1, pBox);
 		}
 	}

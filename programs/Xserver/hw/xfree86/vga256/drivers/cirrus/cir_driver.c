@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.3 1994/06/05 06:00:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.4 1994/06/22 04:38:19 dawes Exp $ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -90,7 +90,7 @@
 
 #include "cir_driver.h"
 #ifndef MONOVGA
-#include "cfbfuncs.h"
+#include "vga256.h"
 #endif
 
 int cirrusChip;
@@ -875,52 +875,52 @@ cirrusFbInit()
     /* Accel functions are available on all chips; some use the BitBLT */
     /* engine if available. */
  
-    cfbLowlevFuncs.doBitbltCopy = CirrusDoBitbltCopy;
-    cfbLowlevFuncs.fillRectSolidCopy = CirrusFillRectSolidCopy;
-    cfbLowlevFuncs.fillBoxSolid = CirrusFillBoxSolid;
+    vga256LowlevFuncs.doBitbltCopy = CirrusDoBitbltCopy;
+    vga256LowlevFuncs.fillRectSolidCopy = CirrusFillRectSolidCopy;
+    vga256LowlevFuncs.fillBoxSolid = CirrusFillBoxSolid;
 
     /* Hook special op. fills (and tiles): */
-    cfbTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
-    cfbNonTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
-    cfbTEOps.PolyFillRect = CirrusPolyFillRect;
-    cfbNonTEOps.PolyFillRect = CirrusPolyFillRect;
+    vga256TEOps1Rect.PolyFillRect = CirrusPolyFillRect;
+    vga256NonTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
+    vga256TEOps.PolyFillRect = CirrusPolyFillRect;
+    vga256NonTEOps.PolyFillRect = CirrusPolyFillRect;
 
-    cfbTEOps1Rect.PolyGlyphBlt = CirrusPolyGlyphBlt;
-    cfbTEOps.PolyGlyphBlt = CirrusPolyGlyphBlt;
+    vga256TEOps1Rect.PolyGlyphBlt = CirrusPolyGlyphBlt;
+    vga256TEOps.PolyGlyphBlt = CirrusPolyGlyphBlt;
     /* Disable accelerated text blit functions for the 543x chips, */
     /* which require exclusively 32-bit transfers. */
     if (!HAVE543X()) {
-	cfbLowlevFuncs.teGlyphBlt8 = CirrusImageGlyphBlt;
-	cfbTEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
-	cfbTEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+	vga256LowlevFuncs.teGlyphBlt8 = CirrusImageGlyphBlt;
+	vga256TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
+	vga256TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
     }
 
 #if 0
     /* Cirrus line drawing acceleration. */
     /* There's currently a problem with clipping regions. */
-    cfbLowlevFuncs.lineSS = CirrusLineSS;
-    cfbTEOps1Rect.Polylines = CirrusLineSS;
-    cfbTEOps.Polylines = CirrusLineSS;
-    cfbNonTEOps1Rect.Polylines = CirrusLineSS;
-    cfbNonTEOps.Polylines = CirrusLineSS;
-    cfbLowlevFuncs.segmentSS = CirrusSegmentSS;
-    cfbTEOps1Rect.PolySegment = CirrusSegmentSS;
-    cfbTEOps.PolySegment = CirrusSegmentSS;
-    cfbNonTEOps1Rect.PolySegment = CirrusSegmentSS;
-    cfbNonTEOps.PolySegment = CirrusSegmentSS;
+    vga256LowlevFuncs.lineSS = CirrusLineSS;
+    vga256TEOps1Rect.Polylines = CirrusLineSS;
+    vga256TEOps.Polylines = CirrusLineSS;
+    vga256NonTEOps1Rect.Polylines = CirrusLineSS;
+    vga256NonTEOps.Polylines = CirrusLineSS;
+    vga256LowlevFuncs.segmentSS = CirrusSegmentSS;
+    vga256TEOps1Rect.PolySegment = CirrusSegmentSS;
+    vga256TEOps.PolySegment = CirrusSegmentSS;
+    vga256NonTEOps1Rect.PolySegment = CirrusSegmentSS;
+    vga256NonTEOps.PolySegment = CirrusSegmentSS;
 #endif
 
 #if 0
     /* Hook FillSpans: */
-    cfbTEOps1Rect.FillSpans = CirrusFillSpans;
-    cfbTEOps.FillSpans = CirrusFillSpans;
+    vga256TEOps1Rect.FillSpans = CirrusFillSpans;
+    vga256TEOps.FillSpans = CirrusFillSpans;
 #endif    
 
     if (HAVEBITBLTENGINE()) {
         ErrorF ("%s %s: Using BitBLT engine\n",
 	    XCONFIG_PROBED, cirrusIdent (cirrusChip) );
 #ifdef CIRRUS_INCLUDE_COPYPLANE1TO8	    
-	cfbLowlevFuncs.copyPlane1to8 = CirrusCopyPlane1to8;
+	vga256LowlevFuncs.copyPlane1to8 = CirrusCopyPlane1to8;
 #endif	
     }
   }

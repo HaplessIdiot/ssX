@@ -28,37 +28,63 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cir_fillrct.c,v 5.14 94/04/17 20:32:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillrct.c,v 3.0 1994/04/29 14:10:10 dawes Exp $ */
-
-/* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
-
-
-/*
- * This file contains the high level PolyFillRect function.
- *
- * We need to reproduce this to be able to use our own non-GXcopy
- * solid fills, and tiles.
- */
-
+/* $XConsortium: cfbfillrct.c,v 5.14 94/04/17 20:32:17 dpw Exp $ */
+/* $XFree86$ */
 
 #include "vga256.h"
 #include "cfbrrop.h"
-#include "mergerop.h"
-#include "xf86.h"
-#include "vga.h"
-#include "vgaBank.h"	/* For CHECKSCREEN. */
 
-#include "cir_driver.h"
+void
+vga256FillBoxTileOdd (pDrawable, n, rects, tile, xrot, yrot)
+    DrawablePtr	pDrawable;
+    int		n;
+    BoxPtr	rects;
+    PixmapPtr	tile;
+    int		xrot, yrot;
+{
+    if (tile->drawable.width & PIM)
+	vga256FillBoxTileOddCopy (pDrawable, n, rects, tile, xrot, yrot, GXcopy, ~0);
+    else
+	vga256FillBoxTile32sCopy (pDrawable, n, rects, tile, xrot, yrot, GXcopy, ~0);
+}
 
-#if PPW == 4
-extern void cfb8FillRectStippledUnnatural();
-#endif
+void
+vga256FillRectTileOdd (pDrawable, pGC, nBox, pBox)
+    DrawablePtr	pDrawable;
+    GCPtr	pGC;
+    int		nBox;
+    BoxPtr	pBox;
+{
+    int	xrot, yrot;
+    void    (*fill)();
+
+    xrot = pDrawable->x + pGC->patOrg.x;
+    yrot = pDrawable->y + pGC->patOrg.y;
+    if (pGC->tile.pixmap->drawable.width & PIM)
+    {
+    	fill = vga256FillBoxTileOddGeneral;
+    	if ((pGC->planemask & PMSK) == PMSK)
+    	{
+	    if (pGC->alu == GXcopy)
+	    	fill = vga256FillBoxTileOddCopy;
+    	}
+    }
+    else
+    {
+    	fill = vga256FillBoxTile32sGeneral;
+    	if ((pGC->planemask & PMSK) == PMSK)
+    	{
+	    if (pGC->alu == GXcopy)
+	    	fill = vga256FillBoxTile32sCopy;
+    	}
+    }
+    (*fill) (pDrawable, nBox, pBox, pGC->tile.pixmap, xrot, yrot, pGC->alu, pGC->planemask);
+}
 
 #define NUM_STACK_RECTS	1024
 
 void
-CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
+vga256PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     DrawablePtr pDrawable;
     register GCPtr pGC;
     int		nrectFill; 	/* number of rectangles to fill */
@@ -76,17 +102,7 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     void	    (*BoxFill)();
     int		    n;
     int		    xorg, yorg;
-    unsigned long   *pdstBase;
-    int		    widthDst;
     RROP_DECLARE
-
-    cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase)
-
-    if (!xf86VTSema || !CHECKSCREEN(pdstBase))
-    {
-        cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
-        return;
-    }
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
     prgnClip = priv->pCompositeClip;
@@ -100,43 +116,48 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	case GXcopy:
 	    BoxFill = vga256LowlevFuncs.fillRectSolidCopy;
 	    break;
+	case GXxor:
+	    BoxFill = vga256FillRectSolidXor;
+	    break;
+	case GXand:
+	    BoxFill = (rrop_xor == 0) ? 
+		vga256FillRectSolidAnd : vga256FillRectSolidGeneral;
+	    break;
+	case GXor:
+	    BoxFill = (rrop_and == 0) ? 
+		vga256FillRectSolidOr : vga256FillRectSolidGeneral;
+	    break;
 	default:
-	    /* BoxFill = cfbFillRectSolidGeneral; */
-	    BoxFill = CirrusFillRectSolidGeneral;
+	    BoxFill = vga256FillRectSolidGeneral;
 	    break;
 	}
 	break;
     case FillTiled:
-    	/* Hmm, it seems FillRectTileOdd always gets called. --HH */
-#if 0    
 	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-	pRotatedPixmap)
-            BoxFill = cfbFillRectTileOdd;
+							pRotatedPixmap)
+	    BoxFill = vga256FillRectTileOdd;
 	else
-#endif
-	if (1)
 	{
 	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
-		/* BoxFill = cfbFillRectTile32Copy; */
-		BoxFill = CirrusFillRectTile;
+		BoxFill = vga256FillRectTile32Copy;
 	    else
-		BoxFill = cfbFillRectTileOdd;
+		BoxFill = vga256FillRectTile32General;
 	}
 	break;
 #if (PPW == 4)
     case FillStippled:
 	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap)
-	    BoxFill = cfb8FillRectStippledUnnatural;
+	    BoxFill = vga2568FillRectStippledUnnatural;
 	else
-	    BoxFill = CirrusFillRectTransparentStippled32;
+	    BoxFill = vga256LowlevFuncs.fillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
 	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap)
-	    BoxFill = cfb8FillRectStippledUnnatural;
+	    BoxFill = vga2568FillRectStippledUnnatural;
 	else
-	    BoxFill = CirrusFillRectOpaqueStippled32;
+	    BoxFill = vga256LowlevFuncs.fillRectOpaqueStippled32;
 	break;
 #endif
     }

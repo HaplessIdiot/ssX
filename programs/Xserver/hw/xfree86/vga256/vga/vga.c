@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.6 1994/07/16 09:40:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.7 1994/07/21 13:59:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -44,8 +44,7 @@
 #include "xf86_Config.h"
 #include "vga.h"
 #if !defined(MONOVGA) && !defined(XF86VGA16)
-#include "cfb.h"
-#include "cfbfuncs.h"
+#include "vga256.h"
 #endif
 
 #ifndef XF86VGA16
@@ -60,12 +59,10 @@ void (*ourmfbDoBitbltCopyInverted)();
 #endif
 #else
 unsigned long useSpeedUp = 0;
-extern void speedupcfbTEGlyphBlt8();
-extern void speedupcfb8FillRectOpaqueStippled32();
-extern void speedupcfb8FillRectTransparentStippled32();
-extern void vgaBitBlt(), OneBankvgaBitBlt();
-
-extern GCOps cfbTEOps1Rect, cfbTEOps, cfbNonTEOps1Rect, cfbNonTEOps;
+extern void speedupvga256TEGlyphBlt8();
+extern void speedupvga2568FillRectOpaqueStippled32();
+extern void speedupvga2568FillRectTransparentStippled32();
+extern void OneBankvgaBitBlt();
 #endif /* MONOVGA */
 #endif /* !XF86VGA16 */
 
@@ -570,22 +567,22 @@ vgaProbe()
         /* We deal with the generic speedups here */
 	if (useSpeedUp & SPEEDUP_TEGBLT8)
 	{
-	  cfbLowlevFuncs.teGlyphBlt8 = speedupcfbTEGlyphBlt8;
-	  cfbTEOps1Rect.ImageGlyphBlt = speedupcfbTEGlyphBlt8;
-	  cfbTEOps.ImageGlyphBlt = speedupcfbTEGlyphBlt8;
+	  vga256LowlevFuncs.teGlyphBlt8 = speedupvga256TEGlyphBlt8;
+	  vga256TEOps1Rect.ImageGlyphBlt = speedupvga256TEGlyphBlt8;
+	  vga256TEOps.ImageGlyphBlt = speedupvga256TEGlyphBlt8;
 	}
 
 	if (useSpeedUp & SPEEDUP_RECTSTIP)
 	{
-	  cfbLowlevFuncs.fillRectOpaqueStippled32 = 
-	    speedupcfb8FillRectOpaqueStippled32;
-	  cfbLowlevFuncs.fillRectTransparentStippled32 = 
-	    speedupcfb8FillRectTransparentStippled32;
+	  vga256LowlevFuncs.fillRectOpaqueStippled32 = 
+	    speedupvga2568FillRectOpaqueStippled32;
+	  vga256LowlevFuncs.fillRectTransparentStippled32 = 
+	    speedupvga2568FillRectTransparentStippled32;
 	}
 
 	if (!vgaUse2Banks)
 	{
-	  cfbLowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
+	  vga256LowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
 	}
 
 	/* Initialise chip-specific enhanced fb functions */
@@ -708,7 +705,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     displayResolution, displayResolution,
 		     vga256InfoRec.displayWidth))
 #else
-  if (!cfbScreenInit(pScreen,
+  if (!vga256ScreenInit(pScreen,
 		     (pointer) vgaVirtBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
@@ -877,7 +874,7 @@ vgaEnterLeaveVT(enter, screen_idx)
 	  mfbDoBitblt(&ppix->drawable, &pspix->drawable, GXcopy, &pixReg,
                       &pixPt);
 #else
-	  cfbDoBitblt(&ppix->drawable, &pspix->drawable, GXcopy, &pixReg,
+	  vga256DoBitblt(&ppix->drawable, &pspix->drawable, GXcopy, &pixReg,
                       &pixPt, 0xFF);
 #endif
 #else /* XF86VGA16 */
@@ -913,7 +910,7 @@ vgaEnterLeaveVT(enter, screen_idx)
 	  mfbDoBitblt(&pspix->drawable, &ppix->drawable, GXcopy, &pixReg,
                       &pixPt, 0xFF);
 #else
-	  cfbDoBitblt(&pspix->drawable, &ppix->drawable, GXcopy, &pixReg,
+	  vga256DoBitblt(&pspix->drawable, &ppix->drawable, GXcopy, &pixReg,
                       &pixPt, 0xFF);
 #endif
 #else /* XF86VGA16 */

@@ -1,4 +1,5 @@
 /* $XConsortium: vgaBank.h,v 1.1 94/03/28 21:55:43 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -34,20 +35,85 @@ extern void *vgaWriteTop;
 extern Bool vgaReadFlag, vgaWriteFlag;
 extern void *writeseg;
 
-extern void * vgaSetReadWrite();
-extern void * vgaReadWriteNext();
-extern void * vgaReadWritePrev();
-extern void * vgaSetRead();
-extern void * vgaReadNext();
-extern void * vgaReadPrev();
-extern void * vgaSetWrite();
-extern void * vgaWriteNext();
-extern void * vgaWritePrev();
-extern void vgaSaveBank();
-extern void vgaRestoreBank();
-extern void vgaPushRead();
-extern void vgaPopRead();
+/* vgaBank.s */
 
+void *vgaSetReadWrite(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+
+void *vgaReadWriteNext(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+
+void *vgaReadWritePrev(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+
+void *vgaSetRead(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+
+void *vgaReadNext(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+
+void *vgaReadPrev(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+
+void *vgaSetWrite(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+
+void *vgaWriteNext(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+
+void *vgaWritePrev(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+
+void vgaSaveBank(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+void vgaRestoreBank(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+void vgaPushRead(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+void vgaPopRead(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 extern int vgaSegmentMask;
 
@@ -108,11 +174,11 @@ extern unsigned SpeedUpRowsPrev[];
 			  x = vgaReadWritePrev(x); }
 #define BANK_FLAG(a) \
   vgaWriteFlag = (((unsigned long)a >= VGABASE) ? TRUE : FALSE); \
-  vgaReadFlag = FALSE;
+  vgaReadFlag = FALSE; 
 
 #define BANK_FLAG_BOTH(a,b) \
   vgaReadFlag = (((unsigned long)a >= VGABASE) ? TRUE : FALSE); \
-  vgaWriteFlag  = (((unsigned long)b >= VGABASE) ? TRUE : FALSE);
+  vgaWriteFlag  = (((unsigned long)b >= VGABASE) ? TRUE : FALSE); 
 
 #define SETR(x)  { if(vgaReadFlag) x = vgaSetRead(x); }
 #define SETW(x)  { if(vgaWriteFlag) x = vgaSetWrite(x); }

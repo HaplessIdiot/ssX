@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.2 94/03/28 21:51:05 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.0 1994/05/31 08:14:55 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -45,12 +45,7 @@
 #endif
 
 #ifndef MONOVGA
-#include "cfbfuncs.h"
-
-extern void speedupcfbFillRectSolidCopy();
-extern void speedupcfbLineSS();
-extern void speedupcfbSegmentSS();
-extern void speedupcfbFillBoxSolid();
+#include "vga256.h"
 #endif
 
 typedef struct {
@@ -379,28 +374,28 @@ ET4000FbInit()
   }
   if (useSpeedUp & SPEEDUP_FILLRECT)
   {
-    cfbLowlevFuncs.fillRectSolidCopy = speedupcfbFillRectSolidCopy;
+    vga256LowlevFuncs.fillRectSolidCopy = speedupvga256FillRectSolidCopy;
   }
   if (useSpeedUp & SPEEDUP_BITBLT)
   {
-    cfbLowlevFuncs.doBitbltCopy = speedupcfbDoBitbltCopy;
+    vga256LowlevFuncs.doBitbltCopy = speedupvga256DoBitbltCopy;
   }
   if (useSpeedUp & SPEEDUP_LINE)
   {
-    cfbLowlevFuncs.lineSS = speedupcfbLineSS;
-    cfbLowlevFuncs.segmentSS = speedupcfbSegmentSS;
-    cfbTEOps1Rect.Polylines = speedupcfbLineSS;
-    cfbTEOps1Rect.PolySegment = speedupcfbSegmentSS;
-    cfbTEOps.Polylines = speedupcfbLineSS;
-    cfbTEOps.PolySegment = speedupcfbSegmentSS;
-    cfbNonTEOps1Rect.Polylines = speedupcfbLineSS;
-    cfbNonTEOps1Rect.PolySegment = speedupcfbSegmentSS;
-    cfbNonTEOps.Polylines = speedupcfbLineSS;
-    cfbNonTEOps.PolySegment = speedupcfbSegmentSS;
+    vga256LowlevFuncs.lineSS = speedupvga256LineSS;
+    vga256LowlevFuncs.segmentSS = speedupvga256SegmentSS;
+    vga256TEOps1Rect.Polylines = speedupvga256LineSS;
+    vga256TEOps1Rect.PolySegment = speedupvga256SegmentSS;
+    vga256TEOps.Polylines = speedupvga256LineSS;
+    vga256TEOps.PolySegment = speedupvga256SegmentSS;
+    vga256NonTEOps1Rect.Polylines = speedupvga256LineSS;
+    vga256NonTEOps1Rect.PolySegment = speedupvga256SegmentSS;
+    vga256NonTEOps.Polylines = speedupvga256LineSS;
+    vga256NonTEOps.PolySegment = speedupvga256SegmentSS;
   }
   if (useSpeedUp & SPEEDUP_FILLBOX)
   {
-    cfbLowlevFuncs.fillBoxSolid = speedupcfbFillBoxSolid;
+    vga256LowlevFuncs.fillBoxSolid = speedupvga256FillBoxSolid;
   }
 #endif /* MONOVGA */
 }

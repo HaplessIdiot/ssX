@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fill.c,v 1.1 94/03/28 21:49:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.1 1994/05/14 07:01:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.2 1994/06/05 06:00:27 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -35,17 +35,7 @@
  * low-level functions depending on size, card configuration etc.
  */
 
-#include "X.h"
-#include "Xmd.h"
-#include "servermd.h"
-#include "gcstruct.h"
-#include "window.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "windowstr.h"
-
-#include "cfb.h"
-#include "cfbmskbits.h"
+#include "vga256.h"
 #include "cfbrrop.h"
 #include "mergerop.h"
 #include "vgaBank.h"
@@ -89,7 +79,7 @@ CirrusFillRectSolidGeneral (pDrawable, pGC, nBox, pBox)
       CirrusFillBoxSolid(pDrawable, nBox, pBox, pGC->fgPixel, pGC->bgPixel,
           pGC->alu);
   else
-      cfbFillRectSolidGeneral(pDrawable, pGC, nBox, pBox);
+      vga256FillRectSolidGeneral(pDrawable, pGC, nBox, pBox);
 }
 
 
@@ -200,6 +190,6 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
           }
 	}
     }
-  else vgacfbFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu);
+  else vga256FillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu);
 
 }

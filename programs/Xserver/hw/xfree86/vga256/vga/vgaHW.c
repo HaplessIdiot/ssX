@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.5 1994/06/18 16:29:13 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.6 1994/06/26 13:11:13 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -197,6 +197,15 @@ unsigned char defaultDAC[768] =
 #endif /* NEED_SAVED_CMAP */
 
 /*
+ * With USE_ASM_SLOWBCOPY, the version in common_hw/SlowBcopy.s is used.
+ * This avoids port I/O during the copy (which causes problems with
+ * some hardware.
+ */
+#define USE_ASM_SLOWBCOPY
+#ifdef USE_ASM_SLOWBCOPY
+#define slowbcopy SlowBcopy
+#else
+/*
  * slowbcopy --
  *	slow version of bcopy for save/restore of font and text data.
  */
@@ -214,6 +223,7 @@ slowbcopy(src, dst, count)
     outb(0x80, 0x00);
   }
 }
+#endif
 
 /*
  * vgaProtect --

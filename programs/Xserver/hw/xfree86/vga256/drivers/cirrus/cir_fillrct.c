@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cir_fillrct.c,v 5.14 94/04/17 20:32:33 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillrct.c,v 3.0 1994/04/29 14:10:10 dawes Exp $ */
 
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 
@@ -42,20 +42,9 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 
-#include "X.h"
-#include "Xmd.h"
-#include "servermd.h"
-#include "gcstruct.h"
-#include "window.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "windowstr.h"
-
-#include "cfb.h"
-#include "cfbmskbits.h"
+#include "vga256.h"
 #include "cfbrrop.h"
 #include "mergerop.h"
-#include "cfbfuncs.h"
 #include "xf86.h"
 #include "vga.h"
 #include "vgaBank.h"	/* For CHECKSCREEN. */
@@ -109,7 +98,7 @@ CirrusPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	RROP_FETCH_GCPRIV(priv)
 	switch (priv->rop) {
 	case GXcopy:
-	    BoxFill = cfbLowlevFuncs.fillRectSolidCopy;
+	    BoxFill = vga256LowlevFuncs.fillRectSolidCopy;
 	    break;
 	default:
 	    /* BoxFill = cfbFillRectSolidGeneral; */
