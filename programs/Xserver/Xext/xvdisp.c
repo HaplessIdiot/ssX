@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.13 2000/05/25 20:45:23 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.14 2000/05/31 19:25:52 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -1821,7 +1821,7 @@ SWriteListImageFormatsReply(
 static int
 XineramaXvStopVideo(ClientPtr client)
 {
-  int result, i;
+  int result, i, portoffset;
   PanoramiXRes *draw;
   XvPortPtr pPort;
   REQUEST(xvStopVideoReq);
@@ -1831,10 +1831,12 @@ XineramaXvStopVideo(ClientPtr client)
                 client, stuff->drawable, XRC_DRAWABLE, SecurityWriteAccess)))
         return BadDrawable;
 
+  portoffset = stuff->port - XineramaAdaptors[0]->base_id;
+
   FOR_NSCREENS_BACKWARD(i) {
      if(XineramaAdaptors[i]) {
 	stuff->drawable = draw->info[i].id;
-	stuff->port = XineramaAdaptors[i]->base_id;
+        stuff->port = XineramaAdaptors[i]->base_id + portoffset;
 	result = ProcXvStopVideo(client);
      }
   }
@@ -1846,13 +1848,15 @@ static int
 XineramaXvSetPortAttribute(ClientPtr client)
 {
     REQUEST(xvSetPortAttributeReq);
-    int result, i;
+    int result, i, portoffset;
 
     REQUEST_SIZE_MATCH(xvSetPortAttributeReq);
 
+    portoffset = stuff->port - XineramaAdaptors[0]->base_id;
+
     FOR_NSCREENS_BACKWARD(i) {
 	if(XineramaAdaptors[i]) {
-	   stuff->port = XineramaAdaptors[i]->base_id;
+	   stuff->port = XineramaAdaptors[i]->base_id + portoffset;
 	   result = ProcXvSetPortAttribute(client);
 	}
     }
@@ -1867,7 +1871,7 @@ XineramaXvShmPutImage(ClientPtr client)
     PanoramiXRes *draw, *gc;
     Bool send_event = stuff->send_event;
     Bool isRoot;
-    int result, i, x, y;
+    int result, i, x, y, portoffset;
 
     REQUEST_SIZE_MATCH(xvShmPutImageReq);
 
@@ -1885,10 +1889,12 @@ XineramaXvShmPutImage(ClientPtr client)
     x = stuff->drw_x;
     y = stuff->drw_y;
 
+    portoffset = stuff->port - XineramaAdaptors[0]->base_id;
+
     FOR_NSCREENS_BACKWARD(i) {
 	if(XineramaAdaptors[i]) {
 	   stuff->drawable = draw->info[i].id;
-	   stuff->port = XineramaAdaptors[i]->base_id;
+	   stuff->port = XineramaAdaptors[i]->base_id + portoffset;
 	   stuff->gc = gc->info[i].id;
 	   stuff->drw_x = x;
 	   stuff->drw_y = y;
@@ -1911,7 +1917,7 @@ XineramaXvPutImage(ClientPtr client)
     REQUEST(xvPutImageReq);
     PanoramiXRes *draw, *gc;
     Bool isRoot;
-    int result, i, x, y;
+    int result, i, x, y, portoffset;
 
     REQUEST_AT_LEAST_SIZE(xvPutImageReq);
 
@@ -1929,10 +1935,12 @@ XineramaXvPutImage(ClientPtr client)
     x = stuff->drw_x;
     y = stuff->drw_y;
 
+    portoffset = stuff->port - XineramaAdaptors[0]->base_id;
+
     FOR_NSCREENS_BACKWARD(i) {
 	if(XineramaAdaptors[i]) {
 	   stuff->drawable = draw->info[i].id;
-	   stuff->port = XineramaAdaptors[i]->base_id;
+	   stuff->port = XineramaAdaptors[i]->base_id + portoffset;
 	   stuff->gc = gc->info[i].id;
 	   stuff->drw_x = x;
 	   stuff->drw_y = y;
