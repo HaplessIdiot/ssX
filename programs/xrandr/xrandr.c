@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xrandr/xrandr.c,v 1.4 2001/06/07 15:33:44 keithp Exp $
+ * $XFree86: xc/programs/xrandr/xrandr.c,v 1.6 2001/06/11 01:40:14 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  * Copyright © 2001 Compaq Computer Corporation
@@ -130,6 +130,9 @@ main (int argc, char **argv)
   }
   root = DefaultRootWindow (dpy);
   sc = XRRGetScreenInfo (dpy, root);
+
+  if (sc == NULL) 
+      exit (1);
   
   current_size = XRRCurrentConfig (sc, &current_visual_group, &current_rotation);
   if (size < 0)
