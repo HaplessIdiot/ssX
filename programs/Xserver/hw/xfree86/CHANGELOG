@@ -1,4 +1,6 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 212. Export SysV IPC functions to modules in Net and OpenBSD 
+      (Bugzilla #355, Quentin Garnier). 
  211. Fix rootless bug when reordering windows behind others (Torrey T Lyons).
  210. Fix page size issues that prevented the mmap()'ing of SBUS devices
       (Marc La France).
@@ -17071,7 +17073,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2733 2003/06/10 20:47:59 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2734 2003/06/11 19:47:10 torrey Exp $
 
 
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.57 2003/02/17 16:37:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.58 2003/04/03 22:47:41 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -75,9 +75,7 @@ MTRRDEFINES = -DHAS_MTRR_SUPPORT
 MTRRDEFINES = -DHAS_MTRR_BUILTIN
 #endif
 
-#if defined(FreeBSDArchitecture)
 SYSVIPCDEFINES = -DHAVE_SYSV_IPC
-#endif
 
 #if UsbMouseSupport
 USBMOUSEDEFINES1 = -DUSBMOUSE_SUPPORT
