@@ -25,11 +25,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_vert_form_points.h,v 1.1 2001/10/04 18:28:21 alanh Exp $ */
 
 /*
  * Author:
- *   Jeff Hartmann <jhartmann@valinux.com>
+ *   Jeff Hartmann <jhartmann@2d3d.com>
  *
  * Heavily based on the I810 driver, which was written by:
  *   Keith Whitwell <keithw@valinux.com>

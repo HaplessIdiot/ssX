@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i830/Imakefile,v 1.1 2001/10/04 18:28:21 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i830/Imakefile,v 1.2 2002/02/23 00:45:50 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -33,8 +33,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i830/Imakefile,v 1.1 2001/10/04 18:28:21 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
      INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
 
-      DRIOBJS = $(GLXLIBSRC)/mesa/dri/dri_mesa.o \
-		$(GLXLIBSRC)/dri/dri_tmm.o
+      DRIOBJS = $(GLXLIBSRC)/dri/dri_util.o
 
       DRMOBJS = $(GLXLIBSRC)/dri/drm/xf86drm.o \
 		$(GLXLIBSRC)/dri/drm/xf86drmHash.o \
@@ -64,12 +63,12 @@ NormalLintTarget($(SRCS))
 
 #if !GlxUseBuiltInDRIDriver
 LIBNAME = i830_dri.so
-SharedDriModuleTarget($(LIBNAME),DONE,$(OBJS))
+SharedDriModuleTarget($(LIBNAME),DONE $(OBJS),$(OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 
 #ifdef GlxSoProf
 SOPROF_LIBNAME = _i830_dri_p
-NormalDepLibraryTarget($(SOPROF_LIBNAME),DONE,$(ALL_OBJS))
+NormalDepLibraryTarget($(SOPROF_LIBNAME),DONE $(OBJS),$(OBJS))
 InstallLibrary($(SOPROF_LIBNAME),$(MODULEDIR)/dri)
 #endif
 #endif

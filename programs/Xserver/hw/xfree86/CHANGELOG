@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 240. Intel 830 and 845G DRI support, including i830 support updated for
+      Mesa 4.x (#5288, Jeff Hartmann, 2D3D).
  239. [SECURITY] Fix an Xlib problem that made it possible to load arbitrary
       code into privileged clients.
  238. Add Xcursor library.  Make Xlib use it. (Keith Packard)
@@ -15001,4 +15003,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2289 2002/08/29 04:40:31 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2290 2002/09/04 03:09:49 dawes Exp $
