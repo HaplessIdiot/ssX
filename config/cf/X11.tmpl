@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.104 2001/03/22 18:30:10 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.105 2001/03/30 02:15:17 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1579,6 +1579,12 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #ifndef ProfileLibGlx
 #define ProfileLibGlx		NO
+#endif
+#ifndef BuildLibGlxWithoutPIC
+#define BuildLibGlxWithoutPIC	NO
+#endif
+#if BuildLibGlxWithoutPIC && SharedLibGlx
+#define SharedLibGlxWithoutPIC	YES
 #endif
 #ifndef LinkGLToUsrLib
 #define LinkGLToUsrLib		NO

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.5 2001/04/02 20:32:38 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.6 2001/04/02 22:15:47 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -197,7 +197,7 @@ XCOMM No built-in drivers. This is the usual case.
 REQUIREDLIBS = $(BASEREQUIREDLIBS) $(OTHERREQUIREDLIBS)
 
         OBJS = $(GLXOBJS) $(DRIOBJS) $(DRVOBJS) 
-#if HasSharedLibraries
+#if HasSharedLibraries && !SharedLibGlxWithoutPIC
        UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRVUOBJS)
 #else
        UOBJS = $(OBJS)

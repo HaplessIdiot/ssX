@@ -1,9 +1,9 @@
-XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.7 2001/03/23 20:56:31 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/dri/Imakefile,v 1.8 2001/03/23 21:20:06 dawes Exp $
 
 #include <Threads.tmpl>
 
-#define DoNormalLib NormalLibGlx
-#define DoSharedLib SharedLibGlx
+#define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
+#define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
 #define DoExtraLib SharedLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx

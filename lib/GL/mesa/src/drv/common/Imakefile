@@ -1,14 +1,14 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/common/Imakefile,v 1.4 2001/03/23 19:18:38 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/common/Imakefile,v 1.5 2001/03/23 20:56:33 dawes Exp $
 
 #if GlxUseBuiltInDRIDriver
-#define DoNormalLib NormalLibGlx
-#define DoSharedLib SharedLibGlx
+#define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
+#define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
 #define DoExtraLib SharedLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 #else
-#define DoSharedLib YES
-#define DoNormalLib NO
+#define DoNormalLib SharedLibGlxWithoutPIC
+#define DoSharedLib !SharedLibGlxWithoutPIC
 #define DoExtrasLib NO
 #define DoDebugLib NO
 #define DoProfileLib NO
