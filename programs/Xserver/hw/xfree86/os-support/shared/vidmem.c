@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.1 1999/04/18 04:08:55 dawes Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc
  *
@@ -149,7 +149,7 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 		vbase = vidMemInfo.mapMemSparse(ScreenNum, Base, Size);
 	else
 		vbase = vidMemInfo.mapMem(ScreenNum, Base, Size);
-	if (!vbase)
+	if (!vbase || vbase == (pointer)-1)
 		return NULL;
 
 	vp = getVidMapRec(ScreenNum);
