@@ -425,17 +425,6 @@ main(int argc, char *argv[])
 				 bottom, NULL, 0);
     XtAddCallback(quit, XtNcallback, QuitCallback, NULL);
 
-    layopt = XtCreatePopupShell("options", simpleMenuWidgetClass,
-				layoutp, NULL, 0);
-    sme = XtCreateManagedWidget("default", smeBSBObjectClass,
-				layopt, NULL, 0);
-    XtAddCallback(sme, XtNcallback, DefaultLayoutCallback, NULL);
-    sme = XtCreateManagedWidget("remove", smeBSBObjectClass,
-				layopt, NULL, 0);
-    XtAddCallback(sme, XtNcallback, RemoveLayoutCallback, NULL);
-
-    XtRealizeWidget(layopt);
-
     XtRealizeWidget(toplevel);
     XtRealizeWidget(topMenu);
 
@@ -483,12 +472,22 @@ main(int argc, char *argv[])
 	sme = XtVaCreateManagedWidget("sme", smeBSBObjectClass,
 				      layoutp,
 				      XtNlabel, lay->lay_identifier,
-				      XtNmenuName, "options",
+				      XtNmenuName, lay->lay_identifier,
 				      XtNleftBitmap, menuPixmap,
 				      NULL, 0);
 	XtAddCallback(sme, XtNcallback, SelectLayoutCallback, (XtPointer)lay);
 	if (layoutsme == NULL)
 	    layoutsme = sme;
+	layopt = XtCreatePopupShell(lay->lay_identifier, simpleMenuWidgetClass,
+				    layoutp, NULL, 0);
+	sme = XtCreateManagedWidget("default", smeBSBObjectClass,
+				    layopt, NULL, 0);
+	XtAddCallback(sme, XtNcallback, DefaultLayoutCallback, NULL);
+	sme = XtCreateManagedWidget("remove", smeBSBObjectClass,
+				    layopt, NULL, 0);
+	XtAddCallback(sme, XtNcallback, RemoveLayoutCallback, NULL);
+	XtRealizeWidget(layopt);
+
 	lay = (XF86ConfLayoutPtr)(lay->list.next);
     }
     SelectLayoutCallback(layoutsme,
@@ -942,10 +941,15 @@ SelectLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
     XF86ConfLayoutPtr lay = (XF86ConfLayoutPtr)user_data;
     XF86ConfInputrefPtr input;
     XF86ConfAdjacencyPtr adj;
+    Widget sme, layopt;
     Arg args[1];
     char *str;
 
-    if (lay == computer.layout)
+			       /* XXX Needs to check computer.layout,
+				* because this function should also create
+				* a new layout...
+				*/
+    if (lay == computer.layout && computer.layout)
 	return;
 
     if (computer.layout != NULL) {
@@ -1038,8 +1042,8 @@ SelectLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	    l = (XF86ConfLayoutPtr)(l->list.next);
 	}
 	do {
-	    ++num_layouts;
 	    XmuSnprintf(name, sizeof(name), "Layout%d", num_layouts);
+	    ++num_layouts;
 	} while (xf86findLayout(name,
 		 XF86Config->conf_layout_lst) != NULL);
 	l = (XF86ConfLayoutPtr)XtCalloc(1, sizeof(XF86ConfLayoutRec));
@@ -1050,11 +1054,22 @@ SelectLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	layoutsme = XtVaCreateManagedWidget("sme", smeBSBObjectClass,
 					    layoutp,
 					    XtNlabel, name,
-					    XtNmenuName, "options",
+					    XtNmenuName, l->lay_identifier,
 					    XtNleftBitmap, menuPixmap,
 					    NULL, 0);
 	XtAddCallback(layoutsme, XtNcallback,
 		      SelectLayoutCallback, (XtPointer)l);
+
+	layopt = XtCreatePopupShell(l->lay_identifier, simpleMenuWidgetClass,
+				    layoutp, NULL, 0);
+	sme = XtCreateManagedWidget("default", smeBSBObjectClass,
+				    layopt, NULL, 0);
+	XtAddCallback(sme, XtNcallback, DefaultLayoutCallback, NULL);
+	sme = XtCreateManagedWidget("remove", smeBSBObjectClass,
+				    layopt, NULL, 0);
+	XtAddCallback(sme, XtNcallback, RemoveLayoutCallback, NULL);
+	XtRealizeWidget(layopt);
+
 	computer.layout = l;
 	XtSetArg(args[0], XtNstring, name);
 	XtSetValues(layout, args, 1);
@@ -1117,15 +1132,14 @@ SelectLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 void
 DefaultLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    Widget sme = (Widget)(((SimpleMenuWidget)(w->core.parent->core.parent))
-			->simple_menu.entry_set);
+    Widget layopt, sme;
     int i;
     char *str;
-    Arg args[1];
     XF86ConfLayoutPtr prev, tmp, lay;
 
-    XtSetArg(args[0], XtNlabel, &str);
-    XtGetValues(sme, args, 1);
+    str = w && XtParent(w) ? XtName(XtParent(w)) : NULL;
+    if (str == NULL)
+	return;
 
     prev = XF86Config->conf_layout_lst;
     lay = xf86findLayout(str, prev);
@@ -1142,6 +1156,8 @@ DefaultLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 
     for (i = 1; i < ((CompositeWidget)layoutp)->composite.num_children; i++)
 	XtDestroyWidget(((CompositeWidget)layoutp)->composite.children[i]);
+    for (i = 0; i < layoutp->core.num_popups; i++)
+	XtDestroyWidget(layoutp->core.popup_list[i]);
 
     prev->list.next = lay->list.next;
     lay->list.next = XF86Config->conf_layout_lst;
@@ -1153,12 +1169,22 @@ DefaultLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	sme = XtVaCreateManagedWidget("sme", smeBSBObjectClass,
 				      layoutp,
 				      XtNlabel, lay->lay_identifier,
-				      XtNmenuName, "options",
+				      XtNmenuName, lay->lay_identifier,
 				      XtNleftBitmap, menuPixmap,
 				      NULL, 0);
 	XtAddCallback(sme, XtNcallback, SelectLayoutCallback, (XtPointer)lay);
 	if (layoutsme == NULL)
 	    layoutsme = sme;
+	layopt = XtCreatePopupShell(lay->lay_identifier, simpleMenuWidgetClass,
+				    layoutp, NULL, 0);
+	sme = XtCreateManagedWidget("default", smeBSBObjectClass,
+				    layopt, NULL, 0);
+	XtAddCallback(sme, XtNcallback, DefaultLayoutCallback, NULL);
+	sme = XtCreateManagedWidget("remove", smeBSBObjectClass,
+				    layopt, NULL, 0);
+	XtAddCallback(sme, XtNcallback, RemoveLayoutCallback, NULL);
+	XtRealizeWidget(layopt);
+
 	lay = (XF86ConfLayoutPtr)(lay->list.next);
     }
     SelectLayoutCallback(layoutsme,
@@ -1170,13 +1196,15 @@ void
 RemoveLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     XF86ConfLayoutPtr prev, tmp, lay, rem;
-    Widget sme = (Widget)(((SimpleMenuWidget)(w->core.parent->core.parent))
-			->simple_menu.entry_set);
+    Widget sme = NULL;
+    int i;
     char *str;
     Arg args[1];
 
-    XtSetArg(args[0], XtNlabel, &str);
-    XtGetValues(sme, args, 1);
+    str = w && XtParent(w) ? XtName(XtParent(w)) : NULL;
+    if (str == NULL)
+	return;
+
     prev = XF86Config->conf_layout_lst;
     lay = xf86findLayout(str, prev);
     tmp = prev;
@@ -1209,8 +1237,6 @@ RemoveLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	SelectLayoutCallback(layoutsme, lay, NULL);
     }
     else {
-	int i;
-
 	computer.layout = NULL;
 	XtSetArg(args[0], XtNstring, "");
 	XtSetValues(layout, args, 1);
@@ -1220,8 +1246,18 @@ RemoveLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	DrawCables();
     }
 
+    for (i = 0; i < ((CompositeWidget)layoutp)->composite.num_children; i++) {
+	XtSetArg(args[0], XtNlabel, &str);
+	XtGetValues(((CompositeWidget)layoutp)->composite.children[i], args, 1);
+	if (strcmp(rem->lay_identifier, str) == 0) {
+	    sme = ((CompositeWidget)layoutp)->composite.children[i];
+	    break;
+	}
+    }
+
     xf86removeLayout(XF86Config, rem);
-    XtDestroyWidget(sme);
+    if (sme)
+	XtDestroyWidget(sme);
 }
 
 void
