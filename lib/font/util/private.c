@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/private.c,v 1.4 1999/08/21 13:48:10 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/private.c,v 1.5 1999/10/13 04:20:52 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -82,7 +82,7 @@ _FontSetNewPrivate (FontPtr pFont, int n, pointer ptr)
 	    if (!new)
 		return FALSE;
 	} else {
-	    new = (pointer *) xmalloc ((n + 1) * sizeof (pointer));
+	    new = (pointer *) xalloc ((n + 1) * sizeof (pointer));
 	    if (!new)
 		return FALSE;
 	    if (pFont->devPrivates)
