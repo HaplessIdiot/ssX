@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.18 2002/03/08 04:33:17 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.21 2002/03/10 08:56:36 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -235,7 +235,7 @@
     {							\
 	int i = (count) + mac->env.base;		\
 	for (; i >= mac->env.base; i--)			\
-	    mac->env.names[i] = NIL;			\
+	    mac->env.names[i] = UNBOUND;		\
     }
 
 /* Error checking, to be called from builtin functions */

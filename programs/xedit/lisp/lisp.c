@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.39 2002/03/08 04:33:17 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.41 2002/03/10 08:56:36 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -3648,7 +3648,7 @@ key_label:
 	/* Check if arguments are correctly specified */
 	for (karg = values; CONS_P(karg); karg = CDR(karg)) {
 	    val = CAR(karg);
-	    if (KEYWORD_P(val)) {
+	    if (SYMBOL_P(val) && KEYWORD_P(val)) {
 		for (i = 0; i < alist->keys.num_symbols; i++)
 		    if (!keys[i] && symbols[i] == val)
 			break;
@@ -4010,8 +4010,14 @@ LispRunFunMac(LispMac *mac, LispObj *name, LispObj *code, int macro)
 	    result = mac->block.block_ret;
     }
     else {
+	int base = mac->env.base,
+	    head = mac->env.head;
+
 	for (; CONS_P(code); code = CDR(code))
 	    result = EVAL(CAR(code));
+
+	for (; base < head; base++)
+	    mac->env.names[base] = UNBOUND;
     }
 
     if (macro) {
