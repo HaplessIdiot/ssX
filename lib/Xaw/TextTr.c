@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.11 1999/05/23 06:33:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.12 1999/05/30 03:03:22 dawes Exp $ */
 
 /* INTERNATIONALIZATION:
 
@@ -46,7 +46,11 @@ char _XawDefaultTextTranslations[] =
 "c<Key>D:"		"delete-next-character()\n"
 "c<Key>E:"		"end-of-line()\n"
 "c<Key>F:"		"forward-character()\n"
+#ifndef OLDXAW
 "c<Key>G:"		"keyboard-reset()\n"
+#else
+"c<Key>G:"		"multiply(Reset)\n"
+#endif
 "c<Key>H:"		"delete-previous-character()\n"
 "c<Key>J:"		"newline-and-indent()\n"
 "c<Key>K:"		"kill-to-end-of-line()\n"
@@ -58,18 +62,27 @@ char _XawDefaultTextTranslations[] =
 "c<Key>R:"		"search(backward)\n"
 "c<Key>S:"		"search(forward)\n"
 "c<Key>T:"		"transpose-characters()\n"
+#ifndef OLDXAW
 "c<Key>U:"		"multiply(Start)\n"
+#else
+"c<Key>U:"		"multiply(4)\n"
+#endif
 "c<Key>V:"		"next-page()\n"
 "c<Key>W:"		"kill-selection()\n"
 "c<Key>Y:"		"insert-selection(SECONDARY)\n"
 "c<Key>Z:"		"scroll-one-line-up()\n"
 "m<Key>B:"		"backward-word()\n"
+"m<Key>C:"		"capitalize-word()\n"
 "m<Key>F:"		"forward-word()\n"
 "m<Key>I:"		"insert-file()\n"
 "m<Key>K:"		"kill-to-end-of-paragraph()\n"
+"m<Key>L:"		"downcase-word()\n"
 "m<Key>Q:"		"form-paragraph()\n"
+"m<Key>U:"		"upcase-word()\n"
 "m<Key>V:"		"previous-page()\n"
+#ifndef OLDXAW
 "m<Key>Y:"		"kill-ring-yank()\n"
+#endif
 "m<Key>Z:"		"scroll-one-line-down()\n"
 "~s m<Key>D:"		"kill-word(alnum)\n"
 "s m<Key>D:"		"delete-next-word(alnum)\n"
@@ -111,6 +124,7 @@ char _XawDefaultTextTranslations[] =
 ":<Key>KP_Enter:"	"newline()\n"
 "c<Key>backslash:"	"reconnect-im()\n"
 "<Key>Kanji:"		"reconnect-im()\n"
+#ifndef OLDXAW
 ":<Key>0:"		"numeric(0)\n"
 ":<Key>1:"		"numeric(1)\n"
 ":<Key>2:"		"numeric(2)\n"
@@ -123,6 +137,7 @@ char _XawDefaultTextTranslations[] =
 ":<Key>9:"		"numeric(9)\n"
 ":<Key>-:"		"numeric(-)\n"
 ":c<Key>_:"		"undo()\n"
+#endif
 "s <Key>Insert:"	"insert-selection(PRIMARY, CUT_BUFFER0)\n"
 "<Ctrl>Q,<Key>:"	"insert-char()\n"
 "<Key>:"		"insert-char()\n"

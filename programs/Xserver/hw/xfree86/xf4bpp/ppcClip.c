@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcClip.c,v 1.2 1998/07/25 16:59:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcClip.c,v 1.3 1999/01/31 12:22:15 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -70,16 +70,10 @@ SOFTWARE.
 */
 /* $XConsortium: ppcClip.c /main/4 1996/02/21 17:57:21 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "Xproto.h"
-#include "misc.h"
-#include "gcstruct.h"
+#include "mfb.h"
 #include "scrnintstr.h"
-#include "region.h"
-#include "pixmapstr.h"
-#include "ppc.h"
-#include "OScompiler.h"
 
 void
 xf4bppDestroyClip(pGC)

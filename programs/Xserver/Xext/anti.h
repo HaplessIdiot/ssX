@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/anti.h,v 1.1 1998/11/15 04:30:09 dawes Exp $ */
 
 #ifndef _ANTI_H
 #define _ANTI_H
@@ -23,12 +23,20 @@ extern int XAntiScreenIndex;
 
 void XAntiExtensionInit(void);
 
+typedef int (*GetAntiGlyphsFuncPtr)(FontPtr, unsigned long, unsigned char*, 
+		FontEncoding, unsigned long*, CharInfoPtr*, int);
 
 #define XANTI_GET_GC_PRIVATE(gc) \
 	(AntiGCPtr)((gc)->devPrivates[XAntiGCIndex].ptr)
 #define XANTI_GET_SCREEN_PRIVATE(draw) \
 	(AntiScreenPtr)((draw)->pScreen->devPrivates[XAntiScreenIndex].ptr)
+#if 1
 #define XANTI_GET_FONT_PRIVATE(font) 0 /* for now */
+#else
+#define XANTI_GET_FONT_PRIVATE(font) \
+	(antiAliasingPrivateIndex == -1) ? 0 : \
+	(GetAntiGlyphsFuncPtr)(font->devPrivates[antiAliasingPrivateIndex])
+#endif
 
 #endif /* _ANTI_H */
 

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.95 1999/05/16 10:13:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.96 1999/05/29 14:41:50 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -175,6 +175,7 @@ static SymTabRec MGAChipsets[] = {
     { PCI_CHIP_MGAG100,		"mgag100" },
     { PCI_CHIP_MGAG200,		"mgag200" },
     { PCI_CHIP_MGAG200_PCI,	"mgag200 PCI" },
+    { PCI_CHIP_MGAG400,		"mgag400" },
     {-1,			NULL }
 };
 
@@ -186,6 +187,7 @@ static PciChipsets MGAPciChipsets[] = {
     { PCI_CHIP_MGAG100,		PCI_CHIP_MGAG100,	RES_SHARED_VGA },
     { PCI_CHIP_MGAG200,		PCI_CHIP_MGAG200,	RES_SHARED_VGA },
     { PCI_CHIP_MGAG200_PCI,	PCI_CHIP_MGAG200_PCI,	RES_SHARED_VGA },
+    { PCI_CHIP_MGAG400,		PCI_CHIP_MGAG400,	RES_SHARED_VGA },
     { -1,			-1,			RES_UNDEFINED }
 };
 
@@ -787,13 +789,13 @@ MGACountRam(ScrnInfoPtr pScrn)
 	return 2048;
 }
 
-
 /*
  * GetAccelPitchValues -
  *
  * This function returns a list of display width (pitch) values that can
  * be used in accelerated mode.
  */
+#if 0
 static int *
 GetAccelPitchValues(ScrnInfoPtr pScrn)
 {
@@ -829,7 +831,7 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     }
     return linePitches;
 }
-
+#endif
 
 static xf86MonPtr
 MGAdoDDC(ScrnInfoPtr pScrn)
@@ -1219,6 +1221,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     case PCI_CHIP_MGAG100:
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:
+    case PCI_CHIP_MGAG400:
 	MGAGSetupFuncs(pScrn);
 	break;
     }
@@ -1492,35 +1495,57 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * pScrn->maxVValue are set.  Since our MGAValidMode() already takes
      * care of this, we don't worry about setting them here.
      */
+    {
+	int Pitches1[] = 
+	  {640, 768, 800, 960, 1024, 1152, 1280, 1600, 1920, 2048, 0};
+	int Pitches2[] = 
+	  {512, 640, 768, 800, 832, 960, 1024, 1152, 1280, 1600, 1664, 
+		1920, 2048, 0};
+	int *linePitches = NULL;
+	int minPitch = 256;
+	int maxPitch = 2048;	
+        
+        switch(pMga->Chipset) {
+	case PCI_CHIP_MGA2064:
+	   if (!pMga->NoAccel) {
+		linePitches = xalloc(sizeof(Pitches1));
+		memcpy(linePitches, Pitches1, sizeof(Pitches1));
+		minPitch = maxPitch = 0;
+	   }
+	   break;
+	case PCI_CHIP_MGA2164:
+	case PCI_CHIP_MGA2164_AGP:
+	case PCI_CHIP_MGA1064:
+	   if (!pMga->NoAccel) {
+		linePitches = xalloc(sizeof(Pitches2));
+		memcpy(linePitches, Pitches2, sizeof(Pitches2));
+		minPitch = maxPitch = 0;
+	   }
+	   break;
+	case PCI_CHIP_MGAG100:
+	   maxPitch = 2048;
+	   break;
+	case PCI_CHIP_MGAG200:
+	case PCI_CHIP_MGAG200_PCI:
+	case PCI_CHIP_MGAG400:
+	   maxPitch = 4096;
+	   break;
+	}
 
-    /* Select valid modes from those available */
-    if (pMga->NoAccel) {
-	/*
-	 * XXX Assuming min pitch 256, max 2048
-	 * XXX Assuming min height 128, max 2048
-	 */
 	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
-			      NULL, 256, 2048,
+			      linePitches, minPitch, maxPitch,
 			      pMga->Rounding * pScrn->bitsPerPixel, 128, 2048,
 			      pScrn->display->virtualX,
 			      pScrn->display->virtualY,
 			      pMga->FbMapSize,
 			      LOOKUP_BEST_REFRESH);
-    
-    } else {
-	/*
-	 * XXX Assuming min height 128, max 2048
-	 */
-	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-			      pScrn->display->modes, clockRanges,
-			      GetAccelPitchValues(pScrn), 0, 0,
-			      pMga->Rounding * pScrn->bitsPerPixel, 128, 2048,
-			      pScrn->display->virtualX,
-			      pScrn->display->virtualY,
-			      pMga->FbMapSize,
-			      LOOKUP_BEST_REFRESH);
+
+	if (linePitches)
+	   xfree(linePitches);
     }
+
+
     if (i < 1 && pMga->FBDev) {
 	fbdevHWUseBuildinMode(pScrn);
 	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
@@ -1568,7 +1593,11 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     pMga->YDstOrg = 0;
-    if (pScrn->virtualX * pScrn->virtualY * bytesPerPixel > 4*1024*1024) {
+    /* Actually, I'm not sure any need this other than the TVP3026 ones */
+    if ((pMga->Chipset != PCI_CHIP_MGAG400) && 
+	(pMga->Chipset != PCI_CHIP_MGAG200) &&
+	(pScrn->virtualX * pScrn->virtualY * bytesPerPixel > 4*1024*1024)) 
+    {
 	int offset, offset_modulo, ydstorg_modulo;
 
 	offset = (4*1024*1024) % (pScrn->displayWidth * bytesPerPixel);
@@ -1600,6 +1629,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    }
 	}
     }
+
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "YDstOrg is set to %d\n",
 		   pMga->YDstOrg);
     pMga->FbUsableSize = pMga->FbMapSize - pMga->YDstOrg * bytesPerPixel;
@@ -2256,8 +2286,11 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
     Base = (y * pScrn->displayWidth + x + pMga->YDstOrg) >>
 			(3 - pMga->BppShift);
 
-    if (pScrn->bitsPerPixel == 24)
+    if (pScrn->bitsPerPixel == 24) {
+	if (pMga->Chipset == PCI_CHIP_MGAG400)
+	   Base &= ~1;  /* Not sure why */
 	Base *= 3;
+    }
 
     /* find start of retrace */
     while (INREG8(0x1FDA) & 0x08);
@@ -2266,11 +2299,11 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
     count = INREG(MGAREG_VCOUNT) + 2;
     while(INREG(MGAREG_VCOUNT) < count);
     
-    OUTREG16(0x1FD4, (Base & 0x00FF00) | 0x0C);
-    OUTREG16(0x1FD4, ((Base & 0x0000FF) << 8) | 0x0D);
-    OUTREG8(0x1FDE, 0x00);
-    tmp = INREG8(0x1FDF);
-    OUTREG8(0x1FDF, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));
+    OUTREG16(MGAREG_CRTC_INDEX, (Base & 0x00FF00) | 0x0C);
+    OUTREG16(MGAREG_CRTC_INDEX, ((Base & 0x0000FF) << 8) | 0x0D);
+    OUTREG8(MGAREG_CRTCEXT_INDEX, 0x00);
+    tmp = INREG8(MGAREG_CRTCEXT_DATA);
+    OUTREG8(MGAREG_CRTCEXT_DATA, (tmp & 0xF0) | ((Base & 0x0F0000) >> 16));
 
 }
 

@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/lib/Xaw/ListP.h,v 1.3 1998/08/20 13:59:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/ListP.h,v 1.4 1998/10/03 08:42:08 dawes Exp $ */
 
 
 /* 
@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
 
 /* New fields for the List widget class */
 typedef struct {
-  XtPointer extension;
+    XtPointer extension;
 } ListClassPart;
 
 /* Full class record */
@@ -61,39 +61,42 @@ extern ListClassRec listClassRec;
 /* New fields for the List widget */
 typedef struct {
     /* resources */
-    Pixel	foreground;
-  Dimension internal_width;		/* if not 3d, user sets directly */
-  Dimension internal_height;
-  Dimension column_space;		/* half of *_space is add on
+    Pixel foreground;
+    Dimension internal_width;		/* if not 3d, user sets directly */
+    Dimension internal_height;
+    Dimension column_space;		/* half of *_space is add on
 					   top/bot/left of */
-  Dimension row_space;			/* each item's text bounding box
+    Dimension row_space;		/* each item's text bounding box
 					   half added to longest for right */
-    int         default_cols;
-  Boolean force_cols;
-  Boolean paste;
-  Boolean vertical_cols;
-    int         longest;	/* in pixels */
-  int nitems;
+    int default_cols;
+    Boolean force_cols;
+    Boolean paste;
+    Boolean vertical_cols;
+    int longest;			/* in pixels */
+    int nitems;
     XFontStruct	*font;
-    XFontSet 	fontset;	/* Sheeran, Omron KK, 93/03/05 */
-  String *list;				/* for i18n, always in multibyte
+    XFontSet fontset;			/* Sheeran, Omron KK, 93/03/05 */
+    String *list;			/* for i18n, always in multibyte
 					   format */
     XtCallbackList callback;
 
-  /* private */
-  int is_highlighted;			/* set to the item currently
+    /* private */
+    int is_highlighted;			/* set to the item currently
 					   highlighted */
-  int highlight;			/* set to the item that should be
+    int highlight;			/* set to the item that should be
 					   highlighted */
-  int col_width;			/* width of each column */
-  int row_height;			/* height of each row */
-  int nrows;				/* number of rows in the list */
-  int ncols;				/* number of columns in the list */
-  GC normgc;
-  GC revgc;
-  GC graygc;
-  int freedoms;				/* flags for resizing height
+    int col_width;			/* width of each column */
+    int row_height;			/* height of each row */
+    int nrows;				/* number of rows in the list */
+    int ncols;				/* number of columns in the list */
+    GC normgc;
+    GC revgc;
+    GC graygc;
+    int freedoms;			/* flags for resizing height
 					   and width */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } ListPart;
 
 

@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiTextP.h,v 1.3 1998/08/20 13:58:56 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiTextP.h,v 1.4 1998/10/03 08:42:01 dawes Exp $ */
 
 /*
  * AsciiText.c - Private header file for AsciiText Widget.
@@ -110,7 +110,10 @@ typedef struct _AsciiStringClassRec {
 extern AsciiStringClassRec asciiStringClassRec;
 
 typedef struct {
-  char resource;
+    char resource;
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } AsciiStringPart;
 
 typedef struct _AsciiStringRec {
@@ -127,7 +130,7 @@ typedef struct _AsciiStringRec {
  * Ascii Disk Emulation widget
  */
 typedef struct {
-  XtPointer extension;
+    XtPointer extension;
 } AsciiDiskClassPart;
 
 typedef struct _AsciiDiskClassRec {
@@ -141,7 +144,7 @@ typedef struct _AsciiDiskClassRec {
 extern AsciiDiskClassRec asciiDiskClassRec;
 
 typedef struct {
-  char resource;
+    char resource;
 } AsciiDiskPart;
 
 typedef struct _AsciiDiskRec {

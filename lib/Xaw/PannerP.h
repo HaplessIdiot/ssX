@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/PannerP.h,v 1.3 1998/08/20 13:59:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/PannerP.h,v 1.4 1998/10/03 08:42:15 dawes Exp $ */
 
 #ifndef _XawPannerP_h
 #define _XawPannerP_h
@@ -59,9 +59,9 @@ typedef struct {
     Dimension slider_width;		/* sliderWidth/SliderWidth */
     Dimension slider_height;		/* sliderHeight/SliderHeight */
     Dimension internal_border;		/* internalBorderWidth/BorderWidth */
-  String stipple_name;			/* backgroundStipple/BackgroundStipple
+    String stipple_name;		/* backgroundStipple/BackgroundStipple
 					 */
-  /* private */
+    /* private */
     GC slider_gc;			/* background of slider */
     GC shadow_gc;			/* edge of slider and shadow */
     GC xor_gc;				/* for doing XOR tmp graphics */
@@ -79,6 +79,9 @@ typedef struct {
     Boolean shadow_valid;		/* true if rects are valid */
     XRectangle shadow_rects[2];		/* location of shadows */
     Position last_x, last_y;		/* previous location of knob */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } PannerPart;
 
 typedef struct _PannerRec {

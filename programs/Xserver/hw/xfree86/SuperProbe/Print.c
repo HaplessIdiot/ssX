@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.63 1999/03/14 03:21:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.64 1999/03/21 07:34:50 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -47,7 +47,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "ATI 264GT (3D Rage I)", "ATI 264GT-B (3D Rage II)",
 		  "ATI 264GT-B+DVD (3D Rage II+DVD)",
 		  "ATI 264GT-IIc (3D Rage IIc)", "ATI 264GT3 (3D Rage Pro)",
-		  "ATI 264LT", "ATI 264LT Pro" },
+		  "ATI 264LT", "ATI 264LT Pro (3D Rage LT Pro)",
+		  "ATI Rage XL or XC" },
 /* AL */	{ "Avance Logic (chipset unknown)",
 		  "Avance Logic 2101", "Avance Logic 2228" },
 /* CT */	{ "Chips & Tech (chipset unknown)",
@@ -140,10 +141,10 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "S3 ViRGE/GX2",
 		  "S3 ViRGE/MX",
 		  "S3 ViRGE/MXP",
-		  "S3 TRIO3D Business",
-		  "S3 TRIO3D",
-		  "S3 SAVAGE3D",
-		  "S3 SAVAGE3D (Macrovision Support)",
+		  "S3 Trio3D Business",
+		  "S3 Trio3D",
+		  "S3 Savage3D",
+		  "S3 Savage3D (Macrovision Support)",
 	       },
 /* Trident */	{ "Trident (chipset unknown)",
 		  "Trident LX8200",
@@ -159,7 +160,10 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Trident Cyber9385-1",
 		  "Trident Cyber9388", "Trident Cyber9388-1",
 		  "Trident Cyber9397", "Trident Cyber9520",
-                  "Trident 3DImage975", "Trident 3DImage985", },
+		  "Trident 3DImage975", "Trident 3DImage985",
+/* Bill Mair */
+		  "Trident Cyber9397 DVD"
+		},
 /* Tseng */	{ "Tseng (chipset unknown)",
 		  "Tseng ET3000", "Tseng ET4000", 
 		  "Tseng ET4000/W32", "Tseng ET4000/W32i", 
@@ -197,7 +201,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Silicon Integrated Systems SG86C225",
 		  "Silicon Integrated Systems 5597/5598",
 		  "Silicon Integrated Systems 530/620",
-		  "Silicon Integrated Systems 6326 AGP" },
+		  "Silicon Integrated Systems 6326 AGP",
+		},
 /* ARK */	{ "ARK Logic (chipset unknown)",
 		  "ARK Logic ARK1000VL",
 		  "ARK Logic ARK1000PV",

@@ -25,11 +25,11 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SiS.c,v 3.3 1997/02/25 14:20:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SiS.c,v 3.4 1999/03/21 07:34:55 dawes Exp $ */
 
 #include "Probe.h"
 
-static Word Ports[] = {0x000, 0x000, SEQ_IDX, SEQ_REG, 0x3c4, 0x3c5};
+static Word Ports[] = {0x000, 0x000, SEQ_IDX, SEQ_REG};
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 
 static int MemProbe_SiS __STDCARGS((int));
@@ -66,20 +66,20 @@ int *Chipset;
 			case PCI_CHIP_SG86C205:
 				*Chipset = CHIP_SIS86C205;
 				break;
-			case PCI_CHIP_SG86C215:
+			case PCI_CHIP_SG86C215:		/* 86C215 */
 				*Chipset = CHIP_SIS86C215;
+				break;
+			case PCI_CHIP_SIS5597:		/* 5597/5598 */
+				*Chipset = CHIP_SIS5597;
+				break;
+			case PCI_CHIP_SIS6326:		/* 6326 */
+				*Chipset = CHIP_SIS6326;
 				break;
 			case PCI_CHIP_SG86C225:
 				*Chipset = CHIP_SIS86C225;
 				break;
-			case PCI_CHIP_SIS5597:
-				*Chipset = CHIP_SIS5597;
-				break;
-			case PCI_CHIP_SIS530:
+			case PCI_CHIP_SIS530:		/* 530/620 */
 				*Chipset = CHIP_SIS530;
-				break;
-			case PCI_CHIP_SIS6326:
-				*Chipset = CHIP_SIS6326;
 				break;
 			default:
 				*Chipset = CHIP_SIS_UNK;
@@ -99,10 +99,15 @@ static int MemProbe_SiS(Chipset)
 int Chipset;
 {
 	int Mem = 0;
-	int temp;
+	unsigned char temp;
+	unsigned char bsiz;
+	unsigned char save;
 
         EnableIOPorts(NUMPORTS, Ports);
-	outpw(0x3C4, 0x8605);	/* Unlock extended registers */ 
+
+	/* unlock extended registers */
+	save = rdinx(SEQ_IDX,0x05);
+	wrinx(SEQ_IDX,0x05,0x86);
 
 	switch (Chipset)
 	{
@@ -111,7 +116,7 @@ int Chipset;
 	case CHIP_SIS86C205:
 	case CHIP_SIS86C215:
 	case CHIP_SIS86C225:
-		switch (rdinx(0x3C4, 0xF) & 0x03)
+		switch (rdinx(SEQ_IDX, 0xF) & 0x03)
 		{
 		case 0x00:
 			Mem = 1024;
@@ -125,47 +130,54 @@ int Chipset;
 		}
 		break;
 	case CHIP_SIS5597:
-	  temp = rdinx(0x3C4, 0x2F);
-	  temp &= 7;
-	  temp++;
-	  Mem = temp * 256;
-	  if ((rdinx(0x3C4, 0x2F)>>1)&3)
-	    Mem *= 2;
-	  break;
-	case CHIP_SIS530:
-	case CHIP_SIS6326:
-	  temp = rdinx(0x3C4, 0x0C);
-	  temp >>=1;
-	  switch (temp & 0x0B)
-	    {
-	    case 0:
-	      Mem = 1024;
-	      break;
-	    case 1:
-	      Mem = 2048;
-	      break;
-	    case 2:
-	      Mem = 4096;
-	      break;
-	    case 3:
-	      Mem = 1024;
-	      break;
-	    case 8:
-	      Mem = 0;
-	      break;
-	    case 9:
-	      Mem = 2048;
-	      break;
-	    case 0xA:
-	      Mem = 4096;
-	      break;
-	    case 0xB:
-	      Mem = 8192;
-	      break;
-	    }
-	}
+		bsiz = rdinx(SEQ_IDX,0x0C);
+		bsiz = (bsiz >> 1) & 3;
 
-	outpw(0x3C4, 0x0005);	/* Lock extended registers */ 
+		temp = rdinx(CRTC_IDX,0x2F);
+		temp &= 7;
+		temp++;
+		if (bsiz > 0) temp = temp << 1;
+
+		Mem = 256 * temp;
+		break;
+	case CHIP_SIS6326:
+	case CHIP_SIS530:
+		temp = rdinx(SEQ_IDX, 0xC);
+		temp >>= 1;
+		switch (temp & 0x0B)
+		{
+		case 0x00: 
+    			Mem = 1024;
+			break;
+		case 0x01:
+			Mem = 2048;
+			break;
+		case 0x02: 
+			Mem = 4096;
+			break;
+		case 0x03: 
+			if(Chipset == CHIP_SIS6326)
+			    Mem = 1024;
+			else
+			    Mem = 0;
+			break;
+		case 0x08: 
+    			Mem = 0;
+			break;
+		case 0x09:
+			Mem = 2048;
+			break;
+		case 0x0A: 
+			Mem = 4096;
+			break;
+		case 0x0B: 
+			Mem = 8192;
+			break;
+		}
+
+	}
+	/* lock registers again */
+	wrinx(SEQ_IDX,0x05,save);
         DisableIOPorts(NUMPORTS, Ports);
 	return(Mem);
     }

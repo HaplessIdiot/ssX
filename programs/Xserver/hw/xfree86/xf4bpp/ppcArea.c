@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcArea.c,v 1.1.2.1 1998/06/27 14:48:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcArea.c,v 1.2 1998/07/25 16:59:31 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -29,18 +29,11 @@
  * Tom Paquin 8/87 
  */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "pixmapstr.h"
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "miscstruct.h"
-#include "scrnintstr.h"
-
-#include "ppc.h"
-
+#include "mfb.h"
+#include "ppcGCstr.h"
 #include "ibmTrace.h"
-extern int mfbGCPrivateIndex;
 
 void
 xf4bppAreaFill( pWin, nboxes, pBox, pGC )

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Grip.h,v 1.3 1998/08/20 13:59:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Grip.h,v 1.4 1998/10/03 08:42:05 dawes Exp $ */
 
 /*
  *  Grip.h - Public Definitions for Grip widget (used by VPane Widget)
@@ -79,11 +79,11 @@ SOFTWARE.
 #define XtNgripTranslations "gripTranslations"
 
 typedef struct _XawGripCallData {
-  XEvent *event;		/* the event causing the GripAction */
-  String *params;		/* the TranslationTable params */
-  Cardinal num_params;		/* count of params */
+    XEvent *event;			/* the event causing the GripAction */
+    String *params;			/* the TranslationTable params */
+    Cardinal num_params;		/* count of params */
 } XawGripCallDataRec, *XawGripCallData,
-    GripCallDataRec, *GripCallData; /* supported for R4 compatibility */
+  GripCallDataRec, *GripCallData; /* supported for R4 compatibility */
 
 /* Class Record Constant */
 

@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Form.h,v 1.5 1998/10/03 08:42:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.h,v 1.6 1999/05/03 12:15:39 dawes Exp $ */
 
 #ifndef _XawForm_h
 #define _XawForm_h
@@ -131,6 +131,7 @@ typedef enum {
 #define XtEchainBottom		"chainBottom"
 #define XtErubber		"rubber"
 
+#ifndef OLDXAW
 #ifndef XawNdisplayList
 #define XawNdisplayList "displayList"
 #endif
@@ -141,6 +142,7 @@ typedef enum {
 
 #ifndef XawRDisplayList
 #define XawRDisplayList "XawDisplayList"
+#endif
 #endif
 
 typedef struct _FormClassRec	*FormWidgetClass;

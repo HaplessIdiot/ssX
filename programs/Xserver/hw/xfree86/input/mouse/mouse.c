@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.9 1999/06/05 15:55:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.10 1999/06/06 05:14:12 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -503,6 +503,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	if (pMse->clearRTS) {
 	    xf86ErrorF("ClearRTS");
 	}
+	xf86ErrorF("\n");
     }
 
     pInfo->flags |= XI86_CONFIGURED;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGC.c,v 1.2 1998/07/25 16:59:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGC.c,v 1.3 1999/01/14 13:05:33 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -71,33 +71,15 @@ SOFTWARE.
 
 /* $XConsortium: ppcGC.c /main/6 1996/02/21 17:57:38 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "Xproto.h"
-#include "windowstr.h"
-#include "window.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "misc.h"
-#include "dixfont.h" /* GJA */
-#include "gcstruct.h"
-#include "cursorstr.h"
-#include "region.h"
-
-#include "mi.h"
-#include "mistruct.h"
-
 #include "mfb.h"
-
-#include "OScompiler.h"
-
-#include "ppc.h"
-
+#include "mi.h"
+#include "scrnintstr.h"
+#include "ppcGCstr.h"
+#include "vgaVideo.h"
 #include "ibmTrace.h"
 
-#include "vgaVideo.h"
-
-extern int mfbGCPrivateInterest;
 #define ppcGCInterestValidateMask \
 ( GCLineStyle | GCLineWidth | GCJoinStyle | GCBackground | GCForeground \
 | GCFunction | GCPlaneMask | GCFillStyle | GC_CALL_VALIDATE_BIT         \
@@ -154,8 +136,8 @@ static GCOps vgaGCOps = {
 	miPolyText16,		/*  int (* PolyText16)() */
 	miImageText8,		/*  void (* ImageText8)() */
 	miImageText16,		/*  void (* ImageText16)() */
-	(void (*)()) xf4bppImageGlyphBlt,	/*  GJA -- void (* ImageGlyphBlt)() */
-	(void (*)()) miPolyGlyphBlt,	/*  GJA -- void (* PolyGlyphBlt)() */
+	(void (*)())xf4bppImageGlyphBlt,	/*  GJA -- void (* ImageGlyphBlt)() */
+	miPolyGlyphBlt,		/*  GJA -- void (* PolyGlyphBlt)() */
 	miPushPixels,		/*  void (* PushPixels)() */
 #ifdef NEED_LINEHELPER
 	miMiter,		/*  void (* LineHelper)() */
@@ -232,13 +214,14 @@ xf4bppDestroyGC( pGC )
 }
 
 static Mask
-ppcChangePixmapGC( pGC, changes )
-register GC *pGC ;
-register Mask changes ;
+ppcChangePixmapGC
+(
+	register GC *pGC,
+	register Mask changes
+)
 {
 register ppcPrivGCPtr devPriv = (ppcPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
 register unsigned long int idx ; /* used for stepping through bitfields */
-register Mask bsChanges = 0 ;
 
 #define LOWBIT( x ) ( x & - x ) /* Two's complement */
 while ((idx = LOWBIT(changes))) {
@@ -297,7 +280,7 @@ while ((idx = LOWBIT(changes))) {
 	}
 }
 
-return bsChanges ;
+return 0 ;
 }
 
 /* Clipping conventions
@@ -318,7 +301,6 @@ xf4bppValidateGC( pGC, changes, pDrawable )
 {
     register ppcPrivGCPtr devPriv ;
     WindowPtr pWin ;
-    Mask bsChanges = 0 ;
 
     devPriv = (ppcPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
 

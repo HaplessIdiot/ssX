@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.55 1999/03/21 01:44:56 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.56 1999/04/17 09:08:02 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -2081,6 +2081,17 @@ clean::									@@\
 	cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .
 #endif
 #endif /* LinkBuildLibrary */
+
+#ifndef LinkBuildLibraryMaybe
+#ifdef UseInstalled
+#define LinkBuildLibraryMaybe(lib,doit) $(_NULLCMD_)
+#else
+#define LinkBuildLibraryMaybe(lib,doit) MakeDir($(BUILDLIBDIR))		@@\
+	@if doit; then (set -x; \					@@\
+	  RemoveFile($(BUILDLIBDIR)/lib); \				@@\
+	  cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .); fi
+#endif
+#endif /* LinkBuildLibraryMaybe */
 
 #ifndef _LinkBuildLibrary /* will get redefined elsewhere */
 #define _LinkBuildLibrary(lib) $(_NULLCMD_)

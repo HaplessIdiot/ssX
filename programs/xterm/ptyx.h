@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.54 1999/05/03 12:16:12 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.55 1999/05/15 06:25:06 dawes Exp $
  */
 
 /*
@@ -920,6 +920,7 @@ typedef struct {
 	Boolean		cutNewline;	/* whether or not line cut has \n */
 	Boolean		cutToBeginningOfLine;  /* line cuts to BOL? */
 	Boolean		highlight_selection; /* controls appearance of selection */
+	Boolean		trim_selection; /* controls trimming of selection */
 	char		*selection_data; /* the current selection */
 	int		selection_size; /* size of allocated buffer */
 	int		selection_length; /* number of significant bytes */

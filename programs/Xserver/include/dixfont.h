@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.2 1997/07/10 08:17:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.3 1998/11/15 05:53:25 dawes Exp $ */
 
 #ifndef DIXFONT_H
 #define DIXFONT_H 1
@@ -202,12 +202,6 @@ extern void InitFonts(
 extern int GetDefaultPointSize(
 #if NeedFunctionPrototypes
     void
-#endif
-);
-
-extern FontResolutionPtr GetClientResolutions(
-#if NeedFunctionPrototypes
-    int * /*num*/
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcRslvC.c,v 1.2 1998/07/25 16:59:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcRslvC.c,v 1.3 1998/09/26 08:34:23 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -57,13 +57,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * P. Shupak 12/31/87
  */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "screenint.h"
+#include "xf4bpp.h"
 #include "scrnintstr.h"
-#include "colormapst.h"	/* GJA */
-#include "OScompiler.h"
-#include "ppc.h"
 
 /*
  * New colormap routines that can support multiple Visual types.

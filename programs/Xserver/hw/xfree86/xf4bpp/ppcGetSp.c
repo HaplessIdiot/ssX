@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGetSp.c,v 1.1.2.1 1998/06/27 14:48:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcGetSp.c,v 1.2 1998/07/25 16:59:34 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -72,21 +72,11 @@ SOFTWARE.
 
 /* $XConsortium: ppcGetSp.c /main/5 1996/02/21 17:57:45 kaleb $ */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "servermd.h"
-#include "scrnintstr.h"
-#include "region.h"
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "pixmapstr.h"
-
+#include "xf4bpp.h"
 #include "OScompiler.h"
-
-/* #include "ppcGCstr.h" */
-/* #include "ppcScrn.h" */
-#include "ppc.h"	/* GJA */
-
+#include "mfbmap.h"
+#include "mfb.h"
+#include "servermd.h"
 #include "ibmTrace.h"
 
 /* GetSpans -- for each span, gets bits from drawable starting at ppt[i]

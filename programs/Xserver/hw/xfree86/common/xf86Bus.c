@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.21 1999/04/04 10:59:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.22 1999/04/11 13:10:44 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1682,7 +1682,8 @@ xf86GetPciSysRes(resPtr *mem, resPtr *io, int flags)
     if (!mem || !io || !xf86PciInfo)
 	return;
 
-    for (pvpp = xf86PciVideoInfo, pvp = *pvpp; pvp; pvp = *(++pvpp)) {
+    if ((pvpp = xf86PciVideoInfo))
+    for (pvp = *pvpp; pvp; pvp = *(++pvpp)) {
 	if (!(flags & PSR_VIDEO) &&
 	    !PCINONSYSTEMCLASSES(pvp->class, pvp->subclass))
 	    continue;

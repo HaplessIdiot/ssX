@@ -67,7 +67,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSinkP.h,v 1.4 1998/08/20 13:59:03 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSinkP.h,v 1.5 1998/10/03 08:42:09 dawes Exp $ */
 
 #ifndef _XawMultiSinkP_h
 #define _XawMultiSinkP_h
@@ -82,7 +82,7 @@ SOFTWARE.
 
 /* new fields for the MultiSink object class */
 typedef struct _MultiSinkClassPart {
-  XtPointer extension;
+    XtPointer extension;
 } MultiSinkClassPart;
 
 /* Full class record declaration */
@@ -100,12 +100,15 @@ typedef struct {
     Boolean echo;
     Boolean display_nonprinting;
 
-  /* private */
+    /* private */
     GC normgc, invgc, xorgc;
     XawTextPosition cursor_position;
     XawTextInsertState laststate;
-  short cursor_x, cursor_y;		/* Cursor Location */
-    XFontSet fontset; /* font set to draw */
+    short cursor_x, cursor_y;		/* Cursor Location */
+    XFontSet fontset;			/* font set to draw */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } MultiSinkPart;
 
 /* Full instance record declaration */

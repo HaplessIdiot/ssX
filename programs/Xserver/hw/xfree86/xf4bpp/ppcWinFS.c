@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWinFS.c,v 1.1.2.1 1998/06/27 14:48:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWinFS.c,v 1.2 1998/07/25 16:59:42 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -46,26 +46,14 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcWinFS.c /main/3 1996/02/21 17:58:39 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "misc.h"
-#include "gcstruct.h"
-#include "window.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "windowstr.h"
+#include "mfb.h"
 #include "mi.h"
 #include "mispans.h"
-
-#include "maskbits.h"
-
-#include "OScompiler.h"
-
-#include "ppc.h"
+#include "ppcGCstr.h"
 #include "ppcSpMcro.h"
-
 #include "ibmTrace.h"
-extern int mfbGCPrivateIndex;
 
 #define LeftMostBitInScreenLongWord SCRLEFT( 0xFFFFFFFF, 31 )
 /*

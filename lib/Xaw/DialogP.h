@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/DialogP.h,v 1.4 1998/10/03 08:42:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DialogP.h,v 1.5 1999/05/09 10:51:37 dawes Exp $ */
 
 #ifndef _DialogP_h
 #define _DialogP_h
@@ -52,7 +52,7 @@ SOFTWARE.
 #include <X11/Xaw/FormP.h>
 
 typedef struct {
-  XtPointer extension;
+    XtPointer extension;
 } DialogClassPart;
 
 typedef struct _DialogClassRec {
@@ -67,18 +67,16 @@ extern DialogClassRec dialogClassRec;
 
 typedef struct _DialogPart {
     /* resources */
-#ifdef NO_BIN_COMPAT_HACK	/* 4 bytes from FormWidget */
-    String	label;		/* description of the dialog	*/
-#endif
-    String	value;		/* for the user response	*/
-    Pixmap	icon;		/* icon bitmap			*/
+    String	label;		/* description of the dialog	 */
+    String	value;		/* for the user response	 */
+    Pixmap	icon;		/* icon bitmap			 */
 
-  /* private */
-    Widget	iconW;		/* widget to display the icon	*/
-  Widget labelW;		/* widget to display description */
-    Widget	valueW;		/* user response TextWidget	*/
-#ifndef NO_BIN_COMPAT_HACK
-    String	label;		/* description of the dialog	*/
+    /* private */
+    Widget	iconW;		/* widget to display the icon	 */
+    Widget	labelW;		/* widget to display description */
+    Widget	valueW;		/* user response TextWidget	 */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
 #endif
 } DialogPart;
 
@@ -91,7 +89,7 @@ typedef struct _DialogRec {
 } DialogRec;
 
 typedef struct {
-  XtPointer extension;
+    XtPointer extension;
 } DialogConstraintsPart;
 
 typedef struct _DialogConstraintsRec {

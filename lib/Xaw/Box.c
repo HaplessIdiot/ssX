@@ -42,12 +42,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Box.c,v 1.11 1999/04/11 13:10:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Box.c,v 1.12 1999/05/09 10:51:36 dawes Exp $ */
 
-#include	<X11/IntrinsicP.h>
-#include	<X11/StringDefs.h>
-#include	<X11/Xmu/Misc.h>
-#include	<X11/Xaw/BoxP.h>
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include <X11/Xmu/Misc.h>
+#include <X11/Xaw/BoxP.h>
 #include <X11/Xaw/XawInit.h>
 #include "Private.h"
 
@@ -56,7 +56,9 @@ SOFTWARE.
  */
 static void XawBoxChangeManaged(Widget);
 static void XawBoxClassInitialize(void);
+#ifndef OLDXAW
 static void XawBoxExpose(Widget, XEvent*, Region);
+#endif
 static XtGeometryResult XawBoxGeometryManager(Widget, XtWidgetGeometry*,
 					      XtWidgetGeometry*);
 static void XawBoxInitialize(Widget, Widget, ArgList, Cardinal*);
@@ -77,12 +79,14 @@ static Bool TryNewLayout(BoxWidget);
 /*
  * Initialization
  */
+#ifndef OLDXAW
 static XtActionsRec actions[] = {
   {"set-values", XawSetValuesAction},
   {"get-values", XawGetValuesAction},
   {"declare",    XawDeclareAction},
   {"call-proc",  XawCallProcAction},
 };
+#endif
 
 static XtResource resources[] = {
   {
@@ -90,7 +94,7 @@ static XtResource resources[] = {
     XtCHSpace,
     XtRDimension,
     sizeof(Dimension),
-		XtOffsetOf(BoxRec, box.h_space),
+    XtOffsetOf(BoxRec, box.h_space),
     XtRImmediate,
     (XtPointer)4
   },
@@ -99,7 +103,7 @@ static XtResource resources[] = {
     XtCVSpace,
     XtRDimension,
     sizeof(Dimension),
-		XtOffsetOf(BoxRec, box.v_space),
+    XtOffsetOf(BoxRec, box.v_space),
     XtRImmediate,
     (XtPointer)4
   },
@@ -108,19 +112,21 @@ static XtResource resources[] = {
     XtCOrientation,
     XtROrientation,
     sizeof(XtOrientation),
-		XtOffsetOf(BoxRec, box.orientation),
+    XtOffsetOf(BoxRec, box.orientation),
     XtRImmediate,
     (XtPointer)XtorientVertical
   },
+#ifndef OLDXAW
   {
     XawNdisplayList,
     XawCDisplayList,
     XawRDisplayList,
     sizeof(XawDisplayList*),
-		XtOffsetOf(BoxRec, box.display_list),
+    XtOffsetOf(BoxRec, box.display_list),
     XtRImmediate,
     NULL
   },
+#endif
 };
 
 BoxClassRec boxClassRec = {
@@ -135,8 +141,13 @@ BoxClassRec boxClassRec = {
     XawBoxInitialize,			/* initialize */
     NULL,				/* initialize_hook */
     XawBoxRealize,			/* realize */
+#ifndef OLDXAW
     actions,				/* actions */
     XtNumber(actions),			/* num_actions */
+#else
+    NULL,				/* actions */
+    0,					/* num_actions */
+#endif
     resources,				/* resources */
     XtNumber(resources),		/* num_resources */
     NULLQUARK,				/* xrm_class */
@@ -146,7 +157,11 @@ BoxClassRec boxClassRec = {
     False,				/* visible_interest */
     NULL,				/* destroy */
     XawBoxResize,			/* resize */
+#ifndef OLDXAW
     XawBoxExpose,			/* expose */
+#else
+    NULL,				/* expose */
+#endif
     XawBoxSetValues,			/* set_values */
     NULL,				/* set_values_hook */
     XtInheritSetValuesAlmost,		/* set_values_almost */
@@ -190,61 +205,53 @@ DoLayout(BoxWidget bbw, unsigned int width, unsigned int height,
     Dimension bw, bh;	/* Width and height needed for current widget 	*/
     Dimension h_space;  /* Local copy of bbw->box.h_space 		*/
     Widget widget;	/* Current widget	 			*/
-  unsigned int num_mapped_children = 0;
+    unsigned int num_mapped_children = 0;
  
     /* Box width and height */
     h_space = bbw->box.h_space;
 
     w = 0;
-  for (i = 0; i < bbw->composite.num_children; i++)
-    {
-      if (XtIsManaged(bbw->composite.children[i])
-	  && bbw->composite.children[i]->core.width > w)
-            w = bbw->composite.children[i]->core.width;
+    for (i = 0; i < bbw->composite.num_children; i++) {
+	if (XtIsManaged(bbw->composite.children[i])
+	    && bbw->composite.children[i]->core.width > w)
+	    w = bbw->composite.children[i]->core.width;
     }
     w += h_space;
-  if (w > width)
-    width = w;
+    if (w > width)
+	width = w;
     h = bbw->box.v_space;
    
     /* Line width and height */
     lh = 0;
     lw = h_space;
   
-  for (i = 0; i < bbw->composite.num_children; i++)
-    {
+    for (i = 0; i < bbw->composite.num_children; i++) {
 	widget = bbw->composite.children[i];
-      if (widget->core.managed)
-	{
-	  if (widget->core.mapped_when_managed)
-	    num_mapped_children++;
+	if (widget->core.managed) {
+	    if (widget->core.mapped_when_managed)
+		num_mapped_children++;
 	    /* Compute widget width */
-	  bw = XtWidth(widget) + (XtBorderWidth(widget)<<1) + h_space;
-	  if ((Dimension)(lw + bw) > width)
-	    {
-	      if (lw > h_space)
-		{
+	    bw = XtWidth(widget) + (XtBorderWidth(widget)<<1) + h_space;
+	    if ((Dimension)(lw + bw) > width) {
+		if (lw > h_space) {
 		    /* At least one widget on this line, and
-		   * can't fit any more.  Start new line if vbox
+		     * can't fit any more.  Start new line if vbox
 		     */
 		    AssignMax(w, lw);
-		  if (vbox)
-		    {
+		    if (vbox) {
 			h += lh + bbw->box.v_space;
 			lh = 0;
 			lw = h_space;
 		    }
 		}
-	      else if (!position)
-		{
+		else if (!position) {
 		    /* too narrow for this widget; we'll assume we can grow */
 		    DoLayout(bbw, (unsigned)(lw + bw), height, reply_width,
 			     reply_height, position);
 		    return;
 		}
 	    }
-	  if (position && (lw != XtX(widget) || h != XtY(widget)))
-	    {
+	    if (position && (lw != XtX(widget) || h != XtY(widget))) {
 		/* It would be nice to use window gravity, but there isn't
 		 * sufficient fine-grain control to nicely handle all
 		 * situations (e.g. when only the height changes --
@@ -262,28 +269,25 @@ DoLayout(BoxWidget bbw, unsigned int width, unsigned int height,
 		XtMoveWidget(widget, (int)lw, (int)h);
 	    }
 	    lw += bw;
-	  bh = XtHeight(widget) + (XtBorderWidth(widget) << 1);
+	    bh = XtHeight(widget) + (XtBorderWidth(widget) << 1);
 	    AssignMax(lh, bh);
 	}
     }
 
-    if (!vbox && width && lw > width && lh < height)
-      {
+    if (!vbox && width && lw > width && lh < height) {
 	/* reduce width if too wide and height not filled */
 	Dimension sw = lw, sh = lh;
 	Dimension width_needed = width;
 	XtOrientation orientation = bbw->box.orientation;
 
 	bbw->box.orientation = XtorientVertical;
-	while (sh < height && sw > width)
-	  {
+	while (sh < height && sw > width) {
 	    width_needed = sw;
 	    DoLayout(bbw, (unsigned)(sw-1), height, &sw, &sh, False);
 	}
 	if (sh < height)
 	  width_needed = sw;
-	if (width_needed != lw)
-	  {
+	if (width_needed != lw) {
 	    DoLayout(bbw, width_needed, height,
 		     reply_width, reply_height, position);
 	    bbw->box.orientation = orientation;
@@ -291,31 +295,27 @@ DoLayout(BoxWidget bbw, unsigned int width, unsigned int height,
 	}
 	bbw->box.orientation = orientation;
     }
-   if (vbox && (width < w || width < lw))
-     {
-        AssignMax(w, lw);
-       DoLayout(bbw, w, height, reply_width, reply_height, position);
-        return;
+    if (vbox && (width < w || width < lw)) {
+	AssignMax(w, lw);
+	DoLayout(bbw, w, height, reply_width, reply_height, position);
+	return;
     }
-   if (position && XtIsRealized((Widget)bbw))
-     {
+     if (position && XtIsRealized((Widget)bbw)) {
 	if (bbw->composite.num_children == num_mapped_children)
-	 XMapSubwindows(XtDisplay((Widget)bbw), XtWindow((Widget)bbw));
-       else
-	 {
-	   int ii = bbw->composite.num_children;
+	    XMapSubwindows(XtDisplay((Widget)bbw), XtWindow((Widget)bbw));
+	else {
+	    int ii = bbw->composite.num_children;
 	    Widget *childP = bbw->composite.children;
 
-	   for (; ii > 0; childP++, ii--)
-	     if (XtIsRealized(*childP) && XtIsManaged(*childP)
-		 && (*childP)->core.mapped_when_managed)
+	    for (; ii > 0; childP++, ii--)
+		if (XtIsRealized(*childP) && XtIsManaged(*childP)
+		    && (*childP)->core.mapped_when_managed)
 		    XtMapWidget(*childP);
 	}
     }
 
     /* Finish off last line */
-   if (lw > h_space)
-     {
+    if (lw > h_space) {
 	AssignMax(w, lw);
         h += lh + bbw->box.v_space;
     }
@@ -332,7 +332,7 @@ XawBoxQueryGeometry(Widget widget, XtWidgetGeometry *constraint,
 		    XtWidgetGeometry *preferred)
 {
     BoxWidget w = (BoxWidget)widget;
-  Dimension width;
+    Dimension width;
     Dimension preferred_width = w->box.preferred_width;
     Dimension preferred_height = w->box.preferred_height;
 
@@ -342,22 +342,21 @@ XawBoxQueryGeometry(Widget widget, XtWidgetGeometry *constraint,
 	/* parent isn't going to change w or h, so nothing to re-compute */
     return (XtGeometryYes);
 
-  if (constraint->request_mode == w->box.last_query_mode
-      && (!(constraint->request_mode & CWWidth)
+    if (constraint->request_mode == w->box.last_query_mode
+	&& (!(constraint->request_mode & CWWidth)
 	  || constraint->width == w->box.last_query_width)
-      && (!(constraint->request_mode & CWHeight)
-	  || constraint->height == w->box.last_query_height))
-    {
+	&& (!(constraint->request_mode & CWHeight)
+	  || constraint->height == w->box.last_query_height)) {
 	/* same query; current preferences are still valid */
 	preferred->request_mode = CWWidth | CWHeight;
 	preferred->width = preferred_width;
 	preferred->height = preferred_height;
-      if (constraint->request_mode == (CWWidth | CWHeight)
-	  && constraint->width == preferred_width
-	  && constraint->height == preferred_height)
-	return (XtGeometryYes);
+	if (constraint->request_mode == (CWWidth | CWHeight)
+	    && constraint->width == preferred_width
+	    && constraint->height == preferred_height)
+	    return (XtGeometryYes);
 	else
-	return (XtGeometryAlmost);
+	    return (XtGeometryAlmost);
     }
 	
     /* else gotta do it the long way...
@@ -371,9 +370,8 @@ XawBoxQueryGeometry(Widget widget, XtWidgetGeometry *constraint,
 
     if (constraint->request_mode & CWWidth)
 	width = constraint->width;
-  else /* if (constraint->request_mode & CWHeight) */
-    {
-	 /* let's see if I can become any narrower */
+    else { /* if (constraint->request_mode & CWHeight) */
+	   /* let's see if I can become any narrower */
 	width = 0;
 	constraint->width = 65535;
     }
@@ -382,32 +380,28 @@ XawBoxQueryGeometry(Widget widget, XtWidgetGeometry *constraint,
        height = (constraint->request_mode & CWHeight) ? constraint->height
 		       : *preferred_height;
      */
-  DoLayout(w, width, 0, &preferred_width, &preferred_height, False);
+    DoLayout(w, width, 0, &preferred_width, &preferred_height, False);
 
-  if (constraint->request_mode & CWHeight
-      && preferred_height > constraint->height)
-    {
+    if (constraint->request_mode & CWHeight
+	&& preferred_height > constraint->height) {
 	/* find minimum width for this height */
-      if (preferred_width <= constraint->width)
-	{
+	if (preferred_width <= constraint->width) {
 	    width = preferred_width;
 	    do { /* find some width big enough to stay within this height */
-	    width <<= 1;
-	    if (width > constraint->width)
-	      width = constraint->width;
-	    DoLayout(w, width, 0, &preferred_width, &preferred_height, False);
-	  } while (preferred_height > constraint->height
-		   && width < constraint->width);
-	  if (width != constraint->width)
-	    {
+		width <<= 1;
+		if (width > constraint->width)
+		    width = constraint->width;
+		DoLayout(w, width, 0, &preferred_width, &preferred_height, False);
+	    } while (preferred_height > constraint->height
+		     && width < constraint->width);
+	    if (width != constraint->width) {
 		do { /* find minimum width */
 		    width = preferred_width;
-		DoLayout(w, (unsigned)(preferred_width - 1), 0,
-			 &preferred_width, &preferred_height, False);
+		    DoLayout(w, (unsigned)(preferred_width - 1), 0,
+			     &preferred_width, &preferred_height, False);
 		} while (preferred_height < constraint->height);
 		/* one last time */
-	      DoLayout(w, width, 0, &preferred_width, &preferred_height,
-		       False);
+		DoLayout(w, width, 0, &preferred_width, &preferred_height, False);
 	    }
 	}
     }
@@ -419,9 +413,9 @@ XawBoxQueryGeometry(Widget widget, XtWidgetGeometry *constraint,
     if (constraint->request_mode == (CWWidth|CWHeight)
 	&& constraint->width == preferred_width
 	&& constraint->height == preferred_height)
-    return (XtGeometryYes);
+	return (XtGeometryYes);
 
-  return (XtGeometryAlmost);
+    return (XtGeometryAlmost);
 }
 
 /*
@@ -430,9 +424,9 @@ XawBoxQueryGeometry(Widget widget, XtWidgetGeometry *constraint,
 static void
 XawBoxResize(Widget w)
 {
-  Dimension tmp;
+    Dimension tmp;
 
-  DoLayout((BoxWidget)w, XtWidth(w), XtHeight(w), &tmp, &tmp, True);
+    DoLayout((BoxWidget)w, XtWidth(w), XtHeight(w), &tmp, &tmp, True);
 }
 
 /*
@@ -449,75 +443,71 @@ TryNewLayout(BoxWidget bbw)
     Dimension	proposed_width, proposed_height;
     int		iterations;
 
-  DoLayout(bbw, bbw->core.width, bbw->core.height,
-	   &preferred_width, &preferred_height, False);
+    DoLayout(bbw, bbw->core.width, bbw->core.height,
+	     &preferred_width, &preferred_height, False);
 
     /* at this point, preferred_width is guaranteed to not be greater
        than bbw->core.width unless some child is larger, so there's no
        point in re-computing another layout */
 
-  if (XtWidth(bbw) == preferred_width && XtHeight(bbw) == preferred_height)
-    return (True);
+    if (XtWidth(bbw) == preferred_width && XtHeight(bbw) == preferred_height)
+	return (True);
 
-  /* let's see if our parent will go for a new size */
+    /* let's see if our parent will go for a new size */
     iterations = 0;
     proposed_width = preferred_width;
     proposed_height = preferred_height;
     do {
 	switch (XtMakeResizeRequest((Widget)bbw,proposed_width,proposed_height,
-				     &proposed_width, &proposed_height))
-	{
+				     &proposed_width, &proposed_height)) {
 	    case XtGeometryYes:
-	return (True);
+		return (True);
 	    case XtGeometryNo:
 		if (iterations > 0)
 		    /* protect from malicious parents who change their minds */
-	  DoLayout(bbw, bbw->core.width, bbw->core.height,
-		    &preferred_width, &preferred_height, False);
-	if (preferred_width <= XtWidth(bbw)
-	    && preferred_height <= XtHeight(bbw))
-	  return (True);
+		    DoLayout(bbw, bbw->core.width, bbw->core.height,
+			     &preferred_width, &preferred_height, False);
+		if (preferred_width <= XtWidth(bbw)
+		    && preferred_height <= XtHeight(bbw))
+		    return (True);
 		else
-	  return (False);
+		    return (False);
 	    case XtGeometryAlmost:
 		if (proposed_height >= preferred_height &&
-	    proposed_width >= preferred_width)
-	  {
+		    proposed_width >= preferred_width) {
 		    /*
 		     * Take it, and assume the parent knows what it is doing.
 		     *
 		     * The parent must accept this since it was returned in
 		     * almost.
 		     */
-	    (void)XtMakeResizeRequest((Widget)bbw,
-				       proposed_width, proposed_height,
-				       &proposed_width, &proposed_height);
-	    return (True);
+		    (void)XtMakeResizeRequest((Widget)bbw,
+					       proposed_width, proposed_height,
+					       &proposed_width, &proposed_height);
+		    return (True);
 		}
-	else if (proposed_width != preferred_width)
-	  {
+		else if (proposed_width != preferred_width) {
 		    /* recalc bounding box; height might change */
 		    DoLayout(bbw, proposed_width, 0,
-		     &preferred_width, &preferred_height, False);
+			     &preferred_width, &preferred_height, False);
 		    proposed_height = preferred_height;
 		}
-	else	/* proposed_height != preferred_height */
-	  {
+		else {	/* proposed_height != preferred_height */
 		    XtWidgetGeometry constraints, reply;
 
 		    constraints.request_mode = CWHeight;
 		    constraints.height = proposed_height;
-	    (void)XawBoxQueryGeometry((Widget)bbw, &constraints, &reply);
+		    (void)XawBoxQueryGeometry((Widget)bbw, &constraints, &reply);
 		    proposed_width = preferred_width;
 		}
-	/*FALLTHROUGH*/
-	default:
-	  break;
+		/*FALLTHROUGH*/
+	    default:
+		break;
 	}
 	iterations++;
     } while (iterations < 10);
 
-  return (False);
+    return (False);
 }
 
 /*
@@ -534,20 +524,19 @@ XawBoxGeometryManager(Widget w, XtWidgetGeometry *request,
     BoxWidget bbw;
 
     /* Position request always denied */
-  if (((request->request_mode & CWX) && request->x != XtX(w))
-      || ((request->request_mode & CWY) && request->y != XtY(w)))
+    if (((request->request_mode & CWX) && request->x != XtX(w))
+	|| ((request->request_mode & CWY) && request->y != XtY(w)))
         return (XtGeometryNo);
 
     /* Size changes must see if the new size can be accomodated */
-  if (request->request_mode & (CWWidth | CWHeight | CWBorderWidth))
-    {
+    if (request->request_mode & (CWWidth | CWHeight | CWBorderWidth)) {
 	/* Make all three fields in the request valid */
 	if ((request->request_mode & CWWidth) == 0)
-	request->width = XtWidth(w);
+	    request->width = XtWidth(w);
 	if ((request->request_mode & CWHeight) == 0)
-	request->height = XtHeight(w);
+	    request->height = XtHeight(w);
         if ((request->request_mode & CWBorderWidth) == 0)
-	request->border_width = XtBorderWidth(w);
+	    request->border_width = XtBorderWidth(w);
 
 	/* Save current size and set to new size */
       width = XtWidth(w);
@@ -565,18 +554,16 @@ XawBoxGeometryManager(Widget w, XtWidgetGeometry *request,
 
 	bbw = (BoxWidget) w->core.parent;
 
-      if (TryNewLayout(bbw))
-	{
+	if (TryNewLayout(bbw)) {
 	    /* Fits in existing or new space, relayout */
 	    (*XtClass((Widget)bbw)->core_class.resize)((Widget)bbw);
 	    return (XtGeometryYes);
 	}
-      else
-	{
+	else {
 	    /* Cannot satisfy request, change back to original geometry */
-	  XtWidth(w) = width;
-	  XtHeight(w) = height;
-	  XtBorderWidth(w) = borderWidth;
+	    XtWidth(w) = width;
+	    XtHeight(w) = height;
+	    XtBorderWidth(w) = borderWidth;
 	    return (XtGeometryNo);
 	}
     }
@@ -589,18 +576,18 @@ static void
 XawBoxChangeManaged(Widget w)
 {
     /* Reconfigure the box */
-  (void)TryNewLayout((BoxWidget)w);
-  XawBoxResize(w);
+    (void)TryNewLayout((BoxWidget)w);
+    XawBoxResize(w);
 }
 
 static void
 XawBoxClassInitialize(void)
 {
     XawInitializeWidgetSet();
-  XtAddConverter(XtRString, XtROrientation, XmuCvtStringToOrientation,
-		 NULL, 0);
-  XtSetTypeConverter(XtROrientation, XtRString, XmuCvtOrientationToString,
-		     NULL, 0, XtCacheNone, NULL);
+    XtAddConverter(XtRString, XtROrientation, XmuCvtStringToOrientation,
+		   NULL, 0);
+    XtSetTypeConverter(XtROrientation, XtRString, XmuCvtOrientationToString,
+		       NULL, 0, XtCacheNone, NULL);
 }
 
 /*ARGSUSED*/
@@ -608,31 +595,31 @@ static void
 XawBoxInitialize(Widget request, Widget cnew,
 		 ArgList args, Cardinal *num_args)
 {
-  BoxWidget newbbw = (BoxWidget)cnew;
+    BoxWidget newbbw = (BoxWidget)cnew;
 
     newbbw->box.last_query_mode = CWWidth | CWHeight;
     newbbw->box.last_query_width = newbbw->box.last_query_height = 0;
     newbbw->box.preferred_width = Max(newbbw->box.h_space, 1);
     newbbw->box.preferred_height = Max(newbbw->box.v_space, 1);
 
-  if (XtWidth(newbbw) == 0)
-    XtWidth(newbbw) = newbbw->box.preferred_width;
+    if (XtWidth(newbbw) == 0)
+	XtWidth(newbbw) = newbbw->box.preferred_width;
 
-  if (XtHeight(newbbw) == 0)
-    XtHeight(newbbw) = newbbw->box.preferred_height;
+    if (XtHeight(newbbw) == 0)
+	XtHeight(newbbw) = newbbw->box.preferred_height;
 }
 
 static void
 XawBoxRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 {
-#ifdef USE_XPM
-  XawPixmap *pixmap;
+#ifndef OLDXAW
+    XawPixmap *pixmap;
 #endif
 
-  XtCreateWindow(w, InputOutput, (Visual *)CopyFromParent,
-		    *valueMask, attributes);
+    XtCreateWindow(w, InputOutput, (Visual *)CopyFromParent,
+		   *valueMask, attributes);
 
-#ifdef USE_XPM
+#ifndef OLDXAW
     if (w->core.background_pixmap > XtUnspecifiedPixmap) {
 	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
 				      w->core.colormap, w->core.depth);
@@ -647,31 +634,35 @@ static Boolean
 XawBoxSetValues(Widget current, Widget request, Widget cnew,
 		ArgList args, Cardinal *num_args)
 {
-   /* need to relayout if h_space or v_space change */
-#ifdef USE_XPM
+     /* need to relayout if h_space or v_space change */
+#ifndef OLDXAW
     BoxWidget b_old = (BoxWidget)current;
     BoxWidget b_new = (BoxWidget)cnew;
 
     if (b_old->core.background_pixmap != b_new->core.background_pixmap) {
 	XawPixmap *opix, *npix;
 
-	opix = XawPixmapFromXPixmap(b_old->core.background_pixmap, XtScreen(b_old),
-				    b_old->core.colormap, b_old->core.depth);
-	npix = XawPixmapFromXPixmap(b_new->core.background_pixmap, XtScreen(b_new),
-				    b_new->core.colormap, b_new->core.depth);
+	opix = XawPixmapFromXPixmap(b_old->core.background_pixmap,
+				    XtScreen(b_old), b_old->core.colormap,
+				    b_old->core.depth);
+	npix = XawPixmapFromXPixmap(b_new->core.background_pixmap,
+				    XtScreen(b_new), b_new->core.colormap,
+				    b_new->core.depth);
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
     }
-#endif
+#endif /* OLDXAW */
 
   return (False);
 }
 
+#ifndef OLDXAW
 static void
 XawBoxExpose(Widget w, XEvent *event, Region region)
 {
-  BoxWidget xaw = (BoxWidget)w;
+    BoxWidget xaw = (BoxWidget)w;
 
-  if (xaw->box.display_list)
-    XawRunDisplayList(w, xaw->box.display_list, event, region);
+    if (xaw->box.display_list)
+	XawRunDisplayList(w, xaw->box.display_list, event, region);
 }
+#endif /* OLDXAW */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.12 1998/10/04 09:39:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.13 1999/04/11 13:11:12 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -1197,7 +1197,7 @@ than a switch on the rop per item (span or rectangle.)
 #define fnCOPYINVERTED(src, dst)(~src)
 #define fnORINVERTED(src, dst)	(~src | dst)
 #define fnNAND(src, dst)	(~(src & dst))
-#define fnSET(src, dst)		(~0)
+#define fnSET(src, dst)		(unsigned long)(~0)
 
 /*  Using a "switch" statement is much faster in most cases
  *  since the compiler can do a look-up table or multi-way branch
@@ -1234,6 +1234,7 @@ than a switch on the rop per item (span or rectangle.)
 	  case GXandInverted: \
 	    result = fnANDINVERTED (src, dst); \
 	    break; \
+	  default: \
 	  case GXnoop: \
 	    result = fnNOOP (src, dst); \
 	    break; \

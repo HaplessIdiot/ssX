@@ -28,7 +28,7 @@ in this Software without prior written authorization from The Open Group.
  * call this routine from their ClassInitialize procs (this routine may be
  * used as the class init proc).
  */
-/* $XFree86: xc/lib/Xaw/XawInit.c,v 1.6 1998/08/20 13:59:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawInit.c,v 1.7 1998/10/03 08:42:33 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Vendor.h>
@@ -38,13 +38,14 @@ in this Software without prior written authorization from The Open Group.
 void
 XawInitializeWidgetSet(void)
 {
-  static Boolean firsttime = True;
+    static Boolean firsttime = True;
 
-  if (firsttime)
-    {
+    if (firsttime) {
 	firsttime = False;
+#ifndef OLDXAW
 	XawPixmapsInitialize();
 	XawInitializeDefaultConverters();
+#endif
 	XtInitializeWidgetClass(vendorShellWidgetClass);
     }
 }

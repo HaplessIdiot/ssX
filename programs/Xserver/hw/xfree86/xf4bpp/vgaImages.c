@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaImages.c,v 1.1.2.2 1998/07/18 17:54:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaImages.c,v 1.2 1998/07/25 16:59:43 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,17 +23,10 @@
 */
 /* $XConsortium: vgaImages.c /main/5 1996/02/21 17:58:58 kaleb $ */
 
-#include "mfbmap.h"
-#include "X.h"
-
+#include "xf4bpp.h"
 #include "OScompiler.h"
-#include "vgaVideo.h"
 #include "vgaReg.h"
-
-#include "windowstr.h" /* GJA -- for pWin */
-#include "scrnintstr.h" /* GJA -- for pWin */
-#include "pixmapstr.h" /* GJA -- for pWin */
-#include "ppc.h" /* GJA -- for pWin */
+#include "vgaVideo.h"
 
 #include "xf86str.h" /* for pScrn->vtSema */
 extern ScrnInfoPtr *xf86Screens;
@@ -275,8 +268,10 @@ return ;
 
 #ifndef	PC98_EGC
 static unsigned long int
-read8Z( screen_ptr )
-register volatile unsigned char *screen_ptr ;
+read8Z
+(
+	register volatile unsigned char *screen_ptr
+)
 {
 register unsigned long int i ;
 register unsigned long int j ;

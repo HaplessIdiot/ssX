@@ -33,7 +33,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/anti.c,v 1.2 1998/11/15 05:53:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/anti.c,v 1.3 1998/11/15 06:20:57 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -80,10 +80,6 @@ int SProcXAntiDispatch (ClientPtr);
 
 static Bool DrawAntiPolyText(PTclosurePtr);
 static Bool DrawAntiImageText(ITclosurePtr);
-
-typedef int (*GetAntiGlyphsFuncPtr)(FontPtr, unsigned long, unsigned char*, 
-		FontEncoding, unsigned long*, CharInfoPtr*, int);
-
 
 int XAntiScreenIndex = -1;
 int XAntiGCIndex = -1;
@@ -686,14 +682,12 @@ DrawAntiImageText(ITclosurePtr c) {
     AntiGCPtr gcPriv = XANTI_GET_GC_PRIVATE(c->pGC);
     GetAntiGlyphsFuncPtr *getGlyphs = XANTI_GET_FONT_PRIVATE(c->pGC->font);
 
-
     if(!getGlyphs) return FALSE;
 
     if(!gcPriv->NumPixels) {
 	if(gcPriv->clientData) return FALSE;
 	
 	/* otherwise, we generate some reasonable colors if appropriate */
-
 	return FALSE;
     }
 

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Box.h,v 1.4 1998/08/20 13:58:56 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Box.h,v 1.5 1998/10/03 08:42:02 dawes Exp $ */
 
 #ifndef _XawBox_h
 #define _XawBox_h
@@ -81,6 +81,7 @@ SOFTWARE.
 #define XtNvSpace "vSpace"
 #endif
 
+#ifndef OLDXAW
 #ifndef XawNdisplayList
 #define XawNdisplayList "displayList"
 #endif
@@ -92,6 +93,7 @@ SOFTWARE.
 #ifndef XawRDisplayList
 #define XawRDisplayList "XawDisplayList"
 #endif
+#endif /* OLDXAW */
 
 /* Class record constants */
 extern WidgetClass boxWidgetClass;

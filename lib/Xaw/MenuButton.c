@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  */
 
-/* $XFree86: xc/lib/Xaw/MenuButton.c,v 3.5 1998/08/16 10:24:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MenuButton.c,v 3.6 1998/10/03 08:42:08 dawes Exp $ */
 
 /*
  * MenuButton.c - Source code for MenuButton widget.
@@ -86,24 +86,24 @@ static XtActionsRec actionsList[] =
 MenuButtonClassRec menuButtonClassRec = {
   /* core */
   {
-    (WidgetClass)superclass,		/* superclass */
+    (WidgetClass)superclass,		/* superclass		  */
     "MenuButton",			/* class_name		  */
     sizeof(MenuButtonRec),       	/* size			  */
-    XawMenuButtonClassInitialize,	/* class_initialize */
+    XawMenuButtonClassInitialize,	/* class_initialize	  */
     NULL,				/* class_part_initialize  */
-    False,				/* class_inited */
+    False,				/* class_inited		  */
     NULL,				/* initialize		  */
     NULL,				/* initialize_hook	  */
     XtInheritRealize,			/* realize		  */
     actionsList,			/* actions		  */
     XtNumber(actionsList),		/* num_actions		  */
     resources,				/* resources		  */
-    XtNumber(resources),		/* num_resources */
+    XtNumber(resources),		/* num_resources	  */
     NULLQUARK,				/* xrm_class		  */
-    False,				/* compress_motion */
-    True,				/* compress_exposure */
-    True,				/* compress_enterleave */
-    False,				/* visible_interest */
+    False,				/* compress_motion	  */
+    True,				/* compress_exposure	  */
+    True,				/* compress_enterleave	  */
+    False,				/* visible_interest	  */
     NULL,				/* destroy		  */
     XtInheritResize,			/* resize		  */
     XtInheritExpose,			/* expose		  */
@@ -146,8 +146,8 @@ static void
 XawMenuButtonClassInitialize(void)
 {
     XawInitializeWidgetSet();
-    XtRegisterGrabAction(PopupMenu, True, 
-		       ButtonPressMask | ButtonReleaseMask,
+    XtRegisterGrabAction(PopupMenu, True,
+			 ButtonPressMask | ButtonReleaseMask,
 			 GrabModeAsync, GrabModeAsync);
 }
 
@@ -155,76 +155,71 @@ XawMenuButtonClassInitialize(void)
 static void
 PopupMenu(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  MenuButtonWidget mbw = (MenuButtonWidget)w;
-  Widget menu = NULL, temp;
-  Arg arglist[2];
-  Cardinal num_args;
-  int menu_x, menu_y, menu_width, menu_height, button_height;
-  Position button_x, button_y;
+    MenuButtonWidget mbw = (MenuButtonWidget)w;
+    Widget menu = NULL, temp;
+    Arg arglist[2];
+    Cardinal num_args;
+    int menu_x, menu_y, menu_width, menu_height, button_height;
+    Position button_x, button_y;
 
-  temp = w;
-  while(temp != NULL)
-    {
-    menu = XtNameToWidget(temp, mbw->menu_button.menu_name);
-    if (menu == NULL) 
-      temp = XtParent(temp);
-    else
-      break;
-  }
+    temp = w;
+    while(temp != NULL) {
+	menu = XtNameToWidget(temp, mbw->menu_button.menu_name);
+	if (menu == NULL) 
+	    temp = XtParent(temp);
+	else
+	    break;
+    }
 
-  if (menu == NULL)
-    {
-    char error_buf[BUFSIZ];
+    if (menu == NULL) {
+	char error_buf[BUFSIZ];
 
-    (void)XmuSnprintf(error_buf, sizeof(error_buf), "MenuButton: %s %s.",
-		      "Could not find menu widget named",
-		      mbw->menu_button.menu_name);
-    XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
-    return;
-  }
+	(void)XmuSnprintf(error_buf, sizeof(error_buf),
+			  "MenuButton:  Could not find menu widget named %s.",
+			  mbw->menu_button.menu_name);
+	XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
+	return;
+    }
 
-  if (!XtIsRealized(menu))
-    XtRealizeWidget(menu);
+    if (!XtIsRealized(menu))
+	XtRealizeWidget(menu);
   
-  menu_width = XtWidth(menu) + (XtBorderWidth(menu) << 1);
-  button_height = XtHeight(w) + (XtBorderWidth(w) << 1);
-  menu_height = XtHeight(menu) + (XtBorderWidth(menu) << 1);
+    menu_width = XtWidth(menu) + (XtBorderWidth(menu) << 1);
+    button_height = XtHeight(w) + (XtBorderWidth(w) << 1);
+    menu_height = XtHeight(menu) + (XtBorderWidth(menu) << 1);
 
-  XtTranslateCoords(w, 0, 0, &button_x, &button_y);
-  menu_x = button_x;
-  menu_y = button_y + button_height;
+    XtTranslateCoords(w, 0, 0, &button_x, &button_y);
+    menu_x = button_x;
+    menu_y = button_y + button_height;
 
-  if (menu_y >= 0)
-    {
-    int scr_height = HeightOfScreen(XtScreen(menu));
+    if (menu_y >= 0) {
+	int scr_height = HeightOfScreen(XtScreen(menu));
 
-    if (menu_y + menu_height > scr_height)
-      menu_y = button_y - menu_height;
+	if (menu_y + menu_height > scr_height)
+	    menu_y = button_y - menu_height;
+	if (menu_y < 0) {
+	    menu_y = scr_height - menu_height;
+	    menu_x = button_x + XtWidth(w) + (XtBorderWidth(w) << 1);
+	    if (menu_x + menu_width > WidthOfScreen(XtScreen(menu)))
+		menu_x = button_x - menu_width;
+	}
+    }
     if (menu_y < 0)
-      {
-	menu_y = scr_height - menu_height;
-	  menu_x = button_x + XtWidth(w) + (XtBorderWidth(w) << 1);
-	if (menu_x + menu_width > WidthOfScreen(XtScreen(menu)))
-	  menu_x = button_x - menu_width;
-      }
-  }
-  if (menu_y < 0)
-    menu_y = 0;
+	menu_y = 0;
 
-  if (menu_x >= 0)
-    {
-    int scr_width = WidthOfScreen(XtScreen(menu));
+    if (menu_x >= 0) {
+	int scr_width = WidthOfScreen(XtScreen(menu));
 
-    if (menu_x + menu_width > scr_width)
-      menu_x = scr_width - menu_width;
-  }
-  if (menu_x < 0) 
-    menu_x = 0;
+	if (menu_x + menu_width > scr_width)
+	    menu_x = scr_width - menu_width;
+    }
+    if (menu_x < 0) 
+	menu_x = 0;
 
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNx, menu_x); num_args++;
-  XtSetArg(arglist[num_args], XtNy, menu_y); num_args++;
-  XtSetValues(menu, arglist, num_args);
+    num_args = 0;
+    XtSetArg(arglist[num_args], XtNx, menu_x); num_args++;
+    XtSetArg(arglist[num_args], XtNy, menu_y); num_args++;
+    XtSetValues(menu, arglist, num_args);
 
-  XtPopupSpringLoaded(menu);
+    XtPopupSpringLoaded(menu);
 }

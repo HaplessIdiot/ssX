@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcQuery.c,v 1.1.2.1 1998/06/27 14:48:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcQuery.c,v 1.2 1998/07/25 16:59:37 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,14 +23,16 @@
 */
 /* $XConsortium: ppcQuery.c /main/3 1996/02/21 17:58:18 kaleb $ */
 
-#include "X.h"
-#include "Xproto.h"
+#include "xf4bpp.h"
 
 void
-xf4bppQueryBestSize( class, pwidth, pheight )
-register int class ;
-register short *pwidth ;
-register short *pheight ;
+xf4bppQueryBestSize
+(
+	register int class,
+	register unsigned short *pwidth,
+	register unsigned short *pheight,
+	ScreenPtr pScreen
+)
 {
 if ( class == CursorShape )
   *pwidth = *pheight = 32 ; /* ppc's cursor max out at 32 by 32 */

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.8 1998/11/15 04:30:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeBSB.c,v 1.9 1999/04/25 10:01:25 dawes Exp $ */
 
 /*
  * SmeBSB.c - Source code file for BSB Menu Entry object.
@@ -163,6 +163,7 @@ static XtResource resources[] = {
     XtRString,
     XtDefaultFontSet
   },
+#ifndef OLDXAW
   {
     XtNmenuName,
     XtCMenuName,
@@ -172,6 +173,7 @@ static XtResource resources[] = {
     XtRImmediate,
     (XtPointer)NULL
   },
+#endif
 };
 #undef offset
     
@@ -237,9 +239,9 @@ static void
 XawSmeBSBClassInitialize(void)
 {
     XawInitializeWidgetSet();
-  XtAddConverter(XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0);
-  XtSetTypeConverter(XtRJustify, XtRString, XmuCvtJustifyToString,
-		     NULL, 0, XtCacheNone, NULL);
+    XtAddConverter(XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0);
+    XtSetTypeConverter(XtRJustify, XtRString, XmuCvtJustifyToString,
+		       NULL, 0, XtCacheNone, NULL);
 }
 
 /*
@@ -258,21 +260,21 @@ static void
 XawSmeBSBInitialize(Widget request, Widget cnew,
 		    ArgList args, Cardinal *num_args)
 {
-  SmeBSBObject entry = (SmeBSBObject)cnew;
+    SmeBSBObject entry = (SmeBSBObject)cnew;
 
     if (entry->sme_bsb.label == NULL) 
-    entry->sme_bsb.label = XtName(cnew);
+	entry->sme_bsb.label = XtName(cnew);
     else
-    entry->sme_bsb.label = XtNewString(entry->sme_bsb.label);
+	entry->sme_bsb.label = XtNewString(entry->sme_bsb.label);
 
-  GetDefaultSize(cnew, &entry->rectangle.width, &entry->rectangle.height);
-  CreateGCs(cnew);
+    GetDefaultSize(cnew, &entry->rectangle.width, &entry->rectangle.height);
+    CreateGCs(cnew);
 
     entry->sme_bsb.left_bitmap_width = entry->sme_bsb.left_bitmap_height = 0;
     entry->sme_bsb.right_bitmap_width = entry->sme_bsb.right_bitmap_height = 0;
 
-  GetBitmapInfo(cnew, True);	/* Left Bitmap Info */
-  GetBitmapInfo(cnew, False);	/* Right Bitmap Info */
+    GetBitmapInfo(cnew, True);	/* Left Bitmap Info */
+    GetBitmapInfo(cnew, False);	/* Right Bitmap Info */
 }
 
 /*
@@ -285,7 +287,7 @@ XawSmeBSBInitialize(Widget request, Widget cnew,
 static void
 XawSmeBSBDestroy(Widget w)
 {
-  SmeBSBObject entry = (SmeBSBObject)w;
+    SmeBSBObject entry = (SmeBSBObject)w;
 
     DestroyGCs(w);
     if (entry->sme_bsb.label != XtName(w))
@@ -309,33 +311,29 @@ static void
 XawSmeBSBRedisplay(Widget w, XEvent *event, Region region)
 {
     GC gc;
-  SmeBSBObject entry = (SmeBSBObject)w;
+    SmeBSBObject entry = (SmeBSBObject)w;
     int	font_ascent, font_descent, y_loc;
     int	fontset_ascent, fontset_descent;
     XFontSetExtents *ext = XExtentsOfFontSet(entry->sme_bsb.fontset);
 
     font_ascent = font_descent = fontset_ascent = fontset_descent = 0;
-  entry->sme_bsb.set_values_area_cleared = False;
+    entry->sme_bsb.set_values_area_cleared = False;
 
-  if (entry->sme.international == True)
-    {
-      fontset_ascent = XawAbs(ext->max_ink_extent.y);
-        fontset_descent = ext->max_ink_extent.height - fontset_ascent;
+    if (entry->sme.international == True) {
+	fontset_ascent = XawAbs(ext->max_ink_extent.y);
+	fontset_descent = ext->max_ink_extent.height - fontset_ascent;
     }
-  else
-    {
-        font_ascent = entry->sme_bsb.font->max_bounds.ascent;
-        font_descent = entry->sme_bsb.font->max_bounds.descent;
+    else {
+	font_ascent = entry->sme_bsb.font->max_bounds.ascent;
+	font_descent = entry->sme_bsb.font->max_bounds.descent;
     }
-  y_loc = XtY(entry);
+    y_loc = XtY(entry);
 
-  if (XtIsSensitive(w) && XtIsSensitive(XtParent(w)))
-    {
-      if (w == XawSimpleMenuGetActiveEntry(XtParent(w)))
-	{
+    if (XtIsSensitive(w) && XtIsSensitive(XtParent(w))) {
+	if (w == XawSimpleMenuGetActiveEntry(XtParent(w))) {
 	    XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w), 
 			   entry->sme_bsb.norm_gc, XtX(w), y_loc,
-			 XtWidth(entry), XtHeight(entry));
+			   XtWidth(entry), XtHeight(entry));
 	    gc = entry->sme_bsb.rev_gc;
 	}
 	else
@@ -344,67 +342,63 @@ XawSmeBSBRedisplay(Widget w, XEvent *event, Region region)
     else
 	gc = entry->sme_bsb.norm_gray_gc;
     
-  if (entry->sme_bsb.label != NULL)
-    {
+    if (entry->sme_bsb.label != NULL) {
 	int x_loc = entry->sme_bsb.left_margin;
 	int len = strlen(entry->sme_bsb.label);
-      char *label = entry->sme_bsb.label;
-	    int width, t_width;
+	char *label = entry->sme_bsb.label;
+	 int width, t_width;
 
-      switch(entry->sme_bsb.justify)
-	{
-	case XtJustifyCenter:
-	  if (entry->sme.international == True)
-	    {
-	      t_width = XmbTextEscapement(entry->sme_bsb.fontset,label, len);
-	      width = XtWidth(entry) - (entry->sme_bsb.left_margin +
+	switch(entry->sme_bsb.justify) {
+	    case XtJustifyCenter:
+		if (entry->sme.international == True) {
+		    t_width = XmbTextEscapement(entry->sme_bsb.fontset,label,
+						len);
+		    width = XtWidth(entry) - (entry->sme_bsb.left_margin +
 					      entry->sme_bsb.right_margin);
-            }
-	  else
-	    {
-	        t_width = XTextWidth(entry->sme_bsb.font, label, len);
-	      width = XtWidth(entry) - (entry->sme_bsb.left_margin +
+		}
+		else {
+		    t_width = XTextWidth(entry->sme_bsb.font, label, len);
+		    width = XtWidth(entry) - (entry->sme_bsb.left_margin +
 					      entry->sme_bsb.right_margin);
-            }
-	  x_loc += (width - t_width) >> 1;
-	    break;
-	case XtJustifyRight:
-	  if (entry->sme.international == True)
-	    {
-	      t_width = XmbTextEscapement(entry->sme_bsb.fontset,label, len);
-	      x_loc = XtWidth(entry) - (entry->sme_bsb.right_margin + t_width);
-            }
-	  else
-	    {
-	        t_width = XTextWidth(entry->sme_bsb.font, label, len);
-	      x_loc = XtWidth(entry) - (entry->sme_bsb.right_margin + t_width);
-            }
-	    break;
-	case XtJustifyLeft:
-	  /*FALLTHROUGH*/
-	default:
-	    break;
+		}
+		x_loc += (width - t_width) >> 1;
+		break;
+	    case XtJustifyRight:
+		if (entry->sme.international == True) {
+		    t_width = XmbTextEscapement(entry->sme_bsb.fontset,label,
+						len);
+		    x_loc = XtWidth(entry) - (entry->sme_bsb.right_margin +
+					      t_width);
+		}
+		else {
+		    t_width = XTextWidth(entry->sme_bsb.font, label, len);
+		    x_loc = XtWidth(entry) - (entry->sme_bsb.right_margin +
+					      t_width);
+		}
+		break;
+	    case XtJustifyLeft:
+		/*FALLTHROUGH*/
+	    default:
+		break;
 	}
 
 	/* this will center the text in the gadget top-to-bottom */
-      if (entry->sme.international == True)
-	{
-	  y_loc += ((XtHeight(entry) -
-		     (fontset_ascent + fontset_descent)) >> 1)
-	    + fontset_ascent;
+	if (entry->sme.international == True) {
+	    y_loc += ((XtHeight(entry) -
+		      (fontset_ascent + fontset_descent)) >> 1) +
+		       fontset_ascent;
 
-            XmbDrawString(XtDisplayOfObject(w), XtWindowOfObject(w),
-		    entry->sme_bsb.fontset, gc,
+	    XmbDrawString(XtDisplayOfObject(w), XtWindowOfObject(w),
+		          entry->sme_bsb.fontset, gc,
 			  XtX(w) + x_loc, y_loc, label, len);
-        }
-      else
-	{
-	  y_loc += ((XtHeight(entry) -
-		     (font_ascent + font_descent)) >> 1) + font_ascent;
+	}
+	else {
+	    y_loc += ((XtHeight(entry) -
+		      (font_ascent + font_descent)) >> 1) + font_ascent;
 	
-            XDrawString(XtDisplayOfObject(w), XtWindowOfObject(w), gc,
-		    XtX(w) + x_loc, y_loc, label, len);
-        }
+	    XDrawString(XtDisplayOfObject(w), XtWindowOfObject(w), gc,
+			XtX(w) + x_loc, y_loc, label, len);
+	}
     }
 
     DrawBitmaps(w, gc);
@@ -429,60 +423,55 @@ static Boolean
 XawSmeBSBSetValues(Widget current, Widget request, Widget cnew,
 		   ArgList args, Cardinal *num_args)
 {
-  SmeBSBObject entry = (SmeBSBObject)cnew;
-  SmeBSBObject old_entry = (SmeBSBObject)current;
-  Boolean ret_val = False;
+    SmeBSBObject entry = (SmeBSBObject)cnew;
+    SmeBSBObject old_entry = (SmeBSBObject)current;
+    Boolean ret_val = False;
 
-  if (old_entry->sme_bsb.label != entry->sme_bsb.label)
-    {
-      if (old_entry->sme_bsb.label != XtName(cnew))
-	XtFree((char *)old_entry->sme_bsb.label);
+    if (old_entry->sme_bsb.label != entry->sme_bsb.label) {
+	if (old_entry->sme_bsb.label != XtName(cnew))
+	    XtFree((char *)old_entry->sme_bsb.label);
 
-      if (entry->sme_bsb.label != XtName(cnew))
-	entry->sme_bsb.label = XtNewString(entry->sme_bsb.label);
+	if (entry->sme_bsb.label != XtName(cnew))
+	    entry->sme_bsb.label = XtNewString(entry->sme_bsb.label);
 
 	ret_val = True;
     }
 
-  if (entry->rectangle.sensitive != old_entry->rectangle.sensitive)
-    ret_val = True;
+    if (entry->rectangle.sensitive != old_entry->rectangle.sensitive)
+	ret_val = True;
 
-  if (entry->sme_bsb.left_bitmap != old_entry->sme_bsb.left_bitmap)
-    {
-      GetBitmapInfo(cnew, True);
-      ret_val = True;
+    if (entry->sme_bsb.left_bitmap != old_entry->sme_bsb.left_bitmap) {
+	GetBitmapInfo(cnew, True);
+	ret_val = True;
     }
 
-  if (entry->sme_bsb.right_bitmap != old_entry->sme_bsb.right_bitmap)
-    {
-      GetBitmapInfo(cnew, False);
-      ret_val = True;
+    if (entry->sme_bsb.right_bitmap != old_entry->sme_bsb.right_bitmap) {
+	GetBitmapInfo(cnew, False);
+	ret_val = True;
     }
 
-  if ((old_entry->sme_bsb.font != entry->sme_bsb.font
-       && old_entry->sme.international == False)
-      || old_entry->sme_bsb.foreground != entry->sme_bsb.foreground)
-    {
+    if ((old_entry->sme_bsb.font != entry->sme_bsb.font
+	 && old_entry->sme.international == False)
+	|| old_entry->sme_bsb.foreground != entry->sme_bsb.foreground)  {
 	DestroyGCs(current);
-      CreateGCs(cnew);
-      ret_val = True;
+	CreateGCs(cnew);
+	ret_val = True;
     }
 
-  if (old_entry->sme_bsb.fontset != entry->sme_bsb.fontset
-      && old_entry->sme.international == True)
-    /* DONT changes the GCs, because the fontset is not in them */
-    ret_val = True;
+    if (old_entry->sme_bsb.fontset != entry->sme_bsb.fontset &&
+	old_entry->sme.international == True)
+	/* DONT changes the GCs, because the fontset is not in them */
+	ret_val = True;
 
-  if (ret_val)
-    {
-      Dimension width, height;
+    if (ret_val) {
+	Dimension width, height;
 
-      GetDefaultSize(cnew, &width, &height);
-      entry->sme_bsb.set_values_area_cleared = True;
-      XtMakeResizeRequest(cnew, width, height, NULL, NULL);
+	GetDefaultSize(cnew, &width, &height);
+	entry->sme_bsb.set_values_area_cleared = True;
+	XtMakeResizeRequest(cnew, width, height, NULL, NULL);
     }
 
-  return (ret_val);
+    return (ret_val);
 }
 
 /*
@@ -505,22 +494,20 @@ static XtGeometryResult
 XawSmeBSBQueryGeometry(Widget w, XtWidgetGeometry *intended,
 		       XtWidgetGeometry *return_val)
 {
-  SmeBSBObject entry = (SmeBSBObject)w;
+    SmeBSBObject entry = (SmeBSBObject)w;
     Dimension width, height;
     XtGeometryResult ret_val = XtGeometryYes;
     XtGeometryMask mode = intended->request_mode;
 
-  GetDefaultSize(w, &width, &height);
+    GetDefaultSize(w, &width, &height);
 
-  if (((mode & CWWidth) && intended->width != width) || !(mode & CWWidth))
-    {
+    if (((mode & CWWidth) && intended->width != width) || !(mode & CWWidth)) {
 	return_val->request_mode |= CWWidth;
 	return_val->width = width;
 	ret_val = XtGeometryAlmost;
     }
 
-  if (((mode & CWHeight) && intended->height != height) || !(mode & CWHeight))
-    {
+    if (((mode & CWHeight) && intended->height != height) || !(mode & CWHeight)) {
 	return_val->request_mode |= CWHeight;
 	return_val->height = height;
 	ret_val = XtGeometryAlmost;
@@ -528,12 +515,12 @@ XawSmeBSBQueryGeometry(Widget w, XtWidgetGeometry *intended,
 
     if (ret_val == XtGeometryAlmost) {
 	mode = return_val->request_mode;
-    if (((mode & CWWidth) && width == XtWidth(entry)) &&
-	((mode & CWHeight) && height == XtHeight(entry)))
-      return (XtGeometryNo);
+	if (((mode & CWWidth) && width == XtWidth(entry)) &&
+	    ((mode & CWHeight) && height == XtHeight(entry)))
+	    return (XtGeometryNo);
     }
 
-  return (ret_val);
+    return (ret_val);
 }
     
 /*
@@ -549,14 +536,14 @@ XawSmeBSBQueryGeometry(Widget w, XtWidgetGeometry *intended,
 static void 
 FlipColors(Widget w)
 {
-  SmeBSBObject entry = (SmeBSBObject)w;
+    SmeBSBObject entry = (SmeBSBObject)w;
 
-  if (entry->sme_bsb.set_values_area_cleared)
+    if (entry->sme_bsb.set_values_area_cleared)
 	return;
 
     XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
 		   entry->sme_bsb.invert_gc, 
-		 XtX(w), XtY(entry), XtWidth(entry), XtHeight(entry));
+		   XtX(w), XtY(entry), XtWidth(entry), XtHeight(entry));
 }
 
 /*
@@ -574,38 +561,36 @@ FlipColors(Widget w)
 static void
 GetDefaultSize(Widget w, Dimension *width, Dimension *height)
 {
-  SmeBSBObject entry = (SmeBSBObject)w;
+    SmeBSBObject entry = (SmeBSBObject)w;
 
-  if (entry->sme.international == True)
-    {
-        XFontSetExtents *ext = XExtentsOfFontSet(entry->sme_bsb.fontset);
+    if (entry->sme.international == True) {
+	XFontSetExtents *ext = XExtentsOfFontSet(entry->sme_bsb.fontset);
 
-        if (entry->sme_bsb.label == NULL) 
+	if (entry->sme_bsb.label == NULL) 
 	    *width = 0;
-        else
-	*width = XmbTextEscapement(entry->sme_bsb.fontset,
-				   entry->sme_bsb.label,
-			    strlen(entry->sme_bsb.label));
-        *width += entry->sme_bsb.left_margin + entry->sme_bsb.right_margin;
-        *height = ext->max_ink_extent.height;
-      *height = ((int)*height * (ONE_HUNDRED +
-				 entry->sme_bsb.vert_space)) / ONE_HUNDRED;
+	else
+	    *width = XmbTextEscapement(entry->sme_bsb.fontset,
+				       entry->sme_bsb.label,
+				       strlen(entry->sme_bsb.label));
+	*width += entry->sme_bsb.left_margin + entry->sme_bsb.right_margin;
+	*height = ext->max_ink_extent.height;
+	*height = ((int)*height * (ONE_HUNDRED +
+				   entry->sme_bsb.vert_space)) / ONE_HUNDRED;
     }
-  else
-    {
-        if (entry->sme_bsb.label == NULL) 
+    else {
+	if (entry->sme_bsb.label == NULL) 
 	    *width = 0;
-        else
+	else
 	    *width = XTextWidth(entry->sme_bsb.font, entry->sme_bsb.label,
 			    strlen(entry->sme_bsb.label));
 
-        *width += entry->sme_bsb.left_margin + entry->sme_bsb.right_margin;
+	*width += entry->sme_bsb.left_margin + entry->sme_bsb.right_margin;
     
-        *height = (entry->sme_bsb.font->max_bounds.ascent +
-	       entry->sme_bsb.font->max_bounds.descent);
+	*height = entry->sme_bsb.font->max_bounds.ascent +
+		  entry->sme_bsb.font->max_bounds.descent;
 
-      *height = ((int)*height * (ONE_HUNDRED +
-				 entry->sme_bsb.vert_space)) / ONE_HUNDRED;
+	*height = ((int)*height * (ONE_HUNDRED +
+				   entry->sme_bsb.vert_space)) / ONE_HUNDRED;
     }
 }
 
@@ -624,45 +609,43 @@ static void
 DrawBitmaps(Widget w, GC gc)
 {
     int x_loc, y_loc;
-  SmeBSBObject entry = (SmeBSBObject)w;
+    SmeBSBObject entry = (SmeBSBObject)w;
     
-  if (entry->sme_bsb.left_bitmap == None &&
-      entry->sme_bsb.right_bitmap == None)
+    if (entry->sme_bsb.left_bitmap == None &&
+	entry->sme_bsb.right_bitmap == None)
     return;
 
-  /*
-   * Draw Left Bitmap
- */
-  if (entry->sme_bsb.left_bitmap != None)
-    {
-      x_loc = ((entry->sme_bsb.left_margin -
-		entry->sme_bsb.left_bitmap_width) >> 1) + XtX(w);
+    /*
+     * Draw Left Bitmap
+     */
+    if (entry->sme_bsb.left_bitmap != None) {
+	x_loc = ((entry->sme_bsb.left_margin -
+		  entry->sme_bsb.left_bitmap_width) >> 1) + XtX(w);
 
-      y_loc = XtY(entry) + ((XtHeight(entry)
-			     - entry->sme_bsb.left_bitmap_height) >> 1);
+	y_loc = XtY(entry) + ((XtHeight(entry) -
+			       entry->sme_bsb.left_bitmap_height) >> 1);
 
-    XCopyPlane(XtDisplayOfObject(w), entry->sme_bsb.left_bitmap,
-	       XtWindowOfObject(w), gc, 0, 0, 
-	       entry->sme_bsb.left_bitmap_width,
-	       entry->sme_bsb.left_bitmap_height, x_loc, y_loc, 1);
-  }
+	XCopyPlane(XtDisplayOfObject(w), entry->sme_bsb.left_bitmap,
+		   XtWindowOfObject(w), gc, 0, 0, 
+		   entry->sme_bsb.left_bitmap_width,
+		   entry->sme_bsb.left_bitmap_height, x_loc, y_loc, 1);
+    }
 
-  /*
-   * Draw Right Bitmap
- */
-  if (entry->sme_bsb.right_bitmap != None)
-    {
-      x_loc = XtWidth(entry) - ((entry->sme_bsb.right_margin +
-				 entry->sme_bsb.right_bitmap_width) >> 1)
-	+ XtX(w);
-      y_loc = XtY(entry) + ((XtHeight(entry)
-			     - entry->sme_bsb.right_bitmap_height) >> 1);
+    /*
+     * Draw Right Bitmap
+     */
+    if (entry->sme_bsb.right_bitmap != None) {
+	x_loc = XtWidth(entry) - ((entry->sme_bsb.right_margin +
+				  entry->sme_bsb.right_bitmap_width) >> 1) +
+				  XtX(w);
+	y_loc = XtY(entry) + ((XtHeight(entry) -
+			      entry->sme_bsb.right_bitmap_height) >> 1);
 
-    XCopyPlane(XtDisplayOfObject(w), entry->sme_bsb.right_bitmap,
-	       XtWindowOfObject(w), gc, 0, 0, 
-	       entry->sme_bsb.right_bitmap_width,
-	       entry->sme_bsb.right_bitmap_height, x_loc, y_loc, 1);
-  }
+	XCopyPlane(XtDisplayOfObject(w), entry->sme_bsb.right_bitmap,
+		   XtWindowOfObject(w), gc, 0, 0, 
+		   entry->sme_bsb.right_bitmap_width,
+	 	   entry->sme_bsb.right_bitmap_height, x_loc, y_loc, 1);
+    }
 }
 
 /*
@@ -680,32 +663,29 @@ DrawBitmaps(Widget w, GC gc)
 static void
 GetBitmapInfo(Widget w, Bool is_left)
 {
-  SmeBSBObject entry = (SmeBSBObject)w;
+    SmeBSBObject entry = (SmeBSBObject)w;
     unsigned int depth, bw;
     Window root;
     int x, y;
     unsigned int width, height;
     
-  if (is_left)
-    {
-      if (entry->sme_bsb.left_bitmap != None
-	  && XGetGeometry(XtDisplayOfObject(w),
-			      entry->sme_bsb.left_bitmap, &root, 
-			  &x, &y, &width, &height, &bw, &depth))
-	{
-	  entry->sme_bsb.left_bitmap_width = width;
-	  entry->sme_bsb.left_bitmap_height = height;
+    if (is_left) {
+	if (entry->sme_bsb.left_bitmap != None &&
+	    XGetGeometry(XtDisplayOfObject(w),
+			 entry->sme_bsb.left_bitmap, &root, 
+			 &x, &y, &width, &height, &bw, &depth))	{
+	    entry->sme_bsb.left_bitmap_width = width;
+	    entry->sme_bsb.left_bitmap_height = height;
 	}
     }
-  else if (entry->sme_bsb.right_bitmap != None
-	   && XGetGeometry(XtDisplayOfObject(w),
+    else if (entry->sme_bsb.right_bitmap != None &&
+	     XGetGeometry(XtDisplayOfObject(w),
 			  entry->sme_bsb.right_bitmap, &root,
-			   &x, &y, &width, &height, &bw, &depth))
-    {
-      entry->sme_bsb.right_bitmap_width = width;
-      entry->sme_bsb.right_bitmap_height = height;
+			  &x, &y, &width, &height, &bw, &depth)) {
+	entry->sme_bsb.right_bitmap_width = width;
+	entry->sme_bsb.right_bitmap_height = height;
     }
-}      
+}
 
 /*
  * Function:
@@ -720,41 +700,41 @@ GetBitmapInfo(Widget w, Bool is_left)
 static void
 CreateGCs(Widget w)
 {
-  SmeBSBObject entry = (SmeBSBObject)w;
+    SmeBSBObject entry = (SmeBSBObject)w;
     XGCValues values;
     XtGCMask mask, mask_i18n;
     
     values.foreground = XtParent(w)->core.background_pixel;
     values.background = entry->sme_bsb.foreground;
     values.font = entry->sme_bsb.font->fid;
-  values.graphics_exposures = False;
+    values.graphics_exposures = False;
     mask      = GCForeground | GCBackground | GCGraphicsExposures | GCFont;
     mask_i18n = GCForeground | GCBackground | GCGraphicsExposures;
-  if (entry->sme.international == True)
-    entry->sme_bsb.rev_gc = XtAllocateGC(w, 0, mask_i18n, &values, GCFont, 0);
+    if (entry->sme.international == True)
+	entry->sme_bsb.rev_gc = XtAllocateGC(w, 0, mask_i18n, &values, GCFont, 0);
     else
-        entry->sme_bsb.rev_gc = XtGetGC(w, mask, &values);
+	entry->sme_bsb.rev_gc = XtGetGC(w, mask, &values);
     
     values.foreground = entry->sme_bsb.foreground;
     values.background = XtParent(w)->core.background_pixel;
-  if (entry->sme.international == True)
-    entry->sme_bsb.norm_gc = XtAllocateGC(w, 0, mask_i18n, &values, GCFont, 0);
+    if (entry->sme.international == True)
+	entry->sme_bsb.norm_gc = XtAllocateGC(w, 0, mask_i18n, &values, GCFont, 0);
     else
-        entry->sme_bsb.norm_gc = XtGetGC(w, mask, &values);
+	entry->sme_bsb.norm_gc = XtGetGC(w, mask, &values);
 
     values.fill_style = FillTiled;
     values.tile   = XmuCreateStippledPixmap(XtScreenOfObject(w), 
 					    entry->sme_bsb.foreground,
 					    XtParent(w)->core.background_pixel,
 					    XtParent(w)->core.depth);
-  values.graphics_exposures = False;
+    values.graphics_exposures = False;
     mask |= GCTile | GCFillStyle;
     mask_i18n |= GCTile | GCFillStyle;
-  if (entry->sme.international == True)
-    entry->sme_bsb.norm_gray_gc = XtAllocateGC(w, 0, mask_i18n, &values,
-					       GCFont, 0);
+    if (entry->sme.international == True)
+	entry->sme_bsb.norm_gray_gc = XtAllocateGC(w, 0, mask_i18n, &values,
+						   GCFont, 0);
     else
-        entry->sme_bsb.norm_gray_gc = XtGetGC(w, mask, &values);
+	entry->sme_bsb.norm_gray_gc = XtGetGC(w, mask, &values);
 
     values.foreground ^= values.background;
     values.background = 0;
@@ -776,7 +756,7 @@ CreateGCs(Widget w)
 static void
 DestroyGCs(Widget w)
 {
-  SmeBSBObject entry = (SmeBSBObject)w;
+    SmeBSBObject entry = (SmeBSBObject)w;
 
     XtReleaseGC(w, entry->sme_bsb.norm_gc);
     XtReleaseGC(w, entry->sme_bsb.norm_gray_gc);

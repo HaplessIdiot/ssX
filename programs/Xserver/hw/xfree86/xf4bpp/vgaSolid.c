@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaSolid.c,v 1.1.2.2 1998/07/18 17:54:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaSolid.c,v 1.2 1998/07/25 16:59:44 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -24,16 +24,10 @@
 
 /* $XConsortium: vgaSolid.c /main/5 1996/02/21 17:59:06 kaleb $ */
 
-#include "mfbmap.h"
-#include "X.h"
+#include "xf4bpp.h"
 #include "OScompiler.h"
-#include "vgaVideo.h"
 #include "vgaReg.h"
-
-#include "windowstr.h" /* GJA -- for pWin */
-#include "scrnintstr.h" /* GJA -- for pWin */
-#include "pixmapstr.h" /* GJA -- for pWin */
-#include "ppc.h" /* GJA -- for pWin */
+#include "vgaVideo.h"
 
 #include "xf86str.h" /* for pScrn->vtSema */
 extern ScrnInfoPtr *xf86Screens;
@@ -49,18 +43,20 @@ extern void fastFill();
 extern void fastFillRMW();
 #else
 
-static void fastFill( destination, bytes_per_line, bytewidth, height )
-register volatile unsigned char *destination ;
-register const unsigned int bytes_per_line ;
-register const unsigned int bytewidth ;	/* MUST BE > 0 !! */
-register unsigned int height ;		/* MUST BE > 0 !! */
+static void fastFill
+(
+	register volatile unsigned char *destination,
+	register const unsigned int bytes_per_line,
+	register const unsigned int bytewidth,	/* MUST BE > 0 !! */
+	register unsigned int height		/* MUST BE > 0 !! */
+)
 {
 int stop_count = bytewidth ;
 register int row_jump = bytes_per_line - bytewidth ;
 #if !defined(OLDHC) && defined(BSDrt) && !defined(i386)
-register const int notZero = ~0x0 ;
+register const unsigned int notZero = ((unsigned char)(~0x0));
 #else
-#define notZero ( ~0 )
+#define notZero ((unsigned char)(~0))
 #endif
 
 #define SINGLE_STORE \
@@ -105,18 +101,18 @@ switch ( bytewidth & 0xF ) { /* Jump into loop at mod 16 remainder */
 }
 
 /* For Read-Modify-Write Case */
-static void fastFillRMW( destination, bytes_per_line, bytewidth, height )
-register volatile unsigned char *destination ;
-register const unsigned int bytes_per_line ;
-register const unsigned int bytewidth ;	/* MUST BE > 0 !! */
-register unsigned int height ;		/* MUST BE > 0 !! */
+static void fastFillRMW
+(
+	register volatile unsigned char *destination,
+	register const unsigned int bytes_per_line,
+	register const unsigned int bytewidth,	/* MUST BE > 0 !! */
+	register unsigned int height		/* MUST BE > 0 !! */
+)
 {
 int stop_count = bytewidth ;
 register int row_jump = bytes_per_line - bytewidth ;
 #if !defined(OLDHC) && defined(BSDrt) && !defined(i386)
-register const int notZero = ~0x0 ;
-#else
-#define notZero ( ~0 )
+register const unsigned int notZero = ((unsigned char)(~0x0));
 #endif
 register int tmp ;
 

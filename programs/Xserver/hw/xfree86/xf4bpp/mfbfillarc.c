@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbfillarc.c,v 1.1.2.2 1998/07/18 17:54:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbfillarc.c,v 1.2 1998/07/25 16:59:29 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -30,29 +30,24 @@ in this Software without prior written authorization from the X Consortium.
 
 /* $XConsortium: mfbfillarc.c /main/4 1996/02/21 17:56:37 kaleb $ */
 
+#include "xf4bpp.h"
+#include "OScompiler.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "Xprotostr.h"
-#include "miscstruct.h"
-#include "gcstruct.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
 #include "mfb.h"
 #include "maskbits.h"
-#include "mifillarc.h"
-#include "OScompiler.h"	/* GJA */
-#include "wm3.h"	/* GJA */
-#include "ppc.h"
 #include "mi.h"
+#include "mifillarc.h"
+#include "wm3.h"
 
 #include "xf86str.h" /* for pScrn->vtSema */
 extern ScrnInfoPtr *xf86Screens;
 
 static void
-v16FillEllipseSolid(pDraw, arc, rop)
-    DrawablePtr pDraw;
-    xArc *arc;
-    register int rop;
+v16FillEllipseSolid
+(
+    DrawablePtr pDraw,
+    xArc *arc
+)
 {
     int x, y, e;
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
@@ -178,11 +173,12 @@ v16FillEllipseSolid(pDraw, arc, rop)
     }
 
 static void
-v16FillArcSliceSolidCopy(pDraw, pGC, arc, rop)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
-    register int rop;
+v16FillArcSliceSolidCopy
+(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    xArc *arc
+)
 {
     register int *addrl;
     register int n;
@@ -240,11 +236,13 @@ v16FillArcSliceSolidCopy(pDraw, pGC, arc, rop)
 }
 
 static void
-xf4bppPolyFillArcSolid(pDraw, pGC, narcs, parcs)
-    register DrawablePtr pDraw;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+xf4bppPolyFillArcSolid
+(
+    register DrawablePtr pDraw,
+    GCPtr	pGC,
+    int		narcs,
+    xArc	*parcs
+)
 {
     mfbPrivGC *priv;
     register xArc *arc;
@@ -276,9 +274,9 @@ xf4bppPolyFillArcSolid(pDraw, pGC, narcs, parcs)
 	    {
 		if ((arc->angle2 >= FULLCIRCLE) ||
 		    (arc->angle2 <= -FULLCIRCLE))
-		    DO_WM3(pGC,v16FillEllipseSolid(pDraw, arc, rop))
+		    DO_WM3(pGC,v16FillEllipseSolid(pDraw, arc))
 		else
-		    DO_WM3(pGC,v16FillArcSliceSolidCopy(pDraw, pGC, arc, rop)) 
+		    DO_WM3(pGC,v16FillArcSliceSolidCopy(pDraw, pGC, arc)) 
 		continue;
 	    }
 	}

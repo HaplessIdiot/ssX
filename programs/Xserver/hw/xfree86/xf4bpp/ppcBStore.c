@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcBStore.c,v 1.1.2.1 1998/06/27 14:48:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcBStore.c,v 1.2 1998/07/25 16:59:32 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -62,19 +62,8 @@ software without specific, written prior permission.
 */
 /* $XConsortium: ppcBStore.c /main/5 1996/02/21 17:57:06 kaleb $ */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "servermd.h"
-#include "regionstr.h"
-#include "scrnintstr.h"
-#include "pixmapstr.h"
-#include "windowstr.h"
-
-#include "mibstore.h"
-
-#include "ppc.h"
+#include "xf4bpp.h"
 #include "vgaVideo.h"
-
 #include "ibmTrace.h"
 
 /*-----------------------------------------------------------------------

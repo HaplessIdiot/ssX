@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.21 1999/03/14 03:21:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.22 1999/03/21 07:34:55 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -401,6 +401,7 @@ int *Chipset;
 			     Chip_data = (Chip_data <<  8) | chip_rev;
 			     *Chipset = CHIP_S3_UNKNOWN;
 			   }
+			   break;
 			case 0xE1: {
                            int chip_id, chip_rev;
                            chip_id  = rdinx(CRTC_IDX, 0x2d) << 8;
@@ -486,6 +487,19 @@ int Chipset;
 			      Mem = 4 * 1024;
 			      break;
 			   case 3:
+			      Mem = 2 * 1024;
+			      break;
+			   }
+			}
+			else if (Chipset == CHIP_S3_Trio3D)
+			{
+			   switch((config & 0xE0) >> 5)
+			   {
+			   case 0:
+			   case 2:
+			      Mem = 4 * 1024;
+			      break;
+			   case 4:
 			      Mem = 2 * 1024;
 			      break;
 			   }

@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.47 1999/05/30 02:28:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.48 1999/05/30 07:18:26 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -301,7 +301,8 @@ xf86ActivateDevice(LocalDevicePtr local)
 	int	open_on_init;
 	
 	open_on_init = !(local->flags & XI86_NO_OPEN_ON_INIT) ||
-	    (local->flags & XI86_ALWAYS_CORE);
+	    (local->flags &
+	     (XI86_ALWAYS_CORE | XI86_CORE_POINTER | XI86_CORE_KEYBOARD));
 	
 	dev = AddInputDevice(local->device_control,
 			     open_on_init);

@@ -1,8 +1,8 @@
 /*
- * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
+ * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.19 1999/04/25 10:02:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.20 1999/06/06 05:14:12 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -46,6 +46,7 @@
  */
 #define OPTION1_MASK	0xFFFFFEFF
 #define OPTION2_MASK	0xFFFFFFFF
+#define OPTION3_MASK	0xFFFFFFFF
 
 /*
  * Read/write to the DAC via MMIO 
@@ -109,7 +110,7 @@ static Bool MGAG_i2cInit(ScrnInfoPtr pScrn);
 
 /* The following values are in kHz */
 #define MGA_MIN_VCO_FREQ     50000
-#define MGA_MAX_VCO_FREQ    250000
+#define MGA_MAX_VCO_FREQ    310000
 
 static double
 MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out,
@@ -134,6 +135,14 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out,
 		in_div_max   = 31;
 		post_div_max = 7;
 		break;
+	case PCI_CHIP_MGAG400:
+		ref_freq     = 27050.5;
+		feed_div_min = 7;
+		feed_div_max = 127;
+		in_div_min   = 1;
+		in_div_max   = 31;
+		post_div_max = 7;
+		break;
 	case PCI_CHIP_MGAG100:
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
@@ -146,7 +155,7 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out,
 		post_div_max = 7;
 		break;
 	}
-	
+
 	/* Make sure that f_min <= f_out */
 	if ( f_out < ( MGA_MIN_VCO_FREQ / 8))
 		f_out = MGA_MIN_VCO_FREQ / 8;
@@ -300,6 +309,17 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		    pReg->Option = 0x404991a9;
 		else
 		    pReg->Option = 0x4049d121;
+		break;
+	case PCI_CHIP_MGAG400:
+		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x06;
+		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x24;
+		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
+		pReg->Option2 = 0x01003000;
+		pReg->Option3 = 0x0190a419;
+		if(pMga->HasSDRAM)
+		    pReg->Option = 0x50040120;
+		else
+		    pReg->Option = 0x50044120;
 		break;
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
@@ -464,60 +484,14 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	
 	MGAGSetPCLK( pScrn, mode->Clock );
 
-	/*
-	 * init palette for palettized depths
-	 */
-#if 0
-   /* Not necessary with the new colormap layer */
-	for(i = 0; i < 256; i++) {
-		switch(pScrn->bitsPerPixel) 
-		{
-		case 16:
-			pVga->DAC[i * 3 + 0] = i << 3;
-			pVga->DAC[i * 3 + 1] = i << (weight555 ? 3 : 2);
-			pVga->DAC[i * 3 + 2] = i << 3;
-			break;
-		case 24:
-		case 32:
-			pVga->DAC[i * 3 + 0] = i;
-			pVga->DAC[i * 3 + 1] = i;
-			pVga->DAC[i * 3 + 2] = i;
-			break;
-		}
-	}
-#endif
-
 	/* This disables the VGA memory aperture */
 	pVga->MiscOutReg &= ~0x02;
 	return(TRUE);
 }
 
 /*
- * MGAGStoreColors
+ * MGAGLoadPalette
  */
-
-#if 0
-  /* not needed any more */
-static void
-MGAGStoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
-{
-    MGAPtr pMga = MGAPTR(pScrn);
-    vgaHWPtr hwp = VGAHWPTR(pScrn);
-    vgaRegPtr pReg = &hwp->ModeReg;
-    unsigned char *pal;
-    int i;
-
-    if(ndef > 256) ndef = 256;
-
-    for(i = 0; i < ndef; i++) {
-        outMGAdreg(MGA1064_WADR_PAL, pdef[i].pixel);
-        pal = pReg->DAC + (pdef[i].pixel * 3);
-        outMGAdreg(MGA1064_COL_PAL, pal[0]);
-        outMGAdreg(MGA1064_COL_PAL, pal[1]);
-        outMGAdreg(MGA1064_COL_PAL, pal[2]);
-    }
-}
-#endif
 
 void MGAGLoadPalette(
     ScrnInfoPtr pScrn, 
@@ -605,6 +579,9 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	if (pMga->Chipset != PCI_CHIP_MGA1064)
 		pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION2, OPTION2_MASK,
 			       mgaReg->Option2);
+	if (pMga->Chipset == PCI_CHIP_MGAG400)
+		pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION3, OPTION3_MASK,
+			       mgaReg->Option3);
 
 	/* restore CRTCEXT regs */
 	for (i = 0; i < 6; i++)
@@ -677,7 +654,10 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 		mgaReg->DacRegs[i] = inMGAdac(i);
 
 	mgaReg->Option = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
+
 	mgaReg->Option2 = pciReadLong(pMga->PciTag, PCI_MGA_OPTION2);
+	if (pMga->Chipset == PCI_CHIP_MGAG400)
+	    mgaReg->Option3 = pciReadLong(pMga->PciTag, PCI_MGA_OPTION3);
 
 	for (i = 0; i < 6; i++)
 	{
@@ -908,6 +888,9 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
 	    else
 	        MGAdac->maxPixelClock = 220000;
 	    break;
+    	case PCI_CHIP_MGAG400:
+	    MGAdac->maxPixelClock = 300000;
+	    break;
 	default:
 	    MGAdac->maxPixelClock = 250000;
 	}
@@ -916,8 +899,12 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
     
     /* Disable interleaving and set the rounding value */
     pMga->Interleave = FALSE;
-    pMga->Rounding = 64 >> pMga->BppShift;
-    
+	
+    if ((pScrn->bitsPerPixel == 16) || (pScrn->bitsPerPixel == 32))
+	pMga->Rounding = 32;
+    else
+	pMga->Rounding = 64;
+
     /* Clear Fast bitblt flag */
     pMga->HasFBitBlt = FALSE;
 }

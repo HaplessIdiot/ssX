@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.29 1999/03/14 03:21:42 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.30 1999/03/21 07:34:50 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -278,6 +278,8 @@ extern struct pci_config_reg *pci_devp[];
 #define PCI_CHIP_9660		0x9660
 #define PCI_CHIP_9680		0x9680
 #define PCI_CHIP_9682		0x9682
+/* Bill Mair */
+#define PCI_CHIP_939A		0x939A
 #define PCI_CHIP_9388		0x9388
 #define PCI_CHIP_9397		0x9397
 #define PCI_CHIP_9520		0x9520
@@ -356,7 +358,6 @@ extern struct pci_config_reg *pci_devp[];
 #define PCI_CHIP_TRIO3D		0x8904
 #define PCI_CHIP_SAVAGE3D	0x8A20
 #define PCI_CHIP_SAVAGE3D_M	0x8A21
-
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcSetSp.c,v 1.1.2.1 1998/06/27 14:48:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcSetSp.c,v 1.2 1998/07/25 16:59:41 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -71,21 +71,11 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcSetSp.c /main/5 1996/02/21 17:58:32 kaleb $ */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "Xmd.h"
-
-#include "servermd.h"
-
-#include "misc.h"
-#include "regionstr.h"
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-
+#include "xf4bpp.h"
 #include "OScompiler.h"
-#include "ppc.h"
+#include "mfbmap.h"
+#include "mfb.h"
+#include "servermd.h"
 
 /* SetScanline -- copies the bits from psrc to the drawable starting at
  * (xStart, y) and continuing to (xEnd, y).  xOrigin tells us where psrc 
@@ -94,12 +84,14 @@ SOFTWARE.
  * further on.) 
  */
 static void
-ppcSetScanline( pixCount, psrc, pdst, pm, alu )
-    register int		pixCount;	/* width of scanline in bits */
-    register char	*psrc;
-    register unsigned char	*pdst;		/* where to put the bits */
-    register int		pm;		/* plane mask */
-    const int			alu;		/* raster op */
+ppcSetScanline
+(
+    register int	   pixCount,	/* width of scanline in bits */
+    register char          *psrc,
+    register unsigned char *pdst,	/* where to put the bits */
+    register int	   pm,		/* plane mask */
+    const int		   alu		/* raster op */
+)
 {
 register int npm = ~pm ;	/* inverted plane mask */
 register char tmpx ;
@@ -201,8 +193,8 @@ xf4bppSetSpans( pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted )
     int				nspans ;
     int				fSorted ;
 {
-    unsigned char	*pdstBase ;	/* start of dst bitmap */
-    int 		widthDst ;	/* width of bitmap in words */
+    unsigned char	*pdstBase = NULL;	/* start of dst bitmap */
+    int 		widthDst = 0;		/* width of bitmap in words */
     register BoxPtr 	pbox, pboxLast, pboxTest ;
     register DDXPointPtr pptLast ;
     RegionPtr 		prgnDst ;

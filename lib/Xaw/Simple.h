@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Simple.h,v 1.4 1998/08/20 13:59:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.h,v 1.5 1998/10/03 08:42:18 dawes Exp $ */
 
 #ifndef _Simple_h
 #define _Simple_h
@@ -86,6 +86,7 @@ SOFTWARE.
 #define XtNinternational "international"
 #endif
 
+#ifndef OLDXAW
 #ifndef XawNdisplayList
 #define XawNdisplayList "displayList"
 #endif
@@ -97,6 +98,7 @@ SOFTWARE.
 #ifndef XawRDisplayList
 #define XawRDisplayList "XawDisplayList"
 #endif
+#endif	/* OLDXAW */
 
 typedef struct _SimpleClassRec	*SimpleWidgetClass;
 typedef struct _SimpleRec	*SimpleWidget;

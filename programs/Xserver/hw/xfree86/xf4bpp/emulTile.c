@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulTile.c,v 1.1.2.1 1998/06/27 14:48:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulTile.c,v 1.2 1998/07/25 16:59:27 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -30,35 +30,24 @@
  * Uses private imageFill a bunch of times
  */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "pixmapstr.h"
-#include "pixmap.h"
-#include "scrnintstr.h"
-#include "gcstruct.h"
-#include "gc.h"
-
+#include "xf4bpp.h"
 #include "OScompiler.h"
-
-/* #include "ppcGCstr.h" */
-#include "windowstr.h"	/* GJA */
-/* #include "ppcScrn.h" */
-#include "ppc.h"	/* GJA */
-
 #include "ibmTrace.h"
 
 static void
-DrawFirstTile( pWin, pTile, x, y, w, h, alu, planes, xOffset, yOffset )
-WindowPtr pWin; /* GJA */
-register PixmapPtr pTile ;
-register int x ;
-register int y ;
-int w ;
-int h ;
-int alu ;
-unsigned long int planes ;
-int xOffset ;
-int yOffset ;
+DrawFirstTile
+(
+	WindowPtr pWin, /* GJA */
+	register PixmapPtr pTile,
+	register int x,
+	register int y,
+	int w,
+	int h,
+	int alu,
+	unsigned long int planes,
+	int xOffset,
+	int yOffset
+)
 {
 register int htarget ;
 register int vtarget ;
@@ -231,9 +220,9 @@ TRACE( ( "xf4bppTileRect(pTile=x%x,alu=x%x,planes=x%02x,x0=%d,y0=%d,w=%d,h=%d,xS
 		DrawFirstTile( pWin, pTile, x0, y0, w, h,
 			       alu, planes, xOffset, yOffset ) ;
 		/* Here We Double The Size Of The BLIT Each Iteration */
-		xf4bppReplicateArea(
-			    pWin, x0, y0, planes, w, h,
-			    MIN( w, pTile->drawable.width ), MIN( h, pTile->drawable.height ), pScreen ) ;
+		xf4bppReplicateArea( pWin, x0, y0, planes, w, h,
+			    MIN( w, pTile->drawable.width ),
+			    MIN( h, pTile->drawable.height ) ) ;
 		break ;
 	case GXnor:		/* 0x8 NOT src AND NOT dst */
 	case GXandReverse:	/* 0x2 src AND NOT dst */

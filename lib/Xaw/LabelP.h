@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/LabelP.h,v 1.3 1998/08/20 13:59:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/LabelP.h,v 1.4 1998/10/03 08:42:07 dawes Exp $ */
 
 #ifndef _XawLabelP_h
 #define _XawLabelP_h
@@ -96,6 +96,9 @@ typedef struct {
     Dimension	label_len;
     int		lbm_y;			/* where in label */
     unsigned int lbm_width, lbm_height;	 /* size of pixmap */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } LabelPart;
 
 /*

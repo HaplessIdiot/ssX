@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Text.h,v 1.10 1999/04/25 10:01:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.h,v 1.11 1999/05/03 12:15:44 dawes Exp $ */
 
 #ifndef _XawText_h
 #define _XawText_h
@@ -280,7 +280,12 @@ int XawTextReplace
 XawTextPosition XawTextTopPosition
 (
  Widget			w
-);
+ );
+
+XawTextPosition XawTextLastPosition
+(
+ Widget			w
+ );
 
 void XawTextSetInsertionPoint
 (
@@ -313,6 +318,11 @@ void XawTextInvalidate
 );
 
 Widget XawTextGetSource
+(
+ Widget			w
+ );
+
+Widget XawTextGetSink
 (
  Widget			w
  );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixmap.c,v 1.2 1998/07/25 16:59:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixmap.c,v 1.3 1999/01/14 13:05:34 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -71,13 +71,10 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcPixmap.c /main/5 1996/02/21 17:58:00 kaleb $ */
 
-#include "mfbmap.h"
-#include "pixmapstr.h"
+#include "xf4bpp.h"
 #include "servermd.h"
-
 #include "OScompiler.h"
 #include "ibmTrace.h"
-#include "ppc.h"
 
 PixmapPtr
 xf4bppCreatePixmap( pScreen, width, height, depth )

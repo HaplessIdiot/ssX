@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulOpStip.c,v 1.1.2.1 1998/06/27 14:48:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulOpStip.c,v 1.2 1998/07/25 16:59:27 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -30,15 +30,10 @@
  *
  */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-
-#include "windowstr.h"	/* GJA */
-#include "ppc.h"
+#include "xf4bpp.h"
 #include "OScompiler.h"
-#include "ibmTrace.h"
+#include "mfbmap.h"
+#include "mfb.h"
 
 void 
 xf4bppOpaqueStipple( pWin, pStipple, fg, bg, alu, planes, x, y, w, h, xSrc, ySrc )
@@ -79,9 +74,7 @@ int xSrc, ySrc ;
 				       xSrc, ySrc ) ;
 
 		/* Here We Double The Size Of The BLIT Each Iteration */
-		xf4bppReplicateArea( pWin, x, y, planes, w, h,
-					    htarget, vtarget,
-					    pStipple->drawable.pScreen ) ;
+		xf4bppReplicateArea(pWin, x, y, planes, w, h, htarget, vtarget);
 	    }
 	    break ;
 	default:

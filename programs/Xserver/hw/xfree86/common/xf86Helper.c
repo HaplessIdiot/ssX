@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.44 1999/05/15 12:10:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.45 1999/05/23 04:26:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -633,7 +633,8 @@ xf86SetWeight(ScrnInfoPtr scrp, rgb weight, rgb mask)
 	case 1:
 	case 4:
 	case 8:
-	    scrp->weight.red = scrp->weight.green = scrp->weight.blue = 6;
+	    scrp->weight.red = scrp->weight.green =
+		scrp->weight.blue = scrp->rgbBits;
 	    break;
 	case 15:
 	    scrp->weight.red = scrp->weight.green = scrp->weight.blue = 5;
@@ -1272,11 +1273,11 @@ xf86ShowClocks(ScrnInfoPtr scrp, MessageType from)
 
     xf86DrvMsg(scrp->scrnIndex, from, "Pixel clocks available:");
     for (j=0; j < scrp->numClocks; j++) {
-	if ((j % 8) == 0) {
+	if ((j % 4) == 0) {
 	    xf86ErrorF("\n");
 	    xf86DrvMsg(scrp->scrnIndex, from, "pixel clocks:");
 	}
-	xf86ErrorF(" %6.2f", (double)scrp->clock[j] / 1000.0);
+	xf86ErrorF(" %7.3f", (double)scrp->clock[j] / 1000.0);
     }
     xf86ErrorF("\n");
 }

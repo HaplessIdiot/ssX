@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcCpArea.c,v 1.1.2.1 1998/06/27 14:48:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcCpArea.c,v 1.2 1998/07/25 16:59:33 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -47,37 +47,29 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "servermd.h"
-#include "misc.h"
-#include "regionstr.h"
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "pixmapstr.h"
 #define PSZ 8
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "mergerop.h"
-#include "scrnintstr.h"
-#include "ppc.h"
-
 #include "mi.h"
-
-#include "OScompiler.h"
-
-extern int mfbGCPrivateIndex;
+#include "pixmapstr.h"
+#include "scrnintstr.h"
 
 /*
  * Graft in the DoBitblt from cfb. It does everything correctly.
  */
 static void
-vga16DoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
-    DrawablePtr	    pSrc, pDst;
-    int		    alu;
-    RegionPtr	    prgnDst;
-    DDXPointPtr	    pptSrc;
-    unsigned long   planemask;
+vga16DoBitblt
+(
+    DrawablePtr	    pSrc,
+    DrawablePtr	    pDst,
+    int		    alu,
+    RegionPtr	    prgnDst,
+    DDXPointPtr	    pptSrc,
+    unsigned long   planemask
+)
 {
     unsigned long *psrcBase, *pdstBase;	
 				/* start of src and dst bitmaps */
@@ -219,8 +211,7 @@ vga16DoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	h = pbox->y2 - pbox->y1;
 	
 	if( pSrc->type == DRAWABLE_WINDOW )
-		xf4bppBitBlt( (WindowPtr)pDst,
-			alu, planemask, planemask,
+		xf4bppBitBlt( (WindowPtr)pDst, alu, planemask,
 			pptSrc->x,		/* x0 */
 			pptSrc->y,		/* y0 */
 			pbox->x1,		/* x1 */
@@ -265,7 +256,7 @@ int srcx, srcy;
 int width, height;
 int dstx, dsty;
 {
-    RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
+    RegionPtr prgnSrcClip = NULL;   /* may be a new region, or just a copy */
     Bool freeSrcClip = FALSE;
 
     RegionPtr prgnExposed;

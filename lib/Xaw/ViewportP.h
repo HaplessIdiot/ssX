@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xaw/ViewportP.h,v 1.3 1998/08/20 13:59:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/ViewportP.h,v 1.4 1998/10/03 08:42:31 dawes Exp $ */
 
 #ifndef _ViewportP_h
 #define _ViewportP_h
@@ -54,7 +54,7 @@ SOFTWARE.
 #include <X11/Xaw/FormP.h>
 
 typedef struct {
-  XtPointer extension;
+    XtPointer extension;
 } ViewportClassPart;
 
 typedef struct _ViewportClassRec {
@@ -69,21 +69,24 @@ extern ViewportClassRec viewportClassRec;
 
 typedef struct _ViewportPart {
     /* resources */
-  Boolean forcebars;		/* Whether we should always display
+    Boolean forcebars;		/* Whether we should always display
 				   the selected scrollbars */
-  Boolean allowhoriz;		/* Whether we allow horizontal scrollbars */
-  Boolean allowvert;		/* Whether we allow vertical scrollbars */
-  Boolean usebottom;		/* True if horiz bars appear at bottom */
-  Boolean useright;		/* True if vert bars appear at right */
-    XtCallbackList report_callbacks;	/* when size/position changes */
+    Boolean allowhoriz;		/* Whether we allow horizontal scrollbars */
+    Boolean allowvert;		/* Whether we allow vertical scrollbars */
+    Boolean usebottom;		/* True if horiz bars appear at bottom */
+    Boolean useright;		/* True if vert bars appear at right */
+    XtCallbackList report_callbacks;/* when size/position changes */
 
-  /* private */
+    /* private */
     Widget clip, child;		/* The clipping and (scrolled) child widgets */
-  Widget horiz_bar, vert_bar;	/* What scrollbars we currently have */
+    Widget horiz_bar, vert_bar;	/* What scrollbars we currently have */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } ViewportPart;
 
 typedef struct _ViewportRec {
-    CorePart	core;
+    CorePart		core;
     CompositePart	composite;
     ConstraintPart	constraint;
     FormPart		form;
@@ -91,7 +94,7 @@ typedef struct _ViewportRec {
 } ViewportRec;
 
 typedef struct {
-  Bool reparented;		/* True if child has been re-parented */
+    Bool reparented;		/* True if child has been re-parented */
 } ViewportConstraintsPart;
 
 typedef struct _ViewportConstraintsRec {

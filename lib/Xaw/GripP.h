@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/GripP.h,v 1.3 1998/08/20 13:59:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/GripP.h,v 1.4 1998/10/03 08:42:06 dawes Exp $ */
 
 #ifndef _XawGripP_h
 #define _XawGripP_h
@@ -57,7 +57,7 @@ SOFTWARE.
 
 /* New fields for the Grip widget class */
 typedef struct {
-  XtPointer extension;
+    XtPointer extension;
 } GripClassPart;
 
 /* Full Class record */
@@ -71,14 +71,17 @@ extern GripClassRec gripClassRec;
 
 /* New fields for the Grip widget */
 typedef struct {
-  XtCallbackList grip_action;
+    XtCallbackList grip_action;
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } GripPart;
 
 /* Full instance record */
 typedef struct _GripRec {
-   CorePart    core;
-   SimplePart  simple;
-   GripPart    grip;
+    CorePart	core;
+    SimplePart	simple;
+    GripPart	grip;
 } GripRec;
 
 #endif /* _XawGripP_h */

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.26 1999/05/15 12:10:42 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.27 1999/05/30 14:41:09 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_105">Patch #105 - 1999/6/5 - XFree86 3.9Pp</A>
 <LI><A HREF="#xterm_104">Patch #104 - 1999/5/30 - XFree86 3.9Pn</A>
 <LI><A HREF="#xterm_103">Patch #103 - 1999/5/14 - XFree86 3.9Pm</A>
 <LI><A HREF="#xterm_102">Patch #102 - 1999/5/12 - XFree86 3.9Pm</A>
@@ -147,6 +148,24 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_105">Patch #105 - 1999/6/5 - XFree86 3.9Pp</A></H1>
+<ul>
+	<li>implement new resource <em>trimSelection</em>, which allows xterm
+	  to trim trailing blanks from selected lines.  This does not affect
+	  the highlighting. (reported by several people using <em>mutt</em>,
+	  including 
+	  Hans Morten Kind &lt;edphk@uib.no&gt;,
+	  Jeremy &lt;jeremy@exit109.com&gt;
+	  and (Michael Fuller &lt;msf@mds.rmit.edu.au&gt;).
+
+	<li>add patch by Matthieu Herrb to include term.h in resize for OpenBSD.
+
+	<li>correct logic for UTF-8 in functions that hide and show the cursor;
+	  it was displaying a space whenever the low byte of the character at
+	  the cursor position was zero (reported by Thomas Wolff
+	  &lt;Thomas.Wolff@icn.siemens.de&gt;).
+</ul>
 
 <H1><A NAME="xterm_104">Patch #104 - 1999/5/30 - XFree86 3.9Pn</A></H1>
 This is a resync patch against XFree86 3.9Pn, reflecting changes which were

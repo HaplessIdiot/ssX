@@ -2,7 +2,7 @@
    Copyright (C) 1998 by The XFree86 Project Inc.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/XAnti.h,v 1.1 1998/11/15 04:29:56 dawes Exp $ */
 
 
 #ifndef _XANTI_H
@@ -22,7 +22,6 @@ int
 XAntiSetInterpolationPixels(
     Display *dpy,
     GC gc,
-    int num,
     unsigned long *pixels
 );
 
@@ -31,7 +30,6 @@ XAntiInterpolateColors(
     Display *dpy,
     GC gc,
     Colormap cmap,
-    int num,
     XColor *colors
 );
 

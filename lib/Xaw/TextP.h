@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.15 1999/05/16 10:12:50 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.16 1999/05/23 06:33:28 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -65,13 +65,13 @@ SOFTWARE.
 extern XtActionsRec _XawTextActionsTable[];
 extern Cardinal _XawTextActionsTableCount;
 
-#define XawLF	0x0a
-#define XawCR	0x0d
-#define XawTAB	0x09
-#define XawBS	0x08
-#define XawSP	0x20
-#define XawDEL	0x7f
-#define XawESC  0x1b
+#define XawLF	  0x0a
+#define XawCR	  0x0d
+#define XawTAB	  0x09
+#define XawBS	  0x08
+#define XawSP	  0x20
+#define XawDEL	  0x7f
+#define XawESC	  0x1b
 #define XawBSLASH '\\'
 
 /* constants that subclasses may want to know */
@@ -80,21 +80,25 @@ extern Cardinal _XawTextActionsTableCount;
 
 /* displayable text management data structures */
 typedef struct {
-  XawTextPosition position;
-  Position y;
-  unsigned int textWidth;
+    XawTextPosition position;
+    Position y;
+#ifndef OLDXAW
+    unsigned int textWidth;
+#else
+    Dimension textWidth;
+#endif
 } XawTextLineTableEntry, *XawTextLineTableEntryPtr;
 
 typedef struct {
-    XawTextPosition   left, right;
+    XawTextPosition left, right;
     XawTextSelectType type;
-    Atom*	     selections;
-    int		     atom_count;
-    int		     array_size;
+    Atom *selections;
+    int atom_count;
+    int array_size;
 } XawTextSelection;
 
 typedef struct _XawTextSelectionSalt {
-    struct _XawTextSelectionSalt    *next;
+    struct _XawTextSelectionSalt *next;
     XawTextSelection	s;
     /* 
      * The element "contents" stores the CT string which is gotten in the
@@ -104,6 +108,7 @@ typedef struct _XawTextSelectionSalt {
     int			length;
 } XawTextSelectionSalt;
 
+#ifndef OLDXAW
 typedef struct _XawTextKillRing {
     struct _XawTextKillRing *next;
     char *contents;
@@ -113,17 +118,20 @@ typedef struct _XawTextKillRing {
 } XawTextKillRing;
 
 extern XawTextKillRing *xaw_text_kill_ring;
+#endif
 
 /* Line Tables are n+1 long - last position displayed is in last lt entry */
 typedef struct {
-  XawTextPosition top;		/* Top of the displayed text */
-  int lines;			/* How many lines in this table */
-  int base_line;		/* line number of first entry */
-  XawTextLineTableEntry *info;  /* A dynamic array, one entry per line  */
+    XawTextPosition top;	 /* Top of the displayed text */
+    int lines;			 /* How many lines in this table */
+#ifndef OLDXAW
+    int base_line;		 /* line number of first entry */
+#endif
+    XawTextLineTableEntry *info; /* A dynamic array, one entry per line  */
 } XawTextLineTable, *XawTextLineTablePtr;
 
 typedef struct _XawTextMargin {
-  Position left, right, top, bottom;
+    Position left, right, top, bottom;
 } XawTextMargin;
 
 typedef struct _XmuScanline XmuTextUpdate;
@@ -141,19 +149,21 @@ typedef struct _XmuScanline XmuTextUpdate;
  * Search & Replace data structure
  */
 struct SearchAndReplace {
-  Boolean selection_changed;	/* flag so that the selection cannot be
+    Boolean selection_changed;	/* flag so that the selection cannot be
 				   changed out from underneath query-replace.*/
-  Widget search_popup;		/* The poppup widget that allows searches.*/
-  Widget label1;		/* The label widgets for the search window. */
-  Widget label2;
-  Widget left_toggle;		/* The left search toggle radioGroup. */
-  Widget right_toggle;		/* The right search toggle radioGroup. */
-  Widget rep_label;		/* The Replace label string. */
-  Widget rep_text;		/* The Replace text field. */
-  Widget search_text;		/* The Search text field. */
-  Widget rep_one;		/* The Replace one button. */
-  Widget rep_all;		/* The Replace all button. */
-  Widget case_sensitive;	/* The "Case Sensitive" toggle */
+    Widget search_popup;	/* The poppup widget that allows searches.*/
+    Widget label1;		/* The label widgets for the search window. */
+    Widget label2;
+    Widget left_toggle; 	/* The left search toggle radioGroup. */
+    Widget right_toggle;	/* The right search toggle radioGroup. */
+    Widget rep_label;		/* The Replace label string. */
+    Widget rep_text;		/* The Replace text field. */
+    Widget search_text; 	/* The Search text field. */
+    Widget rep_one;		/* The Replace one button. */
+    Widget rep_all;		/* The Replace all button. */
+#ifndef OLDXAW
+    Widget case_sensitive;	/* The "Case Sensitive" toggle */
+#endif
 };
 
 /* New fields for the Text widget class record */
@@ -173,11 +183,7 @@ extern TextClassRec textClassRec;
 /* New fields for the Text widget record */
 typedef struct _TextPart {
     /* resources */
-#ifndef NO_BIN_COMPAT_HACK	/* 4 bytes from SimpleWidget */
-    Widget sink;
-#else
     Widget source, sink;
-#endif
     XawTextPosition insertPos;
     XawTextSelection s;
     XawTextSelectType *sarray;		     /* Array to cycle for selections */
@@ -190,26 +196,33 @@ typedef struct _TextPart {
     XawTextWrapMode wrap;		     /* The type of wrapping */
     XawTextResizeMode resize;
     XawTextMargin r_margin;		     /* The real margins */
+#ifndef OLDXAW
     XtCallbackList position_callbacks;
+#else
+    XtPointer pad1;
+#endif
 
     /* private state */
     XawTextMargin margin;		     /* The current margins */
     XawTextLineTable lt;
     XawTextScanDirection extendDir;
     XawTextSelection origSel;		     /* the selection being modified */
-#ifdef NO_BIN_COMPAT_HACK	/* 4 bytes from XawTextLineTable */
     Time lasttime;			     /* timestamp of last processed action */
-#endif
     Time time;				     /* time of last key or button action */
     Position ev_x, ev_y;		     /* x, y coords for key or button action */
     Widget vbar, hbar;			     /* The scroll bars (none = NULL) */
     struct SearchAndReplace *search;	     /* Search and replace structure */
     Widget file_insert;			     /* The file insert popup widget */
     XmuTextUpdate *update;		     /* Position intervals to update */
+#ifndef OLDXAW
     int line_number;
     short column_number;
     unsigned char kill_ring;
     Boolean selection_state;
+#else
+    XtPointer pad2;
+    int pad3;
+#endif
     int from_left;			     /* Cursor position */
     XawTextPosition lastPos;		     /* Last position of source */
     GC gc;
@@ -219,17 +232,17 @@ typedef struct _TextPart {
     Boolean clear_to_eol;		     /* Clear to eol when painting text? */
     XawTextPosition old_insert;		     /* Last insertPos for batched updates */
     short mult;				     /* Multiplier */
+#ifndef OLDXAW
     XawTextKillRing *kill_ring_ptr;
+#else
+    XtPointer pad4;
+#endif
 
     /* private state, shared w/Source and Sink */
     Boolean redisplay_needed;		     /* in SetValues */
     XawTextSelectionSalt *salt2;	     /* salted away selections */
 
-#ifndef NO_BIN_COMPAT_HACK
-    Widget source;
-    Time lasttime;
-#endif
-
+#ifndef OLDXAW
     char numeric;
     char source_changed;
     Boolean overwrite;                      /* Overwrite mode */
@@ -239,14 +252,14 @@ typedef struct _TextPart {
      */
     short left_column, right_column;
     XawTextJustifyMode justify;
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } TextPart;
 
-#define XtRWrapMode "WrapMode"
-#ifndef notdef
-#define XtRScrollMode		"ScrollMode"
-#define XtRResizeMode "ResizeMode"
-#endif
-#define XtRJustifyMode		"JustifyMode"
+#define XtRWrapMode	"WrapMode"
+#define XtRScrollMode	"ScrollMode"
+#define XtRResizeMode	"ResizeMode"
+#define XtRJustifyMode	"JustifyMode"
 
 /* full instance record */
 typedef struct _TextRec {

@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.7 1998/07/25 16:55:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.8 1998/09/20 08:39:22 hohndel Exp $ */
 
 
 
@@ -98,6 +98,9 @@
 #define	MGAREG_DR13		0x1cf4
 #define	MGAREG_DR14		0x1cf8
 #define	MGAREG_DR15		0x1cfc
+
+#define MGAREG_SRCORG		0x2cb4
+#define MGAREG_DSTORG		0x2cb8
 
 /* add or or this to one of the previous "power registers" to start
    the drawing engine */
@@ -210,6 +213,9 @@
 /* MMIO VGA registers */
 #define MGAREG_CRTC_INDEX	0x1fd4
 #define MGAREG_CRTC_DATA	0x1fd5
+#define MGAREG_CRTCEXT_INDEX	0x1fde
+#define MGAREG_CRTCEXT_DATA	0x1fdf
+
 
 /* MGA bits for registers PCI_OPTION_REG */
 #define MGA1064_OPT_SYS_CLK_PCI   		( 0x00 << 0 )
@@ -228,6 +234,7 @@
 #define PCI_MGA_INDEX		0x44
 #define PCI_MGA_DATA		0x48
 #define PCI_MGA_OPTION2		0x50
+#define PCI_MGA_OPTION3		0x54
 
 #define RAMDAC_OFFSET		0x3c00
 

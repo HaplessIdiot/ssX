@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.11 1998/11/15 04:29:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.12 1999/05/09 10:51:37 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -35,6 +35,8 @@
 #include <X11/Xaw/Simple.h>
 #include <X11/Xaw/XawInit.h>
 #include "Private.h"
+
+#ifndef OLDXAW
 
 /*
  * Definitions
@@ -131,11 +133,13 @@ static XtConvertArgRec DLArgs[] = {
   {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.depth),
    sizeof(int)},
 };
+#endif /* OLDXAW */
 
 static String XtCToolkitError = "ToolkitError";
 static String XtNwrongParameters = "wrongParameters";
 static String XtNconversionError = "conversionError";
 
+#ifndef OLDXAW
 /*
  * Implementation
  */
@@ -202,6 +206,7 @@ XawInitializeDefaultConverters(void)
   XtSetTypeConverter(XtRUnsignedChar, XtRString, _XawCvtUnsignedCharToString,
 		     NULL, 0, XtCacheNone, NULL);
 }
+#endif /* OLDXAW */
 
 void
 XawTypeToStringWarning(Display *dpy, String type)
@@ -220,6 +225,7 @@ XawTypeToStringWarning(Display *dpy, String type)
 		  params, &num_params);
 }
 
+#ifndef OLDXAW
 static void
 TypeToStringNoArgsWarning(Display *dpy, String type)
 {
@@ -687,3 +693,5 @@ _XawCvtPixmapToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 
   string_done(buffer);
 }
+
+#endif /* OLDXAW */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPolyRec.c,v 1.1.2.1 1998/06/27 14:48:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPolyRec.c,v 1.2 1998/07/25 16:59:36 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -70,11 +70,7 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcPolyRec.c /main/4 1996/02/21 17:58:11 kaleb $ */
 
-#include "X.h"
-#include "Xprotostr.h"
-#include "miscstruct.h"
-#include "gcstruct.h"
-#include "pixmap.h"
+#include "xf4bpp.h"
 
 void
 xf4bppPolyRectangle(pDraw, pGC, nrects, pRects)

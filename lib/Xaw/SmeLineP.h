@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/SmeLineP.h,v 1.3 1998/08/20 13:59:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeLineP.h,v 1.4 1998/10/03 08:42:22 dawes Exp $ */
 
 #ifndef _XawSmeLineP_h
 #define _XawSmeLineP_h
@@ -34,7 +34,7 @@ in this Software without prior written authorization from The Open Group.
 
 /* New fields for the SmeLine widget class */
 typedef struct _SmeLineClassPart {
-  XtPointer extension;
+    XtPointer extension;
 } SmeLineClassPart;
 
 /* Full class record */
@@ -49,20 +49,23 @@ extern SmeLineClassRec smeLineClassRec;
 /* New fields for the SmeLine widget */
 typedef struct {
     /* resources */
-  Pixel foreground;		/* Foreground color */
-  Pixmap stipple;		/* Line Stipple */
-  Dimension line_width;		/* Width of the line */
+    Pixel foreground;		/* Foreground color */
+    Pixmap stipple;		/* Line Stipple */
+    Dimension line_width;	/* Width of the line */
 
-  /* private */
-  GC gc;			/* Graphics context for drawing line */
+    /* private */
+    GC gc;			/* Graphics context for drawing line */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } SmeLinePart;
 
 /* Full instance record */
 typedef struct _SmeLineRec {
-  ObjectPart     object;
-  RectObjPart    rectangle;
-  SmePart	 sme;
-  SmeLinePart	 sme_line;
+    ObjectPart	object;
+    RectObjPart	rectangle;
+    SmePart	sme;
+    SmeLinePart	sme_line;
 } SmeLineRec;
 
 #endif /* _XawSmeLineP_h */

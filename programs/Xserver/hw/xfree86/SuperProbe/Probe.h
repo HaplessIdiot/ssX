@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.62 1999/03/14 03:21:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.63 1999/03/21 07:34:51 dawes Exp $ */
 
 /*
  * Includes
@@ -351,7 +351,6 @@ extern Chip_Descriptor GLINT_Descriptor;
 #define DAC_MGA1064SG	54	/* Matrox Mystique integrated DAC */
 #define DAC_MGAG100	55	/* Matrox G100 integrated DAC */
 #define DAC_MGAG200	56	/* Matrox G200 integrated DAC */
-
 #define DAC_SIS		57	/* SiS integrated DAC */
 
 #define DAC_MAX		DAC_SIS	/* UPDATE THIS! */
@@ -466,6 +465,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ATI264GT3	SVGA_TYPE(V_ATI,26)	/* ATI 264GT3		*/
 #define CHIP_ATI264LT	SVGA_TYPE(V_ATI,27)	/* ATI 264LT		*/
 #define CHIP_ATI264LTPRO SVGA_TYPE(V_ATI,28)	/* ATI 264LT Pro	*/
+#define CHIP_ATI264XL	SVGA_TYPE(V_ATI,29)	/* ATI 264XL or XC	*/
 #define CHIP_AL_UNKNOWN	SVGA_TYPE(V_AL,0)	/* Avance Logic unknown	*/
 #define CHIP_AL2101	SVGA_TYPE(V_AL,1)	/* Avance Logic 2101	*/
 #define CHIP_AL2228	SVGA_TYPE(V_AL,2)	/* Avance Logic 2228	*/
@@ -599,10 +599,10 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_S3_ViRGE_GX2 SVGA_TYPE(V_S3,33)	/* S3 ViRGE/GX2		*/
 #define CHIP_S3_ViRGE_MX SVGA_TYPE(V_S3,34)	/* S3 ViRGE/MX		*/
 #define CHIP_S3_ViRGE_MXP SVGA_TYPE(V_S3,35)	/* S3 ViRGE/MX+		*/
-#define CHIP_S3_Trio3D_B SVGA_TYPE(V_S3,36)	/* S3 TRIO3D Business	*/
-#define CHIP_S3_Trio3D	SVGA_TYPE(V_S3,37)	/* S3 TRIO3D		*/
-#define CHIP_S3_Savage3D SVGA_TYPE(V_S3,38)	/* S3 SAVAGE3D		*/
-#define CHIP_S3_Savage3D_M SVGA_TYPE(V_S3,39)	/* S3 SAVAGE3D Macro	*/
+#define CHIP_S3_Trio3D_B SVGA_TYPE(V_S3,36)	/* S3 Trio3D Business	*/
+#define CHIP_S3_Trio3D	SVGA_TYPE(V_S3,37)	/* S3 Trio3D		*/
+#define CHIP_S3_Savage3D SVGA_TYPE(V_S3,38)	/* S3 Savage3D		*/
+#define CHIP_S3_Savage3D_M SVGA_TYPE(V_S3,39)	/* S3 Savage3D Macro	*/
 #define CHIP_TVGA_UNK	SVGA_TYPE(V_TRIDENT,0)	/* Trident unknown	*/
 #define CHIP_TVGA8200	SVGA_TYPE(V_TRIDENT,1)	/* Trident LX8200	*/
 #define CHIP_TVGA8800BR	SVGA_TYPE(V_TRIDENT,2)	/* Trident 8800BR	*/
@@ -633,13 +633,14 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_TVGA9520	SVGA_TYPE(V_TRIDENT,27) /* Trident Cyber9520    */
 #define CHIP_TVGA9750	SVGA_TYPE(V_TRIDENT,28) /* Trident 3DImage975   */
 #define CHIP_TVGA9850	SVGA_TYPE(V_TRIDENT,29) /* Trident 3DImage985   */
+#define CHIP_TVGA939A	SVGA_TYPE(V_TRIDENT,30) /* Trident Cyber932A	*/
 #define CHIP_SIS_UNK	SVGA_TYPE(V_SIS,0)	/* SiS unknown		*/
 #define CHIP_SIS86C201	SVGA_TYPE(V_SIS,1)	/* SiS SG86C201		*/
 #define CHIP_SIS86C202	SVGA_TYPE(V_SIS,2)	/* SiS SG86C202		*/
 #define CHIP_SIS86C205	SVGA_TYPE(V_SIS,3)	/* SiS SG86C205		*/
 #define CHIP_SIS86C215	SVGA_TYPE(V_SIS,4)	/* SiS SG86C215		*/
 #define CHIP_SIS86C225	SVGA_TYPE(V_SIS,5)	/* SiS SG86C225		*/
-#define CHIP_SIS5597	SVGA_TYPE(V_SIS,6)	/* SiS 5597/98		*/
+#define CHIP_SIS5597	SVGA_TYPE(V_SIS,6)	/* SiS 5597/5598	*/
 #define CHIP_SIS530	SVGA_TYPE(V_SIS,7)	/* SiS 530/620		*/
 #define CHIP_SIS6326	SVGA_TYPE(V_SIS,8)	/* SiS 6326		*/
 #define CHIP_MATROX_UNK	SVGA_TYPE(V_MATROX,0)	/* Matrox unknown	*/

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSinkP.h,v 1.5 1998/08/20 13:58:55 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSinkP.h,v 1.6 1998/10/03 08:41:59 dawes Exp $ */
 
 #ifndef _XawAsciiSinkP_h
 #define _XawAsciiSinkP_h
@@ -58,7 +58,7 @@ SOFTWARE.
 
 /* New fields for the AsciiSink object class record */
 typedef struct _AsciiSinkClassPart {
-  XtPointer extension;
+    XtPointer extension;
 } AsciiSinkClassPart;
 
 /* Full class record declaration */
@@ -72,16 +72,19 @@ extern AsciiSinkClassRec asciiSinkClassRec;
 
 /* New fields for the AsciiSink object record */
 typedef struct {
-  /* resources */
+    /* resources */
     XFontStruct *font;          /* Font to draw in. */
     Boolean echo;
     Boolean display_nonprinting;
 
-  /* private */
+    /* private */
     GC normgc, invgc, xorgc;
     XawTextPosition cursor_position;
     XawTextInsertState laststate;
     short cursor_x, cursor_y;	/* Cursor Location. */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } AsciiSinkPart;
 
 /* Full instance record declaration */

@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.1 1999/05/16 10:13:07 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.2 1999/05/30 03:03:35 dawes Exp $
 
 #include "Xedit"
 
@@ -96,6 +96,12 @@ lines		-1,+0,+0,+0,+0,-1
 *ispell*List.background:	gray96
 *ispell*word.background:	gray96
 *ispell*word.backgroundPixmap:	XtUnspecifiedPixmap
+*ispell*word.translations:\
+<Enter>:	highlight()\n\
+<Leave>:	reset()\n\
+<Btn1Down>:	set()\n\
+<Btn1Up>:	notify() unset()\n
+*ispell*word.displayList:
 *ispell.Form.Form.borderColor:	gray80
 *ispell.Form.Form.displayList: \
 foreground	gray90;\
@@ -106,3 +112,32 @@ foreground	gray60;\
 lines		+2,-2,-2,-2,-2,+2
 *ispell*status.backgroundPixmap:	XtUnspecifiedPixmap
 *ispell*status.background:	gray96
+*ispell*terse.justify:		right
+*ispell*terse.internalWidth:	10
+*ispell*terse.background:	gray75
+*ispell*terse.foreground:	gray20
+*ispell*terse.highlightThickness:	0
+*ispell*terse.displayList:\
+line-style	solid;\
+foreground	gray70;\
+fill-arc	6,4,14,12;\
+foreground	gray90;\
+draw-arc	6,4,14,12,45,180;\
+draw-lines	+0,-1,-1,-1,-1,+0;\
+foreground	gray50;\
+draw-arc	6,4,14,12,225,180;\
+draw-lines	-2,+0,+0,+0,+0,-2;\
+foreground	gray45;\
+dashes		2,1;\
+line-style	onoffdash;\
+draw-rect	+1,+1,-2,-2
+*ispell*options.MenuButton.borderColor:	gray70
+*ispell*options.MenuButton.background:	gray78
+*ispell*options.MenuButton.backgroundPixmap:	gradient:vertical?dimension=18&start=gray90&end=gray60
+*ispell*options.MenuButton.displayList:\
+foreground	gray60;\
+lines		+2,-2,-2,-2,-2,+2;\
+foreground	gray95;\
+lines		-3,+1,+1,+1,+1,-3;\
+foreground	gray78;\
+points		-2,+1,+1,-2

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.42 1999/04/25 10:02:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.43 1999/06/06 05:14:11 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -1127,28 +1127,6 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
     /* Set Fast bitblt flag */
     pMga->HasFBitBlt = !(pMga->Bios.FeatFlag & 0x00000001);
 }
-
-#if 0
-static void
-MGA3026StoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef)
-{
-    MGAPtr pMga = MGAPTR(pScrn);
-    vgaHWPtr hwp = VGAHWPTR(pScrn);
-    vgaRegPtr pReg = &hwp->ModeReg;
-    unsigned char *pal;
-    int i;
-
-    if(ndef > 256) ndef = 256;
-
-    for(i = 0; i < ndef; i++) {
-        outTi3026dreg(TVP3026_WADR_PAL, pdef[i].pixel);
-        pal = pReg->DAC + (pdef[i].pixel * 3);
-        outTi3026dreg(TVP3026_COL_PAL, pal[0]);
-        outTi3026dreg(TVP3026_COL_PAL, pal[1]);
-        outTi3026dreg(TVP3026_COL_PAL, pal[2]);
-    }
-}
-#endif
 
 void MGA3026LoadPalette(
     ScrnInfoPtr pScrn, 

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/FormP.h,v 1.7 1998/11/01 07:57:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/FormP.h,v 1.8 1998/11/15 04:29:59 dawes Exp $ */
 
 /* Form widget private definitions */
 
@@ -55,16 +55,16 @@ SOFTWARE.
 #define XtREdgeType "EdgeType"
 
 typedef enum {
-  LayoutPending,
-  LayoutInProgress,
-  LayoutDone
+    LayoutPending,
+    LayoutInProgress,
+    LayoutDone
 } LayoutState;
 
 #define XtInheritLayout							\
 ((Boolean (*)(FormWidget, unsigned int, unsigned int, Bool))_XtInherit)
 
 typedef struct {
-  Boolean(*layout)(FormWidget, unsigned int, unsigned int, Bool);
+    Boolean(*layout)(FormWidget, unsigned int, unsigned int, Bool);
 } FormClassPart;
 
 typedef struct _FormClassRec {
@@ -81,13 +81,16 @@ typedef struct _FormPart {
     int		default_spacing;    /* default distance between children */
 
     /* private */
-    Dimension	old_width, old_height; /* used as a 'reference' value    */
+    Dimension	old_width, old_height; /* reference value for *_virtual  */
     int		no_refigure;	    /* no re-layout while > 0		 */
     Boolean	needs_relayout;	    /* next time no_refigure == 0	 */
     Boolean	resize_in_layout;   /* should layout() do geom request?  */
     Dimension	preferred_width, preferred_height; /* cached from layout */
-  Boolean resize_is_no_op;		/* Causes resize to take not action */
+    Boolean	resize_is_no_op;    /* Causes resize to take not action  */
+#ifndef OLDXAW
     XawDisplayList *display_list;
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } FormPart;
 
 typedef struct _FormRec {
@@ -98,20 +101,22 @@ typedef struct _FormRec {
 } FormRec;
 
 typedef struct _FormConstraintsPart {
-  /* resources */
-  XtEdgeType top, bottom, left, right;	/* where to drag edge on resize */
+    /* resources */
+    XtEdgeType top, bottom, left, right;/* where to drag edge on resize */
     int		dx;		/* desired horiz offset			*/
     int		dy;		/* desired vertical offset		*/
     Widget	horiz_base;	/* measure dx from here if non-null	*/
     Widget	vert_base;	/* measure dy from here if non-null	*/
-  Boolean allow_resize;		/* True if child may request resize */
+    Boolean	allow_resize;	/* True if child may request resize	*/
 
-  /* private */
+    /* private */
     short	virtual_width, virtual_height;
-    Position new_x, new_y;
+    Position	new_x, new_y;
     LayoutState	layout_state;	/* temporary layout state		*/
-    Boolean	deferred_resize; /* was resized while no_refigure is set */
-    short virtual_x, virtual_y;
+    Boolean	deferred_resize;/* was resized while no_refigure is set */
+#ifndef OLDXAW
+    short	virtual_x, virtual_y;
+#endif
 } FormConstraintsPart;
 
 typedef struct _FormConstraintsRec {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbline.c,v 1.1.2.2 1998/07/18 17:54:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbline.c,v 1.2 1998/07/25 16:59:30 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -48,23 +48,16 @@ SOFTWARE.
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
 /* $XConsortium: mfbline.c /main/4 1996/02/21 17:56:48 kaleb $ */
+
+#include "xf4bpp.h"
+#include "OScompiler.h"
 #include "mfbmap.h"
-#include "X.h"
-
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "pixmapstr.h"
-#include "regionstr.h"
-#include "scrnintstr.h"
-#include "mistruct.h"
-
-#include "maskbits.h"
-#include "miline.h"
 #include "mfb.h"
-#include "wm3.h"
+#include "maskbits.h"
+#include "mi.h"
+#include "miline.h"
 #include "vgaVideo.h"
-#include "ppc.h"	/* GJA */
-#include "OScompiler.h"	/* GJA */
+#include "wm3.h"
 
 #include "xf86str.h" /* for pScrn->vtSema */
 extern ScrnInfoPtr *xf86Screens;
@@ -603,7 +596,7 @@ DoV16LineSD( pDrawable, pGC, mode, npt, pptInit)
 	return;
 
     cclip = pGC->pCompositeClip;
-    fgink = pGC->fgPixel;	/* GJA */
+    fgink = bgink = pGC->fgPixel;	/* GJA */
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 

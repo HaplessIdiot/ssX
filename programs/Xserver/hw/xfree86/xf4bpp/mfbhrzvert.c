@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbhrzvert.c,v 1.1.2.1 1998/06/27 14:48:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbhrzvert.c,v 1.2 1998/07/25 16:59:29 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -49,21 +49,13 @@ SOFTWARE.
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
 /* $XConsortium: mfbhrzvert.c /main/3 1996/02/21 17:56:41 kaleb $ */
+
+#include "xf4bpp.h"
+#include "OScompiler.h"
 #include "mfbmap.h"
-#include "X.h"
-
-#include "gc.h"
-#include "window.h"
-#include "pixmap.h"
-#include "region.h"
-
-#include "maskbits.h"
 #include "mfb.h"
-
-#include "wm3.h"	/* GJA */
-#include "windowstr.h"	/* GJA */
-#include "ppc.h"	/* GJA */
-#include "OScompiler.h"	/* GJA */
+#include "maskbits.h"
+#include "wm3.h"
 
 /* horizontal solid line
    abs(len) > 1
