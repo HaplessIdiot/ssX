@@ -4,7 +4,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001-2002 Torrey T. Lyons and Greg Parker.
+ * Copyright (c) 2001-2003 Torrey T. Lyons and Greg Parker.
  *                 All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -29,11 +29,13 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCursor.c,v 1.3 2002/10/16 17:39:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCursor.c,v 1.4 2002/11/19 23:01:30 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartzCursor.h"
 #include "darwin.h"
+
+#include <pthread.h>
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -58,6 +60,11 @@ static unsigned long darwinCursorGeneration = 0;
 static CursorPtr quartzLatentCursor = NULL;
 static QD_Cursor gQDArrow; // QuickDraw arrow cursor
 
+// Cursor for the main thread to set (NULL = arrow cursor).
+static CCrsrHandle currentCursor = NULL;
+static pthread_mutex_t cursorMutex;
+static pthread_cond_t cursorCondition;
+
 #define CURSOR_PRIV(pScreen) \
     ((QuartzCursorScreenPtr)pScreen->devPrivates[darwinCursorScreenIndex].ptr)
 
@@ -77,6 +84,18 @@ static QD_Cursor gQDArrow; // QuickDraw arrow cursor
             CGDisplayShowCursor(QUARTZ_PRIV(pScreen)->displayIDs[ix]);  \
         }                                                               \
         visible = TRUE;                                                 \
+    } ((void)0)
+
+#define CHANGE_QD_CURSOR(cursorH)                                       \
+    if (!quartzServerQuitting) {                                        \
+        /* Acquire lock and tell the main thread to change cursor */    \
+        pthread_mutex_lock(&cursorMutex);                               \
+        currentCursor = (CCrsrHandle) (cursorH);                        \
+        QuartzMessageMainThread(kQuartzCursorUpdate, NULL, 0);          \
+                                                                        \
+        /* Wait for the main thread to change the cursor */             \
+        pthread_cond_wait(&cursorCondition, &cursorMutex);              \
+        pthread_mutex_unlock(&cursorMutex);                             \
     } ((void)0)
 
 
@@ -326,7 +345,12 @@ QuartzUnrealizeCursor(
                         (pScreen, pCursor);
         }
     } else {
-        FreeQDCursor((CCrsrHandle) pCursor->devPriv[pScreen->myNum]);
+        CCrsrHandle oldCursor = (CCrsrHandle) pCursor->devPriv[pScreen->myNum];
+
+        if (currentCursor != oldCursor) {
+            // This should only fail when quitting, in which case we just leak.
+            FreeQDCursor(oldCursor);
+        }
         pCursor->devPriv[pScreen->myNum] = NULL;
         return TRUE;
     }
@@ -363,19 +387,16 @@ QuartzSetCursor(
              (pCursor->bits->width <= CURSORWIDTH) && ScreenPriv->useQDCursor)
     {
         // Cursor is small enough to use QuickDraw directly.
-        CCrsrHandle curs;
-
         if (! ScreenPriv->qdCursorMode)    // remove the X cursor
             (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, 0, x, y);
         ScreenPriv->qdCursorMode = TRUE;
 
-        curs = (CCrsrHandle) pCursor->devPriv[pScreen->myNum];
-        SetCCursor(curs);
+        CHANGE_QD_CURSOR(pCursor->devPriv[pScreen->myNum]);
         SHOW_QD_CURSOR(pScreen, ScreenPriv->qdCursorVisible);
     }
     else if (quartzRootless) {
         // Rootless can't use a software cursor, so we just use Mac OS arrow.
-        SetCursor(&gQDArrow);
+        CHANGE_QD_CURSOR(NULL);
         SHOW_QD_CURSOR(pScreen, ScreenPriv->qdCursorVisible);
     }
     else {
@@ -384,6 +405,27 @@ QuartzSetCursor(
         ScreenPriv->qdCursorMode = FALSE;
         (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, pCursor, x, y);
     }
+}
+
+
+/*
+ * QuartzReallySetCursor
+ * Set the QuickDraw cursor. Called from the main thread since changing the
+ * cursor with QuickDraw is not thread safe on dual processor machines.
+ */
+void
+QuartzReallySetCursor()
+{
+    pthread_mutex_lock(&cursorMutex);
+
+    if (currentCursor) {
+        SetCCursor(currentCursor);
+    } else {
+        SetCursor(&gQDArrow);
+    }
+
+    pthread_cond_signal(&cursorCondition);
+    pthread_mutex_unlock(&cursorMutex);
 }
 
 
@@ -579,6 +621,13 @@ QuartzInitCursor(
         ScreenPriv->useQDCursor = TRUE;
     ScreenPriv->qdCursorMode = TRUE;
     ScreenPriv->qdCursorVisible = TRUE;
+
+    // initialize cursor mutex lock
+    pthread_mutex_init(&cursorMutex, NULL);
+
+    // initialize condition for waiting
+    pthread_cond_init(&cursorCondition, NULL);
+
     return TRUE;
 }
 
@@ -589,7 +638,7 @@ void QuartzSuspendXCursor(
 {
     QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
-    SetCursor(&gQDArrow);
+    CHANGE_QD_CURSOR(NULL);
     SHOW_QD_CURSOR(pScreen, ScreenPriv->qdCursorVisible);
 }
 
