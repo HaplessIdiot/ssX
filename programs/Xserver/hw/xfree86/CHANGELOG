@@ -1,4 +1,7 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 931. Change the default base symbols map from pc104 to pc105, which should
+      fix most cases where the <LSGT> key isn't defined.  Also change the
+      default XkbModel from pc101 to pc105 (Ivan Pascal).
  930. Fix run-time enabling/disabling of VT switching via xf86EnableVTSwitch()
       (David Dawes).
  929. Add a "DontVTSwitch" option to allow VT switching to be disabled
@@ -16454,4 +16457,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2568 2003/02/20 02:59:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2569 2003/02/20 04:05:11 dawes Exp $
