@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.37 2000/10/26 11:47:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.38 2000/12/02 15:30:32 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -510,23 +510,41 @@ ATIPreInit
         if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, i))
             return FALSE;
 
-        switch (pScreenInfo->depth)
+        for (j = 0;  ;  j++)
         {
-
+            static const CARD8 AllowedDepthBpp[][2] =
+            {
 #ifndef AVOID_CPIO
-
-            case 1:  case 4:
-
+                { 1,  1},
+                { 4,  4},
+                { 4,  8},
 #endif /* AVOID_CPIO */
+                { 8,  8},
+                {15, 16},
+                {16, 16},
+                {24, 24},
+                {24, 32}
+            };
 
-            case 8:  case 15:  case 16:  case 24:
-                break;
+            if (j < NumberOf(AllowedDepthBpp))
+            {
+                if (pScreenInfo->depth > AllowedDepthBpp[j][0])
+                    continue;
 
-            default:
-                xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-                    "Driver does not support depth %d.\n",
-                    pScreenInfo->depth);
-                return FALSE;
+                if (pScreenInfo->depth == AllowedDepthBpp[j][0])
+                {
+                    if (pScreenInfo->bitsPerPixel > AllowedDepthBpp[j][1])
+                        continue;
+
+                    if (pScreenInfo->bitsPerPixel == AllowedDepthBpp[j][1])
+                        break;
+                }
+            }
+
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                "Driver does not support depth %d at fbbpp %d.\n",
+                pScreenInfo->depth, pScreenInfo->bitsPerPixel);
+            return FALSE;
         }
 
         xf86PrintDepthBpp(pScreenInfo);
