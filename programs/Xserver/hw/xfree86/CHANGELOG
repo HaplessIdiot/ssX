@@ -1,3 +1,12 @@
+XFree86 3.2m (2 January 1997)
+ 164. Update to R6.3 public patch 1.
+ 165. XAA udpates (Harm Hanemaayer).
+ 163. Fix problems with out-of-date cirrus_acl.c (Harm Hanemaayer).
+ 162. Move all default settings from xf86site.def to xfree86.cf, and leave
+      xf86site.def containing only commented out definitions.
+ 161. Fix 'make install' problems in xkbcomp.
+ 160. Fix some ZLIB problems.
+
 XFree86 3.2l (31 December 1996)
  159. Tseng acceleration updates (Koen Gadeyne).
  158. Add config support for using the system's standard version of libz
