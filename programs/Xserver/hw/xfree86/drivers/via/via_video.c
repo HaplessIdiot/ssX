@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.13 2003/12/31 05:42:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.14 2003/12/31 05:44:11 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -351,7 +351,10 @@ void viaInitVideo(ScreenPtr pScreen)
 
     DBG_DD(ErrorF(" via_video.c : viaInitVideo : \n"));
 
-    if((pVia->Chipset == VIA_CLE266))
+    /*
+     *	We have no KM400 information..
+     */
+    if(pVia->Chipset == VIA_CLE266)
     {
         newAdaptor = viaSetupImageVideoG(pScreen);
     }
@@ -1066,12 +1069,7 @@ viaPutImageG(
                 lpUpdateOverlay->rSrc.right = src_x + width;
                 lpUpdateOverlay->rSrc.bottom = src_y + height;
 
-                /* temp solve LinDVD AP bug */
-                /* When y<0, lindvd will send wrong x */
-                if (drw_y<0)
-                    lpUpdateOverlay->rDest.left = drw_x/2;
-                else
-                    lpUpdateOverlay->rDest.left = drw_x;
+                lpUpdateOverlay->rDest.left = drw_x;
                 lpUpdateOverlay->rDest.top = drw_y;
                 lpUpdateOverlay->rDest.right = lpUpdateOverlay->rDest.left + drw_w;
                 lpUpdateOverlay->rDest.bottom = drw_y + drw_h;

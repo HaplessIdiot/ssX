@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.20 2003/12/31 05:42:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.16 2003/10/31 17:19:35 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -2426,14 +2426,17 @@ static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
     else {
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
     }
+    if (!pVia->directRenderingEnabled)
+	VIAInitLinear(pScreen);
+#else    
+    VIAInitLinear(pScreen);
 #endif
 
-    if (VIA_SERIES(pVia->Chipset) && !pVia->IsSecondary) {
+    
+    if (!pVia->IsSecondary) {
+        /* The chipset is checked in viaInitVideo */
         viaFillGraphicInfo(pScrn);
-        if(!pVia->NoAccel)
-        	viaInitVideo(pScreen);
-        else
-        	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration disabled; no Xvideo support.\n");
+       	viaInitVideo(pScreen);
     }
 
     if (serverGeneration == 1)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.4 2003/09/24 02:43:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.5 2003/12/31 05:47:40 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -413,68 +413,6 @@ Bool VIADRIScreenInit(ScreenPtr pScreen)
 	pVia->drmFD = -1;
 	return FALSE;
     }
-
-   /* Check the VIA DRM versioning */
-   {
-      drmVersionPtr version;
-
-      /* Check the DRM lib version.
-       * drmGetLibVersion was not supported in version 1.0, so check for
-       * symbol first to avoid possible crash or hang.
-       */
-      if (xf86LoaderCheckSymbol("drmGetLibVersion")) {
-	 version = drmGetLibVersion(pVia->drmFD);
-      } else
-      {
-	 /* drmlib version 1.0.0 didn't have the drmGetLibVersion
-	  * entry point.  Fake it by allocating a version record
-	  * via drmGetVersion and changing it to version 1.0.0
-	  */
-	 version = drmGetVersion(pVia->drmFD);
-	 version->version_major = 1;
-	 version->version_minor = 0;
-	 version->version_patchlevel = 0;
-      }
-
-#define REQ_MAJ 1
-#define REQ_MIN 1
-      if (version) {
-	 if (version->version_major != REQ_MAJ ||
-	     version->version_minor < REQ_MIN) {
-	    /* incompatible drm library version */
-	    xf86DrvMsg(pScreen->myNum, X_ERROR,
-		       "[dri] VIADRIScreenInit failed because of a version mismatch.\n"
-		       "[dri] libdrm.a module version is %d.%d.%d but version %d.%d.x is needed.\n"
-		       "[dri] Disabling DRI.\n",
-		       version->version_major,
-		       version->version_minor, version->version_patchlevel,
-		       REQ_MAJ, REQ_MIN);
-	    drmFreeVersion(version);
-	    VIADRICloseScreen(pScreen);
-	    return FALSE;
-	 }
-	 drmFreeVersion(version);
-      }
-
-      /* Check the VIA DRM version */
-      version = drmGetVersion(pVia->drmFD);
-      if (version) {
-	 if (version->version_major < 2) {
-	    /* incompatible drm version */
-	    xf86DrvMsg(pScreen->myNum, X_ERROR,
-		       "[dri] VIADRIScreenInit failed because of a version mismatch.\n"
-		       "[dri] via.o kernel module version is %d.%d.%d but version 2.0.0 or greater is needed.\n"
-		       "[dri] Disabling DRI.\n",
-		       version->version_major,
-		       version->version_minor, version->version_patchlevel);
-	    VIADRICloseScreen(pScreen);
-	    drmFreeVersion(version);
-	    return FALSE;
-	 }
-	 drmFreeVersion(version);
-      }
-   }
-
 
 	   
     pVia->IsPCI = !VIADRIAgpInit(pScreen, pVia);
