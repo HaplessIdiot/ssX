@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.8 1996/04/15 11:31:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.9 1996/05/10 06:59:18 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -192,113 +192,6 @@ Bool xf86SupportedMouseTypes[] =
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
 			sizeof(xf86SupportedMouseTypes[0]);
 
-                     /* Necessary to check input events in OS/2     */
-		     /* This function performs select() on sockets  */
-		     /* but uses OS/2 internal fncts to check mouse */
-		     /* and keyboard. S. Marineau, 18/1/96          */
-
-int os2PseudoSelect(nfds,readfds,writefds,exceptfds,timeout)
-int nfds;
-fd_set *readfds,*writefds,*exceptfds;
-struct timeval *timeout;
-{
-
-CARD32 max_time,start_time,time_remaining,elapsed;
-int i,j;
-struct timeval dummy_timeout;
-fd_set read_copy,write_copy,except_copy;
-
-DosSetPriority(2,3,0,0);
-start_time=GetTimeInMillis();
-if(timeout!=NULL) {
-	max_time=timeout->tv_sec*1000+timeout->tv_usec/1000;
-	}
-else { max_time=10000000; }  /* This should be large enough... */
-
-dummy_timeout.tv_sec=0;
-dummy_timeout.tv_usec=0;
-
-	elapsed=0;
-        j=1;
-	do {
-	     os2CheckPopupPending();
-	     dummy_timeout.tv_sec=0;
-             if(++j %2){
-                dummy_timeout.tv_usec=10000;
-                }
-             else {
-                dummy_timeout.tv_usec=0;
-                }
-                /* Always use timeout of zero, as we always have a listener TCP socket open */
-                /* If we put a greater timeout, then select() will go through thread creation etc */
-
-	/* Copy the masks bec. select() will destroy them */
-	     if(readfds!=NULL){ XFD_COPYSET(readfds,&read_copy);}
-	     if(writefds!=NULL) {XFD_COPYSET(writefds,&write_copy);}
-	     if(exceptfds!=NULL) {XFD_COPYSET(exceptfds,&except_copy);}
-	/* Now call select(). If there is a timeout, check only pipes */
-        if(dummy_timeout.tv_usec) {
-             i=_select2(nfds,(readfds!=NULL)?(fd_set *)&read_copy:NULL,
-	     	(writefds!=NULL)?(fd_set *)&write_copy:NULL,
-	     	(exceptfds!=NULL)?(fd_set *)&except_copy:NULL,
-		&dummy_timeout);
-                }
-        else {
-             i=select(nfds,(readfds!=NULL)?(int *)&read_copy:NULL,
-	     	(writefds!=NULL)?(int *)&write_copy:NULL,
-	     	(exceptfds!=NULL)?(int *)&except_copy:NULL,
-		&dummy_timeout);
-                }
-	     if(i<0) { DosSetPriority(2,2,0,0);
-                         return(i);  /* Error on select */
-                         }
-	     if(i>0) {           /* One of the descriptors is awake */
-		      /* We set the timeval to the remaining time */
-		  time_remaining=max_time-elapsed;
-		  if(timeout!=NULL){
-			timeout->tv_sec=time_remaining/1000;
-			timeout->tv_usec=(time_remaining % 1000) *1000;
-		  }
-		/* Put the masks from select() into the original pointers */
-	          if(readfds!=NULL) {XFD_COPYSET(&read_copy,readfds);}
-	          if(writefds!=NULL) {XFD_COPYSET(&write_copy,writefds);}
-	          if(exceptfds!=NULL) {XFD_COPYSET(&except_copy,exceptfds);}
-                  DosSetPriority(2,2,0,0);
-		      /* And return i */
-		  return(i);
-	     }
-
-	     /* Now we check for activity on mouse/kbd handles */
-	     if((!os2MouseQueueQuery()) || (!os2KbdQueueQuery()) || 
-                        xf86Info.vtRequestsPending || os2PopupErrorPending){
-		  if(os2PopupErrorPending) os2RecoverFromPopup();
-		  time_remaining=max_time-elapsed;
-                  if(timeout!=NULL){
-                        timeout->tv_sec=time_remaining/1000;
-                        timeout->tv_usec=(time_remaining % 1000) *1000;
-                        }
-		  /* Put the masks from select() into the original pointers */
-		  if(readfds!=NULL) {FD_ZERO(readfds);}
-		  if(writefds!=NULL) {FD_ZERO(writefds);}
-		  if(exceptfds!=NULL) {FD_ZERO(exceptfds);}
-                  DosSetPriority(2,2,0,0);
-		  return(0);  /* Not to confuse the networking with mouse/kbd */
-	     } 
-                /* if(j++ % 8 == 0) DosSleep(1);*/	/* This is compromise */	
-	   } while((elapsed=(GetTimeInMillis()-start_time))<max_time);
-		/* Well, we have time'd out */
-
-if(timeout!=NULL){
-        timeout->tv_sec=0;
-        timeout->tv_usec=0;
-        }
-		      /* Put the masks from select() into the original pointers */
-if(readfds!=NULL) {FD_ZERO(readfds);}
-if(writefds!=NULL) {FD_ZERO(writefds);}
-if(exceptfds!=NULL) {FD_ZERO(exceptfds);}
-DosSetPriority(2,2,0,0);
-return(0);
-}
 
 
 

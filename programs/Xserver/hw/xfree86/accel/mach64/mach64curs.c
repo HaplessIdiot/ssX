@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.12 1996/02/20 14:33:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.13 1996/03/05 05:42:14 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
- * Copyright 1994 by Kevin E. Martin, Chapel Hill, North Carolina.
+ * Copyright 1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee,
@@ -62,6 +62,7 @@ unsigned char *mach64CursorMemory;
 unsigned int  mach64CursorOffset;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
+extern Bool mach64InDoubleScanMode;
 
 static int xhot, yhot;
 static int mach64CursGeneration = -1;
@@ -405,7 +406,10 @@ mach64MoveCursor(pScr, x, y)
 	default:
 	    regw(CUR_HORZ_VERT_OFF,
 		 (((mach64CursYExtra + yoff) << 16) | xoff));
-	    regw(CUR_HORZ_VERT_POSN, ((y << 16) | x));
+	    if (mach64InDoubleScanMode)
+		regw(CUR_HORZ_VERT_POSN, ((y << 17) | x));
+	    else
+		regw(CUR_HORZ_VERT_POSN, ((y << 16) | x));
 	    break;
 	}
 	if (!mach64CursLastEnabled)

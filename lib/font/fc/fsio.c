@@ -1,5 +1,5 @@
 /* $XConsortium: fsio.c,v 1.37 95/04/05 19:58:13 kaleb Exp $ */
-/* $XFree86: xc/lib/font/fc/fsio.c,v 3.2 1994/06/28 12:24:10 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.3 1996/01/05 13:14:02 dawes Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -59,6 +59,10 @@ extern int errno;
 #ifdef MINIX
 #include <sys/nbio.h>
 #define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#endif
+
+#ifdef __EMX__
+#define select(n,r,w,x,t) os2PseudoSelect(n,r,w,x,t)
 #endif
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX

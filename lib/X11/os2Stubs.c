@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_stubs.c,v 3.0 1996/03/10 12:06:57 dawes Exp $ */
 /*
- * (c) Copyright 1996 by Holger Veit
- *			<Holger.Veit@gmd.de>
+ * (c) Copyright 1996 by Sebastien Marineau and Holger Veit
+ *			<marineau@genie.uottawa.ca>
+ *                      <Holger.Veit@gmd.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,24 +21,30 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  * 
- * Except as contained in this notice, the name of Holger Veit shall not be
- * used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Holger Veit.
+ * Except as contained in this notice, the name of Sebastien Marineau or Holger Veit 
+ * shall not be used in advertising or otherwise to promote the sale, use or other 
+ * dealings in this Software without prior written authorization from Holger Veit or
+ * Sebastien Marineau.
  *
  */
 
-#include "X.h"
-#include "Xpoll.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/time.h>
+/* $XFree86$ */
 
-/* This code is duplicated from XLibInt.c, because the same problems with
- * the drive letter as in clients also exist in the server
- * Unfortunately the standalone servers don't link against libX11
- */
+/* A few OS/2 functions needed in the X11 lib. Mainly, the file path redirection
+ * functions and the "optimized" select() for the clients */
+
+#include <X11/Xpoll.h>
+#include <stdio.h>
+#include <sys/errno.h>
+#define INCL_DOSSEMAPHORES
+#define INCL_DOSNPIPES
+#define INCL_DOSMISC
+#define INCL_DOSMODULEMGR
+#undef BOOL
+#undef BYTE
+#include <os2.h>
+#include <sys/select.h>
+#include <sys/time.h>
 
 char *__XOS2RedirRoot(char *fname)
 {
@@ -58,8 +64,8 @@ char *__XOS2RedirRoot(char *fname)
 
     root = (char*)getenv("X11ROOT");
     if (root==0 || 
-	(fname[1]==':' && isalpha(fname[0]) ||
-        (strlen(fname)+strlen(root)+2) > 300))
+	(fname[1]==':' && isalpha(fname[0])) ||
+        (strlen(fname)+strlen(root)+2) > 300)
 	return fname;
     sprintf(redirname,"%s%s",root,fname);
     return redirname;
@@ -75,34 +81,11 @@ char *__XOS2RedirRoot1(char *format, char *arg1, char *arg2, char *arg3)
     return __XOS2RedirRoot(buf);
 }
 
-/*
- * This declares a missing function in the __EMX__ library, used in
- * various places
- */
-void usleep(delay)
-	unsigned long delay;
-{
-	DosSleep(delay ? (delay/1000) : 1l);
-}
-
-/* This is there to resolve a symbol in Xvfb 
- * this version is somewhat crippled compared to the one in os2_io.c
- */
-#ifdef OS2NULLSELECT
-
-/* This below implements select() for calls in xnest. It has been         */
+/* This below implements select() for the calls in this file. It has been */
 /* somewhat optimized for improved performance, but assumes a few */
-/* things so it cannot be used as a general select.                             */
+/* things so it cannot be used as a general select. If both pipes and     */
+/* sockets are present, this may call the emx select                          */
 
-#include <sys/select.h>
-#include <sys/errno.h>
-#define INCL_DOSSEMAPHORES
-#define INCL_DOSNPIPES
-#define INCL_DOSMISC
-#define INCL_DOSMODULEMGR
-#undef BOOL
-#undef BYTE
-#include <os2.h>
 
 HEV hPipeSem;
 HMODULE hmod_so32dll;
@@ -132,7 +115,7 @@ struct select_data
    int max_fds;
 };
 
-int os2PseudoSelect(int nfds, fd_set *readfds, fd_set *writefds,
+int os2ClientSelect(int nfds, fd_set *readfds, fd_set *writefds,
         fd_set *exceptfds, struct timeval *timeout)
 {
 static BOOL FirstTime=TRUE;
@@ -151,7 +134,7 @@ sd.max_fds=31; ready_handles=0; any_ready=FALSE;
 sd.pipe_ntotal=0; sd.pipe_have_write=FALSE;
 
 if(FirstTime){
-   /* First load the so32dll.dll module and get a pointer to the SELECT function */
+   /* First load the so32dll.dll module and get a pointer to the SELECT fn */
 
    if((rc=DosLoadModule(faildata,sizeof(faildata),"SO32DLL",&hmod_so32dll))!=0){
         fprintf(stderr, "Could not load module so32dll.dll, rc = %d. Error note %s\n",rc,faildata);
@@ -162,16 +145,13 @@ if(FirstTime){
         haveTCPIP=FALSE;
         }
    /* Call these a first time to set the semaphore */
-    /* rc = DosCreateEventSem(NULL, &hPipeSem, DC_SEM_SHARED, FALSE);
+    rc = DosCreateEventSem(NULL, &hPipeSem, DC_SEM_SHARED, FALSE);
     if(rc) { 
              fprintf(stderr, "Could not create event semaphore, rc=%d\n",rc);
              return(-1);
              }
-    rc = DosResetEventSem(hPipeSem, &postCount); */ /* Done in xtrans code for servers*/
-
-fprintf(stderr, "Client select() done first-time stuff, sem handle %d.\n",hPipeSem);
-
-   FirstTime = FALSE;
+    rc = DosResetEventSem(hPipeSem, &postCount);
+    FirstTime = FALSE;
 }
 
 /* Set up the time delay structs */
@@ -212,7 +192,6 @@ fprintf(stderr, "Client select() done first-time stuff, sem handle %d.\n",hPipeS
             else if (np == -1) { return(-1); }
             while(!any_ready){
                  rc = DosWaitEventSem(hPipeSem, timeout_ms);
-                 /* if(rc) fprintf(stderr,"Sem-wait timeout, rc = %d\n",rc); */
                  if(rc == 640)  {
                      return(0);
                      }
@@ -300,7 +279,7 @@ int nfds;
    APIRET rc;
 /* First we determine up to which descriptor we need to check.              */
 /* No need to check up to 256 if we don't have to (and usually we dont...)*/
-/* Note: stuff here is hardcoded for fd_sets which are int[8] as in EMX!    */
+/* Note: stuff here is hardcoded for fd_sets which are int[8] as in EMX!!!    */
 
   if(nfds > sd->max_fds){
      for(i=0;i<((FD_SETSIZE+31)/32);i++){
@@ -326,8 +305,8 @@ int nfds;
          else if (_files[i] & F_PIPE)
           {
             sd -> pipe_ntotal++;
-            /* rc = DosSetNPipeSem((HPIPE)i, (HSEM) hPipeSem, i);
-            if(rc) { fprintf(stderr,"Error SETNPIPE rc = %d\n",rc); return -1;} */
+            rc = DosSetNPipeSem((HPIPE)i, (HSEM) hPipeSem, i);
+            if(rc) { fprintf(stderr,"Error SETNPIPE rc = %d\n",rc); return -1;}
           }
         }
       }
@@ -346,8 +325,8 @@ int nfds;
          else if (_files[i] & F_PIPE)
           {
             sd -> pipe_ntotal++;
-            /* rc = DosSetNPipeSem((HPIPE)i, (HSEM) hPipeSem, i);
-            if(rc) { fprintf(stderr,"Error SETNPIPE rc = %d\n",rc); return -1;} */
+            rc = DosSetNPipeSem((HPIPE)i, (HSEM) hPipeSem, i);
+            if(rc) { fprintf(stderr,"Error SETNPIPE rc = %d\n",rc); return -1;}
             sd -> pipe_have_write=TRUE;
           }
         }
@@ -392,7 +371,7 @@ fd_set *readfds,*writefds;
                return n;
               }
         if(e<0){
-           /*Error -- TODO. EBADF is a good choice for now. */
+           /*Error -- TODO */
            fprintf(stderr,"Error in server select! e=%d\n",e);
            errno = EBADF;
            return (-1);
@@ -418,7 +397,7 @@ APIRET rc;
         while (pipeSemState[i].fStatus != 0) {
            /*fprintf(stderr,"SELECT: sem entry, stat=%d, flag=%d, key=%d,avail=%d\n",
                 pipeSemState[i].fStatus,pipeSemState[i].fFlag,pipeSemState[i].usKey,
-                pipeSemState[i].usAvail);  */
+                pipeSemState[i].usAvail); */
            if((pipeSemState[i].fStatus == 1) &&
                     (FD_ISSET(pipeSemState[i].usKey,&sd->read_copy))){
                 FD_SET(pipeSemState[i].usKey,readfds);
@@ -433,7 +412,6 @@ APIRET rc;
                 ( (FD_ISSET(pipeSemState[i].usKey,&sd->read_copy)) ||
                   (FD_ISSET(pipeSemState[i].usKey,&sd->write_copy)) )){
                 errno = EBADF;
-                /* fprintf(stderr,"Pipe has closed down, fd=%d\n",pipeSemState[i].usKey); */
                 return (-1);
                 }
             i++;
@@ -443,4 +421,5 @@ errno = 0;
 return(e);
 }
 
-#endif
+
+

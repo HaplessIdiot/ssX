@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.4 1996/05/06 05:56:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.5 1996/05/10 06:57:39 dawes Exp $ */
 /*
  * Copyright 1989 by the Massachusetts Institute of Technology
- * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
+ * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted,
@@ -707,6 +707,13 @@ mach64DoBitBlt (pSrc, pDst, pGC, rgnDst, pptSrc, bitPlane)
             }
         }
         WaitIdleEmpty(); /* Make sure that all commands have finished */
+
+        /*
+         * Make sure that the destination trajectory is correctly set
+         * for subsequent calls.  MACH64_BIT_BLT is the only function that
+         * currently changes the destination trajectory from L->R and T->B.
+         */
+        regw(DST_CNTL, (DST_X_LEFT_TO_RIGHT | DST_Y_TOP_TO_BOTTOM));
     }
     /*
      * Copy from an pixmap to a window.

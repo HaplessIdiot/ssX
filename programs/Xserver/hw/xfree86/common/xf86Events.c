@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.33 1996/05/10 06:58:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.34 1996/05/11 11:04:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1467,6 +1467,6 @@ int etype;
   if (etype == KeyPress) {
     *kptr &= ~(1 << (keycode & 7));
   }
-  ProcessKeyboardEvent(xE, keybd, 1);
+  keybd->public.processInputProc(xE, keybd, 1);
 }
 #endif

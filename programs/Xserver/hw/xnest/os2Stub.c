@@ -1,7 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_stubs.c,v 3.0 1996/03/10 12:06:57 dawes Exp $ */
 /*
- * (c) Copyright 1996 by Holger Veit
- *			<Holger.Veit@gmd.de>
+ * (c) Copyright 1996 by Sebastien Marineau
+ *			<marineau@genie.uottawa.ca>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,81 +20,22 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  * 
- * Except as contained in this notice, the name of Holger Veit shall not be
+ * Except as contained in this notice, the name of Sebastien Marineau shall not be
  * used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from Holger Veit.
+ * in this Software without prior written authorization from Sebastien Marineau.
  *
  */
 
-#include "X.h"
-#include "Xpoll.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/time.h>
-
-/* This code is duplicated from XLibInt.c, because the same problems with
- * the drive letter as in clients also exist in the server
- * Unfortunately the standalone servers don't link against libX11
- */
-
-char *__XOS2RedirRoot(char *fname)
-{
-    /* This adds a further redirection by allowing the ProjectRoot
-     * to be prepended by the content of the envvar X11ROOT.
-     * This is for the purpose to move the whole X11 stuff to a different
-     * disk drive.
-     * The feature was added despite various environment variables
-     * because not all file opens respect them.
-     */
-    static char redirname[300]; /* enough for long filenames */
-    char *root;
-
-    /* if name does not start with /, assume it is not root-based */
-    if (fname==0 || !(fname[0]=='/' || fname[0]=='\\'))
-	return fname;
-
-    root = (char*)getenv("X11ROOT");
-    if (root==0 || 
-	(fname[1]==':' && isalpha(fname[0]) ||
-        (strlen(fname)+strlen(root)+2) > 300))
-	return fname;
-    sprintf(redirname,"%s%s",root,fname);
-    return redirname;
-}
-
-char *__XOS2RedirRoot1(char *format, char *arg1, char *arg2, char *arg3)
-{
-    /* this first constructs a name from a format and up to three
-     * components, then adds a path
-     */
-    char buf[300];
-    sprintf(buf,format,arg1,arg2,arg3);
-    return __XOS2RedirRoot(buf);
-}
-
-/*
- * This declares a missing function in the __EMX__ library, used in
- * various places
- */
-void usleep(delay)
-	unsigned long delay;
-{
-	DosSleep(delay ? (delay/1000) : 1l);
-}
-
-/* This is there to resolve a symbol in Xvfb 
- * this version is somewhat crippled compared to the one in os2_io.c
- */
-#ifdef OS2NULLSELECT
+/* $XFree86$ */
 
 /* This below implements select() for calls in xnest. It has been         */
 /* somewhat optimized for improved performance, but assumes a few */
 /* things so it cannot be used as a general select.                             */
 
+#include <stdio.h>
 #include <sys/select.h>
 #include <sys/errno.h>
+#include <sys/time.h>
 #define INCL_DOSSEMAPHORES
 #define INCL_DOSNPIPES
 #define INCL_DOSMISC
@@ -103,6 +43,7 @@ void usleep(delay)
 #undef BOOL
 #undef BYTE
 #include <os2.h>
+#include "Xpoll.h"
 
 HEV hPipeSem;
 HMODULE hmod_so32dll;
@@ -443,4 +384,3 @@ errno = 0;
 return(e);
 }
 
-#endif

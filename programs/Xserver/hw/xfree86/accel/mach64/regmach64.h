@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.10 1996/03/31 11:48:26 dawes Exp $ */
 /*
- * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
+ * Copyright 1992,1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee,
@@ -102,7 +102,7 @@ extern unsigned ioCRTC_GEN_CNTL;
 
 #define GEN_TEST_CNTL           0x00D0  /* Dword offset 34 */
 
-#define CONFIG_CNTL		0x00DC	/* Dword offset 37 (CT and ET) */
+#define CONFIG_CNTL		0x00DC	/* Dword offset 37 (CT, ET, VT) */
 #define CONFIG_CHIP_ID          0x00E0  /* Dword offset 38 */
 #define CONFIG_STAT0            0x00E4  /* Dword offset 39 */
 #define CONFIG_STAT1            0x00E8  /* Dword offset 3A */
@@ -321,8 +321,8 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define CFG_MEM_TYPE		0x00000038
 #define CFG_INIT_DAC_TYPE	0x00000e00
 
-/* CONFIG_STAT0 register constants (CT, ET) */
-#define CFG_MEM_TYPE_CT		0x00000007
+/* CONFIG_STAT0 register constants (CT, ET, VT) */
+#define CFG_MEM_TYPE_xT		0x00000007
 
 #define ISA			0
 #define EISA			1
@@ -363,7 +363,7 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define CLK_ATI18818_1		1
 #define CLK_STG1703		2
 #define CLK_CH8398		3
-#define CLK_MACH64CT		4
+#define CLK_INTERNAL		4
 #define CLK_ATT20C408		5
 #define CLK_IBMRGB514		6
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.6 1996/03/10 12:06:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.7 1996/04/15 11:31:14 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -39,6 +39,7 @@
 
 #define I_NEED_OS2_H
 #define INCL_DOSFILEMGR
+#define INCL_DOSQUEUES
 #define INCL_MOU
 #undef RT_FONT
 #include "xf86.h"
@@ -51,9 +52,13 @@
 #include "xf86_Config.h"
 
 HMOU hMouse=65535;
+HEV hMouseSem;
+HQUEUE hMouseQueue;
+int MouseTid;
 BOOL HandleValid=FALSE;
 extern BOOL SwitchedToWPS;
 extern CARD32 LastSwitchTime;
+void os2MouseEventThread();
 
 int xf86MouseOff(mouse, doclose)
 MouseDevPtr mouse;
@@ -116,6 +121,17 @@ int what;
 			GetMotionEvents, (PtrCtrlProcPtr)xf86MseCtrl, 0);
 
 		xfree(map);
+
+         /* OK, we are ready to start up the mouse thread ! */
+                if(!HandleValid){
+                      rc = DosCreateEventSem(NULL,&hMouseSem,DC_SEM_SHARED,TRUE);
+                      if (rc != 0)
+                         FatalError("xf86OpenMouse: could not create mouse queue semaphore, rc=%d\n",rc);
+                      MouseTid=_beginthread(os2MouseEventThread,NULL,0x4000,(void *)NULL);
+                      ErrorF("xf86-OS/2: Started Mouse event thread, Tid=%d\n",MouseTid);
+                      DosSetPriority(2,3,0,MouseTid);
+                      }
+
 		HandleValid=TRUE;
 		break;
       
@@ -154,31 +170,29 @@ int what;
 
 void xf86OsMouseEvents()
 {
-	MOUEVENTINFO mev;
-	MOUQUEINFO mqif;
-	APIRET rc;	
+	APIRET rc;
+        ULONG postCount,dataLength;
+        PVOID junkPointer;
 	int buttons;
 	int state;
-	int i;
-	USHORT waitflg = 0;
+	int i, col,row;
+        BYTE elemPriority;
+        REQUESTDATA requestData;
 
 	if(!HandleValid) return;
-	if((rc=MouGetNumQueEl(&mqif,hMouse))!=0){
-	     ErrorF("xf86-OS/2: Bad return code from MouGetNumQueEl, rc=%d, hMouse=%d\n",rc,hMouse);
-	     return;
-	}
-	if(mqif.cEvents<1) return;  /* There are no events */
-	for(i=0;i<mqif.cEvents;i++){
-	     if((rc=MouReadEventQue(&mev,&waitflg,hMouse))!=0){
-	          ErrorF("xf86-OS/2: Bad return code from MouReadEventQue, rc=%d\n",rc);
-	          return;
-	     }
-		waitflg = 0;
-		state=mev.fs;
-#if DEBUG
-			ErrorF("mouse event: fs(%x) row(%d) col(%d)\n",
-				state, mev.row, mev.col);
-#endif
+ 	while((rc = DosReadQueue(hMouseQueue,&requestData,&dataLength,&junkPointer, 
+                0L,1L,&elemPriority,hMouseSem))==0){
+                  col=requestData.ulData;
+         rc = DosReadQueue(hMouseQueue,&requestData,&dataLength,&junkPointer,
+                0L,1L,&elemPriority,hMouseSem);
+                 row=requestData.ulData;
+         rc = DosReadQueue(hMouseQueue,&requestData,&dataLength,&junkPointer,
+                0L,1L,&elemPriority,hMouseSem);
+               state=requestData.ulData;
+         rc = DosReadQueue(hMouseQueue,&requestData,&dataLength,&junkPointer,
+                0L,1L,&elemPriority,hMouseSem);
+               if(requestData.ulData!= 0xFFFFFFFF) ErrorF("Unexpected mouse event tag, %d\n",
+                                 requestData.ulData);
 
 		/* Contrary to other systems, OS/2 has mouse buttons *
 		 * in the proper order, so we reverse them before    *
@@ -187,27 +201,68 @@ void xf86OsMouseEvents()
 			buttons = ((state & 0x06) ? 4 : 0) |
 				  ((state & 0x18) ? 1 : 0) |
 				  ((state & 0x60) ? 2 : 0);
-			xf86PostMseEvent(xf86Info.pMouse, buttons, mev.col, mev.row);
+			xf86PostMseEvent(xf86Info.pMouse, buttons, col, row);
 	}
+        DosResetEventSem(hMouseSem,&postCount);
 	xf86Info.inputPending = TRUE;
 }
 
 int os2MouseQueueQuery()
 {
 	     /* Now we check for activity on mouse handles */
-MOUQUEINFO mouQueInfo;
+ULONG numElements,postCount;
 APIRET rc;
-	     if(!HandleValid) return(1);
-	     rc=MouGetNumQueEl(&mouQueInfo,hMouse);
-	     if(rc!=0){
-		  ErrorF("xf86-OS/2: Mouse queue check has rc=%d\n",rc);
-		  return(-1); /* We could also check here for focus */
+        if(!HandleValid) return(1);
+        DosResetEventSem(hMouseSem,&postCount);
+        rc=DosQueryQueue(hMouseQueue,&numElements);
+ 	 if (numElements>0){     /* Something in mouse queue! */
+             return(0);  /* Will this work? */
 	     }
-	     
-	     if (mouQueInfo.cEvents>0){     /* Something in mouse queue! */
-		  return(0);  /* Will this work? */
-	     }
+         return(1);
+}
 
-return(1);
+
+void os2MouseEventThread(arg)
+void *arg;
+{
+     APIRET rc;
+     MOUEVENTINFO mev;
+     ULONG queueParam;
+     USHORT waitflg;
+     char queueName[128];
+ 
+ 
+         sprintf(queueName,"\\QUEUES\\XF86MOU\\%d",getpid());
+         rc=DosCreateQueue(&hMouseQueue,0L,queueName);
+         ErrorF("xf86-OS/2: Mouse Queue created, rc=%d\n",rc);
+         rc=DosPurgeQueue(hMouseQueue);
+ 
+         while(1){
+            waitflg = 1;
+            rc=MouReadEventQue(&mev,&waitflg,hMouse);
+            if(rc){
+               ErrorF("Bad return code from mouse driver, rc=%d\n",rc);
+               ErrorF("Mouse aborting!\n");
+               break;
+               }
+ /* Format of mouse packet is the following: first queued message is mev.col, second is mev.row,
+         third is state and last is FFFFFFFF for "end-of-record". We could pack this better but it
+         is a good start... */
+ 
+             queueParam=mev.col;
+             rc=DosWriteQueue(hMouseQueue,queueParam,0L,NULL,0L);
+             if(rc) break;
+             queueParam=mev.row;
+             rc=DosWriteQueue(hMouseQueue,queueParam,0L,NULL,0L);
+             if(rc) break;
+             queueParam=mev.fs;
+             rc=DosWriteQueue(hMouseQueue,queueParam,0L,NULL,0L);
+             if(rc) break;
+             queueParam=0xFFFFFFFF;
+             rc=DosWriteQueue(hMouseQueue,queueParam,0L,NULL,0L);
+             if(rc) break;
+         }
+    ErrorF("An unrecoverable error in mouse queue has occured, rc=%d. Mouse is shutting down.\n",rc);
+    DosCloseQueue(hMouseQueue);
 }
 

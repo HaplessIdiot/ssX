@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.6 1996/04/15 11:31:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.7 1996/05/10 06:59:17 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -54,7 +54,9 @@ void os2HardErrorNotify();
 void os2KbdMonitorThread();
 void os2KbdBitBucketThread();
 HEV hevPopupPending;
+extern HEV hKbdSem;
 static BOOL emx_checked = FALSE;
+extern BOOL os2HRTimerFlag;
 
 /* from Eberhard to check for the right EMX version */
 static void check_emx (void)
@@ -129,6 +131,12 @@ void xf86OpenConsole()
 	if (rc != 0)
 		FatalError("xf86OpenConsole: cannot set local kbd focus, rc=%d\n",rc);
 
+/* Create kbd queue semaphore */
+ 
+         rc = DosCreateEventSem(NULL,&hKbdSem,DC_SEM_SHARED,TRUE);
+         if (rc != 0)
+                  FatalError("xf86OpenConsole: cannot create keyboard queue semaphore, rc=%d\n",rc);
+ 
 /* Create popup semaphore */
 
 	rc=DosCreateEventSem("\\SEM32\\XF86PUP",&hevPopupPending,DC_SEM_SHARED,1);
@@ -207,50 +215,18 @@ int argc;
 char *argv[];
 int i;
 {
-	return(0);
+  if (!strcmp(argv[i], "-os2HRTimer"))
+  {
+    os2HRTimerFlag = TRUE;
+    return 1;
+  }
+  return 0;
 }
 
 void xf86UseMsg()
 {
+        ErrorF("-os2HRTimer    -use the OS/2 high-resolution timer driver (TIMER0.SYS)\n");
 	return;
 }
 
-/* This code is duplicated from XLibInt.c, because the same problems with
- * the drive letter as in clients also exist in the server
- * Unfortunately the standalone servers don't link against libX11
- */
 
-char *__XOS2RedirRoot(char *fname)
-{
-    /* This adds a further redirection by allowing the ProjectRoot
-     * to be prepended by the content of the envvar X11ROOT.
-     * This is for the purpose to move the whole X11 stuff to a different
-     * disk drive.
-     * The feature was added despite various environment variables
-     * because not all file opens respect them.
-     */
-    static char redirname[300]; /* enough for long filenames */
-    char *root;
-
-    /* if name does not start with /, assume it is not root-based */
-    if (fname==0 || !(fname[0]=='/' || fname[0]=='\\'))
-	return fname;
-
-    root = (char*)getenv("X11ROOT");
-    if (root==0 || 
-	(fname[1]==':' && isalpha(fname[0]) ||
-        (strlen(fname)+strlen(root)+2) > 300))
-	return fname;
-    sprintf(redirname,"%s%s",root,fname);
-    return redirname;
-}
-
-char *__XOS2RedirRoot1(char *format, char *arg1, char *arg2, char *arg3)
-{
-    /* this first constructs a name from a format and up to three
-     * components, then adds a path
-     */
-    char buf[300];
-    sprintf(buf,format,arg1,arg2,arg3);
-    return __XOS2RedirRoot(buf);
-}

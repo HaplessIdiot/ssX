@@ -1,5 +1,5 @@
 /* $XConsortium: GetDflt.c /main/45 1996/02/28 12:16:36 kaleb $ */
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.7 1996/03/16 12:45:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.8 1996/04/15 11:15:47 dawes Exp $ */
 
 /***********************************************************
 
@@ -52,6 +52,31 @@ SOFTWARE.
 #include "Xlibint.h"
 #include <X11/Xos.h>
 #include <X11/Xresource.h>
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef PATH_MAX
+#ifdef WIN32
+#define PATH_MAX 512
+#else
+#include <sys/param.h>
+#endif
+#ifndef PATH_MAX
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
+#endif
+
 #ifdef XTHREADS
 #include <X11/Xthreads.h>
 #endif
@@ -66,17 +91,21 @@ extern char *getenv();
 #endif
 
 /*ARGSUSED*/
-static char *GetHomeDir (dest)
+static char *GetHomeDir (dest, len)
     char *dest;
+    int len;
 {
 #ifdef WIN32
     register char *ptr;
+    char* users = "/users/";
 
-    if (ptr = getenv("HOME"))
-	(void) strcpy(dest, ptr);
-    else if (ptr = getenv("USERNAME")) {
-	(void) strcpy (dest, "/users/");
-	(void) strcat (dest, ptr);
+    if (ptr = getenv("HOME")) {
+	(void) strncpy(dest, ptr, len);
+	dest[len-1] = '\0';
+    } else if (ptr = getenv("USERNAME")) {
+	(void) strcpy (dest, users);
+	(void) strncat (dest, ptr, len - strlen (users));
+	dest[len-1] = '\0';
     } else
 	*dest = '\0';
 #else
@@ -125,7 +154,8 @@ static char *GetHomeDir (dest)
     register char *ptr;
 
     if ((ptr = getenv("HOME"))) {
-	(void) strcpy(dest, ptr);
+	(void) strncpy(dest, ptr, len);
+	dest[len-1] = '\0';
     } else {
 	if (ptr = getenv("USER"))
 	    pw = Getpwnam(ptr);
@@ -146,7 +176,7 @@ static XrmDatabase InitDefaults (dpy)
 {
     XrmDatabase userdb;
     XrmDatabase xdb;
-    char fname[BUFSIZ];                 /* longer than any conceivable size */
+    char fname[PATH_MAX];               /* longer than any conceivable size */
     char *xenv;
 
     XrmInitialize();
@@ -160,19 +190,23 @@ static XrmDatabase InitDefaults (dpy)
      */
 
     if (dpy->xdefaults == NULL) {
-	(void) GetHomeDir (fname);
-	(void) strcat (fname, "/.Xdefaults");
+	static char slashDotXdefaults[] = "/.Xdefaults";
+
+	(void) GetHomeDir (fname, PATH_MAX - sizeof slashDotXdefaults - 1);
+	(void) strcat (fname, slashDotXdefaults);
 	xdb = XrmGetFileDatabase (fname);
     } else {
 	xdb = XrmGetStringDatabase(dpy->xdefaults);
     }
 
     if (!(xenv = getenv ("XENVIRONMENT"))) {
+	static char slashDotXdefaultsDash[] = "/.Xdefaults-";
 	int len;
-	(void) GetHomeDir (fname);
-	(void) strcat (fname, "/.Xdefaults-");
+
+	(void) GetHomeDir (fname, PATH_MAX - sizeof slashDotXdefaultsDash - 1);
+	(void) strcat (fname, slashDotXdefaultsDash);
 	len = strlen (fname);
-	(void) _XGetHostname (fname+len, BUFSIZ-len);
+	(void) _XGetHostname (fname+len, PATH_MAX-len);
 	xenv = fname;
     }
     userdb = XrmGetFileDatabase (xenv);

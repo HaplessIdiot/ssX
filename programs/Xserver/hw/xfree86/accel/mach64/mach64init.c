@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.16 1996/05/06 05:57:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.17 1996/05/11 11:03:41 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
- * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
+ * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
  * This code may be freely incorporated in any program without royalty, as
  * long as the copyright notice stays intact.
@@ -77,6 +77,7 @@ pointer mach64VideoMem = NULL;
 pointer mach64MemRegMap = NULL;
 pointer mach64MemReg = NULL;
 unsigned int mach64MemRegOffset;
+Bool mach64InDoubleScanMode = FALSE;
 
 static char old_ATI2E, old_ATI32, old_ATI36;
 static char old_GRA06, old_SEQ02, old_SEQ04;
@@ -197,6 +198,11 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
 	crtcRegs->crtc_gen_cntl |= CRTC_INTERLACE_EN;
     if (mode->Flags & V_CSYNC)
 	crtcRegs->crtc_gen_cntl |= CRTC_CSYNC_EN;
+    if (mode->Flags & V_DBLSCAN) {
+	crtcRegs->crtc_gen_cntl |= CRTC_DBL_SCAN_EN;
+	mach64InDoubleScanMode = TRUE;
+    } else
+	mach64InDoubleScanMode = FALSE;
     if (OFLG_ISSET(OPTION_CSYNC, &mach64InfoRec.options))
 	crtcRegs->crtc_gen_cntl |= CRTC_CSYNC_EN;
 
@@ -1079,7 +1085,7 @@ void mach64ProgramClk(clkCntl, MHz100)
     case CLK_CH8398:
 	mach64ProgramClk8398(clkCntl, MHz100);
 	break;
-    case CLK_MACH64CT:
+    case CLK_INTERNAL:
 	mach64ProgramClkMach64CT(clkCntl, MHz100);
 	break;
     case CLK_ATT20C408:

@@ -102,7 +102,7 @@ from the X Consortium.
  * from alloca.h which #defines alloca.
  */
 #    ifndef NCR
-#      if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
+#      if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(USL) || defined(alloca)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix it here.

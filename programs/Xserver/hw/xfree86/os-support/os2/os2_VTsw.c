@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.5 1996/04/15 11:31:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.6 1996/05/10 06:59:16 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -142,7 +142,7 @@ void * arg;
                                timeout_count++;
                                if(timeout_count>25){
                                   ErrorF("xf86-OS/2: Server timeout on VT switch request. Server was killed\n");
-                                  GiveUp(0);
+                                  DosExit(1L,0);
                                   }
                                if(WaitingForAccess) {  /* The server is resetting */
                                   DosPostEventSem(hevSwitchRequested);
@@ -190,23 +190,21 @@ void * arg;
 void os2ServerVideoAccess()
 {
    APIRET rc;
-   SWCNTRL sw;
-   HSWITCH hSwitch;
    ULONG fgSession;
    ULONG length=4;
+   CHAR Status;
 
 /* Wait for screen access. This is called at server reset or at server startup */
 /* Here we do some waiting until this session comes in the foreground before *
  * going any further. This is because we may have been started in the bg      */
 
         if(serverGeneration==1){
-                hSwitch=WinQuerySwitchHandle(0,getpid());
-                rc=WinQuerySwitchEntry(hSwitch,&sw);
-                rc=DosQuerySysInfo(24,24,&fgSession,length);
-                while((0xff & fgSession)!=sw.idSession){
-                        rc=DosQuerySysInfo(24,24,&fgSession,length);
+                rc=VioScrLock(0, &Status, (HVIO)0);
+                while(Status != 0){
+                        rc=VioScrLock(0, &Status, (HVIO)0);
                         DosSleep(1000);
                         }
+                VioScrUnLock((HVIO)0);
                 return;
                 }
         WaitingForAccess=TRUE;
@@ -242,7 +240,7 @@ void os2CheckPopupPending()
 {
    int j;
    ULONG postCount;
-
+   return;  /* For now this is a no-op */
    DosQueryEventSem(hevPopupPending,&postCount);
    if(postCount==0) {               /* We have a popup pending */
           for (j = 0; j < screenInfo.numScreens; j++)

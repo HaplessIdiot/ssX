@@ -1,6 +1,11 @@
 XCOMM $XConsortium: Imakefile /main/6 1995/11/16 14:41:07 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.4 1996/01/05 13:19:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.5 1996/01/24 22:04:14 dawes Exp $
 #include <Server.tmpl>
+
+#ifdef OS2Architecture
+SRCS1 = os2Stub.c
+OBJS1 = os2Stub.o
+#endif
 
 SRCS = 	Args.c \
 	Color.c \
@@ -20,7 +25,7 @@ SRCS = 	Args.c \
 	TestExt.c \
 	Visual.c \
 	Window.c \
-	stubs.c
+	stubs.c $(SRCS1)
 
 OBJS = 	Args.o \
 	Color.o \
@@ -40,7 +45,7 @@ OBJS = 	Args.o \
 	TestExt.o \
 	Visual.o \
 	Window.o \
-	stubs.o
+	stubs.o $(OBJS1)
 
 
 INCLUDES = -I$(BUILDINCDIR) -I$(FONTINCSRC) \

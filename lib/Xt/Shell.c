@@ -1,5 +1,5 @@
 /* $XConsortium: Shell.c /main/172 1995/09/13 19:55:40 kaleb $ */
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.3 1995/06/29 13:24:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.4 1996/01/05 13:12:54 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -2649,7 +2649,8 @@ static void ApplicationShellInsertChild(widget)
 
 extern String _XtGetUserName(
 #if NeedFunctionPrototypes
-    String
+    String		/* dest_dir */,
+    int			/* len */
 #endif
 );
 
@@ -2897,7 +2898,7 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 	return;
 
     if (initialize) {
-	char nam_buf[256];
+	char nam_buf[32];
 	char pid[12];
 	String user_name;
 	String pidp = pid;
@@ -2913,7 +2914,7 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 		props[num_props++] = (*(p->proc))(p->name, (XtPointer)addr);
 
 	}
-	user_name = _XtGetUserName(nam_buf);
+	user_name = _XtGetUserName(nam_buf, sizeof nam_buf);
 	if (user_name)
 	    props[num_props++] = ArrayPack(SmUserID, &user_name);
 	sprintf(pid, "%d", getpid());

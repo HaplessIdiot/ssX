@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: usl.cf /main/42 1996/01/22 17:37:55 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.10 1996/01/05 13:06:48 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.11 1996/01/26 08:59:18 dawes Exp $
 
 #ifndef OSName
 #define OSName			UNIX System V/386 Release 4.2 Version 2.0
@@ -32,6 +32,7 @@ XCOMM operating system:  OSName
 #define HasThreadSafeAPI	NO
 #define SystemMTDefines		-D_REENTRANT
 #define ThreadsLibraries	-lthread
+#define DefaultCCOptions	-W0,-2A -Xa -Dasm=__asm
 #define SharedX11Reqs		-L$(BUILDLIBDIR) -lXThrStub
 #endif
 #include <svr4.cf>

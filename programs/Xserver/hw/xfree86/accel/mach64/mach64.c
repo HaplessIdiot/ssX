@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.44 1996/05/10 06:57:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.45 1996/05/11 11:03:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
- * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
+ * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -326,7 +326,7 @@ SymTabRec mach64ChipTable[] = {
     { MACH64_CX, "Mach64 CX" },
     { MACH64_CT, "Mach64 CT" },
     { MACH64_ET, "Mach64 ET" },
-    { MACH64_VT, "Mach64 VT or VT2" },
+    { MACH64_VT, "Mach64 VT" },
     { MACH64_GT, "Mach64 GT" },
     { -1, "" },
 };
@@ -336,7 +336,7 @@ char *mach64ClockTypeTable[] = {
     "ATI18818-1/ICS2595",
     "STG1703",
     "CH8398",
-    "ATI-Mach64CT",
+    "Internal",
     "AT&T20C408",
     "IBM-RGB514",
   };  
@@ -468,7 +468,7 @@ static ATIInformationBlock *GetATIInformationBlock()
 	info.DAC_Type = (tmp & CFG_INIT_DAC_TYPE) >> 9;
 	info.DAC_SubType = inb(ioSCRATCH_REG1+1) & 0xf0 | info.DAC_Type;
    } else {
-	info.Mem_Type = tmp & CFG_MEM_TYPE_CT;
+	info.Mem_Type = tmp & CFG_MEM_TYPE_xT;
 	info.DAC_Type = DAC_INTERNAL;
 	info.DAC_SubType = DAC_INTERNAL;
 #ifdef DEBUG
@@ -1342,7 +1342,7 @@ mach64Probe()
 		mach64ApertureAddr = 0x04000000;  /* for VLB */
 	}
 
-	if (mach64BusType == ISA) {
+	if ((mach64BusType == ISA) && (mach64ChipType != MACH64_VT)) {
 	    mach64ApertureSize = MEM_SIZE_4M;
 	    if (xf86Verbose) {
 	        ErrorF("%s %s: Using 4 MB aperture @ 0x%08x\n", XCONFIG_PROBED,

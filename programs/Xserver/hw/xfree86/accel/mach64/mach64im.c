@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64im.c,v 3.2 1995/01/28 15:53:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64im.c,v 3.3 1996/02/04 09:03:15 dawes Exp $ */
 /*
- * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
+ * Copyright 1992,1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -306,7 +306,8 @@ mach64ImageStippleFunc(x, y, w, h, psrc, pwidth, px, py, fgPixel, bgPixel,
     }
     regw(DP_SRC, (MONO_SRC_HOST | FRGD_SRC_FRGD_CLR | BKGD_SRC_BKGD_CLR));
 
-    w = (w + 31) >> 5; /* round up to int boundry */
+    w = (w + (px % 32) + 31) >> 5; /* round up to int boundry and take into */
+				   /* account the pixels skipped over */
 
     if (px)
         regw(DST_Y_X, (((x - (px % 32)) << 16) | (y & 0x0000ffff)));

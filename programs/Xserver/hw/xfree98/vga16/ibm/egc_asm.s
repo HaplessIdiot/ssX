@@ -1,205 +1,198 @@
-# $XFree86:$
+#include "assyntax.h"
 
+ 	FILE("egc_asm.s")
 
+	AS_BEGIN
+	SEG_TEXT
 
-
-# $XConsortium: egc_asm.s /main/2 1995/12/29 11:49:16 kaleb $
-
-	.text
-
-#
-#
-#
-	.globl	_getbits_x
-_getbits_x:
-	pushl	%esi
-	pushl	%ebx
-	pushl	%ecx
-	pushl	%edx
-	movl	20(%esp),%eax		#  x
-	movl	24(%esp),%ebx		#  patternwidth
-	movl	28(%esp),%esi		#  lineptr
-	pushl	%esi
-	movl	%eax,%edx
-	movl	%eax,%ecx
-	shrl	$3,%ecx
-	addl	%ecx,%esi
-	movb	%al,%cl
-	movb	(%esi),%ah
-	incl	%esi
-	movb	(%esi),%al
-	popl	%esi
-	andb	$07,%cl
-	shlw	%cl,%ax
-	addw	$8,%dx
-	subw	%bx,%dx
-	js	getbits_0
-	jz	getbits_0
-	movb	%dl,%cl
-	shrb	%cl,%ah
-	movb	(%esi),%al
-	shlw	%cl,%ax
+	GLOBL	GLNAME(getbits_x)
+GLNAME(getbits_x):
+	PUSH_L(ESI)
+	PUSH_L(EBX)
+	PUSH_L(ECX)
+	PUSH_L(EDX)
+	MOV_L(REGOFF(20,ESP),EAX)		/*  x */
+	MOV_L(REGOFF(24,ESP),EBX)		/*  patternwidth */
+	MOV_L(REGOFF(28,ESP),ESI)		/*  lineptr */
+	PUSH_L(ESI)
+	MOV_L(EAX,EDX)
+	MOV_L(EAX,ECX)
+	SHR_L(CONST(3),ECX)
+	ADD_L(ECX,ESI)
+	MOV_B(AL,CL)
+	MOV_B(REGIND(ESI),AH)
+	INC_L(ESI)
+	MOV_B(REGIND(ESI),AL)
+	POP_L(ESI)
+	AND_B(CONST(07),CL)
+	SHL_W(CL,AX)
+	ADD_W(CONST(8),DX)
+	SUB_W(BX,DX)
+	JS(getbits_0)
+	JZ(getbits_0)
+	MOV_B(DL,CL)
+	SHR_B(CL,AH)
+	MOV_B(REGIND(ESI),AL)
+	SHL_W(CL,AX)
 getbits_0:
-	cmpw	$8,%bx
-	jl	getbits_xx
-	movl	32(%esp),%ecx
-	shrb	%cl,%ah
-	movb	%ah,%al
-	popl	%edx
-	popl	%ecx
-	popl	%ebx
-	popl	%esi
-	ret
+	CMP_W(CONST(8),BX)
+	JL(getbits_xx)
+	MOV_L(REGOFF(32,ESP),ECX)
+	SHR_B(CL,AH)
+	MOV_B(AH,AL)
+	POP_L(EDX)
+	POP_L(ECX)
+	POP_L(EBX)
+	POP_L(ESI)
+	RET
 getbits_xx:
-	movb	$8,%cl
-	subb	%bl,%cl
-	movb	$0xff,%al
-	shlb	%cl,%al
-	andb	%al,%ah
-	cmpb	$1,%bl
-	je	bit1
-	cmpb	$2,%bl
-	je	bit2
-	cmpb	$4,%bl
-	je	bit4
-	jmp	bit3_x
-bit1:                        
-	movb	%ah,%al
-	shrb	$1,%al
-	orb	%al,%ah
+	MOV_B(CONST(8),CL)
+	SUB_B(BL,CL)
+	MOV_B(CONST(0xff),AL)
+	SHL_B(CL,AL)
+	AND_B(AL,AH)
+	CMP_B(CONST(1),BL)
+	JE(bit1)
+	CMP_B(CONST(2),BL)
+	JE(bit2)
+	CMP_B(CONST(4),BL)
+	JE(bit4)
+	JMP(bit3_x)
+bit1:
+	MOV_B(AH,AL)
+	SHR_B(CONST(1),AL)
+	OR_B(AL,AH)
 bit2:
-	movb	%ah,%al
-	shrb	$2,%al
-	orb	%al,%ah
+	MOV_B(AH,AL)
+	SHR_B(CONST(2),AL)
+	OR_B(AL,AH)
 bit4:
-	movb	%ah,%al
-	shrb	$4,%al
-	orb	%al,%ah
-	jmp	getbits_1
+	MOV_B(AH,AL)
+	SHR_B(CONST(4),AL)
+	OR_B(AL,AH)
+	JMP(getbits_1)
 bit3_x:
-	cmpb	$3,%bl
-	je	bit3
-	cmpb	$6,%bl
-	je	bit6
-	jmp	bit5
+	CMP_B(CONST(3),BL)
+	JE(bit3)
+	CMP_B(CONST(6),BL)
+	JE(bit6)
+	JMP(bit5)
 bit3:
-	movb	%ah,%al
-	shrb	$3,%al
-	orb	%al,%ah
+	MOV_B(AH,AL)
+	SHR_B(CONST(3),AL)
+	OR_B(AL,AH)
 bit6:
-	movb	%ah,%al
-	shrb	$6,%al
-	orb	%al,%ah
-	jmp	getbits_1
+	MOV_B(AH,AL)
+	SHR_B(CONST(6),AL)
+	OR_B(AL,AH)
+	JMP(getbits_1)
 bit5:
-	cmpb	$5,%bl
-	jne	bit7
-	movb	%ah,%al
-	shrb	$5,%al
-	orb	%al,%ah
-	jmp	getbits_1
+	CMP_B(CONST(5),BL)
+	JNE(bit7)
+	MOV_B(AH,AL)
+	SHR_B(CONST(5),AL)
+	OR_B(AL,AH)
+	JMP(getbits_1)
 bit7:
-	movb	%ah,%al
-	shrb	$7,%al
-	orb	%al,%ah
+	MOV_B(AH,AL)
+	SHR_B(CONST(7),AL)
+	OR_B(AL,AH)
 getbits_1:
-	movl	32(%esp),%ecx
-	shrb	%cl,%ah
-	movb	%ah,%al
-	popl	%edx
-	popl	%ecx
-	popl	%ebx
-	popl	%esi
-	ret
-#
-#
-#
-	.globl _wcopyr
-_wcopyr:
-	pushl	%esi
-	pushl	%edi
-	movl	12(%esp),%esi
-	movl	16(%esp),%edi
-	movl	20(%esp),%ecx
-	movl	_vgaBase,%eax
-	cmpl	%eax,%edi
-	jge	wcopyr_0
-	addl	$2,%edi
-	movw	(%esi),%ax
-	movw	%ax,(%edi)
-	addl	$2,%esi
-	decl	%ecx
+	MOV_L(REGOFF(32,ESP),ECX)
+	SHR_B(CL,AH)
+	MOV_B(AH,AL)
+	POP_L(EDX)
+	POP_L(ECX)
+	POP_L(EBX)
+	POP_L(ESI)
+	RET
+
+	GLOBL GLNAME(wcopyr)
+GLNAME(wcopyr):
+	PUSH_L(ESI)
+	PUSH_L(EDI)
+	MOV_L(REGOFF(12,ESP),ESI)
+	MOV_L(REGOFF(16,ESP),EDI)
+	MOV_L(REGOFF(20,ESP),ECX)
+	MOV_L(GLNAME(vgaBase),EAX)
+	CMP_L(EAX,EDI)
+	JGE(wcopyr_0)
+	ADD_L(CONST(2),EDI)
+	MOV_W(REGIND(ESI),AX)
+	MOV_W(AX,REGIND(EDI))
+	ADD_L(CONST(2),ESI)
+	DEC_L(ECX)
 wcopyr_0:
-	cld
-	rep
-	movsw
-	popl	%edi
-	popl	%esi
-	ret
+	CLD
+	REP
+	MOVS_W
+	POP_L(EDI)
+	POP_L(ESI)
+	RET
 
-	.globl	_wcopyl
-_wcopyl:
-	pushl	%esi
-	pushl	%edi
-	movl	12(%esp),%esi
-	movl	20(%esp),%ecx
-	movl	_vgaBase,%edi
-	movl	%ecx,%edx
-	decl	%edx
-	shll	%edx
-	subl	%edx,%esi
-	xorw	%ax,%ax
-	cmpl	%edi,%esi
-	jge	wcopyl_0
-	movb	$1,%al
-	decl	%ecx
+	GLOBL	GLNAME(wcopyl)
+GLNAME(wcopyl):
+	PUSH_L(ESI)
+	PUSH_L(EDI)
+	MOV_L(REGOFF(12,ESP),ESI)
+	MOV_L(REGOFF(20,ESP),ECX)
+	MOV_L(GLNAME(vgaBase),EDI)
+	MOV_L(ECX,EDX)
+	DEC_L(EDX)
+	SHL_L(CONST(1),EDX)
+	SUB_L(EDX,ESI)
+	XOR_W(AX,AX)
+	CMP_L(EDI,ESI)
+	JGE(wcopyl_0)
+	MOV_B(CONST(1),AL)
+	DEC_L(ECX)
 wcopyl_0:
-	movl	12(%esp),%esi
-	movl	16(%esp),%edi
-	std
-	rep
-	movsw
-	testb	%al,%al
-	jz	wcopyl_ret
-	addl	$2,%esi
-	movsw
+	MOV_L(REGOFF(12,ESP),ESI)
+	MOV_L(REGOFF(16,ESP),EDI)
+	STD
+	REP
+	MOVS_W
+	TEST_B(AL,AL)
+	JZ(wcopyl_ret)
+	ADD_L(CONST(2),ESI)
+	MOVS_W
 wcopyl_ret:
-	popl	%edi
-	popl	%esi
-	ret
+	POP_L(EDI)
+	POP_L(ESI)
+	RET
 
-	.globl	_read8Z
-_read8Z:
-	pushl	%esi
-	pushl	%edi
-	pushl	%ecx
-	pushl	%ebx
-	movl	20(%esp),%esi
-	movw	$0x04a2,%dx
-	movw	$0x43ff,%ax
-	outw	%ax,%dx
-	movb	$0x42,%ah
-	movb	(%esi),%bl
-	shll	$8,%ebx
-	outw	%ax,%dx
-	movb	$0x41,%ah
-	movb	(%esi),%bl
-	shll	$8,%ebx
-	outw	%ax,%dx
-	movb	$0x40,%ah
-	movb	(%esi),%bl
-	shll	$8,%ebx
-	outw	%ax,%dx
-	xorl	%eax,%eax
-	movb	(%esi),%bl
-	movl	$32,%ecx
+	GLOBL	GLNAME(read8Z)
+GLNAME(read8Z):
+	PUSH_L(ESI)
+	PUSH_L(EDI)
+	PUSH_L(ECX)
+	PUSH_L(EBX)
+	MOV_L(REGOFF(20,ESP),ESI)
+	MOV_W(CONST(0x04a2),DX)
+	MOV_W(CONST(0x43ff),AX)
+	OUT_W
+	MOV_B(CONST(0x42),AH)
+	MOV_B(REGIND(ESI),BL)
+	SHL_L(CONST(8),EBX)
+	OUT_W
+	MOV_B(CONST(0x41),AH)
+	MOV_B(REGIND(ESI),BL)
+	SHL_L(CONST(8),EBX)
+	OUT_W
+	MOV_B(CONST(0x40),AH)
+	MOV_B(REGIND(ESI),BL)
+	SHL_L(CONST(8),EBX)
+	OUT_W
+	XOR_L(EAX,EAX)
+	MOV_B(REGIND(ESI),BL)
+	MOV_L(CONST(32),ECX)
 read8Z_1:
-	rcrl	$1,%ebx
-	rcll	$4,%eax
-	loop	read8Z_1
+	RCR_L(CONST(1),EBX)
+	RCL_L(CONST(4),EAX)
+	LOOP(read8Z_1)
 
-	popl	%ebx
-	popl	%ecx
-	popl	%edi
-	popl	%esi
-	ret
+	POP_L(EBX)
+	POP_L(ECX)
+	POP_L(EDI)
+	POP_L(ESI)
+	RET

@@ -1,7 +1,35 @@
-/* Copyright (c) 1995 by Holger Veit */
-/* Modified extensively by Sebastien Marineau, 1996 */
+/* $XFree86: xc/lib/xtrans/Xtransos2.c,v 3.2 1996/05/10 12:27:50 dawes Exp $ */
 
-/* $XFree86$ */
+/*
+ * (c) Copyright 1996 by Sebastien Marineau and Holger Veit
+ *			<marineau@genie.uottawa.ca>
+ *                      <Holger.Veit@gmd.de>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+ * HOLGER VEIT  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of Sebastien Marineau or Holger Veit shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from Holger Veit or Sebastien Marineau.
+ *
+ */
+
+/* Implementation of the OS/2 local pipe transport layer */
 
 #define INCL_DOSNMPIPES
 #define INCL_DOSPROCESS
@@ -10,6 +38,11 @@
 #undef BYTE
 #undef BOOL
 #include <os2.h>
+
+#ifdef XSERV_t
+extern HEV hPipeSem;
+BOOL init_server_pipes();
+#endif
 
 /*************************************************************************
  * Independent Layer
@@ -236,6 +269,10 @@ char *port;
    XtransConnInfo ciptr;
    int namelen;
 
+#ifdef XSERV_t
+    if (! init_server_pipes()) return(NULL);
+#endif
+
     PRMSG(2,"Os2OpenServer(%s,%s,%s)\n",protocol,host,port);
 
    if( (ciptr=(XtransConnInfo)xcalloc(1,sizeof(struct _XtransConnInfo))) == NULL )
@@ -326,6 +363,21 @@ char *port;
        return(NULL);
        }
     PRMSG(5, "Os2OpenServer: Pipe handle %d EMX handle %d",ciptr->index,ciptr->fd,0 );
+
+#ifdef XSERV_t
+/* Attach the pipe sem to the pipe. Use handle index as key */
+    rc = DosSetNPipeSem(ciptr->fd, (HSEM)hPipeSem, ciptr->fd);
+    if (rc){
+        PRMSG(1, "TRANS(Os2OpenCOTSServer) Could not attach sem %d to pipe %d, rc=%d\n",
+                 hPipeSem,ciptr->fd,rc);
+        DosClose(ciptr->fd);
+        xfree(ciptr->addr);
+        xfree(ciptr->peeraddr);
+        xfree(ciptr);
+         return(NULL);
+        }
+#endif
+
     fcntl(ciptr->fd,F_SETFL,O_NDELAY);
     fcntl(ciptr->fd,F_SETFD,FD_CLOEXEC);
     return(ciptr);
@@ -626,6 +678,21 @@ int	       *status;
            return(NULL);
            }
     PRMSG(5, "Os2Accept: Pipe handle %d EMX handle %d",newciptr->index,newciptr->fd,0 );
+
+#ifdef XSERV_t
+/* Attach the pipe sem to the pipe. Use handle index as key */
+    rc = DosSetNPipeSem(newciptr->fd, (HSEM)hPipeSem, newciptr->fd);
+    if (rc){
+        PRMSG(1, "TRANS(Os2OpenCOTSServer) Could not attach sem %d to pipe %d, rc=%d\n",
+                 hPipeSem,newciptr->fd,rc);
+        DosClose(newciptr->fd);
+        xfree(newciptr->addr);
+        xfree(newciptr->peeraddr);
+        xfree(newciptr);
+         return(NULL);
+        }
+#endif
+
     fcntl(ciptr->fd,F_SETFL,O_NDELAY);
     fcntl(ciptr->fd,F_SETFD,FD_CLOEXEC);
     *status=0;
@@ -684,9 +751,31 @@ char *buf;
 int size;
 {
     int ret;
+    APIRET rc;
+    ULONG ulRead;
     PRMSG(2,"Os2Read(%d,%x,%d)\n", ciptr->fd, buf, size );
-    ret = read(ciptr->fd,buf,size);
-    if ((ret <0) && (errno == EINVAL)) errno = EPIPE;
+    errno = 0;
+    rc = DosRead(ciptr->fd, buf, size, &ulRead);
+    if (rc == 0){
+        ret = ulRead;
+        }
+    else if ((rc == 232) || (rc == 231)){
+        errno = EAGAIN;
+        ret = -1;
+        }
+    else if (rc == 6){
+        errno = EBADF;
+        ret = -1;
+        }
+     else if ((rc == 109) || (rc == 230) || (rc == 233)){
+        errno = EPIPE;
+       ret = -1;
+        }
+    else {
+           PRMSG(2,"Os2Read: Unknown return code from DosRead, fd %d rc=%d\n", ciptr->fd,rc,0 );
+           errno = EINVAL;
+           ret = -1;
+           }
     return (ret);
 }
 
@@ -697,10 +786,34 @@ char *buf;
 int size;
 {
     int ret;
+    APIRET rc;
+    ULONG nWritten;
     PRMSG(2,"Os2Write(%d,%x,%d)\n", ciptr->fd, buf, size );
-    ret = write(ciptr->fd,buf,size);
-    if ((ret <0) && (errno == EINVAL)) errno = EPIPE;
-    if ((ret <0) && (errno == ENOSPC)) errno = EAGAIN;
+    rc = DosWrite(ciptr->fd, buf, size, &nWritten);
+    if (rc == 0){
+         ret = nWritten;
+         if(nWritten == 0) { 
+                 errno=EAGAIN;
+                 ret = -1;
+                 }
+         }
+    else if ((rc == 39) || (rc == 112)){
+        errno = EAGAIN;
+        ret = -1;
+        }
+    else if ((rc == 109) || (rc == 230) || (rc == 233)){
+        errno = EPIPE;
+        ret = -1;
+        }
+    else if (rc == 6){
+         errno=EBADF;
+         ret = -1;
+         }
+    else {
+        PRMSG(2,"(Os2Write)Unknown return code from DosWrite, fd %d rc=%d\n", ciptr->fd,rc,0 );
+        errno = EINVAL;
+        ret = -1;
+        }
     return (ret);
 }
 
@@ -799,3 +912,24 @@ Xtransport	TRANS(OS2LocalFuncs) = {
 	TRANS(Os2Close),
 	TRANS(Os2CloseForCloning),
 };
+
+#ifdef XSERV_t
+/* This function is used in the server to initialize the semaphore used with pipes */
+
+BOOL init_server_pipes()
+{
+   static BOOL first_time=TRUE;
+   ULONG rc;
+
+   if(first_time){
+        rc = DosCreateEventSem(NULL, &hPipeSem,DC_SEM_SHARED,FALSE);
+        if (rc){
+           PRMSG(1,"TRANS(Os2OpenListener)Could not create pipe semaphore, rc=%d\n",
+                rc,0,0);
+           return(FALSE);
+           }
+     first_time=FALSE;
+     }
+return(TRUE);
+}
+#endif  /* XSERV_t */

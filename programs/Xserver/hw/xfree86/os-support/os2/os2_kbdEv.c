@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.7 1996/03/10 12:06:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_kbdEv.c,v 3.8 1996/04/15 11:31:13 dawes Exp $ */
 /*
  * (c) Copyright 1994,1996 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -107,6 +107,7 @@ extern void  XTestStealMotionData();
 /* end of include */
 
 HQUEUE hKbdQueue;
+HEV hKbdSem;
 int last_status;
 int lastStatus;
 int lastShiftState;
@@ -117,13 +118,13 @@ void os2PostKbdEvent();
 int os2KbdQueueQuery()
 {
     APIRET rc;
-    ULONG numElements;
+    ULONG numElements,postCount;
     
 	rc=DosQueryQueue(hKbdQueue,&numElements);
 	if((numElements!=0)) return(0); /* We have something in queue */
-	   
-return (1);
 
+    DosResetEventSem(hKbdSem,&postCount);
+    return (1);
 }
 
 
@@ -133,7 +134,7 @@ void xf86KbdEvents()
     APIRET rc;
     ULONG numElements;
     REQUESTDATA requestData;
-    ULONG dataLength;
+    ULONG dataLength,postCount;
     PVOID junkPointer;
     BYTE elemPriority;
     int scan,down;
@@ -141,12 +142,12 @@ void xf86KbdEvents()
     USHORT ModState;
     int i;
 
-    rc=DosQueryQueue(hKbdQueue,&numElements);
-    for(i=0;i<numElements;i++){
-        rc=DosReadQueue(hKbdQueue,&requestData,&dataLength,&junkPointer,
-                0L,0L,&elemPriority,0);
+     while((rc=DosReadQueue(hKbdQueue,&requestData,&dataLength,&junkPointer,
+                 0L,1L,&elemPriority,hKbdSem))==0){
+
         /*ErrorF("Got queue element. rc=%d, data=%d, scancode =%d,up=%d, ddflag %d\n",rc,requestData.ulData,
                 (requestData.ulData&0x7F00)>>8,requestData.ulData&0x8000,requestData.ulData>>16);*/
+
         scan=(requestData.ulData&0x7F00)>>8;
 
 	/* the separate cursor keys return 0xe0/scan */
@@ -187,6 +188,7 @@ void xf86KbdEvents()
 	down = (requestData.ulData&0x8000) ? FALSE : TRUE;
 	if(scan!=0) os2PostKbdEvent(scan, down);
     }
+    rc = DosResetEventSem(hKbdSem,&postCount);
 }
 
 /*
@@ -444,14 +446,13 @@ void os2KbdMonitorThread(arg)
 void *arg;
 {
         struct KeyPacket packet;
-        HSWITCH hSwitch;
-  	SWCNTRL sw;
         APIRET rc;
         USHORT length;
         ULONG queueParam;
         HMONITOR hKbdMonitor;
         MONIN monInbuf;
         MONOUT monOutbuf;
+        char queueName[128];
 
 
         /* monInbuf=(MONIN *)_tmalloc(2*sizeof(MONIN));
@@ -464,16 +465,15 @@ void *arg;
         monInbuf.cb=sizeof(MONIN);
         monOutbuf.cb=sizeof(MONOUT);
 
-        hSwitch=WinQuerySwitchHandle(0,getpid());
-        rc=WinQuerySwitchEntry(hSwitch,&sw);
-	rc=DosMonOpen("KBD$",&hKbdMonitor);
+        rc=DosMonOpen("KBD$",&hKbdMonitor);
         ErrorF("xf86-OS/2: Opened kbd monitor, rc=%d\n",rc);
- 	rc=DosMonReg(hKbdMonitor,(PBYTE)&monInbuf,(PBYTE)&monOutbuf,(USHORT)2,(USHORT)sw.idSession);
+ 	rc=DosMonReg(hKbdMonitor,(PBYTE)&monInbuf,(PBYTE)&monOutbuf,(USHORT)2,(USHORT)-1);
         ErrorF("xf86-OS/2: Kbd monitor registered, rc=%d\n",rc);
 	if(rc){
 		DosMonClose(hKbdMonitor); exit(1);
 		}
-        rc=DosCreateQueue(&hKbdQueue,0L,"\\QUEUES\\XF86KBD");
+        sprintf(queueName,"\\QUEUES\\XF86KBD\\%d",getpid());
+        rc=DosCreateQueue(&hKbdQueue,0L,queueName);
         ErrorF("xf86-OS/2: Kbd Queue created, rc=%d\n",rc);
         rc=DosPurgeQueue(hKbdQueue);
 

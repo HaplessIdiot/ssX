@@ -1,4 +1,4 @@
-/* $XConsortium: aixlcLoad.c /main/7 1995/12/05 15:43:11 matt $ */
+/* $XConsortium: aixlcLoad.c /main/9 1996/04/19 16:00:47 kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -201,10 +201,11 @@ resolve_ldxinfo(lc_name, type, option)
 
     dir = getenv("LDXDBPATH");
     if(dir != NULL){
-	strcpy(buf, dir);
+	strncpy(buf, dir, BUFSIZE);
+	buf[BUFSIZE-1] = '\0';
     }else{
 	/* Resolve default path for database */
-	_XlcResolveI18NPath(buf);
+	_XlcResolveI18NPath(buf, BUFSIZE);
     }
     n = parse_path(buf, args, 256);
     for(i = 0; i < n; ++i){

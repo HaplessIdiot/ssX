@@ -1,5 +1,5 @@
 /* $XConsortium: lcFile.c,v 1.1 94/01/20 17:56:55 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.2 1996/04/15 11:58:08 dawes Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -81,23 +81,27 @@ parse_line(line, argv, argsize)
 #endif
 
 static void
-xlocaledir(path)
-    char *path;
+xlocaledir(buf, buf_len)
+    char *buf;
+    int buf_len;
 {
-    char *dir, *p = path;
-    int len;
+    char *dir, *p = buf;
+    int len = 0;
 
     dir = getenv("XLOCALEDIR");
     if(dir != NULL){
 	len = strlen(dir);
-	strcpy(p, dir);
-	p[len++] = LC_PATHDELIM;
-	p += len;
+	strncpy(p, dir, buf_len);
+	if (len < buf_len) {
+	    p[len++] = LC_PATHDELIM;
+	    p += len;
+	}
     }
+    if (len < buf_len)
 #ifndef __EMX__
-    strcpy(p, XLOCALEDIR);
+	strncpy(p, XLOCALEDIR, buf_len - len);
 #else
-    strcpy(p,__XOS2RedirRoot(XLOCALEDIR));
+	strncpy(p,__XOS2RedirRoot(XLOCALEDIR), buf_len - len);
 #endif
 }
 
@@ -229,7 +233,7 @@ _XlcFileName(lcd, category)
     }
 
     lowercase(cat, category);
-    xlocaledir(dir);
+    xlocaledir(dir,BUFSIZE);
     n = parse_path(dir, args, 256);
     for(i = 0; i < n; ++i){
 	char buf[BUFSIZE], *name;
@@ -277,7 +281,7 @@ _XlcResolveLocaleName(lc_name, full_name, language, territory, codeset)
     int i, n;
     char *args[256];
 
-    xlocaledir(dir);
+    xlocaledir(dir,BUFSIZE);
     n = parse_path(dir, args, 256);
     for(i = 0; i < n; ++i){
 	sprintf(buf, "%s/%s", args[i], LOCALE_ALIAS);
@@ -344,7 +348,7 @@ _XlcResolveDBName(lc_name, file_name)
     int i, n;
     char *args[256];
 
-    xlocaledir(dir);
+    xlocaledir(dir,BUFSIZE);
     n = parse_path(dir, args, 256);
     for(i = 0; i < n; ++i){
 	sprintf(buf, "%s/%s", args[i], LOCALE_DIR);
@@ -366,11 +370,12 @@ _XlcResolveDBName(lc_name, file_name)
 
 /************************************************************************/
 int
-_XlcResolveI18NPath(path_name)
-    char *path_name;
+_XlcResolveI18NPath(buf, buf_len)
+    char *buf;
+    int buf_len;
 {
-    if(path_name != NULL){
-	xlocaledir(path_name);
+    if(buf != NULL){
+	xlocaledir(buf, buf_len);
     }
     return 1;
 }

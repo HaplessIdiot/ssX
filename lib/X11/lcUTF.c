@@ -1,4 +1,4 @@
-/* $XConsortium: lcUTF.c,v 1.6 94/01/20 18:07:42 rws Exp $ */
+/* $XConsortium: lcUTF.c /main/9 1996/04/19 16:00:56 kaleb $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -87,7 +87,6 @@ static void	init_ksc5601tab();
 static void	init_gb2312tab();
 
 
-static char	*int_locale = NULL;
 static long	*tabkuten = NULL;
 static long	*tabksc5601 = NULL;
 static long	*tabgb = NULL;
@@ -172,7 +171,7 @@ long	fb_default;
     char	filename[BUFSIZE];
     char	*p, *q;
 
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -207,7 +206,7 @@ long	fb_default;
     char	filename[BUFSIZE];
     char	*p, *q;
 
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -242,7 +241,7 @@ long	fb_default;
     char	filename[BUFSIZE];
     char	*p, *q;
 
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -277,7 +276,7 @@ long	fb_default;
     char	filename[BUFSIZE];
     char	*p, *q;
 
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -312,7 +311,7 @@ long	fb_default;
     char	filename[BUFSIZE];
     char	*p, *q;
 
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -347,7 +346,7 @@ long	fb_default;
     char	filename[BUFSIZE];
     char	*p, *q;
 
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -382,7 +381,7 @@ long	fb_default;
     char	filename[BUFSIZE];
     char	*p, *q;
 
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -417,7 +416,7 @@ long	fb_default;
     char	filename[BUFSIZE];
     char	*p, *q;
 
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -452,7 +451,7 @@ long	fb_default;
     char	filename[BUFSIZE];
     char	*p, *q;
 
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -543,7 +542,7 @@ long	fb_default;
     if((tabkuten = (long *)Xmalloc(KUTENMAX * sizeof(long))) == NULL) {
 	return;
     }
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -581,7 +580,7 @@ long	fb_default;
     if((tabksc5601 = (long *)Xmalloc(KSCMAX * sizeof(long))) == NULL) {
 	return;
     }
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -619,7 +618,7 @@ long	fb_default;
     if((tabgb = (long *)Xmalloc(GBMAX * sizeof(long))) == NULL) {
 	return;
     }
-    _XlcResolveI18NPath(dirname);
+    _XlcResolveI18NPath(dirname, BUFSIZE);
     p = dirname;
     while(p) {
 	q = strchr(p, ':');
@@ -812,7 +811,7 @@ utf1tocs(conv, from, from_left, to, to_left, args, num_args)
     i=0;
     while(our_mbtowc(&dummy, (char*)&char_ptr[0], i) <= 0)
 	i++;
-    utftocs(conv, from, &i, to, to_left, args, num_args);
+    return utftocs(conv, from, &i, to, to_left, args, num_args);
 }
 
 static int
@@ -840,50 +839,50 @@ ucstocs(conv, from, from_left, to, to_left, args, num_args)
     buf_len = *to_left;
 
     while(ucs_len > 0 && buf_len > 0) {
-	    while(pdata->next) {
-		long	r;
-		long	*tbl;
+	while(pdata->next) {
+	    long	r;
+	    long	*tbl;
 
-		tbl = pdata->fromtbl;
-		tbl += *ucsptr;
-		if((r = *tbl) == -1) {
-		    if(tmpcharset) {
-			    goto end;
-		    } else {
-			pdata = pdata->next;
-			continue;
-		    }
+	    tbl = pdata->fromtbl;
+	    tbl += *ucsptr;
+	    if((r = *tbl) == -1) {
+		if(tmpcharset) {
+		    goto end;
 		} else {
-		    if(!tmpcharset) tmpcharset = pdata->charset;
+		    pdata = pdata->next;
+		    continue;
 		}
-		ucsptr++;
-		if(r < 128) {
-		    *bufptr++ = r;
-		    ucs_len--;
-		    buf_len--;
-		} else {
-		    switch(pdata->type) {
-			case N11n_ja:
-			    *bufptr++ = (r/100 + ' ');
-			    *bufptr++ = (r%100 + ' ');
-			    break;
-			case N11n_ko:
-			    *bufptr++ = (r/94 + 0x21);
-			    *bufptr++ = (r%94 + 0x21);
-			    break;
-			case N11n_zh:
-			    *bufptr++ = 0x20 + (r/100);
-			    *bufptr++ = 0x20 + (r%100);
-			    break;
-			default:
-			    break;
-		    }
-		    ucs_len--;
-		    buf_len -= 2;
-		}
-		break;
+	    } else {
+		if(!tmpcharset) tmpcharset = pdata->charset;
 	    }
-	    if(!tmpcharset) return (-1); /* Unknown Codepoint */
+	    ucsptr++;
+	    if(r < 128) {
+		*bufptr++ = r;
+		ucs_len--;
+		buf_len--;
+	    } else {
+		switch(pdata->type) {
+		case N11n_ja:
+		    *bufptr++ = (r/100 + ' ');
+		    *bufptr++ = (r%100 + ' ');
+		    break;
+		case N11n_ko:
+		    *bufptr++ = (r/94 + 0x21);
+		    *bufptr++ = (r%94 + 0x21);
+		    break;
+		case N11n_zh:
+		    *bufptr++ = 0x20 + (r/100);
+		    *bufptr++ = 0x20 + (r%100);
+		    break;
+		default:
+		    break;
+		}
+		ucs_len--;
+		buf_len -= 2;
+	    }
+	    break;
+	}
+	if(!tmpcharset) return (-1); /* Unknown Codepoint */
     }
 end:
     if((num_args > 0) && tmpcharset)
@@ -907,25 +906,25 @@ char **read_from;
 int *from_len;
 #endif
 {
-	int c, i;
-	char str[UTFmax]; /* MB_LEN_MAX really */
-	unsigned long l;
-	int n;
+    int c, i;
+    char str[UTFmax]; /* MB_LEN_MAX really */
+    unsigned long l;
+    int n;
 
-	str[0] = '\0';
-	for(i = 0; i <= UTFmax;) {
-		c = **read_from;
-		(*read_from)++;
-		str[i++] = c;
-		n = our_mbtowc(&l, str, i);
-		if(n == -1)
-			return(-2);
-		if(n > 0) {
-			*from_len -= n;
-			return(l);
-		}
+    str[0] = '\0';
+    for(i = 0; i <= UTFmax;) {
+	c = **read_from;
+	(*read_from)++;
+	str[i++] = c;
+	n = our_mbtowc(&l, str, i);
+	if(n == -1)
+	    return(-2);
+	if(n > 0) {
+	    *from_len -= n;
+	    return(l);
 	}
-	return(-2);
+    }
+    return(-2);
 }
 
 static
@@ -1071,59 +1070,59 @@ char **utfptr;
 int *utf_len;
 #endif
 {
-	long l = (long)r;
+    long l = (long)r;
 
-        if(!utfptr || !*utfptr)
-                return;               /* no shift states */
-        if(l & ~Wchar2) {
-                if(l & ~Wchar4) {
-                        if(l & ~Wchar5) {
-                                /* 6 bytes */
-                                *(*utfptr)++ = T6 | ((l >> 5*Bitx) & Mask6);
-                                *(*utfptr)++ = Tx | ((l >> 4*Bitx) & Maskx);
-                                *(*utfptr)++  = Tx | ((l >> 3*Bitx) & Maskx);
-                                *(*utfptr)++  = Tx | ((l >> 2*Bitx) & Maskx);
-                                *(*utfptr)++  = Tx | ((l >> 1*Bitx) & Maskx);
-                                *(*utfptr)++  = Tx |  (l & Maskx);
-                                *utf_len -= 6;
-                                return;
-                        }
-                        /* 5 bytes */
-                         *(*utfptr)++ = T5 |  (l >> 4*Bitx);
-                         *(*utfptr)++ = Tx | ((l >> 3*Bitx) & Maskx);
-                         *(*utfptr)++ = Tx | ((l >> 2*Bitx) & Maskx);
-                         *(*utfptr)++ = Tx | ((l >> 1*Bitx) & Maskx);
-                         *(*utfptr)++ = Tx |  (l & Maskx);
-                         *utf_len -= 5;
-                         return;
-                }
-                if(l & ~Wchar3) {
-                        /* 4 bytes */
-                         *(*utfptr)++ = T4 |  (l >> 3*Bitx);
-                         *(*utfptr)++ = Tx | ((l >> 2*Bitx) & Maskx);
-                         *(*utfptr)++ = Tx | ((l >> 1*Bitx) & Maskx);
-                         *(*utfptr)++ = Tx |  (l & Maskx);
-                         *utf_len -= 4;
-                         return;
-                }
-                /* 3 bytes */
-                 *(*utfptr)++ = T3 |  (l >> 2*Bitx);
-                 *(*utfptr)++ = Tx | ((l >> 1*Bitx) & Maskx);
-                 *(*utfptr)++ = Tx |  (l & Maskx);
-                 *utf_len -= 3;
-                 return;
-        }
-        if(l & ~Wchar1) {
-                /* 2 bytes */
-                 *(*utfptr)++ = T2 | (l >> 1*Bitx);
-                 *(*utfptr)++ = Tx | (l & Maskx);
-                 *utf_len -= 2;
-                 return;
-        }
-        /* 1 byte */
-         *(*utfptr)++ = T1 | l;
-         *utf_len -= 1;
-         return;
+    if(!utfptr || !*utfptr)
+	return;               /* no shift states */
+    if(l & ~Wchar2) {
+	if(l & ~Wchar4) {
+	    if(l & ~Wchar5) {
+		/* 6 bytes */
+		*(*utfptr)++ = T6 | ((l >> 5*Bitx) & Mask6);
+		*(*utfptr)++ = Tx | ((l >> 4*Bitx) & Maskx);
+		*(*utfptr)++  = Tx | ((l >> 3*Bitx) & Maskx);
+		*(*utfptr)++  = Tx | ((l >> 2*Bitx) & Maskx);
+		*(*utfptr)++  = Tx | ((l >> 1*Bitx) & Maskx);
+		*(*utfptr)++  = Tx |  (l & Maskx);
+		*utf_len -= 6;
+		return;
+	    }
+	    /* 5 bytes */
+	    *(*utfptr)++ = T5 |  (l >> 4*Bitx);
+	    *(*utfptr)++ = Tx | ((l >> 3*Bitx) & Maskx);
+	    *(*utfptr)++ = Tx | ((l >> 2*Bitx) & Maskx);
+	    *(*utfptr)++ = Tx | ((l >> 1*Bitx) & Maskx);
+	    *(*utfptr)++ = Tx |  (l & Maskx);
+	    *utf_len -= 5;
+	    return;
+	}
+	if(l & ~Wchar3) {
+	    /* 4 bytes */
+	    *(*utfptr)++ = T4 |  (l >> 3*Bitx);
+	    *(*utfptr)++ = Tx | ((l >> 2*Bitx) & Maskx);
+	    *(*utfptr)++ = Tx | ((l >> 1*Bitx) & Maskx);
+	    *(*utfptr)++ = Tx |  (l & Maskx);
+	    *utf_len -= 4;
+	    return;
+	}
+	/* 3 bytes */
+	*(*utfptr)++ = T3 |  (l >> 2*Bitx);
+	*(*utfptr)++ = Tx | ((l >> 1*Bitx) & Maskx);
+	*(*utfptr)++ = Tx |  (l & Maskx);
+	*utf_len -= 3;
+	return;
+    }
+    if(l & ~Wchar1) {
+	/* 2 bytes */
+	*(*utfptr)++ = T2 | (l >> 1*Bitx);
+	*(*utfptr)++ = Tx | (l & Maskx);
+	*utf_len -= 2;
+	return;
+    }
+    /* 1 byte */
+    *(*utfptr)++ = T1 | l;
+    *utf_len -= 1;
+    return;
 }
 
 static void
@@ -1135,8 +1134,8 @@ unsigned char c;
 Rune *r;
 #endif
 {
-	*r = (Rune)c;
-	return;
+    *r = (Rune)c;
+    return;
 }
 
 static void
@@ -1148,38 +1147,37 @@ unsigned char c;
 Rune *r;
 #endif
 {
-        static enum { init, cs1last} state = init;
-        static int korean646 = 1; /* fixed to 1 for now. */
-        static int lastc;
-	unsigned char	ch = (c|0x80); /* XXX */
-        int n;
-        long l;
+    static enum { init, cs1last} state = init;
+    static int korean646 = 1; /* fixed to 1 for now. */
+    static int lastc;
+    unsigned char	ch = (c|0x80); /* XXX */
+    int n;
+    long l;
 
-        switch(state)
-        {
-        case init:
-                if (ch < 128){
-                        if(korean646 && (ch=='\\')){
-                                emit(0x20A9);
-                        } else {
-                                emit(ch);
-                        }
-                }else{
-                        lastc = ch;
-                        state = cs1last;
-                }
-                return;
+    switch(state) {
+    case init:
+	if (ch < 128){
+	    if(korean646 && (ch=='\\')){
+		emit(0x20A9);
+	    } else {
+		emit(ch);
+	    }
+	}else{
+	    lastc = ch;
+	    state = cs1last;
+	}
+	return;
         
-        case cs1last: /* 2nd byte of codeset 1 (KSC 5601) */
-                n = ((lastc&0x7f)-33)*94 + (ch&0x7f)-33;
-                if((l = tabksc5601[n]) == 0){
-		    emit(BADMAP);
-                } else {
-                        emit(l);
-                }
-                state = init;
-                return;
-        }
+    case cs1last: /* 2nd byte of codeset 1 (KSC 5601) */
+	n = ((lastc&0x7f)-33)*94 + (ch&0x7f)-33;
+	if((l = tabksc5601[n]) == 0){
+	    emit(BADMAP);
+	} else {
+	    emit(l);
+	}
+	state = init;
+	return;
+    }
 }
 
 static void
@@ -1187,8 +1185,8 @@ static void
 jis02012rune(unsigned char c, Rune *r)
 #else
 jis02012rune(c, r)
-unsigned char c;
-Rune *r;
+    unsigned char c;
+    Rune *r;
 #endif
 {
 /* To Be Implemented */
@@ -1199,42 +1197,40 @@ static void
 gb2rune(unsigned char c, Rune *r)
 #else
 gb2rune(c, r)
-unsigned char c;
-Rune *r;
+    unsigned char c;
+    Rune *r;
 #endif
 {
-        static enum { state0, state1 } state = state0;
-        static int lastc;
-        long n, ch;
-	unsigned char	ch1 = (c|0x80); /* XXX */
+    static enum { state0, state1 } state = state0;
+    static int lastc;
+    long n, ch;
+    unsigned char	ch1 = (c|0x80); /* XXX */
 
-again:
-        switch(state)
-        {
-        case state0:    /* idle state */
-                if(ch1 >= 0xA1){
-                        lastc = ch1;
-                        state = state1;
-                        return;
-                }
-                emit(ch1);
-                return;
+    switch(state) {
+    case state0:    /* idle state */
+	if(ch1 >= 0xA1){
+	    lastc = ch1;
+	    state = state1;
+	    return;
+	}
+        emit(ch1);
+        return;
 
-        case state1:    /* seen a font spec */
-                if(ch1 >= 0xA1)
-                        n = (lastc-0xA0)*100 + (ch1-0xA0);
-                else {
-                        emit(BADMAP);
-                        state = state0;
-                        return;
-                }
-                ch = tabgb[n];
-                if(ch < 0){
-                        emit(BADMAP);
-                } else
-                        emit(ch);
-                state = state0;
+    case state1:    /* seen a font spec */
+	if(ch1 >= 0xA1)
+	    n = (lastc-0xA0)*100 + (ch1-0xA0);
+        else {
+	    emit(BADMAP);
+	    state = state0;
+	    return;
         }
+        ch = tabgb[n];
+        if(ch < 0){
+	    emit(BADMAP);
+        } else
+	    emit(ch);
+        state = state0;
+    }
 }
 
 static void
@@ -1242,46 +1238,45 @@ static void
 jis02082rune(unsigned char c, Rune *r)
 #else
 jis02082rune(c, r)
-unsigned char c;
-Rune *r;
+    unsigned char c;
+    Rune *r;
 #endif
 {
-        static enum { state0, state1} state = state0;
-        static int lastc;
-	unsigned char	ch = (c|0x80); /* XXX */
-        int n;
-        long l;
+    static enum { state0, state1} state = state0;
+    static int lastc;
+    unsigned char	ch = (c|0x80); /* XXX */
+    int n;
+    long l;
 
 again:
-        switch(state)
-        {
-        case state0:    /* idle state */
-                lastc = ch;
-		state = state1;
-		return;
+    switch(state) {
+    case state0:    /* idle state */
+	lastc = ch;
+	state = state1;
+	return;
 
-        case state1:    /* two part char */
-                if((lastc&0x80) != (ch&0x80)){
-                        emit(lastc);
-                        state = state0;
-                        goto again;
-                }
-                if(CANS2J(lastc, ch)){
-                        int h = lastc, l = ch;
-                        S2J(h, l);
-                        n = h*100 + l - 3232;
-                } else
-                        n = (lastc&0x7F)*100 + (ch&0x7f) - 3232; /* kuten */
-                if((l = tabkuten[n]) == -1){
-			emit(BADMAP);
-                } else {          
-                        if(l < 0){
-                                l = -l;
-                        }
-                        emit(l);
-                }        
-                state = state0;
-        }
+    case state1:    /* two part char */
+	if((lastc&0x80) != (ch&0x80)){
+	    emit(lastc);
+	    state = state0;
+	    goto again;
+	}
+	if(CANS2J(lastc, ch)){
+	    int h = lastc, l = ch;
+	    S2J(h, l);
+	    n = h*100 + l - 3232;
+	} else
+	    n = (lastc&0x7F)*100 + (ch&0x7f) - 3232; /* kuten */
+	if((l = tabkuten[n]) == -1){
+	    emit(BADMAP);
+	} else {          
+	    if(l < 0){
+		l = -l;
+	    }
+	    emit(l);
+	}        
+	state = state0;
+    }
 }
 
 static int
@@ -1289,119 +1284,121 @@ static int
 our_mbtowc(unsigned long *p, char *s, size_t n)
 #else
 our_mbtowc(p, s, n)
-unsigned long *p;
-char *s;
-size_t n;
+    unsigned long *p;
+    char *s;
+    size_t n;
 #endif
 {
-	unsigned char *us;
-	int c0, c1, c2, c3, c4, c5;
-	unsigned long wc;
+    unsigned char *us;
+    int c0, c1, c2, c3, c4, c5;
+    unsigned long wc;
 
-	if(s == 0)
-		return 0;		/* no shift states */
+    if(s == 0)
+	return 0;		/* no shift states */
 
-	if(n < 1)
+    if(n < 1)
+	goto badlen;
+    us = (unsigned char*)s;
+    c0 = us[0];
+    if(c0 >= T3) {
+	if(n < 3)
+	    goto badlen;
+	c1 = us[1] ^ Tx;
+	c2 = us[2] ^ Tx;
+	if((c1|c2) & T2) {
+	    goto bad;
+	}
+	if(c0 >= T5) {
+	    if(n < 5)
 		goto badlen;
-	us = (unsigned char*)s;
-	c0 = us[0];
-	if(c0 >= T3) {
-		if(n < 3)
-			goto badlen;
-		c1 = us[1] ^ Tx;
-		c2 = us[2] ^ Tx;
-		if((c1|c2) & T2) {
-			goto bad;
-		}
-		if(c0 >= T5) {
-			if(n < 5)
-				goto badlen;
-			c3 = us[3] ^ Tx;
-			c4 = us[4] ^ Tx;
-			if((c3|c4) & T2) {
-				goto bad;
-			}
-			if(c0 >= T6) {
-				/* 6 bytes */
-				if(n < 6)
-					goto badlen;
-				c5 = us[5] ^ Tx;
-				if(c5 & T2) {
-					goto bad;
-				}
-				wc = ((((((((((c0 & Mask6) << Bitx) |
-					c1) << Bitx) | c2) << Bitx) |
-					c3) << Bitx) | c4) << Bitx) | c5;
-				if(wc <= Wchar5) {
-					goto bad;
-				}
-				*p = wc;
-				return 6;
-			}
-			/* 5 bytes */
-			wc = ((((((((c0 & Mask5) << Bitx) |
-				c1) << Bitx) | c2) << Bitx) |
-				c3) << Bitx) | c4;
-			if(wc <= Wchar4) {
-				goto bad;
-			}
-			*p = wc;
-			return 5;
-		}
-		if(c0 >= T4) {
-			/* 4 bytes */
-			if(n < 4)
-				goto badlen;
-			c3 = us[3] ^ Tx;
-			if(c3 & T2) {
-				goto bad;
-			}
-			wc = ((((((c0 & Mask4) << Bitx) |
-				c1) << Bitx) | c2) << Bitx) |
-				c3;
-			if(wc <= Wchar3) {
-				goto bad;
-			}
-			*p = wc;
-			return 4;
-		}
-		/* 3 bytes */
-		wc = ((((c0 & Mask3) << Bitx) |
-			c1) << Bitx) | c2;
-		if(wc <= Wchar2) {
-			goto bad;
-		}
-		*p = wc;
-		return 3;
-	}
-	if(c0 >= T2) {
-		/* 2 bytes */
-		if(n < 2)
-			goto badlen;
-		c1 = us[1] ^ Tx;
-		if(c1 & T2) {
-			goto bad;
-		}
-		wc = ((c0 & Mask2) << Bitx) |
-			c1;
-		if(wc <= Wchar1) {
-			goto bad;
-		}
-		*p = wc;
-		return 2;
-	}
-	/* 1 byte */
-	if(c0 >= Tx) {
+	    c3 = us[3] ^ Tx;
+	    c4 = us[4] ^ Tx;
+	    if((c3|c4) & T2) {
 		goto bad;
+	    }
+	    if(c0 >= T6) {
+		/* 6 bytes */
+		if(n < 6)
+		    goto badlen;
+		c5 = us[5] ^ Tx;
+		if(c5 & T2) {
+		    goto bad;
+		}
+		wc = ((((((((((c0 & Mask6) << Bitx) | c1) 
+					   << Bitx) | c2) 
+					   << Bitx) | c3) 
+					   << Bitx) | c4) 
+					   << Bitx) | c5;
+		if(wc <= Wchar5) {
+		    goto bad;
+		}
+		*p = wc;
+		return 6;
+	    }
+	    /* 5 bytes */
+	    wc = ((((((((c0 & Mask5) << Bitx) | c1) 
+				     << Bitx) | c2) 
+				     << Bitx) | c3) 
+				     << Bitx) | c4;
+	    if(wc <= Wchar4) {
+				goto bad;
+	    }
+	    *p = wc;
+	    return 5;
 	}
-	*p = c0;
-	return 1;
+	if(c0 >= T4) {
+	    /* 4 bytes */
+	    if(n < 4)
+		goto badlen;
+	    c3 = us[3] ^ Tx;
+	    if(c3 & T2) {
+		goto bad;
+	    }
+	    wc = ((((((c0 & Mask4) << Bitx) | c1) 
+				   << Bitx) | c2) 
+				   << Bitx) | c3;
+	    if(wc <= Wchar3) {
+		goto bad;
+	    }
+	    *p = wc;
+	    return 4;
+	}
+	/* 3 bytes */
+	wc = ((((c0 & Mask3) << Bitx) | c1) 
+			     << Bitx) | c2;
+	if(wc <= Wchar2) {
+	    goto bad;
+	}
+	*p = wc;
+	return 3;
+    }
+    if(c0 >= T2) {
+	/* 2 bytes */
+	if(n < 2)
+	    goto badlen;
+	c1 = us[1] ^ Tx;
+	if(c1 & T2) {
+	    goto bad;
+	}
+	wc = ((c0 & Mask2) << Bitx) | c1;
+	if(wc <= Wchar1) {
+	    goto bad;
+	}
+	*p = wc;
+	return 2;
+    }
+    /* 1 byte */
+    if(c0 >= Tx) {
+	goto bad;
+    }
+    *p = c0;
+    return 1;
 
 bad:
-	errno = EILSEQ;
-	return -1;
+    errno = EILSEQ;
+    return -1;
 badlen:
-	return -2;
+    return -2;
 }
 
 static void
@@ -1428,11 +1425,6 @@ create_conv(lcd, methods)
     _XlcInitUTFInfo(lcd);
 
     return conv;
-
-err:
-    close_converter(conv);
-
-    return (XlcConv) NULL;
 }
 
 static XlcConvMethodsRec mbtocs_methods = {

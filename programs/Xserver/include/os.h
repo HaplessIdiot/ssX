@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h /main/55 1995/12/08 13:34:38 dpw $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.12 1996/02/18 03:45:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.13 1996/03/29 22:19:33 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -414,7 +414,7 @@ extern void FatalError(
     ...
 #endif
 )
-#if __GNUC__
+#if __GNUC__ == 2 && __GNUC_MINOR__ > 4 
 __attribute((noreturn))
 #endif
 ;

@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2E (beta version)
  <author>The XFree86 Project, Inc
- <date>12 May 1996
+ <date>13 May 1996
 
 
 <abstract>
@@ -120,10 +120,13 @@ It is expected that it will reappear in some form in a future release.
 <itemize>
   <item>Screen blanking for Mach64 CT cards running at 16bpp and 32bpp has
 	been fixed.
-  <item>The Mach64 server will detect the new VT and GT cards, but hasn't
-	yet been tested with them.
+  <item>The Mach64 server will detect the new VT and GT cards, and it should
+	work for at least the VT cards.
   <item>A problem that caused the server to incorrectly use block I/O
 	mode on some cards has been fixed.
+  <item>A problem with ol[v]wm icons has been fixed.
+  <item>A problem with ghostview scrollbars has been fixed.  This may also
+	fix some Netscape font problems that have been reported.
 </itemize>
 <sect1> W32 server
 <p>
@@ -161,6 +164,8 @@ It is expected that it will reappear in some form in a future release.
 	This removes the need for the BSD kernel to built with the
 	COMPAT_43 option.  There are problems with this on FreeBSD 2.0.5
 	and earlier, so it isn't used in that case.
+  <item>The termcap and terminfo entries for xterm have been brought up to
+	date.
 </itemize>
 <p>
 <sect> New Features in 3.1.2D
@@ -893,7 +898,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.27 1996/05/12 12:36:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.28 1996/05/12 13:10:21 dawes Exp $
 </verb>
 
 </article>
