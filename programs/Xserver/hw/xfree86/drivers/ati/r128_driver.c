@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.11 2000/12/07 15:43:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.12 2000/12/07 20:26:20 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -537,11 +537,13 @@ static Bool R128GetBIOSParameters(ScrnInfoPtr pScrn)
     }
     if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
 	info->BIOSAddr = 0x00000000;
+	xfree(info->VBIOS);
+	info->VBIOS = NULL;
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		   "Video BIOS not found!\n");
     }
 
-    if (info->HasPanelRegs) {
+    if (info->VBIOS && info->HasPanelRegs) {
 	info->FPBIOSstart = 0;
 
 	/* FIXME: There should be direct access to the start of the FP info
@@ -620,9 +622,40 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info = R128PTR(pScrn);
     R128PLLPtr    pll  = &info->pll;
-    CARD16        bios_header;
-    CARD16        pll_info_block;
 
+#if defined(__powerpc__)
+    /* there is no bios under Linux PowerPC but Open Firmware
+       does set up the PLL registers properly and we can use
+       those to calculate xclk and find the reference divider */
+
+    unsigned x_mpll_ref_fb_div;
+    unsigned xclk_cntl;
+    unsigned Nx, M;
+    unsigned PostDivSet[] = {0, 1, 2, 4, 8, 3, 6, 12};
+
+    /* Assume REF clock is 2950 (in units of 10khz) */
+    /* and that all pllclk must be between 125 Mhz and 250Mhz */
+    pll->reference_freq = 2950;
+    pll->min_pll_freq   = 12500;
+    pll->max_pll_freq   = 25000;
+
+    /* need to memory map the io to use INPLL since it
+       has not been done yet at this point in the startup */
+    R128MapMMIO(pScrn);
+    x_mpll_ref_fb_div = INPLL(pScrn, R128_X_MPLL_REF_FB_DIV);
+    xclk_cntl = INPLL(pScrn, R128_XCLK_CNTL) & 0x7;
+    pll->reference_div =
+	INPLL(pScrn,R128_PPLL_REF_DIV) & R128_PPLL_REF_DIV_MASK;
+    /* unmap it again */
+    R128UnmapMMIO(pScrn);
+     
+    Nx = (x_mpll_ref_fb_div & 0x00FF00) >> 8;
+    M =  (x_mpll_ref_fb_div & 0x0000FF);
+     
+    pll->xclk =  R128Div((2 * Nx * pll->reference_freq),
+			 (M * PostDivSet[xclk_cntl]));
+
+#else /* !defined(__powerpc__) */
 
     if (!info->VBIOS) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
@@ -637,8 +670,8 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
 	pll->max_pll_freq   = 25000;
 	pll->xclk           = 10300;
     } else {
-	bios_header    = R128_BIOS16(0x48);
-	pll_info_block = R128_BIOS16(bios_header + 0x30);
+	CARD16 bios_header    = R128_BIOS16(0x48);
+	CARD16 pll_info_block = R128_BIOS16(bios_header + 0x30);
 	R128TRACE(("Header at 0x%04x; PLL Information at 0x%04x\n",
 		   bios_header, pll_info_block));
 
@@ -648,6 +681,7 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
 	pll->max_pll_freq   = R128_BIOS32(pll_info_block + 0x16);
 	pll->xclk           = R128_BIOS16(pll_info_block + 0x08);
     }
+#endif /* __powerpc__ */
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	       "PLL parameters: rf=%d rd=%d min=%d max=%d; xclk=%d\n",
@@ -979,6 +1013,11 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
 
     if (!xf86LoadSubModule(pScrn, "ddc")) return FALSE;
     xf86LoaderReqSymLists(ddcSymbols, NULL);
+
+#if defined(__powerpc__)
+    /* Int10 is broken on PPC */
+    return TRUE;
+#else
     if (xf86LoadSubModule(pScrn, "vbe")) {
 #ifdef XFree86LOADER
 	xf86LoaderReqSymLists(vbeSymbols,NULL);
@@ -991,6 +1030,7 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
 	return TRUE;
     } else
 	return FALSE;
+#endif
 }
 
 /* This is called by R128PreInit to initialize gamma correction. */
@@ -1944,6 +1984,7 @@ static void R128RestoreCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
     OUTREG(R128_CAP0_TRIG_CNTL,       restore->cap0_trig_cntl);
     OUTREG(R128_CAP1_TRIG_CNTL,       restore->cap1_trig_cntl);
     OUTREG(R128_BUS_CNTL,             restore->bus_cntl);
+    OUTREG(R128_CONFIG_CNTL,          restore->config_cntl);
 }
 
 /* Write CRTC registers. */
@@ -2123,6 +2164,7 @@ static void R128SaveCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
     save->cap0_trig_cntl     = INREG(R128_CAP0_TRIG_CNTL);
     save->cap1_trig_cntl     = INREG(R128_CAP1_TRIG_CNTL);
     save->bus_cntl           = INREG(R128_BUS_CNTL);
+    save->config_cntl        = INREG(R128_CONFIG_CNTL);
 }
 
 /* Read CRTC registers. */
@@ -2390,6 +2432,17 @@ static Bool R128InitCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
 
     R128TRACE(("Pitch = %d bytes (virtualX = %d, displayWidth = %d)\n",
 	       save->crtc_pitch, pScrn->virtualX, info->CurrentLayout.displayWidth));
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    /* Change the endianness of the aperture */
+    switch (info->CurrentLayout.pixel_code) {
+    case 15:
+    case 16: save->config_cntl |= APER_0_BIG_ENDIAN_16BPP_SWAP; break;
+    case 32: save->config_cntl |= APER_0_BIG_ENDIAN_32BPP_SWAP; break;
+    default: break;
+    }
+#endif
+
     return TRUE;
 }
 

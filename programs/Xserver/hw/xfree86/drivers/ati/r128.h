@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.6 2000/12/04 19:21:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.7 2000/12/07 15:43:42 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -108,6 +108,7 @@ typedef struct {
     CARD32     cap0_trig_cntl;
     CARD32     cap1_trig_cntl;
     CARD32     bus_cntl;
+    CARD32     config_cntl;
 
 				/* Other registers to save for VT switches */
     CARD32     dp_datatype;
