@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.30 1999/11/19 13:54:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.31 1999/12/13 23:48:21 robin Exp $ */
 
 /*  #include "compiler.h" */
 /* everybody includes these */
@@ -77,6 +77,11 @@
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
+#endif
+
+#ifdef XvExtension
+#include "xf86xv.h"
+#include "Xv.h"
 #endif
 
 static void	TGAIdentify(int flags);
@@ -273,6 +278,8 @@ TGAFreeRec(ScrnInfoPtr pScrn)
 
     xfree(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
+
+    return;
 }
 
 
@@ -281,6 +288,7 @@ static void
 TGAIdentify(int flags)
 {
     xf86PrintChipsets(TGA_NAME, "driver for Digital chipsets", TGAChipsets);
+    return;
 }
 
 
@@ -1252,6 +1260,23 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       ErrorF("DPMS initialization failed!\n");
 #endif /* DPMSExtension */
 
+#ifdef XvExtension
+    {
+      XF86VideoAdaptorPtr *ptr;
+      int n;
+
+      pScrn->memPhysBase = pTga->FbAddress;
+      pScrn->fbOffset = 0;
+
+      n = xf86XVListGenericAdaptors(&ptr);
+
+      if(n) {
+	xf86XVScreenInit(pScreen, ptr, n);
+      }
+
+    }
+#endif
+    
     /* Report any unused options (only for the first generation) */
     if (serverGeneration == 1) {
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
