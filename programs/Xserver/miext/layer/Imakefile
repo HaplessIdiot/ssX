@@ -7,20 +7,22 @@ XCOMM
 
 #ifdef XFree86Version
 #if DoLoadableServer
-XFMODSRC = shmodule.c
-XFMODOBJ = shmodule.o
+XFMODSRC = laymodule.c
+XFMODOBJ = laymodule.o
 #endif
 #endif
 
 SRCS = layergc.c \
        layerinit.c \
        layerpict.c \
-       layerwin.c
+       layerwin.c \
+       $(XFMODSRC)
 
 OBJS = layergc.o \
        layerinit.o \
        layerpict.o \
-       layerwin.o
+       layerwin.o \
+       $(XFMODOBJ)
 
    INCLUDES = -I. -I../shadow -I../../mi -I../../fb -I../../include -I$(XINCLUDESRC) \
 	      -I$(FONTINCSRC) -I$(XF86SRC)/common $(EXTRAINCLUDES) \
