@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.84 2001/01/30 14:07:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.85 2001/02/01 10:15:43 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -258,6 +258,7 @@
 /* Avance Logic */
 #define PCI_CHIP_ALG2064	0x2064
 #define PCI_CHIP_ALG2301	0x2301
+#define PCI_CHIP_ALG2501	0x2501
 
 /* NS */
 #define PCI_CHIP_87415		0x0002
@@ -1380,6 +1381,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_AVANCE_2, {
 				{PCI_CHIP_ALG2064,	"ALG2064",0},
+				{PCI_CHIP_ALG2501,	"ALG2501",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_S3,	{
 				{PCI_CHIP_PLATO,	"PLATO/PX",0},
@@ -1591,6 +1593,10 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x8000, "C&T 69000",0, NF },
 			{ 0x8760, "Fireport 40 Dual",0, NF },
                         { 0x8a10, "Stealth 3D 4000",0, NF },
+                        { 0x0000, (char *)NULL,0, NF } } },
+	{ PCI_VENDOR_APPIAN, {
+                        { 0x3d32, "Jeronimo 2000",0, NF },
+                        { 0x3db3, "Jeronimo Pro",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_3DLABS, {
                         { 0x0106, "GMX2000",0, NF },
