@@ -32,7 +32,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *
  ***************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.h,v 1.1 2001/09/27 08:25:03 alanh Exp $ */
 
 
 #ifndef I810XVMC_H
@@ -102,7 +102,7 @@ typedef struct _i810XvMCContext {
   drmContext drmcontext;
   unsigned int last_render;
   unsigned int last_flip;
-  unsigned short num_surfaces;
+  unsigned short ref;
   unsigned short current;
   int lock;   /* Lightweight lock to avoid locking twice */
   char busIdString[10]; /* PCI:0:1:0 or PCI:0:2:0 */
@@ -145,7 +145,7 @@ typedef struct _i810XvMCSurface {
   drmAddress data;
   drmHandle offset;
   unsigned int offsets[3];
-  XvMCContext *context;
+  i810XvMCContext *privContext;
 } i810XvMCSurface;
 
 /***************************************************************************
@@ -166,7 +166,7 @@ typedef struct _i810XvMCSubpicture {
   drmHandle offset;
   unsigned int offsets[1];
   unsigned char palette[3][16];
-  XvMCContext *context;
+  i810XvMCContext *privContext;
 } i810XvMCSubpicture;
 
 typedef struct _Box {
@@ -215,7 +215,6 @@ typedef struct _drm_i810_mc {
 #define I810_XVMC_MAXWIDTH  720
 #define I810_XVMC_MAXHEIGHT  576
 #define I810_DEFAULT16_COLORKEY 31
-#define I810_XVMC_MAXSURFACES 7
 #define I810_DMA_BUF_NR 256
 
 /* IOCTL Numbers, these are defined in the kernel drm sources. */
@@ -370,6 +369,7 @@ extern Status   _xvmc_destroy_subpicture(Display *dpy,
   Prototypes
 */
 drmBufPtr i810_get_free_buffer(i810XvMCContext *pI810XvMC);
+void i810_free_privContext(i810XvMCContext *pI810XvMC);
 void dp(unsigned int *address, unsigned int i);
 
 #endif
