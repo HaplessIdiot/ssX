@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/alpha_video.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/alpha_video.c,v 1.3 2003/03/14 13:46:03 tsi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -248,7 +248,6 @@ checkDevMem(Bool warn)
 #ifndef HAS_APERTURE_DRV
            xf86Msg(X_WARNING, "checkDevMem: failed to open/mmap %s (%s)\n",
                    DEV_MEM, strerror(errno));
-           xf86ErrorF("\tlinear framebuffer access unavailable\n");
 #else
 #ifndef __OpenBSD__
            xf86Msg(X_WARNING, "checkDevMem: failed to open %s and %s\n"
@@ -258,12 +257,11 @@ checkDevMem(Bool warn)
                    "\t(%s)\n%s", DEV_APERTURE, DEV_MEM, strerror(errno),
                    SYSCTL_MSG);
 #endif /* __OpenBSD__ */
-	   
+#endif
            xf86ErrorF("\tlinear framebuffer access unavailable\n");
 	}
 	useDevMem = FALSE;
 	return;
-#endif
 }
 
 void
@@ -490,6 +488,9 @@ static int
 sethae(u_int64_t hae)
 {
 #ifdef __FreeBSD__
+#ifndef ALPHA_SETHAE
+#define ALPHA_SETHAE 0
+#endif
 	struct parms p;
 	p.hae = hae;
 	return (sysarch(ALPHA_SETHAE, (char *)&p));
