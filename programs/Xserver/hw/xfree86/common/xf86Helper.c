@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.73 2000/02/12 23:59:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.74 2000/02/15 18:00:56 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2601,6 +2601,7 @@ xf86IsUnblank(int mode)
     default:
 	xf86MsgVerb(X_WARNING, 0, "Unexpected save screen mode: %d\n", mode);
 	return TRUE;
+    }
 }
 
 
