@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.2 1994/06/18 16:28:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.3 1994/07/24 11:55:57 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
  *
@@ -323,13 +323,12 @@ static int Num_Probe_IOPorts =
 #define ATI_CHIP_28800_4   4
 #define ATI_CHIP_28800_5   5
 #define ATI_CHIP_28800_6   6
-#define ATI_CHIP_38800     7    /* Mach8 */
-#define ATI_CHIP_68800     8    /* Mach32 */
-#define ATI_CHIP_68800_3   9    /* Mach32 */
-#define ATI_CHIP_68800_6  10    /* Mach32 */
-#define ATI_CHIP_68800LX  11    /* Mach32 */
-#define ATI_CHIP_68800AX  12    /* Mach32 */
-#define ATI_CHIP_88800    13    /* Mach64 */
+#define ATI_CHIP_68800     7    /* Mach32 */
+#define ATI_CHIP_68800_3   8    /* Mach32 */
+#define ATI_CHIP_68800_6   9    /* Mach32 */
+#define ATI_CHIP_68800LX  10    /* Mach32 */
+#define ATI_CHIP_68800AX  11    /* Mach32 */
+#define ATI_CHIP_88800    12    /* Mach64 */
 static unsigned char ATIChip = ATI_CHIP_NONE;
 static const char *ChipNames[] =
 {
@@ -340,7 +339,6 @@ static const char *ChipNames[] =
         "ATI 28800-4",
         "ATI 28800-5",
         "ATI 28800-6",
-        "ATI 38800",
         "ATI 68800",
         "ATI 68800-3",
         "ATI 68800-6",
@@ -355,10 +353,9 @@ static const char *ChipNames[] =
 #define ATI_BOARD_V5      3
 #define ATI_BOARD_PLUS    4
 #define ATI_BOARD_XL      5
-#define ATI_BOARD_XL24    6
-#define ATI_BOARD_MACH8   7
-#define ATI_BOARD_MACH32  8
-#define ATI_BOARD_MACH64  9
+#define ATI_BOARD_MACH8   6
+#define ATI_BOARD_MACH32  7
+#define ATI_BOARD_MACH64  8
 static unsigned char ATIBoard = ATI_BOARD_NONE;
 static const char *BoardNames[] =
 {
@@ -1007,16 +1004,7 @@ ATIProbe()
                                 return (FALSE);
                         }
 
-                        if (ATIBoard == ATI_BOARD_MACH8)
-                        {
-                                ATIChip = ATI_CHIP_38800;
-                                if (BIOS_Data[0x44] & 0x80)
-                                        ATIDac = ATI_DAC_SC11483;
-                                MachvideoRam =
-                                        videoRamSizes[((inw(CONFIG_STATUS_1) &
-                                                MEM_INSTALLED) >> 5) + 2];
-                        }
-                        else    /* ATIBoard == ATI_BOARD_MACH32 */
+                        if (ATIBoard == ATI_BOARD_MACH32)
                         {
                                 switch (inw(CHIP_ID) & 0x3FF)
                                 {
@@ -1056,9 +1044,12 @@ ATIProbe()
 
                         }
                 }
-                else
+
+                if (ATIBoard != ATI_BOARD_MACH32)
                 {
-                        /* This is a VGA Wonder board of some kind */
+                        unsigned char ATIVGABoard;
+
+                        /* This is a Mach8 or VGA Wonder board of some kind */
                         if ((BIOS_Data[0x43] >= '1') &&
                                 (BIOS_Data[0x43] <= '6'))
                                 ATIChip = BIOS_Data[0x43] - '0';
@@ -1066,7 +1057,7 @@ ATIProbe()
                         switch (ATIChip)
                         {
                                 case ATI_CHIP_18800:
-                                        ATIBoard = ATI_BOARD_V3;
+                                        ATIVGABoard = ATI_BOARD_V3;
                                         /* Reset a few things for V3 boards */
                                         ATI.ChipSetRead = ATIV3SetRead;
                                         ATI.ChipSetWrite = ATIV3SetWrite;
@@ -1080,9 +1071,9 @@ ATIProbe()
 
                                 case ATI_CHIP_18800_1:
                                         if (BIOS_Data[0x42] & 0x10)
-                                                ATIBoard = ATI_BOARD_V5;
+                                                ATIVGABoard = ATI_BOARD_V5;
                                         else
-                                                ATIBoard = ATI_BOARD_V4;
+                                                ATIVGABoard = ATI_BOARD_V4;
                                         /* Reset a few things for V4 and V5
                                            boards */
                                         ATI.ChipSetRead = ATIV4V5SetRead;
@@ -1095,14 +1086,17 @@ ATIProbe()
                                 case ATI_CHIP_28800_4:
                                 case ATI_CHIP_28800_5:
                                 case ATI_CHIP_28800_6:
-                                        ATIBoard = ATI_BOARD_PLUS;
+                                        ATIVGABoard = ATI_BOARD_PLUS;
                                         if (BIOS_Data[0x44] & 0x80)
                                         {
-                                                ATIBoard = ATI_BOARD_XL;
+                                                ATIVGABoard = ATI_BOARD_XL;
                                                 ATIDac = ATI_DAC_SC11483;
                                         }
                                         break;
                         }
+
+                        if (ATIBoard == ATI_BOARD_NONE)
+                                ATIBoard = ATIVGABoard;
                 }
         }
 
@@ -1137,8 +1131,8 @@ ATIProbe()
         /*
          * Sometimes, the BIOS lies about the chip.
          */
-        if ((ATIChip == ATI_CHIP_28800_5) ||
-                (ATIChip == ATI_CHIP_28800_6))
+        if ((ATIChip >= ATI_CHIP_28800_4) &&
+                (ATIChip <= ATI_CHIP_28800_6))
         {
                 IO_Value = ATIGetExtReg(0xAA) & 0x0F;
                 if ((IO_Value < 7) && (IO_Value > ATIChip))
@@ -1351,7 +1345,7 @@ Bool enter;
                         if (ATIBoard > ATI_BOARD_V5)
                         {
                                 saved_ab = ATIGetExtReg(0xAB);
-                                ATIPutExtReg(0xAB, saved_ab & 0xEF);
+                                ATIPutExtReg(0xAB, saved_ab & 0xE7);
                         }
                 }
 
@@ -1382,7 +1376,7 @@ Bool enter;
                         {
                                 tmp = ATIGetExtReg(0xAB);
                                 ATIPutExtReg(0xAB,
-                                        (saved_ab & 0x10) | (tmp & 0xEF));
+                                        (saved_ab & 0x18) | (tmp & 0xE7));
                         }
                 }
 
@@ -1651,7 +1645,7 @@ DisplayModePtr mode;
         new->b1 = (ATIGetExtReg(0xB1) & 0x04)       ;
         new->b3 = (ATIGetExtReg(0xB3) & 0x23)       ;
         new->b4 = 0;
-        new->b5 = (ATIGetExtReg(0xB5) & 0x3E)       ;
+        new->b5 = 0;
 #if defined(MONOVGA) || defined(XF86VGA16)
         new->b6 = 0x41;
 #else
@@ -1660,7 +1654,7 @@ DisplayModePtr mode;
         new->b8 = (ATIGetExtReg(0xB8) & 0xC0)       ;
         new->b9 = (ATIGetExtReg(0xB9) & 0x7F)       ;
         new->ba = (ATIGetExtReg(0xBA) & 0xC0)       ;
-        new->bd = (ATIGetExtReg(0xBD) & 0x0B)       ;
+        new->bd = (ATIGetExtReg(0xBD) & 0x02)       ;
         if (ATIBoard == ATI_BOARD_V3)
                 new->b2 = (ATIGetExtReg(0xB2) & 0xC0)       ;
         else
@@ -1669,11 +1663,11 @@ DisplayModePtr mode;
                 new->be = (ATIGetExtReg(0xBE) & 0x30) | 0x09;
                 if (ATIBoard > ATI_BOARD_V5)
                 {
-                        new->bf = (ATIGetExtReg(0xBF) & 0x7F)       ;
+                        new->bf = (ATIGetExtReg(0xBF) & 0x70)       ;
                         new->a3 = (ATIGetExtReg(0xA3) & 0xC7)       ;
                         new->a6 = (ATIGetExtReg(0xA6) & 0x7A) | 0x05;
                         new->a7 = (ATIGetExtReg(0xA7) & 0xFE)       ;
-                        new->ab = (ATIGetExtReg(0xAB) & 0xEF)       ;
+                        new->ab = (ATIGetExtReg(0xAB) & 0xE7)       ;
                         new->ac = (ATIGetExtReg(0xAC) & 0xBE)       ;
                         new->ad = (ATIGetExtReg(0xAD) & 0xF0)       ;
                         new->ae = (ATIGetExtReg(0xAE) & 0xF0)       ;

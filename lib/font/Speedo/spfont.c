@@ -1,4 +1,5 @@
 /* $XConsortium: spfont.c,v 1.22 94/04/17 20:17:48 gildea Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -60,6 +61,10 @@ from the X Consortium.
 #include	"spint.h"
 #include	<servermd.h>
 #include	<math.h>
+
+#if defined(SVR4) && __STDC__
+extern double hypot(double, double);
+#endif
 
 #ifndef M_PI
 #define M_PI 3.14159

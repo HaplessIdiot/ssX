@@ -1,4 +1,5 @@
 /* $XConsortium: bitscale.c,v 1.27 94/04/17 20:17:13 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -37,6 +38,10 @@ from the X Consortium.
 #include "fntfilst.h"
 #include "bitmap.h"
 #include <math.h>
+
+#if defined(SVR4) && __STDC__
+extern double hypot(double, double);
+#endif
 
 extern Atom MakeAtom();
 
@@ -271,18 +276,18 @@ if (m >= 1.0) { \
     else if (m == 2.0) \
         score += (4 * s); \
     else \
-        score += (3 * s) / m; \
+        score += (int)(((double)(3 * s)) / m); \
 } else { \
-        score += (2 * s) * m; \
+        score += (int)(((double)(2 * s)) * m); \
 }
 
 /* don't need to favor enlargement when looking for bitmap that can
    be used unscalable */
 #define SCORE2(m,s) \
 if (m >= 1.0) \
-    score += (8 * s) / m; \
+    score += (int)(((double)(8 * s)) / m); \
 else \
-    score += (8 * s) * m;
+    score += (int)(((double)(8 * s)) * m);
 
 static FontEntryPtr
 FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)

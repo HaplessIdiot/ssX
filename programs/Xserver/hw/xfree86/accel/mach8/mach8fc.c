@@ -1,5 +1,5 @@
 /* $XConsortium: mach8fc.c,v 1.1 94/03/28 21:10:52 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fc.c,v 3.0 1994/07/15 06:58:57 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -62,7 +62,7 @@ unsigned char mach8cachemaskswapped[ 8 ] = { 0x02, 0x04, 0x08, 0x10,
 /*
  * Move the glyphs to the screen using the GE.
  */
-__inline__ static void
+static void
 Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
      int   x, y, count;
      unsigned char *chars;
@@ -82,12 +82,9 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
       short xoff;
 
       pci = fentry->pci[*chars];
-
       if (pci != NULL) {
-
 	 gHeight = GLYPHHEIGHTPIXELS(pci);
 	 if (gHeight) {
-
 	    if (*chars / 32 != blocki) {
 	       bitMapBlockPtr block;
 
@@ -128,7 +125,7 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 	       /*
 		* Is the readmask altered ?
 		*/
-	       if( !pmsk || mach8cachemaskswapped[block->id] != pmsk ) {
+	       if( mach8cachemaskswapped[block->id] != pmsk ) {
 		 pmsk = mach8cachemaskswapped[block->id];
 		 outw(RD_MASK, pmsk);
 	       }
@@ -144,16 +141,16 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 	    /*
 	     * Need to update width register ?
 	     */
-	    if( !width || (short)(GLYPHWIDTHPIXELS(pci) - 1) != width) {
-	      width = (short)(GLYPHWIDTHPIXELS(pci) - 1);
-	      outw(MAJ_AXIS_PCNT, width);
+	    if( (short)(GLYPHWIDTHPIXELS(pci)) != width) {
+	      width = (short)(GLYPHWIDTHPIXELS(pci));
+	      outw(MAJ_AXIS_PCNT, width - 1);
 	    }
 	    /*
 	     * How about the height register ?
 	     */
-	    if( !height || (short)(gHeight - 1) != height ) {
-	      height = (short)(gHeight - 1);
-	      outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | height);
+	    if( (short)(gHeight) != height ) {
+	      height = (short)(gHeight);
+	      outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | height - 1);
 	    }
 	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 	 }
@@ -161,7 +158,6 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
       }
    }
 
-   return;
 }
 
 /*

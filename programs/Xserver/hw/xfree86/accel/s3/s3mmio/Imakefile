@@ -1,17 +1,17 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:17:55 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.1 1994/06/11 06:59:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3mmio/Imakefile,v 3.2 1994/06/26 13:08:23 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = 	s3misc.c s3cmap.c s3gc.c s3fs.c s3ss.c \
 	s3gs.c s3win.c s3im.c s3bstor.c \
-	s3scrin.c s3blt.c s3pcach.c s3plypt.c \
+	s3scrin.c s3blt.c s3plypt.c \
 	s3line.c s3seg.c s3frect.c s3text.c \
 	s3font.c s3fcach.c s3Cursor.c s3dline.c \
 	s3dseg.c s3bcach.c
 
 OBJS = 	s3misc.o s3cmap.o s3gc.o s3fs.o s3ss.o \
 	s3gs.o s3win.o s3im.o s3bstor.o \
-	s3scrin.o s3blt.o s3pcach.o s3plypt.o \
+	s3scrin.o s3blt.o s3plypt.o \
 	s3line.o s3seg.o s3frect.o s3text.o \
 	s3font.o s3fcach.o s3Cursor.o s3dline.o \
 	s3dseg.o s3bcach.o
@@ -20,7 +20,7 @@ INCLUDES = -I.. -I$(XF86SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/include \
            -I$(SERVERSRC)/cfb -I$(INCLUDESRC) -I$(FONTINCSRC) \
 	   -I$(XF86SRC)/vga256/vga -I$(XF86COMSRC) -I$(XF86HWSRC) \
-	   -I$(XF86OSSRC)
+	   -I$(XF86OSSRC) -I$(XF86SRC)/accel/cache
 
 DEFINES = -DS3_MMIO -DPSZ=8
 
@@ -46,7 +46,6 @@ LinkSourceFile(s3gs.c,..)
 LinkSourceFile(s3im.c,..)
 LinkSourceFile(s3line.c,..)
 LinkSourceFile(s3misc.c,..)
-LinkSourceFile(s3pcach.c,..)
 LinkSourceFile(s3plypt.c,..)
 LinkSourceFile(s3scrin.c,..)
 LinkSourceFile(s3seg.c,..)

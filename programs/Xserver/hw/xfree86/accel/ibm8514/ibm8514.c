@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.1 94/03/28 21:02:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.2 1994/06/19 11:04:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.3 1994/07/21 13:46:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -248,9 +248,6 @@ ibm8514Initialize (scr_index, pScreen, argc, argv)
 #endif
 
     xf86InitCache( ibm8514CacheMoveBlock );
-#ifdef PIXPRIV
-    ibm8514CacheInit(ibm8514InfoRec.virtualX, ibm8514InfoRec.virtualY);
-#endif
     ibm8514FontCache8Init();
 
     ibm8514ImageInit();
@@ -308,9 +305,6 @@ ibm8514EnterLeaveVT(enter, screen_idx)
 	ibm8514Init(ibm8514ScreenMode);
 	InitEnvironment();
 	ibm8514RestoreDACvalues(); /* 25-4-93 TCG */
-#ifdef PIXPRIV
-	ibm8514CacheInit(ibm8514InfoRec.virtualX, ibm8514InfoRec.virtualY);
-#endif
 	ibm8514FontCache8Init();
 	AlreadyInited = TRUE;
 

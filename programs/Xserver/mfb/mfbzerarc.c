@@ -26,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: mfbzerarc.c,v 5.19 94/04/17 20:28:37 dpw Exp $ */
+/* $XFree86$ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -50,7 +51,7 @@ in this Software without prior written authorization from the X Consortium.
  * LONG2CHARS() takes care of the re-ordering as required. (DHD)
  */
 #if (BITMAP_BIT_ORDER == MSBFirst)
-#define LEFTMOST	((PixelType) LONG2CHARS((1 << PLST)))
+#define LEFTMOST	((PixelType) LONG2CHARS(((unsigned long)1 << PLST)))
 #else
 #define LEFTMOST	((PixelType) LONG2CHARS(1))
 #endif

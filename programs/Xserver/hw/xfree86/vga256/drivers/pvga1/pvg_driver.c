@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.2 94/03/28 21:52:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.3 1994/06/15 15:43:54 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.4 1994/07/24 11:57:02 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -317,16 +317,34 @@ PVGA1Probe()
 	unsigned char tmp, tmp1;
 	unsigned char sig[2];
 
+#ifdef USE_BIOS_PROBE
+	/* This test fails for some on-the-motherboard WD video */
 	if (xf86ReadBIOS(vga256InfoRec.BIOSbase, 0x7D, (unsigned char *)ident,
 			 4) != 4)
 	    return(FALSE);
         if (strncmp(ident, "VGA=",4)) 
 	    return(FALSE);
+#else
+	PVGA1EnterLeave(ENTER);
+	tmp = rdinx(0x3CE, 0x0F);
+	wrinx(0x3CE, 0x0F, 0x17 | tmp);	/* Lock registers */
+	if (testinx2(0x3CE, 0x09, 0x7F)) {
+	    PVGA1EnterLeave(LEAVE);
+	    return(FALSE);
+	}
+	wrinx(0x3CE, 0x0F, 0x05);	/* Unlock them again */
+	if (!testinx2(0x3CE, 0x09, 0x7F)) {
+	    PVGA1EnterLeave(LEAVE);
+	    return(FALSE);
+	}
+#endif
 
         /*
          * OK.  We know it's a Paradise/WD chip.  Now to figure out which one.
          */
+#ifdef USE_BIOS_PROBE
         PVGA1EnterLeave(ENTER);
+#endif
         if (!testinx(vgaIOBase+0x04, 0x2B))
 	    WDchipset = C_PVGA1;
         else {

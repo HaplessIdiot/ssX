@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl6420/cl_driver.c,v 3.0 1994/05/29 02:08:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl6420/cl_driver.c,v 3.1 1994/05/31 08:14:25 dawes Exp $ */
 /*
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -534,11 +534,6 @@ vgaCL6420Ptr restore;
 	outw(0x3CE, 0x000F);	/* CPU Base B */
 
 	/*
-	 * This function handles restoring the generic VGA registers.
-	 */
-	vgaHWRestore((vgaHWPtr)restore);
-
-	/*
 	 * Code to restore any SVGA registers that have been saved/modified
 	 * goes here.  Note that it is allowable, and often correct, to 
 	 * only modify certain bits in a register by a read/modify/write cycle.
@@ -594,6 +589,11 @@ vgaCL6420Ptr restore;
 
 	outb(0x3CE, 0xD5);
 	outb(0x3CF, restore->ATTLCDC);	/* Attributes LCD Control */
+
+	/*
+	 * This function handles restoring the generic VGA registers.
+	 */
+	vgaHWRestore((vgaHWPtr)restore);
 }
 
 /*

@@ -1,4 +1,5 @@
 /* $XConsortium: fontscale.c,v 1.13 94/04/17 20:17:07 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -33,6 +34,10 @@ in this Software without prior written authorization from the X Consortium.
 
 #include    "fntfilst.h"
 #include    "math.h"
+
+#if defined(SVR4) && __STDC__
+extern double hypot(double, double);
+#endif
 
 Bool
 FontFileAddScaledInstance (entry, vals, pFont, bitmapName)

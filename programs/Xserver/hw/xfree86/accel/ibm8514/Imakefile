@@ -1,9 +1,10 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:02:48 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 SRCS = 	ibm8514.c ibm8514cmap.c ibm8514gc.c ibm8514fs.c ibm8514ss.c \
 	ibm8514gs.c ibm8514win.c ibm8514init.c ibm8514im.c ibm8514bsto.c \
-	ibm8514scri.c ibm8514blt.c ibm8514pcac.c ibm8514plyp.c \
+	ibm8514scri.c ibm8514blt.c ibm8514plyp.c \
 	ibm8514line.c ibm8514seg.c ibm8514frec.c ibm8514text.c \
 	ibm8514font.c ibm8514fcac.c \
 	ibm8514dsln.c ibm8514dssg.c ibm8514ddln.c ibm8514ddsg.c \
@@ -12,7 +13,7 @@ SRCS = 	ibm8514.c ibm8514cmap.c ibm8514gc.c ibm8514fs.c ibm8514ss.c \
 
 OBJS = 	ibm8514.o ibm8514cmap.o ibm8514gc.o ibm8514fs.o ibm8514ss.o \
 	ibm8514gs.o ibm8514win.o ibm8514init.o ibm8514im.o ibm8514bsto.o \
-	ibm8514scri.o ibm8514blt.o ibm8514pcac.o ibm8514plyp.o \
+	ibm8514scri.o ibm8514blt.o ibm8514plyp.o \
 	ibm8514line.o ibm8514seg.o ibm8514frec.o ibm8514text.o \
 	ibm8514font.o ibm8514fcac.o \
 	ibm8514dsln.o ibm8514dssg.o ibm8514ddln.o ibm8514ddsg.o \

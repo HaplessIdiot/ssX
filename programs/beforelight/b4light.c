@@ -295,7 +295,11 @@ void main(argc, argv)
     Atom		    kill_type;
     int			    i;
 
-    srand (time ((int *) 0));
+#if !defined(X_NOT_POSIX) || ((__STDC__) && !defined(X_NOT_STDC_ENV))
+    srand((int)time((time_t *)NULL));
+#else
+    srand((int)time((int *)NULL));
+#endif
 
     toplevel = XtAppInitialize (&app_con, "Beforelight", NULL, ZERO,
 				&argc, argv, NULL, NULL, ZERO);
