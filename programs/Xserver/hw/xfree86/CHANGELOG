@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 379. Fix XDarwin crash on server reset and problem in full screen mode when
+      switching from X to Aqua to X too rapidly (Torrey T. Lyons).
  378. Add __apploaddir__ definition to imake MANDEFS, to specify location of
       app-defaults directory, fixes Debian bug report #87611 (Thomas Dickey).
  377. Xterm patches #161, #162 (Thomas Dickey): mostly bug fixes.
@@ -14008,4 +14010,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1999 2001/10/24 21:16:02 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2000 2001/10/25 00:18:52 dickey Exp $
