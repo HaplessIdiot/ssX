@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.10 2002/10/31 19:11:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.11 2002/12/11 17:30:48 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -1605,10 +1605,9 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	else
 		new->cr58 = 0x17;
 
-	if (pS3->Chipset == PCI_CHIP_968)
-		new->cr58 = 0x52;
-	else if ((pS3->Chipset == PCI_CHIP_964_0) ||
-		 (pS3->Chipset == PCI_CHIP_964_1))
+	if ((pS3->Chipset == PCI_CHIP_968) ||
+	    (pS3->Chipset == PCI_CHIP_964_0) ||
+	    (pS3->Chipset == PCI_CHIP_964_1))
 		new->cr58 |= 0x40;
 
 	outb(vgaCRIndex, 0x59);
