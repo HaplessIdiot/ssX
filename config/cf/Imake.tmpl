@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.150 2003/10/26 12:17:13 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.151 2003/10/29 05:51:37 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -990,6 +990,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef DefaultCplusplusOptions
 #define DefaultCplusplusOptions /* floating point, etc. */
+#endif
+#ifndef HardCodeLibdirFlag
+#define HardCodeLibdirFlag	/**/
 #endif
 #ifndef NoRConst
 #define NoRConst NO /* YES if const for structs of funcs is bad */
