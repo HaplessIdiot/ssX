@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.101 2003/02/10 23:42:51 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.102 2003/03/12 21:27:18 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1656,6 +1656,9 @@ NVDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
     break;
   }
 
+  /* vgaHWDPMSSet will merely cut the dac output */
+  vgaHWDPMSSet(pScrn, PowerManagementMode, flags);
+
   hwp->writeCrtc(hwp, 0x1A, crtc1A);
 }
 
@@ -1891,13 +1894,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ShadowFBInit(pScreen, refreshArea);
     }
 
-    /* Call the vgaHW DPMS function directly.
-       XXX There must be a way to get all the DPMS modes. */
-#if 0
-    xf86DPMSInit(pScreen, vgaHWDPMSSet, 0);
-#else
     xf86DPMSInit(pScreen, NVDPMSSet, 0);
-#endif
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- DPMS set up\n"));
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Color maps etc. set up\n"));
