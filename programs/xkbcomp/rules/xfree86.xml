@@ -10,6 +10,7 @@
         <description xml:lang="cs">Obecné PC 101 kláves</description>
         <description xml:lang="da">Generisk 101-taster PC</description>
         <description xml:lang="fr">clavier Generic 101-key PC</description>
+        <description xml:lang="hu">általános 101 gombos PC</description>
         <description xml:lang="nl">Algemeen 101-toetsen PC</description>
         <description xml:lang="ru">Обычный 101-клавишный PC</description>
         <description xml:lang="sk">Všeobecná PC 101 kláves</description>
@@ -27,6 +28,7 @@
         <description xml:lang="cs">Obecné PC 102 kláves (mez.)</description>
         <description xml:lang="da">Generisk 102-taster (Intl) PC</description>
         <description xml:lang="fr">clavier Generic 102-key (Intl) PC</description>
+        <description xml:lang="hu">általános 102 gombos (nemzetközi) PC</description>
         <description xml:lang="nl">Algemeen 102-toetsen (internationaal) PC</description>
         <description xml:lang="ru">Обычный 102-клавишный PC</description>
         <description xml:lang="sk">Všeobecná PC 102 kláves (medz.)</description>
@@ -44,6 +46,7 @@
         <description xml:lang="cs">Obecné PC 104 kláves</description>
         <description xml:lang="da">Generisk 104-taster PC</description>
         <description xml:lang="fr">clavier Generic 104-key PC</description>
+        <description xml:lang="hu">általános 104 gombos PC</description>
         <description xml:lang="nl">Algemeen 104-toetsen PC</description>
         <description xml:lang="ru">Обычный 104-клавишный PC</description>
         <description xml:lang="sk">Všeobecná PC 104 kláves</description>
@@ -61,6 +64,7 @@
         <description xml:lang="cs">Obecné PC 105 kláves (mez.)</description>
         <description xml:lang="da">Generisk 105-taster (Intl) PC</description>
         <description xml:lang="fr">clavier Generic 105-key (Intl) PC</description>
+        <description xml:lang="hu">általános 105 gombos (nemzetközi) PC</description>
         <description xml:lang="nl">Algemeen 105-toetsen (internationaal) PC</description>
         <description xml:lang="ru">Обычный 105-клавишный (инт.) РС</description>
         <description xml:lang="sk">Všeobecná 105-kláv. (medzinár.) PC</description>
@@ -128,6 +132,7 @@
         <description xml:lang="cs">Japonské 106 kláves</description>
         <description xml:lang="da">Japansk 106-taster</description>
         <description xml:lang="fr">Japanese 106-clés</description>
+        <description xml:lang="hu">japán 106 gombos</description>
         <description xml:lang="nl">Japans 106-toetsen</description>
         <description xml:lang="ru">Японская 106-клавишная</description>
         <description xml:lang="sk">Japonskáé106 kláves</description>
@@ -161,6 +166,7 @@
         <description xml:lang="cs">Brazilské ABNT2</description>
         <description xml:lang="da">Brasiliansk ABNT2</description>
         <description xml:lang="fr">Brézilien ABNT2</description>
+        <description xml:lang="hu">brazil ABNT2</description>
         <description xml:lang="nl">Braziliaans ABNT2</description>
         <description xml:lang="ru">ABNT2</description>
         <description xml:lang="sk">Brazílska ABNT2</description>
@@ -183,6 +189,7 @@
         <description xml:lang="cs">Standard ACPI</description>
         <description xml:lang="da">ACPI-standard</description>
         <description xml:lang="fr">norme ACPI</description>
+        <description xml:lang="hu">ACPI szabvány</description>
         <description xml:lang="nl">ACPI standaard</description>
         <description xml:lang="ru">Стандартная ACPI</description>
         <description xml:lang="sk">Štandard ACPI</description>
@@ -273,6 +280,7 @@
         <description xml:lang="cs">Cherry Blue Line CyBo@rd (alternativní volba)</description>
         <description xml:lang="da">Cherry Blue Line CyBo@rd (alternativ)</description>
         <description xml:lang="fr">Cherry Blue Line CyBo@rd (option alternative)</description>
+        <description xml:lang="hu">Cherry Blue Line CyBo@rd (másik lehetőség)</description>
         <description xml:lang="nl">Cherry Blue Line CyBo@rd (alternatieve optie)</description>
         <description xml:lang="ru">Cherry Blue Line CyBo@rd (альтернативный вариант)</description>
         <description xml:lang="sk">Cherry Blue Line CyBo@rd (alternatívna voľba)</description>
@@ -319,6 +327,7 @@
         <description xml:lang="cs">Compaq Internet Keyboard (7 kláves)</description>
         <description xml:lang="da">Compaq Internet Keyboard (7 taster)</description>
         <description xml:lang="fr">clavier Compaq Internet (7 clés)</description>
+        <description xml:lang="hu">Compaq Internet Keyboard (7 gombos)</description>
         <description xml:lang="nl">Compaq internet toetsenbord (7 toetsen)</description>
         <description xml:lang="ru">Compaq Internet Keyboard (7 клавиш)</description>
         <description xml:lang="sk">Compaq Internet Keyboard (7 kláves)</description>
@@ -335,6 +344,7 @@
         <description xml:lang="cs">Compaq Internet Keyboard (13 kláves)</description>
         <description xml:lang="da">Compaq Internet Keyboard (13 taster)</description>
         <description xml:lang="fr">clavier Compaq Internet (13 clés)</description>
+        <description xml:lang="hu">Compaq Internet Keyboard (13 gombos)</description>
         <description xml:lang="nl">Compaq internet toetsenbord (13 toetsen)</description>
         <description xml:lang="ru">Compaq Internet Keyboard (13 клавиш)</description>
         <description xml:lang="sk">Compaq Internet Keyboard (13 kláves)</description>
@@ -351,6 +361,7 @@
         <description xml:lang="cs">Compaq Internet Keyboard (18 kláves)</description>
         <description xml:lang="da">Compaq Internet Keyboard (18 taster)</description>
         <description xml:lang="fr">clavier Compaq Internet (18 clés)</description>
+        <description xml:lang="hu">Compaq Internet Keyboard (18 gombos)</description>
         <description xml:lang="nl">Compaq internet toetsenbord (18 toetsen)</description>
         <description xml:lang="ru">Compaq Internet Keyboard (18 клавиш)</description>
         <description xml:lang="sk">Compaq Internet Keyboard (18 kláves)</description>
@@ -367,6 +378,7 @@
         <description xml:lang="cs">Laptop/notebook Compaq (např. Armada) Laptop Keyboard</description>
         <description xml:lang="da">Bærbar Compaq (fx Armada) Laptop Keyboard</description>
         <description xml:lang="fr">clavier Laptop/notebook Compaq (ie. Armada) Laptop</description>
+        <description xml:lang="hu">Laptop/notebook Compaq (pl. Armada) Laptop Keyboard</description>
         <description xml:lang="nl">Laptop/notebook Compaq (bijv. Armada) laptop toetsenbord</description>
         <description xml:lang="ru">Клавиатура для компьютеров Compaq (например Armada)</description>
         <description xml:lang="sk">Laptop/notebook Compaq (napr. Armada) Laptop Keyboard</description>
@@ -383,6 +395,7 @@
         <description xml:lang="cs">Laptop/notebook Compaq (např. Presario) Internet Keyboard</description>
         <description xml:lang="da">Bærbar Compaq (fx Presario) Internet Keyboard</description>
         <description xml:lang="fr">clavier Laptop/notebook Compaq (ie. Presario) Internet</description>
+        <description xml:lang="hu">Laptop/notebook Compaq (pl. Presario) Internet Keyboard</description>
         <description xml:lang="nl">Laptop/notebook Compaq (bijv. Presario) internet toetsenbord</description>
         <description xml:lang="ru">"Интернет" клавиатура для компьютеров Compaq (например Presario)</description>
         <description xml:lang="sk">Laptop/notebook Compaq (napr. Presario) Internet Keyboard</description>
@@ -597,6 +610,7 @@
         <description xml:lang="cs">IBM Rapid Access II (alternativní volba)</description>
         <description xml:lang="da">IBM Rapid Access II (alternativ)</description>
         <description xml:lang="fr">clavier IBM Rapid Access II (option alternative)</description>
+        <description xml:lang="hu">IBM Rapid Access II (másik lehetőség)</description>
         <description xml:lang="nl">IBM Rapid Access II (alternatieve optie)</description>
         <description xml:lang="ru">IBM Rapid Access II (альтернативный вариант)</description>
         <description xml:lang="sk">IBM Rapid Access II (alternatívna voľba)</description>
@@ -651,6 +665,7 @@
         <description xml:lang="cs">Logitech Cordless Desktop Pro (alternativní volba)</description>
         <description xml:lang="da">Logitech Cordless Desktop Pro (alternativ)</description>
         <description xml:lang="fr">Logitech Cordless Desktop Pro (option alternative)</description>
+        <description xml:lang="hu">Logitech Cordless Desktop Pro (másik lehetőség)</description>
         <description xml:lang="nl">Logitech Cordless Desktop Pro (alternatieve optie)</description>
         <description xml:lang="ru">Logitech Cordless Desktop Pro (альтернативный вариант)</description>
         <description xml:lang="sk">Logitech Cordless Desktop Pro (alternatívna voľba)</description>
@@ -667,6 +682,7 @@
         <description xml:lang="cs">Logitech Cordless Desktop Pro (alternativní volba 2)</description>
         <description xml:lang="da">Logitech Cordless Desktop Pro (alternativ 2)</description>
         <description xml:lang="fr">Logitech Cordless Desktop Pro (option2 alternative)</description>
+        <description xml:lang="hu">Logitech Cordless Desktop Pro (harmadik lehetőség)</description>
         <description xml:lang="nl">Logitech Cordless Desktop Pro (alternatieve optie2)</description>
         <description xml:lang="ru">Logitech Cordless Desktop Pro (альтернативный вариант 2)</description>
         <description xml:lang="sk">Logitech Cordless Desktop Pro (alternatívna voľba2)</description>
@@ -773,6 +789,7 @@
         <name>itouchin</name>
         <description>Logitech iTouch keyboard Internet Navigator</description>
         <description xml:lang="fr">clavier Logitech iTouch Internet Navigator</description>
+        <description xml:lang="hu">Logitech iTouch Keyboard Internet Navigator</description>
         <description xml:lang="nl">Logitech iTouch toetsenbord Internet Navigator</description>
         <description xml:lang="sr">Logitech iTouch тастатура Интернет навигатор</description>
         <description xml:lang="tr">Logitech iTouch klavyesi Örütbağ Tarayıcı</description>
@@ -790,6 +807,7 @@
         <name>mx2500</name>
         <description>Memorex MX2500 EZ-Access Keyboard</description>
         <description xml:lang="fr">clavier Memorex MX2500 EZ-Access</description>
+        <description xml:lang="hu">Memorex MX2500 EZ-Access billentyűzet</description>
         <description xml:lang="nl">Memorex MX2500 EZ-Access toetsenbord</description>
         <description xml:lang="sr">Memorex MX2500 EZ-Access тастатура</description>
         <description xml:lang="tr">Memorex MX2500 EZ Erişim Klavyesi</description>
@@ -841,6 +859,7 @@
         <description xml:lang="cs">Microsoft Internet Keyboard Pro, Švédská</description>
         <description xml:lang="da">Microsoft Internet Keyboard Pro, svensk</description>
         <description xml:lang="fr">clavier Microsoft Internet Pro, Suédois</description>
+        <description xml:lang="hu">Microsoft Internet Keyboard Pro, svéd</description>
         <description xml:lang="nl">Microsoft Internet Keyboard Pro, Zweeds</description>
         <description xml:lang="ru">Microsoft Internet Keyboard Pro, шведская</description>
         <description xml:lang="sk">Microsoft Internet Keyboard Pro, Švédska</description>
@@ -855,6 +874,7 @@
         <name>microsoftoffice</name>
         <description>Microsoft Office Keyboard</description>
         <description xml:lang="fr">clavier Microsoft Office</description>
+        <description xml:lang="hu">Microsoft Office billentyűzet</description>
         <description xml:lang="nl">Microsoft Office toetsenbord</description>
         <description xml:lang="sr">Микрософтова канцеларијска тастатура</description>
         <description xml:lang="tr">Microsoft Ofis Klavyesi</description>
@@ -871,6 +891,7 @@
       <configItem>
         <name>oretec</name>
         <description>Oretec MCK-800 MM/Internet keyboard</description>
+        <description xml:lang="hu">Oretec MCK-800 MM/Internet billentyűzet</description>
         <description xml:lang="nl">Oretec MCK-800 MM/Internet toetsenbord</description>
         <description xml:lang="sr">Oretec MCK-800 ММ/Интернет тастатура</description>
         <description xml:lang="tr">Oretec MCK-800 MM/Örütbağ Klavyesi</description>
@@ -967,6 +988,7 @@
         <name>trustda</name>
         <description>Trust Direct Access Keyboard</description>
         <description xml:lang="fr">clavier Trust Direct Access</description>
+        <description xml:lang="hu">Trust Direct Access billentyűzet</description>
         <description xml:lang="nl">Trust Direct Access toetsenbord</description>
         <description xml:lang="sr">Trust Direct Access тастатура</description>
         <description xml:lang="tr">Trust Doğrudan Erişimli Klavye</description>
@@ -978,6 +1000,7 @@
         <name>yahoo</name>
         <description>Yahoo! Internet Keyboard</description>
         <description xml:lang="fr">clavier Yahoo! Internet</description>
+        <description xml:lang="hu">Yahoo! Internet billentyűzet</description>
         <description xml:lang="nl">Yahoo! internet toetsenbord</description>
         <description xml:lang="sr">Yahoo! Интернет тастатура</description>
         <description xml:lang="tr">Yahoo! Örütbağ Klavyesi</description>
@@ -1027,6 +1050,7 @@
         <description xml:lang="cs">Anglické (US)</description>
         <description xml:lang="da">U.S. Engelsk</description>
         <description xml:lang="fr">Anglais U.S.</description>
+        <description xml:lang="hu">amerikai angol</description>
         <description xml:lang="nl">Amerikaans-Engels</description>
         <description xml:lang="ru">Английская (США)</description>
         <description xml:lang="sk">U.S.A. anglické</description>
@@ -1058,6 +1082,7 @@
         <description xml:lang="cs">Anglické (US) s ISO9995-3</description>
         <description xml:lang="da">U.S. Engelsk w/ ISO9995-3</description>
         <description xml:lang="fr">Anglais U.S. w/ ISO9995-3</description>
+        <description xml:lang="hu">amerikai angol (ISO9995-3 szerint)</description>
         <description xml:lang="nl">Amerikaans-Engels met ISO9995-3</description>
         <description xml:lang="ru">Английская (США) с ISO9995-3</description>
         <description xml:lang="sk">U.S.A. anglické s ISO9995-3</description>
@@ -1075,6 +1100,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -1098,6 +1124,7 @@
         <description xml:lang="cs">Anglické (US) s mrtvými klávesami</description>
         <description xml:lang="da">U.S. Engelsk m. døde taster</description>
         <description xml:lang="fr">Anglais U.S. w/ clés mortes</description>
+        <description xml:lang="hu">amerikai angol halott billentyűkkel</description>
         <description xml:lang="nl">Amerikaans-Engels met dode toetsen</description>
         <description xml:lang="ru">Английская (США) со специальными клавишами (dead keys)</description>
         <description xml:lang="sk">Anglické (US) s mŕtvymi klávesmi</description>
@@ -1120,6 +1147,7 @@
         <description xml:lang="cs">Albánské</description>
         <description xml:lang="da">Albansk</description>
         <description xml:lang="fr">Albanais</description>
+        <description xml:lang="hu">albán</description>
         <description xml:lang="nl">Albanees</description>
         <description xml:lang="ru">Албанская</description>
         <description xml:lang="sk">Albánska</description>
@@ -1143,6 +1171,7 @@
         <description xml:lang="cs">Arabské</description>
         <description xml:lang="da">Arabisk</description>
         <description xml:lang="fr">Arabe</description>
+        <description xml:lang="hu">arab</description>
         <description xml:lang="nl">Arabisch</description>
         <description xml:lang="ru">Арабская</description>
         <description xml:lang="sk">Arabsky</description>
@@ -1165,6 +1194,7 @@
             <description xml:lang="cs">azerty/číslice</description>
             <description xml:lang="da">azerty/cifre</description>
             <description xml:lang="fr">azerty/chiffres</description>
+            <description xml:lang="hu">azerty/számjegyek</description>
             <description xml:lang="nl">azerty/cijfers</description>
             <description xml:lang="ru">azerty/цифры</description>
             <description xml:lang="sk">azerty/číslice</description>
@@ -1180,6 +1210,7 @@
             <description xml:lang="cs">číslice</description>
             <description xml:lang="da">cifre</description>
             <description xml:lang="fr">chiffres</description>
+            <description xml:lang="hu">számjegyek</description>
             <description xml:lang="nl">cijfers</description>
             <description xml:lang="ru">цифры</description>
             <description xml:lang="sk">číslice</description>
@@ -1201,6 +1232,7 @@
             <description xml:lang="cs">qwerty/číslice</description>
             <description xml:lang="da">qwerty/cifre</description>
             <description xml:lang="fr">qwerty/chiffres</description>
+            <description xml:lang="hu">qwerty/számjegyek</description>
             <description xml:lang="nl">qwerty/cijfers</description>
             <description xml:lang="ru">qwerty/цифры</description>
             <description xml:lang="sk">qwerty/číslice</description>
@@ -1223,6 +1255,7 @@
         <description xml:lang="cs">Arménské</description>
         <description xml:lang="da">Armensk</description>
         <description xml:lang="fr">Arménian</description>
+        <description xml:lang="hu">örmény</description>
         <description xml:lang="nl">Armeens</description>
         <description xml:lang="ru">Армянская</description>
         <description xml:lang="sk">Arménska</description>
@@ -1246,6 +1279,7 @@
             <description xml:lang="cs">Fonetické</description>
             <description xml:lang="da">Fonetisk</description>
             <description xml:lang="fr">Phonétique</description>
+            <description xml:lang="hu">fonetikus</description>
             <description xml:lang="nl">Fonetisch</description>
             <description xml:lang="ru">Фонетическая</description>
             <description xml:lang="sk">Fonetické</description>
@@ -1266,6 +1300,7 @@
         <description xml:lang="cs">Azerbajdžánské</description>
         <description xml:lang="da">Aserbadjansk</description>
         <description xml:lang="fr">Azerbaijanais</description>
+        <description xml:lang="hu">azerbajdzsán</description>
         <description xml:lang="nl">Azerbeidzjaans</description>
         <description xml:lang="ru">Азербайджанская</description>
         <description xml:lang="sk">Ázerbajdžánské</description>
@@ -1282,6 +1317,7 @@
             <description xml:lang="cs">Cyrilika</description>
             <description xml:lang="da">Kyrillisk</description>
             <description xml:lang="fr">Cérillique</description>
+            <description xml:lang="hu">cirill</description>
             <description xml:lang="nl">Cyrillisch</description>
             <description xml:lang="ru">Кириллическая</description>
             <description xml:lang="sk">Cyrilika</description>
@@ -1295,6 +1331,7 @@
             <name>latin</name>
             <description>Latin</description>
             <description xml:lang="cs">Latinské</description>
+            <description xml:lang="hu">latin</description>
             <description xml:lang="nl">Latijn</description>
             <description xml:lang="ru">Латинская</description>
             <description xml:lang="sk">Latinské</description>
@@ -1315,6 +1352,7 @@
         <description xml:lang="bg">беларуска</description>
         <description xml:lang="cs">Běloruské</description>
         <description xml:lang="fr">Bélarusse</description>
+        <description xml:lang="hu">fehérorosz</description>
         <description xml:lang="nl">Wit-Russisch</description>
         <description xml:lang="ru">Белорусская</description>
         <description xml:lang="sk">Bieloruská</description>
@@ -1349,6 +1387,7 @@
         <description xml:lang="cs">Belgické</description>
         <description xml:lang="da">Belgisk</description>
         <description xml:lang="fr">Belge</description>
+        <description xml:lang="hu">belga</description>
         <description xml:lang="nl">Belgisch</description>
         <description xml:lang="ru">Бельгийская</description>
         <description xml:lang="sk">Belgická</description>
@@ -1381,6 +1420,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -1397,6 +1437,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -1416,6 +1457,7 @@
         <description>Bengali</description>
         <description xml:lang="bg">бенгалска</description>
         <description xml:lang="cs">Bengálské</description>
+        <description xml:lang="hu">bengáli</description>
         <description xml:lang="nl">Bengaals</description>
         <description xml:lang="ru">Бенгальская</description>
         <description xml:lang="sk">Bengálska</description>
@@ -1437,6 +1479,7 @@
         <description xml:lang="cs">Bosenské</description>
         <description xml:lang="da">Bosnisk</description>
         <description xml:lang="fr">Bosniac</description>
+        <description xml:lang="hu">bosnyák</description>
         <description xml:lang="nl">Bosnisch</description>
         <description xml:lang="ru">Боснийская</description>
         <description xml:lang="sk">Bosnianske</description>
@@ -1458,6 +1501,7 @@
         <description xml:lang="cs">Brazilské</description>
         <description xml:lang="da">Brasiliansk</description>
         <description xml:lang="fr">Brézilien</description>
+        <description xml:lang="hu">brazil</description>
         <description xml:lang="nl">Braziliaans</description>
         <description xml:lang="ru">Бразильская</description>
         <description xml:lang="sk">Brazílska</description>
@@ -1482,6 +1526,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -1505,6 +1550,7 @@
         <description xml:lang="cs">Bulharské</description>
         <description xml:lang="da">Bulgarisk</description>
         <description xml:lang="fr">Bulgare</description>
+        <description xml:lang="hu">bolgár</description>
         <description xml:lang="nl">Bulgaars</description>
         <description xml:lang="ru">Болгарская</description>
         <description xml:lang="sk">Bulharská</description>
@@ -1521,6 +1567,7 @@
             <description xml:lang="cs">Fonetické</description>
             <description xml:lang="da">Fonetisk</description>
             <description xml:lang="fr">Phonétique</description>
+            <description xml:lang="hu">fonetikus</description>
             <description xml:lang="nl">Fonetisch</description>
             <description xml:lang="ru">Фонетическая</description>
             <description xml:lang="sk">Fonetické</description>
@@ -1542,6 +1589,7 @@
         <description xml:lang="cs">Barmské</description>
         <description xml:lang="da">Burmesisk</description>
         <description xml:lang="fr">Birman</description>
+        <description xml:lang="hu">burmai</description>
         <description xml:lang="nl">Burmees</description>
         <description xml:lang="ru">Бирманская</description>
         <description xml:lang="sk">Burmézsky</description>
@@ -1565,6 +1613,7 @@
         <description xml:lang="cs">Kanadské</description>
         <description xml:lang="da">Canadisk</description>
         <description xml:lang="fr">Canadien</description>
+        <description xml:lang="hu">kanadai</description>
         <description xml:lang="nl">Canadees</description>
         <description xml:lang="ru">Канадская</description>
         <description xml:lang="sk">Kanadsky</description>
@@ -1581,6 +1630,7 @@
             <description xml:lang="cs">Alternativní</description>
             <description xml:lang="da">Alternativ</description>
             <description xml:lang="fr">Alternative</description>
+            <description xml:lang="hu">Másodlagos</description>
             <description xml:lang="nl">Alternatief</description>
             <description xml:lang="ru">Добавочная</description>
             <description xml:lang="sk">Alternatívne</description>
@@ -1597,6 +1647,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -1613,6 +1664,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -1635,6 +1687,7 @@
         <description xml:lang="cs">Francouzské kanadské</description>
         <description xml:lang="da">Fransk-canadisk</description>
         <description xml:lang="fr">Canadien Français</description>
+        <description xml:lang="hu">francia (kanadai)</description>
         <description xml:lang="nl">Frans-Canadees</description>
         <description xml:lang="ru">Французская Канадская</description>
         <description xml:lang="sk">Francúzske kanadské</description>
@@ -1650,6 +1703,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -1665,6 +1719,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -1689,6 +1744,7 @@
         <description xml:lang="cs">Chorvatské</description>
         <description xml:lang="da">Kroatisk</description>
         <description xml:lang="fr">Croate</description>
+        <description xml:lang="hu">horvát</description>
         <description xml:lang="nl">Kroatisch</description>
         <description xml:lang="ru">Хорватская</description>
         <description xml:lang="sk">Chorvátske</description>
@@ -1714,6 +1770,7 @@
         <description xml:lang="cs">České</description>
         <description xml:lang="da">Tjekkisk</description>
         <description xml:lang="fr">Tchèque</description>
+        <description xml:lang="hu">cseh</description>
         <description xml:lang="nl">Tsjechisch</description>
         <description xml:lang="ru">Чешская</description>
         <description xml:lang="sk">České</description>
@@ -1729,6 +1786,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -1762,6 +1820,7 @@
         <description xml:lang="cs">České (qwerty)</description>
         <description xml:lang="da">Tjekkisk (qwerty)</description>
         <description xml:lang="fr">Tchèque (qwerty)</description>
+        <description xml:lang="hu">cseh (qwerty)</description>
         <description xml:lang="nl">Tsjechisch (qwerty)</description>
         <description xml:lang="ru">Чешская (qwerty)</description>
         <description xml:lang="sk">České (qwerty)</description>
@@ -1777,6 +1836,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -1808,6 +1868,7 @@
         <description xml:lang="cs">Dánské</description>
         <description xml:lang="da">Dansk</description>
         <description xml:lang="fr">Danois</description>
+        <description xml:lang="hu">dán</description>
         <description xml:lang="nl">Deens</description>
         <description xml:lang="ru">Датская</description>
         <description xml:lang="sk">Dánske</description>
@@ -1825,6 +1886,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -1849,6 +1911,7 @@
         <description xml:lang="cs">Niz</description>
         <description xml:lang="da">Hollandsk</description>
         <description xml:lang="fr">Hollandais</description>
+        <description xml:lang="hu">holland</description>
         <description xml:lang="nl">Nederlands</description>
         <description xml:lang="ru">Голландская</description>
         <description xml:lang="sk">Holandské</description>
@@ -1868,6 +1931,7 @@
         <shortDescription xml:lang="uk">Дво</shortDescription>
         <description>Dvorak</description>
         <description xml:lang="bg">Дворак</description>
+        <description xml:lang="hu">Dvorak-féle</description>
         <description xml:lang="ru">Дворак</description>
         <description xml:lang="sr">дворак</description>
         <description xml:lang="uk">Дворак</description>
@@ -1881,6 +1945,7 @@
             <description xml:lang="cs">Francouzské</description>
             <description xml:lang="da">Fransk</description>
             <description xml:lang="fr">Français</description>
+            <description xml:lang="hu">francia</description>
             <description xml:lang="nl">Frans</description>
             <description xml:lang="ru">Французская</description>
             <description xml:lang="sk">Francúzske</description>
@@ -1898,6 +1963,7 @@
             <description xml:lang="cs">Norské</description>
             <description xml:lang="da">Norsk</description>
             <description xml:lang="fr">Norvégien</description>
+            <description xml:lang="hu">norvég</description>
             <description xml:lang="nl">Noors</description>
             <description xml:lang="ru">Норвежская</description>
             <description xml:lang="sk">Nórske</description>
@@ -1915,6 +1981,7 @@
             <description xml:lang="cs">Polské</description>
             <description xml:lang="da">Polsk</description>
             <description xml:lang="fr">Polonais</description>
+            <description xml:lang="hu">lengyel</description>
             <description xml:lang="nl">Pools</description>
             <description xml:lang="ru">Польская</description>
             <description xml:lang="sk">Poľské</description>
@@ -1939,6 +2006,7 @@
             <description xml:lang="cs">Švédské</description>
             <description xml:lang="da">Svensk</description>
             <description xml:lang="fr">Suédois</description>
+            <description xml:lang="hu">svéd</description>
             <description xml:lang="nl">Zweeds</description>
             <description xml:lang="ru">Шведская</description>
             <description xml:lang="sk">Švédske</description>
@@ -1955,6 +2023,7 @@
             <description xml:lang="bg">британска</description>
             <description xml:lang="cs">Spojené království</description>
             <description xml:lang="fr">Royaume Uni</description>
+            <description xml:lang="hu">brit angol</description>
             <description xml:lang="nl">Verenigd Koninkrijk</description>
             <description xml:lang="ru">Английская (Великобритания)</description>
             <description xml:lang="sk">Spojené kráľovstvo</description>
@@ -1985,6 +2054,7 @@
         <description xml:lang="cs">Estonské</description>
         <description xml:lang="da">Estisk</description>
         <description xml:lang="fr">Estonien</description>
+        <description xml:lang="hu">észt</description>
         <description xml:lang="nl">Ests</description>
         <description xml:lang="ru">Эстонская</description>
         <description xml:lang="sk">Estónske</description>
@@ -2002,6 +2072,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -2021,6 +2092,7 @@
         <shortDescription xml:lang="sr">ирн</shortDescription>
         <shortDescription xml:lang="uk">Ірн</shortDescription>
         <description>Farsi</description>
+        <description xml:lang="hu">fárszi</description>
         <description xml:lang="ru">Фарси</description>
         <description xml:lang="sr">фарси</description>
         <description xml:lang="tr">Farsça</description>
@@ -2039,6 +2111,7 @@
         <description>Faroese</description>
         <description xml:lang="cs">Farské</description>
         <description xml:lang="da">Færøisk</description>
+        <description xml:lang="hu">färöi</description>
         <description xml:lang="nl">Faröers</description>
         <description xml:lang="sk">Faerské</description>
         <description xml:lang="sr">фарски</description>
@@ -2054,6 +2127,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -2078,6 +2152,7 @@
         <description xml:lang="cs">Finské</description>
         <description xml:lang="da">Finsk</description>
         <description xml:lang="fr">Finnois</description>
+        <description xml:lang="hu">finn</description>
         <description xml:lang="nl">Fins</description>
         <description xml:lang="ru">Финская</description>
         <description xml:lang="sk">Fínske</description>
@@ -2093,6 +2168,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -2115,6 +2191,7 @@
         <description xml:lang="cs">Francouzské</description>
         <description xml:lang="da">Fransk</description>
         <description xml:lang="fr">Français</description>
+        <description xml:lang="hu">francia</description>
         <description xml:lang="nl">Frans</description>
         <description xml:lang="ru">Французская</description>
         <description xml:lang="sk">Francúzske</description>
@@ -2132,6 +2209,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -2148,6 +2226,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -2169,6 +2248,7 @@
         <description xml:lang="cs">Francouzské (alternativní)</description>
         <description xml:lang="da">Fransk (alternativ)</description>
         <description xml:lang="fr">Français (alternatif)</description>
+        <description xml:lang="hu">francia (alternatív)</description>
         <description xml:lang="nl">Frans (alternatief)</description>
         <description xml:lang="ru">Французская (альтернативная)</description>
         <description xml:lang="sk">Francúzske (alternatívne)</description>
@@ -2186,6 +2266,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -2202,6 +2283,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -2225,6 +2307,7 @@
         <description xml:lang="cs">Gruzínské (latinka)</description>
         <description xml:lang="da">Georgisk (latinsk)</description>
         <description xml:lang="fr">Géorgien (latin)</description>
+        <description xml:lang="hu">grúz (latin betűs)</description>
         <description xml:lang="nl">Georgisch (latijn)</description>
         <description xml:lang="ru">Грузинская "латинская"</description>
         <description xml:lang="sk">Gruzínske (latinka)</description>
@@ -2248,6 +2331,7 @@
         <description xml:lang="cs">Gruzínské (ruské)</description>
         <description xml:lang="da">Georgisk (russisk)</description>
         <description xml:lang="fr">Géorgien (russe)</description>
+        <description xml:lang="hu">grúz (orosz)</description>
         <description xml:lang="nl">Georgisch (Russisch)</description>
         <description xml:lang="ru">Грузинская "русская"</description>
         <description xml:lang="sk">Gruzínske (azbuka)</description>
@@ -2273,6 +2357,7 @@
         <description xml:lang="cs">Německé</description>
         <description xml:lang="da">Tysk</description>
         <description xml:lang="fr">Allemand</description>
+        <description xml:lang="hu">német</description>
         <description xml:lang="nl">Duits</description>
         <description xml:lang="ru">Немецкая</description>
         <description xml:lang="sk">Nemecké</description>
@@ -2288,6 +2373,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -2303,6 +2389,7 @@
             <description xml:lang="cs">Mrtvá čárka</description>
             <description xml:lang="da">Død accent</description>
             <description xml:lang="fr">clé morte d'accent aigu</description>
+            <description xml:lang="hu">Halott vessző (´) ékezet</description>
             <description xml:lang="nl">Dood acutus</description>
             <description xml:lang="ru">Спец. символ Dead acute</description>
             <description xml:lang="sk">Mŕtva čiarka</description>
@@ -2317,6 +2404,7 @@
             <description xml:lang="cs">Mrtvá opačná čárka</description>
             <description xml:lang="da">Død accent grave</description>
             <description xml:lang="fr">clé morte d'accent grave</description>
+            <description xml:lang="hu">Halott grave (`) ékezet</description>
             <description xml:lang="nl">Dood gravis-acutus</description>
             <description xml:lang="ru">Спец. символ Dead grave acute</description>
             <description xml:lang="sk">Mŕtva opačná čiarka</description>
@@ -2332,6 +2420,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -2358,6 +2447,7 @@
         <description xml:lang="cs">Řecké</description>
         <description xml:lang="da">Græsk</description>
         <description xml:lang="fr">Grecque</description>
+        <description xml:lang="hu">görög</description>
         <description xml:lang="nl">Grieks</description>
         <description xml:lang="ru">Греческая</description>
         <description xml:lang="sk">Grécke</description>
@@ -2374,6 +2464,7 @@
             <description xml:lang="cs">Rozšířené</description>
             <description xml:lang="da">Udvidet</description>
             <description xml:lang="fr">Étendue</description>
+            <description xml:lang="hu">Kibővített</description>
             <description xml:lang="nl">Uitgebreid</description>
             <description xml:lang="ru">Расширенная</description>
             <description xml:lang="sk">Rozšírené</description>
@@ -2390,6 +2481,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -2423,6 +2515,7 @@
         <shortDescription xml:lang="sr">гуј</shortDescription>
         <description>Gujarati</description>
         <description xml:lang="bg">гуджарати</description>
+        <description xml:lang="hu">gudzsarati</description>
         <description xml:lang="ru">Гуджарати</description>
         <description xml:lang="sk">Gudžarati</description>
         <description xml:lang="sr">гујарати</description>
@@ -2441,6 +2534,7 @@
         <shortDescription xml:lang="uk">Пан</shortDescription>
         <description>Gurmukhi</description>
         <description xml:lang="bg">гурмуки</description>
+        <description xml:lang="hu">gurmukhi</description>
         <description xml:lang="ru">Гурмукхи</description>
         <description xml:lang="sk">Gurmuchské</description>
         <description xml:lang="sr">гурмуки</description>
@@ -2458,6 +2552,7 @@
         <description>Hindi</description>
         <description xml:lang="bg">хинди</description>
         <description xml:lang="cs">Hindské</description>
+        <description xml:lang="hu">hindi</description>
         <description xml:lang="ru">Хинди</description>
         <description xml:lang="sk">Hindské</description>
         <description xml:lang="sr">индијски</description>
@@ -2483,6 +2578,7 @@
         <description xml:lang="cs">Maďarské</description>
         <description xml:lang="da">Ungarsk</description>
         <description xml:lang="fr">Hongrois</description>
+        <description xml:lang="hu">magyar</description>
         <description xml:lang="nl">Hongaars</description>
         <description xml:lang="ru">Венгерская</description>
         <description xml:lang="sk">Maďarské</description>
@@ -2499,6 +2595,7 @@
             <description xml:lang="cs">l2/101/qwerty/čárka</description>
             <description xml:lang="da">l2/101/qwerty/komma</description>
             <description xml:lang="fr">l2/101/qwerty/virgule</description>
+            <description xml:lang="hu">l2/101/qwerty/vessző</description>
             <description xml:lang="nl">l2/101/qwerty/komma</description>
             <description xml:lang="ru">Latin2 pc101, qwerty, запятая</description>
             <description xml:lang="sk">l2/101/qwerty/čiarka</description>
@@ -2512,6 +2609,7 @@
             <description>l2/101/qwerty/dot</description>
             <description xml:lang="cs">l2/101/qwerty/tečka</description>
             <description xml:lang="da">l2/101/qwerty/punktum</description>
+            <description xml:lang="hu">l2/101/qwerty/pont</description>
             <description xml:lang="nl">l2/101/qwerty/punt</description>
             <description xml:lang="ru">Latin2 pc101, qwerty, точка</description>
             <description xml:lang="sk">l2/101/qwerty/bodka</description>
@@ -2526,6 +2624,7 @@
             <description xml:lang="cs">l2/101/qwertz/čárka</description>
             <description xml:lang="da">l2/101/qwertz/komma</description>
             <description xml:lang="fr">l2/101/qwertz/virgule</description>
+            <description xml:lang="hu">l2/101/qwertz/vessző</description>
             <description xml:lang="nl">l2/101/qwertz/komma</description>
             <description xml:lang="ru">Latin2 pc101, qwertz, запятая</description>
             <description xml:lang="sk">l2/101/qwertz/čiarka</description>
@@ -2539,6 +2638,7 @@
             <description>l2/101/qwertz/dot</description>
             <description xml:lang="cs">l2/101/qwertz/tečka</description>
             <description xml:lang="da">l2/101/qwertz/punktum</description>
+            <description xml:lang="hu">l2/101/qwertz/pont</description>
             <description xml:lang="nl">l2/101/qwertz/punt</description>
             <description xml:lang="ru">Latin2 pc101, qwertz, точка</description>
             <description xml:lang="sk">l2/101/qwertz/bodka</description>
@@ -2552,6 +2652,7 @@
             <description>l2/102/qwerty/comma</description>
             <description xml:lang="cs">l2/102/qwerty/čárka</description>
             <description xml:lang="da">l2/102/qwerty/komma</description>
+            <description xml:lang="hu">l2/102/qwerty/vessző</description>
             <description xml:lang="nl">l2/102/qwerty/komma</description>
             <description xml:lang="ru">Latin2 pc102, qwerty, запятая</description>
             <description xml:lang="sk">l2/102/qwerty/čiarka</description>
@@ -2565,6 +2666,7 @@
             <description>l2/102/qwerty/dot</description>
             <description xml:lang="cs">l2/102/qwerty/tečka</description>
             <description xml:lang="da">l2/102/qwerty/punktum</description>
+            <description xml:lang="hu">l2/102/qwerty/pont</description>
             <description xml:lang="nl">l2/102/qwerty/punt</description>
             <description xml:lang="ru">Latin2 pc102, qwerty, точка</description>
             <description xml:lang="sk">l2/102/qwerty/bodka</description>
@@ -2578,6 +2680,7 @@
             <description>l2/102/qwertz/comma</description>
             <description xml:lang="cs">l2/102/qwertz/čárka</description>
             <description xml:lang="da">l2/102/qwertz/komma</description>
+            <description xml:lang="hu">l2/102/qwertz/vessző</description>
             <description xml:lang="nl">l2/102/qwertz/komma</description>
             <description xml:lang="ru">Latin2 pc102, qwertz, запятая</description>
             <description xml:lang="sk">l2/102/qwertz/čiarka</description>
@@ -2591,6 +2694,7 @@
             <description>l2/102/qwertz/dot</description>
             <description xml:lang="cs">l2/102/qwertz/tečka</description>
             <description xml:lang="da">l2/102/qwertz/punktum</description>
+            <description xml:lang="hu">l2/102/qwertz/pont</description>
             <description xml:lang="nl">l2/102/qwertz/punt</description>
             <description xml:lang="ru">Latin2 pc102, qwertz, точка</description>
             <description xml:lang="sk">l2/102/qwertz/bodka</description>
@@ -2606,6 +2710,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -2620,6 +2725,7 @@
             <name>standard</name>
             <description>Standard</description>
             <description xml:lang="cs">Standardní</description>
+            <description xml:lang="hu">Szabványos</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Стандартная</description>
             <description xml:lang="sk">Štandardné</description>
@@ -2635,6 +2741,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -2650,6 +2757,7 @@
             <description xml:lang="cs">uni/101/qwerty/čárka</description>
             <description xml:lang="da">uni/101/qwerty/komma</description>
             <description xml:lang="fr">uni/101/qwerty/virgule</description>
+            <description xml:lang="hu">uni/101/qwerty/vessző</description>
             <description xml:lang="nl">uni/101/qwerty/komma</description>
             <description xml:lang="ru">Unicode pc101, qwerty, запятая</description>
             <description xml:lang="sk">uni/101/qwerty/čiarka</description>
@@ -2663,6 +2771,7 @@
             <description>uni/101/qwerty/dot</description>
             <description xml:lang="cs">uni/101/qwerty/tečka</description>
             <description xml:lang="da">uni/101/qwerty/punktum</description>
+            <description xml:lang="hu">uni/101/qwerty/pont</description>
             <description xml:lang="nl">uni/101/qwerty/punt</description>
             <description xml:lang="ru">Unicode pc101, qwerty, точка</description>
             <description xml:lang="sk">uni/101/qwerty/bodka</description>
@@ -2677,6 +2786,7 @@
             <description xml:lang="cs">uni/101/qwertz/čárka</description>
             <description xml:lang="da">uni/101/qwertz/komma</description>
             <description xml:lang="fr">uni/101/qwertz/virgule</description>
+            <description xml:lang="hu">uni/101/qwertz/vessző</description>
             <description xml:lang="nl">uni/101/qwertz/komma</description>
             <description xml:lang="ru">Unicode pc101, qwertz, запятая</description>
             <description xml:lang="sk">uni/101/qwertz/čiarka</description>
@@ -2690,6 +2800,7 @@
             <description>uni/101/qwertz/dot</description>
             <description xml:lang="cs">uni/101/qwertz/tečka</description>
             <description xml:lang="da">uni/101/qwertz/punktum</description>
+            <description xml:lang="hu">uni/101/qwertz/pont</description>
             <description xml:lang="nl">uni/101/qwertz/punt</description>
             <description xml:lang="ru">Unicode pc101, qwertz, точка</description>
             <description xml:lang="sk">uni/101/qwertz/bodka</description>
@@ -2704,6 +2815,7 @@
             <description xml:lang="cs">uni/102/qwerty/čárka</description>
             <description xml:lang="da">uni/102/qwerty/komma</description>
             <description xml:lang="fr">uni/102/qwerty/virgule</description>
+            <description xml:lang="hu">uni/102/qwerty/vessző</description>
             <description xml:lang="nl">uni/102/qwerty/komma</description>
             <description xml:lang="ru">Unicode pc102, qwerty, запятая</description>
             <description xml:lang="sk">uni/102/qwerty/čiarka</description>
@@ -2717,6 +2829,7 @@
             <description>uni/102/qwerty/dot</description>
             <description xml:lang="cs">uni/102/qwerty/tečka</description>
             <description xml:lang="da">uni/102/qwerty/punktum</description>
+            <description xml:lang="hu">uni/102/qwerty/pont</description>
             <description xml:lang="nl">uni/102/qwerty/punt</description>
             <description xml:lang="ru">Unicode pc102, qwerty, запятая</description>
             <description xml:lang="sk">uni/102/qwerty/bodka</description>
@@ -2731,6 +2844,7 @@
             <description xml:lang="cs">uni/102/qwertz/čárka</description>
             <description xml:lang="da">uni/102/qwertz/komma</description>
             <description xml:lang="fr">uni/102/qwertz/virgule</description>
+            <description xml:lang="hu">uni/102/qwertz/vessző</description>
             <description xml:lang="nl">uni/102/qwertz/komma</description>
             <description xml:lang="ru">Unicode pc102, qwertz, запятая</description>
             <description xml:lang="sk">uni/102/qwertz/čiarka</description>
@@ -2744,6 +2858,7 @@
             <description>uni/102/qwertz/dot</description>
             <description xml:lang="cs">uni/102/qwertz/tečka</description>
             <description xml:lang="da">uni/102/qwertz/punktum</description>
+            <description xml:lang="hu">uni/102/qwertz/pont</description>
             <description xml:lang="nl">uni/102/qwertz/punt</description>
             <description xml:lang="ru">Unicode pc102, qwertz, точка</description>
             <description xml:lang="sk">uni/102/qwertz/bodka</description>
@@ -2768,6 +2883,7 @@
         <description xml:lang="cs">Maďarské (qwerty)</description>
         <description xml:lang="da">Ungarsk (qwerty)</description>
         <description xml:lang="fr">Hungrois (qwerty)</description>
+        <description xml:lang="hu">magyar (qwerty)</description>
         <description xml:lang="nl">Hongaars (qwerty)</description>
         <description xml:lang="ru">Венгерская (qwerty)</description>
         <description xml:lang="sk">Maďarská (qwerty)</description>
@@ -2791,6 +2907,7 @@
         <description xml:lang="cs">Islandské</description>
         <description xml:lang="da">Islandsk</description>
         <description xml:lang="fr">Icelandais</description>
+        <description xml:lang="hu">izlandi</description>
         <description xml:lang="nl">IJslands</description>
         <description xml:lang="ru">Исландская</description>
         <description xml:lang="sk">Islandské</description>
@@ -2807,6 +2924,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -2823,6 +2941,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -2845,6 +2964,7 @@
         <description>Inuktitut</description>
         <description xml:lang="bg">ескимоска</description>
         <description xml:lang="cs">Inuitské</description>
+        <description xml:lang="hu">inuktitut</description>
         <description xml:lang="ru">Иннуитская</description>
         <description xml:lang="sk">Inuktitutské</description>
         <description xml:lang="sr">инуктитут</description>
@@ -2868,6 +2988,7 @@
         <description xml:lang="cs">Izraelské</description>
         <description xml:lang="da">Israelsk</description>
         <description xml:lang="fr">Israélien</description>
+        <description xml:lang="hu">izraeli</description>
         <description xml:lang="nl">Israëlisch</description>
         <description xml:lang="ru">Иврит</description>
         <description xml:lang="sk">Izraelské</description>
@@ -2905,6 +3026,7 @@
         <description xml:lang="cs">Italské</description>
         <description xml:lang="da">Italiensk</description>
         <description xml:lang="fr">Italien</description>
+        <description xml:lang="hu">olasz</description>
         <description xml:lang="nl">Italiaans</description>
         <description xml:lang="ru">Итальянская</description>
         <description xml:lang="sk">Talianske</description>
@@ -2922,6 +3044,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -2946,6 +3069,7 @@
         <description xml:lang="cs">Japonské</description>
         <description xml:lang="da">Japansk</description>
         <description xml:lang="fr">Japanais</description>
+        <description xml:lang="hu">japán</description>
         <description xml:lang="nl">Japans</description>
         <description xml:lang="ru">Японская</description>
         <description xml:lang="sk">Japonské</description>
@@ -2967,6 +3091,7 @@
         <shortDescription xml:lang="uk">Кан</shortDescription>
         <description>Kannada</description>
         <description xml:lang="cs">Kannadské</description>
+        <description xml:lang="hu">kannada</description>
         <description xml:lang="ru">Каннада</description>
         <description xml:lang="sk">Kannadské</description>
         <description xml:lang="sr">канада (јужна индија)</description>
@@ -2998,6 +3123,7 @@
         <description xml:lang="cs">Latinská Amerika</description>
         <description xml:lang="da">Latinamerika</description>
         <description xml:lang="fr">Amérique latine</description>
+        <description xml:lang="hu">latin-amerikai</description>
         <description xml:lang="nl">Latijns-Amerikaans</description>
         <description xml:lang="ru">Латиноамериканская</description>
         <description xml:lang="sk">Latinská Amerika</description>
@@ -3015,6 +3141,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -3031,6 +3158,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -3055,6 +3183,7 @@
         <description xml:lang="cs">Litevské qwerty "numerické"</description>
         <description xml:lang="da">Litauisk qwerty-numerisk</description>
         <description xml:lang="fr">Lithuanian qwerty "numérique"</description>
+        <description xml:lang="hu">litván (qwerty, "numerikus")</description>
         <description xml:lang="nl">Litouws qwerty "numeriek"</description>
         <description xml:lang="ru">Литовская "Балтийская" qwerty</description>
         <description xml:lang="sk">Litovské qwerty "číselné"</description>
@@ -3069,6 +3198,7 @@
             <name>lt_std</name>
             <description>Standard</description>
             <description xml:lang="cs">Standardní</description>
+            <description xml:lang="hu">Szabványos</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Стандартная</description>
             <description xml:lang="sk">Štandardné</description>
@@ -3103,6 +3233,7 @@
         <description xml:lang="cs">Litevské azerty standardní</description>
         <description xml:lang="da">Litauisk azerty-standard</description>
         <description xml:lang="fr">Lithuanien azerty standard</description>
+        <description xml:lang="hu">litván (azerty)</description>
         <description xml:lang="nl">Litouwse azerty standaard</description>
         <description xml:lang="ru">Литовская стандартная azerty</description>
         <description xml:lang="sk">Litovské azerty štandardné</description>
@@ -3120,6 +3251,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -3136,6 +3268,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -3159,6 +3292,7 @@
         <description xml:lang="bg">латвийска</description>
         <description xml:lang="cs">Lotyšské</description>
         <description xml:lang="da">Lettisk</description>
+        <description xml:lang="hu">lett</description>
         <description xml:lang="nl">Lets</description>
         <description xml:lang="ru">Латышская</description>
         <description xml:lang="sk">Lotyšské</description>
@@ -3183,6 +3317,7 @@
         <description xml:lang="cs">Makedonské</description>
         <description xml:lang="da">Makedonsk</description>
         <description xml:lang="fr">Macédonien</description>
+        <description xml:lang="hu">macedón</description>
         <description xml:lang="nl">Macedonisch</description>
         <description xml:lang="ru">Македонская</description>
         <description xml:lang="sk">Macedónske</description>
@@ -3209,6 +3344,7 @@
         <shortDescription xml:lang="uk">Мал</shortDescription>
         <description>Malayalam</description>
         <description xml:lang="cs">Malajské</description>
+        <description xml:lang="hu">malajalam</description>
         <description xml:lang="nl">Malayalamees</description>
         <description xml:lang="ru">Малайская</description>
         <description xml:lang="sk">Malajalamské</description>
@@ -3239,6 +3375,7 @@
         <description xml:lang="cs">Maltézské</description>
         <description xml:lang="da">Maltesisk</description>
         <description xml:lang="fr">Maltais</description>
+        <description xml:lang="hu">máltai</description>
         <description xml:lang="nl">Maltees</description>
         <description xml:lang="ru">Мальтийская</description>
         <description xml:lang="sk">Maltézske</description>
@@ -3261,6 +3398,7 @@
         <description xml:lang="cs">Maltézské (rozložení US)</description>
         <description xml:lang="da">Maltesisk (US-layout)</description>
         <description xml:lang="fr">Maltais (disposition US)</description>
+        <description xml:lang="hu">máltai (amerikai kiosztás)</description>
         <description xml:lang="nl">Maltees (Amerikaanse indeling)</description>
         <description xml:lang="ru">Мальтийская (Американская раскладка)</description>
         <description xml:lang="sk">Maltézske (US)</description>
@@ -3283,6 +3421,7 @@
         <description xml:lang="cs">Mongolské</description>
         <description xml:lang="da">Mongolsk</description>
         <description xml:lang="fr">Mongole</description>
+        <description xml:lang="hu">mongol</description>
         <description xml:lang="nl">Mongools</description>
         <description xml:lang="ru">Монгольская</description>
         <description xml:lang="sk">Mongloské</description>
@@ -3305,6 +3444,7 @@
         <description xml:lang="cs">Norské</description>
         <description xml:lang="da">Norsk</description>
         <description xml:lang="fr">Norvégien</description>
+        <description xml:lang="hu">norvég</description>
         <description xml:lang="nl">Noors</description>
         <description xml:lang="ru">Норвежская</description>
         <description xml:lang="sk">Nórske</description>
@@ -3320,6 +3460,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -3336,6 +3477,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -3356,6 +3498,7 @@
         <shortDescription xml:lang="uk">Огх</shortDescription>
         <description>Ogham</description>
         <description xml:lang="cs">Oghamské</description>
+        <description xml:lang="hu">ogham</description>
         <description xml:lang="nl">Oghamees</description>
         <description xml:lang="ru">Огхам (древнеирланская)</description>
         <description xml:lang="sk">Oghamské</description>
@@ -3402,6 +3545,7 @@
         <shortDescription xml:lang="sr">ори</shortDescription>
         <shortDescription xml:lang="uk">Орі</shortDescription>
         <description>Oriya</description>
+        <description xml:lang="hu">orija</description>
         <description xml:lang="ru">Орийя</description>
         <description xml:lang="sr">орија</description>
         <description xml:lang="tr">Orissa dili</description>
@@ -3421,6 +3565,7 @@
         <description xml:lang="cs">Polské</description>
         <description xml:lang="da">Polsk</description>
         <description xml:lang="fr">Polonais</description>
+        <description xml:lang="hu">lengyel</description>
         <description xml:lang="nl">Pools</description>
         <description xml:lang="ru">Польская</description>
         <description xml:lang="sk">Poľské</description>
@@ -3443,6 +3588,7 @@
         <description xml:lang="cs">Polské (qwertz)</description>
         <description xml:lang="da">Polsk (qwertz)</description>
         <description xml:lang="fr">Polonais (qwertz)</description>
+        <description xml:lang="hu">lengyel (qwertz)</description>
         <description xml:lang="nl">Pools (qwertz)</description>
         <description xml:lang="ru">Польская (qwertz)</description>
         <description xml:lang="sk">Poľské (qwertz)</description>
@@ -3465,6 +3611,7 @@
         <description xml:lang="cs">Portugalské</description>
         <description xml:lang="da">Portugisisk</description>
         <description xml:lang="fr">Portugais</description>
+        <description xml:lang="hu">portugál</description>
         <description xml:lang="nl">Portugees</description>
         <description xml:lang="ru">Португальская</description>
         <description xml:lang="sk">Portugalské</description>
@@ -3482,6 +3629,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -3498,6 +3646,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -3522,6 +3671,7 @@
         <description xml:lang="cs">Rumunské</description>
         <description xml:lang="da">Rumænsk</description>
         <description xml:lang="fr">Roumain</description>
+        <description xml:lang="hu">román</description>
         <description xml:lang="nl">Roemeens</description>
         <description xml:lang="ru">Румынская</description>
         <description xml:lang="sk">Rumunské</description>
@@ -3538,6 +3688,7 @@
             <description xml:lang="cs">Americká klávesnice s rumunskými písmeny</description>
             <description xml:lang="da">US-tastatur med rumænske bogstaver</description>
             <description xml:lang="fr">clavier US avec lettres roumaines</description>
+            <description xml:lang="hu">US billentyűzet román betűkkel</description>
             <description xml:lang="nl">Amerikaans toetsenbord met Roemeense letters</description>
             <description xml:lang="ru">Клавиатура США с румынскими буквами</description>
             <description xml:lang="sk">Americká klávesnica s rumunskými písmami</description>
@@ -3560,6 +3711,7 @@
         <description xml:lang="cs">Ruské</description>
         <description xml:lang="da">Russisk</description>
         <description xml:lang="fr">Russe</description>
+        <description xml:lang="hu">orosz</description>
         <description xml:lang="nl">Russisch</description>
         <description xml:lang="ru">Русская</description>
         <description xml:lang="sk">Ruské</description>
@@ -3576,6 +3728,7 @@
             <description xml:lang="cs">Fonetické</description>
             <description xml:lang="da">Fonetisk</description>
             <description xml:lang="fr">Phonétique</description>
+            <description xml:lang="hu">fonetikus</description>
             <description xml:lang="nl">Fonetisch</description>
             <description xml:lang="ru">Фонетическая</description>
             <description xml:lang="sk">Fonetické</description>
@@ -3589,6 +3742,7 @@
             <description>"Typewriter"</description>
             <description xml:lang="cs">"Psací stroj"</description>
             <description xml:lang="da">"Skrivemaskine"</description>
+            <description xml:lang="hu">"Írógép"</description>
             <description xml:lang="nl">"Typmachine"</description>
             <description xml:lang="ru">"Печатная машинка"</description>
             <description xml:lang="sk">"Písací stroj"</description>
@@ -3623,6 +3777,7 @@
         <description xml:lang="cs">Severní Saami (Finsko)</description>
         <description xml:lang="da">Nordligt Saami (Finland)</description>
         <description xml:lang="fr">Saami du Nord (Finlande)</description>
+        <description xml:lang="hu">északi lapp (Finnország)</description>
         <description xml:lang="nl">Noord-Lapland (Finland)</description>
         <description xml:lang="ru">Саамская (Финляндия)</description>
         <description xml:lang="sk">Severný Saami (Fínsko)</description>
@@ -3645,6 +3800,7 @@
         <description xml:lang="cs">Severní Saami (Norsko)</description>
         <description xml:lang="da">Nordligt Saami (Norge)</description>
         <description xml:lang="fr">Saami du Nord (Norvège)</description>
+        <description xml:lang="hu">északi lapp (Norvégia)</description>
         <description xml:lang="nl">Noord-Lapland (Noorwegen)</description>
         <description xml:lang="ru">Саамская (Норвегия)</description>
         <description xml:lang="sk">Severný Saami (Nórsko)</description>
@@ -3667,6 +3823,7 @@
         <description xml:lang="cs">Severní Saami (Švédsko)</description>
         <description xml:lang="da">Nordligt Saami (Sverige)</description>
         <description xml:lang="fr">Saami du Nord (Suède)</description>
+        <description xml:lang="hu">északi lapp (Svédország)</description>
         <description xml:lang="nl">Noord-Lapland (Zweden)</description>
         <description xml:lang="ru">Саамская (Швеция)</description>
         <description xml:lang="sk">Severný Saami (Švédsko)</description>
@@ -3688,6 +3845,7 @@
         <description xml:lang="cs">Srbské</description>
         <description xml:lang="da">Serbisk</description>
         <description xml:lang="fr">Serbe</description>
+        <description xml:lang="hu">szerb</description>
         <description xml:lang="nl">Servisch</description>
         <description xml:lang="ru">Сербская</description>
         <description xml:lang="sk">Srbské</description>
@@ -3717,6 +3875,7 @@
         <description xml:lang="cs">Slovinské</description>
         <description xml:lang="da">Slovensk</description>
         <description xml:lang="fr">Slovène</description>
+        <description xml:lang="hu">szlovén</description>
         <description xml:lang="nl">Sloveens</description>
         <description xml:lang="ru">Словенская</description>
         <description xml:lang="sk">Slovinské</description>
@@ -3738,6 +3897,7 @@
         <description xml:lang="cs">Slovenské</description>
         <description xml:lang="da">Slovakisk</description>
         <description xml:lang="fr">Slovaque</description>
+        <description xml:lang="hu">szlovák</description>
         <description xml:lang="nl">Slowaaks</description>
         <description xml:lang="ru">Словацкая</description>
         <description xml:lang="sk">Slovenské</description>
@@ -3753,6 +3913,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -3782,6 +3943,7 @@
         <description xml:lang="cs">Slovenské (qwerty)</description>
         <description xml:lang="da">Slovakisk (qwerty)</description>
         <description xml:lang="fr">Slovaque (qwerty)</description>
+        <description xml:lang="hu">szlovák (qwerty)</description>
         <description xml:lang="nl">Slowaaks (qwerty)</description>
         <description xml:lang="ru">Словацкая (qwerty)</description>
         <description xml:lang="sk">Slovenské (qwerty)</description>
@@ -3797,6 +3959,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -3830,6 +3993,7 @@
         <description xml:lang="cs">Španělské</description>
         <description xml:lang="da">Spansk</description>
         <description xml:lang="fr">Espagnol</description>
+        <description xml:lang="hu">spanyol</description>
         <description xml:lang="nl">Spaans</description>
         <description xml:lang="ru">Испанская</description>
         <description xml:lang="sk">Španielske</description>
@@ -3847,6 +4011,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -3863,6 +4028,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -3889,6 +4055,7 @@
         <description xml:lang="cs">Švédské</description>
         <description xml:lang="da">Svensk</description>
         <description xml:lang="fr">Suédois</description>
+        <description xml:lang="hu">svéd</description>
         <description xml:lang="nl">Zweeds</description>
         <description xml:lang="ru">Шведская</description>
         <description xml:lang="sk">Švédske</description>
@@ -3904,6 +4071,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -3920,6 +4088,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -3943,6 +4112,7 @@
         <description xml:lang="cs">Švýcarské francouzské</description>
         <description xml:lang="da">Schweizisk-fransk</description>
         <description xml:lang="fr">Français Suisse</description>
+        <description xml:lang="hu">svájci francia</description>
         <description xml:lang="nl">Zwitsers-Frans</description>
         <description xml:lang="ru">Французская (Швейцария)</description>
         <description xml:lang="sk">Švajčiarske francúzske</description>
@@ -3960,6 +4130,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -3976,6 +4147,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -4001,6 +4173,7 @@
         <description xml:lang="cs">Švýcarské německé</description>
         <description xml:lang="da">Schweizisk-tysk</description>
         <description xml:lang="fr">Allemand Suisse</description>
+        <description xml:lang="hu">svájci német</description>
         <description xml:lang="nl">Zwitsers-Duits</description>
         <description xml:lang="ru">Немецкая (Швейцария)</description>
         <description xml:lang="sk">Nemecké (Švajčiarsko)</description>
@@ -4018,6 +4191,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -4034,6 +4208,7 @@
             <description xml:lang="cs">Mrtvé klávesy Sun</description>
             <description xml:lang="da">Sun døde taster</description>
             <description xml:lang="fr">clés mortes Sun</description>
+            <description xml:lang="hu">Sun halott billentyűk</description>
             <description xml:lang="nl">Sun dode toetsen</description>
             <description xml:lang="ru">Специальные клавиши (dead keys) Sun</description>
             <description xml:lang="sk">Mŕtve klávesy Sun</description>
@@ -4055,6 +4230,7 @@
         <description>Syriac</description>
         <description xml:lang="cs">Syrské</description>
         <description xml:lang="da">Syrisk</description>
+        <description xml:lang="hu">szír</description>
         <description xml:lang="nl">Syrisch</description>
         <description xml:lang="ru">Сирийская</description>
         <description xml:lang="sk">Syrské</description>
@@ -4076,6 +4252,7 @@
         <description>Tajik</description>
         <description xml:lang="bg">таджикска</description>
         <description xml:lang="cs">Tádžikistánské</description>
+        <description xml:lang="hu">tadzsik</description>
         <description xml:lang="nl">Tadzjikisch</description>
         <description xml:lang="ru">Таджикская</description>
         <description xml:lang="sk">Tadžitské</description>
@@ -4097,6 +4274,7 @@
         <description xml:lang="bg">тамилска</description>
         <description xml:lang="cs">Tamilské</description>
         <description xml:lang="fr">Tamoul</description>
+        <description xml:lang="hu">tamil</description>
         <description xml:lang="ru">Тамильская</description>
         <description xml:lang="sk">Tamilské</description>
         <description xml:lang="sr">тамил</description>
@@ -4112,6 +4290,7 @@
             <description xml:lang="cs">Tamilská klávesová mapa ve stylu psacího stroje, kódování TSCII</description>
             <description xml:lang="da">En tamilsk skrivemaskine-tastaturudlægning; TSCII-kodning</description>
             <description xml:lang="fr">keymap Tamoul de type dactylo; encodage TSCII</description>
+            <description xml:lang="hu">Tamil írógépszerű billentyűzetkiosztás; TSCII kódolás</description>
             <description xml:lang="nl">Een Tamil-typmachine soort toetsenindeling; TSCII codering</description>
             <description xml:lang="ru">"Печатная·машинка",·кодировка·TSCII</description>
             <description xml:lang="sk">Tamilská klávesová mapa v štýle písacieho stroja, kódovanie TSCII</description>
@@ -4128,6 +4307,7 @@
             <description xml:lang="cs">Tamilská klávesová mapa ve stylu psacího stroje, kódování TAB</description>
             <description xml:lang="da">En tamilsk skrivemaskine-tastaturudlægning; TAB-kodning</description>
             <description xml:lang="fr">keymap Tamoul de type dactylo; encodage TAB</description>
+            <description xml:lang="hu">Tamil írógépszerű billentyűzetkiosztás; TAB kódolás</description>
             <description xml:lang="nl">Een Tamil-typmachine stijl toetsenindeling; TAB codering</description>
             <description xml:lang="ru">"Печатная машинка", кодировка TAB</description>
             <description xml:lang="sk">Tamilská klávesová mapa v štýle písacieho stroja, kódovanie TAB</description>
@@ -4144,6 +4324,7 @@
             <description xml:lang="cs">Tamilská klávesová mapa ve stylu psacího stroje, kódování Unicode</description>
             <description xml:lang="da">En tamilsk skrivemaskine-tastaturudlægning; Unicode-kodning</description>
             <description xml:lang="fr">keymap Tamoul de type dactylo; encodage Unicode</description>
+            <description xml:lang="hu">Tamil írógépszerű billentyűzetkiosztás; Unicode kódolás</description>
             <description xml:lang="nl">Een Tamil-typmachine soort toetsenindeling; Unicode codering</description>
             <description xml:lang="ru">"Печатная·машинка",·кодировка·Unicode</description>
             <description xml:lang="sk">Tamilská klávesová mapa v štýle písacieho stroja, kódovanie Unicode</description>
@@ -4160,6 +4341,7 @@
             <description xml:lang="cs">INSCRIPT rozložení</description>
             <description xml:lang="da">INSCRIPT-layout</description>
             <description xml:lang="fr">disposition INSCRIPT</description>
+            <description xml:lang="hu">INSCRIPT kiosztás</description>
             <description xml:lang="nl">INSCRIPT indeling</description>
             <description xml:lang="ru">Раскладка INSCRIPT</description>
             <description xml:lang="sk">INSCRIPT rozloženie</description>
@@ -4177,6 +4359,7 @@
         <shortDescription xml:lang="sr">тел</shortDescription>
         <shortDescription xml:lang="uk">Тел</shortDescription>
         <description>Telugu</description>
+        <description xml:lang="hu">telugu</description>
         <description xml:lang="ru">Телугу</description>
         <description xml:lang="sk">Telugské</description>
         <description xml:lang="sr">телугу</description>
@@ -4195,6 +4378,7 @@
         <shortDescription xml:lang="uk">Тай</shortDescription>
         <description>Thai (Kedmanee)</description>
         <description xml:lang="cs">Thajské (Kedmanee)</description>
+        <description xml:lang="hu">thai (kedmanee)</description>
         <description xml:lang="nl">Thaïsch (Kedmanee)</description>
         <description xml:lang="ru">Тайская (Кедмани)</description>
         <description xml:lang="sk">Thajské (Kedmanee)</description>
@@ -4210,6 +4394,7 @@
         <name>th_tis</name>
         <description>Thai (TIS-820.2538)</description>
         <description xml:lang="cs">Thajské (TIS-820.2538)</description>
+        <description xml:lang="hu">thai (TIS-820.2538)</description>
         <description xml:lang="nl">Thaïsch (TIS-820.2538)</description>
         <description xml:lang="ru">Тайская (TIS-820.2538)</description>
         <description xml:lang="sk">Thajské (TIS-820.2538)</description>
@@ -4225,6 +4410,7 @@
         <name>th_pat</name>
         <description>Thai (Pattachote)</description>
         <description xml:lang="cs">Thajské (Pattachote)</description>
+        <description xml:lang="hu">thai (pattachote)</description>
         <description xml:lang="nl">Thaïsch (Pattachote)</description>
         <description xml:lang="ru">Тайская (Паттачот)</description>
         <description xml:lang="sk">Thajské (Pattachote)</description>
@@ -4249,6 +4435,7 @@
         <description xml:lang="cs">Turecké</description>
         <description xml:lang="da">Tyrkisk</description>
         <description xml:lang="fr">Turque</description>
+        <description xml:lang="hu">török</description>
         <description xml:lang="nl">Turks</description>
         <description xml:lang="ru">Турецкая</description>
         <description xml:lang="sk">Turecké</description>
@@ -4266,6 +4453,7 @@
             <description xml:lang="cs">Turecké (F)</description>
             <description xml:lang="da">Tyrkisk (F)</description>
             <description xml:lang="fr">Turque (F)</description>
+            <description xml:lang="hu">török (F)</description>
             <description xml:lang="nl">Turks (F)</description>
             <description xml:lang="ru">Турецкая (F)</description>
             <description xml:lang="sk">Turecké (F)</description>
@@ -4282,6 +4470,7 @@
             <description xml:lang="cs">Turecké rozložení Alt-Q</description>
             <description xml:lang="da">Tyrkisk Alt-Q-layout</description>
             <description xml:lang="fr">disposition Turque Alt-Q</description>
+            <description xml:lang="hu">Turkish Alt-Q kiosztás</description>
             <description xml:lang="nl">Turkse Alt-Q indeling</description>
             <description xml:lang="ru">Турецкая (Alt-Q)</description>
             <description xml:lang="sk">Turecké rozloženie Alt-Q</description>
@@ -4305,6 +4494,7 @@
         <description xml:lang="cs">Ukrajinské</description>
         <description xml:lang="da">Ukraine</description>
         <description xml:lang="fr">Ukrénien</description>
+        <description xml:lang="hu">ukrán</description>
         <description xml:lang="nl">Oekraïens</description>
         <description xml:lang="ru">Украинская</description>
         <description xml:lang="sk">Ukrajinské</description>
@@ -4321,6 +4511,7 @@
             <description xml:lang="cs">Fonetické</description>
             <description xml:lang="da">Fonetisk</description>
             <description xml:lang="fr">Phonétique</description>
+            <description xml:lang="hu">fonetikus</description>
             <description xml:lang="nl">Fonetisch</description>
             <description xml:lang="ru">Фонетическая</description>
             <description xml:lang="sk">Fonetické</description>
@@ -4334,6 +4525,7 @@
             <description>"Typewriter"</description>
             <description xml:lang="cs">"Psací stroj"</description>
             <description xml:lang="da">"Skrivemaskine"</description>
+            <description xml:lang="hu">"Írógép"</description>
             <description xml:lang="nl">"Typmachine"</description>
             <description xml:lang="ru">"Печатная машинка"</description>
             <description xml:lang="sk">"Písací stroj"</description>
@@ -4369,6 +4561,7 @@
         <description xml:lang="bg">британска</description>
         <description xml:lang="cs">Spojené království</description>
         <description xml:lang="fr">Royaume Uni</description>
+        <description xml:lang="hu">brit angol</description>
         <description xml:lang="nl">Verenigd Koninkrijk</description>
         <description xml:lang="ru">Английская (Великобритания)</description>
         <description xml:lang="sk">Spojené kráľovstvo</description>
@@ -4399,6 +4592,7 @@
         <description xml:lang="cs">Uzbecké</description>
         <description xml:lang="da">Uzbekisk</description>
         <description xml:lang="fr">Uzbèque</description>
+        <description xml:lang="hu">üzbég</description>
         <description xml:lang="nl">Oezbeeks</description>
         <description xml:lang="ru">Узбекская</description>
         <description xml:lang="sk">Uzbecké</description>
@@ -4421,6 +4615,7 @@
         <description xml:lang="cs">Vietnamské</description>
         <description xml:lang="da">Vietnamesisk</description>
         <description xml:lang="fr">Vietnamien</description>
+        <description xml:lang="hu">vietnami</description>
         <description xml:lang="nl">Viëtnamees</description>
         <description xml:lang="ru">Вьетнамская</description>
         <description xml:lang="sk">Vietnamské</description>
@@ -4445,6 +4640,7 @@
         <description xml:lang="cs">Jugoslávské</description>
         <description xml:lang="da">Yugoslavisk</description>
         <description xml:lang="fr">Yugoslave</description>
+        <description xml:lang="hu">jugoszláv</description>
         <description xml:lang="nl">Joegoslavisch</description>
         <description xml:lang="ru">Югославская</description>
         <description xml:lang="sk">Juhoslovanské</description>
@@ -4513,6 +4709,7 @@
         <description xml:lang="cs">Irské</description>
         <description xml:lang="da">Irsk</description>
         <description xml:lang="fr">Irlandais</description>
+        <description xml:lang="hu">ír</description>
         <description xml:lang="nl">Iers</description>
         <description xml:lang="ru">Ирландская</description>
         <description xml:lang="sk">Írske</description>
@@ -4573,6 +4770,7 @@
         <description xml:lang="cs">Fonetické</description>
         <description xml:lang="da">Fonetisk</description>
         <description xml:lang="fr">Phonétique</description>
+        <description xml:lang="hu">fonetikus</description>
         <description xml:lang="nl">Fonetisch</description>
         <description xml:lang="ru">Фонетическая</description>
         <description xml:lang="sk">Fonetické</description>
@@ -4597,6 +4795,7 @@
             <description>Basic</description>
             <description xml:lang="cs">Základní</description>
             <description xml:lang="da">Basal</description>
+            <description xml:lang="hu">Alap</description>
             <description xml:lang="nl">Standaard</description>
             <description xml:lang="ru">Базовая</description>
             <description xml:lang="sk">Základné</description>
@@ -4613,6 +4812,7 @@
             <description xml:lang="cs">Eliminovat mrtvé klávesy</description>
             <description xml:lang="da">Slå døde taster fra</description>
             <description xml:lang="fr">éliminer des clés mortes</description>
+            <description xml:lang="hu">Halott billentyűk tiltása</description>
             <description xml:lang="nl">Dode toetsen niet doen</description>
             <description xml:lang="ru">Исключить специальные клавиши (dead keys)</description>
             <description xml:lang="sk">Eliminovať mrtvé kláves</description>
@@ -4640,6 +4840,7 @@
         <description xml:lang="cs">Chování skupiny Shift/Lock</description>
         <description xml:lang="da">Gruppeskift/-lås-opførsel</description>
         <description xml:lang="fr">comportement de groupe Shitf/Lock</description>
+        <description xml:lang="hu">Csoportváltás és -zárolás</description>
         <description xml:lang="nl">Groepgedrag Shift/Lock</description>
         <description xml:lang="ru">Функция смены раскладки</description>
         <description xml:lang="sk">Zoskupiť chovanie Shift/Lock</description>
@@ -4656,6 +4857,7 @@
           <description xml:lang="cs">Pravý Alt přepne při stisku skupinu</description>
           <description xml:lang="da">Højre Alt skifter gruppe mens nedtrykket</description>
           <description xml:lang="fr">la clé droite Alt bascule de groupe lorsque'enfoncée</description>
+          <description xml:lang="hu">A jobb Alt lenyomva tartása mellett lehet a csoportok közt váltani</description>
           <description xml:lang="nl">R-Alt schakelt groep bij indrukken</description>
           <description xml:lang="ru">Правая клавиша Alt переключает группу на время нажатия</description>
           <description xml:lang="sk">R-Alt prepína skupinu pri stlačení</description>
@@ -4680,6 +4882,7 @@
           <description xml:lang="cs">Levá klávesa Win přepne při stisku skupinu</description>
           <description xml:lang="da">Venstre Win-tast skifter gruppe mens nedtrykket</description>
           <description xml:lang="fr">clé gauche Win-key bascule de groupe lorsqu'enfoncé</description>
+          <description xml:lang="hu">A bal Win billentyű lenyomva tartása mellett lehet a csoportok közt váltani</description>
           <description xml:lang="nl">Linker Win-toets schakelt groep bij indrukken</description>
           <description xml:lang="ru">Левая клавиша Win переключает группу на время нажатия</description>
           <description xml:lang="sk">Ľavý Win-kláves prepína skupinu pri stlačení</description>
@@ -4697,6 +4900,7 @@
           <description xml:lang="cs">Klávesa Pravý Win přepne při stisku skupinu</description>
           <description xml:lang="da">Højre Win-tast skifter gruppe mens nedtrykket</description>
           <description xml:lang="fr">la clé droite Win-key bascule de groupe lorsqu'enfoncée</description>
+          <description xml:lang="hu">A jobb Win billentyű lenyomva tartása mellett lehet a csoportok közt váltani</description>
           <description xml:lang="nl">Rechter Win-toets schakelt groep bij indrukken</description>
           <description xml:lang="ru">Правая клавиша Win переключает группу на время нажатия</description>
           <description xml:lang="sk">Pravý kláves Win prepína skupinu pri stlačení</description>
@@ -4714,6 +4918,7 @@
           <description xml:lang="cs">Obě klávesy Win přepnou při stisku skupinu</description>
           <description xml:lang="da">Begge Win-taster til sammen skifter gruppe</description>
           <description xml:lang="fr">les clés Win-keys lorsqu'enfoncées basculent de groupe</description>
+          <description xml:lang="hu">Bármely Win billentyű lenyomva tartása mellett lehet a csoportok közt váltani</description>
           <description xml:lang="nl">Beide Win-toetsen schakelen groep bij indrukken</description>
           <description xml:lang="ru">Две клавиши Win переключает группу на время нажатия</description>
           <description xml:lang="sk">Oba Win-klávesy prepínajú skupinu pri stlačení</description>
@@ -4731,6 +4936,7 @@
           <description xml:lang="cs">Klávesa Pravý Alt mění skupinu</description>
           <description xml:lang="da">Højre Alt-tast skifter gruppe</description>
           <description xml:lang="fr">la clé droite Alt change de groupe</description>
+          <description xml:lang="hu">A jobb Alt-tal lehet csoportot váltani</description>
           <description xml:lang="nl">Rechter Alt-toets verandert groep</description>
           <description xml:lang="ru">Правая клавиша Alt меняет группу</description>
           <description xml:lang="sk">Pravý Alt mení skupinu</description>
@@ -4747,6 +4953,7 @@
           <description xml:lang="cs">Levá klávesa Alt mění skupinu</description>
           <description xml:lang="da">Venstre Alt-tast skifter gruppe</description>
           <description xml:lang="fr">clé gauche Alt change de groupe</description>
+          <description xml:lang="hu">A bal Alt lenyomásával lehet csoportot váltani</description>
           <description xml:lang="nl">Linker Alt-toets verandert groep</description>
           <description xml:lang="ru">Левая клавиша Alt меняет группу</description>
           <description xml:lang="sk">Ľavý kláves Alt mení skupinu</description>
@@ -4764,6 +4971,7 @@
           <description xml:lang="cs">Klávesa CapsLock mění skupinu</description>
           <description xml:lang="da">Caps Lock-tast skifter gruppe</description>
           <description xml:lang="fr">la clé Caps Lock change de groupe</description>
+          <description xml:lang="hu">A Caps Lock-kal lehet csoportot váltani</description>
           <description xml:lang="nl">CapsLock-toets verandert groep</description>
           <description xml:lang="ru">Клавиша Caps Lock меняет группу</description>
           <description xml:lang="sk">Kláves Caps Lock mení skupinu</description>
@@ -4788,6 +4996,7 @@
           <description xml:lang="cs">Obě klávesy Shift dohromady mění skupinu</description>
           <description xml:lang="da">Begge skiftetaster til sammen skifter gruppe</description>
           <description xml:lang="fr">les clés Shift ensembles changent de groupe</description>
+          <description xml:lang="hu">A két Shift egyszerre lenyomásával lehet csoportot váltani</description>
           <description xml:lang="nl">Beide Shift-toetsen samen veranderen groep</description>
           <description xml:lang="ru">Две клавиши Shift вместе меняют группу</description>
           <description xml:lang="sk">Spoločné stlačenie oboch Shift mení skupinu</description>
@@ -4804,6 +5013,7 @@
           <description xml:lang="cs">Obě klávesy Alt dohromady mění skupinu</description>
           <description xml:lang="da">Begge Alt-taster til sammen skifter gruppe</description>
           <description xml:lang="fr">les clés Alt ensembles changent de groupe</description>
+          <description xml:lang="hu">A két Alt egyszerre lenyomásával lehet csoportot váltani</description>
           <description xml:lang="nl">Beide Alt-toetsen samen veranderen groep</description>
           <description xml:lang="ru">Две клавиши Alt вместе меняют группу</description>
           <description xml:lang="sk">Oba klávesy Alt spolu menia skupinu</description>
@@ -4820,6 +5030,7 @@
           <description xml:lang="cs">Obě klávesy Ctrl dohromady mění skupinu</description>
           <description xml:lang="da">Begge Ctrl-taster til sammen skifter gruppe</description>
           <description xml:lang="fr">les clés Ctrl ensembles changent de groupe</description>
+          <description xml:lang="hu">A két Ctrl egyszerre lenyomásával lehet csoportot váltani</description>
           <description xml:lang="nl">Beide Ctrl-toetsen samen veranderen groep</description>
           <description xml:lang="ru">Две клавиши Ctrl вместе меняют группу</description>
           <description xml:lang="sk">Oba klávesy Ctrl spolu menia skupinu</description>
@@ -4837,6 +5048,7 @@
           <description xml:lang="cs">Control+Shift mění skupinu</description>
           <description xml:lang="da">Ctrl+skift skifter gruppe</description>
           <description xml:lang="fr">les clés Contrôle+Shift change de groupe</description>
+          <description xml:lang="hu">A Ctrl+Shift kombinációval lehet csoportot váltani</description>
           <description xml:lang="nl">Control+Shift verandert groep</description>
           <description xml:lang="ru">Control+Shift меняют группу</description>
           <description xml:lang="sk">Control+Shift mení skupinu</description>
@@ -4854,6 +5066,7 @@
           <description xml:lang="cs">Alt+Control mění skupinu</description>
           <description xml:lang="da">Alt+Ctrl skifter gruppe</description>
           <description xml:lang="fr">Alt+Control modifie le groupe</description>
+          <description xml:lang="hu">Az Alt+Ctrl kombinációval lehet csoportot váltani</description>
           <description xml:lang="nl">Alt+Control verandert groep</description>
           <description xml:lang="ru">Alt+Control меняют группу</description>
           <description xml:lang="sk">Alt+Control mení skupinu</description>
@@ -4871,6 +5084,7 @@
           <description xml:lang="cs">Alt+Shift mění skupinu</description>
           <description xml:lang="da">Alt+skift skifter gruppe</description>
           <description xml:lang="fr">Alt+Shift modifie le groupe</description>
+          <description xml:lang="hu">Az Alt+Shift kombinációval lehet csoportot váltani</description>
           <description xml:lang="nl">Alt+Shift verandert groep</description>
           <description xml:lang="ru">Alt+Shift меняют группу</description>
           <description xml:lang="sk">Alt+Shift mení skupinu</description>
@@ -4888,6 +5102,7 @@
           <description xml:lang="cs">Klávesa Menu mění skupinu</description>
           <description xml:lang="da">Menutast skifter gruppe</description>
           <description xml:lang="fr">clé Menu change de groupe</description>
+          <description xml:lang="hu">A Menü billentyűvel lehet csoportot váltani</description>
           <description xml:lang="nl">Menu-toets verandert groep</description>
           <description xml:lang="ru">Клавиша Menu меняет группу</description>
           <description xml:lang="sk">Kláves Ponuka mení skupinu</description>
@@ -4905,6 +5120,7 @@
           <description xml:lang="cs">Levá klávesa Win mění skupinu</description>
           <description xml:lang="da">Venstre Win-tast skifter gruppe</description>
           <description xml:lang="fr">clé gauche Win-key change de groupe</description>
+          <description xml:lang="hu">A bal Win billentyű lenyomásával lehet a csoportok közt váltani</description>
           <description xml:lang="nl">Linker Win-toets verandert groep</description>
           <description xml:lang="ru">Левая клавиша Win меняет группу</description>
           <description xml:lang="sk">Ľavý Win-kláves mení skupinu</description>
@@ -4922,6 +5138,7 @@
           <description xml:lang="cs">Klávesa Pravý Win mění skupinu</description>
           <description xml:lang="da">Højre Win-tast skifter gruppe</description>
           <description xml:lang="fr">la clé droite Win-key change de groupe</description>
+          <description xml:lang="hu">A jobb Win billentyű lenyomásával lehet a csoportok közt váltani</description>
           <description xml:lang="nl">Rechter Win-toets verandert groep</description>
           <description xml:lang="ru">Правая клавиша Win меняет группу</description>
           <description xml:lang="sk">Pravý kláves Win mení skupinu</description>
@@ -4938,6 +5155,7 @@
           <description xml:lang="cs">Levá klávesa Shift mění skupinu</description>
           <description xml:lang="da">Venstre skiftetast skifter gruppe</description>
           <description xml:lang="fr">clé gauche Shift change de groupe</description>
+          <description xml:lang="hu">A bal Shift lenyomásával lehet a csoportot váltani</description>
           <description xml:lang="nl">Linker Shift-toets verandert groep</description>
           <description xml:lang="ru">Левая клавиша Shift меняет группу</description>
           <description xml:lang="sk">Ľavý kláves Shift mení skupinu</description>
@@ -4954,6 +5172,7 @@
           <description xml:lang="cs">Klávesa Pravý Shift mění skupinu</description>
           <description xml:lang="da">Højre skiftetast skifter gruppe</description>
           <description xml:lang="fr">la clé droite Shift change de groupe</description>
+          <description xml:lang="hu">A jobb Shift lenyomásával lehet csoportot váltani</description>
           <description xml:lang="nl">Rechter Shift-toets verandert groep</description>
           <description xml:lang="ru">Правая клавиша Shift меняет группу</description>
           <description xml:lang="sk">Kláves pravý Shift mení skupinu</description>
@@ -4970,6 +5189,7 @@
           <description xml:lang="cs">Levá klávesa Ctrl mění skupinu</description>
           <description xml:lang="da">Venstre Ctrl-tast skifter gruppe</description>
           <description xml:lang="fr">clé Ctrl gauche change de groupe</description>
+          <description xml:lang="hu">A bal Ctrl lenyomásával lehet csoportot váltani</description>
           <description xml:lang="nl">Linker Ctrl-toets verandert groep</description>
           <description xml:lang="ru">Левая клавиша Ctrl меняет группу</description>
           <description xml:lang="sk">Ľavý kláves Ctrl mení skupinu</description>
@@ -4986,6 +5206,7 @@
           <description xml:lang="cs">Klávesa Pravý Control mění skupinu</description>
           <description xml:lang="da">Højre Ctrl-tast skifter gruppe</description>
           <description xml:lang="fr">la clé droite Ctrl change de groupe</description>
+          <description xml:lang="hu">A jobb Ctrl lenyomásával lehet csoportot váltani</description>
           <description xml:lang="nl">Rechter Ctrl-toets verandert groep</description>
           <description xml:lang="ru">Правая клавиша Ctrl меняет группу</description>
           <description xml:lang="sk">Kláves pravý Ctrl mení skupinu</description>
@@ -5004,6 +5225,7 @@
         <description xml:lang="cs">Výběr třetí úrovně</description>
         <description xml:lang="da">Tredje niveaus vælgere</description>
         <description xml:lang="fr">sélecteur du 3e niveau</description>
+        <description xml:lang="hu">Harmadik szintű választók</description>
         <description xml:lang="nl">Derde niveau kiezers</description>
         <description xml:lang="ru">Выбор 3-го уровня</description>
         <description xml:lang="sk">Výber tretej úrovne</description>
@@ -5020,6 +5242,7 @@
           <description xml:lang="cs">Stiskněte pravou klávesu Control pro výběr 3. úrovně</description>
           <description xml:lang="da">Tryk højre Ctrl-tast for at vælge tredje niveau</description>
           <description xml:lang="fr">enfoncer la clé Contrôle pour choisir le 3e niveau</description>
+          <description xml:lang="hu">A jobb Ctrl-lal lehet a haramdik szintet választani</description>
           <description xml:lang="nl">Druk op de rechter Control op het 3e niveau te kiezen</description>
           <description xml:lang="ru">Выбор 3-го уровня нажатием правой клавиши Control</description>
           <description xml:lang="sk">Stlačenie pravého Control vyberá 3. úroveň</description>
@@ -5037,6 +5260,7 @@
           <description xml:lang="cs">Stiskněte levou klávesu Menu pro výběr 3. úrovně</description>
           <description xml:lang="da">Tryk menutast for at vælge tredje niveau</description>
           <description xml:lang="fr">enfoncer la clé Menu pour choisir le 3e niveau</description>
+          <description xml:lang="hu">A Menü billentyűvel lehet a harmadik szintet választani</description>
           <description xml:lang="nl">Druk op de Menu-toets om het 3e niveau te kiezen</description>
           <description xml:lang="ru">Выбор 3-го уровня нажатием клавиши Menu</description>
           <description xml:lang="sk">Stlačenie klávesu Ponuka vyberá 3. úroveň</description>
@@ -5054,6 +5278,7 @@
           <description xml:lang="cs">Stiskněte kteroukoli klávesu Win pro výběr 3. úrovně</description>
           <description xml:lang="da">Tryk en af Win-tasterne for at vælge tredje niveau</description>
           <description xml:lang="fr">enfoncer n'importe clé Win-key pour choisir le 3e niveau</description>
+          <description xml:lang="hu">Bármelyik Win billentyűvel lehet a harmadik szintet választani</description>
           <description xml:lang="nl">Druk op een Win-toets om het 3e niveau te kiezen</description>
           <description xml:lang="ru">Выбор 3-го уровня нажатием любой клавиши Win</description>
           <description xml:lang="sk">Stlačenie niektorého klávesu Win vyberá 3. úroveň</description>
@@ -5071,6 +5296,7 @@
           <description xml:lang="cs">Stiskněte levou klávesu Win pro výběr 3. úrovně</description>
           <description xml:lang="da">Tryk venstre Win-tast for at vælge tredje niveau</description>
           <description xml:lang="fr">enfoncer la clé gauche Win-Key pour choisir le 3e niveau</description>
+          <description xml:lang="hu">A bal Win billentyűvel lehet a harmadik szintet választani</description>
           <description xml:lang="nl">Druk op de linker Win-toets om het 3e niveau te kiezen</description>
           <description xml:lang="ru">Выбор 3-го уровня нажатием левой клавиши Win</description>
           <description xml:lang="sk">Stlačenie ľavého Win-klávesu vyberá 3. úroveň</description>
@@ -5088,6 +5314,7 @@
           <description xml:lang="cs">Stiskněte pravou klávesu Win pro výběr 3. úrovně</description>
           <description xml:lang="da">Tryk højre Win-tast for at vælge tredje niveau</description>
           <description xml:lang="fr">enfoncer la clé droite Win-key pour choisir le 3e niveau</description>
+          <description xml:lang="hu">A jobb Win billentyűvel lehet a harmadik szintet választani</description>
           <description xml:lang="nl">Druk op de rechter Win-toets om het 3e niveau te kiezen</description>
           <description xml:lang="ru">Выбор 3-го уровня нажатием правой клавиши Win</description>
           <description xml:lang="sk">Stlačenie pravého klávesu Win vyberá 3. úroveň</description>
@@ -5127,6 +5354,7 @@
         <description xml:lang="cs">Umístění klávesy Control</description>
         <description xml:lang="da">Ctrl-tast placering</description>
         <description xml:lang="fr">position de la clé de contrôle</description>
+        <description xml:lang="hu">A Ctrl billentyű beállítása</description>
         <description xml:lang="nl">Control-toets positie</description>
         <description xml:lang="ru">Положение клавиши Control</description>
         <description xml:lang="sk">Pozícia klávesu Control</description>
@@ -5143,6 +5371,7 @@
           <description xml:lang="cs">Vyrobit z CapsLock další Control</description>
           <description xml:lang="da">Gør Caps Lock til en ekstra Ctrl</description>
           <description xml:lang="fr">rendre la touche CapsLock un contrôle additionnel</description>
+          <description xml:lang="hu">A Caps Lock is Ctrl billentyűnek számítson</description>
           <description xml:lang="nl">Van CapsLock een extra Control maken</description>
           <description xml:lang="ru">Использовать CapsLock как дополнительную клавишу Control</description>
           <description xml:lang="sk">Urobiť z CapsLock dodatočný Control</description>
@@ -5160,6 +5389,7 @@
           <description xml:lang="cs">Zaměnit Control a CapsLock</description>
           <description xml:lang="da">Ombyt Ctrl og Caps Lock</description>
           <description xml:lang="fr">interchanger Contrôle et Caps_lock</description>
+          <description xml:lang="hu">A Ctrl és a Caps Lock felcserélése</description>
           <description xml:lang="nl">Control en CapsLock verwisselen</description>
           <description xml:lang="ru">Поменять местами клавиши Control и Caps Lock</description>
           <description xml:lang="sk">Prehodiť Control a Caps Lock</description>
@@ -5177,6 +5407,7 @@
           <description xml:lang="cs">Klávesa Control nalevo od 'A'</description>
           <description xml:lang="da">Ctrl-tast til venstre for 'A'</description>
           <description xml:lang="fr">clé de contrône à la gauche du « A »</description>
+          <description xml:lang="hu">A Ctrl billentyű az 'A' betűtől jobbra van</description>
           <description xml:lang="nl">Control-toets links van 'A'</description>
           <description xml:lang="ru">Клавиша Control слева от 'Ф'</description>
           <description xml:lang="sk">Kláves Control naľavo od 'A'</description>
@@ -5194,6 +5425,7 @@
           <description xml:lang="cs">Klávesa Control vlevo dole</description>
           <description xml:lang="da">Ctrl-tast nederst til venstre</description>
           <description xml:lang="fr">clé de contrôle au bas à gauche</description>
+          <description xml:lang="hu">A Ctrl billentyű a bal alsó sarokban van</description>
           <description xml:lang="nl">Control-toets linksonder</description>
           <description xml:lang="ru">Клавиша Control снизу слева</description>
           <description xml:lang="sk">Kláves Control vľavo dole</description>
@@ -5210,6 +5442,7 @@
           <description xml:lang="cs">Klávesa Pravý Control pracuje jako Pravý Alt</description>
           <description xml:lang="da">Højre Ctrl-tast virker som højre Alt</description>
           <description xml:lang="fr">la clé droite Contrôle se comporte comme la clé droite Alt</description>
+          <description xml:lang="hu">A jobb Ctrl úgy működjön, mint a jobb Alt</description>
           <description xml:lang="nl">Rechter Control-toets werkt als rechter Alt</description>
           <description xml:lang="ru">Правая клавиша Control работает как правая клавиша Alt</description>
           <description xml:lang="sk">Kláves pravý Control funguje ako pravý Alt</description>
@@ -5228,6 +5461,7 @@
         <description xml:lang="cs">Použít LED klávesnice pro zobrazení alternativní skupiny</description>
         <description xml:lang="da">Bruger tastatur-LED til at vise alternativ gruppe</description>
         <description xml:lang="fr">Utiliser le LED du clavier pour afficher un groupe alternatif</description>
+        <description xml:lang="hu">A másik csoport mutatása a billentyűzet LED-jeivel</description>
         <description xml:lang="nl">Gebruik toetsenbord LED om alternatieve groep te tonen</description>
         <description xml:lang="ru">Использование клавиатурных индикаторов для отображения доп. групп</description>
         <description xml:lang="sk">Použiť LED klávesnice pre zobrazenie alternatívnej skupiny</description>
@@ -5244,6 +5478,7 @@
           <description xml:lang="cs">LED Num_Lock zobrazuje alternativní skupinu</description>
           <description xml:lang="da">Num Lock LED viser alternativ gruppe</description>
           <description xml:lang="fr">le LED Num_Lock indique un groupe alternatif</description>
+          <description xml:lang="hu">A Num Lock LED-je mutassa a másik csoportot</description>
           <description xml:lang="nl">NumLock LED toont alternatieve groep</description>
           <description xml:lang="ru">Индикатор Num Lock отображает доп. группу</description>
           <description xml:lang="sk">Num_Lock LED zobrazuje alternatívnu skupinu</description>
@@ -5261,6 +5496,7 @@
           <description xml:lang="cs">LED Caps_Lock zobrazuje alternativní skupinu</description>
           <description xml:lang="da">Caps Lock LED viser alternativ gruppe</description>
           <description xml:lang="fr">le LED de la clé CapsLock montre un groupe alternatif</description>
+          <description xml:lang="hu">A Caps Lock LED-je mutassa a másik csoportot</description>
           <description xml:lang="nl">Caps_Lock LED toont alternatieve groep</description>
           <description xml:lang="ru">Индикатор Caps Lock отображает доп. группу</description>
           <description xml:lang="sk">Caps_Lock LED zobrazuje alternatívnu skupinu</description>
@@ -5278,6 +5514,7 @@
           <description xml:lang="cs">LED Scroll_Lock zobrazuje alternativní skupinu</description>
           <description xml:lang="da">Scroll Lock LED viser alternativ gruppe</description>
           <description xml:lang="fr">le LED Scroll_Lock indique un groupe alternatif</description>
+          <description xml:lang="hu">A Scroll Lock LED-je mutassa a másik csoportot</description>
           <description xml:lang="nl">ScrollLock LED toont alternatieve groep</description>
           <description xml:lang="ru">Индикатор Scroll Lock отображает доп. группу</description>
           <description xml:lang="sk">Scroll_Lock LED zobrazuje alternatívnu skupinu</description>
@@ -5296,6 +5533,7 @@
         <description xml:lang="cs">Chování klávesy CapsLock</description>
         <description xml:lang="da">Opførsel for Caps Lock-tast</description>
         <description xml:lang="fr">comportement de la clé Capslock</description>
+        <description xml:lang="hu">A Caps Lock használati módja</description>
         <description xml:lang="nl">CapsLock-toets gedrag</description>
         <description xml:lang="ru">Клавиша Caps Lock</description>
         <description xml:lang="sk">Chovanie klávesa Caps Lock</description>
@@ -5311,6 +5549,7 @@
           <description xml:lang="cs">Používá interní převod na kapitálky. Shift ruší Caps.</description>
           <description xml:lang="da">Bruger intern forstørrelse af bogstaver. Skift annullerer Caps Lock.</description>
           <description xml:lang="fr">utiliser la mise en majuscule interne. Shift l'annule.</description>
+          <description xml:lang="hu">Nagybetűkre váltás - a Shift megszakítja.</description>
           <description xml:lang="nl">Gebruikt interne conversie naar hoofdletters. Shift heft Caps op.</description>
           <description xml:lang="ru">Включает внутреннюю капитализацию. Shift отменяет Caps.</description>
           <description xml:lang="sk">Používa interný prevod na kapitálky. Shift ruší Caps.</description>
@@ -5327,6 +5566,7 @@
           <description xml:lang="cs">Používá interní převod na kapitálky. Shift neruší Caps.</description>
           <description xml:lang="da">Bruger intern forstørrelse af bogstaver. Skift annullerer ikke Caps Lock.</description>
           <description xml:lang="fr">utiliser la mise en majuscule interne. Shift ne permet de l'annuler.</description>
+          <description xml:lang="hu">Nagybetűkre váltás - a Shift nem szakítja meg.</description>
           <description xml:lang="nl">Gebruikt interne conversie naar hoofdletters. Shift heft Caps niet op.</description>
           <description xml:lang="ru">Включает внутреннюю капитализацию. Shift не отменяет Caps.</description>
           <description xml:lang="sk">Používa interný prevod na kapitálky. Shift neruší Caps.</description>
@@ -5344,6 +5584,7 @@
           <description xml:lang="cs">Pracuje jako Shift s uzamčením. Shift ruší Caps.</description>
           <description xml:lang="da">Agerer som skiftetasten med lås. Skift annullerer Caps Lock.</description>
           <description xml:lang="fr">agit comme la clé Shift avec verrouillage. Shift l'annule.</description>
+          <description xml:lang="hu">Shiftként működik zárolásnál - a Shift megszakítja a nagybetűsítést.</description>
           <description xml:lang="nl">Werkt als Shift met blokkering, Shift heft Caps op.</description>
           <description xml:lang="ru">Действует как Shift с блокировкой. Shift отменяет Caps.</description>
           <description xml:lang="sk">Pracuje ako Shift s uzamknutím. Shift ruší Caps.</description>
@@ -5361,6 +5602,7 @@
           <description xml:lang="cs">Pracuje jako Shift s uzamčením. Shift neruší Caps.</description>
           <description xml:lang="da">Agerer som skiftetasten med lås. Skift annullerer ikke Caps Lock.</description>
           <description xml:lang="fr">agit comme la clé Shift avec verrouillage. Shift ne l'annule pas.</description>
+          <description xml:lang="hu">Shiftként működik zárolásnál - a Shift nem szakítja meg a nagybetűsítést.</description>
           <description xml:lang="nl">Werkt als Shift met blokkering. Shift heft Caps niet op.</description>
           <description xml:lang="ru">Действует как Shift с блокировкой. Shift не отменяет Caps.</description>
           <description xml:lang="sk">Pracuje ako Shift s uzamknutím. Shift neruší Caps.</description>
@@ -5379,6 +5621,7 @@
         <description xml:lang="cs">Chování klávesy Alt/Win</description>
         <description xml:lang="da">Alt/Win-tasteopførsel</description>
         <description xml:lang="fr">comportement de la clé Alt/Win</description>
+        <description xml:lang="hu">Az Alt/Win billentyűk viselkedése</description>
         <description xml:lang="nl">Alt/Win-toets gedrag</description>
         <description xml:lang="ru">Клавиши Alt/Win</description>
         <description xml:lang="sk">Chovanie klávesu Alt/Win</description>
@@ -5395,6 +5638,7 @@
           <description xml:lang="cs">Přidá standardní chování ke klávese Menu.</description>
           <description xml:lang="da">Tilføj standardopførslen til menutasten.</description>
           <description xml:lang="fr">Ajouter le comportement standard au menu de clés</description>
+          <description xml:lang="hu">A standard funkcionalitás hozzáadása a Menü gombhoz.</description>
           <description xml:lang="nl">Het standaard gedrag toevoegen aan Menu-toets.</description>
           <description xml:lang="ru">Добавить стандартную функцию клавиши Menu</description>
           <description xml:lang="sk">Pridať štandardné chovanie klávesu Ponuka.</description>
@@ -5412,6 +5656,7 @@
           <description xml:lang="cs">Alt a Meta na klávesách Alt (výchozí).</description>
           <description xml:lang="da">Alt og Meta på Alt-tasterne (standard).</description>
           <description xml:lang="fr">Alt et Meta sur les clés Alt (par défaut).</description>
+          <description xml:lang="hu">Alt és Meta az Alt billentyűkre (ez az alapértelmezés).</description>
           <description xml:lang="nl">Alt en Meta op de Als-toetsen (standaard).</description>
           <description xml:lang="ru">Alt и Meta на клавишах Alt (по умолчанию)</description>
           <description xml:lang="sk">Alt a Meta na klávesy Alt (štandardné).</description>
@@ -5429,6 +5674,7 @@
           <description xml:lang="cs">Meta je mapována na klávesy Win.</description>
           <description xml:lang="da">Meta ligger på Win-tasterne.</description>
           <description xml:lang="fr">Méta est mappé sur les Win-Keys</description>
+          <description xml:lang="hu">A Meta a Win billentyűkhöz van rendelve.</description>
           <description xml:lang="nl">Meta wordt afgebeeld op de Win-toetsen.</description>
           <description xml:lang="ru">Мета соответствует клавишам Win</description>
           <description xml:lang="sk">Meta je mapovaný na Win-klávesy.</description>
@@ -5446,6 +5692,7 @@
           <description xml:lang="cs">Meta je mapována na levou klávesu Win.</description>
           <description xml:lang="da">Meta ligger på venstre Win-tast.</description>
           <description xml:lang="fr">Méta est mappé à la clé gauche Win-key</description>
+          <description xml:lang="hu">A Meta a bal Win billentyűhöz van rendelve.</description>
           <description xml:lang="nl">Meta wordt afgebeeld op de linker Win-toets.</description>
           <description xml:lang="ru">Meta соответствует левой клавише Win</description>
           <description xml:lang="sk">Meta je mapovaný na ľavý Win-kláves.</description>
@@ -5463,6 +5710,7 @@
           <description xml:lang="cs">Super je mapováno na klávesy Win (výchozí).</description>
           <description xml:lang="da">Super ligger på Win-tasterne (standard).</description>
           <description xml:lang="fr">Super est mappé au clés Win-keys (par défaut).</description>
+          <description xml:lang="hu">A Super billentyű a Win billentyűkhöz van rendelve (ez az alapértelmezés).</description>
           <description xml:lang="nl">Super wordt afgebeeld op de Win-toetsen (standaard).</description>
           <description xml:lang="ru">Super соответствует клавишам Win (по умолчанию)</description>
           <description xml:lang="sk">Super je mapovaný na Win-klávesy (štandardné).</description>
@@ -5480,6 +5728,7 @@
           <description xml:lang="cs">Hyper je mapována na klávesy Win.</description>
           <description xml:lang="da">Hyper ligger på Win-tasterne.</description>
           <description xml:lang="fr">Hyper est mappé aux clés Win-keys.</description>
+          <description xml:lang="hu">A Hyper a Win billentyűkhöz van rendelve.</description>
           <description xml:lang="nl">Hyper wordt afgebeeld naar de Win-toetsen.</description>
           <description xml:lang="ru">Hyper соответствует клавишам Win</description>
           <description xml:lang="sk">Hyper je mapovaný na Win-klávesy.</description>
@@ -5503,6 +5752,7 @@
           <description xml:lang="cs">Pravý Alt je Compose</description>
           <description xml:lang="da">Højre Alt er Compose</description>
           <description xml:lang="fr">la clé droite Alt est Compose</description>
+          <description xml:lang="hu">A jobb Alt a kombináló (Compose)</description>
           <description xml:lang="nl">Rechter Alt is samenstellingstoets</description>
           <description xml:lang="ru">Правая клавиша Alt соответствует клавише Alt</description>
           <description xml:lang="sk">Pravý Alt je Compose</description>
@@ -5520,6 +5770,7 @@
           <description xml:lang="cs">Klávesa Pravý Win je Compose</description>
           <description xml:lang="da">Højre Win-tast er Compose</description>
           <description xml:lang="fr">la clé droite Win-key est Compose</description>
+          <description xml:lang="hu">A jobb Win billentyű a kombináló (Compose)</description>
           <description xml:lang="nl">Rechter Win-toets is samenstellingstoets</description>
           <description xml:lang="ru">Правая клавиша Win соответствует клавише Compose</description>
           <description xml:lang="sk">Pravý kláves Win je Compose</description>
@@ -5536,6 +5787,7 @@
           <description xml:lang="bg">Клавиша Menu фунцкионира като Compose</description>
           <description xml:lang="cs">Menu je Compose</description>
           <description xml:lang="fr">Menu est Compose</description>
+          <description xml:lang="hu">A Menü a kombináló (Compose)</description>
           <description xml:lang="nl">Menu is samenstellingstoets</description>
           <description xml:lang="ru">Клавиша Menu соответствует клавише Compose</description>
           <description xml:lang="sk">Ponuka je Compose</description>
@@ -5553,6 +5805,7 @@
         <description xml:lang="cs">Dodatečné volby pro kompatibilitu</description>
         <description xml:lang="da">Diverse kompatibilitetsvalg</description>
         <description xml:lang="fr">diverses options de compatibilité</description>
+        <description xml:lang="hu">Egyéb kompatibilitási beállítások</description>
         <description xml:lang="nl">Overige compatibiliteitsopties</description>
         <description xml:lang="ru">Разные параметры совместимости</description>
         <description xml:lang="sk">Dodatočné voľby pre kompatibilitu</description>
@@ -5567,6 +5820,7 @@
           <description xml:lang="cs">Shift s numerickými klávesami pracuje jako v MS Windows</description>
           <description xml:lang="da">Skift med numeriske taster virker som i MS Windows</description>
           <description xml:lang="fr">la clé Shift avec le pavé nuérique se comporte comme dans MS Windows</description>
+          <description xml:lang="hu">A Shift+numerikus billentyűk úgy működjenek, mint Microsoft Windowsban.</description>
           <description xml:lang="nl">Shift met cijferblok-toetsen werkt zoals in MS Windows</description>
           <description xml:lang="ru">Клавиша Shift с клавишами цифровой клавиатуры работают как в MS Windows</description>
           <description xml:lang="sk">Shift s numerickými klávesmi pracuje ako v MS Windows</description>
