@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: daemon.c,v 3.20 2002/12/04 16:53:39 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.21 2004/01/10 21:26:29 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -111,7 +111,8 @@ BecomeDaemon (void)
     switch (fork()) {
     case -1:
        /* error */
-       FatalError("daemon fork failed, %s\n", strerror(errno));
+       LogError("daemon fork failed, %s\n", strerror(errno));
+       exit(1);
        break;
     case 0:
        /* child */
@@ -121,9 +122,11 @@ BecomeDaemon (void)
        exit(0);
     }
 
-    if (setsid() == -1)
-       FatalError("setting session id for daemon failed: %s\n",
+    if (setsid() == -1) {
+       LogError("setting session id for daemon failed: %s\n",
                   strerror(errno));
+       exit(1);
+    }
 
     chdir("/");
 
