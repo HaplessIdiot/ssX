@@ -1,17 +1,19 @@
 XFree86 3.9x (23 November 1997)
-1465. Updates for SCO (#1211, 1212, J. Kean Johnston).
-1464. Fix netscape plugin core dump when transfer is interrupted (#1209,
+1466. Updates for SCO (#1211, 1212, J. Kean Johnston).
+1465. Fix netscape plugin core dump when transfer is interrupted (#1209,
       Kaleb Keithley).
-1463. Registry updates (#1205, Kaleb Keithley).
-1462. Preliminary imake support for different Linux distributions (#1203,
+1464. Registry updates (#1205, Kaleb Keithley).
+1463. Preliminary imake support for different Linux distributions (#1203,
       Kaleb Keithley).
-1461. Enable JIS, SJIS, EUC, etc. on X_LOCALE machines (#1201, Kaleb Keithley).
-1460. Linux and HP imake cf updated (#1200, Kaleb Keithley).
-1459. Updates to XINERAMA (#1198, Kaleb Keithley).
-1458. Make the DPMS extension a more "standard" item (ie, its library code
+1462. Enable JIS, SJIS, EUC, etc. on X_LOCALE machines (#1201, Kaleb Keithley).
+1461. Linux and HP imake cf updated (#1200, Kaleb Keithley).
+1460. Updates to XINERAMA (#1198, Kaleb Keithley).
+1459. Make the DPMS extension a more "standard" item (ie, its library code
       is now in libXext) (#1197, Kaleb Keithley).
-1457. xload doesn't need libutil and libkvm on NetBSD and OpenBSD (#1189,
+1458. xload doesn't need libutil and libkvm on NetBSD and OpenBSD (#1189,
       Scott Reynolds).
+1457. Separate module-specific and non-module-specific Xserver/Xext code
+      (#1149, Holger Veit).
 1456. OS/2 updates (don't use WIN32 file handling) (#1149, Holger Veit).
 1455. Clean up XAA calls in glint server (#1210, Alan Hourihane).
 1454. Adapt memory detection in I128 server to T2R (#1208, Robin Cutshaw).
@@ -19,7 +21,7 @@ XFree86 3.9x (23 November 1997)
       Alan Hourihane).
 1452. Cleanups and preliminary support for the Trident 3DImage975 and
       3DImage985 (#1206, Alan Hourihane).
-1451. Add stipple accelereation to the tseng driver (#1192, Koen Gadeyne, 
+1451. Add stipple acceleration to the tseng driver (#1192, Koen Gadeyne, 
       Mark Vojkovich).
 1450. Add better text acceleration to the tseng driver (#1190, Koen Gadeyne).
 1449. Fix HiQV image writes (#1191, David Bateman).
@@ -39,7 +41,7 @@ XFree86 3.9x (23 November 1997)
       cfbImageGlyphBlt8 (#1152, Alan Hourihane).
 1439. Add overlay support for the IBM RGB526 (disabled)(#1151, Mark Vojkovich).
 1438. Fix setting maxclock in s3/svga (#1151, Mark Vojkovich).
-1437. Print module version in plaintext (#1150, Holger Veit).
+1437. Print module version in plain text (#1150, Holger Veit).
 1436. Correct change 1390 (#1148, Takaaki Nomura).
 
 XFree86 3.9w (16 November 1997)
@@ -221,7 +223,7 @@ XFree86 3.9t (26 October 1997)
 1326. XAA hw cursor fix. Delay cursor restoration until after the saved screen 
       is restored (#1057, Mark Vojkovich).
 1325. Fix server to print the clock scale instead of effective clocks when
-      useing a clockchip (#1056, Krajcsovits Gyorgy).
+      using a clockchip (#1056, Krajcsovits Gyorgy).
 1324. Correct eraser/stylus detection in wacom driver (#1055, Frederic Lepied).
 1323. Fixes for APM driver. HW lines/HW clipping. ROP support. Text accel now
       uses PAD_DWORD. Bugfix for WaitForFifo() (lost serial interrupts) and 
@@ -232,9 +234,9 @@ XFree86 3.9t (26 October 1997)
       Implement a new set of control sequences for switching between the
       normal and alternate VT100 screens. Implement the alternate-screen menu
       entry (#1053, Thomas Dickey).
-1321. Add some resonable limit for when a trapezoid fill is used rather than 
+1321. Add some reasonable limit for when a trapezoid fill is used rather than 
       using spans (#1051, Mark Vojkovich).
-1320. Add bindist decription files for an OpenBSD/sparc binary distribution
+1320. Add bindist description files for an OpenBSD/sparc binary distribution
       (#1045, Todd Fries).
 1319. Some fixes and additions to the PCI databases (#1046,1050, Dejan Ilic).
 1318. Add 543x cirrus driver for PowerPC, fix some LynxOS related problems
@@ -271,7 +273,7 @@ XFree86 3.9s (15 October 1997)
       1015, Radek Kapitan).
 1298. Improve some bailout messages in tseng driver (#1009, Koen Gadeyne).
 1297. Suppress popen/pclose messages (#1008, Takaaki Nomura).
-1296. Inital support for Millennium II AGP (Dirk Hohndel).
+1296. Initial support for Millennium II AGP (Dirk Hohndel).
 1295. Fixes to make glint server pass more of xtest (Alan Hourihane).
 
 XFree86 3.9r (30 September 1997)
@@ -320,7 +322,7 @@ XFree86 3.9q (19 September 1997)
 1270. Several fixes to xterm: fix redraw errors after font changes or resizes, 
       add sunKeyboard resource, correct fg/bg test in the control sequence
       that replies with the current SGR settings ((#972, Thomas Dickey).
-1269. Several fixes to the xterm sttandalone configure script (#972, 
+1269. Several fixes to the xterm standalone configure script (#972, 
       Thomas Dickey).
 1268. Fix to pointer movement constraints (#968, Stuart Anderson).
 
@@ -355,12 +357,12 @@ XFree86 3.9o (9 September 1997)
       Fahrion, Dirk Hohndel).
 1240. Fix glint server problems on some ASUS motherboards (Stefan Dirsch).
 1239. Add Permedia support to glint server (Helmut Fahrion, Dirk Hohndel).
-1238. Several m68k related fixes (fater pic code, change Atari TT geometry),
+1238. Several m68k related fixes (faster pic code, change Atari TT geometry),
       fixes to not reference the undefined variable XPROJECTROOT, some glibc
       updates (#947, Andreas Schwab).
 1237. Move some of the improvements that Mark Vojkovich made for the S3 stipple
       code back into XAA (#945, David Bateman).
-1236. Fix problem with HW cursor disapearing on Cirrus Laguna chips (#943,
+1236. Fix problem with HW cursor disappearing on Cirrus Laguna chips (#943,
       Corin Anderson).
 1235. Fix 24bpp XAA NonTE image text with RGB_EQUAL (#942, David Bateman).
 1234. Fix BIOS layout issues in matrox drivers. This might make Millennium
@@ -373,7 +375,7 @@ XFree86 3.9o (9 September 1997)
       Alan Hourihane).
 1230. Fix trident & mga driver for PC98. Fix XF98Conf.cpp. Resync PC98
       Imakefiles (#935, Takaaki Nomura).
-1229. Add accelerated Image Write to C&T driver. Attemptted fix for the use
+1229. Add accelerated Image Write to C&T driver. Attempted fix for the use
       of TMED DSTN dithering on the 65555 and 68554 chips. Small
       documentation patch (#934, David Bateman).
 1228. Fix XF86Setup to load XFree86-VidModeExtension (#932, Takaaki Nomura).
@@ -389,7 +391,7 @@ XFree86 3.9o (9 September 1997)
 
 XFree86 3.9n (26 August 1997)
 1221. Lots of small fixes for xterm (#912, Thomas Dickey).
-1220. Add DirectColor visual to Matrox server (#911, Andres Aitchison).
+1220. Add DirectColor visual to Matrox server (#911, Andrew Aitchison).
 1219. Disable 8x8 pattern tiling on W32 (not W32i/p) cards. Fix lowend W32p
       cards with IMA bus. Modify linear memory code (#910, Koen Gadeyne).
 1218. Fix locale in R6.3, Fix PC98 XKB, Remove xf86ClearIOPortList() and
@@ -500,7 +502,7 @@ XFree86 3.9k (29 July 1997)
 1154. Add code to fine tune memory access on ET6000 boards and cleanup some
       W32 specific code that would write to illegal registers on ET6000 cards
       (#818, Harald Nordgard Hansen).
-1153. Ensure accelerator CRTC registers are unlocked before writting them and 
+1153. Ensure accelerator CRTC registers are unlocked before writing them and 
       horizontal & vertical syncs are not disabled on mode switches (#817,
       Marc La France).
 1152. Change xsetroot -mod option to count pixels from left to right within 
@@ -546,7 +548,7 @@ XFree86 3.9k (29 July 1997)
       (#794, Matthieu Herrb).
 1127. Fix I128 problems (#792, 809, Robin Cutshaw).
 1126. Fix some errors in the symbols/th XKB file (Poonlap Veeratanabutr).
-1125. Don't use EXTRA_DEFINES in Xserver/xkb/Imamkefile (#786, Kaleb Keithley).
+1125. Don't use EXTRA_DEFINES in Xserver/xkb/Imakefile (#786, Kaleb Keithley).
 1124. Alternate way of fixing the "./" problem in Imake.rules 
       (#785, Kaleb Keithley).
 1123. Install full path in dynamic libraries for SCO (#782, J. Kean Johnston).
@@ -615,7 +617,7 @@ XFree86 3.9i (6 July 1997)
       xf86PostMotionEvent() function (#740, Michael Rohleder).
 1084. Add some "test-support" code to xterm, which is not enabled by
       default (#739, Thomas E. Dickey).
-1083. Fix ET4000W32p RAMDAC detction (backs out most of #717), make
+1083. Fix ET4000W32p RAMDAC detection (backs out most of #717), make
       the tseng driver use DELAYED_SYNC, and an (unsuccessful) attempt
       to get CPU-to-screen colour expansion working (#737, Koen Gadeyne).
 1082. Add missing valuator initialisation to the OS/2, SCO and Xqueue
@@ -746,7 +748,7 @@ XFree86 3.9e (15 June 1997)
       resolution (#668, Frederic Lepied).
 1017. Fix a bug in the XInput Wacom driver which prevented the eraser from
       working (#668, Frederic Lepied).
-1016. Add a virtual XInput deviced called "Switch" which sends extended
+1016. Add a virtual XInput device called "Switch" which sends extended
       motions when a different device sends a core event (with AlwaysCore
       enabled (#668, Frederic Lepied).
 1015. Fix behaviour of XInput relative devices.  They send events with
@@ -813,11 +815,11 @@ XFree86 3.9d (10 June 1997)
  979. Avoid nested asm calls for SVR4.0 (#631, Takaaki Nomura).
  978. Fix error messages when loading modules in the static server (#626,
       Matthieu Herrb).
- 977. Change svga/s3 into two seperate modules s3_pio and s3_newmmio. This
+ 977. Change svga/s3 into two separate modules s3_pio and s3_newmmio. This
       doesn't work with the static server at this point. Add linear
       addressing and 16/24(packed)/32bpp. Add pci_retry option. (#625,
       Mark Vojkovich).
- 976. Allow the ChipId and ChipRev values to be overriden from the XF86Config
+ 976. Allow the ChipId and ChipRev values to be overridden from the XF86Config
       for the Mach64 server.
  975. Fix some 1bpp and 4bpp problems (#609, Marc Aurele La France).
  974. Changes to allow SuperProbe, Mach64 driver, scanpci and vgaPCI to
@@ -896,7 +898,7 @@ XFree86 3.9c (3 June 1997)
  931. Fix a blank screen problem when switching back to the Xserver
       from a text VT with the Mystique (#520, Radoslaw Kapitan).
  930. Some minor Tseng code cleanups (#519, Koen Gadeyne).
- 929. Add a timeout to the MGA Sync() funtion (#518, Radoslaw Kapitan).
+ 929. Add a timeout to the MGA Sync() function (#518, Radoslaw Kapitan).
  928. Map only the amount of video memory present in the MGA driver
       rather than always 8MB (#516, Radoslaw Kapitan).
  927. Disable the HW cursor in the tseng driver when entering DGA mode
@@ -947,7 +949,7 @@ XFree86 3.9c (3 June 1997)
  901. Add MODULEVENDORSTRING to the ModuleVersionInfo (#423, Stuart Anderson).
  900. Finetuning for Miro 80SV support. Add "no_pci_disconnect" Option
       (for some Alpha boxes, Alphastation255 and UDB) (#416, Harald Koenig).
- 899. Fix serveral problems with the tseng driver. Don't allow pixmux modes
+ 899. Fix several problems with the tseng driver. Don't allow pixmux modes
       in the VGA16 or MONO server (it doesn't work), disable the combination
       8bpp + linear + acceleration, fix maximal pixel clock for W32p, fix
       cut'n'paste bug where CRTC 0x31 was restored incorrectly, update the
@@ -1109,7 +1111,7 @@ XFree86 3.9c (3 June 1997)
  796. Doc updates (#450, Matthieu Herrb).
  795. Fix the trident driver to make virtual resolutions work for the
       TGUI96xx/Cyber chips and make 32bpp available to these chips too.
-      Also, udpate the clock code for these chips to allow higher
+      Also, update the clock code for these chips to allow higher
       resolutions (#386, Alan Hourihane).
  794. Disable the svga/s3v register dumps except for xf86Verbose > 1.
  793. Fix the svga/s3v driver Probe() to not falsely assume a ViRGE card
@@ -2062,7 +2064,7 @@ XFree86 3.2q (12 January 1997)
  222. Add 15/16/24bpp support to the SiS driver (Xavier Ducoin).
  221. Fix problems with linear mode in the SiS driver (Xavier Ducoin).
  220. Programmable clock support for the SiS 205 (Xavier Ducoin).
- 219. TGUI acceleration udpates (Alan Hourihane).
+ 219. TGUI acceleration updates (Alan Hourihane).
  218. Add XAA support for the Chips & Technologies driver (David Bateman).
  217. Support for 555 weighting in the MGA driver (Xavier Ducoin).
  216. TGUI clock fix (Alan Hourihane and Massimiliano Ghilardi).
@@ -2143,7 +2145,7 @@ XFree86 3.2n (3 January 1997)
 XFree86 3.2m (2 January 1997)
  165. Fix some problems creating Xserver links in XF86Setup (Dirk Hohndel).
  164. Update to R6.3 public patch 1.
- 165. XAA udpates (Harm Hanemaayer).
+ 165. XAA updates (Harm Hanemaayer).
  163. Fix problems with out-of-date cirrus_acl.c (Harm Hanemaayer).
  162. Move all default settings from xf86site.def to xfree86.cf, and leave
       xf86site.def containing only commented out definitions.
@@ -2290,7 +2292,7 @@ XFree86 3.2d (9 December 1996)
       (Harald Koenig).
   72. Add detection of the Alliance ProMotion chips to SuperProbe
       (Joe Moss).
-  71. XAA udpates (including disabling non-TE text acceleration)
+  71. XAA updates (including disabling non-TE text acceleration)
       (Harm Hanemaayer).
   70. Fix pixmap support in XAA (Harm Hanemaayer and Alan Hourihane).
   69. Update the device-specific XF86Config parsing support to report
@@ -2983,7 +2985,7 @@ XFree86 3.1.2En (25 August 1996)
 
 XFree86 3.1.2Em (24 August 1996)
 706. Swap acute and apostrophe keys in de(nodeadkeys) (Michael Rohleder).
-705. ISC documentation udpates (Michael Rohleder).
+705. ISC documentation updates (Michael Rohleder).
 704. Chips & Tech documentation update (Egbert Eich).
 703. Chips & Tech driver updates, including a fix for a 65545 PCI problem,
      and a hack/option for a suspend/resume problem (Egbert Eich).
@@ -3166,7 +3168,7 @@ XFree86 3.1.2Ed (10 August 1996)
 597. Fix broken DGA setviewport on SVGA servers (Jon Tombs).
 
 XFree86 3.1.2Ec (8 July 1996)
-596. XF86Setup fixes and udpates (Joe Moss).
+596. XF86Setup fixes and updates (Joe Moss).
 595. Fix some build problems on Solaris due to the positioning of
      <stdlib.h> includes in xconsole and xwd (William Austin).
 594. Fix a make problem in xfree98/vga16/drivers (Takaaki Nomura).
@@ -3314,7 +3316,7 @@ XFree86 3.1.2Dh (10 May 1996)
      code (Frederic Lepied).
 506. Add support for motion history for extended input devices (implemented
      for the Wacom driver) (Frederic Lepied).
-505. Oak documentation udpates (Jorge Delgado).
+505. Oak documentation updates (Jorge Delgado).
 504. Fix compiler warnings introduced in 3.1.2Dg (Thomas E. Dickey).
 503. OS/2 updates (Sebastien Marineau and Holger Veit).
 502. Fix formatting of xtrans error messages (Holger Veit).
@@ -4242,7 +4244,7 @@ XFree86 3.1.1D (15 July 1995)
      and update xvidtune for extra S3 parameters.
 210. Allow some S3 parameters to be set in the Display SubSection for
      individual modes.
-209. xf86config Cards database udpates.
+209. xf86config Cards database updates.
 208. Updates to README.WstDig for the 90C24 (Brad Bosch).
 207. Updates to LynxOS support, including support for version 2.2.1, and
      a README.LynxOS (Thomas Mueller).
@@ -5682,4 +5684,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.549 1997/11/22 06:50:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.550 1997/11/23 05:46:40 dawes Exp $
