@@ -2,7 +2,7 @@
 
 Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver, Matthieu Herrb
 
-                      Last modified on: 2 December 2000
+                      Last modified on: 7 December 2000
 
 1.  What and Where is XFree86?
 
@@ -23,7 +23,7 @@ ftp://ftp.XFree86.org/pub/XFree86/4.0.2/binaries/NetBSD
 A list of mirror sites is provided by http://www.xfree86.org/MIRRORS.shtml
 
 XFree86 also builds on other NetBSD architectures. See section Building on
-other architectures (section 8.3, page 1) for details.
+other architectures (section 8.4, page 1) for details.
 
 XFree86 also supports NetBSD on PC98 machines.
 
@@ -270,7 +270,20 @@ You should configure the distribution by editing xc/config/cf/host.def
 before compiling.  To compile the sources, invoke ``make World'' in the xc
 directory.
 
-8.1  Aperture driver
+8.1  Perl support
+
+Starting with XFree86 4.0.2, perl is needed to build the fonts in XFree86.
+Since perl is not included with standard NetBSD installation, fonts that need
+perl are not built by default.
+
+If you have installed perl (from the NetBSD packages, for instance), add the
+line
+
+     #define HasPerl YES
+
+in xc/config/cf/host.def before rebuilding XFree86.
+
+8.2  Aperture driver
 
 To build the XFree86 server with the Aperture driver enabled, you should
 unpack apNetBSD.shar and install it first.
@@ -279,11 +292,9 @@ Then edit xc/config/cf/host.def and add the line
 
      #define HasNetBSDApertureDriver    YES
 
-to it.
+to it before rebuilding XFree86.
 
-And finally run make World in the xc directory.
-
-8.2  Console drivers
+8.3  Console drivers
 
 XFree86 has a configuration option to select the console drivers to use in
 host.def:
@@ -307,7 +318,7 @@ adding:
 to xc/config/host.def before rebuilding the server.  This has not been tor-
 oughly tested, except on the macppc.
 
-8.3  Building on other architectures
+8.4  Building on other architectures
 
 Note that the NetBSD project has now its own source tree, based on the
 XFree86 source tree, with some local modifications. You may want to start
@@ -347,7 +358,7 @@ Many thanks to all people who contributed to make XFree86 work on *BSD, in
 particular, David Dawes, Pace Willison, Amancio Hasty, Christoph Robitschko,
 Nate Williams, Rod Grimes, Jack Velte and Michael Smith.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.57 2000/12/02 15:27:09 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.58 2000/12/06 23:45:17 herrb Exp $
 
 
 $XFree86$
