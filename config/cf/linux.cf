@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.192 2002/11/25 14:04:47 eich Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.193 2002/11/26 02:16:42 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -301,8 +301,8 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #    define BuildXF86DRI	NO
 #  elif defined(PpcArchitecture)
 #    define BuildXF86DRI	YES
-#  elif defined(s390xArchitecture)
-#    define BuildXF86DRI	YES
+#  elif defined(s390Architecture) || defined(s390xArchitecture)
+#    define BuildXF86DRI	NO
 #  elif defined(SparcArchitecture)
 #    define BuildXF86DRI	YES
 #  elif defined(SuperHArchitecture)
