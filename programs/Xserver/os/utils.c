@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.28 1997/06/10 12:30:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.29 1997/07/05 15:16:41 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -484,6 +484,7 @@ GetTimeInMillis()
 }
 #endif
 
+void
 AdjustWaitForDelay (waitTime, newdelay)
     pointer	    waitTime;
     unsigned long   newdelay;
@@ -622,7 +623,7 @@ char	*argv[];
     for ( i = 1; i < argc; i++ )
     {
 	/* call ddx first, so it can peek/override if it wants */
-        if(skip = ddxProcessArgument(argc, argv, i))
+        if((skip = ddxProcessArgument(argc, argv, i)))
 	{
 	    i += (skip - 1);
 	}
@@ -1139,7 +1140,7 @@ Xalloc (amount)
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
 	return (unsigned long *)NULL;
 #endif
-    if (ptr = (pointer)malloc(amount)) {
+    if ((ptr = (pointer)malloc(amount))) {
 	return (unsigned long *)ptr;
     }
     if (Must_have_memory)
@@ -1287,9 +1288,9 @@ AuditPrefix(f)
     {
 	time(&tm);
 	autime = ctime(&tm);
-	if (s = strchr(autime, '\n'))
+	if ((s = strchr(autime, '\n')))
 	    *s = '\0';
-	if (s = strrchr(argvGlobal[0], '/'))
+	if ((s = strrchr(argvGlobal[0], '/')))
 	    s++;
 	else
 	    s = argvGlobal[0];

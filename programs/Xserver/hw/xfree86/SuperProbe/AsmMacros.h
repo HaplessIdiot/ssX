@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.9 1996/10/03 08:32:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.10 1996/12/23 06:31:04 dawes Exp $ */
 
 #if defined(__GNUC__)
 #if defined(linux) && defined(__alpha__)
@@ -36,6 +36,70 @@
 #define outb(p,v) _outb((v),(p))
 #define outw(p,v) _outw((v),(p))
 #define outl(p,v) _outl((v),(p))
+#else
+#if defined(Lynx) && defined(__powerpc__)
+extern unsigned char *ioBase;
+
+static volatile void
+eieio()
+{
+	__asm__ __volatile__ ("eieio");
+}
+
+static void
+outb(port, value)
+short port;
+unsigned char value;
+{
+	*(uchar *)(ioBase + port) = value; eieio();
+}
+
+static void
+outw(port, value)
+short port;
+unsigned short value;
+{
+	*(unsigned short *)(ioBase + port) = value; eieio();
+}
+
+static void
+outl(port, value)
+short port;
+unsigned long value;
+{
+	*(unsigned long *)(ioBase + port) = value; eieio();
+}
+
+static unsigned char
+inb(port)
+short port;
+{
+	unsigned char val;
+
+	val = *((unsigned char *)(ioBase + port)); eieio();
+	return(val);
+}
+
+static unsigned short
+inw(port)
+short port;
+{
+	unsigned short val;
+
+	val = *((unsigned short *)(ioBase + port)); eieio();
+	return(val);
+}
+
+static unsigned long
+inl(port)
+short port;
+{
+	unsigned long val;
+
+	val = *((unsigned long *)(ioBase + port)); eieio();
+	return(val);
+}
+
 #else
 #ifdef GCCUSESGAS
 static __inline__ void
@@ -155,9 +219,10 @@ inl(port)
 }
 
 #endif /* GCCUSESGAS */
+#endif /* Lynx && __powerpc__ */
 #endif /* linux && __alpha__ */
 
-#ifdef linux
+#if defined(linux) || (defined(Lynx) && defined(__powerpc__))
 
 #define intr_disable()
 #define intr_enable()

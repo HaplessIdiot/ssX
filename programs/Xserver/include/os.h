@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: os.h /main/60 1996/12/15 21:25:13 rws $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.15 1996/11/24 09:58:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.16 1996/12/23 07:09:30 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -281,7 +281,7 @@ extern CARD32 GetTimeInMillis(
 #endif
 );
 
-extern int AdjustWaitForDelay(
+extern void AdjustWaitForDelay(
 #if NeedFunctionPrototypes
     pointer /*waitTime*/,
     unsigned long /*newdelay*/

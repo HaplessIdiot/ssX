@@ -1,5 +1,5 @@
 /* $XConsortium: dixfont.h /main/21 1996/09/28 17:14:16 rws $ */
-/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.0 1996/04/15 11:34:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.1 1996/12/23 07:09:25 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -26,9 +26,9 @@ SOFTWARE.
 #ifndef DIXFONT_H
 #define DIXFONT_H 1
 
-#include <dix.h>
-#include <font.h>
-#include <closure.h>
+#include "dix.h"
+#include "font.h"
+#include "closure.h"
 
 #define NullDIXFontProp ((DIXFontPropPtr)0)
 
@@ -434,7 +434,7 @@ extern void SetGlyphCachingMode(
 #endif
 );
 
-void
+extern void
 ResetFontPrivateIndex(
 #if NeedFunctionPrototypes
     void

@@ -1,7 +1,7 @@
 /*
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaBltFillc.c,v 3.0 1996/12/09 11:54:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaBltFillc.c,v 3.1 1997/02/17 09:48:22 hohndel Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -100,6 +100,7 @@ unsigned char *fastFillSolidGXand(
 	cur_count -= 4;
     }
 
+#if defined(__alpha__)
 	/*
 	 * Perform bulk copy, knowing 0mod8 alignment
 	 * Assumes 64-bit longs.
@@ -127,6 +128,35 @@ unsigned char *fastFillSolidGXand(
 	pdst += 8;
 	cur_count -= 8;
     }
+#else
+	/*
+	 * Perform bulk copy, knowing 0mod4 alignment
+	 * Assumes 32-bit longs.
+	 */
+
+    while (cur_count >= 32) {
+
+	/* Hand unrolled x8, assumes scheduler does a good job */
+	*(unsigned long *) ((long) pdst + 0 ) &= fill1;
+	*(unsigned long *) ((long) pdst + 4 ) &= fill1;
+	*(unsigned long *) ((long) pdst + 8 ) &= fill1;
+	*(unsigned long *) ((long) pdst + 12) &= fill1;
+	*(unsigned long *) ((long) pdst + 16) &= fill1;
+	*(unsigned long *) ((long) pdst + 20) &= fill1;
+	*(unsigned long *) ((long) pdst + 24) &= fill1;
+	*(unsigned long *) ((long) pdst + 28) &= fill1;
+
+	pdst += 32;
+	cur_count -= 32;
+    }
+
+	/* Perform trailing bits cleanup */
+    while (cur_count >= 4) {
+	*(unsigned long *) ((long) pdst + 0) &= fill1;
+	pdst += 4;
+	cur_count -= 4;
+    }
+#endif
 
     if (cur_count >= 4) {
 		/* On 0mod4 boundary already */
@@ -215,6 +245,7 @@ unsigned char *fastFillSolidGXor(
 	cur_count -= 4;
     }
 
+#if defined(__alpha__)
 	/*
 	 * Perform bulk copy, knowing 0mod8 alignment
 	 * Assumes 64-bit longs.
@@ -242,6 +273,35 @@ unsigned char *fastFillSolidGXor(
 	pdst += 8;
 	cur_count -= 8;
     }
+#else
+	/*
+	 * Perform bulk copy, knowing 0mod4 alignment
+	 * Assumes 32-bit longs.
+	 */
+
+    while (cur_count >= 32) {
+
+	/* Hand unrolled x8, assumes scheduler does a good job */
+	*(unsigned long *) ((long) pdst + 0 ) |= fill1;
+	*(unsigned long *) ((long) pdst + 4 ) |= fill1;
+	*(unsigned long *) ((long) pdst + 8 ) |= fill1;
+	*(unsigned long *) ((long) pdst + 12) |= fill1;
+	*(unsigned long *) ((long) pdst + 16) |= fill1;
+	*(unsigned long *) ((long) pdst + 20) |= fill1;
+	*(unsigned long *) ((long) pdst + 24) |= fill1;
+	*(unsigned long *) ((long) pdst + 28) |= fill1;
+
+	pdst += 32;
+	cur_count -= 32;
+    }
+
+	/* Perform trailing bits cleanup */
+    while (cur_count >= 4) {
+	*(unsigned long *) ((long) pdst + 0) |= fill1;
+	pdst += 4;
+	cur_count -= 4;
+    }
+#endif
 
     if (cur_count >= 4) {
 		/* On 0mod4 boundary already */
@@ -330,6 +390,7 @@ unsigned char *fastFillSolidGXxor(
 	cur_count -= 4;
     }
 
+#if defined(__alpha__)
 	/*
 	 * Perform bulk copy, knowing 0mod8 alignment
 	 * Assumes 64-bit longs.
@@ -357,6 +418,35 @@ unsigned char *fastFillSolidGXxor(
 	pdst += 8;
 	cur_count -= 8;
     }
+#else
+	/*
+	 * Perform bulk copy, knowing 0mod4 alignment
+	 * Assumes 32-bit longs.
+	 */
+
+    while (cur_count >= 32) {
+
+	/* Hand unrolled x8, assumes scheduler does a good job */
+	*(unsigned long *) ((long) pdst + 0 ) ^= fill1;
+	*(unsigned long *) ((long) pdst + 4 ) ^= fill1;
+	*(unsigned long *) ((long) pdst + 8 ) ^= fill1;
+	*(unsigned long *) ((long) pdst + 12) ^= fill1;
+	*(unsigned long *) ((long) pdst + 16) ^= fill1;
+	*(unsigned long *) ((long) pdst + 20) ^= fill1;
+	*(unsigned long *) ((long) pdst + 24) ^= fill1;
+	*(unsigned long *) ((long) pdst + 28) ^= fill1;
+
+	pdst += 32;
+	cur_count -= 32;
+    }
+
+	/* Perform trailing bits cleanup */
+    while (cur_count >= 4) {
+	*(unsigned long *) ((long) pdst + 0) ^= fill1;
+	pdst += 4;
+	cur_count -= 4;
+    }
+#endif
 
     if (cur_count >= 4) {
 		/* On 0mod4 boundary already */
@@ -445,6 +535,7 @@ unsigned char *fastFillSolidGXcopy(
 	cur_count -= 4;
     }
 
+#if defined(__alpha__)
 	/*
 	 * Perform bulk copy, knowing 0mod8 alignment
 	 * Assumes 64-bit longs.
@@ -472,6 +563,34 @@ unsigned char *fastFillSolidGXcopy(
 	pdst += 8;
 	cur_count -= 8;
     }
+#else
+	/*
+	 * Perform bulk copy, knowing 0mod4 alignment
+	 * Assumes 32-bit longs.
+	 */
+
+    while (cur_count >= 32) {
+
+	/* Hand unrolled x8, assumes scheduler does a good job */
+	*(unsigned long *) ((long) pdst + 0 ) = fill1;
+	*(unsigned long *) ((long) pdst + 4 ) = fill1;
+	*(unsigned long *) ((long) pdst + 8 ) = fill1;
+	*(unsigned long *) ((long) pdst + 12) = fill1;
+	*(unsigned long *) ((long) pdst + 16) = fill1;
+	*(unsigned long *) ((long) pdst + 20) = fill1;
+	*(unsigned long *) ((long) pdst + 24) = fill1;
+	*(unsigned long *) ((long) pdst + 28) = fill1;
+
+	pdst += 32;
+	cur_count -= 32;
+    }
+	/* Perform trailing bits cleanup */
+    while (cur_count >= 4) {
+	*(unsigned long *) ((long) pdst + 0) = fill1;
+	pdst += 4;
+	cur_count -= 4;
+    }
+#endif
 
     if (cur_count >= 4) {
 		/* On 0mod4 boundary already */
@@ -573,6 +692,7 @@ unsigned char *fastFillSolidGXset(
 	cur_count -= 4;
     }
 
+#if defined(__alpha__)
 	/*
 	 * Perform bulk copy, knowing 0mod8 alignment
 	 * Assumes 64-bit longs.
@@ -624,6 +744,58 @@ unsigned char *fastFillSolidGXset(
 	pdst += 8;
 	cur_count -= 8;
     }
+#else
+	/*
+	 * Perform bulk copy, knowing 0mod4 alignment
+	 * Assumes 32-bit longs.
+	 */
+
+    while (cur_count >= 32) {
+	unsigned long	tmp_1, tmp_2, tmp_3, tmp_4;
+	unsigned long	tmp_5, tmp_6, tmp_7, tmp_8;
+
+	/* Hand unrolled x8, assumes scheduler does a good job */
+	tmp_1 = *(unsigned long *) ((long) pdst + 0);
+	tmp_2 = *(unsigned long *) ((long) pdst + 4);
+	tmp_3 = *(unsigned long *) ((long) pdst + 8 );
+	tmp_4 = *(unsigned long *) ((long) pdst + 12);
+	tmp_5 = *(unsigned long *) ((long) pdst + 16);
+	tmp_6 = *(unsigned long *) ((long) pdst + 20);
+	tmp_7 = *(unsigned long *) ((long) pdst + 24);
+	tmp_8 = *(unsigned long *) ((long) pdst + 28);
+
+	tmp_1 = (fill1 & tmp_1) ^ fill2;
+	tmp_2 = (fill1 & tmp_2) ^ fill2;
+	tmp_3 = (fill1 & tmp_3) ^ fill2;
+	tmp_4 = (fill1 & tmp_4) ^ fill2;
+	tmp_5 = (fill1 & tmp_5) ^ fill2;
+	tmp_6 = (fill1 & tmp_6) ^ fill2;
+	tmp_7 = (fill1 & tmp_7) ^ fill2;
+	tmp_8 = (fill1 & tmp_8) ^ fill2;
+
+	*(unsigned long *) ((long) pdst + 0) = tmp_1;
+	*(unsigned long *) ((long) pdst + 4) = tmp_2;
+	*(unsigned long *) ((long) pdst + 8 ) = tmp_3;
+	*(unsigned long *) ((long) pdst + 12) = tmp_4;
+	*(unsigned long *) ((long) pdst + 16) = tmp_5;
+	*(unsigned long *) ((long) pdst + 20) = tmp_6;
+	*(unsigned long *) ((long) pdst + 24) = tmp_7;
+	*(unsigned long *) ((long) pdst + 28) = tmp_8;
+
+	pdst += 32;
+	cur_count -= 32;
+    }
+	/* Perform trailing bits cleanup */
+    while (cur_count >= 4) {
+	unsigned long	tmpl;
+
+	tmpl = *(unsigned long *) ((long) pdst + 0);
+	tmpl = (tmpl & fill1) ^ fill2;
+	*(unsigned long *) ((long) pdst + 0) = tmpl;
+	pdst += 4;
+	cur_count -= 4;
+    }
+#endif
 
     if (cur_count >= 4) {
 		/* On 0mod4 boundary already */

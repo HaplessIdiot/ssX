@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.43 1997/06/15 07:12:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.44 1997/07/06 05:30:58 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -136,7 +136,7 @@ unsigned inb(unsigned port);
 
 #if defined(__GNUC__)
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
 #if defined(GCCUSESGAS)
 #define OUTB_GCC "outb %0,%1"
 #define OUTL_GCC "outl %0,%1"
@@ -158,7 +158,7 @@ static unsigned char inb(unsigned short port) { unsigned char ret;
 static unsigned long inl(unsigned short port) { unsigned long ret;
      __asm__ __volatile__(INL_GCC : "=a" (ret) : "d" (port)); return ret; }
 
-#endif /* !defined(__alpha__) */
+#endif /* !defined(__alpha__) && !defined(__powerpc__) */
 #else  /* __GNUC__ */
 
 #if defined(__STDC__) && (__STDC__ == 1)
@@ -260,8 +260,73 @@ int pciconfig_write(
 Generate compiler error - scanpci unsupported on non-linux alpha platforms
 #endif /* linux */
 #endif /* __alpha__ */
+#if defined(Lynx) && defined(__powerpc__)
+/* let's mimick the Linux Alpha stuff for LynxOS so we don't have
+ * to change too much code
+ */
+#include <smem.h>
+
+unsigned char *pciConfBase;
+
+static __inline__ unsigned long
+swapl(unsigned long val)
+{
+	unsigned char *p = (unsigned char *)&val;
+	return ((p[3] << 24) | (p[2] << 16) | (p[1] << 8) | (p[0] << 0));
+}
 
 
+#define BUS(tag) (((tag)>>16)&0xff)
+#define DFN(tag) (((tag)>>8)&0xff)
+
+#define PCIBIOS_DEVICE_NOT_FOUND	0x86
+#define PCIBIOS_SUCCESSFUL		0x00
+
+int pciconfig_read(
+          unsigned char bus,
+          unsigned char dev,
+          unsigned char offset,
+          int len,		/* unused, alway 4 */
+          unsigned long *val)
+{
+	unsigned long _val;
+	unsigned long *ptr;
+
+	dev >>= 3;
+	if (bus || dev >= 16) {
+		*val = 0xFFFFFFFF;
+		return PCIBIOS_DEVICE_NOT_FOUND;
+	} else {
+		ptr = (unsigned long *)(pciConfBase + ((1<<dev) | offset));
+		_val = swapl(*ptr);
+	}
+	*val = _val;
+	return PCIBIOS_SUCCESSFUL;
+}
+
+int pciconfig_write(
+          unsigned char bus,
+          unsigned char dev,
+          unsigned char offset,
+          int len,		/* unused, alway 4 */
+          unsigned long val)
+{
+	unsigned long _val;
+	unsigned long *ptr;
+
+	dev >>= 3;
+	_val = swapl(val);
+	if (bus || dev >= 16) {
+		return PCIBIOS_DEVICE_NOT_FOUND;
+	} else {
+		ptr = (unsigned long *)(pciConfBase + ((1<<dev) | offset));
+		*ptr = _val;
+	}
+	return PCIBIOS_SUCCESSFUL;
+}
+#endif
+
+#if !defined(__powerpc__)
 struct pci_config_reg {
     /* start of official PCI config space header */
     union {
@@ -395,6 +460,149 @@ struct pci_config_reg {
     unsigned short _ioaddr;       /* config type 1 - private I/O addr    */
     unsigned long _cardnum;       /* config type 2 - private card number */
 };
+#else
+/* ppc is big endian, swapping bytes is not quite enough
+ * to interpret the PCI config registers...
+ */
+struct pci_config_reg {
+    /* start of official PCI config space header */
+    union {
+        unsigned long device_vendor;
+	struct {
+	    unsigned short device;
+	    unsigned short vendor;
+	} dv;
+    } dv_id;
+#define _device_vendor dv_id.device_vendor
+#define _vendor dv_id.dv.vendor
+#define _device dv_id.dv.device
+    union {
+        unsigned long status_command;
+	struct {
+	    unsigned short status;
+	    unsigned short command;
+	} sc;
+    } stat_cmd;
+#define _status_command stat_cmd.status_command
+#define _command stat_cmd.sc.command
+#define _status  stat_cmd.sc.status
+    union {
+        unsigned long class_revision;
+	struct {
+	    unsigned char base_class;
+	    unsigned char sub_class;
+	    unsigned char prog_if;
+	    unsigned char rev_id;
+	} cr;
+    } class_rev;
+#define _class_revision class_rev.class_revision
+#define _rev_id     class_rev.cr.rev_id
+#define _prog_if    class_rev.cr.prog_if
+#define _sub_class  class_rev.cr.sub_class
+#define _base_class class_rev.cr.base_class
+    union {
+        unsigned long bist_header_latency_cache;
+	struct {
+	    unsigned char bist;
+	    unsigned char header_type;
+	    unsigned char latency_timer;
+	    unsigned char cache_line_size;
+	} bhlc;
+    } bhlc;
+#define _bist_header_latency_cache bhlc.bist_header_latency_cache
+#define _cache_line_size bhlc.bhlc.cache_line_size
+#define _latency_timer   bhlc.bhlc.latency_timer
+#define _header_type     bhlc.bhlc.header_type
+#define _bist            bhlc.bhlc.bist
+    union {
+	struct {
+	    unsigned long dv_base0;
+	    unsigned long dv_base1;
+	    unsigned long dv_base2;
+	    unsigned long dv_base3;
+	    unsigned long dv_base4;
+	    unsigned long dv_base5;
+	} dv;
+/* ?? */
+	struct {
+	    unsigned long bg_rsrvd[2];
+
+	    unsigned char secondary_latency_timer;
+	    unsigned char subordinate_bus_number;
+	    unsigned char secondary_bus_number;
+	    unsigned char primary_bus_number;
+
+	    unsigned short secondary_status;
+	    unsigned char io_limit;
+	    unsigned char io_base;
+
+	    unsigned short mem_limit;
+	    unsigned short mem_base;
+
+	    unsigned short prefetch_mem_limit;
+	    unsigned short prefetch_mem_base;
+	} bg;
+    } bc;
+#define	_base0				bc.dv.dv_base0
+#define	_base1				bc.dv.dv_base1
+#define	_base2				bc.dv.dv_base2
+#define	_base3				bc.dv.dv_base3
+#define	_base4				bc.dv.dv_base4
+#define	_base5				bc.dv.dv_base5
+#define	_primary_bus_number		bc.bg.primary_bus_number
+#define	_secondary_bus_number		bc.bg.secondary_bus_number
+#define	_subordinate_bus_number		bc.bg.subordinate_bus_number
+#define	_secondary_latency_timer	bc.bg.secondary_latency_timer
+#define _io_base			bc.bg.io_base
+#define _io_limit			bc.bg.io_limit
+#define _secondary_status		bc.bg.secondary_status
+#define _mem_base			bc.bg.mem_base
+#define _mem_limit			bc.bg.mem_limit
+#define _prefetch_mem_base		bc.bg.prefetch_mem_base
+#define _prefetch_mem_limit		bc.bg.prefetch_mem_limit
+    unsigned long rsvd1;
+    unsigned long rsvd2;
+    unsigned long _baserom;
+    unsigned long rsvd3;
+    unsigned long rsvd4;
+    union {
+        unsigned long max_min_ipin_iline;
+	struct {
+	    unsigned char max_lat;
+	    unsigned char min_gnt;
+	    unsigned char int_pin;
+	    unsigned char int_line;
+	} mmii;
+    } mmii;
+#define _max_min_ipin_iline mmii.max_min_ipin_iline
+#define _int_line mmii.mmii.int_line
+#define _int_pin  mmii.mmii.int_pin
+#define _min_gnt  mmii.mmii.min_gnt
+#define _max_lat  mmii.mmii.max_lat
+    /* I don't know how accurate or standard this is (DHD) */
+    union {
+	unsigned long user_config;
+	struct {
+	    unsigned char user_config_3;
+	    unsigned char user_config_2;
+	    unsigned char user_config_1;
+	    unsigned char user_config_0;
+	} uc;
+    } uc;
+#define _user_config uc.user_config
+#define _user_config_0 uc.uc.user_config_0
+#define _user_config_1 uc.uc.user_config_1
+#define _user_config_2 uc.uc.user_config_2
+#define _user_config_3 uc.uc.user_config_3
+    /* end of official PCI config space header */
+    unsigned long _pcibusidx;
+    unsigned long _pcinumbus;
+    unsigned long _pcibuses[16];
+    unsigned short _ioaddr;       /* config type 1 - private I/O addr    */
+    unsigned short _configtype;   /* config type found                   */
+    unsigned long _cardnum;       /* config type 2 - private card number */
+};
+#endif
 
 extern void identify_card(struct pci_config_reg *, int);
 extern void print_i128(struct pci_config_reg *);
@@ -408,7 +616,7 @@ extern void disable_os_io();
 #define MAX_PCI_DEVICES         64
 #define NF ((void (*)())NULL)
 #define PCI_MULTIFUNC_DEV	0x80
-#if defined(__alpha__)
+#if defined(__alpha__) || defined(__powerpc__)
 #define PCI_ID_REG              0x00
 #define PCI_CMD_STAT_REG        0x04
 #define PCI_CLASS_REG           0x08
@@ -779,7 +987,7 @@ main(int argc, unsigned char *argv[])
     unsigned char tmp1, tmp2;
     unsigned int idx;
     struct pci_config_reg pcr;
-    int ch, verbose;
+    int ch, verbose = 0;
     int func;
 
     if (argc > 2) {
@@ -805,7 +1013,7 @@ main(int argc, unsigned char *argv[])
 
     enable_os_io();
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
     pcr._configtype = 0;
 
     outb(PCI_MODE2_ENABLE_REG, 0x00);
@@ -851,7 +1059,7 @@ main(int argc, unsigned char *argv[])
 		pcr._cardnum += 0x1) {
 	  func = 0;
 	  do { /* loop over the different functions, if present */
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
 	    config_cmd = PCI_EN | (pcr._pcibuses[pcr._pcibusidx]<<16) |
                                   (pcr._cardnum<<11) | (func<<8);
 
@@ -869,7 +1077,7 @@ main(int argc, unsigned char *argv[])
 	        pcr._pcibuses[pcr._pcibusidx], pcr._cardnum, func,
 		pcr._vendor, pcr._device);
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x04);
 	    pcr._status_command  = inl(PCI_MODE1_DATA_REG);
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x08);
@@ -950,7 +1158,7 @@ main(int argc, unsigned char *argv[])
         }
     } while (++pcr._pcibusidx < pcr._pcinumbus);
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
     /* Now try pci config 2 probe (deprecated) */
 
     outb(PCI_MODE2_ENABLE_REG, 0xF1);
@@ -1319,6 +1527,12 @@ enable_os_io()
         DosClose(hfd);
    }
 #endif
+#if defined(Lynx) && defined(__powerpc__)
+    pciConfBase = (unsigned char *) smem_create("PCI-CONF",
+    	    (char *)0x80800000, 64*1024, SM_READ|SM_WRITE);
+    if (pciConfBase == (void *) -1)
+        exit(1);
+#endif
 }
 
 
@@ -1363,5 +1577,10 @@ disable_os_io()
 #endif
 #if defined(MACH386)
     close(io_fd);
+#endif
+#if defined(Lynx) && defined(__powerpc__)
+    smem_create(NULL, (char *) pciConfBase, 0, SM_DETACH);
+    smem_remove("PCI-CONF");
+    pciConfBase = NULL;
 #endif
 }

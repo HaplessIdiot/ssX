@@ -1,7 +1,7 @@
 /*
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaLinec.c,v 3.0 1996/12/09 11:54:31 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -34,6 +34,7 @@ void fastvga256BresS(
     int            len
 )
 {
+    SETRW(addrl);
     cfbBresS(alu,and,xor,addrl,nlwidth,signdx,signdy,axis,x,y,e,e1,e2,len);
 }
 
@@ -49,6 +50,7 @@ int fastvga256HorzS(
     int                     len
 )
 {
+    SETRW(addrl);
     cfbHorzS(alu,and,xor,addrl,nlwidth,x,y,len);
 }
 
@@ -64,5 +66,6 @@ int fastvga256VertS(
     register int   len
 )
 {
+    SETRW(addrl);
     cfbVertS(alu,and,xor,addrl,nlwidth,x,y,len);
 }

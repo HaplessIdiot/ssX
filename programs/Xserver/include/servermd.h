@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h /main/58 1996/12/02 10:22:09 lehors $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.21 1997/02/25 16:05:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.22 1997/06/03 14:12:36 hohndel Exp $ */
 
 /*
  * Machine dependent values:
@@ -139,6 +139,7 @@ SOFTWARE.
 #define BITMAP_BIT_ORDER        MSBFirst
 #define GLYPHPADBYTES           4
 #define GETLEFTBITS_ALIGNMENT   1
+#define BITMAP_SCANLINE_UNIT	8
 
 #define LARGE_INSTRUCTION_CACHE
 #define FAST_CONSTANT_OFFSET_MODE

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.11 1996/09/29 13:36:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.12 1996/12/23 06:44:27 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -31,6 +31,7 @@
 #define USE_OLD_PCI_CODE
 #endif
 
+#if !defined(__powerpc__)
 typedef struct pci_config_reg {
     /* start of official PCI config space header */
     union {
@@ -168,6 +169,152 @@ typedef struct pci_config_reg {
     CARD32 _cardnum;      /* config type 2 - private card number */
     CARD32 _func;         /* function number */
 } pciConfigRec, *pciConfigPtr;
+#else
+/* ppc is big endian, swapping bytes is not quite enough
+ * to interpret the PCI config registers...
+ */
+typedef struct pci_config_reg {
+    /* start of official PCI config space header */
+    union {
+	CARD32 device_vendor;
+	struct {
+	    CARD16 device;
+	    CARD16 vendor;
+	} dv;
+    } dv_id;
+#define _device_vendor dv_id.device_vendor
+#define _vendor dv_id.dv.vendor
+#define _device dv_id.dv.device
+    union {
+        CARD32 status_command;
+	struct {
+	    CARD16 status;
+	    CARD16 command;
+	} sc;
+    } stat_cmd;
+#define _status_command stat_cmd.status_command
+#define _command stat_cmd.sc.command
+#define _status  stat_cmd.sc.status
+    union {
+        CARD32 class_revision;
+	struct {
+	    CARD8 base_class;
+	    CARD8 sub_class;
+	    CARD8 prog_if;
+	    CARD8 rev_id;
+	} cr;
+    } class_rev;
+#define _class_revision class_rev.class_revision
+#define _rev_id     class_rev.cr.rev_id
+#define _prog_if    class_rev.cr.prog_if
+#define _sub_class  class_rev.cr.sub_class
+#define _base_class class_rev.cr.base_class
+    union {
+        CARD32 bist_header_latency_cache;
+	struct {
+	    CARD8 bist;
+	    CARD8 header_type;
+	    CARD8 latency_timer;
+	    CARD8 cache_line_size;
+	} bhlc;
+    } bhlc;
+#define _bist_header_latency_cache bhlc.bist_header_latency_cache
+#define _cache_line_size bhlc.bhlc.cache_line_size
+#define _latency_timer   bhlc.bhlc.latency_timer
+#define _header_type     bhlc.bhlc.header_type
+#define _bist            bhlc.bhlc.bist
+    union {
+	struct {
+	    CARD32 dv_base0;
+	    CARD32 dv_base1;
+	    CARD32 dv_base2;
+	    CARD32 dv_base3;
+	    CARD32 dv_base4;
+	    CARD32 dv_base5;
+	} dv;
+	struct {
+	    CARD32 bg_rsrvd[2];
+
+	    CARD8 secondary_latency_timer;
+	    CARD8 subordinate_bus_number;
+	    CARD8 secondary_bus_number;
+	    CARD8 primary_bus_number;
+
+	    CARD16 secondary_status;
+	    CARD8 io_limit;
+	    CARD8 io_base;
+
+	    CARD16 mem_limit;
+	    CARD16 mem_base;
+
+	    CARD16 prefetch_mem_limit;
+	    CARD16 prefetch_mem_base;
+	} bg;
+    } bc;
+#define	_base0				bc.dv.dv_base0
+#define	_base1				bc.dv.dv_base1
+#define	_base2				bc.dv.dv_base2
+#define	_base3				bc.dv.dv_base3
+#define	_base4				bc.dv.dv_base4
+#define	_base5				bc.dv.dv_base5
+#define	_primary_bus_number		bc.bg.primary_bus_number
+#define	_secondary_bus_number		bc.bg.secondary_bus_number
+#define	_subordinate_bus_number		bc.bg.subordinate_bus_number
+#define	_secondary_latency_timer	bc.bg.secondary_latency_timer
+#define _io_base			bc.bg.io_base
+#define _io_limit			bc.bg.io_limit
+#define _secondary_status		bc.bg.secondary_status
+#define _mem_base			bc.bg.mem_base
+#define _mem_limit			bc.bg.mem_limit
+#define _prefetch_mem_base		bc.bg.prefetch_mem_base
+#define _prefetch_mem_limit		bc.bg.prefetch_mem_limit
+    CARD32 rsvd1;
+    CARD32 rsvd2;
+    CARD32 _baserom;
+    CARD32 rsvd3;
+    CARD32 rsvd4;
+    union {
+        CARD32 max_min_ipin_iline;
+	struct {
+	    CARD8 max_lat;
+	    CARD8 min_gnt;
+	    CARD8 int_pin;
+	    CARD8 int_line;
+	} mmii;
+    } mmii;
+#define _max_min_ipin_iline mmii.max_min_ipin_iline
+#define _int_line mmii.mmii.int_line
+#define _int_pin  mmii.mmii.int_pin
+#define _min_gnt  mmii.mmii.min_gnt
+#define _max_lat  mmii.mmii.max_lat
+    /* I don't know how accurate or standard this is (DHD) */
+    union {
+	CARD32 user_config;
+	struct {
+	    CARD8 user_config_3;
+	    CARD8 user_config_2;
+	    CARD8 user_config_1;
+	    CARD8 user_config_0;
+	} uc;
+    } uc;
+#define _user_config uc.user_config
+#define _user_config_0 uc.uc.user_config_0
+#define _user_config_1 uc.uc.user_config_1
+#define _user_config_2 uc.uc.user_config_2
+#define _user_config_3 uc.uc.user_config_3
+    /* end of official PCI config space header */
+#ifdef USE_OLD_PCI_CODE
+    CARD32 _pcibusidx;
+    CARD32 _pcinumbus;
+    CARD32 _pcibuses[16];
+    CARD16 _configtype;   /* config type found                   */
+    CARD16 _ioaddr;       /* config type 1 - private I/O addr    */
+#endif
+    CARD32 _bus;
+    CARD32 _cardnum;      /* config type 2 - private card number */
+    CARD32 _func;         /* function number */
+} pciConfigRec, *pciConfigPtr;
+#endif
 
 typedef union {
     CARD32 cfg1;

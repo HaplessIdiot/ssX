@@ -5,7 +5,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.18 1997/06/03 14:11:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.19 1997/06/11 12:24:37 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -1050,11 +1050,11 @@ getsection_screen(interp, varname)
             sprintf(tmpbuf, "%ld", ScreenSaverTime/MILLI_PER_MIN);
             Tcl_SetVar2(interp, namebuf, "BlankTime", tmpbuf, 0);
 #ifdef DPMSExtension
-            sprintf(tmpbuf, "%d", DPMSStandbyTime/MILLI_PER_MIN);
+            sprintf(tmpbuf, "%ld", DPMSStandbyTime/MILLI_PER_MIN);
             Tcl_SetVar2(interp, namebuf, "StandbyTime", tmpbuf, 0);
-            sprintf(tmpbuf, "%d", DPMSSuspendTime/MILLI_PER_MIN);
+            sprintf(tmpbuf, "%ld", DPMSSuspendTime/MILLI_PER_MIN);
             Tcl_SetVar2(interp, namebuf, "SuspendTime", tmpbuf, 0);
-            sprintf(tmpbuf, "%d", DPMSOffTime/MILLI_PER_MIN);
+            sprintf(tmpbuf, "%ld", DPMSOffTime/MILLI_PER_MIN);
             Tcl_SetVar2(interp, namebuf, "OffTime", tmpbuf, 0);
 #endif
             if (vptr->tmpIndex >= 0) {

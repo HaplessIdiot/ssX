@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.5 1997/03/07 00:28:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.6 1997/03/17 11:22:33 dawes Exp $ */
 /*
  * Copyright 1993 by Thomas Mueller
  *
@@ -32,6 +32,11 @@
 #include <smem.h>
 
 #include <kernel.h>		/* for PHYSBASE */
+
+#ifdef __powerpc__
+unsigned char *ioBase = NULL;
+static int IOEnabled;
+#endif
 
 static int BIOS_fd = -1;
 
@@ -195,6 +200,17 @@ int NumPorts;
 Word *Ports;
 #endif
 {
+#ifdef __powerpc__
+        if (IOEnabled++ == 0) {
+        	ioBase = (unsigned char *) smem_create("IOBASE",
+        		(char *)0x80000000, 64*1024, SM_READ|SM_WRITE);
+        	if (ioBase == (void *) -1) {
+        		ioBase = NULL;
+        		IOEnabled--;
+        		return -1;
+        	}
+        }
+#endif
 	return(0);
 }
 
@@ -214,6 +230,13 @@ int NumPorts;
 Word *Port;
 #endif
 {
+#ifdef __powerpc__
+        if (--IOEnabled == 0 && ioBase) {
+        	smem_create(NULL, (char *) ioBase, 0, SM_DETACH);
+        	smem_remove("IOBASE");
+        	ioBase = NULL;
+        }
+#endif
 	return(0);
 }
 

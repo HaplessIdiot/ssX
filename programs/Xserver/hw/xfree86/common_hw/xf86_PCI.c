@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.19 1997/05/18 12:12:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.20 1997/05/19 10:04:37 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -494,6 +494,77 @@ int pciconfig_write(
 }
 #endif /* __alpha__ */
 
+#if defined(Lynx) && defined(__powerpc__)
+/* let's mimick the Linux Alpha stuff for LynxOS so we don't have
+ * to change too much code
+ */
+static unsigned char *pciConfBase;
+
+#define BUS(tag) (((tag)>>16)&0xff)
+#define DFN(tag) (((tag)>>8)&0xff)
+
+#define PCIBIOS_DEVICE_NOT_FOUND	0x86
+#define PCIBIOS_SUCCESSFUL		0x00
+
+int pciconfig_read(
+          unsigned char bus,
+          unsigned char dev,
+          unsigned char offset,
+          int len,		/* unused, alway 4 */
+          unsigned long *val)
+{
+	unsigned long _val;
+	unsigned long *ptr;
+
+	dev >>= 3;
+#ifdef PCI_DEBUG	
+	fprintf(stderr, "PCI Read config dword[%d.%d.%x] = ", bus, dev, offset);
+#endif	
+	if ((bus != 0) || (dev >= 16))
+	{
+		*val = 0xFFFFFFFF;
+		return PCIBIOS_DEVICE_NOT_FOUND;
+	} else
+	{
+		ptr = (unsigned long *)(pciConfBase + ((1<<dev) | offset));
+#ifdef PCI_DEBUG	
+		fprintf(stderr, "[%x] ", ptr);
+#endif		
+		_val = _LE_to_BE_long(*ptr);
+	}
+#ifdef PCI_DEBUG	
+	fprintf(stderr, "%x\n", _val);
+#endif	
+	*val = _val;
+	return PCIBIOS_SUCCESSFUL;
+}
+
+int pciconfig_write(
+          unsigned char bus,
+          unsigned char dev,
+          unsigned char offset,
+          int len,		/* unused, alway 4 */
+          unsigned long val)
+{
+	unsigned long _val;
+	unsigned long *ptr;
+	dev >>= 3;
+	_val = _LE_to_BE_long(val);
+#ifdef PCI_DEBUG	
+	fprintf(stderr, "PCI Write config dword[%d.%d.%x] = %x\n", bus, dev, offset, _val);
+#endif		
+	if ((bus != 0) || (dev < 11) || (dev > 16))
+	{
+		return PCIBIOS_DEVICE_NOT_FOUND;
+	} else
+	{
+		ptr = (unsigned long *)(pciConfBase + ((1<<dev) | offset));
+		*ptr = _val;
+	}
+	return PCIBIOS_SUCCESSFUL;
+}
+#endif
+
 static Bool
 pcibusCheck()
 {
@@ -522,7 +593,7 @@ pcibusSetup()
 
     setupDone = TRUE;
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
     switch (xf86PCIFlags) {
 
     case PCIProbe1: /* { */
@@ -761,7 +832,7 @@ pcibusSetup()
 
     }
 	
-#else /* !__alpha__ */
+#else /* !__alpha__  && !__powerpc__ */
     pciConfigType = 1;
     pciMaxDevice = PCI_CONFIG1_MAXDEV;
     if (pcibusCheck()) {
@@ -772,7 +843,7 @@ pcibusSetup()
     }
     pciConfigType = 0;
     pciMaxDevice = 0;
-#endif /* !__alpha__ */
+#endif /* !__alpha__ && !__powerpc__ */
 
     /* No PCI found */
 
@@ -844,7 +915,7 @@ pcibusRead(pciTagRec tag, CARD32 reg)
 	return 0xffffffff;
     }
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -861,9 +932,9 @@ pcibusRead(pciTagRec tag, CARD32 reg)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
-#else /* !__alpha__ */
+#else /* !__alpha__ && !__powerpc__ */
     pciconfig_read(BUS(tag.cfg1), DFN(tag.cfg1), reg, 4, &data);
-#endif /* !__alpha__ */
+#endif /* !__alpha__ && !__powerpc__ */
     return data;
 }
 
@@ -877,7 +948,7 @@ pciReadWord(pciTagRec tag, CARD32 reg)
 	return 0xff;
     }
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -894,9 +965,9 @@ pciReadWord(pciTagRec tag, CARD32 reg)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
-#else /* !__alpha__ */
+#else /* !__alpha__ && !__powerpc__ */
     pciconfig_read(BUS(tag.cfg1), DFN(tag.cfg1), reg, 2, &data);
-#endif /* !__alpha__ */
+#endif /* !__alpha__ && !__powerpc__ */
     return data;
 }
 
@@ -910,7 +981,7 @@ pciReadByte(pciTagRec tag, CARD32 reg)
 	return 0xff;
     }
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -927,9 +998,9 @@ pciReadByte(pciTagRec tag, CARD32 reg)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
-#else /* !__alpha__ */
+#else /* !__alpha__ && !__powerpc__ */
     pciconfig_read(BUS(tag.cfg1), DFN(tag.cfg1), reg, 1, &data);
-#endif /* !__alpha__ */
+#endif /* !__alpha__ && !__powerpc__ */
     return data;
 }
 
@@ -942,7 +1013,7 @@ pcibusWrite(pciTagRec tag, CARD32 reg, CARD32 data)
 	return;
     }
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -959,10 +1030,10 @@ pcibusWrite(pciTagRec tag, CARD32 reg, CARD32 data)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
-#else /* !__alpha__ */
+#else /* !__alpha__ && !__powerpc__ */
     addr = data;
     pciconfig_write(BUS(tag.cfg1), DFN(tag.cfg1), reg, 4, &addr);
-#endif /* !__alpha__ */
+#endif /* !__alpha__ && !__powerpc__ */
 }
 
 void
@@ -974,7 +1045,7 @@ pciWriteWord(pciTagRec tag, CARD32 reg, CARD16 data)
 	return;
     }
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -991,10 +1062,10 @@ pciWriteWord(pciTagRec tag, CARD32 reg, CARD16 data)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
-#else /* !__alpha__ */
+#else /* !__alpha__ && !__powerpc__ */
     addr = data;
     pciconfig_write(BUS(tag.cfg1), DFN(tag.cfg1), reg, 2, &addr);
-#endif /* !__alpha__ */
+#endif /* !__alpha__ && !__powerpc__ */
 }
 
 void
@@ -1006,7 +1077,7 @@ pciWriteByte(pciTagRec tag, CARD32 reg, CARD8 data)
 	return;
     }
 
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
     switch (pciConfigType) {
     case 1:
 	addr = tag.cfg1 | (reg & 0xfc);
@@ -1023,15 +1094,16 @@ pciWriteByte(pciTagRec tag, CARD32 reg, CARD8 data)
 	outb(PCI_MODE2_FORWARD_REG, 0);
 	break;
     }
-#else /* !__alpha__ */
+#else /* !__alpha__ && !__powerpc__ */
     addr = data;
     pciconfig_write(BUS(tag.cfg1), DFN(tag.cfg1), reg, 1, &addr);
-#endif /* !__alpha__ */
+#endif /* !__alpha__ && !__powerpc__ */
 }
 
 static void
 pciEnableIO(int scrnIndex)
 {
+#if !(defined(Lynx) && defined(__powerpc__))
     /* This is enough to ensure that full I/O is enabled */
     unsigned pciIOPorts[] = { PCI_MODE1_ADDRESS_REG };
     int numPciIOPorts = sizeof(pciIOPorts) / sizeof(pciIOPorts[0]);
@@ -1039,13 +1111,27 @@ pciEnableIO(int scrnIndex)
     xf86ClearIOPortList(scrnIndex);
     xf86AddIOPorts(scrnIndex, numPciIOPorts, pciIOPorts);
     xf86EnableIOPorts(scrnIndex);
+#else
+    pciConfBase = (unsigned char *) smem_create("PCI-CONF",
+    	    (char *)0x80800000, 64*1024, SM_READ|SM_WRITE);
+    if (pciConfBase == (void *) -1) {
+	perror("smem_create PCI-CONF");
+        pciConfBase = NULL;
+    }
+#endif
 }
 
 static void
 pciDisableIO(int scrnIndex)
 {
+#if !(defined(Lynx) && defined(__powerpc__))
     xf86DisableIOPorts(scrnIndex);
     xf86ClearIOPortList(scrnIndex);
+#else
+    smem_create(NULL, (char *) pciConfBase, 0, SM_DETACH);
+    smem_remove("PCI-CONF");
+    pciConfBase = NULL;
+#endif
 }
 
 static Bool

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.74 1997/06/03 14:11:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.75 1997/06/20 09:24:45 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -135,6 +135,7 @@ typedef struct {
 #define OPTION_MIRO_MAGIC_S4	109 /* miroMagic S4 with (S3) 928 and BT485 */
 #define OPTION_ELSA_W2000PRO_X8	110 /* clock/phase_detect for ELSA Winner 2000PRO/X-8 (S3) */
 #define OPTION_MIRO_80SV	111 /* clock/phase_detect for MIRO 80SV (S3) */
+#define OPTION_AST_MACH32       112 /* AST's soldered-in SVGA motherboard (Mach32) */
 
 /* Misc options */
 #define OPTION_CSYNC		120 /* Composite sync */
@@ -355,6 +356,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "stb",		OPTION_STB },
   { "hercules",		OPTION_HERCULES },
   { "miro_magic_s4",	OPTION_MIRO_MAGIC_S4},
+  { "ast_mach32",       OPTION_AST_MACH32},
 
   { "composite",	OPTION_CSYNC },
   { "secondary",	OPTION_SECONDARY },

@@ -47,7 +47,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.10 1996/12/23 06:29:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.11 1996/12/24 02:23:43 dawes Exp $ */
 /* $XConsortium: devices.c /main/54 1996/09/25 00:45:00 dpw $ */
 
 #include "X.h"
@@ -65,6 +65,17 @@ SOFTWARE.
 #define	XKB_IN_SERVER
 #ifdef XKB
 #include "XKBsrv.h"
+/* Metro Link */
+#if NeedFunctionPrototypes
+extern void XkbFinishDeviceInit(DeviceIntPtr);
+extern void XkbFreeSrvLedInfo(XkbSrvLedInfoPtr);
+extern void XkbFreeInfo(XkbSrvInfoPtr);
+#else
+extern void XkbFinishDeviceInit();
+extern void XkbFreeSrvLedInfo();
+extern void XkbFreeInfo();
+#endif
+/* Metro Link */
 #endif
 #ifdef XCSECURITY
 #define _SECURITY_SERVER

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: main.c /main/82 1996/09/28 17:12:09 rws $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.10.2.1 1997/06/01 12:33:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.11 1997/06/11 12:24:32 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -243,8 +243,8 @@ main(argc, argv)
     int		i, j, k;
     HWEventQueueType	alwaysCheckForInput[2];
 
-    /* Notice if we're restart.  Probably this is because we jumped through
-     * uninitialized pointer */
+    /* Notice if we're restarted.  Probably this is because we jumped through
+     * an uninitialized pointer */
     if (restart)
 	FatalError("server restarted. Jumped through uninitialized pointer?\n");
     else

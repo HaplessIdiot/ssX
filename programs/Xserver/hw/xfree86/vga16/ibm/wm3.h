@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm3.h,v 3.1 1996/02/04 09:11:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/wm3.h,v 3.2 1996/12/23 06:53:32 dawes Exp $ */
 
 
 
@@ -65,6 +65,7 @@
 	{ volatile char *_dtmp = (volatile char *)(destp); \
 	  int _stmp = (src); \
 	  volatile int dummy; /* Bit bucket. */ \
+	  _stmp = ldl_u(&_stmp); \
 	  dummy = *_dtmp; *_dtmp = _stmp; _dtmp++; _stmp >>= 8; \
 	  dummy = *_dtmp; *_dtmp = _stmp; _dtmp++; _stmp >>= 8; \
 	  dummy = *_dtmp; *_dtmp = _stmp; _dtmp++; _stmp >>= 8; \

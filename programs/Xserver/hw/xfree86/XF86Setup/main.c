@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.8 1996/09/03 06:48:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.9 1996/12/27 06:54:05 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -44,8 +44,8 @@
 #include <sys/resource.h>
 #endif
 
-#if TK_MAJOR_VERSION < 4
-#error You must use Tk 4.0 or newer
+#if TK_MAJOR_VERSION < 4 || (TK_MAJOR_VERSION == 4 && TK_MINOR_VERSION < 1)
+#error You must use Tk 4.1 or newer
 #endif
 
 static Tcl_Interp *interp;
@@ -596,7 +596,6 @@ void kill_server(interp)
 	return;
 }
 
-#if TK_MAJOR_VERSION > 4 || TK_MINOR_VERSION > 0
 extern int	TkCreateFrame (
 #if NeedFunctionProtoTypes
 	ClientData	clientData,
@@ -613,7 +612,6 @@ extern int	TkPlatformInit (
 	Tcl_Interp	*interp
 #endif
 );
-#endif  /* TK_VERSION > 4.0 */
 
 extern int	XkbUIWinCmd (
 #if NeedFunctionProtoTypes
@@ -635,10 +633,8 @@ XF86Setup_TkInit(interp, display, appName)
 {
     Tk_Window	mainWindow;
     char	*class;
-#if TK_MAJOR_VERSION > 4 || TK_MINOR_VERSION > 0
     char	*av[10];
     int		ac;
-#endif
 
     if (appName == NULL)
 	appName = "XF86Setup";
@@ -649,11 +645,6 @@ XF86Setup_TkInit(interp, display, appName)
     if (islower(class[0]))
 	class[0] = toupper((unsigned char) class[0]);
 
-#if TK_MAJOR_VERSION == 4 && TK_MINOR_VERSION == 0
-    mainWindow = Tk_CreateMainWindow(interp, display, appName, class);
-    if (mainWindow == NULL)
-	print_result_and_exit;
-#else
     av[0] = "toplevel";
     av[1] = ".";
     av[2] = "-class";
@@ -671,7 +662,6 @@ XF86Setup_TkInit(interp, display, appName)
     Tcl_ResetResult(interp);
     mainWindow = Tk_MainWindow(interp);
     TkPlatformInit(interp);
-#endif
     XtFree(class);
 
     if (synchronize)

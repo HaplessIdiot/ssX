@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.58 1997/01/20 12:34:13 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.59 1997/05/21 15:17:04 dawes Exp $ 
 .TH XF86_Accel 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -635,6 +635,9 @@ of operation.  This option is experimental.
 \fBintel_gx\fP - (Mach32) Sets the hard-wired offset for the linear
 framebuffer correctly for the Intel GX Pro cards.  This option is equivalent
 to setting the \fBmembase\fP to \fI0x78000000\fP.
+.sp
+\fBast_mach32\fP - (Mach32) Sets special handling for the Mach32 cards
+sold soldered-in on some AST motherboards.
 .sp
 \fBspea_mercury\fP - (S3) Enables pixel multiplex support for SPEA Mercury
 cards (928 + Bt485 RAMDAC).  For these cards, pixel multiplexing is required

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_mmap.c,v 3.1 1995/12/09 11:08:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_mmap.c,v 3.2 1996/09/29 13:38:29 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -44,6 +44,10 @@ int Len;
 	char *p;
 	int mlen;
 
+#if defined(__powerpc__)
+	ErrorF("xf86ReadBios: no BIOS-probe on PowerPC\n");
+	return(-1);
+#else
 	mlen = (Offset + Len + 4095) & ~4096;
 	p = smem_create("BIOS-probe", (char *)Base, mlen, SM_READ);
 	if (p == NULL)
@@ -63,4 +67,5 @@ int Len;
 	smem_create(NULL, p, 0, SM_DETACH);
 	smem_remove("BIOS-probe");
 	return(Len);
+#endif
 }

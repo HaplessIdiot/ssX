@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.98 1997/06/15 23:35:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.99 1997/07/05 08:45:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -85,7 +85,7 @@ extern void mfbDoBitbltTwoBanksCopyInverted();
 void (*ourmfbDoBitbltCopy)();
 void (*ourmfbDoBitbltCopyInverted)();
 unsigned long useSpeedUp = 0;
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
 extern void speedupvga256TEGlyphBlt8();
 extern void speedupvga2568FillRectOpaqueStippled32();
 extern void speedupvga2568FillRectTransparentStippled32();
@@ -944,7 +944,7 @@ vgaProbe()
 	     */
 	    if (useSpeedUp & SPEEDUP_TEGBLT8)
 	    {
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
 	      vga256LowlevFuncs.teGlyphBlt8 = speedupvga256TEGlyphBlt8;
 	      vga256TEOps1Rect.ImageGlyphBlt = speedupvga256TEGlyphBlt8;
 	      vga256TEOps.ImageGlyphBlt = speedupvga256TEGlyphBlt8;
@@ -957,7 +957,7 @@ vgaProbe()
 
 	    if (useSpeedUp & SPEEDUP_RECTSTIP)
 	    {
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
 	      vga256LowlevFuncs.fillRectOpaqueStippled32 = 
 	        speedupvga2568FillRectOpaqueStippled32;
 	      vga256LowlevFuncs.fillRectTransparentStippled32 = 
@@ -1413,7 +1413,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
             else
             {
                 /* Set the bank, then clear it */
-#if !defined(__alpha__)
+#if !defined(__alpha__) && !defined(__powerpc__)
 		if (xf86bpp == 4)
 			vgaPhysPtr=vga16SetWrite(vgaVirtPtr);
 		else

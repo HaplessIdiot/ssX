@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.12 1996/12/31 04:18:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.13 1997/05/21 15:17:13 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -481,6 +481,13 @@ XkbSrvLedInfoPtr	sli;
 	map->maps[LED_NUM-1].mods.mask= 0;
 	map->maps[LED_NUM-1].mods.real_mods= 0;
 	map->maps[LED_NUM-1].mods.vmods= vmod_NumLockMask;
+
+/* Metro Link */
+	map->maps[LED_SCROLL-1].flags= XkbIM_NoExplicit;
+	map->maps[LED_SCROLL-1].which_mods= XkbIM_UseLocked;
+	map->maps[LED_SCROLL-1].mods.mask= Mod3Mask;
+	map->maps[LED_SCROLL-1].mods.real_mods= Mod3Mask;
+/* Metro Link */
     }
     sli= XkbFindSrvLedInfo(xkbi->device,XkbDfltXIClass,XkbDfltXIId,0);
     if (sli)

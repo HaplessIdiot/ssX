@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgarctstp8.c,v 3.3 1996/12/09 11:54:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgarctstp8.c,v 3.4 1996/12/23 06:59:57 dawes Exp $ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -491,7 +491,7 @@ vga2568FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     }
 }
 
-#if defined(SPEEDUP) || defined(__alpha__)
+#if defined(SPEEDUP) || defined(__alpha__) || defined(__powerpc__)
 void
 vga2568FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
     DrawablePtr	    pDrawable;

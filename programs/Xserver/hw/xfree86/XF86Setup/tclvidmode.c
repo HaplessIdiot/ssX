@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.7 1997/03/24 13:08:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.8 1997/04/08 10:11:08 hohndel Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -54,6 +54,7 @@
 #define V_CSYNC		0x040
 #define V_PCSYNC	0x080
 #define V_NCSYNC	0x100
+#define V_HSKEW		0x200
 
 static int (*savErrorFunc)();
 static int errorOccurred;
@@ -92,6 +93,11 @@ static int modeline2list(interp, mode_line)
 	chkflag(V_PCSYNC," +csync");
 	chkflag(V_NCSYNC," -csync");
 	chkflag(V_DBLSCAN," doublescan");
+	if (mode_line->flags & V_HSKEW) {
+	    char tmpbuf[16];
+	    sprintf(tmpbuf, "%d", mode_line->hskew);
+	    Tcl_AppendResult(interp, " doublescan ", tmpbuf, (char *) NULL);
+	}
 #undef chkflag
 	return TCL_OK;
 }
@@ -109,6 +115,8 @@ static int list2modeline(interp, buf, mode_line)
 
 	TclOkay(Tcl_SplitList(interp, buf, &ac, &av));
 	if (ac < 9) return TCL_ERROR;
+
+	mode_line->hskew = 0;
 
 	TclOkay(Tcl_GetDouble(interp, av[0], &tmpdbl));
 	mode_line->dotclock = (int) (tmpdbl * 1000.0);
@@ -141,8 +149,12 @@ static int list2modeline(interp, buf, mode_line)
 	    else if (!strcmp(av[i], "+csync"))     mode_line->flags |= V_PCSYNC;
 	    else if (!strcmp(av[i], "-csync"))     mode_line->flags |= V_NCSYNC;
 	    else if (!strcmp(av[i], "doublescan")) mode_line->flags |= V_DBLSCAN;
-	    else {
-	    	Tcl_SetResult(interp, "Invalid mode flag", TCL_STATIC);
+	    else if (!strcmp(av[i], "hskew") && i < ac-1) {
+	    	mode_line->flags |= V_HSKEW;
+		TclOkay(Tcl_GetInt(interp, av[++i], &tmpint));
+		mode_line->hskew = (unsigned short) tmpint;
+	    } else {
+	    	Tcl_AppendResult(interp, "Invalid mode flag: ", av[i], (char *)0);
 		return TCL_ERROR;
 	    }
 	}
@@ -205,6 +217,10 @@ XF86vid_Init(interp)
 
      Tcl_CreateCommand(interp, "xf86vid_getmonitor",
 	     TCL_XF86VidModeGetMonitor, (ClientData) NULL,
+	     (void (*)()) NULL);
+
+     Tcl_CreateCommand(interp, "xf86vid_getclocks",
+	     TCL_XF86VidModeGetDotClocks, (ClientData) NULL,
 	     (void (*)()) NULL);
 
      return TCL_OK;
@@ -357,6 +373,7 @@ TCL_XF86VidModeModModeLine(clientData, interp, argc, argv)
 	mode_line.hsyncstart =	mode_info.hsyncstart;
 	mode_line.hsyncend =	mode_info.hsyncend;
 	mode_line.htotal =	mode_info.htotal;
+	mode_line.hskew =	mode_info.hskew;
 	mode_line.vdisplay =	mode_info.vdisplay;
 	mode_line.vsyncstart =	mode_info.vsyncstart;
 	mode_line.vsyncend =	mode_info.vsyncend;
@@ -492,6 +509,7 @@ TCL_XF86VidModeGetModeLine(clientData, interp, argc, argv)
 	mode_info.hsyncstart = mode_line.hsyncstart;
 	mode_info.hsyncend =   mode_line.hsyncend;
 	mode_info.htotal =     mode_line.htotal;
+	mode_info.hskew =      mode_line.hskew;
 	mode_info.vdisplay =   mode_line.vdisplay;
 	mode_info.vsyncstart = mode_line.vsyncstart;
 	mode_info.vsyncend =   mode_line.vsyncend;
@@ -516,7 +534,7 @@ TCL_XF86VidModeGetAllModeLines(clientData, interp, argc, argv)
 	int i, modecount, mode_flags;
 	Tk_Window topwin, tkwin;
 	XF86VidModeModeInfo **modelines;
-	char tmpbuf[200];
+	char tmpbuf[200], tmpbuf2[16];
 
         if (argc != 1 && !(argc==3 && !strcmp(argv[1],"-displayof"))) {
                 Tcl_SetResult(interp,
@@ -556,6 +574,11 @@ TCL_XF86VidModeGetAllModeLines(clientData, interp, argc, argv)
 		if (mode_flags & V_PCSYNC)    strcat(tmpbuf, " +csync");
 		if (mode_flags & V_NCSYNC)    strcat(tmpbuf, " -csync");
 		if (mode_flags & V_DBLSCAN)   strcat(tmpbuf, " doublescan");
+		if (mode_flags & V_HSKEW) {
+		    strcat(tmpbuf, " hskew ");
+		    sprintf(tmpbuf2, "%d", modelines[i]->hskew);
+		    strcat(tmpbuf, tmpbuf2);
+		}
 		Tcl_AppendElement(interp, tmpbuf);
 	    }
 	    XtFree((char *) modelines);
@@ -759,6 +782,53 @@ TCL_XF86VidModeSwitchToMode(clientData, interp, argc, argv)
 	sprintf(interp->result, "%d",
 		XF86VidModeSwitchToMode(Tk_Display(tkwin),
 		    Tk_ScreenNumber(tkwin), &mode_line));
+	return TCL_OK;
+}
+
+/*
+   Implements the xf86vid_getclocks command which
+   returns a list of available dot clocks
+*/
+
+int
+TCL_XF86VidModeGetDotClocks(clientData, interp, argc, argv)
+    ClientData	clientData;
+    Tcl_Interp	*interp;
+    int		argc;
+    char	*argv[];
+{
+	Tk_Window tkwin;
+	int flags, numclocks, maxclocks, *clocks, i;
+	char tmpbuf[200];
+
+        if (argc != 1) {
+                Tcl_SetResult(interp,
+		    "Usage: xf86vid_getclocks", TCL_STATIC);
+                return TCL_ERROR;
+        }
+
+	if ((tkwin = Tk_MainWindow(interp)) == NULL)
+		return TCL_ERROR;
+
+	if (!XF86VidModeGetDotClocks(Tk_Display(tkwin),
+		    Tk_ScreenNumber(tkwin),
+		    &flags, &numclocks, &maxclocks, &clocks))
+	{
+		Tcl_AppendResult(interp,
+			"Unable to get dot clock information",
+			(char *) NULL);
+		return TCL_ERROR;
+	} else {
+		sprintf(tmpbuf, "%d",
+		    maxclocks * ((flags&CLKFLAG_PROGRAMABLE)? -1: 1));
+		Tcl_SetResult(interp, tmpbuf, TCL_VOLATILE);
+
+		for (i = 0; i < numclocks; i++) {
+		    sprintf(tmpbuf, "%d", clocks[i]);
+		    Tcl_AppendElement(interp, tmpbuf);
+		}
+	}
+
 	return TCL_OK;
 }
 

@@ -28,7 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: cfbmskbits.h,v 4.25 94/04/17 20:28:55 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.3 1996/12/28 08:11:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.4 1997/05/27 06:30:51 dawes Exp $ */
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
 #include	"X.h"
@@ -805,6 +805,18 @@ if ((x) + (w) <= PPW) {\
     else \
         q = (*(psrcstip)) >> -m; \
     q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
+    *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
+}
+/* I just copied this to get the linker satisfied on PowerPC,
+ * so this may not be correct at all.
+ */
+#define getstipplepixels24(psrcstip,xt,ones,psrcpix,destpix,stipindex) \
+{ \
+    PixelGroup q, srcpix, srcstip; \
+    unsigned long src; \
+    register unsigned int stipidx; \
+    q = *(psrcstip) >> (xt); \
+    q = ((ones) ? q : ~q) & 1; \
     *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
 }
 #else /* BITMAP_BIT_ORDER == LSB */

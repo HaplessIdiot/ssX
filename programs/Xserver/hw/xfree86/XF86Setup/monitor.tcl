@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.8 1996/09/29 12:51:11 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.9 1996/12/27 06:54:07 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -242,8 +242,6 @@ proc Monitor_setstandard { win c } {
 }
 
 proc Monitor_sync_ent { win c dir } {
-	global tk_version
-
 	set w [winpathprefix $win]
 	if { [string compare $dir horz] == 0 } {
 		set min 20.0
@@ -264,15 +262,6 @@ proc Monitor_sync_ent { win c dir } {
 	set rnglist [split $rng ,]
 	set count 0
 	catch {$c delete ${dir}rng}
-	if { $tk_version == 4.0 } {
-		# workaround a bug in Tk4.0 canvases
-		set beg $min
-		set end $max
-		catch {$c delete blank}
-		$c create rectangle \
-			[expr $x1] [expr $y1] [expr $x2] [expr $y2] \
-			-fill white -tag blank
-	}
 	foreach elem $rnglist {
 		set beg [set end 0]
 		set elem [zap_white $elem]
