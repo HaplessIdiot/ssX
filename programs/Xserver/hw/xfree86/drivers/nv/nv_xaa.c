@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.13 2000/02/08 17:19:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.14 2000/02/25 21:02:57 dawes Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -723,8 +723,6 @@ NVAccelInit(ScreenPtr pScreen)
 #if 0
     /* Solid lines, don't work yet */
     infoPtr->SolidLineFlags = NO_PLANEMASK;
-    infoPtr->PolySegmentThinSolidFlags = NO_PLANEMASK;
-    infoPtr->PolylinesThinSolidFlags = NO_PLANEMASK;
     infoPtr->SetupForSolidLine = NVSetupForSolidLine;
     infoPtr->SubsequentSolidHorVertLine =
 		NVSubsequentSolidHorVertLine;
@@ -737,6 +735,8 @@ NVAccelInit(ScreenPtr pScreen)
 		NVSubsequentSolidHorVertLine;
     infoPtr->SubsequentSolidBresenhamLine = 
 		NVSubsequentSolidBresenhamLine;
+    infoPtr->PolySegmentThinSolidFlags = NO_PLANEMASK;
+    infoPtr->PolylinesThinSolidFlags = NO_PLANEMASK;
     infoPtr->PolySegmentThinSolid =
 		NVPolySegmentThinSolidWrapper;
     infoPtr->PolylinesThinSolid = 
