@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/14 1998/06/16 15:23:15 msr $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.17 1999/01/11 09:39:26 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.18 1999/01/31 02:24:39 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -30,8 +30,8 @@ FREETYPEPROFILEOBJS = FreeType/profiled/?*.o
       XTTSTATICOBJS = X-TrueType/$(STATIC_OBJSDIR)?*.o
        XTTDEBUGOBJS = X-TrueType/debugger/?*.o
      XTTPROFILEOBJS = X-TrueType/profiled/?*.o
-#endif
            XTTDONES = X-TrueType/DONE
+#endif
 #endif
 
        SUBDIRS = bitmap fontfile fc Speedo Type1 $(FREETYPEDIRS) \
