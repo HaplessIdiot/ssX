@@ -84,6 +84,12 @@ our usual support address.
   <item>Initial release of the PC98 PowerWindowLB(S3) server. This server
 	is based on the PC-AT S3 server.
 </itemize>
+<sect1> Number Nine Imagine 128 server
+<p>
+<itemize>
+  <item>A new server for the Number Nine Imagine 128 card is included.
+	This server is currently not accelerated.
+</itemize>
 <sect1> Trident driver (SVGA server)
 <p>
 <itemize>
@@ -345,6 +351,7 @@ The XFree86 3.1.2B binary beta release is distributed as a upgrade to
 <tag/BetaReport/	Beta test report template form
 <tag/X312B8514.tgz/	8514/A server
 <tag/X312BAGX.tgz/	AGX server
+<tag/X312BI128.tgz/	I128 server
 <tag/X312BMa32.tgz/	Mach 32 server
 <tag/X312BMa64.tgz/	Mach 64 server
 <tag/X312BMa8.tgz/	Mach 8 server
@@ -366,6 +373,7 @@ The XFree86 3.1.2B binary beta release is distributed as a upgrade to
 BetaReport	   Beta test report template form
 X312B8514.tgz	   8514/A server
 X312BAGX.tgz	   AGX server
+X312BI128.tgz	   I128 server
 X312BMa32.tgz	   Mach 32 server
 X312BMa64.tgz	   Mach 64 server
 X312BMa8.tgz	   Mach 8 server
@@ -414,7 +422,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.11 1995/12/28 01:32:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.12 1995/12/28 01:59:22 dawes Exp $
 </verb>
 
 </article>

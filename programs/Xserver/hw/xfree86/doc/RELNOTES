@@ -88,7 +88,13 @@
      o  Initial release of the PC98 PowerWindowLB(S3) server. This
         server is based on the PC-AT S3 server.
 
-  2.3.  Trident driver (SVGA server)
+  2.3.  Number Nine Imagine 128 server
+
+
+     o  A new server for the Number Nine Imagine 128 card is included.
+        This server is currently not accelerated.
+
+  2.4.  Trident driver (SVGA server)
 
 
      o  TGUI9440 is now fully supported by the SVGA server.
@@ -103,7 +109,7 @@
      o  Check README.trident distributed with this release for full
         details.
 
-  2.4.  ARK driver (SVGA server)
+  2.5.  ARK driver (SVGA server)
 
 
      o  The ICS5342 clock support (required for the Diamond Stealth64
@@ -111,7 +117,7 @@
         version.  A problem with it has been found and fixed in 3.1.2B,
         but it hasn't been tested.
 
-  2.5.  S3 server
+  2.6.  S3 server
 
 
      o  Workaround for the hardware bug in some new Trio32 chips that
@@ -120,7 +126,6 @@
 
 
                   Option "trio32_fc_bug"
-
 
 
 
@@ -143,7 +148,7 @@
      o  The AT&T20C409 RAMDAC now supported at clocks up to 135MHz in
         8bpp mode.
 
-  2.6.  Mach64 server
+  2.7.  Mach64 server
 
 
      o  The Mach64 CT (also known as the 264CT, or 215CT22200) chip is
@@ -195,12 +200,11 @@
            and T&T20C409 RAMDACs is blue instead of black in 16bpp and
            32bpp modes.
 
-
         +  When using the software cursor, after switching to the
            console and back, it leaves ``droppings'' when entering and
            exiting windows (this bug is also present in 3.1.2).
 
-  2.7.  ET4000/W32 server
+  2.8.  ET4000/W32 server
 
 
      o  Support for the STG1703 RAMDAC/clock has been added.  To use the
@@ -226,14 +230,14 @@
 
 
 
-  2.8.  SiS 86C201 support
+  2.9.  SiS 86C201 support
 
 
      o  Support is included in 3.1.2B for the SiS 86C201 PCI graphics
         card.  It is currently only supported by the VGA16 and Mono
         servers.  Support for 256 colour operation is being worked on.
 
-  2.9.  Client/Library changes
+  2.10.  Client/Library changes
 
 
      o  The following new clients have been added:
@@ -255,6 +259,8 @@
 
      o  Fix a problem that can cause the X server to crash when running
         xvidtune.
+
+
 
      o  A new pointer keyword RepeatMiddle has been added to support
         dual-protocol 3-button mice which repeat the previous button
@@ -320,15 +326,15 @@
         20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
         currently does not work.
 
+
+
      o  The IBM RGB526 RAMDAC used on the newer Diamond Stealth64 Video
         3240/3400 cards isn't yet auto-detected, but it will work if the
         following line is added to the Device section of your XF86Config
         file:
 
 
-
-
-             Ramdac "ibm_rgb526"
+                  Ramdac "ibm_rgb526"
 
 
 
@@ -386,12 +392,12 @@
   3.13.  SuperProbe
 
 
+
+
      o  Added detection for C&T 65548, Cirrus CL-GD7543/1, AT&T 20C409,
         AT&T20C499, and fixed an incorrect ET4000/W32 probe problem.
 
   3.14.  Client/Library changes
-
-
 
 
      o  The xdm security fix from the X Consortium's fix-13 is included.
@@ -419,6 +425,7 @@
        BetaReport         Beta test report template form
        X312B8514.tgz      8514/A server
        X312BAGX.tgz       AGX server
+       X312BI128.tgz      I128 server
        X312BMa32.tgz      Mach 32 server
        X312BMa64.tgz      Mach 64 server
        X312BMa8.tgz       Mach 8 server
@@ -453,13 +460,6 @@
 
 
 
-
-
-
-
-
-
-
           mkdir /usr/XFree86-3.1.2B
           cd /usr/XFree86-3.1.2B
           gzip -d < /var/tmp/X312BS3.tgz | tar vxf -
@@ -478,7 +478,7 @@
   /usr/XFree86-3.1.2A directory.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.12 1995/12/28 01:59:22 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.13 1995/12/28 02:21:20 dawes Exp $
 
 
 
