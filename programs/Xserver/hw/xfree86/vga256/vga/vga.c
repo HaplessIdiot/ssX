@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.2 1994/05/31 14:24:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.3 1994/06/15 15:44:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -197,6 +197,7 @@ Bool vgaWriteFlag;
 Bool vgaUse2Banks;
 int  vgaInterlaceType;
 OFlagSet vgaOptionFlags;
+extern Bool vgaPowerSaver;
 
 #ifdef MONOVGA
 int vgaReadseg=0;
@@ -396,8 +397,12 @@ vgaProbe()
 	vgaUse2Banks = Drivers[i]->ChipUse2Banks;
 	vgaInterlaceType = Drivers[i]->ChipInterlaceType;
 	vgaOptionFlags = Drivers[i]->ChipOptionFlags;
+	OFLG_SET(OPTION_POWER_SAVER, &vgaOptionFlags);
 
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
+
+	if (OFLG_ISSET(OPTION_POWER_SAVER, &vga256InfoRec.options))
+	    vgaPowerSaver = TRUE;
 
 	/* if Virtual given: is the virtual size too big? */
 #ifdef BANKEDMONOVGA

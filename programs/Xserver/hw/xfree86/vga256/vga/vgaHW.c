@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.3 1994/05/31 14:24:05 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.4 1994/06/13 14:54:08 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -113,6 +113,8 @@ extern void SetTimeSinceLastInputEvent();
 
 static int currentGraphicsClock = -1;
 static int currentExternClock = -1;
+
+Bool vgaPowerSaver = FALSE;
 
 #define new ((vgaHWPtr)vgaNewVideoState)
 
@@ -263,16 +265,23 @@ vgaSaveScreen (pScreen, on)
      ScreenPtr     pScreen;
      Bool          on;
 {
-  unsigned char   state;
+  unsigned char   state, state2;
 
   if (on)
     SetTimeSinceLastInputEvent();
   if (xf86VTSema) {
     outb(0x3C4,1);
     state = inb(0x3C5);
+    outb(vgaIOBase + 4, 0x17);
+    state2 = inb(vgaIOBase + 5);
   
-    if (on) state &= 0xDF;
-    else    state |= 0x20;
+    if (on) {
+      state &= 0xDF;
+      state2 |= 0x80;
+    } else {
+      state |= 0x20;
+      state2 &= ~0x80;
+    }
     
     /*
      * turn off screen if necessary
@@ -280,6 +289,10 @@ vgaSaveScreen (pScreen, on)
     (*vgaSaveScreenFunc)(SS_START);
     outw(0x3C4, 0x0100);              /* syncronous reset */
     outw(0x3C4, (state << 8) | 0x01); /* change mode */
+    if (vgaPowerSaver) {
+      outb(vgaIOBase + 4, 0x17);
+      outb(vgaIOBase + 5, state2);
+    }
     outw(0x3C4, 0x0300);              /* syncronous reset */
     (*vgaSaveScreenFunc)(SS_FINISH);
 
