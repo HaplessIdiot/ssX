@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.26 2002/01/25 21:56:13 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.27 2002/01/27 14:56:47 dawes Exp $
  */
 
 #include "vesa.h"
@@ -150,7 +150,6 @@ static const char *miscfbSymbols[] = {
     "xf4bppScreenInit",
     "afbScreenInit",
     "mfbScreenInit",
-    "cfb24_32ScreenInit",
     NULL
 };
 
@@ -425,7 +424,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 {
     VESAPtr pVesa;
     VbeInfoBlock *vbe;
-    DisplayModePtr pMode, tmp;
+    DisplayModePtr pMode, p;
     VbeModeInfoBlock *mode;
     ModeInfoData *data = NULL;
     char *mod = NULL;
@@ -434,6 +433,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     rgb rzeros = {0, 0, 0};
     pointer pVbeModule, pDDCModule;
     int i;
+    int flags24 = 0;
 
     if (flags & PROBE_DETECT)
 	return (FALSE);
@@ -474,15 +474,50 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     pScrn->progClock = TRUE;
     pScrn->rgbBits = 8;
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb)) {
+    vbe = VBEGetVBEInfo(pVesa->pVbe);
+    pVesa->major = (unsigned)(vbe->VESAVersion >> 8);
+    pVesa->minor = vbe->VESAVersion & 0xff;
+    pVesa->vbeInfo = vbe;
+    pScrn->videoRam = vbe->TotalMemory * 64;
+
+    /* Find what types of depth 24 modes are available. */
+    i = 0;
+    p = NULL;
+    while (vbe->VideoModePtr[i] != 0xffff) {
+	int id = vbe->VideoModePtr[i++];
+
+	if ((mode = VBEGetModeInfo(pVesa->pVbe, id)) == NULL)
+	    continue;
+	if ((mode->ModeAttributes & (1 << 0)) /* usable */ &&
+	    mode->RedMaskSize + mode->GreenMaskSize +
+	    mode->BlueMaskSize == 24) {
+	    switch (mode->BitsPerPixel) {
+	    case 24:
+		flags24 |= Support24bppFb;
+		break;
+	    case 32:
+		flags24 |= Support32bppFb;
+		break;
+	    }
+	}
+    }
+
+    /*
+     * Setting this avoids a "Driver can't support depth 24" message,
+     * which could be misleading.
+     */
+    if (!flags24)
+	flags24 = Support24bppFb;
+
+    /* Prefer 24bpp for fb since it potentially allows larger modes. */
+    if (flags24 & Support24bppFb)
+	flags24 |= SupportConvert32to24 | PreferConvert32to24;
+
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24)) {
         vbeFree(pVesa->pVbe);
 	return (FALSE);
     }
     xf86PrintDepthBpp(pScrn);
-
-    /* Get the depth24 pixmap format */
-    if (pScrn->depth == 24 && pVesa->pix24bpp == 0)
-	pVesa->pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /* color weight */
     if (pScrn->depth > 8 && !xf86SetWeight(pScrn, rzeros, rzeros)) {
@@ -496,12 +531,6 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86SetGamma(pScrn, gzeros);
-
-    vbe = VBEGetVBEInfo(pVesa->pVbe);
-    pVesa->major = (unsigned)(vbe->VESAVersion >> 8);
-    pVesa->minor = vbe->VESAVersion & 0xff;
-    pVesa->vbeInfo = vbe;
-    pScrn->videoRam = vbe->TotalMemory * 64 * 1024;
 
     if (pVesa->major >= 2) {
 	/* Load ddc module */
@@ -526,7 +555,13 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, DEBUG_VERB,
 			"Searching for matching VESA mode(s):\n");
 
+    /*
+     * Check the available BIOS modes, and extract those that match the
+     * requirements into the modePool.  Note: modePool is a NULL-terminated
+     * list.
+     */
     i = 0;
+    p = NULL;
     while (vbe->VideoModePtr[i] != 0xffff) {
 	int id = vbe->VideoModePtr[i++];
 
@@ -638,7 +673,6 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	pMode = xcalloc(sizeof(DisplayModeRec), 1);
-	pMode->prev = pMode->next = NULL;
 
 	pMode->status = MODE_OK;
 	pMode->type = M_T_BUILTIN;
@@ -647,27 +681,19 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	pMode->HDisplay = mode->XResolution;
 	pMode->VDisplay = mode->YResolution;
 
-	data = xcalloc(sizeof(ModeInfoData), 1);
+	data = xnfcalloc(sizeof(ModeInfoData), 1);
 	data->mode = id;
 	data->data = mode;
 	pMode->PrivSize = sizeof(ModeInfoData);
 	pMode->Private = (INT32*)data;
-
-	if (pScrn->modePool == NULL) {
+	pMode->next = NULL;
+	if (p == NULL) {
 	    pScrn->modePool = pMode;
-	    pMode->next = pMode->prev = pMode;
+	} else {
+	    p->next = pMode;
 	}
-	else {
-	    tmp = pScrn->modePool;
-
-	    tmp->prev = pMode;
-	    while (tmp->next != pScrn->modePool)
-		tmp = tmp->next;
-	    tmp->next = pMode;
-	    pMode->prev = tmp;
-	    pMode->next = pScrn->modePool;
-	}
-
+	pMode->prev = NULL;
+	p = pMode;
     }
 
     xf86ErrorFVerb(DEBUG_VERB, "\n");
@@ -676,56 +702,17 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	   (vbe->TotalMemory * 65536) / (1024 * 1024));
 
     pVesa->mapSize = vbe->TotalMemory * 65536;
+#if 0
+    pScrn->videoRam = pVesa->mapSize / 1024;
+#endif
     if (pScrn->modePool == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No matching modes\n");
         vbeFree(pVesa->pVbe);
 	return (FALSE);
     }
 
-    /* Match modes from the Display subsection with the suitable BIOS modes. */
-    for (i = 0; pScrn->modePool != NULL && pScrn->display->modes[i] != NULL; i++) {
-	pMode = pScrn->modePool;
-
-	do {
-	    DisplayModePtr next = pMode->next;
-	    int width, height;
-
-	    if (sscanf(pScrn->display->modes[i], "%dx%d", &width, &height) == 2 &&
-		width == pMode->HDisplay && height == pMode->VDisplay) {
-		pMode->name = strdup(pScrn->display->modes[i]);
-
-		pMode->prev->next = pMode->next;
-		pMode->next->prev = pMode->prev;
-
-		if (pScrn->modes == NULL) {
-		    pScrn->modes = pMode;
-		    pMode->next = pMode->prev = pMode;
-		}
-		else {
-		    tmp = pScrn->modes;
-
-		    tmp->prev = pMode;
-		    while (tmp->next != pScrn->modes)
-			tmp = tmp->next;
-		    pMode->prev = tmp;
-		    tmp->next = pMode;
-		    pMode->next = pScrn->modes;
-		}
-		if (pMode == pScrn->modePool)
-		    pScrn->modePool = (next == pMode) ? NULL : next;
-		break;
-	    }
-	    pMode = next;
-	} while (pMode != pScrn->modePool && pScrn->modePool != NULL);
-    }
-
-    /* If there are no matches, use all of the relevant BIOS modes. */
-    if (pScrn->modes == NULL)
-	pScrn->modes = pScrn->modePool;
-
     /*
-     * Fill in names for all modePool modes that weren't already assigned
-     * a name.
+     * Fill in names for all modePool modes.
      */
     pMode = pScrn->modePool;
     do {
@@ -740,18 +727,30 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	    }
 	}
 	pMode = pMode->next;
-    } while (pMode && (pMode != pScrn->modePool));
+    } while (pMode);
 
-    tmp = pScrn->modes;
+    i = xf86ValidateModes(pScrn, NULL, pScrn->display->modes, 
+			  NULL, NULL, 0, 2048, 1, 0, 2048,
+			  pScrn->display->virtualX,
+			  pScrn->display->virtualY,
+			  pVesa->mapSize, LOOKUP_BEST_REFRESH);
+
+    if (i <= 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes\n");
+        vbeFree(pVesa->pVbe);
+	return (FALSE);
+    }
+
+    xf86PruneDriverModes(pScrn);
+
+    pMode = pScrn->modes;
     do {
-	mode = ((ModeInfoData*)tmp->Private)->data;
-	if (mode->XResolution > pScrn->virtualX) {
-	    pScrn->virtualX = mode->XResolution;
+	mode = ((ModeInfoData*)pMode->Private)->data;
+	if (mode->BytesPerScanline > pVesa->maxBytesPerScanline) {
 	    pVesa->maxBytesPerScanline = mode->BytesPerScanline;
 	}
-	if (mode->YResolution > pScrn->virtualY)
-	    pScrn->virtualY = mode->YResolution;
-    } while ((tmp = tmp->next) != pScrn->modes);
+	pMode = pMode->next;
+    } while (pMode != pScrn->modes);
 
     if (pVesa->monitor != NULL) {
 	pMode = pScrn->modes;
@@ -771,26 +770,26 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 		    break;
 		}
 
-	    tmp = NULL;
+	    p = NULL;
 	    if (maxClock) {
 		for (; last != NULL; last = last->next) {
 		    if (pMode->name != NULL &&
 			strcmp(pMode->name, last->name) == 0 &&
 			last->Clock <= maxClock) {
-			tmp = last;
+			p = last;
 			/* keep looping to find the best refresh */
 		    }
 		}
 	    }
 
-	    if (tmp != NULL) {
+	    if (p != NULL) {
 		int from = (int)(&((DisplayModePtr)0)->Clock);
 		int to = (int)(&((DisplayModePtr)0)->ClockIndex);
 
 		data->mode |= (1 << 11);
 
 		/* copy the "interesting" information */
-		memcpy((char*)pMode + from, (char*)tmp + from, to - from);
+		memcpy((char*)pMode + from, (char*)p + from, to - from);
 		data = (ModeInfoData*)pMode->Private;
 		data->block = xcalloc(sizeof(VbeCRTCInfoBlock), 1);
 		data->block->HorizontalTotal = pMode->HTotal;
@@ -875,13 +874,8 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	    switch (pScrn->bitsPerPixel) {
 		case 8:
 		case 16:
-		case 32:
-		    break;
 		case 24:
-		  if (pVesa->pix24bpp == 32) {
-			mod = "xf24_32bpp";
-			reqSym = "cfb24_32ScreenInit";
-		    }
+		case 32:
 		    break;
 		default:
 		    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1052,18 +1046,9 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	case 0x4:	/* Packed pixel */
 	case 0x6:	/*  Direct Color */
 	    switch (pScrn->bitsPerPixel) {
-		case 24:
-		    if (pVesa->pix24bpp == 32) {
-		        if (!cfb24_32ScreenInit(pScreen,
-			    pVesa->shadowFB ? pVesa->shadowPtr : pVesa->base,
-						pScrn->virtualX, pScrn->virtualY,
-					 	pScrn->xDpi, pScrn->yDpi,
-						pScrn->displayWidth))
-			    return (FALSE);
-			break;
-		    }
 		case 8:
 		case 16:
+		case 24:
 		case 32:
 		    if (!fbScreenInit(pScreen,
 			    pVesa->shadowFB ? pVesa->shadowPtr : pVesa->base,
