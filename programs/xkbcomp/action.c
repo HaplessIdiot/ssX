@@ -1,5 +1,4 @@
-/* $XConsortium: action.c /main/10 1996/03/01 14:31:49 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/action.c,v 3.2 1996/08/26 14:44:09 dawes Exp $ */
+/* $TOG: action.c /main/11 1997/06/30 05:35:35 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86: xc/programs/xkbcomp/action.c,v 3.3 1997/06/25 10:41:50 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"

@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.18 1997/07/05 08:45:12 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.19 1997/07/06 05:30:35 dawes Exp $ */
 
 /*
  * 
@@ -892,7 +892,7 @@ static void get_gcc_incdir(inFile)
   FILE* inFile;
 {
   static char* gcc_path[] = {
-#ifdef linux
+#if defined(linux) || defined(__OpenBSD__)
     "/usr/bin/cc",	/* for Linux PostIncDir */
 #endif
     "/usr/local/bin/gcc",
