@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.80 2001/04/20 16:54:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.81 2001/05/18 16:03:13 tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -376,10 +376,6 @@ extern int errno;
 # define USE_VT_SYSREQ
 
 # define POSIX_TTY
-
-# ifdef __sparc__
-#  define DEV_MEM "/dev/fb"
-# endif
 
 #endif /* linux */
 

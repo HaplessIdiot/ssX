@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.52 2001/05/23 14:39:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.53 2001/05/25 18:19:15 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -397,7 +397,15 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 	pVidMem->initialised = TRUE;
 }
 
-
+#ifdef __sparc__
+/* Basically, you simply cannot do this on Sparc.  You have to do something portable
+ * like use /dev/fb* or mmap() on /proc/bus/pci/X/Y nodes. -DaveM
+ */
+static pointer mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
+{
+	return NULL;
+}
+#else
 static pointer
 mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
@@ -452,6 +460,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 #endif
     return (char *)base + alignOff;
 }
+#endif /* !(__sparc__) */
     
 static void
 unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
