@@ -68,7 +68,7 @@ in this Software without prior written authorization from the X Consortium.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.11 1997/01/18 07:02:46 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.12 1997/06/11 12:24:49 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	"misc.h"
@@ -340,7 +340,9 @@ MakeNewConnections()
 	if ((client = clients[i]) != NullClient) {
 	    oc = (OsCommPtr) client->osPrivate;
 	    if (oc && (oc->conn_time != 0) &&
-		    (connect_time - oc->conn_time) >= TimeOutValue)
+		    (connect_time - oc->conn_time) >= TimeOutValue ||
+		    client->noClientException != FSSuccess &&
+		    client->clientGone != CLIENT_GONE)
 		CloseDownClient(client);
 	}
     }

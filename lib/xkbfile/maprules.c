@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.8 1996/12/24 08:47:02 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.9 1997/06/22 10:16:54 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -1253,17 +1253,17 @@ XkbRF_GetNamesProp(dpy,rf_rtrn,vd_rtrn)
 Atom		rules_atom,actual_type;
 int		fmt,len;
 unsigned long	nitems,bytes_after;
-char		*data,*out;
+char            *data,*out;
 Status		rtrn;
 
     rules_atom= XInternAtom(dpy,_XKB_RF_NAMES_PROP_ATOM,True);
     if (rules_atom==None)	/* property cannot exist */
 	return False; 
     rtrn= XGetWindowProperty(dpy,DefaultRootWindow(dpy),rules_atom,
-				0L,_XKB_RF_NAMES_PROP_MAXLEN,False,
-				XA_STRING,&actual_type,
-				&fmt,&nitems,&bytes_after,
-				(unsigned char **)&data);
+                                0L,_XKB_RF_NAMES_PROP_MAXLEN,False,
+                                XA_STRING,&actual_type,
+                                &fmt,&nitems,&bytes_after,
+                                (unsigned char **)&data);
     if (rtrn!=Success)
 	return False;
     if (rf_rtrn)
@@ -1374,7 +1374,7 @@ char *	pval;
     }
 
     XChangeProperty(dpy,DefaultRootWindow(dpy),name,XA_STRING,8,PropModeReplace,
-                                      (unsigned char *)pval,len);
+                                                (unsigned char *)pval,len);
     _XkbFree(pval);
     return True;
 }

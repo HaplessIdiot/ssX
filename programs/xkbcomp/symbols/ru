@@ -1,8 +1,8 @@
-// $XConsortium: ru /main/3 1996/08/31 12:20:12 kaleb $
+// $TOG: ru /main/4 1997/06/10 06:56:17 kaleb $
 
 
 
-// $XFree86: xc/programs/xkbcomp/symbols/ru,v 3.3 1996/12/28 08:25:05 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/ru,v 3.4 1997/02/16 10:27:43 hohndel Exp $
 
 partial alphanumeric_keys 
 xkb_symbols "toggle" {
@@ -119,7 +119,7 @@ xkb_symbols "basic" {
     key	<AD12> {	[    bracketright,	braceright	],
 			[Cyrillic_hardsign,Cyrillic_HARDSIGN	]	};
     key	<BKSL> {	[	backslash,	       bar	],
-			[	backslash,	       bar	]	};
+			[	backslash,             bar	]	};
 
     // End alphanumeric section
     

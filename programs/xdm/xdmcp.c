@@ -1,5 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.15 94/09/19 20:16:38 converse Exp $ */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.5 1997/02/16 10:27:39 hohndel Exp $ */
+/* $TOG: xdmcp.c /main/16 1997/02/27 11:05:56 kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.6 1997/03/10 10:12:48 hohndel Exp $ */
 
 /*
  * xdm - display manager daemon
