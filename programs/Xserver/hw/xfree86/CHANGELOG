@@ -1,4 +1,8 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 553. Hardware alpha blended cursors in the "nv" driver, new PCI IDs, and
+      a fix for a problem on PowerPC (Mark Vojkovich).
+ 552. "nv" driver workaround needed to let Xv continue to work after a 
+      suspend on some laptops (Pierre Lombard).
  551. Restore '--assembler-with-cpp' in AsCmd for Linux/mips, fixing the build
       on that platform (#5499, Guido Guenther).
  550. An alternative update for alphabetic four level cz, sk XKB maps.
@@ -15632,4 +15636,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2405 2002/11/25 22:58:34 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2406 2002/11/26 02:20:48 dawes Exp $
