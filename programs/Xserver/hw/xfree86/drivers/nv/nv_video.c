@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.2 2001/04/01 14:00:11 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1213,7 +1213,10 @@ XF86OffscreenImageRec NVOffscreenImages[2] =
 static void
 NVInitOffscreenImages (ScreenPtr pScreen)
 {
+#if 0
+   /* This doesn't seem to work */
     xf86XVRegisterOffscreenImages(pScreen, NVOffscreenImages, 2);
+#endif
 }
 
 #endif
