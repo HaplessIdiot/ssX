@@ -1,5 +1,4 @@
 /* $XConsortium: dixfont.h /main/21 1996/09/28 17:14:16 rws $ */
-/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.1 1996/12/23 07:09:25 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -22,6 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/programs/Xserver/include/dixfont.h,v 3.2 1997/07/10 08:17:42 hohndel Exp $ */
 
 #ifndef DIXFONT_H
 #define DIXFONT_H 1
@@ -29,10 +29,13 @@ SOFTWARE.
 #include "dix.h"
 #include "font.h"
 #include "closure.h"
+#include "fontstruct.h"
 
 #define NullDIXFontProp ((DIXFontPropPtr)0)
 
 typedef struct _DIXFontProp *DIXFontPropPtr;
+
+extern FPEFunctions *fpe_functions;
 
 extern int FontToXError(
 #if NeedFunctionPrototypes

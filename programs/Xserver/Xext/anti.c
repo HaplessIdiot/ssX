@@ -33,7 +33,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/anti.c,v 1.1 1998/11/15 04:30:09 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -69,8 +69,6 @@ GCFuncs XAntiGCFuncs = {
     XAntiChangeClip, XAntiDestroyClip, XAntiCopyClip
 };
 
-
-extern FPEFunctions *fpe_functions;
 
 int ProcXAntiDispatch (ClientPtr);
 int SProcXAntiDispatch (ClientPtr);

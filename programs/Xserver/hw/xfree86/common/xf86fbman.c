@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.4 1998/08/29 05:43:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.5 1998/11/15 04:30:19 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -49,7 +49,7 @@ xf86InitFBManager(
 
    REGION_SUBTRACT(pScreen, &FullRegion, &FullRegion, &ScreenRegion);
 
-   ret = xf86InitFBManagerRegions(pScreen, &FullRegion);
+   ret = xf86InitFBManagerRegion(pScreen, &FullRegion);
 
    REGION_UNINIT(pScreen, &ScreenRegion);
    REGION_UNINIT(pScreen, &FullRegion);
