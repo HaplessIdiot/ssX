@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: FreeBSD.cf,v 1.3 2000/08/17 19:41:45 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.131 2003/05/27 21:56:39 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.132 2003/07/01 19:16:32 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -482,7 +482,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /*
  * A hack to work around an optimization problem with gcc 2.95.2 - 2.95.4
  */
-#if OSMajorVersion == 4
+#if (GccMajorVersion == 2 && GccMinorVersion == 95)
 #define GccOptBug295
 #endif
 
