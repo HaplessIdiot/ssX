@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*-
  * cfbbstore.c --
  *	Functions required by the backing-store implementation in MI.
