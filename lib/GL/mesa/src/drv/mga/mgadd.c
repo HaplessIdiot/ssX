@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.10 2001/04/10 16:07:50 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.12tsi Exp $ */
 
 
 #include "mtypes.h"
@@ -114,8 +114,9 @@ static const GLubyte *mgaDDGetString( GLcontext *ctx, GLenum name )
 
 
 
-static void mgaBufferSize(GLcontext *ctx, GLuint *width, GLuint *height)
+static void mgaBufferSize(GLframebuffer *buffer, GLuint *width, GLuint *height)
 {
+   GET_CURRENT_CONTEXT(ctx);
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 
    /* Need to lock to make sure the driDrawable is uptodate.  This

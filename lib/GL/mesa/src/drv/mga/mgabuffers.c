@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.c,v 1.9 2002/02/22 21:33:05 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.c,v 1.10tsi Exp $ */
 
 #include <stdio.h>
 #include "mgacontext.h"
@@ -235,7 +235,7 @@ void mgaUpdateRects( mgaContextPtr mmesa, GLuint buffers )
 
 
 
-GLboolean mgaDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
+void mgaDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 
@@ -251,7 +251,6 @@ GLboolean mgaDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
       mmesa->draw_buffer = MGA_FRONT;
       mgaXMesaSetFrontClipRects( mmesa );
       FALLBACK( ctx, MGA_FALLBACK_DRAW_BUFFER, GL_FALSE );
-      return GL_TRUE;
    }
    else if (mode == GL_BACK_LEFT)
    {
@@ -262,12 +261,10 @@ GLboolean mgaDDSetDrawBuffer(GLcontext *ctx, GLenum mode )
       mmesa->dirty |= MGA_UPLOAD_CONTEXT;
       mgaXMesaSetBackClipRects( mmesa );
       FALLBACK( ctx, MGA_FALLBACK_DRAW_BUFFER, GL_FALSE );
-      return GL_TRUE;
    }
    else
    {
       FALLBACK( ctx, MGA_FALLBACK_DRAW_BUFFER, GL_TRUE );
-      return GL_FALSE;
    }
 }
 
