@@ -430,8 +430,6 @@ DestroyColormap(client, value, id)
     XID		id;
 {
     ColormapPtr pmap = (ColormapPtr)value;
-    xfree(pmap->blue);
-    xfree(pmap->green);
     xfree(pmap);
     return Success;
 }

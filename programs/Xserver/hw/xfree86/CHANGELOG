@@ -1,6 +1,8 @@
 XFree86 4.0b (?? May 2000)
+ 167. Fix too many xfree calls in lbxproxy (#3907, Matthieu Herrb).
+ 166. Fix uninitialized fd_set mask in lbxproxy (#3906, Matthieu Herrb).
  165. Fix typo when printing HSync frequency when not a range
-      (Andrew Aitchison, #3895)
+      (#3895, Andrew Aitchison).
  164. Fix a window unmapping bug in the mioverlay code (Mark Vojkovich).
  163. Attempt to improve memory detection reliability in the Matrox driver
       (Mark Vojkovich). 
