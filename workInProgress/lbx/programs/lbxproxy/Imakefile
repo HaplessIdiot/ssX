@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.7 94/04/13 18:07:51 rws Exp $
-XCOMM $XFree86: xc/workInProgress/lbx/programs/lbxproxy/Imakefile,v 3.2 1995/01/15 10:41:13 dawes Exp $
+XCOMM $XFree86: xc/workInProgress/lbx/programs/lbxproxy/Imakefile,v 3.3 1995/05/27 03:24:53 dawes Exp $
 
 #include <Server.tmpl>
 #define       IHaveSubdirs
@@ -7,7 +7,11 @@ XCOMM $XFree86: xc/workInProgress/lbx/programs/lbxproxy/Imakefile,v 3.2 1995/01/
 SUBDIRS = di os
 LBXLIBS = di/libdilbx.a os/libos.a ../../lib/lbxutil/liblbxutil.a
 #ifndef i386IscArchitecture
+#ifndef LynxOSArchitecture
 OTHERLIBS = $(LBXXEXTLIB) $(XLIB) $(XAULIB) $(XDMCPLIB)
+#else
+OTHERLIBS = $(LBXXEXTLIB) $(XLIB) $(XAULIB) $(XDMCPLIB) -lbsd
+#endif
 #else
 OTHERLIBS = $(LBXXEXTLIB) $(XLIB) $(XAULIB) $(XDMCPLIB) -linet
 #endif
@@ -16,7 +20,11 @@ OTHERLIBS = $(LBXXEXTLIB) $(XLIB) $(XAULIB) $(XDMCPLIB) -linet
 MakeMutex($(SUBDIRS) $(LBXLIBS))
 #endif
 
+#ifndef LynxOSArchitecture
 ServerTarget(lbxproxy,$(SUBDIRS),NullParameter,$(LBXLIBS),$(OTHERLIBS))
+#else
+ServerTarget(lbxproxy,$(SUBDIRS),di/main.o,$(LBXLIBS),$(OTHERLIBS))
+#endif
 
 DependSubdirs($(SUBDIRS))
 
