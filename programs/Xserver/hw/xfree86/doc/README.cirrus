@@ -2,9 +2,10 @@
 		Information for Cirrus Chipset Users
 		------------------------------------
 
-A number of problems has been reported with the Cirrus driver in XFree86
-2.0 and 2.1, and it is hoped that these are alleviated in XFree86 2.1.1.
-Some important issues are described here. Please take the time to read this.
+A number of problems has been reported with the Cirrus driver in previous
+versions of XFree86, and it is hoped that these are alleviated in this
+version. Some important issues are described here. Please take the time
+to read this.
 
 Contents
 
@@ -16,22 +17,23 @@ Contents
 
 1 - Supported chipsets
 
-The driver is used in the 256 color SVGA server; the mono and 16-color
-servers are limited to VGA resolutions. The following chipsets by Cirrus
-Logic are supported:
+The driver is used in the 256 color SVGA server and the mono server (without
+acceleration). The following chipsets by Cirrus Logic are supported:
 
-CL-GD5420	ISA SVGA chipset, 1Mbyte; maximum dot clock is 50 MHz.
-		Acceleration with extended write modes (used for scrolling
-		and solid filling in this driver). This chipset can *not*
-		support 1024x768 non-interlaced. The 50 MHz clock may or
-		may not work.
+CL-GD5420	ISA SVGA chipset, 1Mbyte; maximum dot clock is 50 MHz (256
+		color server). Acceleration with extended write modes (used
+		for scrolling and solid filling in this driver). This chipset
+		can *not* support 1024x768 non-interlaced in 256 colors
 
 CL-GD5422	Enhanced version of the 5420 (32-bit internal memory
 		interface). Maximum dot clock is 80 MHz.
 
-CL-GD6205/6215/6225/6235
+CL-GD6205/6215/6225/6235/64xx
 		Laptop chipsets more or less compatible with the 5420. The
-		only dot clock supported is 25 MHz.
+		only dot clock supported is 25 MHz (more on an external
+		display). Some problems have been reported with these
+		chipsets (especially on external displays). Take note of
+		the "noaccel" option.
 
 CL-GD5424	Basically VLB version of the 5422, but resembles the
 		5426 in some respects.
@@ -45,14 +47,23 @@ CL-GD5428	Enhanced version of the 5426.
 CL-GD5429	Enhanced version of the 5428; officially supports higher
 		MCLK and has memory-mapped I/O (not used by the driver).
 
-CL-GD543x	Next generation 'Alpine' family chip with 64-bit internal
-		memory interface. There is some limited support for this
-		chipset, but it has not really been tested. It is hoped that
-		it will be usable with this driver (being largely compatible
-		with the 5426). The "nobitblt" option may be required.
+CL-GD5430	Similar to 5429, but with 543x core (32-bit host interface).
+		Does not have 64-bit memory mode.
+
+CL-GD5434	Next generation 'Alpine' family chip with 64-bit internal
+		memory interface. Used by the Orchid Kelvin 64. The chip
+		can only support 64-bit mode if equipped with 2 Mbytes of
+		memory; cards with only 1 Mbyte are severely limited.
+		There is some limited support for this chipset, but it has
+		not really been tested. It is hoped that it will be usable
+		with this driver (being largely compatible with the 5426).
 
 
 2 - Xconfig options
+
+Don't use the "Clocks" command. The clocks are fixed (i.e. not probed), and
+there is no variation between cards (other than the maximum supported clock
+for each chipset).
 
 The following options are of particular interest to the Cirrus driver. Each
 of them must be specified in the 'vga256' section of the Xconfig file.
@@ -72,11 +83,13 @@ Option "slow_dram"	(5424, 5426, 5428)
 	Normally, this register is not touched but it appears that the
 	standard CL-GD542x BIOS initializes it to a value that is somewhat
 	on the low side, which has a profound negative influence on
-	performance, and on the	stability of high dot clock modes. The actual
-	speed of DRAM is not a critical factor in the determining whether
-	this option is appropriate; one card with 80ns DRAM, which came with
-	a DOS driver utility to set the MCLK to this value (0x22), seems to
-	run stable with a value of 0x26.
+	performance, and on the	stability of high dot clock modes. This
+	is especially true if extended RAS timing is being used (this is
+	indicated in the server probe).
+	The actual speed of DRAM is not a critical factor in the determining
+	whether	this option is appropriate; one card with 80ns DRAM using
+	Extended RAS timing, which came with a DOS driver utility to set the
+	MCLK to this value (0x22), seems to run stable with a value of 0x26.
 
 	There are also (mainly brand name) cards whose customized BIOS does
 	initialize to a proper (high-performance) value. In this case, the
@@ -96,8 +109,8 @@ Option "slow_dram"	(5424, 5426, 5428)
 
 	0x1c	This is usually the BIOS default. Corresponds to 50 MHz.
 		It is forced by the "slow_dram" option.
-	0x22	Value that most cards seem to be able to handle, used by
-		the "fast_dram" option.
+	0x22	Value that most (Extended RAS) cards seem to be able to
+		handle, used by	the "fast_dram" option.
 	0x26	Highest value that seems to be stable on one card tested.
 		This is also the maximum value of the MCLK register
 		according to the CL-GD542x databook, however, in other
@@ -108,7 +121,6 @@ Option "slow_dram"	(5424, 5426, 5428)
 	high dot clocks), it is best not to use the "fast_dram" option.
 
 Option "no_bitblt"
-chipset "clgd5424"
 
 	This option, when used with a 5426/28/29/3x, will have the effect of
 	disabling the use of the BitBLT engine (which the 5424 does not
@@ -152,7 +164,9 @@ The accelerated driver uses 256 bytes of scratch space in video memory.
 Consequently, a 1024x1024 virtual resolution cannot be used with a 1Mbyte
 card. Recommended virtual resolutions are 800x600 on a 512K card,
 1152x900 on a card equipped with 1Mbyte of video memory, and 1600x1200
-on a 2 Mbyte card (apart from problems described above).
+on a 2 Mbyte card (apart from problems described above). With the mono
+server, the virtual screen can be twice as large (up to 2304x1776 with
+2Mbytes, subject to server restrictions).
 
 The use of a higher dot clock frequencies has a profound negative effect on
 the performance of graphics operations, especially BitBlt. With default MCLK
@@ -171,7 +185,7 @@ based card is a very poor match anyway.
 
 Any 5434-based cards (untested at the time of writing) should do much better
 at high dot clocks; the DRAM bandwidth is basically double that of the 542x
-series.
+series (with 2Mbytes or more installed; 1Mbyte is silly).
 
 
 4 - Trouble shooting
@@ -183,6 +197,10 @@ with standard 640x480x256 with a 25 MHz clock to make sure the driver works
 on your configuration. The default mode used will always be the first mode
 listed in the modes line, with the highest dot clock listed for that
 resolution in the timing section.
+
+Note that some VESA standard mode timings may give problems on some monitors
+(try increasing the horizontal sync pulse, i.e. the difference between
+the middle two horizontal timing values).
 
 There is a video signal, but the screen doesn't sync.
 
@@ -197,7 +215,7 @@ Sparklies/streaks at high dot clocks.
 	You can try the "fast_dram" option, or use a lower dot clock. If
 	it happens when moving something on the screen, try the
 	"fifo_conservative" option. If that is not sufficient, the "noaccel"
-	option or chipset "clgd5424" will probably help.
+	option or "no_bitblt" will probably help.
 
 'Wavy' screen, horizontal jitter.
 
@@ -209,9 +227,9 @@ Sparklies/streaks at high dot clocks.
 
  "1024x768"     65      1024 1116 1228 1328     768  783  789  818
 
-Crash or hang with after start-up (probably with a black screen).
+Crash or hang after start-up (probably with a black screen).
 
-	Try the "noaccel" option. If that works, try chipset "clgd5424" for
+	Try the "noaccel" option. If that works, try Option "no_bitblt" for
 	somewhat better performance. Check that the BIOS settings are OK;
 	in particular, disable caching of 0xa0000-0xaffff. Disabling hidden
 	DRAM refresh may also help.
@@ -221,7 +239,7 @@ timeout' messages from the server.
 
 	This may be related to a bug in one of the accelerated functions, or
 	a problem with the BitBLT engine. Try the "noaccel" option, or
-	the "nobitblt" option. Also check the BIOS settings.
+	the "no_bitblt" option. Also check the BIOS settings.
 
 Screen is 'wrapped' vertically.
 
@@ -229,14 +247,22 @@ Screen is 'wrapped' vertically.
 	megabytes of memory, try the "no_2mb_banksel" option, or use
 	videoram "1024" if you only use 1 Mbyte for the virtual screen.
 
+Corrupted text in terminal window.
+
+	This has been reported on non-standard video implementations.
+	Use the "no_bitblt" option.
+
 Chipset is not detected.
 
-	Try forcing the chipset to the nearest lower number.
+	Try forcing the chipset to a type that is most similar to what
+	you have.
+
+For other screen drawing related problems, try the "noaccel" option (if
+"no_bitblt" doesn't help).
 
 
 If are having driver-related problems that are not addressed by this document,
 or if you have found bugs in accelerated functions, you can try contacting
 the XFree86 team, or post in the Usenet newsgroup "comp.windows.x.i386unix".
 
-
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.0 1994/05/29 02:06:25 dawes Exp $
