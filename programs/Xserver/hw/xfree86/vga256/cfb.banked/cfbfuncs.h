@@ -1,4 +1,5 @@
 /* $XConsortium: cfbfuncs.h,v 1.1 94/03/28 21:44:53 dpw Exp $ */
+/* $XFree86$ */
 /*
  * cfbfuncs.h
  */
@@ -53,6 +54,16 @@ typedef struct _Cfbfunc{
 #endif
 );
     void (*teGlyphBlt8)();
+    void (*copyPlane1to8)(
+#if NeedFunctionPrototype
+		DrawablePtr,
+		DrawablePtr,
+		int,
+		RegionPtr,
+		DDXPointPtr,
+		unsigned long
+#endif
+);
 } CfbfuncRec, *CfbfuncPtr;
 
 extern CfbfuncRec cfbLowlevFuncs;

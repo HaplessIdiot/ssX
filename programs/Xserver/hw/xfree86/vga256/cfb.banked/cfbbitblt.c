@@ -1,4 +1,5 @@
 /* $XConsortium: cfbbitblt.c,v 1.2 94/04/17 20:32:12 dpw Exp $ */
+/* $XFree86$ */
 /*
  * cfb copy area
  */
@@ -672,7 +673,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     {
     	if (bitPlane == 1)
 	{
-       	    doBitBlt = cfbCopyPlane1to8;
+       	    doBitBlt = cfbLowlevFuncs.copyPlane1to8;
 	    bitBltPlane = bitPlane;
 	    cfb8CheckOpaqueStipple (pGC->alu,
 				    pGC->fgPixel, pGC->bgPixel,
@@ -732,7 +733,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	cfb8CheckOpaqueStipple (pGC->alu,
 				pGC->fgPixel, pGC->bgPixel,
 				pGC->planemask);
-	doBitBlt = cfbCopyPlane1to8;
+	doBitBlt = cfbLowlevFuncs.copyPlane1to8;
 	bitBltPlane = 1;
 	/* no exposures here, copy bits from inside a pixmap */
 	cfbCopyArea ((DrawablePtr) pBitmap, pDstDrawable, pGC,
