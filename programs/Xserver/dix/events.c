@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.17 1999/03/14 03:21:33 dawes Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -3992,7 +3992,10 @@ ProcUngrabKey(client)
 	  if (result == TRUE)
 	     anyTrue = result;
 	}
-	return (anyTrue);
+	if (anyTrue)
+	    return(Success);
+	else
+	    return(BadAlloc);
     }else {
 #endif
     if (!DeletePassiveGrabFromList(&tempGrab))
@@ -4273,6 +4276,7 @@ ProcUngrabButton(client)
     tempGrab.detail.pMask = NULL;
 
 #ifdef PANORAMIX
+    anyTrue = FALSE;
     if ( !noPanoramiXExtension ){
 	PANORAMIXFIND_ID(pPanoramiXWin, stuff->grabWindow);
 	FOR_NSCREENS_OR_ONCE(pPanoramiXWin, i) {
@@ -4284,7 +4288,10 @@ ProcUngrabButton(client)
 	  if (result == TRUE)
 	     anyTrue = result;
 	}
-	return (anyTrue);
+	if (anyTrue)
+	    return (Success);
+	else
+	    return (BadAlloc);
     }else {
 #endif
       if (!DeletePassiveGrabFromList(&tempGrab))
