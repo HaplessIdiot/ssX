@@ -46,7 +46,7 @@ typedef enum {
     OPTION_FAST_VRAM,
     OPTION_NOHOSTBUS,
 /*  OPTION_SET_MEMCLOCK,   */
-    OPTION_NORENDER,
+    OPTION_RENDER,
     OPTION_FORCE_CRT2TYPE,
     OPTION_SHADOW_FB,
     OPTION_ROTATE,
@@ -147,7 +147,7 @@ static const OptionInfoRec SISOptions[] = {
 /*  { OPTION_SET_MEMCLOCK,      	"SetMClk",                OPTV_FREQ,      {0}, -1    },  */
     { OPTION_FAST_VRAM,         	"FastVram",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_NOHOSTBUS,         	"NoHostBus",              OPTV_BOOLEAN,   {0}, FALSE },
-    { OPTION_NORENDER,        		"NoRenderAccleration",    OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_RENDER,        		"RenderAcceleration",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_FORCE_CRT2TYPE,    	"ForceCRT2Type",          OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_SHADOW_FB,         	"ShadowFB",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_ROTATE,            	"Rotate",                 OPTV_ANYSTR,    {0}, FALSE },
@@ -472,13 +472,14 @@ SiSOptions(ScrnInfoPtr pScrn)
 
     }
 
-    /* NoRenderAcceleration
-     * Disables RENDER acceleration (315/330 series only)
+    /* RenderAcceleration
+     * En/Disables RENDER acceleration (315/330 series only)
      */
     if((pSiS->VGAEngine == SIS_315_VGA) && (!pSiS->NoAccel)) {
-       if(xf86ReturnOptValBool(pSiS->Options, OPTION_NORENDER, FALSE)) {
-          pSiS->doRender = FALSE;
-	  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "RENDER Acceleration disabled\n");
+       if(xf86GetOptValBool(pSiS->Options, OPTION_RENDER, &pSiS->doRender)) {
+          if(!pSiS->doRender) {
+	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "RENDER Acceleration disabled\n");
+	  }
        }
     }
 
