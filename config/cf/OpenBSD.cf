@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.94 2003/10/15 20:56:12 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.95 2003/10/26 12:17:14 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -67,6 +67,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #define HasUsableFileMmap	YES
 #define HasShadowPasswd		NO
+#define IPv6SocketsAlsoIPv4	NO
 
 #define HasArc4Random		YES
 

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.229 2003/10/22 04:25:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.230 2003/10/26 11:40:52 herrb Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -762,6 +762,14 @@ VENDORMANVERSION = XVendorManVersionString
 #define IPv6Flags /**/
 #endif
 #endif
+/*
+ * Assume by default that IPv6 sockets also listen for IPv4 connections.
+ * XDMCP support currently only works for both IPv4 and IPv6 when this is
+ * true.
+ */
+#ifndef IPv6SocketsAlsoIPv4
+#define IPv6SocketsAlsoIPv4	YES
+#endif
 #ifndef DECnetFlags
 #if HasDECnet
 #define DECnetFlags -DDNETCONN
@@ -1161,8 +1169,19 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 # endif
 #endif
 
+#ifndef PreferXdmcpIPv6
+#define PreferXdmcpIPv6 NO
+#endif
+#ifndef ServerXdmcpIPv6Defines
+#if BuildIPv6 && !IPv6SocketsAlsoIPv4 && !PreferXdmcpIPv6
+#define ServerXdmcpIPv6Defines -DXDMCP_NO_IPV6
+#else
+#define ServerXdmcpIPv6Defines /**/
+#endif
+#endif
+
 #ifndef ServerXdmcpDefines
-#define ServerXdmcpDefines -DXDMCP
+#define ServerXdmcpDefines -DXDMCP ServerXdmcpIPv6Defines
 #endif
 #ifndef ServerOSDefines
 #define ServerOSDefines /**/
