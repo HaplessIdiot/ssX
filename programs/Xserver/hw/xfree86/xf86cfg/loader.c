@@ -96,13 +96,13 @@ sig_handler(int sig)
     }
 
     if (signal_caught == 1) {
-	printf("  ERROR I am dead.\n");
+	ErrorF("  ERROR I am dead.\n");
 	exit(1);
     }
     else if (signal_caught == 2)
 	abort();
     ++signal_caught;
-    printf("  ERROR SIG%s caught!\n", str);
+    ErrorF("  ERROR SIG%s caught!\n", str);
     error_level += 50;
     longjmp(jmp, 1);
     /*NOTREACHED*/
@@ -120,7 +120,7 @@ EnumDatabase(XrmDatabase db, XrmBindingList bindings, XrmQuarkList quarks,
 	    return (False);
 	++option;
     }
-    printf("    ERROR %s.%s is not used\n",
+    ErrorF("    ERROR %s.%s is not used\n",
 	   XrmQuarkToString(quarks[0]), res);
     ++error_level;
 
@@ -142,8 +142,10 @@ LoaderInitializeOptions(void)
     static ModuleType module_types[] = {
 	GenericModule, FontRendererModule, InputModule, VideoModule, NullModule
     };
+
+    /* The offset in this vector must match loader.h:enum ModuleType values */
     static char *module_strs[] = {
-	"Generic Module", "Font Module", "Input Module", "Video Module", NULL
+	"Null Module", "Video Module", "Input Module", "Generic Module", "Font Module"
     };
 
     if (first) {
@@ -170,8 +172,8 @@ LoaderInitializeOptions(void)
     for (i = 0; module_types[i] != NullModule; i++) {
 	xf86cfgLoaderInitList(module_types[i]);
 	if (!noverify)
-	    printf("================= Checking modules of type \"%s\" =================\n",
-		   module_strs[i]);
+	    ErrorF("================= Checking modules of type \"%s\" =================\n",
+		   module_strs[module_types[i]]);
 
 	if (loaderList) {
 	    for (ploaderList = loaderList; *ploaderList; ploaderList++) {
@@ -187,13 +189,13 @@ LoaderInitializeOptions(void)
 			signal(SIGSEGV, sig_handler);
 			signal(SIGILL, sig_handler);
 			signal(SIGFPE, sig_handler);
-			printf("CHECK MODULE %s\n", *ploaderList);
+			ErrorF("CHECK MODULE %s\n", *ploaderList);
 			if ((ok = xf86cfgCheckModule()) == 0) {
-			    printf("  ERROR Failed to load module.\n");
+			    ErrorF("  ERROR Failed to load module.\n");
 			    error_level += 50;
 			}
 			else if (module_type != module_types[i]) {
-			    printf("  WARNING %s recognized as a \"%s\"\n", *ploaderList,
+			    ErrorF("  WARNING %s recognized as a \"%s\"\n", *ploaderList,
 				   module_strs[module_type]);
 			    ++error_level;
 			}
@@ -206,18 +208,18 @@ LoaderInitializeOptions(void)
 			    if (options_ok) {
 				if ((module_options == NULL || module_options->option == NULL) &&
 				    module_type != GenericModule) {
-				    printf("  WARNING Not a generic module, but no options available.\n");
+				    ErrorF("  WARNING Not a generic module, but no options available.\n");
 				    ++error_level;
 				}
 				else if (module_options && strcmp(module_options->name, *ploaderList) == 0) {
-				    printf("  CHECK OPTIONS\n");
+				    ErrorF("  CHECK OPTIONS\n");
 				    option = module_options->option;
 
 				    while (option->name) {
 					XmuSnprintf(query, sizeof(query), "%s.%s", *ploaderList, option->name);
 					if (!XrmGetResource(options_xrm, query, "Module.Option", &type, &value) ||
 					    value.addr == NULL) {
-					    printf("    ERROR no description for %s\n", query);
+					    ErrorF("    ERROR no description for %s\n", query);
 					    ++error_level;
 					}
 					++option;
@@ -234,23 +236,23 @@ LoaderInitializeOptions(void)
 				}
 			    }
 			    else {
-				printf("  ERROR Options file missing.\n");
+				ErrorF("  ERROR Options file missing.\n");
 				error_level += 10;
 			    }
 
 			    if (module_type == VideoModule &&
 				(module_options == NULL || module_options->vendor < 0 ||
 				 module_options->chipsets == NULL)) {
-				printf("  WARNING No vendor/chipset information available.\n");
+				ErrorF("  WARNING No vendor/chipset information available.\n");
 				++error_level;
 			    }
 			    else if (module_type == VideoModule) {
 				if (module_options == NULL) {
-				    printf("  ERROR No module_options!?!\n");
+				    ErrorF("  ERROR No module_options!?!\n");
 				    error_level += 50;
 				}
 				else {
-				    printf("  CHECK CHIPSETS\n");
+				    ErrorF("  CHECK CHIPSETS\n");
 				    CheckChipsets(module_options, &error_level);
 				}
 			    }
@@ -259,39 +261,25 @@ LoaderInitializeOptions(void)
 			    if (module_type == FontRendererModule) {
 				if (strcmp(*ploaderList, font_module->name)) {
 				    /* not an error */
-				    printf("  NOTICE name/FontModule->name specification mismatch: \"%s\" \"%s\"\n",
+				    ErrorF("  NOTICE FontModule->name specification mismatch: \"%s\" \"%s\"\n",
 					   *ploaderList, font_module->name);
 				    ++error_level;
 				}
 				if (nfont_modules + 1 != numFontModules) {
 				    /* not an error */
-				    printf("  NOTICE font module \"%s\" loaded more than one font renderer.\n",
+				    ErrorF("  NOTICE font module \"%s\" loaded more than one font renderer.\n",
 					   *ploaderList);
 				    ++error_level;
 				}
 			    }
 			    else if (nfont_modules != numFontModules) {
-				printf("  WARNING number of font modules changed from %d to %d.\n",
+				ErrorF("  WARNING number of font modules changed from %d to %d.\n",
 				       nfont_modules, numFontModules);
 				++error_level;
 			    }
 			}
 		    }
-
-		    printf("  SUMMARY ");
-		    if (error_level < 3)
-			printf("Driver seems good, or is cheating.");
-		    else if (error_level < 5)
-			printf("Driver needs some work.");
-		    else if (error_level < 10)
-			printf("Driver needs a lot of work.");
-		    else if (error_level < 20)
-			printf("Driver is completely broken, how did it even compile?");
-		    else if (error_level < 50)
-			printf("Are you sure it is a XFree86 driver?");
-		    else
-			printf("I have no words. Whoever wrote this driver must be shot.");
-		    printf("\n\n");
+		    ErrorF("  SUMMARY error_level set to %d.\n\n", error_level);
 		}
 		else
 		    (void)xf86cfgCheckModule();
@@ -299,7 +287,7 @@ LoaderInitializeOptions(void)
 	    xf86cfgLoaderFreeList();
 	}
 	else
-	    fprintf(stderr, "  ERROR Failed to initialize module list.\n");
+	    ErrorF("  ERROR Failed to initialize module list.\n");
     }
 
     return (True);
