@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.14 2000/08/04 21:07:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.15 2000/08/22 21:54:31 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -27,6 +27,7 @@
 #include "atidac.h"
 #include "atimach64io.h"
 #include "atiprint.h"
+#include "atiwonderio.h"
 
 /*
  * ATIPrintBIOS --

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.9 2000/07/26 01:52:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.10 2000/10/10 14:34:59 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -169,7 +169,9 @@ int10_read_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem)
 {
     int size;
 
-    if (((codeSeg << 4) < V_BIOS) || ((codeSeg << 4) >= SYS_SIZE))
+    if ((codeSeg & 0x1f) ||	/* Not 512-byte aligned otherwise */
+        ((codeSeg << 4) < V_BIOS) ||
+	((codeSeg << 4) >= SYS_SIZE))
         return FALSE;
 
     if ((codeSeg << 4) >= SYS_BIOS)

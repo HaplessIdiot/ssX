@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.6 2000/03/22 03:08:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.7 2000/08/04 21:07:14 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,6 +26,7 @@
 #include "atichip.h"
 #include "atilock.h"
 #include "atimach64io.h"
+#include "atiwonderio.h"
 
 /*
  * ATIUnlock --

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.33 2000/09/26 15:57:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.34 2000/10/10 15:16:34 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,17 +26,19 @@
 #include "atiadjust.h"
 #include "atibus.h"
 #include "atichip.h"
+#include "aticonfig.h"
 #include "atidac.h"
 #include "atidsp.h"
 #include "atiident.h"
 #include "atilock.h"
 #include "atimach64.h"
 #include "atimach64io.h"
+#include "atimode.h"
 #include "atimodule.h"
-#include "atioption.h"
 #include "atipreinit.h"
 #include "atiprint.h"
 #include "atividmem.h"
+#include "atiwonderio.h"
 
 #include "vbe.h"
 #include "xf86RAC.h"
@@ -1888,7 +1890,7 @@ ATIPreInit
      * After BIOS initialisation, the accelerator (if any) and the VGA won't
      * necessarily agree on the amount of video memory, depending on whether or
      * where the memory boundary is configured.  Any discrepancy will be
-     * resolved by ATIAdapterPreInit().
+     * resolved by ATIModePreInit().
      *
      * However, it's possible that there is more video memory than VGA Wonder
      * can architecturally handle.
@@ -2558,7 +2560,7 @@ ATIPreInit
     } while ((pMode = pMode->next) != pScreenInfo->modes);
 
     /* Initialise CRTC code */
-    ATIAdapterPreInit(pScreenInfo, pATI, &pATI->NewHW);
+    ATIModePreInit(pScreenInfo, pATI, &pATI->NewHW);
 
     if (!pScreenInfo->chipset || !*pScreenInfo->chipset)
         pScreenInfo->chipset = (char *)ATIChipsetNames[0];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.c,v 1.2 2000/07/07 20:07:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.c,v 1.3 2000/08/04 21:07:13 tsi Exp $ */
 /*
  * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -22,12 +22,13 @@
  */
 
 #include "ati.h"
-#include "atiadapter.h"
 #include "atiadjust.h"
 #include "atichip.h"
 #include "atidac.h"
 #include "atidga.h"
 #include "atiident.h"
+#include "atimode.h"
+#include "atistruct.h"
 
 #include "dgaproc.h"
 
@@ -120,7 +121,7 @@ ATIDGASetMode
 
     pATI->XModifier = pATI->bitsPerPixel / UnitOf(pATI->bitsPerPixel);
     ATIAdjustPreInit(pATI);
-    ATIAdapterPreInit(pScreenInfo, pATI, &pATI->NewHW);
+    ATIModePreInit(pScreenInfo, pATI, &pATI->NewHW);
 
     if (!(*pScreenInfo->SwitchMode)(scrnIndex, pMode, 0))
         return FALSE;

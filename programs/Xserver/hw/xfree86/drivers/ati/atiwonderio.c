@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.c,v 1.5 2000/07/07 20:07:01 tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,25 +23,9 @@
 
 #include "ati.h"
 #include "atichip.h"
-#include "atiio.h"
+#include "atiwonderio.h"
 
 #ifndef AVOID_CPIO
-
-/*
- * ATISetVGAIOBase --
- *
- * This sets vgaIOBase according to the value of the passed value of the
- * miscellaneous output register.
- */
-void
-ATISetVGAIOBase
-(
-    ATIPtr      pATI,
-    const CARD8 misc
-)
-{
-    pATI->CPIO_VGABase = (misc & 0x01U) ? ColourIOBase : MonochromeIOBase;
-}
 
 /*
  * ATIModifyExtReg --

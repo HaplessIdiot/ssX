@@ -1,4 +1,13 @@
 XFree86 4.0.1d (xx October 2000)
+ 751. Fix int10 so that it rejects BIOS's that are not aligned on a 512-byte
+      boundary (Marc La France).
+ 750. Fix int10 for ISA adapters on Alpha's (Egbert Eich).
+ 749. Fix for ATI ISA adapters on Alpha's or with -configure (Marc La France).
+ 748. Fix stupid clock probe bug in ATI driver (Marc La France).
+ 747. Reorganise ATI driver in preparation for futuure changes
+      (Marc La France).
+ 746. Formatting changes to hsync/vrefresh messages (Marc La France).
+ 745. Fix spurious free() when using an ISA adapter (Marc La France).
  744. Preliminary acceleration of the Render extension for Matrox G200/G400
       (Mark Vojkovich).
  743. Fix ordering of drawable destruction in client-side DRI (Brian Paul).
@@ -11203,4 +11212,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1338 2000/10/11 17:27:29 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1339 2000/10/11 17:56:56 mvojkovi Exp $

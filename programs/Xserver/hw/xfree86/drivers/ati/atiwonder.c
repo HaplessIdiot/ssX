@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.9 2000/07/07 20:07:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.10 2000/08/04 21:07:16 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -52,8 +52,8 @@
 
 #include "ati.h"
 #include "atichip.h"
-#include "atiio.h"
 #include "atiwonder.h"
+#include "atiwonderio.h"
 
 #ifndef AVOID_CPIO
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.11 2000/06/19 15:00:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.12 2000/08/04 21:07:16 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,9 +24,10 @@
 #include "ati.h"
 #include "atiadapter.h"
 #include "atichip.h"
-#include "atiio.h"
 #include "atimono.h"
+#include "atistruct.h"
 #include "ativga.h"
+#include "ativgaio.h"
 
 #include "xf86.h"
 

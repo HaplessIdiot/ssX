@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.7 2000/07/07 20:07:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.8 2000/08/04 21:07:12 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,6 +24,7 @@
 #include "ati.h"
 #include "atibank.h"
 #include "atimach64io.h"
+#include "atiwonderio.h"
 
 #ifndef AVOID_CPIO
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.2 2000/08/04 21:07:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.3 2000/08/22 21:54:30 tsi Exp $ */
 /*
  * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -31,6 +31,7 @@
 #define ___ATIMACH64IO_H___ 1
 
 #include "atiio.h"
+#include "atistruct.h"
 
 /*
  * A few important notes on some of the I/O statements provided:
