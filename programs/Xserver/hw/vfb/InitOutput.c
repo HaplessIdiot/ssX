@@ -81,7 +81,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.28 2004/06/01 00:16:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.29 2004/06/02 22:43:03 dawes Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -120,6 +120,7 @@ from The Open Group.
 #include "dix.h"
 #include "miline.h"
 #include "mfb.h"
+#include "micmap.h"
 
 #define VFB_DEFAULT_WIDTH  1280
 #define VFB_DEFAULT_HEIGHT 1024
@@ -993,6 +994,8 @@ vfbScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
     if (!pbits) return FALSE;
 
     /*    miSetPixmapDepths ();*/
+    miClearVisualTypes();
+    miSetVisualTypes(pvfb->depth, miGetDefaultVisualMask(pvfb->depth), 8, -1);
 
     switch (pvfb->bitsPerPixel)
     {
