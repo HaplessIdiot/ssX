@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.17 2001/08/16 08:23:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.18 2001/09/13 08:25:45 alanh Exp $ */
 
 #include "win.h"
 
@@ -266,7 +266,7 @@ winScreenInit (int index,
   winPrivScreenPtr	pScreenPriv;
   DEBUG_FN_NAME("winScreenInit");
   DEBUGVARS;
-  DEBUGPROC_MSG;
+  /*DEBUGPROC_MSG;*/
 
   DEBUG_MSG ("Hello");
 
