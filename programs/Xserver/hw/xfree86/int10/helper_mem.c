@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.20 2001/05/15 10:19:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.22 2002/05/22 21:38:28 herrb Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -281,9 +281,9 @@ xf86int10ParseBiosLocation(void* options,
     
     s = xstrdup(str);
     p = strtok(s,":");
-    if (xf86NameCmp(p,"pci")) bios->bus = BUS_PCI;
+    if (xf86NameCmp(p,"pci") == 0) bios->bus = BUS_PCI;
     else
-	if (xf86NameCmp(p,"primary")) bios->bus = BUS_ISA;
+	if (xf86NameCmp(p,"primary") == 0) bios->bus = BUS_ISA;
 
     xfree(s);
     
