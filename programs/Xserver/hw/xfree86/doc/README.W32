@@ -26,12 +26,13 @@
   135-MHz, you need a w32p (with its 16-bit RAMDAC bus) with a
   multiplexing RAMDAC so that the w32p sees only (135/2 = 67.5) MHz, not
   135 MHz.  This requires special code only provided for cards using the
-  ICS5341 GENDAC. Unfortunately most cards seem to have problems with
-  that code. If you don't get a stable picture for modes using more than
-  86MHz stick to lower dot clocks and contact me (DHH). For details on
-  using this code see below.
+  ICS5341 GENDAC. This code seems to work fine for most people, except
+  for a small band of frequencies around 90MHz.  Similar code is being
+  developed for the STG1703 RAMDAC.
 
   If you have problems with the server.  Try the following:
+
+     o  Put Option "pci_burst_off" in the Device Section.
 
      o  Take out the Hercules monochrome adapter, if you have one.  Many
         configurations of the ET4000/W32 series do not allow one in the
@@ -63,7 +64,6 @@
 
 
 
-
   2.  Using XF86_W32 on a board with an ICS5341 GENDAC
 
   Even though the GENDAC provides a set of standard clocks that can be
@@ -92,7 +92,13 @@
   just a few MHz wide, higher clocks as well as lower clocks work just
   fine. I'm working on it. (DHH)
 
-  3.  Acknowledgments
+  3.  Using XF86_W32 on a board with an STG1703 GENDAC
+
+  Only preliminary support for this chips is implemented. The server is
+  still limited to 86MHz and cannot program the STG1703 clock chip. More
+  support will be added soon (DHH).
+
+  4.  Acknowledgments
 
   Jerry J. Shekhel (jerry@msi.com) gave me (GGL) the 1-M Mirage
   ET4000/W32 VLB board on which the initial development (X_W32) was
@@ -123,12 +129,12 @@
 
         dmm0t@rincewind.mech.virginia.edu (David Meyer)
 
+
         nrh@philabs.Philips.COM (Nikolaus R. Haus)
 
         jdooley@dbp.caltech.edu (James Dooley)
 
         thumper@hitchcock.eng.uiowa.edu (Timothy Paul Schlie)
-
 
         klatta@pkdla5.syntex.com (Ken Latta)
 
@@ -151,13 +157,7 @@
 
 
   $XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.7 1995/11/16 11:05:56 dawes Exp $
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.8 1995/12/09 11:07:52 dawes Exp $
 
 
 

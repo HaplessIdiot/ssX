@@ -866,8 +866,7 @@
   The XFree86 Project has been provided from its proceeds.
 
 
-     o  AIB Software Corporation <ftp://ftp.uu.net/vendor/AIB/>,
-        Herndon, VA
+     o  AIB Software Corporation <http://www.aib.com/>, Herndon, VA
 
      o  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
 
@@ -875,6 +874,8 @@
 
      o  AT&T Global Information Services <http://www.attgis.com/>
         (formerly NCR)
+
+     o  ATI Technologies Inc <http://www.atitech.ca/>
 
      o  Andrew Burgess
 
@@ -919,7 +920,6 @@
      o  Rich & Amy Murphey
 
      o  Brett Neumeier
-
 
 
      o  Number Nine, Lexington, MA
@@ -1036,9 +1036,9 @@
            <ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86-3.1.2> (source and
            binaries)
 
-        +  ftp.laas.fr:/pub/netbsd/XFree86-3.1.2
-           <ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.2> (NetBSD binaries
-           only)
+        +  ftp.laas.fr:/pub/ii/netbsd/XFree86-3.1.2
+           <ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.2> (NetBSD
+           binaries only)
 
         +  ftp.pvv.unit.no:/pub/XFree86/3.1.2
            <ftp://ftp.pvv.unit.no/pub/XFree86/3.1.2> (source and
@@ -1077,7 +1077,7 @@
 
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.36 1995/11/12 09:52:34 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.38 1995/12/07 07:25:36 dawes Exp $
 
 
 

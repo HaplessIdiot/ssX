@@ -1,7 +1,7 @@
   README for XFree86 3.1.2 on NetBSD
   Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver,
   Matthieu Herrb
-  Last modified on: 19 July 1995
+  Last modified on: 3 Dec 1995
 
   1.  What and Where is XFree86?
 
@@ -19,7 +19,7 @@
   ftp.XFree86.org:/pub/XFree86/current
   <ftp://ftp.XFree86.org/pub/XFree86/current>
 
-  Binaries for NetBSD 1.0 and NetBSD-current are available from:
+  Binaries for NetBSD 1.1 and NetBSD-current are available from:
 
   ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD
   <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD>
@@ -32,12 +32,17 @@
 
   ftp.eecs.umich.edu:/BSD/XFree86 <ftp://ftp.eecs.umich.edu/BSD/XFree86>
 
-  If you're still running NetBSD 0.9, you should think about upgrading
-  to a newer version of NetBSD first.  If you don't you'll have to build
-  XFree86 from the sources (which has not been tested on NetBSD 0.9)
+  Other versions:
 
-  This release has also been tested on NetBSD-current of July, 17th 1995
-  with option "COMPAT_10" in the kernel config file.
+  Binaries built with NetBSD 1.1 are not compatible with earlier
+  versions.
+
+  If you're still running NetBSD 0.9 or 1.0, you should think about
+  upgrading to a newer version of NetBSD first.
+
+  If you don't, you'll have to build XFree86 from the sources.  XFree86
+  3.1.2 compiles cleanly under NetBSD 1.0; it has not been tested with
+  NetBSD 0.9. Binaries built on 1.0 will work on 1.1.
 
   XFree86 3.1.2 also builds on NetBSD/sparc. See section ``Building on
   NetBSD/sparc'' for details.
@@ -64,6 +69,8 @@
   binary distribution.
 
   The contents of the packages are:
+
+
      REQUIRED:
 
         X312doc
@@ -122,13 +129,13 @@
         X312fs
            the font server with man pages.
 
+
         X312prog
            the X11 header files and static libraries needed only for
            compiling other X applications
 
         X312man
            man pages except XFree86 specific ones in the doc archive
-
 
         X312xfnt
            the other fonts (100dpi, scaled, Japanese, Chinese, etc)
@@ -147,7 +154,9 @@
 
      2. For each package that you want to install type:
 
+
            # pkg_add <pkg>.tgz
+
 
 
 
@@ -168,6 +177,7 @@
 
         ie, on my machine, I do the following:
 
+
               % cd /usr/local
               % mkdir X11R6
               % ln -s /usr/local/X11R6 /usr/X11R6
@@ -175,46 +185,43 @@
 
 
 
+
      2. You must be logged in as root to unpack the archives and use a
         ``umask'' value of 022.  Typing ``umask 022'' sets it.  Caution:
         If you do not extract the files as user ``root'' with the
-        correct umask you may not be able to run XFree86 3.1.2.  The X
-        server needs special permissions that are only granted to the
-        root user.
+        correct umask you may not be able to run XFree86.  The X server
+        needs special permissions that are only granted to the root
+        user.
 
         Assuming that the destination directory for XFree86 3.1.2 is
         /usr/X11R6, run the following from wherever all the archive
+
         files are (replace /usr/X11R6 with wherever you wish them to go
         if that isn't the place):
 
 
+           cd /usr/X11R6
 
+           tar xzf X312doc.tgz
+           tar xzf X312bin.tgz
+           tar xzf X312lib.tgz
+           tar xzf X312font.tgz
+           tar xzf X312man.tgz
 
+           tar xzf X312link.tgz
+           tar xzf X312prog.tgz
+           tar xzf X312xfnt.tgz
+           tar xzf X312fs.tgz
+           tar xzf X312cfg.tgz
 
-
-
-
-
-
-      cd /usr/X11R6
-
-      tar xzf X312doc.tgz
-      tar xzf X312bin.tgz
-      tar xzf X312lib.tgz
-      tar xzf X312font.tgz
-      tar xzf X312man.tgz
-
-      tar xzf X312link.tgz
-      tar xzf X312prog.tgz
-      tar xzf X312xfnt.tgz
-      tar xzf X312fs.tgz
-      tar xzf X312cfg.tgz
 
 
 
      And unpack the server(s) you need:
 
+
            tar xzf X312<server>.tgz
+
 
 
 
@@ -224,15 +231,19 @@
      1. Set the XWINHOME environment variable to the path where you
         installed XFree86. Under csh  type:
 
+
            setenv XWINHOME /usr/X11R6
+
 
 
 
 
      under sh  type
 
+
            XWINHOME=/usr/X11R6
            export XWINHOME
+
 
 
 
@@ -248,9 +259,13 @@
         an ET4000 based SVGA card:
 
 
-           cd $XWINHOME/bin
-           rm -f X
-           ln -s XF86_SVGA X
+
+
+
+      cd $XWINHOME/bin
+      rm -f X
+      ln -s XF86_SVGA X
+
 
 
 
@@ -260,12 +275,11 @@
 
 
 
+           if [ -d /usr/X11R6/lib ]; then
+              echo 'Adding X shared libraries'
+              ldconfig /usr/X11R6/lib
+           fi
 
-
-      if [ -d /usr/X11R6/lib ]; then
-         echo 'Adding X shared libraries'
-         ldconfig /usr/X11R6/lib
-      fi
 
 
 
@@ -297,14 +311,17 @@
   getty adding the following code to /etc/rc.local:
 
 
+
          if [ -x /usr/X11R6/bin/xdm ]; then
            echo -n ' xdm'; /usr/X11R6/bin/xdm
          fi
 
 
 
+
   To disable the console getty, change ``on'' to ``off'' in the console
   entry in /etc/ttys:
+
 
 
         ttyv0  "/usr/libexec/getty Pc" pc      off secure
@@ -346,7 +363,9 @@
 
   If you have a Xconfig file for XFree86 2.x, use reconfig to translate
   part of it into the new format:
+
      # reconfig <Xconfig >XF86Config
+
 
   and complete the rest according to the XF86Config man page and the
   XF86Config.sample file as a template.
@@ -374,6 +393,7 @@
   because the server takes over the screen.
 
   To get out of X windows, type: ``exit'' in the console xterm.  You can
+
   customize your X by creating .xinitrc, .xserverrc, and .twmrc files in
   your home directory as described in the xinit and startx man pages.
 
@@ -393,7 +413,7 @@
   The pccons driver is the most widely tested and is the console driver
   contained in the NetBSD binary distribution's kernels.
 
-  The pcvt console driver is bundled with NetBSD 1.0. The pcvt X mode is
+  The pcvt console driver is bundled with NetBSD. The pcvt X mode is
   compatible with the pccons driver X mode. It offers several virtual
   consoles and international keyboard support. In order to use this
   driver, change the line:
@@ -410,10 +430,11 @@
 
   in your kernel config file, and rebuild and install your kernel.
 
-  Syscons and codrv are not bundled with NetBSD 1.0. They are available
+  Syscons and codrv are not bundled with NetBSD 1.1. They are available
   by anonymous FTP from a number of sites.
 
   If using pccons you get the message:
+
 
 
        > XFree86 Version 3.1.2 / X Window System
@@ -431,8 +452,13 @@
 
 
 
+
   then delete /dev/ttyv0. I don't know why ``MAKEDEV'' move /dev/ttyqf
   to /dev/ttyv0. (from Hung-Chi Chu hcchu@r350.ee.ntu.edu.tw)
+
+
+
+
 
   7.1.  Aperture Driver
 
@@ -446,33 +472,39 @@
 
   There are two ways to allow XFree86 to access linear memory:
 
-     1. Disable the kernel security feature by initializing the
-        ``securelevel'' variable to -1 in /sys/kern/kern_sysctl.c, line
-        205 and building a new kernel. For more informations, see the
-        comments in /usr/include/sys/systm.h.
+     1. Disable the kernel security feature by adding `option INSECURE'
+        in the kernel configuration file and build a new kernel.
 
-        NetBSD-current users can also disable kernel security by adding
-        `option INSECURE' in their kernel configuration file.
+        On NetBSD-1.0 you have to disable kernel security by
+        initializing the ``securelevel'' variable to -1 in
+        /sys/kern/kern_sysctl.c, line 205. For more informations, see
+        the comments in /usr/include/sys/systm.h.
 
      2. Install the NetBSD aperture driver:
 
         a. add the following lines to the end of /etc/rc.local:
 
 
-
-         KERNDIR=/usr/X11R6/lib/X11/kernel
-         if [ -f ${KERNDIR}/ap.o ]; then
-           modload -o ${KERNDIR}/ap -e ap -p ${KERNDIR}/apinstall ${KERNDIR}/ap.o
-         fi
-
+              KERNDIR=/usr/X11R6/lib/X11/kernel
+              if [ -f ${KERNDIR}/ap.o ]; then
+                modload -o ${KERNDIR}/ap -e ap -p ${KERNDIR}/apinstall ${KERNDIR}/ap.o
+              fi
 
 
 
-        If you use NetBSD-current, replace ``ap.o'' with ``ap-
-        current.o'' in the above lines.
+
+        The distributed ap.o won't work with NetBSD 1.0. In this case,
+        unpack xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar and
+        recompile it.
+
 
         b. Reboot your system. XFree86 will auto-detect the aperture
            driver if available.
+
+
+        Warning: if you boot another kernel than /netbsd, loadable ker-
+        nel modules can crash your system. Always boot in single user
+        mode when you want to run another kernel.
 
 
        Caveat: the NetBSD aperture driver only allows one access at
@@ -484,24 +516,26 @@
 
   7.2.  MIT-SHM
 
-  NetBSD 1.0 supports System V shared memory. If XFree86 3.1.2 detects
-  this support in your kernel, it will support the MIT-SHM extension.
-
-  Under NetBSD 1.0, use the following to add shared memory support to
-  your kernel:
+  NetBSD 1.0 and later supports System V shared memory. If XFree86
+  detects this support in your kernel, it will support the MIT-SHM
+  extension.
 
   To add support for system V shared memory to your kernel add the
   lines:
 
 
-        # System V-like IPC
-        options         SYSVMSG
-        options         SYSVSEM
-        options         SYSVSHM
+
+
+   # System V-like IPC
+   options         SYSVMSG
+   options         SYSVSEM
+   options         SYSVSHM
+
 
 
 
   to your kernel config file. Then from /sys/arch/i386/config, type:
+
 
 
         # rm -f ../compile/<KERNEL-NAME>/*
@@ -512,12 +546,15 @@
 
 
 
+
   Then install your new kernel and re-boot:
+
 
 
         # cp /netbsd /onetbsd
         # cp netbsd /
         # reboot
+
 
 
 
@@ -542,11 +579,14 @@
 
      o  if you're using pccons put:
 
+
            #define XFree86ConsoleDefines -DPCCONS_SUPPORT
 
 
 
+
      o  if you're using pcvt put:
+
 
            #define XFree86ConsoleDefines -DPCVT_SUPPORT
 
@@ -554,13 +594,17 @@
 
      o  if you're using syscons put:
 
+
            #define XFree86ConsoleDefines -DSYSCONS_SUPPORT
+
 
 
 
      o  if you're running codrv put:
 
+
            #define XFree86ConsoleDefines -DCODRV_SUPPORT
+
 
 
 
@@ -588,9 +632,9 @@
   If you have installed the syscons or codrv console drivers, these
   files should be taken from your installed version of the driver.
 
-  8.3.  Support for shared libs under NetBSD 1.0
+  8.3.  Support for shared libs under NetBSD 1.0 and later
 
-  By default XFree86 3.1.2 builds for NetBSD 1.0 with shared libraries
+  By default XFree86 3.1.2 builds for NetBSD with shared libraries
   support. If you're building on 0.9 or don't want shared libraries add
   the following line to xf86site.def:
 
@@ -658,10 +702,10 @@
 
 
 
-  ld.so: undefined symbol _XtCvtStringToFont
+       ld.so: undefined symbol _XtCvtStringToFont
 
 
-  at run-time, you've stumbled on a semantic weakness of NetBSD 1.0
+  at run-time, you've stumbled on a semantic weakness of the NetBSD
   dynamic linker. Applications that use libXmu also need libXt. If the
   client uses a standard Imakefile, this dependency will probably by
   included in the Makefile automagically -- you'll not see the problem.
@@ -679,13 +723,15 @@
 
      o  Christoph Robitschko for fixing com.c and thus select().
 
+
      o  Nate Williams for the patchkit support for X.
 
      o  Rod Grimes and Jack Velte of Walnut Creek Cdrom for use of their
         machines in preparing the FreeBSD binary release.
 
+
   $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.15 1995/07/21 14:40:47 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.16 1995/12/07 07:25:35 dawes Exp $
 
 
 
@@ -725,4 +771,23 @@
 
 
 
-$XFree86$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\n$XFree86$

@@ -441,11 +441,24 @@
 
      S3 968, Ti3026 RAMDAC, Ti3026 Clockchip
 
-        o  Elsa Winner 2000PRO/X
+        o  Elsa Winner 2000PRO/X-2 and /X-4 (Revsions <= F)
+
+        o  Elsa Winner 2000AVI-2 and -4
 
         o  Diamond Stealth 64 VIDEO VRAM
 
         8/15/16/24 bpp
+
+     S3 968, Ti3026 RAMDAC, ICS9161A Clockchip
+
+        o  Elsa Winner 2000PRO/X-2 and /X-4 (Revision G)
+
+        8/15/16/24 bpp
+
+        Note: clock doubling doesn't work, yet, therefore the maximum
+        useable dot clock is limited to about 120MHz.
+
+
 
      S3 964, IBM RGB 514/524/525/528 RAMDAC & Clockchip
 
@@ -455,14 +468,9 @@
 
 
 
-
-
-
-
-
-      s3RefClk   50
-      DACspeed  170
-      Option  "slow_vram"
+           s3RefClk   50
+           DACspeed  170
+           Option  "slow_vram"
 
 
 
@@ -514,8 +522,12 @@
         o  Number Nine FX Motion 771
 
 
-              s3RefClk   16
-              DACspeed  220
+
+
+
+
+         s3RefClk   16
+         DACspeed  220
 
 
 
@@ -524,9 +536,7 @@
         This card may require the line:
 
 
-
-
-                Invert_VCLK "*" 0
+                     Invert_VCLK "*" 0
 
 
 
@@ -581,6 +591,7 @@
   If you feel adventurous you could also open up your computer and have
   a peek at your RAMDAC. The RAMDAC is usually one of the larger chips
   (second or third largest chip that is NOT an EPROM) on the board.  The
+
   markings on it are usually
 
 
@@ -590,6 +601,8 @@
              <company identifier><part number>-<speed grade>
              <manufacturing week><manufacturing year>
              <lot number><other funny numbers>
+
+
 
 
   For example:
@@ -642,6 +655,9 @@
   symptom of this not being correct is the HW cursor being chopped off
   when positioned close to the right edge of the screen.
 
+
+
+
   5.  Reference clock value for IBM RGB 5xx  RAMDACs
 
   Cards with IBM RGB5xx RAMDACs use several different input frequencies
@@ -655,6 +671,7 @@
 
 
            X -probeonly >& outfile
+
 
 
 
@@ -706,7 +723,8 @@
   or
 
 
-               s3RefClk  50
+
+          s3RefClk  50
 
 
 
@@ -723,7 +741,6 @@
   the S3 chip operates. For most clock chips this value can't be read
   (only the S3 SDAC allows reading the MCLK value so far), so this value
   has to be estimated and specified by the user (the default is 60
-
   [MHz]).
 
   With the new `s3MCLK' entry for your XF86Config file, now you can
@@ -762,23 +779,6 @@
   determine the MLCK value, which is printed in MHz. Up to 4 tests are
   run, so you'll get up to 4 estimates (where the first might be the
   most accurate one).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -833,7 +833,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.29 1995/11/16 11:05:55 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.30 1995/12/02 05:05:44 dawes Exp $
 
 
 
