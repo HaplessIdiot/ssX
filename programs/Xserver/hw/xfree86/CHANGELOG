@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 435. Add German localization of XDarwin front end (Andreas Monitzer).
  434. Add the DEC-XTRAP extension and sample clients (#4904, 4918,
       Paul Stewart).
  433. Update the us_intl XKB symbols map to include all diacritics used
@@ -14083,4 +14084,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2014 2001/11/02 16:24:49 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2015 2001/11/02 23:29:30 dawes Exp $
