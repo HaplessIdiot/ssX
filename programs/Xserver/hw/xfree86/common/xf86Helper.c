@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.97 2000/10/27 18:31:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.98 2000/10/30 23:02:10 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1446,17 +1446,12 @@ xf86PrintChipsets(const char *drvname, const char *drvmsg, SymTabPtr chips)
 
 
 int
-xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
+xf86MatchDevice(const char *drivername, GDevPtr **sectlist)
 {
-    static char *     drivernames[MAXDRIVERS];
-    static GDevPtr *  devices[MAXDRIVERS];
-    static int	      count[MAXDRIVERS];
-    GDevPtr           gdp;
+    GDevPtr       gdp, *pgdp = NULL;
     confScreenPtr screensecptr;
     int i,j;
 
-    *driversectlist = NULL;
-    
     if (xf86DoProbe) return 1;
   
     if (xf86DoConfigure && xf86DoConfigurePass1) return 1;
@@ -1465,48 +1460,18 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
      * This is a very important function that matches the device sections
      * as they show up in the config file with the drivers that the server
      * loads at run time.
-
+     *
      * ChipProbe can call 
-     * int xf86MatchDevice(char * drivername, GDevPtr * driversectlist) 
+     * int xf86MatchDevice(char * drivername, GDevPtr ** sectlist) 
      * with its driver name. The function allocates an array of GDevPtr and
-     * returns this via driversectlist and returns the number of elements in
+     * returns this via sectlist and returns the number of elements in
      * this list as return value. 0 means none found, -1 means fatal error.
      * 
      * It can figure out which of the Device sections to use for which card
      * (using things like the Card statement, etc). For single headed servers
      * there will of course be just one such Device section.
-     * 
-     * If there's no Device section with matching name, then xf86MatchDevice()
-     * returns the first Device section without a Driver statement. This will
-     * again work out ok in a single headed environment.
-     */
-    /*
-     * in order to be able to access the results of these queries again, we
-     * keep two parallel static arrays, one holding the name of the driver,
-     * the other holding the coresponding Device section pointers.
-     * So first, we need to check if the query has already been answered
-     * and simply return that old answer if this is the case.
      */
     i = 0;
-    while (drivernames[i] && i < MAXDRIVERS) {
-        if (xf86NameCmp(drivername,drivernames[i]) == 0) {
-            /*
-             * we already had that one
-             */
-            *driversectlist = devices[i];
-            return count[i];
-        }
-        i++;
-    }
-
-    if (i == MAXDRIVERS)
-	return -1;
-
-    /*
-     * if we get here, this is a new name
-     */
-    drivernames[i] = xstrdup(drivername);
-    count[i] = 0;
     
     /*
      * first we need to loop over all the Screens sections to get to all
@@ -1520,10 +1485,8 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
             /*
              * we have a matching driver that wasn't claimed, yet
              */
-            screensecptr->device->claimed = TRUE;
-            devices[i] = xnfrealloc(devices[i],
-                                    (count[i] + 2) * sizeof(GDevPtr));
-            devices[i][count[i]++] = screensecptr->device;
+            pgdp = xnfrealloc(pgdp, (i + 2) * sizeof(GDevPtr));
+            pgdp[i++] = screensecptr->device;
         }
     }
 
@@ -1534,50 +1497,23 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
 	if (gdp->driver && !gdp->claimed &&
 	    !xf86NameCmp(gdp->driver,drivername)) {
 	    /* we have a matching driver that wasn't claimed yet */
-	    gdp->claimed = TRUE;
-	    devices[i] =
-		xnfrealloc(devices[i], (count[i] + 2) * sizeof(GDevPtr));
-	    devices[i][count[i]++] = gdp;
+	    pgdp = xnfrealloc(pgdp, (i + 2) * sizeof(GDevPtr));
+	    pgdp[i++] = gdp;
 	}
 	j++;
     }
     
-#if 0
-    /*
-     * XXX The parser won't let devices with no Driver name through, so
-     * this can be removed.
-     */
-    if (count[i] == 0) {
-        /*
-         * we haven't found a single one, let's try to find one that
-         * wasn't claimed and has no driver given
-         */
-        for (j=0; xf86ConfigLayout.screens[j].screen != NULL; j++) {
-            screensecptr = xf86ConfigLayout.screens[j].screen;
-            if ((screensecptr->device->driver == NULL)
-                && (! screensecptr->device->claimed)) {
-                /*
-                 * we have a device section without driver that wasn't claimed
-                 */
-                screensecptr->device->claimed = TRUE;
-                devices[i] = xnfrealloc(devices[i],
-                                        (count[i] + 2) * sizeof(GDevPtr));
-                devices[i][count[i]++] = screensecptr->device;
-            }
-        }
-    }
-#endif
     /*
      * make the array NULL terminated and return its address
      */
-    if( count[i] )
-        devices[i][count[i]] = NULL;
-    else
-        devices[i] = NULL;
-    
-    *driversectlist = devices[i];
+    if (i)
+        pgdp[i] = NULL;
 
-    return count[i];
+    if (sectlist)
+	*sectlist = pgdp;
+    else
+	xfree(pgdp);
+    return i;
 }
 
 struct Inst {

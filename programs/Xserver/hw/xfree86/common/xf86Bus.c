@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.53 2000/08/04 16:13:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.54 2000/10/11 22:52:52 tsi Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -418,6 +418,7 @@ xf86AddDevToEntity(int entityIndex, GDevPtr dev)
     pEnt->devices = xnfrealloc(pEnt->devices,
 				pEnt->numInstances * sizeof(GDevPtr));
     pEnt->devices[pEnt->numInstances - 1] = dev;
+    dev->claimed = TRUE;
 }
 
 /*
