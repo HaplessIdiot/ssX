@@ -923,7 +923,7 @@ XAAFillPolygonTiled(
 	case DO_CACHE_BLT:
             pCache = (*infoRec->CacheTile)(infoRec->pScrn, pGC->tile.pixmap);
 	    (*infoRec->SetupForScreenToScreenCopy)(infoRec->pScrn, 1, 1, 
-		pGC->alu, pGC->planemask, pCache->trans_color);
+		pGC->alu, pGC->planemask, -1);
 
 	    RectFunc = CacheBltRectHelper;
 	    break;
@@ -937,7 +937,7 @@ XAAFillPolygonTiled(
 		pPriv->offscreenArea->box.y2 - pCache->y;
 
 	    (*infoRec->SetupForScreenToScreenCopy)(infoRec->pScrn, 1, 1, 
-		pGC->alu, pGC->planemask, pCache->trans_color);
+		pGC->alu, pGC->planemask, -1);
 
 	    RectFunc = CacheBltRectHelper;
 	    break;
