@@ -66,6 +66,7 @@ terms and conditions:
 	Ben Fahy  -- AGE Logic, Inc. June, 1993
   
 *****************************************************************************/
+/* $XFree86$ */
 
 
 #define _XIEC_MPGEOM

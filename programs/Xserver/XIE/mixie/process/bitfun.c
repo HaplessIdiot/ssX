@@ -66,6 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. July, 1993
   
 *****************************************************************************/
+/* $XFree86$ */
 
 #define _XIEC_MPBITFUN
 

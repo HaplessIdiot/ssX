@@ -66,6 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. October 1993
   
 *****************************************************************************/
+/* $XFree86$ */
 
 #define _XIEC_MEUNCOMP
 
