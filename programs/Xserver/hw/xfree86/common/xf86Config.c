@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.57 1995/07/17 12:45:18 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.58 1995/09/23 01:17:17 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -359,7 +359,8 @@ getToken(tab)
        */
       else
 	{
-          i = -1;
+          configRBuf[0] = c;
+          i = 0;
 	  do {
 	    configRBuf[++i] = (c = configBuf[configPos++]);;
 	  } while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\0'));
