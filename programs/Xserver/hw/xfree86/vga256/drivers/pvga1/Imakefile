@@ -1,10 +1,12 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:52:09 dpw Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/Imakefile,v 3.0 1994/05/30 08:27:50 dawes Exp $
 #include <Server.tmpl>
 
-SRCS = pvg_driver.c pvg_bank.s pvgablt.c pvgasolid.c pvgaBitBlt.c pvgapntwin.c
+SRCS = pvg_driver.c pvg_bank.s pvgablt.c pvgasolid.c pvgaBitBlt.c \
+       pvgapntwin.c wd90c33.c
 
-OBJS = pvg_driver.o pvg_bank.o pvgablt.o pvgasolid.o pvgaBitBlt.o pvgapntwin.o
+OBJS = pvg_driver.o pvg_bank.o pvgablt.o pvgasolid.o pvgaBitBlt.o \
+       pvgapntwin.o wd90c33.o
 
 DEFINES = -DPSZ=8
 
@@ -30,6 +32,7 @@ InstallLinkKitNonExecFile(pvgablt.c,$(LINKKITDIR)/drivers/vga256/pvga1)
 InstallLinkKitNonExecFile(pvgasolid.c,$(LINKKITDIR)/drivers/vga256/pvga1)
 InstallLinkKitNonExecFile(pvgaBitBlt.c,$(LINKKITDIR)/drivers/vga256/pvga1)
 InstallLinkKitNonExecFile(pvgapntwin.c,$(LINKKITDIR)/drivers/vga256/pvga1)
+InstallLinkKitNonExecFile(wd90c33.c,$(LINKKITDIR)/drivers/vga256/pvga1)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/pvga1)
 
 DependTarget()
