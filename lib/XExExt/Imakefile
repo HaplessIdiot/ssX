@@ -1,0 +1,26 @@
+XCOMM $XFree86$
+#define DoNormalLib NormalLibXExExt
+#define DoSharedLib SharedLibXExExt
+#define DoDebugLib DebugLibXExExt
+#define DoProfileLib ProfileLibXExExt
+#define LibName XExExt
+#define SoRev SOXEXEXTREV
+#define LibHeaders NO
+
+#include <Threads.tmpl>
+
+#ifdef SharedXExExtReqs
+REQUIREDLIBS = SharedXExExtReqs
+#endif
+
+SCRNSAVSRC = XScrnSaver.c
+SCRNSAVOBJ = XScrnSaver.o
+
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
+         SRCS = $(SCRNSAVSRC)
+         OBJS = $(SCRNSAVOBJ)
+     LINTLIBS = $(LINTXLIB)
+
+#include <Library.tmpl>
+
+DependTarget()
