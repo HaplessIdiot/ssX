@@ -27,10 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mp.h,v 1.2 2002/01/31 04:33:29 paulo Exp $ */
 
 #include <stdio.h>
 #include <math.h>
+#ifdef sun
+#include <ieeefp.h>
+#endif
 #include <float.h>
 #include <stdlib.h>
 #include <limits.h>

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xedit/lisp/Imakefile,v 1.14 2002/02/14 17:48:19 tsi Exp $
 
 #include "lisp.cf"
 #include "lisp.rules"
@@ -12,12 +12,20 @@ XCOMM $XFree86$
 #define LibInstall	NO
 #define LibHeaders	NO
 
-#if !HasSnprintf
-SNPRINTF_DEFS  = -DNEED_SNPRINTF
+/* This should probably be moved elsewhere */
+#if defined(SunArchitecture)	/* Needs refinement */
+#define HasSetenv	NO
+#else
+#define HasSetenv	YES
+#endif
+
+#if HasSetenv
+SETENV_DEFS    = -DHAVE_SETENV
 #endif
 
 #if !HasSnprintf
-  MISC_INCLUDES = -I$(LIBSRC)/misc
+SNPRINTF_DEFS  = -DNEED_SNPRINTF
+MISC_INCLUDES  = -I$(LIBSRC)/misc
 #endif
 
 #if defined(LynxOSArchitecture) || defined(SVR3Architecture) || defined(LinuxArchitecture)
@@ -38,7 +46,7 @@ STRCCMP_DEFINES = -DNEED_STRCASECMP
 #endif
        SYS_SRCS = $(RP_SRCS) $(STRCCMP_SRCS)
        SYS_OBJS = $(RP_OBJS) $(STRCCMP_OBJS)
-    SYS_DEFINES = $(RP_DEFINES) $(STRCCMP_DEFINES)
+    SYS_DEFINES = $(RP_DEFINES) $(STRCCMP_DEFINES) $(SETENV_DEFS)
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -93,11 +101,11 @@ AllTarget(ProgramTargetName($(SAMP)))
 CCOPTIONS	= -fpic
 DLLIB		= DlLibrary
 LOCAL_LDFLAGS	= -Xlinker -E
-DEFINES		= -DLISP -DSHARED_MODULES -DLISPDIR='"$(LISPDIR)"' $(SNPRINTF_DEFS) $(SYS_DEFINES) $(SIGNAL_DEFINES)
-#else
-DEFINES		= -DLISP -DLISPDIR='"$(LISPDIR)"' $(SNPRINTF_DEFS) $(SYS_DEFINES) $(SIGNAL_DEFINES)
+SHARED_DEFINES	= -DSHARED_MODULES
 #endif
 
+        DEFINES = -DLISP $(SHARED_DEFINES) -DLISPDIR='"$(LISPDIR)"' \
+		  $(SNPRINTF_DEFS) $(SYS_DEFINES) $(SIGNAL_DEFINES)
         DEPLIBS = mp
        INCLUDES = -I. -Imp -I- $(MISC_INCLUDES)
 LOCAL_LIBRARIES = -L. -llisp -Lmp -lmp -lm $(DLLIB)
