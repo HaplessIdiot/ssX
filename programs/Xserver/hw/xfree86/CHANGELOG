@@ -1,4 +1,28 @@
 XFree86 3.9Ad (24 January 1998)
+1589. Cirrus and vga256 driver changes to support the PowerPC machines.
+      (1357, Gary Barton/Concurrent).
+1588. Organize xf86_ansic.h/xf86_libc.h/xf86_OSlib.h, and de-mangle xf86* 
+      libc calls. Move Probe routine to the beginning of the ScrnInfoRec to
+      match the vgaVideoChipRec. Make the mach32, mach64, mach8, i128, and
+      ibm8514 servers loadable. Use one global byte_reversed array. When
+      SetCursor is called with a null CursorPtr, turn the cursor off. Fix
+      CapNotLast lines and segments in mach64 and xaa. Copy some code from
+      Metro-X 3 to handle panning at 24 bpp on Mach64. Mask the correct
+      number of pitch bits when updating the CRTC_OFF_PITCH register. Use
+      xf86scanpci instead of vgaPCIInfo. Fix tseng driver DPMS bug. Declare
+      and initialize xf86PixmapIndex. (#1356, Craig Groeschel/Metro Link).
+1587. Add xf86Serial functions (#1355, Chris Bare/Metro Link).
+1586. New config file parser, new functions for accessing xf86Info,
+      handle an XQUEUE race condition, make sure XqueQaddr is initialized
+      (1353, Stuart Anderson/Metro Link)
+1585. Build cleanups and fixes to cursor handling for multi screen layout
+      (#1354, Craig Groeschel/Metro Link).
+1584. Add portable and extensible PCI support framework (#1352,
+      Gary Barton/Concurrent).
+1583. Support PowerMAX_OS on Motorola/Concurrent PowerPC machines
+      (#1351, Gary Barton/Concurrent).
+1582. .cf and Imakefile changes to use PpcArchitecture and PpcSvr4Architecture
+      definitions for consistency (#1350, Gary Barton/Concurrent).
 1581. Fix 9397 detection in Trident driver (#1376, Alan Hourihane).
 1580. Add support for the DacSpeed entry to the Mach64 server (#1375,
       Kevin Martin).
@@ -5907,4 +5931,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.564 1998/01/11 03:48:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.565 1998/01/24 01:52:54 hohndel Exp $
