@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.20 2000/11/08 00:51:10 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.21 2000/12/05 20:03:45 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -703,9 +703,9 @@ MGADisplayVideoOverlay(
     OUTREG(MGAREG_BESA1ORG, offset);
 
     if(y1 & 0x00010000)
-	OUTREG(MGAREG_BESCTL, 0x00050c41);
+	OUTREG(MGAREG_BESCTL, 0x00040c41);
     else 
-	OUTREG(MGAREG_BESCTL, 0x00050c01);
+	OUTREG(MGAREG_BESCTL, 0x00040c01);
  
     OUTREG(MGAREG_BESHCOORD, (dstBox->x1 << 16) | (dstBox->x2 - 1));
     OUTREG(MGAREG_BESVCOORD, (dstBox->y1 << 16) | (dstBox->y2 - 1));
