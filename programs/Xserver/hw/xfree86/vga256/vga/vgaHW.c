@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.39 1996/11/24 09:57:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.40 1996/12/17 21:01:02 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -45,6 +45,8 @@
 #endif
 #endif
 
+#include <errno.h>
+
 #if !defined(AMOEBA) && !defined(MINIX)
 #define _NEED_SYSI86
 #endif
@@ -56,7 +58,6 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 #ifdef PC98_EGC

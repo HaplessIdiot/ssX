@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.21 1996/10/03 08:34:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.22 1996/11/18 13:11:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -28,7 +28,7 @@
 
 #ifndef _XF86VIDMODE_SERVER_
 #include "Xproto.h"
-#include "xf86_OSlib.h"
+#include "xf86_OSproc.h"
 #endif
 
 typedef struct {

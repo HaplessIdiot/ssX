@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.11 1996/02/04 09:02:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.12 1996/08/11 12:45:35 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -29,7 +29,6 @@
 #include "misc.h"
 
 #include "xf86.h"
-#include "xf86_OSlib.h"
 #include "mach32.h"
 #include "ativga.h"
 #define XCONFIG_FLAGS_ONLY

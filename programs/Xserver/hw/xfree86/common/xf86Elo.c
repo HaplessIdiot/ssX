@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.16 1996/10/06 13:16:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.17 1996/12/18 03:12:25 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -80,6 +80,7 @@
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Procs.h"
+#include "xf86_OSlib.h"
 #include "xf86_Config.h"
 #include "xf86Xinput.h"
 #include "xf86Version.h"
