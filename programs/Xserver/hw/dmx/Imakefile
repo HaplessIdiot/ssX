@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.1 2004/06/30 20:21:38 martin Exp $
 
 #include <Server.tmpl>
 
@@ -82,7 +82,7 @@ OBJS =	dmxinit.o \
 
 VENDOR_DEFINES = $(VENDOR_STRING) $(VENDOR_RELEASE)
 
-	OSNAME = OSName
+        OSNAME = OSName
       OSVENDOR = OSVendor
 OSNAME_DEFINES = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
 
