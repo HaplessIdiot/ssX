@@ -1,4 +1,4 @@
-/* $XConsortium: XKBSetMap.c,v 1.3 94/04/02 14:34:00 erik Exp $ */
+/* $XConsortium: XKBSetMap.c /main/8 1996/03/01 14:30:01 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,62 +33,76 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBlibint.h"
 
 static int
-_XkbSizeKeyTypes(xkb,firstType,nTypes)
-    XkbDescRec *xkb;
-    unsigned firstType;
-    unsigned nTypes;
+#if NeedFunctionPrototypes
+_XkbSizeKeyTypes(XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbSizeKeyTypes(xkb,req)
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+#endif
 {
-    XkbKeyTypeRec 	*map;
-    int			i,n,len;
+    XkbKeyTypePtr	map;
+    int			i,len;
 
+    if (((req->present&XkbKeyTypesMask)==0)||(req->nTypes==0)) {
+	req->present&= ~XkbKeyTypesMask;
+	req->firstType= req->nTypes= 0;
+	return 0;
+    }
     len= 0;
-    map= &xkb->map->types[firstType];
-    for (i=0;i<nTypes;i++,map++){
+    map= &xkb->map->types[req->firstType];
+    for (i=0;i<req->nTypes;i++,map++){
 	len+= SIZEOF(xkbKeyTypeWireDesc);
 	len+= map->map_count*SIZEOF(xkbKTSetMapEntryWireDesc);
 	if (map->preserve)
-	    len+= map->map_count*SIZEOF(xkbKTPreserveWireDesc);
+	    len+= map->map_count*SIZEOF(xkbModsWireDesc);
     }
     return len;
 }
 
 static void
-_XkbWriteKeyTypes(dpy,xkb,firstType,nTypes)
-    Display	*dpy;
-    XkbDescRec	*xkb;
-    unsigned	 firstType;
-    unsigned	 nTypes;
+#if NeedFunctionPrototypes
+_XkbWriteKeyTypes(Display *dpy,XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbWriteKeyTypes(dpy,xkb,req)
+    Display	*	dpy;
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+#endif
 {
-    char		*buf,*start;
-    XkbKeyTypeRec 	*type;
+    char *		buf;
+    XkbKeyTypePtr 	type;
     int			i,n,sz;
-    xkbKeyTypeWireDesc	*desc;
+    xkbKeyTypeWireDesc *desc;
 
-    type= &xkb->map->types[firstType];
-    for (i=0;i<nTypes;i++,type++) {
+    if ((req->present&XkbKeyTypesMask)==0)
+	return;
+    type= &xkb->map->types[req->firstType];
+    for (i=0;i<req->nTypes;i++,type++) {
 	sz= SIZEOF(xkbKeyTypeWireDesc);
 	sz+= type->map_count*SIZEOF(xkbKTSetMapEntryWireDesc);
 	if (type->preserve)
-	    sz+= type->map_count*SIZEOF(xkbKTPreserveWireDesc);
+	    sz+= type->map_count*SIZEOF(xkbModsWireDesc);
 	BufAlloc(xkbKeyTypeWireDesc *,desc,sz);
-	desc->mask = type->mask;
-	desc->realMods = type->real_mods;
-	desc->virtualMods = type->vmods;
-	desc->groupWidth = type->group_width;
+	desc->mask = type->mods.mask;
+	desc->realMods = type->mods.real_mods;
+	desc->virtualMods = type->mods.vmods;
+	desc->numLevels = type->num_levels;
 	desc->nMapEntries = type->map_count;
-	start= buf= (char *)&desc[1];
+	desc->preserve = (type->preserve!=NULL);
+	buf= (char *)&desc[1];
 	if (desc->nMapEntries>0) {
 	    xkbKTSetMapEntryWireDesc *wire;
 	    wire= (xkbKTSetMapEntryWireDesc *)buf;
 	    for (n=0;n<type->map_count;n++,wire++) {
 		wire->level= type->map[n].level;
-		wire->realMods= type->map[n].real_mods;
-		wire->virtualMods= type->map[n].vmods;
+		wire->realMods= type->map[n].mods.real_mods;
+		wire->virtualMods= type->map[n].mods.vmods;
 	    }
 	    buf= (char *)wire;
 	    if (type->preserve) {
-		xkbKTPreserveWireDesc *pwire;
-		pwire= (xkbKTPreserveWireDesc *)buf;
+		xkbModsWireDesc *pwire;
+		pwire= (xkbModsWireDesc *)buf;
 		for (n=0;n<type->map_count;n++,pwire++) {
 		    pwire->realMods= type->preserve[n].real_mods;
 		    pwire->virtualMods= type->preserve[n].vmods;
@@ -100,103 +114,129 @@ _XkbWriteKeyTypes(dpy,xkb,firstType,nTypes)
 }
 
 static int
-_XkbSizeKeySyms(xkb,firstKey,nKeys,nSymsRtrn)
-    XkbDescRec  *xkb;
-    unsigned 	 firstKey;
-    unsigned	 nKeys;
-    CARD16	*nSymsRtrn;
+#if NeedFunctionPrototypes
+_XkbSizeKeySyms(XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbSizeKeySyms(xkb,req)
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+#endif
 {
-    XkbSymMapRec	*symMap;
-    XkbKeyTypeRec 	*type;
     int			i,len;
     unsigned		nSyms;
 
-    len= nKeys*sizeof(XkbSymMapRec);
-    symMap = &xkb->map->key_sym_map[firstKey];
-    for (i=nSyms=0;i<nKeys;i++,symMap++) {
-	type = &xkb->map->types[symMap->kt_index];
-	nSyms+= XkbNumGroups(symMap->group_info)*type->group_width;
+    if (((req->present&XkbKeySymsMask)==0)||(req->nKeySyms==0)) {
+	req->present&= ~XkbKeySymsMask;
+	req->firstKeySym= req->nKeySyms= 0;
+	req->totalSyms= 0;
+	return 0;
     }
-    len+= nSyms*sizeof(KeySym);
-    *nSymsRtrn = nSyms;
+    len= (int)(req->nKeySyms*sizeof(XkbSymMapRec));
+    for (i=nSyms=0;i<req->nKeySyms;i++) {
+	nSyms+= XkbKeyNumSyms(xkb,i+req->firstKeySym);
+    }
+    len+= nSyms*sizeof(CARD32);
+    req->totalSyms= nSyms;
     return len;
 }
 
 static void
-_XkbWriteKeySyms(dpy,xkb,firstKeySym,nKeySyms,totalSyms)
-    Display *dpy;
-    XkbDescRec *xkb;
-    unsigned firstKeySym;
-    unsigned nKeySyms;
-    unsigned totalSyms;
+#if NeedFunctionPrototypes
+_XkbWriteKeySyms(Display *dpy,XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbWriteKeySyms(dpy,xkb,req)
+    Display *		dpy;
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+#endif
 {
-register KeySym *pSym,*outSym;
-XkbSymMapRec	*symMap;
-XkbKeyTypeRec	*keyType;
+register KeySym *	pSym;
+CARD32 *		outSym;
+XkbSymMapPtr		symMap;
 xkbSymMapWireDesc *desc;
 register int	i;
 
-    i= (nKeySyms*SIZEOF(xkbSymMapWireDesc))+(totalSyms*sizeof(KeySym));
-    BufAlloc(xkbSymMapWireDesc *,desc,i);
-    symMap = &xkb->map->key_sym_map[firstKeySym];
-    for (i=0;i<nKeySyms;i++,symMap++) {
-	keyType = &xkb->map->types[symMap->kt_index];
-	desc->ktIndex = symMap->kt_index;
+    if ((req->present&XkbKeySymsMask)==0)
+	return;
+    symMap = &xkb->map->key_sym_map[req->firstKeySym];
+    for (i=0;i<req->nKeySyms;i++,symMap++) {
+	BufAlloc(xkbSymMapWireDesc *,desc,
+		 SIZEOF(xkbSymMapWireDesc)+
+		 (XkbKeyNumSyms(xkb,i+req->firstKeySym)*sizeof(CARD32)));
+	desc->ktIndex[0] = symMap->kt_index[0];
+	desc->ktIndex[1] = symMap->kt_index[1];
+	desc->ktIndex[2] = symMap->kt_index[2];
+	desc->ktIndex[3] = symMap->kt_index[3];
 	desc->groupInfo = symMap->group_info;
-	desc->nSyms = XkbNumGroups(symMap->group_info)*keyType->group_width;
-	outSym = (KeySym *)&desc[1];
-	pSym = &xkb->map->syms[symMap->offset];
-	memcpy(outSym,pSym,desc->nSyms*sizeof(KeySym));
-	desc = (xkbSymMapWireDesc *)&outSym[desc->nSyms];
+	desc->width = symMap->width;
+	desc->nSyms = XkbKeyNumSyms(xkb,i+req->firstKeySym);
+	outSym = (CARD32 *)&desc[1];
+	if (desc->nSyms>0) {
+	     pSym = XkbKeySymsPtr(xkb,i+req->firstKeySym);
+	    _XkbWriteCopyKeySyms(pSym,outSym,desc->nSyms);
+	}
     }
     return;
 }
 
 static int
-_XkbSizeKeyActions(xkb,firstKey,nKeys,nActsRtrn)
-    XkbDescRec	*xkb;
-    unsigned	 firstKey;
-    unsigned	 nKeys;
-    CARD16	*nActsRtrn;
+#if NeedFunctionPrototypes
+_XkbSizeKeyActions(XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbSizeKeyActions(xkb,req)
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+#endif
 {
     int			i,len,nActs;
-    unsigned		nSyms;
 
-    for (nActs=i=0;i<nKeys;i++) {
-	if (xkb->server->key_acts[i+firstKey]!=0)
-	    nActs+= XkbKeyNumActions(xkb,i+firstKey);
+    if (((req->present&XkbKeyActionsMask)==0)||(req->nKeyActs==0)) {
+	req->present&= ~XkbKeyActionsMask;
+	req->firstKeyAct= req->nKeyActs= 0;
+	req->totalActs= 0;
+	return 0;
     }
-    len= (((nKeys+3)/4)*4)+(nActs*sizeof(XkbAction));
-    *nActsRtrn = nActs;
+    for (nActs=i=0;i<req->nKeyActs;i++) {
+	if (xkb->server->key_acts[i+req->firstKeyAct]!=0)
+	    nActs+= XkbKeyNumActions(xkb,i+req->firstKeyAct);
+    }
+    len= XkbPaddedSize(req->nKeyActs)+(nActs*SIZEOF(xkbActionWireDesc));
+    req->totalActs= nActs;
     return len;
 }
 
 static void
-_XkbWriteKeyActions(dpy,xkb,firstKey,nKeys,totalActs)
-    Display *dpy;
-    XkbDescRec *xkb;
-    unsigned firstKey;
-    unsigned nKeys;
-    unsigned totalActs;
+#if NeedFunctionPrototypes
+_XkbWriteKeyActions(Display *dpy,XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbWriteKeyActions(dpy,xkb,req)
+    Display *		dpy;
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+#endif
 {
     register int	 i;
     int	 		 n;
     CARD8		*numDesc;
     XkbAction		*actDesc;
 
-    n = (((nKeys+3)/4)*4)+totalActs*sizeof(XkbAction);
+    if ((req->present&XkbKeyActionsMask)==0)
+	return;
+    n = XkbPaddedSize(req->nKeyActs);
+    n+= (req->totalActs*SIZEOF(xkbActionWireDesc));
+
     BufAlloc(CARD8 *,numDesc,n);
-    for (i=0;i<nKeys;i++) {
-	if (xkb->server->key_acts[i+firstKey]==0)
+    for (i=0;i<req->nKeyActs;i++) {
+	if (xkb->server->key_acts[i+req->firstKeyAct]==0)
 	     numDesc[i] = 0;
-	else numDesc[i] = XkbKeyNumActions(xkb,(i+firstKey));
+	else numDesc[i] = XkbKeyNumActions(xkb,(i+req->firstKeyAct));
     }
-    actDesc = (XkbAction *)&numDesc[(((nKeys)+3)/4)*4];
-    for (i=0;i<nKeys;i++) {
-	if (xkb->server->key_acts[i+firstKey]!=0) {
-	    n = XkbKeyNumActions(xkb,(i+firstKey));
-	    memcpy(actDesc,XkbKeyActionsPtr(xkb,(i+firstKey)),
-                                                        n*sizeof(XkbAction));
+    actDesc = (XkbAction *)&numDesc[XkbPaddedSize(req->nKeyActs)];
+    for (i=0;i<req->nKeyActs;i++) {
+	if (xkb->server->key_acts[i+req->firstKeyAct]!=0) {
+	    n = XkbKeyNumActions(xkb,(i+req->firstKeyAct));
+	    memcpy(actDesc,XkbKeyActionsPtr(xkb,(i+req->firstKeyAct)),
+                                                   n*SIZEOF(xkbActionWireDesc));
 	    actDesc+= n;
 	}
     }
@@ -204,26 +244,24 @@ _XkbWriteKeyActions(dpy,xkb,firstKey,nKeys,totalActs)
 }
 
 static int
-_XkbSizeKeyBehaviors(xkb,req,pChanges)
+#if NeedFunctionPrototypes
+_XkbSizeKeyBehaviors(XkbDescPtr	xkb,xkbSetMapReq *req)
+#else
+_XkbSizeKeyBehaviors(xkb,req)
     XkbDescPtr		xkb;
     xkbSetMapReq *	req;
-    XkbMapChangesRec *	pChanges;
+#endif
 {
 register int i,first,last,nFound;
 
-    if ((req->present&XkbKeyBehaviorsMask)==0) {
+    if (((req->present&XkbKeyBehaviorsMask)==0)||(req->nKeyBehaviors<1)) {
+	req->present&= ~XkbKeyBehaviorsMask;
+	req->firstKeyBehavior= req->nKeyBehaviors= 0;
 	req->totalKeyBehaviors= 0;
 	return 0;
     }
-    else if (pChanges) {
-	first= pChanges->first_key_behavior;
-	last= first+pChanges->num_key_behaviors-1;
-    }
-    else {
-	first= xkb->min_key_code;
-	last= xkb->max_key_code;
-    }
-
+    first= req->firstKeyBehavior;
+    last= first+req->nKeyBehaviors-1;
     for (i=first,nFound=0;i<=last;i++) {
 	if (xkb->server->behaviors[i].type!=XkbKB_Default)
 	    nFound++;
@@ -233,120 +271,134 @@ register int i,first,last,nFound;
 }
 
 static void
-_XkbWriteKeyBehaviors(dpy,xkb,req,pChanges)
+#if NeedFunctionPrototypes
+_XkbWriteKeyBehaviors(Display *dpy,XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbWriteKeyBehaviors(dpy,xkb,req)
     Display *		dpy;
     XkbDescPtr		xkb;
     xkbSetMapReq *	req;
-    XkbMapChangesRec *	pChanges;
+#endif
 {
-register int i,first,last;
-xkbBehaviorWireDesc *wire;
+register int 		i,first,last;
+xkbBehaviorWireDesc *	wire;
+char *			buf;
 
     if ((req->present&XkbKeyBehaviorsMask)==0)
 	return;
-    if (pChanges) {
-	first= pChanges->first_key_behavior;
-	last= first+pChanges->num_key_behaviors-1;
-    }
-    else {
-	first= xkb->min_key_code;
-	last= xkb->max_key_code;
-    }
+    first= req->firstKeyBehavior;
+    last= first+req->nKeyBehaviors-1;
+
     i= req->totalKeyBehaviors*SIZEOF(xkbBehaviorWireDesc);
-    BufAlloc(xkbBehaviorWireDesc *,wire,i);
+    BufAlloc(char *,buf,i);
+    wire= (xkbBehaviorWireDesc *)buf;
     for (i=first;i<=last;i++) {
 	if (xkb->server->behaviors[i].type!=XkbKB_Default) {
 	    wire->key= i;
 	    wire->type= xkb->server->behaviors[i].type;
 	    wire->data= xkb->server->behaviors[i].data;
-	    wire++;
+	    buf+= SIZEOF(xkbBehaviorWireDesc);
+	    wire= (xkbBehaviorWireDesc *)buf;
 	}
     }
     return;
 }
 
-static int
-_XkbSizeVirtualMods(xkb,which)
-    XkbDescPtr	xkb;
-    unsigned	which;
+static unsigned
+#if NeedFunctionPrototypes
+_XkbSizeVirtualMods(xkbSetMapReq *req)
+#else
+_XkbSizeVirtualMods(req)
+    xkbSetMapReq *	req;
+#endif
 {
 register int i,bit,nMods;
 
+   if (((req->present&XkbVirtualModsMask)==0)||(req->virtualMods==0)) {
+	req->present&= ~XkbVirtualModsMask;
+	req->virtualMods= 0;
+	return 0;
+   }
    for (i=nMods=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	if (which&bit)
+	if (req->virtualMods&bit)
 	    nMods++;
    }
-   return ((nMods+(unsigned)3)/4)*4;
+   return XkbPaddedSize(nMods);
 }
 
 static void
-_XkbWriteVirtualMods(dpy,xkb,which,size)
+#if NeedFunctionPrototypes
+_XkbWriteVirtualMods(	Display *	dpy,
+			XkbDescPtr 	xkb,
+			xkbSetMapReq *	req,
+			unsigned 	size)
+#else
+_XkbWriteVirtualMods(dpy,xkb,req,size)
     Display *		dpy;
     XkbDescPtr		xkb;
-    unsigned 		which;
+    xkbSetMapReq *	req;
     unsigned 		size;
+#endif
 {
     register int	 i,bit;
     CARD8		*vmods;
 
+    if ((req->present&XkbVirtualModsMask==0)||(size<1))
+	return;
     BufAlloc(CARD8 *,vmods,size);
     for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	if (which&bit)
+	if (req->virtualMods&bit)
 	    *vmods++= xkb->server->vmods[i];
     }
     return;
 }
 
 static int
-_XkbSizeKeyExplicit(xkb,req,pChanges)
+#if NeedFunctionPrototypes
+_XkbSizeKeyExplicit(XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbSizeKeyExplicit(xkb,req)
     XkbDescPtr		xkb;
     xkbSetMapReq *	req;
-    XkbMapChangesPtr 	pChanges;
+#endif
 {
 register int i,first,last,nFound;
 
-    if ((req->present&XkbExplicitComponentsMask)==0) {
+    if (((req->present&XkbExplicitComponentsMask)==0)||(req->nKeyExplicit==0)) {
+	req->present&= ~XkbExplicitComponentsMask;
+	req->firstKeyExplicit= req->nKeyExplicit= 0;
 	req->totalKeyExplicit= 0;
 	return 0;
     }
-    else if (pChanges) {
-	first= pChanges->first_key_explicit;
-	last= first+pChanges->num_key_explicit-1;
-    }
-    else {
-	first= xkb->min_key_code;
-	last= xkb->max_key_code;
-    }
+    first= req->firstKeyExplicit;
+    last= first+req->nKeyExplicit-1;
 
     for (i=first,nFound=0;i<=last;i++) {
 	if (xkb->server->explicit[i]!=0)
 	    nFound++;
     }
     req->totalKeyExplicit= nFound;
-    return (((nFound*2)+3)/4)*4;
+    return XkbPaddedSize((nFound*2));
 }
 
 static void
-_XkbWriteKeyExplicit(dpy,xkb,req,pChanges)
+#if NeedFunctionPrototypes
+_XkbWriteKeyExplicit(Display *dpy,XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbWriteKeyExplicit(dpy,xkb,req)
     Display *		dpy;
     XkbDescPtr		xkb;
     xkbSetMapReq *	req;
-    XkbMapChangesPtr	pChanges;
+#endif
 {
 register int	i,first,last;
 CARD8 *		wire;
 
     if ((req->present&XkbExplicitComponentsMask)==0)
 	return;
-    else if (pChanges) {
-	first= pChanges->first_key_explicit;
-	last= first+pChanges->num_key_explicit-1;
-    }
-    else {
-	first= xkb->min_key_code;
-	last= xkb->max_key_code;
-    }
-    i= (((req->totalKeyExplicit*2)+3)/4)*4;
+    first= req->firstKeyExplicit;
+    last= first+req->nKeyExplicit;
+    i= XkbPaddedSize((req->totalKeyExplicit*2));
     BufAlloc(CARD8 *,wire,i);
     for (i=first;i<=last;i++) {
 	if (xkb->server->explicit[i]!=0) {
@@ -358,69 +410,197 @@ CARD8 *		wire;
     return;
 }
 
-static void
-SendSetMap(dpy,xkb,req,pChanges)
-    Display *		dpy;
-    XkbDescPtr 		xkb;
+static int
+#if NeedFunctionPrototypes
+_XkbSizeModifierMap(XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbSizeModifierMap(xkb,req)
+    XkbDescPtr		xkb;
     xkbSetMapReq *	req;
-    XkbMapChangesRec *	pChanges;
+#endif
 {
-xkbSetMapReq tmp;
-int szMods;
-CARD16 totalSyms,totalActs;
+register int i,first,last,nFound;
 
-    req->length+= _XkbSizeKeyTypes(xkb,req->firstType,req->nTypes)/4;
-    req->length+= _XkbSizeKeySyms(xkb,req->firstKeySym,req->nKeySyms,
-						    	&totalSyms)/4;
-    req->length+= _XkbSizeKeyActions(xkb,req->firstKeyAction,req->nKeyActions,
-						    	&totalActs)/4;
-    req->length+= _XkbSizeKeyBehaviors(xkb,req,pChanges)/4;
-    szMods= _XkbSizeVirtualMods(xkb,req->virtualMods);
-    req->length+= szMods/4;
-    req->length+= _XkbSizeKeyExplicit(xkb,req,pChanges)/4;
-    req->totalSyms= totalSyms;
-    req->totalActions= totalActs;
+    if (((req->present&XkbModifierMapMask)==0)||(req->nModMapKeys==0)) {
+	req->present&= ~XkbModifierMapMask;
+	req->firstModMapKey= req->nModMapKeys= 0;
+	req->totalModMapKeys= 0;
+	return 0;
+    }
+    first= req->firstModMapKey;
+    last= first+req->nModMapKeys-1;
 
-    tmp= *req;
-    if ( tmp.nTypes>0 )
-	_XkbWriteKeyTypes(dpy,xkb,tmp.firstType,tmp.nTypes);
-    if ( tmp.nKeySyms>0 )
-	_XkbWriteKeySyms(dpy,xkb,tmp.firstKeySym,tmp.nKeySyms,tmp.totalSyms);
-    if ( tmp.nKeyActions )
-	_XkbWriteKeyActions(dpy,xkb,tmp.firstKeyAction,tmp.nKeyActions,
-							     tmp.totalActions);
-    if ( tmp.totalKeyBehaviors>0 )
-	_XkbWriteKeyBehaviors(dpy,xkb,&tmp,pChanges);
-    if ( tmp.virtualMods )
-	_XkbWriteVirtualMods(dpy,xkb,tmp.virtualMods,szMods);
-    if ( tmp.totalKeyExplicit>0)
-	_XkbWriteKeyExplicit(dpy,xkb,&tmp,pChanges);
+    for (i=first,nFound=0;i<=last;i++) {
+	if (xkb->map->modmap[i]!=0)
+	    nFound++;
+    }
+    req->totalModMapKeys= nFound;
+    return XkbPaddedSize((nFound*2));
+}
+
+static void
+#if NeedFunctionPrototypes
+_XkbWriteModifierMap(Display *dpy,XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbWriteModifierMap(dpy,xkb,req)
+    Display *		dpy;
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+#endif
+{
+register int	i,first,last;
+CARD8 *		wire;
+
+    if ((req->present&XkbModifierMapMask)==0)
+	return;
+    first= req->firstModMapKey;
+    last= first+req->nModMapKeys-1;
+    if (req->totalModMapKeys>0) {
+	i= XkbPaddedSize((req->totalModMapKeys*2));
+	BufAlloc(CARD8 *,wire,i);
+	for (i=first;i<=last;i++) {
+	    if (xkb->map->modmap[i]!=0) {
+		wire[0]= i;
+		wire[1]= xkb->map->modmap[i];
+		wire+= 2;
+	    }
+	}
+    }
     return;
 }
 
-Status
-XkbSetMap(dpy,which,xkb)
-    Display *dpy;
-    unsigned which;
-    XkbDescRec *xkb;
+static int
+#if NeedFunctionPrototypes
+_XkbSizeVirtualModMap(XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbSizeVirtualModMap(xkb,req)
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+#endif
 {
-    register xkbSetMapReq	*req;
-    XkbInfoPtr xkbi;
+register int i,first,last,nFound;
+
+    if (((req->present&XkbVirtualModMapMask)==0)||(req->nVModMapKeys==0)) {
+	req->present&= ~XkbVirtualModMapMask;
+	req->firstVModMapKey= req->nVModMapKeys= 0;
+	req->totalVModMapKeys= 0;
+	return 0;
+    }
+    first= req->firstVModMapKey;
+    last= first+req->nVModMapKeys-1;
+
+    for (i=first,nFound=0;i<=last;i++) {
+	if (xkb->server->vmodmap[i]!=0)
+	    nFound++;
+    }
+    req->totalVModMapKeys= nFound;
+    return nFound*SIZEOF(xkbVModMapWireDesc);
+}
+
+static void
+#if NeedFunctionPrototypes
+_XkbWriteVirtualModMap(Display *dpy,XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+_XkbWriteVirtualModMap(dpy,xkb,req)
+    Display *		dpy;
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+#endif
+{
+register int		i,first,last;
+xkbVModMapWireDesc *	wire;
+
+    if ((req->present&XkbVirtualModMapMask)==0)
+	return;
+    first= req->firstVModMapKey;
+    last= first+req->nVModMapKeys-1;
+    if (req->totalVModMapKeys>0) {
+	i= req->totalVModMapKeys*SIZEOF(xkbVModMapWireDesc);
+	BufAlloc(xkbVModMapWireDesc *,wire,i);
+	for (i=first;i<=last;i++) {
+	    if (xkb->server->vmodmap[i]!=0) {
+		wire->key= i;
+		wire->vmods= xkb->server->vmodmap[i];
+		wire++;
+	    }
+	}
+    }
+    return;
+}
+
+static void
+#if NeedFunctionPrototypes
+SendSetMap(Display *dpy,XkbDescPtr xkb,xkbSetMapReq *req)
+#else
+SendSetMap(dpy,xkb,req)
+    Display *		dpy;
+    XkbDescPtr 		xkb;
+    xkbSetMapReq *	req;
+#endif
+{
+xkbSetMapReq tmp;
+unsigned szMods;
+
+    req->length+= _XkbSizeKeyTypes(xkb,req)/4;
+    req->length+= _XkbSizeKeySyms(xkb,req)/4;
+    req->length+= _XkbSizeKeyActions(xkb,req)/4;
+    req->length+= _XkbSizeKeyBehaviors(xkb,req)/4;
+    szMods= _XkbSizeVirtualMods(req);
+    req->length+= szMods/4;
+    req->length+= _XkbSizeKeyExplicit(xkb,req)/4;
+    req->length+= _XkbSizeModifierMap(xkb,req)/4;
+    req->length+= _XkbSizeVirtualModMap(xkb,req)/4;
+
+    tmp= *req;
+    if ( tmp.nTypes>0 )
+	_XkbWriteKeyTypes(dpy,xkb,&tmp);
+    if ( tmp.nKeySyms>0 )
+	_XkbWriteKeySyms(dpy,xkb,&tmp);
+    if ( tmp.nKeyActs )
+	_XkbWriteKeyActions(dpy,xkb,&tmp);
+    if ( tmp.totalKeyBehaviors>0 )
+	_XkbWriteKeyBehaviors(dpy,xkb,&tmp);
+    if ( tmp.virtualMods )
+	_XkbWriteVirtualMods(dpy,xkb,&tmp,szMods);
+    if ( tmp.totalKeyExplicit>0)
+	_XkbWriteKeyExplicit(dpy,xkb,&tmp);
+    if ( tmp.totalModMapKeys>0)
+	_XkbWriteModifierMap(dpy,xkb,&tmp);
+    if ( tmp.totalVModMapKeys>0)
+	_XkbWriteVirtualModMap(dpy,xkb,&tmp);
+    return;
+}
+
+Bool
+#if NeedFunctionPrototypes
+XkbSetMap(Display *dpy,unsigned which,XkbDescPtr xkb)
+#else
+XkbSetMap(dpy,which,xkb)
+    Display *	dpy;
+    unsigned 	which;
+    XkbDescPtr	xkb;
+#endif
+{
+register xkbSetMapReq *	req;
+XkbInfoPtr 		xkbi;
+XkbServerMapPtr		srv;
+XkbClientMapPtr		map;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL))||
+	(!xkb))
 	return False;
+    map= xkb->map;
+    srv= xkb->server;
 
-    if (((which&XkbKeyTypesMask)&&(!xkb->map->types))||
-	((which&XkbKeySymsMask)&&
-				((!xkb->map->syms)||(!xkb->map->key_sym_map)))||
-	((which&XkbKeyActionsMask)&&
-				((!xkb->server)||(!xkb->server->key_acts)))||
-	((which&XkbKeyBehaviorsMask)&&
-			       ((!xkb->server)||(!xkb->server->behaviors)))||
-	((which&XkbVirtualModsMask)&&(!xkb->server))||
-	((which&XkbExplicitComponentsMask)&&
-				((!xkb->server)||(!xkb->server->explicit))))
+    if (((which&XkbKeyTypesMask)&&((!map)||(!map->types)))||
+	((which&XkbKeySymsMask)&&((!map)||(!map->syms)||(!map->key_sym_map)))||
+	((which&XkbKeyActionsMask)&&((!srv)||(!srv->key_acts)))||
+	((which&XkbKeyBehaviorsMask)&&((!srv)||(!srv->behaviors)))||
+	((which&XkbVirtualModsMask)&&(!srv))||
+	((which&XkbExplicitComponentsMask)&&((!srv)||(!srv->explicit)))||
+	((which&XkbModifierMapMask)&&((!map)||(!map->modmap)))||
+	((which&XkbVirtualModMapMask)&&((!srv)||(!srv->vmodmap))))
 	return False;
 
     LockDisplay(dpy);
@@ -430,50 +610,76 @@ XkbSetMap(dpy,which,xkb)
     req->xkbReqType = X_kbSetMap;
     req->deviceSpec = xkb->device_spec;
     req->present = which;
-    req->resize = which&XkbResizableInfoMask;
+    req->flags = XkbSetMapAllFlags;
+    req->minKeyCode= xkb->min_key_code;
+    req->maxKeyCode= xkb->max_key_code;
     req->firstType = 0;
-    if (which&XkbKeyTypesMask)	req->nTypes = xkb->map->num_types;
+    if (which&XkbKeyTypesMask)	req->nTypes = map->num_types;
     else			req->nTypes = 0;
-    req->firstKeySym = 0;
     if (which&XkbKeySymsMask) {
 	req->firstKeySym = xkb->min_key_code;
-	req->nKeySyms = xkb->max_key_code-xkb->min_key_code+1;
+	req->nKeySyms = XkbNumKeys(xkb);
     }
     if (which&XkbKeyActionsMask) {
-	req->firstKeyAction = xkb->min_key_code;
-	req->nKeyActions = xkb->max_key_code-xkb->min_key_code+1;
+	req->firstKeyAct = xkb->min_key_code;
+	req->nKeyActs = XkbNumKeys(xkb);
+    }
+    if (which&XkbKeyBehaviorsMask) {
+	req->firstKeyBehavior = xkb->min_key_code;
+	req->nKeyBehaviors = XkbNumKeys(xkb);
     }
     if (which&XkbVirtualModsMask)
 	req->virtualMods= ~0;
-    SendSetMap(dpy,xkb,req,NULL);
+    if (which&XkbExplicitComponentsMask) {
+	req->firstKeyExplicit= xkb->min_key_code;
+	req->nKeyExplicit = XkbNumKeys(xkb);
+    }
+    if (which&XkbModifierMapMask) {
+	req->firstModMapKey= xkb->min_key_code;
+	req->nModMapKeys = XkbNumKeys(xkb);
+    }
+    if (which&XkbVirtualModMapMask) {
+	req->firstVModMapKey= xkb->min_key_code;
+	req->nVModMapKeys = XkbNumKeys(xkb);
+    }
+    SendSetMap(dpy,xkb,req);
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
 }
 
-Status
+Bool
+#if NeedFunctionPrototypes
+XkbChangeMap(Display *dpy,XkbDescPtr xkb,XkbMapChangesPtr changes)
+#else
 XkbChangeMap(dpy,xkb,changes)
-    Display *dpy;
-    XkbDescRec *xkb;
-    XkbMapChangesRec *changes;
+    Display *		dpy;
+    XkbDescPtr		xkb;
+    XkbMapChangesPtr	changes;
+#endif
 {
-    register xkbSetMapReq	*req;
-    XkbInfoPtr xkbi;
+register xkbSetMapReq *	req;
+XkbInfoPtr 		xkbi;
+XkbServerMapPtr		srv;
+XkbClientMapPtr		map;
 
     if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL))||
+	(!xkb)||(!changes))
 	return False;
+    srv= xkb->server;
+    map= xkb->map;
 
-    if (((changes->changed&XkbKeyTypesMask)&&(!xkb->map->types))||
-	((changes->changed&XkbKeySymsMask)&&((!xkb->map->syms)||
-				(!xkb->map->key_sym_map)))||
-	((changes->changed&XkbKeyActionsMask)&&
-				((!xkb->server)||(!xkb->server->key_acts)))||
-	((changes->changed&XkbKeyBehaviorsMask)&&
-			       ((!xkb->server)||(!xkb->server->behaviors)))||
-	((changes->changed&XkbVirtualModsMask)&&(!xkb->server))||
+    if (((changes->changed&XkbKeyTypesMask)&&((!map)||(!map->types)))||
+	((changes->changed&XkbKeySymsMask)&&((!map)||(!map->syms)||
+				(!map->key_sym_map)))||
+	((changes->changed&XkbKeyActionsMask)&&((!srv)||(!srv->key_acts)))||
+	((changes->changed&XkbKeyBehaviorsMask)&&((!srv)||(!srv->behaviors)))||
+	((changes->changed&XkbVirtualModsMask)&&(!srv))||
 	((changes->changed&XkbExplicitComponentsMask)&&
-			       ((!xkb->server)||(!xkb->server->explicit))))
+				((!srv)||(!srv->explicit)))||
+	((changes->changed&XkbModifierMapMask)&&((!map)||(!map->modmap)))||
+	((changes->changed&XkbVirtualModMapMask)&&((!srv)||(!srv->vmodmap))))
 	return False;
 
     LockDisplay(dpy);
@@ -483,15 +689,25 @@ XkbChangeMap(dpy,xkb,changes)
     req->xkbReqType = X_kbSetMap;
     req->deviceSpec = xkb->device_spec;
     req->present = changes->changed;
-    req->resize = 0;
+    req->flags = XkbSetMapRecomputeActions;
+    req->minKeyCode= xkb->min_key_code;
+    req->maxKeyCode= xkb->max_key_code;
     req->firstType = changes->first_type;
     req->nTypes = changes->num_types;
     req->firstKeySym = changes->first_key_sym;
     req->nKeySyms = changes->num_key_syms;
-    req->firstKeyAction = changes->first_key_act;
-    req->nKeyActions = changes->num_key_acts;
+    req->firstKeyAct = changes->first_key_act;
+    req->nKeyActs = changes->num_key_acts;
+    req->firstKeyBehavior = changes->first_key_behavior;
+    req->nKeyBehaviors = changes->num_key_behaviors;
     req->virtualMods = changes->vmods;
-    SendSetMap(dpy,xkb,req,changes);
+    req->firstKeyExplicit = changes->first_key_explicit;
+    req->nKeyExplicit = changes->num_key_explicit;
+    req->firstModMapKey = changes->first_modmap_key;
+    req->nModMapKeys = changes->num_modmap_keys;
+    req->firstVModMapKey = changes->first_vmodmap_key;
+    req->nVModMapKeys = changes->num_vmodmap_keys;
+    SendSetMap(dpy,xkb,req);
     UnlockDisplay(dpy);
     SyncHandle();
     return True;

@@ -1,4 +1,4 @@
-/* $XConsortium: srvmisc.c /main/2 1995/12/07 21:18:42 kaleb $ */
+/* $XConsortium: srvmisc.c /main/4 1996/03/01 14:30:31 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -38,8 +38,12 @@
 #include "XKBfileInt.h"
 
 Bool
+#if NeedFunctionPrototypes
+XkbWriteToServer(XkbFileInfo *result)
+#else
 XkbWriteToServer(result)
     XkbFileInfo *	result;
+#endif
 {
 XkbDescPtr		xkb;
 Display *		dpy;
@@ -60,6 +64,10 @@ Display *		dpy;
 	return False;
     if (!XkbSetNames(dpy,XkbAllNamesMask,0,xkb->map->num_types,xkb))
 	return False;
+    if (xkb->geom) {
+	if (XkbSetGeometry(dpy,xkb->device_spec,xkb->geom)!=Success)
+	    return False;
+    }
     return True;
 #ifdef NOTYET
     switch (result->type) {
@@ -81,11 +89,15 @@ Display *		dpy;
 }
 
 unsigned
+#if NeedFunctionPrototypes
+XkbReadFromServer(Display *dpy,unsigned need,unsigned want,XkbFileInfo *result)
+#else
 XkbReadFromServer(dpy,need,want,result)
     Display *		dpy;
     unsigned 		need;
     unsigned		want;
     XkbFileInfo	*	result;
+#endif
 {
 unsigned which= need|want;
 unsigned tmp;
@@ -122,9 +134,13 @@ unsigned tmp;
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbChangeKbdDisplay(Display *newDpy,XkbFileInfo *result)
+#else
 XkbChangeKbdDisplay(newDpy,result)
     Display *		newDpy;
     XkbFileInfo *	result;
+#endif
 {
 register int	i;
 XkbDescPtr	xkb;

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/135 1996/02/02 19:03:12 gildea $
-XCOMM $XFree86: xc/Imakefile,v 3.8 1996/01/21 01:47:05 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.9 1996/02/10 10:35:13 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -56,6 +56,9 @@ clean::
 	$(RM) -r $(BUILDLIBDIR)
 
       MAKE_OPTS = -f xmakefile
+
+World::
+	$(MAKE) $(MFLAGS) $(MAKE_OPTS) $(PARALLELOPTS) all
 
 Everything::
 	@echo ""

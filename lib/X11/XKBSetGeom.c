@@ -1,4 +1,4 @@
-/* $XConsortium: XKBSetGeom.c /main/2 1996/02/02 14:38:34 kaleb $ */
+/* $XConsortium: XKBSetGeom.c /main/4 1996/03/01 14:29:56 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

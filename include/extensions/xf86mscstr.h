@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.2 1996/01/24 21:56:50 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.3 1996/02/22 05:09:22 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -147,4 +147,4 @@ typedef struct _XF86MiscSetKbdSettings {
 } xXF86MiscSetKbdSettingsReq;
 #define sz_xXF86MiscSetKbdSettingsReq	20
 
-#endif /* _XF86VIDMODESTR_H_ */
+#endif /* _XF86MISCSTR_H_ */

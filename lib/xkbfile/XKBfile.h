@@ -1,7 +1,7 @@
 #ifndef _XKBFILE_H_
 #define	_XKBFILE_H_ 1
 
-/* $XConsortium: XKBfile.h /main/2 1995/12/07 21:18:19 kaleb $ */
+/* $XConsortium: XKBfile.h /main/5 1996/03/01 14:30:21 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -191,6 +191,13 @@ extern char *	XkbAccessXDetailText(
 #endif
 );
 
+extern char *	XkbNKNDetailMaskText(
+#if NeedFunctionPrototypes
+    unsigned	/* detail */,
+    unsigned	/* format */
+#endif
+);
+
 extern char *	XkbControlsMaskText(
 #if NeedFunctionPrototypes
     unsigned	/* ctrls */,
@@ -256,7 +263,8 @@ extern	unsigned _XkbKSCheckCase(
 extern	int	 XkbFindKeycodeByName(
 #if NeedFunctionPrototypes
     XkbDescPtr	/* xkb */,
-    char *	/* name */
+    char *	/* name */,
+    Bool	/* use_aliases */
 #endif
 );
 
@@ -363,6 +371,13 @@ extern	Bool	XkbDetermineFileType(
     XkbFileInfo *	/* xkb */,
     int			/* format */,
     int *		/* opts_missing */
+#endif
+);
+
+extern	Bool	XkbNameMatchesPattern(
+#if NeedFunctionPrototypes
+    char *		/* name */,
+    char *		/* pattern */
 #endif
 );
 

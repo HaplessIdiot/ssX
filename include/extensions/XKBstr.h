@@ -1,4 +1,4 @@
-/* $XConsortium: XKBstr.h,v 1.10 94/04/08 02:57:04 erik Exp $ */
+/* $XConsortium: XKBstr.h /main/15 1996/03/01 14:29:15 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -46,56 +46,55 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 typedef struct _XkbStateRec {
 	unsigned char	group;
-	unsigned char	base_group;
-	unsigned char	latched_group;
 	unsigned char   locked_group;
+	unsigned short	base_group;
+	unsigned short	latched_group;
 	unsigned char	mods;
 	unsigned char	base_mods;
 	unsigned char	latched_mods;
 	unsigned char	locked_mods;
 	unsigned char	compat_state;
+	unsigned char	grab_mods;
+	unsigned char	compat_grab_mods;
+	unsigned char	lookup_mods;
+	unsigned char	compat_lookup_mods;
+	unsigned short	ptr_buttons;
 } XkbStateRec,*XkbStatePtr;
 #define	XkbModLocks(s)	 ((s)->locked_mods)
 #define	XkbStateMods(s)	 ((s)->base_mods|(s)->latched_mods|XkbModLocks(s))
 #define	XkbGroupLock(s)	 ((s)->locked_group)
 #define	XkbStateGroup(s) ((s)->base_group+(s)->latched_group+XkbGroupLock(s))
+#define	XkbStateFieldFromRec(s)	XkbBuildCoreState((s)->lookup_mods,(s)->group)
+#define	XkbGrabStateFromRec(s)	XkbBuildCoreState((s)->grab_mods,(s)->group)
+
+typedef struct _XkbMods {
+	unsigned char	mask;	/* effective mods */
+	unsigned char	real_mods;
+	unsigned short	vmods;
+} XkbModsRec,*XkbModsPtr;
 
 typedef struct _XkbKTMapEntry {
 	Bool		active;
-	unsigned char	mask;	/* effective mods */
 	unsigned char	level;
-	unsigned char	real_mods;
-	unsigned short	vmods;
+	XkbModsRec	mods;
 } XkbKTMapEntryRec,*XkbKTMapEntryPtr;
 
-typedef struct _XkbKTPreserve {
-	unsigned char	mask;
-	unsigned char	real_mods;
-	unsigned short	vmods;
-} XkbKTPreserveRec, *XkbKTPreservePtr;
-
 typedef struct _XkbKeyType {
-	unsigned char	  mask;
-	unsigned char	  real_mods;
-	unsigned short	  vmods;
-	unsigned char	  group_width;
-	unsigned char	  free;
-	unsigned char	  map_count;
-	XkbKTMapEntryPtr  map;
-	XkbKTPreservePtr  preserve;
-	Atom		  name;
-	Atom		 *lvl_names;
+	XkbModsRec		mods;
+	unsigned char	  	num_levels;
+	unsigned char	  	map_count;
+	XkbKTMapEntryPtr  	map;
+	XkbModsPtr  		preserve;
+	Atom		  	name;
+	Atom *			level_names;
 } XkbKeyTypeRec, *XkbKeyTypePtr;
-#define	XkbNoFreeKTLevelNames	(1<<4)
-#define	XkbNoFreeKTPreserve	(1<<5)
-#define	XkbNoFreeKTMap		(1<<6)
-#define	XkbNoFreeKTStruct	(1<<7)
 
-#define	XkbNumGroups(g)		((g)&0x1f)
-#define	XkbGroupsWrap(g)	(((g)&0x80)!=0)
-#define	XkbSetGroupInfo(g,w)	(((w)?0x80:0x00)|((g)&0x1f))
-#define	XkbSetNumGroups(g,n)	(((g)&0x80)|((n)&0x1f))
-#define	XkbSetGroupsWrap(g,w)	(((w)?0x80:0x00)|((g)&0x1f))
+#define	XkbNumGroups(g)			((g)&0x0f)
+#define	XkbOutOfRangeGroupInfo(g)	((g)&0xf0)
+#define	XkbOutOfRangeGroupAction(g)	((g)&0xc0)
+#define	XkbOutOfRangeGroupNumber(g)	(((g)&0x30)>>4)
+#define	XkbSetGroupInfo(g,w,n)	(((w)&0xc0)|(((n)&3)<<4)|((g)&0x0f))
+#define	XkbSetNumGroups(g,n)	(((g)&0xf0)|((n)&0x0f))
 
 	/*
 	 * Structures and access macros used primarily by the server
@@ -193,15 +192,55 @@ typedef struct _XkbCtrlsAction {
 					((a)->ctrls2=(((c)>>16)&0xff)),\
 					((a)->ctrls1=(((c)>>8)&0xff)),\
 					((a)->ctrls0=((c)&0xff)))
-#define	XkbActionCtrls(a) ((((unsigned)(a)->ctrls3)<<24)|\
-			   (((unsigned)(a)->ctrls2)<<16)|\
-			   (((unsigned)(a)->ctrls1)<<8)|((a)->ctrls0))
+#define	XkbActionCtrls(a) ((((unsigned int)(a)->ctrls3)<<24)|\
+			   (((unsigned int)(a)->ctrls2)<<16)|\
+			   (((unsigned int)(a)->ctrls1)<<8)|\
+			   ((unsigned int)((a)->ctrls0)))
 
 typedef struct _XkbMessageAction {
 	unsigned char	type;
 	unsigned char	flags;
 	unsigned char	message[6];
 } XkbMessageAction;
+
+typedef struct	_XkbRedirectKeyAction {
+	unsigned char	type;
+	unsigned char	new_key;
+	unsigned char	mods_mask;
+	unsigned char	mods;
+	unsigned char	vmods_mask0;
+	unsigned char	vmods_mask1;
+	unsigned char	vmods0;
+	unsigned char	vmods1;
+} XkbRedirectKeyAction;
+
+#define	XkbSARedirectVMods(a)		((((unsigned int)(a)->vmods1)<<8)|\
+					((unsigned int)(a)->vmods0))
+#define	XkbSARedirectSetVMods(a,m)	(((a)->vmods_mask1=(((m)>>8)&0xff)),\
+					 ((a)->vmods_mask0=((m)&0xff)))
+#define	XkbSARedirectVModsMask(a)	((((unsigned int)(a)->vmods_mask1)<<8)|\
+					((unsigned int)(a)->vmods_mask0))
+#define	XkbSARedirectSetVModsMask(a,m)	(((a)->vmods_mask1=(((m)>>8)&0xff)),\
+					 ((a)->vmods_mask0=((m)&0xff)))
+
+typedef struct _XkbDeviceBtnAction {
+	unsigned char	type;
+	unsigned char	flags;
+	unsigned char	count;
+	unsigned char	button;
+	unsigned char	device;
+} XkbDeviceBtnAction;
+
+typedef struct _XkbDeviceValuatorAction {
+	unsigned char	type;
+	unsigned char	device;
+	unsigned char	v1_what;
+	unsigned char	v1_ndx;
+	unsigned char	v1_value;
+	unsigned char	v2_what;
+	unsigned char	v2_ndx;
+	unsigned char	v2_value;
+} XkbDeviceValuatorAction;
 
 typedef	union _XkbAction {
 	XkbAnyAction		any;
@@ -214,31 +253,40 @@ typedef	union _XkbAction {
 	XkbSwitchScreenAction	screen;
 	XkbCtrlsAction		ctrls;
 	XkbMessageAction	msg;
+	XkbRedirectKeyAction	redirect;
+	XkbDeviceBtnAction	devbtn;
+	XkbDeviceValuatorAction	devval;
 	unsigned char 		type;
 } XkbAction;
 
 typedef	struct _XkbControls {
-	unsigned char	mouse_keys_dflt_btn;
+	unsigned char	mk_dflt_btn;
 	unsigned char	num_groups;
-	unsigned char	internal_mask;
-	unsigned char	ignore_lock_mask;
-	unsigned char	internal_real_mods;
-	unsigned char	ignore_lock_real_mods;
-	unsigned short	internal_vmods;
-	unsigned short	ignore_lock_vmods;
+	unsigned char	groups_wrap;
+	XkbModsRec	internal;
+	XkbModsRec	ignore_lock;
 	unsigned int	enabled_ctrls;
 	unsigned short	repeat_delay;
 	unsigned short	repeat_interval;
 	unsigned short	slow_keys_delay;
 	unsigned short	debounce_delay;
-	unsigned short	mouse_keys_delay;
-	unsigned short	mouse_keys_interval;
-	unsigned short	mouse_keys_time_to_max;
-	unsigned short	mouse_keys_max_speed;
-	unsigned short	mouse_keys_curve;
-	unsigned short	accessx_timeout;
-	unsigned int	accessx_timeout_mask;
+	unsigned short	mk_delay;
+	unsigned short	mk_interval;
+	unsigned short	mk_time_to_max;
+	unsigned short	mk_max_speed;
+		 short	mk_curve;
+	unsigned short	ax_options;
+	unsigned short	ax_timeout;
+	unsigned short	axt_opts_mask;
+	unsigned short	axt_opts_values;
+	unsigned int	axt_ctrls_mask;
+	unsigned int	axt_ctrls_values;
+	unsigned char	per_key_repeat[XkbPerKeyBitArraySize];
 } XkbControlsRec, *XkbControlsPtr;
+
+#define	XkbAX_AnyFeedback(c)	((c)->enabled_ctrls&XkbAccessXFeedbackMask)
+#define	XkbAX_NeedOption(c,w)	((c)->ax_options&(w))
+#define	XkbAX_NeedFeedback(c,w)	(XkbAX_AnyFeedback(c)&&XkbAX_NeedOption(c,w))
 
 typedef struct _XkbServerMapRec {
 	unsigned short		 num_acts;
@@ -249,6 +297,7 @@ typedef struct _XkbServerMapRec {
 	unsigned short		*key_acts;
 	unsigned char		*explicit;
 	unsigned char		 vmods[XkbNumVirtualMods];
+	unsigned short		*vmodmap;
 } XkbServerMapRec, *XkbServerMapPtr;
 
 #define	XkbSMKeyActionsPtr(m,k) (&(m)->acts[(m)->key_acts[k]])
@@ -258,39 +307,38 @@ typedef struct _XkbServerMapRec {
 	 */
 
 typedef	struct _XkbSymMapRec {
-	unsigned char	 kt_index;
+	unsigned char	 kt_index[XkbNumKbdGroups];
 	unsigned char	 group_info;
+	unsigned char	 width;
 	unsigned short	 offset;
 } XkbSymMapRec, *XkbSymMapPtr;
 
 typedef struct _XkbClientMapRec {
 	unsigned char		 size_types;
 	unsigned char		 num_types;
-	XkbKeyTypeRec		*types;
+	XkbKeyTypePtr		 types;
 
 	unsigned short		 size_syms;
 	unsigned short		 num_syms;
 	KeySym			*syms;
-	XkbSymMapRec		*key_sym_map;
+	XkbSymMapPtr		 key_sym_map;
+
+	unsigned char		*modmap;
 } XkbClientMapRec, *XkbClientMapPtr;
 
-#define	XkbCMKeyGroupsWrap(m,k) (XkbGroupsWrap((m)->key_sym_map[k].group_info))
-#define	XkbCMKeyNumGroups(m,k)	(XkbNumGroups((m)->key_sym_map[k].group_info))
-#define	XkbCMKeyGroupWidth(m,k)	(XkbCMKeyType(m,k)->group_width)
-#define	XkbCMKeyTypeIndex(m,k)	((m)->key_sym_map[k].kt_index)
-#define	XkbCMKeyType(m,k)	(&(m)->types[XkbCMKeyTypeIndex(m,k)])
-#define	XkbCMKeyNumSyms(m,k)	(XkbCMKeyGroupWidth(m,k)*XkbCMKeyNumGroups(m,k))
+#define	XkbCMKeyGroupInfo(m,k)  ((m)->key_sym_map[k].group_info)
+#define	XkbCMKeyNumGroups(m,k)	 (XkbNumGroups((m)->key_sym_map[k].group_info))
+#define	XkbCMKeyGroupWidth(m,k,g) (XkbCMKeyType(m,k,g)->num_levels)
+#define	XkbCMKeyGroupsWidth(m,k) ((m)->key_sym_map[k].width)
+#define	XkbCMKeyTypeIndex(m,k,g) ((m)->key_sym_map[k].kt_index[g&0x3])
+#define	XkbCMKeyType(m,k,g)	 (&(m)->types[XkbCMKeyTypeIndex(m,k,g)])
+#define	XkbCMKeyNumSyms(m,k) (XkbCMKeyGroupsWidth(m,k)*XkbCMKeyNumGroups(m,k))
 #define	XkbCMKeySymsOffset(m,k)	((m)->key_sym_map[k].offset)
 #define	XkbCMKeySymsPtr(m,k)	(&(m)->syms[XkbCMKeySymsOffset(m,k)])
 
 	/*
 	 * Compatibility structures and access macros
 	 */
-
-typedef struct _XkbModCompatRec {
-	unsigned char	mods;
-	unsigned char	groups;
-} XkbModCompatRec,*XkbModCompatPtr;
 
 typedef struct _XkbSymInterpretRec {
 	KeySym		sym;
@@ -301,34 +349,43 @@ typedef struct _XkbSymInterpretRec {
 	XkbAnyAction	act;
 } XkbSymInterpretRec,*XkbSymInterpretPtr;
 
-typedef struct _XkbCompatRec {
-	XkbSymInterpretRec	*sym_interpret;
-	XkbModCompatRec		 real_mod_compat[XkbNumModifiers];
-	XkbModCompatRec		 vmod_compat[XkbNumVirtualMods];
-	XkbModCompatPtr		 mod_compat[XkbNumModifiers];
+typedef struct _XkbCompatMapRec {
+	XkbSymInterpretPtr	 sym_interpret;
+	XkbModsRec		 groups[XkbNumKbdGroups];
 	unsigned short		 num_si;
 	unsigned short		 size_si;
-} XkbCompatRec, *XkbCompatPtr;
+} XkbCompatMapRec, *XkbCompatMapPtr;
 
 typedef struct _XkbIndicatorMapRec {
 	unsigned char	flags;
 	unsigned char	which_groups;
 	unsigned char	groups;
 	unsigned char	which_mods;
-	unsigned char	mask;
-	unsigned char	real_mods;
-	unsigned short	vmods;
+	XkbModsRec	mods;
 	unsigned int	ctrls;
 } XkbIndicatorMapRec, *XkbIndicatorMapPtr;
 
+#define	XkbIM_IsAuto(i)	((((i)->flags&XkbIM_NoAutomatic)==0)&&\
+			    (((i)->which_groups&&(i)->groups)||\
+			     ((i)->which_mods&&(i)->mods.mask)||\
+			     ((i)->ctrls)))
+#define	XkbIM_InUse(i)	(((i)->flags)||((i)->which_groups)||\
+					((i)->which_mods)||((i)->ctrls))
+	
+
 typedef struct _XkbIndicatorRec {
-	unsigned char	  	num_phys_indicators;
+	unsigned long	  	phys_indicators;
 	XkbIndicatorMapRec	maps[XkbNumIndicators];
 } XkbIndicatorRec,*XkbIndicatorPtr;
 
 typedef	struct _XkbKeyNameRec {
-	char	name[4];
+	char	name[XkbKeyNameLength];
 } XkbKeyNameRec,*XkbKeyNamePtr;
+
+typedef struct _XkbKeyAliasRec {
+	char	real[XkbKeyNameLength];
+	char	alias[XkbKeyNameLength];
+} XkbKeyAliasRec,*XkbKeyAliasPtr;
 
 	/*
 	 * Names for everything 
@@ -337,43 +394,27 @@ typedef struct _XkbNamesRec {
 	Atom		  keycodes;
 	Atom		  geometry;
 	Atom		  symbols;
-	Atom		  semantics;
-	Atom		  mods[XkbNumModifiers];
+	Atom              types;
+	Atom		  compat;
 	Atom		  vmods[XkbNumVirtualMods];
 	Atom		  indicators[XkbNumIndicators];
+	Atom		  groups[XkbNumKbdGroups];
 	XkbKeyNamePtr	  keys;
+	XkbKeyAliasPtr	  key_aliases;
 	Atom		 *radio_groups;
-	Atom		 *char_sets;
 	Atom		  phys_symbols;
-	Atom		  phys_geometry;
 
 	unsigned char	  num_keys;
+	unsigned char	  num_key_aliases;
 	unsigned short	  num_rg;
-	unsigned short	  num_char_sets;
 } XkbNamesRec,*XkbNamesPtr;
 
-	/*
-	 * Alternate Symbol Sets
-	 */
-typedef struct _XkbAlternateSymsRec {
-	Atom		 name;
-	unsigned char	 index;
-	unsigned char	 num_char_sets;
-	Atom		*char_sets;
-	unsigned char	 first_key;
-	unsigned char	 num_keys;
-	unsigned short	 num_syms;
-	unsigned short	 size_syms;
-	KeySym		*syms;
-	XkbSymMapRec	*maps;
-	struct _XkbAlternateSymsRec	*next;
-} XkbAlternateSymsRec, *XkbAlternateSymsPtr;
-
-typedef	struct _XkbGeometryRec	*XkbGeometryPtr;
+typedef	struct _XkbGeometry	*XkbGeometryPtr;
 	/*
 	 * Tie it all together into one big keyboard description
 	 */
 typedef	struct _XkbDesc {
+	struct _XDisplay *	dpy;
 	unsigned short	 	flags;
 	unsigned short		device_spec;
 	KeyCode			min_key_code;
@@ -384,74 +425,91 @@ typedef	struct _XkbDesc {
 	XkbClientMapPtr		map;
 	XkbIndicatorPtr		indicators;
 	XkbNamesPtr		names;
-	XkbCompatPtr		compat;
-	XkbAlternateSymsPtr	alt_syms;
+	XkbCompatMapPtr		compat;
 	XkbGeometryPtr		geom;
 } XkbDescRec, *XkbDescPtr;
-#define	XkbKeyKeyTypeIndex(d,k)	(XkbCMKeyTypeIndex((d)->map,k))
-#define	XkbKeyKeyType(d,k)	(XkbCMKeyType((d)->map,k))
-#define	XkbKeyGroupWidth(d,k)	(XkbKeyKeyType(d,k)->group_width)
-#define	XkbKeyGroupsWrap(d,k)	(XkbCMKeyGroupsWrap((d)->map,(k)))
-#define	XkbKeyNumGroups(d,k)	(XkbCMKeyNumGroups((d)->map,(k)))
-#define	XkbKeyNumSyms(d,k)	(XkbCMKeyNumSyms((d)->map,(k)))
-#define	XkbKeySymsPtr(d,k)	(XkbCMKeySymsPtr((d)->map,(k)))
-#define	XkbKeySym(d,k,n)	(XkbKeySymsPtr(d,k)[n])
+#define	XkbKeyKeyTypeIndex(d,k,g)	(XkbCMKeyTypeIndex((d)->map,k,g))
+#define	XkbKeyKeyType(d,k,g)		(XkbCMKeyType((d)->map,k,g))
+#define	XkbKeyGroupWidth(d,k,g)		(XkbCMKeyGroupWidth((d)->map,k,g))
+#define	XkbKeyGroupsWidth(d,k)		(XkbCMKeyGroupsWidth((d)->map,k))
+#define	XkbKeyGroupInfo(d,k)		(XkbCMKeyGroupInfo((d)->map,(k)))
+#define	XkbKeyNumGroups(d,k)		(XkbCMKeyNumGroups((d)->map,(k)))
+#define	XkbKeyNumSyms(d,k)		(XkbCMKeyNumSyms((d)->map,(k)))
+#define	XkbKeySymsPtr(d,k)		(XkbCMKeySymsPtr((d)->map,(k)))
+#define	XkbKeySym(d,k,n)		(XkbKeySymsPtr(d,k)[n])
+#define	XkbKeySymEntry(d,k,sl,g) \
+	(XkbKeySym(d,k,((XkbKeyGroupsWidth(d,k)*(g))+(sl))))
+#define	XkbKeyAction(d,k,n) \
+	(XkbKeyHasActions(d,k)?&XkbKeyActionsPtr(d,k)[n]:NULL)
+#define	XkbKeyActionEntry(d,k,sl,g) \
+	(XkbKeyHasActions(d,k)?\
+		XkbKeyAction(d,k,((XkbKeyGroupsWidth(d,k)*(g))+(sl))):NULL)
 
 #define	XkbKeyHasActions(d,k)	((d)->server->key_acts[k]!=0)
 #define	XkbKeyNumActions(d,k)	(XkbKeyHasActions(d,k)?XkbKeyNumSyms(d,k):1)
 #define	XkbKeyActionsPtr(d,k)	(XkbSMKeyActionsPtr((d)->server,k))
+#define	XkbKeycodeInRange(d,k)	(((k)>=(d)->min_key_code)&&\
+				 ((k)<=(d)->max_key_code))
 #define	XkbNumKeys(d)		((d)->max_key_code-(d)->min_key_code+1)
 
+
+	/*
+	 * The following structures can be used to track changes
+	 * to a keyboard device
+	 */
 typedef struct _XkbMapChanges {
 	unsigned short		 changed;
+	KeyCode			 min_key_code;
+	KeyCode			 max_key_code;
 	unsigned char		 first_type;
 	unsigned char		 num_types;
-	unsigned char		 first_key_sym;
+	KeyCode			 first_key_sym;
 	unsigned char		 num_key_syms;
-	unsigned char		 first_key_act;
+	KeyCode			 first_key_act;
 	unsigned char		 num_key_acts;
-	unsigned char		 first_key_behavior;
+	KeyCode			 first_key_behavior;
 	unsigned char		 num_key_behaviors;
-	unsigned short		 vmods;
-	unsigned char		 first_key_explicit;
+	KeyCode 		 first_key_explicit;
 	unsigned char		 num_key_explicit;
+	KeyCode			 first_modmap_key;
+	unsigned char		 num_modmap_keys;
+	KeyCode			 first_vmodmap_key;
+	unsigned char		 num_vmodmap_keys;
+	unsigned char		 pad;
+	unsigned short		 vmods;
 } XkbMapChangesRec,*XkbMapChangesPtr;
 
 typedef struct _XkbControlsChanges {
-	unsigned 		 changed_ctrls;
-	unsigned		 enabled_ctrls_changes;
+	unsigned int 		 changed_ctrls;
+	unsigned int		 enabled_ctrls_changes;
+	Bool			 num_groups_changed;
 } XkbControlsChangesRec,*XkbControlsChangesPtr;
 
 typedef struct _XkbIndicatorChanges {
-	unsigned		 state_changes;
-	unsigned		 map_changes;
+	unsigned int		 state_changes;
+	unsigned int		 map_changes;
 } XkbIndicatorChangesRec,*XkbIndicatorChangesPtr;
 
 typedef struct _XkbNameChanges {
-	unsigned short		changed;
+	unsigned int 		changed;
 	unsigned char		first_type;
 	unsigned char		num_types;
 	unsigned char		first_lvl;
 	unsigned char		num_lvls;
-	unsigned char		first_rg;
+	unsigned char		num_aliases;
 	unsigned char		num_rg;
-	unsigned		changed_indicators;
-	unsigned char		changed_mods;
+	unsigned char		first_key;
+	unsigned char		num_keys;
 	unsigned short		changed_vmods;
+	unsigned long		changed_indicators;
+	unsigned char		changed_groups;
 } XkbNameChangesRec,*XkbNameChangesPtr;
 
 typedef struct _XkbCompatChanges {
-	unsigned char		changed_mods;
-	unsigned short		changed_vmods;
+	unsigned char		changed_groups;
 	unsigned short		first_si;
 	unsigned short		num_si;
 } XkbCompatChangesRec,*XkbCompatChangesPtr;
-
-typedef struct _XkbAlternateSymChanges {
-	unsigned char		id;
-	unsigned char		first_key;
-	unsigned char		num_keys;
-} XkbAlternateSymChanges,*XkbAlternateSymsChangesPtr;
 
 typedef struct _XkbChanges {
 	unsigned short		 device_spec;
@@ -462,5 +520,90 @@ typedef struct _XkbChanges {
 	XkbNameChangesRec	 names;
 	XkbCompatChangesRec	 compat;
 } XkbChangesRec, *XkbChangesPtr;
+
+	/*
+	 * These data structures are used to construct a keymap from 
+	 * a set of components or to list components in the server
+	 * database.
+	 */
+typedef struct _XkbComponentNames {
+	char *			 keymap;
+	char *			 keycodes;
+	char *			 types;
+	char *			 compat;
+	char *			 symbols;
+	char *			 geometry;
+} XkbComponentNamesRec, *XkbComponentNamesPtr;
+
+typedef struct _XkbComponentName {
+	unsigned short		flags;
+	char *			name;
+} XkbComponentNameRec,*XkbComponentNamePtr;
+
+typedef struct _XkbComponentList {
+	int			num_keymaps;
+	int			num_keycodes;
+	int			num_types;
+	int			num_compat;
+	int			num_symbols;
+	int			num_geometry;
+	XkbComponentNamePtr	keymaps;
+	XkbComponentNamePtr 	keycodes;
+	XkbComponentNamePtr	types;
+	XkbComponentNamePtr	compat;
+	XkbComponentNamePtr	symbols;
+	XkbComponentNamePtr	geometry;
+} XkbComponentListRec, *XkbComponentListPtr;
+
+	/*
+	 * The following data structures describe and track changes to a 
+	 * non-keyboard extension device 
+	 */
+typedef struct _XkbDeviceLedInfo {
+	unsigned short			led_class;
+	unsigned short			led_id;
+	unsigned int			phys_indicators;
+	unsigned int			maps_present;
+	unsigned int			names_present;
+	unsigned int			state;
+	Atom 				names[XkbNumIndicators];
+	XkbIndicatorMapRec		maps[XkbNumIndicators];
+} XkbDeviceLedInfoRec,*XkbDeviceLedInfoPtr;
+
+typedef struct _XkbDeviceInfo {
+	char *			name;
+	Atom			type;
+	unsigned short		device_spec;
+	Bool			has_own_state;
+	unsigned short		supported;
+	unsigned short		unsupported;
+
+	unsigned short		num_btns;
+	XkbAction *		btn_acts;
+
+	unsigned short		sz_leds;
+	unsigned short		num_leds;
+	unsigned short		dflt_kbd_fb;
+	unsigned short		dflt_led_fb;
+	XkbDeviceLedInfoPtr	leds;
+} XkbDeviceInfoRec,*XkbDeviceInfoPtr;
+
+#define	XkbXI_DevHasBtnActs(d)	(((d)->num_btns>0)&&((d)->btn_acts!=NULL))
+#define	XkbXI_LegalDevBtn(d,b)	(XkbXI_DevHasBtnActs(d)&&((b)<(d)->num_btns))
+#define	XkbXI_DevHasLeds(d)	(((d)->num_leds>0)&&((d)->leds!=NULL))
+
+typedef struct _XkbDeviceLedChanges {
+	unsigned short		led_class;
+	unsigned short		led_id;
+	unsigned int		defined; /* names or maps changed */
+	struct _XkbDeviceLedChanges *next;
+} XkbDeviceLedChangesRec,*XkbDeviceLedChangesPtr;
+
+typedef struct _XkbDeviceChanges {
+	unsigned int		changed;
+	unsigned short		first_btn;
+	unsigned short		num_btns;
+	XkbDeviceLedChangesRec 	leds;
+} XkbDeviceChangesRec,*XkbDeviceChangesPtr;
 
 #endif /* _XKBSTR_H_ */

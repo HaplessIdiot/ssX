@@ -1,4 +1,4 @@
-/* $XConsortium: XKBCompat.c,v 1.2 94/04/08 15:10:49 erik Exp $ */
+/* $XConsortium: XKBCompat.c /main/8 1996/03/01 14:29:32 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,32 +28,43 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdio.h>
 #define NEED_REPLIES
 #define NEED_EVENTS
+#define	NEED_MAP_READERS
 #include "Xlibint.h"
 #include <X11/extensions/XKBproto.h>
 #include "XKBlibint.h"
 
-static Status
-_XkbReadGetCompatMapReply(dpy,rep,xkb)
+Status
+#if NeedFunctionPrototypes
+_XkbReadGetCompatMapReply(	Display *		dpy,
+				xkbGetCompatMapReply *	rep,
+				XkbDescPtr		xkb,
+				int	*		nread_rtrn)
+#else
+_XkbReadGetCompatMapReply(dpy,rep,xkb,nread_rtrn)
     Display *			dpy;
     xkbGetCompatMapReply *	rep;
     XkbDescPtr			xkb;
+    int	*			nread_rtrn;
+#endif
 {
 register int 		i;
 XkbReadBufferRec	buf;
-int			nMods,nVMods;
 
-    if (!_XkbInitReadBuffer(dpy,&buf,rep->length*4)) 
-	return False;
+    if (!_XkbInitReadBuffer(dpy,&buf,(int)rep->length*4)) 
+	return BadAlloc;
 
+    if (nread_rtrn)
+	*nread_rtrn= (int)rep->length*4;
+
+    i= rep->firstSI+rep->nSI;
     if ((!xkb->compat)&&
-	(!XkbAllocCompatMap(xkb,XkbAllCompatMask,rep->firstSI+rep->nSI-1)))
-	return False;
+	(XkbAllocCompatMap(xkb,XkbAllCompatMask,i)!=Success))
+	return BadAlloc;
 
     if (rep->nSI!=0) {
 	XkbSymInterpretRec *syms;
 	xkbSymInterpretWireDesc *wire;
 
-	int lastSI= rep->firstSI+rep->nSI-1;
 	wire= (xkbSymInterpretWireDesc *)_XkbGetReadBufferPtr(&buf,
 				   rep->nSI*SIZEOF(xkbSymInterpretWireDesc));
 	if (wire==NULL)
@@ -70,78 +81,57 @@ int			nMods,nVMods;
 	}
 	xkb->compat->num_si+= rep->nSI;
     }
-    nMods= nVMods= 0;
 
-    if (rep->mods) {
-	register int bit;
-	xkbModCompatWireDesc *wire;
-
-	for (i=0,bit=1;i<XkbNumModifiers;i++,bit<<=1) {
-	    if (rep->mods&bit)
-		nMods++;
+    if (rep->groups&XkbAllGroupsMask) {
+	register unsigned	bit,nGroups;
+	xkbModsWireDesc * 	wire;
+	for (i=0,nGroups=0,bit=1;i<XkbNumKbdGroups;i++,bit<<=1) {
+	    if (rep->groups&bit)
+		nGroups++;
 	}
-	wire= (xkbModCompatWireDesc *)_XkbGetReadBufferPtr(&buf,
-					sz_xkbModCompatWireDesc*nMods);
+	wire= (xkbModsWireDesc *)_XkbGetReadBufferPtr(&buf,
+				  nGroups*SIZEOF(xkbModsWireDesc));
 	if (wire==NULL)
 	    goto BAILOUT;
-	for (i=0,bit=1;i<XkbNumModifiers;i++,bit<<=1) {
-	    if (rep->mods&bit) {
-		xkb->compat->real_mod_compat[i].mods= wire->mods;
-		xkb->compat->real_mod_compat[i].groups= wire->groups;
-		wire++;
-	    }
+	for (i=0,bit=1;i<XkbNumKbdGroups;i++,bit<<=1) {
+	    if ((rep->groups&bit)==0)
+		continue;
+	    xkb->compat->groups[i].mask= wire->mask;
+	    xkb->compat->groups[i].real_mods= wire->realMods;
+	    xkb->compat->groups[i].vmods= wire->virtualMods;
+	    wire++;
 	}
     }
-    if (rep->virtualMods) {
-	register int bit;
-	xkbModCompatWireDesc *wire;
-
-	for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	    if (rep->virtualMods&bit)
-		nVMods++;
-	}
-	wire= (xkbModCompatWireDesc *)_XkbGetReadBufferPtr(&buf,
-					sz_xkbModCompatWireDesc*nVMods);
-	if (wire==NULL)
-	    goto BAILOUT;
-	for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	    if (rep->virtualMods&bit) {
-		xkb->compat->vmod_compat[i].mods= wire->mods;
-		xkb->compat->vmod_compat[i].groups= wire->groups;
-		wire++;
-	    }
-	}
-    }
-    i= ((nMods+nVMods)*sz_xkbModCompatWireDesc);
-    i= (((i+3)/4)*4)-i;
-    if (i>0)
-	_XkbSkipReadBufferData(&buf,i);
-
     i= _XkbFreeReadBuffer(&buf);
     if (i) 
 	fprintf(stderr,"CompatMapReply! Bad length (%d extra bytes)\n",i);
     if (i || buf.error)
-	return False;
-    return True;
+	return BadLength;
+    return Success;
 BAILOUT:
     _XkbFreeReadBuffer(&buf);
-    return False;
+    return BadLength;
 }
 
 Status
+#if NeedFunctionPrototypes
+XkbGetCompatMap(Display *dpy,unsigned which,XkbDescPtr xkb)
+#else
 XkbGetCompatMap(dpy,which,xkb)
-    Display *dpy;
-    unsigned which;
-    XkbDescRec *xkb;
+    Display *	dpy;
+    unsigned 	which;
+    XkbDescPtr	xkb;
+#endif
 {
     register xkbGetCompatMapReq *req;
     xkbGetCompatMapReply	 rep;
-    Status		     ok;
+    Status			status;
     XkbInfoPtr xkbi;
 
-    if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
-	return False;
+    if ( (!dpy) || (!xkb) || (dpy->flags & XlibDisplayNoXkb) ||
+	((xkb->dpy!=NULL)&&(xkb->dpy!=dpy)) ||
+	(!dpy->xkb_info && (!XkbUseExtension(dpy,NULL,NULL))))
+	return BadAccess;
     LockDisplay(dpy);
     xkbi = dpy->xkb_info;
     GetReq(kbGetCompatMap, req);
@@ -153,53 +143,57 @@ XkbGetCompatMap(dpy,which,xkb)
     else req->getAllSI= False;
     req->firstSI= req->nSI= 0;
 
-    if (which&XkbModCompatMask)
-	 req->mods=  ~0;
-    else req->mods=  0;
-
-    if (which&XkbVirtualModCompatMask)
-	 req->virtualMods=  ~0;
-    else req->virtualMods=  0;
+    if (which&XkbGroupCompatMask)
+	 req->groups= XkbAllGroupsMask;
+    else req->groups=  0;
 
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
-	return False;
+	return BadLength;
     }
+    if (xkb->dpy==NULL)
+	xkb->dpy= dpy;
     if (xkb->device_spec==XkbUseCoreKbd)
 	xkb->device_spec= rep.deviceID;
 
-    ok = _XkbReadGetCompatMapReply(dpy,&rep,xkb);
+    status = _XkbReadGetCompatMapReply(dpy,&rep,xkb,NULL);
     UnlockDisplay(dpy);
     SyncHandle();
-    return ok;
+    return status;
 }
 
-static Status
+static Bool
+#if NeedFunctionPrototypes
+_XkbWriteSetCompatMap(Display *dpy,xkbSetCompatMapReq *req,XkbDescPtr xkb)
+#else
 _XkbWriteSetCompatMap(dpy,req,xkb)
     Display *		dpy;
     xkbSetCompatMapReq	*req;
     XkbDescPtr		xkb;
+#endif
 {
-CARD8	mods = req->mods;
-CARD16	vmods = req->virtualMods;
-CARD16	firstSI = req->firstSI;
-CARD16	nSI = req->nSI;
-int	size,nMods,nVMods;
-register int i,bit;
-char	*buf;
+CARD16			firstSI;
+CARD16			nSI;
+int			size;
+register int 		i,nGroups;
+register unsigned	bit;
+unsigned		groups;
+char *			buf;
 
-    for (i=0,bit=1;i<XkbNumModifiers;i++,bit<<=1) {
-	if (mods&bit)	nMods++;
-	if (vmods&bit)	nVMods++;
+    firstSI = req->firstSI;
+    nSI = req->nSI;
+    size= nSI*SIZEOF(xkbSymInterpretWireDesc);
+    nGroups= 0;
+    groups= req->groups;
+    if (groups&XkbAllGroupsMask) {
+	for (i=0,bit=1;i<XkbNumKbdGroups;i++,bit<<=1) {
+	    if (groups&bit)
+		nGroups++;
+	}
+	size+= SIZEOF(xkbModsWireDesc)*nGroups;
     }
-    for (;i<XkbNumVirtualMods;i++,bit<<=1) {
-	if (vmods&bit) nVMods++;
-    }
-
-    size= nSI*sz_xkbSymInterpretWireDesc;
-    size+= (((nMods*sz_xkbModCompatWireDesc)+3)/4)*4;
-    req->length+= (size+3)/4;
+    req->length+= size/4;
     BufAlloc(char *,buf,size);
     if (!buf)
 	return False;
@@ -207,52 +201,50 @@ char	*buf;
     if (nSI) {
 	XkbSymInterpretPtr sym= &xkb->compat->sym_interpret[firstSI];
 	xkbSymInterpretWireDesc *wire= (xkbSymInterpretWireDesc *)buf;
-	for (i=0;i<nSI;i++) {
-	    wire->sym= sym->sym;
+	for (i=0;i<nSI;i++,wire++,sym++) {
+	    wire->sym= (CARD32)sym->sym;
 	    wire->mods= sym->mods;
 	    wire->match= sym->match;
 	    wire->flags= sym->flags;
 	    wire->virtualMod= sym->virtual_mod;
 	    memcpy(&wire->act,&sym->act,sz_xkbActionWireDesc);
 	}
-	buf+= nSI*sz_xkbSymInterpretWireDesc;
+	buf+= nSI*SIZEOF(xkbSymInterpretWireDesc);
     }
-    if (mods) {
-	xkbModCompatWireDesc *out= (xkbModCompatWireDesc *)buf;
-	for (i=0,bit=1;i<XkbNumModifiers;i++,bit<<=1) {
-	    if (mods&bit) {
-		out->mods= xkb->compat->real_mod_compat[i].mods;
-		out->groups= xkb->compat->real_mod_compat[i].groups;
+    if (groups&XkbAllGroupsMask) {
+	xkbModsWireDesc *	out;
+
+	out= (xkbModsWireDesc *)buf;
+	for (i=0,bit=1;i<XkbNumKbdGroups;i++,bit<<=1) {
+	    if ((groups&bit)!=0) {
+		out->mask= xkb->compat->groups[i].mask;
+		out->realMods= xkb->compat->groups[i].real_mods;
+		out->virtualMods=  xkb->compat->groups[i].vmods;
 		out++;
 	    }
 	}
-    }
-    if (vmods) {
-	xkbModCompatWireDesc *out= (xkbModCompatWireDesc *)buf;
-	for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	    if (vmods&bit) {
-		out->mods= xkb->compat->vmod_compat[i].mods;
-		out->groups= xkb->compat->vmod_compat[i].groups;
-		out++;
-	    }
-	}
+	buf+= nGroups*SIZEOF(xkbModsWireDesc);
     }
     return True;
 }
 
-Status
+Bool
+#if NeedFunctionPrototypes
+XkbSetCompatMap(Display *dpy,unsigned which,XkbDescPtr xkb,Bool updateActions)
+#else
 XkbSetCompatMap(dpy,which,xkb,updateActions)
     Display *		dpy;
     unsigned 		which;
     XkbDescPtr		xkb;
     Bool		updateActions;
+#endif
 {
     register xkbSetCompatMapReq *req;
     Status		     ok;
     XkbInfoPtr xkbi;
 
-    if ((dpy->flags & XlibDisplayNoXkb) ||
-	(!dpy->xkb_info && !XkbUseExtension(dpy)))
+    if ((dpy->flags & XlibDisplayNoXkb) || (dpy!=xkb->dpy) ||
+	(!dpy->xkb_info && !XkbUseExtension(dpy,NULL,NULL)))
 	return False;
     if ((!xkb->compat) ||
 	((which&XkbSymInterpMask)&&(!xkb->compat->sym_interpret)))
@@ -274,108 +266,12 @@ XkbSetCompatMap(dpy,which,xkb,updateActions)
 	req->firstSI= 0;
 	req->nSI= 0;
     }
-    if (which&XkbModCompatMask)
-	 req->mods=	~0;
-    else req->mods=  	 0;
-    if (which&XkbVirtualModCompatMask)
-	 req->virtualMods=	~0;
-    else req->virtualMods=	 0;
+    if (which&XkbGroupCompatMask)
+	 req->groups= XkbAllGroupsMask;
+    else req->groups=  0;
     ok= _XkbWriteSetCompatMap(dpy,req,xkb);
     UnlockDisplay(dpy);
     SyncHandle();
     return ok;
 }
 
-/***====================================================================***/
-
-Status
-XkbAllocCompatMap(xkb,which,nInterpret)
-    XkbDescPtr	xkb;
-    unsigned	which;
-    unsigned	nInterpret;
-{
-register int	i;
-XkbCompatPtr	compat;
-
-    if (!xkb)
-	return False;
-    if (xkb->compat) {
-	if (xkb->compat->size_si>=nInterpret)
-	    return True;
-	compat= xkb->compat;
-	compat->size_si= nInterpret;
-	i= nInterpret*sizeof(XkbSymInterpretRec);
-	if (compat->sym_interpret==NULL) {
-	    compat->num_si= 0;
-	    compat->sym_interpret= (XkbSymInterpretPtr)
-				Xcalloc(nInterpret,sizeof(XkbSymInterpretRec));
-	}
-	else {
-	    compat->sym_interpret= (XkbSymInterpretPtr)
-				Xrealloc(compat->sym_interpret,i);
-	    if (compat->sym_interpret!=NULL)
-		bzero(&compat->sym_interpret[compat->num_si],
-		      (nInterpret-compat->size_si)*sizeof(XkbSymInterpretRec));
-	}
-	if (compat->sym_interpret==NULL) {
-	    compat->size_si= compat->num_si= 0;
-	    return False;
-	}
-	return True;
-    }
-    compat= (XkbCompatPtr)Xmalloc(sizeof(XkbCompatRec));
-    if (compat==NULL)
-	return False;
-    if (nInterpret>0) {
-	i= nInterpret*sizeof(XkbSymInterpretRec);
-	compat->sym_interpret= (XkbSymInterpretPtr)Xmalloc(i);
-	if (!compat->sym_interpret) {
-	    Xfree(compat);
-	    return False;
-	}
-	bzero(compat->sym_interpret,i);
-    }
-    compat->size_si= nInterpret;
-    compat->num_si= 0;
-    for (i=0;i<XkbNumModifiers;i++) {
-	compat->real_mod_compat[i].mods= (1<<i);
-	compat->real_mod_compat[i].groups= 0;
-	compat->mod_compat[i]= &compat->real_mod_compat[i];
-    }
-    bzero(compat->vmod_compat,sizeof(compat->vmod_compat));
-    xkb->compat= compat;
-    return True;
-}
-
-
-Status
-XkbFreeCompatMap(xkb,all,which)
-    XkbDescPtr	xkb;
-    Bool	all;
-    unsigned	which;
-{
-    if ((xkb==NULL)||(xkb->compat==NULL))
-	return False;
-    if (which&XkbModCompatMask) {
-	register int i;
-	for (i=0;i<XkbNumModifiers;i++) {
-	    xkb->compat->real_mod_compat[i].mods= (1<<i);
-	    xkb->compat->real_mod_compat[i].groups= 0;
-	    xkb->compat->mod_compat[i]= &xkb->compat->real_mod_compat[i];
-	}
-    }
-    if (which&XkbVirtualModCompatMask) {
-	bzero(xkb->compat->vmod_compat,sizeof(xkb->compat->vmod_compat));
-    }
-    if (which&XkbSymInterpMask) {
-	if ((xkb->compat->sym_interpret)&&(xkb->compat->size_si>0))
-	    Xfree(xkb->compat->sym_interpret);
-	xkb->compat->size_si= xkb->compat->num_si= 0;
-	xkb->compat->sym_interpret= NULL;
-    }
-    if (all) {
-	Xfree(xkb->compat);
-	xkb->compat= NULL;
-    }
-    return True;
-}

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbtext.c /main/2 1995/12/07 21:19:11 kaleb $ */
+/* $XConsortium: xkbtext.c /main/5 1996/03/01 14:30:35 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -86,10 +86,14 @@ char *rtrn;
 /***====================================================================***/
 
 char *
+#if NeedFunctionPrototypes
+XkbAtomText(Display *dpy,Atom atm,unsigned format)
+#else
 XkbAtomText(dpy,atm,format)
     Display *	dpy;
     Atom 	atm;
     unsigned	format;
+#endif
 {
 char	*rtrn,*tmp;
 
@@ -121,11 +125,15 @@ char	*rtrn,*tmp;
 /***====================================================================***/
 
 char *
+#if NeedFunctionPrototypes
+XkbVModIndexText(Display *dpy,XkbDescPtr xkb,unsigned ndx,unsigned format)
+#else
 XkbVModIndexText(dpy,xkb,ndx,format)
     Display *	dpy;
     XkbDescPtr	xkb;
     unsigned	ndx;
     unsigned	format;
+#endif
 {
 register int len;
 register Atom *vmodNames;
@@ -159,12 +167,20 @@ char  numBuf[20];
 }
 
 char *
+#if NeedFunctionPrototypes
+XkbVModMaskText(	Display *	dpy,
+			XkbDescPtr	xkb,
+			unsigned	modMask,
+			unsigned	mask,
+			unsigned	format)
+#else
 XkbVModMaskText(dpy,xkb,modMask,mask,format)
     Display *	dpy;
     XkbDescPtr	xkb;
     unsigned	modMask;
     unsigned	mask;
     unsigned	format;
+#endif
 {
 register int i,bit;
 int	 len;
@@ -243,9 +259,13 @@ static char *modNames[XkbNumModifiers] = {
 };
 
 char *
+#if NeedFunctionPrototypes
+XkbModIndexText(unsigned ndx,unsigned format)
+#else
 XkbModIndexText(ndx,format)
     unsigned	ndx;
     unsigned	format;
+#endif
 {
 char *	rtrn;
 char	buf[100];
@@ -270,9 +290,13 @@ char	buf[100];
 }
 
 char *
+#if NeedFunctionPrototypes
+XkbModMaskText(unsigned mask,unsigned format)
+#else
 XkbModMaskText(mask,format)
     unsigned	mask;
     unsigned	format;
+#endif
 {
 register int i,bit;
 char buf[64],*rtrn;
@@ -312,9 +336,13 @@ char buf[64],*rtrn;
 
 /*ARGSUSED*/
 char *
+#if NeedFunctionPrototypes
+XkbConfigText(unsigned config,unsigned format)
+#else
 XkbConfigText(config,format)
     unsigned config;
     unsigned format;
+#endif
 {
 static char *buf;
 
@@ -360,14 +388,18 @@ static char *buf;
 
 /***====================================================================***/
 
-#ifndef XKB_IN_SERVER
 char *
+#if NeedFunctionPrototypes
+XkbKeysymText(KeySym sym,unsigned format)
+#else
 XkbKeysymText(sym,format)
     KeySym	sym;
     unsigned	format;
+#endif
 {
 static char buf[32],*rtrn;
 
+#ifndef XKB_IN_SERVER
     if (sym==NoSymbol)
 	strcpy(rtrn=buf,"NoSymbol");
     else if ((rtrn=XKeysymToString(sym))==NULL)
@@ -377,26 +409,22 @@ static char buf[32],*rtrn;
 	rtrn= buf;
     }
     return rtrn;
-}
-#else
-char *
-XkbKeysymText(sym,format)
-    KeySym	sym;
-    unsigned	format;
-{
-static char buf[32],*rtrn;
-
+#else /* def XKB_IN_SERVER */
     if (sym==NoSymbol)
 	 strcpy(rtrn=buf,"NoSymbol");
     else sprintf(rtrn=buf,"0x%x",sym);
     return rtrn;
-}
 #endif /* XKB_IN_SERVER */
+}
 
 char *
+#if NeedFunctionPrototypes
+XkbKeyNameText(char *name,unsigned format)
+#else
 XkbKeyNameText(name,format)
     char *	name;
     unsigned	format;
+#endif
 {
 char *buf;
 
@@ -425,9 +453,13 @@ static char *siMatchText[5] = {
 };
 
 char *
+#if NeedFunctionPrototypes
+XkbSIMatchText(unsigned type,unsigned format)
+#else
 XkbSIMatchText(type,format)
     unsigned	type;
     unsigned	format;
+#endif
 {
 static char buf[40];
 char *rtrn;
@@ -461,9 +493,13 @@ static char *imWhichNames[]= {
 };
 
 char *
+#if NeedFunctionPrototypes
+XkbIMWhichStateMaskText(unsigned use_which,unsigned format)
+#else
 XkbIMWhichStateMaskText(use_which,format)
     unsigned	use_which;
     unsigned	format;
+#endif
 {
 int		len;
 unsigned	i,bit,tmp;
@@ -506,9 +542,13 @@ char *		buf;
 }
 
 char *
+#if NeedFunctionPrototypes
+XkbAccessXDetailText(unsigned state,unsigned format)
+#else
 XkbAccessXDetailText(state,format)
     unsigned	state;
     unsigned	format;
+#endif
 {
 char *buf,*prefix;
 
@@ -525,6 +565,85 @@ char *buf,*prefix;
 	case XkbAXN_AXKWarning:	sprintf(buf,"%sAXKWarning",prefix); break;
 	default:		sprintf(buf,"ILLEGAL",prefix); break;
     }
+    return buf;
+}
+
+static char *nknNames[] = {
+	"keycodes", "geometry", "deviceID"
+};
+#define	NUM_NKN	(sizeof(nknNames)/sizeof(char *))
+
+char *
+#if NeedFunctionPrototypes
+XkbNKNDetailMaskText(unsigned detail,unsigned format)
+#else
+XkbNKNDetailMaskText(detail,format)
+    unsigned	detail;
+    unsigned	format;
+#endif
+{
+char *buf,*prefix,*suffix;
+register int 		i;
+register unsigned	bit;
+int			len,plen,slen;
+
+
+    if ((detail&XkbAllNewKeyboardEventsMask)==0) {
+	char *	tmp;
+	if (format==XkbCFile)			tmp= "0";
+	else if (format==XkbMessage)		tmp= "none";
+	buf=  tbGetBuffer(strlen(tmp)+1);
+	strcpy(buf,tmp);
+	return buf;
+    }
+    else if ((detail&XkbAllNewKeyboardEventsMask)==XkbAllNewKeyboardEventsMask){
+	char *	tmp;
+	if (format==XkbCFile)		tmp= "XkbAllNewKeyboardEventsMask";
+	else 				tmp= "all";
+	buf=  tbGetBuffer(strlen(tmp)+1);
+	strcpy(buf,tmp);
+	return buf;
+    }
+    if (format==XkbMessage) {
+	prefix= "";
+	suffix= "";
+	slen= plen= 0;
+    }
+    else {
+	prefix= "XkbNKN_";
+	plen= 7;
+	if (format==XkbCFile)
+	     suffix= "Mask";
+	else suffix= "";
+	slen= strlen(suffix);
+    }
+    for (len=0,i=0,bit=1;i<NUM_NKN;i++,bit<<=1) {
+	if (detail&bit) {
+	    if (len!=0)	len+= 1;	/* room for '+' or '|' */
+	    len+= plen+slen+strlen(nknNames[i]);
+	}
+    }
+    buf= tbGetBuffer(len+1);
+    buf[0]= '\0';
+    for (len=0,i=0,bit=1;i<NUM_NKN;i++,bit<<=1) {
+	if (detail&bit) {
+	    if (len!=0) {
+		if (format==XkbCFile)	buf[len++]= '|';
+		else			buf[len++]= '+';
+	    }
+	    if (plen) {
+		strcpy(&buf[len],prefix);
+		len+= plen;
+	    }
+	    strcpy(&buf[len],nknNames[i]);
+	    len+= strlen(nknNames[i]);
+	    if (slen) {
+		strcpy(&buf[len],suffix);
+		len+= slen;
+	    }
+	}
+    }
+    buf[len++]= '\0';
     return buf;
 }
 
@@ -545,9 +664,13 @@ static char *ctrlNames[] = {
 };
 
 char *
+#if NeedFunctionPrototypes
+XkbControlsMaskText(unsigned ctrls,unsigned format)
+#else
 XkbControlsMaskText(ctrls,format)
     unsigned	ctrls;
     unsigned	format;
+#endif
 {
 int		len;
 unsigned	i,bit,tmp;
@@ -594,9 +717,13 @@ char *		buf;
 /***====================================================================***/
 
 char *
+#if NeedFunctionPrototypes
+XkbStringText(char *str,unsigned format)
+#else
 XkbStringText(str,format)
     char *	str;
     unsigned	format;
+#endif
 {
 char *	buf;
 register char *in,*out;
@@ -656,9 +783,13 @@ Bool	ok;
 /***====================================================================***/
 
 char *
+#if NeedFunctionPrototypes
+XkbGeomFPText(int val,unsigned format)
+#else
 XkbGeomFPText(val,format)
     int		val;
     unsigned	format;
+#endif
 {
 int	whole,frac;
 char *	buf;
@@ -678,9 +809,13 @@ char *	buf;
 }
 
 char *
+#if NeedFunctionPrototypes
+XkbDoodadTypeText(unsigned type,unsigned format)
+#else
 XkbDoodadTypeText(type,format)
     unsigned	type;
     unsigned	format;
+#endif
 {
 char *	buf;
     if (format==XkbCFile) {
@@ -720,9 +855,13 @@ static char *actionTypeNames[XkbSA_NumActions]= {
 };
 
 char *
+#if NeedFunctionPrototypes
+XkbActionTypeText(unsigned type,unsigned format)
+#else
 XkbActionTypeText(type,format)
     unsigned	type;
     unsigned	format;
+#endif
 {
 static char buf[32];
 char *rtrn;
@@ -742,10 +881,14 @@ char *rtrn;
 /***====================================================================***/
 
 static int
+#if NeedFunctionPrototypes
+TryCopyStr(char *to,char *from,int *pLeft)
+#else
 TryCopyStr(to,from,pLeft)
     char *	to;
     char *	from;
     int *	pLeft;
+#endif
 {
 register int len;
     if (*pLeft>0) {
@@ -762,23 +905,32 @@ register int len;
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopyNoActionArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,int*sz)
+#else
 CopyNoActionArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
     return True;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+CopyModActionArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,
+								int* sz)
+#else
 CopyModActionArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbModAction *	act;
 unsigned	tmp;
@@ -805,12 +957,17 @@ unsigned	tmp;
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopyGroupActionArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,
+								int *sz)
+#else
 CopyGroupActionArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbGroupAction *	act;
 char			tbuf[32];
@@ -834,12 +991,16 @@ char			tbuf[32];
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopyMovePtrArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,int *sz)
+#else
 CopyMovePtrArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbPtrAction *	act;
 int		x,y;
@@ -864,12 +1025,16 @@ char		tbuf[32];
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopyPtrBtnArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,int *sz)
+#else
 CopyPtrBtnArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbPtrBtnAction *	act;
 char			tbuf[32];
@@ -903,12 +1068,17 @@ char			tbuf[32];
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopySetPtrDfltArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,
+								int *sz)
+#else
 CopySetPtrDfltArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbPtrDfltAction *	act;
 char			tbuf[32];
@@ -925,12 +1095,16 @@ char			tbuf[32];
 }
 
 static Bool
+#if NeedFunctionPrototypes
+CopyISOLockArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,int *sz)
+#else
 CopyISOLockArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbISOAction *	act;
 char		tbuf[64];
@@ -992,12 +1166,17 @@ char		tbuf[64];
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopySwitchScreenArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,
+								int *sz)
+#else
 CopySwitchScreenArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbSwitchScreenAction *	act;
 char			tbuf[32];
@@ -1015,12 +1194,17 @@ char			tbuf[32];
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopySetLockControlsArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,
+							char *buf,int *sz)
+#else
 CopySetLockControlsArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbCtrlsAction *	act;
 unsigned		tmp;
@@ -1106,12 +1290,17 @@ char			tbuf[32];
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopyActionMessageArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,
+								int *sz)
+#else
 CopyActionMessageArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbMessageAction *	act;
 unsigned		all;
@@ -1137,21 +1326,35 @@ char			tbuf[32];
 }
 
 static Bool
+#if NeedFunctionPrototypes
+CopyRedirectKeyArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,
+								int *sz)
+#else
 CopyRedirectKeyArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbRedirectKeyAction *	act;
 char			tbuf[32],*tmp;
+unsigned		kc;
 unsigned		vmods,vmods_mask;
 
     act= &action->redirect;
+    kc= act->new_key;
     vmods= XkbSARedirectVMods(act);
     vmods_mask= XkbSARedirectVModsMask(act);
-    sprintf(tbuf,"newKey=%d",act->new_key); TryCopyStr(buf,tbuf,sz);
+    if (xkb && xkb->names && xkb->names->keys && (kc<=xkb->max_key_code) &&
+				(xkb->names->keys[kc].name[0]!='\0')) {
+	char *kn;
+	kn= XkbKeyNameText(xkb->names->keys[kc].name,XkbXKBFile);
+	sprintf(tbuf,"key=%s",kn);
+    }
+    else sprintf(tbuf,"key=%d",kc);
+    TryCopyStr(buf,tbuf,sz);
     if ((act->mods_mask==0)&&(vmods_mask==0))
 	return True;
     if ((act->mods_mask==XkbAllModifiersMask)&&
@@ -1164,13 +1367,13 @@ unsigned		vmods,vmods_mask;
 	if ((act->mods_mask&act->mods)||(vmods_mask&vmods)) {
 	    tmp= XkbVModMaskText(dpy,xkb,act->mods_mask&act->mods,
 					 vmods_mask&vmods,XkbXKBFile);
-	    TryCopyStr(buf,",mods= +",sz);
+	    TryCopyStr(buf,",mods= ",sz);
 	    TryCopyStr(buf,tmp,sz);
 	}
 	if ((act->mods_mask&(~act->mods))||(vmods_mask&(~vmods))) {
 	    tmp= XkbVModMaskText(dpy,xkb,act->mods_mask&(~act->mods),
 					 vmods_mask&(~vmods),XkbXKBFile);
-	    TryCopyStr(buf,",mods= -",sz);
+	    TryCopyStr(buf,",clearMods= ",sz);
 	    TryCopyStr(buf,tmp,sz);
 	}
     }
@@ -1179,12 +1382,17 @@ unsigned		vmods,vmods_mask;
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopyDeviceBtnArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,
+								int *sz)
+#else
 CopyDeviceBtnArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbDeviceBtnAction *	act;
 char			tbuf[32];
@@ -1192,11 +1400,8 @@ char			tbuf[32];
     act= &action->devbtn;
     sprintf(tbuf,"device= %d",act->device); TryCopyStr(buf,tbuf,sz);
     TryCopyStr(buf,",button=",sz);
-    if ((act->button>0)&&(act->button<6)) {
-	 sprintf(tbuf,"%d",act->button);
-	 TryCopyStr(buf,tbuf,sz);
-    }
-    else TryCopyStr(buf,"default",sz);
+    sprintf(tbuf,"%d",act->button);
+    TryCopyStr(buf,tbuf,sz);
     if (act->count>0) {
 	sprintf(tbuf,",count=%d",act->count);
 	TryCopyStr(buf,tbuf,sz);
@@ -1219,12 +1424,16 @@ char			tbuf[32];
 
 /*ARGSUSED*/
 static Bool
+#if NeedFunctionPrototypes
+CopyOtherArgs(Display *dpy,XkbDescPtr xkb,XkbAction *action,char *buf,int *sz)
+#else
 CopyOtherArgs(dpy,xkb,action,buf,sz)
     Display *		dpy;
     XkbDescPtr		xkb;
     XkbAction *		action;
     char *		buf;
     int *		sz;
+#endif
 {
 XkbAnyAction *	act;
 char		tbuf[32];
@@ -1241,7 +1450,15 @@ char		tbuf[32];
     return True;
 }
 
-typedef	Bool	(*actionCopy)();
+typedef	Bool	(*actionCopy)(
+#if NeedFunctionPrototypes
+	Display *	/* dpy */,
+	XkbDescPtr 	/* xkb */,
+	XkbAction *	/* action */,
+	char *		/* buf */,
+	int*		/* sz */
+#endif
+);
 static actionCopy	copyActionArgs[XkbSA_NumActions] = {
 	CopyNoActionArgs		/* NoAction	*/,
 	CopyModActionArgs		/* SetMods	*/,
@@ -1268,11 +1485,15 @@ static actionCopy	copyActionArgs[XkbSA_NumActions] = {
 #define	ACTION_SZ	256
 
 char *
+#if NeedFunctionPrototypes
+XkbActionText(Display *dpy,XkbDescPtr xkb,XkbAction *action,unsigned format)
+#else
 XkbActionText(dpy,xkb,action,format)
     Display *	dpy;
     XkbDescPtr	xkb;
     XkbAction *	action;
     unsigned	format;
+#endif
 {
 char	buf[ACTION_SZ],*tmp;
 int	sz;
@@ -1300,10 +1521,14 @@ int	sz;
 }
 
 char *
+#if NeedFunctionPrototypes
+XkbBehaviorText(XkbDescPtr xkb,XkbBehavior *behavior,unsigned format)
+#else
 XkbBehaviorText(xkb,behavior,format)
     XkbDescPtr		xkb;
     XkbBehavior *	behavior;
     unsigned		format;
+#endif
 {
 char	buf[256],*tmp;
 
@@ -1321,11 +1546,17 @@ char	buf[256],*tmp;
 	    sprintf(buf,"lock= %s,",(permanent?"Permanent":"True"));
 	}
 	else if (type==XkbKB_RadioGroup) {
-	    int g;
-	    g= behavior->data+1;
+	    int 	g;
+	    char	*tmp;
+	    g= ((behavior->data)&(~XkbKB_RGAllowNone))+1;
+	    if (XkbKB_RGAllowNone&behavior->data) {
+		sprintf(buf,"allowNone,");
+		tmp= &buf[strlen(buf)];
+	    }
+	    else tmp= buf;
 	    if (permanent)
-		 sprintf(buf,"permanentRadioGroup= %d",g);
-	    else sprintf(buf,"radioGroup= %d",g);
+		 sprintf(tmp,"permanentRadioGroup= %d",g);
+	    else sprintf(tmp,"radioGroup= %d",g);
 	}
 	else if ((type==XkbKB_Overlay1)||(type==XkbKB_Overlay2)) {
 	    int ndx,kc;
@@ -1354,11 +1585,15 @@ char	buf[256],*tmp;
 /***====================================================================***/
 
 char *
+#if NeedFunctionPrototypes
+XkbIndentText(unsigned size)
+#else
 XkbIndentText(size)
     unsigned size;
+#endif
 {
 static char buf[32];
-register i;
+register int i;
 
     if (size>31)
 	size= 31;

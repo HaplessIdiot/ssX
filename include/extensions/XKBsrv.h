@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h /main/20 1996/02/04 15:33:21 kaleb $ */
+/* $XConsortium: XKBsrv.h /main/21 1996/03/01 14:29:08 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -34,7 +34,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbChangeTypesOfKey		SrvXkbChangeTypesOfKey
 #define XkbCopyKeyType			SrvXkbCopyKeyType
 #define XkbCopyKeyTypes			SrvXkbCopyKeyTypes
-#define XkbAddKeyType			SrvXkbAddKeyType
 #define XkbFreeClientMap		SrvXkbFreeClientMap
 #define XkbFreeServerMap		SrvXkbFreeServerMap
 #define XkbInitCanonicalKeyTypes	SrvXkbInitCanonicalKeyTypes
@@ -61,11 +60,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbLatchModifiers		SrvXkbLatchModifiers
 #define XkbLatchGroup			SrvXkbLatchGroup
 #define XkbVirtualModsToReal		SrvXkbVirtualModsToReal
-#define XkbAddGeomOverlayKey		SrvXkbAddGeomOverlayKey
-#define XkbAllocGeomOverlayKeys		SrvXkbAllocGeomOverlayKeys
-#define XkbApplyVirtualModChanges	SrvXkbApplyVirtualModChanges
-#define XkbUpdateActionVirtualMods	SrvXkbUpdateActionVirtualMods
-#define XkbUpdateKeyTypeVirtualMods	SrvXkbUpdateKeyTypeVirtualMods
+#define	XkbChangeKeycodeRange		SrvXkbChangeKeycodeRange
 #endif
 
 #include <X11/extensions/XKBstr.h>
@@ -87,7 +82,6 @@ typedef struct _XkbInterest {
 	CARD32			iStateNotifyMask;
 	CARD32			iMapNotifyMask;
 	CARD16			altSymsNotifyMask;
-	CARD16			newKeyboardNotifyMask;
 	CARD32			autoCtrls;
 	CARD32			autoCtrlValues;
 } XkbInterestRec,*XkbInterestPtr;
@@ -544,6 +538,15 @@ extern void XkbUpdateKeyTypesFromCore(
 #endif
 );
 
+extern	void XkbUpdateDescActions(	
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */,
+    KeyCode		/* first */,
+    CARD8		/* num */,
+    XkbChangesPtr	/* changes */
+#endif
+);
+
 extern void XkbUpdateActions(
 #if NeedFunctionPrototypes
     DeviceIntPtr	/* pXDev */,
@@ -557,7 +560,8 @@ extern void XkbUpdateActions(
 
 extern void XkbUpdateCoreDescription(
 #if NeedFunctionPrototypes
-    DeviceIntPtr	/* keybd */
+    DeviceIntPtr	/* keybd */,
+    Bool		/* resize */
 #endif
 );
 
@@ -1127,6 +1131,15 @@ extern void	XkbConvertCase(
 	KeySym 			/* sym */,
 	KeySym *		/* lower */,
 	KeySym *		/* upper */
+#endif
+);
+
+extern	Status	 XkbChangeKeycodeRange(	
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	int 			/* minKC */,
+	int 			/* maxKC */,
+	XkbChangesPtr		/* changes */
 #endif
 );
 

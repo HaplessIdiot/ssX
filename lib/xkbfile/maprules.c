@@ -1,4 +1,4 @@
-/* $XConsortium: maprules.c /main/1 1996/02/02 14:13:07 kaleb $ */
+/* $XConsortium: maprules.c /main/4 1996/03/01 14:30:26 kaleb $ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
