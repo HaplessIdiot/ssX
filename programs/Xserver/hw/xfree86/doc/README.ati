@@ -2,7 +2,7 @@
 
                             Marc Aurele La France
 
-                              2002 February 12
+                                2005 March 16
 
                                   Abstract
 
@@ -11,11 +11,11 @@
 
 1.  Statement of intent
 
-Generally speaking, the driver is intended for all ATI video adapters, pro-
+Generally speaking, this driver is intended for all ATI video adapters, pro-
 viding maximum video function within hardware limitations.  The driver is
 also intended to optionally provide the same level of support for generic VGA
-or 8514/A adapters.  This driver is still being actively developed, meaning
-that it currently does not yet fully meet these goals.
+or 8514/A adapters.  As this driver is still being actively developed, it
+currently does not yet fully meet all of these goals.
 
 The driver will provide
 
@@ -31,23 +31,24 @@ The driver will provide
    o generic VGA support if a non-ATI VGA-capable adapter is detected and the
      user has requested such support.
 
-Thus, the level of support provided not only depends on what the driver
-detects in the system, but also, on what the user specifies in the XF86Config
-file.  See the ``XF86Config specifications'' section below for details.
+Thus, the level of support depends not only on what the driver detects in the
+system, but also on what the user specifies in the XF86Config file.
 
-If none of the above conditions are met, the ATI driver will essentially dis-
-able itself to allow other drivers to examine the system.
+See the ``XF86Config specifications'' section below for details.
 
-Note that I am currently considering removing the driver's support for
-generic VGA.  If you have any concerns about this, please contact me at
-<tsi@xfree86.org>.
+If none of the aforementioned conditions are met, the ATI driver will essen-
+tially disable itself to allow other drivers to examine the system.
+
+Note:  I am currently considering removing the driver's support for generic
+VGA.  If you have concerns about this decision, please contact me at
+<tsi@xfree86.org> and I will address them.
 
 2.  A note on acceleration
 
 The meaning of ``acceleration'', as used in this document, needs to be clari-
 fied.  Two of the many components in an accelerator are the CRT controller
 (CRTC) and the Draw Engine.  This is in addition to another CRTC that, gener-
-ally, is also present in the system (often in the same chip) and typically
+ally, is also present in the system, and often in the same chip and typically
 provides EGA, VGA or SuperVGA functionality.
 
 A CRTC is the component of a graphics controller that is responsible for
@@ -69,9 +70,10 @@ the accelerator's CRTC.
 
 The driver currently supports the SuperVGA capabilities of all ATI adapters
 except some early Mach8 and Mach32 adapters that do not provide the required
-functionality.  This support works for monochrome, 16-colour and 256-colour
-video modes, if one of the following ATI graphics controller chips is
-present:
+functionality.
+
+This support works for monochrome, 16-colour and 256-colour video modes, if
+one of the following ATI graphics controller chips is present:
 
      VGAWonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
         Mach32 series:  68800-3, 68800-6, 68800AX, 68800LX
@@ -85,10 +87,13 @@ The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D
 Rage series of adapters using the accelerator CRTC (but not the VGA CRTC).
 
 The newer Rage 128 and Radeon chips are not yet supported by this driver.
+
 Rage 128's and Radeon's are, however, supported by separate drivers, and own-
 ers of such adapters should consult the documentation provided with these
-drivers.  This driver will also invoke the appropriate driver if it finds
-Rage 128 and/or Radeon adapter(s) in the system.
+drivers.
+
+This driver will also invoke the appropriate driver if it finds Rage 128
+and/or Radeon adapter(s) in the system.
 
 Adapters based on the above chips have been marketed under a rather large
 number of names over the years.  Among them are:
@@ -112,8 +117,8 @@ number of names over the years.  Among them are:
                         XPERT@Play 98, XPERT@Work, XPERT 98, XPERT LCD,
                         XPERT XL
 
-Also, a number of mainboards, laptops and notebooks harbour a Mach32 or
-Mach64 controller.
+There are also a number of mainboards, laptops and notebooks that harbour a
+Mach32 or Mach64 controller.
 
 VGAWonder, Mach8 and Mach32 ISA adapters are available with or without a
 mouse.
@@ -124,12 +129,13 @@ that they include a programmable clock generator and a RAMDAC.
 
 For all but Mach64 adapters, this driver still does not provide support for
 accelerated drawing to the screen.  This means that all drawing is done by
-the CPU, rather than by any accelerator present in the system.  This can make
-opaque moves, for example, quite ``jerky''.  Also, given that IBM 8514/A and
-ATI Mach8 do not allow CPU access to their frame buffer, the driver will cur-
-rently ignore these accelerators.  Most Mach32 adapters provide both acceler-
-ated function and SuperVGA functionality, but the driver currently only uses
-the VGA.
+the CPU, rather than by any accelerator present in the system and this can
+make opaque moves, for example, quite ``jerky''.
+
+Given that IBM 8514/A and ATI Mach8 do not allow CPU access to their frame
+buffer, the driver will currently ignore these accelerators.  Most Mach32
+adapters provide both accelerated function and SuperVGA functionality, but
+the driver currently only uses the VGA.
 
 The driver does however support the accelerator CRTC present in all ATI
 Mach64 adapters.  For 256-colour, and higher depth modes, this support will
@@ -573,8 +579,8 @@ driver.  They include:
 
    o Video memory banking does not work in monochrome and 16-colour modes on
      18800-x adapters.  This appears to be another hardware limit, but this
-     conclusion cannot be confirmed at this time.  The driver's default be-
-     haviour in this case is to limit video memory to 256kB.
+     conclusion cannot be confirmed at this time.  The driver's default
+     behaviour in this case is to limit video memory to 256kB.
 
    o Video memory corruption can still occur during mode switches on 18800-x
      adapters.  Symptoms of this problem include garbled fonts on return to
@@ -663,8 +669,8 @@ adapter under X386 1.1a.  This original driver might have actually been based
 on a non-functional ATI driver written by Thomas Roell (currently of Xi
 Graphics).
 
-Then Doug Evans added support for the ATI VGA Wonder XL, trying in the
-process to make the driver work with all other ATI adapters available at the
+Then Doug Evans added support for the ATI VGA Wonder XL, trying in the pro-
+cess to make the driver work with all other ATI adapters available at the
 time.
 
 Rik Faith obtained the X11R4 driver from Doug Evans in the summer of 1992 and
@@ -676,34 +682,35 @@ in the fall of 1993 after Rik got rid of his VGA Wonder adapter.
 
 10.  Driver versions
 
-Due to the introduction of loadable drivers in XFree86 4.0, it has become
-necessary to track driver versions separately.  Driver releases use the fol-
-lowing version numbering scheme.
+With the introduction of loadable drivers in XFree86 4.0, it has become nec-
+essary to track driver versions separately.  Driver releases use the follow-
+ing version numbering scheme.
 
-Version 1 of this driver is the one I inherited from Rik Faith.  This is the
-version found in XFree86 2.0 and 2.1.
+Version 1 of this driver is the one I inherited from Rik Faith and is the
+version found in XFree86 releases 2.0 and 2.1.
 
-Version 2 is my first rewrite of this code which only ended up being a par-
-tially unsuccessful attempt at generalising the driver for all VGA Wonder,
-Mach32, and early Mach64 adapters.  Various releases of this version of the
-driver can be found in XFree86 2.1.1, 3.1, 3.1.1 and 3.1.2.
+Version 2 is my first rewrite which ended up being a partially successful
+attempt at generalising the driver for all of VGA Wonders, Mach32, and the
+early Mach64 adapters.  Various releases of this version of the driver can be
+found in XFree86 2.1.1, 3.1, 3.1.1 and 3.1.2.
 
-Version 3 represents my second rewrite (although a rather lame one as
-rewrites go).  Into version 3, I introduced clock programming for Mach64
-adapters and merged in the old ati_test debugging tool.  This is the version
-found in XFree86 3.2, 3.3 and 3.3.1.
+Version 3 represents my second rewrite, a rather lame one at that, but in
+version 3, I introduced clock programming for Mach64 adapters and merged in
+the old ati_test debugging tool.  This is found in XFree86 releases 3.2, 3.3
+and 3.3.1.
 
-Version 4 is a rather major restructuring of version 3, which became larger
-than I could comfortably handle in one source file.  This is the version
-found in XFree86 3.3.2, 3.3.3, 3.3.3.1, 3.3.3.2, 3.3.4, 3.3.5 and 3.3.6.
+Version 4 is a major restructuring of the previous version which became
+larger than I could comfortably handle in one source file.  This is the ver-
+sion found in XFree86 releases 3.3.2, 3.3.3, 3.3.3.1, 3.3.3.2, 3.3.4, 3.3.5
+and 3.3.6.
 
-Version 5 is an almost complete restructuring of version 4 to fit in the
-newer driver API of XFree86 4.0 and later.
+Version 5 is an almost complete restructuring of version 4, made to fit into
+the new driver API that XFree86 4.0 and later adopted.
 
-The introduction of version 6 is a first swipe at porting the driver to non-
-Intel architectures.
+Version 6 begins the process of porting the driver to non-Intel architec-
+tures.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.43 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.44 tsi Exp $
 
 
 $XFree86$
