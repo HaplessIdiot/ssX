@@ -1,6 +1,6 @@
 /*
  * $XConsortium: swaprep.c,v 1.5 95/05/02 19:26:01 mor Exp $
- * $XFree86: xc/workInProgress/lbx/programs/lbxproxy/di/swaprep.c,v 3.0 1995/03/08 09:22:57 dawes Exp $
+ * $XFree86: xc/workInProgress/lbx/programs/lbxproxy/di/swaprep.c,v 3.1 1995/06/20 14:42:16 dawes Exp $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -318,16 +318,6 @@ SwapGetImageReply(rep)
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
     swapl(&rep->visual, n);
-}
-
-void
-SwapQueryExtensionReply(rep)
-    xQueryExtensionReply	*rep;
-{
-    char n;
-
-    swaps (&rep->sequenceNumber, n);
-    swapl (&rep->length, n);
 }
 
 void
