@@ -2,7 +2,7 @@
 
 
 
-# $XFree86: xc/Makefile,v 3.18 2001/01/21 21:19:06 tsi Exp $
+# $XFree86: xc/Makefile,v 3.19 2001/01/22 22:23:29 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -50,7 +50,9 @@ World:
 	@date
 	@echo ""
 	@if [ -f xmakefile ]; then \
-	    $(MAKE_CMD) clean; \
+	    $(MAKE_CMD) -k distclean || \
+	    $(MAKE_CMD) -k clean || \
+	    $(RM) xmakefile; \
 	fi
 	@if [ ! -f $(IRULESRC)/host.def ]; then \
 	    if [ ! -f $(TOP)/lib/Xt/Imakefile ]; then \
@@ -71,7 +73,7 @@ World:
 	$(MAKE_CMD) $(MFLAGS) VerifyOS
 	$(MAKE_CMD) $(MFLAGS) version.def
 	$(MAKE_CMD) $(MFLAGS) Makefiles
-	$(MAKE_CMD) $(MFLAGS) clean BOOTSTRAPSUBDIRS=
+	$(MAKE_CMD) $(MFLAGS) BOOTSTRAPSUBDIRS= clean
 	$(MAKE_CMD) $(MFLAGS) includes
 	$(MAKE_CMD) $(MFLAGS) depend
 	$(MAKE_CMD) $(MFLAGS) $(WORLDOPTS) World
@@ -88,6 +90,7 @@ World:
 # the Makefile.proto files.
 
 Makefile.boot: imake.bootstrap
+	$(RM) $(IMAKESRC)/Makefile.proto
 
 imake.proto:
 	cd $(IMAKESRC) && $(MAKE) $(FLAGS)
@@ -116,6 +119,7 @@ Makefile::
 	$(MAKE) $(MFLAGS) xmakefile
 
 xmakefile: Imakefile
+	$(RM) xmakefile
 	$(IMAKE_CMD) -s xmakefile -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR)
 
 World.Win32:
@@ -178,6 +182,9 @@ clean:
 	    $(MAKE_CMD) $@
 dangerous_strip_clean:
 	    $(MAKE_CMD) $@
+distclean:
+	    $(MAKE_CMD) $@
+	    $(RM) xmakefile
 depend:
 	    $(MAKE_CMD) $@
 Everything:

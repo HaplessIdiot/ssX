@@ -1,4 +1,7 @@
 XFree86 4.X.Ya (?? January 2001)
+  80. Implement a distclean make target (Marc La France).
+      NOTE:  To correctly install this change, either `make Everything` or
+             `rm xmakefile; make World`.
   79. Preprocess all man pages to make sure that the references to pages
       in sections that are platform-dependent are correct.  Also fixed some
       misc formatting problems found while doing that (David Dawes).
@@ -12306,4 +12309,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1535 2001/01/23 18:14:32 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1536 2001/01/24 00:06:11 dawes Exp $
