@@ -7,10 +7,10 @@
 
 <title>XFree86 Version Numbering Schemes
 <author>The XFree86 Project, Inc
-<date>16 January 2002
+<date>23 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Versions.sgml,v 1.2 2002/01/16 20:38:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Versions.sgml,v 1.3 2002/12/21 03:37:09 dawes Exp $
 </ident>
 
 <abstract>
@@ -57,9 +57,9 @@ be added in update releases.  Update/bugfix releases will not be full
 releases, and will consist of source code patches, plus binary updates
 to be layered on top of the previous full release.
 
-The next full release will be version &nextfullrelvers;, tentatively
-scheduled for late &nextfullreldate;.  There is no scheduled update
-release.  If there is one, the version will be &nextupdrelvers;.
+The next full release will be version &nextfullrelvers;.  There is no
+scheduled update release, but if one is needed, the version will be
+&nextupdrelvers;.
 
 <!--
 The next release on the legacy branch will be 3.3.7.  There is currently

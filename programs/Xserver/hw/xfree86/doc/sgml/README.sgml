@@ -13,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>17 February 2003
+<date>23 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.126 2003/02/16 17:21:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.127 2003/02/17 15:16:22 dawes Exp $
 </ident>
 
 <abstract>
@@ -88,9 +88,8 @@ Specific release enhancements can be viewed in the
 <htmlurl name="Release Notes" url="RELNOTES.html">.
 ]]>
 
-The XFree86 version numbering system has had some changes as of the
-4.0.2 release.  Information about this can be found in the
-<htmlurl name="Versions Document" url="Versions.html">.
+The XFree86 version numbering system (including historical information)
+can be found in the <htmlurl name="Versions Document" url="Versions.html">.
 
 Information about binary distributions and the attendant installation
 instructions can be found in the <htmlurl name="Installation Document"
@@ -306,9 +305,6 @@ Patches might also be available relative to &prevrelvers;.  If so, the
 instructions for applying them are the same, except that you should start 
 with a clean &prevrelvers; source tree.
 ]]>
-
-The contrib part of the distribution was folded into the main source
-tree a while ago, so a separate contrib tarball is not required.
 
 To format the XFree86 documentation use the latest version of our doctools
 package available as <tt>doctools-&doctoolsvers;.tgz</tt>.
