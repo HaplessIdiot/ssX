@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.6 1997/06/03 14:12:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.7 1997/08/26 10:01:25 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -38,6 +38,7 @@ extern unsigned char *tguiMMIOBase;
 extern int TGUIRops_alu[16];
 extern int TGUIRops_Pixalu[16];
 extern int GE_OP;
+extern int revision;
 CARD32 ImageWriteBase[2048];
 #include "trident_driver.h"
 #include "tgui_ger.h"

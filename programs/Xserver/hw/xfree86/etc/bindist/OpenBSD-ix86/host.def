@@ -1,0 +1,16 @@
+/*
+ * Host.def for building OpenBSD bindists
+ *
+ * $XFree86$
+ */
+
+#define InstallEmptyHostDef
+
+#define ForceNormalLib		YES
+
+#define HasTcl			YES
+#define HasTk			YES
+#define TkLibName		tk41
+#define TclLibName		tcl75
+
+#define JoystickSupport		YES
