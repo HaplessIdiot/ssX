@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/fonts/bdf/75dpi/Imakefile.inc,v 1.1 2001/04/04 22:56:07 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/75dpi/Imakefile.inc,v 1.2 2001/04/05 02:43:34 dawes Exp $
 
 
 #if BuildUCSFonts
@@ -57,6 +57,10 @@ UCSOBJS2 = \
 	FontObj(lutBS18) FontObj(lutBS19) FontObj(lutBS24) \
 	FontObj(lutRS08) FontObj(lutRS10) FontObj(lutRS12) FontObj(lutRS14) \
 	FontObj(lutRS18) FontObj(lutRS19) FontObj(lutRS24) \
+	FontObj(UTBI__10) FontObj(UTBI__12) FontObj(UTBI__14) \
+	FontObj(UTB___18) FontObj(UTB___24) \
+	FontObj(UTB___10) FontObj(UTB___12) FontObj(UTB___14) \
+	FontObj(UTBI__18) FontObj(UTBI__24) \
 	FontObj(UTI___10) FontObj(UTI___12) FontObj(UTI___14) \
 	FontObj(UTI___18) FontObj(UTI___24) \
 	FontObj(UTRG__10) FontObj(UTRG__12) FontObj(UTRG__14) \
@@ -68,6 +72,10 @@ UCSOBJS = $(UCSOBJS1) $(UCSOBJS2)
 MISCOBJS = \
 	FontObj(symb08) FontObj(symb10) FontObj(symb12) FontObj(symb14) \
 	FontObj(symb18) FontObj(symb24) \
+	FontObj(charB08) FontObj(charB10) FontObj(charB12) FontObj(charB14) \
+	FontObj(charB18) FontObj(charB24) \
+	FontObj(charBI08) FontObj(charBI10) FontObj(charBI12) \
+	FontObj(charBI14) FontObj(charBI18) FontObj(charBI24) \
 	FontObj(charI08) FontObj(charI10) FontObj(charI12) FontObj(charI14) \
 	FontObj(charI18) FontObj(charI24) \
 	FontObj(charR08) FontObj(charR10) FontObj(charR12) FontObj(charR14) \
@@ -171,6 +179,12 @@ DERIVED_8859_1_OBJS2 = \
 	FontObj(lutRS12-ISO8859-1) FontObj(lutRS14-ISO8859-1) \
 	FontObj(lutRS18-ISO8859-1) FontObj(lutRS19-ISO8859-1) \
 	FontObj(lutRS24-ISO8859-1) \
+	FontObj(UTBI__10-ISO8859-1) FontObj(UTBI__12-ISO8859-1) \
+	FontObj(UTBI__14-ISO8859-1) FontObj(UTBI__18-ISO8859-1) \
+	FontObj(UTBI__24-ISO8859-1) \
+	FontObj(UTB___10-ISO8859-1) FontObj(UTB___12-ISO8859-1) \
+	FontObj(UTB___14-ISO8859-1) FontObj(UTB___18-ISO8859-1) \
+	FontObj(UTB___24-ISO8859-1) \
 	FontObj(UTI___10-ISO8859-1) FontObj(UTI___12-ISO8859-1) \
 	FontObj(UTI___14-ISO8859-1) FontObj(UTI___18-ISO8859-1) \
 	FontObj(UTI___24-ISO8859-1) \
@@ -275,6 +289,12 @@ DERIVED_8859_2_OBJS2 = \
 	FontObj(lutRS12-ISO8859-2) FontObj(lutRS14-ISO8859-2) \
 	FontObj(lutRS18-ISO8859-2) FontObj(lutRS19-ISO8859-2) \
 	FontObj(lutRS24-ISO8859-2) \
+	IontObj(UTBI__10-ISO8859-2) FontObj(UTBI__12-ISO8859-2) \
+	FontObj(UTBI__14-ISO8859-2) FontObj(UTBI__18-ISO8859-2) \
+	FontObj(UTBI__24-ISO8859-2) \
+	FontObj(UTB___10-ISO8859-2) FontObj(UTB___12-ISO8859-2) \
+	FontObj(UTB___14-ISO8859-2) FontObj(UTB___18-ISO8859-2) \
+	FontObj(UTB___24-ISO8859-2) \
 	FontObj(UTI___10-ISO8859-2) FontObj(UTI___12-ISO8859-2) \
 	FontObj(UTI___14-ISO8859-2) FontObj(UTI___18-ISO8859-2) \
 	FontObj(UTI___24-ISO8859-2) \
@@ -377,6 +397,12 @@ DERIVED_8859_3_OBJS2 = \
 	FontObj(lutRS12-ISO8859-3) FontObj(lutRS14-ISO8859-3) \
 	FontObj(lutRS18-ISO8859-3) FontObj(lutRS19-ISO8859-3) \
 	FontObj(lutRS24-ISO8859-3) \
+	FontObj(UTBI__10-ISO8859-3) FontObj(UTBI__12-ISO8859-3) \
+	FontObj(UTBI__14-ISO8859-3) FontObj(UTBI__18-ISO8859-3) \
+	FontObj(UTBI__24-ISO8859-3) \
+	FontObj(UTB___10-ISO8859-3) FontObj(UTB___12-ISO8859-3) \
+	FontObj(UTB___14-ISO8859-3) FontObj(UTB___18-ISO8859-3) \
+	FontObj(UTB___24-ISO8859-3) \
 	FontObj(UTI___10-ISO8859-3) FontObj(UTI___12-ISO8859-3) \
 	FontObj(UTI___14-ISO8859-3) FontObj(UTI___18-ISO8859-3) \
 	FontObj(UTI___24-ISO8859-3) \
@@ -479,6 +505,12 @@ DERIVED_8859_4_OBJS2 = \
 	FontObj(lutRS12-ISO8859-4) FontObj(lutRS14-ISO8859-4) \
 	FontObj(lutRS18-ISO8859-4) FontObj(lutRS19-ISO8859-4) \
 	FontObj(lutRS24-ISO8859-4) \
+	FontObj(UTBI__10-ISO8859-4) FontObj(UTBI__12-ISO8859-4) \
+	FontObj(UTBI__14-ISO8859-4) FontObj(UTBI__18-ISO8859-4) \
+	FontObj(UTBI__24-ISO8859-4) \
+	FontObj(UTB___10-ISO8859-4) FontObj(UTB___12-ISO8859-4) \
+	FontObj(UTB___14-ISO8859-4) FontObj(UTB___18-ISO8859-4) \
+	FontObj(UTB___24-ISO8859-4) \
 	FontObj(UTI___10-ISO8859-4) FontObj(UTI___12-ISO8859-4) \
 	FontObj(UTI___14-ISO8859-4) FontObj(UTI___18-ISO8859-4) \
 	FontObj(UTI___24-ISO8859-4) \
@@ -581,6 +613,12 @@ DERIVED_8859_9_OBJS2 = \
 	FontObj(lutRS12-ISO8859-9) FontObj(lutRS14-ISO8859-9) \
 	FontObj(lutRS18-ISO8859-9) FontObj(lutRS19-ISO8859-9) \
 	FontObj(lutRS24-ISO8859-9) \
+	FontObj(UTBI__10-ISO8859-9) FontObj(UTBI__12-ISO8859-9) \
+	FontObj(UTBI__14-ISO8859-9) FontObj(UTBI__18-ISO8859-9) \
+	FontObj(UTBI__24-ISO8859-9) \
+	FontObj(UTB___10-ISO8859-9) FontObj(UTB___12-ISO8859-9) \
+	FontObj(UTB___14-ISO8859-9) FontObj(UTB___18-ISO8859-9) \
+	FontObj(UTB___24-ISO8859-9) \
 	FontObj(UTI___10-ISO8859-9) FontObj(UTI___12-ISO8859-9) \
 	FontObj(UTI___14-ISO8859-9) FontObj(UTI___18-ISO8859-9) \
 	FontObj(UTI___24-ISO8859-9) \
@@ -683,6 +721,12 @@ DERIVED_8859_10_OBJS2 = \
 	FontObj(lutRS12-ISO8859-10) FontObj(lutRS14-ISO8859-10) \
 	FontObj(lutRS18-ISO8859-10) FontObj(lutRS19-ISO8859-10) \
 	FontObj(lutRS24-ISO8859-10) \
+	FontObj(UTBI__10-ISO8859-10) FontObj(UTBI__12-ISO8859-10) \
+	FontObj(UTBI__14-ISO8859-10) FontObj(UTBI__18-ISO8859-10) \
+	FontObj(UTBI__24-ISO8859-10) \
+	FontObj(UTB___10-ISO8859-10) FontObj(UTB___12-ISO8859-10) \
+	FontObj(UTB___14-ISO8859-10) FontObj(UTB___18-ISO8859-10) \
+	FontObj(UTB___24-ISO8859-10) \
 	FontObj(UTI___10-ISO8859-10) FontObj(UTI___12-ISO8859-10) \
 	FontObj(UTI___14-ISO8859-10) FontObj(UTI___18-ISO8859-10) \
 	FontObj(UTI___24-ISO8859-10) \
@@ -785,6 +829,12 @@ DERIVED_8859_13_OBJS2 = \
 	FontObj(lutRS12-ISO8859-13) FontObj(lutRS14-ISO8859-13) \
 	FontObj(lutRS18-ISO8859-13) FontObj(lutRS19-ISO8859-13) \
 	FontObj(lutRS24-ISO8859-13) \
+	FontObj(UTBI__10-ISO8859-13) FontObj(UTBI__12-ISO8859-13) \
+	FontObj(UTBI__14-ISO8859-13) FontObj(UTBI__18-ISO8859-13) \
+	FontObj(UTBI__24-ISO8859-13) \
+	FontObj(UTB___10-ISO8859-13) FontObj(UTB___12-ISO8859-13) \
+	FontObj(UTB___14-ISO8859-13) FontObj(UTB___18-ISO8859-13) \
+	FontObj(UTB___24-ISO8859-13) \
 	FontObj(UTI___10-ISO8859-13) FontObj(UTI___12-ISO8859-13) \
 	FontObj(UTI___14-ISO8859-13) FontObj(UTI___18-ISO8859-13) \
 	FontObj(UTI___24-ISO8859-13) \
@@ -887,6 +937,12 @@ DERIVED_8859_14_OBJS2 = \
 	FontObj(lutRS12-ISO8859-14) FontObj(lutRS14-ISO8859-14) \
 	FontObj(lutRS18-ISO8859-14) FontObj(lutRS19-ISO8859-14) \
 	FontObj(lutRS24-ISO8859-14) \
+	FontObj(UTBI__10-ISO8859-14) FontObj(UTBI__12-ISO8859-14) \
+	FontObj(UTBI__14-ISO8859-14) FontObj(UTBI__18-ISO8859-14) \
+	FontObj(UTBI__24-ISO8859-14) \
+	FontObj(UTB___10-ISO8859-14) FontObj(UTB___12-ISO8859-14) \
+	FontObj(UTB___14-ISO8859-14) FontObj(UTB___18-ISO8859-14) \
+	FontObj(UTB___24-ISO8859-14) \
 	FontObj(UTI___10-ISO8859-14) FontObj(UTI___12-ISO8859-14) \
 	FontObj(UTI___14-ISO8859-14) FontObj(UTI___18-ISO8859-14) \
 	FontObj(UTI___24-ISO8859-14) \
@@ -989,6 +1045,12 @@ DERIVED_8859_15_OBJS2 = \
 	FontObj(lutRS12-ISO8859-15) FontObj(lutRS14-ISO8859-15) \
 	FontObj(lutRS18-ISO8859-15) FontObj(lutRS19-ISO8859-15) \
 	FontObj(lutRS24-ISO8859-15) \
+	FontObj(UTBI__10-ISO8859-15) FontObj(UTBI__12-ISO8859-15) \
+	FontObj(UTBI__14-ISO8859-15) FontObj(UTBI__18-ISO8859-15) \
+	FontObj(UTBI__24-ISO8859-15) \
+	FontObj(UTB___10-ISO8859-15) FontObj(UTB___12-ISO8859-15) \
+	FontObj(UTB___14-ISO8859-15) FontObj(UTB___18-ISO8859-15) \
+	FontObj(UTB___24-ISO8859-15) \
 	FontObj(UTI___10-ISO8859-15) FontObj(UTI___12-ISO8859-15) \
 	FontObj(UTI___14-ISO8859-15) FontObj(UTI___18-ISO8859-15) \
 	FontObj(UTI___24-ISO8859-15) \
@@ -1204,16 +1266,26 @@ FontTarget(lutRS14)
 FontTarget(lutRS18)
 FontTarget(lutRS19)
 FontTarget(lutRS24)
-FontTarget(UTI___14)
-FontTarget(UTI___12)
-FontTarget(UTI___24)
+FontTarget(UTBI__10)
+FontTarget(UTBI__12)
+FontTarget(UTBI__14)
+FontTarget(UTBI__18)
+FontTarget(UTBI__24)
+FontTarget(UTB___10)
+FontTarget(UTB___12)
+FontTarget(UTB___14)
+FontTarget(UTB___18)
+FontTarget(UTB___24)
 FontTarget(UTI___10)
+FontTarget(UTI___12)
+FontTarget(UTI___14)
 FontTarget(UTI___18)
-FontTarget(UTRG__14)
-FontTarget(UTRG__12)
-FontTarget(UTRG__24)
+FontTarget(UTI___24)
 FontTarget(UTRG__10)
+FontTarget(UTRG__12)
+FontTarget(UTRG__14)
 FontTarget(UTRG__18)
+FontTarget(UTRG__24)
 #endif
 
 FontTarget(symb08)
@@ -1222,6 +1294,18 @@ FontTarget(symb12)
 FontTarget(symb14)
 FontTarget(symb18)
 FontTarget(symb24)
+FontTarget(charB08)
+FontTarget(charB10)
+FontTarget(charB12)
+FontTarget(charB14)
+FontTarget(charB18)
+FontTarget(charB24)
+FontTarget(charBI08)
+FontTarget(charBI10)
+FontTarget(charBI12)
+FontTarget(charBI14)
+FontTarget(charBI18)
+FontTarget(charBI24)
 FontTarget(charI08)
 FontTarget(charI10)
 FontTarget(charI12)
@@ -1410,16 +1494,26 @@ FontTarget(lutRS14-ISO8859-1)
 FontTarget(lutRS18-ISO8859-1)
 FontTarget(lutRS19-ISO8859-1)
 FontTarget(lutRS24-ISO8859-1)
-FontTarget(UTI___14-ISO8859-1)
-FontTarget(UTI___12-ISO8859-1)
-FontTarget(UTI___24-ISO8859-1)
+FontTarget(UTBI__10-ISO8859-1)
+FontTarget(UTBI__12-ISO8859-1)
+FontTarget(UTBI__14-ISO8859-1)
+FontTarget(UTBI__18-ISO8859-1)
+FontTarget(UTBI__24-ISO8859-1)
+FontTarget(UTB___10-ISO8859-1)
+FontTarget(UTB___12-ISO8859-1)
+FontTarget(UTB___14-ISO8859-1)
+FontTarget(UTB___18-ISO8859-1)
+FontTarget(UTB___24-ISO8859-1)
 FontTarget(UTI___10-ISO8859-1)
+FontTarget(UTI___12-ISO8859-1)
+FontTarget(UTI___14-ISO8859-1)
 FontTarget(UTI___18-ISO8859-1)
-FontTarget(UTRG__14-ISO8859-1)
-FontTarget(UTRG__12-ISO8859-1)
-FontTarget(UTRG__24-ISO8859-1)
+FontTarget(UTI___24-ISO8859-1)
 FontTarget(UTRG__10-ISO8859-1)
+FontTarget(UTRG__12-ISO8859-1)
+FontTarget(UTRG__14-ISO8859-1)
 FontTarget(UTRG__18-ISO8859-1)
+FontTarget(UTRG__24-ISO8859-1)
 #endif
 
 /* 8-bit fonts derived from UCS fonts */
@@ -1591,16 +1685,26 @@ FontTarget(lutRS14-ISO8859-2)
 FontTarget(lutRS18-ISO8859-2)
 FontTarget(lutRS19-ISO8859-2)
 FontTarget(lutRS24-ISO8859-2)
-FontTarget(UTI___14-ISO8859-2)
-FontTarget(UTI___12-ISO8859-2)
-FontTarget(UTI___24-ISO8859-2)
+FontTarget(UTBI__10-ISO8859-2)
+FontTarget(UTBI__12-ISO8859-2)
+FontTarget(UTBI__14-ISO8859-2)
+FontTarget(UTBI__18-ISO8859-2)
+FontTarget(UTBI__24-ISO8859-2)
+FontTarget(UTB___10-ISO8859-2)
+FontTarget(UTB___12-ISO8859-2)
+FontTarget(UTB___14-ISO8859-2)
+FontTarget(UTB___18-ISO8859-2)
+FontTarget(UTB___24-ISO8859-2)
 FontTarget(UTI___10-ISO8859-2)
+FontTarget(UTI___12-ISO8859-2)
+FontTarget(UTI___14-ISO8859-2)
 FontTarget(UTI___18-ISO8859-2)
-FontTarget(UTRG__14-ISO8859-2)
-FontTarget(UTRG__12-ISO8859-2)
-FontTarget(UTRG__24-ISO8859-2)
+FontTarget(UTI___24-ISO8859-2)
 FontTarget(UTRG__10-ISO8859-2)
+FontTarget(UTRG__12-ISO8859-2)
+FontTarget(UTRG__14-ISO8859-2)
 FontTarget(UTRG__18-ISO8859-2)
+FontTarget(UTRG__24-ISO8859-2)
 #endif
 
 #if BuildISO8859_3Fonts
@@ -1770,16 +1874,26 @@ FontTarget(lutRS14-ISO8859-3)
 FontTarget(lutRS18-ISO8859-3)
 FontTarget(lutRS19-ISO8859-3)
 FontTarget(lutRS24-ISO8859-3)
-FontTarget(UTI___14-ISO8859-3)
-FontTarget(UTI___12-ISO8859-3)
-FontTarget(UTI___24-ISO8859-3)
+FontTarget(UTBI__10-ISO8859-3)
+FontTarget(UTBI__12-ISO8859-3)
+FontTarget(UTBI__14-ISO8859-3)
+FontTarget(UTBI__18-ISO8859-3)
+FontTarget(UTBI__24-ISO8859-3)
+FontTarget(UTB___10-ISO8859-3)
+FontTarget(UTB___12-ISO8859-3)
+FontTarget(UTB___14-ISO8859-3)
+FontTarget(UTB___18-ISO8859-3)
+FontTarget(UTB___24-ISO8859-3)
 FontTarget(UTI___10-ISO8859-3)
+FontTarget(UTI___12-ISO8859-3)
+FontTarget(UTI___14-ISO8859-3)
 FontTarget(UTI___18-ISO8859-3)
-FontTarget(UTRG__14-ISO8859-3)
-FontTarget(UTRG__12-ISO8859-3)
-FontTarget(UTRG__24-ISO8859-3)
+FontTarget(UTI___24-ISO8859-3)
 FontTarget(UTRG__10-ISO8859-3)
+FontTarget(UTRG__12-ISO8859-3)
+FontTarget(UTRG__14-ISO8859-3)
 FontTarget(UTRG__18-ISO8859-3)
+FontTarget(UTRG__24-ISO8859-3)
 #endif
 
 #if BuildISO8859_4Fonts
@@ -1949,16 +2063,26 @@ FontTarget(lutRS14-ISO8859-4)
 FontTarget(lutRS18-ISO8859-4)
 FontTarget(lutRS19-ISO8859-4)
 FontTarget(lutRS24-ISO8859-4)
-FontTarget(UTI___14-ISO8859-4)
-FontTarget(UTI___12-ISO8859-4)
-FontTarget(UTI___24-ISO8859-4)
+FontTarget(UTBI__10-ISO8859-4)
+FontTarget(UTBI__12-ISO8859-4)
+FontTarget(UTBI__14-ISO8859-4)
+FontTarget(UTBI__18-ISO8859-4)
+FontTarget(UTBI__24-ISO8859-4)
+FontTarget(UTB___10-ISO8859-4)
+FontTarget(UTB___12-ISO8859-4)
+FontTarget(UTB___14-ISO8859-4)
+FontTarget(UTB___18-ISO8859-4)
+FontTarget(UTB___24-ISO8859-4)
 FontTarget(UTI___10-ISO8859-4)
+FontTarget(UTI___12-ISO8859-4)
+FontTarget(UTI___14-ISO8859-4)
 FontTarget(UTI___18-ISO8859-4)
-FontTarget(UTRG__14-ISO8859-4)
-FontTarget(UTRG__12-ISO8859-4)
-FontTarget(UTRG__24-ISO8859-4)
+FontTarget(UTI___24-ISO8859-4)
 FontTarget(UTRG__10-ISO8859-4)
+FontTarget(UTRG__12-ISO8859-4)
+FontTarget(UTRG__14-ISO8859-4)
 FontTarget(UTRG__18-ISO8859-4)
+FontTarget(UTRG__24-ISO8859-4)
 #endif
 
 #if BuildISO8859_9Fonts
@@ -2128,16 +2252,26 @@ FontTarget(lutRS14-ISO8859-9)
 FontTarget(lutRS18-ISO8859-9)
 FontTarget(lutRS19-ISO8859-9)
 FontTarget(lutRS24-ISO8859-9)
-FontTarget(UTI___14-ISO8859-9)
-FontTarget(UTI___12-ISO8859-9)
-FontTarget(UTI___24-ISO8859-9)
+FontTarget(UTBI__10-ISO8859-9)
+FontTarget(UTBI__12-ISO8859-9)
+FontTarget(UTBI__14-ISO8859-9)
+FontTarget(UTBI__18-ISO8859-9)
+FontTarget(UTBI__24-ISO8859-9)
+FontTarget(UTB___10-ISO8859-9)
+FontTarget(UTB___12-ISO8859-9)
+FontTarget(UTB___14-ISO8859-9)
+FontTarget(UTB___18-ISO8859-9)
+FontTarget(UTB___24-ISO8859-9)
 FontTarget(UTI___10-ISO8859-9)
+FontTarget(UTI___12-ISO8859-9)
+FontTarget(UTI___14-ISO8859-9)
 FontTarget(UTI___18-ISO8859-9)
-FontTarget(UTRG__14-ISO8859-9)
-FontTarget(UTRG__12-ISO8859-9)
-FontTarget(UTRG__24-ISO8859-9)
+FontTarget(UTI___24-ISO8859-9)
 FontTarget(UTRG__10-ISO8859-9)
+FontTarget(UTRG__12-ISO8859-9)
+FontTarget(UTRG__14-ISO8859-9)
 FontTarget(UTRG__18-ISO8859-9)
+FontTarget(UTRG__24-ISO8859-9)
 #endif
 
 #if BuildISO8859_10Fonts
@@ -2307,26 +2441,26 @@ FontTarget(lutRS14-ISO8859-10)
 FontTarget(lutRS18-ISO8859-10)
 FontTarget(lutRS19-ISO8859-10)
 FontTarget(lutRS24-ISO8859-10)
-FontTarget(UTI___14-ISO8859-10)
-FontTarget(UTI___12-ISO8859-10)
-FontTarget(UTI___24-ISO8859-10)
+FontTarget(UTBI__10-ISO8859-10)
+FontTarget(UTBI__12-ISO8859-10)
+FontTarget(UTBI__14-ISO8859-10)
+FontTarget(UTBI__18-ISO8859-10)
+FontTarget(UTBI__24-ISO8859-10)
+FontTarget(UTB___10-ISO8859-10)
+FontTarget(UTB___12-ISO8859-10)
+FontTarget(UTB___14-ISO8859-10)
+FontTarget(UTB___18-ISO8859-10)
+FontTarget(UTB___24-ISO8859-10)
 FontTarget(UTI___10-ISO8859-10)
+FontTarget(UTI___12-ISO8859-10)
+FontTarget(UTI___14-ISO8859-10)
 FontTarget(UTI___18-ISO8859-10)
-FontTarget(UTRG__14-ISO8859-10)
-FontTarget(UTRG__12-ISO8859-10)
-FontTarget(UTRG__24-ISO8859-10)
+FontTarget(UTI___24-ISO8859-10)
 FontTarget(UTRG__10-ISO8859-10)
+FontTarget(UTRG__12-ISO8859-10)
+FontTarget(UTRG__14-ISO8859-10)
 FontTarget(UTRG__18-ISO8859-10)
-#endif
-
-#if BuildISO8859_13Fonts
-FontTarget(courB08-ISO8859-13)
-FontTarget(courB10-ISO8859-13)
-FontTarget(courB12-ISO8859-13)
-FontTarget(courB14-ISO8859-13)
-FontTarget(courB18-ISO8859-13)
-FontTarget(courB24-ISO8859-13)
-FontTarget(courBO08-ISO8859-13)
+FontTarget(UTRG__24-ISO8859-10)
 FontTarget(courBO10-ISO8859-13)
 FontTarget(courBO12-ISO8859-13)
 FontTarget(courBO14-ISO8859-13)
@@ -2486,16 +2620,26 @@ FontTarget(lutRS14-ISO8859-13)
 FontTarget(lutRS18-ISO8859-13)
 FontTarget(lutRS19-ISO8859-13)
 FontTarget(lutRS24-ISO8859-13)
-FontTarget(UTI___14-ISO8859-13)
-FontTarget(UTI___12-ISO8859-13)
-FontTarget(UTI___24-ISO8859-13)
+FontTarget(UTBI__10-ISO8859-13)
+FontTarget(UTBI__12-ISO8859-13)
+FontTarget(UTBI__14-ISO8859-13)
+FontTarget(UTBI__18-ISO8859-13)
+FontTarget(UTBI__24-ISO8859-13)
+FontTarget(UTB___10-ISO8859-13)
+FontTarget(UTB___12-ISO8859-13)
+FontTarget(UTB___14-ISO8859-13)
+FontTarget(UTB___18-ISO8859-13)
+FontTarget(UTB___24-ISO8859-13)
 FontTarget(UTI___10-ISO8859-13)
+FontTarget(UTI___12-ISO8859-13)
+FontTarget(UTI___14-ISO8859-13)
 FontTarget(UTI___18-ISO8859-13)
-FontTarget(UTRG__14-ISO8859-13)
-FontTarget(UTRG__12-ISO8859-13)
-FontTarget(UTRG__24-ISO8859-13)
+FontTarget(UTI___24-ISO8859-13)
 FontTarget(UTRG__10-ISO8859-13)
+FontTarget(UTRG__12-ISO8859-13)
+FontTarget(UTRG__14-ISO8859-13)
 FontTarget(UTRG__18-ISO8859-13)
+FontTarget(UTRG__24-ISO8859-13)
 #endif
 
 #if BuildISO8859_14Fonts
@@ -2665,16 +2809,26 @@ FontTarget(lutRS14-ISO8859-14)
 FontTarget(lutRS18-ISO8859-14)
 FontTarget(lutRS19-ISO8859-14)
 FontTarget(lutRS24-ISO8859-14)
-FontTarget(UTI___14-ISO8859-14)
-FontTarget(UTI___12-ISO8859-14)
-FontTarget(UTI___24-ISO8859-14)
+FontTarget(UTBI__10-ISO8859-14)
+FontTarget(UTBI__12-ISO8859-14)
+FontTarget(UTBI__14-ISO8859-14)
+FontTarget(UTBI__18-ISO8859-14)
+FontTarget(UTBI__24-ISO8859-14)
+FontTarget(UTB___10-ISO8859-14)
+FontTarget(UTB___12-ISO8859-14)
+FontTarget(UTB___14-ISO8859-14)
+FontTarget(UTB___18-ISO8859-14)
+FontTarget(UTB___24-ISO8859-14)
 FontTarget(UTI___10-ISO8859-14)
+FontTarget(UTI___12-ISO8859-14)
+FontTarget(UTI___14-ISO8859-14)
 FontTarget(UTI___18-ISO8859-14)
-FontTarget(UTRG__14-ISO8859-14)
-FontTarget(UTRG__12-ISO8859-14)
-FontTarget(UTRG__24-ISO8859-14)
+FontTarget(UTI___24-ISO8859-14)
 FontTarget(UTRG__10-ISO8859-14)
+FontTarget(UTRG__12-ISO8859-14)
+FontTarget(UTRG__14-ISO8859-14)
 FontTarget(UTRG__18-ISO8859-14)
+FontTarget(UTRG__24-ISO8859-14)
 #endif
 
 #if BuildISO8859_15Fonts
@@ -2844,16 +2998,26 @@ FontTarget(lutRS14-ISO8859-15)
 FontTarget(lutRS18-ISO8859-15)
 FontTarget(lutRS19-ISO8859-15)
 FontTarget(lutRS24-ISO8859-15)
-FontTarget(UTI___14-ISO8859-15)
-FontTarget(UTI___12-ISO8859-15)
-FontTarget(UTI___24-ISO8859-15)
+FontTarget(UTBI__10-ISO8859-15)
+FontTarget(UTBI__12-ISO8859-15)
+FontTarget(UTBI__14-ISO8859-15)
+FontTarget(UTBI__18-ISO8859-15)
+FontTarget(UTBI__24-ISO8859-15)
+FontTarget(UTB___10-ISO8859-15)
+FontTarget(UTB___12-ISO8859-15)
+FontTarget(UTB___14-ISO8859-15)
+FontTarget(UTB___18-ISO8859-15)
+FontTarget(UTB___24-ISO8859-15)
 FontTarget(UTI___10-ISO8859-15)
+FontTarget(UTI___12-ISO8859-15)
+FontTarget(UTI___14-ISO8859-15)
 FontTarget(UTI___18-ISO8859-15)
-FontTarget(UTRG__14-ISO8859-15)
-FontTarget(UTRG__12-ISO8859-15)
-FontTarget(UTRG__24-ISO8859-15)
+FontTarget(UTI___24-ISO8859-15)
 FontTarget(UTRG__10-ISO8859-15)
+FontTarget(UTRG__12-ISO8859-15)
+FontTarget(UTRG__14-ISO8859-15)
 FontTarget(UTRG__18-ISO8859-15)
+FontTarget(UTRG__24-ISO8859-15)
 #endif
 #endif
 
@@ -3025,16 +3189,26 @@ MakeBdfFontFromUCSMaster(lutRS14,ISO8859-1)
 MakeBdfFontFromUCSMaster(lutRS18,ISO8859-1)
 MakeBdfFontFromUCSMaster(lutRS19,ISO8859-1)
 MakeBdfFontFromUCSMaster(lutRS24,ISO8859-1)
-MakeBdfFontFromUCSMaster(UTI___14,ISO8859-1)
-MakeBdfFontFromUCSMaster(UTI___12,ISO8859-1)
-MakeBdfFontFromUCSMaster(UTI___24,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTBI__10,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTBI__12,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTBI__14,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTBI__18,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTBI__24,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTB___10,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTB___12,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTB___14,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTB___18,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTB___24,ISO8859-1)
 MakeBdfFontFromUCSMaster(UTI___10,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTI___12,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTI___14,ISO8859-1)
 MakeBdfFontFromUCSMaster(UTI___18,ISO8859-1)
-MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-1)
-MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-1)
-MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTI___24,ISO8859-1)
 MakeBdfFontFromUCSMaster(UTRG__10,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-1)
 MakeBdfFontFromUCSMaster(UTRG__18,ISO8859-1)
+MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-1)
 #endif
 
 #if BuildISO8859_2Fonts
@@ -3204,16 +3378,26 @@ MakeBdfFontFromUCSMaster(lutRS14,ISO8859-2)
 MakeBdfFontFromUCSMaster(lutRS18,ISO8859-2)
 MakeBdfFontFromUCSMaster(lutRS19,ISO8859-2)
 MakeBdfFontFromUCSMaster(lutRS24,ISO8859-2)
-MakeBdfFontFromUCSMaster(UTI___14,ISO8859-2)
-MakeBdfFontFromUCSMaster(UTI___12,ISO8859-2)
-MakeBdfFontFromUCSMaster(UTI___24,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTBI__10,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTBI__12,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTBI__14,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTBI__18,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTBI__24,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTB___10,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTB___12,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTB___14,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTB___18,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTB___24,ISO8859-2)
 MakeBdfFontFromUCSMaster(UTI___10,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTI___12,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTI___14,ISO8859-2)
 MakeBdfFontFromUCSMaster(UTI___18,ISO8859-2)
-MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-2)
-MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-2)
-MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTI___24,ISO8859-2)
 MakeBdfFontFromUCSMaster(UTRG__10,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-2)
 MakeBdfFontFromUCSMaster(UTRG__18,ISO8859-2)
+MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-2)
 #endif
 
 #if BuildISO8859_3Fonts
@@ -3383,16 +3567,26 @@ MakeBdfFontFromUCSMaster(lutRS14,ISO8859-3)
 MakeBdfFontFromUCSMaster(lutRS18,ISO8859-3)
 MakeBdfFontFromUCSMaster(lutRS19,ISO8859-3)
 MakeBdfFontFromUCSMaster(lutRS24,ISO8859-3)
-MakeBdfFontFromUCSMaster(UTI___14,ISO8859-3)
-MakeBdfFontFromUCSMaster(UTI___12,ISO8859-3)
-MakeBdfFontFromUCSMaster(UTI___24,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTBI__10,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTBI__12,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTBI__14,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTBI__18,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTBI__24,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTB___10,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTB___12,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTB___14,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTB___18,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTB___24,ISO8859-3)
 MakeBdfFontFromUCSMaster(UTI___10,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTI___12,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTI___14,ISO8859-3)
 MakeBdfFontFromUCSMaster(UTI___18,ISO8859-3)
-MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-3)
-MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-3)
-MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTI___24,ISO8859-3)
 MakeBdfFontFromUCSMaster(UTRG__10,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-3)
 MakeBdfFontFromUCSMaster(UTRG__18,ISO8859-3)
+MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-3)
 #endif
 
 #if BuildISO8859_4Fonts
@@ -3562,16 +3756,26 @@ MakeBdfFontFromUCSMaster(lutRS14,ISO8859-4)
 MakeBdfFontFromUCSMaster(lutRS18,ISO8859-4)
 MakeBdfFontFromUCSMaster(lutRS19,ISO8859-4)
 MakeBdfFontFromUCSMaster(lutRS24,ISO8859-4)
-MakeBdfFontFromUCSMaster(UTI___14,ISO8859-4)
-MakeBdfFontFromUCSMaster(UTI___12,ISO8859-4)
-MakeBdfFontFromUCSMaster(UTI___24,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTBI__10,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTBI__12,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTBI__14,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTBI__18,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTBI__24,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTB___10,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTB___12,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTB___14,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTB___18,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTB___24,ISO8859-4)
 MakeBdfFontFromUCSMaster(UTI___10,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTI___12,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTI___14,ISO8859-4)
 MakeBdfFontFromUCSMaster(UTI___18,ISO8859-4)
-MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-4)
-MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-4)
-MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTI___24,ISO8859-4)
 MakeBdfFontFromUCSMaster(UTRG__10,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-4)
 MakeBdfFontFromUCSMaster(UTRG__18,ISO8859-4)
+MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-4)
 #endif
 
 #if BuildISO8859_9Fonts
@@ -3741,16 +3945,26 @@ MakeBdfFontFromUCSMaster(lutRS14,ISO8859-9)
 MakeBdfFontFromUCSMaster(lutRS18,ISO8859-9)
 MakeBdfFontFromUCSMaster(lutRS19,ISO8859-9)
 MakeBdfFontFromUCSMaster(lutRS24,ISO8859-9)
-MakeBdfFontFromUCSMaster(UTI___14,ISO8859-9)
-MakeBdfFontFromUCSMaster(UTI___12,ISO8859-9)
-MakeBdfFontFromUCSMaster(UTI___24,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTBI__10,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTBI__12,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTBI__14,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTBI__18,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTBI__24,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTB___10,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTB___12,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTB___14,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTB___18,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTB___24,ISO8859-9)
 MakeBdfFontFromUCSMaster(UTI___10,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTI___12,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTI___14,ISO8859-9)
 MakeBdfFontFromUCSMaster(UTI___18,ISO8859-9)
-MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-9)
-MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-9)
-MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTI___24,ISO8859-9)
 MakeBdfFontFromUCSMaster(UTRG__10,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-9)
 MakeBdfFontFromUCSMaster(UTRG__18,ISO8859-9)
+MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-9)
 #endif
 
 #if BuildISO8859_10Fonts
@@ -3920,16 +4134,26 @@ MakeBdfFontFromUCSMaster(lutRS14,ISO8859-10)
 MakeBdfFontFromUCSMaster(lutRS18,ISO8859-10)
 MakeBdfFontFromUCSMaster(lutRS19,ISO8859-10)
 MakeBdfFontFromUCSMaster(lutRS24,ISO8859-10)
-MakeBdfFontFromUCSMaster(UTI___14,ISO8859-10)
-MakeBdfFontFromUCSMaster(UTI___12,ISO8859-10)
-MakeBdfFontFromUCSMaster(UTI___24,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTBI__10,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTBI__12,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTBI__14,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTBI__18,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTBI__24,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTB___10,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTB___12,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTB___14,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTB___18,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTB___24,ISO8859-10)
 MakeBdfFontFromUCSMaster(UTI___10,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTI___12,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTI___14,ISO8859-10)
 MakeBdfFontFromUCSMaster(UTI___18,ISO8859-10)
-MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-10)
-MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-10)
-MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTI___24,ISO8859-10)
 MakeBdfFontFromUCSMaster(UTRG__10,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-10)
 MakeBdfFontFromUCSMaster(UTRG__18,ISO8859-10)
+MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-10)
 #endif
 
 #if BuildISO8859_13Fonts
@@ -4099,16 +4323,26 @@ MakeBdfFontFromUCSMaster(lutRS14,ISO8859-13)
 MakeBdfFontFromUCSMaster(lutRS18,ISO8859-13)
 MakeBdfFontFromUCSMaster(lutRS19,ISO8859-13)
 MakeBdfFontFromUCSMaster(lutRS24,ISO8859-13)
-MakeBdfFontFromUCSMaster(UTI___14,ISO8859-13)
-MakeBdfFontFromUCSMaster(UTI___12,ISO8859-13)
-MakeBdfFontFromUCSMaster(UTI___24,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTBI__10,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTBI__12,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTBI__14,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTBI__18,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTBI__24,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTB___10,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTB___12,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTB___14,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTB___18,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTB___24,ISO8859-13)
 MakeBdfFontFromUCSMaster(UTI___10,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTI___12,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTI___14,ISO8859-13)
 MakeBdfFontFromUCSMaster(UTI___18,ISO8859-13)
-MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-13)
-MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-13)
-MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTI___24,ISO8859-13)
 MakeBdfFontFromUCSMaster(UTRG__10,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-13)
 MakeBdfFontFromUCSMaster(UTRG__18,ISO8859-13)
+MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-13)
 #endif
 
 #if BuildISO8859_14Fonts
@@ -4278,16 +4512,26 @@ MakeBdfFontFromUCSMaster(lutRS14,ISO8859-14)
 MakeBdfFontFromUCSMaster(lutRS18,ISO8859-14)
 MakeBdfFontFromUCSMaster(lutRS19,ISO8859-14)
 MakeBdfFontFromUCSMaster(lutRS24,ISO8859-14)
-MakeBdfFontFromUCSMaster(UTI___14,ISO8859-14)
-MakeBdfFontFromUCSMaster(UTI___12,ISO8859-14)
-MakeBdfFontFromUCSMaster(UTI___24,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTBI__10,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTBI__12,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTBI__14,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTBI__18,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTBI__24,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTB___10,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTB___12,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTB___14,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTB___18,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTB___24,ISO8859-14)
 MakeBdfFontFromUCSMaster(UTI___10,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTI___12,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTI___14,ISO8859-14)
 MakeBdfFontFromUCSMaster(UTI___18,ISO8859-14)
-MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-14)
-MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-14)
-MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTI___24,ISO8859-14)
 MakeBdfFontFromUCSMaster(UTRG__10,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-14)
 MakeBdfFontFromUCSMaster(UTRG__18,ISO8859-14)
+MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-14)
 #endif
 
 #if BuildISO8859_15Fonts
@@ -4457,16 +4701,26 @@ MakeBdfFontFromUCSMaster(lutRS14,ISO8859-15)
 MakeBdfFontFromUCSMaster(lutRS18,ISO8859-15)
 MakeBdfFontFromUCSMaster(lutRS19,ISO8859-15)
 MakeBdfFontFromUCSMaster(lutRS24,ISO8859-15)
-MakeBdfFontFromUCSMaster(UTI___14,ISO8859-15)
-MakeBdfFontFromUCSMaster(UTI___12,ISO8859-15)
-MakeBdfFontFromUCSMaster(UTI___24,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTBI__10,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTBI__12,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTBI__14,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTBI__18,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTBI__24,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTB___10,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTB___12,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTB___14,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTB___18,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTB___24,ISO8859-15)
 MakeBdfFontFromUCSMaster(UTI___10,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTI___12,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTI___14,ISO8859-15)
 MakeBdfFontFromUCSMaster(UTI___18,ISO8859-15)
-MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-15)
-MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-15)
-MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTI___24,ISO8859-15)
 MakeBdfFontFromUCSMaster(UTRG__10,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTRG__12,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTRG__14,ISO8859-15)
 MakeBdfFontFromUCSMaster(UTRG__18,ISO8859-15)
+MakeBdfFontFromUCSMaster(UTRG__24,ISO8859-15)
 #endif
 
 #else /* DerivedUCSFonts */
@@ -4638,16 +4892,26 @@ LinkFile(lutRS14-ISO8859-1.bdf,lutRS14-L1.bdf)
 LinkFile(lutRS18-ISO8859-1.bdf,lutRS18-L1.bdf)
 LinkFile(lutRS19-ISO8859-1.bdf,lutRS19-L1.bdf)
 LinkFile(lutRS24-ISO8859-1.bdf,lutRS24-L1.bdf)
-LinkFile(UTI___14-ISO8859-1.bdf,UTI___14-L1.bdf)
-LinkFile(UTI___12-ISO8859-1.bdf,UTI___12-L1.bdf)
-LinkFile(UTI___24-ISO8859-1.bdf,UTI___24-L1.bdf)
+LinkFile(UTBI__10-ISO8859-1.bdf,UTBI__10-L1.bdf)
+LinkFile(UTBI__12-ISO8859-1.bdf,UTBI__12-L1.bdf)
+LinkFile(UTBI__14-ISO8859-1.bdf,UTBI__14-L1.bdf)
+LinkFile(UTBI__18-ISO8859-1.bdf,UTBI__18-L1.bdf)
+LinkFile(UTBI__24-ISO8859-1.bdf,UTBI__24-L1.bdf)
+LinkFile(UTB___10-ISO8859-1.bdf,UTB___10-L1.bdf)
+LinkFile(UTB___12-ISO8859-1.bdf,UTB___12-L1.bdf)
+LinkFile(UTB___14-ISO8859-1.bdf,UTB___14-L1.bdf)
+LinkFile(UTB___18-ISO8859-1.bdf,UTB___18-L1.bdf)
+LinkFile(UTB___24-ISO8859-1.bdf,UTB___24-L1.bdf)
 LinkFile(UTI___10-ISO8859-1.bdf,UTI___10-L1.bdf)
+LinkFile(UTI___12-ISO8859-1.bdf,UTI___12-L1.bdf)
+LinkFile(UTI___14-ISO8859-1.bdf,UTI___14-L1.bdf)
 LinkFile(UTI___18-ISO8859-1.bdf,UTI___18-L1.bdf)
-LinkFile(UTRG__14-ISO8859-1.bdf,UTRG__14-L1.bdf)
-LinkFile(UTRG__12-ISO8859-1.bdf,UTRG__12-L1.bdf)
-LinkFile(UTRG__24-ISO8859-1.bdf,UTRG__24-L1.bdf)
+LinkFile(UTI___24-ISO8859-1.bdf,UTI___24-L1.bdf)
 LinkFile(UTRG__10-ISO8859-1.bdf,UTRG__10-L1.bdf)
+LinkFile(UTRG__12-ISO8859-1.bdf,UTRG__12-L1.bdf)
+LinkFile(UTRG__14-ISO8859-1.bdf,UTRG__14-L1.bdf)
 LinkFile(UTRG__18-ISO8859-1.bdf,UTRG__18-L1.bdf)
+LinkFile(UTRG__24-ISO8859-1.bdf,UTRG__24-L1.bdf)
 #endif
 
 #endif /* DerivedUCSFonts */
@@ -4818,14 +5082,24 @@ UpdateDerivedFont(lutRS14-ISO8859-1.bdf,lutRS14-L1.bdf)
 UpdateDerivedFont(lutRS18-ISO8859-1.bdf,lutRS18-L1.bdf)
 UpdateDerivedFont(lutRS19-ISO8859-1.bdf,lutRS19-L1.bdf)
 UpdateDerivedFont(lutRS24-ISO8859-1.bdf,lutRS24-L1.bdf)
-UpdateDerivedFont(UTI___14-ISO8859-1.bdf,UTI___14-L1.bdf)
-UpdateDerivedFont(UTI___12-ISO8859-1.bdf,UTI___12-L1.bdf)
-UpdateDerivedFont(UTI___24-ISO8859-1.bdf,UTI___24-L1.bdf)
+UpdateDerivedFont(UTBI__10-ISO8859-1.bdf,UTBI__10-L1.bdf)
+UpdateDerivedFont(UTBI__12-ISO8859-1.bdf,UTBI__12-L1.bdf)
+UpdateDerivedFont(UTBI__14-ISO8859-1.bdf,UTBI__14-L1.bdf)
+UpdateDerivedFont(UTBI__18-ISO8859-1.bdf,UTBI__18-L1.bdf)
+UpdateDerivedFont(UTBI__24-ISO8859-1.bdf,UTBI__24-L1.bdf)
+UpdateDerivedFont(UTB___10-ISO8859-1.bdf,UTB___10-L1.bdf)
+UpdateDerivedFont(UTB___12-ISO8859-1.bdf,UTB___12-L1.bdf)
+UpdateDerivedFont(UTB___14-ISO8859-1.bdf,UTB___14-L1.bdf)
+UpdateDerivedFont(UTB___18-ISO8859-1.bdf,UTB___18-L1.bdf)
+UpdateDerivedFont(UTB___24-ISO8859-1.bdf,UTB___24-L1.bdf)
 UpdateDerivedFont(UTI___10-ISO8859-1.bdf,UTI___10-L1.bdf)
+UpdateDerivedFont(UTI___12-ISO8859-1.bdf,UTI___12-L1.bdf)
+UpdateDerivedFont(UTI___14-ISO8859-1.bdf,UTI___14-L1.bdf)
 UpdateDerivedFont(UTI___18-ISO8859-1.bdf,UTI___18-L1.bdf)
-UpdateDerivedFont(UTRG__14-ISO8859-1.bdf,UTRG__14-L1.bdf)
-UpdateDerivedFont(UTRG__12-ISO8859-1.bdf,UTRG__12-L1.bdf)
-UpdateDerivedFont(UTRG__24-ISO8859-1.bdf,UTRG__24-L1.bdf)
+UpdateDerivedFont(UTI___24-ISO8859-1.bdf,UTI___24-L1.bdf)
 UpdateDerivedFont(UTRG__10-ISO8859-1.bdf,UTRG__10-L1.bdf)
+UpdateDerivedFont(UTRG__12-ISO8859-1.bdf,UTRG__12-L1.bdf)
+UpdateDerivedFont(UTRG__14-ISO8859-1.bdf,UTRG__14-L1.bdf)
 UpdateDerivedFont(UTRG__18-ISO8859-1.bdf,UTRG__18-L1.bdf)
+UpdateDerivedFont(UTRG__24-ISO8859-1.bdf,UTRG__24-L1.bdf)
 
