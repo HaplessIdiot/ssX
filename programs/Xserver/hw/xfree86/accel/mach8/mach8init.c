@@ -1,4 +1,5 @@
 /* $XConsortium: mach8init.c,v 1.1 94/03/28 21:12:17 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -208,15 +209,6 @@ mach8Init(vmdef)
 
     /* Get board status information */
     i = inw(SUBSYS_STAT);
-
-    /* Check if monitor capable of 1024x768 is attached.
-     * If not, print error message and abort.
-     * In this case, we want an IBM 8514 compatible monitor.
-     */
-    if ((i & MONITORID_MASK) != MONITORID_8514) {
-	mach8CleanUp();
-	FatalError("Attached monitor doesn't report 8514 ID !\n");
-    }
 
     /* Determine the pixel depth of the board.  Then, based on depth,
      * set the memory control register use the appropriate CAS (VRAM
