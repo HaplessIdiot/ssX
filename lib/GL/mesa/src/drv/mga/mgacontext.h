@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.8tsi Exp $*/
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.9 2003/11/13 04:01:04 tsi Exp $*/
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -29,9 +29,6 @@
 #ifndef MGALIB_INC
 #define MGALIB_INC
 
-#if !defined(linux) || defined(__GLIBC__)
-#include <inttypes.h>
-#endif
 #include "dri_util.h"
 #include "mtypes.h"
 #include "xf86drm.h"
