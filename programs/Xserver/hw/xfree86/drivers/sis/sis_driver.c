@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.192tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.193 2004/08/04 16:33:36 tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * SiS driver main code
@@ -6571,7 +6571,7 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	     }
 
 	     /* Reset our PIOOffset as vgaHWInit might have reset it */
-	     VGAHWPTR(pScrn)->PIOOffset = pSiS->MyPIOOffset;
+	     hwp->PIOOffset = pSiS->MyPIOOffset;
 
 	     /* Prepare the register contents */
 	     if(!(*pSiS->ModeInit)(pScrn, mode)) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.59 2004/02/20 16:59:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.60tsi Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -571,7 +571,9 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
 
 	/*
-	 * This will initialize all of the generic VGA registers.
+	 * This will initialize all of the generic VGA registers.  Don't bother
+	 * with VGA_FIX_SYNC_PULSES, given the relevant CRTC settings are
+	 * overridden below.  Ditto for the KGA workaround.
 	 */
 	if (!vgaHWInit(pScrn, mode))
 		return(FALSE);

@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_setup.c $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_setup.c,v 1.1tsi Exp $ */
 
 #include "riva_include.h"
 
@@ -187,12 +187,6 @@ Riva3Setup(ScrnInfoPtr pScrn)
     xf86MonPtr monitor;
     int mmioFlags;
     
-    pRiva->Save = RivaDACSave;
-    pRiva->Restore = RivaDACRestore;
-    pRiva->ModeInit = RivaDACInit;
-
-    pRiva->Dac.LoadPalette = RivaDACLoadPalette;
-
     /*
      * Override VGA I/O routines.
      */
@@ -274,6 +268,4 @@ Riva3Setup(ScrnInfoPtr pScrn)
 
     if(monitor)
       xf86SetDDCproperties(pScrn, monitor);
-
-    pRiva->Dac.maxPixelClock = pRiva->riva.MaxVClockFreqKHz;
 }

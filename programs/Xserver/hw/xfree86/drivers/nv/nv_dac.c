@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.40 2004/03/20 01:52:16 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.41tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -64,7 +64,9 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaRegPtr   pVga;
 
     /*
-     * This will initialize all of the generic VGA registers.
+     * Initialize all of the generic VGA registers.  Don't bother with
+     * VGA_FIX_SYNC_PULSES, given the relevant CRTC settings are overridden
+     * below.  Ditto for the KGA workaround.
      */
     if (!vgaHWInit(pScrn, mode))
         return(FALSE);

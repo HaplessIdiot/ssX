@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400, MGA-G550 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.55 2004/02/20 16:59:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.56tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -429,7 +429,9 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	);	/* MGA_NOT_HAL */
 		
 	/*
-	 * This will initialize all of the generic VGA registers.
+	 * This will initialize all of the generic VGA registers.  Don't bother
+	 * with VGA_FIX_SYNC_PULSES, given the relevant CRTC settings are
+	 * overridden below.  Ditto for the KGA workaround.
 	 */
 	if (!vgaHWInit(pScrn, mode))
 		return(FALSE);
