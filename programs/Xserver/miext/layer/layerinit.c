@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/layer/layerinit.c,v 1.1 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -87,8 +87,6 @@ LayerStartInit (ScreenPtr pScreen)
 	xfree (pScrPriv);
 	return FALSE;
     }
-    LayerSetGCFuncs (pScreen, LAYER_FB, (GCFuncs *) &fbGCFuncs, 0, 0);
-    LayerSetGCFuncs (pScreen, LAYER_SHADOW, &shadowGCFuncs, shadowWrapGC, shadowUnwrapGC);
     return TRUE;
 }
 
@@ -107,6 +105,7 @@ LayerNewKind (ScreenPtr pScreen)
 #ifdef RENDER
     PictureScreenPtr	ps = GetPictureScreen (pScreen);
 #endif
+    LayerPtr		pLayer;
     
     /*
      * Allocate a new kind structure
@@ -118,6 +117,17 @@ LayerNewKind (ScreenPtr pScreen)
 	pLayKinds = (LayerKindPtr) xalloc (sizeof (LayerKindRec));
     if (!pLayKinds)
 	return -1;
+
+    /*
+     * Fix up existing layers to point at the new kind
+     */
+    for (pLayer = pLayScr->pLayers; pLayer; pLayer = pLayer->pNext)
+    {
+	int kind = pLayer->pKind - pLayScr->kinds;
+	
+	pLayer->pKind = &pLayKinds[kind];
+    }
+
     pLayScr->kinds = pLayKinds;
     pLayKind = &pLayScr->kinds[pLayScr->nkinds];
     pLayKind->kind = pLayScr->nkinds;
@@ -176,28 +186,6 @@ LayerNewKind (ScreenPtr pScreen)
 }
 
 /*
- * Set the GC ops/funcs to use for this layer
- */
-
-void
-LayerSetGCFuncs (ScreenPtr pScreen, int kind, 
-		 GCFuncs *funcs,
-		 void (*WrapGC) (GCPtr pGC),
-		 void (*UnwrapGC) (GCPtr pGC))
-{
-    layerScrPriv(pScreen);
-    LayerKindPtr    pLayKind;
-
-    if (0 <= kind && kind < pLayScr->nkinds)
-    {
-	pLayKind = &pLayScr->kinds[kind];
-	pLayKind->funcs = funcs;
-	pLayKind->WrapGC = WrapGC;
-	pLayKind->UnwrapGC = UnwrapGC;
-    }
-}
-
-/*
  * Finally, call this function and layer
  * will wrap the screen functions and prepare for execution
  */
@@ -234,7 +222,7 @@ LayerFinishInit (ScreenPtr pScreen)
 }
 
 /*
- * At any point after LayerFinishInit, a new layer can be created.
+ * At any point after LayerStartInit, a new layer can be created.
  */
 LayerPtr
 LayerCreate (ScreenPtr		pScreen, 
@@ -267,8 +255,14 @@ LayerCreate (ScreenPtr		pScreen,
     pLay->update = update;
     pLay->window = window;
     pLay->closure = closure;
-    if (pPixmap && pPixmap != LAYER_SCREEN_PIXMAP)
-	pPixmap->refcnt++;
+    if (pPixmap == LAYER_SCREEN_PIXMAP)
+	pLay->freePixmap = FALSE;
+    else
+    {
+	pLay->freePixmap = TRUE;
+	if (pPixmap)
+	    pPixmap->refcnt++;
+    }
     REGION_INIT (pScreen, &pLay->region, NullBox, 0);
     /*
      * Hook the layer at the end of the list
@@ -285,11 +279,16 @@ LayerCreate (ScreenPtr		pScreen,
 void
 LayerSetPixmap (ScreenPtr pScreen, LayerPtr pLayer, PixmapPtr pPixmap)
 {
-    if (pLayer->pPixmap && pLayer->pPixmap != LAYER_SCREEN_PIXMAP)
-	(*pScreen->DestroyPixmap) (pLayer->pPixmap);
+    LayerDestroyPixmap (pScreen, pLayer);
     pLayer->pPixmap = pPixmap;
-    if (pPixmap && pPixmap != LAYER_SCREEN_PIXMAP)
-	pPixmap->refcnt++;
+    if (pPixmap == LAYER_SCREEN_PIXMAP)
+	pLayer->freePixmap = FALSE;
+    else
+    {
+	if (pPixmap)
+	    pPixmap->refcnt++;
+	pLayer->freePixmap = TRUE;
+    }
 }
 
 /*
@@ -316,9 +315,9 @@ LayerDestroy (ScreenPtr pScreen, LayerPtr pLay)
     /*
      * Free associated storage
      */
-    if (pLay->pPixmap && pLay->pPixmap != LAYER_SCREEN_PIXMAP)
-	(*pScreen->DestroyPixmap) (pLay->pPixmap);
+    LayerDestroyPixmap (pScreen, pLay);
     REGION_UNINIT (pScreen, &pLay->region);
+    xfree (pLay);
 }
 
 /*
@@ -330,11 +329,19 @@ layerCloseScreen (int index, ScreenPtr pScreen)
     layerScrPriv(pScreen);
     int	    kind;
 
-    for (kind = pLayScr->nkinds - 1; kind > 0; kind--)
-    {
-	pScreen->CloseScreen = pLayScr->kinds[kind].CloseScreen;
-	(*pScreen->CloseScreen) (index, pScreen);
-    }
+    /* XXX this is a mess -- fbCloseScreen can only be called once,
+     * and yet the intervening layers need to be called as well.
+     */
+    kind = pLayScr->nkinds - 1;
+    pScreen->CloseScreen = pLayScr->kinds[kind].CloseScreen;
+    (*pScreen->CloseScreen) (index, pScreen);
+    
+    /*
+     * make sure the shadow layer is cleaned up as well
+     */
+    if (kind != LAYER_SHADOW)
+	xfree (shadowGetScrPriv (pScreen));
+
     xfree (pLayScr->kinds);
     xfree (pLayScr);
     pScreen->devPrivates[layerScrPrivateIndex].ptr = 0;

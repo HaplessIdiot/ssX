@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.1 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -80,9 +80,10 @@ LayerDestroyPixmap (ScreenPtr pScreen, LayerPtr pLayer)
     {
 	if (pLayer->pKind->kind == LAYER_SHADOW)
 	    shadowRemove (pScreen, pLayer->pPixmap);
-	(*pScreen->DestroyPixmap) (pLayer->pPixmap);
-	pLayer->pPixmap = 0;
+	if (pLayer->freePixmap)
+	    (*pScreen->DestroyPixmap) (pLayer->pPixmap);
     }
+    pLayer->pPixmap = 0;
 }
     
 /*
@@ -94,13 +95,8 @@ LayerWindowAdd (ScreenPtr pScreen, LayerPtr pLayer, WindowPtr pWin)
     layerWinPriv(pWin);
 
     if (pLayer->pPixmap == LAYER_SCREEN_PIXMAP)
-    {
 	pLayer->pPixmap = (*pScreen->GetScreenPixmap) (pScreen);
-	if (pLayer->pPixmap)
-	    pLayer->pPixmap->refcnt++;
-    }
-
-    if (!pLayer->pPixmap && !LayerCreatePixmap (pScreen, pLayer))
+    else if (!pLayer->pPixmap && !LayerCreatePixmap (pScreen, pLayer))
 	return FALSE;
     /*
      * Add a new layer list if needed

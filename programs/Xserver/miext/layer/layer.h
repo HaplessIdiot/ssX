@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/layer/layer.h,v 1.1 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -52,6 +52,7 @@ typedef struct _Layer {
     int			windows;    /* number of windows, free pixmap when zero */
     int			depth;	    /* window depth in this layer */
     PixmapPtr		pPixmap;    /* pixmap for this layer (may be frame buffer) */
+    Bool		freePixmap; /* whether to free this pixmap when done */
     RegionRec		region;	    /* valid set of pPixmap for drawing */
     ShadowUpdateProc	update;	    /* for shadow layers, update/window/closure values */
     ShadowWindowProc	window;
@@ -77,16 +78,6 @@ int
 LayerNewKind (ScreenPtr pScreen);
 
 /*
- * Set the GC funcs to use for this layer
- */
-
-void
-LayerSetGCFuncs (ScreenPtr pScreen, int kind, 
-		 GCFuncs *funcs,
-		 void (*WrapGC) (GCPtr pGC),
-		 void (*UnwrapGC) (GCPtr pGC));
-
-/*
  * Finally, call this function and layer
  * will wrap the screen functions and prepare for execution
  */
@@ -95,7 +86,7 @@ Bool
 LayerFinishInit (ScreenPtr pScreen);
 
 /*
- * At any point after LayerFinishInit, a new layer can be created.
+ * At any point after LayerStartInit, a new layer can be created.
  */
 LayerPtr
 LayerCreate (ScreenPtr		pScreen, 
