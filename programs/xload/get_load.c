@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.14 2001/11/16 16:47:58 dawes Exp $ */
+/* $XFree86: get_load.c,v 1.15 2002/01/07 20:38:31 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -613,6 +613,7 @@ void GetLoadPoint(w, closure, call_data)
 
 #else /* not __bsdi__ */
 #if defined(BSD) && (BSD >= 199306)
+#include <stdlib.h>
 
 void InitLoadPoint()
 {
