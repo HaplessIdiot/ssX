@@ -124,8 +124,7 @@ Bool xf86LinearVidMem(void)
 	 */
 }
 
-pointer xf86MapVidMem(int ScreenNum, int Region, pointer Base,
-		      unsigned long Size)
+pointer xf86MapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	/*
 	 * Handle mapping the video memory.  Returns (pointer *)0 for
@@ -501,7 +500,7 @@ xf86cos(double x)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.6 1997/08/26 10:01:33 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/os-support/README.OS-lib,v 3.7 2000/12/09 03:31:38 dawes Exp $
 
 
 
