@@ -1,3 +1,13 @@
+XFree86 3.9j (x July 1997)
+1098. Fix a problem in Imake.rules that shows up when using Motif.rules.
+1097. Fix MGA lockup on SVR4.0.
+1096. Add missing for Japanese "small TSU" character to the XKB 
+      symbols/jp file (#751, Shigehiko Sasaki).
+1095. Fix ET4000/W32i acceleration at 16 and 24bpp, and accelerate colour
+      expansion at 16bpp and 24bpp for the W32p (#747, Koen Gadeyne).
+1094. Fix for I128 rev 2 chips (#746, Robin Cutshaw).
+1093. Fix typo in xf86_libc.h.
+
 XFree86 3.9i (6 July 1997)
 1092. Fix apm HW cursor problem at VT switch, and a problem with
       screen-to-screen bitblts (#745, Henrik Harmsen).
@@ -6,7 +16,8 @@ XFree86 3.9i (6 July 1997)
       add the HSkew parameter and some reserved fields (this introduces
       a protocol incompatibility), and fix a bug in the ValidateModeLine
       function's clock checking (#744, Joe Moss).
-1090. Add port probing for the Alliance 6410, 6422 and AT24 (#743, Joe Moss).
+1090. Add port probing to SuperProbe for the Alliance 6410, 6422 and AT24
+      (#743, Joe Moss).
 1089. Add similar ET6300 detection to scanpci and vgaPCI.h.
 1088. Fix SuperProbe's ET6000 memory probe (#742, Koen Gadeyne).
 1087. Add detection for the ET6100 and ET6300 to SuperProbe (#742,
@@ -5085,4 +5096,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.505 1997/07/06 12:08:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.506 1997/07/06 13:12:06 dawes Exp $

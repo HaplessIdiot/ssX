@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.9 1997/06/29 11:40:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.10 1997/07/06 05:30:55 dawes Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -65,6 +65,15 @@ typedef enum {
     TYPE_ET6000,
     TYPE_ET6300
 } t_tseng_type;
+
+#define Is_W32_any  ( (et4000_type >= TYPE_ET4000W32) && (et4000_type < TYPE_ET6000) )
+#define Is_ET6K     ( et4000_type >= TYPE_ET6000 )
+#define Is_W32      ( (et4000_type >= TYPE_ET4000W32) && (et4000_type < TYPE_ET4000W32I) )
+#define Is_W32i     ( (et4000_type >= TYPE_ET4000W32I) && (et4000_type < TYPE_ET4000W32P) )
+#define Is_W32_W32i ( (et4000_type >= TYPE_ET4000W32) && (et4000_type < TYPE_ET4000W32P) )
+#define Is_W32p     ( (et4000_type >= TYPE_ET4000W32P) && (et4000_type < TYPE_ET6000) )
+#define Is_W32p_up  ( et4000_type >= TYPE_ET4000W32P )
+
 
 extern t_tseng_type et4000_type;
 extern unsigned char tseng_save_divide; /* saves state of hibit */

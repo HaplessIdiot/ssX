@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.7 1997/06/29 11:40:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.8 1997/07/06 05:30:56 dawes Exp $ */
 
 
 /*
@@ -37,8 +37,9 @@
 
 void TsengSync();
 void TsengSetupForFillRectSolid();
-void Tseng4SubsequentFillRectSolid();
-void Tseng6SubsequentFillRectSolid();
+void TsengW32iSubsequentFillRectSolid();
+void TsengW32pSubsequentFillRectSolid();
+void Tseng6KSubsequentFillRectSolid();
 
 void TsengSubsequentFillTrapezoidSolid();
 
@@ -47,6 +48,7 @@ void TsengSubsequentScreenToScreenCopy();
 
 void TsengSetupForScanlineScreenToScreenColorExpand();
 void TsengSubsequentScanlineScreenToScreenColorExpand();
+void TsengSubsequentScanlineScreenToScreenColorExpand_1to2to16();
 
 void TsengSubsequentBresenhamLine();
 void TsengSubsequentTwoPointLine();
@@ -64,6 +66,13 @@ void TsengSubsequentFill8x8Pattern();
 static int bytesperpixel, powerPerPixel;
 static int tseng_line_width;
 static Bool need_wait_acl = FALSE;
+#define COLEXP_ONE_BUF 324  /* (1024-48) / 3 rounded down to multiple of 3*4 */
+
+
+/* for color expansion via scanline buffer in system memory */
+void *colexp_buf;
+static long FrameBufColExpBase;
+static Bool tseng_use_1_to_8_colexp = FALSE;
 
 /* These will hold the ping-pong registers.
  * Note that ping-pong registers might not be needed when using
@@ -107,7 +116,7 @@ void TsengAccelInit() {
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64 | 
                              HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
 
-    if (et4000_type >= TYPE_ET6000)
+    if (Is_ET6K)
     {
       xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
     }
@@ -119,24 +128,36 @@ void TsengAccelInit() {
     xf86AccelInfoRec.Sync = TsengSync;
     
     /* W32 and W32i must wait for ACL before changing registers */
-    need_wait_acl = (et4000_type < TYPE_ET4000W32P);
+    need_wait_acl = Is_W32_W32i;
 
     /*
      * We want to set up the FillRectSolid primitive for filling a solid
      * rectangle.
+     *
+     * The W32 and W32i chips don't have a register to set the amount of
+     * bytes per pixel, and hence they don't skip 1 byte in each 4-byte word
+     * at 24bpp. Therefor, the FG or BG colors would have to be contatenated
+     * in video memory (R-G-B-R-G-B-... instead of R-G-B-X-R-G-B-X-..., with
+     * X = dont' care), plus a wrap value that is a multiple of 3 would have
+     * to be set. There is no such wrap combination available.
      */
     xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;
 
-    xf86AccelInfoRec.SetupForFillRectSolid = TsengSetupForFillRectSolid;
-    if (et4000_type >= TYPE_ET6000) {
-      xf86AccelInfoRec.SubsequentFillRectSolid = Tseng6SubsequentFillRectSolid;
+    if ( !(Is_W32_W32i && (vgaBitsPerPixel == 24)) )
+    {
+      xf86AccelInfoRec.SetupForFillRectSolid = TsengSetupForFillRectSolid;
+      if (Is_ET6K) {
+        xf86AccelInfoRec.SubsequentFillRectSolid = Tseng6KSubsequentFillRectSolid;
 #if TRAPEZOIDS_FIXED
-      /* disabled for now: not fully compliant yet */
-      xf86AccelInfoRec.SubsequentFillTrapezoidSolid = TsengSubsequentFillTrapezoidSolid;
+        /* disabled for now: not fully compliant yet */
+        xf86AccelInfoRec.SubsequentFillTrapezoidSolid = TsengSubsequentFillTrapezoidSolid;
 #endif
+      }
+      else if (Is_W32p)
+        xf86AccelInfoRec.SubsequentFillRectSolid = TsengW32pSubsequentFillRectSolid;
+      else  /* W32, W32i */
+        xf86AccelInfoRec.SubsequentFillRectSolid = TsengW32iSubsequentFillRectSolid;
     }
-    else
-      xf86AccelInfoRec.SubsequentFillRectSolid = Tseng4SubsequentFillRectSolid;
 
     /*
      * We also want to set up the ScreenToScreenCopy (BitBLT) primitive for
@@ -146,36 +167,32 @@ void TsengAccelInit() {
      */
     xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK;
 
-    if (et4000_type < TYPE_ET6000)
+    if (!Is_ET6K)
       xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
     
+#if 1
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
         TsengSetupForScreenToScreenCopy;
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
         TsengSubsequentScreenToScreenCopy;
+#endif
 
     /*
      * 8x8 pattern tiling not possible on W32 chips in 24bpp mode.
      * Currently, 24bpp pattern tiling doesn't work at all.
      */
-
-#ifdef BPP24_BUG
-    if ( !((et4000_type < TYPE_ET6000) && (vgaBitsPerPixel == 24)) )
-#else
-    if ( !(vgaBitsPerPixel == 24) )
-#endif
+    if (vgaBitsPerPixel != 24)
     {
       xf86AccelInfoRec.SetupForFill8x8Pattern =
           TsengSetupForFill8x8Pattern;
       xf86AccelInfoRec.SubsequentFill8x8Pattern =
           TsengSubsequentFill8x8Pattern;
     }
-
     /*
      * Setup hardware-line-drawing code.
      */
 
-    if (et4000_type >= TYPE_ET4000W32P)
+    if (Is_W32p_up)
     {
 #if 0
     /* -- currently disabled because of major bugs... */
@@ -213,12 +230,18 @@ void TsengAccelInit() {
      * CPU-to-screen color expansion.
      */
 
-    if ( ((et4000_type >= TYPE_ET4000W32P) && (vgaBitsPerPixel == 8))
-       || (et4000_type >= TYPE_ET6000) )
+    tseng_use_1_to_8_colexp = Is_W32p && (vgaBitsPerPixel == 16);
+
+    if ( (Is_W32p_up && (vgaBitsPerPixel == 8))   /* std 8bpp W32p colexp */
+      || (Is_W32p_up && (vgaBitsPerPixel == 24))  /* TRIPLE_BITS_24BPP */
+      || (Is_ET6K)                                /* et6000 can do it all */
+      || tseng_use_1_to_8_colexp )                /* intermediate 1-to-2 exp */
     {
       xf86AccelInfoRec.ColorExpandFlags =
           BIT_ORDER_IN_BYTE_LSBFIRST | VIDEO_SOURCE_GRANULARITY_PIXEL | NO_PLANEMASK;
 
+      if ( Is_W32_any && (vga256InfoRec.bitsPerPixel == 24) )
+          xf86AccelInfoRec.ColorExpandFlags |= TRIPLE_BITS_24BPP;
 #if 1
       /* new and untested (not used by XAA yet -- needs testing) */
 
@@ -230,14 +253,40 @@ void TsengAccelInit() {
 
       xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
           TsengSetupForScanlineScreenToScreenColorExpand;
-      xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
-          TsengSubsequentScanlineScreenToScreenColorExpand;
-          
+      if (tseng_use_1_to_8_colexp && (vgaBitsPerPixel==16))
+      {
+        /* expand scanline data to allow for 1-to-8bpp expansion */
+        xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+            TsengSubsequentScanlineScreenToScreenColorExpand_1to2to16;
+      }
+      else
+      {
+        xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+            TsengSubsequentScanlineScreenToScreenColorExpand;
+      }
+
       /* triple-buffering is needed to account for double-buffering of Tseng
        * acceleration registers. Increasing this number doesn't help solve the
        * problems with both ET4000W32 and ET6000 with text rendering.
        */
-      xf86AccelInfoRec.PingPongBuffers = 3;
+      if (tseng_use_1_to_8_colexp)
+      {
+        xf86AccelInfoRec.PingPongBuffers = 1;
+        colexp_buf = (void *) xalloc(1024);
+        if (colexp_buf==NULL)
+          ErrorF("WARNING: Could not get scratch buffer. color expansion will not work.\n");
+        xf86AccelInfoRec.ScratchBufferSize = COLEXP_ONE_BUF;
+        xf86AccelInfoRec.ScratchBufferSize /= vga256InfoRec.bitsPerPixel / 8;
+        xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
+        xf86AccelInfoRec.ScratchBufferBase = colexp_buf;
+        if (TSENG.ChipUseLinearAddressing)
+            FrameBufColExpBase = (int)vgaLinearBase + W32Mix;
+        else
+            FrameBufColExpBase = ( ((int)vgaBase) + 0x18000L + 1024 -
+                                 (vga256InfoRec.videoRam * 1024 - (long) W32Mix));
+      }
+      else
+        xf86AccelInfoRec.PingPongBuffers = 3;
 
       xf86AccelInfoRec.ScratchBufferSize = scratchVidBase + 1024 - (long) W32Mix;
       xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
@@ -281,7 +330,7 @@ void TsengAccelInit() {
      * The same thing goes for PAD_BYTE: this also works (with the same
      * problems as SCANLINE_PAD_DWORD, although less prominent)
      */
-    if ( (et4000_type < TYPE_ET6000) && (vgaBitsPerPixel == 8) )
+    if ( Is_W32_any && (vgaBitsPerPixel == 8) )
     {
       /*
        * CPU_TRANSFER_PAD_DWORD is implied by XAA, and I'm not sure this is
@@ -377,7 +426,7 @@ static __inline__ void SET_FG_COLOR(int color)
     *ACL_SOURCE_Y_OFFSET = 3;
     color = COLOR_REPLICATE_DWORD(color);
     *MemFg               = color;
-    if (et4000_type >= TYPE_ET4000W32P)
+    if (Is_W32p_up)
     {
       *ACL_SOURCE_WRAP   = 0x02;
     }
@@ -394,7 +443,7 @@ static __inline__ void SET_BG_COLOR(int color)
     *ACL_PATTERN_Y_OFFSET = 3;
     color = COLOR_REPLICATE_DWORD(color);
     *MemPat               = color;
-    if (et4000_type >= TYPE_ET4000W32P)
+    if (Is_W32p_up)
     {
       *ACL_PATTERN_WRAP   = 0x02;
     }
@@ -420,7 +469,7 @@ static __inline__ void SET_FG_BG_COLOR(int fgcolor, int bgcolor)
     bgcolor = COLOR_REPLICATE_DWORD(bgcolor);
     *MemFg                = fgcolor;
     *MemPat               = bgcolor;
-    if (et4000_type >= TYPE_ET4000W32P)
+    if (Is_W32p_up)
     {
       *((LongP) ACL_PATTERN_WRAP) = 0x00020002;
     }
@@ -433,7 +482,7 @@ static __inline__ void SET_FG_BG_COLOR(int fgcolor, int bgcolor)
 }
 
 #define SET_FUNCTION_BLT \
-    if (et4000_type>=TYPE_ET6000) \
+    if (Is_ET6K) \
         *ACL_MIX_CONTROL     = 0x33; \
     else \
         *ACL_ROUTING_CONTROL = 0x00;
@@ -442,7 +491,7 @@ static __inline__ void SET_FG_BG_COLOR(int fgcolor, int bgcolor)
         *ACL_MIX_CONTROL     = 0x13;
 
 #define SET_FUNCTION_COLOREXPAND \
-    if (et4000_type >= TYPE_ET6000) \
+    if (Is_ET6K) \
       *ACL_MIX_CONTROL     = 0x32; \
     else \
       *ACL_ROUTING_CONTROL = 0x08;
@@ -489,10 +538,10 @@ static int old_x = 0, old_y = 0;
 static __inline__ void SET_XY(int x, int y)
 {
   int new_x;
-  if (et4000_type >= TYPE_ET6000)
-    new_x = MULBPP(x)-1;
-  else
+  if ( Is_W32p )
     new_x = MULBPP(x-1);
+  else
+    new_x = MULBPP(x)-1;
   *((LongP) ACL_X_COUNT) = ((y - 1) << 16) + new_x;
   old_x = x; old_y = y;
 }
@@ -647,7 +696,7 @@ void TsengSetupForFillRectSolid(color, rop, planemask)
  * Splitting it up between ET4000 and ET6000 avoids lots of "if (et4000_type
  * >= TYPE_ET6000)" -style comparisons.
  */
-void Tseng4SubsequentFillRectSolid(x, y, w, h)
+void TsengW32pSubsequentFillRectSolid(x, y, w, h)
     int x, y, w, h;
 {
     int destaddr = FBADDR(x,y);
@@ -661,7 +710,21 @@ void Tseng4SubsequentFillRectSolid(x, y, w, h)
     START_ACL(destaddr);
 }
 
-void Tseng6SubsequentFillRectSolid(x, y, w, h)
+void TsengW32iSubsequentFillRectSolid(x, y, w, h)
+    int x, y, w, h;
+{
+    int destaddr = FBADDR(x,y);
+
+    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
+
+    SET_XYDIR(0);
+
+    SET_XY_6(w, h);
+    START_ACL(destaddr);
+}
+
+void Tseng6KSubsequentFillRectSolid(x, y, w, h)
     int x, y, w, h;
 {
     int destaddr = FBADDR(x,y);
@@ -717,7 +780,7 @@ transparency_color)
 
     SET_XYDIR(blit_dir);
     
-    if ((et4000_type >= TYPE_ET6000) && (transparency_color != -1))
+    if (Is_ET6K && (transparency_color != -1))
     {
       SET_BG_COLOR(transparency_color);
       SET_FUNCTION_BLT_TR;
@@ -812,7 +875,7 @@ void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, transparenc
 
   SET_FG_ROP(rop);
 
-  if ((et4000_type >= TYPE_ET6000) && (transparency_color != -1))
+  if (Is_ET6K && (transparency_color != -1))
   {
     SET_BG_COLOR(transparency_color);
     SET_FUNCTION_BLT_TR;
@@ -857,6 +920,9 @@ void TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
 
 
 static int ColorExpandDst;
+static int colexp_width;
+static int colexp_slot = 0; /* slot offset in ping-pong buffers */
+
 
 void TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, planemask)
     int x, y;
@@ -867,6 +933,11 @@ void TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, pla
 {
 
 /*    ErrorF("X");*/
+
+    if (tseng_use_1_to_8_colexp)
+    {
+      colexp_width = MULBPP(w/8); /* in bytes */
+    }
 
     PINGPONG();
 
@@ -944,6 +1015,62 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
      *
      * WAIT_QUEUE; // not needed with triple-buffering
      */
+}
+
+
+/*
+ * This function is only used for color-expansion at 16bpp on W32 chips.
+ * They can only do 8bpp color expansion, so we have to expand the incoming
+ * data to 2bpp first.
+ */
+ 
+void TsengSubsequentScanlineScreenToScreenColorExpand_1to2to16(srcaddr)
+    int srcaddr;
+{
+     void *dest = FrameBufColExpBase + colexp_slot;
+
+    /* do triple-buffering here as well */
+
+    /* first, expand the bits so we can do 1-to-8 color expansion */
+
+    if (bytesperpixel == 2)
+    {
+      int i,j;
+      unsigned char ind;
+      CARD16 r;
+      
+      for (i=colexp_width-1; i>=0; i--)
+      {
+        r = 0;
+        ind = *(((unsigned char *)colexp_buf) + i);
+
+        if (ind & 0x01) r |= 0x0003;
+        if (ind & 0x02) r |= 0x000C;
+        if (ind & 0x04) r |= 0x0030;
+        if (ind & 0x08) r |= 0x00C0;
+        if (ind & 0x10) r |= 0x0300;
+        if (ind & 0x20) r |= 0x0C00;
+        if (ind & 0x40) r |= 0x3000;
+        if (ind & 0x80) r |= 0xC000;
+        
+        *((CARD16 *)(dest) + i) = r;
+      }
+    }
+    else
+    {
+      xf86memcpy(dest, colexp_buf, colexp_width);
+    }
+
+    srcaddr += colexp_slot << 3;
+    colexp_slot += COLEXP_ONE_BUF;
+    if (colexp_slot >= (1024 - COLEXP_ONE_BUF)) colexp_slot=0;
+
+    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
+
+    *ACL_MIX_ADDRESS = srcaddr;
+    START_ACL(ColorExpandDst);
+    ColorExpandDst += tseng_line_width;
 }
 
 

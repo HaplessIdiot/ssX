@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $TOG: Imake.rules /main/221 1997/07/02 13:42:46 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.41 1997/07/05 15:14:44 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.42 1997/07/06 05:30:31 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -295,14 +295,6 @@ XCOMM special target for clearmake					@@\
 #ifndef _UseCat
 # define _UseCat	_XUseCat
 #endif /* _UseCat */
-
-#ifndef _MUse
-#define _MUse(a,b) _Use(a,b)
-#endif
-
-#ifndef _MUseCat
-#define _MUseCat(a,b,c) _UseCat(a,b,c)
-#endif
 
 #ifndef ProgramTargetName
 #define ProgramTargetName(target)target

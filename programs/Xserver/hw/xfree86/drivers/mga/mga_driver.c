@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.8 1997/07/05 08:45:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.9 1997/07/06 05:30:55 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -417,6 +417,7 @@ MGAProbe()
 	unsigned long MGAMMIOAddr = 0;
 	pciConfigPtr pcr = NULL;
 	int i;
+	CARD32 save;
 
 	/*
 	 * First we attempt to figure out if one of the supported chipsets
@@ -520,36 +521,18 @@ MGAProbe()
 	/* enable IO ports, etc. */
 	MGAEnterLeave(ENTER);
 
-#ifdef MGA_DISABLE_MMIO
-	ErrorF("Disabling MMIO before mapping\n");
-	{
-		CARD32 save;
+	/*
+	 * Disable memory and I/O before mapping the MMIO area.
+	 * This avoids the MMIO area being read during the mapping
+	 * (which happens on some SVR4 versions), which will cause
+	 * a lockup.
+	 */
 
-		save = pciReadLong(MGAPciTag, PCI_CMD_STAT_REG);
-		pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
-			     save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-		ErrorF("Changed PCI_CMD_STAT_REG: before = 0x%08x, "
-			"after = 0x%08x\n", save,
-			pciReadLong(MGAPciTag, PCI_CMD_STAT_REG));
-	}
-	xf86usleep(1000000);
-#endif
+	save = pciReadLong(MGAPciTag, PCI_CMD_STAT_REG);
+	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
+		     save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
 
-#ifdef MGA_MOVE_MMIO
-	ErrorF("Moving MMIO before mapping\n");
-	{
-		CARD32 save;
 
-		save = pciReadLong(MGAPciTag, PCI_MAP_REG_START);
-		pciWriteLong(MGAPciTag, PCI_MAP_REG_START, pcr->_base1);
-		ErrorF("Changed PCI_MAP_REG_START: before = 0x%08x, "
-			"after = 0x%08x\n", save,
-			pciReadLong(MGAPciTag, PCI_MAP_REG_START));
-	}
-	xf86usleep (1000000);
-#endif
-
-	
 	/*
 	 * Map IO registers to virtual address space
 	 */ 
@@ -563,18 +546,22 @@ MGAProbe()
 #endif /* __alpha__ */
 			    vga256InfoRec.scrnIndex, MMIO_REGION,
 			    (pointer)(MGAMMIOAddr), 0x4000);
-#ifdef READ_MMIO
-#ifndef SVR4
-	/* Simulate the SVR4.0 mmap behaviour by reading the first long */
+#if defined(SVR4)
+	/*
+	 * For some SVR4 versions, a 32-bit read is done for the first
+	 * location in each page when the page is first mapped.  If this
+	 * is done while memory and I/O are enabled, the result will be
+	 * a lockup, so make sure each page is mapped here while it is safe
+	 * to do so.
+	 */
 	{
 		CARD32 val;
 
-		ErrorF("About to read the first dword\n");
-		xf86usleep(1000000);
-		val = ((volatile CARD32 *)MGAMMIOBase)[0];
-		ErrorF("Just read the first dword\n");
+		val = *(volatile CARD32 *)(MGAMMIOBase+0);
+		val = *(volatile CARD32 *)(MGAMMIOBase+0x1000);
+		val = *(volatile CARD32 *)(MGAMMIOBase+0x2000);
+		val = *(volatile CARD32 *)(MGAMMIOBase+0x3000);
 	}
-#endif
 #endif
 
 #ifdef __alpha__
@@ -588,6 +575,10 @@ MGAProbe()
 			    (pointer)(MGAMMIOAddr), 0x4000);
 #endif /* __alpha__ */
 
+	/* Re-enable I/O and memory */
+	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
+		     save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
+
 	if (!MGAMMIOBase)
 		FatalError("MGA: Can't map IO registers\n");
 	
@@ -599,35 +590,6 @@ MGAProbe()
 	ErrorF("MGABios.RamdacType = 0x%x\n",MGABios.RamdacType);
 #endif
 	
-#ifdef MGA_MOVE_MMIO
-	ErrorF("Moving MMIO back after mapping\n");
-	{
-		CARD32 save;
-
-		save = pciReadLong(MGAPciTag, PCI_MAP_REG_START);
-		pciWriteLong(MGAPciTag, PCI_MAP_REG_START, pcr->_base0);
-		ErrorF("Changed PCI_MAP_REG_START: before = 0x%08x, "
-			"after = 0x%08x\n", save,
-			pciReadLong(MGAPciTag, PCI_MAP_REG_START));
-	}
-	xf86usleep (1000000);
-#endif
-	
-#ifdef MGA_DISABLE_MMIO
-	ErrorF("Enabling MMIO after mapping\n");
-	{
-		CARD32 save;
-
-		save = pciReadLong(MGAPciTag, PCI_CMD_STAT_REG);
-		pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
-			     save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-		ErrorF("Changed PCI_CMD_STAT_REG: before = 0x%08x, "
-			"after = 0x%08x\n", save,
-			pciReadLong(MGAPciTag, PCI_CMD_STAT_REG));
-	}
-	xf86usleep(1000000);
-#endif
-
 	/*
 	 * If the user has specified the amount of memory in the XF86Config
 	 * file, we respect that setting.
