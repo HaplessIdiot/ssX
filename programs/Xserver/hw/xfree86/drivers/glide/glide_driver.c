@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.19 2000/12/02 15:30:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.20 2000/12/27 04:57:11 dawes Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -259,6 +259,12 @@ glideSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
   /* This module should be loaded only once, but check to be sure. */
 
+  if (xf86ServerIsOnlyDetecting())
+  {
+    xf86AddDriver(&GLIDE, module, 0);
+    return (pointer)1;
+  }
+    
   if (!setupDone) 
   {
     /*
