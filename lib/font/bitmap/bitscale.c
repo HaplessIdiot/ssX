@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.22 2001/12/14 19:56:46 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.23 2002/05/31 18:45:49 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -1915,6 +1915,7 @@ BitmapGetInfoScalable (FontPathElementPtr fpe,
         return ret;
     *pFontInfo = pfont->info;
 
+    pfont->info.nprops = 0;
     pfont->info.props = NULL;
     pfont->info.isStringProp = NULL;
 
