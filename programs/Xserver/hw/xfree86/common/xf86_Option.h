@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.5 1994/06/18 16:25:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.6 1994/06/22 04:19:33 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -60,9 +60,9 @@ typedef struct {
 #define OPTION_EXTERN_DISP	9  /* Laptops - enable external display (WD)*/
 
 /* Memory options */
-#define OPTION_FAST_DRAM	12 /* fast DRAM (for ET4000, S3) */
-#define OPTION_MED_DRAM		13 /* medium speed DRAM (for S3) */
-#define OPTION_SLOW_DRAM	14 /* slow DRAM (for Cirrus, S3) */
+#define OPTION_FAST_DRAM	12 /* fast DRAM (for ET4000, S3, AGX) */
+#define OPTION_MED_DRAM		13 /* medium speed DRAM (for S3, AGX) */
+#define OPTION_SLOW_DRAM	14 /* slow DRAM (for Cirrus, S3, AGX) */
 #define OPTION_NO_MEM_ACCESS	16 /* Unable to access video ram directly */
 #define OPTION_NOLINEAR_MODE	17 /* chipset has broken linear access mode */
 #define OPTION_INTEL_GX		18 /* Linear fb on an Intel GX/Pro (Mach32) */
@@ -93,8 +93,8 @@ typedef struct {
 #define OPTION_CSYNC		40 /* Composite sync */
 #define OPTION_SECONDARY	41 /* Use secondary address (HGC1280) */
 /* These should probably be included under "memory options" */
-#define OPTION_FIFO_CONSERV	42 /* (cirrus) */
-#define OPTION_FIFO_AGGRESSIVE	43 /* (cirrus) */
+#define OPTION_FIFO_CONSERV	42 /* (cirrus) (agx) */
+#define OPTION_FIFO_AGGRESSIVE	43 /* (cirrus) (agx) */
 #define OPTION_PCI_HACK		44 /* (S3) */
 #define OPTION_POWER_SAVER	45 /* Power-down screen saver */
 #define OPTION_SPEA_MERCURY	46 /* Enable pixmux for SPEA Mercury (S3) */
@@ -128,6 +128,10 @@ typedef struct {
 #define OPTION_VLB_B            79 /* VESA VLB transaction type B   - MR7:2 */
 #define OPTION_SPRITE_REFRESH   80 /* Sprite refresh every hsync    - MR8:4 */
 #define OPTION_SCREEN_REFRESH   81 /* Screen refresh during blank   - MR8:5 */
+#define OPTION_VRAM_DELAY_LATCH	82 /* Delay Latch                   - MR7:3 */
+#define OPTION_VRAM_DELAY_RAS	83 /* Delay RAS signal              - MR7:4 */
+#define OPTION_VRAM_EXTEND_RAS  84 /* Extend the RAS signal         - MR8:6 */
+#define OPTION_ENGINE_DELAY     85 /* Wait state for some VLB's     - MR5:3 */
 
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
 #define CLOCK_OPTION_ICD2061A	 1 /* use ICD 2061A programable clocks      */
@@ -218,6 +222,10 @@ OptFlagRec xf86_OptionTab[] = {
   { "vlb_b",            OPTION_VLB_B },
   { "sprite_refresh",   OPTION_SPRITE_REFRESH },
   { "screen_refresh",   OPTION_SPRITE_REFRESH },
+  { "vram_delay_latch", OPTION_VRAM_DELAY_LATCH },
+  { "vram_delay_ras",   OPTION_VRAM_DELAY_RAS },
+  { "vram_extend_ras",  OPTION_VRAM_EXTEND_RAS },
+  { "engine_delay",     OPTION_ENGINE_DELAY },
 
   { "",			-1 },
 };
