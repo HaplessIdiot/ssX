@@ -1,13 +1,15 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga.cpp,v 1.2 1999/08/28 09:01:08 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga.cpp,v 1.3 2000/03/03 01:05:47 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH VGA __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 vga \- Generic VGA video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""vga"""
+.B  "  Driver \*qvga\*q"
 .br
 \ \ ...
 .br
@@ -35,7 +37,7 @@ driver.
 The driver auto-detects the presence of VGA-compatible hardware.  The
 .B ChipSet
 name may optionally be specified in the config file
-.B """Device"""
+.B \*qDevice\*q
 section, and will override the auto-detection:
 .PP
 .RS 4
@@ -52,7 +54,7 @@ The following driver
 .B Options
 are supported:
 .TP
-.BI "Option ""ShadowFB"" """ boolean """
+.BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: off.
 

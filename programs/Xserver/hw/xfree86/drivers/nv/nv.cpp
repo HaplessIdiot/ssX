@@ -1,13 +1,15 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.cpp,v 1.5 1999/11/12 02:12:40 mvojkovi Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.cpp,v 1.6 2000/03/03 01:05:40 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH NV __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 nv \-NVIDIA video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""nv"""
+.B  "  Driver \*qnv\*q"
 .br
 \ \ ...
 .br
@@ -48,26 +50,26 @@ The following driver
 .B Options
 are supported:
 .TP
-.BI "Option ""HWCursor"" """ boolean """
+.BI "Option \*qHWCursor\*q \*q" boolean \*q
 Enable or disable the HW cursor.  Default: on.
 .TP
-.BI "Option ""NoAccel"" """ boolean """
+.BI "Option \*qNoAccel\*q \*q" boolean \*q
 Disable or enable acceleration.  Default: acceleration is enabled.
 .TP
-.BI "Option ""UseFBDev"" """ boolean """
+.BI "Option \*qUseFBDev\*q \*q" boolean \*q
 Enable or disable use of on OS-specific fb interface (and is not supported
 on all OSs).  See fbdevhw(__drivermansuffix__) for further information.
 Default: off.
 .TP
-.BI "Option ""Rotate"" ""CW""
+.BI "Option \*qRotate\*q \*qCW\*q"
 .TP
-.BI "Option ""Rotate"" ""CCW""
+.BI "Option \*qRotate\*q \*qCCW\*q"
 Rotate the display clockwise or counterclockwise.  This mode is unaccelerated.
 Default: no rotation.
 .TP
-.BI "Option ""ShadowFB"" """ boolean """
+.BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See
-shadowfb(4) for further information.  Default: off.
+shadowfb(__drivermansuffix__) for further information.  Default: off.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
 .SH AUTHORS

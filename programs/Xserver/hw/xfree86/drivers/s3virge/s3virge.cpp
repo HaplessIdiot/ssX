@@ -1,13 +1,15 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.5 2000/03/03 01:05:42 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.6 2000/03/05 16:59:16 dawes Exp $
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH s3virge __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 s3virge \- S3 ViRGE video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""s3virge"""
+.B  "  Driver \*qs3virge\*q"
 .br
 \ \ ...
 .br
@@ -63,7 +65,7 @@ parsed by the server, for exmaple,  "virge vx" and "VIRGEvx" are equivalent.
 The driver auto-detects the chipset type, but the following
 .B ChipSet
 names may optionally be specified in the config file
-.B """Device"""
+.B \*q"Device\*q"
 section, and will override the auto-detection:
 .PP
 .RS 4
@@ -78,10 +80,10 @@ The following Cursor
 .B Options
 are supported:
 .TP
-.BI "Option ""HWCursor"" [""" boolean """]
+.BI "Option \*qHWCursor\*q [\*q" boolean \*q]
 Enable or disable the HW cursor.  Default: on.
 .TP
-.BI "Option ""SWCursor"" [""" boolean """]
+.BI "Option \*qSWCursor\*q [\*q" boolean \*q]
 Inverse of "HWCursor".  Default: off.
 
 .PP
@@ -89,10 +91,10 @@ The following display
 .B Options
 are supported:
 .TP
-.BI "Option ""ShadowFB"" [""" boolean """]
+.BI "Option \*qShadowFB\*q [\*q" boolean \*q]
 Use shadow framebuffer.  Disables HW acceleration.  Default: off.
 .TP
-.BR "Option ""Rotate"" """ cw " | " ccw """
+.BR "Option \*qRotate\*q \*q" cw " | " ccw \*q
 Rotate the screen CW - clockwise or CCW - counter clockwise.
 Disables HW Acceleration and HW Cursor, uses ShadowFB.
 Default: no rotation.
@@ -102,23 +104,23 @@ The following video memory
 .B Options
 are supported:
 .TP
-.BI "Option ""slow_edodram"""
+.BI "Option \*qslow_edodram\*q"
 Switch the standard ViRGE to 2-cycle edo mode. Try this
 if you encounter pixel corruption on the ViRGE. Using this option will
 cause a large decrease in performance.  Default: off.
 .TP
-.BI "Option ""fpm_vram"""
+.BI "Option \*qfpm_vram\*q"
 Switch the ViRGE/VX to fast page mode vram mode.  Default: off.
 .TP
-.BR "Option ""slow_dram " | " fast_dram"""
+.BR "Option \*qslow_dram " | " fast_dram\*q"
 Change Trio 3D and 3D/2X memory options.  Default: Use BIOS defaults.
 .TP
-.BR "Option ""early_ras_precharge " | " late_ras_precharge"""
+.BR "Option \*qearly_ras_precharge " | " late_ras_precharge\*q"
 adjust memory parameters.  One
 of these will us the same settings as your video card defaults, and
 using neither in the config file does the same.  Default: none.
 .TP
-.BI "Option ""set_mclk"" """ integer """
+.BI "Option \*qset_mclk\*q \*q" integer \*q
 sets the memory clock, where
 .I integer
 is in kHz, and
@@ -126,7 +128,7 @@ is in kHz, and
 <= 100000.  Default: probe the memory clock value,
 and use it at server start.
 .TP
-.BI "Option ""set_refclk"" """ integer """
+.BI "Option \*qset_refclk\*q \*q" integer \*q
 sets the ref clock for ViRGE MX, where
 .I integer
 is in kHz.  Default: probe the memory clock value,
@@ -138,7 +140,7 @@ The following acceleration and graphics engine
 .B Options
 are supported:
 .TP
-.B "Option ""NoAccel""
+.B "Option \*qNoAccel\*q"
 Disable acceleration.  Very useful for determining if the
 driver has problems with drawing and acceleration routines.  This is the first
 option to try if your server runs but you see graphic corruption on the screen.
@@ -146,7 +148,7 @@ Using it decreases performance, as it uses software emulation for drawing
 operations the video driver can accelerate with hardware.
 Default: acceleration is enabled.
 .TP
-.BR "Option ""fifo_aggressive " | " fifo_moderate " | " fifo_conservative"""
+.BR "Option \*qfifo_aggressive " | " fifo_moderate " | " fifo_conservative\*q"
 alter the settings
 for the threshold at which the pixel FIFO takes over the internal 
 memory bus to refill itself. The smaller this threshold, the better
@@ -167,11 +169,11 @@ The following PCI bus
 .B Options
 are supported:
 .TP
-.BI "Option ""pci_burst"" [""" boolean """]
+.BI "Option \*qpci_burst\*q [\*q" boolean \*q]
 will enable PCI burst mode. This should work on all but a
 few broken PCI chipsets, and will increase performance.  Default: off.
 .TP
-.BI "Option ""pci_retry"" [""" boolean """]
+.BI "Option \*qpci_retry\*q [\*q" boolean \*q]
 will allow the driver to rely on PCI Retry to program the 
 ViRGE registers. 
 .B "pci_burst"
@@ -185,9 +187,9 @@ The following ViRGE MX LCD
 .B Options
 are supported:
 .TP
-.BI "Option ""lcd_center""
+.BI "Option \*qlcd_center\*q"
 .TP
-.BI "Option ""set_lcdclk"" """ integer """
+.BI "Option \*qset_lcdclk\*q \*q" integer \*q
 allows setting the clock for a ViRGE MX LCD display. 
 .I integer
 is in Hz.  Default: use probed value.
@@ -197,7 +199,7 @@ The following additional
 .B Options
 are supported:
 .TP
-.BI "Option ""ShowCache"" [""" boolean """]
+.BI "Option \*qShowCache\*q [\*q" boolean \*q]
 Enable or disable viewing offscreen cache memory.  A
 development debug option.  Default: off.
 

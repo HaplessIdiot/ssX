@@ -1,15 +1,17 @@
-.\" $XFree86$ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/dynapro/dynapro.cpp,v 1.1 2000/03/03 01:05:48 dawes Exp $ 
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH DYNAPRO __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 dynapro \- Dynapro input driver
 .SH SYNOPSIS
-.B "Section ""InputDevice"""
+.B "Section \*qInputDevice\*q"
 .br
-.BI "  Identifier """ idevname """"
+.BI "  Identifier \*q" idevname \*q
 .br
-.B  "  Driver ""dynapro"""
+.B  "  Driver \*qdynapro\*q"
 .br
-.BI "  Option ""Device""   """ devpath """"
+.BI "  Option \*qDevice\*q   \*q" devpath \*q
 .br
 \ \ ...
 .br

@@ -1,4 +1,6 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.3 2000/03/08 19:12:44 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.4 2000/03/18 20:04:34 dawes Exp $
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
 .TH XF86Config __filemansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -84,8 +86,10 @@ the form:
 .PP
 .RS 4
 .nf
-.BI "Section """ SectionName """"
-.I  "    SectionEntry"
+.\" Some man macros don't handle quotes in .BI, etc very well
+.\" \fBSection "\fP\fISectionName\fP\fB"\fP
+.BI "Section  \*q" SectionName \*q
+.RI "    " SectionEntry
     ...
 .B EndSection
 .fi
@@ -162,7 +166,7 @@ on the keyword.  The argument types are:
 .nf
 .BR "Integer     " "an integer number in decimal, hex or octal"
 .BR "Real        " "a floating point number"
-.BR "String      " "a string enclosed in double quote marks ("")"
+.BR "String      " "a string enclosed in double quote marks (\*q)"
 .fi
 .RE
 .PP
@@ -217,18 +221,18 @@ and the following boolean option values are recognised as
 .RE
 .PP
 If an option name is prefixed with
-.RB """" No """",
+.RB \*q No \*q,
 then the option value is negated.
 .PP
 Example: the following option entries are equivalent:
 .PP
 .RS 4
 .nf
-.B "Option ""Accel""   ""Off"""
-.B "Option ""NoAccel"""
-.B "Option ""NoAccel"" ""On"""
-.B "Option ""Accel""   ""false"""
-.B "Option ""Accel""   ""no"""
+.B "Option \*qAccel\*q   \*qOff\*q"
+.B "Option \*qNoAccel\*q"
+.B "Option \*qNoAccel\*q \*qOn\*q"
+.B "Option \*qAccel\*q   \*qfalse\*q"
+.B "Option \*qAccel\*q   \*qno\*q"
 .fi
 .RE
 .PP
@@ -259,7 +263,7 @@ The command line settings override the values specified in the config
 file.
 The entries that can appear in this section are:
 .TP 7
-.BI "FontPath """ path """"
+.BI "FontPath \*q" path \*q
 sets the search path for fonts.  This path is a comma separated
 list of font path elements which the X server searches for font databases.
 Multiple
@@ -321,7 +325,7 @@ Font path elements that are found to be invalid are removed from the
 font path when the server starts up.
 .RE
 .TP 7
-.BI "RGBPath """ path """"
+.BI "RGBPath \*q" path \*q
 sets the path name for the RGB color database.
 When this entry is not specified in the config file, the server falls back
 to the compiled-in default RGB path, which is:
@@ -330,7 +334,7 @@ to the compiled-in default RGB path, which is:
 __projectroot__/lib/X11/rgb
 .RE
 .TP 7
-.BI "ModulePath """ path """"
+.BI "ModulePath \*q" path \*q
 sets the search path for loadable X server modules.  This path is a
 comma separated list of directories which the X server searches for
 loadable modules loading in the order specified.  Multiple
@@ -340,7 +344,7 @@ module search path used by the server.
 .\" The LogFile keyword is not currently implemented
 .ig
 .TP 7
-.BI "LogFile """ path """"
+.BI "LogFile \*q" path \*q
 sets the name of the X server log file.  The default log file name is
 .PP
 .RS 11
@@ -371,7 +375,7 @@ section.  Options with command line equivalents are overridden when their
 command line equivalent is used.  The options recognised by this section
 are:
 .TP 7
-.BI "Option ""NoTrapSignals""  """ boolean """"
+.BI "Option \*qNoTrapSignals\*q  \*q" boolean \*q
 This prevents the X server from trapping a range of unexpected
 fatal signals and exiting cleanly.  Instead, the X server will die
 and drop core where the fault occurred.  The default behaviour is
@@ -379,14 +383,14 @@ for the X server exit cleanly, but still drop a core file.  In
 general you never want to use this option unless you are debugging
 an X server problem and know how to deal with the consequences.
 .TP 7
-.BI "Option ""DontZap""  """ boolean """"
+.BI "Option \*qDontZap\*q  \*q" boolean \*q
 This disallows the use of the
 .B Ctrl+Alt+Backspace
 sequence.  That sequence is normally used to terminate the X server.
 When this option is enabled, that key sequence has no special meaning
 and is passed to clients.  Default: off.
 .TP 7
-.BI "Option ""DontZoom""  """ boolean """"
+.BI "Option \*qDontZoom\*q  \*q" boolean \*q
 This disallows the use of the
 .B Ctrl+Alt+Keypad-Plus
 and
@@ -395,29 +399,29 @@ sequences.  These sequences allows you to switch between video modes.
 When this option is enabled, those key sequences have no special meaning
 and are passed to clients.  Default: off.
 .TP 7
-.BI "Option ""DisableVidModeExtension""  """ boolean """"
+.BI "Option \*qDisableVidModeExtension\*q  \*q" boolean \*q
 This disables the parts of the VidMode extension used by the xvidtune client
 that can be used to change the video modes.  Default: the VidMode extension
 is enabled.
 .TP 7
-.BI "Option ""AllowNonLocalXvidtune""  """ boolean """"
+.BI "Option \*qAllowNonLocalXvidtune\*q  \*q" boolean \*q
 This allows the xvidtune client (and other clients that use the VidMode
 extension) to connect from another host.  Default: off.
 .TP 7
-.BI "Option ""DisableModInDev""  """ boolean """"
+.BI "Option \*qDisableModInDev\*q  \*q" boolean \*q
 This disables the parts of the XFree86-Misc extension that can be used to
 modify the input device settings dynamically.  Default: that functionality
 is enabled.
 .TP 7
-.BI "Option ""AllowNonLocalModInDev""  """ boolean """"
+.BI "Option \*qAllowNonLocalModInDev\*q  \*q" boolean \*q
 This allows a client to connect from another host and change keyboard
 and mouse settings in the running server.  Default: off.
 .TP 7
-.BI "Option ""AllowMouseOpenFail""  """ boolean """"
+.BI "Option \*qAllowMouseOpenFail\*q  \*q" boolean \*q
 This allows the server to start up even if the mouse device can't be
 opened/initialised.  Default: false.
 .TP 7
-.BI "Option ""VTInit""  """ command """"
+.BI "Option \*qVTInit\*q  \*q" command \*q
 Runs
 .I command
 after the VT used by the server has been opened.
@@ -426,7 +430,7 @@ real user's id with stdin and stdout set to the VT.  The purpose
 of this option is to allow system dependent VT initialisation
 commands to be run.  This option should rarely be needed.  Default: not set.
 .TP 7
-.BI "Option ""VTSysReq""  """ boolean """"
+.BI "Option \*qVTSysReq\*q  \*q" boolean \*q
 enables the SYSV-style VT switch sequence for non-SYSV systems
 which support VT switching.  This sequence is
 .B Alt-SysRq
@@ -439,26 +443,26 @@ access them.  Default: off.
 .\" The following four options are "undocumented".
 .ig
 .TP 7
-.BI "Option ""PciProbe1"""
+.BI "Option \*qPciProbe1\*q"
 Use PCI probe method 1.  Default: set.
 .TP 7
-.BI "Option ""PciProbe2"""
+.BI "Option \*qPciProbe2\*q"
 Use PCI probe method 2.  Default: not set.
 .TP 7
-.BI "Option ""PciForceConfig1"""
+.BI "Option \*qPciForceConfig1\*q"
 Force the use PCI config type 1.  Default: not set.
 .TP 7
-.BI "Option ""PciForceConfig2"""
+.BI "Option \*qPciForceConfig2\*q"
 Force the use PCI config type 2.  Default: not set.
 ..
 .TP 7
-.BI "Option ""BlankTime""  """ time """"
+.BI "Option \*qBlankTime\*q  \*q" time \*q
 sets the inactivity timeout for the blanking phase of the screensaver.
 .I time
 is in minutes.  This is equivalent to the Xserver's `-s' flag, and the
 value can be changed at run-time with \fIxset(1)\fP.  Default: 10 minutes.
 .TP 7
-.BI "Option ""StandbyTime""  """ time """"
+.BI "Option \*qStandbyTime\*q  \*q" time \*q
 sets the inactivity timeout for the "standby" phase of DPMS mode.
 .I time
 is in minutes, and the value can be changed at run-time with \fIxset(1)\fP.
@@ -466,10 +470,10 @@ Default: 20 minutes.
 This is only suitable for VESA DPMS compatible monitors, and may not be
 supported by all video drivers.  It is only enabled for screens that
 have the
-.B """DPMS"""
+.B \*qDPMS\*q
 option set. 
 .TP 7
-.BI "Option ""SuspendTime""  """ time """"
+.BI "Option \*qSuspendTime\*q  \*q" time \*q
 sets the inactivity timeout for the "suspend" phase of DPMS mode.
 .I time
 is in minutes, and the value can be changed at run-time with \fIxset(1)\fP.
@@ -477,10 +481,10 @@ Default: 30 minutes.
 This is only suitable for VESA DPMS compatible monitors, and may not be
 supported by all video drivers.  It is only enabled for screens that
 have the
-.B """DPMS"""
+.B \*qDPMS\*q
 option set. 
 .TP 7
-.BI "Option ""OffTime""  """ time """"
+.BI "Option \*qOffTime\*q  \*q" time \*q
 sets the inactivity timeout for the "off" phase of DPMS mode.
 .I time
 is in minutes, and the value can be changed at run-time with \fIxset(1)\fP.
@@ -488,28 +492,28 @@ Default: 40 minutes.
 This is only suitable for VESA DPMS compatible monitors, and may not be
 supported by all video drivers.  It is only enabled for screens that
 have the
-.B """DPMS"""
+.B \*qDPMS\*q
 option set. 
 .TP 7
-.BI "Option ""Pixmap""  """ bpp """"
+.BI "Option \*qPixmap\*q  \*q" bpp \*q
 This sets the pixmap format to use for depth 24.  Allowed values for
 .I bpp
 are 24 and 32.  Default: 32 unless driver constraints don't allow this
 (which is rare).  Note: some clients don't behave well when
 this value is set to 24.
 .TP 7
-.BI "Option ""PC98""  """ boolean """"
+.BI "Option \*qPC98\*q  \*q" boolean \*q
 Specify that the machine is a Japanese PC-98 machine.  This should not
 be enabled for anything other than the Japanese-specific PC-98
 architecture.  Default: auto-detected.
 .\" Doubt this should be documented.
 .ig
 .TP 7
-.BI "Option ""EstimateSizesAggressively""  """ value """"
+.BI "Option \*qEstimateSizesAggressively\*q  \*q" value \*q
 This option affects the way that bus resource sizes are estimated.  Default: 0.
 ..
 .TP 7
-.BI "Option ""NoPM""  """ boolean """"
+.BI "Option \*qNoPM\*q  \*q" boolean \*q
 Disables something to do with power management events.  Default: PM enabled
 on platforms that support it.
 .SH MODULE SECTION
@@ -526,7 +530,7 @@ used form is an entry that uses the
 .B Load
 keyword, as described here:
 .TP 7
-.BI "Load  """ modulename """"
+.BI "Load  \*q" modulename \*q
 This instructs the server to load the module called
 .IR modulename .
 The module name given should be the module's standard name, not the
@@ -537,7 +541,7 @@ include the "lib" prefix, or the ".a", ".o", or ".so" suffixes.
 Example: the Type 1 font rasteriser can be loaded with the following entry:
 .PP
 .RS 4
-.B "Load ""type1"""
+.B "Load \*qtype1\*q"
 .RE
 .RE
 .PP
@@ -555,8 +559,8 @@ disabled by using the following entry:
 .PP
 .RS 4
 .nf
-.B "SubSection ""extmod"""
-.B "   Option  ""omit XFree86-DGA"""
+.B "SubSection \*qextmod\*q"
+.B "   Option  \*qomit XFree86-DGA\*q"
 .B EndSubSection
 .fi
 .RE
@@ -593,9 +597,9 @@ sections have the following format:
 .PP
 .RS 4
 .nf
-.B  "Section ""InputDevice"""
-.BI "    Identifier """ name """"
-.BI "    Driver     """ inputdriver """"
+.B  "Section \*qInputDevice\*q"
+.BI "    Identifier \*q" name \*q
+.BI "    Driver     \*q" inputdriver \*q
 .I  "    options"
 .I  "    ..."
 .B  "EndSection"
@@ -608,7 +612,7 @@ entry specifies the unique name for this input device.  The
 .B Driver
 entry specifies the name of the driver to use for this input device.
 When using the loadable server, the input driver module
-.RI """ inputdriver """
+.RI \*q inputdriver \*q
 will be loaded for each active
 .B InputDevice
 section.  An
@@ -628,7 +632,7 @@ sections recognise some driver-independent
 which are described here.  See the individual input driver manual pages
 for a description of the device-specific options.
 .TP 7
-.BI "Option ""CorePointer"""
+.BI "Option \*qCorePointer\*q"
 When this is set, the input device is installed as the core (primary)
 pointer device.  There must be exactly one core pointer.  If this option
 is not set here, or in the
@@ -641,7 +645,7 @@ This option is implicitly set when the obsolete
 .B Pointer
 section is used.
 .TP 7
-.BI "Option ""CoreKeyboard"""
+.BI "Option \*qCoreKeyboard\*q"
 When this is set, the input device is to be installed as the core
 (primary) keyboard device.  There must be exactly one core keyboard.  If
 this option is not set here, in the
@@ -654,18 +658,18 @@ This option is implicitly set when the obsolete
 .B Keyboard
 section is used.
 .TP 7
-.BI "Option ""AlwaysCore""  """ boolean """"
+.BI "Option \*qAlwaysCore\*q  \*q" boolean \*q
 .TP 7
-.BI "Option ""SendCoreEvents""  """ boolean """"
+.BI "Option \*qSendCoreEvents\*q  \*q" boolean \*q
 Both of these options are equivalent, and when enabled cause the
 input device to always report core events.  This can be used, for
 example, to allow an additional pointer device to generate core
 pointer events (like moving the cursor, etc).
 .TP 4
-.BI "Option ""HistorySize""  """ number """"
+.BI "Option \*qHistorySize\*q  \*q" number \*q
 Sets the motion history size.  Default: 0.
 .TP 7
-.BI "Option ""SendDragEvents""  """ boolean """"
+.BI "Option \*qSendDragEvents\*q  \*q" boolean \*q
 ???
 .SH DEVICE SECTION
 The config file may have multiple
@@ -677,9 +681,9 @@ sections have the following format:
 .PP
 .RS 4
 .nf
-.B  "Section ""Device"""
-.BI "    Identifier """ name """"
-.BI "    Driver     """ driver """"
+.B  "Section \*qDevice\*q"
+.BI "    Identifier \*q" name \*q
+.BI "    Driver     \*q" driver \*q
 .I  "    entries"
 .I  "    ..."
 .B  "EndSection"
@@ -692,7 +696,7 @@ entry specifies the unique name for this graphics device.  The
 .B Driver
 entry specifies the name of the driver to use for this graphics device.
 When using the loadable server, the driver module
-.RI """ driver """
+.RI \*q driver \*q
 will be loaded for each active
 .B Device
 section.  A
@@ -717,7 +721,7 @@ section instead of here in the
 .B Device
 section.
 .TP 7
-.BI "BusID  """ bus-id """"
+.BI "BusID  \*q" bus-id \*q
 This specifies the bus location of the graphics card.  For PCI/AGP cards,
 the
 .I bus-id
@@ -733,14 +737,14 @@ can usually be found by running the X server with the
 .B \-scanpci
 command line option.
 .TP 7
-.BI "Chipset  """ chipset """"
+.BI "Chipset  \*q" chipset \*q
 This usually optional entry specifies the chipset used on the graphics
 board.  In most cases this entry is not required because the drivers
 will probe the hardware to determine the chipset type.  Don't
 specify it unless the driver-specific documentation recommends that you
 do.
 .TP 7
-.BI "Ramdac  """ ramdac-type """"
+.BI "Ramdac  \*q" ramdac-type \*q
 This optional entry specifies the type of RAMDAC used on the graphics
 board.  This is only used by a few of the drivers, and in most cases it
 is not required because the drivers will probe the hardware to determine
@@ -772,7 +776,7 @@ drivers do not use this entry, and it is only required for some older
 boards with non-programmable clocks.  Don't specify this entry unless
 the driver-specific documentation explicitly recommends that you do.
 .TP
-.BI "ClockChip  """ clockchip-type """"
+.BI "ClockChip  \*q" clockchip-type \*q
 This optional entry is used to specify the clock chip type on
 graphics boards which have a programmable clock generator.  Only
 a few X servers support programmable clock chips.  For details,
@@ -843,8 +847,8 @@ sections have the following format:
 .PP
 .RS 4
 .nf
-.B  "Section ""Monitor"""
-.BI "    Identifier """ name """"
+.B  "Section \*qMonitor\*q"
+.BI "    Identifier \*q" name \*q
 .I  "    entries"
 .I  "    ..."
 .B  "EndSection"
@@ -874,10 +878,10 @@ The entries that may be used in
 .B Monitor
 sections are described below.
 .TP 7
-.BI "VendorName  """ vendor """"
+.BI "VendorName  \*q" vendor \*q
 This optional entry specifies the monitor's manufacturer.
 .TP 7
-.BI "ModelName  """ model """"
+.BI "ModelName  \*q" model \*q
 This optional entry specifies the monitor's model.
 .TP 7
 .BI "HorizSync  " "horizsync-range"
@@ -919,7 +923,7 @@ value or as three separate RGB values.  The values should be in the range
 0.1 to 10.0, and the default is 1.0.  Not all drivers are capable
 of using this information.
 .TP 7
-.BI "UseModes  """ modesection-id """"
+.BI "UseModes  \*q" modesection-id \*q
 Include the set of modes listed in the
 .B Modes
 section called
@@ -948,27 +952,27 @@ specifies the horizontal timings for the mode.
 .BI "VTimings  " "vdisp vsyncstart vsyncend vtotal"
 specifies the vertical timings for the mode.
 .TP 4
-.BI "Flags  """ flag """" " ..."
+.BI "Flags  \*q" flag \*q " ..."
 specifies an optional set of mode flags, each of which is a separate
 string in double quotes.
-.B """Interlace"""
+.B \*qInterlace\*q
 indicates that the mode is interlaced.
-.B """DoubleScan"""
+.B \*qDoubleScan\*q
 indicates a mode where each scanline is doubled.
-.B """+HSync"""
+.B \*q+HSync\*q
 and
-.B """\-HSync"""
+.B \*q\-HSync\*q
 can be used to select the polarity of the HSync signal.
-.B """+VSync"""
+.B \*q+VSync\*q
 and
-.B """\-VSync"""
+.B \*q\-VSync\*q
 can be used to select the polarity of the VSync signal.
-.B """Composite"""
+.B \*qComposite\*q
 can be used to specify composite sync on hardware where this is supported.
 Additionally, on some hardware,
-.B """+CSync"""
+.B \*q+CSync\*q
 and
-.B """\-CSync"""
+.B \*q\-CSync\*q
 may be used to select the composite sync polarity.
 .TP 4
 .BI "HSkew  " hskew
@@ -984,12 +988,12 @@ decreased.
 specifies the number of times each scanline is painted on the screen.
 Not all drivers use this information.  Values less than 1 are treated
 as 1, which is the default.  Generally, the
-.B """DoubleScan"""
+.B \*qDoubleScan\*q
 .B Flag
 mentioned above doubles this value.
 .RE
 .TP 7
-.BI "ModeLine  """ name """" " mode-description"
+.BI "ModeLine  \*q" name \*q " mode-description"
 This entry is a more compact version of the
 .B Mode
 entry, and it also can be used to specify video modes for the monitor.
@@ -1051,9 +1055,9 @@ Some
 flags that may be useful to include in
 .B Monitor
 sections (when needed) include
-.BR """DPMS""" ,
+.BR \*qDPMS\*q ,
 and
-.BR """SyncOnGreen""" .
+.BR \*qSyncOnGreen\*q .
 
 .SH MODES SECTION
 The config file may have multiple
@@ -1076,8 +1080,8 @@ sections have the following format:
 .PP
 .RS 4
 .nf
-.B  "Section ""Modes"""
-.BI "    Identifier """ name """"
+.B  "Section \*qModes\*q"
+.BI "    Identifier \*q" name \*q
 .I  "    entries"
 .I  "    ..."
 .B  "EndSection"
@@ -1119,13 +1123,13 @@ sections have the following format:
 .PP
 .RS 4
 .nf
-.B  "Section ""Screen"""
-.BI "    Identifier """ name """"
-.BI "    Device     """ devid """"
-.BI "    Monitor    """ monid """"
+.B  "Section \*qScreen\*q"
+.BI "    Identifier \*q" name \*q
+.BI "    Device     \*q" devid \*q
+.BI "    Monitor    \*q" monid \*q
 .I  "    entries"
 .I  "    ..."
-.BI "    SubSection ""Display"""
+.BI "    SubSection \*qDisplay\*q"
 .I  "       entries"
 .I  "       ...
 .B  "    EndSubSection"
@@ -1147,7 +1151,7 @@ sections, one for each head.
 The entries available
 for this section are:
 .TP 7
-.BI "Device  """ device-id """"
+.BI "Device  \*q" device-id \*q
 This specifies the
 .B Device
 section to be used for this screen.  This is what ties a specific
@@ -1159,10 +1163,10 @@ of a
 .B Device
 section in the config file.
 .TP 7
-.BI "Monitor  """ monitor-id """"
+.BI "Monitor  \*q" monitor-id \*q
 specifies which monitor description is to be used for this screen.
 .TP 7
-.BI "VideoAdaptor  """ xv-id """"
+.BI "VideoAdaptor  \*q" xv-id \*q
 specifies an optional Xv video adaptor description to be used with this
 screen.
 .TP 7
@@ -1216,7 +1220,7 @@ subsections have the following format:
 .PP
 .RS 4
 .nf
-.B  "    SubSection ""Display"""
+.B  "    SubSection \*qDisplay\*q"
 .BI "        Depth  " depth
 .I  "        entries"
 .I  "        ..."
@@ -1280,7 +1284,7 @@ from the resolution of the initial video mode.  If this entry is not
 given, then the initial display will be centered in the virtual display
 area.
 .TP 7
-.BI "Modes  """ mode-name """" " ..."
+.BI "Modes  \*q" mode-name \*q " ..."
 This entry is highly desirable for most drivers, and it specifies the list
 of video modes to use.  Each
 .I mode-name
@@ -1300,7 +1304,7 @@ appropriate
 .B Monitor
 section will be used.
 .TP 7
-.BI "Visual  """ visual-name """"
+.BI "Visual  \*q" visual-name \*q
 This optional entry sets the default root visual type.  This may also
 be specified from the command line (see the
 .I Xserver(1)
@@ -1390,11 +1394,11 @@ sections have the following format:
 .PP
 .RS 4
 .nf
-.B  "Section ""ServerLayout"""
-.BI "    Identifier   """ name """"
-.BI "    Screen       """ screen-id """"
+.B  "Section \*qServerLayout\*q"
+.BI "    Identifier   \*q" name \*q
+.BI "    Screen       \*q" screen-id \*q
 .I  "    ..."
-.BI "    InputDevice  """ idev-id """"
+.BI "    InputDevice  \*q" idev-id \*q
 .I  "    ..."
 .I  "    options"
 .I  "    ..."
@@ -1418,7 +1422,7 @@ section.
 .PP
 The entries that may be used in this section are described here.
 .TP 7
-.BI "Screen  " "screen-num" " ""screen-id"" " "position-information"
+.BI "Screen  " "screen-num" " \*qscreen-id\*q " "position-information"
 One of these entries must be given for each screen being used in
 a session.  The
 .I screen-id
@@ -1441,19 +1445,19 @@ This says that the upper left corner's coordinates are
 If the coordinates are omitted or if no positioning information
 is given, (0,0) is assumed.
 .TP 4
-.BI "RightOf   """ screen-id """"
+.BI "RightOf   \*q" screen-id \*q
 .TP 4
-.BI "LeftOf    """ screen-id """"
+.BI "LeftOf    \*q" screen-id \*q
 .TP 4
-.BI "Above     """ screen-id """"
+.BI "Above     \*q" screen-id \*q
 .TP 4
-.BI "Below     """ screen-id """"
+.BI "Below     \*q" screen-id \*q
 .TP 4
-.BI "Relative  """ screen-id """" " x y"
+.BI "Relative  \*q" screen-id \*q " x y"
 These give the screen's location relative to another screen.
 .RE
 .TP 7
-.BI "InputDevice  """ idev-id """ """ option """" " ..."
+.BI "InputDevice  \*q" idev-id "\*q \*q" option \*q " ..."
 One of these entries must be given for each input device being used in
 a session.  Normally at least two are required, one each for the core
 pointer and keyboard devices.  The
@@ -1470,9 +1474,9 @@ be used here.  The most commonly used options are:
 .PP
 .RS 11
 .nf
-.B """CorePointer"""
-.B """CoreKeyboard"""
-.B """SendCoreEvents"""
+.B \*qCorePointer\*q
+.B \*qCoreKeyboard\*q
+.B \*qSendCoreEvents\*q
 .fi
 .RE
 .PP
@@ -1495,14 +1499,14 @@ section for a dual headed configuration with two mice:
 .PP
 .RS 4
 .nf
-.B "Section ""ServerLayout"""
-.B "    Identifier  ""Layout 1"""
-.B "    Screen      ""MGA 1"""
-.B "    Screen      ""MGA 2"" RightOf ""MGA 1"""
-.B "    InputDevice ""Keyboard 1"" ""CoreKeyboard"""
-.B "    InputDevice ""Mouse 1""    ""CorePointer"""
-.B "    InputDevice ""Mouse 2""    ""SendCoreEvents"""
-.B "    Option      ""BlankTime""  ""5"""
+.B "Section \*qServerLayout\*q"
+.B "    Identifier  \*qLayout 1\*q"
+.B "    Screen      \*qMGA 1\*q"
+.B "    Screen      \*qMGA 2\*q RightOf \*qMGA 1\*q"
+.B "    InputDevice \*qKeyboard 1\*q \*qCoreKeyboard\*q"
+.B "    InputDevice \*qMouse 1\*q    \*qCorePointer\*q"
+.B "    InputDevice \*qMouse 2\*q    \*qSendCoreEvents\*q"
+.B "    Option      \*qBlankTime\*q  \*q5\*q"
 .B "EndSection"
 .fi
 .RE
