@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.8 2001/02/08 23:36:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.9 2001/03/04 17:40:04 herrb Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -45,7 +45,7 @@ char                    **envpGlobal;   // argcGlobal and argvGlobal
 
 // Quit after this many seconds if no quartz event poster is found.
 // Leave undefined for no safety quit.
-#define QUARTZ_SAFETY_DELAY	10
+#undef QUARTZ_SAFETY_DELAY
 
 /* Fake button press/release for scroll wheel move. */
 #define	SCROLLWHEELUPFAKE	4
@@ -487,7 +487,7 @@ void DarwinUpdateModifiers(
 
 /*
  * ProcessInputEvents
- *  Read events from the event queue
+ *  Read and process events from the event pipe until it is empty.
  */
 void ProcessInputEvents(void)
 {
@@ -514,241 +514,259 @@ void ProcessInputEvents(void)
     }
 #endif
 
-    // try to read from our pipe
-    // FIXME: safely handle SIGPIPE in quartz mode
-    r = read( darwinEventFD, &ev, sizeof(ev));
-    if ((r == -1) && (errno != EAGAIN)) {
-        ErrorF("read(darwinEventFD) failed, errno=%d: %s\n", errno, strerror(errno));
-        return;
-    } else if ((r == -1) && (errno == EAGAIN)) {
-        return;
-    } else if ( r != sizeof( ev ) ) {
-        ErrorF( "Only read %i bytes from darwinPipe!\n", r );
-        return;
-    }
+    while (TRUE) {
 
-    gotread = true;
-    gettimeofday(&tv, &tz);
-
-    // translate it to an X event and post it
-    memset(&xe, 0, sizeof(xe));
-
-    xe.u.keyButtonPointer.rootX = ev.location.x;
-    xe.u.keyButtonPointer.rootY = ev.location.y;
-    //xe.u.keyButtonPointer.time = ev.time;
-    xe.u.keyButtonPointer.time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-
-    /* A newer kernel generates multi-button events by NX_SYSDEFINED.
-       See iokit/Families/IOHIDSystem/IOHIDSystem.cpp version 1.1.1.7,
-       2000/08/10 00:23:37 or later. */
-
-    switch( ev.type ) {
-        case NX_MOUSEMOVED:
-            xe.u.u.type = MotionNotify;
-            (darwinPointer->public.processInputProc)( &xe, darwinPointer, 1 );
+        // try to read from our pipe
+        r = read( darwinEventFD, &ev, sizeof(ev));
+    
+        if ((r == -1) && (errno == EAGAIN)) {
+            // no event available
             break;
- 
-        case NX_LMOUSEDOWN:
-            // Mimic multi-button mouse with Command and Option
-            if (fake3Buttons && ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
-                int button;
-                int keycode;
-                if (ev.flags & NX_COMMANDMASK) {
-                    button = 2;
-                    keycode = darwinKeyCommandL;
+        } else if (r == -1) {
+            // FIXME: FatalError here? Reading may be permanently broken.
+            ErrorF( "Event pipe read failed, errno=%d: %s\n",
+                    errno, strerror(errno) );
+            break;
+        } else if ( r == 0 ) {
+            FatalError("Darwin ProcessInputEvents: EOF on event pipe!\n");
+        } else if ( r != sizeof( ev ) ) {
+            ErrorF( "Only read %i bytes from event pipe!\n", r );
+            break;
+        }
+    
+        gotread = true;
+        gettimeofday(&tv, &tz);
+    
+        // translate it to an X event and post it
+        memset(&xe, 0, sizeof(xe));
+    
+        xe.u.keyButtonPointer.rootX = ev.location.x;
+        xe.u.keyButtonPointer.rootY = ev.location.y;
+        //xe.u.keyButtonPointer.time = ev.time;
+        xe.u.keyButtonPointer.time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    
+        /* A newer kernel generates multi-button events by NX_SYSDEFINED.
+        See iokit/Families/IOHIDSystem/IOHIDSystem.cpp version 1.1.1.7,
+        2000/08/10 00:23:37 or later. */
+    
+        switch( ev.type ) {
+            case NX_MOUSEMOVED:
+                xe.u.u.type = MotionNotify;
+                (darwinPointer->public.processInputProc)
+                    ( &xe, darwinPointer, 1 );
+                break;
+    
+            case NX_LMOUSEDOWN:
+                // Mimic multi-button mouse with Command and Option
+                if (fake3Buttons && 
+                    ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
+                    int button;
+                    int keycode;
+                    if (ev.flags & NX_COMMANDMASK) {
+                        button = 2;
+                        keycode = darwinKeyCommandL;
+                    } else {
+                        button = 3;
+                        keycode = darwinKeyOptionL;
+                    }
+                    DarwinSimulateMouseClick(xe, button, ButtonPress,
+                                             &keycode, 1);
                 } else {
-                    button = 3;
-                    keycode = darwinKeyOptionL;
+                    xe.u.u.detail = 1;
+                    xe.u.u.type = ButtonPress;
+                    (darwinPointer->public.processInputProc)
+                            ( &xe, darwinPointer, 1 );
                 }
-                DarwinSimulateMouseClick(xe, button, ButtonPress, &keycode, 1);
-            } else {
-                xe.u.u.detail = 1;			//de.key = button 1;
+                break;
+    
+            case NX_LMOUSEUP:
+                // Mimic multi-button mouse with Command and Option
+                if (fake3Buttons &&
+                    ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
+                    int button;
+                    int keycode;
+                    if (ev.flags & NX_COMMANDMASK) {
+                        button = 2;
+                        keycode = darwinKeyCommandL;
+                    } else {
+                        button = 3;
+                        keycode = darwinKeyOptionL;
+                    }
+                    DarwinSimulateMouseClick(xe, button, ButtonRelease,
+                                             &keycode, 1);
+                } else {
+                    xe.u.u.detail = 1;
+                    xe.u.u.type = ButtonRelease;
+                    (darwinPointer->public.processInputProc)
+                            ( &xe, darwinPointer, 1 );
+                }
+                break;
+    
+            // Button 2 isn't handled correctly by older kernels anyway.
+            // Just let NX_SYSDEFINED events handle these.
+            case NX_RMOUSEDOWN:
+#if 0
+                xe.u.u.detail = 2;
                 xe.u.u.type = ButtonPress;
                 (darwinPointer->public.processInputProc)
                         ( &xe, darwinPointer, 1 );
-            }
-            break;
-
-        case NX_LMOUSEUP:
-            // Mimic multi-button mouse with Command and Option
-            if (fake3Buttons && ev.flags & (NX_COMMANDMASK | NX_ALTERNATEMASK)) {
-                int button;
-                int keycode;
-                if (ev.flags & NX_COMMANDMASK) {
-                    button = 2;
-                    keycode = darwinKeyCommandL;
-                } else {
-                    button = 3;
-                    keycode = darwinKeyOptionL;
-                }
-                DarwinSimulateMouseClick(xe, button, ButtonRelease, &keycode, 1);
-            } else {
-                xe.u.u.detail = 1;			//de.key = button 1;
+#endif
+                break;
+    
+            case NX_RMOUSEUP:
+#if 0
+                xe.u.u.detail = 2;
                 xe.u.u.type = ButtonRelease;
                 (darwinPointer->public.processInputProc)
                         ( &xe, darwinPointer, 1 );
-            }
-            break;
-
-// Button 2 isn't handled correctly by older kernels anyway. Just let
-// NX_SYSDEFINED events handle these.
-        case NX_RMOUSEDOWN:
-#if 0
-            xe.u.u.detail = 2; //de.key;
-            xe.u.u.type = ButtonPress;
-            (darwinPointer->public.processInputProc)( &xe, darwinPointer, 1 );
 #endif
-            break;
-
-        case NX_RMOUSEUP:
-#if 0
-            xe.u.u.detail = 2; //de.key;
-            xe.u.u.type = ButtonRelease;
-            (darwinPointer->public.processInputProc)( &xe, darwinPointer, 1 );
-#endif
-            break;
-
-        case NX_KEYDOWN:
-            xe.u.u.type = KeyPress;
-            xe.u.u.detail = ev.data.key.keyCode + MIN_KEYCODE;
-            (darwinKeyboard->public.processInputProc)( &xe, darwinKeyboard, 1 );
-            break;
-
-        case NX_KEYUP:
-            xe.u.u.type = KeyRelease;
-            xe.u.u.detail = ev.data.key.keyCode + MIN_KEYCODE;
-            (darwinKeyboard->public.processInputProc)(&xe, darwinKeyboard, 1);
-            break;
-
-        case NX_FLAGSCHANGED:
-        {
-	    // Assumes only one flag has changed. In quartz mode, 
-	    // this restriction must be enforced by the quartz event feeder.
-            int new_on_flags = ~old_state & ev.flags;
-            int new_off_flags = old_state & ~ev.flags;
-            old_state = ev.flags;
-            xe.u.u.detail = ev.data.key.keyCode + MIN_KEYCODE;
-
-            // alphalock is toggled rather than held on,
-            // so we have to handle it differently
-            if (new_on_flags & NX_ALPHASHIFTMASK ||
-                new_off_flags & NX_ALPHASHIFTMASK) {
+                break;
+    
+            case NX_KEYDOWN:
                 xe.u.u.type = KeyPress;
+                xe.u.u.detail = ev.data.key.keyCode + MIN_KEYCODE;
+                (darwinKeyboard->public.processInputProc)
+                        ( &xe, darwinKeyboard, 1 );
+                break;
+    
+            case NX_KEYUP:
+                xe.u.u.type = KeyRelease;
+                xe.u.u.detail = ev.data.key.keyCode + MIN_KEYCODE;
                 (darwinKeyboard->public.processInputProc)
                         (&xe, darwinKeyboard, 1);
-                xe.u.u.type = KeyRelease;
+                break;
+    
+            case NX_FLAGSCHANGED:
+            {
+                // Assumes only one flag has changed. In Quartz mode, this
+                // restriction must be enforced by the Quartz event feeder.
+                int new_on_flags = ~old_state & ev.flags;
+                int new_off_flags = old_state & ~ev.flags;
+                old_state = ev.flags;
+                xe.u.u.detail = ev.data.key.keyCode + MIN_KEYCODE;
+    
+                // Alphalock is toggled rather than held on,
+                // so we have to handle it differently.
+                if (new_on_flags & NX_ALPHASHIFTMASK ||
+                    new_off_flags & NX_ALPHASHIFTMASK) {
+                    xe.u.u.type = KeyPress;
+                    (darwinKeyboard->public.processInputProc)
+                            (&xe, darwinKeyboard, 1);
+                    xe.u.u.type = KeyRelease;
+                    (darwinKeyboard->public.processInputProc)
+                            (&xe, darwinKeyboard, 1);
+                    break;
+                }
+    
+                if (new_on_flags) {
+                    xe.u.u.type = KeyPress;
+                } else if (new_off_flags) {
+                    xe.u.u.type = KeyRelease;
+                } else {
+                    break;
+                }
                 (darwinKeyboard->public.processInputProc)
                         (&xe, darwinKeyboard, 1);
                 break;
             }
-
-            if (new_on_flags) {
-                xe.u.u.type = KeyPress;
-            } else if (new_off_flags) {
-                xe.u.u.type = KeyRelease;
-            } else {
-                break;
-            }
-            (darwinKeyboard->public.processInputProc)(&xe, darwinKeyboard, 1);
-            break;
-        }
-
-        case NX_SYSDEFINED:
-            if (ev.data.compound.subType == 7) {
-                long hwDelta = ev.data.compound.misc.L[0];
-                long hwButtons = ev.data.compound.misc.L[1];
-                int i;
-
-                for (i = 1; i < 4; i++) {
-                    if (hwDelta & (1 << i)) {
-                        xe.u.u.detail = i + 1;
-                        if (hwButtons & (1 << i)) {
-                            xe.u.u.type = ButtonPress;
-                        } else {
-                            xe.u.u.type = ButtonRelease;
+    
+            case NX_SYSDEFINED:
+                if (ev.data.compound.subType == 7) {
+                    long hwDelta = ev.data.compound.misc.L[0];
+                    long hwButtons = ev.data.compound.misc.L[1];
+                    int i;
+    
+                    for (i = 1; i < 4; i++) {
+                        if (hwDelta & (1 << i)) {
+                            xe.u.u.detail = i + 1;
+                            if (hwButtons & (1 << i)) {
+                                xe.u.u.type = ButtonPress;
+                            } else {
+                                xe.u.u.type = ButtonRelease;
+                            }
+                            (darwinPointer->public.processInputProc)
+                                    ( &xe, darwinPointer, 1 );
                         }
-                        (darwinPointer->public.processInputProc)
-                            ( &xe, darwinPointer, 1 );
                     }
                 }
+                break;
+    
+            case NX_SCROLLWHEELMOVED:
+            {
+                short count = ev.data.scrollWheel.deltaAxis1;
+    
+                if (count > 0) {
+                    xe.u.u.detail = SCROLLWHEELUPFAKE;
+                } else {
+                    xe.u.u.detail = SCROLLWHEELDOWNFAKE;
+                    count = -count;
+                }
+    
+                for (; count; --count) {
+                    xe.u.u.type = ButtonPress;
+                    (darwinPointer->public.processInputProc)
+                            ( &xe, darwinPointer, 1 );
+                    xe.u.u.type = ButtonRelease;
+                    (darwinPointer->public.processInputProc)
+                            ( &xe, darwinPointer, 1 );
+                }
+                break;
             }
+    
+            // Special events for Quartz support
+            case NX_APPDEFINED:
+            if (quartz) {
+                switch (ev.data.compound.subType) {
+    
+                // Update modifier state. As opposed to NX_FLAGSCHANGED,
+                // in this case any amount of modifiers may have changed.
+                case kXDarwinUpdateModifiers:
+                    xe.u.u.type = KeyRelease;
+                    DarwinUpdateModifiers(xe, old_state & ~ev.flags);
+                    xe.u.u.type = KeyPress;
+                    DarwinUpdateModifiers(xe, ~old_state & ev.flags);
+                    old_state = ev.flags;
+                        break;
+    
+                case kXDarwinShow:
+                    QuartzShow();
+                    break;
+                
+                case kXDarwinHide:
+                    QuartzHide();
+                    break;
+                
+                case kXDarwinQuit:
+                    GiveUp(0);
+                    break;
+    
+                default:
+                    ErrorF("Unknown application defined event.\n");
+                } // switch (ev.data.compound.subType)
+            } // if (quartz)
             break;
-
-        case NX_SCROLLWHEELMOVED:
-        {
-            short count = ev.data.scrollWheel.deltaAxis1;
-
-            if (count > 0) {
-                xe.u.u.detail = SCROLLWHEELUPFAKE;
-            } else {
-                xe.u.u.detail = SCROLLWHEELDOWNFAKE;
-                count = -count;
-            }
-
-            for (; count; --count) {
-                xe.u.u.type = ButtonPress;
-                (darwinPointer->public.processInputProc)
-                    ( &xe, darwinPointer, 1 );
-                xe.u.u.type = ButtonRelease;
-                (darwinPointer->public.processInputProc)
-                    ( &xe, darwinPointer, 1 );
-            }
-            break;
+    
+            default:
+                ErrorF("Unknown event caught: %d\n", ev.type);
+                ErrorF("\tev.type = %d\n", ev.type);
+                ErrorF("\tev.location.x,y = %d,%d\n", ev.location.x, ev.location.y);
+                ErrorF("\tev.time = %ld\n", ev.time);
+                ErrorF("\tev.flags = 0x%x\n", ev.flags);
+                ErrorF("\tev.window = %d\n", ev.window);
+                ErrorF("\tev.data.key.origCharSet = %d\n", ev.data.key.origCharSet);
+                ErrorF("\tev.data.key.charSet = %d\n", ev.data.key.charSet);
+                ErrorF("\tev.data.key.charCode = %d\n", ev.data.key.charCode);
+                ErrorF("\tev.data.key.keyCode = %d\n", ev.data.key.keyCode);
+                ErrorF("\tev.data.key.origCharCode = %d\n", ev.data.key.origCharCode);
+                break;
         }
-
-	// Special events for Quartz support
-        case NX_APPDEFINED:
-          if (quartz) {
-            switch (ev.data.compound.subType) {
-
-              // Update modifier state. As opposed to NX_FLAGSCHANGED,
-              // in this case any amount of modifiers may have changed.
-              case kXDarwinUpdateModifiers:
-                xe.u.u.type = KeyRelease;
-                DarwinUpdateModifiers(xe, old_state & ~ev.flags);
-                xe.u.u.type = KeyPress;
-                DarwinUpdateModifiers(xe, ~old_state & ev.flags);
-                old_state = ev.flags;
-	            break;
-
-              case kXDarwinShow:
-                QuartzShow();
-                break;
-	      
-              case kXDarwinHide:
-                QuartzHide();
-                break;
-	      
-              case kXDarwinQuit:
-                // FIXME: is there a better way to quit?
-                FatalError("Terminated.\n");
-                break;
-
-              default:
-                ErrorF("Unknown application defined event.\n");
-            } // switch (ev.data.compound.subType)
-          } // if (quartz)
-          break;
-
-        default:
-            ErrorF("Unknown event caught: %d\n", ev.type);
-            ErrorF("\tev.type = %d\n", ev.type);
-            ErrorF("\tev.location.x,y = %d,%d\n", ev.location.x, ev.location.y);
-            ErrorF("\tev.time = %ld\n", ev.time);
-            ErrorF("\tev.flags = 0x%x\n", ev.flags);
-            ErrorF("\tev.window = %d\n", ev.window);
-            ErrorF("\tev.data.key.origCharSet = %d\n", ev.data.key.origCharSet);
-            ErrorF("\tev.data.key.charSet = %d\n", ev.data.key.charSet);
-            ErrorF("\tev.data.key.charCode = %d\n", ev.data.key.charCode);
-            ErrorF("\tev.data.key.keyCode = %d\n", ev.data.key.keyCode);
-            ErrorF("\tev.data.key.origCharCode = %d\n", ev.data.key.origCharCode);
-            break;
+    
+        // why isn't this handled automatically by X???
+        //miPointerAbsoluteCursor( ev.location.x, ev.location.y, ev.time );
+        miPointerAbsoluteCursor( ev.location.x, ev.location.y,
+                                tv.tv_sec * 1000 + tv.tv_usec / 1000 );
     }
 
-    // why isn't this handled automatically by X???
-    //miPointerAbsoluteCursor( ev.location.x, ev.location.y, ev.time );
-    miPointerAbsoluteCursor( ev.location.x, ev.location.y,
-                             tv.tv_sec * 1000 + tv.tv_usec / 1000 );
     miPointerUpdate();
 
 }

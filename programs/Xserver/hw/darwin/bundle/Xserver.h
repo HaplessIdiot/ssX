@@ -11,8 +11,9 @@
 
 @interface Xserver : NSObject {
     // server state
-    BOOL serverDied;
+    NSLock *serverLock;
     BOOL serverVisible;
+    BOOL appQuitting;
     UInt32 mouseState;
 
     // communication
