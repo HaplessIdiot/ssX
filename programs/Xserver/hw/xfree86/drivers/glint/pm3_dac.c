@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.13 2001/01/31 16:15:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.14 2001/02/01 10:04:49 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -228,8 +228,10 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     STOREREG(Aperture0,		 	0x00000000);
     STOREREG(Aperture1,		 	0x00000000);
 
-    STOREREG(DFIFODis,			0x00000000);
-    STOREREG(FIFODis,			0x00000001);
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)
+    	STOREREG(DFIFODis,			0x00000001);
+
+    STOREREG(FIFODis,			0x00000007);
 
     temp1 = mode->CrtcHSyncStart - mode->CrtcHDisplay;
     temp2 = mode->CrtcVSyncStart - mode->CrtcVDisplay;
@@ -283,7 +285,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 
     STOREREG(VClkCtl, GLINT_READ_REG(VClkCtl) & 0xFFFFFFFC);
     STOREREG(PMScreenBase, 0x00000000);
-    STOREREG(ChipConfig, GLINT_READ_REG(ChipConfig) & 0xFFFFFFDD);
+    STOREREG(ChipConfig, GLINT_READ_REG(ChipConfig) & 0xFFFFFFFD);
 
     {
 	/* Get the programmable clock values */
@@ -379,7 +381,8 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     SAVEREG(Aperture0);
     SAVEREG(Aperture1);
 
-    SAVEREG(DFIFODis);
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)
+   	SAVEREG(DFIFODis);
     SAVEREG(FIFODis);
     SAVEREG(PMHTotal);
     SAVEREG(PMHbEnd);
@@ -445,7 +448,8 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     RESTOREREG(ChipConfig);
     RESTOREREG(Aperture0);
     RESTOREREG(Aperture1);
-    RESTOREREG(DFIFODis);
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)
+    	RESTOREREG(DFIFODis);
     RESTOREREG(FIFODis);
     RESTOREREG(PMVideoControl);
     RESTOREREG(PMHbEnd);
