@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 756. Fix Linux drm kernel modules to handle the nopage() prototype change in
+      Linux 2.6.1 (Michel Dänzer, from DRI CVS).
  755. Fix use of dynamic xcursors on OS/2 (Bugzilla #1087, Frank Giessler).
  754. Fix the fbdev driver so that it allows 24-bit pixel size, and disable
       the RandR extension when rotation is enabled (Jonathan Thambidurai).
@@ -18540,7 +18542,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3099 2004/01/11 18:42:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3100 2004/01/13 19:08:04 dawes Exp $
 
 
 
