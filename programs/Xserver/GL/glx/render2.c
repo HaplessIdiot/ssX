@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/render2.c,v 1.9 2004/02/12 02:25:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/render2.c,v 1.10 2004/12/10 16:06:59 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -234,6 +234,7 @@ void __glXDisp_DrawArrays(GLbyte *pc)
 	    glEnableClientState(GL_EDGE_FLAG_ARRAY);
 	    glEdgeFlagPointer(stride, (const GLboolean *)pc);
 	    break;
+#ifndef MISSING_GL_EXTS
 	  case GL_SECONDARY_COLOR_ARRAY:
 	    glEnableClientState(GL_SECONDARY_COLOR_ARRAY);
 	    glSecondaryColorPointer(numVals, datatype, stride, pc);
@@ -242,6 +243,7 @@ void __glXDisp_DrawArrays(GLbyte *pc)
 	    glEnableClientState(GL_FOG_COORD_ARRAY);
 	    glFogCoordPointer(datatype, stride, pc);
 	    break;
+#endif
 	  default:
 	    break;
 	}

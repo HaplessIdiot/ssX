@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.4 2005/01/22 16:01:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxinit.c,v 1.5 2005/01/27 02:42:50 dawes Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -1063,5 +1063,12 @@ CARD32 GetTimeInMillis(void)
 
     gettimeofday(&tp, 0);
     return tp.tv_sec * 1000 + tp.tv_usec / 1000;
+}
+#endif
+
+#ifdef __DARWIN__
+void
+DarwinHandleGUI(int argc, char *argv[])
+{
 }
 #endif

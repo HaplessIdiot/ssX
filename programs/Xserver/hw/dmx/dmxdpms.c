@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxdpms.c,v 1.1 2004/06/30 20:21:38 martin Exp $ */
 /*
  * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -64,7 +64,12 @@ static void _dmxDPMSInit(DMXScreenInfo *dmxScreen)
         dpmsGeneration = serverGeneration;
     }
 
+#ifdef DPMSExtension
     if (DPMSDisabledSwitch) dpmsSupported = FALSE; /* -dpms turns off */
+#else
+    dpmsSupported = FALSE;
+#endif
+
 
     dmxScreen->dpmsCapable = 0;
     
