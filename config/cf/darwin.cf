@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.40 2003/09/17 05:48:31 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.41 2003/10/26 12:17:14 herrb Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -151,8 +151,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #define MkdirHierCmd            mkdir -p
 
-/* our cpp isn't in /lib/cpp and early versions don't like -undef */
-#define CppCmd                  /usr/bin/cpp
+/*
+ * Our cpp isn't in /lib/cpp and early versions don't like -undef.
+ * The default cpp-3.3 that ships with Panther inserts spurious #pragmas,
+ * so we use the 3.1-based version.
+ */
+#if (OSMajorVersion >= 7)
+# define CppCmd                  /usr/bin/cpp3
+#else
+# define CppCmd                  /usr/bin/cpp
+#endif
 #if HasGcc3
 # define RawCppCmd              CppCmd -undef
 #else
