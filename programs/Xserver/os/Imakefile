@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/85 1997/12/07 18:26:23 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.23 1999/03/21 12:46:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/os/Imakefile,v 3.24 1999/04/17 09:08:50 dawes Exp $
 #include <Server.tmpl>
 
 /*
@@ -149,6 +149,9 @@ LinkSourceFile(k5encode.c,$(XAUTHSRC))
 #if DoLoadableServer
 AllTarget(libcwrapper.o)
 ObjectFromSpecialSource(libcwrapper,$(XF86OSSRC)/shared/libc_wrapper,-DSELF_CONTAINED_WRAPPER)
+#if !HasSnprintf
+LinkSourceFile(snprintf.c,$(LIBSRC)/misc)
+#endif
 #endif
 
 DependTarget()

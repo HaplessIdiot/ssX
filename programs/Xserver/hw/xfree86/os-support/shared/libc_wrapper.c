@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.49 1999/07/06 11:38:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.50 1999/07/10 07:24:52 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1691,8 +1691,6 @@ xf86GetErrno ()
 
 #undef mapnum
 
-#ifndef SELF_CONTAINED_WRAPPER
 #ifdef NEED_SNPRINTF
 #include "snprintf.c"
-#endif
 #endif
