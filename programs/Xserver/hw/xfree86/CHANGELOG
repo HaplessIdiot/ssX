@@ -1,4 +1,8 @@
 XFree86 3.9Ag (05 April 1998)
+1649. AGX ScrnInfoRec fix, fix compiler warnings for Xprt and loader,
+      fix vgaCloseScreen problem, add new ScreenRec functions to
+      set/get pixmaps and wrapper functions, VC switch to use
+      low-level backing store functions (#1635, Marc Aurele La France).
 1648. xfree98/XF86Setup sync with 3.3.2 (#1632, Takaaki Nomura).
 1647. xfree86/XF86Setup sync with 3.3.2 (#1629,1634 Kazutaka Yokota).
 1646. Back out the following R6.4-related changes:
@@ -30,13 +34,13 @@ XFree86 3.9Af (28 March 1998)
 1633. Resync xfree98 with xfree86 and resync some PC98 files with 3.3.2
       (#1616, Takaaki Nomura).
 1632. Fix micro typo in chips.sgml (#1615, David Bateman).
-1631. Define defaults for XF86Config file locations. Have make clean remove
+1631. Define defaults for XF86Config file locations. Have make World remove
       Makefile.bak files. Resync ScrnInfoRec's for the last time (Hope
       springs eternal). "Externalise" InstalledMaps in all XFree?? servers.
       Remove reference to DEFAULT_MODULE_PATH in static servers. Deal with
       some of the warnings produced by gcc by default. Resync ATI driver with
       the version found in XFree86 3.3.2. Fix loader bug in dealing with XAA.
-      (#1614, <arc La France).
+      (#1614, Marc La France).
 1630. Don't abort a static server if the Driver statement in the Device 
       section is missing (#1613, Kazutaka Yokota).
 1629. Fix typo in #1606 and improve printing of mouse related messages
@@ -120,7 +124,7 @@ XFree86 3.9Ae (22 March 1998)
       Remove dependence on TimingTab. Include VGA DAC registers in verbose
       output. Skip sparse I/O probes when PCI configuration space indicates a
       device has registered a block I/O base. Virtual X rounding adjustments
-      for planar modes. Documentation updates (#1430, Marc La France). 
+      for packed modes. Documentation updates (#1430, Marc La France). 
 1601. Clean up ScrnInfo, make vgaCloseScreen call the framebuffer's
       CloseScreen() function, determine more pricely whether the virtual
       resolution fits in video memory, minor optimization of cfb's 
@@ -6085,4 +6089,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.580 1998/04/05 02:28:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.581 1998/04/05 16:15:46 robin Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.9 1996/02/04 09:02:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.10 1996/12/23 06:38:46 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -111,12 +111,12 @@ static DepthRec depths[] = {
 
 static unsigned long cfbGeneration = 0;
 
-miBSFuncRec mach32BSFuncRec = {
+BSFuncRec mach32BSFuncRec = {
     mach32SaveAreas,
     mach32RestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
@@ -256,12 +256,20 @@ mach32ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     }
     Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
-			defaultVisual, nvisuals, visuals,
-			&mach32BSFuncRec);
+			defaultVisual, nvisuals, visuals);
+    if (Rstatus) {
+	pScreen->BackingStoreFuncs = mach32BSFuncRec;
+	miInitializeBackingStore(pScreen);
+    }
     if (rootdepth != 8) {
 	pScreen->CreateScreenResources = cfb16CreateScreenResources;
 	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
+	pScreen->GetScreenPixmap = cfb16GetScreenPixmap;
+	pScreen->SetScreenPixmap = cfb16SetScreenPixmap;
+    } else {
+	pScreen->GetScreenPixmap = cfbGetScreenPixmap;
+	pScreen->SetScreenPixmap = cfbSetScreenPixmap;
     }
     return Rstatus;
 

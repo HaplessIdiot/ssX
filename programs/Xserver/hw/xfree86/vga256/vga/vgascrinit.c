@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgascrinit.c,v 3.4 1996/09/24 13:56:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgascrinit.c,v 3.5 1996/12/23 06:59:58 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -42,12 +42,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * This code should be kept in sync with Xserver/cfb/cfbscrinit.c.
  */
 
-miBSFuncRec vga256BSFuncRec = {
+BSFuncRec vga256BSFuncRec = {
     vga256SaveAreas,
     vga256RestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 vga256FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
@@ -77,19 +77,21 @@ vga256FinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 #endif
     if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
-			defaultVisual, nvisuals, visuals,
-			(miBSFuncPtr) 0))
+			defaultVisual, nvisuals, visuals))
 	return FALSE;
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = cfbCloseScreen;
     /* init backing store here so we can overwrite CloseScreen without stepping
      * on the backing store wrapped version */
-    miInitializeBackingStore (pScreen, &vga256BSFuncRec);
+    pScreen->BackingStoreFuncs = vga256BSFuncRec;
+    miInitializeBackingStore (pScreen);
 #ifdef CFB_NEED_SCREEN_PRIVATE
     pScreen->CreateScreenResources = cfbCreateScreenResources;
     pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
 #endif
+    pScreen->GetScreenPixmap = cfbGetScreenPixmap;
+    pScreen->SetScreenPixmap = cfbSetScreenPixmap;
     return TRUE;
 }
 

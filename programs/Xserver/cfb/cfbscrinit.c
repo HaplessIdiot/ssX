@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 /* $XConsortium: cfbscrinit.c,v 5.32 94/04/17 20:29:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.11 1997/06/03 14:11:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbscrinit.c,v 1.12 1998/03/20 21:05:05 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -44,12 +44,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "cfbmskbits.h"
 #include "mibstore.h"
 
-miBSFuncRec cfbBSFuncRec = {
+BSFuncRec cfbBSFuncRec = {
     cfbSaveAreas,
     cfbRestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 Bool
@@ -164,19 +164,21 @@ cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 #endif
     if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
-			defaultVisual, nvisuals, visuals,
-			(miBSFuncPtr) 0))
+			defaultVisual, nvisuals, visuals))
 	return FALSE;
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = cfbCloseScreen;
-    /* init backing store here so we can overwrite CloseScreen without stepping
-     * on the backing store wrapped version */
-    miInitializeBackingStore (pScreen, &cfbBSFuncRec);
 #ifdef CFB_NEED_SCREEN_PRIVATE
     pScreen->CreateScreenResources = cfbCreateScreenResources;
     pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
 #endif
+    /* init backing store here so we can overwrite CloseScreen without stepping
+     * on the backing store wrapped version */
+    pScreen->BackingStoreFuncs = cfbBSFuncRec;
+    miInitializeBackingStore (pScreen);
+    pScreen->GetScreenPixmap = cfbGetScreenPixmap;
+    pScreen->SetScreenPixmap = cfbSetScreenPixmap;
     return TRUE;
 }
 
@@ -192,4 +194,29 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     if (!cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width))
 	return FALSE;
     return cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
+}
+
+PixmapPtr
+cfbGetScreenPixmap(pScreen)
+    ScreenPtr pScreen;
+{
+#ifdef CFB_NEED_SCREEN_PRIVATE
+    return (PixmapPtr)pScreen->devPrivates[cfbScreenPrivateIndex].ptr;
+#else
+    return (PixmapPtr)pScreen->devPrivate;
+#endif
+}
+
+void
+cfbSetScreenPixmap(pPix)
+    PixmapPtr pPix;
+{
+#ifdef CFB_NEED_SCREEN_PRIVATE
+    if (pPix)
+	pPix->drawable.pScreen->devPrivates[cfbScreenPrivateIndex].ptr =
+	    (pointer)pPix;
+#else
+    if (pPix)
+	pPix->drawable.pScreen->devPrivate = (pointer)pPix;
+#endif
 }

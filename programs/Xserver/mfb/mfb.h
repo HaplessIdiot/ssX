@@ -51,7 +51,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.8 1998/03/21 14:14:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.9 1998/03/21 14:23:16 dawes Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -847,6 +847,20 @@ extern Bool mfbScreenInit(
     int /*width*/
 #endif
 );
+
+extern PixmapPtr mfbGetWindowPixmap(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void mfbSetWindowPixmap(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    PixmapPtr /*pPix*/
+#endif
+);
+
 /* mfbseg.c */
 
 extern void mfbSegmentSS(

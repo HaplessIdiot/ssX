@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.0 1996/08/18 01:45:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.1 1998/03/20 21:04:53 hohndel Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -743,6 +743,20 @@ extern Bool afbScreenInit(
 	int /*width*/
 #endif
 );
+
+extern PixmapPtr afbGetWindowPixmap(
+#if NeedFunctionPrototypes
+	WindowPtr /*pWin*/
+#endif
+);
+
+extern void afbSetWindowPixmap(
+#if NeedFunctionPrototypes
+	WindowPtr /*pWin*/,
+	PixmapPtr /*pPix*/
+#endif
+);
+
 /* afbseg.c */
 
 extern void afbSegmentSS(

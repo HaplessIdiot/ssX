@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.24 94/04/17 20:26:06 dpw Exp $ */
+/* $XConsortium: scrnintstr.h /main/32 1996/09/28 17:14:32 rws $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -46,18 +46,17 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.0tsi Exp $ */
+
 #ifndef SCREENINTSTRUCT_H
 #define SCREENINTSTRUCT_H
 
 #include "screenint.h"
 #include "miscstruct.h"
-#include "region.h"
-#include "pixmap.h"
-#include "gc.h"
+#include "bstore.h"
 #include "colormap.h"
 #include "cursor.h"
 #include "validate.h"
-#include "window.h"
 #include "X11/Xproto.h"
 #include "dix.h"
 
@@ -219,7 +218,7 @@ typedef    void (* WindowExposuresProcPtr)(
 #endif
 );
 
-typedef    void (* PaintWindowBackgroundProcPtr)(
+typedef    void (* PaintWindowProcPtr)(
 #if NeedNestedPrototypes
 	WindowPtr /*pWindow*/,
 	RegionPtr /*pRegion*/,
@@ -227,13 +226,8 @@ typedef    void (* PaintWindowBackgroundProcPtr)(
 #endif
 );
 
-typedef    void (* PaintWindowBorderProcPtr)(
-#if NeedNestedPrototypes
-	WindowPtr /*pWindow*/,
-	RegionPtr /*pRegion*/,
-	int /*what*/
-#endif
-);
+typedef PaintWindowProcPtr PaintWindowBackgroundProcPtr;
+typedef PaintWindowProcPtr PaintWindowBorderProcPtr;
 
 typedef    void (* CopyWindowProcPtr)(
 #if NeedNestedPrototypes
@@ -648,6 +642,31 @@ typedef    Bool (* ModifyPixmapHeaderProcPtr)(
 #endif
 );
 
+typedef    PixmapPtr (* GetWindowPixmapProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWin*/
+#endif
+);
+
+typedef    void (* SetWindowPixmapProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWin*/,
+	PixmapPtr /*pPix*/
+#endif
+);
+
+typedef    PixmapPtr (* GetScreenPixmapProcPtr)(
+#if NeedNestedPrototypes
+	ScreenPtr /*pScreen*/
+#endif
+);
+
+typedef    void (* SetScreenPixmapProcPtr)(
+#if NeedNestedPrototypes
+	PixmapPtr /*pPix*/
+#endif
+);
+
 typedef    void (* MarkWindowProcPtr)(
 #if NeedNestedPrototypes
 	WindowPtr /*pWin*/
@@ -812,6 +831,11 @@ typedef struct _Screen {
     TranslateBackingStoreProcPtr TranslateBackingStore;
     ClearBackingStoreProcPtr	ClearBackingStore;
     DrawGuaranteeProcPtr	DrawGuarantee;
+    /*
+     * A read/write copy of the lower level backing store vector is needed now
+     * that the functions can be wrapped.
+     */
+    BSFuncRec			BackingStoreFuncs;
     
     /* Font procedures */
 
@@ -880,6 +904,11 @@ typedef struct _Screen {
     CreateScreenResourcesProcPtr CreateScreenResources;
     ModifyPixmapHeaderProcPtr	ModifyPixmapHeader;
 
+    GetWindowPixmapProcPtr	GetWindowPixmap;
+    SetWindowPixmapProcPtr	SetWindowPixmap;
+    GetScreenPixmapProcPtr	GetScreenPixmap;
+    SetScreenPixmapProcPtr	SetScreenPixmap;
+
     PixmapPtr pScratchPixmap;		/* scratch pixmap "pool" */
 
 #ifdef PIXPRIV
@@ -918,6 +947,7 @@ typedef struct _ScreenInfo {
     int		arraySize;
     int		numScreens;
     ScreenPtr	screens[MAXSCREENS];
+    int		numVideoScreens;
 } ScreenInfo;
 
 extern ScreenInfo screenInfo;

@@ -29,6 +29,8 @@ from the X Consortium.
 
 */
 
+/* $XFree86: xc/programs/Xserver/hw/dec/ws/mdepthinit.c,v 1.0tsi Exp $ */
+
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -168,8 +170,7 @@ mcfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth
     int		ndepths;
     VisualID	defaultVisual;
     int		rootdepth;
-    miBSFuncPtr	bsFuncs;
-    extern miBSFuncRec	cfbBSFuncRec, cfb16BSFuncRec, cfb32BSFuncRec;
+    extern BSFuncRec	cfbBSFuncRec, cfb16BSFuncRec, cfb32BSFuncRec;
     extern Bool		cfbCloseScreen(), cfb16CloseScreen(), cfb32CloseScreen();
 
     rootdepth = depth;
@@ -179,29 +180,28 @@ mcfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp, depth
     oldDevPrivate = pScreen->devPrivate;
     if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
-			defaultVisual, nvisuals, visuals,
-			(miBSFuncPtr) 0))
+			defaultVisual, nvisuals, visuals))
 	return FALSE;
     switch(bpp)
     {
     case 8:
 	pScreen->CloseScreen = cfbCloseScreen;
-	bsFuncs = &cfbBSFuncRec;
+	pScreen->BackingStoreFuncs = cfbBSFuncRec;
 	break;
     case 16:
 	pScreen->CloseScreen = cfb16CloseScreen;
 	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
-	bsFuncs = &cfb16BSFuncRec;
+	pScreen->BackingStoreFuncs = cfb16BSFuncRec;
 	break;
     case 32:
 	pScreen->CloseScreen = cfb32CloseScreen;
 	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
-	bsFuncs = &cfb32BSFuncRec;
+	pScreen->BackingStoreFuncs = cfb32BSFuncRec;
 	break;
     }
-    miInitializeBackingStore (pScreen, bsFuncs);
+    miInitializeBackingStore (pScreen);
     return TRUE;
 }
 

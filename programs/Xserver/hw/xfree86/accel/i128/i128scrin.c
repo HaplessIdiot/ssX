@@ -44,7 +44,7 @@ Modified for the I128 by Robin Cutshaw (robin@XFree86.Org)
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.4 1996/12/23 06:35:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128scrin.c,v 3.5 1998/01/24 16:56:37 hohndel Exp $ */
 
 
 #include "X.h"
@@ -73,30 +73,28 @@ extern xrgb xf86weight;
 
 static unsigned long cfbGeneration = 0;
 
-miBSFuncRec i128BSFuncRec;
-
-miBSFuncRec i128BSFuncRec8 = {
+BSFuncRec i128BSFuncRec8 = {
     cfbSaveAreas,
     cfbRestoreAreas,
-    0,
-    0,
-    0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
-miBSFuncRec i128BSFuncRec16 = {
+BSFuncRec i128BSFuncRec16 = {
     cfb16SaveAreas,
     cfb16RestoreAreas,
-    0,
-    0,
-    0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
-miBSFuncRec i128BSFuncRec32 = {
+BSFuncRec i128BSFuncRec32 = {
     cfb32SaveAreas,
     cfb32RestoreAreas,
-    0,
-    0,
-    0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
@@ -185,7 +183,7 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
   switch (rootdepth)
     {
     case 8:
-      i128BSFuncRec = i128BSFuncRec8;
+      pScreen->BackingStoreFuncs = i128BSFuncRec8;
       pScreen->GetImage = cfbGetImage;
       pScreen->GetSpans = cfbGetSpans;
       pScreen->PaintWindowBackground = cfbPaintWindow;
@@ -223,7 +221,7 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
       break;
     case 15:
     case 16:
-      i128BSFuncRec = i128BSFuncRec16;
+      pScreen->BackingStoreFuncs = i128BSFuncRec16;
       pScreen->GetImage = cfb16GetImage;
       pScreen->GetSpans = cfb16GetSpans;
       pScreen->PaintWindowBackground = cfb16PaintWindow;
@@ -259,7 +257,7 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	mfbRegisterCopyPlaneProc (pScreen, cfb16CopyPlane);
       break;
     case 24:
-      i128BSFuncRec = i128BSFuncRec32;
+      pScreen->BackingStoreFuncs = i128BSFuncRec32;
       pScreen->GetImage = cfb32GetImage;
       pScreen->GetSpans = cfb32GetSpans;
       pScreen->PaintWindowBackground = cfb32PaintWindow;
@@ -311,19 +309,30 @@ i128ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     }
   Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			 rootdepth, ndepths, depths, defaultVisual,
-			 nvisuals, visuals, &i128BSFuncRec);
+			 nvisuals, visuals);
+  if (Rstatus) {
+	miInitializeBackingStore(pScreen);
+  }
   switch (rootdepth)
     {
+    case 8:
+      pScreen->GetScreenPixmap = cfbGetScreenPixmap;
+      pScreen->SetScreenPixmap = cfbSetScreenPixmap;
+      break;
     case 15:
     case 16:
       pScreen->CreateScreenResources = cfb16CreateScreenResources;
       pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
       pScreen->devPrivate = oldDevPrivate;
+      pScreen->GetScreenPixmap = cfb16GetScreenPixmap;
+      pScreen->SetScreenPixmap = cfb16SetScreenPixmap;
       break;
     case 24:
       pScreen->CreateScreenResources = cfb32CreateScreenResources;
       pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr = pScreen->devPrivate;
       pScreen->devPrivate = oldDevPrivate;
+      pScreen->GetScreenPixmap = cfb32GetScreenPixmap;
+      pScreen->SetScreenPixmap = cfb32SetScreenPixmap;
       break;
     }
 

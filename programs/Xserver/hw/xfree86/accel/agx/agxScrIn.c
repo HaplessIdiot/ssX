@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.9 1996/02/04 08:58:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxScrIn.c,v 3.10 1996/12/23 06:32:57 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -75,12 +75,12 @@ extern RegionPtr miCopyPlane();
 
 static unsigned long cfbGeneration = 0;
 
-miBSFuncRec agxBSFuncRec = {
+BSFuncRec agxBSFuncRec = {
     agxSaveAreas,
     agxRestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
@@ -254,13 +254,18 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     }
     Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
-			defaultVisual, nvisuals, visuals,
-			&agxBSFuncRec);
+			defaultVisual, nvisuals, visuals);
+    if (Rstatus) {
+	pScreen->BackingStoreFuncs = agxBSFuncRec;
+	miInitializeBackingStore(pScreen);
+    }
 #ifdef AGX_32BPP
     if (rootdepth > 16) {
 	pScreen->CreateScreenResources = cfb32CreateScreenResources;
 	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
+	pScreen->GetScreenPixmap = cfb32GetScreenPixmap;
+	pScreen->SetScreenPixmap = cfb32SetScreenPixmap;
     }
     else 
 #endif
@@ -268,7 +273,13 @@ agxScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->CreateScreenResources = cfb16CreateScreenResources;
 	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
+	pScreen->GetScreenPixmap = cfb16GetScreenPixmap;
+	pScreen->SetScreenPixmap = cfb16SetScreenPixmap;
+    }
+    else
+    {
+	pScreen->GetScreenPixmap = cfbGetScreenPixmap;
+	pScreen->SetScreenPixmap = cfbSetScreenPixmap;
     }
     return Rstatus;
-
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcIO.c,v 3.9 1997/03/27 18:39:46 hohndel Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -110,12 +110,12 @@ NeverCalled()
 	abort();
 }
 
-miBSFuncRec ppcBSFuncRec = {
+BSFuncRec ppcBSFuncRec = {
     ppcSaveAreas,
     ppcRestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 /*ARGSUSED*/
@@ -280,7 +280,9 @@ Init16Output( pScreen, pbits, virtx, virty, dpix, dpiy, width )
 
   miScreenInit(pScreen, pbits, virtx, virty, 75, 75, width,
 	VGA_MAXPLANES, NUM_DEPTHS, vgaDepths, defvisual /* See above */,
-	NUM_VISUALS, vgaVisuals, &ppcBSFuncRec);
+	NUM_VISUALS, vgaVisuals);
+  pScreen->BackingStoreFuncs = ppcBSFuncRec;
+  miInitializeBackingStore(pScreen);
 
   /* GJA -- Now we override the supplied default: */
   pScreen -> CreateScreenResources = v16CreateScreenResources;

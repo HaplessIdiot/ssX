@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb32.h,v 3.3 1996/12/23 06:43:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb32.h,v 3.4 1997/01/08 20:34:27 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -789,6 +789,18 @@ extern Bool cfb32ScreenInit(
 extern Bool cfb32CreateScreenResources(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/
+#endif
+);
+
+extern PixmapPtr cfb32GetScreenPixmap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern void cfb32SetScreenPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/
 #endif
 );
 

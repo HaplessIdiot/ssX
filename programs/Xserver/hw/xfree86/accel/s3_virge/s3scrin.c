@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3scrin.c,v 3.3 1996/12/27 07:02:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3scrin.c,v 3.4 1997/06/03 14:11:41 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -76,12 +76,12 @@ extern RegionPtr miCopyPlane();
 
 static unsigned long cfbGeneration = 0;
 
-miBSFuncRec s3BSFuncRec = {
+BSFuncRec s3BSFuncRec = {
     s3SaveAreas,
     s3RestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
@@ -252,23 +252,35 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     }
     Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
-			defaultVisual, nvisuals, visuals,
-			&s3BSFuncRec);
+			defaultVisual, nvisuals, visuals);
+    if (Rstatus) {
+	pScreen->BackingStoreFuncs = s3BSFuncRec;
+	miInitializeBackingStore(pScreen);
+    }
     if (xf86bpp == 32 /*> 24*/) {
 	pScreen->CreateScreenResources = cfb32CreateScreenResources;
 	pScreen->devPrivates[cfb32ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
+	pScreen->GetScreenPixmap = cfb32GetScreenPixmap;
+	pScreen->SetScreenPixmap = cfb32SetScreenPixmap;
     }
     else if (xf86bpp == 24 /*> 16*/) {
 	pScreen->CreateScreenResources = cfb24CreateScreenResources;
 	pScreen->devPrivates[cfb24ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
+	pScreen->GetScreenPixmap = cfb24GetScreenPixmap;
+	pScreen->SetScreenPixmap = cfb24SetScreenPixmap;
     }
     else if (xf86bpp == 16 /*> 8*/) {
 	pScreen->CreateScreenResources = cfb16CreateScreenResources;
 	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
+	pScreen->GetScreenPixmap = cfb16GetScreenPixmap;
+	pScreen->SetScreenPixmap = cfb16SetScreenPixmap;
+    }
+    else {
+	pScreen->GetScreenPixmap = cfbGetScreenPixmap;
+	pScreen->SetScreenPixmap = cfbSetScreenPixmap;
     }
     return Rstatus;
-
 }

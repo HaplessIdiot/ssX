@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb24.h,v 3.2 1996/12/27 07:03:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb24.h,v 3.3 1997/01/08 20:34:26 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -792,6 +792,18 @@ extern Bool cfb24ScreenInit(
 extern Bool cfb24CreateScreenResources(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/
+#endif
+);
+
+extern PixmapPtr cfb24GetScreenPixmap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern void cfb24SetScreenPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/
 #endif
 );
 

@@ -23,6 +23,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* $XFree86: xc/programs/Xserver/hw/svga/svgaFb.c,v 1.0tsi Exp $ */
+
 #include "svga.h"
 #include "cfb.h"
 #include "mi.h"
@@ -38,7 +40,7 @@
  extern void ShmRegisterFbFuncs();
 #endif
 
-extern miBSFuncRec svgaBankBSFuncRec;
+extern BSFuncRec svgaBankBSFuncRec;
 
 static Bool ScreenIsSaved = FALSE;
 static ColormapPtr pInstalledMap;
@@ -318,12 +320,12 @@ svgaSVGAScreenInit(
 		    75, 75,
 		    bytesPerScanLine,
 		    rootdepth, ndepths, depths,
-		    defaultVisual, nvisuals, visuals,
-		    NULL))
+		    defaultVisual, nvisuals, visuals))
     return FALSE;
 
   pScreen->CloseScreen = svgaSVGACloseScreen;
   pScreen->CreateScreenResources = svgaSVGACreateScreenResources;
+  pScreen->BackingStoreFuncs = svgaBankBSFuncRec;
 
   svgaSVPMISetGraphics(pScreen);
 
@@ -341,7 +343,7 @@ svgaSVGAScreenInit(
   ShmRegisterFbFuncs(pScreen);
 #endif
 
-  miInitializeBackingStore(pScreen, &svgaBankBSFuncRec);
+  miInitializeBackingStore(pScreen);
 
   if (!miDCInitialize(pScreen, &svgaScreenFuncsRec))
     return FALSE;

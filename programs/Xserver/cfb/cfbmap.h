@@ -1,6 +1,6 @@
 /*
  * $XConsortium: cfbmap.h,v 1.11 95/06/08 23:20:39 gildea Exp $
- * $XFree86: xc/programs/Xserver/cfb/cfbmap.h,v 3.2 1995/06/14 07:28:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfbmap.h,v 3.3 1996/06/29 09:05:40 dawes Exp $
  *
 Copyright (c) 1991  X Consortium
 
@@ -126,6 +126,7 @@ cfb can not hack PSZ yet
 #define cfbFinishScreenInit NAME(FinishScreenInit)
 #define cfbGCFuncs NAME(GCFuncs)
 #define cfbGetImage NAME(GetImage)
+#define cfbGetScreenPixmap NAME(GetScreenPixmap)
 #define cfbGetSpans NAME(GetSpans)
 #define cfbHorzS NAME(HorzS)
 #define cfbImageGlyphBlt8 NAME(ImageGlyphBlt8)
@@ -152,6 +153,7 @@ cfb can not hack PSZ yet
 #define cfbSegmentSD NAME(SegmentSD)
 #define cfbSegmentSS NAME(SegmentSS)
 #define cfbSetScanline NAME(SetScanline)
+#define cfbSetScreenPixmap NAME(SetScreenPixmap)
 #define cfbSetSpans NAME(SetSpans)
 #define cfbSetupScreen NAME(SetupScreen)
 #define cfbSolidSpansCopy NAME(SolidSpansCopy)

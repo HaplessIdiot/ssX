@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.5 1996/02/04 09:03:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.6 1996/12/23 06:40:09 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -101,12 +101,12 @@ static DepthRec depths[] = {
 
 static unsigned long cfbGeneration = 0;
 
-miBSFuncRec mach8BSFuncRec = {
+BSFuncRec mach8BSFuncRec = {
     mach8SaveAreas,
     mach8RestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
@@ -180,9 +180,13 @@ mach8ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->ResolveColor = cfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
     mfbRegisterCopyPlaneProc (pScreen, miCopyPlane);
-    return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+    if (!miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			8, NUMDEPTHS, depths,
-			visuals[i].vid, NUMVISUALS, visuals,
-			&mach8BSFuncRec);
-
+			visuals[i].vid, NUMVISUALS, visuals))
+	return FALSE;
+    pScreen->BackingStoreFuncs = mach8BSFuncRec;
+    miInitializeBackingStore(pScreen);
+    pScreen->GetScreenPixmap = cfbGetScreenPixmap;
+    pScreen->SetScreenPixmap = cfbSetScreenPixmap;
+    return TRUE;
 }

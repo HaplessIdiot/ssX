@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbmscrinit.c,v 3.0 1996/08/18 01:54:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbmscrinit.c,v 3.1 1998/03/20 21:08:04 hohndel Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -56,6 +56,7 @@ SOFTWARE.
 #include "Xmd.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "windowstr.h"
 #include "resource.h"
 #include "colormap.h"
 #include "ilbm.h"
@@ -75,12 +76,12 @@ int ilbmScreenPrivateIndex;
 
 static unsigned long ilbmGeneration = 0;
 
-miBSFuncRec ilbmBSFuncRec = {
+BSFuncRec ilbmBSFuncRec = {
 	ilbmSaveAreas,
 	ilbmRestoreAreas,
-	(void (*)()) 0,
-	(PixmapPtr (*)()) 0,
-	(PixmapPtr (*)()) 0,
+	(BackingStoreSetClipmaskRgnProcPtr) 0,
+	(BackingStoreGetImagePixmapProcPtr) 0,
+	(BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 Bool
@@ -139,9 +140,10 @@ ilbmAllocatePrivates(pScreen, pWinIndex, pGCIndex)
 		*pGCIndex = ilbmGCPrivateIndex;
 
 	ilbmScreenPrivateIndex = AllocateScreenPrivateIndex();
-	return(AllocateWindowPrivate(pScreen, ilbmWindowPrivateIndex,
-										  sizeof(ilbmPrivWin)) &&
-			 AllocateGCPrivate(pScreen, ilbmGCPrivateIndex, sizeof(ilbmPrivGC)));
+	pScreen->GetWindowPixmap = ilbmGetWindowPixmap;
+	pScreen->SetWindowPixmap = ilbmSetWindowPixmap;
+	return(AllocateWindowPrivate(pScreen, ilbmWindowPrivateIndex, sizeof(ilbmPrivWin)) &&
+	       AllocateGCPrivate(pScreen, ilbmGCPrivateIndex, sizeof(ilbmPrivGC)));
 }
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
@@ -204,17 +206,43 @@ ilbmScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	pScreen->BitmapToRegion = ilbmPixmapToRegion;
 	oldDevPrivate = pScreen->devPrivate;
 	if (!miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, rootdepth,
-							ndepths, depths, defaultVisual, nvisuals, visuals, NULL)) {
+			ndepths, depths, defaultVisual, nvisuals, visuals)) {
 		ErrorF("miScreenInit: FALSE\n");
 		return FALSE;
 	}
 
 	pScreen->CloseScreen = ilbmCloseScreen;
 	pScreen->CreateScreenResources = ilbmCreateScreenResources;
-	miInitializeBackingStore(pScreen, &ilbmBSFuncRec);
+	pScreen->BackingStoreFuncs = ilbmBSFuncRec;
+	miInitializeBackingStore(pScreen);
 
 	pScreen->devPrivates[ilbmScreenPrivateIndex].ptr = pScreen->devPrivate;
 	pScreen->devPrivate = oldDevPrivate;
 
 	return TRUE;
+}
+
+PixmapPtr
+ilbmGetWindowPixmap(pWin)
+    WindowPtr pWin;
+{
+#ifdef PIXMAP_PER_WINDOW
+    return (PixmapPtr)(pWin->devPrivates[frameWindowPrivateIndex].ptr);
+#else
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+
+    return (* pScreen->GetScreenPixmap)(pScreen);
+#endif
+}
+
+void
+ilbmSetWindowPixmap(pWin, pPix)
+    WindowPtr pWin;
+    PixmapPtr pPix;
+{
+#ifdef PIXMAP_PER_WINDOW
+    pWin->devPrivates[frameWindowPrivateIndex].ptr = (pointer)pPix;
+#else
+    (* pWin->drawable.pScreen->SetScreenPixmap)(pPix);
+#endif
 }

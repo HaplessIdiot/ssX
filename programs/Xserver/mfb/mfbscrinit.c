@@ -46,13 +46,14 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mfbscrinit.c,v 5.17 94/04/17 20:28:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mfb/mfbscrinit.c,v 3.2 1997/06/03 14:12:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbscrinit.c,v 3.3 1998/03/20 21:08:18 hohndel Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
 #include "Xmd.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "windowstr.h"
 #include "resource.h"
 #include "colormap.h"
 #include "mfb.h"
@@ -82,12 +83,12 @@ static DepthRec depth = {
     1,		1,		&VID
 };
 
-miBSFuncRec mfbBSFuncRec = {
+BSFuncRec mfbBSFuncRec = {
     mfbSaveAreas,
     mfbRestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 Bool
@@ -110,6 +111,8 @@ mfbAllocatePrivates(pScreen, pWinIndex, pGCIndex)
 	*pWinIndex = mfbWindowPrivateIndex;
     if (pGCIndex)
 	*pGCIndex = mfbGCPrivateIndex;
+    pScreen->GetWindowPixmap = mfbGetWindowPixmap;
+    pScreen->SetWindowPixmap = mfbSetWindowPixmap;
     return (AllocateWindowPrivate(pScreen, mfbWindowPrivateIndex,
 				  sizeof(mfbPrivWin)) &&
 	    AllocateGCPrivate(pScreen, mfbGCPrivateIndex, sizeof(mfbPrivGC)));
@@ -154,6 +157,35 @@ mfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->StoreColors = (void (*)())NoopDDA;
     pScreen->ResolveColor = mfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
-    return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
-			1, 1, &depth, VID, 1, &visual, &mfbBSFuncRec);
+    if (!miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+			1, 1, &depth, VID, 1, &visual))
+	return FALSE;
+    pScreen->BackingStoreFuncs = mfbBSFuncRec;
+    miInitializeBackingStore(pScreen);
+    return TRUE;
+}
+
+PixmapPtr
+mfbGetWindowPixmap(pWin)
+    WindowPtr pWin;
+{
+#ifdef PIXMAP_PER_WINDOW
+    return (PixmapPtr)(pWin->devPrivates[frameWindowPrivateIndex].ptr);
+#else
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+
+    return (* pScreen->GetScreenPixmap)(pScreen);
+#endif
+}
+
+void
+mfbSetWindowPixmap(pWin, pPix)
+    WindowPtr pWin;
+    PixmapPtr pPix;
+{
+#ifdef PIXMAP_PER_WINDOW
+    pWin->devPrivates[frameWindowPrivateIndex].ptr = (pointer)pPix;
+#else
+    (* pWin->drawable.pScreen->SetScreenPixmap)(pPix);
+#endif
 }

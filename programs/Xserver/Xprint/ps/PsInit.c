@@ -48,7 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.4 1996/12/31 07:06:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsInit.c,v 1.5 1998/03/20 21:04:52 hohndel Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -185,7 +185,7 @@ InitializePsDriver(ndx, pScreen, argc, argv)
 	       pScreen->width / (pScreen->mmWidth / 25.40), 
 	       pScreen->height / (pScreen->mmHeight / 25.40),
 	       0, 24, nDepths,
-               depths, visuals[1].vid, nVisuals, visuals, (miBSFuncPtr)0); */
+               depths, visuals[1].vid, nVisuals, visuals); */
 
 /*  THE FOLLOWING CAUSES SERVER DEFAULT VISUAL TO BE 8 BIT  */
   miScreenInit(pScreen, (pointer)0,
@@ -193,7 +193,7 @@ InitializePsDriver(ndx, pScreen, argc, argv)
 	       (int) (pScreen->width / (pScreen->mmWidth / 25.40)), 
 	       (int) (pScreen->height / (pScreen->mmHeight / 25.40)),
 	       0, 8, nDepths,
-               depths, visuals[1].vid, nVisuals, visuals, (miBSFuncPtr)0);
+               depths, visuals[1].vid, nVisuals, visuals);
 
   if( cfbCreateDefColormap(pScreen)==FALSE ) return FALSE;
 

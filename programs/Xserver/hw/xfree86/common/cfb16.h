@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb16.h,v 3.3 1996/12/23 06:43:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb16.h,v 3.4 1997/01/08 20:34:25 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -790,6 +790,18 @@ extern Bool cfb16ScreenInit(
 extern Bool cfb16CreateScreenResources(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/
+#endif
+);
+
+extern PixmapPtr cfb16GetScreenPixmap(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
+extern void cfb16SetScreenPixmap(
+#if NeedFunctionPrototypes
+    PixmapPtr /*pPix*/
 #endif
 );
 

@@ -1,5 +1,5 @@
 /* $XConsortium: miscrinit.c /main/13 1996/08/12 21:51:16 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.1 1996/01/05 13:19:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.2 1996/12/23 07:09:46 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -36,7 +36,6 @@ from the X Consortium.
 #include "mi.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
-#include "mibstore.h"
 #include "dix.h"
 #include "miline.h"
 
@@ -161,16 +160,9 @@ miScreenDevPrivateInit(pScreen, width, pbits)
     return TRUE;
 }
 
-/*
- * If you pass in bsfuncs, then you must preinitialize the missing
- * screen procs before calling miScreenInit, so that the backing store
- * code can correctly wrap them.
- */
-
 Bool
 miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
-	     rootDepth, numDepths, depths, rootVisual, numVisuals, visuals,
-	     bsfuncs)
+	     rootDepth, numDepths, depths, rootVisual, numVisuals, visuals)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bits */
     int xsize, ysize;		/* in pixels */
@@ -182,7 +174,6 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     VisualID rootVisual;	/* root visual */
     int numVisuals;		/* number of visuals supported */
     VisualRec *visuals;		/* supported visuals */
-    miBSFuncPtr	bsfuncs;	/* backing store functions */
 {
     pScreen->width = xsize;
     pScreen->height = ysize;
@@ -251,8 +242,6 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     pScreen->WakeupHandler = (void (*)())NoopDDA;
     pScreen->blockData = (pointer)0;
     pScreen->wakeupData = (pointer)0;
-    if (bsfuncs)
-	miInitializeBackingStore (pScreen, bsfuncs);
     pScreen->MarkWindow = miMarkWindow;
     pScreen->MarkOverlappedWindows = miMarkOverlappedWindows;
     pScreen->ChangeSaveUnder = miChangeSaveUnder;
@@ -302,4 +291,19 @@ miSetZeroLineBias(pScreen, bias)
     }
     if (miZeroLineScreenIndex >= 0)
 	pScreen->devPrivates[miZeroLineScreenIndex].uval = bias;
+}
+
+PixmapPtr
+miGetScreenPixmap(pScreen)
+    ScreenPtr pScreen;
+{
+    return (PixmapPtr)(pScreen->devPrivate);
+}
+
+void
+miSetScreenPixmap(pPix)
+    PixmapPtr pPix;
+{
+    if (pPix)
+	pPix->drawable.pScreen->devPrivate = (pointer)pPix;
 }

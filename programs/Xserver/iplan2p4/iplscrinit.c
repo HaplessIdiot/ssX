@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplscrinit.c,v 3.0 1996/08/18 01:55:06 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -47,12 +47,12 @@ interleaved planes */
 #include "mibstore.h"
 
 
-miBSFuncRec iplBSFuncRec = {
+BSFuncRec iplBSFuncRec = {
     iplSaveAreas,
     iplRestoreAreas,
-    (void (*)()) 0,
-    (PixmapPtr (*)()) 0,
-    (PixmapPtr (*)()) 0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 Bool
@@ -167,19 +167,21 @@ iplFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 #endif
     if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
-			defaultVisual, nvisuals, visuals,
-			(miBSFuncPtr) 0))
+			defaultVisual, nvisuals, visuals))
 	return FALSE;
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = iplCloseScreen;
-    /* init backing store here so we can overwrite CloseScreen without stepping
-     * on the backing store wrapped version */
-    miInitializeBackingStore (pScreen, &iplBSFuncRec);
 #ifdef CFB_NEED_SCREEN_PRIVATE
     pScreen->CreateScreenResources = iplCreateScreenResources;
     pScreen->devPrivates[iplScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
 #endif
+    /* init backing store here so we can overwrite CloseScreen without stepping
+     * on the backing store wrapped version */
+    pScreen->BackingStoreFuncs = iplBSFuncRec;
+    miInitializeBackingStore (pScreen);
+    pScreen->GetScreenPixmap = iplGetScreenPixmap;
+    pScreen->SetScreenPixmap = iplSetScreenPixmap;
     return TRUE;
 }
 
@@ -203,4 +205,29 @@ iplScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     PixmapWidthPaddingInfo[2].padBytesLog2 = 2;
 #endif
     return TRUE;
+}
+
+PixmapPtr
+iplGetScreenPixmap(pScreen)
+    ScreenPtr pScreen;
+{
+#ifdef CFB_NEED_SCREEN_PRIVATE
+    return (PixmapPtr)(pScreen->devPrivates[iplScreenPrivateIndex].ptr);
+#else
+    return (PixmapPtr)(pScreen->devPrivate.ptr);
+#endif
+}
+
+void
+iplSetScreenPixmap(pPix)
+    PixmapPtr pPix;
+{
+#ifdef CFB_NEED_SCREEN_PRIVATE
+    if (pPix)
+	pPix->drawable.pScreen->devPrivates[iplScreenPrivateIndex].ptr =
+	    (pointer)pPix;
+#else
+    if (pPix)
+	pPix->drawable.pScreen->devPrivate.ptr = (pointer)pPix;
+#endif
 }

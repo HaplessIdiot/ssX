@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.61 1998/03/20 21:05:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.62 1998/03/27 23:23:08 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -85,10 +85,10 @@ static int agxValidMode(
 ); 
 
 ScrnInfoRec agxInfoRec = {
+    agxProbe,      	/* Bool (* Probe)() */
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
-    agxProbe,      	/* Bool (* Probe)() */
     agxInit,	        /* Bool (* Init)() */
     agxValidMode,       /* int (* ValidMode)() */
     agxEnterLeaveVT,    /* void (* EnterLeaveVT)() */

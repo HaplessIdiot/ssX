@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/ilbm/ilbm.h,v 3.0 1996/08/18 01:53:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/ilbm/ilbm.h,v 3.1 1998/03/20 21:08:00 hohndel Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -746,6 +746,20 @@ extern Bool ilbmScreenInit(
 	int /*width*/
 #endif
 );
+
+extern PixmapPtr ilbmGetWindowPixmap(
+#if NeedFunctionPrototypes
+	WindowPtr /*pWin*/
+#endif
+);
+
+extern void ilbmSetWindowPixmap(
+#if NeedFunctionPrototypes
+	WindowPtr /*pWin*/,
+	PixmapPtr /*pPix*/
+#endif
+);
+
 /* ilbmseg.c */
 
 extern void ilbmSegmentSS(

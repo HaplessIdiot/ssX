@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.22 1998/01/24 16:58:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.23 1998/03/20 21:07:29 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -149,12 +149,12 @@ GetSpansWrapper(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 }
 
 /* We need to define this here instead of use the cfb one. */
-static miBSFuncRec xf86BSFuncRec = {
+static BSFuncRec xf86BSFuncRec = {
     cfbSaveAreas,
     cfbRestoreAreas,
-    0,
-    0,
-    0,
+    (BackingStoreSetClipmaskRgnProcPtr) 0,
+    (BackingStoreGetImagePixmapProcPtr) 0,
+    (BackingStoreGetSpansPixmapProcPtr) 0,
 };
 
 static Bool
@@ -268,8 +268,7 @@ vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 #endif
     if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
-			defaultVisual, nvisuals, visuals,
-			(miBSFuncPtr) 0))
+			defaultVisual, nvisuals, visuals))
 	return FALSE;
     /* overwrite miCloseScreen with our own */
     pScreen->CloseScreen = cfbCloseScreen;
@@ -279,12 +278,16 @@ vgaFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
      */
     xf86BSFuncRec.SaveAreas = xf86GCInfoRec.SaveAreasWrapper;
     xf86BSFuncRec.RestoreAreas = xf86GCInfoRec.RestoreAreasWrapper;
-    miInitializeBackingStore (pScreen, &xf86BSFuncRec);
 #ifdef CFB_NEED_SCREEN_PRIVATE
     pScreen->CreateScreenResources = cfbCreateScreenResources;
     pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
 #endif
+    /* "Last call for boarding!  Last call." :-) */
+    pScreen->BackingStoreFuncs = xf86BSFuncRec;
+    miInitializeBackingStore (pScreen);
+    pScreen->GetScreenPixmap = cfbGetScreenPixmap;
+    pScreen->SetScreenPixmap = cfbSetScreenPixmap;
 
 #ifdef PIXPRIV
     if (!AllocatePixmapPrivate(pScreen, xf86PixmapIndex,

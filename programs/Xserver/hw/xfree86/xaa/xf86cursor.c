@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.8 1998/03/20 21:07:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.9 1998/04/05 00:46:03 robin Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -142,8 +142,6 @@ Bool XAACursorInit(char *pm, ScreenPtr pScr)
     CursorHotY = 0;
 
     if (CursorGeneration != serverGeneration) {
-	miDCInitialize (pScr, &xf86PointerScreenFuncs);
-
     	if (HARDWARE_CURSOR_INT64_BIT_FORMAT & XAACursorInfoRec.Flags) {
 		if (!(miPointerInitialize(pScr, &XAAInt64PointerSpriteFuncs,
 			&xf86PointerScreenFuncs, FALSE)))

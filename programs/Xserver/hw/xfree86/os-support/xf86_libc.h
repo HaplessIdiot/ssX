@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.16 1997/11/22 06:50:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.17 1998/03/20 21:07:05 hohndel Exp $ */
 
 
 
@@ -33,7 +33,7 @@
  * structure, even if some source file might reveal the existence of
  * such a structure.
  */
-typedef pointer XF86FILE;	/* opaque FILE* replacement */
+typedef void XF86FILE;	/* opaque FILE replacement */
 extern  XF86FILE* xf86stdin;
 extern  XF86FILE* xf86stdout;
 extern  XF86FILE* xf86stderr;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/mfbmap.h,v 3.3 1997/03/27 18:39:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/mfbmap.h,v 3.4 1997/04/12 13:45:43 hohndel Exp $ */
 /* mfbmap.h */
 
 
@@ -47,6 +47,7 @@
 #define mfbGCPrivateIndex  mono_mfbGCPrivateIndex
 #define mfbGetImage  mono_mfbGetImage
 #define mfbGetSpans  mono_mfbGetSpans
+#define mfbGetWindowPixmap  mono_mfbGetWindowPixmap
 #define mfbHorzS  mono_mfbHorzS
 #define mfbImageGlyphBltBlack  mono_mfbImageGlyphBltBlack
 #define mfbImageGlyphBltWhite  mono_mfbImageGlyphBltWhite
@@ -81,6 +82,7 @@
 #define mfbSegmentSS  mono_mfbSegmentSS
 #define mfbSetScanline  mono_mfbSetScanline
 #define mfbSetSpans  mono_mfbSetSpans
+#define mfbSetWindowPixmap  mono_mfbSetWindowPixmap
 #define mfbSolidBlackArea  mono_mfbSolidBlackArea
 #define mfbSolidInvertArea  mono_mfbSolidInvertArea
 #define mfbSolidPP  mono_mfbSolidPP
