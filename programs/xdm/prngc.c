@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/xdm/prngc.c,v 1.1 2003/09/17 05:48:32 herrb Exp $ */
-/* Code grabbed from OpenSSH - portable version */
+/* $XFree86: xc/programs/xdm/prngc.c,v 1.2 2003/09/24 21:35:05 herrb Exp $ */
 /*
  * Copyright (c) 1995,1999 Theo de Raadt.  All rights reserved.
  * Copyright (c) 2001-2002 Damien Miller.  All rights reserved.
@@ -24,7 +23,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 
 #include <sys/types.h>
 #include <sys/socket.h>
