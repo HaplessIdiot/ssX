@@ -250,6 +250,27 @@ typedef volatile struct
         unsigned point;         /* y_x S16_S16 in pixels            4-   7*/
     } ColorPolyLin[16];         /* end of aliased methods in array      -067f*/
 } RivaLine;
+/*
+ * 2D/3D surfaces
+ */
+typedef volatile struct
+{
+    unsigned reserved00[4];
+    unsigned short FifoFree;
+    unsigned short Nop;
+    unsigned reserved01[0x0BE];
+    unsigned Offset;
+} RivaSurface;
+typedef volatile struct
+{
+    unsigned reserved00[4];
+    unsigned short FifoFree;
+    unsigned short Nop;
+    unsigned reserved01[0x0BD];
+    unsigned Pitch;
+    unsigned RenderBufferOffset;
+    unsigned ZBufferOffset;
+} RivaSurface3D;
     
 /***************************************************************************\
 *                                                                           *
@@ -366,7 +387,7 @@ int RivaGetConfig(RIVA_HW_INST *);
 #define RIVA_FIFO_FREE(hwinst,hwptr,cnt)                           \
 {                                                                  \
    while ((hwinst).FifoFreeCount < (cnt))                          \
-	(hwinst).FifoFreeCount = (hwinst).hwptr->FifoFree >> 2;    \
+	(hwinst).FifoFreeCount = (hwinst).hwptr->FifoFree >> 2;        \
    (hwinst).FifoFreeCount -= (cnt);                                \
 }
 #endif /* __RIVA_HW_H__ */

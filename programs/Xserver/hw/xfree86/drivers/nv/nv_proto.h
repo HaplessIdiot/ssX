@@ -22,6 +22,7 @@ void    RivaEnterLeave(ScrnInfoPtr pScrn, Bool enter);
 void    NV1Setup(ScrnInfoPtr pScrn);
 void    NV3Setup(ScrnInfoPtr pScrn);
 void    NV4Setup(ScrnInfoPtr pScrn);
+void    NV10Setup(ScrnInfoPtr pScrn);
 
 /* in nv_cursor.c */
 Bool    NVCursorInit(ScreenPtr pScreen);

@@ -199,7 +199,7 @@ extern volatile unsigned  *nvPNVMPort;    /* Priviled Bus */
 extern volatile unsigned  *dumb;          /* FrameBuffer - hack!!!! */
 
 
-typedef enum {NV1,NV3,NV4,NumNVChips} NVChipType;
+typedef enum {NV1,NV3,NV4,NV10,NumNVChips} NVChipType;
 
 NVChipType GetChipType(void);
 

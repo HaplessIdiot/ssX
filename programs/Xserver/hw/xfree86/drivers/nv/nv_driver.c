@@ -85,15 +85,17 @@ DriverRec NV = {
         0
 };
 
-
 /* Supported chipsets */
 static SymTabRec NVChipsets[] = {
-    { NV_CHIP_RIVA128, "RIVA128" },
-    { NV_CHIP_TNT,     "RIVATNT" },
-    { NV_CHIP_TNT2,    "RIVATNT2" },
-    { NV_CHIP_UTNT2,   "RIVATNT2 (Ultra)" },
-    { NV_CHIP_VTNT2,   "RIVATNT2 (Vanta)" },
-    { NV_CHIP_ITNT2,   "RIVATNT2 (Integrated)" },
+    { NV_CHIP_RIVA128,    "RIVA128" },
+    { NV_CHIP_TNT,        "RIVATNT" },
+    { NV_CHIP_TNT2,       "RIVATNT2" },
+    { NV_CHIP_UTNT2,      "RIVATNT2 (Ultra)" },
+    { NV_CHIP_VTNT2,      "RIVATNT2 (Vanta)" },
+    { NV_CHIP_ITNT2,      "RIVATNT2 (Integrated)" },
+    { NV_CHIP_GEFORCE256, "GeForce 256" },
+    { NV_CHIP_GEFORCEDDR, "GeForce DDR" },
+    { NV_CHIP_QUADRO,     "Quadro" },
     {-1,                        NULL }
 };
 
@@ -103,7 +105,10 @@ static PciChipsets NVPciChipsets[] = {
     { NV_CHIP_TNT2,             NV_CHIP_TNT2,           RES_SHARED_VGA },
     { NV_CHIP_UTNT2,            NV_CHIP_UTNT2,          RES_SHARED_VGA },
     { NV_CHIP_VTNT2,            NV_CHIP_VTNT2,          RES_SHARED_VGA },
-    { NV_CHIP_ITNT2,            NV_CHIP_ITNT2,          RES_SHARED_VGA },    
+    { NV_CHIP_ITNT2,            NV_CHIP_ITNT2,          RES_SHARED_VGA },
+    { NV_CHIP_GEFORCE256,       NV_CHIP_GEFORCE256,     RES_SHARED_VGA },
+    { NV_CHIP_GEFORCEDDR,       NV_CHIP_GEFORCEDDR,     RES_SHARED_VGA },
+    { NV_CHIP_QUADRO,           NV_CHIP_QUADRO,         RES_SHARED_VGA },
     { -1,                       -1,                     RES_UNDEFINED }
 };
 
@@ -932,6 +937,12 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         case NV_CHIP_ITNT2:
             NV4Setup(pScrn);
             break;
+
+        case NV_CHIP_GEFORCE256:
+        case NV_CHIP_GEFORCEDDR:
+        case NV_CHIP_QUADRO:
+            NV10Setup(pScrn);
+            break;
     }
 
     /*
@@ -977,10 +988,11 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Remove reserved memory from end of buffer */
     switch( pNv->riva.Architecture ) {
-    case 3:
+    case 0x03:
       pNv->FbUsableSize -= 32 * 1024;
       break;
-    case 4:
+    case 0x04:
+    case 0x10:
       pNv->FbUsableSize -= 128 * 1024;
       break;
     }

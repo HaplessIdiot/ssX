@@ -24,15 +24,18 @@ are supported.
 The
 .B nv
 driver supports PCI and AGP video cards based on the following NVIDIA chips:
-.TP 12
+.TP 22
 .B RIVA 128
 NV3
-.TP 12
+.TP 22
 .B RIVA TNT
 NV4
-.TP 12
+.TP 22
 .B RIVA TNT2
 NV5
+.TP 22
+.B GeForce 256, QUADRO 
+NV10
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this

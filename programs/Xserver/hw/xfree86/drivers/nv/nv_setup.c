@@ -173,4 +173,25 @@ NV4Setup(ScrnInfoPtr pScrn)
 
     NVCommonSetup(pScrn);
 }
+void
+NV10Setup(ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    CARD32 regBase = pNv->IOAddress;
+    int mmioFlags;
+
+    DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NV10Setup\n"));
+
+    pNv->riva.Architecture = 0x10;
+    /*
+     * Map chip-specific memory-mapped registers. This MUST be done in the OS specific driver code.
+     */
+    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
+    pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
+                                     regBase+0x00710000, 0x00010000);
+    pNv->riva.PCRTC  = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
+                                     regBase+0x00600000, 0x00001000);
+
+    NVCommonSetup(pScrn);
+}
 
