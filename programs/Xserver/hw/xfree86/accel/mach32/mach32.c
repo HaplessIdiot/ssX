@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.30 1995/01/28 16:58:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.31 1995/02/12 02:37:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -230,8 +230,8 @@ char	*mach32ramdac_names[] = {
 	"Bt47[68]/INMOS17[68]",
 	"AT&T20C49[01]/Bt48[12]/IMS-G174/MU9C{1880,4910}/SC1502[56]",
 	"ATI-68860",
-	"unknown",
-	"unknown",
+	"STG1700 (or similar)",
+	"SC15021 (or similar)",
 };
 
 

@@ -1,5 +1,13 @@
-XFree86 3.1.1a (13 February 1995)
-  1.
+XFree86 3.1.1a (12 February 1995)
+  8. VGAHELP X server extension for tuning video modes (Kaleb Keithley).
+  7. Fix libfont problem that can cause xfs to get into a loop (Jason Venner).
+  6. Fix problem with TekHVC colours (Kaz Sasayama).
+  5. Fix merge problems in hw/sun.
+  4. Fix line clipping problem in Mach32 server (can affect font cache).
+  3. Fix font cache problem on 2MB Mach32 cards.
+  2. Add detection of Trident GUI9440 to SuperProbe (untested).
+  1. Fix some ISC problems (Michael Rohleder).
+
 
 XFree86 3.1.1 (30 January 1995)
 265. --- Code freeze ---
