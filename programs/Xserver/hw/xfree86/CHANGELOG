@@ -1,4 +1,5 @@
 XFree86 4.0.1i (xx December 2000)
+1098. Fix Cyber9397/DVD acceleration problem (Alan Hourihane).
 1097. Resync with the DRI CVS trunk.
 1096. Fix alot of Rage 128 Xv bugs (Mark Vojkovich).
 1095. Fix XKB symbols for Swedish Macintosh keyboards (#4337, Olaf Hering).
@@ -11898,4 +11899,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1446 2000/12/05 18:58:20 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1447 2000/12/05 21:18:35 dawes Exp $

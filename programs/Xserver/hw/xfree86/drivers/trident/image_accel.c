@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.14 1999/10/13 20:02:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.16 2000/11/03 18:46:13 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -109,18 +109,10 @@ ImageInitializeAccelerator(ScrnInfoPtr pScrn)
     }
     IMAGE_OUT(0x2120, 0x10000000);
     IMAGE_OUT(0x2130, 2047 << 16 | 2047);
-    IMAGE_OUT(0x2120, 0x20000000);
     IMAGE_OUT(0x2120, 0x40000000 | pTrident->EngineOperation);
-    IMAGE_OUT(0x2120, 0x50000000);
     IMAGE_OUT(0x2120, 0x60000000 |pScrn->displayWidth<<16 |pScrn->displayWidth);
     IMAGE_OUT(0x2120, 0x70000000);
     IMAGE_OUT(0x2120, 0x80000000);
-    IMAGE_OUT(0x2120, 0xA0000000);
-    IMAGE_OUT(0x2120, 0xB0000000);
-    IMAGE_OUT(0x2120, 0xD0000000);
-    IMAGE_OUT(0x2120, 0xE0000000);
-    IMAGE_OUT(0x2130, 0x00000000);
-    IMAGE_OUT(0x2120, 0xF0000000);
     IMAGE_OUT(0x2144, 0x00000000);
     IMAGE_OUT(0x2148, 0x00000000);
     IMAGE_OUT(0x2150, 0x00000000);
@@ -255,7 +247,7 @@ ImageSync(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int busy;
-    int cnt = 5000000;
+    int cnt = 10000000;
 
     if (pTrident->Clipping) ImageDisableClipping(pScrn);
     if (pTrident->DstEnable) {
