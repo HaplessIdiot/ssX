@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.14 2001/02/15 19:37:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.15 2001/03/25 05:32:13 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -34,7 +34,8 @@ int
 setup_int(xf86Int10InfoPtr pInt)
 {
     if (pInt != Int10Current) {
-	MapCurrentInt10(pInt);
+	if (!MapCurrentInt10(pInt))
+	    return -1;
 	Int10Current = pInt;
     }
     X86_EAX = (CARD32) pInt->ax;

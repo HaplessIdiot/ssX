@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86x86emu.c,v 1.9 2000/12/06 15:35:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86x86emu.c,v 1.10 2001/01/06 20:19:13 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -31,6 +31,9 @@ void
 xf86ExecX86int10(xf86Int10InfoPtr pInt)
 {
     int sig = setup_int(pInt);
+
+    if (sig < 0)
+	return;
 
     if (int_handler(pInt)) {
 	X86EMU_exec();

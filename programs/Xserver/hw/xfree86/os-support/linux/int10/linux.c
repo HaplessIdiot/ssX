@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.21 2001/02/15 19:46:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.22 2001/03/03 23:54:13 tsi Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -24,6 +24,7 @@
 #endif
 #define ALLOC_ENTRIES(x) ((V_RAM / x) - 1)
 #define REG pInt
+#define SHMERRORPTR (pointer)(-1)
 
 static int counter = 0;
 
@@ -63,8 +64,8 @@ xf86InitInt10(int entityIndex)
     static void* sysMem = NULL;
     int low_mem;
     int high_mem;
-    char *base;
-    char *base_high;
+    char *base = SHMERRORPTR;
+    char *base_high = SHMERRORPTR;
     int pagesize, cs;
     legacyVGARec vga;
 
@@ -139,8 +140,10 @@ xf86InitInt10(int entityIndex)
 
     ((linuxInt10Priv*)pInt->private)->lowMem = low_mem;
     base = shmat(low_mem, 0, 0);
+    if (base == SHMERRORPTR) goto error4;
     ((linuxInt10Priv *)pInt->private)->base = base;
     base_high = shmat(high_mem, 0, 0);
+    if (base_high == SHMERRORPTR) goto error4;
     ((linuxInt10Priv*)pInt->private)->base_high = base_high;
 
     MapCurrentInt10(pInt);
@@ -233,32 +236,45 @@ xf86InitInt10(int entityIndex)
 
     return pInt;
 
-    error3:
+error4:
+    xf86DrvMsg(screen, X_ERROR, "shmat() call retruned errno %d\n", errno);
+error3:
     shmdt(base_high);
     shmdt(base);
     shmdt(0);
     shmdt((char*)HIGH_MEM);
     shmctl(low_mem, IPC_RMID, NULL);
     Int10Current = NULL;
-    error2:
+error2:
     shmctl(high_mem, IPC_RMID,NULL);
-    error1:
+error1:
     xfree(((linuxInt10Priv*)pInt->private)->alloc);
     xfree(pInt->private);
- error0:
+error0:
     xfree(pInt);
     return NULL;
 }
 
-void
+Bool
 MapCurrentInt10(xf86Int10InfoPtr pInt)
 {
+    pointer addr;
+
     if (Int10Current) {
 	shmdt(0);
 	shmdt((char*)HIGH_MEM);
     }
-    shmat(((linuxInt10Priv*)pInt->private)->lowMem, (char*)1, SHM_RND);
-    shmat(((linuxInt10Priv*)pInt->private)->highMem, (char*)HIGH_MEM, 0);
+    addr = shmat(((linuxInt10Priv*)pInt->private)->lowMem, (char*)1, SHM_RND);
+    if (addr == SHMERRORPTR) {
+	xf86DrvMsg(pInt->scrnIndex, X_ERROR, "Cannot shmat() low memory\n");
+	return FALSE;
+    }
+    addr = shmat(((linuxInt10Priv*)pInt->private)->highMem, (char*)HIGH_MEM, 0);
+    if (addr == SHMERRORPTR) {
+	xf86DrvMsg(pInt->scrnIndex, X_ERROR, "Cannot shmat() high memory\n");
+	return FALSE;
+    }
+    return TRUE;
 }
 
 void

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.17 2001/02/16 23:42:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.18 2001/04/09 09:38:58 alanh Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -261,10 +261,11 @@ UnmapVRam(xf86Int10InfoPtr pInt)
     xf86UnMapVidMem(screen, INTPriv(pInt)->vRam, size);
 }
 
-void
+Bool
 MapCurrentInt10(xf86Int10InfoPtr pInt)
 {
-  /* nothing to do here */
+    /* nothing to do here */
+    return TRUE;
 }
 
 void

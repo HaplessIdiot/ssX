@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.18 2001/02/16 10:04:31 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.19 2001/03/03 22:46:32 tsi Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -101,7 +101,7 @@ void xf86ExecX86int10(xf86Int10InfoPtr pInt);
 #define MEM_WL(name, addr, val) (*name->mem->wl)(name, addr, val)
 
 /* OS dependent functions */
-void MapCurrentInt10(xf86Int10InfoPtr pInt);
+Bool MapCurrentInt10(xf86Int10InfoPtr pInt);
 /* x86 executor related functions */
 Bool xf86Int10ExecSetup(xf86Int10InfoPtr pInt);
 
