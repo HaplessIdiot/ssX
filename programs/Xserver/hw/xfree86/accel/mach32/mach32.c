@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.67 1997/02/24 17:46:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.68 1997/02/25 14:20:11 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -51,6 +51,7 @@
 #include "xf86Priv.h"
 #include "xf86Procs.h"
 #include "xf86_HWlib.h"
+#include "xf86Version.h"
 #include "mach32.h"
 #include "regmach32.h"
 
@@ -96,6 +97,19 @@ static int mach32ValidMode(
 int mach32MaxClock = MAX_MACH32_CLOCK;
 int mach32MaxTlc34075Clock = MAX_MACH32_TLC34075_CLOCK;
 int mach32Max16bppClock = MAX_MACH32_16BPP_CLOCK;
+
+ScrnInfoPtr xf86Screens[] =
+{
+  &mach32InfoRec,
+};
+
+int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
+
+int xf86ScreenNames[] =
+{
+  ACCEL,
+  -1
+};
 
 int mach32ValidTokens[] =
 {
@@ -192,6 +206,42 @@ ScrnInfoRec *
 ServerInit()
 {
 return &mach32InfoRec;
+}
+
+XF86ModuleVersionInfo mach32VersRec =
+{
+        "libmach32.a",
+        "The XFree86 Project",
+        MODINFOSTRING1,
+        MODINFOSTRING2,
+        XF86_VERSION_CURRENT,
+        0x00010001,
+        {0,0,0,0}       /* signature, to be patched into the file by a tool */
+};
+
+void
+ModuleInit(data,magic)
+    pointer   * data;
+    INT32     * magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+        /* MAGIC_VERSION must be first in ModuleInit */
+    case 0:
+        * data = (pointer) &mach32VersRec;
+        * magic= MAGIC_VERSION;
+        break;
+    case 1:
+        * data = (pointer) &mach32InfoRec;
+        * magic= MAGIC_ADD_VIDEO_CHIP_REC;
+        break;
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
 }
 
 short mach32alu[16] = {

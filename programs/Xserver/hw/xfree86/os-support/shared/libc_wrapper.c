@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.11 1997/02/28 12:58:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.12 1997/03/03 10:19:29 hohndel Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -39,7 +39,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
-#if !defined (i386) || !defined (SVR4)
+#if (!defined (i386) || !defined (SVR4)) && !defined(ISC)
 #include <stdlib.h>
 #endif
 #define NO_OSLIB_PROTOTYPES

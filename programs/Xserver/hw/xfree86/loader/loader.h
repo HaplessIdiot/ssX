@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.4 1997/02/23 09:25:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.5 1997/02/24 17:46:59 hohndel Exp $ */
 
 
 
@@ -94,7 +94,7 @@ typedef struct _loader_funcs {
 	);
 	int (*CheckForUnresolved)(
 #if NeedFunctionPrototypes
-	void
+	int
 #endif
 	);
 	void (*LoaderUnload)(
@@ -156,7 +156,15 @@ LoaderHashFindNearest(
 int
 #endif
 );
-
+int 
+_LoaderHandleUnresolved(
+#if NeedFunctionPrototypes
+char *,
+char *,
+int
+#endif
+);
+ 
 /*
  * File interface functions
  */
@@ -215,7 +223,7 @@ void
 );
 int COFF2CheckForUnresolved(
 #if NeedFunctionPrototypes
-void
+int
 #endif
 );
 void COFF2UnloadModule(
@@ -250,7 +258,7 @@ void
 );
 int ELFCheckForUnresolved(
 #if NeedFunctionPrototypes
-void
+int
 #endif
 );
 void ELFUnloadModule(
@@ -276,7 +284,7 @@ void
 );
 int AOUTCheckForUnresolved(
 #if NeedFunctionPrototypes
-void
+int
 #endif
 );
 void AOUTUnloadModule(

@@ -56,7 +56,7 @@ void
 );
 int LoaderCheckUnresolved(
 #if NeedFunctionPrototypes
-void
+int
 #endif
 );
 int LoaderDefaultFunc(

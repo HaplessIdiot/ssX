@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.3 1997/02/23 09:25:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.5 1997/02/24 17:46:57 hohndel Exp $ */
 
 
 
@@ -641,11 +641,13 @@ AOUTResolveSymbols(void)
 } /* AOUTResolveSymbols */
 
 int
-AOUTCheckForUnresolved(void)
+AOUTCheckForUnresolved(color_depth)
+int color_depth;
 {
     int symnum;
     AOUT_RELOC *crel = listResolve;
     extern int LoaderDefaultFunc();
+    int fatalsym = 0, flag;
 
 #ifdef AOUTDEBUG
     AOUTDEBUG("AOUTCheckForUnResolved()\n");
@@ -663,14 +665,12 @@ AOUTCheckForUnresolved(void)
 			  crel->rel->r_pcrel);
 	}
 	symnum = crel->rel->r_symbolnum;
-	if (xf86ShowUnresolved) {
-	    ErrorF("Unresolved Symbol %s from %s\n",
-		   AOUTGetSymbolName(crel->file, crel->file->symtab + symnum),
-		   _LoaderHandleToName(crel->file->handle));
-	}
+        flag = _LoaderHandleUnresolved(AOUTGetSymbolName(crel->file, crel->file->symtab + symnum),
+		   _LoaderHandleToName(crel->file->handle), color_depth);
+        if (flag) fatalsym = 1;
 	crel = crel->next;
     }
-    return 1;
+    return fatalsym;
 }
 
 void

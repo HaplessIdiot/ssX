@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.8 1997/02/25 14:21:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.9 1997/02/28 13:32:25 hohndel Exp $ */
 
 
 
@@ -43,6 +43,8 @@
 #include "os.h"
 #include "sym.h"
 #include "loader.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 
 /*
 #define DEBUG
@@ -73,13 +75,20 @@ dummy()
 return;
 }
 
+int 
+dummy0(dum)
+int dum;
+{
+return 0;
+}
+
 /*
  * Array containing entry points for different formats.
  */
 
 static loader_funcs funcs[] = {
 	/* LD_ARCHIVE */
-	{ARCHIVELoadModule,dummy,(int(*)())dummy,dummy},
+	{ARCHIVELoadModule,dummy,(int(*)())dummy0,dummy},
 	/* LD_ELFOBJECT */
 	{ELFLoadModule,ELFResolveSymbols,ELFCheckForUnresolved,ELFUnloadModule},
 	/* LD_COFFOBJECT */
@@ -311,6 +320,63 @@ int	handle;
     return lastitem->name;
 
   return 0;
+}
+
+/* 
+ * _LoaderHandleUnresolved() decides what to do with an unresolved
+ * symbol. Right now, it will ignore cfb* symbols whose color depth
+ * does not match that of the current server. This has to be checked for
+ * the vga16, and xaa servers. Other unresolved will 
+ * always be printed out. 
+ */
+
+int
+_LoaderHandleUnresolved(symbol, module, color_depth)
+char *symbol;
+char *module;
+int color_depth;
+{
+int fatalsym = 0;
+
+     switch (color_depth){
+          case 4:  /* Don't know how to handle yet */
+	       break;
+          case 8:
+	       if (!strncmp(symbol,"cfb16", 5)) break;
+	       if (!strncmp(symbol,"cfb24", 5)) break;
+	       if (!strncmp(symbol,"cfb32", 5)) break;
+	       ErrorF("Symbol %s from module %s is unresolved!\n",
+	           symbol, module);
+	       fatalsym = 1;
+	       break;
+	  case 15:
+          case 16:
+	       if (!strncmp(symbol,"cfb24", 5)) break;
+	       if (!strncmp(symbol,"cfb32", 5)) break;
+	       ErrorF("Symbol %s from module %s is unresolved!\n",
+	           symbol, module);
+	       fatalsym = 1;
+	       break;
+          case 24:
+	       if (!strncmp(symbol,"cfb16", 5)) break;
+	       if (!strncmp(symbol,"cfb32", 5)) break;
+	       ErrorF("Symbol %s from module %s is unresolved!\n",
+	           symbol, module);
+	       fatalsym = 1;
+	       break;
+	  case 32:
+	       if (!strncmp(symbol,"cfb16", 5)) break;
+	       if (!strncmp(symbol,"cfb24", 5)) break;
+	       ErrorF("Symbol %s from module %s is unresolved!\n",
+	           symbol, module);
+	       fatalsym = 1;
+	       break;
+	  }
+     if (xf86ShowUnresolved){
+          ErrorF("Symbol %s from module %s is unresolved!\n",
+	       symbol, module);
+          }
+return(fatalsym);
 }
 
 /*
@@ -562,14 +628,15 @@ LoaderResolveSymbols( )
 }
 
 int
-LoaderCheckUnresolved( )
+LoaderCheckUnresolved( color_depth )
+int color_depth;
 {
   int i,ret=0;
 
   LoaderResolveSymbols();
     
   for(i=0;i<numloaders;i++)
-	if( funcs[i].CheckForUnresolved() )
+	if( funcs[i].CheckForUnresolved( color_depth ) )
 		ret=1;
 
   return ret;
@@ -620,3 +687,4 @@ ErrorF("Duplicate symbol %s in %s\n", symbol, listHead->name );
 ErrorF("Also defined in %s\n", _LoaderHandleToName(handle) );
 FatalError("\n");
 }
+

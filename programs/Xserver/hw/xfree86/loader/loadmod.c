@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.6 1997/02/27 13:58:45 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.7 1997/02/28 13:32:27 hohndel Exp $ */
 
 
 
@@ -163,7 +163,7 @@ LoadModule(module,path)
 	char	* path_elem;
 	char	* p;
 
-	keep = dir_elem = (char *) xcalloc(1, strlen(path) + 1);
+	keep = dir_elem = (char *) xcalloc(1, strlen(path) + 2);
 	path_elem = (char *) xcalloc(1, strlen(path) + 2);
 	*dir_elem = ',';
 	strcpy(dir_elem+1, path);
