@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.38 1999/06/12 07:18:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.39 1999/06/12 14:15:35 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -117,6 +117,7 @@ typedef struct {
     CARD32		IOAddress;
     CARD32		FbAddress;
     CARD32		ILOADAddress;
+    int			FbBaseReg;
     CARD32		BiosAddress;
     MessageType		BiosFrom;
     unsigned char *     IOBase;

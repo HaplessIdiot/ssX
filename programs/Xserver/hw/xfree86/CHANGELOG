@@ -1,4 +1,8 @@
 XFree86 3.9Pr (12 June 1999)
+2742. Change the semantics of xf86ReadPciBIOS() to allow it to temporarily
+      map an unmapped BIOS at the address assigned to another of the card's
+      base address registers, and modify the MGA driver to make use of this
+      (David Dawes).
 2741. Add some functions to the common layer to allow drivers to register
       input handling functions, and modify the pm2_video code to make use of
       this instead of the XInput code (David Dawes).
@@ -8162,4 +8166,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.772 1999/06/12 15:36:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.773 1999/06/13 05:18:38 dawes Exp $

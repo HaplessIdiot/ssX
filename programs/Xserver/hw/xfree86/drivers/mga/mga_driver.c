@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.99 1999/06/12 14:15:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.100 1999/06/12 15:37:05 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -593,7 +593,7 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	MGAPtr pMga;
 	MGABiosInfo *pBios;
 	MGABios2Info *pBios2;
-	Bool pciBIOS = FALSE;
+	Bool pciBIOS = TRUE;
 	
 	pMga = MGAPTR(pScrn);
 	pBios = &pMga->Bios;
@@ -604,14 +604,14 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	 * space.  If it was given in the config file, try to guess when it
 	 * looks like it might be controlled by the PCI config space.
 	 */
-	if (pMga->BiosFrom == X_PROBED)
-	    pciBIOS = TRUE;
-	else if (pMga->BiosFrom == X_CONFIG && pMga->BiosAddress > 0x100000)
+	if (pMga->BiosFrom == X_DEFAULT)
+	    pciBIOS = FALSE;
+	else if (pMga->BiosFrom == X_CONFIG && pMga->BiosAddress < 0x100000)
 	    pciBIOS = TRUE;
 
 #define MGADoBIOSRead(offset, buf, len) \
     (pciBIOS ? \
-      xf86ReadPciBIOS(pMga->BiosAddress, offset, pMga->PciTag, buf, len) : \
+      xf86ReadPciBIOS(offset, pMga->PciTag, pMga->FbBaseReg, buf, len) : \
       xf86ReadBIOS(pMga->BiosAddress, offset, buf, len))
 	
 	MGADoBIOSRead(0, tmp, sizeof( tmp ));
@@ -631,8 +631,8 @@ MGAReadBios(ScrnInfoPtr pScrn)
 
 	/* Let the world know what we are up to */
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		   "Video BIOS info block at 0x%08lX\n",
-		   (long)(pMga->BiosAddress + offset));
+		   "Video BIOS info block at offset 0x%05lX\n",
+		   (long)(offset));
 
 	/* Copy the info block */
 	switch (pMga->Chipset){
@@ -1335,6 +1335,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	/* details: mgabase2 sdk pp 4-12 */
 	int i = ((pMga->Chipset == PCI_CHIP_MGA1064 && pMga->ChipRev < 3) ||
 		    pMga->Chipset == PCI_CHIP_MGA2064) ? 1 : 0;
+	pMga->FbBaseReg = i;
 	if (pMga->PciInfo->memBase[i] != 0) {
 	    pMga->FbAddress = pMga->PciInfo->memBase[i] & 0xff800000;
 	    from = X_PROBED;
@@ -1393,7 +1394,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * use the VGA default.  Allow the config file to override this.
      */
 
+    pMga->BiosFrom = X_NONE;
     if (pMga->pEnt->device->BiosBase != 0) {
+	/* XXX This isn't used */
 	pMga->BiosAddress = pMga->pEnt->device->BiosBase;
 	pMga->BiosFrom = X_CONFIG;
     } else {
@@ -1401,14 +1404,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	if (pMga->PciInfo->biosBase != 0) {
 	    pMga->BiosAddress = pMga->PciInfo->biosBase & 0xffff0000;
 	    pMga->BiosFrom = X_PROBED;
-	} else {
-	    /* Need to watch this when removing VGA depencencies */
+	} else if (pMga->Primary) {
 	    pMga->BiosAddress = 0xc0000;
 	    pMga->BiosFrom = X_DEFAULT;
 	}
     }
-    xf86DrvMsg(pScrn->scrnIndex, pMga->BiosFrom, "BIOS at 0x%lX\n",
-	       (unsigned long)pMga->BiosAddress);
+    if (pMga->BiosAddress) {
+	xf86DrvMsg(pScrn->scrnIndex, pMga->BiosFrom, "BIOS at 0x%lX\n",
+		   (unsigned long)pMga->BiosAddress);
+    }
 
     if (xf86RegisterResources(pMga->pEnt->index, NULL, ResExclusive)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
