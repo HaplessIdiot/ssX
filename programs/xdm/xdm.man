@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.16 2001/01/24 00:06:43 dawes Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.17 2001/01/27 18:21:10 dawes Exp $
 .\" 
 .\" Shorthand for "#" that survives preprocessing
 .ds h \N'35'
@@ -804,10 +804,10 @@ parameters for that widget:
 		<Key>Return: set-session-argument() finish-field()
 	xlogin*borderWidth: 3
 	xlogin*greeting: CLIENTHOST
-	#ifdef COLOR
+\&	#ifdef COLOR
 	xlogin*greetColor: CadetBlue
 	xlogin*failColor: red
-	#endif
+\&	#endif
 
 .fi
 .PP
@@ -852,8 +852,8 @@ can be put into the file named by
 Here is a sample \fIXsetup\fP script:
 .nf
 
-	#!/bin/sh
-	# Xsetup_0 \- setup script for one workstation
+\&	#!/bin/sh
+\&	# Xsetup_0 \- setup script for one workstation
 	xcmsdb < /usr/X11R6/lib/monitors/alex.0
 	xconsole\0\-geometry\0480x130\-0\-0\0\-notify\0\-verbose\0\-exitOnFail &
 
@@ -1041,12 +1041,12 @@ Here is a sample \fIXstartup\fP script:
 .nf
 .ta .5i 1i
 
-	#!/bin/sh
-	#
-	# Xstartup
-	#
-	# This program is run as root after the user is verified
-	#
+\&	#!/bin/sh
+\&	#
+\&	# Xstartup
+\&	#
+\&	# This program is run as root after the user is verified
+\&	#
 	if [ \-f /etc/nologin ]; then
 		xmessage\0\-file /etc/nologin\0\-timeout 30\0\-center
 		exit 1
@@ -1102,12 +1102,12 @@ be executable so we don't have to guess what shell it wants to use.
 .nf
 .ta .5i 1i 1.5i
 
-	#!/bin/sh
-	#
-	# Xsession
-	#
-	# This is the program that is run as the client
-	# for the display manager.
+\&	#!/bin/sh
+\&	#
+\&	# Xsession
+\&	#
+\&	# This is the program that is run as the client
+\&	# for the display manager.
 	
 	case $# in
 	1)
@@ -1137,8 +1137,8 @@ be executable so we don't have to guess what shell it wants to use.
 The user's \fI.xsession\fP file might look something like this
 example.  Don't forget that the file must have execute permission.
 .nf
-	#! /bin/csh
-	# no \-f in the previous line so .cshrc gets run to set $PATH
+\&	#! /bin/csh
+\&	# no \-f in the previous line so .cshrc gets run to set $PATH
 	twm &
 	xrdb \-merge "$HOME/.Xresources"
 	emacs \-geometry +0+50 &
@@ -1159,12 +1159,12 @@ passed to \fIXreset\fP.
 A sample \fIXreset\fP script:
 .nf
 .ta .5i 1i
-	#!/bin/sh
-	#
-	# Xreset
-	#
-	# This program is run as root after the session ends
-	#
+\&	#!/bin/sh
+\&	#
+\&	# Xreset
+\&	#
+\&	# This program is run as root after the session ends
+\&	#
 	sessreg\0\-d\0\-l $DISPLAY\0\-x /usr/X11R6/lib/xdm/Xservers $LOGNAME
 	/usr/X11R6/lib/xdm/TakeConsole
 	exit 0

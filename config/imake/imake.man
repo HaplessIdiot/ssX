@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86$
+.\" $XFree86: xc/config/imake/imake.man,v 1.6 2001/01/27 18:19:54 dawes Exp $
 .\"
 .TH IMAKE 1 __xorgversion__
 .SH NAME
@@ -91,9 +91,9 @@ on the command line and passes the name of a file containing the
 following 3 lines:
 .sp
 .nf
-		#define IMAKE_TEMPLATE "Imake.tmpl"
-		#define INCLUDE_IMAKEFILE <Imakefile>
-		#include IMAKE_TEMPLATE
+\&		#define IMAKE_TEMPLATE "Imake.tmpl"
+\&		#define INCLUDE_IMAKEFILE <Imakefile>
+\&		#include IMAKE_TEMPLATE
 .fi
 .sp
 where \fIImake.tmpl\fP and \fIImakefile\fP may be overridden by the 
@@ -130,7 +130,7 @@ For example, the macro
 .ta 1i 1.6i 5i
 .nf
 
- #define	program_target(program, objlist)	@@\e
+\& #define	program_target(program, objlist)	@@\e
  program:	objlist		@@\e
 	$(CC)  \-o  $@  objlist  $(LDFLAGS)
 
