@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.151 2002/04/28 19:04:20 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.152 2002/06/01 00:54:49 dickey Exp $ */
 
 /* main.c */
 
@@ -2212,7 +2212,8 @@ get_pty(int *pty, char *from GCC_UNUSED)
 			       (resource.utmpInhibit ? OPTY_NOP : OPTY_LOGIN),
 			       getuid(), from)) < 0);
 
-#elif defined(__osf__) || (defined(__GLIBC__) && !defined(USE_USG_PTYS))
+#elif defined(__osf__) || (defined(__GLIBC__) && !defined(USE_USG_PTYS)) \
+	|| defined(__NetBSD__)
 
     int tty;
     result = openpty(pty, &tty, ttydev, NULL, NULL);
@@ -3722,7 +3723,7 @@ spawn(void)
 	    tslot = ttyslot();
 	    added_utmp_entry = False;
 	    {
-		if (pw && !resource.utmpInhibit &&
+		if (tslot > 0 && pw && !resource.utmpInhibit &&
 		    (i = open(etc_utmp, O_WRONLY)) >= 0) {
 		    bzero((char *) &utmp, sizeof(utmp));
 		    (void) strncpy(utmp.ut_line,
