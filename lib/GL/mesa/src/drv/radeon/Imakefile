@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/radeon/Imakefile,v 1.7 2001/11/02 23:29:26 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/radeon/Imakefile,v 1.8 2002/02/22 21:45:00 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -18,6 +18,12 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/radeon/Imakefile,v 1.7 2001/11/02 23:29:2
 
 #include "../common/Imakefile.inc"
 #include "Imakefile.inc"
+#include "../../array_cache/Imakefile.inc"
+#include "../../math/Imakefile.inc"
+#include "../../swrast/Imakefile.inc"
+#include "../../swrast_setup/Imakefile.inc"
+#include "../../tnl/Imakefile.inc"
+#include "../../tnl_dd/Imakefile.inc"
 #include "../../Imakefile.inc"
 #ifdef i386Architecture
 #include "../../X86/Imakefile.inc"

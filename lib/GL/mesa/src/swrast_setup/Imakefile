@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.6 2000/08/01 20:28:39 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/swrast_setup/Imakefile,v 1.1 2002/02/22 21:45:06 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -22,10 +22,9 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.6 2000/08/01 20:28:39 dawes E
 #define DoProfileLib NO
 #endif
 
-LinkSourceFile(ss_context.c, $(MESASRCDIR)/src/swrast_setup)
-LinkSourceFile(ss_triangle.c, $(MESASRCDIR)/src/swrast_setup)
-LinkSourceFile(ss_vb.c, $(MESASRCDIR)/src/swrast_setup)
-
+#define MesaSwrastSetupBuildDir /**/
+#define NeedToLinkMesaSrc
+#include "Imakefile.inc"
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -47,8 +46,8 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		-I../../../include
 
      INCLUDES = $(MESA_INCLUDES) $(DRI_INCLUDES)
-         SRCS = ss_context.c ss_triangle.c ss_vb.c
-         OBJS = ss_context.o ss_triangle.o ss_vb.o
+         SRCS = $(MESA_SWR_SETUP_SRCS)
+         OBJS = $(MESA_SWR_SETUP_OBJS)
 
 #ifdef i386Architecture
      ASM_SRCS =

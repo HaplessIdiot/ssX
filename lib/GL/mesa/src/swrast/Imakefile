@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.6 2000/08/01 20:28:39 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/swrast/Imakefile,v 1.1 2002/02/22 21:45:06 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -22,36 +22,10 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.6 2000/08/01 20:28:39 dawes E
 #define DoProfileLib NO
 #endif
 
-LinkSourceFile(s_aaline.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_aatriangle.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_accum.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_alpha.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_alphabuf.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_bitmap.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_blend.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_buffers.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_context.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_copypix.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_depth.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_drawpix.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_feedback.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_fog.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_histogram.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_imaging.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_lines.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_logic.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_masking.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_pb.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_pixeltex.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_points.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_readpix.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_scissor.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_span.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_stencil.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_texstore.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_texture.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_triangle.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_zoom.c, $(MESASRCDIR)/src/swrast)
+#define MesaSwrastBuildDir /**/
+#define NeedToLinkMesaSrc
+#include "Imakefile.inc"
+
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -73,68 +47,8 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		-I../../../include
 
      INCLUDES = $(MESA_INCLUDES) $(DRI_INCLUDES)
-         SRCS = s_aaline.c \
-		s_aatriangle.c \
-		s_accum.c \
-		s_alpha.c \
-		s_alphabuf.c \
-		s_bitmap.c \
-		s_blend.c \
-		s_buffers.c \
-		s_context.c \
-		s_copypix.c \
-		s_depth.c \
-		s_drawpix.c \
-		s_feedback.c \
-		s_fog.c \
-		s_histogram.c \
-		s_imaging.c \
-		s_lines.c \
-		s_logic.c \
-		s_masking.c \
-		s_pb.c \
-		s_pixeltex.c \
-		s_points.c \
-		s_readpix.c \
-		s_scissor.c \
-		s_span.c \
-		s_stencil.c \
-		s_texstore.c \
-		s_texture.c \
-		s_triangle.c \
-		s_zoom.c
-
-         OBJS = s_aaline.o \
-		s_aatriangle.o \
-		s_accum.o \
-		s_alpha.o \
-		s_alphabuf.o \
-		s_bitmap.o \
-		s_blend.o \
-		s_buffers.o \
-		s_context.o \
-		s_copypix.o \
-		s_depth.o \
-		s_drawpix.o \
-		s_feedback.o \
-		s_fog.o \
-		s_histogram.o \
-		s_imaging.o \
-		s_lines.o \
-		s_logic.o \
-		s_masking.o \
-		s_pb.o \
-		s_pixeltex.o \
-		s_points.o \
-		s_readpix.o \
-		s_scissor.o \
-		s_span.o \
-		s_stencil.o \
-		s_texstore.o \
-		s_texture.o \
-		s_triangle.o \
-		s_zoom.o
-
+         SRCS = $(MESA_SWRAST_SRCS)
+         OBJS = $(MESA_SWRAST_OBJS)
 
 #ifdef i386Architecture
      ASM_SRCS =
