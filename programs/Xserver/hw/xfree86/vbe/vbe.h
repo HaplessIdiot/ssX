@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.h,v 1.10 2002/09/17 23:25:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbe.h,v 1.1 2003/02/17 17:06:45 dawes Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -237,8 +237,8 @@ typedef enum {
 } vbeScanwidthCommand;
 
 #define VBESetLogicalScanline(pVbe, width)	\
-	VBESetGetLogicalScanlineLength(pVbe, SCANWID_SET, \
-					width, NULL, NULL, NULL)
+	VBESetGetLogicalScanlineLength(pVbe, SCANWID_SET, width, \
+					NULL, NULL, NULL)
 #define VBESetLogicalScanlineBytes(pVbe, width)	\
 	VBESetGetLogicalScanlineLength(pVbe, SCANWID_SET_BYTES, width, \
 					NULL, NULL, NULL)
@@ -246,8 +246,8 @@ typedef enum {
 	VBESetGetLogicalScanlineLength(pVbe, SCANWID_GET, 0, \
 					pixels, bytes, max)
 #define VBEGetMaxLogicalScanline(pVbe, pixels, bytes, max)	\
-	VBESetGetLogicalScanlineLength(pVbe, SCANWID_GET_MAX, \
-					NULL, pixels, bytes, max)
+	VBESetGetLogicalScanlineLength(pVbe, SCANWID_GET_MAX, 0, \
+					pixels, bytes, max)
 Bool VBESetGetLogicalScanlineLength(vbeInfoPtr pVbe, 
 				    vbeScanwidthCommand command, int width,
 				     int *pixels, int *bytes, int *max);
