@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.188 2002/12/07 15:22:24 herrb Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.189 2002/12/09 17:18:59 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3320,6 +3320,9 @@ FONTCONFIGDEFINES = -DFONTCONFIG
 #define LibpngDir /usr
 #define LibpngDirStandard YES
 #endif
+#ifndef LibpngDirStandard
+#define LibpngDirStandard NO
+#endif
 
 #ifndef LibpngLibDir
 #define LibpngLibDir LibpngDir/LibDirName
@@ -3327,12 +3330,18 @@ FONTCONFIGDEFINES = -DFONTCONFIG
 #define LibpngLibDirStandard YES
 #endif
 #endif
+#ifndef LibpngLibDirStandard
+#define LibpngLibDirStandard NO
+#endif
 
 #ifndef LibpngIncDir
 #define LibpngIncDir LibpngDir/include
 #if LibpngDirStandard
 #define LibpngIncDirStandard YES
 #endif
+#endif
+#ifndef LibpngIncDirStandard
+#define LibpngIncDirStandard NO
 #endif
 
 LIBPNGINCDIR = LibpngIncDir
