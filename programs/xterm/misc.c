@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.27 1998/04/18 18:42:01 robin Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.28 1998/04/27 03:15:00 robin Exp $
  */
 
 /*
@@ -591,8 +591,6 @@ creat_as(uid, gid, pathname, mode)
 /*
  * Logging is a security hole, since it allows a setuid program to write
  * arbitrary data to an arbitrary file.  So it is disabled by default.
- * (However, this version of xterm resets the setuid before opening the
- * logfile).
  */
 
 #ifdef ALLOWLOGFILEEXEC

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.37 1998/04/18 18:42:02 robin Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.38 1998/04/27 03:15:02 robin Exp $
  */
 
 /*
@@ -636,10 +636,13 @@ typedef struct {
 #endif /* NO_ACTIVE_ICON */
 	Cursor pointer_cursor;		/* pointer cursor in window	*/
 
-	String printer_command;		/* pipe/shell command string	*/
+	String	printer_command;	/* pipe/shell command string	*/
 	Boolean printer_extent;		/* print complete page		*/
 	Boolean printer_formfeed;	/* print formfeed per function	*/
-	int printer_controlmode;	/* 0=off, 1=auto, 2=controller	*/
+	int	printer_controlmode;	/* 0=off, 1=auto, 2=controller	*/
+#ifdef OPT_PRINT_COLORS
+	int	print_attributes;	/* 0=off, 1=normal, 2=color	*/
+#endif
 
 	Boolean		fnt_prop;	/* true if proportional fonts	*/
 	XFontStruct	*fnt_norm;	/* normal font of terminal	*/
