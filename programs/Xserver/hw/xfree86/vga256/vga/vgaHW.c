@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.6 95/01/06 20:59:04 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.21 1995/06/14 07:50:43 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.22 1995/06/17 12:20:09 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -305,6 +305,7 @@ vgaSaveScreen (pScreen, on)
     (*vgaSaveScreenFunc)(SS_START);
     outw(0x3C4, (state << 8) | 0x01); /* change mode */
     if (vgaPowerSaver) {
+      usleep(10000); /* 10ms */
       outb(vgaIOBase + 4, 0x17);
       outb(vgaIOBase + 5, state2);
     }

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.82 1995/06/14 09:44:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.83 1995/06/29 13:30:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -625,6 +625,7 @@ s3Probe()
    OFLG_SET(OPTION_TI3026_CURS, &validOptions);
    OFLG_SET(OPTION_IBMRGB_CURS, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
+   OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
    OFLG_SET(OPTION_FAST_DRAM, &validOptions);
    OFLG_SET(OPTION_MED_DRAM, &validOptions);
    OFLG_SET(OPTION_SLOW_DRAM, &validOptions);
@@ -2644,8 +2645,7 @@ s3Probe()
    }
    if (DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES || DAC_IS_TI3026 
        || DAC_IS_IBMRGB) {
-      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) || s3Bpp > 1 ||
-	  OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
+      if (!OFLG_ISSET(OPTION_DAC_6_BIT, &s3InfoRec.options) || s3Bpp > 1)
 	 s3DAC8Bit = TRUE;
       if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &s3InfoRec.options)) {
 	 s3DACSyncOnGreen = TRUE;
@@ -2655,19 +2655,27 @@ s3Probe()
       }
    }
 
-   if (DAC_IS_ATT490 || DAC_IS_SC15025 || DAC_IS_ATT498 || DAC_IS_STG1700) {
+   if (DAC_IS_SC15025 || DAC_IS_ATT498 || DAC_IS_STG1700) {
+      if (!OFLG_ISSET(OPTION_DAC_6_BIT, &s3InfoRec.options) || s3Bpp > 1)
+         s3DAC8Bit = TRUE;
+   }
+
+   if (DAC_IS_ATT490) {
       if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) || s3Bpp > 1)
          s3DAC8Bit = TRUE;
    }
 
-   if (s3DAC8Bit && xf86Verbose && s3InfoRec.bitsPerPixel == 8)
-      ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",
-         XCONFIG_GIVEN, s3InfoRec.name);
+   if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) && !s3DAC8Bit) {
+      ErrorF("%s %s: Option \"dac_8_bit\" not recognised for RAMDAC \"%s\"\n",
+	     XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.ramdac);
+   }
 
    if (xf86Verbose) {
       if (s3InfoRec.bitsPerPixel == 8)
 	 ErrorF("%s %s: Using %d bits per RGB value\n",
-		XCONFIG_PROBED, s3InfoRec.name,
+		OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) ||
+		OFLG_ISSET(OPTION_DAC_6_BIT, &s3InfoRec.options) ?
+		XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name,
 		s3DAC8Bit ?  8 : 6);
       else if (s3InfoRec.bitsPerPixel == 16)
 	 ErrorF("%s %s: Using 16 bpp.  Color weight: %1d%1d%1d\n",

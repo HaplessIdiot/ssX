@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.25 1995/06/08 06:27:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.26 1995/06/29 13:31:47 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -94,6 +94,7 @@ typedef struct {
 #define OPTION_S3_964_BT485_VCLK	56 /* probe/invert VCLK for 964 + Bt485 */
 #define OPTION_TI3026_CURS	56 /* Use 3026 RAMDAC cursor (default) */
 #define OPTION_IBMRGB_CURS	57 /* Use IBM RGB52x RAMDAC cursor (default) */
+#define OPTION_DAC_6_BIT	58 /* 6-bit DAC operation */
 
 /* Vendor specific options */
 #define OPTION_SPEA_MERCURY	70 /* pixmux for SPEA Mercury (S3) */
@@ -200,6 +201,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "sync_on_green",    OPTION_SYNC_ON_GREEN },
   { "bt482_curs",	OPTION_BT482_CURS },
   { "s3_964_bt485_vclk",OPTION_S3_964_BT485_VCLK },
+  { "dac_6_bit",	OPTION_DAC_6_BIT },
 
   { "spea_mercury",	OPTION_SPEA_MERCURY },
   { "number_nine",	OPTION_NUMBER_NINE },
