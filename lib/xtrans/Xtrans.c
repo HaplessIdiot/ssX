@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.18 1997/12/14 02:55:34 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.19 1998/10/03 09:07:33 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -107,7 +107,7 @@ Xtransport_table Xtransports[] = {
 #ifndef sun
     &TRANS(PTSFuncs),		TRANS_LOCAL_PTS_INDEX,
 #endif /* sun */
-ifdef SVR4
+#ifdef SVR4
     &TRANS(NAMEDFuncs),		TRANS_LOCAL_NAMED_INDEX,
 #endif
 #ifndef sun

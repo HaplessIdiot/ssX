@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.138 1998/09/19 12:14:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.139 1998/10/04 09:34:05 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -765,10 +765,6 @@ XVFBDDXDIR = hw/vfb
 XVFBDDXDIR = hw
 #endif
 XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(XVFBDDXDIR) $(DEPDIRS)
-#if !defined(LynxOSArchitecture) && !defined(Win32Architecture)
-#if BuildDPMS
-XVFBDPMSSTUBOBJS = hw/vfb/dpmsstubs.o
-#endif
 #ifndef Win32Architecture
 #if BuildXinerama
 XVFBPANSTUBOBJS = hw/vfb/panoramiXstubs.o
