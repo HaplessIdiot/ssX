@@ -30,9 +30,9 @@ chips older than ET4000W32p rev C (ET4000, W32i, W32p rev A and B). hi- and
 truecolor modes are not supported on these chips.
 
 On W32p rev C and D however, all color depths are supported on the supported
-RAMDACs (currently ICS5341 and Chrontel CH8398). These modes are also acceler-
-ated. 24bpp sometimes gives wrong colors at this moment. This can be overcome
-by fiddling with the mode timings (shifting the image left or right).
+RAMDACs (currently ICS5341, STG170x and Chrontel CH8398). These modes are also
+accelerated. 24bpp sometimes gives wrong colors at this moment. This can be
+overcome by fiddling with the mode timings (shifting the image left or right).
 
 There is support for special RAMDACs in the SVGA server. This means that W32p
 cards with 16-bit RAMDAC/clockchip combinations (most ET4000W32p-based cards
@@ -141,9 +141,9 @@ Doublescan modes currently don't work with the hardware cursor: only the top
 half of the cursor is visible. If you want to use DoubleSCan modes (320x200 is
 a popular one), then do not enable the hardware cursor.
 
-On some systems, acceleration may cause occasional font corruption. Until this
-problem is fixed, font acceleration may be disabled using the following in the
-Device section of your XF86Config:
+On some fast systems, acceleration may cause occasional font corruption. Until
+this problem is fixed, font acceleration may be disabled using the following in
+the Device section of your XF86Config:
 
        Option "xaa_no_color_exp"
 
@@ -151,9 +151,8 @@ When using accelerated high color-depths (24bpp and 32bpp), high-resolution
 modes (starting somewhere around 800x600) may cause temporary "garbage" lines
 to the right of the screen while the accelerator is busy. The garbage should
 not be persistent: it should go away as soon as the server is left alone. This
-may get fixed in the future. This may also be a bandwidth problem, in which
-case it cannot be resolved (except by not allowing such modes at all, which is
-what is done in the current driver).
+is a memory bandwidth problem, and thus cannot be resolved (except by not
+allowing such modes at all, which is what is done in the current driver).
 
 Ignoring it is one option (it isn't destructive). Disabling acceleration in the
 Device section of the XF86Config file is another option: since the accelerator
@@ -191,6 +190,7 @@ If the line:
 
 is printed, put the following in the SVGA, VGA16 and VGA2 sections of your
 XF86Config:
+
 
 
 
@@ -302,7 +302,8 @@ can enable options for all depths by specifying them in the Device section).
 	    This sets the physical memory base address of the linear frame-
 	    buffer. It must be specified in the Device section. It may be
 	    required for non-PCI linear addressing configurations, and might be
-	    useful for PCI-based systems where auto-detection fails.
+	    useful for PCI-based systems where auto-detection fails. However,
+	    almost all PCI systems will not need this.
 
 	    WARNING: defining a bad MemBase may cause serious injury or death
 	    (to your operating system, of course). Especially defining the Mem-
@@ -310,19 +311,18 @@ can enable options for all depths by specifying them in the Device section).
 
 	    Choosing a suitable MemBase can be quite tricky. If you have no way
 	    of determining the MemBase your card uses, trying to put it a few
-	    Mb behind the system memory is a good first guess. E.g. if you have
+	    Mb above the system memory is a good first guess. E.g. if you have
 	    16 Mb of RAM, defining MemBase 0x01400000 (=20M) may work.
 
-	    There are some limits as to where the linear memory base may be
-	    put.  On any ET4000W32, it must have a 4MB granularity (i.e. it can
-	    be put at 16M or at 20M, but not at 18M). On ET6000, it needs a 16M
-	    granularity (note: the ET6000 driver should be able to determine
-	    the linear memory base automatically, so you should never need to
-	    define MemBase in the first place).
-
-	    On ET4000W32i, things are worse: the linear address base is hard-
-	    wired on the card, and there is no reliable way to read it back
-	    from the card. You need to know the address in some way, and
+	    On most VESA local bus (VLB) boards, there is an additional problem
+	    with address decoding. Some motherboards only decode the first 32,
+	    64 or 128 MB of address space (a good pointer is to check the
+	    amount of DRAM that can be installed on the board: it will at least
+	    decode as much address space as it supports DRAM). On such boards,
+	    you MUST specify a MemBase inside that range, or the actual address
+	    may wrap back onto system memory. That is why the general guideline
+	    of putting the MemBase just above the system memory is a sound one:
+	    it stands most chance of actually being inside the decoded address
 
 
 
@@ -335,8 +335,28 @@ can enable options for all depths by specifying them in the Device section).
 
 
 
-	    specify it. The current code does an intelligent guess at it, but
-	    this is no guarantee.
+	    range of the board.
+
+	    Some other VLB boards can only map the linear framebuffer above the
+	    1GB mark (0x80000000 and up), so you must use a MemBase that is
+	    higher or equal to 0x80000000.
+
+	    Unfortunately, there is no easy way to tell what system you have
+	    (these details are mostly not in the motherboard manuals). Trial
+	    and error is the only road to success here.
+
+	    There are some limits as to where the linear memory base may be
+	    put.  On any ET4000W32, it must have a 4MB granularity (i.e. it can
+	    be put at 16M or at 20M, but not at 18M). On ET6000, it needs a 16M
+	    granularity (note: the ET6000 driver should be able to determine
+	    the linear memory base automatically, so you should never need to
+	    define MemBase in the first place).
+
+	    On ET4000W32i, things are worse: the linear address base is hard-
+	    wired on the card, and there is no reliable way to read it back
+	    from the card. You need to know the address in some way, and spec-
+	    ify it. The current code does an intelligent guess at it, but this
+	    is no guarantee.
 
 	    Use this option ONLY if you have trouble with the default MemBase
 	    used by the server, or if the server explicitly states that you
@@ -368,8 +388,20 @@ ory bandwidth is left for drawing. Memory bandwidth is the speed at which data
 can be pumped into the memory while the RAMDAC is pulling it out to display it
 on the screen.
 
-Higher dot-clocks (mostly related to higher resolutions) consume more band-
-width, so that less of it is left for drawing into the framebuffer. With a
+Higher dot-clocks (mostly related to higher resolutions) consume more
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
+bandwidth, so that less of it is left for drawing into the framebuffer. With a
 working accelerator, things become increasingly crammed, because modern accel-
 erators can consume huge amounts of bandwidth (but they also give you high
 speeds in return). High color depths also need extra bandwidth.
@@ -389,18 +421,6 @@ Hz which should be acceptable. If you have a monitor that supports 1024x768 at
 76 Hz with a 85 MHz dot clock, an 1MB card is a poor match anyway.
 
 The ET4000W32i and ET4000W32p have a special feature that almost doubles memory
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
-
 bandwidth (+80%) using "interleaving" between the two banks. Upgrading to 2MB
 is a real bonus on these cards.
 
@@ -435,6 +455,18 @@ rate, leaving 256kb unused.
 10.  ET6000 memory size facts and fiction
 
 The ET6000 uses a special kind of video memory called MDRAM (multi-bank DRAM).
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 It may have a non-power-of-two amount of MDRAM: 2.25 or even 4.50 MB.  Espe-
 cially 2.25 MB MDRAM is popular, since this can support 1024x768 at 24bpp with-
 out needing 4MB of RAM.
@@ -455,17 +487,6 @@ been having trouble with these all along, since sometimes the X-server used to
 detect this as 2.25 MB (or even 2.5 MB) due to internal chip design and also
 due to faulty BIOSses. This memory detection problem has been fixed now, and
 the server should detect the correct amount of memory.
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
 
 Do NOT define the amount of memory in the XF86Config yourself, unless you are
 absolutely sure about the amount. There is a simple way to determine the amount
@@ -502,6 +523,16 @@ boards with 2 MD918 chips. The ET6000 can do memory interleaving when it finds
 4 MDRAM chips, increasing performance.
 
 
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 11.  ET6000 memory bandwidth hype and the impact on video modes
 
 Tseng has always had wet dreams about memory bandwidth, and their press
@@ -521,18 +552,6 @@ This means the max. bandwidth available on current ET6000 boards is "only" 360
 MB/sec on boards with 2 MDRAM chips, and 720 MB/sec on boards with 4 MDRAM
 chips. And this assumes a best-case situation (=extremely long bursts -- the
 MDRAMs use a shared address/data bus, much like the PCI bus does). In the real
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
-
 world, unaligned accesses both from the PCI bus and the accelerator will reduce
 the effective available bandwidth by over 20 %, which brings us to about 300
 MB/sec for a 2-chip design, and 600 MB/sec for a 4-chip design.
@@ -568,6 +587,18 @@ depth-specific screen section to enable linear addressing; a MemBase setting
 optionally on PCI systems that have trouble finding out for themselves where
 the MemBase is.
 
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 Non-PCI cards are not (or not well) supported in linear memory mode at this
 moment. Some of them don't support it at all, and some of the ones that do have
 so many address decoding bugs that it isn't feasible to provide a working solu-
@@ -587,17 +618,6 @@ you need at least 4MB of video memory to do this. With only 2MB of (M)DRAM,
 In the XF86Config "Screen" section, a "Display" subsection must be defined for
 each depth that you want to run, with separate Modes and virtual screen size.
 Example (2Mb of video memory):
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
 
      Section "screen"
 	 SubSection "Display"
@@ -631,6 +651,20 @@ Example (2Mb of video memory):
      EndSection
 
 
+
+
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 13.  Trouble shooting with the SVGA Tseng driver
 
 First of all, make sure that the default modes selected from your XF86Config is
@@ -652,18 +686,6 @@ horizontal timing parameters).
 	    is a standard mode and frequency that your monitor should be able
 	    to handle, try to find different timings for a similar mode and
 	    frequency combination.
-
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
 
       Horizontal jitter at high dot clocks.
 	    This problem shows up especially when drawing operations such as
@@ -697,6 +719,18 @@ horizontal timing parameters).
 	    or a problem with the BitBLT engine. Try the "noaccel" option.
 	    Also check the BIOS settings.
 
+
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
       `ACL: TIMEOUT' messages from the server.
 	    Same as for the above entry. However, on some systems, the problem
 	    will not go away no matter what you do. It may be related to the
@@ -719,17 +753,6 @@ horizontal timing parameters).
 	    line will fix this. Normally you should be able to restore the
 	    textmode font using a utility that sets it (setfont, runx, restore-
 	    font on Linux).
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
 
       Mostly black or blue screen when using accelerated driver features
 	    If you are seeing a mostly black or blue screen, with only a few
@@ -763,6 +786,17 @@ horizontal timing parameters).
 	    bus delays) by removing the "pci_retry" option.  This will cause a
 	    very small slowdown of accelerated operations.
 
+
+
+
+
+
+
+
+ Information for Tseng Chipset Users
+
+
+
 	    The "pci_retry" option apllies not only to the PCI bus systems, but
 	    has a similar effect on other busses.
 
@@ -780,47 +814,13 @@ rations that have not been tested. You can do this via the BetaReport form
 (mail it to report@XFree86.org). You may want to keep an eye on forthcoming
 beta releases at www.xfree86.org.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
- Information for Tseng Chipset Users
-
-
-
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.20 1997/04/08 10:12:03 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.21 1997/04/14 07:05:12 hohndel Exp $
 
 
 
 
 
      $XConsortium: tseng.sgml /main/6 1996/10/27 11:06:09 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -953,11 +953,11 @@ beta releases at www.xfree86.org.
 
 10. ET6000 memory size facts and fiction  ................................... 7
 
-11. ET6000 memory bandwidth hype and the impact on video modes	............. 8
+11. ET6000 memory bandwidth hype and the impact on video modes	............. 9
 
 12. Linear addressing and 16bpp/24bpp/32bpp modes  .......................... 9
 
-13. Trouble shooting with the SVGA Tseng driver ............................ 10
+13. Trouble shooting with the SVGA Tseng driver ............................ 11
 
 
 

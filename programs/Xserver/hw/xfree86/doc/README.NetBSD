@@ -45,8 +45,6 @@ Binaries for NetBSD 1.1, NetBSD 1.2 and NetBSD-current are available from:
 
 ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD
 
-ftp://ftp.laas.fr/pub/ii/NetBSD
-
 Binaries for OpenBSD are available from:
 
 ftp.XFree86.org:/pub/XFree86/current/binaries/OpenBSD
@@ -60,18 +58,19 @@ These binaries are not compatible with earlier NetBSD versions. If you're still
 running NetBSD 0.9 or 1.0, you should think about upgrading to a newer version
 of NetBSD first.
 
-
-README for XFree86 3.2A on NetBSD and OpenBSD
-
-
-
-
-
-README for XFree86 3.2A on NetBSD and OpenBSD
-
-
-
 If you don't upgrade, you'll have to build XFree86 from the sources.  XFree86
+
+
+README for XFree86 3.2A on NetBSD and OpenBSD
+
+
+
+
+
+README for XFree86 3.2A on NetBSD and OpenBSD
+
+
+
 3.2 should compile cleanly under earlier versions of NetBSD, although this has
 not been tested.
 
@@ -124,6 +123,7 @@ The contents of the packages are:
 
 		  X32Afnts
 			the misc, 75dpi and PEX fonts
+
 
 
 
@@ -963,7 +963,7 @@ Many thanks to:
    o Rod Grimes and Jack Velte of Walnut Creek Cdrom for use of their machines
      in preparing the FreeBSD binary release.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.45 1997/01/25 03:22:00 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.46 1997/04/16 08:34:19 dawes Exp $
 
 
 
