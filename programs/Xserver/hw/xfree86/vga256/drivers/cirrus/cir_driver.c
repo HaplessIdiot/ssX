@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.46 1995/12/09 11:08:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.47 1996/01/12 14:37:54 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -88,11 +88,11 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
-#include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "vga.h"
 #include "region.h"
+#include "vgaPCI.h"
 
 #ifdef XFreeXDGA
 #include "X.h"
@@ -242,7 +242,12 @@ extern cirrusCurRec cirrusCur;
 
 int	CirrusMemTop;
 
+#ifdef PC98
+extern void crtswitch();
+#endif
+
 vgaVideoChipRec CIRRUS = {
+#ifndef PC98_WAB
   cirrusProbe,			/* ChipProbe()*/
   cirrusIdent,			/* ChipIdent(); */
   cirrusEnterLeave,		/* ChipEnterLeave() */
@@ -278,6 +283,43 @@ vgaVideoChipRec CIRRUS = {
   TRUE,				/* ChipHas32bpp */
   NULL,				/* ChipBuiltinModes */
   1,				/* ChipClockScaleFactor */
+#else
+  cirrusProbe,			/* ChipProbe()*/
+  cirrusIdent,			/* ChipIdent(); */
+  cirrusEnterLeave,		/* ChipEnterLeave() */
+  cirrusInit,			/* ChipInit() */
+  cirrusValidMode,		/* ChipValidMode() */
+  cirrusSave,			/* ChipSave() */
+  cirrusRestore,		/* ChipRestore() */
+  cirrusAdjust,			/* ChipAdjust() */
+  (void (*)())NoopDDA,		/* ChipSaveScreen() */
+  (void (*)())NoopDDA,		/* ChipGetMode() */
+  cirrusFbInit,			/* ChipFbInit() */
+  cirrusSetRead,		/* ChipSetRead() */
+  cirrusSetWrite,		/* ChipSetWrite() */
+  cirrusSetReadWrite,	        /* ChipSetReadWrite() */
+#ifndef CIRRUS_SUPPORT_MMIO  
+  0x08000,			/* ChipMapSize */
+#else
+  0x20000,
+#endif
+  0x04000,			/* ChipSegmentSize, 16k*/
+  14,				/* ChipSegmentShift */
+  0x3FFF,			/* ChipSegmentMask */
+  0x00000, 0x04000,		/* ChipReadBottom, ChipReadTop  */
+  0x04000, 0x08000,		/* ChipWriteBottom,ChipWriteTop */
+  TRUE,				/* ChipUse2Banks, Uses 2 bank */
+  VGA_DIVIDE_VERT,		/* ChipInterlaceType -- don't divide verts */
+  {0,},				/* ChipOptionFlags */
+  8,				/* ChipRounding */
+  FALSE,			/* ChipUseLinearAddressing */
+  0,				/* ChipLinearBase */
+  0x10000,			/* ChipLinearSize */
+  TRUE,				/* ChipHas16bpp */
+  TRUE,				/* ChipHas32bpp */
+  NULL,				/* ChipBuiltinModes */
+  1,				/* ChipClockScaleFactor */
+#endif
 };
 
 /*
@@ -1173,6 +1215,14 @@ cirrusProbe()
          OFLG_SET(OPTION_FAST_DRAM, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_FIFO_CONSERV, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_FIFO_AGGRESSIVE, &CIRRUS.ChipOptionFlags);
+#ifdef PC98
+	 OFLG_SET(OPTION_EPSON_MEM_WIN,&CIRRUS.ChipOptionFlags);
+	 OFLG_SET(OPTION_NEC_CIRRUS,&CIRRUS.ChipOptionFlags);
+	 OFLG_SET(OPTION_GA98NB1,&CIRRUS.ChipOptionFlags);
+	 OFLG_SET(OPTION_GA98NB2,&CIRRUS.ChipOptionFlags);
+	 OFLG_SET(OPTION_GA98NB4,&CIRRUS.ChipOptionFlags);
+	 OFLG_SET(OPTION_WAP,&CIRRUS.ChipOptionFlags);
+#endif
      }
      if ((cirrusChip >= CLGD5426 && cirrusChip <= CLGD5429) || HAVE543X()) {
          OFLG_SET(OPTION_NO_2MB_BANKSEL, &CIRRUS.ChipOptionFlags);
@@ -1215,7 +1265,6 @@ cirrusFbInit()
 
 #ifndef MONOVGA
   int useSpeedUp;
-  Bool pciProbed = FALSE;
 
   useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYWIDTH;
   
@@ -1353,40 +1402,28 @@ cirrusFbInit()
         	    /* 32MB is an option for more recent cards. */
         	    CIRRUS.ChipLinearBase = 0x4000000;	/* 64MB */
                 if (cirrusBusType == CIRRUS_BUS_PCI) {
-                    struct pci_config_reg *pcrp;
-                    int device_found = FALSE;
-                    int idx = 0;
 		    cirrusUseLinear = FALSE;
-                    xf86scanpci();
-                    pciProbed = TRUE;
-                    while (pcrp = pci_devp[idx]) {
-                    	if (pcrp->_vendor == 0x1013	/* Cirrus Logic */
-                    	&& (pcrp->_device & 0xFFF0) == 0x00A0) {
-                    	    /*
-                    	     * Known devices:
-                    	     * 0x00A0	5430, 5440
-                    	     * 0x00A8	5434
-                    	     * 0x00AC	5436
-                    	     * Assume 0x00A? are graphics chipsets.
-      			     */
-      			    device_found = TRUE;
-                    	    if (pcrp->_base0 != 0) {
+		    if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_CIRRUS) {
+                    	/*
+                    	 * Known devices:
+                    	 * 0x00A0	5430, 5440
+                    	 * 0x00A8	5434
+                    	 * 0x00AC	5436
+                    	 * Assume 0x00A? are graphics chipsets.
+      			 */
+                    	if (vgaPCIInfo->MemBase != 0) {
                     		CIRRUS.ChipLinearBase =
-                    		    pcrp->_base0 & 0xFF000000;
+                    		    vgaPCIInfo->MemBase & 0xFF000000;
                     		cirrusUseLinear = TRUE;
-                    	 	break;
-                    	    }
-			    else
-			        ErrorF("%s %s: %s: Can't find valid 543x PCI "
-			            "Base Address\n", XCONFIG_PROBED,
-			            vga256InfoRec.name, vga256InfoRec.chipset);
                     	}
-                        idx++;
-                    }
-                    if (!device_found)
+			else
+			    ErrorF("%s %s: %s: Can't find valid PCI "
+			        "Base Address\n", XCONFIG_PROBED,
+			        vga256InfoRec.name, vga256InfoRec.chipset);
+                    } else
 		        ErrorF("%s %s: %s: Can't find PCI device in "
-		            "configuration space\n", XCONFIG_PROBED,
-		            vga256InfoRec.name, vga256InfoRec.chipset);
+		               "configuration space\n", XCONFIG_PROBED,
+		               vga256InfoRec.name, vga256InfoRec.chipset);
 		    if (!cirrusUseLinear)
 			goto nolinear;
 		}
@@ -1422,15 +1459,6 @@ nolinear:
     if (cirrusUseLinear)
         CIRRUS.ChipUseLinearAddressing = TRUE;
 #endif
-
-  if (pciProbed) {
-    /* Re-enable Cirrus I/O */
-    xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-    xf86AddIOPorts(vga256InfoRec.scrnIndex, sizeof(Cirrus_IOPorts) /
-                    sizeof(Cirrus_IOPorts[0]), Cirrus_IOPorts);
-    xf86EnableIOPorts(vga256InfoRec.scrnIndex);
-  }
 
   CirrusMemTop = vga256InfoRec.virtualX * vga256InfoRec.virtualY
       * (vgaBitsPerPixel / 8);
@@ -1685,11 +1713,15 @@ cirrusEnterLeave(enter)
 
        xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
+#ifdef PC98
+       crtswitch(1);
+#else
 				/* Are we Mono or Color? */
        vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
 
        outb(0x3C4,0x06);
        outb(0x3C5,0x12);	 /* unlock cirrus special */
+#endif
 
 				/* Put the Vert. Retrace End Reg in temp */
 
@@ -1708,6 +1740,10 @@ cirrusEnterLeave(enter)
 
        outb(0x3C4,0x06);
        outb(0x3C5,0x0F);	 /*relock cirrus special */
+
+#ifdef PC98
+       crtswitch(0);
+#endif
 
        xf86DisableIOPorts(vga256InfoRec.scrnIndex);
     }
@@ -1917,7 +1953,11 @@ cirrusSave(save)
   unsigned char             temp1, temp2;
 
   
+#if defined(PC98_WAB)||defined(PC98_GANB_WAP)
+  vgaIOBase = 0x3D0;
+#else
   vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
+#endif
 
   outb(0x3CE, 0x09);
   temp1 = inb(0x3CF);
@@ -2234,6 +2274,13 @@ cirrusInit(mode)
      outb(0x3C4,0x0F);
      new->SRF = inb(0x3C5);
 
+#ifdef PC98_WAB
+     new->SRF &= 0xF7;
+     new->SRF |= 0x10;
+     outb(0x3C4,0x0F);
+     outb(0x3C5,new->SRF);
+
+#endif /* PC98_WAB */
      /* This following bit was not set correctly. */
      /* It is vital for correct operation at high dot clocks. */
  

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaply1rct.c,v 1.1 94/10/13 13:04:50 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaply1rct.c,v 3.0 1994/07/24 11:59:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaply1rct.c,v 3.1 1995/01/28 16:14:39 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -77,7 +77,11 @@ RROP_NAME(vga256FillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     }
 #endif
     origin = *((int *) &pDrawable->x);
+#if defined(PC98_WAB)
+    origin -= (origin & 0x4000) << 1;
+#else
     origin -= (origin & 0x8000) << 1;
+#endif
     extents = &devPriv->pCompositeClip->extents;
     RROP_FETCH_GCPRIV(devPriv);
     vertex1 = *((int *) &extents->x1) - origin;
@@ -146,12 +150,20 @@ RROP_NAME(vga256FillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	if (x1 != dx2)
 	    yFlip++;
 	if (yFlip != 2) 
+#if defined(PC98_WAB)
+	    clip = 0x4000;
+#else
 	    clip = 0x8000;
+#endif
     }
     if (y == maxy)
 	return;
 
+#if defined(PC98_WAB)
+    if (clip & 0x40004000)
+#else
     if (clip & 0x80008000)
+#endif
     {
 	miFillPolygon (pDrawable, pGC, shape, mode, vertex2p - (int *) ptsIn, ptsIn);
 	return;

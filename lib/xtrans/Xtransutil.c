@@ -1,5 +1,5 @@
-/* $XConsortium: Xtransutil.c /main/27 1995/11/10 12:08:45 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.5 1995/07/07 15:33:14 dawes Exp $ */
+/* $XConsortium: Xtransutil.c /main/29 1996/01/12 15:08:56 kaleb $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.6 1996/01/05 13:14:39 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -345,8 +345,20 @@ XtransConnInfo  ciptr;
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) peer_addr;
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#ifdef _POSIX_REENTRANT_FUNCTIONS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
+#define _POSIX_THREAD_SAFE_FUNCTIONS 1
+#endif
+#endif
+#endif
+#ifdef sun
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
+#undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+#endif
     struct hostent      hent;
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
 #define Gethostbyaddr(a,l,t) gethostbyaddr_r((a),(l),(t),&hent,hbuf,sizeof hbuf,&herr)
 #define HostName hent.h_name
 #define CallFailed NULL
@@ -385,7 +397,7 @@ XtransConnInfo  ciptr;
 	alarm (4);
 	if (setjmp(env) == 0) {
 #endif
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 	    bzero ((char*)&hdata, sizeof hdata);
 #endif
 	    hostp = Gethostbyaddr ((char *) &saddr->sin_addr,

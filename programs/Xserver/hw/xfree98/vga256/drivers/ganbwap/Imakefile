@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/ganbwap/Imakefile,v 3.0 1995/12/17 10:06:37 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/ganbwap/Imakefile,v 3.1 1995/12/26 07:20:08 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -6,14 +6,14 @@ SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
        cirFillRct.c cir_blitter.c cir_textblt.s cir_cursor.c \
        cir_blitmm.c cir_immm.c cir_tebltmm.c cir_span.s cir_alloc.c \
        cir_blt16.c cir_solid.c cir_line.c cir_seg.c cir_orect.c \
-       cir_orect16.c cir_orect32.c linearline.c
+       cir_orect16.c cir_orect32.c linearline.c cir_pc98.c
 
 OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o cir_bank.o \
        cir_imblt.o cir_colexp.o cirFillSt.o cir_teblt8.o \
        cirFillRct.o cir_blitter.o cir_textblt.o cir_cursor.o \
        cir_blitmm.o cir_immm.o cir_tebltmm.o cir_span.o cir_alloc.o \
        cir_blt16.o cir_solid.o cir_line.o cir_seg.o cir_orect.o \
-       cir_orect16.o cir_orect32.o linearline.o
+       cir_orect16.o cir_orect32.o linearline.o cir_pc98.o
 
 DEFINES = -DPSZ=8 -DPC98 -DPC98_GANB_WAP
 
@@ -59,6 +59,7 @@ LinkSourceFile(cir_teblt8.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(cir_textblt.s,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(linearline.c,$(XF86SRC)/vga256/drivers/cirrus)
 LinkSourceFile(linearline.h,$(XF86SRC)/vga256/drivers/cirrus)
+LinkSourceFile(cir_pc98.c,..)
 
 ObjectFromSpecialSource(cir_blitmm, cir_blitter, -DCIRRUS_MMIO)
 ObjectFromSpecialSource(cir_immm, cir_im, -DCIRRUS_MMIO)
@@ -96,5 +97,6 @@ InstallLinkKitNonExecFile(cir_inline.h,$(XF98LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(linearline.c,$(XF98LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(linearline.h,$(XF98LINKKITDIR)/drivers/vga256/cirrus)
+/* InstallLinkKitNonExecFile(cir_pc98.c,..) */
 
 DependTarget()

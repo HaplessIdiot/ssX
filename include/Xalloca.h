@@ -1,5 +1,4 @@
-/* $XConsortium: Xalloca.h /main/3 1995/10/16 14:15:54 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: Xalloca.h /main/4 1996/01/12 10:07:00 kaleb $ */
 
 /*
 
@@ -111,11 +110,11 @@ from the X Consortium.
 /* alloca might be a macro taking one arg (hi, Sun!), so give it one. */
 #        ifndef __sgi			/* IRIX 5/6 has definition */
 #          define __Xnullarg		/* as nothing */
-#          if defined(sun) && defined(SVR4)
-             void *alloca(__Xnullarg);
+#          ifndef X_NOT_STDC_ENV
+             extern void *alloca(__Xnullarg);
 #          else
-             char *alloca(__Xnullarg);
-#          endif /* sun && SVR4 */
+             extern char *alloca(__Xnullarg);
+#          endif
 #        endif /* __sgi */
 #        define ALLOCATE_LOCAL(size) alloca((int)(size))
 #        define DEALLOCATE_LOCAL(ptr)  /* as nothing */

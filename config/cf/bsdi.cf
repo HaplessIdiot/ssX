@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: bsdi.cf /main/19 1995/12/09 16:09:43 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.19 1995/10/21 11:26:00 dawes Exp $
+XCOMM platform:  $XConsortium: bsdi.cf /main/20 1996/01/11 17:33:12 gildea $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.20 1996/01/05 13:06:33 dawes Exp $
 
 #ifndef OSName
 #define OSName            BSD/OS 2.0
@@ -98,7 +98,7 @@ all:: file.0								@@\
 file.0:: file.man							@@\
 	@if [ -f file.man ]; \						@@\
 	then \								@@\
-	cat file.man | $(NEQN) | $(TBL) | $(NROFF) -man | $(COL) >/tmp/$$$$.man; \	@@\
+	cat file.man | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) >/tmp/$$$$.man; \	@@\
 	cp /tmp/$$$$.man file.0; \					@@\
 	$(RM) /tmp/$$$$.man; \						@@\
 	fi 								@@\
@@ -121,7 +121,7 @@ install.man:: 								@@\
 	case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \                                             @@\
 	  (set -x; \							@@\
-	  cat $$i.suff | $(NEQN) | $(TBL) | $(NROFF) -man | $(COL) >/tmp/$$$$.suff; \	@@\
+	  cat $$i.suff | $(NEQN) | $(TBL) | $(NROFF) $(MANMACROS) | $(COL) >/tmp/$$$$.suff; \	@@\
 	  $(INSTALL) -c $(INSTMANFLAGS) /tmp/$$$$.suff $(DESTDIR)dest/$$i.0; \	@@\
 	  $(RM) /tmp/$$$$.suff); \						@@\
 	done

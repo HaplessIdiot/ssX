@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/14 1995/12/04 17:38:41 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.30 1996/01/03 01:21:12 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.31 1996/01/05 13:06:36 dawes Exp $
 
 #ifndef OSName
 #define OSName			Linux
@@ -49,6 +49,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.30 1996/01/03 01:21:12 dawe
 #define NeedNestedPrototypes	YES
 #define NeedVarargsPrototypes	YES
 #define NeedWidePrototypes	NO
+#define SetTtyGroup		YES
 
 #define MkdirHierCmd		mkdir -p
 #if LinuxElfDefault

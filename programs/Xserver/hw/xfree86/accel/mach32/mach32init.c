@@ -1,5 +1,5 @@
 /* $XConsortium: mach32init.c,v 1.4 95/01/06 20:57:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.9 1995/07/12 15:35:05 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -311,6 +311,11 @@ void mach32InitAperture(screen_idx)
 						     hw_offset),
 					   4 * 1024 * 1024);
 
+#ifdef XFreeXDGA
+	    mach32InfoRec.physBase = apaddr << 20;
+	    mach32InfoRec.physSize = mach32InfoRec.videoRam * 1024;
+#endif
+
 	    /* Initialize the mach32VideoPageBoundary array */
 	    for (i = 0; i <= mach32MaxY; i++)
 		mach32VideoPageBoundary[i] = 0;
@@ -321,6 +326,10 @@ void mach32InitAperture(screen_idx)
 	        mach32VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION,
 					       (pointer)0xa0000, 64 * 1024);
             }
+#ifdef XFreeXDGA
+	    mach32InfoRec.physBase = 0xa0000;
+	    mach32InfoRec.physSize = 64 * 1024;
+#endif
 
 	    /* Initialize the mach32VideoPageBoundary array */
 	    for (i = 0; i <= mach32MaxY; i++) {

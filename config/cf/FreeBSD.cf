@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/9 1995/12/04 10:35:08 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.39 1996/01/05 13:06:22 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.40 1996/01/08 08:41:24 dawes Exp $
 
 #ifndef OSName
 #define OSName            FreeBSD 2.1
@@ -186,6 +186,7 @@ install.man::                                                           @@\
 #endif
 #endif
 
+#if 0
 #if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 1)
 /*
  * ForceSubdirs - force make to build subdirectories
@@ -196,6 +197,7 @@ dirs: .EXEC								@@\
 	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
 									@@\
 .EXEC:
+#endif
 #endif
 
 #include <bsdLib.rules>

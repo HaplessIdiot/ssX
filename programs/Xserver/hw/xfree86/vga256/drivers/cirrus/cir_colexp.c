@@ -1,5 +1,5 @@
 /* $XConsortium: cir_colexp.c,v 1.3 95/01/05 20:47:57 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.7 1995/01/28 17:08:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.8 1995/04/09 14:14:23 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -156,10 +156,18 @@ destpitch )
 	unsigned char *base;	/* Video window base address. */
 	unsigned char color[2];
 
+#ifdef PC98_WAB
+	base = CIRRUSREADBASE();	/* Write window. */
+#else
 	base = CIRRUSWRITEBASE();	/* Write window. */
+#endif
 	destaddr = y * destpitch + x;
 
+#ifdef PC98_WAB
+	CIRRUSSETWRITEB(destaddr, bank); /* It's OK */
+#else
 	CIRRUSSETWRITEB(destaddr, bank);
+#endif
 
 	color[0] = bg;
 	color[1] = fg;
@@ -172,7 +180,11 @@ destpitch )
 		
 		bits = rotateleft(32 - (sox & 31), bits_in[syindex]);
 
+#ifdef PC98_WAB
+		CIRRUSCHECKWRITEB(destaddr, bank); /* It's OK */
+#else
 		CIRRUSCHECKWRITEB(destaddr, bank);
+#endif
 		destp = base + destaddr;
 
 		count = w;
@@ -303,8 +315,13 @@ void CirrusLatchedBitBlt(x1, y1, x2, y2, w, h, destpitch)
 
 	nspans = h;	/* Number of spans to go. */
 
+#ifdef PC98_WAB
+	CIRRUSSETREADB_WAB(srcaddr, readbank);
+	CIRRUSSETWRITEB_WAB(destaddr, writebank);
+#else
 	CIRRUSSETREADB(srcaddr, readbank);
 	CIRRUSSETWRITEB(destaddr, writebank);
+#endif
 
 	for (;;) {
 		int nread, nwrite, n;
@@ -360,8 +377,13 @@ void CirrusLatchedBitBlt(x1, y1, x2, y2, w, h, destpitch)
 			break;
 		srcaddr += n * (destpitch >> 3);
 		destaddr += n * (destpitch >> 3);
+#ifdef PC98_WAB
+		CIRRUSCHECKREADB_WAB(srcaddr, readbank);
+		CIRRUSCHECKWRITEB_WAB(destaddr, writebank);
+#else
 		CIRRUSCHECKREADB(srcaddr, readbank);
 		CIRRUSCHECKWRITEB(destaddr, writebank);
+#endif
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
@@ -422,15 +444,25 @@ void CirrusLatchedBitBltReversed(x1, y1, x2, y2, w, h, destpitch)
 
 	nspans = h;	/* Number of spans to go. */
 
+#ifdef PC98_WAB
+	CIRRUSSETREADB_WAB(srcaddr, readbank);
+	CIRRUSSETWRITEB_WAB(destaddr, writebank);
+#else
 	CIRRUSSETREADB(srcaddr, readbank);
 	CIRRUSSETWRITEB(destaddr, writebank);
+#endif
 
 	for (;;) {
 		int nread, nwrite, n;
 
 		/* Adjust bank regions. */
+#ifdef PC98_WAB
+		CIRRUSCHECKREVERSEDREADB_WAB(srcaddr, readbank, destpitch >> 3);
+		CIRRUSCHECKREVERSEDWRITEB_WAB(destaddr, writebank, destpitch >> 3);
+#else
 		CIRRUSCHECKREVERSEDREADB(srcaddr, readbank, destpitch >> 3);
 		CIRRUSCHECKREVERSEDWRITEB(destaddr, writebank, destpitch >> 3);
+#endif
 
 		/* Calculate how many scanlines fit in the banking region. */
 		nread = CIRRUSREVERSEDWRITEREGIONLINES(srcaddr, destpitch >> 3);
@@ -526,12 +558,22 @@ void CirrusSimpleBitBlt( x1, y1, x2, y2, w, h, destpitch )
 	destaddr = y2 * destpitch + x2;
 	srcaddr = y1 * destpitch + x1;
 
+#ifdef PC98_WAB
+	CIRRUSSETREADB_WAB(srcaddr, readbank);
+	CIRRUSSETWRITEB_WAB(destaddr, writebank);
+#else
 	CIRRUSSETREADB(srcaddr, readbank);
 	CIRRUSSETWRITEB(destaddr, writebank);
+#endif
 
 	for (j = 0; j < h; j++) {
+#ifdef PC98_WAB
+		CIRRUSCHECKREADB_WAB(srcaddr, readbank);
+		CIRRUSCHECKWRITEB_WAB(destaddr, writebank);
+#else
 		CIRRUSCHECKREADB(srcaddr, readbank);
 		CIRRUSCHECKWRITEB(destaddr, writebank);
+#endif
 
 		/* Address in write window. */
 		destp = writebase + destaddr;
@@ -607,7 +649,11 @@ void CirrusColorExpandSolidFill(x, y, w, h, fg, destpitch)
 
 	/* Enable extended write modes and BY8 addressing. */
 	/* Every addressing byte corresponds to 8 pixels. */
+#ifdef PC98_WAB
+	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | DOUBLEBANKED);
+#else
 	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | SINGLEBANKED);
+#endif
 
 	SETWRITEMODE(4);
 
@@ -639,7 +685,12 @@ void CirrusColorExpandSolidFill(x, y, w, h, fg, destpitch)
 		rightmask = rightbitmask[w - (rightbcount - 1) * 8];
 masksdone:
 
+#ifdef PC98_WAB
+/*	CIRRUSSETREADB_WAB(destaddr, bank); */
 	CIRRUSSETSINGLEB(destaddr, bank);
+#else
+	CIRRUSSETSINGLEB(destaddr, bank);
+#endif
 
 	nspans = h;	/* Number of spans to go. */
 	for (;;) {
@@ -657,7 +708,12 @@ masksdone:
 		if (nspans == 0)
 			break;
 		destaddr += n * (destpitch >> 3);
+#ifdef PC98_WAB
+/*		CIRRUSCHECKSINGLEB_WAB(destaddr, bank); */
 		CIRRUSCHECKSINGLEB(destaddr, bank);
+#else
+		CIRRUSCHECKSINGLEB(destaddr, bank);
+#endif
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
@@ -789,7 +845,11 @@ destpitch)
 
 	/* Enable extended write modes and BY8 addressing. */
 	/* Every addressing byte corresponds to 8 pixels. */
+#ifdef PC98_WAB
+	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | DOUBLEBANKED);
+#else
 	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | SINGLEBANKED);
+#endif
 
 	SETWRITEMODE(4);
 
@@ -824,7 +884,12 @@ destpitch)
 		rightmask = rightbitmask[w - (rightbcount - 1) * 8];
 masksdone:
 
+#ifdef PC98_WAB
+/*	CIRRUSSETREADB_WAB(destaddr, bank); */
 	CIRRUSSETSINGLEB(destaddr, bank);
+#else
+	CIRRUSSETSINGLEB(destaddr, bank);
+#endif
 
 	syindex = (y - soy) % sh;	/* y index into source bitmap. */
 
@@ -882,7 +947,12 @@ masksdone:
 		if (nspans == 0)
 			break;
 		destaddr += n * (destpitch >> 3);
+#ifdef PC98_WAB
+/*		CIRRUSCHECKSINGLEB_WAB(destaddr, bank); */
 		CIRRUSCHECKSINGLEB(destaddr, bank);
+#else
+		CIRRUSCHECKSINGLEB(destaddr, bank);
+#endif
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
@@ -949,7 +1019,11 @@ bg, fg, destpitch)
 
 	/* Enable extended write modes and BY8 addressing. */
 	/* Every addressing byte corresponds to 8 pixels. */
+#ifdef PC98_WAB
+	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | DOUBLEBANKED);
+#else
 	SETMODEEXTENSIONS(EXTENDEDWRITEMODES | BY8ADDRESSING | SINGLEBANKED);
+#endif
 
 	SETWRITEMODE(5);	/* Opaque. */
 
@@ -985,7 +1059,12 @@ bg, fg, destpitch)
 		rightmask = rightbitmask[w - (rightbcount - 1) * 8];
 masksdone:
 
+#ifdef PC98_WAB
+/*	CIRRUSSETREADB_WAB(destaddr, bank); */
 	CIRRUSSETSINGLEB(destaddr, bank);
+#else
+	CIRRUSSETSINGLEB(destaddr, bank);
+#endif
 
 	syindex = (y - soy) % sh;	/* y index into source bitmap. */
 
@@ -1091,7 +1170,12 @@ skiprightpart:
 		if (nspans == 0)
 			break;
 		destaddr += n * (destpitch >> 3);
+#ifdef PC98_WAB
+/*		CIRRUSCHECKREADB_WAB(destaddr, bank); */
 		CIRRUSCHECKSINGLEB(destaddr, bank);
+#else
+		CIRRUSCHECKSINGLEB(destaddr, bank);
+#endif
 	}
 
 	/* Disable extended write modes and BY8 addressing. */
@@ -1174,7 +1258,12 @@ toy, destpitch)
 
 	/* Pointer to tile in read window in BY8 addressing mode. */
 	vtileaddr >>= 3;
+#ifdef PC98_WAB
+/*	CIRRUSSETREAD_WAB(vtileaddr); */
 	CIRRUSSETREAD(vtileaddr);
+#else
+	CIRRUSSETREAD(vtileaddr);
+#endif
 	vtilep = CIRRUSREADBASE() + vtileaddr;
 
 	destlineaddr = y * destpitch;	/* x added later. */
@@ -1197,7 +1286,11 @@ toy, destpitch)
 
 	destlineaddr >>= 3;			/* Divide address by 8. */
 
+#ifdef PC98_WAB
+	CIRRUSSETWRITEB(destlineaddr, writebank); /* It's OK */
+#else
 	CIRRUSSETWRITEB(destlineaddr, writebank);
+#endif
 
 	/* Current tile line index. */
 	tyindex = (y - toy) % theight;
@@ -1347,7 +1440,11 @@ skiprightpart:
 			tyindex -= theight;
 
 		destlineaddr += n * (destpitch >> 3);
+#ifdef PC98_WAB
+		CIRRUSCHECKWRITEB(destlineaddr, writebank); /* It's OK */
+#else
 		CIRRUSCHECKWRITEB(destlineaddr, writebank);
+#endif
 	}
 
 	/* Disable extended write modes and BY8 addressing. */

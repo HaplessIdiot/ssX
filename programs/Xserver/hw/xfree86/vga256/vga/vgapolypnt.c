@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 
 /* $XConsortium: vgapolypnt.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.0 1994/07/24 11:59:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapolypnt.c,v 3.1 1995/01/28 16:14:42 dawes Exp $ */
 
 #include "vga256.h"
 
@@ -59,7 +59,11 @@ vga256PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 {
     register long   pt;
     register long   c1, c2;
+#if defined(PC98_WAB)
+    register unsigned long   ClipMask = 0x40004000;
+#else
     register unsigned long   ClipMask = 0x80008000;
+#endif
     register unsigned long   xor;
     register unsigned char   *addrb;
     register int    nbwidth;
@@ -90,7 +94,11 @@ vga256PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	}
     }
     off = *((int *) &pDrawable->x);
+#if defined(PC98_WAB)
+    off -= (off & 0x4000) << 1;
+#else
     off -= (off & 0x8000) << 1;
+#endif
     cfbGetByteWidthAndPointer(pDrawable, nbwidth, addrb);
 
     BANK_FLAG(addrb)

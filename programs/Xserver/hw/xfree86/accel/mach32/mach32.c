@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.44 1995/12/17 05:02:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.45 1995/12/26 06:07:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -58,6 +58,16 @@
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 extern int defaultColorVisualClass;
 extern int mach32MaxClock;
@@ -132,7 +142,7 @@ ScrnInfoRec mach32InfoRec = {
     -1,			/* int s3BlankDelay */
 #ifdef XFreeXDGA
     0,			/* int directMode */
-    NULL,		/* Set Vid Page */
+    mach32SetVGAPage,	/* Set Vid Page */
     0,			/* unsigned long physBase */
     0,			/* int physSize */
 #endif
@@ -798,6 +808,11 @@ mach32Probe()
 		xf86weight.green, xf86weight.blue);
     }
 
+#ifdef XFreeXDGA
+    mach32InfoRec.displayWidth = mach32DisplayWidth;
+    mach32InfoRec.directMode = XF86DGADirectPresent;
+#endif
+
     return(TRUE);
 }
 
@@ -1046,7 +1061,10 @@ mach32EnterLeaveVT(enter, screen_idx)
 	mach32SaveLUT(mach32savedLUT);
 	LUTissaved = TRUE;
 	if (!xf86Resetting) {
-	    mach32CleanUp();
+#ifdef XFreeXDGA
+	    if (!(mach32InfoRec.directMode & XF86DGADirectGraphics))
+#endif
+	        mach32CleanUp();
 	}
 	if (vgaBase)
 	    xf86UnMapDisplay(screen_idx, VGA_REGION);

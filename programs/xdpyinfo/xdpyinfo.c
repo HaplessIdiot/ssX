@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.0 1995/12/23 09:40:53 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.1 1996/01/05 13:21:12 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -42,6 +42,10 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/extensions/record.h>
 #ifdef MITSHM
 #include <X11/extensions/XShm.h>
+#endif
+#ifdef XKB
+#include <X11/extensions/XKB.h>
+#include <X11/XKBlib.h>
 #endif
 #ifdef XF86VIDMODE
 #include <X11/extensions/xf86vmode.h>
@@ -685,6 +689,30 @@ print_mitshm_info(dpy, extname)
 }
 #endif /* MITSHM */
 
+#ifdef XKB
+print_xkb_info(dpy, extname)
+    Display *dpy;
+    char *extname;
+{
+    int opcode, eventbase, errorbase, majorrev, minorrev;
+
+    if (!XkbQueryExtension(dpy, &opcode, &eventbase, &errorbase,
+			   &majorrev, &minorrev)) {
+        return 0;
+    }
+    printf("%s version %d.%d ", extname, majorrev, minorrev);
+
+    printf ("opcode: %d", opcode);
+    if (eventbase)
+	printf (", base event: %d", eventbase);
+    if (errorbase)
+	printf (", base error: %d", errorbase);
+    printf("\n");
+
+    return 1;
+}
+#endif
+
 int
 print_dbe_info(dpy, extname)
     Display *dpy;
@@ -748,6 +776,9 @@ ExtensionPrintInfo known_extensions[] =
 #ifdef MITSHM
     {"MIT-SHM",	print_mitshm_info, False},
 #endif /* MITSHM */
+#ifdef XKB
+    {XkbName, print_xkb_info, False},
+#endif /* XKB */
     {MULTIBUFFER_PROTOCOL_NAME,	print_multibuf_info, False},
     {"SHAPE", print_shape_info, False},
     {SYNC_NAME, print_sync_info, False},
@@ -762,7 +793,7 @@ ExtensionPrintInfo known_extensions[] =
     {"DOUBLE-BUFFER", print_dbe_info, False},
     {"RECORD", print_record_info, False}    
     /* add new extensions here */
-    /* wish list: PEX XKB LBX */
+    /* wish list: PEX */
 };
 
 int num_known_extensions = sizeof known_extensions / sizeof known_extensions[0];

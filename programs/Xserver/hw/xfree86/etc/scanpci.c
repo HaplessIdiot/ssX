@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.4 1995/12/23 09:39:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.5 1996/01/12 14:34:32 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -412,6 +412,7 @@ struct pci_vendor_device {
                             { 0x00A0, "GD 5430", NF },
                             { 0x00A4, "GD 5434-4", NF },
                             { 0x00A8, "GD 5434-8", NF },
+                            { 0x00AC, "GD 5436", NF },
                             { 0x1100, "CL 6729", NF },
                             { 0x1200, "CL 7542", NF },
                             { 0x0000, (char *)NULL, NF } } },
@@ -422,8 +423,11 @@ struct pci_vendor_device {
                             { 0x2020, "53C974 SCSI", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1023, "Trident", {
-                            { 0x9420, "TG 9420", NF },
-                            { 0x9440, "TG 9440", NF },
+                            { 0x9420, "TGUI 9420", NF },
+                            { 0x9440, "TGUI 9440", NF },
+                            { 0x9660, "TGUI 9660", NF },
+                            { 0x9680, "TGUI 9680", NF },
+                            { 0x9682, "TGUI 9682", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1025, "ALI", {
                             { 0x1435, "M1435", NF },
@@ -439,10 +443,14 @@ struct pci_vendor_device {
                             { 0x0000, "TMC-18C30 (36C70)", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1039, "SIS", {
+                            { 0x0001, "86C201", NF },
                             { 0x0008, "85C503", NF },
                             { 0x0406, "85C501", NF },
                             { 0x0496, "85C496", NF },
                             { 0x0601, "85C601", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x103c, "HP", {
+                            { 0x1030, "J2585A", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1042, "SMC", {
                             { 0x1000, "FDC 37C665", NF },
@@ -524,11 +532,17 @@ struct pci_vendor_device {
         { 0x111A, "EF", {
                             { 0x0000, "155P-MF1", NF },
                             { 0x0000, (char *)NULL, NF } } },
+        { 0x1159, "Mutech", {
+                            { 0x0001, "MV1000", NF },
+                            { 0x0000, (char *)NULL, NF } } },
         { 0x1193, "Zeinet", {
                             { 0x0001, "1221", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1C1C, "Symphony", {
                             { 0x0001, "82C101", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x1DE1, "Tekram", {
+                            { 0xDC29, "DC290", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x5333, "S3", {
                             { 0x8811, "Trio32/64", NF },
@@ -555,6 +569,7 @@ struct pci_vendor_device {
                             { 0x5078, "7850", NF },
                             { 0x7078, "294x", NF },
                             { 0x7178, "2940", NF },
+                            { 0x7278, "7872", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x907F, "Atronics", {
                             { 0x2015, "IDE-2015PL", NF },

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.5 95/01/23 15:35:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.18 1995/11/04 11:30:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.19 1995/11/30 13:05:08 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -366,40 +366,138 @@ typedef struct
 
 #define setbank setreadbank
 
+#ifdef PC98_WAB
+#define setwritebank_pc98(n) \
+	outw(0x3ce, 0x0a + ((n) << (cirrusBankShift - 1)));
+
+#define setreadbank_pc98(n) \
+	outw(0x3ce, 0x09 + ((n) << (cirrusBankShift - 1)));
+#endif
+
 /* Set up banking at video address addr. Bank is set, addr adjusted. */
+#ifdef PC98_WAB
+#define CIRRUSSETREAD(addr) \
+	if (!cirrusUseLinear) { \
+		setreadbank(addr >> 14); \
+		setwritebank((addr >> 14) + 1); \
+		addr &= 0x3fff; \
+	}
+#else
 #define CIRRUSSETREAD(addr) \
 	if (!cirrusUseLinear) { \
 		setreadbank(addr >> 14); \
 		addr &= 0x3fff; \
 	}
+#endif
 
+#ifdef PC98_WAB
+#define CIRRUSSETWRITE(addr) \
+	if (!cirrusUseLinear) { \
+		setreadbank(addr >> 14); \
+		setwritebank((addr >> 14) + 1); \
+		addr &= 0x3fff; \
+	}
+#else
 #define CIRRUSSETWRITE(addr) \
 	if (!cirrusUseLinear) { \
 		setwritebank(addr >> 14); \
 		addr &= 0x3fff; \
 	}
+#endif
 
+#ifdef PC98_WAB
+#define CIRRUSSETREAD_WAB(addr) \
+	if (!cirrusUseLinear) { \
+		setreadbank_pc98(addr >> 13); \
+		addr &= 0x1fff; \
+	}
+
+#define CIRRUSSETWRITE_WAB(addr) \
+	if (!cirrusUseLinear) { \
+		setwritebank_pc98(addr >> 13); \
+		addr &= 0x1fff; \
+	}
+#endif
+
+#ifdef PC98_WAB
+#define CIRRUSSETSINGLE(addr) \
+	if (!cirrusUseLinear) { \
+		setreadbank_pc98(addr >> 13); \
+		setwritebank_pc98((addr >> 13)+1); \
+		addr &= 0x1fff; \
+	}
+#else
 #define CIRRUSSETSINGLE CIRRUSSETREAD
+#endif
 
 /* Similar, but also assigns the bank value to a variable. */
+#ifdef PC98_WAB
+#define CIRRUSSETREADB(addr, bank) \
+	if (!cirrusUseLinear) { \
+		bank = addr >> 14; \
+		setreadbank(bank); \
+		setwritebank(bank + 1); \
+		addr &= 0x3fff; \
+	}
+#else
 #define CIRRUSSETREADB(addr, bank) \
 	if (!cirrusUseLinear) { \
 		bank = addr >> 14; \
 		setreadbank(bank); \
 		addr &= 0x3fff; \
 	}
+#endif
 
+#ifdef PC98_WAB
+#define CIRRUSSETWRITEB(addr, bank) \
+	if (!cirrusUseLinear) { \
+		bank = addr >> 14; \
+		setreadbank(bank); \
+		setwritebank(bank + 1); \
+		addr &= 0x3fff; \
+	}
+#else
 #define CIRRUSSETWRITEB(addr, bank) \
 	if (!cirrusUseLinear) { \
 		bank = addr >> 14; \
 		setwritebank(bank); \
 		addr &= 0x3fff; \
 	}
+#endif
+
+#ifdef PC98_WAB
+#define CIRRUSSETREADB_WAB(addr, bank) \
+	if (!cirrusUseLinear) { \
+		bank = addr >> 13; \
+		setreadbank_pc98(bank); \
+		addr &= 0x1fff; \
+	}
+
+#define CIRRUSSETWRITEB_WAB(addr, bank) \
+	if (!cirrusUseLinear) { \
+		bank = addr >> 13; \
+		setwritebank_pc98(bank); \
+		addr &= 0x1fff; \
+	}
+#endif
 
 #define CIRRUSSETSINGLEB CIRRUSSETREADB
 
 /* Adjust the banking address, and maximize the size of the banking */
 /* region for the current address/bank. */
+#ifdef PC98_WAB
+#define CIRRUSCHECKREADB(addr, bank) \
+	if (!cirrusUseLinear && addr >= 0x4000) { \
+		addr -= 0x4000; \
+		bank++; \
+		if (addr >= 0x4000) { \
+			addr -= 0x4000; \
+			bank++; \
+		} \
+		setreadbank(bank); \
+		setwritebank(bank + 1); \
+	}
+#else
 #define CIRRUSCHECKREADB(addr, bank) \
 	if (!cirrusUseLinear && addr >= 0x4000) { \
 		addr -= 0x4000; \
@@ -410,7 +508,21 @@ typedef struct
 		} \
 		setreadbank(bank); \
 	}
+#endif
 
+#ifdef PC98_WAB
+#define CIRRUSCHECKWRITEB(addr, bank) \
+	if (!cirrusUseLinear && addr >= 0x4000) { \
+		addr -= 0x4000; \
+		bank++; \
+		if (addr >= 0x4000) { \
+			addr -= 0x4000; \
+			bank++; \
+		} \
+		setreadbank(bank); \
+		setwritebank(bank + 1); \
+	}
+#else
 #define CIRRUSCHECKWRITEB(addr, bank) \
 	if (!cirrusUseLinear && addr >= 0x4000) { \
 		addr -= 0x4000; \
@@ -421,16 +533,40 @@ typedef struct
 		} \
 		setwritebank(bank); \
 	}
+#endif
 
+#ifdef PC98_WAB
+#define CIRRUSCHECKSINGLEB(addr, bank) \
+	if (!cirrusUseLinear && addr >= 0x4000) { \
+		bank += addr >> 14; \
+		addr &= 0x3fff; \
+		setreadbank(bank); \
+		setwritebank(bank+1); \
+	}
+#else
 #define CIRRUSCHECKSINGLEB(addr, bank) \
 	if (!cirrusUseLinear && addr >= 0x4000) { \
 		bank += addr >> 14; \
 		addr &= 0x3fff; \
 		setbank(bank); \
 	}
+#endif
 
 /* Bank adjust and maximimize size of banking region for routines that */
 /* write from bottom to top. */
+#ifdef PC98_WAB
+#define CIRRUSCHECKREVERSEDREADB(addr, bank, pitch) \
+	if (!cirrusUseLinear && addr + (pitch) <= 0x4000) { \
+		addr += 0x4000; \
+		bank--; \
+		if (addr + (pitch) <= 0x4000) { \
+			addr += 0x4000; \
+			bank--; \
+		} \
+		setreadbank(bank); \
+		setwritebank(bank+1); \
+	}
+#else
 #define CIRRUSCHECKREVERSEDREADB(addr, bank, pitch) \
 	if (!cirrusUseLinear && addr + (pitch) <= 0x4000) { \
 		addr += 0x4000; \
@@ -441,7 +577,21 @@ typedef struct
 		} \
 		setreadbank(bank); \
 	}
+#endif
 
+#ifdef PC98_WAB
+#define CIRRUSCHECKREVERSEDWRITEB(addr, bank, pitch) \
+	if (!cirrusUseLinear && addr + (pitch) <= 0x4000) { \
+		addr += 0x4000; \
+		bank--; \
+		if (addr + (pitch) <= 0x4000) { \
+			addr += 0x4000; \
+			bank--; \
+		} \
+		setreadbank(bank); \
+		setwritebank(bank + 1); \
+	}
+#else
 #define CIRRUSCHECKREVERSEDWRITEB(addr, bank, pitch) \
 	if (!cirrusUseLinear && addr + (pitch) <= 0x4000) { \
 		addr += 0x4000; \
@@ -452,22 +602,84 @@ typedef struct
 		} \
 		setwritebank(bank); \
 	}
+#endif
+
+#ifdef PC98_WAB
+#define CIRRUSCHECKREADB_WAB(addr, bank) \
+	if (!cirrusUseLinear && addr >= 0x2000) { \
+		addr -= 0x2000; \
+		bank++; \
+		setreadbank_pc98(bank); \
+	}
+
+#define CIRRUSCHECKWRITEB_WAB(addr, bank) \
+	if (!cirrusUseLinear && addr >= 0x2000) { \
+		addr -= 0x2000; \
+		bank++; \
+		setwritebank_pc98(bank); \
+	}
+
+#define CIRRUSCHECKSINGLEB_WAB(addr, bank) \
+	if (!cirrusUseLinear && addr >= 0x2000) { \
+		bank += addr >> 13; \
+		addr &= 0x1fff; \
+		setbank(bank); \
+	}
+
+/* Bank adjust for routines that write from bottom to top. */
+#define CIRRUSCHECKREVERSEDREADB_WAB(addr, bank, pitch) \
+	if (!cirrusUseLinear && addr + (pitch) <= 0x2000) { \
+		addr += 0x2000; \
+		bank--; \
+		if (addr + (pitch) <= 0x2000) { \
+			addr += 0x2000; \
+			bank--; \
+		} \
+		setreadbank_pc98(bank); \
+	}
+
+#define CIRRUSCHECKREVERSEDWRITEB_WAB(addr, bank, pitch) \
+	if (!cirrusUseLinear && addr + (pitch) <= 0x2000) { \
+		addr += 0x2000; \
+		bank--; \
+		if (addr + (pitch) <= 0x2000) { \
+			addr += 0x2000; \
+			bank--; \
+		} \
+		setwritebank_pc98(bank); \
+	}
+#endif
 
 /* The pointer base address of the video read/write window. */
 #define CIRRUSREADBASE() (cirrusUseLinear ? (unsigned char *)vgaLinearBase \
 	: (unsigned char *)vgaBase)
+#ifdef PC98_WAB
+#define CIRRUSWRITEBASE() (cirrusUseLinear ? (unsigned char *)vgaLinearBase \
+	: (unsigned char *)vgaBase + 0x4000)
+#else
 #define CIRRUSWRITEBASE() (cirrusUseLinear ? (unsigned char *)vgaLinearBase \
 	: (unsigned char *)vgaBase + 0x8000)
+#endif
 #define CIRRUSSINGLEBASE CIRRUSREADBASE
 #define CIRRUSBASE CIRRUSREADBASE
 
 /* Number of scanlines that fit in banking region (arbitrary number */
 /* for linear addressing mode). */
+#ifdef PC98_WAB
+#define CIRRUSSINGLEREGIONLINES(addr, pitch) (cirrusUseLinear ? 0xf0000 \
+	: (0x8000 - (addr)) / (pitch))
+#else
 #define CIRRUSSINGLEREGIONLINES(addr, pitch) (cirrusUseLinear ? 0xf0000 \
 	: (0x10000 - (addr)) / (pitch))
+#endif
 
+#ifdef PC98_WAB
+#define CIRRUSWRITEREGIONLINES(addr, pitch) (cirrusUseLinear ? 0xf0000 \
+	: (0x4000 - (addr)) / (pitch))
+#else
 #define CIRRUSWRITEREGIONLINES(addr, pitch) (cirrusUseLinear ? 0xf0000 \
 	: (0x8000 - (addr)) / (pitch))
+#endif
 
 #define CIRRUSREVERSEDWRITEREGIONLINES(addr, pitch) \
 	(cirrusUseLinear ? 0xf0000 : (addr) / (pitch))

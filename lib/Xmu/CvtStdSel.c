@@ -1,5 +1,5 @@
-/* $XConsortium: CvtStdSel.c /main/35 1995/11/10 12:07:47 kaleb $ */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.3 1995/06/02 10:04:45 dawes Exp $ */
+/* $XConsortium: CvtStdSel.c /main/37 1996/01/12 15:08:34 kaleb $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.4 1996/01/05 13:12:20 dawes Exp $ */
 
 /*
  
@@ -219,8 +219,20 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
     if (*target == XA_IP_ADDRESS(d)) {
 	char hostname[1024];
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#ifdef _POSIX_REENTRANT_FUNCTIONS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
+#define _POSIX_THREAD_SAFE_FUNCTIONS 1
+#endif
+#endif
+#endif
+#ifdef sun
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
+#undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+#endif
 	struct hostent hent;
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
 #define Gethostbyname(h) gethostbyname_r((h),&hent,hbuf,sizeof hbuf,&herr)
 #define HostAddrType hent.h_addrtype
 #define HostAddr hent.h_addr
@@ -250,7 +262,7 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	hostname[0] = '\0';
 	(void) XmuGetHostname (hostname, sizeof hostname);
 
-#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREADS)
+#if defined(XTHREADS) && defined(XUSE_MTSAFE_API) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
 	bzero((char*)&hdata, sizeof hdata);
 #endif
 	if ((hostp = Gethostbyname (hostname)) == CallFailed)

@@ -1,5 +1,5 @@
-/* $XConsortium: GetDflt.c /main/40 1995/11/10 12:07:17 kaleb $ */
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.3 1995/01/28 15:42:48 dawes Exp $ */
+/* $XConsortium: GetDflt.c /main/42 1996/01/12 15:08:42 kaleb $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.4 1996/01/05 13:11:02 dawes Exp $ */
 
 /***********************************************************
 
@@ -90,12 +90,24 @@ static char *GetHomeDir (dest)
 #endif
 #endif
 #if defined(XTHREADS) && defined(XUSE_MTSAFE_API)
+#ifdef _POSIX_REENTRANT_FUNCTIONS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
+#if defined(AIXV3) || defined(AIXV4) || defined(__osf__)
+#define _POSIX_THREAD_SAFE_FUNCTIONS 1
+#endif
+#endif
+#endif
+#ifdef sun
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS     /* Sun lies in Solaris 2.5 */
+#undef _POSIX_THREAD_SAFE_FUNCTIONS
+#endif
+#endif
 #define PwDir pws.pw_dir
     struct passwd pws;
     char pwbuf[LINE_MAX];
 #define Getpwnam(u) getpwnam_r((u),&pws,pwbuf,sizeof pwbuf)
 #define Getpwuid(u) getpwuid_r((u),&pws,pwbuf,sizeof pwbuf)
-#ifndef _POSIX_THREADS
+#ifndef _POSIX_THREAD_SAFE_FUNCTIONS
 #define CallFailed NULL
     struct passwd *pw;
 #else

@@ -29,7 +29,7 @@
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.1 1996/01/03 01:23:29 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -42,10 +42,10 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
-#include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "vga.h"
+#include "vgaPCI.h"
 
 #ifdef XF86VGA16
 #define MONOVGA
@@ -185,7 +185,6 @@ SISProbe()
 {
   	int numClocks;
   	unsigned char temp;
-	int i;
 
 	/*
          * Set up I/O ports to be used by this card
@@ -194,8 +193,6 @@ SISProbe()
 	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
 
 	SISchipset = -1;
-
-	SISEnterLeave(ENTER);
 
   	if (vga256InfoRec.chipset)
     	{
@@ -209,38 +206,31 @@ SISProbe()
 	{
 		/* Aparently there are only PCI based 86C201's */
 
-		struct pci_config_reg *pcrp;
-		int idx = 0;
-
-		xf86scanpci();
-		while (pcrp = pci_devp[idx])
+		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_SIS)
 		{
-			if (pcrp->_vendor == 0x1039)
+			switch(vgaPCIInfo->ChipType)
 			{
-				switch(pcrp->_device)
-				{
-					case 0x0001: 	/* 86C201 */
-						SISchipset = SIS86C201;
+			case PCI_CHIP_SG86C201: 	/* 86C201 */
+				SISchipset = SIS86C201;
 #ifndef MONOVGA
 /* PCI space doesn't seem to have this set, check out FbInit */
 #if PCI_BASE_0
-						SIS.ChipLinearBase = 
-							pcrp->_base0;
-						sisUseLinear = TRUE;
-#endif
-#endif
-						break;
+				if (vgaPCIInfo->MemBase != 0)
+				{
+				    SIS.ChipLinearBase = vgaPCIInfo->MemBase;
+				    isUseLinear = TRUE;
 				}
+#endif
+#endif
+				break;
 			}
-		idx++;
 		}
 		if (SISchipset == -1)
-		{
-			SISEnterLeave(LEAVE);
 			return (FALSE);
-		}
 		vga256InfoRec.chipset = SISIdent(SISchipset);
 	}
+
+	SISEnterLeave(ENTER);
 	
  	/* 
 	 * How much Video Ram have we got?

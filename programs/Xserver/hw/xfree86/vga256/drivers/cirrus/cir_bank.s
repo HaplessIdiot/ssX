@@ -1,6 +1,5 @@
-/* $XConsortium: cir_bank.s,v 1.2 94/03/29 11:07:35 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bank.s,v 1.1.1.2 1996/01/03 07:23:34 dawes Exp $ */
 /*
- * Header: /usr/local/src/Xaccel/cirrus/RCS/bank.s,v 1.2 1993/04/04 17:56:11 bill Exp
  *
  * Copyright 1990,91 by Bill Reynolds, Santa Fe, New Mexico
  *
@@ -26,6 +25,7 @@
  * Changes: Piercarlo Grandi, Aberystwyth (pcg@aber.ac.uk)
  *
  */
+/* $XConsortium: cir_bank.s /main/3 1995/11/13 08:20:38 kaleb $ */
 
 /*
  * These are here the very lowlevel VGA bankswitching routines.
@@ -42,8 +42,23 @@
  * AH.
  */
 
+#ifdef PC98_WAB
+#define cirrus1MBSHIFT CONST(10)	/* 8 + (lg(16KB) - lg(4KB))     */
+#define cirrus2MBSHIFT CONST(8)		/* 8 + (lg(16KB) - lg(16KB))    */
+#else
 #define cirrus1MBSHIFT CONST(11)	/* 8 + (lg(32KB) - lg(4KB))     */
 #define cirrus2MBSHIFT CONST(9)		/* 8 + (lg(32KB) - lg(16KB))    */
+#endif
+
+#if defined(PC98_WAB) || defined(PC98_GANB_WAP)
+#define GRX	CONST(0x4ee0)
+#else
+#ifdef PC98_NKVNEC
+#define GRX	CONST(0x0cae)
+#else
+#define GRX	CONST(0x3ce)
+#endif
+#endif
 
 #include "assyntax.h"
 
@@ -58,7 +73,7 @@
 GLNAME(cirrusSetRead):
 	SHL_L	(cirrus1MBSHIFT,EAX)
 	MOV_B   (CONST(0x09),AL)
-	MOV_L	(CONST(0x3CE),EDX)
+	MOV_L	(GRX,EDX)
 	OUT_W
 	RET
 
@@ -69,7 +84,7 @@ GLNAME(cirrusSetReadWrite):
 GLNAME(cirrusSetWrite):
 	SHL_L	(cirrus1MBSHIFT,EAX)
 	MOV_B   (CONST(0x0A),AL)
-	MOV_L	(CONST(0x3CE),EDX)
+	MOV_L	(GRX,EDX)
 	OUT_W
 	RET
 
@@ -78,7 +93,7 @@ GLNAME(cirrusSetWrite):
 GLNAME(cirrusSetRead2MB):
 	SHL_L	(cirrus2MBSHIFT,EAX)
 	MOV_B   (CONST(0x09),AL)
-	MOV_L	(CONST(0x3CE),EDX)
+	MOV_L	(GRX,EDX)
 	OUT_W
 	RET
 
@@ -89,6 +104,6 @@ GLNAME(cirrusSetReadWrite2MB):
 GLNAME(cirrusSetWrite2MB):
 	SHL_L	(cirrus2MBSHIFT,EAX)
 	MOV_B   (CONST(0x0A),AL)
-	MOV_L	(CONST(0x3CE),EDX)
+	MOV_L	(GRX,EDX)
 	OUT_W
 	RET

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/202 1995/12/11 15:15:14 dpw $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.43 1996/01/06 05:22:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.44 1996/01/10 05:35:50 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -424,6 +424,18 @@ XF86AGX = XF86_AGX
 #if XF86I128Server
 XF86I128 = XF86_I128
 #endif
+#if XF98GANBWAPServer
+XF98GANBWAP = XF98_GANBWAP
+#endif
+#if XF98NEC480Server
+XF98NEC480 = XF98_NEC480
+#endif
+#if XF98NKVNECServer
+XF98NKVNEC = XF98_NKVNEC
+#endif
+#if XF98WABSServer
+XF98WABS = XF98_WABS
+#endif
 #if XF98EGCServer
 XF98EGC = XF98_EGC
 #endif
@@ -442,8 +454,8 @@ XNEST = Xnest
 #if XVirtualFramebufferServer
 XVFB = Xvfb
 #endif
-#if defined(XF86SVGAServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XnestServer) || defined(XVirtualFramebufferServer)
-MakeMutex($(XF86SVGA) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XNEST) $(XVFB))
+#if defined(XF86SVGAServer) || defined(XF98GANBWAPServer) || defined(XF98NEC480Server) || defined(XF98NKVNECServer) || defined(XF98WABSServer) || defined(XF86VGA16Server) || defined(XF98EGCServer) || defined(XF86W32Server) || defined(XF86MonoServer) || defined(XF86S3Server) || defined(XF98NECS3Server) || defined(XF98PWSKBServer) || defined(XF98PWLBServer) || defined(XF86I8514Server) || defined(XF86Mach8Server) || defined(XF86Mach32Server) || defined(XF86Mach64Server) || defined(XF86P9000Server) || defined(XF86AGXServer) || defined(XF86I128Server) || defined(XnestServer) || defined(XVirtualFramebufferServer)
+MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98NEC480) $(XF98NKVNEC) $(XF98WABS) $(XF86VGA16) $(XF98EGC) $(XF86W32) $(XF86MONO) $(XF86S3) $(XF98NECS3) $(XF98PWSKB) $(XF98PWLB) $(XF868514) $(XF86MACH8) $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) $(XNEST) $(XVFB))
 #endif
 MakeMutex($(STDDIRS) mfb cfb cfb16 cfb32)
 #endif
@@ -760,6 +772,114 @@ LinkFile(XF86_AGX.def,AGX.def)
 #endif
 #endif        /* XF86AGXServer */
 
+
+#if XF98GANBWAPServer
+XCOMM
+XCOMM XFree98 GA-98NB/WAP Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR2 = hw/xfree98
+XF98GANBWAPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98GANBWAPOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/ganbwapConf.o
+XF98GANBWAPLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverganbwap) \
+		  $(XF98SRC)/vga256/LibraryTargetName(ganbwap) $(XF98LIBS) \
+		  CFBLibs $(XF98OSLIB)
+XF98GANBWAPSYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF98GANBWAPSUBDIRS) $(XF98GANBWAPOBJS) $(XF98GANBWAPLIBS) $(XF98GANBWAPSYSLIBS))
+#endif
+SetUIDServerTarget(XF98_GANBWAP,$(XF98GANBWAPSUBDIRS),$(XF98GANBWAPOBJS),$(XF98GANBWAPLIBS),$(XF98GANBWAPSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF98_GANBWAP
+#endif
+#ifdef OS2Architecture
+LinkFile(XF98_GANBWAP.def,SVGA.def)
+#endif
+#endif	/* XF98GANBWAPServer */
+
+#if XF98NEC480Server
+XCOMM
+XCOMM XFree98 NEC480 Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR2 = hw/xfree98
+XF98NEC480SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98NEC480OBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/nec480Conf.o
+XF98NEC480LIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivernec480) \
+		 $(XF98SRC)/vga256/LibraryTargetName(nec480) $(XF98LIBS) \
+		 CFBLibs $(XF98OSLIB)
+XF98NEC480SYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF98NEC480SUBDIRS) $(XF98NEC480OBJS) $(XF98NEC480LIBS) $(XF98NEC480SYSLIBS))
+#endif
+SetUIDServerTarget(XF98_NEC480,$(XF98NEC480SUBDIRS),$(XF98NEC480OBJS),$(XF98NEC480LIBS),$(XF98NEC480SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF98_NEC480
+#endif
+#ifdef OS2Architecture
+LinkFile(XF98_NEC480.def,NEC480.def)
+#endif
+#endif	/* XF98NEC480Server */
+
+#if XF98NKVNECServer
+XCOMM
+XCOMM XFree98 NEC-CIRRUS/EPSON NKV/NKV2 Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR2 = hw/xfree98
+XF98NKVNECSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98NKVNECOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/nkvnecConf.o
+XF98NKVNECLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(drivernkvnec) \
+		 $(XF98SRC)/vga256/LibraryTargetName(nkvnec) $(XF98LIBS) \
+		 CFBLibs $(XF98OSLIB)
+XF98NKVNECSYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF98NKVNECSUBDIRS) $(XF98NKVNECOBJS) $(XF98NKVNECLIBS) $(XF98NKVNECSYSLIBS))
+#endif
+SetUIDServerTarget(XF98_NKVNEC,$(XF98NKVNECSUBDIRS),$(XF98NKVNECOBJS),$(XF98NKVNECLIBS),$(XF98NKVNECSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF98_NKVNEC
+#endif
+#ifdef OS2Architecture
+LinkFile(XF98_NKVNEC.def,SVGA.def)
+#endif
+#endif	/* XF98NKVNECServer */
+
+#if XF98WABSServer
+XCOMM
+XCOMM XFree98 WAB-S Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB32DIR = cfb32
+DDXDIR2 = hw/xfree98
+XF98WABSSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98WABSOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/wabsConf.o
+XF98WABSLIBS = $(XF98VGADRIVERSRC)/LibraryTargetName(driverwabs) \
+	       $(XF98SRC)/vga256/LibraryTargetName(wabs) $(XF98LIBS) CFBLibs \
+	       $(XF98OSLIB)
+XF98WABSSYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF98WABSSUBDIRS) $(XF98WABSOBJS) $(XF98WABSLIBS) $(XF98WABSSYSLIBS))
+#endif
+SetUIDServerTarget(XF98_WABS,$(XF98WABSSUBDIRS),$(XF98WABSOBJS),$(XF98WABSLIBS),$(XF98WABSSYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF98_WABS
+#endif
+#ifdef OS2Architecture
+LinkFile(XF98_WABS.def,SVGA.def)
+#endif
+#endif	/* XF98WABSServer */
 
 #if XF98EGCServer
 XCOMM

@@ -1,5 +1,5 @@
 /* $XConsortium: vgaBank.s,v 1.3 94/10/13 13:04:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.3 1995/01/28 17:10:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.4 1996/01/12 14:38:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -85,6 +85,9 @@
 
 	SEG_DATA
 	GLOBL GLNAME(writeseg)
+#ifdef PC98_NEC480
+	GLOBL GLNAME(readseg)	/* PC98_NEC480 */
+#endif
 GLNAME(writeseg):
 	D_LONG 0
 GLNAME(readseg):

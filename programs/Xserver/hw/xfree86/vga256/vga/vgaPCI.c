@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.0 1996/01/12 14:39:00 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -71,6 +71,22 @@ vgaGetPCIInfo()
 		} else
 		    if (!info->MemBase)
 			info->MemBase = pcrp->_base3 & 0xFFFFFFF0;
+	    }
+	    if (pcrp->_base4) {
+		if (pcrp->_base4 & 1) {
+		    if (!info->IOBase)
+			info->IOBase = pcrp->_base4 & 0xFFFFFFFC;
+		} else
+		    if (!info->MemBase)
+			info->MemBase = pcrp->_base4 & 0xFFFFFFF0;
+	    }
+	    if (pcrp->_base5) {
+		if (pcrp->_base5 & 1) {
+		    if (!info->IOBase)
+			info->IOBase = pcrp->_base5 & 0xFFFFFFFC;
+		} else
+		    if (!info->MemBase)
+			info->MemBase = pcrp->_base5 & 0xFFFFFFF0;
 	    }
 	    break;
 	}

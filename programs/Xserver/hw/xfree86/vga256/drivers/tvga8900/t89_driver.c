@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.19 1996/01/08 08:56:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.20 1996/01/12 14:38:39 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -61,11 +61,11 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
-#include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "vga.h"
 #include "t89_driver.h"
+#include "vgaPCI.h"
 
 #ifdef XFreeXDGA
 #include "X.h"
@@ -715,7 +715,8 @@ TVGA8900Probe()
 				   "Trying to continue....";
 			break;
 		}
-		ErrorF("%s Card Type is %s\n",XCONFIG_PROBED,CardType);
+		if (tridentBusType != PCI)
+			ErrorF("%s Card Type is %s\n",XCONFIG_PROBED,CardType);
 
 #ifndef MONOVGA
 		tridentLinearOK = TRUE;		/* All TGUI cards have Linear */
@@ -988,8 +989,6 @@ TVGA8900FbInit()
 {
 	int offscreen_available;
 	unsigned char temp;
-	struct pci_config_reg *pcrp;
-	int idx = 0;
 	tridentUseLinear = FALSE;
 
 #ifndef MONOVGA
@@ -1008,16 +1007,10 @@ TVGA8900FbInit()
 
 	if (tridentBusType == PCI) /* PCI */
 	{
-		xf86scanpci();
-		while (pcrp = pci_devp[idx]) {
-		  if (pcrp->_vendor == 0x1023) {
-		  switch(pcrp->_device) {
-		    case 0x9440: 	/* 9440AGi */
-		    case 0x9660:	/* 9660XGi */
-		    case 0x9680:	/* 9680??? Video */
-		    case 0x9682:	/* 9682??? Video/3D */
-			if (pcrp->_base0 != 0) {
-			  TVGA8900.ChipLinearBase = pcrp->_base0;
+		if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
+		{
+			if (vgaPCIInfo->MemBase != 0) {
+			  TVGA8900.ChipLinearBase = vgaPCIInfo->MemBase;
 			  tridentUseLinear = TRUE;
 			} else {
 			  ErrorF("%s %s: Unable to locate valid FrameBuffer,"
@@ -1025,21 +1018,7 @@ TVGA8900FbInit()
 			  XCONFIG_PROBED, vga256InfoRec.name);
 			  tridentUseLinear = FALSE;
 			}
-			break;
-		    default:
-			ErrorF("%s %s: Found PCI Trident value 0x%x, "
-			       "Please report !\n", XCONFIG_PROBED,
-			       vga256InfoRec.name, pcrp->_device);
-			break;
-		  } }
-		  idx++;
 		}
-		xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-		xf86AddIOPorts(vga256InfoRec.scrnIndex,
-			       Num_VGA_IOPorts, VGA_IOPorts);
-		xf86AddIOPorts(vga256InfoRec.scrnIndex,
-			       Num_TGUI_ExtPorts, TGUI_ExtPorts);
-		xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 	} 
 	else /* VLBus, ISA, EISA */
 	{
@@ -1244,7 +1223,6 @@ TVGA8900Restore(restore)
 			outw(0x3C4, ((restore->NewMode2) << 8) | 0x0D);
 	}
 
-	outw(0x3C4, ((restore->NewMode1 ^ 0x02) << 8) | 0x0E);
 	outw(vgaIOBase + 4, ((restore->CRTCModuleTest) << 8) | 0x1E);
 
 	if (tridentHWCursorType == 1)
@@ -1274,7 +1252,6 @@ TVGA8900Restore(restore)
 			}
 		}
 		
-		outw(0x3C4, 0xC20E);
 		outw(vgaIOBase + 4, ((restore->CRTHiOrd) << 8) | 0x27);
 		outw(vgaIOBase + 4, ((restore->AddColReg) << 8) | 0x29);
 
@@ -1319,6 +1296,8 @@ TVGA8900Restore(restore)
 		outb(0x43C8, restore->VCLK_A);
 		outb(0x43C9, restore->VCLK_B);
 	}
+
+	outw(0x3C4, ((restore->NewMode1 ^ 0x02) << 8) | 0x0E);
 }
 
 /*
@@ -1445,7 +1424,6 @@ TVGA8900Save(save)
 			save->VCLK_B = inb(0x43C9);
 		}
 
-		outw(0x3C4, 0xC20E);
 		outb(vgaIOBase + 4, 0x27); save->CRTHiOrd = inb(vgaIOBase + 5);
 		outb(vgaIOBase + 4, 0x29); save->AddColReg = inb(vgaIOBase + 5);
 
