@@ -1,4 +1,24 @@
 XFree86 3.9c (xx May 1997)
+ 845. PC98 doc updates (#530, Michio "Karl" Jinbo).
+ 844. Implement the Get/SetViewPort() functions in the VidMode extension
+      (these were already documented).
+ 843. Fix some client/server protocol mismatches in some newer VidMode
+      extension functions, and allow new clients to not fail with
+      servers that don't have these fixes.  The extension version has
+      been bumped to 0.8.
+ 842. Allow xconsole to handle regular files (it could in our R5-based
+      releases, but this was lost when we moved to R6).
+ 841. Updates of tgetent for terminfo vs termcap for resize (#527,
+      Thomas E. Dickey).
+ 840. Add aixterm-style 16 colour support to xterm (#527, Thomas E. Dickey).
+ 839. Make sure the port number is printed in host byte order in Xserver
+      AUTH warning messages (#525, Marc W. Eichin).
+ 838. Stop xterm from setting the TERMCAP environment variable when
+      using terminfo (#523, Mark W. Eichin).
+ 837. Remove '.' from DefaultUserPath (#517, Per Fogelstrom).
+ 836. Add more ET6000-based cards to the Cards db, and make ET6000 and
+      ET4000w32i/p cards point to the SVGA server instead of the W32 server
+      (#515, Koen Gadeyne).
  835. Remove '-m486' from the default gcc options.
  834. Add detection of other variants of the Cyber9385 to the trident
       driver and SuperProbe (Arthur Tateishi and Alan Hourihane).
@@ -4640,4 +4660,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.476 1997/05/23 12:28:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.477 1997/05/24 13:46:32 dawes Exp $

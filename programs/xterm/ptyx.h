@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.19 1997/01/08 20:52:36 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.20 1997/05/23 09:19:53 dawes Exp $
  */
 
 /*
@@ -288,14 +288,24 @@ typedef struct {
 
 /***====================================================================***/
 
-#ifndef OPT_ISO_COLORS
-#define OPT_ISO_COLORS  1 /* true if xterm is configured with ISO colors */
+#ifndef OPT_AIX_COLORS
+#define OPT_AIX_COLORS  1 /* true if xterm is configured with AIX (16) colors */
 #endif
 
 #define OPT_BLINK_CURS  0 /* FIXME: do this later (96/7/31) */
 
+#ifndef OPT_ISO_COLORS
+#define OPT_ISO_COLORS  1 /* true if xterm is configured with ISO colors */
+#endif
+
 #ifndef OPT_VT52_MODE
 #define OPT_VT52_MODE   1 /* true if xterm supports VT52 emulation */
+#endif
+
+/***====================================================================***/
+
+#if OPT_AIX_COLORS && !OPT_ISO_COLORS
+fixme: You must have ANSI/ISO colors to support AIX colors
 #endif
 
 /***====================================================================***/
@@ -322,10 +332,19 @@ typedef struct {
 #define COLOR_15	15
 #define COLOR_BD	16
 #define COLOR_UL	17
+#ifndef DFT_COLORMODE
+#define DFT_COLORMODE FALSE	/* default colorMode resource */
+#endif
 #else
 #define if_OPT_ISO_COLORS(screen, code) /* nothing */
 #define TERM_COLOR_FLAGS 0
 #endif	/* OPT_ISO_COLORS */
+
+#if OPT_AIX_COLORS
+#define if_OPT_AIX_COLORS(screen, code) if(screen->colorMode) code
+#else
+#define if_OPT_AIX_COLORS(screen, code) /* nothing */
+#endif
 
 	/* the number of pointers per row in 'ScrnBuf' */
 #if OPT_ISO_COLORS

@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c /main/155 1996/12/15 21:27:07 rws $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.24 1996/12/24 02:27:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.25 1997/01/18 06:57:59 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -472,7 +472,7 @@ AuthAudit (client, letin, saddr, len, proto_n, auth_proto, auth_id)
 	case AF_INET:
 	    sprintf(out, "IP %s port %d",
 		    inet_ntoa(((struct sockaddr_in *) saddr)->sin_addr),
-		    ((struct sockaddr_in *) saddr)->sin_port);
+		    ntohs(((struct sockaddr_in *) saddr)->sin_port));
 	    break;
 #endif
 #ifdef DNETCONN

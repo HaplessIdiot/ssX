@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.42 1997/01/25 04:22:02 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.43 1997/05/23 09:19:47 dawes Exp $
  */
 
 /*
@@ -328,6 +328,7 @@ static void HandleVisualBell PROTO((Widget w, XEvent *event, String *params, Car
  */
 
 /* Defaults */
+static  Boolean	defaultCOLORMODE   = DFT_COLORMODE;
 static  Boolean	defaultFALSE	   = FALSE;
 static  Boolean	defaultTRUE	   = TRUE;
 static  int	defaultIntBorder   = DEFBORDER;
@@ -688,7 +689,7 @@ static XtResource resources[] = {
 	XtRString, "XtDefaultForeground"},
 {XtNcolorMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.colorMode),
-	XtRBoolean, (XtPointer) &defaultFALSE},
+	XtRBoolean, (XtPointer) &defaultCOLORMODE},
 {XtNcolorULMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.colorULMode),
 	XtRBoolean, (XtPointer) &defaultFALSE},
@@ -836,6 +837,11 @@ setExtendedFG()
 			fg = COLOR_BD;
 	}
 
+	/* This implements the IBM PC-style convention of 8-colors, with one
+	 * bit for bold, thus mapping the 0-7 codes to 8-15.  It won't make
+	 * much sense for 16-color applications, but we keep it to retain
+	 * compatiblity with ANSI-color applications.
+	 */
 	if ((fg >= 0) && (fg < 8) && (term->flags & BOLD))
 		fg |= 8;
 
@@ -1469,10 +1475,36 @@ static void VTparse()
 					  SGR_Background(-1);
 					})
 					break;
+				 case 90:
+				 case 91:
+				 case 92:
+				 case 93:
+				 case 94:
+				 case 95:
+				 case 96:
+				 case 97:
+					if_OPT_AIX_COLORS(screen,{
+					  term->sgr_foreground = (param[row] - 90 + 8);
+					  setExtendedFG();
+					})
+					break;
 				 case 100:
+#if !OPT_AIX_COLORS
 					if_OPT_ISO_COLORS(screen,{
 					  reset_SGR_Foreground();
 					  SGR_Background(-1);
+					})
+					break;
+#endif
+				 case 101:
+				 case 102:
+				 case 103:
+				 case 104:
+				 case 105:
+				 case 106:
+				 case 107:
+					if_OPT_AIX_COLORS(screen,{
+					  SGR_Background(param[row] - 100 + 8);
 					})
 					break;
 				}
