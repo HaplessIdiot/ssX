@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.20 1999/03/29 00:46:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.21 1999/03/29 12:17:56 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -49,6 +49,10 @@ in this Software without prior written authorization from the XFree86 Project.
 #define DPMS_SERVER
 #include "extensions/dpms.h"
 #endif /* DPMSExtension */
+
+#ifdef XvExtension
+#include "xf86xv.h"
+#endif
 
 /*
  * Internals
@@ -103,7 +107,7 @@ static int pix24bpp = 0;
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "0.6.0"
+#define S3VIRGE_VERSION_NAME "0.7.0"
 #define S3VIRGE_VERSION_MAJOR   0
 #define S3VIRGE_VERSION_MINOR   6
 #define S3VIRGE_PATCHLEVEL      0
@@ -133,23 +137,24 @@ DriverRec S3VIRGE =
 /* Supported chipsets */
 static SymTabRec S3VChipsets[] = {
 				  	/* base (86C325) */
-  { PCI_CHIP_VIRGE,			"ViRGE" },
+  { PCI_CHIP_VIRGE,			"virge" },
   { PCI_CHIP_VIRGE,			"86C325" },
   					/* VX (86C988) */
-  { PCI_CHIP_VIRGE_VX,		"ViRGE/VX" },
+  { PCI_CHIP_VIRGE_VX,		"virge vx" },
   { PCI_CHIP_VIRGE_VX,		"86C988" },
   					/* DX (86C375) GX (86C385) */
-  { PCI_CHIP_VIRGE_DXGX,	"ViRGE/DXGX" },
+  { PCI_CHIP_VIRGE_DXGX,	"virge dx" },
+  { PCI_CHIP_VIRGE_DXGX,	"virge gx" },
   { PCI_CHIP_VIRGE_DXGX,	"86C375" },
   { PCI_CHIP_VIRGE_DXGX,	"86C385" },
   					/* GX2 (86C357) */
-  { PCI_CHIP_VIRGE_GX2,		"ViRGE/GX2" },
+  { PCI_CHIP_VIRGE_GX2,		"virge gx2" },
   { PCI_CHIP_VIRGE_GX2,		"86C357" },
   					/* MX (86C260) */
-  { PCI_CHIP_VIRGE_MX,		"ViRGE/MX" },
+  { PCI_CHIP_VIRGE_MX,		"virge mx" },
   { PCI_CHIP_VIRGE_MX,		"86C260" },
   					/* MX+ (86C280) */
-  { PCI_CHIP_VIRGE_MXP,		"ViRGE/MX+" },
+  { PCI_CHIP_VIRGE_MXP,		"virge mx+" },
   { PCI_CHIP_VIRGE_MXP,		"86C280" },
   {-1,			NULL }
 };
@@ -252,6 +257,14 @@ static const char *xaaSymbols[] = {
     NULL
 };
 
+static const char *ramdacSymbols[] = {
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    NULL
+};
+
+
 #ifdef XFree86LOADER
 
 static const char *cfbSymbols[] = {
@@ -262,17 +275,6 @@ static const char *cfbSymbols[] = {
     "cfb32ScreenInit",
     NULL
 };
-
-static const char *ramdacSymbols[] = {
-   /* so far, none */
-   /*
-    "xf86InitCursor",
-    "xf86CreateCursorInfoRec",
-    "xf86DestroyCursorInfoRec",
-    */
-    NULL
-};
-
 
 
 static MODULESETUPPROTO(s3virgeSetup);
@@ -1335,6 +1337,15 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
 
+    /* Load ramdac if needed */
+    if (ps3v->hwcursor) {
+	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	    S3VFreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    }
+
     return TRUE;
 }
 
@@ -2004,8 +2015,6 @@ S3VMapMem(ScrnInfoPtr pScrn)
 
 #endif /* __alpha__ */
 
-
-  
   if( !ps3v->MapBase ) {
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	"Internal error: could not map registers.\n");
@@ -2025,10 +2034,12 @@ S3VMapMem(ScrnInfoPtr pScrn)
   		       		/* Initially the visual display start */
 				/* is the same as the mapped start. */
   ps3v->FBStart = ps3v->FBBase;
+  pScrn->memPhysBase = ps3v->PciInfo->memBase[0];
+  pScrn->fbOffset = 0;
 
-  				/* Set up pointer to hwcursor memory area */
+  				/* Set up offset to hwcursor memory area */
   				/* It's a 1K chunk at the end of the frame buffer */
-  ps3v->FBCursorStart = ps3v->FBStart + ps3v->videoRambytes - 1024;
+  ps3v->FBCursorOffset = ps3v->videoRambytes - 1024;
   
   S3VEnableMmio( pScrn);
    					/* Assign hwp->MemBase & IOBase here */
@@ -2231,6 +2242,18 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed!\n");
 #endif
   
+#ifdef XvExtension
+    {
+	XF86VideoAdaptorPtr *ptr;
+	int n;
+
+	n = xf86XVListGenericAdaptors(&ptr);
+	if (n) {
+	    xf86XVScreenInit(pScreen, ptr, n);
+	}
+    }
+#endif
+ 
     /* Report any unused options (only for the first generation) */
   if (serverGeneration == 1) {
     xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);

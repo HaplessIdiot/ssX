@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfballpriv.c,v 1.6 1998/11/28 10:42:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfballpriv.c,v 1.7 1998/12/20 11:57:28 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -38,10 +38,14 @@ in this Software without prior written authorization from The Open Group.
 #include "cfbmskbits.h"
 #include "mibstore.h"
 
+#if PSZ==8
 int cfbWindowPrivateIndex;
 int cfbGCPrivateIndex;
 #ifdef CFB_NEED_SCREEN_PRIVATE
 int cfbScreenPrivateIndex = -1;
+#endif
+#endif
+#ifdef CFB_NEED_SCREEN_PRIVATE
 static unsigned long cfbGeneration = 0;
 #endif
 

@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.4 1999/01/11 05:13:37 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.5 1999/03/14 03:22:27 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -94,9 +94,8 @@ c<Key>R:	no-op(r)\n\
 m<Key>I:	no-op(r)
 
 *TransientShell.translations: #override \
-<Map>:	get-values(1, $w, width, $h, height)\
-	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h,\
-		   translations, "#override <Map>:")
+<Create>:get-values(my, $w, width, $h, height)\
+	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h)
 
 *baseTranslations: #override \
 <Ctrl>X,<Ctrl>C:quit()\n\

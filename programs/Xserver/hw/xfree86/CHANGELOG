@@ -1,4 +1,49 @@
 XFree86 3.9Ph (5 April 1999)
+2685. Shadowfb support for the generic VGA driver at depths 4 and 1
+      (Dirk Hohndel and Mark Vojkovich).
+2684. Fix the printMonitorSection and printDeviceSection functions in
+      the parser (#2641, Joe Moss).
+2683. Change the s3virge chipset names, removing the slashes (#2640,
+      Kevin Brosius).
+2682. Preliminary s3virge man page (#2640, Kevin Brosius).
+2681. Fix s3virge HW cursor (#2640, Kevin Brosius, Mark Vojkovich).
+2680. Remove some multiply defined variables in the cfb modules to avoid
+      a problem on LynxOS PowerPC (#2639, Thomas Mueller).
+2679. Fix a crash in the new xedit code for listing files and directories
+      (#2638, Paulo Cesar Pereira de Andrade).
+2678. Change the kill_ring code in TextAction.c to always end in a text block
+      of zero length (#2638, Paulo Cesar Pereira de Andrade).
+2677. Add xpm pixmap support to Xaw (needs to be built with -DUSE_XPM
+      for this), and if the xpm image has a mask, the widget will be
+      automatically reshaped to the pixmap mask (#2638,
+      Paulo Cesar Pereira de Andrade).
+2676. Add some PCI IDs for Creative Labs 3D Blaster Banshee PCI (#2637,
+      Nicholas Brealey).
+2675. XAA pixmap->window and window->pixmap copy optimization (#2636,
+      Mark Vojkovich).
+2674. Implement some attributes for the v4l module, and fix the clipping
+      code (#2635, Gerd Knorr).
+2673. Incorporate 3.3.1 FIFO settings for the SiS driver based on memory
+      bandwidth and pixel clock (#2632, Juanjo Santamarta).
+2672. SetMclk and FastVram options for the SiS driver (#2632,
+      Juanjo Santamarta).
+2671. Fix some SiS mode switch problems (#2632, Juanjo Santamarta).
+2670. Imakefile fix for building the X server with BuildGlxExt=NO (#2631,
+      Thomas Mueller).
+2669. Imakefile fixes for cxpm and sxpm (#2631, Thomas Mueller).
+2668. LynxOS resync, including removing the CrossCompile rule from lynx.cf,
+      LynxOS sparc resync, remove SMEM warning for default verbose level,
+      LynxOS support for chips driver util programs (#2631, Thomas Mueller).
+2667. Add man pages for the fbdevhw and fbdev modules (#2630, Gerd Knorr).
+2466. Add fb.h so that fbdevhw can be built on pre-2.2 Linux (#2630,
+      Gerd Knorr).
+2465. Add support for generic Xv adaptors to the fbdev driver (#2629,
+      David Woodhouse).
+2464. Fix X locale problem for Linux/libc6 introduced in 3.9Pg (#2628,
+      Nozomi Ytow).
+2463. Fix VT switching problems with the 8+16 code (#2627, David Bateman).
+2462. Generic Xv support for the s3virge driver (#2626, David Woodhouse).
+2461. Add a permission notice to videodev.h (#2625, David Woodhouse).
 2460. Resync parts of the XInput DDX code with 3.3.x, including restoring
       the "Switch" device, RELATIVE_CHECK code, Elographics driver,
       Wacom driver, and Joystick driver (#2514, 2548, Frederic Lepied
@@ -7656,4 +7701,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.719 1999/04/04 00:20:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.720 1999/04/04 07:03:17 dawes Exp $

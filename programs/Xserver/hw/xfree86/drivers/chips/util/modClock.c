@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/modClock.c,v 1.1.2.1 1998/07/03 13:43:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/modClock.c,v 1.2 1998/07/25 16:55:44 dawes Exp $ */
 
 #ifdef __NetBSD__
 #  include <sys/types.h>
@@ -31,7 +31,9 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef Lynx
 #include <fnmatch.h>
+#endif
 
 #ifdef __NetBSD__
 #  define SET_IOPL() i386_iopl(3)
@@ -46,8 +48,13 @@
 #      define RESET_IOPL() sysi86(SI86IOPL,0)
 #    endif
 #  else
-#    define SET_IOPL() iopl(3)
-#    define RESET_IOPL() iopl(0)
+#    ifndef Lynx
+#      define SET_IOPL() iopl(3)
+#      define RESET_IOPL() iopl(0)
+#    else
+#      define SET_IOPL() 0
+#      define RESET_IOPL() 0
+#    endif
 #  endif
 #endif
 
@@ -350,7 +357,11 @@ int main (int argc, char *argv[]) {
   }
 
   ClockType = DotClk;
+#ifndef Lynx
   if (! fnmatch("*memClock",argv[0],FNM_PATHNAME)) {
+#else
+  if (strstr("memClock",argv[0]) != NULL) {
+#endif
     ClockType = MemClk;
   }
 

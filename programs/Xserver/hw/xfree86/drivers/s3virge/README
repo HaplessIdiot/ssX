@@ -12,6 +12,7 @@ the proper options, which will probably work on most systems.
 
 Cursor:
 
+- "hwcursor" "off" behaves exactly like "swcursor".  Default: "on"
 - "swcursor" will disable the HW Cursor.  HW Cursor is used by default and
 	no option is needed to enable it.
 
@@ -53,7 +54,7 @@ PCI bus:
 	few "broken" PCI chipsets, and will increase performance.  Option may
 	take a parameter "on", "off", "yes", etc...
 - "pci_retry" will allow the driver to rely on PCI Retry to program the 
-	ViRGE registers. "pci_burst_on" must be enabled for this to work. 
+	ViRGE registers. "pci_burst" must be enabled for this to work. 
 	This will increase performance, especially for small fills/blits, 
         because the driver does not have to poll the ViRGE before sending it 
         commands to make sure it is ready. It should work on most 
@@ -66,4 +67,4 @@ ViRGE MX LCD options:
 	in the config file.  Valid values are ?
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/README,v 1.5 1999/03/28 15:32:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/README,v 1.6 1999/03/29 12:17:54 dawes Exp $

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/Imakefile,v 1.5 1999/03/28 15:32:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/Imakefile,v 1.6 1999/03/29 12:17:54 dawes Exp $
 /*
  *
  * Copyright 1995-1998 The XFree86 Project, Inc.
@@ -21,10 +21,11 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa \
            -I$(XF86SRC)/xf1bpp -I$(XF86SRC)/xf4bpp \
-           -I$(XF86SRC)/xf24_32bpp \
+           -I$(XF86SRC)/xf24_32bpp -I$(SERVERSRC)/Xext \
            -I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
 	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
-           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC)
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC) \
+           -I$(EXTINCSRC)
 #endif
 
 #if MakeHasPosixVariableSubstitutions
@@ -37,5 +38,8 @@ ModuleObjectRule()
 ObjectModuleTarget(s3virge, $(OBJS))
 
 InstallObjectModule(s3virge,$(MODULEDIR),drivers)
+
+CppManTarget(s3virge,)
+InstallModuleManPage(s3virge)
 
 DependTarget()

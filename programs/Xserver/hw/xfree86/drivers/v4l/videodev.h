@@ -3,6 +3,9 @@
 
 /* Linux V4L API, Version 1
  * videodev.h from v4l driver in Linux 2.2.3 
+ *
+ * Used here with the explicit permission of the original author, Alan Cox.
+ *				<alan@lxorguk.ukuu.org.uk>
  */
 
 #include <linux/types.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.2 1999/03/20 08:59:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.3 1999/03/28 15:32:36 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -21,6 +21,10 @@
 #include "cfb32.h"
 
 #include "fbdevhw.h"
+
+#ifdef XvExtension
+#include "xf86xv.h"
+#endif
 
 #define DEBUG 1
 
@@ -527,6 +531,18 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Wrap the current CloseScreen function */
 	fPtr->CloseScreen = pScreen->CloseScreen;
 	pScreen->CloseScreen = FBDevCloseScreen;
+
+#ifdef XvExtension
+	{
+	    XF86VideoAdaptorPtr *ptr;
+
+	    int n = xf86XVListGenericAdaptors(&ptr);
+	    if (n) {
+		xf86XVScreenInit(pScreen,ptr,n);
+	    }
+	}
+#endif
+
 #ifdef DEBUG
 	ErrorF("FBDevScreenInit done\n",pScrn->scrnIndex);
 #endif

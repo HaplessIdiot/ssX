@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.1 1999/03/28 15:32:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.2 1999/03/29 06:23:13 dawes Exp $ */
 
 #include "videodev.h"
 
@@ -100,7 +100,6 @@ v4lSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 typedef struct _PortPrivRec {
     ScrnInfoPtr                 pScrn;
     FBAreaPtr			pFBArea[2];
-    RegionRec	                Region;
     int				VideoOn;	/* No, Once, Yes */
     Bool			StreamOn;
 
@@ -124,9 +123,11 @@ typedef struct _PortPrivRec {
 #define XV_SATURATION  	"XV_SATURATION"
 #define XV_HUE		"XV_HUE"
 
+#define XV_FREQ		"XV_FREQ"
+
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-static Atom xvEncoding, xvBrightness, xvContrast, xvSaturation, xvHue;
+static Atom xvEncoding, xvBrightness, xvContrast, xvSaturation, xvHue, xvFreq;
 
 static XF86VideoEncodingRec
 InputVideoEncodings[] =
@@ -189,8 +190,6 @@ V4lPutVideo(ScrnInfoPtr pScrn,
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/PV\n"));
 
-/* FIXME: needs to be updated for clipping changes */
-
     /* ignore vid-* for now */
 
     /* window */
@@ -207,15 +206,15 @@ V4lPutVideo(ScrnInfoPtr pScrn,
 	xfree(pPPriv->ov_win.clips);
 	pPPriv->ov_win.clips = NULL;
     }
-    pPPriv->ov_win.clipcount = REGION_NUM_RECTS(&pPPriv->Region);
+    pPPriv->ov_win.clipcount = REGION_NUM_RECTS(clipBoxes);
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,"  clip: have #%d\n",
 		pPPriv->ov_win.clipcount));
     if (0 != pPPriv->ov_win.clipcount) {
 	pPPriv->ov_win.clips = xalloc(pPPriv->ov_win.clipcount*sizeof(struct video_clip));
 	memset(pPPriv->ov_win.clips,0,pPPriv->ov_win.clipcount*sizeof(struct video_clip));
-	pBox = REGION_RECTS(&pPPriv->Region);
+	pBox = REGION_RECTS(clipBoxes);
 	clip = pPPriv->ov_win.clips;
-	for (i = 0; i < REGION_NUM_RECTS(&pPPriv->Region); i++, pBox++, clip++) {
+	for (i = 0; i < REGION_NUM_RECTS(clipBoxes); i++, pBox++, clip++) {
 	    clip->x	 = pBox->x1 - drw_x;
 	    clip->y      = pBox->y1 - drw_y;
 	    clip->width  = pBox->x2 - pBox->x1;
@@ -267,16 +266,21 @@ V4lStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
     pPPriv->VideoOn = 0;
 }
 
-#if 0
-static void
-V4lReclipVideo(ScrnInfoPtr pScrn, RegionPtr clipBoxes, pointer data)
-{
-    PortPrivPtr pPPriv = (PortPrivPtr) data;
-
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/Reclip\n"));
-    REGION_COPY(pScrn->pScreen, &pPPriv->Region, clipBoxes);
+/* v4l uses range 0 - 65535; Xv uses -1000 - 1000 */
+static int
+v4l_to_xv(int val) {
+    val = val * 2000 / 65536 - 1000;
+    if (val < -1000) val = -1000;
+    if (val >  1000) val =  1000;
+    return val;
 }
-#endif
+static int
+xv_to_v4l(int val) {
+    val = val * 65536 / 2000 + 32768;
+    if (val <    -0) val =     0;
+    if (val > 65535) val = 65535;
+    return val;
+}
 
 static int
 V4lSetPortAttribute(ScrnInfoPtr pScrn,
@@ -287,7 +291,29 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/SPA %d, %d\n",
 	attribute, value));
 
-    /* FIXME */
+    if (-1 == pPPriv->fd)
+	return Success;
+
+    if (attribute == xvEncoding) {
+	/* FIXME */
+    } else if (attribute == xvBrightness ||
+               attribute == xvContrast   ||
+               attribute == xvSaturation ||
+               attribute == xvHue) {
+	ioctl(pPPriv->fd,VIDIOCGPICT,&pPPriv->pict);
+	if (attribute == xvBrightness) pPPriv->pict.brightness = xv_to_v4l(value);
+	if (attribute == xvContrast)   pPPriv->pict.contrast   = xv_to_v4l(value);
+	if (attribute == xvSaturation) pPPriv->pict.colour     = xv_to_v4l(value);
+	if (attribute == xvHue)        pPPriv->pict.hue        = xv_to_v4l(value);
+	ioctl(pPPriv->fd,VIDIOCSPICT,&pPPriv->pict);
+    } else if (attribute == xvFreq) {
+	ErrorF("setfreq=%d\n",value);
+	if (-1 == ioctl(pPPriv->fd,VIDIOCSFREQ,&value))
+	    perror("ioctl");
+    } else {
+	return BadValue;
+    }
+
     return Success;
 }
 
@@ -297,8 +323,25 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;
 
-    /* FIXME */
-    *value = 0;
+    if (-1 == pPPriv->fd)
+	return Success;
+
+    if (attribute == xvEncoding) {
+	/* FIXME */
+    } else if (attribute == xvBrightness ||
+               attribute == xvContrast   ||
+               attribute == xvSaturation ||
+               attribute == xvHue) {
+	ioctl(pPPriv->fd,VIDIOCGPICT,&pPPriv->pict);
+	if (attribute == xvBrightness) *value = v4l_to_xv(pPPriv->pict.brightness);
+	if (attribute == xvContrast)   *value = v4l_to_xv(pPPriv->pict.contrast);
+	if (attribute == xvSaturation) *value = v4l_to_xv(pPPriv->pict.colour);
+	if (attribute == xvHue)        *value = v4l_to_xv(pPPriv->pict.hue);
+    } else if (attribute == xvFreq) {
+	ioctl(pPPriv->fd,VIDIOCGFREQ,value);
+    } else {
+	return BadValue;
+    }
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/GPA %d, %d\n",
 	attribute, *value));
@@ -349,8 +392,6 @@ V4LProbe(DriverPtr drv, int flags)
 	strncpy(pPPriv->devname, dev, 16);
 	pPPriv->useCount=0;
 
-	/* init v4l driver */
-
 	/* alloc VideoAdaptorRec */
 	VAR[i] = xalloc(sizeof(XF86VideoAdaptorRec));
 	memset(VAR[i],0,sizeof(XF86VideoAdaptorRec));
@@ -370,9 +411,6 @@ V4LProbe(DriverPtr drv, int flags)
 	VAR[i]->PutVideo = V4lPutVideo;
 	VAR[i]->PutStill = V4lPutStill;
 	VAR[i]->StopVideo = V4lStopVideo;
-#if 0
-	VAR[i]->ReclipVideo = V4lReclipVideo;
-#endif
 	VAR[i]->SetPortAttribute = V4lSetPortAttribute;
 	VAR[i]->GetPortAttribute = V4lGetPortAttribute;
 	VAR[i]->QueryBestSize = V4lQueryBestSize;
@@ -393,6 +431,8 @@ V4LProbe(DriverPtr drv, int flags)
     xvSaturation = MAKE_ATOM(XV_SATURATION);
     xvBrightness = MAKE_ATOM(XV_BRIGHTNESS);
     xvContrast   = MAKE_ATOM(XV_CONTRAST);
+
+    xvFreq       = MAKE_ATOM(XV_FREQ);
 
     DEBUG(xf86Msg(X_INFO, "v4l: init done, %d found\n",i));
     if (i) {

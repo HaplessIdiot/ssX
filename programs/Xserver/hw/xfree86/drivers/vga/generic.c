@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.24 1999/02/19 21:27:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.25 1999/03/28 15:32:50 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -36,6 +36,7 @@
  * Marc Aurele La France <tsi@ualberta.ca>
  */
 
+#define DEBUG(x) 
 #include "xf86.h"
 #include "xf86_ansic.h"
 #include "compiler.h"
@@ -94,6 +95,14 @@ DriverRec VGA =
     0
 };
 
+typedef enum {
+    OPTION_SHADOW_FB
+} GenericOpts;
+
+static OptionInfoRec GenericOptions[] = {
+    { OPTION_SHADOW_FB,         "ShadowFB",     OPTV_BOOLEAN,   {0}, FALSE },
+    { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
+};
 
 static const char *vgahwSymbols[] = {
     "vgaHWGetHWRec",
@@ -355,6 +364,8 @@ GenericClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)
  */
 typedef struct _GenericRec
 {
+    CARD8 * ShadowPtr;
+    CARD32 ShadowPitch;
     CloseScreenProcPtr CloseScreen;
 } GenericRec, *GenericPtr;
 
@@ -642,6 +653,14 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     /* Deal with options */
     xf86CollectOptions(pScreenInfo, NULL);
+    xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options, 
+		       GenericOptions);
+
+    if (xf86ReturnOptValBool(GenericOptions,OPTION_SHADOW_FB,FALSE)) {
+        pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		   "Using \"Shadow Framebuffer\"\n");
+    }
 
     /* Only one chipset here */
     if (!pScreenInfo->chipset)
@@ -763,6 +782,9 @@ GenericCloseScreen(int scrnIndex, ScreenPtr pScreen)
     GenericPtr pGenericPriv = GenericGetRec(pScreenInfo);
     Bool Closed = TRUE;
 
+    if(pGenericPriv->ShadowPtr)
+	xfree(pGenericPriv->ShadowPtr);
+
     if (pGenericPriv && (pScreen->CloseScreen = pGenericPriv->CloseScreen))
     {
         pGenericPriv->CloseScreen = NULL;
@@ -784,6 +806,217 @@ GenericDPMSSet(ScrnInfoPtr pScreen, int mode, int flags)
 }
 #endif
 
+
+static void
+GenericRefreshArea1bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+{
+    GenericPtr pPriv = GenericGetRec(pScrn);
+    vgaHWPtr pvgaHW = VGAHWPTR(pScrn);
+    int width, height, FBPitch, left, i, j, phase;
+    CARD8  *dst, *dstPtr, *src, *srcPtr;
+   
+    FBPitch = pScrn->displayWidth >> 3;
+
+    while(num--) {
+	left = pbox->x1 & ~7;
+        width = ((pbox->x2 - left) + 7) >> 3;
+        height = pbox->y2 - pbox->y1;
+        src = pPriv->ShadowPtr + (pbox->y1 * pPriv->ShadowPitch) + (left >> 3); 
+        dst = (CARD8*)pvgaHW->Base + (pbox->y1 * FBPitch) + (left >> 3);
+
+	if((phase = (long)dst & 3L)) {
+	    phase = 4 - phase;
+	    if(phase > width) phase = width;
+	    width -= phase;
+	}
+
+        while(height--) {
+	    dstPtr = dst;
+	    srcPtr = src;
+	    i = width;
+	    j = phase;
+	    while(j--) 
+ 		*dstPtr++ = byte_reversed[*srcPtr++];
+	    while(i >= 4) {
+		*((CARD32*)dstPtr) = byte_reversed[srcPtr[0]] |
+				    (byte_reversed[srcPtr[1]] << 8) |
+				    (byte_reversed[srcPtr[2]] << 16) |
+				    (byte_reversed[srcPtr[3]] << 24);
+		srcPtr += 4;
+		dstPtr += 4;
+		i -= 4;
+	    }
+	    while(i--)
+ 		*dstPtr++ = byte_reversed[*srcPtr++];
+            dst += FBPitch;
+            src += pPriv->ShadowPitch;
+        }
+        
+        pbox++;
+    }
+
+} 
+
+static void
+GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+{
+    GenericPtr pPriv = GenericGetRec(pScrn);
+    vgaHWPtr pvgaHW = VGAHWPTR(pScrn);
+    int width, height, FBPitch, left, i, j, SRCPitch, phase;
+    register CARD32 m;
+    CARD8  s1, s2, s3, s4;
+    CARD32 *src, *srcPtr;
+    CARD8  *dst, *dstPtr;
+   
+    FBPitch = pScrn->displayWidth >> 3;
+    SRCPitch = pPriv->ShadowPitch >> 2;
+
+    pvgaHW->writeGr(pvgaHW, 0x05, 0x00);
+    pvgaHW->writeGr(pvgaHW, 0x01, 0x00);
+    pvgaHW->writeGr(pvgaHW, 0x08, 0xFF);
+
+    while(num--) {
+	left = pbox->x1 & ~7;
+        width = ((pbox->x2 - left) + 7) >> 3;
+        height = pbox->y2 - pbox->y1;
+        src = (CARD32*)pPriv->ShadowPtr + (pbox->y1 * SRCPitch) + (left >> 2); 
+        dst = (CARD8*)pvgaHW->Base + (pbox->y1 * FBPitch) + (left >> 3);
+
+	if((phase = (long)dst & 3L)) {
+	    phase = 4 - phase;
+	    if(phase > width) phase = width;
+	    width -= phase;
+	}
+
+        while(height--) {
+	    pvgaHW->writeSeq(pvgaHW, 0x02, 1);
+	    dstPtr = dst;
+	    srcPtr = src;
+	    i = width;
+	    j = phase;
+	    while(j--) {
+		m = (srcPtr[1] & 0x01010101) | ((srcPtr[0] & 0x01010101) << 4);
+ 		*dstPtr++ = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		srcPtr += 2;
+	    }
+	    while(i >= 4) {
+		m = (srcPtr[1] & 0x01010101) | ((srcPtr[0] & 0x01010101) << 4);
+ 		s1 = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		m = (srcPtr[3] & 0x01010101) | ((srcPtr[2] & 0x01010101) << 4);
+ 		s2 = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		m = (srcPtr[5] & 0x01010101) | ((srcPtr[4] & 0x01010101) << 4);
+ 		s3 = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		m = (srcPtr[7] & 0x01010101) | ((srcPtr[6] & 0x01010101) << 4);
+ 		s4 = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		*((CARD32*)dstPtr) = s1 | (s2 << 8) | (s3 << 16) | (s4 << 24);
+		srcPtr += 8;
+		dstPtr += 4;
+		i -= 4;
+	    }
+	    while(i--) {
+		m = (srcPtr[1] & 0x01010101) | ((srcPtr[0] & 0x01010101) << 4);
+ 		*dstPtr++ = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
+		srcPtr += 2;
+	    }
+
+	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 1);
+	    dstPtr = dst;
+	    srcPtr = src;
+	    i = width;
+	    j = phase;
+	    while(j--) {
+		m = (srcPtr[1] & 0x02020202) | ((srcPtr[0] & 0x02020202) << 4);
+ 		*dstPtr++ = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		srcPtr += 2;
+	    }
+	    while(i >= 4) {
+		m = (srcPtr[1] & 0x02020202) | ((srcPtr[0] & 0x02020202) << 4);
+ 		s1 = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		m = (srcPtr[3] & 0x02020202) | ((srcPtr[2] & 0x02020202) << 4);
+ 		s2 = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		m = (srcPtr[5] & 0x02020202) | ((srcPtr[4] & 0x02020202) << 4);
+ 		s3 = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		m = (srcPtr[7] & 0x02020202) | ((srcPtr[6] & 0x02020202) << 4);
+ 		s4 = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		*((CARD32*)dstPtr) = s1 | (s2 << 8) | (s3 << 16) | (s4 << 24);
+		srcPtr += 8;
+		dstPtr += 4;
+		i -= 4;
+	    }
+	    while(i--) {
+		m = (srcPtr[1] & 0x02020202) | ((srcPtr[0] & 0x02020202) << 4);
+ 		*dstPtr++ = (m >> 25) | (m >> 16) | (m >> 7) | (m << 2);
+		srcPtr += 2;
+	    }
+
+	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 2);
+	    dstPtr = dst;
+	    srcPtr = src;
+	    i = width;
+	    j = phase;
+	    while(j--) {
+		m = (srcPtr[1] & 0x04040404) | ((srcPtr[0] & 0x04040404) << 4);
+ 		*dstPtr++ = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		srcPtr += 2;
+	    }
+	    while(i >= 4) {
+		m = (srcPtr[1] & 0x04040404) | ((srcPtr[0] & 0x04040404) << 4);
+ 		s1 = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		m = (srcPtr[3] & 0x04040404) | ((srcPtr[2] & 0x04040404) << 4);
+ 		s2 = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		m = (srcPtr[5] & 0x04040404) | ((srcPtr[4] & 0x04040404) << 4);
+ 		s3 = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		m = (srcPtr[7] & 0x04040404) | ((srcPtr[6] & 0x04040404) << 4);
+ 		s4 = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		*((CARD32*)dstPtr) = s1 | (s2 << 8) | (s3 << 16) | (s4 << 24);
+		srcPtr += 8;
+		dstPtr += 4;
+		i -= 4;
+	    }
+	    while(i--) {
+		m = (srcPtr[1] & 0x04040404) | ((srcPtr[0] & 0x04040404) << 4);
+ 		*dstPtr++ = (m >> 26) | (m >> 17) | (m >> 8) | (m << 1);
+		srcPtr += 2;
+	    }
+	    
+	    pvgaHW->writeSeq(pvgaHW, 0x02, 1 << 3);
+	    dstPtr = dst;
+	    srcPtr = src;
+	    i = width;
+	    j = phase;
+	    while(j--) {
+		m = (srcPtr[1] & 0x08080808) | ((srcPtr[0] & 0x08080808) << 4);
+ 		*dstPtr++ = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		srcPtr += 2;
+	    }
+	    while(i >= 4) {
+		m = (srcPtr[1] & 0x08080808) | ((srcPtr[0] & 0x08080808) << 4);
+ 		s1 = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		m = (srcPtr[3] & 0x08080808) | ((srcPtr[2] & 0x08080808) << 4);
+ 		s2 = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		m = (srcPtr[5] & 0x08080808) | ((srcPtr[4] & 0x08080808) << 4);
+ 		s3 = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		m = (srcPtr[7] & 0x08080808) | ((srcPtr[6] & 0x08080808) << 4);
+ 		s4 = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		*((CARD32*)dstPtr) = s1 | (s2 << 8) | (s3 << 16) | (s4 << 24);
+		srcPtr += 8;
+		dstPtr += 4;
+		i -= 4;
+	    }
+	    while(i--) {
+		m = (srcPtr[1] & 0x08080808) | ((srcPtr[0] & 0x08080808) << 4);
+ 		*dstPtr++ = (m >> 27) | (m >> 18) | (m >> 9) | m;
+		srcPtr += 2;
+	    }
+
+            dst += FBPitch;
+            src += SRCPitch;
+        }
+        
+        pbox++;
+    }
+
+} 
 
 static Bool
 GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
@@ -818,19 +1051,50 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     switch (pScreenInfo->depth)
     {
         case 1:
-            Inited = xf1bppScreenInit(pScreen, pvgaHW->Base,
-                pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
+	    if (xf86ReturnOptValBool(GenericOptions,OPTION_SHADOW_FB,FALSE)) {
+		pGenericPriv->ShadowPitch = 
+				((pScreenInfo->virtualX + 31) >> 3) & ~3L;
+		pGenericPriv->ShadowPtr = xalloc(pGenericPriv->ShadowPitch *
+						 pScreenInfo->virtualY);
+		if(pGenericPriv->ShadowPtr == NULL)
+		    return FALSE;
+		Inited = mfbScreenInit(pScreen, pGenericPriv->ShadowPtr,
+				       pScreenInfo->virtualX, 
+				       pScreenInfo->virtualY,
+				       pScreenInfo->xDpi, pScreenInfo->yDpi,
+				       pScreenInfo->displayWidth);
+		ShadowFBInit(pScreen, GenericRefreshArea1bpp);
+	    } else {
+		Inited = xf1bppScreenInit(pScreen, pvgaHW->Base,
+					  pScreenInfo->virtualX, 
+					  pScreenInfo->virtualY,
+					  pScreenInfo->xDpi, pScreenInfo->yDpi,
+					  pScreenInfo->displayWidth);
+	    }
             break;
-
         case 4:
-            Inited = xf4bppScreenInit(pScreen, pvgaHW->Base,
-                pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
+	    if (xf86ReturnOptValBool(GenericOptions,OPTION_SHADOW_FB,FALSE)) {
+		/* in order to use ShadowFB we do depth 4 / bpp 8 */
+		pScreenInfo->bitsPerPixel = 8;
+		pGenericPriv->ShadowPitch = (pScreenInfo->virtualX + 3) & ~3L;
+		pGenericPriv->ShadowPtr = xalloc(pGenericPriv->ShadowPitch *
+						 pScreenInfo->virtualY);
+		if(pGenericPriv->ShadowPtr == NULL)
+		    return FALSE;
+		Inited = cfbScreenInit(pScreen, pGenericPriv->ShadowPtr,
+				       pScreenInfo->virtualX, 
+				       pScreenInfo->virtualY,
+				       pScreenInfo->xDpi, pScreenInfo->yDpi,
+				       pScreenInfo->displayWidth);
+		ShadowFBInit(pScreen, GenericRefreshArea4bpp);
+	    } else {
+		Inited = xf4bppScreenInit(pScreen, pvgaHW->Base,
+					  pScreenInfo->virtualX, 
+					  pScreenInfo->virtualY,
+					  pScreenInfo->xDpi, pScreenInfo->yDpi,
+					  pScreenInfo->displayWidth);
+	    }
             break;
-
         case 8:
             Inited = cfbScreenInit(pScreen, pvgaHW->Base,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,

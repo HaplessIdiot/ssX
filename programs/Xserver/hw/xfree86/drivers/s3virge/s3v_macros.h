@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.4 1999/03/21 07:35:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.5 1999/03/29 12:17:56 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -42,6 +42,8 @@ in this Software without prior written authorization from the XFree86 Project.
 
 /* Cursor Registers */
 #define HWCURSOR_MODE_CR45 0x45
+#define HWCURSOR_ADDR_LOW_CR4D 0x4d
+#define HWCURSOR_ADDR_HIGH_CR4C 0x4c
 #define EXT_RAMDAC_CNTL_CR55 0x55
 
 /* streams registers */

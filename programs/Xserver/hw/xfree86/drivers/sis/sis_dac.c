@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.5 1999/03/06 13:12:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.6 1999/03/21 07:35:19 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -187,12 +187,10 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
  			        bestVLD = VLD;
  			        bestFout = Fout;
  			    }
-#ifdef DEBUG1
- 			ErrorF("Freq. selected: %.2f MHz, M=%d, N=%d, VLD=%d,"
+ 			xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,"Freq. selected: %.2f MHz, M=%d, N=%d, VLD=%d,"
  			       " P=%d, PSN=%d\n",
  			       (float)(clock / 1000.), M, N, P, VLD, PSN);
- 			ErrorF("Freq. set: %.2f MHz\n", Fout / 1.0e6);
-#endif
+ 			xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,"Freq. set: %.2f MHz\n", Fout / 1.0e6);
  		        }
  		    }
  	        }
@@ -205,17 +203,11 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
   vclk[VLDidx]  = bestVLD;
   vclk[Pidx]    = bestP;
   vclk[PSNidx]  = bestPSN;
-#ifdef DEBUG
-     ErrorF("Freq. selected: %.2f MHz, M=%d, N=%d, VLD=%d, P=%d, PSN=%d\n",
+  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,"Freq. selected: %.2f MHz, M=%d, N=%d, VLD=%d, P=%d, PSN=%d\n",
  	(float)(clock / 1000.), vclk[Midx], vclk[Nidx], vclk[VLDidx], 
  	   vclk[Pidx], vclk[PSNidx]);
-     ErrorF("Freq. set: %.2f MHz\n", bestFout / 1.0e6);
-     ErrorF("VCO Freq.: %.2f MHz\n", bestFout*bestP / 1.0e6);
-#endif
-#ifdef DEBUG1
-                       ErrorF("abest=%f\n",
-                               abest);
-#endif
+  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,"Freq. set: %.2f MHz\n", bestFout / 1.0e6);
+  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,"VCO Freq.: %.2f MHz\n", bestFout*bestP / 1.0e6);
 }
 
 Bool
@@ -223,44 +215,47 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     SISPtr pSiS = SISPTR(pScrn);
     SISRegPtr pReg = &pSiS->ModeReg;
+    int gap, safetymargin, MemBand;
     int vgaIOBase;
     unsigned char temp;
+#if 0
+    int Base,mclk;
+#endif 
     int offset;
     int clock = mode->Clock;
+    unsigned int vclk[5];
+    unsigned int CRT_CPUthresholdLow ;
+    unsigned int CRT_CPUthresholdHigh ;
+    unsigned int CRT_ENGthreshold ;
+
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,"SiSInit()\n"); 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
     offset = pScrn->displayWidth >> (mode->Flags & V_INTERLACE ? 2 : 3);
 
-    outb(0x3C4, 0x05); /* Unlock Registers */
-    temp = inb(0x3C5);
-    outw(0x3C4, 0x8605);
+    SiSSave(pScrn, pReg);
 
-    outb(0x3C4, BankReg);
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
+
     pReg->sisRegs3C4[BankReg] |= 0x82;			/* Enable Linear */
-    pReg->sisRegs3C4[CPUThreshold] = 0x0F;
-    pReg->sisRegs3C4[CRTThreshold] = 0x0F;
-    outb(0x3C4, MMIOEnable);
-    pReg->sisRegs3C4[MMIOEnable] = inb(0x3C5);
 
     switch (pScrn->depth) {
 	case 8:
-    	    pReg->sisRegs3C4[CPUThreshold] |= 0x40;
 	    break;
 	case 15:
 	    offset <<= 1;
 	    pReg->sisRegs3C4[BankReg] |= 0x04;
-    	    pReg->sisRegs3C4[CPUThreshold] |= 0x80;
 	    break;
 	case 16:
 	    offset <<= 1;
 	    pReg->sisRegs3C4[BankReg] |= 0x08;
-    	    pReg->sisRegs3C4[CPUThreshold] |= 0x80;
 	    break;
 	case 24:
 	    offset += (offset << 1);
 	    pReg->sisRegs3C4[BankReg] |= 0x10;
-    	    pReg->sisRegs3C4[CPUThreshold] |= 0xC0;
 	    pReg->sisRegs3C4[MMIOEnable] |= 0x90;
 	    break;
     }
@@ -275,64 +270,67 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				(((mode->CrtcVSyncStart) & 0x400) >> 7 ) ;
 	
     {
-    	unsigned int vclk[5];
-    	unsigned char xr2a, xr2b;
 
     	SiSCalcClock(pScrn, clock, 2, vclk);
 
-	xr2a = (vclk[Midx] - 1) & 0x7f ;
-	xr2a |= ((vclk[VLDidx] == 2 ) ? 1 : 0 ) << 7 ;
-	xr2b = (vclk[Nidx] -1) & 0x1f ;	/* bits [4:0] contain denumerator -MC */
+	pReg->sisRegs3C4[XR2A] = (vclk[Midx] - 1) & 0x7f ;
+	pReg->sisRegs3C4[XR2A] |= ((vclk[VLDidx] == 2 ) ? 1 : 0 ) << 7 ;
+	pReg->sisRegs3C4[XR2B] = (vclk[Nidx] -1) & 0x1f ;	/* bits [4:0] contain denumerator -MC */
 
-	outb(0x3C4, ClockBase);
-    	pReg->sisRegs3C4[ClockBase] = inb(0x3C5);
  	if (vclk[Pidx] <= 4){
- 	    xr2b |= (vclk[Pidx] -1 ) << 5 ; /* postscale 1,2,3,4 */
+ 	    pReg->sisRegs3C4[XR2B] |= (vclk[Pidx] -1 ) << 5 ; /* postscale 1,2,3,4 */
     	    pReg->sisRegs3C4[ClockBase] &= 0xBF;
  	} else {
-	    xr2b |= ((vclk[Pidx] / 2) -1 ) << 5 ;  /* postscale 6,8 */
+	    pReg->sisRegs3C4[XR2B] |= ((vclk[Pidx] / 2) -1 ) << 5 ;  /* postscale 6,8 */
     	    pReg->sisRegs3C4[ClockBase] |= 0x40;
  	};
- 	xr2b |= 0x80 ;   /* gain for high frequency */
+ 	pReg->sisRegs3C4[XR2B] |= 0x80 ;   /* gain for high frequency */
  
-	outb(0x3C4, ClockReg); pReg->sisRegs3C4[ClockReg] = inb(0x3C5);
 	if (clock > 135000) pReg->sisRegs3C4[ClockReg] |= 0x02;
-	pReg->sisRegs3C4[XR2A] = xr2a;
-	pReg->sisRegs3C4[XR2B] = xr2b;
-	pReg->sisRegs3C2[0x00] = inb(0x3CC) | 0x0C;
+
+	pReg->sisRegs3C2[0x00] = inb(0x3CC) | 0x0C; /* Programmable Clock */
     }
 
-    outb(0x3C4, ExtMiscCont5);
-    pReg->sisRegs3C4[ExtMiscCont5] = inb(0x3C5)/* | 0xC0 block writes */;
-    pReg->sisRegs3C4[GraphEng] = inb(0x3C5) | 0x40;
+    if (pSiS->FastVram) 
+        pReg->sisRegs3C4[ExtMiscCont5]|= 0xC0;
+    else 
+        pReg->sisRegs3C4[ExtMiscCont5]&= ~0xC0;
+
+    pReg->sisRegs3C4[GraphEng] |=  0x40;
     pSiS->ValidWidth = TRUE;
-    switch (pScrn->display->virtualX * ((pScrn->depth >> 3) & 3) ) {
+    pReg->sisRegs3C4[GraphEng] &= 0xCF;
+    if ((pScrn->depth != 8) | (pScrn->depth != 16) ) {
+	pReg->sisRegs3C4[GraphEng] |= 0x30; /* Invalid logical width */
+	pSiS->ValidWidth = FALSE;
+    }
+    else
+    {
+	switch (pScrn->virtualX * (pScrn->depth >> 3) ) {
  	case 1024:
- 	    outb(0x3C4, GraphEng); 
- 	    pReg->sisRegs3C4[GraphEng] = (inb(0x3C5) & 0xCF); 
+ 		pReg->sisRegs3C4[GraphEng] |= 0x00; /* | 00 = No change */
  	    break;
  	case 2048:
- 	    outb(0x3C4, GraphEng); 
- 	    pReg->sisRegs3C4[GraphEng] = (inb(0x3C5) & 0xCF) | 0x10; 
+ 		pReg->sisRegs3C4[GraphEng] |= 0x10; 
  	    break;
  	case 4096:
- 	    outb(0x3C4, GraphEng); 
- 	    pReg->sisRegs3C4[GraphEng] = (inb(0x3C5) & 0xCF) | 0x20; 
+ 		pReg->sisRegs3C4[GraphEng] |= 0x20; 
  	    break;
  	default:
- 	    outb(0x3C4, GraphEng); 
- 	    pReg->sisRegs3C4[GraphEng] = (inb(0x3C5) & 0xCF) | 0x30; /* Invalid logical width */
+ 		pReg->sisRegs3C4[GraphEng] =  0x30; /* Invalid logical width */
 	    pSiS->ValidWidth = FALSE;
 	    break;
     }
+    }
+
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
+             "virtualX = %d depth = %d Logical width = %d\n", 
+             pScrn->virtualX, pScrn->depth, pScrn->virtualX * (pScrn->depth >> 3)); 
 
     if (!pSiS->NoAccel) {
-    	outb(0x3C4, GraphEng);
 	pReg->sisRegs3C4[GraphEng] |= 0x40;
 	if (pSiS->TurboQueue) {
     	    pReg->sisRegs3C4[GraphEng] |= 0x80;
-	    outb(0x3C4, ExtMiscCont9);
-    	    pReg->sisRegs3C4[ExtMiscCont9] = inb(0x3C5) & 0xFC; /* All Queue for 2D */
+    	    pReg->sisRegs3C4[ExtMiscCont9] &= 0xFC; /* All Queue for 2D */
 	    if (pSiS->HWCursor) 
     	    	pReg->sisRegs3C4[TurboQueueBase] = (pScrn->videoRam/32) - 2;
 	    else
@@ -340,10 +338,62 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
     	pReg->sisRegs3C4[MMIOEnable] |= 0x60; /* At PCI base */
     }
-    outb(0x3C4, Mode64);
-    pReg->sisRegs3C4[Mode64] = inb(0x3C5) | 0x80;
+    pReg->sisRegs3C4[Mode64] |= 0x80;
 
-    outw(0x3C4, (temp << 8) | 0x05); /* Relock Registers */
+   /* Set memclock */
+    if ((pSiS->Chipset == PCI_CHIP_SIS5597) || (pSiS->Chipset == PCI_CHIP_SIS6326)) {
+      if (pSiS->MemClock > 66000) {
+          SiSCalcClock(pScrn, pSiS->MemClock, 1, vclk);
+  
+          pReg->sisRegs3C4[MemClock0] = (vclk[Midx] - 1) & 0x7f ;
+          pReg->sisRegs3C4[MemClock0] |= ((vclk[VLDidx] == 2 ) ? 1 : 0 ) << 7 ;
+          pReg->sisRegs3C4[MemClock1]  = (vclk[Nidx] -1) & 0x1f ;	/* bits [4:0] contain denumerator -MC */
+          if (vclk[Pidx] <= 4){
+ 	    pReg->sisRegs3C4[MemClock1] |= (vclk[Pidx] -1 ) << 5 ; /* postscale 1,2,3,4 */
+ 	    pReg->sisRegs3C4[ClockBase] &= 0x7F;
+ 	  } else {
+            pReg->sisRegs3C4[MemClock1] |= ((vclk[Pidx] / 2) -1 ) << 5 ;  /* postscale 6,8 */
+ 	    pReg->sisRegs3C4[ClockBase] |= 0x80;
+ 	  };
+
+#if 0
+          mclk=14318*((pReg->sisRegs3C4[MemClock0] & 0x7f)+1);
+          mclk=mclk/((pReg->sisRegs3C4[MemClock1] & 0x0f)+1);
+          Base = pReg->sisRegs3C4[ClockBase];
+          if ( (Base & 0x80)==0 ) {
+            mclk = mclk / (((pReg->sisRegs3C4[MemClock1] & 0x60) >> 5)+1);
+          }  else {
+            if ((pReg->sisRegs3C4[MemClock1] & 0x60) == 0x40) { mclk=mclk/6;}
+            if ((pReg->sisRegs3C4[MemClock1] & 0x60) == 0x60) { mclk=mclk/8;}
+          }
+          xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,2,
+           "Setting memory clock to %.3f MHz\n",
+      	  mclk/1000.0);
+#endif
+      }
+    };
+
+    MemBand = sisMemBandWidth(pScrn) / 10 ;
+    safetymargin = 1; 
+    gap          = 4;
+
+    CRT_ENGthreshold = 0x0F ;	
+    CRT_CPUthresholdLow = ((pScrn->depth*clock) / MemBand)+safetymargin;
+    CRT_CPUthresholdHigh = ((pScrn->depth*clock) / MemBand)+gap+safetymargin;
+
+    if ( CRT_CPUthresholdLow > (pScrn->depth < 24 ? 0xe:0x0d) ) { 
+	CRT_CPUthresholdLow = (pScrn->depth < 24 ? 0xe:0x0d); 
+    }
+
+    if ( CRT_CPUthresholdHigh > (pScrn->depth < 24 ? 0x10:0x0f) ) { 
+	CRT_CPUthresholdHigh = (pScrn->depth < 24 ? 0x10:0x0f);
+    }
+
+    pReg->sisRegs3C4[CPUThreshold] =  (CRT_ENGthreshold & 0x0F) | 
+  				      (CRT_CPUthresholdLow & 0x0F)<<4 ;
+    pReg->sisRegs3C4[CRTThreshold] = CRT_CPUthresholdHigh & 0x0F;
+
+    outw(VGA_SEQ_INDEX, (temp << 8) | 0x05); /* Relock Registers */
     return(TRUE);
 }
 
@@ -352,40 +402,47 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
     SISPtr pSiS = SISPTR(pScrn);
     int vgaIOBase;
+    int i,max;
     unsigned char temp;
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,"SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)\n"); 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    outb(0x3C4, 0x05); /* Unlock Registers */
-    temp = inb(0x3C5);
-    outw(0x3C4, 0x8605);
-
-    if (!pSiS->NoAccel) {
-    	outw(0x3C4, (sisReg->sisRegs3C4[GraphEng] << 8) | GraphEng);
-	if (pSiS->TurboQueue) {
-    	    outw(0x3C4, (sisReg->sisRegs3C4[ExtMiscCont9] << 8) | ExtMiscCont9);
-    	    outw(0x3C4, (sisReg->sisRegs3C4[TurboQueueBase] << 8) | TurboQueueBase);
-	}
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
+    
+    switch (pSiS->Chipset) {
+	case PCI_CHIP_SIS5597:
+           max=0x39;
+           break;
+	case PCI_CHIP_SIS6326:
+           max=0x3c;
+           break;
+	default:
+           max=0x37;
+           break;
     }
 
-    outw(0x3C4, (sisReg->sisRegs3C4[Mode64] << 8) | Mode64);
-    outw(0x3C4, (sisReg->sisRegs3C4[MMIOEnable] << 8) | MMIOEnable);
-    outw(0x3C4, (sisReg->sisRegs3C4[ExtMiscCont5] << 8) | ExtMiscCont5);
-    outw(0x3C4, (sisReg->sisRegs3C4[BankReg] << 8) | BankReg);
-    outw(0x3C4, (sisReg->sisRegs3C4[LinearAdd0] << 8) | LinearAdd0);
-    outw(0x3C4, (sisReg->sisRegs3C4[LinearAdd1] << 8) | LinearAdd1);
-    outw(0x3C4, (sisReg->sisRegs3C4[CPUThreshold] << 8) | CPUThreshold);
-    outw(0x3C4, (sisReg->sisRegs3C4[CRTThreshold] << 8) | CRTThreshold);
+    for (i = 0x06; i <= max; i++) {
+	outb(VGA_SEQ_INDEX,i);
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
+    		    "XR%X Contents - %02X ", i, inb(VGA_SEQ_DATA));
+	    outb(VGA_SEQ_DATA,sisReg->sisRegs3C4[i]);
+	    
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
+		    "Restore to - %02X Read after - %02X\n",sisReg->sisRegs3C4[i], inb(VGA_SEQ_DATA));
+    }
     outw(vgaIOBase + 4, (sisReg->sisRegs3x4[Offset] << 8) | Offset);
-    outw(0x3C4, (sisReg->sisRegs3C4[CRTCOff] << 8) | CRTCOff);
 
-    outw(0x3C4, (sisReg->sisRegs3C4[XR2A] << 8) | XR2A);
-    outw(0x3C4, (sisReg->sisRegs3C4[XR2B] << 8) | XR2B);
-    outw(0x3C4, (sisReg->sisRegs3C4[ClockBase] << 8) | ClockBase);
-    outw(0x3C4, (sisReg->sisRegs3C4[ClockReg] << 8) | ClockReg);
     outb(0x3C2, sisReg->sisRegs3C2[0x00]);
 
-    outw(0x3C4, (temp << 8) | 0x05); /* Relock Registers */
+    /* MemClock needs this to take effect */
+     
+	outw(VGA_SEQ_INDEX, 0x0100);	/* Synchronous Reset */
+	outw(VGA_SEQ_INDEX, 0x0300);	/* End Reset */
+
+    outw(VGA_SEQ_INDEX, (temp << 8) | 0x05); /* Relock Registers */
 }
 
 void
@@ -393,56 +450,45 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
     SISPtr pSiS = SISPTR(pScrn);
     int vgaIOBase;
+    int i,max;
     unsigned char temp;
+
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,"SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)\n");
+
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    outb(0x3C4, 0x05); /* Unlock Registers */
-    temp = inb(0x3C5);
-    outw(0x3C4, 0x8605);
-    outb(0x3C4, BankReg);
-    sisReg->sisRegs3C4[BankReg] = inb(0x3C5);
-    outb(0x3C4, LinearAdd0);
-    sisReg->sisRegs3C4[LinearAdd0] = inb(0x3C5);
-    outb(0x3C4, LinearAdd1);
-    sisReg->sisRegs3C4[LinearAdd1] = inb(0x3C5);
-    outb(0x3C4, CPUThreshold);
-    sisReg->sisRegs3C4[CPUThreshold] = inb(0x3C5);
-    outb(0x3C4, CRTThreshold);
-    sisReg->sisRegs3C4[CRTThreshold] = inb(0x3C5);
-    outb(vgaIOBase + 4, Offset);
-    sisReg->sisRegs3x4[Offset] = inb(0x3C5);
-    outb(0x3C4, CRTCOff);
-    sisReg->sisRegs3C4[CRTCOff] = inb(0x3C5);
-    outb(0x3C4, ExtMiscCont5);
-    sisReg->sisRegs3C4[ExtMiscCont5] = inb(0x3C5);
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,"vgaIOBase = %04X\n", vgaIOBase);
 
-    sisReg->sisRegs3C2[0x00] = inb(0x3CC);
-    outb(0x3C4, ClockBase);
-    sisReg->sisRegs3C4[ClockBase] = inb(0x3C5);
-    outb(0x3C4, XR2A);
-    sisReg->sisRegs3C4[XR2A] = inb(0x3C5);
-    outb(0x3C4, XR2B);
-    sisReg->sisRegs3C4[XR2B] = inb(0x3C5);
-    outb(0x3C4, ClockReg);
-    sisReg->sisRegs3C4[ClockReg] = inb(0x3C5);
-    outb(0x3C4, Mode64);
-    sisReg->sisRegs3C4[Mode64] = inb(0x3C5);
-    outb(0x3C4, MMIOEnable);
-    sisReg->sisRegs3C4[MMIOEnable] = inb(0x3C5);
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
 
-    if (!pSiS->NoAccel) {
-    	outb(0x3C4, GraphEng);
-    	sisReg->sisRegs3C4[GraphEng] = inb(0x3C5);
-	if (pSiS->TurboQueue) {
-    	    outb(0x3C4, ExtMiscCont9);
-    	    sisReg->sisRegs3C4[ExtMiscCont9] = inb(0x3C5);
-    	    outb(0x3C4, TurboQueueBase);
-    	    sisReg->sisRegs3C4[TurboQueueBase] = inb(0x3C5);
+    switch (pSiS->Chipset) {
+	case PCI_CHIP_SIS5597:
+           max=0x39;
+           break;
+	case PCI_CHIP_SIS6326:
+           max=0x3c;
+           break;
+	default:
+           max=0x37;
+           break;
 	}
-    }
 
-    outw(0x3C4, (temp << 8) | 0x05); /* Relock Registers */
+    for (i = 0x06; i <= max; i++) {
+        outb(VGA_SEQ_INDEX, i);
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO,3,
+    		    "XR%02X Contents - %02X \n", i, inb(VGA_SEQ_DATA));
+	sisReg->sisRegs3C4[i] = inb(VGA_SEQ_DATA);
+
+    }
+    outb(vgaIOBase + 4, Offset);
+    sisReg->sisRegs3x4[Offset] = inb(VGA_SEQ_DATA);
+    
+    sisReg->sisRegs3C2[0x00] = inb(0x3CC);
+
+    outw(VGA_SEQ_INDEX, (temp << 8) | 0x05); /* Relock Registers */
 }
 
 static void 
@@ -450,28 +496,28 @@ SiSShowCursor(ScrnInfoPtr pScrn)
 {
     unsigned char temp, temp2;
 
-    outb(0x3C4, 0x05); /* Unlock Registers */
-    temp2 = inb(0x3C5);
-    outw(0x3C4, 0x8605);
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp2 = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
 
-    outb(0x3C4, 0x06); temp = inb(0x3C5);
-    outb(0x3C5, temp | 0x40);
+    outb(VGA_SEQ_INDEX, 0x06); temp = inb(VGA_SEQ_DATA);
+    outb(VGA_SEQ_DATA, temp | 0x40);
 
-    outw(0x3C4, (temp2 << 8) | 0x05);
+    outw(VGA_SEQ_INDEX, (temp2 << 8) | 0x05);
 }
 
 static void 
 SiSHideCursor(ScrnInfoPtr pScrn) {
     unsigned char temp, temp2;
 
-    outb(0x3C4, 0x05); /* Unlock Registers */
-    temp2 = inb(0x3C5);
-    outw(0x3C4, 0x8605);
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp2 = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
 
-    outb(0x3C4, 0x06); temp = inb(0x3C5);
-    outb(0x3C5, temp & 0xBF);
+    outb(VGA_SEQ_INDEX, 0x06); temp = inb(VGA_SEQ_DATA);
+    outb(VGA_SEQ_DATA, temp & 0xBF);
 
-    outw(0x3C4, (temp2 << 8) | 0x05);
+    outw(VGA_SEQ_INDEX, (temp2 << 8) | 0x05);
 }
 
 static void 
@@ -479,28 +525,28 @@ SiSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
     unsigned char temp2;
 
-    outb(0x3C4, 0x05); /* Unlock Registers */
-    temp2 = inb(0x3C5);
-    outw(0x3C4, 0x8605);
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp2 = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
 
     if (x < 0) {
-    	outw(0x3C4, (-x)<<8 | 0x1C);
+    	outw(VGA_SEQ_INDEX, (-x)<<8 | 0x1C);
 	x = 0;
     } else
-    	outw(0x3C4, 0x001C);
+    	outw(VGA_SEQ_INDEX, 0x001C);
  
     if (y < 0) {
-    	outw(0x3C4, (-y)<<8 | 0x1F);
+    	outw(VGA_SEQ_INDEX, (-y)<<8 | 0x1F);
 	y = 0;
     } else
-    	outw(0x3C4, 0x001F);
+    	outw(VGA_SEQ_INDEX, 0x001F);
 
-    outw(0x3C4, (x&0xFF)<<8 | 0x1A);
-    outw(0x3C4, (x&0xFF00)  | 0x1B);
-    outw(0x3C4, (y&0xFF)<<8 | 0x1D);
-    outw(0x3C4, (y&0xFF00)  | 0x1E);
+    outw(VGA_SEQ_INDEX, (x&0xFF)<<8 | 0x1A);
+    outw(VGA_SEQ_INDEX, (x&0xFF00)  | 0x1B);
+    outw(VGA_SEQ_INDEX, (y&0xFF)<<8 | 0x1D);
+    outw(VGA_SEQ_INDEX, (y&0xFF00)  | 0x1E);
 
-    outw(0x3C4, (temp2 << 8) | 0x05);
+    outw(VGA_SEQ_INDEX, (temp2 << 8) | 0x05);
 }
 
 static void
@@ -508,18 +554,18 @@ SiSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
     unsigned char temp2;
 
-    outb(0x3C4, 0x05); /* Unlock Registers */
-    temp2 = inb(0x3C5);
-    outw(0x3C4, 0x8605);
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp2 = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
 
-    outw(0x3C4, (fg & 0x000000FF)<<8  | 0x17);
-    outw(0x3C4, (fg & 0x0000FF00)     | 0x18);
-    outw(0x3C4, (fg & 0x00FF0000)>>8  | 0x19);
-    outw(0x3C4, (bg & 0x000000FF)<<8  | 0x14);
-    outw(0x3C4, (bg & 0x0000FF00)     | 0x15);
-    outw(0x3C4, (bg & 0x00FF0000)>>8  | 0x16);
+    outw(VGA_SEQ_INDEX, (fg & 0x000000FF)<<8  | 0x17);
+    outw(VGA_SEQ_INDEX, (fg & 0x0000FF00)     | 0x18);
+    outw(VGA_SEQ_INDEX, (fg & 0x00FF0000)>>8  | 0x19);
+    outw(VGA_SEQ_INDEX, (bg & 0x000000FF)<<8  | 0x14);
+    outw(VGA_SEQ_INDEX, (bg & 0x0000FF00)     | 0x15);
+    outw(VGA_SEQ_INDEX, (bg & 0x00FF0000)>>8  | 0x16);
 
-    outw(0x3C4, (temp2 << 8) | 0x05);
+    outw(VGA_SEQ_INDEX, (temp2 << 8) | 0x05);
 }
 
 static void
@@ -532,19 +578,19 @@ SiSLoadCursorImage(
     int cursoraddress = ((pScrn->videoRam * 1024) - 16384) / 262144;
     unsigned char temp, temp2;
 
-    outb(0x3C4, 0x05); /* Unlock Registers */
-    temp2 = inb(0x3C5);
-    outw(0x3C4, 0x8605);
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp2 = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
 
     memcpy((unsigned char *)pSiS->FbBase + (pScrn->videoRam * 1024) - 16384,
 			src, pSiS->CursorInfoRec->MaxWidth * 
 			pSiS->CursorInfoRec->MaxHeight / 4);
 
-    outb(0x3C4, 0x38); temp = inb(0x3C5);
-    outb(0x3C5, (temp & 0x0F) | (cursoraddress << 4));
-    outb(0x3C4, 0x1E); temp = inb(0x3C5); outb(0x3C5, (temp & 0xF7) | 0x08);
+    outb(VGA_SEQ_INDEX, 0x38); temp = inb(VGA_SEQ_DATA);
+    outb(VGA_SEQ_DATA, (temp & 0x0F) | (cursoraddress << 4));
+    outb(VGA_SEQ_INDEX, 0x1E); temp = inb(VGA_SEQ_DATA); outb(VGA_SEQ_DATA, (temp & 0xF7) | 0x08);
 
-    outw(0x3C4, (temp2 << 8) | 0x05);
+    outw(VGA_SEQ_INDEX, (temp2 << 8) | 0x05);
 }
 
 static Bool 
@@ -596,18 +642,18 @@ SiSddc1Read(ScrnInfoPtr pScrn)
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
     unsigned char temp, temp2;
 
-    outb(0x3C4, 0x05); /* Unlock Registers */
-    temp2 = inb(0x3C5);
-    outw(0x3C4, 0x8605);
+    outb(VGA_SEQ_INDEX, 0x05); /* Unlock Registers */
+    temp2 = inb(VGA_SEQ_DATA);
+    outw(VGA_SEQ_INDEX, 0x8605);
 
     /* Wait until vertical retrace is in progress. */
     while (inb(vgaIOBase + 0xA) & 0x08);
     while (!(inb(vgaIOBase + 0xA) & 0x08));
 
     /* Get the result */
-    outb(0x3C4, 0x11); temp = inb(0x3C5);
+    outb(VGA_SEQ_INDEX, 0x11); temp = inb(VGA_SEQ_DATA);
 
-    outw(0x3C4, (temp2 << 8) | 0x05);
+    outw(VGA_SEQ_INDEX, (temp2 << 8) | 0x05);
 
     return ((temp & 0x02)>>1);
 }
@@ -617,6 +663,7 @@ int
 SiSMclk()
 { int mclk;
   unsigned char Num, Denum, Base;
+
     /* Numerator */
 
     read_xr(MemClock0,Num);
@@ -633,7 +680,8 @@ SiSMclk()
     }
 #endif
     /* Post-scaler. Values depends on SR13 bit 7  */
-    outb(0x3C4, ClockBase); Base = inb(0x3C5);
+    outb(VGA_SEQ_INDEX, ClockBase); 
+    Base = inb(VGA_SEQ_DATA);
 
     if ( (Base & 0x80)==0 ) {
       mclk = mclk / (((Denum & 0x60) >> 5)+1);
@@ -649,3 +697,25 @@ SiSMclk()
     return(mclk);
 }
 
+/***** Only for SiS 5597 / 6326 *****/
+/* Returns estimated memory bandwidth in Kbits/sec (for dotclock defaults)        */
+/* Currently, a very rough estimate (4 cycles / read ; 2 for fast_vram) */
+int sisMemBandWidth(ScrnInfoPtr pScrn)
+{ int band;
+  SISPtr pSiS = SISPTR(pScrn);
+  SISRegPtr pReg = &pSiS->ModeReg;
+
+   if (pSiS->MemClock)  
+     band=pSiS->MemClock; 
+   else 
+     band=SiSMclk();
+
+   if (((pReg->sisRegs3C4[Mode64] >> 1) & 3) == 0) /* Only 1 bank Vram */
+     band = (band * 8);
+   else
+     band = (band * 16);
+
+   if ((pReg->sisRegs3C4[ExtMiscCont5] & 0xC0) == 0xC0) band=band*2;
+     
+   return(band);
+}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.10 1999/03/28 15:32:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.11 1999/03/29 12:17:55 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -202,7 +202,7 @@ typedef struct {
   /* Current visual FB starting location */
   unsigned char *	FBStart;
   /* Cursor storage location */
-  unsigned char *	FBCursorStart;
+  CARD32			FBCursorOffset;
   /* Saved CR53 value */
   unsigned char	EnableMmioCR53;
   /* Extended reg unlock storage */

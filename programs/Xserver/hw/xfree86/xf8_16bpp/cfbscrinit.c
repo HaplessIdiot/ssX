@@ -4,7 +4,7 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.3 1999/03/21 07:35:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/cfbscrinit.c,v 1.4 1999/03/28 15:33:09 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -381,11 +381,11 @@ cfb8_16SaveRestoreImage(int index, SaveRestoreFlags what)
 	devKinds16[index] = ((PixmapPtr)pScreenPriv->pix16)->devKind;
 	
 	/* allocate new data */
-	devKind8 = ((pScreen->width + 31) >> 5) << 2; 
+	devKind8 = PixmapBytePad(pScreen->width, 8);
         if(!(devPrivate8 = xalloc(devKind8 * pScreen->height)))
 	   break;
 
-	devKind16 = (((pScreen->width * 2) + 31) >> 5) << 2; 
+	devKind16 = PixmapBytePad(pScreen->width, pScrn->depth);
         if(!(devPrivate16 = xalloc(devKind16 * pScreen->height))) {
 	    xfree(devPrivate8);
 	    break;

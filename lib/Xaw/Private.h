@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Private.h,v 3.6 1998/08/16 10:24:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Private.h,v 3.7 1998/12/06 10:44:34 dawes Exp $ */
 
 #ifndef _XawPrivate_h
 #define _XawPrivate_h
@@ -140,6 +140,9 @@ XawPixmap *XawPixmapFromXPixmap(Pixmap, Screen*, Colormap, int);
 XawParams *XawParseParamsString(String name);
 void XawFreeParamsStruct(XawParams *params);
 XawArgVal *XawFindArgVal(XawParams *params, String name);
+#ifdef USE_XPM
+void XawReshapeWidget(Widget, XawPixmap*);
+#endif
 
 /* misc */
 void XawTypeToStringWarning(Display*, String);

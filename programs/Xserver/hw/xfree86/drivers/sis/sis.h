@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.4 1999/03/06 13:12:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.5 1999/03/21 07:35:18 dawes Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -67,6 +67,8 @@ typedef struct {
     Bool		UsePCIRetry;
     Bool		TurboQueue;
     Bool		ValidWidth;
+    Bool		FastVram;
+    int			MemClock;
     int			MinClock;
     int			MaxClock;
     int			Xdirection;
@@ -95,5 +97,6 @@ Bool SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool SiSAccelInit(ScreenPtr pScreen);
 Bool SiS2AccelInit(ScreenPtr pScreen);
 int  SiSMclk(void);
+int sisMemBandWidth(ScrnInfoPtr pScrn);
 
 #endif
