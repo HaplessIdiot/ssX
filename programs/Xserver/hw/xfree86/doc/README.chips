@@ -1,7 +1,7 @@
                  Information for Chips and Technologies Users
 
-David Bateman (dbateman@eng.uts.edu.au), Egbert Eich (Egbert.Eich@Physik.TH-
-                                Darmstadt.DE)
+                  David Bateman (dbateman@eng.uts.edu.au),
+                   Egbert Eich (Egbert.Eich@Physik.TH-Darmstadt.DE)
 
                                19th March 1999
 
@@ -345,7 +345,7 @@ Screen, Monitor, Device.
             improved. Because the rendering is all done into a virtual frame-
             buffer acceleration can not be used.
 
-      Option "8Plus16"
+      Option "Overlay"
             The HiQV chipsets contain a multimedia engine that allow a 16bpp
             window to be overlayed on the screen. This driver uses this capa-
             bility to include a 16bpp framebuffer on top of an 8bpp frame-
@@ -422,7 +422,7 @@ you'll needed to considered several points
             a detrimental effect on the graphics performance.
 
       * PseudoColor Overlay
-            If you use the "8plus16" option, then there are actually two
+            If you use the "overlay" option, then there are actually two
             framebuffers in the video memory. An 8bpp one and a 16bpp one.
             The total memory requirements in this mode of operation is there-
             fore similar to a 24bpp mode. The overlay consumes memory band-
@@ -818,7 +818,7 @@ Contributors (In no particular order)
 We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.22 1999/03/21 12:46:40 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.23 1999/06/05 15:55:23 dawes Exp $
 
 
 $XFree86$
