@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.11 1996/02/09 08:19:41 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.12 1996/05/10 06:55:48 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -69,6 +69,9 @@ from the X Consortium.
  *	XTRANSDEBUG=4 printing of intermediate values
  *	XTRANSDEBUG=5 really detailed stuff
 #define XTRANSDEBUG 2
+ *
+ * Defining XTRANSDEBUGTIMESTAMP will cause printing timestamps with each
+ * message.
  */
 
 #ifndef __EMX__
@@ -443,13 +446,14 @@ static int is_numeric (
 /* add hack to the format string to avoid warnings about extra arguments
  * to fprintf.
  */
+#ifdef XTRANSDEBUGTIMESTAMP
 #if defined(XSERV_t) && defined(TRANS_SERVER)
 /* Use ErrorF() for the X server */
 #define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int hack= 0, saveerrno=errno; \
                         struct timeval tp;\
                         gettimeofday(&tp,0); \
-			ErrorF(__xtransname,a,b,c); \
+			ErrorF(__xtransname); \
 			ErrorF(x+hack,a,b,c); \
                         ErrorF("timestamp (ms): %d\n",tp.tv_sec*1000+tp.tv_usec/1000); \
 			errno=saveerrno; \
@@ -459,13 +463,31 @@ static int is_numeric (
 			int hack= 0, saveerrno=errno; \
                         struct timeval tp;\
                         gettimeofday(&tp,0); \
-			fprintf(stderr, __xtransname,a,b,c); fflush(stderr); \
+			fprintf(stderr, __xtransname); fflush(stderr); \
 			fprintf(stderr, x+hack,a,b,c); fflush(stderr); \
                         fprintf(stderr, "timestamp (ms): %d\n",tp.tv_sec*1000+tp.tv_usec/1000); \
                         fflush(stderr); \
 			errno=saveerrno; \
 			} else ((void)0)
 #endif /* XSERV_t && TRANS_SERVER */
+#else /* XTRANSDEBUGTIMESTAMP */
+#if defined(XSERV_t) && defined(TRANS_SERVER)
+/* Use ErrorF() for the X server */
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
+			int hack= 0, saveerrno=errno; \
+			ErrorF(__xtransname); \
+			ErrorF(x+hack,a,b,c); \
+			errno=saveerrno; \
+			} else ((void)0)
+#else
+#define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
+			int hack= 0, saveerrno=errno; \
+			fprintf(stderr, __xtransname); fflush(stderr); \
+			fprintf(stderr, x+hack,a,b,c); fflush(stderr); \
+			errno=saveerrno; \
+			} else ((void)0)
+#endif /* XSERV_t && TRANS_SERVER */
+#endif /* XTRANSDEBUGTIMESTAMP */
 #else
 #define PRMSG(lvl,x,a,b,c)	((void)0)
 #endif /* XTRANSDEBUG */
