@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.12 2000/02/14 19:20:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.13 2000/04/04 19:25:03 dawes Exp $ */
 
 
 #include "X.h"
@@ -51,6 +51,14 @@ WaitForFifo(ApmPtr pApm, int slots)
   }
 }
 
+void ApmHWCursorReserveSpace(ApmPtr pApm)
+{
+  pApm->OffscreenReserved	+= 2 * CURSORALIGN;
+  pApm->DisplayedCursorAddress	= pApm->BaseCursorAddress =
+  pApm->CursorAddress	= 1024 * xf86Screens[pApm->pScreen->myNum]->videoRam -
+					pApm->OffscreenReserved;
+}
+
 
 int ApmHWCursorInit(ScreenPtr pScreen)
 {
@@ -64,9 +72,6 @@ int ApmHWCursorInit(ScreenPtr pScreen)
       return FALSE;
 
   pApm->CursorInfoRec		= infoPtr;
-  pApm->OffscreenReserved	+= 2 * CURSORALIGN;
-  pApm->DisplayedCursorAddress	= pApm->BaseCursorAddress =
-  pApm->CursorAddress	= 1024 * pScrn->videoRam - pApm->OffscreenReserved;
 
   infoPtr->MaxWidth	= CURSORWIDTH;
   infoPtr->MaxHeight	= CURSORHEIGHT;

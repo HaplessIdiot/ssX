@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.12 2000/02/11 22:35:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.13 2000/02/14 19:20:45 dawes Exp $ */
 
 
 #include "apm.h"
@@ -203,22 +203,11 @@ ApmCopyAreaPixmap(DrawablePtr pSrcDrawable, DrawablePtr pDstDrawable, GC *pGC,
 					dstx, dsty);
 }
 
-/*********************************************************************************************/
-
-int
-ApmAccelInit(ScreenPtr pScreen)
+void ApmAccelReserveSpace(ApmPtr pApm)
 {
-    ScrnInfoPtr		pScrn = xf86Screens[pScreen->myNum];
-    APMDECL(pScrn);
-    XAAInfoRecPtr	pXAAinfo;
-    BoxRec		AvailFBArea;
-    int			mem, ScratchMemOffset, i, stat;
+    memType	mem, ScratchMemOffset;
 
-    pApm->AccelInfoRec	= pXAAinfo = XAACreateInfoRec();
-    if (!pXAAinfo)
-	return FALSE;
-
-    mem			= pScrn->videoRam << 10;
+    mem			= xf86Screens[pApm->pScreen->myNum]->videoRam << 10;
     /*
      * Reserve at least four lines for mono to color expansion
      */
@@ -229,6 +218,26 @@ ApmAccelInit(ScreenPtr pScreen)
     pApm->ScratchMemPtr	= pApm->ScratchMemOffset
 			= (memType)pApm->FbBase + ScratchMemOffset;
     pApm->ScratchMemEnd	= (memType)pApm->FbBase + mem - pApm->OffscreenReserved;
+}
+
+/*********************************************************************************************/
+
+int
+ApmAccelInit(ScreenPtr pScreen)
+{
+    ScrnInfoPtr		pScrn = xf86Screens[pScreen->myNum];
+    APMDECL(pScrn);
+    XAAInfoRecPtr	pXAAinfo;
+    BoxRec		AvailFBArea;
+    memType		mem, ScratchMemOffset;
+    int			i, stat;
+
+    pApm->AccelInfoRec	= pXAAinfo = XAACreateInfoRec();
+    if (!pXAAinfo)
+	return FALSE;
+
+    mem			= pScrn->videoRam << 10;
+    ScratchMemOffset	= pApm->ScratchMemOffset - (memType)pApm->FbBase;
     switch (pApm->CurrentLayout.bitsPerPixel) {
     case 8:
     case 24:
@@ -457,14 +466,14 @@ void ApmSetupXAAInfo(ApmPtr pApm, XAAInfoRecPtr pXAAinfo)
 	    pXAAinfo->WritePixmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
 			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
 	    XAA(WritePixmap);
-	    pXAAinfo->WriteBitmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
-			    LEFT_EDGE_CLIPPING_NEGATIVE_X |
-			    BIT_ORDER_IN_BYTE_LSBFIRST;
-	    XAA(WriteBitmap);
 	    pXAAinfo->FillImageWriteRectsFlags	=
 			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
 			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
 	    XAA(FillImageWriteRects);
+	    pXAAinfo->WriteBitmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X |
+			    BIT_ORDER_IN_BYTE_LSBFIRST;
+	    XAA(WriteBitmap);
 	    pXAAinfo->TEGlyphRendererFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
 			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
 	    XAA(TEGlyphRenderer);
@@ -545,14 +554,14 @@ void ApmSetupXAAInfo(ApmPtr pApm, XAAInfoRecPtr pXAAinfo)
 	    pXAAinfo->WritePixmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
 			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
 	    XAA(WritePixmap);
-	    pXAAinfo->WriteBitmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
-			    LEFT_EDGE_CLIPPING_NEGATIVE_X |
-			    BIT_ORDER_IN_BYTE_LSBFIRST;
-	    XAA(WriteBitmap);
 	    pXAAinfo->FillImageWriteRectsFlags	=
 			    LEFT_EDGE_CLIPPING | NO_PLANEMASK |
 			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
 	    XAA(FillImageWriteRects);
+	    pXAAinfo->WriteBitmapFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
+			    LEFT_EDGE_CLIPPING_NEGATIVE_X |
+			    BIT_ORDER_IN_BYTE_LSBFIRST;
+	    XAA(WriteBitmap);
 	    pXAAinfo->TEGlyphRendererFlags = LEFT_EDGE_CLIPPING | NO_PLANEMASK |
 			    LEFT_EDGE_CLIPPING_NEGATIVE_X;
 	    XAA(TEGlyphRenderer);

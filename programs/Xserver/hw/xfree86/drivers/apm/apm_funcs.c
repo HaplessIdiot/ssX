@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.11 2000/02/12 02:54:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.12 2000/02/12 18:26:47 dawes Exp $ */
 
 #define FASTER
 #ifndef PSZ
@@ -1187,7 +1187,7 @@ A(SyncBlt)(ApmPtr pApm)
        while (!(STATUS() & STATUS_HOSTBLTBUSY))
 	   ;
     }
-    while (again--);	/* See remarc in Sync6422 */
+    while (again--);	/* See remark in Sync6422 */
 }
 static void
 A(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,

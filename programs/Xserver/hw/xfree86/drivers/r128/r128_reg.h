@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.8 2000/06/17 00:03:22 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.9 2000/06/26 05:41:33 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -46,50 +46,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _R128_REG_H_
 #include <compiler.h>
 
-#if defined(__powerpc__)
-
-static __inline__ void regw(volatile unsigned long base_addr, unsigned long regindex, unsigned long regdata)
-{
- __asm__ volatile ("stwbrx %1,%2,%3; eieio"
-          : "=m" (*(volatile unsigned *)(base_addr+regindex))
-          : "r" (regdata), "b" (regindex), "r" (base_addr));
-}
-
-static __inline__ void regw16(volatile unsigned long base_addr, unsigned long regindex, unsigned short regdata)
-{
-  __asm__ volatile ("sthbrx %0,%1,%2; eieio": : "r"(regdata), "b"(regindex), "r"(base_addr));
-}
-
-static __inline__ unsigned long regr(volatile unsigned long base_addr, unsigned long regindex)
-{
-  register unsigned long val;
-  __asm__ volatile ("lwbrx %0,%1,%2; eieio"
-           : "=r"(val)
-           : "b"(regindex), "r"(base_addr),
-             "m" (*(volatile unsigned *)(base_addr+regindex)));
-  return(val);
-}
-
-static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsigned long regindex)
-{
-  register unsigned short val;
-  __asm__ volatile ("lhbrx %0,%1,%2; eieio": "=r"(val):"b"(regindex), "r"(base_addr));
-  return(val);
-}
-
-				/* Memory mapped register access macros */
-#define INREG(addr)         regr(((unsigned long)R128MMIO),(addr))
-#define INREG8(addr)        *(volatile CARD8  *)(R128MMIO + (addr))
-#define INREG16(addr)       regr16(((unsigned long)R128MMIO), (addr))
-#define OUTREG(addr, val)   regw(((unsigned long)R128MMIO), (addr), (val))
-#define OUTREG8(addr, val)  *(volatile CARD8  *)(R128MMIO + (addr)) = (val)
-#define OUTREG16(addr, val) regw16(((unsigned long)R128MMIO), (addr), (val))
-#define ADDRREG(addr)       ((volatile CARD32 *)(R128MMIO + (addr)))
-
-#define R128MMIO_VARS()                                                     \
-    unsigned char *R128MMIO   = R128PTR(pScrn)->MMIO
-
-#else
 				/* Memory mapped register access macros */
 #define INREG8(addr)        MMIO_IN8(R128MMIO, addr)
 #define INREG16(addr)       MMIO_IN16(R128MMIO, addr)
@@ -103,7 +59,6 @@ static __inline__ unsigned short regr16(volatile unsigned long base_addr, unsign
 #define R128MMIO_VARS()                                                     \
     unsigned char *R128MMIO   = R128PTR(pScrn)->MMIO
 
-#endif
 
 #define OUTREGP(addr, val, mask)   \
     do {                           \

@@ -1,7 +1,7 @@
 #ifndef __GLX_glx_h__
 #define __GLX_glx_h__
 
-/* $XFree86: xc/include/GL/glx.h,v 1.5 2000/03/02 16:07:29 martin Exp $ */
+/* $XFree86: xc/include/GL/glx.h,v 1.6 2000/06/17 00:02:46 martin Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -38,7 +38,6 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/Xmd.h>
 #include <GL/gl.h>
 #include <GL/glxtokens.h>
 

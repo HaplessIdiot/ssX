@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.41 2000/04/20 13:31:50 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.42 2000/06/21 17:28:03 dawes Exp $ */
 
 
 #include "apm.h"
@@ -7,6 +7,7 @@
 #include "xf86Resources.h"
 #include "xf86int10.h"
 #include "xf86RAC.h"
+#include "vbe.h"
 
 #ifdef DPMSExtension
 #include "opaque.h"
@@ -51,10 +52,12 @@ static void	ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					     int PowerManagementMode,
 					     int flags);
 #endif
+static void	ApmProbeDDC(ScrnInfoPtr pScrn, int index);
 
 
 int ApmPixmapIndex = -1;
 static int ApmGeneration = -1;
+static int pix24bpp = 0;
 
 DriverRec APM = {
 	VERSION,
@@ -197,6 +200,7 @@ static const char *cfbSymbols[] = {
     "cfb16ScreenInit",
     "cfb24ScreenInit",
     "cfb32ScreenInit",
+    "cfb24_32ScreenInit",
     NULL
 };
 
@@ -435,10 +439,8 @@ ApmProbe(DriverPtr drv, int flags)
 	    }
 	}
     }
-#if 0	/* This causes problems with -configure? */
     if (DevSections)
 	xfree(DevSections);
-#endif
     return foundScreen;
 }
 
@@ -466,13 +468,26 @@ static unsigned int
 ddc1Read(ScrnInfoPtr pScrn)
 {
     APMDECL(pScrn);
-    unsigned char tmp;
+    unsigned char	tmp;
 
     tmp = RDXB_IOP(0xD0);
     WRXB_IOP(0xD0, tmp & 0x07);
     while (STATUS_IOP() & 0x800);             
     while (!(STATUS_IOP() & 0x800));             
     return (STATUS_IOP() & STATUS_SDA) != 0;
+}
+
+extern xf86MonPtr ConfiguredMonitor;
+
+static void
+ApmProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        pVbe = VBEInit(NULL, index);
+        ConfiguredMonitor = vbeDoEDID(pVbe);
+    }
 }
 
 static Bool
@@ -487,8 +502,6 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     xf86MonPtr		MonInfo = NULL;
     double		real;
 
-    if (flags & PROBE_DETECT) return FALSE;
-
     /*
      * Note: This function is only called once at server startup, and
      * not at the start of each server generation.  This means that
@@ -501,6 +514,33 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
      * Per-generation data should be allocated with
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
+
+    /* Check the number of entities, and fail if it isn't one. */
+    if (pScrn->numEntities != 1)
+	return FALSE;
+
+    /* Allocate the ApmRec driverPrivate */
+    if (!ApmGetRec(pScrn)) {
+	return FALSE;
+    }
+    pApm = APMPTR(pScrn);
+
+    /* Get the entity */
+    pEnt = pApm->pEnt	= xf86GetEntityInfo(pScrn->entityList[0]);
+    if (pEnt->location.type == BUS_PCI) {
+	pApm->PciInfo	= xf86GetPciInfoForEntity(pEnt->index);
+	pApm->PciTag	= pciTag(pApm->PciInfo->bus, pApm->PciInfo->device,
+				 pApm->PciInfo->func);
+    }
+    else {
+	pApm->PciInfo	= NULL;
+	pApm->PciTag	= 0;
+    }
+
+    if (flags & PROBE_DETECT) {
+        ApmProbeDDC(pScrn, pEnt->index);
+        return TRUE;
+    }
 
     /* The vgahw module should be allocated here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
@@ -571,24 +611,6 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
-
-    /* Allocate the ApmRec driverPrivate */
-    if (!ApmGetRec(pScrn)) {
-	return FALSE;
-    }
-    pApm = APMPTR(pScrn);
-
-    /* Get the entity */
-    pEnt = pApm->pEnt	= xf86GetEntityInfo(pScrn->entityList[0]);
-    if (pEnt->location.type == BUS_PCI) {
-	pApm->PciInfo	= xf86GetPciInfoForEntity(pEnt->index);
-	pApm->PciTag	= pciTag(pApm->PciInfo->bus, pApm->PciInfo->device,
-				 pApm->PciInfo->func);
-    }
-    else {
-	pApm->PciInfo	= NULL;
-	pApm->PciTag	= 0;
-    }
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
@@ -922,6 +944,23 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 		      return FALSE;
 	       }
 	       break;
+	  case AP6422:
+	       switch(pScrn->bitsPerPixel)
+	       {
+		 case 4:
+		 case 8:
+		      pApm->MaxClock = 135000;
+		      break;
+		 case 16:
+		      pApm->MaxClock = 75000;
+		      break;
+		 case 32:
+		      pApm->MaxClock = 60000;
+		      break;
+		 default:
+		      return FALSE;
+	       }
+	       break;
 	  default:
 	       pApm->MaxClock = 135000;
 	       break;
@@ -1014,8 +1053,13 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	req = "cfb16ScreenInit";
 	break;
     case 24:
-	mod = "cfb24";
-	req = "cfb24ScreenInit";
+	if (pix24bpp == 24) {
+	    mod = "cfb24";
+	    req = "cfb24ScreenInit";
+	} else {
+	    mod = "xf24_32bpp";
+	    req = "cfb24_32ScreenInit";
+	}
 	break;
     case 32:
 	mod = "cfb32";
@@ -1057,8 +1101,8 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
 
-    pApm->CurrentLayout.displayWidth	= pScrn->display->virtualX;
-    pApm->CurrentLayout.displayHeight	= pScrn->display->virtualY;
+    pApm->CurrentLayout.displayWidth	= pScrn->virtualX;
+    pApm->CurrentLayout.displayHeight	= pScrn->virtualY;
     pApm->CurrentLayout.bitsPerPixel	= pScrn->bitsPerPixel;
     pApm->CurrentLayout.bytesPerScanline= (pApm->CurrentLayout.displayWidth * pApm->CurrentLayout.bitsPerPixel) >> 3;
     pApm->CurrentLayout.depth		= pScrn->depth;
@@ -1812,6 +1856,10 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	FbBase = pApm->FbBase;
     }
 
+    /* Reserve memory */
+    ApmHWCursorReserveSpace(pApm);
+    ApmAccelReserveSpace(pApm);
+
     switch (pScrn->bitsPerPixel) {
     case 1:
 	ret = xf1bppScreenInit(pScreen, FbBase,
@@ -1836,9 +1884,16 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, FbBase, pScrn->virtualX,
-	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-	    pScrn->displayWidth);
+	if (pix24bpp == 24)
+	    ret = cfb24ScreenInit(pScreen, FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	else
+	    ret = cfb24_32ScreenInit(pScreen, FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
 	break;
     case 32:
 	ret = cfb32ScreenInit(pScreen, FbBase, pScrn->virtualX,
