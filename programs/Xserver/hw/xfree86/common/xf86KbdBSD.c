@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.11 1998/07/25 16:55:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.12 1999/04/29 05:12:57 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -447,7 +447,10 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   break;
 #endif
 
-#if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
+/*
+ * XXX wscons has no GIO_KEYMAP
+ */
+#if (defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)) && defined(GIO_KEYMAP)
   case SYSCONS:
   case PCVT:
     {
