@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dga.c,v 1.3 2000/06/17 00:03:25 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dga.c,v 1.4 2000/12/20 01:30:46 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -76,7 +76,7 @@ TDFXDGAInit(ScreenPtr pScreen)
     currentMode->xViewportStep = 1;
     currentMode->yViewportStep = 1;
     currentMode->viewportFlags = DGA_FLIP_RETRACE;
-    currentMode->offset = pTDFX->fbOffset;
+    currentMode->offset = 0;
     currentMode->address = pTDFX->FbBase;
     currentMode->bytesPerScanline = ((pScrn->displayWidth*pTDFX->cpp)+3) & ~3L;
     currentMode->imageWidth = pScrn->displayWidth;
@@ -203,9 +203,9 @@ TDFX_OpenFramebuffer(
     TDFXPtr pTDFX = TDFXPTR(pScrn);
 
     *name = NULL; 		/* no special device */
-    *mem = (unsigned char*)pTDFX->LinearAddr[0];
+    *mem = (unsigned char*)pTDFX->LinearAddr[0] + pTDFX->fbOffset;
     *size = pTDFX->FbMapSize;
-    *offset = 0;
+    *offset = /* pTDFX->fbOffset */ 0 ;  /* DGA is broken */
     *flags = DGA_NEED_ROOT;
 
     return TRUE;
