@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.75tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.76tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -224,7 +224,12 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 #  define ServerExtraDefines	AllocateLocalDefines
 # endif
 #else
-# define ServerExtraDefines	AllocateLocalDefines XFree86ServerDefines
+# ifdef BuildXFree86OnSparcSunOS
+#  define ServerExtraDefines	AllocateLocalDefines XFree86ServerDefines
+# else
+#  define ServerExtraDefines	AllocateLocalDefines XFree86ServerDefines \
+				-UXFree86Server
+# endif
 # define HasPlugin		YES
 #endif
 #define ServerOSDefines		XFree86ServerOSDefines IncludeCG2HeaderDefine
@@ -283,14 +288,16 @@ XCOMM SunPro C++ CplusplusCompilerMajorVersion./**/CplusplusCompilerMinorVersion
 # endif
 # ifdef i386Architecture
 #  if (OSMajorVersion < 4) || ((OSMajorVersion == 5) && (OSMinorVersion <= 5))
-#   define StandardDefines	-Dsun -Di386 -DSVR4 -D__EXTENSIONS__ -D__i386 \
-				-D__SOL64__
+#   define StandardDefines	-Dsun -DSVR4 -D__EXTENSIONS__ -D__SOL64__ \
+				-Di386 -D__i386 -D__i386__
 #  else
-#   define StandardDefines	-Dsun -Di386 -DSVR4 -D__EXTENSIONS__ -D__i386
+#   define StandardDefines	-Dsun -DSVR4 -D__EXTENSIONS__ \
+				-Di386 -D__i386 -D__i386__
 #  endif
 #  define ToolkitStringsABIOptions	-intelabi
 # else
-#  define StandardDefines	  -Dsun -Dsparc -DSVR4 -D__EXTENSIONS__
+#  define StandardDefines	-Dsun -DSVR4 -D__EXTENSIONS__ \
+				-Dsparc -D__sparc__
 #  define ToolkitStringsABIOptions	-sparcabi
 # endif
 # define ExtraLibraries    -lsocket -lnsl
