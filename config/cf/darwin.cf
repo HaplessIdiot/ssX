@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.4 2001/01/14 16:41:32 herrb Exp $
+XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.5 2001/01/20 21:08:55 herrb Exp $
 
-/* Darwin / MacOS-X configuration by John Carmack <johnc@idsoftware.com> */
+/* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
 /* imake determines the default values by parsing uname */
 #define OSName                  DefaultOSName
@@ -31,22 +31,17 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.4 2001/01/14 16:41:32 herrb Exp $
 #define MathLibrary             /**/
 
 /* we don't have a termcap library */
-#define TermcapLibrary         /**/
+#define TermcapLibrary          /**/
 
 /* we don't have a dbm library */
-#define DBMLibrary             /**/
+#define DBMLibrary              /**/
 
 /* our cpp isn't in /lib/cpp */
 #define CppCmd                  /usr/bin/cpp
 
 /* we have a gcc compatible compiler, but its not called gcc */
 #define CcCmd                   /usr/bin/cc
-#define CplusplusCmd		/usr/bin/c++
-
-/* if -c isn't passed, there are problems with the cfb libs when
- * they include an object file without any symbols
- */
-#define RanlibCmd               ranlib
+#define CplusplusCmd            /usr/bin/c++
 
 /* uncommenting this line will get -g instead of -O, which builds
  * a lot faster and gets debug info
@@ -71,8 +66,11 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.4 2001/01/14 16:41:32 herrb Exp $
  *
  * __DARWIN__ will be used for platform specific #ifdefs that can't
  * be handled by existing X defines.
+ *
+ * Darwin's alloca() seg faults (rather than returning NULL) on failed
+ * allocations, so we can't use it.
  */
-#define StandardDefines         -D__powerpc__ -D__DARWIN__
+#define StandardDefines         -D__powerpc__ -D__DARWIN__ -DNO_ALLOCA
 
 /* programs/rgb/rgb.h and others needs this */
 #define HasNdbm                 YES
@@ -108,10 +106,10 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.4 2001/01/14 16:41:32 herrb Exp $
 
 /* no OpenGL libraries */
 #ifndef BuildGLXLibrary	
-# define BuildGLXLibrary		NO
+# define BuildGLXLibrary        NO
 #endif
 #ifndef BuildGLULibrary
-# define BuildGLULibrary		NO
+# define BuildGLULibrary        NO
 #endif
 
 
