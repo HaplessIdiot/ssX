@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 2 December 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.20 2001/09/29 20:32:30 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.21 2001/12/04 20:59:38 herrb Exp $
 </ident>
 
 <toc>
@@ -245,12 +245,12 @@ To enable the aperture driver, once included in the kernel, set
 machdep.allowaperture=2     
 </verb></tscreen>
 in <tt>/etc/sysctl.conf</tt>.  See the
-<htmlurl name="xf86(4)" url="http://www.openbsd.org/cgi-bin/man.cgi?query=xf86&apropos=0&sektion=4&manpath=OpenBSD+Current&arch=i386&format=html"
+<htmlurl name="xf86(4)" url="http://www.openbsd.org/cgi-bin/man.cgi?query=xf86&amp;apropos=0&amp;sektion=4&amp;manpath=OpenBSD+Current&amp;arch=i386&amp;format=html">
 manual page for details. 
 <p>
 Another (less recommended) way to enable linear memory and I/O ports
-access is to disable the kernel security feature by adding ``option
-INSECURE'' in your kernel configuration file and build a new kernel.
+access is to disable the kernel security feature by adding 'option
+INSECURE' in your kernel configuration file and build a new kernel.
 You will also need to comment out the line
 initializing <tt/securelevel/ to 1 in <tt>/etc/rc.securelevel</tt>.
 <p>
