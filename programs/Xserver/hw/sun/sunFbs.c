@@ -67,7 +67,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * express or implied warranty.
  */
 
-/* $XFree86: sunFbs.c,v 1.5 2001/12/14 19:59:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunFbs.c,v 1.6 2002/03/17 19:01:47 herrb Exp $ */
 
 /****************************************************************/
 /* Modified from  sunCG4C.c for X11R3 by Tom Jarmolowski	*/
@@ -112,7 +112,7 @@ pointer sunMemoryMap (len, off, fd)
     }
 #endif
 
-#if !defined(__NetBSD__) && !defined(__NetBSD__)
+#if !defined(__NetBSD__) && !defined(__OpenBSD__)
     /* 
      * try and make it private first, that way once we get it, an
      * interloper, e.g. another server, can't get this frame buffer,
