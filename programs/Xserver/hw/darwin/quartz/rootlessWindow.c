@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.9 2001/12/22 05:28:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -75,10 +75,9 @@ RootlessSetShape(WindowPtr pWin)
 
 // Disallow ParentRelative background on top-level windows
 // because the root window doesn't really have the right background
-// and cfb will try to draw on the root instead of on the window.
-// fixme what about fb?
-// fixme implement ParentRelative with real transparency?
-// ParentRelative prevention is also in RealizeWindow()
+// and fb will try to draw on the root instead of on the window.
+// ParentRelative prevention is also in PaintWindowBackground/Border()
+// so it is no longer really needed here.
 Bool
 RootlessChangeWindowAttributes(WindowPtr pWin, unsigned long vmask)
 {
@@ -138,8 +137,8 @@ RootlessPositionWindow(WindowPtr pWin, int x, int y)
 
 
 // RootlessRealizeWindow
-// The frame is created here and not in CreateWindow.
-// fixme change this? probably not - would be faster, but eat more memory
+// The frame is created here and not in CreateWindow so that windows do
+// not eat memory until they are realized.
 Bool
 RootlessRealizeWindow(WindowPtr pWin)
 {
@@ -176,10 +175,8 @@ RootlessRealizeWindow(WindowPtr pWin)
                       (pScreen, &WINREC(pWin)->frame,
                       pWin->prevSib ? &WINREC(pWin->prevSib)->frame : NULL));
 
-        // fixme implement ParentRelative with transparency?
-        //  need non-interfering fb first
-        // Disallow ParentRelative background state
-        // This might have been set before the window was mapped
+        // Disallow ParentRelative background state on top-level windows.
+        // This might have been set before the window was mapped.
         if (pWin->backgroundState == ParentRelative) {
             XID pixel = 0;
             ChangeWindowAttributes(pWin, CWBackPixel, &pixel, serverClient);
@@ -628,6 +625,100 @@ RootlessResizeWindow(WindowPtr pWin, int x, int y,
     }
 
     RL_DEBUG_MSG("resizewindow end\n");
+}
+
+
+/*
+ * SetPixmapOfAncestors
+ *  Set the Pixmaps on all ParentRelative windows up the ancestor chain.
+ */
+static void
+SetPixmapOfAncestors(WindowPtr pWin)
+{
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    WindowPtr topWin = TopLevelParent(pWin);
+    RootlessWindowRec *topWinRec = WINREC(topWin);
+
+    while (pWin->backgroundState == ParentRelative) {
+        if (pWin == topWin) {
+            // disallow ParentRelative background state on top level
+            XID pixel = 0;
+            ChangeWindowAttributes(pWin, CWBackPixel, &pixel, serverClient);
+            RL_DEBUG_MSG("Cleared ParentRelative on 0x%x.\n", pWin);
+            break;
+        }
+
+        pWin = pWin->parent;
+        pScreen->SetWindowPixmap(pWin, topWinRec->pixmap);
+    }
+}
+
+
+void
+RootlessPaintWindowBackground(WindowPtr pWin, RegionPtr pRegion, int what)
+{
+    int oldBackgroundState = 0;
+    PixUnion oldBackground;
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+
+    SCREEN_UNWRAP(pScreen, PaintWindowBackground);
+    RL_DEBUG_MSG("paintwindowbackground start (win 0x%x) ", pWin);
+    if (IsFramedWindow(pWin)) {
+        if (IsRoot(pWin)) {
+            // set root background to magic transparent color
+            oldBackgroundState = pWin->backgroundState;
+            oldBackground = pWin->background;
+            pWin->backgroundState = BackgroundPixel;
+            pWin->background.pixel = 0x00fffffe;
+        }
+        RootlessStartDrawing(pWin);
+
+        // For ParentRelative windows, we have to make sure the window
+        // pixmap is set correctly all the way up the ancestor chain.
+        if (pWin->backgroundState == ParentRelative) {
+            SetPixmapOfAncestors(pWin);
+        }
+    }
+
+    pScreen->PaintWindowBackground(pWin, pRegion, what);
+
+    if (IsFramedWindow(pWin)) {
+        RootlessDamageRegion(pWin, pRegion);
+        if (IsRoot(pWin)) {
+            pWin->backgroundState = oldBackgroundState;
+            pWin->background = oldBackground;
+        }
+    }
+    SCREEN_WRAP(pScreen, PaintWindowBackground);
+    RL_DEBUG_MSG("paintwindowbackground end\n");
+}
+
+
+void
+RootlessPaintWindowBorder(WindowPtr pWin, RegionPtr pRegion, int what)
+{
+    SCREEN_UNWRAP(pWin->drawable.pScreen, PaintWindowBorder);
+    RL_DEBUG_MSG("paintwindowborder start (win 0x%x) ", pWin);
+    if (IsFramedWindow(pWin)) {
+        RootlessStartDrawing(pWin);
+
+        // For ParentRelative windows with tiled borders, we have to make
+        // sure the window pixmap is set correctly all the way up the
+        // ancestor chain.
+        if (!pWin->borderIsPixel &&
+            pWin->backgroundState == ParentRelative)
+        {
+            SetPixmapOfAncestors(pWin);
+        }
+    }
+
+    pWin->drawable.pScreen->PaintWindowBorder(pWin, pRegion, what);
+
+    if (IsFramedWindow(pWin)) {
+        RootlessDamageRegion(pWin, pRegion);
+    }
+    SCREEN_WRAP(pWin->drawable.pScreen, PaintWindowBorder);
+    RL_DEBUG_MSG("paintwindowborder end\n");
 }
 
 

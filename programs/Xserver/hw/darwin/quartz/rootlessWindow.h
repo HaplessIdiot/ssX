@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.h,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #ifndef _ROOTLESSWINDOW_H
 #define _ROOTLESSWINDOW_H
@@ -27,6 +27,10 @@ void RootlessCopyWindow(WindowPtr pWin,DDXPointRec ptOldOrg,RegionPtr prgnSrc);
 void RootlessMoveWindow(WindowPtr pWin,int x,int y,WindowPtr pSib,VTKind kind);
 void RootlessResizeWindow(WindowPtr pWin, int x, int y,
 			  unsigned int w, unsigned int h, WindowPtr pSib);
+void RootlessPaintWindowBackground(WindowPtr pWin, RegionPtr pRegion,
+                                   int what);
+void RootlessPaintWindowBorder(WindowPtr pWin, RegionPtr pRegion,
+                               int what);
 void RootlessChangeBorderWidth(WindowPtr pWin, unsigned int width);
 
 #endif

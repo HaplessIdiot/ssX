@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessCommon.c,v 1.3 2001/11/05 05:12:16 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #include "rootlessCommon.h"
 
@@ -84,6 +84,7 @@ void RootlessStartDrawing(WindowPtr pWindow)
         winRec->drawing = TRUE;
     }
 
+    winRec->oldPixmap = pScreen->GetWindowPixmap(pWindow);
     pScreen->SetWindowPixmap(pWindow, winRec->pixmap);
 }
 
@@ -105,7 +106,7 @@ void RootlessStopDrawing(WindowPtr pWindow)
         ScreenPtr pScreen = pWindow->drawable.pScreen;
         CallFrameProc(pScreen, StopDrawing, (pScreen, &winRec->frame));
         FreeScratchPixmapHeader(winRec->pixmap);
-        pScreen->SetWindowPixmap(pWindow, NULL);
+        pScreen->SetWindowPixmap(pWindow, winRec->oldPixmap);
         winRec->pixmap = NULL;
         winRec->drawing = FALSE;
     }
