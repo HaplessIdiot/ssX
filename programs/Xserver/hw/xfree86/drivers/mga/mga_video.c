@@ -715,6 +715,9 @@ MGAQueryImageAttributesG(
 ){
     int size, tmp;
 
+    if(*w > 1024) *w = 1024;
+    if(*h > 1024) *h = 1024;
+
     *w = (*w + 1) & ~1;
     if(offsets) offsets[0] = 0;
 
