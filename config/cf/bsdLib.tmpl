@@ -1,11 +1,15 @@
 XCOMM $Xorg: bsdLib.tmpl,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.18 2003/05/29 21:56:57 herrb Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.19 2003/06/01 21:36:21 herrb Exp $
 
 /*
  * NetBSD/FreeBSD/OpenBSD shared library template
  */
 
 #if !UseElfFormat
+
+#ifndef SharedXlibi18nReqs
+#define SharedXlibi18nReqs $(LDPRELIB) $(XONLYLIB)
+#endif
 
 #ifndef SharedXtReqs
 #define SharedXtReqs /**/
