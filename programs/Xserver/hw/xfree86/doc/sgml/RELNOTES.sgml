@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>3 July 2000
+<date>6 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.42 2000/07/03 16:27:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.43tsi Exp $
 </ident>
 
 <abstract>
@@ -31,18 +31,18 @@ We've attempted to provide some information
 about the second point in our <htmlurl name="Driver Status document"
 url="Status.html">.  Please check there first before downloading  &relvers;.
 
-The 4.0.1 has a new configuration tool, "<tt>xf86cfg</tt>".  It is work
-in progress, but definitely worth trying out.  We have also updated the
-basic text-based tool "<tt>xf86config</tt>" to generate config files in
-the format required by &relvers; (3.3.x config files won't really work
-with &relvers;).  We're also on a configuration tool that is built-in
+The 4.0.1 release introduced a new configuration tool, "<tt>xf86cfg</tt>".
+It is work in progress, but definitely worth trying out.  We have also
+updated the basic text-based tool "<tt>xf86config</tt>" to generate config
+files in the format required by &relvers; (3.3.x config files won't really
+work with &relvers;).  We're also on a configuration tool that is built-in
 to the X server.  An early version of this is included in the release,
 and it works well for some hardware.  To try it out, just run (as root)
 "<tt>XFree86 -configure</tt>".  Each of these configuration options will
 give you a reasonable starting point for a suitable configuration file.
 We've put some effort into documenting the &relvers; config file format,
 and you can find that information in the XF86Config manual page. Check
-that,  the driver manual pages and the related documentation for further
+that, the driver manual pages and the related documentation for further
 information.
 
 Oh, another thing you might notice is that our documentation is rather
@@ -96,6 +96,14 @@ don't have enough space to cover it all here.
 	improvements to the MouseKeys support.
 
   <item>Add generic DGA support to the sis, neomagic and i810 drivers.
+
+  <item>A driver for ATI Radeon adapters has been added.
+
+  <item>ATI driver support for multi-head configurations and non-Intel
+        platforms has been improved.
+
+  <item>The ATI driver has been changed to invoke the appropriate driver for
+        any Rage 128 and Radeon adapters that it finds in the system.
 
   <item><tt>xf86cfg</tt>, a new graphical configuration tool for XFree86 4.0,
 	and can be used to either write the initial configuration or make
@@ -809,6 +817,7 @@ XFree86 &relvers; includes the following drivers:
    <tabrow><tt>neomagic</tt><colsep>NeoMagic</tabrow>
    <tabrow><tt>nv</tt><colsep>NVIDIA</tabrow>
    <tabrow><tt>r128</tt><colsep>ATI Rage 128</tabrow>
+   <tabrow><tt>radeon</tt><colsep>ATI Radeon</tabrow>
    <tabrow><tt>rendition</tt><colsep>Rendition</tabrow>
    <tabrow><tt>s3virge</tt><colsep>S3 ViRGE</tabrow>
    <tabrow><tt>sis</tt><colsep>SiS</tabrow>

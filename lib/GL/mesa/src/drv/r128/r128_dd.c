@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.2 2000/08/25 13:42:28 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.3 2000/12/04 19:21:45 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -65,10 +65,10 @@ static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
 
    switch ( name ) {
    case GL_VENDOR:
-      return "VA Linux Systems, Inc.";
+      return (const GLubyte *)"VA Linux Systems, Inc.";
 
    case GL_RENDERER:
-      sprintf( buffer, "Mesa DRI Rage128 " R128_DATE );
+      sprintf((void *)buffer, "Mesa DRI Rage128 " R128_DATE );
 
       /* Append any chipset-specific information.
        */

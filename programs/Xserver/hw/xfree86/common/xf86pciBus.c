@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.24 2000/10/26 11:47:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.26 2000/12/06 15:35:11 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1351,7 +1351,7 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
  */
 
 memType
-getValidBIOSBase(PCITAG tag, int num)
+getValidBIOSBase(PCITAG tag, int *num)
 {
     pciVideoPtr pvp = NULL;
     PciBusPtr pbp, pbp1;
@@ -1419,18 +1419,27 @@ getValidBIOSBase(PCITAG tag, int num)
 	    return pvp->biosBase;
 	}
     }
-    if (num >= 0 && num <= 5 &&
-	pvp->memBase[num] && (pvp->size[num] >= biosSize)) {
+
+    /* Validate alternate base, and, on failure, look for another one */
+    if ((*num < 0) || (*num > 5) ||
+	!pvp->memBase[*num] || (pvp->size[*num] < biosSize)) {
+	*num = -1;
+	for (n = 0;  n <= 5;  n++) {
+	    if (pvp->memBase[n] && (pvp->size[n] >= biosSize)) {
+		*num = n;
+		break;
+	    }
+	}
+    }
+
+    if (*num >= 0) {
 	/* then try suggested memBase */
 	/* keep bios size ! */
-	P_M_RANGE(range,TAG(pvp),pvp->memBase[num],biosSize,ResExcMemBlock);
+	P_M_RANGE(range,TAG(pvp),pvp->memBase[*num],biosSize,ResExcMemBlock);
 	if (xf86IsSubsetOf(range,m) && !ChkConflict(&range,avoid,SETUP)) {
 	    xf86FreeResList(avoid);
 	    xf86FreeResList(m);
-	    xf86MsgVerb(X_INFO,5,"GetVaildBIOSBase for %x:%x:%x: "
-			"got mem base %i: 0x%lx\n",pvp->bus,pvp->device,
-			pvp->func,num,(memType)pvp->memBase[num]);
-	    return pvp->memBase[num];
+	    return pvp->memBase[*num];
 	}
     }
     while (m) {
@@ -1666,7 +1675,6 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->brfunc = pcrp->funcnum;
 		PciBus->subclass = sub_class;
 		xf86MsgVerb(X_INFO,3,"PCI-to-ISA bridge:\n");
-		printBridgeInfo(PciBus);
 		break;
 	    case PCI_SUBCLASS_BRIDGE_HOST:
 		*pnPciBus = PciBus = xnfcalloc(1, sizeof(PciBusRec));
@@ -1681,7 +1689,6 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->preferred_pmem = xf86ExtractTypeFromList(
 		    xf86PciBusAccWindowsFromOS(),ResMem);
 		xf86MsgVerb(X_INFO,3,"Host-to-PCI bridge:\n");
-		printBridgeInfo(PciBus);
 		break;
 	    default:
 		break;
@@ -1718,7 +1725,6 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->preferred_pmem = xf86ExtractTypeFromList(
 		    xf86PciBusAccWindowsFromOS(),ResMem);
 		xf86MsgVerb(X_INFO,3,"Host-to-PCI bridge:\n");
-		printBridgeInfo(PciBus);
 	    }
 	}
     }
@@ -1741,11 +1747,11 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		    PciBus->pmem = PciBus1->pmem ? PciBus1->pmem
 			: PciBus1->preferred_pmem;
 		    xf86MsgVerb(X_INFO,3,"Subtractive PCI-to-PCI bridge:\n");
-		    printBridgeInfo(PciBus);
 		    break;
 		}
 	    }
 	}
+	printBridgeInfo(PciBus);
     }
     
     return PciBusBase;
@@ -1774,7 +1780,6 @@ alignBridgeRanges(PciBusPtr PciBusBase, PciBusPtr primary)
 		    xf86FreeResList(PciBus->preferred_mem);
 		    PciBus->preferred_mem = tmp;
 		    xf86MsgVerb(X_INFO,3,"PCI-to-PCI bridge:\n");
-		    printBridgeInfo(PciBus);
 		    alignBridgeRanges(PciBusBase, PciBus);
 	}
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.67 2000/06/20 05:08:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.68 2000/10/30 23:02:11 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -126,7 +126,7 @@ void xf86ClearEntityListForScreen(int scrnIndex);
 void xf86AddDevToEntity(int entityIndex, GDevPtr dev);
 extern void xf86PostPreInit(void);
 extern void xf86PostScreenInit(void);
-extern memType getValidBIOSBase(PCITAG tag, int num);
+extern memType getValidBIOSBase(PCITAG tag, int *num);
 extern int pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag);
 
 /* xf86Config.c */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.7 2000/11/08 05:02:51 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.8 2000/12/04 19:21:48 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -90,7 +90,7 @@ do {									\
    }									\
 } while (0)
 
-#if USE_RHW2
+#ifdef USE_RHW2
 
 #define TEX1_4								\
 do {									\

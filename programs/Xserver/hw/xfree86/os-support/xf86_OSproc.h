@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.47 2000/11/14 18:20:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.48 2000/11/21 23:10:40 tsi Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -195,16 +195,6 @@ extern Bool xf86UnbindGARTMemory(int screenNum, int key);
 extern Bool xf86EnableAGP(int screenNum, CARD32 mode);
 
 #if defined(__alpha__)
-/* entry points for Mmio memory access routines */
-extern int (*xf86ReadMmio8)(pointer, unsigned long);
-extern int (*xf86ReadMmio16)(pointer, unsigned long);
-extern int (*xf86ReadMmio32)(pointer, unsigned long);
-extern void (*xf86WriteMmio8)(int, pointer, unsigned long);
-extern void (*xf86WriteMmio16)(int, pointer, unsigned long);
-extern void (*xf86WriteMmio32)(int, pointer, unsigned long);
-extern void (*xf86WriteMmioNB8)(int, pointer, unsigned long);
-extern void (*xf86WriteMmioNB16)(int, pointer, unsigned long);
-extern void (*xf86WriteMmioNB32)(int, pointer, unsigned long);
 extern void xf86JensenMemToBus(char *, long, long, int);
 extern void xf86JensenBusToMem(char *, char *, unsigned long, int);
 extern void xf86SlowBCopyFromBus(unsigned char *, unsigned char *, int);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.100 2000/11/06 19:24:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.101 2000/11/18 19:37:09 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1090,9 +1090,9 @@ xf86SigHandler(int signo)
 #ifdef XF86BIGFONT
   XF86BigfontCleanup();
 #endif
-#if defined(DEBUG) && defined(XFree86LOADER)
-  if (signo == SIGSEGV)
-      LoaderDumpSymbols();
+#if defined(XFree86LOADER)
+  if (xf86Initialising)
+      LoaderCheckUnresolved(LD_RESOLV_IFDONE);
 #endif
   FatalError("Caught signal %d.  Server aborting\n", signo);
 }

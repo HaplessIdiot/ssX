@@ -25,7 +25,7 @@
  *
  * Author: Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.2 2000/11/18 19:37:21 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmR128.h,v 3.3 2000/12/04 21:04:47 dawes Exp $
  *
  */
 
@@ -82,12 +82,12 @@ extern int drmR128Clear( int fd, unsigned int flags,
 			 unsigned int clear_color, unsigned int clear_depth,
 			 unsigned int color_mask, unsigned int depth_mask );
 
-extern int drmR128FlushVertexBuffer( int fd, int prim, int index,
+extern int drmR128FlushVertexBuffer( int fd, int prim, int indx,
 				     int count, int discard );
-extern int drmR128FlushIndices( int fd, int prim, int index,
+extern int drmR128FlushIndices( int fd, int prim, int indx,
 				int start, int end, int discard );
 
-extern int drmR128TextureBlit( int fd, int index,
+extern int drmR128TextureBlit( int fd, int indx,
 			       int offset, int pitch, int format,
 			       int x, int y, int width, int height );
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.18 2000/01/25 01:36:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.19 2000/02/26 05:19:44 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -85,6 +85,7 @@ clean::									@@\
 update.docs:: textfile							@@\
 	-@if [ -f $(FORMATTEDDIR)/textfile ]; then \			@@\
 	    if [ "$(FORCEUPDATE)" = yes ]; then set -x; \		@@\
+		$(RM) $(FORMATTEDDIR)/textfile; \			@@\
 		cp textfile $(FORMATTEDDIR)/textfile; \			@@\
 		echo "" >> $(FORMATTEDDIR)/textfile; \			@@\
 		echo "\$$XFree86\$$" >> $(FORMATTEDDIR)/textfile; \	@@\
@@ -92,8 +93,9 @@ update.docs:: textfile							@@\
 		$(RM) __tmp1__ __tmp2__; \				@@\
 		grep "Generated from XFree86:" textfile > __tmp1__; \	@@\
 		grep "Generated from XFree86:" $(FORMATTEDDIR)/textfile > __tmp2__; \	@@\
-		if diff __tmp1__ __tmp2__ > /dev/null 2>&1; then :; \ @@\
+		if diff __tmp1__ __tmp2__ > /dev/null 2>&1; then :; \	@@\
 		else set -x; \						@@\
+			$(RM) $(FORMATTEDDIR)/textfile; \		@@\
 			cp textfile $(FORMATTEDDIR)/textfile ; \	@@\
 			echo "" >> $(FORMATTEDDIR)/textfile; \		@@\
 			echo "\$$XFree86\$$" >> $(FORMATTEDDIR)/textfile; \ @@\

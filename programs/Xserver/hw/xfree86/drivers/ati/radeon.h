@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.4 2000/11/18 19:37:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.5 2000/12/01 08:56:03 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -39,8 +39,6 @@
 #define _RADEON_H_
 
 #include "xf86str.h"
-
-#include "xf86_OSproc.h"
 
 				/* PCI support */
 #include "xf86Pci.h"

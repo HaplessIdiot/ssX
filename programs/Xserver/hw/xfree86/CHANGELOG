@@ -1,42 +1,51 @@
 XFree86 4.0.1i (xx December 2000)
-2022. Don't reference libc wrapper names directly in the newport driver
+1129. Fix typo in int10 for IA-64's (Marc La France).
+1128. Make PCI bridge information in the log more accurate (Marc La France).
+1127. Update ATI docs (Marc La France).
+1126. Another getValidBIOSBase() fix (Marc La France).
+1125. If the loader server dies from a signal during initialisation, print a
+      list of undefined symbols (Marc La France).
+1124. Move Alpha MMIO definitions from xf86_OSproc.h to compiler.h
+      (Marc La France).
+1123. Change update.docs rule for shodow tree friendliness (Marc La France).
+1122. Don't reference libc wrapper names directly in the newport driver
       (David Dawes).
-2021. Fix the fr_CH xkb Macintosh symbols file (#4345, Olaf Hering).
-2020. Revert the Estonian_Estonia.1257 change in patch #4297 because
+1121. Fix the fr_CH xkb Macintosh symbols file (#4345, Olaf Hering).
+1120. Revert the Estonian_Estonia.1257 change in patch #4297 because
       windows-1257 is a closer match to iso8859-13 than iso8859-15.
       Also add entries for the et_EE.ISO8859-1 locale (while not perfect for
       Estonian, it is commonly used) (#4344, Ville Hallik).
-2019. Change name of long Unicode keysyms from 6 to 8 hex digits, which
+1119. Change name of long Unicode keysyms from 6 to 8 hex digits, which
       matches conventional usage better (#4343, Ivan Pascal).
-2018. Make XF86VidModeSetViewPort() actually set the viewport to the
+1118. Make XF86VidModeSetViewPort() actually set the viewport to the
       X and Y coordinates specified as opposed to always setting it to (0,0)
       (#4342, Joe Moss).
-2017. Work around some build problems on SVR4.0 (#4341, Satoshi Kimura).
-2016. Compose characters for the Macedonian UTF-8 locale (#4338,
+1117. Work around some build problems on SVR4.0 (#4341, Satoshi Kimura).
+1116. Compose characters for the Macedonian UTF-8 locale (#4338,
       Damjan Georgievski).
-2015. Fix build problems with the wacom driver on Linux 2.4 when building
+1115. Fix build problems with the wacom driver on Linux 2.4 when building
       a static server (Frederic Lepied, David Dawes).
-2014. Changed name of server binary to call by xf86cfg back to "XFree86
+1114. Changed name of server binary to call by xf86cfg back to "XFree86
       (Egbert Eich).
-2013. Modified handling of memory alloctaion in TDFX driver (Egbert Eich).
-2012. Attempt to fix the 'UseModes' directive in the Monitor section 
+1113. Modified handling of memory alloctaion in TDFX driver (Egbert Eich).
+1112. Attempt to fix the 'UseModes' directive in the Monitor section 
       (Egbert Eich).
-2011. Added debugging output for BIOS base address search (Egbert Eich).
-2010. Changed neomagic driver to treat disable stretching for each mode
+1111. Added debugging output for BIOS base address search (Egbert Eich).
+1110. Changed neomagic driver to treat disable stretching for each mode
       individually (Egbert Eich).
-2009. Removed '-traditional' from cpp rule for makedpend. Required for
+1109. Removed '-traditional' from cpp rule for makedpend. Required for
       new glibc header files (Ruediger Oertel).
-2007. Fix to make SuperProbe build again on ia64 (Andreas Schwab).
-2007. Attempt to fix int10 (Egbert Eich).
-2006. Modified blitter busy test to use the MMIO mapped registers on chips
+1107. Fix to make SuperProbe build again on ia64 (Andreas Schwab).
+1107. Attempt to fix int10 (Egbert Eich).
+1106. Modified blitter busy test to use the MMIO mapped registers on chips
       > CT69000 (Egbert Eich).
-2005. Attempt to improve dga support in C&T driver (Egbert Eich).
-2004. Moved ppc_flush_icache to compiler.h - hope this fixes build problems
+1105. Attempt to improve dga support in C&T driver (Egbert Eich).
+1104. Moved ppc_flush_icache to compiler.h - hope this fixes build problems
       (Egert Eich).
-2003. changed cirrus driver to us fb instead of cfb (Egbert Eich).
-2002. Modularized HALlib for mga driver (Egbert Eich).
-2001. Added DGA support to tseng driver (Rainer Keller).
-2000. Added "framebuffer" bus type allowing resource control to take place
+1103. changed cirrus driver to us fb instead of cfb (Egbert Eich).
+1102. Modularized HALlib for mga driver (Egbert Eich).
+1101. Added DGA support to tseng driver (Rainer Keller).
+1100. Added "framebuffer" bus type allowing resource control to take place
       outside of the server (Egbert Eich).
 1099. Added turkish keyboard layout (Togan Muftuoglu).
 1098. Fix Cyber9397/DVD acceleration problem (Alan Hourihane).
@@ -11940,4 +11949,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1452 2000/12/06 20:39:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1453 2000/12/06 22:00:43 dawes Exp $
