@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.554 2003/07/25 11:07:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.555 2003/08/10 11:07:12 dawes Exp $ */
 
 #ifndef XF86_VERSION_CURRENT
 
@@ -19,7 +19,7 @@
 /* Define these for compatibility.  They'll be removed at some point. */
 #define XF86_VERSION_SUBMINOR	XF86_VERSION_PATCH
 #define XF86_VERSION_BETA	0
-#define XF87_VERSION_ALPHA	XF86_VERSION_SNAP
+#define XF86_VERSION_ALPHA	XF86_VERSION_SNAP
 
 #define XF86_VERSION_CURRENT					\
    XF86_VERSION_NUMERIC(XF86_VERSION_MAJOR,			\
