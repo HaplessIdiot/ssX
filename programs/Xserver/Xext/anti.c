@@ -33,7 +33,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/anti.c,v 1.1 1998/11/15 04:30:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/anti.c,v 1.2 1998/11/15 05:53:22 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -52,6 +52,11 @@ in this Software without prior written authorization from the X Consortium.
 #include "XAntiproto.h"
 #include "anti.h"
 
+#ifdef EXTMODULE
+#include "xf86_ansic.h"
+#else
+#include <string.h>
+#endif
 
 static Bool XAntiCreateGC(GCPtr);
 
