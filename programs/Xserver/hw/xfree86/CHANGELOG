@@ -1,4 +1,13 @@
-XFree86 3.1.2a (17 September 1995)
+XFree86 3.1.2a (23 September 1995)
+ 20. Fix problem with IBM ramdac and clockchip handling in xf86config.
+ 19. Change XF86Config parsing to ignore '_' characters in keywords, and
+     to ignore '_', ' ', and '\t' characters when comparing strings with
+     StrCaseCmp() (ie, all strings except paths, Device/Monitor identifiers
+     and Mode names).
+ 18. Reduce nonMuxMaxClock to 80MHz (from 100MHz) for S3 864 with
+     ATT498-compatible RAMDACs because it was too high for some cards.
+ 17. Fix problem installing xterm on SunOS 4.x introduced in 3.1.2.
+ 16. Set -fno-strength-reduce with -O2 for gcc2 to avoid a compiler bug.
  15. Fix xvidtune/XF86VidMode problem when the Monitor Vendor and/or Model
      are not specified in the XF86Config file.
  14. Colour support for xterm (David Wexelblat).
