@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/xtrapemacros.h,v 1.1 2001/11/02 23:29:26 dawes Exp $ */
 #ifndef __XTRAPEMACROS__
 #define __XTRAPEMACROS__ "@(#)xtrapemacros.h	1.9 - 90/09/18  "
 
@@ -44,6 +44,7 @@ SOFTWARE.
  *      routines is strongly encouraged (XETrapContext.c)
  */
 #include <X11/extensions/xtrapbits.h>
+#include <signal.h>
 
 /* msleep macro to replace msleep() for portability reasons */
 #define msleep(m)   usleep((m)*1000)
@@ -290,20 +291,79 @@ SOFTWARE.
 #define XEGetRevision(tc)       ((tc)->revision)
 
 /*  Condition handling macros */
+#if !defined(vms) && \
+    (!defined(_InitExceptionHandling) || !defined(_ClearExceptionHandling))
+# ifndef _SetSIGBUSHandling
+#  ifdef SIGBUS
+#   define _SetSIGBUSHandling(rtn)  (void)signal(SIGBUS, rtn)
+#  else
+#   define _SetSIGBUSHandling(rtn)  /* */
+#  endif
+# endif
+# ifndef _SetSIGSEGVHandling
+#  ifdef SIGSEGV
+#   define _SetSIGSEGVHandling(rtn) (void)signal(SIGSEGV, rtn)
+#  else
+#   define _SetSIGSEGVHandling(rtn) /* */
+#  endif
+# endif
+# ifndef _SetSIGFPEHandling
+#  ifdef SIGFPE
+#   define _SetSIGFPEHandling(rtn)  (void)signal(SIGFPE, rtn)
+#  else
+#   define _SetSIGFPEHandling(rtn)  /* */
+#  endif
+# endif
+# ifndef _SetSIGILLHandling
+#  ifdef SIGILL
+#   define _SetSIGILLHandling(rtn)  (void)signal(SIGILL, rtn)
+#  else
+#   define _SetSIGILLHandling(rtn)  /* */
+#  endif
+# endif
+# ifndef _SetSIGSYSHandling
+#  ifdef SIGSYS
+#   define _SetSIGSYSHandling(rtn)  (void)signal(SIGSYS, rtn)
+#  else
+#   define _SetSIGSYSHandling(rtn)  /* */
+#  endif
+# endif
+# ifndef _SetSIGHUPHandling
+#  ifdef SIGHUP
+#   define _SetSIGHUPHandling(rtn)  (void)signal(SIGHUP, rtn)
+#  else
+#   define _SetSIGHUPHandling(rtn)  /* */
+#  endif
+# endif
+# ifndef _SetSIGPIPEHandling
+#  ifdef SIGPIPE
+#   define _SetSIGPIPEHandling(rtn) (void)signal(SIGPIPE, rtn)
+#  else
+#   define _SetSIGPIPEHandling(rtn) /* */
+#  endif
+# endif
+# ifndef _SetSIGTERMHandling
+#  ifdef SIGTERM
+#   define _SetSIGTERMHandling(rtn) (void)signal(SIGTERM, rtn)
+#  else
+#   define _SetSIGTERMHandling(rtn) /* */
+#  endif
+# endif
+#endif
 #ifndef _InitExceptionHandling
 #ifdef vms
 #define _InitExceptionHandling(rtn)                        \
     VAXC$ESTABLISH(rtn)   /* VMS exception handler */
 #else /* vms */
-#define _InitExceptionHandling(rtn)                       \
-    (void)signal(SIGBUS,  rtn); /* Bus error */                 \
-    (void)signal(SIGSEGV, rtn); /* Accvio/Segment error */      \
-    (void)signal(SIGFPE,  rtn); /* Floating point exception */  \
-    (void)signal(SIGILL,  rtn); /* Illegal instruction */       \
-    (void)signal(SIGSYS,  rtn); /* Param error in sys call */   \
-    (void)signal(SIGHUP,  rtn);                                 \
-    (void)signal(SIGPIPE, rtn);                                 \
-    (void)signal(SIGTERM, rtn)
+#define _InitExceptionHandling(rtn)                           \
+    _SetSIGBUSHandling(rtn);  /* Bus error */                 \
+    _SetSIGSEGVHandling(rtn); /* Accvio/Segment error */      \
+    _SetSIGFPEHandling(rtn);  /* Floating point exception */  \
+    _SetSIGILLHandling(rtn);  /* Illegal instruction */       \
+    _SetSIGSYSHandling(rtn);  /* Param error in sys call */   \
+    _SetSIGHUPHandling(rtn);                                  \
+    _SetSIGPIPEHandling(rtn);                                 \
+    _SetSIGTERMHandling(rtn)
 #endif /* vms */
 #endif /* _InitExceptionHandling */
 
@@ -313,16 +373,15 @@ SOFTWARE.
     LIB$REVERT()
 #else
 #define _ClearExceptionHandling() \
-    (void)signal(SIGBUS,  SIG_DFL); /* Bus error */                 \
-    (void)signal(SIGSEGV, SIG_DFL); /* Accvio/Segment error */      \
-    (void)signal(SIGFPE,  SIG_DFL); /* Floating point exception */  \
-    (void)signal(SIGILL,  SIG_DFL); /* Illegal instruction */       \
-    (void)signal(SIGSYS,  SIG_DFL); /* Param error in sys call */   \
-    (void)signal(SIGHUP,  SIG_DFL);                                 \
-    (void)signal(SIGPIPE, SIG_DFL);                                 \
-    (void)signal(SIGTERM, SIG_DFL)
+    _SetSIGBUSHandling(SIG_DFL);   /* Bus error */                 \
+    _SetSIGSEGVHandling(SIG_DFL);  /* Accvio/Segment error */      \
+    _SetSIGFPEHandling(SIG_DFL);   /* Floating point exception */  \
+    _SetSIGILLHandling(SIG_DFL);   /* Illegal instruction */       \
+    _SetSIGSYSHandling(SIG_DFL);   /* Param error in sys call */   \
+    _SetSIGHUPHandling(SIG_DFL);                                   \
+    _SetSIGPIPEHandling(SIG_DFL);                                  \
+    _SetSIGTERMHandling(SIG_DFL)
 #endif /* vms */
 #endif /* _ClearExceptionHandling */
 
 #endif /* __XTRAPEMACROS__ */
-
