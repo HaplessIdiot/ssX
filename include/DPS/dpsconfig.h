@@ -89,7 +89,7 @@
 #if defined(__alpha) || defined(__alpha__) || \
     defined(__ia64__) || defined(ia64) || \
     defined(__s390x__) || \
-    defined(__x86_64__) || defined(x86_64)
+    defined(__AMD64__) || defined(AMD64)
 #define IEEEFLOAT 1
 #endif
 

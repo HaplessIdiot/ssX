@@ -139,7 +139,7 @@
 # if !defined(linux)
 #  error    No MAP_ANON?
 # endif
-# if !defined (__x86_64__)
+# if !defined (__AMD64__)
 # define MMAP_FLAGS     (MAP_PRIVATE | MAP_ANON)
 # else
 # define MMAP_FLAGS     (MAP_PRIVATE | MAP_ANON | MAP_32BIT)
@@ -157,7 +157,7 @@
 
 #if defined (__alpha__) || \
     defined (__ia64__) || \
-    defined (__x86_64__) || \
+    defined (__AMD64__) || \
     (defined (__sparc__) && \
      (defined (__arch64__) || \
       defined (__sparcv9)))
@@ -247,7 +247,7 @@ typedef Elf32_Word Elf_Word;
     defined(__alpha__) || \
     defined(__sparc__) || \
     defined(__ia64__) || \
-    defined(__x86_64__)
+    defined(__AMD64__)
 typedef Elf_Rela Elf_Rel_t;
 #else
 typedef Elf_Rel  Elf_Rel_t;
@@ -448,7 +448,7 @@ Elf_Rel_t	*rel;
     defined(__alpha__) || \
     defined(__sparc__) || \
     defined(__ia64__) || \
-    defined(__x86_64__)
+    defined(__AMD64__)
     ELFDEBUG(", r_addend 0x%lx", rel->r_addend);
 # endif
     ELFDEBUG("\n");
@@ -484,7 +484,7 @@ ElfCOMMONSize(void)
 	size+=common->sym->st_size;
 #if defined(__alpha__) || \
     defined(__ia64__) || \
-    defined(__x86_64__) || \
+    defined(__AMD64__) || \
     (defined(__sparc__) && \
      (defined(__arch64__) || \
       defined(__sparcv9)))
@@ -510,7 +510,7 @@ LOOKUP		*pLookup;
 	size+=common->sym->st_size;
 #if defined(__alpha__) || \
     defined(__ia64__) || \
-    defined(__x86_64__) || \
+    defined(__AMD64__) || \
     (defined(__sparc__) && \
      (defined(__arch64__) || \
       defined(__sparcv9)))
@@ -568,7 +568,7 @@ LOOKUP		*pLookup;
 	offset+=common->sym->st_size;
 #if defined(__alpha__) || \
     defined(__ia64__) || \
-    defined(__x86_64__) || \
+    defined(__AMD64__) || \
     (defined(__sparc__) && \
      (defined(__arch64__) || \
       defined(__sparcv9)))
@@ -1240,7 +1240,7 @@ int		force;
     unsigned long *dest64;
     unsigned short *dest16;
 #endif
-#if  defined(__x86_64__)
+#if  defined(__AMD64__)
     unsigned long *dest64;
     int *dest32s;
 #endif
@@ -1258,7 +1258,7 @@ int		force;
     defined(__alpha__) || \
     defined(__sparc__) || \
     defined(__ia64__) || \
-    defined(__x86_64__)
+    defined(__AMD64__)
     ELFDEBUG( "%lx", rel->r_addend );
 # endif
     ELFDEBUG("\n");
@@ -1317,7 +1317,7 @@ int		force;
 
 	    break;
 #endif /* i386 */
-#if defined(__x86_64__)
+#if defined(__AMD64__)
 	case R_X86_64_32:
 	    dest32=(unsigned int *)(secp+rel->r_offset );
 # ifdef ELFDEBUG
@@ -1364,7 +1364,7 @@ int		force;
 	case R_X86_64_64:
 	    dest64=(unsigned long *)(secp+rel->r_offset);
 # ifdef ELFDEBUG
-	    ELFDEBUG( "R_x86_64_64\t");
+	    ELFDEBUG( "R_AMD64_64\t");
 	    ELFDEBUG( "dest64=%x\t", dest64 );
 	    ELFDEBUG( "*dest64=%8.8lx\t", *dest64 );
 	    ELFDEBUG( "r_addend=%lx\t", rel->r_addend);
@@ -1374,7 +1374,7 @@ int		force;
 	    ELFDEBUG( "*dest64=%8.8lx\n", *dest64 );
 # endif
 	    break;
-#endif /* __x86_64__ */
+#endif /* __AMD64__ */
 #if defined(__alpha__)
 	case R_ALPHA_NONE:
 	case R_ALPHA_LITUSE:

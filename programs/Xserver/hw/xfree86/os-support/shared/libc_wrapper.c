@@ -484,7 +484,7 @@ xf86mmap(void *start, xf86size_t length, int prot,
     if (flags & XF86_MAP_FIXED)		f |= MAP_FIXED;
     if (flags & XF86_MAP_SHARED)	f |= MAP_SHARED;
     if (flags & XF86_MAP_PRIVATE)	f |= MAP_PRIVATE;
-#ifdef __x86_64__
+#ifdef __AMD64__
     if (flags & XF86_MAP_32BIT)	        f |= MAP_32BIT;
 #endif
     if (prot  & XF86_PROT_EXEC)		p |= PROT_EXEC;

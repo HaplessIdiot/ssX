@@ -73,7 +73,7 @@ PCIDRVRSRC = ppcPci.c
 PCIDRVROBJ = ppcPci.o
 
 #elif defined(LinuxArchitecture) && \
-     (defined(i386Architecture) || defined(x86_64Architecture))
+     (defined(i386Architecture) || defined(AMD64Architecture))
 
 XCOMM ix86 PCI driver with OS fallback for Linux
 
@@ -97,7 +97,7 @@ PCIDRVROBJ = netbsdPci.o
 
 #elif defined(i386Architecture) || \
       defined(ia64Architecture) || \
-      defined(x86_64Architecture)
+      defined(AMD64Architecture)
 
 XCOMM ix86 PCI driver
 

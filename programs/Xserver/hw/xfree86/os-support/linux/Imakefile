@@ -29,7 +29,7 @@ MOUSEOBJ = lnx_mouse.o
 KBDSRC = lnx_kbd.c lnx_KbdMap.c at_scancode.c
 KBDOBJ = lnx_kbd.o lnx_KbdMap.o at_scancode.o 
 
-#if defined(i386Architecture) || defined(ia64Architecture) || defined(x86_64Architecture)
+#if defined(i386Architecture) || defined(ia64Architecture) || defined(AMD64Architecture)
 RES_SRCS=stdResource.c
 RES_OBJS=stdResource.o
 #else
@@ -107,7 +107,7 @@ LinkSourceFile(kmod_noop.c,../shared)
 
 LinkSourceFile($(DRI_SRC),../shared)
 
-#if defined(i386Architecture) || defined(ia64Architecture) || defined (x86_64Architecture)
+#if defined(i386Architecture) || defined(ia64Architecture) || defined (AMD64Architecture)
 LinkSourceFile(stdResource.c,../shared)
 #endif
 #if defined(AlphaArchitecture)

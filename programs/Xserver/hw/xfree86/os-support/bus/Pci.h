@@ -295,7 +295,7 @@
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
 # define ARCH_PCI_PCI_BRIDGE sparcPciPciBridge
-#elif defined(__x86_64__)
+#elif defined(__AMD64__)
 # define ARCH_PCI_INIT ix86PciInit
 # define INCLUDE_XF86_MAP_PCI_MEM
 # define INCLUDE_XF86_NO_DOMAIN

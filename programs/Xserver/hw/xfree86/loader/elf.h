@@ -141,7 +141,7 @@ extern Elf32_Dyn _DYNAMIC [];
 #define R_386_GOTPC	10
 #define R_386_NUM	11
 
-/* x86_64 Relocation Types */
+/* AMD64 Relocation Types */
 #define R_X86_64_NONE                   0
 #define R_X86_64_64                     1
 #define R_X86_64_PC32                   2
