@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.25 2001/03/28 14:37:03 alanh Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.27 2001/05/29 04:54:08 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -634,6 +634,14 @@ typedef struct {
 	((WindowPtr) (pWin))->devPrivates[fbWinPrivateIndex].ptr)
 #endif
 
+#if 0
+#define __fbPixOriginX(pPix)	((pPix)->drawable.x)
+#define __fbPixOriginY(pPix)	((pPix)->drawable.y)
+#else
+#define __fbPixOriginX(pPix)	0
+#define __fbPixOriginY(pPix)	0
+#endif
+
 #define fbGetDrawable(pDrawable, pointer, stride, bpp, xoff, yoff) { \
     PixmapPtr   _pPix; \
     if ((pDrawable)->type != DRAWABLE_PIXMAP) \
@@ -643,8 +651,8 @@ typedef struct {
     (pointer) = (FbBits *) _pPix->devPrivate.ptr; \
     (stride) = ((int) _pPix->devKind) / sizeof (FbBits); \
     (bpp) = _pPix->drawable.bitsPerPixel; \
-    (xoff) = _pPix->drawable.x; \
-    (yoff) = _pPix->drawable.y; \
+    (xoff) = __fbPixOriginX(_pPix); \
+    (yoff) = __fbPixOriginY(_pPix); \
 }
 
 #define fbGetStipDrawable(pDrawable, pointer, stride, bpp, xoff, yoff) { \
@@ -656,8 +664,8 @@ typedef struct {
     (pointer) = (FbStip *) _pPix->devPrivate.ptr; \
     (stride) = ((int) _pPix->devKind) / sizeof (FbStip); \
     (bpp) = _pPix->drawable.bitsPerPixel; \
-    (xoff) = _pPix->drawable.x; \
-    (yoff) = _pPix->drawable.y; \
+    (xoff) = __fbPixOriginX(_pPix); \
+    (yoff) = __fbPixOriginY(_pPix); \
 }
 
 /*
