@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.4 2000/02/12 23:56:20 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.5 2000/03/01 00:25:26 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -78,6 +78,8 @@ lnxPMGetEventFromOs(int fd, pmEvent *events, int num)
     if ((n = read( fd, linuxEvents, num * sizeof(apm_event_t) )) == -1)
 	return 0;
     n /= sizeof(apm_event_t);
+    if (n > num)
+	n = num;
     for (i = 0; i < n; i++) {
 	for (j = 0; j < numApmEvents; j++)
 	    if (LinuxToXF86[j].apmLinux == linuxEvents[i]) {
@@ -96,17 +98,13 @@ lnxPMConfirmEventToOs(int fd, pmEvent event)
     switch (event) {
     case XF86_APM_SYS_STANDBY:
     case XF86_APM_USER_STANDBY:
-	if (ioctl( fd, APM_IOC_STANDBY, NULL ) == 0)
-	    return PM_WAIT;  /* should we stop the Xserver in standby, too? */
-	else
-	    return PM_NONE;
+	ioctl( fd, APM_IOC_STANDBY, NULL );
+	return PM_CONTINUE;
     case XF86_APM_SYS_SUSPEND:
     case XF86_APM_CRITICAL_SUSPEND:
     case XF86_APM_USER_SUSPEND:
-	if (ioctl( fd, APM_IOC_SUSPEND, NULL ) == 0)
-	    return PM_WAIT;
-	else
-	    return PM_NONE;
+	ioctl( fd, APM_IOC_SUSPEND, NULL );
+	return PM_CONTINUE;
     case XF86_APM_STANDBY_RESUME:
     case XF86_APM_NORMAL_RESUME:
     case XF86_APM_CRITICAL_RESUME:

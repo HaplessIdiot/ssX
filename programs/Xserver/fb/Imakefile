@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.3 2000/02/14 19:20:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.4 2000/02/23 20:29:40 dawes Exp $
 XCOMM 
 XCOMM 
 XCOMM Id: Imakefile,v 1.1 1999/11/02 03:54:44 keithp Exp $
@@ -90,3 +90,6 @@ InstallLibraryModule(fb,$(MODULEDIR),.)
 DependTarget()
 #endif
 
+InstallDriverSDKLibraryModule(fb,$(DRIVERSDKMODULEDIR),.)
+InstallDriverSDKNonExecFile(fb.h,$(DRIVERSDKINCLUDEDIR))
+InstallDriverSDKNonExecFile(fbrop.h,$(DRIVERSDKINCLUDEDIR))

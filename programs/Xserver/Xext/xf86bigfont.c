@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.4 2000/02/11 18:06:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86bigfont.c,v 1.5 2000/02/29 03:09:07 dawes Exp $ */
 /*
  * BIGFONT extension for sharing font metrics between clients (if possible)
  * and for transmitting font metrics to clients in a compressed form.
@@ -37,9 +37,6 @@
 
 #include <sys/types.h>
 #ifdef HAS_SHM
-#ifdef CSRG_BASED
-#include <sys/param.h>
-#endif
 #if defined(linux) && !defined(__GNU_LIBRARY__)
 /* Linux libc4 and libc5 only (because glibc doesn't include kernel headers):
    Linux 2.0.x and 2.2.x define SHMLBA as PAGE_SIZE, but forget to define
@@ -57,6 +54,7 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <time.h>
 #include <errno.h>
 #endif
@@ -165,7 +163,11 @@ XFree86BigfontExtensionInit()
 
 	FontShmdescIndex = AllocateFontPrivateIndex();
 
+#if !defined(CSRG_BASED)
 	pagesize = SHMLBA;
+#else
+	pagesize = sysconf(_SC_PAGESIZE);
+#endif
 #endif
     }
 }

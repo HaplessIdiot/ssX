@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/Imakefile,v 1.16 2000/02/12 02:54:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/Imakefile,v 1.17 2000/03/03 01:05:33 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -54,6 +54,7 @@ InstallDriverSDKNonExecFile(apm_dga.c,$(DRIVERSDKDIR)/drivers/apm)
 InstallDriverSDKNonExecFile(apm_driver.c,$(DRIVERSDKDIR)/drivers/apm)
 InstallDriverSDKNonExecFile(apm_i2c.c,$(DRIVERSDKDIR)/drivers/apm)
 InstallDriverSDKNonExecFile(apm_funcs.c,$(DRIVERSDKDIR)/drivers/apm)
+InstallDriverSDKNonExecFile(apm_video.c,$(DRIVERSDKDIR)/drivers/apm)
 #if BuildXF86RushExt
 InstallDriverSDKNonExecFile(apm_rush.c,$(DRIVERSDKDIR)/drivers/apm)
 #endif

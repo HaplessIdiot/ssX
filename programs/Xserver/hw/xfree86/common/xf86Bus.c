@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.43 2000/02/12 23:59:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.44 2000/03/05 23:47:44 dawes Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -2824,7 +2824,7 @@ CheckGenericGA()
 }
 
 Bool
-xf86NoSharedMem(int screenIndex)
+xf86NoSharedResources(int screenIndex,resType res)
 {
     int j;
     
@@ -2832,9 +2832,25 @@ xf86NoSharedMem(int screenIndex)
 	return TRUE;
 
     for (j = 0; j < xf86Screens[screenIndex]->numEntities; j++) {
+      switch (res) {
+      case IO:
+	if ( xf86Entities[xf86Screens[screenIndex]->entityList[j]]->entityProp
+	     & NEED_IO_SHARED)
+	  return FALSE;
+	break;
+      case MEM:
 	if ( xf86Entities[xf86Screens[screenIndex]->entityList[j]]->entityProp
 	     & NEED_MEM_SHARED)
-	    return FALSE;
+	  return FALSE;
+	break;
+      case MEM_IO:
+	if ( xf86Entities[xf86Screens[screenIndex]->entityList[j]]->entityProp
+	     & NEED_SHARED)
+	  return FALSE;
+	break;
+      case NONE:
+	break;
+      }
     }
     return TRUE;
 }

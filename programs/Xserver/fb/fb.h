@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.12 2000/02/23 20:29:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.13 2000/03/01 00:25:14 dawes Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -204,10 +204,10 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 #ifdef FBNOPIXADDR
 #define FbMaskBitsBytes(x,w,copy,l,lb,n,r,rb) FbMaskBits(x,w,l,n,r)
 #define FbDoLeftMaskByteRRop(dst,lb,l,and,xor) { \
-    *dst = FbDoRRop(*dst,and,xor,l);
+    *dst = FbDoMaskRRop(*dst,and,xor,l); \
 }
 #define FbDoRightMaskByteRRop(dst,rb,r,and,xor) { \
-    *dst = FbDoRRop(*dst,and,xor,r);
+    *dst = FbDoMaskRRop(*dst,and,xor,r); \
 }
 #else
 

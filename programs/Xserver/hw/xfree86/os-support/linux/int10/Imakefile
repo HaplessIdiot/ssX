@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/Imakefile,v 1.6 1999/12/13 01:39:53 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/Imakefile,v 1.9 2000/02/15 02:00:15 eich Exp $
 
 #define IHaveModules
 
@@ -101,8 +101,6 @@ all::
 	$(LN) linux/int10/LibraryTargetName(int10) . )
 
 InstallDriverSDKLibraryModule(int10,$(DRIVERSDKMODULEDIR),.)
-
-InstallDriverSDKNonExecFile(../../int10/xf86int10.h,$(DRIVERSDKINCLUDEDIR))
 
 #endif
 

@@ -28,7 +28,7 @@
  * Modified version of tx_accel.c to support dual MX chips by
  *   Jens Owen, <jens@precisioninsight.com>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_accel.c,v 1.5 2000/01/21 01:12:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_accel.c,v 1.6 2000/02/23 04:47:06 martin Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -229,8 +229,11 @@ DualMXAccelInit(ScreenPtr pScreen)
     infoPtr->PolylinesThinSolidFlags = 0;
     infoPtr->SetupForSolidLine = DualMXSetupForSolidLine;
     infoPtr->SubsequentSolidHorVertLine = DualMXSubsequentHorVertLine;
-    infoPtr->SubsequentSolidBresenhamLine = 
+    if (!(pScrn->overlayFlags & OVERLAY_8_32_PLANAR))
+    {
+        infoPtr->SubsequentSolidBresenhamLine = 
 					DualMXSubsequentSolidBresenhamLine;
+    }
     infoPtr->PolySegmentThinSolid = DualMXPolySegmentThinSolidWrapper;
     infoPtr->PolylinesThinSolid = DualMXPolylinesThinSolidWrapper;
 

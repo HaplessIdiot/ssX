@@ -237,6 +237,13 @@ by default with the syscons driver.  To configure your kernel similarly
 it should have a line like this in <tt>/usr/src/sys/i386/conf/GENERIC</tt>:
 
 <tscreen><verb>
+ device		sc0	at isa? tty
+</verb></tscreen>
+
+The above example is for FreeBSD version 3.1 or later.  If you are running
+earlier versions, use the following line instead.
+
+<tscreen><verb>
  device		sc0	at isa? port "IO_KBD" tty irq 1 vector scintr
 </verb></tscreen>
 
@@ -272,6 +279,13 @@ The bus mouse driver and the PS/2 mouse driver may not be included, or
 may be included but disabled in your kernel.  If you intend to use
 these mice, verify the following lines in the kernel configuration file:
 
+<tscreen><verb>
+ device		mse0	at isa? port 0x23c tty irq 5
+ device		psm0	at isa? tty irq 12
+</verb></tscreen>
+
+The above example is for FreeBSD version 3.1 or later.  If you are running
+earlier versions, use the following lines instead.
 
 <tscreen><verb>
  device		mse0	at isa? port 0x23c tty irq 5 vector mseintr
@@ -352,7 +366,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.29 1999/08/23 06:38:46 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.30 2000/02/10 22:33:36 dawes Exp $ 
 
 
 

@@ -13,7 +13,7 @@
  * express or implied warranty.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.6 1997/11/16 06:18:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.7 1998/06/27 12:53:52 hohndel Exp $ */
 
 #ifndef _SUN_H_ 
 #define _SUN_H_
@@ -67,6 +67,7 @@ extern char *getenv();
 
 #include <errno.h>
 #include <memory.h>
+#include <signal.h>
 
 #ifdef X_NOT_STDC_ENV
 extern int errno;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.18 1999/05/03 12:15:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.19 1999/08/01 07:56:59 dawes Exp $ */
 
 /*
 
@@ -145,7 +145,16 @@ ProcXF86DGASetViewPort(ClientPtr client)
     REQUEST_SIZE_MATCH(xXF86DGASetViewPortReq);
 
     if (!DGAActive(stuff->screen))
-	return (DGAErrorBase + XF86DGADirectNotActivated);
+    {
+	int num;
+	PixmapPtr pix;
+	XDGAModeRec mode;
+	
+	if(!(num = DGAGetOldDGAMode(stuff->screen)))
+	    return (DGAErrorBase + XF86DGANoDirectVideoMode);
+	if(Success != DGASetMode(stuff->screen, num, &mode, &pix))
+	    return (DGAErrorBase + XF86DGAScreenNotActive);
+    }
 
     if (DGASetViewport(stuff->screen, stuff->x, stuff->y, DGA_FLIP_RETRACE)
 		!= Success)

@@ -30,7 +30,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.22 2000/02/12 20:45:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.23 2000/02/25 21:02:50 dawes Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -288,8 +288,11 @@ Permedia2AccelInit(ScreenPtr pScreen)
         infoPtr->PolylinesThinSolidFlags = 0;
         infoPtr->SetupForSolidLine = Permedia2SetupForSolidLine;
         infoPtr->SubsequentSolidHorVertLine = Permedia2SubsequentHorVertLine;
-	infoPtr->SubsequentSolidBresenhamLine = 
+        if (!(pScrn->overlayFlags & OVERLAY_8_32_PLANAR))
+        {
+        	infoPtr->SubsequentSolidBresenhamLine = 
 				Permedia2SubsequentSolidBresenhamLine;
+        }
 	infoPtr->PolySegmentThinSolid = Permedia2PolySegmentThinSolidWrapper;
 	infoPtr->PolylinesThinSolid = Permedia2PolylinesThinSolidWrapper;
     	infoPtr->SetupForSolidFill = Permedia2SetupForFillRectSolid;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.54 2000/03/06 22:59:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.55 2000/03/31 20:13:32 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -1043,8 +1043,9 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       }
       else if (S3_TRIO_3D_2X_SERIES(ps3v->Chipset)) {
          switch((config1 & 0xE0) >> 5) {
-         case 0:
-            ps3v->videoRamKbytes = 8 * 1024;
+         case 0:  /* 8MB -- only 4MB usable for display/cursor */
+            ps3v->videoRamKbytes = 4 * 1024;
+            ps3v->MemOffScreen   = 4 * 1024;
             break;
          case 1:    /* 32 bit interface -- yuck */
 	   xf86ErrorFVerb(VERBLEV, 
@@ -1149,6 +1150,12 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    if (ps3v->Chipset == S3_ViRGE_VX) {
       if (pScrn->clock[0] <= 0) pScrn->clock[0] = 220000;
       if (pScrn->clock[1] <= 0) pScrn->clock[1] = 220000;
+      if (pScrn->clock[2] <= 0) pScrn->clock[2] = 135000;
+      if (pScrn->clock[3] <= 0) pScrn->clock[3] = 135000;
+   }
+   else if (S3_TRIO_3D_2X_SERIES(ps3v->Chipset)) {
+      if (pScrn->clock[0] <= 0) pScrn->clock[0] = 230000;
+      if (pScrn->clock[1] <= 0) pScrn->clock[1] = 230000;
       if (pScrn->clock[2] <= 0) pScrn->clock[2] = 135000;
       if (pScrn->clock[3] <= 0) pScrn->clock[3] = 135000;
    }
@@ -1672,6 +1679,10 @@ S3VSave (ScrnInfoPtr pScrn)
 
    VGAOUT8(vgaCRIndex, 0x33);             
    save->CR33 = VGAIN8(vgaCRReg);
+   if (S3_TRIO_3D_2X_SERIES(ps3v->Chipset)) {
+      VGAOUT8(vgaCRIndex, 0x85);
+      save->CR85 = VGAIN8(vgaCRReg);
+   }
    if (ps3v->Chipset == S3_ViRGE_DXGX) {
       VGAOUT8(vgaCRIndex, 0x86);
       save->CR86 = VGAIN8(vgaCRReg);
@@ -1939,6 +1950,10 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
 
    VGAOUT8(vgaCRIndex, 0x33);
    VGAOUT8(vgaCRReg, restore->CR33);
+   if (S3_TRIO_3D_2X_SERIES(ps3v->Chipset)) {
+      VGAOUT8(vgaCRIndex, 0x85);
+      VGAOUT8(vgaCRReg, restore->CR85);
+   }
    if (ps3v->Chipset == S3_ViRGE_DXGX) {
       VGAOUT8(vgaCRIndex, 0x86);
       VGAOUT8(vgaCRReg, restore->CR86);
@@ -3044,6 +3059,9 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 
    new->CR33 = 0x20;
+   if (S3_TRIO_3D_2X_SERIES(ps3v->Chipset)) {
+      new->CR85 = 0x1f;  /* avoid sreen flickering */
+   }
    if (ps3v->Chipset == S3_ViRGE_DXGX || S3_TRIO_3D_SERIES(ps3v->Chipset)) {
       new->CR86 = 0x80;  /* disable DAC power saving to avoid bright left edge */
    }

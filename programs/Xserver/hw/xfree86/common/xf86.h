@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.130 2000/03/01 16:00:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.131 2000/03/02 23:15:03 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -109,7 +109,7 @@ resRange xf86GetSparse(long type,  memType fixed_bits,
 memType xf86ChkConflict(resRange *rgp, int entityIndex);
 Bool xf86IsPciDevPresent(int bus, int dev, int func);
 ScrnInfoPtr xf86FindScreenForEntity(int entityIndex);
-Bool xf86NoSharedMem(int screenIndex);
+Bool xf86NoSharedResources(int screenIndex, resType res);
 resPtr xf86FindIntersectOfLists(resPtr l1, resPtr l2);
 pciVideoPtr xf86FindPciDeviceVendor(CARD16 vendorID, CARD16 deviceID,
 				    char n, pciVideoPtr pvp_exclude);

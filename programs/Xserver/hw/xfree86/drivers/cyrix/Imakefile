@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/Imakefile,v 1.1 2000/02/13 00:56:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/Imakefile,v 1.2 2000/03/03 01:05:35 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the CYRIX driver.  
 XCOMM
@@ -9,12 +9,16 @@ XCOMM
 SRCS = cyrix_driver.c cyrix_accel.c cyrix_bank.c cyrix_helper.c
 OBJS = cyrix_driver.o cyrix_accel.o cyrix_bank.o cyrix_helper.o
 
+#if defined(XF86DriverSDK)
+INCLUDES = -I. -I../../include
+#else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(XF86SRC)/i2c \
            -I$(XF86SRC)/xaa -I$(XF86SRC)/rac \
            -I$(XF86SRC)/vgahw -I$(XF86SRC)/ddc -I$(XF86SRC)/ramdac \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XTOP)/include/extensions
+#endif
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
@@ -32,3 +36,13 @@ InstallModuleManPage(cyrix)
 #endif
 
 DependTarget()
+
+InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/cyrix)
+InstallDriverSDKNonExecFile(cyrix.h,$(DRIVERSDKDIR)/drivers/cyrix)
+InstallDriverSDKNonExecFile(cyrix_accel.c,$(DRIVERSDKDIR)/drivers/cyrix)
+InstallDriverSDKNonExecFile(cyrix_bank.c,$(DRIVERSDKDIR)/drivers/cyrix)
+InstallDriverSDKNonExecFile(cyrix_driver.c,$(DRIVERSDKDIR)/drivers/cyrix)
+InstallDriverSDKNonExecFile(cyrix_helper.c,$(DRIVERSDKDIR)/drivers/cyrix)
+
+InstallDriverSDKObjectModule(cyrix,$(DRIVERSDKMODULEDIR),drivers)
+

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/Imakefile,v 1.11 2000/03/03 01:05:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/Imakefile,v 1.12 2000/03/31 20:13:34 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the SIS driver.  
 XCOMM
@@ -13,6 +13,9 @@ OBJS = sis_driver.o sis_dac.o sis_cursor.o sis_accel.o sis_setup.o\
        sis530_accel.o sis300_accel.o sis_vga.o sis_tv.o sis_lcd.o\
        sis_opt.o sis_bios.o
 
+#if defined(XF86DriverSDK)
+INCLUDES = -I. -I../../include
+#else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa \
@@ -23,6 +26,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
 	   -I$(XF86SRC)/rac \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XTOP)/include/extensions
+#endif
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
@@ -41,3 +45,26 @@ InstallModuleManPage(sis)
 
 DependTarget()
 
+
+InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis.h,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis300_accel.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis300_accel.h,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis530_accel.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_accel.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_bios.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_bios.h,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_cursor.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_cursor.h,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_dac.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_driver.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_driver.h,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_lcd.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_opt.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_regs.h,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_regs2.h,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_setup.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_tv.c,$(DRIVERSDKDIR)/drivers/sis)
+InstallDriverSDKNonExecFile(sis_vga.c,$(DRIVERSDKDIR)/drivers/sis)
+
+InstallDriverSDKObjectModule(sis,$(DRIVERSDKMODULEDIR),drivers)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.82 2000/03/05 23:47:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.83 2000/03/06 19:07:15 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -27,6 +27,7 @@
 #include "xf86Xinput.h"
 #include "xf86InPriv.h"
 #include "mivalidate.h"
+#include "xf86RAC.h"
 
 /* For xf86GetClocks */
 #if defined(CSRG_BASED) || defined(MACH386)
@@ -2367,10 +2368,17 @@ xf86SetSilkenMouse (ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, SMOptions);
-
+    
     /* check for commandline option here */
-    if (xf86silkenMouseDisableFlag) {
-	from = X_CMDLINE;
+    /* disable if screen shares resources */
+    if (((pScrn->racMemFlags & RAC_CURSOR) && 
+	 !xf86NoSharedResources(pScrn->scrnIndex,MEM)) ||
+	((pScrn->racIoFlags & RAC_CURSOR) && 
+	 !xf86NoSharedResources(pScrn->scrnIndex,IO))) {
+	useSM = FALSE;
+	from = X_PROBED;
+    } else if (xf86silkenMouseDisableFlag) {
+        from = X_CMDLINE;
 	useSM = FALSE;
     } else {
 	if (xf86GetOptValBool(SMOptions, OPTION_SILKEN_MOUSE, &useSM))

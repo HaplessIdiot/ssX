@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.28 2000/02/12 23:56:20 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.32 2000/02/22 01:02:37 mvojkovi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -370,12 +370,13 @@ volatile unsigned char *ioBase = MAP_FAILED;
 void
 ppc_flush_icache(char *addr)
 {
-	/* cut+paste from linux glibc */
-	__asm__ volatile (" dcbf 0,3");
-	__asm__ volatile (" icbi 0,3");
-	__asm__ volatile (" addi 3,3,32");
-	__asm__ volatile (" dcbf 0,3");
-	__asm__ volatile (" icbi 0,3");
+	__asm__ volatile (
+		"dcbf 0,%0;" 
+		"sync;" 
+		"icbi 0,%0;" 
+		"sync;" 
+		"isync;" 
+		: : "r"(addr) : "memory");
 }
 #endif
 

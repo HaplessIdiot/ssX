@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.31 1999/12/31 15:14:48 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.32 2000/01/21 01:12:11 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -402,8 +402,8 @@ DGAAvailable(int index)
    if(DGAScreenIndex < 0)
 	return FALSE;
    
-   if (!xf86NoSharedMem(((ScrnInfoPtr)screenInfo.screens[index]->
-			 devPrivates[xf86ScreenIndex].ptr)->scrnIndex))
+   if (!xf86NoSharedResources(((ScrnInfoPtr)screenInfo.screens[index]->
+			 devPrivates[xf86ScreenIndex].ptr)->scrnIndex,MEM))
        return FALSE;
    
    if(DGA_GET_SCREEN_PRIV(screenInfo.screens[index]))
@@ -811,6 +811,7 @@ DGAStealKeyEvent(int index, xEvent *e)
    return TRUE;
 }
 
+static int  DGAMouseX, DGAMouseY;
 
 Bool
 DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
@@ -826,14 +827,23 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
    if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
 	return FALSE;
     
-    if (!dx && !dy)
-	de.u.u.type = e->u.u.type + *XDGAEventBase;
-    else
-	de.u.u.type = MotionNotify + *XDGAEventBase;
+    DGAMouseX += dx;
+    if (DGAMouseX < 0)
+	DGAMouseX = 0;
+    else if (DGAMouseX > screenInfo.screens[index]->width)
+	DGAMouseX = screenInfo.screens[index]->width;
+    DGAMouseY += dy;
+    if (DGAMouseY < 0)
+	DGAMouseY = 0;
+    else if (DGAMouseY > screenInfo.screens[index]->height)
+	DGAMouseY = screenInfo.screens[index]->height;
+    de.u.u.type = e->u.u.type + *XDGAEventBase;
     de.u.u.detail = e->u.u.detail;
     de.u.event.time = e->u.keyButtonPointer.time;
     de.u.event.dx = dx;
     de.u.event.dy = dy;
+    de.u.event.pad1 = DGAMouseX;
+    de.u.event.pad2 = DGAMouseY;
     xf86eqEnqueue ((xEvent *) &de);
     return TRUE;
 }
@@ -1021,10 +1031,10 @@ DGAProcessPointerEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr mouse)
 	    core.u.u.type		    = coreEquiv;
 	    core.u.u.detail		    = de->u.u.detail;
 	    core.u.keyButtonPointer.time    = de->u.event.time;
-	    core.u.keyButtonPointer.eventX  = de->u.event.dx;
-	    core.u.keyButtonPointer.eventY  = de->u.event.dy;
-	    core.u.keyButtonPointer.rootX   = de->u.event.dx;
-	    core.u.keyButtonPointer.rootY   = de->u.event.dy;
+	    core.u.keyButtonPointer.eventX  = de->u.event.pad1;
+	    core.u.keyButtonPointer.eventY  = de->u.event.pad2;
+	    core.u.keyButtonPointer.rootX   = de->u.event.pad1;
+	    core.u.keyButtonPointer.rootY   = de->u.event.pad2;
 	    core.u.keyButtonPointer.state   = de->u.event.state;
 	    DeliverGrabbedEvent (&core, mouse, FALSE, 1);
 	}

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.22 1999/08/28 09:00:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.23 1999/09/27 06:29:11 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -1755,7 +1755,6 @@ XawTextSourceAddEntity(Widget w, int type, int flags, XtPointer data,
 		       XawTextPosition position, Cardinal length,
 		       XrmQuark property)
 {
-    TextSrcObject src = (TextSrcObject)w;
     XawTextAnchor *next, *anchor = _XawTextSourceFindAnchor(w, position);
     XawTextEntity *entity, *eprev;
 
@@ -1840,11 +1839,10 @@ XawTextSourceAddEntity(Widget w, int type, int flags, XtPointer data,
 void
 XawTextSourceClearEntities(Widget w, XawTextPosition left, XawTextPosition right)
 {
-    TextSrcObject src = (TextSrcObject)w;
     XawTextAnchor *anchor = XawTextSourceFindAnchor(w, left);
     XawTextEntity *entity, *eprev, *enext;
     XawTextPosition offset;
-    int i, length;
+    int length;
 
     while (anchor && anchor->entities == NULL)
 	anchor = XawTextSourceRemoveAnchor(w, anchor);
@@ -1881,11 +1879,11 @@ XawTextSourceClearEntities(Widget w, XawTextPosition left, XawTextPosition right
 	    XtFree((XtPointer)entity);
 	    anchor->cache = NULL;
 	    if (entity == anchor->entities) {
+		eprev = NULL;
 		if ((anchor->entities = enext) == NULL) {
 		    if ((anchor = XawTextSourceRemoveAnchor(w, anchor)) == NULL)
 			return;
 		    entity = anchor->entities;
-		    eprev = NULL;
 		}
 		else
 		    entity = enext;
@@ -1941,7 +1939,6 @@ XawTextSourceClearEntities(Widget w, XawTextPosition left, XawTextPosition right
 XawTextAnchor *
 _XawTextSourceFindAnchor(Widget w, XawTextPosition position)
 {
-    TextSrcObject src = (TextSrcObject)w;
     XawTextAnchor *anchor;
 
     anchor = XawTextSourceFindAnchor(w, position);

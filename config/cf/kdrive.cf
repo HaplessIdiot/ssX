@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/kdrive.cf,v 1.1 1999/11/19 13:53:22 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/kdrive.cf,v 1.2 1999/12/30 03:56:16 robin Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -198,6 +198,7 @@ XF86COMSRC=.
 #define InstallDriverSDKMultipleDestFlags(list,dest,flags)		/**/
 #define InstallDriverSDKDynamicModule(module,dest,subdir)		/**/
 #define InstallDriverSDKObjectModule(module,dest,subdir)		/**/
+#define InstallDriverSDKObjectSubModule(module,dest,subdir)		/**/
 #define InstallDriverSDKLibraryModule(module,dest,subdir)		/**/
 #define ServerDriverSDKTarget(program)					/**/
 #define InstallDriverSDKProgramWithFlags(program,dest,flags)		/**/

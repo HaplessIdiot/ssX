@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.25 94/02/21 10:20:10 kaleb Exp $
+XCOMM $TOG: Imakefile /main/48 1997/11/13 15:48:43 msr $
 #include <Server.tmpl>
 
 SRCS1 =	sunInit.c \
@@ -10,10 +10,15 @@ SRCS1 =	sunInit.c \
 	sunKbd.c \
 	sunMfb.c \
 	sunMouse.c\
-	sunGX.c \
 	sunKeyMap.c
 
-SRCS =	$(SRCS1) kbd_mode.c constype.c
+#if BuildLowMem
+SRCS2 =
+#else
+SRCS2 = sunGX.c
+#endif
+
+SRCS =	$(SRCS1) $(SRCS2) kbd_mode.c constype.c
 
 #ifdef i386Architecture
 OFILES = sunInit.o
@@ -21,7 +26,7 @@ OFILES = sunInit.o
 OFILES = sunInit.o sunInitMono.o sunInExMono.o sunInitMulti.o
 #endif
 
-OBJS = 	sunCfb.o \
+OBJS1 = sunCfb.o \
 	sunCfb24.o \
 	sunCursor.o \
 	sunFbs.o \
@@ -29,11 +34,18 @@ OBJS = 	sunCfb.o \
 	sunKbd.o \
 	sunMfb.o \
 	sunMouse.o \
-	sunGX.o \
 	sunKeyMap.o
 
+#if BuildLowMem
+OBJS2 =
+#else
+OBJS2 = sunGX.o
+#endif
+
+OBJS = $(OBJS1) $(OBJS2)
+
    INCLUDES = -I. -I../.. -I../../mi -I../../mfb -I../../cfb -I../../cfb32 \
-	      -I../../include -I$(INCLUDESRC) -I$(FONTINCSRC)
+	      -I../../include -I$(XINCLUDESRC) -I$(FONTINCSRC)
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 
@@ -48,7 +60,7 @@ NormalLintTarget($(SRCS1))
 
 #ifndef i386Architecture
 sunInExMono.o: $(ICONFIGFILES)
-ObjectFromSpecialSource(sunInExMono,../../mi/miinitext,-UPEXEXT)
+ObjectFromSpecialSource(sunInExMono,../../mi/miinitext,-I$(EXTINCSRC) $(EXT_DEFINES) -UPEXEXT -UGLXEXT)
 ObjectFromSpecialSource(sunInitMono,sunInit,-DSUNMAXDEPTH=1)
 ObjectFromSpecialSource(sunInitMulti,sunInit,-DSUNMAXDEPTH=32)
 #endif
@@ -62,6 +74,7 @@ InstallManPage(constype,$(MANDIR))
 InstallManPage(Xsun,$(MANDIR))
 #ifndef i386Architecture
 InstallManPageAliases(Xsun,$(MANDIR),XsunMono)
+InstallManPageAliases(Xsun,$(MANDIR),Xsun24)
 #endif
 
 DependTarget()

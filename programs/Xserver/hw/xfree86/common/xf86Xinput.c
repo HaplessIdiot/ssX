@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.53 1999/10/13 22:33:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.54 1999/12/13 23:38:11 robin Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -1081,6 +1081,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		 */
 
 #ifdef XFreeXDGA
+		xev->type = MotionNotify;
 		if (!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, x - xdelta, y - ydelta )) {
 #endif
 		    miPointerAbsoluteCursor(x, y, xf86Info.lastEventTime); 
