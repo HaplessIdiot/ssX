@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.21 2003/10/24 15:44:05 tsi Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -753,6 +753,7 @@ FindChildren(Widget parent, Widget **children, Bool normal, Bool popup,
       for (i = 0; i < num_norm; i++)
 	if (strcmp(norm_list[i].resource_type, XtRWidget) == 0)
 	  {
+	    widget = NULL;
 	    XtSetArg(args[0], norm_list[i].resource_name, &widget);
 	    XtGetValues(parent, args, 1);
 	    if (widget && XtParent(widget) == parent)
@@ -766,6 +767,7 @@ FindChildren(Widget parent, Widget **children, Bool normal, Bool popup,
       for (i = 0; i < num_cons; i++)
 	if (strcmp(cons_list[i].resource_type, XtRWidget) == 0)
 	  {
+	    widget = NULL;
 	    XtSetArg(args[0], cons_list[i].resource_name, &widget);
 	    XtGetValues(parent, args, 1);
 	    if (widget && XtParent(widget) == parent)
@@ -816,8 +818,9 @@ FindChildren(Widget parent, Widget **children, Bool normal, Bool popup,
 	for (j = 0; j < num_extra; j++)
 	  if ((*children)[i] == extra_widgets[j])
 	    {
-	      memmove(&extra_widgets[j], &extra_widgets[j + 1],
-		      (num_extra - j) * sizeof(Widget));
+	      if ((j + 1) < num_extra)
+		memmove(&extra_widgets[j], &extra_widgets[j + 1],
+			(num_extra - j) * sizeof(Widget));
 	      --num_extra;
 	    }
 
@@ -999,7 +1002,8 @@ HandleToolkitErrors(String name, String type, String class, String msg,
 	if (streq((String)info->event->value, XtRString))
 	    XmuSnprintf(buf, sizeof(buf),
 			"Could not convert the string '%s' for the `%s' "
-			"resource.", info->event->value, info->event->name);
+			"resource.", (String)info->event->value,
+			info->event->name);
 	else
 	    XmuSnprintf(buf, sizeof(buf),
 			"Could not convert the `%s' resource.",
@@ -2189,11 +2193,11 @@ _XEditresGetStringValues(Widget w, Arg *warg, int numargs)
 	      XmuSnprintf(buffer, sizeof(buffer), "%d", (int)(value & 0xffff));
 	      break;
 	    case sizeof(int):
-	      XmuSnprintf(buffer, sizeof(buffer), "0x%08hx", (int)value);
+	      XmuSnprintf(buffer, sizeof(buffer), "0x%08x", (int)value);
 	      break;
 #ifdef LONG_64
 	    case sizeof(long):
-	      XmuSnprintf(buffer, sizeof(buffer), "0x%016hx", value);
+	      XmuSnprintf(buffer, sizeof(buffer), "0x%016lx", value);
 	      break;
 #endif
 	    }
