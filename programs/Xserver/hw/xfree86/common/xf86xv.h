@@ -8,15 +8,45 @@
 
 #define VIDEO_NO_CLIPPING			0x00000001
 #define VIDEO_INVERT_CLIPLIST			0x00000002
-#define VIDEO_EXPOSE				0x00000004
+#define VIDEO_OVERLAID_IMAGES			0x00000004
 #define VIDEO_OVERLAID_STILLS			0x00000008
+#define VIDEO_CLIP_TO_VIEWPORT			0x00000010
+
+typedef struct {
+  int id;
+  int type;
+  int byte_order;
+  char guid[16];               
+  int bits_per_pixel;
+  int format;
+  int num_planes;
+
+  /* for RGB formats only */
+  int depth;
+  unsigned int red_mask;       
+  unsigned int green_mask;   
+  unsigned int blue_mask;   
+
+  /* for YUV formats only */
+  unsigned int y_sample_bits;
+  unsigned int u_sample_bits;
+  unsigned int v_sample_bits;   
+  unsigned int horz_y_period;
+  unsigned int horz_u_period;
+  unsigned int horz_v_period;
+  unsigned int vert_y_period;
+  unsigned int vert_u_period;
+  unsigned int vert_v_period;
+  char component_order[32];
+  int scanline_order;
+} XF86ImageRec, *XF86ImagePtr; 
 
 
-typedef  int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
+typedef int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
 	RegionPtr clipBoxes, pointer data );
-typedef  int (* PutStillFuncPtr)( ScrnInfoPtr pScrn, 
+typedef int (* PutStillFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
 	RegionPtr clipBoxes, pointer data );
@@ -36,7 +66,14 @@ typedef int (* GetPortAttributeFuncPtr)(ScrnInfoPtr pScrn, Atom attribute,
 typedef void (* QueryBestSizeFuncPtr)(ScrnInfoPtr pScrn, Bool motion,
 	short vid_w, short vid_h, short drw_w, short drw_h, 
 	unsigned int *p_w, unsigned int *p_h, pointer data);
-
+typedef int (* PutImageFuncPtr)( ScrnInfoPtr pScrn, 
+	short src_x, short src_y, short drw_x, short drw_y,
+	short src_w, short src_h, short drw_w, short drw_h,
+	int image, char* buf, short width, short height, Bool sync,
+	RegionPtr clipBoxes, pointer data );
+typedef int (*QueryImageAttributesFuncPtr)(ScrnInfoPtr pScrn, 
+	int image, short *width, short *height, 
+	int *pitches, int *offsets);
 
 /*** this is what the driver needs to fill out ***/
 
@@ -47,17 +84,17 @@ typedef struct {
   XvRationalRec rate;
 } XF86VideoEncodingRec, *XF86VideoEncodingPtr;
 
-
 typedef struct {
   char 	depth;  
   short class;
 } XF86VideoFormatRec, *XF86VideoFormatPtr;
 
 typedef struct {
-  int 	number;  
-  int   *flags;
-  char  **names;
-} XF86AttributeListRec, *XF86AttributeListPtr;
+  int   flags;
+  int   min_value;
+  int   max_value;
+  char  *name;
+} XF86AttributeRec, *XF86AttributePtr;
 
 typedef struct {
   unsigned int type; 
@@ -68,8 +105,11 @@ typedef struct {
   int nFormats;
   XF86VideoFormatPtr pFormats;  
   int nPorts;
-  XF86AttributeListPtr pAttributes;
   DevUnion *pPortPrivates;
+  int nAttributes;
+  XF86AttributePtr pAttributes;
+  int nImages;
+  XF86ImagePtr pImages;
   PutVideoFuncPtr PutVideo;
   PutStillFuncPtr PutStill;
   GetVideoFuncPtr GetVideo;
@@ -78,6 +118,8 @@ typedef struct {
   SetPortAttributeFuncPtr SetPortAttribute;
   GetPortAttributeFuncPtr GetPortAttribute;
   QueryBestSizeFuncPtr QueryBestSize;
+  PutImageFuncPtr PutImage;
+  QueryImageAttributesFuncPtr QueryImageAttributes;
 } XF86VideoAdaptorRec, *XF86VideoAdaptorPtr;
 
 
@@ -105,10 +147,8 @@ xf86XVListGenericAdaptors(
 
 typedef struct {
    CreateWindowProcPtr		CreateWindow;
+   DestroyWindowProcPtr		DestroyWindow;
    ClipNotifyProcPtr		ClipNotify;
-   UnrealizeWindowProcPtr	UnrealizeWindow;
-   WindowExposuresProcPtr	WindowExposures;
-   CopyWindowProcPtr		CopyWindow;
    Bool                         (*EnterVT)(int, int);
    void                         (*LeaveVT)(int, int);
 } XF86XVScreenRec, *XF86XVScreenPtr;
@@ -123,6 +163,8 @@ typedef struct {
   SetPortAttributeFuncPtr SetPortAttribute;
   GetPortAttributeFuncPtr GetPortAttribute;
   QueryBestSizeFuncPtr QueryBestSize;
+  PutImageFuncPtr PutImage;
+  QueryImageAttributesFuncPtr QueryImageAttributes;
 } XvAdaptorRecPrivate, *XvAdaptorRecPrivatePtr;
 
 typedef struct {
