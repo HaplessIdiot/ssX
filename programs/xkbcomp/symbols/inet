@@ -1,0 +1,17 @@
+// $XFree86$
+
+partial alphanumeric_keys 
+xkb_symbols "hp" {
+
+    // Describes the extra keys on an HP "Internet" keyboard.
+
+    name[Group1]= "HP";
+    key <I12>	{	[ Find			]	};
+    key <I26>	{	[ Help			]	};
+    key <I5F>	{	[ XF86Standby		]	};
+    key <I2E>	{	[ XF86AudioLowerVolume	]	};
+    key <I30>	{	[ XF86AudioRaiseVolume	]	};
+    key <I20>	{	[ XF86AudioMute		]	};
+};
+
+

@@ -3,7 +3,7 @@ XCOMM $TOG: Imakefile /main/93 1997/06/13 15:34:58 kaleb $
 
 
 
-XCOMM $XFree86: xc/include/Imakefile,v 3.16 1999/08/21 13:47:32 dawes Exp $
+XCOMM $XFree86: xc/include/Imakefile,v 3.17 1999/08/28 09:00:22 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 
@@ -21,6 +21,7 @@ HEADERS = DECkeysym.h \
 	HPkeysym.h \
 	Sunkeysym.h \
 	X.h \
+	XF86keysym.h \
 	XWDFile.h \
 	Xalloca.h \
 	Xarch.h \

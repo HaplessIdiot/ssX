@@ -4,7 +4,7 @@
 //  Rules for resolving XKB components for use with XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.14 1999/08/30 02:34:26 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.15 1999/10/13 04:21:39 dawes Exp $
 //
 
 ! model 	=	keycodes	geometry
@@ -22,6 +22,7 @@
   winbook	=	xfree86		winbook(XP5)
   pc98		=	xfree98(pc98)	nec(pc98)
   abnt2		=	xfree86(abnt2)	pc(abnt2)
+  hp            =       xfree86         pc(pc104)
 
 //! model		layout	=	symbols
 //  microsoft	us	=	us(pc104)
@@ -68,6 +69,7 @@
   pc101		us_intl	=	us(pc101)+us_intl
   pc98		nec/jp	=	nec/jp(pc98)
   abnt2		br	=	us(pc101)+br
+  hp		us	=	us(pc104)+inet(hp)
   *		us	=	us(pc101)
   *		en_US	=	en_US(pc101)
   *		intl	=	us(pc101compose)
