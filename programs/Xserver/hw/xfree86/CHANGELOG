@@ -1,4 +1,10 @@
 XFree86 4.2.99.1 (XX March 2002)
+  59. Major XDarwin rootless mode rewrite:
+       - Use Carbon to draw directly to windows' backing buffers, rather
+         than "triple" buffering with Core Graphics.
+       - Reorganized Xserver/hw/darwin directory structure to separate out
+         legacy support for Mac OS X 10.0.x.
+      (Torrey T. Lyons and Greg Parker).
   58. Fix RGB/BGR inversion problem on Permedia3 chips (Alan Hourihane).
   57. Fix server link problem that shows up on ppc (#5205, Guido Guenther).
   56. Restore effect of option "NoSilkenMouse" (Marc La France).
@@ -14674,4 +14680,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2189 2002/03/19 18:09:18 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2190 2002/03/20 23:14:47 alanh Exp $

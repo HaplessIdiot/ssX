@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.257 2002/02/25 00:45:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.258 2002/03/19 18:09:17 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1263,7 +1263,7 @@ SetUIDServerTarget(XDarwin,$(DARWINDIRS),$(DARWINOBJS), \
  */
 QUARTZSYSLIBS = -framework ApplicationServices -framework Cocoa \
                 -framework CoreAudio -framework Carbon -ObjC
-QUARTZOBJS = $(DARWINDDXDIR)/bundle/quartzStartup.o
+QUARTZOBJS = $(DARWINDDXDIR)/quartz/quartzStartup.o
 #if NothingOutsideProjectRoot
 XDARWINAPPDIR = $(BINDIR)/XDarwin.app/Contents/MacOS
 #else
@@ -1274,7 +1274,7 @@ XDARWINAPPDIR = /Applications/XDarwin.app/Contents/MacOS
  * Quartz X server (installed in its application bundle)
  */
 SetUIDServerTarget(XDarwinApp,$(DARWINDIRS),$(QUARTZOBJS), \
-	$(DARWINLIBS) $(DARWINDDXDIR)/bundle/LibraryTargetName(XQuartz), \
+	$(DARWINLIBS) $(DARWINDDXDIR)/quartz/LibraryTargetName(XQuartz), \
 	$(DARWINSYSLIBS) $(QUARTZSYSLIBS))
 
 install::
