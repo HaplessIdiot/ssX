@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /* 
  * Main procedure for XF86Setup, by Joe Moss

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /* Fake some stuff to get xf86Config.c to compile here */
 

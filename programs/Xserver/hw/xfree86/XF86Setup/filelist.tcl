@@ -1,3 +1,4 @@
+# $XFree86$
 
 # These lists are not meant to be exhaustive, but they should be
 # complete enough to ensure that all the needed .tgz files have been

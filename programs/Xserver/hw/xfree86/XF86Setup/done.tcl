@@ -1,3 +1,4 @@
+# $XFree86$
 #
 
 proc Done_create_widgets { w } {
