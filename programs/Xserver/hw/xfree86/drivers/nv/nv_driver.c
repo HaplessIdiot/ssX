@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.59 2001/02/18 23:47:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.60 2001/02/21 00:42:57 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1529,6 +1529,8 @@ NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     if ( pNv->Restore )
         (*pNv->Restore)(pScrn, vgaReg, nvReg, FALSE);
+
+    NVResetGraphics(pScrn);
 
     vgaHWProtect(pScrn, FALSE);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_proto.h,v 1.3 1999/11/12 02:12:40 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_proto.h,v 1.4 2001/02/21 00:42:57 mvojkovi Exp $ */
 
 #ifndef __NV_PROTO_H__
 #define __NV_PROTO_H__
@@ -31,6 +31,7 @@ Bool    NVCursorInit(ScreenPtr pScreen);
 /* in nv_xaa.c */
 Bool    NVAccelInit(ScreenPtr pScreen);
 void    NVSync(ScrnInfoPtr pScrn);
+void    NVResetGraphics(ScrnInfoPtr pScrn);
 
 /* in nv_dga.c */
 Bool    NVDGAInit(ScreenPtr pScreen);
