@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.101 2000/12/01 17:08:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.103 2000/12/06 15:35:12 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -467,9 +467,6 @@ static DisplayModeRec ChipsNTSCMode = {
 DriverRec CHIPS = {
 	VERSION,
 	CHIPS_DRIVER_NAME,
-#if 0
-	"Driver for the Chips and Technologies chipsets",
-#endif
 	CHIPSIdentify,
 	CHIPSProbe,
 	CHIPSAvailableOptions,

@@ -11,7 +11,7 @@
  *	Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.60 2000/10/26 11:47:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.62 2000/12/06 15:35:15 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -65,9 +65,6 @@ static Bool alp_loaded = FALSE;
 DriverRec CIRRUS = {
 	VERSION,
 	CIR_DRIVER_NAME,
-#if 0
-	"Driver for Cirrus Logic GD5446, GD5480, and GD5462/4/5 cards",
-#endif
 	CIRIdentify,
 	CIRProbe,
 	CIRAvailableOptions,

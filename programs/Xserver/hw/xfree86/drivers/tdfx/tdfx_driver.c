@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.59 2000/12/18 15:50:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.60 2000/12/20 01:30:46 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -150,9 +150,6 @@ static void TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 DriverRec TDFX = {
   TDFX_VERSION,
   TDFX_DRIVER_NAME,
-#if 0
-  "Accelerated driver for 3dfx cards",
-#endif
   TDFXIdentify,
   TDFXProbe,
   TDFXAvailableOptions,

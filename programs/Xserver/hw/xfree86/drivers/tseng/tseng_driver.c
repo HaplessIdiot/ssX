@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.78 2000/12/06 15:35:25 eich Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.79 2000/12/14 16:33:10 eich Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -118,9 +118,6 @@ DriverRec TSENG =
 {
     VERSION,
     TSENG_DRIVER_NAME,
-#if 0
-    "unaccelerated driver for Tseng Labs ET4000, accelerated driver for Tseng Labs ET4000W32, W32i, W32p, ET6000 and ET6100 cards",
-#endif
     TsengIdentify,
     TsengProbe,
     TsengAvailableOptions,
