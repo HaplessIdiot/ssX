@@ -109,7 +109,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 				/* Forward definitions for driver functions */
-static OptionInfoPtr R128AvailableOptions(int chipid);
+static OptionInfoPtr R128AvailableOptions(int chipid, int busid);
 static Bool R128Probe(DriverPtr drv, int flags);
 static void R128Identify(int flags);
 static Bool R128PreInit(ScrnInfoPtr pScrn, int flags);
@@ -525,7 +525,7 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
 
 static
 OptionInfoPtr
-R128AvailableOptions(int chipid)
+R128AvailableOptions(int chipid, int busid)
 {
     return R128Options;
 }

@@ -94,7 +94,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Xv.h"
 
 /* Required Functions: */
-static OptionInfoPtr I740AvailableOptions(int chipid);
+static OptionInfoPtr I740AvailableOptions(int chipid, int busid);
 
 /* Print a driver identifying message. */
 static void I740Identify(int flags);
@@ -325,7 +325,7 @@ I740FreeRec(ScrnInfoPtr pScrn) {
 
 static
 OptionInfoPtr
-I740AvailableOptions(int chipid) 
+I740AvailableOptions(int chipid, int busid) 
 {
     return I740Options;
 }

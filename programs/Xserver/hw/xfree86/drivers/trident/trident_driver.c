@@ -72,7 +72,7 @@
 #include "xf86xv.h"
 #endif
 
-static OptionInfoPtr TRIDENTAvailableOptions(int chipid);
+static OptionInfoPtr TRIDENTAvailableOptions(int chipid, int busid);
 static void	TRIDENTIdentify(int flags);
 static Bool	TRIDENTProbe(DriverPtr drv, int flags);
 static Bool	TRIDENTPreInit(ScrnInfoPtr pScrn, int flags);
@@ -538,7 +538,7 @@ TRIDENTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int
 
 static 
 OptionInfoPtr
-TRIDENTAvailableOptions(int chipid)
+TRIDENTAvailableOptions(int chipid, int busid)
 {
     return TRIDENTOptions;
 }

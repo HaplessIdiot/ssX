@@ -67,7 +67,7 @@
  */
 
 /* Mandatory functions */
-static OptionInfoPtr TsengAvailableOptions(int chipid);
+static OptionInfoPtr TsengAvailableOptions(int chipid, int busid);
 static void TsengIdentify(int flags);
 static Bool TsengProbe(DriverPtr drv, int flags);
 static Bool TsengPreInit(ScrnInfoPtr pScrn, int flags);
@@ -344,7 +344,7 @@ TsengPCI2Type(ScrnInfoPtr pScrn, int ChipID)
 
 static 
 OptionInfoPtr
-TsengAvailableOptions(int chipid)
+TsengAvailableOptions(int chipid, int busid)
 {
     return TsengOptions;
 }

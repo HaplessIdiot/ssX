@@ -39,7 +39,7 @@
  * Forward definitions for the functions that make up the driver.
  */
 /* Mandatory functions */
-static OptionInfoPtr NVAvailableOptions(int chipid);
+static OptionInfoPtr NVAvailableOptions(int chipid, int busid);
 static void    NVIdentify(int flags);
 static Bool    NVProbe(DriverPtr drv, int flags);
 static Bool    NVPreInit(ScrnInfoPtr pScrn, int flags);
@@ -340,7 +340,7 @@ nvSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 static
 OptionInfoPtr
-NVAvailableOptions(int chipid)
+NVAvailableOptions(int chipid, int busid)
 {
     return NVOptions;
 }

@@ -109,7 +109,7 @@
  */
 
 /* Mandatory functions */
-static OptionInfoPtr	MGAAvailableOptions(int chipid);
+static OptionInfoPtr	MGAAvailableOptions(int chipid, int busid);
 static void	MGAIdentify(int flags);
 static Bool	MGAProbe(DriverPtr drv, int flags);
 static Bool	MGAPreInit(ScrnInfoPtr pScrn, int flags);
@@ -444,7 +444,7 @@ MGAFreeRec(ScrnInfoPtr pScrn)
 
 static
 OptionInfoPtr
-MGAAvailableOptions(int chipid)
+MGAAvailableOptions(int chipid, int busid)
 {
     return MGAOptions;
 }

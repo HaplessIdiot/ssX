@@ -139,7 +139,7 @@ static pgrLfbUnlock_t      pgrLfbUnlock;
 static pgrGlideShutdown_t  pgrGlideShutdown;
 static pgrLfbWriteRegion_t pgrLfbWriteRegion;
 
-static OptionInfoPtr GLIDEAvailableOptions(int chipid);
+static OptionInfoPtr GLIDEAvailableOptions(int chipid, int busid);
 static void	GLIDEIdentify(int flags);
 static Bool	GLIDEProbe(DriverPtr drv, int flags);
 static Bool	GLIDEPreInit(ScrnInfoPtr pScrn, int flags);
@@ -352,7 +352,7 @@ GLIDEFreeRec(ScrnInfoPtr pScrn)
 
 static 
 OptionInfoPtr
-GLIDEAvailableOptions(int chipid)
+GLIDEAvailableOptions(int chipid, int busid)
 {
    return GLIDEOptions;
 }

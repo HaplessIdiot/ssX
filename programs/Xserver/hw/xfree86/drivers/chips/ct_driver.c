@@ -136,7 +136,7 @@
 #include "ct_driver.h"
 
 /* Mandatory functions */
-static OptionInfoPtr	CHIPSAvailableOptions(int chipid);
+static OptionInfoPtr	CHIPSAvailableOptions(int chipid, int busid);
 static void     CHIPSIdentify(int flags);
 static Bool     CHIPSProbe(DriverPtr drv, int flags);
 static Bool     CHIPSPreInit(ScrnInfoPtr pScrn, int flags);
@@ -793,18 +793,20 @@ CHIPSIdentify(int flags)
 
 static
 OptionInfoPtr
-CHIPSAvailableOptions(int chipid)
+CHIPSAvailableOptions(int chipid, int busid)
 {
     int vendor = ((chipid & 0xffff0000) >> 16);
     int chip = chipid & 0x0000ffff;
 
-    if ((chip == CHIPS_CT64200) || (chip == CHIPS_CT64300)) 
-	return ChipsWingineOptions;
-    else
-    if ((chip >= CHIPS_CT65550) && (chip <= CHIPS_CT69030))
-	return ChipsHiQVOptions;
-    else
-	return Chips655xxOptions;
+    if (busid == BUS_ISA) {
+    	if ((chip == CHIPS_CT64200) || (chip == CHIPS_CT64300)) 
+	    return ChipsWingineOptions;
+    }
+    if (busid == BUS_PCI) {
+    	if ((chip >= CHIPS_CT65550) && (chip <= CHIPS_CT69030))
+	    return ChipsHiQVOptions;
+    }
+    return Chips655xxOptions;
 }
 
 /* Mandatory */

@@ -74,7 +74,7 @@
 
 
 /* Forward definitions */
-static OptionInfoPtr	  GenericAvailableOptions(int chipid);
+static OptionInfoPtr	  GenericAvailableOptions(int chipid, int busid);
 static void       GenericIdentify(int);
 static Bool       GenericProbe(DriverPtr, int);
 static Bool       GenericPreInit(ScrnInfoPtr, int);
@@ -218,7 +218,7 @@ GenericIdentify(int flags)
 
 static
 OptionInfoPtr
-GenericAvailableOptions(int chipid)
+GenericAvailableOptions(int chipid, int busid)
 {
     return GenericOptions;
 }

@@ -79,7 +79,7 @@
  * local function prototypes
  */
 
-static OptionInfoPtr renditionAvailableOptions(int);
+static OptionInfoPtr renditionAvailableOptions(int, int);
 static void       renditionIdentify(int);
 static Bool       renditionProbe(DriverPtr, int);
 static Bool       renditionPreInit(ScrnInfoPtr, int);
@@ -255,7 +255,7 @@ static PciChipsets renditionPCIchipsets[] = {
 
 static
 OptionInfoPtr
-renditionAvailableOptions(int chipid)
+renditionAvailableOptions(int chipid, int busid)
 {
     return renditionOptions;
 }
