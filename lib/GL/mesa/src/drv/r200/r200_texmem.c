@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texmem.c,v 1.3 2002/11/06 17:19:40 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texmem.c,v 1.4 2002/12/16 16:18:55 dawes Exp $ */
 /**************************************************************************
 
 Copyright (C) Tungsten Graphics 2002.  All Rights Reserved.  
@@ -51,7 +51,7 @@ SOFTWARE.
 #include "enums.h"
 #include "mem.h"
 
-
+#include <unistd.h>	/* for usleep */
 
 /* Destroy hardware state associated with texture `t'.
  */

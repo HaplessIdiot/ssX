@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_ioctl.c,v 1.2 2002/12/11 02:59:49 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_ioctl.c,v 1.3 2002/12/16 16:18:54 dawes Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -44,10 +44,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "context.h"
 #include "swrast/swrast.h"
 
+#include <unistd.h>	/* for usleep */
+
 #define R200_TIMEOUT             512
 #define R200_IDLE_RETRY           16
 
-#undef usleep
 
 static void do_usleep( int nr, const char *caller )
 {
