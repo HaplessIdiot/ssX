@@ -22,9 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.4 1997/11/16 11:51:11 dawes Exp $ */
-
-#include "Xos.h"
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AceCad.c,v 3.3.2.5 1998/06/05 16:22:50 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -47,12 +45,12 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86Priv.h"
+#include "xf86_OSproc.h"
 #ifdef XFree86LOADER 
 #include "xf86_ansic.h" 
 #endif 
-#include "xf86_Config.h"
+#include "xf86Config.h"
 #include "xf86Xinput.h"
 #include "atKeynames.h"
 #include "xf86Version.h"
@@ -712,7 +710,7 @@ static int
 xf86AceCadOpenDevice(DeviceIntPtr pAceCad)
 {
     LocalDevicePtr	local = (LocalDevicePtr)pAceCad->public.devicePrivate;
-    AceCadDevicePtr	priv = (AceCadDevicePtr)PRIVATE(pAceCad);
+    AceCadDevicePtr	priv = (AceCadDevicePtr)XI_PRIVATE(pAceCad);
 
     if (xf86AceCadOpen(local) != Success) {
 	if (local->fd >= 0) {
@@ -858,13 +856,13 @@ xf86AceCadClose(LocalDevicePtr local)
 ** When I figure out what it does, it will do it.
 */
 static int
-xf86AceCadChangeControl(LocalDevicePtr local, xDeviceCtl *control)
+xf86AceCadChangeControl(LocalDevicePtr local, pointer control)
 {
     xDeviceResolutionCtl	*res;
 
     res = (xDeviceResolutionCtl *)control;
 	
-    if ((control->control != DEVICE_RESOLUTION) ||
+    if ((res->control != DEVICE_RESOLUTION) ||
 	   (res->num_valuators < 1))
 	return (BadMatch);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_init.c,v 3.3 1996/02/04 09:10:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_init.c,v 3.4.4.3 1998/07/18 17:53:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -31,13 +31,11 @@
 
 #include "X.h"
 #include "Xmd.h"
-#include "input.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 static Bool KeepTty = FALSE;
@@ -50,30 +48,18 @@ static int xf86StartVT = -1;
 #define MAX_SECONDS	60	
 #define USEC_IN_SEC     (unsigned long)1000000
 
-int xf86_solx86usleep(
-#if NeedFunctionPrototypes
-unsigned long
-#endif
-);
-static void xf86_solx86sleep(
-#if NeedFunctionPrototypes
-int
-#endif
-);
+int xf86_solx86usleep(unsigned long);
+static void xf86_solx86sleep(int);
 
-extern void xf86VTRequest(
-#if NeedFunctionPrototypes
-	int
-#endif
-);
-
-void xf86OpenConsole()
+void
+xf86OpenConsole()
 {
     int fd;
     struct vt_mode VT;
     struct vt_stat vtinfo;
     char vtname1[10];
     int i, FreeVTslot;
+    MessageType from = X_PROBED;
 
     if (serverGeneration == 1) 
     {
@@ -91,16 +77,18 @@ void xf86OpenConsole()
 
 	    if ((fd = open("/dev/zero", O_RDONLY, 0)) < 0)
 	    {
-		ErrorF("xf86OpenConsole: cannot open /dev/zero (%s)\n",
-		       strerror(errno));
+		xf86Msg(X_WARNING,
+			"xf86OpenConsole: cannot open /dev/zero (%s)\n",
+			strerror(errno));
 	    }
 	    else
 	    {
 		if ((int)mmap(0, 0x1000, PROT_NONE,
 			      MAP_FIXED | MAP_SHARED, fd, 0) == -1)
 		{
-		    ErrorF("xf86OpenConsole: failed to protect page 0 (%s)\n",
-		       strerror(errno));
+		    xf86Msg(X_WARNING,
+			"xf86OpenConsole: failed to protect page 0 (%s)\n",
+			strerror(errno));
 		}
 		close(fd);
 	    }
@@ -111,6 +99,7 @@ void xf86OpenConsole()
     	if (VTnum != -1) 
 	{
       	    xf86Info.vtno = VTnum;
+	    from = X_CMDLINE;
     	}
     	else 
 	{
@@ -156,11 +145,9 @@ void xf86OpenConsole()
 	    }
            close(fd);
         }
-	ErrorF("(using VT number %d)\n\n", xf86Info.vtno);
+	xf86Msg(from, "using VT number %d\n\n", xf86Info.vtno);
 
  	sprintf(vtname1,"/dev/vt%02d",xf86Info.vtno); /* Solaris 2.1  x86 */ 
-
-	xf86Config(FALSE); /* Read XF86Config */
 
 	if (!KeepTty)
     	{
@@ -181,11 +168,11 @@ void xf86OpenConsole()
 	 */
 	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
 	{
-    	    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+    	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	}
 	if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
 	{
-	    ErrorF("xf86OpenConsole: VT_WAITACTIVE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	}
 	if (ioctl(xf86Info.consoleFd, VT_GETMODE, &VT) < 0) 
 	{
@@ -215,18 +202,18 @@ void xf86OpenConsole()
 	 */
 	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
 	{
-	    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	}
 	if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
 	{
-      	    ErrorF("xf86OpenConsole: VT_WAITACTIVE failed\n");
+      	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	}
 	/*
 	 * If the server doesn't have the VT when the reset occurs,
 	 * this is to make sure we don't continue until the activate
 	 * signal is received.
 	 */
-	if (!xf86VTSema)
+	if (!xf86Screens[0]->vtSema)
 	    sleep(5);
     }
     return;
@@ -324,7 +311,8 @@ void xf86UseMsg()
  *			 Doug Anson
  *			 danson@lgc.com
  */
-int xf86_solx86usleep(unsigned long usec)
+int
+xf86_solx86usleep(unsigned long usec)
 {
     int		      retval = 0;
     struct itimerval  naptime;
@@ -391,7 +379,8 @@ int xf86_solx86usleep(unsigned long usec)
  *			Doug Anson
  *			danson@lgc.com
  */
-static void xf86_solx86sleep(int signo)
+static void
+xf86_solx86sleep(int signo)
 {
     /* do nothing */
     return;

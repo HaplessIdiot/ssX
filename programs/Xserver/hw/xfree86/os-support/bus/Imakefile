@@ -1,0 +1,47 @@
+XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.1.2.1 1998/06/04 17:35:48 dawes Exp $
+
+#include <Server.tmpl>
+
+#if defined(LinuxArchitecture) && defined(AlphaArchitecture)
+
+XCOMM Alpha (Linux) PCI driver
+
+PCIDRVRSRC = axpPci.c
+PCIDRVROBJ = axpPci.o
+
+#elif defined(PpcArchitecture)
+
+XCOMM PowerPC PCI drivers
+
+PCIDRVRSRC = ppcPci.c
+PCIDRVROBJ = ppcPci.o
+
+#elif defined(i386Architecture)
+
+XCOMM ix86 PCI driver
+
+PCIDRVRSRC = ix86Pci.c
+PCIDRVROBJ = ix86Pci.o
+
+#else
+XCOMM no PCI driver -- shouldn't get here
+#endif
+
+SRCS = Pci.c $(PCIDRVRSRC)
+OBJS = Pci.o $(PCIDRVROBJ)
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+
+NormalLibraryObjectRule()
+SubdirLibraryRule($(OBJS))
+
+InstallLinkKitNonExecFile(Pci.h,$(LINKKITDIR)/include)
+
+DependTarget()
+

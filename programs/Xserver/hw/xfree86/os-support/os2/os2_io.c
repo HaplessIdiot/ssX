@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.10 1996/05/13 06:40:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.11.4.1 1998/06/04 17:36:03 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -39,7 +39,7 @@
 #define INCL_KBD
 #define INCL_MOU
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 int os2MouseQueueQuery();

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.49 1998/06/27 12:54:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.41.2.8 1998/06/09 14:40:57 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -9,7 +9,7 @@
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  * Copyright 1994, 1996 by Holger Veit <Holger.Veit@gmd.de>
- * Copyright 1994, 1995 by The XFree86 Project, Inc
+ * Copyright 1994-1998 by The XFree86 Project, Inc
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -31,36 +31,12 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf86_OSlib.h /main/22 1996/10/27 11:06:31 kaleb $ */
 
 /*
- * Copyright 1997
- * Digital Equipment Corporation. All rights reserved.
- * This software is furnished under license and may be used and copied only in 
- * accordance with the following terms and conditions.  Subject to these conditions, 
- * you may download, copy, install, use, modify and distribute this software in 
- * source and/or binary form. No title or ownership is transferred hereby.
- *
- * 1) Any source code used, modified or distributed must reproduce and retain this 
- *    copyright notice and list of conditions as they appear in the source file.
- *
- * 2) No right is granted to use any trade name, trademark, or logo of Digital 
- *    Equipment Corporation. Neither the "Digital Equipment Corporation" name nor 
- *    any trademark or logo of Digital Equipment Corporation may be used to endorse or 
- *    promote products derived from this software without the prior written permission 
- *    of Digital Equipment Corporation.
- *
- * 3) This software is provided "AS-IS" and any express or implied warranties, including 
- *    but not limited to, any implied warranties of merchantability, fitness for a 
- *    particular purpose, or non-infringement are disclaimed. In no event shall DIGITAL 
- *    be liable for any damages whatsoever, and in particular, DIGITAL shall not be 
- *    liable for special, indirect, consequential, or incidental damages or damages for 
- *    lost profits, loss of revenue or loss of use, whether such damages arise in contract, 
- *    negligence, tort, under statute, in equity, at law or otherwise, even if advised of 
- *    the possibility of such damage. 
- *
+ * This is private, and should not be included by any drivers.  Drivers
+ * may include xf86_OSprocs.h to get prototypes for public interfaces.
  */
-
-/* $XConsortium: xf86_OSlib.h /main/22 1996/10/27 11:06:31 kaleb $ */
 
 #ifndef _XF86_OSLIB_H
 #define _XF86_OSLIB_H
@@ -68,7 +44,20 @@
 #include <X11/Xos.h>
 #include <X11/Xfuncproto.h>
 
+/*
+ * Define some things from the "ANSI" C wrappers that are needed in the
+ * the core server.
+ */
+#ifndef HAVE_WRAPPER_DECLS
+#define HAVE_WRAPPER_DECLS
+#undef usleep
+#define usleep(a) xf86usleep(a)
+extern void xf86usleep(unsigned long);
+#endif
+
+#ifndef NO_COMPILER_H
 #include "compiler.h"
+#endif
 
 #if defined(MACH386) || defined(__OSF__)
 # undef NULL
@@ -83,8 +72,8 @@
 #if defined(SYSV) || defined(SVR4)
 # ifdef SCO325
 #  ifndef _SVID3
-#  define _SVID3
-# endif
+#   define _SVID3
+#  endif
 #  ifndef _NO_STATIC
 #   define _NO_STATIC
 #  endif
@@ -92,9 +81,7 @@
 # include <sys/ioctl.h>
 # include <signal.h>
 # include <termio.h>
-# if defined(SCO) || !defined(SVR4)
 # include <sys/stat.h>
-# endif		
 # include <sys/types.h>
 # if defined(SCO) || defined(ISC)
 # include <sys/param.h>
@@ -106,42 +93,36 @@
 #  define HAS_USL_VTS
 #  include <sys/immu.h>
 #  include <sys/sysmacros.h>
-
-# else /* !PowerMAX_OS */
-
-#  if defined(_NEED_SYSI86)
-#   include <sys/immu.h>
-#   if !(defined (sun) && defined (i386) && defined (SVR4))
-#     include <sys/region.h>
-#   endif
-#   include <sys/proc.h>
-#   include <sys/tss.h>
-#   include <sys/sysi86.h>
-#   if defined(SVR4) && !defined(sun)
-#    include <sys/seg.h>
-#   endif /* SVR4 && !sun */
-#   include <sys/v86.h>
-#   if defined(sun) && defined (i386) && defined (SVR4)
-#     include <sys/psw.h>
-#   endif
-#  endif /* _NEED_SYSI86 */
- 
-#  if defined(HAS_SVR3_MMAPDRV)
-#   include <sys/sysmacros.h>
-#   if !defined(_NEED_SYSI86)
-#    include <sys/immu.h>
+# elif defined(_NEED_SYSI86)
+#  include <sys/immu.h>
+#  if !(defined (sun) && defined (i386) && defined (SVR4))
 #    include <sys/region.h>
-#   endif
-#   include <sys/mmap.h>		/* MMAP driver header */
 #  endif
+#  include <sys/proc.h>
+#  include <sys/tss.h>
+#  include <sys/sysi86.h>
+#  if defined(SVR4) && !defined(sun)
+#   include <sys/seg.h>
+#  endif /* SVR4 && !sun */
+#  include <sys/v86.h>
+#  if defined(sun) && defined (i386) && defined (SVR4)
+#    include <sys/psw.h>
+#  endif
+# endif /* _NEED_SYSI86 */
 
-#  define HAS_USL_VTS
-#  if !defined(sun)
+#if defined(HAS_SVR3_MMAPDRV)
+# include <sys/sysmacros.h>
+# if !defined(_NEED_SYSI86)
+#  include <sys/immu.h>
+#  include <sys/region.h>
+# endif
+# include <sys/mmap.h>		/* MMAP driver header */
+#endif
+
+# define HAS_USL_VTS
+# if !defined(sun)
 #  include <sys/emap.h>
-#  endif
-
-# endif /* ! PowerMAX_OS */
-
+# endif
 # if defined(SCO)
 #  include <sys/vtkd.h>
 #  include <sys/console.h>
@@ -165,7 +146,7 @@
 #  define POSIX_TTY
 # endif /* SCO */
 
-# if defined(SVR4) || defined(SCO325)
+# ifdef SVR4
 #  include <sys/mman.h>
 #  if !(defined(sun) && defined (i386) && defined (SVR4))
 #    define DEV_MEM "/dev/pmem"
@@ -209,10 +190,6 @@ extern int xf86_solx86usleep(unsigned long);
 #else
 # define usleep(usec) syscall(3112, (usec) / 1000 + 1)
 #endif /* sun && i386 && SVR4 */
-#else
-#if defined(ISC) || defined(SVR4)
-# define usleep(usec) xf86usleep(usec) 
-#endif
 #endif
 
 # ifdef SYSV
@@ -285,13 +262,6 @@ extern int errno;
 # include <termios.h>
 # define POSIX_TTY
 
-/* LynxOS 2.5.1 has these */
-# ifdef LED_NUMLOCK
-#  define LED_CAP	LED_CAPSLOCK
-#  define LED_NUM	LED_NUMLOCK
-#  define LED_SCR	LED_SCROLLOCK
-# endif
-
 #endif /* Lynx */
 
 /**************************************************************************/
@@ -311,7 +281,6 @@ extern int errno;
 # define POSIX_TTY
 
 # include <errno.h>
-extern int errno;
 
 # if !defined(LINKKIT)
   /* Don't need this stuff for the Link Kit */
@@ -329,14 +298,6 @@ extern int errno;
 #       undef CONSOLE_X_BELL
 #     endif
 #   endif
-#   ifdef CODRV_SUPPORT
-#    define COMPAT_CO011
-#    if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#     include <machine/ioctl_pc.h>
-#    else
-#     include <sys/ioctl_pc.h>
-#    endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
-#   endif /* CODRV_SUPPORT */
 #   ifdef SYSCONS_SUPPORT
 #    define COMPAT_SYSCONS
 #    if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
@@ -361,10 +322,6 @@ extern int errno;
       };
 #    endif /* PCVT_SUPPORT && SYSCONS_SUPPORT */
 #   endif /* PCVT_SUPPORT */
-#   if defined(__FreeBSD__)
-#    undef MOUSE_GETINFO
-#    include <machine/mouse.h>
-#   endif
     /* Include these definitions in case ioctl_pc.h didn't get included */
 #   ifndef CONSOLE_X_MODE_ON
 #    define CONSOLE_X_MODE_ON _IO('t',121)
@@ -375,25 +332,6 @@ extern int errno;
 #   ifndef CONSOLE_X_BELL
 #    define CONSOLE_X_BELL _IOW('t',123,int[2])
 #   endif
-#   ifndef CONSOLE_X_TV_ON
-#    define CONSOLE_X_TV_ON _IOW('t',155,int)
-#    define XMODE_RGB   0
-#    define XMODE_NTSC  1
-#    define XMODE_PAL   2
-#    define XMODE_SECAM 3
-#   endif
-#   ifndef CONSOLE_X_TV_OFF
-#    define CONSOLE_X_TV_OFF _IO('t',156)
-#   endif
-#ifndef CONSOLE_GET_LINEAR_INFO
-#    define CONSOLE_GET_LINEAR_INFO         _IOR('t',157,struct map_info)
-#endif
-#ifndef CONSOLE_GET_IO_INFO 
-#    define CONSOLE_GET_IO_INFO             _IOR('t',158,struct map_info)
-#endif
-#ifndef CONSOLE_GET_MEM_INFO 
-#    define CONSOLE_GET_MEM_INFO            _IOR('t',159,struct map_info)
-#endif
 #  endif /* __bsdi__ */
 # endif /* !LINKKIT */
 
@@ -550,6 +488,8 @@ extern char* __XOS2RedirRoot(char*);
 /* Generic                                                                */
 /**************************************************************************/
 
+#include <sys/wait.h>	/* May need to adjust this for other OSs */
+
 /* 
  * Hack originally for ISC 2.2 POSIX headers, but may apply elsewhere,
  * and it's safe, so just do it.
@@ -607,5 +547,7 @@ double RInt(
 # endif
 #endif
 
+#define XF86_OS_PRIVS
 #include "xf86_OSproc.h"
+
 #endif /* _XF86_OSLIB_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_kbd.c,v 3.1 1996/12/09 11:53:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_kbd.c,v 3.2.4.2 1998/06/05 16:23:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@XFree86.org>
@@ -25,18 +25,16 @@
  */
 /* $XConsortium: sysv_kbd.c /main/3 1996/02/21 17:53:59 kaleb $ */
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-int xf86GetKbdLeds()
+int
+xf86GetKbdLeds()
 {
 	int leds;
 
@@ -44,12 +42,8 @@ int xf86GetKbdLeds()
 	return(leds);
 }
 
-#if NeedFunctionPrototypes
-void xf86SetKbdRepeat(char rad)
-#else
-void xf86SetKbdRepeat(rad)
-char rad;
-#endif
+void
+xf86SetKbdRepeat(char rad)
 {
 #ifdef KDSETRAD
 	ioctl(xf86Info.consoleFd, KDSETRAD, rad);
@@ -60,7 +54,8 @@ static int kbdtrans;
 static struct termio kbdtty;
 static char *kbdemap = NULL;
 
-void xf86KbdInit()
+void
+xf86KbdInit()
 {
 #ifdef KDGKBMODE
 	ioctl (xf86Info.consoleFd, KDGKBMODE, &kbdtrans);
@@ -76,7 +71,8 @@ void xf86KbdInit()
 #endif
 }
 
-int xf86KbdOn()
+int
+xf86KbdOn()
 {
 	struct termio nTty;
 
@@ -93,7 +89,8 @@ int xf86KbdOn()
 	return(xf86Info.consoleFd);
 }
 
-int xf86KbdOff()
+int
+xf86KbdOff()
 {
 	if (kbdemap)
 	{

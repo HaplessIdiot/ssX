@@ -1,4 +1,9 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.h,v 1.2.2.1 1998/07/24 11:36:33 dawes Exp $ */
+
+
+
+
+
 /*
  * Tseng acceleration interface -- color expansion primitives.
  */
@@ -62,18 +67,18 @@ extern void W32WriteBitmap(
 
 extern void W32ImageTextTECPUToScreenColorExpand(
     DrawablePtr pDrawable,
-    GC *pGC,
+    GC * pGC,
     int xInit, int yInit,
     int nglyph,
-    CharInfoPtr *ppci,
+    CharInfoPtr * ppci,
     unsigned char *pglyphBase);
 
 extern void W32PolyTextTECPUToScreenColorExpand(
     DrawablePtr pDrawable,
-    GC *pGC,
+    GC * pGC,
     int xInit, int yInit,
     int nglyph,
-    CharInfoPtr *ppci,
+    CharInfoPtr * ppci,
     unsigned char *pglyphBase);
 
 extern void TsengScanlineScreenToScreenFillStippledRect(
@@ -101,5 +106,5 @@ extern void TsengSubsequentScanlineCPUToScreenFillStippledRect(
     int srcwidth,
     int stipplewidth, int stippleheight,
     int srcx, int srcy);
-                    
+
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.19 1997/11/16 11:51:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.16.2.5 1998/06/05 16:23:07 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -25,43 +25,44 @@
  */
 
 /*
+ * The ARM32 code here carries the following copyright:
+ *
  * Copyright 1997
  * Digital Equipment Corporation. All rights reserved.
  * This software is furnished under license and may be used and copied only in 
- * accordance with the following terms and conditions.  Subject to these conditions, 
- * you may download, copy, install, use, modify and distribute this software in 
- * source and/or binary form. No title or ownership is transferred hereby.
+ * accordance with the following terms and conditions.  Subject to these
+ * conditions, you may download, copy, install, use, modify and distribute
+ * this software in source and/or binary form. No title or ownership is
+ * transferred hereby.
  *
- * 1) Any source code used, modified or distributed must reproduce and retain this 
- *    copyright notice and list of conditions as they appear in the source file.
+ * 1) Any source code used, modified or distributed must reproduce and retain
+ *    this copyright notice and list of conditions as they appear in the
+ *    source file.
  *
  * 2) No right is granted to use any trade name, trademark, or logo of Digital 
- *    Equipment Corporation. Neither the "Digital Equipment Corporation" name nor 
- *    any trademark or logo of Digital Equipment Corporation may be used to endorse or 
- *    promote products derived from this software without the prior written permission 
- *    of Digital Equipment Corporation.
+ *    Equipment Corporation. Neither the "Digital Equipment Corporation"
+ *    name nor any trademark or logo of Digital Equipment Corporation may be
+ *    used to endorse or promote products derived from this software without
+ *    the prior written permission of Digital Equipment Corporation.
  *
- * 3) This software is provided "AS-IS" and any express or implied warranties, including 
- *    but not limited to, any implied warranties of merchantability, fitness for a 
- *    particular purpose, or non-infringement are disclaimed. In no event shall DIGITAL 
- *    be liable for any damages whatsoever, and in particular, DIGITAL shall not be 
- *    liable for special, indirect, consequential, or incidental damages or damages for 
- *    lost profits, loss of revenue or loss of use, whether such damages arise in contract, 
- *    negligence, tort, under statute, in equity, at law or otherwise, even if advised of 
- *    the possibility of such damage. 
+ * 3) This software is provided "AS-IS" and any express or implied warranties,
+ *    including but not limited to, any implied warranties of merchantability,
+ *    fitness for a particular purpose, or non-infringement are disclaimed.
+ *    In no event shall DIGITAL be liable for any damages whatsoever, and in
+ *    particular, DIGITAL shall not be liable for special, indirect,
+ *    consequential, or incidental damages or damages for lost profits, loss
+ *    of revenue or loss of use, whether such damages arise in contract, 
+ *    negligence, tort, under statute, in equity, at law or otherwise, even
+ *    if advised of the possibility of such damage. 
  *
  */
 
 /* $XConsortium: bsd_video.c /main/10 1996/10/25 11:37:57 kaleb $ */
 
 #include "X.h"
-#include "input.h"
-#include "scrnintstr.h"
-
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
 
 #ifdef __arm32__
 #include "machine/devmap.h"
@@ -98,17 +99,9 @@ struct memAccess ioMemInfo = { CONSOLE_GET_IO_INFO, NULL, NULL,
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
-
 static Bool devMemChecked = FALSE;
 static Bool useDevMem = FALSE;
 static int  devMemFd = -1;
-
-#if 0
-static struct xf86memMap {
-  int offset;
-  int memSize;
-} xf86memMaps[MAXSCREENS];
-#endif
 
 #ifdef HAS_APERTURE_DRV
 #define DEV_APERTURE "/dev/xf86"
@@ -119,9 +112,8 @@ static struct xf86memMap {
  * Check if /dev/mem can be mmap'd.  If it can't print a warning when
  * "warn" is TRUE.
  */
-static void 
-checkDevMem(warn)
-Bool warn;
+static void
+checkDevMem(Bool warn)
 {
 	int fd;
 	pointer base;
@@ -143,8 +135,8 @@ Bool warn;
 		/* This should not happen */
 		if (warn)
 		{
-		    ErrorF("%s checkDevMem: warning: failed to mmap %s (%s)\n",
-			   XCONFIG_PROBED, DEV_MEM, strerror(errno));
+		    xf86Msg(X_WARNING, "checkDevMem: failed to mmap %s (%s)\n",
+			    DEV_MEM, strerror(errno));
 		}
 		useDevMem = FALSE;
 		return;
@@ -153,9 +145,9 @@ Bool warn;
 #ifndef HAS_APERTURE_DRV
 	if (warn)
 	{ 
-	    ErrorF("%s checkDevMem: warning: failed to open %s (%s)\n",
-		   XCONFIG_PROBED, DEV_MEM, strerror(errno));
-	    ErrorF("\tlinear framebuffer access unavailable\n");
+	    xf86Msg(X_WARNING, "checkDevMem: failed to open %s (%s)\n",
+		    DEV_MEM, strerror(errno));
+	    xf86ErrorF("\tlinear framebuffer access unavailable\n");
 	} 
 	useDevMem = FALSE;
 	return;
@@ -172,28 +164,28 @@ Bool warn;
 		munmap((caddr_t)base, 4096);
 		devMemFd = fd;
 		useDevMem = TRUE;
-		ErrorF("%s checkDevMem: using aperture driver %s\n",
-		       XCONFIG_PROBED, DEV_APERTURE);
+		xf86Msg(X_INFO, "checkDevMem: using aperture driver %s\n",
+		        DEV_APERTURE);
 		return;
 	    } else {
 
 		if (warn)
 		{
-		    ErrorF("%s checkDevMem: warning: failed to mmap %s (%s)\n",
-			   XCONFIG_PROBED, DEV_APERTURE, strerror(errno));
+		    xf86Msg(X_WARNING, "checkDevMem: failed to mmap %s (%s)\n",
+			    DEV_APERTURE, strerror(errno));
 		}
 	    }
 	} else {
 	    if (warn)
 	    {
-		ErrorF("%s checkDevMem: warning: failed to open %s and %s\n\t(%s)\n",
-		   XCONFIG_PROBED, DEV_MEM, DEV_APERTURE, strerror(errno));
+		xf86Msg(X_WARNING, "checkDevMem: failed to open %s and %s\n"
+			"\t(%s)\n", DEV_MEM, DEV_APERTURE, strerror(errno));
 	    }
 	}
 	
 	if (warn)
 	{
-	    ErrorF("\tlinear framebuffer access unavailable\n");
+	    xf86ErrorF("\tlinear framebuffer access unavailable\n");
 	}
 	useDevMem = FALSE;
 	return;
@@ -202,12 +194,8 @@ Bool warn;
 }
 
 
-pointer 
-xf86MapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+pointer
+xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 {
 	pointer base;
 
@@ -259,10 +247,6 @@ unsigned long Size;
 			   "xf86MapVidMem", DEV_MEM, Size, Base, 
 			   strerror(errno));
 	    }
-#if 0
-	    xf86memMaps[ScreenNum].offset = (int) Base;
-	    xf86memMaps[ScreenNum].memSize = Size;
-#endif
 	    return(base);
 	}
 		
@@ -288,31 +272,11 @@ unsigned long Size;
 	    FatalError("xf86MapVidMem: Could not mmap /dev/vga (%s)\n",
 		       strerror(errno));
 	}
-#if 0
-       xf86memMaps[ScreenNum].offset = (int) Base;
-       xf86memMaps[ScreenNum].memSize = Size;
-       return(base);
-#endif
+	return(base);
 }
 
-#if 0
-void 
-xf86GetVidMemData(ScreenNum, Base, Size)
-int ScreenNum;
-int *Base;
-int *Size;      
-{              
-   *Base = xf86memMaps[ScreenNum].offset;
-   *Size = xf86memMaps[ScreenNum].memSize;
-}
-#endif
-
-void 
-xf86UnMapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+void
+xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 #ifdef __arm32__
         struct memAccess *memInfoP;
@@ -331,7 +295,7 @@ unsigned long Size;
 	munmap((caddr_t)Base, Size);
 }
 
-Bool 
+Bool
 xf86LinearVidMem()
 {
 	/*
@@ -346,13 +310,14 @@ xf86LinearVidMem()
 
 #ifdef __arm32__
 
+/* XXX This needs to be updated for the ND */
+
 /*
 ** Find out whether the console driver provides memory mapping information 
 ** for the specified region and return the map_info pointer. Print a warning if required.
 */
-static struct memAccess *checkMapInfo(warn, Region)
-Bool warn;
-int Region;
+static struct memAccess *
+checkMapInfo(Bool warn, int Region)
 {
     struct memAccess *memAccP;
         
@@ -403,10 +368,8 @@ int Region;
     }
 }
 
-static pointer xf86MapInfoMap(memInfoP, Base, Size)
-    struct memAccess *memInfoP;
-    pointer Base;
-    unsigned long Size;
+static pointer
+xf86MapInfoMap(struct memAccess *memInfoP, pointer Base, unsigned long Size)
 {
     struct map_info *mapInfoP = &(memInfoP->memInfo);
 
@@ -453,9 +416,8 @@ static pointer xf86MapInfoMap(memInfoP, Base, Size)
     return (pointer)((int)memInfoP->regionVirtBase + (int)Base);
 }
 
-static void xf86MapInfoUnmap(memInfoP, Size)
-    struct memAccess *memInfoP;
-    unsigned long Size;
+static void
+xf86MapInfoUnmap(struct memAccess *memInfoP, unsigned long Size)
 {
     struct map_info *mapInfoP = &(memInfoP->memInfo);
     
@@ -487,20 +449,15 @@ static Bool ExtendedEnabled = FALSE;
 static Bool InitDone = FALSE;
 
 void
-xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
+xf86EnableIO()
 {
-	int i;
-
-	ScreenEnabled[ScreenNum] = TRUE;
-
 	if (ExtendedEnabled)
 		return;
 
 	if (i386_iopl(TRUE) < 0)
 	{
 		FatalError("%s: Failed to set IOPL for extended I/O\n",
-			   "xf86EnableIOPorts");
+			   "xf86EnableIO");
 	}
 	ExtendedEnabled = TRUE;
 
@@ -508,19 +465,10 @@ int ScreenNum;
 }
 	
 void
-xf86DisableIOPorts(ScreenNum)
-int ScreenNum;
+xf86DisableIO()
 {
-	int i;
-
-	ScreenEnabled[ScreenNum] = FALSE;
-
 	if (!ExtendedEnabled)
 		return;
-
-	for (i = 0; i < MAXSCREENS; i++)
-		if (ScreenEnabled[i])
-			return;
 
 	i386_iopl(FALSE);
 	ExtendedEnabled = FALSE;
@@ -530,6 +478,138 @@ int ScreenNum;
 
 #endif /* USE_I386_IOPL */
 
+
+#ifdef USE_ARC_MMAP || defined(__arm32__)
+
+void
+xf86EnableIO()
+{
+	int fd;
+	pointer base;
+
+	if (ExtendedEnabled)
+		return;
+
+	if ((fd = open("/dev/ttyC0", O_RDWR)) >= 0) {
+		/* Try to map a page at the pccons I/O space */
+		base = (pointer)mmap((caddr_t)0, 65536, PROT_READ|PROT_WRITE,
+				MAP_FLAGS, fd, (off_t)0x0000);
+
+		if (base != (pointer)-1) {
+			IOPortBase = base;
+		}
+		else {
+			FatalError("EnableIO: failed to mmap %s (%s)\n",
+				"/dev/ttyC0", strerror(errno));
+		}
+	}
+	else {
+		FatalError("EnableIO: failed to open %s (%s)\n",
+			"/dev/ttyC0", strerror(errno));
+	}
+	
+	ExtendedEnabled = TRUE;
+
+	return;
+}
+
+void
+xf86DisableIO()
+{
+	return;
+}
+
+#endif /* USE_ARC_MMAP */
+
+/***************************************************************************/
+/* Interrupt Handling section                                              */
+/***************************************************************************/
+
+Bool
+xf86DisableInterrupts()
+{
+
+#if !defined(__mips__) && !defined(__arm32__)
+#ifdef __GNUC__
+	__asm__ __volatile__("cli");
+#else 
+	asm("cli");
+#endif /* __GNUC__ */
+#endif /* __mips__ */
+
+	return(TRUE);
+}
+
+void
+xf86EnableInterrupts()
+{
+
+#if !defined(__mips__) && !defined(__arm32__)
+#ifdef __GNUC__
+	__asm__ __volatile__("sti");
+#else 
+	asm("sti");
+#endif /* __GNUC__ */
+#endif /* __mips__ */
+
+	return;
+}
+
+/***************************************************************************/
+/* Set TV output mode                                                      */
+/***************************************************************************/
+void
+xf86SetTVOut(int mode)
+{    
+    switch (xf86Info.consType)
+    {
+#ifdef PCCONS_SUPPORT
+	case PCCONS:{
+
+	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_TV_ON, &mode) < 0)
+	    {
+		ErrorF("xf86SetTVOut: Could not set console to TV output, %s\n", strerror(errno));
+	    }
+	}
+	break;
+#endif /* PCCONS_SUPPORT */
+
+	default:
+	    FatalError("Xf86SetTVOut: Unsupported console\n");
+	    break; 
+    }
+    return;
+}
+
+void
+xf86SetRGBOut()
+{    
+    switch (xf86Info.consType)
+    {
+#ifdef PCCONS_SUPPORT
+	case PCCONS:{
+	    
+	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_TV_OFF, 0) < 0)
+	    {
+		ErrorF("xf86SetTVOut: Could not set console to RGB output, %s\n", strerror(errno));
+	    }
+	}
+	break;
+#endif /* PCCONS_SUPPORT */
+
+	default:
+	    FatalError("Xf86SetTVOut: Unsupported console\n");
+	    break; 
+    }
+    return;
+}
+
+
+#if 0
+/*
+ * XXX This is here for reference.  It needs to be handled differently for the
+ * ND.
+ */
 #if defined(USE_ARC_MMAP) || defined(__arm32__)
 
 #ifdef USE_ARM32_MMAP
@@ -662,84 +742,4 @@ int ScreenNum;
 }
 
 #endif /* USE_ARC_MMAP || USE_ARM32_MMAP */
-
-/***************************************************************************/
-/* Interrupt Handling section                                              */
-/***************************************************************************/
-
-Bool 
-xf86DisableInterrupts()
-{
-
-#if !defined(__mips__) && !defined(__arm32__)
-#ifdef __GNUC__
-	__asm__ __volatile__("cli");
-#else 
-	asm("cli");
-#endif /* __GNUC__ */
-#endif /* !__mips__ && !__arm32__ */
-
-	return(TRUE);
-}
-
-void 
-xf86EnableInterrupts()
-{
-
-#if !defined(__mips__) && !defined(__arm32__)
-#ifdef __GNUC__
-	__asm__ __volatile__("sti");
-#else 
-	asm("sti");
-#endif /* __GNUC__ */
-#endif /* !__mips__ && !__arm32__ */
-
-	return;
-}
-
-/***************************************************************************/
-/* Set TV output mode                                                      */
-/***************************************************************************/
-void xf86SetTVOut(int mode)
-{    
-    switch (xf86Info.consType)
-    {
-#ifdef PCCONS_SUPPORT
-	case PCCONS:{
-
-	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_TV_ON, &mode) < 0)
-	    {
-		ErrorF("xf86SetTVOut: Could not set console to TV output, %s\n", strerror(errno));
-	    }
-	}
-	break;
-#endif /* PCCONS_SUPPORT */
-
-	default:
-	    FatalError("Xf86SetTVOut: Unsupported console\n");
-	    break; 
-    }
-    return;
-}
-
-void xf86SetRGBOut()
-{    
-    switch (xf86Info.consType)
-    {
-#ifdef PCCONS_SUPPORT
-	case PCCONS:{
-	    
-	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_TV_OFF, 0) < 0)
-	    {
-		ErrorF("xf86SetTVOut: Could not set console to RGB output, %s\n", strerror(errno));
-	    }
-	}
-	break;
-#endif /* PCCONS_SUPPORT */
-
-	default:
-	    FatalError("Xf86SetTVOut: Unsupported console\n");
-	    break; 
-    }
-    return;
-}
+#endif

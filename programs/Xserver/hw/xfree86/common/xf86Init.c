@@ -1,39 +1,17 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.73.2.46 1998/07/19 13:21:53 dawes Exp $ */
+
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.75 1998/04/05 00:45:53 robin Exp $
+ * Copyright 1991-1998 by The XFree86 Project, Inc.
  *
- * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
+ * Loosely based on code bearing the following copyright:
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Thomas Roell not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Thomas Roell makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
- *
- * THOMAS ROELL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THOMAS ROELL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ *   Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  */
-/* $XConsortium: xf86Init.c /main/37 1996/10/23 18:43:39 kaleb $ */
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #else
 extern int atoi();
-#endif
-
-#if !defined(AMOEBA) && !defined(MINIX)
-#if defined(Lynx) || defined(ISC)
-#include <sys/types.h>
-#endif
-#include <sys/wait.h>
 #endif
 
 #define NEED_EVENTS
@@ -47,8 +25,14 @@ extern int atoi();
 
 #include "compiler.h"
 
+#ifdef XFree86LOADER
+#include "loaderProcs.h"
+#endif
+
+#define XF86_OS_PRIVS
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
+#include "xf86Config.h"
 #include "xf86_OSlib.h"
 #include "xf86Version.h"
 #include "mipointer.h"
@@ -56,7 +40,6 @@ extern int atoi();
 #ifdef XINPUT
 #include "XI.h"
 #include "XIproto.h"
-#include "xf86_Config.h"
 #include "xf86Xinput.h"
 #else
 #include "inputstr.h"
@@ -69,89 +52,35 @@ extern int atoi();
 extern int xtest_command_key;
 #endif /* XTESTEXT1 */
 
-#ifdef __EMX__
-#define seteuid(x) /*nothing*/
-#define setruid(x) /*nothing*/
+#ifdef PC98
+#include "pc98_vers.h"
 #endif
 
-extern void xf86WrapperInit(void);
-#ifdef XFree86LOADER
-extern void LoaderInit(void);
-#endif
 
-/* xf86Exiting is set while the screen is shutting down (even on a reset) */
-Bool xf86Exiting = FALSE;
-Bool xf86Resetting = FALSE;
-Bool xf86ProbeFailed = TRUE;
-Bool xf86FlipPixels = FALSE;
-#ifdef XF86VIDMODE
-Bool xf86VidModeEnabled = TRUE;
-Bool xf86VidModeAllowNonLocal = FALSE;
-#endif
-#ifdef XF86MISC
-Bool xf86MiscModInDevEnabled = TRUE;
-Bool xf86MiscModInDevAllowNonLocal = FALSE;
-#endif
-Bool xf86AllowMouseOpenFail = FALSE;
-PciProbeType xf86PCIFlags = PCIProbe1;
-Bool xf86ScreensOpen = FALSE;
-int xf86Verbose = 1;
-Bool xf86fpFlag = FALSE;
-Bool xf86coFlag = FALSE;
-Bool xf86sFlag = FALSE;
-Bool xf86ProbeOnly = FALSE;
-Bool xf86ShowUnresolved = FALSE;
-char xf86ConfigFile[PATH_MAX] = "";
-int  xf86bpp = -1;
-xrgb xf86weight = { 0, 0, 0 } ;	/* RGB weighting at 16 bpp */
-double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
-unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
-char *xf86ServerName = NULL;
-Bool xf86BestRefresh = FALSE;
+/* forward declarations */
 
-int   vgaIOBase = 0x3d0;
-int   vgaCRIndex = 0x3d4;
-int   vgaCRReg = 0x3d5;
+static void xf86PrintBanner(void);
+static void xf86RunVtInit(void);
 
-void xf86PrintBanner(
-#if NeedFunctionPrototypes
-	void
-#endif
-	);
-static void xf86PrintConfig(
-#if NeedFunctionPrototypes
-	void
-#endif
-	);
 #ifdef DO_CHECK_BETA
-void xf86CheckBeta(
-#if NeedFunctionPrototypes
-	int,
-	char *
-#endif
-	);
 static int extraDays = 0;
 static char *expKey = NULL;
 #endif
 
-extern ScrnInfoPtr xf86Screens[];
-extern int xf86MaxScreens;
-/* argh if you include <math.h> it redefines MINSHORT and MAXSHORT */
-#if NeedFunctionPrototypes
-extern double pow(double,double);
-#else
-extern double pow();
+#ifdef XFree86LOADER
+static Bool xf86LoadModules(char **list, pointer *);
 #endif
-#ifdef USE_XF86_SERVERLOCK
-extern void xf86UnlockServer();
-#endif
+
 #ifdef __EMX__
 extern void os2ServerVideoAccess();
 #endif
 
-xf86InfoRec xf86Info;
-int         xf86ScreenIndex;
-int         xf86PixmapIndex;
+char xf86ConfigFile[PATH_MAX + 1] = {0,};
+
+static char *baseModules[] = {
+	"bitmap",
+	NULL
+};
 
 /*
  * InitOutput --
@@ -161,45 +90,56 @@ int         xf86PixmapIndex;
  */
 
 void
-InitOutput(pScreenInfo, argc, argv)
-     ScreenInfo	*pScreenInfo;
-     int     	argc;
-     char    	**argv;
+InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 {
-  int                    i, j, scr_index;
+  int                    i, j, k, scr_index;
   static int             numFormats = 0;
   static PixmapFormatRec formats[MAXFORMATS];
   static unsigned long   generation = 0;
-  int                    any_screens = 0;
-   
+#ifdef XFree86LOADER
+  char                   **modulelist;
+  pointer                *optionlist;
+#endif
+  screenLayoutPtr	layout;
+  
 #ifdef __EMX__
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
 #endif
 
+#ifdef TESTLOADER
+  /* XXX Should use a standalone loader test program */
+  {
+    pointer p[3];
+    int errmaj, errmin;
+
+    LoaderInit();
+    ErrorF("Loading test1, 1\n");
+    p[0] = LoadModule("test1", TESTLOADERPATH, NULL, &errmaj, &errmin);
+    ErrorF("Loading test1, 2\n");
+    p[1] = LoadModule("test1", TESTLOADERPATH, NULL, &errmaj, &errmin);
+    ErrorF("Loading test1, 3\n");
+    p[2] = LoadModule("test1", TESTLOADERPATH, NULL, &errmaj, &errmin);
+    ErrorF("Unloading test1, 2\n");
+    UnloadModule(p[1]);
+    ErrorF("Unloading test1, 3\n");
+    UnloadModule(p[2]);
+    ErrorF("Unloading test1, 1\n");
+    UnloadModule(p[0]);
+    exit(0);
+  }
+#endif
+
+
+  /* Do this early? */
+  if (generation != serverGeneration) {
+      xf86ScreenIndex = AllocateScreenPrivateIndex();
+      xf86PixmapIndex = AllocatePixmapPrivateIndex();
+      generation = serverGeneration;
+  }
+
   if (serverGeneration == 1) {
 
-    /*
-     * These four values really need to be specific to a screen, rather than
-     * to a display.
-     */
-    pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
-    pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
-    /*
-     * The following two values are OK for most XFree86 screens, except for
-     * 1bpp and 4bpp, which are setup differently.  But this is for the driver
-     * to deal with.
-     */
-    pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
-    pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
-
-    xf86WrapperInit();
-#ifdef XFree86LOADER
-    LoaderInit();
-#endif
-    if (generation != serverGeneration) {
-	xf86PixmapIndex = AllocatePixmapPrivateIndex();
-    }
-
+    pScreenInfo->numScreens = 0;
 
     if ((xf86ServerName = strrchr(argv[0], '/')) != 0)
       xf86ServerName++;
@@ -212,119 +152,301 @@ InitOutput(pScreenInfo, argc, argv)
 
     xf86PrintBanner();
 
-    xf86PrintConfig();
-
+    /* Read and parse the config file */
+    if( ! xf86HandleConfigFile() ) {
+      ErrorF("Error from xf86HandleConfigFile()\n");
+      return;
+    }
+    
     xf86OpenConsole();
 
-#if !defined(AMOEBA) && !defined(MINIX)
-    /*
-     * If VTInit was set, run that program with consoleFd as stdin and stdout
-     */
-
-    if (xf86Info.vtinit) {
-      switch(fork()) {
-        case -1:
-          FatalError("Fork failed for VTInit (%s)\n", strerror(errno));
-          break;
-        case 0:  /* child */
-          setuid(getuid());
-          /* set stdin, stdout to the consoleFd */
-          for (i = 0; i < 2; i++) {
-            if (xf86Info.consoleFd != i) {
-              close(i);
-              dup(xf86Info.consoleFd);
-            }
-          }
-          execl("/bin/sh", "sh", "-c", xf86Info.vtinit, NULL);
-          ErrorF("Warning: exec of /bin/sh failed for VTInit (%s)\n",
-                 strerror(errno));
-          exit(255);
-          break;
-        default:  /* parent */
-          wait(NULL);
-      }
-    }
-#endif /* !AMOEBA && !MINIX */
+    /* Run an external VT Init program if specified in the config file */
+    xf86RunVtInit();
 
     /* Do this after XF86Config is read (it's normally in OsInit()) */
     OsInitColors();
 
-    for (i=0; i<256; i++) {
-       xf86rGammaMap[i] = (int)(pow(i/255.0,xf86rGamma)*255.0+0.5);
-       xf86gGammaMap[i] = (int)(pow(i/255.0,xf86gGamma)*255.0+0.5);
-       xf86bGammaMap[i] = (int)(pow(i/255.0,xf86bGamma)*255.0+0.5);
-    }
+    /* Enable full I/O access */
+    xf86EnableIO();
 
-    xf86Config(TRUE); /* Probe displays, and resolve modes */
+    /* Do a general bus probe.  This will be a PCI probe for x86 platforms */
+    xf86BusProbe();
 
-#ifdef XKB
-    xf86InitXkb();
+#ifdef XFree86LOADER
+    /* Initialise the loader */
+    LoaderInit();
+
+    /* Force load mandatory base modules */
+    xf86LoadModules(baseModules, NULL);
+    
+    /* Load all modules specified explicitly in the config file */
+    if ((modulelist = xf86ModulelistFromConfig(&optionlist)))
+      xf86LoadModules(modulelist, optionlist);
+
+    /* Load all driver modules specified in the config file */
+    if ((modulelist = xf86DriverlistFromConfig()))
+      xf86LoadModules(modulelist, NULL);
+
+    /*
+     * It is expected that xf86AddDriver() will be called for each driver
+     * as it is loaded.  xf86AddDriver() saves the module pointers for
+     * drivers.  XXX Nothing keeps track of them for other modules.
+     */
+    /* XXX What do we do if all of these couldn't be loaded? */
 #endif
 
     /*
-     * collect all possible formats
+     * At this point, xf86DriverList[] is all filled in with entries for
+     * each of the drivers to try and xf86NumDrivers has the number of
+     * drivers.  If there are none, return now.
      */
-    formats[0].depth = 1;
-    formats[0].bitsPerPixel = 1;
-    formats[0].scanlinePad = BITMAP_SCANLINE_PAD;
-    numFormats++;
 
-    for ( i=0;
-          i < xf86MaxScreens && xf86Screens[i] && xf86Screens[i]->configured;
-          i++ )
-      { 
-	/*
-	 * At least one probe function succeeded.
-	 */
-	any_screens = 1;
+    if (xf86NumDrivers == 0) {
+      ErrorF("No drivers available\n");
+      return;
+    }
 
-	/*
-	 * add new pixmap format
-	 */
-	for ( j=0; j < numFormats; j++ ) {
-	  
-	  if (formats[j].depth == xf86Screens[i]->depth &&
-	      formats[j].bitsPerPixel == xf86Screens[i]->bitsPerPixel)
-	    break; /* found */
-        }
-	  
-        if (j == numFormats) {   /* not already there */
-	  formats[j].depth = xf86Screens[i]->depth;
-	  formats[j].bitsPerPixel = xf86Screens[i]->bitsPerPixel;
-	  formats[j].scanlinePad = BITMAP_SCANLINE_PAD;
-	  numFormats++;
-	  if ( numFormats > MAXFORMATS )
-	    FatalError( "Too many pixmap formats! Exiting\n" );
-        }
-      }
-    if (!any_screens)
-      if (xf86ProbeFailed)
-        ErrorF("\n *** None of the configured devices were detected.***\n\n");
+    /*
+     * Call each of the Identify functions.  The Identify functions print
+     * out some identifying information, and anything else that might be
+     * needed at this early stage.
+     */
+
+    for (i = 0; i < xf86NumDrivers; i++)
+      /* The Identify function is mandatory, but if it isn't there continue */
+      if (xf86DriverList[i]->Identify != NULL)
+	xf86DriverList[i]->Identify(0);
       else
-        ErrorF(
-         "\n *** A configured device found, but display modes could not be resolved.***\n\n");
+        ErrorF("Warning: driver `%s' has no Identify function\n",
+	       xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
+					     : "noname");
+
+    /*
+     * Now call each of the Probe functions.  Each successful probe will
+     * result in an extra entry added to the xf86Screens[] list for each
+     * instance of the hardware found.
+     */
+
+    for (i = 0; i < xf86NumDrivers; i++)
+      if (xf86DriverList[i]->Probe != NULL)
+	xf86DriverList[i]->Probe(xf86DriverList[i], 0);
+      else
+        ErrorF("Warning: driver `%s' has no Probe function (ignoring)\n",
+	       xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
+					     : "noname");
+
+    /*
+     * If nothing was detected, return now.
+     */
+
+    if (xf86NumScreens == 0) {
+      ErrorF("No devices detected\n");
+      return;
+    }
+
+    /*
+     * Match up the screens found by the probes against those specified
+     * in the config file.  Remove the ones that won't be used.  Sort
+     * them in the order specified.
+     */
+
+    /*
+     * What is the best way to do this?
+     *
+     * For now, go through the screens allocated by the probes, and
+     * look for screen config entry which refers to the same device
+     * section as picked out by the probe.
+     *
+     * Should the screen sorting (ie assignment of screen number) go here
+     * or elsewhere?
+     */
+
+    for (i = 0; i < xf86NumScreens; i++) {
+      for (layout = xf86ConfigLayout; layout->screen != NULL; layout++) {
+	if (xf86Screens[i]->device == layout->screen->device) {
+	  /* A match has been found */
+	  xf86Screens[i]->confScreen = layout->screen;
+	  break;
+	}
+      }
+      if (layout->screen == NULL) {
+	/* No match found */
+ErrorF("Screen deleted because of no matching config section\n");
+        xf86DeleteScreen(i--, 0);
+      }
+    }
+
+    /*
+     * If no screens left, return now.
+     */
+
+    if (xf86NumScreens == 0) {
+      ErrorF("Device(s) detected, but none match those in the config file\n");
+      return;
+    }
+
+    /*
+     * Prune the set of monitor modes for each monitor that is referenced
+     * by a screen section.
+     *
+     * XXX Probably best to do this here than elsewhere?
+     */
+
+    for (i = 0; i < xf86NumScreens; i++) {
+	xf86PruneMonitorModes(xf86Screens[i]->confScreen->monitor);
+    }
+
+    for (i = 0; i < xf86NumScreens; i++)
+      if (!xf86Screens[i]->PreInit(xf86Screens[i], 0))
+        xf86DeleteScreen(i--, 0);
+
+    /*
+     * If no screens left, return now.
+     */
+
+    if (xf86NumScreens == 0) {
+      ErrorF("Screen(s) found, but none have a usable configuration\n");
+      return;
+    }
+
+    /* This could be moved into a separate function */
+
+    /*
+     * Check that all screens have initialised the mandatory function
+     * entry points.  Delete those which have not.
+     */
+
+#define WARN_SCREEN(func) \
+    ErrorF("Warning: driver `%s' has no %s function, deleting\n", \
+	   xf86Screens[i]->name, (warned++, func))
+
+    for (i = 0; i < xf86NumScreens; i++) {
+      int warned = 0;
+      if (xf86Screens[i]->name == NULL) {
+	xf86Screens[i]->name = (char *)xnfalloc(strlen("screen") + 1 + 1);
+	if (i < 10)
+	  sprintf(xf86Screens[i]->name, "screen%c", i + '0');
+	else
+	  sprintf(xf86Screens[i]->name, "screen%c", i - 10 + 'A');
+	ErrorF("Warning: screen driver %d has no name set, using `%s'\n",
+	       i, xf86Screens[i]->name);
+      }
+      if (xf86Screens[i]->Probe == NULL)
+	WARN_SCREEN("Probe");
+      if (xf86Screens[i]->PreInit == NULL)
+	WARN_SCREEN("PreInit");
+      if (xf86Screens[i]->ScreenInit == NULL)
+	WARN_SCREEN("ScreenInit");
+      if (xf86Screens[i]->EnterVT == NULL)
+	WARN_SCREEN("EnterVT");
+      if (xf86Screens[i]->LeaveVT == NULL)
+	WARN_SCREEN("LeaveVT");
+      if (warned)
+	xf86DeleteScreen(i--, 0);
+    }
+
+    /*
+     * If no screens left, return now.
+     */
+
+    if (xf86NumScreens == 0) {
+      ErrorF("Screen(s) found, but drivers were unusable\n");
+      return;
+    }
+
+    /* XXX Should this be before or after loading dependent modules? */
     if (xf86ProbeOnly)
     {
-      xf86VTSema = FALSE;
       OsCleanup();
       AbortDDX();
       fflush(stderr);
       exit(0);
     }
-  }
-  else {
+
+#ifdef XFree86LOADER
+    /* Remove (unload) drivers that are not required */
+    for (i = 0; i < xf86NumDrivers; i++)
+	if (xf86DriverList[i] && xf86DriverList[i]->refCount <= 0)
+	    xf86DeleteDriver(i);
+#endif
+
+#ifdef XFree86LOADER
+    if (LoaderCheckUnresolved(0, LD_RESOLV_IFDONE)) {
+	/* For now, just a warning */
+	xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
+    }
+#endif
+
+    /*
+     * At this stage we know how many screens there are.
+     */
+
+    for (i = 0; i < xf86NumScreens; i++)
+      xf86InitViewport(xf86Screens[i]);
+
+    /*
+     * Collect all pixmap formats and check for conflicts at the display
+     * level.  Should we die here?  Or just delete the offending screens?
+     * Also, should this be done for -probeonly?
+     */
+    for (i = 0; i < xf86NumScreens; i++) {
+	if (xf86Screens[i]->imageByteOrder !=
+	    xf86Screens[0]->imageByteOrder)
+	    FatalError("Inconsistent display bitmapBitOrder.  Exiting\n");
+	if (xf86Screens[i]->bitmapScanlinePad !=
+	    xf86Screens[0]->bitmapScanlinePad)
+	    FatalError("Inconsistent display bitmapScanlinePad.  Exiting\n");
+	if (xf86Screens[i]->bitmapScanlineUnit !=
+	    xf86Screens[0]->bitmapScanlineUnit)
+	    FatalError("Inconsistent display bitmapScanlineUnit.  Exiting\n");
+	if (xf86Screens[i]->bitmapBitOrder !=
+	    xf86Screens[0]->bitmapBitOrder)
+	    FatalError("Inconsistent display bitmapBitOrder.  Exiting\n");
+
+	/*
+	 * Collect pixmap formats
+	 */
+	for (j = 0; j < xf86Screens[i]->numFormats; j++) {
+	    for (k = 0; ; k++) {
+		if (k >= numFormats) {
+		    if (k >= MAXFORMATS)
+			FatalError("Too many pixmap formats!  Exiting\n");
+		    formats[k] = xf86Screens[i]->formats[j];
+		    numFormats++;
+		    break;
+		}
+		if (formats[k].depth == xf86Screens[i]->formats[j].depth) {
+		    if ((formats[k].bitsPerPixel ==
+			 xf86Screens[i]->formats[j].bitsPerPixel) &&
+		        (formats[k].scanlinePad ==
+			 xf86Screens[i]->formats[j].scanlinePad))
+			break;
+		    FatalError("Inconsistent pixmap format for depth %d."
+			       "  Exiting\n", formats[k].depth);
+		}
+	    }
+	}
+    }
+
+#ifdef XKB
+    xf86InitXkb();
+#endif
+
+  } else {
     /*
      * serverGeneration != 1; some OSs have to do things here, too.
      */
     xf86OpenConsole();
+    /* Make sure full I/O access is enabled */
+    xf86EnableIO();
   }
 
   /*
    * Install signal handler for unexpected signals
    */
+  xf86Info.caughtSignal=FALSE;
   if (!xf86Info.notrapSignals)
   {
-     xf86Info.caughtSignal=FALSE;
      signal(SIGSEGV,xf86SigHandler);
      signal(SIGILL,xf86SigHandler);
 #ifdef SIGEMT
@@ -345,71 +467,71 @@ InitOutput(pScreenInfo, argc, argv)
 #endif
   }
 
-
   /*
-   * Use the previous collected parts to setup pScreenInfo
+   * Use the previously collected parts to setup pScreenInfo
    */
+
+  pScreenInfo->imageByteOrder = xf86Screens[0]->imageByteOrder;
+  pScreenInfo->bitmapScanlinePad = xf86Screens[0]->bitmapScanlinePad;
+  pScreenInfo->bitmapScanlineUnit = xf86Screens[0]->bitmapScanlineUnit;
+  pScreenInfo->bitmapBitOrder = xf86Screens[0]->bitmapBitOrder;
   pScreenInfo->numPixmapFormats = numFormats;
-  for ( i=0; i < numFormats; i++ ) pScreenInfo->formats[i] = formats[i];
+  for (i = 0; i < numFormats; i++)
+    pScreenInfo->formats[i] = formats[i];
 
-  if (generation != serverGeneration)
-    {
-      xf86ScreenIndex = AllocateScreenPrivateIndex();
-      generation = serverGeneration;
-    }
-
-
-  for ( i=0;
-        i < xf86MaxScreens && xf86Screens[i] && xf86Screens[i]->configured;
-        i++ )
-    {    
-      /*
-       * On a server-reset, we have explicitely to remap all stuff ...
-       * (At startuptime this is implicitely done by probing the device
-       */
-      if (serverGeneration != 1)
-        {
-          xf86Resetting = TRUE;
-          xf86Exiting = FALSE;
+  /* Make sure the server's VT is active */
+    
+  if (serverGeneration != 1) {
+    xf86Resetting = TRUE;
+    xf86Exiting = FALSE;
 #ifdef HAS_USL_VTS
-          if (!xf86VTSema)
-            ioctl(xf86Info.consoleFd,VT_RELDISP,VT_ACKACQ);
+    /* All screens are in the same state, so just check the first */
+    if (!xf86Screens[0]->vtSema) {
+      ioctl(xf86Info.consoleFd, VT_RELDISP, VT_ACKACQ);
+    } 
 #endif
-          xf86VTSema = TRUE;
-          (xf86Screens[i]->EnterLeaveVT)(ENTER, i);
-          xf86Resetting = FALSE;
-        }
+  }
 #ifdef SCO
-        else {
-          /*
-           * Under SCO we must ack that we got the console at startup,
-           * I think this is the safest way to assure it
-           */
-          static int once = 1;
-          if (once) {
-            once = 0;
-            if (ioctl(xf86Info.consoleFd, VT_RELDISP, VT_ACKACQ) < 0)
-              ErrorF("VT_ACKACQ failed");
-          }
-        }
+  else {
+    /*
+     * Under SCO we must ack that we got the console at startup,
+     * I think this is the safest way to assure it.
+     */
+    static int once = 1;
+    if (once) {
+      once = 0;
+      if (ioctl(xf86Info.consoleFd, VT_RELDISP, VT_ACKACQ) < 0)
+        ErrorF("VT_ACKACQ failed");
+    }
+  }
 #endif /* SCO */
-      scr_index = AddScreen(xf86Screens[i]->Init, argc, argv);
-      if (scr_index > -1)
-      {
+
+  for (i = 0; i < xf86NumScreens; i++) {    
+      scr_index = AddScreen(xf86Screens[i]->ScreenInit, argc, argv);
+      if (scr_index == i) {
+	/*
+	 * Hook in our ScrnInfoRec, and initialise some other pScreen
+	 * fields.
+	 */
 	screenInfo.screens[scr_index]->devPrivates[xf86ScreenIndex].ptr
 	  = (pointer)xf86Screens[i];
+	xf86Screens[i]->pScreen = screenInfo.screens[scr_index];
+	/* The driver should set this, but make sure it is set anyway */
+	xf86Screens[i]->vtSema = TRUE;
+      } else {
+	/* This shouldn't normally happen */
+	FatalError("AddScreen/ScreenInit failed for driver %d\n", i);
       }
 
+#ifdef NOT_USED
       /*
        * Here we have to let the driver getting access of the VT. Note that
        * this doesn't mean that the graphics board may access automatically
        * the monitor. If the monitor is shared this is done in xf86CrossScreen!
        */
       if (!xf86Info.sharedMonitor) (xf86Screens[i]->EnterLeaveMonitor)(ENTER);
-    }
-
-    if( pScreenInfo->screens[0] && xf86bpp == -1 ) 
-	xf86bpp = pScreenInfo->screens[0]->rootDepth;
+#endif
+  }
 
 #ifndef AMOEBA
   RegisterBlockAndWakeupHandlers(xf86Block, xf86Wakeup, (void *)0);
@@ -466,11 +588,13 @@ InitInput(argc, argv)
  *      is called by dix before establishing the well known sockets.
  */
  
-extern Bool OsDelayInitColors;
-
 void
 OsVendorInit()
 {
+  /* Init the libc wrappers */
+  xf86WrapperInit();
+
+
 #ifdef SIGCHLD
   signal(SIGCHLD, SIG_DFL);	/* Need to wait for child processes */
 #endif
@@ -484,70 +608,11 @@ OsVendorInit()
   }
 #endif
   OsDelayInitColors = TRUE;
-}
-
-#ifdef DPMSExtension
-/*
- * DPMSSet --
- *	Device dependent DPMS mode setting hook.  This is called whenever
- *	the DPMS mode is to be changed.
- */
-void
-DPMSSet(CARD16 level)
-{
-    int i;
-
-    /* For each screen, set the power saver level */
-    for (i = 0; i < screenInfo.numScreens; i++) {
-	(XF86SCRNINFO(screenInfo.screens[i])->DPMSSet)(level);
-    }
-
-    DPMSPowerLevel = level;
-}
-
-#if 0
-/*
- * DPMSGet --
- *	Device dependent DPMS mode getting hook.  This returns the current
- *	DPMS mode, or -1 if DPMS is not supported.
- *
- *	This should hook in to the appropriate driver-level function, which
- *	will be added to the ScrnInfoRec.
- *
- *	NOTES:
- *	 1. the calling interface should be changed to specify which
- *	    screen to check.
- *	 2. It isn't clear that this function is ever used.
- */
-CARD16
-DPMSGet(CARD16 *level)
-{
-    int i;
-
-    /* For each screen, set the power saver level */
-    for (i = 0; i < screenInfo.numScreens; i++) {
-	 ;
-    }
-}
+#ifdef XFree86LOADER
+  loadableFonts = TRUE;
 #endif
 
-/*
- * DPMSSupported --
- *	Return TRUE if any screen supports DPMS.
- */
-Bool
-DPMSSupported(void)
-{
-    int i;
-
-    /* For each screen, check if DPMS is supported */
-    for (i = 0; i < screenInfo.numScreens; i++) {
-	if (XF86SCRNINFO(screenInfo.screens[i])->DPMSSet != (void (*)(int))NoopDDA)
-	    return TRUE;
-    }
-    return FALSE;
 }
-#endif /* DPMSExtension */
 
 /*
  * ddxGiveUp --
@@ -594,8 +659,10 @@ AbortDDX()
   /*
    * try to deinitialize all input devices
    */
-  if (xf86Info.pMouse) (xf86Info.mouseDev->mseProc)(xf86Info.pMouse, DEVICE_CLOSE);
-  if (xf86Info.pKeyboard) (xf86Info.kbdProc)(xf86Info.pKeyboard, DEVICE_CLOSE);
+  if (xf86Info.pMouse)
+    (xf86Info.mouseDev->mseProc)(xf86Info.pMouse, DEVICE_CLOSE);
+  if (xf86Info.pKeyboard)
+    (xf86Info.kbdProc)(xf86Info.pKeyboard, DEVICE_CLOSE);
 
   /*
    * try to restore the original video state
@@ -604,14 +671,12 @@ AbortDDX()
   /* Need the sleep when starting X from within another X session */
   sleep(1);
 #endif
-  if (xf86VTSema && xf86ScreensOpen)
-    for ( i=0;
-          i < xf86MaxScreens && xf86Screens[i] && xf86Screens[i]->configured;
-          i++ )
-      (xf86Screens[i]->EnterLeaveVT)(LEAVE, i);
+  for (i = 0; i < xf86NumScreens; i++)
+    if (xf86Screens[i]->vtSema)
+      (xf86Screens[i]->LeaveVT)(i, 0);
 
   /*
-   * This is needed for a abnormal server exit, since the normal exit stuff
+   * This is needed for an abnormal server exit, since the normal exit stuff
    * MUST also be performed (i.e. the vt must be left in a defined state)
    */
   ddxGiveUp();
@@ -633,16 +698,19 @@ OsVendorFatalError()
 
 /* ARGSUSED */
 int
-ddxProcessArgument (argc, argv, i)
-     int argc;
-     char *argv[];
-     int i;
+ddxProcessArgument(int argc, char **argv, int i)
 {
+  /*
+   * Note: can't use xalloc/xfree here because OsInit() hasn't been called
+   * yet.  Use malloc/free instead.
+   */
+
   if (getuid() == 0 && !strcmp(argv[i], "-xf86config"))
   {
+    int len;
     if (!argv[i+1])
       return 0;
-    if (strlen(argv[i+1]) >= PATH_MAX)
+    if ((len = strlen(argv[i+1]) >= PATH_MAX))
       FatalError("XF86Config path name too long\n");
     strcpy(xf86ConfigFile, argv[i+1]);
     return 2;
@@ -718,7 +786,6 @@ ddxProcessArgument (argc, argv, i)
   if (!strcmp(argv[i],"-showconfig") || !strcmp(argv[i],"-version"))
   {
     xf86PrintBanner();
-    xf86PrintConfig();
     exit(0);
   }
   /* Notice the -fp flag, but allow it to pass to the dix layer */
@@ -739,7 +806,6 @@ ddxProcessArgument (argc, argv, i)
     xf86sFlag = TRUE;
     return 0;
   }
-#ifndef XF86MONOVGA
   if (!strcmp(argv[i], "-bpp"))
   {
     int bpp;
@@ -747,7 +813,39 @@ ddxProcessArgument (argc, argv, i)
       return 0;
     if (sscanf(argv[i], "%d", &bpp) == 1)
     {
-      xf86bpp = bpp;
+      xf86Bpp = bpp;
+      return 2;
+    }
+    else
+    {
+      ErrorF("Invalid bpp\n");
+      return 0;
+    }
+  }
+  if (!strcmp(argv[i], "-fbbpp"))
+  {
+    int bpp;
+    if (++i >= argc)
+      return 0;
+    if (sscanf(argv[i], "%d", &bpp) == 1)
+    {
+      xf86FbBpp = bpp;
+      return 2;
+    }
+    else
+    {
+      ErrorF("Invalid fbbpp\n");
+      return 0;
+    }
+  }
+  if (!strcmp(argv[i], "-depth"))
+  {
+    int depth;
+    if (++i >= argc)
+      return 0;
+    if (sscanf(argv[i], "%d", &depth) == 1)
+    {
+      xf86Depth = depth;
       return 2;
     }
     else
@@ -763,9 +861,9 @@ ddxProcessArgument (argc, argv, i)
       return 0;
     if (sscanf(argv[i], "%1d%1d%1d", &red, &green, &blue) == 3)
     {
-      xf86weight.red = red;
-      xf86weight.green = green;
-      xf86weight.blue = blue;
+      xf86Weight.red = red;
+      xf86Weight.green = green;
+      xf86Weight.blue = blue;
       return 2;
     }
     else
@@ -785,15 +883,29 @@ ddxProcessArgument (argc, argv, i)
 	  ErrorF("gamma out of range, only  0.1 < gamma_value < 10  is valid\n");
 	  return 0;
        }
-       if (!strcmp(argv[i-1], "-gamma")) 
-	  xf86rGamma = xf86gGamma = xf86bGamma = 1.0 / gamma;
-       else if (!strcmp(argv[i-1], "-rgamma")) xf86rGamma = 1.0 / gamma;
-       else if (!strcmp(argv[i-1], "-ggamma")) xf86gGamma = 1.0 / gamma;
-       else if (!strcmp(argv[i-1], "-bgamma")) xf86bGamma = 1.0 / gamma;
+       if (!strcmp(argv[i-1], "-gamma"))
+	  xf86Gamma.red = xf86Gamma.green = xf86Gamma.blue = gamma;
+       else if (!strcmp(argv[i-1], "-rgamma")) xf86Gamma.red = gamma;
+       else if (!strcmp(argv[i-1], "-ggamma")) xf86Gamma.green = gamma;
+       else if (!strcmp(argv[i-1], "-bgamma")) xf86Gamma.blue = gamma;
        return 2;
     }
   }
-#endif /* XF86MONOVGA */
+  if (!strcmp(argv[i], "-layout"))
+  {
+    if (++i >= argc)
+      return 0;
+    xf86LayoutName = argv[i];
+    return 2;
+  }
+  if (!strcmp(argv[i], "-screen"))
+  {
+    if (++i >= argc)
+      return 0;
+    xf86ScreenName = argv[i];
+    return 2;
+  }
+  /* OS-specific processing */
   return xf86ProcessArgument(argc, argv, i);
 }
 
@@ -815,14 +927,16 @@ ddxUseMsg()
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose               verbose startup messages\n");
   ErrorF("-quiet                 minimal startup messages\n");
-#ifndef XF86MONOVGA
   ErrorF("-bpp n                 set number of bits per pixel. Default: 8\n");
+  ErrorF("-fbbpp n               set bpp for the framebuffer. Default: 8\n");
+  ErrorF("-depth n               set colour depth. Default: 8\n");
   ErrorF("-gamma f               set gamma value (0.1 < f < 10.0) Default: 1.0\n");
   ErrorF("-rgamma f              set gamma value for red phase\n");
   ErrorF("-ggamma f              set gamma value for green phase\n");
   ErrorF("-bgamma f              set gamma value for blue phase\n");
   ErrorF("-weight nnn            set RGB weighting at 16 bpp.  Default: 565\n");
-#endif /* XF86MONOVGA */
+  ErrorF("-layout name           specify the ServerLayout section name\n");
+  ErrorF("-screen name           specify the Screen section name\n");
   ErrorF("-flipPixels            swap default black/white Pixel values\n");
 #ifdef XF86VIDMODE
   ErrorF("-disableVidMode        disable mode adjustments with xvidtune\n");
@@ -834,9 +948,9 @@ ddxUseMsg()
   ErrorF("                       from non-local clients\n");
   ErrorF("-allowMouseOpenFail    start server even if the mouse can't be initialized\n");
 #endif
-  ErrorF("-bestRefresh           Chose modes with the best refresh rate\n");
-  ErrorF(
-   "-showconfig            show which drivers are included in the server\n");
+  ErrorF("-bestRefresh           chose modes with the best refresh rate\n");
+  ErrorF("-version               show the server version\n");
+  /* OS-specific usage */
   xf86UseMsg();
   ErrorF("\n");
 }
@@ -849,16 +963,10 @@ ddxUseMsg()
 #define OSVENDOR ""
 #endif
 
-void
+static void
 xf86PrintBanner()
 {
-#if defined(MetroLink)
-  ErrorF("\nMetro Link, Inc Version %s/ X Window System\n",METRO_VERSION);
-  ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
-         X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
-  ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
-#else
-  ErrorF("\nXFree86 Version%s/ X Window System\n",XF86_VERSION);
+  ErrorF("\nXFree86 Version%s/ X Window System\n", XF86_VERSION);
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
   ErrorF("Release Date: %s\n", XF86_DATE);
@@ -868,36 +976,82 @@ xf86PrintBanner()
 	 "reporting\n"
 	 "\tproblems.  (see http://www.XFree86.Org/FAQ)\n");
   ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
-#endif
 }
 
 static void
-xf86PrintConfig()
+xf86RunVtInit(void)
 {
-  int i;
+#if !defined(AMOEBA) && !defined(MINIX)
+    int i;
 
-  ErrorF("Configured drivers:\n");
-  for (i = 0; i < xf86MaxScreens; i++)
-    if (xf86Screens[i])
-      (xf86Screens[i]->PrintIdent)();
+    /*
+     * If VTInit was set, run that program with consoleFd as stdin and stdout
+     */
+
+    if (xf86Info.vtinit) {
+      switch(fork()) {
+      case -1:
+          FatalError("xf86RunVtInit: fork failed (%s)\n", strerror(errno));
+          break;
+      case 0:  /* child */
+          setuid(getuid());
+          /* set stdin, stdout to the consoleFd */
+          for (i = 0; i < 2; i++) {
+            if (xf86Info.consoleFd != i) {
+              close(i);
+              dup(xf86Info.consoleFd);
+            }
+          }
+          execl("/bin/sh", "sh", "-c", xf86Info.vtinit, NULL);
+          ErrorF("Warning: exec of /bin/sh failed for VTInit (%s)\n",
+                 strerror(errno));
+          exit(255);
+          break;
+      default:  /* parent */
+          wait(NULL);
+      }
+    }
+#endif /* !AMOEBA && !MINIX */
 }
 
-
-void
-xf86SetCurrentScreen(pScr)
-ScreenPtr pScr;
+#ifdef XFree86LOADER
+/*
+ * xf86LoadModules iterates over a list that is being passed in
+ * since LoadModule().
+ */             
+static Bool
+xf86LoadModules(char **list, pointer *optlist)
 {
-xf86Info.currentScreen = pScr;
-}
+    int errmaj, errmin;
+    pointer opt;
+    int i;
+    char *name;
 
-ScreenPtr
-xf86GetCurrentScreen()
-{
-return xf86Info.currentScreen;
-}
+    if (!list)
+	return TRUE;
 
-int
-xf86GetConsoleFD()
-{
-return xf86Info.consoleFd;
+    for (i = 0; list[i] != NULL; i++) {
+
+	/* Normalise the module name */
+	name = xf86NormalizeName(list[i]);
+
+	/* Skip empty names */
+	if (name == NULL || *name == '\0')
+	    continue;
+
+	if (optlist)
+	    opt = optlist[i];
+	else
+	    opt = NULL;
+
+        if (!LoadModule(name, xf86ModulePath, opt, &errmaj, &errmin)) {
+	    ErrorF("Failed to load module \"%s\"\n", name);
+	    xfree(name);
+            return FALSE;
+	}
+	xfree(name);
+    }
+    return TRUE;
 }
+#endif
+

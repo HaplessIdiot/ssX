@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.11 1996/08/23 11:04:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.12.4.3 1998/06/05 16:23:04 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -27,25 +27,18 @@
 
 #define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-void xf86SoundKbdBell(loudness, pitch, duration)
-int loudness;
-int pitch;
-int duration;
+void
+xf86SoundKbdBell(int loudness, int pitch, int duration)
 {
     	if (loudness && pitch)
 	{
-#ifdef CODRV_SUPPORT
-		struct kbd_sound s;
-#endif
 #ifdef PCCONS_SUPPORT
 		int data[2];
 #endif
@@ -57,14 +50,6 @@ int duration;
 		    	data[0] = pitch;
 		    	data[1] = (duration * loudness) / 50;
 		    	ioctl(xf86Info.consoleFd, CONSOLE_X_BELL, data);
-			break;
-#endif
-#ifdef CODRV_SUPPORT
-	    	case CODRV011:
-	    	case CODRV01X:
-		    	s.pitch = pitch;
-		    	s.duration = (duration * loudness) / 50;
-		    	ioctl(xf86Info.consoleFd, KBDSETBELL, &s);
 			break;
 #endif
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
@@ -79,20 +64,13 @@ int duration;
 	}
 }
 
-void xf86SetKbdLeds(leds)
-int leds;
+void
+xf86SetKbdLeds(int leds)
 {
 	switch (xf86Info.consType) {
 
 	case PCCONS:
 		break;
-#ifdef CODRV_SUPPORT
-	case CODRV011:
-	case CODRV01X:
-	        leds = (leds&0x01)<<2 | leds&0x02 | (leds&0x04)>>2;
-		ioctl(xf86Info.consoleFd, KBDSLEDS, &leds);
-		break;
-#endif
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	case SYSCONS:
 	case PCVT:
@@ -102,7 +80,8 @@ int leds;
 	}
 }
 
-int xf86GetKbdLeds()
+int
+xf86GetKbdLeds()
 {
 	int leds = 0;
 
@@ -110,13 +89,6 @@ int xf86GetKbdLeds()
 
 	case PCCONS:
 		break;
-#ifdef CODRV_SUPPORT
-	case CODRV011:
-	case CODRV01X:
-		ioctl(xf86Info.consoleFd, KBDGLEDS, &leds);
-	        leds = (leds&0x01)<<2 | leds&0x02 | (leds&0x04)>>2;
-		break;
-#endif
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	case SYSCONS:
 	case PCVT:
@@ -127,23 +99,13 @@ int xf86GetKbdLeds()
 	return(leds);
 }
 
-#if NeedFunctionPrototypes
-void xf86SetKbdRepeat(char rad)
-#else
-void xf86SetKbdRepeat(rad)
-char rad;
-#endif
+void
+xf86SetKbdRepeat(char rad)
 {
 	switch (xf86Info.consType) {
 
 	case PCCONS:
 		break;
-#ifdef CODRV_SUPPORT
-	case CODRV011:
-	case CODRV01X:
-		ioctl(xf86Info.consoleFd, KBDSTPMAT, &rad);
-		break;
-#endif
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	case SYSCONS:
 	case PCVT:
@@ -155,13 +117,11 @@ char rad;
 
 static struct termio kbdtty;
 
-void xf86KbdInit()
+void
+xf86KbdInit()
 {
 	switch (xf86Info.consType) {
 
-	case CODRV011:
-	case CODRV01X:
-		break;
 #if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	case PCCONS:
 	case SYSCONS:
@@ -172,15 +132,12 @@ void xf86KbdInit()
 	}
 }
 
-int xf86KbdOn()
+int
+xf86KbdOn()
 {
 	struct termios nTty;
 
 	switch (xf86Info.consType) {
-
-	case CODRV011:
-	case CODRV01X:
-		break;
 
 #if defined(SYSCONS_SUPPORT) || defined(PCCONS_SUPPORT) || defined(PCVT_SUPPORT)
 	case SYSCONS:
@@ -206,13 +163,10 @@ int xf86KbdOn()
 	return(xf86Info.consoleFd);
 }
 
-int xf86KbdOff()
+int
+xf86KbdOff()
 {
 	switch (xf86Info.consType) {
-
-	case CODRV011:
-	case CODRV01X:
-		break;
 
 #if defined (SYSCONS_SUPPORT) || defined (PCVT_SUPPORT)
 	case SYSCONS:
@@ -229,19 +183,20 @@ int xf86KbdOff()
 	return(xf86Info.consoleFd);
 }
 
-void xf86MouseInit(mouse)
-MouseDevPtr mouse;
+void
+xf86MouseInit(MouseDevPtr mouse)
 {
 	return;
 }
 
-int xf86MouseOn(mouse)
-MouseDevPtr mouse;
+int
+xf86MouseOn(MouseDevPtr mouse)
 {
 	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
 		if (xf86AllowMouseOpenFail) {
-			ErrorF("Cannot open mouse (%s) - Continuing...\n",
+			xf86Msg(X_WARNING,
+				"Cannot open mouse (%s) - Continuing...\n",
 				strerror(errno));
 			return(-2);
 		}

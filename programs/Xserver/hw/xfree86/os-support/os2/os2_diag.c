@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_diag.c,v 3.3 1997/07/06 05:31:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_diag.c,v 3.4 1997/07/19 05:43:17 dawes Exp $ */
 /*
  * (c) Copyright 1997 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -49,7 +49,7 @@
 #define INCL_DOSMODULEMGR
 #define INCL_DOSFILEMGR
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 #include <netdb.h>

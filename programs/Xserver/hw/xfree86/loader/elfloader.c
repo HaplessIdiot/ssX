@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.11 1998/03/20 21:07:01 hohndel Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.8.2.5 1998/07/04 13:32:43 dawes Exp $ */
 
 /*
  *
@@ -48,10 +45,7 @@
 
 #include "sym.h"
 #include "loader.h"
-#include "elfloader.h"
 
-#include "xf86.h"
-#include "xf86Priv.h"
 /*
 #ifndef LDTEST
 #define ELFDEBUG ErrorF
@@ -315,7 +309,7 @@ ELFModulePtr	elffile;
      */
     while(listCOMMON) {
 	common=listCOMMON;
-	/* this is xf86strdup because is should be more efficient. it is freed
+	/* this is xstrdup because is should be more efficient. it is freed
 	 * with xf86loaderfree
 	 */
 	lookup[l].symName = (char *)xf86loaderstrdup(ElfGetString(elffile,common->sym->st_name));
@@ -640,12 +634,22 @@ ELFModulePtr	elffile;
     ELFDEBUG( "ELFCreateGOT: %x entries in the GOT\n", elffile->gotsize/8 );
 #endif
 
-    if( elffile->gotsize == 0 ) return;
+#if ELFDEBUG
+    /*
+     * Hmmm. Someone is getting here without any got entries, but they
+     * may still have R_ALPHA_GPDISP relocations against the got.
+     */
+    if( elffile->gotsize == 0 ) 
+	ELFDEBUG( "Module %s doesn't have any GOT entries!\n",
+		_LoaderModuleToName(elffile->module) );
+#endif
+    if( elffile->gotsize == 0 ) elffile->gotsize=8;
 
     if ((elffile->got = xf86loadermalloc(elffile->gotsize)) == NULL) {
 	ErrorF( "ELFCreateGOT() Unable to allocate memory!!!!\n" );
 	return;
     }
+    elffile->sections[elffile->gotndx].sh_size=elffile->gotsize;
 #ifdef ELFDEBUG
     ELFDEBUG( "ELFCreateGOT: GOT address %lx\n", elffile->got );
 #endif
@@ -695,7 +699,7 @@ Elf_Rela	*rel;
 	{
 #if defined(i386)
 	case R_386_32:
-	    dest32=(unsigned long *)(secp+rel->r_offset);
+	    dest32=(unsigned int *)(secp+rel->r_offset);
 	    symval=ElfGetSymbolValue(elffile,
 				     ELF_R_SYM(rel->r_info));
 	    if( symval == 0 ) {
@@ -718,7 +722,7 @@ Elf_Rela	*rel;
 #endif
 	    break;
 	case R_386_PC32:
-	    dest32=(unsigned long *)(secp+rel->r_offset);
+	    dest32=(unsigned int *)(secp+rel->r_offset);
 	    symval=ElfGetSymbolValue(elffile,
 				     ELF_R_SYM(rel->r_info));
 	    if( symval == 0 ) {
@@ -893,6 +897,9 @@ Elf_Rela	*rel;
 	    }
 	  
 	case R_ALPHA_GPDISP:
+	    {
+	    long offset;
+
 	    dest32h=(unsigned int *)(secp+rel->r_offset);
 	    dest32=(unsigned int *)((secp+rel->r_offset)+rel->r_addend);
 
@@ -921,12 +928,17 @@ Elf_Rela	*rel;
 	    symval = (*dest32h & 0xffff) << 16 | (*dest32 & 0xffff);
 	    symval = (symval ^ 0x80008000) - 0x80008000;
 	    
+	    offset = ((unsigned char *)elffile->got - (unsigned char *)dest32h);
 #ifdef ELFDEBUG
 	    ELFDEBUG( "symval=%lx\t", symval );
-	    ELFDEBUG( "got-dest32=%lx\t", ((unsigned char *)elffile->got - (unsigned char *)dest32h) );
+	    ELFDEBUG( "got-dest32=%lx\t", offset );
 #endif
-	    symval += ((unsigned char *)elffile->got - (unsigned char *)dest32h);
 
+	    if( (offset >= 0x7fff8000L) || (offset < -0x80000000L) ) {
+		FatalError( "Offset overflow for R_ALPHA_GPDISP\n");
+	    }
+
+	    symval += (unsigned long)offset;
 #ifdef ELFDEBUG
 	    ELFDEBUG( "symval=%lx\t", symval );
 #endif
@@ -938,6 +950,7 @@ Elf_Rela	*rel;
 	    ELFDEBUG( "*dest32h=%8.8x\n", *dest32h );
 #endif
 	  break;
+	  }
 	  
 	case R_ALPHA_HINT:
 	    dest32=(unsigned int *)((secp+rel->r_offset)+rel->r_addend);
@@ -1804,7 +1817,6 @@ LOOKUP **ppLookup;
     ELFModulePtr elffile;
     Elf_Ehdr   *header;
     ELFRelocPtr  elf_reloc, tail;
-    LOOKUP *p;
     void	*v;
 
     if ((elffile = (ELFModulePtr) xf86loadercalloc(1, sizeof(ELFModuleRec))) == NULL) {
@@ -1923,10 +1935,6 @@ LOOKUP **ppLookup;
     ELFCreateGOT(elffile);
 #endif
 
-/* Done with this, so free it */
-    _LoaderFreeFileMem(elffile->shstraddr,elffile->shstrsize);
-    elffile->shstraddr=NULL;
-
     return (void *)elffile;
 }
 
@@ -2037,15 +2045,32 @@ void *modptr;
     if( elffile->common )
 	xf86loaderfree(elffile->common);
 /*
- * Free the section table, and section pointer array
+ * Free the section table, section pointer array, and section names
  */
     _LoaderFreeFileMem(elffile->sections,elffile->secsize);
     xf86loaderfree(elffile->saddr);
     _LoaderFreeFileMem(elffile->header,sizeof(Elf_Ehdr));
+    _LoaderFreeFileMem(elffile->shstraddr,elffile->shstrsize);
+
 /*
  * Free the ELFModuleRec
  */
     xf86loaderfree(elffile);
 
     return;
+}
+
+char *
+ELFAddressToSection(void *modptr, unsigned long address)
+{
+    ELFModulePtr elffile = (ELFModulePtr)modptr;
+    int i;
+
+    for( i=1; i<elffile->numsh; i++) {
+	if( address >= (unsigned long)elffile->saddr[i] &&
+	    address <= (unsigned long)elffile->saddr[i]+SecSize(i) ) {
+		return ElfGetSectionName(elffile, elffile->sections[i].sh_name);
+		}
+	}
+return NULL;
 }

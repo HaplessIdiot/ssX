@@ -2,27 +2,22 @@
 #ifndef MGA_BIOS_H
 #define MGA_BIOS_H
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_bios.h,v 1.1 1997/04/10 11:34:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_bios.h,v 1.1.2.1 1998/05/23 09:31:28 dawes Exp $ */
 
 /*
  * MGABiosInfo - This struct describes the video BIOS info block.
- * MGABios2Info - This struct describes the Myst, Mill II, and poss Mill 1 rev 3
  *
  * DESCRIPTION
  *   Do not mess with this, unless you know what you are doing.
  *   The data lengths and types are critical.
  *
  * HISTORY
- *   August 31, 1997 - [ajv] Andrew van der Stock
- *   Updated to reflected PINS 2.06 information from Matrox
- *
  *   October 7, 1996 - [aem] Andrew E. Mileski
  *   This struct was shamelessly stolen from the MGA DDK.
  *   It has been reformatted, and the data types changed.
  */
-
 typedef struct {
-        /* Length of this structure in bytes */
+	/* Length of this structure in bytes */
 	CARD16 StructLen;
 
 	/*
@@ -144,8 +139,5 @@ typedef struct tagParamMGA {
 	CARD8	Reserved[8];	/* 55-62 */
 	CARD8	PinCheck;	/* 63 */
 }	MGABios2Info;
-
-extern MGABiosInfo 	MGABios;
-extern MGABios2Info	MGABios2;
 
 #endif

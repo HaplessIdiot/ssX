@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.8 1996/12/23 06:51:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.8.4.3 1998/06/05 16:23:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -25,24 +25,18 @@
  */
 /* $XConsortium: sysv_tty.c /main/7 1996/10/19 18:07:52 kaleb $ */
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
+
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
 
 static Bool not_a_tty = FALSE;
 
-void xf86SetMouseSpeed(mouse, old, new, cflag)
-MouseDevPtr mouse;
-int old;
-int new;
-unsigned cflag;
+void
+xf86SetMouseSpeed(MouseDevPtr mouse, int old, int new, unsigned cflag)
 {
 	struct termio tty;
 	char *c;
@@ -53,7 +47,7 @@ unsigned cflag;
 	if (ioctl(mouse->mseFd, TCGETA, &tty) < 0)
 	{
 		not_a_tty = TRUE;
-		ErrorF("Warning: unable to get status of mouse fd (%s)\n",
+		xf86Msg(X_WARNING, "unable to get status of mouse fd (%s)\n",
 		       strerror(errno));
 		return;
 	}
@@ -104,13 +98,14 @@ unsigned cflag;
 
 	if (ioctl(mouse->mseFd, TCSETAW, &tty) < 0)
 	{
-		if (xf86AllowMouseOpenFail) {
-			ErrorF("Unable to set status of mouse fd (%s) - Continuing...\n",
-			       strerror(errno));
-			return;
-		}
-		xf86FatalError("Unable to set status of mouse fd (%s)\n",
-			       strerror(errno));
+	    if (xf86AllowMouseOpenFail) {
+		xf86Msg(X_WARNING,
+		    "Unable to set status of mouse fd (%s) - Continuing...\n",
+		    strerror(errno));
+		return;
+	    }
+	    xf86FatalError("Unable to set status of mouse fd (%s)\n",
+			   strerror(errno));
 	}
 
 	switch (new)
@@ -135,38 +130,33 @@ unsigned cflag;
 
 	if (mouse->mseType == P_LOGIMAN || mouse->mseType == P_LOGI)
 	{
-		if (write(mouse->mseFd, c, 2) != 2)
-		{
-			if (xf86AllowMouseOpenFail) {
-				ErrorF("Unable to write to mouse fd (%s) - Continuing...\n",
-				       strerror(errno));
-				return;
-			}
-			xf86FatalError("Unable to write to mouse fd (%s)\n",
-				       strerror(errno));
+	    if (write(mouse->mseFd, c, 2) != 2)
+	    {
+		if (xf86AllowMouseOpenFail) {
+		    xf86Msg(X_WARNING,
+			"Unable to write to mouse fd (%s) - Continuing...\n",
+			strerror(errno));
+		    return;
 		}
+		xf86FatalError("Unable to write to mouse fd (%s)\n",
+			       strerror(errno));
+	    }
 	}
 	usleep(100000);
 
 	if (ioctl(mouse->mseFd, TCSETAW, &tty) < 0)
 	{
-		if (xf86AllowMouseOpenFail) {
-			ErrorF("Unable to set status of mouse fd (%s) - Continuing...\n",
-			       strerror(errno));
-			return;
-		}
-		xf86FatalError("Unable to set status of mouse fd (%s)\n",
-			       strerror(errno));
+	    if (xf86AllowMouseOpenFail) {
+		xf86Msg(X_WARNING,
+		    "Unable to set status of mouse fd (%s) - Continuing...\n",
+		    strerror(errno));
+		return;
+	    }
+	    xf86FatalError("Unable to set status of mouse fd (%s)\n",
+			   strerror(errno));
 	}
 #ifdef TCMOUSE
 	ioctl(mouse->mseFd, TCMOUSE, 1);
 #endif
-}
-
-int
-xf86FlushInput(fd)
-int fd;
-{
-	return ioctl(fd, TCFLSH, 0);
 }
 

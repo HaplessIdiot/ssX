@@ -1,5 +1,9 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.12 1998/03/20 21:06:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.5.2.1 1998/07/24 11:36:31 dawes Exp $ */
+
+
+
+
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -14,12 +18,11 @@
 
 #undef NO_OPTIMIZE
 
-
-typedef volatile unsigned char *ByteP; 
+typedef volatile unsigned char *ByteP;
 typedef volatile unsigned short *WordP;
 typedef volatile unsigned *LongP;
 
-void tseng_recover_timeout();
+void tseng_recover_timeout(TsengPtr pTseng);
 
 /*
  * Shortcuts to Tseng memory-mapped accelerator-control registers
@@ -28,78 +31,51 @@ void tseng_recover_timeout();
 extern
 ByteP MMU_CONTROL;
 
-
 extern
-ByteP ACL_SUSPEND_TERMINATE,
-      ACL_OPERATION_STATE,
-      ACL_SYNC_ENABLE,
-      ACL_WRITE_INTERFACE_VALID,
-      ACL_INTERRUPT_MASK,
-      ACL_INTERRUPT_STATUS,
-      ACL_ACCELERATOR_STATUS;
+ByteP ACL_SUSPEND_TERMINATE, ACL_OPERATION_STATE, ACL_SYNC_ENABLE, ACL_WRITE_INTERFACE_VALID,
+    ACL_INTERRUPT_MASK, ACL_INTERRUPT_STATUS, ACL_ACCELERATOR_STATUS;
 
 /* for ET6000: */
 #define ACL_6K_CONFIG ACL_SYNC_ENABLE
 
 extern
-WordP ACL_X_POSITION,
-      ACL_Y_POSITION;
+WordP ACL_X_POSITION, ACL_Y_POSITION;
 
 extern
-WordP ACL_NQ_X_POSITION,
-      ACL_NQ_Y_POSITION;
-
+WordP ACL_NQ_X_POSITION, ACL_NQ_Y_POSITION;
 
 extern
-LongP ACL_PATTERN_ADDRESS,
-      ACL_SOURCE_ADDRESS;
-
+LongP ACL_PATTERN_ADDRESS, ACL_SOURCE_ADDRESS;
 
 extern
-WordP ACL_PATTERN_Y_OFFSET,
-      ACL_SOURCE_Y_OFFSET,
-      ACL_DESTINATION_Y_OFFSET;
-
+WordP ACL_PATTERN_Y_OFFSET, ACL_SOURCE_Y_OFFSET, ACL_DESTINATION_Y_OFFSET;
 
 extern
-ByteP ACL_VIRTUAL_BUS_SIZE,     /* only for w32 and w32i */
-      ACL_XY_DIRECTION,
-      ACL_PIXEL_DEPTH;          /* only for w32p_rev_A and w32p_rev_B */
-
+ByteP ACL_VIRTUAL_BUS_SIZE,	       /* only for w32 and w32i */
+    ACL_XY_DIRECTION, ACL_PIXEL_DEPTH; /* only for w32p_rev_A and w32p_rev_B */
 
 extern
-ByteP ACL_PATTERN_WRAP,
-      ACL_SOURCE_WRAP;
-
+ByteP ACL_PATTERN_WRAP, ACL_SOURCE_WRAP;
 
 extern
-WordP ACL_X_COUNT,
-      ACL_Y_COUNT;
-LongP ACL_XY_COUNT; /* for combined writes to X and Y count registers */
-
+WordP ACL_X_COUNT, ACL_Y_COUNT;
+extern
+LongP ACL_XY_COUNT;		       /* for combined writes to X and Y count registers */
 
 extern
-ByteP ACL_ROUTING_CONTROL,
-      ACL_RELOAD_CONTROL,
-      ACL_BACKGROUND_RASTER_OPERATION,
-      ACL_FOREGROUND_RASTER_OPERATION;
+ByteP ACL_ROUTING_CONTROL, ACL_RELOAD_CONTROL, ACL_BACKGROUND_RASTER_OPERATION,
+    ACL_FOREGROUND_RASTER_OPERATION;
 
 /* for ET6000: */
 #define ACL_MIX_CONTROL ACL_ROUTING_CONTROL
 #define ACL_STEPPING_INHIBIT ACL_RELOAD_CONTROL
 
 extern
-LongP ACL_DESTINATION_ADDRESS,
-
-      /* only for w32p_rev_A and w32p_rev_B */
-      ACL_MIX_ADDRESS;
-
+LongP ACL_DESTINATION_ADDRESS,	       /* only for w32p_rev_A and w32p_rev_B */
+    ACL_MIX_ADDRESS;
 
 extern
-WordP ACL_MIX_Y_OFFSET,
-      ACL_ERROR_TERM,
-      ACL_DELTA_MINOR,
-      ACL_DELTA_MAJOR;
+WordP ACL_MIX_Y_OFFSET, ACL_ERROR_TERM, ACL_DELTA_MINOR, ACL_DELTA_MAJOR;
 
 /* for ET6000 only */
 extern
@@ -107,9 +83,7 @@ ByteP ACL_POWER_CONTROL;
 extern
 ByteP ACL_SECONDARY_EDGE;
 extern
-WordP ACL_SECONDARY_ERROR_TERM,
-      ACL_SECONDARY_DELTA_MINOR,
-      ACL_SECONDARY_DELTA_MAJOR;
+WordP ACL_SECONDARY_ERROR_TERM, ACL_SECONDARY_DELTA_MINOR, ACL_SECONDARY_DELTA_MAJOR;
 extern
 ByteP ACL_TRANSFER_DISABLE;
 
@@ -140,7 +114,7 @@ extern LongP MemW32BackgroundPing;
 extern LongP MemW32BackgroundPong;
 extern LongP MemW32PatternPing;
 extern LongP MemW32PatternPong;
-extern LongP MemW32Mix;    /* ping-ponging the MIX map is done by XAA */ 
+extern LongP MemW32Mix;		       /* ping-ponging the MIX map is done by XAA */
 
 /*
  * Some exported variables used by several source files. They are all
@@ -154,9 +128,8 @@ extern int tsengImageWriteBase;
 
 extern int tseng_powerPerPixel;
 extern int tseng_neg_x_pixel_offset;
-extern int tseng_line_width;
 extern Bool tseng_need_wait_acl;
-extern Bool tseng_use_PCI_Retry; /* Do we use PCI-retry or busy-waiting */
+extern Bool tseng_use_PCI_Retry;       /* Do we use PCI-retry or busy-waiting */
 
 /* for ImageWrite and WriteBitmap */
 extern CARD32 *tsengFirstLinePntr, *tsengSecondLinePntr;
@@ -179,41 +152,37 @@ extern long tsengPat;
 extern int old_x, old_y;
 extern int tseng_old_dir;
 
-
 /*
  * Some shortcuts. 
  */
 
-#define MAX_WAIT_CNT 500000  /* how long we wait before we time out */
-#undef WAIT_VERBOSE          /* if defined: print out how long we waited */
+#define MAX_WAIT_CNT 500000	       /* how long we wait before we time out */
+#undef WAIT_VERBOSE		       /* if defined: print out how long we waited */
 
-static __inline__ void tseng_wait(reg,name,mask)
-     ByteP reg;
-     char* name;
-     unsigned char mask;
+static __inline__ void 
+tseng_wait(TsengPtr pTseng, ByteP reg, char *name, unsigned char mask)
 {
     int cnt = MAX_WAIT_CNT;
+
     while (*reg & mask)
-      if (--cnt < 0)
-      {
-        ErrorF("WAIT_%s: timeout.\n",name);
-        tseng_recover_timeout();
-        break;
-      }
+	if (--cnt < 0) {
+	    ErrorF("WAIT_%s: timeout.\n", name);
+	    tseng_recover_timeout(pTseng);
+	    break;
+	}
 #ifdef WAIT_VERBOSE
-      ErrorF("%s%d ",name,MAX_WAIT_CNT-cnt);
+    ErrorF("%s%d ", name, MAX_WAIT_CNT - cnt);
 #endif
 }
 
-#define WAIT_QUEUE tseng_wait(ACL_ACCELERATOR_STATUS, "QUEUE", 0x1)
+#define WAIT_QUEUE tseng_wait(pTseng, ACL_ACCELERATOR_STATUS, "QUEUE", 0x1)
 
-/* This is only for W32p rev b...d*/
-#define WAIT_INTERFACE tseng_wait(ACL_WRITE_INTERFACE_VALID, "INTERFACE", 0xf)
+/* This is only for W32p rev b...d */
+#define WAIT_INTERFACE tseng_wait(pTseng, ACL_WRITE_INTERFACE_VALID, "INTERFACE", 0xf)
 
-#define WAIT_ACL tseng_wait(ACL_ACCELERATOR_STATUS, "ACL", 0x2)
-  
-#define WAIT_XY tseng_wait(ACL_ACCELERATOR_STATUS, "XY", 0x4)
+#define WAIT_ACL tseng_wait(pTseng, ACL_ACCELERATOR_STATUS, "ACL", 0x2)
 
+#define WAIT_XY tseng_wait(pTseng, ACL_ACCELERATOR_STATUS, "XY", 0x4)
 
 #define SET_FUNCTION_BLT \
     if (Is_ET6K) \
@@ -224,7 +193,7 @@ static __inline__ void tseng_wait(reg,name,mask)
 #define SET_FUNCTION_BLT_TR \
         *ACL_MIX_CONTROL     = 0x13;
 
-#define FBADDR(x,y) ( (y) * tseng_line_width + MULBPP(x) )
+#define FBADDR(pTseng, x,y) ( (y) * pTseng->line_width + MULBPP(pTseng, x) )
 
 #define SET_FG_ROP(rop) \
     *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable[rop];
@@ -264,27 +233,27 @@ static __inline__ void tseng_wait(reg,name,mask)
 #define SET_SECONDARY_XYDIR(dir) \
       *ACL_SECONDARY_EDGE = (dir);
 
-
 /* Must do 0x09 (in one operation) for the W32 */
-#define START_ACL(dst) \
+#define START_ACL(pTseng, dst) \
     *(ACL_DESTINATION_ADDRESS) = dst; \
-    if (et4000_type < TYPE_ET4000W32P) *ACL_OPERATION_STATE = 0x09;
+    if (Is_W32 || Is_W32i) *ACL_OPERATION_STATE = 0x09;
 
 /* START_ACL for the ET6000 */
 #define START_ACL_6(dst) \
     *(ACL_DESTINATION_ADDRESS) = dst;
 
-#define START_ACL_CPU(dst) \
-    if (et4000_type < TYPE_ET4000W32P) \
-      *tsengCPU2ACLBase = dst; \
+#define START_ACL_CPU(pTseng, dst) \
+    if (Is_W32 || Is_W32i) \
+      *((LongP) (MMioBase + 0x08)) = (CARD32)dst; /* writing to MMU2 will trigger accel at this address */ \
     else \
       *(ACL_DESTINATION_ADDRESS) = dst;
 
 /*    *(ACL_DESTINATION_ADDRESS) = dst;    should be enough for START_ACL_CPU */
 
-
 /***********************************************************************/
 
-void tseng_init_acl();
+void tseng_init_acl(ScreenPtr pScreen);
+
+Bool TsengXAAInit(ScreenPtr pScreen);
 
 #endif

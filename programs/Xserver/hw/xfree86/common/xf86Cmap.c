@@ -1,4 +1,3 @@
-/* $XFree86: $ */
 /*
  * Copyright 1997 Metro Link Incorporated ("Metro Link")
  *
@@ -25,6 +24,7 @@
  *
  */
 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cmap.c,v 1.1.2.1 1997/07/18 03:33:36 dawes Exp $ */
 
 
 #include "colormap.h"

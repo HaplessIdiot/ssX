@@ -1,0 +1,121 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.1.2.4 1998/07/19 13:22:10 dawes Exp $ */
+
+/*
+   A CopyPlane function that handles bitmap->screen copies and
+   sends anything else to the Fallback.
+
+   Also, a PushPixels for solid fill styles.
+
+   Written by Mark Vojkovich (mvojkovi@ucsd.edu)
+
+*/
+
+#include "misc.h"
+#include "xf86.h"
+#include "xf86_ansic.h"
+#include "xf86_OSproc.h"
+
+#include "X.h"
+#include "scrnintstr.h"
+#include "mi.h"
+#include "pixmapstr.h"
+#include "xf86str.h"
+#include "xaa.h"
+#include "xaalocal.h"
+
+static void XAACopyPlane1toNColorExpand(DrawablePtr pSrc, DrawablePtr pDst,
+					GCPtr pGC, RegionPtr rgnDst,
+					DDXPointPtr pptSrc);
+
+RegionPtr
+XAACopyPlaneColorExpansion(
+    DrawablePtr	pSrc,
+    DrawablePtr	pDst,
+    GCPtr pGC,
+    int	srcx, int srcy,
+    int	width, int height,
+    int	dstx, int dsty,
+    unsigned long bitPlane )
+{
+    if((pSrc->bitsPerPixel == 1) && (bitPlane == 1) &&
+	(pDst->type == DRAWABLE_WINDOW) &&
+	(pSrc->type != DRAWABLE_WINDOW)) {
+	   return(XAABitBlt(pSrc, pDst, pGC, srcx, srcy,
+			width, height, dstx, dsty, 
+			XAACopyPlane1toNColorExpand, bitPlane));
+    }
+
+    return (XAAFallbackOps.CopyPlane(pSrc, pDst, pGC, srcx, srcy, 
+			width, height, dstx, dsty, bitPlane));
+}
+
+
+static void 
+XAACopyPlane1toNColorExpand(
+    DrawablePtr   pSrc, 
+    DrawablePtr	  pDst,
+    GCPtr	  pGC,
+    RegionPtr     rgnDst,
+    DDXPointPtr   pptSrc )
+{
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    BoxPtr pbox = REGION_RECTS(rgnDst);
+    int numrects = REGION_NUM_RECTS(rgnDst);
+    unsigned char *src = ((PixmapPtr)pSrc)->devPrivate.ptr;
+    int srcwidth = ((PixmapPtr)pSrc)->devKind; 
+    
+    while(numrects--) {	
+	(*infoRec->WriteBitmap)(infoRec->pScrn, pbox->x1, pbox->y1, 
+		pbox->x2 - pbox->x1, pbox->y2 - pbox->y1, 
+		src + (srcwidth * pptSrc->y) + ((pptSrc->x >> 5) << 2), 
+		srcwidth, pptSrc->x & 31, 
+		pGC->fgPixel, pGC->bgPixel, pGC->alu, pGC->planemask);
+	pbox++; pptSrc++;
+    }
+}
+
+
+void
+XAAPushPixelsSolidColorExpansion(
+    GCPtr	pGC,
+    PixmapPtr	pBitMap,
+    DrawablePtr pDraw,
+    int	dx, int dy, 
+    int xOrg, int yOrg )
+{
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   int MaxBoxes = REGION_NUM_RECTS(pGC->pCompositeClip);
+   BoxPtr	pbox, pClipBoxes;
+   int		nboxes, srcx, srcy;
+   xRectangle TheRect;
+   unsigned char *src = pBitMap->devPrivate.ptr;
+   int srcwidth = pBitMap->devKind;
+
+   TheRect.x = xOrg;
+   TheRect.y = yOrg;
+   TheRect.width = dx;
+   TheRect.height = dy; 
+
+   if(MaxBoxes > infoRec->NumPreAllocBoxes) {
+	pClipBoxes = (BoxPtr)ALLOCATE_LOCAL(MaxBoxes * sizeof(BoxRec));
+	if(!pClipBoxes) return;	
+   } else pClipBoxes = infoRec->PreAllocBoxes;
+
+   nboxes = XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 1, &TheRect);
+   pbox = pClipBoxes;
+
+   while(nboxes--) {
+	srcx = pbox->x1 - xOrg;
+	srcy = pbox->y1 - yOrg;
+ 	(*infoRec->WriteBitmap)(infoRec->pScrn, pbox->x1, pbox->y1, 
+		pbox->x2 - pbox->x1, pbox->y2 - pbox->y1, 
+		src + (srcwidth * srcy) + ((srcx >> 5) << 2), 
+		srcwidth, srcx & 31, 
+		pGC->fgPixel, -1, pGC->alu, pGC->planemask);
+	pbox++;
+   }
+
+    if(pClipBoxes != infoRec->PreAllocBoxes)
+	DEALLOCATE_LOCAL(pClipBoxes);
+}
+

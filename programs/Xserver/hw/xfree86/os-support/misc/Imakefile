@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.2 1997/02/19 06:04:08 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/Imakefile,v 3.3.2.2 1998/06/04 17:36:00 dawes Exp $
 
 
 
@@ -7,14 +7,18 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:24:12 rws $
 
 #include <Server.tmpl>
 
-#if DoLoadableServer
-DSRC = xf86dummy.c
-DOBJ = xf86dummy.o 
+
+#if defined(i386Architecture)
+XSRCS = BUSmemcpy.s IODelay.s SlowBcopy.s
+XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
+#else
+XSRCS = BUSmemcpy.c IODelay.c SlowBcopy.c
+XOBJS = BUSmemcpy.o IODelay.o SlowBcopy.o
 #endif
 
-SRCS = xf86_Util.c xf86_IlHack.c $(DSRC)
+SRCS = xf86_Util.c xf86_IlHack.c $(XSRCS)
 
-OBJS = xf86_Util.o xf86_IlHack.o $(DOBJ)
+OBJS = xf86_Util.o xf86_IlHack.o $(XOBJS)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
@@ -22,8 +26,10 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
-#if DoLoadableServer
-InstallLinkKitNonExecFile(xf86dummy.o,$(LINKKITDIR)/lib86)
+#if defined(i386Architecture)
+ObjectFromAsmSource(BUSmemcpy,NullParameter)
+ObjectFromAsmSource(IODelay,NullParameter)
+ObjectFromAsmSource(SlowBcopy,NullParameter)
 #endif
 
 DependTarget()

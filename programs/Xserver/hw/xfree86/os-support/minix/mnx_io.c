@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.8 1996/08/20 12:29:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.9.4.2 1998/06/04 17:35:55 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -34,9 +34,10 @@
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
+#include "xf86Config.h"
 
 #include <sys/nbio.h>
 

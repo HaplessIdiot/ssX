@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.14 1997/01/05 11:58:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.14.4.4 1998/06/04 17:35:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -30,10 +30,11 @@
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
-#include "xf86_Config.h"
+#include "xf86Config.h"
 
 #include "xf86Keymap.h"
 

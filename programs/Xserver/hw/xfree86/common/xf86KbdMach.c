@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdMach.c,v 3.6 1996/02/04 09:06:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdMach.c,v 3.7.4.2 1998/06/04 17:35:20 dawes Exp $ */
 /*
  *****************************************************************************
  * HISTORY
@@ -44,10 +44,11 @@
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
-#include "xf86_Config.h"
+#include "xf86Config.h"
 
 #include "xf86Keymap.h"
 

@@ -1,4 +1,4 @@
-/* $XConsortium: VTsw_sco.c,v 1.1 94/03/28 21:30:26 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/VTsw_sco.c,v 1.1.1.2.6.2 1998/06/09 15:23:10 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
@@ -22,11 +22,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: VTsw_sco.c /main/2 1995/11/13 06:08:36 kaleb $ */
 
 #include "X.h"
-#include "input.h"
-#include "scrnintstr.h"
 
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -40,20 +38,22 @@
  * This function is the signal handler for the VT-switching signal.  It
  * is only referenced inside the OS-support layer.
  */
-void xf86VTRequest(sig)
-int sig;
+void
+xf86VTRequest(int sig)
 {
 	signal(sig, (void(*)())xf86VTRequest);
 	xf86Info.vtRequestsPending = TRUE;
 	return;
 }
 
-Bool xf86VTSwitchPending()
+Bool
+xf86VTSwitchPending()
 {
 	return(xf86Info.vtRequestsPending ? TRUE : FALSE);
 }
 
-Bool xf86VTSwitchAway()
+Bool
+xf86VTSwitchAway()
 {
 	xf86Info.vtRequestsPending = FALSE;
 	if (ioctl(xf86Info.consoleFd, VT_RELDISP, 1) < 0)
@@ -66,7 +66,8 @@ Bool xf86VTSwitchAway()
 	}
 }
 
-Bool xf86VTSwitchTo()
+Bool
+xf86VTSwitchTo()
 {
 	xf86Info.vtRequestsPending = FALSE;
 	if (ioctl(xf86Info.consoleFd, VT_RELDISP, VT_ACKACQ) < 0)

@@ -22,152 +22,254 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.7 1998/03/28 06:35:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.2.2.2 1998/07/11 13:52:27 dawes Exp $ */
 
-/*#define DEBUG
-#define CT_HW_DEBUG */
-#define CT_DEBUG_WAIT 500000
 
-extern Bool ctLinearSupport;	       /*linear addressing enable */
-extern Bool ctAccelSupport;	       /*acceleration enable */
-extern Bool ctisHiQV32;		       /*New architecture used in 65550 and 65554 */
-extern Bool ctisWINGINE;
-extern Bool ctHDepth;		       /*Chip has 16/24bpp */
-extern Bool ctDSTN;
-extern Bool ctHWCursor;
-extern Bool ctHWCursorAlways;
+#ifndef _CT_DRIVER_H_
+#define _CT_DRIVER_H_
 
-extern unsigned int ctCursorAddress;   /* The address in video ram of cursor */
+#include "xaa.h"
+#include "xaacursor.h"
 
-/* The adress in video ram of the tile pattern.  */
-extern unsigned int ctBLTPatternAddress;
-extern Bool ctUseMMIO;
-extern Bool ctAvoidImageBLT;
-extern Bool ctColorTransparency;
-extern unsigned char *ctMMIOBase;
-extern unsigned char *ctBltDataWindow;
+/* Clock related */
+typedef struct {
+    unsigned char msr;		/* Dot Clock Related */
+    unsigned char fcr;
+    unsigned char xr02;
+    unsigned char xr03;
+    unsigned char xr33;
+    unsigned char xr54;
+    unsigned char fr03;
+    int Clock;
+} CHIPSClockReg, *CHIPSClockPtr;
 
-extern int ctAluConv[];		       /* Map Alu to Chips ROP source data  */
-extern int ctAluConv2[];       	       /* Map Alu to Chips ROP pattern data */
-extern int ctAluConv3[];       	       /* Map Alu to Chips ROP source data with
-					  pattern as planemask */
+typedef struct {
+    unsigned int Max;		/* Memory Clock Related */
+    unsigned int ProbedClk;
+    unsigned int Clk;
+    unsigned char M;
+    unsigned char N;
+    unsigned char P;
+    unsigned char PSN;
+    unsigned char xrCC;
+    unsigned char xrCD;
+    unsigned char xrCE;
+} CHIPSMemClockReg, *CHIPSMemClockPtr;
 
-extern unsigned long ctFrameBufferSize;		/* Frame buffer size */
-extern unsigned int ctCacheEnd;			/* Pixmap Cache End */
+#define TYPE_HW 0x01
+#define TYPE_PROGRAMMABLE 0x02
+#define GET_TYPE 0x0F
+#define OLD_STYLE 0x10
+#define NEW_STYLE 0x20
+#define HiQV_STYLE 0x30
+#define WINGINE_1_STYLE 0x40        /* 64300: external clock; 4 clocks    */
+#define WINGINE_2_STYLE 0x50        /* 64300: internal clock; 2 hw-clocks */
+#define GET_STYLE 0xF0
+#define LCD_TEXT_CLK_FREQ 25000	    /* lcd textclock if TYPE_PROGRAMMABLE */
+#define CRT_TEXT_CLK_FREQ 28322     /* crt textclock if TYPE_PROGRAMMABLE */
+#define Fref 14318180               /* The reference clock in Hertz       */
 
-/* Byte reversal functions */
-extern unsigned int byte_reversed3[];
+/* The capability flags for the C&T chipsets */
+#define ChipsLinearSupport	0x00000001
+#define ChipsAccelSupport	0x00000002
+#define ChipsMMIOSupport	0x00000004
+#define ChipsHDepthSupport	0x00000008
+#define ChipsDPMSSupport	0x00000010
+#define ChipsTMEDSupport	0x00000020
 
-/* 
- * Definitions for IO access to ports
- */
+/* Options flags for the C&T chipsets */
+#define ChipsUseVClk1		0x00000040
+#define ChipsHWCursor		0x00000080
+
+/* Architecture type flags */
+#define ChipsHiQV		0x00000100
+#define ChipsWingine		0x00000200
+#define IS_Wingine(x)		((x->Flags) & ChipsWingine)
+#define IS_HiQV(x)		((x->Flags) & ChipsHiQV)
+
+/* Acceleration flags for the C&T chipsets */
+#define ChipsColorTransparency	0x0100000
+
+/* Flag Bus Types */
+#define ChipsUnknown	0
+#define ChipsISA	1
+#define ChipsVLB	2
+#define ChipsPCI	3
+#define ChipsCPUDirect	4
+#define ChipsPIB	5
+#define ChipsMCB	6
+
+/* Macro's to select the 32 bit acceleration registers */
+#define DR(x) cPtr->Regs32[x]	/* For CT655xx naming scheme  */
+#define MR(x) cPtr->Regs32[x]	/* CT655xx MMIO naming scheme */
+#define BR(x) cPtr->Regs32[x]	/* For HiQV naming scheme     */
+#define MMIOmeml(x) *(unsigned int *)(cPtr->MMIOBase + (x))
+#define MMIOmemw(x) *(unsigned short *)(cPtr->MMIOBase + (x))
+
+/* Definitions for IO access to ports */
 #define write_xr(num,val) {outb(0x3D6, num);outb(0x3D7, val);}
 #define read_xr(num,var) {outb(0x3D6, num);var=inb(0x3D7);}
 #define write_fr(num,val) {outb(0x3D0, num);outb(0x3D1, val);}
 #define read_fr(num,var) {outb(0x3D0, num);var=inb(0x3D1);}
 
-/* 
- * Definitions for IO access to 32 bit ports
- */
-extern int ctReg32MMIO[];
-extern int ctReg32HiQV[];
-#define MR(x) ctReg32MMIO[x]
-#define BR(x) ctReg32HiQV[x]
+/* Monitor or flat panel type flags */
+#define ChipsCRT	0x0010
+#define ChipsLCD	0x1000
+#define ChipsTFT	0x0100
+#define ChipsDS		0x0200
+#define ChipsDD		0x0400
+#define ChipsSS		0x0800
+#define IS_STN(x)	((x) & 0xE00)
 
-extern unsigned int CHIPS_ExtPorts32[];
-#define DR(x) CHIPS_ExtPorts32[x] 
+/* Storage for the registers of the C&T chipsets */
+typedef struct {
+	unsigned char XR[0xFF];
+	unsigned char CR[0x80];
+	unsigned char FR[0x80];
+	CHIPSClockReg Clock;
+} CHIPSRegRec, *CHIPSRegPtr;
 
-/*
- * Forward definitions for the functions that make up the driver.    See
- * the definitions of these functions for the real scoop.
- */
+/* Storage for the flat panel size */
+typedef struct {
+    int HDisplay;
+    int HRetraceStart;
+    int HRetraceEnd;
+    int HTotal;
+    int VDisplay;
+    int VRetraceStart;
+    int VTotal;
+} CHIPSPanelSizeRec, *CHIPSPanelSizePtr;
 
-/* ct_accel.c */
-extern void ctAccelInit(void);
-/* ct_accelhi.c */
-extern void ctHiQVAccelInit(void);
-/* ct_accelmm.c */
-extern void ctMMIOAccelInit(void);
-/* ct_alloc.c */
-extern int ctInitializeAllocator(void);
-extern int ctAllocate(int, unsigned int);
-extern void ctFree(int);
-/* ct_config.c */
-extern void ctConfig(void);
-/* ct_cursor.c */
-extern Bool CHIPSCursorInit(char *, ScreenPtr);
-extern void CHIPSRestoreCursor(ScreenPtr);
-extern void CHIPSWarpCursor(ScreenPtr, int, int);
-extern void CHIPSQueryBestSize(int, unsigned short *, unsigned short *, ScreenPtr);
-/* ct_driver.c */
-extern void ModuleInit(pointer *, INT32 *);
-extern int ctGetHWClock(unsigned char);
-extern int ctVideoMode(int, int, int, int);
-/* ct_pci.c */
-extern int ctPCIMemBase(Bool);
-extern int ctPCIChipset(void);
+/* Some variables needed in the XAA acceleration */
+typedef struct {
+    /* General variable */ 
+    unsigned int CommandFlags;
+    unsigned int BytesPerPixel;
+    unsigned int PitchInBytes;
+    unsigned int ScratchAddress;
+    /* 64k for color expansion and imagewrites */
+    unsigned char * BltDataWindow;
+    /* Hardware cursor address */
+    unsigned int CursorAddress;
+    Bool UseHWCursor;
+    /* Boundaries of the pixmap cache */
+    unsigned int CacheStart;
+    unsigned int CacheEnd;
+    /* Storage for pattern mask */
+    int planemask;
+    /* For the 8x8 pattern fills */
+    int patternyrot;
+    /* Variables for the 24bpp fill */
+    unsigned char fgpixel;
+    unsigned char bgpixel;
+    unsigned char xorpixel;
+    Bool fastfill;
+    Bool rgb24equal;
+    int fillindex;
+    unsigned int width24bpp;
+    unsigned int color24bpp;
+    unsigned int rop24bpp;
+} CHIPSACLRec, *CHIPSACLPtr;
+#define CHIPSACLPTR(p)	&((CHIPSPtr)((p)->driverPrivate))->Accel
 
-/* Bank select functions. */
-extern void CHIPSSetRead(int);
-extern void CHIPSSetWrite(int);
-extern void CHIPSSetReadWrite(int);
-extern void CHIPSWINSetRead(int);
-extern void CHIPSWINSetWrite(int);
-extern void CHIPSWINSetReadWrite(int);
-extern void CHIPSHiQVSetRead(int);
-extern void CHIPSHiQVSetWrite(int);
-extern void CHIPSHiQVSetReadWrite(int);
+/* Storage for some register values that are messed up by suspend/resumes */
+typedef struct {
+    unsigned char xr02;
+    unsigned char xr03;
+    unsigned char xr14;
+    unsigned char xr15;
+    unsigned char vgaIOBaseFlag;
+} CHIPSSuspendHackRec, *CHIPSSuspendHackPtr;
 
-/* Bank select functions for 1 and 4bpp */
-extern void CHIPSSetReadPlanar(int);
-extern void CHIPSSetWritePlanar(int);
-extern void CHIPSSetReadWritePlanar(int);
-extern void CHIPSWINSetReadPlanar(int);
-extern void CHIPSWINSetWritePlanar(int);
-extern void CHIPSWINSetReadWritePlanar(int);
-extern void CHIPSHiQVSetReadPlanar(int);
-extern void CHIPSHiQVSetWritePlanar(int);
-extern void CHIPSHiQVSetReadWritePlanar(int);
+/* The privates of the C&T driver */
+#define CHIPSPTR(p)	((CHIPSPtr)((p)->driverPrivate))
 
-/* in ct_cursor.c */
-extern Bool  CHIPSInitCursor();
+typedef struct {
+    pciVideoPtr		PciInfo;
+    PCITAG		PciTag;
+    int			Chipset;
+    CARD32		IOAddress;
+    CARD32		FbAddress;
+    unsigned int	IOBase;
+    unsigned char *	FbBase;
+    unsigned char *	MMIOBase;
+    long		FbMapSize;
+    OptionInfoPtr	Options;
+    CHIPSPanelSizeRec	PanelSize;
+    int			FrameBufferSize;
+    Bool		SyncResetIgn;
+    Bool		UseMMIO;
+    int			Monitor;
+    int			MinClock;
+    int			MaxClock;
+    CHIPSClockReg	SaveClock;		/* Storage for ClockSelect */
+    CHIPSMemClockReg	MemClock;
+    unsigned char	ClockType;
+    unsigned char	ConsoleClk[4];
+    int			ClockMulFactor;
+    int			Rounding;
+    CHIPSSuspendHackRec	SuspendHack;
+    CARD32		PanelType;
+    CHIPSRegRec		ModeReg;
+    CHIPSRegRec		SavedReg;
+    unsigned int *	Regs32;
+    unsigned int	Flags;
+    CARD32		Bus;
+    XAAInfoRecPtr	AccelInfoRec;
+    XAACursorInfoPtr	CursorInfoRec;
+    CHIPSACLRec		Accel;
+    unsigned int	HWCursorContents;
+    Bool		HWCursorShown;
+    CloseScreenProcPtr	CloseScreen;
+#ifdef __arm32
+#ifdef __NetBSD__
+    int			TVMode;
+#endif
+    int			Bank;
+#endif
+} CHIPSRec, *CHIPSPtr;
 
-#define MMIOmeml(x) *(unsigned int *)(ctMMIOBase + (x))
-#define MMIOmemw(x) *(unsigned short *)(ctMMIOBase + (x))
+/* External variables */
+extern int ChipsAluConv[];
+extern int ChipsAluConv2[];
+extern int ChipsAluConv3[];
+extern unsigned int ChipsReg32[];
+extern unsigned int ChipsReg32HiQV[];
+
+/* Prototypes */
+/* banking */
+int CHIPSSetRead(ScreenPtr pScreen, int bank);
+int CHIPSSetWrite(ScreenPtr pScreen, int bank);
+int CHIPSSetReadWrite(ScreenPtr pScreen, int bank);
+int CHIPSSetReadPlanar(ScreenPtr pScreen, int bank);
+int CHIPSSetWritePlanar(ScreenPtr pScreen, int bank);
+int CHIPSSetReadWritePlanar(ScreenPtr pScreen, int bank);
+int CHIPSWINSetRead(ScreenPtr pScreen, int bank);
+int CHIPSWINSetWrite(ScreenPtr pScreen, int bank);
+int CHIPSWINSetReadWrite(ScreenPtr pScreen, int bank);
+int CHIPSWINSetReadPlanar(ScreenPtr pScreen, int bank);
+int CHIPSWINSetWritePlanar(ScreenPtr pScreen, int bank);
+int CHIPSWINSetReadWritePlanar(ScreenPtr pScreen, int bank);
+int CHIPSHiQVSetReadWrite(ScreenPtr pScreen, int bank);
+int CHIPSHiQVSetReadWritePlanar(ScreenPtr pScreen, int bank);
+
+/* acceleration */
+Bool CHIPSAccelInit(ScreenPtr pScreen);
+void CHIPSSync(ScrnInfoPtr pScrn);
+Bool CHIPSMMIOAccelInit(ScreenPtr pScreen);
+void CHIPSMMIOSync(ScrnInfoPtr pScrn);
+Bool CHIPSHiQVAccelInit(ScreenPtr pScreen);
+void CHIPSHiQVSync(ScrnInfoPtr pScrn);
+Bool CHIPSCursorInit(ScreenPtr pScreen);
 
 /* To aid debugging of 32 bit register access we make the following defines */
+/*
+#define DEBUG
+#define CT_HW_DEBUG 
+*/
 #if defined(DEBUG) & defined(CT_HW_DEBUG)
-extern void ctHWDebug(int);
-#define HW_DEBUG(x) ctHWDebug((x))
+#define HW_DEBUG(x) {usleep(500000); ErrorF("Register/Address: 0x%X\n",x);}
 #else
-#define HW_DEBUG(x)
+#define HW_DEBUG(x) 
 #endif
-
-/* A generalised blitter wait function for use in compiled once code. This
- * might be need in the CHIPSSave, CHIPSRestore and HW cursor functions with
- * changes to XAA introduced in 32Ar */
-#define ctBLTWAITGENERAL { \
-    if (ctUseMMIO) { \
-	if (ctisHiQV32) { \
-	    outb(0x3D6,0x20); {int timeout; \
-        	timeout = 0; \
-		for (;;) { \
-		    if (!(inb(0x3D7)&0x1)) break; \
-		    timeout++; \
-		    if (timeout == 10000000) { \
-			unsigned char tmp; \
-			ErrorF("CHIPS: BitBlt Engine Timeout\n"); \
-			tmp = inb(0x3D7); \
-			outb(0x3D7, ((tmp & 0xFD) | 0x2)); \
-			break; \
-		    } \
-		} \
-	    } \
-	} else { \
-	   while(*(volatile unsigned int *)(ctMMIOBase + MR(0x4)) & \
-   		0x00100000){}; \
-	} \
-    } else { \
-	while(inw(DR(0x4)+2)&0x10){}; \
-    } \
-}
+#endif

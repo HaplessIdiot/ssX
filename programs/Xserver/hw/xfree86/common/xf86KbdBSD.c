@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.9 1996/09/03 04:11:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.10.4.7 1998/06/04 17:35:19 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -31,19 +31,15 @@
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
-#include "xf86_Config.h"
 #include "coKeynames.h"
 #include "xf86Keymap.h"
 
 #define KD_GET_ENTRY(i,n) \
   eascii_to_x[((keymap.key[i].spcl << (n+1)) & 0x100) + keymap.key[i].map[n]]
-
-#ifndef __bsdi__
-static KeySym coGetKeysym();
-#endif
 
 #ifndef PC98
 static unsigned char remap[128] = {
@@ -341,7 +337,6 @@ xf86KbdGetMapping (pKeySyms, pModMap)
      CARD8      *pModMap;
 {
   KeySym        *k;
-  char          type;
   int           i, j;
 
 #ifndef __bsdi__
@@ -482,46 +477,6 @@ xf86KbdGetMapping (pKeySyms, pModMap)
     break;
 #endif /* SYSCONS || PCVT */
     
-#ifdef CODRV_SUPPORT
-  case CODRV011:
-  case CODRV01X:
-    for (i=1; i<= 128; i++) {
-      struct kbd_ovlkey cokeymap;
-      struct oldkbd_ovlkey ocokeymap;
-      KeySym coGetKeysym();
-
-      if (xf86Info.consType == CODRV011) {
-        ocokeymap.keynum = i;
-        if (ioctl(xf86Info.consoleFd, OLDKBDGCKEY, &ocokeymap) < 0)
-          break;  /* Don't try again if it fails once */
-        if ((ocokeymap.type & KBD_OVERLOAD)) { /* changed from default setting */
-  	  k = map + (xf86CodrvMap[i] << 2);
-  	  k[0] = coGetKeysym(ocokeymap.type,(CARD8*)&ocokeymap.unshift,k[0]);
-	  k[1] = coGetKeysym(ocokeymap.type,(CARD8*)&ocokeymap.shift,k[1]);
-	  k[2] = coGetKeysym(ocokeymap.type,(CARD8*)&ocokeymap.altgr,k[2]);
-	  k[3] = NoSymbol;
-        }
-      } else {
-        cokeymap.keynum = i;
-        if (ioctl(xf86Info.consoleFd, KBDGCKEY, &cokeymap) < 0)
-          break;  /* Don't try again if it fails once */
-        if ((cokeymap.type & KBD_OVERLOAD)) { /* changed from default setting */
-	  k = map + (xf86CodrvMap[i] << 2);
-	  k[0] = coGetKeysym(cokeymap.type,(CARD8*)&cokeymap.unshift,k[0]);
-	  k[1] = coGetKeysym(cokeymap.type,(CARD8*)&cokeymap.shift,k[1]);
-	  k[2] = coGetKeysym(cokeymap.type,(CARD8*)&cokeymap.altgr,k[2]);
-	  k[3] = coGetKeysym(cokeymap.type,(CARD8*)&cokeymap.shiftaltgr,k[3]);
-        }
-      }
-      if ((cokeymap.type & KBD_OVERLOAD)) { /* changed from default setting */
-        if (k[3] == k[2]) k[3] = NoSymbol;
-        if (k[2] == k[1]) k[2] = NoSymbol;
-        if (k[1] == k[0]) k[1] = NoSymbol;
-        if (k[0] == k[2] && k[1] == k[3]) k[2] = k[3] = NoSymbol;
-      }
-    }
-    break;
-#endif /* CODRV */
   } 
 #endif /* !bsdi */
 
@@ -641,47 +596,3 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 
 }
 
-#ifdef CODRV_SUPPORT
-/* Converts a CoDriver ASCII+Special combination into a KeySym
- */
-static KeySym
-coGetKeysym(typ,str,old)
-	int typ;
-	CARD8 *str;
-	KeySym old;
-{
-	if (strlen((char *)str) > 1) return old;
-	switch (typ & KBD_MASK) {
-	case KBD_NONE:	
-		return NoSymbol;
-	case KBD_SHIFT: 
-		if (old==XK_Shift_L || old==XK_Shift_R) return old;
-		else return XK_Shift_L;
-	case KBD_NUM:	
-		return XK_Num_Lock;
-	case KBD_CTL:
-		if (old==XK_Control_L || old==XK_Control_R) return old;
-		else return XK_Control_L;
-	case KBD_ALTGR:	
-		return XK_Mode_switch;
-	case KBD_META:
-		if (old==XK_Alt_L || old==XK_Alt_R) return old;
-		else return XK_Alt_L;
-	case KBD_SHFTLOCK:
-	case KBD_CAPS:
-		return XK_Caps_Lock;
-	case KBD_SCROLL:
-		return XK_Scroll_Lock;
-	case KBD_BREAK:
-		return XK_Break;
-	default:
-	case KBD_KP:	/* there are few good reasons to overload 
-			 * F Keys and KP Keys, so we ignore any attempt
-			 * at all
-			 */
-		 return old;
-	case KBD_ASCII:
-		return *str;
-	}
-}
-#endif

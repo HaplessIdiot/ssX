@@ -1,5 +1,5 @@
 /*
- * Copyright 1997 by The XFree86 Project, Inc
+ * Copyright 1997,1998 by The XFree86 Project, Inc
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,16 +22,31 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.7 1998/06/28 03:53:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.1.2.6 1998/07/11 13:52:34 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
 
 #include "xf86_libc.h"
 
-#ifdef XFree86LOADER
 /*
- * at this point I don't think we support any non-ANSI compilers...
+ * The first set of definitions are required both for modules and
+ * libc_wrapper.c.
+ */
+
+#if defined(XFree86LOADER) || defined(NEED_XF86_TYPES)
+
+#if !defined(SYSV) && !defined(SVR4) && !defined(Lynx) || defined(SCO)  
+#define HAVE_VSSCANF
+#define HAVE_VFSCANF
+#endif 
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+/*
+ * ANSI C compilers only.
  */
 
 /* ANSI C emulation library */
@@ -57,18 +72,25 @@ extern int xf86feof(XF86FILE*);
 extern int xf86ferror(XF86FILE*);
 extern int xf86fflush(XF86FILE*);
 extern int xf86fgetc(XF86FILE*);
+extern int xf86getc(XF86FILE*);
 extern int xf86fgetpos(XF86FILE*,XF86fpos_t*);
-extern char* xf86fgets(char*,int,XF86FILE*);
+extern char* xf86fgets(char*,INT32,XF86FILE*);
 extern double xf86floor(double);
 extern double xf86fmod(double,double);
 extern XF86FILE* xf86fopen(const char*,const char*);
-extern int xf86fprintf(/*XF86FILE*,const char*,...*/);
+extern int xf86printf(const char*,...);
+extern int xf86fprintf(XF86FILE*,const char*,...);
 extern int xf86fputc(int,XF86FILE*);
 extern int xf86fputs(const char*,XF86FILE*);
 extern INT32 xf86fread(void*,INT32,INT32,XF86FILE*);
 extern void xf86free(void*);
 extern XF86FILE* xf86freopen(const char*,const char*,XF86FILE*);
-extern int xf86fscanf(/*XF86FILE*,const char*,...*/);
+#ifdef HAVE_VFSCANF
+extern int xf86fscanf(XF86FILE*,const char*,...);
+#else
+extern int xf86fscanf(/*XF86FILE*,const char*,char *,char *,char *,char *,
+			char *,char *,char *,char *,char *,char * */);
+#endif
 extern int xf86fseek(XF86FILE*,long,int);
 extern int xf86fsetpos(XF86FILE*,const XF86fpos_t*);
 extern long xf86ftell(XF86FILE*);
@@ -91,7 +113,7 @@ extern double xf86log10(double);
 extern void* xf86malloc(INT32);
 extern void* xf86memchr(const void*,int,INT32);
 extern int xf86memcmp(const void*,const void*,INT32);
-extern int xf86memcpy(void*,const void*,INT32);
+extern void* xf86memcpy(void*,const void*,INT32);
 extern void* xf86memmove(void*,const void*,INT32);
 extern void* xf86memset(void*,int,INT32);
 extern double xf86modf(double,double*);
@@ -104,15 +126,22 @@ extern void xf86rewind(XF86FILE*);
 extern int xf86setbuf(XF86FILE*,char*);
 extern int xf86setvbuf(XF86FILE*,char*,int,INT32);
 extern double xf86sin(double);
-extern int xf86sprintf(/*char*,const char*,...*/);
+extern int xf86sprintf(char*,const char*,...);
 extern double xf86sqrt(double);
-extern int xf86sscanf(/*const char* const char*,...*/);
+#ifdef HAVE_VSSCANF
+extern int xf86sscanf(char*,const char*,...);
+#else
+extern int xf86sscanf(/*char*,const char*,char *,char *,char *,char *,
+			char *,char *,char *,char *,char *,char * */);
+#endif
 extern char* xf86strcat(char*,const char*);
+extern char* xf86strchr(const char*, int c);
 extern int xf86strcmp(const char*,const char*);
 extern char* xf86strcpy(char*,const char*);
 extern INT32 xf86strcspn(const char*,const char*);
 extern char* xf86strerror(int);
 extern INT32 xf86strlen(const char*);
+extern char* xf86strncat(char *, const char *, INT32);
 extern int xf86strncmp(const char*,const char*,INT32);
 extern char* xf86strncpy(char*,const char*,INT32);
 extern char* xf86strpbrk(const char*,const char*);
@@ -129,18 +158,20 @@ extern char* xf86tmpnam(char*);
 extern int xf86tolower(int);
 extern int xf86toupper(int);
 extern int xf86ungetc(int,XF86FILE*);
-extern int xf86vfprintf(/*XF86FILE*,const char*,...*/);
-extern int xf86vsprintf(/*char*,const char*,...*/);
+extern int xf86vfprintf(XF86FILE*,const char*,...);
+extern int xf86vsprintf(char*,const char*,...);
 
-extern int xf86open(/*const char*, int,...*/);
+extern int xf86open(const char*, int,...);
 extern int xf86close(int);
 extern int xf86ioctl(int, unsigned long, char *);
-extern int xf86read(int, const void *, size_t);
-extern int xf86write(int, const void *, size_t);
+extern unsigned int xf86read(int, void *, INT32);
+extern unsigned int xf86write(int, const void *, INT32);
 extern int xf86errno;
 
+extern double xf86hypot(double,double);
+
 /* non-ANSI C functions */
-extern XF86DIR* xf86opendir(char*);
+extern XF86DIR* xf86opendir(const char*);
 extern int xf86closedir(XF86DIR*);
 extern XF86DIRENT* xf86readdir(XF86DIR*);
 extern void xf86rewinddir(XF86DIR*);
@@ -151,14 +182,19 @@ extern void xf86bzero(void*,unsigned int);
 extern void xf86getsecs(INT32 *, INT32 *);
 extern int xf86getbitsperpixel(int);
 extern Bool xf86setexternclock(char *, int, int);
-extern int xf86execl();
-extern long xf86fpossize();
+extern int xf86execl(const char *, const char *, ...);
+extern long xf86fpossize(void);
 
-#else /* XFree86LOADER */
+#else /* XFree86LOADER || NEED_XF86_TYPES */
 #include <unistd.h>
 #include <stdio.h>
-#endif /* XFree86LOADER */
-  
+#endif /* XFree86LOADER NEED_XF86_TYPES */
+
+/*
+ * These things are always required by drivers (but not by libc_wrapper.c),
+ * even for a static server because some OSs don't provide them.
+ */
+
 extern void xf86usleep(unsigned long);
 
 #endif /* _XF86_ANSIC_H */

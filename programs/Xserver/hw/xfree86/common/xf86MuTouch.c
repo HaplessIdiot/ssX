@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MuTouch.c,v 3.3 1997/11/16 11:51:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MuTouch.c,v 3.2.2.4 1998/06/04 17:35:21 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -39,8 +39,6 @@
  *******************************************************************************
  */
 
-#include "Xos.h"
-
 #define	 NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
@@ -52,12 +50,11 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86Priv.h"
+#include "xf86_OSproc.h"
 #ifdef XFree86LOADER
 #include "xf86_ansic.h"                            
 #endif
-#include "xf86_Config.h"
 #include "xf86Xinput.h"
 #include "xf86Version.h"
 

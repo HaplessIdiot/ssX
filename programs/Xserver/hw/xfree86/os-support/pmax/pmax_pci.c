@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_pci.c,v 1.2.2.1 1998/06/09 14:41:03 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -48,10 +48,10 @@
 #include <stdio.h>
 #include "os.h"
 #include "compiler.h"
-#include "input.h"
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "../../common_hw/Pci.h"
+#include "Pci.h"
 
 #include <sys/prosrfs.h>
 #include <sys/cpu.h>
@@ -465,12 +465,13 @@ nh6400PciReadLong(PCITAG tag, int offset)
   devnum = PCI_DEV_FROM_TAG(tag);
   func   = PCI_FUNC_FROM_TAG(tag);
 
-  if (xf86Verbose > 2)
-    ErrorF("nh6400PciReadLong: bus=%d, devnum=%d, func=%d, offset=0x%x\n", bus, devnum, func, offset);
+  xf86MsgVerb(3, X_INFO,
+	      "nh6400PciReadLong: bus=%d, devnum=%d, func=%d, offset=0x%x\n",
+	      bus, devnum, func, offset);
 
   if (bus >= pciNumBuses ||  !pciBusInfo[bus]) {
-	  if (xf86Verbose > 0)
-		  ErrorF("nh6400PciReadLong: bus pci%d not defined!!!\n", bus);
+	  xf86Msg(X_WARNING, "nh6400PciReadLong: bus pci%d not defined!!!\n",
+		  bus);
 	  return(0xffffffff);
   }
   
@@ -487,9 +488,9 @@ nh6400PciReadLong(PCITAG tag, int offset)
 	  data_reg_offset = NH6400_PCI_CFG_TYPE1_DATA_REG_OFF;  /* For Type 1 cfg cycles */
 
 	  if (!pri_busp) {
-		  if (xf86Verbose > 0)
-			  ErrorF("nh6400PciReadLong: pci%d's primary parent [pci%d] is not defined!!!\n",
-				 bus, busp->primary_bus);
+		  xf86Msg(X_WARNING,
+			"nh6400PciReadLong: pci%d's primary parent [pci%d] "
+			"is not defined!!!\n", bus, busp->primary_bus);
 		  return(0xffffffff);
 	  }
   }
@@ -501,9 +502,9 @@ nh6400PciReadLong(PCITAG tag, int offset)
   }
 
   if (devnum >= ndevs) {
-	  if (xf86Verbose > 0)
-		  ErrorF("nh6400PciReadLong: devnum %d out of range for bus pci%d\n",
-			 devnum, bus);
+	  xf86Msg(X_WARNING,
+		"nh6400PciReadLong: devnum %d out of range for bus pci%d\n",
+		devnum, bus);
 	  return(0xffffffff);
   }
  
@@ -533,19 +534,18 @@ nh6400PciReadLong(PCITAG tag, int offset)
 	  cfgaddr  = infop->cfg_addrs[devnum] + offset;
   }
   
-  if (xf86Verbose > 1)
-    ErrorF("nh6400PciReadLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
-	   cfgaddr, base, infop->cfgPhysBase); 
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6400PciReadLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
+	      cfgaddr, base, infop->cfgPhysBase); 
 
   xf86DisableInterrupts();
   
   *((unsigned long *)(base)) = pciByteSwap(cfgaddr); /* Set cfg address */
   eieio();
   
-  if (xf86Verbose > 2)
-      ErrorF("nh6400PciReadLong: About to read from 0x%x (phys=0x%x)\n",
-	     base + data_reg_offset,
-	     infop->cfgPhysBase + data_reg_offset);
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6400PciReadLong: About to read from 0x%x (phys=0x%x)\n",
+	       base + data_reg_offset, infop->cfgPhysBase + data_reg_offset);
   
   if (!badaddr(base + data_reg_offset, 4, 0)) {
 	tmp = *((unsigned long *)(base + data_reg_offset));
@@ -554,8 +554,8 @@ nh6400PciReadLong(PCITAG tag, int offset)
 
   xf86EnableInterrupts();
   
-  if (xf86Verbose > 1)
-      ErrorF("nh6400PciReadLong: Read value=0x%x\n", pciByteSwap(tmp));
+  xf86MsgVerb(X_INFO, 3, "nh6400PciReadLong: Read value=0x%x\n",
+	      pciByteSwap(tmp));
   
   return(pciByteSwap(tmp));
 }
@@ -573,13 +573,13 @@ nh6400PciWriteLong(PCITAG tag, int offset, unsigned long val)
   devnum = PCI_DEV_FROM_TAG(tag);
   func   = PCI_FUNC_FROM_TAG(tag);
 
-  if (xf86Verbose > 2)
-    ErrorF("nh6400PciWriteLong: bus=%d, devnum=%d, func=%d, offset=0x%x, val=0x%x\n",
-	   bus, devnum, func, offset, val);
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6400PciWriteLong: bus=%d, devnum=%d, func=%d, offset=0x%x, "
+	      val=0x%x\n", bus, devnum, func, offset, val);
 
   if (bus >= pciNumBuses || !pciBusInfo[bus]) {
-	  if (xf86Verbose > 0)
-		  ErrorF("nh6400PciWriteLong: bus pci%d not defined!!!\n", bus);
+	  xf86Msg(X_WARNING, "nh6400PciWriteLong: bus pci%d not defined!!!\n",
+		  bus);
 	  return;
   }
   busp = pciBusInfo[bus];
@@ -595,9 +595,9 @@ nh6400PciWriteLong(PCITAG tag, int offset, unsigned long val)
 	  data_reg_offset = NH6400_PCI_CFG_TYPE1_DATA_REG_OFF;  /* For Type 1 cfg cycles */
 
 	  if (!pri_busp) {
-		  if (xf86Verbose > 0)
-			  ErrorF("nh6400PciWriteLong: pci%d's primary parent [pci%d] is not defined!!!\n",
-				 bus, busp->primary_bus);
+		  xf86Msg(X_WARNING,
+			  "nh6400PciWriteLong: pci%d's primary parent [pci%d]"
+			  " is not defined!!!\n", bus, busp->primary_bus);
 		  return;
 	  }
   }
@@ -609,9 +609,9 @@ nh6400PciWriteLong(PCITAG tag, int offset, unsigned long val)
   }
 
   if (devnum >= ndevs) {
-	  if (xf86Verbose > 0)
-		  ErrorF("nh6400PciWriteLong: devnum %d out of range for bus pci%d\n",
-			 devnum, bus);
+	  xf86Msg(X_WARNING,
+		  "nh6400PciWriteLong: devnum %d out of range for bus pci%d\n",
+		  devnum, bus);
 	  return;
   }
 
@@ -641,21 +641,19 @@ nh6400PciWriteLong(PCITAG tag, int offset, unsigned long val)
 	  cfgaddr  = infop->cfg_addrs[devnum] + offset;
   }
   
-  if (xf86Verbose > 1)
-    ErrorF("nh6400PciWriteLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
-	   cfgaddr, base, infop->cfgPhysBase); 
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6400PciWriteLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
+	      cfgaddr, base, infop->cfgPhysBase); 
 
   xf86DisableInterrupts();
   
   *((unsigned long *)(base)) = pciByteSwap(cfgaddr); /* Set cfg address */
   eieio();
   
-  if (xf86Verbose > 1) {
-      ErrorF("nh6400PciWriteLong: Writing value=0x%x to 0x%x (phys=0x%x)\n",
-	     val,
-	     base + data_reg_offset,
-	     infop->cfgPhysBase + data_reg_offset);
-  }
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6400PciWriteLong: Writing value=0x%x to 0x%x (phys=0x%x)\n",
+	      val, base + data_reg_offset,
+	      infop->cfgPhysBase + data_reg_offset);
   
   *((unsigned long *)(base + data_reg_offset)) = pciByteSwap(val);
   eieio();
@@ -775,12 +773,13 @@ nh6408PciReadLong(PCITAG tag, int offset)
   devnum = PCI_DEV_FROM_TAG(tag);
   func   = PCI_FUNC_FROM_TAG(tag);
 
-  if (xf86Verbose > 2)
-    ErrorF("nh6408PciReadLong: bus=%d, devnum=%d, func=%d, offset=0x%x\n", bus, devnum, func, offset);
+  xf86MsgVerb(X_INFO,
+	      "nh6408PciReadLong: bus=%d, devnum=%d, func=%d, offset=0x%x\n",
+	      bus, devnum, func, offset);
 
   if (bus >= pciNumBuses || !pciBusInfo[bus]) {
-	  if (xf86Verbose > 0)
-		  ErrorF("nh6408PciReadLong: bus pci%d not defined!!!\n", bus);
+	  xf86Msg(X_WARNING, "nh6408PciReadLong: bus pci%d not defined!!!\n",
+		  bus);
 	  return(0xffffffff);
   }
   
@@ -796,9 +795,9 @@ nh6408PciReadLong(PCITAG tag, int offset)
 	  ndevs           = 16;
 
 	  if (!pri_busp) {
-		  if (xf86Verbose > 0)
-			  ErrorF("nh6408PciReadLong: pci%d's primary parent [pci%d] is not defined!!!\n",
-				 bus, busp->primary_bus);
+		  xf86Msg(X_WARNING,
+			  "nh6408PciReadLong: pci%d's primary parent [pci%d] "
+			  "is not defined!!!\n", bus, busp->primary_bus);
 		  return(0xffffffff);
 	  }
   }
@@ -809,9 +808,9 @@ nh6408PciReadLong(PCITAG tag, int offset)
   }
 
   if (devnum >= ndevs) {
-	  if (xf86Verbose > 0)
-		  ErrorF("nh6408PciReadLong: devnum %d out of range for bus pci%d\n",
-			 devnum, bus);
+	  xf86Msg(X_WARNING
+		  "nh6408PciReadLong: devnum %d out of range for bus pci%d\n",
+		  devnum, bus);
 	  return(0xffffffff);
   }
 
@@ -841,19 +840,19 @@ nh6408PciReadLong(PCITAG tag, int offset)
 	  cfgaddr  = infop->cfg_addrs[devnum] + offset;
   }
   
-  if (xf86Verbose > 1)
-    ErrorF("nh6408PciReadLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
-	   cfgaddr, base, infop->cfgPhysBase); 
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6408PciReadLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
+	      cfgaddr, base, infop->cfgPhysBase); 
 
   xf86DisableInterrupts();
   
   *((unsigned long *)(base)) = pciByteSwap(cfgaddr); /* Set cfg address */
   eieio();
   
-  if (xf86Verbose > 2) 
-      ErrorF("nh6408PciReadLong: About to read from 0x%x (phys=0x%x)\n",
-	     base + NH6408_PCI_CFG_DATA_REG_OFF,
-	     infop->cfgPhysBase + NH6408_PCI_CFG_DATA_REG_OFF);
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6408PciReadLong: About to read from 0x%x (phys=0x%x)\n",
+	      base + NH6408_PCI_CFG_DATA_REG_OFF,
+	      infop->cfgPhysBase + NH6408_PCI_CFG_DATA_REG_OFF);
 
   if (!badaddr(base + NH6408_PCI_CFG_DATA_REG_OFF, 4, 0)) {
     tmp = *((unsigned long *)(base + NH6408_PCI_CFG_DATA_REG_OFF));
@@ -862,8 +861,8 @@ nh6408PciReadLong(PCITAG tag, int offset)
 
   xf86EnableInterrupts();
   
-  if (xf86Verbose > 1) 
-      ErrorF("nh6408PciReadLong: Read value=0x%x\n", pciByteSwap(tmp));
+  xf86MsgVerb(X_INFO, 3, "nh6408PciReadLong: Read value=0x%x\n",
+	      pciByteSwap(tmp));
   
   return(pciByteSwap(tmp));
 }
@@ -881,13 +880,13 @@ nh6408PciWriteLong(PCITAG tag, int offset, unsigned long val)
   devnum = PCI_DEV_FROM_TAG(tag);
   func   = PCI_FUNC_FROM_TAG(tag);
 
-  if (xf86Verbose > 2)
-    ErrorF("nh6408PciWriteLong: bus=%d, devnum=%d, func=%d, offset=0x%x, val=0x%x\n",
-	   bus, devnum, func, offset, val);
+  xf86MsgVerb(X_INFO,
+	      "nh6408PciWriteLong: bus=%d, devnum=%d, func=%d, offset=0x%x, "
+	      "val=0x%x\n", bus, devnum, func, offset, val);
 
   if (bus >= pciNumBuses || !pciBusInfo[bus]) {
-	  if (xf86Verbose > 0)
-		  ErrorF("nh6408PciWriteLong: bus pci%d not defined!!!\n", bus);
+	  xf86Msg(X_WARNING, "nh6408PciWriteLong: bus pci%d not defined!!!\n",
+		  bus);
 	  return;
   }
   
@@ -903,9 +902,9 @@ nh6408PciWriteLong(PCITAG tag, int offset, unsigned long val)
 	  ndevs           = 16;
 
 	  if (!pri_busp) {
-		  if (xf86Verbose > 0)
-			  ErrorF("nh6408PciWriteLong: pci%d's primary parent [pci%d] is not defined!!!\n",
-				 bus, busp->primary_bus);
+		  xf86Msg(X_WARNING,
+			  "nh6408PciWriteLong: pci%d's primary parent [pci%d] "
+			  is not defined!!!\n", bus, busp->primary_bus);
 		  return;
 	  }
   }
@@ -916,9 +915,9 @@ nh6408PciWriteLong(PCITAG tag, int offset, unsigned long val)
   }
 
   if (devnum >= ndevs) {
-	  if (xf86Verbose > 0)
-		  ErrorF("nh6408PciWriteLong: devnum %d out of range for bus pci%d\n",
-			 devnum, bus);
+	  xf86Msg(X_WARNING,
+		  "nh6408PciWriteLong: devnum %d out of range for bus pci%d\n",
+		  devnum, bus);
 	  return;
   }
 
@@ -948,21 +947,20 @@ nh6408PciWriteLong(PCITAG tag, int offset, unsigned long val)
 	  cfgaddr  = infop->cfg_addrs[devnum] + offset;
   }
   
-  if (xf86Verbose > 1)
-    ErrorF("nh6408PciWriteLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
-	   cfgaddr, base, infop->cfgPhysBase); 
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6408PciWriteLong: Writing cfgaddr=0x%x to 0x%x (phys=0x%x)\n",
+	      cfgaddr, base, infop->cfgPhysBase); 
 
   xf86DisableInterrupts();
   
   *((unsigned long *)(base)) = pciByteSwap(cfgaddr); /* Set cfg address */
   eieio();
   
-  if (xf86Verbose > 1) {
-      ErrorF("nh6408PciWriteLong: Writing value=0x%x to 0x%x (phys=0x%x)\n",
-	     val,
-	     base + NH6408_PCI_CFG_DATA_REG_OFF,
-	     infop->cfgPhysBase + NH6408_PCI_CFG_DATA_REG_OFF);
-  }
+  xf86MsgVerb(X_INFO, 3,
+	      "nh6408PciWriteLong: Writing value=0x%x to 0x%x (phys=0x%x)\n",
+	      val, base + NH6408_PCI_CFG_DATA_REG_OFF,
+	      infop->cfgPhysBase + NH6408_PCI_CFG_DATA_REG_OFF);
+
   
   *((unsigned long *)(base + NH6408_PCI_CFG_DATA_REG_OFF)) = pciByteSwap(val);
   eieio();

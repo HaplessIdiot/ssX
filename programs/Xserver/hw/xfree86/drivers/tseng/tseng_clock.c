@@ -1,5 +1,294 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.5 1998/01/24 16:58:25 hohndel Exp $ */
 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.3.2.2 1998/07/24 11:36:32 dawes Exp $ */
+
+
+
+
+
+/*
+ *
+ * Copyright 1993-1997 The XFree86 Project, Inc.
+ *
+ */
+/**
+ ** Clock setting methods for Tseng chips
+ **
+ ** The *ClockSelect() fucntions are ONLY used used for clock probing!
+ ** Setting the actual clock is done in TsengRestore().
+ **/
+
+#include "tseng.h"
+
+static SymTabRec TsengClockChips[] =
+{
+    {CLOCKCHIP_ICD2061A, "icd2061a"},
+    {CLOCKCHIP_ET6000, "et6000"},
+    {CLOCKCHIP_ICS5341, "ics5341"},
+    {CLOCKCHIP_ICS5301, "ics5301"},
+    {CLOCKCHIP_CH8398, "ch8398"},
+    {CLOCKCHIP_STG1703, "stg1703"},
+    {-1, NULL}
+};
+
+Bool
+Tseng_check_clockchip(ScrnInfoPtr pScrn, TsengPtr pTseng)
+{
+    MessageType from;
+
+    ErrorF("	Tseng_check_clockchip\n");
+
+    if (pScrn->device->clockchip && *pScrn->device->clockchip) {
+	/* clockchip given as a string in the config file */
+	pScrn->clockchip = pScrn->device->clockchip;
+	pTseng->ClockChip = xf86StringToToken(TsengClockChips, pScrn->clockchip);
+	if (pTseng->ClockChip == -1) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Unknown clockchip: \"%s\"\n",
+		pScrn->clockchip);
+	    return FALSE;
+	}
+	from = X_CONFIG;
+    } else {
+	/* ramdac probe already defined pTseng->ClockChip */
+	pScrn->clockchip = (char *)xf86TokenToString(TsengClockChips, pTseng->ClockChip);
+	from = X_PROBED;
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "Clockchip: \"%s\"\n",
+	pScrn->clockchip);
+
+    return TRUE;
+}
+
+#ifdef TODO
+
+/*
+ * ET4000ClockSelect --
+ *      select one of the possible clocks ...
+ */
+
+Bool
+Tseng_ET4000ClockSelect(no)
+    int no;
+{
+    static unsigned char save1, save2, save3, save4;
+    unsigned char temp;
+
+    switch (no) {
+    case CLK_REG_SAVE:
+	save1 = inb(0x3CC);
+	outb(vgaIOBase + 4, 0x34);
+	save2 = inb(vgaIOBase + 5);
+	outb(0x3C4, 7);
+	save3 = inb(0x3C5);
+	if (!Is_stdET4K) {
+	    outb(vgaIOBase + 4, 0x31);
+	    save4 = inb(vgaIOBase + 5);
+	}
+	break;
+    case CLK_REG_RESTORE:
+	outb(0x3C2, save1);
+	outw(vgaIOBase + 4, 0x34 | (save2 << 8));
+	outw(0x3C4, 7 | (save3 << 8));
+	if (!Is_stdET4K) {
+	    outw(vgaIOBase + 4, 0x31 | (save4 << 8));
+	}
+	break;
+    default:
+	temp = inb(0x3CC);
+	outb(0x3C2, (temp & 0xf3) | ((no << 2) & 0x0C));
+	outb(vgaIOBase + 4, 0x34);     /* don't nuke the other bits in CR34 */
+	temp = inb(vgaIOBase + 5);
+	outw(vgaIOBase + 4, 0x34 | ((temp & 0xFD) << 8) | ((no & 0x04) << 7));
+
+#ifndef OLD_CLOCK_SCHEME
+	{
+	    outb(vgaIOBase + 4, 0x31);
+	    temp = inb(vgaIOBase + 5);
+	    outb(vgaIOBase + 5, (temp & 0x3f) | ((no & 0x10) << 2));
+	    outb(0x3C4, 7);
+	    temp = inb(0x3C5);
+	    outb(0x3C5, (tseng_save_divide ^ ((no & 0x8) << 3)) | (temp & 0xBF));
+	}
+#else
+	{
+	    outb(0x3C4, 7);
+	    temp = inb(0x3C5);
+	    outb(0x3C5, (tseng_save_divide ^ ((no & 0x10) << 2)) | (temp & 0xBF));
+	}
+#endif
+    }
+    return (TRUE);
+}
+
+/*
+ * LegendClockSelect --
+ *      select one of the possible clocks ...
+ */
+
+Bool
+Tseng_LegendClockSelect(no)
+    int no;
+{
+    /*
+     * Sigma Legend special handling
+     *
+     * The Legend uses an ICS 1394-046 clock generator.  This can generate 32
+     * different frequencies.  The Legend can use all 32.  Here's how:
+     *
+     * There are two flip/flops used to latch two inputs into the ICS clock
+     * generator.  The five inputs to the ICS are then
+     *
+     * ICS     ET-4000
+     * ---     ---
+     * FS0     CS0
+     * FS1     CS1
+     * FS2     ff0     flip/flop 0 output
+     * FS3     CS2
+     * FS4     ff1     flip/flop 1 output
+     *
+     * The flip/flops are loaded from CS0 and CS1.  The flip/flops are
+     * latched by CS2, on the rising edge. After CS2 is set low, and then high,
+     * it is then set to its final value.
+     *
+     */
+    static unsigned char save1, save2;
+    unsigned char temp;
+
+    switch (no) {
+    case CLK_REG_SAVE:
+	save1 = inb(0x3CC);
+	outb(vgaIOBase + 4, 0x34);
+	save2 = inb(vgaIOBase + 5);
+	break;
+    case CLK_REG_RESTORE:
+	outb(0x3C2, save1);
+	outw(vgaIOBase + 4, 0x34 | (save2 << 8));
+	break;
+    default:
+	temp = inb(0x3CC);
+	outb(0x3C2, (temp & 0xF3) | ((no & 0x10) >> 1) | (no & 0x04));
+	outw(vgaIOBase + 4, 0x0034);
+	outw(vgaIOBase + 4, 0x0234);
+	outw(vgaIOBase + 4, ((no & 0x08) << 6) | 0x34);
+	outb(0x3C2, (temp & 0xF3) | ((no << 2) & 0x0C));
+    }
+    return (TRUE);
+}
+
+/*
+ * ET6000ClockSelect --
+ *      programmable clock chip
+ */
+
+Bool
+Tseng_ET6000ClockSelect(freq)
+    int freq;
+{
+    Bool result = TRUE;
+
+    switch (freq) {
+    case CLK_REG_SAVE:
+    case CLK_REG_RESTORE:
+	result = Tseng_ET4000ClockSelect(freq);
+	break;
+    default:
+	{
+	    ET6000SetClock(freq, 2);
+	    result = Tseng_ET4000ClockSelect(2);
+	    usleep(150000);
+	}
+    }
+    return (result);
+}
+
+/*
+ * ICS5341ClockSelect --
+ *      programmable clock chip
+ */
+
+Bool
+Tseng_GenDACClockSelect(freq)
+    int freq;
+{
+    Bool result = TRUE;
+
+    switch (freq) {
+    case CLK_REG_SAVE:
+    case CLK_REG_RESTORE:
+	result = Tseng_ET4000ClockSelect(freq);
+	break;
+    default:
+	{
+	    /*
+	     * right now this is never called
+	     * the code programs the clocks directly :-(
+	     */
+	    ET4000gendacSetClock(freq, 2);	/* can't fail */
+	    result = Tseng_ET4000ClockSelect(2);
+	    usleep(150000);
+	}
+    }
+    return (result);
+}
+
+/*
+ * STG1703ClockSelect --
+ *      programmable clock chip
+ */
+
+Bool
+Tseng_STG1703ClockSelect(freq)
+    int freq;
+{
+    Bool result = TRUE;
+
+    switch (freq) {
+    case CLK_REG_SAVE:
+    case CLK_REG_RESTORE:
+	result = Tseng_ET4000ClockSelect(freq);
+	break;
+    default:
+	{
+	    /*
+	     * right now this is never called
+	     * the code programs the clocks directly :-(
+	     */
+	    ET4000stg1703SetClock(freq, 2);	/* can't fail */
+	    result = Tseng_ET4000ClockSelect(2);
+	    usleep(150000);
+	}
+    }
+    return (result);
+}
+
+/*
+ * ICD2061AClockSelect --
+ *      programmable clock chip
+ */
+
+Bool
+Tseng_ICD2061AClockSelect(freq)
+    int freq;
+{
+    Bool result = TRUE;
+
+    switch (freq) {
+    case CLK_REG_SAVE:
+    case CLK_REG_RESTORE:
+	result = Tseng_ET4000ClockSelect(freq);
+	break;
+    default:
+	{
+	    Et4000AltICD2061SetClock((long)freq * 1000, 2);	/* can't fail */
+	    result = Tseng_ET4000ClockSelect(2);
+	    usleep(150000);
+	}
+    }
+    return (result);
+}
+
+#endif
+
+#if 0
 /*
  *
  * Copyright 1993-1997 The XFree86 Project, Inc.
@@ -14,9 +303,10 @@
  ** Setting the actual clock is done in ET4000Restore().
  **/
 
+#include "compiler.h"
+
 #include "xf86.h"
-#include "xf86_ansic.h"
-#include "xf86_HWlib.h"
+#include "xf86_OSproc.h"
 
 #include "tseng.h"
 
@@ -27,54 +317,56 @@
 
 Bool
 Tseng_ET4000ClockSelect(no)
-     int no;
+    int no;
 {
-  static unsigned char save1, save2, save3, save4;
-  unsigned char temp;
+    static unsigned char save1, save2, save3, save4;
+    unsigned char temp;
 
-  switch(no)
-  {
+    switch (no) {
     case CLK_REG_SAVE:
-      save1 = inb(0x3CC);
-      outb(vgaIOBase + 4, 0x34); save2 = inb(vgaIOBase + 5);
-      outb(0x3C4, 7); save3 = inb(0x3C5);
-      if( et4000_type > TYPE_ET4000 )
-      {
-         outb(vgaIOBase + 4, 0x31); save4 = inb(vgaIOBase + 5);
-      }
-      break;
+	save1 = inb(0x3CC);
+	outb(vgaIOBase + 4, 0x34);
+	save2 = inb(vgaIOBase + 5);
+	outb(0x3C4, 7);
+	save3 = inb(0x3C5);
+	if (!Is_stdET4K) {
+	    outb(vgaIOBase + 4, 0x31);
+	    save4 = inb(vgaIOBase + 5);
+	}
+	break;
     case CLK_REG_RESTORE:
-      outb(0x3C2, save1);
-      outw(vgaIOBase + 4, 0x34 | (save2 << 8));
-      outw(0x3C4, 7 | (save3 << 8));
-      if( et4000_type > TYPE_ET4000 )
-      {
-         outw(vgaIOBase + 4, 0x31 | (save4 << 8));
-      }
-      break;
+	outb(0x3C2, save1);
+	outw(vgaIOBase + 4, 0x34 | (save2 << 8));
+	outw(0x3C4, 7 | (save3 << 8));
+	if (!Is_stdET4K) {
+	    outw(vgaIOBase + 4, 0x31 | (save4 << 8));
+	}
+	break;
     default:
-      temp = inb(0x3CC);
-      outb(0x3C2, ( temp & 0xf3) | ((no << 2) & 0x0C));
-      outb(vgaIOBase + 4, 0x34);	/* don't nuke the other bits in CR34 */
-      temp = inb(vgaIOBase + 5);
-      outw(vgaIOBase + 4, 0x34 | ((temp & 0xFD) << 8) | ((no & 0x04) << 7));
+	temp = inb(0x3CC);
+	outb(0x3C2, (temp & 0xf3) | ((no << 2) & 0x0C));
+	outb(vgaIOBase + 4, 0x34);     /* don't nuke the other bits in CR34 */
+	temp = inb(vgaIOBase + 5);
+	outw(vgaIOBase + 4, 0x34 | ((temp & 0xFD) << 8) | ((no & 0x04) << 7));
 
 #ifndef OLD_CLOCK_SCHEME
-      {
-         outb(vgaIOBase + 4, 0x31);
-         temp = inb(vgaIOBase + 5);
-         outb(vgaIOBase + 5, (temp & 0x3f) | ((no & 0x10) << 2));
-         outb(0x3C4, 7); temp = inb(0x3C5);
-         outb(0x3C5, (tseng_save_divide ^ ((no & 0x8) << 3)) | (temp & 0xBF));
-      }
+	{
+	    outb(vgaIOBase + 4, 0x31);
+	    temp = inb(vgaIOBase + 5);
+	    outb(vgaIOBase + 5, (temp & 0x3f) | ((no & 0x10) << 2));
+	    outb(0x3C4, 7);
+	    temp = inb(0x3C5);
+	    outb(0x3C5, (tseng_save_divide ^ ((no & 0x8) << 3)) | (temp & 0xBF));
+	}
 #else
-      {
-         outb(0x3C4, 7); temp = inb(0x3C5);
-         outb(0x3C5, (tseng_save_divide ^ ((no & 0x10) << 2)) | (temp & 0xBF));
-      }
+	{
+	    outb(0x3C4, 7);
+	    temp = inb(0x3C5);
+	    outb(0x3C5, (tseng_save_divide ^ ((no & 0x10) << 2)) | (temp & 0xBF));
+	}
 #endif
-  }
-  return(TRUE);
+    }
+    return (TRUE);
 }
 
 /*
@@ -84,52 +376,52 @@ Tseng_ET4000ClockSelect(no)
 
 Bool
 Tseng_LegendClockSelect(no)
-     int no;
+    int no;
 {
-  /*
-   * Sigma Legend special handling
-   *
-   * The Legend uses an ICS 1394-046 clock generator.  This can generate 32
-   * different frequencies.  The Legend can use all 32.  Here's how:
-   *
-   * There are two flip/flops used to latch two inputs into the ICS clock
-   * generator.  The five inputs to the ICS are then
-   *
-   * ICS     ET-4000
-   * ---     ---
-   * FS0     CS0
-   * FS1     CS1
-   * FS2     ff0     flip/flop 0 output
-   * FS3     CS2
-   * FS4     ff1     flip/flop 1 output
-   *
-   * The flip/flops are loaded from CS0 and CS1.  The flip/flops are
-   * latched by CS2, on the rising edge. After CS2 is set low, and then high,
-   * it is then set to its final value.
-   *
-   */
-  static unsigned char save1, save2;
-  unsigned char temp;
+    /*
+     * Sigma Legend special handling
+     *
+     * The Legend uses an ICS 1394-046 clock generator.  This can generate 32
+     * different frequencies.  The Legend can use all 32.  Here's how:
+     *
+     * There are two flip/flops used to latch two inputs into the ICS clock
+     * generator.  The five inputs to the ICS are then
+     *
+     * ICS     ET-4000
+     * ---     ---
+     * FS0     CS0
+     * FS1     CS1
+     * FS2     ff0     flip/flop 0 output
+     * FS3     CS2
+     * FS4     ff1     flip/flop 1 output
+     *
+     * The flip/flops are loaded from CS0 and CS1.  The flip/flops are
+     * latched by CS2, on the rising edge. After CS2 is set low, and then high,
+     * it is then set to its final value.
+     *
+     */
+    static unsigned char save1, save2;
+    unsigned char temp;
 
-  switch(no)
-  {
+    switch (no) {
     case CLK_REG_SAVE:
-      save1 = inb(0x3CC);
-      outb(vgaIOBase + 4, 0x34); save2 = inb(vgaIOBase + 5);
-      break;
+	save1 = inb(0x3CC);
+	outb(vgaIOBase + 4, 0x34);
+	save2 = inb(vgaIOBase + 5);
+	break;
     case CLK_REG_RESTORE:
-      outb(0x3C2, save1);
-      outw(vgaIOBase + 4, 0x34 | (save2 << 8));
-      break;
+	outb(0x3C2, save1);
+	outw(vgaIOBase + 4, 0x34 | (save2 << 8));
+	break;
     default:
-      temp = inb(0x3CC);
-      outb(0x3C2, (temp & 0xF3) | ((no & 0x10) >> 1) | (no & 0x04));
-      outw(vgaIOBase + 4, 0x0034);
-      outw(vgaIOBase + 4, 0x0234);
-      outw(vgaIOBase + 4, ((no & 0x08) << 6) | 0x34);
-      outb(0x3C2, (temp & 0xF3) | ((no << 2) & 0x0C));
-  }
-  return(TRUE);
+	temp = inb(0x3CC);
+	outb(0x3C2, (temp & 0xF3) | ((no & 0x10) >> 1) | (no & 0x04));
+	outw(vgaIOBase + 4, 0x0034);
+	outw(vgaIOBase + 4, 0x0234);
+	outw(vgaIOBase + 4, ((no & 0x08) << 6) | 0x34);
+	outb(0x3C2, (temp & 0xF3) | ((no << 2) & 0x0C));
+    }
+    return (TRUE);
 }
 
 /*
@@ -139,24 +431,23 @@ Tseng_LegendClockSelect(no)
 
 Bool
 Tseng_ET6000ClockSelect(freq)
-     int freq;
+    int freq;
 {
-   Bool result = TRUE;
+    Bool result = TRUE;
 
-   switch(freq)
-   {
-   case CLK_REG_SAVE:
-   case CLK_REG_RESTORE:
-      result = Tseng_ET4000ClockSelect(freq);
-      break;
-   default:
-      {
-        ET6000SetClock(freq, 2);
-        result = Tseng_ET4000ClockSelect(2);
-        usleep(150000);
-      }
-   }
-   return(result);
+    switch (freq) {
+    case CLK_REG_SAVE:
+    case CLK_REG_RESTORE:
+	result = Tseng_ET4000ClockSelect(freq);
+	break;
+    default:
+	{
+	    ET6000SetClock(freq, 2);
+	    result = Tseng_ET4000ClockSelect(2);
+	    usleep(150000);
+	}
+    }
+    return (result);
 }
 
 /*
@@ -165,29 +456,28 @@ Tseng_ET6000ClockSelect(freq)
  */
 
 Bool
-Tseng_GenDACClockSelect(freq)
-     int freq;
+Tseng_ICS5341ClockSelect(freq)
+    int freq;
 {
-   Bool result = TRUE;
+    Bool result = TRUE;
 
-   switch(freq)
-   {
-   case CLK_REG_SAVE:
-   case CLK_REG_RESTORE:
-      result = Tseng_ET4000ClockSelect(freq);
-      break;
-   default:
-      {
-        /*
-	 * right now this is never called
-	 * the code programs the clocks directly :-(
-	 */
-        ET4000gendacSetClock(freq, 2); /* can't fail */
-        result = Tseng_ET4000ClockSelect(2);
-        usleep(150000);
-      }
-   }
-   return(result);
+    switch (freq) {
+    case CLK_REG_SAVE:
+    case CLK_REG_RESTORE:
+	result = Tseng_ET4000ClockSelect(freq);
+	break;
+    default:
+	{
+	    /*
+	     * right now this is never called
+	     * the code programs the clocks directly :-(
+	     */
+	    ET4000gendacSetClock(freq, 2);	/* can't fail */
+	    result = Tseng_ET4000ClockSelect(2);
+	    usleep(150000);
+	}
+    }
+    return (result);
 }
 
 /*
@@ -197,28 +487,27 @@ Tseng_GenDACClockSelect(freq)
 
 Bool
 Tseng_STG1703ClockSelect(freq)
-     int freq;
+    int freq;
 {
-   Bool result = TRUE;
+    Bool result = TRUE;
 
-   switch(freq)
-   {
-   case CLK_REG_SAVE:
-   case CLK_REG_RESTORE:
-      result = Tseng_ET4000ClockSelect(freq);
-      break;
-   default:
-      {
-        /*
-	 * right now this is never called
-	 * the code programs the clocks directly :-(
-	 */
-        ET4000stg1703SetClock(freq, 2); /* can't fail */
-        result = Tseng_ET4000ClockSelect(2);
-        usleep(150000);
-      }
-   }
-   return(result);
+    switch (freq) {
+    case CLK_REG_SAVE:
+    case CLK_REG_RESTORE:
+	result = Tseng_ET4000ClockSelect(freq);
+	break;
+    default:
+	{
+	    /*
+	     * right now this is never called
+	     * the code programs the clocks directly :-(
+	     */
+	    ET4000stg1703SetClock(freq, 2);	/* can't fail */
+	    result = Tseng_ET4000ClockSelect(2);
+	    usleep(150000);
+	}
+    }
+    return (result);
 }
 
 /*
@@ -228,23 +517,23 @@ Tseng_STG1703ClockSelect(freq)
 
 Bool
 Tseng_ICD2061AClockSelect(freq)
-     int freq;
+    int freq;
 {
-   Bool result = TRUE;
+    Bool result = TRUE;
 
-   switch(freq)
-   {
-   case CLK_REG_SAVE:
-   case CLK_REG_RESTORE:
-      result = Tseng_ET4000ClockSelect(freq);
-      break;
-   default:
-      {
-        Et4000AltICD2061SetClock((long)freq*1000, 2); /* can't fail */
-        result = Tseng_ET4000ClockSelect(2);
-        usleep(150000);
-      }
-   }
-   return(result);
+    switch (freq) {
+    case CLK_REG_SAVE:
+    case CLK_REG_RESTORE:
+	result = Tseng_ET4000ClockSelect(freq);
+	break;
+    default:
+	{
+	    Et4000AltICD2061SetClock((long)freq * 1000, 2);	/* can't fail */
+	    result = Tseng_ET4000ClockSelect(2);
+	    usleep(150000);
+	}
+    }
+    return (result);
 }
 
+#endif

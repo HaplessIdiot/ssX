@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.9 1998/01/24 16:58:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.5.2.12 1998/07/03 13:43:53 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -14,54 +14,30 @@
 #ifndef MGA_H
 #define MGA_H
 
-/*
- * Macros for accessing MMIO space
- */
+#include "xaa.h"
+#include "xaacursor.h"
+
 #if defined(__alpha__)
-#define INREG8(addr) xf86ReadSparse8(MGAMMIOBase, (addr))
-#define INREG16(addr) xf86ReadSparse16(MGAMMIOBase, (addr))
-#define INREG(addr) xf86ReadSparse32(MGAMMIOBase, (addr))
-#define OUTREG8(addr,val) do { xf86WriteSparse8((val),MGAMMIOBase,(addr)); \
-				mem_barrier();} while(0)
-#define OUTREG16(addr,val) do { xf86WriteSparse16((val),MGAMMIOBase,(addr)); \
-				mem_barrier();} while(0)
-#define OUTREG(addr, val) do { xf86WriteSparse32((val),MGAMMIOBase,(addr)); \
-				mem_barrier();} while(0)
-
-#elif defined(__powerpc__)
-/* Regs must be swapped.  Could use PowerPC compat flag, but   */
-/* certain regs need to be accessed as 8/16 bit values meaning */
-/* the addresses need adjusting.  It's just simpler to swap    */
-/* during the access using the the PPC special load/store      */
-/* byte reversed instructions                                  */
-
-#define INREG8(addr)       *(volatile CARD8 *)(MGAMMIOBase + (addr))
-#define INREG16(addr)      ldw_brx(MGAMMIOBase, (addr))
-#define INREG(addr)        ldl_brx(MGAMMIOBase, (addr))
-#define OUTREG8(addr,val)  do { *((volatile CARD8 *)(MGAMMIOBase + (addr))) = (val); mem_barrier(); } while (0)
-#define OUTREG16(addr,val) do { stw_brx((CARD16)(val),MGAMMIOBase,(addr)); mem_barrier(); } while (0)
-#define OUTREG(addr,val)   do { stl_brx((CARD32)(val),MGAMMIOBase,(addr)); mem_barrier(); } while (0)
-
-#else
-
-#define INREG8(addr) *(volatile CARD8 *)(MGAMMIOBase + (addr))
-#define INREG16(addr) *(volatile CARD16 *)(MGAMMIOBase + (addr))
-#define INREG(addr) *(volatile CARD32 *)(MGAMMIOBase + (addr))
-#define OUTREG8(addr, val) *(volatile CARD8 *)(MGAMMIOBase + (addr)) = (val)
-#define OUTREG16(addr, val) *(volatile CARD16 *)(MGAMMIOBase + (addr)) = (val)
-#define OUTREG(addr, val) *(volatile CARD32 *)(MGAMMIOBase + (addr)) = (val)
-
+#define mb() __asm__ __volatile__("mb": : :"memory")
+#define INREG8(addr) xf86ReadSparse8(pMga->IOBase, (addr))
+#define INREG16(addr) xf86ReadSparse16(pMga->IOBase, (addr))
+#define INREG(addr) xf86ReadSparse32(pMga->IOBase, (addr))
+#define OUTREG8(addr,val) do { xf86WriteSparse8((val),pMga->IOBase,(addr)); \
+				mb();} while(0)
+#define OUTREG16(addr,val) do { xf86WriteSparse16((val),pMga->IOBase,(addr)); \
+				mb();} while(0)
+#define OUTREG(addr, val) do { xf86WriteSparse32((val),pMga->IOBase,(addr)); \
+				mb();} while(0)
+#else /* __alpha__ */
+#define INREG8(addr) *(volatile CARD8 *)(pMga->IOBase + (addr))
+#define INREG16(addr) *(volatile CARD16 *)(pMga->IOBase + (addr))
+#define INREG(addr) *(volatile CARD32 *)(pMga->IOBase + (addr))
+#define OUTREG8(addr, val) *(volatile CARD8 *)(pMga->IOBase + (addr)) = (val)
+#define OUTREG16(addr, val) *(volatile CARD16 *)(pMga->IOBase + (addr)) = (val)
+#define OUTREG(addr, val) *(volatile CARD32 *)(pMga->IOBase + (addr)) = (val)
 #endif /* __alpha__ */
 
-#define VGAOUTREG8(addr,val)  OUTREG8((0x1c00+addr),val)
-#define VGAOUTREG16(addr,val) OUTREG16((0x1c00+addr),val)
-#define VGAINREG8(addr)       INREG8((0x1c00+addr))
-#define VGAINREG16(addr)      INREG16((0x1c00+addr))
-
 #define MGAISBUSY() (INREG8(MGAREG_Status + 2) & 0x01)
-#define MGAWAITFIFO() while(INREG16(MGAREG_FIFOSTATUS) & 0x0100)
-#define MGAWAITFREE() while(MGAISBUSY())
-#define MGAWAITFIFOSLOTS(slots) while (((INREG16(MGAREG_FIFOSTATUS) & 0x3f) - (slots)) < 0)
 
 typedef struct {
     Bool	isHwCursor;
@@ -76,40 +52,100 @@ typedef struct {
     void	(*SetCursorColors)();
     long	maxPixelClock;
     long	MemoryClock;
-} MGARamdacRec;
+    MessageType ClockFrom;
+    MessageType MemClkFrom;
+    Bool	SetMemClk;
+} MGARamdacRec, *MGARamdacPtr;
 
-extern MGARamdacRec MGAdac;
-extern PCITAG MGAPciTag;
-extern int MGAchipset;
-extern int MGArev;
-extern int MGAinterleave;
-extern int MGABppShft;
-extern int MGAusefbitblt;
-extern int MGAydstorg;
-extern unsigned char *MGAMMIOBase;
+typedef struct {
+    unsigned char	ExtVga[6];
+    unsigned char 	DacClk[6];
+    unsigned char *     DacRegs;
+    CARD32		DacLong;
+} MGARegRec, *MGARegPtr;
+
+/* Card-specific driver information */
+
+#define MGAPTR(p) ((MGAPtr)((p)->driverPrivate))
+
+typedef struct {
+    MGABiosInfo		Bios;
+    MGABios2Info	Bios2;
+    pciVideoPtr		PciInfo;
+    PCITAG		PciTag;
+    int			Chipset;
+    int                 ChipRev;
+    Bool		Interleave;
+    int			HwBpp;
+    int			Rounding;
+    int			BppShift;
+    Bool		HasFBitBlt;
+    int			YDstOrg;
+    CARD32		IOAddress;
+    CARD32		FbAddress;
+    CARD32		BiosAddress;
+    unsigned char *     IOBase;
 #ifdef __alpha__
-extern unsigned char *MGAMMIOBaseDENSE;
+    unsigned char *     IOBaseDense;
 #endif
+    unsigned char *	FbBase;
+    long		FbMapSize;
+    MGARamdacRec	Dac;
+    Bool		NoAccel;
+    Bool		SyncOnGreen;
+    Bool		Dac6Bit;
+    Bool		HWCursor;
+    Bool		UsePCIRetry;
+    Bool		ShowCache;
+    int			MemClk;
+    int			MinClock;
+    int			MaxClock;
+    MGARegRec		SavedReg;
+    MGARegRec		ModeReg;
+    int			MaxFastBlitY;
+    CARD32		BltScanDirection;
+    CARD32		FilledRectCMD;
+    CARD32		SolidLineCMD;
+    CARD32		PatternRectCMD;
+    CARD32		AccelFlags;
+    XAAInfoRecPtr	AccelInfoRec;
+    XAACursorInfoPtr	CursorInfoRec;
+    CloseScreenProcPtr	CloseScreen;
+} MGARec, *MGAPtr;
+
+extern CARD32 MGAAtype[16];
+extern CARD32 MGAAtypeNoBLK[16];
+
+#define USE_RECTS_FOR_LINES	0x00000001
+#define FASTBLT_BUG		0x00000002
+#define CLIPPER_ON		0x00000004
+#define BLK_OPAQUE_EXPANSION	0x00000008
+#define TRANSC_SOLID_FILL	0x00000010
 
 
-extern void Mga8AccelInit();
-extern void Mga16AccelInit();
-extern void Mga24AccelInit();
-extern void Mga32AccelInit();
-extern void MGAStormAccelInit();
-extern void MGAStormSync();
-extern void MGAStormEngineInit();
-extern void MGA3026RamdacInit();
-extern void MGA1064RamdacInit();
+/* Prototypes */
+void MGA3026RamdacInit(ScrnInfoPtr pScrn);
+void MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
+		    Bool saveFonts);
+void MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
+		    Bool restoreFonts);
+Bool MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
-/*
- * definitions for the new acceleration interface
- */
-#define WAITUNTILFINISHED()	MGAWAITFREE()
-#define SETBACKGROUNDCOLOR(col)	OUTREG(MGAREG_BCOL, (col))
-#define SETFOREGROUNDCOLOR(col)	OUTREG(MGAREG_FCOL, (col))
-#define SETRASTEROP(rop)	mga_cmd |= MGARop[rop]
-#define SETWRITEPLANEMASK(pm)	OUTREG(MGAREG_PLNWT, (pm))
-#define SETBLTXYDIR(x,y)	OUTREG(MGAREG_SGN, ((-x+1)>>1)+4*((-y+1)>>1))
+void MGA1064RamdacInit(ScrnInfoPtr pScrn);
+void MGA1064Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
+		    Bool saveFonts);
+void MGA1064Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
+		    Bool restoreFonts);
+Bool MGA1064Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
+
+void MGAStormSync(ScrnInfoPtr pScrn);
+void MGAStormEngineInit(ScrnInfoPtr pScrn);
+Bool MGAStormAccelInit(ScreenPtr pScreen);
+Bool MGAHWCursorInit(ScreenPtr pScreen);
+
+Bool Mga8AccelInit(ScreenPtr pScreen);
+Bool Mga16AccelInit(ScreenPtr pScreen);
+Bool Mga24AccelInit(ScreenPtr pScreen);
+Bool Mga32AccelInit(ScreenPtr pScreen);
 
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.2 1998/01/24 23:58:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_map.c,v 1.3.2.1 1998/06/09 14:41:03 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -72,20 +72,16 @@
  */
 
 #include "X.h"
-#include "input.h"
-#include "scrnintstr.h"
 
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-#include "../../common_hw/Pci.h"
+#include "Pci.h"
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
-struct kd_memloc MapDSC[MAXSCREENS][NUM_REGIONS];
-pointer AllocAddress[MAXSCREENS][NUM_REGIONS];
 
 /*
  * Map an I/O region given its address (host POV)
@@ -128,30 +124,31 @@ xf86MapVidMem(int ScreenNum, int Region, pointer Base, unsigned long Size)
 
 
 pointer
-xf86MapPciMem(int ScreenNum, int Region, PCITAG Tag, pointer Base, unsigned long Size)
+xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, pointer Base,
+		unsigned long Size)
 {
 	pointer hostbase = pciBusAddrToHostAddr(Tag, Base);
 	pointer base;
 
 	base = (pointer) pmax_iomap((unsigned long)hostbase, Size);
 	if (base == MAP_FAILED)	{
-		ErrorF("%s: WARNING: Could not mmap PCI memory [base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
-			   "xf86MapPciMem", Base, hostbase, Size, strerror(errno));
+		xf86Msg(X_WARNING,
+			"xf86MapPciMem: Could not mmap PCI memory "
+			"[base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
+			Base, hostbase, Size, strerror(errno));
 	}
 	return((pointer)base);
 }
 
 
 /* ARGSUSED */
-void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+void
+xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	munmap(Base, Size);
 }
 
+#if 0
 /* ARGSUSED */
 void xf86MapDisplay(ScreenNum, Region)
 int ScreenNum;
@@ -167,6 +164,7 @@ int Region;
 {
 	return;
 }
+#endif
 
 /*
  * Read BIOS via mmap()ing /dev/iomem.
@@ -181,15 +179,17 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf, int L
 }
 
 int
-xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag, unsigned char *Buf, int Len)
+xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
+		unsigned char *Buf, int Len)
 {
 	pointer hostbase = pciBusAddrToHostAddr(Tag, (void *)Base);
 	char   *base;
 
 	base = pmax_iomap((unsigned long)hostbase, 0x8000);
 	if (base == MAP_FAILED)	{
-		ErrorF("%s: WARNING: Could not mmap PCI memory [base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
-			   "xf86MapPciMem", Base, hostbase, 0x8000, strerror(errno));
+		xf86Msg(X_WARNING, "xf86ReadPciBIOS: Could not mmap PCI memory"
+			" [base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
+			Base, hostbase, 0x8000, strerror(errno));
 		return(0);
 	}
 	
@@ -219,8 +219,10 @@ pmax_init_splmap(void)
 {
      spl_map_addr = spl_map(0);
      if (!spl_map_addr) {
-	  ErrorF("pmax_init_splmap: spl_map() failed. Cannot bind to IPL register\n");
-	  ErrorF("\nWARNING: Interrupts cannot be disabled/enabled !!!\n");
+	  xf86Msg(X_WARNING,
+	 	"pmax_init_splmap: spl_map() failed. "
+		"Cannot bind to IPL register\n");
+	  xf86ErrorF("\tInterrupts cannot be disabled/enabled !!!\n");
      }
 }
 

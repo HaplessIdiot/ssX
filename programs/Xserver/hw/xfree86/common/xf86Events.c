@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.52 1998/06/27 12:54:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.46.2.17 1998/07/18 17:53:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -25,30 +25,22 @@
 
 /* [JCH-96/01/21] Extended std reverse map to four buttons. */
 
-#define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
 #include "Xpoll.h"
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
+#define XF86_OS_PRIVS
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
 #include "atKeynames.h"
 
 
 #ifdef XFreeXDGA
-#include "XIproto.h"
-#include "extnsionst.h"
-#include "scrnintstr.h"
-#include "servermd.h"
-
-#include "exevents.h"
-
+#include "dgaproc.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
 #endif
@@ -60,11 +52,6 @@
 #endif
 
 #include "mipointer.h"
-#include "dixevents.h"
-#include "opaque.h"
-#ifdef DPMSExtension
-#include "extensions/dpms.h"
-#endif
 
 #ifdef XKB
 extern Bool noXkbExtension;
@@ -124,12 +111,6 @@ extern void  XTestStealMotionData();
 
 #endif
 
-Bool xf86VTSema = TRUE;
-
-#ifdef	XINPUT
-extern	InputInfo 	inputInfo;
-#endif	/* XINPUT */
-
 /*
  * The first of many hack's to get VT switching to work under
  * Solaris 2.1 for x86. The basic problem is that Solaris is supposed
@@ -152,50 +133,21 @@ static Bool VTSwitchEnabled = TRUE;   /* Allows run-time disabling for *BSD */
 
 extern fd_set EnabledDevices;
 
-#if defined(CODRV_SUPPORT)
-extern unsigned char xf86CodrvMap[];
+#if defined(XQUEUE)
+extern void xf86XqueRequest(void);
 #endif
 
-#if defined(XQUEUE) && !defined(XQUEUE_ASYNC)
-extern void xf86XqueRequest(
-#if NeedFunctionPrototypes
-	void
-#endif
-	);
-#endif
+static void xf86VTSwitch(void);
 
-static void xf86VTSwitch(
-#if NeedFunctionPrototypes
-	void
-#endif
-	);
 #ifdef XFreeXDGA
 #ifdef XINPUT
-void XF86DirectVideoMoveMouse(
+void XF86DirectVideoMoveMouse(int x, int y, CARD32 mtime);
 #else
-static void XF86DirectVideoMoveMouse(
+static void XF86DirectVideoMoveMouse(int x, int y, CARD32 mtime);
 #endif
-#if NeedFunctionPrototypes
-	int x,
-	int y,
-	CARD32 mtime
+static void XF86DirectVideoKeyEvent(xEvent *xE, int keycode, int etype);
 #endif
-	);
-static void XF86DirectVideoKeyEvent(
-#if NeedFunctionPrototypes
-	xEvent *xE,
-	int keycode,
-	int etype
-#endif
-	);
-#endif
-static CARD32 buttonTimer(
-#if NeedFunctionPrototypes
-	OsTimerPtr timer,
-	CARD32 now,
-	pointer arg
-#endif
-     	);
+static CARD32 buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg);
 
 /*
  * Lets create a simple finite-state machine:
@@ -301,7 +253,6 @@ static char hitachMap[16] = {  0,  2,  1,  3,
 			      12, 14, 13, 15 };
 
 #define reverseBits(map, b)	(((b) & ~0x0f) | map[(b) & 0x0f])
-
 
 /*
  * TimeSinceLastInputEvent --
@@ -460,8 +411,7 @@ extern u_char SpecialServerMap[];
 
 #if !defined(__EMX__)
 void
-xf86PostKbdEvent(key)
-     unsigned key;
+xf86PostKbdEvent(unsigned key)
 {
   int         scanCode = (key & 0x7f);
   int         specialkey;
@@ -476,11 +426,6 @@ xf86PostKbdEvent(key)
   static int  lockkeys = 0;
 #if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
   static Bool first_time = TRUE;
-#endif
-
-#if defined(CODRV_SUPPORT)
-  if (xf86Info.consType == CODRV011 || xf86Info.consType == CODRV01X)
-    scanCode = xf86CodrvMap[scanCode];
 #endif
 
 #if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
@@ -661,8 +606,13 @@ xf86PostKbdEvent(key)
       case KEY_BackSpace:
 	if (!xf86Info.dontZap) {
 #ifdef XFreeXDGA
-  if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectGraphics) 
-	break;
+	  Bool dgaActive = FALSE;
+	  int i;
+	  for (i = 0; i < xf86NumScreens; i++)
+            if (DGAAvailable(i) && DGAGetDirectMode(i))
+		dgaActive = TRUE;
+	  if (dgaActive)
+	    break;
 #endif
 	 GiveUp(0);
         }
@@ -1024,8 +974,10 @@ xf86PostKbdEvent(key)
   else 
     {
 #ifdef XFreeXDGA
-      if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectKeyb) {
-	  XF86DirectVideoKeyEvent(&kevent, keycode, (down ? KeyPress : KeyRelease));
+      if (DGAAvailable(xf86Info.currentScreen->myNum) &&
+	  (DGAGetFlags(xf86Info.currentScreen->myNum) & XF86DGADirectKeyb)) {
+	  XF86DirectVideoKeyEvent(&kevent, keycode,
+				  (down ? KeyPress : KeyRelease));
       } else
 #endif
       {
@@ -1038,10 +990,7 @@ xf86PostKbdEvent(key)
 
 
 static CARD32
-buttonTimer(timer, now, arg)
-     OsTimerPtr timer;
-     CARD32 now;
-     pointer arg;
+buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 {
     MouseDevPtr	priv = MOUSE_DEV((DeviceIntPtr) arg);
 
@@ -1057,9 +1006,7 @@ buttonTimer(timer, now, arg)
  */
 
 void
-xf86PostMseEvent(device, buttons, dx, dy)
-    DeviceIntPtr device;
-    int buttons, dx, dy;
+xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
 {
   static OsTimerPtr timer = NULL;
   MouseDevPtr private = MOUSE_DEV(device);
@@ -1077,7 +1024,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
   xf86Info.lastEventTime = mevent->u.keyButtonPointer.time = GetTimeInMillis();
 
   truebuttons = buttons;
-  if (private->mseType == P_MMHIT)
+  if (private->mseType == PROT_MMHIT)
     buttons = reverseBits(hitachMap, buttons);
   else
     buttons = reverseBits(reverseMap, buttons);
@@ -1095,7 +1042,8 @@ xf86PostMseEvent(device, buttons, dx, dy)
 
 #ifndef XINPUT
 #ifdef XFreeXDGA
-      if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectMouse) {
+      if (DGAAvailable(xf86Info.currentScreen->myNum) &&
+	  (DGAGetFlags(xf86Info.currentScreen->myNum) & XF86DGADirectMouse)) {
 	XF86DirectVideoMoveMouse(dx, dy, mevent->u.keyButtonPointer.time);
       } else
 #endif
@@ -1115,7 +1063,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
        * Modifying the state table to keep track of the middle button state
        * would nearly double its size, so I'll stick with this fix.  - TJW
        */
-      if (private->mseType == P_MMHIT)
+      if (private->mseType == PROT_MMHIT)
         change = buttons ^ reverseBits(hitachMap, private->lastButtons);
       else
         change = buttons ^ reverseBits(reverseMap, private->lastButtons);
@@ -1190,10 +1138,10 @@ xf86PostMseEvent(device, buttons, dx, dy)
        * Note that xf86Info.lastButtons has the hardware button mapping which
        * is the reverse of the button mapping reported to the server.
        */
-      if (private->mseType == P_MMHIT)
-        change = buttons ^ reverseBits(hitachMap, private->lastButtons);
+      if (private->mseType == PROT_MMHIT)
+	change = buttons ^ reverseBits(hitachMap, private->lastButtons);
       else
-        change = buttons ^ reverseBits(reverseMap, private->lastButtons);
+	change = buttons ^ reverseBits(reverseMap, private->lastButtons);
       while (change)
 	{
 	  id = ffs(change);
@@ -1204,7 +1152,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
                     XE_POINTER);
 # else
 	    xf86PostButtonEvent(device, 0, id, (buttons&(1<<(id-1))), 0, 0);
-#endif
+# endif
 	}
 #endif
     }
@@ -1220,24 +1168,21 @@ xf86PostMseEvent(device, buttons, dx, dy)
 
 /* ARGSUSED */
 void
-xf86Block(blockData, pTimeout, pReadmask)
-     pointer blockData;
-     OSTimePtr pTimeout;
-     pointer  pReadmask;
+xf86Block(pointer blockData, OSTimePtr pTimeout, pointer pReadmask)
 {
-#if defined(MetroLink) && defined(SVR4)
-/*
- * On MP SVR4 boxes, and race condition exists because the XQUEUE does
- * not have anyway to lock it for exclusive access. This results in one
- * processor putting something on the queue at the same time the other
- * processor is taking it soemthing off. The count of items int he queue
- * can get off by 1. This just goes and checks to see if an extra event
- * was put in the queue a during this period. The signal for this event
- * was ignored while processing the previous event.
- */
-   
-  if(xf86VTSema)
-    xf86XqueRequest();
+#if defined(XQUEUE)
+    /* 
+     * On MP SVR4 boxes, a race condition exists because the XQUEUE does
+     * not have anyway to lock it for exclusive access. This results in one
+     * processor putting something on the queue at the same time the other
+     * processor is taking it something off. The count of items in the queue
+     * can get off by 1. This just goes and checks to see if an extra event
+     * was put in the queue a during this period. The signal for this event
+     * was ignored while processing the previous event.
+     */ 
+
+    if (xf86Screens[0]->vtSema)
+	xf86XqueRequest();
 #endif
 }
 
@@ -1251,10 +1196,7 @@ xf86Block(blockData, pTimeout, pReadmask)
 
 /* ARGSUSED */
 void
-xf86Wakeup(blockData, err, pReadmask)
-     pointer blockData;
-     int err;
-     pointer pReadmask;
+xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 {
 
 #ifndef __EMX__
@@ -1321,8 +1263,7 @@ xf86Wakeup(blockData, err, pReadmask)
  *    Catch unexpected signals and exit cleanly.
  */
 void
-xf86SigHandler(signo)
-     int signo;
+xf86SigHandler(int signo)
 {
   signal(signo,SIG_IGN);
   xf86Info.caughtSignal = TRUE;
@@ -1336,21 +1277,39 @@ xf86SigHandler(signo)
 static void
 xf86VTSwitch()
 {
-  int j;
+  int i;
 
+ErrorF("xf86VTSwitch()\n");
 #ifdef XFreeXDGA
   /*
    * Not ideal, but until someone adds DGA events to the DGA client we
-   * should protect the machine
+   * should protect the machine.
+   *
+   * If any of the screens has DGA direct mode activated, abort the
+   * switch.
    */
-  if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectGraphics) {
-   xf86Info.vtRequestsPending = FALSE;
-   return;
-  }
+  
+  for (i = 0; i < xf86NumScreens; i++)
+    if (DGAAvailable(i) && DGAGetDirectMode(i)) {
+      xf86Info.vtRequestsPending = FALSE;
+      return;
+    }
 #endif
-  if (xf86VTSema) {
-    for (j = 0; j < screenInfo.numScreens; j++)
-      (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(LEAVE, j);
+
+  /*
+   * Since all screens are currently all in the same state it is sufficient
+   * check the first.  This might change in future.
+   */
+  if (xf86Screens[0]->vtSema) {
+
+ErrorF("xf86VTSwitch: Leaving, xf86Exiting is %s\n",
+	BOOLTOSTRING(xf86Exiting));
+
+    for (i = 0; i < xf86NumScreens; i++) {
+      if (!xf86Exiting)
+	xf86SaveRestoreImage(i, SaveImage);
+      xf86Screens[i]->LeaveVT(i, 0);
+    }
 
 #ifndef __EMX__
     DisableDevice((DeviceIntPtr)xf86Info.pKeyboard);
@@ -1362,13 +1321,15 @@ xf86VTSwitch()
        * switch failed 
        */
 
-      for (j = 0; j < screenInfo.numScreens; j++)
-        (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(ENTER, j);
-      SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
-#ifdef DPMSExtension
-      if (DPMSEnabled)
-        DPMSSet(DPMSModeOn);
-#endif
+ErrorF("xf86VTSwitch: Leave failed\n");
+      for (i = 0; i < xf86NumScreens; i++) {
+	if (!xf86Screens[i]->EnterVT(i, 0))
+	  FatalError("EnterVT failed for screen %d\n", i);
+	if (!xf86Exiting) {
+	  xf86SaveRestoreImage(i, RestoreImage);
+	}
+      }
+      SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
 
 #ifndef __EMX__
       EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
@@ -1376,21 +1337,24 @@ xf86VTSwitch()
 #endif
 
     } else {
-      xf86VTSema = FALSE;
+      for (i = 0; i < xf86NumScreens; i++)
+	xf86Screens[i]->vtSema = FALSE;
+      xf86DisableIO();
     }
   } else {
+ErrorF("xf86VTSwitch: Entering\n");
     if (!xf86VTSwitchTo()) return;
       
-    xf86VTSema = TRUE;
-    for (j = 0; j < screenInfo.numScreens; j++)
-      (XF86SCRNINFO(screenInfo.screens[j])->EnterLeaveVT)(ENTER, j);
-      
+    xf86EnableIO();
+    for (i = 0; i < xf86NumScreens; i++) {
+      xf86Screens[i]->vtSema = TRUE;
+      if (!xf86Screens[i]->EnterVT(i, 0))
+	FatalError("EnterVT failed for screen %d\n", i);
+      xf86SaveRestoreImage(i, RestoreImage);
+    }
+
     /* Turn screen saver off when switching back */
     SaveScreens(SCREEN_SAVER_FORCER,ScreenSaverReset);
-#ifdef DPMSExtension
-    if (DPMSEnabled)
-      DPMSSet(DPMSModeOn);
-#endif
 
 #ifndef __EMX__
     EnableDevice((DeviceIntPtr)xf86Info.pKeyboard);
@@ -1403,9 +1367,7 @@ xf86VTSwitch()
 #ifdef XTESTEXT1
 
 void
-XTestGetPointerPos(fmousex, fmousey)
-     short *fmousex;
-     short *fmousey;
+XTestGetPointerPos(short *fmousex, short *fmousey)
 {
   int x,y;
 
@@ -1417,10 +1379,7 @@ XTestGetPointerPos(fmousex, fmousey)
 
 
 void
-XTestJumpPointer(jx, jy, dev_type)
-     int jx;
-     int jy;
-     int dev_type;
+XTestJumpPointer(int jx, int jy, int dev_type)
 {
   miPointerAbsoluteCursor(jx, jy, GetTimeInMillis() );
 }
@@ -1428,12 +1387,8 @@ XTestJumpPointer(jx, jy, dev_type)
 
 
 void
-XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
-     int dev_type;
-     int keycode;
-     int keystate;
-     int mousex;
-     int mousey;
+XTestGenerateEvent(int dev_type, int keycode, int keystate, int mousex,
+		   int mousey)
 {
   xEvent tevent;
   
@@ -1461,10 +1416,7 @@ void
 #else
 static void
 #endif
-XF86DirectVideoMoveMouse(x, y, mtime)
-     int x;
-     int y;
-     CARD32 mtime;
+XF86DirectVideoMoveMouse(int x, int y, CARD32 mtime)
 {
   xEvent xE;
 
@@ -1486,10 +1438,7 @@ XF86DirectVideoMoveMouse(x, y, mtime)
 }
 
 static void
-XF86DirectVideoKeyEvent(xE, keycode, etype)
-xEvent *xE;
-int keycode;
-int etype;
+XF86DirectVideoKeyEvent(xEvent *xE, int keycode, int etype)
 {
   DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
   KeyClassPtr keyc = keybd->key;

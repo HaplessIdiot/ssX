@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_io.c,v 3.2 1996/08/11 13:02:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_io.c,v 3.3.4.3 1998/06/05 16:23:19 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -25,22 +25,16 @@
  */
 /* $XConsortium: sco_io.c /main/7 1996/10/19 18:07:31 kaleb $ */
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
 
-void xf86SoundKbdBell(loudness, pitch, duration)
-int loudness;
-int pitch;
-int duration;
+void
+xf86SoundKbdBell(int loudness, int pitch, int duration)
 {
 	if (loudness && pitch)
 	{
@@ -50,8 +44,8 @@ int duration;
 	}
 }
 
-void xf86SetKbdLeds(leds)
-int leds;
+void
+xf86SetKbdLeds(int leds)
 {
 	/*
 	 * sleep the first time through under SCO.  There appears to be a
@@ -70,8 +64,8 @@ int leds;
 	ioctl(xf86Info.consoleFd, KDSETLED, leds );
 }
 
-void xf86MouseInit(mouse)
-MouseDevPtr mouse;
+void
+xf86MouseInit(MouseDevPtr mouse)
 {
 	if ((mouse->mseFd = open(mouse->mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
@@ -84,8 +78,8 @@ MouseDevPtr mouse;
 	}
 }
 
-int xf86MouseOn(mouse)
-MouseDevPtr mouse;
+int
+xf86MouseOn(MouseDevPtr mouse)
 {
 	xf86SetupMouse(mouse);
 
@@ -95,9 +89,8 @@ MouseDevPtr mouse;
 	return(mouse->mseFd);
 }
 
-int xf86MouseOff(mouse, doclose)
-MouseDevPtr mouse;
-Bool doclose;
+int
+xf86MouseOff(MouseDevPtr mouse, Bool doclose)
 {
 	if (mouse->mseFd >= 0)
 	{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_init.c,v 3.5 1996/02/04 09:10:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_init.c,v 3.6.4.2 1998/06/05 16:23:16 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -35,7 +35,7 @@
 
 #include "local.h"
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 #define VIDEO_SIZE	0x20000
@@ -59,11 +59,6 @@ void xf86OpenConsole()
 	{
 	    FatalError("xf86OpenConsole: Server must be suid root\n");
 	}
-	setuid(real_uid);
-
-	xf86Config(FALSE); /* Read XF86Config */
-
-	setuid(0);
 	fd = open("/dev/vga", O_RDWR);
 	if (fd == -1)
 	{

@@ -22,10 +22,16 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.16 1997/06/15 07:12:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.16.2.8 1998/06/05 16:22:55 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
+
+/*
+ * THIS IS A BIG UGGLY HACK!!!
+ * vvvvvvvvvvvvvvvvv */
+#define LexPtr void *
+/* ^^^^^^^^^^^^^^^^^ */
 
 #ifndef NEED_EVENTS
 #define NEED_EVENTS
@@ -33,18 +39,21 @@
 #include "X.h"
 #include "Xproto.h"
 #include "inputstr.h"
+#if 0
 #include "XI.h"
 #include "XIproto.h"
 #include "XIstubs.h"
+#endif
+#if 0
+#include "xf86Config.h"
+#endif
 
 #define XI86_NO_OPEN_ON_INIT    1 /* open the device only when needed */
 #define XI86_CONFIGURED         2 /* the device has been configured */
 #define XI86_ALWAYS_CORE	4 /* the device always controls the pointer */
 
-#ifdef PRIVATE
-#undef PRIVATE
-#endif
-#define PRIVATE(dev) (((LocalDevicePtr)((dev)->public.devicePrivate))->private)
+#define XI_PRIVATE(dev) \
+	(((LocalDevicePtr)((dev)->public.devicePrivate))->private)
 
 #ifdef HAS_MOTION_HISTORY
 #undef HAS_MOTION_HISTORY
@@ -59,7 +68,7 @@ typedef struct _LocalDeviceRec {
     struct _LocalDeviceRec** /*array*/,
     int /*index*/,
     int /*max*/,
-    LexPtr /*val*/
+    LexPtr /*val*/ 
 #endif
     );
   Bool		(*device_control)(
@@ -76,7 +85,7 @@ typedef struct _LocalDeviceRec {
   int           (*control_proc)(
 #if NeedNestedPrototypes
     struct _LocalDeviceRec* /*local*/,
-    xDeviceCtl* /* control */
+    pointer	/*control*/
 #endif
     );
   void          (*close_proc)(
@@ -157,7 +166,7 @@ xf86AlwaysCore(
 void
 xf86configExtendedInputSection(
 #ifdef NeedFunctionPrototypes
-		LexPtr          /* val */
+		LexPtr          /* val */ 
 #endif
 );
 
@@ -245,13 +254,6 @@ xf86PostKeyEvent(
 		 int		first_valuator,
 		 int		num_valuators,
 		 ...
-#endif
-);
-
-void
-xf86AddDeviceAssoc(
-#if NeedFunctionPrototypes
-		DeviceAssocPtr	/*assoc*/
 #endif
 );
 

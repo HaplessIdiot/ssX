@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.20 1998/06/27 12:54:28 hohndel Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.15.2.13 1998/07/19 13:22:05 dawes Exp $ */
 
 /*
  *
@@ -36,6 +33,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#if defined(linux) && defined(__alpha__)
+#include <malloc.h>
+#endif
 #include "ar.h"
 #include "elf.h"
 #include "coff.h"
@@ -50,6 +50,7 @@
 extern LOOKUP miLookupTab[];
 extern LOOKUP xfree86LookupTab[];
 extern LOOKUP dixLookupTab[];
+extern LOOKUP fontLookupTab[];
 
 /*
 #define DEBUG
@@ -96,6 +97,9 @@ static void ARCHIVEResolveSymbols(void *unused) {}
 /*ARGSUSED*/
 static int ARCHIVECheckForUnresolved(int foo, void *v) { return 0; }
 /*ARGSUSED*/
+static char *ARCHIVEAddressToSection(void *modptr, unsigned long address)
+{ return NULL; }
+/*ARGSUSED*/
 static void ARCHIVEUnload(void *unused2) {}
 
 /*
@@ -107,33 +111,59 @@ static loader_funcs funcs[] = {
 	{ARCHIVELoadModule,
 	 ARCHIVEResolveSymbols,
 	 ARCHIVECheckForUnresolved,
+	 ARCHIVEAddressToSection,
 	 ARCHIVEUnload, {0,0,0,0,0}},
 	/* LD_ELFOBJECT */
 	{ELFLoadModule,
 	 ELFResolveSymbols,
 	 ELFCheckForUnresolved,
+	 ELFAddressToSection,
 	 ELFUnloadModule, {0,0,0,0,0}},
 	/* LD_COFFOBJECT */
 	{COFFLoadModule,
 	 COFFResolveSymbols,
 	 COFFCheckForUnresolved,
+	 COFFAddressToSection,
 	 COFFUnloadModule, {0,0,0,0,0}},
 	/* LD_XCOFFOBJECT */
 	{COFFLoadModule,
 	 COFFResolveSymbols,
 	 COFFCheckForUnresolved,
+	 COFFAddressToSection,
 	 COFFUnloadModule, {0,0,0,0,0}},
 	/* LD_AOUTOBJECT */
 	{AOUTLoadModule,
 	 AOUTResolveSymbols,
 	 AOUTCheckForUnresolved,
+	 AOUTAddressToSection,
 	 AOUTUnloadModule, {0,0,0,0,0}},
-#ifdef DLOPEN_SUPPORT
 	/* LD_AOUTDLOBJECT */
+#ifdef DLOPEN_SUPPORT
 	{DLLoadModule,
 	 DLResolveSymbols,
 	 DLCheckForUnresolved,
+	 ARCHIVEAddressToSection,
 	 DLUnloadModule, {0,0,0,0,0}},
+#else
+	{AOUTLoadModule,
+	 AOUTResolveSymbols,
+	 AOUTCheckForUnresolved,
+	 AOUTAddressToSection,
+	 AOUTUnloadModule, {0,0,0,0,0}},
+#endif
+	/* LD_ELFDLOBJECT */
+#ifdef DLOPEN_SUPPORT
+	{DLLoadModule,
+	 DLResolveSymbols,
+	 DLCheckForUnresolved,
+	 ARCHIVEAddressToSection,
+	 DLUnloadModule, {0,0,0,0,0}},
+#else
+	{ELFLoadModule,
+	 ELFResolveSymbols,
+	 ELFCheckForUnresolved,
+	 ELFAddressToSection,
+	 ELFUnloadModule, {0,0,0,0,0}},
 #endif
 	};
 
@@ -146,6 +176,32 @@ LoaderInit(void)
     LoaderAddSymbols(-1, -1, miLookupTab ) ;
     LoaderAddSymbols(-1, -1, xfree86LookupTab ) ;
     LoaderAddSymbols(-1, -1, dixLookupTab ) ;
+    LoaderAddSymbols(-1, -1, fontLookupTab ) ;
+
+    xf86MsgVerb(X_INFO, 2, "Module ABI versions:\n");
+    xf86ErrorFVerb(2, "\tANSI C Emulation: %d.%d\n",
+			LoaderVersionInfo.ansicVersion >> 16,
+			LoaderVersionInfo.ansicVersion & 0xFFFF);
+    xf86ErrorFVerb(2, "\tXFree86 Video Driver: %d.%d\n",
+			LoaderVersionInfo.videodrvVersion >> 16,
+			LoaderVersionInfo.videodrvVersion & 0xFFFF);
+    xf86ErrorFVerb(2, "\tXInput Driver: %d.%d\n",
+			LoaderVersionInfo.xinputVersion >> 16,
+			LoaderVersionInfo.xinputVersion & 0xFFFF);
+    xf86ErrorFVerb(2, "\tServer Extension: %d.%d\n",
+			LoaderVersionInfo.extensionVersion >> 16,
+			LoaderVersionInfo.extensionVersion & 0xFFFF);
+    xf86ErrorFVerb(2, "\tFont Renderer: %d.%d\n",
+			LoaderVersionInfo.fontVersion >> 16,
+			LoaderVersionInfo.fontVersion & 0xFFFF);
+#if defined(linux) && defined(__alpha__)
+    /*
+     * The glibc malloc uses mmap for large allocations anyway. This breaks
+     * some relocation types because the offset overflow. See loader.h for more
+     * details. We need to turn off this behavior here.
+     */
+    mallopt(M_MMAP_MAX,0);
+#endif
 }
 
 /*
@@ -156,9 +212,7 @@ LoaderInit(void)
  * so the correct loader_funcs can be determined.
  */
 static int
-_GetModuleType(fd,offset)
-int	fd;
-long	offset;
+_GetModuleType(int fd, long offset)
 {
     unsigned char	buf[10]; /* long enough for the largest magic type */
 
@@ -185,7 +239,11 @@ long	offset;
 #endif
 
     if (strncmp((char *) buf, ELFMAG, SELFMAG) == 0) {
-	return LD_ELFOBJECT;
+	if( buf[ELFDLOFF] == ELFDLMAG ) {
+	    return LD_ELFDLOBJECT;
+	} else {
+	    return LD_ELFOBJECT;
+	}
     }
 
     if( buf[0] == 0x4c && buf[1] == 0x01 ) {
@@ -214,14 +272,11 @@ long	offset;
         /* AOUTMAGIC, BSDI */
         return LD_AOUTOBJECT;
     }
-#ifdef DLOPEN_SUPPORT
-    if ((buf[0] == 0xc0 && buf[1] == 0x86) ||
-	(buf[3] == 0xc0 && buf[2] == 0x86))
-    {
+    if ((buf[0] == 0xc0 && buf[1] == 0x86) || /* big endian form */
+	(buf[3] == 0xc0 && buf[2] == 0x86)) { /* little endian form */
         /* i386 shared object */
         return LD_AOUTDLOBJECT;
     }
-#endif
 
     return LD_UNKNOWN;
 }
@@ -233,11 +288,7 @@ static int	offsetbias=0; /* offset into archive */
  * the most efficient method for a platform.
  */
 void *
-_LoaderFileToMem(fd,offset,size,label)
-int	fd;
-unsigned long	offset;
-int	size;
-char	*label; /* Only used for Debugging */
+_LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 {
 #if UseMMAP
     unsigned long ret;	
@@ -294,9 +345,7 @@ char	*label; /* Only used for Debugging */
  * _LoaderFreeFileMem() free the memory in which a file was loaded.
  */
 void
-_LoaderFreeFileMem(addr,size)
-void	*addr;
-int	size;
+_LoaderFreeFileMem(void *addr, int size)
 {
 #ifdef DEBUGMEM
     ErrorF("_LoaderFreeFileMem(%x,%d)\n",addr,size);
@@ -314,11 +363,7 @@ int	size;
 }
 
 int
-_LoaderFileRead(fd,offset,buf,size)
-int	fd;
-unsigned int offset;
-void	*buf;
-int	size;
+_LoaderFileRead(int fd, unsigned int offset, void *buf, int size)
 {
     if(lseek(fd,offset+offsetbias,SEEK_SET)<0)
 	FatalError("_LoaderFileRead() lseek() failed: %s\n", strerror(errno) );
@@ -342,8 +387,7 @@ _LoaderListPush()
 }
 
 static loaderPtr
-_LoaderListPop(handle)
-int	handle;
+_LoaderListPop(int handle)
 {
   loaderPtr item=listHead;
   loaderPtr *bptr=&listHead; /* pointer to previous node */
@@ -366,8 +410,7 @@ int	handle;
  * the given handle.
  */
 char *
-_LoaderHandleToName(handle)
-int	handle;
+_LoaderHandleToName(int handle)
 {
   loaderPtr item=listHead;
   loaderPtr aritem=NULL;
@@ -395,6 +438,60 @@ int	handle;
   return 0;
 }
 
+/*
+ * _LoaderModuleToName() will return the name of the first module with a
+ * given handle. This requires getting the last module on the LIFO with
+ * the given handle.
+ */
+char *
+_LoaderModuleToName(int module)
+{
+  loaderPtr item=listHead;
+  loaderPtr aritem=NULL;
+  loaderPtr lastitem=NULL;
+
+  if ( module < 0 ) {
+	return "(built-in)";
+	}
+  while(item) {
+	if( item->module == module ) {
+	    if( strchr(item->name,':') == NULL )
+		aritem=item;
+	    else
+		lastitem=item;
+	    }
+	item=item->next;
+	}
+
+  if( aritem )
+    return aritem->name;
+
+  if( lastitem )
+    return lastitem->name;
+
+  return 0;
+}
+
+/*
+ * _LoaderAddressToSection() will return the name of the file & section
+ * that contains the given address.
+ */
+int
+_LoaderAddressToSection(const unsigned long address, const char **module,
+			const char ** section)
+{
+  loaderPtr item=listHead;
+
+  while(item) {
+	if( (*section=item->funcs->AddressToSection(item->private, address)) != NULL ) {
+		*module=_LoaderModuleToName(item->module);
+		return 1;
+		}
+	item=item->next;
+ 	}
+
+  return 0;
+}
 /* 
  * _LoaderHandleUnresolved() decides what to do with an unresolved
  * symbol. Right now, it will ignore cfb* symbols whose color depth
@@ -404,14 +501,12 @@ int	handle;
  */
 
 int
-_LoaderHandleUnresolved(symbol, module, color_depth)
-char *symbol;
-char *module;
-int color_depth;
+_LoaderHandleUnresolved(char *symbol, char *module, int color_depth)
 {
-int fatalsym = 0;
+    int fatalsym = 0;
 
-     switch (color_depth){
+    /* XXX remove this depth stuff */
+    switch (color_depth){
           case 4:  /* Don't know how to handle yet */
 	       break;
           case 8:
@@ -445,21 +540,18 @@ int fatalsym = 0;
 	       fatalsym = 1;
 	       break;
 	  }
-     if (xf86ShowUnresolved && !fatalsym){
+    if (xf86ShowUnresolved && !fatalsym){
           ErrorF("Symbol %s from module %s is unresolved!\n",
 	       symbol, module);
-          }
-return(fatalsym);
+    }
+    return(fatalsym);
 }
 
 /*
  * Handle an archive.
  */
 void *
-ARCHIVELoadModule(modrec, arfd, ppLookup)
-loaderPtr	modrec;
-int	arfd;
-LOOKUP **ppLookup;
+ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 {
     loaderPtr tmp = NULL;
     unsigned char	magic[SARMAG];
@@ -643,12 +735,11 @@ LOOKUP **ppLookup;
  * _LoaderGetRelocations() Return the list of outstanding relocations
  */
 LoaderRelocPtr
-_LoaderGetRelocations(mod)
-void *mod;
+_LoaderGetRelocations(void *mod)
 {
-loader_funcs	*formatrec = (loader_funcs *)mod;
+	loader_funcs	*formatrec = (loader_funcs *)mod;
 
-return  &(formatrec->pRelocs);
+	return  &(formatrec->pRelocs);
 }
 
 /*
@@ -656,16 +747,13 @@ return  &(formatrec->pRelocs);
  */
 
 int
-LoaderOpen(module, handle, errmaj, errmin)
-const char *module;
-int handle;
-int *errmaj; int *errmin;
+LoaderOpen(const char *module, int handle, int *errmaj, int *errmin,
+	   int *wasLoaded)
 {
     loaderPtr tmp ;
     int new_handle, modtype ;
     int fd;
     LOOKUP *pLookup;
-    int i;
 
 #if defined(DEBUG)
     ErrorF("LoaderOpen(%s)\n", module );
@@ -684,6 +772,10 @@ int *errmaj; int *errmin;
 		   tmp->name,tmp->name );
 #endif
 	    if ( ! strcmp( module, tmp->name )) {
+		refCount[tmp->handle]++;
+		if (wasLoaded)
+		    *wasLoaded = 1;
+		xf86MsgVerb(X_INFO, 2, "Reloading %s\n", module);
 		return tmp->handle;
 	    }
 	    tmp = tmp->next ;
@@ -693,7 +785,9 @@ int *errmaj; int *errmin;
     /*
      * OK, it's a new one. Add it.
      */
-    ErrorF( "Loading %s\n", module ) ;
+    xf86Msg(X_INFO, "Loading %s\n", module ) ;
+    if (wasLoaded)
+	*wasLoaded = 0;
 
     /*
      * Find a free handle.
@@ -703,18 +797,16 @@ int *errmaj; int *errmin;
 	new_handle ++ ;
 
     if ( new_handle == MAX_HANDLE ) {
-	ErrorF( "Out of loader space\n" ) ; /* XXX */
+	xf86Msg(X_ERROR, "Out of loader space\n" ) ; /* XXX */
 	if(errmaj) *errmaj = LDR_NOSPACE;
 	return -1 ;
     }
-    else
-	freeHandles[new_handle] = HANDLE_USED ;
-	refCount[new_handle] = 1;
 
-
+    freeHandles[new_handle] = HANDLE_USED ;
+    refCount[new_handle] = 1;
 
     if( (fd=open(module, O_RDONLY)) < 0 ) {
-	ErrorF( "Unable to open %s\n", module );
+	xf86Msg(X_ERROR, "Unable to open %s\n", module );
 	freeHandles[new_handle] = HANDLE_FREE ;
 	if(errmaj) *errmaj = LDR_NOMODOPEN;
 	if(errmin) *errmin = errno;
@@ -722,7 +814,7 @@ int *errmaj; int *errmin;
     }
 
     if( (modtype=_GetModuleType(fd,0)) < 0 ) {
-	ErrorF( "%s is an unrecognized module type\n", module ) ;
+	xf86Msg(X_ERROR, "%s is an unrecognized module type\n", module ) ;
         freeHandles[new_handle] = HANDLE_FREE ;
 	if(errmaj) *errmaj = LDR_UNKTYPE;
 	return -1;
@@ -736,7 +828,7 @@ int *errmaj; int *errmin;
     tmp->funcs=&funcs[modtype];
 
     if((tmp->private = funcs[modtype].LoadModule(tmp,fd, &pLookup)) == NULL) {
-	ErrorF( "Failed to load %s\n", module ) ;
+	xf86Msg(X_ERROR, "Failed to load %s\n", module ) ;
 	_LoaderListPop(new_handle);
         freeHandles[new_handle] = HANDLE_FREE ;
 	if(errmaj) *errmaj = LDR_NOLOAD;
@@ -751,9 +843,21 @@ int *errmaj; int *errmin;
     return new_handle;
 }
 
+int
+LoaderHandleOpen(int handle)
+{
+    if (handle < 0 || handle >= MAX_HANDLE)
+	return -1;
+
+    if (freeHandles[handle] != HANDLE_USED)
+	return -1;
+
+    refCount[handle]++;
+    return handle;
+}
+
 void *
-LoaderSymbol(sym)
-const char *sym;
+LoaderSymbol(const char *sym)
 {
   int i;
   itemPtr item = NULL;
@@ -782,21 +886,22 @@ LoaderResolveSymbols(void)
 }
 
 int
-LoaderCheckUnresolved( color_depth, delay_flag )
-int color_depth, delay_flag;
+LoaderCheckUnresolved(int color_depth, int delay_flag )
 {
   int i,ret=0;
+  LoaderResolveOptions delayFlag = delay_flag;
 
   LoaderResolveSymbols();
 
-  if (delay_flag == LD_RESOLV_NOW) {
+  if (delayFlag == LD_RESOLV_NOW) {
      if (check_unresolved_sema > 0) 
 	check_unresolved_sema--;
      else 
-	ErrorF("LoaderCheckUnresolved: not enough MAGIC_DONT_CHECK_UNRESOLVED \n");
+	xf86Msg(X_WARNING, "LoaderCheckUnresolved: not enough "
+		"MAGIC_DONT_CHECK_UNRESOLVED\n");
   }
 
-  if (!check_unresolved_sema ||  delay_flag == LD_RESOLV_FORCE)
+  if (!check_unresolved_sema ||  delayFlag == LD_RESOLV_FORCE)
 	for(i=0;i<numloaders;i++)
 	   if (funcs[i].CheckForUnresolved(color_depth, &funcs[i]))
 		ret=1;
@@ -807,13 +912,13 @@ int color_depth, delay_flag;
 void
 LoaderDefaultFunc(void)
 {
-	ErrorF("\n\n\tThis should not happen!\n\tAn unresolved function was called!\n");
+	ErrorF("\n\n\tThis should not happen!\n"
+		"\tAn unresolved function was called!\n");
 	FatalError("\n");
 }
 
 int
-LoaderUnload( handle)
-     int handle ;
+LoaderUnload(int handle)
 {
   loaderRec fakeHead ;
   loaderPtr tmp = & fakeHead ;
@@ -824,22 +929,21 @@ LoaderUnload( handle)
  /*
   * check the reference count, only free it if it goes to zero
   */
-	if (--refCount[handle])
-		return 0;
+  if (--refCount[handle])
+	return 0;
  /*
   * find the loaderRecs associated with this handle.
   */
 
-  while( (tmp=_LoaderListPop(handle)) != NULL )
-	{
+  while( (tmp=_LoaderListPop(handle)) != NULL ) {
 	if( strchr(tmp->name,':') == NULL ) {
 		/* It is not a member of an archive */
-		ErrorF( "Unloading %s\n", tmp->name ) ;
-		}
+		xf86Msg(X_INFO, "Unloading %s\n", tmp->name ) ;
+	}
 	tmp->funcs->LoaderUnload(tmp->private);
 	xf86loaderfree(tmp->name);
 	xf86loaderfree(tmp);
-	}
+  }
   
   freeHandles[handle] = HANDLE_FREE ;
 
@@ -849,7 +953,8 @@ return 0;
 void
 LoaderDuplicateSymbol(const char *symbol, const int handle)
 {
-    ErrorF("Duplicate symbol %s in %s\n", symbol, listHead->name);
+    ErrorF("Duplicate symbol %s in %s\n", symbol,
+		listHead ? listHead->name : "(built-in)");
     ErrorF("Also defined in %s\n", _LoaderHandleToName(handle));
-    FatalError("\n");
+    FatalError("Module load failure\n");
 }

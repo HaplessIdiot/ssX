@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.8 1997/02/11 10:03:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.9.2.3 1998/06/05 16:23:11 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -27,13 +27,11 @@
 
 #include "X.h"
 #include "Xmd.h"
-#include "input.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 #ifdef USE_DEV_FB
@@ -46,18 +44,14 @@ static Bool KeepTty = FALSE;
 static int VTnum = -1;
 static int activeVT = -1;
 
-extern void xf86VTRequest(
-#if NeedFunctionPrototypes
-	int
-#endif
-);
-
-void xf86OpenConsole()
+void
+xf86OpenConsole()
 {
     int i, fd;
     struct vt_mode VT;
     char vtname[11];
     struct vt_stat vts;
+    MessageType from = X_PROBED;
 #ifdef USE_DEV_FB
     struct fb_var_screeninfo var;
     int fbfd;
@@ -77,6 +71,7 @@ void xf86OpenConsole()
 	if (VTnum != -1)
 	{
 	    xf86Info.vtno = VTnum;
+	    from = X_CMDLINE;
 	}
 	else 
 	{
@@ -104,11 +99,9 @@ void xf86OpenConsole()
 	if (ioctl(fbfd, FBIOGET_VSCREENINFO, &var))
 	    FatalError("xf86OpenConsole: Unable to get screen info\n");
 #endif
-	ErrorF("(using VT number %d)\n\n", xf86Info.vtno);
+	xf86Msg(from, "using VT number %d\n\n", xf86Info.vtno);
 
 	sprintf(vtname,"/dev/tty%d",xf86Info.vtno); /* /dev/tty1-64 */
-
-	xf86Config(FALSE); /* Read XF86Config */
 
 	if (!KeepTty)
 	{
@@ -158,15 +151,15 @@ void xf86OpenConsole()
 	 */
 	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
 	{
-	    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	}
 	if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
 	{
-	    ErrorF("xf86OpenConsole: VT_WAITACTIVE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	}
 	if (ioctl(xf86Info.consoleFd, VT_GETMODE, &VT) < 0) 
 	{
-	    FatalError ("xf86OpenConsole: VT_GETMODE failed\n");
+	    FatalError("xf86OpenConsole: VT_GETMODE failed\n");
 	}
 
 	signal(SIGUSR1, xf86VTRequest);
@@ -199,17 +192,18 @@ void xf86OpenConsole()
 	 */
 	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
 	{
-	    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	}
 	if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
 	{
-	    ErrorF("xf86OpenConsole: VT_WAITACTIVE failed\n");
+	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	}
     }
     return;
 }
 
-void xf86CloseConsole()
+void
+xf86CloseConsole()
 {
     struct vt_mode   VT;
 
@@ -235,10 +229,8 @@ void xf86CloseConsole()
     return;
 }
 
-int xf86ProcessArgument (argc, argv, i)
-int argc;
-char *argv[];
-int i;
+int
+xf86ProcessArgument(int argc, char *argv[], int i)
 {
 	/*
 	 * Keep server from detaching from controlling tty.  This is useful 
@@ -262,7 +254,8 @@ int i;
 	return(0);
 }
 
-void xf86UseMsg()
+void
+xf86UseMsg()
 {
 	ErrorF("vtXX                   use the specified VT number\n");
 	ErrorF("-keeptty               ");

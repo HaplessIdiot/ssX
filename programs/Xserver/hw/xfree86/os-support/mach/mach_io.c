@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_io.c,v 3.3 1996/08/20 12:29:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/mach_io.c,v 3.4.4.1 1998/06/04 17:35:54 dawes Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -28,12 +28,11 @@
 #define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 Bool xf86SupportedMouseTypes[] =

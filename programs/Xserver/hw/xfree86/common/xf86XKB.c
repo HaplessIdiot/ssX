@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86XKB.c,v 3.6.4.5 1998/06/04 17:35:25 dawes Exp $ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -38,9 +38,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
+#define XF86_OS_PRIVS
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
 
 #include "XKBsrv.h"
 
@@ -57,18 +58,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 
 void
-xf86InitXkb()
+xf86InitXkb(void)
 {
 }
 
 void
-#if NeedFunctionPrototypes
 XkbDDXUpdateIndicators(DeviceIntPtr pXDev,CARD32 new)
-#else
-XkbDDXUpdateIndicators(pXDev,new)
-    DeviceIntPtr  pXDev;
-    CARD32 new;
-#endif
 {
     CARD32 old;
 #ifdef DEBUG
@@ -87,16 +82,9 @@ XkbDDXUpdateIndicators(pXDev,new)
 }
 
 void
-#if NeedFunctionPrototypes
 XkbDDXUpdateDeviceIndicators(	DeviceIntPtr		dev,
 				XkbSrvLedInfoPtr 	sli,
 				CARD32 			new)
-#else
-XkbDDXUpdateDeviceIndicators(dev,sli,new)
-    DeviceIntPtr  	dev;
-    XkbSrvLedInfoPtr	sli;
-    CARD32 		new;
-#endif
 {
     if (sli->fb.kf==dev->kbdfeed)
 	XkbDDXUpdateIndicators(dev,new);

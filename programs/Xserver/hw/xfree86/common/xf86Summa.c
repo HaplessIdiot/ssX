@@ -20,9 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.11 1997/11/16 11:51:12 dawes Exp $ */
-
-#include "Xos.h"
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.10.2.5 1998/06/05 16:22:53 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -45,12 +43,12 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86Priv.h"
+#include "xf86_OSproc.h"
 #ifdef XFree86LOADER
 #include "xf86_ansic.h"
 #endif
-#include "xf86_Config.h"
+#include "xf86Config.h"
 #include "xf86Xinput.h"
 #include "atKeynames.h"
 #include "xf86Version.h"
@@ -803,7 +801,7 @@ static int
 xf86SumOpenDevice(DeviceIntPtr pSum)
 {
     LocalDevicePtr	local = (LocalDevicePtr)pSum->public.devicePrivate;
-    SummaDevicePtr	priv = (SummaDevicePtr)PRIVATE(pSum);
+    SummaDevicePtr	priv = (SummaDevicePtr)XI_PRIVATE(pSum);
 
     if (xf86SumOpen(local) != Success) {
 	if (local->fd >= 0) {
@@ -949,13 +947,13 @@ xf86SumClose(LocalDevicePtr local)
 ** When I figure out what it does, it will do it.
 */
 static int
-xf86SumChangeControl(LocalDevicePtr local, xDeviceCtl *control)
+xf86SumChangeControl(LocalDevicePtr local, pointer control)
 {
     xDeviceResolutionCtl	*res;
 
     res = (xDeviceResolutionCtl *)control;
 	
-    if ((control->control != DEVICE_RESOLUTION) ||
+    if ((res->control != DEVICE_RESOLUTION) ||
 	   (res->num_valuators < 1))
 	return (BadMatch);
 

@@ -23,7 +23,7 @@
 
 /* Modified for FreeBSD by David Dawes <dawes@XFree86.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.5 1997/07/31 07:16:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.3.2.2 1998/06/05 16:23:06 dawes Exp $ */
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -35,10 +35,8 @@
 #ifdef XFree86LOADER
 #include "misc.h"
 #include "xf86_libc.h"
-#include "xf86_ansic.h"
 #endif
 #include "xf86.h"
-#include "xf86Priv.h"
 
 #define JS_RETURN sizeof(struct joystick)
 
@@ -65,8 +63,8 @@ xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
   
   if ((status = open(name, O_RDWR | O_NDELAY, 0)) < 0)
     {
-      ErrorF("xf86JoystickOn: Cannot open joystick '%s' (%s)\n", name,
-            strerror(errno));
+      xf86Msg(X_WARNING, "xf86JoystickOn: Cannot open joystick '%s' (%s)\n",
+	      name, strerror(errno));
       return -1;
     }
 
@@ -84,8 +82,8 @@ xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
     changed = 1;
   }
   
-  if (changed && xf86Verbose)
-    ErrorF("(--) Joystick: timeout value = %d\n", *timeout);
+  if (changed)
+    xf86Msg(X_PROBED, "Joystick: timeout value = %d\n", *timeout);
 
   timeinmicros = *timeout * 1000;
 
@@ -93,14 +91,11 @@ xf86JoystickOn(char * name, int *timeout, int *centerX, int *centerY)
   read(status, &js, JS_RETURN);
   if (*centerX < 0) {
     *centerX = js.x;
-    if (xf86Verbose) {
-      ErrorF("(--) Joystick: CenterX set to %d\n", *centerX);
-    }
+    xf86Msg(X_PROBED, "Joystick: CenterX set to %d\n", *centerX);
   }
   if (*centerY < 0) {
     *centerY = js.y;
-    if (xf86Verbose) {
-      ErrorF("(--) Joystick: CenterY set to %d\n", *centerY);
+    xf86Msg(X_PROBED, "Joystick: CenterY set to %d\n", *centerY);
     }
   }
 
@@ -132,9 +127,7 @@ xf86JoystickInit()
  */
 
 int
-xf86JoystickOff(fd, doclose)
-int *fd;
-int doclose;
+xf86JoystickOff(int *fd, int doclose)
 {
   int   oldfd;
   
@@ -155,11 +148,7 @@ int doclose;
  */
 
 int
-xf86JoystickGetState(fd, x, y, buttons)
-int     fd;
-int     *x;
-int     *y;
-int     *buttons;
+xf86JoystickGetState(int fd, int *x, int *y, int *buttons)
 {
   struct joystick	js;
   int                   status;
@@ -188,9 +177,7 @@ int     *buttons;
  * Entry point for XFree86 Loader
  */
 void
-bsd_jstkModuleInit(data, magic)
-    pointer *data;
-    INT32 *magic;
+bsd_jstkModuleInit(pointer *data, INT32 *magic)
 {
     *magic = MAGIC_DONE;
     *data = NULL;

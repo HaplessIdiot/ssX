@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 1997 by Metro Link, Inc.
+ * Copyright 1997,1998 by Metro Link, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,10 +21,14 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.h,v 1.1.2.2 1998/07/04 13:32:44 dawes Exp $ */
 
+#ifndef _ELFLOADER_H
+#define _ELFLOADER_H
 /* elfloader.c */
 extern void *ELFLoadModule(loaderPtr, int, LOOKUP **);
 extern void ELFResolveSymbols(void *);
 extern int ELFCheckForUnresolved(int, void *);
+extern char *ELFAddressToSection(void *,unsigned long);
 extern void ELFUnloadModule(void *);
+#endif /* _ELFLOADER_h */

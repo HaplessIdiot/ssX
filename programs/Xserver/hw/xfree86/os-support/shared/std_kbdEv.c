@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/std_kbdEv.c,v 3.0 1996/03/10 12:07:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/std_kbdEv.c,v 3.1.4.2 1998/06/05 16:23:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -25,16 +25,13 @@
  */
 /* $XConsortium: std_kbdEv.c /main/4 1996/03/11 10:47:33 kaleb $ */
 
-#define NEED_EVENTS
 #include "X.h"
-#include "Xproto.h"
-#include "inputstr.h"
-#include "scrnintstr.h"
-
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
-void xf86KbdEvents()
+void
+xf86KbdEvents()
 {
 	unsigned char rBuf[64];
 	int nBytes, i;

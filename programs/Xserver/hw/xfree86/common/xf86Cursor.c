@@ -1,22 +1,20 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.13 1996/12/23 06:43:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.13.4.12 1998/06/13 14:41:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
- * Copyright 1997 Metro Link Incorporated, Fort Lauderdale, Florida
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Thomas Roell or Metro Link
- * ("copyright holders") not be used in advertising or publicity pertaining to
- * distribution of the software without specific, written prior permission.
- * The copyright holders make no representations about the suitability of this
- * software for any purpose.  It is provided "as is" without express or
- * implied warranty.
+ * documentation, and that the name of Thomas Roell not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Thomas Roell makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
  *
- * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * THOMAS ROELL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * EVENT SHALL THOMAS ROELL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
@@ -36,69 +34,41 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
-#ifdef XFreeXDGA
-#include "Xproto.h"
-#include "extnsionst.h"
-#include "scrnintstr.h"
-#include "servermd.h"
-
-#define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
-#endif
+#include "xf86Priv.h"
 
 #ifdef XINPUT
-#include "xf86_Config.h"
 #include "XIproto.h"
 #include "xf86Xinput.h"
 #endif
 
-typedef struct _screen_layout {
-    short left, right, up, down;
-} xf86ScreenLayoutRec;
-
-/* #include "atKeynames.h" -hv- dont need that include here */
-
-
-static Bool   xf86CursorOffScreen(
-#if NeedFunctionPrototypes
-     ScreenPtr   *pScreen,
-     int         *x,
-     int         *y
+#ifdef XFreeXDGA
+#include "dgaproc.h"
 #endif
-);
-static void   xf86CrossScreen(
-#if NeedFunctionPrototypes
-     ScreenPtr   pScreen,
-     Bool        entering
-#endif
-);
-static void   xf86WrapCursor(
-#if NeedFunctionPrototypes
-     ScreenPtr   pScreen,
-     int         x,
-     int	 y
-#endif
-);
 
-miPointerScreenFuncRec xf86PointerScreenFuncs = {
+typedef struct {
+    short	left, right, up, down;
+} xf86ScreenLayoutRec, *xf86ScreenLayoutPtr;
+
+static Bool xf86CursorOffScreen(ScreenPtr *pScreen, int *x, int *y);
+static void xf86CrossScreen(ScreenPtr pScreen, Bool entering);
+static void   xf86WarpCursor(ScreenPtr pScreen, int x, int y);
+
+static miPointerScreenFuncRec xf86PointerScreenFuncs = {
   xf86CursorOffScreen,
   xf86CrossScreen,
-  xf86WrapCursor,
+  xf86WarpCursor,
 #ifdef XINPUT
   xf86eqEnqueue,
-  xf86eqSwitchScreen,
+  xf86eqSwitchScreen
 #else
   /* let miPointerInitialize take care of these */
   NULL,
-  NULL,
+  NULL
 #endif
 };
 
 static xf86ScreenLayoutRec xf86ScreenLayout[MAXSCREENS];
-static int have_screen_layout;
-
-
+static Bool haveScreenLayout;
 
 /*
  * xf86InitViewport --
@@ -108,9 +78,19 @@ static int have_screen_layout;
  */
 
 void
-xf86InitViewport(pScr)
-     ScrnInfoPtr pScr;
+xf86InitViewport(ScrnInfoPtr pScr)
 {
+
+  /* Set a default layout if none has been specified directly */
+  if (!haveScreenLayout) {
+    int left, right;
+
+    left = pScr->scrnIndex ? pScr->scrnIndex - 1 : xf86NumScreens - 1;
+    right = (pScr->scrnIndex + 1) % xf86NumScreens;
+
+    xf86SetScreenLayout(pScr->scrnIndex, left, right, -1, -1);
+  }
+
   /*
    * Compute the initial Viewport if necessary
    */
@@ -145,9 +125,7 @@ xf86InitViewport(pScr)
  */
 
 void
-xf86SetViewport(pScreen, x, y)
-     ScreenPtr   pScreen;
-     int         x, y;
+xf86SetViewport(ScreenPtr pScreen, int x, int y)
 {
   Bool          frameChanged = FALSE;
   ScrnInfoPtr   pScr = XF86SCRNINFO(pScreen);
@@ -158,33 +136,32 @@ xf86SetViewport(pScreen, x, y)
    */
   if ( pScr->frameX0 > x) { 
     pScr->frameX0 = x;
-    pScr->frameX1 = x + pScr->modes->HDisplay - 1;
+    pScr->frameX1 = x + pScr->currentMode->HDisplay - 1;
     frameChanged = TRUE ;
   }
   
   if ( pScr->frameX1 < x) { 
     pScr->frameX1 = x + 1;
-    pScr->frameX0 = x - pScr->modes->HDisplay + 1;
+    pScr->frameX0 = x - pScr->currentMode->HDisplay + 1;
     frameChanged = TRUE ;
   }
   
   if ( pScr->frameY0 > y) { 
     pScr->frameY0 = y;
-    pScr->frameY1 = y + pScr->modes->VDisplay - 1;
+    pScr->frameY1 = y + pScr->currentMode->VDisplay - 1;
     frameChanged = TRUE;
   }
   
   if ( pScr->frameY1 < y) { 
     pScr->frameY1 = y;
-    pScr->frameY0 = y - pScr->modes->VDisplay + 1;
+    pScr->frameY0 = y - pScr->currentMode->VDisplay + 1;
     frameChanged = TRUE; 
   }
   
-  if (frameChanged) (pScr->AdjustFrame)(pScr->frameX0, pScr->frameY0);
+  if (frameChanged && pScr->AdjustFrame != NULL)
+    pScr->AdjustFrame(pScr->scrnIndex, pScr->frameX0, pScr->frameY0, 0);
 }
 
-
-static Bool xf86ZoomLocked = FALSE;
 
 /*
  * xf86LockZoom --
@@ -192,31 +169,31 @@ static Bool xf86ZoomLocked = FALSE;
  */
 
 void
-xf86LockZoom (pScreen, lock)
-     ScreenPtr	pScreen;
-     Bool	lock;
+xf86LockZoom(ScreenPtr pScreen, Bool lock)
 {
-  /*
-   * pScreen is currently ignored, but may be used later to enable locking
-   * of individual screens.
-   */
-
-  xf86ZoomLocked = lock;
+  XF86SCRNINFO(pScreen)->zoomLocked = lock;
 }
 
+Bool
+xf86ZoomLocked(ScreenPtr pScreen)
+{
+  if (xf86Info.dontZoom || XF86SCRNINFO(pScreen)->zoomLocked)
+    return TRUE;
+  else
+    return FALSE;
+}
+    
 /*
  * xf86ZoomViewport --
- *      Reinitialize the visual part of the screen for another modes->
+ *      Reinitialize the visual part of the screen for another mode.
  */
 
 void
-xf86ZoomViewport (pScreen, zoom)
-     ScreenPtr   pScreen;
-     int        zoom;
+xf86ZoomViewport (ScreenPtr pScreen, int zoom)
 {
   ScrnInfoPtr   pScr = XF86SCRNINFO(pScreen);
 
-  if (xf86ZoomLocked)
+  if (pScr->zoomLocked)
     return;
 
 #ifdef XFreeXDGA
@@ -224,52 +201,50 @@ xf86ZoomViewport (pScreen, zoom)
    * We should really send the mode change request to the DGA client and let
    * it decide what to do. For now just bin the request
    */
-   if (((ScrnInfoPtr)(xf86Info.currentScreen->devPrivates[xf86ScreenIndex].ptr))->directMode&XF86DGADirectGraphics)
-   return;
+  if (DGAAvailable(pScreen->myNum) && DGAGetDirectMode(pScreen->myNum))
+    return;
 #endif
 
-  if (pScr->modes != pScr->modes->next)
-  {
-    pScr->modes = zoom > 0 ? pScr->modes->next : pScr->modes->prev;
+  if (pScr->SwitchMode != NULL &&
+      pScr->currentMode != pScr->currentMode->next) {
+    pScr->currentMode = zoom > 0 ? pScr->currentMode->next
+				 : pScr->currentMode->prev;
 
-    if ((pScr->SwitchMode)(pScr->modes))
-    {
+    if (pScr->SwitchMode(pScr->scrnIndex, pScr->currentMode, 0)) {
       /* 
        * adjust new frame for the displaysize
        */
-      pScr->frameX0 = (pScr->frameX1 + pScr->frameX0 -pScr->modes->HDisplay)/2;
-      pScr->frameX1 = pScr->frameX0 + pScr->modes->HDisplay - 1;
+      pScr->frameX0 = (pScr->frameX1 + pScr->frameX0 -
+		       pScr->currentMode->HDisplay) / 2;
+      pScr->frameX1 = pScr->frameX0 + pScr->currentMode->HDisplay - 1;
 
-      if (pScr->frameX0 < 0)
-	{
+      if (pScr->frameX0 < 0) {
 	  pScr->frameX0 = 0;
-	  pScr->frameX1 = pScr->frameX0 + pScr->modes->HDisplay - 1;
-	}
-      else if (pScr->frameX1 >= pScr->virtualX)
-	{
-	  pScr->frameX0 = pScr->virtualX - pScr->modes->HDisplay;
-	  pScr->frameX1 = pScr->frameX0 + pScr->modes->HDisplay - 1;
-	}
+	  pScr->frameX1 = pScr->frameX0 + pScr->currentMode->HDisplay - 1;
+      } else if (pScr->frameX1 >= pScr->virtualX) {
+	  pScr->frameX0 = pScr->virtualX - pScr->currentMode->HDisplay;
+	  pScr->frameX1 = pScr->frameX0 + pScr->currentMode->HDisplay - 1;
+      }
       
-      pScr->frameY0 = (pScr->frameY1 + pScr->frameY0 - pScr->modes->VDisplay)/2;
-      pScr->frameY1 = pScr->frameY0 + pScr->modes->VDisplay - 1;
+      pScr->frameY0 = (pScr->frameY1 + pScr->frameY0 -
+		       pScr->currentMode->VDisplay) / 2;
+      pScr->frameY1 = pScr->frameY0 + pScr->currentMode->VDisplay - 1;
 
-      if (pScr->frameY0 < 0)
-	{
+      if (pScr->frameY0 < 0) {
 	  pScr->frameY0 = 0;
-	  pScr->frameY1 = pScr->frameY0 + pScr->modes->VDisplay - 1;
-	}
-      else if (pScr->frameY1 >= pScr->virtualY)
-	{
-	  pScr->frameY0 = pScr->virtualY - pScr->modes->VDisplay;
-	  pScr->frameY1 = pScr->frameY0 + pScr->modes->VDisplay - 1;
-	}
+	  pScr->frameY1 = pScr->frameY0 + pScr->currentMode->VDisplay - 1;
+      } else if (pScr->frameY1 >= pScr->virtualY) {
+	  pScr->frameY0 = pScr->virtualY - pScr->currentMode->VDisplay;
+	  pScr->frameY1 = pScr->frameY0 + pScr->currentMode->VDisplay - 1;
+      }
     }
     else /* switch failed, so go back to old mode */
-      pScr->modes = zoom > 0 ? pScr->modes->prev : pScr->modes->next;
+      pScr->currentMode = zoom > 0 ? pScr->currentMode->prev
+				   : pScr->currentMode->next;
   }
 
-  (pScr->AdjustFrame)(pScr->frameX0, pScr->frameY0);
+  if (pScr->AdjustFrame != NULL)
+    (pScr->AdjustFrame)(pScr->scrnIndex, pScr->frameX0, pScr->frameY0, 0);
 }
 
 
@@ -280,57 +255,49 @@ xf86ZoomViewport (pScreen, zoom)
  */
 
 static Bool
-xf86CursorOffScreen (pScreen, x, y)
-     ScreenPtr   *pScreen;
-     int         *x, *y;
+xf86CursorOffScreen(ScreenPtr *pScreen, int *x, int *y)
 {
-    int		new_x, new_y;
-    int		new_screen = -1;
-    ScreenPtr	oldScreen = *pScreen;
-    xf86ScreenLayoutRec *layout = &(xf86ScreenLayout[(*pScreen)->myNum]);
+    int newX, newY;
+    int newScreen = -1;
+    ScreenPtr oldScreen = *pScreen;
+    xf86ScreenLayoutPtr layout = &(xf86ScreenLayout[(*pScreen)->myNum]);
 
     /* This is a trivial case but it is not checked anywhere else. */
     if (screenInfo.numScreens == 1)
 	return FALSE;
 
-    new_x = *x;
-    new_y = *y;
+    newX = *x;
+    newY = *y;
 
     /* Find the new screen number from the screen layout array. */
     if (*y < 0) {
-	new_screen = layout->up;
+	newScreen = layout->up;
     } else if (*y >= (*pScreen)->height) {
-	new_screen = layout->down;
+	newScreen = layout->down;
     } else if (*x < 0) {
-	new_screen = layout->left;
+	newScreen = layout->left;
     } else if (*x >= (*pScreen)->width) {
-	new_screen = layout->right;
+	newScreen = layout->right;
     }
 
-    if (new_screen < 0 || new_screen >= MAXSCREENS)
+    if (newScreen < 0 || newScreen >= screenInfo.numScreens)
 	return FALSE;
 
     /* Set pScreen, adjust x and y, set x and y. */
-    *pScreen = screenInfo.screens[new_screen];
-
-    /* In case the screen did not configure completely */
-    if (!*pScreen ) {
-	*pScreen = oldScreen;
-	return FALSE;
-	}
+    *pScreen = screenInfo.screens[newScreen];
 
     if (*y < 0) {
-	new_y += (*pScreen)->height;
+	newY += (*pScreen)->height;
     } else if (*y >= oldScreen->height) {
-	new_y -= oldScreen->height;
+	newY -= oldScreen->height;
     } else if (*x < 0) {
-	new_x += (*pScreen)->width;
+	newX += (*pScreen)->width;
     } else if (*x >= oldScreen->width) {
-	new_x -= oldScreen->width;
+	newX -= oldScreen->width;
     }
 
-    *x = new_x;
-    *y = new_y;
+    *x = newX;
+    *y = newY;
 
     return TRUE;
 }
@@ -342,34 +309,32 @@ xf86CursorOffScreen (pScreen, x, y)
  *      Switch to another screen
  */
 
+/* NEED TO CHECK THIS */
 /* ARGSUSED */
 static void
-xf86CrossScreen (pScreen, entering)
-     ScreenPtr   pScreen;
-     Bool        entering;
+xf86CrossScreen (ScreenPtr pScreen, Bool entering)
 {
+#if 0
   if (xf86Info.sharedMonitor)
     (XF86SCRNINFO(pScreen)->EnterLeaveMonitor)(entering);
   (XF86SCRNINFO(pScreen)->EnterLeaveCursor)(entering);
+#endif
 }
 
 
 /*
- * xf86WrapCursor --
- *      Wrap possible to another screen
+ * xf86WarpCursor --
+ *      Warp possible to another screen
  */
 
 /* ARGSUSED */
 static void
-xf86WrapCursor (pScreen, x, y)
-     ScreenPtr   pScreen;
-     int         x,y;
+xf86WarpCursor (ScreenPtr pScreen, int x, int y)
 {
   miPointerWarpCursor(pScreen,x,y);
 
   xf86Info.currentScreen = pScreen;
 }
-
 
 void
 xf86SetScreenLayout(int num, int left, int right, int up, int down)
@@ -378,8 +343,7 @@ xf86SetScreenLayout(int num, int left, int right, int up, int down)
     ErrorF("xf86SetScreenLayout: %d %d %d %d %d\n", num, left,right,up,down);
 #endif
     if (num >= MAXSCREENS) {
-	ErrorF("xf86SetScreenLayout: Screen number %d .gt. MAXSCREENS\n",
-	       num);
+	ErrorF("xf86SetScreenLayout: Screen number %d >= MAXSCREENS\n", num);
 	return;
     }
 
@@ -387,4 +351,10 @@ xf86SetScreenLayout(int num, int left, int right, int up, int down)
     xf86ScreenLayout[num].right = right;
     xf86ScreenLayout[num].up    = up;
     xf86ScreenLayout[num].down  = down;
+}
+
+void *
+xf86GetPointerScreenFuncs(void)
+{
+    return (void *)&xf86PointerScreenFuncs;
 }

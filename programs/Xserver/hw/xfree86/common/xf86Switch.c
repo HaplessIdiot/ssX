@@ -21,24 +21,25 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.2 1997/06/17 12:33:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.2.2.5 1998/06/05 16:22:54 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
+#include "Xfuncproto.h"
 #include "Xproto.h"
 #include "misc.h"
 #include "inputstr.h"
 #include "scrnintstr.h"
 #include "XI.h"
 #include "XIproto.h"
+#include "exevents.h"
 
 #if !defined(sun) || defined(i386)
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
 #include "xf86Xinput.h"
 #include "atKeynames.h"
 #include "xf86Version.h"
@@ -47,6 +48,9 @@
 #else
 #include "extio.h"
 #endif
+#include "extnsionst.h"
+#include "extinit.h"
+#include "mipointer.h"
 
 /******************************************************************************
  * debugging macro
@@ -78,20 +82,6 @@ typedef struct
 /******************************************************************************
  * external declarations
  *****************************************************************************/
-
-extern void xf86eqEnqueue(
-#if NeedFunctionPrototypes
-    xEventPtr /*e*/
-#endif
-);
-
-extern void miPointerDeltaCursor(
-#if NeedFunctionPrototypes
-    int /*dx*/,
-    int /*dy*/,
-    unsigned long /*time*/
-#endif
-);
 
 extern int xf86SwitchGetState(
 #ifdef NeedFunctionPrototypes
@@ -182,14 +172,12 @@ xf86SwtControlProc(DeviceIntPtr	device,
  *      Handle the initialization, etc. of a switch
  */
 static int
-xf86SwtProc(pSwt, what)
-     DeviceIntPtr       pSwt;
-     int                what;
+xf86SwtProc(DeviceIntPtr pSwt, int what)
 {
   int			loop;
   int                   nbaxes;
   LocalDevicePtr        local = (LocalDevicePtr)pSwt->public.devicePrivate;
-  SwitchDevPtr		priv = (SwitchDevPtr)PRIVATE(pSwt);
+  SwitchDevPtr		priv = (SwitchDevPtr)XI_PRIVATE(pSwt);
 
   DBG(2, ErrorF("BEGIN xf86SwtProc dev=0x%x priv=0x%x\n", pSwt, priv));
   
@@ -223,14 +211,14 @@ xf86SwtProc(pSwt, what)
                                    loop,
                                    0, /* min val */
                                    1000, /* max val */
-                                   1); /* resolution */
+                                   1, /* min res XXX */
+                                   1, /* max res XXX */
+                                   1 ); /* resolution */
           }
 	  /* allocate the motion history buffer if needed */
 	  xf86MotionHistoryAllocate(local);
 
-/***
           AssignTypeAndName(pSwt, local->atom, local->name);
-***/
         }
 
       break; 
@@ -268,14 +256,20 @@ xf86SwtAllocate()
   
   local->name = "SWITCH";
   local->flags = 0;
+#if !defined(sun) || defined(i386)
+  local->device_config = NULL;
+#endif
+  local->device_control = xf86SwtProc;
   local->read_input = NULL;
   local->close_proc = NULL;
   local->control_proc = NULL;
   local->switch_mode = NULL;
   local->conversion_proc = xf86SwtConvert;
   local->fd = -1;
+  local->atom = 0;
   local->dev = NULL;
   local->private = priv;
+  local->type_name = "Switch";
   local->history_size  = 0;
   
   priv->last = -1;

@@ -23,7 +23,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.11 1997/09/09 10:27:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.8.2.1 1998/06/05 16:23:12 dawes Exp $ */
 
 static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
 
@@ -36,10 +36,8 @@ static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Ex
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#include "xf86.h"
-#include "xf86Priv.h"
 #ifdef XFree86LOADER
-#include "xf86_libc.h"
+#include "xf86.h"
 #include "xf86_ansic.h"
 #endif
 
@@ -64,7 +62,7 @@ int
 xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
 {
   int			fd;
-  struct js_status      js;
+  struct js_status	js;
     
 #ifdef DEBUG
   ErrorF("xf86JoystickOn %s\n", name);
@@ -72,8 +70,8 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
 
   if ((fd = open(name, O_RDWR | O_NDELAY, 0)) < 0)
     {
-      ErrorF("Cannot open joystick '%s' (%s)\n", name,
-            strerror(errno));
+      xf86Msg(X_WARNING, "Cannot open joystick '%s' (%s)\n", name,
+		strerror(errno));
       return -1;
     }
 
@@ -82,9 +80,7 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
       Error("joystick JSIOCGTIMELIMIT ioctl");
     }
     else {
-      if (xf86Verbose) {
-	ErrorF("(--) Joystick: timeout value = %d\n", *timeout);
-      }
+      xf86Msg(X_CONFIG, "Joystick: timeout value = %d\n", *timeout);
     }
   }
   else {
@@ -97,15 +93,11 @@ xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
   read(fd, &js, JS_RETURN);
   if (*centerX < 0) {
     *centerX = js.x;
-    if (xf86Verbose) {
-      ErrorF("(--) Joystick: CenterX set to %d\n", *centerX);
-    }
+    xf86Msg(X_CONFIG, "Joystick: CenterX set to %d\n", *centerX);
   }
   if (*centerY < 0) {
     *centerY = js.y;
-    if (xf86Verbose) {
-      ErrorF("(--) Joystick: CenterY set to %d\n", *centerY);
-    }
+    xf86Msg(X_CONFIG, "Joystick: CenterY set to %d\n", *centerY);
   }
 
   return fd;
@@ -136,9 +128,7 @@ xf86JoystickInit()
  */
 
 int
-xf86JoystickOff(fd, doclose)
-int *fd;
-int doclose;
+xf86JoystickOff(int *fd, int doclose)
 {
   int   oldfd;
   
@@ -159,14 +149,10 @@ int doclose;
  */
 
 int
-xf86JoystickGetState(fd, x, y, buttons)
-int     fd;
-int     *x;
-int     *y;
-int     *buttons;
+xf86JoystickGetState(int fd, int *x, int *y, int *buttons)
 {
-  struct js_status      js;
-  int                   status;
+  struct js_status	js;
+  int			status;
   
   status = read(fd, &js, JS_RETURN);
  
@@ -188,9 +174,7 @@ int     *buttons;
  * Entry point for XFree86 Loader
  */
 void
-linux_jstkModuleInit(data, magic)
-    pointer *data;
-    INT32 *magic;
+linux_jstkModuleInit(pointer *data, INT32 *magic)
 {
     *magic = MAGIC_DONE;
     *data = NULL;

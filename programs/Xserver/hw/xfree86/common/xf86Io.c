@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.33 1998/02/07 08:58:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.30.2.5 1998/06/04 17:35:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -22,23 +22,25 @@
  *
  */
 /* $XConsortium: xf86Io.c /main/27 1996/10/19 17:58:55 kaleb $ */
-/* Patch for PS/2 Intellimouse - Tim Goodwin 1997-11-06. */
 
 #define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
 #include "inputstr.h"
 #include "scrnintstr.h"
-#include "mipointer.h"
 
 #include "compiler.h"
 
-#include "xf86Procs.h"
+#include "xf86.h"
+#include "xf86Priv.h"
+#define XF86_OS_PRIVS
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
+#include "mipointer.h"
 
 #ifdef XINPUT
 #include "xf86Xinput.h"
+#include "XIproto.h"
+#include "exevents.h"
 #endif
 
 #ifdef XKB
@@ -47,17 +49,11 @@
 #include <X11/extensions/XKBsrv.h>
 #endif
 
-extern KeybdCtrl defaultKeyboardControl;
-
 unsigned int xf86InitialCaps = 0;
 unsigned int xf86InitialNum = 0;
 unsigned int xf86InitialScroll = 0;
 
 #include "atKeynames.h"
-
-extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
-				    unsigned long start, unsigned long stop,
-				    ScreenPtr pScreen);
 
 /*
  * xf86KbdBell --
@@ -503,7 +499,7 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
 	      if (fd)
 		  *fd = -1;
 	  } else {
-	      if (mouse->mseType == P_PS2)
+	      if (mouse->mseType == PROT_PS2)
 	          write(mousefd, "\364", 1);
 	  
 	      AddEnabledDevice(mousefd);

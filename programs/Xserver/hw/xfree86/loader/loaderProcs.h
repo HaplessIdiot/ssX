@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.4 1998/01/25 08:28:20 dawes Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.3.2.6 1998/07/05 14:36:22 dawes Exp $ */
 
 /*
  *
@@ -26,8 +23,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "xf86Optrec.h"
+#define IN_LOADER
+#include "xf86Module.h"
 #include "loaderErrors.h"
+#include "fontmod.h"
 
 typedef struct module_desc {
 	struct module_desc *child;
@@ -41,16 +40,23 @@ typedef struct module_desc {
 	ModuleSetupProc SetupProc;
 	ModuleTearDownProc TearDownProc;
 	void *TearDownData; /* returned from SetupProc */
+	const char *path;
 } ModuleDesc, *ModuleDescPtr;
 
 
 /*
  * Extenal API for the loader 
  */
-ModuleDescPtr
-LoadDriver(const char *, const char *, int, XF86OptionPtr, int*, int *);
-ModuleDescPtr
-LoadModule(const char *, const char *, XF86OptionPtr, int*, int *);
+
+void LoaderInit(void);
+
+ModuleDescPtr LoadDriver(const char *, const char *, int, pointer, int *,
+			 int *);
+ModuleDescPtr LoadModule(const char *, const char *, pointer, int *, int *);
+ModuleDescPtr LoadSubModule(ModuleDescPtr, const char *, const char *,
+			    pointer, int *, int *);
+ModuleDescPtr DuplicateModule(ModuleDescPtr mod);
+void LoadFont (FontModule *);
 void UnloadModule (ModuleDescPtr);
 void UnloadDriver (ModuleDescPtr);
 void FreeModuleDesc (ModuleDescPtr mod);
@@ -58,39 +64,9 @@ ModuleDescPtr NewModuleDesc (const char *);
 ModuleDescPtr AddSibling (ModuleDescPtr head, ModuleDescPtr new);
 
 
-int LoaderCheckUnresolved(
-#if NeedFunctionPrototypes
-int, int
-#endif
-);
-int LoaderOpen(
-#if NeedFunctionPrototypes
-const char *,
-int,
-int *,
-int *
-#endif
-);
-void LoaderShowStack(
-#if NeedFunctionPrototypes
-void
-#endif
-);
-void *LoaderSymbol(
-#if NeedFunctionPrototypes
-const char *
-#endif
-);
-void *
-LoaderSymbolHandle(
-#if NeedFunctionPrototypes
-const char *,
-int
-#endif
-);
-int
-LoaderUnload(
-#if NeedFunctionPrototypes
-int
-#endif
-);
+int LoaderCheckUnresolved(int, int);
+void LoaderShowStack(void);
+void *LoaderSymbol(const char *);
+void *LoaderSymbolHandle(const char *, int);
+int LoaderUnload(int);
+

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_ppc.c,v 1.2.2.1 1998/06/09 14:41:04 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -54,7 +54,7 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 volatile unsigned char *ioBase = MAP_FAILED;  /* Also referenced by compiler.h */

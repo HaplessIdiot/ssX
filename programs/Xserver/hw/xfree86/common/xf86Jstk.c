@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.20 1997/06/25 08:24:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.20.2.3 1998/06/05 16:22:52 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -36,8 +36,7 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86_Config.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86Xinput.h"
 #include "xf86_OSlib.h"
 #include "atKeynames.h"
@@ -45,11 +44,7 @@
 
 #include "osdep.h"
 #ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#if 0
 #define strdup(a) xf86strdup(a)
-extern char* xf86strdup(const char*);
-#endif
 #endif
 
 /******************************************************************************
@@ -355,7 +350,7 @@ xf86JstkEvents(OsTimerPtr        timer,
                pointer           arg)
 {
   DeviceIntPtr          device = (DeviceIntPtr)arg;
-  JoystickDevPtr        priv = (JoystickDevPtr) PRIVATE(device);
+  JoystickDevPtr        priv = (JoystickDevPtr) XI_PRIVATE(device);
   int                   timeout = priv->jstkTimeout;
   int                   x, y, buttons;
 
@@ -425,7 +420,7 @@ xf86JstkProc(pJstk, what)
   int                   jstkfd;
   int                   loop;
   LocalDevicePtr        local = (LocalDevicePtr)pJstk->public.devicePrivate;
-  JoystickDevPtr        priv = (JoystickDevPtr)PRIVATE(pJstk);
+  JoystickDevPtr        priv = (JoystickDevPtr)XI_PRIVATE(pJstk);
 
   DBG(2, ErrorF("BEGIN xf86JstkProc dev=0x%x priv=0x%x xf86JstkEvents=0x%x\n",
                 pJstk, priv, xf86JstkEvents));

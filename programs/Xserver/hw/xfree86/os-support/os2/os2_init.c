@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.12 1997/03/03 15:55:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.13.2.2 1998/06/05 16:23:17 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -46,7 +46,7 @@
 #define INCL_DOSMODULEMGR
 #define INCL_DOSFILEMGR
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 VIOMODEINFO OriginalVideoMode;
@@ -177,8 +177,6 @@ void xf86OpenConsole()
 /* Start up the Kbd bit-bucket thread. We don't want to leave the kbd events in the driver queue */
 	VioTid=_beginthread(os2KbdBitBucketThread,NULL,0x2000,(void *)NULL);
 	ErrorF("xf86-OS/2: Started Kbd bit-bucket thread, Tid=%d\n",VioTid);
-
-	xf86Config(FALSE); /* Read XF86Config */
     }
     return;
 }

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.22 1997/11/16 11:51:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.21.2.4 1998/06/04 17:35:15 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -46,8 +46,6 @@
  */
 
 
-#include "Xos.h"
-
 #define	 NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
@@ -67,12 +65,12 @@
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86Priv.h"
+#include "xf86_OSproc.h"
 #ifdef XFree86LOADER
 #include "xf86_ansic.h"
 #endif
-#include "xf86_Config.h"
+#include "xf86Config.h"
 #include "xf86Xinput.h"
 #include "xf86Version.h"
 #endif

@@ -1,6 +1,6 @@
 /* Copyright 1996, The XFree86 Project, Inc */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Beta.c,v 3.3 1997/01/18 06:55:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Beta.c,v 3.4 1997/02/17 09:45:47 hohndel Exp $ */
 
 /*
  * This is for publicly released beta server binaries.
@@ -25,7 +25,7 @@
  */
 
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86Version.h"
 
@@ -57,8 +57,6 @@
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
 #endif
-
-extern char *xf86ServerName;
 
 void
 xf86CheckBeta(int extraDays, char *key)

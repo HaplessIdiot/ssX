@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.9 1996/12/23 06:51:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.9.4.1 1998/06/05 16:23:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -26,8 +26,6 @@
 /* $XConsortium: sysv_video.c /main/8 1996/10/25 11:38:09 kaleb $ */
 
 #include "X.h"
-#include "input.h"
-#include "scrnintstr.h"
 
 #define _NEED_SYSI86
 #include "xf86.h"
@@ -46,11 +44,15 @@
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
+/*
+ * XXX Support for SVR3 will need to be reworked if needed.  In particular
+ * the Region parameter is no longer passed, and will need to be dealt
+ * with internally if required.
+ */
+
+#if 0
 struct kd_memloc MapDSC[MAXSCREENS][NUM_REGIONS];
 pointer AllocAddress[MAXSCREENS][NUM_REGIONS];
-#ifndef SVR4
-static int mmapFd = -2;
-#endif
 #if 0
 /* inserted for DGA support Tue Dec  5 21:33:00 MET 1995 mr */
 #if defined(SVR4) || defined(HAS_SVR3_MMAPDRV)
@@ -60,13 +62,18 @@ static struct xf86memMap {
 } xf86memMaps[MAXSCREENS];
 #endif
 #endif
+#endif
 
-Bool xf86LinearVidMem()
+#ifndef SVR4
+static int mmapFd = -2;
+#endif
+
+Bool
+xf86LinearVidMem()
 {
 #ifdef SVR4
 	return TRUE;
-#else
-#ifdef HAS_SVR3_MMAPDRV
+#elif defined(HAS_SVR3_MMAPDRV)
 	if(mmapFd >= 0)
 	{
 		return TRUE;
@@ -74,25 +81,23 @@ Bool xf86LinearVidMem()
 	if ((mmapFd = open("/dev/mmap", O_RDWR)) != -1)
 	{
 	    if(ioctl(mmapFd, GETVERSION) < 0x0222) {
-		ErrorF("xf86LinearVidMem: MMAP 2.2.2 or above required\n");
-		ErrorF(" linear memory access disabled\n");
+		xf86Msg(X_WARNING,
+			"xf86LinearVidMem: MMAP 2.2.2 or above required\n");
+		xf86ErrorF("\tlinear memory access disabled\n");
 		return FALSE;
 	    }
 	    return TRUE;
 	}
-	ErrorF("xf86LinearVidMem: failed to open /dev/mmap (%s)\n",
-	       strerror(errno));
-	ErrorF(" linear memory access disabled\n");
-#endif
+	xf86Msg(X_WARNING, "xf86LinearVidMem: failed to open /dev/mmap (%s)\n",
+	        strerror(errno));
+	xf86ErrorF("\tlinear memory access disabled\n");
+#else
 	return FALSE;
 #endif
 }
 
-pointer xf86MapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+pointer
+xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 {
 	pointer base;
 	int fd;
@@ -112,6 +117,7 @@ unsigned long Size;
 			   "xf86MapVidMem", Size, Base, strerror(errno));
 	}
 #else /* SVR4 */
+        XXX Not Supported!
 #ifdef HAS_SVR3_MMAPDRV
 	if (mmapFd == -2)
 	{
@@ -190,15 +196,12 @@ int *Size;
 #endif
 #endif
 /* ARGSUSED */
-void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+void xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 #if defined (SVR4)
 	munmap(Base, Size);
 #else /* SVR4 */
+	XXX Not Supported!
 #ifdef HAS_SVR3_MMAPDRV
 	if(mmapFd >= 0)
 	{
@@ -212,6 +215,8 @@ unsigned long Size;
 #endif /* SVR4 */
 }
 
+#if 0
+/* xf86{Map,UnMap}Display() are no longer supported */
 /* ARGSUSED */
 void xf86MapDisplay(ScreenNum, Region)
 int ScreenNum;
@@ -247,39 +252,27 @@ int Region;
 #endif /* SVR4 */
 	return;
 }
+#endif
 
 /***************************************************************************/
 /* I/O Permissions section                                                 */
 /***************************************************************************/
 
-
-static Bool ScreenEnabled[MAXSCREENS];
 static Bool ExtendedEnabled = FALSE;
 static Bool InitDone = FALSE;
 
-
 void
-xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
+xf86EnableIO()
 {
 	int i;
-
-	if (!InitDone)
-	{
-		int i;
-		for (i = 0; i < MAXSCREENS; i++)
-			ScreenEnabled[i] = FALSE;
-		InitDone = TRUE;
-	}
-	ScreenEnabled[ScreenNum] = TRUE;
 
 	if (ExtendedEnabled)
 		return;
 
 	if (SET_IOPL() < 0)
 	{
-		FatalError("%s: Failed to set IOPL for extended I/O\n",
-			   "xf86EnableIOPorts");
+		FatalError(
+			"xf86EnableIO: Failed to set IOPL for extended I/O\n");
 	}
 	ExtendedEnabled = TRUE;
 
@@ -287,19 +280,10 @@ int ScreenNum;
 }
 	
 void
-xf86DisableIOPorts(ScreenNum)
-int ScreenNum;
+xf86DisableIO()
 {
-	int i;
-
-	ScreenEnabled[ScreenNum] = FALSE;
-
 	if (!ExtendedEnabled)
 		return;
-
-	for (i = 0; i < MAXSCREENS; i++)
-		if (ScreenEnabled[i])
-			return;
 
 	RESET_IOPL();
 	ExtendedEnabled = FALSE;
@@ -311,7 +295,8 @@ int ScreenNum;
 /* Interrupt Handling section                                              */
 /***************************************************************************/
 
-Bool xf86DisableInterrupts()
+Bool
+xf86DisableInterrupts()
 {
 	if (!ExtendedEnabled)
 	{
@@ -334,7 +319,8 @@ Bool xf86DisableInterrupts()
 	return(TRUE);
 }
 
-void xf86EnableInterrupts()
+void
+xf86EnableInterrupts()
 {
 	if (!ExtendedEnabled)
 	{

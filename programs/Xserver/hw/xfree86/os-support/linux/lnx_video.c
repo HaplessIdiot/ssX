@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.14 1997/05/03 09:19:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.14.2.4 1998/06/05 16:23:12 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -33,6 +33,8 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
+static Bool ExtendedEnabled = FALSE;
+
 #ifdef __alpha__
 
 /*
@@ -52,108 +54,48 @@
 
 #define BUS_BASE (isJensen ? _bus_base_sparse() : _bus_base())
 #define JENSEN_SHIFT(x) (isJensen ? ((long)x<<SPARSE) : (long)x)
-#else
+#else /* ! __alpha__ */
 #define BUS_BASE 0
 #define JENSEN_SHIFT(x) (x)
-#endif
+#endif /* ! __alpha__ */
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
-/*
- * Unfortunatly mmap without MAP_FIXED only works the first time :-(
- * This is now fixed in pl13 ALPHA, but still seems to have problems.
- */
-#undef ONLY_MMAP_FIXED_WORKS
-
-#ifdef ONLY_MMAP_FIXED_WORKS
-static pointer AllocAddress[MAXSCREENS][NUM_REGIONS];
-#endif
-
-#if 0
-static struct xf86memMap {
-  int offset;
-  int memSize;
-} xf86memMaps[MAXSCREENS];
-#endif
-
-pointer xf86MapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+pointer
+xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 {
 	pointer base;
       	int fd;
 
-#ifdef ONLY_MMAP_FIXED_WORKS
-#ifdef __alpha__
-	FatalError("xf86MapVidMem: Unexpected code for Alpha (pagesize=8k!)\n");
-#endif 
-	AllocAddress[ScreenNum][Region] = (pointer)xalloc(Size + 0x1000);
-	if (AllocAddress[ScreenNum][Region] == NULL)
-	{
-		FatalError("xf86MapVidMem: can't alloc framebuffer space\n");
-	}
-	base = (pointer)(((unsigned int)AllocAddress[ScreenNum][Region]
-			  & ~0xFFF) + 0x1000);
 	if ((fd = open("/dev/mem", O_RDWR)) < 0)
 	{
 		FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
 			   strerror(errno));
 	}
-	base = (pointer)mmap((caddr_t)base, Size, PROT_READ|PROT_WRITE,
-			     MAP_FIXED|MAP_SHARED, fd, (off_t)Base);
-#else
-	if ((fd = open("/dev/mem", O_RDWR)) < 0)
-	{
-		FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
-			   strerror(errno));
-	}
-	/* This requirers linux-0.99.pl10 or above */
+	/* This requires linux-0.99.pl10 or above */
 	base = (pointer)mmap((caddr_t)0, JENSEN_SHIFT(Size),
 			     PROT_READ|PROT_WRITE,
 			     MAP_SHARED, fd,
 			     (off_t)(JENSEN_SHIFT((off_t)Base) + BUS_BASE));
-#endif
 	close(fd);
 	if ((long)base == -1)
 	{
 		FatalError("xf86MapVidMem: Could not mmap framebuffer (%s)\n",
 			   strerror(errno));
 	}
-#if 0
-	xf86memMaps[ScreenNum].offset = (int) Base;
-	xf86memMaps[ScreenNum].memSize = Size;
-#endif
 	return base;
 }
 
-#if 0
-void xf86GetVidMemData(ScreenNum, Base, Size)
-int ScreenNum;
-int *Base;
-int *Size;
-{
-   *Base = xf86memMaps[ScreenNum].offset;
-   *Size = xf86memMaps[ScreenNum].memSize;
-}
-#endif
-
-void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+void
+xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
     munmap((caddr_t)JENSEN_SHIFT(Base), JENSEN_SHIFT(Size));
-#ifdef ONLY_MMAP_FIXED_WORKS
-    xfree(AllocAddress[ScreenNum][Region]);
-#endif
 }
 
-Bool xf86LinearVidMem()
+Bool
+xf86LinearVidMem()
 {
 	return(TRUE);
 }
@@ -162,38 +104,9 @@ Bool xf86LinearVidMem()
 /* I/O Permissions section                                                 */
 /***************************************************************************/
 
-/*
- * Linux handles regular (<= 0x3ff) ports with the TSS I/O bitmap, and
- * extended ports with the iopl() system call.
- *
- * For testing, it's useful to enable only the ports we need, but for
- * production purposes, it's faster to enable all ports.
- */
-#define ALWAYS_USE_EXTENDED
-
-#ifdef ALWAYS_USE_EXTENDED
-
-static Bool ScreenEnabled[MAXSCREENS];
-static Bool ExtendedEnabled = FALSE;
-static Bool InitDone = FALSE;
-
-
-void xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
+void
+xf86EnableIO(void)
 {
-	int i;
-
-	if (!InitDone)
-	{
-		int i;
-
-		for (i = 0; i < MAXSCREENS; i++)
-			ScreenEnabled[i] = FALSE;
-		InitDone = TRUE;
-	}
-
-	ScreenEnabled[ScreenNum] = TRUE;
-
 	if (ExtendedEnabled)
 		return;
 
@@ -207,19 +120,11 @@ int ScreenNum;
 	return;
 }
 
-void xf86DisableIOPorts(ScreenNum)
-int ScreenNum;
+void
+xf86DisableIO(void)
 {
-	int i;
-
-	ScreenEnabled[ScreenNum] = FALSE;
-
 	if (!ExtendedEnabled)
 		return;
-
-	for (i = 0; i < MAXSCREENS; i++)
-		if (ScreenEnabled[i])
-			return;
 
 #ifndef __mc68000__
 	iopl(0);
@@ -229,156 +134,13 @@ int ScreenNum;
 	return;
 }
 
-#else /* !ALWAYS_USE_EXTENDED */
-
-static unsigned *EnabledPorts[MAXSCREENS];
-static int NumEnabledPorts[MAXSCREENS];
-static Bool ScreenEnabled[MAXSCREENS];
-static Bool ExtendedPorts[MAXSCREENS];
-static Bool ExtendedEnabled = FALSE;
-static Bool InitDone = FALSE;
-
-void xf86ClearIOPortList(ScreenNum)
-int ScreenNum;
-{
-	if (!InitDone)
-	{
-		xf86InitPortLists(EnabledPorts, NumEnabledPorts,
-				  ScreenEnabled, ExtendedPorts, MAXSCREENS);
-		InitDone = TRUE;
-		return;
-	}
-	ExtendedPorts[ScreenNum] = FALSE;
-	if (EnabledPorts[ScreenNum] != (unsigned *)NULL)
-		xfree(EnabledPorts[ScreenNum]);
-	EnabledPorts[ScreenNum] = (unsigned *)NULL;
-	NumEnabledPorts[ScreenNum] = 0;
-}
-
-void xf86AddIOPorts(ScreenNum, NumPorts, Ports)
-int ScreenNum;
-int NumPorts;
-unsigned *Ports;
-{
-	int i;
-
-	if (!InitDone)
-	{
-	    FatalError("xf86AddIOPorts: I/O control lists not initialised\n");
-	}
-	EnabledPorts[ScreenNum] = (unsigned *)xrealloc(EnabledPorts[ScreenNum],
-			(NumEnabledPorts[ScreenNum]+NumPorts)*sizeof(unsigned));
-	for (i = 0; i < NumPorts; i++)
-	{
-		EnabledPorts[ScreenNum][NumEnabledPorts[ScreenNum] + i] =
-								Ports[i];
-		if (Ports[i] > 0x3FF)
-			ExtendedPorts[ScreenNum] = TRUE;
-	}
-	NumEnabledPorts[ScreenNum] += NumPorts;
-}
-
-void xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
-{
-	int i;
-
-	if (ScreenEnabled[ScreenNum])
-		return;
-
-	for (i = 0; i < MAXSCREENS; i++)
-	{
-		if (ExtendedPorts[i] && (ScreenEnabled[i] || i == ScreenNum))
-		{
-#ifndef __mc68000__
-		    if (iopl(3))
-		    {
-			FatalError("%s: Failed to set IOPL for extended I/O\n",
-				   "xf86EnableIOPorts");
-		    }
-#endif
-		    ExtendedEnabled = TRUE;
-		    break;
-		}
-	}
-	/* Extended I/O was used, but not any more */
-	if (ExtendedEnabled && i == MAXSCREENS)
-	{
-#ifndef __mc68000__
-		iopl(0);
-#endif
-		ExtendedEnabled = FALSE;
-	}
-	/*
-	 * Turn on non-extended ports even when using extended I/O
-	 * so they are there if extended I/O gets turned off when it's no
-	 * longer needed.
-	 */
-	for (i = 0; i < NumEnabledPorts[ScreenNum]; i++)
-	{
-		unsigned port = EnabledPorts[ScreenNum][i];
-
-		if (port > 0x3FF)
-			continue;
-
-		if (xf86CheckPorts(port, EnabledPorts, NumEnabledPorts,
-				   ScreenEnabled, MAXSCREENS))
-		{
-		    if (ioperm(port, 1, TRUE) < 0)
-		    {
-			FatalError("%s: Failed to enable I/O port 0x%x (%s)\n",
-				   "xf86EnableIOPorts", port, strerror(errno));
-		    }
-		}
-	}
-	ScreenEnabled[ScreenNum] = TRUE;
-	return;
-}
-
-void xf86DisableIOPorts(ScreenNum)
-int ScreenNum;
-{
-	int i;
-
-	if (!ScreenEnabled[ScreenNum])
-		return;
-
-	ScreenEnabled[ScreenNum] = FALSE;
-	for (i = 0; i < MAXSCREENS; i++)
-	{
-		if (ScreenEnabled[i] && ExtendedPorts[i])
-			break;
-	}
-	if (ExtendedEnabled && i == MAXSCREENS)
-	{
-#ifndef __mc68000__
-		iopl(0);
-#endif
-		ExtendedEnabled = FALSE;
-	}
-	for (i = 0; i < NumEnabledPorts[ScreenNum]; i++)
-	{
-		unsigned port = EnabledPorts[ScreenNum][i];
-
-		if (port > 0x3FF)
-			continue;
-
-		if (xf86CheckPorts(port, EnabledPorts, NumEnabledPorts,
-				   ScreenEnabled, MAXSCREENS))
-		{
-			ioperm(port, 1, FALSE);
-		}
-	}
-	return;
-}
-
-#endif /* ALWAYS_USE_EXTENDED */
 
 /***************************************************************************/
 /* Interrupt Handling section                                              */
 /***************************************************************************/
 
-Bool xf86DisableInterrupts()
+Bool
+xf86DisableInterrupts()
 {
 	if (!ExtendedEnabled)
 #ifndef __mc68000__
@@ -400,7 +162,8 @@ Bool xf86DisableInterrupts()
 	return (TRUE);
 }
 
-void xf86EnableInterrupts()
+void
+xf86EnableInterrupts()
 {
 	if (!ExtendedEnabled)
 #ifndef __mc68000__
@@ -426,11 +189,8 @@ void xf86EnableInterrupts()
 
 static int xf86SparseShift = 5; /* default to all but JENSEN */
 
-pointer xf86MapVidMemSparse(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+pointer
+xf86MapVidMemSparse(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 {
 	pointer base;
       	int fd;
@@ -459,11 +219,8 @@ unsigned long Size;
 	return base;
 }
 
-void xf86UnMapVidMemSparse(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+void
+xf86UnMapVidMemSparse(int ScreenNum, pointer Base, unsigned long Size)
 {
 	Size <<= xf86SparseShift;
 
@@ -474,9 +231,8 @@ unsigned long Size;
 
 extern void sethae(unsigned long hae);
 
-int xf86ReadSparse8(Base, Offset)
-pointer Base;
-unsigned long Offset;
+int
+xf86ReadSparse8(pointer Base, unsigned long Offset)
 {
     unsigned long result, shift;
     unsigned long msb = 0;
@@ -498,9 +254,8 @@ unsigned long Offset;
     return 0xffUL & result;
 }
 
-int xf86ReadSparse16(Base, Offset)
-pointer Base;
-unsigned long Offset;
+int
+xf86ReadSparse16(pointer Base, unsigned long Offset)
 {
     unsigned long result, shift;
     unsigned long msb = 0;
@@ -522,9 +277,8 @@ unsigned long Offset;
     return 0xffffUL & result;
 }
 
-int xf86ReadSparse32(Base, Offset)
-pointer Base;
-unsigned long Offset;
+int
+xf86ReadSparse32(pointer Base, unsigned long Offset)
 {
     unsigned long result;
     unsigned long msb = 0;
@@ -544,10 +298,8 @@ unsigned long Offset;
     return result;
 }
 
-void xf86WriteSparse8(Value, Base, Offset)
-int Value;
-pointer Base;
-unsigned long Offset;
+void
+xf86WriteSparse8(int Value, pointer Base, unsigned long Offset)
 {
     unsigned long msb = 0;
     unsigned int b = Value & 0xffU;
@@ -566,10 +318,8 @@ unsigned long Offset;
       sethae(0);
 }
 
-void xf86WriteSparse16(Value, Base, Offset)
-int Value;
-pointer Base;
-unsigned long Offset;
+void
+xf86WriteSparse16(int Value, pointer Base, unsigned long Offset)
 {
     unsigned long msb = 0;
     unsigned int w = Value & 0xffffU;
@@ -589,10 +339,8 @@ unsigned long Offset;
       sethae(0);
 }
 
-void xf86WriteSparse32(Value, Base, Offset)
-int Value;
-pointer Base;
-unsigned long Offset;
+void
+xf86WriteSparse32(int Value, pointer Base, unsigned long Offset)
 {
     unsigned long msb = 0;
 

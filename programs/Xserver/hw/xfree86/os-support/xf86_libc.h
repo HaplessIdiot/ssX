@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.21 1998/06/28 03:53:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.12.2.7 1998/07/18 17:53:52 dawes Exp $ */
 
 
 
@@ -21,6 +21,11 @@
 
 #define XF86_LIBC_H
 
+
+/*
+ * The first set of definitions are required both for modules and
+ * libc_wrapper.c.
+ */
 
 #if defined(XFree86LOADER) || defined(NEED_XF86_TYPES)
 
@@ -56,24 +61,29 @@ typedef struct _xf86dirent XF86DIRENT;
 #define XF86_IOFBF    2
 #define XF86_IOLBF    3
 
+/* for open (XXX not complete) */
+#define XF86_O_RDONLY	0x0000
+#define XF86_O_WRONLY	0x0001
+#define XF86_O_RDWR	0x0002
+#define XF86_O_CREAT	0x0200
+
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
 
-
+/*
+ * These things are always required by drivers (but not by libc_wrapper.c),
+ * even for a static server because some OSs don't provide them.
+ */
 #ifndef DONT_DEFINE_WRAPPERS
 #undef usleep
 #define usleep(ul)		xf86usleep(ul)
 #endif
-
-
-#ifdef XFree86LOADER
 
 /*
  * the rest of this file should only be included for code that is supposed
  * to go into modules
  */
 
-
-#ifndef DONT_DEFINE_WRAPPERS
+#if defined(XFree86LOADER) && !defined(DONT_DEFINE_WRAPPERS)
 
 #define abort()			xf86abort()
 #undef abs
@@ -100,11 +110,14 @@ typedef struct _xf86dirent XF86DIRENT;
 #define ferror(FP)		xf86ferror(FP)
 #define fflush(FP)		xf86fflush(FP)
 #define fgetc(FP)		xf86fgetc(FP)
+#undef getc
+#define getc(FP)		xf86getc(FP)
 #define fgetpos(FP,fpp)		xf86fgetpos(FP,fpp)
 #define fgets(cp,i,FP)		xf86fgets(cp,i,FP)
 #define floor(d)		xf86floor(d)
 #define fmod(d1,d2)		xf86fmod(d1,d2)
 #define fopen(ccp1,ccp2)	xf86fopen(ccp1,ccp2)
+#define printf			xf86printf
 #define fprintf			xf86fprintf
 #define fputc(i,FP)		xf86fputc(i,FP)
 #define fputs(ccp,FP)		xf86fputs(ccp,FP)
@@ -171,6 +184,7 @@ typedef struct _xf86dirent XF86DIRENT;
 #define strncmp(ccp1,ccp2,I)	xf86strncmp(ccp1,ccp2,I)
 #define strncpy(cp,ccp,I)	xf86strncpy(cp,ccp,I)
 #define strpbrk(ccp1,ccp2)	xf86strpbrk(ccp1,ccp2)
+#define strchr(ccp,i)		xf86strchr(ccp,i)
 #define strrchr(ccp,i)		xf86strrchr(ccp,i)
 #define strspn(ccp1,ccp2)	xf86strspn(ccp1,ccp2)
 #define strstr(ccp1,ccp2)	xf86strstr(ccp1,ccp2)
@@ -187,6 +201,8 @@ typedef struct _xf86dirent XF86DIRENT;
 #define ungetc(i,FP)		xf86ungetc(i,FP)
 #define vfprintf		xf86vfprintf
 #define vsprintf		xf86vsprintf
+
+#define hypot(x,y)		xf86hypot(x,y)
 
 /* non-ANSI C functions */
 #define opendir(cp)		xf86opendir(cp)
@@ -224,16 +240,22 @@ typedef struct _xf86dirent XF86DIRENT;
 /*
  * XXX Basic I/O functions BAD,BAD,BAD!
  */
-#define open(a,b,c)     xf86open(a,b,c)
-#define close(a)        xf86close(a)
-#define ioctl(a,b,c)    xf86ioctl(a,b,c)
-#define read(a,b,c)     xf86read(a,b,c)
-#define write(a,b,c)    xf86write(a,b,c)
+#define open(a,b,c)		xf86open(a,b,c)
+#define close(a)		xf86close(a)
+#define ioctl(a,b,c)		xf86ioctl(a,b,c)
+#define read(a,b,c)		xf86read(a,b,c)
+#define write(a,b,c)		xf86write(a,b,c)
+#undef O_RDONLY
+#define O_RDONLY		XF86_O_RDONLY
+#undef O_WRONLY
+#define O_WRONLY		XF86_O_WRONLY
+#undef O_RDWR
+#define O_RDWR			XF86_O_RDWR
+#undef O_CREAT
+#define O_CREAT			XF86_O_CREAT
 #ifndef __EMX__
-#define errno           xf86errno
+#define errno			xf86errno
 #endif
-
-#endif /*DONT_DEFINE_WRAPPERS*/
 
 #endif /* XFree86LOADER */
 

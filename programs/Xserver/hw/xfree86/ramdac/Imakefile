@@ -1,0 +1,26 @@
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/Imakefile,v 1.1.2.2 1998/07/18 17:54:03 dawes Exp $
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = xf86RamDacMod.c xf86RamDac.c xf86RamDacCmap.c IBM.c BT.c
+
+OBJS = xf86RamDacMod.o xf86RamDac.o xf86RamDacCmap.o IBM.o BT.o
+
+   INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
+	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+              -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+   LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/llib-los.ln \
+	     ../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln
+
+ModuleObjectRule()
+
+LibraryModuleTarget(ramdac,$(OBJS))
+
+NormalLintTarget($(SRCS))
+
+InstallLibraryModule(ramdac,$(MODULEDIR))
+
+#ifndef OS2Architecture
+DependTarget()
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.12 1997/11/01 15:04:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.10.4.7 1998/07/18 17:53:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,6 +26,7 @@
 #ifndef _XF86PROCS_H
 #define _XF86PROCS_H
 
+#if 0
 #include <X11/Xfuncproto.h>
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -33,289 +34,48 @@
 _XFUNCPROTOBEGIN
 
 /* xf86Config.c */
-extern void xf86CheckBeta(
-#if NeedFunctionPrototypes
-	int			/* extraDays */,
-	char *			/* key */
-#endif 
-);
-
-/* xf86Config.c */
-
-#ifndef CONFIG_RETURN_TYPE
-#ifdef XF86SETUP
-#define CONFIG_RETURN_TYPE int
-#else
-#define CONFIG_RETURN_TYPE void
-#endif
-#endif
-
-extern CONFIG_RETURN_TYPE xf86Config(
-#if NeedFunctionPrototypes
-    int vtopen
-#endif
-);
-
-extern Bool xf86LookupMode(
-#if NeedFunctionPrototypes
-	DisplayModePtr,		/* target */
-	ScrnInfoPtr,		/* driver */
-	int			/* flags */
-#endif 
-);
-
-extern void xf86VerifyOptions(
-#if NeedFunctionPrototypes
-	OFlagSet *,		/* allowedOptions */
-	ScrnInfoPtr		/* driver */
-#endif
-);
-
-extern void xf86DeleteMode(
-#if NeedFunctionPrototypes
-	ScrnInfoPtr,		/* infoptr */
-	DisplayModePtr		/* dispmp */
-#endif
-);
-
-extern int xf86GetToken(
-#if NeedFunctionPrototypes
-	SymTabPtr		/* table */
-#endif
-);
-
-extern char *xf86TokenToString(
-#if NeedFunctionPrototypes
-	SymTabPtr,		/* table */
-	int			/* token */
-#endif
-);
-
-extern int xf86StringToToken(
-#if NeedFunctionPrototypes
-	SymTabPtr,		/* table */
-	char *			/* string */
-#endif
-);
-
-extern void xf86ConfigError(
-#if NeedFunctionPrototypes
-	char *,			/* msg */
-	...
-#endif
-);
-
-/* xf86Cursor.c */
-
-extern void xf86InitViewport(
-#if NeedFunctionPrototypes
-	ScrnInfoPtr		/* pScr */
-#endif 
-);
-
-extern void xf86SetViewport(
-#if NeedFunctionPrototypes
-	ScreenPtr,		/* pScreen */
-	int,			/* x */
-	int			/* y */
-#endif 
-);
-
-extern void xf86ZoomViewport(
-#if NeedFunctionPrototypes
-	ScreenPtr,		/* pScreen */
-	int			/* zoom */
-#endif 
-);
-
+extern void xf86CheckBeta(int extraDays, char *key);
 
 /* xf86Events.c */
-
-extern void ProcessInputEvents(
-#if NeedFunctionPrototypes
-	void
-#endif
-);
-
-extern void xf86PostKbdEvent(
-#if NeedFunctionPrototypes
-	unsigned		/* key */
-#endif 
-);
-
-extern void xf86PostMseEvent(
-#if NeedFunctionPrototypes
-        DeviceIntPtr,		/* device */
-	int,			/* buttons */
-	int,			/* dx */
-	int			/* dy */
-#endif
-);
-
-extern void xf86Block(
-#if NeedFunctionPrototypes
-	pointer,		/* blockData */
-	OSTimePtr,		/* pTimeout */
-	pointer			/* pReadmask */
-#endif
-);
-
-extern void xf86Wakeup(
-#if NeedFunctionPrototypes
-	pointer,		/* blockData */
-	int,			/* err */
-	pointer			/* pReadmask */
-#endif
-);
-
-extern void xf86VTRequest(
-#if NeedFunctionPrototypes
-	int			/* signo */
-#endif
-);
-
-extern void xf86SigHandler(
-#if NeedFunctionPrototypes
-	int		       /* signo */
-#endif
-);
+extern void ProcessInputEvents(void);
+extern void xf86PostKbdEvent(unsigned key);
+extern void xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy);
+extern void xf86Block(pointer blockData, OSTimePtr pTimeout,
+			pointer pReadmask);
+extern void xf86Wakeup(pointer blockData, int err, pointer pReadmask);
+extern void xf86VTRequest(int signo);
+extern void xf86SigHandler(int signo);
 
 /* xf86Io.c */
-
-extern void xf86KbdLeds(
-#if NeedFunctionPrototypes
-	void
-#endif
-);
-
-extern void xf86InitKBD(
-#if NeedFunctionPrototypes
-	Bool			/* init */
-#endif
-);
-
+extern void xf86KbdLeds(void);
+extern void xf86InitKBD(Bool init);
 #ifdef NEED_EVENTS
-extern void xf86KbdBell(
-#if NeedFunctionPrototypes
-	int,			/* loudness */
-	DeviceIntPtr, 		/* pKeyboard */
-	pointer, 		/* ctrl */
-	int
+extern void xf86KbdBell(int loudness, DeviceIntPtr pKeyboard, pointer ctrl,
+			int);
 #endif
-);
-#endif
-
-extern void xf86KbdCtrl(
-#if NeedFunctionPrototypes
-	DevicePtr,		/* pKeyboard */
-	KeybdCtrl *		/* ctrl */
-#endif
-);
-
-extern int  xf86KbdProc(
-#if NeedFunctionPrototypes
-	DeviceIntPtr,		/* pKeyboard */
-	int			/* what */
-#endif
-);
-
-extern void xf86KbdEvents(
-#if NeedFunctionPrototypes
-	void
-#endif
-);
-
-extern void xf86MseCtrl(
-#if NeedFunctionPrototypes
-	DevicePtr,		/* pPointer */
-	PtrCtrl*		/* ctrl */
-#endif
-);
-
-extern int  xf86MseProc(
-#if NeedFunctionPrototypes
-	DeviceIntPtr,		/* pPointer */
-	int			/* what */
-#endif
-);
-
-extern int  
-xf86MseProcAux(
-#if NeedFunctionPrototypes
-       DeviceIntPtr,		/* pPointer */
-       int,			/* what */
-       MouseDevPtr,		/* mouse */
-       int*,                    /* fd */
-       PtrCtrlProcPtr		/* ctrl */
-#endif
-	       );
-
-extern void xf86MseEvents(
-#if NeedFunctionPrototypes
-        MouseDevPtr		/* mouse */
-#endif
-);
+extern void xf86KbdCtrl(DevicePtr pKeyboard, KeybdCtrl *ctrl);
+extern int  xf86KbdProc(DeviceIntPtr pKeyboard, int what);
+extern void xf86KbdEvents(void);
+extern void xf86MseCtrl(DevicePtr pPointer, PtrCtrl *ctrl);
+extern int  xf86MseProc(DeviceIntPtr pPointer, int what);
+extern int  xf86MseProcAux(DeviceIntPtr pPointer, int what, MouseDevPtr mouse,
+				int* fd, PtrCtrlProcPtr ctrl);
+extern void xf86MseEvents(MouseDevPtr mouse);
 
 /* xf86_Mouse.c */
-
-extern Bool xf86MouseSupported(
-#if NeedFunctionPrototypes
-	int			/* mousetype */
-#endif
-);
-
-extern void xf86SetupMouse(
-#if NeedFunctionPrototypes
-	MouseDevPtr
-#endif
-);
-
-extern void xf86MouseProtocol(
-#if NeedFunctionPrototypes
-        DeviceIntPtr,		/* device */
-	unsigned char *,	/* rBuf */
-	int			/* nBytes */
-#endif
-);
-
+extern Bool xf86MouseSupported(int mousetype);
+extern void xf86SetupMouse(MouseDevPtr);
+extern void xf86MouseProtocol(DeviceIntPtr device, unsigned char *rBuf,
+				int nBytes);
 
 /* xf86Kbd.c */
-
-extern void xf86KbdGetMapping(
-#if NeedFunctionPrototypes
-	KeySymsRec *,		/* pKeySyms */
-	CARD8 *			/* pModMap */
-#endif
-);
+extern void xf86KbdGetMapping(KeySymsRec *pKeySyms, CARD8 *pModMap);
 
 /* xf86XKB.c */
-extern void xf86InitXkb(
-#if NeedFunctionPrototypes
-	void
+extern void xf86InitXkb(void);
 #endif
-);
-
-extern void xf86SetCurrentScreen(
-#if NeedFunctionPrototypes
-	ScreenPtr
-#endif
-);
-
-extern ScreenPtr xf86GetCurrentScreen(
-#if NeedFunctionPrototypes
-	void
-#endif
-);
-
-extern int xf86GetConsoleFD(
-#if NeedFunctionPrototypes
-	void
-#endif
-);
-
 
 _XFUNCPROTOEND
 
 #endif /* _XF86PROCS_H */
-
 

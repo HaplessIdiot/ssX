@@ -1,5 +1,5 @@
 /*
- * Copyright 1997 Metro Link, Inc.
+ * Copyright 1997,1998 Metro Link, Inc.
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
@@ -19,13 +19,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.h,v 1.1.2.2 1998/07/04 13:32:42 dawes Exp $ */
 
 #ifndef _AOUTLOADER_H
 #define _AOUTLOADER_H
 extern void *AOUTLoadModule(loaderPtr, int, LOOKUP **);
 extern void AOUTResolveSymbols(void *);
 extern int AOUTCheckForUnresolved(int, void *);
+extern char *AOUTAddressToSection(void *,unsigned long);
 extern void AOUTUnloadModule(void *);
 #endif

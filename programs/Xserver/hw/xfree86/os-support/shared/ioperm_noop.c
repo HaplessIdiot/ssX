@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/ioperm_noop.c,v 3.1 1996/12/23 06:50:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/ioperm_noop.c,v 3.1.4.4 1998/06/05 16:23:21 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -28,14 +28,19 @@
  * or the permissions are implicit with opening/enabling the console.
  */
 
-void xf86EnableIOPorts(ScreenNum)
-int ScreenNum;
+#include "X.h"
+#include "xf86.h"
+#include "xf86Priv.h"
+#include "xf86_OSlib.h"
+
+void
+xf86EnableIO()
 {
 	return;
 }
 
-void xf86DisableIOPorts(ScreenNum)
-int ScreenNum;
+void
+xf86DisableIO()
 {
 	return;
 }

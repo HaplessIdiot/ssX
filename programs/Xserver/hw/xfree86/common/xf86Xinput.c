@@ -22,17 +22,18 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.32 1998/01/24 16:57:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.30.2.9 1998/06/21 15:38:16 dawes Exp $ */
 
+#include "Xfuncproto.h"
 #include "Xmd.h"
 #include "XI.h"
 #include "XIproto.h"
 #include "xf86.h"
 #include "Xpoll.h"
 #include "xf86Priv.h"
-#include "xf86_Config.h"
 #include "xf86Xinput.h"
-#include "xf86Procs.h"
+#include "XIstubs.h"
+#include "xf86Priv.h"
 #include "mipointer.h"
 
 #ifdef DPMSExtension
@@ -53,6 +54,12 @@
 
 #include <stdarg.h>
 
+extern fd_set EnabledDevices;	/* os/connection.c */
+extern int BadDevice;		/* Xi/extinit.c */
+
+/* This should be somewhere else */
+extern void DPMSSet(CARD16 level);
+
 /******************************************************************************
  * debugging macro
  *****************************************************************************/
@@ -71,8 +78,6 @@ static int      debug_level = 0;
 #define DBG(lvl, f)
 #endif
 
-extern InputInfo inputInfo;
-
 extern	int	DeviceKeyPress;
 extern	int	DeviceKeyRelease;
 extern	int	DeviceButtonPress;
@@ -82,7 +87,7 @@ extern	int	DeviceValuator;
 extern	int	ProximityIn;
 extern	int	ProximityOut;
 
-#if !defined(DYNAMIC_MODULE) && !defined(XFree86LOADER)
+#if !defined(XFree86LOADER)
 #ifdef JOYSTICK_SUPPORT
 extern DeviceAssocRec   joystick_assoc;
 #endif
@@ -111,7 +116,9 @@ extern DeviceAssocRec	switch_assoc;
 
 static int              num_devices;
 static LocalDevicePtr	*localDevices;
+#if 0
 static int              max_devices;
+#endif
 
 static LocalDevicePtr	switch_device;
 
@@ -121,12 +128,14 @@ static int		maxAssoc = 0;
 
 #define DEBUG_LEVEL	10010
 
+#if OLD_CONFIG_PARSER
 static SymTabRec XinputTab[] = {
   { ENDSECTION,		"endsection"},
   { SUBSECTION,		"subsection" },
   { DEBUG_LEVEL,	"debuglevel" },
   { -1,			"" },
 };
+#endif
 
 /***********************************************************************
  *
@@ -228,7 +237,6 @@ ReadInput(pointer	block_data,
   LocalDevicePtr	local_dev;
   fd_set*		LastSelectMask = (fd_set*) read_mask;
   fd_set		devices_with_input;
-  extern fd_set		EnabledDevices;
 
   if (select_status < 1)
     return;
@@ -255,13 +263,17 @@ ReadInput(pointer	block_data,
  ***********************************************************************
  */
 
+#if 0
 void
 xf86ConfigExtendedInputSection(LexPtr       val)
 {
+#if OLD_CONFIG_PARSER
   int           i;
   int           token;
 
-#if !defined(DYNAMIC_MODULE) && !defined(XFree86LOADER)
+  
+  
+#if !defined(XFree86LOADER)
 # ifdef JOYSTICK_SUPPORT
   xf86AddDeviceAssoc(&joystick_assoc);
 # endif
@@ -310,7 +322,7 @@ xf86ConfigExtendedInputSection(LexPtr       val)
           
           for(i=0; !found && i<numAssoc; i++)
             {
-              if (StrCaseCmp(val->str, deviceAssoc[i]->config_section_name) == 0)
+              if (xf86NameCmp(val->str, deviceAssoc[i]->config_section_name) == 0)
                 {
                   if (num_devices == max_devices) {
                     max_devices *= 2;
@@ -338,21 +350,20 @@ xf86ConfigExtendedInputSection(LexPtr       val)
 	  if (xf86GetToken(NULL) != NUMBER)
 	      xf86ConfigError("Option number expected");
 	  debug_level = val->num;
-	  if (xf86Verbose) {
 #if DEBUG
-	      ErrorF("%s XInput debug level sets to %d\n", XCONFIG_GIVEN,
-		     debug_level);      
+	  xf86Msg(X_INFO, "XInput debug level sets to %d\n", debug_level);
 #else
-	      ErrorF("%s XInput debug level not sets to %d because"
-		     " debugging is not compiled\n", XCONFIG_GIVEN,
-		     debug_level);      
+	  xf86Msg(X_INFO, "XInput debug level not sets to %d because"
+		  " debugging is not compiled\n", debug_level);      
 #endif
-	  }
       }
       else
 	  xf86ConfigError("XInput keyword section expected");        
     }
+
+#endif /* OLD_CONFIG_PARSER */
 }
+#endif
 
 /***********************************************************************
  *
@@ -444,9 +455,11 @@ InitExtInput()
 	    xf86XinputFinalizeInit(dev);
       
 	    RegisterOtherDevice(dev);
+#ifdef XCONFIG_GIVEN
 	    if (serverGeneration == 1) 
 		ErrorF("%s Adding extended device \"%s\" (type: %s)\n", XCONFIG_GIVEN,
 		       localDevices[i]->name, localDevices[i]->type_name);
+#endif
 	}
     }
 }
@@ -476,13 +489,8 @@ InitExtInput()
  */
 
 void
-OpenInputDevice (dev, client, status)
-    DeviceIntPtr dev;
-    ClientPtr client;
-    int *status;
+OpenInputDevice (DeviceIntPtr dev, ClientPtr client, int *status)
 {
-    extern int	BadDevice;
-    
     if (!dev->inited) {
 	*status = BadDevice;
     } else {
@@ -524,9 +532,7 @@ OpenInputDevice (dev, client, status)
  */
 
 int
-ChangeKeyboardDevice (old_dev, new_dev)
-     DeviceIntPtr	old_dev;
-     DeviceIntPtr	new_dev;
+ChangeKeyboardDevice (DeviceIntPtr old_dev, DeviceIntPtr new_dev)
 {
   /**********************************************************************
    * DeleteFocusClassDeviceStruct(old_dev);	 * defined in xchgptr.c *
@@ -567,17 +573,8 @@ ChangeKeyboardDevice (old_dev, new_dev)
  */
 
 int
-#ifdef NeedFunctionPrototypes
-ChangePointerDevice (
-     DeviceIntPtr	old_dev,
-     DeviceIntPtr	new_dev,
-     unsigned char	x,
-     unsigned char	y)
-#else
-ChangePointerDevice (old_dev, new_dev, x, y)
-     DeviceIntPtr	old_dev, new_dev;
-     unsigned char	x, y;
-#endif /* NeedFunctionPrototypes */
+ChangePointerDevice (DeviceIntPtr old_dev, DeviceIntPtr new_dev,
+		     unsigned char x, unsigned char y)
 {
   /************************************************************************
     InitFocusClassDeviceStruct(old_dev);	* allow focusing old ptr*
@@ -638,9 +635,7 @@ ChangePointerDevice (old_dev, new_dev, x, y)
  */
 
 void
-CloseInputDevice (d, client)
-     DeviceIntPtr d;
-     ClientPtr client;
+CloseInputDevice (DeviceIntPtr d, ClientPtr client)
 {
   ErrorF("ProcXCloseDevice to close or not ?\n");
 }
@@ -693,10 +688,7 @@ AddOtherInputDevices ()
  */
 
 int
-SetDeviceMode (client, dev, mode)
-     register	ClientPtr	client;
-     DeviceIntPtr dev;
-     int		mode;
+SetDeviceMode (ClientPtr client, DeviceIntPtr dev, int mode)
 {
   LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
 
@@ -722,12 +714,8 @@ SetDeviceMode (client, dev, mode)
  */
 
 int
-SetDeviceValuators (client, dev, valuators, first_valuator, num_valuators)
-     register ClientPtr	client;
-     DeviceIntPtr 	dev;
-     int		*valuators;
-     int		first_valuator;
-     int		num_valuators;
+SetDeviceValuators (ClientPtr client, DeviceIntPtr dev, int *valuators,
+		    int first_valuator, int num_valuators)
 {
   return BadMatch;
 }
@@ -743,10 +731,7 @@ SetDeviceValuators (client, dev, valuators, first_valuator, num_valuators)
  */
 
 int
-ChangeDeviceControl (client, dev, control)
-     register ClientPtr	client;
-     DeviceIntPtr	dev;
-     xDeviceCtl		*control;
+ChangeDeviceControl (ClientPtr client, DeviceIntPtr dev, xDeviceCtl *control)
 {
   LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
 
@@ -754,7 +739,7 @@ ChangeDeviceControl (client, dev, control)
       return (BadMatch);
   }
   else {
-      return (*local->control_proc)(local, control);
+      return (*local->control_proc)(local, (pointer)control);
   }
 }
 
@@ -762,8 +747,6 @@ ChangeDeviceControl (client, dev, control)
  * adapted from mieq.c to support extended events
  *
  */
-extern	InputInfo 	inputInfo;
-
 #define QUEUE_SIZE  256
 
 typedef struct _Event {
@@ -787,8 +770,7 @@ typedef struct _EventQueue {
 static EventQueueRec xf86EventQueue;
 
 Bool
-xf86eqInit (pKbd, pPtr)
-    DevicePtr	pKbd, pPtr;
+xf86eqInit (DevicePtr pKbd, DevicePtr pPtr)
 {
     xf86EventQueue.head = xf86EventQueue.tail = 0;
     xf86EventQueue.lastEventTime = GetTimeInMillis ();
@@ -809,8 +791,7 @@ xf86eqInit (pKbd, pPtr)
  */
 
 void
-xf86eqEnqueue (e)
-    xEvent	*e;
+xf86eqEnqueue (xEvent *e)
 {
     int	oldtail, newtail;
     Bool    isMotion;
@@ -1466,6 +1447,14 @@ xf86GetMotionEvents(DeviceIntPtr	dev,
 	loop = (loop + 1) % valuator->numMotionEvents;
     }
     return num;
+}
+
+void
+xf86eqSwitchScreen(ScreenPtr pScreen, Bool fromDIX)
+{
+    xf86EventQueue.pEnqueueScreen = pScreen;
+    if (fromDIX)
+	xf86EventQueue.pDequeueScreen = pScreen;
 }
 
 void

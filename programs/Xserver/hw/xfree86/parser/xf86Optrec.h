@@ -1,0 +1,76 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Optrec.h,v 1.1.2.5 1998/06/21 15:38:24 dawes Exp $ */
+/* 
+ * 
+ * Copyright (c) 1997  Metro Link Incorporated
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of the Metro Link shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from Metro Link.
+ * 
+ */
+
+/* 
+ * This file contains the Option Record that is passed between the Parser,
+ * and Module setup procs.
+ */
+#ifndef _xf86Optrec_h_
+#define _xf86Optrec_h_
+
+/* 
+ * all records that need to be linked lists should contain a GenericList as
+ * their first field.
+ */
+typedef struct generic_list_rec
+{
+	void *next;
+}
+GenericListRec, *GenericListPtr, *glp;
+
+/*
+ * All options are stored using this data type.
+ */
+typedef struct
+{
+	GenericListRec list;
+	char *opt_name;
+	char *opt_val;
+	int opt_used;
+}
+XF86OptionRec, *XF86OptionPtr;
+
+#if 0
+/* XXX These two belong in xf86Module.h */
+typedef void * (*ModuleSetupProc)(XF86OptionPtr, int *, int *);
+typedef void (*ModuleTearDownProc)(void *);
+#endif
+
+XF86OptionPtr OptionListCreate (char ** options, int count);
+XF86OptionPtr OptionListMerge (XF86OptionPtr head, XF86OptionPtr tail); 
+void OptionListFree (XF86OptionPtr list); 
+XF86OptionPtr FindOption(XF86OptionPtr list, const char *name);
+char *FindOptionValue(XF86OptionPtr list, const char *name);
+XF86OptionPtr addNewOption(XF86OptionPtr head, char *name, char *val);
+XF86OptionPtr OptionListDup (XF86OptionPtr list);
+char * ConfigStrdup (char *s);
+int NameCompare (const char *s1, const char *s2);
+
+
+#endif /* _xf86Optrec_h_ */

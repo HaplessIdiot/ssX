@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.4 1996/10/17 15:19:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.5.4.1 1998/06/04 17:36:04 dawes Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau
@@ -56,7 +56,7 @@
 
 #include "Xpoll.h"
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
 
 int os2MouseQueueQuery();

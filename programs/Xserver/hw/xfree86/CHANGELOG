@@ -1,4 +1,6 @@
 XFree86 3.9Al (25 July 1998)
+1704. Merge in the new design branch.  A full changelog for the new design
+      branch can be found in the CHANGELOG.ND file.
 1703. Font-related X server buffer overflow fixes (Robin Cutshaw).
 
 XFree86 3.9Ak (11 July 1998)
@@ -6198,4 +6200,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.602 1998/07/17 12:05:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.603 1998/07/25 03:10:22 dawes Exp $

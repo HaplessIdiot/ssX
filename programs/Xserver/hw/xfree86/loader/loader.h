@@ -1,7 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.11 1998/03/21 11:08:49 dawes Exp $ */
-
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.7.2.9 1998/07/19 13:22:05 dawes Exp $ */
 
 /*
  *
@@ -52,6 +49,7 @@
 #define LD_XCOFFOBJECT	3
 #define LD_AOUTOBJECT   4
 #define LD_AOUTDLOBJECT	5
+#define LD_ELFDLOBJECT	6
 
 #define LD_PROCESSED_ARCHIVE -1
 
@@ -115,7 +113,7 @@ typedef struct _loader_item {
 #define xf86loaderrealloc(ptr,size) xrealloc(ptr,size)
 #define xf86loadercalloc(num,size) xcalloc(num,size)
 #define xf86loaderfree(ptr) xfree(ptr)
-#define xf86loaderstrdup(ptr) xf86strdup(ptr)
+#define xf86loaderstrdup(ptr) xstrdup(ptr)
 #else
 /*
  * On Some OSes, xalloc() et al uses mmap to allocate space for large
@@ -123,10 +121,10 @@ typedef struct _loader_item {
  * modules very far away from the rest which are placed on the heap.
  * Certain relocations are limited in the size of the offsets that can be
  * handled, and this seperation causes these relocation to overflow. This
- * is fixes by just using the C library allocation functions for the loader
- * to ensure that all text sections are located on the head. OSes that have
+ * is fixed by just using the C library allocation functions for the loader
+ * to ensure that all text sections are located on the heap. OSes that have
  * this problem are:
- *	PowerMAXOS/PPC
+ *	PowerMAX_OS/PPC
  * 	Linux/Alpha
  */
 #define xf86loadermalloc(size) malloc(size)
@@ -142,34 +140,17 @@ typedef struct _loader *loaderPtr;
  * _loader_funcs hold the entry points for a module format.
  */
 
-typedef void * (*LoadModuleProcPtr)(
-#if NeedNestedPrototypes
-	loaderPtr,	/* modrec */
-	int,		/* fd */
-	LOOKUP **
-#endif
-	);
-typedef void (*ResolveSymbolsProcPtr)(
-#if NeedNestedPrototypes
-	void *
-#endif
-	);
-typedef int (*CheckForUnresolvedProcPtr)(
-#if NeedNestedPrototypes
-	int,
-	void *
-#endif
-	);
-typedef void (*LoaderUnloadProcPtr)(
-#if NeedNestedPrototypes
-	void *
-#endif
-	);
+typedef void * (*LoadModuleProcPtr)(loaderPtr modrec, int fd, LOOKUP **);
+typedef void (*ResolveSymbolsProcPtr)(void *);
+typedef int (*CheckForUnresolvedProcPtr)(int, void *);
+typedef char * (*AddressToSectionProcPtr)(void *, unsigned long);
+typedef void (*LoaderUnloadProcPtr)(void *);
 
 typedef struct _loader_funcs {
 	LoadModuleProcPtr	LoadModule;
 	ResolveSymbolsProcPtr	ResolveSymbols;
 	CheckForUnresolvedProcPtr CheckForUnresolved;
+	AddressToSectionProcPtr AddressToSection;
 	LoaderUnloadProcPtr	LoaderUnload;
 	LoaderRelocRec		pRelocs; /* type specific relocations */
 } loader_funcs;
@@ -185,147 +166,57 @@ typedef struct _loader {
 	loaderPtr next;
 } loaderRec;
 
-void LoaderInit(void);
+/* Compiled-in version information */
+typedef struct {
+	INT32	xf86Version;
+	INT32	ansicVersion;
+	INT32	videodrvVersion;
+	INT32	xinputVersion;
+	INT32	extensionVersion;
+	INT32	fontVersion;
+} ModuleVersions;
+extern ModuleVersions LoaderVersionInfo;
 
 /* Internal Functions */
 
-void
-LoaderAddSymbols(
-#if NeedFunctionPrototypes
-int,
-int,
-LOOKUP *
-#endif
-);
-void
-LoaderDefaultFunc(
-#if NeedFunctionPrototypes
-void
-#endif
-);
-void
-LoaderDuplicateSymbol(
-#if NeedFunctionPrototypes
-const char *,
-const int
-#endif
-);
-void
-LoaderFixups(void);
-void
-LoaderResolve(
-#if NeedFunctionPrototypes
-void
-#endif
-);
-int
-LoaderResolveSymbols(
-#if NeedFunctionPrototypes
-void
-#endif
-);
-char *
-LoaderHandleToName(
-#if NeedFunctionPrototypes
-int
-#endif
-);
-int
-_LoaderHandleUnresolved(
-#if NeedFunctionPrototypes
-char *, char *, int
-#endif
-);
-void
-LoaderHashAdd(
-#if NeedFunctionPrototypes
-itemPtr
-#endif
-);
-itemPtr
-LoaderHashDelete(
-#if NeedFunctionPrototypes
-const char *
-#endif
-);
-itemPtr
-LoaderHashFind(
-#if NeedFunctionPrototypes
-const char *
-#endif
-);
-void
-LoaderHashTraverse( 
-#if NeedFunctionPrototypes
-void *,
-int (*)(void *, itemPtr)
-#endif
-);
-#if NeedFunctionPrototypes
+void LoaderAddSymbols(int, int, LOOKUP *);
+void LoaderDefaultFunc(void);
+void LoaderDuplicateSymbol(const char *, const int);
+void LoaderFixups(void);
+void LoaderResolve(void);
+int LoaderResolveSymbols(void);
+char *LoaderHandleToName(int);
+int _LoaderHandleUnresolved(char *, char *, int);
+void LoaderHashAdd(itemPtr);
+itemPtr LoaderHashDelete(const char *);
+itemPtr LoaderHashFind(const char *);
+void LoaderHashTraverse(void *, int (*)(void *, itemPtr));
 void LoaderPrintAddress(const char *);
 void LoaderPrintItem(itemPtr);
 void LoaderPrintSymbol(unsigned long);
-#else
-void LoaderPrintAddress();
-void LoaderPrintItem();
-void LoaderPrintSymbol();
-#endif
-void LoaderResolve(
-#if NeedFunctionPrototypes
-void
-#endif
-);
+char *LoaderGetCanonicalName(const char *);
+void LoaderDumpSymbols(void);
+char *_LoaderModuleToName(int);
+int _LoaderAddressToSection(const unsigned long, const char **, const char **);
+int LoaderOpen(const char *, int, int *, int *, int *);
+int LoaderHandleOpen(int);
 
 /*
  * File interface functions
  */
-void *
-_LoaderFileToMem(
-#if NeedFunctionPrototypes
-int,	/* fd */
-unsigned long,	/* offset */
-int,	/* size */
-char *	/* label */
-#endif
-);
-
-void
-_LoaderFreeFileMem(
-#if NeedFunctionPrototypes
-void *,	/* addr */
-int	/* size */
-#endif
-);
-
-int
-_LoaderFileRead(
-#if NeedFunctionPrototypes
-int,		/* fd */
-unsigned int,	/* offset */
-void *,		/* addr */
-int		/* size */
-#endif
-);
+void *_LoaderFileToMem(int fd, unsigned long offset, int size, char *label);
+void _LoaderFreeFileMem(void *addr, int size);
+int _LoaderFileRead(int fd, unsigned int offset, void *addr, int size);
 
 /*
  * Relocation list manipulation routines
  */
-LoaderRelocPtr
-_LoaderGetRelocations(
-#if NeedFunctionPrototypes
-void *
-#endif
-);
+LoaderRelocPtr _LoaderGetRelocations(void *);
 
 /*
  * object to name lookup routines
  */
-char *
-_LoaderHandleToName(
-#if NeedFunctionPrototypes
-int            /* handle */
-#endif
-);
+char * _LoaderHandleToName(int handle);
 
 /*
  * Entry points for the different loader types
@@ -333,45 +224,9 @@ int            /* handle */
 #include "aoutloader.h"
 #include "coffloader.h"
 #include "elfloader.h"
+#include "dlloader.h"
 /* LD_ARCHIVE */
-void *ARCHIVELoadModule(
-#if NeedFunctionPrototypes
-loaderPtr,
-int,
-LOOKUP **
-#endif
-);
-
-
-/* LD_DLOBJECT */
-void *DLLoadModule(
-#if NeedFunctionPrototypes
-loaderPtr,
-int,
-LOOKUP **
-#endif
-);
-void DLResolveSymbols(
-#if NeedFunctionPrototypes
-void *
-#endif
-);
-int DLCheckForUnresolved(
-#if NeedFunctionPrototypes
-int,
-void *
-#endif
-);
-void DLUnloadModule(
-#if NeedFunctionPrototypes
-void *
-#endif
-);
-void *DLFindSymbol(
-#if NeedFuncionPrototypes
-char *
-#endif
-);
+void *ARCHIVELoadModule(loaderPtr, int, LOOKUP **);
 
 
 #endif /* _LOADER_H */

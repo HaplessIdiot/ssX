@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/VTsw_noop.c,v 3.0 1996/11/18 13:12:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/VTsw_noop.c,v 3.1.4.1 1998/06/05 16:23:20 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -24,8 +24,6 @@
 /* $XConsortium: VTsw_noop.c /main/3 1996/02/21 17:53:25 kaleb $ */
 
 #include "X.h"
-#include "input.h"
-#include "scrnintstr.h"
 
 #include "xf86.h"
 #include "xf86Priv.h"
@@ -35,17 +33,20 @@
  * No-op functions for OSs without VTs
  */
 
-Bool xf86VTSwitchPending()
+Bool
+xf86VTSwitchPending()
 {
 	return(FALSE);
 }
 
-Bool xf86VTSwitchAway()
+Bool
+xf86VTSwitchAway()
 {
 	return(FALSE);
 }
 
-Bool xf86VTSwitchTo()
+Bool
+xf86VTSwitchTo()
 {
 	return(TRUE);
 }

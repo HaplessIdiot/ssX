@@ -1,6 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.9 1997/11/22 08:17:36 dawes Exp $ */
-
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.7.2.7 1998/06/27 14:47:54 dawes Exp $ */
 
 
 /*
@@ -48,9 +46,9 @@
 #include "exevents.h"
 #include "extinit.h"
 
+/* These should be in a header somewhere */
 extern Bool     Must_have_memory;
 extern WindowPtr *WindowTable;
-extern int defaultColorVisualClass;
 extern int GrabInProgress;
 extern int monitorResolution;
 extern Bool permitOldBugs;
@@ -60,13 +58,12 @@ extern void ClientSleepUntil();
 
 /* DIX things */
 
-/* extern void writev(); */
-
 LOOKUP dixLookupTab[] = {
 
   /* dix */
   /* atom.c */
   SYMFUNC(MakeAtom)
+  SYMFUNC(ValidAtom)
   /* colormap.c */
   SYMFUNC(AllocColor)
   SYMFUNC(CreateColormap)
@@ -94,6 +91,7 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(ClientStateCallback)
   /* dixutils.c */
   SYMFUNC(AddCallback)
+  SYMFUNC(ClientTimeToServerTime)
   SYMFUNC(CompareTimeStamps)
   SYMFUNC(CopyISOLatin1Lowered)
   SYMFUNC(DeleteCallback)
@@ -225,9 +223,12 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(Error)
   SYMFUNC(ErrorF)
   SYMFUNC(FatalError)
+  SYMFUNC(Xstrdup)
   SYMVAR(Must_have_memory)
   /* xalloc.c */
   SYMFUNC(XNFalloc)
+  SYMFUNC(XNFcalloc)
+  SYMFUNC(XNFrealloc)
   SYMFUNC(Xalloc)
   SYMFUNC(Xcalloc)
   SYMFUNC(Xfree)
@@ -268,7 +269,7 @@ LOOKUP dixLookupTab[] = {
 
   /* libXext.a */
   SYMFUNC(ClientSleepUntil)
-  
+
 
   { 0, 0 },
 

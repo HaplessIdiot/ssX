@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.11 1996/12/23 06:50:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.12.2.2 1998/06/04 17:36:03 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -44,12 +44,9 @@
 #define INCL_MOU
 #undef RT_FONT
 #include "xf86.h"
-#include "xf86Procs.h"
+#include "xf86Priv.h"
 #include "xf86_OSlib.h"
-
-#include "xf86Procs.h"
-#include "xf86_OSlib.h"
-#include "xf86_Config.h"
+#include "xf86Config.h"
 
 extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
 				    unsigned long start, unsigned long stop,

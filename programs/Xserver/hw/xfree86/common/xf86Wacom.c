@@ -22,13 +22,11 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.31 1998/01/24 16:57:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.28.2.5 1998/06/05 16:22:54 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
  */
-
-#include "Xos.h"
 
 #define NEED_EVENTS
 #include "X.h"
@@ -42,23 +40,23 @@
 
 #if defined(sun) && !defined(i386)
 #define POSIX_TTY
-#include <errno.h>
 #include <termio.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include "extio.h"
 #else
 #include "compiler.h"
 
 #include "xf86.h"
-#include "xf86Procs.h"
-#include "xf86_OSlib.h"
+#include "xf86Priv.h"
+#include "xf86_OSproc.h"
 #ifdef XFree86LOADER
 #include "xf86_ansic.h"
 #endif
-#include "xf86_Config.h"
+#include "xf86Config.h"
 #include "xf86Xinput.h"
 #include "atKeynames.h"
 #include "xf86Version.h"
@@ -1338,7 +1336,7 @@ static int
 xf86WcmOpenDevice(DeviceIntPtr       pWcm)
 {
     LocalDevicePtr	local = (LocalDevicePtr)pWcm->public.devicePrivate;
-    WacomDevicePtr	priv = (WacomDevicePtr)PRIVATE(pWcm);
+    WacomDevicePtr	priv = (WacomDevicePtr)XI_PRIVATE(pWcm);
     WacomCommonPtr	common = priv->common;
     double		screenRatio, tabletRatio;
     int			gap;
@@ -1638,7 +1636,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
  */
 static int
 xf86WcmChangeControl(LocalDevicePtr	local,
-		     xDeviceCtl		*control)
+		     pointer		control)
 {
     xDeviceResolutionCtl	*res;
     int				*resolutions;
@@ -1646,7 +1644,7 @@ xf86WcmChangeControl(LocalDevicePtr	local,
   
     res = (xDeviceResolutionCtl *)control;
 	
-    if ((control->control != DEVICE_RESOLUTION) ||
+    if ((res->control != DEVICE_RESOLUTION) ||
 	(res->num_valuators < 1))
 	return (BadMatch);
   
