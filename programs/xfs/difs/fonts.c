@@ -3,7 +3,7 @@
  * font control
  */
 /*
- 
+
 Copyright 1990, 1991, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -47,7 +47,7 @@ in this Software without prior written authorization from The Open Group.
  * THIS SOFTWARE.
  */
 /* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.13 2001/12/14 20:01:34 dawes Exp $ */
-
+/*#define DEBUG*/
 #include        "FS.h"
 #include        "FSproto.h"
 #include	<stdio.h>
@@ -441,6 +441,9 @@ OpenFont(
 	SendErrToClient(client, FSBadName, (pointer) 0);
 	return FSBadName;
     }
+#ifdef DEBUG
+    fprintf(stderr,"OpenFont: %s\n",name);
+#endif
     /*
     ** Check name cache.  If we find a cached version of this font that
     ** is cachable, immediately satisfy the request with it.  If we find

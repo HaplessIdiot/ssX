@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.9 2004/03/29 16:25:17 tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_video.c $
- * $Revision: 1.9 $
- * $Author: tsi $
+ * $Revision: 1.10 $
+ * $Author: eich $
  *
  * File Contents: This file consists of main Xfree video supported routines.
  *
@@ -242,7 +242,6 @@ GX1InitVideo(ScreenPtr pScreen)
 
    pGeode = GEODEPTR(pScreenInfo);
 
-   if (!pGeode->NoAccel) {
       ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
       XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
       XF86VideoAdaptorPtr newAdaptor = NULL;
@@ -277,7 +276,6 @@ GX1InitVideo(ScreenPtr pScreen)
 
       if (newAdaptors)
 	 xfree(newAdaptors);
-   }
 }
 
 /* client libraries expect an encoding */
@@ -412,17 +410,15 @@ GX1SetColorkey(ScrnInfoPtr pScrn, GeodePortPrivPtr pPriv)
 void
 GX1ResetVideo(ScrnInfoPtr pScrn)
 {
-   GeodePtr pGeode = GEODEPTR(pScrn);
+    GeodePtr pGeode = GEODEPTR(pScrn);
 
-   if (!pGeode->NoAccel) {
-      GeodePortPrivPtr pPriv = pGeode->adaptor->pPortPrivates[0].ptr;
+    GeodePortPrivPtr pPriv = pGeode->adaptor->pPortPrivates[0].ptr;
 
-      DEBUGMSG(0, (0, X_NONE, "ResetVideo\n"));
-      GX1AccelSync(pScrn);
-      GFX(set_video_palette(NULL));
-      GX1SetColorkey(pScrn, pPriv);
-      GFX(set_video_filter(pPriv->filter, pPriv->filter));
-   }
+    DEBUGMSG(0, (0, X_NONE, "ResetVideo\n"));
+    if (!pGeode->NoAccel) GX1AccelSync(pScrn);
+    GFX(set_video_palette(NULL));
+    GX1SetColorkey(pScrn, pPriv);
+    GFX(set_video_filter(pPriv->filter, pPriv->filter));
 }
 
 /*----------------------------------------------------------------------------
@@ -536,7 +532,7 @@ GX1StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
    DEBUGMSG(0, (0, X_NONE, "StopVideo\n"));
    REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
 
-   GX1AccelSync(pScrn);
+   if (!pGeode->NoAccel) GX1AccelSync(pScrn);
    if (exit) {
       if (pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	 GFX(set_video_enable(0));
@@ -579,8 +575,9 @@ GX1SetPortAttribute(ScrnInfoPtr pScrn,
 		    Atom attribute, INT32 value, pointer data)
 {
    GeodePortPrivPtr pPriv = (GeodePortPrivPtr) data;
+   GeodePtr pGeode = GEODEPTR(pScrn);
 
-   GX1AccelSync(pScrn);
+   if (!pGeode->NoAccel) GX1AccelSync(pScrn);
    if (attribute == xvColorKey) {
       pPriv->colorKey = value;
       GX1SetColorkey(pScrn, pPriv);
@@ -1001,7 +998,7 @@ GX1DisplayVideo(ScrnInfoPtr pScrn,
    GeodePtr pGeode = GEODEPTR(pScrn);
 
    /*    DisplayModePtr mode = pScrn->currentMode; */
-   GX1AccelSync(pScrn);
+   if (!pGeode->NoAccel) GX1AccelSync(pScrn);
 
    GFX(set_video_enable(1));
 
@@ -1352,7 +1349,7 @@ GX1BlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask)
    (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
    pScreen->BlockHandler = GX1BlockHandler;
 
-   GX1AccelSync(pScrn);
+   if (!pGeode->NoAccel) GX1AccelSync(pScrn);
    if (pPriv->videoStatus & TIMER_MASK) {
       UpdateCurrentTime();
       if (pPriv->videoStatus & OFF_TIMER) {

@@ -1,4 +1,19 @@
 XFree86 4.4.99.2 (xx March 2004)
+  47. Free XrmDB in XCloseDisplay() only when implicitely allocated by 
+      XGetDefaults(). If Client allocates it itself it should free it also.
+      Trying to free it for the client may result in segfault if the client
+      has already freed it (Egbert Eich).
+  46. Protect removeOverlapsWithBrides() from NULL pointer in target 
+      (Egbert Eich).
+  45. Fixed stretching option and centering in C&T driver (Egbert Eich).
+  44. Added support for memory size tweaking in BIOS for i845 (Egbert Eich, 
+      thanks to Christian Ziez).
+  43. Removed video playback dependency on Accel in NSC drivers (Egbert Eich).
+  42. Fix HW cursor state on Savage driver when entering VT as some BIOSes 
+      seem to enable it unconditionally (Egbert Eich).
+  41. Fixed Emulate3Button message to distinguish between 'hard' (ie. 
+      configured) and 'soft' (ie. automatic emulation that is disabled as 
+      soon as the middle button is pressed) (Egbert Eich).
   40. Address Xv segfaults with Option "XaaNoSolidFillRect" by reducing output
       driver dependence on xaalocal.h (Marc La France).
   39. Fix a crash that can happen with apps using the zh_CN.UTF-8 locale
@@ -18761,7 +18776,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3194 2004/03/26 02:06:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3195 2004/03/29 16:25:14 tsi Exp $
 
 
 
