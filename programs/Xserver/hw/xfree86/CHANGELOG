@@ -1,4 +1,9 @@
 XFree86 3.9i (6 July 1997)
+1091. VidMode extensions updates, including adding a new function to
+      return the available clocks, and how many more clocks can be programmed,
+      add the HSkew parameter and some reserved fields (this introduces
+      a protocol incompatibility), and fix a bug in the ValidateModeLine
+      function's clock checking (#744, Joe Moss).
 1090. Add port probing for the Alliance 6410, 6422 and AT24 (#743, Joe Moss).
 1089. Add similar ET6300 detection to scanpci and vgaPCI.h.
 1088. Fix SuperProbe's ET6000 memory probe (#742, Koen Gadeyne).
@@ -5078,4 +5083,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.503 1997/07/06 05:30:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.504 1997/07/06 07:06:10 dawes Exp $
