@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:30 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.18 2001/10/10 12:56:58 alanh Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.19 2002/05/31 18:46:13 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -37,11 +37,6 @@ YaccFile(xkbparse,$(YFLAGS))
 install::
 	@echo "Creating $(LIBDIR)/xkb"
 	MakeDir($(DESTDIR)$(LIBDIR)/xkb)
-
-#ifdef VarDbDirectory
-CONFDIR = $(VARDBDIR)
-#endif
-LinkConfDirectory(xkb,xkb,compiled,compiled)
 
 InstallProgram(xkbcomp,$(LIBDIR)/xkb)
 
