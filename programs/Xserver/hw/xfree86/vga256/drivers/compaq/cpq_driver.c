@@ -1,5 +1,5 @@
 /* $XConsortium: cpq_driver.c /main/6 1996/01/12 12:16:57 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.10 1996/02/04 09:13:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.11 1996/02/22 05:13:04 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -114,6 +114,7 @@ vgaVideoChipRec COMPAQ = {
 	FALSE,
 	0,
 	0,
+	FALSE,
 	FALSE,
 	FALSE,
 	NULL,

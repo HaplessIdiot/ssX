@@ -28,6 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: cfbmskbits.h,v 4.25 94/04/17 20:28:55 dpw Exp $ */
+/* $XFree86$ */
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
 #include	"X.h"
@@ -68,18 +69,18 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * B is PGSZB.  All the other values are derived from these
  * two.  This table does not show all combinations!
  *
- * name	    cfb8,4    cfb32,4      cfb8,8    cfb32,8
- * ----	    ------    -------      ------    -------
- * PSZ	      8	        32	      8        32
- * PGSZ	     32         32           64        64
- * PGSZB      4          4            8         8
- * PGSZBMSK 0xF        0xF         0xFF      0xFF
- * PPW	      4	         1	      8         2
- * PPWMSK   0xF        0x1         0xFF       0x3    
- * PLST	      3	         0	      7         1
- * PIM	    0x3        0x0	    0x7       0x1
- * PWSH	      2	         0	      3         1
- * PMSK	    0xFF      0xFFFFFFFF   0xFF      0xFFFFFFFF
+ * name	    cfb8,4    cfb24,4      cfb32,4    cfb8,8    cfb24,8    cfb32,8
+ * ----	    ------    -------      ------     ------    ------     -------
+ * PSZ	      8	        24	     32          8        24         32
+ * PGSZ	     32         32           32         64        64         64
+ * PGSZB      4          4            4          8         8          8
+ * PGSZBMSK 0xF        0xF?         0xF        0xFF      0xFF       0xFF
+ * PPW	      4	         1            1          8         2          2
+ * PPWMSK   0xF        0x1          0x1        0xFF       0x3?       0x3    
+ * PLST	      3	         0            0	         7         1          1
+ * PIM	    0x3        0x0          0x0	       0x7       0x1?        0x1
+ * PWSH	      2	         0            0	         3         1          1
+ * PMSK	    0xFF      0xFFFFFF     0xFFFFFFFF 0xFF      0xFFFFFF   0xFFFFFFFF
  *
  *
  * I have also added a new macro, PFILL, that takes one pixel and
@@ -169,6 +170,15 @@ typedef CARD8 PixelType;
 #if PSZ == 16
 #define PIXEL_ADDR
 typedef CARD16 PixelType;
+#endif
+
+#if PSZ == 24
+#undef PMSK
+#define PMSK	0xFFFFFF
+/*#undef PIM
+#define PIM 3*/
+#define PIXEL_ADDR
+typedef CARD32 PixelType;
 #endif
 
 #if PSZ == 32
@@ -385,6 +395,109 @@ getleftbits(psrc, w, dst)
 
 #if PSZ != 32 || PPW != 1
 
+# if (PSZ == 24 && PPW == 1)
+#define maskbits(x, w, startmask, endmask, nlw) {\
+    startmask = cfbstarttab[(x)&3]; \
+    endmask = cfbendtab[((x)+(w)) & 3]; \
+    nlw = ((((x)+(w))*3)>>2) - (((x)*3 +3)>>2); \
+}
+
+#define mask32bits(x, w, startmask, endmask) \
+    startmask = cfbstarttab[(x)&3]; \
+    endmask = cfbendtab[((x)+(w)) & 3];
+
+#define maskpartialbits(x, w, mask) \
+    mask = cfbstartpartial[(x) & 3] & cfbendpartial[((x)+(w)) & 3];
+
+#define maskbits24(x, w, startmask, endmask, nlw) \
+    startmask = cfbstarttab24[(x) & 3]; \
+    endmask = cfbendtab24[((x)+(w)) & 3]; \
+    if (startmask){ \
+	nlw = (((w) - (4 - ((x) & 3))) >> 2); \
+    } else { \
+	nlw = (w) >> 2; \
+    }
+
+#define getbits24(psrc, dst, index) {\
+    register int idx; \
+    switch(idx = ((index)&3)<<1){ \
+    	case 0: \
+		dst = (*(psrc) &cfbmask[idx]); \
+		break; \
+    	case 6: \
+		dst = BitLeft((*(psrc) &cfbmask[idx]), cfb24Shift[idx]); \
+		break; \
+	default: \
+		dst = BitLeft((*(psrc) &cfbmask[idx]), cfb24Shift[idx]) | \
+		BitRight(((*((psrc)+1)) &cfbmask[idx+1]), cfb24Shift[idx+1]); \
+	}; \
+}
+
+#define putbits24(src, x, w, pdst, planemask, index) {\
+    register PixelGroup dstpixel; \
+    register unsigned int idx; \
+    switch(idx = ((index)&3)<<1){ \
+    	case 0: \
+		dstpixel = (*(pdst) &cfbmask[idx]); \
+		break; \
+    	case 6: \
+		dstpixel = BitLeft((*(pdst) &cfbmask[idx]), cfb24Shift[idx]); \
+		break; \
+	default: \
+		dstpixel = BitLeft((*(pdst) &cfbmask[idx]), cfb24Shift[idx])| \
+		BitRight(((*((pdst)+1)) &cfbmask[idx+1]), cfb24Shift[idx+1]); \
+	}; \
+    dstpixel &= ~(planemask); \
+    dstpixel |= (src & planemask); \
+    *(pdst) &= cfbrmask[idx]; \
+    switch(idx){ \
+    	case 0: \
+		*(pdst) |=  (dstpixel & cfbmask[idx]); \
+		break; \
+    	case 2: \
+    	case 4: \
+		pdst++;idx++; \
+		*(pdst) = ((*(pdst))  & cfbrmask[idx]) | \
+				(BitLeft(dstpixel, cfb24Shift[idx]) & cfbmask[idx]); \
+		pdst--;idx--; \
+    	case 6: \
+		*(pdst) |=  (BitRight(dstpixel, cfb24Shift[idx]) & cfbmask[idx]); \
+		break; \
+	}; \
+}
+
+#define putbitsrop24(src, x, pdst, planemask, rop) \
+{ \
+    register PixelGroup t1, dstpixel; \
+    register unsigned int idx; \
+    switch(idx = (x)<<1){ \
+    	case 0: \
+		dstpixel = (*(pdst) &cfbmask[idx]); \
+		break; \
+    	case 6: \
+		dstpixel = BitLeft((*(pdst) &cfbmask[idx]), cfb24Shift[idx]); \
+		break; \
+	default: \
+		dstpixel = BitLeft((*(pdst) &cfbmask[idx]), cfb24Shift[idx])| \
+		BitRight(((*((pdst)+1)) &cfbmask[idx+1]), cfb24Shift[idx+1]); \
+	}; \
+    DoRop(t1, rop, (src), dstpixel); \
+    dstpixel &= ~planemask; \
+    dstpixel |= (t1 & planemask); \
+    *(pdst) &= cfbrmask[idx]; \
+    switch(idx){ \
+    	case 0: \
+		*(pdst) |= (dstpixel & cfbmask[idx]); \
+		break; \
+    	case 2: \
+    	case 4: \
+		*((pdst)+1) = ((*((pdst)+1))  & cfbrmask[idx+1]) | \
+				(BitLeft(dstpixel, cfb24Shift[idx+1]) & (cfbmask[idx+1])); \
+    	case 6: \
+		*(pdst) |= (BitRight(dstpixel, cfb24Shift[idx]) & cfbmask[idx]); \
+	}; \
+}
+# else  /* PSZ == 24 && PPW == 1 */
 #define maskbits(x, w, startmask, endmask, nlw) \
     startmask = cfbstarttab[(x)&PIM]; \
     endmask = cfbendtab[((x)+(w)) & PIM]; \
@@ -400,6 +513,7 @@ getleftbits(psrc, w, dst)
     startmask = cfbstarttab[(x)&PIM]; \
     endmask = cfbendtab[((x)+(w)) & PIM];
 
+#endif /* PSZ == 24 && PPW == 1 */
 
 #define getbits(psrc, x, w, dst) \
 if ( ((x) + (w)) <= PPW) \
@@ -552,6 +666,15 @@ else \
  */
 
 /* useful only when not spanning destination longwords */
+#if PSZ == 24
+#define putbitsmropshort24(src,x,w,pdst,index) {\
+    PixelGroup   _tmpmask; \
+    PixelGroup   _t1; \
+    maskpartialbits ((x), (w), _tmpmask); \
+    _t1 = SCRRIGHT((src), (x)); \
+    DoMaskMergeRop24(_t1, pdst, _tmpmask, index); \
+}
+#endif
 #define putbitsmropshort(src,x,w,pdst) {\
     PixelGroup   _tmpmask; \
     PixelGroup   _t1; \
@@ -583,6 +706,22 @@ if ((x) + (w) <= PPW) {\
 
 #if GETLEFTBITS_ALIGNMENT == 1
 #define getleftbits(psrc, w, dst)	dst = *((unsigned int *) psrc)
+#define getleftbits24(psrc, w, dst, idx){	\
+	regiseter int index; \
+	switch(index = ((idx)&3)<<1){ \
+	case 0: \
+	dst = (*((unsigned int *) psrc))&cfbmask[index]; \
+	break; \
+	case 2: \
+	case 4: \
+	dst = BitLeft(((*((unsigned int *) psrc))&cfbmask[index]), cfb24Shift[index]); \
+	dst |= BitRight(((*((unsigned int *) psrc)+1)&cfbmask[index]), cfb4Shift[index]); \
+	break; \
+	case 6: \
+	dst = BitLeft((*((unsigned int *) psrc)),cfb24Shift[index]); \
+	break; \
+	}; \
+}
 #endif /* GETLEFTBITS_ALIGNMENT == 1 */
 
 #define getglyphbits(psrc, x, w, dst) \
@@ -660,6 +799,55 @@ if ((x) + (w) <= PPW) {\
     q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
     *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
 }
+#if PSZ == 24
+# if 0
+#define getstipplepixels24( psrcstip,xt,w,ones,psrcpix,destpix,stipindex,srcindex,dstindex) \
+{ \
+    PixelGroup q, srcpix, srcstip; \
+    unsigned long src; \
+    register unsigned int sidx; \
+    register unsigned int didx; \
+    register unsigned int stipidx; \
+    sidx = ((srcindex) & 3)<<1; \
+    didx = ((dstindex) & 3)<<1; \
+    q = *(psrcstip) >> (xt); \
+/*    if((srcindex)!=0)*/ \
+/*    src = (((*(psrcpix)) << cfb24Shift[sidx]) & (cfbmask[sidx])) |*/ \
+/*	(((*((psrcpix)+1)) << cfb24Shift[sidx+1]) & (cfbmask[sidx+1])); */\
+/*    else */\
+	src = (*(psrcpix))&0xFFFFFF; \
+    if ( ((xt)+(w)) > PGSZ ) \
+        q |= (*((psrcstip)+1)) << (PGSZ -(xt)); \
+    q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
+    src &= QuartetPixelMaskTable[q]; \
+    *(destpix) &= cfbrmask[didx]; \
+    switch(didx) {\
+	case 0: \
+		*(destpix) |= (src &cfbmask[didx]); \
+		break; \
+	case 2: \
+	case 4: \
+		destpix++;didx++; \
+		*(destpix) = ((*(destpix)) & (cfbrmask[didx]))| \
+			(BitLeft(src, cfb24Shift[didx]) & (cfbmask[didx])); \
+		destpix--; didx--;\
+	case 6: \
+		*(destpix) |= (BitRight(src, cfb24Shift[didx]) & cfbmask[didx]); \
+		break; \
+	}; \
+}
+# else
+#define getstipplepixels24(psrcstip,xt,ones,psrcpix,destpix,stipindex) \
+{ \
+    PixelGroup q, srcpix, srcstip; \
+    unsigned long src; \
+    register unsigned int stipidx; \
+    q = *(psrcstip) >> (xt); \
+    q = ((ones) ? q : ~q) & 1; \
+    *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
+}
+# endif
+#endif /* PSZ == 24 */
 #endif
 
 extern PixelGroup cfbstarttab[];
@@ -670,3 +858,6 @@ extern PixelGroup cfbrmask[];
 extern PixelGroup cfbmask[];
 extern PixelGroup QuartetBitsTable[];
 extern PixelGroup QuartetPixelMaskTable[];
+#if PSZ == 24
+extern int cfb24Shift[];
+#endif

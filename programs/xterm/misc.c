@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/106 1996/02/02 14:27:57 kaleb $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.10 1996/02/04 09:18:08 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.11 1996/03/17 11:44:07 dawes Exp $
  */
 
 /*
@@ -974,7 +974,7 @@ int		i,ndx;
 	    if (names[0]==';')
 		 thisName=	NULL;
 	    else thisName=	names;
-	    names=	index(names,';');
+	    names = strchr(names,';');
 	    if (names!=NULL) {
 		*names=	'\0';
 		names++;

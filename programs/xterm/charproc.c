@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.26 1996/05/06 06:01:23 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.27 1996/06/10 09:18:49 dawes Exp $
  */
 
 /*
@@ -2408,13 +2408,11 @@ SwitchBufPtrs(screen)
 {
     register int rows = screen->max_row + 1;
     char *save [MAX_PTRS * MAX_ROWS];
+    Size_t len = MAX_PTRS * sizeof(char *) * rows;
 
-    memmove( (char *)save, (char *)screen->buf,
-    	  MAX_PTRS * sizeof(char *) * rows);
-    memmove( (char *)screen->buf, (char *)screen->altbuf, 
-	  MAX_PTRS * sizeof(char *) * rows);
-    memmove( (char *)screen->altbuf, (char *)save,
-    	  MAX_PTRS * sizeof(char *) * rows);
+    memmove( (char *)save,           (char *)screen->buf,    len);
+    memmove( (char *)screen->buf,    (char *)screen->altbuf, len);
+    memmove( (char *)screen->altbuf, (char *)save,           len);
 }
 
 void
@@ -2897,7 +2895,7 @@ static void VTInitI18N()
 	for(ns=s=tmp; ns && *s;) {
 	    while (*s && isspace(*s)) s++;
 	    if (!*s) break;
-	    if ((ns = end = index(s, ',')) == 0)
+	    if ((ns = end = strchr(s, ',')) == 0)
 		end = s + strlen(s);
 	    while (isspace(*end)) end--;
 	    *end = '\0';
@@ -2932,7 +2930,7 @@ static void VTInitI18N()
     for(s = tmp; s && !found;) {
 	while (*s && isspace(*s)) s++;
 	if (!*s) break;
-	if ((ns = end = index(s, ',')) != 0)
+	if ((ns = end = strchr(s, ',')) != 0)
 	    ns++;
 	else
 	    end = s + strlen(s);

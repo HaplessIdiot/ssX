@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.0 1995/05/07 11:46:05 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -53,7 +53,11 @@ cfbFillBoxTileOdd (pDrawable, n, rects, tile, xrot, yrot)
     PixmapPtr	tile;
     int		xrot, yrot;
 {
+#if PSZ == 24
+    if (tile->drawable.width & 3)
+#else
     if (tile->drawable.width & PIM)
+#endif
 	cfbFillBoxTileOddCopy (pDrawable, n, rects, tile, xrot, yrot, GXcopy, ~0L);
     else
 	cfbFillBoxTile32sCopy (pDrawable, n, rects, tile, xrot, yrot, GXcopy, ~0L);

@@ -1,5 +1,5 @@
 /* $XConsortium: util.c,v 1.18 94/11/21 18:33:11 kaleb Exp $ */
-/* $XFree86: xc/programs/xdm/util.c,v 3.4 1994/10/20 06:15:13 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.5 1995/01/28 16:16:57 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -219,6 +219,9 @@ freeArgs (argv)
 
 CleanUpChild ()
 {
+#ifdef CSRG_BASED
+	setsid();
+#else
 #if defined(SYSV) || defined(SVR4)
 #if !(defined(SVR4) && defined(i386))
 	setpgrp ();
@@ -233,6 +236,7 @@ CleanUpChild ()
 	}
 #else
 	sigsetmask (0);
+#endif
 #endif
 #endif
 #ifdef SIGCHLD

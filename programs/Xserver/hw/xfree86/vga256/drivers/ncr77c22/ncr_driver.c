@@ -1,5 +1,5 @@
 /* $XConsortium: ncr_driver.c /main/6 1996/01/12 12:18:28 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.11 1996/02/22 05:13:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.12 1996/03/29 22:17:59 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -131,6 +131,7 @@ vgaVideoChipRec NCR77C22 = {
   FALSE,
   0,
   0,
+  FALSE,
   FALSE,
   FALSE,
   NULL,

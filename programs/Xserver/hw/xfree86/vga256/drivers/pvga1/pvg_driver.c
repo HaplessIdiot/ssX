@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.22 1996/02/04 09:14:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.23 1996/03/29 22:18:05 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -151,6 +151,7 @@ vgaVideoChipRec PVGA1 = {
   FALSE,
   0,
   0,
+  FALSE,
   FALSE,
   FALSE,
   NULL,

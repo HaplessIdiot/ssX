@@ -1,6 +1,6 @@
 /*
  * $XConsortium: cfbply1rct.c,v 1.15 94/11/21 18:29:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.0 1994/05/08 05:17:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.1 1995/01/28 15:45:35 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -53,6 +53,10 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     cfbPrivGCPtr    devPriv;
     int		    nwidth;
     unsigned long   *addrl, *addr;
+#if PSZ == 24
+    unsigned long startmask, endmask;
+    register int pidx;
+#endif
     int		    maxy;
     int		    origin;
     register int    vertex1, vertex2;
@@ -275,6 +279,9 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 #define LWRD_SHIFT 3
 #endif /* PGSZ */
 
+#if PSZ == 24
+	    addr = (unsigned long *)((char *)addrl + ((l * 3) & ~0x03));
+#else /* PSZ == 24 */
 #if PWSH > LWRD_SHIFT
 	    l = l >> (PWSH - LWRD_SHIFT);
 #endif
@@ -282,6 +289,30 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	    l = l << (LWRD_SHIFT - PWSH);
 #endif
 	    addr = (unsigned long *) (((char *) addrl) + l);
+#endif /* PSZ == 24 */
+#if PSZ == 24
+	    if (nmiddle <= 1){
+	      if (nmiddle)
+	        RROP_SOLID24(addr, l);
+	    } else {
+	      maskbits(l, nmiddle, startmask, endmask, nmiddle);
+	      pidx = l & 3;
+	      if (startmask){
+		RROP_SOLID_MASK(addr, startmask, pidx-1);
+		addr++;
+		if (pidx == 3)
+		  pidx = 0;
+	      }
+	      while (--nmiddle >= 0){
+		RROP_SOLID(addr, pidx);
+		addr++;
+		if (++pidx == 3)
+		  pidx = 0;
+	      }
+	      if (endmask)
+		RROP_SOLID_MASK(addr, endmask, pidx);
+	    }
+#else /* PSZ == 24 */
 #if PPW > 1
 	    if (c + nmiddle < PPW)
 	    {
@@ -307,6 +338,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	    	    RROP_SOLID_MASK(addr,mask);
 	    }
 #endif
+#endif /* PSZ == 24 */
 	    if (!--h)
 		break;
 	    addrl = AddrYPlus (addrl, 1);

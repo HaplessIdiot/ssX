@@ -1,5 +1,5 @@
 /* $XConsortium: et3_driver.c /main/6 1996/01/12 12:17:02 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.12 1996/03/29 22:17:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.13 1996/06/10 09:16:12 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -106,6 +106,7 @@ vgaVideoChipRec ET3000 = {
   FALSE,
   0,
   0,
+  FALSE,
   FALSE,
   FALSE,
   NULL,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.3 1996/03/10 12:15:27 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.4 1996/05/06 06:01:28 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -174,6 +174,7 @@ extern int HandleExposure PROTO((TScreen *screen, XEvent *event));
 extern void ChangeColors PROTO((XtermWidget tw, ScrnColors *pNew));
 extern void ClearAbove PROTO((TScreen *screen));
 extern void ClearBelow PROTO((TScreen *screen));
+extern void ClearCurBackground PROTO((TScreen *screen, int top, int left, unsigned height, unsigned width));
 extern void ClearLeft PROTO((TScreen *screen));
 extern void ClearLine PROTO((TScreen *screen));
 extern void ClearRight PROTO((TScreen *screen));
