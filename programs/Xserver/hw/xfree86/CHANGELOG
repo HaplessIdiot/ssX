@@ -1,4 +1,17 @@
-XFree86 3.1.0b (23 October 1994)
+XFree86 3.1.0b (29 October 1994)
+ 51. The vgawonder driver will now attempt to determine what the board uses to
+     generate clocks (Marc Aurele La France).
+ 50. Allow mode flags to specify composite sync polarity (Marc Aurele
+     La France).
+ 49. ati.test and vgawonder driver updates (Marc Aurele La France).
+ 48. Vgawonder driver will now attempt to use a default video mode (derived
+     from the existing CRTC settings) when no modes are specified in the
+     XF86Config (Marc Aurele La France).
+ 47. Fix problem where clock probe could report high values as zero (Marc
+     Aurele La France).
+ 46. SVGA driver for Avance Logic Inc. ali2301, ali2302, ali2308 and
+     ali2401 (Ching-Tai Chiu).
+ 45. Enable linear aperture access for BSD/386 (Hans Nasten).
  44. Some Linux xterm fixes (Orest Zborowski).
  43. Fix Linux xdm groups setting problem (Orest Zborowski).
  42. Allow Mach8 server to delete unsuitable modes (Hans Nasten).
