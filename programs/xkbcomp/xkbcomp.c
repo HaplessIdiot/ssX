@@ -1,5 +1,5 @@
-/* $XConsortium: xkbcomp.c /main/8 1996/02/02 14:17:40 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.1 1996/01/16 15:09:04 dawes Exp $ */
+/* $XConsortium: xkbcomp.c /main/10 1996/02/05 14:08:51 kaleb $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.2 1996/02/04 09:17:46 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -70,7 +70,7 @@ static char *fileTypeExt[] = {
 };
 
 static	unsigned	inputFormat,outputFormat;
-static	char *		rootDir;
+	char *		rootDir;
 static	char *		inputFile;
 static	char *		inputMap;
 static	char *		outputFile;
@@ -85,70 +85,11 @@ static	Bool		computeDflts= False;
 static	Bool		xkblist= False;
 	unsigned	warningLevel= 5;
 	unsigned	verboseLevel= 0;
+	unsigned	dirsToStrip= 0;
 	unsigned	optionalParts= 0;
 static	char *		preErrorMsg= NULL;
 static	char *		postErrorMsg= NULL;
 static	char *		errorPrefix= NULL;
-
-#define	WantLongListing	(1<<0)
-#define	WantPartialMaps	(1<<1)
-#define	WantHiddenMaps	(1<<2)
-#define	WantFullNames	(1<<3)
-
-/***====================================================================***/
-
-static	int		szListing= 0;
-static	int		nListed= 0;
-static	int		nFilesListed= 0;
-static	char **		filesToList= NULL;
-static	char **		mapsToList= NULL;
-
-static Bool
-#if NeedFunctionPrototypes
-AddListing(char *file,char *map)
-#else
-AddListing(file,map)
-    char *file;
-    char *map;
-#endif
-{
-    if (map==NULL) {
-	char *tmp;
-	tmp= strchr(file,'(');
-	if (tmp!=NULL) {
-	    map= &tmp[1];
-	    tmp= strchr(file,')');
-	    if ((tmp==NULL)||(tmp[1]!='\0')) {
-		ERROR("Files/maps to list must have the form file(map)\n");
-		ACTION1("Illegal specifier %s ignored\n",file);
-		return False;
-	    }
-	    *(map-1)='\0';
-	    *tmp= '\0';
-	}
-#ifdef DEBUG
-	if (warningLevel>9)
-	    INFO2("Adding %s(%s) to listings\n",file,(map?map:"*"));
-#endif
-    }
-    if (nListed>=szListing) {
-	if (szListing<1)	szListing= 10;
-	else		szListing*= 2;
-	filesToList= uTypedRealloc(filesToList,szListing,char *);
-	mapsToList= uTypedRealloc(mapsToList,szListing,char *);
-	if ((!filesToList) || (!mapsToList)) {
-	    WSGO("Couldn't allocate list of files and maps\n");
-	    ACTION("Exiting\n");
-	    exit(1);
-	}
-    }
-    filesToList[nListed]= file;
-    mapsToList[nListed]= map;
-    nListed++;
-    if (file!=NULL)
-	nFilesListed++;
-    return True;
-}
 
 /***====================================================================***/
 
@@ -183,7 +124,13 @@ Usage(argc,argv)
 	M("-dflts               Compute defaults for missing parts\n");
 	M("-I[<dir>]            Specifies a top level directory for include\n");
 	M("                     directives. Multiple directories are legal.\n");
-	M("-l[ist]              List matching maps in the specified files\n");
+	M("-l [flags]           List matching maps in the specified files\n");
+	M("                     f: list fully specified names\n");
+	M("                     h: also list hidden maps\n");
+	M("                     l: long listing (show flags)\n");
+	M("                     p: also list partial maps\n");
+	M("                     R: recursively list subdirectories\n");
+	M("                     default is all options off\n");
     }
     M("-m[ap] <map>         Specifies map to compile\n");
     if (!xkblist)
@@ -197,16 +144,16 @@ Usage(argc,argv)
 	M("                     k: keycodes           s: symbols\n");
 	M("                     t: types\n");
     }
+    if (xkblist) {
+	M("-p <count>           Specifies the number of slashes to be stripped\n");
+	M("                     from the front of the map name on output\n");
+    }
     M("-R[<DIR>]            Specifies the root directory for\n");
     M("                     relative path names\n");
     M("-synch               Force synchronization\n");
     if (xkblist) {
-	M("-v [<flags>]         Set level of detail for listing:\n");
-	M("                     f: list fully specified names\n");
-	M("                     h: also list hidden maps\n");
-	M("                     l: long listing (show flags)\n");
-	M("                     p: also list partial maps\n");
-	M("                     default is all options off\n");
+	M("-v [<flags>]         Set level of detail for listing.\n");
+	M("                     flags are as for the -l option\n");
     }
     M("-w [<lvl>]           Set warning level (0=none, 10=all)\n");
     if (!xkblist) {
@@ -217,6 +164,32 @@ Usage(argc,argv)
 }
 
 /***====================================================================***/
+
+static void
+#if NeedFunctionPrototypes
+setVerboseFlags(char *str)
+#else
+setVerboseFlags(str)
+    char *	str;
+#endif
+{
+    for (;*str;str++) {
+	switch (*str) {
+	    case 'f': verboseLevel|= WantFullNames; break;
+	    case 'h': verboseLevel|= WantHiddenMaps; break;
+	    case 'l': verboseLevel|= WantLongListing; break;
+	    case 'p': verboseLevel|= WantPartialMaps; break;
+	    case 'R': verboseLevel|= ListRecursive; break;
+	    default:
+		if (warningLevel>4) {
+		    WARN1("Unknown verbose option \"%c\"\n",(unsigned int)*str);
+		    ACTION("Ignored\n");
+		}
+		break;
+	}
+    }
+    return;
+}
 
 Bool
 #if NeedFunctionPrototypes
@@ -247,7 +220,7 @@ register int i,tmp;
 					inputFile,outputFile,argv[i]);
 		}
 	    }
-	    else if (!AddListing(argv[i],NULL))
+	    else if (!AddMatchingFiles(argv[i]))
 		return False;
 	}
 	else if ((strcmp(argv[i],"-?")==0)||(strcmp(argv[i],"-help")==0)) {
@@ -331,8 +304,7 @@ register int i,tmp;
 	    }
 	    exit(1);
 	}
-	else if (((strcmp(argv[i],"-l")==0)||(strcmp(argv[i],"-list")==0))&&
-							(!xkblist)) {
+	else if ((strncmp(argv[i],"-l",2)==0)&&(!xkblist)) {
 	    if (outputFormat!=WANT_DEFAULT) {
 		if (warningLevel>0) {
 		    WARN("Multiple output file formats specified\n");
@@ -340,11 +312,13 @@ register int i,tmp;
 		}
 	    }
 	    else {
+		if (argv[i][2]!='\0')
+		    setVerboseFlags(&argv[i][2]);
 		xkblist= True;
-		if ((inputFile)&&(!AddListing(inputFile,NULL)))
+		if ((inputFile)&&(!AddMatchingFiles(inputFile)))
 		     return False;
 		else inputFile= NULL;
-		if ((outputFile)&&(!AddListing(outputFile,NULL)))
+		if ((outputFile)&&(!AddMatchingFiles(outputFile)))
 		     return False;
 		else outputFile= NULL;
 	    }
@@ -357,7 +331,7 @@ register int i,tmp;
 		}
 	    }
 	    else if (xkblist) {
-		 if (!AddListing(NULL,argv[i]))
+		 if (!AddMapOnly(argv[i]))
 		    return False;
 	    }
 	    else if (inputMap!=NULL) {
@@ -425,6 +399,19 @@ register int i,tmp;
 		}
 	    }
 	}
+	else if (strncmp(argv[i],"-p",2)==0) {
+	    if (isdigit(argv[i][2])) {
+		sscanf(&argv[i][2],"%i",&dirsToStrip);
+	    }
+	    else if ((i<(argc-1))&&(isdigit(argv[i+1][0]))) {
+		sscanf(argv[++i],"%i",&dirsToStrip);
+	    }
+	    else {
+		dirsToStrip= 0;
+	    }
+	    if (warningLevel>5)
+		INFO1("Setting path count to %d\n",dirsToStrip);
+	}
 	else if (strncmp(argv[i],"-R",2)==0) {
 	    if (argv[i][2]=='\0') {
 		if (warningLevel>0) {
@@ -438,7 +425,17 @@ register int i,tmp;
 		    ACTION2("Using %s, ignoring %s\n",rootDir,argv[i]);
 		}
 	    }
-	    else rootDir= &argv[i][2];
+	    else {
+		rootDir= &argv[i][2];
+		if (warningLevel>8) {
+		    WARN1("Changing root directory to \"%s\"\n",rootDir);
+		}
+		if ((chdir(rootDir)<0) && (warningLevel>0)) {
+		    WARN1("Couldn't change directory to \"%s\"\n",rootDir);
+		    ACTION("Root directory (-R) option ignored\n");
+		    rootDir= NULL;
+		}
+	    }
 	}
 	else if ((strcmp(argv[i],"-synch")==0)||(strcmp(argv[i],"-s")==0)) {
 	    synch= True;
@@ -450,22 +447,8 @@ register int i,tmp;
 	    else if ((i<(argc-1))&&(argv[i+1][0]!='-'))
 		 str= argv[++i];
 	    else str= NULL;
-	    if (str) {
-		for (;*str;str++) {
-		    switch (*str) {
-			case 'f': verboseLevel|= WantFullNames; break;
-			case 'h': verboseLevel|= WantHiddenMaps; break;
-			case 'l': verboseLevel|= WantLongListing; break;
-			case 'p': verboseLevel|= WantPartialMaps; break;
-			default:
-			    if (warningLevel>4) {
-				WARN1("Unknown verbose option \"%c\"\n",(unsigned int)*str);
-				ACTION("Ignored\n");
-			    }
-			    break;
-		    }
-		}
-	    }
+	    if (str)
+		setVerboseFlags(str);
 	}
 	else if (strncmp(argv[i],"-w",2)==0) {
 	    if ((i>=(argc-1))||(!isdigit(argv[i+1][0]))) {
@@ -499,15 +482,6 @@ register int i,tmp;
 	    ERROR1("Unknown flag \"%s\" on command line\n",argv[i]);
 	    Usage(argc,argv);
 	    return False;
-	}
-    }
-    if (rootDir) {
-	if (warningLevel>8) {
-	    WARN1("Changing root directory to \"%s\"\n",rootDir);
-	}
-	if ((chdir(rootDir)<0) && (warningLevel>0)) {
-	    WARN1("Couldn't change root directory to \"%s\"\n",rootDir);
-	    ACTION("Root directory (-R) option ignored\n");
 	}
     }
     if (xkblist)
@@ -693,102 +667,6 @@ Display	*dpy;
     else if (synch)
 	XSynchronize(dpy,True);
     return dpy;
-}
-
-/***====================================================================***/
-
-static void
-#if NeedFunctionPrototypes
-ListFile(char *fileName,XkbFile *map)
-#else
-ListFile(fileName,map)
-char *		fileName;
-XkbFile *	map;
-#endif
-{
-register unsigned	flags;
-char *			mapName;
-
-    flags= map->flags;
-    if ((flags&XkbLC_Hidden)&&(!(verboseLevel&WantHiddenMaps)))
-	return;
-    if ((flags&XkbLC_Partial)&&(!(verboseLevel&WantPartialMaps)))
-	return;
-    if (verboseLevel&WantLongListing) {
-	printf((flags&XkbLC_Hidden)?"h":"-");
-	printf((flags&XkbLC_Default)?"d":"-");
-	printf((flags&XkbLC_Partial)?"p":"-");
-	printf("----- ");
-	if (map->type==XkmSymbolsIndex) {
-	    printf((flags&XkbLC_AlphanumericKeys)?"a":"-");
-	    printf((flags&XkbLC_ModifierKeys)?"m":"-");
-	    printf((flags&XkbLC_KeypadKeys)?"k":"-");
-	    printf((flags&XkbLC_FunctionKeys)?"f":"-");
-	    printf((flags&XkbLC_AlternateGroup)?"g":"-");
-	    printf("--- ");
-	}
-        else printf("-------- ");
-    }
-    mapName= map->name;
-    if ((!(verboseLevel&WantFullNames))&&((flags&XkbLC_Default)!=0))
-	mapName= NULL;
-    if (mapName)
-	 printf("%s(%s)\n",fileName,mapName);
-    else printf("%s\n",fileName);
-    return;
-}
-
-static int
-#if NeedFunctionPrototypes
-GenerateListing(void)
-#else
-GenerateListing()
-#endif
-{
-int		i;
-FILE *		inputFile;
-XkbFile *	rtrn,*mapToUse;
-unsigned	oldWarningLevel;
-
-    if (nFilesListed<1) {
-	ERROR("Must specify at least one file or pattern to list\n");
-	return 1;
-    }
-#ifdef DEBUG
-    if (warningLevel>9)
-	fprintf(stderr,"should list:\n");
-#endif
-    for (i=0;i<nListed;i++) {
-#ifdef DEBUG
-	if (warningLevel>9) {
-	    fprintf(stderr,"%s(%s)\n",(filesToList[i]?filesToList[i]:"*"),
-					(mapsToList[i]?mapsToList[i]:"*"));
-	}
-#endif
-	oldWarningLevel= warningLevel;
-	warningLevel= 0;
-	if (filesToList[i]) {
-	    inputFile= fopen(filesToList[i],"r");
-	    if (!inputFile) {
-		if (oldWarningLevel>5)
-		    WARN1("Couldn't open \"%s\"\n",filesToList[i]);
-		continue;
-	    }
-	    if (XKBParseFile(inputFile,&rtrn)&&(rtrn!=NULL)) {
-		mapToUse= rtrn;
-		for (;mapToUse;mapToUse= (XkbFile *)mapToUse->common.next) {
-		    if (mapsToList[i]!=NULL) {
-			fprintf(stderr,"Don't know how to pattern match yet\n");
-			continue;
-		    }
-		    ListFile(filesToList[i],mapToUse);
-		}
-	    }
-	    fclose(inputFile);
-	}
-	warningLevel= oldWarningLevel;
-    }
-    return 1;
 }
 
 /***====================================================================***/

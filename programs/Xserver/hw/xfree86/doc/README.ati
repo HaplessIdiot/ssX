@@ -1,9 +1,9 @@
-  ATI boards README
+  ATI adapters README
   Marc Aurele La France
-  8 May 1995
+  22 January 1996
 
   This is the README for the XFree86 ATI VGA driver used in the
-  XF86_Mono, XF86_VGA16 and XF86_SVGA servers.  Users of ATI boards
+  XF86_Mono, XF86_VGA16 and XF86_SVGA servers.  Users of ATI adapters
   based on the Mach8, Mach32 or Mach64 accelerators should be using the
   accelerated servers (XF86_Mach8, XF86_Mach32 or XF86_Mach64).  The
   unaccelerated servers (XF86_Mono, XF86_VGA16 and XF86_SVGA) might
@@ -14,18 +14,15 @@
   The ATI VGA driver is a 256-colour, 16-colour and monochrome driver
   for XFree86.  The driver is intended for all ATI video adapters except
   those that do not provide SuperVGA functionality (such as some early
-  Mach8 and Mach32 boards).  The following approximate maximum
+  Mach8 and Mach32 adapters).  The following approximate maximum
   resolutions (based on the Golden Ratio of x/y = (1 + sqrt(5))/2) are
-  possible depending on the video memory available on the board (and the
-  capabilities of your monitor):
+  possible depending on the video memory available on the adapter (and
+  the capabilities of your monitor):
 
       256k    640x409x256    896x585x16
       512k    896x585x256   1280x819x16
       1M     1280x819x256  1824x1149x16
 
-
-  Higher resolutions are also possible on Mach32 (but not Mach64) boards
-  with more than 1M of video memory.
 
   Maximum monochrome resolutions are the same as those for 16-colour
   mode, because the monochrome server uses a maximum of one fourth of
@@ -38,7 +35,7 @@
   using more than 256 colours, the ATI VGA driver will not use these
   modes.
 
-  The ATI VGA driver is not an accelerated driver.  If your board is
+  The ATI VGA driver is not an accelerated driver.  If your adapter is
   based on the Mach8, Mach32 or Mach64 video controllers, this driver
   will not use the accelerated functions of the hardware.  It will only
   use the VGA hardware (which, for Mach32's and Mach64's, is integrated
@@ -47,61 +44,59 @@
 
   3.  What video adapters will the driver work with?
 
-  Most boards harbouring the following ATI video controller chips will
+  Most adapters harbouring the following ATI video controller chips will
   work with this driver:
 
   VGA Wonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
       Mach32 series:  68800-3, 68800-6, 68800AX, 68800LX
-      Mach64 series:  88800CX, 88800GX
+      Mach64 series:  88800GX-C, 88800GX-D, 88800GX-E, 88800GX-F, 88800CX,
+                      88800CT, 88800ET
 
 
-  Some early Mach32 boards will not work with this driver because they
-  do not provide VGA functionality.  Also, early Mach8 boards will not
-  work for the same reason, unless the board also has a video controller
-  from the VGA Wonder series (or is connected to one through the VGA
-  passthrough connector).
+  Some early Mach32 adapters will not work with this driver because they
+  do not provide VGA functionality.  Also, early Mach8 adapters will not
+  work for the same reason, unless the adapter also has a video con-
+  troller from the VGA Wonder series (or is connected to one through the
+  VGA passthrough connector).
 
-  These boards are available with a variety of clock generators and
-  RAMDACs.  See the XF86Config section below for details.  These boards
+  These adapters are available with a variety of clock generators and
+  RAMDACs.  See the XF86Config section below for details.  These
+  adapters are available with or without a mouse.
 
-  are available with or without a mouse.  When they do have a mouse (ISA
-  boards only), it is either a proprietary ATIXL busmouse, or one that
-  uses the Logitech busmouse protocol.
 
-  VGA Wonder V3 boards use a 18800 video controller and generate dot
-  clocks with crystals.  VGA Wonder V4 boards have a 18800-1 and also
-  use crystals.  VGA Wonder V5 boards also use a 18800-1, but have a
-  18810 clock generator.  VGA Wonder+ boards use a 28800-2 and a 18810.
-  Other than these, ATI's board naming convention (if it can be said
-  that one exists) starts to fall apart.
+  VGA Wonder V3 adapters use a 18800 video controller and generate dot
+  clocks with crystals.  VGA Wonder V4 adapters have a 18800-1 and also
+  use crystals.  VGA Wonder V5 adapters also use a 18800-1, but have a
+  18810 clock generator.  VGA Wonder+ adapters use a 28800-2 and a
+  18810.  Other than these, ATI's adapter naming convention (if it can
+  be said that one exists) starts to fall apart.
 
   The VGA Wonder series was also available through ATI's OEM channel
   under the name VGA1024.  Thus, the ATI VGA driver also supports
-  VGA1024, VGA1024D, VGA1024XL, VGA1024DXL and VGA1024VLB boards, among
-  others.
+  VGA1024, VGA1024D, VGA1024XL, VGA1024DXL and VGA1024VLB adapters,
+  among others.
 
   4.  What should I put in my XF86Config file?
 
   The chipset will be automatically detected.  The chipset name for this
-  driver is "vgawonder".  If you specify "ati" or "mach64" instead, any
-  clocks specification in XF86Config will be ignored (which means the
-  clocks will be probed).  This is done to ensure you are aware that the
-  clocks specification for previous versions of the driver is not
-  supported by this version.
+  driver is "ati".  The driver also recognizes "vgawonder", "mach8",
+  "mach32" and "mach64" as chipset names.  In this version of the
+  driver, all names are equivalent.  In some future version each name
+  will have a different meaning to be documented at that time.
 
   The clocks line to be specified in your XF86Config depends on what the
-  board uses to generate dot clocks.
+  adapter uses to generate dot clocks.
 
-  For all boards, one of the following clocks specifications (or an
-  initial subset thereof) can be used depending on what the board uses
+  For all adapters, one of the following clocks specifications (or an
+  initial subset thereof) can be used depending on what the adapter uses
   to generate dot clocks:
 
-  Crystals (VGA Wonder V3 and V4 boards only):
+  Crystals (VGA Wonder V3 and V4 adapters only):
 
-    Clocks  50.175  56.644   0.000  44.900  44.900  50.175   0.000  36.000
-            25.088  28.322   0.000  22.450  22.450  25.088   0.000  18.000
-            16.725  18.881   0.000  14.967  14.967  16.725   0.000  12.000
-            12.544  14.161   0.000  11.225  11.225  12.544   0.000   9.000
+    Clocks  50.000  56.644   0.000  44.900  44.900  50.000   0.000  36.000
+            25.000  28.322   0.000  22.450  22.450  25.000   0.000  18.000
+            16.667  18.881   0.000  14.967  14.967  16.667   0.000  12.000
+            12.500  14.161   0.000  11.225  11.225  12.500   0.000   9.000
 
 
 
@@ -130,6 +125,11 @@
              9.978  11.225  18.750  16.250  12.588  14.160   0.000  11.225
 
 
+
+
+
+
+
   ATI 18811-1 and ATI 18811-2 clock generators:
 
     Clocks 135.000  32.000 110.000  80.000 100.000 126.000  92.400  36.000
@@ -145,40 +145,66 @@
   Mach32 and Mach64 owners should only specify up to the first 32 fre-
   quencies.
 
-  The possibilities for Mach64 boards also include the newer ATI 18818
-  clock generator chip.  At bootup, video BIOS initialization can set up
-  the 18818 to generate two slightly different sets of dot clocks.  A
-  way to duplicate this behaviour in the driver has not yet been found.
-  In the meantime, one of the following clocks specification can be
-  used:
+  The oldest Mach64 adapters use one of the clock generators described
+  above.  The possibilities for Mach64 adapters also include
+  programmable clock generators.  At bootup, video BIOS initialization
+  programmes an initial set of frequencies.  Two of these are reserved
+  to allow the setting of modes that do not use a frequency from this
+  initial set.  One of these reserved slots is used by the BIOS mode set
+  routine, the other by the particular driver used (MS-Windows, AutoCAD,
+  X, etc.).  The clock numbers reserved in this way are dependent on the
+  particular clock generator used on the adapter.
 
-  ATI 18818 clock generator (primary BIOS setting):
+  If the driver does not support the adapter's clock generator, it will
+  try to match the clocks to one of the following specifications.  This
+  matching will occur whether or not the user specifies the clocks in
+  XF86Config.
 
-    Clocks   0.000 110.000 126.000 135.000  50.350  56.644  63.000  72.000
+  BIOS setting 1:
+
+    Clocks   0.000 110.000 126.000 135.000  50.350  56.640  63.000  72.000
              0.000  80.000  75.000  65.000  40.000  44.900  49.500  50.000
-             0.000  55.000  63.000  67.500  25.175  28.322  31.500  36.000
+             0.000  55.000  63.000  67.500  25.180  28.320  31.500  36.000
              0.000  40.000  37.500  32.500  20.000  22.450  24.750  25.000
 
 
 
-  ATI 18818 clock generator (alternate BIOS setting):
+  BIOS setting 2:
 
-    Clocks   0.000 110.000 126.000 135.000  25.175  28.322  31.500  36.000
+    Clocks   0.000 110.000 126.000 135.000  25.180  28.320  31.500  36.000
              0.000  80.000  75.000  65.000  40.000  44.900  49.500  50.000
-             0.000  55.000  63.000  67.500  12.588  14.161  15.750  18.000
+             0.000  55.000  63.000  67.500  12.590  14.160  15.750  18.000
              0.000  40.000  37.500  32.500  20.000  22.450  24.750  25.000
 
 
-  Other clock generators that have been used on ATI boards (which can
+
+  BIOS setting 3:
+
+    Clocks   0.000   0.000   0.000   0.000  25.180  28.320   0.000   0.000
+             0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000
+             0.000   0.000   0.000   0.000  12.590  14.160   0.000   0.000
+             0.000   0.000   0.000   0.000   0.000   0.000   0.000   0.000
+
+
+  If the driver matches the clocks to the third setting above, function-
+  ality will be *extremely* limited (assuming the driver works at all).
+
+  Other clock generators that have been used on ATI adapters (which can
   all be said to be clones of one of the above) might generate non-zero
   frequencies for those that are zero above, or vice-versa.
 
-  The order of the clocks *is* very important.  Mach32 and Mach64 owners
-  should note that this order is different than what they would use for
-  the accelerated servers.
+  The order of the clocks *is* very important, although the driver will
+  reorder the clocks if it deems it appropriate to do so.  Mach32 and
+
+  Mach64 owners should note that this order is different than what they
+  would use for the accelerated servers.
+
+  If the driver detects a supported programmable clock generator, it
+  will ignore any XF86Config clock specification and programme the
+  generator as needed by the modes to be used during the X session.
 
   A clock probe, done with the command "X -probeonly", will help you
-  decide which of the above to use for your particular board.  If the
+  decide which of the above to use for your particular adapter.  If the
   server consistently reports that it has detected an unknown clock
   generator, please e-mail me the stderr output.
 
@@ -189,23 +215,7 @@
   default mode are derived from the timings of the mode (usually a text
   mode) in effect when the server is started.
 
-  5.  Upgrading from other releases
-
-  If you have an Xconfig for XFree86 versions earlier than 2.1.1, or for
-  the alpha Mach64 server, you will need to change it to use it for this
-  version.  Specifically, you should run the server with the -probeonly
-  flag and the the XF86Config derived from the Xconfig you used with the
-
-  older XFree86.  This will cause the clocks to be probed.  You should
-  replace the XF86Config clocks with the clocks reported by the probe.
-  You should then change the chipset specification to "vgawonder".
-
-  You should not need to change your mode definitions except for those
-  that are already driving your monitor close to its tolerance limits.
-  You might need to change the dot clock used to one with the next lower
-  (or higher) frequency.
-
-  6.  What is the history of the driver?
+  5.  What is the history of the driver?
 
   The complete history of the driver is rather cloudy.  The following is
   probably incomplete and inaccurate.
@@ -221,30 +231,86 @@
   in the summer of 1992, and ported the code to the X386 part of X11R5.
   This subsequently became part of XFree86.
 
-  I (Marc La France) have since taken the driver over after Rik got rid
-  of his VGA Wonder card.
+  I (Marc Aurele La France) took the driver over in the fall of 1993
+  after Rik got rid of his VGA Wonder card.
 
-  7.  Miscellaneous notes
+  6.  Miscellaneous notes
 
-  Dot clocks greater than 80MHz cannot be used as a way still needs to
-  be discovered to make the VGA Wonder controller do pixel multiplexing.
+  Dot clocks greater than 80MHz cannot be used on most adapters as a way
+  still needs to be discovered to make the VGA Wonder controller do
+  pixel multiplexing.
 
   Support for more than 8bpp colour depth is pending proper RAMDAC
-  handling.
+  handling and banked framebuffer code for >8bpp.
 
-  Support for the ATI 18818 clock generator needs to be cleaned up.
+  Video memory banking does not work in the 16-colour and monochrome
+  servers on V3, V4 and V5 adapters.
+
+  Interlaced modes do not work in the monochrome server on 28800-x
+  adapters when using a virtual resolution wider than 1024 pixels.
+
+  Interlaced modes do not work on 88800CT & 88800ET adapters (Graphics
+  Xpression PCI).  Support for virtual resolutions using more than 1MB
+  of video memory is still incomplete.  Specifically, such support
+  should work on Mach32 adapters but is untested.  Also, such support
+  *does* work on 88800CT & 88800ET adapters, but not on any other Mach64
+  adapters.
+
+  88800CT & 88800ET adapters are as yet only supported if they use
+  sparsely decoded I/O based at 0x2EC.  Support for any other setting,
+  such as 0x1C8, or block (a.k.a. relocatable) I/O is being worked on.
+  On some such adapters, the I/O decoding is controlled by a jumper.
+
+
+  Future development plans include addressing the above problems and
+  using accelerated functionality.
 
   Please e-mail any bug reports, comments, etc. to Marc Aurele La
   France, tsi@ualberta.ca
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.6 1996/02/04 09:08:34 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.7 1996/02/09 08:20:41 dawes Exp $
 
 
 
 
 
   $XConsortium: ati.sgml /main/3 1995/11/12 20:00:33 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

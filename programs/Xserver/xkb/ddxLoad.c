@@ -1,5 +1,5 @@
-/* $XConsortium: ddxLoad.c /main/7 1996/01/31 09:59:52 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.3 1996/02/04 09:17:35 dawes Exp $ */
+/* $XConsortium: ddxLoad.c /main/8 1996/02/05 06:18:40 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.4 1996/02/05 11:28:01 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h /main/19 1996/02/02 14:37:30 kaleb $ */
+/* $XConsortium: XKBsrv.h /main/20 1996/02/04 15:33:21 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -34,6 +34,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbChangeTypesOfKey		SrvXkbChangeTypesOfKey
 #define XkbCopyKeyType			SrvXkbCopyKeyType
 #define XkbCopyKeyTypes			SrvXkbCopyKeyTypes
+#define XkbAddKeyType			SrvXkbAddKeyType
 #define XkbFreeClientMap		SrvXkbFreeClientMap
 #define XkbFreeServerMap		SrvXkbFreeServerMap
 #define XkbInitCanonicalKeyTypes	SrvXkbInitCanonicalKeyTypes
@@ -60,6 +61,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define XkbLatchModifiers		SrvXkbLatchModifiers
 #define XkbLatchGroup			SrvXkbLatchGroup
 #define XkbVirtualModsToReal		SrvXkbVirtualModsToReal
+#define XkbAddGeomOverlayKey		SrvXkbAddGeomOverlayKey
+#define XkbAllocGeomOverlayKeys		SrvXkbAllocGeomOverlayKeys
+#define XkbApplyVirtualModChanges	SrvXkbApplyVirtualModChanges
+#define XkbUpdateActionVirtualMods	SrvXkbUpdateActionVirtualMods
+#define XkbUpdateKeyTypeVirtualMods	SrvXkbUpdateKeyTypeVirtualMods
 #endif
 
 #include <X11/extensions/XKBstr.h>

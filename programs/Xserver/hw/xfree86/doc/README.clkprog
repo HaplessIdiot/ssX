@@ -25,7 +25,7 @@
   line should correspond to what the card/program expects.  In the case
   of a card which has a fully programmable clock (like the SS24) the
   ordering is not important, and the values chosen can be anything in
-  the range supported by the card.  Up to 32 clock values may be
+  the range supported by the card.  Up to 128 clock values may be
   specified.
 
   The server calls the external program when it needs to change the
@@ -73,7 +73,7 @@
   Klemm <pfk@rz.uni-jena.de>
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.3 1996/02/04 09:08:36 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.4 1996/02/09 08:20:42 dawes Exp $
 
 
 

@@ -16,10 +16,6 @@
   ATI68860         135MHz      16      1280x1024             4Mb
   ATI68860          80MHz      32       1024x768             4Mb
 
-  ATI68880         135MHz       8      1280x1024             2Mb
-  ATI68880         135MHz      16      1280x1024             4Mb
-  ATI68880          80MHz      32       1024x768             4Mb
-
   ATI68875          80MHz      32       1024x768             4Mb
 
   CH8398           135MHz       8      1280x1024             2Mb
@@ -63,11 +59,11 @@
   (packed pixel mode), but this is not currently supported in the Mach64
   for various reasons.  The main one is that there is no current support
   for 24bpp modes in the X Consortium's servers.  Adding this support
-
   will require a great programming effort.
 
   The Mach64 X server requires the video memory aperture to function
   properly.  This means that ISA Mach64 cards in systems with more than
+
   12Mb of main memory will not work.
 
   2.  Optimizing the speed of the Mach64 X server
@@ -129,11 +125,11 @@
 
      Option "composite"
         This option will set the composite sync for monitors that
-
         require this.
 
      Option "dac_8_bit"
         This option enables 8 bits per RGB value.  Note this option does
+
         not work with the Chrontel 8398 RAMDAC.
 
      Option "override_bios"
@@ -194,8 +190,6 @@
 
         o  att20c408
 
-
-
         o  ibm_rgb514
 
      Ramdac "type"
@@ -237,13 +231,19 @@
   comp.windows.x.i386unix newsgroup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.9 1996/02/04 09:08:14 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.10 1996/02/09 08:20:39 dawes Exp $
 
 
 
 
 
   $XConsortium: Mach64.sgml /main/5 1995/12/29 15:59:01 kaleb $
+
+
+
+
+
+
 
 
 
