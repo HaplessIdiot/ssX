@@ -1,4 +1,18 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 930. Fix run-time enabling/disabling of VT switching via xf86EnableVTSwitch()
+      (David Dawes).
+ 929. Add a "DontVTSwitch" option to allow VT switching to be disabled
+      (on platforms where the X server initiates VT switches) (#5640,
+      Branden Robinson).
+ 928. Fix a memory leak in _XimExtension() (#5638, MINAMI Hirokazu).
+ 927. Fix hard-coded ProjectRoot paths in the proxymngr man page (#5634,
+      Branden Robinson).
+ 926. Fix a NULL pointer dereference in the fontenc library (#5633, Debian).
+ 925. Update the neomagic man page to document the OverlayMem option (#5632,
+      Diego Santa Cruz and Branden Robinson).
+ 924. Fix a memory leak in XCloseDisplay, and a potential race condition
+      when multiple threads attempt to initialize the Xcursor library
+      simultaneously (#A.1623, Keith Packard).
  923. Fix xvidtune to pop up a info window if mode on chipset is
       not tuneable (Egbert Eich).
  922. Fix a NULL pointer in a var_arg list in xfd which causes problems
@@ -16440,4 +16454,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2567 2003/02/19 18:55:22 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2568 2003/02/20 02:59:02 dawes Exp $
