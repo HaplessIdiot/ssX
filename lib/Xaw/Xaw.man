@@ -26,7 +26,7 @@
 .\"
 .\" Author: Paulo César Pereira de Andrade
 .\"
-.\" $XFree86: xc/lib/Xaw/Xaw.man,v 1.5 2001/01/27 18:20:39 dawes Exp $
+.\" $XFree86: xc/lib/Xaw/Xaw.man,v 1.6 2001/11/03 16:37:10 paulo Exp $
 .\"
 .de TQ
 .br
@@ -416,13 +416,15 @@ the syntax:
 \fBName\fP may be a file name, or, in the case of type \fIgradient\fP, may be
 either \fIvertical\fP or \fIhorizontal\fP.
 .PP
-\fBArg=val\fP is a list of arguments to the converter.  The most common
-arguments are \fIforeground\fP and \fIbackground\fP.  Gradients also
-support the arguments \fIstart\fP and \fIend\fP (colors with which to start
-and end the gradient); the \fPsteps\fP argument, to allow using less
-colors; and the \fIsize\fP argument to specify the size of the gradient.
-The \fIxpm\fP converter understands the \fIcloseness\fP argument, which
-aids in using fewer colors (useful if you have a limited colormap).
+\fBArg=val\fP is a list of arguments to the converter.  An argument list is
+preceded by a question mark, and multiple arguments are separated by
+ampersands.  The most common arguments are \fIforeground\fP and
+\fIbackground\fP.  Gradients also support the arguments \fIstart\fP and
+\fIend\fP (colors with which to start and end the gradient); the
+\fPsteps\fP argument, to allow using less colors; and the \fIdimension\fP
+argument to specify the size of the gradient.	The \fIxpm\fP converter
+understands the \fIcloseness\fP argument, which aids in using fewer colors
+(useful if you have a limited colormap).
 .SH TEXT WIDGET
 Most of the changes to this version of the Xaw library were done in the
 TextWidget, TextSrcObject, TextSinkObject and related files.
@@ -455,7 +457,7 @@ is enabled, toggles between undo and redo.  Bound by default to
 .B kill-ring-yank
 In this version of Xaw, text killed in any text field is kept in memory,
 allowing cut and paste operations internally to the program between text
-fields.  Bound by default to\fIMeta<Key>Y\fP.
+fields.  Bound by default to \fIMeta<Key>Y\fP.
 .TP 8
 .B numeric
 Listed here only for purposes of documentation.  Called by default when one
