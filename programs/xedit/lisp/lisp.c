@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.49 2002/05/17 20:24:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.50 2002/05/23 01:14:32 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -319,6 +319,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_IntChar, "int-char integer"},
     {LispFunction, Lisp_Integerp, "integerp object"},
     {LispFunction, Lisp_Intern, "intern string &optional package", 1},
+    {LispFunction, Lisp_Intersection, "intersection list1 list2 &key test test-not key"},
     {LispFunction, Lisp_Isqrt, "isqrt natural"},
     {LispFunction, Lisp_Keywordp, "keywordp object"},
     {LispFunction, Lisp_Last, "last list &optional (count 1) &aux (length (length list))"},
@@ -414,6 +415,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Rplaca, "rplaca place value"},
     {LispFunction, Lisp_Rplacd, "rplacd place value"},
     {LispFunction, Lisp_Set, "set symbol value"},
+    {LispFunction, Lisp_SetDifference, "set-difference list1 list2 &key test test-not key"},
+    {LispFunction, Lisp_SetExclusiveOr, "set-exclusive-or list1 list2 &key test test-not key"},
     {LispMacro, Lisp_Setf, "setf &rest form"},
     {LispMacro, Lisp_SetQ, "setq &rest form"},
     {LispFunction, Lisp_Sleep, "sleep seconds"},
@@ -442,6 +445,10 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_StringDowncase, "string-downcase string &key start end"},
     {LispFunction, Lisp_StringCapitalize, "string-capitalize string &key start end"},
     {LispFunction, Lisp_Subseq, "subseq sequence start &optional end"},
+    {LispFunction, Lisp_Subsetp, "subsetp list1 list2 &key test test-not key"},
+    {LispFunction, Lisp_Substitute, "substitute newitem olditem sequence &key from-end test test-not start end count key"},
+    {LispFunction, Lisp_SubstituteIf, "substitute-if newitem test sequence &key from-end start end count key"},
+    {LispFunction, Lisp_SubstituteIfNot, "substitute-if-not newitem test sequence &key from-end start end count key"},
     {LispFunction, Lisp_Symbolp, "symbolp object"},
     {LispFunction, Lisp_SymbolPlist, "symbol-plist symbol"},
     {LispMacro, Lisp_Tagbody, "tagbody &rest body"},
