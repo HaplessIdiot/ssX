@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.8 1996/08/25 14:06:26 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.9 1996/08/26 10:47:43 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -201,8 +201,10 @@ if { [string length $ConfigFile] > 0 } {
 		set StartServer 0
 		if { [getuid] != 0 } {
 		    set proceed [mesg "You are not running as\
-			root.\n\nSuperuser privileges are required to\
-			save any changes you make\nor to change the\
+			root.\n\nSuperuser privileges are usually\
+			required to save any changes\nyou make\
+			in a directory that is searched by the\
+			server and\nare required to change the\
 			mouse device.\n\nWould you like\
 			to continue anyway?" yesno]
 		    if !$proceed {
@@ -247,12 +249,14 @@ set clicks2 [clock clicks]
 
 if { ![getuid] } {
     if { $UseConfigFile } {
-	if {[file exists $Pointer(Device)]
-		&& [file type $Pointer(Device)] == "link" } {
-	    set Pointer(RealDev) [readlink $Pointer(Device)]
-	    set Pointer(OldLink) $Pointer(Device)
-	} else {
-	    set Pointer(RealDev) $Pointer(Device)
+	if [string length $Pointer(Device)] {
+	    if {[file exists $Pointer(Device)]
+		    && [file type $Pointer(Device)] == "link" } {
+	        set Pointer(RealDev) [readlink $Pointer(Device)]
+	        set Pointer(OldLink) $Pointer(Device)
+	    } else {
+		set Pointer(RealDev) $Pointer(Device)
+	    }
 	}
     } else {
 	# Check for the SysV Xqueue mouse driver
@@ -309,7 +313,7 @@ check_tmpdirs
 if { ![getuid] } {
 	set Pointer(Device) $TmpDir/mouse
 	if [info exists Pointer(RealDev)] {
-		link $Pointer(RealDev) $Pointer(Device)
+	    link $Pointer(RealDev) $Pointer(Device)
 	}
 }
 

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.10 1996/08/26 10:47:42 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.11 1996/08/26 14:08:33 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -488,7 +488,7 @@ proc Mouse_getsettings { win } {
 	set initchdmid	[lindex $initlist 6]
 	set initflags	[lrange $initlist 7 end]
 
-	set mseDeviceSelected 0
+	set mseDeviceSelected 1
 	if [getuid] {
 	    pack forget $w.mouse.device.title
 	    pack forget $w.mouse.device.entry
@@ -496,10 +496,16 @@ proc Mouse_getsettings { win } {
 	} else {
 	    if { [info exists Pointer(RealDev)] } {
 		$w.mouse.device.entry insert 0 $Pointer(RealDev)
-		set mseDeviceSelected 1
 	    } else {
-		$w.mouse.device.entry insert 0 \
-			[Mouse_defaultdevice $inittype]
+		set default [Mouse_defaultdevice $inittype]
+		if { [string length $default] } {
+		    $w.mouse.device.entry insert 0 $default
+		    set mseDeviceSelected 0
+		} else {
+		    pack forget $w.mouse.device.title
+		    pack forget $w.mouse.device.entry
+		    pack forget $w.mouse.device.list
+		}
 	    }
 	}
 	Mouse_setlistbox $w $w.mouse.device.list.lb

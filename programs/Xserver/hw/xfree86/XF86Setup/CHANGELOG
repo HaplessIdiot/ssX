@@ -360,7 +360,7 @@
 			Add keybindings for the arrow keys
 
 0.18	25 Aug 1996	Added online help text
-			Some fixes for mouse device name handling
+(3.1.2Eo)		Some fixes for mouse device name handling
 			  (David Dawes)
 			Add border to and fix the autorepeat timings for
 			  the readme display box (David Dawes)
@@ -388,3 +388,12 @@
 			Fixed bug where the additional device lines
 			  were appended to instead of replaced when
 			  a new card was picked from the list
+
+1.00	26 Aug 1996	Updated XF86Setup & xmseconfig man pages
+(3.1.2F)		Fixed some security problems with mouse
+			  device name handling
+			Fixed bug with device name handling for
+			  Xqueue and OsMouse drivers
+			Updated xmseconfig to work with new mouse
+			  device name changes
+

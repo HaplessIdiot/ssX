@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.7 1996/08/25 14:06:29 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.8 1996/08/26 10:47:47 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -534,8 +534,8 @@ proc shutdown {args} {
 proc check_tmpdirs {} {
 	global TmpDir XF86SetupDir
 
-	file stat $XF86SetupDir xfsdir
-	file stat $TmpDir tmpdir
+	file lstat $XF86SetupDir xfsdir
+	file lstat $TmpDir tmpdir
 	if {       [string compare $xfsdir(type) directory]
 		|| [string compare $tmpdir(type) directory]
 		|| $xfsdir(uid)  != [getuid]

@@ -1,20 +1,9 @@
 
-ITEMS THAT SHOULD BE COMPLETED BEFORE FIRST PUBLIC RELEASE:
-----------------------------------------------------------------------
-
-Write documentation (modify the QuickStart guide)
-
-Update man page
-
-
-
-ITEMS THAT WOULD BE NICE TO HAVE BEFORE FIRST PUBLIC RELEASE:
-----------------------------------------------------------------------
-
 When using the SVGA server, further restrict the list of available
    RAMDACs, clock chips, and READMEs once the chipset has been selected.
 
-Improve keybindings for the arrow keys
+Improve keybindings for the arrow keys (e.g. scale widgets should
+   allow perpendicular movement to other widgets)
 
 
 

@@ -134,10 +134,9 @@
 
 
 
-     This driver has one known problem in 32bpp mode with a virtual
-     screen size of 1152x864 (1024x768 seems to work fine).  If you see
-     any other problems, please let us know.  It is possible to disable
-     this new driver and use the old one by specifying:
+     If you see any problems with the new driver, please let us know.
+     It is possible to disable this new driver and use the old one by
+     specifying:
 
              Chipset "mmio_928"
 
@@ -172,7 +171,9 @@
   3.10.  Trident driver (SVGA server)
 
 
-     o  Some problems introduced in 3.1.2E have been fixed.
+     o  Some problems introduced in 3.1.2E have been fixed.  Refer to
+        the README.trident file for details of new options that may be
+        required.
 
   3.11.  SiS driver (SVGA server)
 
@@ -191,7 +192,6 @@
      o  16bpp and 24bpp (packed) support for the 65545 an above.
 
      o  BitBLT acceleration for the 65545, 65546 and 65548.
-
 
 
 
@@ -1151,7 +1151,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.35 1996/08/26 14:08:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.36 1996/08/27 03:13:51 dawes Exp $
 
 
 
