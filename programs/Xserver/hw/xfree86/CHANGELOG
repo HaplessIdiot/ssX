@@ -1,4 +1,5 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 307. Fix Radeon CPUToScreen acceleration on Alpha platforms (Jay Estabrook).
  306. Fix bug in ServerLayout option handling when there's no ServerFlags
       section present (David Dawes).
  305. Allow fb to access 16bit devices (Alan Hourihane).

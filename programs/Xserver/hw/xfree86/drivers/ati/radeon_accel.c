@@ -723,7 +723,13 @@ static void RADEONSubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr
     info->scanline_h      = h;
     info->scanline_words  = (w + 31) >> 5;
 
-    if ((info->scanline_words * h) <= 9) {
+#ifdef __alpha__
+    /* always use indirect for Alpha */
+    if (0)
+#else
+    if ((info->scanline_words * h) <= 9)
+#endif
+    {
 	/* Turn on direct for less than 9 dword colour expansion */
 	info->scratch_buffer[0]
 	    = (unsigned char *)(ADDRREG(RADEON_HOST_DATA_LAST)
@@ -759,6 +765,7 @@ static void RADEONSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     if (info->scanline_direct) return;
     --info->scanline_h;
     while (left) {
+	write_mem_barrier();
 	if (left <= 8) {
 	  /* Last scanline - finish write to DATA_LAST */
 	  if (info->scanline_h == 0) {
@@ -836,7 +843,13 @@ static void RADEONSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
     info->scanline_h      = h;
     info->scanline_words  = (w * info->scanline_bpp + 31) >> 5;
 
-    if ((info->scanline_words * h) <= 9) {
+#ifdef __alpha__
+    /* always use indirect for Alpha */
+    if (0)
+#else
+    if ((info->scanline_words * h) <= 9)
+#endif
+    {
 	/* Turn on direct for less than 9 dword colour expansion */
 	info->scratch_buffer[0]
 	    = (unsigned char *)(ADDRREG(RADEON_HOST_DATA_LAST)
@@ -872,6 +885,7 @@ static void RADEONSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     if (info->scanline_direct) return;
     --info->scanline_h;
     while (left) {
+	write_mem_barrier();
 	if (left <= 8) {
 	  /* Last scanline - finish write to DATA_LAST */
 	  if (info->scanline_h == 0) {
