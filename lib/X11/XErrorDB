@@ -19,7 +19,7 @@
 ! other dealings in this Software without prior written authorization
 ! from The Open Group.
 !
-! $XFree86: xc/lib/X11/XErrorDB,v 3.20 1999/03/12 02:36:20 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.21 1999/03/14 11:17:38 dawes Exp $
 !
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
@@ -604,7 +604,7 @@ XProtoError.XFree86-Misc.4: XF86MiscBadKbdType
 XProtoError.XFree86-Misc.5: XF86MiscModInDevDisabled
 XProtoError.XFree86-Misc.6: XF86MiscModInDevClientNotLocal
 ! XFree86-DGA  -- not an X Consortium standard
-XRequest.XFree86-DGA.0: XF86DGAQueryVersion
+XRequest.XFree86-DGA.0: XDGAQueryVersion
 XRequest.XFree86-DGA.1: XF86DGAGetVideoLL
 XRequest.XFree86-DGA.2: XF86DGADirectVideo
 XRequest.XFree86-DGA.3: XF86DGAGetViewPortSize
@@ -614,10 +614,26 @@ XRequest.XFree86-DGA.6: XF86DGASetVidPage
 XRequest.XFree86-DGA.7: XF86DGAInstallColormap
 XRequest.XFree86-DGA.8: XF86DGAQueryDirectVideo
 XRequest.XFree86-DGA.9: XF86DGAViewPortChanged
+XRequest.XFree86-DGA.10: XF86DGAObsolete1
+XRequest.XFree86-DGA.11: XF86DGAObsolete2
+XRequest.XFree86-DGA.12: XDGAQueryModes
+XRequest.XFree86-DGA.13: XDGASetMode
+XRequest.XFree86-DGA.14: XDGASetViewport
+XRequest.XFree86-DGA.15: XDGAInstallColormap
+XRequest.XFree86-DGA.16: XDGASelectInput
+XRequest.XFree86-DGA.17: XDGAFillRectangle
+XRequest.XFree86-DGA.18: XDGACopyArea
+XRequest.XFree86-DGA.19: XDGACopyTransparentArea
+XRequest.XFree86-DGA.20: XDGAGetViewportStatus
+XRequest.XFree86-DGA.21: XDGAFlush
+XRequest.XFree86-DGA.22: XDGAOpenFramebuffer
+XRequest.XFree86-DGA.23: XDGACloseFramebuffer
+XRequest.XFree86-DGA.24: XDGASetClientVersion
 XProtoError.XFree86-DGA.0: XF86DGAClientNotLocal
 XProtoError.XFree86-DGA.1: XF86DGANoDirectVideoMode
 XProtoError.XFree86-DGA.2: XF86DGAScreenNotActive
 XProtoError.XFree86-DGA.3: XF86DGADirectNotActivated
+XProtoError.XFree86-DGA.4: XF86DGAOperationNotSupported
 ! DOUBLE-BUFFER (DBE), an X Consortium standard
 XRequest.DOUBLE-BUFFER.0: DBEGetVersion
 XRequest.DOUBLE-BUFFER.1: DBEAllocateBackBufferName

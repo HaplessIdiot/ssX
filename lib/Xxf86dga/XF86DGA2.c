@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.4 1999/05/03 12:15:53 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.5 1999/05/09 10:51:47 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -174,6 +174,27 @@ Bool XDGAQueryVersion(
     }
     *majorVersion = rep.majorVersion;
     *minorVersion = rep.minorVersion;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    if (*majorVersion >= 2)
+	XDGASetClientVersion(dpy);
+    return True;
+}
+
+Bool XDGASetClientVersion(
+    Display	*dpy
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
+    xXDGASetClientVersionReq *req;
+
+    XDGACheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XDGASetClientVersion, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XDGASetClientVersion;
+    req->major = XDGA_MAJOR_VERSION;
+    req->minor = XDGA_MINOR_VERSION;
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
