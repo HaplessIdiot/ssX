@@ -32,7 +32,7 @@
  *
  * Cleaned up and simplified by Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.5 2000/12/12 23:52:37 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.6 2001/01/17 12:50:11 alanh Exp $ */
 
 #include "assyntax.h"
 #include "common_x86_features.h"
@@ -58,8 +58,10 @@
 GLNAME( found_intel ):	STRING( "Genuine Intel processor found\n\0" )
 GLNAME( found_amd ):	STRING( "Authentic AMD processor found\n\0" )
 
+#ifdef USE_KATMAI_ASM
 GLNAME( katmai_test_dummy ):
 	D_LONG 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000
+#endif
 
 
 	SEG_TEXT
@@ -155,6 +157,7 @@ LLBL ( cpuid_done ):
 	RET
 
 
+#ifdef USE_KATMAI_ASM
 /* Execute an SSE instruction to see if the operating system correctly
  * supports SSE.  A signal handler for SIGILL should have been set
  * before calling this function, otherwise this could kill the client
@@ -203,3 +206,5 @@ GLNAME( gl_test_os_katmai_exception_support ):
 
 	LEAVE
 	RET
+#endif
+
