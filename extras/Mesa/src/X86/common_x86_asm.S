@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.4
+ * Version:  3.5
  *
- * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,7 +33,7 @@
  * Cleaned up and simplified by Gareth Hughes <gareth@valinux.com>
  */
 
-#include "assyntax.h"
+#include "matypes.h"
 #include "common_x86_features.h"
 
 
@@ -57,8 +57,8 @@
 GLNAME( found_intel ):	STRING( "Genuine Intel processor found\n\0" )
 GLNAME( found_amd ):	STRING( "Authentic AMD processor found\n\0" )
 
-#ifdef USE_KATMAI_ASM
-GLNAME( katmai_test_dummy ):
+#ifdef USE_SSE_ASM
+GLNAME( sse_test_dummy ):
 	D_LONG 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000
 #endif
 
@@ -66,8 +66,8 @@ GLNAME( katmai_test_dummy ):
 	SEG_TEXT
 
 ALIGNTEXT4
-GLOBL GLNAME( gl_identify_x86_cpu_features )
-GLNAME( gl_identify_x86_cpu_features ):
+GLOBL GLNAME( _mesa_identify_x86_cpu_features )
+GLNAME( _mesa_identify_x86_cpu_features ):
 
 	PUSH_L	( EBX )
 
@@ -156,15 +156,15 @@ LLBL ( cpuid_done ):
 	RET
 
 
-#ifdef USE_KATMAI_ASM
+#ifdef USE_SSE_ASM
 /* Execute an SSE instruction to see if the operating system correctly
  * supports SSE.  A signal handler for SIGILL should have been set
  * before calling this function, otherwise this could kill the client
  * application.
  */
 ALIGNTEXT4
-GLOBL GLNAME( gl_test_os_katmai_support )
-GLNAME( gl_test_os_katmai_support ):
+GLOBL GLNAME( _mesa_test_os_sse_support )
+GLNAME( _mesa_test_os_sse_support ):
 
 	XORPS	( XMM0, XMM0 )
 
@@ -177,8 +177,8 @@ GLNAME( gl_test_os_katmai_support ):
  * otherwise this could kill the client application.
  */
 ALIGNTEXT4
-GLOBL GLNAME( gl_test_os_katmai_exception_support )
-GLNAME( gl_test_os_katmai_exception_support ):
+GLOBL GLNAME( _mesa_test_os_sse_exception_support )
+GLNAME( _mesa_test_os_sse_exception_support ):
 
 	PUSH_L	( EBP )
 	MOV_L	( ESP, EBP )
@@ -195,7 +195,7 @@ GLNAME( gl_test_os_katmai_exception_support ):
 	LDMXCSR	( REGOFF( -8, EBP ) )
 
 	XORPS	( XMM0, XMM0 )
-	MOVUPS	( GLNAME( katmai_test_dummy ), XMM1 )
+	MOVUPS	( GLNAME( sse_test_dummy ), XMM1 )
 
 	DIVPS	( XMM0, XMM1 )
 

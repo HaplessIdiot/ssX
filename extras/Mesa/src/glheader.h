@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.4
+ * Version:  3.5
  *
- * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -60,7 +60,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#if defined(__linux__) && defined(__i386__) 
+#if defined(__linux__) && defined(__i386__)
 #include <fpu_control.h>
 #endif
 #endif
@@ -75,6 +75,7 @@
 
 #if defined(_WIN32) && !defined(__WIN32__) && !defined(__CYGWIN__)
 #	define __WIN32__
+#	define finite _finite
 #endif
 
 #if !defined(OPENSTEP) && (defined(__WIN32__) && !defined(__CYGWIN__))
@@ -160,10 +161,25 @@ typedef struct tagPIXELFORMATDESCRIPTOR PIXELFORMATDESCRIPTOR, *PPIXELFORMATDESC
 #endif
 
 
+/* This is a macro on IRIX */
+#ifdef _P
+#undef _P
+#endif
+
 
 
 #include "GL/gl.h"
 #include "GL/glext.h"
+
+
+#ifndef CAPI
+#ifdef WIN32
+#define CAPI _cdecl
+#else
+#define CAPI
+#endif
+#endif
+#include <GL/internal/glcore.h>
 
 
 
@@ -203,6 +219,53 @@ typedef struct tagPIXELFORMATDESCRIPTOR PIXELFORMATDESCRIPTOR, *PPIXELFORMATDESC
 #define _NORMAPIP *
 #endif
 
+
+/* Function inlining */
+#if defined(__GNUC__)
+#  define INLINE __inline__
+#elif defined(__MSC__)
+#  define INLINE __inline
+#elif defined(_MSC_VER)
+#  define INLINE __inline
+#elif defined(__ICL)
+#  define INLINE __inline
+#else
+#  define INLINE
+#endif
+
+
+/* Some compilers don't like some of Mesa's const usage */
+#ifdef NO_CONST
+#  define CONST
+#else
+#  define CONST const
+#endif
+
+
+#ifdef DEBUG
+#  define ASSERT(X)   assert(X)
+#else
+#  define ASSERT(X)
+#endif
+
+
+/*
+ * Sometimes we treat GLfloats as GLints.  On x86 systems, moving a float
+ * as a int (thereby using integer registers instead of fp registers) is
+ * a performance win.  Typically, this can be done with ordinary casts.
+ * But with gcc's -fstrict-aliasing flag (which defaults to on in gcc 3.0)
+ * these casts generate warnings.
+ * The following union typedef is used to solve that.
+ */
+typedef union { GLfloat f; GLint i; } fi_type;
+
+
+#ifndef GL_MIRRORED_REPEAT_ARB
+#define GL_MIRRORED_REPEAT_ARB  0x8370
+#endif
+#ifndef GL_ARB_texture_mirrored_repeat
+#define GL_ARB_texture_mirrored_repeat 1
+#endif
 
 
 #endif /* GLHEADER_H */
