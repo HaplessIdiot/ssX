@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.233 2003/11/14 02:17:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.234 2003/11/20 22:36:31 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -4235,4 +4235,14 @@ update.fonts:: src							@@\
 	fi								@@\
 	@$(RM) __tmp1__ __tmp2__
 #endif
+
+#if !HasFreetype2
+      FT2PRELOADPATTERN = libfreetype.so.?
+#endif
+#if !HasFontconfig
+       FCPRELOADPATTERN = libfontconfig.so.?
+#endif
+      XFTPRELOADPATTERN = libXft.so.?
+  XRENDERPRELOADPATTERN = libXrender.so.?
+    XFONTPRELOADPATTERN = libXfont*.so.?
 
