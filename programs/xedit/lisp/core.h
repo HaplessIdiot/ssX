@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.1 2001/08/31 15:00:13 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.2 2001/09/09 23:03:47 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -85,14 +85,12 @@ LispObj *Lisp_Nthcdr(LispMac*, LispObj*, char*);	/* nthcdr */
 LispObj *Lisp_Null(LispMac*, LispObj*, char*);		/* null */
 LispObj *Lisp_Numberp(LispMac*, LispObj*, char*);	/* numberp */
 LispObj *Lisp_Or(LispMac*, LispObj*, char*);		/* or */
-LispObj *Lisp_Pop(LispMac*, LispObj*, char*);		/* pop */
 LispObj *Lisp_Princ(LispMac*, LispObj*, char*);		/* princ */
 LispObj *Lisp_Print(LispMac*, LispObj*, char*);		/* print */
 LispObj *Lisp_Prog1(LispMac*, LispObj*, char*);		/* prog1 */
 LispObj *Lisp_Prog2(LispMac*, LispObj*, char*);		/* prog2 */
 LispObj *Lisp_Progn(LispMac*, LispObj*, char*);		/* progn */
 LispObj *Lisp_Provide(LispMac*, LispObj*, char*);	/* provide */
-LispObj *Lisp_Push(LispMac*, LispObj*, char*);		/* push */
 LispObj *Lisp_Quit(LispMac*, LispObj*, char*);		/* quit */
 LispObj *Lisp_Quote(LispMac*, LispObj*, char*);		/* quote */
 LispObj *Lisp_Read(LispMac*, LispObj*, char*);		/* read */
