@@ -1,4 +1,5 @@
 XFree86 3.9i (6 July 1997)
+1090. Add port probing for the Alliance 6410, 6422 and AT24 (#743, Joe Moss).
 1089. Add similar ET6300 detection to scanpci and vgaPCI.h.
 1088. Fix SuperProbe's ET6000 memory probe (#742, Koen Gadeyne).
 1087. Add detection for the ET6100 and ET6300 to SuperProbe (#742,
@@ -5077,4 +5078,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.502 1997/06/30 07:13:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.503 1997/07/06 05:30:40 dawes Exp $
