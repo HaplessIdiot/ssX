@@ -1,11 +1,15 @@
+.\" $XConsortium: XF86Misc.man /main/6 1996/12/09 17:45:38 kaleb $
+.\"
+.\"
+.\"
 .\" Copyright (c) 1996  Joe Moss, The XFree86 Project
 .\" 
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86Misc.man,v 3.4 1996/10/03 08:34:31 dawes Exp $
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
-.TH XF86MISC 3X11 "3.1.2D" "XFree86" "X FUNCTIONS"
+.TH XF86MISC 3X11 "3.2" "XFree86" "X FUNCTIONS"
 .SH NAME
 XF86MiscQueryExtension, XF86MiscQueryVersion, XF86MiscGetSaver, XF86MiscSetSaver, XF86MiscGetMouseSettings, XF86MiscSetMouseSettings, XF86MiscGetKbdSettings, XF86MiscSetKbdSettings \- XFree86-Misc extension interface functions
 .SH SYNTAX
@@ -149,19 +153,22 @@ function to change their value in the server,
 with the following restrictions:
 .RS 5
 .IP 1) 3
-The device can not be changed (the contents of the device
-field is ignored)
+The device can not be changed
 .IP 2) 3
 The protocol can not be changed to or from Xqueue or OsMouse
 .IP 3) 3
 Invalid combinations of parameters are not allowed
 .RE
 .PP
-The server will generate an error if any of the above is attempted.
+The server will generate an error if any of the above is attempted,
+except the first \- the contents of the device field are simply ignored.
 .PP
-A change of the protocol, baud rate, sample rate, or flags causes
-the device to be closed and reopened. A reopen can be forced by
-using the MF_REOPEN flag.
+A change of the protocol causes the device to be closed and reopened.
+Changes to the baud rate, sample rate, or flags, when applicable to the
+selected protocol, also cause a reopen of the device.
+A reopen can be forced by using the MF_REOPEN flag, except in the
+case of the OsMouse and Xqueue protocols which ignore all attempts
+to reopen the device.
 .SS "KEYBOARD FUNCTIONS"
 The
 .ZN XF86MiscGetKbdSettings
@@ -194,6 +201,8 @@ Mouse protocols
 Keyboard types
 .IP \fBMF_\fP* 1i
 Mouse flags
-.SH AUTHOR
+.SH "SEE ALSO"
+xset(1)
+.SH AUTHORS
 Joe Moss and David Dawes, The XFree86 Project, Inc.
 

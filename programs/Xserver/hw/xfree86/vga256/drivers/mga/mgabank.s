@@ -1,4 +1,8 @@
-/* $XFree86$ */
+/* $XConsortium: mgabank.s /main/1 1996/10/25 07:18:10 kaleb $ */
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabank.s,v 3.1 1996/11/18 13:18:09 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -98,25 +102,5 @@ GLNAME(MGASetReadWrite):
 	RET
 
 /*
- * The WaitForBlitter function doesn't work correctly
- * in C because of -O2 optimizations (I think...)
+ * The WaitForBlitter function moved to mgadriver.c
  */
-#define max_time CONST(10000000)
-
-	GLOBL	GLNAME(MGAMMIOBase)
-
-	ALIGNTEXT4
-	GLOBL	GLNAME(MGAWaitForBlitter)
-GLNAME(MGAWaitForBlitter):
-
-	PUSH_L	(EBX)
-	MOV_L	(CONTENT(GLNAME(MGAMMIOBase)),EBX)
-	MOV_L	(max_time,EAX)
-.loop:
-	DEC_L	(EAX)
-	JZ	(.exit)
-	TEST_B	(CONST(0x01),REGOFF(0x1E16,EBX))	/* 0x1e16<0> : 1 = dwgengine busy ? 0 = not busy */
-	JNZ	(.loop)
-.exit:
-	POP_L	(EBX)
-	RET

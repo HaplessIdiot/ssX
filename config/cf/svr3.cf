@@ -1,4 +1,8 @@
-XCOMM $XFree86$
+XCOMM $XConsortium: svr3.cf /main/1 1996/10/31 14:47:37 kaleb $
+
+
+
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.8 1995/09/22 07:06:34 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -123,11 +127,19 @@ XCOMM $XFree86$
 #endif
 
 #ifndef StandardDefines
-#define StandardDefines		-DSYSV -DSYSV386 OSDefines -Di386
+#ifdef i386Architecture
+#define StandardDefines		-DSYSV OSDefines -Di386
+#else
+#define StandardDefines		-DSYSV OSDefines
+#endif
 #endif
 
 #ifndef ServerOSDefines
-# define ServerOSDefines -DDDXTIME -DDDXOSINIT
+# ifdef i386Architecture
+#  define ServerOSDefines -DDDXTIME XFree86ServerOSDefines -DPART_NET
+# else
+#  define ServerOSDefines -DDDXTIME
+# endif
 #endif
 
 #ifndef XawI18nDefines
@@ -136,7 +148,11 @@ XCOMM $XFree86$
 
 #ifndef DefaultCDebugFlags
 # if HasGcc2
-#  define DefaultCDebugFlags -O2
+#  if defined(i386Architecture)
+#   define DefaultCDebugFlags DefaultGcc2i386Opt
+#  else
+#   define DefaultCDebugFlags -O2
+#  endif
 # else
 #  define DefaultCDebugFlags -O
 # endif
@@ -151,7 +167,11 @@ XCOMM $XFree86$
 #  define DefaultCCOptions Gcc2MOption -DNO_ASM -fpcc-struct-return \
 			   -fwritable-strings
 #  define LibraryCCOptions Gcc2MOption -DNO_ASM -fpcc-struct-return
-#  define OptimizedCDebugFlags -O2
+#  if defined(i386Architecture)
+#   define OptimizedCDebugFlags DefaultGcc2i386Opt
+#  else
+#   define OptimizedCDebugFlags -O2
+#  endif
 # else
 #  define DefaultCCOptions -DNO_ASM -fpcc-struct-return -fwritable-strings
 #  define LibraryCCOptions -DNO_ASM -fpcc-struct-return
@@ -167,10 +187,10 @@ XCOMM $XFree86$
 #endif
 
 #ifndef SocketLibraries
-#define SocketLibraries /**/
+# define SocketLibraries /**/
 #endif
 #ifndef LocalLibraries
-#define LocalLibraries /**/
+# define LocalLibraries /**/
 #endif
 #ifndef ExtraLibraries
 # if HasSockets
@@ -186,28 +206,24 @@ XCOMM $XFree86$
 # define RemoveDSDENroffMacrosCmd cat
 #endif
 
-#ifndef PartialNetDefault
-#define PartialNetDefault	YES
-#endif
-
 #ifndef ConnectionFlags
-#define ConnectionFlags	-DUNIXCONN -DLOCALCONN -DTCPCONN
+# define ConnectionFlags	-DLOCALCONN -DTCPCONN
 #endif
 
 #ifndef FormattedManPages
-#define FormattedManPages	YES
+# define FormattedManPages	YES
 #endif
 
 #ifndef ManSuffix
-#define ManSuffix               1x
-#define ManDir			$(MANSOURCEPATH)1
+# define ManSuffix               1x
+# define ManDir			$(MANSOURCEPATH)1
 #endif
 #ifndef LibManSuffix
-#define LibManSuffix            3x
-#define LibmanDir		$(MANSOURCEPATH)3
+# define LibManSuffix            3x
+# define LibmanDir		$(MANSOURCEPATH)3
 #endif
 #ifndef FileManSuffix
-#define FileManSuffix           4
+# define FileManSuffix           4
 #endif
 
 /*
@@ -252,6 +268,17 @@ install.man:: file.man                                                  @@\
         $(RM) /tmp/file.man
 #endif
 
+#ifndef InstallGenManPageLong
+#define InstallGenManPageLong(file,destdir,dest,suffix)                 @@\
+install.man:: file.man                                                  @@\
+        MakeDir($(DESTDIR)destdir)                                      @@\
+        $(RM) $(DESTDIR)destdir/dest.suffix*                            @@\
+        $(RMDSDEMACCMD) file.man | neqn | nroff -man >/tmp/file.man     @@\
+        $(INSTALL) -c $(INSTMANFLAGS) /tmp/file.man $(DESTDIR)destdir/dest.suffix @@\
+        -$(COMPRESSMANCMD) $(DESTDIR)destdir/dest.suffix                @@\
+        $(RM) /tmp/file.man
+#endif
+
 #ifndef InstallMultipleMan
 #define InstallMultipleMan(list,dest)                                   @@\
 install.man:: list                                                      @@\
@@ -278,9 +305,14 @@ install.man::                                                           @@\
         @(SUFFIX=`echo $(DESTDIR)destdir/file.* | cut -f2,3 -d.`; \     @@\
         for i in aliases; do (set -x; \                                 @@\
         $(RM) $(DESTDIR)destdir/$$i.*; \                                @@\
-        $(LN) $(DESTDIR)destdir/file.$${SUFFIX} \                       @@\
-        $(DESTDIR)destdir/$$i.$${SUFFIX}); \                            @@\
+        (cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \                  @@\
+        $$i.$${SUFFIX})); \                                             @@\
         done)
+#endif
+
+#ifndef InstallGenManPageAliases
+#define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
+	InstallManPageAliases(file,destdir,aliases)
 #endif
 
 #endif /* FormattedManPages */
@@ -296,5 +328,8 @@ install.man::                                                           @@\
 #endif
 
 #include <sv3Lib.rules>
+
+#ifdef i386Architecture
 #include <xfree86.cf>
+#endif
 

@@ -1,4 +1,10 @@
-/* $XFree86$ */
+/* $XConsortium: ct_pci.c /main/1 1996/09/21 13:36:44 kaleb $ */
+
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_pci.c,v 3.3 1996/12/09 11:54:01 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -38,4 +44,14 @@ ctPCIMemBase(ctisHiQV32)
 	    vga256InfoRec.name, vga256InfoRec.chipset);
 	return -1;
     }
+}
+
+int
+ctPCIChipset()
+{
+  if (!vgaPCIInfo)
+    return (-1);
+  if (!vgaPCIInfo->Vendor == PCI_VENDOR_CHIPSTECH)
+    return (0);
+  return(vgaPCIInfo->ChipType);
 }

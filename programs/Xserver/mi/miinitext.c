@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.13 1996/12/23 07:09:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.14 1996/12/24 08:49:03 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -138,13 +138,13 @@ extern void     LbxExtensionInit(INITARGS);
 extern void     DbeExtensionInit(INITARGS);
 #endif
 #ifdef XAPPGROUP
-extern void XagExtensionInit();
+extern void XagExtensionInit(INITARGS);
 #endif
 #ifdef XCSECURITY
-extern void SecurityExtensionInit();
+extern void SecurityExtensionInit(INITARGS);
 #endif
 #ifdef XPRINT
-extern void	XpExtensionInit();
+extern void	XpExtensionInit(INITARGS);
 #endif
 #ifdef XF86VIDMODE
 extern void	XFree86VidModeExtensionInit(INITARGS);

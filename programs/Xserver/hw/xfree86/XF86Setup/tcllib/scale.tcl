@@ -1,3 +1,10 @@
+# $XConsortium: scale.tcl /main/1 1996/09/21 14:16:04 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # scale.tcl --
 #
 # This file defines the default bindings for Tk scale widgets and provides

@@ -1,4 +1,9 @@
-/* $XFree86$ */
+/* $XConsortium: tgafcache.c /main/2 1996/10/24 10:56:11 kaleb $ */
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgafcache.c,v 3.0 1996/09/22 05:04:44 dawes Exp $ */
 
 /*
  * Copyright 1995,96 by Alan Hourihane, Wigan, England.

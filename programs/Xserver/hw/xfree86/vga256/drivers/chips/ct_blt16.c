@@ -1,3 +1,4 @@
+/* $XConsortium: ct_blt16.c /main/3 1996/10/25 10:29:10 kaleb $ */
 /*
  * Hooks for cfb16/24 CopyArea
  */
@@ -42,7 +43,7 @@
  *    Modified again for use with Chips chipsets
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_blt16.c,v 3.2 1996/09/29 13:39:17 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -198,6 +199,10 @@ ctcfbCopyWindow(pWin, ptOldOrg, prgnSrc)
     register int i, nbox;
     WindowPtr pwinRoot;
 
+#ifdef DEBUG
+    ErrorF("ctcfbCopyWindow\n");
+#endif
+
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
     REGION_INIT(pWin->drawable.pScreen, &rgnDst, NullBox, 0);
@@ -259,13 +264,17 @@ ctcfbBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     int ydir;			       /* 1 = top down, -1 = bottom up */
     int careful;
 
+#ifdef DEBUG
+    ErrorF("ctcfbBppDoBitbltCopy\n");
+#endif
+
 #if 0
     /* This doesn't work because we need to deal with cfb16 and cfb24
      * at the same time. */
     cfbGetLongWidthAndPointer(pSrc, widthSrc, psrcBase);
     cfbGetLongWidthAndPointer(pDst, widthDst, pdstBase);
 #else
-    widthSrc = widthDst = vga256InfoRec.virtualX;
+    widthSrc = widthDst = vga256InfoRec.displayWidth;
     /* Hack!!! I'm assuming that if you get here you want a screen to
      * screen blit.  */
     psrcBase = pdstBase = (unsigned long *)VGABASE;
@@ -286,7 +295,7 @@ ctcfbBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     pboxNew2 = NULL;
     pptNew2 = NULL;
     if (careful && (pptSrc->y < pbox->y1)) {
-	/* walk source botttom to top */
+	/* walk source bottom to top */
 	ydir = -1;
 
 	if (nbox > 1) {
@@ -394,16 +403,25 @@ ctcfbBppPolyBitblt(pdstBase, psrcBase, widthSrc, widthDst, nbox, pptSrc,
     unsigned long planemask;
 {
 #ifdef DEBUG
+    ErrorF("ctcfbBppPolyBitblt");
+#endif
+#ifdef DEBUG
     ErrorF("planemask: 0x%X \n", planemask);
 #endif
 
     for (; nbox; pbox++, pptSrc++, nbox--) {
-	if (ctUseMMIO)
-	    ctMMIOBitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
-		widthSrc, widthDst, pptSrc->x, pptSrc->y,
-		pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-		xdir, ydir, 0x03, planemask);
-	else
+	if (ctUseMMIO) {
+	    if (ctisHiQV32)
+		ctHiQVBitBlt((unsigned char *)psrcBase,
+		    (unsigned char *)pdstBase, widthSrc, widthDst, pptSrc->x,
+		    pptSrc->y, pbox->x1, pbox->y1, pbox->x2 - pbox->x1,
+		    pbox->y2 - pbox->y1, xdir, ydir, 0x03, planemask);
+	    else
+		ctMMIOBitBlt((unsigned char *)psrcBase,
+		    (unsigned char *)pdstBase, widthSrc, widthDst, pptSrc->x,
+		    pptSrc->y, pbox->x1, pbox->y1, pbox->x2 - pbox->x1,
+		    pbox->y2 - pbox->y1, xdir, ydir, 0x03, planemask);
+	} else
 	    ctBitBlt((unsigned char *)psrcBase, (unsigned char *)pdstBase,
 		widthSrc, widthDst, pptSrc->x, pptSrc->y,
 		pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,

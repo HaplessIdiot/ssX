@@ -1,4 +1,8 @@
-/* $XFree86$ */
+/* $XConsortium: sunLyKbd.c /main/1 1996/10/31 14:20:55 kaleb $ */
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyKbd.c,v 3.1 1996/10/03 08:31:39 dawes Exp $ */
 
 /*
  * This is sunKbd.c modified for LynxOS
@@ -726,8 +730,8 @@ int sunKbdProc (device, what)
 	/* restore saved termio setting */
 	if (ioctl(pPriv->fd, TCSETAW, &kbdtty) < 0)
 		perror("ioctl TCSETAW");
-	RemoveEnabledDevice(pPriv->fd);
 	pKeyboard->on = FALSE;
+	RemoveEnabledDevice(pPriv->fd);
 	break;
     default:
 	FatalError("Unknown keyboard operation\n");

@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.h,v 3.0 1996/08/20 12:26:54 dawes Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.h,v 3.1 1996/12/23 06:41:30 dawes Exp $ */
 
 
 

@@ -1,3 +1,32 @@
+/* $XConsortium: tclvidmode.c /main/2 1996/10/19 19:06:29 kaleb $ */
+
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclvidmode.c,v 3.4 1996/08/24 12:51:02 dawes Exp $ */
+/*
+ * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Joseph Moss not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Joseph Moss makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * JOSEPH MOSS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL JOSEPH MOSS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
 
 /*
 
@@ -30,6 +59,9 @@ static int (*savErrorFunc)();
 static int errorOccurred;
 static char errMsgBuf[512];
 
+/*
+  Simple error handler
+*/
 static int vidError(dis, err)
 Display *dis;
 XErrorEvent *err;
@@ -43,6 +75,7 @@ XErrorEvent *err;
    Adds all the vidmode specific commands to the Tcl interpreter
 */
 
+int
 XF86vid_Init(interp)
     Tcl_Interp	*interp;
 {
@@ -84,6 +117,7 @@ XF86vid_Init(interp)
    The version is returned simple floating point number (e.g. 0.4)
 */
 
+int
 TCL_XF86VidModeQueryVersion(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -121,6 +155,7 @@ TCL_XF86VidModeQueryVersion(clientData, interp, argc, argv)
    The first element is the EventBase and the second is the ErrorBase
 */
 
+int
 TCL_XF86VidModeQueryExtension(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -157,6 +192,7 @@ TCL_XF86VidModeQueryExtension(clientData, interp, argc, argv)
    various video mode parameters (including any flags)
 */
 
+int
 TCL_XF86VidModeGetModeLine(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -211,6 +247,7 @@ TCL_XF86VidModeGetModeLine(clientData, interp, argc, argv)
    various video mode parameters (including any flags)
 */
 
+int
 TCL_XF86VidModeGetAllModeLines(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -267,6 +304,12 @@ TCL_XF86VidModeGetAllModeLines(clientData, interp, argc, argv)
 	}
 }
 
+/*
+   Returns the monitor's manufacturer and model names and its
+   horiz and vert sync rates,
+*/
+
+int
 TCL_XF86VidModeGetMonitor(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -329,6 +372,11 @@ TCL_XF86VidModeGetMonitor(clientData, interp, argc, argv)
 #undef MNVSync
 }
 
+/*
+   Turn on/off video mode switching
+*/
+
+int
 TCL_XF86VidModeLockModeSwitch(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -364,14 +412,19 @@ TCL_XF86VidModeLockModeSwitch(clientData, interp, argc, argv)
 	XSync(Tk_Display(tkwin), False);
 	XSetErrorHandler(savErrorFunc);
 	if (errorOccurred) {
-		Tcl_AppendResult(interp,
-			"Unable to set screen saver timeouts: ",
+		Tcl_AppendResult(interp, "Unable to ",
+			(lock? "":"un"), "lock mode switching: ",
 			errMsgBuf, (char *) NULL);
 		return TCL_ERROR;
 	}
 	return TCL_OK;
 }
 
+/*
+   Change to the previous/next video mode
+*/
+
+int
 TCL_XF86VidModeSwitchMode(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;

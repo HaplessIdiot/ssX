@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc24.c,v 3.2 1996/09/01 04:15:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3gc24.c,v 3.1 1996/10/03 08:33:29 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -55,7 +55,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
  * Modified by Amancio Hasty and Jon Tombs
  *
  */
-/* $XConsortium: s3gc24.c /main/3 1995/11/12 19:06:32 kaleb $ */
+/* $XConsortium: s3gc24.c /main/2 1996/10/25 11:34:56 kaleb $ */
 
 
 #include "X.h"
@@ -83,7 +83,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "xf86fcache.h"
 #include "xf86text.h"
 
-#include "s3.h"
+#include "s3v.h"
 
 static void s3ValidateGC();
 

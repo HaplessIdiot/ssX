@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.16 1996/12/09 11:51:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.17 1996/12/23 06:41:31 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -10,7 +10,6 @@
  * 
  * 
  */
-
 /* $XConsortium: s3ELSA.c /main/10 1996/10/28 04:55:10 kaleb $ */
 
 #ifdef linux

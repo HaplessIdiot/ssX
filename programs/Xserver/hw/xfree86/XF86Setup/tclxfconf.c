@@ -1,3 +1,33 @@
+/* $XConsortium: tclxfconf.c /main/3 1996/10/23 11:44:07 kaleb $ */
+
+
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.12 1996/12/20 06:44:45 dawes Exp $ */
+/*
+ * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Joseph Moss not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Joseph Moss makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * JOSEPH MOSS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL JOSEPH MOSS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
 
 /*
 
@@ -11,13 +41,12 @@
 #include "servermd.h"
 #include "scrnintstr.h"
 
-#include "compiler.h"
-
 #define INIT_OPTIONS
 #include "xf86_Option.h"
 
+#define NO_COMPILER_H_EXTRAS
 #include "xf86Procs.h"
-
+#include "xf86_OSlib.h"
 #include "xf86_Config.h"
 
 #include "tcl.h"
@@ -187,6 +216,11 @@ CARD32		defaultScreenSaverTime, ScreenSaverTime;
 Bool		xf86fpFlag, xf86coFlag, xf86sFlag;
 char		*rgbPath = NULL, *defaultFontPath = NULL;
 Bool		xf86ScreensOpen;
+Bool		xf86BestRefresh;
+extern int	n_devices, n_monitors;
+extern GDevPtr	device_list;
+extern MonPtr	monitor_list;
+
 ScrnInfoRec	monoInfoRec, vga2InfoRec, vga16InfoRec,
 		svgaInfoRec, accelInfoRec;
 
@@ -218,6 +252,10 @@ Bool		xf86MiscModInDevAllowNonLocal;
 
 #define XF86MAXSCREENS	sizeof(xf86Screens) / sizeof(ScrnInfoPtr)
 
+/*
+  Set the various config file related variables to their defaults
+*/
+
 static void
 init_config_vars(xwinhome)
   char *xwinhome;
@@ -230,6 +268,7 @@ init_config_vars(xwinhome)
 	defaultColorVisualClass = xf86bpp         = -1;
 	xf86AllowMouseOpenFail  = xf86ScreensOpen = FALSE;
 	xf86fpFlag = xf86coFlag = xf86sFlag       = FALSE;
+	xf86BestRefresh = FALSE;
 	xf86MaxScreens = XF86MAXSCREENS;
 
 	pathlen = strlen(xwinhome);
@@ -314,12 +353,14 @@ xf86KbdProc(pKeyboard, what)
   DeviceIntPtr pKeyboard;
   int	what;
 {
+  return 0;
 }
 int
 xf86MseProc(pPointer, what)
   DeviceIntPtr pPointer;
   int	what;
 {
+  return 0;
 }
 void
 xf86KbdEvents()
@@ -336,12 +377,14 @@ xf86XqueKbdProc(pKeyboard, what)
   DeviceIntPtr pKeyboard;
   int	what;
 {
+  return 0;
 }
 int
 xf86XqueMseProc(pPointer, what)
   DeviceIntPtr pPointer;
   int	what;
 {
+  return 0;
 }
 void
 xf86XqueEvents()
@@ -354,9 +397,16 @@ xf86OsMouseProc(pPointer, what)
   DeviceIntPtr pPointer;
   int	what;
 {
+  return 0;
 }
 void
 xf86OsMouseEvents()
+{
+}
+void
+xf86OsMouseOption(lt,lp)
+  int lt;
+  pointer lp;
 {
 }
 #endif
@@ -385,6 +435,7 @@ char *KeyMapType(key)
 		case KM_SCROLLLOCK:	return "ScrollLock";
 		case KM_CONTROL:	return "Control";
 	}
+	return "";
 }
 
 /*
@@ -406,6 +457,10 @@ XF86Config_Init(interp)
 	return TCL_OK;
 }
 
+/*
+  Locate the XF86Config that would be used by the server
+*/
+
 int
 TCL_XF86FindXF86Config(clientData, interp, argc, argv)
     ClientData	clientData;
@@ -413,9 +468,9 @@ TCL_XF86FindXF86Config(clientData, interp, argc, argv)
     int		argc;
     char	*argv[];
 {
-	int retval;
-	char *tmpbuf;
-	FILE *fp;
+	int	retval;
+	char	*tmpbuf;
+	FILE	*fp;
 
 	if (argc != 1) {
 		Tcl_SetResult(interp, "Usage: xf86config_findfile", TCL_STATIC);
@@ -482,17 +537,34 @@ TCL_XF86ReadXF86Config(clientData, interp, argc, argv)
 #endif
 	getsection_module  (interp, argv[10]);
 #endif
+	XtFree((char *) monitor_list);
+	XtFree((char *) device_list);
 	return TCL_OK;
 }
+
+/*
+  Set the Tcl variables for the config from the Files section
+*/
 
 static int
 getsection_files(interp, varname)
   Tcl_Interp *interp;
   char *varname;
 {
-	Tcl_SetVar2(interp, "files", "FontPath", defaultFontPath, 0);
-	Tcl_SetVar2(interp, "files", "RGBPath", rgbPath, 0);
+	Tcl_SetVar2(interp, "files", "FontPath",
+		StrOrNull(defaultFontPath), 0);
+	if (defaultFontPath)
+		XtFree(defaultFontPath);
+	Tcl_SetVar2(interp, "files", "RGBPath", StrOrNull(rgbPath), 0);
+	if (rgbPath)
+		XtFree(rgbPath);
+	rgbPath = defaultFontPath = NULL;
+	return TCL_OK;
 }
+
+/*
+  Set the Tcl variables for the config from the ServerFlags section
+*/
 
 static int
 getsection_server(interp, varname)
@@ -518,15 +590,20 @@ getsection_server(interp, varname)
 		xf86MiscModInDevAllowNonLocal?
 			"AllowNonLocalModInDev": "", 0);
 #endif
+	return TCL_OK;
 }
+
+/*
+  Set the Tcl variables for the config from the Keyboard section
+*/
 
 static int
 getsection_keyboard(interp, varname)
   Tcl_Interp *interp;
   char *varname;
 {
-	char tmpbuf[128], tmpbuf2[16];
-	int i;
+	char	tmpbuf[128], tmpbuf2[16];
+	int	i;
 
 #ifdef XQUEUE
 	if (xf86Info.kbdProc == xf86XqueKbdProc)
@@ -571,8 +648,23 @@ getsection_keyboard(interp, varname)
 		StrOrNull(xf86Info.xkbgeometry), 0);
 	Tcl_SetVar2(interp, "keyboard", "XkbKeymap",
 		StrOrNull(xf86Info.xkbkeymap), 0);
+	Tcl_SetVar2(interp, "keyboard", "XkbRules",
+		StrOrNull(xf86Info.xkbrules), 0);
+	Tcl_SetVar2(interp, "keyboard", "XkbModel",
+		StrOrNull(xf86Info.xkbmodel), 0);
+	Tcl_SetVar2(interp, "keyboard", "XkbLayout",
+		StrOrNull(xf86Info.xkblayout), 0);
+	Tcl_SetVar2(interp, "keyboard", "XkbVariant",
+		StrOrNull(xf86Info.xkbvariant), 0);
+	Tcl_SetVar2(interp, "keyboard", "XkbOptions",
+		StrOrNull(xf86Info.xkboptions), 0);
 #endif
+	return TCL_OK;
 }
+
+/*
+  Set the Tcl variables for the config from the Pointer section
+*/
 
 static int
 getsection_pointer(interp, varname)
@@ -582,63 +674,57 @@ getsection_pointer(interp, varname)
 	char tmpbuf[16];
 
 #ifdef XQUEUE
-	if (xf86Info.mouseDev.mseProc == xf86XqueMseProc)
-		xf86Info.mouseDev.mseType = 10;
+	if (xf86Info.mouseDev->mseProc == xf86XqueMseProc)
+		xf86Info.mouseDev->mseType = 10;
 #endif
 #if defined(USE_OSMOUSE) || defined(OSMOUSE_ONLY)
-	if (xf86Info.mouseDev.mseProc == xf86OsMouseProc)
-		xf86Info.mouseDev.mseType = 11;
+	if (xf86Info.mouseDev->mseProc == xf86OsMouseProc)
+		xf86Info.mouseDev->mseType = 11;
 #endif
 	Tcl_SetVar2(interp, "mouse", "Protocol",
-		msetypes[xf86Info.mouseDev.mseType+1], 0);
+		msetypes[xf86Info.mouseDev->mseType+1], 0);
 	Tcl_SetVar2(interp, "mouse", "Device",
-		StrOrNull(xf86Info.mouseDev.mseDevice), 0);
-	sprintf(tmpbuf, "%d", xf86Info.mouseDev.baudRate);
+		StrOrNull(xf86Info.mouseDev->mseDevice), 0);
+	sprintf(tmpbuf, "%d", xf86Info.mouseDev->baudRate);
 	Tcl_SetVar2(interp, "mouse", "BaudRate", tmpbuf, 0);
-	sprintf(tmpbuf, "%d", xf86Info.mouseDev.sampleRate);
+	sprintf(tmpbuf, "%d", xf86Info.mouseDev->sampleRate);
 	Tcl_SetVar2(interp, "mouse", "SampleRate", tmpbuf, 0);
 	Tcl_SetVar2(interp, "mouse", "Emulate3Buttons",
-		xf86Info.mouseDev.emulate3Buttons? "Emulate3Buttons": "", 0);
-	sprintf(tmpbuf, "%d", xf86Info.mouseDev.emulate3Timeout);
+		xf86Info.mouseDev->emulate3Buttons? "Emulate3Buttons": "", 0);
+	sprintf(tmpbuf, "%d", xf86Info.mouseDev->emulate3Timeout);
 	Tcl_SetVar2(interp, "mouse", "Emulate3Timeout", tmpbuf, 0);
 	Tcl_SetVar2(interp, "mouse", "ChordMiddle",
-		xf86Info.mouseDev.chordMiddle? "ChordMiddle": "", 0);
+		xf86Info.mouseDev->chordMiddle? "ChordMiddle": "", 0);
 	Tcl_SetVar2(interp, "mouse", "ClearDTR",
-		xf86Info.mouseDev.mouseFlags&MF_CLEAR_DTR? "ClearDTR": "", 0);
+		xf86Info.mouseDev->mouseFlags&MF_CLEAR_DTR? "ClearDTR": "", 0);
 	Tcl_SetVar2(interp, "mouse", "ClearRTS",
-		xf86Info.mouseDev.mouseFlags&MF_CLEAR_RTS? "ClearRTS": "", 0);
+		xf86Info.mouseDev->mouseFlags&MF_CLEAR_RTS? "ClearRTS": "", 0);
+	return TCL_OK;
 }
+
+/*
+  Set the Tcl variables for the config from the Monitor sections
+*/
 
 static int
 getsection_monitor(interp, varname)
   Tcl_Interp *interp;
   char *varname;
 {
-	int i, j, unique[XF86MAXSCREENS];
-	char *namebuf, *tmpptr, *tmpbuf;
-	MonPtr mptr;
-	DisplayModePtr dptr;
+	int		i, j;
+	char		*namebuf, *tmpptr, *tmpbuf;
+	MonPtr	 	mptr;
+	DisplayModePtr	dptr;
 
-	for (i = 0; i < xf86MaxScreens; i++)
-	    unique[i] = xf86Screens[i]->configured;
-
-	for (i = 0; i < xf86MaxScreens; i++)
-	    if (unique[i])
-		for (j = i+1; j < xf86MaxScreens; j++)
-		    if (unique[j] &&
-			    !strcmp(xf86Screens[i]->monitor->id,
-				    xf86Screens[j]->monitor->id)) {
-			unique[j] = FALSE;
-		    }
-
-	for (i = 0; i < xf86MaxScreens; i++)
-	    if (unique[i]) {
-		mptr = xf86Screens[i]->monitor;
+	for (i = 0; i < n_monitors; i++) {
+		mptr = &monitor_list[i];
 		namebuf = (char *) XtMalloc(strlen(varname)+strlen(mptr->id)+2);
 		sprintf(namebuf, "%s_%s", varname, mptr->id);
 
-		Tcl_SetVar2(interp, namebuf, "VendorName", mptr->vendor, 0);
-		Tcl_SetVar2(interp, namebuf, "ModelName", mptr->model, 0);
+		Tcl_SetVar2(interp, namebuf, "VendorName",
+			StrOrNull(mptr->vendor), 0);
+		Tcl_SetVar2(interp, namebuf, "ModelName",
+			StrOrNull(mptr->model), 0);
 
 		tmpptr = tmpbuf = XtMalloc(mptr->n_hsync*14);
 		for (j = 0; j < mptr->n_hsync; j++) {
@@ -657,7 +743,8 @@ getsection_monitor(interp, varname)
 		Tcl_SetVar2(interp, namebuf, "VertRefresh", tmpbuf, 0);
 
 		tmpbuf = XtRealloc(tmpbuf, 256);
-		if (xf86rGamma == xf86gGamma == xf86bGamma) {
+		if ((xf86rGamma == xf86gGamma)
+				&& (xf86rGamma == xf86bGamma)) {
 		    if (xf86rGamma == 1.0)
 			Tcl_SetVar2(interp, namebuf, "Gamma", "", 0);
 		    else {
@@ -698,43 +785,35 @@ getsection_monitor(interp, varname)
 		}
 		XtFree(tmpbuf);
 		XtFree(namebuf);
-	    }
+	}
 	return TCL_OK;
 }
 
-extern int n_scr_devices, scr_devices[];
-extern GDevPtr device_list;
+/*
+  Set the Tcl variables for the config from the Device sections
+*/
 
 static int
 getsection_device(interp, varname)
   Tcl_Interp *interp;
   char *varname;
 {
-	int i, j, unique[XF86MAXSCREENS];
-	char *namebuf, tmpbuf[128];
-	GDevPtr dptr;
+	int	i, j;
+	char	*namebuf, tmpbuf[128];
+	GDevPtr	dptr;
 
-	for (i = 0; i < n_scr_devices; i++)
-	    unique[i] = 1;
-
-	for (i = 0; i < n_scr_devices; i++)
-	    if (unique[i])
-		for (j = i+1; j < n_scr_devices; j++)
-		    if (unique[j] &&
-			    !strcmp(device_list[scr_devices[i]].identifier,
-				    device_list[scr_devices[j]].identifier)) {
-			unique[j] = FALSE;
-		    }
-
-	for (i = 0; i < n_scr_devices; i++)
-	    if (unique[i]) {
-		dptr = &device_list[scr_devices[i]];
+	for (i = 0; i < n_devices; i++) {
+		dptr = &device_list[i];
 		namebuf = XtMalloc(strlen(varname)+strlen(dptr->identifier)+2);
 		sprintf(namebuf, "%s_%s", varname, dptr->identifier);
-		Tcl_SetVar2(interp, namebuf, "VendorName", dptr->vendor, 0);
-		Tcl_SetVar2(interp, namebuf, "BoardName", dptr->board, 0);
-		Tcl_SetVar2(interp, namebuf, "Chipset", dptr->chipset, 0);
-		Tcl_SetVar2(interp, namebuf, "Ramdac", dptr->ramdac, 0);
+		Tcl_SetVar2(interp, namebuf, "VendorName",
+			StrOrNull(dptr->vendor), 0);
+		Tcl_SetVar2(interp, namebuf, "BoardName",
+			StrOrNull(dptr->board), 0);
+		Tcl_SetVar2(interp, namebuf, "Chipset",
+			StrOrNull(dptr->chipset), 0);
+		Tcl_SetVar2(interp, namebuf, "Ramdac",
+			StrOrNull(dptr->ramdac), 0);
 		Tcl_SetVar2(interp, namebuf, "DacSpeed",
 			NonZeroStr(dptr->dacSpeed,10), 0);
 		Tcl_SetVar2(interp, namebuf, "Clocks", "", 0);
@@ -743,7 +822,8 @@ getsection_device(interp, varname)
 			Tcl_SetVar2(interp, namebuf, "Clocks",
 				tmpbuf, TCL_APPEND_VALUE);
 		}
-		Tcl_SetVar2(interp, namebuf, "ClockProg", dptr->clockprog, 0);
+		Tcl_SetVar2(interp, namebuf, "ClockProg",
+			StrOrNull(dptr->clockprog), 0);
 		if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(dptr->clockOptions))) {
 		    j = 0;
 		    while (xf86_ClockOptionTab[j].token != -1) {
@@ -768,7 +848,7 @@ getsection_device(interp, varname)
 		    else if (dptr->speedup == SPEEDUP_ALL)
 			Tcl_SetVar2(interp, namebuf, "SpeedUp", "all", 0);
 		    else {
-			sprintf(tmpbuf, "%d", dptr->speedup);
+			sprintf(tmpbuf, "%ld", dptr->speedup);
 			Tcl_SetVar2(interp, namebuf, "SpeedUp", tmpbuf, 0);
 		    }
 		} else
@@ -817,9 +897,15 @@ getsection_device(interp, varname)
 		    }
 		if (Tcl_GetVar2(interp, namebuf, "Option", 0) == NULL)
 			Tcl_SetVar2(interp, namebuf, "Option", "", 0);
-	    }
+		XtFree(namebuf);
+	}
 	return TCL_OK;
 }
+
+/*
+  Convert the given value to a string representation in the specified
+  base.  If the value is zero, return an empty string
+*/
 
 static char *NonZeroStr(val, base)
   unsigned long val;
@@ -829,13 +915,17 @@ static char *NonZeroStr(val, base)
 
 	if (val) {
 		if (base == 16)
-			sprintf(tmpbuf, "%#x", val);
+			sprintf(tmpbuf, "%#lx", val);
 		else
 			sprintf(tmpbuf, "%ld", val);
 		return tmpbuf;
 	} else
 		return "";
 }
+
+/*
+  Set the Tcl variables for the config from the Screen sections
+*/
 
 extern int	xf86setup_scrn_ndisps[];
 extern DispPtr	xf86setup_scrn_displays[];
@@ -846,11 +936,11 @@ getsection_screen(interp, varname)
   Tcl_Interp *interp;
   char *varname;
 {
-    int i, j, dispn, depth;
-    char *namebuf, tmpbuf[128], tmpbuf2[32];
-    ScrnInfoPtr vptr;
-    DispPtr     dptr;
-    DisplayModePtr modeptr;
+    int			i, j, dispn, depth;
+    char		*namebuf, tmpbuf[128], tmpbuf2[32];
+    ScrnInfoPtr		vptr;
+    DispPtr		dptr;
+    DisplayModePtr	modeptr;
 
     for (i = 0; i < xf86MaxScreens; i++)
         if (xf86Screens[i]->configured) {
@@ -863,6 +953,9 @@ getsection_screen(interp, varname)
                                     +dispn*sizeof(DispRec));
                 if ((depth = dptr->depth) == -1)
                     depth = vptr->depth;
+                sprintf(tmpbuf, "%d", depth);
+                sprintf(tmpbuf2, "Depth,%d", depth);
+                Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf, 0);
                 if (dptr->frameX0 != -1 || dptr->frameX0 != -1) {
                     sprintf(tmpbuf, "%d %d",
                         dptr->frameX0, dptr->frameY0);
@@ -911,18 +1004,15 @@ getsection_screen(interp, varname)
 		        xf86VisualNames[dptr->defaultVisual], 0);
 		}
 		modeptr = dptr->modes;
-                sprintf(tmpbuf2, "Modes,%d", depth);
-		Tcl_SetVar2(interp, namebuf, tmpbuf2, "", 0);
-		do {
-		  /*
-                    sprintf(tmpbuf, "\"%s\" ", modeptr->name);
-		    Tcl_SetVar2(interp, namebuf, tmpbuf2, tmpbuf,
-			TCL_APPEND_VALUE);
-		  */
-		    Tcl_SetVar2(interp, namebuf, tmpbuf2, modeptr->name,
-			TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
-		    modeptr = modeptr->next;
-		} while (dptr->modes != modeptr);
+		if (modeptr) {
+                    sprintf(tmpbuf2, "Modes,%d", depth);
+		    Tcl_SetVar2(interp, namebuf, tmpbuf2, "", 0);
+		    do {
+		        Tcl_SetVar2(interp, namebuf, tmpbuf2, modeptr->name,
+			    TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
+		        modeptr = modeptr->next;
+		    } while (dptr->modes != modeptr);
+		}
 
                 sprintf(tmpbuf2, "Option,%d", depth);
 		Tcl_UnsetVar2(interp, namebuf, tmpbuf2, 0);
@@ -934,11 +1024,11 @@ getsection_screen(interp, varname)
 			    TCL_APPEND_VALUE|TCL_LIST_ELEMENT);
 		    }
             }
-            sprintf(tmpbuf, "%s", vptr->monitor->id);
-            Tcl_SetVar2(interp, namebuf, "Monitor", tmpbuf, 0);
-	    sprintf(tmpbuf, "%s", device_list[scr_devices[i]].identifier);
-            Tcl_SetVar2(interp, namebuf, "Device", tmpbuf, 0);
-            sprintf(tmpbuf, "%d", ScreenSaverTime/MILLI_PER_MIN);
+            Tcl_SetVar2(interp, namebuf, "Monitor",
+		    StrOrNull(vptr->monitor->id), 0);
+            Tcl_SetVar2(interp, namebuf, "Device",
+		    StrOrNull(((GDevPtr) vptr->device)->identifier), 0);
+            sprintf(tmpbuf, "%ld", ScreenSaverTime/MILLI_PER_MIN);
             Tcl_SetVar2(interp, namebuf, "BlankTime", tmpbuf, 0);
             sprintf(tmpbuf, "%d", vptr->offTime/MILLI_PER_MIN);
             Tcl_SetVar2(interp, namebuf, "OffTime", tmpbuf, 0);
@@ -948,6 +1038,8 @@ getsection_screen(interp, varname)
                 sprintf(tmpbuf, "%d", vptr->tmpIndex);
                 Tcl_SetVar2(interp, namebuf, "ScreenNo", tmpbuf, 0);
             }
+	    XtFree(namebuf);
         }
+	return TCL_OK;
 }
 

@@ -1,3 +1,10 @@
+# $XConsortium: optionMenu.tcl /main/1 1996/09/21 14:15:53 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # optionMenu.tcl --
 #
 # This file defines the procedure tk_optionMenu, which creates

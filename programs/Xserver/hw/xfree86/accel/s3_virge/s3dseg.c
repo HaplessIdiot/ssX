@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.12 1996/09/01 04:15:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3dseg.c,v 3.2 1996/10/08 13:11:56 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -52,7 +52,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 */
 
 /* s3dline.c from s3line.c with help from cfbresd.c and cfbline.c - Jon */
-/* $XConsortium: s3dseg.c /main/6 1996/01/11 12:26:32 kaleb $ */
+/* $XConsortium: s3dseg.c /main/3 1996/10/25 15:37:13 kaleb $ */
 
 #include "X.h"
 
@@ -71,8 +71,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 
 #define NextDash {\
     dashIndexTmp++; \
@@ -149,8 +148,9 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
    cfbPrivGCPtr devPriv;
    short fix;
 
-   if (!xf86VTSema)
+   if (1 || !xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask))
    {
+      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
@@ -165,6 +165,7 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 	 cfb32SegmentSD(pDrawable, pGC, nseg, pSeg);
          break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 

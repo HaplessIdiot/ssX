@@ -1,6 +1,11 @@
-/* $XFree86$ */
+/* $XConsortium: pc98_tgui.h /main/2 1996/10/25 10:35:23 kaleb $ */
 
-typedef enum { PC98Unkown , PC98PCIBus , PC98CBus } PC98BusType;
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/trident/pc98_tgui.h,v 3.1 1996/09/29 13:47:46 dawes Exp $ */
+
+typedef enum { PC98Unknown , PC98PCIBus , PC98CBus } PC98BusType;
 typedef enum { PC98NoExist , PC98NEC9680 , PC98NEC9320
 		 , PC98DRV9680 } PC98TGUiType;
 

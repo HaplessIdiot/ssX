@@ -1,3 +1,10 @@
+# $XConsortium: tk.tcl /main/1 1996/09/21 14:15:57 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # tk.tcl --
 #
 # Initialization script normally executed in the interpreter for each
@@ -92,6 +99,7 @@ source $tk_library/text.tcl
 # ----------------------------------------------------------------------
 
 bind all <Tab> {focus [tk_focusNext %W]}
+bind all <Key-ISO_Left_Tab> {focus [tk_focusPrev %W]}
 bind all <Shift-Tab> {focus [tk_focusPrev %W]}
 
 # tkCancelRepeat --

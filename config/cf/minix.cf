@@ -1,4 +1,8 @@
-XCOMM platform:  $XFree86$
+XCOMM $XConsortium: minix.cf /main/1 1996/10/31 14:47:22 kaleb $
+
+
+
+XCOMM platform:  $XFree86: xc/config/cf/minix.cf,v 3.3 1994/06/28 12:15:02 dawes Exp $
 
 
 /*
@@ -14,8 +18,9 @@ XCOMM platform:  $XFree86$
 #define AcdGcc
 
 #ifdef AcdGcc
-#define ServerExtraDefines	-DGCCUSESGAS
-#define AsmDefines -DUSE_GAS
+#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#define AsmDefines 		-DUSE_GAS
+#define GccGasOption		-DGCCUSESGAS /* For SuperProbe */
 #endif
 
 /* Defaults for Minix */

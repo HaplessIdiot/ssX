@@ -1,5 +1,9 @@
+/* $XConsortium: btvar.h /main/1 1996/10/31 14:20:34 kaleb $ */
+
+
+
 /*	$NetBSD: btvar.h,v 1.2 1994/11/20 20:51:56 deraadt Exp $ */
-/*	$XFree86$ */
+/*	$XFree86: xc/programs/Xserver/hw/sunLynx/btvar.h,v 3.0 1996/09/29 12:47:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1993

@@ -1,3 +1,10 @@
+# $XConsortium: entry.tcl /main/1 1996/09/21 14:15:21 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # entry.tcl --
 #
 # This file defines the default bindings for Tk entry widgets and provides

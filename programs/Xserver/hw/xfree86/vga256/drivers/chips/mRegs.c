@@ -1,6 +1,22 @@
-/* $XFree86$ */
+/* $XConsortium: mRegs.c /main/2 1996/10/27 11:49:43 kaleb $ */
 
-#include "AsmMacros.h"
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/mRegs.c,v 3.1 1996/10/17 15:20:51 dawes Exp $ */
+
+#ifdef __NetBSD__
+/*
+ * For NetBSD compile with -li386
+ */
+# include <sys/types.h>
+# include <machine/pio.h>
+# include <machine/sysarch.h>
+# define iopl i386_iopl
+#else /* NetBSD */
+# include "AsmMacros.h"*/
+#endif /* NetBSD */
 
 #include <unistd.h>
 #include <stdio.h>

@@ -1,8 +1,11 @@
+/* $XConsortium: newmmio-sizes.c /main/2 1996/10/25 11:33:52 kaleb $ */
 /* compile with
    cc -I../../common -I../../../../../../X11 newmmio-sizes.c
    */
 
-#include "regs3.h"
+/* $XFree86$ */
+
+#include "regs3v.h"
 
 #define PS(set)  printf(#set "_regs \t\t = %04x\n", &((mmtr)0)->set ## _regs)
 #define P(set,reg)  printf(#set "_regs.regs." #reg " \t = %04x\n", &((mmtr)0)->set ## _regs.regs.reg)

@@ -1,3 +1,4 @@
+/* $XConsortium: ct_FillSt.c /main/3 1996/10/25 10:28:55 kaleb $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -26,7 +27,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_FillSt.c,v 3.1 1996/09/29 13:39:15 dawes Exp $ */
 
 /*
  * These are the functions for tiles, which call low-level functions.
@@ -46,6 +47,116 @@ extern void cfb16FillRectTile32Copy();
 extern void cfb16FillRectTile32General();
 extern void cfb24FillRectTile32Copy();
 extern void cfb24FillRectTile32General();
+
+/*
+ * This function uses the color expand fill for opaque stipples.
+ * I'm not entirely sure about the origin of the stipple; I assume
+ * it should be (0, 0).
+ */
+
+void ctcfbFillRectOpaqueStippled32(pDrawable, pGC, nBox, pBox)
+	DrawablePtr pDrawable;
+	GCPtr pGC;
+	int nBox;		/* number of boxes to fill */
+	register BoxPtr pBox;	/* pointer to list of boxes to fill */
+{
+	unsigned long *src;
+	int stippleHeight;
+	cfbPrivGCPtr devPriv;
+	PixmapPtr stipple;
+	int destPitch;
+
+	devPriv = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr);
+	stipple = devPriv->pRotatedPixmap;
+
+	destPitch = (int)
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);
+
+	cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel,
+		pGC->planemask);
+
+	stippleHeight = stipple->drawable.height;
+	src = (unsigned long *)stipple->devPrivate.ptr;
+
+	for (;nBox; nBox--, pBox++) {
+		int w = pBox->x2 - pBox->x1;
+		int h = pBox->y2 - pBox->y1;
+		if (cfb8StippleRRop == GXcopy && w >= 10 && h >= 10) {
+		    if (ctUseMMIO) {
+			if (ctisHiQV32)
+			    ctHiQVColorExpandStippleFill(pBox->x1, pBox->y1,
+				w, h, src, stippleHeight, 0, 0,
+				pGC->bgPixel, pGC->fgPixel, destPitch, 0);
+			else
+			    ctMMIOColorExpandStippleFill(pBox->x1, pBox->y1,
+				w, h, src, stippleHeight, 0, 0,
+				pGC->bgPixel, pGC->fgPixel, destPitch, 0);
+		    } else
+			ctcfbColorExpandStippleFill(pBox->x1, pBox->y1,
+				w, h, src, stippleHeight, 0, 0,
+				pGC->bgPixel, pGC->fgPixel, destPitch, 0);
+		} else {
+			/* Special raster op. */
+			/* Let cfb do this one. */
+			speedupvga2568FillRectOpaqueStippled32(
+				pDrawable, pGC, 1, pBox);
+		}
+	}
+}
+
+/*
+ * This function uses the color expand fill for transparent stipples.
+ */
+
+void ctcfbFillRectTransparentStippled32(pDrawable, pGC, nBox, pBox)
+	DrawablePtr pDrawable;
+	GCPtr pGC;
+	int nBox;		/* number of boxes to fill */
+	register BoxPtr pBox;	/* pointer to list of boxes to fill */
+{
+	unsigned long *src;
+	int stippleHeight;
+	cfbPrivGCPtr devPriv;
+	PixmapPtr stipple;
+	int destPitch;
+
+	devPriv = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr);
+	stipple = devPriv->pRotatedPixmap;
+
+	destPitch = (int)
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind);
+
+	cfb8CheckStipple(pGC->alu, pGC->fgPixel, pGC->planemask);
+
+	stippleHeight = stipple->drawable.height;
+	src = (unsigned long *)stipple->devPrivate.ptr;
+
+	for (;nBox; nBox--, pBox++) {
+		int w = pBox->x2 - pBox->x1;
+		int h = pBox->y2 - pBox->y1;
+		if (cfb8StippleRRop == GXcopy && w >= 10 && h >= 10) {
+		    if (ctUseMMIO) { 
+			if (ctisHiQV32)
+			    ctHiQVColorExpandStippleFill(pBox->x1, pBox->y1,
+				w, h, src, stippleHeight, 0, 0, 0,
+				pGC->fgPixel, destPitch, 1);
+			else
+			    ctMMIOColorExpandStippleFill(pBox->x1, pBox->y1,
+				w, h, src, stippleHeight, 0, 0, 0,
+				pGC->fgPixel, destPitch, 1);
+		    } else
+			ctcfbColorExpandStippleFill(pBox->x1, pBox->y1,
+				w, h, src, stippleHeight, 0, 0, 0,
+				pGC->fgPixel, destPitch, 1);
+		} else {
+			/* Special raster op. */
+			/* Let cfb do this one. */
+			speedupvga2568FillRectTransparentStippled32(
+				pDrawable, pGC, 1, pBox);
+		}
+	}
+}
+
 
 /*
  * Chips Tile fill.
@@ -117,14 +228,14 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 	if (width == 8 && height == 8)
 	    goto tile8x8;
 	if (width == 16 && height == 16 &&
-	    ((vga256InfoRec.virtualX < 2048 && !ctisHiQV32) ||
-		(vga256InfoRec.virtualX < 4096 && ctisHiQV32)
+	    ((vga256InfoRec.displayWidth < 2048 && !ctisHiQV32) ||
+		(vga256InfoRec.displayWidth < 4096 && ctisHiQV32)
 	    ))
 	    goto tile16x16;
 #if 1				       /* Disable 32x32 tile */
 	if (width == 32 && height == 32 &&
-	    ((vga256InfoRec.virtualX < 1024 && !ctisHiQV32) ||
-		(vga256InfoRec.virtualX < 2048 && ctisHiQV32)
+	    ((vga256InfoRec.displayWidth < 1024 && !ctisHiQV32) ||
+		(vga256InfoRec.displayWidth < 2048 && ctisHiQV32)
 	    ))
 	    goto tile32x32;
 #endif
@@ -134,8 +245,8 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 	if (width == 8 && height == 8)
 	    goto tile8x8;
 	if (width == 16 && height == 16 &&
-	    ((vga256InfoRec.virtualX < 1024 && !ctisHiQV32) ||
-		(vga256InfoRec.virtualX < 2048 && ctisHiQV32)
+	    ((vga256InfoRec.displayWidth < 1024 && !ctisHiQV32) ||
+		(vga256InfoRec.displayWidth < 2048 && ctisHiQV32)
 	    ))
 	    goto tile16x16;
 	break;
@@ -245,11 +356,16 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 			vgaBytesPerPixel, (8 - xrot) * vgaBytesPerPixel);
 	    }
 	}
-	if (ctUseMMIO)
-	    ctMMIOBLT8x8PatternFill(pBox->y1 * destPitch + pBox->x1,
-		w, h, pattern, ((pBox->y1 - yrot) & 7), 8,
-		destPitch);
-	else
+	if (ctUseMMIO) {
+	    if (ctisHiQV32)
+		ctHiQVBLT8x8PatternFill(pBox->y1 * destPitch + pBox->x1,
+		    w, h, pattern, ((pBox->y1 - yrot) & 7), 8,
+		    destPitch);
+	    else
+		ctMMIOBLT8x8PatternFill(pBox->y1 * destPitch + pBox->x1,
+		    w, h, pattern, ((pBox->y1 - yrot) & 7), 8,
+		    destPitch);
+	} else
 	    ctcfbBLT8x8PatternFill(pBox->y1 * destPitch + pBox->x1,
 		w, h, pattern, ((pBox->y1 - yrot) & 7), 8,
 		destPitch);
@@ -317,11 +433,16 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 		}
 	    }
 	}
-	if (ctUseMMIO)
-	    ctMMIOBLT16x16PatternFill(pBox->y1 * destPitch + pBox->x1,
-		pBox->x1, w, h, pattern, ((pBox->y1 - yrot) & 15),
-		16, destPitch);
-	else
+	if (ctUseMMIO) {
+	    if (ctisHiQV32)
+		ctHiQVBLT16x16PatternFill(pBox->y1 * destPitch + pBox->x1,
+		    pBox->x1, w, h, pattern, ((pBox->y1 - yrot) & 15),
+		    16, destPitch);
+	    else
+		ctMMIOBLT16x16PatternFill(pBox->y1 * destPitch + pBox->x1,
+		    pBox->x1, w, h, pattern, ((pBox->y1 - yrot) & 15),
+		    16, destPitch);
+	} else
 	    ctcfbBLT16x16PatternFill(pBox->y1 * destPitch + pBox->x1,
 		pBox->x1, w, h, pattern, ((pBox->y1 - yrot) & 15),
 		16, destPitch);
@@ -380,11 +501,16 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 			i * 32, 32);
 	    }
 	}
-	if (ctUseMMIO)
-	    ctMMIOBLT32x32PatternFill(pBox->y1 * destPitch + pBox->x1,
-		pBox->x1, w, h, pattern, ((pBox->y1 - yrot) & 31),
-		32, destPitch);
-	else
+	if (ctUseMMIO) {
+	    if (ctisHiQV32) 	
+		ctHiQVBLT32x32PatternFill(pBox->y1 * destPitch + pBox->x1,
+		    pBox->x1, w, h, pattern, ((pBox->y1 - yrot) & 31),
+		    32, destPitch);
+	    else
+		ctMMIOBLT32x32PatternFill(pBox->y1 * destPitch + pBox->x1,
+		    pBox->x1, w, h, pattern, ((pBox->y1 - yrot) & 31),
+		    32, destPitch);
+	} else
 	    ctcfbBLT32x32PatternFill(pBox->y1 * destPitch + pBox->x1,
 		pBox->x1, w, h, pattern, ((pBox->y1 - yrot) & 31),
 		32, destPitch);
@@ -451,11 +577,16 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 	blith = min(height, h);
 
 	while (blitx <= x + w - width) {
-	    if (ctUseMMIO)
-		ctMMIOBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
-		    y, blitx, y, width, blith, 1, 1, GXcopy,
-		    mask);
-	    else
+	    if (ctUseMMIO) {
+		if (ctisHiQV32)
+		    ctHiQVBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
+			y, blitx, y, width, blith, 1, 1, GXcopy,
+			mask);
+		else
+		    ctMMIOBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
+			y, blitx, y, width, blith, 1, 1, GXcopy,
+			mask);
+	    } else
 		ctBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
 		    y, blitx, y, width, blith, 1, 1, GXcopy,
 		    mask);
@@ -465,11 +596,16 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 	 * is hacked to force a screen to screen blit.
 	 */
 	if (blitx < x + w)
-	    if (ctUseMMIO)
-		ctMMIOBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
-		    y, blitx, y, x + w - blitx, blith, 1, 1,
-		    GXcopy, mask);
-	    else
+	    if (ctUseMMIO) {
+		if (ctisHiQV32)
+		    ctHiQVBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
+			y, blitx, y, x + w - blitx, blith, 1, 1,
+			GXcopy, mask);
+		else
+		    ctMMIOBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
+			y, blitx, y, x + w - blitx, blith, 1, 1,
+			GXcopy, mask);
+	    } else
 		ctBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
 		    y, blitx, y, x + w - blitx, blith, 1, 1,
 		    GXcopy, mask);
@@ -477,11 +613,16 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 	/* Repeat row of tiles vertically. */
 	blity = y + height;	       /* Will skip if height > h. */
 	while (blity < y + h - height) {
-	    if (ctUseMMIO)
-		ctMMIOBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
-		    y, x, blity, w, height, 1, 1, GXcopy,
-		    mask);
-	    else
+	    if (ctUseMMIO) {
+		if (ctisHiQV32)
+		    ctHiQVBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
+			y, x, blity, w, height, 1, 1, GXcopy,
+			mask);
+		else
+		    ctMMIOBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
+			y, x, blity, w, height, 1, 1, GXcopy,
+			mask);
+	    } else
 		ctBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
 		    y, x, blity, w, height, 1, 1, GXcopy,
 		    mask);
@@ -489,11 +630,16 @@ ctcfbFillRectTile(pDrawable, pGC, nBox, pBox)
 	}
 	/* Bottom edge. */
 	if (blity < y + h)
-	    if (ctUseMMIO)
-		ctMMIOBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
-		    y, x, blity, w, y + h - blity, 1, 1, GXcopy,
-		    mask);
-	    else
+	    if (ctUseMMIO) {
+		if (ctisHiQV32)
+		    ctHiQVBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
+			y, x, blity, w, y + h - blity, 1, 1, GXcopy,
+			mask);
+		else
+		    ctMMIOBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
+			y, x, blity, w, y + h - blity, 1, 1, GXcopy,
+			mask);
+	    } else
 		ctBitBlt(VGABASE, VGABASE, destPitch, destPitch, x,
 		    y, x, blity, w, y + h - blity, 1, 1, GXcopy,
 		    mask);

@@ -1,3 +1,10 @@
+# $XConsortium: init.tcl /main/1 1996/09/21 14:15:28 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # init.tcl --
 #
 # Default system startup file for Tcl-based applications.  Defines

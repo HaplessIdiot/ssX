@@ -1,4 +1,9 @@
-/* $XFree86$ */
+/* $XConsortium: s3gc24.c /main/2 1996/10/23 11:44:57 kaleb $ */
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc24.c,v 3.2 1996/09/01 04:15:36 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -55,7 +60,6 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
  * Modified by Amancio Hasty and Jon Tombs
  * 
  */
-/* $XConsortium: s3gc24.c /main/3 1995/11/12 19:06:32 kaleb $ */
 
 
 #include "X.h"
@@ -260,7 +264,7 @@ s3CreateGC24(pGC)
    if (PixmapWidthPaddingInfo[pGC->depth].padPixelsLog2 == LOG2_BITMAP_PAD)
        return (mfbCreateGC(pGC));
    if (pGC->depth != s3InfoRec.depth) {
-        ErrorF("s3CreateGC: unsupported depth: %d\n", pGC->depth);
+        ErrorF("s3CreateGC24: unsupported depth: %d\n", pGC->depth);
         return FALSE;
    }
 
@@ -572,7 +576,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   if (!pGC->tileIsPixel) { /* XXX: check constants */
 	      int   width = pGC->tile.pixmap->drawable.width * 24;
 
-	      if ((width <= 64) && !(width & (width - 1))) {
+	      if ((width <= PPW*PSZ) && !(width & (width - 1))) {
 		 cfb24CopyRotatePixmap(pGC->tile.pixmap,
 				     &devPriv->pRotatedPixmap,
 				     xrot, yrot);

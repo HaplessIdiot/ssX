@@ -1,4 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/doc/sgml/Imakefile,v 3.8 1996/08/14 14:37:14 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/1 1996/09/21 11:17:58 kaleb $
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/doc/sgml/Imakefile,v 3.1 1996/08/20 12:25:34 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -62,6 +67,7 @@ LinuxDocReadmeTarget(W32)
 LinuxDocReadmeTarget(WstDig)
 LinuxDocReadmeTarget(agx)
 LinuxDocReadmeTarget(ati)
+LinuxDocReadmeTarget(chips)
 LinuxDocReadmeTarget(cirrus)
 LinuxDocReadmeTarget(trident)
 LinuxDocReadmeTarget(tseng)

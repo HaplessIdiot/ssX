@@ -1,3 +1,4 @@
+/* $XConsortium: tga.h /main/4 1996/10/27 11:47:29 kaleb $ */
 /*
  * Copyright 1995,96 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -21,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.h,v 3.2 1996/10/17 15:18:14 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -114,11 +115,6 @@ void tgaPrintIdent(
 Bool tgaProbe(
 #if NeedFunctionPrototypes
     void
-#endif
-);
-Bool tgaValidMode(
-#if NeedFunctionPrototypes
-    DisplayModePtr
 #endif
 );
 /* tgamisc.c */
@@ -574,7 +570,7 @@ void tgaCacheMoveBlock(
     unsigned int
 #endif
 );
-/* tgaCursor.c */
+/* tgacurs.c */
 Bool tgaCursorInit(
 #if NeedFunctionPrototypes
     char *,
@@ -619,6 +615,12 @@ void tgaQueryBestSize(
     unsigned short *,
     unsigned short *,
     ScreenPtr 
+#endif
+);
+/* tgaBtCurs.c */
+void tgaBtRecolorCursor(
+#if NeedFunctionPrototypes
+    ScreenPtr, CursorPtr, Bool
 #endif
 );
 /* tgadline.c */

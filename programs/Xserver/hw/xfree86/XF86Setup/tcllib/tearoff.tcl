@@ -1,3 +1,10 @@
+# $XConsortium: tearoff.tcl /main/1 1996/09/21 14:16:12 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # tearoff.tcl --
 #
 # This file contains procedures that implement tear-off menus.

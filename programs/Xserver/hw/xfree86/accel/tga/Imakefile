@@ -1,4 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/Imakefile,v 3.2 1996/10/17 15:18:11 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/4 1996/10/27 11:47:23 kaleb $
+
+
+
+
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/Imakefile,v 3.3 1996/12/24 02:24:53 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = 	tga.c tgainit.c tgacmap.c tgacurs.c tgaBtCurs.c tgafcache.c \

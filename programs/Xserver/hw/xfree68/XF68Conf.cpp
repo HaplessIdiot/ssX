@@ -1,4 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.27 1996/08/20 12:25:41 dawes Exp $
+XCOMM $XConsortium: XF68Conf.cpp /main/3 1996/10/23 18:39:05 kaleb $
+XCOMM
+XCOMM
+XCOMM
+XCOMM
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/XF68Conf.cpp,v 3.2 1996/09/14 13:06:10 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -25,7 +30,6 @@ XCOMM not be used in advertising or otherwise to promote the sale, use or other
 XCOMM dealings in this Software without prior written authorization from the
 XCOMM XFree86 Project.
 XCOMM
-XCOMM $XConsortium: XF86Conf.cpp /main/16 1996/01/31 10:03:57 kaleb $
 
 XCOMM **********************************************************************
 XCOMM Refer to the XF86Config(4/5) man page for details about the format of 
@@ -403,6 +407,7 @@ Section "Screen"
     Driver	"svga"
     Device	"Generic SVGA"
     Monitor	"Generic Monitor"
+    DefaultColorDepth 8
     Subsection "Display"
         Depth	    8
         Modes	    "640x480"
@@ -453,6 +458,7 @@ XCOMM Section "Screen"
 XCOMM     Driver	"accel"
 XCOMM     Device	"Actix GE32+ 2MB"
 XCOMM     Monitor	"Generic Monitor"
+XCOMM     DefaultColorDepth 8
 XCOMM     Subsection  "Display"
 XCOMM         Depth	    8
 XCOMM         Modes	    "640x480"
@@ -469,30 +475,31 @@ XCOMM     EndSubsection
 XCOMM EndSection
 
 XCOMM Server for the Linux/m68k Frame Buffer Device
+XCOMM Note: DefaultColorDepth, Depth and Virtual aren't used for mode "default"
 
 Section "Screen"
     Driver	"fbdev"
     Device	"Linux/m68k Frame Buffer Device"
     Monitor	"Generic Monitor"
+    DefaultColorDepth 4
     SubSection "Display"
-XCOMM Note: Depth and Virtual aren't used for mode "default"
-        Depth	    1
-        Modes	    "default"
-        Virtual	    1152 900
+	Depth	    1
+	Modes	    "default"
+	Virtual	    1152 900
     EndSubSection
-XCOMM SubSection "Display"
-XCOMM     Depth	    1
-XCOMM     Modes	    "640x480" "800x600"
-XCOMM     Virtual	    1152 900
-XCOMM EndSubSection
-XCOMM SubSection "Display"
-XCOMM     Depth	    4
-XCOMM     Modes	    "640x480" "800x600"
-XCOMM     Virtual	    1152 900
-XCOMM EndSubSection
-XCOMM SubSection "Display"
-XCOMM     Depth	    8
-XCOMM     Modes	    "640x480" "800x600"
-XCOMM     Virtual	    1152 900
-XCOMM EndSubSection
+XCOMM    SubSection "Display"
+XCOMM        Depth	    1
+XCOMM        Modes	    "640x480" "800x600"
+XCOMM        Virtual	    1152 900
+XCOMM    EndSubSection
+XCOMM    SubSection "Display"
+XCOMM        Depth	    4
+XCOMM        Modes	    "640x480" "800x600"
+XCOMM        Virtual	    1152 900
+XCOMM    EndSubSection
+XCOMM    SubSection "Display"
+XCOMM        Depth	    8
+XCOMM        Modes	    "640x480" "800x600"
+XCOMM        Virtual	    1152 900
+XCOMM    EndSubSection
 EndSection

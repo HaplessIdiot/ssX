@@ -1,5 +1,11 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/xmseconfig.man,v 3.1 1996/08/16 12:29:42 dawes Exp $
-.TH xmseconfig 1 "Version 3.1.2F"  "XFree86"
+.\" $XConsortium: xmseconfig.man /main/3 1996/12/09 17:42:35 kaleb $
+.\"
+.\"
+.\"
+.\"
+.\"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/scripts/xmseconfig.man,v 3.2 1996/10/19 15:15:00 dawes Exp $
+.TH xmseconfig 1 "Version 3.2"  "XFree86"
 .SH NAME
 xmseconfig - Graphical mouse configuration utility
 .SH SYNOPSIS
@@ -45,5 +51,5 @@ xf86config(1), XF86Misc(3)
 Joe Moss, \fIjoe@XFree86.org\fP
 .SH NOTES
 If the program is unable to read the mouse configuration from
-the existing XF86Config file, changes to the mouse device are
-disallowed.
+the existing XF86Config file or if the user is not the superuser,
+changes to the mouse device are disallowed.

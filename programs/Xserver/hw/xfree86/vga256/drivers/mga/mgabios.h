@@ -1,3 +1,9 @@
+/* $XConsortium: mgabios.h /main/2 1996/10/28 04:48:23 kaleb $ */
+#ifndef MGABIOS_H
+#define MGABIOS_H
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabios.h,v 3.1 1996/10/20 13:34:07 dawes Exp $ */
+
 /*
  * MGABiosInfo - This struct describes the video BIOS info block.
  *
@@ -8,13 +14,8 @@
  * HISTORY
  *   October 7, 1996 - [aem] Andrew E. Mileski
  *   This struct was shamelessly stolen from the MGA DDK.
+ *   It has been reformatted, and the data types changed.
  */
-
-/* $XFree86$ */
-
-#ifndef MGABIOS_H
-#define MGABIOS_H
-
 typedef struct {
 	/* Length of this structure in bytes */
 	CARD16 StructLen;

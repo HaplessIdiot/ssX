@@ -1,3 +1,10 @@
+# $XConsortium: menu.tcl /main/1 1996/09/21 14:15:49 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # menu.tcl --
 #
 # This file defines the default bindings for Tk menus and menubuttons.

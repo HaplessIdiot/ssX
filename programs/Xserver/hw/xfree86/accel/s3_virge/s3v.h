@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.h,v 3.3 1996/09/25 14:16:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.4 1996/10/18 15:01:56 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -26,7 +26,7 @@
  * Modified by Amancio Hasty and Jon Tombs
  *
 */
-/* $XConsortium: s3.h /main/17 1996/01/31 10:04:41 kaleb $ */
+/* $XConsortium: s3v.h /main/8 1996/10/27 18:07:17 kaleb $ */
 
 
 #ifndef _S3V_H_
@@ -118,7 +118,7 @@ extern ScrnInfoRec s3InfoRec;
 extern short s3ChipId;
 extern int s3ChipRev;
 
-#ifndef LINKKIT
+#if !defined(LINKKIT)
 _XFUNCPROTOBEGIN
 
 extern void (*s3ImageReadFunc)(
@@ -144,7 +144,7 @@ extern int s3ScissR;
 extern int s3Bpp;    /* Bytes per pixel */
 extern int s3BppDisplayWidth;
 extern int s3Weight;
-extern int s3alu[], s3alu_sp[];
+extern int s3alu[], s3alu_sp[], s3alu_pat[];
 extern pointer s3VideoMem;
 extern pointer s3MmioMem;
 extern pointer vgaBase;
@@ -168,6 +168,8 @@ extern int s3Trio32FCBug;
 extern int s3_968_DashBug;
 extern int s3_gcmd;
 extern int s3bltbug_width1, s3bltbug_width2;
+
+extern Pixel s3BppPMask;
 
 #define UNKNOWN_DAC       -1
 #define NORMAL_DAC         0
@@ -1029,9 +1031,8 @@ void s3IBMRGBLoadCursor(
 
 _XFUNCPROTOEND
 
-#endif /* !LINKKIT */
 
-static __inline__ int s3CheckLSPN(int w)
+static __inline__ int s3CheckLSPN(int w, int dir)
 {
    int lspn = (w * s3Bpp) & 63;  /* scanline width in bytes modulo 64*/
 
@@ -1051,6 +1052,11 @@ static __inline__ int s3CheckLSPN(int w)
       else if (lspn <= 6*3)
 	 w += 3;
    }
+
+   if (dir && w >= s3bltbug_width1 && w <= s3bltbug_width2) {
+      w = s3bltbug_width2 + 1;
+   }
+
    return w;
 }
 
@@ -1058,18 +1064,8 @@ static __inline__ int s3CheckLSPN(int w)
 static __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, int inc_x)
 {
    int newwidth;
-   int n1;
 
-   newwidth = s3CheckLSPN(w+1);
-   n1=newwidth;
-
-   if (((inc_x) == INC_X && (sx) > (dx)
-	&& newwidth >= s3bltbug_width1 && newwidth <= s3bltbug_width2) ||
-       ((inc_x) != INC_X && (sx) < (dx)
-	&& newwidth >= s3bltbug_width1 && newwidth <= s3bltbug_width2)) {
-      if (newwidth < s3bltbug_width2)
-	 newwidth = s3bltbug_width2;
-   }
+   newwidth = s3CheckLSPN(w+1, (inc_x == INC_X) ^ (sx < dx));
 
    if (newwidth != w+1) {
       WaitQueue(5);
@@ -1089,13 +1085,14 @@ static __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, in
       SETB_RWIDTH_HEIGHT(w, h);
       SETB_RDEST_XY(dx, dy);
    }
-   if (0) ErrorF("wh %d,%d\ts %d,%d\td %d,%d\tix %d\tn %d %d %d\tc %d,%d\n"
+   if (0) ErrorF("wh %d,%d\ts %d,%d\td %d,%d\tix %d\tn %d %d\tc %d,%d\n"
 		 ,w+1,h ,sx,sy ,dx,dy
 		 ,inc_x==INC_X
-		 ,w+1,n1,newwidth
+		 ,w+1,newwidth
 		 ,(inc_x == INC_X) ? dx : dx-w, (inc_x == INC_X) ? dx+w : dx
 		 );
 }
 
+#endif /* !LINKKIT */
 
 #endif /* _S3V_H_ */

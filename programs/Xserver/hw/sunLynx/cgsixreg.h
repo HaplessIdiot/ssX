@@ -1,5 +1,9 @@
+/* $XConsortium: cgsixreg.h /main/1 1996/10/31 14:20:36 kaleb $ */
+
+
+
 /*	$NetBSD: cgsixreg.h,v 1.3 1994/11/20 20:52:00 deraadt Exp $ */
-/*	$XFree86$ */
+/*	$XFree86: xc/programs/Xserver/hw/sunLynx/cgsixreg.h,v 3.0 1996/09/29 12:47:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1993

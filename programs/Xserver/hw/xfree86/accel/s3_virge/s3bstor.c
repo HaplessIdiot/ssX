@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bstor.c,v 3.9 1996/06/29 09:07:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3bstor.c,v 3.1 1996/10/03 08:33:19 dawes Exp $ */
 /*-
  * s3bstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -28,7 +28,7 @@
  * Modified by Amancio Hasty and Jon Tombs
  *
  */
-/* $XConsortium: s3bstor.c /main/4 1995/11/12 19:06:08 kaleb $ */
+/* $XConsortium: s3bstor.c /main/2 1996/10/25 11:34:20 kaleb $ */
 
 
 #include    "cfb.h"
@@ -41,7 +41,7 @@
 #include    "scrnintstr.h"
 #include    "pixmapstr.h"
 #include    "windowstr.h"
-#include    "s3.h"
+#include    "s3v.h"
 
 void
 s3SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)

@@ -1,3 +1,9 @@
+/* $XConsortium: dwg.c /main/2 1996/10/28 06:57:55 kaleb $ */
+
+
+
+/* $XFree86$ */
+
 #include <stdio.h>
 /* #include <stdlib.h> */
 

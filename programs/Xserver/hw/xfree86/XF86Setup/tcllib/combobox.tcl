@@ -1,3 +1,17 @@
+# $XConsortium: combobox.tcl /main/1 1996/09/21 14:15:02 kaleb $
+#
+#
+#
+#
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tcllib/combobox.tcl,v 3.5 1996/08/26 10:47:54 dawes Exp $
+#
+# Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+#
+# See the file "LICENSE" for information regarding redistribution terms,
+# and for a DISCLAIMER OF ALL WARRANTIES.
+#
+
+# Implements a simple combobox widget
 
 proc combobox {w args} {
 	global tcl_library
@@ -15,7 +29,7 @@ proc combobox {w args} {
 	toplevel $w.popup -cursor top_left_arrow
 
 	listbox $w.popup.list -yscroll "$w.popup.sb set" \
-		-selectmode single -relief sunken -bd 1m
+		-selectmode browse -relief sunken -bd 1m
 	scrollbar $w.popup.sb -command "$w.popup.list yview"
 
 	set topwin [winfo toplevel $w]
@@ -56,7 +70,7 @@ proc #combobox_proc {w op args} {
 	    lscan	{return [eval [list $p.list  scan]      $args]}
 	    see		{return [eval [list $p.list  see]       $args]}
 	    eselection	{return [eval [list $w.entry selection] $args]}
-	    lselection	{return [eval [list $w.entry selection] $args]}
+	    lselection	{return [eval [list $p.list  selection] $args]}
 	    size	{return [eval [list $p.list  size]      $args]}
 	    exview	{return [eval [list $w.entry xview]     $args]}
 	    lxview	{return [eval [list $p.list  xview]     $args]}
@@ -71,6 +85,7 @@ proc #combobox_popup { w } {
 	set count [$w.popup.list size]
 	if { $count == 0 } return
 	pack forget $w.popup.sb $w.popup.list
+	set #combobox_vars(focus) [focus]
 	if { $count > 10 } {
 		set wid [winfo width $w.entry]
 		$w.popup.list configure -height 10 -width [$w.entry cget -width]
@@ -97,11 +112,16 @@ proc #combobox_popup { w } {
 	#grab -global $w.popup
 	grab $w.popup
 	bind $w.popup <ButtonPress-1> "\\#combobox_checkmsepos [list $w] %X %Y"
+	bind $w.popup.list <Return> "\\#combobox_popdown [list $w]"
+	#bind $w.popup.list <Escape> "\\#combobox_popdown [list $w]"
 	$w.button configure -command "\\#combobox_popdown [list $w]" \
 		-bitmap @$tcl_library/uparrow.xbm
 	set #combobox_vars($w,x) [winfo rootx $w]
 	set #combobox_vars($w,y) [winfo rooty $w]
 	bind [winfo toplevel $w] <Configure> "\\#combobox_follow [list $w]"
+	if [string length [focus]] {
+		focus $w.popup.list
+	}
 }
 
 proc #combobox_follow { w } {
@@ -119,11 +139,15 @@ proc #combobox_follow { w } {
 }
 
 proc #combobox_popdown { w } {
-	global tcl_library
+	global tcl_library #combobox_vars
 
 	wm withdraw $w.popup
 	#$w.button configure -state normal
 	grab release $w.popup
+	if { [info exists #combobox_vars(focus)]
+		&& [string length [set #combobox_vars(focus)]] } {
+	    focus [set #combobox_vars(focus)]
+	}
 	set entry ""
 	foreach selection [$w.popup.list curselection] {
 	    set text [$w.popup.list get $selection]

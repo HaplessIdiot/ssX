@@ -1,3 +1,10 @@
+# $XConsortium: text.tcl /main/1 1996/09/21 14:16:15 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # text.tcl --
 #
 # This file defines the default bindings for Tk text widgets and provides

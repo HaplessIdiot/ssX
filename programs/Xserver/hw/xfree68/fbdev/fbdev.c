@@ -1,4 +1,9 @@
-/* $XFree86$ */
+/* $XConsortium: fbdev.c /main/1 1996/09/21 11:18:10 kaleb $ */
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree68/fbdev/fbdev.c,v 3.2 1996/11/24 09:52:22 dawes Exp $ */
 /*
  *
  *  Author: Martin Schaller. Taken from hga2.c
@@ -17,7 +22,7 @@
  */
 
 
-#define fbdev_PATCHLEVEL "4"
+#define fbdev_PATCHLEVEL "5"
 
 
 #include "X.h"
@@ -439,11 +444,13 @@ static Bool fbdevProbe(void)
 	ErrorF("%s %s: Using default frame buffer video mode\n", XCONFIG_GIVEN,
 	       fbdevInfoRec.name);
 	fbdevInfoRec.depth = initscrvar.bits_per_pixel;
+	fbdevInfoRec.bitsPerPixel = fbdevInfoRec.depth;
     } else {
 	ErrorF("%s %s: Using XF86Config video mode database\n", XCONFIG_GIVEN,
 	       fbdevInfoRec.name);
 	UseModeDB = TRUE;
 	pEnd = NULL;
+	fbdevInfoRec.bitsPerPixel = fbdevInfoRec.depth;
 	do {
 	    DisplayModePtr pModeSv;
 
@@ -462,7 +469,6 @@ static Bool fbdevProbe(void)
 	} while (pMode != pEnd);
 	fbdevInfoRec.SwitchMode = fbdevSwitchMode;
     }
-    fbdevInfoRec.bitsPerPixel = fbdevInfoRec.depth;
 
     return(TRUE);
 }
@@ -802,6 +808,7 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
 		break;
 
 	    case FB_TYPE_PACKED_PIXELS:
+		width = fb_fix.line_length ? 8*fb_fix.line_length/bpp : xsize;
 		switch (bpp) {
 #ifdef CONFIG_CFB8
 		    case 8:
@@ -851,7 +858,10 @@ static Bool fbdevScreenInit(int scr_index, ScreenPtr pScreen, int argc,
     pScreen->CloseScreen = fbdevCloseScreen;
     pScreen->SaveScreen = (SaveScreenProcPtr)fbdevSaveScreen;
 
-    if (bpp != 1) {
+    if (fb_fix.visual != FB_VISUAL_MONO10 &&
+	fb_fix.visual != FB_VISUAL_MONO01 &&
+	fb_fix.visual != FB_VISUAL_DIRECTCOLOR &&
+	fb_fix.visual != FB_VISUAL_TRUECOLOR) {
 	pScreen->InstallColormap = fbdevInstallColormap;
 	pScreen->UninstallColormap = fbdevUninstallColormap;
 	pScreen->ListInstalledColormaps = fbdevListInstalledColormaps;
@@ -1070,6 +1080,8 @@ static Bool fbdevSwitchMode(DisplayModePtr mode)
 	if (ppix)
 	    (*fbdevBitBlt)(&ppix->drawable, &pspix->drawable, GXcopy, &pixReg,
 	    		   &pixPt, ~0);
+	initscrvar.xres = var.xres;
+	initscrvar.yres = var.yres;
 	res = TRUE;
     }
     if (ppix)

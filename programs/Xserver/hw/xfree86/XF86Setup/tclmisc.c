@@ -1,3 +1,32 @@
+/* $Xconsortium: $ */
+
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.4 1996/08/24 12:51:00 dawes Exp $ */
+/*
+ * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Joseph Moss not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Joseph Moss makes no representations
+ * about the suitability of this software for any purpose.  It is provided
+ * "as is" without express or implied warranty.
+ *
+ * JOSEPH MOSS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL JOSEPH MOSS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
 
 /*
 
@@ -8,9 +37,19 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xmd.h>
 #include <X11/extensions/xf86misc.h>
+#include <X11/Xos.h>
 #include <tcl.h>
 #include <tk.h>
+#include <ctype.h>
 #include "tclmisc.h"
+
+#if X_NOT_STDC_ENV
+int atoi(
+#if NeedFunctionPrototypes
+  char  *str
+#endif
+);
+#endif
 
 static int (*savErrorFunc)();
 static int errorOccurred;
@@ -29,6 +68,7 @@ XErrorEvent *err;
    Adds all the xf86misc specific commands to the Tcl interpreter
 */
 
+int
 XF86Misc_Init(interp)
     Tcl_Interp	*interp;
 {
@@ -67,6 +107,7 @@ XF86Misc_Init(interp)
 	return TCL_OK;
 }
 
+int
 StrCaseCmp(s1, s2)
 char *s1, *s2;
 {
@@ -97,6 +138,7 @@ char *s1, *s2;
    The version is returned simple floating point number (e.g. 0.4)
 */
 
+int
 TCL_XF86MiscQueryVersion(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -134,6 +176,7 @@ TCL_XF86MiscQueryVersion(clientData, interp, argc, argv)
    The first element is the EventBase and the second is the ErrorBase
 */
 
+int
 TCL_XF86MiscQueryExtension(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -168,6 +211,7 @@ TCL_XF86MiscQueryExtension(clientData, interp, argc, argv)
    powersaver timeouts
 */
 
+int
 TCL_XF86MiscGetSaver(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -201,6 +245,7 @@ TCL_XF86MiscGetSaver(clientData, interp, argc, argv)
    sets the powersaver timeouts
 */
 
+int
 TCL_XF86MiscSetSaver(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -245,6 +290,7 @@ static char *kbdtable[] = { "None", "84Key", "101Key", "Other", "Xqueue" };
    keyboard settings
 */
 
+int
 TCL_XF86MiscGetKbdSettings(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -279,6 +325,7 @@ TCL_XF86MiscGetKbdSettings(clientData, interp, argc, argv)
    sets the keyboard settings
 */
 
+int
 TCL_XF86MiscSetKbdSettings(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -347,6 +394,7 @@ static char *msetable[] = { "None", "Microsoft", "MouseSystems", "MMSeries",
    mouse settings
 */
 
+int
 TCL_XF86MiscGetMouseSettings(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -401,6 +449,7 @@ static char *setmouseusage =
 		" <baudrate> <samplerate> on|off <timeout>"
 		" on|off [ClearDTR] [ClearRTS] [ReOpen]";
 
+int
 TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
     ClientData	clientData;
     Tcl_Interp	*interp;
@@ -410,7 +459,6 @@ TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
 	XF86MiscMouseSettings mseinfo;
 	int i;
 	Tk_Window tkwin;
-	char tmpbuf[200];
 
         if (argc < 8 || argc > 11) {
                 Tcl_SetResult(interp, setmouseusage, TCL_STATIC);
@@ -461,7 +509,9 @@ TCL_XF86MiscSetMouseSettings(clientData, interp, argc, argv)
 		else if (!StrCaseCmp(argv[i], "reopen"))
 			mseinfo.flags |= MF_REOPEN;
 		else {
-			Tcl_AppendResult(interp, "Flag must be one of ClearDTR, ClearRTS, or ReOpen\n",
+			Tcl_AppendResult(interp,
+					"Flag must be one of ClearDTR,"
+					    "ClearRTS, or ReOpen\n",
 					setmouseusage, (char *) NULL);
 			return TCL_ERROR;
 		}

@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.28 1996/11/18 13:07:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.29 1996/12/23 05:50:06 dawes Exp $
 XCOMM
 
 /*
@@ -146,9 +146,6 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 
 #include <Imake.rules>
-#ifdef BUILD_MOTIF
-#include <Motif.rules>
-#endif
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries NO

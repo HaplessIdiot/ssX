@@ -1,3 +1,4 @@
+/* $XConsortium: nv_driver.c /main/3 1996/10/28 05:13:37 kaleb $ */
 /*
  * Copyright 1996  David J. McKay
  *
@@ -20,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.2 1996/10/23 13:10:51 dawes Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -62,6 +63,9 @@
 #define NV_1764_MAX_CLOCK_IN_KHZ 170000
 #define NV_1732_MAX_CLOCK_IN_KHZ 135000
 
+#define NV_MAX_VCLK_PIN_CLOCK_IN_KHZ  50000
+
+
 #include "nvreg.h"
 
 /* This holds the pointer to the ramdac micro port */
@@ -83,8 +87,10 @@ typedef struct {
   /* These values hold the params for the programmable PLL */
   unsigned char Nparam, Mparam, Oparam, Pparam;
   unsigned char dacConfReg0;
+  unsigned char dacConfReg1;
   unsigned char dacRgbPalCtrl;
   unsigned long confReg0;
+  unsigned long memoryTrace;
   unsigned long startAddr; /* Where to start readin out from the buffer */
   /* All the following registers control the display */
   unsigned long prmConfig0;     /* Controls if text mode on or off */
@@ -92,7 +98,7 @@ typedef struct {
   unsigned long horSyncWidth;   /* Sync Width in pixels */
   unsigned long horBackPorch;   /* horizontal back porch in in pixels */
   unsigned long horDispWidth;   /* Horizontal display width in pixels */
-  unsigned long verFrontPorch;  /* Veritical front porch in lines */
+  unsigned long verFrontPorch;  /* Vertical front porch in lines */
   unsigned long verSyncWidth;   /* Vertical sync width in lines */
   unsigned long verBackPorch;   /* Vertical back porch in lines */
   unsigned long verDispWidth;   /* Vertical display width in lines */
@@ -303,7 +309,7 @@ static Bool NVProbe(void)
   if(vga256InfoRec.chipset) {
     int i = 0;
     char *chipName;
-    while((chipName = NVIdent (i)) != NULL) {
+    while((chipName = NVIdent (i++)) != NULL) {
       if(!StrCaseCmp(vga256InfoRec.chipset, chipName))
 	break;
     }
@@ -404,6 +410,7 @@ static void NVRestore(vgaNVPtr restore)
   vgaHWRestore ((vgaHWPtr) restore);
   /* Set the clock registers */
 
+  nvPort[NV_MEMORY_TRACE]=restore->memoryTrace;
   nvPort[NV_PRM_CONFIG_0]=restore->prmConfig0;
 
   WriteExtReg(NV_DAC_VPLL_M_PARAM,restore->Mparam);
@@ -413,6 +420,7 @@ static void NVRestore(vgaNVPtr restore)
 
   /* Set the dac conf reg that sets the pixel depth */
   WriteExtReg(NV_DAC_CONF_0,restore->dacConfReg0);
+  WriteExtReg(NV_DAC_CONF_1,restore->dacConfReg1);
   WriteExtReg(NV_DAC_RGB_PAL_CTRL,restore->dacRgbPalCtrl);
 
   /* Write out the registers that control the dumb framebuffer */ 
@@ -445,8 +453,10 @@ static void *NVSave(vgaNVPtr save)
   save = (vgaNVPtr) vgaHWSave ((vgaHWPtr) save, sizeof (vgaNVRec));
 
   save->prmConfig0=nvPort[NV_PRM_CONFIG_0];
-  
+  save->memoryTrace=nvPort[NV_MEMORY_TRACE];
+
   save->dacConfReg0=ReadExtReg(NV_DAC_CONF_0);
+  save->dacConfReg1=ReadExtReg(NV_DAC_CONF_1);
   save->dacRgbPalCtrl=ReadExtReg(NV_DAC_RGB_PAL_CTRL);
   save->Mparam=ReadExtReg(NV_DAC_VPLL_M_PARAM);
   save->Nparam=ReadExtReg(NV_DAC_VPLL_N_PARAM);
@@ -468,18 +478,31 @@ static void *NVSave(vgaNVPtr save)
   return ((void *) save);
 }
 
+
+static int VirtualScreenOk(DisplayModePtr mode)
+{
+ if(mode->CrtcHDisplay!=vga256InfoRec.virtualX) return 0;
+ 
+ if(mode->Flags & V_DBLSCAN) {
+   return (2*vga256InfoRec.virtualY==mode->CrtcVDisplay);
+ }
+  
+ return (vga256InfoRec.virtualY==mode->CrtcVDisplay);
+}
+
 static Bool NVInit(DisplayModePtr mode)     
 {
   int bppShift=(vgaBitsPerPixel==8)  ? 1 : 2;
   int m,n,o,p;
   float clockIn=(float)vga256InfoRec.clock[mode->Clock];
   float clockOut;
+  int pclkVclkRatio;
+  int i;
 
   /* Check to see that we are not trying to do a virtual screen */
-  if(mode->CrtcHDisplay!=vga256InfoRec.virtualX ||
-     mode->CrtcVDisplay!=vga256InfoRec.virtualY) { 
-    ErrorF("Can't select mode %s : virtual desktop not supported\n",
-            vga256InfoRec.name);
+  if(!VirtualScreenOk(mode)) {
+    ErrorF("%s %s: %s: Can't select mode %s : virtual desktop not supported\n",
+        XCONFIG_PROBED, vga256InfoRec.name,vga256InfoRec.chipset,mode->name);
     return FALSE;
   }
 
@@ -488,6 +511,18 @@ static Bool NVInit(DisplayModePtr mode)
     return FALSE;
   
   }
+  /* Figure out divide down for clock. The Vclk pin is rated for
+   * 25-50Mhz but can actually be driven higher than this on most 
+   * silicon
+   */
+  for(i=1,pclkVclkRatio=0;i<=16;i*=2,pclkVclkRatio++) {
+    if((clockOut/(double)i) <= NV_MAX_VCLK_PIN_CLOCK_IN_KHZ) break;
+  }
+
+  ErrorF("%s %s: %s: Using %.3fMhz clock\n",XCONFIG_PROBED, vga256InfoRec.name,
+          vga256InfoRec.chipset,clockOut/1000);
+    
+
   /*
    * This will allocate the datastructure and initialize all of the
    * generic VGA registers.
@@ -503,11 +538,21 @@ static Bool NVInit(DisplayModePtr mode)
   SETBITFIELD(new->dacConfReg0,NV_DAC_CONF_0_PORT_WIDTH,pixelPortWidth);
   SETBITFIELD(new->dacConfReg0,NV_DAC_CONF_0_VISUAL_DEPTH,bppShift);
   SETBITFIELD(new->dacConfReg0,NV_DAC_CONF_0_IDC_MODE,vgaBitsPerPixel==8);
+
+  new->dacConfReg1=0;
+  SETBITFIELD(new->dacConfReg1,NV_DAC_CONF_1_VCLK_IMPEDANCE,1);
+  SETBITFIELD(new->dacConfReg1,NV_DAC_CONF_1_PCLK_VCLK_RATIO,pclkVclkRatio);
+
   new->dacRgbPalCtrl=0;
   new->prmConfig0=0;  
+  new->memoryTrace=0;
+
   new->confReg0=0; 
   /* We should set resolution here, but it doesn't seem to do anything */
   SETBITFIELD(new->confReg0,NV_PFB_CONFIG_0_PIXEL_DEPTH,bppShift);
+  SETBITFIELD(new->confReg0,NV_PFB_CONFIG_0_PCLK_VCLK_RATIO,pclkVclkRatio);
+  SETBITFIELD(new->confReg0,NV_PFB_CONFIG_0_RESOLUTION,4);
+  
   new->startAddr=0;
   /* Calculate the monitor timings */
   new->horFrontPorch=mode->CrtcHSyncStart - mode->CrtcHDisplay+1;
@@ -540,7 +585,11 @@ static void NVAdjust(int x, int y)
 {
   int bppShift=(vgaBitsPerPixel==8)  ? 1 : 2;
 
+  /* Wait for vertical blank */
+  while(GETBITFIELD(nvPort[NV_PFB_CONFIG_0],NV_PFB_CONFIG_0_VERTICAL)==0);
+
   nvPort[NV_PFB_START]=(y * vga256InfoRec.displayWidth + x)*bppShift;
+ 
 }
 
 static int NVValidMode(DisplayModePtr mode,Bool verbose)

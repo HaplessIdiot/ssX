@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.22 1996/09/01 04:15:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.3 1996/10/08 13:11:57 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -26,7 +26,7 @@
  * Modified by Amancio Hasty and Jon Tombs
  *
  */
-/* $XConsortium: s3fcach.c /main/8 1995/12/29 10:11:14 kaleb $ */
+/* $XConsortium: s3fcach.c /main/3 1996/10/25 15:37:16 kaleb $ */
 
 
 #include	"X.h"
@@ -39,8 +39,7 @@
 #include	"gcstruct.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
-#include	"s3.h"
-#include	"regs3.h"
+#include	"s3v.h"
 #include        "xf86bcache.h"
 #include	"xf86fcache.h"
 #include	"xf86text.h"
@@ -63,7 +62,7 @@ void
 s3FontCache8Init()
 {
    static int first = TRUE;
-   int x, y, w, h, pmwidth = 0, pmx, pmy;
+   int x, y, w, h, pmwidth = 0, pmx=0, pmy=0;
    int x2, y2, w2, h2;
    int BitPlane;
    CachePool FontPool;
@@ -91,7 +90,7 @@ s3FontCache8Init()
     * If a full-size pixmap expansion area will fit to the right, put it
     * there.
     */
-   if (!OFLG_ISSET(OPTION_NO_PIXMAP_CACHE, &s3InfoRec.options)) {
+   if (0 && !OFLG_ISSET(OPTION_NO_PIXMAP_CACHE, &s3InfoRec.options)) {
     if (s3DisplayWidth - s3InfoRec.virtualX >= MAX_PIXMAP_WIDTH ||
        s3DisplayWidth - s3InfoRec.virtualX >= h) {
       /* use area at right of screen */
@@ -151,7 +150,7 @@ s3FontCache8Init()
     }
    }
 
-   if (OFLG_ISSET(OPTION_NO_FONT_CACHE, &s3InfoRec.options)) {
+   if (1 || OFLG_ISSET(OPTION_NO_FONT_CACHE, &s3InfoRec.options)) {
       if (first)
 	 xf86InitText( NULL, s3NoCPolyText, s3NoCImageText );
    } else {

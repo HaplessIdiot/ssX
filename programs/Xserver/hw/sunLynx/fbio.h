@@ -1,5 +1,9 @@
+/* $XConsortium: fbio.h /main/1 1996/10/31 14:20:38 kaleb $ */
+
+
+
 /*	$NetBSD: fbio.h,v 1.3 1994/11/20 20:53:03 deraadt Exp $ */
-/*	$XFree86$ */
+/*	$XFree86: xc/programs/Xserver/hw/sunLynx/fbio.h,v 3.0 1996/09/29 12:47:20 dawes Exp $ */
 
 /*
  * Copyright (c) 1992 Regents of the University of California.

@@ -1,3 +1,10 @@
+# $XConsortium: listbox.tcl /main/1 1996/09/21 14:15:40 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # listbox.tcl --
 #
 # This file defines the default bindings for Tk listbox widgets

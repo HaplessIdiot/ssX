@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.9 1996/06/29 09:07:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3gtimg.c,v 3.1 1996/10/03 08:33:32 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -21,7 +21,7 @@
  * OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XConsortium: s3gtimg.c /main/4 1995/11/12 19:06:41 kaleb $ */
+/* $XConsortium: s3gtimg.c /main/2 1996/10/25 11:35:06 kaleb $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -33,7 +33,7 @@
 #include "cfb24.h"
 #include "cfb32.h"
 #include "cfbmskbits.h"
-#include "s3.h"
+#include "s3v.h"
 
 void
 s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)

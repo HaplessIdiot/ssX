@@ -1,3 +1,10 @@
+/* $XConsortium: tclxkbui.c /main/2 1996/10/19 19:06:46 kaleb $ */
+
+
+
+
+
+/* $XFree86$ */
 /* 
  * tkXkbUIWin.c --
  *

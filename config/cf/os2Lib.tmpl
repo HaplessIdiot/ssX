@@ -1,4 +1,8 @@
-XCOMM $XFree86$
+XCOMM $XConsortium: os2Lib.tmpl /main/1 1996/10/31 14:47:31 kaleb $
+
+
+
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.3 1996/04/15 11:13:56 dawes Exp $
 
 /*
  * OS2/EMX shared library template
@@ -21,15 +25,45 @@ XCOMM $XFree86$
 #define SharedPexReqs $(LDPRELIB) $(XLIBONLY) MathLibrary
 #else
 #define SharedXtReqs ..\\..\\usrlib\\ ICE SM X11
-#define SharedXawReqs ..\\..\\usrlib\\ Xmu Xt X11 XexExt Xext
-#define SharedXmuReqs ..\\..\\usrlib\\ Xt X11 XexExt Xext
+#define SharedXawReqs ..\\..\\usrlib\\ Xmu Xt X11 Xext
+#define SharedXmuReqs ..\\..\\usrlib\\ Xt X11 Xext
 #define SharedSMReqs ..\\..\\usrlib\\ ICE
-#define SharedXextReqs ..\\..\\usrlib\\ X11 XexExt Xext
-#define SharedXiReqs ..\\..\\usrlib\\ X11 XexExt Xext
-#define SharedXieReqs ..\\..\\usrlib\\ X11 XexExt Xext
-#define SharedXtstReqs ..\\..\\usrlib\\ X11 XexExt Xext
-#define SharedOldXReqs ..\\..\\usrlib\\ X11 XexExt Xext
+#define SharedXextReqs ..\\..\\usrlib\\ X11
+#define SharedXiReqs ..\\..\\usrlib\\ X11 Xext
+#define SharedXieReqs ..\\..\\usrlib\\ X11 Xext
+#define SharedXtstReqs ..\\..\\usrlib\\ X11 Xext
+#define SharedOldXReqs ..\\..\\usrlib\\ X11 Xext
 #define SharedPexReqs ..\\..\\usrlib\\ X11 m
+#endif
+
+/*
+ * By setting this in your Imakefile, you can force using static libraries
+ * to be linked with you app, rather than DLLs
+ */
+#ifndef LinkStatically
+#define LinkStatically NO
+#endif
+
+#if LinkStatically
+#define SDlibX11 -lX11_s
+#define SDlibXExt -lXExt_s
+#define SDlibXmu -lXmu_s
+#define SDlibXt -lXt_s
+#define SDlibXaw -lXaw_s
+#define SDlibXi -lXi_s
+#define SDlibXIE -lXIE_s
+#define SDlibXtst -lXtst_s
+#define SDlibPEX5 -lPEX5_s
+#else
+#define SDlibX11 -lX11
+#define SDlibXExt -lXExt
+#define SDlibXmu -lXmu
+#define SDlibXt -lXt
+#define SDlibXaw -lXaw
+#define SDlibXi -lXi
+#define SDlibXIE -lXIE
+#define SDlibXtst -lXtst
+#define SDlibPEX5 -lPEX5
 #endif
 
 /*
@@ -38,15 +72,15 @@ XCOMM $XFree86$
  */
 #if SharedLibXext
  DEPEXTENSIONLIB = 
-    EXTENSIONLIB = _Use(-lXext,-L$(EXTENSIONSRC)/lib -lXext)
+    EXTENSIONLIB = _Use(SDlibXExt,-L$(EXTENSIONSRC)/lib SDlibXExt)
 #endif
 #if SharedLibX11
          DEPXLIB = 
-            XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
+            XLIB = $(EXTENSIONLIB) _Use(SDlibX11,-L$(XLIBSRC) SDlibX11)
 #endif
 #if SharedLibXmu
        DEPXMULIB = 
-          XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu) $(XLIB)
+          XMULIB = _Use(SDlibXmu,-L$(XMUSRC) SDlibXmu) $(XLIB)
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 #endif
@@ -57,21 +91,21 @@ XCOMM $XFree86$
 #endif
 #if SharedLibXt
      DEPXTOOLLIB = 
-        XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
+        XTOOLLIB = _Use(SDlibXt,-L$(TOOLKITSRC) SDlibXt)
 #endif
 #if SharedLibXaw
        DEPXAWLIB = 
-          XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
+          XAWLIB = _Use(SDlibXaw,-L$(AWIDGETSRC) SDlibXaw)
 #endif
 #if SharedLibXi
         DEPXILIB = 
-           XILIB = _Use(-lXi,-L$(XILIBSRC) -lXi)
+           XILIB = _Use(SDlibXi,-L$(XILIBSRC) SDlibXi)
 #endif
 #if SharedLibXTest
     DEPXTESTLIB = 
-       XTESTLIB = _Use(-lXtst,-L$(EXTENSIONSRC)/lib/xtest -lXtst)
+       XTESTLIB = _Use(SDlibXtst,-L$(EXTENSIONSRC)/lib/xtest SDlibXtst)
 #endif
 #if SharedLibPex
       DEPPEXLIB = 
-         PEXLIB = _Use(-lPEX5,-L$(PEXLIBSRC) -lPEX5)
+         PEXLIB = _Use(SDlibPEX5,-L$(PEXLIBSRC) SDlibPEX5)
 #endif

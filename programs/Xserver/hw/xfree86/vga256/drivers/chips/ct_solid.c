@@ -1,3 +1,4 @@
+/* $XConsortium: ct_solid.c /main/3 1996/10/25 10:30:04 kaleb $ */
 /*
  * 
  * Copyright (c) 1987  X Consortium
@@ -95,7 +96,7 @@
  * 
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_solid.c,v 3.2 1996/12/09 11:54:02 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -115,7 +116,11 @@
 #include "ct_driver.h"
 
 #ifdef CHIPS_MMIO
+#ifdef CHIPS_HIQV
+#include "ct_BltHiQV.h"
+#else
 #include "ct_BlitMM.h"
+#endif
 #else
 #include "ct_Blitter.h"
 #endif
@@ -127,7 +132,11 @@
  */
 
 #ifdef CHIPS_MMIO
+#ifdef CHIPS_HIQV
+#define _ctcfbFillSolidSpansGeneral ctHiQVFillSolidSpansGeneral
+#else
 #define _ctcfbFillSolidSpansGeneral ctMMIOFillSolidSpansGeneral
+#endif
 #else
 #define _ctcfbFillSolidSpansGeneral ctcfbFillSolidSpansGeneral
 #endif
@@ -203,14 +212,18 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
     switch (vgaBitsPerPixel) {
     case 8:
 	ctSETFGCOLOR8(pGC->fgPixel);
+	ctSETBGCOLOR8(pGC->fgPixel);
 	break;
     case 16:
 	ctSETFGCOLOR16(pGC->fgPixel);
+	ctSETBGCOLOR16(pGC->fgPixel);
 	break;
     case 24:
-	if (ctisHiQV32) {
-	    ctSETFGCOLOR24(pGC->fgPixel);
-	} else {
+#ifdef CHIPS_HIQV
+	ctSETFGCOLOR24(pGC->fgPixel);
+	ctSETBGCOLOR24(pGC->fgPixel);
+#else
+	{
 	    /* The 6554x Blitter can only handle 8/16bpp fills directly,
 	     * Though you can do a grey fill, by a little bit of magic
 	     * with the 8bpp fill */
@@ -225,8 +238,10 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
 		return;
 	    } else {
 		ctSETFGCOLOR8(pGC->fgPixel);
+		ctSETBGCOLOR8(pGC->fgPixel);
 	    }
 	}
+#endif
 	break;
     }
 
@@ -250,7 +265,7 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
 
     RROP_FETCH_GC(pGC);
 
-    pitch = vga256InfoRec.virtualX * vgaBytesPerPixel;
+    pitch = vga256InfoRec.displayWidth * vgaBytesPerPixel;
 
     /*
      * Source bit pattern is irrelevant, background and foregound color
@@ -258,7 +273,8 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
      */
 
     /* Set up the invariant BitBLT parameters. */
-    op = ctAluConv[pGC->alu & 0xf] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctSRCFG;
+    op = ctAluConv2[pGC->alu & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctPATSOLID
+	| ctPATMONO;
     ctSETPITCH(0, pitch);
 
     while (n--) {
@@ -272,6 +288,11 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
 
 	ctBLTWAIT;
 	ctSETROP(op);
+#ifdef CHIPS_HIQV
+	ctSETMONOCTL(0);	/* This operation involves colour expansion, */
+				/* so being paranoid, set the monochrome     */
+				/* control register to zero                  */
+#endif
 	ctSETDSTADDR(destaddr);
 	ctSETHEIGHTWIDTHGO(1, width_in_bytes);
 
@@ -290,7 +311,11 @@ _ctcfbFillSolidSpansGeneral(pDrawable, pGC, nInit, pptInit, pwidthInit,
  * Command overhead is reduced as far as possible.
  */
 #ifdef CHIPS_MMIO
+#ifdef CHIPS_HIQV
+#define _ctcfbFillRectSolid ctHiQVFillRectSolid
+#else
 #define _ctcfbFillRectSolid ctMMIOFillRectSolid
+#endif
 #else
 #define _ctcfbFillRectSolid ctcfbFillRectSolid
 #endif
@@ -331,19 +356,21 @@ _ctcfbFillRectSolid(pDrawable, pGC, nBox, pBox)
     }
     RROP_FETCH_GC(pGC);
 
-    pitch = vga256InfoRec.virtualX * vgaBytesPerPixel;
-
     switch (vgaBitsPerPixel) {
     case 8:
 	ctSETFGCOLOR8(pGC->fgPixel);
+	ctSETBGCOLOR8(pGC->fgPixel);
 	break;
     case 16:
 	ctSETFGCOLOR16(pGC->fgPixel);
+	ctSETBGCOLOR16(pGC->fgPixel);
 	break;
     case 24:
-	if (ctisHiQV32) {
+#ifdef CHIPS_HIQV
 	    ctSETFGCOLOR24(pGC->fgPixel);
-	} else {
+	    ctSETBGCOLOR24(pGC->fgPixel);
+#else
+	{
 	    /* The 6554x Blitter can only handle 8/16bpp fills directly,
 	     * Though you can do a grey fill, by a little bit of magic
 	     * with the 8bpp fill */
@@ -353,17 +380,29 @@ _ctcfbFillRectSolid(pDrawable, pGC, nBox, pBox)
 	    green = (pGC->fgPixel >> 8) & 0xFF;
 	    blue = (pGC->fgPixel >> 16) & 0xFF;
 	    if (red ^ green || green ^ blue || blue ^ red) {
-		cfb24FillRectSolidGeneral(pDrawable, pGC, nBox, pBox);
+		if (ctAvoidImageBLT || (pGC->alu != GXcopy)) {
+		    cfb24FillRectSolidGeneral(pDrawable, pGC, nBox, pBox);
+		} else {
+#ifdef CHIPS_MMIO
+		    ctMMIOFillRectSolid24(pDrawable, pGC, nBox, pBox);
+#else
+		    ctcfbFillRectSolid24(pDrawable, pGC, nBox, pBox);
+#endif
+		}
 		return;
 	    } else {
 		ctSETFGCOLOR8(pGC->fgPixel);
+		ctSETBGCOLOR8(pGC->fgPixel);
 	    }
 	}
+#endif
 	break;
     }
 
     /* Set up the invariant BitBLT parameters. */
-    op = ctAluConv[pGC->alu & 0xf] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctSRCFG;
+    op = ctAluConv2[pGC->alu & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT | ctPATSOLID
+	| ctPATMONO;
+    pitch = vga256InfoRec.displayWidth * vgaBytesPerPixel;
     ctSETPITCH(0, pitch);
 
     while (nBox) {
@@ -375,6 +414,11 @@ _ctcfbFillRectSolid(pDrawable, pGC, nBox, pBox)
 
 	ctBLTWAIT;
 	ctSETROP(op);
+#ifdef CHIPS_HIQV
+	ctSETMONOCTL(0);	/* This operation involves colour expansion, */
+				/* so being paranoid, set the monochrome     */
+				/* control register to zero                  */
+#endif
 	ctSETDSTADDR(destaddr);
 	ctSETHEIGHTWIDTHGO(height, width_in_bytes);
 
@@ -383,3 +427,117 @@ _ctcfbFillRectSolid(pDrawable, pGC, nBox, pBox)
     }
     ctBLTWAIT;
 }
+
+/*
+ * Optimized accelerated solid colour filled rectangles for 24bpp using
+ * 8bpp colour expansion. If we get here it is assumed that all the
+ * testing for special cases has already been done. Note that the moment
+ * this only works for GXcopy.
+ */
+#ifndef CHIPS_HIQV
+#ifdef CHIPS_MMIO
+#define _ctcfbFillRectSolid24 ctMMIOFillRectSolid24
+#else
+#define _ctcfbFillRectSolid24 ctcfbFillRectSolid24
+#endif
+void
+_ctcfbFillRectSolid24(pDrawable, pGC, nBox, pBox)
+    DrawablePtr pDrawable;
+    GCPtr pGC;
+    int nBox;
+    BoxPtr pBox;
+{
+    static unsigned int dwords[3] = { 0x24499224, 0x92244992, 0x49922449};
+    unsigned char pixel1, pixel2, pixel3, fgpixel, bgpixel, xorpixel;
+    unsigned int op, index, pitch;
+    Bool fastfill;
+
+#ifdef DEBUG
+#ifdef CHIPS_MMIO
+    ErrorF("CHIPS:ctMMIOFillRectSolid24\n");
+#else
+    ErrorF("CHIPS:ctcfbFillRectSolid24\n");
+#endif
+#endif
+
+    pixel3 = pGC->fgPixel & 0xFF;
+    pixel2 = (pGC->fgPixel >> 8) & 0xFF;
+    pixel1 = (pGC->fgPixel >> 16) & 0xFF;
+    fgpixel = pixel1;
+    bgpixel = pixel2;
+    index = 0;
+    fastfill = FALSE;
+
+    /* Test for the special case where two of the byte of the 
+     * 24bpp colour are the same. This can double the speed
+     */
+    if (pixel1 == pixel2) {
+	fgpixel = pixel3;
+	bgpixel = pixel1;
+	fastfill = TRUE;
+	index = 1;
+    } else if (pixel1 == pixel3) { 
+	fgpixel = pixel2;
+	bgpixel = pixel1;
+	fastfill = TRUE;
+	index = 2;
+    } else if (pixel2 == pixel3) { 
+	fastfill = TRUE;
+    } else {
+	xorpixel = pixel2 ^ pixel3;
+    }
+
+    /* Set up the invariant BitBLT parameters. */
+    op = ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT;
+    pitch = vga256InfoRec.displayWidth * 3;
+    ctSETPITCH(0, pitch);
+    ctSETSRCADDR(0);
+    if (fastfill) {
+	ctSETFGCOLOR8(fgpixel);
+    }
+    ctSETBGCOLOR8(bgpixel);
+
+    while (nBox) {
+	int i, height, width, destaddr, line;
+
+	height = pBox->y2 - pBox->y1;
+	width = 3 * (pBox->x2 - pBox->x1);
+	destaddr = pBox->y1 * pitch + (pBox->x1 * 3);
+
+	ctBLTWAIT;
+	if (!fastfill) {
+	    ctSETFGCOLOR8(fgpixel);
+	}
+	ctSETROP(op | ctAluConv[GXcopy & 0xf]);
+	ctSETDSTADDR(destaddr);
+	ctSETHEIGHTWIDTHGO(height, width);
+
+	line = 0;
+	while (line < height) {
+	    for (i = 0; i < (((width + 31) & ~31) >> 5); i++) {
+		*(unsigned int *)ctBltDataWindow = dwords[((index + i) % 3)];
+	    }
+	    line++;
+	}
+	
+	if (!fastfill) {
+	    ctBLTWAIT;
+	    ctSETFGCOLOR8(xorpixel);
+	    ctSETROP(op | ctAluConv[GXxor & 0xf] | ctBGTRANSPARENT);
+	    ctSETDSTADDR(destaddr);
+	    ctSETHEIGHTWIDTHGO(height, width);
+	    line = 0;
+	    while (line < height) {
+		for (i = 0; i < (((width + 31) & ~31) >> 5); i++) {
+		    *(unsigned int *)ctBltDataWindow = dwords[((1 + i) % 3)];
+		}
+		line++;
+	    }
+	}
+
+	nBox--;
+	pBox++;
+    }
+    ctBLTWAIT;
+}
+#endif

@@ -63,50 +63,59 @@ The server supports the following extended devices :
 	<item> Wacom stylus. Features :
 	<itemize>
 		<item>Absolute or relative modes.
-		<item>6 valuators :
+		<item>5 valuators :
 		<enum>
 			<item>X axis.
 			<item>Y axis.
 			<item>pressure.
 			<item>X tilt.
 			<item>Y tilt.
-			<item>macro button number.
 		</enum>
 		<item>3 buttons.
 		<item>Proximity report.
 		<item>Motion history capability.
+		<item>Macro/function buttons are reported as keys.
 	</itemize>
 
 	<item> Wacom eraser. Features :
 	<itemize>
 		<item>Absolute or relative modes.
-		<item>6 valuators :
+		<item>5 valuators :
 		<enum>
 			<item>X axis.
 			<item>Y axis.
 			<item>pressure.
 			<item>X tilt.
 			<item>Y tilt.
-			<item>macro button number.
 		</enum>
 		<item>1 button.
 		<item>Proximity report.
 		<item>Motion history capability.
+		<item>Macro/function buttons are reported as keys.
 	</itemize>
 
 	<item> Wacom cursor. Features :
 	<itemize>
 		<item>Absolute or relative modes.
-		<item>6 valuators :
+		<item>5 valuators :
 		<enum>
 			<item>X axis.
 			<item>Y axis.
 			<item>pressure.
 			<item>X tilt.
 			<item>Y tilt.
-			<item>macro button number.
 		</enum>
 		<item>16 buttons.
+		<item>Proximity report.
+		<item>Motion history capability.
+		<item>Macro/function buttons are reported as keys.
+	</itemize>
+
+	<item> SummaSketch tablet. Features :
+	<itemize>
+		<item>Absolute or relative modes.
+		<item>2 valuators (x and y axis).
+		<item>2 button stylus or 4 button puck.
 		<item>Proximity report.
 		<item>Motion history capability.
 	</itemize>
@@ -119,10 +128,10 @@ pages to see the details.
 
 <sect1> Clients <p>
 
-<em>xsetpointer</em> is used to  change the device controling the core
+<em>xsetpointer</em> is used to  change the device controlling the core
 pointer and to list available extended devices. <p>
 
-<em>xsetmode</em> is used to change the mode (aboslute or relative) of
+<em>xsetmode</em> is used to change the mode (absolute or relative) of
 an extended device. The device  has to  support relative and  absolute
 modes and the device must not control the core pointer. <p>
 
@@ -130,7 +139,12 @@ Consult the man pages for details.
 
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.3 1996/10/16 14:41:17 dawes Exp $
+
+
+
+
+$XConsortium: xinput.sgml /main/3 1996/10/27 11:06:13 kaleb $
 </verb>
 
 </article>

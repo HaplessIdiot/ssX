@@ -1,6 +1,10 @@
+/* $XConsortium: sun.h /main/1 1996/10/31 14:20:43 kaleb $ */
+
+
+
 /* This is sun.h modified for LynxOS */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.2 1996/10/16 14:38:22 dawes Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -57,7 +61,7 @@ extern char *getenv();
 #include <fcntl.h>
 
 #ifndef __bsdi__
-# ifndef __NetBSD__
+# if !defined(__NetBSD__) && !defined(__OpenBSD__)
 #  ifndef Lynx
 #   ifndef i386
 #    include <poll.h>
@@ -93,7 +97,7 @@ extern int errno;
 # include <stropts.h>
 # define usleep(usec) poll((struct pollfd *) 0, (size_t) 0, usec / 1000)
 #else
-# if !defined(__NetBSD__) && !defined(Lynx)
+# if !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(Lynx)
 #  include <sun/fbio.h>
 #  include <sundev/kbd.h>
 #  include <sundev/kbio.h>
@@ -106,7 +110,7 @@ extern int getrlimit();
 extern int setrlimit();
 extern int getpagesize();
 # else
-#  ifdef __NetBSD__
+#  if defined (__NetBSD__) || defined (__OpenBSD__)
 #   include <machine/fbio.h>
 #   include <machine/kbd.h>
 #   include <machine/kbio.h>
@@ -123,8 +127,14 @@ extern int getpagesize();
 #    define __P(x)	x
 #   endif
 #   include <signal.h>
-#   include <kbio.h>
-#   include <kbd.h>
+#   ifdef PATCHED_CONSOLE
+#    include <kbio.h>
+#    include <kbd.h>
+#   else
+#    define KB_SUN2		2		/* type 2 keyboard */
+#    define KB_SUN3		3		/* type 3 keyboard */
+#    define KB_SUN4		4		/* type 4 keyboard */
+#   endif
 #   include <smem.h>
 #   include "fbio.h"
 #   include "vuid_event.h"

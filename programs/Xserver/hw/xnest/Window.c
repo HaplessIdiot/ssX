@@ -1,5 +1,5 @@
 /* $XConsortium: Window.c /main/8 1996/12/02 10:21:53 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Window.c,v 3.2 1996/01/24 22:04:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Window.c,v 3.3 1996/12/23 07:09:20 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -16,11 +16,7 @@ is" without express or implied warranty.
 #include "X.h"
 #include "Xproto.h"
 #include "gcstruct.h"
-#ifdef __EMX__
-#include "../../include/window.h"
-#else
 #include "window.h"
-#endif
 #include "windowstr.h"
 #include "pixmapstr.h"
 #include "colormapst.h"

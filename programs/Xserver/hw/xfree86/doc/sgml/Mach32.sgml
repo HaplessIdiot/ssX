@@ -67,7 +67,7 @@ almost certainly be set after first running the server with the
 		this option does not work with all RAMDACs, and
                 is not considered supported by the Mach32 itself.
 <tag>Option &dquot;intel_gx&dquot;</tag>
-                This option sets the memory apeture address to
+                This option sets the memory aperture address to
                 the hardwired value for the Intel GX Pro.  It is
                 equivalent to setting Membase to 0x78000000.
 <tag>Option &dquot;no_linear&dquot;</tag>
@@ -127,6 +127,10 @@ Mach32 X server.  They include:
 <item> Not all RAMDACs are supported at higher colour ranges, and not all
        that are can be detected properly.  In fact most of the RAMDAC values
        above have no effect except to block higher bit modes.
+<item> Sixteen bit character support (e.g., Chinese and Japanese character
+       sets) has been known to lose parts of characters.  While this should
+       be fixed, if it occurs try running the server with Option
+       &dquot;no_linear&dquot;.
 </itemize>
 
 Bug reports should be sent to XFree86@XFree86.org or posted to the
@@ -135,7 +139,12 @@ comp.windows.x.i386unix newsgroup.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 1.00 1996/09/22 20:09:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach32.sgml,v 3.2 1996/10/20 13:33:15 dawes Exp $
+
+
+
+
+$XConsortium: Mach32.sgml /main/4 1996/10/28 04:47:43 kaleb $
 </verb>
 
 </article>

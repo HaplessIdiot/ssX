@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.8 1996/08/20 12:27:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3plypt.c,v 3.3 1996/11/18 13:10:51 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -41,7 +41,7 @@ PERFORMANCE OF THIS SOFTWARE.
  * Modified by Amancio Hasty and Jon Tombs
  *
  */
-/* $XConsortium: s3plypt.c /main/5 1995/11/12 19:07:05 kaleb $ */
+/* $XConsortium: s3plypt.c /main/3 1996/10/25 15:37:48 kaleb $ */
 
 
 #include "X.h"
@@ -57,8 +57,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "cfbmskbits.h"
 #include "misc.h"
 #include "xf86.h"
-#include "s3.h"
-#include "regs3.h"
+#include "s3v.h"
 
 #define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)
 
@@ -81,10 +80,128 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
    int   off;
    cfbPrivGCPtr devPriv;
    xPoint *pptPrev;
+   int s3_clr=0, s3_rop = -1;
 
+   if (!pGC->planemask || pGC->alu == GXnoop)  /* for xgc "benchmarks" ;-) */
+      return;
 
-   if (!xf86VTSema)
-   {
+   if ((pGC->planemask & s3BppPMask) == s3BppPMask) {
+      s3_rop = s3alu_sp[pGC->alu];
+      s3_clr = pGC->fgPixel;
+   } else {
+      switch (pGC->alu) {
+      case GXclear:  /* ROP_0 */
+	 s3_rop = ROP_DPa;
+	 s3_clr = ~pGC->planemask;
+	 break;
+      case GXand:  /* ROP_DPa */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask)
+	    return;		/* NOP */
+	 s3_rop = ROP_DPa;
+	 s3_clr = pGC->fgPixel | ~pGC->planemask;
+	 break;
+      case GXandReverse:  /* ROP_PDna */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPx;
+	    s3_clr = pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPa;
+	    s3_clr = ~pGC->planemask;
+	 }
+	 break;
+      case GXcopy:  /* ROP_P */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPo;
+	    s3_clr = pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPa;
+	    s3_clr = ~pGC->planemask;
+	 }
+	 break;
+      case GXandInverted:  /* ROP_DPna */
+	 if ((~pGC->fgPixel & pGC->planemask) == pGC->planemask)
+	    return;		/* NOP */
+	 s3_rop = ROP_DPa;
+	 s3_clr = ~pGC->fgPixel | ~pGC->planemask;
+	 break;
+      case GXnoop:  /* ROP_D */
+	 return;		/* NOP */
+	 s3_rop = ROP_D;
+	 s3_clr = pGC->fgPixel;
+	 break;
+      case GXxor:  /* ROP_DPx */
+	 s3_rop = ROP_DPx;
+	 s3_clr = pGC->fgPixel & pGC->planemask;
+	 if (!s3_clr)
+	    return;		/* NOP */
+	 break;
+      case GXor:  /* ROP_DPo */
+	 s3_rop = ROP_DPo;
+	 s3_clr = pGC->fgPixel & pGC->planemask;
+	 if (!s3_clr)
+	    return;		/* NOP */
+	 break;
+      case GXnor:  /* ROP_DPon */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPa;
+	    s3_clr = ~pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPx;
+	    s3_clr = pGC->planemask;
+	 }
+	 break;
+      case GXequiv:  /* ROP_DPxn */
+	 s3_rop = ROP_DPx;
+	 s3_clr = ~pGC->fgPixel & pGC->planemask;
+	 if (!s3_clr)
+	    return;		/* NOP */
+	 break;
+      case GXinvert:  /* ROP_Dn */
+	 s3_rop = ROP_DPx;
+	 s3_clr = pGC->planemask;
+	 break;
+      case GXorReverse:  /* ROP_PDno */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPo;
+	    s3_clr = pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPx;
+	    s3_clr = pGC->planemask;
+	 }
+	 break;
+      case GXcopyInverted:  /* ROP_Pn */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPa;
+	    s3_clr = ~pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPo;
+	    s3_clr = pGC->planemask;
+	 }
+	 break;
+      case GXorInverted:  /* ROP_DPno */
+	 s3_rop = ROP_DPo;
+	 s3_clr = ~pGC->fgPixel & pGC->planemask;
+	 if (!s3_clr)
+	    return;		/* NOP */
+	 break;
+      case GXnand:  /* ROP_DPan */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPx;
+	    s3_clr = pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPo;
+	    s3_clr = pGC->planemask;
+	 }
+	 break;
+      case GXset:  /* ROP_1 */
+	 s3_rop = ROP_DPo;
+	 s3_clr = pGC->planemask;
+	 break;
+      }
+   }
+
+   if (!xf86VTSema || (s3_rop == -1)) {
+      if (xf86VTSema) WaitIdleEmpty();
       switch (s3InfoRec.bitsPerPixel) {
       case 8:
 	 cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit);
@@ -99,12 +216,12 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	 cfb32PolyPoint(pDrawable, pGC, mode, npt, pptInit);
 	 break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
 
    devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
-   if (pGC->alu == GXnoop)
-      return;
+
    cclip = devPriv->pCompositeClip;
    if ((mode == CoordModePrevious) && (npt > 1)) {
       for (pptPrev = pptInit + 1, i = npt - 1; --i >= 0; pptPrev++) {
@@ -116,11 +233,10 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
    off -= (off & 0x8000) << 1;
 
    BLOCK_CURSOR;
-   WaitQueue16_32(4,6);
-   SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
-   SET_WRT_MASK(pGC->planemask);
-   SET_FRGD_COLOR(pGC->fgPixel);
-   SET_MAJ_AXIS_PCNT(0);
+   WaitQueue(3);
+   SETL_PAT_FG_CLR(s3_clr);
+   SETL_CMD_SET(s3_gcmd | CMD_LINE | MIX_MONO_PATT | CMD_AUTOEXEC | s3_rop);
+   SETL_LDX(0);
 
    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
 	--nbox >= 0;
@@ -130,15 +246,25 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
       for (ppt = (int *)pptInit, i = npt; --i >= 0;) {
 	 pt = *ppt++;
 	 if (!isClipped(pt, c1, c2)) {
-	    WaitQueue(3);
-	    SET_CURPT((short)(intToX(pt) + pDrawable->x),
-	    		(short)(intToY(pt) + pDrawable->y));
-	    SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR | WRTDATA);
+	    int x = intToX(pt) + pDrawable->x;
+	    WaitQueue(4);
+	    SETL_LXEND0_END1(x,x);
+	    SETL_LXSTART(x << 20);
+	    SETL_LYSTART(intToY(pt) + pDrawable->y);
+	    SETL_LYCNT(1);
 	 }
       }
    }
 
-   WaitQueue(2);
-   SET_MIX(FSS_FRGDCOL | ROP_S, BSS_BKGDCOL | ROP_S);
+   WaitQueue(5);
+   SETL_CMD_SET(CMD_NOP);
+
+   /* avoid system hangs again :-( */
+   SETB_RSRC_XY(0,0);
+   SETB_RDEST_XY(0,0);
+   SETB_RWIDTH_HEIGHT(0,1);
+   SETB_CMD_SET(s3_gcmd | CMD_BITBLT | ROP_S);
+   WaitIdle();
+
    UNBLOCK_CURSOR;
 }

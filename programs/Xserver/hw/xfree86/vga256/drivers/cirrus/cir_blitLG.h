@@ -1,7 +1,7 @@
 #ifndef __CIR_BLITLG_H
 #define __CIR_BLITLG_H
 
-
+/* $XConsortium: cir_blitLG.h /main/3 1996/10/25 10:31:11 kaleb $ */
 /*
  *
  * Copyright 1996 by Corin Anderson, Bellevue, Washington, USA
@@ -29,7 +29,7 @@
  * cir_blitLG.h
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.3 1996/12/18 03:23:07 dawes Exp $ */
 
 
 /* This header file defines the necessary structures, contstants, and 
@@ -47,6 +47,7 @@ void CirrusLgFillRectSolid(
     int		    nBox,
     BoxPtr	    pBox);
 extern RegionPtr CirrusLgCopyArea16();
+extern RegionPtr CirrusLgCopyArea24();
 extern RegionPtr CirrusLgCopyArea32();
 extern void CirrusLgCopyWindow();
 

@@ -1,4 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.3 1996/09/29 14:01:45 dawes Exp $ */
+/* $XConsortium: apm_driver.c /main/5 1996/10/25 10:27:55 kaleb $ */
+
+
+
+
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.4 1996/12/26 01:39:12 dawes Exp $ */
 
 /*
  * These are X and server generic header files.

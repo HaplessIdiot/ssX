@@ -1,3 +1,10 @@
+# $XConsortium: dialog.tcl /main/1 1996/09/21 14:15:10 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # dialog.tcl --
 #
 # This file defines the procedure tk_dialog, which creates a dialog

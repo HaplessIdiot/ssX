@@ -1,3 +1,10 @@
+# $XConsortium: palette.tcl /main/1 1996/09/21 14:16:00 kaleb $
+#
+#
+#
+#
+# $XFree86$
+#
 # palette.tcl --
 #
 # This file contains procedures that change the color palette used
