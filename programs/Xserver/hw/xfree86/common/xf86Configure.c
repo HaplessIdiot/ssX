@@ -361,7 +361,6 @@ configureLayoutSection (void)
 
 	aptr = xf86confmalloc (sizeof (XF86ConfAdjacencyRec));
 	aptr->list.next = NULL;
-	aptr->adj_where = CONF_ADJ_OBSOLETE;
 	aptr->adj_x = 0;
 	aptr->adj_y = 0;
 	aptr->adj_refscreen = NULL;

@@ -104,9 +104,6 @@ InputDriverRec xf86KEYBOARD = {
 	NULL,
 	0
 };
-#undef MOUSE
-extern InputDriverRec MOUSE;
-
 
 static Bool
 xf86CreateRootWindow(WindowPtr pWin)
@@ -359,7 +356,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     /* Setup the builtin input drivers */
     xf86AddInputDriver(&xf86KEYBOARD, NULL, 0);
-    xf86AddInputDriver(&MOUSE, NULL, 0);
     /* Load all input driver modules specified in the config file. */
     if ((modulelist = xf86InputDriverlistFromConfig()))
       xf86LoadModules(modulelist, NULL);

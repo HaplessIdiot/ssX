@@ -310,7 +310,7 @@ xf86DriverlistFromConfig()
 Bool
 xf86BuiltinInputDriver(const char *name)
 {
-    if (xf86NameCmp(name, "keyboard") == 0 || xf86NameCmp(name, "mouse") == 0)
+    if (xf86NameCmp(name, "keyboard"))
 	return TRUE;
     else
 	return FALSE;

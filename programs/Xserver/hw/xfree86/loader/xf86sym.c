@@ -428,6 +428,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetOptValBool)
    SYMFUNC(xf86ReturnOptValBool)
    SYMFUNC(xf86NameCmp)
+   SYMFUNC(xf86InitValuatorAxisStruct)
+   SYMFUNC(xf86InitValuatorDefaults)
+   
 
    /* xf86fbman.c */
    SYMFUNC(xf86InitFBManager)
@@ -757,6 +760,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86InstallSIGIOHandler)
    SYMFUNC(xf86RemoveSIGIOHandler)
 #endif
+   SYMFUNC(xf86BlockSIGIO)
+   SYMFUNC(xf86UnblockSIGIO)
   
 #if defined(__alpha__)
    SYMFUNC(__divl)
