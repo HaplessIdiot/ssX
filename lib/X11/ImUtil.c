@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ImUtil.c,v 3.10 2001/12/14 19:54:02 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ImUtil.c,v 3.11 2003/04/13 19:22:16 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
@@ -69,7 +69,7 @@ _XGetScanlinePad(
  	return(dpy->bitmap_pad);
  }
  
-static int
+int
 _XGetBitsPerPixel(
  Display *dpy,
  int depth)
