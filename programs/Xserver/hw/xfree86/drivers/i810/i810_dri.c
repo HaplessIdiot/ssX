@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.14 2000/12/21 12:22:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.15 2001/03/21 17:02:23 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -684,7 +684,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] added %d %d byte DMA buffers\n",
 	      bufs, I810_DMA_BUF_SZ);
 
-   xf86EnableBusMaster(pI810->PciTag);
+   xf86EnablePciBusMaster(pI810->PciTag);
 
    I810InitDma(pScrn);
    
