@@ -1343,25 +1343,7 @@ XAAGetRectClipBoxes(
 );
 
 void
-XAACopyWindow8_32(
-    WindowPtr pWin,
-    DDXPointRec ptOldOrg,
-    RegionPtr prgnSrc
-);
-
-void
-XAAPaintWindow8_32(
-  WindowPtr pWin,
-  RegionPtr prgn,
-  int what 
-);
-
-void
-XAAWindowExposures8_32(
-   WindowPtr pWin,
-   RegionPtr pReg,
-   RegionPtr pOtherReg
-);
+XAASetupOverlay8_32Planar(ScreenPtr);
 
 void
 XAAPolyFillArcSolid(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs);

@@ -193,13 +193,8 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScrn->EnableDisableFBAccess = XAAEnableDisableFBAccess;
 
     pScreenPriv->WindowExposures = pScreen->WindowExposures;
-    if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
-	pScreen->PaintWindowBackground = XAAPaintWindow8_32;
-	pScreen->PaintWindowBorder = XAAPaintWindow8_32;
-	pScreen->CopyWindow = XAACopyWindow8_32;
-	pScreen->WindowExposures = XAAWindowExposures8_32;
-	infoRec->FullPlanemask = ~0;
-    }
+    if(pScrn->overlayFlags & OVERLAY_8_32_PLANAR)
+        XAASetupOverlay8_32Planar(pScreen);
 
     infoRec->PreAllocMem = xalloc(MAX_PREALLOC_MEM);
     if(infoRec->PreAllocMem)

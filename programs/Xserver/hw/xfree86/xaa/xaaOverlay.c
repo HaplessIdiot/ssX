@@ -14,6 +14,7 @@
 #include "xaawrap.h"
 #include "gcstruct.h"
 #include "pixmapstr.h"
+#include "mioverlay.h"
 
 #ifdef PANORAMIX
 #include "panoramiX.h"
@@ -22,23 +23,27 @@
 
 extern WindowPtr *WindowTable;
 
-void
+static void
 XAACopyWindow8_32(
     WindowPtr pWin,
     DDXPointRec ptOldOrg,
     RegionPtr prgnSrc
 ){
-    ScreenPtr pScreen = pWin->drawable.pScreen;
-    DDXPointPtr ppt, pptSrc;
-    RegionRec rgnDst8, rgnDst32;
+    DDXPointPtr pptSrc, ppt;
+    RegionRec rgnDst;
     BoxPtr pbox;
-    int i, nbox, dx, dy;
-    WindowPtr pRoot = WindowTable[pScreen->myNum];
-    unsigned long pm = (pWin->drawable.depth == 24) ? ~0 : 0xff000000;
+    int dx, dy, nbox;
+    WindowPtr pwinRoot;
+    ScreenPtr pScreen = pWin->drawable.pScreen;
     XAAInfoRecPtr infoRec = 
 	GET_XAAINFORECPTR_FROM_DRAWABLE((&pWin->drawable));
+    Bool doUnderlay = miOverlayCopyUnderlay(pScreen);
+    RegionPtr borderClip = &pWin->borderClip;
+    Bool freeReg = FALSE;
 
-    if (!infoRec->pScrn->vtSema || !infoRec->ScreenToScreenBitBlt) { 
+    if (!infoRec->pScrn->vtSema || !infoRec->ScreenToScreenBitBlt ||
+	(infoRec->ScreenToScreenBitBltFlags & NO_PLANEMASK)) 
+    { 
 	XAA_SCREEN_PROLOGUE (pScreen, CopyWindow);
 	if(infoRec->pScrn->vtSema && infoRec->NeedToSync) {
 	    (*infoRec->Sync)(infoRec->pScrn);
@@ -49,63 +54,49 @@ XAACopyWindow8_32(
     	return;
     }
 
-    REGION_INIT(pScreen, &rgnDst8, NullBox, 0);
-    REGION_INIT(pScreen, &rgnDst32, NullBox, 0);
+    pwinRoot = WindowTable[pScreen->myNum];
+
+    if(doUnderlay)
+	freeReg = miOverlayCollectUnderlayRegions(pWin, &borderClip);
+
+    REGION_INIT(pScreen, &rgnDst, NullBox, 0);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
     REGION_TRANSLATE(pScreen, prgnSrc, -dx, -dy);
-    REGION_INTERSECT(pScreen, &rgnDst8, &pWin->borderClip, prgnSrc);
+    REGION_INTERSECT(pScreen, &rgnDst, borderClip, prgnSrc);
 
+    pbox = REGION_RECTS(&rgnDst);
+    nbox = REGION_NUM_RECTS(&rgnDst);
+    if(!nbox || 
+      !(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec)))) {
+	REGION_UNINIT(pScreen, &rgnDst);
+	return;
+    }
+    ppt = pptSrc;
+
+    while(nbox--) {
+	ppt->x = pbox->x1 + dx;
+	ppt->y = pbox->y1 + dy;
+	ppt++; pbox++;
+    }
+    
+    infoRec->ScratchGC.planemask = doUnderlay ? 0x00ffffff : 0xff000000;
     infoRec->ScratchGC.alu = GXcopy;
 
-    nbox = REGION_NUM_RECTS(&rgnDst8);
-    if(nbox &&
-	(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec)))) {
+    XAADoBitBlt((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
+        		&(infoRec->ScratchGC), &rgnDst, pptSrc);
 
-	pbox = REGION_RECTS(&rgnDst8);
-	for (i = nbox, ppt = pptSrc; i--; ppt++, pbox++) {
-	    ppt->x = pbox->x1 + dx;
-	    ppt->y = pbox->y1 + dy;
-	}
-
-	infoRec->ScratchGC.planemask = pm;
-	XAADoBitBlt((DrawablePtr)pRoot, (DrawablePtr)pRoot,
-        		&(infoRec->ScratchGC), &rgnDst8, pptSrc);
-	DEALLOCATE_LOCAL(pptSrc);
-    }
-
-    if(pm != ~0) {
-      miSegregateChildren(pWin, &rgnDst32, 24);
-      if(REGION_NOTEMPTY(pScreen, &rgnDst32)) {
-	REGION_INTERSECT(pScreen, &rgnDst32, &rgnDst32, prgnSrc);
-	nbox = REGION_NUM_RECTS(&rgnDst32);
-	if(nbox &&
-	  (pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec)))){
-
-	    pbox = REGION_RECTS(&rgnDst32);
-	    for (i = nbox, ppt = pptSrc; i--; ppt++, pbox++) {
-		ppt->x = pbox->x1 + dx;
-		ppt->y = pbox->y1 + dy;
-	    }
-
-	    infoRec->ScratchGC.planemask = 0x00ffffff;
-	    XAADoBitBlt((DrawablePtr)pRoot, (DrawablePtr)pRoot,
-        		&(infoRec->ScratchGC), &rgnDst32, pptSrc);
-
-	    DEALLOCATE_LOCAL(pptSrc);
-	}
-      }
-    }
-
-    REGION_UNINIT(pScreen, &rgnDst8);
-    REGION_UNINIT(pScreen, &rgnDst32);
+    DEALLOCATE_LOCAL(pptSrc);
+    REGION_UNINIT(pScreen, &rgnDst);
+    if(freeReg) 
+	REGION_DESTROY(pScreen, borderClip);
 }
 
 
 
 
-void
+static void
 XAAPaintWindow8_32(
   WindowPtr pWin,
   RegionPtr prgn,
@@ -115,9 +106,9 @@ XAAPaintWindow8_32(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_DRAWABLE((&pWin->drawable));
     int nBox = REGION_NUM_RECTS(prgn);
     BoxPtr pBox = REGION_RECTS(prgn);
-    int depth = pWin->drawable.depth;
-    int fg, key;
     PixmapPtr pPix = NULL;
+    int depth = pWin->drawable.depth;
+    int fg, pm;
 
     if(!infoRec->pScrn->vtSema) goto BAILOUT;	
 
@@ -139,8 +130,6 @@ XAAPaintWindow8_32(
 	}
 	break;
     case PW_BORDER:
-	if(depth == 24)
-	   key = infoRec->pScrn->colorKey << 24;
 	if (pWin->borderIsPixel) 
 	    fg = pWin->border.pixel;
 	else 	/* pixmap */ 
@@ -149,37 +138,31 @@ XAAPaintWindow8_32(
     default: return;
     }
 
+    if(depth == 8) {
+	pm = 0xff000000;
+	fg <<= 24;
+    } else
+	pm = 0x00ffffff;
 
-    if(!pPix) {
+    if(!pPix) {	
         if(infoRec->FillSolidRects &&
-           (!(infoRec->FillSolidRectsFlags & RGB_EQUAL) || 
-                (CHECK_RGB_EQUAL(fg))) )  {
-	    if(depth == 8)
-		(*infoRec->FillSolidRects)(infoRec->pScrn, fg << 24, GXcopy, 
-						0xff000000, nBox, pBox);
-	    else if(what == PW_BORDER) 
-		(*infoRec->FillSolidRects)(infoRec->pScrn, 	
-					(fg & 0x00ffffff) | key, 
-					GXcopy, ~0, nBox, pBox);
-	    else
-		(*infoRec->FillSolidRects)(infoRec->pScrn, fg, GXcopy, 
-						0x00ffffff, nBox, pBox);
+           !(infoRec->FillSolidRectsFlags & NO_PLANEMASK) &&
+           (!(infoRec->FillSolidRectsFlags & RGB_EQUAL) ||
+			(depth == 8) || CHECK_RGB_EQUAL(fg)))  
+	{
+	    (*infoRec->FillSolidRects)(infoRec->pScrn, fg, GXcopy, 
+						pm, nBox, pBox);
 	    return;
 	}
     } else {	/* pixmap */
         XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
 	WindowPtr pBgWin = pWin;
-	unsigned int pm = (depth == 8) ? 0xff000000 : 0x00ffffff;
-	Bool DoExpose = FALSE;
 	int xorg, yorg;
-
 
 	if (what == PW_BORDER) {
 	    for (pBgWin = pWin;
 		 pBgWin->backgroundState == ParentRelative;
 		 pBgWin = pBgWin->parent);
-	    if(depth == 24)
-		DoExpose = TRUE;
 	}
 
         xorg = pBgWin->drawable.x;
@@ -208,9 +191,6 @@ XAAPaintWindow8_32(
 	    (*infoRec->FillCacheBltRects)(infoRec->pScrn, GXcopy, pm,
 				nBox, pBox, xorg, yorg, pCache);
 
-	    if(DoExpose)
-		(*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
-						0xff000000, nBox, pBox);
 	    return;
 	}
 
@@ -227,52 +207,45 @@ XAAPaintWindow8_32(
 	if(pPriv->flags & REDUCIBLE_TO_8x8) {
 	    if((pPriv->flags & REDUCIBLE_TO_2_COLOR) &&
 		infoRec->CanDoMono8x8 && infoRec->FillMono8x8PatternRects &&
+		!(infoRec->FillMono8x8PatternRectsFlags & NO_PLANEMASK) &&
 		!(infoRec->FillMono8x8PatternRectsFlags & TRANSPARENCY_ONLY) && 
 		(!(infoRec->FillMono8x8PatternRectsFlags & RGB_EQUAL) || 
-		(CHECK_RGB_EQUAL(pPriv->fg) && CHECK_RGB_EQUAL(pPriv->bg)))) {
-
+		(CHECK_RGB_EQUAL(pPriv->fg) && CHECK_RGB_EQUAL(pPriv->bg)))) 
+	    {
 		(*infoRec->FillMono8x8PatternRects)(infoRec->pScrn,
 			pPriv->fg, pPriv->bg, GXcopy, pm, nBox, pBox,
 			pPriv->pattern0, pPriv->pattern1, xorg, yorg);
-		if(DoExpose)
-		    (*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
-						0xff000000, nBox, pBox);
 		return;
 	    }
-	    if(infoRec->CanDoColor8x8 && infoRec->FillColor8x8PatternRects) {
+	    if(infoRec->CanDoColor8x8 && infoRec->FillColor8x8PatternRects &&
+		!(infoRec->FillColor8x8PatternRectsFlags & NO_PLANEMASK)) 
+	    {
 		XAACacheInfoPtr pCache = (*infoRec->CacheColor8x8Pattern)(
 					infoRec->pScrn, pPix, -1, -1);
 
 		(*infoRec->FillColor8x8PatternRects) (infoRec->pScrn, 
 			GXcopy, pm, nBox, pBox, xorg, yorg, pCache);
-		if(DoExpose)
-		    (*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
-						0xff000000, nBox, pBox);
 		return;
 	    }        
 	}
 
 	if(infoRec->UsingPixmapCache && infoRec->FillCacheBltRects && 
+	    !(infoRec->FillCacheBltRectsFlags & NO_PLANEMASK) && 
 	    (pPix->drawable.height <= infoRec->MaxCacheableTileHeight) &&
-	    (pPix->drawable.width <= infoRec->MaxCacheableTileWidth)) {
-
+	    (pPix->drawable.width <= infoRec->MaxCacheableTileWidth)) 
+	{
 	     XAACacheInfoPtr pCache = 
 			(*infoRec->CacheTile)(infoRec->pScrn, pPix);
 	     (*infoRec->FillCacheBltRects)(infoRec->pScrn, GXcopy, pm,
 				nBox, pBox, xorg, yorg, pCache);
-	     if(DoExpose)
-		(*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
-						0xff000000, nBox, pBox);
 	     return;
 	}
 
 	if(infoRec->FillImageWriteRects && 
-		!(infoRec->FillImageWriteRectsFlags & NO_GXCOPY)) {
+		!(infoRec->FillImageWriteRectsFlags & NO_PLANEMASK)) 
+	{
 	    (*infoRec->FillImageWriteRects) (infoRec->pScrn, GXcopy, 
 			pm, nBox, pBox, xorg, yorg, pPix);
-	    if(DoExpose)
-		(*infoRec->FillSolidRects)(infoRec->pScrn, key, GXcopy, 
-						0xff000000, nBox, pBox);
 	    return;
 	}
     }
@@ -296,29 +269,36 @@ BAILOUT:
 }
 
 
-void
-XAAWindowExposures8_32(
-   WindowPtr pWin,
-   RegionPtr pReg,
-   RegionPtr pOtherReg
+static void
+XAASetColorKey8_32(
+    ScreenPtr pScreen,
+    int nbox,
+    BoxPtr pbox
 ){
-    ScreenPtr pScreen = pWin->drawable.pScreen;
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
+    ScrnInfoPtr pScrn = infoRec->pScrn;
+
+    /* I'm counting on writes being clipped away while switched away.
+       If this isn't going to be true then I need to be wrapping instead. */
+    if(!infoRec->pScrn->vtSema) return;
+
+    (*infoRec->FillSolidRects)(pScrn, pScrn->colorKey << 24, GXcopy, 
+					0xff000000, nbox, pbox);
+  
+    SET_SYNC_FLAG(infoRec);
+}
+
+void 
+XAASetupOverlay8_32Planar(ScreenPtr pScreen)
+{
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
 
-    if((pWin->drawable.depth == 24) && infoRec->pScrn->vtSema) {
-	if(REGION_NUM_RECTS(pReg) && infoRec->FillSolidRects) {
-	    (*infoRec->FillSolidRects)(infoRec->pScrn, 
-		(infoRec->pScrn->colorKey << 24), GXcopy, 0xff000000,
-			REGION_NUM_RECTS(pReg), REGION_RECTS(pReg));
-	    miWindowExposures(pWin, pReg, pOtherReg);
-	    return;
-	} else if(infoRec->NeedToSync) {
-            (*infoRec->Sync)(infoRec->pScrn);
-            infoRec->NeedToSync = FALSE;
-	}
-    } 
+    pScreen->PaintWindowBackground = XAAPaintWindow8_32;
+    pScreen->PaintWindowBorder = XAAPaintWindow8_32;
+    pScreen->CopyWindow = XAACopyWindow8_32;
 
-    XAA_SCREEN_PROLOGUE (pScreen, WindowExposures);
-    (*pScreen->WindowExposures) (pWin, pReg, pOtherReg);
-    XAA_SCREEN_EPILOGUE(pScreen, WindowExposures, XAAWindowExposures8_32);
+    if(!(infoRec->FillSolidRectsFlags & NO_PLANEMASK))
+	miOverlaySetTransFunction(pScreen, XAASetColorKey8_32);
+
+    infoRec->FullPlanemask = ~0;
 }
