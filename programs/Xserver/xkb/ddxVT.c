@@ -1,4 +1,4 @@
-/* $XConsortium: ddxVT.c /main/1 1995/11/30 19:22:23 kaleb $ */
+/* $Xorg: ddxVT.c,v 1.3 2000/08/17 19:53:46 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -36,13 +36,35 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XI.h"
 
-extern	CARD16	xkbDebugFlags;
+#ifdef XF86DDXACTIONS
+#include "xf86.h"
+#endif
 
 int
+#if NeedFunctionPrototypes
+XkbDDXSwitchScreen(DeviceIntPtr dev,KeyCode key,XkbAction *act)
+#else
 XkbDDXSwitchScreen(dev,key,act)
     DeviceIntPtr  dev;
     KeyCode	  key;
     XkbAction	 *act;
+#endif
 {
+#ifdef XF86DDXACTIONS
+    {
+	int scrnnum = XkbSAScreen(&act->screen);
+
+	if (act->screen.flags & XkbSA_SwitchApplication) {
+	    if (act->screen.flags & XkbSA_SwitchAbsolute)
+		xf86ProcessActionEvent(ACTION_SWITCHSCREEN,(void *) &scrnnum);
+	    else {
+		if (scrnnum < 0)
+		    xf86ProcessActionEvent(ACTION_SWITCHSCREEN_PREV,NULL);
+		else
+		    xf86ProcessActionEvent(ACTION_SWITCHSCREEN_NEXT,NULL);
+	    }
+	}
+    }
+#endif
     return 1;
 }
