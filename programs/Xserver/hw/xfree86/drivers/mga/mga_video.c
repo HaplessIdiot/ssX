@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.26 2001/09/26 12:59:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.27 2001/12/10 23:02:33 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -146,13 +146,14 @@ static XF86VideoFormatRec Formats[NUM_FORMATS] =
    {15, DirectColor}, {16, DirectColor}, {24, DirectColor}
 };
 
-#define NUM_ATTRIBUTES_OVERLAY 3
+#define NUM_ATTRIBUTES_OVERLAY 4
 
 static XF86AttributeRec Attributes[NUM_ATTRIBUTES_OVERLAY] =
 {
    {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
    {XvSettable | XvGettable, -128, 127, "XV_BRIGHTNESS"},
    {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"}
+   {XvSettable | XvGettable, 0, 1, "XV_DOUBLE_BUFFER"}
 };
 
 #define NUM_IMAGES 4
@@ -253,7 +254,7 @@ MGASetupImageVideoOverlay(ScreenPtr pScreen)
     if (pMga->Chipset == PCI_CHIP_MGAG400 || 
 	pMga->Chipset == PCI_CHIP_MGAG550) {
 	adapt->nImages = 4;
-	adapt->nAttributes = 3;
+	adapt->nAttributes = 4;
     } else {
 	adapt->nImages = 3;
 	adapt->nAttributes = 1;
@@ -698,10 +699,10 @@ MGADisplayVideoOverlay(
     /* got 48 scanlines to do it in */
     tmp = INREG(MGAREG_VCOUNT) + 48;
     /* FIXME always change it in vertical retrace use CrtcV ?*/
-    if(tmp > pScrn->currentMode->VTotal)
+    if(tmp > pScrn->currentMode->CrtcVTotal)
 	tmp -= 49; /* too bad */
     else
-        tmp = pScrn->currentMode->VTotal -1;
+        tmp = pScrn->currentMode->CrtcVTotal -1;
 
     tmp = pScrn->currentMode->VDisplay +1;
     /* enable accelerated 2x horizontal zoom when pixelclock >135MHz */
@@ -1254,7 +1255,7 @@ MGAInitOffscreenImages(ScreenPtr pScreen)
     offscreenImages[0].getAttribute = MGAGetSurfaceAttribute;
     offscreenImages[0].max_width = 1024;
     offscreenImages[0].max_height = 1024;
-    offscreenImages[0].num_attributes = (num == 1) ? 1 : 3;
+    offscreenImages[0].num_attributes = (num == 1) ? 1 : 4;
     offscreenImages[0].attributes = Attributes;
 
     if(num == 2) {
@@ -1269,7 +1270,7 @@ MGAInitOffscreenImages(ScreenPtr pScreen)
 	offscreenImages[1].getAttribute = MGAGetSurfaceAttribute;
 	offscreenImages[1].max_width = 1024;
 	offscreenImages[1].max_height = 1024;
-	offscreenImages[1].num_attributes = 3;
+	offscreenImages[1].num_attributes = 4;
 	offscreenImages[1].attributes = Attributes;
     }
 
