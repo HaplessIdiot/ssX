@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.83 2002/10/08 23:55:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.84 2002/11/05 05:34:38 keithp Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -425,7 +425,7 @@ GiveUp(sig)
     errno = olderrno;
 }
 
-#if __GNUC__
+#ifdef __GNUC__
 static void AbortServer() __attribute__((noreturn));
 #endif
 

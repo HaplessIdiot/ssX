@@ -26,7 +26,7 @@
  *
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.19 2002/12/11 02:59:50 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.20 2002/12/12 22:17:35 dawes Exp $
  *
  */
 
@@ -260,7 +260,7 @@ typedef union _drmVBlank {
 #define DRM_LOCK_HELD  0x80000000 /* Hardware lock is held                 */
 #define DRM_LOCK_CONT  0x40000000 /* Hardware lock is contended            */
 
-#if __GNUC__ >= 2
+#if defined(__GNUC__) && (__GNUC__ >= 2)
 # if defined(__i386) || defined(__x86_64__)
 				/* Reflect changes here to drmP.h */
 #define DRM_CAS(lock,old,new,__ret)                                    \

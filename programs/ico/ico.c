@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/ico/ico.c,v 1.7 2002/10/10 01:18:33 tsi Exp $ */
+/* $XFree86: xc/programs/ico/ico.c,v 1.8 2002/10/10 02:17:39 dawes Exp $ */
 
 /******************************************************************************
  * Description
@@ -245,7 +245,8 @@ xcondition_rec count_cond;	/* Xthreads doesn't define an equivalent to
  *	Error handling
  *****************************************************************************/
 
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 7)))
 void icoFatal (const char *fmt, const char *a0) __attribute__((__noreturn__));
 #endif
 void

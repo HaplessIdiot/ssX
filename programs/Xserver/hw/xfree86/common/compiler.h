@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.96 2002/11/25 14:04:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.97 2002/12/12 04:12:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -219,7 +219,7 @@ struct __una_u16 { unsigned short x __attribute__((packed)); };
 
 static __inline__ unsigned long ldq_u(unsigned long * r11)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	const struct __una_u64 *ptr = (const struct __una_u64 *) r11;
 	return ptr->x;
 #    else
@@ -238,7 +238,7 @@ static __inline__ unsigned long ldq_u(unsigned long * r11)
 
 static __inline__ unsigned long ldl_u(unsigned int * r11)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	const struct __una_u32 *ptr = (const struct __una_u32 *) r11;
 	return ptr->x;
 #    else
@@ -257,7 +257,7 @@ static __inline__ unsigned long ldl_u(unsigned int * r11)
 
 static __inline__ unsigned long ldw_u(unsigned short * r11)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	const struct __una_u16 *ptr = (const struct __una_u16 *) r11;
 	return ptr->x;
 #    else
@@ -280,7 +280,7 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 
 static __inline__ void stq_u(unsigned long r5, unsigned long * r11)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	struct __una_u64 *ptr = (struct __una_u64 *) r11;
 	ptr->x = r5;
 #    else
@@ -305,7 +305,7 @@ static __inline__ void stq_u(unsigned long r5, unsigned long * r11)
 
 static __inline__ void stl_u(unsigned long r5, unsigned int * r11)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	struct __una_u32 *ptr = (struct __una_u32 *) r11;
 	ptr->x = r5;
 #    else
@@ -330,7 +330,7 @@ static __inline__ void stl_u(unsigned long r5, unsigned int * r11)
 
 static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	struct __una_u16 *ptr = (struct __una_u16 *) r11;
 	ptr->x = r5;
 #    else
@@ -770,7 +770,7 @@ struct __una_u16 { unsigned short x __attribute__((packed)); };
 
 static __inline__ unsigned long ldq_u(unsigned long *p)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 #     if defined(__arch64__) || defined(__sparcv9)
 	const struct __una_u64 *ptr = (const struct __una_u64 *) p;
 #     else
@@ -786,7 +786,7 @@ static __inline__ unsigned long ldq_u(unsigned long *p)
 
 static __inline__ unsigned long ldl_u(unsigned int *p)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	const struct __una_u32 *ptr = (const struct __una_u32 *) p;
 	return ptr->x;
 #    else
@@ -798,7 +798,7 @@ static __inline__ unsigned long ldl_u(unsigned int *p)
 
 static __inline__ unsigned long ldw_u(unsigned short *p)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	const struct __una_u16 *ptr = (const struct __una_u16 *) p;
 	return ptr->x;
 #    else
@@ -810,7 +810,7 @@ static __inline__ unsigned long ldw_u(unsigned short *p)
 
 static __inline__ void stq_u(unsigned long val, unsigned long *p)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 #     if defined(__arch64__) || defined(__sparcv9)
 	struct __una_u64 *ptr = (struct __una_u64 *) p;
 #     else
@@ -825,7 +825,7 @@ static __inline__ void stq_u(unsigned long val, unsigned long *p)
 
 static __inline__ void stl_u(unsigned long val, unsigned int *p)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	struct __una_u32 *ptr = (struct __una_u32 *) p;
 	ptr->x = val;
 #    else
@@ -836,7 +836,7 @@ static __inline__ void stl_u(unsigned long val, unsigned int *p)
 
 static __inline__ void stw_u(unsigned long val, unsigned short *p)
 {
-#    if __GNUC__ > 2 || __GNUC_MINOR__ >= 91
+#    if defined(__GNUC__) && ((__GNUC__ > 2) || (__GNUC_MINOR__ >= 91))
 	struct __una_u16 *ptr = (struct __una_u16 *) p;
 	ptr->x = val;
 #    else
