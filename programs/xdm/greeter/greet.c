@@ -1,4 +1,4 @@
-/* $TOG: greet.c /main/44 1998/02/11 10:00:26 kaleb $ */
+/* $Xorg: greet.c,v 1.3 2000/08/17 19:54:17 cpqbld Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.8 2000/11/14 21:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.9 2000/12/01 00:24:36 dawes Exp $ */
 
 /*
  * xdm - display manager daemon

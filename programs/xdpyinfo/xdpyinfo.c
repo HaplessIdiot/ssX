@@ -1,5 +1,5 @@
 /*
- * $TOG: xdpyinfo.c /main/35 1998/02/09 13:57:05 kaleb $
+ * $Xorg: xdpyinfo.c,v 1.4 2000/08/17 19:54:18 cpqbld Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.18 2000/05/14 20:43:59 alanh Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.19 2001/01/12 19:28:36 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

@@ -1,5 +1,5 @@
 /*
- * $TOG: xconsole.c /main/23 1998/02/09 13:54:04 kaleb $
+ * $Xorg: xconsole.c,v 1.4 2000/08/17 19:54:13 cpqbld Exp $
  *
 Copyright 1990, 1998  The Open Group
 
@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.22 1999/03/02 07:46:00 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.23 1999/03/21 07:35:37 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>

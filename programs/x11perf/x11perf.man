@@ -1,4 +1,4 @@
-.\" $TOG: x11perf.man /main/28 1998/02/09 13:52:03 kaleb $
+.\" $Xorg: x11perf.man,v 1.3 2000/08/17 19:54:10 cpqbld Exp $
 .\" Copyright 1988, 1989 Digital Equipment Corporation.
 .\" Copyright 1989, 1994, 1998  The Open Group
 .\" 

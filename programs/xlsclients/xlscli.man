@@ -1,4 +1,4 @@
-.\" $TOG: xlscli.man /main/12 1998/02/09 14:10:02 kaleb $
+.\" $Xorg: xlscli.man,v 1.3 2000/08/17 19:54:53 cpqbld Exp $
 .\" Copyright 1991, 1994, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.

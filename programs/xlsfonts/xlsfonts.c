@@ -1,5 +1,5 @@
 /*
- * $TOG: xlsfonts.c /main/35 1998/02/09 14:10:16 kaleb $
+ * $Xorg: xlsfonts.c,v 1.3 2000/08/17 19:54:53 cpqbld Exp $
  *
  * 
 Copyright 1989, 1998  The Open Group

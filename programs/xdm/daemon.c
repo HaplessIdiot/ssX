@@ -1,4 +1,4 @@
-/* $TOG: daemon.c /main/17 1998/02/09 13:54:47 kaleb $ */
+/* $Xorg: daemon.c,v 1.3 2000/08/17 19:54:14 cpqbld Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.11 2000/08/10 17:40:41 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.12 2000/11/14 18:20:39 dawes Exp $ */
 
 /*
  * xdm - display manager daemon

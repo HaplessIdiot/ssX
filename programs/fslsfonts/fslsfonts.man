@@ -1,4 +1,4 @@
-.\" $TOG: fslsfonts.man /main/10 1998/02/09 13:43:22 kaleb $
+.\" $Xorg: fslsfonts.man,v 1.3 2000/08/17 19:53:52 cpqbld Exp $
 .\" Copyright 1991, Network Computing Devices, Inc
 .\" Copyright 1993, 1994, 1998  The Open Group
 .\" 

@@ -1,4 +1,4 @@
-/* $TOG: xkill.c /main/20 1998/02/09 14:09:10 kaleb $ */
+/* $Xorg: xkill.c,v 1.4 2000/08/17 19:54:51 cpqbld Exp $ */
 /*
 
 Copyright 1988, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xkill/xkill.c,v 1.3 1999/03/02 11:50:03 dawes Exp $ */
 
 /*
  * xkill - simple program for destroying unwanted clients

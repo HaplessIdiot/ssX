@@ -1,15 +1,22 @@
-// $XFree86$
+// $Xorg: ataritt,v 1.3 2000/08/17 19:54:35 cpqbld Exp $
+
+
+
+// $XFree86: xc/programs/xkbcomp/geometry/ataritt,v 3.2 1997/10/26 13:25:34 dawes Exp $
+
 default xkb_geometry "us" {
 
     description= "Atari TT (us)";
-    width= 470;
-    height= 210;
+    width= 480;
+    height= 173;
 
     shape.cornerRadius= 1;
     shape "NORM" { { [ 18,18] }, { [2,1], [ 16,17] } };
     shape "BKSP" { { [ 37,18] }, { [2,1], [ 35,17] } };
     shape "TABK" { { [ 28,18] }, { [2,1], [ 26,17] } };
-    shape "RTRN" { { [ 42,18] }, { [2,1], [ 40,17] } };
+    shape "RTRN" { approx = { [0,19], [32,37] },
+		   { [ 14, 0], [32, 0], [32,37], [0,37], [0,19], [14,19] },
+		   { [ 16, 1], [30, 1], [30,36], [2,36], [2,20], [16,20] } };
     shape "CTRL" { { [ 32,18] }, { [2,1], [ 30,17] } };
     shape "LFSH" { { [ 42,18] }, { [2,1], [ 40,17] } };
     shape "RTSH" { { [ 52,18] }, { [2,1], [ 50,17] } };
@@ -19,12 +26,13 @@ default xkb_geometry "us" {
     shape "KP0"  { { [ 37,18] }, { [2,1], [ 35,17] } };
     shape "KPEN" { { [ 18,37] }, { [2,1], [ 16,36] } };
 
-    section.left= 19;
+    section.left= 21;
     row.left= 1;
-    key.shape= "FCTS";
+    key.shape = "NORM";
     key.gap=  1;
     section "Function" {
-	top= 52;
+	top= 36;
+	key.shape= "FCTS";
 	row {
 	    top= 1;
 	    keys { <FK01>, <FK02>, <FK03>, <FK04>,
@@ -35,7 +43,7 @@ default xkb_geometry "us" {
     }; // End of "Function" section
 
     section "Alpha" {
-	top= 91;
+	top= 63;
 	row {
 	    top= 1;
 	    keys { <ESC>, <AE01>, <AE02>, <AE03>, <AE04>,
@@ -49,7 +57,7 @@ default xkb_geometry "us" {
 	    keys { { <TAB>, "TABK" },
 		   <AD01>, <AD02>, <AD03>, <AD04>, <AD05>, 
 		   <AD06>, <AD07>, <AD08>, <AD09>, <AD10>, 
-		   <AD11>, <AD12>, { <DELE>, 18 }
+		   <AD11>, <AD12>, { <RTRN>, "RTRN", -13 }, <DELE>
 	    };
 	};
 	row {
@@ -57,7 +65,7 @@ default xkb_geometry "us" {
 	    keys { { <LCTL>, "CTRL" },
 		   <AC01>, <AC02>, <AC03>, <AC04>, <AC05>, 
 		   <AC06>, <AC07>, <AC08>, <AC09>, <AC10>, 
-		   <AC11>, { <RTRN>, "RTRN" }, <BKSL>
+		   <AC11>, { <BKSL>, 34 }
 	    };
 	};
 	row {
@@ -79,8 +87,8 @@ default xkb_geometry "us" {
     }; // End of "Alpha" section
 
     section "Editing" {
-	top= 91;
-	left= 310;
+	top= 63;
+	left= 319;
 	row {
 	    top= 1;
 	    key.shape = "BKSP";
@@ -97,8 +105,8 @@ default xkb_geometry "us" {
     }; // End of "Editing" section
 
     section "Keypad" {
-	top= 91;
-	left= 375;
+	top= 63;
+	left= 381;
 	row {
 	    top= 1;
 	    keys { <KPLP>, <KPRP>, <KPDV>, <KPMU> };
@@ -133,7 +141,9 @@ xkb_geometry "de" {
     shape "NORM" { { [ 18,18] }, { [2,1], [ 16,17] } };
     shape "BKSP" { { [ 27,18] }, { [2,1], [ 25,17] } };
     shape "TABK" { { [ 27,18] }, { [2,1], [ 25,17] } };
-    shape "RTRN" { { [ 32,18] }, { [2,1], [ 30,17] } };
+    shape "RTRN" { approx = { [0,19], [32,37] },
+		   { [ 14, 0], [32, 0], [32,37], [0,37], [0,19], [14,19] },
+		   { [ 16, 1], [30, 1], [30,36], [2,36], [2,20], [16,20] } };
     shape "CTRL" { { [ 32,18] }, { [2,1], [ 30,17] } };
     shape "LFSH" { { [ 23,18] }, { [2,1], [ 21,17] } };
     shape "RTSH" { { [ 28,18] }, { [2,1], [ 26,17] } };
@@ -174,7 +184,7 @@ xkb_geometry "de" {
 	    keys { { <TAB>, "TABK" },
 		   <AD01>, <AD02>, <AD03>, <AD04>, <AD05>, 
 		   <AD06>, <AD07>, <AD08>, <AD09>, <AD10>, 
-		   <AD11>, <AD12>, { <DELE>, 20 }
+		   <AD11>, <AD12>, { <RTRN>, "RTRN", -13 }, <DELE>
 	    };
 	};
 	row {
@@ -182,7 +192,7 @@ xkb_geometry "de" {
 	    keys { { <LCTL>, "CTRL" },
 		   <AC01>, <AC02>, <AC03>, <AC04>, <AC05>, 
 		   <AC06>, <AC07>, <AC08>, <AC09>, <AC10>, 
-		   <AC11>, { <RTRN>, "RTRN" }, <BKSL>
+		   <AC11>, { <BKSL>, 34 }
 	    };
 	};
 	row {

@@ -1,4 +1,4 @@
-.\" $TOG: xieperf.man /main/10 1998/02/09 14:02:11 kaleb $
+.\" $Xorg: xieperf.man,v 1.3 2000/08/17 19:54:29 cpqbld Exp $
 .\" Copyright 1993, 1994, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.

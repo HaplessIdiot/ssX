@@ -1,4 +1,4 @@
-/* $TOG: xprop.c /main/44 1998/02/09 14:12:01 kaleb $*/
+/* $Xorg: xprop.c,v 1.5 2000/08/17 19:54:55 cpqbld Exp $ */
 /*
 
 Copyright 1990, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.6 1999/03/07 11:41:17 dawes Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.7 1999/12/27 00:40:14 robin Exp $ */
 
 
 #include <X11/Xlib.h>

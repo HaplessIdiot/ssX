@@ -1,4 +1,4 @@
-/* $TOG: xwininfo.c /main/56 1998/02/09 14:21:06 kaleb $ */
+/* $Xorg: xwininfo.c,v 1.3 2000/08/17 19:55:16 cpqbld Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xwininfo/xwininfo.c,v 1.5 1999/03/02 11:50:04 dawes Exp $ */
 
 
 /*

@@ -1,4 +1,4 @@
-.\" $TOG: xkbprint.man /main/7 1998/02/12 09:36:54 kaleb $
+.\" $Xorg: xkbprint.man,v 1.3 2000/08/17 19:54:50 cpqbld Exp $
 .TH XKBPRINT 1 "Release 6.4" "X Version 11"
 .SH NAME
 xkbprint \- print an XKB keyboard description

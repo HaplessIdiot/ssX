@@ -1,4 +1,4 @@
-XCOMM $TOG: Imakefile /main/3 1997/06/10 06:54:46 kaleb $
+XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:40 cpqbld Exp $
 
      DATAFILES = be bg ca cs de de_CH dk dvorak en_US es fi fr fr_CH \
 		gb hu it jp no pl pt ru se th us

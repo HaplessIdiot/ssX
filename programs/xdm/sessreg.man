@@ -1,4 +1,4 @@
-.\" $TOG: sessreg.man /main/17 1998/02/09 13:56:27 kaleb $
+.\" $Xorg: sessreg.man,v 1.3 2000/08/17 19:54:15 cpqbld Exp $
 .\" Copyright 1994, 1998  The Open Group
 .\" 
 .\" All Rights Reserved.

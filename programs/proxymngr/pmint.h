@@ -1,4 +1,4 @@
-/* $TOG: pmint.h /main/9 1998/02/09 13:45:49 kaleb $ */
+/* $Xorg: pmint.h,v 1.3 2000/08/17 19:54:00 cpqbld Exp $ */
 
 /*
 Copyright 1996, 1998  The Open Group
@@ -21,7 +21,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/proxymngr/pmint.h,v 1.3 1999/02/20 15:07:18 hohndel Exp $ */
 
 #include <stdio.h>
 #include <X11/Xos.h>

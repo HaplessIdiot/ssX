@@ -1,5 +1,4 @@
-/* $XConsortium: x11perf.h,v 2.13 94/03/17 20:25:53 dpw Exp $ */
-/* $XFree86: xc/programs/x11perf/x11perf.h,v 3.0 1996/05/06 06:00:54 dawes Exp $ */
+/* $Xorg: x11perf.h,v 1.3 2000/08/17 19:54:10 cpqbld Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -22,6 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
+/* $XFree86: xc/programs/x11perf/x11perf.h,v 3.2 2000/11/29 08:58:20 keithp Exp $ */
 
 #ifndef VMS
 #include <X11/Xlib.h>

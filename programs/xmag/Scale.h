@@ -1,4 +1,4 @@
-/* $TOG: Scale.h /main/7 1998/02/09 14:10:55 kaleb $ */
+/* $Xorg: Scale.h,v 1.3 2000/08/17 19:54:54 cpqbld Exp $ */
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmag/Scale.h,v 1.3 1999/03/07 14:23:36 dawes Exp $ */
 
 #ifndef _XawScale_h
 #define _XawScale_h

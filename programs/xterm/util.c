@@ -1,7 +1,8 @@
 /*
- *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.61 2000/12/01 03:27:58 keithp Exp $
+ *	$Xorg: util.c,v 1.3 2000/08/17 19:55:10 cpqbld Exp $
  */
+
+/* $XFree86: xc/programs/xterm/util.c,v 3.62 2000/12/30 19:15:47 dickey Exp $ */
 
 /*
  * Copyright 1999-2000 by Thomas E. Dickey

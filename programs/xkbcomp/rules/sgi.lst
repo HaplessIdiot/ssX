@@ -1,5 +1,9 @@
-// $TOG: sgi.lst /main/3 1997/06/13 06:28:54 kaleb $
-// $XFree86$
+// $Xorg: sgi.lst,v 1.3 2000/08/17 19:54:41 cpqbld Exp $
+
+
+
+
+// $XFree86: xc/programs/xkbcomp/rules/sgi.lst,v 3.4 2000/12/08 16:45:16 dawes Exp $
 
 ! model
   indy			SGI O2, Indigo^2 or Indy

@@ -1,7 +1,8 @@
 /*
- *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.81 2000/11/29 08:39:26 keithp Exp $
+ *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
+
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.82 2000/12/30 19:15:47 dickey Exp $ */
 
 /*
  * Copyright 1999-2000 by Thomas E. Dickey

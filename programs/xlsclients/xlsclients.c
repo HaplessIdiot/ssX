@@ -1,5 +1,5 @@
 /*
- * $TOG: xlsclients.c /main/8 1998/02/09 14:09:58 kaleb $
+ * $Xorg: xlsclients.c,v 1.3 2000/08/17 19:54:53 cpqbld Exp $
  *
  * 
 Copyright 1989, 1998  The Open Group
@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xlsclients/xlsclients.c,v 1.3 1999/03/07 14:23:35 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

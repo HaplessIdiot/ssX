@@ -1,5 +1,5 @@
 /*
- * $TOG: chooser.c /main/28 1998/02/09 13:54:31 kaleb $
+ * $Xorg: chooser.c,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
  *
 Copyright 1990, 1998  The Open Group
 
@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/chooser.c,v 3.19 2000/05/31 07:15:11 eich Exp $ */
+/* $XFree86: xc/programs/xdm/chooser.c,v 3.20 2000/06/15 20:50:04 dawes Exp $ */
 
 /*
  * Chooser - display a menu of names and let the user select one

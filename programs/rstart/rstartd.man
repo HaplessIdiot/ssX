@@ -1,4 +1,4 @@
-.\" $TOG: rstartd.man /main/6 1997/11/04 20:55:38 kaleb $
+.\" $Xorg: rstartd.man,v 1.3 2000/08/17 19:54:01 cpqbld Exp $
 .\" Copyright (c) 1993 Quarterdeck Office Systems
 .\" 
 .\" Permission to use, copy, modify, distribute, and sell this software and

@@ -1,5 +1,4 @@
-/* $XConsortium: xkbvleds.c /main/5 1996/01/14 18:42:34 kaleb $ */
-/* $XFree86: xc/programs/xkbutils/xkbvleds.c,v 3.2 1997/12/06 09:26:17 hohndel Exp $ */
+/* $Xorg: xkbvleds.c,v 1.4 2000/08/17 19:54:51 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86: xc/programs/xkbutils/xkbvleds.c,v 3.3 1999/03/02 10:42:32 dawes Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xlib.h>

@@ -1,7 +1,8 @@
 /*
- *	$XConsortium: scrollbar.c /main/47 1996/12/01 23:47:08 swick $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.27 2000/05/18 00:33:21 dawes Exp $
+ *	$Xorg: scrollbar.c,v 1.4 2000/08/17 19:55:09 cpqbld Exp $
  */
+
+/* $XFree86: xc/programs/xterm/scrollbar.c,v 3.28 2000/06/13 02:28:41 dawes Exp $ */
 
 /*
  * Copyright 2000 by Thomas E. Dickey
