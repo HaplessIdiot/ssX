@@ -21,8 +21,9 @@ in this Software without prior written authorization from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.2 1998/10/04 09:41:37 dawes Exp $ */
+/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.3 1998/12/20 11:58:25 dawes Exp $ */
 
+#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 #include "Logo.h"
@@ -31,8 +32,14 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/extensions/XKBbells.h>
 #endif
 
+#ifdef X_NOT_STDC_ENV
 extern void exit();
-static void quit();
+#else
+#include <stdlib.h>
+#endif
+
+static void quit(Widget w, XEvent *event, String *params, 
+		 Cardinal *num_params);
 
 static XrmOptionDescRec options[] = {
 { "-shape", "*shapeWindow", XrmoptionNoArg, (XPointer) "on" },
@@ -50,17 +57,15 @@ String fallback_resources[] = {
     NULL,
 };
 
-static void die(w, client_data, call_data)
-    Widget	w;
-    XtPointer	client_data, call_data;
+static void 
+die(Widget w, XtPointer client_data, XtPointer call_data)
 {
     XCloseDisplay(XtDisplay(w));
     exit(0);
 }
 
-static void save(w, client_data, call_data)
-    Widget w;
-    XtPointer client_data, call_data;
+static void 
+save(Widget w, XtPointer client_data, XtPointer call_data)
 {
     return;
 }
@@ -69,9 +74,8 @@ static void save(w, client_data, call_data)
  * Report the syntax for calling xlogo.
  */
 
-static void Syntax(toplevel, call)
-    Widget toplevel;
-    char *call;
+static void 
+Syntax(Widget toplevel, char *call)
 {
     Arg arg;
     SmcConn connection;
@@ -97,9 +101,7 @@ static void Syntax(toplevel, call)
 }
 
 int 
-main(argc, argv)
-int argc;
-char **argv;
+main(int argc, char *argv[])
 {
     Widget toplevel;
     XtAppContext app_con;
@@ -124,14 +126,12 @@ char **argv;
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
                             &wm_delete_window, 1);
     XtAppMainLoop(app_con);
+    exit(0);
 }
 
 /*ARGSUSED*/
-static void quit(w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+static void 
+quit(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     Arg arg;
 
@@ -151,7 +151,8 @@ static void quit(w, event, params, num_params)
 }
 
 #ifdef MINIX
-SmcCloseStatus SmcCloseConnection(SmcConn smcConn, int count, char **reasonMsgs)
+SmcCloseStatus 
+SmcCloseConnection(SmcConn smcConn, int count, char **reasonMsgs)
 {
 	return SmcClosedNow;
 }

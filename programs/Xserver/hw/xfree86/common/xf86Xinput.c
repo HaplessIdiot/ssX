@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.36 1998/09/13 00:51:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.37 1998/12/05 14:40:09 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -43,8 +43,7 @@
 #endif
 
 #ifdef XFreeXDGA
-#define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
+#include "dgaproc.h"
 #endif
 
 #include "exevents.h"			/* AddInputDevice */
@@ -649,6 +648,11 @@ xf86eqEnqueue( xEvent *e )
 		}
 		break;
 	}
+#endif
+
+#ifdef XFreeXDGA
+	if(DGAStealEvent(xf86EventQueue.pEnqueueScreen->myNum, e))
+	    return;
 #endif
 
 	oldtail = xf86EventQueue.tail;

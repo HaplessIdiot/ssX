@@ -1,5 +1,5 @@
 /* $XConsortium: cfgscan.c /main/2 1995/12/07 21:27:36 kaleb $ */
-/* $XFree86: xc/programs/xkbevd/cfgscan.c,v 3.3 1996/08/25 14:15:21 dawes Exp $ */
+/* $XFree86: xc/programs/xkbevd/cfgscan.c,v 3.4 1997/12/06 09:26:15 hohndel Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,7 +33,7 @@
 #include <X11/extensions/XKB.h>
 
 #include "tokens.h"
-#include "utils.h"
+#include "xkbevd.h"
 
 FILE	*yyin = NULL;
 
@@ -57,8 +57,7 @@ static	char	buf[BUFSIZE];
 extern	unsigned debugFlags;
 
 static char *
-tokText(tok)
-    int tok;
+tokText(int tok)
 {
 static char buf[32];
 
@@ -108,9 +107,7 @@ static char buf[32];
 #endif
 
 int
-setScanState(file,line)
-    char *	file;
-    int 	line;
+setScanState(char *file, int line)
 {
     if (file!=NULL)
 	strncpy(scanFile,file,1024);
@@ -119,8 +116,8 @@ setScanState(file,line)
     return 1;
 }
 
-int
-yyGetString()
+static int
+yyGetString(void)
 {
 int ch;
 
@@ -181,8 +178,8 @@ int ch;
     return ERROR;
 }
 
-int
-yyGetKeyName()
+static int
+yyGetKeyName(void)
 {
 int ch;
 
@@ -259,12 +256,11 @@ struct _Keyword {
 };
 int	numKeywords = sizeof(keywords)/sizeof(struct _Keyword);
 
-int
-yyGetIdent(first)
-    int first;
+static int
+yyGetIdent(int first)
 {
 int ch,i,found;
-int	rtrn;
+int	rtrn = -1;
 
     buf[0] = first; nInBuf = 1;
     while ( ((ch=getc(yyin))!=EOF) && (isalnum(ch)||(ch=='_')) ) {
@@ -296,9 +292,8 @@ int	rtrn;
     return rtrn;
 }
 
-int
-yyGetNumber(ch)
-    int ch;
+static int
+yyGetNumber(int ch)
 {
 int	isFloat= 0;
 
@@ -332,7 +327,7 @@ int	isFloat= 0;
 }
 
 int
-yylex()
+yylex(void)
 {
 int	ch;
 int	rtrn;

@@ -44,10 +44,8 @@ static	int		 win = None;
 static	int		 force = 0;
 static	int		 nobeep = 0;
 
-int
-parseArgs(argc,argv)
-    int argc;
-    char *argv[];
+static int
+parseArgs(int argc, char *argv[])
 {
 int i;
 
@@ -146,14 +144,10 @@ int i;
 }
 
 int
-main(argc,argv)
-    int argc;
-    char *argv[];
+main(int argc, char *argv[])
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
-XkbDescRec	*desc;
-unsigned	 	 query;
 
   
     if (!parseArgs(argc,argv)) {
@@ -221,7 +215,7 @@ unsigned	 	 query;
 	if (!ok)
 	    fprintf(stderr,"XkbDeviceBell request failed\n");
     }
-BAIL:
+/* BAIL: */
     XCloseDisplay(dpy);
     return 0;
 }

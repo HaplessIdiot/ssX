@@ -83,12 +83,8 @@ static XieClipScaleParam *parms;
 static int maxlevels;
 static int flo_elements;
 
-static void FreeDitherStuff(XParms xp, Parms p);
-
-int InitDither(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitDither(XParms xp, Parms p, int reps)
 {
 	int	threshold;
 
@@ -163,10 +159,8 @@ int InitDither(xp, p, reps)
         return( reps );
 }
 
-void DoDither(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoDither(XParms xp, Parms p, int reps)
 {
 	int	i, j, idx;
 	char    *tech_parms=NULL;
@@ -274,17 +268,13 @@ void DoDither(xp, p, reps)
 }
 
 void 
-EndDither(xp, p)
-    XParms  xp;
-    Parms   p;
+EndDither(XParms xp, Parms p)
 {
 	FreeDitherStuff( xp, p );
 }
 
-static void
-FreeDitherStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeDitherStuff(XParms xp, Parms p)
 {
 	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
 	{

@@ -5,7 +5,7 @@ Xv --- X Window System video extension
 .SH Description
 The Xv extension provides support for video adaptors attached to an X
 display.  It takes the approach that a display may have one or more
-video adaptors, each of which has one or more ports though which
+video adaptors, each of which has one or more ports through which
 independent video streams pass.  
 .PP
 An adaptor may be able to display video in a drawable, capture video

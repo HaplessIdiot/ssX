@@ -67,6 +67,6 @@ doSetupPMListen(
     fd_set * rinit);
 
 extern void 
-doInstallIOErrorHandler ();
+doInstallIOErrorHandler (void);
 
 #endif /* _PM_H */

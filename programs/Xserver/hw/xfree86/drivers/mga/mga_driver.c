@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.77 1999/02/24 17:18:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.78 1999/02/28 11:19:41 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -199,7 +199,6 @@ typedef enum {
     OPTION_SHOWCACHE,
     OPTION_8_PLUS_24,
     OPTION_MGA_SDRAM,
-    OPTION_NO_DDC,
     OPTION_SHADOW_FB
 } MGAOpts;
 
@@ -213,7 +212,6 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_8_PLUS_24,		"8Plus24",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MGA_SDRAM,		"MGASDRAM",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_NO_DDC,		"NODDC",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
@@ -1133,7 +1131,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	(pMga->PciInfo->subsysCard == PCI_CARD_MYST_G200_SD) ||
 	(pMga->PciInfo->subsysCard == PCI_CARD_PROD_G100_SD)) {
         pMga->HasSDRAM = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Has SDRAM\n");
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Has SDRAM\n");
     }
     pMga->PciTag = pciTag(pMga->PciInfo->bus, pMga->PciInfo->device,
 			  pMga->PciInfo->func);
@@ -1565,10 +1563,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
-    if (! xf86IsOptionSet(MGAOptions, OPTION_NO_DDC)) {
-      /* Load DDC if we have the code to use it */
-      /* This gives us DDC1 */
-      if (pMga->ddc1Read || pMga->i2cInit) {
+
+    /* Load DDC if we have the code to use it */
+    /* This gives us DDC1 */
+    if (pMga->ddc1Read || pMga->i2cInit) {
 	if (xf86LoadSubModule(pScrn, "ddc")) {
 	  xf86LoaderReqSymLists(ddcSymbols, NULL);
 	} else {
@@ -1578,24 +1576,24 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	  /* Without DDC, we have no use for the I2C bus */
 	  pMga->i2cInit = NULL;
 	}
-      }
+    }
 #if MGAuseI2C    
-      /* - DDC can use I2C bus */
-      /* Load I2C if we have the code to use it */
-      if (pMga->i2cInit) {
-	if ( xf86LoadSubModule(pScrn, "i2c") ) {
-	  xf86LoaderReqSymLists(i2cSymbols,NULL);
-	} else {
-	  /* i2c module not found, we can do without it */
-	  pMga->i2cInit = NULL;
-	  pMga->I2C = NULL;
-	}
+    /* - DDC can use I2C bus */
+    /* Load I2C if we have the code to use it */
+    if (pMga->i2cInit) {
+      if ( xf86LoadSubModule(pScrn, "i2c") ) {
+	xf86LoaderReqSymLists(i2cSymbols,NULL);
+      } else {
+	/* i2c module not found, we can do without it */
+	pMga->i2cInit = NULL;
+	pMga->I2C = NULL;
       }
+    }
 #endif /* MGAuseI2C */
 
-      /* Read and print the Monitor DDC info */
-      MGAdoDDC(pScrn);
-    }
+    /* Read and print the Monitor DDC info */
+    MGAdoDDC(pScrn);
+
     return TRUE;
 }
 
@@ -2197,9 +2195,11 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     MGAPtr pMga = MGAPTR(pScrn);
 
-    MGARestore(pScrn);
-    vgaHWLock(hwp);
-    MGAUnmapMem(pScrn);
+    if (pScrn->vtSema) {
+    	MGARestore(pScrn);
+    	vgaHWLock(hwp);
+    	MGAUnmapMem(pScrn);
+    }
     if (pMga->AccelInfoRec)
 	XAADestroyInfoRec(pMga->AccelInfoRec);
     if (pMga->CursorInfoRec)

@@ -70,7 +70,8 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 
-static int BuildRedefineFlograph();
+static int BuildRedefineFlograph ( XParms xp, Parms p, 
+				   XiePhotoElement **flograph, int which );
 
 static XiePhotomap XIEPhotomap;
 XieLut XIELut;
@@ -81,12 +82,8 @@ static XiePhotoflo flo;
 static int flo_elements;
 extern Bool dontClear;
 
-static void FreeRedefineStuff(XParms xp, Parms p);
-
-int InitRedefine(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitRedefine(XParms xp, Parms p, int reps)
 {
 	XIEimage *image;
 
@@ -142,11 +139,8 @@ int InitRedefine(xp, p, reps)
 }
 
 static int
-BuildRedefineFlograph( xp, p, flograph, which )
-XParms	xp;
-Parms	p;
-XiePhotoElement **flograph;
-int	which;
+BuildRedefineFlograph(XParms xp, Parms p, XiePhotoElement **flograph, 
+		      int which)
 {
 	XieProcessDomain domain;
 
@@ -184,10 +178,8 @@ int	which;
 	return( 1 );
 }
 
-void DoRedefine(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoRedefine(XParms xp, Parms p, int reps)
 {
     	int     i;
 	int	toggle;
@@ -209,19 +201,15 @@ void DoRedefine(xp, p, reps)
     	}
 }
 
-void 
-EndRedefine(xp, p)
-    XParms  xp;
-    Parms   p;
+void
+EndRedefine(XParms xp, Parms p)
 {
 	dontClear = True;
 	FreeRedefineStuff( xp, p );
 }
 
-static void
-FreeRedefineStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeRedefineStuff(XParms xp, Parms p)
 {
         if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
         {

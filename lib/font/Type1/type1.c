@@ -28,7 +28,7 @@
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/type1.c,v 1.4 1998/07/25 06:57:00 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/type1.c,v 1.5 1998/10/03 09:07:19 dawes Exp $ */
  
 /*********************************************************************/
 /*                                                                   */
@@ -47,7 +47,14 @@
 /******************/
 /* Include Files: */
 /******************/
+#ifndef FONTMODULE
 #include  <stdio.h>          /* a system-dependent include, usually */
+#include  <math.h>
+#else
+#include  "fontmisc.h"
+#include  "Xmd.h"
+#include  "xf86_ansic.h"
+#endif
 #include  "objects.h"
 #include  "spaces.h"
 #include  "paths.h"
@@ -106,14 +113,12 @@ typedef struct xobject xobject;
 /*****************/
 /* Useful macros */
 /*****************/
-static double tmpx;  /* Store macro argument in tmpx to avoid re-evaluation */
-static long tmpi;    /* Store converted value in tmpi to avoid re-evaluation */
  
-#define FABS(x) (((tmpx = (x)) < 0.0) ? -tmpx : tmpx)
+#define FABS(x) fabs(x)
  
-#define CEIL(x) (((tmpi = (long) (tmpx = (x))) < tmpx) ? ++tmpi : tmpi)
+#define CEIL(x) ceil(x)
  
-#define FLOOR(x) (((tmpi = (long) (tmpx = (x))) > tmpx) ? --tmpi : tmpi)
+#define FLOOR(x) floor(x)
  
 #define ROUND(x) FLOOR((x) + 0.5)
  

@@ -17,10 +17,6 @@ XvFreeEncodingInfo(3X) frees encoding information that
 was returned by XvQueryEncodings(3X).  The data structure
 used for encoding information is defined in the
 reference page for XvQueryEncodings(3X).
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH See Also
 .\"
 XvQueryEncodings(3X)

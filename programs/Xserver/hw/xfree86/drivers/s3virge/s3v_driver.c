@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.12 1999/01/26 10:40:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.13 1999/01/31 12:21:58 dawes Exp $ */
 
 /*
  *
@@ -42,6 +42,7 @@ static void S3VSaveSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams);
 static void S3VRestoreSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams);
 static void S3VDisableSTREAMS(ScrnInfoPtr pScrn);
 static Bool S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv);
+static int S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen);
 static void S3VPrintRegs(ScrnInfoPtr);
 static ModeStatus S3VValidMode(int index, DisplayModePtr mode, Bool verbose, int flags);
 
@@ -83,9 +84,9 @@ static int pix24bpp = 0;
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "0.3.0"
+#define S3VIRGE_VERSION_NAME "0.4.0"
 #define S3VIRGE_VERSION_MAJOR   0
-#define S3VIRGE_VERSION_MINOR   3
+#define S3VIRGE_VERSION_MINOR   4
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -442,7 +443,6 @@ S3VProbe(DriverPtr drv, int flags)
 	/*
 	 * PCI_ONLY for use without vgaHW, use PCI_VGA otherwise.
 	 */
-	/*  Obsolete ?! ^^-> resource {KF}*/
 	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,resource)) {
 	    ScrnInfoPtr pScrn;
 
@@ -848,17 +848,17 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
    #if 0	/* Not needed in 4.0 flavors */
    /* Unlock sys regs */
-   OUTREG8(vgaCRIndex, 0x38);
-   OUTREG8(vgaCRReg, 0x48);
+   VGAOUT8(vgaCRIndex, 0x38);
+   VGAOUT8(vgaCRReg, 0x48);
    #endif
  
    /* Next go on to detect amount of installed ram */
 
-   OUTREG8(vgaCRIndex, 0x36);              /* for register CR36 (CONFG_REG1), */
-   config1 = INREG8(vgaCRReg);              /* get amount of vram installed */
+   VGAOUT8(vgaCRIndex, 0x36);              /* for register CR36 (CONFG_REG1), */
+   config1 = VGAIN8(vgaCRReg);              /* get amount of vram installed */
 
-   OUTREG8(vgaCRIndex, 0x37);              /* for register CR37 (CONFG_REG2), */
-   config2 = INREG8(vgaCRReg);             /* get amount of off-screen ram  */
+   VGAOUT8(vgaCRIndex, 0x37);              /* for register CR37 (CONFG_REG2), */
+   config2 = VGAIN8(vgaCRReg);             /* get amount of off-screen ram  */
 
    /* And compute the amount of video memory and offscreen memory */
    ps3v->MemOffScreen = 0;
@@ -937,9 +937,9 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
    /* reset S3 graphics engine to avoid memory corruption */
    if (ps3v->Chipset != S3_ViRGE_VX) {
-      OUTREG8(vgaCRIndex, 0x66);
-      cr66 = INREG8(vgaCRReg);
-      OUTREG8(vgaCRReg, cr66 | 0x02);
+      VGAOUT8(vgaCRIndex, 0x66);
+      cr66 = VGAIN8(vgaCRReg);
+      VGAOUT8(vgaCRReg, cr66 | 0x02);
       usleep(10000);  /* wait a little bit... */
    }
 
@@ -959,8 +959,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
    if (ps3v->Chipset != S3_ViRGE_VX) {
-      OUTREG8(vgaCRIndex, 0x66);
-      OUTREG8(vgaCRReg, cr66 & ~0x02);  /* clear reset flag */
+      VGAOUT8(vgaCRIndex, 0x66);
+      VGAOUT8(vgaCRReg, cr66 & ~0x02);  /* clear reset flag */
       usleep(10000);  /* wait a little bit... */
    }
 
@@ -1029,12 +1029,12 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     
 
    /* Detect current MCLK and print it for user */
-   OUTREG8(0x3c4, 0x08);
-   OUTREG8(0x3c5, 0x06); 
-   OUTREG8(0x3c4, 0x10);
-   n = INREG8(0x3c5);
-   OUTREG8(0x3c4, 0x11);
-   m = INREG8(0x3c5);
+   VGAOUT8(0x3c4, 0x08);
+   VGAOUT8(0x3c5, 0x06); 
+   VGAOUT8(0x3c4, 0x10);
+   n = VGAIN8(0x3c5);
+   VGAOUT8(0x3c4, 0x11);
+   m = VGAIN8(0x3c5);
    m &= 0x7f;
    n1 = n & 0x1f;
    n2 = (n>>5) & 0x03;
@@ -1048,25 +1048,25 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	  lcdclk = ps3v->LCDClk;
        } else {
 	  int n1, n2, sr12, sr13, sr29;
-          OUTREG8(0x3c4, 0x12);
-          sr12 = INREG8(0x3c5);
-          OUTREG8(0x3c4, 0x13);
-          sr13 = INREG8(0x3c5) & 0x7f;
-          OUTREG8(0x3c4, 0x29);
-          sr29 = INREG8(0x3c5);
+          VGAOUT8(0x3c4, 0x12);
+          sr12 = VGAIN8(0x3c5);
+          VGAOUT8(0x3c4, 0x13);
+          sr13 = VGAIN8(0x3c5) & 0x7f;
+          VGAOUT8(0x3c4, 0x29);
+          sr29 = VGAIN8(0x3c5);
     	  n1 = sr12 & 0x1f;
     	  n2 = ((sr12>>6) & 0x03) | ((sr29 & 0x01) << 2);
           lcdclk = ((2 * 1431818 * (sr13+2)) / (n1+2) / (1 << n2) + 50) / 100;
        }
-       OUTREG8(0x3c4, 0x61);
-       h_lcd = INREG8(0x3c5);
-       OUTREG8(0x3c4, 0x66);
-       h_lcd |= ((INREG8(0x3c5) & 0x02) << 7);
+       VGAOUT8(0x3c4, 0x61);
+       h_lcd = VGAIN8(0x3c5);
+       VGAOUT8(0x3c4, 0x66);
+       h_lcd |= ((VGAIN8(0x3c5) & 0x02) << 7);
        h_lcd = (h_lcd+1) * 8;
-       OUTREG8(0x3c4, 0x69);
-       v_lcd = INREG8(0x3c5);
-       OUTREG8(0x3c4, 0x6e);
-       v_lcd |= ((INREG8(0x3c5) & 0x70) << 4);
+       VGAOUT8(0x3c4, 0x69);
+       v_lcd = VGAIN8(0x3c5);
+       VGAOUT8(0x3c4, 0x6e);
+       v_lcd |= ((VGAIN8(0x3c5) & 0x70) << 4);
        v_lcd++;
        xf86DrvMsg(pScrn->scrnIndex
 	      , ps3v->LCDClk ? X_CONFIG : X_PROBED
@@ -1306,6 +1306,7 @@ static Bool
 S3VEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    ScreenPtr pScreen = xf86Screens[scrnIndex]->pScreen;
     /*vgaHWPtr hwp = VGAHWPTR(pScrn);*/
 
     PVERB5("	S3VEnterVT\n");
@@ -1316,6 +1317,14 @@ S3VEnterVT(int scrnIndex, int flags)
     xf86EnableAccess(&pScrn->Access);
     				/* Enable MMIO and map memory */
     S3VMapMem(pScrn);
+    #if 0
+    	/* todo - KJB - cep */
+    				/* New pointer mapping means we need to call */
+    				/* cfb...Init again and anything else required */
+    				/* to notify the upper layers of the change. */
+    if( !S3VInternalScreenInit(scrnIndex, pScreen) )
+    	return FALSE;
+	#endif
     S3VSave(pScrn);
     return S3VModeInit(pScrn, pScrn->currentMode);
 }
@@ -1383,12 +1392,12 @@ S3VSave (ScrnInfoPtr pScrn)
     * in the generic VGA portion.
     */
 	 
-   OUTREG8(vgaCRIndex, 0x66);
-   cr66 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRReg, cr66 | 0x80);
-   OUTREG8(vgaCRIndex, 0x3a);
-   cr3a = INREG8(vgaCRReg);
-   OUTREG8(vgaCRReg, cr3a | 0x80);
+   VGAOUT8(vgaCRIndex, 0x66);
+   cr66 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRReg, cr66 | 0x80);
+   VGAOUT8(vgaCRIndex, 0x3a);
+   cr3a = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRReg, cr3a | 0x80);
 
    /* VGA_SR_MODE saves mode info only, no fonts, no colormap */
 					/* Save all for primary, anything */
@@ -1399,115 +1408,115 @@ S3VSave (ScrnInfoPtr pScrn)
    else
    	vgaHWSave(pScrn, vgaSavePtr, VGA_SR_MODE);
    
-   OUTREG8(vgaCRIndex, 0x66);
-   OUTREG8(vgaCRReg, cr66);
-   OUTREG8(vgaCRIndex, 0x3a);             
-   OUTREG8(vgaCRReg, cr3a);
+   VGAOUT8(vgaCRIndex, 0x66);
+   VGAOUT8(vgaCRReg, cr66);
+   VGAOUT8(vgaCRIndex, 0x3a);             
+   VGAOUT8(vgaCRReg, cr3a);
 
    /* First unlock extended sequencer regs */
-   OUTREG8(0x3c4, 0x08);
-   save->SR8 = INREG8(0x3c5);
-   OUTREG8(0x3c5, 0x06); 
+   VGAOUT8(0x3c4, 0x08);
+   save->SR8 = VGAIN8(0x3c5);
+   VGAOUT8(0x3c5, 0x06); 
 
    /* Now we save all the s3 extended regs we need */
-   OUTREG8(vgaCRIndex, 0x31);             
-   save->CR31 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x34);             
-   save->CR34 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x36);             
-   save->CR36 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x3a);             
-   save->CR3A = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x40);
-   save->CR40 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x42);             
-   save->CR42 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x45);
-   save->CR45 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x51);             
-   save->CR51 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x53);             
-   save->CR53 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x54);             
-   save->CR54 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x58);             
-   save->CR58 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x63);
-   save->CR63 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x66);             
-   save->CR66 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x67);             
-   save->CR67 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x68);             
-   save->CR68 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x69);
-   save->CR69 = INREG8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x31);             
+   save->CR31 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x34);             
+   save->CR34 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x36);             
+   save->CR36 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x3a);             
+   save->CR3A = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x40);
+   save->CR40 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x42);             
+   save->CR42 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x45);
+   save->CR45 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x51);             
+   save->CR51 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x53);             
+   save->CR53 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x54);             
+   save->CR54 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x58);             
+   save->CR58 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x63);
+   save->CR63 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x66);             
+   save->CR66 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x67);             
+   save->CR67 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x68);             
+   save->CR68 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x69);
+   save->CR69 = VGAIN8(vgaCRReg);
 
-   OUTREG8(vgaCRIndex, 0x33);             
-   save->CR33 = INREG8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x33);             
+   save->CR33 = VGAIN8(vgaCRReg);
    if (ps3v->Chipset == S3_ViRGE_DXGX) {
-      OUTREG8(vgaCRIndex, 0x86);
-      save->CR86 = INREG8(vgaCRReg);
+      VGAOUT8(vgaCRIndex, 0x86);
+      save->CR86 = VGAIN8(vgaCRReg);
    }
    if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset) || 
        S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
-      OUTREG8(vgaCRIndex, 0x90);
-      save->CR90 = INREG8(vgaCRReg);
+      VGAOUT8(vgaCRIndex, 0x90);
+      save->CR90 = VGAIN8(vgaCRReg);
    }
 
    /* Extended mode timings regs */
 
-   OUTREG8(vgaCRIndex, 0x3b);             
-   save->CR3B = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x3c);             
-   save->CR3C = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x43);             
-   save->CR43 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x5d);             
-   save->CR5D = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x5e);
-   save->CR5E = INREG8(vgaCRReg);  
-   OUTREG8(vgaCRIndex, 0x65);             
-   save->CR65 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRIndex, 0x6d);
-   save->CR6D = INREG8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x3b);             
+   save->CR3B = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x3c);             
+   save->CR3C = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x43);             
+   save->CR43 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x5d);             
+   save->CR5D = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x5e);
+   save->CR5E = VGAIN8(vgaCRReg);  
+   VGAOUT8(vgaCRIndex, 0x65);             
+   save->CR65 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x6d);
+   save->CR6D = VGAIN8(vgaCRReg);
 
 
    /* Save sequencer extended regs for DCLK PLL programming */
 
-   OUTREG8(0x3c4, 0x10);
-   save->SR10 = INREG8(0x3c5);
-   OUTREG8(0x3c4, 0x11);
-   save->SR11 = INREG8(0x3c5);
+   VGAOUT8(0x3c4, 0x10);
+   save->SR10 = VGAIN8(0x3c5);
+   VGAOUT8(0x3c4, 0x11);
+   save->SR11 = VGAIN8(0x3c5);
 
-   OUTREG8(0x3c4, 0x12);
-   save->SR12 = INREG8(0x3c5);
-   OUTREG8(0x3c4, 0x13);
-   save->SR13 = INREG8(0x3c5);
+   VGAOUT8(0x3c4, 0x12);
+   save->SR12 = VGAIN8(0x3c5);
+   VGAOUT8(0x3c4, 0x13);
+   save->SR13 = VGAIN8(0x3c5);
    if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
-     OUTREG8(0x3c4, 0x29);
-     save->SR29 = INREG8(0x3c5);
-     OUTREG8(0x3c4, 0x54);
-     save->SR54 = INREG8(0x3c5);
-     OUTREG8(0x3c4, 0x55);
-     save->SR55 = INREG8(0x3c5);
-     OUTREG8(0x3c4, 0x56);
-     save->SR56 = INREG8(0x3c5);
-     OUTREG8(0x3c4, 0x57);
-     save->SR57 = INREG8(0x3c5);
+     VGAOUT8(0x3c4, 0x29);
+     save->SR29 = VGAIN8(0x3c5);
+     VGAOUT8(0x3c4, 0x54);
+     save->SR54 = VGAIN8(0x3c5);
+     VGAOUT8(0x3c4, 0x55);
+     save->SR55 = VGAIN8(0x3c5);
+     VGAOUT8(0x3c4, 0x56);
+     save->SR56 = VGAIN8(0x3c5);
+     VGAOUT8(0x3c4, 0x57);
+     save->SR57 = VGAIN8(0x3c5);
    }
 
-   OUTREG8(0x3c4, 0x15);
-   save->SR15 = INREG8(0x3c5);
-   OUTREG8(0x3c4, 0x18);
-   save->SR18 = INREG8(0x3c5);
+   VGAOUT8(0x3c4, 0x15);
+   save->SR15 = VGAIN8(0x3c5);
+   VGAOUT8(0x3c4, 0x18);
+   save->SR18 = VGAIN8(0x3c5);
 
-   OUTREG8(vgaCRIndex, 0x66);
-   cr66 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRReg, cr66 | 0x80);
-   OUTREG8(vgaCRIndex, 0x3a);
-   cr3a = INREG8(vgaCRReg);
-   OUTREG8(vgaCRReg, cr3a | 0x80);
+   VGAOUT8(vgaCRIndex, 0x66);
+   cr66 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRReg, cr66 | 0x80);
+   VGAOUT8(vgaCRIndex, 0x3a);
+   cr3a = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRReg, cr3a | 0x80);
 
    /* And if streams is to be used, save that as well */
 
@@ -1532,10 +1541,10 @@ S3VSave (ScrnInfoPtr pScrn)
       PVERB5("\n\nViRGE driver: saved current video mode. Register dump:\n\n");
    }
 
-   OUTREG8(vgaCRIndex, 0x3a);
-   OUTREG8(vgaCRReg, cr3a);
-   OUTREG8(vgaCRIndex, 0x66);
-   OUTREG8(vgaCRReg, cr66);
+   VGAOUT8(vgaCRIndex, 0x3a);
+   VGAOUT8(vgaCRReg, cr3a);
+   VGAOUT8(vgaCRIndex, 0x66);
+   VGAOUT8(vgaCRReg, cr66);
    				/* Dup the VGA & S3V state to the */
 				/* new mode state, but only first time. */
    if( !ps3v->ModeStructInit ) {
@@ -1586,7 +1595,7 @@ S3VSaveSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams)
 
 /* 
  * This function is used to restore a video mode. It writes out all  
- * of the standart VGA and extended S3 registers needed to setup a 
+ * of the standard VGA and extended S3 registers needed to setup a 
  * video mode.
  *
  * Note that our life is made more difficult because of the STREAMS
@@ -1617,98 +1626,98 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
 
    /* First reset GE to make sure nothing is going on */
    if(ps3v->Chipset == S3_ViRGE_VX) {
-      OUTREG8(vgaCRIndex, 0x63);
-      if(INREG8(vgaCRReg) & 0x01) S3VGEReset(pScrn,0,__LINE__,__FILE__);
+      VGAOUT8(vgaCRIndex, 0x63);
+      if(VGAIN8(vgaCRReg) & 0x01) S3VGEReset(pScrn,0,__LINE__,__FILE__);
       }
    else {
-      OUTREG8(vgaCRIndex, 0x66);
-      if(INREG8(vgaCRReg) & 0x01) S3VGEReset(pScrn,0,__LINE__,__FILE__);
+      VGAOUT8(vgaCRIndex, 0x66);
+      if(VGAIN8(vgaCRReg) & 0x01) S3VGEReset(pScrn,0,__LINE__,__FILE__);
       }
 
    /* As per databook, always disable STREAMS before changing modes */
-   OUTREG8(vgaCRIndex, 0x67);
-   cr67 = INREG8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x67);
+   cr67 = VGAIN8(vgaCRReg);
    if ((cr67 & 0x0c) == 0x0c) {
       S3VDisableSTREAMS(pScrn);     /* If STREAMS was running, disable it */
       }
 
    /* Restore S3 extended regs */
-   OUTREG8(vgaCRIndex, 0x63);             
-   OUTREG8(vgaCRReg, restore->CR63);
-   OUTREG8(vgaCRIndex, 0x66);             
-   OUTREG8(vgaCRReg, restore->CR66);
-   OUTREG8(vgaCRIndex, 0x3a);             
-   OUTREG8(vgaCRReg, restore->CR3A);
-   OUTREG8(vgaCRIndex, 0x31);    
-   OUTREG8(vgaCRReg, restore->CR31);
-   OUTREG8(vgaCRIndex, 0x58);             
-   OUTREG8(vgaCRReg, restore->CR58);
+   VGAOUT8(vgaCRIndex, 0x63);             
+   VGAOUT8(vgaCRReg, restore->CR63);
+   VGAOUT8(vgaCRIndex, 0x66);             
+   VGAOUT8(vgaCRReg, restore->CR66);
+   VGAOUT8(vgaCRIndex, 0x3a);             
+   VGAOUT8(vgaCRReg, restore->CR3A);
+   VGAOUT8(vgaCRIndex, 0x31);    
+   VGAOUT8(vgaCRReg, restore->CR31);
+   VGAOUT8(vgaCRIndex, 0x58);             
+   VGAOUT8(vgaCRReg, restore->CR58);
 
    /* Extended mode timings registers */  
-   OUTREG8(vgaCRIndex, 0x53);             
-   OUTREG8(vgaCRReg, restore->CR53); 
-   OUTREG8(vgaCRIndex, 0x5d);     
-   OUTREG8(vgaCRReg, restore->CR5D);
-   OUTREG8(vgaCRIndex, 0x5e);             
-   OUTREG8(vgaCRReg, restore->CR5E);
-   OUTREG8(vgaCRIndex, 0x3b);             
-   OUTREG8(vgaCRReg, restore->CR3B);
-   OUTREG8(vgaCRIndex, 0x3c);             
-   OUTREG8(vgaCRReg, restore->CR3C);
-   OUTREG8(vgaCRIndex, 0x43);             
-   OUTREG8(vgaCRReg, restore->CR43);
-   OUTREG8(vgaCRIndex, 0x65);             
-   OUTREG8(vgaCRReg, restore->CR65);
-   OUTREG8(vgaCRIndex, 0x6d);
-   OUTREG8(vgaCRReg, restore->CR6D);
+   VGAOUT8(vgaCRIndex, 0x53);             
+   VGAOUT8(vgaCRReg, restore->CR53); 
+   VGAOUT8(vgaCRIndex, 0x5d);     
+   VGAOUT8(vgaCRReg, restore->CR5D);
+   VGAOUT8(vgaCRIndex, 0x5e);             
+   VGAOUT8(vgaCRReg, restore->CR5E);
+   VGAOUT8(vgaCRIndex, 0x3b);             
+   VGAOUT8(vgaCRReg, restore->CR3B);
+   VGAOUT8(vgaCRIndex, 0x3c);             
+   VGAOUT8(vgaCRReg, restore->CR3C);
+   VGAOUT8(vgaCRIndex, 0x43);             
+   VGAOUT8(vgaCRReg, restore->CR43);
+   VGAOUT8(vgaCRIndex, 0x65);             
+   VGAOUT8(vgaCRReg, restore->CR65);
+   VGAOUT8(vgaCRIndex, 0x6d);
+   VGAOUT8(vgaCRReg, restore->CR6D);
 
 
    /* Restore the desired video mode with CR67 */
         
-   OUTREG8(vgaCRIndex, 0x67);             
-   cr67 = INREG8(vgaCRReg) & 0xf; /* Possible hardware bug on VX? */
-   OUTREG8(vgaCRReg, 0x50 | cr67); 
+   VGAOUT8(vgaCRIndex, 0x67);             
+   cr67 = VGAIN8(vgaCRReg) & 0xf; /* Possible hardware bug on VX? */
+   VGAOUT8(vgaCRReg, 0x50 | cr67); 
    usleep(10000);
-   OUTREG8(vgaCRIndex, 0x67);             
-   OUTREG8(vgaCRReg, restore->CR67 & ~0x0c); /* Don't enable STREAMS yet */
+   VGAOUT8(vgaCRIndex, 0x67);             
+   VGAOUT8(vgaCRReg, restore->CR67 & ~0x0c); /* Don't enable STREAMS yet */
 
    /* Other mode timing and extended regs */
-   OUTREG8(vgaCRIndex, 0x34);             
-   OUTREG8(vgaCRReg, restore->CR34);
-   OUTREG8(vgaCRIndex, 0x40);             
-   OUTREG8(vgaCRReg, restore->CR40);
-   OUTREG8(vgaCRIndex, 0x42);             
-   OUTREG8(vgaCRReg, restore->CR42);
-   OUTREG8(vgaCRIndex, 0x45);
-   OUTREG8(vgaCRReg, restore->CR45);
-   OUTREG8(vgaCRIndex, 0x51);             
-   OUTREG8(vgaCRReg, restore->CR51);
-   OUTREG8(vgaCRIndex, 0x54);             
-   OUTREG8(vgaCRReg, restore->CR54);
+   VGAOUT8(vgaCRIndex, 0x34);             
+   VGAOUT8(vgaCRReg, restore->CR34);
+   VGAOUT8(vgaCRIndex, 0x40);             
+   VGAOUT8(vgaCRReg, restore->CR40);
+   VGAOUT8(vgaCRIndex, 0x42);             
+   VGAOUT8(vgaCRReg, restore->CR42);
+   VGAOUT8(vgaCRIndex, 0x45);
+   VGAOUT8(vgaCRReg, restore->CR45);
+   VGAOUT8(vgaCRIndex, 0x51);             
+   VGAOUT8(vgaCRReg, restore->CR51);
+   VGAOUT8(vgaCRIndex, 0x54);             
+   VGAOUT8(vgaCRReg, restore->CR54);
    
    /* Memory timings */
-   OUTREG8(vgaCRIndex, 0x36);             
-   OUTREG8(vgaCRReg, restore->CR36);
-   OUTREG8(vgaCRIndex, 0x68);             
-   OUTREG8(vgaCRReg, restore->CR68);
-   OUTREG8(vgaCRIndex, 0x69);
-   OUTREG8(vgaCRReg, restore->CR69);
+   VGAOUT8(vgaCRIndex, 0x36);             
+   VGAOUT8(vgaCRReg, restore->CR36);
+   VGAOUT8(vgaCRIndex, 0x68);             
+   VGAOUT8(vgaCRReg, restore->CR68);
+   VGAOUT8(vgaCRIndex, 0x69);
+   VGAOUT8(vgaCRReg, restore->CR69);
 
-   OUTREG8(vgaCRIndex, 0x33);
-   OUTREG8(vgaCRReg, restore->CR33);
+   VGAOUT8(vgaCRIndex, 0x33);
+   VGAOUT8(vgaCRReg, restore->CR33);
    if (ps3v->Chipset == S3_ViRGE_DXGX) {
-      OUTREG8(vgaCRIndex, 0x86);
-      OUTREG8(vgaCRReg, restore->CR86);
+      VGAOUT8(vgaCRIndex, 0x86);
+      VGAOUT8(vgaCRReg, restore->CR86);
    }
    if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset) ||
        S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
-      OUTREG8(vgaCRIndex, 0x90);
-      OUTREG8(vgaCRReg, restore->CR90);
+      VGAOUT8(vgaCRIndex, 0x90);
+      VGAOUT8(vgaCRReg, restore->CR90);
    }
 
    /* Unlock extended sequencer regs */
-   OUTREG8(0x3c4, 0x08);
-   OUTREG8(0x3c5, 0x06); 
+   VGAOUT8(0x3c4, 0x08);
+   VGAOUT8(0x3c5, 0x06); 
 
 
    /* Restore extended sequencer regs for MCLK. SR10 == 255 indicates that 
@@ -1716,61 +1725,61 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
     */
 
    if (restore->SR10 != 255) {   
-       OUTREG8(0x3c4, 0x10);
-       OUTREG8(0x3c5, restore->SR10);
-       OUTREG8(0x3c4, 0x11);
-       OUTREG8(0x3c5, restore->SR11);
+       VGAOUT8(0x3c4, 0x10);
+       VGAOUT8(0x3c5, restore->SR10);
+       VGAOUT8(0x3c4, 0x11);
+       VGAOUT8(0x3c5, restore->SR11);
        }
 
    /* Restore extended sequencer regs for DCLK */
-   OUTREG8(0x3c4, 0x12);
-   OUTREG8(0x3c5, restore->SR12);
-   OUTREG8(0x3c4, 0x13);
-   OUTREG8(0x3c5, restore->SR13);
+   VGAOUT8(0x3c4, 0x12);
+   VGAOUT8(0x3c5, restore->SR12);
+   VGAOUT8(0x3c4, 0x13);
+   VGAOUT8(0x3c5, restore->SR13);
    if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
-     OUTREG8(0x3c4, 0x29);
-     OUTREG8(0x3c5, restore->SR29);
-     OUTREG8(0x3c4, 0x54);
-     OUTREG8(0x3c5, restore->SR54);
-     OUTREG8(0x3c4, 0x55);
-     OUTREG8(0x3c5, restore->SR55);
-     OUTREG8(0x3c4, 0x56);
-     OUTREG8(0x3c5, restore->SR56);
-     OUTREG8(0x3c4, 0x57);
-     OUTREG8(0x3c5, restore->SR57);
+     VGAOUT8(0x3c4, 0x29);
+     VGAOUT8(0x3c5, restore->SR29);
+     VGAOUT8(0x3c4, 0x54);
+     VGAOUT8(0x3c5, restore->SR54);
+     VGAOUT8(0x3c4, 0x55);
+     VGAOUT8(0x3c5, restore->SR55);
+     VGAOUT8(0x3c4, 0x56);
+     VGAOUT8(0x3c5, restore->SR56);
+     VGAOUT8(0x3c4, 0x57);
+     VGAOUT8(0x3c5, restore->SR57);
    }
 
-   OUTREG8(0x3c4, 0x18);
-   OUTREG8(0x3c5, restore->SR18); 
+   VGAOUT8(0x3c4, 0x18);
+   VGAOUT8(0x3c5, restore->SR18); 
 
    /* Load new m,n PLL values for DCLK & MCLK */
-   OUTREG8(0x3c4, 0x15);
-   tmp = INREG8(0x3c5) & ~0x21;
+   VGAOUT8(0x3c4, 0x15);
+   tmp = VGAIN8(0x3c5) & ~0x21;
 
-   OUTREG8(0x3c5, tmp | 0x03);
-   OUTREG8(0x3c5, tmp | 0x23);
-   OUTREG8(0x3c5, tmp | 0x03);
-   OUTREG8(0x3c5, restore->SR15);
+   VGAOUT8(0x3c5, tmp | 0x03);
+   VGAOUT8(0x3c5, tmp | 0x23);
+   VGAOUT8(0x3c5, tmp | 0x03);
+   VGAOUT8(0x3c5, restore->SR15);
 
-   OUTREG8(0x3c4, 0x08);
-   OUTREG8(0x3c5, restore->SR8); 
+   VGAOUT8(0x3c4, 0x08);
+   VGAOUT8(0x3c5, restore->SR8); 
 
 
    /* Now write out CR67 in full, possibly starting STREAMS */
 
    VerticalRetraceWait();
-   OUTREG8(vgaCRIndex, 0x67);    
-   OUTREG8(vgaCRReg, 0x50);   /* For possible bug on VX?! */          
+   VGAOUT8(vgaCRIndex, 0x67);    
+   VGAOUT8(vgaCRReg, 0x50);   /* For possible bug on VX?! */          
    usleep(10000);
-   OUTREG8(vgaCRIndex, 0x67);
-   OUTREG8(vgaCRReg, restore->CR67); 
+   VGAOUT8(vgaCRIndex, 0x67);
+   VGAOUT8(vgaCRReg, restore->CR67); 
 
-   OUTREG8(vgaCRIndex, 0x66);
-   cr66 = INREG8(vgaCRReg);
-   OUTREG8(vgaCRReg, cr66 | 0x80);
-   OUTREG8(vgaCRIndex, 0x3a);
-   cr3a = INREG8(vgaCRReg);
-   OUTREG8(vgaCRReg, cr3a | 0x80);
+   VGAOUT8(vgaCRIndex, 0x66);
+   cr66 = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRReg, cr66 | 0x80);
+   VGAOUT8(vgaCRIndex, 0x3a);
+   cr3a = VGAIN8(vgaCRReg);
+   VGAOUT8(vgaCRReg, cr3a | 0x80);
 
    /* And finally, we init the STREAMS processor if we have CR67 indicate 24bpp
     * We also restore FIFO and TIMEOUT memory controller registers. (later...)
@@ -1818,10 +1827,10 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
      vgaHWRestore(pScrn, vgaSavePtr, VGA_SR_MODE);
 
  		/* moved from before vgaHWRestore, to prevent segfault? */
-   OUTREG8(vgaCRIndex, 0x66);             
-   OUTREG8(vgaCRReg, cr66);
-   OUTREG8(vgaCRIndex, 0x3a);             
-   OUTREG8(vgaCRReg, cr3a);
+   VGAOUT8(vgaCRIndex, 0x66);             
+   VGAOUT8(vgaCRReg, cr66);
+   VGAOUT8(vgaCRIndex, 0x3a);             
+   VGAOUT8(vgaCRReg, cr3a);
 
    if (xf86GetVerbosity() > 1) {
       ErrorF("\n\nViRGE driver: done restoring mode, dumping CR registers:\n\n");
@@ -1898,10 +1907,10 @@ unsigned char tmp;
 
    VerticalRetraceWait();
    ((mmtr)s3vMmioMem)->memport_regs.regs.fifo_control = 0xC000;
-   OUTREG8(vgaCRIndex, 0x67);
-   tmp = INREG8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x67);
+   tmp = VGAIN8(vgaCRReg);
                          /* Disable STREAMS processor */
-   OUTREG8( vgaCRReg, tmp & ~0x0C );
+   VGAOUT8( vgaCRReg, tmp & ~0x0C );
 
    return;
 }
@@ -2065,49 +2074,8 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
   }
 
-    /*
-     * Call the framebuffer layer's ScreenInit function, and fill in other
-     * pScreen fields.
-     */
+  ret = S3VInternalScreenInit(scrnIndex, pScreen);
 
-  switch (pScrn->bitsPerPixel) {
-    case 8:
-	ret = cfbScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	break;
-    case 16:
-	ret = cfb16ScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	break;
-    case 24:
-	if (pix24bpp ==24)
-	    ret = cfb24ScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	else
-	    ret = cfb24_32ScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	break;
-    case 32:
-	ret = cfb32ScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	break;
-    default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in S3VScreenInit\n",
-		   pScrn->bitsPerPixel);
-	ret = FALSE;
-	break;
-  } /*switch*/
   if (!ret)
     return FALSE;
       
@@ -2178,6 +2146,67 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 
 
+/* Common init routines needed in EnterVT and ScreenInit */
+
+static int
+S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen)
+{
+  int ret = TRUE;
+  ScrnInfoPtr pScrn;
+  S3VPtr ps3v;
+  					/* First get the ScrnInfoRec */
+  pScrn = xf86Screens[pScreen->myNum];
+
+  ps3v = S3VPTR(pScrn);
+  
+    /*
+     * Call the framebuffer layer's ScreenInit function, and fill in other
+     * pScreen fields.
+     */
+
+  switch (pScrn->bitsPerPixel) {
+    case 8:
+	ret = cfbScreenInit(pScreen, ps3v->FBStart,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
+    case 16:
+	ret = cfb16ScreenInit(pScreen, ps3v->FBStart,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
+    case 24:
+	  if (pix24bpp ==24) {
+	    ret = cfb24ScreenInit(pScreen, ps3v->FBStart,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	  } else {
+	    ret = cfb24_32ScreenInit(pScreen, ps3v->FBStart,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	  	}
+	break;
+    case 32:
+	ret = cfb32ScreenInit(pScreen, ps3v->FBStart,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	break;
+    default:
+	xf86DrvMsg(scrnIndex, X_ERROR,
+		   "Internal error: invalid bpp (%d) in S3VScreenInit\n",
+		   pScrn->bitsPerPixel);
+	ret = FALSE;
+	break;
+  } /*switch*/
+
+  return ret;
+}
+
 
 
 /* Checks if a mode is suitable for the selected chipset. */
@@ -2229,8 +2258,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    /* Now we fill in the rest of the stuff we need for the virge */
    /* Start with MMIO, linear addr. regs */
 
-   OUTREG8(vgaCRIndex, 0x3a);
-   tmp = INREG8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x3a);
+   tmp = VGAIN8(vgaCRReg);
    if(ps3v->pci_burst_on)
       new->CR3A = (tmp & 0x7f) | 0x15; /* ENH 256, PCI burst */
    else 
@@ -2251,8 +2280,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
   /* Now set linear addr. registers */
   /* LAW size: we have 2 cases, 2MB, 4MB or >= 4MB for VX */
-   OUTREG8(vgaCRIndex, 0x58);
-   new->CR58 = INREG8(vgaCRReg) & 0x80;
+   VGAOUT8(vgaCRIndex, 0x58);
+   new->CR58 = VGAIN8(vgaCRReg) & 0x80;
    if(pScrn->videoRam == 2048){   
       new->CR58 |= 0x02 | 0x10; 
       }
@@ -2283,8 +2312,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    /*new->CR65 = 0x02;  3.9Nm */
    new->CR54 = 0x00;
    
-   OUTREG8(vgaCRIndex, 0x40);
-   new->CR40 = INREG8(vgaCRReg) & ~0x01;
+   VGAOUT8(vgaCRIndex, 0x40);
+   new->CR40 = VGAIN8(vgaCRReg) & ~0x01;
    
     /*cep*/  
     xf86ErrorFVerb(VERBLEV, "	S3VModeInit dclk=%i \n", 
@@ -2377,22 +2406,22 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
          unsigned char ndiv;
 	 if (S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
 	   unsigned char sr8;
-	   OUTREG8(0x3c4, 0x08);  /* unlock extended SEQ regs */
-	   sr8 = INREG8(0x3c5);
-	   OUTREG8(0x3c5, 0x06);
-	   OUTREG8(0x3c4, 0x31);
-	   if (INREG8(0x3c5) & 0x10) { /* LCD on */
+	   VGAOUT8(0x3c4, 0x08);  /* unlock extended SEQ regs */
+	   sr8 = VGAIN8(0x3c5);
+	   VGAOUT8(0x3c5, 0x06);
+	   VGAOUT8(0x3c4, 0x31);
+	   if (VGAIN8(0x3c5) & 0x10) { /* LCD on */
 	     if (!ps3v->LCDClk) {  /* entered only once for first mode */
 	       int h_lcd, v_lcd;
-	       OUTREG8(0x3c4, 0x61);
-	       h_lcd = INREG8(0x3c5);
-	       OUTREG8(0x3c4, 0x66);
-	       h_lcd |= ((INREG8(0x3c5) & 0x02) << 7);
+	       VGAOUT8(0x3c4, 0x61);
+	       h_lcd = VGAIN8(0x3c5);
+	       VGAOUT8(0x3c4, 0x66);
+	       h_lcd |= ((VGAIN8(0x3c5) & 0x02) << 7);
 	       h_lcd = (h_lcd+1) * 8;
-	       OUTREG8(0x3c4, 0x69);
-	       v_lcd = INREG8(0x3c5);
-	       OUTREG8(0x3c4, 0x6e);
-	       v_lcd |= ((INREG8(0x3c5) & 0x70) << 4);
+	       VGAOUT8(0x3c4, 0x69);
+	       v_lcd = VGAIN8(0x3c5);
+	       VGAOUT8(0x3c4, 0x6e);
+	       v_lcd |= ((VGAIN8(0x3c5) & 0x70) << 4);
 	       v_lcd++;
 	       
 	       /* check if first mode has physical LCD resolution */
@@ -2400,12 +2429,12 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		 ps3v->LCDClk = pScrn->clock[pScrn->modes->Clock];
 	       else {
 		 int n1, n2, sr12, sr13, sr29;
-		 OUTREG8(0x3c4, 0x12);
-		 sr12 = INREG8(0x3c5);
-		 OUTREG8(0x3c4, 0x13);
-		 sr13 = INREG8(0x3c5) & 0x7f;
-		 OUTREG8(0x3c4, 0x29);
-		 sr29 = INREG8(0x3c5);
+		 VGAOUT8(0x3c4, 0x12);
+		 sr12 = VGAIN8(0x3c5);
+		 VGAOUT8(0x3c4, 0x13);
+		 sr13 = VGAIN8(0x3c5) & 0x7f;
+		 VGAOUT8(0x3c4, 0x29);
+		 sr29 = VGAIN8(0x3c5);
 		 n1 = sr12 & 0x1f;
 		 n2 = ((sr12>>6) & 0x03) | ((sr29 & 0x01) << 2);
 		 ps3v->LCDClk = ((2 * 1431818 * (sr13+2)) / (n1+2) / (1 << n2) + 50) / 100;
@@ -2417,8 +2446,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	   else
 	     commonCalcClock(dclk/2, 1, 1, 31, 0, 4,
 			     170000, 340000, &new->SR13, &ndiv);
-	   OUTREG8(0x3c4, 0x08);
-	   OUTREG8(0x3c5, sr8);
+	   VGAOUT8(0x3c4, 0x08);
+	   VGAOUT8(0x3c5, sr8);
 	 }
 	 else  /* S3_ViRGE_GX2 */
 	   commonCalcClock(dclk, 1, 1, 31, 0, 4,
@@ -2539,8 +2568,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
    /* Now we handle various XConfig memory options and others */
    
-   OUTREG8(vgaCRIndex, 0x36);
-   new->CR36 = INREG8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x36);
+   new->CR36 = VGAIN8(vgaCRReg);
    /* option "slow_edodram" sets EDO to 2 cycle mode on ViRGE */
    if (ps3v->Chipset == S3_ViRGE) {
       if( ps3v->slow_edodram )
@@ -2596,8 +2625,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       else {
 	    new->CR65 = (new->CR65 & ~0x38) 
 	       | (blank_delay & 0x07) << 3;
-	    OUTREG8(vgaCRIndex, 0x6d);
-	    new->CR6D = INREG8(vgaCRReg);
+	    VGAOUT8(vgaCRIndex, 0x6d);
+	    new->CR6D = VGAIN8(vgaCRReg);
       }
    }
    				/* S3_EARLY_SC was defaulted to 0 	*/
@@ -2613,8 +2642,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       }
    #endif
   
-   OUTREG8(vgaCRIndex, 0x68);
-   new->CR68 = INREG8(vgaCRReg);
+   VGAOUT8(vgaCRIndex, 0x68);
+   new->CR68 = VGAIN8(vgaCRReg);
    new->CR69 = 0;
    
    if (S3_ViRGE_MX_SERIES(ps3v->Chipset) && (ps3v->lcd_center)) {
@@ -2788,10 +2817,10 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
 	Base = Base+2 - (Base+2) % 3;
 
       /* Now program the start address registers */
-      OUTREG16(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
-      OUTREG16(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);
-      OUTREG8(vgaCRIndex, 0x69);
-      OUTREG8(vgaCRReg, (Base & 0x0F0000) >> 16);   
+      VGAOUT16(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
+      VGAOUT16(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);
+      VGAOUT8(vgaCRIndex, 0x69);
+      VGAOUT8(vgaCRReg, (Base & 0x0F0000) >> 16);   
       }
    else {          /* Change start address for STREAMS case */
       VerticalRetraceWait();
@@ -2839,10 +2868,10 @@ void S3VLoadPalette(
 
     for(i = 0; i < numColors; i++) {
 	index = indicies[i];
-        OUTREG8(0x3c8, index);
-        OUTREG8(0x3c9, colors[index].red);
-        OUTREG8(0x3c9, colors[index].green);
-        OUTREG8(0x3c9, colors[index].blue);
+        VGAOUT8(0x3c8, index);
+        VGAOUT8(0x3c9, colors[index].red);
+        VGAOUT8(0x3c9, colors[index].green);
+        VGAOUT8(0x3c9, colors[index].blue);
     }
 }
 
@@ -2864,91 +2893,91 @@ S3VPrintRegs(ScrnInfoPtr pScrn)
     vgaCRReg = vgaIOBase + 5;
        
 /* All registers */
-    OUTREG8(0x3c4, 0x10);
-    tmp1 = INREG8(0x3c5);
-    OUTREG8(0x3c4, 0x11);
-    tmp2 = INREG8(0x3c5);
+    VGAOUT8(0x3c4, 0x10);
+    tmp1 = VGAIN8(0x3c5);
+    VGAOUT8(0x3c4, 0x11);
+    tmp2 = VGAIN8(0x3c5);
     ErrorF("SR10: %02x SR11: %02x\n", tmp1, tmp2);
 
-    OUTREG8(0x3c4, 0x12);
-    tmp1 = INREG8(0x3c5);
-    OUTREG8(0x3c4, 0x13);
-    tmp2 = INREG8(0x3c5);
+    VGAOUT8(0x3c4, 0x12);
+    tmp1 = VGAIN8(0x3c5);
+    VGAOUT8(0x3c4, 0x13);
+    tmp2 = VGAIN8(0x3c5);
     ErrorF("SR12: %02x SR13: %02x\n", tmp1, tmp2);
 
-    OUTREG8(0x3c4, 0x0a);
-    tmp1 = INREG8(0x3c5);
-    OUTREG8(0x3c4, 0x15);
-    tmp2 = INREG8(0x3c5);
+    VGAOUT8(0x3c4, 0x0a);
+    tmp1 = VGAIN8(0x3c5);
+    VGAOUT8(0x3c4, 0x15);
+    tmp2 = VGAIN8(0x3c5);
     ErrorF("SR0A: %02x SR15: %02x\n", tmp1, tmp2);
 
     /* Now load and print a whole rnage of other regs */
     for(tmp1=0x0;tmp1<=0x0f;tmp1++){
-	OUTREG8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,INREG8(vgaCRReg));
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
     }
     ErrorF("\n");
     for(tmp1=0x10;tmp1<=0x1f;tmp1++){
-	OUTREG8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,INREG8(vgaCRReg));
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
     }
     ErrorF("\n");
     for(tmp1=0x20;tmp1<=0x2f;tmp1++){
-	OUTREG8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,INREG8(vgaCRReg));
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
     }
     ErrorF("\n");
     for(tmp1=0x30;tmp1<=0x3f;tmp1++){
-	OUTREG8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,INREG8(vgaCRReg));
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
     }
     ErrorF("\n");
     for(tmp1=0x40;tmp1<=0x4f;tmp1++){
-	OUTREG8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,INREG8(vgaCRReg));
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
     }
     ErrorF("\n");
     for(tmp1=0x50;tmp1<=0x59;tmp1++){
-	OUTREG8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,INREG8(vgaCRReg));
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
     }
     ErrorF("\n");
     for(tmp1=0x5d;tmp1<=0x67;tmp1++){
-	OUTREG8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,INREG8(vgaCRReg));
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
     }
     ErrorF("\n");
     for(tmp1=0x68;tmp1<=0x6f;tmp1++){
-	OUTREG8(vgaCRIndex, tmp1);
-	ErrorF("CR%02x:%02x ",tmp1,INREG8(vgaCRReg));
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("CR%02x:%02x ",tmp1,VGAIN8(vgaCRReg));
     }
 
     ErrorF("\n\n");
  #if 0
 /* New formatted registers, matches s3rc */
     ErrorF("Misc Out\n");
-    ErrorF("  %02x\n",INREG8(0x3cc));
+    ErrorF("  %02x\n",VGAIN8(0x3cc));
 
     ErrorF("CR[00-2f]\n");
     for(tmp1=0x0;tmp1<=0x2f;tmp1++){
-	OUTREG8(vgaCRIndex, tmp1);
-	ErrorF("%02x ",INREG8(vgaCRReg));
+	VGAOUT8(vgaCRIndex, tmp1);
+	ErrorF("%02x ",VGAIN8(vgaCRReg));
 	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
 	if((tmp1 & 0xf) == 0xf) ErrorF("\n");
     }
     
     ErrorF("SR[00-0f]\n");
     for(tmp1=0x0;tmp1<=0x0f;tmp1++){
-	OUTREG8(0x3c4, tmp1);
-	ErrorF("%02x ",INREG8(0x3c5));
+	VGAOUT8(0x3c4, tmp1);
+	ErrorF("%02x ",VGAIN8(0x3c5));
 	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
 	if((tmp1 & 0xf) == 0xf) ErrorF("\n");
     }
 
     ErrorF("Gr Cont GR[00-0f]\n");
     for(tmp1=0x0;tmp1<=0x0f;tmp1++){
-	OUTREG8(0x3ce, tmp1);
-	ErrorF("%02x ",INREG8(0x3cf));
+	VGAOUT8(0x3ce, tmp1);
+	ErrorF("%02x ",VGAIN8(0x3cf));
 	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
 	if((tmp1 & 0xf) == 0xf) ErrorF("\n");
     }

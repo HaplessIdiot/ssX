@@ -1,4 +1,4 @@
-/* $XConsortium: token.c,v 1.3 94/02/04 17:07:17 gildea Exp $ */
+/* $TOG: token.c /main/5 1998/05/08 08:46:01 kaleb $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -105,7 +105,7 @@ static double P10(exponent)
   if (exponent < 0) {
     power = 0.1;
     value = (exponent & 1 ? power : 1.0);
-    exponent = -(++exponent >> 1); /* portable C for -(exponent/2) */
+    exponent = -((exponent + 1) >> 1);
   }
   else {
     power = 10.0;
@@ -132,7 +132,7 @@ static double P10(exponent)
 /* Get next character from the input --
  *
  */
-#define next_ch()    (getc(inputFileP))
+#define next_ch()    (_XT1getc(inputFileP))
  
 /* Push a character back into the input --
  *
@@ -144,7 +144,7 @@ static double P10(exponent)
  * required to return anything in particular, and callers should
  * not rely on the returned value.
  */
-#define back_ch(ch)   (ungetc(ch, inputFileP))
+#define back_ch(ch)   (T1Ungetc(ch, inputFileP))
  
 /* Push a character back into the input if it was not white space.
  * If it is a carriage return (\r) then check next char for

@@ -89,13 +89,11 @@ static XStandardColormap stdCmap;
 extern Window drawableWindow;
 static int visclass, type, interleave;
 
-static void FreeEncodePhotomapStuff(XParms xp, Parms p);
+static int GetDecodeParms ( int encode, char *eparms, int *decode, 
+			    char **dparms );
 
 int 
-InitEncodePhotomap(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+InitEncodePhotomap(XParms xp, Parms p, int reps)
 {
 	XieLTriplet levels;
 	int encodeTech;
@@ -440,12 +438,8 @@ int     reps;
 	return( reps );
 }
 
-int
-GetDecodeParms( encode, eparms, decode, dparms )
-int	encode;
-char	*eparms;
-int	*decode;
-char	**dparms;
+static int
+GetDecodeParms(int encode, char *eparms, int *decode, char **dparms)
 {
 	static unsigned char left_pad[3] = { 0, 0, 0 };
 	XieEncodeUncompressedSingleParam *USP = ( XieEncodeUncompressedSingleParam * ) eparms;
@@ -535,10 +529,7 @@ char	**dparms;
 }
 
 void 
-DoEncodePhotomap(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoEncodePhotomap(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -552,10 +543,7 @@ int     reps;
 }
 
 void 
-DoEncodeClientPhotomap(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoEncodeClientPhotomap(XParms xp, Parms p, int reps)
 {
 	int	i, done, size;
 	char	*data;
@@ -590,9 +578,8 @@ int     reps;
 	}
 }
 
-void EndEncodePhotomap(xp, p)
-XParms  xp;
-Parms   p;
+void 
+EndEncodePhotomap(XParms xp, Parms p)
 {
 	if ( type == xieValTripleBand && !IsStaticVisual( visclass ) )
 		InstallGrayColormap( xp );
@@ -601,10 +588,8 @@ Parms   p;
 	FreeEncodePhotomapStuff( xp, p );
 }
 
-static void
-FreeEncodePhotomapStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeEncodePhotomapStuff(XParms xp, Parms p)
 {
 	if ( XIELut )
 	{

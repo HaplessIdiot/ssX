@@ -87,16 +87,8 @@ static XiePhotoflo flo;
 
 extern Bool dontClear;
 
-static void FreeImportPhotoStuff(XParms xp, Parms p);
-static void FreeImportDrawableWindowStuff(XParms xp, Parms p);
-static void FreeImportDrawablePixmapStuff(XParms xp, Parms p);
-static void FreeImportLUTStuff(XParms xp, Parms p);
-static void FreeImportROIStuff(XParms xp, Parms p);
-
-int InitImportDrawablePixmap(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportDrawablePixmap(XParms xp, Parms p, int reps)
 {
 	flo = ( XiePhotoflo ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
@@ -146,10 +138,8 @@ int InitImportDrawablePixmap(xp, p, reps)
 	return( reps );
 }
 
-int InitImportDrawableWindow(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportDrawableWindow(XParms xp, Parms p, int reps)
 {
 	flo = ( XiePhotoflo ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
@@ -215,10 +205,8 @@ int InitImportDrawableWindow(xp, p, reps)
 	return( reps );
 }
 
-int InitImportDrawablePlanePixmap(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportDrawablePlanePixmap(XParms xp, Parms p, int reps)
 {
 	int	planes;
 
@@ -275,10 +263,8 @@ int InitImportDrawablePlanePixmap(xp, p, reps)
 	return( reps );
 }
 
-int InitImportDrawablePlaneWindow(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportDrawablePlaneWindow(XParms xp, Parms p, int reps)
 {
 	int	planes;
 
@@ -353,10 +339,8 @@ int InitImportDrawablePlaneWindow(xp, p, reps)
 	return( reps );
 }
 
-int InitImportPhoto(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportPhoto(XParms xp, Parms p, int reps)
 {
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
@@ -409,10 +393,8 @@ int InitImportPhoto(xp, p, reps)
 	return( reps );
 }
 
-int InitImportPhotoExportDrawable(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportPhotoExportDrawable(XParms xp, Parms p, int reps)
 {
 	int	decode_notify;
 	XIEimage *image;
@@ -471,10 +453,7 @@ int InitImportPhotoExportDrawable(xp, p, reps)
 }
 
 int 
-InitImportLUT(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+InitImportLUT(XParms xp, Parms p, int reps)
 {
 	int lutSize, i;
         Bool    merge;
@@ -551,10 +530,8 @@ InitImportLUT(xp, p, reps)
 	return( reps );
 }
 
-int InitImportROI(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitImportROI(XParms xp, Parms p, int reps)
 {
 	int     rectsSize, i;
 
@@ -620,10 +597,8 @@ int InitImportROI(xp, p, reps)
 	return( reps );
 }
 
-void DoImportPhoto(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportPhoto(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -633,10 +608,8 @@ void DoImportPhoto(xp, p, reps)
     	}
 }
 
-void DoImportDrawablePixmap(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportDrawablePixmap(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -646,10 +619,8 @@ void DoImportDrawablePixmap(xp, p, reps)
     	}
 }
 
-void DoImportDrawableWindow(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportDrawableWindow(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -660,10 +631,8 @@ void DoImportDrawableWindow(xp, p, reps)
 	XClearWindow( xp->d, drawableWindow );
 }
 
-void DoImportDrawablePlanePixmap(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportDrawablePlanePixmap(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -673,10 +642,8 @@ void DoImportDrawablePlanePixmap(xp, p, reps)
     	}
 }
 
-void DoImportDrawablePlaneWindow(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportDrawablePlaneWindow(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -687,10 +654,8 @@ void DoImportDrawablePlaneWindow(xp, p, reps)
 	XClearWindow( xp->d, drawableWindow );
 }
 
-void DoImportLUT(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportLUT(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -700,10 +665,8 @@ void DoImportLUT(xp, p, reps)
     	}
 }
 
-void DoImportROI(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoImportROI(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -713,47 +676,40 @@ void DoImportROI(xp, p, reps)
     	}
 }
 
-void EndImportLUT(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndImportLUT(XParms xp, Parms p)
 {
 	FreeImportLUTStuff( xp, p );
 }
 
-void EndImportPhoto(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndImportPhoto(XParms xp, Parms p)
 {
 	FreeImportPhotoStuff( xp, p );
 }
 
-void EndImportROI(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndImportROI(XParms xp, Parms p)
 {
 	FreeImportROIStuff( xp, p );
 }
 
-void EndImportDrawableWindow(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndImportDrawableWindow(XParms xp, Parms p)
 {
 	XUnmapWindow( xp->d, drawableWindow );
 	dontClear = False;
 	FreeImportDrawableWindowStuff( xp, p );
 }
 
-void EndImportDrawablePixmap(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndImportDrawablePixmap(XParms xp, Parms p)
 {
 	FreeImportDrawablePixmapStuff( xp, p );
 }
 
-static void
-FreeImportPhotoStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeImportPhotoStuff(XParms xp, Parms p)
 {
 	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
 	{
@@ -779,10 +735,8 @@ Parms	p;
         }
 }
 
-static void
-FreeImportDrawableWindowStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeImportDrawableWindowStuff(XParms xp, Parms p)
 {
         if ( flograph )
         {
@@ -796,10 +750,8 @@ Parms	p;
         }
 }
 
-static void
-FreeImportDrawablePixmapStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeImportDrawablePixmapStuff(XParms xp, Parms p)
 {
 	XFreePixmap( xp->d, myPixmap );
         if ( flograph )
@@ -814,10 +766,8 @@ Parms	p;
         }
 }
 
-static void
-FreeImportLUTStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeImportLUTStuff(XParms xp, Parms p)
 {
         if ( flograph )
         {
@@ -843,10 +793,8 @@ Parms	p;
 	}
 }
 
-static void
-FreeImportROIStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeImportROIStuff(XParms xp, Parms p)
 {
         if ( flograph )
         {

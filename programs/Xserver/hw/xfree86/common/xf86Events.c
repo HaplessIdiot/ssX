@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.58 1999/01/26 05:53:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.59 1999/02/28 11:19:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -41,8 +41,6 @@
 
 #ifdef XFreeXDGA
 #include "dgaproc.h"
-#define _XF86DGA_SERVER_
-#include "extensions/xf86dgastr.h"
 #endif
 
 #ifdef XINPUT
@@ -141,16 +139,6 @@ extern void xf86XqueRequest(void);
 
 static void xf86VTSwitch(void);
 
-#if 0
-#ifdef XFreeXDGA
-#ifdef XINPUT
-void XF86DirectVideoMoveMouse(int x, int y, CARD32 mtime);
-#else
-static void XF86DirectVideoMoveMouse(int x, int y, CARD32 mtime);
-#endif
-static void XF86DirectVideoKeyEvent(xEvent *xE, int keycode, int etype);
-#endif
-#endif
 static CARD32 buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg);
 
 /*
@@ -971,19 +959,7 @@ xf86PostKbdEvent(unsigned key)
     }
   else 
     {
-#if 0
-#ifdef XFreeXDGA
-      if (DGAAvailable(xf86Info.currentScreen->myNum) &&
-	  (DGAGetFlags(xf86Info.currentScreen->myNum) & XF86DGADirectKeyb)) {
-	  XF86DirectVideoKeyEvent(&kevent, keycode,
-				  (down ? KeyPress : KeyRelease));
-      } else
-#endif
-#endif
-     {
-         ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
-
-      }
+      ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
     }
 }
 #endif /* !__EMX__ */
@@ -1041,19 +1017,9 @@ xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
     }
 
 #ifndef XINPUT
-#if 0
-#ifdef XFreeXDGA
-      if (DGAAvailable(xf86Info.currentScreen->myNum) &&
-	  (DGAGetFlags(xf86Info.currentScreen->myNum) & XF86DGADirectMouse)) {
-	XF86DirectVideoMoveMouse(dx, dy, mevent->u.keyButtonPointer.time);
-      } else
-#endif
-#endif
-	{
-	  MOVEPOINTER(dx, dy, mevent->u.keyButtonPointer.time);
-	}
+    MOVEPOINTER(dx, dy, mevent->u.keyButtonPointer.time);
 #else
-      xf86PostMotionEvent(device, 0, 0, 2, dx, dy);
+    xf86PostMotionEvent(device, 0, 0, 2, dx, dy);
 #endif
   }
 
@@ -1285,22 +1251,9 @@ xf86VTSwitch()
   ErrorF("xf86VTSwitch()\n");
 #endif
 
-#if 0
 #ifdef XFreeXDGA
-  /*
-   * Not ideal, but until someone adds DGA events to the DGA client we
-   * should protect the machine.
-   *
-   * If any of the screens has DGA direct mode activated, abort the
-   * switch.
-   */
-  
-  for (i = 0; i < xf86NumScreens; i++)
-    if (DGAAvailable(i) && DGAGetDirectMode(i)) {
-      xf86Info.vtRequestsPending = FALSE;
-      return;
-    }
-#endif
+  if(!DGAVTSwitch(i))
+	return;
 #endif
 
   /*
@@ -1427,50 +1380,3 @@ XTestGenerateEvent(int dev_type, int keycode, int keystate, int mousex,
 
 #endif /* XTESTEXT1 */
 
-#if 0
-#ifdef XFreeXDGA
-#ifdef XINPUT
-void
-#else
-static void
-#endif
-XF86DirectVideoMoveMouse(int x, int y, CARD32 mtime)
-{
-  xEvent xE;
-
-  xE.u.u.type = MotionNotify;
-  xE.u.keyButtonPointer.time = xf86Info.lastEventTime = mtime;
-  xf86Info.lastEventTime = mtime;
-
-
-  xE.u.keyButtonPointer.eventY = x;
-  xE.u.keyButtonPointer.eventY = y;
-  xE.u.keyButtonPointer.rootX = x;
-  xE.u.keyButtonPointer.rootY = y;
-
-  if (((DeviceIntPtr)(xf86Info.pMouse))->grab)
-     DeliverGrabbedEvent(&xE, (xf86Info.pMouse), FALSE, 1);
-  else
-     DeliverDeviceEvents(GetSpriteWindow(), &xE, NullGrab, NullWindow,
-			   (xf86Info.pMouse), 1);
-}
-
-static void
-XF86DirectVideoKeyEvent(xEvent *xE, int keycode, int etype)
-{
-  DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
-  KeyClassPtr keyc = keybd->key;
-  BYTE *kptr;
-
-  kptr = &keyc->down[keycode >> 3];
-  xE->u.u.type = etype;
-  xE->u.u.detail = keycode;
-
-  /* clear the keypress state */
-  if (etype == KeyPress) {
-    *kptr &= ~(1 << (keycode & 7));
-  }
-  keybd->public.processInputProc(xE, keybd, 1);
-}
-#endif
-#endif

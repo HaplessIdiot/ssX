@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.18 1998/10/04 09:41:24 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.19 1999/02/25 06:01:30 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -34,6 +34,9 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #include <errno.h>
 #include <setjmp.h>
+#ifdef NeedVarargsPrototypes
+#include <stdarg.h>
+#endif
 
 #if !defined(SIGCHLD) && defined(SIGCLD)
 #define SIGCHLD SIGCLD
@@ -107,19 +110,7 @@ char *server_names[] = {
     "XmacII      Apple monochrome display on Macintosh II",
 #endif
 #ifdef XFREE86
-    "XF86_SVGA   SVGA color display on i386 PC",
-    "XF86_Mono   monochrome display on i386 PC",
-    "XF86_VGA16  16 color VGA display on i386 PC",
-    "XF86_S3     S3 color display on i386 PC",
-    "XF86_S3V    S3 ViRGE color display on i386 PC",
-    "XF86_8514   IBM 8514/A color display on i386 PC",
-    "XF86_Mach8  ATI Mach8 color display on i386 PC",
-    "XF86_Mach32 ATI Mach32 color display on i386 PC",
-    "XF86_Mach64 ATI Mach64 color display on i386 PC",
-    "XF86_P9000  Weitek P9000 color display on i386 PC",
-    "XF86_AGX    IIT AGX color display on i386 PC",
-    "XF86_W32    Tseng ET4000/W32 color display on i386 PC",
-    "XF86_I128   #9 I128 color display on i386 PC",
+    "XFree86     XFree86 displays",
 #endif
     NULL};
 
@@ -166,9 +157,17 @@ int clientpid = -1;
 extern int errno;
 #endif
 
+static void Execute ( char **vec, char **envp );
+static Bool waitforserver ( void );
+static Bool processTimeout ( int timeout, char *string );
+static int startServer ( char *server[] );
+static int startClient ( char *client[] );
+static int ignorexio ( Display *dpy );
+static void shutdown ( void );
+static void set_environment ( void );
+static void Fatal(char *msg);
+static void Error ( char *fmt, ... );
 
-static void shutdown();
-static void set_environment();
 
 #ifdef SIGNALRETURNSINT
 #define SIGVAL int
@@ -176,8 +175,8 @@ static void set_environment();
 #define SIGVAL void
 #endif
 
-SIGVAL sigCatch(sig)
-	int	sig;
+static SIGVAL 
+sigCatch(int sig)
 {
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGINT, SIG_IGN);
@@ -188,26 +187,25 @@ SIGVAL sigCatch(sig)
 	exit(1);
 }
 
-SIGVAL sigAlarm(sig)
-	int sig;
+static SIGVAL 
+sigAlarm(int sig)
 {
 #if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__EMX__)
 	signal (sig, sigAlarm);
 #endif
 }
 
-SIGVAL
-sigUsr1(sig)
-	int sig;
+static SIGVAL
+sigUsr1(int sig)
 {
 #if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__EMX__)
 	signal (sig, sigUsr1);
 #endif
 }
 
-static void Execute (vec, envp)
-    char **vec;				/* has room from up above */
-    char **envp;
+static void 
+Execute(char **vec,		/* has room from up above */
+	char **envp)
 {
     Execvpe (vec[0], vec, envp);
 #ifndef __EMX__
@@ -221,11 +219,11 @@ static void Execute (vec, envp)
 }
 
 #ifndef __EMX__
-main(argc, argv)
-int argc;
-register char **argv;
+int
+main(int argc, char *argv[])
 #else
-main(int argc, char **argv, char **envp)
+int
+main(int argc, char *argv[], char *envp[])
 #endif
 {
 	register char **sptr = server;
@@ -424,14 +422,14 @@ main(int argc, char **argv, char **envp)
 /*
  *	waitforserver - wait for X server to start up
  */
-
-waitforserver()
+static Bool
+waitforserver(void)
 {
 	int	ncycles	 = 120;		/* # of cycles to wait */
 	int	cycles;			/* Wait cycle count */
 
 	for (cycles = 0; cycles < ncycles; cycles++) {
-		if (xd = XOpenDisplay(displayNum)) {
+		if ((xd = XOpenDisplay(displayNum))) {
 			return(TRUE);
 		}
 		else {
@@ -449,9 +447,8 @@ waitforserver()
 /*
  * return TRUE if we timeout waiting for pid to exit, FALSE otherwise.
  */
-processTimeout(timeout, string)
-	int	timeout;
-	char	*string;
+static Bool
+processTimeout(int timeout, char *string)
 {
 	int	i = 0, pidfound = -1;
 	static char	*laststring;
@@ -488,8 +485,8 @@ processTimeout(timeout, string)
 	return( serverpid != pidfound );
 }
 
-startServer(server)
-	char *server[];
+static int
+startServer(char *server[])
 {
 	serverpid = vfork();
 	switch(serverpid) {
@@ -575,8 +572,8 @@ startServer(server)
 	return(serverpid);
 }
 
-startClient(client)
-	char *client[];
+static int
+startClient(char *client[])
 {
 	if ((clientpid = vfork()) == 0) {
 		setuid(getuid());
@@ -605,9 +602,8 @@ startClient(client)
 
 static jmp_buf close_env;
 
-static int
-ignorexio (dpy)
-    Display *dpy;
+static int 
+ignorexio(Display *dpy)
 {
     fprintf (stderr, "%s:  connection to X server lost.\r\n", program);
     longjmp (close_env, 1);
@@ -615,8 +611,8 @@ ignorexio (dpy)
     return 0;
 }
 
-static
-void shutdown()
+static void 
+shutdown(void)
 {
 	/* have kept display opened, so close it now */
 	if (clientpid > 0) {
@@ -669,7 +665,8 @@ void shutdown()
  * make a new copy of environment that has room for DISPLAY
  */
 
-static void set_environment ()
+static void 
+set_environment(void)
 {
     int nenvvars;
     char **newPtr, **oldPtr;
@@ -703,18 +700,22 @@ static void set_environment ()
     return;
 }
 
-Fatal(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-	char	*fmt;
+static void
+Fatal(char *msg)
 {
-	Error(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+	Error(msg);
 	exit(ERR_EXIT);
 }
 
-Error(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-	char	*fmt;
+static void
+Error(char *fmt, ...)
 {
+        va_list ap;
+
+	va_start(ap, fmt);
 	fprintf(stderr, "%s:  ", program);
 	if (errno > 0)
 	  fprintf (stderr, "%s (errno %d):  ", strerror(errno), errno);
-	fprintf(stderr, fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
 }

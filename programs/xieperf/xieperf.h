@@ -1,16 +1,11 @@
-/* $XConsortium: xieperf.h,v 1.16 94/04/17 20:39:42 rws Exp $ */
+/* $TOG: xieperf.h /main/17 1998/02/09 14:02:07 kaleb $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -18,13 +13,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -72,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-
+#include <stdio.h>
 #ifndef VMS
 #include <X11/Xatom.h>
 #include <X11/Xos.h>
@@ -103,7 +98,11 @@ char *malloc();
 char *realloc();
 #endif
 #include <fcntl.h>
-
+#ifdef SIGNALRETURNSINT
+#define SIGNAL_T int
+#else
+#define SIGNAL_T void
+#endif
 
 #define WIDTH         600	/* Size of large window to work within  */
 #define HEIGHT        600
@@ -111,11 +110,6 @@ char *realloc();
 #define	MONWIDTH      350 
 #define	MONHEIGHT     200 
 
-typedef Bool (*InitProc)    (/* XParms xp; Parms p */);
-typedef void (*Proc)	    (/* XParms xp; Parms p */);
-
-extern void NullProc	    (/* XParms xp; Parms p */);
-extern Bool NullInitProc    (/* XParms xp; Parms p */);
 
 #define VALL	   	 1		/* future use - see x11perf.h */
 
@@ -497,7 +491,7 @@ typedef struct _convolveParms {
     short		height;
     XieConvolveTechnique tech;
     XieConstant		constant;
-    int			( * kfunc )();
+    int			( * kfunc )(float **);
 } ConvolveParms;
 
 typedef struct _queryParms {
@@ -534,6 +528,10 @@ typedef struct _XParms {
     int		    screenDepth;	/* effective depth of drawables */
 } XParmRec, *XParms;
 
+typedef Bool (*InitProc)    (XParms, Parms, int);
+typedef void (*Proc)	    (XParms, Parms, int);
+typedef void (*CleanupProc) (XParms xp, Parms p);
+
 typedef int TestType;
 
 typedef struct _Test {
@@ -541,8 +539,8 @@ typedef struct _Test {
     char	*label;     /* Fuller description of test		    */
     InitProc    init;       /* Initialization procedure			    */
     Proc	proc;       /* Timed benchmark procedure		    */
-    Proc	passCleanup;/* Cleanup between repetitions of same test     */
-    Proc	cleanup;    /* Cleanup after test			    */
+    CleanupProc	passCleanup;/* Cleanup between repetitions of same test     */
+    CleanupProc	cleanup;    /* Cleanup after test			    */
     Version     versions;   /* future expansion	    */
     TestType    testType;   /* future expansion     */
     int		clips;      /* Number of obscuring windows to force clipping*/
@@ -553,10 +551,468 @@ extern Test test[];
 
 #define ForEachTest(x) for (x = 0; test[x].option != NULL; x++)
 
-XiePhotomap GetXIEPhotomap();
-XieRoi GetXIERoi();
-XieLut GetXIELut();
-Display *GetDisplay();
+/* abort.c */
+extern int InitAbort ( XParms xp, Parms p, int reps );
+extern void DoAbort ( XParms xp, Parms p, int reps );
+extern void EndAbort ( XParms xp, Parms p );
+extern void FreeAbortStuff ( XParms xp, Parms p );
+
+/* arith.c */
+extern int InitArithmetic ( XParms xp, Parms p, int reps );
+extern void DoArithmetic ( XParms xp, Parms p, int reps );
+extern void EndArithmetic ( XParms xp, Parms p );
+extern void FreeArithStuff ( XParms xp, Parms p );
+
+/* await.c */
+extern int InitAwait ( XParms xp, Parms p, int reps );
+extern void AbortFlo ( XParms xp );
+extern SIGNAL_T AwaitHandler ( int sig );
+extern void DoAwait ( XParms xp, Parms p, int reps );
+extern void EndAwait ( XParms xp, Parms p );
+extern void FreeAwaitStuff ( XParms xp, Parms p );
+
+/* band.c */
+extern int InitBandSelectExtract ( XParms xp, Parms p, int reps );
+extern int InitBandColormap ( XParms xp, Parms p, int reps );
+extern int InitBandCombine ( XParms xp, Parms p, int reps );
+extern int CreateColorBandSelectExtractFlo ( XParms xp, Parms p );
+extern void DoBand ( XParms xp, Parms p, int reps );
+extern void EndBandCombine ( XParms xp, Parms p );
+extern void EndBandColormap ( XParms xp, Parms p );
+extern void EndBandSelectExtract ( XParms xp, Parms p );
+extern void FreeBandStuff ( XParms xp, Parms p );
+
+/* blend.c */
+extern int InitBlend ( XParms xp, Parms p, int reps );
+extern void DoBlend ( XParms xp, Parms p, int reps );
+extern void EndBlend ( XParms xp, Parms p );
+extern void FreeBlendStuff ( XParms xp, Parms p );
+
+/* cache.c */
+extern void CacheInit ( void );
+extern void FlushCache ( void );
+extern int SetImageActiveState ( XIEimage *image, Bool active );
+extern int SetPhotomapActiveState ( XiePhotomap pId, Bool active );
+extern int AddToCache ( XIEimage *image, XiePhotomap pId );
+extern Bool IsImageInCache ( XIEimage *image );
+extern Bool IsPhotomapInCache ( XiePhotomap pId );
+extern XiePhotomap PhotomapOfImage ( XIEimage *image );
+extern int RemoveImageFromCache ( XIEimage *image );
+extern int RemovePhotomapFromCache ( XiePhotomap pId );
+extern int TouchImage ( XIEimage *image );
+extern int TouchPhotomap ( XiePhotomap pId );
+extern XIEimage * GetLRUImage ( void );
+extern XiePhotomap GetLRUPhotomap ( void );
+extern void DumpCache ( void );
+
+/* compare.c */
+extern int InitCompare ( XParms xp, Parms p, int reps );
+extern void DoCompare ( XParms xp, Parms p, int reps );
+extern void EndCompare ( XParms xp, Parms p );
+extern void FreeCompareStuff ( XParms xp, Parms p );
+
+/* complex.c */
+extern int InitComplex ( XParms xp, Parms p, int reps );
+extern int CreateComplexFlo ( XParms xp, Parms p );
+extern void DoComplex ( XParms xp, Parms p, int reps );
+extern void EndComplex ( XParms xp, Parms p );
+extern void FreeComplexStuff ( XParms xp, Parms p );
+
+/* constrain.c */
+extern int InitConstrain ( XParms xp, Parms p, int reps );
+extern void DoConstrain ( XParms xp, Parms p, int reps );
+extern void EndConstrain ( XParms xp, Parms p );
+extern void FreeConstrainStuff ( XParms xp, Parms p );
+
+/* convolve.c */
+extern int InitConvolve ( XParms xp, Parms p, int reps );
+extern void DoConvolve ( XParms xp, Parms p, int reps );
+extern void EndConvolve ( XParms xp, Parms p );
+extern void FreeConvolveStuff ( XParms xp, Parms p );
+extern int Boxcar3 ( float **data );
+extern int Boxcar5 ( float **data );
+extern int LaPlacian3 ( float **data );
+extern int LaPlacian5 ( float **data );
+
+/* creatdstry.c */
+extern int InitCreateDestroyPhotoflo ( XParms xp, Parms p, int reps );
+extern int InitCreateDestroy ( XParms xp, Parms p, int reps );
+extern void DoCreateDestroyColorList ( XParms xp, Parms p, int reps );
+extern void DoCreateDestroyLUT ( XParms xp, Parms p, int reps );
+extern void DoCreateDestroyPhotomap ( XParms xp, Parms p, int reps );
+extern void DoCreateDestroyROI ( XParms xp, Parms p, int reps );
+extern void DoCreateDestroyPhotospace ( XParms xp, Parms p, int reps );
+extern void DoCreateDestroyPhotoflo ( XParms xp, Parms p, int reps );
+extern void EndCreateDestroy ( XParms xp, Parms p );
+extern void EndCreateDestroyPhotoflo ( XParms xp, Parms p );
+extern void FreeCreateDestroyPhotofloStuff ( XParms xp, Parms p );
+
+/* cvttoindex.c */
+extern int InitConvertToIndex ( XParms xp, Parms p, int reps );
+extern void DoConvertToIndex ( XParms xp, Parms p, int reps );
+extern void DoColorAllocEvent ( XParms xp, Parms p, int reps );
+extern void EndConvertToIndex ( XParms xp, Parms p );
+extern void FreeCvtToIndexStuff ( XParms xp, Parms p );
+
+/* dither.c */
+extern int InitDither ( XParms xp, Parms p, int reps );
+extern void DoDither ( XParms xp, Parms p, int reps );
+extern void EndDither ( XParms xp, Parms p );
+extern void FreeDitherStuff ( XParms xp, Parms p );
+
+/* encode.c */
+extern int InitEncodePhotomap ( XParms xp, Parms p, int reps );
+extern void DoEncodePhotomap ( XParms xp, Parms p, int reps );
+extern void DoEncodeClientPhotomap ( XParms xp, Parms p, int reps );
+extern void EndEncodePhotomap ( XParms xp, Parms p );
+extern void FreeEncodePhotomapStuff ( XParms xp, Parms p );
+
+/* errors.c */
+extern int InitErrors ( XParms xp, Parms p, int reps );
+extern int InitCoreErrors ( XParms xp, Parms p, int reps );
+extern int InitFloAccessError ( XParms xp, Parms p, int reps );
+extern int InitBadValue ( XParms xp, Parms p, int reps );
+extern int InitFloErrors ( XParms xp, Parms p, int reps );
+extern int InitPhotofloError ( XParms xp, Parms p, int reps );
+extern int InitFloMatchError ( XParms xp, Parms p, int reps );
+extern int InitFloTechniqueError ( XParms xp, Parms p, int reps );
+extern int InitFloPhotomapError ( XParms xp, Parms p, int reps );
+extern int InitFloSourceError ( XParms xp, Parms p, int reps );
+extern int InitFloElementError ( XParms xp, Parms p, int reps );
+extern int InitFloDrawableError ( XParms xp, Parms p, int reps );
+extern int InitFloColorListError ( XParms xp, Parms p, int reps );
+extern int InitFloColormapError ( XParms xp, Parms p, int reps );
+extern int InitFloGCError ( XParms xp, Parms p, int reps );
+extern int InitFloOperatorError ( XParms xp, Parms p, int reps );
+extern int InitFloDomainError ( XParms xp, Parms p, int reps );
+extern int InitFloIDError ( XParms xp, Parms p, int reps );
+extern int InitFloValueError ( XParms xp, Parms p, int reps );
+extern int InitFloROIError ( XParms xp, Parms p, int reps );
+extern int InitFloLUTError ( XParms xp, Parms p, int reps );
+extern void DoBadValueError ( XParms xp, Parms p, int reps );
+extern void DoColorListError ( XParms xp, Parms p, int reps );
+extern void DoFloErrorImmediate ( XParms xp, Parms p, int reps );
+extern void DoPhotospaceError ( XParms xp, Parms p, int reps );
+extern void DoROIError ( XParms xp, Parms p, int reps );
+extern void DoFloElementError ( XParms xp, Parms p, int reps );
+extern void DoLUTError ( XParms xp, Parms p, int reps );
+extern void DoFloIDError ( XParms xp, Parms p, int reps );
+extern void DoPhotomapError ( XParms xp, Parms p, int reps );
+extern void DoErrors ( XParms xp, Parms p, int reps );
+extern void EndErrors ( XParms xp, Parms p );
+extern void EndCoreErrors ( XParms xp, Parms p );
+extern void EndFloErrors ( XParms xp, Parms p );
+extern void FreeErrorWithPhotomapStuff ( XParms xp, Parms p );
+extern void FreeErrorWithROIStuff ( XParms xp, Parms p );
+extern void FreeErrorWithLUTStuff ( XParms xp, Parms p );
+extern void FreeFloErrorStuff ( XParms xp, Parms p );
+
+/* events.c */
+extern int GetTimeout ( void );
+extern void SetTimeout ( int time );
+extern void InitEventInfo ( Display *display, XieExtensionInfo *info );
+extern void GetExtensionInfo ( XieExtensionInfo **info );
+extern Bool event_check ( Display *display, XEvent *event, char *arg );
+extern int WaitForXIEEvent ( XParms xp, int which, XiePhotoflo flo_id, XiePhototag tag, Bool verbose );
+extern int InitEvents ( XParms xp, Parms p, int reps );
+extern int InitPhotofloDoneEvent ( XParms xp, Parms p, int reps );
+extern int InitColorAllocEvent ( XParms xp, Parms p, int reps );
+extern int InitDecodeNotifyEvent ( XParms xp, Parms p, int reps );
+extern int InitImportObscuredEvent ( XParms xp, Parms p, int reps );
+extern int InitExportAvailableEvent ( XParms xp, Parms p, int reps );
+extern void DoPhotofloDoneEvent ( XParms xp, Parms p, int reps );
+extern void DoDecodeNotifyEvent ( XParms xp, Parms p, int reps );
+extern void DoImportObscuredEvent ( XParms xp, Parms p, int reps );
+extern void DoExportAvailableEvent ( XParms xp, Parms p, int reps );
+extern void EndEvents ( XParms xp, Parms p );
+extern void FreePhotofloDoneEventStuff ( XParms xp, Parms p );
+extern void FreeImportObscuredEventStuff ( XParms xp, Parms p );
+extern void FreeExportAvailableEventStuff ( XParms xp, Parms p );
+extern void FreeDecodeNotifyEventStuff ( XParms xp, Parms p );
+
+/* exportcl.c */
+extern int InitExportClientPhoto ( XParms xp, Parms p, int reps );
+extern int InitExportClientLUT ( XParms xp, Parms p, int reps );
+extern int InitExportClientROI ( XParms xp, Parms p, int reps );
+extern int InitExportClientHistogram ( XParms xp, Parms p, int reps );
+extern void DoExportClientPhotoCSum ( XParms xp, Parms p, int reps );
+extern void DoExportClientPhoto ( XParms xp, Parms p, int reps );
+extern void DoExportClientHistogram ( XParms xp, Parms p, int reps );
+extern void DoExportClientLUT ( XParms xp, Parms p, int reps );
+extern void DoExportClientROI ( XParms xp, Parms p, int reps );
+extern void EndExportClientLUT ( XParms xp, Parms p );
+extern void EndExportClientPhoto ( XParms xp, Parms p );
+extern void EndExportClientHistogram ( XParms xp, Parms p );
+extern void EndExportClientROI ( XParms xp, Parms p );
+extern void FreeExportClientPhotoStuff ( XParms xp, Parms p );
+extern void FreeExportClientROIStuff ( XParms xp, Parms p );
+extern void FreeExportClientLUTStuff ( XParms xp, Parms p );
+extern void FreeExportClientHistogramStuff ( XParms xp, Parms p );
+
+/* funcode.c */
+extern int InitFunnyEncode ( XParms xp, Parms p, int reps );
+extern void DoFunnyEncode ( XParms xp, Parms p, int reps );
+extern void EndFunnyEncode ( XParms xp, Parms p );
+extern void FreeFunnyEncodeStuff ( XParms xp, Parms p );
+
+/*  geometry.c */
+extern int InitGeometry ( XParms xp, Parms p, int reps );
+extern void DoGeometry ( XParms xp, Parms p, int reps );
+extern int InitGeometryFAX ( XParms xp, Parms p, int reps );
+extern void DoGeometryFAX ( XParms xp, Parms p, int reps );
+extern int SetCoefficients ( XParms xp, Parms p, int which, GeometryParms *gp, float coeffs[] );
+extern void EndGeometry ( XParms xp, Parms p );
+extern void FreeGeometryStuff ( XParms xp, Parms p );
+extern void EndGeometryFAX ( XParms xp, Parms p );
+extern void FreeGeometryFAXStuff ( XParms xp, Parms p );
+
+/* getnext.c */
+extern int GetNextTest ( FILE *fp, int *repeat, int *reps );
+
+/* import.c */
+extern int InitImportDrawablePixmap ( XParms xp, Parms p, int reps );
+extern int InitImportDrawableWindow ( XParms xp, Parms p, int reps );
+extern int InitImportDrawablePlanePixmap ( XParms xp, Parms p, int reps );
+extern int InitImportDrawablePlaneWindow ( XParms xp, Parms p, int reps );
+extern int InitImportPhoto ( XParms xp, Parms p, int reps );
+extern int InitImportPhotoExportDrawable ( XParms xp, Parms p, int reps );
+extern int InitImportLUT ( XParms xp, Parms p, int reps );
+extern int InitImportROI ( XParms xp, Parms p, int reps );
+extern void DoImportPhoto ( XParms xp, Parms p, int reps );
+extern void DoImportDrawablePixmap ( XParms xp, Parms p, int reps );
+extern void DoImportDrawableWindow ( XParms xp, Parms p, int reps );
+extern void DoImportDrawablePlanePixmap ( XParms xp, Parms p, int reps );
+extern void DoImportDrawablePlaneWindow ( XParms xp, Parms p, int reps );
+extern void DoImportLUT ( XParms xp, Parms p, int reps );
+extern void DoImportROI ( XParms xp, Parms p, int reps );
+extern void EndImportLUT ( XParms xp, Parms p );
+extern void EndImportPhoto ( XParms xp, Parms p );
+extern void EndImportROI ( XParms xp, Parms p );
+extern void EndImportDrawableWindow ( XParms xp, Parms p );
+extern void EndImportDrawablePixmap ( XParms xp, Parms p );
+extern void FreeImportPhotoStuff ( XParms xp, Parms p );
+extern void FreeImportDrawableWindowStuff ( XParms xp, Parms p );
+extern void FreeImportDrawablePixmapStuff ( XParms xp, Parms p );
+extern void FreeImportLUTStuff ( XParms xp, Parms p );
+extern void FreeImportROIStuff ( XParms xp, Parms p );
+
+/* importctl.c */
+extern int InitImportClientPhoto ( XParms xp, Parms p, int reps );
+extern int InitImportClientPhotoExportDrawable ( XParms xp, Parms p, 
+						 int reps );
+extern int InitImportClientLUT ( XParms xp, Parms p, int reps );
+extern int InitImportClientROI ( XParms xp, Parms p, int reps );
+extern void DoImportClientPhoto ( XParms xp, Parms p, int reps );
+extern void DoImportClientLUT ( XParms xp, Parms p, int reps );
+extern void DoImportClientROI ( XParms xp, Parms p, int reps );
+extern void EndImportClientLUT ( XParms xp, Parms p );
+extern void FreeImportClientLUTStuff ( XParms xp, Parms p );
+extern void EndImportClientPhoto ( XParms xp, Parms p );
+extern void FreeImportClientPhotoStuff ( XParms xp, Parms p );
+extern void EndImportClientROI ( XParms xp, Parms p );
+extern void FreeImportClientROIStuff ( XParms xp, Parms p );
+
+/* logical.c */
+extern int InitLogical ( XParms xp, Parms p, int reps );
+extern void DoLogical ( XParms xp, Parms p, int reps );
+extern void EndLogical ( XParms xp, Parms p );
+extern void FreeLogicalStuff ( XParms xp, Parms p );
+
+/* math.c */
+extern int InitMath ( XParms xp, Parms p, int reps );
+extern void DoMath ( XParms xp, Parms p, int reps );
+extern void EndMath ( XParms xp, Parms p );
+extern void FreeMathStuff ( XParms xp, Parms p );
+
+/* modify.c */
+extern int InitModifyROI ( XParms xp, Parms p, int reps );
+extern void DoModifyROI ( XParms xp, Parms p, int reps );
+extern void EndModifyROI ( XParms xp, Parms p );
+extern void FreeModifyROIStuff ( XParms xp, Parms p );
+extern int InitModifyPoint ( XParms xp, Parms p, int reps );
+extern void DoModifyPoint ( XParms xp, Parms p, int reps );
+extern void EndModifyPoint ( XParms xp, Parms p );
+extern void FreeModifyPointStuff ( XParms xp, Parms p );
+extern int InitModifySimple ( XParms xp, Parms p, int reps );
+extern void DoModifySimple ( XParms xp, Parms p, int reps );
+extern void EndModifySimple ( XParms xp, Parms p );
+extern void FreeModifySimpleStuff ( XParms xp, Parms p );
+extern int InitModifyLong1 ( XParms xp, Parms p, int reps );
+extern void DoModifyLong1 ( XParms xp, Parms p, int reps );
+extern void EndModifyLong ( XParms xp, Parms p );
+extern void FreeModifyLongStuff ( XParms xp, Parms p );
+extern int InitModifyLong2 ( XParms xp, Parms p, int reps );
+extern void DoModifyLong2 ( XParms xp, Parms p, int reps );
+
+/* mtchhist.c */
+extern int InitMatchHistogram ( XParms xp, Parms p, int reps );
+extern void DoMatchHistogram ( XParms xp, Parms p, int reps );
+extern void EndMatchHistogram ( XParms xp, Parms p );
+extern void FreeMatchHistogramStuff ( XParms xp, Parms p );
+
+/* pasteup.c */
+extern int InitPasteUp ( XParms xp, Parms p, int reps );
+extern void DoPasteUp ( XParms xp, Parms p, int reps );
+extern void EndPasteUp ( XParms xp, Parms p );
+extern void FreePasteUpStuff ( XParms xp, Parms p );
+
+/* point.c */
+extern int InitPoint ( XParms xp, Parms p, int reps );
+extern void DoPoint ( XParms xp, Parms p, int reps );
+extern void EndPoint ( XParms xp, Parms p );
+extern void FreePointStuff ( XParms xp, Parms p );
+extern int InitTriplePoint ( XParms xp, Parms p, int reps );
+extern void DoTriplePoint ( XParms xp, Parms p, int reps );
+extern void EndTriplePoint ( XParms xp, Parms p );
+extern void FreeTriplePointStuff ( XParms xp, Parms p );
+
+/* purgecolst.c */
+extern int InitPurgeColorList ( XParms xp, Parms p, int reps );
+extern void DoPurgeColorList ( XParms xp, Parms p, int reps );
+extern void EndPurgeColorList ( XParms xp, Parms p );
+
+/* query.c */
+extern int InitQueryTechniques ( XParms xp, Parms p, int reps );
+extern int InitQueryColorList ( XParms xp, Parms p, int reps );
+extern int InitQueryPhotomap ( XParms xp, Parms p, int reps );
+extern int InitQueryPhotoflo ( XParms xp, Parms p, int reps );
+extern void DoQueryTechniques ( XParms xp, Parms p, int reps );
+extern void DoQueryColorList ( XParms xp, Parms p, int reps );
+extern void DoQueryPhotomap ( XParms xp, Parms p, int reps );
+extern void DoQueryPhotoflo ( XParms xp, Parms p, int reps );
+extern void EndQueryTechniques ( XParms xp, Parms p );
+extern void EndQueryColorList ( XParms xp, Parms p );
+extern void FreeQueryColorListStuff ( XParms xp, Parms p );
+extern void EndQueryPhotomap ( XParms xp, Parms p );
+extern void FreeQueryPhotomapStuff ( XParms xp, Parms p );
+extern void EndQueryPhotoflo ( XParms xp, Parms p );
+extern void FreeQueryPhotofloStuff ( XParms xp, Parms p );
+
+/* redefine.c */
+extern int InitRedefine ( XParms xp, Parms p, int reps );
+extern void DoRedefine ( XParms xp, Parms p, int reps );
+extern void EndRedefine ( XParms xp, Parms p );
+extern void FreeRedefineStuff ( XParms xp, Parms p );
+
+/* rgb.c */
+extern int InitRGB ( XParms xp, Parms p, int reps );
+extern void DoRGB ( XParms xp, Parms p, int reps );
+extern void EndRGB ( XParms xp, Parms p );
+extern void FreeRGBStuff ( XParms xp, Parms p );
+
+/* tests.c */
+extern XIEimage * GetImageStruct ( int which );
+extern void ReclaimPhotomapMemory ( void );
+
+/* uconstrain.c */
+extern int InitUnconstrain ( XParms xp, Parms p, int reps );
+extern void DoUnconstrain ( XParms xp, Parms p, int reps );
+extern void EndUnconstrain ( XParms xp, Parms p );
+extern void FreeUnconstrainStuff ( XParms xp, Parms p );
+
+/* xieperf.c */
+extern Display * GetDisplay ( void );
+extern Display *Open_Display ( char *display_name );
+extern SIGNAL_T Cleanup ( int sig );
+extern void NullProc ( XParms xp, Parms p );
+extern Bool NullInitProc ( XParms xp, Parms p, int reps );
+extern void InstallThisColormap ( XParms xp, Colormap newcmap );
+extern void InstallDefaultColormap ( XParms xp );
+extern void InstallGrayColormap ( XParms xp );
+extern void InstallEmptyColormap ( XParms xp );
+extern void InstallColorColormap ( XParms xp );
+extern int TestIndex ( char *testname );
+extern void PumpTheClientData ( XParms xp, Parms p, int flo_id, 
+			       XiePhotospace photospace, int element, 
+			       char *data, int size, int band_number );
+extern int ReadNotifyExportData ( XParms xp, Parms p, unsigned long namespace, 
+				  int flo_id, XiePhototag element, 
+				  unsigned int elementsz, unsigned int numels, 
+				  char **data, int *done );
+extern int ReadNotifyExportTripleData ( XParms xp, Parms p, 
+					unsigned long namespace, int flo_id, 
+					XiePhototag element, 
+					unsigned int elementsz, 
+					unsigned int numels, char **data, 
+					int *done );
+extern unsigned int CheckSum ( char *data, unsigned int size );
+extern XiePhotomap GetXIEFAXPhotomap ( XParms xp, Parms p, int which, 
+				       Bool radiometric );
+extern XiePhotomap GetXIETriplePhotomap ( XParms xp, Parms p, int which );
+extern XiePhotomap GetXIEPhotomap ( XParms xp, Parms p, int which );
+extern XiePhotomap GetXIEPointPhotomap ( XParms xp, Parms p, int which, 
+					 int inlevels, Bool useLevels );
+extern XiePhotomap GetXIEGeometryPhotomap ( XParms xp, Parms p, 
+					    GeometryParms *geo, int which );
+extern int GetXIEGeometryWindow ( XParms xp, Parms p, Window w, 
+				  GeometryParms *geo, int which );
+extern int GetXIEPixmap ( XParms xp, Parms p, Pixmap pixmap, int which );
+extern int GetXIEWindow ( XParms xp, Parms p, Window window, int which );
+extern int GetXIEDitheredWindow ( XParms xp, Parms p, Window window, 
+				  int which, int level );
+extern XiePhotomap GetXIEDitheredPhotomap ( XParms xp, Parms p, int which, 
+					    int level );
+extern XiePhotomap GetXIEDitheredTriplePhotomap ( XParms xp, Parms p, int 
+						  which, int ditherTech, 
+						  int threshold, 
+						  XieLTriplet levels );
+extern XiePhotomap GetXIEConstrainedPhotomap ( XParms xp, Parms p, int which, 
+					       XieLTriplet cliplevels, 
+					       int cliptype, 
+					       XieConstant in_low, 
+					       XieConstant in_high, 
+					       XieLTriplet out_low, 
+					       XieLTriplet out_high );
+extern XiePhotomap GetXIEConstrainedTriplePhotomap ( XParms xp, Parms p, 
+						     int which, 
+						     XieLTriplet cliplevels, 
+						     int cliptype, 
+						     XieConstant in_low, 
+						     XieConstant in_high, 
+						     XieLTriplet out_low, 
+						     XieLTriplet out_high );
+extern XiePhotomap GetXIEConstrainedGeometryTriplePhotomap ( XParms xp, 
+							     Parms p, 
+							     int which, 
+							     XieLTriplet cliplevels, 
+							     int cliptype, 
+							     XieConstant in_low, 
+							     XieConstant in_high, 
+							     XieLTriplet out_low, 
+							     XieLTriplet out_high, 
+							     GeometryParms *geo );
+extern XiePhotomap GetXIEGeometryTriplePhotomap ( XParms xp, Parms p, 
+						  int which, 
+						  GeometryParms *geo );
+extern int GetXIEDitheredTripleWindow ( XParms xp, Parms p, Window w, 
+					int which, int ditherTech, 
+					int threshold, XieLTriplet levels );
+extern int GetXIEDitheredStdTripleWindow ( XParms xp, Parms p, Window w, 
+					   int which, int ditherTech, 
+					   int threshold, XieLTriplet levels, 
+					   XStandardColormap *stdCmap );
+extern int GetFileSize ( char *path );
+extern int GetImageData ( XParms xp, Parms p, int which );
+extern XieLut GetXIELut ( XParms xp, Parms p, unsigned char *lut, 
+			  int lutSize, int lutLevels );
+extern XieRoi GetXIERoi ( XParms xp, Parms p, XieRectangle *rects, 
+			  int rectsSize );
+extern int IsDISServer ( void );
+extern Bool TechniqueSupported ( XParms xp, XieTechniqueGroup group, 
+				 unsigned int tech );
+extern void DrawHistogram ( XParms xp, Window w, XieHistogramData histos[], 
+			    int size, unsigned long levels );
+extern int GetStandardColormap ( XParms xp, XStandardColormap *stdColormap, 
+				 Atom atom );
+extern int DepthFromLevels ( int levels );
+extern XieLut CreatePointLut ( XParms xp, Parms p, int inlevels, 
+			       int outlevels, Bool computeLutFromLevels );
+extern int TrueOrDirectLevels ( XParms xp );
+extern int TripleTrueOrDirectLevels ( XParms xp );
+extern int CreateStandardColormap ( XParms xp, XStandardColormap *stdCmap, 
+				    int atom );
+extern XiePhotomap GetControlPlane ( XParms xp, int which );
+extern int icbrt ( int a );
 
 /*****************************************************************************
 

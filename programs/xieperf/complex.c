@@ -87,15 +87,10 @@ static char *techParms2;
 static char *techParms3;
 extern Window drawableWindow;
 
-static void FreeComplexStuff(XParms xp, Parms p);
-
 #define NUMTILES 5
 
 int 
-InitComplex(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+InitComplex(XParms xp, Parms p, int reps)
 {
 #if     defined(__cplusplus) || defined(c_plusplus)
     	cclass = xp->vinfo.c_class;
@@ -156,9 +151,7 @@ int     reps;
 }
 
 int
-CreateComplexFlo( xp, p )
-XParms	xp;
-Parms	p;
+CreateComplexFlo(XParms xp, Parms p)
 {
 	int	tech, idx, pasteSrc, lutSrc1, lutSrc2, lutSrc3;
 	int	pntSrc1, pntSrc2, logSrc1, logSrc2, logSrc3, logSrc4;
@@ -796,10 +789,7 @@ out:
 }
 
 void 
-DoComplex(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoComplex(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -812,18 +802,15 @@ int     reps;
 	XSync( xp->d, 0 );
 }
 
-void EndComplex( xp, p )
-XParms	xp;
-Parms	p;
+void 
+EndComplex(XParms xp, Parms p)
 {
         XUnmapWindow( xp->d, drawableWindow );
 	FreeComplexStuff( xp, p );
 }
 
-static void
-FreeComplexStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeComplexStuff(XParms xp, Parms p)
 {
 	if ( XIEPhotomap1 && IsPhotomapInCache( XIEPhotomap1 ) == False )
 	{

@@ -87,13 +87,8 @@ static int flo_elements;
 static unsigned char *lut;
 static XStandardColormap stdCmap;
 
-static void FreePointStuff(XParms  xp, Parms p);
-static void FreeTriplePointStuff(XParms  xp, Parms p);
-
-int InitPoint(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitPoint(XParms xp, Parms p, int reps)
 {
 	int lutSize, i, idx; 
 	int src1, src2, levelsIn, levelsOut;
@@ -330,10 +325,8 @@ int InitPoint(xp, p, reps)
 	return( reps );
 }
 
-void DoPoint(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoPoint(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -343,18 +336,14 @@ void DoPoint(xp, p, reps)
     	}
 }
 
-void
-EndPoint(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndPoint(XParms xp, Parms p)
 {
 	FreePointStuff( xp, p );
 }
 
-static void
-FreePointStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreePointStuff(XParms xp, Parms p)
 {
 	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
 	{
@@ -401,10 +390,8 @@ Parms	p;
 	}
 }
 
-int InitTriplePoint(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitTriplePoint(XParms xp, Parms p, int reps)
 {
 	int lutSize, idx; 
 	int i, src1, src2;
@@ -436,7 +423,7 @@ int InitTriplePoint(xp, p, reps)
 		return( 0 );
 	}
 
-	fprintf( stderr, "Standard cmap found: dithering input to levels %d, %d, %d\n", stdCmap.red_max + 1, stdCmap.green_max + 1, stdCmap.blue_max + 1 );
+	fprintf( stderr, "Standard cmap found: dithering input to levels %ld, %ld, %ld\n", stdCmap.red_max + 1, stdCmap.green_max + 1, stdCmap.blue_max + 1 );
 	fflush( stderr );
         useDomain = ( ( TriplePointParms * )p->ts )->useDomain;
         bandMask = ( ( TriplePointParms * )p->ts )->bandMask;
@@ -579,10 +566,8 @@ int InitTriplePoint(xp, p, reps)
 	return( reps );
 }
 
-void DoTriplePoint(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoTriplePoint(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -592,19 +577,15 @@ void DoTriplePoint(xp, p, reps)
     	}
 }
 
-void
-EndTriplePoint(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndTriplePoint(XParms xp, Parms p)
 {
 	InstallGrayColormap( xp );
 	FreeTriplePointStuff( xp, p );
 }
 
-static void
-FreeTriplePointStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeTriplePointStuff(XParms xp, Parms p)
 {
 	if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
 	{

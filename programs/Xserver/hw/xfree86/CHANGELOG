@@ -1,5 +1,19 @@
 XFree86 3.9Pc (2 March 1999)
-2290.
+2297. Preliminary work on new DGA event support (#2506, Mark Vojkovich).
+2296. Add rewrite of s3virge driver's accel code (#2505, Mark Vojkovich,
+      Kevin Brosius).
+2295. Remove typos and inconsistencies between the Xv manual pages and
+      the implementation (#2504, Michael Schimek).
+2294. Ansification and gcc warning elimnation in xfwp, xhost, xieperf,
+      xinit, xkbevd, xkbprint, xkbutils, xkill, xlogo (#2502, Matthieu Herrb).
+2293. Fix an MGA driver crash that shows up when running xtest (#2501
+      Alan Hourihane).
+2292. Correctly indicate when the MGA driver auto-detects SDRAM cards
+      (#2500, Alan Hourihane).
+2291. Add "noddc1" and "noddc2" options to the DDC layer to allow DDC to
+      be disabled (#2499, Alan Hourihane).
+2290. Change PsAttVal.c (Xprt/PS) so that values other then {PostScript 2}
+      can be put into xp-raw-formats-supported (#2498, Noah Roberts).
 2289. Fix a 'make includes' problem in lib/font that shows up on SVR4.
 2288. Integrate SGI's GLX and the Mesa core rendering library
       (#2492, Precision Insight, SGI, Mesa).
@@ -28,9 +42,9 @@ XFree86 3.9Pc (2 March 1999)
       Mark Vojkovich).
 2273. Ansification and gcc warning elimnation in x11perf and xauth
       (#2483, Matthieu Herrb).
-2272. Add support for setting write-combining for the frame buffer memory
-      via the PPro/PII MTRR facility provided in Linux 2.2 (#2480,
-      David Wragg).
+2272. Add support for setting write-combining for the frame buffer memory,
+      and disabling WC for MMIO memory via the PPro/PII MTRR facility
+      provided in Linux 2.2 (#2480, 2503, David Wragg).
 2271. Xaw and xedit updates/fixes (#2479, Paulo Cesar Pereira de Andrade).
 2270. Add some more PCI data (#2478, Andrew Aitchison, #2489, 2495,
       Itai Nahshon).
@@ -7350,4 +7364,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.695 1999/02/28 11:19:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.696 1999/03/02 02:49:17 dawes Exp $

@@ -1,16 +1,11 @@
-/* $XConsortium: tests.c,v 1.14 94/04/17 20:39:34 rws Exp $ */
+/* $TOG: tests.c /main/15 1998/02/09 14:01:42 kaleb $ */
 
 /**** module tests.c ****/
 /******************************************************************************
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -18,13 +13,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 				NOTICE
@@ -75,189 +70,6 @@ terms and conditions:
 #include <stdio.h> 	/* for stderr */
 #include "xieperf.h"
 
-extern Bool InitImportPhoto();
-extern Bool InitImportPhotoExportDrawable();
-extern Bool InitConvertToIndex();
-extern Bool InitImportLUT();
-extern Bool InitImportROI();
-extern Bool InitPurgeColorList();
-extern Bool InitDither();
-extern Bool InitImportDrawablePixmap();
-extern Bool InitImportDrawableWindow();
-extern Bool InitImportDrawablePlanePixmap();
-extern Bool InitImportDrawablePlaneWindow();
-extern Bool InitQueryTechniques();
-extern Bool InitQueryColorList();
-extern Bool InitQueryPhotomap();
-extern Bool InitQueryPhotoflo();
-extern Bool InitPasteUp();
-extern Bool InitGeometry();
-extern Bool InitGeometryFAX();
-extern Bool InitAbort();
-extern Bool InitAwait();
-extern Bool InitMatchHistogram();
-extern Bool InitCreateDestroyPhotoflo();
-extern Bool InitCreateDestroy();
-extern Bool InitConstrain();
-extern Bool InitUnconstrain();
-extern Bool InitFunnyEncode();
-extern Bool InitPoint();
-extern Bool InitTriplePoint();
-extern Bool InitModifyLong1();
-extern Bool InitModifyLong2();
-extern Bool InitModifyROI();
-extern Bool InitModifyPoint();
-extern Bool InitModifySimple();
-extern Bool InitRedefine();
-extern Bool InitBlend();
-extern Bool InitLogical();
-extern Bool InitImportClientPhoto();
-extern Bool InitImportClientPhotoExportDrawable();
-extern Bool InitImportClientLUT();
-extern Bool InitImportClientROI();
-extern Bool InitExportClientPhoto();
-extern Bool InitExportClientLUT();
-extern Bool InitExportClientROI();
-extern Bool InitExportClientHistogram();
-extern Bool InitRGB();
-extern Bool InitCompare();
-extern Bool InitEvents();
-extern Bool InitErrors();
-extern Bool InitCoreErrors();
-extern Bool InitFloErrors();
-extern Bool InitArithmetic();
-extern Bool InitMath();
-extern Bool InitConvolve();
-extern Bool InitBandSelectExtract();
-extern Bool InitBandCombine(); 
-extern Bool InitBandColormap();
-extern Bool InitEncodePhotomap();
-extern Bool InitComplex();
-extern void DoConvertToIndex();
-extern void DoCreateDestroyColorList();
-extern void DoCreateDestroyLUT();
-extern void DoCreateDestroyPhotomap();
-extern void DoCreateDestroyROI();
-extern void DoCreateDestroyPhotospace();
-extern void DoCreateDestroyPhotoflo();
-extern void DoRGB();
-extern void DoCompare();
-extern void DoMath();
-extern void DoImportObscuredEvent();
-extern void DoDecodeNotifyEvent();
-extern void DoExportAvailableEvent();
-extern void DoPhotofloDoneEvent();
-extern void DoColorAllocEvent();
-extern void DoArithmetic();
-extern void DoConvolve();
-extern void DoMatchHistogram();
-extern void DoAbort();
-extern void DoAwait();
-extern void DoGeometry();
-extern void DoGeometryFAX();
-extern void DoPasteUp();
-extern void DoUnconstrain();
-extern void DoConstrain();
-extern void DoDither();
-extern void DoFunnyEncode();
-extern void DoPoint();
-extern void DoTriplePoint();
-extern void DoBlend();
-extern void DoLogical();
-extern void DoImportPhoto();
-extern void DoImportLUT();
-extern void DoImportROI();
-extern void DoExportClientPhotoCSum();
-extern void DoExportClientPhoto();
-extern void DoExportClientHistogram();
-extern void DoExportClientLUT();
-extern void DoExportClientROI();
-extern void DoImportDrawablePixmap();
-extern void DoImportDrawableWindow();
-extern void DoImportDrawablePlanePixmap();
-extern void DoImportDrawablePlaneWindow();
-extern void DoImportClientPhoto();
-extern void DoImportClientLUT();
-extern void DoImportClientROI();
-extern void DoQueryTechniques();
-extern void DoQueryColorList();
-extern void DoQueryPhotomap();
-extern void DoQueryPhotoflo();
-extern void DoPurgeColorList();
-extern void DoModifyLong1();
-extern void DoModifyLong2();
-extern void DoModifyROI();
-extern void DoModifyPoint();
-extern void DoModifySimple();
-extern void DoRedefine();
-extern void DoBand();
-extern void DoErrors();
-extern void DoBadValueError();
-extern void DoFloElementError();
-extern void DoFloTechniqueError();
-extern void DoLUTError();
-extern void DoPhotomapError();
-extern void DoROIError();
-extern void DoPhotospaceError();
-extern void DoFloIDError();
-extern void DoFloErrorImmediate();
-extern void DoColorListError();
-extern void DoEncodePhotomap();
-extern void DoEncodeClientPhotomap();
-extern void DoComplex();
-extern void EndConvertToIndex();
-extern void EndRGB();
-extern void EndConvolve();
-extern void EndCompare();
-extern void EndMath();
-extern void EndArithmetic();
-extern void EndPasteUp();
-extern void EndGeometry();
-extern void EndGeometryFAX();
-extern void EndConstrain();
-extern void EndUnconstrain();
-extern void EndFunnyEncode();
-extern void EndPoint();
-extern void EndTriplePoint();
-extern void EndEvents();
-extern void EndFloErrors();
-extern void EndCoreErrors();
-extern void EndErrors();
-extern void EndBlend();
-extern void EndLogical();
-extern void EndImportClientPhoto();
-extern void EndImportClientLUT();
-extern void EndImportClientROI();
-extern void EndExportClientHistogram();
-extern void EndExportClientPhoto();
-extern void EndExportClientLUT();
-extern void EndExportClientROI();
-extern void EndImportPhoto();
-extern void EndImportLUT();
-extern void EndImportROI();
-extern void EndDither();
-extern void EndCreateDestroy();
-extern void EndCreateDestroyPhotoflo();
-extern void EndImportDrawablePixmap();
-extern void EndImportDrawableWindow();
-extern void EndQueryTechniques();
-extern void EndQueryColorList();
-extern void EndQueryPhotomap();
-extern void EndQueryPhotoflo();
-extern void EndPurgeColorList();
-extern void EndMatchHistogram();
-extern void EndAbort();
-extern void EndAwait();
-extern void EndModifyLong();
-extern void EndModifyROI();
-extern void EndModifyPoint();
-extern void EndModifySimple();
-extern void EndRedefine();
-extern void EndBandSelectExtract();
-extern void EndBandCombine();
-extern void EndBandColormap();
-extern void EndEncodePhotomap();
-extern void EndComplex();
 
 static XIEimage ImageInfo[] = { 
 	{ "image.001", 0, xieValSingleBand, { 512, 0, 0 }, 
@@ -673,11 +485,6 @@ static BlendParms BlendParmVec[] = {
 		{ { 0.0, 0.0, 0.0 }, 250.0, 7, DomainROI, 5 },
 		{ { 0.1, 0.0, 0.0 }, 0.5, 7, DomainCtlPlane, 0 },
 				   };
-
-int	Boxcar3();
-int	Boxcar5();
-int	LaPlacian3();
-int	LaPlacian5();
 
 static ConvolveParms ConvolveParmVec[] = { 
 { False, 7, DomainNone, 0, 0, 0, 0, xieValConvolveDefault, { 0.0, 0.0, 0.0 }, Boxcar3 },

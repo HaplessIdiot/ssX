@@ -76,6 +76,8 @@ terms and conditions:
 #include <math.h>
 #include "xieperf.h"
 #include <errno.h>
+#include <X11/Xmu/SysUtil.h>
+#include <X11/Xmu/StdCmap.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #define Time_t long
@@ -89,7 +91,6 @@ extern Time_t time ();
 #endif
 #define lowbit(x) ((x) & (~(x) + 1))
 
-extern XIEimage *GetImageStruct();
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
@@ -153,20 +154,44 @@ static unsigned long whiteidx, blackidx;
 unsigned long DCRedMask, DCGreenMask, DCBlueMask;
 static unsigned char rbits, gbits, bbits;
 
-Window	CreateXIEParent();
-void	AllocateGrayMapColors();
-void	AllocateColorMapColors();
-XieLut CreatePointLut();
-
-static void SetDirectTrueColorStuff(XParms xp, int *n_colors);
-static void ListAllTechs(XParms xp);
-void PumpTheClientData(XParms xp, Parms p, int flo_id,
-		XiePhotospace photospace, int element, char *data, int size,
-		int band_number);
 
 /* ScreenSaver state */
 static XParmRec    xparms;
 static int ssTimeout, ssInterval, ssPreferBlanking, ssAllowExposures;
+
+static void usage ( void );
+static Window CreateXIEParent ( XParms xp );
+static void AllocateGrayMapColors ( XParms xp );
+static void AllocateColorMapColors ( XParms xp );
+static void SetDirectTrueColorStuff ( XParms xp, int *n_colors );
+#ifdef notyet
+static int GetWords ( int argi, int argc, char **argv, char **wordsp, 
+		      int *nump );
+static int atox ( char *s );
+static int GetNumbers ( int argi, int argc, char **argv, int *intsp, 
+			int *nump );
+#endif
+static void SendTripleBandPlaneDataSequential ( XParms xp, Parms p, 
+						int flo_id, 
+						XiePhotospace photospace, 
+						int element, char *data, 
+						int size, 
+						unsigned char pixel_stride[3], 
+						unsigned char left_pad[3], 
+						unsigned char scanline_pad[3], 
+						XieLTriplet width, 
+						XieLTriplet height );
+static void ScanlinePad ( int *value, int pad );
+static int EventOrErrorValid ( unsigned short testcp );
+static int ServerIsCapable ( unsigned short testcp );
+static void ListAllTechs ( XParms xp );
+#ifdef notyet
+static void FillHisto ( XieHistogramData histos[], int size, int levels );
+#endif
+static int TDLutCellSize ( XParms xp );
+static int LutCellSize ( int depth );
+static int icbrt_with_guess ( int a, int guess );
+static int icbrt_with_bits ( int a, int bits );
 
 /************************************************
 *	    time related stuff			*
@@ -219,7 +244,8 @@ int gettimeofday(tp)
 
 static struct  timeval start;
 
-void PrintTime()
+static void 
+PrintTime(void)
 {
     Time_t t;
 
@@ -227,13 +253,14 @@ void PrintTime()
     printf("%s\n", ctime(&t));
 }
 
-void InitTimes ()
+static void 
+InitTimes(void)
 {
     X_GETTIMEOFDAY(&start);
 }
 
-double ElapsedTime(correction)
-    double correction;
+static double 
+ElapsedTime(double correction)
 {
     struct timeval stop;
 
@@ -246,8 +273,8 @@ double ElapsedTime(correction)
             (1000000.0 * (double)(stop.tv_sec - start.tv_sec)) - correction;
 }
 
-double RoundTo3Digits(d)
-    double d;
+static double 
+RoundTo3Digits(double d)
 {
     /* It's kind of silly to print out things like ``193658.4/sec'' so just
        junk all but 3 most significant digits. */
@@ -280,10 +307,8 @@ double RoundTo3Digits(d)
 }
 
 
-void ReportTimes(usecs, n, str, average)
-    double  usecs;
-    int     n;
-    char    *str;
+static void 
+ReportTimes(double usecs, int n, char *str, int average)
 {
     double msecsperobj, objspersec;
 
@@ -321,10 +346,9 @@ void ReportTimes(usecs, n, str, average)
 ************************************************/
 
 static char *program_name;
-void usage();
 
 Display *
-GetDisplay()
+GetDisplay(void)
 {
 	return( xparms.d );
 }
@@ -333,9 +357,9 @@ GetDisplay()
  * Get_Display_Name (argc, argv) Look for -display, -d, or host:dpy (obselete)
  * If found, remove it from command line.  Don't go past a lone -.
  */
-char *Get_Display_Name(pargc, argv)
-    int     *pargc;  /* MODIFIED */
-    char    **argv; /* MODIFIED */
+static char *
+Get_Display_Name(int *pargc,	/* MODIFIED */
+		 char **argv)	/* MODIFIED */
 {
     int     argc = *pargc;
     char    **pargv = argv+1;
@@ -367,8 +391,8 @@ char *Get_Display_Name(pargc, argv)
 /*
  * Open_Display: Routine to open a display with correct error handling.
  */
-Display *Open_Display(display_name)
-    char *display_name;
+Display *
+Open_Display(char *display_name)
 {
     Display *d;
 
@@ -383,13 +407,8 @@ Display *Open_Display(display_name)
     return(d);
 }
 
-#ifdef SIGNALRETURNSINT
-int
-#else
-void
-#endif
-Cleanup(sig)
-    int sig;
+SIGNAL_T
+Cleanup(int sig)
 {
     sigBail = True;
 #ifdef SIGNALRETURNSINT
@@ -401,7 +420,8 @@ Cleanup(sig)
 *		Performance stuff		*
 ************************************************/
 
-void usage()
+static void 
+usage(void)
 {
     char    **cpp;
     int     i = 0;
@@ -455,23 +475,20 @@ NULL};
     exit (1);
 }
 
-void NullProc(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+NullProc(XParms xp, Parms p)
 {
 }
 
-Bool NullInitProc(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int reps;
+Bool 
+NullInitProc(XParms xp, Parms p, int reps)
 {
     return reps;
 }
 
 
-void HardwareSync(xp)
-    XParms  xp;
+static void 
+HardwareSync(XParms xp)
 {
     /*
      * Some graphics hardware allows the server to claim it is done,
@@ -485,10 +502,8 @@ void HardwareSync(xp)
     XDestroyImage(image);
 }
 
-void DoHardwareSync(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+static void 
+DoHardwareSync(XParms xp, Parms p, int reps)
 {
     int i;
     
@@ -505,9 +520,8 @@ static Test syncTest = {
 };
 
 
-Window CreatePerfWindow(xp, x, y, width, height)
-    XParms  xp;
-    int     width, height, x, y;
+static Window 
+CreatePerfWindow(XParms xp, int x, int y, int width, int height)
 {
     XSetWindowAttributes xswa;
     Window w;
@@ -532,9 +546,8 @@ Window CreatePerfWindow(xp, x, y, width, height)
     return w;
 }
 
-Window CreatePerfWindowUnmapped(xp, x, y, width, height)
-    XParms  xp;
-    int     width, height, x, y;
+static Window 
+CreatePerfWindowUnmapped(XParms xp, int x, int y, int width, int height)
 {
     XSetWindowAttributes xswa;
     Window w;
@@ -557,9 +570,7 @@ Window CreatePerfWindowUnmapped(xp, x, y, width, height)
 }
 
 void
-InstallThisColormap( xp, newcmap )
-XParms xp;
-Colormap newcmap;
+InstallThisColormap(XParms xp, Colormap newcmap)
 {
 	if ( WMSafe == False )
 	{
@@ -579,8 +590,7 @@ Colormap newcmap;
 }
 
 void
-InstallDefaultColormap( xp )
-XParms xp;
+InstallDefaultColormap(XParms xp)
 {
 	InstallThisColormap( xp,
 			DefaultColormap( xp->d, DefaultScreen( xp->d ) ) );
@@ -588,32 +598,28 @@ XParms xp;
 }
 
 void
-InstallGrayColormap( xp )
-XParms xp;
+InstallGrayColormap(XParms xp)
 {
 	cmap = graycmap;
 	InstallThisColormap( xp, cmap );
 }
 
 void
-InstallEmptyColormap( xp )
-XParms xp;
+InstallEmptyColormap(XParms xp)
 {
 	cmap = emptycmap;
 	InstallThisColormap( xp, cmap );
 }
 
 void
-InstallColorColormap( xp )
-XParms xp;
+InstallColorColormap(XParms xp)
 {
 	cmap = colorcmap;
 	InstallThisColormap( xp, cmap );
 }
 
-void CreateClipWindows(xp, clips)
-    XParms  xp;
-    int     clips;
+static void 
+CreateClipWindows(XParms xp, int clips)
 {
     int j;
     XWindowAttributes    xwa;
@@ -627,9 +633,8 @@ void CreateClipWindows(xp, clips)
 } /* CreateClipWindows */
 
 
-void DestroyClipWindows(xp, clips)
-    XParms  xp;
-    int     clips;
+static void 
+DestroyClipWindows(XParms xp, int clips)
 {
     int j;
 
@@ -640,10 +645,8 @@ void DestroyClipWindows(xp, clips)
 } /* DestroyClipWindows */
 
 
-double DoTest(xp, test, reps)
-    XParms  xp;
-    Test    *test;
-    int     reps;
+static double 
+DoTest(XParms xp, Test *test, int reps)
 {
     double  time;
     unsigned int ret_width, ret_height;
@@ -667,11 +670,8 @@ double DoTest(xp, test, reps)
 }
 
 
-int CalibrateTest(xp, test, seconds, usecperobj)
-    XParms  xp;
-    Test    *test;
-    int     seconds;
-    double  *usecperobj;
+static int 
+CalibrateTest(XParms xp, Test *test, int seconds, double *usecperobj)
 {
 #define goal    2500000.0   /* Try to get up to 2.5 seconds		    */
 #define enough  2000000.0   /* But settle for 2.0 seconds		    */
@@ -743,10 +743,8 @@ int CalibrateTest(xp, test, seconds, usecperobj)
     return reps;
 } /* CalibrateTest */
 
-void CreatePerfGCs(xp, func, pm)
-    XParms  xp;
-    int     func;
-    unsigned long   pm;
+static void 
+CreatePerfGCs(XParms xp, int func, unsigned long pm)
 {
     XGCValues gcvfg, gcvbg;
     unsigned long	fg, bg;
@@ -779,18 +777,15 @@ void CreatePerfGCs(xp, func, pm)
 
 }
 
-void DestroyPerfGCs(xp)
-XParms	xp;
+static void 
+DestroyPerfGCs(XParms xp)
 {
     XFreeGC(xp->d, xp->fggc);
     XFreeGC(xp->d, xp->bggc);
 }
 
-void DisplayStatus(d, message, test, try)
-    Display *d;
-    char    *message;
-    char    *test;
-    int     try;
+static void 
+DisplayStatus(Display *d, char *message, char *test, int try)
 {
     char    s[500];
 
@@ -802,13 +797,9 @@ void DisplayStatus(d, message, test, try)
 }
 
 
-void ProcessTest(xp, test, func, pm, label, locreps)
-    XParms  xp;
-    Test    *test;
-    int     func;
-    unsigned long   pm;
-    char    *label;
-    int	    locreps;
+static void 
+ProcessTest(XParms xp, Test *test, int func, unsigned long pm, char *label, 
+	    int locreps)
 {
     double  time, totalTime;
     int     reps;
@@ -870,10 +861,8 @@ void ProcessTest(xp, test, func, pm, label, locreps)
 } /* ProcessTest */
 
 
-main(argc, argv)
-    int argc;
-    char **argv;
-
+int
+main(int argc, char *argv[])
 {
     int		i, j, n;
     int		numTests;       /* Even though the linker knows, we don't. */
@@ -1447,11 +1436,11 @@ main(argc, argv)
 	XmuDeleteStandardColormap( xparms.d, DefaultScreen( xparms.d ),
 		XA_RGB_BEST_MAP );
     XCloseDisplay(xparms.d);
+    exit(0);
 }
 
 int
-TestIndex ( testname )
-char	*testname;
+TestIndex(char *testname)
 {
 	int	j, found;
 
@@ -1467,9 +1456,8 @@ char	*testname;
 	return( found );
 }
 
-Window
-CreateXIEParent( xp )
-XParms	xp;
+static Window
+CreateXIEParent(XParms xp)
 {
 	Window root, ret;
 	unsigned int width, height, border_width, depth;
@@ -1573,9 +1561,8 @@ XParms	xp;
 	return( ret );
 }
 
-void
-AllocateGrayMapColors( xp )
-XParms	xp;
+static void
+AllocateGrayMapColors(XParms xp)
 {
 	int	i, n_colors;
 	long	intensity, rintensity, gintensity, bintensity;
@@ -1658,9 +1645,8 @@ XParms	xp;
 		free( gray );
 }
 
-void
-AllocateColorMapColors( xp )
-XParms	xp;
+static void
+AllocateColorMapColors(XParms xp)
 {
 	int	i, n_colors;
 	long	intensity, rintensity, gintensity, bintensity;
@@ -1742,9 +1728,7 @@ XParms	xp;
 }
 
 static void
-SetDirectTrueColorStuff( xp, n_colors )
-XParms	xp;
-int	*n_colors;
+SetDirectTrueColorStuff(XParms xp, int *n_colors )
 {
 	unsigned long mask;
 
@@ -1775,13 +1759,9 @@ int	*n_colors;
 	}
 }
 
-int
-GetWords (argi, argc, argv, wordsp, nump)
-    int     argi;
-    int     argc;
-    char    **argv;
-    char    **wordsp;
-    int     *nump;
+#ifdef notyet
+static int
+GetWords(int argi, int argc, char **argv, char **wordsp, int *nump)
 {
     int	    count;
 
@@ -1798,8 +1778,7 @@ GetWords (argi, argc, argv, wordsp, nump)
 }
 
 static int
-atox (s)
-    char    *s;
+atox(char *s)
 {
     int     v, c;
 
@@ -1817,12 +1796,8 @@ atox (s)
     return v;
 }
 
-int GetNumbers (argi, argc, argv, intsp, nump)
-    int     argi;
-    int     argc;
-    char    **argv;
-    int     *intsp;
-    int     *nump;
+static int 
+GetNumbers(int argi, int argc, char **argv, int *intsp, int *nump)
 {
     char    *words[256];
     int	    count;
@@ -1843,23 +1818,17 @@ int GetNumbers (argi, argc, argv, intsp, nump)
     }
     return count;
 }
+#endif
 
-void	
-SendTripleBandPlaneDataSequential( xp, p, flo_id, photospace, element, data, 
-	size, pixel_stride, left_pad, scanline_pad, width, height )
-XParms	xp;
-Parms	p;
-int	flo_id;
-XiePhotospace photospace;
-int	element;
-char	*data;
-int	size;
-unsigned char pixel_stride[ 3 ];
-unsigned char left_pad[ 3 ];
-unsigned char scanline_pad[ 3 ];
-XieLTriplet width, height;
+static void
+SendTripleBandPlaneDataSequential(XParms xp, Parms p, int flo_id, 
+				  XiePhotospace photospace, int element, 
+				  char *data, int size, 
+				  unsigned char pixel_stride[3], 
+				  unsigned char left_pad[3], 
+				  unsigned char scanline_pad[3],
+				  XieLTriplet width, XieLTriplet height )
 {
-	void	ScanlinePad();
 	int	band1, band2, band3;
 
 	/* calculate band sizes */
@@ -1884,10 +1853,8 @@ XieLTriplet width, height;
 	data += band3;
 }
 
-void
-ScanlinePad( value, pad )
-int	*value;
-int	pad;
+static void
+ScanlinePad(int *value, int pad)
 {
 	int	newval;
 
@@ -1911,15 +1878,8 @@ int	pad;
 }
 
 void	
-PumpTheClientData( xp, p, flo_id, photospace, element, data, size, band_number )
-XParms	xp;
-Parms	p;
-int	flo_id;
-XiePhotospace photospace;
-int	element;
-char	*data;
-int	size;
-int	band_number;
+PumpTheClientData(XParms xp, Parms p, int flo_id, XiePhotospace photospace, 
+		  int element, char *data, int size, int band_number )
 {
 	int	bytes_left, final, nbytes;
 
@@ -1948,17 +1908,9 @@ int	band_number;
 }
 
 int	
-ReadNotifyExportData( xp, p, namespace, flo_id, element, elementsz, 
-	numels, data, done )
-XParms	xp;
-Parms	p;
-unsigned long namespace;
-int	flo_id;
-XiePhototag element;
-unsigned int elementsz;
-unsigned int numels;
-char	**data;
-int	*done;
+ReadNotifyExportData(XParms xp, Parms p, unsigned long namespace, int flo_id, 
+		     XiePhototag element, unsigned int elementsz, 
+		     unsigned int numels, char **data, int *done )
 {
 	char	*cp, *ptr;
 	Bool	terminate = False;
@@ -2063,17 +2015,10 @@ int	*done;
 }
 
 int	
-ReadNotifyExportTripleData( xp, p, namespace, flo_id, element, elementsz, 
-	numels, data, done )
-XParms	xp;
-Parms	p;
-unsigned long namespace;
-int	flo_id;
-XiePhototag element;
-unsigned int elementsz;
-unsigned int numels;
-char	**data;
-int	*done;
+ReadNotifyExportTripleData(XParms xp, Parms p, unsigned long namespace, 
+			   int flo_id, XiePhototag element, 
+			   unsigned int elementsz, 
+			   unsigned int numels, char **data, int *done )
 {
 	char	*cp, *ptr;
 	Bool	terminate = False;
@@ -2173,9 +2118,7 @@ int	*done;
 }
 
 unsigned int
-CheckSum( data, size )
-char	*data;
-unsigned int size;
+CheckSum(char *data, unsigned int size)
 {
 	unsigned int sum, i;
 
@@ -2188,11 +2131,7 @@ unsigned int size;
 }
 
 XiePhotomap
-GetXIEFAXPhotomap( xp, p, which, radiometric )
-XParms	xp;
-Parms	p;
-int	which;
-Bool 	radiometric;
+GetXIEFAXPhotomap(XParms xp, Parms p, int which, Bool radiometric)
 {
 	XIEimage *image = ( XIEimage * ) NULL;
         XiePhotospace photospace;
@@ -2342,10 +2281,7 @@ Bool 	radiometric;
 }
 
 XiePhotomap
-GetXIETriplePhotomap( xp, p, which )
-XParms	xp;
-Parms	p;
-int	which;
+GetXIETriplePhotomap(XParms xp, Parms p, int which)
 {
 	XIEimage *image = ( XIEimage * ) NULL;
         XiePhotospace photospace;
@@ -2509,10 +2445,7 @@ int	which;
 }
 
 XiePhotomap
-GetXIEPhotomap( xp, p, which )
-XParms	xp;
-Parms	p;
-int	which;
+GetXIEPhotomap(XParms xp, Parms p, int which)
 {
 	XIEimage *image = ( XIEimage * ) NULL;
         XiePhotospace photospace;
@@ -2619,12 +2552,8 @@ int	which;
 }
 
 XiePhotomap
-GetXIEPointPhotomap( xp, p, which, inlevels, useLevels )
-XParms	xp;
-Parms	p;
-int	which;
-int	inlevels;
-Bool	useLevels;
+GetXIEPointPhotomap(XParms xp, Parms p, int which, 
+		    int inlevels, Bool useLevels )
 {
 	XIEimage *image = ( XIEimage * ) NULL;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
@@ -2712,11 +2641,7 @@ Bool	useLevels;
 }
 
 XiePhotomap
-GetXIEGeometryPhotomap( xp, p, geo, which )
-XParms	xp;
-Parms	p;
-GeometryParms *geo;
-int	which;
+GetXIEGeometryPhotomap(XParms xp, Parms p, GeometryParms *geo, int which)
 {
         XiePhotospace photospace;
 	int flo_id, flo_notify;
@@ -2788,12 +2713,8 @@ int	which;
 }
 
 int
-GetXIEGeometryWindow( xp, p, w, geo, which )
-XParms	xp;
-Parms	p;
-Window 	w;
-GeometryParms *geo;
-int	which;
+GetXIEGeometryWindow(XParms xp, Parms p, Window w, 
+		     GeometryParms *geo, int which )
 {
 	XIEimage *image;
         XiePhotospace photospace;
@@ -2897,11 +2818,7 @@ int	which;
 }
 
 int
-GetXIEPixmap( xp, p, pixmap, which )
-XParms	xp;
-Parms	p;
-Pixmap 	pixmap;
-int	which;
+GetXIEPixmap(XParms xp, Parms p, Pixmap pixmap, int which)
 {
 	XIEimage *image;
         XiePhotospace photospace;
@@ -2999,11 +2916,7 @@ int	which;
 }
 
 int
-GetXIEWindow( xp, p, window, which )
-XParms	xp;
-Parms	p;
-Window 	window;
-int	which;
+GetXIEWindow(XParms xp, Parms p, Window window, int which)
 {
         XiePhotospace photospace;
 	int flo_elements, flo_id, flo_notify;
@@ -3100,12 +3013,7 @@ int	which;
 }
 
 int
-GetXIEDitheredWindow( xp, p, window, which, level )
-XParms	xp;
-Parms	p;
-Window 	window;
-int	which;
-int	level;
+GetXIEDitheredWindow(XParms xp, Parms p, Window window, int which, int level)
 {
         XiePhotospace photospace;
 	int flo_id, flo_notify;
@@ -3208,11 +3116,7 @@ int	level;
 }
 
 XiePhotomap
-GetXIEDitheredPhotomap( xp, p, which, level )
-XParms	xp;
-Parms	p;
-int	which;
-int	level;
+GetXIEDitheredPhotomap(XParms xp, Parms p, int which, int level)
 {
         XiePhotospace photospace;
 	int flo_id, flo_notify;
@@ -3284,13 +3188,8 @@ int	level;
 }
 
 XiePhotomap
-GetXIEDitheredTriplePhotomap( xp, p, which, ditherTech, threshold, levels )
-XParms	xp;
-Parms	p;
-int	which;
-int	ditherTech;
-int	threshold;
-XieLTriplet levels;
+GetXIEDitheredTriplePhotomap(XParms xp, Parms p, int which, int ditherTech, 
+			     int threshold, XieLTriplet levels)
 {
 	XiePhotomap tmp;
 	XiePhotomap triple;
@@ -3382,15 +3281,10 @@ XieLTriplet levels;
 }
 
 XiePhotomap
-GetXIEConstrainedPhotomap( xp, p, which, cliplevels, cliptype,
-	in_low, in_high, out_low, out_high )
-XParms	xp;
-Parms	p;
-int	which;
-XieLTriplet cliplevels;
-int	cliptype;
-XieConstant in_low,in_high;
-XieLTriplet out_low,out_high;
+GetXIEConstrainedPhotomap(XParms xp, Parms p, int which, 
+			  XieLTriplet cliplevels, int cliptype,
+			  XieConstant in_low, XieConstant in_high, 
+			  XieLTriplet out_low, XieLTriplet out_high )
 {
         XiePhotospace photospace;
 	int flo_id, flo_notify;
@@ -3473,15 +3367,10 @@ XieLTriplet out_low,out_high;
 }
 
 XiePhotomap
-GetXIEConstrainedTriplePhotomap( xp, p, which, cliplevels, cliptype, 
-	in_low, in_high, out_low, out_high )
-XParms	xp;
-Parms	p;
-int	which;
-XieLTriplet cliplevels;
-int 	cliptype;
-XieConstant in_low,in_high;
-XieLTriplet out_low,out_high;
+GetXIEConstrainedTriplePhotomap(XParms xp, Parms p, int which, 
+				XieLTriplet cliplevels, int cliptype, 
+				XieConstant in_low, XieConstant in_high, 
+				XieLTriplet out_low, XieLTriplet out_high )
 {
 	XiePhotomap tmp, XIEPhotomap;
         XiePhotospace photospace;
@@ -3569,16 +3458,13 @@ XieLTriplet out_low,out_high;
 }
 
 XiePhotomap
-GetXIEConstrainedGeometryTriplePhotomap( xp, p, which, cliplevels, cliptype, 
-	in_low, in_high, out_low, out_high, geo )
-XParms	xp;
-Parms	p;
-int	which;
-XieLTriplet cliplevels;
-int 	cliptype;
-XieConstant in_low,in_high;
-XieLTriplet out_low,out_high;
-GeometryParms *geo;
+GetXIEConstrainedGeometryTriplePhotomap(XParms xp, Parms p, int which, 
+					XieLTriplet cliplevels, int cliptype, 
+					XieConstant in_low, 
+					XieConstant in_high, 
+					XieLTriplet out_low, 
+					XieLTriplet out_high, 
+					GeometryParms *geo )
 {
 	XiePhotomap tmp, XIEPhotomap;
         XiePhotospace photospace;
@@ -3681,11 +3567,8 @@ GeometryParms *geo;
 }
 
 XiePhotomap
-GetXIEGeometryTriplePhotomap( xp, p, which, geo )
-XParms	xp;
-Parms	p;
-int	which;
-GeometryParms *geo;
+GetXIEGeometryTriplePhotomap(XParms xp, Parms p, int which, 
+			     GeometryParms *geo)
 {
 	XiePhotomap tmp, XIEPhotomap;
         XiePhotospace photospace;
@@ -3764,14 +3647,8 @@ GeometryParms *geo;
 }
 
 int
-GetXIEDitheredTripleWindow( xp, p, w, which, ditherTech, threshold, levels )
-XParms	xp;
-Parms	p;
-Window 	w;
-int	which;
-int	ditherTech;
-int	threshold;
-XieLTriplet levels;
+GetXIEDitheredTripleWindow(XParms xp, Parms p, Window w, int which, 
+			   int ditherTech, int threshold, XieLTriplet levels )
 {
 	XiePhotomap ditheredPhoto;
         XiePhotospace photospace;
@@ -3866,16 +3743,9 @@ XieLTriplet levels;
 }
 
 int
-GetXIEDitheredStdTripleWindow( xp, p, w, which, ditherTech, threshold, levels,
-	stdCmap )
-XParms	xp;
-Parms	p;
-Window 	w;
-int	which;
-int	ditherTech;
-int	threshold;
-XieLTriplet levels;
-XStandardColormap *stdCmap;
+GetXIEDitheredStdTripleWindow(XParms xp, Parms p, Window w, int which, 
+			      int ditherTech, int threshold, 
+			      XieLTriplet levels, XStandardColormap *stdCmap)
 {
 	XiePhotomap ditheredPhoto;
         XiePhotospace photospace;
@@ -3934,8 +3804,7 @@ XStandardColormap *stdCmap;
 }
 
 int
-GetFileSize( path )
-char	*path;
+GetFileSize(char *path)
 {
 	int	size;
 	struct stat _Stat_Buffer;
@@ -3953,10 +3822,7 @@ char	*path;
 }
  
 int
-GetImageData( xp, p, which )
-XParms	xp;
-Parms	p;
-int	which;
+GetImageData(XParms xp, Parms p, int which)
 {
         int     fd;
 	int	*size;
@@ -4038,12 +3904,7 @@ out:	if ( fd )
 }
 
 XieLut
-GetXIELut( xp, p, lut, lutSize, lutLevels )
-XParms	xp;
-Parms	p;
-unsigned char *lut;
-int	lutSize;
-int	lutLevels;
+GetXIELut(XParms xp, Parms p, unsigned char *lut, int lutSize, int lutLevels)
 {
         XiePhotospace photospace;
 	int	flo_id, flo_notify;
@@ -4114,11 +3975,7 @@ int	lutLevels;
 }
 
 XieRoi
-GetXIERoi( xp, p, rects, rectsSize )
-XParms	xp;
-Parms	p;
-XieRectangle *rects;
-int	rectsSize;
+GetXIERoi(XParms xp, Parms p, XieRectangle *rects, int rectsSize)
 {
         XiePhotospace photospace;
 	int	flo_id, flo_notify;
@@ -4165,9 +4022,8 @@ int	rectsSize;
     	return tmp;
 }
 
-int
-EventOrErrorValid( testcp )
-unsigned short testcp;
+static int
+EventOrErrorValid(unsigned short testcp)
 {
 	if ( IsEvent( testcp ) && runEvents == False )
 		return( 0 );
@@ -4177,14 +4033,13 @@ unsigned short testcp;
 }
 
 int	
-IsDISServer()
+IsDISServer(void)
 {
 	return( IsDIS( capabilities ) );
 }
 
-int
-ServerIsCapable( testcp )
-unsigned short testcp;
+static int
+ServerIsCapable(unsigned short testcp)
 {
 	if ( IsFull( testcp ) && IsDIS( capabilities ) )
 		return( 0 );
@@ -4192,10 +4047,7 @@ unsigned short testcp;
 }
 
 Bool
-TechniqueSupported( xp, group, tech )
-XParms			xp;
-XieTechniqueGroup	group;
-unsigned int		tech;
+TechniqueSupported(XParms xp, XieTechniqueGroup group, unsigned int tech)
 {
 	XieTechnique	*techVector;		
 	int		numTech, i;
@@ -4336,8 +4188,7 @@ static struct _class classes[] = {
 		sizeof( WhiteAdjustTechs ) / sizeof( struct _tech )  } };
 		  
 static void
-ListAllTechs( xp )
-XParms	xp;
+ListAllTechs(XParms xp)
 {
 	int	i, j;
 
@@ -4365,11 +4216,9 @@ XParms	xp;
 	printf( "\n" );
 } 
 
-void
-FillHisto( histos, size, levels )
-XieHistogramData histos[];
-int	size;
-int	levels;
+#ifdef notyet
+static void
+FillHisto(XieHistogramData histos[], int size, int levels)
 {
 	int	i;
 	int	sy;
@@ -4381,14 +4230,11 @@ int	levels;
 		histos[ i ].count = i * sy;
 	}	
 }
+#endif
 
 void
-DrawHistogram( xp, w, histos, size, levels )
-XParms  xp;
-Window	w;
-XieHistogramData histos[];
-int     size;
-unsigned long levels;
+DrawHistogram(XParms xp, Window w, XieHistogramData histos[], int size, 
+	      unsigned long levels)
 {
         unsigned long maxcount;
         int     i;
@@ -4422,13 +4268,13 @@ unsigned long levels;
 
         XDrawImageString( xp->d, w, tgc, xadd,
                 MONHEIGHT - 3, "0", 1 );
-        sprintf( buf, "%d", levels );
+        sprintf( buf, "%ld", levels );
         XDrawImageString( xp->d, w, tgc, MONWIDTH -
                 strlen( buf ) * 14, MONHEIGHT - 3, buf, strlen( buf ) );
 
         /* label y */
 
-        sprintf( buf, "%d", maxcount );
+        sprintf( buf, "%ld", maxcount );
         XDrawImageString( xp->d, w, tgc, 3,
                 20, buf, strlen( buf ) );
         XDrawImageString( xp->d, w, tgc, 3,
@@ -4467,10 +4313,7 @@ unsigned long levels;
 }
 
 int
-GetStandardColormap( xp, stdColormap, atom )
-XParms	xp;
-XStandardColormap *stdColormap;
-Atom	atom;
+GetStandardColormap(XParms xp, XStandardColormap *stdColormap, Atom atom)
 {
 	int	status, i;
 	int	numberColormaps;
@@ -4554,8 +4397,7 @@ else { \
 	ptr+=sizeof(long); }
 
 int 
-DepthFromLevels( levels )
-int	levels;
+DepthFromLevels(int levels)
 {
 	unsigned int mask;
 	int	bp;
@@ -4570,9 +4412,8 @@ int	levels;
 	return( bp );
 }
 
-int
-TDLutCellSize( xp )
-XParms	xp;
+static int
+TDLutCellSize(XParms xp)
 {
 	int	bp, max;
 
@@ -4590,9 +4431,8 @@ XParms	xp;
 	return( LutCellSize( max ) );
 }
 
-int
-LutCellSize( depth )
-int	depth;
+static int
+LutCellSize(int depth)
 {
 	if ( depth >= 0 && depth <= 7 )
 		depth = 8;
@@ -4604,12 +4444,8 @@ int	depth;
 }
 
 XieLut
-CreatePointLut( xp, p, inlevels, outlevels, computeLutFromLevels )
-XParms	xp;
-Parms	p;
-int	inlevels;
-int	outlevels;
-Bool	computeLutFromLevels;
+CreatePointLut(XParms xp, Parms p, int inlevels, int outlevels, 
+	       Bool computeLutFromLevels )
 {
         unsigned char *lut, *ptr;
         int     lutSize;
@@ -4674,10 +4510,11 @@ Bool	computeLutFromLevels;
 	j = 0;
         for ( i = 0; i < lutSize; i++ )
         {
-		if ( cclass != DirectColor && cclass != TrueColor )
+	    	if ( cclass != DirectColor && cclass != TrueColor ) {
                 	SETLUT
-		else
+		} else {
 			SETTDLUT
+		}
                 j++;
                 if ( j == step )
                 {
@@ -4699,8 +4536,7 @@ Bool	computeLutFromLevels;
 }
 
 int
-TrueOrDirectLevels( xp )
-XParms	xp;
+TrueOrDirectLevels(XParms xp)
 {
 	int	depth = xp->screenDepth;
 
@@ -4715,8 +4551,7 @@ XParms	xp;
 }
 
 int
-TripleTrueOrDirectLevels( xp )
-XParms	xp;
+TripleTrueOrDirectLevels(XParms xp)
 {
 	int	depth = xp->screenDepth;
 
@@ -4734,10 +4569,7 @@ XParms	xp;
    blue_max, like in StandardColormaps */
 
 int
-CreateStandardColormap( xp, stdCmap, atom )
-XParms  xp;
-XStandardColormap *stdCmap;
-int	atom;
+CreateStandardColormap(XParms xp, XStandardColormap *stdCmap, int atom)
 {
         XWindowAttributes xwa;
 	unsigned long mask;
@@ -4761,7 +4593,7 @@ int	atom;
 	}
 	else
 	{
-		XmuGetColormapAllocation(xp->vinfo, atom, 
+		XmuGetColormapAllocation(&xp->vinfo, atom, 
 			&stdCmap->red_max, 
 			&stdCmap->green_max, 
 				&stdCmap->blue_max);
@@ -4808,9 +4640,7 @@ int	atom;
 }
 
 XiePhotomap 
-GetControlPlane( xp, which )
-XParms	xp;
-int	which;
+GetControlPlane(XParms xp, int which)
 {
 	ParmRec	p;
 	XiePhotomap ControlPlane;
@@ -4841,8 +4671,8 @@ int	which;
  * We actually return floor(cbrt(a)) because that's what we need here, too.
  */
 
-static int icbrt_with_guess(a, guess)
-    int a, guess;
+static int 
+icbrt_with_guess(int a, int guess)
 {
     register int delta;
 
@@ -4862,15 +4692,16 @@ static int icbrt_with_guess(a, guess)
     return guess;
 }
 
-static int icbrt_with_bits(a, bits)
-    int a;
-    int bits;			/* log 2 of a */
+static int 
+icbrt_with_bits(int a, 
+		int bits)	/* log 2 of a */
+
 {
     return icbrt_with_guess(a, a>>2*bits/3);
 }
 
-int icbrt(a)		/* integer cube root */
-    int a;
+int 
+icbrt(int a)		/* integer cube root */
 {
     register int bits = 0;
     register unsigned n = a;

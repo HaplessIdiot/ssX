@@ -83,13 +83,8 @@ static int flo_elements;
 static XieClipScaleParam *parms;
 static int monoflag;
 
-static void FreeMathStuff(XParms xp, Parms p);
-
 int 
-InitMath(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+InitMath(XParms xp, Parms p, int reps)
 {
 	XieProcessDomain domain;
 	XieArithmeticOp	*ops;
@@ -344,10 +339,7 @@ InitMath(xp, p, reps)
 }
 
 void 
-DoMath(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoMath(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -359,17 +351,13 @@ int     reps;
 }
 
 void 
-EndMath(xp, p)
-XParms  xp;
-Parms   p;
+EndMath(XParms xp, Parms p)
 {
 	FreeMathStuff( xp, p );
 }
 
-static void
-FreeMathStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeMathStuff(XParms xp, Parms p)
 {
 	if ( parms )
 	{

@@ -87,13 +87,11 @@ static XStandardColormap stdCmap;
 static Bool useStdCmap;
 extern Bool WMSafe;
 
-static void FreeBandStuff(XParms xp, Parms p);
+static int CreateColormapFlo ( XParms xp, Parms p, Bool useStdCmap );
+static int CreateBandCombineFlo ( XParms xp, Parms p, int cclass );
 
 int 
-InitBandSelectExtract(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+InitBandSelectExtract(XParms xp, Parms p, int reps)
 {
 	XieLTriplet levels;
 	int cube;
@@ -187,10 +185,7 @@ int     reps;
 }
 
 int
-InitBandColormap(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+InitBandColormap(XParms xp, Parms p, int reps)
 {
 	XieLTriplet levels;
         Atom atom;
@@ -273,11 +268,8 @@ int     reps;
 	return( reps );
 }
 
-int
-CreateColormapFlo( xp, p, useStdCmap )
-XParms  xp;
-Parms   p;
-Bool	useStdCmap;
+static int
+CreateColormapFlo(XParms xp, Parms p, Bool useStdCmap)
 {
 	int idx, decode_notify;
 	unsigned int mylevels;
@@ -373,10 +365,7 @@ Bool	useStdCmap;
 }
 
 int 
-InitBandCombine(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+InitBandCombine(XParms xp, Parms p, int reps)
 {
 #if     defined(__cplusplus) || defined(c_plusplus)
     	cclass = xp->vinfo.c_class;
@@ -421,11 +410,8 @@ int     reps;
 	return( reps );
 }
 
-int
-CreateBandCombineFlo( xp, p, cclass )
-XParms	xp;
-Parms	p;
-int	cclass;
+static int
+CreateBandCombineFlo(XParms xp, Parms p, int cclass )
 {
 	int idx, decode_notify;
 	float bias;
@@ -514,9 +500,7 @@ int	cclass;
 }
 
 int
-CreateColorBandSelectExtractFlo( xp, p )
-XParms	xp;
-Parms	p;
+CreateColorBandSelectExtractFlo(XParms xp, Parms p)
 {
 	int idx, which, decode_notify;
 	unsigned int mylevels;
@@ -601,10 +585,7 @@ Parms	p;
 }
 
 void 
-DoBand(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoBand(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -614,35 +595,30 @@ int     reps;
         }
 }
 
-void EndBandCombine( xp, p )
-XParms	xp;
-Parms	p;
+void 
+EndBandCombine(XParms xp, Parms p)
 {
 	FreeBandStuff( xp, p );
 }
 
-void EndBandColormap( xp, p )
-XParms	xp;
-Parms	p;
+void 
+EndBandColormap(XParms xp, Parms p)
 {
 	if ( useStdCmap == True )
 		InstallGrayColormap( xp );
 	FreeBandStuff( xp, p );
 }
 
-void EndBandSelectExtract(xp, p)
-XParms  xp;
-Parms   p;
+void 
+EndBandSelectExtract(XParms xp, Parms p)
 {
 	if ( IsColorVisual( cclass ) )
 		InstallGrayColormap( xp );
 	FreeBandStuff( xp, p );
 }
 
-static void
-FreeBandStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeBandStuff(XParms xp, Parms p)
 {
 	if ( XIEPhotomap1 && IsPhotomapInCache( XIEPhotomap1 ) == False )
 	{

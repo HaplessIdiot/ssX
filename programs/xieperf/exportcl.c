@@ -93,19 +93,13 @@ extern Window monitorWindow;
 extern Bool dontClear;
 static char *data;
 
-static void FreeExportClientPhotoStuff(XParms xp, Parms p);
-static void FreeExportClientROIStuff(XParms xp, Parms p);
-static void FreeExportClientLUTStuff(XParms xp, Parms p);
-static void FreeExportClientHistogramStuff(XParms xp, Parms p);
+extern char *imagepath;
 
-int InitExportClientPhoto(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitExportClientPhoto(XParms xp, Parms p, int reps)
 {
         char *encode_params=NULL;
 	int *size;
-	extern char *imagepath;
 	unsigned char pixel_stride[ 3 ];
 	unsigned char scanline_pad[ 3 ];
 	char buf[ 64 ];
@@ -312,10 +306,8 @@ int InitExportClientPhoto(xp, p, reps)
 	return( reps );
 }
 
-int InitExportClientLUT(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitExportClientLUT(XParms xp, Parms p, int reps)
 {
 	int	i;
         XieOrientation band_order = xieValLSFirst;
@@ -392,10 +384,8 @@ int InitExportClientLUT(xp, p, reps)
 	return( reps );
 }
 
-int InitExportClientROI(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitExportClientROI(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -462,10 +452,7 @@ int InitExportClientROI(xp, p, reps)
 }
 
 int 
-InitExportClientHistogram(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+InitExportClientHistogram(XParms xp, Parms p, int reps)
 {
 	XieProcessDomain domain;
 	int	idx, src;
@@ -629,10 +616,8 @@ InitExportClientHistogram(xp, p, reps)
 	return( reps );
 }
 
-void DoExportClientPhotoCSum(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoExportClientPhotoCSum(XParms xp, Parms p, int reps)
 {
     	int     i, done;
 	unsigned int checksum;
@@ -662,10 +647,8 @@ void DoExportClientPhotoCSum(xp, p, reps)
     	}
 }
 
-void DoExportClientPhoto(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoExportClientPhoto(XParms xp, Parms p, int reps)
 {
     	int     i, done;
 
@@ -688,10 +671,7 @@ void DoExportClientPhoto(xp, p, reps)
 }
 
 void 
-DoExportClientHistogram(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoExportClientHistogram(XParms xp, Parms p, int reps)
 {
     	int     i, done, numHistos;
 
@@ -708,10 +688,7 @@ int     reps;
 }
 
 void 
-DoExportClientLUT(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoExportClientLUT(XParms xp, Parms p, int reps)
 {
     	int     i, j, done;
 
@@ -738,10 +715,7 @@ int     reps;
 }
 
 void 
-DoExportClientROI(xp, p, reps)
-XParms  xp;
-Parms   p;
-int     reps;
+DoExportClientROI(XParms xp, Parms p, int reps)
 {
     	int     i, j, done, n;
 	GC	gc;
@@ -774,43 +748,35 @@ int     reps;
     	}
 }
 
-void EndExportClientLUT(xp, p)
-XParms  xp;
-Parms   p;
+void 
+EndExportClientLUT(XParms xp, Parms p)
 {
 	XUnmapWindow( xp->d, monitorWindow );
 	FreeExportClientLUTStuff( xp, p );
 }
 
 void 
-EndExportClientPhoto(xp, p)
-XParms  xp;
-Parms   p;
+EndExportClientPhoto(XParms xp, Parms p)
 {
 	FreeExportClientPhotoStuff( xp, p );
 }
 
 void 
-EndExportClientHistogram(xp, p)
-XParms  xp;
-Parms   p;
+EndExportClientHistogram(XParms xp, Parms p)
 {
 	XUnmapWindow( xp->d, monitorWindow );
 	FreeExportClientHistogramStuff( xp, p );
 }
 
-void EndExportClientROI(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndExportClientROI(XParms xp, Parms p)
 {
 	dontClear = False;
 	FreeExportClientROIStuff( xp, p );
 }
 
-static void
-FreeExportClientPhotoStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeExportClientPhotoStuff(XParms xp, Parms p)
 {
 	if ( data )
 	{
@@ -837,10 +803,8 @@ Parms	p;
 	}
 }
 
-static void
-FreeExportClientROIStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeExportClientROIStuff(XParms xp, Parms p)
 {
         if ( data )
         {
@@ -873,10 +837,8 @@ Parms	p;
 	}
 }
 
-static void
-FreeExportClientLUTStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeExportClientLUTStuff(XParms xp, Parms p)
 {
 	if ( data )
 	{
@@ -914,7 +876,7 @@ Parms	p;
         }
 }
 
-static void
+void
 FreeExportClientHistogramStuff( xp, p )
 XParms	xp;
 Parms	p;

@@ -49,6 +49,7 @@ for transport.
 Defines the port to which the still is outputed.
 .IP \fId\fR 15
 Defines the drawable from which the still is to be captured.
+Pixmaps are currently not supported.
 .IP \fIgc\fR 15
 Defines the graphical context.  GC components are: 
 .I subwindow-mode, 
@@ -92,14 +93,12 @@ requested video region size (or the closest size supported) and
 clipped to the bounds of the video encoding.  The contents of any region
 not updated with drawable data is undefined.
 .PP
-If the still is successfully captured an XvVideoNotify event with
-detail XvStill is generated for the drawable.  If the port is grabbed
+./" If the still is successfully captured an XvVideoNotify event with
+./" detail XvStill is generated for the drawable.
+./" [mhs]: Not in this universe
+If the port is grabbed
 by another client, this request is ignored, and an XvVideoNotify event
 with detail XvBusy is generated for the drawable.
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returned if XvGetStill(3X) completed successfully.

@@ -38,12 +38,12 @@ Specifies \fITrue\fP if the destination size needs to support
 full motion, and \fIFalse\fP if the destination size need only
 support still images.
 .IP \fIvw,vh\fR 15
-Specifies the size of the source vide region desired.
+Specifies the size of the source video region desired.
 .IP \fIdw,dh\fR 15
 Specifies the size of the destination drawable region desired.
 .IP \fIp_dw,p_dh\fR 15
 Pointers to where the closest destination sizes supported by the server are
-retunred.
+returned.
 .\"
 .SH Description
 .\"
@@ -52,11 +52,6 @@ XvQueryBestSize(3X) returns the size of the closest destination
 region that is supported by the adaptor.  The returned size is
 guaranteed to be smaller than the requested size if a smaller 
 size is supported.
-.\"
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .\"
 .SH Returned Values
 .IP [Success] 8

@@ -17,10 +17,6 @@ XvFreeAdaptorInfo(3X) frees adaptor information that
 was returned by XvQueryAdaptors(3X).  The data structure
 used for adaptor information is defined in the
 reference page for XvQueryAdaptors(3X).
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH See Also
 .\"
 XvQueryAdaptors(3X), XvFreeEncodingInfo(3X)

@@ -137,6 +137,13 @@ static XpOidDocFmtList DefaultEmbeddedFormatsSupported = {
     DefaultEmbeddedFormatsSupportedFmts, XpNumber(DefaultEmbeddedFormatsSupportedFmts)
 };
 
+/*
+**	So filtered printers that accept other raw formats can be
+**	used with this driver.
+**
+**		Noah Roberts (jik-)
+*/
+#if 0
 static XpOidDocFmt ValidRawFormatsSupportedFmts[] = {
     { "Postscript", "2", NULL }
     
@@ -144,6 +151,7 @@ static XpOidDocFmt ValidRawFormatsSupportedFmts[] = {
 static XpOidDocFmtList ValidRawFormatsSupported = {
     ValidRawFormatsSupportedFmts, XpNumber(ValidRawFormatsSupportedFmts)
 };
+#endif
 
 static XpOidDocFmt DefaultRawFormatsSupportedFmts[] = {
     { "Postscript", "2", NULL }
@@ -191,7 +199,7 @@ XpValidatePoolsRec PsValidatePoolsRec = {
     &ValidPrinterResolutions, &DefaultPrinterResolutions,
     &ValidEmbeddedFormatsSupported, &DefaultEmbeddedFormatsSupported,
     &ValidListfontsModes, &DefaultListfontsModes,
-    &ValidRawFormatsSupported, &DefaultRawFormatsSupported,
+    NULL /* Any raw format specified (NR)*/, &DefaultRawFormatsSupported,
     &ValidSetupProviso,
     &DefaultDocumentFormat
 };

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.4 1999/01/14 13:04:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.5 1999/01/26 05:54:00 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -134,6 +134,20 @@ static unsigned char * DDCRead_DDC2(
 #endif
 );
 
+typedef enum {
+    DDCOPT_NODDC1,
+    DDCOPT_NODDC2,
+    DDCOPT_NODDC
+} DDCOpts;
+
+static OptionInfoRec DDCOptions[] = {
+    { DDCOPT_NODDC1,	"NoDDC1",	OPTV_BOOLEAN,	{0},	FALSE },
+    { DDCOPT_NODDC2,	"NoDDC2",	OPTV_BOOLEAN,	{0},	FALSE },
+    { DDCOPT_NODDC,	"NoDDC",	OPTV_BOOLEAN,	{0},	FALSE },
+    { -1,		NULL,		OPTV_NONE,	{0},	FALSE },
+};
+    
+
 xf86MonPtr 
 xf86DoEDID_DDC1(
     int scrnIndex, void (*DDC1SetSpeed)(ScrnInfoPtr, xf86ddcSpeed), 
@@ -143,6 +157,12 @@ xf86DoEDID_DDC1(
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     unsigned char *EDID_block = NULL;
     xf86MonPtr tmp = NULL;
+
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, DDCOptions);
+
+    if (xf86IsOptionSet(DDCOptions, DDCOPT_NODDC1) ||
+	xf86IsOptionSet(DDCOptions, DDCOPT_NODDC))
+	return NULL;
 
     EDID_block = EDIDRead_DDC1(pScrn,DDC1SetSpeed,DDC1Read);
 
@@ -160,6 +180,11 @@ xf86DoEDID_DDC2(int scrnIndex, I2CBusPtr pBus)
     unsigned char *VDIF_Block = NULL;
     xf86MonPtr tmp = NULL;
     
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, DDCOptions);
+
+    if (xf86IsOptionSet(DDCOptions, DDCOPT_NODDC2) ||
+	xf86IsOptionSet(DDCOptions, DDCOPT_NODDC))
+	return NULL;
 
     EDID_block = EDID1Read_DDC2(scrnIndex,pBus);
 

@@ -72,11 +72,16 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 
-static int BuildModifyPointFlograph();
-static int BuildModifySimpleFlograph();
-static int BuildModifyROIFlograph();
-static int BuildModifyLong1Flograph();
-static int BuildModifyLong2Flograph();
+static int BuildModifyROIFlograph ( XParms xp, Parms p, 
+				    XiePhotoElement **flograph );
+static int BuildModifyPointFlograph ( XParms xp, Parms p, 
+				      XiePhotoElement **flograph );
+static int BuildModifySimpleFlograph ( XParms xp, Parms p, 
+				       XiePhotoElement **flograph );
+static int BuildModifyLong1Flograph ( XParms xp, Parms p, 
+				      XiePhotoElement **flograph );
+static int BuildModifyLong2Flograph ( XParms xp, Parms p, 
+				      XiePhotoElement **flograph );
 
 static XiePhotomap XIEPhotomap;
 static XieRoi XIERoi1, XIERoi2;
@@ -90,15 +95,8 @@ static int monoflag = 0;
 static XieRectangle *rects;
 static unsigned char *lut; 
 
-static void FreeModifyROIStuff(XParms xp, Parms p);
-static void FreeModifyPointStuff(XParms xp, Parms p);
-static void FreeModifySimpleStuff(XParms xp, Parms p);
-static void FreeModifyLongStuff(XParms xp, Parms p);
-
-int InitModifyROI(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitModifyROI(XParms xp, Parms p, int reps)
 {
 	XIEimage *image;	
         int rectsSize, i;
@@ -182,10 +180,7 @@ int InitModifyROI(xp, p, reps)
 }
 
 static int
-BuildModifyROIFlograph( xp, p, flograph )
-XParms	xp;
-Parms	p;
-XiePhotoElement **flograph;
+BuildModifyROIFlograph(XParms xp, Parms p, XiePhotoElement **flograph )
 {
 	XieProcessDomain domain;
 
@@ -241,10 +236,8 @@ XiePhotoElement **flograph;
 	return( 1 );
 }
 
-void DoModifyROI(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoModifyROI(XParms xp, Parms p, int reps)
 {
     	int     i;
 	int	flo_notify;
@@ -273,17 +266,13 @@ void DoModifyROI(xp, p, reps)
 }
 
 void
-EndModifyROI(xp, p)
-    XParms  xp;
-    Parms   p;
+EndModifyROI(XParms xp, Parms p)
 {
 	FreeModifyROIStuff( xp, p );
 }
 
-static void
-FreeModifyROIStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeModifyROIStuff(XParms xp, Parms p)
 {
 	if ( XIELut )
 	{
@@ -322,10 +311,8 @@ Parms	p;
         }
 }
 
-int InitModifyPoint(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitModifyPoint(XParms xp, Parms p, int reps)
 {
         int     lutSize, i;
 	XIEimage *image;
@@ -407,10 +394,7 @@ int InitModifyPoint(xp, p, reps)
 }
 
 static int
-BuildModifyPointFlograph( xp, p, flograph )
-XParms	xp;
-Parms	p;
-XiePhotoElement **flograph;
+BuildModifyPointFlograph(XParms xp, Parms p, XiePhotoElement **flograph )
 {
 	XieProcessDomain domain;
         int     band_mask = 1;
@@ -445,10 +429,8 @@ XiePhotoElement **flograph;
 	return( 1 );
 }
 
-void DoModifyPoint(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoModifyPoint(XParms xp, Parms p, int reps)
 {
     	int     i;
 	int	flo_notify;
@@ -477,17 +459,13 @@ void DoModifyPoint(xp, p, reps)
 }
 
 void
-EndModifyPoint(xp, p)
-    XParms  xp;
-    Parms   p;
+EndModifyPoint(XParms xp, Parms p)
 {
 	FreeModifyPointStuff( xp, p );
 }
 
-static void
-FreeModifyPointStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeModifyPointStuff(XParms xp, Parms p)
 {
 	if ( lut )
 	{
@@ -526,10 +504,8 @@ Parms	p;
         }
 }
 
-int InitModifySimple(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitModifySimple(XParms xp, Parms p, int reps)
 {
 	XIEimage *image;
 
@@ -570,10 +546,7 @@ int InitModifySimple(xp, p, reps)
 }
 
 static int
-BuildModifySimpleFlograph( xp, p, flograph )
-XParms	xp;
-Parms	p;
-XiePhotoElement **flograph;
+BuildModifySimpleFlograph(XParms xp, Parms p, XiePhotoElement **flograph)
 {
 	XieProcessDomain domain;
 
@@ -618,10 +591,8 @@ XiePhotoElement **flograph;
 	return( 1 );
 }
 
-void DoModifySimple(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoModifySimple(XParms xp, Parms p, int reps)
 {
     	int     i;
 	int	flo_notify;
@@ -664,17 +635,13 @@ void DoModifySimple(xp, p, reps)
 }
 
 void
-EndModifySimple(xp, p)
-    XParms  xp;
-    Parms   p;
+EndModifySimple(XParms xp, Parms p)
 {
 	FreeModifySimpleStuff( xp, p );
 }
 
-static void
-FreeModifySimpleStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeModifySimpleStuff(XParms xp, Parms p)
 {
         if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
         {
@@ -698,10 +665,8 @@ Parms	p;
         }
 }
 
-int InitModifyLong1(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitModifyLong1(XParms xp, Parms p, int reps)
 {
 	XIEimage *image;
 	GeometryParms gp;
@@ -750,10 +715,7 @@ int InitModifyLong1(xp, p, reps)
 }
 
 static int
-BuildModifyLong1Flograph( xp, p, flograph )
-XParms	xp;
-Parms	p;
-XiePhotoElement **flograph;
+BuildModifyLong1Flograph(XParms xp, Parms p, XiePhotoElement **flograph)
 {
 	int	i, idx;
         XieProcessDomain domain;
@@ -830,22 +792,18 @@ XiePhotoElement **flograph;
 #else
 #ifndef X_NOT_STDC_ENV
 #include <math.h>
+#include <stdlib.h>
 #else
 extern long random();
 #endif
-#if defined(SYSV) || defined(SVR4) || defined(__osf__)
+#if defined(SYSV) || defined(SVR4) || defined(__osf__) || defined(CSRG_BASED)
 #define random lrand48
-#endif
-#if !defined(sgi) && !defined(linux) && !defined(__alpha__) && !defined(__GNU__)
-extern long random();
 #endif
 #define RAND( x, y ) ( ( random() / 2147483648.0 ) * ( y - x ) + x )
 #endif
 
-void DoModifyLong1(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoModifyLong1(XParms xp, Parms p, int reps)
 {
     	int     x, y, i, flo_notify;
 
@@ -870,17 +828,13 @@ void DoModifyLong1(xp, p, reps)
 }
 
 void
-EndModifyLong(xp, p)
-    XParms  xp;
-    Parms   p;
+EndModifyLong(XParms xp, Parms p)
 {
 	FreeModifyLongStuff( xp, p );
 }
 
-static void
-FreeModifyLongStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeModifyLongStuff(XParms xp, Parms p)
 {
         if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
         {
@@ -904,10 +858,8 @@ Parms	p;
         }
 }
 
-int InitModifyLong2(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitModifyLong2(XParms xp, Parms p, int reps)
 {
 	XIEimage *image;
 
@@ -948,10 +900,7 @@ int InitModifyLong2(xp, p, reps)
 }
 
 static int
-BuildModifyLong2Flograph( xp, p, flograph )
-XParms	xp;
-Parms	p;
-XiePhotoElement **flograph;
+BuildModifyLong2Flograph(XParms xp, Parms p, XiePhotoElement **flograph)
 {
 	int i, idx;
         XieProcessDomain domain;
@@ -1050,10 +999,8 @@ XiePhotoElement **flograph;
 	return( 1 );
 }
 
-void DoModifyLong2(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoModifyLong2(XParms xp, Parms p, int reps)
 {
     	int     x, y, i, flo_notify;
 	GeometryParms gp;
@@ -1104,5 +1051,3 @@ void DoModifyLong2(xp, p, reps)
 		XSync( xp->d, 0 );
     	}
 }
-
-

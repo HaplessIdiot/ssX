@@ -70,17 +70,15 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 
-static int AbortAndWaitForEvent();
-static void FreeAbortStuff(XParms xp, Parms p);
+static int AbortAndWaitForEvent(XParms xp, Parms p, unsigned long namespace, 
+				unsigned long flo_id);
 
 static XieLut XIELut;
 static XiePhotoElement *flograph;
 static XiePhotoflo flo;
 
-int InitAbort(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitAbort(XParms xp, Parms p, int reps)
 {
         XieDataClass    class;
         XieOrientation  band_order;
@@ -144,10 +142,8 @@ int InitAbort(xp, p, reps)
 	return( reps );
 }
 
-void DoAbort(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoAbort(XParms xp, Parms p, int reps)
 {
 	int	i;
 
@@ -162,9 +158,8 @@ void DoAbort(xp, p, reps)
     	}
 }
 
-void EndAbort(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndAbort(XParms xp, Parms p)
 {
         XieFreePhotofloGraph(flograph,2);
         XieDestroyPhotoflo( xp->d, flo );
@@ -172,20 +167,15 @@ void EndAbort(xp, p)
 }
 
 static int
-AbortAndWaitForEvent( xp, p, namespace, flo_id )
-XParms	xp;
-Parms	p;
-unsigned long namespace; 
-unsigned long flo_id;
+AbortAndWaitForEvent(XParms xp, Parms p, unsigned long namespace, 
+		     unsigned long flo_id )
 {
 	XieAbort( xp->d, namespace, flo_id );
 	return( WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False ) );
 }
 
 void
-static FreeAbortStuff( xp, p )
-XParms	xp;
-Parms	p;
+FreeAbortStuff(XParms xp, Parms p)
 {
 	if ( XIELut )
 	{

@@ -38,24 +38,32 @@ XvSetPortAttribute(3X) permits a client to set the port attribute
 to specified values.  This request supports the following values:
 .bp
 .PP
-.TS
-tab(@);
-lfHB lfHB lfHB
-lfR  lfR  lfR .
-_
-.PP
-.sp 4p
-Control String@Type@Default
-.sp 6p
-_
-.sp 6p
-"XV_ENCODING"@XvEncodingID@Server dependent
-"XV_HUE"@[-1000...1000]@0
-"XV_SATURATION"@[-1000...1000]@0
-"XV_BRIGHTNESS"@[-1000...1000]@0
-"XV_CONTRAST"@[-1000...1000]@0
-.sp 6p
-_
+.\".TS
+.\"tab(@);
+.\"lfHB lfHB lfHB
+.\"lfR  lfR  lfR .
+.\"_
+.\".PP
+.\".sp 4p
+.\"Attribute String@Type@Default
+.\".sp 6p
+.\"_
+.\".sp 6p
+.\""XV_ENCODING"@XvEncodingID@Server dependent
+.\""XV_HUE"@[-1000...1000]@0
+.\""XV_SATURATION"@[-1000...1000]@0
+.\""XV_BRIGHTNESS"@[-1000...1000]@0
+.\""XV_CONTRAST"@[-1000...1000]@0
+.\".sp 6p
+.\".TE
+.nf
+Attribute String        Type             Default
+
+"XV_ENCODING"           XvEncodingID     Server dependent
+"XV_HUE"                [-1000...1000]   0
+"XV_SATURATION"         [-1000...1000]   0
+"XV_BRIGHTNESS"         [-1000...1000]   0
+"XV_CONTRAST"           [-1000...1000]   0
 .TE
 .PP
 The supplied encoding must be one of the encodings listed for the
@@ -69,10 +77,6 @@ to query the resulting levels.
 When an XvSetPortAttribute(3X) request is processed, a 
 PortControlNotify(3X) event is generated for all clients 
 that have requested for port changes using XvSelectPortNotify(3X).
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returns True if XvSetPortAttribute(3X) completed successfully.

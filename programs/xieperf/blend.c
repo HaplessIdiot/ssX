@@ -87,13 +87,8 @@ static int decode_notify;
 static XiePhotoflo flo;
 static XieRectangle *rects;
 
-static void FreeBlendStuff(XParms xp, Parms p);
-
 int 
-InitBlend(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+InitBlend(XParms xp, Parms p, int reps)
 {
 	int	i, idx;
 	int	useDomain;
@@ -311,10 +306,7 @@ InitBlend(xp, p, reps)
 }
 
 void 
-DoBlend(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+DoBlend(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -324,18 +316,14 @@ DoBlend(xp, p, reps)
     	}
 }
 
-void 
-EndBlend(xp, p)
-    XParms  xp;
-    Parms   p;
+void
+EndBlend(XParms xp, Parms p)
 {
 	FreeBlendStuff( xp, p );
 }
 
-static void
-FreeBlendStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeBlendStuff(XParms xp, Parms p)
 {
 	if ( rects )
 	{
@@ -383,4 +371,3 @@ Parms	p;
 		flo = ( XiePhotoflo ) NULL;
 	}
 }
-

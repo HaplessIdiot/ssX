@@ -353,7 +353,7 @@ void FWPprocessMessages(
 	(void) fprintf(stderr, "Proxy Manager reported ICE Error:\n");
 	(void) fprintf(stderr, "\tclass = 0x%x, offending minor opcode = %d\n",
 		       pMsg->errorClass, pMsg->offendingMinorOpcode);
-	(void) fprintf(stderr, "\tseverity = %d, sequence = %d\n",
+	(void) fprintf(stderr, "\tseverity = %d, sequence = %ld\n",
 		       pMsg->severity, pMsg->offendingSequenceNum);
 
 	IceDisposeCompleteMessage (iceConn, pStart);
@@ -532,7 +532,7 @@ MyIoErrorHandler (
 }
 
 void 
-doInstallIOErrorHandler ()
+doInstallIOErrorHandler (void)
 {
     IceIOErrorHandler default_handler;
 

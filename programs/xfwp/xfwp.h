@@ -82,8 +82,10 @@ enum LOG_EVENTS {
   CLIENT_REJECT_SERVER    /* event 2:  client conn rejected by server query */
 };
 
+#ifdef notyet
 typedef void fp1();
 typedef Bool fp2();
+#endif
 
 struct ICE_setup_info
 {
@@ -91,8 +93,10 @@ struct ICE_setup_info
  int       opcode;
  int       versionCount;
  IcePaVersionRec PMVersions[1];
+#ifdef notyet
  void (*fp1) ();
  Bool (*fp2) ();
+#endif
 };
 
 struct client_conn_buf

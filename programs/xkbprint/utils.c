@@ -1,7 +1,7 @@
 
   /*\
    * $XConsortium: utils.c /main/2 1996/12/04 10:24:03 lehors $
-   * $XFree86: xc/programs/xkbprint/utils.c,v 3.1 1996/12/23 07:13:59 dawes Exp $
+   * $XFree86: xc/programs/xkbprint/utils.c,v 3.2 1997/12/06 09:26:16 hohndel Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -124,18 +124,18 @@ uSetEntryFile(name)
 }
 
 void
-uEntry(l,s,a1,a2,a3,a4,a5,a6,a7,a8)
-int	l;
-char	*s;
-Opaque	a1,a2,a3,a4,a5,a6,a7,a8;
+uEntry(int l, char *s,...)
 {
 int	i;
+va_list ap;
 
+    va_start(ap, s);
     for (i=0;i<uEntryLevel;i++) {
 	putc(' ',entryFile);
     }
-    fprintf(entryFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    vfprintf(entryFile,s,ap);
     uEntryLevel+= l;
+    va_end(ap);
     return;
 }
 
@@ -181,29 +181,30 @@ uSetDebugFile(name)
 }
 
 void
-uDebug(s,a1,a2,a3,a4,a5,a6,a7,a8)
-char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+uDebug(char *s,...)
 {
 int	i;
+va_list ap;
 
+    va_start(ap, s);
     for (i=(uDebugIndentLevel*uDebugIndentSize);i>0;i--) {
 	putc(' ',uDebugFile);
     }
-    fprintf(uDebugFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    vfprintf(uDebugFile,s,ap);
     fflush(uDebugFile);
+    va_end(ap);
     return;
 }
 
 void
-uDebugNOI(s,a1,a2,a3,a4,a5,a6,a7,a8)
-char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+uDebugNOI(char *s,...)
 {
-int	i;
+va_list ap;
 
-    fprintf(uDebugFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    va_start(ap, s);
+    vfprintf(uDebugFile,s,ap);
     fflush(uDebugFile);
+    va_end(ap);
     return;
 }
 
@@ -212,8 +213,7 @@ int	i;
 static	FILE	*errorFile=	NULL;
 
 Boolean
-uSetErrorFile(name)
-    char *name;
+uSetErrorFile(char *name)
 {
     if ((errorFile!=NULL)&&(errorFile!=stderr)) {
 	fprintf(errorFile,"switching to %s\n",name?name:"stderr");
@@ -229,65 +229,75 @@ uSetErrorFile(name)
 }
 
 void
-uInformation(s,a1,a2,a3,a4,a5,a6,a7,a8)
-char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+uInformation(char *s,...)
 {
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    va_list ap;
+
+    va_start(ap, s);
+    vfprintf(errorFile,s,ap);
     fflush(errorFile);
+    va_end(ap);
     return;
 }
 
 /***====================================================================***/
 
 void
-uAction(s,a1,a2,a3,a4,a5,a6,a7,a8)
-char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+uAction(char *s,...)
 {
+    va_list ap;
+
+    va_start(ap, s);
     fprintf(errorFile,"                  ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    vfprintf(errorFile,s,ap);
     fflush(errorFile);
+    va_end(ap);
     return;
 }
 
 /***====================================================================***/
 
 void
-uWarning(s,a1,a2,a3,a4,a5,a6,a7,a8)
-char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+uWarning(char *s,...)
 {
+    va_list ap;
+
+    va_start(ap, s);
     fprintf(errorFile,"Warning:          ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    vfprintf(errorFile,s,ap);
     fflush(errorFile);
+    va_end(ap);
     return;
 }
 
 /***====================================================================***/
 
 void
-uError(s,a1,a2,a3,a4,a5,a6,a7,a8)
-char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+uError(char *s,...)
 {
+    va_list ap;
+
+    va_start(ap, s);
     fprintf(errorFile,"Error:            ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    vfprintf(errorFile,s,ap);
     fflush(errorFile);
+    va_end(ap);
     return;
 }
 
 /***====================================================================***/
 
 void
-uFatalError(s,a1,a2,a3,a4,a5,a6,a7,a8)
-char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+uFatalError(char *s,...)
 {
+    va_list ap;
+
+    va_start(ap, s);
     fprintf(errorFile,"Fatal Error:      ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    vfprintf(errorFile,s,ap);
     fprintf(errorFile,"                  Exiting\n");
     fflush(errorFile);
+    va_end(ap);
     exit(1);
     /* NOTREACHED */
 }
@@ -295,13 +305,15 @@ Opaque a1,a2,a3,a4,a5,a6,a7,a8;
 /***====================================================================***/
 
 void
-uInternalError(s,a1,a2,a3,a4,a5,a6,a7,a8)
-char *s;
-Opaque a1,a2,a3,a4,a5,a6,a7,a8;
+uInternalError(char *s,...)
 {
+    va_list ap;
+
+    va_start(ap, s);
     fprintf(errorFile,"Internal error:   ");
-    fprintf(errorFile,s,a1,a2,a3,a4,a5,a6,a7,a8);
+    vfprintf(errorFile,s,ap);
     fflush(errorFile);
+    va_end(ap);
     return;
 }
 
@@ -331,7 +343,7 @@ uStrCaseCmp(str1, str2)
     char c, *s;
     register int n;
 
-    for (n=0, s = buf1; c = *str1++; n++) {
+    for (n=0, s = buf1; (c = *str1++); n++) {
 	if (isupper(c))
 	    c = tolower(c);
 	if (n>510)
@@ -339,7 +351,7 @@ uStrCaseCmp(str1, str2)
 	*s++ = c;
     }
     *s = '\0';
-    for (n=0, s = buf2; c = *str2++; n++) {
+    for (n=0, s = buf2; (c = *str2++); n++) {
 	if (isupper(c))
 	    c = tolower(c);
 	if (n>510)
@@ -354,8 +366,8 @@ int
 uStrCasePrefix(prefix, str)
     char *prefix, *str;
 {
-    char c1, *s1;
-    char c2, *s2;
+    char c1;
+    char c2;
     while (((c1=*prefix)!='\0')&&((c2=*str)!='\0')) {
 	if (isupper(c1))	c1= tolower(c1);
 	if (isupper(c2))	c2= tolower(c2);

@@ -48,7 +48,7 @@ for transport.
 .IP \fIport\fR 15
 Defines the port to which video output is sent.
 .IP \fId\fR 15
-Defines the drawable from which video output is to be obtained.
+Defines the drawable (window) from which video output is to be obtained.
 .IP \fIgc\fR 15
 Defines the graphical context.  GC components are: 
 .I subwindow-mode, 
@@ -107,12 +107,6 @@ is generated for the old drawable.  If the port is grabbed by another
 client, this request is ignored, and an XvVideoNotify event with detail
 XvBusy is generated for the drawable.
 .\"
-.br
-.SH Examples
-.br
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .br
 .SH Returned Values
 .IP [Success] 8

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.18 1999/02/19 21:27:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.19 1999/02/28 11:19:47 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -115,63 +115,114 @@ getVidMapRec(int scrnIndex)
 				   a problem. */
 static int mtrr_fd = MTRR_FD_UNOPENED;
 
-static void
-mtrr_write_combining_region(ScrnInfoPtr scrn, pointer base, unsigned long size)
+/* Open /proc/mtrr. FALSE on failure. */
+static Bool
+mtrr_open(int verbosity)
 {
-	static const char *mtrr_files[] = {
+	/* Only report absence of /proc/mtrr once. */
+	static Bool warned = FALSE;
+
+	char **fn;
+	static char *mtrr_files[] = {
 		"/dev/cpu/mtrr",	/* Possible future name */
 		"/proc/mtrr",		/* Current name */
 		NULL
 	};
 
-	struct mtrr_sentry sentry;
-	const char **fn;
-	VidMapPtr vp;
-
-	switch (mtrr_fd) {
-	case MTRR_FD_PROBLEM:
-		break;
-		
-	case MTRR_FD_UNOPENED:
+	if (mtrr_fd == MTRR_FD_UNOPENED) { 
 		/* So open it. */
-		for (fn = mtrr_files; mtrr_fd < 0 && *fn; fn++) {
-			mtrr_fd = open(*fn, O_WRONLY, 0);
-			if (mtrr_fd < 0 && errno != ENOENT) {
-				xf86MsgVerb(X_WARNING, 0
-					    "Error opening %s: %s\n"
-					    *fn, strerror(errno));
-				break;
-			}
+		for (fn = mtrr_files; mtrr_fd < 0 && *fn; fn++)
+			mtrr_fd = open(*fn, O_WRONLY);
+
+		if (mtrr_fd < 0)
+			mtrr_fd = MTRR_FD_PROBLEM;
+	}
+
+	if (mtrr_fd == MTRR_FD_PROBLEM) {
+		if (!warned) {
+			xf86MsgVerb(X_WARNING, verbosity,
+				  "System lacks support for changing MTRRs\n");
+			warned = TRUE;
 		}
 
-		if (mtrr_fd < 0) {
-			if (errno == ENOENT)
-				xf86MsgVerb(X_WARNING, 0,
-				    "System lacks write combining support\n");
-			
-			mtrr_fd = MTRR_FD_PROBLEM;
-			break;
-		}
+		return FALSE;
+	}
+	else
+		return TRUE;
+}
+
+static void 
+mtrr_cull_mmio_region(ScrnInfoPtr scrn, pointer base, unsigned long size)
+{
+	/* Some BIOS writers thought that setting wc over the mmio
+	   region of a graphics devices was a good idea. Try to fix
+	   it. */
+
+	struct mtrr_gentry gent;
+	char buf[20];
+
+	if (!mtrr_open(0))
+		return;
+
+	for (gent.regnum = 0; 
+	     ioctl(mtrr_fd, MTRRIOC_GET_ENTRY, &gent) >= 0;
+	     gent.regnum++) {
+		if (gent.type != MTRR_TYPE_WRCOMB
+		    || gent.base + gent.size <= (unsigned long)base
+		    || (unsigned long)base + size <= gent.base)
+			continue;
+
+		/* Found an overlapping region. Delete it. */
 		
-		/* FALL THROUGH */
-	default:
-		sentry.base = (unsigned long) base;
-		sentry.size = size;
-		sentry.type = MTRR_TYPE_WRCOMB;
-		
-		if (ioctl(mtrr_fd, MTRRIOC_ADD_ENTRY, &sentry) < 0) {
+		/* There is now a nicer ioctl-based way to do this,
+		   but it isn't in current kernels. */
+		snprintf(buf, sizeof(buf), "disable=%u\n", gent.regnum);
+
+		if (write(mtrr_fd, buf, strlen(buf)) >= 0)
+			xf86DrvMsg(scrn->scrnIndex, X_DEFAULT,
+				   "Removed MMIO write-combining range "
+				   "(0x%lx,0x%lx)\n",
+				   gent.base, gent.size);
+		else
 			xf86DrvMsgVerb(scrn->scrnIndex, X_WARNING, 0,
-				"Failed to set up write-combining range "
-				"(0x%lx,0x%lx)\n", (long)base, (long)size);
-		} else {
-			vp = VIDMAPPTR(scrn);
-			xf86DrvMsg(scrn->scrnIndex, vp->mtrrFrom,
-				"Write-combining range (0x%lx,0x%lx)\n",
-				(long)base, (long)size);
-		}
+				   "Failed to remove MMIO "
+				   "write-combining range (0x%lx,0x%lx)\n",
+				   gent.base, gent.size);
 	}
 }
-#endif
+
+static void
+mtrr_write_combining_region(ScrnInfoPtr scrn, 
+			    pointer base, unsigned long size)
+{
+	struct mtrr_sentry sent;
+	VidMapPtr vp = VIDMAPPTR(scrn);
+
+	/* Only warn about problems opening /proc/mtrr if the user
+	   explicitly asks for it, since failure is to be expected on
+	   Linux-2.0 */
+	if (!mtrr_open(vp->mtrrFrom == X_CONFIG ? 0 : 2))
+		return;
+
+	sent.base = (unsigned long) base;
+	sent.size = size;
+	sent.type = MTRR_TYPE_WRCOMB;
+		
+	if (ioctl(mtrr_fd, MTRRIOC_ADD_ENTRY, &sent) >= 0)
+		xf86DrvMsg(scrn->scrnIndex, vp->mtrrFrom,
+			   "Write-combining range (0x%lx,0x%lx)\n",
+			   (unsigned long)base, (unsigned long)size);
+	else if ((unsigned long)base >= 0x100000)
+		/* Don't complain about the VGA region: MTRR fixed
+		   regions aren't currently supported, but might be in
+		   the future. */
+		xf86DrvMsgVerb(scrn->scrnIndex, X_WARNING, 0,
+			       "Failed to set up write-combining range "
+			       "(0x%lx,0x%lx)\n", 
+			       (unsigned long)base, (unsigned long)size);
+}
+
+#endif /* HAS_MTRR_SUPPORT */
 
 
 pointer
@@ -230,12 +281,14 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	}
 
 #ifdef HAS_MTRR_SUPPORT
-	if (vp->mtrrEnabled)
-	{
+	if (vp->mtrrEnabled) {
+		if (Flags & VIDMEM_MMIO)
+			mtrr_cull_mmio_region(xf86Screens[ScreenNum], Base,
+					      Size);
+
 		if (Flags & VIDMEM_FRAMEBUFFER)
 			mtrr_write_combining_region(xf86Screens[ScreenNum],
 						    Base, Size);
-		/* XXX add code to make sure WC is off for VIDMEM_MMIO */
 	}
 #endif
 

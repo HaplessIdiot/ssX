@@ -48,6 +48,7 @@ for transport.
 Defines the port from which to get the still.
 .IP \fId\fR 15
 Defines the drawable into which the still is to be written.
+Pixmaps are currently not supported.
 .IP \fIgc\fR 15
 Defines the graphical context.  
 GC components are: 
@@ -81,12 +82,8 @@ clipped to the bounds of the drawable.
 If the port is grabbed by another client, this request is ignored, and
 an XvVideoNotify event with detail XvBusy is generated for the
 drawable.  If the port is not receiving a valid video signal a
-VideoNotify event with detail HardError is generated for the drawable.
+VideoNotify event with detail XvHardError is generated for the drawable.
 .\"
-.SH Examples
-.EX
-Example between .EX and .EE will show in monospace
-.EE
 .SH Returned Values
 .IP [Success] 8
 Returned if XvPutStill(3X) completed successfully.

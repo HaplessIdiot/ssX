@@ -79,12 +79,8 @@ static XiePhotoflo flo;
 static XieClipScaleParam *parms;
 static int flo_elements;
 
-static void FreeUnconstrainStuff(XParms xp, Parms p);
-
-int InitUnconstrain(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitUnconstrain(XParms xp, Parms p, int reps)
 {
 	int decode_notify = 0;
 	XieLTriplet levels;
@@ -234,10 +230,8 @@ int InitUnconstrain(xp, p, reps)
 	return( reps );
 }
 
-void DoUnconstrain(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoUnconstrain(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -247,18 +241,14 @@ void DoUnconstrain(xp, p, reps)
     	}
 }
 
-void
-EndUnconstrain(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndUnconstrain(XParms xp, Parms p)
 {
 	FreeUnconstrainStuff( xp, p );
 }
 
-static void
-FreeUnconstrainStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeUnconstrainStuff(XParms xp, Parms p)
 {
 	if ( parms )
 	{

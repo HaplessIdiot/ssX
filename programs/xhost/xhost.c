@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.8 1998/09/05 06:37:09 dawes Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.9 1998/10/04 09:41:18 dawes Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -112,16 +112,17 @@ extern unsigned long inet_makeaddr();
 #define NGROUPS_MAX NGROUPS
 #endif
 #endif
- 
-static int local_xerror();
-static char *get_hostname();
+
+static int change_host(Display *dpy, char *name, Bool add);
+static char *get_hostname(XHostAddress *ha);
+static int local_xerror(Display *dpy, XErrorEvent *rep);
 
 #ifdef SIGNALRETURNSINT
 #define signal_t int
 #else
 #define signal_t void
 #endif
-static signal_t nameserver_lost();
+static signal_t nameserver_lost(int sig);
 
 #define NAMESERVER_TIMEOUT 5	/* time to wait for nameserver */
 
@@ -130,8 +131,8 @@ int nameserver_timedout;
 char *ProgramName;
 
 #ifdef NEEDSOCKETS
-static int XFamily(af)
-    int af;
+static int 
+XFamily(int af)
 {
     int i;
     static struct _familyMap {
@@ -158,9 +159,8 @@ static int XFamily(af)
 
 Display *dpy;
 
-main(argc, argv)
-    int argc;
-    char **argv;
+int
+main(int argc, char *argv[])
 {
     register char *arg;
     int i, nhosts = 0;
@@ -286,10 +286,8 @@ main(argc, argv)
  * address.
  */
 
-int change_host (dpy, name, add)
-    Display *dpy;
-    char *name;
-    Bool add;
+static int 
+change_host(Display *dpy, char *name, Bool add)
 {
     struct hostent *hp;
     XHostAddress ha;
@@ -544,12 +542,14 @@ int change_host (dpy, name, add)
 
 jmp_buf env;
 
-static char *get_hostname (ha)
-    XHostAddress *ha;
+static char *
+get_hostname(XHostAddress *ha)
 {
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
-    struct hostent *hp = NULL;
+    static struct hostent *hp = NULL;
+#if X_NOT_STDC_ENV
     char *inet_ntoa();
+#endif
 #endif
 #ifdef DNETCONN
     struct nodeent *np;
@@ -647,7 +647,9 @@ static char *get_hostname (ha)
     return (NULL);
 }
 
-static signal_t nameserver_lost()
+/*ARGUSED*/
+static signal_t 
+nameserver_lost(int sig)
 {
     nameserver_timedout = 1;
     longjmp(env, -1);
@@ -658,9 +660,8 @@ static signal_t nameserver_lost()
  * that an X_GetHosts request for an unknown address format was received, just
  * return, otherwise print the normal error message and continue.
  */
-static int local_xerror (dpy, rep)
-    Display *dpy;
-    XErrorEvent *rep;
+static int 
+local_xerror(Display *dpy, XErrorEvent *rep)
 {
     if ((rep->error_code == BadAccess) && (rep->request_code == X_ChangeHosts)) {
 	fprintf (stderr, 

@@ -463,7 +463,7 @@ ProcessPMInput (
 		    break;
 
 		case IceProcessMessagesIOError:
-		     IceProcessMessagesConnectionClosed:
+		case IceProcessMessagesConnectionClosed:
 
 		    if (process_status == IceProcessMessagesIOError)
 			/*

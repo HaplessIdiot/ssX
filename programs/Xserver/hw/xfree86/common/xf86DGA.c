@@ -6,8 +6,10 @@
 
 #include "xf86.h"
 #include "xf86str.h"
+#include "xf86Priv.h"
 #include "dgaproc.h"
 #include "colormapst.h"
+#include "inputstr.h"
 
 static unsigned long DGAGeneration = 0;
 static int DGAScreenIndex = -1;
@@ -265,7 +267,7 @@ DGASetMode(
 
     ret = (*pScrn->SetDGAMode)(index, num, &device);
     if(ret == Success) {
-	DGACopyDeviceInfo(&device.mode, devRet);
+	DGACopyDeviceInfo(device.mode, devRet);
 	devRet->pPix = device.pPix;
     }
 
@@ -475,6 +477,92 @@ DGACopyDeviceInfo(
 
    if(dmode->Flags & V_INTERLACE) dev->mode.flags |= DGA_INTERLACED;
    if(dmode->Flags & V_DBLSCAN) dev->mode.flags |= DGA_DOUBLESCAN;
+}
+
+
+Bool 
+DGAVTSwitch(int index)
+{
+    ScreenPtr pScreen;
+    int i;
+
+    for(i = 0; i < screenInfo.numScreens; i++) {
+      pScreen = screenInfo.screens[i];	
+
+      /* Alternatively, this could send events to DGA clients */
+
+      if(DGAAvailable(i) && (DGA_GET_SCREEN_PRIV(pScreen)->current))
+	  return FALSE;
+    }
+
+   return TRUE;
+}
+
+
+/* We have the power to steal or modify events that are about to get queued */
+
+Bool
+DGAStealEvent(int index, xEvent *e)
+{
+   DGAScreenPtr pScreenPriv;
+
+   if(DGAScreenIndex < 0) /* no DGA */
+	return FALSE;
+
+   pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
+
+   if(!pScreenPriv->current) /* no direct mode */
+	return FALSE;
+
+   if(pScreenPriv->input) { /* steal this event */
+	if(pScreenPriv->input & e->u.u.type) {
+
+	    /* send to the DGA 2.0 client */
+
+	}
+	return TRUE;
+   } 
+
+   /* Not sure how best to handle this stuff. It's only for
+      DGA 1.0 compatibility.  Hopefully, we can remove this
+      some day */
+
+#if 0
+   switch(e->u.u.type) { 
+   case MotionNotify:
+   case ButtonPress:
+   case ButtonRelease:
+	if(((DeviceIntPtr)(xf86Info.pMouse))->grab) {
+	    e->u.keyButtonPointer.eventX = dx;
+	    e->u.keyButtonPointer.eventY = dy;
+	    e->u.keyButtonPointer.rootX = dx;
+	    e->u.keyButtonPointer.rootY = dy;
+	    DeliverGrabbedEvent(e, (xf86Info.pMouse), FALSE, 1);
+	}
+	break;
+   case KeyPress:
+   case KeyRelease:
+	if(((DeviceIntPtr)(xf86Info.pKeyboard))->grab){
+	    DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
+	    KeyClassPtr keyc = keybd->key;
+	    BYTE *kptr;
+
+	    kptr = &keyc->down[keycode >> 3];
+
+	    /* clear the keypress state */
+	    if (e->u.u.type == KeyPress) 
+		*kptr &= ~(1 << (keycode & 7));
+	    keybd->public.processInputProc(e, keybd, 1);
+	}
+	break;
+   }
+#endif
+
+   /* Direct mode but the client doesn't want the events.
+      We have to keep them from hitting the other windows. 
+    */
+
+   return TRUE;
 }
 
 /*  For DGA 1.0 backwards compatibility only */

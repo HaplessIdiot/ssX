@@ -85,10 +85,10 @@ typedef struct _cache
         struct _cache   *next;
 } Cache;
 
-static Cache *PrivIsImageInCache();
-static Cache *PrivIsPhotomapInCache();
-static int SetAndScootch();
-static int RemoveFromCacheLRU();
+static Cache * PrivIsImageInCache ( XIEimage *image, Cache **prev );
+static Cache * PrivIsPhotomapInCache ( XiePhotomap pId, Cache **prev );
+static int SetAndScootch ( Cache *cPtr );
+static int RemoveFromCacheLRU ( void );
 
 static Cache *cHead = ( Cache * ) NULL;
 static int cSize;
@@ -96,7 +96,7 @@ static int cSize;
 /* cache functions */
 
 void
-CacheInit()
+CacheInit(void)
 {
 	Cache *ptr, *next;
 
@@ -112,7 +112,7 @@ CacheInit()
 }
 
 void
-FlushCache()
+FlushCache(void)
 {
 	Cache *ptr, *next;
 
@@ -129,9 +129,7 @@ FlushCache()
 }
 
 int
-SetImageActiveState( image, active )
-XIEimage *image;
-Bool	active;
+SetImageActiveState(XIEimage *image, Bool active)
 {
 	Cache *cPtr, *prev;
 	int retval = 0;
@@ -147,9 +145,7 @@ Bool	active;
 /* unused */
 
 int
-SetPhotomapActiveState( pId, active )
-XiePhotomap pId;
-Bool	active;
+SetPhotomapActiveState(XiePhotomap pId, Bool active )
 {
 	Cache *cPtr, *prev;
 	int retval = 0;
@@ -163,9 +159,7 @@ Bool	active;
 }
 
 int
-AddToCache( image, pId )
-XIEimage *image;
-XiePhotomap pId;
+AddToCache(XIEimage *image, XiePhotomap pId )
 {
 	Cache *cPtr, *prev;
 
@@ -236,8 +230,7 @@ XiePhotomap pId;
 }
 
 Bool
-IsImageInCache( image )
-XIEimage *image;
+IsImageInCache(XIEimage *image)
 {
 	Cache	*dummy;
 
@@ -247,8 +240,7 @@ XIEimage *image;
 }
 
 Bool
-IsPhotomapInCache( pId )
-XiePhotomap pId;
+IsPhotomapInCache(XiePhotomap pId)
 {
 	Cache	*dummy;
 
@@ -258,8 +250,7 @@ XiePhotomap pId;
 }
 
 XiePhotomap
-PhotomapOfImage( image )
-XIEimage *image;
+PhotomapOfImage(XIEimage *image)
 {
 	Cache *dummy, *cPtr;	
 
@@ -270,9 +261,7 @@ XIEimage *image;
 }
 
 static Cache *
-PrivIsImageInCache( image, prev )
-XIEimage *image;
-Cache **prev;
+PrivIsImageInCache(XIEimage *image, Cache **prev)
 {
 	Cache *cPtr, *retval;
 
@@ -292,9 +281,7 @@ Cache **prev;
 }
 
 static Cache *
-PrivIsPhotomapInCache( pId, prev )
-XiePhotomap pId;
-Cache **prev;
+PrivIsPhotomapInCache(XiePhotomap pId, Cache **prev)
 {
 	Cache *cPtr, *retval;
 
@@ -314,8 +301,7 @@ Cache **prev;
 }
 
 static int
-SetAndScootch( cPtr )
-Cache *cPtr;
+SetAndScootch(Cache *cPtr)
 {
 	time_t	tLoc;
 	int	found;
@@ -364,8 +350,7 @@ Cache *cPtr;
 }
 
 int
-RemoveImageFromCache( image )
-XIEimage *image;
+RemoveImageFromCache(XIEimage *image)
 {
         Cache *cPtr, *prev;
 
@@ -389,8 +374,7 @@ XIEimage *image;
 }
 
 int
-RemovePhotomapFromCache( pId )
-XiePhotomap pId;
+RemovePhotomapFromCache(XiePhotomap pId)
 {
         Cache *cPtr, *prev;
 
@@ -414,8 +398,7 @@ XiePhotomap pId;
 }
 
 int
-TouchImage( image )
-XIEimage *image;
+TouchImage(XIEimage *image)
 {
 	Cache	*cPtr, *prev;
 	int	retval;
@@ -436,8 +419,7 @@ XIEimage *image;
 }
 
 int
-TouchPhotomap( pId )
-XiePhotomap pId;
+TouchPhotomap(XiePhotomap pId)
 {
 	Cache	*cPtr, *prev;
 	int	retval;
@@ -458,7 +440,7 @@ XiePhotomap pId;
 }
 
 static int
-RemoveFromCacheLRU()
+RemoveFromCacheLRU(void)
 {
 	Cache *ptr;
 
@@ -473,7 +455,7 @@ RemoveFromCacheLRU()
 }
 
 XIEimage *
-GetLRUImage()
+GetLRUImage(void)
 {
 	if ( cHead == ( Cache * ) NULL )
 		return( ( XIEimage * ) NULL );
@@ -481,7 +463,7 @@ GetLRUImage()
 }
 
 XiePhotomap 
-GetLRUPhotomap()
+GetLRUPhotomap(void)
 {
 	if ( cHead == ( Cache * ) NULL )
 		return( ( XiePhotomap ) NULL );
@@ -489,19 +471,19 @@ GetLRUPhotomap()
 }
 
 void
-DumpCache()
+DumpCache(void)
 {
 	Cache *cPtr;
 
 	cPtr = cHead;
-	fprintf( stderr, "Head of list is %x\n", cHead );
+	fprintf( stderr, "Head of list is %p\n", cHead );
 	fprintf( stderr, "Cache list is:\n" );
 	while ( cPtr != ( Cache * ) NULL )
 	{
 		fprintf( stderr, 
-			"node %x pId %x active %s timeStamp %x image %x next %x\n",
+			"node %p pId %x active %s timeStamp %lx image %p next %p\n",
 			cPtr,
-			cPtr->pId, 
+			(unsigned int)cPtr->pId, 
 			( cPtr->active == True ? "True" : "False" ),
 			cPtr->timeStamp, 
 			cPtr->image,
@@ -520,7 +502,8 @@ XIEimage	image4;
 XIEimage	image5;
 XiePhotomap	p1, p2, p3, p4, p5;
 
-main()
+int
+main(int argc, char *argv[])
 {
 	CacheInit();
 	p1 = 0xaa;
@@ -561,5 +544,6 @@ main()
 	DumpCache();	
 	RemovePhotomapFromCache( p5 );
 	DumpCache();	
+	exit( 0 );
 }
 #endif

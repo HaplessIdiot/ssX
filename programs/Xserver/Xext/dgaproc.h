@@ -56,15 +56,6 @@ typedef struct {
 
 /*********************************************************************/
 
-#define DGA_MOUSE_EVENT		(ButtonPressMask | ButtonReleaseMask | \
-				PointerMotionMask | Button1MotionMask | \
-				Button2MotionMask | Button3MotionMask | \
-				Button4MotionMask | Button5MotionMask | \
-				ButtonMotionMask)
-
-#define DGA_KEY_EVENT		(KeyPressMask | KeyReleaseMask) 
-
-
 void XFree86DGAExtensionInit(void);
 
 /* DDX interface */
@@ -124,6 +115,9 @@ int DGAGetModes(int index);
 int DGAGetOldDGAMode(int index);
 
 int DGAGetDeviceInfo(int index, XDGADevicePtr dev, int mode);
+
+Bool DGAVTSwitch(int index);
+Bool DGAStealEvent(int index, xEvent *event);
 
 
 

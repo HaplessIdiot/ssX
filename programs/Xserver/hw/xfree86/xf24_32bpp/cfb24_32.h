@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32.h,v 1.1 1999/01/23 09:56:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32.h,v 1.2 1999/02/28 11:19:49 dawes Exp $ */
 
 #ifndef _CFB24_32_H
 #define _CFB24_32_H
@@ -62,13 +62,6 @@ cfb24_32DoBitblt24To24GXcopy(
     DDXPointPtr pptSrc,
     unsigned long pm,
     unsigned long bitPlane
-);
-
-void 
-cfb24_32CopyWindow(
-    WindowPtr pWin,
-    DDXPointRec ptOldOrg,
-    RegionPtr prgnSrc
 );
 
 void

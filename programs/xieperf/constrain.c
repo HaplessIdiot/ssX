@@ -80,12 +80,8 @@ static int flo_elements;
 static XieClipScaleParam *parms;
 static int monoflag;
 
-static void FreeConstrainStuff(XParms xp, Parms p);
-
-int InitConstrain(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+int 
+InitConstrain(XParms xp, Parms p, int reps)
 {
 	XieLTriplet levels;
 	XieConstrainTechnique tech;
@@ -269,10 +265,8 @@ int InitConstrain(xp, p, reps)
 	return( reps );
 }
 
-void DoConstrain(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void 
+DoConstrain(XParms xp, Parms p, int reps)
 {
     	int     i;
 
@@ -281,17 +275,14 @@ void DoConstrain(xp, p, reps)
     	}
 }
 
-void EndConstrain(xp, p)
-    XParms  xp;
-    Parms   p;
+void 
+EndConstrain(XParms xp, Parms p)
 {
 	FreeConstrainStuff( xp, p );
 }
 
-static void
-FreeConstrainStuff( xp, p )
-XParms	xp;
-Parms	p;
+void
+FreeConstrainStuff(XParms xp, Parms p)
 {
         if ( XIEPhotomap && IsPhotomapInCache( XIEPhotomap ) == False )
         {
