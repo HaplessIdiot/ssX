@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.7 1999/07/10 12:17:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.8 1999/08/28 09:00:57 dawes Exp $ */
 
 
 #include "apm.h"
@@ -200,7 +200,7 @@ ApmAccelInit(ScreenPtr pScreen)
 	pApm->ScratchMemWidth =
 		(mem - ScratchMemOffset - pApm->OffscreenReserved) / 4;
 	pApm->ScratchMem =
-		((ScratchMemOffset & 0xFFC000) << 2) |
+		((ScratchMemOffset & 0xFFC000U) << 2) |
 		    ((ScratchMemOffset & 0x3FFC) >> 2);
 	break;
     }

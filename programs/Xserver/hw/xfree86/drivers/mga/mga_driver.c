@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.112 1999/08/22 05:57:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.113 1999/08/28 09:01:04 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -860,6 +860,13 @@ MGAdoDDC(ScrnInfoPtr pScrn)
     hwp->MapSize = 0x10000;
     if (!vgaHWMapMem(pScrn))
       return NULL;
+  } else {
+    /* XXX Need to write an MGA mode ddc1SetSpeed */
+    if (pMga->DDC1SetSpeed == vgaHWddc1SetSpeed) {
+      pMga->DDC1SetSpeed = NULL;
+      xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+		     "DDC1 disabled - chip not in VGA mode\n");
+    }
   } 
 
   /* Save the current state */

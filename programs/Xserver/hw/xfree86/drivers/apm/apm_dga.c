@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.2 1999/08/22 06:21:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.3 1999/08/28 09:00:58 dawes Exp $ */
 /*
  * file: apm_dga.c
  * ported from s3virge, ported from mga
@@ -302,7 +302,8 @@ ApmSetViewport(
 	    ApmWriteSeq(0x1C, 0x2F);
 	}
 	else {
-	    WRXB_IOP(0xDB, (RDXB_IOP(0xDB) & 0xF4) |  0x0A);
+	    unsigned char tmp = RDXB_IOP(0xDB);
+	    WRXB_IOP(0xDB, (tmp & 0xF4) |  0x0A);
 	    wrinx(0x3C4, 0x1B, 0x20);
 	    wrinx(0x3C4, 0x1C, 0x2F);
 	}

@@ -188,7 +188,8 @@ A(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
     /*
      * This is just an attempt, because Daryll is tampering with MY registers.
      */
-    WRXB(0xDB, (RDXB(0xDB) & 0xF4) |  0x0A);
+    unsigned char tmp = RDXB(0xDB);
+    WRXB(0xDB, (tmp & 0xF4) |  0x0A);
     ApmWriteSeq(0x1B, 0x20);
     ApmWriteSeq(0x1C, 0x2F);
     pApm->apmLock = FALSE;
@@ -199,7 +200,8 @@ A(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
 
   pApm->apmTransparency = (transparency_color != -1);
 
-#ifdef FASTER
+/* cc on SVR4.0 can't handle this */
+#if defined(FASTER) && !(defined(SVR4) && !defined(__GNUC__))
   A(WaitForFifo)(pApm, 2 + pApm->apmClip + pApm->apmTransparency);
   SETDEC(DEC_QUICKSTART_ONDIMX | DEC_OP_BLT | DEC_DEST_UPD_TRCORNER |
 	  (pApm->apmTransparency ? DEC_SOURCE_TRANSPARENCY : 0) | pApm->Setup_DEC |
