@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxcommon.h,v 1.1tsi Exp $ */
 /*
  * Copyright 2002,2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -64,13 +64,9 @@
 #define DMX_COMMON_XKB      DMX_COMMON_OTHER
 #endif
 
-#ifdef XINPUT
 #define DMX_COMMON_PRIVATE                  \
     DMX_COMMON_XKB;                         \
     XDevice                 *xi
-#else
-#define DMX_COMMON_PRIVATE  DMX_COMMON_OTHER
-#endif
 
 #define GETONLYPRIVFROMPRIVATE                                          \
     myPrivate            *priv     = private

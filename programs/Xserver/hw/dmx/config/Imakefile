@@ -1,7 +1,6 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/config/Imakefile,v 1.1tsi Exp $
 
 #include <Server.tmpl>
-#include <lnxdoc.rules>
 
 YFLAGS = -d
 
@@ -35,15 +34,6 @@ all::
 
 LexFile(scanner)
 YaccFile(parser,$(YFLAGS))
-
-#if HasGcc3
-XCOMM These rules remove some of the default warnings and, therefore, the
-XCOMM clutter from the compiler output.  Only do this for GCC 3, since the
-XCOMM undef warning was added in 2.8.  (The warnings are harmless, so be
-XCOMM conservative in their removal.)
-SpecialCObjectRule(parser,parser.h,-Wno-undef)
-SpecialCObjectRule(scanner,parser.h,-Wno-undef -Wno-unused-function -Wno-unused-label -Wno-unused-variable)
-#endif
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dmxconfig,$(LIBOBJS))

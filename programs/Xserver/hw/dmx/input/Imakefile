@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/input/Imakefile,v 1.1tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/input/Imakefile,v 1.2tsi Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -38,8 +38,10 @@ DEFINES = $(OS_DEFINES) $(EXT_DEFINES) $(DMX_DEFINES) $(USB_DEFINES)
 
 all:: $(OBJS)
 
+#ifdef LinuxArchitecture
 LinkSourceFile(atKeynames.h,$(XF86COMSRC))
 LinkSourceFile(xf86Keymap.h,$(XF86COMSRC))
+#endif
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dmxinput,$(OBJS))
