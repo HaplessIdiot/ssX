@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.44 2001/02/07 13:26:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.45 2001/02/24 14:29:17 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -123,6 +123,7 @@ typedef struct {
     Bool		HWCursor;
     Bool		ClippingOn;
     Bool		UseBlockWrite;
+    Bool		UseFlatPanel;
     Bool		UseFireGL3000;
     CARD8		VGAdata[65536];
     Bool		VGAcore;

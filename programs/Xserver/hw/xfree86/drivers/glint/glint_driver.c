@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.118 2001/02/24 14:29:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.119 2001/02/26 21:47:51 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -189,7 +189,8 @@ typedef enum {
     OPTION_FIREGL3000,
     OPTION_OVERLAY,
     OPTION_SHADOW_FB,
-    OPTION_FBDEV
+    OPTION_FBDEV,
+    OPTION_FLATPANEL
 } GLINTOpts;
 
 static OptionInfoRec GLINTOptions[] = {
@@ -201,6 +202,7 @@ static OptionInfoRec GLINTOptions[] = {
     { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_FBDEV,		"UseFBDev",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_FLATPANEL,		"UseFlatPanel",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1146,6 +1148,10 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pGlint->HWCursor ? "HW" : "SW");
+    if (xf86ReturnOptValBool(GLINTOptions, OPTION_FLATPANEL, FALSE)) {
+	pGlint->UseFlatPanel = TRUE;
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using Flat Panel Interface\n");
+    }
     if (xf86ReturnOptValBool(GLINTOptions, OPTION_NOACCEL, FALSE)) {
 	pGlint->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");

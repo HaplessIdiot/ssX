@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 281. Fix 3DLabs GLINT driver for use the Flat Panels, use the UseFlatPanel
+      option. Tested with the SGI 1600SW and Permedia3 board (Alan Hourihane).
  280. Fix glxinfo to query default display (Alan Hourihane).
  279. Convert TGA driver to use fb (Alan Hourihane).
  278. Fix XTRAP typo in miinitext.c (Damien Touraine).
@@ -12722,4 +12724,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1634 2001/03/19 11:00:52 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1635 2001/03/19 13:57:33 alanh Exp $
