@@ -1,4 +1,14 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 247. Fixed DMC touchscreen driver: button press events are properly
+      recognized now, made sure device is still recognized after a restart,
+      fixed misleading error messages (Bugzilla #418, Andreas Kies).
+ 246. Added PanoramiX supprt for the RENDER requests: Trapezoids, Triangles,
+      TriStrip, TriFan, SetPictureTransform and SetPictureFilter 
+      (BugzillaR #138, Egbert Eich).
+ 245. Fixed SW/Theme cursor drawing glitches in i740 driver (BugzillaR #21,
+      Egbert Eich).
+ 244. Added input driver for Aiptek tablet (Bugzilla: #393, (list #5686), 
+      Bryan W. Headley).
 
 XFree86 4.3.99.7 (25 June 2003)
  243. Added 'BitKeeper' to the directories that get excluded by lndir
@@ -17148,7 +17158,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2747 2003/06/24 15:44:46 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2748 2003/06/25 11:07:20 dawes Exp $
 
 
 
