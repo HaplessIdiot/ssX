@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.162 2000/05/31 07:14:52 eich Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.163 2000/10/04 13:20:24 robin Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -312,6 +312,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.162 2000/05/31 07:14:52 eich Exp $
  * Consult your system administrator before making the X server setuid.
  *
 #define InstallXserverSetUID	NO
+ */
+
+/*
+ * To link the X server with a dynamic version of the Xfont library,
+ * uncomment this.
+ *
+#define XserverStaticFontLib	NO
  */
 
 /*

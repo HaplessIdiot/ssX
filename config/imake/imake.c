@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.35 2000/06/13 02:28:27 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.36 2000/07/07 20:06:57 tsi Exp $ */
 
 /*
  * 
@@ -146,6 +146,7 @@ in this Software without prior written authorization from The Open Group.
 # include <sys/types.h>
 # include <sys/sysctl.h>
 #endif
+#include <stdlib.h>
 #include <stdio.h>
 #include "Xosdefs.h"
 #ifndef X_NOT_STDC_ENV

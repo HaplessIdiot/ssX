@@ -1,4 +1,22 @@
-XFree86 4.0.1d (xx October 2000)
+XFree86 4.0.1d (27 October 2000)
+ 792. Remove the old UTF-1 locale (it's not filesystems safe, deprecated
+      for years, withdrawn from ISO standards, and nobody uses it) (#4147,
+      4149, Bruno Haible).
+ 791. Replace multiple stub functions in libXThrStub by only one (#4141,
+      Carlos A. M. dos Santos).
+ 790. Fix some build problems that show up with glibc 2.1.3 where ctype.h
+      sometimes (always?) depends on stdlib.h being included (#4134,
+      Kevin Brosius).
+ 789. Updates for building on BSD/OS 4.2 on UltraSparc (#4132, Kurt J. Lidl).
+ 788. Default to linking the Xfont library into the X server statically
+      (based on #4127, Kurt J. Lidl).
+ 787. Update apNetBSD.shar for a kernel mmap interface change (#4124,
+      Bernd Ernesti).
+ 786. When the "auto" mouse protocol is specified, do the auto-detection
+      whenever regaining control of the VT (based on #4120, Kazutaka Yokota).
+ 785. Change the usage of the "Xinerama" config file option to be consistent
+      with all the other ServerLayout/ServerFlags options, and document it
+      in the XF86Config man page (#4118, Itai Nahshon).
  784. Add I2C/DDC support to i128 driver (Robin Cutshaw).
  783. Add non-GXcopy raster op support to cirrus driver (#4178, David Monniaux).
  782. Use DlLibrary instead of referencing -ldl explicitly in xf86cfg
@@ -164,7 +182,7 @@ XFree86 4.0.1d (xx October 2000)
  583. Turn off visual ID matching in Xv (Mark Vojkovich).
  582. Add the IA-64 ELF loader (Jakub Jelinek).
  581. Add I420 and UYVY image formats to the i810 driver (#4135, Jonathan Bian).
- 580. Fix an Xaw problem with illegal aliases (Jakub Jelinek).
+ 580. Fix an Xaw problem with illegal aliases (#4133, Jakub Jelinek).
  579. Set $(SHELL) to '/bin/sh -e' on Linux to allow builds/installs stop
       immediately on errors as on other platforms (Brandon Robinson).
  578. Update i810 driver for -configure to work (Alan Hourihane).
@@ -11260,4 +11278,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1351 2000/10/23 12:10:06 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1352 2000/10/23 14:11:36 robin Exp $

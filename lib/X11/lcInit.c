@@ -31,7 +31,7 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED 
  *
  */
-/* $XFree86: xc/lib/X11/lcInit.c,v 3.4 1997/11/22 12:50:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcInit.c,v 3.5 2000/02/12 02:54:13 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -43,7 +43,6 @@
 # define USE_EUC_LOADER
 # define USE_SJIS_LOADER
 # define USE_JIS_LOADER
-# define USE_UTF_LOADER
 #endif
 
 extern XLCd _XlcDefaultLoader(
@@ -80,14 +79,6 @@ extern XLCd _XlcGenericLoader(
 
 #ifdef USE_UTF8_LOADER
 extern XLCd _XlcUtf8Loader(
-#if NeedFunctionPrototypes
-    _Xconst char*
-#endif
-);
-#endif
-
-#ifdef USE_UTF_LOADER
-extern XLCd _XlcUtfLoader(
 #if NeedFunctionPrototypes
     _Xconst char*
 #endif
@@ -156,10 +147,6 @@ _XlcInitLoader()
 
 #ifdef USE_JIS_LOADER
     _XlcAddLoader(_XlcJisLoader, XlcHead);
-#endif
-
-#ifdef USE_UTF_LOADER
-    _XlcAddLoader(_XlcUtfLoader, XlcHead);
 #endif
 
 #ifdef DYNAMIC_LOAD

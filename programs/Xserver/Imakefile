@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.196 2000/09/26 04:27:20 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.197 2000/10/17 16:53:12 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -247,8 +247,12 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
             DIX = dix/LibraryTargetName(dix)
        FONTBASE = $(FONTLIBSRC)/fontbase.o \
 		  $(FONTLIBSRC)/LibraryTargetName(fontbase)
-           FONT = $(XFONTLIB) $(XPFBLIBS)
-       FONTLIBS = $(LDPRELIB) $(FONT)
+#if XserverStaticFontLib
+           FONT = $(FONTLIBSRC)/LibraryTargetName(Xfont)
+#else
+           FONT = $(LDPRELIB) $(XFONTLIB)
+#endif
+       FONTLIBS = $(FONT) $(XPFBLIBS)
 #if UsbMouseSupport 
 #if !HasLibUsb
             USB = $(XF86OSSRC)/bsd/libusb/LibraryTargetName(usb)
@@ -693,7 +697,7 @@ XCOMM
      SHADOWDIR = miext/shadow
             KD = $(KDRIVE)/LibraryTargetName(kdrive)
        KDFBDEV = $(KDRIVE)/fbdev/LibraryTargetName(fbdev)
-       
+
 
 #define StdKdDirs $(KDRIVE) $(KDOSDIR) $(PSEUDO8DIR) fb $(DEPDIRS)
 #define StdKdSysLibs $(FONTLIBS) $(SYSLIBS)

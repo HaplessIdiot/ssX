@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.8 2000/02/12 03:39:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.9 2000/07/26 01:52:14 tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -34,7 +34,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include	"X.h"
 #include	"Xmd.h"
 #include	"servermd.h"
-#if defined(XFREE86) || ( defined(__OpenBSD__) && defined(__alpha__) )
+#if defined(XFREE86) || ( defined(__OpenBSD__) && defined(__alpha__) ) \
+	|| (defined(__bsdi__))
 #include	"xf86_ansic.h"
 #define NO_COMPILER_H_EXTRAS
 #include	"compiler.h"

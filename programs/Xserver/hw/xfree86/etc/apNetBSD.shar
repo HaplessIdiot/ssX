@@ -28,7 +28,7 @@
 #	xf86test/Makefile
 #	xf86test/xf86test.c
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.11 1999/12/14 02:40:14 robin Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.12 2000/05/11 18:14:36 tsi Exp $
 #
 echo x - COPYRIGHT
 sed 's/^X//' >COPYRIGHT << 'END-of-COPYRIGHT'
@@ -830,11 +830,20 @@ X *
 X * allow only section in the vga framebuffer and above main memory 
 X * to be mapped
 X */
+X#if !defined(__NetBSD_Version__) || \
+X    (defined(__NetBSD_Version__) && (__NetBSD_Version__ < 105000000))
 Xint
 Xxf86mmap(dev, offset, length)
 X	dev_t dev;
 X	int offset;
 X	int length;
+X#else
+Xpaddr_t
+Xxf86mmap(dev, offset, length)
+X	dev_t dev;
+X	off_t offset;
+X	int length;
+X#endif /* __NetBSD_Version__ */
 X{
 X
 X#ifdef XF86_DEBUG
@@ -2040,7 +2049,7 @@ sed 's/^X//' >module/xf86_mod.h << 'END-of-module/xf86_mod.h'
 X/*
 X * Copyright (C) 1999, The XFree86 Project Inc.
 X *
-X * $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.11 1999/12/14 02:40:14 robin Exp $
+X * $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.12 2000/05/11 18:14:36 tsi Exp $
 X */
 X#ifndef _XF86_MOD_H
 X#define _XF86_MOD_H

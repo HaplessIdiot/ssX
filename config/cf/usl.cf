@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: usl.cf /main/50 1997/04/17 14:11:39 barstow $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.18 2000/02/15 00:07:40 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.19 2000/02/15 16:55:09 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -44,7 +44,11 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_ISW_FUNCS
 #endif
 #if OSMajorVersion > 1 || OSTeenyVersion > 1
-# define ExtraLibraries		-lsocket -lnsl -lgen -lw
+# if OSMajorVersion >= 7
+#  define ExtraLibraries		-lsocket -lnsl -lgen
+# else
+#  define ExtraLibraries		-lsocket -lnsl -lgen -lw
+# endif
 # define ThreadedX		YES
 # define HasThreadSafeAPI	NO
 /* UnixWare does not have MT-safe pwd routines. */

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.9 2000/06/14 18:17:51 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.cpp,v 1.10 2000/06/20 05:08:42 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ "Version 4.0.1"  "XFree86"
@@ -516,6 +516,9 @@ This option affects the way that bus resource sizes are estimated.  Default: 0.
 .BI "Option \*qNoPM\*q  \*q" boolean \*q
 Disables something to do with power management events.  Default: PM enabled
 on platforms that support it.
+.TP 7
+.BI "Option \*qXinerama\*q  \*q" boolean \*q
+enable or disable XINERAMA extension. Default is disabled. 
 .SH MODULE SECTION
 The
 .B Module

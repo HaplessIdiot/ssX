@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.h,v 3.4 1999/03/28 15:32:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbrrop.h,v 3.5 2000/02/12 03:39:30 dawes Exp $ */
 
 #ifndef GXcopy
 #include "X.h"
@@ -320,12 +320,13 @@ in this Software without prior written authorization from The Open Group.
 	RROP_SOLID((CfbBits *) (pdst)); \
 	(pdst) += sizeof (CfbBits) / sizeof (*pdst); \
     }
+#endif
+
 #define RROP_SPAN_lu(pdst,nmiddle) \
     while (--(nmiddle) >= 0) { \
 	RROP_SOLID_lu((CfbBits *) (pdst)); \
 	(pdst) += sizeof (CfbBits) / sizeof (*pdst); \
     }
-#endif
 
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define RROP_NAME_CAT(prefix,suffix)	prefix##suffix

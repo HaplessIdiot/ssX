@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  *
- * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.11 2000/02/12 03:39:20 dawes Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.12 2000/09/26 15:57:03 tsi Exp $
  * Jeff Anton'x fixes: cfb8line.c   97/02/07
  */
 
@@ -63,7 +63,8 @@ in this Software without prior written authorization from The Open Group.
 
 #ifdef POLYSEGMENT
 
-# ifdef sun
+# if (defined(sun) || defined(__bsdi__)) && \
+     (defined(sparc) || defined(__sparc__))
 #  define WIDTH_FAST  1152
 # endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.231 2000/09/29 08:59:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.232 2000/10/20 14:58:59 alanh Exp $ */
 
 
 /*
@@ -692,7 +692,8 @@ typedef enum {
     FLAG_PIXMAP,
     FLAG_PC98,
     FLAG_ESTIMATE_SIZES_AGGRESSIVELY,
-    FLAG_NOPM
+    FLAG_NOPM,
+    FLAG_XINERAMA
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -742,6 +743,8 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_NOPM,			"NoPM",				OPTV_BOOLEAN,
 	{0}, FALSE },
+  { FLAG_XINERAMA,		"Xinerama",			OPTV_BOOLEAN,
+	{0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
 	{0}, FALSE }
 };
@@ -770,6 +773,7 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     int i;
     Pix24Flags pix24 = Pix24DontCare;
     Bool value;
+    MessageType from;
 
     if(flagsconf == NULL)
 	return TRUE;
@@ -910,6 +914,18 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	    xf86Info.pc98 = TRUE;
 	    xf86Msg(X_PROBED, "Japanese PC98 architecture\n");
 	}
+#endif
+
+#ifdef PANORAMIX
+    from = X_DEFAULT;
+    if (!noPanoramiXExtension)
+      from = X_CMDLINE;
+    else if (xf86GetOptValBool(FlagOptions, FLAG_XINERAMA, &value)) {
+      noPanoramiXExtension = !value;
+      from = X_CONFIG;
+    }
+    if (!noPanoramiXExtension)
+      xf86Msg(from, "Xinerama: enabled\n");
 #endif
 
     return TRUE;
@@ -1440,17 +1456,6 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout,
     servlayoutp->inputs = indp;
     servlayoutp->options = conf_layout->lay_option_lst;
     from = X_DEFAULT;
-#ifdef PANORAMIX
-    if (!noPanoramiXExtension)
-      from = X_CMDLINE;
-    else if (xf86FindOption(conf_layout->lay_option_lst, "Xinerama")) {
-      noPanoramiXExtension =
-	  !xf86SetBoolOption(conf_layout->lay_option_lst, "Xinerama", FALSE);
-      from = X_CONFIG;
-    }
-    if (!noPanoramiXExtension)
-      xf86Msg(from, "Xinerama: enabled\n");
-#endif
 
     if (!checkCoreInputDevices(servlayoutp, FALSE))
 	return FALSE;

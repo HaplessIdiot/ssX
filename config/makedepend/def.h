@@ -20,10 +20,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/def.h,v 3.5 1998/10/05 13:21:48 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.6 1999/03/21 07:34:25 dawes Exp $ */
 
 #include "Xos.h"
 #include "Xfuncproto.h"
+#include <stdlib.h>
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
 #include <string.h>
