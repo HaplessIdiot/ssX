@@ -25,7 +25,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xext/globals.c,v 3.5 2001/12/14 19:55:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/globals.c,v 3.6 2005/01/27 02:28:59 dawes Exp $ */
 
 /*
  * This file should contain only those objects which must be predefined.
@@ -71,7 +71,7 @@ from The Open Group.
 /*
  * Error handlers; used to be in XlibInt.c
  */
-ZEROINIT (XExtensionErrorHandlerProcPtr, _XExtensionErrorFunction, NULL);
+ZEROINIT (XExtensionErrorHandler, _XExtensionErrorFunction, NULL);
 
 /*
  * NOTE: any additional external definition NEED

@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  *         XSetExtensionErrorHandler	establish an extension error handler
  *         XMissingExtension		raise an error about missing ext
  */
-/* $XFree86: xc/lib/Xext/extutil.c,v 1.6 2003/11/17 22:20:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xext/extutil.c,v 1.7 2005/01/27 02:28:59 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xlibint.h>
@@ -245,12 +245,12 @@ _default_exterror(Display *dpy, _Xconst char *ext_name, _Xconst char *reason)
  * requested extension is referenced.  This should eventually move into Xlib.
  */
 
-extern XExtensionErrorHandlerProcPtr _XExtensionErrorFunction;
+extern XExtensionErrorHandler _XExtensionErrorFunction;
 
-XExtensionErrorHandlerProcPtr
-XSetExtensionErrorHandler(XExtensionErrorHandlerProcPtr handler)
+XExtensionErrorHandler
+XSetExtensionErrorHandler(XExtensionErrorHandler handler)
 {
-    XExtensionErrorHandlerProcPtr oldhandler = _XExtensionErrorFunction;
+    XExtensionErrorHandler oldhandler = _XExtensionErrorFunction;
 
     _XExtensionErrorFunction = (handler ? handler :
 				_default_exterror);
@@ -264,7 +264,7 @@ XSetExtensionErrorHandler(XExtensionErrorHandlerProcPtr handler)
 int
 XMissingExtension(Display *dpy, _Xconst char *ext_name)
 {
-    XExtensionErrorHandlerProcPtr func = (_XExtensionErrorFunction ?
+    XExtensionErrorHandler func = (_XExtensionErrorFunction ?
 		     _XExtensionErrorFunction : _default_exterror);
 
     if (!ext_name) ext_name = X_EXTENSION_UNKNOWN;
