@@ -25,25 +25,25 @@ ET4000/W32 and ET6000 server, refer to README.W32.
 
 2.  ET4000 driver features
 
-The SVGA driver for ET4000 chipsets only supports 8bpp mode (256 colors).  hi-
-and truecolor modes are not supported.
+The SVGA driver for ET4000 chipsets only supports 8bpp mode (256 colors) on all
+chips older than ET4000W32p rev C (ET4000, W32i, W32p rev A and B). hi- and
+truecolor modes are not supported on these chips.
 
-As opposed to the separate XF86_W32 server, there is no support for special
-RAMDACs in the SVGA server yet. This means that W32 cards with 16-bit RAM-
-DAC/clockchip combinations (most ET4000W32p-based cards fall in that category)
-will not be able to use the features that allow higher pixel clocks and higher
-color depths.
+On W32p rev C and D however, all color depths are supported on the supported
+RAMDACs (currently ICS5341 and Chrontel CH8398). These modes are also acceler-
+ated. 24bpp sometimes gives wrong colors aty this moment. This can be overcome
+by fiddling with the mode timings (shifting the image left or right).
 
-As such, those cards will be limited in a similar manner as the older cards,
-i.e. to a maximum pixel clock of 90 MHz, whilst they actually are able to go up
-to 135 MHz. As a result, 1280x1024 modes will only be possible when using
-interlacing, and non-interlaced modes are limited to about 1024x768 at 75 Hz
-refresh.
+There is support for special RAMDACs in the SVGA server. This means that W32p
+cards with 16-bit RAMDAC/clockchip combinations (most ET4000W32p-based cards
+fall in that category) now support the features that allow higher pixel clocks
+(including pixel multiplexing) and higher color depths.
 
-Similarly, cards with a fully programmable clockchip will not allow you to use
-the clockchip. Only the standard set of fixed clocks is available.
-
-Most of the limitations outlined above will be addressed in a future release.
+Cards with a RAMDAC that is not yet supported will be limited in a similar man-
+ner as the older cards, i.e. to a maximum pixel clock of 86 MHz, whilst they
+actually might be able to go up to 135 MHz. As a result, 1280x1024 modes will
+only be possible when using interlacing, and non-interlaced modes are limited
+to about 1024x768 at 75 Hz refresh.
 
 Linear memory mode (especially important for some DGA clients) is supported on
 the ET4000W32p rev C and D. Work is underway to support it on some of the older
@@ -58,7 +58,7 @@ Acceleration support is present, and enabled by default, for W32p chips (not
 yet for W32i, but that's being worked on). This is based on the new XFree86
 acceleration interface. See also README.W32.
 
-Acceleration does not work together with linear memory mode, and the server
+Acceleration does not work together with linear memory mode on some cards, and
 
 
  Information for Tseng Chipset Users
@@ -71,8 +71,10 @@ Acceleration does not work together with linear memory mode, and the server
 
 
 
-disables linear memory mode if acceleration isn't disabled in the Device sec-
-tion.
+will produce a mostly black screen. If this happens in 8bpp (256 color) mode,
+disabling acceleration or disabling linear memory mode will get rid of that
+problem. If this happens in a 16, 24 or 32 bpp mode, disabling acceleration is
+the only way out.
 
 To disable acceleration, put the following in the Device section of your
 XF86Config:
@@ -123,8 +125,6 @@ When using accelerated high color-depths (24bpp and 32bpp), high-resolution
 modes (starting somewhere around 800x600) may cause temporary "garbage" lines
 to the right of the screen while the accelerator is busy. The garbage should
 not be persistent: it should go away as soon as the server is left alone. This
-may get fixed in the future. This may also be a bandwidth problem, in which
-case it cannot be resolved (except by not allowing such modes at all).
 
 
 
@@ -136,6 +136,9 @@ case it cannot be resolved (except by not allowing such modes at all).
  Information for Tseng Chipset Users
 
 
+
+may get fixed in the future. This may also be a bandwidth problem, in which
+case it cannot be resolved (except by not allowing such modes at all).
 
 Ignoring it is one option (it isn't destructive). Disabling acceleration in the
 Device section of the XF86Config file is another option: since the accelerator
@@ -186,11 +189,8 @@ been removed.  Hopefully the past text-restoration problems are alleviated in
 XFree86 2.0.
 
 
-6.  Basic configuration
 
-It is recommended that you generate an XF86Config file using the XF86Setup' or
-xf86config' program, which should produce a working high-resolution 8bpp con-
-figuration. You may want to include mode timings in the Monitor section that
+
 
 
 
@@ -203,6 +203,11 @@ figuration. You may want to include mode timings in the Monitor section that
 
 
 
+6.  Basic configuration
+
+It is recommended that you generate an XF86Config file using the XF86Setup' or
+xf86config' program, which should produce a working high-resolution 8bpp con-
+figuration. You may want to include mode timings in the Monitor section that
 better fit your monitor (e.g 1152x900 modes). The driver options are described
 in detail in the next section; here the basic options are hinted at.
 
@@ -252,11 +257,6 @@ can enable options for all depths by specifying them in the Device section).
 	    It must be specified in the Device section. Normally the server
 	    will automatically use this feature when it detects an ET6000. Use
 	    it only when you suspect auto-detection is not working. Note that
-	    some frequencies may be unstable (resulting in a `Wavy' screen).
-	    Only tried and tested frequencies (like the default clocks) are
-	    guaranteed to be stable. If this happens, try a slightly different
-	    frequency in the modeline (like 0.5 MHz more or less). The monitor
-	    should still be capable of syncing to this frequency, but the
 
 
 
@@ -269,6 +269,11 @@ can enable options for all depths by specifying them in the Device section).
 
 
 
+	    some frequencies may be unstable (resulting in a `Wavy' screen).
+	    Only tried and tested frequencies (like the default clocks) are
+	    guaranteed to be stable. If this happens, try a slightly different
+	    frequency in the modeline (like 0.5 MHz more or less). The monitor
+	    should still be capable of syncing to this frequency, but the
 	    clockchip may already be outside an unstable region.
 
       Option "linear"  (ET4000W32p, ET6000)
@@ -318,11 +323,6 @@ It does not make much sense performance-wise to use the highest clock (85 MHz)
 for 1024x768 at 76 Hz on a 1 MB ET4000W32; the card will very slow, because
 there is almost no bandwidth left for drawing. A 75 MHz dot clock results in 70
 Hz which should be acceptable. If you have a monitor that supports 1024x768 at
-76 Hz with a 85 MHz dot clock, an 1MB card is a poor match anyway.
-
-The ET4000W32i and ET4000W32p have a special feature that almost doubles memory
-bandwidth (+80%) using "interleaving" between the two banks. Upgrading to 2MB
-is a real bonus on these cards.
 
 
 
@@ -334,6 +334,12 @@ is a real bonus on these cards.
  Information for Tseng Chipset Users
 
 
+
+76 Hz with a 85 MHz dot clock, an 1MB card is a poor match anyway.
+
+The ET4000W32i and ET4000W32p have a special feature that almost doubles memory
+bandwidth (+80%) using "interleaving" between the two banks. Upgrading to 2MB
+is a real bonus on these cards.
 
 The same goes for an ET6000: when using DRAM, it can do 4-way interleaving
 (with 4MB), which increases performance even more compared to single-banked
@@ -382,13 +388,7 @@ decoding bugs that it isn't feasible to provide a working solution.
 
 For the most part, many of the accelerated features in the 8bpp server have
 been implemented to support 16, 24, and 32 bpp modes. So although there are now
-up to 4 times as many bits to display, the X server shouldn't feel overly slug-
-gish. Note also that the 24bpp and 32bpp modes are only supported on a limited
-set of cards, and with at least 2Mb of memory.
-
-The ET6000, using MDRAM, may have a non-power-of-two amount of MDRAM: 2.25 or
-even 4.50 MB. Especially 2.25 MB MDRAM is cheap-and-sound, since it can _just_
-support 1024x768 at 24bpp (using all available video memory) With only 2MB of
+up to 4 times as many bits to display, the X server shouldn't feel overly
 
 
 
@@ -401,6 +401,12 @@ support 1024x768 at 24bpp (using all available video memory) With only 2MB of
 
 
 
+sluggish. Note also that the 24bpp and 32bpp modes are only supported on a lim-
+ited set of cards, and with at least 2Mb of memory.
+
+The ET6000, using MDRAM, may have a non-power-of-two amount of MDRAM: 2.25 or
+even 4.50 MB. Especially 2.25 MB MDRAM is cheap-and-sound, since it can _just_
+support 1024x768 at 24bpp (using all available video memory) With only 2MB of
 MDRAM, 960x720 is the best you can hope for.
 
 In the XF86Config "Screen" section, a "Display" subsection must be defined for
@@ -449,12 +455,6 @@ configuration. The default mode used will always be the first mode listed in
 the modes line, with the highest dot clock listed for that resolution in the
 timing section.
 
-Note that some VESA standard mode timings may give problems on some monitors
-(try increasing the horizontal sync pulse, i.e. the difference between the mid-
-dle two horizontal timing values, or try multiples of 16 or 32 for all of the
-horizontal timing parameters).
-
-
 
 
 
@@ -466,6 +466,11 @@ horizontal timing parameters).
  Information for Tseng Chipset Users
 
 
+
+Note that some VESA standard mode timings may give problems on some monitors
+(try increasing the horizontal sync pulse, i.e. the difference between the mid-
+dle two horizontal timing values, or try multiples of 16 or 32 for all of the
+horizontal timing parameters).
 
       There is a video signal, but the screen doesn't sync.
 	    You are using a mode that your monitor cannot handle. If it is a
@@ -516,11 +521,6 @@ horizontal timing parameters).
 	    performance, which may cause these problems. There is currently no
 	    fix for this.
 
-      Textmode is not properly restored
-	    This has been reported on some configurations. Sometimes Chipset
-	    line will fix this. Normally you should be able to restore the
-	    textmode font using a utility that sets it (setfont, runx, restore-
-	    font on Linux).
 
 
 
@@ -532,6 +532,24 @@ horizontal timing parameters).
  Information for Tseng Chipset Users
 
 
+
+      Textmode is not properly restored
+	    This has been reported on some configurations. Sometimes a Chipset
+	    line will fix this. Normally you should be able to restore the
+	    textmode font using a utility that sets it (setfont, runx, restore-
+	    font on Linux).
+
+      Mostly black screen when using accelerated driver features
+	    There can be several causes for this.
+
+	    One is if the amount of memory is not detected correctly. If the
+	    server's autodetection mechanism detects too much memory, acce-
+	    larated features will not work. Define the amount of memory in the
+	    XF86Config file. This seems to happen sometimes on some 2.25 MB
+	    ET6000 cards, where the server detects 2.5 MB instead.
+
+	    If that doesn't help, disabling acceleration (option "noaccel") is
+	    the only solution.
 
       Problems with DMA hardware (floppy, tape)
 	    On some systems, the accelerated server will interfere with other
@@ -559,31 +577,13 @@ rations that have not been tested. You can do this via the BetaReport form
 (mail it to report@XFree86.org). You may want to keep an eye on forthcoming
 beta releases at www.xfree86.org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.15 1997/01/27 06:57:53 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.16 1997/02/12 08:56:03 hohndel Exp $
 
 
 
 
 
      $XConsortium: tseng.sgml /main/6 1996/10/27 11:06:09 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -679,7 +679,7 @@ beta releases at www.xfree86.org.
 
 5.  Text mode restore problems	............................................. 3
 
-6.  Basic configuration  .................................................... 3
+6.  Basic configuration  .................................................... 4
 
 7.  general options in the XF86Config file  ................................. 4
 

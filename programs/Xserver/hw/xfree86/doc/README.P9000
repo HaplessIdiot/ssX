@@ -11,11 +11,19 @@
 
 			 Erik Nygren (nygren@mit.edu)
 
-				 1996 March 31
+			       1997 February 18
 
 
 
 1.  Change Log
+
+      1997.01.30:
+
+	       o Added probing for MemBase and IOBase on Diamond Viper PCI
+		 cards (Karl Anders Øygard)
+
+	       o Added support for DPMS screen saving -- off mode only (Karl
+		 Anders Øygard)
 
       1996.03.31:
 
@@ -51,25 +59,24 @@
 
 	       o Fixed p9000init.c to properly deal with the vram_128 option.
 		 This should allow the driver to work properly with all Viper's
+
+
+XFree86 3.2 P9000 Server Release Notes
+
+
+
+
+
+XFree86 3.2 P9000 Server Release Notes
+
+
+
 		 with 1 MB of memory. (Erik Nygren)
 
       1995.01.29:
 
 	       o Updated P9000.sgml to mention using Robin's scanpci rather
 		 than PCIDUMP.EXE.
-
-
-
-
-XFree86 3.2 P9000 Server Release Notes
-
-
-
-
-
-XFree86 3.2 P9000 Server Release Notes
-
-
 
       1995.01.15:
 
@@ -118,13 +125,6 @@ XFree86 3.2 P9000 Server Release Notes
 
       1994.09.20:
 
-	       o Fixed problem which prevented 16 bpp modes from working (Erik
-		 Nygren)
-
-      1994.09.16:
-
-	       o Added screen blanking support for 16 bpp and 32 bpp modes.
-		 Screen blanking now powers down the RAMDAC rather than just
 
 
 
@@ -137,6 +137,13 @@ XFree86 3.2 P9000 Server Release Notes
 
 
 
+	       o Fixed problem which prevented 16 bpp modes from working (Erik
+		 Nygren)
+
+      1994.09.16:
+
+	       o Added screen blanking support for 16 bpp and 32 bpp modes.
+		 Screen blanking now powers down the RAMDAC rather than just
 		 changing the planemask. (Chris Mason, Erik Nygren)
 
 	       o Fixed more problems caused by switch to XF86Config (Erik
@@ -184,13 +191,6 @@ XFree86 3.2 P9000 Server Release Notes
 		 lution.  Also added check for valid hres to probe. (Erik
 		 Nygren)
 
-	       o Added MoveWindow acceleration for all depths.	Opaque move
-		 even looks nice at 32bpp now!	(Chris Mason)
-
-	       o Minor fixes to acceleration.  Acceleration is now enabled by
-		 default (Chris Mason)
-
-
 
 
 
@@ -202,6 +202,12 @@ XFree86 3.2 P9000 Server Release Notes
 XFree86 3.2 P9000 Server Release Notes
 
 
+
+	       o Added MoveWindow acceleration for all depths.	Opaque move
+		 even looks nice at 32bpp now!	(Chris Mason)
+
+	       o Minor fixes to acceleration.  Acceleration is now enabled by
+		 default (Chris Mason)
 
 	       o Added "noaccel" option (Erik Nygren)
 
@@ -242,21 +248,15 @@ this happens, put chipset "vipervlb" into your XF86Config file.
 
 2.2  Diamond Viper PCI
 
-For Diamond Viper PCI owners, you'll need to use scanpci to find the values to
-fill in for MemBase and IOBase in the Device section of XF86Config.  These val-
-ues will change whenever you move cards around or add cards.  This should now
-work, thanks to help from Bob Hollinger and Matt Thomas.  You may need to spec-
-ify the chipset "viperpci" in your XF86Config file.  You'll also need to spec-
-ify an IOBase and a memBase.  These values may be obtained by running the scan-
-pci program available via anonymous ftp from
-ftp.xfree86.org:/pub/XFree86/3.1.1/ScanPCI
-<URL:ftp://ftp.xfree86.org/pub/XFree86/3.1.1/ScanPCI> Part of the output of
-this program will look like:
+You may need to specify the chipset "viperpci" in your XF86Config file.
+
+Previously you had to find out the values for MemBase and IOBase by yourself.
+These are now autodetected.
 
 
+3.  Orchid P9000 and random clones
 
-
-
+The Orchid P9000 and other cards based on the Weitek board design (such as the
 
 
 
@@ -269,24 +269,6 @@ XFree86 3.2 P9000 Server Release Notes
 
 
 
-     pci slot at 0xce00, vendor 0x100e device 0x9001
-      Diamond Viper/PCI
-       STATUS	 0x0400  COMMAND 0x0003
-       CLASS	 0x03 0x00 0x00  REVISION 0x03
-       BASE0	 0xa0000000  addr 0xa0000000  MEM
-       BASE1	 0x0000e001  addr 0x0000e000  I/O
-       BASEROM	 0xff800000  addr 0xff800000  not-decode-enabled
-
-In this case, you would specify 0xe000 as the IOBase and 0xa0000000 as the mem-
-Base.
-
-Eventually we would like to autodetect the IOBase and memBase, but this doesn't
-yet work.
-
-
-3.  Orchid P9000 and random clones
-
-The Orchid P9000 and other cards based on the Weitek board design (such as the
 STAR 2000) should now work.  Talk to harry@brain.jpl.nasa.gov if you have prob-
 lems with this.  Specify the chipset "orchid_p9000" in the Device section of
 XF86Config
@@ -299,8 +281,7 @@ drivers for them on.  The docs I have says the P9100 has a different interface
 than the P9000.  As a result, they may need an entirely new server.  If you
 need support for one of these cards, you should look into XInside's Accelerat-
 edX.  It's a commercial product that costs about $99.  Send email to info@xin-
-side.com for more information.	Their P9000 server is also much faster than
-ours at present (but then this server is free :-)
+side.com for more information.
 
 
 5.  Acceleration
@@ -323,18 +304,6 @@ following things are now accelerated:
 The XFree86-DGA extension is now supported.  Note that XF86DGASetViewPort com-
 mand is not fully implemented due to hardware limitations of the P9000.  The
 SetViewPort and SetVidPage commands have been hacked to allow double buffering
-
-
-
-
-
-
-
-
-XFree86 3.2 P9000 Server Release Notes
-
-
-
 under certain conditions.
 
 For cards with 1MB or modes where xres*yres*Bpp > 1024K, no double buffering is
@@ -353,6 +322,17 @@ cause buffer 0 to be displayed.  If ypos >= yres, buffer 1 will be displayed.
 The result of this behavior is that programs which switch banks as necessary
 and which use two vertically adjacent banks should work with no P9000-specific
 changes.
+
+
+
+
+
+
+
+
+
+XFree86 3.2 P9000 Server Release Notes
+
 
 
 7.  High Color and TrueColor
@@ -390,17 +370,6 @@ Example problems:
 	    the selection tool.  I think later versions may have fixed this.
 
 
-
-
-
-
-
-
-
-XFree86 3.2 P9000 Server Release Notes
-
-
-
 8.  Random Notes
 
 Text restoration should now be fixed.  Color restoration should also be fixed.
@@ -417,6 +386,19 @@ bt485's.  Without 135 MHz, it is not possible for people to with large monitors
 to run at 1280x1024.  Diamond claims that all Vipers have 135MHz bt485's or
 compatibles.  If you have something slower, call their tech support and they
 will send you a RMA to get the board replaced.
+
+
+
+
+
+
+
+
+
+
+
+XFree86 3.2 P9000 Server Release Notes
+
 
 
 9.  Operating System Notes
@@ -454,19 +436,6 @@ are:
 			0xA0000000 or 0x20000000 or 0x80000000 (0x80000000 is
 			default if none spec'd)
 
-
-
-
-
-
-
-
-
-
-XFree86 3.2 P9000 Server Release Notes
-
-
-
 		  Orchid P9000:
 			0xC0000000 or 0xD0000000 or 0xE0000000 (this MUST be
 			set to correspond to the jumpers)
@@ -486,6 +455,17 @@ XFree86 3.2 P9000 Server Release Notes
 	    any values between 25 and 135 corresponding to the clocks for the
 	    mode entries being used.  This line may now be omitted and clocks
 	    will be matched automatically.
+
+
+
+
+
+
+
+
+XFree86 3.2 P9000 Server Release Notes
+
+
 
       Option
 
@@ -522,6 +502,26 @@ are:
 			use 32 bits per pixel (sparse 24 bpp) for up to 16 mil-
 			lion colors
 
+      Weight
+	    555 or 565 if Depth is 15 or 16.  Otherwise this is ignored.  These
+	    are the Red, Green, and Blue bits per pixel (default=565)
+
+Here's a portion of a sample XF86Config file for the Viper VLB:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -532,12 +532,6 @@ are:
 XFree86 3.2 P9000 Server Release Notes
 
 
-
-      Weight
-	    555 or 565 if Depth is 15 or 16.  Otherwise this is ignored.  These
-	    are the Red, Green, and Blue bits per pixel (default=565)
-
-Here's a portion of a sample XF86Config file for the Viper VLB:
 
      Section "Device"
 	 Identifier "ViperVLB"
@@ -586,7 +580,13 @@ Major contributors to P9000 code:
 
    o Henrik Harmsen (harmsen@eritel.se)
 
-Thanks to Matt Thomas (thomas@lkg.dec.com) and Bob Hollinger
+Thanks to Matt Thomas (thomas@lkg.dec.com) and Bob Hollinger (bob@interac-
+cess.com) for helping to get the Viper PCI server working.
+
+Special thanks to David Moews (dmoews@xraysgi.ims.uconn.edu) whose banking
+patch could unfortunately not be included.
+
+Thanks to Andy, David, Dave, Jon, Michael, Bob, all the XFree86 core team
 
 
 
@@ -599,24 +599,24 @@ XFree86 3.2 P9000 Server Release Notes
 
 
 
-(bob@interaccess.com) for helping to get the Viper PCI server working.
-
-Special thanks to David Moews (dmoews@xraysgi.ims.uconn.edu) whose banking
-patch could unfortunately not be included.
-
-Thanks to Andy, David, Dave, Jon, Michael, Bob, all the XFree86 core team peo-
-ple, and everyone else!
+people, and everyone else!
 
 During the course of the next few months, people will be working on accelera-
 tion, etc.  Please send any patches to me (nygren@mit.edu).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.18 1997/01/25 03:22:03 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.19 1997/02/12 08:56:02 hohndel Exp $
 
 
 
 
 
      $XConsortium: P9000.sgml /main/9 1996/05/12 20:58:05 kaleb $
+
+
+
+
+
+
 
 
 
@@ -741,7 +741,7 @@ XFree86 3.2 P9000 Server Release Notes
     2.1 Diamond Viper VLB  .................................................. 4
     2.2 Diamond Viper PCI  .................................................. 4
 
-3.  Orchid P9000 and random clones  ......................................... 5
+3.  Orchid P9000 and random clones  ......................................... 4
 
 4.  Viper Pro and other P9100 and P9130 cards (UNSUPPORTED!!!)	............. 5
 
@@ -751,7 +751,7 @@ XFree86 3.2 P9000 Server Release Notes
 
 7.  High Color and TrueColor  ............................................... 6
 
-8.  Random Notes  ........................................................... 7
+8.  Random Notes  ........................................................... 6
 
 9.  Operating System Notes  ................................................. 7
     9.1 NetBSD	............................................................. 7
