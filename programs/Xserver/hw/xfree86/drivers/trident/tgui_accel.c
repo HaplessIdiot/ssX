@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.10 1997/09/19 08:30:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_accel.c,v 1.11 1997/10/13 17:16:43 hohndel Exp $ */
 
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
@@ -94,8 +94,21 @@ void TGUISubsequentFill8x8Pattern();
 void TGUISetupForImageWrite();
 void TGUISubsequentImageWrite();
 
-#define HAVE_CLIPPING (IsTGUI9685 || IsTGUI9682 || IsTGUI9680 || IsTGUI9660)
-#define HAVE_TRANSPARENCY (IsTGUI9440 || IsTGUI9682 || IsTGUI9685)
+#define REPLICATE(x)  				\
+	if (vgaBitsPerPixel < 32) {		\
+		x |= x << 16;			\
+		if (vgaBitsPerPixel < 16)	\
+			x |= x << 8;		\
+	}
+
+#define PLANEMASKCHECK(x)  			\
+	x & ((1 << vgaBitsPerPixel)-1) !=	\
+	       (1 << vgaBitsPerPixel)-1		
+	
+
+#define HAVE_CLIPPING (IsTGUI9685 || IsTGUI9682 || IsTGUI9680 || \
+		       IsTGUI9660 || IsAdvCyber)
+#define HAVE_TRANSPARENCY (IsTGUI9440 || IsTGUI9682 || IsTGUI9685 || IsAdvCyber)
 #define HAVE_DASHEDLINES (IsTGUI9685)
 
 /*
@@ -105,7 +118,6 @@ void TGUISubsequentImageWrite();
 void TGUIAccelInit() {
 
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE |
-			     LINE_PATTERN_MSBFIRST_LSBJUSTIFIED |
 			     DELAYED_SYNC;
 
     xf86AccelInfoRec.PatternFlags = 
@@ -186,7 +198,7 @@ void TGUIAccelInit() {
     xf86AccelInfoRec.SubsequentScreenToScreenColorExpand = 
 	TGUISubsequentScreenToScreenColorExpand;
 
-    xf86AccelInfoRec.ImageWriteFlags = NO_PLANEMASK;
+    xf86AccelInfoRec.ImageWriteFlags = NO_GXCOPY | NO_PLANEMASK;
     if (!HAVE_TRANSPARENCY)
 	xf86AccelInfoRec.ImageWriteFlags |= NO_TRANSPARENCY;
     xf86AccelInfoRec.SetupForImageWrite = TGUISetupForImageWrite;
@@ -236,9 +248,7 @@ void TGUISetupForFillRectSolid(color, rop, planemask)
     int color, rop;
     unsigned planemask;
 {
-	/* 9680 has a bug and needs this replication ! */
-	if (vgaBitsPerPixel == 8)
-		color = color << 24 | color << 16 | color << 8 | color;
+	REPLICATE(color);
 
 	TGUI_FCOLOUR(color);
 	TGUI_BCOLOUR(color);
@@ -249,9 +259,7 @@ void TGUI9685SetupForFillRectSolid(color, rop, planemask)
     int color, rop;
     unsigned planemask;
 {
-	/* 9680 has a bug and needs this replication ! */
-	if (vgaBitsPerPixel == 8)
-		color = color << 24 | color << 16 | color << 8 | color;
+	REPLICATE(color);
 
 	TGUI_FPATCOL(color);
 	TGUI_BPATCOL(color);
@@ -296,12 +304,7 @@ void TGUISetClippingRectangle(x1, y1, x2, y2)
 	TGUI_DSTCLIP_XY(x2, y2);
 	ClipOn = TRUE;
 }
-/*
- * This is the implementation of the SetupForScreenToScreenCopy function
- * that sets up the coprocessor for a subsequent batch for solid
- * screen-to-screen copies. Remember, we don't handle transparency,
- * so the transparency color is ignored.
- */
+
 static int blitxdir, blitydir;
  
 void TGUISetupForScreenToScreenCopy(xdir, ydir, rop, planemask,
@@ -317,6 +320,7 @@ transparency_color)
     if (ydir < 0) direction |= YNEG;
     if ((HAVE_TRANSPARENCY) && (transparency_color != -1)) {
 	direction |= TRANS_ENABLE;
+	REPLICATE(transparency_color);
 	TGUI_BCOLOUR(transparency_color);
     }
     TGUI_DRAWFLAG(direction | SCR2SCR);
@@ -324,14 +328,7 @@ transparency_color)
     blitxdir = xdir;
     blitydir = ydir;
 }
-/*
- * This is the implementation of the SubsequentForScreenToScreenCopy
- * that sends commands to the coprocessor to perform a screen-to-screen
- * copy of the specified areas, with the parameters from the SetUp call.
- * In this sample implementation, the direction must be taken into
- * account when calculating the addresses (with coordinates, it might be
- * a little easier).
- */
+
 void TGUISubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
     int x1, y1, x2, y2, w, h;
 {
@@ -361,7 +358,7 @@ void TGUISubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 	TGUI_DEST_XY(x1,y1);
 	TGUI_DIM_XY(err,length);
 	if ((HAVE_CLIPPING) && (ClipOn)) {
-		if (IsTGUI9682) {
+		if ((IsTGUI9682) || (IsAdvCyber)) {
 			GE_OP &= 0xFEFF; /* Enable Clipping */
 		} else 
 		if (IsTGUI9685) {
@@ -370,7 +367,7 @@ void TGUISubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 	}
 	TGUI_DRAWFLAG(SOLIDFILL | STENCIL | direction);
 	TGUI_COMMAND(GE_BRESLINE);
-	if (IsTGUI9682)
+	if ((IsTGUI9682) || (IsAdvCyber))
 		GE_OP |= 0x100; /* Disable Clipping */
 	ClipOn = FALSE;
 }
@@ -381,19 +378,16 @@ void TGUISetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 {
 	int drawflag = 0;
 
-	/* 9680 has a bug, replication needed ! */
-	if (vgaBitsPerPixel == 8) {
-		fg = fg << 24 | fg << 16 | fg << 8 | fg;
-		bg = fg << 24 | bg << 16 | bg << 8 | bg;
-	}
+	REPLICATE(fg);
 
 	TGUI_FCOLOUR(fg);
 	if ((HAVE_TRANSPARENCY) && (bg == -1)) {
 		drawflag |= TRANS_ENABLE;
 		TGUI_BCOLOUR(~fg);
-	}
-	else
+	} else {
+		REPLICATE(bg);
 		TGUI_BCOLOUR(bg);
+	}
 	TGUI_DRAWFLAG(SRCMONO | drawflag);
 	TGUI_FMIX(TGUIRops_alu[rop]);
 }
@@ -415,6 +409,7 @@ transparency_color)
 	int direction = 0;
     	if ((HAVE_TRANSPARENCY) && (transparency_color != -1)) {
 		direction |= TRANS_ENABLE;
+		REPLICATE(transparency_color);
 		TGUI_BCOLOUR(transparency_color);
     	}
 	TGUI_FMIX(TGUIRops_Pixalu[rop]); /* ROP */
@@ -439,19 +434,16 @@ void TGUISetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
 {
 	int drawflag = 0;
 
-	/* 9680 has a bug, replication needed */
-	if (vgaBitsPerPixel == 8) {
-		fg = fg << 24 | fg << 16 | fg << 8 | fg;
-		bg = fg << 24 | bg << 16 | bg << 8 | bg;
-	}
+	REPLICATE(fg);
 
 	TGUI_FCOLOUR(fg);
 	if ((HAVE_TRANSPARENCY) && (bg == -1)) {
 		drawflag |= TRANS_ENABLE;
 		TGUI_BCOLOUR(~fg);
-	}
-	else
+	} else {
+		REPLICATE(bg);
 		TGUI_BCOLOUR(bg);
+	}
 	TGUI_DRAWFLAG(SCR2SCR | SRCMONO | drawflag);
 	TGUI_FMIX(TGUIRops_alu[rop]);
 }
@@ -472,11 +464,11 @@ void TGUISetupForImageWrite(rop, planemask, transparency_color)
 	int direction = 0;
     	if ((HAVE_TRANSPARENCY) && (transparency_color != -1)) {
 		direction |= TRANS_ENABLE;
+		REPLICATE(transparency_color);
 		TGUI_BCOLOUR(transparency_color);
     	}
      	TGUI_DRAWFLAG(PAT2SCR | direction);
-     	TGUI_FMIX(TGUIRops_alu[rop]);
-	TGUI_SRC_XY(0,0);
+    	TGUI_FMIX(TGUIRops_alu[rop]);
 }
  
 void TGUISubsequentImageWrite(x, y, w, h, skipleft)
@@ -491,40 +483,46 @@ void TGUISetupForDashedLine(fg, bg, rop, planemask, size)
 {
 	dashdrawflag = 0;
 
-	/* 9680 has bug, needs replication */
-	if (vgaBitsPerPixel == 8) {
-		fg = fg << 24 | fg << 16 | fg << 8 | fg;
-		bg = bg << 24 | bg << 16 | bg << 8 | bg;
-	}
+	REPLICATE(fg);
 
 	TGUI_FPATCOL(fg);
 	if ((HAVE_TRANSPARENCY) && (bg == -1)) {
 		dashdrawflag |= TRANS_ENABLE;
 		TGUI_BPATCOL(~fg);
-	}
-	else
+	} else {
+		REPLICATE(bg);
 		TGUI_BPATCOL(bg);
+	}
 
      	TGUI_FMIX(TGUIRops_Pixalu[rop]);
 
-	dashsize = size;
+	dashsize = size >> 4;
 }
 
 void TGUISubsequentDashedBresenhamLine(x1, y1, octant, err, e1, e2, length, 
 					offset)
     int x1, y1, octant, err, e1, e2, length, offset;
 {
-	dashdrawflag = 0;
+	int temp = dashdrawflag;
 
-	if (octant & YMAJOR)      dashdrawflag |= YMAJ;
-	if (octant & XDECREASING) dashdrawflag |= XNEG;
-	if (octant & YDECREASING) dashdrawflag |= YNEG;
+	if (octant & YMAJOR)      temp |= YMAJ;
+	if (octant & XDECREASING) temp |= XNEG;
+	if (octant & YDECREASING) temp |= YNEG;
 	TGUI_SRC_XY(e2,e1);
 	TGUI_DEST_XY(x1,y1);
 	TGUI_DIM_XY(err,length);
-	if ((HAVE_CLIPPING) && (ClipOn)) dashdrawflag |= CLIPENABLE;
-	TGUI_PENSTYLE(DashedBuffer);
-	TGUI_DRAWFLAG(STENCIL | dashdrawflag);
+	if ((HAVE_CLIPPING) && (ClipOn)) {
+		if ((IsTGUI9682) || (IsAdvCyber)) {
+			GE_OP &= 0xFEFF; /* Enable Clipping */
+		} else 
+		if (IsTGUI9685) {
+			temp |= CLIPENABLE;
+		}
+	}
+	TGUI_PENSTYLE(0xFFFF & DashedBuffer);
+	TGUI_DRAWFLAG(STENCIL | temp);
 	TGUI_COMMAND(GE_BRESLINE);
+	if ((IsTGUI9682) || (IsAdvCyber))
+		GE_OP |= 0x100; /* Disable Clipping */
 	ClipOn = FALSE;
 }

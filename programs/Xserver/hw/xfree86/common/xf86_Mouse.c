@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.26 1997/10/25 13:50:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.27 1997/11/01 15:04:37 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -429,8 +429,8 @@ xf86MouseProtocol(device, rBuf, nBytes)
 
     case P_MSC:             /* Mouse Systems Corp */
       buttons = (~pBuf[0]) & 0x07;
-      dx =    (char)(pBuf[1]) + (int)(pBuf[3]);
-      dy = - ((char)(pBuf[2]) + (int)(pBuf[4]));
+      dx =    (char)(pBuf[1]) + (char)(pBuf[3]);
+      dy = - ((char)(pBuf[2]) + (char)(pBuf[4]));
       break;
       
     case P_MMHIT:           /* MM_HitTablet */

@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.20 1997/10/01 05:51:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.21 1997/10/25 13:50:32 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -537,6 +537,7 @@ MGAProbe()
 {
 	unsigned long MGAMMIOAddr = 0;
 	pciConfigPtr pcr = NULL;
+	pciConfigPtr mgapcr = NULL;
 	int i;
 	CARD32 save;
 
@@ -586,7 +587,7 @@ MGAProbe()
 					vga256InfoRec.chipset = MGAIdent(3);
 			}
 			if (MGAchipset)
-				break;
+				mgapcr = pcr;
 		}
 	  }
 	} else return(FALSE);
@@ -598,6 +599,7 @@ MGAProbe()
 		return(FALSE);
 	}
 
+	pcr = mgapcr;
 	if (vga256InfoRec.chipRev) {
 		ErrorF("%s %s: MGA chipset override, using ChipRev "
 		       "0x%02x instead of 0x%02x\n", XCONFIG_GIVEN,

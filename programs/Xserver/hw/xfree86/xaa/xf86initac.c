@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.26 1997/09/30 04:51:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.27 1997/10/25 13:51:06 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -534,7 +534,6 @@ xf86InitializeAcceleration(pScreen)
                 ErrorF("\n");
         }
     }
-
     /*
      * If there's any kind of accelerated stippled rectangle fill,
      * we'll assume it is beneficial to convert stippled spans to

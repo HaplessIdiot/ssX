@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.9 1997/08/26 10:01:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.10 1997/09/25 16:13:56 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -593,8 +593,8 @@ Bool S3Probe()
 	\***************************************/
 
    /* Check that maxClock is not higher than dacSpeed */
-   if (vga256InfoRec.maxClock > vga256InfoRec.dacSpeeds[0])
-      vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+   if (vga256InfoRec.maxClock > vga256InfoRec.dacSpeeds[s3Bpp - 1])
+      vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
 
    /* Modify vga256InfoRec.maxClock if necessary */
    if(s3clockDoublingPossible) 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.4 1997/09/29 08:40:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cursor.c,v 3.5 1997/11/01 15:04:59 hohndel Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -1000,7 +1000,7 @@ int yoffset)
             xf86ImageWrite(
                 XAACursorInfoRec.CursorDataX,
                 XAACursorInfoRec.CursorDataY,
-                (XAACursorInfoRec.MaxWidth * XAACursorInfoRec.MaxHeight / 8) * 2,
+                (XAACursorInfoRec.MaxWidth * XAACursorInfoRec.MaxHeight * 2) / xf86bpp,
                 1,
                 cursor_image,
                 0, GXcopy, ~0

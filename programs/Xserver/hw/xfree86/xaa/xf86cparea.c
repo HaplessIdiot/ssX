@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.5 1997/10/13 17:16:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.6 1997/10/25 13:51:00 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -657,13 +657,11 @@ BAD_ALIGNMENT_SCANLINE:
 	   MoveDWORDS(FirstLinePntr,(CARD32*)srcPntr,dwords);
            xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy(
 					FirstLine, skipleft, x, y++, w);
-	   if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
-		xf86AccelInfoRec.Sync();
 	   srcPntr += srcwidth;
 	   MoveDWORDS(SecondLinePntr,(CARD32*)srcPntr,dwords);
            xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy(
 					SecondLine, skipleft, x, y++, w);
-	   if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+	   if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
 		xf86AccelInfoRec.Sync();
 	   srcPntr += srcwidth;
 	}
@@ -671,13 +669,13 @@ BAD_ALIGNMENT_SCANLINE:
 	   MoveDWORDS(FirstLinePntr,(CARD32*)srcPntr,dwords);
            xf86AccelInfoRec.SubsequentScanlineScreenToScreenCopy(
 					FirstLine, skipleft, x, y, w);
-	   if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+	   if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
 		xf86AccelInfoRec.Sync();
 	}
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-    	SET_SYNC_FLAG;
+	SET_SYNC_FLAG;
 }
 
 extern WindowPtr *WindowTable;

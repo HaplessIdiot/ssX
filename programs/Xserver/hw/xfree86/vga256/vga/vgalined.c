@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgalined.c,v 3.2 1996/01/05 06:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgalined.c,v 3.3 1996/12/23 06:59:51 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -269,7 +269,7 @@ vga256LineSD( pDrawable, pGC, mode, npt, pptInit)
 		    	if (axis == X_AXIS)
 			    dlen = abs(new_x1 - x1);
 		    	else
-			    dlen = abs(new_y2 - y1);
+			    dlen = abs(new_y1 - y1);
 		    	miStepDash (dlen, &dashIndexTmp, pDash,
 				    numInDashList, &dashOffsetTmp);
 		}

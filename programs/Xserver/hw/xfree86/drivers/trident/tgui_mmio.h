@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_mmio.h,v 1.3 1997/08/26 10:01:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_mmio.h,v 1.4 1997/10/13 17:16:46 hohndel Exp $ */
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
  *
@@ -107,6 +107,8 @@
 		*(unsigned long *)(tguiMMIOBase + GER_DSTCLIP_XY) = XY_MERGE(x,y);
 #define TGUI_PATLOC(addr) \
 		*(unsigned short *)(tguiMMIOBase +GER_PATLOC) = addr;
+#define TGUI_PLANEMASK(c) \
+		*(unsigned long *)(tguiMMIOBase + GER_PLANEMASK) = c;
 #define TGUI_OUTB(addr, c) \
 		*(unsigned long *)(tguiMMIOBase + addr) = c;
 #define TGUI_COMMAND(c) \
@@ -230,6 +232,8 @@
 		outl(GER_BASE+GER_DSTCLIP_XY, XY_MERGE(x,y));
 #define TGUI_PATLOC(addr) \
 		outw(GER_BASE+GER_PATLOC, addr);
+#define TGUI_PLANEMASK(c) \
+		outl(GER_BASE+GER_PLANEMASK, c);
 #define TGUI_OUTB(addr, c) \
 		outb(GER_BASE+addr, c);
 #define TGUI_COMMAND(c) \

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm_accel.c,v 1.2 1997/11/01 23:18:56 hohndel Exp $ */
 
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
@@ -158,6 +158,8 @@ PermediaAccelInit ()
 
   xf86AccelInfoRec.PixmapCacheMemoryStart = glintInfoRec.virtualY *
     glintInfoRec.displayWidth * glintInfoRec.bitsPerPixel / 8;
+
+  xf86AccelInfoRec.PixmapCacheMemoryEnd = glintInfoRec.videoRam * 1024;
 }
 
 void

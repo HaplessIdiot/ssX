@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.9 1997/05/03 09:19:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gc.c,v 3.10 1997/05/26 15:35:03 dawes Exp $ */
 
 /***********************************************************
 
@@ -316,6 +316,7 @@ xf86ValidateGC(pGC, changes, pDrawable)
 	switch (index) {
 	case GCForeground:
 	    pGC->fgPixel &= PMSK;
+	    break;
 	case GCFunction:
 	    new_rrop = TRUE;
 	    new_text = TRUE;
@@ -455,7 +456,7 @@ xf86ValidateGC(pGC, changes, pDrawable)
     }
 
 
-    if (new_rrop)
+    if (new_rrop || (changes & GCForeground))
     {
 	int old_rrop;
 
@@ -545,7 +546,8 @@ xf86ValidateGC(pGC, changes, pDrawable)
      * raster-op, planemask and "RGB_EQUAL" restrictions
      * used for selecting accelerated functions.
      */
-    if (new_rrop || (changes & GCBackground)) {
+    if (new_rrop || ((xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP) &&
+		     ((changes & GCBackground) || (changes & GCForeground)))) {
         new_line = TRUE;
         new_text = TRUE;
         new_fillspans = TRUE;

@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_ger.h,v 1.2 1997/08/26 10:01:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_ger.h,v 1.3 1997/10/13 17:16:45 hohndel Exp $ */
 
 /* Graphics Engine for 9420/9430 */
 
@@ -115,6 +115,7 @@
 #define GER_DSTKEY	0x68
 #define GER_FPATCOL	0x78
 #define GER_BPATCOL	0x7C
+#define GER_PLANEMASK	0x80
 
 /* ROPS */
 #define TGUIROP_0		0x00		/* 0 */
