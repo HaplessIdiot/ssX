@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-/* $XFree86 */
+/* $XFree86$ */
 
 #include <X11/Xmu/EditresP.h>
 #include <X11/Xresource.h>
