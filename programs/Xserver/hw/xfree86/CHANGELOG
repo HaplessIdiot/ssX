@@ -1,4 +1,4 @@
-XFree86 3.9Ai (xx April 1998)
+XFree86 3.9Ai (05 June 1998)
 1686. Add rendition directory. This is not included in the build process, yet
       (#1707, Marc Langenbach).
 1685. Make glint compile on Alpha. Some xtest fixes for Alpha (#1705,
@@ -6157,4 +6157,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.592 1998/04/30 13:51:49 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.593 1998/06/04 16:43:11 hohndel Exp $
