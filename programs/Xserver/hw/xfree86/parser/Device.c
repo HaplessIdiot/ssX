@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.19 2001/06/30 04:00:23 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.20 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -317,6 +317,7 @@ xf86freeDeviceList (XF86ConfDevicePtr ptr)
 		TestFree (ptr->dev_driver);
 		TestFree (ptr->dev_ramdac);
 		TestFree (ptr->dev_clockchip);
+		TestFree (ptr->dev_comment);
 		xf86optionListFree (ptr->dev_option_lst);
 
 		prev = ptr;

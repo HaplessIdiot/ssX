@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.18 2001/06/30 04:00:24 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.19 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -404,6 +404,7 @@ xf86freeScreenList (XF86ConfScreenPtr ptr)
 		TestFree (ptr->scrn_identifier);
 		TestFree (ptr->scrn_monitor_str);
 		TestFree (ptr->scrn_device_str);
+		TestFree (ptr->scrn_comment);
 		xf86optionListFree (ptr->scrn_option_lst);
 		xf86freeAdaptorLinkList (ptr->scrn_adaptor_lst);
 		xf86freeDisplayList (ptr->scrn_display_lst);
