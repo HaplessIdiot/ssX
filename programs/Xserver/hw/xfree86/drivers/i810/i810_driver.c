@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.24 2000/09/01 21:25:23 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.25 2000/09/04 13:26:26 alanh Exp $ */
 
 /*
  * Authors:
@@ -68,6 +68,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "miscstruct.h"
 #include "xf86xv.h"
 #include "Xv.h"
+#include "vbe.h"
 
 #include "i810.h"
 
@@ -478,7 +479,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    if (pI810->pEnt->location.type != BUS_PCI) return FALSE;
 
    if (flags & PROBE_DETECT) {
-	I810ProbeDDC(pScrn, info->pEnt->index);
+	I810ProbeDDC(pScrn, pI810->pEnt->index);
 	return TRUE;
    }
 
