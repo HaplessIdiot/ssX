@@ -1,5 +1,5 @@
 /* $XConsortium: CvtStdSel.c,v 1.29 94/04/17 20:15:57 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.0 1994/05/08 05:16:00 dawes Exp $ */
 
 /*
  
@@ -207,7 +207,7 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	*format = 8;
 	return True;
     }
-#ifdef TCPCONN || defined(MNX_TCPCONN)
+#if defined(TCPCONN) || defined(MNX_TCPCONN)
     if (*target == XA_IP_ADDRESS(d)) {
 	char hostname[1024];
 
