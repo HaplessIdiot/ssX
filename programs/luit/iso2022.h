@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/luit/iso2022.h,v 1.4 2002/07/01 02:25:59 tsi Exp $ */
 
 #define ESC 0x1B
 #define CSI 0x9B
@@ -60,6 +60,7 @@ THE SOFTWARE.
 typedef struct _Iso2022 {
     CharsetPtr *glp, *grp;
     CharsetPtr g[4];
+    CharsetPtr other;
     int parserState;
     int shiftState;
     int inputFlags;
@@ -78,6 +79,7 @@ typedef struct _Iso2022 {
 #define G1(i) ((i)->g[1])
 #define G2(i) ((i)->g[2])
 #define G3(i) ((i)->g[3])
+#define OTHER(i) ((i)->other)
 
 #define BUFFER_SIZE 512
 
