@@ -52,6 +52,9 @@
 #include "xf86_ansic.h"
 #include "xisb.h"
 #include "xf86Priv.h"
+#include "vbe.h"
+
+extern xf86MonPtr ConfiguredMonitor;
 
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
@@ -931,6 +934,9 @@ LOOKUP xfree86LookupTab[] = {
 
    /* Globals from xf86Globals.c and xf86Priv.h */
    SYMVAR(xf86ConfigDRI)
+
+   /* Globals from xf86Configure.c */
+   SYMVAR(ConfiguredMonitor)
 
    /* Pci.c */
    SYMVAR(pciNumBuses)
