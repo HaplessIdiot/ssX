@@ -6,7 +6,7 @@ XCOMM  This file is provided as preliminary support for the Latin-9
 XCOMM  (a.k.a. Latin-0) character set so that Europeans who want
 XCOMM  the Euro currency character can do so.
 XCOMM 
-XCOMM  $XFree86: xc/nls/XLC_LOCALE/iso8859-15,v 1.3tsi Exp $
+XCOMM  $XFree86: xc/nls/XLC_LOCALE/iso8859-15,v 1.4 2005/01/17 03:07:41 tsi Exp $
 XCOMM 
 
 XCOMM 
@@ -16,7 +16,7 @@ XLC_FONTSET
 XCOMM 	fs0 class 
 fs0	{
 	charset	{
-		name		ISO8859-15:GL
+		name		ISO8859-1:GL
 	}
 	font	{
 		primary		ISO8859-15:GL
