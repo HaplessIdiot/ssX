@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.13 2004/02/13 23:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.14 2004/10/23 15:29:32 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -72,6 +72,50 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Copyright © 2003, 2004, 2005 David H. Dawes.
+ * Copyright © 2003, 2004, 2005 X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 
 /* View/edit this file with tab stops set to 4 */
@@ -98,7 +142,7 @@ static xf86ConfigSymTabRec ModuleTab[] =
 	{-1, ""},
 };
 
-#define CLEANUP xf86freeModules
+#define CLEANUP xf86freeModulesList
 
 XF86LoadPtr
 xf86parseModuleSubSection (XF86LoadPtr head, char *name)
@@ -192,45 +236,49 @@ xf86printModuleSection (FILE * cf, XF86ConfModulePtr ptr)
 {
 	XF86LoadPtr lptr;
 
-	if (ptr == NULL)
-		return;
-
-	if (ptr->mod_comment)
-		fprintf(cf, "%s", ptr->mod_comment);
-	for (lptr = ptr->mod_load_lst; lptr; lptr = lptr->list.next)
+	while (ptr)
 	{
-		switch (lptr->load_type)
+		fprintf(cf, "Section \"Modules\"\n");
+
+		if (ptr->mod_comment)
+			fprintf(cf, "%s", ptr->mod_comment);
+		for (lptr = ptr->mod_load_lst; lptr; lptr = lptr->list.next)
 		{
-		case XF86_LOAD_MODULE:
-			if( lptr->load_opt == NULL ) {
-				fprintf (cf, "\tLoad  \"%s\"", lptr->load_name);
-				if (lptr->load_comment)
-					fprintf(cf, "%s", lptr->load_comment);
-				else
-					fputc('\n', cf);
-			}
-			else
+			switch (lptr->load_type)
 			{
-				fprintf (cf, "\tSubSection \"%s\"\n", lptr->load_name);
-				if (lptr->load_comment)
-					fprintf(cf, "%s", lptr->load_comment);
-				xf86printOptionList(cf, lptr->load_opt, 2);
-				fprintf (cf, "\tEndSubSection\n");
-			}
-			break;
-		case XF86_LOAD_DRIVER:
-			fprintf (cf, "\tLoadDriver  \"%s\"", lptr->load_name);
-				if (lptr->load_comment)
-					fprintf(cf, "%s", lptr->load_comment);
+			case XF86_LOAD_MODULE:
+				if( lptr->load_opt == NULL ) {
+					fprintf (cf, "\tLoad  \"%s\"", lptr->load_name);
+					if (lptr->load_comment)
+						fprintf(cf, "%s", lptr->load_comment);
+					else
+						fputc('\n', cf);
+				}
 				else
-					fputc('\n', cf);
-			break;
+				{
+					fprintf (cf, "\tSubSection \"%s\"\n", lptr->load_name);
+					if (lptr->load_comment)
+						fprintf(cf, "%s", lptr->load_comment);
+					xf86printOptionList(cf, lptr->load_opt, 2);
+					fprintf (cf, "\tEndSubSection\n");
+				}
+				break;
+			case XF86_LOAD_DRIVER:
+				fprintf (cf, "\tLoadDriver  \"%s\"", lptr->load_name);
+					if (lptr->load_comment)
+						fprintf(cf, "%s", lptr->load_comment);
+					else
+						fputc('\n', cf);
+				break;
 #if 0
-		default:
-			fprintf (cf, "#\tUnknown type  \"%s\"\n", lptr->load_name);
-			break;
+			default:
+				fprintf (cf, "#\tUnknown type  \"%s\"\n", lptr->load_name);
+				break;
 #endif
+			}
 		}
+		fprintf(cf, "EndSection\n");
+		ptr = ptr->list.next;
 	}
 }
 
@@ -255,22 +303,25 @@ xf86addNewLoadDirective (XF86LoadPtr head, char *name, int type, XF86OptionPtr o
 }
 
 void
-xf86freeModules (XF86ConfModulePtr ptr)
+xf86freeModulesList (XF86ConfModulePtr ptr)
 {
 	XF86LoadPtr lptr;
 	XF86LoadPtr prev;
+	XF86ConfModulePtr mprev;
 
-	if (ptr == NULL)
-		return;
-	lptr = ptr->mod_load_lst;
-	while (lptr)
-	{
-		TestFree (lptr->load_name);
-		TestFree (lptr->load_comment);
-		prev = lptr;
-		lptr = lptr->list.next;
-		xf86conffree (prev);
+	while (ptr) {
+		lptr = ptr->mod_load_lst;
+		while (lptr)
+		{
+			TestFree (lptr->load_name);
+			TestFree (lptr->load_comment);
+			prev = lptr;
+			lptr = lptr->list.next;
+			xf86conffree (prev);
+		}
+		TestFree (ptr->mod_comment);
+		mprev = ptr;
+		ptr = ptr->list.next;
+		xf86conffree (ptr);
 	}
-	TestFree (ptr->mod_comment);
-	xf86conffree (ptr);
 }

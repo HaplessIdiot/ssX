@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.34 2004/02/13 23:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.35 2005/01/07 17:19:32 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -72,6 +72,50 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Copyright © 2003, 2004, 2005 David H. Dawes.
+ * Copyright © 2003, 2004, 2005 X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 
 /* 
@@ -85,8 +129,18 @@
 
 #define HAVE_PARSER_DECLS
 
+/*
+ * Define these here so that consumers of the parser data can use the same
+ * alloc/free mechanism as the parser when manipulating parser data.
+ */
+#define xf86confmalloc malloc
+#define xf86confrealloc realloc
+#define xf86confcalloc calloc
+#define xf86conffree free
+
 typedef struct
 {
+	GenericListRec list;
 	char *file_logfile;
 	char *file_rgbpath;
 	char *file_modulepath;
@@ -112,6 +166,7 @@ XF86LoadRec, *XF86LoadPtr;
 
 typedef struct
 {
+	GenericListRec list;
 	XF86LoadPtr mod_load_lst;
 	char *mod_comment;
 }
@@ -303,6 +358,7 @@ XF86ConfDisplayRec, *XF86ConfDisplayPtr;
 
 typedef struct
 {
+	GenericListRec list;
 	XF86OptionPtr flg_option_lst;
 	char *flg_comment;
 }
@@ -447,9 +503,9 @@ XF86ConfDRIRec, *XF86ConfDRIPtr;
 
 typedef struct
 {
-	XF86ConfFilesPtr conf_files;
-	XF86ConfModulePtr conf_modules;
-	XF86ConfFlagsPtr conf_flags;
+	XF86ConfFilesPtr conf_files_lst;
+	XF86ConfModulePtr conf_modules_lst;
+	XF86ConfFlagsPtr conf_flags_lst;
 	XF86ConfVideoAdaptorPtr conf_videoadaptor_lst;
 	XF86ConfModesPtr conf_modes_lst;
 	XF86ConfMonitorPtr conf_monitor_lst;
@@ -463,6 +519,11 @@ typedef struct
 }
 XF86ConfigRec, *XF86ConfigPtr;
 
+/* For build-time compatibility.  This will be removed at some point. */
+#define conf_flags conf_flags_lst
+#define conf_files conf_files_lst
+#define conf_modules conf_modules_lst
+
 typedef struct
 {
 	int token;			/* id of the token */
@@ -473,13 +534,14 @@ xf86ConfigSymTabRec, *xf86ConfigSymTabPtr;
 /*
  * prototypes for public functions
  */
-extern const char *xf86openConfigFile (const char *, const char *,
-					const char *);
-extern void xf86setBuiltinConfig(const char *config[]);
-extern XF86ConfigPtr xf86readConfigFile (void);
-extern void xf86closeConfigFile (void);
-extern void xf86freeConfig (XF86ConfigPtr p);
-extern int xf86writeConfigFile (const char *, XF86ConfigPtr);
+const char *xf86openConfigFile (const char *, const char *, const char *);
+void xf86setBuiltinConfig(const char *config[]);
+XF86ConfigPtr xf86readConfigFile (void);
+int xf86validateConfig(XF86ConfigPtr p);
+XF86ConfigPtr xf86parseConfigFile (XF86ConfigPtr ptr);
+void xf86closeConfigFile (void);
+void xf86freeConfig (XF86ConfigPtr p);
+int xf86writeConfigFile (const char *, XF86ConfigPtr);
 XF86ConfDevicePtr xf86findDevice(const char *ident, XF86ConfDevicePtr p);
 XF86ConfLayoutPtr xf86findLayout(const char *name, XF86ConfLayoutPtr list);
 XF86ConfMonitorPtr xf86findMonitor(const char *ident, XF86ConfMonitorPtr p);
@@ -491,6 +553,28 @@ XF86ConfInputPtr xf86findInputByDriver(const char *driver, XF86ConfInputPtr p);
 XF86ConfVendorPtr xf86findVendor(const char *name, XF86ConfVendorPtr list);
 XF86ConfVideoAdaptorPtr xf86findVideoAdaptor(const char *ident,
 						XF86ConfVideoAdaptorPtr p);
+
+void xf86freeDeviceList(XF86ConfDevicePtr ptr);
+void xf86freeFilesList(XF86ConfFilesPtr ptr);
+void xf86freeFlagsList(XF86ConfFlagsPtr ptr);
+void xf86freeInputList(XF86ConfInputPtr ptr);
+void xf86freeLayoutList(XF86ConfLayoutPtr ptr);
+void xf86freeAdjacencyList(XF86ConfAdjacencyPtr ptr);
+void xf86freeInputrefList(XF86ConfInputrefPtr ptr);
+void xf86freeModulesList(XF86ConfModulePtr ptr);
+void xf86freeMonitorList(XF86ConfMonitorPtr ptr);
+void xf86freeModesList(XF86ConfModesPtr ptr);
+void xf86freeModeLineList(XF86ConfModeLinePtr ptr);
+void xf86freeScreenList(XF86ConfScreenPtr ptr);
+void xf86freeAdaptorLinkList(XF86ConfAdaptorLinkPtr ptr);
+void xf86freeDisplayList(XF86ConfDisplayPtr ptr);
+void xf86freeModeList(XF86ModePtr ptr);
+void xf86freeVendorList(XF86ConfVendorPtr p);
+void xf86freeVendorSubList (XF86ConfVendSubPtr ptr);
+void xf86freeVideoAdaptorList(XF86ConfVideoAdaptorPtr ptr);
+void xf86freeVideoPortList(XF86ConfVideoPortPtr ptr);
+void xf86freeBuffersList (XF86ConfBuffersPtr ptr);
+void xf86freeDRI (XF86ConfDRIPtr ptr);
 
 GenericListPtr xf86addListItem(GenericListPtr head, GenericListPtr c_new);
 int xf86itemNotSublist(GenericListPtr list_1, GenericListPtr list_2);
