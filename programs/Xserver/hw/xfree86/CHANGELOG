@@ -1,3 +1,16 @@
+XFree86 3.1.0Bc (11 January 1995)
+188. Added a DontZoom keyword for the XF86Config "ServerFlags" section
+     to disable the mode switching key sequences.
+187. Updates for ISC.  Includes imake config support for the SVR3 mmap
+     driver, updates to install.svr3, and patches for building lbxproxy
+     (Michael Rohleder).
+186. Fix 864 + STG1700 8bpp pixmux for clocks between 67.5 and 95 MHz
+     (Harald Koenig).
+185. Change VRAM timings for Diamond Stealth 64 VRAM (Harald Koenig).
+184. Set HSyncEnd overflow in S3 server when needed (Harald Koenig).
+183. Prevent C&T driver from pretending to support the 82c45x chipsets.
+182. Don't trap <ctrl><alt><bs> when DontZap is set.
+
 XFree86 3.1.0Bb (10 January 1995)
 181. Updates to linear fb code for OTI087, and allow the FIFO threshold
      to be set from XF86Config (Jorge Delgado).
