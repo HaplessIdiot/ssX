@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.129 2001/04/28 13:51:55 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.130 2001/05/11 08:16:54 alanh Exp $ */
 
 
 /* main.c */
@@ -285,7 +285,7 @@ extern __inline__ ttyslot() {return 1;} /* yuk */
 
 #endif	/* } !SYSV */
 
-#ifdef SVR4
+#if defined(SVR4) && !defined(__CYGWIN__)
 #define HAS_SAVED_IDS_AND_SETEUID
 #endif
 

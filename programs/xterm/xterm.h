@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.68 2001/03/05 23:01:21 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.70 2001/04/12 01:02:51 dickey Exp $ */
 
 /************************************************************
 
@@ -127,7 +127,7 @@ authorization.
 #define USE_LASTLOG
 #endif
 
-#if defined(AMOEBA) || defined(SCO) || defined(SVR4) || defined(_POSIX_SOURCE) || defined(__QNX__) || defined(__hpux) || (defined(BSD) && (BSD >= 199103))
+#if defined(AMOEBA) || defined(SCO) || defined(SVR4) || defined(_POSIX_SOURCE) || defined(__QNX__) || defined(__hpux) || (defined(BSD) && (BSD >= 199103)) || defined(__CYGWIN__)
 #define USE_POSIX_WAIT
 #endif
 
