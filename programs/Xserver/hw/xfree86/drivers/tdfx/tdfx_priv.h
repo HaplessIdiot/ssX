@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 
 #ifndef _TDFX_FIFO_H_
 #define _TDFX_FIFO_H_

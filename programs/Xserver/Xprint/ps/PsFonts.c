@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /* $TOG: PsFonts.c /main/3 1998/02/09 15:42:34 kaleb $ */
 /*
 

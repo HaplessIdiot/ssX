@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /* $XConsortium: OidStrs.h /main/1 1996/09/28 16:58:35 rws $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company

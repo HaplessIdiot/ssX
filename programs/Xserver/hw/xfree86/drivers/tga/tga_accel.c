@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
