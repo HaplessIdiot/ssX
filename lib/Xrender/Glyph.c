@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Glyph.c,v 1.10 2002/08/31 18:15:45 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Glyph.c,v 1.11 2002/10/18 01:13:39 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -698,7 +698,7 @@ XRenderCompositeText32 (Display			    *dpy,
 	    elt->deltay = yDst;
 	    xDst = 0;
 	    yDst = 0;
-	    Data32 (dpy, chars, this_bytes);
+	    DataInt32 (dpy, chars, this_bytes);
 	    nchars -= this_chars;
 	    chars += this_chars;
 	}
