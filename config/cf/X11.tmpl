@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.105 2001/03/30 02:15:17 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.106 2001/04/03 02:29:30 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -86,6 +86,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildDocs
 #define BuildDocs		!BuildServersOnly
+#endif
+#ifndef BuildLibraries
+#define BuildLibraries		(!BuildServersOnly || BuildClients)
 #endif
 #ifndef BuildFontServer
 #define BuildFontServer		YES
@@ -174,8 +177,14 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildPexExt
 #define BuildPexExt		NO
 #endif
+#ifndef BuildPexLib
+#define BuildPexLib		(BuildPex && !BuildServersOnly)
+#endif
 #ifndef BuildXInputExt
 #define BuildXInputExt		NO
+#endif
+#ifndef BuildXInputLib
+#define BuildXinputLib		(BuildXInputExt && !BuildServersOnly)
 #endif
 #ifndef BuildEVI
 #define BuildEVI		YES
@@ -216,7 +225,7 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #endif
 #ifndef BuildXIElib
-#define BuildXIElib		BuildXIE
+#define BuildXIElib		(BuildXIE && !BuildServersOnly)
 #endif
 #ifndef BuildXKB
 #define BuildXKB		YES
@@ -282,11 +291,14 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXprint		NO
 #endif
 #endif
+#ifndef BuildXprintLib
+#define BuildXprintLib		(BuildXprint && !BuildServersOnly)
+#endif
 #ifndef BuildScreenSaverExt
 #define BuildScreenSaverExt	NO
 #endif
 #ifndef BuildScreenSaverLibrary
-#define BuildScreenSaverLibrary	BuildScreenSaverExt
+#define BuildScreenSaverLibrary	(BuildScreenSaverExt && !BuildServersOnly)
 #endif
 #ifndef BuildXF86VidModeExt
 #define BuildXF86VidModeExt	NO
@@ -429,6 +441,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef ThreadedProject
 #define ThreadedProject ThreadedX
+#endif
+#ifndef BuildThreadStubLibrary
+#define BuildThreadStubLibrary	NO
 #endif
 #ifndef HasWChar32
 #define HasWChar32		SystemV4
@@ -2458,7 +2473,7 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 #endif
 #endif /* BuildXKBlib */
 
-#ifdef BuildXKBuilib
+#if BuildXKBuilib
     XKBUILIBSRC = $(LIBSRC)/xkbui
 ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 #ifndef XkbuiLibs
