@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.63 2000/08/10 17:40:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.64 2000/08/23 21:06:21 dawes Exp $ */
 #ifdef __CYGWIN__
 #include <stdlib.h>
 #include <signal.h>
@@ -1469,12 +1469,13 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #if NeedVarargsPrototypes
     va_list args;
 #endif
-    static beenhere = 0;
+    static Bool beenhere = FALSE;
 
     if (beenhere)
 	ErrorF("\nFatalError re-entered, aborting\n");
     else
 	ErrorF("\nFatal server error:\n");
+
 #if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);
@@ -1490,9 +1491,10 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #ifdef ABORTONFATALERROR
     abort();
 #endif
-    if (!beenhere)
+    if (!beenhere) {
+	beenhere = TRUE;
 	AbortServer();
-    else
+    } else
 	abort();
     /*NOTREACHED*/
 }
