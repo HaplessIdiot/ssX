@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.25 2001/04/18 09:24:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.26 2001/07/29 14:24:33 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -434,7 +434,7 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentColorExpandScanline = 
 			Permedia3SubsequentColorExpandScanline;
 
-    infoPtr->ScanlineImageWriteFlags = 	NO_GXCOPY |
+    infoPtr->ScanlineImageWriteFlags = 	/* NO_GXCOPY | */
 					LEFT_EDGE_CLIPPING |
 					LEFT_EDGE_CLIPPING_NEGATIVE_X |
 					BIT_ORDER_IN_BYTE_LSBFIRST |
