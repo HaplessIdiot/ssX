@@ -1,4 +1,6 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 106. Fix DRM module build on 2.5.41 and later kernels (tqueue -> workqueue)
+      (David Dawes).
  105. Fix lockup when using Xv in the trident driver (Alan Hourihane).
  104. Add support for TV chipsets VT1621 and CH7005 to the trident driver
       (VIA, Alan Hourihane).
@@ -16775,4 +16777,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2638 2003/04/15 15:35:42 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2639 2003/04/15 22:13:40 alanh Exp $
