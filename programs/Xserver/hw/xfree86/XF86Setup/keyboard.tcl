@@ -20,11 +20,11 @@ proc Keyboard_create_widgets { w } {
 	pack $w.keyboard.xkb.geotitle -side left -expand yes -fill x
 	pack $w.keyboard.xkb.geometry -side left -expand yes -fill x
 	bind $w.keyboard.xkb.geometry.popup.list <ButtonRelease-1> \
-		"+Keyboard_loadsettings [list $w]"
+		"+Keyboard_loadgeometry [list $w]"
 	pack $w.keyboard.xkb.symtitle -side left -expand yes -fill x
 	pack $w.keyboard.xkb.language -side left -expand yes -fill x
 	bind $w.keyboard.xkb.language.popup.list <ButtonRelease-1> \
-		"+Keyboard_loadsettings [list $w]"
+		"+Keyboard_loadsymbols [list $w]"
 	frame $w.keyboard.graphic -width 600 -height 260
 	pack $w.keyboard.graphic  -side top -expand yes -fill both
 	bind $w.keyboard.graphic <Expose> [list xkb_show $w.keyboard.graphic]
@@ -82,16 +82,23 @@ proc Keyboard_deactivate { w } {
 		[expr $otherInpDevMods?"AllowNonLocalModInDev":""]
 }
 
-proc Keyboard_loadsettings { w } {
+proc Keyboard_loadgeometry { w } {
 	global XKBComponents
 	set geom_idx [$w.keyboard.xkb.geometry.popup.list curselection]
-	set lang_idx [$w.keyboard.xkb.language.popup.list curselection]
-	update idletasks
+	#update idletasks
 	set geom [lindex $XKBComponents(geometry) $geom_idx]
+	xkb_load "" "" "" "" "" [string range $geom 1 end]
+	xkb_show $w.keyboard.graphic
+	focus $w
+}
+
+proc Keyboard_loadsymbols { w } {
+	global XKBComponents
+	set lang_idx [$w.keyboard.xkb.language.popup.list curselection]
+	#update idletasks
 	set lang [lindex $XKBComponents(symbols)  $lang_idx]
-	xkb_load "" "" "" "" \
-		[string range $lang 1 end] [string range $geom 1 end]
-	list xkb_show $w.keyboard.graphic
+	xkb_load "" "" "" "" [string range $lang 1 end] ""
+	xkb_show $w.keyboard.graphic
 	focus $w
 }
 
