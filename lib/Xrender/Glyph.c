@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xrender/Glyph.c,v 1.2 2000/08/28 02:43:13 tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -171,6 +171,91 @@ XRenderCompositeString8 (Display	    *dpy,
     len = (nchar + 3) >> 2;
     SetReqLen(req, len, len);
     Data(dpy, string, nchar);
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+void
+XRenderCompositeString16 (Display	    *dpy,
+			  int		    op,
+			  Picture	    src,
+			  Picture	    dst,
+			  XRenderPictFormat *maskFormat,
+			  GlyphSet	    glyphset,
+			  int		    xSrc,
+			  int		    ySrc,
+			  int		    xDst,
+			  int		    yDst,
+			  unsigned short    *string,
+			  int		    nchar)
+{
+    XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
+    xRenderCompositeGlyphs8Req	*req;
+    long			len;
+    xGlyphElt			*elt;
+
+    RenderSimpleCheckExtension (dpy, info);
+    LockDisplay(dpy);
+    GetReqExtra(RenderCompositeGlyphs8, SIZEOF (xGlyphElt), req);
+    req->reqType = info->codes->major_opcode;
+    req->renderReqType = X_RenderCompositeGlyphs8;
+    req->op = op;
+    req->src = src;
+    req->dst = dst;
+    req->maskFormat = maskFormat ? maskFormat->id : None;
+    req->glyphset = glyphset;
+    req->xSrc = xSrc;
+    req->ySrc = ySrc;    
+    elt = (xGlyphElt *) (req + 1);
+    elt->len = nchar;
+    elt->deltax = xDst;
+    elt->deltay = yDst;
+    len = (nchar + 1) >> 1;
+    SetReqLen(req, len, len);
+    nchar <<= 1;
+    Data16(dpy, string, nchar);
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+
+void
+XRenderCompositeString32 (Display	    *dpy,
+			  int		    op,
+			  Picture	    src,
+			  Picture	    dst,
+			  XRenderPictFormat  *maskFormat,
+			  GlyphSet	    glyphset,
+			  int		    xSrc,
+			  int		    ySrc,
+			  int		    xDst,
+			  int		    yDst,
+			  unsigned long	    *string,
+			  int		    nchar)
+{
+    XExtDisplayInfo		*info = XRenderFindDisplay (dpy);
+    xRenderCompositeGlyphs8Req	*req;
+    long			len;
+    xGlyphElt			*elt;
+
+    RenderSimpleCheckExtension (dpy, info);
+    LockDisplay(dpy);
+    GetReqExtra(RenderCompositeGlyphs32, SIZEOF (xGlyphElt), req);
+    req->reqType = info->codes->major_opcode;
+    req->renderReqType = X_RenderCompositeGlyphs8;
+    req->op = op;
+    req->src = src;
+    req->dst = dst;
+    req->maskFormat = maskFormat ? maskFormat->id : None;
+    req->glyphset = glyphset;
+    req->xSrc = xSrc;
+    req->ySrc = ySrc;    
+    elt = (xGlyphElt *) (req + 1);
+    elt->len = nchar;
+    elt->deltax = xDst;
+    elt->deltay = yDst;
+    len = nchar;
+    SetReqLen(req, len, len);
+    nchar <<= 2;
+    Data32(dpy, string, nchar);
     UnlockDisplay(dpy);
     SyncHandle();
 }
