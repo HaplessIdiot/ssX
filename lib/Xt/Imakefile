@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:12 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.16 2001/07/23 13:15:42 dawes Exp $
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.17 2002/05/31 18:45:46 dawes Exp $
 
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
@@ -33,7 +33,7 @@ POPDOWN_DEFINES = -DX_NO_XT_POPDOWN_CONFORMANCE
 #ifndef MotifBC
 #define MotifBC NO
 #endif
-				   
+
 /* "YES" allows illegal XtGetValues requests with NULL ArgVal to
    usually succeed, as R5 did.  Some applications erroneously rely on
    this behavior.  Support for this will be removed in a future release. */
