@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.16 2001/08/16 08:23:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.17 2001/08/30 21:24:46 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -103,8 +103,8 @@ gcc -o XWin.exe -g -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/
 #define WIN_DEFAULT_E3B_TIME	50 /* milliseconds */
 #define WIN_DEFAULT_DPI		75
 #define WIN_DEFAULT_REFRESH	0
-#define WIN_DEFAULT_WIN_KILL    1
-#define WIN_DEFAULT_UNIX_KILL   0
+#define WIN_DEFAULT_WIN_KILL    TRUE
+#define WIN_DEFAULT_UNIX_KILL   FALSE
 
 #define WIN_DIB_MAXIMUM_SIZE	0x08000000 /* 16 MB on Windows 95, 98, Me */
 #define WIN_DIB_MAXIMUM_SIZE_MB (WIN_DIB_MAXIMUM_SIZE / 8 / 1024 / 1024)
@@ -324,6 +324,9 @@ typedef struct
   DWORD			dwBitsPerRGB;
 
   DWORD			dwModeKeyStates;
+
+  /* Clipboard support */
+  HWND			hwndNextViewer;
 
   /* Layer support */
   DWORD			dwLayerKind;

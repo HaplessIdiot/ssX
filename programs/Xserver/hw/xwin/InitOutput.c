@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.17 2001/08/06 11:02:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.18 2001/08/30 21:24:46 alanh Exp $ */
 
 #include "win.h"
 
@@ -55,7 +55,12 @@ void
 winInitializeDefaultScreens (void)
 {
   int                   i;
-  
+  DWORD			dwWidth, dwHeight;
+
+  /* Get default width and height */
+  dwWidth = GetSystemMetrics (SM_CXSCREEN);
+  dwHeight = GetSystemMetrics (SM_CYSCREEN);
+
   /* Set a default DPI, if no parameter was passed */
   if (monitorResolution == 0)
     monitorResolution = WIN_DEFAULT_DPI;
@@ -63,16 +68,16 @@ winInitializeDefaultScreens (void)
   for (i = 0; i < MAXSCREENS; ++i)
     {
       g_ScreenInfo[i].dwScreen = i;
-      g_ScreenInfo[i].dwWidth  = WIN_DEFAULT_WIDTH;
-      g_ScreenInfo[i].dwHeight = WIN_DEFAULT_HEIGHT;
+      g_ScreenInfo[i].dwWidth  = dwWidth;
+      g_ScreenInfo[i].dwHeight = dwHeight;
       g_ScreenInfo[i].dwDepth  = WIN_DEFAULT_DEPTH;
       g_ScreenInfo[i].dwRefreshRate = WIN_DEFAULT_REFRESH;
       g_ScreenInfo[i].pfb = NULL;
       g_ScreenInfo[i].fFullScreen = FALSE;
       g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
-      g_ScreenInfo[i].dwWidth_mm = (WIN_DEFAULT_WIDTH / WIN_DEFAULT_DPI)
+      g_ScreenInfo[i].dwWidth_mm = (dwWidth / WIN_DEFAULT_DPI)
 	* 25.4;
-      g_ScreenInfo[i].dwHeight_mm = (WIN_DEFAULT_HEIGHT / WIN_DEFAULT_DPI)
+      g_ScreenInfo[i].dwHeight_mm = (dwHeight / WIN_DEFAULT_DPI)
 	* 25.4;
       g_ScreenInfo[i].fUseWinKillKey = WIN_DEFAULT_WIN_KILL;
       g_ScreenInfo[i].fUseUnixKillKey = WIN_DEFAULT_UNIX_KILL;
@@ -128,20 +133,15 @@ OsVendorInit (void)
 	OsVendorVErrorFProc = OsVendorVErrorF;
 #endif
 
-#if CYGDEBUG
-  ErrorF ("OsVendorInit ()\n");
-#endif
-
   /* Add a default screen if no screens were specified */
   if (g_iNumScreens == 0)
     {
-      winInitializeDefaultScreens ();
-
+      /* Add a screen 0 using the defaults set by 
+       * winInitializeDefaultScreens () and any additional parameters
+       * processed by ddxProcessArgument ().
+       */
       g_iNumScreens = 1;
       g_iLastScreen = 0;
-
-      g_ScreenInfo[0].dwWidth = GetSystemMetrics (SM_CXSCREEN);
-      g_ScreenInfo[0].dwHeight = GetSystemMetrics (SM_CYSCREEN);
     }
 }
 
@@ -191,29 +191,36 @@ ddxUseMsg (void)
  *   you may check if i is greater than or equal to argc, in which case
  *   you should display the UseMsg () and return 0.
  */
+
 int
 ddxProcessArgument (int argc, char *argv[], int i)
 {
-#ifdef DDXOSVERRORF
-  static Bool beenHere = FALSE;
+  static Bool		beenHere = FALSE;
 
+  /* Initialize once */
   if (!beenHere)
     {
+#ifdef DDXOSVERRORF
       /*
        * This initialises our hook into VErrorF() for catching log messages
        * that are generated before OsInit() is called.
        */
       OsVendorVErrorFProc = OsVendorVErrorF;
-      beenHere = TRUE;
-  }
 #endif
+
+      beenHere = TRUE;
+
+      /*
+       * Initialize default screen settings.  We have to do this before
+       * OsVendorInit () gets called, otherwise we will overwrite
+       * settings changed by parameters such as -fullscreen, etc.
+       */
+      ErrorF ("ddxProcessArgument () - Initializing default screens\n");
+      winInitializeDefaultScreens ();
+  }
 
   ErrorF ("ddxProcessArgument ()\n");
   
-  /* Set a default DPI */
-  if (monitorResolution == 0)
-	monitorResolution = WIN_DEFAULT_DPI;
-
   /*
    * Look for the '-screen scr_num width height' argument
    */
