@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.86 2002/10/05 17:57:13 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.87 2002/10/13 23:09:43 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_171">Patch #171 - 2002/12/12 - XFree86 4.2.99.3</A>
 <LI><A HREF="#xterm_170">Patch #170 - 2002/10/13 - XFree86 4.2.1</A>
 <LI><A HREF="#xterm_169">Patch #169 - 2002/10/5 - XFree86 4.2.1</A>
 <LI><A HREF="#xterm_168">Patch #168 - 2002/9/29 - XFree86 4.2.1</A>
@@ -215,6 +216,46 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_171">Patch #171 - 2002/12/12 - XFree86 4.2.99.3</A></H1>
+<ul>
+	<li>modify parser tables to improve detection of malformed control
+	  sequences, making xterm behave more like a real DEC terminal
+	  (patch by Paul Williams).
+
+	<li>update comment in <code>input.c</code> to document
+	  <code>Meta</code> as a modifier for escape sequences (patch by D
+	  Roland Walker).
+
+	<li>add ifdef'd code for logging option which adds the hostname and a
+	  timestamp to the generated logfile name.  The ifdef's are setup
+	  with the configure script (patch by Nelson Beebe).
+
+	<li>remove <code>xevents()</code> call from the end of
+	  <code>BlinkCursor()</code>, to fix an occasional problem
+	  which caused xterm to pause until a key was pressed.
+	  The reason for this was that there was no check to ensure that
+	  there really were events for <code>xevents()</code> to process.
+	  (patch by Semen A Ustimenko &lt;semenu@FreeBSD.org&gt;).
+
+	<li>remove unused mode-params from <code>open()</code> calls that do
+	  not create a file.
+
+	<li>modify configure script to put new items first on
+	  <code>$CPPFLAGS</code> and <code>$CFLAGS</code> to avoid conflict
+	  with environment's <em>-I</em> and <em>-D</em> options.
+
+	<li>update config.guess, config.sub
+
+	<li>resync with XFree86 CVS:
+	<ul>
+	  <li>fix va_args glitches for xterm/libfontconfig:  0 == (void*)0
+	    isn't true for all platforms (Egbert Eich).
+	  <li>initialise ProgramName in xterm's main before referencing it
+	    (#5473, Peter Valchev).
+          <li>some cleanup of Imakefile ifdef's (Marc La France).
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_170">Patch #170 - 2002/10/13 - XFree86 4.2.1</A></H1>
 <ul>
