@@ -2,7 +2,7 @@ XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.2 2002/09/05 22:46:14 keith
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-        SUBDIRS = redglass
+        SUBDIRS = redglass whiteglass
   DEFAULT_THEME = redglass
         ICONDIR = $(LIBDIR)/icons
        THEMEDIR = $(ICONDIR)/default
