@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.39 2000/11/16 19:45:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.40 2000/11/18 19:37:23 tsi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -375,7 +375,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
         mapflags |= MAP_NONCACHED; 
 #endif
 
-#if defined(__ia64_)
+#if defined(__ia64__)
     /* this will disappear when people upgrade their kernels */
     if ((fd = open(DEV_MEM, O_RDWR|O_SYNC)) < 0) 
 #else
