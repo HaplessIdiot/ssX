@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.86 2004/12/31 03:30:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.87 2005/01/28 02:11:18 dawes Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2961,30 +2961,29 @@ xf86FindPrimaryDevice()
         CheckGenericGA();
     if (primaryBus.type != BUS_NONE) {
 	char *bus;
-	char *loc = xnfcalloc(1,9);
-	if (loc == NULL) return;
+	char *loc = NULL;
 
 	switch (primaryBus.type) {
 	case BUS_PCI:
 	    bus = "PCI";
-	    sprintf(loc," %2.2x:%2.2x:%1.1x",primaryBus.id.pci.bus,
-	    primaryBus.id.pci.device,primaryBus.id.pci.func);
+	    xasprintf(&loc, " %2.2x:%2.2x:%1.1x", primaryBus.id.pci.bus,
+		      primaryBus.id.pci.device, primaryBus.id.pci.func);
 	    break;
 	case BUS_ISA:
 	    bus = "ISA";
-	    loc[0] = '\0';
 	    break;
 	case BUS_SBUS:
 	    bus = "SBUS";
-	    sprintf(loc," %2.2x",primaryBus.id.sbus.fbNum);
+	    xasprintf(&loc, " %2.2x", primaryBus.id.sbus.fbNum);
 	    break;
 	default:
 	    bus = "";
-	    loc[0] = '\0';
 	}
 	
-	xf86MsgVerb(X_INFO, 2, "Primary Device is: %s%s\n",bus,loc);
-	xfree(loc);
+	xf86MsgVerb(X_INFO, 2, "Primary Device is: %s%s\n",
+		    bus, loc ? loc : "");
+	if (loc)
+	    xfree(loc);
     }
     
 }

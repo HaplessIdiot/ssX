@@ -46,7 +46,7 @@
  * Author: David Dawes <dawes@x-oz.com>.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.5 2005/01/26 05:31:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86AutoConfig.c,v 1.6 2005/02/09 20:55:57 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86Parser.h"
@@ -210,10 +210,10 @@ xf86AutoConfig(void)
 	    }
 	}
 	if (!info) {
-	    ErrorF("Primary device is not PCI\n");
+	    xf86MsgVerb(X_INFO, 3, "AutoConfig: Primary device is not PCI.\n");
 	}
     } else {
-	ErrorF("xf86PciVideoInfo is not set\n");
+	xf86MsgVerb(X_INFO, 3, "AutoConfig: xf86PciVideoInfo is not set.\n");
     }
 #ifdef SBUS_SUPPORT
     if (!foundDev) {
@@ -236,13 +236,14 @@ xf86AutoConfig(void)
 	    if (useProm)
 		sparcPromClose();
 	} else {
-	    ErrorF("xf86SbusInfo is not set.\n");
+	    xf86MsgVerb(X_INFO, 3, "AutoConfig: xf86SbusInfo is not set.\n");
 	}
     }
 #endif
 
     if (!foundDev)
-	xf86Msg(X_WARNING, "Cannot detect the primary video device.\n");
+	xf86Msg(X_WARNING,
+		"AutoConfig: Cannot detect the primary video device.\n");
 
     if (foundDev) {
 	char *tmp;
@@ -256,18 +257,20 @@ xf86AutoConfig(void)
 	 * search path.
 	 */
 
-	if (xf86FilePaths->modulePath) {
-	    a = xnfstrdup(xf86FilePaths->modulePath);
+	a = xstrdup(xf86FilePaths->modulePath);
+	if (a) {
 	    b = strtok(a, ",");
 	    while (b) {
-		path = xnfrealloc(path,
-				  strlen(b) + 1 + strlen(GET_CONFIG_CMD) + 1);
-		sprintf(path, "%s/%s", b, GET_CONFIG_CMD);
-		if (access(path, X_OK) == 0)
+		if (path) {
+		    xfree(path);
+		    path = NULL;
+		}
+		xasprintf(&path, "%s/%s", b, GET_CONFIG_CMD);
+		if (path && access(path, X_OK) == 0)
 		    break;
 		b = strtok(NULL, ",");
 	    }
-	    if (!b) {
+	    if (!b && path) {
 		xfree(path);
 		path = NULL;
 	    }
@@ -310,12 +313,13 @@ xf86AutoConfig(void)
 	strcat(searchPath, GETCONFIG_DIR);
 
 	if (info) {
-	    ErrorF("xf86AutoConfig: Primary PCI is %d:%d:%d\n",
-		   info->bus, info->device, info->func);
+	    xf86MsgVerb(X_INFO, 3, "AutoConfig: Primary PCI is %d:%d:%d\n",
+			info->bus, info->device, info->func);
 	}
 #ifdef SBUS_SUPPORT
 	else if (promPath) {
-	    ErrorF("xf86AutoConfig: Primary SBUS is %s\n", promPath);
+	    xf86MsgVerb(X_INFO, 3, "AutoConfig: Primary SBUS is %s\n",
+			promPath);
 	}
 #endif
 
@@ -351,7 +355,7 @@ xf86AutoConfig(void)
 	    xfree(promPath);
 	}
 #endif
-	ErrorF("Running \"%s\"\n", buf);
+	xf86MsgVerb(X_INFO, 3, "AutoConfig: Running \"%s\".\n", buf);
 	gp = Popen(buf, "r");
 	if (gp) {
 	    if (fgets(buf, sizeof(buf) - 1, gp)) {
@@ -372,11 +376,12 @@ xf86AutoConfig(void)
 	snprintf(buf, sizeof(buf), BUILTIN_DEVICE_SECTION_PRE,
 		 driver, 0, driver);
 	AppendToConfig(buf);
-	ErrorF("New driver is \"%s\"\n", driver);
+	xf86MsgVerb(X_INFO, 3, "AutoConfig: New driver is \"%s\".\n", driver);
 	buf[0] = '\t';
 	while (fgets(buf + 1, sizeof(buf) - 2, gp)) {
 	    AppendToConfig(buf);
-	    ErrorF("Extra line: %s", buf);
+	    xf86MsgVerb(X_INFO, 3, "AutoConfig: Extra line: '%.*s'.\n",
+			strlen(buf) - 2, buf + 1);
 	}
 	AppendToConfig(BUILTIN_DEVICE_SECTION_POST);
 	snprintf(buf, sizeof(buf), BUILTIN_SCREEN_SECTION,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.145 2005/01/28 02:11:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.146 2005/02/03 03:32:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -1329,28 +1329,20 @@ xf86EnableDisableFBAccess(int scrnIndex, Bool enable)
 
 /* Print driver messages in the standard format */
 
-#undef PREFIX_SIZE
-#define PREFIX_SIZE 14
-
 void
 xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 		va_list args)
 {
-    char *tmpFormat;
+    char *tmpFormat = NULL;
 
     /* Prefix the scrnIndex name to the format string. */
     if (scrnIndex >= 0 && scrnIndex < xf86NumScreens &&
 	xf86Screens[scrnIndex]->name) {
-	tmpFormat = xalloc(strlen(format) +
-			   strlen(xf86Screens[scrnIndex]->name) +
-			   PREFIX_SIZE + 1);
+	xasprintf(&tmpFormat, "%s(%d): %s",
+		  xf86Screens[scrnIndex]->name, scrnIndex, format);
 	if (!tmpFormat)
 	    return;
 
-	snprintf(tmpFormat, PREFIX_SIZE + 1, "%s(%d): ",
-		 xf86Screens[scrnIndex]->name, scrnIndex);
-
-	strcat(tmpFormat, format);
 	LogVMessageVerb(type, verb, tmpFormat, args);
 	xfree(tmpFormat);
     } else

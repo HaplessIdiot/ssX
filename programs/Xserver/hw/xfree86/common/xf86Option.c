@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.34tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.35 2005/01/28 16:56:43 tsi Exp $ */
 /*
  * Copyright (c) 1998-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -350,17 +350,25 @@ xf86CheckBoolOption(pointer optlist, const char *name, int deflt)
 pointer
 xf86ReplaceIntOption(pointer optlist, const char *name, const int val)
 {
-    char *tmp = xnfalloc(16);
-    sprintf(tmp,"%i",val);
-    return xf86AddNewOption(optlist,name,tmp);
+    char *tmp;
+
+    xasprintf(&tmp, "%i", val);
+    if (tmp)
+	return xf86AddNewOption(optlist, name, tmp);
+    else
+	return NULL;
 }
 
 pointer
 xf86ReplaceRealOption(pointer optlist, const char *name, const double val)
 {
-    char *tmp = xnfalloc(32);
-    snprintf(tmp,32,"%f",val);
-    return xf86AddNewOption(optlist,name,tmp);
+    char *tmp;
+
+    xasprintf(&tmp, "%f", val);
+    if (tmp)
+	return xf86AddNewOption(optlist, name, tmp);
+    else
+	return NULL;
 }
 
 pointer

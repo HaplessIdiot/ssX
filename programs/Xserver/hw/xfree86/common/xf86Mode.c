@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.75 2005/02/17 03:46:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.76 2005/02/18 00:31:43 dawes Exp $ */
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -2373,16 +2373,22 @@ add(char **p, char *new)
 static void
 PrintModeline(int scrnIndex,DisplayModePtr mode)
 {
-    char tmp[256];
+    char *tmp;
     char *flags = xnfcalloc(1, 1);
 
     if (mode->HSkew) { 
-	snprintf(tmp, 256, "hskew %i", mode->HSkew); 
-	add(&flags, tmp);
+	xasprintf(&tmp, "hskew %i", mode->HSkew); 
+	if (tmp) {
+	    add(&flags, tmp);
+	    xfree(tmp);
+	}
     }
     if (mode->VScan) { 
-	snprintf(tmp, 256, "vscan %i", mode->VScan); 
-	add(&flags, tmp);
+	xasprintf(&tmp, "vscan %i", mode->VScan); 
+	if (tmp) {
+	    add(&flags, tmp);
+	    xfree(tmp);
+	}
     }
     if (mode->Flags & V_INTERLACE) add(&flags, "interlace");
     if (mode->Flags & V_CSYNC) add(&flags, "composite");
