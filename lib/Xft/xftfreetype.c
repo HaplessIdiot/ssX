@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.8 2000/12/22 05:05:16 tsi Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.9 2001/01/02 02:46:51 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -618,7 +618,7 @@ XftInitFtLibrary (void)
 	XftDirScan (_XftFontSet, *d, False);
     }
 #ifdef XFT_DEBUG_FONTSET
-    XftPrintFontSet (_XftFontSet);
+    XftFontSetPrint (_XftFontSet);
 #endif
     if (cache)
 	XftFileCacheSave (cache);

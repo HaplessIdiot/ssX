@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftname.c,v 1.7 2000/12/22 05:05:16 tsi Exp $
+ * $XFree86: xc/lib/Xft/xftname.c,v 1.8 2001/01/02 02:46:51 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -97,6 +97,8 @@ static XftConstant XftConstants[] = {
 
     { "rgb",		"rgba",	    XFT_RGBA_RGB, },
     { "bgr",		"rgba",	    XFT_RGBA_BGR, },
+    { "vrgb",		"rgba",	    XFT_RGBA_VRGB },
+    { "vbgr",		"rgba",	    XFT_RGBA_VBGR },
 };
 
 #define NUM_XFT_CONSTANTS   (sizeof XftConstants/sizeof XftConstants[0])
