@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.1 2000/11/02 02:51:06 dawes Exp $
+XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.2 2000/11/28 17:25:07 dawes Exp $
 
 /* Darwin / MacOS-X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -49,6 +49,7 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.1 2000/11/02 02:51:06 dawes Exp $
 #endif
 
 /* default flags to pass to cc */
+#ifndef DefaultCCOptions
 #if XFree86Devel
 # define DefaultCCOptions       -Wall -Wpointer-arith -Wstrict-prototypes \
                                 -Wmissing-prototypes -Wmissing-declarations \
@@ -56,6 +57,7 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.1 2000/11/02 02:51:06 dawes Exp $
                                 -traditional-cpp
 #else
 # define DefaultCCOptions       -Wall -Wpointer-arith -traditional-cpp
+#endif
 #endif
 
 /* a lot of xfree86 code needs __powerpc__ to avoid doing outport asm

@@ -1,5 +1,5 @@
 # $TOG: Makefile /main/37 1998/02/17 14:30:04 kaleb $
-# $XFree86: xc/Makefile,v 3.15 1999/08/14 10:48:56 dawes Exp $
+# $XFree86: xc/Makefile,v 3.16 2000/03/22 21:23:30 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -57,9 +57,13 @@ World:
 		fi; \
 	    fi; \
 	fi
+	@if [ ! -f $(IRULESRC)/version.def ]; then \
+	    echo "" > $(IRULESRC)/version.def; \
+	fi
 	cd $(IMAKESRC) && $(MAKE) $(FLAGS) clean
 	$(MAKE) $(MFLAGS) Makefile.boot
 	$(MAKE_CMD) $(MFLAGS) VerifyOS
+	$(MAKE_CMD) $(MFLAGS) version.def
 	$(MAKE_CMD) $(MFLAGS) Makefiles
 	$(MAKE_CMD) $(MFLAGS) clean BOOTSTRAPSUBDIRS=
 	$(MAKE_CMD) $(MFLAGS) includes

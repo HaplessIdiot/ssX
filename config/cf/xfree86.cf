@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.338 2000/12/14 16:59:06 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.339 2001/01/08 01:07:10 martin Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1169,6 +1169,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # define OtherIConfigFiles $(IRULESRC)/xfree86.cf $(IRULESRC)/xf86.rules
 #endif
 
+#include "version.def"
 /*
  * As of 3.9.15, XFree86 release versions are X.Y.Z, and XFree86Version is:
  *
@@ -1181,7 +1182,28 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
  *
  */
 #ifndef XFree86Version
-# define XFree86Version	4002
+#ifdef XF86_VERSION_NUMERIC
+# define XFree86Version \
+	((((XF86_VERSION_MAJOR * 100) + XF86_VERSION_MINOR) * 10) + \
+	    XF86_VERSION_SUBMINOR)
+#endif
+#endif
+
+#ifndef XFree86VersionString
+#ifdef XF86_VERSION
+#define XFree86VersionString XF86_VERSION
+#endif
+#endif
+
+#ifndef XFree86DateString
+#ifdef XF86_DATE
+#define XFree86DateString XF86_DATE
+#endif
+#endif
+
+/* This must be defined here for boostrapping purposes */
+#ifndef XFree86Version
+# define XFree86Version	/**/
 #endif
 
 #ifndef XVendorString

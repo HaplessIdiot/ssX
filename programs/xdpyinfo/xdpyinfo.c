@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.16 1999/02/28 11:20:14 dawes Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.18 2000/05/14 20:43:59 alanh Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -123,6 +123,31 @@ print_display_info(Display *dpy)
 	    ProtocolVersion (dpy), ProtocolRevision (dpy));
     printf ("vendor string:    %s\n", ServerVendor (dpy));
     printf ("vendor release number:    %d\n", VendorRelease (dpy));
+
+    if (strstr(ServerVendor (dpy), "XFree86")) {
+	char vers1[10], vers2[10] = "", vers3[10] = "";
+	int vendrel = VendorRelease(dpy);
+
+	if (vendrel < 3900) {
+	    sprintf(vers1, "%d.%d", vendrel / 1000, (vendrel / 100) % 10);
+	    if (((vendrel / 10) % 10) || (vendrel % 10)) {
+		sprintf(vers2, ".%d", (vendrel / 10) % 10);
+		if (vendrel % 10) {
+		    sprintf(vers3, ".%d", vendrel % 10);
+		}
+	    }
+	} else if (vendrel < 4000000) {
+	    sprintf(vers1, "%d.%d", vendrel / 1000, (vendrel / 10) % 10);
+	    if (vendrel % 10) {
+		sprintf(vers2, ".%d", vendrel % 10);
+	    }
+	}
+
+	if (vendrel < 4000000) {
+	    printf("XFree86 version: %s%s%s\n", vers1, vers2, vers3);
+	}
+    }
+
     req_size = XExtendedMaxRequestSize (dpy);
     if (!req_size) req_size = XMaxRequestSize (dpy);
     printf ("maximum request size:  %ld bytes\n", req_size * 4);
