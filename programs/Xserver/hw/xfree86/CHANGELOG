@@ -1,4 +1,7 @@
 XFree86 4.4.99.9 (xx June 2004)
+ 144. Disable building DMX on OSs that have not been verified to build
+      correctly (Kevin Martin).
+ 143. Fix DMX build when Xinerama is not enabled (Kevin Martin).
  142. Add support for dynamic screen configuration changes in rootless XDarwin
       (John Harper and Torrey T. Lyons).
  141. Add Distributed Multihead X (DMX) support (Kevin Martin and
@@ -19022,7 +19025,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3288 2004/06/30 20:21:45 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3289 2004/07/02 01:30:32 torrey Exp $
 
 
 
