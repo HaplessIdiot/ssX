@@ -182,11 +182,11 @@
 #define TVRPLLDIV2XO		0x1000
 #define TVSetNTSC1024		0x2000
 
-/* YPbPr flag (>=315, <661) */
-#define YPbPr525p               0x0001	/* 525p */
-#define YPbPr750p               0x0002	/* 750p */
-#define YPbPr525i               0x0004	/* 525p */
-#define YPbPrHiVision           0x0008	/* HiVision or 1080i (bridge type dependent) */
+/* YPbPr flag (>=315, <661; converted to TVMode) */
+#define YPbPr525p               0x0001
+#define YPbPr750p               0x0002
+#define YPbPr525i               0x0004
+#define YPbPrHiVision           0x0008
 #define YPbPrModeMask           (YPbPr750p | YPbPr525p | YPbPr525i | YPbPrHiVision)
 
 /* SysFlags (to identify special versions) */

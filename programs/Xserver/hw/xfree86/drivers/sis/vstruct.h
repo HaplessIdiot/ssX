@@ -300,7 +300,7 @@ typedef struct _SiS_Private
 	BOOLEAN HaveEMILCD;
 	BOOLEAN OverruleEMI;
 	UCHAR  EMI_30,EMI_31,EMI_32,EMI_33;
-	UCHAR  PDC;
+	SHORT  PDC;
 	UCHAR  SiS_MyCR63;
 	USHORT SiS_CRT1Mode;
 	USHORT SiS_flag_clearbuffer;

@@ -2901,7 +2901,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pSiS->SiS_Pr->SiS_ChSW = FALSE;
        pSiS->SiS_Pr->SiS_CustomT = CUT_NONE;
        pSiS->SiS_Pr->CRT1UsesCustomMode = FALSE;
-       pSiS->SiS_Pr->PDC = 0;
+       pSiS->SiS_Pr->PDC = -1;
        pSiS->SiS_Pr->LVDSHL = -1;
        pSiS->SiS_Pr->HaveEMI = FALSE;
        pSiS->SiS_Pr->HaveEMILCD = FALSE;
@@ -4412,15 +4412,15 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	      	        "Unable to detect LCD PanelDelayCompensation, please update sisfb\n");
 	        }
 	     }
-	     pSiS->SiS_Pr->PDC &= 0x3c;
-	     if(pSiS->SiS_Pr->PDC) {
+	     if(pSiS->SiS_Pr->PDC != -1) {
+	        pSiS->SiS_Pr->PDC &= 0x3c;
 	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	       	     "Detected LCD PanelDelayCompensation 0x%02x\n",
 		     pSiS->SiS_Pr->PDC);
 	     }
 
 	     /* If we haven't been able to find out, use our other methods */
-	     if(pSiS->SiS_Pr->PDC == 0) {
+	     if(pSiS->SiS_Pr->PDC == -1) {
                 int i=0;
                 do {
 	           if(mypdctable[i].subsysVendor == pSiS->PciInfo->subsysVendor &&
@@ -4495,7 +4495,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	      	       "Unable to detect LCD PanelDelayCompensation, please update sisfb\n");
 	        }
 	     }
-	     if(pSiS->SiS_Pr->PDC) {
+	     if(pSiS->SiS_Pr->PDC != -1) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	      	     "Detected LCD PanelDelayCompensation 0x%02x\n",
 		     pSiS->SiS_Pr->PDC);
