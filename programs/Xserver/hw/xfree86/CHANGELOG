@@ -1,4 +1,6 @@
-XFree86 4.4.99.11 (xx July 2004)
+XFree86 4.4.99.12 (xx August 2004)
+
+XFree86 4.4.99.11 (12 August 2004)
  164. Xterm patch #195 (Thomas Dickey).
  163. Xterm patch #194 (Thomas Dickey).
 
@@ -19063,7 +19065,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3300 2004/07/28 00:53:24 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3301 2004/08/08 22:36:12 dickey Exp $
 
 
 
