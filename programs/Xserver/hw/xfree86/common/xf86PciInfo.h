@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.16 1999/02/13 07:59:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.17 1999/02/13 16:44:57 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -437,7 +437,7 @@
 #define PCI_CHIP_I740		0x7800
 
 /* Increase this as required */
-#define MAX_DEV_PER_VENDOR 32
+#define MAX_DEV_PER_VENDOR 37
 
 typedef struct {
     unsigned short VendorID;
@@ -453,6 +453,20 @@ extern pciVendorDeviceInfo xf86PCIVendorInfoData[];
 
 #ifdef INIT_PCI_VENDOR_INFO
 pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
+#ifdef VENDOR_INCLUDE_NONVIDEO
+    {PCI_VENDOR_COMPAQ, "Compaq", {
+				{0x3033, 	"QVision 1280/p" },
+				{0xae10, 	"Smart-2/P RAID Controller" },
+				{0xae32, 	"Netellignet 10/100" },
+				{0xae34, 	"Netellignet 10" },
+				{0xae35, 	"NetFlex 3" },
+				{0xae40, 	"Netellignet 10/100 Dual" },
+				{0xae43, 	"Netellignet 10/100 ProLiant" },
+				{0xb011, 	"Netellignet 10/100 Integrated" },
+				{0xf130, 	"ThunderLAN" },
+				{0xf150, 	"NetFlex 3 BNC" },
+				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_NCR_1,	"NCR",	{
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ATI,	"ATI",	{
@@ -472,9 +486,26 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MACH64GI,	"Mach64 GT"},
 				{PCI_CHIP_MACH64GQ,	"Mach64 GT"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+    {PCI_VENDOR_VLSI, "VLSI", {
+				{0x0005,		"82C592-FC1" },
+				{0x0006,		"82C593-FC1" },
+				{0x0007,		"82C594-AFC2" },
+				{0x0009,		"82C597-AFC2" },
+				{0x000C,		"82C541 Lynx" },
+				{0x000D,		"82C543 Lynx ISA" },
+				{0x0702,	 	"VAS96011" },
+				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_AVANCE,	"Avance Logic",	{
 				{PCI_CHIP_ALG2301,	"ALG2301"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+    {PCI_VENDOR_NS, "NS", {
+				{0x0002,		"87415" },
+				{0xD001, 		"87410" },
+				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_TSENG,	"Tseng Labs", {
 				{PCI_CHIP_ET4000_W32P_A, "ET4000W32P revA"},
 				{PCI_CHIP_ET4000_W32P_B, "ET4000W32P revB"},
@@ -489,6 +520,16 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_DIGITAL, "Digital", {
 				{PCI_CHIP_DEC21030,	"21030/TGA"},
+				{0x0001,		"DC21050 PCI-PCI Bridge",
+						 /* print_pcibridge} */ },
+				{0x0002,		"DC21040 10Mb/s Ethernet" },
+				{0x0009,		"DC21140 10/100 Mb/s Ethernet" },
+				{0x000D,		"TGA2" },
+				{0x000F,		"DEFPA (FDDI PCI)" },
+				{0x0014,		"DC21041 10Mb/s Ethernet Plus" },
+				{0x0019,		"DC21142 10/100 Mb/s Ethernet" },
+				{0x0021,		"DC21052" },
+				{0x0024,		"DC21152" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_CIRRUS,	"Cirrus Logic", {
 				{PCI_CHIP_GD5430,	"GD5430"},
@@ -507,10 +548,25 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_GD7548,	"GD7548"},
 				{PCI_CHIP_GD7555,	"GD7555"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IBM, "IBM", {
+				{0x000A,		"Fire Coral" },
+				{0x0018,		"Token Ring" },
+				{0x001D,		"82G2675" },
+				{0x0022,		"82351 pci-pci bridge" },
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_NCR_2,	"NCR",	{
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+    {PCI_VENDOR_WD, "WD*", {
+				{0x3296,		"WD 7197" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_AMD, "AMD", {
+				{0x2000,		"79C970 Lance" },
+				{0x2020,		"53C974 SCSI" },
+				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_TRIDENT, "Trident", {
 				{PCI_CHIP_9320,		"TGUI 9320"},
 				{PCI_CHIP_9420,		"TGUI 9420"},
@@ -523,6 +579,11 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_9750,		"3DImage975"},
 				{PCI_CHIP_9850,		"3DImage985"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+     {PCI_VENDOR_ALI, "ALI", {
+				{0x1435,		"M1435"},
+				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_MATROX,	"Matrox", {
 				{PCI_CHIP_MGA2085,	"MGA 2085PX"},
 				{PCI_CHIP_MGA2064,	"MGA 2064W"},
@@ -542,6 +603,17 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_68554,	"68554"},
 				{PCI_CHIP_69000,	"69000"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+    {PCI_VENDOR_MIRO, "Miro", {
+				{0x5601,		"ZR36050" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_NEC, "NEC", {
+				{0x0046,		"PowerVR PCX2" },
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_FD, "FD", {
+				{0x0000,		"TMC-18C30 (36C70)" },
+				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_SIS,	"SiS",	{
 				{PCI_CHIP_SG86C201,	"SG86C201"},
 				{PCI_CHIP_SG86C202,	"SG86C202"},
@@ -552,6 +624,19 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_SIS530,	"530"},
 				{PCI_CHIP_SIS6326,	"6326"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+     {PCI_VENDOR_HP, "HP", {
+				{0x1030,		"J2585A" },
+				{0x1031,		"J2585B" },
+				{0x0000,		NULL}}},
+     {PCI_VENDOR_SMC_PCTECH, "SMC/PCTECH", {
+				{0x1000,		"FDC 37C665/RZ1000" },
+				{0x1001,		"FDC /RZ1001" },
+				{0x0000,		NULL}}},
+     {PCI_VENDOR_DPT, "DPT", {
+				{0xA400,		"SmartCache/Raid" },
+				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_SGS,	"SGS-Thomson",	{
 				{PCI_CHIP_STG2000,	"STG2000"},
 				{PCI_CHIP_STG1764,	"STG1764"},
@@ -880,25 +965,40 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_968,		"968"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_INTEL,	"Intel",{
-                                { 0x0482, "82375EB pci-eisa bridge"},
-				{ 0x0483, "82424ZX cache dram controller"},
-				{ 0x0484, "82378IB/ZB pci-isa bridge"},
-				{ 0x0486, "82430ZX Aries"},
-				{ 0x04A3, "82434LX/NX pci cache mem controller"},
-				{ 0x1230, "82371 bus-master IDE controller"},
-				{ 0x1223, "SAA7116"},
-				{ 0x1229, "82557 10/100MBit network controller"},
-				{ 0x122D, "82437 Triton"},
-				{ 0x122E, "82471 Triton"},
-				{ 0x1230, "82438"},
-				{ 0x1250, "82439"},
-				{ 0x7000, "82371 pci-isa bridge"},
-				{ 0x7010, "82371 bus-master IDE controller"},
-				{ 0x7100, "82439 TX"},
-				{ 0x7110, "82371AB PIIX4 ISA"},
-				{ 0x7111, "82371AB PIIX4 IDE"},
-				{ 0x7112, "82371AB PIIX4 USB"},
-				{ 0x7113, "82371AB PIIX4 ACPI"},
+                                {0x0482, "82375EB pci-eisa bridge"},
+				{0x0483, "82424ZX cache dram controller"},
+				{0x0484, "82378IB/ZB pci-isa bridge"},
+				{0x0486, "82430ZX Aries"},
+				{0x04A3, "82434LX/NX pci cache mem controller"},
+				{0x1221, "82092AA"},
+				{0x1222, "82092AA"},
+				{0x1223, "SAA7116"},
+				{0x1226, "82596"},
+				{0x1227, "82865"},
+				{0x1229, "82557 10/100MBit network controller"},
+				{0x122D, "82437 Triton"},
+				{0x122E, "82471 Triton"},
+				{0x1230, "82371 bus-master IDE controller"},
+				{0x1234, "82371MX bus-master IDE controller"},
+				{0x1235, "82437MX"},
+				{0x1237, "82441"},
+				{0x124B, "82380FB"},
+				{0x1250, "82439"},
+				{0x7000, "82371 pci-isa bridge"},
+				{0x7010, "82371 bus-master IDE controller"},
+				{0x7020, "82371 bus-master IDE controller"},
+				{0x7030, "82437VX"},
+				{0x7100, "82439TX"},
+				{0x7110, "82371AB PIIX4 ISA"},
+				{0x7111, "82371AB PIIX4 IDE"},
+				{0x7112, "82371AB PIIX4 USB"},
+				{0x7113, "82371AB PIIX4 ACPI"},
+				{0x7180, "82443LX"},
+				{0x7181, "82443LX"},
+				{0x7190, "82443BX"},
+				{0x7191, "82443BX"},
+				{0x84C4, "P6"},
+				{0x84C5, "82450GX20"},
 				{PCI_CHIP_I740,		"i740"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ARK,	"ARK Logic", {
@@ -941,6 +1041,10 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x0088, "Mach64 (SuSE Econ)", NF },
                         { 0x4c42, "XPERT LCD", NF },
                         { 0x0000, (char *)NULL, NF } } },
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{ PCI_VENDOR_COMPAQ, "Compaq", {
+                        { 0x0000, (char *)NULL, NF } } },
+#endif
 	{ PCI_VENDOR_DIAMOND, "Diamond", {
                         { 0x8000, "C&T 69000", NF },
                         { 0x1103, "Fire GL 1000", NF },

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.1 1999/02/12 22:52:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.2 1999/02/13 16:44:59 hohndel Exp $ */
 /*
  * Display the Subsystem Vendor Id and Subsystem Id in order to identify
  * the cards installed in this computer
@@ -92,46 +92,65 @@ xf86DisplayPCICardInfo(int verbosity)
 	char *chipvendorname = NULL, *chipname = NULL;
 	Bool noCard = FALSE;
 
-	/* first let's look for the card itself */
-	k = 0;
-	while(xf86PCICardInfo[k].VendorName) {
-	    if (xf86PCICardInfo[k].VendorID == pcrp->_subsys_vendor) {
-		j = 0;
-		vendorname = xf86PCICardInfo[k].VendorName;
-		while (xf86PCICardInfo[k].Device[j].CardName) {
-		    if (xf86PCICardInfo[k].Device[j].SubsystemID ==
-			pcrp->_subsys_card) {
-			cardname =
-			  xf86PCICardInfo[k].Device[j].CardName;
-			break;
-		    }
-		    j++;
-		}
-		break;
-	    }
-	    k++;
-	}
-#if DONT_PRINT_ALL_DEVICES
-	if ((!vendorname || !cardname) &&
-	    !PCIALWAYSPRINTCLASSES(pcrp->_base_class, 
-				   pcrp->_sub_class)) {
-	    i++;
-	    continue;
-	}
-#endif /* DONT_PRINT_ALL_DEVICES */
 	xf86MsgVerb(X_NONE,-verbosity,
 		    "(%d:%d:%d) ", pcrp->busnum, pcrp->devnum,
 		pcrp->funcnum);
-	if (vendorname)
-	  xf86MsgVerb(X_NONE,-verbosity,"%s ", vendorname);
-	if (cardname)
-	  xf86MsgVerb(X_NONE,-verbosity,"%s ", cardname);
+
+	/* first let's look for the card itself, but only if information
+	 * is available
+	 */
+	if ( pcrp->_subsys_vendor || pcrp->_subsys_card ) {
+	    k = 0;
+	    while(xf86PCICardInfo[k].VendorName) {
+		if (xf86PCICardInfo[k].VendorID == pcrp->_subsys_vendor) {
+		    j = 0;
+		    vendorname = xf86PCICardInfo[k].VendorName;
+		    while (xf86PCICardInfo[k].Device[j].CardName) {
+			if (xf86PCICardInfo[k].Device[j].SubsystemID ==
+			    pcrp->_subsys_card) {
+			    cardname =
+			      xf86PCICardInfo[k].Device[j].CardName;
+			    break;
+			}
+			j++;
+		    }
+		    break;
+		}
+		k++;
+	    }
+	    if (vendorname)
+		xf86MsgVerb(X_NONE,-verbosity,"%s ", vendorname);
+	    if (cardname)
+		xf86MsgVerb(X_NONE,-verbosity,"%s ", cardname);
+	    if (vendorname && !cardname)
+		xf86MsgVerb(X_NONE,-verbosity,"unknown card ");
+	}
 	if (!(cardname || vendorname)) {
-	  noCard = TRUE;
-	  if (verbosity > 1)
-	    xf86MsgVerb(X_NONE,-verbosity,
-			"unknown card (0x%04x/0x%04x) \n\t", pcrp->_subsys_vendor,
-			pcrp->_subsys_card);
+	    /*
+	     * we didn't find text representation of the information 
+	     * about the card
+	     */
+	    if ( pcrp->_subsys_vendor || pcrp->_subsys_card ) {
+		/*
+		 * if there was information and we just couldn't interpret
+		 * it, print it out as unknown, anyway
+		 */
+		xf86MsgVerb(X_NONE,-verbosity,
+			    "unknown card (0x%04x/0x%04x) \n\t",
+			    pcrp->_subsys_vendor, pcrp->_subsys_card);
+	    }
+	    else {
+		/*
+		 * if there was no info to begin with, only print in
+		 * verbose mode
+		 */
+		if (verbosity > 1)
+		    xf86MsgVerb(X_NONE,-verbosity,
+				"unknown card (0x%04x/0x%04x) \n\t",
+				pcrp->_subsys_vendor, pcrp->_subsys_card);
+		else
+		    noCard = TRUE;
+	    }
 	}
 	/* now check for the chipset used */
 	k = 0;
@@ -173,11 +192,11 @@ xf86DisplayPCICardInfo(int verbosity)
 			chipvendorname,chipname);
 	  else if (chipvendorname)
 	    xf86MsgVerb(X_NONE,-verbosity,
-			"\n\tusing an unknown chip (DeviceId 0x%04x) from %s",
+			"using an unknown chip (DeviceId 0x%04x) from %s",
 			pcrp->_device,chipvendorname);
 	  else
 	    xf86MsgVerb(X_NONE,-verbosity,
-			"\n\tusing an unknown chipset(0x%04x/0x%04x)",
+			"using an unknown chipset(0x%04x/0x%04x)",
 			pcrp->_vendor,pcrp->_device);
 	  xf86MsgVerb(X_NONE,-verbosity,"\n");
 	}
