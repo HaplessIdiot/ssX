@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.17 1997/07/06 05:31:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.18 1997/07/06 06:50:43 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -52,6 +52,7 @@ int xf86execl();
 #endif
 extern char* xf86tmpnam();
 
+#define NEED_XF86_TYPES
 #define DONT_DEFINE_WRAPPERS
 #include "xf86_libc.h"
 
@@ -73,6 +74,7 @@ extern char* xf86tmpnam();
 #endif
 typedef struct dirent DIRENTRY;
 
+#if 0 /* Don't duplicate this stuff or it will get out of sync, like now */
 #ifndef XFree86LOADER
 typedef pointer XF86FILE;	/* opaque FILE* replacement */
 typedef pointer XF86fpos_t;	/* opaque fpos_t* replacement */
@@ -88,6 +90,7 @@ struct _xf86dirent {		/* types in struct dirent/direct: */
 	char	d_name[_XF86NAMELEN+1];	/* char [MAXNAMLEN]; might be smaller or unaligned */
 };
 typedef struct _xf86dirent XF86DIRENT;
+#endif
 #endif
 
 #ifdef __EMX__

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.9 1997/07/06 05:31:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.10 1997/07/06 06:50:43 dawes Exp $ */
 
 
 
@@ -21,6 +21,8 @@
 
 #define XF86_LIBC_H
 
+
+#if defined(XFree86LOADER) || defined(NEED_XF86_TYPES)
 
 /*
  * First, the new data types
@@ -54,12 +56,15 @@ typedef struct _xf86dirent XF86DIRENT;
 #define XF86_IOFBF    2
 #define XF86_IOLBF    3
 
+#endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
+
+#ifndef XFree86LOADER
+
 /*
  * the rest of this file should only be included for code that is supposed
  * to go into modules
  */
 
-#ifdef XFree86LOADER
 
 #ifndef DONT_DEFINE_WRAPPERS
 
@@ -75,13 +80,16 @@ typedef struct _xf86dirent XF86DIRENT;
 #define atol(ccp)		xf86atol(ccp)
 #define ceil(d)			xf86ceil(d)
 #define calloc(I1,I2)		xf86calloc(I1,I2)
+#undef clearerr
 #define clearerr(FP)		xf86clearerr(FP)
 #define cos(d)			xf86cos(d)
 #define exit(i)			xf86exit(i)
 #define exp(d)			xf86exp(d)
 #define fabs(d)			xf86fabs(d)
 #define fclose(FP)		xf86fclose(FP)
+#undef feof
 #define feof(FP)		xf86feof(FP)
+#undef ferror
 #define ferror(FP)		xf86ferror(FP)
 #define fflush(FP)		xf86fflush(FP)
 #define fgetc(FP)		xf86fgetc(FP)
