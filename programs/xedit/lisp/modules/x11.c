@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.9 2002/11/10 16:29:11 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.10 2002/11/23 08:26:52 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -228,10 +228,10 @@ Lisp_XBlackPixel(LispBuiltin *builtin)
 
     if (oscreen == UNSPEC)
 	screen = DefaultScreen(display);
-    else
+    else {
 	CHECK_INDEX(oscreen);
-    else
 	screen = FIXNUM_VALUE(oscreen);
+    }
 
     if (screen >= ScreenCount(display))
 	LispDestroy("%s: screen index %d too large, %d screens available",
@@ -278,10 +278,10 @@ Lisp_XWhitePixel(LispBuiltin *builtin)
 
     if (oscreen == UNSPEC)
 	screen = DefaultScreen(display);
-    else
+    else {
 	CHECK_FIXNUM(oscreen);
-    else
 	screen = FIXNUM_VALUE(oscreen);
+    }
 
     if (screen >= ScreenCount(display))
 	LispDestroy("%s: screen index %d too large, %d screens available",
@@ -328,10 +328,10 @@ Lisp_XDefaultGC(LispBuiltin *builtin)
 
     if (oscreen == UNSPEC)
 	screen = DefaultScreen(display);
-    else
+    else {
 	CHECK_FIXNUM(oscreen);
-    else
 	screen = FIXNUM_VALUE(oscreen);
+    }
 
     if (screen >= ScreenCount(display))
 	LispDestroy("%s: screen index %d too large, %d screens available",
@@ -408,24 +408,24 @@ Lisp_XCreateSimpleWindow(LispBuiltin *builtin)
     /* check &OPTIONAL parameters */
     if (oborder_width == UNSPEC)
 	border_width = 1;
-    else
+    else {
 	CHECK_INDEX(oborder_width);
-    else
 	border_width = FIXNUM_VALUE(oborder_width);
+    }
 
     if (oborder == UNSPEC)
 	border = BlackPixel(display, DefaultScreen(display));
-    else
+    else {
 	CHECK_LONGINT(oborder);
-    else
 	border = LONGINT_VALUE(oborder);
+    }
 
     if (obackground == UNSPEC)
 	background = WhitePixel(display, DefaultScreen(display));
-    else
+    else {
 	CHECK_LONGINT(obackground);
-    else
 	background = LONGINT_VALUE(obackground);
+    }
 
     return (OPAQUE(
 	    XCreateSimpleWindow(display, parent, x, y, width, height,
@@ -588,10 +588,10 @@ Lisp_XBell(LispBuiltin *builtin)
 
     if (opercent == UNSPEC)
 	percent = 0;
-    else
+    else {
 	CHECK_FIXNUM(opercent);
-    else
 	percent = FIXNUM_VALUE(opercent);
+    }
 
     if (percent < -100 || percent > 100)
 	LispDestroy("%s: percent value %d out of range -100 to 100",

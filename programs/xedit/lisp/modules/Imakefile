@@ -1,9 +1,9 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/modules/Imakefile,v 1.12 2003/01/16 03:50:46 paulo Exp $
+XCOMM $XFree86: xc/programs/xedit/lisp/modules/Imakefile,v 1.13 2003/01/16 06:25:49 paulo Exp $
 
 #include "../lisp.cf"
 #include "../lisp.rules"
 
-INCLUDES	= -I..  -I../mp -I$(XINCLUDESRC) -I-
+INCLUDES	= -I..  -I../mp -I../re -I$(XINCLUDESRC) -I-
 
 #if BuildSharedLispModules
 LispModuleTarget(x11, $(XLIB) $(LOCAL_LIBRARIES),)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.7 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.8 2003/03/25 04:18:27 dawes Exp $ */
 
 #include "time.h"
 #include "bytecode.h"
@@ -138,6 +138,6 @@ Lisp_Time(LispBuiltin *builtin)
     return (result);
 #else
     LispMessage("\"Lisp_Time\" not implemented under OS/2");
-    return (NULL);
+    return (NIL);
 #endif
 }
