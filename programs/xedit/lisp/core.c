@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.26 2002/03/01 16:42:43 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.27 2002/03/03 05:44:50 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -35,6 +35,11 @@
 #include "helper.h"
 #include "private.h"
 #include "write.h"
+
+#ifdef NEED_SETENV
+extern int setenv(const char *name, const char *value, int overwrite);
+extern void unsetenv(const char *name);
+#endif
 
 /*
  * Prototypes
@@ -2655,7 +2660,6 @@ Lisp_Rplacd(LispMac *mac, LispBuiltin *builtin)
     return (place);
 }
 
-#ifdef HAVE_SETENV
 /*
  * XXX non standard function
  */
@@ -2688,7 +2692,6 @@ Lisp_Setenv(LispMac *mac, LispBuiltin *builtin)
 
     return (value ? STRING(value) : NIL);
 }
-#endif
 
 LispObj *
 Lisp_Set(LispMac *mac, LispBuiltin *builtin)
@@ -3432,7 +3435,6 @@ Lisp_While(LispMac *mac, LispBuiltin *builtin)
     return (NIL);
 }
 
-#ifdef HAVE_SETENV
 /*
  * XXX non standard function
  */
@@ -3457,7 +3459,6 @@ Lisp_Unsetenv(LispMac *mac, LispBuiltin *builtin)
 
     return (NIL);
 }
-#endif
 
 /* helper functions for setf
  *	DONT explicitly call these functions. Non standard functions
