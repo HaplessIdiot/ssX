@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.88tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.89 2003/07/09 15:27:35 tsi Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -63,6 +63,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdio.h>
 #include "misc.h"
 #include "X.h"
+#include <X11/Xtrans.h>
 #include "input.h"
 #include "dixfont.h"
 #include "osdep.h"
@@ -816,9 +817,11 @@ ProcessCommandLine(int argc, char *argv[])
 #endif
 	else if ( strcmp( argv[i], "-nolisten") == 0)
 	{
-            if(++i < argc)
-	        protNoListen = argv[i];
-	    else
+            if(++i < argc) {
+		if (_XSERVTransNoListen(argv[i])) 
+		    FatalError ("Failed to disable listen for %s transport",
+				argv[i]);
+	   } else
 		UseMsg();
 	}
 	else if ( strcmp( argv[i], "-noreset") == 0)

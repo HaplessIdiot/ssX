@@ -1,4 +1,19 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 326. Removed ru_yawerty xkb symbols file as it is misleading as suggested
+      by Ivan Pasacal (Bugzilla #516, Ivan Pascal).
+ 325. Fixed two bounds errors in rman 
+      (Bugzilla #505, Dan Nelson, Bugzilla #506,  Eric Anholt).
+ 324. Cleaned up MMIO map/unmap in RADEONPreInit(), unmapped MMIO in 
+      CloseScreen() even when server is switched away (Bugzilla #504, 
+      Hui Yu, Egbert Eich).
+ 323. Modified transport code so that a bind to an IPv4 socket fails silently
+      when the bind to an IPv6 socket for the same port was successful.
+      This works around a problem in theIPv6 implementation on some OSes
+      that also handle IPv4 calls over IPv6 sockets (Egbert Eich).
+ 322. Simplified handling of the -nolisten option as suggested by 
+      Alan Coopersmith. This option can now be issued multiple times.
+ 321. Added code to unmap sysMem when freeing int10 (Bugzilla #504, 
+      Frank Giessler).
  320. Fix generic rootless crash while resizing when CopyBytes is not defined
       by the implementation (Torrey T. Lyons).
  319. Fix XDarwin Cocoa rootless crash when unshaping a shaped window
@@ -17347,7 +17362,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2782 2003/07/22 01:16:56 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2783 2003/07/23 00:48:55 torrey Exp $
 
 
 

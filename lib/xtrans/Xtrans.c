@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.30tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.31 2003/07/20 16:12:15 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -90,10 +90,10 @@ Xtransport_table Xtransports[] = {
 #endif /* STREAMSCONN */
 #if defined(TCPCONN)
     { &TRANS(SocketTCPFuncs),	TRANS_SOCKET_TCP_INDEX },
-    { &TRANS(SocketINETFuncs),	TRANS_SOCKET_INET_INDEX },
 #if defined(IPv6) && defined(AF_INET6)
     { &TRANS(SocketINET6Funcs),	TRANS_SOCKET_INET6_INDEX },
 #endif /* IPv6 */
+    { &TRANS(SocketINETFuncs),	TRANS_SOCKET_INET_INDEX },
 #endif /* TCPCONN */
 #if defined(DNETCONN)
     { &TRANS(DNETFuncs),	TRANS_DNET_INDEX },
@@ -768,10 +768,10 @@ TRANS(SetOption) (XtransConnInfo ciptr, int option, int arg)
 #ifdef TRANS_SERVER
 
 int
-TRANS(CreateListener) (XtransConnInfo ciptr, char *port)
+TRANS(CreateListener) (XtransConnInfo ciptr, char *port, unsigned int flags)
 
 {
-    return ciptr->transptr->CreateListener (ciptr, port);
+    return ciptr->transptr->CreateListener (ciptr, port, flags);
 }
 
 int
@@ -1037,6 +1037,9 @@ TRANS(MakeAllCOTSServerListeners) (char *port, int *partial, int *count_ret,
     char		buffer[256]; /* ??? What size ?? */
     XtransConnInfo	ciptr, temp_ciptrs[NUMTRANS];
     int			status, i, j;
+#if defined(IPv6) && defined(AF_INET6)
+    int		ipv6_succ = 0;
+#endif
 
     PRMSG (2,"MakeAllCOTSServerListeners(%s,%p)\n",
 	   port ? port : "NULL", ciptrs_ret, 0);
@@ -1046,6 +1049,7 @@ TRANS(MakeAllCOTSServerListeners) (char *port, int *partial, int *count_ret,
     for (i = 0; i < NUMTRANS; i++)
     {
 	Xtransport *trans = Xtransports[i].transport;
+	unsigned int flags = 0;
 
 	if (trans->flags&TRANS_ALIAS || trans->flags&TRANS_NOLISTEN)
 	    continue;
@@ -1065,8 +1069,13 @@ TRANS(MakeAllCOTSServerListeners) (char *port, int *partial, int *count_ret,
 		  trans->TransName, 0, 0);
 	    continue;
 	}
+#if defined(IPv6) && defined(AF_INET6)
+		if ((Xtransports[i].transport_id == TRANS_SOCKET_INET_INDEX
+		     && ipv6_succ))
+		    flags |= ADDR_IN_USE_ALLOWED;
+#endif
 
-	if ((status = TRANS(CreateListener (ciptr, port))) < 0)
+	if ((status = TRANS(CreateListener (ciptr, port, flags))) < 0)
 	{
 	    if (status == TRANS_ADDR_IN_USE)
 	    {
@@ -1098,6 +1107,11 @@ TRANS(MakeAllCOTSServerListeners) (char *port, int *partial, int *count_ret,
 	    }
 	}
 
+#if defined(IPv6) && defined(AF_INET6)
+	if (Xtransports[i].transport_id == TRANS_SOCKET_INET6_INDEX)
+	    ipv6_succ = 1;
+#endif
+	
 	PRMSG (5,
 	      "MakeAllCOTSServerListeners: opened listener for %s, %d\n",
 	      trans->TransName, ciptr->fd, 0);
@@ -1165,7 +1179,7 @@ TRANS(MakeAllCLTSServerListeners) (char *port, int *partial, int *count_ret,
 	    continue;
 	}
 
-	if ((status = TRANS(CreateListener (ciptr, port))) < 0)
+	if ((status = TRANS(CreateListener (ciptr, port, 0))) < 0)
 	{
 	    if (status == TRANS_ADDR_IN_USE)
 	    {
