@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/Imakefile,v 1.5 2000/06/17 00:03:43 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/Imakefile,v 1.6 2000/08/11 19:51:04 dawes Exp $
 
 
 
@@ -20,13 +20,13 @@ SRCS = sol8_init.c sol8_vid.c sol8_bios.c sol8_kbd.c sol8_io.c \
 	VTsw_noop.c sol8_kbd.c sol8_kbdEv.c posix_tty.c $(MOUSESRC) \
 	libc_wrapper.c $(PROWORKS_INOUT_SRC) stdResource.c stdPci.c \
         sol8_kbdgetmapping.c sol8_postkbdevents.c sigiostubs.c pm_noop.c \
-        kmod_noop.c
+        kmod_noop.c agp_noop.c
 
 OBJS = sol8_init.o sol8_vid.o sol8_bios.o sol8_kbd.o sol8_io.o \
 	VTsw_noop.o sol8_kbd.o sol8_kbdEv.o posix_tty.o $(MOUSEOBJ) \
 	libc_wrapper.o $(PROWORKS_INOUT_OBJ) stdResource.o stdPci.o \
         sol8_kbdgetmapping.o sol8_postkbdevents.o sigiostubs.o pm_noop.o \
-        kmod_noop.o
+        kmod_noop.o agp_noop.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -47,5 +47,6 @@ LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(sigiostubs.c,../shared)
 LinkSourceFile(pm_noop.c,../shared)
 LinkSourceFile(kmod_noop.c,../shared)
+LinkSourceFile(agp_noop.c,../shared)
 
 DependTarget()

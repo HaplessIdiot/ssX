@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.10 2000/06/17 00:03:33 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/Imakefile,v 1.11 2000/06/27 14:27:30 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -9,11 +9,11 @@ MOUSEOBJ = hurd_mouse.o
 
 SRCS = hurd_init.c hurd_video.c hurd_io.c libc_wrapper.c $(BIOS_MOD).c \
        VTsw_noop.c posix_tty.c std_kbdEv.c $(MOUSESRC) \
-       stdResource.c stdPci.c sigiostubs.c pm_noop.c kmod_noop.c
+       stdResource.c stdPci.c sigiostubs.c pm_noop.c kmod_noop.c agp_noop.c
 
 OBJS = hurd_init.o hurd_video.o hurd_io.o libc_wrapper.o $(BIOS_MOD).o \
        VTsw_noop.o posix_tty.o std_kbdEv.o $(MOUSEOBJ) \
-       stdResource.o stdPci.o sigiostubs.o pm_noop.o kmod_noop.o
+       stdResource.o stdPci.o sigiostubs.o pm_noop.o kmod_noop.o agp_noop.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi
@@ -35,6 +35,7 @@ LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(sigiostubs.c,../shared)
 LinkSourceFile(pm_noop.c,../shared)
 LinkSourceFile(kmod_noop.c,../shared)
+LinkSourceFile(agp_noop.c,../shared)
 
 DependTarget()
 

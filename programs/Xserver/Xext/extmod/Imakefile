@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.18 2000/08/01 23:38:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.19 2000/08/09 03:06:55 tsi Exp $
 XCOMM This directory is only entered if DoLoadableServer is set
 
 #define IHaveModules
@@ -87,7 +87,7 @@ LinkSourceFile(cup.c,..)
               $(CUPOBJS) $(DPMSOBJS) $(FONTCACHEOBJS) \
 	      $(EVIOBJS) $(XVOBJS)
 
-    DEFINES = -DEXTMODULE
+    DEFINES = -DEXTMODULE $(EXT_DEFINES)
 
 XF86INCLUDES = -I$(XF86COMSRC)
     INCLUDES = -I.. -I../../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \

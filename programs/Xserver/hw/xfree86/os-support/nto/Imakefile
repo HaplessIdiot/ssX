@@ -1,14 +1,14 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/nto/Imakefile,v 1.3 2000/06/17 00:03:41 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/nto/Imakefile,v 1.4 2000/06/27 14:27:30 tsi Exp $
 XCOMM
 
 #include <Server.tmpl>
 
 
 SRCS = nto_io.c nto_init.c nto_kbdEv.c nto_ioperm.c nto_video.c \
-       VTsw_noop.c posix_tty.c std_mseEv.c std_mouse.c kmod_noop.c
+       VTsw_noop.c posix_tty.c std_mseEv.c std_mouse.c kmod_noop.c agp_noop.c
 
 OBJS = nto_io.o nto_init.o nto_kbdEv.o nto_ioperm.o nto_video.o \
-       VTsw_noop.o posix_tty.o std_mseEv.o std_mouse.o kmod_noop.o
+       VTsw_noop.o posix_tty.o std_mseEv.o std_mouse.o kmod_noop.o agp_noop.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
@@ -17,11 +17,12 @@ SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
 
-ObjectFromSpecialSource(IO_utils,../shared/IO_utils,/**/)
-ObjectFromSpecialSource(VTsw_noop,../shared/VTsw_noop,/**/)
-ObjectFromSpecialSource(posix_tty,../shared/posix_tty,/**/)
-ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
-ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
-ObjectFromSpecialSource(kmod_noop,../shared/kmod_noop,/**/)
+LinkSourceFile(IO_utils.c,../shared)
+LinkSourceFile(VTsw_noop.c,../shared)
+LinkSourceFile(posix_tty.c,../shared)
+LinkSourceFile(std_mseEv.c,../shared)
+LinkSourceFile(std_mouse.c,../shared)
+LinkSourceFile(kmod_noop.c,../shared)
+LinkSourceFile(agp_noop.c,../shared)
 
 DependTarget()

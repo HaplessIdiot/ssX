@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.12 2000/08/03 02:14:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.13 2000/08/03 02:30:24 dawes Exp $ */
 
 /*
  * Authors:
@@ -156,10 +156,10 @@ typedef struct _I810Rec {
    int auxPitchBits;
 
    int CursorOffset;
-   int CursorPhysical;
-   int CursorStart;
-   int OverlayPhysical;
-   int OverlayStart;
+   unsigned long CursorPhysical;
+   unsigned long CursorStart;
+   unsigned long OverlayPhysical;
+   unsigned long OverlayStart;
 
 
    DGAModePtr DGAModes;
@@ -177,15 +177,14 @@ typedef struct _I810Rec {
    I810RingBuffer LpRing;
    unsigned int BR[20]; 
 
-   int  gartfd;
    int  LmFreqSel;
 
    int VramKey;
-   long VramOffset;
+   unsigned long VramOffset;
    int DcacheKey;
-   long DcacheOffset;
+   unsigned long DcacheOffset;
    int HwcursKey; 
-   long HwcursOffset;
+   unsigned long HwcursOffset;
 
    int GttBound;
    
