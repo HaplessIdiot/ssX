@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.7 2000/02/14 06:27:13 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.8 2000/03/02 16:07:38 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -200,11 +200,19 @@ DRIInfoPtr DRICreateInfoRec(void);
 void DRIDestroyInfoRec(DRIInfoPtr DRIInfo);
 Bool DRIFinishScreenInit(ScreenPtr pScreen);
 void DRIWakeupHandler(
+    pointer wakeupData,
+    int result,
+    pointer pReadmask);
+void DRIBlockHandler(
+    pointer blockData,
+    OSTimePtr pTimeout,
+    pointer pReadmask);
+void DRIDoWakeupHandler(
     int screenNum,
     pointer wakeupData,
     unsigned long result,
     pointer pReadmask);
-void DRIBlockHandler(
+void DRIDoBlockHandler(
     int screenNum,
     pointer blockData,
     pointer pTimeout,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.11 2000/02/15 07:13:32 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.12 2000/03/02 16:07:37 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -311,14 +311,6 @@ DRIFinishScreenInit(ScreenPtr pScreen)
     }
 
     /* Wrap DRI support */
-    if (pDRIInfo->wrap.WakeupHandler) {
-	pDRIPriv->wrap.WakeupHandler = pScreen->WakeupHandler;
-	pScreen->WakeupHandler = pDRIInfo->wrap.WakeupHandler;
-    }
-    if (pDRIInfo->wrap.BlockHandler) {
-	pDRIPriv->wrap.BlockHandler = pScreen->BlockHandler;
-	pScreen->BlockHandler = pDRIInfo->wrap.BlockHandler;
-    }
     if (pDRIInfo->wrap.ValidateTree) {
 	pDRIPriv->wrap.ValidateTree = pScreen->ValidateTree;
 	pScreen->ValidateTree = pDRIInfo->wrap.ValidateTree;
@@ -433,6 +425,8 @@ DRIExtensionInit(void)
 	if (!AllocateWindowPrivate(pScreen, DRIWindowPrivIndex, 0))
 	    return FALSE;
     }
+
+    RegisterBlockAndWakeupHandlers(DRIBlockHandler, DRIWakeupHandler, NULL);
 
     return TRUE;
 }
@@ -960,8 +954,8 @@ DRICreateInfoRec(void)
     inforec->busIdString = NULL;
 
     /* Wrapped function defaults */
-    inforec->wrap.WakeupHandler         = DRIWakeupHandler;
-    inforec->wrap.BlockHandler          = DRIBlockHandler;
+    inforec->wrap.WakeupHandler         = DRIDoWakeupHandler;
+    inforec->wrap.BlockHandler          = DRIDoBlockHandler;
     inforec->wrap.PaintWindowBackground = DRIPaintWindow;
     inforec->wrap.PaintWindowBorder     = DRIPaintWindow;
     inforec->wrap.CopyWindow            = DRICopyWindow;
@@ -980,6 +974,44 @@ DRIDestroyInfoRec(DRIInfoPtr DRIInfo)
 
 void
 DRIWakeupHandler(
+    pointer wakeupData,
+    int result,
+    pointer pReadmask)
+{
+    int i;
+
+    for (i = 0; i < screenInfo.numScreens; i++) {
+	ScreenPtr        pScreen  = screenInfo.screens[i];
+	DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+
+	if (pDRIPriv &&
+	    pDRIPriv->pDriverInfo->wrap.WakeupHandler)
+	    (*pDRIPriv->pDriverInfo->wrap.WakeupHandler)(i, wakeupData,
+							 result, pReadmask);
+    }
+}
+
+void
+DRIBlockHandler(
+    pointer blockData,
+    OSTimePtr pTimeout,
+    pointer pReadmask)
+{
+    int i;
+
+    for (i = 0; i < screenInfo.numScreens; i++) {
+	ScreenPtr        pScreen  = screenInfo.screens[i];
+	DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+
+	if (pDRIPriv &&
+	    pDRIPriv->pDriverInfo->wrap.BlockHandler)
+	    (*pDRIPriv->pDriverInfo->wrap.BlockHandler)(i, blockData,
+							pTimeout, pReadmask);
+    }
+}
+
+void
+DRIDoWakeupHandler(
     int screenNum,
     pointer wakeupData,
     unsigned long result,
@@ -998,20 +1030,10 @@ DRIWakeupHandler(
 					      DRI_2D_CONTEXT,
 					      pDRIPriv->hiddenContextStore);
     }
-
-    /* unwrap */
-    pScreen->WakeupHandler = pDRIPriv->wrap.WakeupHandler;
-
-    /* call lower layers */
-    (*pScreen->WakeupHandler)(screenNum, wakeupData, result, pReadmask);
-
-    /* rewrap */
-    pDRIPriv->wrap.WakeupHandler = pScreen->WakeupHandler;
-    pScreen->WakeupHandler = DRIWakeupHandler;
 }
 
 void 
-DRIBlockHandler(
+DRIDoBlockHandler(
     int screenNum,
     pointer blockData,
     pointer pTimeout,
@@ -1019,16 +1041,6 @@ DRIBlockHandler(
 {
     ScreenPtr pScreen = screenInfo.screens[screenNum];
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
-
-    /* unwrap */
-    pScreen->BlockHandler = pDRIPriv->wrap.BlockHandler;
-
-    /* call lower layers */
-    (*pScreen->BlockHandler)(screenNum, blockData, pTimeout, pReadmask);
-
-    /* rewrap */
-    pDRIPriv->wrap.BlockHandler = pScreen->BlockHandler;
-    pScreen->BlockHandler = DRIBlockHandler;
 
     if (pDRIPriv->pDriverInfo->driverSwapMethod == DRI_HIDE_X_CONTEXT) {
 	/* hide X context by swapping 2D component here */
