@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef __AFLATIN_H__
 #define __AFLATIN_H__
 
@@ -9,7 +11,9 @@ FT_BEGIN_HEADER
   * the latin-specific script class
   *
   */
+#ifndef FT_MAKE_OPTION_SINGLE_OBJECT
   FT_LOCAL( const AF_ScriptClassRec )    af_latin_script_class;
+#endif
 
  /***************************************************************************/
  /***************************************************************************/
