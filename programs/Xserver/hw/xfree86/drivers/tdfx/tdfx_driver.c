@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.78 2001/05/23 13:30:35 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.79 2001/06/05 15:54:15 alanh Exp $ */
 
 /*
  * Authors:
@@ -1885,6 +1885,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 					pTDFX->stride - 1)/pTDFX->stride;
 
   allocateMemory(pScrn);
+
+  pScrn->fbOffset = pTDFX->fbOffset;
 
 #if 0
   if (pTDFX->numChips>1) {
