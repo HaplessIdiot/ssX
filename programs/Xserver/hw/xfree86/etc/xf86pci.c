@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.0 1995/03/18 11:02:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.1 1995/06/14 07:47:16 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -471,4 +471,19 @@ xf86DisableIOPorts(int dummy)
 #if defined(MACH386)
     close(io_fd);
 #endif
+}
+
+/* These are to allow libxf86_hw.a use Xalloc(), Xfree() */
+
+unsigned long *
+Xalloc(unsigned long amount)
+{
+	return (unsigned long *)malloc(amount);
+}
+
+void
+Xfree(void *ptr)
+{
+	free(ptr);
+	return;
 }

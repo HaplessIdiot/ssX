@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.27 94/04/17 20:14:52 rws Exp $ */
+/* $XConsortium: TMkey.c,v 1.28 95/06/22 15:35:13 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -228,7 +228,7 @@ Boolean _XtMatchUsingDontCareMods(typeMatch, modMatch, eventSeq)
     Modifiers modifiers_return;
     KeySym keysym_return;
     Modifiers useful_mods;
-    int i;
+    int i, num_modbits;
     Modifiers computed = 0;
     Modifiers computedMask = 0;
     Boolean resolved = TRUE;
@@ -261,21 +261,66 @@ Boolean _XtMatchUsingDontCareMods(typeMatch, modMatch, eventSeq)
 	}
         useful_mods = ~computedMask & modifiers_return;
         if (useful_mods == 0) return FALSE;
-	for (least_mod = 1; (least_mod & useful_mods)==0; least_mod <<= 1){/*EMPTY*/};
-        for (i = modifiers_return; i >= least_mod; i--)
-	  /* all useful combinations of 8 modifier bits */
-	  if (useful_mods & i) {
-	      TRANSLATE(tm_context, pd, dpy, eventSeq->event.eventCode,
-			(Modifiers)i, modifiers_return, keysym_return);
-	      if (keysym_return  ==
-		  (typeMatch->eventCode & typeMatch->eventCodeMask)) {
-		  tm_context->event = eventSeq->xev;
-		  tm_context->serial = eventSeq->xev->xany.serial;
-		  tm_context->keysym = keysym_return;
-		  tm_context->modifiers = (Modifiers)i;
-		  return TRUE;
-	      }
-	  }
+
+	for (num_modbits = 0, least_mod = useful_mods;
+	     least_mod != 0; least_mod >>= 1)
+	    if (least_mod & 1) num_modbits++;
+
+	switch (num_modbits) {
+	case 1:
+	case 8:
+	    /* 
+	     * one modbit should never happen, in fact the implementation
+	     * of XtTranslateKey and XmTranslateKey guarantee that it
+	     * won't, so don't care if the loop is set up for the case 
+	     * when one modbit is set.
+	     * The performance implications of all eight modbits being
+	     * set is horrendous. This isn't a problem with Xt/Xaw based
+	     * applications. We can only hope that Motif's virtual
+	     * modifiers won't result in all eight modbits being set.
+	     */
+	    for (i = useful_mods; i > 0; i--) {
+		TRANSLATE(tm_context, pd, dpy, eventSeq->event.eventCode,
+			  (Modifiers)i, modifiers_return, keysym_return);
+		if (keysym_return ==
+		    (typeMatch->eventCode & typeMatch->eventCodeMask)) {
+		    tm_context->event = eventSeq->xev;
+		    tm_context->serial = eventSeq->xev->xany.serial;
+		    tm_context->keysym = keysym_return;
+		    tm_context->modifiers = (Modifiers)i;
+		    return TRUE;
+		}
+	    }
+	    break;
+	default: /* (2..7) */
+	    {
+	    /*
+	     * Only translate using combinations of the useful modifiers.
+	     * to minimize the chance of invalidating the cache.
+	     */
+		static char pows[] = { 0, 1, 3, 7, 15, 31, 63, 127 };
+		Modifiers tmod, mod_masks[8];
+		int j;
+		for (tmod = 1, i = 0; tmod <= (Mod5Mask<<1); tmod <<= 1)
+		    if (tmod & useful_mods) mod_masks[i++] = tmod;
+		for (j = (int) pows[num_modbits]; j > 0; j--) {
+		    tmod = 0;
+		    for (i = 0; i < num_modbits; i++)
+			if (j & (1<<i)) tmod |= mod_masks[i];
+		    TRANSLATE(tm_context, pd, dpy, eventSeq->event.eventCode,
+			      tmod, modifiers_return, keysym_return);
+		    if (keysym_return ==
+			(typeMatch->eventCode & typeMatch->eventCodeMask)) {
+			tm_context->event = eventSeq->xev;
+			tm_context->serial = eventSeq->xev->xany.serial;
+			tm_context->keysym = keysym_return;
+			tm_context->modifiers = (Modifiers)i;
+			return TRUE;
+		    }
+		}
+	    }
+	    break;
+	} /* switch (num_modbits) */
     }
     return FALSE;
 }

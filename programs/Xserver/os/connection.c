@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.195 95/04/25 20:33:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.11 1995/04/09 13:54:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.12 1995/06/20 14:31:00 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -285,7 +285,7 @@ CreateWellKnownSockets()
 	}
 	else
 	{
-	    ListenTransFds = (int *) malloc (ListenTransCount * sizeof (int));
+	    ListenTransFds = (int *) xalloc (ListenTransCount * sizeof (int));
 
 	    for (i = 0; i < ListenTransCount; i++)
 	    {

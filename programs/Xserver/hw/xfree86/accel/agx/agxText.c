@@ -1,5 +1,5 @@
 /* $XConsortium: agxText.c,v 1.3 95/01/05 20:30:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxText.c,v 3.3 1995/01/28 15:49:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxText.c,v 3.4 1995/06/21 11:51:54 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -172,8 +172,10 @@ agxNoCPolyText(pDraw, pGC, x, y, count, chars, is8bit, opaque)
    unsigned int mapDim, mapCoOrd;
    xRectangle backrect;
    FontPtr pfont = pGC->font;
+#if 0
    Bool terminalFont = pfont->info.terminalFont;
    Bool noVertOverlap = FALSE;
+#endif
    Bool first = TRUE;
    unsigned int backDim; 
    unsigned int backCoOrd;
@@ -265,8 +267,10 @@ agxNoCPolyText(pDraw, pGC, x, y, count, chars, is8bit, opaque)
    if( opaque ) {
       backrect.y = y - FONTASCENT(pfont);
       backrect.height = FONTASCENT(pfont) + FONTDESCENT(pfont); 
+#if 0
       noVertOverlap = backrect.y == minY
                       && backrect.height == (maxY - minY);
+#endif
       backDim = (backrect.height-1)<< 16 | backrect.width-1; 
       backCoOrd = backrect.y << 16 | backrect.x;
    }
@@ -308,15 +312,17 @@ agxNoCPolyText(pDraw, pGC, x, y, count, chars, is8bit, opaque)
                       FALSE, FALSE, FALSE );
             GE_WAIT_IDLE_SHORT();
             GE_SET_MAP( GE_MS_MAP_B );
-            MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
+            MAP_SET_DST( GE_MS_MAP_A );
             GE_OUT_D( GE_PIXEL_BIT_MASK, pGC->planemask );
             GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
             GE_OUT_D( GE_BKGD_CLR, pGC->bgPixel );
             if (opaque) {
+#if 0
                /* opaque stipples are faster, so if possible: opaque it */ 
                if (terminalFont && noVertOverlap) 
                   mixes = MIX_SRC << 8 | MIX_SRC; 
                else
+#endif
                   mixes = MIX_DST << 8 | MIX_SRC; 
             }
             else {
@@ -333,12 +339,15 @@ agxNoCPolyText(pDraw, pGC, x, y, count, chars, is8bit, opaque)
             GE_OUT_D( GE_MASK_MAP_X, mapCoOrd );
             GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapDim ); 
          }
-         if (opaque && !(terminalFont && noVertOverlap) ) {
+         if ( opaque 
+#if 0
+              && !(terminalFont && noVertOverlap) 
+#endif
+            ) {
                /* have to seperate the opaque from the character draw */
                GE_OUT_D( GE_FRGD_CLR, pGC->bgPixel );
                GE_OUT_D( GE_DEST_MAP_X, backCoOrd );
                GE_OUT_D( GE_OP_DIM_WIDTH, backDim );
-               GE_OUT_W( GE_FRGD_MIX, MIX_SRC );
                GE_START_CMD( GE_OP_BITBLT
                              | GE_OP_PAT_FRGD
                              | GE_OP_MASK_BOUNDARY
@@ -348,7 +357,6 @@ agxNoCPolyText(pDraw, pGC, x, y, count, chars, is8bit, opaque)
                              | GE_OP_DEST_MAP_A   );
                GE_WAIT_IDLE_SHORT(); 
                GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
-               GE_OUT_W( GE_FRGD_MIX, mixes );
          }
          DoagxPolyGlyphBlt( pGC, x, y, n, charinfo, scrPadWidth );
       }

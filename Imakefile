@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.125 94/04/08 19:57:43 rws Exp $
-XCOMM $XFree86: xc/Imakefile,v 3.2 1995/03/11 14:02:22 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.3 1995/05/27 01:53:06 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -8,6 +8,7 @@ RELEASE = "Release 6"
 #define OSName Unknown Operating System!
 #endif
 
+#if !BuildLBXProxyOnly
 #if !BuildServersOnly
 #if BuildFonts
         FONTSDIR = fonts
@@ -15,10 +16,16 @@ RELEASE = "Release 6"
 #if !defined(Win32Architecture)
         WIPDIR = workInProgress
         DOCSDIR = doc
+        NLSDIR = nls
 #endif
+#endif
+        PROGRAMSDIR = programs
+#else
+	WIPDIR = workInProgress
 #endif
 
-        SUBDIRS = config include lib nls programs $(WIPDIR) $(FONTSDIR) $(DOCSDIR)
+        SUBDIRS = config include lib $(NLSDIR) $(PROGRAMSDIR) $(WIPDIR) \
+                  $(FONTSDIR) $(DOCSDIR)
   LNINSTALLDIRS = lib
 
 #if HasParallelMake

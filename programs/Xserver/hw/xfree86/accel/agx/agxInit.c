@@ -1,5 +1,5 @@
 /* $XConsortium: agxInit.c,v 1.7 95/01/23 15:33:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.18 1995/06/17 12:15:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.19 1995/06/21 11:51:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -535,8 +535,8 @@ agxInitGE()
    GE_OUT_B( GE_FRGD_MIX, MIX_SRC );
    GE_OUT_B( GE_BKGD_MIX, MIX_SRC );
    GE_OUT_B( GE_CLR_COMP_FUNC, GE_CC_FALSE ); 
-   GE_OUT_D( GE_PIXEL_BIT_MASK, 0x000000FF ); 
-   GE_OUT_D( GE_CARRY_CHAIN, 0x000000FF ); 
+   GE_OUT_D( GE_PIXEL_BIT_MASK, ~0 ); 
+   GE_OUT_D( GE_CARRY_CHAIN, ~0 ); 
    GE_OUT_D( GE_FRGD_CLR, 0x00000000 );
    GE_OUT_D( GE_BKGD_CLR, 0x00000000 );
 
@@ -1621,32 +1621,27 @@ agxCleanUp()
  */
 
 void
-agxImageClear()
+agxImageClear( unsigned int clr )
 {
 
    GE_WAIT_IDLE();
 
    MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
 
-   GE_OUT_B(GE_FRGD_MIX, MIX_SRC);
-   GE_OUT_B(GE_BKGD_MIX, MIX_SRC);
-   GE_OUT_D(GE_PIXEL_BIT_MASK, 0xFF);
-   GE_OUT_D(GE_FRGD_CLR, 1 );
-   GE_OUT_D(GE_BKGD_CLR, 0 );
+   GE_OUT_W(GE_FRGD_MIX, MIX_SRC);
+   GE_OUT_D(GE_PIXEL_BIT_MASK, ~0);
+   GE_OUT_D(GE_FRGD_CLR, clr );
 
    GE_OUT_W( GE_PIXEL_OP, GE_OP_PAT_FRGD
                             | GE_OP_MASK_DISABLED
                             | GE_OP_INC_X
                             | GE_OP_INC_Y         );
 
-   GE_OUT_W( GE_DEST_MAP_X, 0 );
-   GE_OUT_W( GE_DEST_MAP_Y, 0 );
+   GE_OUT_D( GE_DEST_MAP_X, 0 );
    GE_OUT_W( GE_OP_DIM_WIDTH, agxVirtX-1 );
    GE_OUT_W( GE_OP_DIM_HEIGHT, agxVirtY-1 );
    GE_START_CMDW( GE_OPW_BITBLT
                   | GE_OPW_FRGD_SRC_CLR
-                  | GE_OPW_BKGD_SRC_CLR
-                  | GE_OPW_SRC_MAP_A 
                   | GE_OPW_DEST_MAP_A   );
 
    GE_WAIT_IDLE_EXIT();

@@ -1,5 +1,5 @@
 /* $XConsortium: sco_init.c,v 1.3 95/01/05 20:42:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.2 1994/11/19 13:56:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.4 1995/01/28 17:04:56 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -52,7 +52,7 @@ void xf86OpenConsole()
     int fd;
     struct vt_mode VT;
     struct stat status;
-    char vtname[10];
+    char vtname[11];
 
     if (serverGeneration == 1) 
     {

@@ -31,7 +31,7 @@ Author: Keith Packard
 
 */
 /* $XConsortium: mfbblt.c,v 1.1 94/10/12 21:20:46 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfbblt.c,v 3.1 1994/08/12 14:02:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfbblt.c,v 3.2 1995/01/28 16:10:37 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -283,8 +283,11 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 			*pdst = MROP_MASK(bits, *pdst, endmask);
 			READ_SRC_WRITE_DST();
 		    }
-		    mfbScanlineIncDst(pdstLine, widthDst);
-		    mfbScanlineIncSrc(psrcLine, widthSrc);
+		    if (h)
+		    {
+			mfbScanlineIncDst(pdstLine, widthDst);
+			mfbScanlineIncSrc(psrcLine, widthSrc);
+		    }
 		}
 	    }
 	    else
@@ -351,8 +354,11 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 			*pdst = MROP_MASK (bits1, *pdst, endmask);
 			READ_SRC_WRITE_DST();
 		    }
-		    mfbScanlineIncDst(pdstLine, widthDst);
-		    mfbScanlineIncSrc(psrcLine, widthSrc);
+		    if (h)
+		    {
+			mfbScanlineIncDst(pdstLine, widthDst);
+			mfbScanlineIncSrc(psrcLine, widthSrc);
+		    }
 		}
 	    }
 	  }
@@ -408,10 +414,15 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 			*pdst = MROP_MASK(bits, *pdst, startmask);
 			READ_SRC_WRITE_DST();
 		    }
-		    /* this can wrap around to the next line */
-		    /* First access will be with pre-decrement -- PHB 8/94 */
-		    pdstLine--; mfbScanlineIncDst(pdstLine, widthDst); pdstLine++;
-		    psrcLine--; mfbScanlineIncSrc(psrcLine, widthSrc); psrcLine++;
+		    if (h)
+		    {
+			/* this can wrap around to the next line */
+			/* First access will be with pre-decrement -- PHB 8/94 */
+			pdstLine--; mfbScanlineIncDst(pdstLine, widthDst);
+			pdstLine++;
+			psrcLine--; mfbScanlineIncSrc(psrcLine, widthSrc);
+			psrcLine++;
+		    }
 		}
 	    }
 	    else
@@ -479,10 +490,15 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 			*pdst = MROP_MASK(bits1, *pdst, startmask);
 			READ_SRC_WRITE_DST();
 		    }
-		    /* this can wrap around to the next line */
-		    /* First access will be with pre-decrement -- PHB 8/94 */
-		    pdstLine--; mfbScanlineIncDst(pdstLine, widthDst); pdstLine++;
-		    psrcLine--; mfbScanlineIncSrc(psrcLine, widthSrc); psrcLine++;
+		    if (h)
+		    {
+			/* this can wrap around to the next line */
+			/* First access will be with pre-decrement -- PHB 8/94 */
+			pdstLine--; mfbScanlineIncDst(pdstLine, widthDst);
+			pdstLine++;
+			psrcLine--; mfbScanlineIncSrc(psrcLine, widthSrc);
+			psrcLine++;
+		    }
 		}
 	    }
 	}
@@ -538,8 +554,11 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 
 		    if (endmask)
 			*pdst = MROP_MASK(*psrc, *pdst, endmask);
-		    mfbScanlineInc(pdstLine, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc);
+		    if (h)
+		    {
+			mfbScanlineInc(pdstLine, widthDst);
+			mfbScanlineInc(psrcLine, widthSrc);
+		    }
 		}
 	    }
 	    else
@@ -590,8 +609,11 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 			}
 			*pdst = MROP_MASK (bits1, *pdst, endmask);
 		    }
-		    mfbScanlineInc(pdstLine, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc);
+		    if (h)
+		    {
+			mfbScanlineInc(pdstLine, widthDst);
+			mfbScanlineInc(psrcLine, widthSrc);
+		    }
 		}
 	    }
 	  }
@@ -627,8 +649,11 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 			--psrc;
 			*pdst = MROP_MASK(*psrc, *pdst, startmask);
 		    }
-		    mfbScanlineInc(pdstLine, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc);
+		    if (h)
+		    {
+			mfbScanlineInc(pdstLine, widthDst);
+			mfbScanlineInc(psrcLine, widthSrc);
+		    }
 		}
 	    }
 	    else
@@ -680,8 +705,11 @@ MROP_NAME(mfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc)
 			--pdst;
 			*pdst = MROP_MASK(bits1, *pdst, startmask);
 		    }
-		    mfbScanlineInc(pdstLine, widthDst);
-		    mfbScanlineInc(psrcLine, widthSrc);
+		    if (h)
+		    {
+			mfbScanlineInc(pdstLine, widthDst);
+			mfbScanlineInc(psrcLine, widthSrc);
+		    }
 		}
 	    }
 	}

@@ -1,5 +1,5 @@
 ! $XConsortium: XErrorDB,v 1.25 94/04/13 18:11:43 gildea Exp $
-! $XFree86$
+! $XFree86: xc/lib/X11/XErrorDB,v 3.0 1995/06/08 13:28:00 dawes Exp $
 ! Copyright 1993 Massachusetts Institute of Technology
 !
 ! Permission to use, copy, modify, distribute, and sell this software and
@@ -551,6 +551,7 @@ XRequest.XFree86-VidModeExtension.1: XF86VidModeGetModeLine
 XRequest.XFree86-VidModeExtension.2: XF86VidModeModModeLine
 XRequest.XFree86-VidModeExtension.3: XF86VidModeSwitchMode
 XRequest.XFree86-VidModeExtension.4: XF86VidModeGetMonitor
+XRequest.XFree86-VidModeExtension.5: XF86VidModeLockModeSwitch
 XProtoError.XFree86-VidModeExtension.0: XF86VidModeBadClock
 XProtoError.XFree86-VidModeExtension.1: XF86VidModeBadHTimings
 XProtoError.XFree86-VidModeExtension.2: XF86VidModeBadVTimings

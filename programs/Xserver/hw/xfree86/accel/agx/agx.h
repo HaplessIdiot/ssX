@@ -1,5 +1,5 @@
 /* $XConsortium: agx.h,v 1.6 95/01/23 15:33:38 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.13 1995/05/27 03:02:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.14 1995/06/21 11:51:19 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -352,7 +352,7 @@ void agxCleanUp(
 );
 void agxImageClear(
 #if NeedFunctionPrototypes
-    void
+    unsigned int
 #endif
 );
 /* agxIm.c */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.1 1995/03/18 12:06:51 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -26,6 +26,7 @@
 /*#define DEBUGPCI  1 */
 
 #include <stdio.h>
+#include "os.h"
 #include "compiler.h"
 #include "xf86_PCI.h"
 
@@ -147,7 +148,7 @@ xf86scanpci()
 	    if (idx >= MAX_PCI_DEVICES)
 	        continue;
 
-	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(
+	    if ((pci_devp[idx] = (struct pci_config_reg *)xalloc(sizeof(
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
                 outl(0xCF8, 0x00);
                 xf86DisableIOPorts(0);
@@ -218,7 +219,7 @@ xf86scanpci()
 	    if (idx >= MAX_PCI_DEVICES)
 	        continue;
 
-	    if ((pci_devp[idx] = (struct pci_config_reg *)malloc(sizeof(
+	    if ((pci_devp[idx] = (struct pci_config_reg *)xalloc(sizeof(
 		 struct pci_config_reg))) == (struct pci_config_reg *)NULL) {
                 outb(0xCF8, 0x00);
                 outb(0xCFA, 0x00);

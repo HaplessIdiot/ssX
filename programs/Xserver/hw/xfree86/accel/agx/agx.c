@@ -1,5 +1,5 @@
 /* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.30 1995/06/17 12:15:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.31 1995/06/21 11:51:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -909,6 +909,8 @@ for information on how to manually configure.\n",
       switch( agxInfoRec.depth ) {
          int clk, max;
          case 8:
+            break;
+   
          case 15:
          case 16:
             max = agxInfoRec.clocks;
@@ -1300,7 +1302,10 @@ agxInit (scr_index, pScreen, argc, argv)
     * Need to set the color, origin, and size.  Then draw.
     */
 #ifndef DIRTY_STARTUP
-   agxImageClear();
+   if(agxInfoRec.bitsPerPixel == 8)         
+      agxImageClear(1);
+   else
+      agxImageClear(0);
 #endif
    agxBitCache8Init(agxDisplayWidth, agxVirtY);
 
@@ -1380,7 +1385,7 @@ agxEnterLeaveVT(enter, screen_idx)
    ErrorF( "agxEnterLeaveVT() - savepScreen %x\n", savepScreen );
 #endif
 
-   if (!xf86Resetting && !xf86Exiting) {
+   if ( !xf86Resetting && !xf86Exiting ) {
       switch (agxInfoRec.bitsPerPixel) {
          case 8:
             pspix = (PixmapPtr)pScreen->devPrivate;
@@ -1450,7 +1455,10 @@ agxEnterLeaveVT(enter, screen_idx)
           * Need to set the color, origin, and size.  Then draw.
           */
 #ifndef DIRTY_STARTUP
-         agxImageClear();
+         if( agxInfoRec.bitsPerPixel == 8 )
+            agxImageClear(1);
+         else
+            agxImageClear(0);
 #endif
   	 agxBitCache8Init(agxDisplayWidth, agxVirtY);
   	 agxRestoreCursor(pScreen);
@@ -1580,6 +1588,7 @@ agxEnterLeaveVT(enter, screen_idx)
       if (!xf86Resetting) {
          agxCleanUp();
       }
+
       if (vgaPhysBase)
          xf86UnMapDisplay(screen_idx, VGA_REGION);
       if (agxPhysVidMem != vgaPhysBase)
@@ -1634,11 +1643,12 @@ agxSaveScreen (pScreen, on)
 {
    unsigned char oldIndex;
    unsigned int  palDataReg;
+   static PixmapPtr savePix = NULL;
 
    if (on)
       SetTimeSinceLastInputEvent();
 
-   if (xf86VTSema) {
+   if (xf86VTSema || savePix) {
       xf86EnableIOPorts(agxInfoRec.scrnIndex);
       if (vgaPhysBase)
          xf86MapDisplay(agxInfoRec.scrnIndex, VGA_REGION);
@@ -1650,26 +1660,92 @@ agxSaveScreen (pScreen, on)
       GE_WAIT_IDLE();
 
       oldIndex = inb(agxIdxReg);
-      if (on) {
-         agxRestoreColor0(savepScreen);
+      if( agxInfoRec.bitsPerPixel == 8 ) {
+         if (on) {
+            agxBitCache8Init(agxDisplayWidth, agxVirtY);
 
-         if(XGA_PALETTE_CONTROL(agxChipId)) {
-            outb(agxIdxReg, IR_PAL_MASK);
-            outb(agxByteData, 0xff);
+            agxRestoreColor0(pScreen);
+            if(XGA_PALETTE_CONTROL(agxChipId)) {
+               outb(agxIdxReg, IR_PAL_MASK);
+               outb(agxByteData, 0xff);
+            }
+            else {
+               outb(VGA_PAL_MASK, 0xff);
+            }
          }
          else {
-            outb(VGA_PAL_MASK, 0xff);
+            agxClearColor0();
+            if(XGA_PALETTE_CONTROL(agxChipId)) {
+               outb(agxIdxReg, IR_PAL_MASK);
+               outb(agxByteData, 0x00);
+            }
+            else {
+               outb(VGA_PAL_MASK, 0x00);
+            }
          }
       }
       else {
-         agxClearColor0();
-   
-         if(XGA_PALETTE_CONTROL(agxChipId)) {
-            outb(agxIdxReg, IR_PAL_MASK);
-            outb(agxByteData, 0x00);
+         PixmapPtr pspix;
+         ScreenPtr pScreen = savepScreen;
+
+         switch (agxInfoRec.bitsPerPixel) {
+            case 8:
+               pspix = (PixmapPtr)pScreen->devPrivate;
+               break;
+            case 16:
+               pspix = (PixmapPtr)pScreen->
+                           devPrivates[cfb16ScreenPrivateIndex].ptr;
+               break;
+#ifdef AGX_32BPP
+            case 32:
+               pspix = (PixmapPtr)pScreen->
+                          devPrivates[cfb32ScreenPrivateIndex].ptr;
+            break;
+#endif
+         }
+
+         if (on) {
+            ScrnInfoPtr pScr = XF86SCRNINFO(pScreen);
+
+            agxBitCache8Init(agxDisplayWidth, agxVirtY);
+            agxRestoreCursor(pScreen);
+            agxAdjustFrame(pScr->frameX0, pScr->frameY0);
+
+            if( (pointer)pspix->devPrivate.ptr != (pointer)vgaVirtBase
+                && savePix != NULL
+              ) {
+
+               (*agxImageWriteFunc)( 0, 0, 
+                                     pScreen->width, pScreen->height,
+                                     savePix->devPrivate.ptr,
+                                     PixmapBytePad( agxDisplayWidth,
+                                                    pScreen->rootDepth ),
+                                     0, 0, MIX_SRC, ~0 );
+               (pScreen->DestroyPixmap)(savePix);
+               savePix = NULL;
+               xf86VTSema = TRUE;
+               pspix->devPrivate.ptr = vgaVirtBase;
+            }
          }
          else {
-            outb(VGA_PAL_MASK, 0x00);
+            if( savePix == NULL ) {
+               savePix = (pScreen->CreatePixmap)( pScreen,
+                                                  agxDisplayWidth,
+                                                  pScreen->height,
+                                                  pScreen->rootDepth );
+
+
+               (agxImageReadFunc)( 0, 0,
+                                   pScreen->width, pScreen->height,
+                                   savePix->devPrivate.ptr,
+                                   PixmapBytePad( agxDisplayWidth,
+                                                  pScreen->rootDepth ),
+                                   0, 0, ~0 );
+               agxImageClear(0);
+
+               pspix->devPrivate.ptr = savePix->devPrivate.ptr;
+               xf86VTSema = FALSE;  
+            }
          }
       }
       outb(agxIdxReg, oldIndex); 

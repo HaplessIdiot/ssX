@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.40 1995/04/24 05:07:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.41 1995/06/02 09:59:53 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -123,8 +123,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.40 1995/04/24 05:07:14 dawes Exp $
  */
 
 /*
- * To build with LBX, uncomment the BuildLBX line below.  Note, after doing
- * this, you should do the following to build an X server with lbx:
+ * To build with LBX, uncomment the BuildLBX line below.  Note, if you
+ * are doing this after already having built non-LBX Xservers,
+ * you should do the following:
  *
  *   cd programs/Xserver
  *   make clean
@@ -155,6 +156,20 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.40 1995/04/24 05:07:14 dawes Exp $
  *
  */
 #define BuildLBXCompatible	YES
+
+/*
+ * To build only the LBX proxy daemon using a cut-down source tree
+ * designed specifically for this purpose, uncomment the following.
+ *
+#define BuildLBXProxyOnly	YES
+ */
+
+/*
+ * If BuildLBXProxyOnly is set and you want a dynamically linked lbxproxy,
+ * uncomment this (the default is statically linked).
+ *
+#define DynamicLBXProxyOnly	YES
+ */
 
 /*
  * Build xterm with Internationalisation support by default.

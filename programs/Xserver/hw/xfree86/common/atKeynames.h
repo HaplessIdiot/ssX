@@ -1,5 +1,5 @@
 /* $XConsortium: atKeynames.h,v 1.6 95/01/13 19:19:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.3 1995/01/28 17:03:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.4 1995/06/08 06:27:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -38,9 +38,9 @@
 
 #define AltMask		Mod1Mask
 #define NumLockMask	Mod2Mask
-#define ScrollLockMask	Mod3Mask
+#define AltLangMask	Mod3Mask
 #define KanaMask	Mod4Mask
-#define AltLangMask	Mod5Mask
+#define ScrollLockMask	Mod5Mask
 
 #define KeyPressed(k) (keyc->down[k >> 3] & (1 << (k & 7)))
 #define ModifierDown(k) ((keyc->state & (k)) == (k))

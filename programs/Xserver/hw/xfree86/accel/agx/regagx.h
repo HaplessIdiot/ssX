@@ -1,5 +1,5 @@
 /* $XConsortium: regagx.h,v 1.4 95/01/23 15:33:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.12 1995/06/17 12:15:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.13 1995/06/21 11:51:58 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -533,9 +533,9 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_DC1_WRITE_MASK			0xF8
 #define IR_DC1_PRESERVE_MASK			0x20
 #define IR_DC1_CRTC_MASK			0x07
-#define IR_DC1_CRTC_PREP			0x00
+#define IR_DC1_CRTC_PREP			0x01
 #define    CRTC_PRERESET				0x1
-#define IR_DC1_CRTC_RESET			0x01
+#define IR_DC1_CRTC_RESET			0x00
 #define    CRTC_RESET					0x2
 #define IR_DC1_CRTC_RUN  			0x03
 #define    CRTC_RUN					0x3

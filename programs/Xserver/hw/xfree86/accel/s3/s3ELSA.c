@@ -1,5 +1,5 @@
 /* $XConsortium: s3ELSA.c,v 1.2 94/11/21 22:50:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.7 1995/04/24 05:20:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.8 1995/05/27 03:10:03 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -16,12 +16,15 @@
 #include <stdio.h>
 #ifdef linux
 #include <unistd.h>
-#endif
+#endif /* linux */
 #ifndef SVR4
 #include <getopt.h>
-#endif
+#endif /* SVR4 */
 #include <malloc.h>
-#endif
+#define xalloc(_p) malloc(_p)
+#define xrealloc(_o,_s,_p) realloc(_o,_s,_p)
+#define xfree(_p) free(_p)
+#endif /* ELSA_MAIN */
 
 #include "s3.h"
 #include "s3ELSA.h"
@@ -133,7 +136,7 @@ static int read_eeprom_data(unsigned short **pdata)
    for(i=0; i<64; i++)
       shift_out(0);
 
-   data = (unsigned short*) malloc(ndata*sizeof(unsigned short));
+   data = (unsigned short*) xalloc(ndata*sizeof(unsigned short));
 
    for (i=0; i<ndata; i++)
       data[i] = read_eeprom_byte(i);
@@ -143,7 +146,7 @@ static int read_eeprom_data(unsigned short **pdata)
    if (eedata->wnr_type == ('S' | '3'<<8)) {
       if (eedata->eeprom_size > ndata) {
 	 ndata = eedata->eeprom_size;
-	 data = (unsigned short*) realloc(data, ndata*sizeof(unsigned short));
+	 data = (unsigned short*) xrealloc(data, ndata*sizeof(unsigned short));
 	 for (; i<ndata; i++)
 	    data[i] = read_eeprom_byte(i);
       }
@@ -171,7 +174,7 @@ static int read_eeprom_data(unsigned short **pdata)
       *pdata = data;
    }
    else {
-      free(data);
+      xfree(data);
       ndata = -1;
    }
    return ndata;
@@ -303,7 +306,7 @@ void main()
 	     ,ELSA_TIM_vtot(*eetim)
 	     );
    }   
-   free(data);
+   xfree(data);
 }
 
 #else
@@ -330,12 +333,12 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
    eedata = (elsa_eeprom_data_t *) data;
 
    if (eedata->crc16 != crc16) {
-      free(data);
+      xfree(data);
       return -3;
    }
 
    if (eedata->wnr_type != ('S' | '3'<<8)) {
-      free(data);
+      xfree(data);
       return -4;
    }
 
@@ -343,7 +346,7 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
       if (elsa_board_types[i].code == eedata->board_code) break;
 
    if (pcard) {
-      *pcard  = (char*) malloc(80);
+      *pcard  = (char*) xalloc(80);
       if (elsa_board_types[i].code)
 	 sprintf(*pcard,"%s detected",elsa_board_types[i].name);
       else 
@@ -352,7 +355,7 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
    }
 
    if (pserno) {
-      *pserno = (char*) malloc(20);
+      *pserno = (char*) xalloc(20);
       serno = (eedata->serno_h<<16) | eedata->serno_l;
       sprintf(*pserno,"%c-%04ld.%03ld.%03ld",
 	      (char)('A' + ((serno>>27) & 0x0f)),
@@ -367,7 +370,7 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
       *max_mem_clock = eedata->max_memclock * 4;
    
    i = eedata->board_code;
-   free(data);
+   xfree(data);
    return i;
 }
 

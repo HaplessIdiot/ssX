@@ -1,5 +1,5 @@
 /* $XConsortium: agxFCach.c,v 1.4 95/01/23 15:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.13 1995/06/17 12:15:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.14 1995/06/21 11:51:31 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -499,7 +499,6 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
               GE_OUT_D( GE_FRGD_CLR, pGC->bgPixel );
               GE_OUT_D( GE_DEST_MAP_X, backCoOrd );
               GE_OUT_D( GE_OP_DIM_WIDTH, backDim );
-              GE_OUT_W( GE_FRGD_MIX, MIX_SRC );
               GE_START_CMD( GE_OP_BITBLT
                             | GE_OP_PAT_FRGD
                             | GE_OP_MASK_BOUNDARY
@@ -537,6 +536,8 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
    register unsigned int idx;
    unsigned int h = fentry->hPix;
    unsigned int w = fentry->wBytes<<3;
+   unsigned int opHeight;
+   CharInfoPtr pciLast = NULL;
    unsigned int blocki = 0xFFFFFFFF;
    bitMapBlockPtr block;
    unsigned int blockBase;
@@ -545,7 +546,6 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
    if (opaque) {
       GE_WAIT_IDLE_SHORT(); 
       GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
-      GE_OUT_W(GE_FRGD_MIX, mixes);
    }
       
    GE_OUT_W( GE_PIXEL_OP,
@@ -556,9 +556,9 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
 
    for (;count > 0; count--, chars++) {
       if ( (pci = fentry->pci[(int)*chars]) != NULL ) {
-         if ( (opDim = GLYPHHEIGHTPIXELS(pci)) > 0 ) {
+         if ( (opHeight = GLYPHHEIGHTPIXELS(pci)) > 0 ) {
 	    if ((int)(*chars >> BLOCK_NUM_SHIFT) != blocki) {
-	       blocki = (*chars >> BLOCK_NUM_SHIFT) & BLOCK_IDX_MASK;
+	       blocki = *chars >> BLOCK_NUM_SHIFT;
 	       block = fentry->fblock[blocki];
 	       if (block == NULL) {
                   geBlockMove = FALSE;
@@ -585,24 +585,28 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
                   GE_OUT_D( GE_PIXEL_MAP_BASE, blockBase );
                   oldBlockBase = blockBase;
                }
+               pciLast = NULL;
    	    }
 
-            idx =  (*chars) & BLOCK_IDX_MASK;
-            patCoOrd = (block->line + ((idx / fentry->gper) * h)) << 16
-                       | (w * (idx % fentry->gper));
+            if( pci != pciLast ) {
+               pciLast = pci;
+               opDim = (opHeight-1) << 16 | (GLYPHWIDTHPIXELS(pci)-1);
+               idx =  (*chars) & BLOCK_IDX_MASK;
+               patCoOrd = (block->line + ((idx / fentry->gper) * h)) << 16
+                          | (w * (idx % fentry->gper));
+            }
             dstCoOrd = (y - pci->metrics.ascent) << 16
                        | (x + pci->metrics.leftSideBearing);
-            opDim = (opDim-1) << 16 
-                    | (GLYPHWIDTHPIXELS(pci)-1);
-
-            GE_WAIT_IDLE_SHORT();
-            GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-            GE_OUT_D( GE_PAT_MAP_X, patCoOrd ); 
-            GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-            GE_START_CMDW( GE_OPW_BITBLT
-                            | GE_OPW_FRGD_SRC_CLR 
-                            | GE_OPW_BKGD_SRC_CLR 
-                            | GE_OPW_DEST_MAP_A   );
+            {
+               GE_WAIT_IDLE_SHORT();
+               GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+               GE_OUT_D( GE_PAT_MAP_X, patCoOrd ); 
+               GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+               GE_START_CMDW( GE_OPW_BITBLT
+                              | GE_OPW_FRGD_SRC_CLR 
+                              | GE_OPW_BKGD_SRC_CLR 
+                              | GE_OPW_DEST_MAP_A   );
+            }
 	 }
          x += pci->metrics.characterWidth;
       }
@@ -646,7 +650,7 @@ DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
    for (;count > 0; count--, chars++) {
       if ( (pci = fentry->pci[(int)*chars]) != NULL ) {
 	    if ((int)(*chars >> BLOCK_NUM_SHIFT) != blocki) {
-	       blocki = (*chars >> BLOCK_NUM_SHIFT) & BLOCK_IDX_MASK;
+	       blocki = *chars >> BLOCK_NUM_SHIFT;
 	       block = fentry->fblock[blocki];
 	       if (block == NULL) {
                   geBlockMove = FALSE;

@@ -1,5 +1,5 @@
 /* $XConsortium: agxBCach.c,v 1.3 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.9 1995/06/17 12:15:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.10 1995/06/21 11:51:21 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -297,8 +297,8 @@ agxCReturnBlock(block)
          GE_WAIT_IDLE();
          MAP_SET_SRC_AND_DST( GE_MS_MAP_B ); 
          GE_SET_MAP( GE_MS_MAP_B );
-         GE_OUT_B( GE_FRGD_MIX, MIX_SRC );
-         GE_OUT_D( GE_PIXEL_BIT_MASK, 0xFFFFFFFF );
+         GE_OUT_W( GE_FRGD_MIX, MIX_SRC );
+         GE_OUT_D( GE_PIXEL_BIT_MASK, ~0 );
          GE_OUT_W( GE_PIXEL_OP,
                    GE_OP_PAT_FRGD
                    | GE_OP_MASK_DISABLED
