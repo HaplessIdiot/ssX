@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.35 1999/01/24 03:13:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.36 1999/04/04 13:51:01 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -57,6 +57,7 @@ XCOMM command (or a combination of both methods)
     FontPath	DPI75USFONTPATH
     FontPath	DPI100USFONTPATH
     FontPath	T1FONTPATH
+    FontPath	CIDFONTPATH
     FontPath	SPFONTPATH
     FontPath	DPI75FONTPATH
     FontPath	DPI100FONTPATH

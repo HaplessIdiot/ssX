@@ -1,3 +1,9 @@
+XFree86 3.9Pm (xx May 1999)
+2813. Add lseek and bsearch to the libc wrappers (and fix fseek), as needed
+      by the CID font code.
+2812. Add missing file for CID fonts support, and fix a few module-related
+      thing with it.
+
 XFree86 3.9Pl (3 May 1999)
 2811. Fix Xinerama bugs in GetImage and PolyRectangle (#2751, Mark Vojkovich).
 2810. Xterm patch #99 (#2750, Thomas Dickey).
@@ -7933,4 +7939,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.741 1999/05/03 05:58:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.742 1999/05/03 12:15:57 dawes Exp $
