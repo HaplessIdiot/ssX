@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.2 1997/04/12 13:45:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.3 1997/05/03 09:18:11 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -682,6 +682,14 @@ vgaMGAPtr restore;
 	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong |
 		(pciReadLong(MGAPciTag, PCI_OPTION_REG) & ~0x1000));
 
+	/* select pixel clock PLL as clock source */
+	outTi3026(TVP3026_CLK_SEL, 0, restore->DACreg[3]);
+	
+	/* set loop and pixel clock PLL PLLEN bits to 0 */
+	outTi3026(TVP3026_PLL_ADDR, 0, 0x2A);
+	outTi3026(TVP3026_LOAD_CLK_DATA, 0, 0);
+	outTi3026(TVP3026_PIX_CLK_DATA, 0, 0);
+	 
 	/*
 	 * This function handles restoring the generic VGA registers.
 	 */
@@ -691,20 +699,31 @@ vgaMGAPtr restore;
 	 * Code to restore SVGA registers that have been saved/modified
 	 * goes here. 
 	 */
+
+	/* program pixel clock PLL */
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
 	for (i = 0; i < 3; i++)
 		outTi3026(TVP3026_PIX_CLK_DATA, 0, restore->DACclk[i]);
+	 
+	/* poll until pixel clock PLL LOCK bit is set */
+	outTi3026(TVP3026_PLL_ADDR, 0, 0x3F);
+	while ( ! (inTi3026(TVP3026_PIX_CLK_DATA) & 0x40) );
 	
-	/* Wait for PCLK PLL to lock on frequency */
-	while ( ! ( inTi3026( TVP3026_PIX_CLK_DATA ) & 0x40 ));
-
+	/* set Q divider for loop clock PLL */
+	outTi3026(TVP3026_MCLK_CTL, 0, restore->DACreg[18]);
+	
+	/* program loop PLL */
 	outTi3026(TVP3026_PLL_ADDR, 0, 0x00);
 	for (i = 3; i < 6; i++)
 		outTi3026(TVP3026_LOAD_CLK_DATA, 0, restore->DACclk[i]);
 	
-	/* Wait for PCLK PLL to lock on frequency */
-	while ( ! ( inTi3026( TVP3026_PIX_CLK_DATA ) & 0x40 ));
-
+	/* poll until loop PLL LOCK bit is set */
+	outTi3026(TVP3026_PLL_ADDR, 0, 0x3F);
+	while ( ! (inTi3026(TVP3026_LOAD_CLK_DATA) & 0x40) );
+	
+	/*
+	 * restore other DAC registers
+	 */
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		outTi3026(MGADACregs[i], 0, restore->DACreg[i]);
 

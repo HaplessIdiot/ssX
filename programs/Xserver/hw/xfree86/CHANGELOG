@@ -1,3 +1,7 @@
+XFree86 3.9d (9 May 1997)
+ 761. Rewrite clock restoring procedure for mga driver (#385, Radoslaw Kapitan).
+ 760. More modes for XF86Setup database (#372, Koen Gadeyne).
+
 XFree86 3.9c (6 May 1997)
  759. Fix typos in NetBSD.cf (#363, Takaaki Nomura).
  758. Add a ModuleInit function to libxaa.a (#362, J. Kean Johnston).
