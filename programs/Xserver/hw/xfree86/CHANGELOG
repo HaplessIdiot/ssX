@@ -1,4 +1,8 @@
 XFree86 3.9.18Z (3 March 2000)
+3925. Add an imake parameter called XFree86Devel that can be set in host.def
+      to enable devel-specific settings (like more verbose compiler warnings),
+      and adjust GccWarningOptions to use this (David Dawes).
+3924. Various doc updates, and don't install out of date docs (David Dawes).
 3923. Fix a thread related problem in the Xv client library (Mark Vojkovich).
 3922. Fix a Xinerama problem with XShapeMask (Mark Vojkovich).
 3921. LynxOS documentation and bindist updates, and an os-support fix (#3779,
@@ -9948,4 +9952,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1058 2000/03/03 18:55:57 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1060 2000/03/03 20:53:23 mvojkovi Exp $
