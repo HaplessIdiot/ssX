@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.12 2000/01/25 18:37:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.13 2000/02/13 06:15:31 dawes Exp $ */
 
 /*
  *
@@ -112,11 +112,6 @@ extern void FontCacheExtensionInit(INITARGS);
 #define _FONTCACHE_SERVER_
 #include "fontcacheP.h"
 #include "fontcachstr.h"
-#endif
-
-#ifdef XANTI
-extern void XAntiExtensionInit(INITARGS);
-#include "XAntiproto.h"
 #endif
 
 #ifdef TOGCUP
@@ -281,15 +276,6 @@ ExtensionModule extensionModules[] = {
 	XvName,
 	NULL,
 	XvRegister,
-	NULL
-    },
-#endif
-#ifdef XANTI
-    {
-	XAntiExtensionInit,
-	XAntiName,
-	NULL,
-	NULL,
 	NULL
     },
 #endif
