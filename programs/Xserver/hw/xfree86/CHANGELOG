@@ -1,4 +1,7 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 421. Xinstall.sh updates to reduce its reliance on external utilities and
+      provide better diagnostics when required external utilities don't exist.
+      (David Dawes).
  420. Fixes and updates for XKB keyboard maps:
       - Fix unneeded BKSL redefinition in Ukrainian 'winkeys' keyboard map
         (Andriy Rysin).
@@ -17661,7 +17664,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2841 2003/09/04 00:24:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2842 2003/09/04 13:58:07 pascal Exp $
 
 
 
