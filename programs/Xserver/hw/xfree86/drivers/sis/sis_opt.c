@@ -266,10 +266,6 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->XvDefDisableGfxLR = FALSE;
     pSiS->UsePanelScaler = -1;
     pSiS->XvUseMemcpy = TRUE;
-    if(pSiS->sishw_ext.jChipType == SIS_730 ||
-       pSiS->sishw_ext.jChipType == SIS_740) {
-       pSiS->XvUseMemcpy = FALSE;
-    }
 #ifdef SISMERGED
     pSiS->MergedFB = FALSE;
     pSiS->CRT2Position = sisRightOf;
