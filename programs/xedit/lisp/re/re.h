@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/re/re.h,v 1.1 2002/09/08 02:29:50 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -57,9 +57,9 @@
 #define RE_NOTBOL		1
 #define RE_NOTEOL		2
 #define RE_STARTEND		4
-#define REG_TRACE		00400	/* Not used/supported */
-#define REG_LARGE		01000	/* Not used/supported */
-#define REG_BACKR		02000	/* Not used/supported */
+#define RE_TRACE		00400	/* Not used/supported */
+#define RE_LARGE		01000	/* Not used/supported */
+#define RE_BACKR		02000	/* Not used/supported */
 
 	/* Value returned by reexec when match fails */
 #define RE_NOMATCH		1
@@ -79,8 +79,8 @@
 #define RE_EMPTY		14
 #define RE_ASSERT		15
 #define RE_INVARG		16
-#define REG_ATOI		255	/* Not used/supported */
-#define REG_ITOA		0400	/* Not used/supported */
+#define RE_ATOI			255	/* Not used/supported */
+#define RE_ITOA			0400	/* Not used/supported */
 
 
 /*

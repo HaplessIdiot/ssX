@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.5 2002/09/18 17:11:56 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/re/reo.c,v 1.6 2002/09/22 07:09:09 paulo Exp $ */
 
 #include "rep.h"
 
@@ -333,20 +333,23 @@ orec_pat_bad_rpt(orec_inf *inf, rec_pat *pat)
 
 	/* Check if the first group element is a complex pattern */
 	case Rep_Group:
-	    if (pat->data.grp->alt) {
-		for (pat = pat->data.grp->alt->pat; pat; pat = pat->next) {
-		    if (!orec_pat_bad_rpt(inf, pat))
-			break;
+	    if (pat->rep == NULL) {
+		if (pat->data.grp->alt) {
+		    for (pat = pat->data.grp->alt->pat; pat; pat = pat->next) {
+			if (orec_pat_bad_rpt(inf, pat))
+			    break;
+		    }
 		}
+		break;
 	    }
-	    break;
+	    /*FALLTHROUGH*/
 	default:
 	    if (pat->rep)
 		inf->ecode = RE_BADRPT;
 	    break;
     }
 
-    if (!inf->ecode && pat->next)
+    if (!inf->ecode && pat && pat->next)
 	orec_pat_bad_forward_rpt(inf, pat->next);
 
     return (inf->ecode);

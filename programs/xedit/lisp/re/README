@@ -1,4 +1,4 @@
-$XFree86: xc/programs/xedit/lisp/re/README,v 1.1 2002/09/08 02:29:50 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/re/README,v 1.2 2002/09/22 07:09:09 paulo Exp $
 
 LAST UPDATED:	$Date$
 
@@ -23,7 +23,7 @@ very useful tool.
 
 		M A T C H I N G
 ------------------------------------------------------------------------
-.		Any character
+.		Any character (won't match newline if compiled with RE_NEWLINE)
 \w		Any word letter (shortcut to [a-zA-Z0-9_]
 \W		Not a word letter (shortcut to [^a-zA-Z0-9_]
 \d		Decimal number
@@ -32,7 +32,7 @@ very useful tool.
 \S		Not a space
 \l		A lower case letter
 \u		An upper case letter
-\c		A control character, currently the range 1-32
+\c		A control character, currently the range 1-32 (minus tab)
 \o		Octal number
 \x		Hexadecimal number
 \<		Beginning of a word (matches an empty string)
@@ -91,8 +91,15 @@ o Some "special repetitions" were not implemented, these are:
 	.{,<m>}
 	.{<n>,<m>}
 
-  These limitations may be worked on future versions of the library, but
-this is not what the library is expected to do, and, adding support for
+o Some patterns will never match, for example:
+	\w*\d
+    Since "\w*" already includes all possible matches of "\d", "\d" will
+  only be tested when "\w*" failed. There are no plans to make such
+  patterns work.
+
+
+  Some of these limitations may be worked on future versions of the library,
+but this is not what the library is expected to do, and, adding support for
 correct handling of these would probably make the library slower, what is
 not the reason of it to exist in the first time.
 
