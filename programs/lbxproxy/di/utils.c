@@ -47,6 +47,11 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: utils.c /main/37 1996/12/15 21:28:59 rws $ */
 
+
+
+
+/* $XFree86$ */
+
 #include "lbx.h"
 #include <stdio.h>
 #ifdef X_POSIX_C_SOURCE

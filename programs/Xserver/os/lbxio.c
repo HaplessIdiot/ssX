@@ -24,6 +24,11 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: lbxio.c /main/10 1996/12/16 23:03:30 rws $ */
 
+
+
+
+/* $XFree86$ */
+
 #include <stdio.h>
 #include <X11/Xtrans.h>
 #ifdef X_NOT_STDC_ENV

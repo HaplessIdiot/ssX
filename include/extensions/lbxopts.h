@@ -21,6 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #ifndef _LBX_OPTS_H_
 #define _LBX_OPTS_H_

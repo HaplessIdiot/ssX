@@ -31,6 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
+/* $XFree86$ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"

@@ -52,6 +52,7 @@ from the X Consortium.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
+/* $XFree86$ */
 
 #include "zlib.h"
 
