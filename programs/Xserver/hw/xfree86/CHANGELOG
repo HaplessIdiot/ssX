@@ -1,4 +1,8 @@
 XFree86 4.3.99.1 (xx March 2003)
+ 972. Various NetBSD fixes for non-i386 (#5662, #5666 Aymeric Vincent, 
+      Matthew Green, Chris Gilbert, Thomas Klausner). 
+ 971. Enable native thread support on NetBSD 1.6M and later (#5597, #5660, 
+      Matthias Scheler). 
  970. Make setjmp/longjmp emulation save/restore blocked signal masks on all
       libc5 & glibc systems (Marc La France).
  969. Fix setjmp/longjmp emulation for glibc 2.2.[01] systems and remove
@@ -16548,4 +16552,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2589 2003/03/04 02:53:24 torrey Exp $
+$XFree86: CHANGELOG,v 3.2590 2003/03/04 16:25:06 tsi Exp $

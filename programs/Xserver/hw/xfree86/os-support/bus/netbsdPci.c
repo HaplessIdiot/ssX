@@ -25,7 +25,7 @@
  * use or other dealings in this Software without prior written
  * authorization from the XFree86 Project.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/netbsdPci.c,v 1.1 2002/08/06 13:13:15 herrb Exp $ */
+/* $XFree86: netbsdPci.c,v 1.2 2002/08/27 22:07:07 tsi Exp $ */
 
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -60,10 +60,6 @@ static pciBusInfo_t netbsdPci0 = {
 /* numDevices  */	32,
 /* secondary   */	FALSE,
 /* primary_bus */	0,
-#ifdef PowerMAX_OS
-/* io_base */		0,
-/* io_size */		0,
-#endif
 /* funcs       */	&netbsdFuncs0,
 /* pciBusPriv  */	NULL,
 /* bridge      */	NULL
@@ -72,6 +68,7 @@ static pciBusInfo_t netbsdPci0 = {
 void
 netbsdPciInit()
 {
+	struct pciio_businfo pci_businfo;
 
 	devpci = open("/dev/pci0", O_RDWR);
 	if (devpci == -1)
@@ -81,6 +78,10 @@ netbsdPciInit()
 	pciBusInfo[0]  = &netbsdPci0;
 	pciFindFirstFP = pciGenFindFirst;
 	pciFindNextFP  = pciGenFindNext;
+	/* use businfo to get the number of devs */
+	if (ioctl(devpci, PCI_IOC_BUSINFO, &pci_businfo) != 0)
+	    FatalError("netbsdPciInit: not a PCI bus device");
+	netbsdPci0.numDevices = pci_businfo.maxdevs;
 }
 
 static CARD32
