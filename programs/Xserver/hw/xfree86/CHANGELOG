@@ -1,4 +1,7 @@
 XFree86 4.4.99.2 (xx March 2004)
+  29. Add formatCommand resource to xman, extend functionality of some key
+      bindings (Thomas Dickey).
+  28. Xterm fix for Bugzilla #1158 (Andreas Schwab).
   27. Change the Mystique lockup workaround to apply some Mystique cards only
       (David Dawes).
   26. Changes to make IPv6 enabled xdm work when OS support of IPv6 is disabled
@@ -18735,7 +18738,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3181 2004/03/15 16:51:38 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3182 2004/03/16 01:22:32 dawes Exp $
 
 
 
