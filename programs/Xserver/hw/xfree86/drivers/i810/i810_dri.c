@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.20 2001/05/10 16:48:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.21 2001/05/19 00:26:44 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -835,8 +835,6 @@ I810DRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
        oldContextType == DRI_2D_CONTEXT &&
        newContextType == DRI_2D_CONTEXT)
    {
-      ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-
       if (I810_DEBUG & DEBUG_VERBOSE_DRI)
 	 ErrorF("I810DRISwapContext (in)\n");
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.14 2001/05/10 16:48:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.15 2001/06/13 23:34:04 dawes Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -484,11 +484,18 @@ static Bool ARKPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86PrintModes(pScrn);
 	xf86SetDpi(pScrn, 0, 0);
 
-	xf86LoadSubModule(pScrn, "fb");
+	if (!xf86LoadSubModule(pScrn, "fb")) {
+	    ARKFreeRec(pScrn);
+	    return FALSE;
+	}
+
 	xf86LoaderReqSymLists(fbSymbols, NULL);
 
 	if (!pARK->NoAccel) {
-		xf86LoadSubModule(pScrn, "xaa");
+		if (!xf86LoadSubModule(pScrn, "xaa")) {
+			ARKFreeRec(pScrn);
+			return FALSE;
+		}
 		xf86LoaderReqSymLists(xaaSymbols, NULL);
 	}
 
@@ -820,7 +827,6 @@ static Bool ARKModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* set display FIFO threshold */
 	{
 		int threshold;
-		unsigned char tmp;
 		int bandwidthused, percentused;
 
 		/* mostly guesses here as I would need to know more about

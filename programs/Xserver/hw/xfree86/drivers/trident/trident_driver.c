@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.134 2001/05/02 14:53:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.136 2001/05/15 10:19:41 eich Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -440,54 +440,69 @@ tridentLCD LCD[] = {
 #endif
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
-    "XAACreateInfoRec",
-    "XAAHelpPatternROP",
-    "XAAHelpSolidROP",
-    "XAAFillSolidRects",
     "XAACopyROP",
-    "XAAPatternROP",
+    "XAACreateInfoRec",
+    "XAADestroyInfoRec",
+    "XAAFillSolidRects",
     "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
+    "XAAPatternROP",
     "XAAScreenIndex",
     NULL
 };
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWProtect",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWLock",
+    "vgaHWBlankScreen",
     "vgaHWFreeHWRec",
-    "vgaHWSaveScreen",
-    "vgaHWSave",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
     "vgaHWRestore",
+    "vgaHWSave",
+    "vgaHWSaveScreen",
     "vgaHWSetMmioFuncs",
+    "vgaHWUnlock",
     NULL
 };
 
-static const char *fbSymbols[] = {
-    "fbScreenInit",
-    "fbPictureInit",
+static const char *miscfbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
     NULL
 };
 
+static const char *fbSymbols[] = {
+    "fbPictureInit",
+    "fbScreenInit",
+    NULL
+};
+
+static const char *ramdacSymbols[] = {
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
+    NULL
+};
+
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86DoEDID_DDC1",
+    "xf86SetDDCproperties",
     NULL
 };
 
 static const char *i2cSymbols[] = {
-    "xf86I2CBusInit",
     "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
+    NULL
+};
+
+static const char *int10Symbols[] = {
+    "xf86ExecX86int10",
+    "xf86FreeInt10",
+    "xf86InitInt10",
     NULL
 };
 
@@ -532,6 +547,7 @@ tridentSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	setupDone = TRUE;
 	xf86AddDriver(&TRIDENT, module, 0);
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols, vbeSymbols,
+			  miscfbSymbols, ramdacSymbols, int10Symbols,
 			  xaaSymbols, shadowSymbols, NULL);
 	return (pointer)TRUE;
     } 
@@ -1130,6 +1146,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     if (!xf86LoadSubModule(pScrn, "ramdac"))
 	return FALSE;
 
+    xf86LoaderReqSymLists(ramdacSymbols, NULL);
+
     /*
      * This must happen after pScrn->display has been set because
      * xf86SetWeight references it.
@@ -1354,6 +1372,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	xf86MonPtr pMon;
 	vbeInfoPtr pVbe;
+
+        xf86LoaderReqSymLists(vbeSymbols, NULL);
 	pVbe =  VBEInit(NULL,pTrident->pEnt->index);
 	pMon = vbeDoEDID(pVbe, NULL);
 	vbeFree(pVbe);
@@ -2010,22 +2030,18 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     case 8:
 	pTrident->EngineOperation |= 0x00;
 	mod = "fb";
-	Sym = "fbScreenInit";
 	break;
     case 16:
 	pTrident->EngineOperation |= 0x01;
 	mod = "fb";
-	Sym = "fbScreenInit";
 	break;
     case 24:
 	pTrident->EngineOperation |= 0x03;
 	mod = "fb";
-	Sym = "fbScreenInit";
 	break;
     case 32:
 	pTrident->EngineOperation |= 0x02;
 	mod = "fb";
-	Sym = "fbScreenInit";
 	break;
     }
 
@@ -2038,9 +2054,13 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-    xf86LoaderReqSymbols(Sym, NULL);
-    if (pScrn->depth > 8)
-    	xf86LoaderReqSymbols("fbPictureInit", NULL);
+    if (mod) {
+	if (Sym) {
+	    xf86LoaderReqSymbols(Sym, NULL);
+	} else {
+	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	}
+    }
 
     if (!xf86LoadSubModule(pScrn, "i2c")) {
 	if (IsPciCard && UseMMIO) {
@@ -2397,6 +2417,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (!xf86IsPc98()) {
 	if (xf86LoadSubModule(pScrn, "int10")) {
+	    xf86LoaderReqSymLists(int10Symbols, NULL);
 	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Initializing int10\n");
 	    pTrident->Int10 = xf86InitInt10(pTrident->pEnt->index);
 	}

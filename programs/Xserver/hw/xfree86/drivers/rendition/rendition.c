@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.41 2001/05/04 19:05:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.42 2001/05/16 06:48:10 keithp Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -130,67 +130,58 @@ DriverRec RENDITION={
 };
 
 static const char *vgahwSymbols[]={
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWProtect",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWUnmapMem",
-    "vgaHWLock",
-    "vgaHWFreeHWRec",
-    "vgaHWSaveScreen",
-    "vgaHWSave",
-    "vgaHWRestore",
-    "vgaHWGetIndex",
-    "vgaHWDPMSSet",
     "vgaHWBlankScreen",
+    "vgaHWDPMSSet",
+    "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
+    "vgaHWSaveScreen",
+    "vgaHWUnlock",
     "vgaHWHandleColormaps",
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
 static const char *xaaSymbols[] = {
     "XAACreateInfoRec",
-    "XAACursorInfoRec",
-    "XAACursorInit",
     "XAADestroyInfoRec",
     "XAAInit",
-    "XAAPixmapIndex",
-    "XAAQueryBestSize",
-    "XAAReverseBitOrder",
-    "XAARestoreCursor",
-    "XAAScreenIndex",
-    "XAAStippleScanlineFuncMSBFirst",
-    "XAAGlyphScanlineFuncLSBFirst",
-    "XAAWarpCursor",
     NULL
 };
 
 static const char *ddcSymbols[] = {
-    "xf86PrintEDID",
     "xf86DoEDID_DDC1",
+    "xf86PrintEDID",
     NULL
 };
 
 static const char *int10Symbols[] = {
+    "xf86FreeInt10",
     "xf86InitInt10",
     NULL
 };
 
-static const char *fbSymbols[]={
+static const char *miscfbSymbols[]={
     "xf1bppScreenInit",
     "xf4bppScreenInit",
+    NULL
+};
+
+static const char *fbSymbols[]={
     "fbScreenInit",
-#ifdef RENDER
     "fbPictureInit",
-#endif
     NULL
 };
 
@@ -238,8 +229,8 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
     if (!Initialised) {
         Initialised=TRUE;
         xf86AddDriver(&RENDITION, Module, 0);
-        LoaderRefSymLists(vgahwSymbols, ramdacSymbols, fbSymbols, 
-			  xaaSymbols, ddcSymbols, int10Symbols,
+        LoaderRefSymLists(vgahwSymbols, ramdacSymbols, miscfbSymbols,
+			  fbSymbols, xaaSymbols, ddcSymbols, int10Symbols,
 			  shadowfbSymbols, vbeSymbols, NULL);
         return (pointer)TRUE;
     }
@@ -563,7 +554,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (!xf86LoadSubModule(pScreenInfo, "fb"))
       return FALSE;
 
-    xf86LoaderReqSymbols("fbScreenInit", NULL);
+    xf86LoaderReqSymLists(fbSymbols, NULL);
 
     /* determine colour weights */
     pScreenInfo->rgbBits=8;
@@ -1179,9 +1170,7 @@ renditionScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!Inited)
         return FALSE;
 
-#ifdef RENDER
     fbPictureInit (pScreen, 0, 0);
-#endif
 
     if (pScreenInfo->bitsPerPixel > 8) {
         /* Fixup RGB ordering */

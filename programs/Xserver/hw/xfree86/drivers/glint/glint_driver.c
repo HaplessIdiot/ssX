@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.130 2001/06/05 10:19:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.131 2001/06/13 23:34:11 dawes Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -270,6 +270,18 @@ static const char *vbeSymbols[] = {
 };
 
 static const char *ramdacSymbols[] = {
+    "IBMramdac526CalculateMNPCForClock",
+    "IBMramdac640CalculateMNPCForClock",
+    "IBMramdacProbe",
+    "RamDacCreateInfoRec",
+    "RamDacDestroyInfoRec",
+    "RamDacFreeRec",
+    "RamDacGetHWIndex",
+    "RamDacHandleColormaps",
+    "RamDacInit",
+    "TIramdacCalculateMNPForClock",
+    "TIramdacLoadPalette",
+    "TIramdacProbe",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
     "xf86InitCursor",

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.3 2001/02/15 18:20:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_video.c,v 1.4 2001/03/03 22:26:13 tsi Exp $ */
 
 #include "smi.h"
 #include "smi_video.h"
@@ -49,7 +49,7 @@ static int SMI_GetVideo(ScrnInfoPtr pScrn,
 		short vid_w, short vid_h, short drw_w, short drw_h,
 		RegionPtr clipBoxes, pointer data);
 #endif
-static void SMI_StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit);
+static void SMI_StopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown);
 static int SMI_SetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
 		INT32 value, pointer data);
 static int SMI_GetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
@@ -682,7 +682,7 @@ static void
 SMI_StopVideo(
 	ScrnInfoPtr	pScrn,
 	pointer		data,
-	Bool		exit
+	Bool		shutdown
 )
 {
 	SMI_PortPtr ptrPort = (SMI_PortPtr) data;
@@ -692,7 +692,7 @@ SMI_StopVideo(
 
 	REGION_EMPTY(pScrn->pScreen, &ptrPort->clip);
 
-	if (exit)
+	if (shutdown)
 	{
 		if (ptrPort->videoStatus & CLIENT_VIDEO_ON)
 		{

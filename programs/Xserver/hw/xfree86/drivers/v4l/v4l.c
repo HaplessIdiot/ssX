@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.24 2001/04/26 21:27:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.25 2001/05/04 19:05:49 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -468,7 +468,7 @@ V4lPutStill(ScrnInfoPtr pScrn,
 }
 
 static void
-V4lStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
+V4lStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;  
     int zero=0;
@@ -478,9 +478,9 @@ V4lStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 	      "Xv/StopVideo called with video already off\n"));
 	return;
     }
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/StopVideo exit=%d\n",exit));
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/StopVideo shutdown=%d\n",shutdown));
 
-    if (!exit) {
+    if (!shutdown) {
 	/* just reclipping, we have to stop DMA transfers to the visible screen */
 	if (VIDEO_RGB == pPPriv->VideoOn) {
 	    if (-1 == ioctl(V4L_FD, VIDIOCCAPTURE, &zero))

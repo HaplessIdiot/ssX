@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.50 2001/05/04 19:05:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.51 2001/06/13 23:34:03 dawes Exp $ */
 
 #define COMPILER_H_EXTRAS
 #include "apm.h"
@@ -1064,12 +1064,12 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-    switch (pScrn->bitsPerPixel) {
-    case 1:
-    case 4:
-	xf86LoaderReqSymbols(req, NULL);
-    default:
-	xf86LoaderReqSymLists(fbSymbols, NULL);
+    if (mod) {
+	if (req) {
+	    xf86LoaderReqSymbols(req, NULL);
+	} else {
+	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	}
     }
 
     /* Load XAA if needed */

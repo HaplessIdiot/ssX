@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.83 2001/04/06 16:51:19 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.84 2001/05/04 19:05:48 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -220,47 +220,51 @@ static const OptionInfoRec TsengOptions[] =
 };
 
 static const char *int10Symbols[] = {
-    "xf86InitInt10",
     "xf86FreeInt10",
+    "xf86InitInt10",
     NULL
 };
 
 static const char *vgaHWSymbols[] = {
-  "vgaHWMapMem",
-  "vgaHWUnmapMem",
+  "vgaHWFreeHWRec",
   "vgaHWGetHWRec",
   "vgaHWGetIOBase",
+  "vgaHWGetIndex",
   "vgaHWHandleColormaps",
-  "vgaHWUnlock",
-  "vgaHWLock",
-  "vgaHWSaveScreen",
   "vgaHWInit",
-  "vgaHWSave", 
-  "vgaHWRestore",
-  "vgaHWBlankScreen",
-  "vgaHWSeqReset",
+  "vgaHWLock",
+  "vgaHWMapMem",
   "vgaHWProtect",
+  "vgaHWRestore",
+  "vgaHWSave", 
+  "vgaHWSaveScreen",
+  "vgaHWUnlock",
+  "vgaHWUnmapMem",
+  NULL
+};
+
+static const char* miscfbSymbols[] = {
+  "xf1bppScreenInit",
+  "xf4bppScreenInit",
   NULL
 };
 
 static const char* fbSymbols[] = {
-  "xf1bppScreenInit",
-  "xf4bppScreenInit",
-  "fbScreenInit",
   "fbPictureInit",
+  "fbScreenInit",
   NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
     "XAACreateInfoRec",
+    "XAADestroyInfoRec",
     "XAAInit",
     NULL
 };
@@ -307,8 +311,8 @@ tsengSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgaHWSymbols, fbSymbols, xaaSymbols,
-			  ramdacSymbols,  NULL);
+	LoaderRefSymLists(vgaHWSymbols, miscfbSymbols, fbSymbols, xaaSymbols,
+			  int10Symbols, ramdacSymbols,  NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -1847,7 +1851,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	  TsengFreeRec(pScrn);
 	  return FALSE;
 	}
-	xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
+	xf86LoaderReqSymLists(fbSymbols, NULL);
 	break;
     }
 

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.13 2000/02/12 20:45:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.19 2001/04/19 12:40:33 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -218,8 +218,8 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
   if (pSiS->Chipset == PCI_CHIP_SIS5597 || pSiS->Chipset == PCI_CHIP_SIS6326){
         int low_N = 2;
         int high_N = 5;
-        int PSN = 1;
  
+	PSN = 1;
         P = 1;
         if (target < MAX_VCO_5597 / 2)
             P = 2;
@@ -251,7 +251,7 @@ SiSCalcClock(ScrnInfoPtr pScrn, int clock, int max_VLD, unsigned int *vclk)
  
             error = (target - Fout) / target;
             aerror = (error < 0) ? -error : error;
-/*          if (aerror < abest && abest > TOLERANCE) {*/
+/*          if (aerror < abest && abest > TOLERANCE) */
             if (aerror < abest) {
                 abest = aerror;
                 bestError = error;

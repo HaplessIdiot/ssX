@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.18 2001/05/28 21:35:26 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.19 2001/06/14 02:23:50 keithp Exp $
  */
 
 #include "vesa.h"
@@ -141,15 +141,18 @@ static const OptionInfoRec VESAOptions[] = {
  * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
-static const char *fbSymbols[] = {
+static const char *miscfbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
     "afbScreenInit",
-    "fbScreenInit",
-    "fbPictureInit",
-    "cfbScreenInit",
     "mfbScreenInit",
     "cfb24_32ScreenInit",
+    NULL
+};
+
+static const char *fbSymbols[] = {
+    "fbPictureInit",
+    "fbScreenInit",
     NULL
 };
 
@@ -163,7 +166,18 @@ static const char *shadowSymbols[] = {
 };
 
 static const char *vbeSymbols[] = {
+    "VBEBankSwitch",
+    "VBEFreeModeInfo",
+    "VBEGetModeInfo",
+    "VBEGetVBEInfo",
+    "VBEGetVBEMode",
     "VBEInit",
+    "VBESaveRestore",
+    "VBESetDisplayStart",
+    "VBESetGetDACPaletteFormat",
+    "VBESetGetLogicalScanlineLength",
+    "VBESetGetPaletteData",
+    "VBESetVBEMode",
     "vbeDoEDID",
     NULL
 };
@@ -171,7 +185,13 @@ static const char *vbeSymbols[] = {
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86SetDDCproperties",
-    NULL};
+    NULL
+};
+
+static const char *vgahwSymbols[] = {
+    "vgaHWDPMSSet",
+    NULL
+};
 
 #ifdef XFree86LOADER
 
@@ -207,7 +227,8 @@ vesaSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
     {
 	Initialised = TRUE;
 	xf86AddDriver(&VESA, Module, 0);
-	LoaderRefSymLists(fbSymbols,
+	LoaderRefSymLists(miscfbSymbols,
+			  fbSymbols,
 			  shadowSymbols,
 			  vbeSymbols,
 			  ddcSymbols,
@@ -425,10 +446,15 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load vgahw module */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
     	return (FALSE);
+
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
     
     /* Load vbe module */
     if ((pVbeModule = xf86LoadSubModule(pScrn, "vbe")) == NULL)
         return (FALSE);
+
+    xf86LoaderReqSymLists(vbeSymbols, NULL);
+
     if ((pVesa->pVbe = VBEInit(NULL, pVesa->pEnt->index)) == NULL)
         return (FALSE);
 
@@ -784,7 +810,6 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	case 0x3:	/* Planar */
 	    if (pVesa->shadowFB) {
 		mod = "fb";
-		reqSym = "fbScreenInit";
 		pScrn->bitmapBitOrder = BITMAP_BIT_ORDER; 
 
 		xf86LoaderReqSymbols("fbPictureInit", NULL);
@@ -809,9 +834,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	case 0x4:	/* Packed pixel */
 	case 0x6:	/*  Direct Color */
 	    mod = "fb";
-	    reqSym = "fbScreenInit";
 	    pScrn->bitmapBitOrder = BITMAP_BIT_ORDER; 
-	    xf86LoaderReqSymbols("fbPictureInit", NULL);
 
 	    switch (pScrn->bitsPerPixel) {
 		case 8:
@@ -847,7 +870,14 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	VESAFreeRec(pScrn);
 	return (FALSE);
     }
-    xf86LoaderReqSymbols(reqSym, NULL);
+
+    if (mod) {
+	if (reqSym) {
+	    xf86LoaderReqSymbols(reqSym, NULL);
+	} else {
+	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	}
+    }
 
     return (TRUE);
 }
@@ -1652,6 +1682,7 @@ static void
 VESADisplayPowerManagementSet(ScrnInfoPtr pScrn, int mode,
                 int flags)
 {
+   /* XXX How can this work without the vgahw module being initialized? */
    vgaHWDPMSSet(pScrn, mode, flags);
 }
 

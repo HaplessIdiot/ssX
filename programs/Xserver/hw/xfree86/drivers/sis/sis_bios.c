@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bios.c,v 1.8 2001/04/19 14:11:37 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -300,8 +300,8 @@ static void SetLockRegs(void);
 static void GetVBInfo(UShort BaseAddr,ULong ROMAddr);
 static Bool BridgeIsEnable(UShort BaseAddr);
 static Bool BridgeInSlave(void);
-static Bool GetLCDResInfo(ULong ROMAddr,UShort P3d4);
-static void PresetScratchregister(UShort P3d4);
+static Bool GetLCDResInfo(ULong ROMAddr,UShort P3d4Reg);
+static void PresetScratchregister(UShort P3d4Reg);
 static Bool GetLCDDDCInfo(ScrnInfoPtr pScrn);
 static void SetTVSystem(void);
 static void LongWait(void);
@@ -3984,11 +3984,11 @@ static Bool BridgeInSlave(void)
   }
 }
 
-static Bool GetLCDResInfo(ULong ROMAddr,UShort P3d4)
+static Bool GetLCDResInfo(ULong ROMAddr,UShort P3d4Reg)
 {
   UShort tempah,tempbh,tempflag;        
 
-  tempah=(UChar)GetReg1(P3d4,0x36);
+  tempah=(UChar)GetReg1(P3d4Reg,0x36);
   tempbh=tempah;
   tempah=tempah&0x0F;
 /*  if(tempah!=0) tempah--; */
@@ -3997,7 +3997,7 @@ static Bool GetLCDResInfo(ULong ROMAddr,UShort P3d4)
   tempbh=tempbh>>4;
   LCDTypeInfo=tempbh;
 
-  tempah=(UChar)GetReg1(P3d4,0x37);
+  tempah=(UChar)GetReg1(P3d4Reg,0x37);
   LCDInfo=tempah;
 
   if(IF_DEF_LVDS==1){
@@ -4043,9 +4043,9 @@ static Bool GetLCDResInfo(ULong ROMAddr,UShort P3d4)
   return 1;
 }
 
-static void PresetScratchregister(UShort P3d4)
+static void PresetScratchregister(UShort P3d4Reg)
 {
-  SetReg1(P3d4,0x37,0x00);
+  SetReg1(P3d4Reg,0x37,0x00);
 }
 
 static Bool GetLCDDDCInfo(ScrnInfoPtr pScrn)

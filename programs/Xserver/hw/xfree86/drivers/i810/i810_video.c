@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.16 2001/01/30 19:23:55 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.17 2001/04/18 14:52:41 dawes Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -502,7 +502,7 @@ I810ClipVideo(
 } 
 
 static void 
-I810StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
+I810StopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 {
   I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
   I810Ptr pI810 = I810PTR(pScrn);
@@ -511,7 +511,7 @@ I810StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
 
-  if(exit) {
+  if(shutdown) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	overlay->OV0CMD &= 0xFFFFFFFE;
 	OVERLAY_UPDATE(pI810->OverlayPhysical);

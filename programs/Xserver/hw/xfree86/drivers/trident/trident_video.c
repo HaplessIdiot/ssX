@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.5 2001/05/23 12:58:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.6 2001/05/24 09:35:59 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -431,7 +431,7 @@ TRIDENTClipVideo(
 
 
 static void 
-TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
+TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 {
   TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
   TRIDENTPortPrivPtr pPriv = (TRIDENTPortPrivPtr)data;
@@ -439,7 +439,7 @@ TRIDENTStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
 
-  if(exit) {
+  if(shutdown) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	OUTW(vgaIOBase + 4, 0x008E);
 	OUTW(vgaIOBase + 4, 0x008F);
