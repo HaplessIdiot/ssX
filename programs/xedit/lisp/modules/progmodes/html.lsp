@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/html.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
 ;;
 
 (require "syntax")
@@ -97,6 +97,11 @@
 (defsynprop *prop-html-h4*
     "h4"
     :font	"-*-lucida-bold-r-*-*-12-*-*-*-*-*-*-1"
+    :foreground	"Gray15")
+
+(defsynprop *prop-html-h5*
+    "h5"
+    :font	"-*-lucida-bold-r-*-*-10-*-*-*-*-*-*-1"
     :foreground	"Gray15")
 
 (defsynprop *prop-html-li*
@@ -175,8 +180,25 @@
 
     ;; If in the toplevel, unbalanced!
     ;; XXX When adding new nested tables, don't forget to update this pattern.
-    (syntoken "</(b|strong|i|em|address|pre|code|tt|small|big|a|span|div|h1|h2|h3|h4|title|font)>"
-	:icase t :property *prop-html-unknown* :switch :main)
+    (syntoken
+	(string-concat
+	    "</("
+	    "b|strong|i|em|address|pre|code|tt|small|big|a|span|div|"
+	    "h1|h2|h3|h4|h5|title|font|ol|ul|dl|dt|dd|menu"
+	    ")\\>")
+	:icase t :property *prop-html-unknown* :begin :unbalanced)
+    (syntable :unbalanced *prop-html-unknown*
+	(syntoken ">" :nospec t :switch :main)
+	(synaugment :generic-tag)
+    )
+
+    #||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    ;; XXX ONLY add a rule for "html", "head" and "body" if you want to do a
+    ;; more complete check for common errors. If you add those rules, it will
+    ;; reparse the entire file at every character typed (unless there are
+    ;; errors in which case the parser resets the state).
+    ;; For visualization only that would be OK...
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||#
 
     (html-syntoken "b")
     (html-syntable "b" *prop-html-bold*)
@@ -208,8 +230,8 @@
     (syntoken "<a\\>" :icase t :contained t :begin :a)
     (syntable :a *prop-html-tag*
 	;; Tag is open
-	(syntoken "\\<href\\>" :begin :a-href)
-	(syntoken "\\<name\\>" :begin :a-name)
+	(syntoken "\\<href\\>" :icase t :begin :a-href)
+	(syntoken "\\<name\\>" :icase t :begin :a-name)
 	(syntoken "<" :nospec t :property *prop-html-unknown* :switch -2)
 	(synaugment :generic-tag)
 	(syntoken ">" :nospec t :begin :a-generic-text)
@@ -219,33 +241,49 @@
 	    (syntable :a-href-text *prop-html-link*
 		(syntoken "</a>"
 		    :icase t :nospec t :property *prop-html-tag* :switch -3)
-		(syntoken "<a/\\s$" :begin :continued-nested-end-tag)
+		(syntoken "</a\\s*$" :icase t :begin :continued-nested-end-tag)
 		(synaugment :main)
 	    )
 	)
 	(syntable :a-name *prop-html-tag*
-	    (syntoken ">" :nospec t :begin :a-href-text)
+	    (syntoken ">" :nospec t :begin :a-name-text)
 	    (synaugment :generic-tag)
 	    (syntable :a-name-text *prop-html-name*
 		(syntoken "</a>"
 		    :icase t :nospec t :property *prop-html-tag* :switch -3)
-		(syntoken "<a/\\s$" :begin :continued-nested-end-tag)
+		(syntoken "</a\\s*$" :icase t :begin :continued-nested-end-tag)
 		(synaugment :main)
 	    )
 	)
 	(syntable :a-generic-text nil
 	    (syntoken "</a>"
 		:icase t :nospec t :property *prop-html-tag* :switch -2)
-	    (syntoken "<a/\\s$" :begin :continued-end-tag)
+	    (syntoken "<a/\\s$" :icase t :begin :continued-end-tag)
 	    (synaugment :main)
 	)
     )
 
-    ;; Do nothing
+    ;; Do nothing, just check start/end tags
+    (html-syntoken "ol")
+    (html-syntable "ol" nil)
+    (html-syntoken "ul")
+    (html-syntable "ul" nil)
+    (html-syntoken "dl")
+    (html-syntable "dl" nil)
+    ;; Maybe <dt> and <dd> should be in a special table, to not require
+    ;; and ending tag.
+    ;; XXX Maybe should also add a table for <p>.
+    (html-syntoken "dt")
+    (html-syntable "dt" nil)
+    (html-syntoken "dd")
+    (html-syntable "dd" nil)
+
     (html-syntoken "span")
     (html-syntable "span" nil)
     (html-syntoken "div")
     (html-syntable "div" nil)
+    (html-syntoken "menu")
+    (html-syntable "menu" nil)
 
     (html-syntoken "h1")
     (html-syntable "h1" *prop-html-h1*)
@@ -255,6 +293,8 @@
     (html-syntable "h3" *prop-html-bold*)
     (html-syntoken "h4")
     (html-syntable "h4" *prop-html-h4*)
+    (html-syntoken "h5")
+    (html-syntable "h5" *prop-html-h5*)
     (html-syntoken "title")
     (html-syntable "title" *prop-html-title*)
 

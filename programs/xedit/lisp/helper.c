@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.35 2002/09/15 21:32:19 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.36 2002/09/22 07:09:06 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -510,137 +510,118 @@ LispReallyDo(LispMac *mac, LispBuiltin *builtin, int refs)
  do* init test &rest body
  */
 {
-    int syms, length = mac->protect.length, head = mac->env.length;
-    LispObj *result, *init, *test, *body, *object, *list, *env;
+    GC_ENTER();
+    int stack, lex, head;
+    LispObj *list, *symbol, *value, *values, *cons;
+
+    LispObj *init, *test, *body;
 
     body = ARGUMENT(2);
     test = ARGUMENT(1);
     init = ARGUMENT(0);
 
-    env = result = NIL;
-
     if (!CONS_P(test))
 	LispDestroy(mac, "%s: end test condition must be a list, not %s",
 		    STRFUN(builtin), STROBJ(init));
 
-    /* Add variables */
     if (init != NIL && !CONS_P(init))
 	LispDestroy(mac, "%s: %s is not a list",
 		    STRFUN(builtin), STROBJ(init));
 
-    syms = 0;
-    for (object = init; CONS_P(object); object = CDR(object), syms++) {
-	LispObj *symbol, *value, *step;
+    /* Save state */
+    stack = mac->stack.length;
+    lex = mac->env.lex;
+    head = mac->env.length;
 
-	symbol = value = NIL;
-	step = NULL;
-	list = CAR(object);
-	if (SYMBOL_P(list))
-	    symbol = list;
-	else if (!CONS_P(list))
-		LispDestroy(mac, "%s: %s is not a list",
-			    STRFUN(builtin), STROBJ(list));
+    values = cons = NIL;
+    for (list = init; CONS_P(list); list = CDR(list)) {
+	symbol = CAR(list);
+	if (!SYMBOL_P(symbol)) {
+	    ERROR_CHECK_LIST(symbol);
+	    value = CDR(symbol);
+	    symbol = CAR(symbol);
+	    ERROR_CHECK_SYMBOL(symbol);
+	    ERROR_CHECK_LIST(value);
+	    value = EVAL(CAR(value));
+	}
+	else
+	    value = NIL;
+
+	ERROR_CHECK_CONSTANT(symbol);
+
+	LispAddVar(mac, symbol, value);
+
+	/* Bind variable now */
+	if (refs) {
+	    ++mac->env.head;
+	}
 	else {
-	    if (!SYMBOL_P(symbol = CAR(list)))
-		LispDestroy(mac, "%s: %s is not a symbol",
-			    STRFUN(builtin), STROBJ(symbol));
-	    if ((list = CDR(list)) != NIL) {
-		if (NCONSTANT_P(value = CAR(list)))
-		    value = EVAL(value);
-		if ((list = CDR(list)) != NIL)
-		    step = CAR(list);
+	    if (values == NIL) {
+		values = cons = CONS(NIL, NIL);
+		GC_PROTECT(values);
+	    }
+	    else {
+		RPLACD(cons, CONS(NIL, NIL));
+		cons = CDR(cons);
 	    }
 	}
-	GCProtect();
-	if (step)
-	    list = CONS(symbol, CONS(value, CONS(step, NIL)));
-	else
-	    list = CONS(symbol, CONS(value, NIL));
-	if (env == NIL) {
-	    env = CONS(list, NIL);
-	    if (length + 1 >= mac->protect.space)
-		LispMoreProtects(mac);
-	    mac->protect.objects[mac->protect.length++] = env;
-	}
-	else {
-	    RPLACD(env, CONS(CAR(env), CDR(env)));
-	    RPLACA(env, list);
-	}
-	GCUProtect();
-	if (refs) {
-	    ERROR_CHECK_CONSTANT(symbol);
-	    LispAddVar(mac, symbol, value);
-	    ++mac->env.head;
-	}
     }
+    if (!refs)
+	mac->env.head = mac->env.length;
 
-    env = mac->protect.objects[length] = LispReverse(env);
-    if (!refs) {
-	for (object = env; object != NIL; object = CDR(object)) {
-	    list = CAR(object);
-	    ERROR_CHECK_CONSTANT(CAR(list));
-	    LispAddVar(mac, CAR(list), CADR(list));
-	    ++mac->env.head;
-	}
-    }
-
-    /* Execute iterations */
     for (;;) {
 	if (EVAL(CAR(test)) != NIL)
 	    break;
-	for (object = body; CONS_P(object); object = CDR(object))
-	    (void)EVAL(CAR(object));
 
-	/* Update variables */
-	if (refs) {
-	    /* Variables are sequentially updated */
-	    for (object = env; CONS_P(object); object = CDR(object)) {
-		list = CAR(object);
-		if (CONS_P(CDDR(list)))
-		    LispSetVar(mac, CAR(list), EVAL(CAR(CDDR(list))));
+	/* TODO Run this code in an implicit tagbody */
+	for (list = body; CONS_P(list); list = CDR(list))
+	    (void)EVAL(CAR(list));
+
+	/* Error checking already done in the initialization */
+	for (list = init, cons = values; CONS_P(list); list = CDR(list)) {
+	    symbol = CAR(list);
+	    if (CONS_P(symbol)) {
+		value = CDDR(symbol);
+		symbol = CAR(symbol);
+		if (CONS_P(value))
+		    value = EVAL(CAR(value));
+		else
+		    value = NIL;
+	    }
+	    else
+		value = NIL;
+
+	    if (refs)
+		LispSetVar(mac, symbol, value);
+	    else {
+		RPLACA(cons, value);
+		cons = CDR(cons);
 	    }
 	}
-	else {
-	    /* Variables are only bound after all new values calculated */
-	    int i, protect;
-
-	    protect = mac->protect.length;
-	    while (protect + syms > mac->protect.space)
-		LispMoreProtects(mac);
-
-	    /* Calculate new symbols values */
-	    for (object = env; CONS_P(object); object = CDR(object)) {
-		list = CAR(object);
-		if (CONS_P(CDDR(list)))
-		    result = EVAL(CAR(CDDR(list)));
-		else
-		    result = NIL;
-		/* XXX this assumes mac->protect.length is always propertly
-		 * restored. Another option would set the offset correctly,
-		 * but would need to initialize fields to NIL, and it would
-		 * consume a "vital" time for loops */
-		mac->protect.objects[mac->protect.length++] = result;
+	if (!refs) {
+	    for (list = init, cons = values; CONS_P(list);
+		 list = CDR(list), cons = CDR(cons)) {
+		symbol = CAR(list);
+		if (CONS_P(symbol)) {
+		    if (CONS_P(CDR(symbol)))
+			LispSetVar(mac, CAR(symbol), CAR(cons));
+		}
 	    }
-
-	    /* Update symbols values */
-	    i = protect;
-	    for (object = env; CONS_P(object); object = CDR(object), i++) {
-		list = CAR(object);
-		if (CONS_P(CDDR(list)))
-		    LispSetVar(mac, CAR(list), mac->protect.objects[i]);
-	    }
-
-	    mac->protect.length = protect;
 	}
     }
 
     if (CONS_P(CDR(test)))
-	result = EVAL(CADR(test));
+	value = EVAL(CADR(test));
+    else
+	value = NIL;
 
-    mac->protect.length = length;
+    /* Restore state */
+    mac->stack.length = stack;
+    mac->env.lex = lex;
     mac->env.head = mac->env.length = head;
+    GC_LEAVE();
 
-    return (result);
+    return (value);
 }
 
 LispObj *
@@ -650,22 +631,24 @@ LispDo(LispMac *mac, LispBuiltin *builtin, int refs)
  do* init test &rest body
  */
 {
-    int did_jump, *pdid_jump = &did_jump;
-    LispObj *res, **pres = &res;
+    int jumped, *pjumped;
+    LispObj *result, **presult;
     LispBlock *block;
 
-    *pres = NIL;
-    *pdid_jump = 1;
+    jumped = 1;
+    result = NIL;
+    presult = &result;
+    pjumped = &jumped;
     block = LispBeginBlock(mac, NIL, LispBlockTag);
     if (setjmp(block->jmp) == 0) {
-	*pres = LispReallyDo(mac, builtin, refs);
-	*pdid_jump = 0;
+	result = LispReallyDo(mac, builtin, refs);
+	jumped = 0;
     }
     LispEndBlock(mac, block);
-    if (*pdid_jump)
-	*pres = mac->block.block_ret;
+    if (jumped)
+	result = mac->block.block_ret;
 
-    return (*pres);
+    return (result);
 }
 
 static LispObj *
