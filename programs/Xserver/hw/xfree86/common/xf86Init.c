@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.92 1999/01/17 11:25:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.93 1999/01/23 09:55:45 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -781,15 +781,32 @@ ddxProcessArgument(int argc, char **argv, int i)
    * yet.  Use malloc/free instead.
    */
 
-  if (getuid() == 0 && !strcmp(argv[i], "-xf86config"))
+  /* First the options that are only allowed for root */
+  if (getuid() == 0)
   {
-    int len;
-    if (!argv[i+1])
-      return 0;
-    if ((len = strlen(argv[i+1]) >= PATH_MAX))
-      FatalError("XF86Config path name too long\n");
-    strcpy(xf86ConfigFile, argv[i+1]);
-    return 2;
+    if (!strcmp(argv[i], "-xf86config"))
+    {
+      int len;
+      if (!argv[i+1])
+	return 0;
+      if ((len = strlen(argv[i+1]) >= PATH_MAX))
+	FatalError("XF86Config path name too long\n");
+      strcpy(xf86ConfigFile, argv[i+1]);
+      return 2;
+    }
+    else if (!strcmp(argv[i], "-modulepath"))
+    {
+      char *mp;
+      if (!argv[i + 1])
+	return 0;
+      mp = malloc(strlen(argv[i + 1]) + 1);
+      if (!mp)
+	FatalError("Can't allocate memory for ModulePath\n");
+      strcpy(mp, argv[i + 1]);
+      xf86ModulePath = mp;
+      xf86ModPathFrom = X_CMDLINE;
+      return 2;
+    }
   }
   if (!strcmp(argv[i],"-showunresolved"))
   {
@@ -1014,7 +1031,10 @@ ddxUseMsg()
   ErrorF("\n");
   ErrorF("Device Dependent Usage\n");
   if (getuid() == 0)
+  {
     ErrorF("-xf86config file       specify a configuration file\n");
+    ErrorF("-modulepath paths      specify the module search path\n");
+  }
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose               verbose startup messages\n");
   ErrorF("-quiet                 minimal startup messages\n");

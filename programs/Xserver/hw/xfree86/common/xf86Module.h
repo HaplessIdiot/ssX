@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.8 1999/01/17 10:53:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.9 1999/01/23 09:55:46 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -134,16 +134,13 @@ typedef struct {
 
 extern ExtensionModule extension[];
 
+/* Prototypes for Loader functions that are exported to modules */
 #ifndef IN_LOADER
 /* Prototypes with opaque pointers for use by modules */
-pointer LoadModule(const char *, const char *, pointer,
-		   const XF86ModReqInfo *, int *, int *);
 pointer LoadSubModule(pointer, const char *, const char *, const char **,
 		      const char **, pointer, const XF86ModReqInfo *,
 		      int *, int *);
-void UnloadModule(pointer);
 void UnloadSubModule(pointer);
-pointer DuplicateModule(pointer, pointer);
 void LoadFont(pointer);
 pointer LoaderSymbol(const char *);
 #endif

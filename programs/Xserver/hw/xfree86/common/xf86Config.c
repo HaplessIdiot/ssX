@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.157 1999/01/13 03:19:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.158 1999/01/13 08:31:02 dawes Exp $ */
 
 
 /*
@@ -352,17 +352,12 @@ configFiles(XF86ConfFilesPtr fileconf)
 #ifdef XFree86LOADER
   /* ModulePath */
 
-  pathFrom = X_DEFAULT;
-
-  if (fileconf->file_modulepath) {
+  if (xf86ModPathFrom != X_CMDLINE && fileconf->file_modulepath) {
     xf86ModulePath = fileconf->file_modulepath;
-    pathFrom = X_CONFIG;
-  } else {
-    xf86ModulePath = xnfalloc(strlen(DEFAULT_MODULE_PATH) + 1);
-    strcpy(xf86ModulePath, DEFAULT_MODULE_PATH);
+    xf86ModPathFrom = X_CONFIG;
   }
 
-  xf86Msg(pathFrom, "ModulePath set to \"%s\"\n", xf86ModulePath);
+  xf86Msg(xf86ModPathFrom, "ModulePath set to \"%s\"\n", xf86ModulePath);
 #endif
 
   /* LogFile */

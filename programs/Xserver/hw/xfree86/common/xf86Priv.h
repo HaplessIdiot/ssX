@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.31 1999/01/12 06:24:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.32 1999/01/13 03:19:37 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -52,7 +52,8 @@ extern Bool xf86ShowUnresolved;
 /* Other parameters */
 
 extern xf86InfoRec xf86Info;
-extern char *xf86ModulePath;
+extern const char *xf86ModulePath;
+extern MessageType xf86ModPathFrom;
 extern serverLayoutRec xf86ConfigLayout;
 extern Pix24Flags xf86ConfigPix24;
 

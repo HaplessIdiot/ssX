@@ -25,22 +25,27 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.1 1999/01/23 09:55:54 dawes Exp $ */
 
 /* 3C4 */
 #define BankReg 0x06
 #define ClockReg 0x07
+#define CPUThreshold 0x08
+#define CRTThreshold 0x09
 #define CRTCOff 0x0A
 #define DualBanks 0x0B
 #define MMIOEnable 0x0B
 #define RAMSize 0x0C
 #define Mode64 0x0C
+#define ExtConfStatus1 0x0E
 #define ClockBase 0x13
 #define LinearAdd0 0x20
 #define LinearAdd1 0x21
 #define GraphEng 0x27
 #define XR2A 0x2A
 #define XR2B 0x2B
+#define TurboQueueBase 0x2C
+#define ExtMiscCont9 0x3C
 
 /* 3x4 */
 #define Offset 0x13

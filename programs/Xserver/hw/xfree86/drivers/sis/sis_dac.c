@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.1 1999/01/23 09:55:53 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -240,19 +240,27 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     outb(0x3C4, BankReg);
     pReg->sisRegs3C4[BankReg] |= 0x82;			/* Enable Linear */
+    pReg->sisRegs3C4[CPUThreshold] = 0x0F;
+    pReg->sisRegs3C4[CRTThreshold] = 0x0F;
 
     switch (pScrn->depth) {
+	case 8:
+    	    pReg->sisRegs3C4[CPUThreshold] |= 0x40;
+	    break;
 	case 15:
 	    offset <<= 1;
 	    pReg->sisRegs3C4[BankReg] |= 0x04;
+    	    pReg->sisRegs3C4[CPUThreshold] |= 0x80;
 	    break;
 	case 16:
 	    offset <<= 1;
 	    pReg->sisRegs3C4[BankReg] |= 0x08;
+    	    pReg->sisRegs3C4[CPUThreshold] |= 0x80;
 	    break;
 	case 24:
 	    offset += (offset << 1);
 	    pReg->sisRegs3C4[BankReg] |= 0x80;
+    	    pReg->sisRegs3C4[CPUThreshold] |= 0xC0;
 	    break;
     }
 
@@ -293,7 +301,13 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     if (!pSiS->NoAccel) {
     	outb(0x3C4, GraphEng);
-    	pReg->sisRegs3C4[GraphEng] = inb(0x3C5) | 0x70;
+    	pReg->sisRegs3C4[GraphEng] = inb(0x3C5) | 0x40;
+	if (pSiS->TurboQueue) {
+    	    pReg->sisRegs3C4[GraphEng] |= 0x80;
+	    outb(0x3C4, ExtMiscCont9);
+    	    pReg->sisRegs3C4[ExtMiscCont9] = inb(0x3C5) & 0xFC; /* All Queue for 2D */
+    	    pReg->sisRegs3C4[TurboQueueBase] = (pScrn->videoRam/32) - 1;
+	}
 	outb(0x3C4, Mode64);
     	pReg->sisRegs3C4[Mode64] = inb(0x3C5) | 0x80;
 	outb(0x3C4, MMIOEnable);
@@ -317,9 +331,22 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     outb(0x3C4, 0x05); /* Unlock Registers */
     temp = inb(0x3C5);
     outw(0x3C4, 0x8605);
+
+    if (!pSiS->NoAccel) {
+    	outw(0x3C4, (sisReg->sisRegs3C4[GraphEng] << 8) | GraphEng);
+    	outw(0x3C4, (sisReg->sisRegs3C4[Mode64] << 8) | Mode64);
+    	outw(0x3C4, (sisReg->sisRegs3C4[MMIOEnable] << 8) | MMIOEnable);
+	if (pSiS->TurboQueue) {
+    	    outw(0x3C4, (sisReg->sisRegs3C4[ExtMiscCont9] << 8) | ExtMiscCont9);
+    	    outw(0x3C4, (sisReg->sisRegs3C4[TurboQueueBase] << 8) | TurboQueueBase);
+	}
+    }
+
     outw(0x3C4, (sisReg->sisRegs3C4[BankReg] << 8) | BankReg);
     outw(0x3C4, (sisReg->sisRegs3C4[LinearAdd0] << 8) | LinearAdd0);
     outw(0x3C4, (sisReg->sisRegs3C4[LinearAdd1] << 8) | LinearAdd1);
+    outw(0x3C4, (sisReg->sisRegs3C4[CPUThreshold] << 8) | CPUThreshold);
+    outw(0x3C4, (sisReg->sisRegs3C4[CRTThreshold] << 8) | CRTThreshold);
     outw(vgaIOBase + 4, (sisReg->sisRegs3x4[Offset] << 8) | Offset);
     outw(0x3C4, (sisReg->sisRegs3C4[CRTCOff] << 8) | CRTCOff);
 
@@ -327,13 +354,6 @@ SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     outw(0x3C4, (sisReg->sisRegs3C4[XR2B] << 8) | XR2B);
     outw(0x3C4, (sisReg->sisRegs3C4[ClockBase] << 8) | ClockBase);
     outb(0x3C2, sisReg->sisRegs3C2[0x00]);
-
-    if (!pSiS->NoAccel) {
-    	outw(0x3C4, (sisReg->sisRegs3C4[GraphEng] << 8) | GraphEng);
-    	outw(0x3C4, (sisReg->sisRegs3C4[Mode64] << 8) | Mode64);
-    	outw(0x3C4, (sisReg->sisRegs3C4[MMIOEnable] << 8) | MMIOEnable);
-    }
-
 
     outw(0x3C4, (temp << 8) | 0x05); /* Relock Registers */
 }
@@ -357,6 +377,10 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     sisReg->sisRegs3C4[LinearAdd0] = inb(0x3C5);
     outb(0x3C4, LinearAdd1);
     sisReg->sisRegs3C4[LinearAdd1] = inb(0x3C5);
+    outb(0x3C4, CPUThreshold);
+    sisReg->sisRegs3C4[CPUThreshold] = inb(0x3C5);
+    outb(0x3C4, CRTThreshold);
+    sisReg->sisRegs3C4[CRTThreshold] = inb(0x3C5);
     outb(vgaIOBase + 4, Offset);
     sisReg->sisRegs3x4[Offset] = inb(0x3C5);
     outb(0x3C4, CRTCOff);
@@ -377,6 +401,12 @@ SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     	sisReg->sisRegs3C4[Mode64] = inb(0x3C5);
 	outb(0x3C4, MMIOEnable);
     	sisReg->sisRegs3C4[MMIOEnable] = inb(0x3C5);
+	if (pSiS->TurboQueue) {
+    	    outb(0x3C4, ExtMiscCont9);
+    	    sisReg->sisRegs3C4[ExtMiscCont9] = inb(0x3C5);
+    	    outb(0x3C4, TurboQueueBase);
+    	    sisReg->sisRegs3C4[TurboQueueBase] = inb(0x3C5);
+	}
     }
 
     outw(0x3C4, (temp << 8) | 0x05); /* Relock Registers */

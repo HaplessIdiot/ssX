@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.33 1998/12/20 11:57:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.34 1999/01/23 09:55:42 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -516,7 +516,6 @@ Section "Screen"
     Option		"no accel"
     DefaultDepth	16
 XCOMM    DefaultDepth	24
-XCOMM    DefaultBpp		32
 
     SubSection "Display"
 	Depth		8
@@ -530,7 +529,6 @@ XCOMM    DefaultBpp		32
     EndSubSection
     SubSection "Display"
 	Depth		24
-	Bpp		32
 	Modes		"1280x1024"
     EndSubSection
 EndSection

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.6 1999/01/13 03:19:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.7 1999/01/14 01:44:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -129,7 +129,8 @@ xf86InfoRec xf86Info = {
 	FALSE,		/* miscModInDevAllowNonLocal */
 	PCIProbe1	/* pciFlags */
 };
-char *xf86ModulePath = NULL;
+const char *xf86ModulePath = DEFAULT_MODULE_PATH;
+MessageType xf86ModPathFrom = X_DEFAULT;
 serverLayoutRec xf86ConfigLayout = {NULL, };
 Pix24Flags xf86ConfigPix24 = Pix24DontCare;
 XF86ConfigPtr xf86configptr = NULL;

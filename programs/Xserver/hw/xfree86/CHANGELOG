@@ -1,8 +1,9 @@
 XFree86 3.9Nx (24 January 1999)
+2181. Add a root-only -modulepath command line option to the X server.
 2180. Fix the VT switch screen restore bug introduced a few versions ago
       (#2406, Mark Vojkovich).
-2179. ND version of the sis driver, currently only for the 6326 chip (#2404,
-      2405, Alan Hourihane).
+2179. ND version of the SiS driver, currently only for the 6326 chip (#2404,
+      2405, 2407, Alan Hourihane).
 2178. xterm patch #91 (#2402, Thomas Dickey).
 2177. Add 32/24 support to the MGA driver (#2401, Mark Vojkovich).
 2176. Add 32bpp->24bpp conversion acceleration to XAA (#2400, Mark Vojkovich).
@@ -7142,4 +7143,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.673 1999/01/21 06:55:12 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.674 1999/01/23 09:55:40 dawes Exp $
