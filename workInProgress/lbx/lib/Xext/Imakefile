@@ -1,6 +1,12 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/04/13 18:05:48 rws Exp $
+XCOMM $XFree86$
+#ifdef LinuxArchitecture
+#define DoNormalLib YES
+#define DoSharedLib NO
+#else
 #define DoNormalLib NormalLibXext
 #define DoSharedLib SharedLibXext
+#endif
 #define DoDebugLib DebugLibXext
 #define DoProfileLib ProfileLibXext
 #define LibName lbxXext
