@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.11 2000/07/05 13:41:37 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.12 2000/10/11 15:42:05 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -91,15 +91,13 @@ static void
 TridentInitializeAccelerator(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-
+    /* This forces updating the clipper */
+    pTrident->Clipping = TRUE;
     CHECKCLIPPING;
     if (pTrident->Chipset == PROVIDIA9682)
     	pTrident->EngineOperation |= 0x100; /* Disable Clipping */
     TGUI_OPERMODE(pTrident->EngineOperation);
-    if (pTrident->Chipset == PROVIDIA9685 && pScrn->bitsPerPixel == 16)
-    	pTrident->PatternLocation = pScrn->displayWidth;
-    else
-    	pTrident->PatternLocation = pScrn->displayWidth*pScrn->bitsPerPixel/8;
+    pTrident->PatternLocation = pScrn->displayWidth*pScrn->bitsPerPixel/8;
 }
 
 Bool
