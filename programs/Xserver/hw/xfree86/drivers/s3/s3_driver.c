@@ -132,6 +132,8 @@ static SymTabRec S3Chipsets[] = {
 	{ PCI_CHIP_968,		"968" },
 	{ PCI_CHIP_TRIO, 	"Trio32/64" },
 	{ PCI_CHIP_AURORA64VP,	"Aurora64V+" },
+	{ PCI_CHIP_TRIO64UVP, 		"Trio64UV+" },
+	{ PCI_CHIP_TRIO64V2_DXGX,	"Trio64V2/DX/GX" },
 	{ -1, NULL }
 };
 
@@ -142,6 +144,8 @@ static PciChipsets S3PciChipsets[] = {
 	{ PCI_CHIP_968, 	PCI_CHIP_968, 		RES_SHARED_VGA },
 	{ PCI_CHIP_TRIO, 	PCI_CHIP_TRIO, 		RES_SHARED_VGA },
 	{ PCI_CHIP_AURORA64VP,	PCI_CHIP_AURORA64VP, 	RES_SHARED_VGA },
+	{ PCI_CHIP_TRIO64UVP,	PCI_CHIP_TRIO64UVP, 	RES_SHARED_VGA },
+	{ PCI_CHIP_TRIO64V2_DXGX,	PCI_CHIP_TRIO64V2_DXGX, 	RES_SHARED_VGA },
 	{ -1,			-1,	      		RES_UNDEFINED }
 };
 
@@ -531,6 +535,8 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	case PCI_CHIP_AURORA64VP:		/* ??? */
 		pS3->S3NewMMIO = FALSE;
 		break;
+	case PCI_CHIP_TRIO64V2_DXGX:
+	case PCI_CHIP_TRIO64UVP:
 	case PCI_CHIP_968:
 		pS3->S3NewMMIO = TRUE;
 		break;
@@ -579,6 +585,15 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	outb(0x46e8, 0x10);
 	outb(0x102, 0x01);
 	outb(0x46e8, 0x08);
+
+	if (pS3->Chipset == PCI_CHIP_TRIO64V2_DXGX)
+	{
+	  outb (0x3d4, 0x86);
+	  outb (0x3d5, 0x80);
+	  
+	  outb (0x3d4, 0x90);
+	  outb (0x3d5, 0x00);
+	}
 
 	if (!pScrn->videoRam) {
 		/* probe videoram */
@@ -1118,7 +1133,9 @@ static int S3GetPixMuxShift(ScrnInfoPtr pScrn)
 
 	if (pS3->Chipset == PCI_CHIP_968)
 		shift = 1;	/* XXX IBMRGB */
-	else if (pS3->Chipset == PCI_CHIP_TRIO)
+	else if (pS3->Chipset == PCI_CHIP_TRIO || 
+	         pS3->Chipset == PCI_CHIP_TRIO64UVP || 
+	         pS3->Chipset == PCI_CHIP_TRIO64V2_DXGX)
 		shift = -(pS3->s3Bpp >> 1);
 
 	return shift;

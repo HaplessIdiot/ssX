@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.208 2003/06/27 14:53:08 eich Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.209 2003/07/01 19:16:33 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3826,7 +3826,7 @@ HtmlTarget(file): deps							@@\
 #endif
 #endif
 
-#ifndef MakeTblHtmlDoc(file,srcs)
+#ifndef MakeTblHtmlDoc
 #ifdef HTMLroffCmd
 #define MakeTblHtmlDoc(file,srcs)					@@\
 file.html: srcs								@@\
@@ -3838,7 +3838,7 @@ file.html: srcs								@@\
 #endif
 #endif
 
-#ifndef MakeEqnHtmlDoc(file,srcs)
+#ifndef MakeEqnHtmlDoc
 #ifdef HTMLroffCmd
 #define MakeEqnHtmlDoc(file,srcs)					@@\
 file.html: srcs								@@\

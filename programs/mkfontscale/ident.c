@@ -121,9 +121,8 @@ pcfIdentify(gzFile f, char **name)
 {
     int prop_position;
     PropPtr props = NULL;
-    int version, format, count, prop_size, nprops, i, string_size, rc;
+    int format, count, prop_size, nprops, i, string_size, rc;
     char *strings = NULL, *s;
-    char buf[4];
 
     count = getLSB32(f);
     if(count <= 0)

@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/list.c,v 1.2 2002/12/04 10:28:08 eich Exp $ */
+/* $XFree86: xc/programs/mkfontscale/list.c,v 1.4 2003/06/20 15:49:52 eich Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -57,8 +57,6 @@ listCons(char *car, ListPtr cdr)
 ListPtr
 listAdjoin(char *car, ListPtr cdr)
 {
-    ListPtr lcar;
-
     if(listMember(car, cdr)) {
         free(car);
         return cdr;

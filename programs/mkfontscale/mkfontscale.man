@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/mkfontscale/mkfontscale.man,v 1.2 2002/09/27 01:55:07 dawes Exp $
+.\" $XFree86: xc/programs/mkfontscale/mkfontscale.man,v 1.4 2003/06/20 15:49:52 eich Exp $
 .\"
 .TH MKFONTSCALE 1 __vendorversion__
 .SH NAME
@@ -14,6 +14,9 @@ mkfontscale \- create an index of scalable font files for X
 .I filename
 ] [
 .B \-x
+.I suffix
+] [
+.B \-a
 .I encoding
 ] \|.\|.\|. [
 .B \-f 
@@ -25,6 +28,12 @@ mkfontscale \- create an index of scalable font files for X
 .I directory
 ] [
 .B \-p
+.I prefix
+] [
+.B \-r
+.I prefix
+] [
+.B \-n
 .I prefix
 ] [
 .B \-\-
@@ -71,7 +80,11 @@ the special value
 .BR \- ,
 output is written to standard output.
 .TP
-.BI \-x " encoding"
+.BI \-x " suffix"
+exclude all files with the specified
+.I suffix
+.TP
+.BI \-a " encoding"
 add
 .I encoding
 to the list of encodings searched for.
@@ -98,6 +111,17 @@ Specifies a prefix that is prepended to the encoding file path names
 when they are written to the "encodings.dir" file.  The prefix is
 prepended litterally: if a `/' is required between the prefix and the path
 names, it must be supplied explicitly as part of the prefix.
+.TP
+.B \-r
+Keep non-absolute encoding directories in their relative form when
+writing the "encodings.dir" file.  The default is to convert relative
+encoding directories to absolute directories by prepending the current
+directory.  The positioning of this options is significant, as this
+option only applies to subsequent
+.TP
+.B \-n
+do not scan for fonts, do not write font directory files.  This option
+is useful when generating encoding directories only.
 .TP
 .B \-\- 
 end of options.

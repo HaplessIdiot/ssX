@@ -1,4 +1,21 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 280. Made mkfontscale behavior and options compatible to mkfontdir, fixed
+      bugs in output format (Bugzilla #425, Juliusz Chroboczek, Kean Johnston).
+ 279. Changed xclock hands back to black (antialiased) , created XClk-col.ad
+      to set colored hands instead, added missing documentation for missing
+      resources. This follows the behavior of the other X applications more
+      closely (Bugzilla #437, Joerg Wunsch).
+ 278. Added support for Trio64UV+ and Trio64V2/DX/GX to S3 driver (backport
+      from 3.x) (Bugzilla #465, Alexej Baj).
+ 277. Increased Xlib default buffer size to 16k (was 2048), made size 
+      configurable thru environment variable XLIBBUFFERSIZE (minimum 2048)
+      (Bugzilla #466, Roland Mainz).
+ 276. Increased maximum BIGREQUEST size to 4Mb and made it configurable thru
+      a command line option. This increases performance of certain 
+      applications considerably (Bugzilla #460, Roland Mainz).
+ 275. VIA driver: initialized screen parameters in PreInit() instead of
+      AccelInit() so that they are set even when acceleration is disabled
+      (Egbert Eich).
  274. Do not drop H&V sync during screen blanking for Radeon
       (Bugzilla #320, Michael Breuer, Hui Yu@ATI).
  273. Let out-of-limit pixel clocks only use the frequency below pll output
@@ -17215,7 +17232,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2764 2003/07/02 10:44:31 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2765 2003/07/02 17:31:24 martin Exp $
 
 
 

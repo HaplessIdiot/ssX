@@ -1296,6 +1296,10 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
 	VIAFreeRec(pScrn);
 	return FALSE;
     }
+    
+    /* Set up screen parameters. */
+    pVia->Bpp = pScrn->bitsPerPixel >> 3;
+    pVia->Bpl = pScrn->displayWidth * pVia->Bpp;
 
     if (!VIAGetBIOSTable(pBIOSInfo)) {
 	VIAFreeRec(pScrn);

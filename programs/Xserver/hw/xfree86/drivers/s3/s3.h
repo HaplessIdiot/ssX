@@ -240,6 +240,8 @@ Bool S3_CursorInit(ScreenPtr pScreen);
 #define S3_964_SERIES()		((pS3->Chipset == PCI_CHIP_964_0) ||	\
 			 	 (pS3->Chipset == PCI_CHIP_964_1))
 #define	S3_TRIO_SERIES()	((pS3->Chipset == PCI_CHIP_TRIO) ||	\
-			 	 (pS3->Chipset == PCI_CHIP_AURORA64VP))
+			 	 (pS3->Chipset == PCI_CHIP_AURORA64VP) || \
+				 (pS3->Chipset == PCI_CHIP_TRIO64UVP) || \
+				 (pS3->Chipset == PCI_CHIP_TRIO64V2_DXGX))
 
 #endif /* _S3_H */

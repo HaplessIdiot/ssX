@@ -35,3 +35,4 @@ char *getHash(HashTablePtr table, char *key);
 int putHash(HashTablePtr table, char *key, char *value, int prio);
 int hashElements(HashTablePtr table);
 HashBucketPtr *hashArray(HashTablePtr table, int value_first);
+void destroyHashArray(HashBucketPtr *array);

@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.2 2003/06/30 16:52:57 eich Exp $ */
 #include "Xarch.h"
 #include "xaalocal.h"
 #include "xaarop.h"
@@ -451,10 +451,6 @@ VIAInitAccel(ScreenPtr pScreen)
     xaaptr->SubsequentImageWriteRect = VIASubsequentImageWriteRect;
     xaaptr->ImageWriteBase = pVia->BltBase;
     xaaptr->ImageWriteRange = VIA_MMIO_BLTSIZE;
-
-    /* Set up screen parameters. */
-    pVia->Bpp = pScrn->bitsPerPixel >> 3;
-    pVia->Bpl = pScrn->displayWidth * pVia->Bpp;
 
     /* We reserve space for pixel cache */
     pVia->ScissB = (pVia->FBFreeStart + VIA_PIXMAP_CACHE_SIZE) / pVia->Bpl;
