@@ -27,7 +27,7 @@ Equipment Corporation.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.2 1997/11/22 06:50:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.3 1997/12/14 02:55:38 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -233,7 +233,6 @@ ProcDPMSForceLevel(client)
 	client->errorValue = stuff->level;
 	return BadValue;
     }
-#endif
 
 #ifdef DPMSExtension
     DPMSSet(stuff->level);
