@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.19 1998/03/20 21:05:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.20 1998/03/27 23:23:10 hohndel Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -54,7 +54,6 @@ extern int coprotype;
 extern GLINTWindowBase;
 extern UsePCIRetry;
 int ScanlineWordCount;
-int wait = 0;
 int savedplanemask = 0xffffffff;
 int savedrop = UNIT_DISABLE;
 int savedreadmode = 0;
