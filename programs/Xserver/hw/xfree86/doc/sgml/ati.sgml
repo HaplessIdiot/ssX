@@ -15,7 +15,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.37 2001/04/16 15:02:08 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.38 2001/08/10 16:38:13 dawes Exp $
 </ident>
 
 <abstract>
@@ -559,7 +559,8 @@ Mach8's, 8514/A's and other clones.
 <item>Colour depth greater than 8 on non-integrated controllers, where
 permitted by the hardware.
 <item>Mach32, Mach8 and 8514/A Draw Engines.
-<item>Hardware cursors.
+<item>Hardware cursors where implemented by hardware.
+This has already been done for Mach64 integrated controllers.
 <item>TVOut, i.e. the ability to use a television screen as a monitor.
 <item>Motion Video, i.e. displaying an asynchronous data stream (TV signal,
 DVD, etc.) in a window or full-screen.
