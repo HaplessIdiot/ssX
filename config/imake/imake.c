@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.52 2002/04/14 22:01:27 herrb Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.53 2002/04/30 17:14:11 tsi Exp $ */
 
 /*
  * 
@@ -1254,7 +1254,11 @@ get_gcc(char *cmd)
 {
   struct stat sb;
     static char* gcc_path[] = {
-# if defined(linux) || defined(__NetBSD__) || defined(__OpenBSD__) || defined (__GNU__)
+# if defined(linux) || \
+     defined(__NetBSD__) || \
+     defined(__OpenBSD__) || \
+     defined(__FreeBSD__) || \
+     defined(__GNU__)
 	"/usr/bin/cc",	/* for Linux PostIncDir */
 # endif
 	"/usr/local/bin/gcc",
