@@ -1,4 +1,8 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 763. Add missing TimerCallback in trident_video.c to shutdown the video.
+      This could account for many peoples lockups with video on Trident chips.
+      Also, add a Wait for vsync when programming video modes to avoid lockups.
+      (Yukun Chen, Alan Hourihane).
  762. Fix a lockup problem on Trident Blade3D engines by permanently turning
       on PCI Retry. Also sync the engine on CloseScreen and LeaveVT.
       (Yukun Chen, Alan Hourihane).
@@ -18558,7 +18562,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3106 2004/01/20 03:36:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3107 2004/01/21 22:31:50 alanh Exp $
 
 
 
