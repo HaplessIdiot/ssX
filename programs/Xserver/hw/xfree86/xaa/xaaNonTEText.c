@@ -266,7 +266,7 @@ PolyGlyphBltAsSingleBitmap (
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     CARD32 *block, *pntr, *bits;
-    int pitch, topLine, botLine, top, bot;
+    int pitch, topLine, botLine, top, bot, height;
     int Left, Right, Top, Bottom;
     int LeftEdge, RightEdge;
     int bitPitch, shift, size, i, skippix;
@@ -332,10 +332,12 @@ PolyGlyphBltAsSingleBitmap (
 	if(RightEdge > LeftEdge) {
 	    skippix = LeftEdge - Left;
 	    topLine = max(Top, pbox->y1);
-	    botLine = min(Bottom, pbox->y2);
+	    botLine = min(Bottom, pbox->y2);	
+	    height = botLine - topLine;
 
-	    (*infoRec->WriteBitmap)(pScrn, LeftEdge, topLine, 
-			RightEdge - LeftEdge, botLine - topLine,
+	    if(height > 0) 
+	       (*infoRec->WriteBitmap)(pScrn, LeftEdge, topLine, 
+			RightEdge - LeftEdge, height,
 			(unsigned char*)(pntr + ((topLine - Top) * pitch) +
 				(skippix >> 5)),
 			pitch << 2, skippix & 31, fg, -1, rop, planemask);
@@ -403,9 +405,10 @@ ImageGlyphBltNonTEColorExpansion(
     nbox = REGION_NUM_RECTS(cclip);
     pbox = REGION_RECTS(cclip);
 
-    if((nglyph > 1) && ((FONTMAXBOUNDS(font, rightSideBearing) - 
-          		FONTMINBOUNDS(font, leftSideBearing)) <= 32)) {
-
+    if(infoRec->WriteBitmap && (nglyph > 1) && 
+			((FONTMAXBOUNDS(font, rightSideBearing) - 
+          		FONTMINBOUNDS(font, leftSideBearing)) <= 32)) 
+   {
 	PolyGlyphBltAsSingleBitmap(pScrn, nglyph, font, 
 				xInit, yInit, nbox, pbox,
 				fg, GXcopy, planemask);
