@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbimage.c,v 1.2 1998/03/20 21:08:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbimage.c,v 1.3 1998/10/04 09:39:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -136,7 +136,6 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     unsigned long planeMask;
     char	*pdstLine;
 {
-    PixmapPtr pPixmap;
     BoxRec box;
     DDXPointRec ptSrc;
     RegionRec rgnDst;

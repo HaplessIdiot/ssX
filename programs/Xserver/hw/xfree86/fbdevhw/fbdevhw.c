@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.5 1999/04/04 08:46:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.6 1999/04/05 07:13:14 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -134,6 +134,7 @@ fbdevHWFreeRec(ScrnInfoPtr pScrn)
 /* -------------------------------------------------------------------- */
 /* some helpers for printing debug informations                         */
 
+#if DEBUG
 static void
 print_fbdev_mode(char *txt, struct fb_var_screeninfo *var)
 {
@@ -153,6 +154,7 @@ print_xfree_mode(char *txt, DisplayModePtr mode)
 		mode->HDisplay, mode->HSyncStart, mode->HSyncEnd, mode->HTotal,
 		mode->VDisplay, mode->VSyncStart, mode->VSyncEnd, mode->VTotal);
 }
+#endif
 
 /* -------------------------------------------------------------------- */
 /* Convert timings between the XFree and the Frame Buffer Device        */

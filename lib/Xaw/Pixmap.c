@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.9 1998/11/01 07:57:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.10 1999/04/04 08:46:02 dawes Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -766,11 +766,7 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	return (False);
     }
   else
-    {
-      steps = dimension / 5;
-      if (!steps)
-	steps = 1;
-    }
+      steps = dimension;
 
   steps = XawMin(steps, dimension);
 

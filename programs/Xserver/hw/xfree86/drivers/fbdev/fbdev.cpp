@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.2 1999/03/21 07:35:12 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.cpp,v 1.1 1999/04/04 08:46:15 dawes Exp $ 
 .TH FBDEV __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 fbdev \- video driver for framebuffer device
@@ -8,6 +8,8 @@ fbdev \- video driver for framebuffer device
 .BI "  Identifier """  devname """"
 .br
 .B  "  Driver ""fbdev"""
+.br
+.BI "  BusID  ""pci:" bus : dev : func """
 .br
 \ \ ...
 .br
@@ -36,13 +38,17 @@ section of the config file.  The
 driver can pick up the currently used video mode from the framebuffer 
 driver and will use it if there are no video modes configured.
 .PP
+For PCI boards you might have to add a BusID line to the Device
+section.  See above for a sample line.  You can use "XFree86 -scanpci"
+to figure out the correct values.
+.PP
 The following driver 
 .B Options
 are supported:
 .TP
 .BI "Option ""ShadowFB"" """ boolean """
 Enable or disable use of the shadow framebuffer layer.  See
-shadowfb(__drivermansuffix__) for further information.  Default: off.
+shadowfb(__drivermansuffix__) for further information.  Default: on.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1),
 X(1), fbdevhw(__drivermansuffix__)

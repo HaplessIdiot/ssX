@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.4 1999/04/04 08:46:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.5 1999/04/05 07:13:10 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -263,7 +263,7 @@ FBDevProbe(DriverPtr drv, int flags)
 				xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 					   "claimed PCI slot %d:%d:%d\n",bus,device,func);
 				xf86ClaimPciSlot(bus,device,func,RES_SHARED_VGA,
-						 &FBDEV,&devSections[i],pScrn->scrnIndex);
+						 &FBDEV,0,pScrn->scrnIndex);
 			}
 		}
 	}
@@ -330,10 +330,10 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	/* handle options */
 	xf86CollectOptions(pScrn, NULL);
 	xf86ProcessOptions(pScrn->scrnIndex, pScrn->device->options, FBDevOptions);
-	if (xf86ReturnOptValBool(FBDevOptions, OPTION_SHADOW_FB, FALSE)) {
-		fPtr->shadowFB = TRUE;
-		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShadowFB enabled\n");
-	}
+	fPtr->shadowFB = xf86ReturnOptValBool(FBDevOptions, OPTION_SHADOW_FB, TRUE);
+	xf86DrvMsg(pScrn->scrnIndex,
+		   xf86IsOptionSet(FBDevOptions, OPTION_SHADOW_FB) ? X_CONFIG : X_DEFAULT,
+		   "Option ShadowFB is %s\n",fPtr->shadowFB ? "on" : "off");
 
 	/* select video modes */
 	fbdevHWSetVideoModes(pScrn);
@@ -416,13 +416,24 @@ static Bool
 FBDevSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	FBDevPtr fPtr = FBDEVPTR(pScrn);
+	BoxRec box;
 
-#if DEBUG
-	ErrorF("FBDevSaveScreen unblank=%s vtSema=%d\n",
-		unblank ? "true" : "false",
-		pScrn->vtSema);
-#endif
-	/* not implemented yet */
+	TRACE_ENTER("FBDevSaveScreen");
+	if (!(fPtr->shadowFB))
+		/* Not implemented yet - alloc huge memory block and copy ? */
+		return TRUE;
+
+	if (unblank) {
+		box.x1 = 0;
+		box.x2 = pScrn->virtualX;
+		box.y1 = 0;
+		box.y2 = pScrn->virtualY;
+		FBDevRefreshArea(pScrn, 1, &box);
+	} else {
+		memset(fPtr->fbmem + fPtr->fboff, 0,
+		       pScrn->virtualX * pScrn->virtualY * ((pScrn->bitsPerPixel+7)/8));
+	}
 	return TRUE;
 }
 

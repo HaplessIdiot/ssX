@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.7 1999/03/14 03:21:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.8 1999/03/20 08:59:12 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -301,6 +301,8 @@ DDCRead_DDC2(int scrnIndex, I2CBusPtr pBus, int start, int len)
     dev = xf86CreateI2CDevRec();
     dev->DevName = "ddc2";
     dev->SlaveAddr = 0xA0;
+    dev->ByteTimeout = 2200; /* VESA DDC spec 3 p. 43 (+10 %) */
+    dev->StartTimeout = 550;
     dev->pI2CBus = pBus;
     if (! xf86I2CDevInit(dev)) {
 	xf86DrvMsg(X_PROBED,scrnIndex,"No DDC2 device\n");

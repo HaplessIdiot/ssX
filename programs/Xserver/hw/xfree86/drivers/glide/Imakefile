@@ -1,0 +1,44 @@
+XCOMM
+XCOMM This is an Imakefile for the glide driver.  
+XCOMM
+XCOMM $XFree86$
+
+#define IHaveModules
+#include <Server.tmpl>
+
+#if !HasGlide || !defined(GlideIncDir)
+all::
+	@echo "This driver requires that you define HasGlide and GlideIncDir in host.def"
+	@exit 1
+install::
+	@echo "This driver requires that you define HasGlide and GlideIncDir in host.def"
+	@exit 1
+#endif
+
+SRCS = glide_driver.c
+OBJS = glide_driver.o
+
+INCLUDES = -I. -I$(GLIDEINCDIR) -I$(XF86COMSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+           -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa \
+           -I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
+           -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
+           -I$(SERVERSRC)/Xext -I$(XF86SRC)/xf8_32bpp\
+           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+           -I$(XF86SRC)/xf24_32bpp -I$(XF86SRC)/shadowfb
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+
+ModuleObjectRule()
+
+ObjectModuleTarget(glide,$(OBJS))
+
+InstallObjectModule(glide,$(MODULEDIR),drivers)
+
+CppManTarget(glide,)
+InstallModuleManPage(glide)
+
+DependTarget()
+

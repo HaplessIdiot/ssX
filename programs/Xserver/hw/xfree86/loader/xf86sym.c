@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.79 1999/03/29 09:41:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.80 1999/04/04 07:03:29 dawes Exp $ */
 
 /*
  *
@@ -178,23 +178,6 @@ extern int testinx(unsigned short, unsigned char);
 #ifdef DPMSExtension
 extern void DPMSSet(CARD16);
 #endif
-
-/* XXX Should get all of these from elsewhere */
-
-#ifdef GLXEXT
-typedef Bool (*GlxInitVisualsType) (
-   VisualPtr * /* visualp */ ,
-   DepthPtr * /* depthp */ ,
-   int * /* nvisualp */ ,
-   int * /* ndepthp */ ,
-   int * /* rootDepthp */ ,
-   VisualID * /* defaultVisp */ ,
-   unsigned long /* sizes */ ,
-   int	/* bitsPerRGB */
-);
-extern GlxInitVisualsType GlxInitVisualsPtr;
-#endif
-
 
 /* XFree86 things */
 
@@ -405,6 +388,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86RegisterFreeBoxCallback)
    SYMFUNC(xf86FreeOffscreenArea)
    SYMFUNC(xf86AllocateOffscreenArea)
+   SYMFUNC(xf86AllocateLinearOffscreenArea)
    SYMFUNC(xf86ResizeOffscreenArea)
    SYMFUNC(xf86FBManagerRunning)
 
@@ -810,10 +794,6 @@ LOOKUP xfree86LookupTab[] = {
 
 #if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx))
    SYMVAR(ioBase)
-#endif
-
-#ifdef GLXEXT
-   SYMVAR(GlxInitVisualsPtr)
 #endif
 
   { 0, 0 },

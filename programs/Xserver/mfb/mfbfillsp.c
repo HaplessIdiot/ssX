@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbfillsp.c,v 1.2 1998/03/20 21:08:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbfillsp.c,v 1.3 1998/10/04 09:39:10 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -628,7 +628,7 @@ mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       case GXcopy:
 	{
 
-#define DoMaskCopyRop(src,dst,mask)	((dst) & ~(mask) | (src) & (mask))
+#define DoMaskCopyRop(src,dst,mask)	(((dst) & ~(mask)) | ((src) & (mask)))
 
 	    while (n--)
 	    {

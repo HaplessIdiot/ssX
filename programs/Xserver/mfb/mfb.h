@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.11 1998/07/26 02:33:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.12 1998/10/04 09:39:07 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -472,7 +472,7 @@ extern void mfbGetSpans(
 );
 /* mfbhrzvert.c */
 
-extern int mfbHorzS(
+extern void mfbHorzS(
 #if NeedFunctionPrototypes
     int /*rop*/,
     PixelType * /*addrl*/,
@@ -483,7 +483,7 @@ extern int mfbHorzS(
 #endif
 );
 
-extern int mfbVertS(
+extern void mfbVertS(
 #if NeedFunctionPrototypes
     int /*rop*/,
     PixelType * /*addrl*/,
@@ -878,7 +878,7 @@ extern void mfbSegmentSD(
 );
 /* mfbsetsp.c */
 
-extern int mfbSetScanline(
+extern void mfbSetScanline(
 #if NeedFunctionPrototypes
     int /*y*/,
     int /*xOrigin*/,

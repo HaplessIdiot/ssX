@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.18 1999/03/21 07:35:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.19 1999/03/28 15:32:53 dawes Exp $ */
 
 /*
  *
@@ -1544,6 +1544,7 @@ ELFDEBUG( "*dest32=%8.8x\n", *dest32 );
 		unsigned long val;
 		/* S + A - P */
 		val=symval+(rel->r_addend);
+		val-=*dest32;
 #ifdef ELFDEBUG
 		ELFDEBUG("S+A=%x\t",val);
 		ELFDEBUG("S+A-P=%x\t",val+(*dest32)-(Elf_Addr)dest32);

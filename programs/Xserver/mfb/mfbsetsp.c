@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbsetsp.c,v 1.2 1998/03/20 21:08:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbsetsp.c,v 1.3 1998/10/04 09:39:17 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -66,6 +66,7 @@ SOFTWARE.
  * boxes, we may not want to start grabbing bits at psrc but at some offset
  * further on.) 
  */
+void
 mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
     int			y;
     int			xOrigin;	/* where this scanline starts */

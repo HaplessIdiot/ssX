@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.47 1999/03/14 14:10:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.48 1999/03/20 08:59:27 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -131,6 +131,7 @@ static SymTabRec TRIDENTChipsets[] = {
     { PCI_CHIP_9397,		"cyber9397" },
     { PCI_CHIP_939A,		"cyber939a" },
     { PCI_CHIP_9520,		"cyber9520" },
+    { PCI_CHIP_9525,		"cyber9525" },
     { PCI_CHIP_9420,		"tgui9420" },
     { PCI_CHIP_9440,		"tgui9440" },
     { PCI_CHIP_9660,		"tgui9660" },
@@ -148,6 +149,7 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { PCI_CHIP_9397,	PCI_CHIP_9397,	RES_SHARED_VGA },
     { PCI_CHIP_939A,	PCI_CHIP_939A,	RES_SHARED_VGA },
     { PCI_CHIP_9520,	PCI_CHIP_9520,	RES_SHARED_VGA },
+    { PCI_CHIP_9525,	PCI_CHIP_9525,	RES_SHARED_VGA },
     { PCI_CHIP_9420,	PCI_CHIP_9420,	RES_SHARED_VGA },
     { PCI_CHIP_9440,	PCI_CHIP_9440,	RES_SHARED_VGA },
     { PCI_CHIP_9660,	PCI_CHIP_9660,	RES_SHARED_VGA },

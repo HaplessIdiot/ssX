@@ -6,7 +6,7 @@
  *      (c) 1998 Gerd Knorr <kraxel@cs.tu-berlin.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.3 1998/12/29 13:00:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.4 1999/01/14 13:04:42 dawes Exp $ */
 
 #if 1
 #include "misc.h"
@@ -35,11 +35,12 @@ typedef void *Pointer;
 
 #include "xf86i2c.h"
 
-#define I2C_TIMEOUT(x) (x) /* Report timeouts */
-#define I2C_TRACE(x) (x)   /* Report progress */
+#define I2C_TIMEOUT(x)	/* (x) */ /* Report timeouts */
+#define I2C_TRACE(x)	/* (x) */ /* Report progress */
 
 /* This is the default I2CUDelay function if not supplied by the driver.
- * High level I2C interfaces should supply this function too.
+ * High level I2C interfaces implementing the bus protocol in hardware
+ * should supply this function too.
  *
  * Delay execution at least usec microseconds.
  * All values 0 to 1e6 inclusive must be expected.
@@ -66,7 +67,7 @@ I2CUDelay(I2CBusPtr b, int usec)
  * ================================================================
  *
  * It is assumed that there is just one master on the I2C bus, therefore
- * There is no explicit test for conflits.
+ * there is no explicit test for conflits.
  */
 
 #define RISEFALLTIME 1 /* usec, actually 300 to 1000 ns according to the i2c specs */
@@ -76,7 +77,7 @@ I2CUDelay(I2CBusPtr b, int usec)
  *
  * This condition will be noticed when the master tries to raise
  * the SCL line. You can set the timeout to zero if the slave device
- * does not support clock synchronization.
+ * does not support this clock synchronization.
  */
 
 static Bool
@@ -105,7 +106,7 @@ I2CRaiseSCL(I2CBusPtr b, int sda, int timeout)
  * devices that a new transaction is initiated by the bus master.
  *
  * The start signal is always followed by a slave address.
- * Slave addresses are 8 bits. The first 7 bits identify the
+ * Slave addresses are 8+ bits. The first 7 bits identify the
  * device and the last bit signals if this is a read (1) or
  * write (0) operation.
  *
@@ -213,9 +214,8 @@ I2CReadBit(I2CBusPtr b, int *psda, int timeout)
 /* This is the default I2CPutByte function if not supplied by the driver.
  *
  * A single byte is sent to the device.
- * The function must return FALSE if a timeout occurs, 
- * it is recommended the master will send a stop condition then
- * to reset the bus.
+ * The function returns FALSE if a timeout occurs, you should send 
+ * a stop condition afterwards to reset the bus.
  *
  * A timeout occurs,
  * if the slave pulls SCL to slow down the bus more than ByteTimeout usecs,
@@ -223,7 +223,8 @@ I2CReadBit(I2CBusPtr b, int *psda, int timeout)
  * or does not send an ACK bit (0) to acknowledge the transmission within
  * AcknTimeout usecs, but a NACK (1) bit.
  *
- * AcknTimeout must be at least b->HoldTime.
+ * AcknTimeout must be at least b->HoldTime, the other timeouts can be
+ * zero according to the comment on I2CRaiseSCL.
  */
 
 static Bool
@@ -271,18 +272,18 @@ I2CPutByte(I2CDevPtr d, I2CByte data)
 /* This is the default I2CGetByte function if not supplied by the driver.
  *
  * A single byte is read from the device.
- * The function must return FALSE if a timeout occurs,
- * it is recommended the master will send a stop condition then
- * to reset the bus.
+ * The function returns FALSE if a timeout occurs, you should send
+ * a stop condition afterwards to reset the bus.
  * 
  * A timeout occurs,
  * if the slave pulls SCL to slow down the bus more than ByteTimeout usecs,
  * or slows down the bus for more than b->BitTimeout usecs for each bit.
  *
- * ByteTimeout must be at least b->HoldTime.
+ * ByteTimeout must be at least b->HoldTime, the other timeouts can be
+ * zero according to the comment on I2CRaiseSCL.
  *
- * For the last byte in a sequence the acknowledge bit NACK (1), 
- * otherwise ACK (0) must be sent.
+ * For the <last> byte in a sequence the acknowledge bit NACK (1), 
+ * otherwise ACK (0) will be sent.
  */
 
 static Bool
@@ -316,25 +317,26 @@ I2CGetByte(I2CDevPtr d, I2CByte *data, Bool last)
 /* This is the default I2CAddress function if not supplied by the driver.
  *
  * It creates the start condition, followed by the d->SlaveAddr.
- * It has been decided to wrap this in one function instead of 
- * I2CStart/PutByte since a hardware I2C master may not be able 
- * to send a slave addr without also a start condition.
+ * Higher level functions must call this routine rather than
+ * I2CStart/PutByte because a hardware I2C master may not be able 
+ * to send a slave address without a start condition.
  *
- * The same timeouts apply as with PutByte and additional a
+ * The same timeouts apply as with I2CPutByte and additional a
  * StartTimeout, similar to the ByteTimeout but for the start 
  * condition.
  *
  * In case of a timeout, the bus is left in a clean idle condition.
- * I. e. you must not send a Stop. If this function succeeds, you must.
+ * I. e. you *must not* send a Stop. If this function succeeds, you *must*.
  *
  * The slave address format is 16 bit, with the legacy _8_bit_ slave address
  * in the least significant byte. This is, the slave address must include the
- * r/w flags as least significant bit.
+ * R/_W flag as least significant bit.
  *
  * The most significant byte of the address will be sent _after_ the LSB, 
  * but only if the LSB indicates:
- * a) an 11 bit address, this is, LSB = 1111 0xxx.
- * b) a 'general call address', this is, LSB = 0000 000x - see the I2C specs for more.
+ * a) an 11 bit address, this is LSB = 1111 0xxx.
+ * b) a 'general call address', this is LSB = 0000 000x - see the I2C specs
+ *    for more.
  */
 
 static Bool
@@ -361,9 +363,10 @@ I2CAddress(I2CDevPtr d, I2CSlaveAddr addr)
  */
 
 /* Function for probing. Just send the slave address 
-   and return true if the device responds. The slave address
-   must have the lsb set to reflect a read (1) or write (0) access.
-   Don't expect a read- or write-only device will respond otherwise. */
+ * and return true if the device responds. The slave address
+ * must have the lsb set to reflect a read (1) or write (0) access.
+ * Don't expect a read- or write-only device will respond otherwise.
+ */
 
 Bool
 xf86I2CProbeAddress(I2CBusPtr b, I2CSlaveAddr addr)
@@ -388,21 +391,26 @@ xf86I2CProbeAddress(I2CBusPtr b, I2CSlaveAddr addr)
 }
 
 /* All functions below are related to devices and take the
- * slave address and timeout values from an I2CDevRec.
+ * slave address and timeout values from an I2CDevRec. They
+ * return FALSE in case of an error (presumably a timeout).
  */
 
 /* General purpose read and write function.
  *
- * If nWrite > 0
- *   Send a Start condition
+ * 1st, if nWrite > 0
+ *   Send a start condition
  *   Send the slave address (1 or 2 bytes) with write flag
  *   Write n bytes from WriteBuffer
- * Then if nRead > 0
- *   Send a Start condition [again]
+ * 2nd, if nRead > 0
+ *   Send a start condition [again]
  *   Send the slave address (1 or 2 bytes) with read flag
  *   Read n bytes to ReadBuffer
- * Then if a Start condition has been successfully sent,
+ * 3rd, if a Start condition has been successfully sent,
  *   Send a Stop condition.
+ *
+ * The functions exits immediately when an error occures,
+ * not proceeding any data left. However, step 3 will
+ * be executed anyway to leave the bus in clean idle state. 
  */
 
 Bool
@@ -541,7 +549,9 @@ xf86I2CWriteWord(I2CDevPtr d, I2CByte subaddr, unsigned short word)
 
 /* Write a vector of bytes to not adjacent registers. This vector is, 
  * 1st byte sub-address, 2nd byte value, 3rd byte sub-address asf.
- * This function is intended to initialize devices.
+ * This function is intended to initialize devices. Note this function
+ * exits immediately when an error occurs, some registers may
+ * remain uninitialized.
  */
 
 Bool
@@ -575,11 +585,24 @@ xf86I2CWriteVec(I2CDevPtr d, I2CByte *vec, int nValues)
  * =========================
  */
 
+/* Allocates an I2CDevRec for you and initializes with propper defaults
+ * you may modify before calling xf86I2CDevInit. Your I2CDevRec must
+ * contain at least a SlaveAddr, and a pI2CBus pointer to the bus this
+ * device shall be linked to.
+ *
+ * See function I2CAddress for the slave address format. Always set
+ * the least significant bit, indicating a read or write access, to zero.
+ */
+
 I2CDevPtr
 xf86CreateI2CDevRec(void) 
 {
     return xcalloc(1, sizeof(I2CDevRec));
 }
+
+/* Unlink an I2C device. If you got the I2CDevRec from xf86CreateI2CDevRec
+ * you should set <unalloc> to free it.
+ */
 
 void
 xf86DestroyI2CDevRec(I2CDevPtr d, Bool unalloc) 
@@ -606,6 +629,19 @@ xf86DestroyI2CDevRec(I2CDevPtr d, Bool unalloc)
 	if (unalloc) xfree(d);
     }
 }
+
+/* I2C transmissions are related to an I2CDevRec you must link to a
+ * previously registered bus (see xf86I2CBusInit) before attempting
+ * to read and write data. You may call xf86I2CProbeAddress first to
+ * see if the device in question is present on this bus. 
+ *
+ * xf86I2CDevInit will not allocate an I2CBusRec for you, instead you
+ * may enter a pointer to a statically allocated I2CDevRec or the (modified)
+ * result of xf86CreateI2CDevRec.
+ *
+ * If you don't specify timeouts for the device (n <= 0), it will inherit
+ * the bus-wide defaults. The function returns TRUE on success.
+ */
 
 Bool
 xf86I2CDevInit(I2CDevPtr d) 
@@ -652,6 +688,14 @@ xf86I2CFindDev(I2CBusPtr b, I2CSlaveAddr addr)
 
 static I2CBusPtr I2CBusList;
 
+/* Allocates an I2CBusRec for you and initializes with propper defaults
+ * you may modify before calling xf86I2CBusInit. Your I2CBusRec must
+ * contain at least a BusName, a scrnIndex (or -1), and a complete set
+ * of either high or low level I2C function pointers. You may pass
+ * bus-wide timeouts, otherwise inplausible values will be replaced
+ * with safe defaults.
+ */
+
 I2CBusPtr
 xf86CreateI2CBusRec(void) 
 {
@@ -661,7 +705,7 @@ xf86CreateI2CBusRec(void)
 
     if (b != NULL) {
 	b->scrnIndex = -1;
-	b->HoldTime = 5;
+	b->HoldTime = 5; /* 100 kHz bus */
 	b->BitTimeout = 5;
 	b->ByteTimeout = 5;
 	b->AcknTimeout = 5;
@@ -670,6 +714,12 @@ xf86CreateI2CBusRec(void)
 
     return b;
 }
+
+/* Unregister an I2C bus. If you got the I2CBusRec from xf86CreateI2CBusRec
+ * you should set <unalloc> to free it. If you set <devs_too>, the function
+ * xf86DestroyI2CDevRec will be called for all devices linked to the bus
+ * first, passing down the <unalloc> option.
+ */
 
 void
 xf86DestroyI2CBusRec(I2CBusPtr b, Bool unalloc, Bool devs_too) 
@@ -710,6 +760,14 @@ xf86DestroyI2CBusRec(I2CBusPtr b, Bool unalloc, Bool devs_too)
 	if (unalloc) xfree(b);
     }
 }
+
+/* I2C masters have to register themselves using this function.
+ * It will not allocate an I2CBusRec for you, instead you may enter
+ * a pointer to a statically allocated I2CBusRec or the (modified)
+ * result of xf86CreateI2CBusRec. Returns TRUE on success.
+ *
+ * At this point there won't be any traffic on the I2C bus.
+ */
 
 Bool
 xf86I2CBusInit(I2CBusPtr b) 

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: VTparse.h,v 1.6 92/09/15 15:28:31 gildea Exp $
- *	$XFree86: xc/programs/xterm/VTparse.h,v 3.9 1997/08/12 12:02:18 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/VTparse.h,v 3.10 1998/10/25 07:12:39 dawes Exp $
  */
 
 /*
@@ -188,5 +188,7 @@ extern Const PARSE_T vt52_esc_table[];
 #define CASE_DECSWL 111
 #define CASE_DECDWL 112
 #define CASE_DEC_MC 113
+#define CASE_ESC_PERCENT 114
+#define CASE_UTF8 115
 
 #endif /* included_VTparse_h */

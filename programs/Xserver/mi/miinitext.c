@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.38 1999/01/31 12:22:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.39 1999/03/01 02:15:12 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -45,6 +45,7 @@ SOFTWARE.
 
 #include "misc.h"
 #include "extension.h"
+#include "micmap.h"
 
 #ifdef NOPEXEXT /* sleaze for Solaris cpp building XsunMono */
 #undef PEXEXT
@@ -158,6 +159,7 @@ extern void XFree86DGAExtensionInit(INITARGS);
 #endif
 #ifdef GLXEXT
 extern void GlxExtensionInit(INITARGS);
+extern void GlxWrapInitVisuals(miInitVisualsProcPtr *);
 #endif
 #ifdef XF86DRI
 extern void XFree86DRIExtensionInit(INITARGS);
@@ -292,6 +294,17 @@ InitExtensions(argc, argv)
 #endif
 }
 
+void
+InitVisualWrap()
+{
+    miResetInitVisuals();
+#ifdef GLXEXT
+#ifndef XPRINT
+    GlxWrapInitVisuals(&miInitVisualsProc);
+#endif
+#endif
+}
+
 #else /* XFree86LOADER */
 /* FIXME:The names here must come from the headers. those with ?? are 
    not included in X11R6.3 sample implementation, so there's a problem... */
@@ -421,6 +434,12 @@ InitExtensions(argc, argv)
 	     (extension[i].disablePtr != NULL && !*extension[i].disablePtr))) {
 	    (*extension[i].initFunc)();
 	}
+}
+
+void
+InitVisualWrap()
+{
+    miResetInitVisuals();
 }
 
 #endif /* XFree86LOADER */

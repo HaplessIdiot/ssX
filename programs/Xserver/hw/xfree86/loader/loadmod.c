@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.44 1999/03/14 03:22:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.45 1999/03/29 09:41:33 dawes Exp $ */
 
 /*
  *
@@ -50,21 +50,6 @@
 #include <limits.h>
 
 extern int check_unresolved_sema;
-
-#ifdef GLXEXT
-extern void (*GlxExtensionInitPtr) (void);
-typedef Bool (*GlxInitVisualsType) (
-   VisualPtr * /* visualp */ ,
-   DepthPtr * /* depthp */ ,
-   int * /* nvisualp */ ,
-   int * /* ndepthp */ ,
-   int * /* rootDepthp */ ,
-   VisualID * /* defaultVisp */ ,
-   unsigned long /* sizes */ ,
-   int	/* bitsPerRGB */
-);
-GlxInitVisualsType GlxInitVisualsPtr = NULL;
-#endif
 
 typedef struct _pattern {
 	const char *	pattern;
@@ -994,6 +979,10 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 	}
 	else
 	{
+		/* No initdata is OK for external modules */
+		if (options == EXTERN_MODULE)
+			goto LoadModule_exit;
+
 		/* no initdata, fail the load */
 		xf86Msg (X_ERROR, "LoadModule: Module %s does not have a %s "
 				"data object.\n", module, p);

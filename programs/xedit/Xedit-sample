@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-sample,v 1.2 1999/01/11 05:13:36 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit-sample,v 1.3 1999/03/14 03:22:27 dawes Exp $
 
 Xedit*insertFile*text.width:		150
 Xedit*search*searchText.width:		192
@@ -126,7 +126,7 @@ foreground	rgb:9/8/8;\
 draw-lines	+2,-1,-1,-1,-1,+2;\
 foreground	rgb:f/e/e;\
 draw-lines	-1,+1,-1,+0,+0,+0,+0,-1,+1,-1
-Xedit*fileMenu.displayList:\
+Xedit*SimpleMenu.displayList:\
 foreground	rgb:3/0/1;\
 draw-lines	+1,-1,-1,-1,-1,+1;\
 foreground	rgb:d/0/3;\
@@ -140,11 +140,11 @@ fill-rect	+3,+4,-4,+22;\
 foreground	rgb:b/a/6;\
 draw-line	+4,+4,-5,+4;\
 draw-line	+4,+22,-5,+22
-Xedit*fileMenu.VerticalMargins:		2
-Xedit*fileMenu.HorizontalMargins:	2
-Xedit*fileMenu.borderWidth:		0
-Xedit*fileMenu.?.foreground:		rgb:d/c/8
-Xedit*fileMenu.background:		rgb:9/0/2
+Xedit*SimpleMenu.VerticalMargins:	2
+Xedit*SimpleMenu.HorizontalMargins:	2
+Xedit*SimpleMenu.borderWidth:		0
+Xedit*SimpleMenu.?.foreground:		rgb:d/c/8
+Xedit*SimpleMenu.background:		rgb:9/0/2
 Xedit*dirlabel*font:			-*-courier-bold-r-*-*-12-*-*-*-*-*-*-1
 Xedit*dirlabel*background:		rgb:9/0/2
 Xedit*dirlabel*foreground:		rgb:d/c/8
@@ -162,3 +162,21 @@ Xedit*dirwindow*font:			-*-courier-bold-r-*-*-12-*-*-*-*-*-*-1
 Xedit*dirwindow*foreground:		rgb:9/0/2
 Xedit*dirwindow.backgroundPixmap:	gradient:vertical?dimension=3&start=rgb:e/d/d&end=rgb:f/e/e
 Xedit*viewport*Scrollbar.thumb:		hlines2
+
+Xedit*ispell*text.width:		198
+Xedit*ispell*commands.vertDistance:	8
+Xedit*ispell*Command.vertDistance:	0
+Xedit*ispell*replace.vertDistance:	4
+Xedit*ispell*replaceAll.vertDistance:	4
+Xedit*ispell*Command.height:		22
+Xedit*ispell*replaceAll.width:		34
+Xedit*ispell*ignoreAll.width:		34
+Xedit*ispell*undo.width:		94
+Xedit*ispell*add.width:			94
+Xedit*ispell*suspend.width:		94
+Xedit*ispell*cancel.width:		94
+Xedit*ispell*replace.internalWidth:	0
+Xedit*ispell*list.foreground:		rgb:9/0/2
+Xedit*ispell*list.backgroundPixmap:	gradient:vertical?dimension=3&start=rgb:e/d/d&end=rgb:f/e/e
+Xedit*ispell*borderColor:		rgb:9/0/2
+

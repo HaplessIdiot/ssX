@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbclip.c,v 1.2 1999/01/31 12:22:19 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -91,7 +91,7 @@ mfbPixmapToRegion(pPix)
     register RegionPtr	pReg;
     register PixelType	*pw, w;
     register int	ib;
-    int			width, h, base, rx1, crects;
+    int			width, h, base, rx1 = 0, crects;
     PixelType		*pwLineEnd;
     int			irectPrevStart, irectLineStart;
     register BoxPtr	prectO, prectN;

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.10 1999/03/14 03:22:28 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.11 1999/04/04 08:46:26 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -917,13 +917,6 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		    XtSetArg(args[1], XtNnumberStrings, &n_list);
 		    XtGetValues(dirwindow, args, 2);
 
-		    if (n_list > 0
-			&& (n_list != 1 || list[0] != XtName(dirwindow))) {
-			while (--n_list)
-			    XtFree(list[n_list]);
-			XtFree((char*)list);
-		    }
-
 		    matches = (char **)XtRealloc((char*)matches, sizeof(char**)
 						 * (n_matches + 2));
 		    matches[n_matches++] = XtNewString("./");
@@ -932,6 +925,12 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		    XtSetArg(args[0], XtNlist, matches);
 		    XtSetArg(args[1], XtNnumberStrings, n_matches);
 		    XtSetValues(dirwindow, args, 2);
+		    if (n_list > 0
+			&& (n_list != 1 || list[0] != XtName(dirwindow))) {
+			while (--n_list)
+			    XtFree(list[n_list]);
+			XtFree((char*)list);
+		    }
 
 		    label = ResolveName(dir_name);
 		    XtSetArg(args[0], XtNlabel, label);
@@ -1022,16 +1021,16 @@ DirWindowCB(Widget w, XtPointer user_data, XtPointer call_data)
 	    XtSetArg(args[1], XtNnumberStrings, &n_list);
 	    XtGetValues(dirwindow, args, 2);
 
+	    qsort(entries, n_entries, sizeof(char*), compar);
+	    XtSetArg(args[0], XtNlist, entries);
+	    XtSetArg(args[1], XtNnumberStrings, n_entries);
+	    XtSetValues(dirwindow, args, 2);
 	    if (n_list > 0
 		&& (n_list != 1 || list[0] != XtName(dirwindow))) {
 		while (--n_list)
 		    XtFree(list[n_list]);
 		XtFree((char*)list);
 	    }
-	    qsort(entries, n_entries, sizeof(char*), compar);
-	    XtSetArg(args[0], XtNlist, entries);
-	    XtSetArg(args[1], XtNnumberStrings, n_entries);
-	    XtSetValues(dirwindow, args, 2);
 
 	    *pptr = '\0';
 	    label = ResolveName(path);
@@ -1044,6 +1043,7 @@ DirWindowCB(Widget w, XtPointer user_data, XtPointer call_data)
 	    XtSetArg(args[0], XtNstring, path);
 	    XtSetValues(filenamewindow, args, 1);
 	    XtSetKeyboardFocus(topwindow, filenamewindow);
+	    XawTextSetInsertionPoint(filenamewindow, strlen(path));
 	}
 	else
 	    Feep();

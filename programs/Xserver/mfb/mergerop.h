@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.6 1999/03/14 03:22:19 dawes Exp $ */
 
 #ifndef _MERGEROP_H_
 #define _MERGEROP_H_
@@ -272,7 +272,7 @@ extern mergeRopRec	mergeRopBits[16];
 	*(dst) = (*(dst) & cfbrmask[idx])|((_src >>cfb24Shift[idx])&cfbmask[idx]); \
 	(dst)--; \
 	}
-#define MROP_MASK(src,dst,mask)	((dst) & ~(mask) | (~(src)) & (mask))
+#define MROP_MASK(src,dst,mask)	(((dst) & ~(mask)) | ((~(src)) & (mask)))
 #define MROP_MASK24(src,dst,mask,index)	{\
 	register int idx = ((index) & 3)<< 1; \
 	unsigned long _src = ~(src); \
@@ -351,7 +351,7 @@ extern mergeRopRec	mergeRopBits[16];
 #define MROP_SOLID(src,dst) \
     ((dst) & ((src) & _ca1 ^ _cx1) ^ (src))
 #define MROP_MASK(src,dst,mask)	\
-    ((dst) & (((src) & _ca1 ^ _cx1) | ~(mask)) ^ ((src) & (mask)))
+    (((dst) & (((src) & _ca1 ^ _cx1)) | (~(mask)) ^ ((src) & (mask))))
 #define MROP_NAME(prefix)	MROP_NAME_CAT(prefix,CopyXorAndReverseOr)
 #define MROP_PREBUILD(src)	PrebuildMergeRop(src)
 #define MROP_PREBUILT_DECLARE()	DeclarePrebuiltMergeRop()

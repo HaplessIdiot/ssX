@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.24 1999/01/26 10:40:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.25 1999/03/07 11:40:27 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -372,6 +372,7 @@ main(argc, argv)
 	ResetColormapPrivates();
 	ResetFontPrivateIndex();
 	InitCallbackManager();
+	InitVisualWrap();
 	InitOutput(&screenInfo, argc, argv);
 	if (screenInfo.numScreens < 1)
 	    FatalError("no screens found");

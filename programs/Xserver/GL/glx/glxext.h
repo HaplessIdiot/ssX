@@ -21,12 +21,12 @@
 **
 ** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glxext.h,v 1.2 1999/02/23 07:49:27 martin Exp $
 */
+/* $XFree86$ */
 
 typedef struct {
     int type;
     void (*resetExtension)(void);
     Bool (*initVisuals)(
-#if NeedFunctionPrototypes
 	VisualPtr *       visualp,
 	DepthPtr *        depthp,
 	int *             nvisualp,
@@ -35,7 +35,6 @@ typedef struct {
 	VisualID *        defaultVisp,
 	unsigned long     sizes,
 	int               bitsPerRGB
-#endif
 	);
 } __GLXextensionInfo;
 
@@ -55,7 +54,6 @@ extern int __glXSwapQueryContextInfoEXT(__GLXclientState *cl, char *pc);
 extern Bool __glXCoreType(void);
 extern void GlxExtensionInit(void);
 extern int GlxInitVisuals(
-#if NeedFunctionPrototypes
     VisualPtr *       visualp,
     DepthPtr *        depthp,
     int *             nvisualp,
@@ -63,8 +61,8 @@ extern int GlxInitVisuals(
     int *             rootDepthp,
     VisualID *        defaultVisp,
     unsigned long     sizes,
-    int               bitsPerRGB
-#endif
+    int               bitsPerRGB,
+    int               preferredVis
 );
 
 #endif /* _glxext_h_ */

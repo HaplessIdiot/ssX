@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.13 1999/03/28 15:31:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.14 1999/04/05 07:12:48 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -556,7 +556,7 @@ MapPhysAddress(unsigned long address, unsigned long size)
 	if ((mapFd = open(DEV_MEM, O_RDWR)) < 0)
 	    return NULL;
     }
-    vaddr = (void *)mmap(NULL, size + delta, PROT_READ,
+    vaddr = (void *)mmap(NULL, size + delta, PROT_READ | PROT_WRITE,
                         MAP_FILE | MAP_SHARED, mapFd, (off_t)offset);
     if (vaddr == (void *)-1)
 	return NULL;

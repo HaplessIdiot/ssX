@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mfb/mfbtegblt.c,v 1.3 1998/10/04 09:39:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbtegblt.c,v 1.4 1998/12/20 11:57:57 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -345,7 +345,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 # endif
 		    FASTPUTBITS(OP(c), xoff1, widthGlyphs, dst);
 #else
-		    *(dst) = (*dst) & ~startmask | OP(SCRRIGHT(c, xoff1)) & startmask;
+		    *(dst) = ((*dst) & ~startmask) | (OP(SCRRIGHT(c, xoff1)) & startmask);
 #endif
 		    mfbScanlineInc(dst, widthDst);
 		}
@@ -358,10 +358,10 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		while (hTmp--)
 		{
 		    GetBits4
-		    dst[0] = dst[0] & ~startmask |
-			     OP(SCRRIGHT(c,xoff1)) & startmask;
-		    dst[1] = dst[1] & ~endmask |
-			     OP(SCRLEFT(c,nfirst)) & endmask;
+		    dst[0] = (dst[0] & ~startmask) |
+			     (OP(SCRRIGHT(c,xoff1)) & startmask);
+		    dst[1] = (dst[1] & ~endmask) |
+			     (OP(SCRLEFT(c,nfirst)) & endmask);
 		    mfbScanlineInc(dst, widthDst);
 		}
 	    }
@@ -397,7 +397,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		FASTPUTBITS (OP(c),xoff1,widthGlyph,dst);
 #else
 		GetBits1
-		(*dst) = (*dst) & ~startmask | OP(SCRRIGHT(c, xoff1)) & startmask;
+		(*dst) = ((*dst) & ~startmask) | (OP(SCRRIGHT(c, xoff1)) & startmask);
 #endif
 		mfbScanlineInc(dst, widthDst);
 	    }
@@ -410,10 +410,10 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    while (hTmp--)
 	    {
 		GetBits1
-		dst[0] = dst[0] & ~startmask |
-			 OP(SCRRIGHT(c,xoff1)) & startmask;
-		dst[1] = dst[1] & ~endmask |
-			 OP(SCRLEFT(c,nfirst)) & endmask;
+		dst[0] = (dst[0] & ~startmask) |
+			 (OP(SCRRIGHT(c,xoff1)) & startmask);
+		dst[1] = (dst[1] & ~endmask) |
+			 (OP(SCRLEFT(c,nfirst)) & endmask);
 		mfbScanlineInc(dst, widthDst);
 	    }
 	}

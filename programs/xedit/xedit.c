@@ -24,9 +24,10 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.4 1999/02/28 11:20:15 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.5 1999/03/14 03:22:28 dawes Exp $ */
 
 #include "xedit.h"
+#include <X11/Xaw/SmeBSB.h>
 #include <time.h>
 #include <sys/stat.h>
 
@@ -54,6 +55,7 @@ static XtActionsRec actions[] = {
 {"xedit-focus", XeditFocus},
 {"other-window", OtherWindow},
 {"switch-source", SwitchSource},
+{"ispell", IspellAction},
 };
 
 #define DEF_HINT_INTERVAL	300	/* in seconds, 5 minutes */
@@ -65,7 +67,7 @@ static XawTextPositionInfo infos[3];
 
 Widget topwindow, textwindow, messwidget, labelwindow, filenamewindow;
 Widget scratch, hpane, vpanes[2], labels[3], texts[3], forms[3], positions[3];
-Widget dirlabel, dirwindow;
+Widget options_popup, dirlabel, dirwindow;
 Boolean international;
 
 extern void ResetSourceChanged(xedit_flist_item*);
@@ -135,6 +137,13 @@ main(int argc, char *argv[])
 	  XtRemoveCallback(texts[i], XtNpositionCallback, PositionChanged, NULL);
   }
   XtRealizeWidget(topwindow);
+
+  options_popup = XtCreatePopupShell("optionsMenu", simpleMenuWidgetClass,
+				     topwindow, NULL, 0);
+  XtRealizeWidget(options_popup);
+  XtAddCallback(XtCreateManagedWidget("ispell", smeBSBObjectClass,
+				      options_popup, NULL, 0),
+		XtNcallback, IspellCallback, NULL);
   
   wm_delete_window = XInternAtom(XtDisplay(topwindow), "WM_DELETE_WINDOW",
 				 False);

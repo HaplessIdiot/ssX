@@ -2,9 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.2 1999/03/29 06:23:13 dawes Exp $ */
-
-#include "videodev.h"
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.3 1999/04/04 08:46:20 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -20,9 +18,11 @@
 
 
 #include <asm/ioctl.h>		/* _IORW(xxx) #defines are here */
-#if 0
+#if 1
 typedef unsigned long ulong;
 #endif
+#include "videodev.h"
+
 
 #define DEBUG(x) (x)
 
@@ -115,6 +115,7 @@ typedef struct _PortPrivRec {
     /* attributes */
     struct video_picture	pict;
 
+    XF86VideoEncodingPtr        enc;
 } PortPrivRec, *PortPrivPtr;
 
 #define XV_ENCODING	"XV_ENCODING"
@@ -128,12 +129,6 @@ typedef struct _PortPrivRec {
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
 static Atom xvEncoding, xvBrightness, xvContrast, xvSaturation, xvHue, xvFreq;
-
-static XF86VideoEncodingRec
-InputVideoEncodings[] =
-{
-    { 0, "pal-tuner",			768, 576, { 1, 50 }},
-};
 
 static XF86VideoFormatRec
 InputVideoFormats[] = {
@@ -169,7 +164,7 @@ static void V4lCloseDevice(PortPrivPtr pPPriv)
 {
     pPPriv->useCount--;
     
-    if(pPPriv->fd != -1) {
+    if(pPPriv->useCount == 0 && pPPriv->fd != -1) {
 	close(pPPriv->fd);
 	pPPriv->fd = -1;
     }
@@ -287,15 +282,21 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
     Atom attribute, INT32 value, pointer data)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data; 
+    struct video_channel chan;
+    int ret = Success;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/SPA %d, %d\n",
 	attribute, value));
 
-    if (-1 == pPPriv->fd)
-	return Success;
+    V4lOpenDevice(pPPriv, pScrn);
 
-    if (attribute == xvEncoding) {
-	/* FIXME */
+    if (-1 == pPPriv->fd) {
+	ret = Success /* FIXME: EBUSY/ENODEV ?? */;
+    } else if (attribute == xvEncoding) {
+	chan.channel = value/3;
+	chan.norm    = value%3;
+	if (-1 == ioctl(pPPriv->fd,VIDIOCSCHAN,&chan))
+	    perror("ioctl VIDIOCSCHAN");
     } else if (attribute == xvBrightness ||
                attribute == xvContrast   ||
                attribute == xvSaturation ||
@@ -307,14 +308,15 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
 	if (attribute == xvHue)        pPPriv->pict.hue        = xv_to_v4l(value);
 	ioctl(pPPriv->fd,VIDIOCSPICT,&pPPriv->pict);
     } else if (attribute == xvFreq) {
-	ErrorF("setfreq=%d\n",value);
+	/* ErrorF("setfreq=%d\n",value); */
 	if (-1 == ioctl(pPPriv->fd,VIDIOCSFREQ,&value))
 	    perror("ioctl");
     } else {
-	return BadValue;
+	ret = BadValue;
     }
 
-    return Success;
+    V4lCloseDevice(pPPriv);
+    return ret;
 }
 
 static int
@@ -322,12 +324,14 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
     Atom attribute, INT32 *value, pointer data)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;
+    int ret = Success;
 
-    if (-1 == pPPriv->fd)
-	return Success;
+    V4lOpenDevice(pPPriv, pScrn);
 
-    if (attribute == xvEncoding) {
-	/* FIXME */
+    if (-1 == pPPriv->fd) {
+	ret = Success /* FIXME: EBUSY/ENODEV ?? */;
+    } else if (attribute == xvEncoding) {
+	/* TODO */
     } else if (attribute == xvBrightness ||
                attribute == xvContrast   ||
                attribute == xvSaturation ||
@@ -340,13 +344,14 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
     } else if (attribute == xvFreq) {
 	ioctl(pPPriv->fd,VIDIOCGFREQ,value);
     } else {
-	return BadValue;
+	ret = BadValue;
     }
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/GPA %d, %d\n",
 	attribute, *value));
 
-    return Success;
+    V4lCloseDevice(pPPriv);
+    return ret;
 }
 
 static void
@@ -366,21 +371,94 @@ V4LIdentify(int flags)
     xf86Msg(X_INFO, "v4l driver for Video4Linux\n");
 }        
 
+static char*
+fixname(char *str)
+{
+	int s,d;
+	for (s=0, d=0;; s++) {
+		if (str[s] == '-')
+			continue;
+		str[d++] = tolower(str[s]);
+		if (0 == str[s])
+			break;
+	}
+	return str;
+}
+
+static XF86VideoEncodingPtr
+V4LBuildEncodings(int fd, int *count)
+{
+    static struct video_capability  cap;
+    static struct video_channel     channel;
+    XF86VideoEncodingPtr            enc;
+    int i;
+
+    if (-1 == ioctl(fd,VIDIOCGCAP,&cap))
+	return NULL;
+
+    enc = xalloc(sizeof(XF86VideoEncodingRec)*3*cap.channels);
+    memset(enc,0,sizeof(XF86VideoEncodingRec)*3*cap.channels);
+
+    for (i = 0; i < 3*cap.channels; ) {
+	channel.channel = i/3;
+	if (-1 == ioctl(fd,VIDIOCGCHAN,&channel)) {
+	    perror("ioctl VIDIOCGCHAN");
+	    return NULL;
+	}
+
+	/* one for PAL ... */
+	enc[i].id     = i;
+	enc[i].name   = malloc(strlen(channel.name)+8);
+	enc[i].width  = 768;
+	enc[i].height = 576;
+	enc[i].rate.numerator   =  1;
+	enc[i].rate.denominator = 50;
+	sprintf(enc[i].name,"pal-%s",fixname(channel.name));
+	i++;
+
+	/* NTSC */
+	enc[i].id     = i;
+	enc[i].name   = malloc(strlen(channel.name)+8);
+	enc[i].width  = 640;
+	enc[i].height = 480;
+	enc[i].rate.numerator   =  1001;
+	enc[i].rate.denominator = 60000;
+	sprintf(enc[i].name,"ntsc-%s",fixname(channel.name));
+	i++;
+
+	/* SECAM */
+	enc[i].id     = i;
+	enc[i].name   = malloc(strlen(channel.name)+8);
+	enc[i].width  = 768;
+	enc[i].height = 576;
+	enc[i].rate.numerator   =  1;
+	enc[i].rate.denominator = 50;
+	sprintf(enc[i].name,"secam-%s",fixname(channel.name));
+	i++;
+    }
+    *count = i;
+    return enc;
+}
+
+
 static Bool
 V4LProbe(DriverPtr drv, int flags)
 {
     PortPrivPtr pPPriv;
     DevUnion *Private;
-    XF86VideoAdaptorPtr VAR[4];
+    XF86VideoAdaptorPtr  VAR[4];
+    XF86VideoEncodingPtr enc;
     char dev[16];
-    int  fd,i;
+    int  fd,i,nenc;
 
     DEBUG(xf86Msg(X_INFO, "v4l: init start\n"));
 
     for (i = 0; i < 4; i++) {
 	sprintf(dev,"/dev/video%d",i);
 	fd = open(dev, O_RDWR, 0);
-	if (fd == -1 && errno != EBUSY)
+	if (fd == -1)
+	    break;
+	if (NULL == (enc = V4LBuildEncodings(fd,&nenc)))
 	    break;
 	
 	DEBUG(xf86Msg(X_INFO,  "v4l: %s ok\n",dev));
@@ -415,10 +493,8 @@ V4LProbe(DriverPtr drv, int flags)
 	VAR[i]->GetPortAttribute = V4lGetPortAttribute;
 	VAR[i]->QueryBestSize = V4lQueryBestSize;
 
-	/* FIXME: don't hardcode, but query v4l */
-	VAR[i]->nEncodings =
-		sizeof(InputVideoEncodings) / sizeof(InputVideoEncodings[0]);
-	VAR[i]->pEncodings = InputVideoEncodings;
+	VAR[i]->nEncodings = nenc;
+	VAR[i]->pEncodings = enc;
 	VAR[i]->nFormats =
 		sizeof(InputVideoFormats) / sizeof(InputVideoFormats[0]);
 	VAR[i]->pFormats = InputVideoFormats;

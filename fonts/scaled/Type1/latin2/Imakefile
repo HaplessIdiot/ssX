@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/fonts/scaled/Type1/latin2/Imakefile,v 1.1 1997/04/17 13:02:44 dawes Exp $
 
 OBJS = arl2____.pfb arl2b___.pfb arl2bi__.pfb arl2i___.pfb cnl2____.pfb \
        cnl2b___.pfb cnl2bi__.pfb cnl2i___.pfb \
@@ -10,3 +10,4 @@ MakeFontsDir(fonts.scale)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontScale($(FONTINSTDIR))
+InstallFontAliases($(FONTINSTDIR))
