@@ -1,6 +1,12 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.1 2002/02/25 00:45:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.2 2002/02/25 18:00:38 dawes Exp $
 
+#if !BuildModuleInSubdir
 #define IHaveModules
+#elif !defined(IHaveModules) && DoLoadableServer
+#define IHaveSubdirs
+SUBDIRS = module
+#endif
+
 #include <Server.tmpl>
 
 #define NeedAllMesaSrc
@@ -21,7 +27,7 @@ XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.1 2002/02/25 00
 #include "../../../../../lib/GL/mesa/src/X/Imakefile.inc"
 #include "../../../../../lib/GL/mesa/src/Imakefile.inc"
 
-#if DoLoadableServer
+#if DoLoadableServer && defined(IHaveModules)
         MSRCS = GLcoremodule.c
         MOBJS = GLcoremodule.o
 #endif
@@ -41,7 +47,7 @@ XCOMM $XFree86: xc/programs/Xserver/GL/mesa/GLcore/Imakefile,v 1.1 2002/02/25 00
 
       DEFINES = $(GLX_DEFINES)
 
-#if DoLoadableServer
+#if DoLoadableServer && defined(IHaveModules)
 ModuleObjectRule()
 
 DepLibraryModuleTarget(GLcore, $(DONES) $(OBJS),$(OBJS) $(XOBJS))
@@ -53,4 +59,9 @@ NormalLibraryObjectRule()
 #endif
 
 InstallDriverSDKLibraryModule(GLcore,$(DRIVERSDKMODULEDIR),extensions)
+
+#ifdef IHaveSubdirs
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
 

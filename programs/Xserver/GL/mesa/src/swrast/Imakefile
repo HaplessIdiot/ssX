@@ -1,12 +1,22 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/swrast/Imakefile,v 1.2 2002/02/25 00:45:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/swrast/Imakefile,v 1.3 2002/02/28 17:52:18 dawes Exp $
 
+#if !BuildModuleInSubdir
 #define IHaveModules
+#elif !defined(IHaveModules) && DoLoadableServer
+#define IHaveSubdirs
+SUBDIRS = module
+#endif
+
 #include <Server.tmpl>
 
 #define NeedAllMesaSrc
 #define NeedToLinkMesaSrc
 #define MesaSwrastBuildDir /**/
+#if !BuildModuleInSubdir || !defined(IHaveModules)
 #include "../../../../../../lib/GL/mesa/src/swrast/Imakefile.inc"
+#else
+#include "../../../../../../../lib/GL/mesa/src/swrast/Imakefile.inc"
+#endif
 
 
          SRCS = $(MESA_SWRAST_SRCS)
@@ -17,13 +27,13 @@ XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/swrast/Imakefile,v 1.2 2002/02/2
 		-I$(MESASRCDIR)/src/swrast_setup \
 		-I$(MESASRCDIR)/include \
                 -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-                -I../../../include -I../../../glx \
+                -I$(SERVERSRC)/GL/include -I$(SERVERSRC)/GL/glx \
                 -I$(LIBSRC)/GL/include \
                 -I$(XF86SRC) -I$(INCLUDESRC)
 
       DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
 
-#if DoLoadableServer
+#ifdef IHaveModules
 ModuleObjectRule()
 #else
 NormalLibraryObjectRule()
@@ -35,3 +45,9 @@ LintLibraryTarget(dri,$(SRCS))
 NormalLintTarget($(SRCS))
 
 DependTarget()
+
+#ifdef IHaveSubdirs
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif
+
