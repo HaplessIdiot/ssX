@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Ti.c,v 1.3 2001/09/28 07:45:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Ti.c,v 1.4 2001/10/28 03:33:44 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -93,7 +93,7 @@ void S3OutTiIndReg(ScrnInfoPtr pScrn, CARD32 reg, unsigned char mask,
 }
 
 
-unsigned char S3InTiIndReg(ScrnInfoPtr pScrn, CARD32 reg)
+static unsigned char S3InTiIndReg(ScrnInfoPtr pScrn, CARD32 reg)
 {
 	S3Ptr pS3 = S3PTR(pScrn);
 	int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
@@ -418,7 +418,7 @@ static void S3TiDACProgramClock(ScrnInfoPtr pScrn, int clk,
 }
 
 
-void S3TiDACSetClock(ScrnInfoPtr pScrn, long freq, int clk)
+static void S3TiDACSetClock(ScrnInfoPtr pScrn, long freq, int clk)
 {
 	int m, n, p;
 
