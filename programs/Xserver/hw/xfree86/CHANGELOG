@@ -26,8 +26,8 @@ XFree86 4.0a (31 March 2000)
   62. Enable devfs support for the v4l driver (based on #3823,
       Christopher Sekiya).
   61. Update for README.FreeBSD (#3822, Kazutaka Yokota).
-  60. Bump the video driver ABI major version because of interface changes
-      (now 1.0).
+  60. Bump the video driver ABI minor version because of interface changes
+      (now 0.2).
   59. Disable SilkenMouse when IO/MEM resource sharing means that it cannot
       be reliably used (#382o, Keith Packard and Egbert Eich).
   58. Fix DGA 1.0 compatibility for mouse events and SetViewport behaviour
@@ -10175,4 +10175,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1111 2000/03/31 20:13:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1112 2000/03/31 22:55:24 dawes Exp $
