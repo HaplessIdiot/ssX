@@ -820,7 +820,7 @@ LispEnvRun(LispMac *mac, LispObj *args, LispFunPtr fn, char *fname, int refs)
     }
 
     for (; env != NIL; env = CDR(env)) {
-	LispObj *var, *val;
+	LispObj *var = NIL, *val = NIL;
 
 	pair = CAR(env);
 	if (pair->type == LispAtom_t) {
@@ -921,7 +921,7 @@ LispObj *
 LispRun(LispMac *mac)
 {
     static char *DOTMSG = "Illegal end of dotted list";
-    int ch, len, dquote = 0, escape, size, dot = 0;
+    int ch, len, dquote = 0, escape = 0, size, dot = 0;
     LispObj *res, *obj, *cons, *code, *frm;
     char stk[1024], *str;
 
@@ -1046,8 +1046,8 @@ LispRun(LispMac *mac)
 LispObj *
 LispEval(LispMac *mac, LispObj *obj)
 {
-    char *name, stk[32];
-    LispObj *fun, *cons, *frm, *res;
+    char *name = NULL, stk[32];
+    LispObj *fun, *cons = NIL, *frm, *res;
     LispObj *car, *cdr;
     LispBuiltin *fn;
     unsigned num_objs;

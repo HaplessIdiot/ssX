@@ -113,10 +113,10 @@ struct _LispObj {
 	struct {
 	    LispObj *list;	/* stored as a linear list */
 	    LispObj *dim;	/* dimensions of array */
-	    long rank : 8;	/* i.e. array-rank-limit => 256 */
-	    long type : 7;	/* converted to LispType, if not Lisp{Nil,True}_t
+	    int rank : 8;	/* i.e. array-rank-limit => 256 */
+	    int type : 7;	/* converted to LispType, if not Lisp{Nil,True}_t
 				 * only accepts given type in array fields */
-	    long zero : 1;	/* at least one of the dimensions is zero */
+	    int zero : 1;	/* at least one of the dimensions is zero */
 	} array;
 	struct {
 	    LispObj *fields;	/* structure fields */

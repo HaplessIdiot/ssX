@@ -195,7 +195,7 @@ LispObj *
 _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 {
     unsigned num_args;
-    LispObj *name, *args, *code, *obj, *fun;
+    LispObj *name = NIL, *args, *code, *obj = NIL, *fun;
     static char *types[3] = {"lambda", "function", "macro"};
     static char *fnames[3] = {"lambda", "defun", "defmacro"};
 
@@ -316,7 +316,7 @@ LispObj *
 _LispLoadFile(LispMac *mac, char *filename, char *fname,
 	      int verbose, int print, int ifdoesnotexist)
 {
-    LispObj *obj, *res;
+    LispObj *obj, *res = NIL;
     FILE *fp;
     int level;
 

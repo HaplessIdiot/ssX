@@ -233,12 +233,14 @@ Lisp_And(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Append(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *res = NIL, *obj, *cdr, *cons;
+    LispObj *res, *obj, *cdr, *cons;
 
     if (list == NIL)
 	return (NIL);
     else if (CDR(list) == NIL)
 	return (EVAL(CAR(list)));
+
+    res = cdr = NIL;
 
     for (; list != NIL; list = CDR(list)) {
 	obj = EVAL(CAR(list));
@@ -276,6 +278,7 @@ Lisp_Apply(LispMac *mac, LispObj *list, char *fname)
     if (eval->type != LispAtom_t && eval->type != LispLambda_t)
 	LispDestroy(mac, "%s is not a valid function name, at %s",
 		LispStrObj(mac, eval), fname);
+    obj = NIL;
     eval = cdr = CONS(eval, NIL);
     for (list = CDR(list); list != NIL; list = CDR(list)) {
 	obj = EVAL(CAR(list));
@@ -325,6 +328,7 @@ Lisp_Butlast(LispMac *mac, LispObj *list, char *fname)
     if ((obj = CAR(list))->type != LispCons_t)
 	LispDestroy(mac, "%s is not a list, at %s",
 		LispStrObj(mac, obj), fname);
+    cdr = NIL;
     nlist = 0;
     while (obj->type == LispCons_t) {
 	++nlist;
@@ -375,7 +379,7 @@ Lisp_Butlast(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Car(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *res;
+    LispObj *res = NIL;
 
     switch (CAR(list)->type) {
 	case LispNil_t:
@@ -430,8 +434,8 @@ Lisp_Catch(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Coerce(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *from, *to, *res;
-    LispType type;
+    LispObj *from, *to, *res = NIL;
+    LispType type = LispNil_t;
 
     from = CAR(list);
     to = CAR(CDR(list));
@@ -491,7 +495,7 @@ Lisp_Coerce(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Cdr(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *res;
+    LispObj *res = NIL;
 
     switch (CAR(list)->type) {
 	case LispNil_t:
@@ -811,8 +815,8 @@ LispObj *
 Lisp_Makearray(LispMac *mac, LispObj *list, char *fname)
 {
     LispType type = LispNil_t;
-    long rank, count = 1, zero, offset, c;
-    LispObj *ary = NIL, *dim, *init, *cont, *disp, *obj;
+    long rank = 0, count = 1, zero, offset, c;
+    LispObj *ary = NIL, *dim = NIL, *init, *cont, *disp, *obj;
 
     if (CAR(list)->type == LispReal_t) {
 	if ((int)CAR(list)->data.real != CAR(list)->data.real ||
@@ -954,7 +958,7 @@ Lisp_Makearray(LispMac *mac, LispObj *list, char *fname)
 	    ary = cont;
 	}
 	else {
-	    LispObj *err;
+	    LispObj *err = NIL;
 	    /* check if list matches */
 	    int i, j, k, *dims, *loop;
 
@@ -1073,6 +1077,7 @@ Lisp_Mapcar(LispMac *mac, LispObj *list, char *fname)
     if (fun->type != LispAtom_t && fun->type != LispLambda_t)
 	LispDestroy(mac, "%s is not a valid function name, at %s",
 		    LispStrObj(mac, fun), fname);
+    cdres = NIL;
     for (level = 0, res = NIL; ; level++) {
 	eval = cdr = CONS(fun, NIL);
 	for (ptr = CDR(list); ptr != NIL; ptr = CDR(ptr)) {
@@ -1341,7 +1346,7 @@ Lisp_Push(LispMac *mac, LispObj *list, char *fname)
     if (var->type == LispCons_t)
 	cons = CONS(CAR(var), CDR(var));
     else {
-	LispObj *car;
+	LispObj *car = NIL;
 
 	switch (var->type) {
 	    case LispNil_t:
@@ -1471,8 +1476,8 @@ Lisp_SetQ(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Setf(LispMac *mac, LispObj *list, char *fname)
 {
-    int count, cdr;
-    LispObj *cons, *place, *res = NIL, *resp, *sym, *obj, *setf;
+    int count, cdr = 0;
+    LispObj *cons, *place, *res = NIL, *resp, *sym, *obj = NIL, *setf;
 
     for (count = 0, place = list; place != NIL; count++, place = CDR(place))
 	;
@@ -1635,7 +1640,7 @@ Lisp_Typep(LispMac *mac, LispObj *list, char *fname)
 {
     LispType type = LispStruct_t;
     LispObj *obj;
-    char *atom;
+    char *atom = NULL;
 
     obj = CAR(CDR(list));
     if (obj == NIL || obj == T)
