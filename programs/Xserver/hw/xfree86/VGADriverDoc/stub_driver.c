@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.9 1994/10/20 06:08:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.10 1995/01/10 10:54:34 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -104,62 +104,18 @@ typedef struct {
  * Forward definitions for the functions that make up the driver.  See
  * the definitions of these functions for the real scoop.
  */
-static Bool     STUBProbe(
-#if NeedFunctionPrototypes
-			void
-#endif
-		);
-static char *   STUBIdent(
-#if NeedFunctionPrototypes
-			int
-#endif
-		);
-static Bool     STUBClockSelect(
-#if NeedFunctionPrototypes
-			int
-#endif
-		);
-static void     STUBEnterLeave(
-#if NeedFunctionPrototypes
-			Bool
-#endif
-		);
-static Bool     STUBInit(
-#if NeedFunctionPrototypes
-			DisplayModePtr
-#endif
-		);
-static void *   STUBSave(
-#if NeedFunctionPrototypes
-			vgaSTUBPtr
-#endif
-		);
-static void     STUBRestore(
-#if NeedFunctionPrototypes
-			vgaSTUBPtr
-#endif
-		);
-static void     STUBAdjust(
-#if NeedFunctionPrototypes
-			int,
-			int
-#endif
-		);
-static void     STUBSaveScreen(
-#if NeedFunctionPrototypes
-			int
-#endif
-		);
-static void     STUBGetMode(
-#if NeedFunctionPrototypes
-			DisplayModePtr
-#endif
-		);
-static void	STUBFbInit(
-#if NeedFunctionPrototypes
-			void
-#endif
-		);
+static Bool     STUBProbe();
+static char *   STUBIdent();
+static Bool     STUBClockSelect();
+static void     STUBEnterLeave();
+static Bool     STUBInit();
+static Bool	STUBValidMode();
+static void *   STUBSave();
+static void     STUBRestore();
+static void     STUBAdjust();
+static void     STUBSaveScreen();
+static void     STUBGetMode();
+static void	STUBFbInit();
 /*
  * These are the bank select functions.  There are defined in stub_bank.s
  */
