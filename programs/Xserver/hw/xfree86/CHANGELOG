@@ -1,3 +1,29 @@
+XFree86 3.9Pd (9 March 1999)
+2313. Add DPMS support to the TGA driver (#2518, Matt Grossman).
+2312. Fix a bug in xaaInitAccel.c that affects disabling offscreen pixmaps
+      (#2519, Andrew Aitchison).
+2311. Some SiS driver fixes/updates (#2517, Juanjo Santamarta).
+2310. Fix a server crash when assiging the primary device (#2516,
+      Alan Hourihane).
+2309. Don't save/restore the VGA colourmap in the glint driver (#2515,
+      Alan Hourihane).
+2308. Fix a problem of using freed data in xgc (#2512, Jeff Anton).
+2307. Make the server fail gracefully when it can't load its base modules
+      (#2511, Alan Hourihane).
+2306. Fix a global declaration clash in panoramiXprocs.c (#2510,
+      Alan Hourihane).
+2305. Fix installation of GLX man pages (based on #2509, Matthieu Herrb).
+2304. Update the Linux/ppc section of xfree86.cf (#2507, Gerd Knorr).
+2303. Add a fbdev module that provides a simple non-accelerated driver that
+      works on top of fbdevhw (#2507, Gerd Knorr).
+2302. Add a fbdevhw module that provides the functions needed to access
+      Linux framebuffer devices (#2507, Gerd Knorr).
+2301. Add a wrapper for mmap and munmap (#2507, Gerd Knorr).
+2300. Fix an XAA FillPoly problem that shows up with the noblank screen
+      saver (#2513, Mark Vojkovich).
+2299. Fix some problems in XAA's 32->24bpp image conversion (Mark Vojkovich).
+2298. Fix padding in the xf24_32bpp layer (#2508, Mark Vojkovich).
+
 XFree86 3.9Pc (2 March 1999)
 2297. Preliminary work on new DGA event support (#2506, Mark Vojkovich).
 2296. Add rewrite of s3virge driver's accel code (#2505, Mark Vojkovich,
@@ -7364,4 +7390,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.696 1999/03/02 02:49:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.697 1999/03/02 10:41:52 dawes Exp $

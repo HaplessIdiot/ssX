@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.18 1998/07/26 09:56:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.19 1998/12/05 14:40:25 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -86,8 +86,6 @@ typedef enum {
     VIDMEM_MMIO        = 0x02	/* memory for I/O use */
 } VidMemFlags;
 
-typedef unsigned long xf86size_t;	/* added for Xinput	(Metrolink merge) */
-typedef signed long xf86ssize_t;	/* added for Xinput	(Metrolink merge) */
 
 #ifdef XF86_OS_PRIVS
 extern void xf86WrapperInit(void);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.11 1999/01/23 09:56:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.12 1999/01/31 12:22:10 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -110,8 +110,8 @@ XAAWritePixmap32To24(
 
 	    while(count >= 4) {
 		*dst = (src[0] & 0x00ffffff) | (src[1] << 24);
-		*dst = (src[1] >> 8) | (src[2] << 16);
-		*dst = (src[2] >> 16) | (src[3] << 8);
+		*dst = ((src[1] >> 8) & 0x0000ffff) | (src[2] << 16);
+		*dst = ((src[2] >> 16) & 0x000000ff) | (src[3] << 8);
 		src += 4;
 		count -= 4;
 	    }
@@ -123,7 +123,7 @@ XAAWritePixmap32To24(
 			*dst = src[1] >> 8;
 			break;
 	    default:	*dst = (src[0] & 0x00ffffff) | (src[1] << 24);
-			*dst = (src[1] >> 8) | (src[2] << 16);
+			*dst = ((src[1] >> 8) & 0x0000ffff) | (src[2] << 16);
 			*dst = src[2] >> 16;
 			break;
 	    }
@@ -137,8 +137,8 @@ XAAWritePixmap32To24(
 
 	    while(count >= 4) {
 		dst[0] = (src[0] & 0x00ffffff) | (src[1] << 24);
-		dst[1] = (src[1] >> 8) | (src[2] << 16);
-		dst[2] = (src[2] >> 16) | (src[3] << 8);
+		dst[1] = ((src[1] >> 8) & 0x0000ffff) | (src[2] << 16);
+		dst[2] = ((src[2] >> 16) & 0x000000ff) | (src[3] << 8);
 		dst += 3;
 		src += 4;
 		count -= 4;
@@ -151,7 +151,7 @@ XAAWritePixmap32To24(
 			dst[1] = src[1] >> 8;
 			break;
 	    default:	dst[0] = (src[0] & 0x00ffffff) | (src[1] << 24);
-			dst[1] = (src[1] >> 8) | (src[2] << 16);
+			dst[1] = ((src[1] >> 8) & 0x0000ffff) | (src[2] << 16);
 			dst[2] = src[2] >> 16;
 			break;
 	    }

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.3 1999/01/26 10:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.4 1999/01/31 12:21:59 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -42,7 +42,7 @@
 static void
 SiSCalcClock(int clock, int max_VLD, unsigned int *vclk)
 {
-    int M, N, P, PSN, VLD, PSNx;
+    int M, N, P /*, PSN*/, VLD /*, PSNx */;
     int bestM, bestN, bestP, bestPSN, bestVLD;
     double bestError, abest = 42.0, bestFout;
     double target;
@@ -74,7 +74,7 @@ SiSCalcClock(int clock, int max_VLD, unsigned int *vclk)
 #define MAX_PSN 0 /* no pre scaler for this chip */
 #define TOLERANCE 0.01	/* search smallest M and N in this tolerance */
   
-  int M_min = 2;
+/*  int M_min = 2; */
   int M_max = 128;
   
 /*  abest=10000.0; */
@@ -306,10 +306,31 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     outb(0x3C4, ExtMiscCont5);
     pReg->sisRegs3C4[ExtMiscCont5] = inb(0x3C5)/* | 0xC0 block writes */;
+    pReg->sisRegs3C4[GraphEng] = inb(0x3C5) | 0x40;
+    pSiS->ValidWidth = TRUE;
+    switch (pScrn->display->virtualX * ((pScrn->depth >> 3) & 3) ) {
+ 	case 1024:
+ 	    outb(0x3C4, GraphEng); 
+ 	    pReg->sisRegs3C4[GraphEng] = (inb(0x3C5) & 0xCF); 
+ 	    break;
+ 	case 2048:
+ 	    outb(0x3C4, GraphEng); 
+ 	    pReg->sisRegs3C4[GraphEng] = (inb(0x3C5) & 0xCF) | 0x10; 
+ 	    break;
+ 	case 4096:
+ 	    outb(0x3C4, GraphEng); 
+ 	    pReg->sisRegs3C4[GraphEng] = (inb(0x3C5) & 0xCF) | 0x20; 
+ 	    break;
+ 	default:
+ 	    outb(0x3C4, GraphEng); 
+ 	    pReg->sisRegs3C4[GraphEng] = (inb(0x3C5) & 0xCF) | 0x30; /* Invalid logical width */
+	    pSiS->ValidWidth = FALSE;
+	    break;
+    }
 
     if (!pSiS->NoAccel) {
     	outb(0x3C4, GraphEng);
-    	pReg->sisRegs3C4[GraphEng] = inb(0x3C5) | 0x40;
+	pReg->sisRegs3C4[GraphEng] |= 0x40;
 	if (pSiS->TurboQueue) {
     	    pReg->sisRegs3C4[GraphEng] |= 0x80;
 	    outb(0x3C4, ExtMiscCont9);
@@ -332,7 +353,6 @@ void
 SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
     SISPtr pSiS = SISPTR(pScrn);
-    int i;
     int vgaIOBase;
     unsigned char temp;
     vgaHWGetIOBase(VGAHWPTR(pScrn));
@@ -374,7 +394,6 @@ void
 SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 {
     SISPtr pSiS = SISPTR(pScrn);
-    int i;
     int vgaIOBase;
     unsigned char temp;
     vgaHWGetIOBase(VGAHWPTR(pScrn));
@@ -460,7 +479,7 @@ SiSHideCursor(ScrnInfoPtr pScrn) {
 static void 
 SiSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-    unsigned char temp, temp2;
+    unsigned char temp2;
 
     outb(0x3C4, 0x05); /* Unlock Registers */
     temp2 = inb(0x3C5);
@@ -489,7 +508,7 @@ SiSSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 static void
 SiSSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 {
-    unsigned char temp, temp2;
+    unsigned char temp2;
 
     outb(0x3C4, 0x05); /* Unlock Registers */
     temp2 = inb(0x3C5);
@@ -601,8 +620,10 @@ SiSMclk()
 { int mclk;
   unsigned char Num, Denum, Base;
     /* Numerator */
+
     read_xr(MemClock0,Num);
     mclk=14318*((Num & 0x7f)+1);
+    
     /* Denumerator */
     read_xr(MemClock1,Denum);
     mclk=mclk/((Denum & 0x0f)+1);
@@ -614,7 +635,7 @@ SiSMclk()
     }
 #endif
     /* Post-scaler. Values depends on SR13 bit 7  */
-    read_xr(ClockBase,Base);
+    outb(0x3C4, ClockBase); Base = inb(0x3C5);
 
     if ( (Base & 0x80)==0 ) {
       mclk = mclk / (((Denum & 0x60) >> 5)+1);

@@ -293,9 +293,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 	unsigned char seq1 = 0 ;
         int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-#ifdef DEBUG
-	ErrorF("SISDisplayPowerManagementSet(%d)\n",PowerManagementMode);
-#endif
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,"SISDisplayPowerManagementSet(%d)\n",PowerManagementMode);
 	outb(vgaIOBase + 4, 0x17);
 	crtc17 = inb(vgaIOBase + 5);
 	outb(0x3C4, 0x11);
@@ -733,9 +731,28 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     outw(0x3C4, 0x8605); /* Unlock registers */
 
     switch (pSiS->Chipset) {
+        case PCI_CHIP_SG86C201:
+        case PCI_CHIP_SG86C202:
+        case PCI_CHIP_SG86C205:
+        case PCI_CHIP_SG86C215:
+        case PCI_CHIP_SG86C225:
+	    pSiS->MaxClock = 135000;	
+	    pSiS->TurboQueue = FALSE; 
+	    break;
+	case PCI_CHIP_SIS5597:
+	    pSiS->MaxClock = 135000;	
+	    pSiS->TurboQueue = FALSE; 
+            xf86DrvMsg(pScrn->scrnIndex, from, "Memory clock is %3.3fMHz\n",SiSMclk()/1000.0);
+    	    if (xf86IsOptionSet(SISOptions, OPTION_NOTURBOQUEUE)) {
+		pSiS->TurboQueue = FALSE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling TurboQueue\n");
+    	    }
+	    break;
 	case PCI_CHIP_SIS6326:
 	case PCI_CHIP_SIS530:
-	    pSiS->TurboQueue = TRUE; /* Turn on for 6326/530 */
+	    pSiS->MaxClock = 175000;	/* XXX Guess, need to check this */
+	    pSiS->TurboQueue = FALSE; /* Turn on for 6326 */
+            xf86DrvMsg(pScrn->scrnIndex, from, "Memory clock is %3.3fMHz\n",SiSMclk()/1000.0);
     	    if (xf86IsOptionSet(SISOptions, OPTION_NOTURBOQUEUE)) {
 		pSiS->TurboQueue = FALSE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Disabling TurboQueue\n");
@@ -858,13 +875,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			    break;
 		    }
 		    break;
-		break;
-	}
     }
-
     xf86DrvMsg(pScrn->scrnIndex, from, "Installed RAM type is %s\n",ramtype);
     xf86DrvMsg(pScrn->scrnIndex, from, "Memory speed is %sMHz\n",mclk);
-    xf86DrvMsg(pScrn->scrnIndex, from, "Memory clock is %3.5fMHz\n",SiSMclk()/1000);
+	break;
+    }
 
     pSiS->PciTag = pciTag(pSiS->PciInfo->bus, pSiS->PciInfo->device,
 			  pSiS->PciInfo->func);
@@ -927,6 +942,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		if ((inb(0x3C5) >> 1) & 3) { 
 		         pScrn->videoRam *= 2;
 		}
+                break;   
 	case PCI_CHIP_SIS6326:
 	case PCI_CHIP_SIS530:
 	outb(0x3C4, RAMSize); /* Get memory size */
@@ -975,7 +991,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Set the min pixel clock */
     pSiS->MinClock = 16250;	/* XXX Guess, need to check this */
-    pSiS->MaxClock = 175000;	/* XXX Guess, need to check this */
     xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
 	       pSiS->MinClock / 1000);
 

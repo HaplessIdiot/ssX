@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.27 1999/02/07 06:18:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.28 1999/02/12 22:51:57 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1331,7 +1331,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		    if (dev || devBus)
 			xf86MsgVerb(X_WARNING, 0,
 			    "%s: More than one matching Device section "
-			    "found: %s\n", devList[j]->identifier);
+			    "found: %s\n",driverName,devList[j]->identifier);
 		    else
 			dev = devList[j];
 		}

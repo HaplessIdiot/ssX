@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.16 1999/01/23 09:56:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.17 1999/01/31 12:22:11 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -392,13 +392,14 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	    xf86ErrorF("\tImage Reads\n");
     }
 
-#define XAAMSG(s) if (serverGeneration == 1) xf86ErrorF(s)
+#define XAAMSG(s) do { if (serverGeneration == 1) xf86ErrorF(s); } while (0)
 
     if((infoRec->Flags & OFFSCREEN_PIXMAPS) && HaveScreenToScreenCopy &&
-		!xf86IsOptionSet(XAAOptions, XAAOPT_OFFSCREEN_PIXMAPS))
+		!xf86IsOptionSet(XAAOptions, XAAOPT_OFFSCREEN_PIXMAPS)) {
 	XAAMSG("\tOffscreen Pixmaps\n");
-    else
+    } else {
 	infoRec->Flags &= ~OFFSCREEN_PIXMAPS;
+    }
 
 
     /************** Mid Level *************/

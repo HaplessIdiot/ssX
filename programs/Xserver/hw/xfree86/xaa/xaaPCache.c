@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.12 1999/01/31 12:22:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.13 1999/02/07 06:18:49 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -632,7 +632,6 @@ XAAInitPixmapCache(
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
    XAAInfoRecPtr infoRec = (XAAInfoRecPtr)data;
    XAAPixmapCachePrivatePtr pCachePriv;
-   static Bool FirstTime = TRUE;
    BoxPtr pBox = REGION_RECTS(areas);
    int nBox = REGION_NUM_RECTS(areas);
    int Num512, Num256, Num128, NumPartial, NumColor, NumMono;
@@ -1041,8 +1040,7 @@ XAAInitPixmapCache(
 	infoRec->CanDoColor8x8 = TRUE;
     }
 
-    if(FirstTime) {
-	FirstTime = FALSE;
+    if(serverGeneration == 1) {
 	xf86ErrorF("\tSetting up tile and stipple cache:\n");
 	if(NumPartial) 
 	   xf86ErrorF("\t\t%i %ix%i slots\n", 
@@ -1055,7 +1053,7 @@ XAAInitPixmapCache(
     } 
 
     if(!(NumPartial | Num128 | Num256 | Num512 | NumColor | NumMono)) {
-	if(FirstTime)
+	if(serverGeneration == 1)
 	   xf86ErrorF("\t\tNot enough video memory for pixmap cache\n");
     } else infoRec->UsingPixmapCache = TRUE;
 }

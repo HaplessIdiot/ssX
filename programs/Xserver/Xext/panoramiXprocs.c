@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.6 1999/01/13 08:30:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.7 1999/02/01 11:55:51 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -52,11 +52,6 @@ extern void Swap32Write();
 
 static ClientPtr onlyClient;
 static Bool grabbingClient = FALSE;
-#ifdef __alpha /* THIS NEEDS TO BE LONG !!!! Change driver! */
-int	*checkForInput[2];
-#else
-long	*checkForInput[2];
-#endif
 extern int connBlockScreenStart;
 
 extern int (* InitialVector[3]) ();
@@ -78,14 +73,14 @@ static int nextFreeClientID; /* always MIN free client ID */
 
 static int	nClients;	/* number active clients */
 
-char isItTimeToYield;
+extern char isItTimeToYield;
 
 /* Various of the DIX function interfaces were not designed to allow
  * the client->errorValue to be set on BadValue and other errors.
  * Rather than changing interfaces and breaking untold code we introduce
  * a new global that dispatch can use.
  */
-XID clientErrorValue;   /* XXX this is a kludge */
+extern XID clientErrorValue;   /* XXX this is a kludge */
 
 
 #define SAME_SCREENS(a, b) (\

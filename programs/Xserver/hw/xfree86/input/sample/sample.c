@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.4 1999/01/17 10:54:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.5 1999/01/26 05:54:12 dawes Exp $ */
 
 #define _SAMPLE_C_
 /*****************************************************************************
@@ -33,6 +33,7 @@
 
 #include <misc.h>
 #include <xf86.h>
+#define NEED_XF86_TYPES
 #include <xf86_ansic.h>
 #include <xf86_OSproc.h>
 #include <xf86Xinput.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.6 1998/11/01 12:36:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.7 1998/12/06 06:08:40 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -703,7 +703,7 @@ XAAFillPolygonStippled(
 	return;
     }
 
-    origin = coordToInt(pDraw->x, pDraw->y);
+    origin = *((int *)&pDraw->x);
 
     switch( XAAIsEasyPolygon(ptsIn, count, &pGC->pCompositeClip->extents,
 		 origin, &topPoint, &y, &maxy, shape) ) {
@@ -850,7 +850,7 @@ XAAFillPolygonTiled(
 	return;
     }
 
-    origin = coordToInt(pDraw->x, pDraw->y);
+    origin = *((int *)&pDraw->x);
 
     switch( XAAIsEasyPolygon(ptsIn, count, &pGC->pCompositeClip->extents,
 		 origin, &topPoint, &y, &maxy, shape) ) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.99 1999/02/13 16:44:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.100 1999/02/14 13:04:41 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -195,7 +195,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #endif
 	
     /* Force load mandatory base modules */
-    xf86LoadModules(baseModules, NULL);
+    if (!xf86LoadModules(baseModules, NULL))
+	FatalError("Unable to load required base modules, Exiting...\n");
     
 #endif
 

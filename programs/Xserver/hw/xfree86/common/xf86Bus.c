@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.14 1999/02/16 09:46:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.15 1999/02/19 21:27:00 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1324,6 +1324,9 @@ xf86EnableAccess(xf86ScrnAccessPtr pScAcc)
 static void 
 xf86DisableAccess(void)
 {
+#if 0 /* kraxel */
+    return;
+#endif
     DisablePciAccess();
 }
 

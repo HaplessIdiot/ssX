@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.205 1999/02/28 11:19:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.206 1999/03/01 02:13:58 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -74,6 +74,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef XF86VgaHw
 #define XF86VgaHw		YES
 #endif
+/* fbdevhw module */
+#ifndef XF86FBDevHw
+#define XF86FBDevHw		YES
+#endif
 /* XAA module */
 #ifndef XF86XAA
 #define XF86XAA			YES
@@ -98,7 +102,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
 #define XF86CardDrivers		mga glint tga s3virge sis cirrus tseng \
-				trident chips vga
+				trident chips fbdev vga
 #endif
 #endif
 
@@ -126,6 +130,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef XF86VgaHw
 #define XF86VgaHw		YES
 #endif
+/* fbdevhw module */
+#ifndef XF86FBDevHw
+#define XF86FBDevHw		YES
+#endif
+/* fbdevhw module */
 /* XAA module */
 #ifndef XF86XAA
 #define XF86XAA			YES
@@ -172,9 +181,9 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 
 /*
- * LinuxPPC
+ * PPC (currently Linux and LynxOS)
  */
-#if defined(PpcArchitecture) && defined(LinuxArchitecture)
+#if defined(PpcArchitecture)
 #ifndef XF86Server
 #define XF86Server		YES
 #endif
@@ -205,6 +214,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* vgahw module */
 #ifndef XF86VgaHw
 #define XF86VgaHw		YES
+#endif
+/* fbdevhw module */
+#ifndef XF86FBDevHw
+#define XF86FBDevHw		YES
 #endif
 /* XAA module */
 #ifndef XF86XAA
@@ -245,120 +258,6 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 #endif
 
-/*
- * For LynxOS/PowerPC platforms, the default is to build all modules which
- * are supported on this platform.
- */
-#if defined(PpcArchitecture) && defined(LynxOSArchitecture)
-#ifndef XF86Server
-#define XF86Server		YES
-#endif
-/* 1bpp module */
-#ifndef XF1Bpp
-#define XF1Bpp			YES
-#endif
-/* 4bpp module */
-#ifndef XF4Bpp
-#define XF4Bpp			YES
-#endif
-/* 8/32bpp overlay module */
-#ifndef XF8_32Bpp
-#define XF8_32Bpp		YES
-#endif
-/* 8/16bpp dual fb module */
-#ifndef XF8_16Bpp
-#define XF8_16Bpp		YES
-#endif
-/* 24/32bpp conversion module */
-#ifndef XF24_32Bpp
-#define XF24_32Bpp		YES
-#endif
-/* shadow fb module */
-#ifndef XFShadowFB
-#define XFShadowFB		YES
-#endif
-/* vgahw module */
-#ifndef XF86VgaHw
-#define XF86VgaHw		YES
-#endif
-/* XAA module */
-#ifndef XF86XAA
-#define XF86XAA			YES
-#endif
-/* ramdac module */
-#ifndef XF86Ramdac
-#define XF86Ramdac		YES
-#endif
-/* I2C module */
-#ifndef XF86I2C
-#define XF86I2C			YES
-#endif
-/* DDC module */
-#ifndef XF86DDC
-#define XF86DDC			YES
-#endif
-/* RAC (Resource Access Control) module */
-#ifndef XF86RAC
-#define XF86RAC			YES
-#endif
-
-/* Pure PCI drivers should go first */
-#ifndef XF86CardDrivers
-#define XF86CardDrivers		vga
-#endif
-#endif
-
-#if XF68FBDevServer || XF68LoaderServer
-# ifndef XF68FBDevIPLAN2p2
-#  define XF68FBDevIPLAN2p2	YES
-# endif
-# ifndef XF68FBDevIPLAN2p4
-#  define XF68FBDevIPLAN2p4	YES
-# endif
-# ifndef XF68FBDevIPLAN2p8
-#  define XF68FBDevIPLAN2p8	YES
-# endif
-# ifndef XF68FBDevILBM
-#  define XF68FBDevILBM		YES
-# endif
-# ifndef XF68FBDevAFB
-#  define XF68FBDevAFB		YES
-# endif
-# ifndef XF68FBDevCFB8
-#  define XF68FBDevCFB8		YES
-# endif
-# ifndef XF68FBDevCFB16
-#  define XF68FBDevCFB16	NO
-# endif
-# ifndef XF68FBDevCFB32
-#  define XF68FBDevCFB32	NO
-# endif
-#else
-# ifndef XF68FBDevIPLAN2p2
-#  define XF68FBDevIPLAN2p2	NO
-# endif
-# ifndef XF68FBDevIPLAN2p4
-#  define XF68FBDevIPLAN2p4	NO
-# endif
-# ifndef XF68FBDevIPLAN2p8
-#  define XF68FBDevIPLAN2p8	NO
-# endif
-# ifndef XF68FBDevILBM
-#  define XF68FBDevILBM		NO
-# endif
-# ifndef XF68FBDevAFB
-#  define XF68FBDevAFB		NO
-# endif
-# ifndef XF68FBDevCFB8
-#  define XF68FBDevCFB8		NO
-# endif
-# ifndef XF68FBDevCFB16
-#  define XF68FBDevCFB16	NO
-# endif
-# ifndef XF68FBDevCFB32
-#  define XF68FBDevCFB32	NO
-# endif
-#endif
 
 /*
  * The default is to install the X servers setuid-root on most OSs.
@@ -373,23 +272,14 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /*
  * The server-side of PEX is not 64-bit clean.
  */
-#ifndef BuildPextExt
-#ifdef AlphaArchitecture
-#define BuildPexExt		NO
-#endif
-#endif
-
-/*
- * PEX doesn't work for 1-bit and 4-bit servers
- */
-#if !defined(BuildPexExt) || BuildPexExt
-#undef BuildPexExt
-#if XF86Server
+#if !defined(BuildPexExt)
+#if XF86Server && !defined(AlphaArchitecture)
 #define BuildPexExt		YES
 #else
 #define BuildPexExt		NO
 #endif
 #endif
+
 
 /*
  * Build GLX server interface
@@ -429,10 +319,9 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 
 /*
- * XIE doesn't work for our 1-bit and 4-bit servers
+ * XIE
  */
-#if !defined(BuildXIE) || BuildXIE
-#undef BuildXIE
+#ifndef BuildXIE
 #if XF86Server
 #define BuildXIE		YES
 #else

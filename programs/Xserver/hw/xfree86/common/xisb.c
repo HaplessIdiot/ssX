@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xisb.c,v 1.2 1998/12/06 06:08:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xisb.c,v 1.3 1999/01/14 13:04:11 dawes Exp $ */
 
 /*
 	X Input Serial Buffer routines for use in any XInput driver that accesses
@@ -40,6 +40,7 @@
 #include <xf86.h>
 #include <xf86Version.h>
 #include <xf86_OSproc.h>
+#include <xf86_OSlib.h>
 #include <xf86Xinput.h>
 #include "xisb.h"
 

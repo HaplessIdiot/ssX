@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.31 1999/01/26 05:54:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.32 1999/01/31 12:22:05 dawes Exp $ */
 
 
 
@@ -56,6 +56,9 @@ struct _xf86dirent {		/* types in struct dirent/direct: */
 };
 typedef struct _xf86dirent XF86DIRENT;
 
+typedef unsigned long xf86size_t;
+typedef signed long xf86ssize_t;
+
 /* for setvbuf */
 #define XF86_IONBF    1
 #define XF86_IOFBF    2
@@ -66,6 +69,15 @@ typedef struct _xf86dirent XF86DIRENT;
 #define XF86_O_WRONLY	0x0001
 #define XF86_O_RDWR	0x0002
 #define XF86_O_CREAT	0x0200
+
+/* for mmap */
+#define XF86_PROT_EXEC		0x0001
+#define XF86_PROT_READ		0x0002
+#define XF86_PROT_WRITE		0x0004
+#define XF86_PROT_NONE		0x0008
+#define XF86_MAP_FIXED		0x0001
+#define XF86_MAP_SHARED		0x0002
+#define XF86_MAP_PRIVATE	0x0004
 
 /* for fseek */
 #define XF86_SEEK_SET	0
@@ -97,6 +109,7 @@ typedef struct _xf86dirent XF86DIRENT;
 #define xf86_EROFS		1018
 #define xf86_ETXTBSY		1019
 #define xf86_ENOTTY		1020
+#define xf86_ENOSYS		1021
 
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
 
@@ -252,6 +265,8 @@ typedef struct _xf86dirent XF86DIRENT;
 #define fpos_t			XF86fpos_t
 #define DIR			XF86DIR
 #define DIRENT			XF86DIRENT
+#define size_t			xf86size_t
+#define ssize_t			xf86ssize_t
 
 /*
  * There should be no need to #undef any of these.  If they are already
@@ -275,10 +290,19 @@ typedef struct _xf86dirent XF86DIRENT;
 #define ioctl(a,b,c)		xf86ioctl(a,b,c)
 #define read(a,b,c)		xf86read(a,b,c)
 #define write(a,b,c)		xf86write(a,b,c)
+#define mmap(a,b,c,d,e,f)	xf86mmap(a,b,c,d,e,f)
+#define munmap(a,b)		xf86munmap(a,b)
 #define O_RDONLY		XF86_O_RDONLY
 #define O_WRONLY		XF86_O_WRONLY
 #define O_RDWR			XF86_O_RDWR
 #define O_CREAT			XF86_O_CREAT
+#define PROT_EXEC		XF86_PROT_EXEC
+#define PROT_READ		XF86_PROT_READ
+#define PROT_WRITE		XF86_PROT_WRITE
+#define PROT_NONE		XF86_PROT_NONE
+#define MAP_FIXED		XF86_MAP_FIXED
+#define MAP_SHARED		XF86_MAP_SHARED
+#define MAP_PRIVATE		XF86_MAP_PRIVATE
 #ifndef __EMX__
 #define errno			xf86errno
 #endif
@@ -303,6 +327,7 @@ typedef struct _xf86dirent XF86DIRENT;
 #define EROFS		xf86_EROFS
 #define ETXTBSY		xf86_ETXTBSY
 #define ENOTTY		xf86_ENOTTY
+#define ENOSYS		xf86_ENOSYS
 
 /* Some ANSI macros */
 #define FILENAME_MAX		1024

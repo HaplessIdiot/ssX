@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.41 1999/01/31 12:22:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.42 1999/03/01 02:15:11 dawes Exp $ */
 
 /*
  *
@@ -1180,6 +1180,9 @@ LoaderErrorMsg(const char *name, const char *modname, int errmaj, int errmin)
 		break;
 	case LDR_INVALID:
 		msg = "invalid module";
+		break;
+	case LDR_BADOS:
+		msg = "module doesn't support this OS";
 		break;
 	default:
 		msg = "uknown error";

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.12 1999/01/26 05:53:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.13 1999/01/31 12:21:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -86,7 +86,8 @@ typedef enum {
     LDR_NOHARDWARE,	/* could not query/initialize the hardware device */
     LDR_MISMATCH,	/* the module didn't match the spec'd requirments */
     LDR_BADUSAGE,	/* LoadModule is called with bad arguments */
-    LDR_INVALID		/* The module doesn't have a valid ModuleData object */
+    LDR_INVALID,	/* The module doesn't have a valid ModuleData object */
+    LDR_BADOS		/* The module doesn't support the OS */
 } LoaderErrorCode;
 
 /*
@@ -169,6 +170,7 @@ void LoaderRefSymLists(const char **, ...);
 void LoaderReqSymLists(const char **, ...);
 void LoaderReqSymbols(const char *, ...);
 int LoaderCheckUnresolved(int);
+void LoaderGetOS(const char **name, int *major, int *minor, int *teeny);
 
 typedef pointer (*ModuleSetupProc)(pointer, pointer, int *, int *);
 typedef void (*ModuleTearDownProc)(pointer);

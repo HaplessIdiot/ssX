@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.30 1999/01/17 10:54:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.31 1999/01/26 05:54:12 dawes Exp $ */
 
 /*
  *
@@ -206,6 +206,8 @@ int	numloaders=sizeof(funcs)/sizeof(loader_funcs);
 void
 LoaderInit(void)
 {
+    const char *osname = NULL;
+
     LoaderAddSymbols(-1, -1, miLookupTab ) ;
     LoaderAddSymbols(-1, -1, xfree86LookupTab ) ;
     LoaderAddSymbols(-1, -1, dixLookupTab ) ;
@@ -227,6 +229,11 @@ LoaderInit(void)
     xf86ErrorFVerb(2, "\t%s : %d.%d\n", ABI_CLASS_FONT,
 			GET_ABI_MAJOR(LoaderVersionInfo.fontVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.fontVersion));
+
+    LoaderGetOS(&osname, NULL, NULL, NULL);
+    if (osname)
+	xf86MsgVerb(X_INFO, 2, "Loader running on %s\n", osname);
+
 #if defined(linux) && defined(__alpha__)
     /*
      * The glibc malloc uses mmap for large allocations anyway. This breaks
