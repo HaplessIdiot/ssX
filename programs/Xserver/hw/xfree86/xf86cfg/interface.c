@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.7 2000/10/20 14:59:05 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.10 2000/11/30 20:55:17 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -447,6 +447,7 @@ AskConfig(void)
     if (shell_cf == NULL) {
 	Arg args[1];
 	char *l, *label;
+	int len;
 
 	shell_cf = XtCreatePopupShell("quit", transientShellWidgetClass,
 				      toplevel, NULL, 0);
@@ -459,8 +460,8 @@ AskConfig(void)
 	XSetWMProtocols(DPY, XtWindow(shell_cf), &wm_delete_window, 1);
 	XtSetArg(args[0], XtNlabel, &l);
 	XtGetValues(dialog, args, 1);
-	label = XtMalloc(strlen(l) + strlen(XF86CONFIG));
-	XmuSnprintf(label, sizeof(label), "%s\n", XF86CONFIG);
+	label = XtMalloc(len = (strlen(l) + strlen(XF86CONFIG) + 1));
+	XmuSnprintf(label, len, "%s\n", XF86CONFIG);
 	strcat(label, l);
 	XtSetArg(args[0], XtNlabel, label);
 	XtSetValues(dialog, args, 1);

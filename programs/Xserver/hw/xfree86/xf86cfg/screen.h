@@ -44,6 +44,7 @@ void RemoveScreen(xf86cfgDevice*, xf86cfgDevice*);
 void DrawScreen(Display*, Drawable, int, int, int, int, Bool, int);
 void DrawScreenMask(Display*, Drawable, GC, int, int, int, int, int);
 void CreateScreenWidget(xf86cfgScreen*);
+void SetScreenRotate(xf86cfgScreen*);
 
 void AdjustScreenUI(void);
 void UpdateScreenUI(void);

@@ -56,17 +56,11 @@ static int *mon_widths, *mon_heights;
  * Implementation
  */
 void
-CreateScreenWidget(xf86cfgScreen *screen)
+SetScreenRotate(xf86cfgScreen *screen)
 {
     static char *Rotate = "Rotate", *_CW = "CW", *_CCW = "CCW";
     int rotate = 0;
     XF86OptionPtr option, options;
-    Widget w = XtCreateWidget("screen", simpleWidgetClass,
-			      XtParent(computer.cpu), NULL, 0);
-
-    /* When this function is called, the monitor and card fields should have
-     * been already set.
-     */
 
     /* This is the only place where xf86cfg is intrusive, and deletes options
      * added by the user directly in the config file. The "Rotate" option
@@ -108,7 +102,15 @@ CreateScreenWidget(xf86cfgScreen *screen)
 			     XtNewString(Rotate),
 			     XtNewString(rotate > 0 ? _CW : _CCW));
     screen->rotate = rotate;
+}
 
+void
+CreateScreenWidget(xf86cfgScreen *screen)
+{
+    Widget w = XtCreateWidget("screen", simpleWidgetClass,
+			      XtParent(computer.cpu), NULL, 0);
+
+    SetScreenRotate(screen);
     XtRealizeWidget(w);
     screen->widget = w;
     screen->column = screen->row = -1;
