@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.6 1998/04/26 16:05:08 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmap.h,v 3.7 1998/06/04 16:43:40 hohndel Exp $ */
 
 
 #ifdef VGA256
@@ -50,7 +50,3 @@
 #ifndef XFree86LOADER
 #define xf86XAAScreenInit XF86NAME(xf86XAAScreenInit)
 #endif
-/* xf86plane.c */
-#define xf86CopyPlane XF86NAME(xf86CopyPlane)
-#define xf86CopyPlane1toN XF86NAME(xf86CopyPlane1toN)
-
