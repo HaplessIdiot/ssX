@@ -1,60 +1,60 @@
 XFree86 3.9Pn (16 May 1999)
-2659. Add a SetClientVersion request to the DGA extension (David Dawes).
-2658. Change DGA initialisation ordering in the MGA driver (#2796,
+2663. Add a SetClientVersion request to the DGA extension (David Dawes).
+2662. Change DGA initialisation ordering in the MGA driver (#2796,
       Mark Vojkovich).
-2657. Turn on DGA pixmaps in xinerama since it insists on duplicating
+2661. Turn on DGA pixmaps in xinerama since it insists on duplicating
       the rendering protocol on all heads despite the DGA pixmaps existing
       only on a single head (#2795, Mark Vojkovich).
-2656. Fix some xinerama problems with 8+32 overlays (#2795, Mark Vojkovich).
-2655. Add XAA acceleration for DGA pixmaps (#2795, Mark Vojkovich).
-2654. Add PCI IDs for new NVIDIA chipsets (#2794, Mark Vojkovich).
-2653. Change the default cursor colour in the app-defaults for editres
+2660. Fix some xinerama problems with 8+32 overlays (#2795, Mark Vojkovich).
+2659. Add XAA acceleration for DGA pixmaps (#2795, Mark Vojkovich).
+2658. Add PCI IDs for new NVIDIA chipsets (#2794, Mark Vojkovich).
+2657. Change the default cursor colour in the app-defaults for editres
       (#2793, Paulo Cesar Pereira de Andrade).
-2652. Xedit updates, including a new Xedit-color.ad file, to show some of
+2656. Xedit updates, including a new Xedit-color.ad file, to show some of
       the new features of Xaw, and some improvements to the ispell interface
       (#2793, Paulo Cesar Pereira de Andrade).
-2651. Xaw updates, including some fixes, optimizations, and additional
+2655. Xaw updates, including some fixes, optimizations, and additional
       documentation (#2793, Paulo Cesar Pereira de Andrade).
-2650. Working mouse support with the new input device code (David Dawes).
-2649. Fix for sysv_video.c on Interactive UNIX (#2792, Michael Rohleder).
-2648. Fix handling of xkbcomp's -I flag (Stanislav Meduna).
-2647. CID updates (third submission) (#2769, Ivan Bach, SGI).
-2646. Kludge to allow a server with the glint driver to link without XInput
+2654. Working mouse support with the new input device code (David Dawes).
+2653. Fix for sysv_video.c on Interactive UNIX (#2792, Michael Rohleder).
+2652. Fix handling of xkbcomp's -I flag (Stanislav Meduna).
+2651. CID updates (third submission) (#2769, Ivan Bach, SGI).
+2650. Kludge to allow a server with the glint driver to link without XInput
       (#2788, Marc La France).
-2645. Remove unused dacSpeeds field from the ScrnInfoRec (#2788,
+2649. Remove unused dacSpeeds field from the ScrnInfoRec (#2788,
       Marc La France).
-2644. Add an option to the colourmap code to allow a driver's LoadPalette()
+2648. Add an option to the colourmap code to allow a driver's LoadPalette()
       to be called even when switched out (#2788, Marc La France).
-2643. Add more reasons for rejecting a mode (#2788, Marc La France).
-2642. Factor in the log verbosity when reporting the verbosity to a driver
+2647. Add more reasons for rejecting a mode (#2788, Marc La France).
+2646. Factor in the log verbosity when reporting the verbosity to a driver
       (#2788, Marc La France).
-2641. Allow xf86GetClocks() to be called with NULL ProtectRegs() and
+2645. Allow xf86GetClocks() to be called with NULL ProtectRegs() and
       BlankScreen() functions (#2788, Marc La France).
-2640. When deleting a screen, also free its mode lists and options (#2788,
+2644. When deleting a screen, also free its mode lists and options (#2788,
       Marc La France).
-2639. Allow a driver to determine if -probeonly was specified (#2788,
+2643. Allow a driver to determine if -probeonly was specified (#2788,
       Marc La France).
-2638. Fix a large jump in changelog numbering that happened a little while
+2642. Fix a large jump in changelog numbering that happened a little while
       ago (#2788, Marc La France).
-2637. Various warning and include fixes (#2788, Marc La France).
-2636. Xterm patch #103 (#2786, Thomas Dickey).
-2635. SiS driver updates, including fixing the SetMClk option, change solid
+2641. Various warning and include fixes (#2788, Marc La France).
+2640. Xterm patch #103 (#2786, Thomas Dickey).
+2639. SiS driver updates, including fixing the SetMClk option, change solid
       lines from bresenham to two-point, correct a clippling bug, and change
       the verbose level of some messages (#2784, 2785, Juanjo Santamarta).
-2634. Fix a server loop that can happen when VT switching while a grab is
+2638. Fix a server loop that can happen when VT switching while a grab is
       in progress (#2782, Edward Wang).
-2633. Xterm patch #102 (#2778, Thomas Dickey).
-2632. Fix some spelling errors in Xlib.h (#2775, Itai Nahshon).
-2631. Add auto-detection of Debian to imake (#2774, Sven Luther).
-2630. SiS driver updates, including turning on solid line acceleration,
+2637. Xterm patch #102 (#2778, Thomas Dickey).
+2636. Fix some spelling errors in Xlib.h (#2775, Itai Nahshon).
+2635. Add auto-detection of Debian to imake (#2774, Sven Luther).
+2634. SiS driver updates, including turning on solid line acceleration,
       remove GXCOPY_ONLY for Mono8x8 patterns, change mmio pointers to
       volatile to avoid optimization problems, use xaarop.h, fix offscreen
       memory init to avoid exceeding the accelerator's address range
       (#2772, Alan Hourihane).
-2629. Fix build problems with the v4l driver on some systems (based on #2771,
+2633. Fix build problems with the v4l driver on some systems (based on #2771,
       Gerd Knorr, and a suggestion from David Woodhouse).
-2628. Xterm patch #101 (#2770, Thomas Dickey).
-2627. Fix some more Xinerarma bugs (#2766, 2768, Mark Vojkovich).
+2632. Xterm patch #101 (#2770, Thomas Dickey).
+2631. Fix some more Xinerarma bugs (#2766, 2768, Mark Vojkovich).
 2630. Fix the use of va_lists in the logging code (David Dawes).
 
 XFree86 3.9Pm (9 May 1999)
@@ -8019,4 +8019,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.751 1999/05/16 10:12:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.752 1999/05/16 13:24:53 dawes Exp $
