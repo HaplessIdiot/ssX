@@ -1,5 +1,5 @@
 /* $XConsortium: fLineV.s,v 1.2 94/03/29 11:19:15 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineV.s,v 3.0 1994/07/24 11:58:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineV.s,v 3.1 1994/08/31 04:49:26 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -42,15 +42,9 @@ PERFORMANCE OF THIS SOFTWARE.
 
 
 	SEG_TEXT
-#ifdef OLDVGA
-GLOBL	GLNAME(fastcfbVertS)
-	ALIGNTEXT4
-GLNAME(fastcfbVertS):
-#else
 GLOBL	GLNAME(fastvga256VertS)
 	ALIGNTEXT4
 GLNAME(fastvga256VertS):
-#endif
 	PUSH_L	(EBP)
 	MOV_L	(ESP,EBP)
 	PUSH_L	(EBX)
