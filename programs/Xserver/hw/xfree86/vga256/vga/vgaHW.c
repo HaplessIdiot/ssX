@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.2 1994/05/31 08:21:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.3 1994/05/31 14:24:05 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -275,7 +275,7 @@ vgaSaveScreen (pScreen, on)
     else    state |= 0x20;
     
     /*
-     * turn off srceen if necessary
+     * turn off screen if necessary
      */
     (*vgaSaveScreenFunc)(SS_START);
     outw(0x3C4, 0x0100);              /* syncronous reset */
