@@ -1,6 +1,14 @@
-SRCS = fonttosfnt.c read.c write.c struct.c util.c
+XCOMM $XFree86$
 
-OBJS = fonttosfnt.o read.o write.o struct.o util.o
+#if !HasSetenv
+    SETENV_SRCS = env.c
+    SETENV_OBJS = env.o
+ SETENV_DEFINES = -DNEED_SETENV
+#endif
+
+SRCS = fonttosfnt.c read.c write.c struct.c util.c $(SETENV_SRCS)
+
+OBJS = fonttosfnt.o read.o write.o struct.o util.o $(SETENV_OBJS)
 
 FONTENC_INCS = -I$(BUILDINCDIR)/X11/fonts
 FONTENC_LIBS = -lfontenc

@@ -19,9 +19,11 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "hash.h"
 #include "list.h"
 

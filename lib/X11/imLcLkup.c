@@ -29,7 +29,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imLcLkup.c,v 3.6 2001/08/13 21:46:46 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcLkup.c,v 3.8 2003/06/23 17:35:43 eich Exp $ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>
@@ -82,9 +82,9 @@ _XimLocalMbLookupString(xic, ev, buffer, bytes, keysym, status)
     } else { /* Throughed Event */
 	ret = _XimLookupMBText(ic, ev, buffer, bytes, keysym, NULL);
 	if(ret > 0) {
-	    if (ret > bytes)
+	    if (ret > bytes) {
 		if (status) *status = XBufferOverflow;
-	    else if (keysym && *keysym != NoSymbol) {
+	    } else if (keysym && *keysym != NoSymbol) {
 		if(status) *status = XLookupBoth;
 	    } else {
 		if(status) *status = XLookupChars;
@@ -142,9 +142,9 @@ _XimLocalWcLookupString(xic, ev, buffer, wlen, keysym, status)
     } else { /* Throughed Event */
 	ret = _XimLookupWCText(ic, ev, buffer, wlen, keysym, NULL);
 	if(ret > 0) {
-	    if (ret > wlen)
+	    if (ret > wlen) {
 		if (status) *status = XBufferOverflow;
-	    else if (keysym && *keysym != NoSymbol) {
+	    } else if (keysym && *keysym != NoSymbol) {
 		if(status) *status = XLookupBoth;
 	    } else {
 		if(status) *status = XLookupChars;
@@ -201,9 +201,9 @@ _XimLocalUtf8LookupString(xic, ev, buffer, bytes, keysym, status)
     } else { /* Throughed Event */
 	ret = _XimLookupUTF8Text(ic, ev, buffer, bytes, keysym, NULL);
 	if(ret > 0) {
-	    if (ret > bytes)
+	    if (ret > bytes) {
 		if (status) *status = XBufferOverflow;
-	    else if (keysym && *keysym != NoSymbol) {
+	    } else if (keysym && *keysym != NoSymbol) {
 		if(status) *status = XLookupBoth;
 	    } else {
 		if(status) *status = XLookupChars;

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XGetVers.c,v 3.3 2001/12/14 19:55:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xi/XGetVers.c,v 3.5 2003/07/07 15:34:22 eich Exp $ */
 
 /***********************************************************************
  *
@@ -75,7 +75,7 @@ XExtensionVersion
 
     LockDisplay (dpy);
     ext = _XiGetExtensionVersion (dpy, name);
-    if (ext != NoSuchExtension) { /* This is unlocked in _XiCheckExtInit() */
+    if (ext != (XExtensionVersion *) NoSuchExtension) {
 	UnlockDisplay (dpy);
 	SyncHandle();
     }

@@ -20,7 +20,11 @@
   THE SOFTWARE.
 */
 
-int bitmapIdentify(char *filename, char **xlfd);
-    
+/* $XFree86$ */
 
-    
+#ifndef _MKS_IDENT_H_
+#define _MKS_IDENT_H_ 1
+
+int bitmapIdentify(char *filename, char **xlfd);
+
+#endif /* _MKS_IDENT_H_ */

@@ -19,10 +19,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+/* $XFree86$ */
 
-#if defined(Linux)
+#if defined(linux) && !defined(_GNU_SOURCE)
 /* for fwrite_unlocked and fread_unlocked */
-#define _GNU_SOURCE
+#define _GNU_SOURCE 1
 #endif
 
 #include <stdio.h>
@@ -211,7 +212,7 @@ writeFile(char *filename, FontPtr font)
     int rc;
     FILE *out;
     unsigned tables[15];
-    int head_position;
+    int head_position = 0;
     int full_length;
     int (*(table_writers[15]))(FILE*, FontPtr);
     int i, j;

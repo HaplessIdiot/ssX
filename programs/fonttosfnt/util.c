@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/fonttosfnt/util.c,v 1.5 2003/07/07 17:06:20 tsi Exp $ */
 
 #include <time.h>
 #include <string.h>
@@ -54,6 +54,11 @@ THE SOFTWARE.
 
 /* That's in POSIX */
 #define HAVE_TZSET
+
+#ifdef NEED_SETENV
+extern int setenv(const char *name, const char *value, int overwrite);
+extern void unsetenv(const char *name);
+#endif
 
 char*
 sprintf_reliable(char *f, ...)
@@ -348,7 +353,6 @@ char *
 faceEncoding(FT_Face face)
 {
     BDF_PropertyRec p1, p2;
-    char *e;
     int rc;
 
     rc = FT_Get_BDF_Property(face, "CHARSET_REGISTRY", &p1);

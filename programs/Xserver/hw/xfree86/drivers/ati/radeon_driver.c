@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.97 2003/07/01 15:56:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.98 2003/07/02 17:31:29 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1379,12 +1379,12 @@ static void RADEONQueryConnectedDisplays(ScrnInfoPtr pScrn, xf86Int10InfoPtr pIn
 	    /* always keep internal TMDS as primary head */
 	    if (pRADEONEnt->MonType1 == MT_DFP || 
 		pRADEONEnt->MonType2 == MT_DFP) {
-		int tmp = pRADEONEnt->MonType1;
+		int tmp1 = pRADEONEnt->MonType1;
 		xf86MonPtr MonInfo = pRADEONEnt->MonInfo1;
 		pRADEONEnt->MonInfo1 = pRADEONEnt->MonInfo2;
 		pRADEONEnt->MonInfo2 = MonInfo;
 		pRADEONEnt->MonType1 = pRADEONEnt->MonType2;
-		pRADEONEnt->MonType2 = tmp;
+		pRADEONEnt->MonType2 = tmp1;
 		if ((pRADEONEnt->MonType1 == MT_CRT) || 
 		    (pRADEONEnt->MonType2 == MT_CRT)) {
 		    pRADEONEnt->ReversedDAC ^= 1;

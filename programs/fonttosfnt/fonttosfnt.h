@@ -19,6 +19,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+/* $XFree86$ */
+
+#ifndef _FONTTOSFNT_H_
+#define _FONTTOSFNT_H_ 1
 
 #include <stdarg.h>
 #include "freetype/freetype.h"
@@ -134,7 +138,7 @@ typedef struct _Cmap {
 
 FontPtr makeFont(void);
 StrikePtr makeStrike(FontPtr, int, int);
-BitmapPtr makeBitmap(StrikePtr, int, 
+BitmapPtr makeBitmap(StrikePtr, int,
                      int, int, int, int, int, int,
                      char*, int);
 IndexSubTablePtr makeIndexSubTables(StrikePtr, CmapPtr);
@@ -169,3 +173,5 @@ int faceWeight(FT_Face);
 int faceWidth(FT_Face);
 int faceItalicAngle(FT_Face);
 int degreesToFraction(int, int*, int*);
+
+#endif /* _FONTTOSFNT_H_ */
