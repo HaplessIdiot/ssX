@@ -1,0 +1,11 @@
+XCOMM $XFree86$
+
+SRCS = stormdwg.c
+OBJS = stormdwg.o
+
+PROGRAM = ProgramTargetName(stormdwg)
+
+AllTarget($(PROGRAM))
+NormalProgramTarget(stormdwg,$(OBJS),NullParameter,NullParameter,NullParameter)
+
+DependTarget()
