@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/load.c,v 1.1 2000/10/05 18:05:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -96,7 +96,7 @@ XftLoadFont (Display *dpy, XftFontName *name)
     font->descent = descent * font->size / (64 * div);
     font->ascent = ascent * font->size / (64 * div);
     font->height = height * font->size / (64 * div);
-    font->max_advance_width = font->face->max_advance_width * font->size / (64 * div);
+    font->max_advance_width = font->face->max_advance_width * font->size / (64 * font->face->units_per_EM);
     
 #if 0
     if ( FT_Set_Char_Size (font->face, 0, font->size, 72, 72))
