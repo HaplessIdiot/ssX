@@ -1,4 +1,6 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 448. Make linux/int10 module complain when SystemV IPC isn't configured
+      into the kernel (Marc La France).
  447. Add new offscreen frame bufffer manager functions for managing linear
       offscreen areas (Mark Vojkovich).
  446. int10 fixes and remove checksum verification (Marc La France).
@@ -10862,4 +10864,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1243 2000/07/13 21:31:32 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1244 2000/07/14 22:40:32 mvojkovi Exp $
