@@ -1,5 +1,6 @@
 /*
  * $XConsortium: Panner.c,v 1.49 94/04/17 20:12:31 kaleb Exp $
+ * $XFree86$
  *
 Copyright (c) 1989, 1994  X Consortium
 
@@ -42,6 +43,10 @@ extern Bool XmuDistinguishablePixels(); /* not defined in any Xmu headers */
 
 #if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
 extern double atof(char *);
+#else
+#if !defined(X_NOT_STDC_ENV) || defined(SCO)
+#include <stdlib.h>			/* for atof() */
+#endif
 #endif
 
 static char defaultTranslations[] = 
