@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbzerarc.c,v 3.3 2001/12/14 19:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbzerarc.c,v 3.4tsi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -266,6 +266,7 @@ RROP_NAME(cfbZeroArcSS8)(
 	    RROP_SOLID(yorgop - yoffset + info.xorg + x);
 #endif /* PSZ == 24 */
     }
+    RROP_UNDECLARE
 }
 
 void

@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.17tsi Exp $ */
 
 /*
 
@@ -260,7 +260,7 @@ cfbBitBlt (
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
 	    {
-		REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
+		REGION_NULL(pGC->pScreen, &rgnDst);
 	    }
 	    else
 	    {
@@ -523,7 +523,7 @@ cfbCopyPlaneReduce (
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
 	    {
-		REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
+		REGION_NULL(pGC->pScreen, &rgnDst);
 	    }
 	    else
 	    {
@@ -536,7 +536,7 @@ cfbCopyPlaneReduce (
 	       a full blown region.  It is intersected with the
 	       composite clip below. */
 	    fastClip = 0;
-	    REGION_INIT(pGC->pScreen, &rgnDst, &fastBox,1);
+	    REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
 	}
     }
     else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.12 2001/01/17 22:36:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.13tsi Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -446,7 +446,7 @@ getleftbits(psrc, w, dst)
 	}; \
 }
 
-#define putbits24(src, x, w, pdst, planemask, index) {\
+#define putbits24(src, w, pdst, planemask, index) {\
     register PixelGroup dstpixel; \
     register unsigned int idx; \
     switch(idx = ((index)&3)<<1){ \
@@ -531,7 +531,7 @@ getleftbits(psrc, w, dst)
     abort()
 #define getbits24(psrc, dst, index) \
     abort()
-#define putbits24(src, x, w, pdst, planemask, index) \
+#define putbits24(src, w, pdst, planemask, index) \
     abort()
 #define putbitsrop24(src, x, pdst, planemask, rop) \
     abort()

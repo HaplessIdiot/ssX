@@ -1,7 +1,7 @@
 /*
  * cfb copy area
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.12 2001/12/14 19:59:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbblt.c,v 3.13tsi Exp $ */
 
 /*
 
@@ -168,12 +168,8 @@ MROP_NAME(cfbDoBitblt)(
 #endif
 
 #if MROP == 0
-    unsigned char *psrcBaseByte, *pdstBaseByte;
-    int widthSrcBytes, widthDstBytes;
-
-    cfbGetByteWidthAndPointer (pSrc, widthSrcBytes, psrcBaseByte)
-
-    cfbGetByteWidthAndPointer (pDst, widthDstBytes, pdstBaseByte)
+    int widthSrcBytes = cfbGetByteWidth(pSrc);
+    int widthDstBytes = cfbGetByteWidth(pDst);
 #endif
 #endif
 
