@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.9 2001/01/17 22:36:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.10 2001/07/25 15:05:09 dawes Exp $ */
  
 #include <sys/types.h>
 #define NEED_REPLIES
@@ -82,15 +82,6 @@ in this Software without prior written authorization from The Open Group.
 #define CloseLbxClient	0xff
 
 #define MAXBYTESDIFF	8
-
-extern void LbxAllowMotion ( ClientPtr client, int num );
-extern int LbxDecodePoints ( char *in, char *inend, short *out );
-extern int LbxDecodeSegment ( char *in, char *inend, short *out );
-extern int LbxDecodeRectangle ( char *in, char *inend, short *out );
-extern int LbxDecodeArc ( char *in, char *inend, short *out );
-
-
-extern int	GrabInProgress;
 
 int LbxWhoAmI = 1;		/*
 				 * for lbx zlib library to know who we are
