@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.53 2001/02/15 20:31:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.54 2001/04/10 16:07:58 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -246,7 +246,7 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 
     /* Get driver's available options */
     if (xf86DriverList[CurrentDriver]->AvailableOptions)
-	NewDevice.GDev.options =
+	NewDevice.GDev.options = (OptionInfoPtr)
 	    (*xf86DriverList[CurrentDriver]->AvailableOptions)(chipset,
 							       bus);
 
