@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX March 2002)
+ 110. Implement WarpCursor for Cygwin/XFree86, and use GetProcAddress
+      instead of relying on ddraw.dll (#5220-#5222, Harold Hunt).
  109. Fix bug that prevented the vesa driver from accessing VGA CRTC registers
       (Marc La France).
  108. New pre-processor files for expat, fontconfig and rename of
@@ -14757,4 +14759,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2198 2002/04/07 15:21:38 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2199 2002/04/10 17:19:25 tsi Exp $

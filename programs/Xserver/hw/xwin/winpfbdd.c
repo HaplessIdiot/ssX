@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.13 2001/11/11 22:45:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.14 2001/11/21 08:51:24 alanh Exp $ */
 
 #include "win.h"
 
@@ -49,8 +49,14 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
   DDSURFACEDESC		*pddsdPrimary = NULL;
   DDSURFACEDESC		*pddsdOffscreen = NULL;
   RECT			rcClient;
+  FARPROC		fpDirectDrawCreate = NULL;
   
   ErrorF ("winAllocateFBPrimaryDD ()\n");
+
+  /* Get proc addresses for DirectDraw */
+  if (!winGetDDProcAddresses (pScreen))
+    return FALSE;
+  fpDirectDrawCreate = pScreenPriv->fpDirectDrawCreate;
 
   /* Get client area location in screen coords */
   GetClientRect (pScreenPriv->hwndScreen, &rcClient);
@@ -59,7 +65,7 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
 		   (LPPOINT)&rcClient, 2);
 
   /* Create a DirectDraw object, store the address at lpdd */
-  ddrval = DirectDrawCreate (NULL, &pScreenPriv->pdd, NULL);
+  ddrval = (*fpDirectDrawCreate) (NULL, &pScreenPriv->pdd, NULL);
   if (ddrval != DD_OK)
     FatalError ("winAllocateFBPrimaryDD () - Could not start DirectDraw\n");
   
@@ -257,6 +263,15 @@ winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
       IDirectDraw2_RestoreDisplayMode (pScreenPriv->pdd);
       IDirectDraw2_Release (pScreenPriv->pdd);
       pScreenPriv->pdd = NULL;
+    }
+
+  /* Unload the DirectDraw library */
+  if (pScreenPriv->hmodDirectDraw != NULL)
+    {
+      FreeLibrary (pScreenPriv->hmodDirectDraw);
+      pScreenPriv->hmodDirectDraw = NULL;
+      pScreenPriv->fpDirectDrawCreate = NULL;
+      pScreenPriv->fpDirectDrawCreateClipper = NULL;
     }
 
   /* Kill our window */

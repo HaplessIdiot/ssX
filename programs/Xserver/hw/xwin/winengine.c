@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winengine.c,v 1.1 2001/11/11 23:07:40 alanh Exp $ */
 
 #include "win.h"
 
@@ -256,4 +256,60 @@ winSetEngine (ScreenPtr pScreen)
     }
 
   return TRUE;
+}
+
+
+/* Get procedure addresses for DirectDrawCreate and DirectDrawCreateClipper */
+Bool
+winGetDDProcAddresses (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  Bool			fReturn = TRUE;
+  
+  /* Load the DirectDraw library */
+  pScreenPriv->hmodDirectDraw = LoadLibraryEx ("ddraw.dll", NULL, 0);
+  if (pScreenPriv->hmodDirectDraw == NULL)
+    {
+      ErrorF ("winGetDDProcAddresses - Could not load ddraw.dll\n");
+      fReturn = FALSE;
+      goto winGetDDProcAddresses_Exit;
+    }
+
+  /* Try to get the DirectDrawCreate address */
+  pScreenPriv->fpDirectDrawCreate
+    = GetProcAddress (pScreenPriv->hmodDirectDraw,
+		      "DirectDrawCreate");
+  if (pScreenPriv->fpDirectDrawCreate == NULL)
+    {
+      ErrorF ("winGetDDProcAddresses - Could not get DirectDrawCreate "
+	      "address\n");
+      fReturn = FALSE;
+      goto winGetDDProcAddresses_Exit;
+    }
+
+  /* Try to get the DirectDrawCreateClipper address */
+  pScreenPriv->fpDirectDrawCreateClipper
+    = GetProcAddress (pScreenPriv->hmodDirectDraw,
+		      "DirectDrawCreateClipper");
+  if (pScreenPriv->fpDirectDrawCreateClipper == NULL)
+    {
+      ErrorF ("winGetDDProcAddresses - Could not get "
+	      "DirectDrawCreateClipper address\n");
+      fReturn = FALSE;
+      goto winGetDDProcAddresses_Exit;
+    }
+
+  /*
+   * Note: Do not unload ddraw.dll here.  Do it in winCloseScreen
+   */
+
+ winGetDDProcAddresses_Exit:
+  /* Unload the DirectDraw library if we failed to initialize */
+  if (!fReturn && pScreenPriv->hmodDirectDraw != NULL)
+    {
+      FreeLibrary (pScreenPriv->hmodDirectDraw);
+      pScreenPriv->hmodDirectDraw = NULL;
+    }
+  return fReturn;
+  
 }

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.18 2001/11/11 22:45:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.19 2001/11/21 08:51:24 alanh Exp $ */
 
 #include "win.h"
 
@@ -52,6 +52,7 @@
 DEFINE_GUID( IID_IDirectDraw2,0xB3A6F3E0,0x2B43,0x11CF,0xA2,0xDE,0x00,0xAA,0x00,0xB9,0x33,0x56 );
 #endif /* IID_IDirectDraw2 */
 
+
 /*
  * Create a DirectDraw surface for the shadow framebuffer; also create
  * a primary surface object so we can blit to the display.
@@ -59,6 +60,7 @@ DEFINE_GUID( IID_IDirectDraw2,0xB3A6F3E0,0x2B43,0x11CF,0xA2,0xDE,0x00,0xAA,0x00,
  * Install a DirectDraw clipper on our primary surface object
  * that clips our blits to the unobscured client area of our display window.
  */
+
 Bool
 winAllocateFBShadowDD (ScreenPtr pScreen)
 {
@@ -67,15 +69,23 @@ winAllocateFBShadowDD (ScreenPtr pScreen)
   HRESULT		ddrval = DD_OK;
   DDSURFACEDESC		ddsd;
   DDSURFACEDESC		*pddsdShadow = NULL;
-  
+  FARPROC		fpDirectDrawCreate = NULL;
+  FARPROC		fpDirectDrawCreateClipper = NULL;
+
 #if CYGDEBUG
   ErrorF ("winAllocateFBShadowDD ()\n");
 #endif
 
+  /* Get proc addresses for DirectDraw */
+  if (!winGetDDProcAddresses (pScreen))
+    return FALSE;
+  fpDirectDrawCreate = pScreenPriv->fpDirectDrawCreate;
+  fpDirectDrawCreateClipper = pScreenPriv->fpDirectDrawCreateClipper;
+
   /* Create a clipper */
-  ddrval = DirectDrawCreateClipper (0,
-				    &pScreenPriv->pddcPrimary,
-				    NULL);
+  ddrval = (*fpDirectDrawCreateClipper) (0,
+					 &pScreenPriv->pddcPrimary,
+					 NULL);
   if (FAILED (ddrval))
     {
       ErrorF ("winAllocateFBShadowDD () - Could not create clipper: %08x\n",
@@ -104,7 +114,7 @@ winAllocateFBShadowDD (ScreenPtr pScreen)
 #endif
 
   /* Create a DirectDraw object, store the address at lpdd */
-  ddrval = DirectDrawCreate (NULL, &pScreenPriv->pdd, NULL);
+  ddrval = (*fpDirectDrawCreate) (NULL, &pScreenPriv->pdd, NULL);
   if (FAILED (ddrval))
     {
       ErrorF ("winAllocateFBShadowDD () - Could not start DirectDraw: %08x\n",
@@ -473,7 +483,7 @@ winCloseScreenShadowDD (int nIndex, ScreenPtr pScreen)
   Bool			fReturn;
   
 #if CYGDEBUG
-  ErrorF ("winCloseScreenShadowDD () - Freeing screen resources\n");
+  ErrorF ("winCloseScreenShadowDD - Freeing screen resources\n");
 #endif
 
   /* Flag that the screen is closed */
@@ -515,6 +525,15 @@ winCloseScreenShadowDD (int nIndex, ScreenPtr pScreen)
     {
       IDirectDraw_Release (pScreenPriv->pdd);
       pScreenPriv->pdd = NULL;
+    }
+
+  /* Unload the DirectDraw library */
+  if (pScreenPriv->hmodDirectDraw != NULL)
+    {
+      FreeLibrary (pScreenPriv->hmodDirectDraw);
+      pScreenPriv->hmodDirectDraw = NULL;
+      pScreenPriv->fpDirectDrawCreate = NULL;
+      pScreenPriv->fpDirectDrawCreateClipper = NULL;
     }
 
   /* Kill our window */
