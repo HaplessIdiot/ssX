@@ -1,5 +1,5 @@
 /* $XConsortium: xsmclient.c,v 1.20 94/05/20 12:25:42 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/workInProgress/xsm/xsmclient.c,v 3.0 1994/06/28 12:41:25 dawes Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <unistd.h>
 #endif
 #include <limits.h>
-#ifndef X_NO_SYS_PARAM
+#ifndef MINIX
 #include <sys/param.h>
 #endif
 #ifndef PATH_MAX
