@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * xtestext1.h
  *

@@ -35,8 +35,7 @@
 /*
 ** Author: Eric Veach, July 1994.
 **
-** $Date: 2005/03/25 02:22:51 $ $Revision: 1.2 $
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libtess/mesh.c,v 1.2 2005/03/25 02:22:51 dawes Exp $
+** $XFree86$
 */
 
 #include "gluos.h"

@@ -401,3 +401,6 @@ typedef void (*RootlessCopyWindowProc)
     (RootlessFrameID wid, int dstNrects, const BoxRec *dstRects,
      int dx, int dy);
 
+
+
+$XFree86$

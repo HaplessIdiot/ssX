@@ -1,4 +1,5 @@
 XCOMM platform:  $XConsortium: sequent.cf$
+XCOMM $XFree86$
 
 /*
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES; also, you'll need to install

@@ -1,5 +1,6 @@
 STARTENCODING suneu-greek
 SIZE 0xFF
+# $XFree86$
 STARTMAPPING unicode
 0x21 0x0021
 0x22 0x0022
