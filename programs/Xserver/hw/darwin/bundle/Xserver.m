@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.11 2001/04/13 07:21:36 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.12 2001/04/18 20:28:52 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -108,9 +108,9 @@ extern int main(int argc, char *argv[], char *envp[]);
             break;
         case NSSystemDefined:
             if(([anEvent subtype]==7) && ([anEvent data1] & 1))
-                return YES; // skip mouse button 1 events
+                return NO; // skip mouse button 1 events
             if(mouseState==[anEvent data2])
-                return YES; // ignore double events
+                return NO; // ignore double events
             ev.data.compound.subType=[anEvent subtype];
             ev.data.compound.misc.L[0]=[anEvent data1];
             ev.data.compound.misc.L[1]=mouseState=[anEvent data2];
@@ -127,7 +127,7 @@ extern int main(int argc, char *argv[], char *envp[]);
             ev.data.key.keyCode = [anEvent keyCode];
             break;
         default:
-            return YES;
+            return NO;
     }
 
     [self sendNXEvent:&ev];
