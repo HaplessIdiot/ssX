@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.4 2001/10/28 03:33:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86sbusBus.h,v 3.5tsi Exp $ */
 
 #ifndef _XF86_SBUSBUS_H
 #define _XF86_SBUSBUS_H
@@ -47,6 +47,11 @@ typedef struct sbus_prom_node {
     int			cookie[2];
 } sbusPromNode, *sbusPromNodePtr;
 
+typedef struct sbus_prom_parent {
+    sbusPromNode	node;
+    struct sbus_prom_parent *parent;
+} sbusPromParent, *sbusPromParentPtr;
+
 typedef struct sbus_device {
     int			devId;
     int			fbNum;
@@ -55,6 +60,8 @@ typedef struct sbus_device {
     sbusPromNode	node;
     char		*descr;
     char		*device;
+    sbusPromParentPtr	parent;
+    void		*OSprivate;
 } sbusDevice, *sbusDevicePtr;
 
 extern struct sbus_devtable {
