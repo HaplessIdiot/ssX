@@ -73,6 +73,7 @@
 		0157A37D002CF6D7CE6F79C2 = {
 			children = (
 				0157A37E002CF6D7CE6F79C2,
+				F58D65DF018F79B101000001,
 				43B962E200617B93416877C2,
 			);
 			isa = PBXVariantGroup;
@@ -303,6 +304,7 @@
 		02E03CA000348209CE6F79C2 = {
 			children = (
 				02E03CA100348209CE6F79C2,
+				F58D65E0018F79C001000001,
 				43B962E300617B93416877C2,
 			);
 			isa = PBXVariantGroup;
@@ -396,6 +398,7 @@
 		089C165CFE840E0CC02AAC07 = {
 			children = (
 				089C165DFE840E0CC02AAC07,
+				F58D65DD018F798F01000001,
 				43B962E100617B49416877C2,
 			);
 			isa = PBXVariantGroup;
@@ -606,6 +609,7 @@
 		1220774300712D2D416877C2 = {
 			children = (
 				1220774400712D2D416877C2,
+				F58D65DE018F79A001000001,
 				1220774600712D75416877C2,
 			);
 			isa = PBXVariantGroup;
@@ -689,6 +693,7 @@
 		1BD8DE4200B8A3567F000001 = {
 			children = (
 				1BD8DE4300B8A3567F000001,
+				F58D65DC018F794D01000001,
 				1BD8DE4700B8A3C77F000001,
 			);
 			isa = PBXVariantGroup;
@@ -705,6 +710,7 @@
 		1BD8DE4400B8A38E7F000001 = {
 			children = (
 				1BD8DE4500B8A38E7F000001,
+				F58D65E1018F79E001000001,
 				1BD8DE4800B8A4167F000001,
 			);
 			isa = PBXVariantGroup;
@@ -859,6 +865,7 @@
 		29B97318FDCFA39411CA2CEA = {
 			children = (
 				29B97319FDCFA39411CA2CEA,
+				F58D65DB018F793801000001,
 				43B962E000617B49416877C2,
 			);
 			isa = PBXVariantGroup;
@@ -1120,6 +1127,48 @@
 		F5582948015DAD3B01000001 = {
 			isa = PBXFileReference;
 			path = quartzCommon.h;
+			refType = 4;
+		};
+		F58D65DB018F793801000001 = {
+			isa = PBXFileReference;
+			name = French;
+			path = French.lproj/MainMenu.nib;
+			refType = 4;
+		};
+		F58D65DC018F794D01000001 = {
+			isa = PBXFileReference;
+			name = French;
+			path = French.lproj/InfoPlist.strings.cpp;
+			refType = 4;
+		};
+		F58D65DD018F798F01000001 = {
+			isa = PBXFileReference;
+			name = French;
+			path = French.lproj/InfoPlist.strings;
+			refType = 4;
+		};
+		F58D65DE018F79A001000001 = {
+			isa = PBXFileReference;
+			name = French;
+			path = French.lproj/Localizable.strings;
+			refType = 4;
+		};
+		F58D65DF018F79B101000001 = {
+			isa = PBXFileReference;
+			name = French;
+			path = French.lproj/Credits.rtf;
+			refType = 4;
+		};
+		F58D65E0018F79C001000001 = {
+			isa = PBXFileReference;
+			name = French;
+			path = French.lproj/XDarwinHelp.html;
+			refType = 4;
+		};
+		F58D65E1018F79E001000001 = {
+			isa = PBXFileReference;
+			name = French;
+			path = French.lproj/XDarwinHelp.html.cpp;
 			refType = 4;
 		};
 	};
