@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.2 2002/04/03 00:06:32 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.3 2002/04/04 18:29:24 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -111,7 +111,7 @@ RootlessChangeWindowAttributes(WindowPtr pWin, unsigned long vmask)
 Bool
 RootlessPositionWindow(WindowPtr pWin, int x, int y)
 {
-    RootlessWindowRec *winRec = WINREC(pWin);
+//    RootlessWindowRec *winRec = WINREC(pWin);
     ScreenPtr pScreen = pWin->drawable.pScreen;
     Bool result;
 
@@ -151,19 +151,20 @@ RootlessRealizeWindow(WindowPtr pWin)
     if (IsTopLevel(pWin)  ||  IsRoot(pWin)) {
         DrawablePtr d = &pWin->drawable;
         RootlessWindowRec *winRec = xalloc(sizeof(RootlessWindowRec));
+        int bw = wBorderWidth(pWin);
 
         if (! winRec) goto windowcreatebad;
 
         winRec->frame.isRoot = (pWin == WindowTable[pScreen->myNum]);
-        winRec->frame.x = d->x - pWin->borderWidth;
-        winRec->frame.y = d->y - pWin->borderWidth;
-        winRec->frame.w = d->width + 2*pWin->borderWidth;
-        winRec->frame.h = d->height + 2*pWin->borderWidth;
+        winRec->frame.x = d->x - bw;
+        winRec->frame.y = d->y - bw;
+        winRec->frame.w = d->width + 2*bw;
+        winRec->frame.h = d->height + 2*bw;
         winRec->frame.win = pWin;
         winRec->frame.devPrivate = NULL;
 
         REGION_INIT(pScreen, &winRec->damage, NullBox, 0);
-        winRec->borderWidth = pWin->borderWidth;
+        winRec->borderWidth = bw;
         winRec->drawing = FALSE;
 
         winRec->pixmap = NULL;
@@ -427,7 +428,8 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
         GetScratchPixmapHeader(pScreen, winRec->frame.w, winRec->frame.h,
                                winRec->frame.depth, winRec->frame.bitsPerPixel,
                                winRec->frame.bytesPerRow, gResizeDeathBits);
-    SetPixmapBaseToScreen(gResizeDeathPix, pWin->origin.x, pWin->origin.y);
+    SetPixmapBaseToScreen(gResizeDeathPix, pWin->drawable.x - oldBW,
+                          pWin->drawable.y - oldBW);
     RootlessStopDrawing(pWin);
 
     winRec->frame.x = newX;
@@ -536,7 +538,7 @@ RootlessMoveWindow(WindowPtr pWin, int x, int y, WindowPtr pSib, VTKind kind)
             oldY = winRec->frame.y;
             oldW = winRec->frame.w;
             oldH = winRec->frame.h;
-            newBW = pWin->borderWidth;
+            newBW = wBorderWidth(pWin);
             newX = x;
             newY = y;
             newW = pWin->drawable.width  + 2*newBW;
@@ -732,7 +734,7 @@ RootlessChangeBorderWidth(WindowPtr pWin, unsigned int width)
     RegionRec saveRoot;
 
     RL_DEBUG_MSG("change border width ");
-    if (width != pWin->borderWidth) {
+    if (width != wBorderWidth(pWin)) {
         RootlessWindowRec *winRec = WINREC(pWin);
         int oldX = 0, oldY = 0, newX = 0, newY = 0;
         unsigned int oldW = 0, oldH = 0, oldBW = 0;
