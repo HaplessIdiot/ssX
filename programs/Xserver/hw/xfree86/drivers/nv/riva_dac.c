@@ -23,7 +23,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_dac.c $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_dac.c,v 1.1 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #include "riva_include.h"
 
@@ -162,7 +162,7 @@ RivaDACRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, RivaRegPtr rivaReg,
     RivaPtr pRiva = RivaPTR(pScrn);
     int restore = VGA_SR_MODE;
 
-    if(primary) restore |= VGA_SR_CMAP | VGA_SR_FONTS | VGA_SR_CMAP;
+    restore |= primary ? (VGA_SR_CMAP | VGA_SR_FONTS) : VGA_SR_CMAP;
     pRiva->riva.LoadStateExt(&pRiva->riva, rivaReg);
     vgaHWRestore(pScrn, vgaReg, restore);
 }
