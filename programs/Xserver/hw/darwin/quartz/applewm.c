@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/applewm.c,v 1.1 2003/08/12 23:47:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/applewm.c,v 1.2 2003/09/16 00:36:13 torrey Exp $ */
 /**************************************************************************
 
 Copyright (c) 2002 Apple Computer, Inc. All Rights Reserved.
@@ -32,15 +32,32 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define NEED_EVENTS
 #include "misc.h"
 #include "dixstruct.h"
+#include "globals.h"
 #include "extnsionst.h"
 #include "colormapst.h"
 #include "cursorstr.h"
 #include "scrnintstr.h"
+#include "windowstr.h"
 #include "servermd.h"
 #include "swaprep.h"
+#include "Xatom.h"
+#include "darwin.h"
 #define _APPLEWM_SERVER_
 #include "applewmstr.h"
 #include "applewmExt.h"
+
+#define DEFINE_ATOM_HELPER(func,atom_name)			\
+static Atom func (void) {					\
+    static int generation;					\
+    static Atom atom;						\
+    if (generation != serverGeneration) {			\
+	generation = serverGeneration;				\
+	atom = MakeAtom (atom_name, strlen (atom_name), TRUE);	\
+    }								\
+    return atom;						\
+}
+
+DEFINE_ATOM_HELPER(xa_native_screen_origin, "_NATIVE_SCREEN_ORIGIN")
 
 static AppleWMProcsPtr appleWMProcs;
 
@@ -116,6 +133,23 @@ AppleWMResetProc (
     ExtensionEntry* extEntry
 )
 {
+}
+
+/* Updates the _NATIVE_SCREEN_ORIGIN property on the given root window. */
+void
+AppleWMSetScreenOrigin(
+    WindowPtr pWin
+)
+{
+    long data[2];
+
+    data[0] = (dixScreenOrigins[pWin->drawable.pScreen->myNum].x
+                + darwinMainScreenX);
+    data[1] = (dixScreenOrigins[pWin->drawable.pScreen->myNum].y
+                + darwinMainScreenY);
+
+    ChangeWindowProperty(pWin, xa_native_screen_origin(), XA_INTEGER,
+                         32, PropModeReplace, 2, data, TRUE);
 }
 
 static int
