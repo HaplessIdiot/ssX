@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.8 95/01/16 21:11:00 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.14 1995/06/01 08:18:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.15 1995/12/31 10:22:57 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -177,6 +177,14 @@ clean::									@@\
 #ifndef UseInstalled
 XCOMM These are only needed to build the server
 
+#if LinuxElfDefault
+LIBC_SA = /usr/i486-linuxaout/lib/libc.sa
+LIBM_SA = /usr/i486-linuxaout/lib/libm.sa
+#else
+LIBC_SA = /usr/lib/libc.sa
+LIBM_SA = /usr/lib/libm.sa
+#endif
+
 JUMP_LDLIBS_libc = `$(CC) --print-libgcc-file-name` -lc
 
 XCOMM libX11.so (X11, SM, ICE)
@@ -194,11 +202,7 @@ JUMP_ADDRESS_X11 = 0x60200000
 JUMP_JUMPTABLESIZE_X11 = 0x4000
 JUMP_GOTSIZE_X11 = 4096
 JUMP_STUBNAMES_X11 = libX11 libSM libICE
-#if LinuxElfDefault
-JUMP_STUBS_IMPORT_X11 = /usr/i486-linuxaout/lib/libc.sa
-#else
-JUMP_STUBS_IMPORT_X11 = /usr/lib/libc.sa
-#endif
+JUMP_STUBS_IMPORT_X11 = $(LIBC_SA)
 JUMP_SIBARS_X11 = jump/libSM.a~ jump/libICE.a~
 JUMP_LDLIBS_X11 = $(JUMP_SIBARS_X11) $(JUMP_LDLIBS_libc)
 
@@ -295,7 +299,7 @@ JUMP_ADDRESS_PEX5 = 0x60b00000
 JUMP_JUMPTABLESIZE_PEX5 = 0x4000
 JUMP_GOTSIZE_PEX5 = 4096
 JUMP_STUBNAMES_PEX5 = libPEX5
-JUMP_STUBS_IMPORT_PEX5 = $(JUMP_STUBS_IMPORT_X11) /usr/lib/libm.sa
+JUMP_STUBS_IMPORT_PEX5 = $(JUMP_STUBS_IMPORT_X11) $(LIBM_SA)
 JUMP_LDLIBS_PEX5 = $(JUMP_ROOT_X11)/libX11.sa $(JUMP_LDLIBS_libc) -lm
 
 # libXIE.so (XIE)
@@ -313,7 +317,7 @@ JUMP_ADDRESS_XIE = 0x60be0000
 JUMP_JUMPTABLESIZE_XIE = 0x4000
 JUMP_GOTSIZE_XIE = 4096
 JUMP_STUBNAMES_XIE = libXIE
-JUMP_STUBS_IMPORT_XIE = $(JUMP_STUBS_IMPORT_X11) /usr/lib/libm.sa
+JUMP_STUBS_IMPORT_XIE = $(JUMP_STUBS_IMPORT_X11) $(LIBM_SA)
 JUMP_LDLIBS_XIE = $(JUMP_ROOT_X11)/libX11.sa $(JUMP_LDLIBS_libc) -lm
 
 XCOMM libFresco.so (Fresco, Xtf)

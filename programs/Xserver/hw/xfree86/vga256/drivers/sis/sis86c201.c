@@ -29,7 +29,7 @@
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.0 1995/12/16 08:21:08 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -195,8 +195,6 @@ SISProbe()
 
 	SISchipset = -1;
 
-	SISEnterLeave(ENTER);
-
   	if (vga256InfoRec.chipset)
     	{
 		/*
@@ -235,12 +233,11 @@ SISProbe()
 		idx++;
 		}
 		if (SISchipset == -1)
-		{
-			SISEnterLeave(LEAVE);
 			return (FALSE);
-		}
 		vga256InfoRec.chipset = SISIdent(SISchipset);
 	}
+
+	SISEnterLeave(ENTER);
 	
  	/* 
 	 * How much Video Ram have we got?
