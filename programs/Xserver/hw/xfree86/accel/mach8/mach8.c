@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.27 1996/02/04 09:03:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.28 1996/06/10 09:14:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -125,6 +125,7 @@ ScrnInfoRec mach8InfoRec = {
     0,			/* int suspendTime */
     0,			/* int offTime */
     -1,			/* int s3BlankDelay */
+    0,			/* int textClockFreq */
 #ifdef XFreeXDGA
     0,			/* int directMode */
     NULL,		/* Set Vid Page */
