@@ -6,7 +6,7 @@
  * Copyright © 2000 VA Linux Systems, Inc.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.1 2000/08/15 16:05:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.2 2000/08/16 01:45:32 dawes Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -270,14 +270,23 @@ xf86UnbindGARTMemory(int screenNum, int key)
 }
 
 
-/* XXX Not implemented yet, and interface may change. */
+/* XXX Interface may change. */
 Bool
-xf86EnableAGP(int screenNum)
+xf86EnableAGP(int screenNum, CARD32 mode)
 {
+	agp_setup setup;
+
 	if (!GARTInit() || acquiredScreen != screenNum)
 		return FALSE;
 
-	xf86DrvMsg(screenNum, X_ERROR, "xf86EnableAGP(): not implemented\n");
-	return FALSE;
+	setup.agp_mode = mode;
+	if (ioctl(gartFd, AGPIOC_SETUP, &setup) != 0) {
+		xf86DrvMsg(screenNum, X_WARNING, "xf86EnableAGP: "
+			   "AGPIOC_SETUP with mode %d failed (%s)\n",
+			   mode, strerror(errno));
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
