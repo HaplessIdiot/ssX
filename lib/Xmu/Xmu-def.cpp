@@ -135,11 +135,9 @@ XmuNCopyISOLatin1Lowered
 XmuNCopyISOLatin1Uppered
 XmuCvtShapeStyleToString
 XmuCvtOrientationToString
-XmuScanlineOrSegment
-#ifdef __UNIXOS2__
-XmuScanlineNot
 XmuScanlineAnd
+XmuScanlineNot
 XmuScanlineOr
-#endif
+XmuScanlineOrSegment
 
-/* $XFree86: xc/lib/Xmu/Xmu-def.cpp,v 1.1 2000/08/09 23:40:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Xmu-def.cpp,v 1.2 2002/05/31 18:45:45 dawes Exp $ */
