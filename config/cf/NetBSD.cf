@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.85 2000/08/28 15:29:07 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.86 2000/11/30 23:29:54 dawes Exp $
 
 
 #ifndef OSName
@@ -250,6 +250,14 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #define HasFlex			YES
 
+/* 
+ * NetBSD doesn't have perl in default system
+ * you may override this in host.def if you installed perl from the packages
+ */
+#ifndef HasPerl
+#define HasPerl			NO
+#endif
+
 /*
  * Make & install Features
  */
@@ -298,6 +306,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # endif
 #endif /* i386Architecture */
 
+#ifndef HasCookieMaker
+# if OSMajorVersion == 1 && OSMinorVersion >= 5 || OSMajorVersion >= 2
+   /* NetBSD 1.5 and later have /dev/urandom */
+#  define HasCookieMaker	YES
+#  define MkCookieCmd \
+	'dd if=/dev/urandom bs=16 count=1 2>/dev/null | hexdump -e \\"%08x\\"'
+# else
+#  define HasCookieMaker	NO
+# endif
+#endif
 
 /*
  * ForceSubdirs - force make to build subdirectories
