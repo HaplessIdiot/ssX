@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.7 1999/03/21 07:35:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.8 1999/07/10 12:17:27 dawes Exp $ */
 
 
 #include "X.h"
@@ -32,8 +32,6 @@ static void	ApmLoadCursorImage(ScrnInfoPtr pScrn, u8* data);
 static Bool	ApmUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs);
 
 static u8 ConvertTable[256];
-
-extern int xf86Exiting;
 
 /* Inline functions */
 static __inline__ void
@@ -100,17 +98,7 @@ int ApmHWCursorInit(ScreenPtr pScreen)
 
   /* Set up the convert table for the input cursor data */
   for (i = 0; i < 256; i++)
-  {
-#if 1
     ConvertTable[i] = ((~i) & 0xAA) | (i & (i >> 1) & 0x55);
-#else
-    unsigned char	CT[4] = { 2, 2, 0, 1 };
-
-    ConvertTable[i] = (CT[(i >> 6) & 3] << 6) |
-		      (CT[(i >> 4) & 3] << 4) |
-		      (CT[(i >> 2) & 3] << 2) | CT[i & 3];
-#endif
-  }
 
   return xf86InitCursor(pScreen, infoPtr);
 }
@@ -123,8 +111,8 @@ ApmShowCursor(ScrnInfoPtr pScrn)
 
   ApmCheckMMIO_InitFast(pScrn);
   WaitForFifo(pApm, 2);
-  WRXB(0x140, 1);
   WRXW(0x144, pApm->CursorAddress >> 10);
+  WRXB(0x140, 1);
   pApm->DisplayedCursorAddress = pApm->CursorAddress;
 }
 
@@ -213,9 +201,7 @@ ApmLoadCursorImage(ScrnInfoPtr pScrn, u8* data)
 
   /* Correct input data */
   for (i = 0; i < sizeof tmp; i++)
-  {
     tmp[i] = ConvertTable[data[i]];
-  }
   /*
    * To avoid flicker.
    * Note: 2*pApm->BaseCursorAddress + CURSORALIGN (=1024) < 2^31 all the time.

@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.4 1999/07/04 06:40:08 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit-color.ad,v 1.5 1999/08/15 13:00:54 dawes Exp $
 
 #include "Xedit"
 
@@ -157,6 +157,7 @@ draw-lines	2,-1, -2,-1, -1,-2, -1,2
 
 *editModes.C.auto:		True
 *editModes.C.properties:\
+default?foreground=black&font=*courier-medium-r*12*,\
 keyword?foreground=gray12&font=*courier-bold-r*12*,\
 preprocessor?foreground=green4&font=*courier-medium-r*12*,\
 comment?foreground=SlateBlue3&font=*courier-medium-o*12*,\
@@ -167,5 +168,4 @@ hexa?foreground=OrangeRed3&font=*courier-bold-r*12*&underline,\
 integer?foreground=OrangeRed3&font=*courier-bold-r*12*,\
 float?foreground=OrangeRed3&font=*courier-bold-r*12*&overstrike&underline,\
 punctuation?foreground=gray12&font=*courier-bold-r*12*,\
-error?foreground=yellow&background=red&font=*new century schoolbook-bold*25*,\
-default?foreground=black&font=*courier-medium-r*12*
+error?foreground=yellow&background=red&font=*new century schoolbook-bold*25*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.54 1999/07/10 12:17:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.55 1999/07/11 10:27:04 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -797,6 +797,7 @@ xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
 	scrp->gamma.red = SET_GAMMA(scrp->monitor->gamma.red);
 	scrp->gamma.green = SET_GAMMA(scrp->monitor->gamma.green);
 	scrp->gamma.blue = SET_GAMMA(scrp->monitor->gamma.blue);
+#if 0
     } else if ( DDC && DDC->features.gamma > GAMMA_ZERO ) {
         from = X_PROBED;
 	scrp->gamma.red = SET_GAMMA(DDC->features.gamma);
@@ -804,6 +805,7 @@ xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
 	scrp->gamma.blue = SET_GAMMA(DDC->features.gamma);
 	/* EDID structure version 2 gives optional seperate red, green & blue gamma values
 	 * in bytes 0x57-0x59 */
+#endif
     } else if (TEST_GAMMA(gamma)) {
 	scrp->gamma.red = SET_GAMMA(gamma.red);
 	scrp->gamma.green = SET_GAMMA(gamma.green);

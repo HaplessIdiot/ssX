@@ -9,7 +9,7 @@
 <date>22 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.12 1999/07/20 04:27:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.13 1999/08/21 14:08:29 dawes Exp $
 </ident>
 
 <abstract>
@@ -21,10 +21,18 @@ in XFree86 &relvers; and their status.
 
 <toc>
 
-<sect>Summary of new features in &relvers; compared with the previous snapshot.
+<sect>Summary of new features in &relvers; compared with &prevrelvers;.
 <p>
 This section contains a brief summary of what has changed since the previous
 snapshot.  More detailed information can be found in the sections that follow.
+
+<itemize>
+  <item>The ``apm'' driver has been updated.
+	See the <ref id="apm" name="APM section"> below.
+  <item>A driver for NVIDIA chipsets is now included.  The driver is called
+	``nv''.  Some very basic information can be found in the nv(4) man
+	page.
+</itemize>
 
 <sect>X server
 <p>
@@ -485,6 +493,7 @@ Partial or complete DDC support is available in the following hardware modules
   <item>Glint
   <item>MGA 
   <item>Neomagic
+  <item>S3 ViRGE
   <item>SIS
   <item>Trident
 </itemize>
@@ -498,7 +507,7 @@ with <tt>Option "NoDDC1"</tt> and <tt>Option "NoDDC2"</tt>.
 At startup the server prints out DDC information from the display,
 but it does not yet use it the determine modelines.
 
-Changed behavior caused by DDC. The MGA driver uses DDC information to
+Changed behavior caused by DDC. Several drivers uses DDC information to
 set the monitor gamma (brightness) curve, and the screen size and
 pitch.
 <itemize>
@@ -577,6 +586,7 @@ XFree86 &relvers; includes the following drivers:
    <tabrow><tt>glint</tt><colsep>3Dlabs</tabrow>
    <tabrow><tt>mga</tt><colsep>Matrox</tabrow>
    <tabrow><tt>neomagic</tt><colsep>NeoMagic</tabrow>
+   <tabrow><tt>nv</tt><colsep>NVIDIA</tabrow>
    <tabrow><tt>rendition</tt><colsep>Rendition</tabrow>
    <tabrow><tt>s3virge</tt><colsep>S3 ViRGE</tabrow>
    <tabrow><tt>sis</tt><colsep>SiS</tabrow>
@@ -587,13 +597,14 @@ XFree86 &relvers; includes the following drivers:
 </tabular>
 </table>
 
-<sect2>APM
+<sect2>APM <label id="apm">
 <p>
 
-The driver apm is for Alliance AT3D/AT25 based boards. It's still buggy,
-but it works at least with the Hercules 128/3D board.  Please send as
-many bug-report (but success stories as well) as possible to
-<email>grenie@lami.univ-evry.fr</email>
+The driver apm is for Alliance AT3D/AT25 based boards.  The driver is
+still in development. I hope to be able to correct the errors I find.
+The Rush extension should be ready for the next snapshot; I can do better
+memory management, but I'll need time. If someone can help me, feel free
+to drop an email to <email>grenie@lami.univ-evry.fr</email>
 
 <sect2>Chips &amp; Technologies
 <p>

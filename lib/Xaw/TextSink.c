@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.12 1999/06/13 13:47:23 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.13 1999/08/15 13:00:36 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -72,6 +72,7 @@ static Boolean CvtPropertyListToString(Display*, XrmValue*, Cardinal*,
 				       XrmValue*, XrmValue*, XtPointer*);
 static Bool BeginPaint(Widget);
 static Bool EndPaint(Widget);
+static void SetXlfdDefaults(Display*, XawTextProperty*);
 #endif
 
 /*
@@ -138,6 +139,8 @@ static TextSinkExtRec extension_rec = {
     NULL,
     EndPaint
 };
+
+static XrmQuark Qdefault;
 #endif
 
 #define Superclass	(&objectClassRec)
@@ -215,6 +218,8 @@ XawTextSinkClassPartInitialize(WidgetClass wc)
     extension_rec.record_type = XrmPermStringToQuark("TextSink");
     extension_rec.next_extension = (XtPointer)t_src->text_sink_class.extension;
     t_src->text_sink_class.extension = &extension_rec;
+
+    Qdefault = XrmPermStringToQuark("default");
 #endif
 
     /* 
@@ -1010,24 +1015,142 @@ qcmp_qident(_Xconst void *left, _Xconst void *right)
 }
 
 static void
+SetXlfdDefaults(Display *display, XawTextProperty *property)
+{
+    Atom atom = XInternAtom(display, "FONT", True);
+    unsigned long value;
+    char *str;
+
+    if (XGetFontProperty(property->font, atom, &value)) {
+	char *xlfd = XGetAtomName(display, value);
+
+	if (xlfd) {
+	    char *sep = xlfd + 1;
+	    char *name = sep;
+
+	    property->xlfd = XrmStringToQuark(xlfd);
+
+	    sep = strchr(sep, '-');     *sep++ = '\0';
+	    property->foundry = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');	*sep++ = '\0';
+	    property->family = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');	*sep++ = '\0';
+	    property->weight = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');	*sep++ = '\0';
+	    property->slant = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');	*sep++ = '\0';
+	    property->setwidth = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');     *sep++ = '\0';
+	    property->addstyle = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');     *sep++ = '\0';
+	    property->pixel_size = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');     *sep++ = '\0';
+	    property->point_size = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');     *sep++ = '\0';
+	    property->res_x = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');     *sep++ = '\0';
+	    property->res_y = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');     *sep++ = '\0';
+	    property->spacing = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');     *sep++ = '\0';
+	    property->avgwidth = XrmStringToQuark(name);
+	    name = sep;
+
+	    sep = strchr(sep, '-');     *sep++ = '\0';
+	    property->registry = XrmStringToQuark(name);
+	    name = sep;
+
+	    property->encoding = XrmStringToQuark(name);
+
+	    XFree(xlfd);
+	}
+    }
+
+    atom = XInternAtom(display, "UNDERLINE_THICKNESS", True);
+    if (XGetFontProperty(property->font, atom, &value) &&
+	(str = XGetAtomName(display, value)) != NULL) {
+	property->underline_thickness = atoi(str);
+	XFree(str);
+    }
+    else {
+	/* XLFD says:
+	 * CapStemWidth = average width of the stems of capitals
+	 * if (UNDERLINE_THICKNESS undefined) then
+	 *   UNDERLINE_THICKNESS = CapStemWidth
+	 *
+	 * How do I know the value of CapStemWidth??
+	 */
+	if (property->pixel_size != NULLQUARK) {
+	    property->underline_thickness =
+		atoi(XrmQuarkToString(property->pixel_size)) / 10;
+	    property->underline_thickness =
+		XawMax(1, property->underline_thickness);
+	}
+	else
+	    property->underline_thickness = 1;
+    }
+
+    atom = XInternAtom(display, "UNDERLINE_POSITION", True);
+    if (XGetFontProperty(property->font, atom, &value) &&
+	(str = XGetAtomName(display, value)) != NULL) {
+	property->underline_position = atoi(str);
+	XFree(str);
+    }
+    else
+	/* XLFD says:
+	 * if (UNDERLINE_POSITION undefined) then
+	 *   UNDERLINE_POSITION = ROUND((maximum_descent) / 2)
+	 */
+	property->underline_position =
+	    property->font->max_bounds.descent >> 1;
+
+    /* I am assuming xlfd does not consider that lines are
+     * centered in the path */
+    property->underline_position += property->underline_thickness >> 1;
+
+}
+
+static void
 DestroyTextPropertyList(XawTextPropertyList *list)
 {
     int i;
 
-    for (i = 0; i < list->num_properties; i++)
+    for (i = 0; i < list->num_properties; i++) {
+	if (list->properties[i]->font)
+	    XFreeFont(DisplayOfScreen(list->screen), list->properties[i]->font);
 	XtFree((char*)list->properties[i]);
+    }
     if (list->properties)
 	XtFree((char*)list->properties);
     XtFree((char*)list);
 }
 
 XawTextProperty *
-XawTextSinkGetProperty(Widget w, XrmQuark property)
+_XawTextSinkGetProperty(XawTextPropertyList *list, XrmQuark property)
 {
-    TextSinkObject sink = (TextSinkObject)w;
-    XawTextPropertyList *list = sink->text_sink.properties;
-
-    if (list) {
+    if (property != NULLQUARK && list) {
 	XawTextProperty **ptr = (XawTextProperty**)
 	    bsearch((void*)property, list->properties, list->num_properties,
 		    sizeof(XawTextProperty*), bcmp_qident);
@@ -1039,6 +1162,321 @@ XawTextSinkGetProperty(Widget w, XrmQuark property)
     return (NULL);
 }
 
+XawTextProperty *
+XawTextSinkGetProperty(Widget w, XrmQuark property)
+{
+    TextSinkObject sink = (TextSinkObject)w;
+    XawTextPropertyList *list = sink->text_sink.properties;
+
+    return (_XawTextSinkGetProperty(list, property));
+}
+
+XawTextProperty *
+XawTextSinkCopyProperty(Widget w, XrmQuark property)
+{
+    XawTextProperty *cur, *ret;
+
+    if ((cur = XawTextSinkGetProperty(w, property)) == NULL)
+	cur = XawTextSinkGetProperty(w, Qdefault);
+    ret = (XawTextProperty*)XtCalloc(1, sizeof(XawTextProperty));
+    if (cur)
+	memcpy(ret, cur, sizeof(XawTextProperty));
+    ret->identifier = NULLQUARK;
+    ret->mask &= ~XAW_TPROP_FONT;
+
+    return (ret);
+}
+
+XawTextProperty *
+_XawTextSinkAddProperty(XawTextPropertyList *list, XawTextProperty *property,
+			Bool replace)
+{
+    XawTextProperty *result;
+    XColor color;
+    char identifier[1024];
+    char foreground[16];
+    char background[16];
+    char *foundry, *family, *weight, *slant, *setwidth, *addstyle, *pixel_size,
+	 *point_size, *res_x, *res_y, *spacing, *avgwidth, *registry, *encoding;
+    char *xlfd;
+    static char *asterisk = "*", *null = "";
+    XrmQuark quark;
+
+    if (list == NULL || property == NULL)
+	return (NULL);
+
+    if (property->mask & XAW_TPROP_FOREGROUND) {
+	color.pixel = property->foreground;
+	XQueryColor(DisplayOfScreen(list->screen), list->colormap, &color);
+	XmuSnprintf(foreground, sizeof(foreground), "%04x%04x%04x",
+		    color.red, color.green, color.blue);
+    }
+    else
+	strcpy(foreground, asterisk);
+    if (property->mask & XAW_TPROP_BACKGROUND) {
+	color.pixel = property->background;
+	XQueryColor(DisplayOfScreen(list->screen), list->colormap, &color);
+	XmuSnprintf(background, sizeof(background), "%04x%04x%04x",
+		    color.red, color.green, color.blue);
+    }
+    else
+	strcpy(background, asterisk);
+
+    if (property->xlfd_mask & XAW_TPROP_FOUNDRY)
+	foundry = XrmQuarkToString(property->foundry);
+    else
+	foundry = asterisk;
+
+    /* use default, or what was requested */
+    if (property->family != NULLQUARK)
+	family = XrmQuarkToString(property->family);
+    else
+	family = asterisk;
+    if (property->weight != NULLQUARK)
+	weight = XrmQuarkToString(property->weight);
+    else
+	weight = asterisk;
+    if (property->slant != NULLQUARK) {
+	slant = XrmQuarkToString(property->slant);
+	if (toupper(*slant) != 'R')
+	    slant = asterisk;	/* X defaults to italics, so, don't
+				   care in resolving between `I' and `O' */
+    }
+    else
+	slant = asterisk;
+
+    if (property->xlfd_mask & XAW_TPROP_SETWIDTH)
+	setwidth = XrmQuarkToString(property->setwidth);
+    else
+	setwidth = asterisk;
+    if (property->xlfd_mask & XAW_TPROP_ADDSTYLE)
+	addstyle = XrmQuarkToString(property->addstyle);
+    else
+	addstyle = null;
+
+    /* use default, or what was requested */
+    if (!(property->mask & XAW_TPROP_POINTSIZE) &&
+	property->pixel_size != NULLQUARK)
+	pixel_size = XrmQuarkToString(property->pixel_size);
+    else
+	pixel_size = asterisk;
+
+    if (property->xlfd_mask & XAW_TPROP_POINTSIZE)
+	point_size = XrmQuarkToString(property->point_size);
+    else
+	point_size = asterisk;
+    if (property->xlfd_mask & XAW_TPROP_RESX)
+	res_x = XrmQuarkToString(property->res_x);
+    else
+	res_x = asterisk;
+    if (property->xlfd_mask & XAW_TPROP_RESY)
+	res_y = XrmQuarkToString(property->res_y);
+    else
+	res_y = asterisk;
+    if (property->xlfd_mask & XAW_TPROP_SPACING)
+	spacing = XrmQuarkToString(property->spacing);
+    else
+	spacing = asterisk;
+    if (property->xlfd_mask & XAW_TPROP_AVGWIDTH)
+	avgwidth = XrmQuarkToString(property->avgwidth);
+    else
+	avgwidth = asterisk;
+
+    /* use default, or what that was requested */
+    if (property->registry != NULLQUARK)
+	registry = XrmQuarkToString(property->registry);
+    else
+	registry = asterisk;
+    if (property->encoding != NULLQUARK)
+	encoding = XrmQuarkToString(property->encoding);
+    else
+	encoding = asterisk;
+
+    if (replace) {
+	result = XtNew(XawTextProperty);
+	memcpy(result, property, sizeof(XawTextProperty));
+    }
+    else
+	result = property;
+
+    /* XXX should do the best to load a suitable font here */
+    if (!(result->mask & XAW_TPROP_FONT)) {
+	XmuSnprintf(identifier, sizeof(identifier),
+		    "-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s",
+		    foundry, family, weight, slant, setwidth, addstyle, pixel_size,
+		    point_size, res_x, res_y, spacing, avgwidth, registry, encoding);
+	if ((result->font = XLoadQueryFont(DisplayOfScreen(list->screen),
+					   identifier)) != NULL) {
+	    result->mask |= XAW_TPROP_FONT;
+	    SetXlfdDefaults(DisplayOfScreen(list->screen), result);
+	}
+	else
+	    result->mask &= ~XAW_TPROP_FONT;
+    }
+
+    if (result->font)
+	xlfd = XrmQuarkToString(result->xlfd);
+    else
+	xlfd = null;
+
+    XmuSnprintf(identifier, sizeof(identifier), "%08x%08x%s%s%d%d%d%d%s",
+		property->mask, property->xlfd_mask,
+		foreground, background,
+		(result->mask & XAW_TPROP_UNDERLINE) != 0,
+		(result->mask & XAW_TPROP_OVERSTRIKE) != 0,
+		(result->mask & XAW_TPROP_SUBSCRIPT) != 0,
+		(result->mask & XAW_TPROP_SUPERSCRIPT) != 0,
+		xlfd);
+
+    quark = XrmStringToQuark(identifier);
+    if (result->identifier == NULLQUARK)
+	result->identifier = quark;
+    result->code = quark;
+
+    if ((property = _XawTextSinkGetProperty(list, result->identifier)) != NULL) {
+	if (result->font)
+	    XFreeFont(DisplayOfScreen(list->screen), result->font);
+	if (replace)
+	    XtFree((XtPointer)result);
+
+	return (property);
+    }
+
+    list->properties = (XawTextProperty**)
+	XtRealloc((XtPointer)list->properties, sizeof(XawTextProperty*) *
+		  (list->num_properties + 1));
+    list->properties[list->num_properties++] = result;
+    qsort((void*)list->properties, list->num_properties,
+	      sizeof(XawTextProperty*), qcmp_qident);
+
+    return (result);
+}
+
+XawTextProperty *
+XawTextSinkAddProperty(Widget w, XawTextProperty *property)
+{
+    TextSinkObject sink = (TextSinkObject)w;
+    XawTextPropertyList *list = sink->text_sink.properties;
+
+    return (_XawTextSinkAddProperty(list, property, True));
+}
+
+XawTextProperty *
+XawTextSinkCombineProperty(Widget w,
+			   XawTextProperty *property, XawTextProperty *combine,
+			   Bool override)
+{
+    if (property == NULL || combine == NULL)
+	return (property);
+
+    if ((override || !(property->mask & XAW_TPROP_FOREGROUND)) &&
+	(combine->mask & XAW_TPROP_FOREGROUND)) {
+	property->mask |= XAW_TPROP_FOREGROUND;
+	property->foreground = combine->foreground;
+    }
+    if ((override || !(property->mask & XAW_TPROP_BACKGROUND)) &&
+	(combine->mask & XAW_TPROP_BACKGROUND)) {
+	property->mask |= XAW_TPROP_BACKGROUND;
+	property->background = combine->background;
+    }
+    if ((override || !(property->mask & XAW_TPROP_FPIXMAP)) &&
+	(combine->mask & XAW_TPROP_FPIXMAP)) {
+	property->mask |= XAW_TPROP_FPIXMAP;
+	property->foreground_pixmap = combine->foreground_pixmap;
+    }
+    if ((override || !(property->mask & XAW_TPROP_BPIXMAP)) &&
+	(combine->mask & XAW_TPROP_BPIXMAP)) {
+	property->mask |= XAW_TPROP_BPIXMAP;
+	property->background_pixmap = combine->background_pixmap;
+    }
+    if (combine->mask & XAW_TPROP_UNDERLINE)
+	property->mask |= XAW_TPROP_UNDERLINE;
+    if (combine->mask & XAW_TPROP_OVERSTRIKE)
+	property->mask |= XAW_TPROP_OVERSTRIKE;
+    if ((override || !(property->mask & XAW_TPROP_SUPERSCRIPT)) &&
+	(combine->mask & XAW_TPROP_SUBSCRIPT))
+	property->mask |= XAW_TPROP_SUBSCRIPT;
+    if ((property->mask & XAW_TPROP_SUBSCRIPT) &&
+	(combine->mask & XAW_TPROP_SUPERSCRIPT))
+	property->mask |= XAW_TPROP_SUPERSCRIPT;
+    if ((override || !(property->xlfd_mask & XAW_TPROP_FOUNDRY)) &&
+	(combine->xlfd_mask & XAW_TPROP_FOUNDRY)) {
+	property->xlfd_mask |= XAW_TPROP_FOUNDRY;
+	property->foundry = combine->foundry;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_FAMILY)) &&
+	(combine->xlfd_mask & XAW_TPROP_FAMILY)) {
+	property->xlfd_mask |= XAW_TPROP_FAMILY;
+	property->family = combine->family;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_WEIGHT)) &&
+	(combine->xlfd_mask & XAW_TPROP_WEIGHT)) {
+	property->xlfd_mask |= XAW_TPROP_WEIGHT;
+	property->weight = combine->weight;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_SLANT)) &&
+	(combine->xlfd_mask & XAW_TPROP_SLANT)) {
+	property->xlfd_mask |= XAW_TPROP_SLANT;
+	property->slant = combine->slant;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_SETWIDTH)) &&
+	(combine->xlfd_mask & XAW_TPROP_SETWIDTH)) {
+	property->xlfd_mask |= XAW_TPROP_SETWIDTH;
+	property->setwidth = combine->setwidth;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_ADDSTYLE)) &&
+	(combine->xlfd_mask & XAW_TPROP_ADDSTYLE)) {
+	property->xlfd_mask |= XAW_TPROP_ADDSTYLE;
+	property->addstyle = combine->addstyle;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_PIXELSIZE)) &&
+	(combine->xlfd_mask & XAW_TPROP_PIXELSIZE)) {
+	property->xlfd_mask |= XAW_TPROP_PIXELSIZE;
+	property->pixel_size = combine->pixel_size;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_POINTSIZE)) &&
+	(combine->xlfd_mask & XAW_TPROP_POINTSIZE)) {
+	property->xlfd_mask |= XAW_TPROP_POINTSIZE;
+	property->point_size = combine->point_size;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_RESX)) &&
+	(combine->xlfd_mask & XAW_TPROP_RESX)) {
+	property->xlfd_mask |= XAW_TPROP_RESX;
+	property->res_x = combine->res_x;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_RESY)) &&
+	(combine->xlfd_mask & XAW_TPROP_RESY)) {
+	property->xlfd_mask |= XAW_TPROP_RESY;
+	property->res_y = combine->res_y;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_SPACING)) &&
+	(combine->xlfd_mask & XAW_TPROP_SPACING)) {
+	property->xlfd_mask |= XAW_TPROP_SPACING;
+	property->spacing = combine->spacing;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_AVGWIDTH)) &&
+	(combine->xlfd_mask & XAW_TPROP_AVGWIDTH)) {
+	property->xlfd_mask |= XAW_TPROP_AVGWIDTH;
+	property->avgwidth = combine->avgwidth;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_REGISTRY)) &&
+	(combine->xlfd_mask & XAW_TPROP_REGISTRY)) {
+	property->xlfd_mask |= XAW_TPROP_REGISTRY;
+	property->registry = combine->registry;
+    }
+    if ((override || !(property->xlfd_mask & XAW_TPROP_ENCODING)) &&
+	(combine->xlfd_mask & XAW_TPROP_ENCODING)) {
+	property->xlfd_mask |= XAW_TPROP_ENCODING;
+	property->encoding = combine->encoding;
+    }
+
+    return (property);
+}
+
+/*
+ * The default property must be defined first, if the code is willing to
+ * combine properties.
+ */
 XawTextPropertyList *
 XawTextSinkConvertPropertyList(String name, String spec, Screen *screen,
 			       Colormap colormap, int depth)
@@ -1048,6 +1486,7 @@ XawTextSinkConvertPropertyList(String name, String spec, Screen *screen,
 	bsearch((void*)qname, prop_lists, num_prop_lists,
 		sizeof(XawTextPropertyList*), bcmp_qident);
     XawTextPropertyList *propl, *prev = NULL;
+    XawTextProperty *def_prop = NULL;
     String str, tok, tmp;
 
     if (ptr) {
@@ -1083,6 +1522,8 @@ XawTextSinkConvertPropertyList(String name, String spec, Screen *screen,
 	XawArgVal *argval;
 	XColor color, exact;
 
+	if (def_prop == NULL && propl->num_properties)
+	    def_prop = _XawTextSinkGetProperty(propl, Qdefault);
 	tmp = strchr(tok, ',');
 	if (tmp) {
 	    *tmp = '\0';
@@ -1098,15 +1539,30 @@ XawTextSinkConvertPropertyList(String name, String spec, Screen *screen,
 	    XawFreeParamsStruct(params);
 	    return (NULL);
 	}
-	else if (bsearch((void*)qname, propl->properties, propl->num_properties,
-			 sizeof(XawTextProperty*), bcmp_qident)) {
+	else if (_XawTextSinkGetProperty(propl, ident) != NULL) {
 	    XawFreeParamsStruct(params);
 	    continue;
 	}
 
-	prop = XtNew(XawTextProperty);
+	prop = (XawTextProperty*)XtCalloc(1, sizeof(XawTextProperty));
 	prop->identifier = ident;
-	prop->mask = 0;
+
+	if ((argval = XawFindArgVal(params, "font")) != NULL &&
+	    argval->value) {
+
+	    if ((prop->font = XLoadQueryFont(DisplayOfScreen(screen),
+					     argval->value)) == NULL) {
+		DestroyTextPropertyList(propl);
+		if (prev)
+		    prev->next = NULL;
+		XawFreeParamsStruct(params);
+		return (NULL);
+	    }
+	    prop->mask |= XAW_TPROP_FONT;
+	    SetXlfdDefaults(DisplayOfScreen(screen), prop);
+	}
+	/* fontset processing here */
+
 	if ((argval = XawFindArgVal(params, "foreground")) != NULL &&
 	    argval->value) {
 	    if (!XAllocNamedColor(DisplayOfScreen(screen), colormap,
@@ -1133,32 +1589,93 @@ XawTextSinkConvertPropertyList(String name, String spec, Screen *screen,
 	    prop->background = color.pixel;
 	    prop->mask |= XAW_TPROP_BACKGROUND;
 	}
-	if ((argval = XawFindArgVal(params, "font")) != NULL &&
-	    argval->value) {
-	    if ((prop->font = XLoadQueryFont(DisplayOfScreen(screen),
-					     argval->value)) == NULL) {
-		DestroyTextPropertyList(propl);
-		if (prev)
-		    prev->next = NULL;
-		XawFreeParamsStruct(params);
-		return (NULL);
-	    }
-	    prop->mask |= XAW_TPROP_FONT;
-	}
+	/* foreground_pixmap and background_pixmap processing here */
 
-	/* fontset */
-
-	if (XawFindArgVal(params, "overstrike"))
-	    prop->mask |= XAW_TPROP_OVERSTRIKE;
 	if (XawFindArgVal(params, "underline"))
 	    prop->mask |= XAW_TPROP_UNDERLINE;
+	if (XawFindArgVal(params, "overstrike"))
+	    prop->mask |= XAW_TPROP_OVERSTRIKE;
 
-	propl->properties = (XawTextProperty**)
-	XtRealloc((XtPointer)propl->properties, sizeof(XawTextProperty*) *
-		  (propl->num_properties + 1));
-	propl->properties[propl->num_properties++] = prop;
-	qsort((void*)propl->properties, propl->num_properties,
-	      sizeof(XawTextProperty*), qcmp_qident);
+	if (XawFindArgVal(params, "subscript"))
+	    prop->mask |= XAW_TPROP_SUBSCRIPT;
+	else if (XawFindArgVal(params, "superscript"))
+	    prop->mask |= XAW_TPROP_SUPERSCRIPT;
+
+	/* xlfd */
+	if ((argval = XawFindArgVal(params, "foundry")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_FOUNDRY;
+	    prop->foundry = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "family")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_FAMILY;
+	    prop->family = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "weight")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_WEIGHT;
+	    prop->weight = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "slant")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_SLANT;
+	    prop->slant = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "setwidth")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_SETWIDTH;
+	    prop->setwidth = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "addstyle")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_ADDSTYLE;
+	    prop->addstyle = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "pixelsize")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_PIXELSIZE;
+	    prop->pixel_size = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "pointsize")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_POINTSIZE;
+	    prop->point_size = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "resx")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_RESX;
+	    prop->res_x = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "resy")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_RESY;
+	    prop->res_y = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "spacing")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_SPACING;
+	    prop->spacing = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "avgwidth")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_AVGWIDTH;
+	    prop->avgwidth = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "registry")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_REGISTRY;
+	    prop->registry = XrmStringToQuark(argval->value);
+	}
+	if ((argval = XawFindArgVal(params, "encoding")) != NULL &&
+	    argval->value) {
+	    prop->xlfd_mask |= XAW_TPROP_ENCODING;
+	    prop->encoding = XrmStringToQuark(argval->value);
+	}
+
+	if (def_prop)
+	    (void)XawTextSinkCombineProperty(NULL, prop, def_prop, False);
+	(void)_XawTextSinkAddProperty(propl, prop, False);
 
 	XawFreeParamsStruct(params);
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.6 1999/03/28 15:33:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPaintWin.c,v 1.7 1999/05/15 06:24:58 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -150,8 +150,16 @@ XAAPaintWindow(
 		return;
 	    }        
 	}
+
+	/* The window size check is to reduce pixmap cache thrashing
+	   when there are lots of little windows with pixmap backgrounds
+	   like are sometimes used for buttons, etc... */
+
 	if(infoRec->UsingPixmapCache && 
 	    infoRec->FillCacheBltRects && !NoCache &&
+	    ((what == PW_BORDER) ||
+		(pPix->drawable.height != pWin->drawable.height) ||
+		(pPix->drawable.width != pWin->drawable.width)) &&
 	    (pPix->drawable.height <= infoRec->MaxCacheableTileHeight) &&
 	    (pPix->drawable.width <= infoRec->MaxCacheableTileWidth)) {
 

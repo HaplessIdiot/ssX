@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.2 1999/04/25 10:02:06 dawes Exp $ */
+/* $XFree83: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.3 1999/07/10 12:17:28 dawes Exp $ */
 
 #undef DEBUG
 #define FASTER
@@ -14,12 +14,14 @@
 #  undef	WRXB
 #  undef	WRXW
 #  undef	WRXL
+#  undef	ApmWriteSeq
 #  define RDXB	RDXB_IOP
 #  define RDXW	RDXW_IOP
 #  define RDXL	RDXL_IOP
 #  define WRXB	WRXB_IOP
 #  define WRXW	WRXW_IOP
 #  define WRXL	WRXL_IOP
+#  define ApmWriteSeq(i, v)	wrinx(0x3C4, i, v)
 #  ifdef DEBUG
 #    if defined(PSZ) && (PSZ == 24)
 #      define DPRINTNAME(s)	do { ErrorF("Apm" #s "24_IOP\n"); fflush(stderr); sync(); } while (0)
@@ -149,9 +151,6 @@ A(SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
   APMDECL(pScrn);
 
-  if (h <= 0)
-      return;
-
   DPRINTNAME(SubsequentSolidFillRect);
 #if defined(PSZ) && (PSZ == 24)
 #  ifndef FASTER
@@ -184,6 +183,17 @@ A(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
 
   DPRINTNAME(SetupForScreenToScreenCopy);
   A(CheckMMIO_InitFast)(pScrn);
+
+  if (pApm->apmLock) {
+    /*
+     * This is just an attempt, because Daryll is tampering with MY registers.
+     */
+    WRXB(0xDB, (RDXB(0xDB) & 0xF4) |  0x0A);
+    ApmWriteSeq(0x1B, 0x20);
+    ApmWriteSeq(0x1C, 0x2F);
+    pApm->apmLock = FALSE;
+  }
+
   pApm->blitxdir = xdir;
   pApm->blitydir = ydir;
 
@@ -214,16 +224,14 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
 				    int x2, int y2, int w, int h)
 {
   APMDECL(pScrn);
+  BoxRec	box;
 #ifndef FASTER
-  u32 c = pApm->apmTransparency ? DEC_SOURCE_TRANSPARENCY : 0;
+  u32		c = pApm->apmTransparency ? DEC_SOURCE_TRANSPARENCY : 0;
 #endif
 #if defined(PSZ) && (PSZ == 24)
-  u16 offset;
+  u16		offset;
 #endif
-  u32 sx, dx, sy, dy;
-
-  if (h <= 0)
-      return;
+  u32		sx, dx, sy, dy;
 
   DPRINTNAME(SubsequentScreenToScreenCopy);
   if (pApm->blitxdir < 0)
@@ -291,6 +299,8 @@ A(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int x1, int y1,
 #ifndef FASTER
   SETDEC(c);
 #endif
+  if (POINT_IN_REGION(pApm->pScreen, &pApm->apmLockedRegion, sx, sy, &box))
+      A(Sync)(pScrn);
 }
 
 #if !defined(PSZ) || PSZ != 24
@@ -341,9 +351,6 @@ A(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int x, int y,
 #ifndef FASTER
   u32 c;
 #endif
-
-  if (h <= 0)
-      return;
 
   DPRINTNAME(SubsequentCPUToScreenColorExpandFill);
 #ifndef FASTER
@@ -404,12 +411,6 @@ A(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
 #endif
   }
 
-  /* Daryll : you may not tamper with bits 0, 1 and 3 of this register... */
-#ifdef IOP_ACCESS
-  WRXB_IOP(0xDB, pApm->db & 0xF4);
-#else
-  WRXB(0xDB, (pApm->db & 0xF4) | 0x0A);
-#endif
   SETROP(apmROP[rop]);
 }
 
@@ -421,9 +422,6 @@ A(SubsequentImageWriteRect)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 #ifndef FASTER
   u32 c;
 #endif
-
-  if (h <= 0)
-      return;
 
   DPRINTNAME(SubsequentImageWriteRect);
 #ifndef FASTER
@@ -485,9 +483,6 @@ A(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn, int x, int y,
   APMDECL(pScrn);
   u32 c;
 
-  if (h <= 0)
-      return;
-
   DPRINTNAME(SubsequentScreenToScreenColorExpandFill);
 #ifdef FASTER
   c = DEC_OP_BLT | DEC_DIR_X_POS | DEC_DIR_Y_POS | DEC_SOURCE_MONOCHROME |
@@ -500,51 +495,52 @@ A(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn, int x, int y,
   if (pApm->apmTransparency)
     c |= DEC_SOURCE_TRANSPARENCY;
 
-  if (srcy >= pApm->displayHeight) {
+  if (srcy >= pApm->Scanlines) {
+      struct ApmStippleCacheRec *pCache;
       CARD32	dist;
 
       /*
        * Offscreen linear stipple
        */
-      if (w != pApm->apmStippleCache.orig_w) {
-	  pApm->apmClip = TRUE;
+      pCache = &pApm->apmCache[srcy / pApm->Scanlines - 1];
+      if (w != pCache->apmStippleCache.w * pApm->bitsPerPixel) {
 	  A(WaitForFifo)(pApm, 3);
 	  SETCLIP_LEFTTOP(x, y);
-	  SETCLIP_RIGHTBOT(x + w, y + h);
+	  SETCLIP_RIGHTBOT(x + w - 1, y + h - 1);
 	  SETCLIP_CTRL(0x01);
-	  w = pApm->apmStippleCache.orig_w;
-	  srcx = pApm->apmStippleCache.x;
-	  x -= offset;
+	  pApm->apmClip = TRUE;
+	  w = pCache->apmStippleCache.w * pApm->bitsPerPixel;
+	  x -= srcx - pCache->apmStippleCache.x;
+	  srcx = pCache->apmStippleCache.x;
       }
       else if (pApm->apmClip) {
-	  pApm->apmClip = FALSE;
 	  A(WaitForFifo)(pApm, 1);
 	  SETCLIP_CTRL(0x00);
+	  pApm->apmClip = FALSE;
       }
-      srcx += ((srcy-pApm->apmStippleCache.y) * pApm->apmStippleCache.orig_w *
-	      pApm->displayWidth) / 8;
-      srcy -= pApm->displayHeight;
-      c |= DEC_SOURCE_CONTIG | DEC_SOURCE_LINEAR;
+      srcx += (srcy - pCache->apmStippleCache.y) * pCache->apmStippleCache.w;
+      srcy = pCache->apmStippleCache.y % pApm->Scanlines;
       dist = srcx + srcy * pApm->displayWidth;
       srcx = dist & 0xFFF;
       srcy = dist >> 12;
+      c |= DEC_SOURCE_CONTIG | DEC_SOURCE_LINEAR;
   }
   else if (offset) {
-      pApm->apmClip = TRUE;
       A(WaitForFifo)(pApm, 3);
       SETCLIP_LEFTTOP(x, y);
       SETCLIP_RIGHTBOT(x + w, y + h);
       SETCLIP_CTRL(0x01);
+      pApm->apmClip = TRUE;
       w += offset;
       x -= offset;
   }
   else if (pApm->apmClip) {
-      pApm->apmClip = FALSE;
       A(WaitForFifo)(pApm, 1);
       SETCLIP_CTRL(0x00);
+      pApm->apmClip = FALSE;
   }
 
-  A(WaitForFifo)(pApm, 5);
+  A(WaitForFifo)(pApm, 4);
 
   SETSOURCEXY(srcx, srcy);
   SETDESTXY(x, y);
@@ -641,9 +637,74 @@ A(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     APMDECL(pScrn);
     int dwords, skipleft, Bpp = bpp >> 3; 
     Bool beCareful = FALSE;
-    int PlusOne = 0, mask;
+    unsigned char *dst = ((unsigned char *)pApm->FbBase) + x * Bpp + y * pApm->bytesPerScanline;
+    int PlusOne = 0, mask, count;
 
     DPRINTNAME(WritePixmap);
+    /*
+     * First the fast case : source and dest have same alignment. Doc says
+     * it's faster to do it here, which may be true since one has to read
+     * the chip when CPU to screen-ing.
+     */
+    if ((skipleft = (long)src & 3L) == ((long)dst & 3L)) {
+	int skipright;
+
+	if (skipleft)
+	    skipleft = 4 - skipleft;
+	dwords = (skipright = (w - skipleft) * Bpp) >> 2;
+	skipright %= 4;
+	if (!skipleft && !skipright)
+	    while (h-- > 0) {
+		CARD32 *src2 = (CARD32 *)src;
+		CARD32 *dst2 = (CARD32 *)dst;
+
+		for (count = dwords; count-- > 0; )
+		    *dst2++ = *src2++;
+		src += srcwidth;
+		dst += pApm->bytesPerScanline;
+	    }
+	else if (!skipleft)
+	    while (h-- > 0) {
+		CARD32 *src2 = (CARD32 *)src;
+		CARD32 *dst2 = (CARD32 *)dst;
+
+		for (count = dwords; count-- > 0; )
+		    *dst2++ = *src2++;
+		for (count = skipright; count-- > 0; )
+		    ((char *)dst2)[count] = ((char *)src2)[count];
+		src += srcwidth;
+		dst += pApm->bytesPerScanline;
+	    }
+	else if (!skipright)
+	    while (h-- > 0) {
+		CARD32 *src2 = (CARD32 *)(src + skipleft);
+		CARD32 *dst2 = (CARD32 *)(dst + skipleft);
+
+		for (count = skipleft; count-- > 0; )
+		    dst[count] = src[count];
+		for (count = dwords; count-- > 0; )
+		    *dst2++ = *src2++;
+		src += srcwidth;
+		dst += pApm->bytesPerScanline;
+	    }
+	else
+	    while (h-- > 0) {
+		CARD32 *src2 = (CARD32 *)(src + skipleft);
+		CARD32 *dst2 = (CARD32 *)(dst + skipleft);
+
+		for (count = skipleft; count-- > 0; )
+		    dst[count] = src[count];
+		for (count = dwords; count-- > 0; )
+		    *dst2++ = *src2++;
+		for (count = skipright; count-- > 0; )
+		    ((char *)dst2)[count] = ((char *)src2)[count];
+		src += srcwidth;
+		dst += pApm->bytesPerScanline;
+	    }
+
+	return;
+    }
+
     if ((skipleft = (long)src & 0x03L)) {
 	if (Bpp == 3)
 	   skipleft = 4 - skipleft;
@@ -673,9 +734,11 @@ BAD_ALIGNMENT:
     if (dwords & mask) {
 	/*
 	 * Experimental...
+	 * It seems the AT3D needs a padding of scanline to a multiple of
+	 * 4 pixels, not only bytes.
 	 */
 	PlusOne = mask - (dwords & mask) + 1;
-    } 
+    }
 
     A(SetupForImageWrite)(pScrn, rop, planemask, trans, bpp, depth);
     A(SubsequentImageWriteRect)(pScrn, x, y, w, h, skipleft);
@@ -690,8 +753,6 @@ BAD_ALIGNMENT:
     srcwidth -= (dwords << 2);
 
     while (h--) {
-	int		count;
-
 	for (count = dwords; count-- > 0; ) {
 	    while (!(STATUS() & STATUS_HOSTBLTBUSY))
 		;
@@ -739,10 +800,38 @@ static void A(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
     APMDECL(pScrn);
 
     DPRINTNAME(SetupForMono8x8PatternFill);
-    A(WaitForFifo)(pApm, 3);
-    SETFOREGROUNDCOLOR(fg);
-    SETBACKGROUNDCOLOR(bg);
-    SETROP(apmROP[rop] & 0xF0);
+    if (bg != -1) {
+	pApm->apmTransparency = FALSE;
+	A(WaitForFifo)(pApm, 3 + pApm->apmClip);
+	SETBACKGROUNDCOLOR(bg);
+	SETFOREGROUNDCOLOR(fg);
+	SETROP(apmROP[rop] & 0xF0);
+    }
+    else {
+	pApm->apmTransparency = TRUE;
+	A(WaitForFifo)(pApm, 3);
+	SETROP(0xCC);
+	SETFOREGROUNDCOLOR(fg);
+	SETDESTOFF(pApm->ScratchMem);
+	A(WaitForFifo)(pApm, 4 + pApm->apmClip);
+#ifdef FASTER
+	SETDEC(pApm->Setup_DEC | DEC_OP_STRIP | DEC_DEST_LINEAR |
+		DEC_DEST_CONTIG | DEC_QUICKSTART_ONDIMX);
+	SETWIDTH(pApm->ScratchMemWidth);
+	SETDEC(pApm->Setup_DEC | DEC_OP_BLT | DEC_DEST_XY | DEC_SOURCE_CONTIG |
+		DEC_PATTERN_88_1bMONO | DEC_DEST_UPD_BLCORNER | DEC_SOURCE_TRANSPARENCY |
+		DEC_QUICKSTART_ONDIMX);
+#else
+	SETWIDTH(pApm->ScratchMemWidth);
+	SETDEC(pApm->Setup_DEC | DEC_OP_STRIP | DEC_DEST_LINEAR |
+		DEC_DEST_CONTIG | DEC_START);
+#endif
+	SETROP((apmROP[rop] & 0xF0) | 0x0A);
+    }
+    if (pApm->apmClip) {
+	SETCLIP_CTRL(0);
+	pApm->apmClip = FALSE;
+    }
 }
 
 static void A(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
@@ -751,24 +840,55 @@ static void A(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
 {
     APMDECL(pScrn);
 
-    if (h <= 0)
-	return;
     DPRINTNAME(SubsequentMono8x8PatternFillRect);
-    A(WaitForFifo)(pApm, 5);
+    A(WaitForFifo)(pApm, 6);
     SETPATTERN(patx, paty);
     SETDESTXY(x, y);
-    UPDATEDEST(x + w + 1, y);
-#ifdef FASTER
-    SETDEC(pApm->Setup_DEC | ((h == 1) ? DEC_OP_STRIP : DEC_OP_RECT) | 
-	    DEC_DEST_XY | DEC_PATTERN_88_1bMONO | DEC_DEST_UPD_TRCORNER |
-	    DEC_QUICKSTART_ONDIMX);
-    SETWIDTHHEIGHT(w, h);
-#else
-    SETWIDTHHEIGHT(w, h);
-    SETDEC(pApm->Setup_DEC | ((h == 1) ? DEC_OP_STRIP : DEC_OP_RECT) | 
-	    DEC_DEST_XY | DEC_PATTERN_88_1bMONO | DEC_DEST_UPD_TRCORNER |
-	    DEC_START);
+    UPDATEDEST(x, y + h + 1);
+    if (pApm->apmTransparency) {
+	int hoff = pApm->ScratchMemWidth / w;
+
+	SETSOURCEOFF(pApm->ScratchMem);
+#ifndef FASTER
+	if (h > hoff)
+	    SETWIDTHHEIGHT(w, hoff);
 #endif
+	while (h > hoff) {
+#ifdef FASTER
+	    A(WaitForFifo)(pApm, 4);
+	    SETWIDTHHEIGHT(w, hoff);
+	    SETPATTERN(patx, paty);
+#else
+	    A(WaitForFifo)(pApm, 5);
+	    SETDEC(pApm->Setup_DEC | DEC_OP_BLT | DEC_SOURCE_LINEAR |
+		    DEC_SOURCE_CONTIG | DEC_DEST_XY | DEC_PATTERN_88_1bMONO |
+		    DEC_DEST_UPD_BLCORNER | DEC_START);
+	    SETPATTERN(patx, paty);
+#endif
+	    h -= hoff;
+	}
+#ifdef FASTER
+	SETWIDTHHEIGHT(w, h);
+#else
+	SETWIDTHHEIGHT(w, h);
+	SETDEC(pApm->Setup_DEC | DEC_OP_BLT | DEC_DEST_XY |
+		DEC_SOURCE_CONTIG | DEC_PATTERN_88_1bMONO |
+		DEC_DEST_UPD_BLCORNER | DEC_START);
+#endif
+    }
+    else {
+#ifdef FASTER
+	SETDEC(pApm->Setup_DEC | ((h == 1) ? DEC_OP_STRIP : DEC_OP_RECT) | 
+		DEC_DEST_XY | DEC_PATTERN_88_1bMONO | DEC_DEST_UPD_TRCORNER |
+		DEC_QUICKSTART_ONDIMX);
+	SETWIDTHHEIGHT(w, h);
+#else
+	SETWIDTHHEIGHT(w, h);
+	SETDEC(pApm->Setup_DEC | ((h == 1) ? DEC_OP_STRIP : DEC_OP_RECT) | 
+		DEC_DEST_XY | DEC_PATTERN_88_1bMONO | DEC_DEST_UPD_TRCORNER |
+		DEC_START);
+#endif
+    }
 }
 
 static void A(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn,int patx,int paty,
@@ -781,9 +901,9 @@ static void A(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn,int patx,int paty,
     if (transparency_color != -1) {
 #ifndef FASTER
 	pApm->apmTransparency = TRUE;
-	A(WaitForFifo)(pApm, 2);
+	A(WaitForFifo)(pApm, 2 + pApm->apmClip);
 #else
-	A(WaitForFifo)(pApm, 3);
+	A(WaitForFifo)(pApm, 3 + pApm->apmClip);
 	SETDEC(pApm->Setup_DEC | DEC_OP_BLT | 
 	    DEC_DEST_XY | DEC_PATTERN_88_8bCOLOR | DEC_SOURCE_TRANSPARENCY |
 	    DEC_QUICKSTART_ONDIMX);
@@ -793,12 +913,16 @@ static void A(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn,int patx,int paty,
     else {
 #ifndef FASTER
 	pApm->apmTransparency = FALSE;
-	A(WaitForFifo)(pApm, 1);
+	A(WaitForFifo)(pApm, 1 + pApm->apmClip);
 #else
-	A(WaitForFifo)(pApm, 2);
+	A(WaitForFifo)(pApm, 2 + pApm->apmClip);
 	SETDEC(pApm->Setup_DEC | DEC_OP_BLT | 
 	    DEC_DEST_XY | DEC_PATTERN_88_8bCOLOR | DEC_QUICKSTART_ONDIMX);
 #endif
+    }
+    if (pApm->apmClip) {
+	SETCLIP_CTRL(0);
+	pApm->apmClip = FALSE;
     }
     SETROP(apmROP[rop]);
 }
@@ -809,8 +933,6 @@ static void A(SubsequentColor8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
 {
     APMDECL(pScrn);
 
-    if (h <= 0)
-	return;
     DPRINTNAME(SubsequentColor8x8PatternFillRect);
 #ifndef FASTER
     A(WaitForFifo)(pApm, 5);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/options.c,v 1.4 1999/06/13 13:47:51 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/options.c,v 1.5 1999/08/15 13:00:56 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -68,6 +68,13 @@ static void DoSetTextProperties(xedit_flist_item*, property_info*);
  */
 extern void C_ModeStart(Widget);
 extern void C_ModeEnd(Widget);
+
+/*
+ * externs in html-mode.c
+ */
+extern void Html_ModeStart(Widget);
+extern void Html_ModeEnd(Widget);
+
 extern void _XawTextBuildLineTable(TextWidget, XawTextPosition, _XtBoolean);
 
 /*
@@ -86,7 +93,8 @@ static XtActionsRec actions[] = {
     {"change-field", ChangeField},
 };
 
-#define	C_MODE	0
+#define	C_MODE		0
+#define HTML_MODE	1
 static property_info property_list[] = {
     {
 	/* C */
@@ -99,6 +107,17 @@ static property_info property_list[] = {
 	C_ModeStart,	/* SetMode */
 	C_ModeEnd	/* UnsetMode */
     },
+    {
+	/* Html */
+	False,		/* automatic */
+	NULL,		/* ext_res */
+	NULL,		/* prop_res */
+	NULL,		/* extensions */
+	0,		/* num_extensions */
+	NULL,		/* properties */
+	Html_ModeStart,	/* SetMode */
+	Html_ModeEnd	/* UnsetMode */
+    },
 };
 
 #define Offset(field) XtOffsetOf(struct _property_info, field)
@@ -109,6 +128,15 @@ static XtResource C_resources[] = {
 	Offset(ext_res), XtRString, "c,h,cc,C"},
     {"properties", "Properties", XtRString, sizeof(char*),
 	Offset(prop_res), XtRString, "error?background=black&foreground=white"},
+};
+
+static XtResource Html_resources[] = {
+    {"auto", "Auto", XtRBoolean, sizeof(Boolean),
+	Offset(automatic), XtRImmediate, (XtPointer)True},
+    {"extensions", "Extensions", XtRString, sizeof(char*),
+	Offset(ext_res), XtRString, "html,htm"},
+    {"properties", "Properties", XtRString, sizeof(char*),
+	Offset(prop_res), XtRString, NULL},
 };
 #undef Offset
 
@@ -125,7 +153,7 @@ static XtResource C_resources[] = {
 
 static Widget autoFill, wrapNever, wrapLine, wrapWord,
 	      justifyLeft, justifyRight, justifyCenter, justifyFull,
-	      breakColumns, scrollVert, scrollHoriz, modeNone, modeC;
+	      breakColumns, scrollVert, scrollHoriz, modeNone, modeC, modeHtml;
 
 void
 CreateEditPopup(void)
@@ -229,6 +257,28 @@ CreateEditPopup(void)
 	XtFree(list);
 
 	XtAddCallback(modeC, XtNcallback, ModeCallback, (XtPointer)&property_list[C_MODE]);
+
+	modeHtml	= XtCreateManagedWidget("html", smeBSBObjectClass,
+						mode_popup, NULL, 0);
+	XtGetApplicationResources(modeHtml, (XtPointer)&property_list[HTML_MODE],
+				  Html_resources, XtNumber(Html_resources), NULL, 0);
+	property_list[HTML_MODE].properties =
+	    XawTextSinkConvertPropertyList("html", property_list[HTML_MODE].prop_res,
+					   topwindow->core.screen,
+					   topwindow->core.colormap,
+					   topwindow->core.depth);
+	list = XtNewString(property_list[HTML_MODE].ext_res);
+	for (str = strtok(list, " \t,"); str; str = strtok(NULL, " \t,")) {
+	    property_list[HTML_MODE].extensions =
+		(char**)XtRealloc((XtPointer)property_list[HTML_MODE].extensions,
+				  (property_list[HTML_MODE].num_extensions + 1) *
+				  sizeof(char*));
+	    property_list[HTML_MODE].extensions
+		[property_list[HTML_MODE].num_extensions++] = XtNewString(str);
+	}
+	XtFree(list);
+
+	XtAddCallback(modeHtml, XtNcallback, ModeCallback, (XtPointer)&property_list[HTML_MODE]);
     }
 }
 
@@ -319,12 +369,18 @@ SetEditMenu(void)
 	if (prop == NULL) {
 	    XtSetValues(modeNone, &args[1], 1);
 	    XtSetValues(modeC, &args[0], 1);
+	    XtSetValues(modeHtml, &args[0], 1);
 	}
 	else if (prop == property_list[C_MODE].properties) {
 	    XtSetValues(modeNone, &args[0], 1);
 	    XtSetValues(modeC, &args[1], 1);
+	    XtSetValues(modeHtml, &args[0], 1);
 	}
-
+	else if (prop == property_list[HTML_MODE].properties) {
+	    XtSetValues(modeNone, &args[0], 1);
+	    XtSetValues(modeC, &args[0], 1);
+	    XtSetValues(modeHtml, &args[1], 1);
+	}
     }
     if (!auto_fill) {
 	XtSetSensitive(wrapNever, True);
@@ -570,11 +626,10 @@ SetTextProperties(xedit_flist_item *item, Bool force)
 	    break;
     }
 
-    if (i < sizeof(property_list) / sizeof(property_list[0]) &&
-	(force || info->automatic == True))
-	DoSetTextProperties(item, info);
-    else
-	DoSetTextProperties(item, NULL);
+    if (i >= sizeof(property_list) / sizeof(property_list[0]) ||
+	(!force && info->automatic == False))
+	info = NULL;
+    DoSetTextProperties(item, info);
 }
 
 void
@@ -654,10 +709,14 @@ DoSetTextProperties(xedit_flist_item *item, property_info *info)
 	    }
     }
 
+    item->properties = info ? info->properties : NULL;
+
+    XtSetArg(args[0], XawNtextProperties, item->properties);
+    XtSetValues(XawTextGetSink(textwindow), args, 1);
     if (info)
 	(info->SetMode)(source);
-
-    item->properties = info ? info->properties : NULL;
+    XtSetArg(args[0], XawNtextProperties, prop);
+    XtSetValues(XawTextGetSink(textwindow), args, 1);
 
     UpdateTextProperties();
 }

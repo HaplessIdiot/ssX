@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.4 1999/06/12 07:18:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.5 1999/07/19 13:36:16 dawes Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -135,8 +135,8 @@ VidModeGetCurrentModeline(int scrnIndex, pointer *mode, int *dotClock)
 	return FALSE;
 
     pScrn = xf86Screens[scrnIndex];
-    *mode = (pointer)(pScrn->modes);
-    *dotClock = pScrn->modes->Clock;
+    *mode = (pointer)(pScrn->currentMode);
+    *dotClock = pScrn->currentMode->Clock;
 
     return TRUE;
 }
@@ -338,6 +338,7 @@ VidModeSwitchMode(int scrnIndex, pointer mode)
 	/* 
 	 * adjust new frame for the displaysize
 	 */
+	pScrn->currentMode = (DisplayModePtr)mode;
 	pScrn->frameX0 = (pScrn->frameX1 + pScrn->frameX0 -
 			 ((DisplayModePtr)mode)->HDisplay) / 2;
 	pScrn->frameX1 = pScrn->frameX0 + ((DisplayModePtr)mode)->HDisplay - 1;

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.64 1999/06/06 08:48:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.65 1999/07/19 13:36:15 dawes Exp $ */
 
 /*
  * Includes
@@ -473,6 +473,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ALSC6410	SVGA_TYPE(V_ALLIANCE,1)	/* Alliance PM6410	*/
 #define CHIP_ALSC6422	SVGA_TYPE(V_ALLIANCE,2)	/* Alliance PM6422	*/
 #define CHIP_ALSCAT24	SVGA_TYPE(V_ALLIANCE,3)	/* Alliance AT24	*/
+#define CHIP_ALSCAT3D	SVGA_TYPE(V_ALLIANCE,4)	/* Alliance AT3D	*/
 #define CHIP_CT_UNKNOWN	SVGA_TYPE(V_CT,0)	/* C&T unknown		*/
 #define CHIP_CT450	SVGA_TYPE(V_CT,1)	/* C&T 82c450		*/
 #define CHIP_CT451	SVGA_TYPE(V_CT,2)	/* C&T 82c451		*/

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.144 1999/07/10 12:17:10 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.145 1999/08/01 07:56:50 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -182,12 +182,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.144 1999/07/10 12:17:10 dawes Exp 
  * It can be disabled by the following.
  *
 #define XF86Server		NO
- */
-
-/*
- * The following server is supported on Motorola 68k platforms:
- *
-#define XF68FBDevServer		NO
  */
 
 /*
@@ -454,6 +448,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.144 1999/07/10 12:17:10 dawes Exp 
  */
 
 /*
+ * If you want to build the client library for the xf86rush extension,
+ * uncomment this line.
+ *
+#define BuildXF86RushLibrary	YES
+ */
+
+/*
  * By default, the sample config files for xinit, xdm and xfs are installed
  * only when there is no pre-existing version installed.  Uncommenting the
  * following lines will force the sample versions to be installed even if
@@ -514,6 +515,14 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.144 1999/07/10 12:17:10 dawes Exp 
  *
 #define HasDECnet		YES
  */
+
+/*
+ * To build static and shared libraries with debugging information, uncomment
+ * this. Assumes you have Gcc2.
+ * (If you don't have Gcc2, you can use the DebugLib{X11,Xt,Xaw,...} variables
+ * to build debugging versions of the libraries separately.)
+#define DebuggableLibraries	YES
+*/
 
 /*
  * To forceably build static libraries in addition to shared libraries,

@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.64 1999/03/28 15:33:06 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.65 1999/07/19 13:36:32 dawes Exp $
 
 # VGA
 
@@ -2770,7 +2770,7 @@ DRIVER mga
 LINE VideoRam 8192
 NOCLOCKPROBE
 
-# NV1
+# NVIDIA
 
 NAME Diamond Edge 3D
 CHIPSET nv1
@@ -2782,15 +2782,19 @@ NOCLOCKPROBE
 NAME RIVA128
 CHIPSET RIVA128
 SERVER SVGA
-DRIVER vga
-UNSUPPORTED
+DRIVER nv
 NOCLOCKPROBE
 
 NAME RIVA TNT
 CHIPSET RIVATNT
 SERVER SVGA
-DRIVER vga
-UNSUPPORTED
+DRIVER nv
+NOCLOCKPROBE
+
+NAME RIVA TNT2
+CHIPSET RIVATNT2
+SERVER SVGA
+DRIVER nv
 NOCLOCKPROBE
 
 NAME ELSA VICTORY ERAZOR
@@ -2808,14 +2812,32 @@ SEE RIVA128
 NAME Diamond Viper 550
 SEE RIVA TNT
 
+NAME Diamond Viper 770
+SEE RIVA TNT2
+
 NAME STB Velocity 128
 SEE RIVA128
 
 NAME STB nvidia 128
 SEE RIVA128
 
+NAME STB Velocity 4400
+SEE RIVATNT
+
 NAME ASUS 3Dexplorer
 SEE RIVA128
+
+NAME Guillemot Maxi Gamer Xentor
+SEE RIVATNT2
+
+NAME Guillemot Maxi Gamer Xentor 32
+SEE RIVATNT2
+
+NAME Creative Graphics Blaster TNT
+SEE RIVATNT
+
+NAME Creative Graphics Blaster TNT2
+SEE RIVATNT2
 
 # 3DLabs
 

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.7 1996/10/03 08:37:44 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.8 1996/12/23 06:47:06 dawes Exp $
 #
 # This is a shell archive.  Save it in a file, remove anything before
 # this line, and then unpack it by entering "sh file".  Note, it may
@@ -171,12 +171,10 @@ X#include <sys/proc.h>
 X#include <sys/errno.h>
 X
 X#define VGA_START 0xA0000
-X#ifdef PC98 
 X#define VGA_END   0xFFFFF
+X#ifdef PC98 
 X#define HOLE16M_START	0xF00000
 X#define HOLE16M_END	0xFFFFFF
-X#else 
-X#define VGA_END   0xBFFFF
 X#endif 
 X
 X/* open counter */
@@ -459,7 +457,7 @@ X *
 X * Copyright (c) 1994,1996 The XFree86 Project Inc.
 X */
 Xchar *ap_major_version = "1";
-Xchar *ap_minor_version = "6";
+Xchar *ap_minor_version = "7";
 END-of-version.c
 echo x - version.h
 sed 's/^X//' >version.h << 'END-of-version.h'

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.46 1999/04/11 13:10:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.47 1999/07/19 13:36:07 dawes Exp $ */
 
 /*
 
@@ -857,7 +857,10 @@ ProcXF86VidModeDeleteModeLine(ClientPtr client)
 	    MODEMATCH(mode, stuff))
 	return BadValue;
 
-    while (VidModeGetNextModeline(stuff->screen, &mode, &dotClock)) {
+    if (!VidModeGetFirstModeline(stuff->screen, &mode, &dotClock))
+	return BadValue;
+
+     do {
 	if (xf86GetVerbosity() > 1) {
 	    ErrorF("Checking against clock: %d (%d)\n",
 		 VidModeGetModeValue(mode, VIDMODE_CLOCK), dotClock);
@@ -880,7 +883,8 @@ ProcXF86VidModeDeleteModeLine(ClientPtr client)
 		ErrorF("DeleteModeLine - Succeeded\n");
 	    return(client->noClientException);
 	}
-    }
+    } while (VidModeGetNextModeline(stuff->screen, &mode, &dotClock));
+
     return BadValue;
 }
 
@@ -1125,7 +1129,6 @@ ProcXF86VidModeSwitchMode(ClientPtr client)
     DEBUG_P("XF86VidModeSwitchMode");
 
     VidModeZoomViewport(stuff->screen, (short)stuff->zoom);
-	return VidModeErrorBase + XF86VidModeZoomLocked;
 
     REQUEST_SIZE_MATCH(xXF86VidModeSwitchModeReq);
 
@@ -1192,7 +1195,10 @@ ProcXF86VidModeSwitchToMode(ClientPtr client)
 	    && MODEMATCH(mode, stuff))
 	return (client->noClientException);
 
-    while (VidModeGetNextModeline(stuff->screen, &mode, &dotClock)) {
+    if (!VidModeGetFirstModeline(stuff->screen, &mode, &dotClock))
+	return BadValue;
+
+    do {
 	if (xf86GetVerbosity() > 1) {
 	    ErrorF("Checking against clock: %d (%d)\n",
 		 VidModeGetModeValue(mode, VIDMODE_CLOCK), dotClock);
@@ -1218,7 +1224,8 @@ ProcXF86VidModeSwitchToMode(ClientPtr client)
 		ErrorF("SwitchToMode - Succeeded\n");
 	    return(client->noClientException);
 	}
-    }
+    } while (VidModeGetNextModeline(stuff->screen, &mode, &dotClock));
+
     return BadValue;
 }
 

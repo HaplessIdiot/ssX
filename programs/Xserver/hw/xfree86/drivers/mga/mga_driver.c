@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.111 1999/08/21 13:48:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.112 1999/08/22 05:57:34 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -880,9 +880,8 @@ ErrorF("I2C initialized on %p\n",pMga->I2C);
     xf86PrintEDID(MonInfo);
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n\n");
   }
-  /* while experimenting, get DDC1 info even if I2C gave us DDC2 info */
-  /* This will not Work! (EE) */
-#else 
+  if (!MonInfo)
+#endif /* MGAuseI2C */
   /* Read and output monitor info using DDC1 */
   if (pMga->ddc1Read && pMga->DDC1SetSpeed) {
     MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex,
@@ -892,7 +891,6 @@ ErrorF("I2C initialized on %p\n",pMga->I2C);
     xf86PrintEDID( MonInfo );
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
   }
-#endif /* MGAuseI2C */  
 
 
   /* Restore previous state and unmap MGA memory and MMIO areas */

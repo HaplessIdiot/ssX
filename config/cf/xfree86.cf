@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.243 1999/08/01 07:56:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.244 1999/08/14 10:48:59 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -29,7 +29,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* XInput drivers */
 #ifndef XInputDrivers
 #if NewInput
-#define XInputDrivers		dynapro wacom
+#define XInputDrivers		dynapro microtouch wacom
 #else
 #define XInputDrivers		dynapro elo2300 elographics magellan \
 				microtouch mutouch spaceorb wacom
@@ -906,7 +906,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3915
+#define XFree86Version	3916
 #endif
 
 #ifndef XVendorString
@@ -968,6 +968,14 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #ifndef DefaultGcc2AxpOpt
 #define DefaultGcc2AxpOpt -O2
 #endif
+#endif
+
+#ifndef DefaultGcc2DebugOpt
+#define DefaultGcc2DebugOpt -g
+#endif
+
+#if HasGcc2 && DebuggableLibraries
+#define LibraryDebugOpt DefaultGcc2DebugOpt
 #endif
 
 #ifndef DontDefineXF86Contrib

@@ -1,10 +1,9 @@
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.2 1999/08/22 06:21:27 dawes Exp $ */
 /*
  * file: apm_dga.c
  * ported from s3virge, ported from mga
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.1 1999/07/10 12:17:27 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -67,10 +66,6 @@ ApmDGAInit(ScreenPtr pScreen)
     pMode = firstMode = pScrn->modes;
 
     while(pMode) {
-	/* The Apm driver wasn't designed with switching depths in
-	   mind.  Subsequently, large chunks of it will probably need
-	   to be rewritten to accommodate depth changes in DGA mode */
-
 	if(pScrn->displayWidth != pMode->HDisplay) {
 	    newmodes = xrealloc(modes, (num + 2) * sizeof(DGAModeRec));
 	    oneMore = TRUE;
@@ -109,7 +104,7 @@ SECOND_PASS:
 	currentMode->viewportFlags = DGA_FLIP_RETRACE;
 	currentMode->offset = 0;
 	currentMode->address = (pointer)(pApm->LinAddress +
-			((char *)pApm->FbBase - (char *)pApm->LinMap));
+			0*((char *)pApm->FbBase - (char *)pApm->LinMap));
 /*cep*/
   xf86ErrorFVerb(4, 
 	"	ApmDGAInit firstone vpWid=%d, vpHgt=%d, Bpp=%d, mdbitsPP=%d\n",
@@ -296,6 +291,23 @@ ApmSetViewport(
 {
     APMDECL(pScrn);
 
+    if (pApm->apmLock) {
+	/*
+	 * This is just an attempt, because Daryll is tampering with MY
+	 * registers.
+	 */
+	if (!pApm->noLinear) {
+	    WRXB(0xDB, (RDXB(0xDB) & 0xF4) |  0x0A);
+	    ApmWriteSeq(0x1B, 0x20);
+	    ApmWriteSeq(0x1C, 0x2F);
+	}
+	else {
+	    WRXB_IOP(0xDB, (RDXB_IOP(0xDB) & 0xF4) |  0x0A);
+	    wrinx(0x3C4, 0x1B, 0x20);
+	    wrinx(0x3C4, 0x1C, 0x2F);
+	}
+	pApm->apmLock = FALSE;
+    }
     pScrn->AdjustFrame(pScrn->pScreen->myNum, x, y, flags);
     if (pApm->VGAMap) {
 	/* Wait until vertical retrace is in progress. */
@@ -384,7 +396,7 @@ ApmOpenFramebuffer(
 
     *name = NULL; 		/* no special device */
     *mem = (unsigned char*)(pApm->LinAddress +
-			((char *)pApm->FbBase - (char *)pApm->LinMap));
+			0*((char *)pApm->FbBase - (char *)pApm->LinMap));
     *size = pScrn->videoRam << 10;
     *offset = 0;
     *flags = DGA_NEED_ROOT;

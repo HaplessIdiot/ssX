@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.35 1999/08/01 07:57:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.36 1999/08/21 13:48:23 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2258,18 +2258,15 @@ xf86GetPciSysRes(resPtr *res, int flags)
     /* XXX Needs to be updated for 64 bit mappings */
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
 	long resMisc;
-#if 0 /* disable this for now. If no problem remove entirely */
 	if (PCINONSYSTEMCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    continue;
-#endif
+	/* Only process devices with type 0 headers */
+	if ((pcrp->pci_header_type & 0x7f) != 0)
+	    continue;
 	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    resMisc = ResBios;
 	else
 	    resMisc = ResEstimated;
-
-	/* Only process devices with type 0 headers */
-	if ((pcrp->pci_header_type & 0x7f) != 0)
-	    continue;
 
 	basep = &pcrp->pci_base0;
 	for (i = 0; i < 6; i++) {

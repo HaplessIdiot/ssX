@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.97 1999/06/27 14:07:16 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.98 1999/07/04 13:27:38 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -230,6 +230,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 
 #define AvoidNullMakeCommand	YES
+#define DebuggableLibraries	YES
 #define StripInstalledPrograms	YES
 #define CompressAllFonts	YES
 #define Malloc0ReturnsNull	YES

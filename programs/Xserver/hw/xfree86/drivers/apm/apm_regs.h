@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.1 1999/03/21 07:35:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_regs.h,v 1.2 1999/07/10 12:17:28 dawes Exp $ */
 
 
 
@@ -25,16 +25,16 @@
 #define MIN(a,b)	((a) < (b) ? (a) : (b))
 #endif
 /* Memory mapped access to extended registers */
-#define RDXB(addr)     (*(volatile unsigned char  *)(pApm->MemMap+(addr)))
-#define RDXW(addr)     (*(volatile unsigned short *)(pApm->MemMap+(addr)))
-#define RDXL(addr)     (*(volatile unsigned int   *)(pApm->MemMap+(addr)))
-#define WRXB(addr,val) (void) (check08((addr), (val)) && \
+#define RDXB_M(addr)     (*(volatile unsigned char  *)(pApm->MemMap+(addr)))
+#define RDXW_M(addr)     (*(volatile unsigned short *)(pApm->MemMap+(addr)))
+#define RDXL_M(addr)     (*(volatile unsigned int   *)(pApm->MemMap+(addr)))
+#define WRXB_M(addr,val) (void) (check08((addr), (val)) && \
 			(*(volatile unsigned char  *)(pApm->MemMap+(addr)) = (val),	\
 			curr08[MIN((addr), 0x80)] = (val)))
-#define WRXW(addr,val) (void) (check16((addr), (val)) && \
+#define WRXW_M(addr,val) (void) (check16((addr), (val)) && \
 			(*(volatile unsigned short *)(pApm->MemMap+(addr)) = (val),	\
 			curr16[MIN(((addr) / 2), 0x40)] = (val)))
-#define WRXL(addr,val) (void) (check32((addr), (val)) && \
+#define WRXL_M(addr,val) (void) (check32((addr), (val)) && \
 			(*(volatile unsigned int   *)(pApm->MemMap+(addr)) = (val),	\
 			curr32[MIN(((addr) / 4), 0x20)] = (val)))
 
@@ -61,6 +61,12 @@
 				    break;				     \
 				}} while (1)
 
+#define WRXL	WRXL_M
+#define WRXW	WRXW_M
+#define WRXB	WRXB_M
+#define RDXL	RDXL_M
+#define RDXW	RDXW_M
+#define RDXB	RDXB_M
 #define UPDATEDEST(x,y)		(void)(curr32[0x54 / 4] = ((y) << 16) | ((x) & 0xFFFF))
 
 /* Memory mapped access to VGA registers */
@@ -97,10 +103,12 @@
 #define SETSOURCEX(x)			WRXW(0x50, x)
 #define SETSOURCEY(y)			WRXW(0x52, y)
 #define SETSOURCEXY(x,y)		WRXL(0x50, ((y) << 16) | ((x) & 0xFFFF))
+#define SETSOURCEOFF(o)			WRXL(0x50, (o))
 
 #define SETDESTX(x)			WRXW(0x54, x)
 #define SETDESTY(y)			WRXW(0x56, y)
 #define SETDESTXY(x,y)			WRXL(0x54, ((y) << 16) | ((x) & 0xFFFF))
+#define SETDESTOFF(o)			WRXL(0x54, (o))
 
 #define SETWIDTH(w)			WRXW(0x58, w)
 #define SETHEIGHT(h)			WRXW(0x5A, h)
@@ -168,8 +176,8 @@
 #define DEC_BITDEPTH_8              (1 << 14)
 #define DEC_DEST_LINEAR             (1 << 18)
 #define DEC_DEST_XY                 (0 << 18)
-#define DEC_DEST_RECTANGULAR        (1 << 19)
-#define DEC_DEST_OTHER              (0 << 19)
+#define DEC_DEST_CONTIG             (1 << 19)
+#define DEC_DEST_RECTANGULAR        (0 << 19)
 #define DEC_DEST_TRANSPARENCY       (1 << 20)
 #define DEC_DEST_NO_TRANSPARENCY    (0 << 20)
 #define DEC_DEST_TRANSP_POLARITY    (1 << 21)

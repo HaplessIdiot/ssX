@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.132 1999/06/27 09:20:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.133 1999/08/21 13:48:24 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1146,12 +1146,12 @@ ddxProcessArgument(int argc, char **argv, int i)
     xf86MiscModInDevAllowNonLocal = TRUE;
     return 1;
   }
+#endif
   if (!strcmp(argv[i],"-allowMouseOpenFail"))
   {
     xf86AllowMouseOpenFail = TRUE;
     return 1;
   }
-#endif
   if (!strcmp(argv[i],"-bestRefresh"))
   {
     xf86BestRefresh = TRUE;

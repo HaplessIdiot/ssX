@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/9 1998/06/29 09:17:20 kaleb $
-XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.6 1998/10/21 06:12:01 dawes Exp $
+XCOMM $XFree86: xc/nls/Compose/Imakefile,v 1.7 1999/06/06 14:05:57 dawes Exp $
 
 #ifndef Win32Architecture
 #ifndef OS2Architecture
@@ -26,12 +26,31 @@ all:: name								@@\
 InstallNamedNonExec(name,Compose,$(XLOCALEDIR)/name)
 #endif
 
-ComposeTarget(iso8859-1)
-ComposeTarget(iso8859-2)
-ComposeTarget(iso8859-3)
+ComposeTarget(armscii-8)
+ComposeTarget(en_US.utf)
+ComposeTarget(georgian-academy)
+ComposeTarget(georgian-ps)
+ComposeTarget(ibm-cp1133)
 ComposeTarget(iso8859-4)
+ComposeTarget(iso8859-5)
+ComposeTarget(iso8859-6)
+ComposeTarget(iso8859-7)
+ComposeTarget(iso8859-8)
 ComposeTarget(iso8859-9)
-#if 0
+ComposeTarget(iso8859-10)
 ComposeTarget(iso8859-14)
-#endif
 ComposeTarget(iso8859-15)
+ComposeTarget(ja)
+ComposeTarget(ja.JIS)
+ComposeTarget(ja.SJIS)
+ComposeTarget(ko)
+ComposeTarget(koi8-r)
+ComposeTarget(koi8-u)
+ComposeTarget(mulelao-1)
+ComposeTarget(th_TH.TACTIS)
+ComposeTarget(vi_VN.tcvn)
+ComposeTarget(vi_VN.viscii)
+ComposeTarget(zh)
+ComposeTarget(zh_TW)
+ComposeTarget(zh_TW.big5)
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.18 1999/07/17 06:30:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.19 1999/07/18 03:26:52 dawes Exp $ */
 
 
 #include "apm.h"
@@ -88,36 +88,37 @@ static IsaChipsets ApmIsaChipsets[] = {
 #endif
 
 typedef enum {
+    OPTION_SET_MCLK,
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
-    OPTION_PCI_BURST,
-    OPTION_NOACCEL,
-    OPTION_NOCLOCKCHIP,
     OPTION_NOLINEAR,
+    OPTION_NOACCEL,
+    OPTION_SHADOW_FB,
+    OPTION_PCI_BURST,
     OPTION_PCI_RETRY
 } ApmOpts;
 
 static OptionInfoRec ApmOptions[] =
 {
+    {OPTION_SET_MCLK, "SetMclk", OPTV_FREQ,
+	{0}, FALSE},
     {OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_HW_CURSOR, "HWcursor", OPTV_BOOLEAN,
 	{0}, FALSE},
-    {OPTION_PCI_BURST, "pci_burst", OPTV_BOOLEAN,
+    {OPTION_NOLINEAR, "NoLinear", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN,
 	{0}, FALSE},
-    {OPTION_NOCLOCKCHIP, "NoClockchip", OPTV_BOOLEAN,
+    {OPTION_SHADOW_FB, "ShadowFB", OPTV_BOOLEAN,
 	{0}, FALSE},
-    {OPTION_NOLINEAR, "NoLinear", OPTV_BOOLEAN,
+    {OPTION_PCI_BURST, "pci_burst", OPTV_BOOLEAN,
 	{0}, FALSE},
     {OPTION_PCI_RETRY, "PciRetry", OPTV_BOOLEAN,
 	{0}, FALSE},
     {-1, NULL, OPTV_NONE,
 	{0}, FALSE}
 };
-
-#ifdef XFree86LOADER
 
 /*
  * List of symbols from other modules that this module references.  This
@@ -139,19 +140,10 @@ static const char *vgahwSymbols[] = {
     "vgaHWMapMem",
     "vgaHWProtect",
     "vgaHWRestore",
+    "vgaHWSave",
     "vgaHWSaveScreen",
     "vgaHWSetMmioFuncs",
     "vgaHWUnlock",
-    NULL
-};
-
-static const char *cfbSymbols[] = {
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb32ScreenInit",
-    "cfb8_32ScreenInit",
-    "cfb24_32ScreenInit",
     NULL
 };
 
@@ -164,7 +156,7 @@ static const char *xaaSymbols[] = {
     "XAAQueryBestSize",
     "XAARestoreCursor",
     "XAAScreenIndex",
-    "XAAStippleScanlineFuncLSBFirst",
+    "XAAStippleScanlineFuncMSBFirst",
     "XAAWarpCursor",
     NULL
 };
@@ -193,6 +185,18 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
+
+#ifdef XFree86LOADER
+
+static const char *cfbSymbols[] = {
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb24ScreenInit",
+    "cfb32ScreenInit",
+    NULL
+};
 
 static XF86ModuleVersionInfo apmVersRec = {
     "Alliance Promotion",
@@ -469,9 +473,10 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     APMDECL(pScrn);
     EntityInfoPtr	pEnt;
     MessageType		from;
-    char		*mod = NULL;
+    char		*mod = NULL, *req = NULL;
     ClockRangePtr	clockRanges;
     int			i;
+    double		real;
 
     /*
      * Note: This function is only called once at server startup, and
@@ -489,6 +494,8 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     /* The vgahw module should be allocated here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
+
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -617,6 +624,16 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if (pApm->NoAccel)
 	xf86DrvMsg(pScrn->scrnIndex, from, "Acceleration disabled\n");
+    if (xf86GetOptValFreq(ApmOptions, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MCLK used is %.1f MHz\n", real);
+	pApm->MemClk = (int)(real * 1000.0);
+    }
+    if (xf86ReturnOptValBool(ApmOptions, OPTION_SHADOW_FB, FALSE)) {
+	pApm->ShadowFB = TRUE;
+	pApm->NoAccel = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
+    }
     if (xf86ReturnOptValBool(ApmOptions, OPTION_PCI_RETRY, FALSE)) {
 	if (xf86ReturnOptValBool(ApmOptions, OPTION_PCI_BURST, FALSE)) {
 	  pApm->UsePCIRetry = TRUE;
@@ -690,6 +707,14 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pApm->LinAddress);
+
+    if (xf86LoadSubModule(pScrn, "ddc")) {
+	xf86LoaderReqSymLists(ddcSymbols, NULL);
+	if (xf86LoadSubModule(pScrn, "i2c")) {
+	    xf86LoaderReqSymLists(i2cSymbols, NULL);
+	    pApm->I2C = TRUE;
+	}
+    }
 
     if (pApm->noLinear) {
 	/*
@@ -902,20 +927,29 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
+    case 1:
+	mod = "xf1bpp";
+	req = "xf1bppScreenInit";
+	break;
     case 4:
 	mod = "xf4bpp";
+	req = "xf4bppScreenInit";
 	break;
     case 8:
 	mod = "cfb";
+	req = "cfbScreenInit";
 	break;
     case 16:
 	mod = "cfb16";
+	req = "cfb16ScreenInit";
 	break;
     case 24:
 	mod = "cfb24";
+	req = "cfb24ScreenInit";
 	break;
     case 32:
 	mod = "cfb32";
+	req = "cfb32ScreenInit";
 	break;
     }
 
@@ -924,12 +958,34 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
+    xf86LoaderReqSymbols(req, NULL);
+
     /* Load XAA if needed */
-    if (!pApm->NoAccel)
+    if (!pApm->NoAccel) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    ApmFreeRec(pScrn);
 	    return FALSE;
 	}
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
+    }
+
+    /* Load ramdac if needed */
+    if (pApm->hwCursor) {
+	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	    ApmFreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
+    }
+
+    /* Load shadowfb if needed */
+    if (pApm->ShadowFB) {
+	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    ApmFreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(shadowSymbols, NULL);
+    }
 
     return TRUE;
 }
@@ -962,7 +1018,7 @@ ApmMapMem(ScrnInfoPtr pScrn)
 	pApm->d9 = RDXB(0xD9);
 	pApm->db = RDXB(0xDB);
 
-	/* If you change it, change it also in apm_rush.c */
+	/* If you change it, change it also in apm_funcs.c */
 	WRXB(0xDB, (pApm->db & 0xF4) | 0x0A);
 	WRXB(0xD9, (pApm->d9 & 0xCF) | 0x20);
 	vgaHWSetMmioFuncs(VGAHWPTR(pScrn), (CARD8 *)pApm->LinMap, 0xFFF000);
@@ -1332,7 +1388,9 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	hwp->ModeReg.Attribute[0x11] = 0x00;
     else
 	hwp->ModeReg.Attribute[0x11] = 0xFF;
-    if (pApm->Chipset >= AT3D)
+    if (pApm->MemClk)
+	ApmReg->EX[XRE8] = comp_lmn(pApm, pApm->MemClk);
+    else if (pApm->Chipset >= AT3D)
 	ApmReg->EX[XRE8] = 0x071F01E8; /* Enable 58MHz MCLK (actually 57.3 MHz)
 				       This is what is used in the Windows
 				       drivers. The BIOS sets it to 50MHz. */
@@ -1343,7 +1401,7 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     ApmReg->EX[XRE0] = 0x10;
 
-    /* If you change it, change in apm_rush.c as well */
+    /* If you change it, change in apm_funcs.c as well */
     ApmReg->SEQ[0x1B] = 0x20;
     ApmReg->SEQ[0x1C] = 0x2F;
 
@@ -1455,16 +1513,58 @@ ApmRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, ApmRegPtr ApmReg)
     vgaHWProtect(pScrn, FALSE);
 }
 
+
+/* Refresh a region of the shadow framebuffer to the screen */
+static void
+ApmRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+{
+    APMDECL(pScrn);
+    int width, height, Bpp, FBPitch;
+    unsigned char *src, *dst;
+
+    Bpp = pScrn->bitsPerPixel >> 3;
+    FBPitch = pScrn->displayWidth * Bpp;
+
+    while(num--) {
+	width = (pbox->x2 - pbox->x1) * Bpp;
+	height = pbox->y2 - pbox->y1;
+	src = pApm->ShadowPtr + (pbox->y1 * pApm->ShadowPitch) +
+						(pbox->x1 * Bpp);
+	dst = (unsigned char *)pApm->FbBase + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
+
+	while(height--) {
+	    memcpy(dst, src, width);
+	    dst += FBPitch;
+	    src += pApm->ShadowPitch;
+	}
+
+	pbox++;
+    }
+}
+
+
 /* Mandatory */
 
 /* This gets called at the start of each server generation */
 
+static unsigned int
+ddc1Read(ScrnInfoPtr pScrn)
+{
+    APMDECL(pScrn);
+
+    WRXB(0xD0, RDXB(0xD0) & 0x07);
+    while (APMVGAB(0x3DA) & 0x08);             
+    while (!(APMVGAB(0x3DA) & 0x08));             
+    return (STATUS() & STATUS_SDA) != 0;
+}
+
 static Bool
 ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
-    ScrnInfoPtr	pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr		pScrn = xf86Screens[pScreen->myNum];
     APMDECL(pScrn);
-    int ret;
+    int			ret;
+    unsigned char	*FbBase;
 
     /* Map the chip memory and MMIO areas */
     if (pApm->noLinear) {
@@ -1537,36 +1637,46 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * pScreen fields.
      */
 
+    if(pApm->ShadowFB) {
+	pApm->ShadowPitch =
+		((pScrn->virtualX * pScrn->bitsPerPixel >> 3) + 3) & ~3L;
+	pApm->ShadowPtr = xalloc(pApm->ShadowPitch * pScrn->virtualY);
+	FbBase = pApm->ShadowPtr;
+    } else {
+	pApm->ShadowPtr = NULL;
+	FbBase = pApm->FbBase;
+    }
+
     switch (pScrn->bitsPerPixel) {
     case 1:
-	ret = xf1bppScreenInit(pScreen, pApm->FbBase,
+	ret = xf1bppScreenInit(pScreen, FbBase,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 4:
-	ret = xf4bppScreenInit(pScreen, pApm->FbBase,
+	ret = xf4bppScreenInit(pScreen, FbBase,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 8:
-	ret = cfbScreenInit(pScreen, pApm->FbBase, pScrn->virtualX,
+	ret = cfbScreenInit(pScreen, FbBase, pScrn->virtualX,
 	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
 	    pScrn->displayWidth);
 	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, pApm->FbBase, pScrn->virtualX,
+	ret = cfb16ScreenInit(pScreen, FbBase, pScrn->virtualX,
 	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
 	    pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, pApm->FbBase, pScrn->virtualX,
+	ret = cfb24ScreenInit(pScreen, FbBase, pScrn->virtualX,
 	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
 	    pScrn->displayWidth);
 	break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, pApm->FbBase, pScrn->virtualX,
+	ret = cfb32ScreenInit(pScreen, FbBase, pScrn->virtualX,
 	    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
 	    pScrn->displayWidth);
 	break;
@@ -1610,15 +1720,24 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
                 "Hardware cursor initialization failed\n");
     }
 
-    if(!ApmDGAInit(pScreen)) {
-        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DGA initialization failed\n");
+    if (!pApm->ShadowFB) {       /* hardware cursor needs to wrap this layer */
+	if(!ApmDGAInit(pScreen)) {
+	    xf86DrvMsg(pScrn->scrnIndex,X_ERROR,"DGA initialization failed\n");
+	}
     }
 
-    if (!ApmI2CInit(pScreen)) {
-        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "I2C initialization failed\n");
-    }
-    else {
-	xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,pApm->I2CPtr));
+    vgaHWSetMmioFuncs(VGAHWPTR(pScrn), (CARD8 *)pApm->LinMap, 0xFFF000);
+    vgaHWGetIOBase(VGAHWPTR(pScrn));
+    VGAHWPTR(pScrn)->MapSize = 0x10000;
+    vgaHWMapMem(pScrn);
+    xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,ddc1Read));
+    if (pApm->I2C) {
+	if (!ApmI2CInit(pScreen)) {
+	    xf86DrvMsg(pScrn->scrnIndex,X_ERROR,"I2C initialization failed\n");
+	}
+	else {
+	    xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,pApm->I2CPtr));
+	}
     }
 
     /*
@@ -1643,6 +1762,9 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Colormap initialization failed\n");
 	return FALSE;
     }
+
+    if (pApm->ShadowFB)
+	ShadowFBInit(pScreen, ApmRefreshArea);
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, ApmDisplayPowerManagementSet, 0);
@@ -1751,7 +1873,7 @@ ApmEnterVT(int scrnIndex, int flags)
     APMDECL(pScrn);
 
     if (!pApm->noLinear) {
-	/* If you change it, change it also in apm_rush.c */
+	/* If you change it, change it also in apm_funcs.c */
 	WRXB(0xDB, (pApm->db & 0xF4) | 0x0A);
 	WRXB(0xD9, (pApm->d9 & 0xCF) | 0x20);
     }

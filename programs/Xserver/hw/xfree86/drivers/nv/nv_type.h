@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.2 1999/08/01 12:17:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.3 1999/08/14 10:49:51 dawes Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -114,6 +114,7 @@ typedef struct {
     Bool                FBDev;
     int                 colorKey;
     /* Color expansion */
+    Bool                useFifo;
     unsigned char       *expandBuffer;
     unsigned char       *expandFifo;
     int                 expandWidth;

@@ -1,15 +1,16 @@
 
 /* 
-   XFree86 driver for Glide(tm). 
+   XFree86 driver for Glide(tm). (Mainly for Voodoo 1 and 2 cards)
 
-   Since Voodoo cards are very, very NOT made for running a 2D
-   windowing system, this driver is a little special. Basically, we
-   have a virtual framebuffer in RAM (the Shadow Framebuffer) and we
-   copy selected regions of this to the voodoo card at appropriate
-   times. We get no hardware acceleration help (there isn't any for 2D
-   in glide), but since the framebuffer is in cached RAM, we get a
-   useable display anyway. Also, we don't have any interaction with
-   any hardware since Glide is the layer beneath the driver.
+   Since Voodoo 1 and Voodoo 2 cards are very, very NOT made for
+   running a 2D windowing system, this driver is a little
+   special. Basically, we have a virtual framebuffer in RAM (the
+   Shadow Framebuffer) and we copy selected regions of this to the
+   voodoo card at appropriate times. We get no hardware acceleration
+   help (there isn't any for 2D on these cards), but since the
+   framebuffer is in cached RAM, we get a useable display
+   anyway. Also, we don't have any interaction with any hardware since
+   Glide is the layer beneath the driver.
 
    Author: 
      Henrik Harmsen (hch@cd.chalmers.se or Henrik.Harmsen@erv.ericsson.se) 
@@ -30,15 +31,18 @@
      be loaded, and to return appropriate error codes when it fails.
    - Prevent GLIDEFreeScreen() from crashing if called early.
 
+   1999-08-22
+   - Minor fixes.
+
    TODO
    * Support for adjusting gamma correction.
    * Support for setting gamma individually for R,G,B when Glide 3 arrives
      for Linux.  This will allow me to get rid of that sick green tint my
      voodoo2 board produces...
-   * Support static loading.
+   * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.3 1999/06/20 15:02:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.4 1999/06/27 09:20:19 dawes Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -188,8 +192,9 @@ typedef enum {
 } GLIDEOpts;
 
 static OptionInfoRec GLIDEOptions[] = {
-  { OPTION_ON_AT_EXIT, "OnAtExit",   OPTV_BOOLEAN, {0}, FALSE },
-  { -1,	               NULL,         OPTV_NONE,	   {0}, FALSE }
+  { OPTION_ON_AT_EXIT, "OnAtExit",       OPTV_BOOLEAN, {0}, FALSE },
+  { OPTION_GLIDEDEVICE, "GlideDevice",   OPTV_INTEGER, {0}, FALSE },
+  { -1,	               NULL,             OPTV_NONE,    {0}, FALSE }
 };
 
 /* Supported chipsets */
@@ -679,8 +684,7 @@ GLIDEScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth), pScrn->rgbBits, pScrn->defaultVisual))
     return FALSE;
 
-  pGlide->ShadowPitch = 
-    ((pScrn->virtualX * pScrn->bitsPerPixel >> 3) + 3) & ~3L;
+  pGlide->ShadowPitch = ((pScrn->virtualX * pScrn->bitsPerPixel >> 3) + 3) & ~3L;
   pGlide->ShadowPtr = xnfalloc(pGlide->ShadowPitch * pScrn->virtualY);
 
   /*

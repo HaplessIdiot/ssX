@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.27 1999/04/18 12:59:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.28tsi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -109,7 +109,6 @@ struct memAccess ioMemInfo = { CONSOLE_GET_IO_INFO, NULL, NULL,
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
-static Bool devMemChecked = FALSE;
 static Bool useDevMem = FALSE;
 static int  devMemFd = -1;
 
@@ -133,10 +132,14 @@ static Bool cleanMTRR(void);
 static void
 checkDevMem(Bool warn)
 {
+	static Bool devMemChecked = FALSE;
 	int fd;
 	pointer base;
 
+	if (devMemChecked)
+	    return;
 	devMemChecked = TRUE;
+
 	if ((fd = open(DEV_MEM, O_RDWR)) >= 0)
 	{
 	    /* Try to map a page at the VGA address */
@@ -240,8 +243,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 {
 	pointer base;
 
-	if (!devMemChecked)
-		checkDevMem(FALSE);
+	checkDevMem(FALSE);
 
 	if (useDevMem)
 	{
@@ -778,8 +780,7 @@ int ScreenNum;
 	    return;
 	}
 #ifdef USE_ARM32_MMAP
-	if (!devMemChecked)
-	    checkDevMem(TRUE);
+	checkDevMem(TRUE);
 
 	if (devMemFd >= 0 && useDevMem)
 	{

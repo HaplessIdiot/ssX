@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.8 1999/05/15 12:10:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.9 1999/06/05 15:55:26 dawes Exp $ */
 
 #define _microtouch_C_
 /*****************************************************************************
@@ -76,6 +76,23 @@
 /*****************************************************************************
  *	Local Variables
  ****************************************************************************/
+
+static InputInfoPtr
+MuTouchPreInit(InputDriverPtr drv, IDevPtr dev, int flags);
+
+
+InputDriverRec MUTOUCH = {
+  1,
+  "microtouch",
+  NULL,
+  MuTouchPreInit,
+  /*MuTouchUnInit*/ NULL,
+  NULL,
+  0
+};
+
+#ifdef XFree86LOADER
+
 static XF86ModuleVersionInfo VersionRec =
 {
 	"microtouch",
@@ -90,6 +107,76 @@ static XF86ModuleVersionInfo VersionRec =
 	{0, 0, 0, 0}				/* signature, to be patched into the file by
 								 * a tool */
 };
+
+static const char *reqSymbols[] = {
+	"AddEnabledDevice",
+	"ErrorF",
+	"InitButtonClassDeviceStruct",
+	"InitProximityClassDeviceStruct",
+	"InitValuatorAxisStruct",
+	"InitValuatorClassDeviceStruct",
+	"RemoveEnabledDevice",
+	"Xcalloc",
+	"Xfree",
+	"XisbBlockDuration",
+	"XisbFree",
+	"XisbNew",
+	"XisbRead",
+	"XisbTrace",
+	"XisbWrite",
+	"screenInfo",
+	"xf86AddInputDriver",
+	"xf86AllocateInput",
+	"xf86CloseSerial",
+	"xf86CollectInputOptions",
+	"xf86ErrorF",
+	"xf86ErrorFVerb",
+	"xf86FindOptionValue",
+	"xf86FlushInput",
+	"xf86GetMotionEvents",
+	"xf86GetVerbosity",
+	"xf86LoaderReqSymLists",
+	"xf86MotionHistoryAllocate",
+	"xf86Msg",
+	"xf86NameCmp",
+	"xf86OpenSerial",
+	"xf86OptionListCreate",
+	"xf86OptionListFree",
+	"xf86OptionListReport",
+	"xf86PostButtonEvent",
+	"xf86PostMotionEvent",
+	"xf86PostProximityEvent",
+	"xf86ProcessCommonOptions",
+	"xf86ScaleAxis",
+	"xf86SetIntOption",
+	"xf86SetSerial",
+	"xf86SetStrOption",
+	"xf86XInputSetScreen",
+	"xf86XInputSetSendCoreEvents",
+	"xf86memset",
+	"xf86sscanf",
+	"xf86strcmp",
+	"xf86strlen",
+	"xf86strncmp",
+	"xf86strncpy",
+        NULL
+};
+
+static pointer
+SetupProc(	pointer module,
+			pointer options,
+			int *errmaj,
+			int *errmin )
+{
+        xf86LoaderReqSymLists(reqSymbols, NULL);
+	xf86AddInputDriver(&MUTOUCH, module, 0);
+	return (pointer) 1;
+}
+
+XF86ModuleData microtouchModuleData = {&VersionRec, &SetupProc, NULL };
+
+#endif /* XFree86LOADER */
+
 
 static const char *default_options[] =
 {
@@ -112,69 +199,57 @@ static const char *fallback_options[] =
 	"FlowControl", "None"
 };
 
-XF86ModuleData microtouchModuleData = { &VersionRec, SetupProc, TearDownProc };
 
 /*****************************************************************************
  *	Function Definitions
  ****************************************************************************/
 
 
-static void
-TearDownProc( pointer p )
+
+static InputInfoPtr
+MuTouchPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 {
-	LocalDevicePtr local = (LocalDevicePtr) p;
-	MuTPrivatePtr priv = (MuTPrivatePtr) local->private;
-
-	DeviceOff (local->dev);
-
-	xf86RemoveLocalDevice (local);
-
-	xf86CloseSerial (local->fd);
-	XisbFree (priv->buffer);
-	xfree (priv);
-	xfree (local->name);
-	xfree (local);
-}
-
-static pointer
-SetupProc(	pointer module,
-			pointer options,
-			int *errmaj,
-			int *errmin )
-{
-	LocalDevicePtr local = xcalloc (1, sizeof (LocalDeviceRec));
+	LocalDevicePtr local = xf86AllocateInput(drv, 0);
 	MuTPrivatePtr priv = xcalloc (1, sizeof (MuTPrivateRec));
-	pointer	defaults,
-			merged;
+
 	char *s;
 
 	if ((!local) || (!priv))
 		goto SetupProc_fail;
 
-	defaults = xf86OptionListCreate (default_options,
-				  (sizeof (default_options) / sizeof (default_options[0])), 0);
-	merged = xf86OptionListMerge (defaults, options);
+	local->type_name = XI_TOUCHSCREEN;
+	local->device_control = DeviceControl;
+	local->read_input = ReadInput;
+	local->control_proc = ControlProc;
+	local->close_proc = CloseProc;
+	local->switch_mode = SwitchMode;
+	local->conversion_proc = ConvertProc;
+	local->dev = NULL;
+	local->private = priv;
+	local->private_flags = 0;
+	local->flags = XI86_POINTER_CAPABLE | XI86_SEND_DRAG_EVENTS;
+	local->conf_idev = dev;
 
-	xf86OptionListReport( merged );
+	xf86CollectInputOptions(local, default_options, NULL);
 
-	local->fd = xf86OpenSerial (merged);
+	xf86OptionListReport(local->options);
+
+	local->fd = xf86OpenSerial (local->options);
 	if (local->fd == -1)
 	{
 		ErrorF ("MicroTouch driver unable to open device\n");
-		*errmaj = LDR_NOPORTOPEN;
-		*errmin = xf86GetErrno ();
 		goto SetupProc_fail;
 	}
 	xf86ErrorFVerb( 6, "tty port opened successfully\n" );
 
-	priv->min_x = xf86SetIntOption( merged, "MinX", 0 );
-	priv->max_x = xf86SetIntOption( merged, "MaxX", 1000 );
-	priv->min_y = xf86SetIntOption( merged, "MinY", 0 );
-	priv->max_y = xf86SetIntOption( merged, "MaxY", 1000 );
-	priv->screen_num = xf86SetIntOption( merged, "ScreenNumber", 0 );
-	priv->button_number = xf86SetIntOption( merged, "ButtonNumber", 1 );
+	priv->min_x = xf86SetIntOption( local->options, "MinX", 0 );
+	priv->max_x = xf86SetIntOption( local->options, "MaxX", 1000 );
+	priv->min_y = xf86SetIntOption( local->options, "MinY", 0 );
+	priv->max_y = xf86SetIntOption( local->options, "MaxY", 1000 );
+	priv->screen_num = xf86SetIntOption( local->options, "ScreenNumber", 0 );
+	priv->button_number = xf86SetIntOption( local->options, "ButtonNumber", 1 );
 
-	s = xf86FindOptionValue (merged, "ReportingMode");
+	s = xf86FindOptionValue (local->options, "ReportingMode");
 	if ((s) && (xf86NameCmp (s, "raw") == 0))
 		priv->reporting_mode = TS_Raw;
 	else
@@ -187,30 +262,35 @@ SetupProc(	pointer module,
 	DBG (9, XisbTrace (priv->buffer, 1));
 
 	MuTNewPacket (priv);
-	if (QueryHardware (priv, errmaj, errmin) != Success)
+	if (QueryHardware(local) != Success)
 	{
 		ErrorF ("Unable to query/initialize MicroTouch hardware.\n");
 		goto SetupProc_fail;
 	}
 
-	/* this results in an xstrdup that must be freed later */
-	local->name = xf86SetStrOption( merged, "DeviceName", "MicroTouch TouchScreen" );
-	local->type_name = XI_TOUCHSCREEN;
-	local->device_control = DeviceControl;
-	local->read_input = ReadInput;
-	local->control_proc = ControlProc;
-	local->close_proc = CloseProc;
-	local->switch_mode = SwitchMode;
-	local->conversion_proc = ConvertProc;
-	local->dev = NULL;
-	local->private = priv;
-	local->private_flags = 0;
-	local->history_size = xf86SetIntOption( merged, "HistorySize", 0 );
+	local->history_size = xf86SetIntOption( local->options, "HistorySize", 0 );
 
-	xf86AddLocalDevice( local, merged );
 
 	/* prepare to process touch packets */
 	MuTNewPacket (priv);
+
+	/* this results in an xstrdup that must be freed later */
+	local->name = xf86SetStrOption( local->options, "DeviceName", "MicroTouch TouchScreen" );
+	xf86ProcessCommonOptions(local, local->options);
+	local->flags |= XI86_CONFIGURED;
+
+	if (local->fd != -1)
+	{ 
+		RemoveEnabledDevice (local->fd);
+		if (priv->buffer)
+		{
+			XisbFree(priv->buffer);
+			priv->buffer = NULL;
+		}
+		xf86CloseSerial(local->fd);
+	}
+	RemoveEnabledDevice (local->fd);
+	local->fd = -1;
 	return (local);
 
   SetupProc_fail:
@@ -244,10 +324,8 @@ DeviceControl (DeviceIntPtr dev,
 		RetValue = DeviceOn( dev );
 		break;
 	case DEVICE_OFF:
-		RetValue = DeviceOff( dev );
-		break;
 	case DEVICE_CLOSE:
-		RetValue = DeviceClose( dev );
+		RetValue = DeviceOff( dev );
 		break;
 	default:
 		RetValue = BadValue;
@@ -260,7 +338,24 @@ static Bool
 DeviceOn (DeviceIntPtr dev)
 {
 	LocalDevicePtr local = (LocalDevicePtr) dev->public.devicePrivate;
+	MuTPrivatePtr priv = (MuTPrivatePtr) (local->private);
 
+	local->fd = xf86OpenSerial(local->options);
+	if (local->fd == -1)
+	{
+		xf86Msg(X_WARNING, "%s: cannot open input device\n", local->name);
+		return (!Success);
+	}
+
+	priv->buffer = XisbNew(local->fd, 64);
+	if (!priv->buffer) 
+		{
+			xf86CloseSerial(local->fd);
+			local->fd = -1;
+			return (!Success);
+		}
+
+	xf86FlushInput(local->fd);
 	AddEnabledDevice (local->fd);
 	dev->public.on = TRUE;
 	return (Success);
@@ -270,15 +365,21 @@ static Bool
 DeviceOff (DeviceIntPtr dev)
 {
 	LocalDevicePtr local = (LocalDevicePtr) dev->public.devicePrivate;
+	MuTPrivatePtr priv = (MuTPrivatePtr) (local->private);
+
+	if (local->fd != -1)
+        { 
+	RemoveEnabledDevice (local->fd);
+		if (priv->buffer)
+		{
+			XisbFree(priv->buffer);
+			priv->buffer = NULL;
+}
+		xf86CloseSerial(local->fd);
+	}
 
 	RemoveEnabledDevice (local->fd);
 	dev->public.on = FALSE;
-	return (Success);
-}
-
-static Bool
-DeviceClose (DeviceIntPtr dev)
-{
 	return (Success);
 }
 
@@ -512,19 +613,15 @@ xf86MuTSendCommand (unsigned char *type, MuTPrivatePtr priv)
  * 72N and puts the controller in 81N before proceeding
  */
 static Bool
-QueryHardware (MuTPrivatePtr priv, int *errmaj, int *errmin)
+QueryHardware (LocalDevicePtr local)
 {
-	pointer	fallback,
-			normal;
+        MuTPrivatePtr priv = (MuTPrivatePtr) local->private;
+	pointer	fallback;
 	Bool ret = Success;
 	int cs7 = FALSE;
 
-	*errmaj = LDR_NOHARDWARE;
-
 	fallback = xf86OptionListCreate (fallback_options,
 				(sizeof (fallback_options) / sizeof (fallback_options[0])), 0);
-	normal = xf86OptionListCreate (default_options,
-				  (sizeof (default_options) / sizeof (default_options[0])), 0);
 
 	priv->cs7flag = TRUE;
 	if (!xf86MuTSendCommand ( (unsigned char *)MuT_RESET, priv))
@@ -553,7 +650,7 @@ QueryHardware (MuTPrivatePtr priv, int *errmaj, int *errmin)
 	{
 		xf86ErrorFVerb( 5, 
 		  "Switching Com Parameters back to CS8, 1 stop bit, no parity\n" );
-		xf86SetSerial (priv->buffer->fd, normal);
+		xf86SetSerial (priv->buffer->fd, local->options);
 	}
 	priv->cs7flag = FALSE;
 	if (!xf86MuTSendCommand ( (unsigned char *)MuT_FORMAT_TABLET, priv))
@@ -605,7 +702,7 @@ QueryHardware (MuTPrivatePtr priv, int *errmaj, int *errmin)
 
   done:
 	xf86OptionListFree (fallback);
-	xf86OptionListFree (normal);
+
 	return (ret);
 }
 

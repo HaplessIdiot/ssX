@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.1 1999/08/01 07:21:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.2 1999/08/14 10:49:52 dawes Exp $ */
 
 #include "riva_hw.h"
 #include "riva_tbl.h"
@@ -1212,20 +1212,20 @@ static void nv3GetConfig
             switch (chip->PFB[0x00000000/4] & 0x03)
             {
                 case 2:
-                    chip->RamAmountKBytes = 1024 * 4 - 32;
+                    chip->RamAmountKBytes = 1024 * 4;
                     break;
                 case 1:
-                    chip->RamAmountKBytes = 1024 * 2 - 32;
+                    chip->RamAmountKBytes = 1024 * 2;
                     break;
                 default:
-                    chip->RamAmountKBytes = 1024 * 8 - 32;
+                    chip->RamAmountKBytes = 1024 * 8;
                     break;
             }
         }            
         else            
         {
             chip->RamBandwidthKBytesPerSec = 1000000;
-            chip->RamAmountKBytes          = 1024 * 8 - 32;
+            chip->RamAmountKBytes          = 1024 * 8;
         }            
     }
     else
@@ -1237,13 +1237,13 @@ static void nv3GetConfig
         switch (chip->PFB[0x00000000/4] & 0x00000003)
         {
             case 0:
-                chip->RamAmountKBytes = 1024 * 8 - 32;
+                chip->RamAmountKBytes = 1024 * 8;
                 break;
             case 2:
-                chip->RamAmountKBytes = 1024 * 4 - 32;
+                chip->RamAmountKBytes = 1024 * 4;
                 break;
             default:
-                chip->RamAmountKBytes = 1024 * 2 - 32;
+                chip->RamAmountKBytes = 1024 * 2;
                 break;
         }
     }        
@@ -1279,24 +1279,24 @@ static void nv4GetConfig
     if (chip->PFB[0x00000000/4] & 0x00000100)
     {
         chip->RamAmountKBytes = ((chip->PFB[0x00000000/4] >> 12) & 0x0F) * 1024 * 2
-                              + 1024 * 2 - 128;
+                              + 1024 * 2;
     }
     else
     {
         switch (chip->PFB[0x00000000/4] & 0x00000003)
         {
             case 0:
-                chip->RamAmountKBytes = 1024 * 32 - 128;
+                chip->RamAmountKBytes = 1024 * 32;
                 break;
             case 1:
-                chip->RamAmountKBytes = 1024 * 4 - 128;
+                chip->RamAmountKBytes = 1024 * 4;
                 break;
             case 2:
-                chip->RamAmountKBytes = 1024 * 8 - 128;
+                chip->RamAmountKBytes = 1024 * 8;
                 break;
             case 3:
             default:
-                chip->RamAmountKBytes = 1024 * 16 - 128;
+                chip->RamAmountKBytes = 1024 * 16;
                 break;
         }
     }
