@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.25 2001/12/17 20:00:46 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.26 2002/01/16 18:20:11 dawes Exp $
 
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
@@ -338,3 +338,12 @@ xkb_keymap "ar" {
     xkb_symbols		{ include "en_US(pc105)+ar"	};
     xkb_geometry	{ include "pc(pc102)"		};
 };
+
+// Additions by Emil Soleyman-Zomalan, <emil@nishra.com>
+xkb_keymap "syr" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default" 		};
+    xkb_symbols		{ include "en_US(pc105)+syr"	};
+    xkb_geometry	{ include "pc(pc102)"		};
+};    
