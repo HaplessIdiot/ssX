@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/300vtbl.h,v 1.8 2003/05/06 15:40:13 twini Exp $ */
+/* $XFree86$ */
 /*
  * Register settings for SiS 300 series
  *
@@ -982,8 +982,8 @@ static const SiS300_LVDSDataStruct  SiS300_CHTVUPALData[] =
 	{1008, 625,1008, 625},
 	{1008, 625,1008, 625},
 	{1008, 625,1008, 625},
-	{840, 750, 840, 750},
-	{936, 836, 936, 836}
+	{ 840, 750, 840, 750},
+	{ 936, 836, 936, 836}
 };
 
 static const SiS300_LVDSDataStruct  SiS300_CHTVOPALData[] =
@@ -992,8 +992,8 @@ static const SiS300_LVDSDataStruct  SiS300_CHTVOPALData[] =
 	{1008, 625,1008, 625},
 	{1008, 625,1008, 625},
 	{1008, 625,1008, 625},
-	{840, 625, 840, 625},
-	{960, 750, 960, 750}
+	{ 840, 625, 840, 625},
+	{ 960, 750, 960, 750}
 };
 
 static const SiS300_LVDSDataStruct  SiS300_CHTVSOPALData[] =
@@ -1002,8 +1002,8 @@ static const SiS300_LVDSDataStruct  SiS300_CHTVSOPALData[] =
 	{1008, 625,1008, 625},
 	{1008, 625,1008, 625},
 	{1008, 625,1008, 625},
-	{840, 500, 840, 500},
-	{944, 625, 944, 625}
+	{ 840, 500, 840, 500},
+	{ 944, 625, 944, 625}
 };
 
 typedef struct _SiS300_LVDSDesStruct

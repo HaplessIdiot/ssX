@@ -164,7 +164,7 @@ typedef unsigned long IOADDRESS;
 #define TV_CHSCART              0x00008000
 #define TV_CHHDTV               0x00010000
 #define VGA2_CONNECTED          0x00040000
-#define DISPTYPE_CRT1		0x00080000  	/* TW: CRT1 connected and used */
+#define DISPTYPE_CRT1		0x00080000  	/* CRT1 connected and used */
 #define DISPTYPE_DISP1		DISPTYPE_CRT1
 #define VB_301                  0x00100000	/* Video bridge type */
 #define VB_301B                 0x00200000
@@ -178,14 +178,14 @@ typedef unsigned long IOADDRESS;
 #define VB_30xLVX               VB_302LV
 #define VB_TRUMPION		0x10000000     
 #define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_302B|VB_301LV|VB_302LV| \
-				 VB_LVDS|VB_CHRONTEL|VB_TRUMPION) /* TW */
+				 VB_LVDS|VB_CHRONTEL|VB_TRUMPION)
 #define VB_SISBRIDGE            (VB_301|VB_301B|VB_302B|VB_301LV|VB_302LV)
-#define SINGLE_MODE             0x20000000   	/* TW: CRT1 or CRT2; determined by DISPTYPE_CRTx */
-#define VB_DISPMODE_SINGLE	SINGLE_MODE  	/* TW: alias */
-#define MIRROR_MODE		0x40000000   	/* TW: CRT1 + CRT2 identical (mirror mode) */
-#define VB_DISPMODE_MIRROR	MIRROR_MODE  	/* TW: alias */
-#define DUALVIEW_MODE		0x80000000   	/* TW: CRT1 + CRT2 independent (dual head mode) */
-#define VB_DISPMODE_DUAL	DUALVIEW_MODE 	/* TW: alias */
+#define SINGLE_MODE             0x20000000   	/* CRT1 or CRT2; determined by DISPTYPE_CRTx */
+#define VB_DISPMODE_SINGLE	SINGLE_MODE  	/* alias */
+#define MIRROR_MODE		0x40000000   	/* CRT1 + CRT2 identical (mirror mode) */
+#define VB_DISPMODE_MIRROR	MIRROR_MODE  	/* alias */
+#define DUALVIEW_MODE		0x80000000   	/* CRT1 + CRT2 independent (dual head mode) */
+#define VB_DISPMODE_DUAL	DUALVIEW_MODE 	/* alias */
 #define DISPLAY_MODE            (SINGLE_MODE | MIRROR_MODE | DUALVIEW_MODE) /* TW */
 
 /* TW: pSiS->VBLCDFlags */
@@ -202,6 +202,8 @@ typedef unsigned long IOADDRESS;
 #define VB_LCD_1152x768         0x00000400
 #define VB_LCD_1280x768         0x00000800
 #define VB_LCD_1024x600         0x00001000
+#define VB_LCD_640x480_2	0x00002000  	/* DSTN/FSTN */
+#define VB_LCD_640x480_3	0x00004000  	/* DSTN/FSTN */
 #define VB_LCD_CUSTOM  		0x40000000
 #define VB_LCD_EXPANDING	0x80000000
 
@@ -324,6 +326,7 @@ typedef struct {
     DisplayModePtr	CRT1DMode;		/* Current display mode for CRT1 */
     int 		CRT2ModeNo;		/* Current display mode for CRT2 */
     DisplayModePtr	CRT2DMode;		/* Current display mode for CRT2 */
+    Bool		CRT2IsCustom;
     int			refCount;
     int 		lastInstance;		/* number of entities */
     Bool		DisableDual;		/* Emergency flag */
@@ -339,7 +342,7 @@ typedef struct {
     int                 PDC;
     Bool                NoAccel;
     int			forceCRT1;
-    int			DSTN;
+    int			DSTN, FSTN;
     Bool		XvOnCRT2;
     int                 maxUsedClock;  		/* Max used pixelclock on master head */
     unsigned long       masterFbAddress;	/* Framebuffer addresses and sizes */
@@ -377,7 +380,6 @@ typedef struct {
     unsigned char	p2_01, p2_02, p2_2d;
     unsigned short      cursorBufferNum;
     BOOLEAN		restorebyset;
-    BOOLEAN		nocrt2ddcdetection;
     BOOLEAN		CRT1gamma, CRT2gamma;
     int			curxvcrtnum;
     int			UsePanelScaler;
@@ -456,7 +458,7 @@ typedef struct {
     Bool                FastVram;		/* now unused */
     int			forceCRT1;
     Bool		CRT1changed;
-    unsigned char       oldCR17;
+    unsigned char       oldCR17, oldCR63, oldSR1F;
     unsigned char       oldCR32;
     unsigned char       newCR32;
     unsigned long   	VBFlags;		/* Video bridge configuration */
@@ -651,6 +653,7 @@ typedef struct {
     unsigned short      cursorBufferNum;
     BOOLEAN		restorebyset;
     BOOLEAN		nocrt2ddcdetection;
+    BOOLEAN		forcecrt2redetection;
     BOOLEAN		CRT1gamma, CRT2gamma;
     int			XvDefCon, XvDefBri, XvDefHue, XvDefSat;
     BOOLEAN		XvDefDisableGfx, XvDefDisableGfxLR;
@@ -664,6 +667,9 @@ typedef struct {
     unsigned long	bClrColor, dwColor;
     int			AllowHotkey;
     short		Video_MaxWidth, Video_MaxHeight;
+    int			FSTN;
+    BOOLEAN		AddedPlasmaModes;
+    short               scrnPitch2;
 #ifdef SISMERGED
     Bool		MergedFB;
     SiSScrn2Rel		CRT2Position;
@@ -679,6 +685,7 @@ typedef struct {
     int			CRT1frameY1;
     Bool		CheckForCRT2;
     Bool		IsCustomCRT2;
+    BOOLEAN 		HaveCustomModes2;
 #endif
 } SISRec, *SISPtr;
 

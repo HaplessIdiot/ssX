@@ -30,7 +30,7 @@
 /* Mode numbers for 300/315/330 series */
 const UShort  ModeIndex_320x200[]      = {0x59, 0x41, 0x00, 0x4f};
 const UShort  ModeIndex_320x240[]      = {0x50, 0x56, 0x00, 0x53};
-const UShort  ModeIndex_320x480[]      = {0x5a, 0x5b, 0x00, 0x00};  /* DSTN/FSTN */
+const UShort  ModeIndex_320x240_FSTN[] = {0x5a, 0x5b, 0x00, 0x00};  /* FSTN */
 const UShort  ModeIndex_400x300[]      = {0x51, 0x57, 0x00, 0x54};
 const UShort  ModeIndex_512x384[]      = {0x52, 0x58, 0x00, 0x5c};
 const UShort  ModeIndex_640x400[]      = {0x2f, 0x5d, 0x00, 0x5e};
@@ -539,8 +539,8 @@ static DisplayModeRec SiS6326SIS1600x1200_60Mode = {
 	0.0		/* VRefresh */
 };
 
-USHORT 	      SiS_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode);
-USHORT        SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBFlags);
+USHORT 	      SiS_CalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN hcm);
+USHORT        SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBFlags, BOOLEAN hcm);
 unsigned char SiS_GetSetBIOSScratch(ScrnInfoPtr pScrn, USHORT offset, unsigned char value);
 
 void          SISMergePointerMoved(int scrnIndex, int x, int y);

@@ -303,6 +303,8 @@ typedef struct _SiS_Private
 	USHORT SiS_Panel1280x768;
 	USHORT SiS_Panel1024x600;
 	USHORT SiS_Panel640x480;
+	USHORT SiS_Panel640x480_2;
+	USHORT SiS_Panel640x480_3;
 	USHORT SiS_Panel1152x864;
 	USHORT SiS_PanelCustom;
 	USHORT SiS_PanelMax;
@@ -417,6 +419,7 @@ typedef struct _SiS_Private
 	const SiS_LVDSDataStruct  *SiS_LVDS1152x768Data_1;
 	const SiS_LVDSDataStruct  *SiS_LVDS1152x768Data_2;
 	const SiS_LVDSDataStruct  *SiS_LVDS640x480Data_1;
+	const SiS_LVDSDataStruct  *SiS_LVDS640x480Data_2;
 	const SiS_LVDSDataStruct  *SiS_LVDS320x480Data_1;
 	const SiS_LVDSDataStruct  *SiS_LCDA1400x1050Data_1;
 	const SiS_LVDSDataStruct  *SiS_LCDA1400x1050Data_2;
@@ -514,6 +517,12 @@ typedef struct _SiS_Private
 	const SiS_LVDSCRT1DataStruct  *SiS_LVDSCRT11600x1200_2_H;
 	const SiS_LVDSCRT1DataStruct  *SiS_LVDSCRT1XXXxXXX_1;
 	const SiS_LVDSCRT1DataStruct  *SiS_LVDSCRT1XXXxXXX_1_H;
+	const SiS_LVDSCRT1DataStruct  *SiS_LVDSCRT1640x480_1;
+	const SiS_LVDSCRT1DataStruct  *SiS_LVDSCRT1640x480_1_H;
+	const SiS_LVDSCRT1DataStruct  *SiS_LVDSCRT1640x480_2;
+	const SiS_LVDSCRT1DataStruct  *SiS_LVDSCRT1640x480_2_H;
+	const SiS_LVDSCRT1DataStruct  *SiS_LVDSCRT1640x480_3;
+	const SiS_LVDSCRT1DataStruct  *SiS_LVDSCRT1640x480_3_H;
 	const SiS_LVDSCRT1DataStruct  *SiS_CHTVCRT1UNTSC;
 	const SiS_LVDSCRT1DataStruct  *SiS_CHTVCRT1ONTSC;
 	const SiS_LVDSCRT1DataStruct  *SiS_CHTVCRT1UPAL;
@@ -602,6 +611,7 @@ typedef struct _SiS_Private
 	USHORT  CModeFlag;
 	USHORT  CModeFlag_CRT1;
 	USHORT  CInfoFlag;
+
 	BOOLEAN SiS_CHPALM;
 	BOOLEAN SiS_CHPALN;
 	
@@ -620,15 +630,19 @@ typedef struct _SiS_Private
 	
 	int     UsePanelScaler;
 
-	int     CP_HDisplay, CP_VDisplay;	/* For Custom LCD panel dimensions */
-    	int     CP_HTotal, CP_VTotal;
-    	int     CP_HSyncStart, CP_VSyncStart;
-    	int     CP_HSyncEnd, CP_VSyncEnd;
-	int     CP_HBlankStart, CP_VBlankStart;
-	int     CP_HBlankEnd, CP_VBlankEnd;
-	BOOLEAN CP_HSync_P, CP_VSync_P;
-    	int     CP_Clock;
-	BOOLEAN CP_DataValid;
+	USHORT  CP_Vendor, CP_Product;
+	BOOLEAN CP_HaveCustomData;
+	int     CP_PreferredX, CP_PreferredY;
+	int	CP_MaxX, CP_MaxY, CP_MaxClock;
+	int     CP_HDisplay[7], CP_VDisplay[7];	/* For Custom LCD panel dimensions */
+    	int     CP_HTotal[7], CP_VTotal[7];
+    	int     CP_HSyncStart[7], CP_VSyncStart[7];
+    	int     CP_HSyncEnd[7], CP_VSyncEnd[7];
+	int     CP_HBlankStart[7], CP_VBlankStart[7];
+	int     CP_HBlankEnd[7], CP_VBlankEnd[7];
+    	int     CP_Clock[7];
+	BOOLEAN CP_DataValid[7];
+	BOOLEAN CP_HSync_P[7], CP_VSync_P[7], CP_SyncValid[7];
 } SiS_Private;
 
 #endif

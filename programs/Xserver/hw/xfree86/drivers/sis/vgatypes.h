@@ -157,12 +157,14 @@ typedef enum _SIS_LCD_TYPE {
     LCD_1600x1200,
     LCD_1920x1440,
     LCD_2048x1536,
-    LCD_320x480,       /* TW: FSTN */
+    LCD_320x480,       /* FSTN, DSTN */
     LCD_1400x1050,
     LCD_1152x864,
     LCD_1152x768,
     LCD_1280x768,
     LCD_1024x600,
+    LCD_640x480_2,     /* FSTN, DSTN */
+    LCD_640x480_3,     /* FSTN, DSTN */
     LCD_CUSTOM,
     LCD_UNKNOWN
 } SIS_LCD_TYPE;

@@ -1310,8 +1310,8 @@ SiSLVDSChrontelRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	 SetBlock(SISPART1, 0x35, 0x37, &(sisReg->VBPart1[0x35]));  /* Panel Link Scaler */
     }
 
-    /* TW: For 550 DSTN registers */
-    if (pSiS->DSTN) {
+    /* For 550 DSTN registers */
+    if (pSiS->DSTN || pSiS->FSTN) {
         SetBlock(SISPART1, 0x25, 0x2E, &(sisReg->VBPart1[0x25]));
 	SetBlock(SISPART1, 0x30, 0x45, &(sisReg->VBPart1[0x30]));
     }
@@ -1639,14 +1639,12 @@ SiSEstimateCRT2Clock(ScrnInfoPtr pScrn)
 	           return 65000;
 	       else if(pSiS->VBLCDFlags & VB_LCD_1280x768)
 		   return 81000;
-	       else if(pSiS->VBLCDFlags & (VB_LCD_1280x1024 | VB_LCD_1280x960))
+	       else if(pSiS->VBLCDFlags & (VB_LCD_1280x1024 | VB_LCD_1280x960 | VB_LCD_1400x1050))
 		   return 108000;
-	       else if(pSiS->VBLCDFlags & VB_LCD_1400x1050)
-		   return 122000;
 	       else if(pSiS->VBLCDFlags & VB_LCD_1600x1200)
 		   return 162000;
-	       else if((pSiS->VBLCDFlags & VB_LCD_CUSTOM) && (pSiS->SiS_Pr->CP_DataValid))
-	           return pSiS->SiS_Pr->CP_Clock;
+	       else if((pSiS->VBLCDFlags & VB_LCD_CUSTOM) && (pSiS->SiS_Pr->CP_HaveCustomData))
+	           return pSiS->SiS_Pr->CP_MaxClock;
 	       else
 	           return 108000;
 	} else if(pSiS->VBFlags & CRT2_TV) {
@@ -1678,7 +1676,7 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
         int             mclk = pSiS->MemClock;
         int             bpp = pSiS->CurrentLayout.bitsPerPixel;
 	int             bytesperpixel = (bpp + 7) / 8;
-        float   	magic=0.0, total, crt2used;
+        float   	magic=0.0, total, crt2used, maxcrt2;
 	int		crt2clock, max=0;
         const float     magic300[4] = { 1.2,      1.368421, 2.263158, 1.2};
         const float     magic630[4] = { 1.441177, 1.441177, 2.588235, 1.441177 };
@@ -1762,6 +1760,10 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 
                 if(pSiS->VBFlags & CRT2_ENABLE)  {
 
+		    maxcrt2 = 135000;
+		    if(pSiS->VBFlags & (VB_301B|VB_302B)) maxcrt2 = 162000;
+		    if(pSiS->VBFlags & VB_30xBDH) maxcrt2 = 100000;
+
 		    crt2used = 0.0;
 		    crt2clock = SiSEstimateCRT2Clock(pScrn);
 		    if(crt2clock) {
@@ -1808,10 +1810,10 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 				 *  is limited on CRT2, we can assume a
 				 *  maximum here.
 			         */
-                                if((total / 2) > 137000) {
-				    total = 137000 * magic;
-				    crt2used = 137000;
-				} else {  
+                                if((total / 2) > (maxcrt2 + 2000)) {
+				    total = (maxcrt2 + 2000) * magic;
+				    crt2used = maxcrt2 + 2000;
+				} else {
 				    total /= 2;
 				    crt2used = total;
 				}
@@ -1855,9 +1857,9 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 			if(crt2clock) {
 			    total -= crt2used;
 			} else {
-                            if((total / 2) > 137000) {  
-			    	total -= 137000;
-				crt2used = 137000;
+                            if((total / 2) > (maxcrt2 + 2000)) {
+			    	total -= (maxcrt2 + 2000);
+				crt2used = maxcrt2 + 2000;
 			    } else {  
 			    	total /= 2;
 				crt2used = total;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.11 2003/05/06 15:40:17 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.5 2001/04/19 12:40:33 alanh Exp $ */
 /*
  * Basic hardware and memory detection
  *

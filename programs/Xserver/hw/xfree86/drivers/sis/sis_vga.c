@@ -847,6 +847,10 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     SISPtr         pSiS = SISPTR(pScrn);
     SISRegPtr      pReg = &pSiS->ModeReg;
     unsigned short temp;
+    DisplayModePtr realmode = mode;
+#ifdef SISMERGED
+    DisplayModePtr realmode2 = NULL;
+#endif
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4, "SIS300Init()\n");
 
@@ -855,17 +859,30 @@ SIS300Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pScrn->virtualX, pSiS->CurrentLayout.bitsPerPixel,
         pScrn->virtualX * pSiS->CurrentLayout.bitsPerPixel/8);
 
+#ifdef SISMERGED
+    if(pSiS->MergedFB) {
+       realmode = ((SiSMergedDisplayModePtr)mode->Private)->CRT1;
+       realmode2 = ((SiSMergedDisplayModePtr)mode->Private)->CRT2;
+    }
+#endif
+
     /* Copy current register settings to structure */
     (*pSiS->SiSSave)(pScrn, pReg);
 
     /* TW: Calculate Offset/Display Pitch */
     pSiS->scrnOffset = pSiS->CurrentLayout.displayWidth *
                           ((pSiS->CurrentLayout.bitsPerPixel + 7) / 8);
-    pSiS->scrnPitch = pSiS->scrnOffset;
-    if(mode->Flags & V_INTERLACE)  pSiS->scrnPitch <<= 1;
-#ifdef TWDEBUG
-    xf86DrvMsg(0, X_INFO, "ScrnPitch %d scrnOffset %d\n", pSiS->scrnPitch, pSiS->scrnOffset);
-#endif    
+
+    pSiS->scrnPitch = pSiS->scrnPitch2 = pSiS->scrnOffset;
+
+    if(realmode->Flags & V_INTERLACE)  pSiS->scrnPitch <<= 1;
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB) {
+       if(realmode2->Flags & V_INTERLACE) pSiS->scrnPitch2 <<= 1;
+    } else
+#endif
+       pSiS->scrnPitch2 = pSiS->scrnPitch;
 
 #ifdef UNLOCK_ALWAYS
     outSISIDXREG(SISSR, 0x05, 0x86);
