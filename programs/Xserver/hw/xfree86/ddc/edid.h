@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/edid.h,v 1.2 1998/12/06 06:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/edid.h,v 1.4 1999/11/19 13:54:24 hohndel Exp $ */
 
 /* edid.h: defines to parse an EDID block 
  *
@@ -9,6 +9,10 @@
  *
  * Copyright 1998 by Egbert Eich <Egbert.Eich@Physik.TU-Darmstadt.DE>
  */
+
+#ifndef _EDID_H_
+#define _EDID_H_ 1
+
 #include "vdif.h"
 
 /* read complete EDID record */
@@ -414,5 +418,4 @@ typedef struct {
   Uchar *rawData;
 } xf86Monitor, *xf86MonPtr;
 
-
-
+#endif /* _EDID_H_ */

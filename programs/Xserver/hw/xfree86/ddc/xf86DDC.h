@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.h,v 1.2 1999/03/14 03:21:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.h,v 1.5 1999/12/03 19:17:26 eich Exp $ */
 
 /* xf86DDC.h
  *
@@ -16,6 +16,7 @@
 
 #include "edid.h"
 #include "xf86i2c.h"
+#include "xf86str.h"
 
 /* speed up / slow down */
 typedef enum {

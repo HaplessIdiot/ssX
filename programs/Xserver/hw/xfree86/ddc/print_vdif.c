@@ -1,6 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_vdif.c,v 1.1 1998/11/28 10:43:05 dawes Exp $ */
 
 #include "vdif.h"
+#include "misc.h"
+
 static void print_vdif(xf86VdifPtr l, char *s);
 static void print_timings(xf86VdifTimingPtr *pt);
 static void print_limits(xf86VdifLimitsPtr *pl);
