@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.4 1996/08/13 11:28:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.5 1996/08/16 12:29:41 dawes Exp $ */
 
 /*
 
@@ -188,6 +188,7 @@ CARD32		defaultScreenSaverTime, ScreenSaverTime;
 Bool		xf86fpFlag, xf86coFlag, xf86sFlag;
 char		*rgbPath = NULL, *defaultFontPath = NULL;
 Bool		xf86ScreensOpen;
+Bool		xf86BestRefresh;
 extern int	n_devices, n_monitors;
 extern GDevPtr	device_list;
 extern MonPtr	monitor_list;

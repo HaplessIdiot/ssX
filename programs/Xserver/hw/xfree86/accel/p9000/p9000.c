@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.37 1996/05/10 06:57:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.38 1996/08/11 12:54:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -438,7 +438,7 @@ p9000Probe()
 	modeIsValid = TRUE;
 	/* xf86LookupMode returns FALSE if it ran into an invalid
 	 * parameter */
-	if(xf86LookupMode(pMode, &p9000InfoRec) == FALSE)
+	if(xf86LookupMode(pMode, &p9000InfoRec, LOOKUP_DEFAULT) == FALSE)
 	  {
 	    modeIsValid = FALSE;
 	  }

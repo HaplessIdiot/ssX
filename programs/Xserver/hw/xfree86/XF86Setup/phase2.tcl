@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.2 1996/06/30 10:44:08 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase2.tcl,v 3.3 1996/08/13 11:28:30 dawes Exp $
 #
 # Phase II - Commands run after connection is made to VGA16 server
 #
@@ -174,7 +174,8 @@ frame $w.buttons
 #label $w.buttons.xlogo -bitmap @/usr/tmp/xfset1.xbm -anchor w \
 	-foreground black
 #pack $w.buttons.xlogo -side left -anchor w -expand no -padx 0 -fill x
-button $w.buttons.abort -text Abort -underline 0 -command "shutdown 1"
+button $w.buttons.abort -text Abort -underline 0 \
+	-command "puts stderr Aborted;shutdown 1"
 button $w.buttons.done  -text Done  -underline 0 \
 	-command [list Done_execute $w]
 button $w.buttons.help  -text Help  -underline 0 \

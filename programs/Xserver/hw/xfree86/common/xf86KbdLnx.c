@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.9 1996/03/04 05:14:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.10 1996/03/29 22:16:18 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -261,6 +261,8 @@ static KeySym linux_to_x[256] = {
 	XK_udiaeresis,	XK_yacute,	XK_thorn,	XK_ydiaeresis
 };
 
+#ifndef ASSUME_CUSTOM_KEYCODES
+
 /*
  * Maps the AT keycodes to Linux keycodes
  */
@@ -345,6 +347,14 @@ static unsigned char at2lnx[] =
 };
 #define NUM_AT2LNX (sizeof(at2lnx) / sizeof(at2lnx[0]))
 
+#else /* !ASSUME_CUSTOM_KEYCODES */
+
+#define NUM_AT2LNX	NR_KEYS
+
+u_char SpecialServerMap[NR_KEYS];
+
+#endif /* !ASSUME_CUSTOM_KEYCODES */
+
 static void
 readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
 {
@@ -377,12 +387,21 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
     tbl[2] = 8;	/* alt */
   tbl[3] = tbl[2] | 1;
 
+#ifndef ASSUME_CUSTOM_KEYCODES
   for (i = 0, k = map+GLYPHS_PER_KEY; i < NUM_AT2LNX; ++i)
+#else /* !ASSUME_CUSTOM_KEYCODES */
+  for (i = 0, k = map; i < NUM_AT2LNX; ++i)
+#endif /* !ASSUME_CUSTOM_KEYCODES */
   {
     struct kbentry kbe;
     int j;
 
+#ifndef ASSUME_CUSTOM_KEYCODES
     kbe.kb_index = at2lnx[i];
+#else /* !ASSUME_CUSTOM_KEYCODES */
+    kbe.kb_index = i;
+#endif /* !ASSUME_CUSTOM_KEYCODES */
+
     for (j = 0; j < GLYPHS_PER_KEY; ++j, ++k)
     {
       unsigned short kval;
@@ -390,7 +409,10 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
       *k = NoSymbol;
 
       kbe.kb_table = tbl[j];
-      if (kbe.kb_index == 0 ||
+      if (
+#ifndef ASSUME_CUSTOM_KEYCODES
+	  kbe.kb_index == 0 ||
+#endif /* !ASSUME_CUSTOM_KEYCODES */
 	  ioctl(xf86Info.consoleFd, KDGKBENT, &kbe))
 	continue;
 
@@ -602,4 +624,74 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
     if (k[-4] == k[-2] && k[-3] == k[-1]) k[-2] = k[-1] = NoSymbol;
     if (k[-1] == k[-4] && k[-2] == k[-3] && k[-2] == NoSymbol) k[-1] =NoSymbol;
   }
+#ifdef ASSUME_CUSTOM_KEYCODES
+  /*
+   * Find the Mapping for the special server functions
+   */
+  for (i = 0; i < NR_KEYS; ++i) {
+    struct kbentry kbe;
+    int special = 0;
+
+    kbe.kb_index = i;
+    kbe.kb_table = 0; /* Plain map */
+    if (!ioctl(xf86Info.consoleFd, KDGKBENT, &kbe))
+      switch (kbe.kb_value) {
+	case K(KT_LATIN,0x7f):	/* This catches DEL too... But who cares? */
+	  special = KEY_BackSpace;
+	  break;
+	case K_PMINUS:
+	  special = KEY_KP_Minus;
+	  break;
+	case K_PPLUS:
+	  special = KEY_KP_Plus;
+	  break;
+	case K_F1:
+	  special = KEY_F1;
+	  break;
+	case K_F2:
+	  special = KEY_F2;
+	  break;
+	case K_F3:
+	  special = KEY_F3;
+	  break;
+	case K_F4:
+	  special = KEY_F4;
+	  break;
+	case K_F5:
+	  special = KEY_F5;
+	  break;
+	case K_F6:
+	  special = KEY_F6;
+	  break;
+	case K_F7:
+	  special = KEY_F7;
+	  break;
+	case K_F8:
+	  special = KEY_F8;
+	  break;
+	case K_F9:
+	  special = KEY_F9;
+	  break;
+	case K_F10:
+	  special = KEY_F10;
+	  break;
+	case K_F11:
+	  special = KEY_F11;
+	  break;
+	case K_F12:
+	  special = KEY_F12;
+	  break;
+	case K_ALT:
+	  special = KEY_Alt;
+	  break;
+	case K_ALTGR:
+	  special = KEY_AltLang;
+	  break;
+	case K_CONS:
+	  special = KEY_SysReqest;
+	  break;
+      }
+    SpecialServerMap[i] = special;
+  }
+#endif /* ASSUME_CUSTOM_KEYCODES */
 }

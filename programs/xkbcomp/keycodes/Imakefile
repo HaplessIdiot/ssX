@@ -1,7 +1,8 @@
 XCOMM $XConsortium: Imakefile /main/7 1996/01/30 14:25:39 kaleb $
+XCOMM $XFree86$
 #define IHaveSubdirs
 
-     DATAFILES = ibm sun xfree86 xfree98 sony
+     DATAFILES = amiga ataritt ibm sun xfree86 xfree98 sony
        SUBDIRS = digital sgi
 
 all::

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.28 1996/06/10 09:14:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.29 1996/08/11 12:54:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -450,7 +450,7 @@ mach8Probe()
 	   * xf86LookupMode returns FALSE if it ran into an invalid
 	   * parameter
 	   */
-	  if(xf86LookupMode(pMode, &mach8InfoRec) == FALSE) {
+	  if(xf86LookupMode(pMode, &mach8InfoRec, LOOKUP_DEFAULT) == FALSE) {
 		pModeSv=pMode->next;
 		xf86DeleteMode(&mach8InfoRec, pMode);
 		pMode = pModeSv; 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.6 1996/03/29 22:16:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.7 1996/04/15 11:30:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,7 +52,8 @@ extern CONFIG_RETURN_TYPE xf86Config(
 extern Bool xf86LookupMode(
 #if NeedFunctionPrototypes
 	DisplayModePtr,		/* target */
-	ScrnInfoPtr		/* driver */
+	ScrnInfoPtr,		/* driver */
+	int			/* flags */
 #endif 
 );
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.23 1996/08/10 13:08:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.24 1996/08/16 12:32:01 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -232,7 +232,6 @@ enum {CLGD5420 = 0,
       CLGD5436,
       CLGD5446,
       CLGD5462,
-      CLGD5464,
       CLGD7541,
       CLGD7542,
       CLGD7543,
@@ -311,7 +310,7 @@ typedef struct
 #define HAVE543X() (cirrusChip >= CLGD5434 && cirrusChip <= CLGD5436)
 #endif
 
-#define HAVE546X() (cirrusChip == CLGD5462 || cirrusChip == CLGD5464)
+#define HAVE546X() (cirrusChip == CLGD5462)
 
 #define HAVEBITBLTENGINE() (cirrusUseBLTEngine)
 

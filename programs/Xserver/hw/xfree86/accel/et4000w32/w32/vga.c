@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.28 1996/05/10 06:56:47 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.30 1996/08/13 11:29:29 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -419,7 +419,7 @@ vgaProbe()
 	    return(FALSE);
 	  }
 	do {
-	  if (!xf86LookupMode(pMode, &vga256InfoRec))
+	  if (!xf86LookupMode(pMode, &vga256InfoRec, LOOKUP_DEFAULT))
 	    {
               vgaEnterLeaveFunc(LEAVE);
 	      return(FALSE);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.2 1996/08/13 11:28:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.3 1996/08/16 12:29:39 dawes Exp $ */
 
 /*
  * Main procedure for XF86Setup, by Joe Moss
@@ -12,7 +12,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <signal.h>
-#include <errno.h>
 
 #if TK_MAJOR_VERSION < 4
 #error You must use Tk 4.0 or newer
@@ -28,6 +27,7 @@ static char *LibDir;			/* where the tcl src files are */
 static int  rest = 0;			/* arg after options */
 static int  synchronize = 0;		/* sync X connection */
 static int  nodialog = 0;		/* Don't use Dialog */
+static int  notk = 0;			/* Don't add Tk to interp */
 
 #define PHASE1	"phase1.tcl"
 #define PHASE2	"phase2.tcl"
@@ -91,6 +91,7 @@ static char usage_msg[] =
 	"Options available only when a filename is specified:\n"
 	"   -display <disp>	Display to use\n"
 	"   -geometry <geom>	Initial geometry for window\n"
+	"   -notk		Don't open a connection to the X server\n"
 	"\n"
 	"Options available only when a filename is not specified:\n"
 	"   -nodialog      	Don't use Dialog for user interaction\n"
@@ -108,6 +109,8 @@ static Tk_ArgvInfo argTable[] = {
         "Use synchronous mode for display server"},
     {"-nodialog", TK_ARGV_CONSTANT, (char *) 1, (char *) &nodialog,
         "Don't use the Dialog program for interaction with user"},
+    {"-notk", TK_ARGV_CONSTANT, (char *) 1, (char *) &notk,
+        "Don't open a connection to the X server or load Tk widgets"},
     {"--", TK_ARGV_REST, (char *) 1, (char *) &rest,
         "Pass all remaining arguments through to script"},
     /* This one is undocumented - it's used when execing a 2nd copy */
@@ -310,6 +313,21 @@ main(argc, argv)
 		Tcl_VarEval(interp, "exit ", tmpptr, (char *)0);
 		exit(1);
 	}
+    } else {
+	if (notk) {
+            /****  Load the default bindings ****/
+	    strcpy(buf, "source $tk_library/init.tcl");
+	    if (Tcl_Eval(interp, buf) != TCL_OK)
+		print_result_and_exit;
+	    if (strchr(filename, '/') != NULL) {
+		if (Tcl_EvalFile(interp, filename) != TCL_OK)
+			print_result_and_exit;
+	    } else {
+		XF86Setup_TclEvalFile(interp, filename);
+	    }
+	    Tcl_Eval(interp, "exit 0");
+	    exit(1);
+	}
     }
 
     /* If the app name wasn't given, use the filename or argv[0] */
@@ -409,12 +427,15 @@ main(argc, argv)
 	    statefile = Tcl_GetVar(interp, "StateFileName", TCL_GLOBAL_ONLY);
 #ifdef DEBUG
 	    fprintf(stderr,
-	        "Executing second copy of XF86Setup (%s -statefile %s)...\n",
+		"Executing second copy of XF86Setup (%s -statefile %s)...\n",
 		argv[0], statefile);
 #endif
 	    if (statefile)
 	        execlp(argv[0], argv[0], "-statefile", statefile, (char *)0);
-	    fprintf(stderr, "Failed - errno: %d\n", errno);
+	    fprintf(stderr,
+	        "Exec of 2nd XF86Setup failed! Returned error #%d\n", errno);
+	    Tcl_Eval(interp, "exit 1");
+	    exit(1);
 	} else {
             /****  Lastly, execute the Phase V commands ****/
             XF86Setup_TclEvalFile(interp, PHASE5);

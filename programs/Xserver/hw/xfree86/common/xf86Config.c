@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.96 1996/08/13 11:30:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.97 1996/08/16 12:29:52 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -194,7 +194,8 @@ static DisplayModePtr xf86PruneModes(
 #if NeedFunctionPrototypes
     MonPtr monp,
     DisplayModePtr allmodes,
-    ScrnInfoPtr scrp
+    ScrnInfoPtr scrp,
+    Bool card
 #endif
 );
 static char * xf86ValidateFontPath(
@@ -2544,6 +2545,7 @@ configScreenSection()
   case MONO:
   case VGA16:
   case ACCEL:
+  case FBDEV:
 	break;
   default:
     xf86ConfigError("Not a recognized driver name");
@@ -2690,7 +2692,7 @@ configScreenSection()
 	  if (!dummy) {
             monitor_list[i].Modes = xf86PruneModes(&monitor_list[i],
                                                    monitor_list[i].Modes,
-                                                   screen);
+                                                   screen, FALSE);
 	    screen->monitor = (MonPtr)xalloc(sizeof(MonRec));
 	    memcpy(screen->monitor, &monitor_list[i], sizeof(MonRec));
           }
@@ -3144,9 +3146,10 @@ DispPtr disp;
 }
 
 Bool 
-xf86LookupMode(target, driver)
+xf86LookupMode(target, driver, flags)
      DisplayModePtr target;
      ScrnInfoPtr    driver;
+     int	    flags;
 {
   DisplayModePtr p;
   DisplayModePtr best_mode = NULL;
@@ -3155,18 +3158,43 @@ xf86LookupMode(target, driver)
   Bool           found_mode = FALSE;
   Bool           clock_too_high = FALSE;
   static Bool	 first_time = TRUE;
+  double         refresh, bestRefresh = 0.0;
 
   if (first_time)
   {
     ErrorF("%s %s: Maximum allowed dot-clock: %1.3f MHz\n", XCONFIG_PROBED,
 	   driver->name, driver->maxClock / 1000.0);
     first_time = FALSE;
+    /*
+     * First time through, cull modes which are not valid for the
+     * card/driver.
+     */
+    driver->monitor->Modes = xf86PruneModes(NULL, driver->monitor->Modes,
+					    driver, TRUE);
   }
+
+  if (xf86BestRefresh && !(flags & LOOKUP_FORCE_DEFAULT))
+    flags |= LOOKUP_BEST_REFRESH;
 
   for (p = driver->monitor->Modes; p != NULL; p = p->next)	/* scan list */
   {
     if (!strcmp(p->name, target->name))		/* names equal ? */
     {
+#if 0
+      /* First check if the driver objects to the mode */
+      if ((driver->ValidMode)(p) == FALSE)
+      {
+         ErrorF("%s %s: Mode \"%s\" rejected by driver.  Deleted.\n",
+                XCONFIG_PROBED,driver->name, target->name );
+	 break;
+      }
+#endif
+
+      if ((flags & LOOKUP_NO_INTERLACED) && (p->Flags & V_INTERLACE))
+      {
+         continue;
+      }
+
       if ((OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(driver->clockOptions))) &&
 	  !OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &(driver->options)))
       {
@@ -3199,9 +3227,32 @@ xf86LookupMode(target, driver)
             driver->clock[i] = p->Clock;
             driver->clocks++;
           }
-	       
-          target->Clock = i;
-          best_mode = p;
+	  
+
+          if (flags & LOOKUP_BEST_REFRESH)
+          {
+             refresh = p->Clock * 1000.0 / p->HTotal / p->VTotal;
+             if (p->Flags & V_INTERLACE)
+             {
+                refresh *= 2;
+                refresh /= INTERLACE_REFRESH_WEIGHT;
+             }
+             else if (p->Flags & V_DBLSCAN)
+             {
+                refresh /= 2;
+             }
+             if (refresh > bestRefresh)
+             {
+                best_mode = p;
+                bestRefresh = refresh;
+                target->Clock = i;
+             }
+          }
+          else
+          {
+             target->Clock = i;
+             best_mode = p;
+          }
         }
       }
       else
@@ -3218,17 +3269,45 @@ xf86LookupMode(target, driver)
         for (j=1 ; j<=k ; j++)
         {
           i = xf86GetNearestClock(driver, p->Clock*j);
-          Gap = abs( p->Clock - (driver->clock[i]/j) );
-          if (Gap < Minimum_Gap)
+          if (flags & LOOKUP_BEST_REFRESH)
           {
             if ( ((driver->clock[i]/j) / 1000) > (driver->maxClock / 1000) )
               clock_too_high = TRUE;
             else
             {
-              target->Clock = i;
-              if (j==2) p->Flags |= V_CLKDIV2;
-              best_mode = p;
-              Minimum_Gap = Gap;
+              refresh = p->Clock * 1000.0 / p->HTotal / p->VTotal;
+              if (p->Flags & V_INTERLACE)
+              {
+                 refresh *= 2;
+                 refresh /= INTERLACE_REFRESH_WEIGHT;
+              }
+              else if (p->Flags & V_DBLSCAN)
+              {
+                 refresh /= 2;
+              }
+              if (refresh > bestRefresh)
+              {
+                 target->Clock = i;
+                 if (j==2) p->Flags |= V_CLKDIV2;
+                 best_mode = p;
+                 bestRefresh = refresh;
+              }
+            }
+          }
+          else
+          {
+            Gap = abs( p->Clock - (driver->clock[i]/j) );
+            if (Gap < Minimum_Gap)
+            {
+              if ( ((driver->clock[i]/j) / 1000) > (driver->maxClock / 1000) )
+                clock_too_high = TRUE;
+              else
+              {
+                target->Clock = i;
+                if (j==2) p->Flags |= V_CLKDIV2;
+                best_mode = p;
+                Minimum_Gap = Gap;
+              }
             }
           }
         }
@@ -3267,6 +3346,7 @@ xf86LookupMode(target, driver)
       target->CrtcVAdjusted = TRUE;
     }
 
+#if 0
     /* I'm not sure if this is the best place for this in the
      * new XF86Config organization. - SRA
      */
@@ -3277,6 +3357,7 @@ xf86LookupMode(target, driver)
               XCONFIG_GIVEN,driver->name, target->name );
          return(FALSE);
         }
+#endif
 
     if (xf86Verbose)
     {
@@ -3335,10 +3416,11 @@ xf86VerifyOptions(allowedOptions, driver)
  * Initially this is just singly linked.
  */
 static DisplayModePtr
-xf86PruneModes(monp, allmodes, scrp)
+xf86PruneModes(monp, allmodes, scrp, card)
      MonPtr monp;		/* Monitor specification */
      DisplayModePtr allmodes;	/* List to be pruned */
      ScrnInfoPtr scrp;
+     Bool card;			/* TRUE => do driver validity check */
 {
 	DisplayModePtr dispmp;	/* To walk the list */
 	DisplayModePtr olddispmp; /* The one being freed. */
@@ -3350,7 +3432,9 @@ xf86PruneModes(monp, allmodes, scrp)
 	 * mode list is updated. Also, they have no predecessor in the list.
 	 */
 	while (dispmp &&
-	       xf86CheckMode(scrp, dispmp, monp, xf86Verbose) != MODE_OK) {
+	       (card ?
+		 ((scrp->ValidMode)(dispmp) == FALSE) :
+		 (xf86CheckMode(scrp, dispmp, monp, xf86Verbose) != MODE_OK))) {
 		olddispmp = dispmp;
 		dispmp = dispmp->next;
 		xfree(olddispmp->name);
@@ -3362,8 +3446,10 @@ xf86PruneModes(monp, allmodes, scrp)
 	}
 	remainder = dispmp;
 	while ( dispmp->next ) {
-		if (xf86CheckMode(scrp, dispmp->next, monp, xf86Verbose) !=
-                    MODE_OK) {
+		if (card ?
+		     ((scrp->ValidMode)(dispmp->next) == FALSE) :
+		     (xf86CheckMode(scrp, dispmp->next, monp, xf86Verbose) !=
+                      MODE_OK)) {
 			olddispmp = dispmp->next;
 			dispmp->next = dispmp->next->next;
 			xfree(olddispmp->name);

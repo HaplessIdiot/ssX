@@ -62,3 +62,18 @@ proc winpathprefix { w } {
 	return $w
 }
 
+# return a (sorted) list with duplicate elements removed
+# uses the same syntax as lsort
+proc lrmdups { args } {
+	set inlist [eval lsort $args]
+	set retlist ""
+	set lastelem "nomatch[lindex $inlist 0]"
+	foreach elem $inlist {
+		if [string compare $lastelem $elem] {
+			lappend retlist $elem
+			set lastelem $elem
+		}
+	}
+	return $retlist
+}
+

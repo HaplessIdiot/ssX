@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.12 1996/08/11 12:38:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.13 1996/08/13 11:29:39 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -539,7 +539,7 @@ i128Probe()
        * xf86LookupMode returns FALSE if it ran into an invalid
        * parameter 
        */
-      if (!xf86LookupMode(pMode, &i128InfoRec)) {
+      if (!xf86LookupMode(pMode, &i128InfoRec, LOOKUP_DEFAULT)) {
 	 xf86DeleteMode(&i128InfoRec, pMode);
       } else if (pMode->HDisplay > maxDisplayWidth) {
 	 ErrorF("%s %s: Width of mode \"%s\" is too large (max is %d)\n",

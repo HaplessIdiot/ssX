@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h /main/56 1996/01/04 17:19:24 gildea $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.11 1996/06/29 09:10:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.12 1996/08/14 14:40:08 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -305,7 +305,7 @@ SOFTWARE.
 
 #endif /* luna */
 
-#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || defined(linux) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || defined(Lynx))
+#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || (defined(linux) && !defined(__mc68000__)) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || defined(Lynx))
 
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst
@@ -340,6 +340,15 @@ SOFTWARE.
 
 #endif /* SVR4 / BSD / i386 */
 
+#if defined (linux) && defined (__mc68000__)
+
+#define IMAGE_BYTE_ORDER       MSBFirst
+#define BITMAP_BIT_ORDER       MSBFirst
+#define FAST_UNALIGNED_READS
+#define GLYPHPADBYTES          4
+#define GETLEFTBITS_ALIGNMENT  1
+
+#endif /* linux/m68k */
 
 #ifdef sgi
 

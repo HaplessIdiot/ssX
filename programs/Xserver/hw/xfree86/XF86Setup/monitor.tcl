@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.1 1996/06/30 10:44:05 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.2 1996/08/13 11:28:26 dawes Exp $
 #
 #
 
@@ -47,7 +47,7 @@ proc Monitor_create_widgets { win } {
 	set canv $w.monitor.canvas
 	set monCanvas $canv
 	canvas $canv -width 600 -height 330 -highlightthickness 0 \
-		-takefocus no -relief sunken -borderwidth 2
+		-takefocus 0 -relief sunken -borderwidth 2
 	pack $canv -side top -fill x
 
 	frame $canv.list
@@ -230,9 +230,16 @@ proc Monitor_sync_ent { win c dir } {
 		} else {
 			scan $elem %f-%f beg end
 		}
-		if { $beg < $min || $end > $max } continue
 		if { $beg > $end } {
 			set end $beg
+		}
+		if { $beg < $min } {
+			if { $end < $min } continue
+			set beg $min
+		}
+		if { $end > $max } {
+			if { $beg > $max } continue
+			set end $max
 		}
 		incr count
 		$c create rectangle \

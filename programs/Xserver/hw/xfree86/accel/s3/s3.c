@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.134 1996/08/13 11:29:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.135 1996/08/14 14:31:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -682,6 +682,7 @@ s3Probe()
    OFlagSet validOptions;
    char *card, *serno;
    int card_id, max_pix_clock, max_mem_clock, hwconf;
+   int lookupFlags;
 
    /*
     * These characterise a RAMDACs pixel multiplexing capabilities and
@@ -2949,6 +2950,10 @@ s3Probe()
       return (FALSE);
    }
  
+   lookupFlags = LOOKUP_DEFAULT;
+
+redo_mode_lookup:
+
    tx = s3InfoRec.virtualX;
    ty = s3InfoRec.virtualY;
    pMode = s3InfoRec.modes;
@@ -2966,7 +2971,7 @@ s3Probe()
        * xf86LookupMode returns FALSE if it ran into an invalid
        * parameter 
        */
-      if (!xf86LookupMode(pMode, &s3InfoRec)) {
+      if (!xf86LookupMode(pMode, &s3InfoRec, lookupFlags)) {
 	 xf86DeleteMode(&s3InfoRec, pMode);
       } else if (pMode->HDisplay > maxDisplayWidth) {
 	 ErrorF("%s %s: Width of mode \"%s\" is too large (max is %d)\n",
@@ -3066,46 +3071,95 @@ s3Probe()
     */
    if (pixMuxPossible && pixMuxNeeded) {
       if (!pixMuxWidthOK) {
+	 pMode = s3InfoRec.modes;
+	 pEnd = NULL;
+	 do {
+	    DisplayModePtr pModeSv;
+
+	    pModeSv = pMode->next;
+
+	    if (pMode->HDisplay < pixMuxMinWidth) {
+	       xf86DeleteMode(&s3InfoRec, pMode);
+	    } else {
+	       if (pEnd == (DisplayModePtr) NULL)
+		  pEnd = pMode;
+	    }
+
+	    pMode = pModeSv;
+	 } while (pMode != pEnd);
 	 if (s3InfoRec.videoRam > nonMuxMaxMemory) {
-	    ErrorF("To access more than %dkB video memory the RAMDAC must\n",
-		   nonMuxMaxMemory);
-	    ErrorF("operate in pixel multiplex mode, but pixel multiplexing\n");
-	    ErrorF("cannot be used for modes of width less than %d.\n",
+	    ErrorF("%s %s: To access more than %dkB video memory the RAMDAC "
+		   "must\n", XCONFIG_PROBED, s3InfoRec.name, nonMuxMaxMemory);
+	    ErrorF("\toperate in pixel multiplex mode, but pixel "
+		   "multiplexing\n");
+	    ErrorF("\tcannot be used for modes of width less than %d.\n",
 		   pixMuxMinWidth);
-	    ErrorF("Adjust the Modes and/or VideoRam and Virtual lines in\n");
-	    ErrorF("your XF86Config to meet these requirements\n");
+	    ErrorF("\tAdjust the Modes and/or VideoRam and Virtual lines in\n");
+	    ErrorF("\tyour XF86Config to meet these requirements\n");
 	 } else {
-	    ErrorF("Modes with a dot-clock above %dMHz require the RAMDAC to\n",
-		   nonMuxMaxClock / 1000);
-	    ErrorF("operate in pixel multiplex mode, but pixel multiplexing\n");
-	    ErrorF("cannot be used for modes with width less than %d.\n",
-		   pixMuxMinWidth);
-	    ErrorF("Adjust the Modes line in your XF86Config to meet these ");
-	    ErrorF("requirements.\n");
+	    if (nonMuxMaxClock > 0) {
+	       ErrorF("%s %s: Modes with a dot-clock above %dMHz require the "
+		      "RAMDAC to\n", XCONFIG_PROBED, s3InfoRec.name,
+		      nonMuxMaxClock / 1000);
+	       ErrorF("\toperate in pixel multiplex mode, but pixel "
+		      "multiplexing\n");
+	       ErrorF("\tcannot be used for modes with width less than %d.\n",
+		      pixMuxMinWidth);
+	    } else {
+	       ErrorF("%s %s: The RAMDAC must operate in pixel multiplex "
+		      "mode,\n", XCONFIG_PROBED, s3InfoRec.name);
+	       ErrorF("\tbut pixel multiplexing cannot be used for modes\n");
+	       ErrorF("\twith width less than %d.\n", pixMuxMinWidth);
+	    }
+	    ErrorF("\tAdjust the Modes line in your XF86Config to meet these ");
+	    ErrorF("\trequirements.\n");
 	 }
       }
       if (!pixMuxInterlaceOK) {
 	 if (s3InfoRec.videoRam > nonMuxMaxMemory) {
-	    ErrorF("To access more than %dkB video memory the RAMDAC must\n",
-		   nonMuxMaxMemory);
-	    ErrorF("operate in pixel multiplex mode, but pixel multiplexing\n");
-	    ErrorF("cannot be used for interlaced modes.\n",
-		   pixMuxMinWidth);
+	    ErrorF("%s %s: To access more than %dkB video memory the RAMDAC "
+		   "must\n", XCONFIG_PROBED, s3InfoRec.name, nonMuxMaxMemory);
+	    ErrorF("\toperate in pixel multiplex mode, but pixel "
+		   "multiplexing\n");
+	    ErrorF("\tcannot be used for interlaced modes.\n");
+#if 1
+	    ErrorF("\tRescanning modes with interlaced modes elimintated.\n");
+#else
 	    ErrorF("Adjust the Modes and/or VideoRam and Virtual lines in\n");
 	    ErrorF("your XF86Config to meet these requirements\n");
+#endif
 	 } else {
-	    ErrorF("Modes with a dot-clock above %dMHz require the RAMDAC to\n",
-		   nonMuxMaxClock / 1000);
-	    ErrorF("operate in pixel multiplex mode, but pixel multiplexing\n");
-	    ErrorF("cannot be used for interlaced modes.\n");
+	    if (nonMuxMaxClock > 0) {
+	       ErrorF("%s %s: Modes with a dot-clock above %dMHz require the "
+		      "RAMDAC to\n", XCONFIG_PROBED, s3InfoRec.name,
+		      nonMuxMaxClock / 1000);
+	       ErrorF("\toperate in pixel multiplex mode, but pixel "
+		      "multiplexing\n");
+	       ErrorF("\tcannot be used for interlaced modes.\n");
+	    } else {
+	       ErrorF("%s %s: The RAMDAC must operate in pixel multiplex "
+		      "mode,\n", XCONFIG_PROBED, s3InfoRec.name);
+	       ErrorF("\tbut pixel multiplexing cannot be used for interlaced "
+		      "modes.\n");
+	    }
+#if 1
+	    ErrorF("\tRescanning modes with interlaced modes elimintated.\n");
+#else
 	    ErrorF("Adjust the Modes line in your XF86Config to meet these ");
 	    ErrorF("requirements.\n");
+#endif
 	 }
+	 pixMuxInterlaceOK = TRUE;
+	 lookupFlags = LOOKUP_NO_INTERLACED;
+	 goto redo_mode_lookup;
       }
+#if 0
       if (!pixMuxWidthOK || !pixMuxInterlaceOK) {
 	 xf86DisableIOPorts(s3InfoRec.scrnIndex);
 	 return(FALSE);
-      } else {
+      } else
+#endif
+      {
 	 if (xf86Verbose)
 	    ErrorF("%s %s: Operating RAMDAC in pixel multiplex mode\n",
 		   XCONFIG_PROBED, s3InfoRec.name);

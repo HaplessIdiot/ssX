@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.12 1996/05/13 07:29:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.13 1996/08/14 14:32:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -260,7 +260,7 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #define stw_u(v,p)	((unsigned short *)(p)) = (v)
 #define mem_barrier()   /* NOP */
 
-#ifndef FAKEIT
+#if !defined(FAKEIT) && !defined(__mc68000__)
 #ifdef GCCUSESGAS
 
 /*
@@ -785,7 +785,7 @@ unsigned short int port;
 
 #endif /* GCCUSESGAS */
 
-#else /* FAKEIT */
+#else /* !defined(FAKEIT) && !defined(__mc68000__) */
 
 static __inline__ void
 #if NeedFunctionPrototypes

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.2 1996/07/08 10:23:27 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.3 1996/08/13 11:28:29 dawes Exp $
 #
 # Phase I - Initial text mode interaction w/user and starting of VGA16 server
 #
@@ -323,7 +323,7 @@ if $StartServer {
 		if {"X$chipset" != "Xgeneric"} {
 			mesg "Hmmm.. server start-up failed!\
 				Let me try one more time..." info
-			writeXF86Config $Confname-1g -defaultmodes -generic
+			writeXF86Config $Confname-1g -vgamode -generic
 			set ServerPID [start_server VGA16 \
 				$Confname-1g XSout[pid].1]
 		}

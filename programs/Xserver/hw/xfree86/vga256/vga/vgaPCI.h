@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.7 1996/08/11 13:03:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.8 1996/08/16 12:32:50 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -62,7 +62,6 @@
 #define PCI_CHIP_GD5436		0x00AC
 #define PCI_CHIP_GD5446         0x00B8
 #define PCI_CHIP_GD5462		0x00D0
-#define PCI_CHIP_GD5464		0x00D4
 #define PCI_CHIP_GD7542		0x1200
 
 /* Trident */
@@ -169,7 +168,6 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_GD5436,	"GD5436"},
 				{PCI_CHIP_GD5446,       "GD5446"},
 				{PCI_CHIP_GD5462,       "GD5462"},
-				{PCI_CHIP_GD5464,       "GD5464"},
 				{PCI_CHIP_GD7542,	"GD7542"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NCR_2,	"NCR",	{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclother.c,v 3.3 1996/07/08 10:23:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclother.c,v 3.4 1996/08/13 11:28:39 dawes Exp $ */
 
 /*
 
@@ -201,14 +201,15 @@ TCL_XF86ServerRunning(clientData, interp, argc, argv)
 		}
 		old = XSetErrorHandler(ignoreErrors);
 		display = XOpenDisplay(argv[1]);
-		(void) XSetErrorHandler(old);
 		if (display == (Display *) NULL) {
 			Tcl_SetResult(interp, "0", TCL_STATIC);
 		} else {
 			entry = Tcl_CreateHashEntry(&connectTable, argv[1], &new);
 			Tcl_SetHashValue(entry, display);
 			Tcl_SetResult(interp, "1", TCL_STATIC);
+			XSync(display, False);
 		}
+		(void) XSetErrorHandler(old);
 	}
 	return TCL_OK;
 }

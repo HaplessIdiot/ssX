@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.39 1996/08/14 14:32:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.40 1996/08/16 12:29:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -241,6 +241,14 @@ typedef struct {
 #define MODE_HSYNC  1		/* hsync out of range */
 #define MODE_VSYNC  2		/* vsync out of range */
 
+/* flags for xf86LookupMode */
+#define LOOKUP_DEFAULT		0	/* Use default mode lookup method */
+#define LOOKUP_BEST_REFRESH	1	/* Pick modes with best refresh */
+#define LOOKUP_NO_INTERLACED	2	/* Ignore interlaced modes */
+#define LOOKUP_FORCE_DEFAULT	4	/* Force default lookup method */
+
+#define INTERLACE_REFRESH_WEIGHT	1.5
+
 /* SpeedUp options */
 
 #define SPEEDUP_FILLBOX		1
@@ -418,7 +426,8 @@ CONFIG_RETURN_TYPE configPointerSection(
 Bool xf86LookupMode(
 #if NeedFunctionPrototypes
     DisplayModePtr target,
-    ScrnInfoPtr driver
+    ScrnInfoPtr driver,
+    int flags
 #endif
 );
 

@@ -1,9 +1,10 @@
 XCOMM $XConsortium: Imakefile /main/10 1996/02/02 14:22:19 kaleb $
+XCOMM $XFree86$
 #define IHaveSubdirs
 
      TESTDATA = 
-    DATAFILES = dell everex keytronic kinesis microsoft nec northgate \
-		pc sony sun winbook $(TESTDATA)
+    DATAFILES = amiga ataritt dell everex keytronic kinesis microsoft nec \
+		northgate pc sony sun winbook $(TESTDATA)
       SUBDIRS = digital sgi
 
 all::

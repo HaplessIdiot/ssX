@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.2 1996/08/13 11:28:20 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.3 1996/08/16 12:29:38 dawes Exp $
 #
 #
 
@@ -212,7 +212,7 @@ proc Card_create_widgets { win } {
 	if { $UseConfigFile } {
 		set cardDetail		std
 		Card_switchdetail $win
-		$w.card.modebutton configure -state disabled
+		#$w.card.modebutton configure -state disabled
 	} else {
 		set cardDetail		detail
 		Card_switchdetail $win
@@ -248,7 +248,7 @@ proc Card_dacspeed { win } {
 
 proc Card_clockprobe { win } {
 	global cardServer Xwinhome Confname cardClocks cardDevNum
-	global serverNumber
+	global serverNumber cardDetail
 
 	set w [winpathprefix $win]
 	writeXF86Config $Confname-probe -noclocks -defaultmodes

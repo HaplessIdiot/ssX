@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.57 1996/08/10 13:08:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.58 1996/08/16 12:31:59 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -183,9 +183,9 @@ int cirrusLgCursorXOffset;  /* Used by 546X chips */
 			 ((x) == CLGD5430 || (x) == CLGD5434 || \
 			  (x) == CLGD5436) || \
 			 (x) == CLGD5446 || \
-			 ((x) == CLGD5462 || (x) == CLGD5464))
+			 ((x) == CLGD5462))
 
-#define HasLargeHWCursor(x) ((x) == CLGD5462 || (x) == CLGD5464)
+#define HasLargeHWCursor(x) ((x) == CLGD5462)
 			 
 
 /* Define a structure for the HIDDEN DAC cursor colours */
@@ -443,7 +443,6 @@ static int cirrusClockLimit[] = {
   135100,	/* 5436 */
   135100,       /* 5446 */
   170000,       /* 5462 */
-  170000,       /* 5464 */
   80100,	/* 7543 */
 #else 
   /* Clock limits for 256-color mode. */
@@ -472,7 +471,6 @@ static int cirrusClockLimit[] = {
   135100,	/* 5436 */
   135100,       /* 5446 */
   170000,       /* 5462 */
-  170000,       /* 5464 */
   80100,	/* 7541 */
   80100,	/* 7542 */
   80100,	/* 7543 */
@@ -494,7 +492,6 @@ static int cirrusClockLimit16bpp[] = {
   85500,	/* 5436 */
   85500,        /* 5446 */
   135100,       /* 5462 */
-  135100,       /* 5464 */
 };
 
 static int cirrusClockLimit32bpp[] = {
@@ -507,7 +504,6 @@ static int cirrusClockLimit32bpp[] = {
   45100,	/* 5436 */
   45100,        /* 5446 */
   85500,        /* 5462 */  /* Hmm... I wonder if this will break something */
-  85500,        /* 5464 */
 };
 
 #define new ((vgacirrusPtr)vgaNewVideoState)
@@ -524,7 +520,6 @@ static SymTabRec chipsets[] = {
   { CLGD5436,	"clgd5436" },
   { CLGD5446,   "clgd5446" },
   { CLGD5462,   "clgd5462" },
-  { CLGD5464,   "clgd5464" },
   { CLGD6205,	"clgd6205" },
   { CLGD6215,	"clgd6215" },
   { CLGD6225,	"clgd6225" },
@@ -927,10 +922,6 @@ cirrusProbe()
 		  see if there's a Laguna chip there. */
 	       if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_CIRRUS) {
 		 switch (vgaPCIInfo->ChipType) {
-		 case PCI_CHIP_GD5464:
-		   cirrusChip = CLGD5464;
-		   break;
-
 		 case PCI_CHIP_GD5462:
 		   cirrusChip = CLGD5462;
 		   break;
@@ -1697,7 +1688,6 @@ cirrusFbInit()
                     	 * 0x00AC	5436
 			 * 0x00B8       5446
 			 * 0x00D0       5462
-			 * 0x00D4       5464
       			 */
                     	if (vgaPCIInfo->MemBase != 0) {
 			  /* Why the mask?  (CRA) */
@@ -2602,7 +2592,9 @@ cirrusSave(save)
   if (HAVE546X()) {
     outb(vgaIOBase + 4, 0x1E);
     save->CR1E = inb(vgaIOBase + 5);
+#ifdef DEBUG_CIRRUS
     ErrorF("save:  CR1E = 0x%04X\n", save->CR1E);
+#endif
   }
 
   if (Is_754x(cirrusChip)) {

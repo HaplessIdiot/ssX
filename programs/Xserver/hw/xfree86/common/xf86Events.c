@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.35 1996/05/13 06:39:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.36 1996/08/13 11:30:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -434,12 +434,17 @@ ProcessInputEvents ()
  *  ifdefs further (hv).
  */
 
+#ifdef ASSUME_CUSTOM_KEYCODES
+extern u_char SpecialServerMap[];
+#endif /* ASSUME_CUSTOM_KEYCODES */
+
 #if !defined(__EMX__)
 void
 xf86PostKbdEvent(key)
      unsigned key;
 {
   int         scanCode = (key & 0x7f);
+  int         specialkey;
   Bool        down = (key & 0x80 ? FALSE : TRUE);
   KeyClassRec *keyc = ((DeviceIntPtr)xf86Info.pKeyboard)->key;
   Bool        updateLeds = FALSE;
@@ -466,6 +471,7 @@ xf86PostKbdEvent(key)
 	    || (xf86Info.consType == PCVT);
   }
 #endif
+#ifndef ASSUME_CUSTOM_KEYCODES
   /*
    * First do some special scancode remapping ...
    */
@@ -585,15 +591,23 @@ xf86PostKbdEvent(key)
       scanCode = KEY_Pause;       /* pause */
     }
 #endif /* not PC98 */  
+#endif /* !ASSUME_CUSTOM_KEYCODES */
 
   /*
    * and now get some special keysequences
    */
+
+#ifdef ASSUME_CUSTOM_KEYCODES
+  specialkey = SpecialServerMap[scanCode];
+#else /* ASSUME_CUSTOM_KEYCODES */
+  specialkey = scanCode;
+#endif /* ASSUME_CUSTOM_KEYCODES */
+
   if ((ModifierDown(ControlMask | AltMask)) ||
       (ModifierDown(ControlMask | AltLangMask)))
     {
       
-      switch (scanCode) {
+      switch (specialkey) {
 	
       case KEY_BackSpace:
 	if (!xf86Info.dontZap) GiveUp(0);
@@ -601,7 +615,7 @@ xf86PostKbdEvent(key)
 	
 	/*
 	 * The idea here is to pass the scancode down to a list of
-	 * registered routines. There should be some standart conventions
+	 * registered routines. There should be some standard conventions
 	 * for processing certain keys.
 	 */
       case KEY_KP_Minus:   /* Keypad - */
@@ -641,7 +655,7 @@ xf86PostKbdEvent(key)
 	    )
         {
 	  if (down)
-            ioctl(xf86Info.consoleFd, VT_ACTIVATE, scanCode - KEY_F1 + 1);
+            ioctl(xf86Info.consoleFd, VT_ACTIVATE, specialkey - KEY_F1 + 1);
           return;
         }
 	break;
@@ -654,7 +668,7 @@ xf86PostKbdEvent(key)
 	    )
         {
 	  if (down)
-            ioctl(xf86Info.consoleFd, VT_ACTIVATE, scanCode - KEY_F11 + 11);
+            ioctl(xf86Info.consoleFd, VT_ACTIVATE, specialkey - KEY_F11 + 11);
           return;
         }
 	break;
@@ -678,7 +692,7 @@ xf86PostKbdEvent(key)
 #ifdef USE_VT_SYSREQ
     if (VTSwitchEnabled && xf86Info.vtSysreq)
     {
-      switch (scanCode)
+      switch (specialkey)
       {
       /*
        * syscons on *BSD doesn't have a VT #0  -- don't think Linux does
@@ -734,7 +748,7 @@ xf86PostKbdEvent(key)
       case KEY_F10:
 	if (VTSysreqToggle && down)
 	{
-          if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, scanCode-KEY_F1 + 1) < 0)
+          if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, specialkey-KEY_F1 + 1) < 0)
             ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
           VTSysreqToggle = FALSE;
           return;
@@ -745,7 +759,7 @@ xf86PostKbdEvent(key)
       case KEY_F12:
 	if (VTSysreqToggle && down)
 	{
-          if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, scanCode-KEY_F11 + 11) < 0)
+          if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, specialkey-KEY_F11 + 11) < 0)
             ErrorF("Failed to switch consoles (%s)\n", strerror(errno));
           VTSysreqToggle = FALSE;
           return;
@@ -791,7 +805,7 @@ xf86PostKbdEvent(key)
      *	We could do something similar to linux here but SCO ODT uses
      *	Ctrl-PrintScrn, so why change?
      */
-    if (scanCode == KEY_Print && ModifierDown(ControlMask)) {
+    if (specialkey == KEY_Print && ModifierDown(ControlMask)) {
       if (down)
         if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno + 1) < 0)
           if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, 0) < 0)
@@ -896,6 +910,7 @@ xf86PostKbdEvent(key)
     }
 #endif /* not PC98 */	
 
+#ifndef ASSUME_CUSTOM_KEYCODES
   /*
    * normal, non-keypad keys
    */
@@ -913,6 +928,7 @@ xf86PostKbdEvent(key)
       }
 #endif /* !CSRG_BASED && !MACH386 && !MINIX && !__OSF__ */
   }
+#endif /* !ASSUME_CUSTOM_KEYCODES */
   if (updateLeds) xf86KbdLeds();
 #ifdef XKB
   }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.4 1996/03/31 11:50:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.5 1996/08/16 12:32:49 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -44,8 +44,7 @@ vgaGetPCIInfo()
 	    info->IOBase = 0;
 
 	    if (info->Vendor == PCI_VENDOR_CIRRUS &&
-		(info->ChipType == PCI_CHIP_GD5462 ||
-		 info->ChipType == PCI_CHIP_GD5464)) {
+		(info->ChipType == PCI_CHIP_GD5462)) {
 	      info->IOBase = pcrp->_base0;
 	      info->MemBase = pcrp->_base1;
 

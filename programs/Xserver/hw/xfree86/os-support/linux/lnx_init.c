@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.3 1995/06/24 10:29:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.4 1996/02/04 09:10:02 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -36,6 +36,12 @@
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 
+#ifdef USE_DEV_FB
+extern char *getenv(const char *);
+#include <linux/fb.h>
+char *fb_dev_name;
+#endif
+
 static Bool KeepTty = FALSE;
 static int VTnum = -1;
 static int activeVT = -1;
@@ -52,6 +58,10 @@ void xf86OpenConsole()
     struct vt_mode VT;
     char vtname[11];
     struct vt_stat vts;
+#ifdef USE_DEV_FB
+    struct fb_var_screeninfo var;
+    int fbfd;
+#endif
 
     if (serverGeneration == 1) 
     {
@@ -83,6 +93,17 @@ void xf86OpenConsole()
 	    }
 	    close(fd);
 	}
+
+#ifdef USE_DEV_FB
+	fb_dev_name=getenv("FRAMEBUFFER");
+	if (!fb_dev_name)
+	    fb_dev_name="/dev/fb0current";
+	if ((fbfd = open(fb_dev_name, O_RDONLY)) < 0)
+	    FatalError("xf86OpenConsole: Cannot open %s (%s)\n",
+	fb_dev_name, strerror(errno));
+	if (ioctl(fbfd, FBIOGET_VSCREENINFO, &var))
+	    FatalError("xf86OpenConsole: Unable to get screen info\n");
+#endif
 	ErrorF("(using VT number %d)\n\n", xf86Info.vtno);
 
 	sprintf(vtname,"/dev/tty%d",xf86Info.vtno); /* /dev/tty1-64 */
@@ -129,6 +150,13 @@ void xf86OpenConsole()
 		ioctl(i, TIOCNOTTY, 0);
 		close(i);
 	    }
+#ifdef USE_DEV_FB
+	    /* set the controling tty to the new vc */
+	    setsid();
+	    if (ioctl(xf86Info.consoleFd, TIOCSCTTY)) {
+		ErrorF("xf86OpenConsole: TIOCSCTTY failed\n");
+	    }
+#endif
 	}
 
 	/*
@@ -160,6 +188,14 @@ void xf86OpenConsole()
 	{
 	    FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed\n");
 	}
+#ifdef USE_DEV_FB
+	/* copy info to new console */
+	var.yoffset=0;
+	var.xoffset=0;
+	if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &var))
+	    FatalError("Unable to set screen info\n");
+	close(fbfd);
+#endif
     }
     else 
     {

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.2 1996/06/30 10:44:09 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.3 1996/08/13 11:28:34 dawes Exp $
 #
 
 
@@ -232,14 +232,7 @@ proc writeXF86Config {filename args} {
 	    puts $fd "EndSection"
 	}
 
-	set modesList ""
-	set lastmode "nomatch$modeNames"
-	foreach mode [lsort -decreasing -command mode_compare $modeNames] {
-		if { [string compare $lastmode $mode] != 0 } {
-			lappend modesList $mode
-			set lastmode $mode
-		}
-	}
+	set modesList [lrmdups -decreasing -command mode_compare $modeNames]
 
 	foreach id $DeviceIDs {
 	    global Device_$id
@@ -319,7 +312,13 @@ proc writeXF86Config {filename args} {
 			    puts $fd [format "      Visual       \"%s\"" \
 				[set Scrn_${drvr}(Visual,$depth)] ]
 			}
-			foreach key {ViewPort Virtual White Black Weight
+		        if { [string first -vgamode $args] < 0 } {
+		            if [info exists Scrn_${drvr}(Virtual,$depth)] {
+			        puts $fd [format "      Virtual       %s" \
+				    [set Scrn_${drvr}(Virtual,$depth)] ]
+			    }
+		        }
+			foreach key {ViewPort White Black Weight
 				InvertVCLK EarlySC BlankDelay} {
 			    if [info exists Scrn_${drvr}($key,$depth)] {
 				puts $fd [format "      %-12s %s" \
@@ -379,18 +378,18 @@ proc start_server { server configfile outfile } {
 
 	set pid [exec $Xwinhome/bin/XF86_$server $disp \
 		-allowMouseOpenFail -xf86config $configfile \
-		-ls 2048 >& $TmpDir/$outfile & ]
+		-ls 2048 -bestRefresh >& $TmpDir/$outfile & ]
 
-	sleep 1
+	sleep 9
 	set trycount 0
-	while { [incr trycount] < 15 } {
+	while { [incr trycount] < 10 } {
 		if ![process_running $pid] {
 			return 0
 		}
+		sleep 2
 		if [server_running $disp] {
 			return $pid
 		}
-		sleep 2
 	}
 	return -1
 }

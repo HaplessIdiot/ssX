@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.55 1996/08/13 11:30:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.56 1996/08/14 14:32:24 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -87,6 +87,7 @@ xrgb xf86weight = { 0, 0, 0 } ;	/* RGB weighting at 16 bpp */
 double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
 unsigned char xf86rGammaMap[256], xf86gGammaMap[256], xf86bGammaMap[256];
 char *xf86ServerName = NULL;
+Bool xf86BestRefresh = FALSE;
 
 static void xf86PrintConfig(
 #if NeedFunctionPrototypes
@@ -557,6 +558,11 @@ ddxProcessArgument (argc, argv, i)
     return 1;
   }
 #endif
+  if (!strcmp(argv[i],"-bestRefresh"))
+  {
+    xf86BestRefresh = TRUE;
+    return 1;
+  }
 #ifdef DO_CHECK_BETA
   if (!strcmp(argv[i],"-extendExpiry"))
   {
@@ -694,6 +700,7 @@ ddxUseMsg()
   ErrorF("                       from non-local clients\n");
   ErrorF("-allowMouseOpenFail    start server even if the mouse can't be initialized\n");
 #endif
+  ErrorF("-bestRefresh           Chose modes with the best refresh rate\n");
   ErrorF(
    "-showconfig            show which drivers are included in the server\n");
   xf86UseMsg();

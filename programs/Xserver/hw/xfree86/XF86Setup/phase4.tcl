@@ -68,7 +68,7 @@ button $w.buttons.xvidtune -text "Run xvidtune" \
 button $w.buttons.save -text "Save the configuration and exit" \
 	-command [list Phase4_nextphase $w]
 button $w.buttons.abort -text "Abort - Don't save the configuration" \
-	-command "shutdown 1"
+	-command "puts stderr Aborted;shutdown 1"
 pack   $w.buttons.xvidtune $w.buttons.save $w.buttons.abort -side top \
 	-pady 5m -fill x
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.46 1996/08/10 13:05:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.47 1996/08/11 12:37:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1008,7 +1008,7 @@ for information on how to manually configure.\n",
        * xf86LookupMode returns FALSE if it ran into an invalid
        * parameter 
        */
-      if (!xf86LookupMode(pMode, &agxInfoRec)) {
+      if (!xf86LookupMode(pMode, &agxInfoRec, LOOKUP_DEFAULT)) {
          xf86DeleteMode(&agxInfoRec, pMode);
       }
       else {

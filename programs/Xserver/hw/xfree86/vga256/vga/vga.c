@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.55 1996/08/14 14:33:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.56 1996/08/16 12:32:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -696,7 +696,7 @@ vgaProbe()
 	     * xf86LookupMode returns FALSE if it ran into an invalid
 	     * parameter
 	     */
-	    if(xf86LookupMode(pMode, &vga256InfoRec) == FALSE) {
+	    if(xf86LookupMode(pMode, &vga256InfoRec, LOOKUP_DEFAULT) == FALSE) {
 	      pModeSv = pMode->next;
 	      xf86DeleteMode(&vga256InfoRec, pMode);
 	      pMode = pModeSv; 

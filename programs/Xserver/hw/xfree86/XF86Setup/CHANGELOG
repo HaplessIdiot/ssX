@@ -195,7 +195,7 @@
 			Make it compile with newer Tcl/Tk releases
 
 0.12	2 Aug 1996	Updated Imakefile
-			Full support for Tcl 7.5/Tk 4.1 added
+(3.1.2Ef)		Full support for Tcl 7.5/Tk 4.1 added
 			More XKB updates (_XKB_RULES_NAMES property
 			  support)
 			XKB functions no longer use a single static
@@ -227,4 +227,40 @@
 			Add "flush stdout" statements to flush the
 			  (Tcl 7.5) channel buffers
 			
+0.13	15 Aug 1996	Process window path names to use as prefix
+(3.1.2Eh)		  to other window paths
+			Add man pages for XF86Setup and xmseconfig
+			Imakefile updates (David Dawes)
+			Change exec of second XF86Setup to use execlp
+			  instead of execl (David Dawes)
+			Modified config file reading routines to keep
+			  all existing monitor and devices - this also
+			  eliminated a bug in handling multiple
+			  monitors/devices
+			Fixed typo in monitor sync rates (Harald Koenig)
+			Changed autorepeat timings for the scrollbar
+			  associated with the card list - scrolling
+			  takes too long with the VGA16 server
+
+0.14	16 Aug 1996	Added -notk option (when a script is specified)
+			When writing config file for VGA16 server,
+			  don't write a Virtual size
+			Use -vgamode option when writing config file
+			  used to start VGA16 server with
+			  Chipset "generic"
+			Added "lrmdups" proc to eliminate duplicate
+			  elements from a list
+			Fleshed out Chipset, RamDac, ClockChip, and
+			  Options info in carddata.tcl
+			Output error message if exec-ing second copy
+			  fails
+			Fixed bug w/ keyboard focus during monitor
+			  configuration
+			Monitor sync range canvases now handle ranges
+			  that exceed their limits
+			Fix bug in Card_clockprobe - cardDetail wasn't
+			  declared global
+			The card list can now be accessed even when
+			  the existing config file is read
+			Output "Aborted" message when abort is pressed
 

@@ -17,7 +17,16 @@ if {![catch {xf86config_readfile $Xwinhome files server \
 	if [info exists mouse] {
 		set Pointer(Device) $mouse(Device)
 	}
-	foreach var {files server keyboard mouse monitor device screen} {
+	foreach var {files server keyboard mouse}
+		catch {unset $var}
+	}
+	foreach var [info vars monitor_*] {
+		catch {unset $var}
+	}
+	foreach var [info vars device_*] {
+		catch {unset $var}
+	}
+	foreach var [info vars screen_*] {
 		catch {unset $var}
 	}
 }
