@@ -1,10 +1,13 @@
 XFree86 4.0.1d (8 September 2000)
+ 588. Add SilkenMouse support to the I810 driver (Mark Vojkovich).
+ 587. Disable DRI acceleration in depth 15 on the I810 because it doesn't 
+      work (Mark Vojkovich).
  586. Fix some ordering problems in the I810ScreenInit that broke the 
       software cursor (Mark Vojkovich).
  585. Convert the I810 driver from cfb to fb (Mark Vojkovich).
  584. Fix some depth/bpp confusion in the I810 driver.  Depth 15 works now
       (Mark Vojkovich).
- 583. Turn of visual ID matching in Xv (Mark Vojkovich).
+ 583. Turn off visual ID matching in Xv (Mark Vojkovich).
  582. Add the IA-64 ELF loader (Jakub Jelinek).
  581. Add I420 and UYVY image formats to the I810 driver (#4135, Jonathan Bian).
  580. Fix an Xaw problem with illegal aliases (Jakub Jelinek).
@@ -11115,4 +11118,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1302 2000/09/08 02:31:21 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1303 2000/09/09 02:34:42 mvojkovi Exp $
