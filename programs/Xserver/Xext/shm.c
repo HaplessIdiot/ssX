@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.17 1999/09/06 11:27:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.18 1999/09/25 14:36:44 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -59,9 +59,6 @@ in this Software without prior written authorization from The Open Group.
 #include "panoramiXsrv.h"
 extern int PanoramiXNumScreens;
 extern Bool noPanoramiXExtension;
-extern PanoramiXWindow *PanoramiXWinRoot;
-extern PanoramiXPmap   *PanoramiXPmapRoot;
-extern PanoramiXGC     *PanoramiXGCRoot;
 extern PanoramiXData   *panoramiXdataPtr;
 #endif
 
@@ -204,9 +201,6 @@ ShmExtensionInit()
     sharedPixmaps = xFalse;
     pixmapFormat = 0;
 #ifndef INTERNAL_VS_EXTERNAL_PADDING
-#ifdef PANORAMIX
-    if(noPanoramiXExtension)
-#endif
     {
       sharedPixmaps = xTrue;
       pixmapFormat = shmPixFormat[0];
@@ -455,42 +449,38 @@ fbShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy, data)
 static int 
 ProcPanoramiXShmPutImage(register ClientPtr client)
 {
-    DrawablePtr 	 pDraw;
-    int			 j;
-    PanoramiXWindow 	 *pPanoramiXWin;
-    PanoramiXWindow 	 *pPanoramiXRoot;
-    PanoramiXGC 	 *pPanoramiXGC = PanoramiXGCRoot;
-    int			 orig_x, orig_y;
-    int			 result;
-    Bool		 sendEvent;
+    int			 j, result, orig_x, orig_y;
+    PanoramiXRes	*draw, *gc;
+    Bool		 sendEvent, isRoot;
 
     REQUEST(xShmPutImageReq);
     REQUEST_SIZE_MATCH(xShmPutImageReq);
 
-    pDraw = (DrawablePtr) SecurityLookupIDByClass(
-		client, stuff->drawable, RC_DRAWABLE, SecurityReadAccess);
-    IF_RETURN(!pDraw, BadDrawable);
-    pPanoramiXRoot = (pDraw->type == DRAWABLE_PIXMAP) 
-				? PanoramiXPmapRoot : PanoramiXWinRoot;
-    pPanoramiXWin = pPanoramiXRoot;
-    PANORAMIXFIND_ID(pPanoramiXWin, stuff->drawable);
-    IF_RETURN(!pPanoramiXWin,BadDrawable);
-    PANORAMIXFIND_ID(pPanoramiXGC, stuff->gc);
-    IF_RETURN(!pPanoramiXGC, BadGC);
+    if(!(draw = (PanoramiXRes *)SecurityLookupIDByClass(
+                client, stuff->drawable, XRC_DRAWABLE, SecurityWriteAccess)))
+        return BadDrawable;
+
+    if(!(gc = (PanoramiXRes *)SecurityLookupIDByType(
+                client, stuff->gc, XRT_GC, SecurityReadAccess)))
+        return BadGC;
+
+    isRoot = (draw->type == XRT_WINDOW) &&
+		(stuff->drawable == WindowTable[0]->drawable.id);
+
     orig_x = stuff->dstX;
     orig_y = stuff->dstY;
     sendEvent = stuff->sendEvent;
     stuff->sendEvent = 0;
-    FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
+    FOR_NSCREENS(j) {
 	if(!j) stuff->sendEvent = sendEvent;
-	stuff->drawable = pPanoramiXWin->info[j].id;
-	stuff->gc = pPanoramiXGC->info[j].id;
-	if (pPanoramiXWin == pPanoramiXRoot) {
+	stuff->drawable = draw->info[j].id;
+	stuff->gc = gc->info[j].id;
+	if (isRoot) {
 	    stuff->dstX = orig_x - panoramiXdataPtr[j].x;
 	    stuff->dstY = orig_y - panoramiXdataPtr[j].y;
 	}
 	result = ProcShmPutImage(client);
-	BREAK_IF(result != client->noClientException);
+	if(result != client->noClientException) break;
     }
     return(result);
 }
@@ -498,7 +488,7 @@ ProcPanoramiXShmPutImage(register ClientPtr client)
 static int 
 ProcPanoramiXShmGetImage(ClientPtr client)
 {
-    PanoramiXWindow	*pPanoramiXWin = PanoramiXWinRoot;
+    PanoramiXRes	*draw;
     DrawablePtr 	drawables[MAXSCREENS];
     DrawablePtr 	pDraw;
     xShmGetImageReply	xgi;
@@ -524,10 +514,14 @@ ProcPanoramiXShmGetImage(ClientPtr client)
         return(BadValue);
     }
 
-    VERIFY_DRAWABLE(pDraw, stuff->drawable, client);
+    if(!(draw = (PanoramiXRes *)SecurityLookupIDByClass(
+		client, stuff->drawable, XRC_DRAWABLE, SecurityWriteAccess)))
+	return BadDrawable;
 
-    if (pDraw->type == DRAWABLE_PIXMAP)
+    if (draw->type == XRT_PIXMAP)
 	return ProcShmGetImage(client);
+
+    VERIFY_DRAWABLE(pDraw, stuff->drawable, client);
 
     VERIFY_SHMPTR(stuff->shmseg, stuff->offset, TRUE, shmdesc, client);
 
@@ -537,7 +531,9 @@ ProcPanoramiXShmGetImage(ClientPtr client)
     h = stuff->height;
     format = stuff->format;
     planemask = stuff->planeMask;
-    isRoot = (stuff->drawable == pPanoramiXWin->info[0].id);
+
+    isRoot = (draw->type == XRT_WINDOW) &&
+		(stuff->drawable == WindowTable[0]->drawable.id);
 
     if(isRoot) {
       if( /* check for being onscreen */
@@ -556,13 +552,11 @@ ProcPanoramiXShmGetImage(ClientPtr client)
 	y < -wBorderWidth((WindowPtr)pDraw) ||
 	y + h > wBorderWidth ((WindowPtr)pDraw) + (int)pDraw->height)
 	    return(BadMatch);
-
-	PANORAMIXFIND_ID(pPanoramiXWin, stuff->drawable);
     }
 
     drawables[0] = pDraw;
     for(i = 1; i < PanoramiXNumScreens; i++)
-	VERIFY_DRAWABLE(drawables[i], pPanoramiXWin->info[i].id, client);
+	VERIFY_DRAWABLE(drawables[i], draw->info[i].id, client);
 
     xgi.visual = wVisual(((WindowPtr)pDraw));
     xgi.type = X_Reply;
@@ -693,12 +687,95 @@ ProcPanoramiXShmGetImage(ClientPtr client)
 
     return(client->noClientException);
 }
+
+static int
+ProcPanoramiXShmCreatePixmap(client)
+    register ClientPtr client;
+{
+    ScreenPtr pScreen;
+    PixmapPtr pMap;
+    DrawablePtr pDraw;
+    DepthPtr pDepth;
+    int i, j, result;
+    ShmDescPtr shmdesc;
+    REQUEST(xShmCreatePixmapReq);
+    PanoramiXRes *newPix;
+
+    REQUEST_SIZE_MATCH(xShmCreatePixmapReq);
+    client->errorValue = stuff->pid;
+    if (!sharedPixmaps)
+	return BadImplementation;
+    LEGAL_NEW_RESOURCE(stuff->pid, client);
+    VERIFY_GEOMETRABLE(pDraw, stuff->drawable, client);
+    VERIFY_SHMPTR(stuff->shmseg, stuff->offset, TRUE, shmdesc, client);
+    if (!stuff->width || !stuff->height)
+    {
+	client->errorValue = 0;
+        return BadValue;
+    }
+    if (stuff->depth != 1)
+    {
+        pDepth = pDraw->pScreen->allowedDepths;
+        for (i=0; i<pDraw->pScreen->numDepths; i++, pDepth++)
+	   if (pDepth->depth == stuff->depth)
+               goto CreatePmap;
+	client->errorValue = stuff->depth;
+        return BadValue;
+    }
+CreatePmap:
+    VERIFY_SHMSIZE(shmdesc, stuff->offset,
+		   PixmapBytePad(stuff->width, stuff->depth) * stuff->height,
+		   client);
+
+    if(!(newPix = (PanoramiXRes *) xalloc(sizeof(PanoramiXRes))))
+	return BadAlloc;
+
+    newPix->type = XRT_PIXMAP;
+    newPix->u.pix.shared = TRUE;
+    newPix->info[0].id = stuff->pid;
+    for(j = 1; j < PanoramiXNumScreens; j++)
+	newPix->info[j].id = FakeClientID(client->index);
+
+    result = (client->noClientException);
+
+    FOR_NSCREENS(j) {
+	pScreen = screenInfo.screens[j];
+
+	pMap = (*shmFuncs[j]->CreatePixmap)(pScreen, 
+				stuff->width, stuff->height, stuff->depth,
+				shmdesc->addr + stuff->offset);
+
+	if (pMap) {
+	    pMap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	    pMap->drawable.id = newPix->info[j].id;
+	    if (!AddResource(newPix->info[j].id, RT_PIXMAP, (pointer)pMap)) {
+		(*pScreen->DestroyPixmap)(pMap);
+		result = BadAlloc;
+		break;
+	    }
+	} else {
+	   result = BadAlloc;
+	   break;
+	}
+    }
+
+    if(result == BadAlloc) {
+	while(j--) {
+	    (*pScreen->DestroyPixmap)(pMap);
+	    FreeResource(newPix->info[j].id, RT_NONE);
+	}
+	xfree(newPix);
+    } else {
+	AddResource(stuff->pid, ShmPixType, shmdesc);
+	AddResource(stuff->pid, XRT_PIXMAP, newPix);
+    }
+
+    return result;
+}
+
 #endif
 
-#ifdef PANORAMIX
-static
-#endif
-int
+static int
 ProcShmPutImage(client)
     register ClientPtr client;
 {
@@ -1221,7 +1298,11 @@ ProcShmDispatch (client)
 #endif
 	return ProcShmGetImage(client);
     case X_ShmCreatePixmap:
-	return ProcShmCreatePixmap(client);
+#ifdef PANORAMIX
+        if ( !noPanoramiXExtension )
+	   return ProcPanoramiXShmCreatePixmap(client);
+#endif
+	   return ProcShmCreatePixmap(client);
     default:
 	return BadRequest;
     }
