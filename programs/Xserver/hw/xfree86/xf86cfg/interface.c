@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.13 2000/12/09 02:23:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.14 2000/12/29 20:09:52 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -137,6 +137,7 @@ int sxpos, sypos;
 static char no_cursor_data[] = { 0,0,0,0, 0,0,0,0 };
 static GC cablegc, cablegcshadow;
 Atom wm_delete_window;
+static Bool config_set = False;
 
 #define CONFIG_LAYOUT	0
 #define CONFIG_SCREEN	1
@@ -215,8 +216,10 @@ main(int argc, char *argv[])
 
     for (i = 1; i < argc; i++) {
 	if (strcmp(argv[i], "-xf86config") == 0) {
-	    if (i + 1 < argc)
+	    if (i + 1 < argc) {
 		XF86Config_path = argv[++i];
+		config_set = True;
+	    }
 	} else if (strcmp(argv[i], "-modulepath") == 0) {
 	    if (i + 1 < argc)
 		XF86Module_path = argv[++i];
@@ -421,6 +424,22 @@ main(int argc, char *argv[])
 	LoaderInitializeOptions();
 #endif
 
+    if (!config_set && startedx) {
+	XtFree(XF86Config_path);
+#ifdef XF86CONFIG
+# ifdef XF86CONFIGDIR
+	XF86Config_path = XtNewString(XF86CONFIGDIR "/" XF86CONFIG);
+# else
+	XF86Config_path = XtNewString("/etc/X11/" XF86CONFIG);
+# endif
+#else
+# ifdef XF86CONFIGDIR
+	XF86Config_path = XtNewString(XF86CONFIGDIR "/XF86Config-4");
+# else
+	XF86Config_path = XtNewString("/etc/X11/XF86Config-4");
+# endif
+#endif
+    }
     XtAppMainLoop(appcon);
     if (startedx)
 	endx();
