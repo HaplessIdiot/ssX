@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Box.c,v 1.8 1998/10/03 08:42:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Box.c,v 1.9 1999/04/04 08:46:00 dawes Exp $ */
 
 #include	<X11/IntrinsicP.h>
 #include	<X11/StringDefs.h>
@@ -633,8 +633,10 @@ XawBoxRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
     if (w->core.background_pixmap > XtUnspecifiedPixmap) {
 	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
 				      w->core.colormap, w->core.depth);
+#ifdef USE_XPM
 	if (pixmap && pixmap->mask)
 	    XawReshapeWidget(w, pixmap);
+#endif
     }
 }
 
@@ -654,8 +656,10 @@ XawBoxSetValues(Widget current, Widget request, Widget cnew,
 				    b_old->core.colormap, b_old->core.depth);
 	npix = XawPixmapFromXPixmap(b_new->core.background_pixmap, XtScreen(b_new),
 				    b_new->core.colormap, b_new->core.depth);
+#ifdef USE_XPM
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
+#endif
     }
 
   return (False);

@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.8 1998/10/03 08:42:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.9 1999/04/04 08:46:02 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -283,8 +283,10 @@ XawSimpleRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
     if (w->core.background_pixmap > XtUnspecifiedPixmap) {
 	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
 				      w->core.colormap, w->core.depth);
+#ifdef USE_XPM
 	if (pixmap && pixmap->mask)
 	    XawReshapeWidget(w, pixmap);
+#endif
     }
 }
 
@@ -369,8 +371,10 @@ XawSimpleSetValues(Widget current, Widget request, Widget cnew,
 				    s_old->core.colormap, s_old->core.depth);
 	npix = XawPixmapFromXPixmap(s_new->core.background_pixmap, XtScreen(s_new),
 				    s_new->core.colormap, s_new->core.depth);
+#ifdef USE_XPM
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
+#endif
     }
 
     if (s_old->simple.display_list != s_new->simple.display_list)
