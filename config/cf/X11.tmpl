@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.116 2001/05/21 18:52:39 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.117 2001/05/23 03:29:36 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2971,21 +2971,25 @@ clean::									@@\
 #define PostProcessTroffPS(temp,real) $(MV) temp real
 #endif
 
-#ifndef MakeSimpleDoc
-#define MakeSimpleDoc(file,srcs)					@@\
+#ifndef MakeDepSimpleDoc
+#define MakeDepSimpleDoc(file,deps,srcs)				@@\
 all:: file.PS file.txt							@@\
 .PRECIOUS: file.PS							@@\
 									@@\
-file.PS: srcs								@@\
+file.PS: deps								@@\
 	-$(TROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw > file.nPS \@@\
 	&& PostProcessTroffPS(file.nPS,$@)				@@\
 	@if grep '^[^1-9.]' index.raw; then exit 1; else test $$? -le 1; fi @@\
 									@@\
-file.txt: srcs								@@\
+file.txt: deps								@@\
 	$(NROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw | $(COL) $(COLFLAGS) > $@ @@\
 									@@\
 clean::									@@\
 	$(RM) index.raw file.nPS file.PS file.txt
+#endif
+
+#ifndef MakeSimpleDoc(file,srcs)
+#define MakeSimpleDoc(file,srcs) MakeDepSimpleDoc(file,srcs,srcs)
 #endif
 
 #ifndef MakeTblDoc

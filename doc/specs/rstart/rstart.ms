@@ -1,10 +1,11 @@
+.\" $XFree86$
 .ds iL Brown
 .ds iI J.
 .ds iO Quarterdeck Office Systems
 .ds iG X Consortium
 .ds iN DRAFT
 .ds iD August 1993
-.so tmac.rfc
+.so tmac.build
 .LG
 .LG
 .ce
