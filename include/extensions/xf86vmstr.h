@@ -1,7 +1,7 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.19 1997/05/25 14:41:16 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.20 1997/07/06 12:08:34 dawes Exp $ */
 /*
 
-Copyright (c) 1995  Kaleb S. KEITHLEY
+Copyright 1995  Kaleb S. KEITHLEY
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,9 +28,9 @@ or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
 
 */
-/* $XConsortium: xf86vmstr.h /main/10 1996/10/26 21:38:17 kaleb $ */
+/* $TOG: xf86vmstr.h /main/11 1998/02/09 11:23:53 kaleb $ */
 
-/* THIS IS NOT AN X CONSORTIUM STANDARD */
+/* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
 #ifndef _XF86VIDMODESTR_H_
 #define _XF86VIDMODESTR_H_

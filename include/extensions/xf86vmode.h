@@ -1,7 +1,7 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.22 1997/07/19 05:43:00 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.23 1997/11/16 06:17:34 dawes Exp $ */
 /*
 
-Copyright (c) 1995  Kaleb S. KEITHLEY
+Copyright 1995  Kaleb S. KEITHLEY
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,9 +28,9 @@ or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
 
 */
-/* $TOG: xf86vmode.h /main/10 1997/08/10 12:53:37 kaleb $ */
+/* $TOG: xf86vmode.h /main/11 1998/02/09 11:23:48 kaleb $ */
 
-/* THIS IS NOT AN X CONSORTIUM STANDARD */
+/* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
 #ifndef _XF86VIDMODE_H_
 #define _XF86VIDMODE_H_
