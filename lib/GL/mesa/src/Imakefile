@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.4 1999/08/14 10:49:16 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.5 1999/12/14 01:32:25 robin Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/Imakefile,v 1.5 1999/06/21 05:13:55 martin Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -207,9 +207,13 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 		vertices.o
 
      ASM_SRCS = 
-     ASM_OBJS = 
+     ASM_OBJS =
+#if i386Architecture
      ASM_DEFS = -DUSE_MMX_ASM -DUSE_X86_ASM 
 # -DUSE_3DNOW_ASM
+#else
+     ASM_DEFS =
+#endif /* i386Architecture */
 
       DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS) $(ASM_DEFS)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I../include -I../../dri
@@ -226,8 +230,11 @@ LinkSourceFile(zoom.h, ../../../../extras/Mesa/src)
 #if GlxBuiltInMesa || GlxDriverUsesMesa || !GlxUseBuiltInDRIDriver
 # We have to go into X to make the xmesaP.h symbolic link
   MESASUBDIRS = X
-
+#if i386Architecture
   ASMSUBDIRS = X86
+#else
+  ASMSUBDIRS =
+#endif /* i386Architecture */
 
 #include <Library.tmpl>
 
@@ -247,8 +254,15 @@ DependSubdirs($(SUBDIRS))
 
 #if !GlxUseBuiltInDRIDriver && !GlxDriverUsesMesa
 LIBNAME = mesa_dri.so
+
+#if i386Architecture
 ALL_OBJS = $(CORE_OBJS) X/?*.o X86/?*.o
 ALL_DEPS = $(SUBDIRS) DONE X/DONE X86/DONE
+#else
+ALL_OBJS = $(CORE_OBJS) X/?*.o
+ALL_DEPS = $(SUBDIRS) DONE X/DONE
+#endif /* i386Architecture */
+
 SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),.)
 #endif
