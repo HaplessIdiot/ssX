@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.29 2002/08/05 01:55:54 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.30 2002/08/15 00:14:53 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -102,9 +102,13 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #define MkdirHierCmd            mkdir -p
 
-/* our cpp isn't in /lib/cpp and it doesn't like -undef */
+/* our cpp isn't in /lib/cpp and early versions don't like -undef */
 #define CppCmd                  /usr/bin/cpp
-#define RawCppCmd               /usr/bin/cc -E -undef
+#if GccMajorVersion >= 3
+# define RawCppCmd              CppCmd -undef
+#else
+# define RawCppCmd              CppCmd
+#endif
 
 /* we have a gcc compatible compiler, but its not called gcc */
 #define CcCmd                   /usr/bin/cc
