@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.14 2000/12/01 17:08:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.15 2000/12/02 15:30:40 tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -188,6 +188,9 @@ static const char *vgahwSymbols[] = {
 
 static const char *fbSymbols[] = {
     "fbScreenInit",
+#ifdef RENDER
+    "fbPictureInit",
+#endif
     NULL
 };
 
@@ -1156,6 +1159,9 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     xf86LoaderReqSymbols("fbScreenInit", NULL);
+#ifdef RENDER
+    xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
 
     /* Load XAA if needed */
     if (!pI128->NoAccel) {
@@ -1526,6 +1532,10 @@ I128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			displayWidth, pScrn->bitsPerPixel);
     if (!ret)
 	return FALSE;
+
+#ifdef RENDER
+    fbPictureInit(pScreen, 0, 0);
+#endif
 
     if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */

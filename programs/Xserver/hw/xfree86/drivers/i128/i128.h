@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.h,v 1.1 2000/10/04 23:34:58 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.h,v 1.2 2000/10/23 14:11:39 robin Exp $ */
 /*
  * Number Nine I128 functions
  *
@@ -48,7 +48,6 @@ typedef struct {
     int		CursorLines;
     int		AdjustCursorXPos;
     int		CursGeneration;
-    unsigned char *vgamem;
 
     /* layout specific */
     int bitsPerPixel;
