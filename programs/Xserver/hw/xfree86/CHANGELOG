@@ -1,3 +1,8 @@
+XFree86 3.9.16d (xx November 1999)
+3337. Pass positioning information for the obsolete ServerLayout format
+      to the common layer, and update the DESIGN doc for the newer ServerLayout
+      formats (David Dawes).
+
 XFree86 3.9.16d (19 November 1999)
 3336. Fx up new MMIO macros (#3337, Matt Grossman).
 3335. Clean up compiler warnings in lib/font/bitmap (#3411, Matt Grossman).
@@ -9082,4 +9087,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.851 1999/11/19 13:54:08 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.852 1999/11/19 14:46:42 hohndel Exp $
