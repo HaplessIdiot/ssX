@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/Imakefile,v 1.1 2001/04/05 19:29:43 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the VMware virtual SVGA driver.  
 XCOMM
@@ -20,17 +20,17 @@ OBJS = vmware.o vmwaregc.o vmwarefs.o vmwarepolypnt.o vmwarepush.o \
 INCLUDES = -I. -I../../include
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
-           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(XF86SRC)/int10 \
-           -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa -I$(XF86SRC)/rac \
+           -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(XF86SRC)/int10 \
+           -I$(XF86SRC)/xaa -I$(XF86SRC)/rac \
            -I$(XF86SRC)/vgahw -I$(XF86SRC)/fbdevhw \
            -I$(XF86SRC)/ramdac -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
-           -I$(SERVERSRC)/Xext -I$(XF86SRC)/xf8_32bpp\
+           -I$(SERVERSRC)/Xext -I$(SERVERSRC)/render \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-           -I$(XF86SRC)/xf24_32bpp -I$(XF86SRC)/shadowfb -I$(EXTINCSRC) \
+           -I$(XF86SRC)/shadowfb -I$(EXTINCSRC) \
 	   -I$(XF86OSSRC)/vbe $(DRIINCLUDES)
 #endif
 
-DEFINES = -DPSZ=8 $(DRIDEFINES)
+DEFINES = $(DRIDEFINES)
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))

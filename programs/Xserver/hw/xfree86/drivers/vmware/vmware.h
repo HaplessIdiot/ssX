@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Id: vmware.h,v 1.6 2001/01/30 18:13:47 bennett Exp $
  * **********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.h,v 1.1 2001/04/05 19:29:44 dawes Exp $ */
 
 #ifndef VMWARE_H
 #define VMWARE_H
@@ -22,12 +22,7 @@
 #include "mibstore.h"		/* backing store */
 #include "micmap.h"		/* mi color map */
 #include "vgaHW.h"		/* VGA hardware */
-#define PSZ	8		/* 8bpp */
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"		/* 16bpp */
-#include "cfb24.h"		/* 24bpp */
-#include "cfb32.h"		/* 32bpp */
+#include "fb.h"
 
 #include "xf86cmap.h"		/* xf86HandleColormaps */
 
@@ -95,9 +90,6 @@ typedef struct {
 
 	uint16		indexReg, valueReg;
 
-	RegionPtr (*pcfbCopyPlane) (DrawablePtr, DrawablePtr, GCPtr,
-					int, int, int, int, int, int,
-					unsigned long);
 	ScreenRec	ScrnFuncs;
 	/* ... */
 } VMWARERec, *VMWAREPtr;
@@ -631,12 +623,18 @@ void vmwarePutImage(
 #endif
     );
 
-void vmwareDoBitblt(DrawablePtr pSrc,
-#if NeedFunctionPrototypes
-    DrawablePtr pDst,
-    int alu, RegionPtr prgnDst, DDXPointPtr pptSrc, unsigned long planemask, unsigned long bitplane
-#endif
-    );
+void
+vmwareDoBitblt(DrawablePtr  pSrc,
+	       DrawablePtr  pDst,
+	       GCPtr	    pGC,
+	       BoxPtr	    pbox,
+	       int	    nbox,
+	       int	    dx,
+	       int	    dy,
+	       Bool	    reverse,
+	       Bool	    upsidedown,
+	       Pixel	    bitplane,
+	       void	    *closure);
 
 RegionPtr vmwareCopyArea(
 #if NeedFunctionPrototypes

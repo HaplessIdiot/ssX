@@ -20,9 +20,8 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.3 2000/12/02 15:30:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.4 2001/05/04 19:05:46 dawes Exp $ */
 
-#define PSZ 8
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
@@ -31,9 +30,7 @@
 #include "mibstore.h"
 #include "micmap.h"
 
-#include "cfb.h"
-#undef PSZ
-#include "cfb32.h"
+#include "fb.h"
 #include "xf86cmap.h"
 #include "tcx.h"
 
@@ -433,8 +430,7 @@ TCXPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pTcx->HWCursor ? "HW" : "SW");
 
-    if (xf86LoadSubModule(pScrn, pScrn->depth > 8 ? "cfb32" : "cfb") ==
-	NULL) {
+    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	TCXFreeRec(pScrn);
 	return FALSE;
     }
@@ -539,24 +535,25 @@ TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			  pScrn->rgbBits, pScrn->defaultVisual))
 	return FALSE;
 
+    miSetPixmapDepths ();
+
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
      */
 
-    if (pScrn->depth == 8)
-	ret = cfbScreenInit(pScreen, pTcx->fb, pScrn->virtualX,
-			    pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			    pScrn->virtualX);
-    else {
+    if (pScrn->bitsPerPixel != 8)
 	TCXInitCplane24(pScrn);
-	ret = cfb32ScreenInit(pScreen, pTcx->fb, pScrn->virtualX,
-			      pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			      pScrn->virtualX);
-    }
+    ret = fbScreenInit(pScreen, pTcx->fb, pScrn->virtualX,
+		       pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+		       pScrn->virtualX, pScrn->bitsPerPixel);
 
     if (!ret)
 	return FALSE;
+
+#ifdef RENDER
+    fbPictureInit (pScreen, 0, 0);
+#endif
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);

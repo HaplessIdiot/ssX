@@ -7,7 +7,7 @@ char rcsId_vmware[] =
 
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.2 2001/05/04 19:05:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.3 2001/05/10 21:04:36 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -23,12 +23,7 @@ char rcsId_vmware[] =
 #include "mibstore.h"		/* backing store */
 #include "micmap.h"		/* mi color map */
 #include "vgaHW.h"		/* VGA hardware */
-#define PSZ	8		/* 8bpp */
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"		/* 16bpp */
-#include "cfb24.h"		/* 24bpp */
-#include "cfb32.h"		/* 32bpp */
+#include "fb.h"
 
 #include "xf86cmap.h"		/* xf86HandleColormaps */
 
@@ -345,7 +340,6 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 	int bpp24flags;
 	uint32 id;
 	int i;
-	const char* mod;
 	ClockRange* clockRanges;
 
 	if (flags & PROBE_DETECT) {
@@ -619,17 +613,7 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->currentMode = pScrn->modes;
 	xf86PrintModes(pScrn);
 	xf86SetDpi(pScrn, 0, 0);
-	switch (pScrn->bitsPerPixel) {
-		case 8:	mod = "cfb"; break;
-		case 16:mod = "cfb16"; break;
-		case 24:mod = "cfb24"; break;
-		case 32:mod = "cfb32"; break;
-		default:
-			xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Unexpected bpp (%d)\n", pScrn->bitsPerPixel);
-			VMWAREFreeRec(pScrn);
-			return FALSE;
-	}
-	if (mod && !xf86LoadSubModule(pScrn, mod)) {
+	if (!xf86LoadSubModule(pScrn, "fb")) {
 		VMWAREFreeRec(pScrn);
 		return FALSE;
 	}
@@ -888,67 +872,24 @@ VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		}
 	}
 
+	miSetPixmapDepths ();
+
 	/*
 	 * Initialise the framebuffer.
 	 */
 
-	switch (pScrn->bitsPerPixel) {
-#if 0
-		case 1:
-			ret = xf1bppScreenInit(pScreen, pVMWARE->FbBase,
-					pScrn->virtualX, pScrn->virtualY,
-					pScrn->xDpi, pScrn->yDpi,
-					pScrn->displayWidth);
-			break;
-	        case 4:
-			ret = xf4bppScreenInit(pScreen, pVMWARE->FbBase,
-			                pScrn->virtualX, pScrn->virtualY,
-			                pScrn->xDpi, pScrn->yDpi,
-			                pScrn->displayWidth);
-		        break;
-#endif
-	case 8:
-			/*
-			 * In ScreenToPrivate, below, we register our own
-			 * CopyPlane proc (via mfbRegisterCopyPlaneProc).
-			 * But we can't handle all cases, so we have to stash
-			 * away a pointer to someone who can.
-			 */
-			pVMWARE->pcfbCopyPlane = cfbCopyPlane;
-	                ret = cfbScreenInit(pScreen, pVMWARE->FbBase + pVMWARE->fbOffset,
-			                pScrn->virtualX, pScrn->virtualY,
-				        pScrn->xDpi, pScrn->yDpi,
-			                pScrn->displayWidth);
-	                break;
-                case 16:
-			pVMWARE->pcfbCopyPlane = cfb16CopyPlane;
-			ret = cfb16ScreenInit(pScreen, pVMWARE->FbBase + pVMWARE->fbOffset,
-			                pScrn->virtualX, pScrn->virtualY,
-			                pScrn->xDpi, pScrn->yDpi,
-			                pScrn->displayWidth);
-	                break;
-                case 24:
-			pVMWARE->pcfbCopyPlane = cfb24CopyPlane;
-		        ret = cfb24ScreenInit(pScreen, pVMWARE->FbBase + pVMWARE->fbOffset,
-				pScrn->virtualX, pScrn->virtualY,
-			                pScrn->xDpi, pScrn->yDpi,
-			                pScrn->displayWidth);
-                        break;
-                case 32:
-			pVMWARE->pcfbCopyPlane = cfb32CopyPlane;
-	                ret = cfb32ScreenInit(pScreen, pVMWARE->FbBase + pVMWARE->fbOffset,
-			                pScrn->virtualX, pScrn->virtualY,
-		                        pScrn->xDpi, pScrn->yDpi,
-		                        pScrn->displayWidth);
-	                break;
-                default:
-			xf86DrvMsg(scrnIndex, X_ERROR, "Internal error: invalid bpp (%d) in VMWAREScreenInit\n",
-				   pScrn->bitsPerPixel);
-	                ret = FALSE;
-	                break;
-	}
+	ret = fbScreenInit (pScreen, pVMWARE->FbBase,
+			    pScrn->virtualX, pScrn->virtualY,
+			    pScrn->xDpi, pScrn->yDpi,
+			    pScrn->displayWidth,
+			    pScrn->bitsPerPixel);
+    
 	if (!ret)
 		return FALSE;
+
+#ifdef RENDER
+	fbPictureInit (pScreen, 0, 0);
+#endif
 
         /* Override the default mask/offset settings */
         if (pScrn->bitsPerPixel > 8) {
@@ -998,23 +939,8 @@ VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	        miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 	}
 
-        /* Initialise the default colourmap */
-        switch (pScrn->depth) {
-#if 0
-		case 1:
-			if (!xf1bppCreateDefColormap(pScreen))
-				return FALSE;
-		        break;
-	        case 4:
-			if (!xf4bppCreateDefColormap(pScreen))
-				return FALSE;
-			break;
-#endif
-		default:
-			if (!cfbCreateDefColormap(pScreen))
-				return FALSE;
-			break;
-	}
+    	if (!fbCreateDefColormap(pScreen))
+	    return FALSE;
 
 	if (!xf86HandleColormaps(pScreen, 256, 8,
 		VMWARELoadPalette, NULL,
@@ -1257,7 +1183,6 @@ ScreenToPrivate(ScreenPtr pScreen, ScrnInfoPtr pScrn)
 
 #endif
 
-    mfbRegisterCopyPlaneProc(pScreen, vmwareCopyPlane);
     pScreen->PaintWindowBackground  = vmwarePaintWindow;
     pScreen->PaintWindowBorder      = vmwarePaintWindow;
     pScreen->CopyWindow             = vmwareCopyWindow;

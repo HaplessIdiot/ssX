@@ -21,7 +21,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_driver.c,v 1.4 2000/12/02 15:30:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_driver.c,v 1.5 2001/05/04 19:05:46 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -31,9 +31,7 @@
 #include "mibstore.h"
 #include "micmap.h"
 
-#define PSZ 32
-#include "cfb.h"
-#undef PSZ
+#include "fb.h"
 #include "xf86cmap.h"
 #include "leo.h"
 
@@ -414,7 +412,7 @@ LeoPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
         
-    if (xf86LoadSubModule(pScrn, "cfb32") == NULL) {
+    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	LeoFreeRec(pScrn);
 	return FALSE;
     }
@@ -497,16 +495,22 @@ LeoScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			  pScrn->defaultVisual))
 	return FALSE;
 
+    miSetPixmapDepths ();
+
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
      */
 
-    ret = cfb32ScreenInit(pScreen, pLeo->fb, pScrn->virtualX,
-			  pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			  2048);
+    ret = fbScreenInit(pScreen, pLeo->fb, pScrn->virtualX,
+		       pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+		       2048, 32);
     if (!ret)
 	return FALSE;
+
+#ifdef RENDER
+    fbPictureInit (pScreen, 0, 0);
+#endif
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);

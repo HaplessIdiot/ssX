@@ -7,19 +7,15 @@ char rcsId_vmwarewindow[] =
 
     "Id: vmwarewindow.c,v 1.4 2001/01/27 00:28:15 bennett Exp $";
 #endif
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarewindow.c,v 1.1 2001/04/05 19:29:44 dawes Exp $ */
 
 #include "vmware.h"
 
 void
 vmwareCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
-    DDXPointPtr pptSrc;
-    register DDXPointPtr ppt;
     RegionRec rgnDst;
-    BoxPtr pbox;
     int dx, dy;
-    int i, nbox;
     WindowPtr pwinRoot;
     BoxPtr pBB;
 
@@ -37,26 +33,15 @@ vmwareCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
     REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
     REGION_INTERSECT(pWin->drawable.pScreen, &rgnDst, &pWin->borderClip,
 	prgnSrc);
-    pbox = REGION_RECTS(&rgnDst);
-    nbox = REGION_NUM_RECTS(&rgnDst);
-    if (!nbox ||
-	!(pptSrc =
-   (DDXPointPtr) ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec)))) {
-	REGION_UNINIT(pWin->drawable.pScreen, &rgnDst);
-	return;
-    }
-    ppt = pptSrc;
-    for (i = nbox; --i >= 0; ppt++, pbox++) {
-	ppt->x = pbox->x1 + dx;
-	ppt->y = pbox->y1 + dy;
-    }
     pBB = REGION_EXTENTS(pWin->drawable.pScreen, &rgnDst);
     HIDE_CURSOR_ACCEL(pVMWARE, *pBB);
-    vmwareDoBitblt((DrawablePtr) pwinRoot, (DrawablePtr) pwinRoot,
-	GXcopy, &rgnDst, pptSrc, ~0L, 0);
+    
+    fbCopyRegion ((DrawablePtr) pwinRoot, (DrawablePtr) pwinRoot,
+		  0,
+		  &rgnDst, dx, dy, vmwareDoBitblt, 0, 0);
+
     SHOW_CURSOR(pVMWARE, *pBB);
     UPDATE_ACCEL_AREA(pVMWARE, *pBB);
-    DEALLOCATE_LOCAL(pptSrc);
     REGION_UNINIT(pWin->drawable.pScreen, &rgnDst);
 }
 

@@ -7,76 +7,66 @@ char rcsId_vmwareblt[] =
 
     "Id: vmwareblt.c,v 1.4 2001/01/27 00:28:15 bennett Exp $";
 #endif
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwareblt.c,v 1.1 2001/04/05 19:29:44 dawes Exp $ */
 
 #include "X.h"
-#include "cfb.h"
+#include "fb.h"
 #include "vmware.h"
 
 void
-vmwareDoBitblt(DrawablePtr pSrc,
-    DrawablePtr pDst,
-    int alu, RegionPtr prgnDst, DDXPointPtr pptSrc, unsigned long planemask, unsigned long bitplane)
+vmwareDoBitblt(DrawablePtr  pSrc,
+	       DrawablePtr  pDst,
+	       GCPtr	    pGC,
+	       BoxPtr	    pbox,
+	       int	    nbox,
+	       int	    dx,
+	       int	    dy,
+	       Bool	    reverse,
+	       Bool	    upsidedown,
+	       Pixel	    bitplane,
+	       void	    *closure)
 {
-    BoxPtr pbox;
-    int nbox;
     BoxPtr pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
-    DDXPointPtr pptTmp, pptNew1, pptNew2;
     VMWAREPtr pVMWARE;
+    CARD8   alu;
 
     pVMWARE = VMWAREPTR(infoFromScreen(pSrc->pScreen));
+    if (pGC)
+	alu = pGC->alu;
+    else
+	alu = GXcopy;
 
-    pbox = REGION_RECTS(prgnDst);
-    nbox = REGION_NUM_RECTS(prgnDst);
     pboxNew1 = NULL;
-    pptNew1 = NULL;
     pboxNew2 = NULL;
-    pptNew2 = NULL;
-    if (pptSrc->y < pbox->y1) {
+    if (upsidedown) {
 	if (nbox > 1) {
 	    /* keep ordering in each band, reverse order of bands */
 	    pboxNew1 = (BoxPtr) ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
 	    if (!pboxNew1)
 		return;
-	    pptNew1 =
-		(DDXPointPtr) ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    if (!pptNew1) {
-		DEALLOCATE_LOCAL(pboxNew1);
-		return;
-	    }
 	    pboxBase = pboxNext = pbox + nbox - 1;
 	    while (pboxBase >= pbox) {
 		while ((pboxNext >= pbox) && (pboxBase->y1 == pboxNext->y1))
 		    pboxNext--;
 		pboxTmp = pboxNext + 1;
-		pptTmp = pptSrc + (pboxTmp - pbox);
 		while (pboxTmp <= pboxBase) {
 		    *pboxNew1++ = *pboxTmp++;
-		    *pptNew1++ = *pptTmp++;
 		}
 		pboxBase = pboxNext;
 	    }
 	    pboxNew1 -= nbox;
 	    pbox = pboxNew1;
-	    pptNew1 -= nbox;
-	    pptSrc = pptNew1;
 	}
     }
-    if (pptSrc->x < pbox->x1) {
+    if (reverse) {
 	if (nbox > 1) {
 	    /* reverse order of rects in each band */
 	    pboxNew2 = (BoxPtr) ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
-	    pptNew2 =
-		(DDXPointPtr) ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    if (!pboxNew2 || !pptNew2) {
-		if (pptNew2)
-		    DEALLOCATE_LOCAL(pptNew2);
+	    if (!pboxNew2) {
 		if (pboxNew2)
 		    DEALLOCATE_LOCAL(pboxNew2);
-		if (pboxNew1) {
-		    DEALLOCATE_LOCAL(pptNew1);
+		if (pboxNew1)
 		    DEALLOCATE_LOCAL(pboxNew1);
-		}
 		return;
 	    }
 	    pboxBase = pboxNext = pbox;
@@ -84,38 +74,31 @@ vmwareDoBitblt(DrawablePtr pSrc,
 		while ((pboxNext < pbox + nbox) &&
 		    (pboxNext->y1 == pboxBase->y1)) pboxNext++;
 		pboxTmp = pboxNext;
-		pptTmp = pptSrc + (pboxTmp - pbox);
 		while (pboxTmp != pboxBase) {
 		    *pboxNew2++ = *--pboxTmp;
-		    *pptNew2++ = *--pptTmp;
 		}
 		pboxBase = pboxNext;
 	    }
 	    pboxNew2 -= nbox;
 	    pbox = pboxNew2;
-	    pptNew2 -= nbox;
-	    pptSrc = pptNew2;
 	}
     }
     /* Send the commands */
     while (nbox--) {
 	vmwareWriteWordToFIFO(pVMWARE, SVGA_CMD_RECT_ROP_COPY);
-	vmwareWriteWordToFIFO(pVMWARE, pptSrc->x);
-	vmwareWriteWordToFIFO(pVMWARE, pptSrc->y);
+	vmwareWriteWordToFIFO(pVMWARE, pbox->x1 + dx);
+	vmwareWriteWordToFIFO(pVMWARE, pbox->y1 + dy);
 	vmwareWriteWordToFIFO(pVMWARE, pbox->x1);
 	vmwareWriteWordToFIFO(pVMWARE, pbox->y1);
 	vmwareWriteWordToFIFO(pVMWARE, pbox->x2 - pbox->x1);
 	vmwareWriteWordToFIFO(pVMWARE, pbox->y2 - pbox->y1);
-	vmwareWriteWordToFIFO(pVMWARE, alu);
-	pptSrc++;
+	vmwareWriteWordToFIFO(pVMWARE, pGC->alu);
 	pbox++;
     }
     if (pboxNew2) {
-	DEALLOCATE_LOCAL(pptNew2);
 	DEALLOCATE_LOCAL(pboxNew2);
     }
     if (pboxNew1) {
-	DEALLOCATE_LOCAL(pptNew1);
 	DEALLOCATE_LOCAL(pboxNew1);
     }
 }
@@ -134,7 +117,7 @@ GCPtr pGC, int srcx, int srcy, int width, int height, int dstx, int dsty)
 	pSrcDrawable->type == DRAWABLE_WINDOW &&
 	pDstDrawable->type == DRAWABLE_WINDOW &&
 	(pGC->planemask & pVMWARE->Pmsk) == pVMWARE->Pmsk) {
-	void (*doBitBlt) (DrawablePtr, DrawablePtr, int, RegionPtr, DDXPointPtr, unsigned long, unsigned long);
+	fbCopyProc  doBitBlt;
 	BoxRec updateBB;
 	BoxRec mouseBB;
 	Bool hidden = pVMWARE->mouseHidden;
@@ -151,9 +134,8 @@ GCPtr pGC, int srcx, int srcy, int width, int height, int dstx, int dsty)
 	if (!hidden) {
 	    HIDE_CURSOR_ACCEL(pVMWARE, mouseBB);
 	}
-	prgn =
-	    cfbBitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width,
-	    height, dstx, dsty, doBitBlt, 0L);
+	prgn = fbDoCopy (pSrcDrawable, pDstDrawable, pGC, srcx, srcy, width,
+			 height, dstx, dsty, doBitBlt, 0, 0);
 	if (!hidden) {
 	    SHOW_CURSOR(pVMWARE, mouseBB);
 	}
@@ -257,10 +239,9 @@ int srcx, int srcy, int width, int height, int dstx, int dsty, unsigned long bit
 	    HIDE_CURSOR(pVMWARE, mouseBB);
 	    vmwareWaitForFB(pVMWARE);
 	    pVMWARE->vmwareBBLevel++;
-	    prgn =
-		pVMWARE->pcfbCopyPlane(pSrcDrawable,
-		pDstDrawable, pGC, srcx, srcy, width, height, dstx, dsty,
-		bitPlane);
+	    prgn = fbCopyPlane(pSrcDrawable,
+			       pDstDrawable, pGC, srcx, srcy, width, height, dstx, dsty,
+			       bitPlane);
 	    pVMWARE->vmwareBBLevel--;
 	    if (pDstDrawable->type == DRAWABLE_WINDOW) {
 		vmwareSendSVGACmdUpdate(pVMWARE, &updateBB);
@@ -268,15 +249,13 @@ int srcx, int srcy, int width, int height, int dstx, int dsty, unsigned long bit
 	    SHOW_CURSOR(pVMWARE, mouseBB);
 	} else {
 	    vmwareWaitForFB(pVMWARE);
-	    prgn =
-		pVMWARE->pcfbCopyPlane(pSrcDrawable,
-		pDstDrawable, pGC, srcx, srcy, width, height, dstx, dsty,
-		bitPlane);
+	    prgn = fbCopyPlane(pSrcDrawable,
+			       pDstDrawable, pGC, srcx, srcy, width, height, dstx, dsty,
+			       bitPlane);
 	}
     } else {
-	prgn =
-	    pVMWARE->pcfbCopyPlane(pSrcDrawable, pDstDrawable,
-	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
+	prgn = fbCopyPlane(pSrcDrawable, pDstDrawable,
+			   pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
     }
     return prgn;
 }
