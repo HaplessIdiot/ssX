@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.3 1999/02/14 07:52:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.5 1999/02/25 06:01:00 dawes Exp $ */
 /*
  * Display the Subsystem Vendor Id and Subsystem Id in order to identify
  * the cards installed in this computer
@@ -100,20 +100,20 @@ xf86DisplayPCICardInfo(int verbosity)
 	/* first let's look for the card itself, but only if information
 	 * is available
 	 */
-	if ( pcrp->_subsys_vendor || pcrp->_subsys_card ) {
+	if ( pcrp->pci_subsys_vendor || pcrp->pci_subsys_card ) {
 	    k = 0;
 	    while (xf86PCIVendorNameInfo[k].token) {
-	      if (xf86PCIVendorNameInfo[k].token == pcrp->_subsys_vendor) 
+	      if (xf86PCIVendorNameInfo[k].token == pcrp->pci_subsys_vendor) 
 		vendorname = (char*)xf86PCIVendorNameInfo[k].name;
 	      k++;
 	    }
 	    k = 0;
 	    while(xf86PCICardInfo[k].VendorID) {
-		if (xf86PCICardInfo[k].VendorID == pcrp->_subsys_vendor) {
+		if (xf86PCICardInfo[k].VendorID == pcrp->pci_subsys_vendor) {
 		    j = 0;
 		    while (xf86PCICardInfo[k].Device[j].CardName) {
 			if (xf86PCICardInfo[k].Device[j].SubsystemID ==
-			    pcrp->_subsys_card) {
+			    pcrp->pci_subsys_card) {
 			    cardname =
 			      xf86PCICardInfo[k].Device[j].CardName;
 			    break;
@@ -129,26 +129,26 @@ xf86DisplayPCICardInfo(int verbosity)
 	    if (cardname)
 		xf86MsgVerb(X_NONE,-verbosity,"%s ", cardname);
 	    if (vendorname && !cardname)
-	        if (pcrp->_subsys_card)
+	        if (pcrp->pci_subsys_card)
 		    xf86MsgVerb(X_NONE,-verbosity,"unknown card (0x%04x) ",
-				pcrp->_subsys_card);
+				pcrp->pci_subsys_card);
 		else
 		    xf86MsgVerb(X_NONE,-verbosity,"card ",
-				pcrp->_subsys_card);
+				pcrp->pci_subsys_card);
 	}
 	if (!(cardname || vendorname)) {
 	    /*
 	     * we didn't find text representation of the information 
 	     * about the card
 	     */
-	    if ( pcrp->_subsys_vendor || pcrp->_subsys_card ) {
+	    if ( pcrp->pci_subsys_vendor || pcrp->pci_subsys_card ) {
 		/*
 		 * if there was information and we just couldn't interpret
 		 * it, print it out as unknown, anyway
 		 */
 		xf86MsgVerb(X_NONE,-verbosity,
 			    "unknown card (0x%04x/0x%04x) \n\t",
-			    pcrp->_subsys_vendor, pcrp->_subsys_card);
+			    pcrp->pci_subsys_vendor, pcrp->pci_subsys_card);
 	    }
 	    else {
 		/*
@@ -158,7 +158,7 @@ xf86DisplayPCICardInfo(int verbosity)
 		if (verbosity > 1)
 		    xf86MsgVerb(X_NONE,-verbosity,
 				"unknown card (0x%04x/0x%04x) \n\t",
-				pcrp->_subsys_vendor, pcrp->_subsys_card);
+				pcrp->pci_subsys_vendor, pcrp->pci_subsys_card);
 		else
 		    noCard = TRUE;
 	    }
@@ -166,17 +166,17 @@ xf86DisplayPCICardInfo(int verbosity)
 	/* now check for the chipset used */
 	k = 0;
 	while (xf86PCIVendorNameInfo[k].token) {
-	  if (xf86PCIVendorNameInfo[k].token == pcrp->_vendor) 
+	  if (xf86PCIVendorNameInfo[k].token == pcrp->pci_vendor) 
 	    chipvendorname = (char *)xf86PCIVendorNameInfo[k].name;
 	  k++;
 	}
 	k = 0;
 	while(xf86PCIVendorInfo[k].VendorID) {
-	    if (xf86PCIVendorInfo[k].VendorID == pcrp->_vendor) {
+	    if (xf86PCIVendorInfo[k].VendorID == pcrp->pci_vendor) {
 		j = 0;
 		while (xf86PCIVendorInfo[k].Device[j].DeviceName) {
 		    if (xf86PCIVendorInfo[k].Device[j].DeviceID ==
-			pcrp->_device) {
+			pcrp->pci_device) {
 			chipname =
 			  xf86PCIVendorInfo[k].Device[j].DeviceName;
 			break;
@@ -194,11 +194,11 @@ xf86DisplayPCICardInfo(int verbosity)
 	  else if (chipvendorname)
 	    xf86MsgVerb(X_NONE,-verbosity,
 			"unknown chip (DeviceId 0x%04x) from %s",
-			pcrp->_device,chipvendorname);
+			pcrp->pci_device,chipvendorname);
 	  else
 	    xf86MsgVerb(X_NONE,-verbosity,
 			"unknown chipset(0x%04x/0x%04x)",
-			pcrp->_vendor,pcrp->_device);
+			pcrp->pci_vendor,pcrp->pci_device);
 	  xf86MsgVerb(X_NONE,-verbosity,"\n");
 	}
 	else
@@ -209,11 +209,11 @@ xf86DisplayPCICardInfo(int verbosity)
 	  else if (chipvendorname)
 	    xf86MsgVerb(X_NONE,-verbosity,
 			"using an unknown chip (DeviceId 0x%04x) from %s",
-			pcrp->_device,chipvendorname);
+			pcrp->pci_device,chipvendorname);
 	  else
 	    xf86MsgVerb(X_NONE,-verbosity,
 			"using an unknown chipset(0x%04x/0x%04x)",
-			pcrp->_vendor,pcrp->_device);
+			pcrp->pci_vendor,pcrp->pci_device);
 	  xf86MsgVerb(X_NONE,-verbosity,"\n");
 	}
 	i++;

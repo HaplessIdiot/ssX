@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.2 1999/01/14 13:04:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.3 1999/04/04 07:03:28 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -41,6 +41,7 @@
 
 #include <misc.h>
 #include <xf86.h>
+#define NEED_XF86_TYPES
 #include <xf86_ansic.h>
 #include <xf86_OSproc.h>
 #include <xf86Xinput.h>
@@ -51,6 +52,9 @@
 
 #ifdef XFree86LOADER
 #include <xf86Module.h>
+#else
+#include <unistd.h>
+#include <errno.h>
 #endif
 
 #define sleep(t) xf86WaitForInput(-1, 1000 * (t))

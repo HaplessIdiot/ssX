@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.10 1999/03/28 15:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.11 1999/04/04 00:20:55 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -486,57 +486,57 @@ typedef struct pci_device {
     int       basesize[7];	/* number of bits in base addr allocations */
 } pciDevice, *pciConfigPtr;
 
-#define _device_vendor		   cfgspc.regs.dv_id.device_vendor
-#define _vendor			   cfgspc.regs.dv_id.dv.vendor
-#define _device			   cfgspc.regs.dv_id.dv.device
-#define _status_command		   cfgspc.regs.stat_cmd.status_command
-#define _command		   cfgspc.regs.stat_cmd.sc.command
-#define _status			   cfgspc.regs.stat_cmd.sc.status
-#define _class_revision		   cfgspc.regs.class_rev.class_revision
-#define _rev_id			   cfgspc.regs.class_rev.cr.rev_id
-#define _prog_if		   cfgspc.regs.class_rev.cr.prog_if
-#define _sub_class		   cfgspc.regs.class_rev.cr.sub_class
-#define _base_class		   cfgspc.regs.class_rev.cr.base_class
-#define _bist_header_latency_cache cfgspc.regs.bhlc.bist_header_latency_cache
-#define _cache_line_size	   cfgspc.regs.bhlc.bhlc.cache_line_size
-#define _latency_timer		   cfgspc.regs.bhlc.bhlc.latency_timer
-#define _header_type		   cfgspc.regs.bhlc.bhlc.header_type
-#define _bist			   cfgspc.regs.bhlc.bhlc.bist
-#define _base0			   cfgspc.regs.bc.dv.dv_base0
-#define _base1			   cfgspc.regs.bc.dv.dv_base1
-#define _base2			   cfgspc.regs.bc.dv.dv_base2
-#define _base3			   cfgspc.regs.bc.dv.dv_base3
-#define _base4			   cfgspc.regs.bc.dv.dv_base4
-#define _base5			   cfgspc.regs.bc.dv.dv_base5
-#define _cardbus_cis_ptr	   cfgspc.regs.c_cis.cardbus_cis_ptr
-#define _subsys_card_vendor	   cfgspc.regs.ssys_id.subsys_card_vendor
-#define _subsys_vendor		   cfgspc.regs.ssys_id.ssys.subsys_vendor
-#define _subsys_card		   cfgspc.regs.ssys_id.ssys.subsys_card
-#define _baserom		   cfgspc.regs.baserom
-#define _primary_bus_number	   cfgspc.regs.bc.bg.primary_bus_number
-#define _secondary_bus_number	   cfgspc.regs.bc.bg.secondary_bus_number
-#define _subordinate_bus_number	   cfgspc.regs.bc.bg.subordinate_bus_number
-#define _secondary_latency_timer   cfgspc.regs.bc.bg.secondary_latency_timer
-#define _io_base		   cfgspc.regs.bc.bg.io_base
-#define _io_limit		   cfgspc.regs.bc.bg.io_limit
-#define _secondary_status	   cfgspc.regs.bc.bg.secondary_status
-#define _mem_base		   cfgspc.regs.bc.bg.mem_base
-#define _mem_limit		   cfgspc.regs.bc.bg.mem_limit
-#define _prefetch_mem_base	   cfgspc.regs.bc.bg.prefetch_mem_base
-#define _prefetch_mem_limit	   cfgspc.regs.bc.bg.prefetch_mem_limit
-#define _rsvd1			   cfgspc.regs.c_cis.rsvd1;
-#define _rsvd2			   cfgspc.regs.ssys_id.rsvd2;
-#define _int_line		   cfgspc.regs.bm.mmii.mmii.int_line
-#define _int_pin		   cfgspc.regs.bm.mmii.mmii.int_pin
-#define _min_gnt		   cfgspc.regs.bm.mmii.mmii.min_gnt
-#define _max_lat		   cfgspc.regs.bm.mmii.mmii.max_lat
-#define _max_min_ipin_iline	   cfgspc.regs.bm.mmii.max_min_ipin_iline
-#define _bridge_control		   cfgspc.regs.bm.bctrl.bridge_control
-#define _user_config		   cfgspc.regs.devspf.dwords[0]
-#define _user_config_0		   cfgspc.regs.devspf.bytes[0]
-#define _user_config_1		   cfgspc.regs.devspf.bytes[1]
-#define _user_config_2		   cfgspc.regs.devspf.bytes[2]
-#define _user_config_3		   cfgspc.regs.devspf.bytes[3]
+#define pci_device_vendor	      cfgspc.regs.dv_id.device_vendor
+#define pci_vendor		      cfgspc.regs.dv_id.dv.vendor
+#define pci_device		      cfgspc.regs.dv_id.dv.device
+#define pci_status_command	      cfgspc.regs.stat_cmd.status_command
+#define pci_command		      cfgspc.regs.stat_cmd.sc.command
+#define pci_status		      cfgspc.regs.stat_cmd.sc.status
+#define pci_class_revision	      cfgspc.regs.class_rev.class_revision
+#define pci_rev_id		      cfgspc.regs.class_rev.cr.rev_id
+#define pci_prog_if		      cfgspc.regs.class_rev.cr.prog_if
+#define pci_sub_class		      cfgspc.regs.class_rev.cr.sub_class
+#define pci_base_class		      cfgspc.regs.class_rev.cr.base_class
+#define pci_bist_header_latency_cache cfgspc.regs.bhlc.bist_header_latency_cache
+#define pci_cache_line_size	      cfgspc.regs.bhlc.bhlc.cache_line_size
+#define pci_latency_timer	      cfgspc.regs.bhlc.bhlc.latency_timer
+#define pci_header_type		      cfgspc.regs.bhlc.bhlc.header_type
+#define pci_bist		      cfgspc.regs.bhlc.bhlc.bist
+#define pci_base0		      cfgspc.regs.bc.dv.dv_base0
+#define pci_base1		      cfgspc.regs.bc.dv.dv_base1
+#define pci_base2		      cfgspc.regs.bc.dv.dv_base2
+#define pci_base3		      cfgspc.regs.bc.dv.dv_base3
+#define pci_base4		      cfgspc.regs.bc.dv.dv_base4
+#define pci_base5		      cfgspc.regs.bc.dv.dv_base5
+#define pci_cardbus_cis_ptr	      cfgspc.regs.c_cis.cardbus_cis_ptr
+#define pci_subsys_card_vendor	      cfgspc.regs.ssys_id.subsys_card_vendor
+#define pci_subsys_vendor	      cfgspc.regs.ssys_id.ssys.subsys_vendor
+#define pci_subsys_card		      cfgspc.regs.ssys_id.ssys.subsys_card
+#define pci_baserom		      cfgspc.regs.baserom
+#define pci_primary_bus_number	      cfgspc.regs.bc.bg.primary_bus_number
+#define pci_secondary_bus_number      cfgspc.regs.bc.bg.secondary_bus_number
+#define pci_subordinate_bus_number    cfgspc.regs.bc.bg.subordinate_bus_number
+#define pci_secondary_latency_timer   cfgspc.regs.bc.bg.secondary_latency_timer
+#define pci_io_base		      cfgspc.regs.bc.bg.io_base
+#define pci_io_limit		      cfgspc.regs.bc.bg.io_limit
+#define pci_secondary_status	      cfgspc.regs.bc.bg.secondary_status
+#define pci_mem_base		      cfgspc.regs.bc.bg.mem_base
+#define pci_mem_limit		      cfgspc.regs.bc.bg.mem_limit
+#define pci_prefetch_mem_base	      cfgspc.regs.bc.bg.prefetch_mem_base
+#define pci_prefetch_mem_limit	      cfgspc.regs.bc.bg.prefetch_mem_limit
+#define pci_rsvd1		      cfgspc.regs.c_cis.rsvd1;
+#define pci_rsvd2		      cfgspc.regs.ssys_id.rsvd2;
+#define pci_int_line		      cfgspc.regs.bm.mmii.mmii.int_line
+#define pci_int_pin		      cfgspc.regs.bm.mmii.mmii.int_pin
+#define pci_min_gnt		      cfgspc.regs.bm.mmii.mmii.min_gnt
+#define pci_max_lat		      cfgspc.regs.bm.mmii.mmii.max_lat
+#define pci_max_min_ipin_iline	      cfgspc.regs.bm.mmii.max_min_ipin_iline
+#define pci_bridge_control	      cfgspc.regs.bm.bctrl.bridge_control
+#define pci_user_config		      cfgspc.regs.devspf.dwords[0]
+#define pci_user_config_0	      cfgspc.regs.devspf.bytes[0]
+#define pci_user_config_1	      cfgspc.regs.devspf.bytes[1]
+#define pci_user_config_2	      cfgspc.regs.devspf.bytes[2]
+#define pci_user_config_3	      cfgspc.regs.devspf.bytes[3]
 
 /* Public PCI access functions */
 void          pciInit(void);
