@@ -2,7 +2,7 @@
 
 
 
-# $XFree86: xc/Makefile,v 3.23 2003/01/21 04:56:23 dawes Exp $
+# $XFree86: xc/Makefile,v 3.24 2003/01/21 15:32:58 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -28,7 +28,7 @@ MAKE_CMD = $(MAKE) $(MAKE_OPTS)
 FLAGS = $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)" CC="$(CC)"
 VERSINC = -Iprograms/Xserver/hw/xfree86
 VERSSRC = $(CONFIGSRC)/util/printver.c
-VERSPROG = $(CONFIGSRC)/util/printver
+VERSPROG = $(CONFIGSRC)/util/printver.exe
 
 all:
 	@$(MAKE_CMD) xmakefile-exists || $(MAKE) all-initial
