@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.100 2001/03/01 01:23:54 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.101 2001/03/15 19:02:30 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -346,8 +346,11 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildXftLibrary
 #define BuildXftLibrary		BuildRenderLibrary
 #endif
+#ifndef UseFreetype2
+#define UseFreetype2		BuildXftLibrary
+#endif
 #ifndef BuildFreetype2Library
-#define BuildFreetype2Library	BuildXftLibrary
+#define BuildFreetype2Library	(UseFreetype2 && !HasFreetype2)
 #endif
 
 #ifndef BuildMiscDocs
@@ -2306,15 +2309,18 @@ SharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),SOFREETYPE2REV,SharedF
 ProjectUnsharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),XBuildLibDir)
 #endif
 
+#if UseFreetype2
+
 #if BuildFreetype2Library
 FREETYPE2INCLUDES=$(TOP_X_INCLUDES)/freetype2
 FREETYPE2DEFINES=-DFREETYPE2
-#define HasFreetype2	YES
 #else
 
-#ifdef Freetype2Dir
+#if HasFreetype2
 
-#define HasFreetype2	YES
+#ifndef Freetype2Dir
+#define Freetype2Dir /usr
+#endif
 
 #ifndef Freetype2LibDir
 #define Freetype2LibDir Freetype2Dir/lib
@@ -2333,9 +2339,6 @@ FREETYPE2DEFINES = -DFREETYPE2
 #endif
 
 #endif
-
-#ifndef HasFreetype2
-#define HasFreetype2	NO
 #endif
 
 #ifndef SharedLibXft
@@ -2361,10 +2364,18 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 #endif
 
 #ifndef XftClientDepLibs
+#if UseFreetype2
 #define XftClientDepLibs $(DEPXFTLIB) $(DEPFREETYPE2LIB) $(DEPXRENDERLIB)
+#else
+#define XftClientDepLibs $(DEPXFTLIB) $(DEPXRENDERLIB)
+#endif
 #endif
 #ifndef XftClientLibs
+#if UseFreetype2
 #define XftClientLibs $(XFTLIB) $(FREETYPE2LIB) $(XRENDERLIB)
+#else
+#define XftClientLibs $(XFTLIB) $(XRENDERLIB)
+#endif
 #endif
 
 #ifndef LdLibraryPath
