@@ -1,6 +1,6 @@
 
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/pc,v 1.8 2003/05/15 13:32:00 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/pc,v 1.9 2003/06/09 19:59:46 dawes Exp $
 
 partial hidden alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
@@ -182,16 +182,16 @@ xkb_symbols "basic" {
     key <MDSW> {	[ Mode_switch 		]	};
     modifier_map Mod5   { <LVL3>, <MDSW> };
 
-    key <ALT>  {	[ Alt_L		]	};
-    modifier_map Mod1   { <ALT> };
+    key <ALT>  {	[ NoSymbol, Alt_L	]	};
+    modifier_map Mod1   { <ALT>, <LALT> };
 
-    key <META> {	[ Meta_L	]	};
+    key <META> {	[ NoSymbol, Meta_L	]	};
     modifier_map Mod1   { <META> };
 
-    key <SUPR> {	[ Super_L	]	};
+    key <SUPR> {	[ NoSymbol, Super_L	]	};
     modifier_map Mod4   { <SUPR> };
 
-    key <HYPR> {	[ Hyper_L	]	};
+    key <HYPR> {	[ NoSymbol, Hyper_L	]	};
     modifier_map Mod4   { <HYPR> };
 };
 
