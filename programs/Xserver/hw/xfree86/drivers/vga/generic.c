@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.61 2002/12/02 21:23:06 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -1025,7 +1025,7 @@ GenericRefreshArea4bpp(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	    srcPtr = src;
 	    i = width;
 	    j = phase;
-	    while (j--)xi
+	    while (j--)
 	    {
 		m = (srcPtr[1] & 0x01010101) | ((srcPtr[0] & 0x01010101) << 4);
 		*dstPtr++ = (m >> 24) | (m >> 15) | (m >> 6) | (m << 3);
