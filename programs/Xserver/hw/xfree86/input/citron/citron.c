@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.5 2000/11/21 23:10:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.6 2001/04/05 17:42:34 dawes Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -137,7 +137,6 @@ char version[]="Touch Driver V2.09  (c) 1999-2001 Citron GmbH";
 #define NEED_XF86_TYPES
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
-#include "xf86Optrec.h"
 #include "xf86Xinput.h"
 #include "xisb.h"
 #include "exevents.h"		/* Needed for InitValuator/Proximity stuff*/
