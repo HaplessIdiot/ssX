@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Io.c,v 1.1 94/03/28 21:23:16 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.0 1994/05/08 05:20:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.1 1994/06/22 05:13:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -418,7 +418,7 @@ xf86MseProc(pPointer, what)
       mousefd = xf86MouseOff(what == DEVICE_CLOSE);
 
       if (mousefd != -1)
-        RemoveEnabledDevice(xf86Info.mseFd);
+        RemoveEnabledDevice(mousefd);
 
       pPointer->on = FALSE;
       usleep(300000);

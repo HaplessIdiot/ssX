@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.2 94/04/11 16:03:11 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.8 1994/09/25 13:25:13 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.9 1994/09/26 15:30:27 dawes Exp $
 .TH XF86_SVGA 1 "Version 3.1"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -68,7 +68,7 @@ MX:\ \
 MX68000, MX68010
 .TP 4
 Video7:
-???
+HT216-32
 .RE
 .PP
 Accelerated support is included for most of the Cirrus chipsets, and for

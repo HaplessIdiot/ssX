@@ -28,11 +28,11 @@ many architectures.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-     ftp.x.org:/contrib/XFree86
-     ftp.physics.su.oz.au:/XFree86.
+     ftp.XFree86.org:/pub/XFree86/current
 
 Binaries for XFree86 on FreeBSD will be available from:
 
+     ftp.XFree86.org:/pub/XFree86/current/FreeBSD
      XFree86.cdrom.com:/pub/XFree86
 
 Send email to Rich-Murphey@Rice.edu or XFree86@XFree86.org if you have
@@ -500,4 +500,4 @@ David Dawes
 -----------------
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/READ.FreeBSD,v 3.1 1994/09/20 12:47:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/READ.FreeBSD,v 3.2 1994/09/26 15:33:04 dawes Exp $

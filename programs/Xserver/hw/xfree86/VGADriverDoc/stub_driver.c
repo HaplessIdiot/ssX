@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.5 1994/09/11 00:35:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.6 1994/09/23 10:07:11 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -198,7 +198,8 @@ vgaVideoChipRec STUB = {
 	8,
 	/*
 	 * If the driver includes support for a linear-mapped frame buffer
-	 * this should be set to TRUE.  In most cases it should be FALSE.
+	 * for the detected configuratio this should be set to TRUE in the
+	 * Probe or FbInit function.  In most cases it should be FALSE.
 	 */
 	FALSE,
 	/*
@@ -212,11 +213,14 @@ vgaVideoChipRec STUB = {
 	 */
 	0,
 	/*
-	 * This is TRUE if the driver has support for 16bpp
+	 * This is TRUE if the driver has support for 16bpp for the detected
+	 * configuration. It must be set in the Probe function.
+	 * It most cases it should be FALSE.
 	 */
 	FALSE,
 	/*
-	 * This is TRUE if the driver has support for 32bpp
+	 * This is TRUE if the driver has support for 32bpp for the detected
+	 * configuration.
 	 */
 	FALSE,
 	/*

@@ -26,14 +26,16 @@ well as binary distributions for many architectures.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-    ftp.x.org:/contrib/XFree86
-    ftp.XFree86.org:/XFree86.
+    ftp.XFree86.org:/pub/XFree86/current
 
 Binaries for BSD/386 1.1 will be available from:
 
-    ftp.bsdi.com:/contrib/XFree86
+    ftp.bsdi.com:/contrib/X11/XFree86
 
 If you're running BSD 1.0, you'll have to build it from the source.
+Building the distribution on BSD/386 1.0 is untested, but belived to
+work correctly. If you run into trouble building on BSD/386 1.0, please
+let us know so that we can correct any incompatibilities.
 If you've done it and want to share your binaries, please let the Bsdi
 mailing list know.
 The binaries are compiled using gcc 2.5.8. There may be problems using
@@ -66,30 +68,31 @@ XFree86 binary distribution.
 
     REQUIRED:
 
-    xf86-doc.tar.gz   - READMEs and XFree86 specific man pages.
-    xf86-bin.tar.gz   - all of the executable X client applications.
-    xf86-fonts.tar.gz - all fonts
-    xf86-lib.tar.gz   - data files needed at runtime
+    xf86-doc.tar.gz     - READMEs and XFree86 specific man pages.
+    xf86-bin.tar.gz     - all of the executable X client applications.
+    xf86-fonts.tar.gz   - all fonts
+    xf86-lib.tar.gz     - data files needed at runtime
 
     Choose at least one of the following to match your hardware:
 
-    XF86_SVGA.gz      - the 8-bit pseudo-color X server for Super VGA cards
-    XF86_VGA16.gz     - the 4-bit pseudo-color X server for VGA & SVGA cards.
-    XF86_Mono.gz      - the Monochrome X Server
-    XF86_8514.gz      - the X server for IBM 8514/A and compatible boards
-    XF86_AGX.gz       - the X server for AGX boards
-    XF86_Mach8.gz     - the X server for ATI Mach8 graphics accelerator boards
-    XF86_Mach32.gz    - the X server for ATI Mach32 graphics accelerator boards
-    XF86_P9000.gz     - the X server for P9000 based boards
-    XF86_S3.gz        - the X server for S3 based boards
-    XF86_W32.gz       - the X server for ET4000/W32 based boards
+    XF86_SVGA.gz        - the 8-bit pseudo-color X server for Super VGA cards
+    XF86_VGA16.gz       - the 4-bit pseudo-color X server for VGA & SVGA cards.
+    XF86_Mono.gz        - the Monochrome X Server
+    XF86_8514.gz        - the X server for IBM 8514/A and compatible boards
+    XF86_AGX.gz         - the X server for AGX boards
+    XF86_Mach8.gz       - the X server for ATI Mach8 boards
+    XF86_Mach32.gz      - the X server for ATI Mach32 boards
+    XF86_P9000.gz       - the X server for P9000 based boards
+    XF86_S3.gz          - the X server for S3 based boards
+    XF86_W32.gz         - the X server for ET4000/W32 based boards
 
     OPTIONAL:
 
-    xf86-fs.tar.gz    - the font server with man pages.
-    xf86-prog.tar.gz  - the include/X11 header files and static libraries
-                        needed only for compiling other X applications
-    xf86-man.tar.gz   - man pages except XFree86 specific ones in the doc arch.
+    xf86-fs.tar.gz      - the font server with man pages.
+    xf86-prog.tar.gz    - the include/X11 header files and static libraries
+                          needed only for compiling other X applications
+    xf86-man.tar.gz     - all man pages
+    xf86-linkkit.tar.gz - the server reconfiguration kit.
 
 
     If this is your first time, then you should be able to safely
@@ -264,4 +267,4 @@ and __bsdi__ for BSD/386.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Bsdi,v 3.0 1994/09/20 12:47:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Bsdi,v 3.1 1994/09/24 15:13:45 dawes Exp $

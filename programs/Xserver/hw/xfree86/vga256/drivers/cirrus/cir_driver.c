@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.15 1994/09/19 13:45:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.16 1994/09/23 10:26:10 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -67,7 +67,7 @@
 
 #if defined(__GNUC__) || defined(__STDC__)
 
-#define CIRRUS_SUPPORT_MMIO
+/* #define CIRRUS_SUPPORT_MMIO */
 
 #endif
 
@@ -157,6 +157,7 @@ typedef struct {
   unsigned char GR9;		/* Graphics Offset1 */
   unsigned char GRA;		/* Graphics Offset2 */
   unsigned char GRB;		/* Graphics Extensions Control */
+  unsigned char GRF;		/* Display Compression Control */
   unsigned char SR7;		/* Extended Sequencer */
   unsigned char SRE;		/* VCLK Numerator */
   unsigned char SRF;		/* DRAM Control */
@@ -1052,8 +1053,10 @@ cirrusProbe()
          OFLG_SET(OPTION_NO_BITBLT, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_FAVOUR_BITBLT, &CIRRUS.ChipOptionFlags);
      }
+#ifdef CIRRUS_SUPPORT_MMIO
      if (cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
          OFLG_SET(OPTION_MMIO, &CIRRUS.ChipOptionFlags);
+#endif
 
      /* <scooper>
       *	The Hardware cursor, if the chip is capable, can be turned off using
@@ -1443,6 +1446,7 @@ cirrusRestore(restore)
   }
 #else
   if (vgaBitsPerPixel != 8) {
+#if 0 /* This doesn't seem to help; disable for monitor safety. */
       /* The 5426/8 have a hardware bug that can cause lock-ups on the bus
        * when the Hidden DAC register is programmed with the ESYNC* signal
        * disabled. I hope this stuff makes sure it is enabled. */
@@ -1454,6 +1458,7 @@ cirrusRestore(restore)
           outw(0x3c4, ((tmp & 0xdf) << 8) | 0x01);
           outw(0x3c4, 0x0300);	/* Enable sequencer. */
       }
+#endif
       /* Write to DAC. */
       outb(0x3c6, 0xff);	/* Reset access count. */
       inb(0x3c6); inb(0x3c6); inb(0x3c6); inb(0x3c6);
@@ -1507,6 +1512,11 @@ cirrusRestore(restore)
 
   outb(0x3CE,0x0B);
   outb(0x3CF,restore->GRB);
+
+  if (HAVE543X()) {
+       outb(0x3ce, 0x0f);
+       outb(0x3cf, restore->GRF);
+  }
 
   if (restore->std.NoClock >= 0)
        {
@@ -1641,7 +1651,12 @@ cirrusSave(save)
 
   outb(0x3CE,0x0B);		
   save->GRB = inb(0x3CF); 
-				
+
+  if (HAVE543X()) {
+      outb(0x3ce, 0x0f);
+      save->GRF = inb(0x3cf);
+  }
+
   outb(0x3C4,0x07);
   save->SR7 = inb(0x3C5);
 
@@ -1859,6 +1874,13 @@ cirrusInit(mode)
      /* have an effective 64K window at the start of video memory. */
      new->GR9 = 0x00;
      new->GRA = (CIRRUS.ChipSetRead != cirrusSetRead) ? 0x02 : 0x08;
+
+     /* Write sane value to Display Compression Control register, which */
+     /* might be corrupted by other chipset probes. */
+     if (HAVE543X()) {
+         outb(0x3ce, 0x0f);
+         new->GRF = inb(0x3cf) & 0xc0;
+     }
 
      outb(0x3C4,0x0F);
      new->SRF = inb(0x3C5);

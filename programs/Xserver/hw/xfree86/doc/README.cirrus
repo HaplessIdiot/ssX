@@ -259,7 +259,7 @@ Option "favour_bitblt" (5426/8/9)
         system (e.g. running gcc and other programs at the same time) in
 	certain situations.
 
-Option "mmio" (543x)
+Option "mmio" (543x) [disabled; it doesn't work yet]
 
 	This enables the use of memory-mapped I/O to talk to the BitBLT
         engine on the 543x. This may not work, and the performance advantage
@@ -267,9 +267,9 @@ Option "mmio" (543x)
 
 Option "sw_cursor" (542x/3x)
 
-	This disables use of the hardware cursor provided by the chip. The
-        hardware cursor is currently not partially displayed when partly
-	over the top or left edge of the screen.
+	This disables use of the hardware cursor provided by the chip. Try
+        this if the cursor seems to have problems (especially at the edges
+	of the screen).
 
 Option "clgd6225_lcd"
 
@@ -280,18 +280,19 @@ Option "clgd6225_lcd"
 3 - Mode issues
 
 The accelerated 256-color driver uses 256 bytes of scratch space in video
-memory. Consequently, a 1024x1024 virtual resolution should not be used with
-a 1Mbyte card.
+memory, and the hardware cursor also uses 1K. Consequently, a 1024x1024
+virtual resolution should not be used with a 1Mbyte card.
 
 The use of a higher dot clock frequencies has a profound negative effect on
 the performance of graphics operations, especially BitBlt, when little DRAM
-bandwidth is left for drawing. With default MCLK setting (0x1c) and a 32-bit
-memory interface, performance with a 65 MHz dot clock can be half of that
-with a dot clock of 25 MHz, and it becomes worse with higher dot clocks. The
-"fast_dram" option helps a bit. For this reason, it is recommended that that
-lowest dot clock that is acceptable is used; for example, on a 14" or 15"
-screen 800x600 with high refresh (50 MHz dot clock) is not so bad, with a
-large virtual screen.
+bandwidth is left for drawing (the amount is displayed during start-up).
+With default MCLK setting (0x1c) and a 32-bit memory interface, performance
+with a 65 MHz dot clock can be half of that with a dot clock of 25 MHz, and
+it becomes worse with higher dot clocks. The "fast_dram" option helps a bit.
+For this reason, it is recommended that the lowest dot clock that is
+acceptable is used on configurations that are short on DRAM bandwidth; for
+example, on a 14" or 15" screen 800x600 with high refresh (50 MHz dot clock)
+is not so bad, with a large virtual screen.
 
 It does not make much sense to use the highest clock (85 MHz) for 1024x768
 at 76 Hz on a 542x; the card will almost come to a standstill. A 75 MHz dot
@@ -325,9 +326,10 @@ addressing:
 - Cards that can only map in the lower 16Mb, like cards on the ISA bus.
   This is most found in older cards (first half 1993). The same
   restrictions apply (i.e. you must have less than 16Mb of memory).
-- Cards that connect address line A26 and always map at 64Mb. In this
-  case specify 'MemBase 0x04000000'. This assumes you have a VLB
-  motherboard implementation that implements A26.
+- Cards that connect address line A26 and always map at 64Mb + 14Mb. In
+  this case specify 'MemBase 0x04e00000'. This assumes you have a VLB
+  motherboard implementation that implements A26. This has not been tested;
+  it is not quite clear whether it maps at 0x04000000 or 0x04e00000.
 
 You will probably have to rely on trial and error. If you have less
 than 16Mb memory, the 'wrong' membase setting will result in no graphics
@@ -338,17 +340,17 @@ with a stupid VLB motherboard) will result in a crash (probably a
 spontaneous hard reboot).
 
 It may be possible to find out the type by visual inspection. If the card
-has a pin at A26, it is likely to map at 64Mb. To do this, take the card
+has a pin at A26, it is likely to map beyond 64Mb. To do this, take the card
 out. At the VESA local bus pins (this is the smaller strip of connector pins
 at the non-slot side of the card), consider the right side (this is the side
 of the board where all the chips are mounted). There are 45 pins here. They
 are numbered 1 to 45, from the inside (i.e. the one nearest to the card end
 is 45). Counting from the inside, the 17th pin is probably not present, then
 there are pins at 18-20. The 21st is A30, the 22nd is A28 and the 23rd is
-A26. So, if we have no pins at at 21-23, the card doesn't map at 64Mb. If
+A26. So, if we have no pins at at 21-23, the card doesn't map beyond 64Mb. If
 there's only a gap of two pins at 21 and 22 (or they are both present) and
-there's a pin at 23, the card does probably map at 64Mb. If there's a little
-logic near that pin on the card, it's more likely.
+there's a pin at 23, the card does probably map beyond 64Mb. If there's a
+little logic near that pin on the card, it's more likely.
 
 With a 543x on the local bus things are simpler (the Cirrus Logic windows
 drivers use it), but it is not quite without problems.
@@ -358,6 +360,7 @@ the framebuffer base address. However, the driver currently does not read it
 out yet, so you'll have to specify the address with MemBase. There may be a
 hint about this in the card documentation, or in some .ini file for an
 MS-Windows driver. The PCIDUMP.EXE program can help (see README.P9000).
+On one system tested, it mapped at 0xa0000000, but that doesn't say much.
 
 On the VESA local bus, most 543x cards have a default mapping address of
 64Mb, with jumper options for 2048Mb and 32Mb. This is probably described in
@@ -486,6 +489,16 @@ Chipset is not detected.
 	Try forcing the chipset to a type that is most similar to what
 	you have.
 
+System hangs during VC switches.
+
+	This has been observed on a VLB 5426 in 16bpp mode. It is probably
+	related to a bug in the chip, and is dependent on freak timing.
+
+Incorrect little lines (mostly white) appear occasionally
+
+	This may be related to a problem with system-to-video-memory BitBLT
+	operations. Try "no_bitblt" if it annoys you.
+
 For other screen drawing related problems, try the "noaccel" option (if
 "no_bitblt" doesn't help).
 
@@ -494,4 +507,4 @@ If are having driver-related problems that are not addressed by this document,
 or if you have found bugs in accelerated functions, you can try contacting
 the XFree86 team, or post in the Usenet newsgroup "comp.windows.x.i386unix".
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.2 1994/06/22 04:23:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.3 1994/09/17 04:06:48 dawes Exp $

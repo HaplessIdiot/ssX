@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.2 1994/09/19 13:42:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.3 1994/09/25 12:28:04 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -449,13 +449,6 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     miDCInitialize (pScreen, &xf86PointerScreenFuncs);
   }
 
-    if (serverGeneration == 1)
-    {
-	/* Depends on pixel size--GGLGGL*/
-	W32_INIT_BOX(GXcopy, ~0, PFILL(pScreen->whitePixel), vga256InfoRec.virtualX - 1)
-	W32_BOX(0, vga256InfoRec.virtualX, vga256InfoRec.virtualY)
-	WAIT_XY
-    }
   if (!cfbCreateDefColormap(pScreen))
     return(FALSE);
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.5 1994/09/24 15:13:42 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.6 1994/09/26 15:33:01 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -40,7 +40,7 @@ all::
 
 HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
             README.cirrus README.Video7 README.P9000 README.agx \
-            README.S3
+            README.S3 README.W32
 
 MAINDOCS = COPYRIGHT README README.Config INSTALL ServersOnly
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.8 1994/09/21 10:57:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.9 1994/09/24 15:14:52 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
  *
@@ -146,14 +146,14 @@
  *    0       0       0       1      48.771   48.771  126.000   56.644   28.322
  *    0       0       1       0        (*1)   92.400   92.400   63.000   31.500
  *    0       0       1       1      36.000   36.000   36.000   72.000   36.000
- *    0       1       0       0      50.350   50.350   50.350   40.000   40.000
- *    0       1       0       1      56.640   56.640   56.640   44.900   44.900
- *    0       1       1       0        (*2)     (*3)     (*3)   49.500   49.500
- *    0       1       1       1      44.900   44.900   44.900   50.000   50.000
- *    1       0       0       0      30.240   30.240  135.000     (*3)     (*3)
- *    1       0       0       1      32.000   32.000   32.000  110.000  110.000
- *    1       0       1       0      37.500  110.000  110.000  126.000  126.000
- *    1       0       1       1      39.000   80.000   80.000  135.000  135.000
+ *    0       1       0       0      30.240   30.240  135.000     (*3)     (*3)
+ *    0       1       0       1      32.000   32.000   32.000  110.000  110.000
+ *    0       1       1       0      37.500  110.000  110.000  126.000  126.000
+ *    0       1       1       1      39.000   80.000   80.000  135.000  135.000
+ *    1       0       0       0      50.350   50.350   50.350   40.000   40.000
+ *    1       0       0       1      56.640   56.640   56.640   44.900   44.900
+ *    1       0       1       0        (*2)     (*3)     (*3)   49.500   49.500
+ *    1       0       1       1      44.900   44.900   44.900   50.000   50.000
  *    1       1       0       0      40.000   39.910   39.910     (*3)     (*3)
  *    1       1       0       1      56.644   44.900   44.900   80.000   80.000
  *    1       1       1       0      75.000   75.000   75.000   75.000   75.000
@@ -547,13 +547,8 @@ int Clock;
 {
         if (ATIBoard >= ATI_BOARD_MACH32)
         {
-                /* First, invert the 0x04 bit */
+                /* Invert the 0x04 bit */
                 Clock ^= 0x04;
-
-                /* Lastly, exchange 0x04 and 0x08 bits */
-                Clock = (Clock & ~0x0C) |
-                        ((Clock & 0x04) << 1) |
-                        ((Clock & 0x08) >> 1);
         }
 
         return Clock;
@@ -960,7 +955,7 @@ ATIProbe()
                                 return (FALSE);
                 ErrorF("ChipSet specification changed from \"%s%s",
                        chipsets[i], "\" to \"vgawonder\"\n");
-                ErrorF("See README.ati for more information");
+                ErrorF("See README.ati for more information\n");
                 OFLG_CLR(XCONFIG_CHIPSET, &vga256InfoRec.xconfigFlag);
                 if (vga256InfoRec.clocks)
                 {

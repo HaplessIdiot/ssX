@@ -27,10 +27,11 @@ well as binary distributions for many architectures.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-    ftp.XFree86.org:/pub/XFree86.
+    ftp.XFree86.org:/pub/XFree86/current
 
 Binaries for NetBSD 1.0_BETA will be available from:
 
+    ftp.XFree86.org:/pub/XFree86/current/NetBSD
     ftp.laas.fr:/pub/NetBSD/XFree86-3.1
     ftp.iastate.edu:/pub/netbsd/XFree86-3.1
     ftp.eecs.umich.edu:/BSD/NetBSD/ports/XFree86-3.1
@@ -479,4 +480,4 @@ Mark  Weaver
 Matthieu Herrb
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.3 1994/09/18 08:49:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.4 1994/09/26 15:33:11 dawes Exp $
