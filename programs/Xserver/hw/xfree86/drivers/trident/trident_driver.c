@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.123 2001/01/25 11:40:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.125 2001/02/15 17:59:07 eich Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2088,10 +2088,13 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     vgaHWPtr hwp = VGAHWPTR(pScrn);
+    int mapsize = 0x10000;
+
+    if (Is3Dchip) mapsize = 0x20000;
 
     if (IsPciCard && UseMMIO)
     	pTrident->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-		pTrident->PciTag, pTrident->IOAddress, 0x20000);
+		pTrident->PciTag, pTrident->IOAddress, mapsize);
     else {
     	pTrident->IOBase = xf86MapVidMem(pScrn->scrnIndex, VIDMEM_MMIO, 
 		pTrident->IOAddress, 0x1000);
@@ -2126,12 +2129,15 @@ static Bool
 TRIDENTUnmapMem(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int mapsize = 0x10000;
+
+    if (Is3Dchip) mapsize = 0x20000;
 
     /*
      * Unmap IO registers to virtual address space
      */ 
     if (IsPciCard && UseMMIO) 
-    	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTrident->IOBase, 0x20000);
+    	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTrident->IOBase, mapsize);
     else {
     	pTrident->IOBase -= 0xF00;
     	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTrident->IOBase, 0x1000);
