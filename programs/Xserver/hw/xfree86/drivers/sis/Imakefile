@@ -1,10 +1,16 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/Imakefile,v 1.26 2001/05/16 13:43:17 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/Imakefile,v 1.29 2002/11/29 13:52:05 eich Exp $
 XCOMM
 XCOMM This is an Imakefile for the SIS driver.  
 XCOMM
 
 #define IHaveModules
 #include <Server.tmpl>
+
+/* DRI static build only works on Linux */
+#if !defined(LinuxArchitecture) && !DoLoadableServer && BuildXF86DRI
+#undef BuildXF86DRI
+#define BuildXF86DRI NO
+#endif
 
 #if BuildXF86DRI
 DRISRCS = sis_dri.c
