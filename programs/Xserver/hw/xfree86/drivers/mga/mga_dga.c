@@ -93,7 +93,7 @@ MGASetupDGAMode(
    DisplayModePtr firstMode, pMode;
    MGAPtr pMga = MGAPTR(pScrn);
    DGAModePtr mode, newmodes;
-   int size, tmp, pitch, Bpp = bitsPerPixel >> 3;
+   int size, pitch, Bpp = bitsPerPixel >> 3;
 
 SECOND_PASS:
 
@@ -153,11 +153,21 @@ SECOND_PASS:
 	    mode->pixmapHeight = (min(pMga->FbUsableSize, 16*1024*1024)) / 
 					mode->bytesPerScanline;
 	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
-	    tmp = (8*1024*1024 / mode->bytesPerScanline);
 	    mode->maxViewportY = (pMga->FbUsableSize / mode->bytesPerScanline) -
 				 	mode->viewportHeight;
-	    if(tmp < mode->maxViewportY)
-		mode->maxViewportY = tmp;
+
+	    if( (pMga->Chipset == PCI_CHIP_MGA2064) ||
+		(pMga->Chipset == PCI_CHIP_MGA2164) ||
+		(pMga->Chipset == PCI_CHIP_MGA2164_AGP)) 
+	    {
+		int tmp;
+
+		tmp = (8*1024*1024 / mode->bytesPerScanline) -
+					mode->viewportHeight;
+		if(tmp < 0) tmp = 0;
+		if(tmp < mode->maxViewportY)
+		    mode->maxViewportY = tmp;
+	    }
 
 	    (*num)++;
 	}
