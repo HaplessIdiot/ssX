@@ -1,4 +1,5 @@
 XFree86 4.0.1f (xx November 2000)
+ 915. Fix visual setting in ATI r128/radeon driver (Jeff Wiedemeier).
  914. Alpha fix for xf86cfg (Alan Hourihane).
  913. Resync DRI code/drivers with the DRI CVS (VA Linux).
  912. Fix tdfx driver to register resources and remove some redundant code
@@ -11503,4 +11504,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1383 2000/11/08 05:02:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1384 2000/11/08 17:58:40 alanh Exp $

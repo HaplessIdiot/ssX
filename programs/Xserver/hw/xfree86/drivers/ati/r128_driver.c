@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.1 2000/11/02 16:55:35 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario
  *		    and Precision Insight, Inc., Cedar Park, Texas.
@@ -1542,9 +1542,8 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (pScrn->bitsPerPixel > 8) {
 	VisualPtr visual;
 
-	for (visual = pScreen->visuals + pScreen->numVisuals;
-	     visual >= pScreen->visuals;
-	     visual--) {
+        visual = pScreen->visuals + pScreen->numVisuals;
+        while (--visual >= pScreen->visuals) {
 	    if ((visual->class | DynamicClass) == DirectColor) {
 		visual->offsetRed   = pScrn->offset.red;
 		visual->offsetGreen = pScrn->offset.green;
