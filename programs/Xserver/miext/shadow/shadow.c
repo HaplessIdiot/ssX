@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.5 2001/01/21 21:19:39 tsi Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shadow.c,v 1.6 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2000 Keith Packard
  *
@@ -1444,6 +1444,8 @@ shadowFindBuf (WindowPtr pWindow)
 
     for (pPrev = &pScrPriv->pBuf; pBuf = *pPrev; pPrev = &pBuf->pNext)
     {
+	if (!pBuf->pPixmap)
+	    pBuf->pPixmap = (*pScreen->GetScreenPixmap) (pScreen);
 	if (pBuf->pPixmap == pPixmap)
 	{
 	    /*
@@ -1467,7 +1469,7 @@ shadowInit (ScreenPtr pScreen, ShadowUpdateProc update, ShadowWindowProc window)
     if (!shadowSetup (pScreen))
 	return FALSE;
     
-    if (!shadowAdd (pScreen, pScreen->devPrivate, update, window, 0))
+    if (!shadowAdd (pScreen, 0, update, window, 0))
 	return FALSE;
 
     return TRUE;
