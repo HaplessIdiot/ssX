@@ -1758,6 +1758,7 @@ EXPORTS
 	_Xdebug  
 	Xutf8TextPropertyToTextList 
 	Xutf8TextListToTextProperty	 
+	Xutf8LookupString
 	XkbIgnoreExtension  
 	XkbOpenDisplay  
 	XkbQueryExtension  
@@ -1988,4 +1989,4 @@ EXPORTS
 #endif
 
 /* $Xorg: X11-def.cpp,v 1.3 2000/08/17 19:44:59 cpqbld Exp $ */
-/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.9 2001/03/01 00:37:06 dawes Exp $ */
+/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.10 2001/04/05 19:29:38 dawes Exp $ */

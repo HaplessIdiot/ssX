@@ -30,14 +30,14 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.12 2001/06/20 12:55:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.13 2001/06/25 08:12:33 alanh Exp $ */
 
 #include "win.h"
 
 /*
  * Create a full screen window
  */
-void
+Bool
 winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
@@ -97,12 +97,14 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
 
   /* Attempt to bring our window to the top of the display */
   BringWindowToTop (*phwnd);
+
+  return TRUE;
 }
 
 /*
  * Create our primary Windows display window
  */
-void
+Bool
 winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
@@ -187,21 +189,55 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 			    (HMENU) NULL,	/* No menu */
 			    GetModuleHandle (NULL),/* Instance handle */
 			    pScreenPriv);	/* ScreenPrivates */
+  if (*phwnd == NULL)
+    {
+      ErrorF ("winCreateBoundingWindowWindowed () CreateWindowEx () failed\n");
+      return FALSE;
+    }
+
+#if CYGDEBUG
+  ErrorF ("winCreateBoundingWindowWindowed () - CreateWindowEx () returned\n");
+#endif
 
   /* Get the client area coordinates */
-  GetClientRect (*phwnd, &rcClient);
+  if (!GetClientRect (*phwnd, &rcClient))
+    {
+      ErrorF ("winCreateBoundingWindowWindowed () - GetClientRect () "
+	      "failed\n");
+      return FALSE;
+    }
   ErrorF ("winCreateBoundingWindowWindowed () - WindowClient "\
 	  "width %d height %d\n",
 	  rcClient.right - rcClient.left,
 	  rcClient.bottom - rcClient.top);
-  MapWindowPoints (*phwnd, HWND_DESKTOP, (LPPOINT)&rcClient, 2);
+
+  if (MapWindowPoints (*phwnd,
+		       HWND_DESKTOP,
+		       (LPPOINT)&rcClient,
+		       2) == 0)
+    {
+      ErrorF ("winCreateBoundingWindowWindowed () - MapWindowPoints () "
+	      "failed\n");
+      return FALSE;
+    }
 
   /* Show the window */
   ShowWindow (*phwnd, SW_SHOW);
-  UpdateWindow (*phwnd);
+  if (!UpdateWindow (*phwnd))
+    {
+      ErrorF ("winCreateBoundingWindowWindowed () - UpdateWindow () failed\n");
+      return FALSE;
+    }
   
   /* Attempt to bring our window to the top of the display */
-  BringWindowToTop (*phwnd);
+  if (!BringWindowToTop (*phwnd))
+    {
+      ErrorF ("winCreateBoundingWindowWindowed () - BringWindowToTop () "
+	      "failed\n");
+      return FALSE;
+    }
+
+  return TRUE;
 }
 
 /*
@@ -218,7 +254,11 @@ winScreenInit (int index,
   winPrivScreenPtr	pScreenPriv;
 
   /* Allocate privates for this screen */
-  winAllocatePrivates (pScreen);
+  if (!winAllocatePrivates (pScreen))
+    {
+      ErrorF ("winScreenInit () - Couldn't allocate screen privates\n");
+      return FALSE;
+    }
 
   /* Get a pointer to the privates structure that was allocated */
   pScreenPriv = winGetScreenPriv (pScreen);
@@ -283,11 +323,14 @@ winFinishScreenInitFB (int index,
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-  Bool			fReturn = TRUE;
+#if WIN_PSEUDO_SUPPORT
+  VisualPtr		pVisual = NULL;
+#endif
   char			*pbits = NULL;
 
-  /* Initial display parameters */
   pScreenInfo->dwBPP = winBitsPerPixel (pScreenInfo->dwDepth);
+  pScreenPriv->dwOrigDepth = pScreenInfo->dwDepth;
+  pScreenPriv->dwLayerKind = LAYER_SHADOW;  
 
 #if CYGDEBUG
   ErrorF ("winFinishScreenInitFB () - dwBPP: %d\n", pScreenInfo->dwBPP);
@@ -301,19 +344,17 @@ winFinishScreenInitFB (int index,
 					      pScreenInfo->dwDepth);
 
   /* Clear the visuals list */
-  winClearVisualTypes ();
+  miClearVisualTypes ();
 
   /* Create framebuffer */
-  fReturn = (*pScreenPriv->pwinAllocateFB) (pScreen);
-  if (!fReturn)
+  if (!(*pScreenPriv->pwinAllocateFB) (pScreen))
     {
       ErrorF ("winFinishScreenInitFB () - Could not allocate framebuffer\n");
       return FALSE;
     }
 
   /* Init visuals */
-  fReturn = (*pScreenPriv->pwinInitVisuals) (pScreen);
-  if (!fReturn)
+  if (!(*pScreenPriv->pwinInitVisuals) (pScreen))
     {
       ErrorF ("winFinishScreenInitFB () - winInitVisuals failed\n");
       return FALSE;
@@ -325,89 +366,173 @@ winFinishScreenInitFB (int index,
   /* Apparently we need this for the render extension */
   miSetPixmapDepths ();
 
-  /* Initialize the fb code */
-  if (!fbScreenInit (pScreen,
-		     pScreenInfo->pfb,
-		     pScreenInfo->dwWidth, pScreenInfo->dwHeight,
-		     pScreenInfo->dwDPIx, pScreenInfo->dwDPIy,
-		     pScreenInfo->dwStride,
-		     pScreenInfo->dwBPP))
+  /* Start fb initialization */
+  if (!fbSetupScreen (pScreen,
+		      pScreenInfo->pfb,
+		      pScreenInfo->dwWidth, pScreenInfo->dwHeight,
+		      monitorResolution, monitorResolution,
+		      pScreenInfo->dwStride,
+		      pScreenInfo->dwBPP))
     {
-      ErrorF ("winFinishScreenInitFB () - fbScreenInit failed\n");
+      ErrorF ("winFinishScreenInitFB () - fbSetupScreen failed\n");
       return FALSE;
     }
 
 #if WIN_PSEUDO_SUPPORT
-  /* Colormap Routines */
-  pScreen->CreateColormap = winCreateColormap;
-  pScreen->DestroyColormap = winDestroyColormap;
-  pScreen->InstallColormap = winInstallColormap;
-  pScreen->UninstallColormap = winUninstallColormap;
-  pScreen->ListInstalledColormaps = winListInstalledColormaps;
-  pScreen->StoreColors = winStoreColors;
-  pScreen->ResolveColor = winResolveColor;
+  /* Override default colormap routines if visual class is dynamic */
+  /* FIXME: PseudoColor is only supported with the GDI engine */
+  if (pScreenInfo->dwDepth == 8
+      && pScreenInfo->dwEngine == WIN_SERVER_SHADOW_GDI)
+    {
+      pScreen->CreateColormap = winCreateColormap;
+      pScreen->DestroyColormap = winDestroyColormap;
+      pScreen->InstallColormap = winInstallColormap;
+      pScreen->UninstallColormap = winUninstallColormap;
+      pScreen->ListInstalledColormaps = winListInstalledColormaps;
+      pScreen->StoreColors = winStoreColors;
+      pScreen->ResolveColor = winResolveColor;
+
+      /*
+       * NOTE: Setting whitePixel to 255 causes Magic 7.1 to allocate its
+       * own colormap, as it cannot allocate 7 planes in the default
+       * colormap.  Setting whitePixel to 1 allows Magic to get 7
+       * planes in the default colormap, so it doesn't create its
+       * own colormap.  This latter situation is highly desireable,
+       * as it keeps the Magic window viewable when switching to
+       * other X clients that use the default colormap.
+       */
+      pScreen->blackPixel = 0;
+      pScreen->whitePixel = 1;
+    }
 #endif
+
+  /* Place our save screen function */
+  pScreen->SaveScreen = winSaveScreen;
+
+  /* Backing store functions */
+  /*
+   * FIXME: Backing store support still doesn't seem to be working.
+   */
+  pScreen->BackingStoreFuncs.SaveAreas = fbSaveAreas;
+  pScreen->BackingStoreFuncs.RestoreAreas = fbRestoreAreas;
+
+  /* Finish fb initialization */
+  if (!fbFinishScreenInit (pScreen,
+			   pScreenInfo->pfb,
+			   pScreenInfo->dwWidth, pScreenInfo->dwHeight,
+			   monitorResolution, monitorResolution,
+			   pScreenInfo->dwStride,
+			   pScreenInfo->dwBPP))
+    {
+      ErrorF ("winFinishScreenInitFB () - fbFinishScreenInit failed\n");
+      return FALSE;
+    }
+
+  /* Save a pointer to the root visual */
+  for (pVisual = pScreen->visuals;
+       pVisual->vid != pScreen->rootVisual;
+       pVisual++);
+  pScreenPriv->pRootVisual = pVisual;
+
+  /* 
+   * Setup points to the block and wakeup handlers.  Pass a pointer
+   * to the current screen as pWakeupdata.
+   */
+  pScreen->BlockHandler = winBlockHandler;
+  pScreen->WakeupHandler = winWakeupHandler;
+  pScreen->blockData = pScreen;
+  pScreen->wakeupData = pScreen;
 
 #ifdef RENDER
   /* Render extension initialization, calls miPictureInit */
-  fbPictureInit (pScreen, NULL, 0);
+  if (!fbPictureInit (pScreen, NULL, 0))
+    {
+      ErrorF ("winFinishScreenInitFB () - fbPictureInit () failed\n");
+      return FALSE;
+    }
 #endif
 
+#if WIN_LAYER_SUPPORT
+  /* KDrive does LayerStartInit right after fbPictureInit */
+  if (!LayerStartInit (pScreen))
+    {
+      ErrorF ("winFinishScreenInitFB () - LayerStartInit () failed\n");
+      return FALSE;
+    }
+
+  /* KDrive does LayerFinishInit right after LayerStartInit */
+  if (!LayerFinishInit (pScreen))
+    {
+      ErrorF ("winFinishScreenInitFB () - LayerFinishInit () failed\n");
+      return FALSE;
+    }
+
+  /* KDrive does LayerCreate right after LayerFinishInit */
+  pScreenPriv->pLayer = winLayerCreate (pScreen);
+  if (!pScreenPriv->pLayer)
+    {
+      ErrorF ("winFinishScreenInitFB () - winLayerCreate () failed\n");
+      return FALSE;
+    }
+
+  /* KDrive does RandRInit right after LayerCreate */
+#ifdef RANDR
+  if (!winRandRInit (pScreen))
+    {
+      ErrorF ("winFinishScreenInitFB () - winRandRInit () failed\n");
+      return FALSE;
+    }
+#endif
+#endif
+
+#if !WIN_LAYER_SUPPORT
   /*
    * Backing store support should reduce network traffic and increase
    * performance.
    */
-  miInitializeBackingStore(pScreen);
+  miInitializeBackingStore (pScreen);
+#endif
 
+  /* KDrive does miDCInitialize right after miInitializeBackingStore */
   /* Setup the cursor routines */
 #if CYGDEBUG
   ErrorF ("winFinishScreenInitFB () - Calling miDCInitialize ()\n");
 #endif
   miDCInitialize (pScreen, &g_winPointerCursorFuncs);
 
+  /* KDrive does winCreateDefColormap right after miDCInitialize */
   /* Create a default colormap */
+#if CYGDEBUG
   ErrorF ("winFinishScreenInitFB () - Calling winCreateDefColormap ()\n");
-  fReturn = winCreateDefColormap (pScreen);
-  if (!fReturn)
+#endif
+  if (!winCreateDefColormap (pScreen))
     {
       ErrorF ("winFinishScreenInitFB () - Could not create colormap\n");
       return FALSE;
     }
 
+#if !WIN_LAYER_SUPPORT
   /* Initialize the shadow framebuffer layer */
   if (pScreenInfo->dwEngine == WIN_SERVER_SHADOW_GDI
       || pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DD
       || pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL)
     {
 #if CYGDEBUG
-  ErrorF ("winFinishScreenInitFB () - Calling shadowInit ()\n");
+      ErrorF ("winFinishScreenInitFB () - Calling shadowInit ()\n");
 #endif
-      shadowInit (pScreen,
-		  pScreenPriv->pwinShadowUpdate,
-		  NULL);
+      if (!shadowInit (pScreen,
+		       pScreenPriv->pwinShadowUpdate,
+		       NULL))
+	{
+	  ErrorF ("winFinishScreenInitFB () - shadowInit () failed\n");
+	  return FALSE;
+	}
     }
-
-  /*
-   * Register our block and wakeup handlers; these procedures
-   * process messages in our Windows message queue; specifically,
-   * they process mouse and keyboard input.
-   */
-#if CYGDEBUG
-  ErrorF ("winFinishScreenInitFB () - Calling "\
-	  "RegisterBlockAndWakeupHandlers ()\n");
 #endif
-  RegisterBlockAndWakeupHandlers (winBlockHandler,
-				  winWakeupHandler,
-				  pScreen);
 
   /* Wrap either fb's or shadow's CloseScreen with our CloseScreen */
   pScreenPriv->CloseScreen = pScreen->CloseScreen;
   pScreen->CloseScreen = pScreenPriv->pwinCloseScreen;
-
-  /* See Porting Layer Definition - p. 33 */
-  /* SaveScreen () has something to do with screen savers */
-  /* Our SaveScreen () does nothing */
-  pScreen->SaveScreen = winSaveScreen;
 
   /* Tell the server that we are enabled */
   pScreenPriv->fEnabled = TRUE;
@@ -416,7 +541,7 @@ winFinishScreenInitFB (int index,
   ErrorF ("winFinishScreenInitFB () - returning\n");
 #endif
 
-  return fReturn;
+  return TRUE;
 }
 
 /*
@@ -433,6 +558,10 @@ winDetectSupportedEngines (ScreenPtr pScreen)
 
   /* Initialize the engine support flags */
   pScreenInfo->dwEnginesSupported = WIN_SERVER_SHADOW_GDI;
+
+#if WIN_NATIVE_GDI_SUPPORT
+  pScreenInfo->dwEnginesSupported |= WIN_SERVER_NATIVE_GDI;
+#endif
 
   /* Get operating system version information */
   ZeroMemory (&osvi, sizeof (osvi));
@@ -562,6 +691,9 @@ winSetEngine (ScreenPtr pScreen)
 	case WIN_SERVER_PRIMARY_DD:
 	  winSetEngineFunctionsPrimaryDD (pScreen);
 	  break;
+	case WIN_SERVER_NATIVE_GDI:
+	  winSetEngineFunctionsNativeGDI (pScreen);
+	  break;
 	default:
 	  FatalError ("winSetEngine () - Invalid engine type\n");
 	}
@@ -630,124 +762,84 @@ winFinishScreenInitNativeGDI (int index,
 			      ScreenPtr pScreen,
 			      int argc, char **argv)
 {
+  winScreenPriv(pScreen);
   winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
   PictFormatPtr         formats = NULL;
   int                   nformats = 0;
-  Bool                  fReturn = FALSE;
-  int			xsize, ysize;
-  int			dpix = 75, dpiy = 75;
-  char                  *pbits = NULL;
   VisualPtr		pVisuals = NULL;
   DepthPtr		pDepths = NULL;
   VisualID		rootVisual = 0;
   int			nVisuals = 0, nDepths = 0, nRootDepth = 0;
-  winPrivScreenPtr	pScreenPriv = NULL;
   
-  ErrorF ("winScreenInit ()\n");
+  ErrorF ("winFinishScreenInitNativeGDI ()\n");
 
-  if (!winAllocatePrivates (pScreen))
+  /* Calculate the bits per pixel */
+  pScreenInfo->dwBPP = winBitsPerPixel (pScreenInfo->dwDepth);
+
+  ErrorF ("winFinishScreenInitNativeGDI () - screen %d %d %d\n",
+	  pScreenInfo->dwWidth,
+	  pScreenInfo->dwHeight,
+	  pScreenInfo->dwDepth);
+
+  /* Create primary display window */
+  if (!winCreateBoundingWindowWindowed (pScreen))
     {
-      ErrorF ("winFinishScreenInitNativeGDI () winAllocatePrivates failed\n");
+      ErrorF ("winFinishScreenInitNativeGDI () - "
+	      "winCreateBoundingWindowWindowed () failed\n");
       return FALSE;
     }
 
-  /* Get a pointer to the privates structure that was allocated */
-  pScreenPriv = winGetScreenPriv (pScreen);
-
-  /* Save a pointer to this screen in the screen info structure */
-  pScreenInfo->pScreen = pScreen;
-
-  /* Save a pointer to the screen info in the sceen privates structure */
-  /* This allows us to get back to the screen info from a sceen pointer */
-  pScreenPriv->pScreenInfo = pScreenInfo;
-
-  /* Initial display parameters */
+  /* Calculate the padded width */
   pScreenInfo->dwPaddedWidth = PixmapBytePad (pScreenInfo->dwWidth,
 					      pScreenInfo->dwDepth);
-  pScreenInfo->dwBPP = winBitsPerPixel (pScreenInfo->dwDepth);
-  ErrorF ("winScreenInit () - screen (%dx%dx%d)\n",
-	  pScreenInfo->dwWidth, pScreenInfo->dwHeight, pScreenInfo->dwDepth);
 
-  /* Copy the width and height into local variables */
-  xsize = pScreenInfo->dwWidth;
-  ysize = pScreenInfo->dwHeight;
+  /* Clear the visuals list */
+  miClearVisualTypes ();
 
-  /* Create primary display window */
-  winCreateBoundingWindowWindowed (pScreen);
-  
-  /* Simple screen information */
-  pScreen->width = xsize;
-  pScreen->height = ysize;
-  pScreen->mmWidth = (xsize * 254 + dpix * 5) / (dpix * 10);
-  pScreen->mmHeight = (ysize * 254 + dpiy * 5) / (dpiy * 10);
-  pScreen->defColormap = FakeClientID (0);
-  pScreen->minInstalledCmaps = 1;
-  pScreen->maxInstalledCmaps = 1;
-  pScreen->backingStoreSupport = NotUseful;
-  pScreen->saveUnderSupport = NotUseful;
+  ErrorF ("winFinishScreenInitNativeGDI () - calling "
+	  "winInitVisualsNativeGDI ()\n");
+  if (!winInitVisualsNativeGDI (pScreen))
+    {
+      ErrorF ("winFinishScreenInitNativeGDI () - winInitVisuals failed\n");
+      return FALSE;
+    }
 
-  pScreen->GetScreenPixmap = miGetScreenPixmap;
-  pScreen->SetScreenPixmap = miSetScreenPixmap;
-  
-  /* Region Routines */
-#ifdef NEED_SCREEN_REGIONS
-  pScreen->RegionCreate = miRegionCreate;
-  pScreen->RegionInit = miRegionInit;
-  pScreen->RegionCopy = miRegionCopy;
-  pScreen->RegionDestroy = miRegionDestroy;
-  pScreen->RegionUninit = miRegionUninit;
-  pScreen->Intersect = miIntersect;
-  pScreen->Union = miUnion;
-  pScreen->Subtract = miSubtract;
-  pScreen->Inverse = miInverse;
-  pScreen->RegionReset = miRegionReset;
-  pScreen->TranslateRegion = miTranslateRegion;
-  pScreen->RectIn = miRectIn;
-  pScreen->PointInRegion = miPointInRegion;
-  pScreen->RegionNotEmpty = miRegionNotEmpty;
-  pScreen->RegionBroken = miRegionBroken;
-  pScreen->RegionBreak = miRegionBreak;
-  pScreen->RegionEmpty = miRegionEmpty;
-  pScreen->RegionExtents = miRegionExtents;
-  pScreen->RegionAppend = miRegionAppend;
-  pScreen->RegionValidate = miRegionValidate;
-#endif /* NEED_SCREEN_REGIONS */
-  pScreen->BitmapToRegion = winPixmapToRegionNativeGDI;
-#ifdef NEED_SCREEN_REGIONS
-  pScreen->RectsToRegion = miRectsToRegion;
-#endif /* NEED_SCREEN_REGIONS */
-  
-  /* Cursor Routines for a Screen */
-  /* See mi/midispcur.c - miDCInitialize() */
-  /* See Porting Layer Definition - pp. 25-26 */
-  pScreen->PointerNonInterestBox = (PointerNonInterestBoxProcPtr) 0;
+  /* Initialize the mi visuals */
+  if (!miInitVisuals (&pVisuals, &pDepths, &nVisuals, &nDepths, &nRootDepth,
+		      &rootVisual,
+		      ((unsigned long)1 << (pScreenInfo->dwDepth - 1)), 8,
+		      TrueColor))
+    {
+      ErrorF ("winFinishScreenInitNativeGDI () - miInitVisuals () failed\n");
+      return FALSE;
+    }
 
-  /* Colormap Routines */
-  pScreen->CreateColormap = winCreateColormap;
-  pScreen->DestroyColormap = winDestroyColormap;
-  pScreen->InstallColormap = winInstallColormap;
-  pScreen->UninstallColormap = winUninstallColormap;
-  pScreen->ListInstalledColormaps = winListInstalledColormaps;
-  pScreen->StoreColors = winStoreColors;
-  pScreen->ResolveColor = winResolveColor;
+  ErrorF ("winFinishScreenInitNativeGDI () - miInitVisuals () returned\n");
 
-  /* Fonts */
-  pScreen->RealizeFont = winRealizeFontNativeGDI;
-  pScreen->UnrealizeFont = winUnrealizeFontNativeGDI;
+  /* Initialize the mi code */
+  if (!miScreenInit (pScreen,
+		     NULL, /* No framebuffer */
+		     pScreenInfo->dwWidth, pScreenInfo->dwHeight,
+		     monitorResolution, monitorResolution,
+		     pScreenInfo->dwStride,
+		     nRootDepth, nDepths, pDepths, rootVisual,
+		     nVisuals, pVisuals))
+    {
+      ErrorF ("winFinishScreenInitNativeGDI () - miScreenInit failed\n");
+      return FALSE;
+    }
 
-  /* Other Screen Routines */
-  pScreen->GetImage = miGetImage;
-  pScreen->GetSpans = winGetSpansNativeGDI;
-  pScreen->QueryBestSize = winQueryBestSizeNativeGDI;
-  pScreen->SourceValidate = (SourceValidateProcPtr) 0;
-  pScreen->SaveScreen = winSaveScreen;  
-  pScreen->CloseScreen = miCloseScreen;
-  pScreen->CreateScreenResources = miCreateScreenResources;
+  ErrorF ("winFinishScreenInitNativeGDI () - miScreenInit () returned\n");
 
   /* Pixmaps */
   pScreen->CreatePixmap = winCreatePixmapNativeGDI;
   pScreen->DestroyPixmap = winDestroyPixmapNativeGDI;
-  pScreen->ModifyPixmapHeader = miModifyPixmapHeader;
+
+  /* Other Screen Routines */
+  pScreen->QueryBestSize = winQueryBestSizeNativeGDI;
+  pScreen->SaveScreen = winSaveScreen;  
+  pScreen->GetImage = miGetImage;
+  pScreen->GetSpans = winGetSpansNativeGDI;
 
   /* Window Procedures */
   pScreen->CreateWindow = winCreateWindowNativeGDI;
@@ -756,117 +848,101 @@ winFinishScreenInitNativeGDI (int index,
   pScreen->ChangeWindowAttributes = winChangeWindowAttributesNativeGDI;
   pScreen->RealizeWindow = winMapWindowNativeGDI;
   pScreen->UnrealizeWindow = winUnmapWindowNativeGDI;
-  pScreen->ValidateTree = miValidateTree;
-  pScreen->PostValidateTree = (PostValidateTreeProcPtr) 0;
-  pScreen->WindowExposures = miWindowExposures;
-  pScreen->ClipNotify = (ClipNotifyProcPtr) 0;
 
-  /* Window Painting Procedures */
-  pScreen->ClearToBackground = miClearToBackground;
-  pScreen->CopyWindow = winCopyWindowNativeGDI;
+  /* Paint window */
   pScreen->PaintWindowBackground = miPaintWindow;
   pScreen->PaintWindowBorder = miPaintWindow;
-  
-  /* Screen Operation for Backing Store */
-  pScreen->SaveDoomedAreas = 0;
-  pScreen->RestoreAreas = 0;
-  pScreen->TranslateBackingStore = 0;
-  pScreen->ExposeCopy = 0;
-  pScreen->ClearBackingStore = 0;
-  pScreen->DrawGuarantee = 0;
-  
-  /* Screen Operations for Multi-Layered Framebuffers */
-  pScreen->MarkWindow = miMarkWindow;
-  pScreen->MarkOverlappedWindows = miMarkOverlappedWindows;
-  pScreen->ChangeSaveUnder = miChangeSaveUnder;
-  pScreen->PostChangeSaveUnder = miPostChangeSaveUnder;
-  pScreen->MoveWindow = miMoveWindow;
-  pScreen->ResizeWindow = miSlideAndSizeWindow;
-  pScreen->GetLayerWindow = miGetLayerWindow;
-  pScreen->HandleExposures = miHandleValidateExposures;
-  pScreen->ReparentWindow = (ReparentWindowProcPtr) 0;
-#ifdef SHAPE
-  pScreen->SetShape = miSetShape;
-#endif
-  pScreen->ChangeBorderWidth = miChangeBorderWidth;
-  pScreen->MarkUnrealizedWindow = miMarkUnrealizedWindow;
+  pScreen->CopyWindow = winCopyWindowNativeGDI;
 
-  /* GC Handling Routines */
-  /*
-   * All other GC handling routines are pointed to through
-   * pScreen->gcfuncs
-   */
-  /* See Porting Layer Definition pp. 43-46 */
+  /* Fonts */
+  pScreen->RealizeFont = winRealizeFontNativeGDI;
+  pScreen->UnrealizeFont = winUnrealizeFontNativeGDI;
+
+  /* GC */
   pScreen->CreateGC = winCreateGCNativeGDI;
 
-  pScreen->RestackWindow = (RestackWindowProcPtr) 0;
+  /* Colormap Routines */
+  pScreen->CreateColormap = miInitializeColormap;
+  pScreen->DestroyColormap = (DestroyColormapProcPtr) (void (*)()) NoopDDA;
+  pScreen->InstallColormap = miInstallColormap;
+  pScreen->UninstallColormap = miUninstallColormap;
+  pScreen->ListInstalledColormaps = miListInstalledColormaps;
+  pScreen->StoreColors = (StoreColorsProcPtr) (void (*)()) NoopDDA;
+  pScreen->ResolveColor = miResolveColor;
 
-  pScreen->SendGraphicsExpose = miSendGraphicsExpose;
+  /* Bitmap */
+  pScreen->BitmapToRegion = winPixmapToRegionNativeGDI;
 
-  /* Block and Wakeup Handlers */
-  pScreen->BlockHandler = (ScreenBlockHandlerProcPtr) NoopDDA;
-  pScreen->WakeupHandler = (ScreenWakeupHandlerProcPtr) NoopDDA;
-  pScreen->blockData = (pointer) 0;
-  pScreen->wakeupData = (pointer) 0;
+  ErrorF ("winFinishScreenInitNativeGDI () - calling miDCInitialize\n");
 
-  ErrorF ("winScreenInit () - calling miInitVisuals()\n");
-  if (!winInitVisualsNativeGDI (pScreen))
-    {
-      ErrorF ("winScreenInit () - winInitVisuals returned FALSE\n");
-      return FALSE;
-    }
-  else
-    {
-      ErrorF ("winScreenInit () - winInitVisuals returned TRUE\n");
-    }
-
-  /* Visuals */
-  pScreen->numDepths = nDepths;
-  pScreen->rootDepth = nRootDepth;
-  pScreen->allowedDepths = pDepths;
-  pScreen->rootVisual = rootVisual;
-  pScreen->numVisuals = nVisuals;
-  pScreen->visuals = pVisuals;
-
-  ErrorF ("winScreenInit () - nDepths: %d, nRootDepth: %d, nVisuals: %d\n",
-	  nDepths, nRootDepth, nVisuals);
-
-  miPointerSetNewScreen (pScreenInfo->dwScreen, 0, 0);
-
-  ErrorF ("winScreenInit () - calling miDCInitialize()\n");
   if (!miDCInitialize (pScreen, &g_winPointerCursorFuncs))
     {
-      ErrorF ("winScreenInit () - miDCInitialize failed\n");
+      ErrorF ("winFinishScreenInitNativeGDI () - miDCInitialize failed\n");
       return FALSE;
     }
-  else
+
+  ErrorF ("winFinishScreenInitNativeGDI () - miDCInitialize () returned\n");
+
+  /* Set the default white and black pixel positions */
+  pScreen->whitePixel = pScreen->blackPixel = (Pixel) 0;
+  
+  /* Create a default colormap */
+  if (!miCreateDefColormap (pScreen))
     {
-      ErrorF ("winScreenInit () - miDCInitialize succeeded\n");
+        ErrorF ("winFinishScreenInitNativeGDI () - miCreateDefColormap () "
+		"failed\n");
+	return FALSE;
     }
 
-  ErrorF ("winScreenInit () - calling winCreateDefColormap()\n");
-  fReturn = winCreateDefColormap (pScreen);
+  ErrorF ("winFinishScreenInitNativeGDI () - miCreateDefColormap () "
+	  "returned\n");
 
 #ifdef RENDER
-  ErrorF ("winScreenInit () - calling miPictureInit()\n");
+  ErrorF ("winFinishScreenInitNativeGDI () - calling miPictureInit()\n");
   miPictureInit (pScreen, formats, nformats);
 #endif
   
-  if (fReturn)
+  /*
+   * Register our block and wakeup handlers; these procedures
+   * process messages in our Windows message queue; specifically,
+   * they process mouse and keyboard input.
+   */
+#if 0
+  RegisterBlockAndWakeupHandlers (winBlockHandler,
+				  winWakeupHandler,
+				  pScreen);
+#else
+  pScreen->BlockHandler = winBlockHandler;
+  pScreen->WakeupHandler = winWakeupHandler;
+  pScreen->blockData = pScreen;
+  pScreen->wakeupData = pScreen;
+#endif
+
+  /* Wrap mi's CloseScreen with our CloseScreen */
+  pScreenPriv->CloseScreen = pScreen->CloseScreen;
+  pScreen->CloseScreen = pScreenPriv->pwinCloseScreen;
+
+  /* See Porting Layer Definition - p. 33 */
+  pScreen->SaveScreen = winSaveScreen;
+
+  /* Tell the server that we are enabled */
+  pScreenPriv->fEnabled = TRUE;
+
+
+  /* Allocate a DC for the client window */
+  pScreenPriv->hdcScreen = GetDC (pScreenPriv->hwndScreen);
+  if (pScreenPriv->hdcScreen == NULL)
     {
-      RegisterBlockAndWakeupHandlers (winBlockHandler,
-				      winWakeupHandler,
-				      NULL);
+      ErrorF ("winFinishScreenInitNativeGDI () - Couldn't get DC\n");
+      return FALSE;
     }
-  pScreenInfo->pScreen = pScreen;
 
-  miScreenDevPrivateInit (pScreen, xsize, pbits);
 
-  ErrorF ("winScreenInit () - Successful addition of Screen %p %p\n",
-	  pScreen->devPrivate,
+  ErrorF ("winFinishScreenInitNativeGDI () - Successful addition of "
+	  "screen %08x\n",
 	  pScreen);
 
-  return fReturn;
+  return TRUE;
 }
 
 PixmapPtr

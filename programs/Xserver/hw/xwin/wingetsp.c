@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.2 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -40,53 +40,24 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
 		      int		nSpans, 
 		      char		*pDsts)
 {
-#if 0
+#if WIN_NATIVE_GDI_SUPPORT
+  PixmapPtr		pPixmap = (PixmapPtr) pDrawable;
+  winPixmapPriv(pPixmap);
   int			iIdx;
   DDXPointPtr		pPoint = NULL;
   int			*pWidth = NULL;
   char			*pDst = pDsts;
-  int			iScanlineBytes;
-  int			iBitmapBytes;
-  BITMAPINFOHEADER	bmih;
-  DEBUG_FN_NAME("winGetSpans");
-  DEBUGVARS;
-  DEBUGPROC_MSG;
 
-  /* Setup the bitmap header info */
-  bmih.biSize = sizeof (bmih);
-  bmih.biWidth = pDrawable->width;
-  bmih.biHeight = pDrawable->height;
-  bmih.biPlanes = 1;
-  bmih.biBitCount = pDrawable->depth;
-  bmih.biCompression = BI_RGB;
-  bmih.biSizeImage = 0;
-  bmih.biXPelsPerMeter = 0;
-  bmih.biYPelsPerMeter = 0;
-  bmih.biClrUsed = 0;
-  bmih.biClrImportant = 0;
-
-  ErrorF ("winGetSpans () - pDrawable: %08x\n",
-	  pDrawable);
-
-  /* Calculate the number of bytes in each scanline */
-  iScanlineBytes = 4 * ((pDrawable->width * pDrawable->depth + 31) / 32);
-  
-  /* Calculate the number of bytes in the bitmap */
-  iBitmapBytes = iScanlineBytes * pDrawable->height;
-
-#if 0
-    ErrorF ("winGetSpans () - iBitmapBytes: %d\n", iBitmapBytes);
-#endif
-  
   /* Loop through spans */
   for (iIdx = 0; iIdx < nSpans; ++iIdx)
     {
       pPoint = pPoints + iIdx;
       pWidth = pWidths + iIdx;
 
-      /* Drawable should be in g_hdcMem */
-      GetDIBits (hdcMem, ((PixmapPtr)pDrawable)->devPrivate.ptr,
-		 pPoint->y, 1, pDst, &bmih, 0);
+      memcpy (pDst,
+	      ((char*)pPixmapPriv->pvBits)
+	      + pPixmapPriv->dwScanlineBytes * pPoint->y,
+	      pPixmap->devKind);
 
       ErrorF ("(%dx%dx%d) (%d,%d) w: %d\n",
 	      pDrawable->width, pDrawable->height, pDrawable->depth,

@@ -1,4 +1,7 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 116. Define Xutf8LookupString in X11-def.cpp for Cygwin/XFree86 
+      (#4790, Suhaib Siddiqi).
+ 115. Turn on RandR build for Cygwin/XFree86 (#4789, Harold Hunt).
  114. Import of Gregory Parker's rootless code for Mac OS X. The code has
       been cleaned up, reorganized, and modified to use Cocoa and fb
       (Gregory Parker and Torrey T. Lyons).
@@ -13516,4 +13519,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1860 2001/07/01 01:59:59 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1861 2001/07/01 02:13:36 torrey Exp $

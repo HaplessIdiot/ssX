@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.22 2001/06/08 08:37:35 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.23 2001/06/25 08:12:30 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -16,7 +16,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.22 2001/06/08 08:37:35 ala
 #define OSTeenyVersion		2
 #endif
 
-#define ProjectRoot /usr/X11R6
+#define ProjectRoot 		/usr/X11R6
 
 #define BuildServer		YES
 
@@ -68,7 +68,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.22 2001/06/08 08:37:35 ala
  * /lib/libtermcap.a doesn't have tgetent, which is needed for
  * xc/programs/xterm/resize.exe
  */
-#define TermcapLibrary -lncurses
+#define TermcapLibrary -lncurses.dll
 
 #define AvoidNullMakeCommand    YES
 #define StripInstalledPrograms  NO
@@ -193,8 +193,9 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.22 2001/06/08 08:37:35 ala
 #define BuildXF86VidModeExt     YES
 #define BuildXF86DGA		NO	/* No direct access to hardware */
 #define BuildXvExt		YES
-#define BuildXF86MiscExt	YES
+#define BuildXF86MiscExt	NO
 #define BuildRender		YES
+#define BuildRandR		YES
 #define BuildXF86DRI		NO	/* No direct access to hardware */
 #define BuildXF86DRM		NO	/* No direct access to hardware */
 #define BuildXKB		YES

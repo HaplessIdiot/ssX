@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.2 2001/04/19 12:56:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.3 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -75,7 +75,10 @@ const GCOps winGCOps = {
 Bool
 winCreateGCNativeGDI (GCPtr pGC)
 {
-  ErrorF ("\nwinCreateGC () depth: %d\n\n",
+  winPrivGCPtr		pGCPriv = NULL;
+  winPrivScreenPtr	pScreenPriv = NULL;
+
+  ErrorF ("winCreateGCNativeGDI () depth: %d\n",
 	  pGC->depth);
 
   pGC->clientClip = NULL;
@@ -86,13 +89,29 @@ winCreateGCNativeGDI (GCPtr pGC)
 
   pGC->miTranslate = 0;
 
-  /*
+  /* Allocate privates for this GC */
+  pGCPriv = winGetGCPriv (pGC);
+  if (pGCPriv == NULL)
+    {
+      ErrorF ("winCreateGCNativeGDI () - Privates pointer was NULL\n");
+      return FALSE;
+    }
+
+  /* Copy the screen DC to the local privates */
+  pScreenPriv = winGetScreenPriv (pGC->pScreen);
+  pGCPriv->hdc = pScreenPriv->hdcScreen;
+
+  /* Allocate a memory DC for the GC */
+  pGCPriv->hdcMem = CreateCompatibleDC (pGCPriv->hdc);
+
+#if 0
     winGetRotatedPixmapNativeGDI(pGC) = 0;
     winGetExposeNativeGDI(pGC) = 1;
     winGetFreeCompClipNativeGDI(pGC) = 0;
     winGetCompositeClipNativeGDI(pGC) = 0;
     winGetGCPrivateNativeGDI(pGC)->bpp = BitsPerPixel (pGC->depth);
-  */
+#endif
+
   return TRUE;
 }
 
@@ -111,16 +130,19 @@ winValidateGCNativeGDI (GCPtr pGC,
 			unsigned long dwChanges,
 			DrawablePtr pDrawable)
 {
-#if 0
-  PixmapPtr		pPixmap;
+#if WIN_NATIVE_GDI_SUPPORT
+  winGCPriv(pGC);
+  winPrivPixmapPtr	pPixmapPriv = NULL;
+  PixmapPtr		pPixmap = NULL;
   int			nIndex, iResult;
   unsigned long		dwMask = dwChanges;
   HPEN			hPen;
   HBRUSH		hBrush;
   HBITMAP		hBitmap;
+  HDC			hdc = pGCPriv->hdc;
+  HDC			hdcMem = pGCPriv->hdcMem;
   DEBUG_FN_NAME("winValidateGC");
   DEBUGVARS;
-  //DEBUGPROC_MSG;
 
   ErrorF ("winValidateGC - pDrawable: %08x, pGC: %08x\n",
 	  pDrawable, pGC);
@@ -130,15 +152,45 @@ winValidateGCNativeGDI (GCPtr pGC,
     case DRAWABLE_PIXMAP:
       /* I can handle drawable pixmaps, no problem */
       pPixmap = (PixmapPtr) pDrawable;
+      pPixmapPriv = winGetPixmapPriv (pPixmap);
 
-      ErrorF ("winValidateGC - pPixmap->devPrivate.ptr: %08x\n",
-	      pPixmap->devPrivate.ptr);
+      ErrorF ("winValidateGC - pPixmapPriv->hBitmap: %08x\n",
+	      pPixmapPriv->hBitmap);
 
-      /* Select the bitmap into the memory device context.
-	 NOTE: A bitmap can only be selected into a single
-	 memory device context at a time.
-      */
-      SelectObject (g_hdcMem, pPixmap->devPrivate.ptr);
+      
+      /* Is this bitmap selected into a DC? */
+      if (pPixmapPriv->hdcSelected != NULL
+	  && pPixmapPriv->hdcSelected != hdcMem)
+	{
+	  /* Pop the bitmap out of the last DC it was selected into */
+	  SelectObject (pPixmapPriv->hdcSelected, g_hbmpGarbage);
+	  
+	  /* Set the last selected DC for the pixmap */
+	  pPixmapPriv->hdcSelected = hdcMem;
+
+	  /* Select the bitmap into the memory device context */
+	  SelectObject (hdcMem, pPixmapPriv->hBitmap);
+	}
+      else if (pPixmapPriv->hdcSelected == NULL)
+	{
+	  /* Set the last selected DC for the pixmap */
+	  pPixmapPriv->hdcSelected = hdcMem;
+
+	  /* Select the bitmap into the memory device context */
+	  SelectObject (hdcMem, pPixmapPriv->hBitmap);
+	}
+
+#if 0 /* Should be handled above now */
+      /*
+       * Select the bitmap into the memory device context.
+       * NOTE: A bitmap can only be selected into a single
+       * memory device context at a time.
+       */
+      SelectObject (hdcMem, pPixmapPriv->hBitmap);
+#endif
+
+      /* Save a pointer to the last HDC this pixmap was selected into */
+      pPixmapPriv->hdcSelected = hdcMem;
 
       /* Sync the DC settings with the GC settings */
       switch (pGC->fillStyle)
@@ -147,19 +199,23 @@ winValidateGCNativeGDI (GCPtr pGC,
 	  /* Select a stock pen */
 	  if (pDrawable->depth == 1 && pGC->fgPixel)
 	    {
-	      SelectObject (g_hdcMem, GetStockObject (WHITE_PEN));
+	      SelectObject (hdcMem, GetStockObject (WHITE_PEN));
 	    }
 	  else if (pDrawable->depth == 1 && !pGC->fgPixel)
 	    {
-	      SelectObject (g_hdcMem, GetStockObject (BLACK_PEN));
+	      SelectObject (hdcMem, GetStockObject (BLACK_PEN));
 	    }
 	  else if (pGC->fgPixel)
 	    {
-	      SelectObject (g_hdcMem, CreatePen (PS_SOLID, 0, pGC->fgPixel));
+#if 1
+	      SelectObject (hdcMem, CreatePen (PS_SOLID, 0, pGC->fgPixel));
+#else
+	      SelectObject (hdcMem, GetStockObject (WHITE_PEN));
+#endif
 	    }
 	  else
 	    {
-	      SelectObject (g_hdcMem, GetStockObject (BLACK_PEN));
+	      SelectObject (hdcMem, GetStockObject (BLACK_PEN));
 	    }
 	  break;
 	case FillStippled:
@@ -173,15 +229,49 @@ winValidateGCNativeGDI (GCPtr pGC,
       switch (pGC->fillStyle)
 	{
 	case FillTiled:
+	  pPixmapPriv = winGetPixmapPriv (pGC->tile.pixmap);
+	  
+
+	  /* Is this bitmap selected into a DC? */
+	  if (pPixmapPriv->hdcSelected != NULL
+	      && pPixmapPriv->hdcSelected != hdcMem)
+	    {
+	      /* Pop the bitmap out of the last DC it was selected into */
+	      SelectObject (pPixmapPriv->hdcSelected, g_hbmpGarbage);
+	      
+	      /* Set the last selected DC for the pixmap */
+	      pPixmapPriv->hdcSelected = hdcMem;
+	      
+	      /* Select the bitmap into the memory device context */
+	      SelectObject (hdcMem, pPixmapPriv->hBitmap);
+	    }
+	  else if (pPixmapPriv->hdcSelected == NULL)
+	    {
+	      /* Set the last selected DC for the pixmap */
+	      pPixmapPriv->hdcSelected = hdcMem;
+	      
+	      /* Select the bitmap into the memory device context */
+	      SelectObject (hdcMem, pPixmapPriv->hBitmap);
+	    }
+
+#if 0 /* Should be handled correctly above */
+	  if (winGetPixmapPriv(pGC->tile.pixmap)->hdcSelected != NULL)
+	    {
+	      FatalError ("winValidateGCNativeGDI () - Tile already in DC\n");
+	    }
+
 	  /* Need to select the tile into the memory DC */
-	  SelectObject (g_hdcMem, pGC->tile.pixmap->devPrivate.ptr);
+	  SelectObject (hdcMem, winGetPixmapPriv(pGC->tile.pixmap)->hBitmap);
+#endif
 
 	  /* Blit the tile to a remote area of the screen */
-	  BitBlt (g_hdc, 64, 64,
+	  BitBlt (hdc,
+		  64, 64,
 		  pGC->tile.pixmap->drawable.width,
 		  pGC->tile.pixmap->drawable.height,
-		  g_hdcMem,
-		  0, 0, SRCCOPY);
+		  hdcMem,
+		  0, 0,
+		  SRCCOPY);
 	  DEBUG_MSG("Blitted the tile to a remote area of the screen");
 	  break;
 	case FillStippled:
@@ -294,7 +384,20 @@ winCopyGCNativeGDI (GCPtr pGCsrc, unsigned long ulMask, GCPtr pGCdst)
 void
 winDestroyGCNativeGDI (GCPtr pGC)
 {
+  winGCPriv(pGC);
 
+  /* Free the memory DC */
+  if (pGCPriv->hdcMem != NULL)
+    {
+      DeleteDC (pGCPriv->hdcMem);
+      pGCPriv->hdcMem = NULL;
+    }
+
+  /* Invalidate the screen DC pointer */
+  pGCPriv->hdc = NULL;
+
+  /* Invalidate the GC privates pointer */
+  winSetGCPriv (pGC, NULL);
 }
 
 /* See Porting Layer Definition - p. 46 */
