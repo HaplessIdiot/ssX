@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.55 2001/05/07 21:38:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.56 2001/06/30 22:41:48 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -437,7 +437,7 @@ configureDeviceSection (int screennum)
     if (DevToConfig[screennum].GDev.options) {
     	/* Fill in the available driver options for people to use */
     	ptr->dev_comment = xnfalloc(240 + 1);
-    	strcpy(ptr->dev_comment, "Available Driver options are:-\n");
+    	strcpy(ptr->dev_comment, "        ### Available Driver options are:-\n");
     	strcat(ptr->dev_comment, "        ### Values: <i>: integer, <f>: "
 	                         "float, <bool>: \"True\"/\"False\",\n"
                                  "        ### <string>: \"String\", "
