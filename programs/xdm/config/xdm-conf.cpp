@@ -1,4 +1,5 @@
 ! $XConsortium: xdm-conf.cpp /main/3 1996/01/15 15:17:26 gildea $
+! $XFree86$
 DisplayManager.errorLogFile:	XDMDIR/xdm-errors
 DisplayManager.pidFile:		XDMDIR/xdm-pid
 DisplayManager.keyFile:		XDMDIR/xdm-keys

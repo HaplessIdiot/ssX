@@ -90,3 +90,8 @@
     about video modes, gamma values etc.
     Therefore it is strongly recommended to read out DDC data
     before any video mode processing is done.
+
+
+
+
+$XFree86$
