@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.79 2001/06/05 15:54:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.80 2001/06/12 22:22:05 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -1884,6 +1884,14 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   pTDFX->pixmapCacheLinesMin = ((720*480*pTDFX->cpp) + 
 					pTDFX->stride - 1)/pTDFX->stride;
 
+  if (pTDFX->ChipType > PCI_CHIP_VOODOO3) {
+  	if ((pTDFX->pixmapCacheLinesMin + pScrn->virtualY) > 4095)
+		pTDFX->pixmapCacheLinesMin = 4095 - pScrn->virtualY;
+  } else {
+  	if ((pTDFX->pixmapCacheLinesMin + pScrn->virtualY) > 2047)
+		pTDFX->pixmapCacheLinesMin = 2047 - pScrn->virtualY;
+  }
+
   allocateMemory(pScrn);
 
   pScrn->fbOffset = pTDFX->fbOffset;
@@ -1925,8 +1933,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    * in that case, so pTDFX->pixmapCacheLinesMin isn't used when that's true.
    */
   xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-    "%i lines of offscreen memory available for 2D and video\n", 
-	pTDFX->pixmapCacheLinesMax);
+    "Minimum %d, Maximum %d lines of offscreen memory available\n",
+	pTDFX->pixmapCacheLinesMin, pTDFX->pixmapCacheLinesMax);
      
   MemBox.y1 = 0;
   MemBox.x1 = 0;
