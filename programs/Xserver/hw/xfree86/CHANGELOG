@@ -1,4 +1,6 @@
-XFree86 4.3.99.12 (xx August 2003)
+XFree86 4.3.99.13 (xx September 2003)
+
+XFree86 4.3.99.12 (10 September 2003)
  437. Move the X server log file handling from the XFree86 DDX to the DIX,
       allowing the more descriptive logging to be used throughout the server,
       and the log messages to be more uniform in formatting (David Dawes).
@@ -17708,7 +17710,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2850 2003/09/08 15:31:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2851 2003/09/09 03:20:30 dawes Exp $
 
 
 
