@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.23 1998/08/30 04:56:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.24 1998/09/05 06:36:52 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -125,6 +125,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
  			   USE_RECTS_FOR_LINES; 
         break;
     case PCI_CHIP_MGAG200:
+    case PCI_CHIP_MGAG200_PCI:
         pMga->AccelFlags = TRANSC_SOLID_FILL;
         break;
     case PCI_CHIP_MGA1064:

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.40 1998/08/30 04:49:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.41 1998/09/05 06:36:51 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -170,6 +170,7 @@ static SymTabRec MGAChipsets[] = {
     { PCI_CHIP_MGA2164,		"mga2164w" },
     { PCI_CHIP_MGA2164_AGP,	"mga2164w AGP" },
     { PCI_CHIP_MGAG200,		"mgag200" },
+    { PCI_CHIP_MGAG200_PCI,	"mgag200 PCI" },
     {-1,			NULL }
 };
 
@@ -180,6 +181,7 @@ static char *MGAPciNames[] = {
     "mga2164w",
     "mga2164w AGP",
     "mgag200",
+    "mgag200 PCI",
     NULL
 };
 
@@ -190,6 +192,7 @@ static unsigned int MGAPciIds[] = {
     PCI_CHIP_MGA2164,
     PCI_CHIP_MGA2164_AGP,
     PCI_CHIP_MGAG200,
+    PCI_CHIP_MGAG200_PCI,
     ~0
 };
 
@@ -1034,6 +1037,7 @@ MGAMapMem(pScrn);
 	break;
     case PCI_CHIP_MGA1064:
     case PCI_CHIP_MGAG200:
+    case PCI_CHIP_MGAG200_PCI:
 	MGAGRamdacInit(pScrn);
 	break;
     }
@@ -1273,7 +1277,8 @@ MGAUnmapMem(pScrn);
 
     /* Set Fast bitblt flag */
     if (pMga->Chipset == PCI_CHIP_MGA1064 ||
-    	    pMga->Chipset == PCI_CHIP_MGAG200) {
+    	    pMga->Chipset == PCI_CHIP_MGAG200 ||
+	    pMga->Chipset == PCI_CHIP_MGAG200_PCI) {
 	pMga->HasFBitBlt = FALSE;
     } else {
 	pMga->HasFBitBlt = !(pMga->Bios.FeatFlag & 0x00000001);
@@ -1471,6 +1476,7 @@ MGASave(ScrnInfoPtr pScrn)
 	break;
     case PCI_CHIP_MGA1064:
     case PCI_CHIP_MGAG200:
+    case PCI_CHIP_MGAG200_PCI:
 	MGAGSave(pScrn, vgaReg, mgaReg, TRUE);
 	break;
     }
@@ -1509,6 +1515,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	break;
     case PCI_CHIP_MGA1064:                               
     case PCI_CHIP_MGAG200:                               
+    case PCI_CHIP_MGAG200_PCI:                               
 	ret = MGAGInit(pScrn, mode);
 	break;
     }
@@ -1527,6 +1534,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	break;
     case PCI_CHIP_MGA1064:                               
     case PCI_CHIP_MGAG200:                               
+    case PCI_CHIP_MGAG200_PCI:                               
 	MGAGRestore(pScrn, vgaReg, mgaReg, FALSE);
 	break;
     }
@@ -1563,6 +1571,7 @@ MGARestore(ScrnInfoPtr pScrn)
 	break;
     case PCI_CHIP_MGA1064:                               
     case PCI_CHIP_MGAG200:                               
+    case PCI_CHIP_MGAG200_PCI:
 	MGAGRestore(pScrn, vgaReg, mgaReg, TRUE);
 	break;
     }

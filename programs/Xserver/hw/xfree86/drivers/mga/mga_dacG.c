@@ -2,7 +2,7 @@
  * Millennium G200 RAMDAC driver
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.1 1998/09/05 06:36:51 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -118,6 +118,7 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out, long f_max,
 		post_div_max = 3;
 		break;
 	case PCI_CHIP_MGAG200:
+	case PCI_CHIP_MGAG200_PCI:
 	default:
 		ref_freq     = 27050.5;
 		feed_div_min = 1;
@@ -292,6 +293,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->Option = 0x5F094E21;
 		break;
 	case PCI_CHIP_MGAG200:
+	case PCI_CHIP_MGAG200_PCI:
 	default:
 		initDAC = initDACG200;
 		pReg->Option = 0x4007CC21;
