@@ -526,7 +526,7 @@ CONVERT_ARGB1555( texsubimage3d )
 
 #define CONVERT_TEXEL_DWORD( dst, src )					\
 	dst = ((PACK_COLOR_88( src[3], src[0] )) |			\
-	       (PACK_COLOR_88( src[7], src[1] ) << 16))
+	       (PACK_COLOR_88( src[7], src[4] ) << 16))
 
 #define SRC_TEXEL_BYTES		4
 
