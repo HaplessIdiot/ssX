@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.90 2001/01/24 17:28:54 tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.91 2001/01/27 11:04:24 herrb Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3154,13 +3154,24 @@ clean::									@@\
 #endif /* CppFileTarget */
 
 /*
- * CppManTarget - generates rules to create man source from a file with a .cpp
- * suffix.  OS-specific man sections are replaced.
+ * CppManTarget - preprocess man pages.  OS-specific man sections are replaced.
  */
 #ifndef CppManTarget
+#if !DontPreprocessManPages || defined(PreprocessManPages)
 #define CppManTarget(name,defs)						@@\
 AllTarget(name.$(MANNEWSUFFIX))						@@\
 CppRawFileTarget(name.$(MANNEWSUFFIX),name.$(MANSRCSUFFIX),$(MANDEFS) defs,NullParameter)
+#else
+#define CppManTarget(name,defs)						@@\
+AllTarget(name.$(MANNEWSUFFIX))						@@\
+									@@\
+name.$(MANNEWSUFFIX): name.$(MANSRCSUFFIX)				@@\
+	RemoveFile($@)							@@\
+	$(LN) name.$(MANSRCSUFFIX) $@					@@\
+									@@\
+clean::									@@\
+	RemoveFile(name.$(MANNEWSUFFIX))
+#endif
 #endif /* CppManTarget */
 
 /*
