@@ -880,6 +880,7 @@ static void radeon_cp_init_ring_buffer( drm_device_t *dev,
 
 	/* Set the write pointer delay */
 	RADEON_WRITE( RADEON_CP_RB_WPTR_DELAY, 0 );
+	RADEON_READ( RADEON_CP_RB_WPTR_DELAY ); /* read back to propagate */
 
 	/* Initialize the ring buffer's read and write pointers */
 	cur_read_ptr = RADEON_READ( RADEON_CP_RB_RPTR );
