@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xlogo/Logo.c,v 1.6 2002/05/23 23:53:59 keithp Exp $ */
+/* $XFree86: xc/programs/xlogo/Logo.c,v 1.7 2003/12/19 02:05:40 dawes Exp $ */
 
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
@@ -339,7 +339,7 @@ XmuCvtStringToXftColor(Display *dpy,
 			     &xftColor))
 	return False;
     
-    donestr (XftColor, xftColor, XtRXftColor);
+    donestr (XftColor, xftColor, XtRXftColor)
 }
 
 

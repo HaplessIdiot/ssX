@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.74 2003/12/31 05:07:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.75 2004/02/18 04:20:30 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -760,7 +760,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
      */
     /* This driver doesn't expect more than one entity per screen */
     if (pScrn->numEntities > 1)
-	RETURN;
+	RETURN
 
     /* This is the general case */
     for (i = 0; i<pScrn->numEntities; i++) {
@@ -1250,7 +1250,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	/* XXX What about VGA resources in OPERATING mode? */
 	if (xf86RegisterResources(nPtr->pEnt->index, NULL, ResExclusive))
-	    RETURN;
+	    RETURN
 	    
     } else if (nPtr->pEnt->location.type == BUS_ISA) {
 	unsigned int addr;
@@ -1277,7 +1277,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	    nPtr->noLinear = TRUE; /* XXX */
 	}
     } else
-	RETURN;
+	RETURN
 
     if (nPtr->pEnt->device->videoRam != 0) {
 	pScrn->videoRam = nPtr->pEnt->device->videoRam;
@@ -1369,7 +1369,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 			  LOOKUP_BEST_REFRESH);
 
        if (i == -1)
-           RETURN;
+           RETURN
     }
 
     /* Prune the modes marked as invalid */
@@ -1377,7 +1377,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (i == 0 || pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
-	RETURN;
+	RETURN
     }
 
     /*
@@ -1400,27 +1400,27 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     xf86SetDpi(pScrn, 0, 0);
 
     if (xf86LoadSubModule(pScrn, "fb") == NULL) {
-	RETURN;
+	RETURN
     }
 
     xf86LoaderReqSymLists(fbSymbols, NULL);
 
     if (!nPtr->noLinear) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) 
-	    RETURN;
+	    RETURN
 	xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
 
     if (nPtr->shadowFB) {
 	if (!xf86LoadSubModule(pScrn, "shadow")) {
-	    RETURN;
+	    RETURN
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
     
     if (!nPtr->swCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac"))
-	    RETURN;
+	    RETURN
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
     return TRUE;
@@ -2353,7 +2353,6 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
 		VGAwCR(0x57,0x16);
 		VGAwCR(0x58,0x2C);
 		VGAwCR(0x59,0x94);
-		break;
 		break;
 		/* Not done */
 	    }

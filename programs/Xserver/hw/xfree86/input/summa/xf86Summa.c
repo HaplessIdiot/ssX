@@ -24,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.17 2003/11/17 22:20:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.18 2004/04/26 22:26:11 dawes Exp $ */
 
 #ifndef XFree86LOADER
 #include <unistd.h>
@@ -819,7 +819,6 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 	default:
 	    ErrorF("unsupported mode=%d\n", what);
 	    return !Success;
-	    break;
     }
     DBG(2, ErrorF("END   xf86SumProc Success what=%d dev=%p priv=%p\n",
 	   what, (void *)pSum, (void *)priv));

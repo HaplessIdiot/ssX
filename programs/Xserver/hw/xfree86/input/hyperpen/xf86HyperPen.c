@@ -35,7 +35,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.10 2003/11/17 22:20:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.11 2004/04/26 22:26:10 dawes Exp $ */
 
 #ifndef XFree86LOADER
 #include <unistd.h>
@@ -832,7 +832,6 @@ xf86HypProc(DeviceIntPtr pHyp, int what)
 	default:
 	    ErrorF("unsupported mode=%d\n", what);
 	    return !Success;
-	    break;
     }
     DBG(2, ErrorF("END   xf86HypProc Success what=%d dev=%p priv=%p\n",
 	   what, (void *)pHyp, (void *)priv));

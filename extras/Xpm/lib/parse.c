@@ -23,7 +23,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from GROUPE BULL.
  */
-/* $XFree86: xc/extras/Xpm/lib/parse.c,v 1.3 2001/10/28 03:32:10 tsi Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/parse.c,v 1.4 2004/09/15 16:00:37 herrb Exp $ */
 
 /*****************************************************************************\
 * parse.c:                                                                    *
@@ -34,7 +34,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86: xc/extras/Xpm/lib/parse.c,v 1.3 2001/10/28 03:32:10 tsi Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/parse.c,v 1.4 2004/09/15 16:00:37 herrb Exp $ */
 
 /*
  * The code related to FOR_MSW has been added by
@@ -704,7 +704,7 @@ xpmParseData(data, image, info)
     if (ErrorStatus != XpmSuccess) {
 	if (USE_HASHTABLE)
 	    xpmHashTableFree(&hashtable);
-	RETURN(ErrorStatus);
+	RETURN(ErrorStatus)
     }
 
     /*
@@ -726,7 +726,7 @@ xpmParseData(data, image, info)
 	xpmHashTableFree(&hashtable);
 
     if (ErrorStatus != XpmSuccess)
-	RETURN(ErrorStatus);
+	RETURN(ErrorStatus)
 
     /*
      * store the pixels comment line
@@ -742,7 +742,7 @@ xpmParseData(data, image, info)
 	    ErrorStatus = xpmParseExtensions(data, &info->extensions,
 					     &info->nextensions);
 	    if (ErrorStatus != XpmSuccess)
-		RETURN(ErrorStatus);
+		RETURN(ErrorStatus)
 	} else {
 	    info->extensions = NULL;
 	    info->nextensions = 0;

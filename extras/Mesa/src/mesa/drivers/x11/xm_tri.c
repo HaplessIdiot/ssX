@@ -1309,8 +1309,6 @@ static swrast_tri_func get_triangle_func( GLcontext *ctx )
    XMesaContext xmesa = XMESA_CONTEXT(ctx);
    int depth = GET_VISUAL_DEPTH(xmesa->xm_visual);
 
-   (void) kernel1;
-
 #ifdef DEBUG
    triFuncName = NULL;
 #endif
@@ -1352,7 +1350,6 @@ static swrast_tri_func get_triangle_func( GLcontext *ctx )
                   USE(smooth_DITHER8_z_triangle);
                else
                   USE(smooth_DITHER_z_triangle);
-               break;
             case PF_Lookup:
                if (depth == 8)
                   USE(smooth_LOOKUP8_z_triangle);
@@ -1390,7 +1387,6 @@ static swrast_tri_func get_triangle_func( GLcontext *ctx )
                   USE(flat_DITHER8_z_triangle);
                else
                   USE(flat_DITHER_z_triangle);
-               break;
             case PF_Lookup:
                if (depth == 8)
                   USE(flat_LOOKUP8_z_triangle);
@@ -1425,7 +1421,6 @@ static swrast_tri_func get_triangle_func( GLcontext *ctx )
                   USE(smooth_DITHER8_triangle);
                else
                   USE(smooth_DITHER_triangle);
-               break;
             case PF_Lookup:
                if (depth == 8)
                   USE(smooth_LOOKUP8_triangle);
@@ -1461,7 +1456,6 @@ static swrast_tri_func get_triangle_func( GLcontext *ctx )
                   USE(flat_DITHER8_triangle);
                else
                   USE(flat_DITHER_triangle);
-               break;
             case PF_Lookup:
                if (depth == 8)
                   USE(flat_LOOKUP8_triangle);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/vertarr.c,v 1.4 2001/03/25 05:32:00 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/vertarr.c,v 1.6 2004/04/08 10:07:33 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -68,10 +68,12 @@
 #define __GL_SEC_COLOR_FUNC(NAME, let) \
     case GL_##NAME: \
       seccolorPointer->proc = (void (*)(const void *))glSecondaryColor3##let##v; \
+      break
 
 #define __GL_FOG_FUNC(NAME, let) \
     case GL_##NAME: \
       fogPointer->proc = (void (*)(const void *))glFogCoord##let##v; \
+      break
 
 #define __GL_INDEX_FUNC(NAME, let) \
     case GL_##NAME: \

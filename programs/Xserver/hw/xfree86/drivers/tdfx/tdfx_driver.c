@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.104tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.105 2003/11/03 05:11:41 tsi Exp $ */
 
 /*
  * Authors:
@@ -2414,14 +2414,11 @@ TDFXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
     switch (pTDFX->ChipType) {
       case PCI_CHIP_BANSHEE:
         return MODE_BAD;
-        break;
       case PCI_CHIP_VOODOO3:
       case PCI_CHIP_VOODOO5:
         return MODE_OK;
-        break;
       default:
         return MODE_BAD;
-        break;
     }
   }
   /* In clock doubled mode widths must be divisible by 16 instead of 8 */

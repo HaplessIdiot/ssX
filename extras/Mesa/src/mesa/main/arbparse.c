@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/main/arbparse.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/arbparse.c,v 1.5 2004/06/24 02:21:15 tsi Exp $ */
 
 #define DEBUG_PARSING 0
 
@@ -3205,7 +3205,6 @@ parse_matrix (GLcontext * ctx, GLubyte ** inst, struct arb_program *Program,
          _mesa_error (ctx, GL_INVALID_OPERATION,
               "ARB_matrix_palette not supported\n");
          return 1;
-         break;
 
       case MATRIX_PROGRAM:
          *matrix = STATE_PROGRAM;
@@ -3676,7 +3675,6 @@ parse_attrib_binding (GLcontext * ctx, GLubyte ** inst,
             _mesa_error (ctx, GL_INVALID_OPERATION,
                  "ARB_vertex_blend not supported\n");
             return 1;
-            break;
 
          case VERTEX_ATTRIB_NORMAL:
             *binding = VERT_ATTRIB_NORMAL;
@@ -3722,7 +3720,6 @@ parse_attrib_binding (GLcontext * ctx, GLubyte ** inst,
             _mesa_error (ctx, GL_INVALID_OPERATION,
                   "ARB_palette_matrix not supported");
             return 1;
-            break;
 
          case VERTEX_ATTRIB_GENERIC:
             {

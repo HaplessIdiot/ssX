@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/psres/PSres.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/psres/PSres.c,v 1.6 2004/04/03 22:38:52 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -244,7 +244,7 @@ static char *myfgets(
 	       buf[count] = '\0';
 #define RETURN_BUF \
         if (buf[0] != '\0') return buf; \
-	else return myfgets(buf, size, f);
+	else return myfgets(buf, size, f)
 
     if (size == 0) return buf;
     size--;

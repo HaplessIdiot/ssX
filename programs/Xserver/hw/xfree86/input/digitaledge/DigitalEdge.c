@@ -30,7 +30,7 @@
  * Probably buggy as hell, no idea what the initialisation strings are,
  * no idea how to ack it. If the tablet stops responding power cycle it.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.9 2003/11/17 22:20:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.10 2004/04/26 22:26:10 dawes Exp $ */
 
 #ifndef XFree86LOADER
 #include <unistd.h>
@@ -659,7 +659,6 @@ static int xf86SumProc(DeviceIntPtr pSum, int what)
     default:
 	ErrorF("unsupported mode=%d\n", what);
 	return !Success;
-	break;
     }
     DBG(2, ErrorF("END   xf86SumProc Success what=%d dev=%p priv=%p\n",
 		  what, (void *)pSum, (void *)priv));
