@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Mono.man,v 1.6 95/01/23 15:33:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.10 1995/06/17 12:14:37 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.11 1995/07/03 08:41:16 dawes Exp $
 .TH XF86_Mono 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Mono - 1 bit non-accelerated X Window System servers for UNIX on
@@ -45,7 +45,7 @@ OTI067, OTI077, OTI087
 .TP 4
 Cirrus:
 CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429, CLGD5430,
-CLGD5434, CLGD6205, CLGD6215, CLGD6225, CLGD6235,
+CLGD5434, CLGD5436, CLGD6205, CLGD6215, CLGD6225, CLGD6235,
 CL6410, CL6412, CL6420, CL6440
 .RE
 .PP
@@ -132,7 +132,7 @@ oti067, oti077, oti087
 .TP 4
 Cirrus:
 clgd5420, clgd5422, clgd5424, clgd5426, clgd5428, clgd5429, clgd5430,
-clgd5434, clgd6205, clgd6215, clgd6225, clgd6235,
+clgd5434, clgd5436, clgd6205, clgd6215, clgd6225, clgd6235,
 cl6410, cl6412, cl6420, cl6440
 .TP 4
 Generic VGA:
