@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.11 1999/06/20 07:14:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.14 1999/10/13 20:02:30 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -572,7 +572,7 @@ ImageSubsequentScanlineCPUToScreenColorExpandFill(
     IMAGE_OUT(0x210C, (((y+h-1)&0xfff)<<16) | ((x+w-1)&0xfff));
     IMAGE_OUT(0x2124, 0x80000000 | pTrident->ROP | 1<<10 | 1);
     pTrident->dwords = (w + 31) >> 5;
-    pTrident->height = h;
+    pTrident->h = h;
 }
 
 static void
@@ -585,8 +585,8 @@ ImageSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     MoveDWORDS((CARD32*)infoRec->ImageWriteBase,
  	(CARD32*)pTrident->XAAScanlineColorExpandBuffers[bufno], pTrident->dwords);
 
-    pTrident->height--;
-    if (!pTrident->height)
+    pTrident->h--;
+    if (!pTrident->h)
 	ImageSync(pScrn);
 }
 
@@ -614,7 +614,7 @@ ImageSubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn, int x, int y,
     IMAGE_OUT(0x210C, (((y+h-1)&0xfff)<<16) | ((x+w-1)&0xfff));
     IMAGE_OUT(0x2124, 0x80000000 | 1<<22 | 1<<10 | 1);
     pTrident->dwords = ((w * (pScrn->bitsPerPixel/8)) + 3) >> 2;
-    pTrident->height = h;
+    pTrident->h = h;
 }
 
 
@@ -628,7 +628,7 @@ ImageSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     MoveDWORDS((CARD32*)infoRec->ImageWriteBase,
  	(CARD32*)pTrident->XAAImageScanlineBuffer[bufno], pTrident->dwords);
 
-    pTrident->height--;
-    if (!pTrident->height)
+    pTrident->h--;
+    if (!pTrident->h)
 	ImageSync(pScrn);
 }

@@ -1,4 +1,5 @@
 XFree86 4.0.1d (xx October 2000)
+ 742. Update Trident's text acceleration routines (Alan Hourihane).
  741. Destroy unbound window info when a client destroys a context in
       the client-side DRI driver (Kevin Martin).
  740. Make ATI driver's detection of Rage 128's more precise (Marc La France).
@@ -11199,4 +11200,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1335 2000/10/10 15:16:31 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1336 2000/10/10 20:25:20 martin Exp $
