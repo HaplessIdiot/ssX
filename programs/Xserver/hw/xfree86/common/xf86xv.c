@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.7 1999/02/28 11:19:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.8 1999/03/07 11:40:33 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -257,7 +257,7 @@ xf86XVInitAdaptors(
       pa->ddSetPortAttribute = xf86XVSetPortAttribute;
       pa->ddGetPortAttribute = xf86XVGetPortAttribute;
       pa->ddQueryBestSize = xf86XVQueryBestSize;
-      if((pa->name = xalloc(strlen(adaptorPtr->name))))
+      if((pa->name = xalloc(strlen(adaptorPtr->name) + 1)))
           strcpy(pa->name, adaptorPtr->name);
 
       pEncode = xcalloc(adaptorPtr->nEncodings, sizeof(XvEncodingRec));
@@ -273,7 +273,7 @@ xf86XVInitAdaptors(
 
           pe->id = encodingPtr->id;
           pe->pScreen = pScreen;
-          if((pe->name = xalloc(strlen(encodingPtr->name))))
+          if((pe->name = xalloc(strlen(encodingPtr->name) + 1)))
               strcpy(pe->name, encodingPtr->name);
           pe->width = encodingPtr->width;
           pe->height = encodingPtr->height;
@@ -313,9 +313,10 @@ xf86XVInitAdaptors(
 		   if(numFormat >= totFormat) {
 			void *moreSpace; 
 			totFormat *= 2;
-			moreSpace = xrealloc(pFormat, totFormat);
+			moreSpace = xrealloc(pFormat, totFormat * sizeof(XvFormatRec));
 			if(!moreSpace) break;
-			pf = (XvFormatPtr)moreSpace + numFormat;
+			pFormat = moreSpace;
+			pf = pFormat + numFormat;
 		   }
 
                    pf->visual = pVisual->vid; 
