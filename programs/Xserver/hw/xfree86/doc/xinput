@@ -141,6 +141,19 @@
         +  Motion history capability.
 
 
+     o  SummaSketch tablet. Features :
+
+        +  Absolute or relative modes.
+
+        +  2 valuators (x and y axis).
+
+        +  2 button stylus or 4 button puck.
+
+        +  Proximity report.
+
+        +  Motion history capability.
+
+
   To  enable  an   extended  device, you  must   add   en  entry  in the
   XF86Config file.   Consult   to  the XF86Config  man pages to see the
   details.
@@ -157,20 +170,7 @@
   Consult the man pages for details.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.1 1996/05/12 12:41:46 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.2 1996/07/08 10:32:34 dawes Exp $
 
 
 
