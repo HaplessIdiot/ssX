@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.18 2003/03/26 20:43:52 tsi Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -166,7 +166,7 @@ static Bool isApplicationShell(Widget);
 static void LoadResources(Widget);
 static Bool PositionInChild(Widget, int, int);
 static int qcmp_widget_list(register _Xconst void*, register _Xconst void*);
-static void SendCommand(Widget, Atom, ResIdent, EditresCommand,
+static void SendCommand(Widget, Atom, ResIdent, EditResError,
 			ProtocolStream*);
 static void SendFailure(Widget, Atom, ResIdent, char*);
 static char *VerifyWidget(Widget, WidgetInfo*);
@@ -631,20 +631,19 @@ SendFailure(Widget w, Atom sel, ResIdent ident, char *str)
  *	packet to send
  */
 static XtPointer
-BuildReturnPacket(ResIdent ident, EditresCommand command, 
-		  ProtocolStream *stream)
+BuildReturnPacket(ResIdent ident, EditResError error, ProtocolStream *stream)
 {
     long old_alloc, old_size;
-  unsigned char *old_current;
+    unsigned char *old_current;
     
     /*
      * We have cleverly keep enough space at the top of the header
      * for the return protocol stream, so all we have to do is
-   * fill in the space
+     * fill in the space
      */
     /* 
      * Fool the insert routines into putting the header in the right
-   * place while being damn sure not to realloc (that would be very bad.)
+     * place while being damn sure not to realloc (that would be very bad.)
      */
     old_current = stream->current;
     old_alloc = stream->alloc;
@@ -654,7 +653,7 @@ BuildReturnPacket(ResIdent ident, EditresCommand command,
     stream->alloc = stream->size + (2 * HEADER_SIZE);	
     
     _XEditResPut8(stream, ident);
-  _XEditResPut8(stream, (unsigned char)command);
+    _XEditResPut8(stream, (unsigned char)error);
     _XEditResPut32(stream, old_size);
 
     stream->alloc = old_alloc;
@@ -678,10 +677,10 @@ BuildReturnPacket(ResIdent ident, EditresCommand command,
  *	Builds a return command line
  */
 static void
-SendCommand(Widget w, Atom sel, ResIdent ident, EditresCommand command,
+SendCommand(Widget w, Atom sel, ResIdent ident, EditResError error,
 	    ProtocolStream *stream)
 {
-    BuildReturnPacket(ident, command, stream);
+    BuildReturnPacket(ident, error, stream);
     globals.command_stream = stream;	
 
   /*
