@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514fcac.c,v 1.1 94/03/28 21:03:58 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -37,40 +38,50 @@
 #include "xf86_Config.h"
 extern Bool xf86Verbose;
 
+#define ALIGNMENT 8
+#define N_PLANES 8
+
 void
 ibm8514FontCache8Init()
 {
-    int first = 1;
+    static int first = 1;
     int x, y, w, h;
     unsigned int BitPlane;
     CachePool FontPool;
 
-    x = ( ibm8514InfoRec.virtualX < 1024 ? 0 : 256 );
+    x = 0;
     y = ibm8514InfoRec.virtualY;
-    w = ( ibm8514InfoRec.virtualX < 1024 ? ibm8514InfoRec.virtualX : 768 );
+    w = ibm8514InfoRec.virtualX;
     h = 1024 - ibm8514InfoRec.virtualY;
-    if( w > 0 && h > 0 ) {
+    /*
+     * Don't allow a font cache if we don't have room for at least
+     * 2 complete 6x13 fonts.
+     */
+    if( w >= 6*32 && h > 2*13 ) {
       if( first ) {
-        FontPool = xf86CreateCachePool( 8 );
-        for( BitPlane = 0; BitPlane < 7; BitPlane++ )
+        FontPool = xf86CreateCachePool( ALIGNMENT );
+        for( BitPlane = 0; BitPlane < N_PLANES; BitPlane++ )
 	  xf86AddToCachePool( FontPool, x, y, w, h, BitPlane );
 
         xf86InitFontCache( FontPool, w, h, ibm8514ImageOpStipple, ibm8514alu );
         xf86InitText( ibm8514GlyphWrite, ibm8514NoCPolyText,
 		      ibm8514NoCImageText );
 
-        ErrorF( "%s %s: Using %dx%d at %dx%d aligned %d as font cache\n",
+        ErrorF( "%s %s: Using %d planes of %dx%d at %dx%d aligned %d as font cache\n",
 	        XCONFIG_PROBED, ibm8514InfoRec.name,
-	        w, h, x, y, 8 );
-        first = 0;
+		N_PLANES, w, h, x, y, ALIGNMENT );
       }
       else
         xf86ReleaseFontCache();
     }
     else if( first ) {
+      /*
+       * Crash and burn if the cached glyph write function gets called.
+       */
+      xf86InitText( NULL, ibm8514NoCPolyText, ibm8514NoCImageText );
       ErrorF( "%s %s: No font cache available\n",
 	      XCONFIG_PROBED, ibm8514InfoRec.name );
-      first = 1;
     }
+    first = 0;
 
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86fcache.c,v 1.1 94/03/28 21:02:22 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.0 1994/04/29 14:06:23 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -41,8 +41,8 @@
 #include	"xf86bcache.h"
 #include	"xf86fcache.h"
 
-static CacheFont8Ptr xf86HeadFont;
-static CachePool xf86FontPool;
+static CacheFont8Ptr xf86HeadFont = NULL;
+static CachePool xf86FontPool = NULL;
 static int xf86MaxWidth;
 static int xf86MaxHeight;
 static void (*xf86ImageOpStippleFunc)(int, int, int, int, unsigned char *, int,
@@ -87,10 +87,9 @@ void xf86ReleaseFontCache()
     for (CFptr = xf86HeadFont; CFptr != NULL; CFptr=CFptr->next) {
       if (CFptr->font) {
         for (i = 0; i < 8; i++) {
-          if (CFptr->fblock[i] != NULL) {
+          if (CFptr->fblock[i] != NULL)
 	    xf86ReleaseToCachePool( xf86FontPool, CFptr->fblock[i] );
-	    CFptr->fblock[i] = NULL;
-	  }
+
         }
       }
     }
@@ -112,10 +111,9 @@ xf86UnCacheFont8(font)
    for (ptr = xf86HeadFont; ptr != NULL; ptr = ptr->next) {      
       if (ptr->font == font) {
 	 for (i = 0; i < 8; i++) 
-	    if (ptr->fblock[i] != NULL) {
+	    if (ptr->fblock[i] != NULL)
 	        xf86ReleaseToCachePool( xf86FontPool, ptr->fblock[i] );
-		ptr->fblock[i] = NULL;
-	    }
+
 	 if (ptr != xf86HeadFont) {
 	    last->next = ptr->next;
 	    Xfree(ptr);
@@ -151,6 +149,9 @@ xf86CacheFont8(font)
    CharInfoPtr pci;
    CacheFont8Ptr last, ret = xf86HeadFont;
 
+
+   if( !xf86FontPool )	/* No font cache available */
+      return( NULL );
 
    while (ret != NULL) {
       if (ret->font == font)
