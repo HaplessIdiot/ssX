@@ -1348,7 +1348,7 @@ Ensure that you are getting XFree86 3.2A - some of these sites may archive
 older releases as well.  Check the RELNOTES to find which files you need to
 take from the archive.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.85 1997/06/15 07:12:29 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.86 1997/07/06 05:30:54 dawes Exp $
 
 
 
@@ -1517,4 +1517,4 @@ README for XFree86[tm] 3.2A
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.87 1997/06/15 07:27:22 dawes Exp $
+$XFree86$
