@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.20 1998/08/13 14:46:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.21 1998/08/19 07:49:19 dawes Exp $ */
 
 
 
@@ -131,7 +131,7 @@ ProbeSTG1703(TsengPtr pTseng, Bool quiet)
 }
 
 static Bool
-ProbeGenDAC(TsengPtr pTseng, Bool quiet)
+ProbeGenDAC(TsengPtr pTseng, int scrnIndex, Bool quiet)
 {
     /* probe for ICS GENDAC (ICS5341) */
     /*
@@ -207,21 +207,21 @@ ProbeGenDAC(TsengPtr pTseng, Bool quiet)
 	switch (dbyte & 0xf0) {
 	case 0xb0:
 	    if (!quiet) {
-		xf86Msg(X_PROBED, "Ramdac: ICS 5341 GenDAC and programmable clock (MClk = %d MHz)\n",
+		xf86DrvMsg(scrnIndex, X_PROBED, "Ramdac: ICS 5341 GenDAC and programmable clock (MClk = %d MHz)\n",
 		    mclk/1000);
 	    }
 	    pTseng->DacInfo.DacType = ICS5341_DAC;
 	    break;
 	case 0xf0:
 	    if (!quiet) {
-		xf86Msg(X_PROBED, "Ramdac: ICS 5301 GenDAC and programmable clock (MClk = %d MHz)\n",
+		xf86DrvMsg(scrnIndex, X_PROBED, "Ramdac: ICS 5301 GenDAC and programmable clock (MClk = %d MHz)\n",
 		    mclk/1000);
 	    }
 	    pTseng->DacInfo.DacType = ICS5301_DAC;
 	    break;
 	default:
 	    if (!quiet) {
-		xf86Msg(X_PROBED, "Ramdac: unkown GenDAC and programmable clock (ID code = 0x%02x). Please report. (we'll treat it as a standard ICS5301 for now).\n",
+		xf86DrvMsg(scrnIndex, X_PROBED, "Ramdac: unkown GenDAC and programmable clock (ID code = 0x%02x). Please report. (we'll treat it as a standard ICS5301 for now).\n",
 		    dbyte);
 	    }
 	    pTseng->DacInfo.DacType = ICS5301_DAC;
@@ -353,7 +353,7 @@ Check_Tseng_Ramdac(ScrnInfoPtr pScrn)
     if (pScrn->ramdac) {
 	pTseng->DacInfo.DacType = xf86StringToToken(TsengDacTable, pScrn->ramdac);
 	if (pTseng->DacInfo.DacType < 0) {
-	    xf86Msg(X_ERROR, "Unknown RAMDAC type \"%s\" specified\n", pScrn->ramdac);
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Unknown RAMDAC type \"%s\" specified\n", pScrn->ramdac);
 	    return FALSE;
 	}
     } else {			       /* autoprobe for the RAMDAC */
@@ -365,7 +365,7 @@ Check_Tseng_Ramdac(ScrnInfoPtr pScrn)
 	    dbyte = inb(pTseng->IOAddress + 0x69);
 	    mclk /= ((dbyte & 0x1f) + 2) * (1 << ((dbyte >> 5) & 0x03));
 	    pTseng->MClkInfo.MemClk = mclk;
-	} else if (ProbeGenDAC(pTseng, FALSE)) {
+	} else if (ProbeGenDAC(pTseng, pScrn->scrnIndex, FALSE)) {
 	    /* It is. Nothing to do here */
 	} else if (ProbeSTG1703(pTseng, FALSE)) {
 	    /* it's a STG170x */
@@ -642,10 +642,10 @@ tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    if (cmd_dest != NULL) {
 		*cmd_dest = cmd_array[index];
 	    } else
-		xf86Msg(X_ERROR, " cmd_dest = NULL -- please report\n");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, " cmd_dest = NULL -- please report\n");
 	} else {
 	    pTseng->ModeReg.pll.cmd_reg = 0;
-	    xf86Msg(X_ERROR, " %dbpp not supported in %d-bit DAC mode on this RAMDAC -- Please report.\n",
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, " %dbpp not supported in %d-bit DAC mode on this RAMDAC -- Please report.\n",
 		pScrn->bitsPerPixel, dac16bit ? 16 : 8);
 	}
     }
