@@ -1,3 +1,11 @@
+XFree86 3.1.2Bj (15 January 1996)
+240. README.S3 updates (Paul Gortmaker).
+239. Do framebuffer address scan for all VLB Trio64 cards, not just those
+     with > 1MB.
+238. Fix typo in trident driver (Alan Hourihane).
+237. Modify the I128 server to use xf86scanpci() rather than its own PCI
+     probe (which didn't work for PCI config type 1 boards) (Robin Cutshaw).
+
 XFree86 3.1.2Bi (14 January 1996)
 236. Enable dynamic allocation of XInput devices to allow for muliple
      instances of the same device type.  The Joystick2 device has been
