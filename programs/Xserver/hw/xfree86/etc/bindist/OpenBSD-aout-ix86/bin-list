@@ -20,7 +20,7 @@ lib/libXfontcache.so.1.2
 lib/libXft.so.1.1
 lib/libXft.so.2.1
 lib/libXi.so.6.0
-lib/libXinerama.1.0
+lib/libXinerama.so.1.0
 lib/libXmu.so.6.2
 lib/libXmuu.so.1.0
 lib/libXp.so.6.2
