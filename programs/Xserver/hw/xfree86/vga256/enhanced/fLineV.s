@@ -1,4 +1,5 @@
 /* $XConsortium: fLineV.s,v 1.2 94/03/29 11:19:15 dpw Exp $ */
+/* $XFree86$ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -41,9 +42,15 @@ PERFORMANCE OF THIS SOFTWARE.
 
 
 	SEG_TEXT
+#ifdef OLDVGA
 GLOBL	GLNAME(fastcfbVertS)
 	ALIGNTEXT4
 GLNAME(fastcfbVertS):
+#else
+GLOBL	GLNAME(fastvga256VertS)
+	ALIGNTEXT4
+GLNAME(fastvga256VertS):
+#endif
 	PUSH_L	(EBP)
 	MOV_L	(ESP,EBP)
 	PUSH_L	(EBX)

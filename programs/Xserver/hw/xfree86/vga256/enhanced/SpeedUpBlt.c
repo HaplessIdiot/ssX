@@ -1,4 +1,5 @@
 /* $XConsortium: SpeedUpBlt.c,v 1.1 94/03/28 21:53:32 dpw Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
                         Copyr 1992 by Glenn G. Lai
 
@@ -26,9 +27,8 @@ Austin, Tx 78765
 glenn@cs.utexas.edu)
 8/17/92
 *******************************************************************************/
-#include "misc.h"
-#include "vgaBank.h"
-#include <stdio.h>
+
+#include "vga256.h"
 
 static char copyright[] = "Copyright 8/17/1992 by Glenn G. Lai";
 
@@ -41,19 +41,19 @@ SpeedUpBitBlt(sBase, dBase, widthS, widthD, x, y, x1, y1, w, h, xdir, ydir)
 {
     if (sBase >= (unsigned char*)VGABASE)
 	if (dBase >= (unsigned char*)VGABASE) {
-	    unsigned src, dst;
+	    unsigned char *src, *dst;
 
 	    if (y == y1 && xdir == -1) {
-		src = (unsigned)sBase + (y+h-1) * widthS + x + w - 1 - VGABASE;
-		dst = (unsigned)dBase + (y1+h-1) * widthD + x1 + w - 1-VGABASE;
+		src = sBase + (y+h-1) * widthS + x + w - 1 - VGABASE;
+		dst = dBase + (y1+h-1) * widthD + x1 + w - 1-VGABASE;
 		WinWin(src, dst, h, w, -1, -1, widthS, 1);
 	    } else if (ydir == -1) {
-		src = (unsigned)sBase - (y + h - 1) * widthS + x - VGABASE;
-		dst = (unsigned)dBase - (y1 + h - 1) * widthD + x1 - VGABASE;
+		src = sBase - (y + h - 1) * widthS + x - VGABASE;
+		dst = dBase - (y1 + h - 1) * widthD + x1 - VGABASE;
 		WinWin(src, dst, h, w, xdir, -1, widthS, 0);
 	    } else { /* ydir == 1 */
-		src = (unsigned)sBase + y * widthS + x - VGABASE;
-		dst = (unsigned)dBase + y1 * widthD + x1 - VGABASE;
+		src = sBase + y * widthS + x - VGABASE;
+		dst = dBase + y1 * widthD + x1 - VGABASE;
 		WinWin(src, dst, h, w, xdir, 1, widthS, 0);
 	    }
 	} else {

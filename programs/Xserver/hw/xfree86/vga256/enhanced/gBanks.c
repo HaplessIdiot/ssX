@@ -1,4 +1,5 @@
 /* $XConsortium: gBanks.c,v 1.1 94/03/28 21:54:19 dpw Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
 			Copyright 1992 by Glenn G. Lai 
 
@@ -30,10 +31,10 @@ Austin, Tx 78765
 #include "vgaBank.h"
 unsigned SpeedUpRowsNext[17];
 unsigned SpeedUpRowsPrev[17];
-void SpeedUpComputeNext(dst, h) 
 
+void
+SpeedUpComputeNext(dst, h) 
 unsigned dst, h;
-
 {
     if (vgaWriteFlag) {
 	register unsigned int i, j = h, k = 0, l = vgaSegmentMask + 1 >> 10;
