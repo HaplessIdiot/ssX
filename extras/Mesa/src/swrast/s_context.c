@@ -1,10 +1,9 @@
-/* $Id: s_context.c,v 1.1 2002/02/22 17:14:12 dawes Exp $ */
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.3
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -75,9 +74,9 @@ _swrast_update_rasterflags( GLcontext *ctx )
       RasterMask |= ALPHABUF_BIT;
 
    if (   ctx->Viewport.X < 0
-       || ctx->Viewport.X + ctx->Viewport.Width > ctx->DrawBuffer->Width
+       || ctx->Viewport.X + ctx->Viewport.Width > (GLint) ctx->DrawBuffer->Width
        || ctx->Viewport.Y < 0
-       || ctx->Viewport.Y + ctx->Viewport.Height > ctx->DrawBuffer->Height) {
+       || ctx->Viewport.Y + ctx->Viewport.Height > (GLint) ctx->DrawBuffer->Height) {
       RasterMask |= WINCLIP_BIT;
    }
 
@@ -89,10 +88,8 @@ _swrast_update_rasterflags( GLcontext *ctx )
     * MULTI_DRAW_BIT flag.  Also set it if we're drawing to no
     * buffers or the RGBA or CI mask disables all writes.
     */
-   if (ctx->Color.MultiDrawBuffer) {
-      RasterMask |= MULTI_DRAW_BIT;
-   }
-   else if (ctx->Color.DrawBuffer==GL_NONE) {
+   if (ctx->Color.DrawBuffer == GL_FRONT_AND_BACK ||
+       ctx->Color.DrawBuffer == GL_NONE) {
       RasterMask |= MULTI_DRAW_BIT;
    }
    else if (ctx->Visual.rgbMode && *((GLuint *) ctx->Color.ColorMask) == 0) {
@@ -529,6 +526,25 @@ _swrast_GetDeviceDriverReference( GLcontext *ctx )
    return &swrast->Driver;
 }
 
+
+void
+_swrast_render_start( GLcontext *ctx )
+{
+   SWcontext *swrast = SWRAST_CONTEXT(ctx);
+   if (swrast->Driver.SpanRenderStart)
+      swrast->Driver.SpanRenderStart( ctx );
+}
+
+void
+_swrast_render_finish( GLcontext *ctx )
+{
+   SWcontext *swrast = SWRAST_CONTEXT(ctx);
+   _mesa_flush_pb(ctx);
+   if (swrast->Driver.SpanRenderFinish)
+      swrast->Driver.SpanRenderFinish( ctx );
+}
+
+
 #define SWRAST_DEBUG_VERTICES 0
 
 void
@@ -563,3 +579,5 @@ _swrast_print_vertex( GLcontext *ctx, const SWvertex *v )
       fprintf(stderr, "\n");
    }
 }
+
+

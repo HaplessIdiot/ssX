@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/swrast/s_tritemp.h,v 1.2 2002/02/27 21:07:54 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/swrast/s_tritemp.h,v 1.3 2002/09/09 21:07:37 dawes Exp $ */
 
 /*
  * Triangle Rasterizer Template
@@ -210,7 +210,7 @@
       if (area * bf < 0.0)
          return;
 
-      if (area == 0.0F || IS_INF_OR_NAN(area))
+      if (IS_INF_OR_NAN(area) || area == 0.0F)
          return;
 
       oneOverArea = 1.0F / area;
