@@ -1,4 +1,19 @@
 XFree86 4.2.99.1 (XX June 2002)
+ 177. Make the 'distclean' target remove depend files (#5194,
+      Carlos A M dos Santos).
+ 176. Fix bad usage of "UseInstalled" in FreeBSD.cf (#5192,
+      Carlos A M dos Santos).
+ 175. Several xkb layout updates:
+       - Added other Armenian layouts.
+       - Added Swedish dvorak layout.
+       - Fixed typo in "la" file.
+       - Added EuroSign in Dutch keyboard.
+       - Added a "comma" variant for "ro" keyboard allowing to type real comma
+         below Romanian letters.
+       - New file "ro2" with the real Romanian layout (the file "ro" is not a
+         Romanian keyboard, but a modified US one that has been hacked to
+         include Romanian letters).
+      (#5191, Pablo Saratxaga).
  174. Fix makedepend so that it can parse a unary '+' operator (#5185,
       Mark Snitily).
  173. Fix a typo in Xvesa's emulation of instructions forbidden in vm86
@@ -14859,4 +14874,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2239 2002/06/04 21:55:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2240 2002/06/04 22:19:59 dawes Exp $

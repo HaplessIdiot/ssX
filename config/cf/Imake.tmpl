@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.120 2002/04/04 14:05:32 eich Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.121 2002/05/31 20:09:27 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -2073,9 +2073,9 @@ depend::
 #endif /* if subdirectory rules are needed */
 
 #ifndef IHaveSpecialMakefileTarget
-/* "distclean" also removes the Makefile */
+/* "distclean" also removes the Makefile and the depend file */
 distclean::
-	RemoveFile(Makefile)
+	RemoveFiles(Makefile DependFileName)
 #endif
 
 XCOMM ----------------------------------------------------------------------
