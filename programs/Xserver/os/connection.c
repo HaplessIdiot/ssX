@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.58 2003/06/09 18:49:39 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.59tsi Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -72,6 +72,7 @@ SOFTWARE.
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifndef WIN32
 #if defined(Lynx)
@@ -123,6 +124,7 @@ extern __const__ int _nfiles;
 #    endif
 #  endif
 # endif
+# include <arpa/inet.h>
 #endif
 
 #ifdef AMTCPCONN
@@ -504,6 +506,16 @@ AuthAudit (ClientPtr client, Bool letin,
 		    inet_ntoa(((struct sockaddr_in *) saddr)->sin_addr),
 		    ntohs(((struct sockaddr_in *) saddr)->sin_port));
 	    break;
+#if defined(IPv6) && defined(AF_INET6)
+	case AF_INET6: {
+	    char ipaddr[INET6_ADDRSTRLEN];
+	    inet_ntop(AF_INET6, &((struct sockaddr_in6 *) saddr)->sin6_addr,
+	      ipaddr, sizeof(ipaddr));
+	    sprintf(out, "IP %s port %d", ipaddr,		    
+		    ((struct sockaddr_in6 *) saddr)->sin6_port);
+	}
+	    break;
+#endif
 #endif
 #ifdef DNETCONN
 	case AF_DECnet:

@@ -25,7 +25,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/proxymngr/main.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/proxymngr/main.c,v 1.8tsi Exp $ */
 
 #include <stdlib.h>
 #include "pmint.h"
@@ -484,17 +484,21 @@ Bool		 swap;
 	     * different host than the client or the client host, 
 	     * proxy host and the server host may all be different, 
 	     * thus a serverAddress of :0 or :0.0 is not useful.  
-	     * Therefore, change serverAddrees to use the client's 
+	     * Therefore, change serverAddress to use the client's 
 	     * hostname.
 	     */
 	    char		*tmpName;
 
-	    tmpName = strchr (serverAddress, ':');
+	    tmpName = strrchr (serverAddress, ':');
 
-	    if (tmpName && ((serverAddress[0] == ':') || 
+	    if (tmpName && ((tmpName == serverAddress) || 
 			    (!strncmp (serverAddress, "unix:", 5))))
 	    {
+#if defined(IPv6) && defined(AF_INET6)
+		struct sockaddr_storage	serverSock;
+#else
 		struct sockaddr_in	serverSock;
+#endif
 		int 			retVal;
 		int 			addrLen = sizeof(serverSock);
 
@@ -503,20 +507,43 @@ Bool		 swap;
 				     (void *) &addrLen);
 		if (!retVal) 
 		{
+		    char *canonname = NULL;
+#if defined(IPv6) && defined(AF_INET6)
+		    char hostname[NI_MAXHOST];
+		    struct addrinfo *ai = NULL, hints;
+
+		    if (getnameinfo((struct sockaddr *) &serverSock,
+		      addrLen, hostname, sizeof(hostname), NULL, 0, 0) == 0) {
+			(void)memset(&hints, 0, sizeof(hints));
+			hints.ai_flags = AI_CANONNAME;
+			if (getaddrinfo(hostname, NULL, &hints, &ai) == 0) {
+			    canonname = ai->ai_canonname;
+			} else {
+			    ai = NULL;
+			}
+		    }
+#else
 		    struct hostent *hostent;
 
 		    hostent = gethostbyname (inet_ntoa(serverSock.sin_addr));
 
 		    if (hostent && hostent->h_name) 
+			canonname = hostent->h_name;
+#endif
+		    if (canonname)
 		    {
 			int		len;
 			char		* pch = strdup (tmpName);
 
-			len = strlen(hostent->h_name) + strlen(tmpName) + 1;
+			len = strlen(canonname) + strlen(tmpName) + 1;
 			serverAddress = (char *) realloc (serverAddress, len);
-			sprintf (serverAddress, "%s%s", hostent->h_name, pch);
+			sprintf (serverAddress, "%s%s", canonname, pch);
 			free (pch);
 		    }
+#if defined(IPv6) && defined(AF_INET6)
+		    if (ai != NULL)
+			freeaddrinfo(ai);
+#endif		    
 		}
 	    }
 	}

@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996, 2002 The Open Group
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -19,10 +19,10 @@
 .\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 .\" OTHER DEALINGS IN THE SOFTWARE.
 .\"
-.\" Except as contained in this notice, the name of the X Consortium shall
+.\" Except as contained in this notice, the name of The Open Group shall
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
-.\" from the X Consortium.
+.\" from The Open Group.
 .\"
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991 by
 .\" Digital Equipment Corporation
@@ -40,6 +40,7 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
 \&
 .sp 1
 .ce 3
@@ -415,7 +416,7 @@ list for its screen.
 As a result,
 the specified colormap might be uninstalled, 
 and the X server might implicitly install or uninstall additional colormaps.
-Which colormaps get installed or uninstalled is server-dependent
+Which colormaps get installed or uninstalled is server dependent
 except that the required list must remain installed.
 .LP
 If the specified colormap becomes uninstalled, 
@@ -509,9 +510,9 @@ The
 .PN XSetFontPath
 function defines the directory search path for font lookup.
 There is only one search path per X server, not one per client.
-The encoding and interpretation of the
-strings is implementation dependent, but typically they specify
-directories or font servers to be searched in the order listed.
+The encoding and interpretation of the strings are implementation-dependent,
+but typically they specify directories or font servers to be searched 
+in the order listed.
 An X server is permitted to cache font information internally;
 for example, it might cache an entire font from a file and not
 check on subsequent opens of that font to see if the underlying
@@ -520,7 +521,7 @@ However,
 when the font path is changed,
 the X server is guaranteed to flush all cached information about fonts 
 for which there currently are no explicit resource IDs allocated.
-The meaning of an error from this request is implementation dependent.
+The meaning of an error from this request is implementation-dependent.
 .LP
 .PN XSetFontPath
 can generate a
@@ -549,7 +550,7 @@ Returns the number of strings in the font path array.
 The
 .PN XGetFontPath
 function allocates and returns an array of strings containing the search path.
-The contents of these strings are implementation dependent
+The contents of these strings are implementation-dependent
 and are not intended to be interpreted by client applications.
 When it is no longer needed,
 the data in the font path should be freed by using
@@ -578,9 +579,9 @@ function
 frees the data allocated by
 .PN XGetFontPath .
 .NH 2
-Server Grabbing 
+Grabbing the Server 
 .XS
-\*(SN Server Grabbing 
+\*(SN Grabbing the Server 
 .XE
 .LP
 Xlib provides functions that you can use to grab and ungrab the server.
@@ -662,7 +663,7 @@ Specifies any resource associated with the client that you want to destroy or
 The
 .PN XKillClient
 function
-forces a close-down of the client
+forces a close down of the client
 that created the resource
 if a valid resource is specified.
 If the client has already terminated in
@@ -690,9 +691,9 @@ can generate a
 .PN BadValue 
 error.
 .NH 2
-Screen Saver Control
+Controlling the Screen Saver 
 .XS
-\*(SN Screen Saver Control
+\*(SN Controlling the Screen Saver 
 .XE
 .LP
 Xlib provides functions that you can use to set or reset the mode 
@@ -968,6 +969,7 @@ typedef struct {
 The family member specifies which protocol address family to use 
 (for example, TCP/IP or DECnet) and can be
 .PN FamilyInternet ,
+.PN FamilyInternetV6 ,
 .PN FamilyDECnet ,
 or
 .PN FamilyChaos .
@@ -975,13 +977,17 @@ The length member specifies the length of the address in bytes.
 The address member specifies a pointer to the address.
 .LP
 For TCP/IP, the address should be in network byte order.
+For IP version 4 addresses, the family should be FamilyInternet
+and the length should be 4 bytes.  For IP version 6 addresses, the
+family should be FamilyInternetV6 and the length should be 16 bytes.
+.LP
 For the DECnet family, 
 the server performs no automatic swapping on the address bytes.
-A Phase IV address is two bytes long.
-The first byte contains the least-significant eight bits of the node number.
-The second byte contains the most-significant two bits of the
-node number in the least-significant two bits of the byte
-and the area in the most-significant six bits of the byte.
+A Phase IV address is 2 bytes long.
+The first byte contains the least significant 8 bits of the node number.
+The second byte contains the most significant 2 bits of the
+node number in the least significant 2 bits of the byte
+and the area in the most significant 6 bits of the byte.
 .LP
 .sp
 To add a single host, use

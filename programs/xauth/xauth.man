@@ -23,14 +23,14 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xauth/xauth.man,v 1.7 2001/12/14 20:01:15 dawes Exp $
+.\" $XFree86: xc/programs/xauth/xauth.man,v 1.8tsi Exp $
 .\"
 .TH XAUTH 1 __xorgversion__
 .SH NAME
 xauth \- X authority file utility
 .SH SYNOPSIS
 .B xauth
-[ \fB\-f\fP \fIauthfile\fP ] [ \fB\-vqib\fP ] [ \fIcommand arg ...\fP ]
+[ \fB\-f\fP \fIauthfile\fP ] [ \fB\-vqibn\fP ] [ \fIcommand arg ...\fP ]
 .SH DESCRIPTION
 .PP
 The \fIxauth\fP program is used to edit and display the authorization 
@@ -73,6 +73,11 @@ that have been locked by other programs (usually \fIxdm\fP or another
 .B \-b
 This option indicates that \fIxauth\fP should attempt to break any authority
 file locks before proceeding.  Use this option only to clean up stale locks.
+.TP 8
+.B \-n
+This option indicates that \fIxauth\fP should not attempt to resolve any
+hostnames, but should simply always print the host address as stored in
+the authority file.
 .SH COMMANDS
 The following commands may be used to manipulate authority files:
 .TP 8
@@ -147,7 +152,7 @@ description of the \fIadd\fP command.
 .TP 8
 .B "[n]merge \fR[\fIfilename\fP...]"
 Authorization entries are read from the specified files and are merged into
-the authorization database, superseding any matching existing entries. If
+the authorization database, superceding any matching existing entries. If
 the \fInmerge\fP command is used, the numeric format given in the description
 of the \fIextract\fP command is used.  If a filename consists of just a single
 dash, the standard input will be read if it hasn't been read before.

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.14 2002/05/31 18:46:10 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.15tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -47,6 +47,10 @@ from The Open Group.
 
 static unsigned char	key[8];
 
+#ifdef DEV_RANDOM
+extern char	*randomDevice;
+#endif
+
 #ifdef HASXDMAUTH
 
 typedef unsigned char auth_cblock[8];	/* block size */
@@ -66,9 +70,25 @@ longtochars (long l, unsigned char *c)
 
 #endif
 
+#ifdef POLL_DEV_RANDOM
+#include <poll.h>
+static int
+pollRandomDevice (int fd)
+{
+    struct pollfd fds;
+
+    fds.fd = fd;
+    fds.events = POLLIN | POLLRDNORM;
+    /* Wait up to 5 seconds for entropy to accumulate */
+    return poll(&fds, 1, 5000);
+}
+#else
+#define pollRandomDevice 1
+#endif
+
 # define FILE_LIMIT	1024	/* no more than this many buffers */
 
-#if !defined(ARC4_RANDOM) && !defined(DEV_RANDOM)
+#if !defined(ARC4_RANDOM) 
 static int
 sumFile (char *name, long sum[2])
 {
@@ -120,12 +140,15 @@ InitXdmcpWrapper (void)
 
     _XdmcpWrapperToOddParity(sum, key);
 
-#elif defined(DEV_RANDOM)
-    int fd;
+#else
     unsigned char   tmpkey[8];
+    long	    sum[2];
+
+#ifdef DEV_RANDOM
+    int fd;
     
-    if ((fd = open(DEV_RANDOM, O_RDONLY)) >= 0) {
-	if (read(fd, tmpkey, 8) == 8) {
+    if ((fd = open(randomDevice, O_RDONLY)) >= 0) {
+	if (pollRandomDevice(fd) && read(fd, tmpkey, 8) == 8) {
 	    tmpkey[0] = 0;
 	    _XdmcpWrapperToOddParity(tmpkey, key);
 	    close(fd);
@@ -133,11 +156,11 @@ InitXdmcpWrapper (void)
 	} else {
 	    close(fd);
 	}
+    } else {
+	LogError("Cannot open randomDevice \"%s\", errno = %d\n", 
+	  randomDevice, errno);
     }
-#else    
-    long	    sum[2];
-    unsigned char   tmpkey[8];
-
+#endif    
     if (!sumFile (randomFile, sum)) {
 	sum[0] = time ((Time_t *) 0);
 	sum[1] = time ((Time_t *) 0);
@@ -231,18 +254,23 @@ GenerateAuthData (char *auth, int len)
 #ifdef ARC4_RANDOM
 	    localkey[0] = arc4random();
 	    localkey[1] = arc4random();
-#elif defined(DEV_RANDOM)
+#else
+#ifdef DEV_RANDOM
 	    int fd;
     
-	    if ((fd = open(DEV_RANDOM, O_RDONLY)) >= 0) {
-		if (read(fd, (char *)localkey, 8) != 8) {
-		    localkey[0] = 1;
+	    if ((fd = open(randomDevice, O_RDONLY)) >= 0) {
+		if (pollRandomDevice(fd) && 
+		  read(fd, (char *)localkey, 8) != 8) {
+		    localkey[0] = 0; localkey[1] = 0;
 		}
 		close(fd);
 	    } else {
-		localkey[0] = 1;
+		LogError("Cannot open randomDevice \"%s\", errno = %d\n", 
+		  randomDevice, errno);
 	    }
-#else 
+	    /* Fallback if not able to get from /dev/random */
+	    if ( (localkey[0] == 0) && (localkey[1] == 0) )
+#endif
     	    if (!sumFile (randomFile, localkey)) {
 		localkey[0] = 1; /* To keep from continually calling sumFile() */
     	    }

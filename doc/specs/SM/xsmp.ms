@@ -1,5 +1,6 @@
 .\" Use tbl, -ms, and macros.t
-.\" $XConsortium: xsmp.ms,v 1.5 94/04/18 15:09:43 mor Exp $
+.\" $Xorg: xsmp.ms,v 1.3 2000/08/17 19:42:19 cpqbld Exp $
+.\" $XFree86$
 .EH ''''
 .OH ''''
 .EF ''''
@@ -10,9 +11,9 @@
 .TL
 \s+2\fBX Session Management Protocol\fP\s-2
 .sp
-X Consortium Standard
+X.Org Standard
 .sp
-X Version 11, Release 6
+X Version 11, Release 6.7
 .AU
 Mike Wexler
 .AI
@@ -22,8 +23,8 @@ Kubota Pacific Computer, Inc.
 This document specifies a protocol that facilitates the management of groups
 of client applications by a session manager.  The session manager can cause
 clients to save their state, to shut down, and to be restarted into a
-previously saved state.  This protocol is layered on top of the X
-Consortium's ICE protocol.
+previously saved state.  This protocol is layered on top of the X.Org
+ICE protocol.
 .AE
 .LP
 .bp
@@ -31,9 +32,9 @@ Consortium's ICE protocol.
 .sp 8
 .LP
 .DS C
-X Window System is a trademark of X Consortium, Inc.
+X Window System is a trademark of The Open Group.
 .sp
-Copyright \(co 1992, 1993, 1994 X Consortium
+Copyright \(co 1992, 1993, 1994, 2002 The Open Group.
 .DE
 .sp 3
 .LP
@@ -58,8 +59,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .OF ''\\\\n(PN''
 .bp 1
 .af PN 1
-.EH '\fBX Session Management Protocol\fP''\fBX11, Release 6\fP'
-.OH '\fBX Session Management Protocol\fP''\fBX11, Release 6\fP'
+.EH '\fBX Session Management Protocol\fP''\fBX11, Release 6.4\fP'
+.OH '\fBX Session Management Protocol\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB\\\\n(PN\fP''
 .OF ''\fB\\\\n(PN\fP''
 .nH 1 "Acknowledgements"
@@ -264,8 +265,9 @@ Version.  This is currently the character `1'.
 Address type and address.  The address type will be one of
 .DS
 .ta 0.5i
-`1'	a 4-byte IP address encoded as 8 hexadecimal digits
+`1'	a 4-byte IPv4 address encoded as 8 hexadecimal digits
 `2'	a 6-byte DECNET address encoded as 12 hexadecimal digits
+`6'	a 16-byte IPv6 address encoded as 32 hexadecimal digits
 .DE
 .IP
 The address is the one of the network addresses of the machine where the
@@ -538,7 +540,7 @@ to a client, it can't send another
 to that client until the client either
 responds with a 
 .PN SaveYourselfDone
- or the SM sends a 
+or the SM sends a 
 .PN ShutdownCancelled .
 .NE
 .NT "Advice to Implementors"
@@ -556,7 +558,7 @@ without knowing that it is needed for the new checkpoint.
 The shutdown field specifies whether the system is being shut down.
 .NT Rationale
 The interaction
-may different depending on whether or not shutdown is set.
+may be different depending on whether or not shutdown is set.
 .NE
 The client must save and then must prevent interaction
 until it receives a
@@ -689,9 +691,6 @@ client wants to start an error dialog or
 .PN Normal ,
 meaning the client 
 wishes to start a non-error dialog.
-.LP
-.LP
-.RE
 .LP
 .sM
 .PN Interact
@@ -1082,6 +1081,7 @@ the client and the SM.
 \fIconnection-closed:\fP
 	client stops participating in session
 .DE
+.ne 1i
 .nH 2 "Session Manager State Diagram"
 .LP
 .nf
@@ -1144,11 +1144,11 @@ the client and the SM.
 .DE
 .sp
 .DS L 0
-\fIstarting-phase2:\fP	
+\fIstart-phase2:\fP	
 	If all clients have sent either \fBSaveYourselfPhase2Request\fP or \fBSaveYourselfDone\fP:
 		send \fBSaveYourselfPhase2\fP \(-> \fCphase2\fP
 	else
-		\(-> \fCsave-yourself\fP
+		\(-> \fCsaving-yourself\fP
 .DE
 .sp
 .DS L 0
@@ -1202,6 +1202,7 @@ SAVE_TYPE
 	1 	Local
 	2 	Both
 .sp
+.ne .75i
 ARRAY8
 	4	CARD32	length
 	n	LISTofCARD8	the array
@@ -1265,7 +1266,7 @@ message.
 	2		unused
 	4	a/8	length of remaining data in 8-byte units
 	a	ARRAY8	previous-ID
-.ne 4
+.ne 6
 .sp
 .PN RegisterClientReply
 	1	?	XSMP
@@ -1321,7 +1322,7 @@ message.
 	1	BOOL	cancel-shutdown
 	1		unused
 	4	0	length of remaining data in 8-byte units
-.ne 4
+.ne 6
 .sp
 .PN SaveYourselfDone
 	1	?	XSMP

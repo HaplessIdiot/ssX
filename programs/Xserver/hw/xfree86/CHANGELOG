@@ -1,4 +1,36 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 300. X.Org IPv6 changes (Bugzilla #227, Alan Coopersmith, Marc La France).
+      See http://www.x.org/IPV6_Specific_Changes.html for details.  This has
+      been further modified as follows.
+      - Deal with small memory leaks in xdm & xauth.
+      - Fix a number of compilation issues.
+      - Where supported, use SIOCGLIFCONF to query network interfaces on more
+        than only Solaris.
+      - Incorporate X.Org responses to comments #'s 1, 2, 4, 5, 7, 10, 11, 12,
+        13, 14 and 15 (taken from an X.Org-internal document dated 2003.06.17).
+      - Replace HasIPv6 imake symbol with BuildIPv6, defaulting it to YES, and
+        build in IPv6 support whenever BuildIPv6 is asserted _and_ the OS
+        #define's AF_INET6.  This is to maximise IPv6 code exposure and
+        eliminate <OS>.cf file changes to support IPv6.
+ 299. On Solaris, don't allow remote root xdm logins if CONSOLE is set in
+      /etc/default/login (Bugzilla #227, Alan Coopersmith).
+ 298. Fix SEGV in fstobdf when font server is not specified and FSServerName()
+      returns NULL (Bugzilla #227, Alan Coopersmith).
+ 297. Fix XDMCP bug that could cause local host entries in /etc/X0.hosts to be
+      lost (Bugzilla #227, Alan Coopersmith).
+ 296. Make certain xtrans static variable volatile to avoid optimisation issues
+      that occur when they are modified by SIGALRM handlers
+      (Bugzilla #227, Alan Coopersmith).
+ 295. Use %p instead of %x to print pointer values in xtrans debug messages to
+      avoid overflow on platforms with 32-bit ints & 64-bit pointers
+      (Bugzilla #227, Alan Coopersmith).
+ 294. Change SUN-RPC code to use authdes_seccreate() call rather than the
+      deprecated authdes_create() (Bugzilla #227, Alan Coopersmith).
+ 293. Add xdm /dev/random handling for Solaris
+      (Bugzilla #227, Alan Coopersmith).
+ 292. Solaris compile fixes (Bugzilla #227, Alan Coopersmith).
+ 291. Update X.Org version numbers to X11R6.6 or X11R6.7 and replace old
+      references to X Consortium with X.Org (Bugzilla #227, Alan Coopersmith).
  290. Update the usage of DRM AGP handles so that valid handles aren't
       mis-interpreted as invalid handles (based on Bugzilla #484, Dave Airlie).
  289. Twisting fontfile.c and fontdir.c to be able to pass all fonts (bitmap
@@ -69,7 +101,7 @@ XFree86 4.3.99.8 (xx June 2003)
       mkfontscale (Roland Mainz).
  262. Changed resource registration in TDFX driver: VGA mem resources
       are unused during OPERATING state, RAC isn't required for memory
-      resources (BugzillaR #357, Egbert Eich).
+      resources (Bugzilla #357, Egbert Eich).
  261. Attempt to fix VIA driver lockups when moving windows:
       assumed bug compatibility to previous S3 products 
       (BugzillaR #435, Egbert Eich).
@@ -17261,7 +17293,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2769 2003/07/09 01:45:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2770 2003/07/09 02:15:16 dawes Exp $
 
 
 
