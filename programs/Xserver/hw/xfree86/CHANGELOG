@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+   8. Fix new ioperm calls in lnx_video.c for Alpha that are not needed
+      (Jay Estabrook).
    7. Add drivers for PCMCIA cards, HP VGA Out F1252A, and the ColorGraphic
       Voyager VGA card to the KDrive server. Tested on the Compaq IPAQ.
       Use -listmodes, to check resolutions supported.
@@ -13319,4 +13321,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1792 2001/05/23 03:29:39 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1793 2001/05/23 08:56:06 alanh Exp $

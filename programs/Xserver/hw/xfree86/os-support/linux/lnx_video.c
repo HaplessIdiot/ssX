@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.49 2001/04/05 21:29:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.51 2001/05/15 10:19:42 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -512,8 +512,10 @@ xf86EnableIO(void)
 #elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__)
 	if (ioperm(0, 1024, 1) || iopl(3))
 		FatalError("xf86EnableIOPorts: Failed to set IOPL for I/O\n");
+# if !defined(__alpha__)
 	ioperm(0x40,4,0); /* trap access to the timer chip */
 	ioperm(0x60,4,0); /* trap access to the keyboard controller */
+# endif
 #endif
 	ExtendedEnabled = TRUE;
 
