@@ -1,4 +1,6 @@
-XFree86 4.1.99.2 (xx November 2001)
+XFree86 4.1.99.2 (xx December 2001)
+ 554. Fix incorrect code in signal handlers in most of the clients,
+      xterm and xdm not done yet (Matthieu Herrb).
  553. Add Glint R4 and Gamma2 support to the glint driver (Alan Hourihane).
  552. Fix rotated display in the nv driver (Mark Vojkovich).
  551. By default, validate all available modes rather than only the largest
@@ -14298,4 +14300,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2078 2001/12/07 00:10:58 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2079 2001/12/08 16:01:50 alanh Exp $
