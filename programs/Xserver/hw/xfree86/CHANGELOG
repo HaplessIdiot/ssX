@@ -1,3 +1,9 @@
+XFree86 4.1.99.5 (xx December 2001)
+ 634. Don't add XDarwin's PseudoramiX extension with only one screen
+      (Greg Parker).
+ 633. Add Spanish localization of XDarwin help file (Pablo Di Noto).
+ 632. Improve XDarwinStartup's error reporting (Torrey T. Lyons).
+
 XFree86 4.1.99.4 (28 December 2001)
  631. Update the ati/radeon driver to recognise the All-in-Wonder 8500's
       ID (#5117, Vladimir Dergachev).
@@ -14441,4 +14447,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2107 2001/12/27 21:32:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2108 2001/12/28 17:50:54 dawes Exp $
