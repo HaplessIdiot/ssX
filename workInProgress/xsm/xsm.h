@@ -1,5 +1,5 @@
 /* $XConsortium: xsm.h,v 1.36 95/01/03 17:22:47 mor Exp $ */
-/* $XFree86: xc/workInProgress/xsm/xsm.h,v 3.2 1994/11/30 20:52:07 dawes Exp $ */
+/* $XFree86: xc/workInProgress/xsm/xsm.h,v 3.3 1995/01/27 05:02:16 dawes Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -40,12 +40,12 @@ in this Software without prior written authorization from the X Consortium.
 #endif /* X_NOT_POSIX */
 #ifndef PATH_MAX
 #include <sys/param.h>
-#endif
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
 #else
 #define PATH_MAX 1024
+#endif
 #endif
 #endif /* PATH_MAX */
 
