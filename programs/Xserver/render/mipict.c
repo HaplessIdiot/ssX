@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.4 2000/12/05 03:13:32 keithp Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -122,7 +122,7 @@ miValidatePicture (PicturePtr pPicture,
 {
     DrawablePtr	    pDrawable = pPicture->pDrawable;
 
-    if ((mask & (GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode)) ||
+    if ((mask & (CPClipXOrigin|CPClipYOrigin|CPClipMask|CPSubwindowMode)) ||
 	(pDrawable->serialNumber != (pPicture->serialNumber & DRAWABLE_SERIAL_BITS)))
     {
 	if (pDrawable->type == DRAWABLE_WINDOW)
