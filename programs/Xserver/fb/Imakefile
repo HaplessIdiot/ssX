@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.13 2001/01/21 21:19:09 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/fb/Imakefile,v 1.14 2001/07/17 15:28:58 keithp Exp $
 XCOMM 
 XCOMM 
 XCOMM Id: Imakefile,v 1.1 1999/11/02 03:54:44 keithp Exp $
@@ -42,6 +42,7 @@ SRCS =	$(XFMODSRC) \
 	fbsolid.c \
 	fbstipple.c \
 	fbtile.c \
+	fbtrap.c \
 	fbutil.c \
 	fbwindow.c \
 	fb24_32.c \
@@ -75,6 +76,7 @@ OBJS =	$(XFMODOBJ) \
 	fbsolid.o \
 	fbstipple.o \
 	fbtile.o \
+	fbtrap.o \
 	fbutil.o \
 	fbwindow.o \
 	fb24_32.o \

@@ -1,0 +1,288 @@
+/*
+ * $XFree86$
+ *
+ * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Keith Packard not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.  Keith Packard makes no
+ * representations about the suitability of this software for any purpose.  It
+ * is provided "as is" without express or implied warranty.
+ *
+ * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include "scrnintstr.h"
+#include "gcstruct.h"
+#include "pixmapstr.h"
+#include "windowstr.h"
+#include "mi.h"
+#include "picturestr.h"
+#include "mipict.h"
+
+void
+miPointFixedBounds (int npoint, xPointFixed *points, BoxPtr bounds)
+{
+    bounds->x1 = FixedToInt (points->x);
+    bounds->x2 = FixedToInt (FixedCeil (points->x));
+    bounds->y1 = FixedToInt (points->y);
+    bounds->y2 = FixedToInt (FixedCeil (points->y));
+    points++;
+    npoint--;
+    while (npoint-- > 0)
+    {
+	INT16	x1 = FixedToInt (points->x);
+	INT16	x2 = FixedToInt (FixedCeil (points->x));
+	INT16	y1 = FixedToInt (points->y);
+	INT16	y2 = FixedToInt (FixedCeil (points->y));
+
+	if (x1 < bounds->x1)
+	    bounds->x1 = x1;
+	else if (x2 > bounds->x2)
+	    bounds->x2 = x2;
+	if (y1 < bounds->y1)
+	    bounds->y1 = y1;
+	else if (y2 > bounds->y2)
+	    bounds->y2 = y2;
+	points++;
+    }
+}
+
+void
+miTriangleBounds (int ntri, xTriangle *tris, BoxPtr bounds)
+{
+    miPointFixedBounds (ntri * 3, (xPointFixed *) tris, bounds);
+}
+
+void
+miRasterizeTriangle (PicturePtr	pPicture,
+		     xTriangle	*tri,
+		     int	x_off,
+		     int	y_off)
+{
+    ScreenPtr		pScreen = pPicture->pDrawable->pScreen;
+    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+    xPointFixed		*top, *left, *right, *t;
+    xTrapezoid		trap[2];
+
+    top = &tri->p1;
+    left = &tri->p1;
+    right = &tri->p1;
+    if (left->y < top->y) {
+	t = left; left = top; top = t;
+    }
+    if (right->y < top->y) {
+	t = right; right = top; top = t;
+    }
+    if (right->x < left->x) {
+	t = right; right = left; left = t;
+    }
+    
+    /*
+     * Two cases:
+     *
+     *		+		+
+     *	       / \             / \
+     *	      /   \           /   \
+     *	     /     +         +     \
+     *          /    --           --    \
+     *         /   --               --   \
+     *        / ---                   --- \
+     *	 +--                         --+
+     */
+    
+    trap[0].top = top->y;
+    
+    trap[0].left.p1.x = top->x;
+    trap[0].left.p1.y = trap[0].top;
+    trap[0].left.p2.x = left->x;
+    trap[0].left.p2.y = left->y;
+    
+    trap[0].right.p1 = trap[0].left.p1;
+    trap[0].right.p2.y = right->x;
+    trap[0].right.p2.y = right->y;
+    
+    if (right->y < left->y)
+    {
+	trap[0].bottom = trap[0].right.p2.y;
+
+	trap[1].top = trap[0].bottom;
+	trap[1].bottom = trap[0].left.p2.y;
+	
+	trap[1].left = trap[0].left;
+	trap[1].right.p1 = trap[0].right.p2;
+	trap[1].right.p2 = trap[0].left.p2;
+    }
+    else
+    {
+	trap[0].bottom = trap[0].left.p2.y;
+	
+	trap[1].top = trap[0].bottom;
+	trap[1].bottom = trap[0].right.p2.y;
+	
+	trap[1].right = trap[0].right;
+	trap[1].left.p1 = trap[0].left.p2;
+	trap[1].left.p2 = trap[0].right.p2;
+    }
+    if (trap[0].top != trap[0].bottom)
+	(*ps->RasterizeTrapezoid) (pPicture, &trap[0], x_off, y_off);
+    if (trap[1].top != trap[1].bottom)
+	(*ps->RasterizeTrapezoid) (pPicture, &trap[1], x_off, y_off);
+}
+
+void
+miTriangles (CARD8	    op,
+	     PicturePtr	    pSrc,
+	     PicturePtr	    pDst,
+	     PictFormatPtr  maskFormat,
+	     INT16	    xSrc,
+	     INT16	    ySrc,
+	     int	    ntri,
+	     xTriangle	    *tris)
+{
+    ScreenPtr		pScreen = pDst->pDrawable->pScreen;
+    BoxRec		bounds;
+    PicturePtr		pPicture = 0;
+
+    if (maskFormat)
+    {
+	miTriangleBounds (ntri, tris, &bounds);
+	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+					 bounds.x2 - bounds.x1,
+					 bounds.y2 - bounds.y1);
+	if (!pPicture)
+	    return;
+    }
+    while (ntri--)
+    {
+	if (!maskFormat)
+	{
+	    miTriangleBounds (1, tris, &bounds);
+	    pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+					     bounds.x2 - bounds.x1,
+					     bounds.y2 - bounds.y1);
+	    if (!pPicture)
+		break;
+	}
+	miRasterizeTriangle (pPicture, tris, -bounds.x1, -bounds.y1);
+	if (!maskFormat)
+	{
+	    CompositePicture (op, pSrc, pPicture, pDst,
+			      xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			      bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
+	    FreePicture (pPicture, 0);
+	}
+	tris++;
+	/* XXX adjust xSrc and ySrc */
+    }
+    if (maskFormat)
+    {
+	CompositePicture (op, pSrc, pPicture, pDst,
+			  xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			  bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
+	FreePicture (pPicture, 0);
+    }
+}
+
+void
+miTriStrip (CARD8	    op,
+	    PicturePtr	    pSrc,
+	    PicturePtr	    pDst,
+	    PictFormatPtr   maskFormat,
+	    INT16	    xSrc,
+	    INT16	    ySrc,
+	    int		    npoint,
+	    xPointFixed	    *points)
+{
+    ScreenPtr		pScreen = pDst->pDrawable->pScreen;
+    xTriangle		tri;
+    BoxRec		bounds;
+    PicturePtr		pPicture = 0;
+
+    if (npoint < 3)
+	return;
+    if (maskFormat)
+    {
+	miPointFixedBounds (npoint, points, &bounds);
+	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
+					 bounds.x2 - bounds.x1,
+					 bounds.y2 - bounds.y1);
+	if (!pPicture)
+	    return;
+    }
+    while (npoint-- > 2)
+    {
+	tri.p1 = points[0];
+	tri.p2 = points[1];
+	tri.p3 = points[2];
+	if (!maskFormat)
+	{
+	    miTriangleBounds (1, &tri, &bounds);
+	    pPicture = miCreateAlphaPicture (pScreen, maskFormat, 
+					     bounds.x2 - bounds.x1,
+					     bounds.y2 - bounds.y1);
+	    if (!pPicture)
+		break;
+	}
+	miRasterizeTriangle (pPicture, &tri, -bounds.x1, -bounds.y1);
+	if (!maskFormat)
+	{
+	    CompositePicture (op, pSrc, pPicture, pDst,
+			      xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			      bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
+	    FreePicture (pPicture, 0);
+	}
+	points++;
+    }
+    if (maskFormat)
+    {
+	CompositePicture (op, pSrc, pPicture, pDst,
+			  xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			  bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
+	FreePicture (pPicture, 0);
+    }
+}
+
+void
+miTriFan (CARD8		op,
+	  PicturePtr	pSrc,
+	  PicturePtr	pDst,
+	  PictFormatPtr	maskFormat,
+	  INT16		xSrc,
+	  INT16		ySrc,
+	  int		npoint,
+	  xPointFixed	*points)
+{
+    ScreenPtr		pScreen = pDst->pDrawable->pScreen;
+    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+    xTriangle		*tri, *triBase;
+    xPointFixed		*first = points;
+    int			ntri = npoint - 2;
+
+    if (npoint < 3)
+	return;
+    triBase = (xTriangle *) ALLOCATE_LOCAL (ntri * sizeof (xTriangle));
+    points++;
+    npoint--;
+    tri = triBase;
+    while (npoint-- > 1)
+    {
+	tri->p1 = *first;
+	tri->p2 = points[0];
+	tri->p3 = points[1];
+	tri++;
+	points++;
+    }
+    (*ps->Triangles) (op, pSrc, pDst, maskFormat, xSrc, ySrc, ntri, tri);
+    DEALLOCATE_LOCAL (tri);
+}

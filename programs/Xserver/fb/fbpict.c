@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.11 2001/06/08 19:36:35 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.12 2001/07/16 05:04:05 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -1143,6 +1143,7 @@ fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     ps->Composite = fbComposite;
     ps->Glyphs = miGlyphs;
     ps->CompositeRects = miCompositeRects;
+    ps->RasterizeTrapezoid = fbRasterizeTrapezoid;
 
 #endif /* RENDER */
 

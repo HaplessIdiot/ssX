@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/renderproto.h,v 1.8 2001/08/01 00:44:35 tsi Exp $
+ * $XFree86: xc/include/extensions/renderproto.h,v 1.9 2001/09/07 16:21:15 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -126,10 +126,26 @@ typedef struct {
 #define sz_xPointFixed	8
 
 typedef struct {
+    xPointFixed	p1;
+    xPointFixed p2;
+} xLineFixed;
+
+#define sz_xLineFixed	16
+
+typedef struct {
     xPointFixed	p1, p2, p3;
 } xTriangle;
 
 #define sz_xTriangle	24
+
+typedef struct {
+    Fixed	top B32;
+    Fixed	bottom B32;
+    xLineFixed	left;
+    xLineFixed	right;
+} xTrapezoid;
+
+#define sz_xTrapezoid	40
 
 typedef struct {
     CARD16  width B16;
@@ -313,13 +329,65 @@ typedef struct {
     CARD8       reqType;
     CARD8       renderReqType;
     CARD16      length B16;
+    CARD8	op;
+    CARD8	pad1;
+    CARD16	pad2 B16;
     Picture	src B32;
     Picture	dst B32;
+    PictFormat	maskFormat B32;
+    INT16	xSrc B16;
+    INT16	ySrc B16;
+} xRenderTrapezoidsReq;
+
+#define sz_xRenderTrapezoidsReq			    24
+
+typedef struct {
+    CARD8       reqType;
+    CARD8       renderReqType;
+    CARD16      length B16;
+    CARD8	op;
+    CARD8	pad1;
+    CARD16	pad2 B16;
+    Picture	src B32;
+    Picture	dst B32;
+    PictFormat	maskFormat B32;
     INT16	xSrc B16;
     INT16	ySrc B16;
 } xRenderTrianglesReq;
 
-#define sz_xRenderTrianglesReq			    16
+#define sz_xRenderTrianglesReq			    24
+
+typedef struct {
+    CARD8       reqType;
+    CARD8       renderReqType;
+    CARD16      length B16;
+    CARD8	op;
+    CARD8	pad1;
+    CARD16	pad2 B16;
+    Picture	src B32;
+    Picture	dst B32;
+    PictFormat	maskFormat B32;
+    INT16	xSrc B16;
+    INT16	ySrc B16;
+} xRenderTriStripReq;
+
+#define sz_xRenderTriStripReq			    24
+
+typedef struct {
+    CARD8       reqType;
+    CARD8       renderReqType;
+    CARD16      length B16;
+    CARD8	op;
+    CARD8	pad1;
+    CARD16	pad2 B16;
+    Picture	src B32;
+    Picture	dst B32;
+    PictFormat	maskFormat B32;
+    INT16	xSrc B16;
+    INT16	ySrc B16;
+} xRenderTriFanReq;
+
+#define sz_xRenderTriFanReq			    24
 
 typedef struct {
     CARD8       reqType;

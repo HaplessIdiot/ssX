@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.15 2001/07/19 04:42:10 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.16 2001/08/01 00:45:00 tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -123,6 +123,47 @@ typedef void	(*CompositeRectsProcPtr)    (CARD8	    op,
 					     int	    nRect,
 					     xRectangle	    *rects);
 
+typedef void	(*RasterizeTrapezoidProcPtr)(PicturePtr	    pMask,
+					     xTrapezoid	    *trap,
+					     int	    x_off,
+					     int	    y_off);
+
+typedef void	(*TrapezoidsProcPtr)	    (CARD8	    op,
+					     PicturePtr	    pSrc,
+					     PicturePtr	    pDst,
+					     PictFormatPtr  maskFormat,
+					     INT16	    xSrc,
+					     INT16	    ySrc,
+					     int	    ntrap,
+					     xTrapezoid	    *traps);
+
+typedef void	(*TrianglesProcPtr)	    (CARD8	    op,
+					     PicturePtr	    pSrc,
+					     PicturePtr	    pDst,
+					     PictFormatPtr  maskFormat,
+					     INT16	    xSrc,
+					     INT16	    ySrc,
+					     int	    ntri,
+					     xTriangle	    *tris);
+
+typedef void	(*TriStripProcPtr)	    (CARD8	    op,
+					     PicturePtr	    pSrc,
+					     PicturePtr	    pDst,
+					     PictFormatPtr  maskFormat,
+					     INT16	    xSrc,
+					     INT16	    ySrc,
+					     int	    npoint,
+					     xPointFixed    *points);
+
+typedef void	(*TriFanProcPtr)	    (CARD8	    op,
+					     PicturePtr	    pSrc,
+					     PicturePtr	    pDst,
+					     PictFormatPtr  maskFormat,
+					     INT16	    xSrc,
+					     INT16	    ySrc,
+					     int	    npoint,
+					     xPointFixed    *points);
+
 typedef Bool	(*InitIndexedProcPtr)	    (ScreenPtr	    pScreen,
 					     PictFormatPtr  pFormat);
 
@@ -154,7 +195,13 @@ typedef struct _PictureScreen {
     CompositeProcPtr		Composite;
     GlyphsProcPtr		Glyphs;
     CompositeRectsProcPtr	CompositeRects;
+    TrapezoidsProcPtr		Trapezoids;
+    TrianglesProcPtr		Triangles;
+    TriStripProcPtr		TriStrip;
+    TriFanProcPtr		TriFan;
 
+    RasterizeTrapezoidProcPtr	RasterizeTrapezoid;
+    
     DestroyWindowProcPtr	DestroyWindow;
     CloseScreenProcPtr		CloseScreen;
 
@@ -199,6 +246,12 @@ PictureDestroyWindow (WindowPtr pWindow);
 
 Bool
 PictureCloseScreen (int Index, ScreenPtr pScreen);
+
+void
+PictureStoreColors (ColormapPtr pColormap, int ndef, xColorItem *pdef);
+
+Bool
+PictureInitIndexedFormats (ScreenPtr pScreen);
 
 PictFormatPtr
 PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp);
@@ -292,6 +345,46 @@ CompositeRects (CARD8		op,
 		xRenderColor	*color,
 		int		nRect,
 		xRectangle      *rects);
+
+void
+CompositeTrapezoids (CARD8	    op,
+		     PicturePtr	    pSrc,
+		     PicturePtr	    pDst,
+		     PictFormatPtr  maskFormat,
+		     INT16	    xSrc,
+		     INT16	    ySrc,
+		     int	    ntrap,
+		     xTrapezoid	    *traps);
+
+void
+CompositeTriangles (CARD8	    op,
+		    PicturePtr	    pSrc,
+		    PicturePtr	    pDst,
+		    PictFormatPtr   maskFormat,
+		    INT16	    xSrc,
+		    INT16	    ySrc,
+		    int		    ntriangles,
+		    xTriangle	    *triangles);
+
+void
+CompositeTriStrip (CARD8	    op,
+		   PicturePtr	    pSrc,
+		   PicturePtr	    pDst,
+		   PictFormatPtr    maskFormat,
+		   INT16	    xSrc,
+		   INT16	    ySrc,
+		   int		    npoints,
+		   xPointFixed	    *points);
+
+void
+CompositeTriFan (CARD8		op,
+		 PicturePtr	pSrc,
+		 PicturePtr	pDst,
+		 PictFormatPtr	maskFormat,
+		 INT16		xSrc,
+		 INT16		ySrc,
+		 int		npoints,
+		 xPointFixed	*points);
 
 void RenderExtensionInit (void);
 

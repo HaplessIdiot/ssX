@@ -148,6 +148,34 @@ typedef struct _XGlyphElt32 {
     int			    yOff;
 } XGlyphElt32;
 
+typedef double	XDouble;
+
+typedef struct _XPointDouble {
+    XDouble  x, y;
+} XPointDouble;
+
+#define XDoubleToFixed(f)    ((XFixed) ((f) * 65536))
+#define XFixedToDouble(f)    (((XDouble) (f)) / 65536)
+
+typedef int XFixed;
+
+typedef struct _XPointFixed {
+    XFixed  x, y;
+} XPointFixed;
+
+typedef struct _XLineFixed {
+    XPointFixed	p1, p2;
+} XLineFixed;
+
+typedef struct _XTriangle {
+    XPointFixed	p1, p2, p3;
+} XTriangle;
+
+typedef struct _XTrapezoid {
+    XFixed  top, bottom;
+    XLineFixed	left, right;
+} XTrapezoid;
+
 _XFUNCPROTOBEGIN
 
 Bool XRenderQueryExtension (Display *dpy, int *event_basep, int *error_basep);
@@ -335,6 +363,63 @@ XRenderFillRectangles (Display		    *dpy,
 		       _Xconst XRectangle   *rectangles,
 		       int		    n_rects);
 
+void
+XRenderCompositeTrapezoids (Display		*dpy,
+			    int			op,
+			    Picture		src,
+			    Picture		dst,
+			    _Xconst XRenderPictFormat	*maskFormat,
+			    int			xSrc,
+			    int			ySrc,
+			    _Xconst XTrapezoid	*traps,
+			    int			ntrap);
+
+void
+XRenderCompositeTriangles (Display		*dpy,
+			   int			op,
+			   Picture		src,
+			   Picture		dst,
+			    _Xconst XRenderPictFormat	*maskFormat,
+			   int			xSrc,
+			   int			ySrc,
+			   _Xconst XTriangle	*triangles,
+			   int			ntriangle);
+
+void
+XRenderCompositeTriStrip (Display		*dpy,
+			  int			op,
+			  Picture		src,
+			  Picture		dst,
+			    _Xconst XRenderPictFormat	*maskFormat,
+			  int			xSrc,
+			  int			ySrc,
+			  _Xconst XPointFixed	*points,
+			  int			npoint);
+
+void
+XRenderCompositeTriFan (Display			*dpy,
+			int			op,
+			Picture			src,
+			Picture			dst,
+			_Xconst XRenderPictFormat	*maskFormat,
+			int			xSrc,
+			int			ySrc,
+			_Xconst XPointFixed	*points,
+			int			npoint);
+
+void
+XRenderCompositeDoublePoly (Display		    *dpy,
+			    int			    op,
+			    Picture		    src,
+			    Picture		    dst,
+			    _Xconst XRenderPictFormat	*maskFormat,
+			    int			    xSrc,
+			    int			    ySrc,
+			    int			    xDst,
+			    int			    yDst,
+			    _Xconst XPointDouble    *fpoints,
+			    int			    npoints,
+			    int			    winding);
 _XFUNCPROTOEND
 
 #endif /* _XRENDER_H_ */

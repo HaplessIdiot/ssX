@@ -505,6 +505,11 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 	    return FALSE;
 	PictureWindowPrivateIndex = AllocateWindowPrivateIndex();
 	PictureGeneration = serverGeneration;
+#ifdef XResExtension
+	RegisterResourceName (PictureType, "PICTURE");
+	RegisterResourceName (PictFormatType, "PICTFORMAT");
+	RegisterResourceName (GlyphSetType, "GLYPHSET");
+#endif
     }
     if (!AllocateWindowPrivate (pScreen, PictureWindowPrivateIndex, 0))
 	return FALSE;
@@ -1073,4 +1078,72 @@ CompositeRects (CARD8		op,
     
     ValidatePicture (pDst);
     (*ps->CompositeRects) (op, pDst, color, nRect, rects);
+}
+
+void
+CompositeTrapezoids (CARD8	    op,
+		     PicturePtr	    pSrc,
+		     PicturePtr	    pDst,
+		     PictFormatPtr  maskFormat,
+		     INT16	    xSrc,
+		     INT16	    ySrc,
+		     int	    ntrap,
+		     xTrapezoid	    *traps)
+{
+    PictureScreenPtr	ps = GetPictureScreen(pDst->pDrawable->pScreen);
+    
+    ValidatePicture (pSrc);
+    ValidatePicture (pDst);
+    (*ps->Trapezoids) (op, pSrc, pDst, maskFormat, xSrc, ySrc, ntrap, traps);
+}
+
+void
+CompositeTriangles (CARD8	    op,
+		    PicturePtr	    pSrc,
+		    PicturePtr	    pDst,
+		    PictFormatPtr   maskFormat,
+		    INT16	    xSrc,
+		    INT16	    ySrc,
+		    int		    ntriangles,
+		    xTriangle	    *triangles)
+{
+    PictureScreenPtr	ps = GetPictureScreen(pDst->pDrawable->pScreen);
+    
+    ValidatePicture (pSrc);
+    ValidatePicture (pDst);
+    (*ps->Triangles) (op, pSrc, pDst, maskFormat, xSrc, ySrc, ntriangles, triangles);
+}
+
+void
+CompositeTriStrip (CARD8	    op,
+		   PicturePtr	    pSrc,
+		   PicturePtr	    pDst,
+		   PictFormatPtr    maskFormat,
+		   INT16	    xSrc,
+		   INT16	    ySrc,
+		   int		    npoints,
+		   xPointFixed	    *points)
+{
+    PictureScreenPtr	ps = GetPictureScreen(pDst->pDrawable->pScreen);
+    
+    ValidatePicture (pSrc);
+    ValidatePicture (pDst);
+    (*ps->TriStrip) (op, pSrc, pDst, maskFormat, xSrc, ySrc, npoints, points);
+}
+
+void
+CompositeTriFan (CARD8		op,
+		 PicturePtr	pSrc,
+		 PicturePtr	pDst,
+		 PictFormatPtr	maskFormat,
+		 INT16		xSrc,
+		 INT16		ySrc,
+		 int		npoints,
+		 xPointFixed	*points)
+{
+    PictureScreenPtr	ps = GetPictureScreen(pDst->pDrawable->pScreen);
+    
+    ValidatePicture (pSrc);
+    ValidatePicture (pDst);
+    (*ps->TriFan) (op, pSrc, pDst, maskFormat, xSrc, ySrc, npoints, points);
 }

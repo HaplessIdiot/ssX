@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/render/Imakefile,v 1.6 2001/01/21 21:19:39 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/render/Imakefile,v 1.7 2001/07/18 10:15:02 keithp Exp $
 #include <Server.tmpl>
 
        SRCS =   glyph.c \
@@ -6,14 +6,18 @@ XCOMM $XFree86: xc/programs/Xserver/render/Imakefile,v 1.6 2001/01/21 21:19:39 t
 		miindex.c \
                 mipict.c \
                 mirect.c \
+                mitrap.c \
+                mitri.c \
                 picture.c \
                 render.c
 
        OBJS =   glyph.o \
                 miglyph.o \
-		miindex.o \
+                miindex.o \
                 mipict.o \
                 mirect.o \
+                mitrap.o \
+                mitri.o \
                 picture.o \
                 render.o
 

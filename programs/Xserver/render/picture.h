@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.6 2001/07/18 10:15:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.7 2001/08/10 22:25:59 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -103,12 +103,40 @@ typedef struct _Picture		*PicturePtr;
 
 #define PICT_g1		PICT_FORMAT(1,PICT_TYPE_GRAY,0,0,0,0)
 
-#define FixedToInt(f)	(int) ((f) >> 8)
-#define IntToFixed(i)	((Fixed) (i) << 8)
+/* Fixed point updates from Carl Worth, USC, Information Sciences Institute */
+
+#ifdef WIN32
+typedef __int64    Fixed_32_32;
+#else
+#  if defined(__alpha__) || defined(__alpha) || \
+      defined(ia64) || defined(__ia64__) || \
+      defined(__sparc64__) || \
+      defined(__s390x__) || \
+      defined(x86_64) || defined (__x86_64__)
+typedef long	    Fixed_32_32;
+# else
+__extension__
+typedef long long int  Fixed_32_32;
+# endif
+#endif
+
+typedef CARD32		Fixed_1_31;
+typedef CARD32		Fixed_1_16;
+typedef INT32		Fixed_16_16;
+
+/* An unadorned "Fixed" is the same as Fixed_16_16, (since it's quite common in the code) */
+typedef	Fixed_16_16	Fixed;
+#define FIXED_BITS	16
+
+#define FixedToInt(f)	(int) ((f) >> FIXED_BITS)
+#define IntToFixed(i)	((Fixed) (i) << FIXED_BITS)
 #define FixedE		((Fixed) 1)
 #define Fixed1		(IntToFixed(1))
-#define Fixed1minusE	(Fixed1 - FixedE)
-#define FixedCeil(f)	(((f) + Fixed1minusE) & ~Fixed1MinusE)
+#define Fixed1MinusE	(Fixed1 - FixedE)
 #define FixedFloor(f)	((f) & ~Fixed1MinusE)
+#define FixedCeil(f)	FixedFloor((f) + Fixed1MinusE)
+
+#define FixedFraction(f)	((f) & Fixed1MinusE)
+#define FixedMod2(f)		((f) & (Fixed1 | Fixed1MinusE))
 
 #endif /* _PICTURE_H_ */
