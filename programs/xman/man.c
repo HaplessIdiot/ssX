@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/man.c,v 1.3 2000/03/03 23:16:27 dawes Exp $ */
+/* $XFree86: xc/programs/xman/man.c,v 1.4 2000/06/13 23:15:53 dawes Exp $ */
 
 
 #include "globals.h"
@@ -961,20 +961,66 @@ DumpManual(int number)
 
 #endif /* DEBUG */
 
+
+
 #ifdef MANCONF
 
-#if !defined(__OpenBSD__) && !defined(__NetBSD__)
-
-#if defined(linux)
+#if defined(__FreeBSD__)
 
 /*    Function Name: ReadManConfig
- *    Description: Reads man.conf file used by BSD 4.4
+ *    Description: Reads man.conf file used by FreeBSD man
  *      Argument: manpath - char array to return path in.
  *    Returns: TRUE if read was successful.
  */
 
 Bool
-ReadManConfig(char  manpath[])
+ReadManConfig(char manpath[])
+{
+  FILE        *fp;
+  char        line[BUFSIZ];
+  char        *path;
+  Bool  firstpath = TRUE;
+
+  if (!(fp = fopen(MANCONF, "r")))
+    return(FALSE);
+
+  while (fgets(line, sizeof(line), fp)) {
+    path = strtok(line, " \t\n");
+    if (!path || *path == '#')
+      continue;
+    if (strcmp(path, "MANPATH_MAP") == 0)
+      path = strtok((char *)NULL, " \t\n");
+    else if (strcmp(path, "MANDATORY_MANPATH") != 0 &&
+	     strcmp(path, "OPTIONAL_MANPATH") != 0)
+      return(FALSE);
+    path = strtok((char *)NULL, " \t\n");
+    if (!path || *path == '#')
+      return FALSE;
+    if (firstpath) {
+      strcpy(manpath, path);
+      firstpath = FALSE;
+    }
+    else if (!strstr(manpath,path)) {
+      strcat(manpath, ":");
+      strcat(manpath, path);
+    }
+  }
+  fclose(fp);
+  return(!firstpath);
+}
+
+
+#elif defined(linux) /* not __FreeBSD__ */
+
+/*    Function Name: ReadManConfig
+ *    Description: Reads man.conf file used by Linux man
+ *      Argument: manpath - char array to return path in.
+ *    Returns: TRUE if read was successful.
+ */
+
+
+Bool
+ReadManConfig(char manpath[])
 {
   FILE        *fp;
   char        line[BUFSIZ];
@@ -1004,47 +1050,7 @@ ReadManConfig(char  manpath[])
   return(!firstpath);
 }
 
-#else /* linux */
-
-/*    Function Name: ReadManConfig
- *    Description: Reads man.conf file used by Linux man
- *      Argument: manpath - char array to return path in.
- *    Returns: TRUE if read was successful.
- */
-
-Bool
-ReadManConfig(char  manpath[])
-{
-  FILE        *fp;
-  char        line[BUFSIZ];
-  char        *path;
-  Bool  firstpath = TRUE;
-
-  if (!(fp = fopen(MANCONF, "r")))
-    return(FALSE);
-
-  while (fgets(line, sizeof(line), fp)) {
-    path = strtok(line, " \t\n");
-    if (!path || *path == '#' || strcmp(path, "_default"))
-      continue;
-    while ((path = strtok((char *)NULL, " \t\n"))) {
-      if (firstpath) {
-        strcpy(manpath, path);
-        firstpath = FALSE;
-      }
-      else {
-        strcat(manpath, ":");
-        strcat(manpath, path);
-      }
-    }
-  }
-  fclose(fp);
-  return(!firstpath);
-}
-
-#endif /* linux */
-
-#else /* __OpenBSD__ || __NetBSD__ */
+#elif defined(__OpenBSD__) || defined(__NetBSD__)
 
 /*    Function Name: ReadManConfig
  *    Description: Reads man.conf file used by Open/NetBSD
@@ -1057,7 +1063,7 @@ ReadManConfig(char  manpath[])
 #include <glob.h>
 
 Bool
-ReadManConfig(char  manpath[])
+ReadManConfig(char manpath[])
 {
     FILE        *fp;
     char        line[BUFSIZ];
@@ -1100,6 +1106,56 @@ ReadManConfig(char  manpath[])
     return(!firstpath);
 }
 
-#endif /* __OpenBSD__ || __NetBSD__ */
+#elif defined(BSD)
+
+/*    Keep this ever AFTER linux, {Free,Net,Open}BSD and any other system in
+ *    which "BSD" is defined but whose man.conf doesn't follows the original
+ *    BSD 4.4 format.
+ */
+
+/*    Function Name: ReadManConfig
+ *    Description: Reads man.conf file used by BSD 4.4
+ *      Argument: manpath - char array to return path in.
+ *    Returns: TRUE if read was successful.
+ */
+
+Bool
+ReadManConfig(manpath)
+
+char  manpath[];
+
+{
+  FILE        *fp;
+  char        line[BUFSIZ];
+  char        *path;
+  Bool  firstpath = TRUE;
+
+  if (!(fp = fopen(MANCONF, "r")))
+    return(FALSE);
+
+  while (fgets(line, sizeof(line), fp)) {
+    path = strtok(line, " \t\n");
+    if (!path || *path == '#' || strcmp(path, "_default"))
+      continue;
+    while (path = strtok((char *)NULL, " \t\n")) {
+      if (firstpath) {
+        strcpy(manpath, path);
+        firstpath = FALSE;
+      }
+      else {
+        strcat(manpath, ":");
+        strcat(manpath, path);
+      }
+    }
+  }
+  fclose(fp);
+  return(!firstpath);
+}
+
+#else /* not BSD */
+
+#error "MANCONF defined (in vendor.h) for unknown operating system."
+
+#endif /* __FreeBSD__ ... BSD */
 
 #endif /* MANCONF */

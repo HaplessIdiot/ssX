@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.37 2000/06/22 10:40:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.38 2000/07/01 01:40:45 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -2680,8 +2680,15 @@ static Bool R128SaveScreen(ScreenPtr pScreen, int mode)
     Bool unblank;
 
     unblank = xf86IsUnblank(mode);
+    if (unblank)
+        SetTimeSinceLastInputEvent();
 
-    if (unblank) R128Unblank(pScrn); else R128Blank(pScrn);
+    if ((pScrn != NULL) && pScrn->vtSema) {
+    	if (unblank)
+    		R128Unblank(pScrn);
+    	else
+    		R128Blank(pScrn);
+    }
     return TRUE;
 }
 

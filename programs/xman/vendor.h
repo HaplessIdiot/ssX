@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/vendor.h,v 1.3 2000/03/03 20:02:26 dawes Exp $ */
+/* $XFree86: xc/programs/xman/vendor.h,v 1.4 2000/03/03 23:16:29 dawes Exp $ */
 
 /* Vendor-specific definitions */
 
@@ -59,8 +59,12 @@ from the X Consortium.
 # define SEARCHOTHER CAT
 #endif
 
-#if (defined(BSD) && (BSD >= 199103)) || defined(linux)
-# define MANCONF "/etc/man.conf"
+#if defined(__FreeBSD__)
+# define MANCONF "/etc/manpath.config"
+#else
+# if (defined(BSD) && (BSD >= 199103)) || defined(linux)
+#  define MANCONF "/etc/man.conf"
+# endif
 #endif
 
 /*
