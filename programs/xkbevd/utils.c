@@ -1,6 +1,6 @@
 
   /*\
-   * $XFree86: xc/programs/xkbevd/utils.c,v 3.3 1999/03/02 10:42:26 dawes Exp $
+   * $XFree86: xc/programs/xkbevd/utils.c,v 3.4 2001/01/17 23:46:08 dawes Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -29,11 +29,7 @@
 
 #include 	"utils.h"
 #include	<ctype.h>
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#else
-char *malloc();
-#endif
+#include	<stdlib.h>
 
 /***====================================================================***/
 

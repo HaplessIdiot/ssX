@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.10 1999/09/04 09:14:11 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.11 2001/01/17 19:43:30 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -38,9 +38,6 @@ in this Software without prior written authorization from The Open Group.
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 static Bool AddFileNameAliases ( FontDirectoryPtr dir );
 static int ReadFontAlias ( char *directory, Bool isFile,

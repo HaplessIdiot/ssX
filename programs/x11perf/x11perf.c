@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ****************************************************************************/
-/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.3 2000/11/29 08:58:20 keithp Exp $ */
+/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.4 2001/01/17 23:45:12 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -36,14 +36,9 @@ SOFTWARE.
 #include "x11perf.h"
 #include <X11/Xmu/SysUtil.h>
 
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
 #include <stdlib.h>
-#endif
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
@@ -838,23 +833,7 @@ ProcessTest(XParms xp, Test *test, int func, unsigned long pm, char *label)
     DestroyPerfGCs(xp);
 } /* ProcessTest */
 
-#ifndef X_NOT_STDC_ENV
 #define Strstr strstr
-#else
-static char *
-Strstr(char *s1, char *s2)
-{
-    int n1, n2;
-
-    n1 = strlen(s1);
-    n2 = strlen(s2);
-    for ( ; n1 >= n2; s1++, n1--) {
-	if (!strncmp(s1, s2, n2))
-	    return s1;
-    }	
-    return NULL;
-}
-#endif
 
 #define LABELP(i) (test[i].label14 && (xparms.version >= VERSION1_4) \
 		        ? test[i].label14 : test[i].label)

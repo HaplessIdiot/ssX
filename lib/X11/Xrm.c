@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.14 2000/11/28 18:49:29 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.15 2001/01/17 19:41:50 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -57,17 +57,6 @@ from The Open Group.
 #endif
 #include 	"XrmI.h"
 #include	<X11/Xos.h>
-
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-#if defined(__STDC__) && !defined(NORCONST)
-#define RConst const
-#else
-#define RConst /**/
-#endif
 
 extern XrmQuark _XrmInternalStringToQuark();
 
@@ -293,7 +282,7 @@ typedef unsigned char XrmBits;
 #define is_special(bits)	((bits) & (ENDOF|BSLASH))
 
 /* parsing types */
-static XrmBits Const xrmtypes[256] = {
+static XrmBits const xrmtypes[256] = {
     EOS,0,0,0,0,0,0,0,
     0,SPACE,EOL,0,0,
 #if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */

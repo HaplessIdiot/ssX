@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/lib/Xaw/Panner.c,v 3.6 2001/01/17 19:42:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Panner.c,v 3.7 2001/07/04 16:45:56 paulo Exp $ */
 
 #include <ctype.h>
 #include <math.h>
@@ -39,9 +39,7 @@ in this Software without prior written authorization from The Open Group.
 #if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #else
-#if !defined(X_NOT_STDC_ENV) || defined(SCO)
 #include <stdlib.h>			/* for atof() */
-#endif
 #endif
 
 /*

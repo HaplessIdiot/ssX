@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.14 2001/02/26 23:04:22 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.15 2001/07/23 13:15:52 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -53,13 +53,8 @@ from The Open Group.
 #endif
 #include	<netdb.h>
 
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 #define getString(name,len)	((name = malloc (len + 1)) ? 1 : 0)
 

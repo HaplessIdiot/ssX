@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dps/cslibint.h,v 1.3 2001/06/30 22:41:44 tsi Exp $ */
  
 /*
  *	XlibInternal.h - Header definition and support file for the internal
@@ -86,7 +86,7 @@
  *
  */
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if !defined(UNIXCPP)
 #define NXMacroGetReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req)) > dpy->bufmax)\
@@ -114,7 +114,7 @@
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if !defined(UNIXCPP)
 #define GetReqExtra(name, n, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req) + n) > dpy->bufmax)\
@@ -143,7 +143,7 @@
  * "rid" is the name of the resource. 
  */
 
-#if __STDC__ && !defined(UNIXCPP)
+#if !defined(UNIXCPP)
 #define GetResReq(name, rid, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xResourceReq)) > dpy->bufmax)\
@@ -171,7 +171,7 @@
  * GetEmptyReq is for those requests that have no arguments
  * at all. 
  */
-#if __STDC__ && !defined(UNIXCPP)
+#if !defined(UNIXCPP)
 #define GetEmptyReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xReq)) > dpy->bufmax)\

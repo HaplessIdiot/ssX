@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/WMProps.c,v 3.3 2000/03/31 20:13:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/WMProps.c,v 3.4 2001/01/17 19:41:46 dawes Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
@@ -54,9 +54,6 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include <X11/Xlocale.h>
 
-#ifdef X_NOT_STDC_ENV
-extern char *getenv();
-#endif
 
 /* 
  * XSetWMProperties sets the following properties:

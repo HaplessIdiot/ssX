@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.14 2000/11/06 19:24:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.15 2001/01/17 19:42:54 dawes Exp $ */
 
 /*
  * This file contains routines to handle common selection targets.
@@ -64,9 +64,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 #include <X11/Xos.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #include "Atoms.h"
 #include "StdSel.h"
 #include "SysUtil.h"
@@ -88,11 +86,6 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #endif /*X_OS_FILE*/
 #ifdef USE_UNAME
-#ifdef ultrix
-#ifndef __STDC__
-#include <limits.h>		/* fixed in Ultrix 3.0 */
-#endif
-#endif
 #include <sys/utsname.h>
 #endif
 #endif

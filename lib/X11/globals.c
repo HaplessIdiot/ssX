@@ -49,7 +49,7 @@ from The Open Group.
 /*
  * If we need to define extra variables for each global
  */
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define ZEROINIT(t,var,val) SetZero(t,var,val); \
   SetZero (long, _libX_##var##Flag, 0); \
   SetZero (void *, _libX_##var##Ptr, NULL)

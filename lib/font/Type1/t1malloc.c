@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.8 1999/09/25 14:36:39 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1malloc.c,v 1.9 2001/01/17 19:43:24 dawes Exp $ */
  /* MALLOC   CWEB         V0004 LOTS                                 */
 /*
 :h1.MALLOC - Fast Memory Allocation
@@ -59,7 +59,7 @@ popular (in terms of reducing compiler complaints), however, if your
 compiler is unhappy about it, you can redefine it on the command line:
 */
 #ifndef   NULL
-#define   NULL   0
+#include <stddef.h>
 #endif
 /*
 Of course, NULL is important because xiMalloc() is defined to return

@@ -26,7 +26,7 @@
  *   by Andreas Stolcke <stolcke@icsi.berkeley.edu>
  */
 
-/* $XFree86: xc/programs/xdm/sessreg.c,v 3.15 2000/11/28 17:25:13 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/sessreg.c,v 3.16 2001/01/17 23:45:22 dawes Exp $ */
 
 /*
  * sessreg
@@ -110,13 +110,8 @@
 # endif
 #endif
 
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 #ifdef X_NOT_POSIX
 extern long	lseek ();
 extern char	*ttyname ();

@@ -23,17 +23,11 @@ in this Software without prior written authorization from The Open Group.
 
 #include <X11/X.h>
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
 /*
  * This array can be used given an event type to determine the mask bits
  * that could have generated it.
  */
-long Const _Xevent_to_mask [LASTEvent] = {
+long const _Xevent_to_mask [LASTEvent] = {
 	0,						/* no event 0 */
 	0,						/* no event 1 */
 	KeyPressMask,					/* KeyPress */

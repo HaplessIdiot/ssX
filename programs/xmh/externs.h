@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.39 93/09/20 17:52:05 hersh Exp $
+ * $XConsortium: externs.h /main/36 1996/01/14 16:51:37 kaleb $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -27,14 +27,7 @@
  */
 
 #include <errno.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern int errno;
-extern char *getenv();
-extern void exit();
-extern void free();
-#endif
 
 /* Action routines are declared in actions.h */
 /* Functions which begin with `Do' are the corresponding callbacks. */
@@ -56,6 +49,7 @@ extern void	DoOpenFolder		(/* Widget, XtPointer, XtPointer */);
 extern void 	DoOpenFolderInNewWindow	(/* Widget, XtPointer, XtPointer */);
 extern void	DoCreateFolder		(/* Widget, XtPointer, XtPointer */);
 extern void 	DoDeleteFolder		(/* Widget, XtPointer, XtPointer */);
+extern void	DoSaveYourself		(/* Widget, XtPointer, XtPointer */);
 extern void	Push			(/* Stack, char* */);
 extern char *	Pop			(/* Stack */);
 
@@ -70,6 +64,7 @@ extern void	ToggleMenuItem		(/* Widget, Boolean */);
 	/* from msg.c */
 
 extern Widget   CreateFileSource	(/* Widget, String, Boolean */);
+extern char*	MsgName			(/* Msg */);
 
 	/* from popup.c */
 
@@ -91,6 +86,10 @@ extern void	ScreenSetAssocMsg	(/* Scrn, Msg */);
 extern void	DestroyScrn		(/* Scrn */);
 extern void	MapScrn			(/* Scrn */);
 extern Scrn	ScrnFromWidget		(/* Widget */);
+
+	/* from toc.c */
+
+extern Boolean	TocHasChanges		(/* Toc */);
 
 	/* from tocfuncs.c */
 
@@ -142,7 +141,7 @@ extern void 	SetCurrentFolderName	(/* Scrn, char * */);
 extern void	ChangeLabel		(/* Widget, char * */);
 extern Widget	CreateTextSW	(/* Scrn, char *, ArgList, Cardinal */);
 extern Widget	CreateTitleBar		(/* Scrn, char * */);
-extern void	Feep			(/* void */);
+extern void	Feep			(/* type, volume, window */);
 extern MsgList	CurMsgListOrCurMsg	(/* Toc */);
 extern int	GetWidth		(/* Widget */);
 extern int	GetHeight		(/* Widget */);

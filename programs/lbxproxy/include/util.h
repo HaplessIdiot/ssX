@@ -146,21 +146,21 @@ extern void OsInitAllocator(
 
 extern void AuditF(
 #if NeedVarargsPrototypes
-    char * /*f*/,
+    const char * /*f*/,
     ...
 #endif
 );
 
 extern void FatalError(
 #if NeedVarargsPrototypes
-    char * /*f*/,
+    const char * /*f*/,
     ...
 #endif
 );
 
 extern void ErrorF(
 #if NeedVarargsPrototypes
-    char * /*f*/,
+    const char * /*f*/,
     ...
 #endif
 );

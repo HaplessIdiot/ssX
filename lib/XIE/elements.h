@@ -27,7 +27,7 @@ from The Open Group.
 #ifndef _ELEMENTS_H_
 #define _ELEMENTS_H_
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define ELEM_NAME(_name_) xieFlo##_name_
 #define ELEM_SIZE(_name_) sz_xieFlo##_name_
 #else

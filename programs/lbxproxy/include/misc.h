@@ -51,9 +51,7 @@ typedef int Bool;
 typedef struct _Client *ClientPtr;
 typedef struct _XServer *XServerPtr;
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 #define DE_RESET     1
 #define DE_TERMINATE 2
 #define MILLI_PER_SECOND (1000)

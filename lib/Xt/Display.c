@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Display.c,v 3.9 2000/11/02 02:51:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Display.c,v 3.10 2001/01/17 19:43:04 dawes Exp $ */
 
 /*
 
@@ -61,11 +61,7 @@ in this Software without prior written authorization from The Open Group.
 #include "ResConfigP.h"
 #endif
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char* getenv();
-#endif
 
 #ifdef XTHREADS
 void (*_XtProcessLock)() = NULL;

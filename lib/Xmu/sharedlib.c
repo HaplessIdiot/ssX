@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/sharedlib.c,v 3.2 2000/11/28 18:50:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/sharedlib.c,v 3.3 2001/01/17 19:42:58 dawes Exp $ */
 
 #if defined(SUNSHLIB) && !defined(SHAREDCODE)
 
@@ -32,7 +32,7 @@ struct _AtomRec {
     struct _DisplayRec* head;
 };
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define DeclareAtom(atom) \
 extern struct _AtomRec __##atom; \
 AtomPtr _##atom = &__##atom;

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.10 1999/12/27 00:39:23 robin Exp $ */
+/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.11 2001/01/17 19:42:36 dawes Exp $ */
 
 #ifdef HAS_WCTYPE_H
 #include <wctype.h>
@@ -60,9 +60,7 @@ int _Xaw_iswspace
 #define toascii( c ) ((unsigned)(c) & 0x007f)
 #endif
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 
 #ifdef USE_XWCHAR_STRING
 int _Xwcslen

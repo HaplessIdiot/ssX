@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmag/Scale.c,v 3.6 1999/03/21 07:35:39 dawes Exp $ */
+/* $XFree86: xc/programs/xmag/Scale.c,v 3.7 2001/01/17 23:46:20 dawes Exp $ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -31,9 +31,7 @@ from The Open Group.
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #endif

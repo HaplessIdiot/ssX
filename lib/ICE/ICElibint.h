@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/ICElibint.h,v 1.3 2000/06/17 18:23:22 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/ICElibint.h,v 1.4 2001/01/17 19:41:29 dawes Exp $ */
 
 #ifndef _ICELIBINT_H_
 #define _ICELIBINT_H_
@@ -34,15 +34,8 @@ Author: Ralph Mor, X Consortium
 #include <X11/ICE/ICEconn.h>
 #include <X11/ICE/ICEmsg.h>
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc();
-#endif
-
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 
 
 /*

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.7 2000/12/02 15:30:22 tsi Exp $ */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.8 2001/01/17 19:41:49 dawes Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -70,7 +70,7 @@ from The Open Group.
 
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
-#include "Xvarargs.h"
+#include <stdarg.h>
 
 typedef Bool (*XFilterEventProc)(
 #if NeedFunctionPrototypes

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/Xct.c,v 1.6 1999/03/21 07:34:39 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Xct.c,v 1.7 2001/01/17 19:42:58 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include "Xct.h"
@@ -45,12 +45,7 @@ typedef struct _XctPriv {
 #define IsMore(priv) ((priv)->ptr != (priv)->ptrend)
 #define AmountLeft(priv) ((priv)->ptrend - (priv)->ptr)
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *malloc();
-extern char *realloc();
-#endif
 
 #define HT	0x09
 #define NL	0x0a

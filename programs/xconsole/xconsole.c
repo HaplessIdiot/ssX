@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.25 2001/04/23 21:41:46 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.26 2001/07/23 13:15:51 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -57,12 +57,7 @@ extern char *_XawTextGetSTRING(TextWidget ctx, XawTextPosition left,
 #endif
 #include <X11/Shell.h>
 #include <ctype.h>
-
-#ifdef X_NOT_STDC_ENV
-extern char *malloc ();
-#else
 #include <stdlib.h>
-#endif
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
 #if defined(ISC) && __STDC__ && !defined(ISC30)

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.10 2001/01/17 23:45:21 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.11 2001/01/20 14:11:55 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -38,14 +38,8 @@ from The Open Group.
 
 #include <errno.h>
 
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-extern int errno;
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 static unsigned char	key[8];
 

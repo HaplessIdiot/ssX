@@ -23,14 +23,10 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/miscutil.c,v 1.5 1999/09/04 09:14:12 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/miscutil.c,v 1.6 2001/01/17 19:43:33 dawes Exp $ */
 
 #include <X11/Xosdefs.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc(), *realloc();
-#endif
 #include "fontmisc.h"
 
 #define XK_LATIN1

@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/csconndi.c,v 1.6 2001/04/16 20:33:08 tsi Exp $ */
+/* $XFree86: xc/lib/dps/csconndi.c,v 1.7 2001/06/15 08:09:20 alanh Exp $ */
 
 #if defined(sun) && !defined(SVR4)
 #define memmove(t,f,c) bcopy(f,t,c)
@@ -720,9 +720,7 @@ int N_XDisconnectDisplay (int server)
 }
 
 
-
-#undef NULL
-#define NULL ((char *) 0)
+#include <stddef.h>
 /*
  * This is an OS dependent routine which:
  * 1) returns as soon as the connection can be written on....

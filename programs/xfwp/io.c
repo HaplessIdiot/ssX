@@ -32,7 +32,7 @@ authorization from The Open Group.
 X Window System is a trademark of The Open Group.
 
 */
-/* $XFree86: xc/programs/xfwp/io.c,v 1.8 2000/06/26 23:00:33 dawes Exp $ */
+/* $XFree86: xc/programs/xfwp/io.c,v 1.9 2001/01/17 23:45:34 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,9 +55,6 @@ X Window System is a trademark of The Open Group.
 #include "transport.h"
 #include "io.h"
 
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 /*
  * Error messages returned to clients who are denied access

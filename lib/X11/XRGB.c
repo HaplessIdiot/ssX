@@ -37,17 +37,11 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
 /*
  *      LOCAL VARIABLES
  */
 
-static unsigned short Const MASK[17] = {
+static unsigned short const MASK[17] = {
     0x0000,	/*  0 bitsPerRGB */
     0x8000,	/*  1 bitsPerRGB */
     0xc000,	/*  2 bitsPerRGB */

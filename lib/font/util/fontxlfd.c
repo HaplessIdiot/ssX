@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.9 2000/08/31 19:03:55 tsi Exp $ */
+/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.10 2001/01/17 19:43:33 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -35,10 +35,8 @@ from The Open Group.
 #include	"fontutil.h"
 #include	<X11/Xos.h>
 #include	<math.h>
-#if !defined(X_NOT_STDC_ENV) || defined(SCO)
 #include	<stdlib.h>
-#endif
-#if defined(X_NOT_STDC_ENV) || (defined(sony) && !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV))
+#if defined(sony) && !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV)
 #define NO_LOCALE
 #endif
 #ifndef NO_LOCALE
@@ -106,19 +104,9 @@ readreal(char *ptr, double *result)
     *p2 = 0;
 
     /* Now we have something that strtod() can interpret... do it. */
-#ifndef X_NOT_STDC_ENV
     *result = strtod(buffer, &p1);
     /* Return NULL if failure, pointer past number if success */
     return (p1 == buffer) ? (char *)0 : (ptr + (p1 - buffer));
-#else
-    for (p1 = buffer; isspace(*p1); p1++)
-	;
-    if (sscanf(p1, "%lf", result) != 1)
-	return (char *)0;
-    while (!isspace(*p1))
-	p1++;
-    return ptr + (p1 - buffer);
-#endif
 }
 
 static char *

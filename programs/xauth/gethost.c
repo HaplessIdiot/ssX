@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/gethost.c,v 3.13 2001/01/17 23:45:14 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/gethost.c,v 3.14 2001/07/23 13:15:51 dawes Exp $ */
 
 /* sorry, streams support does not really work yet */
 #if defined(STREAMSCONN) && defined(SVR4)
@@ -63,9 +63,6 @@ in this Software without prior written authorization from The Open Group.
 #endif /* !STREAMSCONN */
 #endif /* !WIN32 */
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #include "xauth.h"
 
 #ifdef DNETCONN
@@ -106,9 +103,6 @@ get_hostname (auth)
     Xauth *auth;
 {
     static struct hostent *hp = NULL;
-#if !defined(WIN32) && defined(X_NOT_STDC_ENV)
-    char *inet_ntoa();
-#endif
 #ifdef DNETCONN
     struct nodeent *np;
     static char nodeaddr[4 + 2 * DN_MAXADDL];

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/programs/smproxy/smproxy.h,v 1.3 1999/02/20 15:07:21 hohndel Exp $ */
+/* $XFree86: xc/programs/smproxy/smproxy.h,v 1.4 2001/01/17 23:45:05 dawes Exp $ */
 
 #include <X11/Xosdefs.h>
 #include <X11/Xfuncs.h>
@@ -39,13 +39,7 @@ Author:  Ralph Mor, X Consortium
 #else
 #include <stdio.h>
 #endif
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *malloc(), *calloc(), *realloc(), *getenv();
-extern void free();
-#endif
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwud/xwud.c,v 3.4 1999/03/07 11:41:38 dawes Exp $ */
+/* $XFree86: xc/programs/xwud/xwud.c,v 3.5 2001/01/17 23:46:43 dawes Exp $ */
 
 /* xwud - marginally useful raster image undumper */
 
@@ -36,13 +36,7 @@ from The Open Group.
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
 #include <errno.h>
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-extern char *malloc();
-#else
 #include <stdlib.h>
-#endif
 
 Atom wm_protocols;
 Atom wm_delete_window;

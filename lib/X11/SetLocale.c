@@ -51,7 +51,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/SetLocale.c,v 3.12 2000/09/27 18:51:07 keithp Exp $ */
+/* $XFree86: xc/lib/X11/SetLocale.c,v 3.13 2001/01/17 19:41:43 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -63,10 +63,6 @@ from The Open Group.
 #ifdef X_LOCALE
 
 /* alternative setlocale() for when the OS does not provide one */
-
-#ifdef X_NOT_STDC_ENV
-extern char *getenv();
-#endif
 
 #if NeedFunctionPrototypes
 char *

@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xauth/parsedpy.c,v 3.3 1999/02/28 11:20:04 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/parsedpy.c,v 3.4 2001/01/17 23:45:14 dawes Exp $ */
 
 #include <stdio.h>			/* for NULL */
 #include <ctype.h>			/* for isascii() and isdigit() */
@@ -42,11 +42,7 @@ in this Software without prior written authorization from The Open Group.
 #define UNIX_CONNECTION_LENGTH 4
 #endif
 
-#ifdef X_NOT_STDC_ENV
-extern char *malloc();
-#else
 #include <stdlib.h>
-#endif
 #include "xauth.h"
 
 /*

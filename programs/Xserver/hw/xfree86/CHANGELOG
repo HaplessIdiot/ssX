@@ -1,5 +1,8 @@
-XFree86 4.1.99.1 (xx June 2001)
- 153. Update Cygwin/XFree86 cross-compilation and update to latest
+XFree86 4.1.99.1 (xx July 2001)
+ 156. Remove most X_NOT_STDC_ENV code, and assume that __STDC__ is defined
+      (David Dawes).
+ 155. Remove (stale) support for Amoeba and Minix (David Dawes).
+ 154. Update Cygwin/XFree86 cross-compilation and update to latest
       source base (#4801, #4802, Harold Hunt).
  153. Fix 'make install' for Freetype. (#4812, Carlos A M dos Santos).
  152. Turn on dll style modules for Linux/MIPS. (#4807, Guido Guenther).
@@ -13584,4 +13587,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1884 2001/07/25 09:26:52 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1885 2001/07/25 14:30:04 alanh Exp $

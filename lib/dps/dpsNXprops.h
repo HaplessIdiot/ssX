@@ -75,9 +75,7 @@
 #define LICENSE_METHOD_OPEN   "_ADOBE_DPS_NX_LICENSE_OPEN_SERVICE"
 #define OPEN_LICENSE_VERSION 1
 
-#ifndef NULL
-#define NULL (void *) 0
-#endif  /* NULL */
+#include <stddef.h>
   
 
 /* ---Types--- */

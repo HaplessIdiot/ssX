@@ -32,7 +32,7 @@ PERFORMANCE OF THIS SOFTWARE.
 		 	     makoto@sm.sony.co.jp
 				
 ***********************************************************************/
-/* $XFree86: xc/lib/X11/imCallbk.c,v 3.4 1999/05/09 10:50:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imCallbk.c,v 3.5 2001/01/17 19:41:51 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -117,15 +117,10 @@ Private XimCbStatus _XimStatusDrawCallback();
 Private XimCbStatus _XimPreeditStateNotifyCallback();
 #endif /* NeedFunctionPrototypes */
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
 #if defined(__STDC__) && ((defined(sun) && defined(SVR4)) || defined(WIN32))
 #define RConst /**/
 #else
-#define RConst Const
+#define RConst const
 #endif
 
 /* NOTE:

@@ -56,7 +56,7 @@ from The Open Group.
  * 28-Oct-87 Thomas E. LaStrange	File created
  * 10-Oct-90 David M. Sternlicht        Storeing saved colors on root
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/twm.h,v 3.6 2001/01/17 23:45:08 dawes Exp $ */
+/* $XFree86: xc/programs/twm/twm.h,v 3.7 2001/07/23 13:15:51 dawes Exp $ */
 
 #ifndef _TWM_
 #define _TWM_
@@ -343,12 +343,7 @@ typedef struct TWMWinConfigEntry
 #define TBPM_QUESTION ":question"	/* name of unknown titlebar pixmap */
 
 #include <X11/Xosdefs.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *malloc(), *calloc(), *realloc(), *getenv();
-extern void free();
-#endif
 extern void InitVariables ( void );
 extern void CreateFonts ( void );
 extern void RestoreWithdrawnLocation ( TwmWindow *tmp );

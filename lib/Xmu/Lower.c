@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/Lower.c,v 1.9 1999/07/11 08:49:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lower.c,v 1.10 2001/01/17 19:42:56 dawes Exp $ */
 
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
@@ -37,13 +37,7 @@ in this Software without prior written authorization from The Open Group.
 #include "snprintf.c"
 #endif
 
-#if NeedVarargsPrototypes
 #include <stdarg.h>
-#define Va_start(a,b) va_start(a,b)
-#else
-#include <varargs.h>
-#define Va_start(a,b) va_start(a)
-#endif
 
 /*
  * ISO Latin-1 case conversion routine
@@ -143,7 +137,7 @@ XmuSnprintf(char *str, int size, _Xconst char *fmt, ...)
   if (size <= 0)
     return (size);
 
-  Va_start(ap, fmt);
+  va_start(ap, fmt);
 
 #if 0
   retval = vsprintf(str, fmt, ap);

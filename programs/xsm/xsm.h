@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/xsm.h,v 1.3 1999/03/07 14:23:44 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/xsm.h,v 1.4 2001/01/17 23:46:31 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -53,9 +53,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 #include <ctype.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
@@ -181,11 +179,7 @@ extern int strbw(char *a, char *b);
 extern void nomem(void);
 
 
-#ifndef X_NOT_STDC_ENV
 #define Strstr strstr
-#else
-extern char *Strstr();
-#endif
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
 #if defined(ISC) && __STDC__

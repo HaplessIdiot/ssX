@@ -23,7 +23,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsio.c,v 3.13 2001/01/17 19:43:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.14 2001/07/23 13:15:43 dawes Exp $ */
 /*
  * font server i/o routines
  */
@@ -51,9 +51,6 @@
 #endif
 #endif
 #include	<errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif 
 #ifdef WIN32
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #undef EINTR

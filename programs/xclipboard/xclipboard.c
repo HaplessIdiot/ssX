@@ -24,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
-/* $XFree86: xc/programs/xclipboard/xclipboard.c,v 1.5 1999/03/21 07:35:36 dawes Exp $ */
+/* $XFree86: xc/programs/xclipboard/xclipboard.c,v 1.6 2001/01/17 23:45:17 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -49,11 +49,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/extensions/XKBbells.h>
 #endif
 
-#ifdef X_NOT_STDC_ENV
-extern char *malloc ();
-#else
 #include <stdlib.h>
-#endif
 
 #define Command commandWidgetClass
 #define Label	labelWidgetClass

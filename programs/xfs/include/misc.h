@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/include/misc.h,v 3.6 2001/01/17 23:45:31 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/misc.h,v 3.7 2001/06/26 22:18:13 paulo Exp $ */
 
 #ifndef _MISC_H_
 #define _MISC_H_
@@ -51,13 +51,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"assert.h"	/* so its everywhere */
 
 #ifndef NULL
-
-#ifndef X_NOT_STDC_ENV
 #include	<stddef.h>
-#else
-#define	NULL	0
-#endif
-
 #endif
 
 #define	MAXCLIENTS	128
@@ -122,7 +116,7 @@ extern char *NameForAtom(Atom atom);
 extern void BitOrderInvert(unsigned char *buf, int nbytes);
 
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define fsCat(x,y) x##_##y
 #else
 #define fsCat(x,y) x/**/_/**/y

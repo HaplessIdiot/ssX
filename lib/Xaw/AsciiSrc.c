@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.27 2001/01/26 22:35:23 herrb Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.28 2001/06/08 18:47:42 paulo Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -30,9 +30,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #include <stdio.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #include <ctype.h>
 #include <errno.h>
 #include <X11/IntrinsicP.h>
@@ -201,9 +199,6 @@ static XtResource resources[] = {
 };
 #undef offset
 
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 #define Superclass	(&textSrcClassRec)
 AsciiSrcClassRec asciiSrcClassRec = {

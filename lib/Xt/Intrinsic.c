@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.16 2000/09/27 18:49:59 keithp Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.17 2001/01/17 19:43:05 dawes Exp $ */
 
 /*
 
@@ -67,11 +67,7 @@ in this Software without prior written authorization from The Open Group.
 #include <sys/stat.h>
 #endif /* VMS */
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *getenv();
-#endif
 
 String XtCXtToolkitError = "XtToolkitError";
 
@@ -1636,19 +1632,13 @@ int direction ;
 
 
 void 
-#if NeedVarargsPrototypes
 _XtGeoTrace (Widget widget, ...)
-#else
-_XtGeoTrace (widget, va_alist)
-Widget widget;
-va_dcl
-#endif
 {
     va_list args;
     char *fmt;
     int i ;
     if (IsTattled(widget)) {
-	Va_start(args, widget);
+	va_start(args, widget);
 	fmt = va_arg(args, char *);
 	for (i=0; i<n_tab; i++) printf("     ");
 	(void) vprintf(fmt, args);

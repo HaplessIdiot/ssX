@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.6 1998/10/03 08:42:49 dawes Exp $ */
+/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.7 2001/01/17 19:42:42 dawes Exp $ */
 
 
 /*
@@ -77,7 +77,7 @@ from The Open Group.
 
 #include <X11/Xosdefs.h>
 
-#if (__STDC__ && !defined(X_NOT_STDC_ENV)) || defined(SVR4) || defined(hpux)
+#if (__STDC__) || defined(SVR4) || defined(hpux)
 
 #include <string.h>
 

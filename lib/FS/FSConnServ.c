@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.7 2001/01/17 19:41:28 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSConnServ.c,v 3.8 2001/07/23 13:15:41 dawes Exp $ */
 
 #include	<stdio.h>
 #include	"FSlibint.h"
@@ -135,10 +135,7 @@ _FSDisconnectServer(trans_conn)
     (void) _FSTransClose(trans_conn);
 }
 
-#ifndef __NetBSD__
-#undef NULL
-#define NULL ((char *) 0)
-#endif
+
 /*
  * This is an OS dependent routine which:
  * 1) returns as soon as the connection can be written on....

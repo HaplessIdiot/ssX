@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/Atoms.c,v 3.5 2000/11/28 18:50:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Atoms.c,v 3.6 2001/01/17 19:42:53 dawes Exp $ */
 
 /*
  * This file contains routines to cache atoms, avoiding multiple
@@ -56,7 +56,7 @@ struct _AtomRec {
 #define STATIC static
 #endif
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define DeclareAtom(atom,text) \
 STATIC struct _AtomRec __##atom = { text, NULL }; \
 AtomPtr _##atom = &__##atom;

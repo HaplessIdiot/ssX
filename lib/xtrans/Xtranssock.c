@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.48 2001/01/17 19:43:47 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.49 2001/01/19 06:41:02 keithp Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -56,10 +56,6 @@ from The Open Group.
 
 #if defined(TCPCONN) || defined(UNIXCONN)
 #include <netinet/in.h>
-#else
-#ifdef ESIX
-#include <lan/in.h>
-#endif
 #endif
 
 #if defined(TCPCONN) || defined(UNIXCONN)
@@ -98,7 +94,7 @@ from The Open Group.
 #include <sys/filio.h>
 #endif
 
-#if (defined(i386) && defined(SYSV)) && !defined(ESIX) && !defined(sco)
+#if (defined(i386) && defined(SYSV)) && !defined(sco)
 #include <net/errno.h>
 #endif 
 

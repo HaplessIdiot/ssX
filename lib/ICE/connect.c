@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/connect.c,v 3.6 2001/01/17 19:41:29 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/connect.c,v 3.7 2001/07/23 13:15:41 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -31,23 +31,7 @@ Author: Ralph Mor, X Consortium
 
 static XtransConnInfo ConnectToPeer();
 
-#ifndef X_NOT_STDC_ENV
 #define Strstr strstr
-#else
-static char *Strstr(s1, s2)
-    char *s1, *s2;
-{
-    int n1, n2;
-
-    n1 = strlen(s1);
-    n2 = strlen(s2);
-    for ( ; n1 >= n2; s1++, n1--) {
-	if (!strncmp(s1, s2, n2))
-	    return s1;
-    }	
-    return NULL;
-}
-#endif
 
 IceConn
 IceOpenConnection (networkIdsList, context, mustAuthenticate, majorOpcodeCheck,

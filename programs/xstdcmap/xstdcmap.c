@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Donna Converse, MIT X Consortium
  */
-/* $XFree86: xc/programs/xstdcmap/xstdcmap.c,v 1.5 2001/01/17 23:46:33 dawes Exp $ */
+/* $XFree86: xc/programs/xstdcmap/xstdcmap.c,v 1.6 2001/04/01 14:00:24 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,10 +32,6 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xresource.h>
 #include <X11/Xatom.h>
 #include <X11/Xmu/StdCmap.h>
-
-#ifdef X_NOT_STDC_ENV
-extern void exit();
-#endif
 
 #define REPLACE		1
 #define DO_NOT_REPLACE  0

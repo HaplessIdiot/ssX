@@ -27,7 +27,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1imager.h,v 1.3 1999/08/22 08:58:53 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1imager.h,v 1.4 2001/01/17 19:43:23 dawes Exp $ */
 
 
 #include "objects.h"
@@ -42,7 +42,7 @@ typedef  struct XYspace *XYspace;
  
 
 #ifndef   NULL
-#define   NULL         0
+#include <stddef.h>
 #endif
  
 #ifndef   TRUE

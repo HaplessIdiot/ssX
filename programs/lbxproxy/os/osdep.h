@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.7 1999/12/27 00:40:06 robin Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.8 2001/01/17 23:44:59 dawes Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -101,9 +101,7 @@ SOFTWARE.
 #define HAS_GETDTABLESIZE
 #endif
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 
 typedef struct _connectionInput {
     struct _connectionInput *next;

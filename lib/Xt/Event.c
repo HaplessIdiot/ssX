@@ -59,12 +59,6 @@ in this Software without prior written authorization from The Open Group.
 #include "Shell.h"
 #include "StringDefs.h"
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
 typedef struct _XtEventRecExt {
     int type;
     XtPointer select_data[1]; /* actual dimension is [mask] */
@@ -579,7 +573,7 @@ typedef struct _WWTable {
     WWPair pairs;		/* bogus entries */
 } *WWTable;
 
-static Const WidgetRec WWfake;	/* placeholder for deletions */
+static const WidgetRec WWfake;	/* placeholder for deletions */
 
 #define WWHASH(tab,win) ((win) & tab->mask)
 #define WWREHASHVAL(tab,win) ((((win) % tab->rehash) + 2) | 1)
@@ -1235,7 +1229,7 @@ char * arg;
     return(FALSE);
 }
 
-static EventMask Const masks[] = {
+static EventMask const masks[] = {
 	0,			    /* Error, should never see  */
 	0,			    /* Reply, should never see  */
 	KeyPressMask,		    /* KeyPress			*/

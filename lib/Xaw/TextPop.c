@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.17 2001/01/17 19:42:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.18 2001/02/05 22:38:05 paulo Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -58,10 +58,6 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Toggle.h>
 #include "XawI18n.h"
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 static char* INSERT_FILE = "Enter Filename:";
 static char* SEARCH_LABEL_1 = "Use <Tab> to change fields.";

@@ -48,16 +48,13 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.26 2001/04/27 12:51:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.27 2001/07/23 13:15:50 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
 #endif
 #include <stdio.h>
 #include <X11/Xtrans.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #include "Xmd.h"
 #include <errno.h>
 #if !defined(__EMX__) && !defined(WIN32)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/hook.c,v 1.2 1999/05/30 03:03:36 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/hook.c,v 1.3 1999/06/06 08:49:14 dawes Exp $ */
 
 /*
  * This file is intended to be used to add all the necessary hooks to xedit
@@ -38,9 +38,7 @@
  */
 
 #include "xedit.h"
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #include <string.h>
 #include <ctype.h>
 

@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.131 2001/06/08 09:48:15 alanh Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.132 2001/06/18 19:09:26 dickey Exp $ */
 
 
 /* main.c */
@@ -599,19 +599,11 @@ struct _xttymodes {
 static int parse_tty_modes (char *s, struct _xttymodes *modelist);
 
 #ifdef USE_SYSV_UTMP
-#if (defined(X_NOT_STDC_ENV) || (defined(AIXV3) && (OSMAJORVERSION < 4))) && !(defined(getutent) || defined(getutid) || defined(getutline))
+#if (defined(AIXV3) && (OSMAJORVERSION < 4)) && !(defined(getutent) || defined(getutid) || defined(getutline))
 extern struct utmp *getutent();
 extern struct utmp *getutid();
 extern struct utmp *getutline();
-#endif /* X_NOT_STDC_ENV || AIXV3 */
-
-#ifdef X_NOT_STDC_ENV		/* could remove paragraph unconditionally? */
-extern struct passwd *getpwent();
-extern struct passwd *getpwuid();
-extern struct passwd *getpwnam();
-extern void setpwent();
-extern void endpwent();
-#endif
+#endif /* AIXV3 */
 
 #else	/* not USE_SYSV_UTMP */
 static char etc_utmp[] = UTMP_FILENAME;

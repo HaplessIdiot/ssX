@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.20 2001/01/17 19:42:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.21 2001/01/26 22:45:59 herrb Exp $ */
 
 /*
 
@@ -82,9 +82,6 @@ in this Software without prior written authorization from The Open Group.
 #define Size_t size_t
 #endif
 
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 /*
  * Class Methods

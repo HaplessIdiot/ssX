@@ -67,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/xieperf.h,v 1.3 1999/03/02 11:49:54 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/xieperf.h,v 1.4 2001/01/17 23:45:40 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef VMS
@@ -87,18 +87,11 @@ terms and conditions:
 #include <X11/Xfuncs.h>
 #include <X11/extensions/XIElib.h>
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc();
-char *realloc();
-#endif
 #include <fcntl.h>
 #ifdef SIGNALRETURNSINT
 #define SIGNAL_T int

@@ -22,7 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86: xc/lib/lbxutil/delta/lbxdelta.c,v 1.5 2000/06/07 22:03:02 tsi Exp $ */
+/* $XFree86: xc/lib/lbxutil/delta/lbxdelta.c,v 1.6 2001/01/17 19:43:34 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -31,9 +31,7 @@
 #include "lbxstr.h"
 #include "lbxdeltastr.h"
 
-#ifndef NULL
-#define NULL	0
-#endif
+#include <stddef.h>
 
 #ifdef LBXREQSTATS
 #include "../lbx_zlib/reqstats.h"

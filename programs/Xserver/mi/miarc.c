@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.7 1999/12/27 00:39:56 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miarc.c,v 3.8 2001/01/17 22:37:05 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -98,7 +98,7 @@ ICEILTEMPDECL
 #undef max
 #undef min
 
-#if defined (__GNUC__) && defined (__STDC__) && !defined (__STRICT_ANSI__)
+#if defined (__GNUC__) && !defined (__STRICT_ANSI__)
 #define USE_INLINE
 #endif
 

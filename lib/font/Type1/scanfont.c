@@ -45,7 +45,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.13 1999/08/21 13:47:46 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.14 2001/01/17 19:43:23 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <string.h>
@@ -67,8 +67,6 @@
  
 #ifdef BUILDCID
 #define CID_BUFSIZE 80
-
-extern Bool CIDType1fontfcnA( int * );
 
 extern psfont *FDArrayP;
 static spacerange *spacerangeP;

@@ -66,7 +66,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xkbcomp/listing.c,v 3.6 2000/08/01 20:05:44 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/listing.c,v 3.7 2001/01/17 23:45:44 dawes Exp $ */
 
 
 #include <stdio.h>
@@ -82,9 +82,7 @@ SOFTWARE.
 #define	DEBUG_VAR_NOT_LOCAL
 #define	DEBUG_VAR listingDebug
 #include "xkbcomp.h"
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>

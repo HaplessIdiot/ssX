@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.9 1999/12/27 00:40:01 robin Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.10 2001/01/17 23:44:56 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -63,14 +63,9 @@ SOFTWARE.
 #include <sys/resource.h>
 #endif
 
-/* lifted from Xt/VarargsI.h */
-#if NeedVarargsPrototypes
 #include <stdarg.h>
-#endif
 
-#if NeedVarargsPrototypes
-static void VErrorF(char*, va_list);
-#endif
+static void VErrorF(const char*, va_list);
 
 #ifdef SIGNALRETURNSINT
 #define SIGVAL int
@@ -83,12 +78,7 @@ static void VErrorF(char*, va_list);
 #include "atomcache.h"
 #include "proxyopts.h"
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *malloc();
-extern char *realloc();
-#endif
 
 /*
  * External declarations not in header files
@@ -642,27 +632,13 @@ OsInitAllocator ()
 #endif
 }
 
-/*VARARGS1*/
 void
-AuditF(
-#if NeedVarargsPrototypes
-    char * f, ...)
-#else
- f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-#endif
+AuditF(const char * f, ...)
 {
 #ifdef notyet		/* ever ? */
-#ifdef X_NOT_STDC_ENV
-    long tm;
-#else
     time_t tm;
-#endif
     char *autime, *s;
-#if NeedVarargsPrototypes
     va_list args;
-#endif
 
     if (*f != ' ')
     {
@@ -676,72 +652,38 @@ AuditF(
 	    s = argvGlobal[0];
 	ErrorF("AUDIT: %s: %d %s: ", autime, getpid(), s);
     }
-#if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);
     va_end(args);
-#else
-    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif
 #endif
 }
 
-/*VARARGS1*/
 void
-FatalError(
-#if NeedVarargsPrototypes
-    char *f, ...)
-#else
-f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-#endif
+FatalError(const char *f, ...)
 {
-#if NeedVarargsPrototypes
     va_list args;
-#endif
     ErrorF("\nFatal lbxproxy error: ");
-#if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);
     va_end(args);
-#else
-    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif
     ErrorF("\n");
     AbortServer();
     /*NOTREACHED*/
 }
 
-#if NeedVarargsPrototypes
 static void
-VErrorF(f, args)
-    char *f;
-    va_list args;
+VErrorF(const char *f, va_list args)
 {
     vfprintf(stderr, f, args);
 }
-#endif
 
-/*VARARGS1*/
 void
-ErrorF(
-#if NeedVarargsPrototypes
-    char * f, ...)
-#else
- f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-#endif
+ErrorF(const char * f, ...)
 {
-#if NeedVarargsPrototypes
     va_list args;
     va_start(args, f);
     VErrorF(f, args);
     va_end(args);
-#else
-    fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif
 }
 
 char *

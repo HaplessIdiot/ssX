@@ -95,14 +95,9 @@ Window Select_Window();
 void blip();
 Window Window_With_Name();
 #endif
-#if NeedVarargsPrototypes
 #if __GNUC__
 void Fatal_Error(char *, ...) __attribute__((__noreturn__));
 #else
 void Fatal_Error(char *, ...);
 #endif
 void outl(char *, ...);
-#else
-void Fatal_Error();
-void outl();
-#endif

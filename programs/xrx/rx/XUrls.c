@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.6 2000/05/11 18:14:45 tsi Exp $ */
+/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.7 2001/01/17 23:46:25 dawes Exp $ */
 
 #include "RxI.h"
 #include <sys/utsname.h>
@@ -33,9 +33,6 @@ The Open Group.
 #include <stdlib.h>
 #include <limits.h>		/* for MAXHOSTNAMELEN */
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 /* and in case we didn't get it from the headers above */
 #ifndef MAXHOSTNAMELEN

@@ -20,15 +20,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/def.h,v 3.8 2001/01/17 16:38:58 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.9 2001/04/29 23:25:02 tsi Exp $ */
 
 #include "Xos.h"
 #include "Xfuncproto.h"
 #include <stdlib.h>
 #include <stdio.h>
-#ifndef X_NOT_STDC_ENV
 #include <string.h>
-#endif
 #include <ctype.h>
 #if 0
 #ifndef X_NOT_POSIX
@@ -125,15 +123,10 @@ struct filepointer {
 	long	f_line;
 };
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
 char *malloc(), *realloc();
 #endif /* macII */
-#else
-char			*malloc();
-char			*realloc();
-#endif
 
 char			*copy(char *str);
 int                     match(char *str, char **list);
@@ -173,8 +166,6 @@ int                     cppsetup(char *line, struct filepointer *filep,
 				 struct inclist *inc);
 
 
-#if NeedVarargsPrototypes
 extern void fatalerr(char *, ...);
 extern void warning(char *, ...);
 extern void warning1(char *, ...);
-#endif

@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibint.h,v 3.4 1999/02/19 21:26:52 hohndel Exp $ */
+/* $XFree86: xc/lib/FS/FSlibint.h,v 3.5 2001/01/17 19:41:28 dawes Exp $ */
 
 /*
  * FSlib internal decls
@@ -71,14 +71,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"FSproto.h"
 #include	"FSlibos.h"
 #include	<errno.h>
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifdef X_NOT_STDC_ENV
-extern int  errno;		/* Internal system error number. */
-#endif
+#include	<stddef.h>
 
 typedef int (* FSIOErrorHandler)(FSServer *);
 typedef int (* FSErrorHandler)(FSServer *, FSErrorEvent *);
@@ -160,7 +153,7 @@ extern FSIOErrorHandler FSSetIOErrorHandler ( FSIOErrorHandler handler );
  *
  */
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define GetReq(name, req) \
         WORD64ALIGN\
 	if ((svr->bufptr + SIZEOF(fs##name##Req)) > svr->bufmax)\
@@ -187,7 +180,7 @@ extern FSIOErrorHandler FSSetIOErrorHandler ( FSIOErrorHandler handler );
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define GetReqExtra(name, n, req) \
         WORD64ALIGN\
 	if ((svr->bufptr + SIZEOF(fs##name##Req) + n) > svr->bufmax)\
@@ -216,7 +209,7 @@ extern FSIOErrorHandler FSSetIOErrorHandler ( FSIOErrorHandler handler );
  * "rid" is the name of the resource.
  */
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define GetResReq(name, rid, req) \
         WORD64ALIGN\
 	if ((svr->bufptr + SIZEOF(fsResourceReq)) > svr->bufmax)\
@@ -245,7 +238,7 @@ extern FSIOErrorHandler FSSetIOErrorHandler ( FSIOErrorHandler handler );
  * at all.
  */
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define GetEmptyReq(name, req) \
         WORD64ALIGN\
 	if ((svr->bufptr + SIZEOF(fsReq)) > svr->bufmax)\
@@ -355,7 +348,7 @@ extern void Data();
 				 * don't line up with proto */
 
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define FSCat(x,y) x##_##y
 #else
 #define FSCat(x,y) x/**/_/**/y

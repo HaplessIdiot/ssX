@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.6 1998/10/04 09:40:29 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.7 2001/01/17 23:44:59 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -53,9 +53,6 @@ SOFTWARE.
 #include <stdio.h>
 #include <X11/Xtrans.h>
 #include "Xos.h"
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #include "misc.h"
 #include <errno.h>
 #include <sys/param.h>

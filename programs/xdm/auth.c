@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.21 2001/01/17 23:45:20 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.22 2001/07/23 13:15:51 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -42,13 +42,8 @@ from The Open Group.
 #include "dm_error.h"
 
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
-#ifndef ESIX
-# include <sys/ioctl.h>
-#endif /* !ESIX */
+#include <sys/ioctl.h>
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
 # include "dm_socket.h"
@@ -69,9 +64,6 @@ extern int errno;
 #  include <stropts.h>
 #  include <sys/sioctl.h>
 # endif /* ISC */
-# ifdef ESIX
-#  include <lan/net_ioctl.h>
-# endif /* ESIX */
 #endif /* i386 */
 
 #ifdef SVR4

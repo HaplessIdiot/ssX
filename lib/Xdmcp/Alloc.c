@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/lib/Xdmcp/Alloc.c,v 3.2 1998/10/10 15:25:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/Alloc.c,v 3.3 2001/01/17 19:42:43 dawes Exp $ */
 
 /* stubs for use when Xalloc, Xrealloc and Xfree are not defined */
 
@@ -31,12 +31,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/X.h>
 #include <X11/Xmd.h>
 #include <X11/Xdmcp.h>
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc(size_t), *realloc(char *, size_t);
-#endif
 
 void *
 Xalloc (unsigned long amount)

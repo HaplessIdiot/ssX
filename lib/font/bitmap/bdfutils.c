@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.6 2000/04/05 18:13:25 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfutils.c,v 1.7 2001/01/17 19:43:27 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -63,7 +63,6 @@ int bdfFileLineNum;
 
 /***====================================================================***/
 
-/* VARARGS1 */
 void
 bdfError(char* message, ...)
 {
@@ -77,7 +76,6 @@ bdfError(char* message, ...)
 
 /***====================================================================***/
 
-/* VARARGS1 */
 void
 bdfWarning(char *message, ...)
 {

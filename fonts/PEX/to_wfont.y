@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.11 2001/04/01 13:59:58 tsi Exp $ */
+/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.12 2001/06/30 22:41:44 tsi Exp $ */
 
 
 #define YYMAXDEPTH 10000
@@ -55,10 +55,6 @@ SOFTWARE.
 #define L_SET SEEK_SET
 #endif
 #include "wfont.h"
-
-#ifdef X_NOT_STDC_ENV
-FILE *fopen();
-#endif
 
 typedef struct {
 

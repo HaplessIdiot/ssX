@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Convert.c,v 3.4 1998/12/20 11:57:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Convert.c,v 3.5 2001/01/17 19:43:03 dawes Exp $ */
 
 /*
 
@@ -608,13 +608,8 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	    break;
 
 	case XtBaseOffset:
-#if defined(CRAY1) && !defined(__STDC__)
-	    args[i].addr =
-		(XPointer)((int)widget + (int)convert_args[i].address_id);
-#else
 	    args[i].addr =
 		(XPointer)((char *)widget + (long)convert_args[i].address_id);
-#endif
 	    break;
 
 	case XtWidgetBaseOffset:
@@ -625,13 +620,8 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 		    ancestor = _XtWindowedAncestor(widget);
 	    }
 
-#if defined(CRAY1) && !defined(__STDC__)
-	    args[i].addr =
-		(XPointer)((int)ancestor + (int)convert_args[i].address_id);
-#else
 	    args[i].addr =
 		(XPointer)((char *)ancestor + (long)convert_args[i].address_id);
-#endif
 	    break;
 
 	case XtImmediate:
@@ -661,11 +651,7 @@ static void ComputeArgs(widget, convert_args, num_args, args)
                      params,&num_params);
 		offset = 0;
 	    }
-#if defined(CRAY1) && !defined(__STDC__)
-	    args[i].addr = (XPointer)((int)widget + offset);
-#else
 	    args[i].addr = (XPointer)((char *)widget + offset);
-#endif
 	    break;
 	default:
 	    params[0] = XtName(widget);

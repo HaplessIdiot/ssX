@@ -20,18 +20,12 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/MaskEvent.c,v 3.2 1999/05/09 10:49:49 dawes Exp $ */
+/* $XFree86: xc/lib/X11/MaskEvent.c,v 3.3 2001/01/17 19:41:40 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
-extern long Const _Xevent_to_mask[];
+extern long const _Xevent_to_mask[];
 #define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
 #define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
 		    Button4MotionMask|Button5MotionMask)

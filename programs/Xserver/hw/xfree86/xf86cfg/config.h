@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.11 2001/05/21 22:21:57 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.13 2001/07/07 23:00:42 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -38,13 +38,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#if NeedVarargsPrototypes
 #include <stdarg.h>
-#define Va_start(a,b) va_start(a,b)
-#else
-#include <varargs.h>
-#define Va_start(a,b) va_start(a)
-#endif
 
 #ifdef __EMX__
 #define strcasecmp stricmp

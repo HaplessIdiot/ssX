@@ -22,12 +22,10 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmag/xmag.c,v 1.7 1999/03/07 11:41:13 dawes Exp $ */
+/* $XFree86: xc/programs/xmag/xmag.c,v 1.8 2001/01/17 23:46:20 dawes Exp $ */
 
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>		/* for exit() and abs() */
-#endif
 #include <stdio.h>
 
 #include <X11/Intrinsic.h>

@@ -1,4 +1,3 @@
-/* $Id */
 
 /***************************************************************************
  *                                                                         *
@@ -8,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.42 2001/06/07 18:30:40 alanh Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.43 2001/07/19 02:22:45 tsi Exp $ */
 
 /*
  * 
@@ -149,9 +148,7 @@ in this Software without prior written authorization from The Open Group.
 #include <stdlib.h>
 #include <stdio.h>
 #include "Xosdefs.h"
-#ifndef X_NOT_STDC_ENV
 #include <string.h>
-#endif
 #include <ctype.h>
 #ifdef WIN32
 # include "Xw32defs.h"
@@ -224,27 +221,16 @@ typedef union wait	waitType;
 #  define WIFEXITED(w) waitCode(w)
 # endif
 #endif /* X_NOT_POSIX */
-#ifndef X_NOT_STDC_ENV
-# include <stdlib.h>
-#else
-char *malloc(), *realloc();
-void exit();
-#endif
+#include <stdlib.h>
 #if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
 char *malloc(), *realloc();
 #endif /* macII */
-#ifdef X_NOT_STDC_ENV
-extern char	*getenv();
-#endif
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int	errno;
-#endif
 #ifdef __minix_vmd
 #define USE_FREOPEN		1
 #endif
 
-#if !(defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII))
+#if !((defined(sun) && !defined(SVR4)) || defined(macII))
 #define USE_STRERROR		1
 #endif
 #ifdef __EMX__
@@ -270,11 +256,6 @@ extern int	errno;
 #include <unix.h>
 #endif
 
-/* 
- * is strstr() in <strings.h> on X_NOT_STDC_ENV? 
- * are there any X_NOT_STDC_ENV machines left in the world?
- */
-#include <string.h>
 #include "imakemdep.h"
 
 /*

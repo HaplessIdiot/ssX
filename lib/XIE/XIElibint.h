@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/XIE/XIElibint.h,v 3.3 1999/06/13 16:18:06 dawes Exp $ */
+/* $XFree86: xc/lib/XIE/XIElibint.h,v 3.4 2001/01/17 19:42:21 dawes Exp $ */
 
 #ifndef _XIELIBINT_H_
 #define _XIELIBINT_H_
@@ -153,7 +153,7 @@ typedef struct _XieExtInfo
  * Request names and opcodes.
  */
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define REQNAME(_name_) xie##_name_##Req
 #define REQOPCODE(_name_) X_ie##_name_
 #define REQSIZE(_name_) sz_xie##_name_##Req

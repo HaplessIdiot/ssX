@@ -22,21 +22,16 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/oclock/transform.c,v 3.2 1999/02/19 21:27:14 hohndel Exp $ */
+/* $XFree86: xc/programs/oclock/transform.c,v 3.3 2001/01/17 23:45:01 dawes Exp $ */
 
 
 /*
  * transformed coordinate system objects for X
  */
 
-# include	<X11/Xlib.h>
-# include	"transform.h"
-
-#ifndef X_NOT_STDC_ENV
+#include	<X11/Xlib.h>
+#include	"transform.h"
 #include	<stdlib.h>
-#else
-char *malloc();
-#endif
 
 static XPoint * 
 TranslatePoints(TPoint *points, int n_points, 

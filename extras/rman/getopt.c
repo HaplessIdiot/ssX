@@ -12,13 +12,13 @@ in the public domain.
 
 /*LINTLIBRARY*/
 
-extern int strlen();
-extern int strcmp();
-extern char *strchr();
-extern int write();
+#include <stdlib.h>
+#include <unistd.h>
+#include <stddef.h>
 
-#define NULL	0
+#ifndef EOF
 #define EOF	(-1)
+#endif
 #define ERR(s, c)	if(opterr){\
 	char errbuf[2];\
 	errbuf[0] = c; errbuf[1] = '\n';\

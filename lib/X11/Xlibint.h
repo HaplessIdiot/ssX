@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.15 2000/02/08 17:18:43 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.16 2001/01/17 19:41:50 dawes Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -228,18 +228,8 @@ typedef struct _XSQEvent
 #undef dirty
 #endif
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #include <string.h>
-#else
-char *malloc(size_t), *realloc(char *, size_t), *calloc(size_t, size_t);
-void exit(int);
-#ifdef SYSV
-#include <string.h>
-#else
-#include <strings.h>
-#endif
-#endif
 
 /*
  * The following definitions can be used for locking requests in multi-threaded
@@ -360,15 +350,10 @@ extern LockInfoPtr _Xglobal_lock;
 
 #endif
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
+
 #define LOCKED 1
 #define UNLOCKED 0
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;			/* Internal system error number. */
-#endif
 
 #ifndef BUFSIZE
 #define BUFSIZE 2048			/* X output buffer size. */
@@ -444,7 +429,7 @@ extern int errno;			/* Internal system error number. */
  *
  */
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define GetReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req)) > dpy->bufmax)\
@@ -470,7 +455,7 @@ extern int errno;			/* Internal system error number. */
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define GetReqExtra(name, n, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req) + n) > dpy->bufmax)\
@@ -499,7 +484,7 @@ extern int errno;			/* Internal system error number. */
  * "rid" is the name of the resource. 
  */
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define GetResReq(name, rid, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xResourceReq)) > dpy->bufmax)\
@@ -527,7 +512,7 @@ extern int errno;			/* Internal system error number. */
  * GetEmptyReq is for those requests that have no arguments
  * at all. 
  */
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define GetEmptyReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xReq)) > dpy->bufmax)\

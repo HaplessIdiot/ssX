@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/KeysymStr.c,v 3.5 2000/12/06 22:00:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/KeysymStr.c,v 3.6 2001/01/17 19:41:38 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
@@ -29,19 +29,13 @@ in this Software without prior written authorization from The Open Group.
 
 #include <stdio.h> /* sprintf */
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
 typedef unsigned long Signature;
 
 #define NEEDVTABLE
 #include "ks_tables.h"
 
 extern XrmDatabase _XInitKeysymDB();
-extern Const unsigned char _XkeyTable[];
+extern const unsigned char _XkeyTable[];
 
 
 typedef struct _GRNData {
@@ -87,7 +81,7 @@ char *XKeysymToString(ks)
     register int i, n;
     int h;
     register int idx;
-    Const unsigned char *entry;
+    const unsigned char *entry;
     unsigned char val1, val2;
     XrmDatabase keysymdb;
 

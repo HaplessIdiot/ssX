@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.12 2001/07/18 20:43:17 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.13 2001/07/23 13:15:52 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -66,10 +66,6 @@ from The Open Group.
 #ifndef X_NOT_POSIX
 # include	<unistd.h>
 #endif
-#endif
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
 #endif
 
 

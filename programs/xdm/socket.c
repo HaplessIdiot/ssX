@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.7 2001/01/17 23:45:22 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.8 2001/07/23 13:15:52 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -48,10 +48,6 @@ from The Open Group.
 #endif
 #endif
 #include <netdb.h>
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 
 extern int	xdmcpFd;

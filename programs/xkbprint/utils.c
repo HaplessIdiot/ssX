@@ -25,15 +25,11 @@
    * used in advertising or publicity pertaining to distribution of the 
    * software without specific, written prior permission.
   \*/
-/* $XFree86: xc/programs/xkbprint/utils.c,v 3.3 1999/03/02 10:42:29 dawes Exp $ */
+/* $XFree86: xc/programs/xkbprint/utils.c,v 3.4 2001/01/17 23:46:11 dawes Exp $ */
 
 #include 	"utils.h"
 #include	<ctype.h>
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#else
-char *malloc();
-#endif
+#include	<stdlib.h>
 
 /***====================================================================***/
 

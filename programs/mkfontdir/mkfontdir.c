@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.11 2000/11/09 01:35:50 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.12 2001/01/17 23:45:00 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1988  X Consortium
@@ -55,9 +55,7 @@ SOFTWARE.
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <stdio.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -115,9 +113,6 @@ SOFTWARE.
 #include "bitmap.h"
 
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 
 #define  XK_LATIN1
