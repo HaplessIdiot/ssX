@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.4 1998/04/06 13:54:52 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.5 1998/10/04 09:39:32 dawes Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -118,7 +118,8 @@ miCreateScreenResources(pScreen)
 	    return FALSE;
 
 	if (!(*pScreen->ModifyPixmapHeader)(pPixmap, pScreen->width,
-		    pScreen->height, pScreen->rootDepth, pScreen->rootDepth,
+		    pScreen->height, pScreen->rootDepth,
+		    BitsPerPixel(pScreen->rootDepth),
 		    PixmapBytePad(pScrInitParms->width, pScreen->rootDepth),
 		    pScrInitParms->pbits))
 	    return FALSE;

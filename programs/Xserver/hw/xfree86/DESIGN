@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 28 November 1998.
+Last modified: 29 November 1998.
 
 
 
@@ -1727,6 +1727,7 @@ the colormap layer, a driver calls the xf86HandleColormaps() function.
 
     Bool xf86HandleColormaps(ScreenPtr pScreen, int maxColors,
                              int sigRGBbits, LoadPaletteFuncPtr loadPalette,
+			     SetOverscanFuncPtr setOverscan,
                              unsigned int flags)
 
       This function must be called after the default colormap has been
@@ -1734,9 +1735,15 @@ the colormap layer, a driver calls the xf86HandleColormaps() function.
       preferably by calling xf86SetGamma().  maxColors is the number of
       entries in the palette.  sigRGBbits is the number of significant
       bits in each colour component.  This would normally be the same as
-      pScrn->rgbBits.  loadPalette is a driver-provided function for loading
-      a colormap into the harwdare, and is described below.  flags may
-      be set to the following (which may be ORed together):
+      pScrn->rgbBits.  loadPalette is a driver-provided function for
+      loading a colormap into the harwdare, and is described below.
+      setOverscan is an optional function that may provided when the
+      overscan color is an index from the standard LUT and when it needs
+      to be adjusted to keep it as close to black as possible.  The
+      setOverscan function programs the overscan index.  It shouldn't
+      normally be used for depths other than 8.  setOverscan should be
+      set to NULL when it isn't needed.  flags may be set to the following
+      (which may be ORed together):
 
         CMAP_PALETTED_TRUECOLOR     the TrueColor visual is paletted and is
                                     just a special case of DirectColor.  This
@@ -1755,6 +1762,15 @@ the colormap layer, a driver calls the xf86HandleColormaps() function.
       and colors is the colormap entries corresponding to each if the
       indices.
 
+
+    void SetOverscan(ScrnInfoPtr pScrn, int overscan)
+
+      SetOverscan is a driver-provided function for programming the overscan
+      index.  As described above, it is normally only appropriate for LUT
+      modes where all colormap entries are available for the display, but
+      where one of them is also used for the overscan (typically 8bpp
+      for VGA compatible LUTs).  It isn't required in cases where the
+      overscan area is never visible.
 
 
 Section 12: DPMS Extension
@@ -4192,4 +4208,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.18 1998/11/15 10:22:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.19 1998/11/28 10:42:55 dawes Exp $

@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.15 1998/10/04 09:37:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.16 1998/11/28 10:42:50 dawes Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -1438,12 +1438,6 @@ extern int cfbScreenPrivateIndex;
 #endif
 
 #ifndef CFB_PROTOTYPES_ONLY
-/*
- * This is the only completely portable way to
- * compute this info
- */
-
-#define BitsPerPixel(d) PixmapWidthPaddingInfo[d].bitsPerPixel
 
 /* Common macros for extracting drawing information */
 
