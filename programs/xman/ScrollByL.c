@@ -1,5 +1,4 @@
 /* $XConsortium: ScrollByL.c,v 1.30 94/04/17 20:43:46 rws Exp $ */
-/* $XFree86: xc/programs/xman/ScrollByL.c,v 1.1 2000/02/12 03:55:14 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/programs/xman/ScrollByL.c,v 1.2 2000/03/03 20:02:20 dawes Exp $ */
 
 #if ( !defined(lint) && !defined(SABER))
   static char rcs_version[] = "$Athena: ScrollByL.c,v 4.5 88/12/19 13:46:04 kit Exp $";
