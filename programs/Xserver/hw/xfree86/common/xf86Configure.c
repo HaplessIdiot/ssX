@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.47 2000/12/08 20:13:33 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.48 2000/12/09 00:18:54 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -349,6 +349,8 @@ configureScreenSection (int screennum)
     	memset((XF86ConfDisplayPtr)display,0,sizeof(XF86ConfDisplayRec));
 	display->disp_depth = depths[i];
 	display->disp_black.red = display->disp_white.red = -1;
+	display->disp_black.green = display->disp_white.green = -1;
+	display->disp_black.blue = display->disp_white.blue = -1;
 	ptr->scrn_display_lst = (XF86ConfDisplayPtr)xf86addListItem(
 				     (glp)ptr->scrn_display_lst, (glp)display);
     }
