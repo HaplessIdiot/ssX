@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.230 2003/01/20 03:22:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.231 2003/01/29 19:29:49 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -304,7 +304,10 @@ static const char *drmSymbols[] = {
     "drmAgpVendorId",
     "drmCommandNone",
     "drmCommandWrite",
+    "drmCtlInstHandler",
+    "drmCtlUninstHandler",
     "drmFreeVersion",
+    "drmGetInterruptFromBusID",
     "drmGetLibVersion",
     "drmGetVersion",
     "drmMap",
