@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.81 2001/12/31 18:13:37 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.82 2002/01/03 02:18:53 tsi Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1540,7 +1540,12 @@ xf86fabs(double x)
 int 
 xf86finite(double x)
 {
+#ifndef QNX4
 	return(finite(x));
+#else
+	/* XXX Replace this with something that really works. */
+	return 1;
+#endif
 }
 
 double
