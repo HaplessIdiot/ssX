@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.110tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.111tsi Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -235,7 +235,7 @@ XCOMM special target for clearmake					@@\
  * Concat - concatenates two strings.
  */
 #ifndef Concat
-#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
+#if (defined(__STDC__) && !defined(UnixCpp)) || defined(AnsiCpp)
 #define Concat(a,b)a##b
 #else
 #define Concat(a,b)a/**/b
@@ -246,7 +246,7 @@ XCOMM special target for clearmake					@@\
  * Concat3 - concatenates three strings.
  */
 #ifndef Concat3
-#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
+#if (defined(__STDC__) && !defined(UnixCpp)) || defined(AnsiCpp)
 #define Concat3(a,b,c)a##b##c
 #else
 #define Concat3(a,b,c)a/**/b/**/c
@@ -257,7 +257,7 @@ XCOMM special target for clearmake					@@\
  * Concat4 - concatenates four strings.
  */
 #ifndef Concat4
-#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
+#if (defined(__STDC__) && !defined(UnixCpp)) || defined(AnsiCpp)
 #define Concat4(a,b,c,d)a##b##c##d
 #else
 #define Concat4(a,b,c,d)a/**/b/**/c/**/d
@@ -287,7 +287,7 @@ XCOMM special target for clearmake					@@\
  *           exists to avoid problems with some preprocessors
  */
 #ifndef _XUseCat
-# if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
+# if (defined(__STDC__) && !defined(UnixCpp)) || defined(AnsiCpp)
 #  if defined(UseInstalled) || UseInstalledX11
 #   define _XUseCat(a,b,c) a##c
 #  else

@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:12 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.17 2002/05/31 18:45:46 dawes Exp $
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.18tsi Exp $
 
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
@@ -242,7 +242,7 @@ SpecialCLibObjectRule(TMkey,$(_NOOP_),-DXKB)
 #if DoSharedLib
 SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif
-#if ItsyCompilerBug
+#if defined(ItsyCompilerBug)
 SpecialCLibObjectRule(PassivGrab,$(_NOOP_),-O0)
 #endif
 

@@ -1,9 +1,19 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.64 94/04/09 20:44:15 rws Exp $
+XCOMM platform:  $Xorg: ultrix.cf,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
-#define OSName            Ultrix-32 4.3
-XCOMM operating system:  OSName
-#define OSMajorVersion    4
-#define OSMinorVersion    3
+
+
+XCOMM $XFree86$
+
+#ifndef OSName
+# define OSName		DefaultOSName
+#endif
+#ifndef OSMajorVersion
+# define OSMajorVersion	DefaultOSMajorVersion
+#endif
+#ifndef OSMinorVersion
+# define OSMinorVersion DefaultOSMinorVersion
+#endif
+XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion)
 
 #define HasNdbm YES
 #define HasPutenv YES
@@ -11,14 +21,19 @@ XCOMM operating system:  OSName
 #define LintLibFlag -o
 #define LintOpts -ax
 
+#ifndef HasDECnet
+#define HasDECnet	NO
+#endif
 #if HasDECnet
 #define ExtraLibraries -ldnet
 #endif
 
 #if ThreadedX
 /* if you want to experiment, turn this on, but no guarantees */
-#define HasPosixThreads YES
-#define ExtraLibraries -lpthreads -li
+#define HasThreadSafeAPI	NO
+#define HasPosixThreads		YES
+#define ThreadPreStdAPIDefines	-DXPRE_STANDARD_API
+#define ExtraLibraries		-lpthreads -li
 #endif
 
 #ifdef VaxArchitecture
@@ -65,3 +80,5 @@ XCOMM operating system:  OSName
 
 #define ServerExtraDefines AllocateLocalDefines
 #define HasWChar32 YES
+
+#define MotifDefines		-DNO_REGEX -DNO_REGCOMP -DNO_CONST

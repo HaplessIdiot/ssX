@@ -1,7 +1,7 @@
-XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.9 2002/05/31 06:38:43 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.10tsi Exp $
 
 XCOMM Allow for builds against old installed bits
-#if UseInstalled
+#ifdef UseInstalled
 
 #ifndef SharedLibXft1
 #define SharedLibXft1		YES

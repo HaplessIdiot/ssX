@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.176 2002/11/08 11:50:25 alanh Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.177tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -119,6 +119,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildXTrueType
 #define BuildXTrueType		NO
+#endif
+#ifndef XTTInLibFont
+#define XTTInLibFont		NO
 #endif
 #ifndef BuildBuiltinFonts
 #define BuildBuiltinFonts	NO
@@ -253,6 +256,9 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildLoadableXlibI18n
 #define BuildLoadableXlibI18n	(HasDlopen && SharedLibX11)
 #endif
+#ifndef InstallXcmsTxt
+#define InstallXcmsTxt		YES
+#endif
 /*
  * This disables XLOCALEDIR.  Set it if you're using BuildLoadableXlibI18n,
  * don't have either issetugid() or getresuid(), and you need to protect
@@ -271,11 +277,11 @@ VENDORMANVERSION = XVendorManVersionString
 #ifndef BuildXauLib
 #define BuildXauLib		(BuildLibraries || BuildLibrariesForXServers)
 #endif
-#define UseInstalledXauLib	(UseInstalled || !BuildXauLib)
+#define UseInstalledXauLib	(defined(UseInstalled) || !BuildXauLib)
 #ifndef BuildXdmcpLib
 #define BuildXdmcpLib		(BuildLibraries || BuildLibrariesForXServers)
 #endif
-#define UseInstalledXdmcpLib	(UseInstalled || !BuildXdmcpLib)
+#define UseInstalledXdmcpLib	(defined(UseInstalled) || !BuildXdmcpLib)
 #ifndef BuildMITMiscExt
 #define BuildMITMiscExt		YES
 #endif
@@ -571,6 +577,9 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildLibxml2Library
 #define BuildLibxml2Library	(UseLibxml2 && !HasLibxml2)
+#endif
+#ifndef HasExpat
+#define HasExpat		NO
 #endif
 #ifndef UseExpat
 #define UseExpat		(UseFontconfig)
@@ -1193,7 +1202,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 
 #ifndef MesaUseMMX
-#if HasMMXSupport
+#ifdef HasMMXSupport
 #define MesaUseMMX HasMMXSupport
 #else
 #define MesaUseMMX NO
@@ -1635,6 +1644,10 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 
 #ifndef XBuildLibDir
 # define XBuildLibDir	BuildLibDir
+#endif
+
+#ifndef NeedLibInsideFlag
+#define NeedLibInsideFlag	NO
 #endif
 
 #ifndef SharedLibX11
@@ -2767,7 +2780,7 @@ ProjectUnsharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),XBuildLibDir)
 
 #if BuildFreetype2Library
 
-#if UseInstalled
+#ifdef UseInstalled
 FREETYPE2INCDIR=$(INCDIR)/freetype2
 #else
 FREETYPE2INCDIR=$(BUILDINCDIR)/freetype2
@@ -3038,7 +3051,7 @@ ProjectUnsharedLibReferences(FONTCONFIG,fontconfig,$(FONTCONFIGLIBSRC),XBuildLib
 
 #if BuildFontconfigLibrary
 
-#if UseInstalled
+#ifdef UseInstalled
 FONTCONFIGINCDIR=$(INCDIR)
 #else
 FONTCONFIGINCDIR=$(BUILDINCDIR)

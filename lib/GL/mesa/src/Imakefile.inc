@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile.inc,v 1.6 2002/02/22 21:32:56 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile.inc,v 1.7tsi Exp $
 
 #ifndef MesaBuildDir
 #define MesaBuildDir $(GLXLIBSRC)/mesa/src/
@@ -275,7 +275,7 @@ GLAPINOOPUOBJS = $(MESABUILDDIR)unshared/glapinoop.o
  GLTHREADUOBJS = $(MESABUILDDIR)unshared/glthread.o
 #endif
 
-#if DoSharedLib
+#if defined(DoSharedLib) && DoSharedLib
 COREMESABASEUOBJS = $(MESABUILDDIR)unshared/accum.o \
 		$(MESABUILDDIR)unshared/api_arrayelt.o \
 		$(MESABUILDDIR)unshared/api_eval.o \

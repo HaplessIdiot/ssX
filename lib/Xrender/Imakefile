@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.7tsi Exp $
+XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.10tsi Exp $
 
-#if UseInstalled
+#ifdef UseInstalled
 
 XCOMM Allow for builds against old installed bits.  Note that this requires
 XCOMM that additional files be copied (or linked) into this directory.  See
@@ -97,7 +97,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
       DEFINES = $(ALLOC_DEFINES)
-#if UseInstalled
+#ifdef UseInstalled
      INCLUDES = -I$(RENDERINCDIR) -I$(INCROOT)/X11 -I$(INCROOT)/X11/extensions
 #else
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)

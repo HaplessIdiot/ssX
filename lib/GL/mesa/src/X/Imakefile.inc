@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile.inc,v 1.2 2002/02/23 00:45:47 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile.inc,v 1.3tsi Exp $
 
 #ifndef MesaXBuildDir
 #define MesaXBuildDir $(GLXLIBSRC)/mesa/src/X/
@@ -49,7 +49,7 @@ XMESA_GLX_OBJS = $(MESAXBUILDDIR)fakeglx.o \
 		$(MESAXBUILDDIR)xm_span.o \
 		$(MESAXBUILDDIR)xm_tri.o
 
-#if DoSharedLib
+#if defined(DoSharedLib) && DoSharedLib
 #ifndef MesaInXServer
 XMESA_GLX_UOBJS = $(MESAXBUILDDIR)unshared/fakeglx.o \
 		  $(MESAXBUILDDIR)unshared/glxapi.o \

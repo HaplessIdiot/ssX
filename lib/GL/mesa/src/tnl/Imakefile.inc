@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/tnl/Imakefile,v 1.1 2002/02/22 21:45:06 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/tnl/Imakefile.inc,v 1.1tsi Exp $
 
 #ifndef MesaTnlBuildDir
 #define MesaTnlBuildDir $(GLXLIBSRC)/mesa/src/tnl/
@@ -74,7 +74,7 @@ LinkSourceFile(t_vb_vertex.c, $(MESASRCDIR)/src/tnl)
 		  $(MESATNLBUILDDIR)t_vb_texmat.o \
 		  $(MESATNLBUILDDIR)t_vb_vertex.o
 
-#if DoSharedLib
+#if defined(DoSharedLib) && DoSharedLib
  MESA_TNL_UOBJS = $(MESATNLBUILDDIR)unshared/t_array_api.o \
 		  $(MESATNLBUILDDIR)unshared/t_array_import.o \
 		  $(MESATNLBUILDDIR)unshared/t_context.o \
