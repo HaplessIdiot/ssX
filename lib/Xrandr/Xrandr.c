@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.6 2001/06/11 01:37:53 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.8 2002/10/14 18:01:39 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  * Copyright © 2002 Hewlett Packard Company, Inc.
@@ -499,7 +499,7 @@ static XRRScreenConfiguration *_XRRGetScreenInfo (Display *dpy, Window window)
     nbytes = (long) rep.length << 2;
 
     nbytesRead = (long) (rep.nSizes * SIZEOF (xScreenSizes) +
-			 rep.nrateEnts * 2 /* SIZEOF (CARD16) */);
+			 ((rep.nrateEnts + 1)& ~1) * 2 /* SIZEOF (CARD16) */);
     
     /* 
      * first we must compute how much space to allocate for 
