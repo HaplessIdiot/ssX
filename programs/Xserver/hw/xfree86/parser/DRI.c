@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.11 2001/07/02 15:38:34 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.12 2001/08/06 20:51:12 dawes Exp $
  * 
  */
 
@@ -111,6 +111,8 @@ xf86parseDRISection (void)
 		break;
 	    case COMMENT:
 		ptr->dri_comment = xf86addComment(ptr->dri_comment, val.str);
+		break;
+	    case EOL_TOKEN:
 		break;
 	    default:
 		Error (INVALID_KEYWORD_MSG, xf86tokenString ());

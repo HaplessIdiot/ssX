@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.13 2001/08/06 20:51:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.14 2002/09/17 18:54:16 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -74,6 +74,8 @@ xf86parseVendorSubSection (void)
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
 			break;
+		case EOL_TOKEN:
+			break;
 		default:
 			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
 			break;
@@ -135,6 +137,8 @@ xf86parseVendorSection (void)
 			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
+			break;
+		case EOL_TOKEN:
 			break;
 		default:
 			Error (INVALID_KEYWORD_MSG, xf86tokenString ());

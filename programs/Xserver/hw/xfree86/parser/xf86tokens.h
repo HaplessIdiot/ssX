@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.15 2000/10/24 22:45:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.17 2002/09/16 18:06:17 eich Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -40,6 +40,7 @@
 
 typedef enum {
     /* errno-style tokens */
+    EOL_TOKEN		= -5,
     EOF_TOKEN		= -4,
     LOCK_TOKEN		= -3,
     ERROR_TOKEN		= -2,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.21 2002/09/17 18:54:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.22 2002/11/18 23:04:43 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -161,6 +161,7 @@ again:
 			}
 			configLineNo++;
 			configStart = configPos = 0;
+			return (EOL_TOKEN);
 		}
 
 		i = 0;
@@ -268,7 +269,8 @@ again:
 			{
 				configRBuf[++i] = (c = configBuf[configPos++]);;
 			}
-			while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\r') && (c != '\0'));
+			while ((c != ' ') && (c != '\t') && (c != '\n') && (c != '\r') && (c != '\0') && (c != '#'));
+			--configPos;
 			configRBuf[i] = '\0';
 			i = 0;
 		}
@@ -287,6 +289,8 @@ again:
 		if (temp == COMMA || temp == DASH)
 			return (temp);
 		if (temp == NUMBER || temp == STRING)
+			return (temp);
+		if (temp == EOL_TOKEN)
 			return (temp);
 	}
 
