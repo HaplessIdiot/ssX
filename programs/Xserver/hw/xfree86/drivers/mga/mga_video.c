@@ -598,8 +598,11 @@ MGAPutImageG(
 	     nukeMem = TRUE;
 	  }
       } else {
-	  if(!xf86ResizeOffscreenArea(area, pScrn->displayWidth, new_h))
+	  if(!xf86ResizeOffscreenArea(area, pScrn->displayWidth, new_h)) {
+	     xf86FreeOffscreenArea(area);
+	     pPriv->area = area = NULL;
 	     nukeMem = TRUE;		
+	  }
       }
       if(nukeMem) {
 	int max_w, max_h;
