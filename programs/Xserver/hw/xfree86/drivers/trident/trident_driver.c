@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.168 2002/05/15 20:53:35 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.169 2002/05/25 17:35:16 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1961,7 +1961,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     pTrident->HwBpp = pScrn->bitsPerPixel;
 
     /* Due to bugs in the chip, turn it off */
-    if (pTrident->Chipset >= CYBERBLADEI7 && pTrident->Chipset < CYBERBLADEAI1D)
+    if (pTrident->Chipset >= CYBERBLADEI7 && pTrident->Chipset <= CYBERBLADEAI1D)
 	pTrident->HWCursor = FALSE;
 
     from = X_PROBED;
