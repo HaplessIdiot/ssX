@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.66 2000/06/17 00:03:20 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.67 2000/06/20 05:08:47 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -382,19 +382,11 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     AvailFBArea.x1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
 
-    /* DRI module is not loaded, so do a normal Fb init */
-    if (
-#if XFree86LOADER	
-	!LoaderSymbol("DRIScreenInit")
-#else
-	0
-#endif
+    /* DRI module is not enabled, so do a normal Fb init */
 #ifdef XF86DRI
-	|| pMga->directRenderingEnabled != TRUE
-#else
-	|| 1
+    if (pMga->directRenderingEnabled != TRUE)
 #endif
-	) {
+    {
         AvailFBArea.x1 = 0;
         AvailFBArea.x2 = pScrn->displayWidth;
         AvailFBArea.y1 = 0;
@@ -403,7 +395,9 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
         xf86InitFBManager(pScreen, &AvailFBArea); 
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using All available"
 		   " offscreen memory.\n");
-    } else {
+    }
+#ifdef XF86DRI
+    else {
         /* The dri module is loaded and in use at this time */
         AvailFBArea.x1 = 0;
         AvailFBArea.x2 = pScrn->displayWidth;
@@ -416,6 +410,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 		   "memory.\n",
 		   pMga->numXAALines);
     }
+#endif
 
     return(XAAInit(pScreen, infoPtr));
 }
