@@ -1,5 +1,5 @@
 /* $XConsortium: daemon.c,v 1.14 94/04/17 20:03:35 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.0 1994/04/28 12:44:50 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.1 1994/06/22 05:04:45 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -42,7 +42,7 @@ from the X Consortium.
 #else
 #include <sys/ioctl.h>
 #endif
-#if defined(__osf__) || defined(linux)
+#if defined(__osf__) || defined(linux) || defined(MINIX)
 #define setpgrp setpgid
 #endif
 #ifdef hpux
@@ -96,9 +96,11 @@ BecomeOrphan ()
 	stat = 0;	/* don't know how to set child's process group */
 #else
 	stat = setpgrp(child_id, child_id);
+#ifndef MINIX
 	if (stat != 0)
 	    LogError("setting process grp for daemon failed, errno = %d\n",
 		     errno);
+#endif /* MINIX */
 #endif
 #endif
 	exit (0);
@@ -123,6 +125,16 @@ BecomeDaemon ()
     close (1);
     close (2);
 
+#ifdef MINIX
+#if 0
+    /* Use setsid() to get rid of our controlling tty, this requires an extra
+     * fork though.
+     */
+    setsid();
+    if (fork() > 0)
+    	_exit(0);
+#endif
+#else /* !MINIX */
 #if !((defined(SYSV) || defined(SVR4)) && defined(i386))
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
 #if defined(USG) && defined(TCCLRCTTY)
@@ -139,6 +151,7 @@ BecomeDaemon ()
 	(void) close (i);
     }
 #endif /* !SYSV386 */
+#endif /* MINIX */
 
     /*
      * Set up the standard file descriptors.

@@ -1,5 +1,6 @@
 /*
  * $XConsortium: gethost.c,v 1.21 94/04/17 20:37:51 hersh Exp $
+ * $XFree86$
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -49,6 +50,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #ifndef WIN32
 #ifndef STREAMSCONN
+#ifndef MINIX
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -59,11 +61,21 @@ in this Software without prior written authorization from the X Consortium.
 #endif /* !SCO */
 #endif /* !SVR4 */
 #endif /* SYSV386 */
+#else /* MINIX */
+#include <net/gen/netdb.h>
+#endif /* !MINIX */
 #endif /* !STREAMSCONN */
 #endif /* !WIN32 */
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
+
+#ifdef MINIX
+#ifdef MNX_TCPCONN
+#define TCPCONN
+#endif
+#define EPROTOTYPE EGENERIC
 #endif
 
 #ifdef DNETCONN

@@ -1,5 +1,6 @@
 /*
  * $XConsortium: tocutil.c,v 2.58 93/09/20 17:51:59 hersh Exp $
+ * $XFree86$
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -501,7 +502,7 @@ void TUSaveTocFile(toc)
     if (fid < 0 && toc->length != toc->origlength)
 	fid = myopen(toc->scanfile, O_RDWR, 0666);
     if (fid >= 0) {
-#if defined(SYSV) && (defined(SYSV386) || defined(MOTOROLA))
+#if defined(SYSV) && (defined(i386) || defined(MOTOROLA)) || defined(MINIX)
 	(void) ftruncate_emu(fid, toc->length, toc->scanfile);
 #else
 	(void) ftruncate(fid, toc->length);

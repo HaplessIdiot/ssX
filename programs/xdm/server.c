@@ -1,5 +1,5 @@
 /* $XConsortium: server.c,v 1.19 94/04/17 20:03:44 hersh Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/server.c,v 3.0 1994/04/28 12:44:54 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -43,6 +43,13 @@ from the X Consortium.
 # include	<stdio.h>
 # include	<signal.h>
 # include	<errno.h>
+
+#ifdef MINIX
+#include <sys/ioctl.h>
+#include <net/gen/in.h>
+#include <net/gen/tcp.h>
+#include <net/gen/tcp_io.h>
+#endif
 
 static receivedUsr1;
 
@@ -257,6 +264,9 @@ GetRemoteAddress (d, fd)
 #ifdef STREAMSCONN
     struct netbuf	netb;
 #endif
+#ifdef MINIX
+    nwio_tcpconf_t tcpconf;
+#endif
 
     if (d->peer)
 	free ((char *) d->peer);
@@ -267,7 +277,25 @@ GetRemoteAddress (d, fd)
     len = 8;
     /* lucky for us, t_getname returns something that looks like a sockaddr */
 #else
+#ifdef MINIX
+    if (ioctl(fd, NWIOGTCPCONF, &tcpconf) == -1)
+    {
+    	LogError("NWIOGTCPCONF failed: %s\n", strerror(errno));
+    	len= 0;
+    }
+    else
+    {
+    	struct sockaddr_in *sinp;
+
+    	sinp= (struct sockaddr_in *)buf;
+    	len= sizeof(*sinp);
+    	sinp->sin_family= AF_INET;
+    	sinp->sin_port= tcpconf.nwtc_remport;
+    	sinp->sin_addr.s_addr= tcpconf.nwtc_remaddr;
+    }
+#else
     getpeername (fd, (struct sockaddr *) buf, &len);
+#endif
 #endif
     d->peerlen = 0;
     if (len)

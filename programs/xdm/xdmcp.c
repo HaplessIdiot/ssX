@@ -1,4 +1,5 @@
 /* $XConsortium: xdmcp.c,v 1.14 94/04/17 20:03:50 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -45,10 +46,15 @@ from the X Consortium.
 # include	<sys/types.h>
 # include	<ctype.h>
 
+#ifndef MINIX
 #include	<sys/socket.h>
 #include	<netinet/in.h>
 #include	<sys/un.h>
 #include	<netdb.h>
+#else /* MINIX */
+#include <net/hton.h>
+#include <net/gen/netdb.h>
+#endif /* !MINIX */
 
 #ifdef X_NOT_STDC_ENV
 #define Time_t long
@@ -56,6 +62,18 @@ extern Time_t time ();
 #else
 #include <time.h>
 #define Time_t time_t
+#endif
+
+#ifdef MINIX
+struct sockaddr_un
+{
+	u16_t   sun_family;
+	char    sun_path[62];
+};
+static char read_buffer[XDM_MAX_MSGLEN+sizeof(udp_io_hdr_t)];
+static int read_inprogress;
+static int read_size;
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 #define getString(name,len)	((name = malloc (len + 1)) ? 1 : 0)
@@ -261,13 +279,45 @@ ProcessRequestSocket ()
     XdmcpHeader		header;
     struct sockaddr_in	addr;
     int			addrlen = sizeof addr;
+#ifdef MINIX
+    int			r;
+#endif
+
+#ifdef MINIX
+    if (read_inprogress) abort();
+    if (read_size == 0)
+    {
+    	r= read(xdmcpFd, read_buffer, sizeof(read_buffer));
+    	if (r == -1 && errno == EINPROGRESS)
+    	{
+    		read_inprogress= 1;
+    		nbio_inprogress(xdmcpFd, ASIO_READ, 1 /* read */,
+    			0 /* write */, 0 /* exception */);
+    	}
+    	else if (r <= 0)
+    	{
+    		LogError("read error: %s\n",
+    			r == 0 ?  "EOF" : strerror(errno));
+		return;
+	}
+    }
+#endif
 
     Debug ("ProcessRequestSocket\n");
     bzero ((char *) &addr, sizeof (addr));
+#ifdef MINIX
+    if (!MNX_XdmcpFill (xdmcpFd, &buffer, &addr, &addrlen,
+    	read_buffer, read_size))
+    {
+	return;
+    }
+    read_size= 0;
+#else
     if (!XdmcpFill (xdmcpFd, &buffer, &addr, &addrlen)) {
 	Debug ("XdmcpFill failed\n");
 	return;
     }
+#endif
     if (!XdmcpReadHeader (&buffer, &header)) {
 	Debug ("XdmcpReadHeader failed\n");
 	return;
@@ -313,7 +363,17 @@ WaitForSomething ()
     Debug ("WaitForSomething\n");
     if (AnyWellKnownSockets () && !ChildReady) {
 	reads = WellKnownSocketsMask;
+#ifdef MINIX__NOT
+	{
+		struct timeval tv;
+		tv.tv_sec= 5;
+		tv.tv_usec= 0;
+		nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, &tv);
+		ChildReady= 1;
+	}
+#else
 	nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
+#endif
 	Debug ("select returns %d.  Rescan: %d  ChildReady: %d\n",
 		nready, Rescan, ChildReady);
 	if (nready > 0)
@@ -1217,3 +1277,22 @@ CARD16Ptr   displayNumber;
 }
 
 #endif /* XDMCP */
+
+#ifdef MINIX
+void udp_read_cb(nbio_ref_t ref, int res, int err)
+{
+	if (!read_inprogress)
+		abort();
+	if (res > 0)
+	{
+		read_size= res;
+	}
+	else
+    	{
+    		LogError("read error: %s\n",
+    			res == 0 ?  "EOF" : strerror(err));
+		read_size= 0;
+	}
+	read_inprogress= 0;
+}
+#endif

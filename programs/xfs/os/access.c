@@ -1,4 +1,5 @@
 /* $XConsortium: access.c,v 1.11 94/04/17 19:56:02 kaleb Exp $ */
+/* $XFree86$ */
 /*
  
 Copyright (c) 1990, 1991  X Consortium
@@ -46,10 +47,14 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include	<X11/Xos.h>
+#ifndef MINIX
 #include        <sys/param.h>
 #include	<sys/socket.h>
 #include	<netdb.h>
 #include	<netinet/in.h>
+#else
+#include <net/gen/netdb.h>
+#endif /* !MINIX */
 #include	"clientstr.h"
 #include	"misc.h"
 #include	"site.h"

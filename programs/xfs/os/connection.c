@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.29 94/04/17 19:56:05 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.0 1994/05/08 05:26:20 dawes Exp $ */
 /*
  * handles connections
  */
@@ -88,6 +88,11 @@ in this Software without prior written authorization from the X Consortium.
 #include	"globals.h"
 #include	"osstruct.h"
 #include	"servermd.h"
+
+#ifdef MINIX
+#include <sys/nbio.h>
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#endif
 
 #ifdef X_NOT_STDC_ENV
 extern int errno;

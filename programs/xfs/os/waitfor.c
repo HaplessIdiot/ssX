@@ -1,4 +1,5 @@
 /* $XConsortium: waitfor.c,v 1.13 94/04/17 19:56:09 dpw Exp $ */
+/* $XFree86$ */
 /*
  * waits for input
  */
@@ -56,11 +57,18 @@ in this Software without prior written authorization from the X Consortium.
 
 #include	<stdio.h>
 #include	<errno.h>
+#ifndef X_NO_SYS_PARAM
 #include	<sys/param.h>
+#endif
 
 #include	"clientstr.h"
 #include	"globals.h"
 #include	"osdep.h"
+
+#ifdef MINIX
+#include <sys/nbio.h>
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#endif
 
 extern WorkQueuePtr workQueue;
 

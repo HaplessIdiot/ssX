@@ -1,5 +1,6 @@
 /*
  * $XConsortium: util.c,v 2.44 94/03/30 19:55:04 gildea Exp $
+ * $XFree86$
  *
  *
  *			  COPYRIGHT 1987
@@ -37,6 +38,13 @@
 #define abs(x)		((x) < 0 ? (-(x)) : (x))
 #endif
 
+#ifdef MINIX	/* actually, if std-c */
+static char *SysErrorMsg (n)
+    int n;
+{
+	return strerror(n);
+}
+#else
 static char *SysErrorMsg (n)
     int n;
 {
@@ -46,6 +54,7 @@ static char *SysErrorMsg (n)
 
     return (s ? s : "no such error");
 }
+#endif
 
 /* Something went wrong; panic and quit. */
 

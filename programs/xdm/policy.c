@@ -1,4 +1,5 @@
 /* $XConsortium: policy.c,v 1.12 94/04/17 20:03:41 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -41,9 +42,11 @@ from the X Consortium.
 #ifdef XDMCP
 
 # include <X11/X.h>
+#ifndef MINIX
 # include <sys/socket.h>
 #ifdef AF_INET
 # include <netinet/in.h>
+#endif
 #endif
 
 static ARRAY8 noAuthentication = { (CARD16) 0, (CARD8Ptr) 0 };
