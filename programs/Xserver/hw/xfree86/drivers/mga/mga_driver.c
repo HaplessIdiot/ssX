@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.64 1999/01/03 08:06:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.65 1999/01/11 05:13:30 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -953,7 +953,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if (xf86IsOptionSet(MGAOptions, OPTION_8_PLUS_24)) {
 	if(pScrn->bitsPerPixel == 32) {
-#if 1
+#if 0
             int num = pScrn->numFormats;
             pScrn->formats[num].depth = pScrn->formats[num - 1].depth;
             pScrn->formats[num].bitsPerPixel =
