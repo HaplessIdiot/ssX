@@ -12,7 +12,7 @@
 #include "intel_ioctl.h"
 
 
-#define BATCH_LOCALS	GLubyte *batch_ptr;
+#define BATCH_LOCALS	GLubyte *batch_ptr
 
 /* #define VERBOSE 0 */
 #ifndef VERBOSE
