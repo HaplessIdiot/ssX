@@ -8,10 +8,9 @@
 
      This document provides information about the status of the driver
      and hardware support in XFree86 4.0.2 compared with that in XFree86
-     3.3.6.  Unless otherwise stated, hardware is classified as "sup-
-     ported" if its driver provides basic 2D support.  Support for addi-
-     tional features may or may not be present.  Please send updates for
-     this document to <fixes@xfree86.org>
+     3.3.6.  Please send updates for this document to
+     <fixes@xfree86.org>.  Please do not send requests for information
+     or support to that address.
 
 1.  Introduction
 
@@ -19,7 +18,9 @@ This document contains one section per vendor (organised alphabetically) for
 each chipset family that is supported in XFree86 3.3.6 or XFree86 4.0.2.  It
 includes information about the status of the drivers and the hardware they
 support, including a comparison of the level of support between versions
-3.3.6 and 4.0.2.
+3.3.6 and 4.0.2.  Unless otherwise stated, hardware is classified as "sup-
+ported" if its driver provides basic 2D support.  Support for additional fea-
+tures may or may not be present.
 
 In XFree86 3.3.6, several X servers are available; much hardware uses the
 XF86_SVGA server, which has a set of driver modules that are built into it at
@@ -307,13 +308,15 @@ architectures known to work on (e.g., Alpha, PPC), etc.
 
       4.0.2:
             Support (accelerated) for the Intel i740 is provided by the
-            "i740" driver, and support for the Intel i810 is provided by the
-            "i810" driver.  The "i810" driver is currently Linux-only, and
-            requires the agpgart.o kernel module.
+            "i740" driver, and support for the Intel i810 (including
+            i810-dc100 and i810e) and i815 is provided by the "i810" driver.
+            The "i810" driver is currently supported only on Linux and
+            FreeBSD (4.1 and later), and requires the agpgart kernel support.
 
       Summary:
             The i740 and i810 are supported in both versions, but the i810 is
-            only supported on Linux/x86 platforms at present.
+            only supported on Linux/x86 and recent FreeBSD/i386 platforms at
+            present.
 
 18.  Matrox
 
@@ -629,7 +632,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.0.2.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.28 2001/03/16 22:13:19 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.29 2001/04/04 01:34:18 dawes Exp $
 
 
 $XFree86$

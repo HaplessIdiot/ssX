@@ -8,7 +8,7 @@
 
 1.1  Copyright
 
-Copyright 2000-2001 by VA Linux Systems, Inc.  All Rights Reserved.
+Copyright © 2000-2001 by VA Linux Systems, Inc.  All Rights Reserved.
 
 Permission is granted to make and distribute verbatim copies of this document
 provided the copyright notice and this permission notice are preserved on all
@@ -114,7 +114,7 @@ Here are the basic steps for kernel setup.
 
    o Read /usr/src/linux/Documentation/Changes.  This file lists the minimum
      requirements for all software packages required to build the kernel.
-     You must upgrage at least gcc, make, binutils and modutils to at least
+     You must upgrade at least gcc, make, binutils and modutils to at least
      the versions specified in this file.  The other packages may not be
      needed.  If you are upgrading from Linux 2.2.x you must upgrade your
      modutils package for Linux 2.4.x.
@@ -187,8 +187,6 @@ should be used and enable them where appropriate.
 
 5.1  Intel Pentium III Features
 
-        "
-
 The Pentium III SSE (Katmai) instructions are used in optimized vertex trans-
 formation functions in the Mesa-based DRI drivers.  On Linux, SSE requires a
 recent kernel (such as 2.4.0-test11 or later) both at compile time and run-
@@ -196,15 +194,11 @@ time.
 
 5.2  AMD 3DNow! Features
 
-        "
-
 AMD's 3DNow! instructions are used in optimized vertex transformation func-
 tions in the Mesa-based DRI drivers.  3DNow! is supported in most versions of
 Linux.
 
 5.3  Alpha Features
-
-     "
 
 On newer Alpha processors a significant performance increase can be seen with
 the addition of the -mcpu= option to GCC.  This option is dependent on the
@@ -601,7 +595,7 @@ At this point your X server should be up and running with hardware-acceler-
 ated direct rendering.  Please read the DRI User Guide for information about
 trouble shooting and how to use the DRI-enabled X server for 3D applications.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.11 2001/03/21 16:56:18 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.13 2001/04/05 19:29:42 dawes Exp $
 
 
 $XFree86$

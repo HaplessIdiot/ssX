@@ -8,7 +8,7 @@
 
 1.1  Copyright
 
-Copyright 2000-2001 by VA Linux Systems, Inc.  All Rights Reserved.
+Copyright © 2000-2001 by VA Linux Systems, Inc.  All Rights Reserved.
 
 Permission is granted to make and distribute verbatim copies of this document
 provided the copyright notice and this permission notice are preserved on all
@@ -50,11 +50,7 @@ inux.com.
 
 3.  Supported Architectures & Hardware
 
-     "
-
 3.1  CPU Architectures
-
-     "
 
 The architectures currently supported by the DRI have grown from the initial
 Intel i386 systems to now include the Alpha Processor and the Sun SPARC
@@ -75,8 +71,6 @@ Alpha-based systems can use Compaq's optimized math library for improved 3D
 performance.  See the DRI Compilation Guide for details.
 
 3.2  Graphics Hardware
-
-     "
 
 XFree86 4.0 (or later versions) includes 3D acceleration for the following
 graphics hardware:
@@ -164,8 +158,6 @@ may not be answerable.
 
 5.  Kernel Modules
 
-    "
-
 3D hardware acceleration requires a DRI kernel module that's specific to your
 graphics hardware.
 
@@ -191,8 +183,6 @@ You can verify that the kernel module was installed with lsmod, checking the
 X server startup log, and checking that /proc/dri/0 exists.
 
 6.  XF86Config file
-
-      "
 
 The XFree86 configuration file is usually found in /etc/X11/XF86Config.  This
 section describes the parts which must be specially set for the DRI.
@@ -431,7 +421,7 @@ card.  This will indicate whether or not bus mastering is enabled.
 
              setpci -s 01:00.0 4.w
 
-A hexidecimal value will be printed.  Convert the least significant digit to
+A hexadecimal value will be printed.  Convert the least significant digit to
 binary.  For example, if you see 3, that's 0011 in binary (bit two is 0).  If
 you see 7, that's 0111 in binary (bit two is 1).  In the first example, bus
 mastering is disabled.  It's enabled in the second example.
@@ -755,19 +745,13 @@ A software-based accumulation buffer is available in both 16 and 32bpp modes.
 
 10.2  Intel i810
 
-        "
-
 10.2.1  Dependencies
-
-          "
 
 A Linux kernel with AGP GART support is required.  The 2.2.x kernel series
 does not have AGP GART support.  The 2.4.x test kernels have AGP GART and
 have been tested with the i810.
 
 10.2.2  Configuration
-
-          "
 
 Your XF86Config file's device section must specify the i810 device, and spec-
 ify a usable amount of video ram to reserve.
@@ -818,18 +802,12 @@ ules/dri/i810_dri.so.  This will be automatically loaded by libGL.so.
 
 10.3  Matrox G200 and G400
 
-      "
-
 10.3.1  Dependencies
-
-        "
 
 A Linux kernel with AGP GART support (such as the 2.4.x test kernels) is
 needed.
 
 10.3.2  Configuration
-
-        "
 
 Your XF86Config file's device section must specify the mga device:
 
@@ -900,6 +878,23 @@ Software rendering will be used under any of the following conditions:
 The AGP mode may be set to 1, 2, or 4.  One is used by default.  Higher AGP
 speeds may result in unreliable performance depending on your motherboard.
 
+Compaq has funded the implementation of AGP acclerated ReadPixels and Draw-
+Pixels in this driver.  With this implementation, on a G400 drawing directly
+from AGP memory (exported to the client), throughput of up to 1 GB/sec has
+been measured.
+
+Additionally Compaq's funding has produced several new extensions in Mesa,
+including one (packed_depth_stencil_MESA) which enables Read/DrawPixels func-
+tionality to operate directly on the packed 24/8 depth/stencil buffers of
+this hardware.
+
+In order to access this functionality, the application must ensure that all
+pixel processing operations are disabled.  There are in addition a fairly
+complex set of rules regarding which packing/unpacking modes must be used,
+and which data formats are supported, and alignment constraints.  See the
+files in lib/GL/mesa/src/drv/mga/DOCS for a summary of these.  The extension
+definitions are included in the Mesa 3.4 source distribution.
+
 10.3.4  IRQ Assignment
 
 There have been problems in the past with the MGA driver being very sluggish
@@ -943,18 +938,12 @@ None.
 
 10.4  ATI Rage 128
 
-      "
-
 10.4.1  Dependencies
-
-        "
 
 A Linux kernel with AGP GART support (such as the 2.4.x test kernels) is
 needed.
 
 10.4.2  Configuration
-
-        "
 
 Your XF86Config file's device section must specify the ati device:
 
@@ -1011,18 +1000,12 @@ Performance will be degraded, of course.
 
 10.5  ATI Radeon
 
-      "
-
 10.5.1  Dependencies
-
-        "
 
 A Linux kernel with AGP GART support (such as the 2.4.x test kernels) is
 needed.
 
 10.5.2  Configuration
-
-        "
 
 Your XF86Config file's device section must specify the ati device:
 
@@ -1187,7 +1170,7 @@ forge.net/resources/resources.html
    o In the future there may be IHV and Linux vendor support resources for
      the DRI.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.17 2001/03/21 16:56:18 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.21 2001/04/10 16:07:58 dawes Exp $
 
 
 $XFree86$
