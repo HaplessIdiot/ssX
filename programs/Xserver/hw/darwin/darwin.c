@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.11 2001/03/15 22:24:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.12 2001/03/24 23:08:53 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -827,7 +827,12 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         return 1;
     }
 
-    // This command line arg is passed when started from the command line.
+    // The Mac OS X front end uses this argument, which we just ignore here.
+    if ( !strcmp( argv[i], "-nostartx" ) ) {
+        return 1;
+    }
+
+    // This command line arg is passed when launched from the Aqua GUI.
     if ( !strncmp( argv[i], "-psn_", 5 ) ) {
         return 1;
     }

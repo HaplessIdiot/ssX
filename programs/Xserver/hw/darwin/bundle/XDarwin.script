@@ -1,4 +1,0 @@
-#!/bin/sh
-
-/usr/X11R6/bin/XDarwin.app/Contents/MacOS/XDarwin $@
-
