@@ -91,7 +91,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.143 2001/12/14 20:02:31 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.144 2002/01/05 22:05:03 dickey Exp $ */
 
 
 /* main.c */
@@ -1437,7 +1437,11 @@ posix_signal(int signo, sigfunc func)
 
 	act.sa_handler = func;
 	sigemptyset(&act.sa_mask);
+#ifdef SA_RESTART
 	act.sa_flags = SA_NOCLDSTOP|SA_RESTART;
+#else
+	act.sa_flags = SA_NOCLDSTOP;
+#endif
 	if (sigaction(signo, &act, &oact) < 0)
 		return(SIG_ERR);
 	return (oact.sa_handler);
