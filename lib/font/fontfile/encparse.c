@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.1 1999/01/31 04:59:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.2 1999/01/31 13:45:18 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -216,7 +216,7 @@ retry:
       return ERROR_LINE;
     }
   case KEYWORD_TOKEN:
-    if(!f_strcasecmp(keyword_value, "STARTENCODING")) {
+    if(!strcasecmp(keyword_value, "STARTENCODING")) {
       token=gettoken(f,c,&c);
       if(token==KEYWORD_TOKEN) {
         if(endOfLine(f,c))
@@ -227,7 +227,7 @@ retry:
         skipEndOfLine(f,c);
         return ERROR_LINE;
       }
-    } else if(!f_strcasecmp(keyword_value, "ALIAS")) {
+    } else if(!strcasecmp(keyword_value, "ALIAS")) {
       token=gettoken(f,c,&c);
       if(token==KEYWORD_TOKEN) {
         if(endOfLine(f,c))
@@ -238,7 +238,7 @@ retry:
         skipEndOfLine(f,c);
         return ERROR_LINE;
       }
-    } else if(!f_strcasecmp(keyword_value, "SIZE")) {
+    } else if(!strcasecmp(keyword_value, "SIZE")) {
       token=gettoken(f,c,&c);
       if(token==NUMBER_TOKEN) {
         value1=number_value;
@@ -250,7 +250,7 @@ retry:
         skipEndOfLine(f,c);
         return ERROR_LINE;
       }
-    } else if(!f_strcasecmp(keyword_value, "STARTMAPPING")) {
+    } else if(!strcasecmp(keyword_value, "STARTMAPPING")) {
       keyword_value[0]=0;
       value1=0; value1=0;
       /* read up to three tokens, the first being a keyword */
@@ -283,7 +283,7 @@ retry:
       else {
         return STARTMAPPING_LINE;
       }
-    } else if(!f_strcasecmp(keyword_value, "UNDEFINE")) {
+    } else if(!strcasecmp(keyword_value, "UNDEFINE")) {
       token=gettoken(f,c,&c);
       if(token!=NUMBER_TOKEN) {
         skipEndOfLine(f,c);
@@ -301,12 +301,12 @@ retry:
         } else
           return ERROR_LINE;
       }
-    } else if(!f_strcasecmp(keyword_value, "ENDENCODING")) {
+    } else if(!strcasecmp(keyword_value, "ENDENCODING")) {
       if(endOfLine(f,c))
         return EOF_LINE;
       else
         return ERROR_LINE;
-    } else if(!f_strcasecmp(keyword_value, "ENDMAPPING")) {
+    } else if(!strcasecmp(keyword_value, "ENDMAPPING")) {
       if(endOfLine(f,c))
         return ENDMAPPING_LINE;
       else
@@ -391,7 +391,7 @@ no_mapping:
     encoding->size=value1; 
     goto no_mapping;
   case STARTMAPPING_LINE:
-    if(!f_strcasecmp(keyword_value, "unicode")) {
+    if(!strcasecmp(keyword_value, "unicode")) {
       if((mapping=
           (struct font_encoding_mapping*)
           xalloc(sizeof(struct font_encoding_mapping)))
@@ -400,7 +400,7 @@ no_mapping:
       mapping->type = FONT_ENCODING_UNICODE;
       mapping->pid = 0;
       mapping->eid = 0;
-    } else if(!f_strcasecmp(keyword_value, "cmap")) {
+    } else if(!strcasecmp(keyword_value, "cmap")) {
       if((mapping=
           (struct font_encoding_mapping*)
           xalloc(sizeof(struct font_encoding_mapping)))
@@ -410,7 +410,7 @@ no_mapping:
       mapping->pid = value1;
       mapping->eid = value2;
       goto mapping;
-    } else if(!f_strcasecmp(keyword_value, "postscript")) {
+    } else if(!strcasecmp(keyword_value, "postscript")) {
       if((mapping=
           (struct font_encoding_mapping*)
           xalloc(sizeof(struct font_encoding_mapping)))
@@ -681,7 +681,7 @@ loadEncodingFile(char *charset, char *fontFileName)
       break;
     if(count!=2)
       break;
-    if(!f_strcasecmp(encoding_name, charset)) {
+    if(!strcasecmp(encoding_name, charset)) {
       strcpy(buf, dir);
       strcat(buf, file_name);
       if((f=FontFileOpen(buf))==NULL) {
