@@ -1,4 +1,5 @@
 /* $XConsortium: xkbparse.y,v 1.3 94/04/08 15:30:22 erik Exp $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -356,8 +357,6 @@ ExprList	:	ExprList COMMA Expr
 			{ $$= (ExprDef *)AppendStmt(&$1->common,&$3->common); }
 		|	Expr
 			{ $$= $1; }
-		;
-
 		;
 
 Expr		:	Expr DIVIDE Expr
