@@ -1,3 +1,7 @@
+XFree86 4.5.99.1 (xx March 2005)
+   1. Fix i830 bug where the DDC-probed parameters are not applied before
+      modes are selected (David Dawes).
+
 XFree86 4.5.0 (16 March 2005)
  363. Readability updates for the BUILD and RELNOTES docs
       (Georgina O. Economou).
@@ -19455,7 +19459,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3470 2005/03/16 15:31:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3471 2005/03/17 01:11:52 dawes Exp $
 
 
 
