@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.52 1998/07/26 09:56:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.53 1998/08/16 10:25:46 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -549,7 +549,7 @@ extern char* __XOS2RedirRoot(char*);
 #endif
 
 /**************************************************************************/
-/* GNU/Hurd
+/* GNU/Hurd								  */
 /**************************************************************************/
 #if defined(__GNU__)
 
