@@ -1,4 +1,5 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 849. Fix HW cursor on CRTC2 for SiS650+301B (Thomas Winischhofer).
  848. Update the i810/i830 driver to recognise the 865G integrated graphics
       chipset (David Dawes).
  847. Updates for the nsc driver (Sarma Kolluru, NSC).
@@ -16266,4 +16267,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2527 2003/02/05 18:38:39 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2528 2003/02/06 04:18:01 dawes Exp $
