@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/misc.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/xman/misc.c,v 1.9 2003/05/27 22:27:08 tsi Exp $ */
 
 /*
  * xman - X window system manual page display program.
@@ -43,12 +43,6 @@ from the X Consortium.
 #include <errno.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Shell.h>
-
-#ifndef HAS_SNPRINTF
-#undef SCOPE
-#define SCOPE static
-#include "snprintf.c"
-#endif
 
 static FILE * Uncompress(ManpageGlobals * man_globals, char * filename);
 #ifndef HAS_MKSTEMP
