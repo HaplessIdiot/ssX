@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.8 1996/03/29 22:18:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.9 1996/09/01 04:47:55 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -580,10 +580,11 @@ void TridentWarpCursor(pScr, x, y)
  * It is called by the SVGA server.
  */
 
-void TridentQueryBestSize(class, pwidth, pheight)
+void TridentQueryBestSize(class, pwidth, pheight, pScreen)
 	int class;
-	short *pwidth;
-	short *pheight;
+	unsigned short *pwidth;
+	unsigned short *pheight;
+	ScreenPtr pScreen;
 {
  	if (*pwidth > 0) {
  		if (class == CursorShape) {
@@ -591,7 +592,7 @@ void TridentQueryBestSize(class, pwidth, pheight)
 			*pheight = TridentCursorHeight;
 		}
 		else
-			(void) mfbQueryBestSize(class, pwidth, pheight);
+			(void) mfbQueryBestSize(class, pwidth, pheight, pScreen);
 	}
 }
 

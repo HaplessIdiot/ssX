@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.52 1996/08/24 12:50:20 dawes Exp $ 
-.TH XF86_Accel 1 "Version 3.1.2F"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.53 1996/09/22 05:01:26 dawes Exp $ 
+.TH XF86_Accel 1 "Version 3.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
 UNIX on x86 platforms with an S3, Mach8, Mach32, Mach64, P9000, AGX,
@@ -44,7 +44,8 @@ is an 8-bit PseudoColor server for ATI Mach8 graphic accelerator boards.
 .I XF86_Mach32
 is an 8-bit PseudoColor and 16-bit TrueColor server for ATI Mach32
 graphic accelerator boards.  Note, 16-bit operation is not supported on
-all Mach32 accelerator boards.
+all Mach32 accelerator boards.  Refer to \fIREADME.Mach32\fP for details
+of which RAMDACs are supported at which depths.
 .PP
 .I XF86_Mach64
 is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor server
@@ -311,7 +312,7 @@ The only possible clockchip value for the ET6000 is \fB"et6000"\fP.
 .TP 8
 .B Ramdac \fI"ramdac-type"\fP
 This specifies the type of RAMDAC used on the board.  Only the S3,
-AGX, and W32 servers use this.
+AGX, Mach32, Mach64, and W32 servers use this.
 .sp
 \fBnormal\fP - (S3, AGX) Card does not have one of the other RAMDACs mentioned
 here.  This option is only required for the S3 server if the server 
@@ -322,7 +323,8 @@ is the default if no RAMDAC is specified.
 \fBgeneric\fP - (W32) This forces the W32 server to treat the RAMDAC
 as a generic VGA RAMDAC.
 .sp
-\fBatt20c490\fP - (S3, AGX) Card has an AT&T 20C490 or AT&T 20C491 RAMDAC.
+\fBatt20c490\fP - (S3, AGX, Mach32) Card has an AT&T 20C490 or AT&T 20C491
+RAMDAC.
 When the \fBdac_8_bit\fP option is specified, these
 RAMDACs may be operated in 8 bit per RGB mode.  It also allows 16bpp
 operation with 801/805/928 boards.  True AT&T 20C490 RAMDACs should be
@@ -413,7 +415,7 @@ be specified if the server fails to detect the Ti3025.
 \fBti3026\fP - (S3) Card has a TI ViewPoint Ti3026 RAMDAC.  This must
 be specified if the server fails to detect the Ti3026.
 .sp
-\fBbt481\fP - (AGX) Card has a BrookTree Bt481 RAMDAC.
+\fBbt481\fP - (AGX, Mach32) Card has a BrookTree Bt481 RAMDAC.
 .sp
 \fBbt482\fP - (AGX) Card has a BrookTree Bt482 RAMDAC.
 .sp
@@ -423,10 +425,10 @@ be specified if the server fails to detect the Ti3026.
 \fBherc_small_dac\fP - (AGX) Card (Hercules Graphite Pro) has only the
 44-pin (Bt481 or Bt482) RAMDAC installed.
 .sp
-\fBati68875\fP - (Mach64) Card has an ATI 68875 RAMDAC.  This must be
-specified if the server fails to detect it.
+\fBati68875\fP - (Mach64, Mach32) Card has an ATI 68875 RAMDAC.  This must
+be specified if the server fails to detect it.
 .sp
-\fBtlc34075\fP - (Mach64) Card has a TI 34075 RAMDAC.  This must be
+\fBtlc34075\fP - (Mach64, Mach32) Card has a TI 34075 RAMDAC.  This must be
 specified if the server fails to detect it.
 .sp
 \fBati68860\fP - (Mach64) Card has an ATI 68860 RAMDAC.  This must be
@@ -799,6 +801,7 @@ Rik Faith,          \fIfaith@cs.unc.edu\fP
 Mike Bernson,       \fImike@mbsun.mlb.org\fP
 Mark Weaver,        \fIMark_Weaver@brown.edu\fP
 Craig Groeschel,    \fIcraig@metrolink.com\fP
+Bryan Feir,         \fIjenora@istar.ca\fP
 .fi
 .RS 8
 Development and improvement of the Mach32 specific code.

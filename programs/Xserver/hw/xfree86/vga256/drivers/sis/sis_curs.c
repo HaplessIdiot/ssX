@@ -25,7 +25,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_curs.c,v 3.0 1996/07/08 10:33:10 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -507,10 +507,11 @@ void SISWarpCursor(pScr, x, y)
  * It is called by the SVGA server.
  */
 
-void SISQueryBestSize(class, pwidth, pheight)
+void SISQueryBestSize(class, pwidth, pheight, pScreen)
 	int class;
-	short *pwidth;
-	short *pheight;
+	unsigned short *pwidth;
+	unsigned short *pheight;
+	ScreenPtr pScreen;
 {
  	if (*pwidth > 0) {
  		if (class == CursorShape) {
@@ -518,7 +519,7 @@ void SISQueryBestSize(class, pwidth, pheight)
 			*pheight = SISCursorHeight;
 		}
 		else
-			(void) mfbQueryBestSize(class, pwidth, pheight);
+			(void) mfbQueryBestSize(class, pwidth, pheight, pScreen);
 	}
 }
 

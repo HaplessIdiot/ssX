@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.9tsi Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -30,7 +30,7 @@
 
 #include "Probe.h"
 
-static Word Ports[] = {0x01CE, 0x01CF, CHIP_ID };
+static Word Ports[] = {0x01CE, 0x01CF};
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 
 static int MemProbe_ATI __STDCARGS((int));
@@ -52,9 +52,9 @@ Bool Crippled_Mach32 = FALSE,
 extern Chip_Descriptor ATIMach_Descriptor;
 
 #ifdef __STDC__
-static void Probe_ATI_ChipID(int chip, int *Chipset)
+void Probe_ATI_ChipID(int chip, int *Chipset)
 #else
-static void Probe_ATI_ChipID(chip, Chipset)
+void Probe_ATI_ChipID(chip, Chipset)
 int chip, *Chipset;
 #endif
 {
@@ -117,6 +117,10 @@ int chip, *Chipset;
 	}
 	else /* if (chip == CHIP_MACH32) */
 	{
+		Word IOPort = CHIP_ID;
+
+		EnableIOPorts(1, &IOPort);
+
 		chip = inpw(CHIP_ID);
 		if (chip == 0xFFFF)
 			chip = 0;
@@ -139,6 +143,7 @@ int chip, *Chipset;
 			*Chipset = CHIP_ATI_UNK;
 			break;
 		}
+		DisableIOPorts(1, &IOPort);
 	}
 }
 
@@ -160,11 +165,7 @@ int *Chipset;
 	if (ATIMach_Descriptor.f(&chip) &&
 	   ((chip == CHIP_MACH32) || (chip == CHIP_MACH64)))
 	{
-		EnableIOPorts(NUMPORTS, Ports);
-
 		Probe_ATI_ChipID(chip, Chipset);
-
-		DisableIOPorts(NUMPORTS, Ports);
 		return (TRUE);
 	}
 
@@ -194,9 +195,6 @@ int *Chipset;
 					MyName);
 				return (FALSE);
 			}
-			Ports[0] = *((Word *)bios);
-			Ports[1] = Ports[0] + 1;
-			EnableIOPorts(NUMPORTS, Ports);
 
 			switch (bios[3])
 			{
@@ -236,12 +234,19 @@ int *Chipset;
 				break;
 			}
 
+			if (!Crippled_Mach64)
+			{
+				Ports[0] = *((Word *)bios);
+				Ports[1] = Ports[0] + 1;
+			}
+
 			/*
 			 * Sometimes, the BIOS lies about the chip.
 			 */
 			if ((*Chipset >= CHIP_ATI28800_4) &&
 			    (*Chipset <= CHIP_ATI28800_6))
 			{
+				EnableIOPorts(NUMPORTS, Ports);
 				chip = rdinx(Ports[0], 0xAA) & 0x0F;
 				if (chip < 7)
 				{
@@ -249,9 +254,8 @@ int *Chipset;
 					if (chip > *Chipset)
 						*Chipset = chip;
 				}
+				DisableIOPorts(NUMPORTS, Ports);
 			}
-
-			DisableIOPorts(NUMPORTS, Ports);
 		}
 		else
 		{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.4 1996/09/22 05:05:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.5 1996/09/24 13:55:05 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -38,6 +38,9 @@
 #include "scrnintstr.h"
 #include "servermd.h"
 #include "windowstr.h"
+
+#include "compiler.h"
+#include "vga256.h"
 #include "xf86.h"
 #include "mipointer.h"
 #include "xf86Priv.h"
@@ -437,10 +440,6 @@ static void ArkMoveCursor(pScr, x, y)
  * Adapted from accel/s3/s3Cursor.c.
  */
 
-#if 0
-int vgaGetInstalledColormaps();
-#endif
-
 static void ArkRecolorCursor(pScr, pCurs, displayed)
 	ScreenPtr pScr;
 	CursorPtr pCurs;
@@ -530,10 +529,11 @@ void ArkWarpCursor(pScr, x, y)
  * It is called by the SVGA server.
  */
 
-void ArkQueryBestSize(class, pwidth, pheight)
+void ArkQueryBestSize(class, pwidth, pheight, pScreen)
 	int class;
-	short *pwidth;
-	short *pheight;
+	unsigned short *pwidth;
+	unsigned short *pheight;
+	ScreenPtr pScreen;
 {
  	if (*pwidth > 0) {
  		if (class == CursorShape) {
@@ -541,7 +541,7 @@ void ArkQueryBestSize(class, pwidth, pheight)
 			*pheight = arkCursorHeight;
 		}
 		else
-			(void) mfbQueryBestSize(class, pwidth, pheight);
+			(void) mfbQueryBestSize(class, pwidth, pheight, pScreen);
 	}
 }
 

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgainit.c,v 3.0 1996/09/22 05:04:46 dawes Exp $ */
 
 #include "tga.h"
 #include "tga_presets.h"
@@ -55,12 +55,12 @@ tgaCalcCRTCRegs(crtcRegs, mode)
 	/* Trying to retain some familiarity with normal config methods */
 	crtcRegs->h_active = mode->CrtcHDisplay;
 	crtcRegs->h_fporch = mode->CrtcHSyncStart - crtcRegs->h_active;
-	crtcRegs->h_sync   = mode->CrtcHSyncEnd - crtcRegs->h_fporch;
-	crtcRegs->h_bporch = mode->CrtcHTotal - crtcRegs->h_sync;
+	crtcRegs->h_sync   = mode->CrtcHSyncEnd - mode->CrtcHSyncStart;
+	crtcRegs->h_bporch = mode->CrtcHTotal - mode->CrtcHSyncEnd;
 	crtcRegs->v_active = mode->CrtcVDisplay;
 	crtcRegs->v_fporch = mode->CrtcVSyncStart - crtcRegs->v_active;
-	crtcRegs->v_sync   = mode->CrtcVSyncEnd - crtcRegs->v_fporch;
-	crtcRegs->v_bporch = mode->CrtcVTotal - crtcRegs->v_sync;
+	crtcRegs->v_sync   = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
+	crtcRegs->v_bporch = mode->CrtcVTotal - mode->CrtcVSyncEnd;
 
 	/*
 	 * We do polarity the Step B way of the 21030 
@@ -97,11 +97,12 @@ tgaSetCRTCRegs(crtcRegs)
 		(crtcRegs->v_bporch << 22) |
 		(crtcRegs->v_pol << 30);
 
-	TGA_WRITE_REG(0x03, TGA_VALID_REG); /* Disable Video */
+	TGA_WRITE_REG(0x00, TGA_VALID_REG); /* Disable Video */
 	tgaClockSelect(crtcRegs->clock_sel);
 	TGA_WRITE_REG(virtX, TGA_HORIZ_REG);
 	TGA_WRITE_REG(virtY, TGA_VERT_REG);
-	if (OFLG_ISSET(OPTION_HW_CURSOR, &tgaInfoRec.options))
+	if ( (OFLG_ISSET(OPTION_HW_CURSOR, &tgaInfoRec.options)) ||
+	     (OFLG_ISSET(OPTION_BT485_CURS, &tgaInfoRec.options)) )
 	{
 		TGA_WRITE_REG(0x05, TGA_VALID_REG); /* Enable Video & Cursor */
 	}

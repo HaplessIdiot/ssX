@@ -68,6 +68,10 @@
 	url="chips.html">
 <item> <htmlurl name="Information for Cirrus Chipset Users"
 	url="cirrus.html">
+<item> <htmlurl name="Information for DEC 21030 Users (aka TGA)"
+	url="DECtga.html">
+<item> <htmlurl name="Notes for Mach32 X Server"
+	url="Mach32.html">
 <item> <htmlurl name="Notes for Mach64 X Server"
 	url="Mach64.html">
 <item> <htmlurl name="Information for Oak Technologies Inc. Chipset Users"
@@ -89,7 +93,7 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.13 1996/08/20 12:29:05 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.14 1996/09/14 13:10:23 dawes Exp $ 
 
 
 

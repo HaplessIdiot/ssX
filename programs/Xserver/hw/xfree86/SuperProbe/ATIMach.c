@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATIMach.c,v 3.7tsi Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -35,6 +35,7 @@ static Word Ports[] = {ROM_ADDR_1, DESTX_DIASTP, READ_SRC_X,
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
 
 static int MemProbe_ATIMach __STDCARGS((int));
+extern void Probe_ATI_ChipID __STDCARGS((int, int *));
 
 Chip_Descriptor ATIMach_Descriptor = {
 	"ATI_Mach",
@@ -72,6 +73,7 @@ Bool SparseIO;
 {
 	Long tmp;
 	Word IOPort;
+	int chip;
 
 	if ((*Chipset != -1) || (IOBase == 0))
 		return;
@@ -86,9 +88,6 @@ Bool SparseIO;
 		outpl(IOPort, 0xAAAAAAAA);	/* Test even bits */
 		if (inpl(IOPort) == 0xAAAAAAAA)
 		{
-			/* A mach64 detected */
-			*Chipset = CHIP_MACH64;
-
 			/*
 			 * Fix I/O ports.  I know, I know:  hard-wired
 			 * constants are *EVIL*, but this'll do for now.
@@ -111,6 +110,18 @@ Bool SparseIO;
 			ATIMach64MEM_INFO += IOBase;
 			ATIMach64DAC_CNTL += IOBase;
 			ATIMach64CONFIG_CHIP_ID += IOBase;
+
+			/*
+			 * Something's responding to our hail.  Make sure it's
+			 * a Mach64.  This assumes ATI won't be producing any
+			 * more adapters that don't register themselves in PCI
+			 * configuration space.
+			 */
+			Probe_ATI_ChipID(CHIP_MACH64, &chip);
+			if ((chip == CHIP_ATI_UNK) && SparseIO)
+				Chip_data = (Long)~0;
+			else
+				*Chipset = CHIP_MACH64;
 		}
 	}
 	outpl(IOPort, tmp);

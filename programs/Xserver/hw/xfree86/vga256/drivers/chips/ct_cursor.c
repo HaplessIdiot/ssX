@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.1 1996/08/21 08:40:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_cursor.c,v 3.2 1996/08/24 12:54:09 dawes Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -681,10 +681,11 @@ CHIPSWarpCursor(pScr, x, y)
 }
 
 void
-CHIPSQueryBestSize(class, pwidth, pheight)
+CHIPSQueryBestSize(class, pwidth, pheight, pScreen)
     int class;
     short *pwidth;
     short *pheight;
+    ScreenPtr pScreen;
 {
     if (*pwidth > 0) {
 	switch (class) {
@@ -696,7 +697,7 @@ CHIPSQueryBestSize(class, pwidth, pheight)
 	    break;
 
 	default:
-	    (void)mfbQueryBestSize(class, pwidth, pheight);
+	    (void)mfbQueryBestSize(class, pwidth, pheight, pScreen);
 	    break;
 	}
     }

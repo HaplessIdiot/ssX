@@ -502,6 +502,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item> Mike Bernson <it>&lt;mike@mbsun.mlb.org&gt;</it>,
        <item> Mark Weaver <it>&lt;Mark_Weaver@brown.edu&gt;</it>,
        <item> Craig Groeschel <it>&lt;craig@metrolink.com&gt;</it>
+       <item> Bryan Feir <it>&lt;jenora@istar.ca&gt;</it>
 </itemize>
 <tag/Mach64 accelerated code by:  /
 <itemize>
@@ -990,7 +991,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.53 1996/09/01 08:33:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.54 1996/09/14 13:10:27 dawes Exp $
 
 
 

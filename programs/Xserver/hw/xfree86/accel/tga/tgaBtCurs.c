@@ -24,7 +24,7 @@
  * Modified by Alan Hourihane (alanh@fairlite.demon.co.uk) for use with TGA
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tgaBtCurs.c,v 3.0 1996/09/22 05:04:35 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <X.h>
@@ -298,7 +298,7 @@ tgaBtLoadCursor(pScr, pCurs, x, y)
 #if 0
       tgaStartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);
 #endif
-      BT485_WRITE(0x00, BT485_ADDR_CUR_WRITE);
+      BT485_WRITE(0x00, BT485_ADDR_PAL_WRITE);
 
       for (i=0; i < 64; i++) {		/* 64 rows in cursor */
 	 p = ram + (((i % 2) ? i-1 : i+1)*8);
@@ -332,7 +332,7 @@ tgaBtLoadCursor(pScr, pCurs, x, y)
 #if 0
       tgaStartBtData(BT_WRITE_ADDR, 0x00, BT_CURS_RAM_DATA);
 #endif
-      BT485_WRITE(0x00, BT485_ADDR_CUR_WRITE);
+      BT485_WRITE(0x00, BT485_ADDR_PAL_WRITE);
 
       /* 
        * Output the cursor data.  The realize function has put the planes into

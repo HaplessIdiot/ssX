@@ -21,9 +21,6 @@ you can switch to another VT using the standard key sequence, but when
 switching back to the Xserver's VT the screen is not restored. Executing
 `xrefresh' from your window manager or xterm should clear this up.
 
-<item>If you have PEX fonts installed, the Xserver will coredump. Only
-workaround for the moment is to delete the PEX font files.
-
 <item>Only one modeline is accepted, this will be the first viable one
 that matches other criteria.
 
@@ -56,7 +53,7 @@ have access to the 24plane or the 24plane3D chip.
 
 <sect> Additional Notes <p>
 The code for the 21030 as yet - has only been tested on DEC's UDB box, better
-known as the Multia in other environments, in a Linux environment.
+known as the Multia, in a Linux environment.
 
 <sect> Known modelines <p>
 Use these ModeLines as a starting point and tune them, although you can
@@ -82,7 +79,7 @@ ModeLine "640x480"        25.175 640  664  688  700  480  490  492  525
 
 <p>
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DECtga.sgml,v 3.0 1996/09/22 05:05:21 dawes Exp $
 </verb>
 
 </article>

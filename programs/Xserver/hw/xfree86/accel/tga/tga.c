@@ -22,12 +22,14 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.0 1996/09/22 05:04:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.1 1996/09/23 13:27:01 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
 #include "screenint.h"
 #include "dix.h"
+#include "cfb.h"
+#include "cfb32.h"
 
 #include "compiler.h"
 
@@ -36,13 +38,28 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
-#define XCONFIG_FLAGS_ONLY
-#include "xf86_Config.h"
 #include "tga.h"
 #include "tga_presets.h"
 #include "tga_clocks.h"
-#include "cfb.h"
-#include "cfb32.h"
+
+#define XCONFIG_FLAGS_ONLY
+#include "xf86_Config.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
+
+static int tgaValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr,
+    Bool
+#endif
+);
 
 ScrnInfoRec tgaInfoRec = {
     FALSE,		/* Bool configured */
@@ -51,7 +68,7 @@ ScrnInfoRec tgaInfoRec = {
     tgaProbe,      	/* Bool (* Probe)() */
     tgaInitialize,	/* Bool (* Init)() */
     tgaValidMode,	/* Bool (* ValidMode)() */
-    tgaEnterLeaveVT,/* void (* EnterLeaveVT)() */
+    tgaEnterLeaveVT,	/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
     tgaAdjustFrame,	/* void (* AdjustFrame)() */
@@ -101,6 +118,13 @@ ScrnInfoRec tgaInfoRec = {
     0,			/* int suspendTime */
     0,			/* int offTime */
     -1,			/* int s3BlankDelay */
+    0,			/* int textClockFreq */
+#ifdef XFreeXDGA
+    0,			/* int directMode */
+    NULL,		/* Set Vid Page */
+    0,			/* unsigned long physBase */
+    0,			/* int physSize */
+#endif
 };
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
@@ -256,6 +280,11 @@ tgaProbe()
   /* Initialize options that reflect the TGA */
   OFLG_ZERO(&validOptions);
 #if NOTYET	/* Cursor support isn't here yet! */
+  /* According to the 21030 manual - The Cursor of the 21030 is latched
+   * through to the RAMDAC's own cursor, so it may be that both of these
+   * are the same, but obviously we've got different methods of accessing
+   * them. I guess that the UDB(Multia) has these latches.....
+   */
   /* Use TGA's own HW cursor */
   OFLG_SET(OPTION_HW_CURSOR, &validOptions);
   /* Or, use BT485 HW cursor */
@@ -296,7 +325,7 @@ tgaProbe()
 	pModeSv = pMode->next;
 	
 	/* Delete any invalid ones */
-	if (xf86LookupMode(pMode, &tgaInfoRec) == FALSE) {
+	if (xf86LookupMode(pMode, &tgaInfoRec, LOOKUP_DEFAULT) == FALSE) {
 		pModeSv = pMode->next;
 		xf86DeleteMode(&tgaInfoRec, pMode);
 		pMode = pModeSv;
@@ -359,6 +388,10 @@ tgaProbe()
 
   if (OFLG_ISSET(OPTION_DAC_8_BIT, &tgaInfoRec.options))
 	tgaDAC8Bit = TRUE;
+
+#ifdef XFreeXDGA
+  tgaInfoRec.directMode = XF86DGADirectPresent;
+#endif
 
   return(TRUE);
 }
@@ -431,7 +464,8 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 			break;
 	}
 
-	if (OFLG_ISSET(OPTION_HW_CURSOR, &tgaInfoRec.options)) {
+	if ( (OFLG_ISSET(OPTION_HW_CURSOR, &tgaInfoRec.options)) ||
+	     (OFLG_ISSET(OPTION_BT485_CURS, &tgaInfoRec.options)) ) {
 		pScreen->QueryBestSize = tgaQueryBestSize;
 		xf86PointerScreenFuncs.WarpCursor = tgaWarpCursor;
 		(void)tgaCursorInit(0, pScreen);
@@ -499,8 +533,8 @@ tgaEnterLeaveVT(enter, screen_idx)
 	    tgaRestoreDACvalues();
 
 #ifdef NOTYET
-	    tgaCacheInit(tgaVirtX, tgaVirtY);
-	    tgaFontCache8Init(tgaVirtX, tgaVirtY);
+	    tgaCacheInit(tgaInfoRec.virtualX, tgaInfoRec.virtualY);
+	    tgaFontCache8Init(tgaInfoRec.virtualX, tgaInfoRec.virtualY);
 
 	    tgaRestoreCursor(pScreen);
 	    tgaAdjustFrame(pScr->frameX0, pScr->frameY0);
@@ -582,7 +616,10 @@ tgaEnterLeaveVT(enter, screen_idx)
 	LUTissaved = TRUE;
 #endif
 	if (!xf86Resetting) {
-	    tgaCleanUp();
+#ifdef XFreeXDGA
+	    if (!(tgaInfoRec.directMode & XF86DGADirectGraphics))
+#endif
+		tgaCleanUp();
 	}
 	xf86UnMapDisplay(screen_idx, LINEAR_REGION);
     }
@@ -847,9 +884,10 @@ tgaSwitchMode(mode)
  * tgaValidMode --
  *
  */
-static Bool
-tgaValidMode(mode)
-DisplayModePtr mode;
+static int
+tgaValidMode(mode, verbose)
+    DisplayModePtr mode;
+    Bool verbose;
 {
-return TRUE;
+    return MODE_OK;
 }

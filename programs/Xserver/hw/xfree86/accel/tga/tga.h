@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.h,v 3.0 1996/09/22 05:04:34 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -114,11 +114,6 @@ void tgaPrintIdent(
 Bool tgaProbe(
 #if NeedFunctionPrototypes
     void
-#endif
-);
-Bool tgaValidMode(
-#if NeedFunctionPrototypes
-    DisplayModePtr
 #endif
 );
 /* tgamisc.c */

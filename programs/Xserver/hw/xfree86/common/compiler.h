@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.15 1996/08/23 11:03:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.16 1996/09/24 13:54:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1168,6 +1168,12 @@ static int inb(port)
 #  pragma asm partial_optimization inb
 # endif
 #endif
+#define ldq_u(p)	(*((unsigned long  *)(p)))
+#define ldl_u(p)	(*((unsigned int   *)(p)))
+#define ldw_u(p)	(*((unsigned short *)(p)))
+#define stq_u(v,p)	((unsigned long  *)(p)) = (v)
+#define stl_u(v,p)	((unsigned int   *)(p)) = (v)
+#define stw_u(v,p)	((unsigned short *)(p)) = (v)
 #define mem_barrier()   /* NOP */
 #endif /* __GNUC__ */
 

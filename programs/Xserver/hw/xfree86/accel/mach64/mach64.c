@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.52 1996/09/14 13:09:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.53tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -365,7 +365,8 @@ int	mach64MemClk;
 int	mach64VRAMMemClk;
 Bool	mach64IntegratedController;
 
-static ATIInformationBlock *GetATIInformationBlock()
+static ATIInformationBlock *GetATIInformationBlock(BlockIO)
+    Bool BlockIO;
 {
 #define BIOS_DATA_SIZE 0x8000
    char                       signature[]    = " 761295520";
@@ -454,8 +455,16 @@ static ATIInformationBlock *GetATIInformationBlock()
 	info.ChipType = MACH64_GT;
 	break;
    default:
-	info.ChipType = MACH64_UNKNOWN;
-	break;
+	/*
+	 * Assume ATI won't produce any more adapters that don't (properly)
+	 * register themselves in PCI configuration space.
+	 */
+	if (BlockIO) {
+	    info.ChipType = MACH64_UNKNOWN;
+	    break;
+	}
+	info.Mach64_Present = FALSE;
+	return &info;
    }
    info.ChipRev = (tmp & CFG_CHIP_REV) >> 24;
 #ifdef DEBUG
@@ -758,12 +767,12 @@ mach64Probe()
 
     xf86EnableIOPorts(mach64InfoRec.scrnIndex);
 
-    info = GetATIInformationBlock();
+    info = GetATIInformationBlock(pciInfo->BlockIO);
 
     /* If probe fails when assuming block I/O, try again with sparse I/O */
     if (pciInfo && pciInfo->BlockIO && info && !info->Mach64_Present) {
 	InitIOAddresses(0x2EC, FALSE);
-	info = GetATIInformationBlock();
+	info = GetATIInformationBlock(pciInfo->BlockIO);
 	if (info && info->Mach64_Present) {
 	    ErrorF("%s %s: PCI reports Block I/O, but really Sparse I/O"
 		   " @ 0x2ec\n", XCONFIG_PROBED, mach64InfoRec.name);

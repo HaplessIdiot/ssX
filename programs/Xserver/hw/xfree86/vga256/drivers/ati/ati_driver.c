@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.35 1996/09/14 13:11:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.36tsi Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -976,7 +976,8 @@ ATIPrintBIOS(const unsigned char *BIOS,
 /*
  * ATIPrintIndexedRegisters --
  *
- * Display a set of VGA registers when the server is invoked with -verbose.
+ * Display a set of indexed byte-size registers when the server is invoked with
+ * -verbose.
  */
 static void
 ATIPrintIndexedRegisters(const unsigned short int Port,
@@ -1003,7 +1004,7 @@ ATIPrintIndexedRegisters(const unsigned short int Port,
         if (Port == ATTRX)
         {
                 (void) inb(GenS1);              /* Reset flip-flop */
-                outb(ATTRX, 0x20U);              /* Turn on PAS bit */
+                outb(ATTRX, 0x20U);             /* Turn on PAS bit */
         }
 }
 
@@ -1688,9 +1689,9 @@ ATIMach64ChipID(void)
         ChipRevision = GetBits(IO_Value, CFG_CHIP_REV);
         switch (ChipType)
         {
-                case 0x00D7U:
                 case 0x4758U:
                         ChipType = 0x00D7U;
+                case 0x00D7U:
                         switch (ChipRevision)
                         {
                                 case 0x00U:
@@ -1715,33 +1716,33 @@ ATIMach64ChipID(void)
                         }
                         break;
 
-                case 0x0057U:
                 case 0x4358U:
                         ChipType = 0x0057U;
+                case 0x0057U:
                         ATIChip = ATI_CHIP_88800CX;
                         break;
 
-                case 0x0053U:
                 case 0x4354U:
                         ChipType = 0x0053U;
+                case 0x0053U:
                         ATIChip = ATI_CHIP_264CT;
                         break;
 
-                case 0x0093U:
                 case 0x4554U:
                         ChipType = 0x0093U;
+                case 0x0093U:
                         ATIChip = ATI_CHIP_264ET;
                         break;
 
-                case 0x02B3U:
                 case 0x5654U:
                         ChipType = 0x02B3U;
+                case 0x02B3U:
                         ATIChip = ATI_CHIP_264VT;
                         break;
 
-                case 0x00D3U:
                 case 0x4754U:
                         ChipType = 0x00D3U;
+                case 0x00D3U:
                         ATIChip = ATI_CHIP_264GT;
                         break;
 
@@ -2009,7 +2010,7 @@ static void
 ATIMach64Probe(const unsigned short int IO_Base,
                const unsigned char IO_Decoding)
 {
-        unsigned int IO_Value;
+        unsigned int IO_Value, saved_bus_cntl, saved_gen_test_cntl;
         unsigned short int IO_Port;
 
         if ((ATIAdapter != ATI_ADAPTER_NONE) || (IO_Base == 0))
@@ -2020,15 +2021,16 @@ ATIMach64Probe(const unsigned short int IO_Base,
 
         /* Make sure any Mach64 is not in some weird state */
         BUS_CNTL_IOPort = ATIIOPort(BUS_CNTL);
-        IO_Value = inl(BUS_CNTL_IOPort);
-        outl(BUS_CNTL_IOPort, (IO_Value &
+        saved_bus_cntl = inl(BUS_CNTL_IOPort);
+        outl(BUS_CNTL_IOPort, (saved_bus_cntl &
                 ~(BUS_ROM_DIS | BUS_FIFO_ERR_INT_EN |
                   BUS_HOST_ERR_INT_EN)) |
                 (BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT |
                  SetBits(15, BUS_FIFO_WS)));
 
         GEN_TEST_CNTL_IOPort = ATIIOPort(GEN_TEST_CNTL);
-        IO_Value = inl(GEN_TEST_CNTL_IOPort) &
+        saved_gen_test_cntl = inl(GEN_TEST_CNTL_IOPort);
+        IO_Value = saved_gen_test_cntl &
                 (GEN_OVR_OUTPUT_EN | GEN_OVR_POLARITY |
                  GEN_CUR_EN | GEN_BLOCK_WR_EN);
         outl(GEN_TEST_CNTL_IOPort, IO_Value | GEN_GUI_EN);
@@ -2047,11 +2049,32 @@ ATIMach64Probe(const unsigned short int IO_Base,
                 outl(IO_Port, 0xAAAAAAAAUL);
                 if (inl(IO_Port) == 0xAAAAAAAAUL)
                 {
-                        /* A Mach64 has been detected */
-                        ATIAdapter = ATI_ADAPTER_MACH64;
+                        /*
+                         * *Something* has a R/W 32-bit register at this I/O
+                         * address.  Try to make sure it's a Mach64.  The
+                         * following assumes that ATI won't be producing any
+                         * more adapters that don't register themselves in the
+                         * PCI configuration space.
+                         */
+                        ATIMach64ChipID();
+                        if ((ATIChip != ATI_CHIP_88800) ||
+                            (IO_Decoding == BLOCK_IO))
+                                ATIAdapter = ATI_ADAPTER_MACH64;
+                        else
+                        {
+                                ATIChip = ATI_CHIP_NONE;
+                                ATIClockMap = ATIVGAWonderClockMap;
+                        }
                 }
-         }
-         outl(IO_Port, IO_Value);
+        }
+
+        /* Restore registers that might have been clobbered */
+        outl(IO_Port, IO_Value);
+        if (ATIAdapter != ATI_ADAPTER_MACH64)
+        {
+                outl(GEN_TEST_CNTL_IOPort, saved_gen_test_cntl);
+                outl(BUS_CNTL_IOPort, saved_bus_cntl);
+        }
 }
 
 /*
@@ -2216,17 +2239,19 @@ ATIProbe(void)
                 ATIMach64Probe(0x01CCU, SPARSE_IO);
 
                 /* Lastly, check PCI configuration space */
-                Index = 0;
-                while ((ATIAdapter == ATI_ADAPTER_NONE) &&
-                       vgaPCIInfo && vgaPCIInfo->AllCards &&
-		       (PCIDevice = vgaPCIInfo->AllCards[Index++]))
+                if (vgaPCIInfo && vgaPCIInfo->AllCards)
                 {
-                        if (PCIDevice->_vendor != PCI_VENDOR_ATI)
-                                continue;
-                        if (PCIDevice->_device == PCI_CHIP_MACH32)
-                                continue;
-                        ATIMach64Probe(PCIDevice->_base1 & BLOCK_IO_BASE,
-                                BLOCK_IO);
+                        Index = 0;
+                        while ((ATIAdapter == ATI_ADAPTER_NONE) &&
+                               (PCIDevice = vgaPCIInfo->AllCards[Index++]))
+                        {
+                                if (PCIDevice->_vendor != PCI_VENDOR_ATI)
+                                        continue;
+                                if (PCIDevice->_device == PCI_CHIP_MACH32)
+                                        continue;
+                                ATIMach64Probe(PCIDevice->_base1 &
+                                        BLOCK_IO_BASE, BLOCK_IO);
+                        }
                 }
         }
 
@@ -2285,8 +2310,6 @@ ATIProbe(void)
                         break;
 
                 case ATI_ADAPTER_MACH64:
-                        ATIMach64ChipID();
-
                         if (ATIChip <= ATI_CHIP_88800CX)
                         {
                                 IO_Value = inl(ATIIOPort(CONFIG_STATUS64_0)) &

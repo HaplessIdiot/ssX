@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.36 1996/09/22 05:01:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.37 1996/09/24 13:52:44 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -189,7 +189,7 @@ struct RamDac_Name RamDac_Names[] =
 	{ "68860", "ATI 68860 15/15/24-bit DAC w/pixel-mux" },
 	{ "68875", "ATI-68875/Bt885/TLC34075 15/16/24-bit DAC w/pixel-mux" },
 	{ "ATIMisc", 
-	  "ATI Misc 3rd-party {AT&T, BT, Sierra} 15/16/24-bit DAC" },
+	  "ATI Misc 3rd-party 15/16/24-bit DAC, probably BT481" },
 	{ "Cirrus8", "Cirrus Logic Built-in 8-bit pseudo-color DAC" },
 	{ "Cirrus24B", "Cirrus Logic Built-in 15/16/24-bit DAC" },
 	{ "Cirrus24", "Cirrus Logic 15/16/24-bit DAC" },

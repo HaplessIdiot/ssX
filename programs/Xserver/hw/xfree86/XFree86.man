@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.29 1996/08/13 11:27:50 dawes Exp $ 
-.TH XFree86 1 "Version 3.1.2F"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.30 1996/08/16 12:28:24 dawes Exp $ 
+.TH XFree86 1 "Version 3.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
 .SH DESCRIPTION
@@ -463,7 +463,7 @@ Brad Bosch,        \fIbrad@lachman.com\fP
 WD 90C24A support.
 .TP 8
 Alan Hourihane,    \fIalanh@fairlite.demon.co.uk\fP
-Trident SVGA driver and SiS SVGA driver.
+Trident SVGA driver, SiS SVGA driver and DEC 21030 server.
 .TP 8
 Marc La France,    \fIMarc.La-France@ualberta.ca\fP
 ATI vgawonder SVGA driver

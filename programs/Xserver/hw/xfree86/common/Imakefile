@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.38 1996/07/08 10:26:07 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.39 1996/09/22 13:26:35 dawes Exp $
 
 
 
@@ -101,7 +101,8 @@ SERVERSRCS = \
 	XF86_P9000.c \
 	XF86_AGX.c \
 	XF86_W32.c \
-	XF86_I128.c
+	XF86_I128.c \
+	XF86_TGA.c
 
 SRCS =	\
 	$(XF86DL_SRC) \
@@ -179,7 +180,7 @@ XF86SCREENFLAGS = $(VGA2BUILD) $(VGA16BUILD) $(VGA2MONOBUILD) $(VGA16MONOBUILD)
 
 all:: $(OFILES)
 
-#ifdef BuildXInputExt
+#if BuildXInputExt
 SpecialObjectRule(xf86Xinput.o,xf86Xinput.c $(ICONFIGFILES),$(XINPUT_DEVICES) $(MODULEDEFINES))
 # if BuildDynamicLoading
 #  if JoystickSupport
@@ -255,14 +256,18 @@ all:: XF86_W32.o
 SpecialObjectRule(XF86_I128.o,XF86_I128.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_I128.o
 #endif
+#if XF86TGAServer
+SpecialObjectRule(XF86_TGA.o,XF86_TGA.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_TGA.o
+#endif
 
 #if NeedXF86Beta
 SpecialObjectRule($(BETAOBJ),$(BETASRC),$(EXP_DEFINES))
 #endif
 
 ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS) -DXF86MONOVGA)
-ObjectFromSpecialSource(xf86IniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES))
-ObjectFromSpecialSource(xf86MIniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES) -UPEXEXT -UXIE)
+SpecialObjectRule(xf86IniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES))
+SpecialObjectRule(xf86MIniExt.o,xf86IniExt.c $(ICONFIGFILES),$(EXT_DEFINES) -UPEXEXT -UXIE)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(xf86,$(OBJS))
@@ -270,6 +275,8 @@ NormalLibraryTarget(xf86,$(OBJS))
 LinkFile(XF86_Mach8.c,Mach8.c)
 LinkFile(XF86_Mach32.c,Mach32.c)
 LinkFile(XF86_Mach64.c,Mach64.c)
+LinkFile(xf86IniExt.c,$(SERVERSRC)/mi/miinitext.c)
+LinkFile(xf86MIniExt.c,$(SERVERSRC)/mi/miinitext.c)
 
 InstallLinkKitLibrary(xf86,$(LINKKITDIR)/lib)
 InstallLinkKitNonExecFile(xf86Init.o,$(LINKKITDIR)/lib)
@@ -294,5 +301,6 @@ InstallLinkKitNonExecFile(XF86_P9000.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_AGX.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_W32.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_I128.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_TGA.c,$(LINKKITDIR))
 
 DependTarget()

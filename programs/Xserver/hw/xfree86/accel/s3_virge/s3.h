@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.h,v 3.1 1996/09/23 13:26:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.h,v 3.2 1996/09/24 13:54:03 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -1031,7 +1031,7 @@ _XFUNCPROTOEND
 
 #endif /* !LINKKIT */
 
-extern __inline__ int s3CheckLSPN(int w)
+static __inline__ int s3CheckLSPN(int w)
 {
    int lspn = (w * s3Bpp) & 63;  /* scanline width in bytes modulo 64*/
 
@@ -1055,7 +1055,7 @@ extern __inline__ int s3CheckLSPN(int w)
 }
 
 
-extern __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, int inc_x)
+static __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, int inc_x)
 {
    int newwidth;
    int n1;

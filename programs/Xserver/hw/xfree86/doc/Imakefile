@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/17 1996/02/06 10:03:48 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.34 1996/09/03 04:12:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.35 1996/09/22 05:05:16 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -84,7 +84,8 @@ all::
 HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
             README.DECtga \
             README.chips README.cirrus README.Video7 README.P9000 README.agx \
-            README.S3 README.W32 README.Oak README.Mach64 README.ark
+            README.S3 README.W32 README.Oak README.Mach32 \
+            README.Mach64 README.ark
 
 MAINDOCS = COPYRIGHT README README.Config INSTALL RELNOTES
 
@@ -99,6 +100,7 @@ FILES = $(MAINDOCS) $(OSREADME) $(HWREADME) $(OTHERDOCS) $(MISCDOCS) $(DATABASE)
 
 InstallMultipleDest(install,$(FILES),$(XFREE86DOCDIR))
 
+LinkFile(README.Mach32,READ.Mach32)
 LinkFile(README.Mach64,READ.Mach64)
 LinkFile(README.FreeBSD,READ.FreeBSD)
 LinkFile(README.OpenBSD,README.NetBSD)

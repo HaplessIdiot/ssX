@@ -30,7 +30,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.22 1996/08/10 13:04:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.23 1996/09/24 13:52:46 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -938,11 +938,20 @@ int *RamDac;
 	    else if (!Crippled_Mach64)
 	    {
 		if (Chipset <= CHIP_ATI88800GXC)
+		{
 		    CheckMach32(Chipset, RamDac);
+		    if (DAC_CHIP(*RamDac) != DAC_ATIMISC24)
+		    {
+		        DisableIOPorts(NUMPORTS, Ports);
+		        return;
+		    }
+		}
 		else
+		{
 		    CheckMach64(Chipset, RamDac);
-		DisableIOPorts(NUMPORTS, Ports);
-		return;
+		    DisableIOPorts(NUMPORTS, Ports);
+		    return;
+		}
 	    }
 	}
 	else if ((SVGA_VENDOR(Chipset) == V_CIRRUS) &&

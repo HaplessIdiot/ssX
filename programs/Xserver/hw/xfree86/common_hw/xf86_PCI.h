@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.7 1996/08/23 11:03:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.8 1996/09/14 13:10:07 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -344,6 +344,7 @@ pciConfigPtr *xf86scanpci(
 #endif
 );
 
+#ifdef USE_OLD_PCI_CODE
 void xf86writepci(
 #if NeedFunctionPrototypes
 	int,
@@ -355,6 +356,19 @@ void xf86writepci(
 	unsigned long
 #endif
 );
+#else
+void xf86writepci(
+#if NeedFunctionPrototypes
+	int,
+	int,
+	int,	
+	int,
+	int,
+	CARD32,
+	CARD32
+#endif
+);
+#endif
 
 void xf86cleanpci(
 #if NeedFunctionPrototypes

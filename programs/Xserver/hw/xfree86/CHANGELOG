@@ -1,3 +1,19 @@
+XFree86 3.1.2Gf (25 September 1996)
+854. Mach32 documentation (Bryan Feir).
+853. Improve Mach32 ramdac probing in SuperProbe (Bryan Feir).
+852. Fix xf86writepci() prototype (Alan Hourihane).
+851. TGA server and documentation updates (Alan Hourihane).
+850. Fix missing argument in the QueryBestSize functions in the SVGA server
+     (Harm Hanemaayer).
+849. Another fix for usage of XInput defines, and make initext depend on
+     ICONFIGFILES (Marc Aurele La France).
+848. Improve reliability of detecting Mach64 cards in SuperProbe, the
+     Mach64 server and the ati driver (Marc Aurele La France).
+847. Complete s3im.c for s3_virge (Harald Koenig).
+846. Fix s3_virge framebuffer detection (Harald Koenig).
+845. Fix s3_virge compile problems when using a compiler other than gcc.
+844. Missing patch to vgaCmap.c for item 842 (Harm Hanemaayer).
+
 XFree86 3.1.2Ge (24 September 1996)
 843. Add Trio/ViRGE clock support to the "s3_svga" driver.  This is still
      incomplete, and for development use (Harald Koenig).
