@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.11 2000/04/20 21:28:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.12 2000/08/04 21:07:12 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -559,8 +559,8 @@ ATIChipID
 
         default:
             /*
-             * I'd say it's a Rage128 here, except that I don't support them
-             * yet.
+             * I'd say it's a Rage128 or a Radeon here, except that I don't
+             * support them.
              */
             return ATI_CHIP_Mach64;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.10 2000/06/19 15:00:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.11 2000/08/04 21:07:13 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -419,7 +419,7 @@ static const CARD8 ClockMaps[][4] =
 #define ATIProgrammableClockMap      ClockMaps[0]
 #define ATIProgrammableClockUnmap    ATIProgrammableClockMap
 #define MapClockIndex(_ClockMap, _Index) \
-    (SetBits((_ClockMap)[GetBits((_Index), 0x0CU)], 0x0CU) | \
+    (SetBits((_ClockMap)[GetBits(_Index, 0x0CU)], 0x0CU) | \
      ((_Index) & ~0x0CU))
 
 /*

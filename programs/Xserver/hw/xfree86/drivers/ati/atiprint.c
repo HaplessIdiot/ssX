@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.13 2000/06/19 15:00:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.14 2000/08/04 21:07:15 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -37,12 +37,11 @@ void
 ATIPrintBIOS
 (
     const CARD8        *BIOS,
-    const unsigned int Start,
-    const unsigned int End
+    const unsigned int Length   /* A multiple of 512 */
 )
 {
     unsigned char *Char = NULL;
-    unsigned int Index = Start & ~(16U - 1U);
+    unsigned int  Index;
     unsigned char Printable[17];
 
     if (xf86GetVerbosity() <= 4)
@@ -50,9 +49,9 @@ ATIPrintBIOS
 
     (void)memset(Printable, 0, SizeOf(Printable));
 
-    xf86ErrorFVerb(5, "\n BIOS data at offset 0x%08X:", Start);
+    xf86ErrorFVerb(5, "\n BIOS image:");
 
-    for (;  Index < ((End + (16U - 1U)) & ~(16U - 1U));  Index++)
+    for (Index = 0;  Index < Length;  Index++)
     {
         if (!(Index & (4U - 1U)))
         {
@@ -65,19 +64,11 @@ ATIPrintBIOS
             }
             xf86ErrorFVerb(5, " ");
         }
-        if ((Index < Start) || (Index >= End))
-        {
-            xf86ErrorFVerb(5, "  ");
-            *Char++ = ' ';
-        }
+        xf86ErrorFVerb(5, "%02X", BIOS[Index]);
+        if (isprint(BIOS[Index]))
+            *Char++ = BIOS[Index];
         else
-        {
-            xf86ErrorFVerb(5, "%02X", BIOS[Index]);
-            if (isprint(BIOS[Index]))
-                *Char++ = BIOS[Index];
-            else
-                *Char++ = '.';
-        }
+            *Char++ = '.';
     }
 
     xf86ErrorFVerb(5, "  |%s|\n", Printable);
@@ -307,7 +298,7 @@ ATIPrintRegisters
 
     if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
     {
-        xf86ErrorFVerb(4, "\n Miscellaneous output register value:  0x%02X.",
+        xf86ErrorFVerb(4, "\n Miscellaneous output register value:  0x%02X.\n",
             genmo = inb(R_GENMO));
 
         if (genmo & 0x01U)
@@ -740,5 +731,6 @@ ATIPrintMode
                 break;
         }
     }
+
     xf86ErrorFVerb(4, "\n");
 }

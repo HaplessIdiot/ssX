@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.1 2000/07/07 20:07:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.2 2000/08/04 21:07:14 tsi Exp $ */
 /*
  * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -180,31 +180,34 @@ extern void ATIAccessMach64PLLReg FunctionPrototype((ATIPtr, const CARD8,
         in8(CLOCK_CNTL + 2)                         \
     )
 #define ATIPutMach64PLLReg(_Index, _Value)          \
-    (                                               \
-        ATIAccessMach64PLLReg(pATI, _Index, TRUE),  \
-        out8(CLOCK_CNTL + 2, _Value)                \
-    )
+    do                                              \
+    {                                               \
+        ATIAccessMach64PLLReg(pATI, _Index, TRUE);  \
+        out8(CLOCK_CNTL + 2, _Value);               \
+    } while(0)
 
-#define ATIGetMach64LCDReg(_Index)                         \
-    (                                                      \
-        out8(LCD_INDEX, SetBits((_Index), LCD_REG_INDEX)), \
-        inr(LCD_DATA)                                      \
+#define ATIGetMach64LCDReg(_Index)                       \
+    (                                                    \
+        out8(LCD_INDEX, SetBits(_Index, LCD_REG_INDEX)), \
+        inr(LCD_DATA)                                    \
     )
-#define ATIPutMach64LCDReg(_Index, _Value)                 \
-    (                                                      \
-        out8(LCD_INDEX, SetBits((_Index), LCD_REG_INDEX)), \
-        outr(LCD_DATA, (_Value))                           \
-    )
+#define ATIPutMach64LCDReg(_Index, _Value)               \
+    do                                                   \
+    {                                                    \
+        out8(LCD_INDEX, SetBits(_Index, LCD_REG_INDEX)); \
+        outr(LCD_DATA, _Value);                          \
+    } while(0)
 
-#define ATIGetMach64TVReg(_Index)                            \
-    (                                                        \
-        out8(TV_OUT_INDEX, SetBits((_Index), TV_REG_INDEX)), \
-        inr(TV_OUT_DATA)                                     \
+#define ATIGetMach64TVReg(_Index)                          \
+    (                                                      \
+        out8(TV_OUT_INDEX, SetBits(_Index, TV_REG_INDEX)), \
+        inr(TV_OUT_DATA)                                   \
     )
-#define ATIPutMach64TVReg(_Index, _Value)                    \
-    (                                                        \
-        out8(TV_OUT_INDEX, SetBits((_Index), TV_REG_INDEX)), \
-        outr(TV_OUT_DATA, (_Value))                          \
-    )
+#define ATIPutMach64TVReg(_Index, _Value)                  \
+    do                                                     \
+    {                                                      \
+        out8(TV_OUT_INDEX, SetBits(_Index, TV_REG_INDEX)); \
+        outr(TV_OUT_DATA, _Value);                         \
+    } while(0)
 
 #endif /* ___ATIMACH64IO_H___ */

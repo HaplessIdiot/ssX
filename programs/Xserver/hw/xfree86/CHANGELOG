@@ -1,8 +1,16 @@
-
+XFree86 4.0.1c (17 August 2000)
+ 523. ATI driver changes (Marc La France):
+      - Make ATIProbe() and ATIPreInit() optionally more verbose.
+      - Fix compile problem on Alpha's.
+      - Fix Mach64 hardware clipping bug.
+      - Support transparency during Mach64 screen-to-screen copies.
+      - Disable int10 interface in MMIO-only driver version.
+      - Fix determination of MMIO base address for Mach64 GX, CX, CT, ET,
+        VT and GT.
+      - "Wake" up ATI VGA's before probing for them.
+      - Other cosmetic changes.
  522. Workaround for problems with static during palette changes on the
       MGA G400 (Mark Vojkovich).
-
-XFree86 4.0.1c (17 August 2000)
  521. Share common drm files between Linux and FreeBSD.  This fixes
       DRI-related build problems on FreeBSD (David Dawes).
  520. Add Romanian xkb symbols definitions (Cristian Gafton).
@@ -11009,4 +11017,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1273 2000/08/16 01:45:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1274 2000/08/21 00:38:55 mvojkovi Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibios.c,v 1.5 2000/02/18 12:19:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibios.c,v 1.6 2000/08/04 21:07:12 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -52,7 +52,6 @@ ATIReadBIOS
         (((pPCI = pVideo->thisCard)->pci_command &
           (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)) !=
          (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)))
-
     {
         pATI->BIOSBase = PCIGETROM(pciReadLong(pPCI->tag, PCI_MAP_ROM_REG));
         return xf86ReadPciBIOS(Offset, pPCI->tag, 0, Buffer, Length);

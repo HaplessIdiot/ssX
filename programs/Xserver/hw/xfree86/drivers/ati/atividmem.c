@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.8 2000/02/18 12:19:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.9 2000/08/04 21:07:16 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -168,7 +168,7 @@ ATIMapApertures
 
 #ifndef AVOID_CPIO
 
-    if (pATI->VGAAdapter == ATI_ADAPTER_NONE) 
+    if (pATI->VGAAdapter == ATI_ADAPTER_NONE)
 
 #endif /* AVOID_CPIO */
 
