@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holder.
 
 */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.11 2003/07/09 15:27:39 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.12tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -102,7 +102,7 @@ GetChooserAddr (
     if (getsockname (chooserFd, (struct sockaddr *)&in_addr, (void *)&len) < 0)
 	return -1;
 #if defined(IPv6) && defined(AF_INET6)
-    if (in_addr.ss_family == AF_INET6)
+    if (((struct sockaddr *)&in_addr)->sa_family == AF_INET6)
 	Debug ("Chooser socket port: %d (IPv6)\n", 
 	  ntohs(((struct sockaddr_in6 *) &in_addr)->sin6_port));
     else

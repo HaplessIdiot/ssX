@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.21 2003/07/09 15:27:41 tsi Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.22tsi Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -715,7 +715,8 @@ get_hostname(XHostAddress *ha)
 	}
 	alarm(0);
 	if (nameserver_timedout || inetname[0] == '\0')
-	    inet_ntop(saddr.ss_family, ha->address, inetname, sizeof(inetname));
+	    inet_ntop(((struct sockaddr *)&saddr)->sa_family, ha->address,
+		inetname, sizeof(inetname));
 	return inetname;	      
     }
 #else

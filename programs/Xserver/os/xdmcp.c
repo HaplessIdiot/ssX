@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.23tsi Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -100,32 +100,32 @@ static XdmcpBuffer	    buffer;
 static struct addrinfo *mgrAddr;
 static struct addrinfo *mgrAddrFirst;
 
-#define SOCKADDR_TYPE	struct sockaddr_storage
-#define SOCKLEN_TYPE 	socklen_t
-#define SOCKADDR_FAMILY ss_family
+#define SOCKADDR_TYPE		struct sockaddr_storage
+#define SOCKLEN_TYPE 		socklen_t
+#define SOCKADDR_FAMILY(s)	((struct sockaddr *)&(s))->sa_family
 
 #ifdef BSD44SOCKETS
-#define SOCKLEN_FIELD 	ss_len
+#define SOCKLEN_FIELD(s)	((struct sockaddr *)&(s))->sa_len
 #endif
 
 #else
 
-#define SOCKADDR_TYPE	struct sockaddr_in
-#define SOCKLEN_TYPE	size_t
-#define SOCKADDR_FAMILY sin_family
+#define SOCKADDR_TYPE		struct sockaddr_in
+#define SOCKLEN_TYPE		size_t
+#define SOCKADDR_FAMILY(s)	(s).sin_family
 
 #ifdef BSD44SOCKETS
-#define SOCKLEN_FIELD sin_len
+#define SOCKLEN_FIELD(s)	(s).sin_len
 #endif
 
 #endif
 
-static SOCKADDR_TYPE   ManagerAddress;
-static SOCKADDR_TYPE   FromAddress;
+static SOCKADDR_TYPE		ManagerAddress;
+static SOCKADDR_TYPE		FromAddress;
 
 #ifdef SOCKLEN_FIELD
-#define ManagerAddressLen ManagerAddress.SOCKLEN_FIELD
-#define FromAddressLen FromAddress.SOCKLEN_FIELD
+#define ManagerAddressLen	SOCKLEN_FIELD(ManagerAddress)
+#define FromAddressLen		SOCKLEN_FIELD(FromAddress)
 #else
 static SOCKLEN_TYPE ManagerAddressLen, FromAddressLen;
 #endif
@@ -464,11 +464,11 @@ XdmcpRegisterConnection (
 	int regAddrlen = addrlen;
 
 	if (addrlen == sizeof(struct in_addr)) {
-	    if (FromAddress.SOCKADDR_FAMILY == AF_INET) {
+	    if (SOCKADDR_FAMILY(FromAddress) == AF_INET) {
 		fromAddr = &((struct sockaddr_in *)&FromAddress)->sin_addr;
 	    } 
 #if defined(IPv6) && defined(AF_INET6)
-	    else if ((FromAddress.SOCKADDR_FAMILY == AF_INET6) &&
+	    else if ((SOCKADDR_FAMILY(FromAddress) == AF_INET6) &&
 	      IN6_IS_ADDR_V4MAPPED(
 		  &((struct sockaddr_in6 *)&FromAddress)->sin6_addr)) {
 		fromAddr = &((struct sockaddr_in6 *)&FromAddress)->sin6_addr.s6_addr[12];
@@ -477,9 +477,9 @@ XdmcpRegisterConnection (
 	}
 #if defined(IPv6) && defined(AF_INET6)
 	else if (addrlen == sizeof(struct in6_addr)) {
-	    if (FromAddress.SOCKADDR_FAMILY == AF_INET6) {
+	    if (SOCKADDR_FAMILY(FromAddress) == AF_INET6) {
 		fromAddr = &((struct sockaddr_in6 *)&FromAddress)->sin6_addr;
-	    } else if ((FromAddress.SOCKADDR_FAMILY == AF_INET) &&
+	    } else if ((SOCKADDR_FAMILY(FromAddress) == AF_INET) &&
 	      IN6_IS_ADDR_V4MAPPED((struct in6_addr *) address)) {
 		fromAddr = &((struct sockaddr_in *)&FromAddress)->sin_addr;
 		regAddr = &((struct sockaddr_in6 *)&address)->sin6_addr.s6_addr[12];
@@ -1147,7 +1147,7 @@ send_query_msg(void)
     else
     {
 #if defined(IPv6) && defined(AF_INET6)
-	if (ManagerAddress.ss_family == AF_INET6)
+	if (SOCKADDR_FAMILY(ManagerAddress) == AF_INET6)
 	    socketfd = xdmcpSocket6;
 #endif	
 	XdmcpFlush (socketfd, &buffer, (XdmcpNetaddr) &ManagerAddress,
@@ -1245,7 +1245,7 @@ send_request_msg(void)
     XdmcpWriteARRAYofARRAY8 (&buffer, &AuthorizationNames);
     XdmcpWriteARRAY8 (&buffer, &ManufacturerDisplayID);
 #if defined(IPv6) && defined(AF_INET6)
-    if (req_sockaddr.ss_family == AF_INET6)
+    if (SOCKADDR_FAMILY(req_sockaddr) == AF_INET6)
 	socketfd = xdmcpSocket6;
 #endif
     if (XdmcpFlush (socketfd, &buffer, 
@@ -1346,7 +1346,7 @@ send_manage_msg(void)
     XdmcpWriteARRAY8 (&buffer, &DisplayClass);
     state = XDM_AWAIT_MANAGE_RESPONSE;
 #if defined(IPv6) && defined(AF_INET6)
-    if (req_sockaddr.ss_family == AF_INET6)
+    if (SOCKADDR_FAMILY(req_sockaddr) == AF_INET6)
 	socketfd = xdmcpSocket6;
 #endif
     XdmcpFlush (socketfd, &buffer, (XdmcpNetaddr) &req_sockaddr, req_socklen);
@@ -1408,7 +1408,7 @@ send_keepalive_msg(void)
 
     state = XDM_AWAIT_ALIVE_RESPONSE;
 #if defined(IPv6) && defined(AF_INET6)
-    if (req_sockaddr.ss_family == AF_INET6)
+    if (SOCKADDR_FAMILY(req_sockaddr) == AF_INET6)
 	socketfd = xdmcpSocket6;
 #endif
     XdmcpFlush (socketfd, &buffer, (XdmcpNetaddr) &req_sockaddr, req_socklen);

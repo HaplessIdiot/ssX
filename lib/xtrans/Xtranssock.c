@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holders.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.57 2003/07/09 15:27:29 tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.58tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -87,7 +87,7 @@ from the copyright holders.
 #endif 
 
 #ifndef NO_TCP_H
-#ifdef __osf__
+#if defined(__osf__) || defined(linux)
 #include <sys/param.h>
 #endif /* osf */
 #if defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) 
@@ -335,7 +335,7 @@ TRANS(SocketINETGetAddr) (XtransConnInfo ciptr)
     }
 
 #if defined(IPv6) && defined(AF_INET6)
-    ciptr->family = sockname.ss_family;
+    ciptr->family = ((struct sockaddr *)&sockname)->sa_family;
 #else
     ciptr->family = sockname.sin_family;
 #endif
@@ -858,11 +858,10 @@ TRANS(SocketINETCreateListener) (XtransConnInfo ciptr, char *port)
 {
 #if defined(IPv6) && defined(AF_INET6)
     struct sockaddr_storage sockname;
-    in_port_t		    sport;
 #else
     struct sockaddr_in	    sockname;
-    unsigned short	    sport;
 #endif
+    unsigned short	    sport;
     int		namelen = sizeof(sockname);
     int		status;
     long	tmpport;
