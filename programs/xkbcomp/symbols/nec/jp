@@ -158,8 +158,10 @@ default xkb_symbols "pc98" {
     // End "Keypad" section
 
     // begin modifier mappings
-    modifier_map Shift  	{ Shift_L, Shift_R };
-    modifier_map Mod2   	{ Mode_switch };
-    modifier_map Mod3   	{ Alt_L };
+    modifier_map Shift  { Shift_L };
+    modifier_map Lock   { Caps_Lock };
+    modifier_map Control{ Control_L };
+    modifier_map Mod2   { Mode_switch };
+    modifier_map Mod3   { Alt_L };
 };
 
