@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.26 1999/06/12 07:18:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.27 1999/06/12 15:37:07 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -386,7 +386,6 @@ S3VProbe(DriverPtr drv, int flags)
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
-    EntityInfoPtr pEnt;
     
     PVERB5("	S3VProbe begin\n");
     
@@ -412,30 +411,26 @@ S3VProbe(DriverPtr drv, int flags)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	pEnt = xf86GetEntityInfo(usedChips[i]);
+	/* Allocate a ScrnInfoRec and claim the slot */
+	ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
 	
- 	if (pEnt->active) {
-	    /* Allocate a ScrnInfoRec and claim the slot */
-	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
+	/* Fill in what we can of the ScrnInfoRec */
+	pScrn->driverVersion = S3VIRGE_DRIVER_VERSION;
+	pScrn->driverName	 = S3VIRGE_DRIVER_NAME;
+	pScrn->name		 = S3VIRGE_NAME;
+	pScrn->Probe	 = S3VProbe;
+	pScrn->PreInit	 = S3VPreInit;
+	pScrn->ScreenInit	 = S3VScreenInit;
+	pScrn->SwitchMode	 = S3VSwitchMode;
+	pScrn->AdjustFrame	 = S3VAdjustFrame;
+	pScrn->EnterVT	 = S3VEnterVT;
+	pScrn->LeaveVT	 = S3VLeaveVT;
+	pScrn->FreeScreen	 = NULL; /*S3VFreeScreen;*/
+	pScrn->ValidMode	 = S3VValidMode;
+	foundScreen = TRUE;
+	xf86ConfigActivePciEntity(pScrn,usedChips[i],S3VPciChipsets,
+				  NULL,NULL, NULL,NULL,NULL);
 
-		/* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion = S3VIRGE_DRIVER_VERSION;
-	    pScrn->driverName	 = S3VIRGE_DRIVER_NAME;
-	    pScrn->name		 = S3VIRGE_NAME;
-	    pScrn->Probe	 = S3VProbe;
-	    pScrn->PreInit	 = S3VPreInit;
-	    pScrn->ScreenInit	 = S3VScreenInit;
-	    pScrn->SwitchMode	 = S3VSwitchMode;
-	    pScrn->AdjustFrame	 = S3VAdjustFrame;
-	    pScrn->EnterVT	 = S3VEnterVT;
-	    pScrn->LeaveVT	 = S3VLeaveVT;
-	    pScrn->FreeScreen	 = NULL; /*S3VFreeScreen;*/
-	    pScrn->ValidMode	 = S3VValidMode;
-	    foundScreen = TRUE;
-	    xf86ConfigActivePciEntity(pScrn,pEnt,S3VPciChipsets,NULL,NULL,
-				      NULL,NULL,NULL);
-	}
-	xfree(pEnt);
     }
     xfree(usedChips);
     PVERB5("	S3VProbe end\n");
@@ -722,6 +717,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     }
     ps3v->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
     xf86RegisterResources(pEnt->index,NULL,ResNone);
+    
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
@@ -2744,10 +2740,11 @@ S3VCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     					/* Like S3VRestore, but uses passed */
 					/* mode registers.		    */
-/*  xf86EnableAccess(xf86Screens[scrnIndex]);*/
-  S3VWriteMode(pScrn, vgaSavePtr, S3VSavePtr);
-  vgaHWLock(hwp);
-  S3VUnmapMem(pScrn);
+  if (pScrn->vtSema) {
+      S3VWriteMode(pScrn, vgaSavePtr, S3VSavePtr);
+      vgaHWLock(hwp);
+      S3VUnmapMem(pScrn);
+  }
   if (ps3v->AccelInfoRec)
     XAADestroyInfoRec(ps3v->AccelInfoRec);
 
@@ -2952,6 +2949,8 @@ S3VEnableMmio(ScrnInfoPtr pScrn)
    * might not be needed once we use the VGA softbooter
    * (EE 05/04/99)
    */
+  vgaHWSetStdFuncs(hwp);
+  
   val = inb(0x3C3);               /*@@@EE*/
   outb(0x3C3,val | 0x01);
   /*

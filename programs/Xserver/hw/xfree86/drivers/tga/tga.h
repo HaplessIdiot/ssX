@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.8 1999/04/17 07:06:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.9 1999/04/25 10:02:24 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -66,6 +66,7 @@ typedef struct {
     int                 CardType;
     unsigned char       Bt463modeReg[59];
     unsigned char       Bt463saveReg[59];
+    EntityInfoPtr       pEnt;
 } TGARec, *TGAPtr;
 
 /* Prototypes */

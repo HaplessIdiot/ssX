@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.58 1999/06/13 15:49:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.59 1999/06/13 16:30:39 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -539,7 +539,6 @@ TRIDENTProbe(DriverPtr drv, int flags)
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
-    EntityInfoPtr pEnt;
 
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -606,32 +605,27 @@ TRIDENTProbe(DriverPtr drv, int flags)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	pEnt = xf86GetEntityInfo(usedChips[i]);
-
-	if (pEnt->active) {
-	    ScrnInfoPtr pScrn;
-
-	    /* Allocate a ScrnInfoRec and claim the slot */
-	    pScrn = xf86AllocateScreen(drv, 0);
-
-	    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName	 = TRIDENT_DRIVER_NAME;
-	    pScrn->name		 = TRIDENT_NAME;
-	    pScrn->Probe	 = TRIDENTProbe;
-	    pScrn->PreInit	 = TRIDENTPreInit;
-	    pScrn->ScreenInit	 = TRIDENTScreenInit;
-	    pScrn->SwitchMode	 = TRIDENTSwitchMode;
-	    pScrn->AdjustFrame	 = TRIDENTAdjustFrame;
-	    pScrn->EnterVT	 = TRIDENTEnterVT;
-	    pScrn->LeaveVT	 = TRIDENTLeaveVT;
-	    pScrn->FreeScreen	 = TRIDENTFreeScreen;
-	    pScrn->ValidMode	 = TRIDENTValidMode;
-	    foundScreen = TRUE;
-	    xf86ConfigActivePciEntity(pScrn, pEnt, TRIDENTPciChipsets, NULL,
-				      NULL, NULL, NULL, NULL);
-	}
-	xfree(pEnt);
+	ScrnInfoPtr pScrn;
+	
+	/* Allocate a ScrnInfoRec and claim the slot */
+	pScrn = xf86AllocateScreen(drv, 0);
+	
+	/* Fill in what we can of the ScrnInfoRec */
+	pScrn->driverVersion = VERSION;
+	pScrn->driverName	 = TRIDENT_DRIVER_NAME;
+	pScrn->name		 = TRIDENT_NAME;
+	pScrn->Probe	 = TRIDENTProbe;
+	pScrn->PreInit	 = TRIDENTPreInit;
+	pScrn->ScreenInit	 = TRIDENTScreenInit;
+	pScrn->SwitchMode	 = TRIDENTSwitchMode;
+	pScrn->AdjustFrame	 = TRIDENTAdjustFrame;
+	pScrn->EnterVT	 = TRIDENTEnterVT;
+	pScrn->LeaveVT	 = TRIDENTLeaveVT;
+	pScrn->FreeScreen	 = TRIDENTFreeScreen;
+	pScrn->ValidMode	 = TRIDENTValidMode;
+	foundScreen = TRUE;
+	xf86ConfigActivePciEntity(pScrn, usedChips[i], TRIDENTPciChipsets,
+				  NULL, NULL, NULL, NULL, NULL);
     }
     xfree(usedChips);
     return foundScreen;

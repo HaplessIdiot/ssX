@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.12 1999/03/21 07:35:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.13 1999/03/28 15:32:38 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -125,7 +125,7 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     GLINTRegPtr pReg = &pGlint->ModeReg;
     CARD32 temp1, temp2, temp3, temp4;
-
+    
     pReg->glintRegs[Aperture0 >> 3] = 0;
     pReg->glintRegs[Aperture1 >> 3] = 0;
     pReg->glintRegs[PMFramebufferWriteMask >> 3] = 0xFFFFFFFF;
@@ -286,9 +286,9 @@ Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig);
 
     Permedia2ReadAddress(pScrn, 0x00);
+#if 1
     for (i=0;i<768;i++)
 	glintReg->cmap[i] = Permedia2ReadData(pScrn);
-
     glintReg->DacRegs[PM2DACIndexColorKeyOverlay] = 
 				Permedia2InIndReg(pScrn, PM2DACIndexColorKeyOverlay);
     glintReg->DacRegs[PM2DACIndexColorKeyControl] = 
@@ -306,6 +306,7 @@ Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 				Permedia2InIndReg(pScrn, PM2DACIndexClockAN);
     glintReg->DacRegs[PM2DACIndexClockAP] =
 				Permedia2InIndReg(pScrn, PM2DACIndexClockAP);
+#endif
 
 #if 0 /* In theory we should restore the memory clock, we can't as the register
        * is write only. This code is here for completeness and possible

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.28 1999/06/12 07:19:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.29 1999/06/14 12:02:10 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -224,7 +224,6 @@ GenericProbe(DriverPtr drv, int flags)
     int numDevSections, numUsed;
     GDevPtr *devSections;
     int *usedChips;
-    EntityInfoPtr pEnt;
     int i;
 
     /*
@@ -244,41 +243,8 @@ GenericProbe(DriverPtr drv, int flags)
 					drv, &usedChips);
 	if (numUsed > 0){
 	    for (i = 0; i < numUsed; i++) {
-		pEnt = xf86GetEntityInfo(usedChips[i]);
-		if (pEnt->active) {
-		    /* Allocate a ScrnInfoRec  */
-		    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-		    pScrn->driverVersion = VGA_VERSION_CURRENT;
-		    pScrn->driverName    = VGA_DRIVER_NAME;
-		    pScrn->name          = VGA_NAME;
-		    pScrn->Probe         = GenericProbe;
-		    pScrn->PreInit       = GenericPreInit;
-		    pScrn->ScreenInit    = GenericScreenInit;
-		    pScrn->SwitchMode    = GenericSwitchMode;
-		    pScrn->AdjustFrame   = GenericAdjustFrame;
-		    pScrn->EnterVT       = GenericEnterVT;
-		    pScrn->LeaveVT       = GenericLeaveVT;
-		    pScrn->FreeScreen    = GenericFreeScreen;
-		    pScrn->ValidMode     = GenericValidMode;
-		    foundScreen = TRUE;
-		    xf86ConfigActivePciEntity(pScrn,pEnt,GenericPCIchipsets,
-					      NULL,NULL,NULL,NULL,NULL);
-		}
-		xfree(pEnt);
-	    }
-	}
-    }
-    /* Isa Bus */
-    numUsed = xf86MatchIsaInstances(VGA_NAME,GenericChipsets,
-				     GenericISAchipsets,drv,
-				     VGAFindIsaDevice,devSections,
-				     numDevSections,&usedChips);
-    if(numUsed >= 0)
-	for (i = 0; i < numUsed; i++) {
-	    pEnt = xf86GetEntityInfo(usedChips[i]);
-	    if (pEnt->active) {
+		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-
 		pScrn->driverVersion = VGA_VERSION_CURRENT;
 		pScrn->driverName    = VGA_DRIVER_NAME;
 		pScrn->name          = VGA_NAME;
@@ -292,10 +258,35 @@ GenericProbe(DriverPtr drv, int flags)
 		pScrn->FreeScreen    = GenericFreeScreen;
 		pScrn->ValidMode     = GenericValidMode;
 		foundScreen = TRUE;
-		xf86ConfigActiveIsaEntity(pScrn,pEnt,GenericISAchipsets,
+		xf86ConfigActivePciEntity(pScrn,usedChips[i],GenericPCIchipsets,
 					  NULL,NULL,NULL,NULL,NULL);
 	    }
-	    xfree(pEnt);
+	}
+    }
+    /* Isa Bus */
+    numUsed = xf86MatchIsaInstances(VGA_NAME,GenericChipsets,
+				     GenericISAchipsets,drv,
+				     VGAFindIsaDevice,devSections,
+				     numDevSections,&usedChips);
+    if(numUsed >= 0)
+	for (i = 0; i < numUsed; i++) {
+	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
+	    
+	    pScrn->driverVersion = VGA_VERSION_CURRENT;
+	    pScrn->driverName    = VGA_DRIVER_NAME;
+	    pScrn->name          = VGA_NAME;
+	    pScrn->Probe         = GenericProbe;
+	    pScrn->PreInit       = GenericPreInit;
+	    pScrn->ScreenInit    = GenericScreenInit;
+	    pScrn->SwitchMode    = GenericSwitchMode;
+	    pScrn->AdjustFrame   = GenericAdjustFrame;
+	    pScrn->EnterVT       = GenericEnterVT;
+	    pScrn->LeaveVT       = GenericLeaveVT;
+	    pScrn->FreeScreen    = GenericFreeScreen;
+	    pScrn->ValidMode     = GenericValidMode;
+	    foundScreen = TRUE;
+	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],GenericISAchipsets,
+				      NULL,NULL,NULL,NULL,NULL);
 	}
     xfree(devSections);
     return foundScreen;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.59 1999/04/27 12:05:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.60 1999/06/12 07:18:51 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -789,7 +789,6 @@ CHIPSProbe(DriverPtr drv, int flags)
     int numDevSections, numUsed;
     GDevPtr *devSections;
     int *usedChips;
-    EntityInfoPtr pEnt;
     int i;
     
     /*
@@ -808,41 +807,8 @@ CHIPSProbe(DriverPtr drv, int flags)
 					&usedChips);
 	if (numUsed > 0) {
 	    for (i = 0; i < numUsed; i++) {
-		pEnt = xf86GetEntityInfo(usedChips[i]);
-		if (pEnt->active) {
-		    /* Allocate a ScrnInfoRec  */
-		    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-		    pScrn->driverVersion = VERSION;
-		    pScrn->driverName    = CHIPS_DRIVER_NAME;
-		    pScrn->name          = CHIPS_NAME;
-		    pScrn->Probe         = CHIPSProbe;
-		    pScrn->PreInit       = CHIPSPreInit;
-		    pScrn->ScreenInit    = CHIPSScreenInit;
-		    pScrn->SwitchMode    = CHIPSSwitchMode;
-		    pScrn->AdjustFrame   = CHIPSAdjustFrame;
-		    pScrn->EnterVT       = CHIPSEnterVT;
-		    pScrn->LeaveVT       = CHIPSLeaveVT;
-		    pScrn->FreeScreen    = CHIPSFreeScreen;
-		    pScrn->ValidMode     = CHIPSValidMode;
-		    foundScreen = TRUE;
-		    xf86ConfigActivePciEntity(pScrn,pEnt,CHIPSPCIchipsets,
-					      NULL,NULL,NULL,NULL,NULL);
-		}
-		xfree(pEnt);
-	    }
-	}
-    }
-
-    /* Isa Bus */
-    numUsed = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
-				     drv,chipsFindIsaDevice,devSections,
-				     numDevSections,&usedChips);
-    if(numUsed >= 0)
-	for (i = 0; i < numUsed; i++) {
-	    pEnt = xf86GetEntityInfo(usedChips[i]);
-	    if (pEnt->active) {
+		/* Allocate a ScrnInfoRec  */
 		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-	  
 		pScrn->driverVersion = VERSION;
 		pScrn->driverName    = CHIPS_DRIVER_NAME;
 		pScrn->name          = CHIPS_NAME;
@@ -856,10 +822,35 @@ CHIPSProbe(DriverPtr drv, int flags)
 		pScrn->FreeScreen    = CHIPSFreeScreen;
 		pScrn->ValidMode     = CHIPSValidMode;
 		foundScreen = TRUE;
-		xf86ConfigActiveIsaEntity(pScrn,pEnt,CHIPSISAchipsets,
+		xf86ConfigActivePciEntity(pScrn,usedChips[i],CHIPSPCIchipsets,
 					  NULL,NULL,NULL,NULL,NULL);
 	    }
-	    xfree(pEnt);
+	}
+    }
+    
+    /* Isa Bus */
+    numUsed = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
+				     drv,chipsFindIsaDevice,devSections,
+				     numDevSections,&usedChips);
+    if(numUsed >= 0)
+	for (i = 0; i < numUsed; i++) {
+	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
+	    
+	    pScrn->driverVersion = VERSION;
+	    pScrn->driverName    = CHIPS_DRIVER_NAME;
+	    pScrn->name          = CHIPS_NAME;
+	    pScrn->Probe         = CHIPSProbe;
+	    pScrn->PreInit       = CHIPSPreInit;
+	    pScrn->ScreenInit    = CHIPSScreenInit;
+	    pScrn->SwitchMode    = CHIPSSwitchMode;
+	    pScrn->AdjustFrame   = CHIPSAdjustFrame;
+	    pScrn->EnterVT       = CHIPSEnterVT;
+	    pScrn->LeaveVT       = CHIPSLeaveVT;
+	    pScrn->FreeScreen    = CHIPSFreeScreen;
+	    pScrn->ValidMode     = CHIPSValidMode;
+	    foundScreen = TRUE;
+	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],CHIPSISAchipsets,
+				      NULL,NULL,NULL,NULL,NULL);
 	}
     xfree(devSections);
     return foundScreen;
@@ -1434,8 +1425,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 				    (0x80 & (cPtr->readXR(cPtr, 0x05)))) << 16;
 		from = X_PROBED;
 	    }
-	    linearRes[0].__begin = cPtr->FbAddress;
-	    linearRes[0].__end = cPtr->FbAddress + 0x800000;
+	    linearRes[0].rBegin = cPtr->FbAddress;
+	    linearRes[0].rEnd = cPtr->FbAddress + 0x800000;
 	    if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 		cPtr->Flags &= ~ChipsLinearSupport;
 		from = X_PROBED;
@@ -2228,8 +2219,8 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	    cPtr->FbAddress |= ((mask  & (cPtr->readXR(cPtr, 0x08))) << 16);
 	    from = X_PROBED;
 	}
-	linearRes[0].__begin = cPtr->FbAddress;
-	linearRes[0].__end = cPtr->FbAddress + 0x800000;
+	linearRes[0].rBegin = cPtr->FbAddress;
+	linearRes[0].rEnd = cPtr->FbAddress + 0x800000;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 	    useLinear = FALSE;
 	    from = X_PROBED;
@@ -2312,8 +2303,8 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 #endif
 	}
 	linearRes[0].type = ResShrIoSparse | ResBios;
-	linearRes[0].__base = cPtr->Regs32[0];
-	linearRes[0].__mask = 0x83FC;
+	linearRes[0].rBase = cPtr->Regs32[0];
+	linearRes[0].rMask = 0x83FC;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 	    if (cPtr->Flags & ChipsAccelSupport) {
 		cPtr->Flags &= ~ChipsAccelSupport;
@@ -2695,8 +2686,8 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 		}
 		from = X_PROBED;
 	    }
-	    linearRes[0].__begin = cPtr->FbAddress;
-	    linearRes[0].__end = cPtr->FbAddress + 0x800000;
+	    linearRes[0].rBegin = cPtr->FbAddress;
+	    linearRes[0].rEnd = cPtr->FbAddress + 0x800000;
 	    if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 		useLinear = FALSE;
 		from = X_PROBED;
@@ -2970,8 +2961,8 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 #endif
 	}
 	linearRes[0].type = ResShrIoSparse;
-	linearRes[0].__base = cPtr->Regs32[0];
-	linearRes[0].__mask = 0x83FC;
+	linearRes[0].rBase = cPtr->Regs32[0];
+	linearRes[0].rMask = 0x83FC;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
 	    if (cPtr->Flags & ChipsAccelSupport) {
 		cPtr->Flags &= ~ChipsAccelSupport;

@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.39 1999/06/13 15:49:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.40 1999/06/13 16:30:35 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -411,7 +411,6 @@ CIRProbe(DriverPtr drv, int flags)
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
-    EntityInfoPtr pEnt;
 
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -478,54 +477,49 @@ CIRProbe(DriverPtr drv, int flags)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	pEnt = xf86GetEntityInfo(usedChips[i]);
-
-	if (pEnt->active) {
-	    ScrnInfoPtr pScrn;
-
-	    /* Allocate a ScrnInfoRec and claim the slot */
-	    pScrn = xf86AllocateScreen(drv, 0);
-
-	    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName	 = CIR_DRIVER_NAME;
-	    pScrn->name		 = CIR_NAME;
-	    pScrn->Probe	 = CIRProbe;
-	    /* The Laguna family of chips is so different from the Alpine
-	       family that we won't share even the highest-level of 
-	       functions.  But, the Laguna chips /are/ Cirrus chips, so
-	       they should be handled in this driver (as opposed to their
-	       own driver). */
-	    pPci = xf86GetPciInfoForEntity(pEnt->index);
-	    if (pPci->chipType == PCI_CHIP_GD5462 ||
-		pPci->chipType == PCI_CHIP_GD5464 ||
-		pPci->chipType == PCI_CHIP_GD5464BD ||
-		pPci->chipType == PCI_CHIP_GD5465) {
-	      pScrn->PreInit	 = LgPreInit;
+	ScrnInfoPtr pScrn;
+	
+	/* Allocate a ScrnInfoRec and claim the slot */
+	pScrn = xf86AllocateScreen(drv, 0);
+	
+	/* Fill in what we can of the ScrnInfoRec */
+	pScrn->driverVersion = VERSION;
+	pScrn->driverName	 = CIR_DRIVER_NAME;
+	pScrn->name		 = CIR_NAME;
+	pScrn->Probe	 = CIRProbe;
+	/* The Laguna family of chips is so different from the Alpine
+	   family that we won't share even the highest-level of 
+	   functions.  But, the Laguna chips /are/ Cirrus chips, so
+	   they should be handled in this driver (as opposed to their
+	   own driver). */
+	pPci = xf86GetPciInfoForEntity(usedChips[i]);
+	if (pPci->chipType == PCI_CHIP_GD5462 ||
+	    pPci->chipType == PCI_CHIP_GD5464 ||
+	    pPci->chipType == PCI_CHIP_GD5464BD ||
+	    pPci->chipType == PCI_CHIP_GD5465) {
+	    pScrn->PreInit	 = LgPreInit;
 #if 1
-	      pScrn->ScreenInit	 = LgScreenInit;
-	      pScrn->SwitchMode	 = LgSwitchMode;
-	      pScrn->AdjustFrame = LgAdjustFrame;
-	      pScrn->EnterVT	 = LgEnterVT;
-	      pScrn->LeaveVT	 = LgLeaveVT;
-	      pScrn->FreeScreen	 = LgFreeScreen;
-	      pScrn->ValidMode	 = LgValidMode;
+	    pScrn->ScreenInit	 = LgScreenInit;
+	    pScrn->SwitchMode	 = LgSwitchMode;
+	    pScrn->AdjustFrame = LgAdjustFrame;
+	    pScrn->EnterVT	 = LgEnterVT;
+	    pScrn->LeaveVT	 = LgLeaveVT;
+	    pScrn->FreeScreen	 = LgFreeScreen;
+	    pScrn->ValidMode	 = LgValidMode;
 #endif
-	    } else {
-	      pScrn->PreInit	 = CIRPreInit;
-	      pScrn->ScreenInit	 = CIRScreenInit;
-	      pScrn->SwitchMode	 = CIRSwitchMode;
-	      pScrn->AdjustFrame = CIRAdjustFrame;
-	      pScrn->EnterVT	 = CIREnterVT;
-	      pScrn->LeaveVT	 = CIRLeaveVT;
-	      pScrn->FreeScreen	 = CIRFreeScreen;
-	      pScrn->ValidMode	 = CIRValidMode;
-	    }
-	    foundScreen = TRUE;
-	    xf86ConfigActivePciEntity(pScrn, pEnt, CIRPciChipsets, NULL,
-				      NULL, NULL, NULL, NULL);
+	} else {
+	    pScrn->PreInit	 = CIRPreInit;
+	    pScrn->ScreenInit	 = CIRScreenInit;
+	    pScrn->SwitchMode	 = CIRSwitchMode;
+	    pScrn->AdjustFrame = CIRAdjustFrame;
+	    pScrn->EnterVT	 = CIREnterVT;
+	    pScrn->LeaveVT	 = CIRLeaveVT;
+	    pScrn->FreeScreen	 = CIRFreeScreen;
+	    pScrn->ValidMode	 = CIRValidMode;
 	}
-	xfree(pEnt);
+	foundScreen = TRUE;
+	xf86ConfigActivePciEntity(pScrn, usedChips[i], CIRPciChipsets, NULL,
+				  NULL, NULL, NULL, NULL);
     }
     xfree(usedChips);
 

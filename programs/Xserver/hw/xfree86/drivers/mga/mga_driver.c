@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.100 1999/06/12 15:37:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.101 1999/06/13 07:11:05 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -454,7 +454,6 @@ MGAProbe(DriverPtr drv, int flags)
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
-    EntityInfoPtr pEnt;
 
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -512,43 +511,38 @@ MGAProbe(DriverPtr drv, int flags)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	pEnt = xf86GetEntityInfo(usedChips[i]);
-
-	if (pEnt->active) {
-	    ScrnInfoPtr pScrn;
+	ScrnInfoPtr pScrn;
 #ifdef DISABLE_VGA_IO
-	    MgaSavePtr smga;
+	MgaSavePtr smga;
 #endif
-	    
-	    /* Allocate a ScrnInfoRec and claim the slot */
-	    pScrn = xf86AllocateScreen(drv, 0);
-
-	    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName	 = MGA_DRIVER_NAME;
-	    pScrn->name		 = MGA_NAME;
-	    pScrn->Probe	 = MGAProbe;
-	    pScrn->PreInit	 = MGAPreInit;
-	    pScrn->ScreenInit	 = MGAScreenInit;
-	    pScrn->SwitchMode	 = MGASwitchMode;
-	    pScrn->AdjustFrame	 = MGAAdjustFrame;
-	    pScrn->EnterVT	 = MGAEnterVT;
-	    pScrn->LeaveVT	 = MGALeaveVT;
-	    pScrn->FreeScreen	 = MGAFreeScreen;
-	    pScrn->ValidMode	 = MGAValidMode;
-	    foundScreen = TRUE;
+	
+	/* Allocate a ScrnInfoRec and claim the slot */
+	pScrn = xf86AllocateScreen(drv, 0);
+	
+	/* Fill in what we can of the ScrnInfoRec */
+	pScrn->driverVersion = VERSION;
+	pScrn->driverName	 = MGA_DRIVER_NAME;
+	pScrn->name		 = MGA_NAME;
+	pScrn->Probe	 = MGAProbe;
+	pScrn->PreInit	 = MGAPreInit;
+	pScrn->ScreenInit	 = MGAScreenInit;
+	pScrn->SwitchMode	 = MGASwitchMode;
+	pScrn->AdjustFrame	 = MGAAdjustFrame;
+	pScrn->EnterVT	 = MGAEnterVT;
+	pScrn->LeaveVT	 = MGALeaveVT;
+	pScrn->FreeScreen	 = MGAFreeScreen;
+	pScrn->ValidMode	 = MGAValidMode;
+	foundScreen = TRUE;
 #ifndef DISALBLE_VGA_IO
-	    xf86ConfigActivePciEntity(pScrn, pEnt, MGAPciChipsets, NULL,
+	xf86ConfigActivePciEntity(pScrn, usedChips[i], MGAPciChipsets, NULL,
 				      NULL, NULL, NULL, NULL);
 #else
-	    smga = xnfalloc(sizeof(MgaSave));
-	    smga->pvp = xf86GetPciInfoForEntity(pEnt->index);
-	    xf86ConfigActivePciEntity(pScrn, pEnt, MGAPciChipsets, NULL,
-				      VgaIOSave, VgaIOSave, VgaIORestore,
-				      smga);
+	smga = xnfalloc(sizeof(MgaSave));
+	smga->pvp = xf86GetPciInfoForEntity(usedChips[i]);
+	xf86ConfigActivePciEntity(pScrn, usedChips[i], MGAPciChipsets, NULL,
+				  VgaIOSave, VgaIOSave, VgaIORestore,
+				  smga);
 #endif
-	}
-	xfree(pEnt);
     }
     xfree(usedChips);
     return foundScreen;

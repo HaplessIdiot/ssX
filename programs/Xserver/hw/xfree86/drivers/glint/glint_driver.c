@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.40 1999/06/14 07:31:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.41 1999/06/14 09:13:10 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.29 1999/06/09 20:05:12 jens Exp $ */
 
 #define PSZ 8
@@ -518,7 +518,6 @@ GLINTProbe(DriverPtr drv, int flags)
     Bool foundScreen = FALSE;
     unsigned long glintbase = 0, glintbase3 = 0, deltabase = 0;
     unsigned long *delta_pci_base = 0 ;
-    EntityInfoPtr pEnt;
 
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -577,183 +576,169 @@ GLINTProbe(DriverPtr drv, int flags)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	pEnt = xf86GetEntityInfo(usedChips[i]);
+	ScrnInfoPtr pScrn;
+	
+	/* Allocate a ScrnInfoRec and claim the slot */
+	pScrn = xf86AllocateScreen(drv, 0);
+	ErrorF("used chips: %i\n",usedChips[i]);
+	
+	xf86ConfigActivePciEntity(pScrn, usedChips[i], GLINTPciChipsets, NULL,
+				  NULL, NULL, NULL, NULL);
 
-	if (pEnt->active) {
-	    ScrnInfoPtr pScrn;
-
-	    /* Allocate a ScrnInfoRec and claim the slot */
-	    pScrn = xf86AllocateScreen(drv, 0);
-
-	    xf86ConfigActivePciEntity(pScrn, pEnt, GLINTPciChipsets, NULL,
-				      NULL, NULL, NULL, NULL);
-
-	    pPci = xf86GetPciInfoForEntity(pEnt->index);
-	    glintbase = pPci->memBase[0];
-	    chiptag = pciTag(pPci->bus, pPci->device, pPci->func);
-
-	    /* Need to claim Glint Delta for PERMEDIA & 500TX */
-	    /* and for the moment we claim all other chips on the same */
-	    /* bus/device number */
-	    if ( (pPci->chipType == PCI_CHIP_500TX) ||
-                 (pPci->chipType == PCI_CHIP_MX) ||
-                 (pPci->chipType == PCI_CHIP_GAMMA) ||
-		 (pPci->chipType == PCI_CHIP_PERMEDIA) ) {
-
-    		while (*checkusedPci != NULL) {
-		    int gIndex;
-		    EntityInfoPtr gEntity;
-		    /* make sure we claim all but our source device */
-		    if ((pPci->bus == (*checkusedPci)->bus && 
-			pPci->device == (*checkusedPci)->device) &&
-			pPci->func != (*checkusedPci)->func) {
-
-			/* Find that Delta chip, and give us the tag value */
-			if ( (((*checkusedPci)->vendor == PCI_VENDOR_TI) || 
-			      ((*checkusedPci)->vendor == PCI_VENDOR_3DLABS)) &&
-			     (((*checkusedPci)->chipType == PCI_CHIP_DELTA) ||
+	pPci = xf86GetPciInfoForEntity(usedChips[i]);
+	glintbase = pPci->memBase[0];
+	chiptag = pciTag(pPci->bus, pPci->device, pPci->func);
+	
+	/* Need to claim Glint Delta for PERMEDIA & 500TX */
+	/* and for the moment we claim all other chips on the same */
+	/* bus/device number */
+	if ( (pPci->chipType == PCI_CHIP_500TX) ||
+	     (pPci->chipType == PCI_CHIP_MX) ||
+	     (pPci->chipType == PCI_CHIP_GAMMA) ||
+	     (pPci->chipType == PCI_CHIP_PERMEDIA) ) {
+	    
+	    while (*checkusedPci != NULL) {
+		int gIndex;
+		/* make sure we claim all but our source device */
+		if ((pPci->bus == (*checkusedPci)->bus && 
+		     pPci->device == (*checkusedPci)->device) &&
+		    pPci->func != (*checkusedPci)->func) {
+		    
+		    /* Find that Delta chip, and give us the tag value */
+		    if ( (((*checkusedPci)->vendor == PCI_VENDOR_TI) || 
+			  ((*checkusedPci)->vendor == PCI_VENDOR_3DLABS)) &&
+			 (((*checkusedPci)->chipType == PCI_CHIP_DELTA) ||
 #if 0
-			      ((*checkusedPci)->chipType == PCI_CHIP_GAMMA) ||
+			  ((*checkusedPci)->chipType == PCI_CHIP_GAMMA) ||
 #endif
-			      ((*checkusedPci)->chipType == PCI_CHIP_MX)) ) {
-			    if ((*checkusedPci)->chipType == PCI_CHIP_DELTA) {
-				deltabase = (*checkusedPci)->memBase[0];
-				delta_pci_base = &((*checkusedPci)->memBase[0]);
-		    		deltatag = pciTag((*checkusedPci)->bus, 
+			  ((*checkusedPci)->chipType == PCI_CHIP_MX)) ) {
+			if ((*checkusedPci)->chipType == PCI_CHIP_DELTA) {
+			    deltabase = (*checkusedPci)->memBase[0];
+			    delta_pci_base = &((*checkusedPci)->memBase[0]);
+			    deltatag = pciTag((*checkusedPci)->bus, 
+					      (*checkusedPci)->device, 
+					      (*checkusedPci)->func);
+			}
+			gIndex = xf86ClaimPciSlot((*checkusedPci)->bus, 
 						  (*checkusedPci)->device, 
-						  (*checkusedPci)->func);
-			    }
-			    gIndex = xf86ClaimPciSlot((*checkusedPci)->bus, 
-						(*checkusedPci)->device, 
-						(*checkusedPci)->func, drv,
-						(*checkusedPci)->chipType,
-						NULL, TRUE);
-			    if (gIndex == -1) {
+						  (*checkusedPci)->func, drv,
+						  (*checkusedPci)->chipType,
+						  NULL, TRUE);
+			if (gIndex == -1) {
 				/* This can't happen */
-				FatalError("someone claimed the free slot!\n");
-			    }
-			    gEntity = xf86GetEntityInfo(gIndex);
-			    xf86ConfigActivePciEntity(pScrn, gEntity,
-						      NULL, NULL, NULL, NULL,
-						      NULL, NULL);
-			    xfree(gEntity);
-			} else {
-			    int eIndex;
-			    EntityInfoPtr entity;
-			    /* Claim other entities on the same card */
-			    eIndex = xf86ClaimPciSlot((*checkusedPci)->bus, 
-						(*checkusedPci)->device, 
-						(*checkusedPci)->func,
-						drv, -1 /* XXX */,
-						NULL, FALSE);
-			    if (eIndex == -1) {
+			    FatalError("someone claimed the free slot!\n");
+			}
+			xf86ConfigActivePciEntity(pScrn, gIndex,
+						  NULL, NULL, NULL, NULL,
+						  NULL, NULL);
+		    } else {
+			int eIndex;
+			/* Claim other entities on the same card */
+			eIndex = xf86ClaimPciSlot((*checkusedPci)->bus, 
+						  (*checkusedPci)->device, 
+						  (*checkusedPci)->func,
+						  drv, -1 /* XXX */,
+						  NULL, FALSE);
+			if (eIndex == -1) {
 				/* This can't happen */
-				FatalError("someone claimed the free slot!\n");
-			    }
-			    /* XXX Is this stuff necessary? */
-			    entity = xf86GetEntityInfo(eIndex);
-			    xf86ConfigPciEntityInactive(entity, NULL, NULL,
-							NULL, NULL, NULL,
-							NULL);
-			    xfree(entity);
+			    FatalError("someone claimed the free slot!\n");
 			}
 		    }
-		    checkusedPci++;
 		}
+		checkusedPci++;
 	    }
+	}
 
-	    /* Fill in what we can of the ScrnInfoRec */
-	    pScrn->driverVersion = VERSION;
-	    pScrn->driverName	 = GLINT_DRIVER_NAME;
-	    pScrn->name		 = GLINT_NAME;
-	    pScrn->Probe	 = GLINTProbe;
-	    pScrn->PreInit	 = GLINTPreInit;
-	    pScrn->ScreenInit	 = GLINTScreenInit;
-	    pScrn->SwitchMode	 = GLINTSwitchMode;
-	    pScrn->AdjustFrame	 = GLINTAdjustFrame;
-	    pScrn->EnterVT	 = GLINTEnterVT;
-	    pScrn->LeaveVT	 = GLINTLeaveVT;
-	    pScrn->FreeScreen	 = GLINTFreeScreen;
-	    pScrn->ValidMode	 = GLINTValidMode;
-	    foundScreen = TRUE;
-
+	/* Fill in what we can of the ScrnInfoRec */
+	pScrn->driverVersion = VERSION;
+	pScrn->driverName	 = GLINT_DRIVER_NAME;
+	pScrn->name		 = GLINT_NAME;
+	pScrn->Probe	 = GLINTProbe;
+	pScrn->PreInit	 = GLINTPreInit;
+	pScrn->ScreenInit	 = GLINTScreenInit;
+	pScrn->SwitchMode	 = GLINTSwitchMode;
+	pScrn->AdjustFrame	 = GLINTAdjustFrame;
+	pScrn->EnterVT	 = GLINTEnterVT;
+	pScrn->LeaveVT	 = GLINTLeaveVT;
+	pScrn->FreeScreen	 = GLINTFreeScreen;
+	pScrn->ValidMode	 = GLINTValidMode;
+	foundScreen = TRUE;
+	
 /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 /* NEED TO MOVE THIS OUT OF THE PROBE CODE */
 /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
-	    {
-		int temp;
-		int bugbase = 0;
-  		/*
-   		 * due to a few bugs in the GLINT Delta we might have to
-   		 * relocate the base address of config region of the Delta, if
-   		 * bit 17 of the base addresses of config region of the Delta
-   		 * and the 500TX or 300SX are different
-   		 * We only handle config type 1 at this point
-   		 */
-  		if (deltatag && chiptag) {
-    		    if ((deltabase & 0x20000) ^ (glintbase & 0x20000)) {
-		/*
-	 	 * if the base addresses are different at bit 17,
-	 	 * we have to remap the base0 for the delta;
-	 	 * as wrong as this looks, we can use the base3 of the
-	 	 * 300SX/500TX for this. The delta is working as a bridge
-	  	 * here and gives its own addresses preference. And we
-	  	 * don't need to access base3, as this one is the bytw
-	 	 * swapped local buffer which we don't need.
-	  	 * Using base3 we know that the space is
-	 	 * a) large enough
-	 	 * b) free (well, almost)
-	 	 *
-	 	 * to be able to do that we need to enable IO
-	 	 */
+	{
+	    int temp;
+	    int bugbase = 0;
+	    /*
+	     * due to a few bugs in the GLINT Delta we might have to
+	     * relocate the base address of config region of the Delta, if
+	     * bit 17 of the base addresses of config region of the Delta
+	     * and the 500TX or 300SX are different
+	     * We only handle config type 1 at this point
+	     */
+	    if (deltatag && chiptag) {
+		if ((deltabase & 0x20000) ^ (glintbase & 0x20000)) {
+		    /*
+		     * if the base addresses are different at bit 17,
+		     * we have to remap the base0 for the delta;
+		     * as wrong as this looks, we can use the base3 of the
+		     * 300SX/500TX for this. The delta is working as a bridge
+		     * here and gives its own addresses preference. And we
+		     * don't need to access base3, as this one is the bytw
+		     * swapped local buffer which we don't need.
+		     * Using base3 we know that the space is
+		     * a) large enough
+		     * b) free (well, almost)
+		     *
+		     * to be able to do that we need to enable IO
+		     */
  		    if (pPci->chipType == PCI_CHIP_PERMEDIA) {
 		    	glintbase3 = pciReadLong(chiptag, 0x20); /* base4 */
          	    } else {
 		    	glintbase3 = pciReadLong(chiptag, 0x1c); /* base3 */
  		    }
 		    if ((glintbase & 0x20000) ^ (glintbase3 & 0x20000)) {
-	    	/*
-	     	 * oops, still different; we know that base3 is at least
-	     	 * 16 MB, so we just take 128k offset into it
-	     	 */
+			/*
+			 * oops, still different; we know that base3 is at least
+			 * 16 MB, so we just take 128k offset into it
+			 */
 	    	    	glintbase3 += 0x20000;
 		    }
-		/*
-	 	 * and now for the magic.
-	 	 * read old value
-	 	 * write fffffffff
-	 	 * read value
-	 	 * write new value
-	 	 */
+		    /*
+		     * and now for the magic.
+		     * read old value
+		     * write fffffffff
+		     * read value
+		     * write new value
+		     */
 		    bugbase = pciReadLong(deltatag, 0x10);
 		    pciWriteLong(deltatag, 0x10, 0xffffffff);
 		    temp = pciReadLong(deltatag, 0x10);
 		    pciWriteLong(deltatag, 0x10, glintbase3);
-
-		/* Update PCI tables */
+		    
+		    /* Update PCI tables */
 		    *delta_pci_base = glintbase3;
-
-		/*
-	 	 * additionally, sometimes we see the baserom which might
-	 	 * confuse the chip, so let's make sure that is disabled
-	 	 */
+		    
+		    /*
+		     * additionally, sometimes we see the baserom which might
+		     * confuse the chip, so let's make sure that is disabled
+		     */
 		    temp = pciReadLong(chiptag, 0x30);
 		    pciWriteLong(chiptag, 0x30, 0xffffffff);
 		    temp = pciReadLong(chiptag, 0x30);
 		    pciWriteLong(chiptag, 0x30, 0);
-		    }
-    	        }
-  	        if (bugbase)
-    	    	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-			"Glint Delta BUG, fixing.....old = 0x%x, new = 0x%x\n", 
-				bugbase, glintbase3);
-	    } 
-	}
+		}
+	    }
+	    if (bugbase)
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			   "Glint Delta BUG, fixing.....old = 0x%x, new = 0x%x\n", 
+			   bugbase, glintbase3);
+	} 
 	/*
 	 * ok, now let's forget about the Delta, in case we found one
 	 */
 	deltatag = deltabase = 0;
-	xfree(pEnt);
     }
     xfree(usedChips);
     return foundScreen;
@@ -1645,7 +1630,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	GLINTFreeRec(pScrn);
 	return FALSE;
     }
-
     /* Load I2C if needed */
     if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
@@ -1680,6 +1664,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    }
 	}
     }
+    
     return TRUE;
 }
 
@@ -1819,7 +1804,6 @@ GLINTSave(ScrnInfoPtr pScrn)
     pRAMDAC = RAMDACHWPTR(pScrn);
     glintReg = &pGlint->SavedReg;
     RAMDACreg = &pRAMDAC->SavedReg;
-
     if (pGlint->VGAcore) {
     	vgaRegPtr vgaReg;
     	vgaReg = &VGAHWPTR(pScrn)->SavedReg;
@@ -2117,7 +2101,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int ret;
     VisualPtr visual;
-
+    
     /* Map the GLINT memory and MMIO areas */
     if (!GLINTMapMem(pScrn))
 	return FALSE;
@@ -2137,7 +2121,6 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Save the current state */
     GLINTSave(pScrn);
-
     /* DDC */
     {
 	xf86MonPtr pMon = NULL;
@@ -2150,7 +2133,6 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    
 	xf86PrintEDID(pMon);
     }
-    
     /* Initialise the first mode */
     if ( !(GLINTModeInit(pScrn, pScrn->currentMode))) {
 	xf86DrvMsg(scrnIndex, X_ERROR,

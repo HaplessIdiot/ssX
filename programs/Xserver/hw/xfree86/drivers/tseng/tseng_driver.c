@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.52 1999/05/30 07:18:28 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.53 1999/06/12 07:18:58 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -449,13 +449,11 @@ static Bool
 TsengProbe(DriverPtr drv, int flags)
 {
     int i;
-    pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
     int numDevSections;
     int numUsed;
     int *usedChips;
     Bool foundScreen = FALSE;
-    EntityInfoPtr pEnt;
     
     
     PDEBUG("	TsengProbe\n");
@@ -502,36 +500,28 @@ TsengProbe(DriverPtr drv, int flags)
 					&usedChips);
 	if (numUsed > 0) {
 	    for (i = 0; i < numUsed; i++) {
-		pEnt = xf86GetEntityInfo(usedChips[i]);
-		if (pEnt->active) {
-		    /* Allocate a ScrnInfoRec  */
-		    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-		    TsengAssignFPtr(pScrn);
-		    xf86ConfigActivePciEntity(pScrn,pEnt,TsengPciChipsets,
-					      NULL,NULL,NULL,NULL,NULL);
-		    foundScreen = TRUE;
-		}
-		xfree(pEnt);
+		/* Allocate a ScrnInfoRec  */
+		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
+		TsengAssignFPtr(pScrn);
+		xf86ConfigActivePciEntity(pScrn,usedChips[i],TsengPciChipsets,
+					  NULL,NULL,NULL,NULL,NULL);
+		foundScreen = TRUE;
 	    }
 	}
     }
-
+    
     /* Check for non-PCI cards */
     numUsed = xf86MatchIsaInstances(TSENG_NAME, TsengChipsets,
 			TsengIsaChipsets,drv, TsengFindIsaDevice, devSections,
 			numDevSections, &usedChips);
     if (numUsed >= 0) 
 	for (i = 0; i < numUsed; i++) {
-	    pEnt = xf86GetEntityInfo(usedChips[i]);
-	    if (pEnt->active) {
-		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
-		TsengAssignFPtr(pScrn);
-		foundScreen = TRUE;
-		xf86ConfigActiveIsaEntity(pScrn,pEnt,TsengIsaChipsets,
-					  NULL,NULL,NULL,NULL,NULL);
-	    }
+	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
+	    TsengAssignFPtr(pScrn);
+	    foundScreen = TRUE;
+	    xf86ConfigActiveIsaEntity(pScrn,usedChips[i],TsengIsaChipsets,
+				      NULL,NULL,NULL,NULL,NULL);
 	}
-    xfree(devSections);
     return foundScreen;
 }
 
@@ -1317,8 +1307,8 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 	    pTseng->LinFbAddress &= ~pTseng->LinFbAddressMask;
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "    Clipping MemBase to: 0x%x.\n",
 		pTseng->LinFbAddress);
-	    range[0].__begin = pTseng->LinFbAddress;
-	    range[0].__end = pTseng->LinFbAddress + 16 * 1024 * 1024;
+	    range[0].rBegin = pTseng->LinFbAddress;
+	    range[0].rEnd = pTseng->LinFbAddress + 16 * 1024 * 1024;
 	    if (xf86RegisterResources(pTseng->pEnt->index,range,ResNone)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			   "    Cannot register linear memory."
@@ -1401,8 +1391,8 @@ TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 		return TRUE;
 	    }
 	    range[0].type |= ResBios;
-	    range[0].__begin = pTseng->LinFbAddress;
-	    range[0].__end = pTseng->LinFbAddress + 16 * 1024 * 1024;
+	    range[0].rBegin = pTseng->LinFbAddress;
+	    range[0].rEnd = pTseng->LinFbAddress + 16 * 1024 * 1024;
 	    if (xf86RegisterResources(pTseng->pEnt->index,range,ResNone)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		    "    Cannot register linear memory."
@@ -1439,7 +1429,6 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 {
     TsengPtr pTseng;
     MessageType from;
-    pciVideoPtr *pciList = NULL;
     int i;
     char *mod = NULL;
 
