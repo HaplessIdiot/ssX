@@ -3,7 +3,7 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.11 2001/10/07 18:47:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.12 2001/10/18 16:50:24 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartzCursor.h"
@@ -23,13 +23,13 @@ typedef struct {
     int                     qdCursorMode;
     int                     qdCursorVisible;
     int                     useQDCursor;
-    CursorPtr               latentCursor;
     QueryBestSizeProcPtr    QueryBestSize;
     miPointerSpriteFuncPtr  spriteFuncs;
 } QuartzCursorScreenRec, *QuartzCursorScreenPtr;
 
 static int darwinCursorScreenIndex = -1;
 static unsigned long darwinCursorGeneration = 0;
+static CursorPtr quartzLatentCursor = NULL;
 static QD_Cursor gQDArrow; // QuickDraw arrow cursor
 
 #define CURSOR_PRIV(pScreen) \
@@ -196,6 +196,29 @@ pixAllocFailed:
 
 
 /*
+ * FreeQDCursor
+ * Destroy a QuickDraw color cursor created with MakeQDCursor().
+ * The cursor must not currently be on screen.
+ */
+static void FreeQDCursor(CCrsrHandle cursHandle)
+{
+    CCrsrPtr curs;
+    PixMap *pix;
+
+    HLock((Handle)cursHandle);
+    curs = *cursHandle;
+    HLock((Handle)curs->crsrMap);
+    pix = *curs->crsrMap;
+    DisposeHandle((Handle)pix->pmTable);
+    HUnlock((Handle)curs->crsrMap);
+    DisposeHandle((Handle)curs->crsrMap);
+    DisposeHandle((Handle)curs->crsrData);
+    HUnlock((Handle)cursHandle);
+    DisposeHandle((Handle)cursHandle);
+}
+
+
+/*
 ===========================================================================
 
  Pointer sprite functions
@@ -263,7 +286,8 @@ QuartzUnrealizeCursor(
                         (pScreen, pCursor);
         }
     } else {
-        DisposeCCursor((CCrsrHandle) pCursor->devPriv[pScreen->myNum]);
+        FreeQDCursor((CCrsrHandle) pCursor->devPriv[pScreen->myNum]);
+        pCursor->devPriv[pScreen->myNum] = NULL;
         return TRUE;
     }
 }
@@ -283,7 +307,7 @@ QuartzSetCursor(
 {
     QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
-    ScreenPriv->latentCursor = pCursor;
+    quartzLatentCursor = pCursor;
 
     // Don't touch Mac OS cursor if X is hidden!
     if (!quartzServerVisible)
@@ -312,6 +336,7 @@ QuartzSetCursor(
     else if (quartzRootless) {
         // Rootless can't use a software cursor, so we just use Mac OS arrow.
         SetCursor(&gQDArrow);
+        SHOW_QD_CURSOR(pScreen, ScreenPriv->qdCursorVisible);
     }
     else {
         // Cursor is too big for QuickDraw. Use X software cursor.
@@ -508,7 +533,6 @@ QuartzInitCursor(
         ScreenPriv->useQDCursor = TRUE;
     ScreenPriv->qdCursorMode = TRUE;
     ScreenPriv->qdCursorVisible = TRUE;
-    ScreenPriv->latentCursor = NULL;
     return TRUE;
 }
 
@@ -532,5 +556,5 @@ void QuartzResumeXCursor(
 {
     QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
-    QuartzSetCursor(pScreen, ScreenPriv->latentCursor, x, y);
+    QuartzSetCursor(pScreen, quartzLatentCursor, x, y);
 }
