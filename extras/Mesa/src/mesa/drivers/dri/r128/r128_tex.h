@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.h,v 1.7 2002/02/22 21:44:58 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_tex.h,v 1.1.1.3tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -44,7 +44,7 @@ extern void r128UploadTexImages( r128ContextPtr rmesa, r128TexObjPtr t );
 
 extern void r128DestroyTexObj( r128ContextPtr rmesa, r128TexObjPtr t );
 
-extern void r128DDInitTextureFuncs( GLcontext *ctx );
+extern void r128InitTextureFuncs( struct dd_function_table *functions );
 
 
 /* ================================================================
@@ -70,7 +70,7 @@ extern void r128DDInitTextureFuncs( GLcontext *ctx );
 #define R128PACKCOLOR4444( r, g, b, a )					\
    ((((a) & 0xf0) << 8) | (((r) & 0xf0) << 4) | ((g) & 0xf0) | ((b) >> 4))
 
-static __inline__ CARD32 r128PackColor( GLuint cpp,
+static __inline__ u_int32_t r128PackColor( GLuint cpp,
 					GLubyte r, GLubyte g,
 					GLubyte b, GLubyte a )
 {

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * (C) Copyright IBM Corporation 2004
  * All Rights Reserved.
@@ -33,15 +34,13 @@
 #ifndef MMIO_H
 #define MMIO_H
 
-#include <inttypes.h>
-
 #if defined( __powerpc__ )
 
-static __inline__ uint32_t
+static __inline__ u_int32_t
 read_MMIO_LE32( volatile void * base, unsigned long offset )
 {
    volatile void * p = ((volatile char *) base) + offset;
-   uint32_t val;
+   u_int32_t val;
    
    __asm__ __volatile__( "lwbrx	%0, %1, %2 ; eieio"
 			 : "=r" (val)
@@ -51,10 +50,10 @@ read_MMIO_LE32( volatile void * base, unsigned long offset )
 
 #else
 
-static __inline__ uint32_t
+static __inline__ u_int32_t
 read_MMIO_LE32( volatile void * base, unsigned long offset )
 {
-   volatile uint32_t * p = (volatile uint32_t *) (((volatile char *) base) + offset);
+   volatile u_int32_t * p = (volatile u_int32_t *) (((volatile char *) base) + offset);
    return LE32_TO_CPU( p[0] );
 }
 

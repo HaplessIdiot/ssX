@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/tnl/Imakefile.inc,v 1.2 2004/04/22 13:58:41 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/tnl/Imakefile.inc,v 1.3tsi Exp $
 
 #ifndef MesaTnlBuildDir
 #define MesaTnlBuildDir $(GLXLIBSRC)/mesa/tnl/
@@ -31,7 +31,7 @@ MESATNLBUILDDIR = MesaTnlBuildDir
 		  $(MESATNLBUILDDIR)t_vtx_generic.c
 
 #if defined(i386Architecture) && MesaUseX86Asm
-  MESA_TNL_SRCS += MesaTnlAsmSrcs $(MESATNLBUILDDIR)t_vtx_x86.c \
+  MESA_TNL_SRCS += $(MESATNLBUILDDIR)t_vtx_x86.c \
 		  $(MESATNLBUILDDIR)t_vtx_x86_gcc.S
 #endif
 

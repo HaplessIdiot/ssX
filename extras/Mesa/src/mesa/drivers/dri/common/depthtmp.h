@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/common/depthtmp.h,v 1.5 2001/03/21 16:14:20 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/depthtmp.h,v 1.1.1.2tsi Exp $ */
 
 #ifndef DBG
 #define DBG 0
@@ -63,6 +63,46 @@ static void TAG(WriteDepthSpan)( GLcontext *ctx,
       }
    HW_WRITE_UNLOCK();
 }
+
+#ifndef NO_MONO
+
+static void TAG(WriteMonoDepthSpan)( GLcontext *ctx,
+                                 GLuint n, GLint x, GLint y,
+				 const GLdepth depth,
+				 const GLubyte mask[] )
+{
+   HW_WRITE_LOCK()
+      {
+	 GLint x1;
+	 GLint n1;
+	 LOCAL_DEPTH_VARS;
+
+	 y = Y_FLIP( y );
+
+	 HW_CLIPLOOP()
+	    {
+	       GLint i = 0;
+	       CLIPSPAN( x, y, n, x1, n1, i );
+
+	       if ( DBG ) fprintf( stderr, "%s %d..%d (x1 %d) = %u\n",
+				   __FUNCTION__, (int)i, (int)n1, (int)x1, (GLuint)depth );
+
+	       if ( mask ) {
+		  for ( ; i < n1 ; i++, x1++ ) {
+		     if ( mask[i] ) WRITE_DEPTH( x1, y, depth );
+		  }
+	       } else {
+		  for ( ; i < n1 ; i++, x1++ ) {
+		     WRITE_DEPTH( x1, y, depth );
+		  }
+	       }
+	    }
+	 HW_ENDCLIPLOOP();
+      }
+   HW_WRITE_UNLOCK();
+}
+
+#endif
 
 static void TAG(WriteDepthPixels)( GLcontext *ctx,
 				   GLuint n,

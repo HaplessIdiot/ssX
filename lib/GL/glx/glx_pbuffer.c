@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * (C) Copyright IBM Corporation 2004
  * All Rights Reserved.
@@ -29,7 +30,6 @@
  * \author Ian Romanick <idr@us.ibm.com>
  */
 
-#include <inttypes.h>
 #include "glxclient.h"
 #include <extutil.h>
 #include <Xext.h>

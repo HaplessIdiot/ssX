@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_screen.c,v 1.1.1.4 2004/12/10 15:33:24 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_screen.c,v 1.6tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -132,8 +132,8 @@ radeonFillInModes( unsigned pixel_bits, unsigned depth_bits,
 	GLX_NONE, GLX_SWAP_UNDEFINED_OML /*, GLX_SWAP_COPY_OML */
     };
 
-    uint8_t depth_bits_array[2];
-    uint8_t stencil_bits_array[2];
+    u_int8_t depth_bits_array[2];
+    u_int8_t stencil_bits_array[2];
 
 
     depth_bits_array[0] = depth_bits;
@@ -271,7 +271,7 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
       __driUtilMessage("%s: drmMap (2) failed\n", __FUNCTION__ );
       return NULL;
    }
-   screen->scratch = (__volatile__ uint32_t *)
+   screen->scratch = (__volatile__ u_int32_t *)
       ((GLubyte *)screen->status.map + RADEON_SCRATCH_REG_OFFSET);
 
    screen->buffers = drmMapBufs( sPriv->fd );

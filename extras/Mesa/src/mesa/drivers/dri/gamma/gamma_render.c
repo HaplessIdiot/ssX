@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -74,7 +75,7 @@ static void gamma_emit( GLcontext *ctx, GLuint start, GLuint end)
 	    WRITEF(gmesa->buf, Tr4, tc0[i][2]);
 	    WRITEF(gmesa->buf, Tt4, tc0[i][0]);
 	    WRITEF(gmesa->buf, Ts4, tc0[i][1]);
-	    WRITE(gmesa->buf, PackedColor4, *(CARD32*)col[i]);
+	    WRITE(gmesa->buf, PackedColor4, *(u_int32_t*)col[i]);
 	    WRITEF(gmesa->buf, Vw, coord[i][3]);
 	    WRITEF(gmesa->buf, Vz, coord[i][2]);
 	    WRITEF(gmesa->buf, Vy, coord[i][1]);
@@ -85,7 +86,7 @@ static void gamma_emit( GLcontext *ctx, GLuint start, GLuint end)
 	    CHECK_DMA_BUFFER(gmesa, 7);
 	    WRITEF(gmesa->buf, Tt2, tc0[i][0]);
 	    WRITEF(gmesa->buf, Ts2, tc0[i][1]);
-	    WRITE(gmesa->buf, PackedColor4, *(CARD32*)col[i]);
+	    WRITE(gmesa->buf, PackedColor4, *(u_int32_t*)col[i]);
 	    WRITEF(gmesa->buf, Vw, coord[i][3]);
 	    WRITEF(gmesa->buf, Vz, coord[i][2]);
 	    WRITEF(gmesa->buf, Vy, coord[i][1]);
@@ -94,7 +95,7 @@ static void gamma_emit( GLcontext *ctx, GLuint start, GLuint end)
    } else {
       for (i=start; i < end; i++) {
 	    CHECK_DMA_BUFFER(gmesa, 4);
-	    WRITE(gmesa->buf, PackedColor4, *(CARD32*)col[i]);
+	    WRITE(gmesa->buf, PackedColor4, *(u_int32_t*)col[i]);
 	    WRITEF(gmesa->buf, Vz, coord[i][2]);
 	    WRITEF(gmesa->buf, Vy, coord[i][1]);
 	    WRITEF(gmesa->buf, Vx3, coord[i][0]);
@@ -177,7 +178,7 @@ static GLboolean gamma_run_render( GLcontext *ctx,
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    struct vertex_buffer *VB = &tnl->vb;
    GLuint i;
-   render_func *tab;
+   tnl_render_func *tab;
 
 				/* GH: THIS IS A HACK!!! */
    if (VB->ClipOrMask || gmesa->RenderIndex != 0)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.57 2004/08/04 16:33:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.58tsi Exp $ */
 /*
  * Copyright 1997-2004 by The XFree86 Project, Inc
  * All rights reserved.
@@ -365,6 +365,7 @@ extern void xf86longjmp(xf86jmp_buf env, int val);
 #include <errno.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include <string.h>
 #if HAVE_SYSV_IPC
 #include <sys/ipc.h>
 #include <sys/shm.h>

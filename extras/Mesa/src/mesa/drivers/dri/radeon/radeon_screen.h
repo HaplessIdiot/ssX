@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.h,v 1.5 2002/12/16 16:18:58 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_screen.h,v 1.1.1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -43,16 +43,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * IMPORTS: these headers contain all the DRI, X and kernel-related
  * definitions that we need.
  */
-#include "dri_util.h"
-#include "radeon_common.h"
+/* #include "dri_util.h" */
 #include "radeon_dri.h"
 #include "radeon_reg.h"
-#include "radeon_sarea.h"
+#include "drm_sarea.h"
 #include "xmlconfig.h"
 
 
 typedef struct {
-   drmHandle handle;			/* Handle to the DRM region */
+   drm_handle_t handle;			/* Handle to the DRM region */
    drmSize size;			/* Size of the DRM region */
    drmAddress map;			/* Mapping of the DRM region */
 } radeonRegionRec, *radeonRegionPtr;
@@ -89,7 +88,7 @@ typedef struct {
 
    drmBufMapPtr buffers;
 
-   __volatile__ CARD32 *scratch;
+   __volatile__ u_int32_t *scratch;
 
    __DRIscreenPrivate *driScreen;
    unsigned int sarea_priv_offset;

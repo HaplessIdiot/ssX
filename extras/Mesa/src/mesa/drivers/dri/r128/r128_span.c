@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_span.c,v 1.8 2002/10/30 12:51:39 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_span.c,v 1.1.1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -43,6 +43,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "swrast/swrast.h"
 
 #define DBG 0
+#define NO_MONO
 
 #define HAVE_HW_DEPTH_SPANS	1
 #define HAVE_HW_DEPTH_PIXELS	1
@@ -390,7 +391,7 @@ static void r128DDSetBuffer( GLcontext *ctx,
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
 
    switch ( bufferBit ) {
-   case FRONT_LEFT_BIT:
+   case DD_FRONT_LEFT_BIT:
       if ( rmesa->sarea->pfCurrentPage == 1 ) {
          rmesa->drawOffset = rmesa->readOffset = rmesa->r128Screen->backOffset;
          rmesa->drawPitch  = rmesa->readPitch  = rmesa->r128Screen->backPitch;
@@ -399,7 +400,7 @@ static void r128DDSetBuffer( GLcontext *ctx,
          rmesa->drawPitch  = rmesa->readPitch  = rmesa->r128Screen->frontPitch;
       }
       break;
-   case BACK_LEFT_BIT:
+   case DD_BACK_LEFT_BIT:
       if ( rmesa->sarea->pfCurrentPage == 1 ) {
          rmesa->drawOffset = rmesa->readOffset = rmesa->r128Screen->frontOffset;
          rmesa->drawPitch  = rmesa->readPitch  = rmesa->r128Screen->frontPitch;

@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_span.c,v 1.5 2001/03/21 16:14:26 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/sis/sis_span.c,v 1.1.1.2tsi Exp $ */
 
 /*
  * Authors:
@@ -34,10 +34,13 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "sis_context.h"
 #include "sis_span.h"
+#include "sis_lock.h"
+#include "sis_tris.h"
 
 #include "swrast/swrast.h"
 
 #define DBG 0
+#define NO_MONO
 
 #define LOCAL_VARS							\
    sisContextPtr smesa = SIS_CONTEXT(ctx);				\
@@ -203,11 +206,11 @@ static void sisDDSetBuffer( GLcontext *ctx,
    sisContextPtr smesa = SIS_CONTEXT(ctx);
 
    switch ( bufferBit ) {
-   case FRONT_LEFT_BIT:
+   case DD_FRONT_LEFT_BIT:
       smesa->drawOffset = smesa->readOffset = smesa->frontOffset;
       smesa->drawPitch  = smesa->readPitch  = smesa->frontPitch;
       break;
-   case BACK_LEFT_BIT:
+   case DD_BACK_LEFT_BIT:
       smesa->drawOffset = smesa->readOffset = smesa->backOffset;
       smesa->drawPitch  = smesa->readPitch  = smesa->backPitch;
       break;
@@ -216,16 +219,21 @@ static void sisDDSetBuffer( GLcontext *ctx,
    }
 }
 
-static void sisSpanRenderStart( GLcontext *ctx )
+void sisSpanRenderStart( GLcontext *ctx )
 {
    sisContextPtr smesa = SIS_CONTEXT(ctx);
 
+   SIS_FIREVERTICES(smesa);
+   LOCK_HARDWARE();
    WaitEngIdle( smesa );
 }
 
-static void sisSpanRenderFinish( GLcontext *ctx )
+void sisSpanRenderFinish( GLcontext *ctx )
 {
+   sisContextPtr smesa = SIS_CONTEXT(ctx);
+
    _swrast_flush( ctx );
+   UNLOCK_HARDWARE();
 }
 
 void
@@ -294,7 +302,7 @@ sisDDInitSpanFuncs( GLcontext *ctx )
       swdd->ReadRGBAPixels = sisReadRGBAPixels_8888;
       break;
     default:
-      assert(0);
+      sis_fatal_error("Bad bytesPerPixel.\n");
       break;
    }
 

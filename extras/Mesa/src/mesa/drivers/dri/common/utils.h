@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2002
+ * (C) Copyright IBM Corporation 2002, 2004
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,7 +24,7 @@
  * Authors:
  *    Ian Romanick <idr@us.ibm.com>
  */
-/* $XFree86:$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/utils.h,v 1.1.1.2tsi Exp $ */
 
 #ifndef DRI_DEBUG_H
 #define DRI_DEBUG_H
@@ -47,12 +47,25 @@ extern unsigned driGetRendererString( char * buffer,
 extern void driInitExtensions( GLcontext * ctx, 
     const char * const card_extensions[], GLboolean enable_imaging );
 
+#ifndef DRI_NEW_INTERFACE_ONLY
 extern GLboolean driCheckDriDdxDrmVersions( __DRIscreenPrivate *sPriv,
     const char * driver_name, int dri_major, int dri_minor,
     int ddx_major, int ddx_minor, int drm_major, int drm_minor );
+#endif
+
+extern GLboolean driCheckDriDdxDrmVersions2(const char * driver_name,
+    const __DRIversion * driActual, const __DRIversion * driExpected,
+    const __DRIversion * ddxActual, const __DRIversion * ddxExpected,
+    const __DRIversion * drmActual, const __DRIversion * drmExpected);
 
 extern GLboolean driClipRectToFramebuffer( const GLframebuffer *buffer,
 					   GLint *x, GLint *y,
 					   GLsizei *width, GLsizei *height );
+
+extern GLboolean driFillInModes( __GLcontextModes ** modes,
+    GLenum fb_format, GLenum fb_type,
+    const u_int8_t * depth_bits, const u_int8_t * stencil_bits,
+    unsigned num_depth_stencil_bits,
+    const GLenum * db_modes, unsigned num_db_modes, int visType );
 
 #endif /* DRI_DEBUG_H */

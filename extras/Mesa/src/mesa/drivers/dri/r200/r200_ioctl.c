@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c,v 1.1.1.3 2004/12/10 15:05:57 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c,v 1.3tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -343,11 +343,11 @@ void r200AllocDmaRegionVerts( r200ContextPtr rmesa,
  * SwapBuffers with client-side throttling
  */
 
-static uint32_t r200GetLastFrame(r200ContextPtr rmesa)
+static u_int32_t r200GetLastFrame(r200ContextPtr rmesa)
 {
    drm_radeon_getparam_t gp;
    int ret;
-   uint32_t frame;
+   u_int32_t frame;
 
    gp.param = RADEON_PARAM_LAST_FRAME;
    gp.value = (int *)&frame;

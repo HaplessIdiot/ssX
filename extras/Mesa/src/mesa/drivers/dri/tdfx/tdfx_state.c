@@ -23,9 +23,12 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_state.c,v 1.7 2002/10/30 12:52:00 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/tdfx/tdfx_state.c,v 1.1.1.3tsi Exp $ */
 
 /*
+ * New fixes:
+ *	Daniel Borca <dborca@users.sourceforge.net>, 19 Jul 2004
+ *
  * Original rewrite:
  *	Gareth Hughes <gareth@valinux.com>, 29 Sep - 1 Oct 2000
  *
@@ -67,41 +70,20 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
 {
    tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
    GrCmpFnc_t func;
-   GrAlphaBlendFnc_t srcRGB, dstRGB, srcA, dstA;
+   GrAlphaBlendFnc_t srcRGB, dstRGB = GR_BLEND_ZERO, srcA, dstA;
+   GrAlphaBlendOp_t eqRGB, eqA;
    GrAlpha_t ref = (GLint) (ctx->Color.AlphaRef * 255.0);
+   
+   GLboolean isNapalm = TDFX_IS_NAPALM(fxMesa);
+   GLboolean have32bpp = (ctx->Visual.greenBits == 8);
+   GLboolean haveAlpha = fxMesa->haveHwAlpha;
 
    if ( TDFX_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "%s()\n", __FUNCTION__ );
    }
 
    if ( ctx->Color.AlphaEnabled ) {
-      switch ( ctx->Color.AlphaFunc ) {
-      case GL_NEVER:
-	 func = GR_CMP_NEVER;
-	 break;
-      case GL_LESS:
-	 func = GR_CMP_LESS;
-         break;
-      case GL_LEQUAL:
-	 func = GR_CMP_LEQUAL;
-	 break;
-      case GL_EQUAL:
-	 func = GR_CMP_EQUAL;
-	 break;
-      case GL_GEQUAL:
-	 func = GR_CMP_GEQUAL;
-	 break;
-      case GL_GREATER:
-	 func = GR_CMP_GREATER;
-	 break;
-      case GL_NOTEQUAL:
-	 func = GR_CMP_NOTEQUAL;
-	 break;
-      case GL_ALWAYS:
-      default:
-	 func = GR_CMP_ALWAYS;
-	 break;
-      }
+      func = ctx->Color.AlphaFunc - GL_NEVER + GR_CMP_NEVER;
    } else {
       func = GR_CMP_ALWAYS;
    }
@@ -128,14 +110,24 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
 	 srcRGB = GR_BLEND_ONE_MINUS_SRC_ALPHA;
 	 break;
       case GL_DST_ALPHA:
-	 srcRGB = GR_BLEND_DST_ALPHA;
+	 srcRGB = haveAlpha ? GR_BLEND_DST_ALPHA : GR_BLEND_ONE/*JJJ*/;
 	 break;
       case GL_ONE_MINUS_DST_ALPHA:
-	 srcRGB = GR_BLEND_ONE_MINUS_DST_ALPHA;
+	 srcRGB = haveAlpha ? GR_BLEND_ONE_MINUS_DST_ALPHA : GR_BLEND_ZERO/*JJJ*/;
 	 break;
       case GL_SRC_ALPHA_SATURATE:
 	 srcRGB = GR_BLEND_ALPHA_SATURATE;
 	 break;
+      case GL_SRC_COLOR:
+         if (isNapalm) {
+	    srcRGB = GR_BLEND_SAME_COLOR_EXT;
+	    break;
+         }
+      case GL_ONE_MINUS_SRC_COLOR:
+         if (isNapalm) {
+	    srcRGB = GR_BLEND_ONE_MINUS_SAME_COLOR_EXT;
+	    break;
+         }
       default:
 	 srcRGB = GR_BLEND_ONE;
       }
@@ -147,23 +139,21 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
       case GL_ONE:
 	 srcA = GR_BLEND_ONE;
 	 break;
+      case GL_SRC_COLOR:
+      case GL_SRC_ALPHA:
+	 srcA = have32bpp ? GR_BLEND_SRC_ALPHA : GR_BLEND_ONE/*JJJ*/;
+	 break;
+      case GL_ONE_MINUS_SRC_COLOR:
+      case GL_ONE_MINUS_SRC_ALPHA:
+	 srcA = have32bpp ? GR_BLEND_ONE_MINUS_SRC_ALPHA : GR_BLEND_ONE/*JJJ*/;
+	 break;
       case GL_DST_COLOR:
-	 srcA = GR_BLEND_DST_ALPHA;  /* Napalm only */
+      case GL_DST_ALPHA:
+	 srcA = (have32bpp && haveAlpha) ? GR_BLEND_DST_ALPHA : GR_BLEND_ONE/*JJJ*/;
 	 break;
       case GL_ONE_MINUS_DST_COLOR:
-	 srcA = GR_BLEND_ONE_MINUS_DST_ALPHA;  /* Napalm only */
-	 break;
-      case GL_SRC_ALPHA:
-	 srcA = GR_BLEND_SRC_ALPHA;  /* Napalm only */
-	 break;
-      case GL_ONE_MINUS_SRC_ALPHA:
-	 srcA = GR_BLEND_ONE_MINUS_SRC_ALPHA;  /* Napalm only */
-	 break;
-      case GL_DST_ALPHA:
-	 srcA = GR_BLEND_DST_ALPHA;  /* Napalm only */
-	 break;
       case GL_ONE_MINUS_DST_ALPHA:
-	 srcA = GR_BLEND_ONE_MINUS_DST_ALPHA;  /* Napalm only */
+	 srcA = (have32bpp && haveAlpha) ? GR_BLEND_ONE_MINUS_DST_ALPHA : GR_BLEND_ZERO/*JJJ*/;
 	 break;
       case GL_SRC_ALPHA_SATURATE:
          srcA = GR_BLEND_ONE;
@@ -192,11 +182,21 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
 	 dstRGB = GR_BLEND_ONE_MINUS_SRC_ALPHA;
 	 break;
       case GL_DST_ALPHA:
-	 dstRGB = GR_BLEND_DST_ALPHA;
+	 dstRGB = haveAlpha ? GR_BLEND_DST_ALPHA : GR_BLEND_ONE/*JJJ*/;
 	 break;
       case GL_ONE_MINUS_DST_ALPHA:
-	 dstRGB = GR_BLEND_ONE_MINUS_DST_ALPHA;
+	 dstRGB = haveAlpha ? GR_BLEND_ONE_MINUS_DST_ALPHA : GR_BLEND_ZERO/*JJJ*/;
 	 break;
+      case GL_DST_COLOR:
+         if (isNapalm) {
+	    srcRGB = GR_BLEND_SAME_COLOR_EXT;
+	    break;
+         }
+      case GL_ONE_MINUS_DST_COLOR:
+         if (isNapalm) {
+	    srcRGB = GR_BLEND_ONE_MINUS_SAME_COLOR_EXT;
+	    break;
+         }
       default:
 	 dstRGB = GR_BLEND_ZERO;
       }
@@ -209,32 +209,58 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
 	 dstA = GR_BLEND_ONE;
 	 break;
       case GL_SRC_COLOR:
-	 dstA = GR_BLEND_SRC_ALPHA;  /* Napalm only */
+      case GL_SRC_ALPHA:
+	 dstA = have32bpp ? GR_BLEND_SRC_ALPHA : GR_BLEND_ZERO/*JJJ*/;
 	 break;
       case GL_ONE_MINUS_SRC_COLOR:
-	 dstA = GR_BLEND_ONE_MINUS_SRC_ALPHA;  /* Napalm only */
-	 break;
-      case GL_SRC_ALPHA:
-	 dstA = GR_BLEND_SRC_ALPHA;  /* Napalm only */
-	 break;
       case GL_ONE_MINUS_SRC_ALPHA:
-	 dstA = GR_BLEND_ONE_MINUS_SRC_ALPHA;  /* Napalm only */
+	 dstA = have32bpp ? GR_BLEND_ONE_MINUS_SRC_ALPHA : GR_BLEND_ZERO/*JJJ*/;
 	 break;
+      case GL_DST_COLOR:
       case GL_DST_ALPHA:
-	 dstA = GR_BLEND_DST_ALPHA;  /* Napalm only */
+	 dstA = have32bpp ? GR_BLEND_DST_ALPHA : GR_BLEND_ONE/*JJJ*/;
 	 break;
+      case GL_ONE_MINUS_DST_COLOR:
       case GL_ONE_MINUS_DST_ALPHA:
-	 dstA = GR_BLEND_ONE_MINUS_DST_ALPHA;  /* Napalm only */
+	 dstA = have32bpp ? GR_BLEND_ONE_MINUS_DST_ALPHA : GR_BLEND_ZERO/*JJJ*/;
 	 break;
       default:
 	 dstA = GR_BLEND_ZERO;
+      }
+
+      switch ( ctx->Color.BlendEquationRGB ) {
+      case GL_FUNC_SUBTRACT:
+	 eqRGB = GR_BLEND_OP_SUB;
+	 break;
+      case GL_FUNC_REVERSE_SUBTRACT:
+	 eqRGB = GR_BLEND_OP_REVSUB;
+	 break;
+      case GL_FUNC_ADD:
+      default:
+	 eqRGB = GR_BLEND_OP_ADD;
+	 break;
+      }
+
+      switch ( ctx->Color.BlendEquationA ) {
+      case GL_FUNC_SUBTRACT:
+	 eqA = GR_BLEND_OP_SUB;
+	 break;
+      case GL_FUNC_REVERSE_SUBTRACT:
+	 eqA = GR_BLEND_OP_REVSUB;
+	 break;
+      case GL_FUNC_ADD:
+      default:
+	 eqA = GR_BLEND_OP_ADD;
+	 break;
       }
    } else {
       /* blend disabled */
       srcRGB = GR_BLEND_ONE;
       dstRGB = GR_BLEND_ZERO;
+      eqRGB = GR_BLEND_OP_ADD;
       srcA = GR_BLEND_ONE;
       dstA = GR_BLEND_ZERO;
+      eqA = GR_BLEND_OP_ADD;
    }
 
    if ( fxMesa->Color.AlphaFunc != func ) {
@@ -248,13 +274,17 @@ static void tdfxUpdateAlphaMode( GLcontext *ctx )
 
    if ( fxMesa->Color.BlendSrcRGB != srcRGB ||
 	fxMesa->Color.BlendDstRGB != dstRGB ||
+	fxMesa->Color.BlendEqRGB != eqRGB ||
 	fxMesa->Color.BlendSrcA != srcA ||
-	fxMesa->Color.BlendDstA != dstA )
+	fxMesa->Color.BlendDstA != dstA ||
+	fxMesa->Color.BlendEqA != eqA )
    {
       fxMesa->Color.BlendSrcRGB = srcRGB;
       fxMesa->Color.BlendDstRGB = dstRGB;
+      fxMesa->Color.BlendEqRGB = eqRGB;
       fxMesa->Color.BlendSrcA = srcA;
       fxMesa->Color.BlendDstA = dstA;
+      fxMesa->Color.BlendEqA = eqA;
       fxMesa->dirty |= TDFX_UPLOAD_BLEND_FUNC;
    }
 }
@@ -267,15 +297,19 @@ static void tdfxDDAlphaFunc( GLcontext *ctx, GLenum func, GLfloat ref )
    fxMesa->new_state |= TDFX_NEW_ALPHA;
 }
 
-static void tdfxDDBlendEquation( GLcontext *ctx, GLenum mode )
+static void tdfxDDBlendEquationSeparate( GLcontext *ctx, 
+					 GLenum modeRGB, GLenum modeA )
 {
    tdfxContextPtr fxMesa = TDFX_CONTEXT( ctx );
 
+   assert( modeRGB == modeA );
    FLUSH_BATCH( fxMesa );
    fxMesa->new_state |= TDFX_NEW_ALPHA;
 }
 
-static void tdfxDDBlendFunc( GLcontext *ctx, GLenum sfactor, GLenum dfactor )
+static void tdfxDDBlendFuncSeparate( GLcontext *ctx,
+				     GLenum sfactorRGB, GLenum dfactorRGB,
+				     GLenum sfactorA, GLenum dfactorA )
 {
    tdfxContextPtr fxMesa = TDFX_CONTEXT( ctx );
 
@@ -287,16 +321,6 @@ static void tdfxDDBlendFunc( GLcontext *ctx, GLenum sfactor, GLenum dfactor )
     * blend modes.  To pass all the conformance tests we'd have to
     * fall back to software for many modes.  Revisit someday.
     */
-}
-
-static void tdfxDDBlendFuncSeparate( GLcontext *ctx,
-				     GLenum sfactorRGB, GLenum dfactorRGB,
-				     GLenum sfactorA, GLenum dfactorA )
-{
-   tdfxContextPtr fxMesa = TDFX_CONTEXT( ctx );
-
-   FLUSH_BATCH( fxMesa );
-   fxMesa->new_state |= TDFX_NEW_ALPHA;
 }
 
 /* =============================================================
@@ -343,40 +367,8 @@ static void tdfxUpdateZMode( GLcontext *ctx )
    bias = (FxI32) (ctx->Polygon.OffsetUnits * TDFX_DEPTH_BIAS_SCALE);
 
    if ( ctx->Depth.Test ) {
-      switch ( ctx->Depth.Func ) {
-      case GL_NEVER:
-	 func = GR_CMP_NEVER;
-	 break;
-      case GL_LESS:
-	 func = GR_CMP_LESS;
-         break;
-      case GL_LEQUAL:
-	 func = GR_CMP_LEQUAL;
-	 break;
-      case GL_EQUAL:
-	 func = GR_CMP_EQUAL;
-	 break;
-      case GL_GEQUAL:
-	 func = GR_CMP_GEQUAL;
-	 break;
-      case GL_GREATER:
-	 func = GR_CMP_GREATER;
-	 break;
-      case GL_NOTEQUAL:
-	 func = GR_CMP_NOTEQUAL;
-	 break;
-      case GL_ALWAYS:
-      default:
-	 func = GR_CMP_ALWAYS;
-	 break;
-      }
-
-      if ( ctx->Depth.Mask ) {
-         mask = FXTRUE;
-      }
-      else {
-         mask = FXFALSE;
-      }
+      func = ctx->Depth.Func - GL_NEVER + GR_CMP_NEVER;
+      mask = ctx->Depth.Mask;
    }
    else {
       /* depth testing disabled */
@@ -384,8 +376,7 @@ static void tdfxUpdateZMode( GLcontext *ctx )
       mask = FXFALSE;        /* zbuffer is not touched */
    }
 
-   fxMesa->Depth.Clear = (FxU32) (((1 << fxMesa->glCtx->Visual.depthBits) - 1)
-                                  * ctx->Depth.Clear);
+   fxMesa->Depth.Clear = (FxU32) (ctx->DepthMaxF * ctx->Depth.Clear);
 
    if ( fxMesa->Depth.Bias != bias ) {
       fxMesa->Depth.Bias = bias;
@@ -470,7 +461,7 @@ static void tdfxUpdateStencil( GLcontext *ctx )
 
    if (fxMesa->haveHwStencil) {
       if (ctx->Stencil.Enabled) {
-         fxMesa->Stencil.Function = ctx->Stencil.Function[0] - GL_NEVER;
+         fxMesa->Stencil.Function = ctx->Stencil.Function[0] - GL_NEVER + GR_CMP_NEVER;
          fxMesa->Stencil.RefValue = ctx->Stencil.Ref[0];
          fxMesa->Stencil.ValueMask = ctx->Stencil.ValueMask[0];
          fxMesa->Stencil.WriteMask = ctx->Stencil.WriteMask[0];
@@ -526,7 +517,11 @@ static void tdfxUpdateFogAttrib( GLcontext *ctx )
    }
 
    if ( ctx->Fog.Enabled ) {
-      mode = GR_FOG_WITH_TABLE_ON_Q;
+      if (ctx->Fog.FogCoordinateSource == GL_FOG_COORDINATE_EXT) {
+         mode = GR_FOG_WITH_TABLE_ON_FOGCOORD_EXT;
+      } else {
+         mode = GR_FOG_WITH_TABLE_ON_Q;
+      }
    } else {
       mode = GR_FOG_DISABLE;
    }
@@ -538,6 +533,7 @@ static void tdfxUpdateFogAttrib( GLcontext *ctx )
    if ( fxMesa->Fog.Mode != mode ) {
       fxMesa->Fog.Mode = mode;
       fxMesa->dirty |= TDFX_UPLOAD_FOG_MODE;
+      fxMesa->dirty |= TDFX_UPLOAD_VERTEX_LAYOUT;/*JJJ*/
    }
    if ( fxMesa->Fog.Color != color ) {
       fxMesa->Fog.Color = color;
@@ -575,6 +571,26 @@ static void tdfxDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *param )
 
    FLUSH_BATCH( fxMesa );
    fxMesa->new_state |= TDFX_NEW_FOG;
+
+   switch (pname) {
+      case GL_FOG_COORDINATE_SOURCE_EXT: {
+         GLenum p = (GLenum)*param;
+         if (p == GL_FOG_COORDINATE_EXT) {
+            _swrast_allow_vertex_fog(ctx, GL_TRUE);
+            _swrast_allow_pixel_fog(ctx, GL_FALSE);
+            _tnl_allow_vertex_fog( ctx, GL_TRUE);
+            _tnl_allow_pixel_fog( ctx, GL_FALSE);
+         } else {
+            _swrast_allow_vertex_fog(ctx, GL_FALSE);
+            _swrast_allow_pixel_fog(ctx, GL_TRUE);
+            _tnl_allow_vertex_fog( ctx, GL_FALSE);
+            _tnl_allow_pixel_fog( ctx, GL_TRUE);
+         }
+         break;
+      }
+      default:
+         ;
+   }
 }
 
 
@@ -582,9 +598,9 @@ static void tdfxDDFogfv( GLcontext *ctx, GLenum pname, const GLfloat *param )
  * Clipping
  */
 
-static int intersect_rect( XF86DRIClipRectPtr out,
-			   const XF86DRIClipRectPtr a,
-			   const XF86DRIClipRectPtr b)
+static int intersect_rect( drm_clip_rect_t *out,
+			   const drm_clip_rect_t *a,
+			   const drm_clip_rect_t *b)
 {
    *out = *a;
    if (b->x1 > out->x1) out->x1 = b->x1;
@@ -633,7 +649,7 @@ void tdfxUpdateClipping( GLcontext *ctx )
       /* intersect OpenGL scissor box with all cliprects to make a new
        * list of cliprects.
        */
-      XF86DRIClipRectRec scissor;
+      drm_clip_rect_t scissor;
       int x1 = ctx->Scissor.X + fxMesa->x_offset;
       int y1 = fxMesa->screen_height - fxMesa->y_delta
              - ctx->Scissor.Y - ctx->Scissor.Height;
@@ -648,7 +664,7 @@ void tdfxUpdateClipping( GLcontext *ctx )
       assert(scissor.y2 >= scissor.y1);
 
       fxMesa->pClipRects = malloc(dPriv->numClipRects
-                                  * sizeof(XF86DRIClipRectRec));
+                                  * sizeof(drm_clip_rect_t));
       if (fxMesa->pClipRects) {
          int i;
          fxMesa->numClipRects = 0;
@@ -918,7 +934,7 @@ static void tdfxDDEnable( GLcontext *ctx, GLenum cap, GLboolean state )
       fxMesa->new_state |= TDFX_NEW_ALPHA;
       FALLBACK( fxMesa, TDFX_FALLBACK_LOGICOP,
 		(ctx->Color.ColorLogicOpEnabled &&
-		 ctx->Color.LogicOp != GL_COPY));
+		 ctx->Color.LogicOp != GL_COPY)/*JJJ - more blending*/);
       break;
 
    case GL_CULL_FACE:
@@ -980,15 +996,16 @@ static void tdfxDDEnable( GLcontext *ctx, GLenum cap, GLboolean state )
    case GL_STENCIL_TEST:
       FLUSH_BATCH( fxMesa );
       FALLBACK( fxMesa, TDFX_FALLBACK_STENCIL, state && !fxMesa->haveHwStencil);
+      fxMesa->new_state |= TDFX_NEW_STENCIL;
       break;
 
-   case GL_TEXTURE_1D:
    case GL_TEXTURE_3D:
       FLUSH_BATCH( fxMesa );
-      FALLBACK( fxMesa, TDFX_FALLBACK_TEXTURE_1D_3D, state); /* wrong */
+      FALLBACK( fxMesa, TDFX_FALLBACK_TEXTURE_MAP, state); /* wrong */
       fxMesa->new_state |= TDFX_NEW_TEXTURE;
       break;
 
+   case GL_TEXTURE_1D:
    case GL_TEXTURE_2D:
       FLUSH_BATCH( fxMesa );
       fxMesa->new_state |= TDFX_NEW_TEXTURE;
@@ -1017,12 +1034,12 @@ static void tdfxDDDrawBuffer( GLcontext *ctx, GLenum mode )
     * _DrawDestMask is easier to cope with than <mode>.
     */
    switch ( ctx->Color._DrawDestMask ) {
-   case FRONT_LEFT_BIT:
+   case DD_FRONT_LEFT_BIT:
       fxMesa->DrawBuffer = fxMesa->ReadBuffer = GR_BUFFER_FRONTBUFFER;
       fxMesa->new_state |= TDFX_NEW_RENDER;
       FALLBACK( fxMesa, TDFX_FALLBACK_DRAW_BUFFER, GL_FALSE );
       break;
-   case BACK_LEFT_BIT:
+   case DD_BACK_LEFT_BIT:
       fxMesa->DrawBuffer = fxMesa->ReadBuffer = GR_BUFFER_BACKBUFFER;
       fxMesa->new_state |= TDFX_NEW_RENDER;
       FALLBACK( fxMesa, TDFX_FALLBACK_DRAW_BUFFER, GL_FALSE );
@@ -1388,20 +1405,16 @@ void tdfxDDInitStateFuncs( GLcontext *ctx )
 
    /* State notification callbacks:
     */
-   ctx->Driver.ClearIndex		= NULL;
    ctx->Driver.ClearColor		= tdfxDDClearColor;
    ctx->Driver.DrawBuffer		= tdfxDDDrawBuffer;
    ctx->Driver.ReadBuffer		= tdfxDDReadBuffer;
 
-   ctx->Driver.IndexMask		= NULL;
    ctx->Driver.ColorMask		= tdfxDDColorMask;
 
    ctx->Driver.AlphaFunc		= tdfxDDAlphaFunc;
-   ctx->Driver.BlendEquation		= tdfxDDBlendEquation;
-   ctx->Driver.BlendFunc		= tdfxDDBlendFunc;
+   ctx->Driver.BlendEquationSeparate	= tdfxDDBlendEquationSeparate;
    ctx->Driver.BlendFuncSeparate	= tdfxDDBlendFuncSeparate;
    ctx->Driver.ClearDepth		= tdfxDDClearDepth;
-   ctx->Driver.ClearStencil		= NULL;
    ctx->Driver.CullFace			= tdfxDDCullFace;
    ctx->Driver.FrontFace		= tdfxDDFrontFace;
    ctx->Driver.DepthFunc		= tdfxDDDepthFunc;
@@ -1409,54 +1422,20 @@ void tdfxDDInitStateFuncs( GLcontext *ctx )
    ctx->Driver.DepthRange		= tdfxDDDepthRange;
    ctx->Driver.Enable			= tdfxDDEnable;
    ctx->Driver.Fogfv			= tdfxDDFogfv;
-   ctx->Driver.Hint			= NULL;
-   ctx->Driver.Lightfv			= NULL;
    ctx->Driver.LightModelfv		= tdfxDDLightModelfv;
-   ctx->Driver.LineStipple		= NULL;
    ctx->Driver.LineWidth		= tdfxDDLineWidth;
    ctx->Driver.PolygonStipple		= tdfxDDPolygonStipple;
    ctx->Driver.RenderMode               = tdfxDDRenderMode;
    ctx->Driver.Scissor			= tdfxDDScissor;
    ctx->Driver.ShadeModel		= tdfxDDShadeModel;
 
-   ctx->Driver.BindTexture		= tdfxDDBindTexture;
-   ctx->Driver.DeleteTexture		= tdfxDDDeleteTexture;
-   ctx->Driver.TexEnv			= tdfxDDTexEnv;
-   ctx->Driver.TexParameter		= tdfxDDTexParameter;
-   ctx->Driver.ChooseTextureFormat      = tdfxDDChooseTextureFormat;
-   ctx->Driver.TexImage2D		= tdfxDDTexImage2D;
-   ctx->Driver.TexSubImage2D		= tdfxDDTexSubImage2D;
-   /*
-   ctx->Driver.TexImage2D               = _mesa_store_teximage2d;
-   ctx->Driver.TexSubImage2D            = _mesa_store_texsubimage2d;
-   */
-
-   ctx->Driver.TexImage1D               = _mesa_store_teximage1d;
-   ctx->Driver.TexImage3D               = _mesa_store_teximage3d;
-   ctx->Driver.TexSubImage1D            = _mesa_store_texsubimage1d;
-   ctx->Driver.TexSubImage3D            = _mesa_store_texsubimage3d;
-   ctx->Driver.CopyTexImage1D           = _swrast_copy_teximage1d;
-   ctx->Driver.CopyTexImage2D           = _swrast_copy_teximage2d;
-   ctx->Driver.CopyTexSubImage1D        = _swrast_copy_texsubimage1d;
-   ctx->Driver.CopyTexSubImage2D        = _swrast_copy_texsubimage2d;
-   ctx->Driver.CopyTexSubImage3D        = _swrast_copy_texsubimage3d;
-   ctx->Driver.TestProxyTexImage        = _mesa_test_proxy_teximage;
-
-/*     ctx->Driver.GetTexImage		= tdfxDDGetTexImage; */
-   ctx->Driver.UpdateTexturePalette	= tdfxDDTexturePalette;
-
    if ( fxMesa->haveHwStencil ) {
       ctx->Driver.StencilFunc		= tdfxDDStencilFunc;
       ctx->Driver.StencilMask		= tdfxDDStencilMask;
       ctx->Driver.StencilOp		= tdfxDDStencilOp;
-   } else {
-      ctx->Driver.StencilFunc		= NULL;
-      ctx->Driver.StencilMask		= NULL;
-      ctx->Driver.StencilOp		= NULL;
    }
 
    ctx->Driver.Viewport			= tdfxDDViewport;
-
 
    /* Swrast hooks for imaging extensions:
     */

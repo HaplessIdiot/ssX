@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -32,6 +33,7 @@
 #include "tnl/tnl.h"
 #include "tnl/t_vertex.h"
 #include "tnl/t_context.h"
+#include "utils.h"
 
 
 /***************************************

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -41,6 +42,13 @@
 #include "nvfragprog.h"
 #include "arbprogparse.h"
 #include "grammar_mesa.h"
+
+#ifndef __extension__
+#if !defined(__GNUC__) || (__GNUC__ < 2) || \
+    ((__GNUC__ == 2) && (__GNUC_MINOR__ <= 7))
+# define __extension__
+#endif
+#endif
 
 /* TODO:
  *    Fragment Program Stuff:
@@ -129,7 +137,7 @@ typedef GLubyte *production;
 /**
  * This is the text describing the rules to parse the grammar
  */
-static char arb_grammar_text[] =
+__extension__ static char arb_grammar_text[] =
 #include "arbprogram_syn.h"
 ;
 
@@ -384,8 +392,8 @@ static char arb_grammar_text[] =
 #define  PARAM_CONSTANT                             0x05
 
 /* param state property */
-#define  STATE_MATERIAL                             0x01
-#define  STATE_LIGHT                                0x02
+#define  STATE_MATERIAL_PARSER                      0x01
+#define  STATE_LIGHT_PARSER                         0x02
 #define  STATE_LIGHT_MODEL                          0x03
 #define  STATE_LIGHT_PROD                           0x04
 #define  STATE_FOG                                  0x05
@@ -591,6 +599,7 @@ parse_string (GLubyte ** inst, struct var_cache **vc_head,
 {
    GLubyte *i = *inst;
    struct var_cache *va = NULL;
+   (void) Program;
 
    *inst += _mesa_strlen ((char *) i) + 1;
 
@@ -614,30 +623,31 @@ static char *
 parse_string_without_adding (GLubyte ** inst, struct arb_program *Program)
 {
    GLubyte *i = *inst;
-
+   (void) Program;
+   
    *inst += _mesa_strlen ((char *) i) + 1;
 
    return (char *) i;
 }
 
 /**
- * \return 0 if sign is plus, 1 if sign is minus
+ * \return -1 if we parse '-', return 1 otherwise
  */
-static GLuint
+static GLint
 parse_sign (GLubyte ** inst)
 {
    /*return *(*inst)++ != '+'; */
 
    if (**inst == '-') {
       (*inst)++;
-      return 1;
+      return -1;
    }
    else if (**inst == '+') {
       (*inst)++;
-      return 0;
+      return 1;
    }
 
-   return 0;
+   return 1;
 }
 
 /**
@@ -670,10 +680,7 @@ parse_integer (GLubyte ** inst, struct arb_program *Program)
     */
    Program->Position = parse_position (inst);
 
-   if (sign)
-      value *= -1;
-
-   return value;
+   return value * sign;
 }
 
 /**
@@ -685,9 +692,6 @@ parse_float (GLubyte ** inst, struct arb_program *Program)
    GLuint leading_zeros =0;
    GLfloat value = 0;
 
-#if 0
-   tmp[0] = parse_sign (inst);  /* This is the sign of the number + - >0, - -> 1 */
-#endif
    tmp[1] = parse_integer (inst, Program);   /* This is the integer portion of the number */
 
    /* Now we grab the fractional portion of the number (the digits after
@@ -709,10 +713,7 @@ parse_float (GLubyte ** inst, struct arb_program *Program)
       denom *= 10;
    denom *= (GLint) _mesa_pow( 10, leading_zeros );
    value += (GLfloat) tmp[2] / (GLfloat) denom;
-#if 0
-   if (tmp[0])
-      value *= -1;
-#endif
+
    value *= (GLfloat) _mesa_pow (10, (GLfloat) tmp[3] * (GLfloat) tmp[4]);
 
    return value;
@@ -724,17 +725,9 @@ parse_float (GLubyte ** inst, struct arb_program *Program)
 static GLfloat
 parse_signed_float (GLubyte ** inst, struct arb_program *Program)
 {
-   GLint negate;
-   GLfloat value;
-
-   negate = parse_sign (inst);
-
-   value = parse_float (inst, Program);
-
-   if (negate)
-      value *= -1;
-
-   return value;
+   GLint sign = parse_sign (inst);
+   GLfloat value = parse_float (inst, Program);
+   return value * sign;
 }
 
 /**
@@ -805,6 +798,7 @@ static GLuint
 parse_color_type (GLcontext * ctx, GLubyte ** inst, struct arb_program *Program,
                   GLint * color)
 {
+   (void) ctx; (void) Program;
    *color = *(*inst)++ != COLOR_PRIMARY;
    return 0;
 }
@@ -818,9 +812,9 @@ static GLuint
 parse_generic_attrib_num(GLcontext *ctx, GLubyte ** inst,
                        struct arb_program *Program, GLuint *attrib)
 {
-   *attrib = parse_integer(inst, Program);
+   GLint i = parse_integer(inst, Program);
 
-   if ((*attrib < 0) || (*attrib > MAX_VERTEX_PROGRAM_ATTRIBS))
+   if ((i < 0) || (i > MAX_VERTEX_PROGRAM_ATTRIBS))
    {
       _mesa_set_program_error (ctx, Program->Position,
                                "Invalid generic vertex attribute index");
@@ -828,6 +822,8 @@ parse_generic_attrib_num(GLcontext *ctx, GLubyte ** inst,
 
       return 1;
    }
+
+   *attrib = (GLuint) i;
 
    return 0;
 }
@@ -841,15 +837,16 @@ static GLuint
 parse_texcoord_num (GLcontext * ctx, GLubyte ** inst,
                     struct arb_program *Program, GLuint * coord)
 {
-   *coord = parse_integer (inst, Program);
+   GLint i = parse_integer (inst, Program);
 
-   if ((*coord < 0) || (*coord >= ctx->Const.MaxTextureUnits)) {
+   if ((i < 0) || (i >= (int)ctx->Const.MaxTextureUnits)) {
       _mesa_set_program_error (ctx, Program->Position,
                                "Invalid texture unit index");
       _mesa_error (ctx, GL_INVALID_OPERATION, "Invalid texture unit index");
       return 1;
    }
 
+   *coord = (GLuint) i;
    return 0;
 }
 
@@ -1850,7 +1847,8 @@ static GLuint
 parse_param (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
              struct arb_program *Program)
 {
-   GLuint found, specified_length, err;
+   GLuint found, err;
+   GLint specified_length;
    char *error_msg;
    struct var_cache *param_var;
 
@@ -1903,7 +1901,7 @@ parse_param (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
 
    /* Test array length here! */
    if (specified_length) {
-      if (specified_length != param_var->param_binding_length) {
+      if (specified_length != (int)param_var->param_binding_length) {
          _mesa_set_program_error (ctx, Program->Position,
                                   "Declared parameter array lenght does not match parameter list");
          _mesa_error (ctx, GL_INVALID_OPERATION,
@@ -2295,6 +2293,7 @@ parse_address_reg (GLcontext * ctx, GLubyte ** inst,
 {
    struct var_cache *dst;
    GLuint result;
+   (void) Index;
 
    dst = parse_string (inst, vc_head, Program, &result);
    Program->Position = parse_position (inst);
@@ -2405,7 +2404,7 @@ parse_extended_swizzle_mask (GLubyte ** inst, GLubyte * mask, GLboolean * Negate
 
    *Negate = GL_FALSE;
    for (a = 0; a < 4; a++) {
-      if (parse_sign (inst))
+      if (parse_sign (inst) == -1)
          *Negate = GL_TRUE;
 
       swz = *(*inst)++;
@@ -2452,7 +2451,8 @@ parse_src_reg (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
                GLboolean *IsRelOffset )
 {
    struct var_cache *src;
-   GLuint binding_state, binding_idx, is_generic, found, offset;
+   GLuint binding_state, binding_idx, is_generic, found;
+   GLint offset;
 
    /* And the binding for the src */
    switch (*(*inst)++) {
@@ -2504,7 +2504,7 @@ parse_src_reg (GLcontext * ctx, GLubyte ** inst, struct var_cache **vc_head,
                      offset = parse_integer (inst, Program);
 
                      if ((offset < 0)
-                         || (offset >= src->param_binding_length)) {
+                         || (offset >= (int)src->param_binding_length)) {
                         _mesa_set_program_error (ctx, Program->Position,
                                                  "Index out of range");
                         _mesa_error (ctx, GL_INVALID_OPERATION,
@@ -2614,7 +2614,7 @@ parse_vector_src_reg (GLcontext * ctx, GLubyte ** inst,
                       GLubyte * Swizzle, GLboolean *IsRelOffset)
 {
    /* Grab the sign */
-   *Negate = parse_sign (inst);
+   *Negate = (parse_sign (inst) == -1);
 
    /* And the src reg */
    if (parse_src_reg (ctx, inst, vc_head, Program, File, Index, IsRelOffset))
@@ -2635,7 +2635,7 @@ parse_scalar_src_reg (GLcontext * ctx, GLubyte ** inst,
                       GLubyte * Swizzle, GLboolean *IsRelOffset)
 {
    /* Grab the sign */
-   *Negate = parse_sign (inst);
+   *Negate = (parse_sign (inst) == -1);
 
    /* And the src reg */
    if (parse_src_reg (ctx, inst, vc_head, Program, File, Index, IsRelOffset))
@@ -3698,13 +3698,13 @@ parse_arb_program (GLcontext * ctx, GLubyte * inst, struct var_cache **vc_head,
 }
 
 /* XXX temporary */
-static char core_grammar_text[] =
+__extension__ static char core_grammar_text[] =
 #include "grammar_syn.h"
 ;
 
 static int set_reg8 (GLcontext *ctx, grammar id, const byte *name, byte value)
 {
-   char error_msg;
+   char error_msg[300];
    GLint error_pos;
 
    if (grammar_set_reg8 (id, name, value))
@@ -3716,29 +3716,29 @@ static int set_reg8 (GLcontext *ctx, grammar id, const byte *name, byte value)
    return 1;
 }
 
-/*
-	Taken from SGI sample code
-*/
-static int extension_is_supported (const byte *ext)
+static int extension_is_supported (const GLubyte *ext)
 {
-   const byte *extensions = glGetString (GL_EXTENSIONS);
-   const byte *end = extensions + _mesa_strlen ((const char *) extensions);
-   const int ext_len = _mesa_strlen ((const char *) ext);
+   const GLubyte *extensions = GL_CALL(GetString)(GL_EXTENSIONS);
+   const GLubyte *end = extensions + _mesa_strlen ((const char *) extensions);
+   const GLint ext_len = _mesa_strlen ((const char *) ext);
 
-   while (extensions < end) {
-      const int n = _mesa_strcspn ((const char *) extensions, " ");
-      if ((ext_len == n) && (_mesa_strncmp ((const char *) ext,
-                             (const char *) extensions, n) == 0))
+   while (extensions < end)
+   {
+      const GLubyte *name_end = (const GLubyte *) strchr ((const char *) extensions, ' ');
+      if (name_end == NULL)
+         name_end = end;
+      if (name_end - extensions == ext_len && _mesa_strncmp ((const char *) ext,
+         (const char *) extensions, ext_len) == 0)
          return 1;
-      extensions += (n + 1);
-    }
+      extensions = name_end + 1;
+   }
 
    return 0;
 }
 
 static int enable_ext (GLcontext *ctx, grammar id, const byte *name, const byte *extname)
 {
-   if (extension_is_supported (extname)) {
+   if (extension_is_supported (extname))
       if (set_reg8 (ctx, id, name, 0x01))
          return 1;
    return 0;
@@ -3765,6 +3765,9 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
    GLubyte *parsed, *inst;
    GLubyte *strz = NULL;
    static int arbprogram_syn_is_ok = 0;		/* XXX temporary */
+
+   /* Reset error state */
+   _mesa_set_program_error(ctx, -1, NULL);
 
 #if DEBUG_PARSING
    fprintf (stderr, "Loading grammar text!\n");
@@ -3839,6 +3842,8 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
        enable_ext (ctx, arbprogram_syn_id,
           (byte *) "fog_coord", (byte *) "GL_EXT_fog_coord") ||
        enable_ext (ctx, arbprogram_syn_id,
+          (byte *) "texture_rectangle", (byte *) "GL_ARB_texture_rectangle") ||
+       enable_ext (ctx, arbprogram_syn_id,
           (byte *) "texture_rectangle", (byte *) "GL_EXT_texture_rectangle") ||
        enable_ext (ctx, arbprogram_syn_id,
           (byte *) "texture_rectangle", (byte *) "GL_NV_texture_rectangle") ||
@@ -3863,7 +3868,7 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
 
    /* copy the program string to a null-terminated string */
    /* XXX should I check for NULL from malloc()? */
-   strz = _mesa_malloc (len + 1);
+   strz = (GLubyte *) _mesa_malloc (len + 1);
    _mesa_memcpy (strz, str, len);
    strz[len] = '\0';
 
@@ -3872,14 +3877,22 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
 #endif
    err = grammar_check (arbprogram_syn_id, strz, &parsed, &parsed_len);
 
-   _mesa_free (strz);
-   strz = NULL;
-
    /* Syntax parse error */
    if (err == 0) {
+      _mesa_free (strz);
       grammar_get_last_error ((GLubyte *) error_msg, 300, &error_pos);
       _mesa_set_program_error (ctx, error_pos, error_msg);
-      _mesa_error (ctx, GL_INVALID_OPERATION, "Parse Error");
+      _mesa_error (ctx, GL_INVALID_OPERATION, "glProgramStringARB(syntax error)");
+
+      /* useful for debugging */
+      if (0) {
+         int line, col;
+         char *s;
+         printf("Program: %s\n", (char *) strz);
+         printf("Error Pos: %d\n", ctx->Program.ErrorPos);
+         s = (char *) _mesa_find_line_column(strz, strz+ctx->Program.ErrorPos, &line, &col);
+         printf("line %d col %d: %s\n", line, col, s);
+      }
 
       grammar_destroy (arbprogram_syn_id);
       return 1;
@@ -3891,6 +3904,7 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
    grammar_destroy (arbprogram_syn_id);
 
    /* Initialize the arb_program struct */
+   program->Base.String = strz;
    program->Base.NumInstructions =
    program->Base.NumTemporaries =
    program->Base.NumParameters =
@@ -3921,7 +3935,7 @@ _mesa_parse_arb_program (GLcontext * ctx, const GLubyte * str, GLsizei len,
    /* Check the grammer rev */
    if (*inst++ != REVISION) {
       _mesa_set_program_error (ctx, 0, "Grammar version mismatch");
-      _mesa_error (ctx, GL_INVALID_OPERATION, "Grammar verison mismatch");
+      _mesa_error (ctx, GL_INVALID_OPERATION, "glProgramStringARB(Grammar verison mismatch)");
       err = 1;
    }
    else {

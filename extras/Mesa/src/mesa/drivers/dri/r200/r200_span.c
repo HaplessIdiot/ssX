@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_span.c,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_span.c,v 1.1.1.3tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -45,6 +45,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r200_tex.h"
 
 #define DBG 0
+#define NO_MONO
 
 #define LOCAL_VARS							\
    r200ContextPtr rmesa = R200_CONTEXT(ctx);			\
@@ -195,7 +196,7 @@ static GLuint r200_mba_z32( r200ContextPtr rmesa,
 				       GLint x, GLint y )
 {
    GLuint pitch = rmesa->r200Screen->frontPitch;
-   GLuint b = ((y & 0x3FF) >> 4) * ((pitch & 0xFFF) >> 5) + ((x & 0x3FF) >> 5);
+   GLuint b = ((y & 0x7FF) >> 4) * ((pitch & 0xFFF) >> 5) + ((x & 0x7FF) >> 5);
    GLuint a = 
       (BIT(x,0) << 2) |
       (BIT(y,0) << 3) |
@@ -214,7 +215,7 @@ static GLuint r200_mba_z32( r200ContextPtr rmesa,
 static GLuint r200_mba_z16( r200ContextPtr rmesa, GLint x, GLint y )
 {
    GLuint pitch = rmesa->r200Screen->frontPitch;
-   GLuint b = ((y & 0x3FF) >> 4) * ((pitch & 0xFFF) >> 6) + ((x & 0x3FF) >> 6);
+   GLuint b = ((y & 0x7FF) >> 4) * ((pitch & 0xFFF) >> 6) + ((x & 0x7FF) >> 6);
    GLuint a = 
       (BIT(x,0) << 1) |
       (BIT(y,0) << 2) |
@@ -301,7 +302,7 @@ static void r200SetBuffer( GLcontext *ctx,
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
 
    switch ( bufferBit ) {
-   case FRONT_LEFT_BIT:
+   case DD_FRONT_LEFT_BIT:
       if ( rmesa->doPageFlip && rmesa->sarea->pfCurrentPage == 1 ) {
         rmesa->state.pixel.readOffset = rmesa->r200Screen->backOffset;
         rmesa->state.pixel.readPitch  = rmesa->r200Screen->backPitch;
@@ -314,7 +315,7 @@ static void r200SetBuffer( GLcontext *ctx,
       	rmesa->state.color.drawPitch  = rmesa->r200Screen->frontPitch;
       }
       break;
-   case BACK_LEFT_BIT:
+   case DD_BACK_LEFT_BIT:
       if ( rmesa->doPageFlip && rmesa->sarea->pfCurrentPage == 1 ) {
       	rmesa->state.pixel.readOffset = rmesa->r200Screen->frontOffset;
       	rmesa->state.pixel.readPitch  = rmesa->r200Screen->frontPitch;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_ioctl.c,v 1.1.1.4 2004/12/10 15:32:58 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_ioctl.c,v 1.5tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -230,7 +230,7 @@ static int r128WaitForFrameCompletion( r128ContextPtr rmesa )
    int wait = 0;
 
    while ( 1 ) {
-      uint32_t frame = read_MMIO_LE32( R128MMIO, R128_LAST_FRAME_REG );
+      u_int32_t frame = read_MMIO_LE32( R128MMIO, R128_LAST_FRAME_REG );
 
       if ( rmesa->sarea->last_frame - frame <= R128_MAX_OUTSTANDING ) {
 	 break;

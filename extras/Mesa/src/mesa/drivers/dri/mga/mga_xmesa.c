@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.19 2003/03/26 20:43:49 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mga_xmesa.c,v 1.1.1.3tsi Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -26,7 +26,9 @@
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
-#include "mga_common.h"
+#include <stdlib.h>
+#include "drm.h"
+#include "mga_drm.h"
 #include "mga_xmesa.h"
 #include "context.h"
 #include "matrix.h"
@@ -39,6 +41,8 @@
 #include "array_cache/acache.h"
 
 #include "tnl/t_pipeline.h"
+
+#include "drivers/common/driverfuncs.h"
 
 #include "mgadd.h"
 #include "mgastate.h"
@@ -55,9 +59,9 @@
 #include "utils.h"
 #include "vblank.h"
 
-#ifndef _SOLO
-#include "glxextensions.h"
-#endif
+#include "extensions.h"
+
+#include "GL/internal/dri_interface.h"
 
 /* MGA configuration
  */
@@ -72,8 +76,16 @@ DRI_CONF_BEGIN
         DRI_CONF_TEXTURE_DEPTH(DRI_CONF_TEXTURE_DEPTH_FB)
         DRI_CONF_COLOR_REDUCTION(DRI_CONF_COLOR_REDUCTION_DITHER)
     DRI_CONF_SECTION_END
+    DRI_CONF_SECTION_SOFTWARE
+        DRI_CONF_ARB_VERTEX_PROGRAM(true)
+        DRI_CONF_NV_VERTEX_PROGRAM(true)
+    DRI_CONF_SECTION_END
 DRI_CONF_END;
-static const GLuint __driNConfigOptions = 3;
+static const GLuint __driNConfigOptions = 5;
+
+#ifdef USE_NEW_INTERFACE
+static PFNGLXCREATECONTEXTMODES create_context_modes = NULL;
+#endif /* USE_NEW_INTERFACE */
 
 #ifndef MGA_DEBUG
 int MGA_DEBUG = 0;
@@ -81,14 +93,146 @@ int MGA_DEBUG = 0;
 
 static int getSwapInfo( __DRIdrawablePrivate *dPriv, __DRIswapInfo * sInfo );
 
+#ifdef USE_NEW_INTERFACE
+static __GLcontextModes * fill_in_modes( __GLcontextModes * modes,
+					 unsigned pixel_bits, 
+					 unsigned depth_bits,
+					 unsigned stencil_bits,
+					 const GLenum * db_modes,
+					 unsigned num_db_modes,
+					 int visType )
+{
+    static const u_int8_t bits[2][4] = {
+	{          5,          6,          5,          0 },
+	{          8,          8,          8,          0 }
+    };
+
+    static const u_int32_t masks[2][4] = {
+	{ 0x0000F800, 0x000007E0, 0x0000001F, 0x00000000 },
+	{ 0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000 }
+    };
+
+    unsigned   i;
+    unsigned   j;
+    const unsigned index = ((pixel_bits + 15) / 16) - 1;
+
+    for ( i = 0 ; i < num_db_modes ; i++ ) {
+	for ( j = 0 ; j < 2 ; j++ ) {
+
+	    modes->redBits   = bits[index][0];
+	    modes->greenBits = bits[index][1];
+	    modes->blueBits  = bits[index][2];
+	    modes->alphaBits = bits[index][3];
+	    modes->redMask   = masks[index][0];
+	    modes->greenMask = masks[index][1];
+	    modes->blueMask  = masks[index][2];
+	    modes->alphaMask = masks[index][3];
+	    modes->rgbBits   = modes->redBits + modes->greenBits
+		+ modes->blueBits;
+
+	    modes->accumRedBits   = 16 * j;
+	    modes->accumGreenBits = 16 * j;
+	    modes->accumBlueBits  = 16 * j;
+	    modes->accumAlphaBits = (masks[index][3] != 0) ? 16 * j : 0;
+	    modes->visualRating = (j == 0) ? GLX_NONE : GLX_SLOW_CONFIG;
+
+	    modes->stencilBits = stencil_bits;
+	    modes->depthBits = depth_bits;
+
+	    modes->visualType = visType;
+	    modes->renderType = GLX_RGBA_BIT;
+	    modes->drawableType = GLX_WINDOW_BIT;
+	    modes->rgbMode = GL_TRUE;
+
+	    if ( db_modes[i] == GLX_NONE ) {
+		modes->doubleBufferMode = GL_FALSE;
+	    }
+	    else {
+		modes->doubleBufferMode = GL_TRUE;
+		modes->swapMethod = db_modes[i];
+	    }
+
+	    modes = modes->next;
+	}
+    }
+    
+    return modes;
+}
+#endif /* USE_NEW_INTERFACE */
+
+
+#ifdef USE_NEW_INTERFACE
+static __GLcontextModes *
+mgaFillInModes( unsigned pixel_bits, unsigned depth_bits,
+		unsigned stencil_bits, GLboolean have_back_buffer )
+{
+    __GLcontextModes * modes;
+    __GLcontextModes * m;
+    unsigned num_modes;
+    unsigned depth_buffer_factor;
+    unsigned back_buffer_factor;
+    unsigned i;
+
+    /* GLX_SWAP_COPY_OML is only supported because the MGA driver doesn't
+     * support pageflipping at all.
+     */
+    static const GLenum back_buffer_modes[] = {
+	GLX_NONE, GLX_SWAP_UNDEFINED_OML, GLX_SWAP_COPY_OML
+    };
+
+    int depth_buffer_modes[2][2];
+
+
+    depth_buffer_modes[0][0] = depth_bits;
+    depth_buffer_modes[1][0] = depth_bits;
+
+    /* Just like with the accumulation buffer, always provide some modes
+     * with a stencil buffer.  It will be a sw fallback, but some apps won't
+     * care about that.
+     */
+    depth_buffer_modes[0][1] = 0;
+    depth_buffer_modes[1][1] = (stencil_bits == 0) ? 8 : stencil_bits;
+
+    depth_buffer_factor = ((depth_bits != 0) || (stencil_bits != 0)) ? 2 : 1;
+    back_buffer_factor  = (have_back_buffer) ? 2 : 1;
+
+    num_modes = depth_buffer_factor * back_buffer_factor * 4;
+
+    modes = (*create_context_modes)( num_modes, sizeof( __GLcontextModes ) );
+    m = modes;
+    for ( i = 0 ; i < depth_buffer_factor ; i++ ) {
+	m = fill_in_modes( m, pixel_bits, 
+			   depth_buffer_modes[i][0], depth_buffer_modes[i][1],
+			   back_buffer_modes, back_buffer_factor,
+			   GLX_TRUE_COLOR );
+    }
+
+    for ( i = 0 ; i < depth_buffer_factor ; i++ ) {
+	m = fill_in_modes( m, pixel_bits, 
+			   depth_buffer_modes[i][0], depth_buffer_modes[i][1],
+			   back_buffer_modes, back_buffer_factor,
+			   GLX_DIRECT_COLOR );
+    }
+
+    /* Mark the visual as slow if there are "fake" stencil bits.
+     */
+    for ( m = modes ; m != NULL ; m = m->next ) {
+	if ( (m->stencilBits != 0) && (m->stencilBits != stencil_bits) ) {
+	    m->visualRating = GLX_SLOW_CONFIG;
+	}
+    }
+
+    return modes;
+}
+#endif /* USE_NEW_INTERFACE */
+
+
 static GLboolean
 mgaInitDriver(__DRIscreenPrivate *sPriv)
 {
    mgaScreenPrivate *mgaScreen;
    MGADRIPtr         serverInfo = (MGADRIPtr)sPriv->pDevPriv;
 
-   if ( ! driCheckDriDdxDrmVersions( sPriv, "MGA", 4, 0, 1, 0, 3, 0 ) )
-      return GL_FALSE;
 
    /* Allocate the private area */
    mgaScreen = (mgaScreenPrivate *)MALLOC(sizeof(mgaScreenPrivate));
@@ -102,10 +246,11 @@ mgaInitDriver(__DRIscreenPrivate *sPriv)
 
    if (sPriv->drmMinor >= 1) {
       int ret;
-      drmMGAGetParam gp;
+      drm_mga_getparam_t gp;
 
       gp.param = MGA_PARAM_IRQ_NR;
       gp.value = &mgaScreen->irq;
+      mgaScreen->irq = 0;
 
       ret = drmCommandWriteRead( sPriv->fd, DRM_MGA_GETPARAM,
 				    &gp, sizeof(gp));
@@ -119,7 +264,7 @@ mgaInitDriver(__DRIscreenPrivate *sPriv)
    
    mgaScreen->linecomp_sane = (sPriv->ddxMajor > 1) || (sPriv->ddxMinor > 1)
        || ((sPriv->ddxMinor == 1) && (sPriv->ddxPatch > 0));
-#ifndef _SOLO       
+
    if ( driCompareGLXAPIVersion( 20030813 ) >= 0 ) {
       PFNGLXSCRENABLEEXTENSIONPROC glx_enable_extension =
           (PFNGLXSCRENABLEEXTENSIONPROC) glXGetProcAddress( (const GLubyte *) "__glXScrEnableExtension" );
@@ -134,9 +279,13 @@ mgaInitDriver(__DRIscreenPrivate *sPriv)
 
 	 (*glx_enable_extension)( psc, "GLX_SGI_make_current_read" );
 	 (*glx_enable_extension)( psc, "GLX_MESA_swap_frame_usage" );
+
+	 if ( driCompareGLXAPIVersion( 20030915 ) >= 0 ) {
+	    (*glx_enable_extension)( psc, "GLX_SGIX_fbconfig" );
+	    (*glx_enable_extension)( psc, "GLX_OML_swap_method" );
+	 }
       }
    }
-#endif
 
    if (serverInfo->chipset != MGA_CARD_TYPE_G200 &&
        serverInfo->chipset != MGA_CARD_TYPE_G400) {
@@ -256,6 +405,8 @@ mgaDestroyScreen(__DRIscreenPrivate *sPriv)
    if (MGA_DEBUG&DEBUG_VERBOSE_DRI)
       fprintf(stderr, "mgaDestroyScreen\n");
 
+   drmUnmapBufs(mgaScreen->bufs);
+
    /*drmUnmap(mgaScreen->agp_tex.map, mgaScreen->agp_tex.size);*/
 
    /* free all option information */
@@ -275,6 +426,8 @@ static const struct tnl_pipeline_stage *mga_pipeline[] = {
    &_tnl_fog_coordinate_stage,
    &_tnl_texgen_stage, 
    &_tnl_texture_transform_stage, 
+   &_tnl_vertex_program_stage,
+
 				/* REMOVE: point attenuation stage */
 #if 0
    &_mga_render_stage,		/* ADD: unclipped rastersetup-to-dma */
@@ -304,8 +457,10 @@ static const char * const card_extensions[] =
 {
    "GL_ARB_multisample",
    "GL_ARB_texture_compression",
+   "GL_ARB_texture_rectangle",
    "GL_EXT_blend_logic_op",
    "GL_EXT_fog_coord",
+   "GL_EXT_multi_draw_arrays",
    /* paletted_textures currently doesn't work, but we could fix them later */
 #if 0
    "GL_EXT_shared_texture_palette",
@@ -313,10 +468,8 @@ static const char * const card_extensions[] =
 #endif
    "GL_EXT_secondary_color",
    "GL_EXT_stencil_wrap",
-   "GL_EXT_texture_rectangle",
    "GL_MESA_ycbcr_texture",
    "GL_SGIS_generate_mipmap",
-   "GL_SGIS_texture_lod",
    NULL
 };
 
@@ -350,8 +503,9 @@ mgaCreateContext( const __GLcontextModes *mesaVis,
    mgaContextPtr mmesa;
    __DRIscreenPrivate *sPriv = driContextPriv->driScreenPriv;
    mgaScreenPrivate *mgaScreen = (mgaScreenPrivate *)sPriv->private;
-   MGASAREAPrivPtr saPriv=(MGASAREAPrivPtr)(((char*)sPriv->pSAREA)+
+   drm_mga_sarea_t *saPriv = (drm_mga_sarea_t *)(((char*)sPriv->pSAREA)+
 					      mgaScreen->sarea_priv_offset);
+   struct dd_function_table functions;
 
    if (MGA_DEBUG&DEBUG_VERBOSE_DRI)
       fprintf(stderr, "mgaCreateContext\n");
@@ -362,12 +516,21 @@ mgaCreateContext( const __GLcontextModes *mesaVis,
       return GL_FALSE;
    }
 
+   /* Init default driver functions then plug in our Radeon-specific functions
+    * (the texture functions are especially important)
+    */
+   _mesa_init_driver_functions( &functions );
+   mgaInitDriverFuncs( &functions );
+   mgaInitTextureFuncs( &functions );
+   mgaInitIoctlFuncs( &functions );
+
    /* Allocate the Mesa context */
    if (sharedContextPrivate)
       shareCtx = ((mgaContextPtr) sharedContextPrivate)->glCtx;
    else 
       shareCtx = NULL;
-   mmesa->glCtx = _mesa_create_context(mesaVis, shareCtx, (void *) mmesa, GL_TRUE);
+   mmesa->glCtx = _mesa_create_context(mesaVis, shareCtx,
+                                       &functions, (void *) mmesa);
    if (!mmesa->glCtx) {
       FREE(mmesa);
       return GL_FALSE;
@@ -396,9 +559,9 @@ mgaCreateContext( const __GLcontextModes *mesaVis,
 	    mgaScreen->textureSize[i],
 	    6,
 	    MGA_NR_TEX_REGIONS,
-	    mmesa->sarea->texList[i],
-	    & mmesa->sarea->texAge[i],
-	    & mmesa->swapped,
+	    (drmTextureRegionPtr)mmesa->sarea->texList[i],
+	    &mmesa->sarea->texAge[i],
+	    &mmesa->swapped,
 	    sizeof( mgaTextureObject_t ),
 	    (destroy_texture_object_t *) mgaDestroyTexObj );
    }
@@ -493,10 +656,12 @@ mgaCreateContext( const __GLcontextModes *mesaVis,
    _tnl_destroy_pipeline( ctx );
    _tnl_install_pipeline( ctx, mga_pipeline );
 
-   /* Configure swrast to match hardware characteristics:
+   /* Configure swrast and T&L to match hardware characteristics:
     */
    _swrast_allow_pixel_fog( ctx, GL_FALSE );
    _swrast_allow_vertex_fog( ctx, GL_TRUE );
+   _tnl_allow_pixel_fog( ctx, GL_FALSE );
+   _tnl_allow_vertex_fog( ctx, GL_TRUE );
 
    mmesa->primary_offset = mmesa->mgaScreen->primary.handle;
 
@@ -509,11 +674,19 @@ mgaCreateContext( const __GLcontextModes *mesaVis,
       driInitExtensions( ctx, g400_extensions, GL_FALSE );
    }
 
+   if ( driQueryOptionb( &mmesa->optionCache, "arb_vertex_program" ) ) {
+      _mesa_enable_extension( ctx, "GL_ARB_vertex_program" );
+   }
+   
+   if ( driQueryOptionb( &mmesa->optionCache, "nv_vertex_program" ) ) {
+      _mesa_enable_extension( ctx, "GL_NV_vertex_program" );
+      _mesa_enable_extension( ctx, "GL_NV_vertex_program1_1" );
+   }
+
+	
+   /* XXX these should really go right after _mesa_init_driver_functions() */
    mgaDDInitStateFuncs( ctx );
-   mgaDDInitTextureFuncs( ctx );
    mgaDDInitSpanFuncs( ctx );
-   mgaDDInitDriverFuncs( ctx );
-   mgaDDInitIoctlFuncs( ctx );
    mgaDDInitPixelFuncs( ctx );
    mgaDDInitTriFuncs( ctx );
 
@@ -530,14 +703,11 @@ mgaCreateContext( const __GLcontextModes *mesaVis,
    mmesa->vblank_flags = ((mmesa->mgaScreen->irq == 0) 
 			  || !mmesa->mgaScreen->linecomp_sane)
        ? VBLANK_FLAG_NO_IRQ : driGetDefaultVBlankFlags(&mmesa->optionCache);
-#ifndef _SOLO
+
    mmesa->get_ust = (PFNGLXGETUSTPROC) glXGetProcAddress( (const GLubyte *) "__glXGetUST" );
    if ( mmesa->get_ust == NULL ) {
       mmesa->get_ust = get_ust_nop;
    }
-#else
-   mmesa->get_ust = get_ust_nop;
-#endif   
 
    (*mmesa->get_ust)( & mmesa->swap_ust );
 
@@ -656,13 +826,6 @@ mgaUnbindContext(__DRIcontextPrivate *driContextPriv)
    return GL_TRUE;
 }
 
-static GLboolean
-mgaOpenCloseFullScreen(__DRIcontextPrivate *driContextPriv)
-{
-    return GL_TRUE;
-}
-
-
 /* This looks buggy to me - the 'b' variable isn't used anywhere...
  * Hmm - It seems that the drawable is already hooked in to
  * driDrawablePriv.
@@ -707,7 +870,7 @@ mgaMakeCurrent(__DRIcontextPrivate *driContextPriv,
 void mgaGetLock( mgaContextPtr mmesa, GLuint flags )
 {
    __DRIdrawablePrivate *dPriv = mmesa->driDrawable;
-   MGASAREAPrivPtr sarea = mmesa->sarea;
+   drm_mga_sarea_t *sarea = mmesa->sarea;
    int me = mmesa->hHWContext;
    int i;
 
@@ -748,8 +911,6 @@ static const struct __DriverAPIRec mgaAPI = {
    .SwapBuffers     = mgaSwapBuffers,
    .MakeCurrent     = mgaMakeCurrent,
    .UnbindContext   = mgaUnbindContext,
-   .OpenFullScreen  = mgaOpenCloseFullScreen,
-   .CloseFullScreen = mgaOpenCloseFullScreen,
    .GetSwapInfo     = getSwapInfo,
    .GetMSC          = driGetMSC32,
    .WaitForMSC      = driWaitForMSC32,
@@ -763,7 +924,7 @@ static const struct __DriverAPIRec mgaAPI = {
  * The __driCreateScreen name is the symbol that libGL.so fetches.
  * Return:  pointer to a __DRIscreenPrivate.
  */
-#ifndef _SOLO 
+#if !defined(DRI_NEW_INTERFACE_ONLY)
 void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
                         int numConfigs, __GLXvisualConfig *config)
 {
@@ -771,15 +932,62 @@ void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
    psp = __driUtilCreateScreen(dpy, scrn, psc, numConfigs, config, &mgaAPI);
    return (void *) psp;
 }
-#else
-void *__driCreateScreen(struct DRIDriverRec *driver,
-                        struct DRIDriverContextRec *driverContext)
+#endif /* !defined(DRI_NEW_INTERFACE_ONLY) */
+
+
+/**
+ * This is the bootstrap function for the driver.  libGL supplies all of the
+ * requisite information about the system, and the driver initializes itself.
+ * This routine also fills in the linked list pointed to by \c driver_modes
+ * with the \c __GLcontextModes that the driver can support for windows or
+ * pbuffers.
+ * 
+ * \return A pointer to a \c __DRIscreenPrivate on success, or \c NULL on 
+ *         failure.
+ */
+#ifdef USE_NEW_INTERFACE
+void * __driCreateNewScreen( __DRInativeDisplay *dpy, int scrn, __DRIscreen *psc,
+			     const __GLcontextModes * modes,
+			     const __DRIversion * ddx_version,
+			     const __DRIversion * dri_version,
+			     const __DRIversion * drm_version,
+			     const __DRIframebuffer * frame_buffer,
+			     drmAddress pSAREA, int fd, 
+			     int internal_api_version,
+			     __GLcontextModes ** driver_modes )
+			     
 {
    __DRIscreenPrivate *psp;
-   psp = __driUtilCreateScreen(driver, driverContext, &mgaAPI);
+   static const __DRIversion ddx_expected = { 1, 0, 0 };
+   static const __DRIversion dri_expected = { 4, 0, 0 };
+   static const __DRIversion drm_expected = { 3, 0, 0 };
+
+   if ( ! driCheckDriDdxDrmVersions2( "MGA",
+				      dri_version, & dri_expected,
+				      ddx_version, & ddx_expected,
+				      drm_version, & drm_expected ) ) {
+      return NULL;
+   }
+
+   psp = __driUtilCreateNewScreen(dpy, scrn, psc, NULL,
+				  ddx_version, dri_version, drm_version,
+				  frame_buffer, pSAREA, fd,
+				  internal_api_version, &mgaAPI);
+   if ( psp != NULL ) {
+      create_context_modes = (PFNGLXCREATECONTEXTMODES)
+	  glXGetProcAddress( (const GLubyte *) "__glXCreateContextModes" );
+      if ( create_context_modes != NULL ) {
+	 MGADRIPtr dri_priv = (MGADRIPtr) psp->pDevPriv;
+	 *driver_modes = mgaFillInModes( dri_priv->cpp * 8,
+					 (dri_priv->cpp == 2) ? 16 : 24,
+					 (dri_priv->cpp == 2) ? 0  : 8,
+					 (dri_priv->backOffset != dri_priv->depthOffset) );
+      }
+   }
+
    return (void *) psp;
 }
-#endif
+#endif /* USE_NEW_INTERFACE */
 
 
 /**

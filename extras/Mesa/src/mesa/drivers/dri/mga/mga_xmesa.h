@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.h,v 1.12 2002/12/16 16:18:52 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mga_xmesa.h,v 1.1.1.2tsi Exp $ */
 
 #ifndef _MGA_INIT_H_
 #define _MGA_INIT_H_
@@ -33,9 +33,9 @@
 
 #include <sys/time.h>
 #include "dri_util.h"
+#include "mga_drm.h"
 #include "mtypes.h"
 #include "mgaregs.h"
-#include "mga_common.h"
 #include "xmlconfig.h"
 
 typedef struct mga_screen_private_s {
@@ -65,10 +65,10 @@ typedef struct mga_screen_private_s {
 
    unsigned int dmaOffset;
 
-   unsigned int textureOffset[DRM_MGA_NR_TEX_HEAPS];
-   unsigned int textureSize[DRM_MGA_NR_TEX_HEAPS];
-   int logTextureGranularity[DRM_MGA_NR_TEX_HEAPS];
-   char *texVirtual[DRM_MGA_NR_TEX_HEAPS];
+   unsigned int textureOffset[MGA_NR_TEX_HEAPS];
+   unsigned int textureSize[MGA_NR_TEX_HEAPS];
+   int logTextureGranularity[MGA_NR_TEX_HEAPS];
+   char *texVirtual[MGA_NR_TEX_HEAPS];
 
 
    __DRIscreenPrivate *sPriv;
@@ -144,7 +144,7 @@ do {						\
 #define MGA_BASE( reg )		((unsigned long)(mmesa->mgaScreen->mmio.map))
 #define MGA_ADDR( reg )		(MGA_BASE(reg) + reg)
 
-#define MGA_DEREF( reg )	*(volatile CARD32 *)MGA_ADDR( reg )
+#define MGA_DEREF( reg )	*(volatile u_int32_t *)MGA_ADDR( reg )
 #define MGA_READ( reg )		MGA_DEREF( reg )
 #define MGA_WRITE( reg, val )	do { MGA_DEREF( reg ) = val; } while (0)
 

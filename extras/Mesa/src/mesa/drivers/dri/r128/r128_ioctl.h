@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.h,v 1.6 2002/12/16 16:18:53 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_ioctl.h,v 1.1.1.3tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -41,18 +41,17 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_reg.h"
 #include "r128_lock.h"
 
-#include "xf86drm.h"
-#include "r128_common.h"
-
-#define R128_BUFFER_MAX_DWORDS	(R128_BUFFER_SIZE / sizeof(CARD32))
+#define R128_BUFFER_MAX_DWORDS	(R128_BUFFER_SIZE / sizeof(u_int32_t))
 
 
 extern drmBufPtr r128GetBufferLocked( r128ContextPtr rmesa );
 extern void r128FlushVerticesLocked( r128ContextPtr rmesa );
 
-static __inline void *r128AllocDmaLow( r128ContextPtr rmesa, int bytes )
+static __inline void *r128AllocDmaLow( r128ContextPtr rmesa, int count,
+				       int vert_size )
 {
-   CARD32 *head;
+   u_int32_t *head;
+   int bytes = count * vert_size;
 
    if ( !rmesa->vert_buf ) {
       LOCK_HARDWARE( rmesa );
@@ -65,8 +64,10 @@ static __inline void *r128AllocDmaLow( r128ContextPtr rmesa, int bytes )
       UNLOCK_HARDWARE( rmesa );
    }
 
-   head = (CARD32 *)((char *)rmesa->vert_buf->address + rmesa->vert_buf->used);
+   head = (u_int32_t *)((char *)rmesa->vert_buf->address + rmesa->vert_buf->used);
    rmesa->vert_buf->used += bytes;
+   rmesa->num_verts += count;
+   
    return head;
 }
 
@@ -94,7 +95,7 @@ void r128WaitForVBlank( r128ContextPtr rmesa );
 extern void r128WaitForIdleLocked( r128ContextPtr rmesa );
 
 
-extern void r128DDInitIoctlFuncs( GLcontext *ctx );
+extern void r128InitIoctlFuncs( struct dd_function_table *functions );
 
 
 /* ================================================================

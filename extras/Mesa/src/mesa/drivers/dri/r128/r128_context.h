@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.12 2002/12/16 16:18:52 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_context.h,v 1.1.1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -39,11 +39,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef GLX_DIRECT_RENDERING
 
 #include "dri_util.h"
-
-#include "xf86drm.h"
-#include "r128_common.h"
+#include "drm.h"
+#include "r128_drm.h"
 
 #include "mtypes.h"
+#include "tnl/t_vertex.h"
 
 #include "r128_reg.h"
 
@@ -82,6 +82,7 @@ typedef struct r128_context *r128ContextPtr;
 #define R128_FALLBACK_SEP_SPECULAR	0x0080
 #define R128_FALLBACK_BLEND_EQ		0x0100
 #define R128_FALLBACK_BLEND_FUNC	0x0200
+#define R128_FALLBACK_PROJTEX		0x0400
 
 
 /* Use the templated vertex format:
@@ -121,24 +122,27 @@ struct r128_context {
     */
    GLuint new_state;
    GLuint dirty;			/* Hardware state to be updated */
-   r128_context_regs_t setup;
+   drm_r128_context_regs_t setup;
+
+   /* Vertex state */
+   GLuint vertex_size;
+   GLuint vertex_format;
+   struct tnl_attr_map vertex_attrs[VERT_ATTRIB_MAX];
+   GLuint vertex_attr_count;
+   char *verts;			/* points to tnl->clipspace.vertex_buf */
+   GLuint num_verts;
+   int coloroffset, specoffset;
+   int tnl_state;	/* tnl->render_inputs for this _tnl_install_attrs */
 
    GLuint NewGLState;
    GLuint Fallback;
-   GLuint SetupIndex;
-   GLuint SetupNewInputs;
    GLuint RenderIndex;
    GLfloat hw_viewport[16];
    GLfloat depth_scale;
-   GLuint vertex_size;
-   GLuint vertex_stride_shift;
-   GLuint vertex_format;
-   GLuint num_verts;
-   GLubyte *verts;		
 
-   CARD32 ClearColor;			/* Color used to clear color buffer */
-   CARD32 ClearDepth;			/* Value used to clear depth buffer */
-   CARD32 ClearStencil;			/* Value used to clear stencil */
+   u_int32_t ClearColor;			/* Color used to clear color buffer */
+   u_int32_t ClearDepth;			/* Value used to clear depth buffer */
+   u_int32_t ClearStencil;		/* Value used to clear stencil */
 
    /* Map GL texture units onto hardware
     */
@@ -181,10 +185,10 @@ struct r128_context {
    GLint readOffset, readPitch;
 
    GLuint numClipRects;			/* Cliprects for the draw buffer */
-   XF86DRIClipRectPtr pClipRects;
+   drm_clip_rect_t *pClipRects;
 
    GLuint scissor;
-   XF86DRIClipRectRec ScissorRect;	/* Current software scissor */
+   drm_clip_rect_t ScissorRect;	/* Current software scissor */
 
    /* Mirrors of some DRI state
     */
@@ -194,12 +198,12 @@ struct r128_context {
 
    unsigned int lastStamp;	        /* mirror driDrawable->lastStamp */
 
-   drmContext hHWContext;
-   drmLock *driHwLock;
+   drm_context_t hHWContext;
+   drm_hw_lock_t *driHwLock;
    int driFd;
 
    r128ScreenPtr r128Screen;		/* Screen private DRI data */
-   R128SAREAPrivPtr sarea;		/* Private SAREA data */
+   drm_r128_sarea_t *sarea;		/* Private SAREA data */
 
    /* Performance counters
     */
