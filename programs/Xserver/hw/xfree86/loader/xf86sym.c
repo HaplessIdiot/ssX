@@ -271,9 +271,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ZoomViewport)
    SYMFUNC(xf86GetPointerScreenFuncs)
 
-   /* xf86Configure.c */
-   SYMVAR(ConfiguredID)
-
    /* xf86DGA.c */
    /* For drivers */
    SYMFUNC(DGAInit)
