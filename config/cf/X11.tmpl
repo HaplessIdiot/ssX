@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.228 2003/10/21 17:41:43 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.229 2003/10/22 04:25:53 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2182,14 +2182,15 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #define ProfileLibGlx		NO
 #endif
 /*
- * Don't make a shared GLw library because is would depend on Motif.
+ * Only make a shared GLw library on systems with Weak symbols 
+ * because it depends on Motif. See xc/lib/GLw/README.txt for details
  */
 #if BuildGLwLibrary
 #ifndef SharedLibGLw
-#define SharedLibGLw		NO	/* HasSharedLibraries */
+#define SharedLibGLw		HasSharedLibraries && HasWeakSymbols
 #endif
 #ifndef NormalLibGLw
-#define NormalLibGLw		YES	/* (!SharedLibGLw | ForceNormalLib) */
+#define NormalLibGLw		(!SharedLibGLw || ForceNormalLib)
 #endif
 #ifndef DebugLibGLw
 #define DebugLibGLw		NO	/* debugged widget library */
@@ -2198,7 +2199,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #define ProfileLibGLw		NO	/* profiled widget library */
 #endif
 #ifndef GLwUseXmStubs
-#define GLwUseXmStubs		NO	/* create stub (weak) Motif symbols */
+	/* create stub (weak) Motif symbols */
+#define GLwUseXmStubs		SharedLibGLw && HasWeakSymbols
 #endif
 #else
 #undef  SharedLibGLw

@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.209 2003/10/05 21:22:19 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.210 2003/10/11 09:40:14 herrb Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -432,6 +432,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  define HasDlopen		YES
 # endif
 #endif
+#define HasWeakSymbols		UseElfFormat
 #ifndef HasShadowPasswd
 # if UseElfFormat
 #  define HasShadowPasswd	YES
