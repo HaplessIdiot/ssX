@@ -3,7 +3,7 @@ XCOMM platform:  $TOG: usl.cf /main/50 1997/04/17 14:11:39 barstow $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.15 1999/05/16 06:55:39 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.16 1999/05/17 13:17:01 dawes Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -88,6 +88,9 @@ XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVer
 #define DtPrintDefines		DtSearchDefines
 
 #define HasStrcasecmp		NO
+#ifndef HasSnprintf
+#define HasSnprintf		YES
+#endif
 
 /* For DtHelp's TIFF processing routines. */
 #define LSBBitOrder		YES
