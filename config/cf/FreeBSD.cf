@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.84 1999/04/18 12:59:42 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.85 1999/05/22 08:39:55 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -439,6 +439,15 @@ install.man::								@@\
 #define DlLibrary		-rdynamic
 #else
 #define DlLibrary		/**/
+#endif
+
+
+/*
+ * A hack to work around an optimisation problem with the compiler on
+ * FreeBSD 4.0-current in late 1999/early 2000.
+ */
+#if OSMajorVersion == 4 && OSMinorVersion == 0 && OSTeenyVersion == 0
+#define FreeBSDGccOptBug
 #endif
 
 #include <bsdLib.rules>

@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/63 1997/11/24 16:48:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.27 1999/04/17 09:08:21 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.28 1999/08/14 10:49:25 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -105,6 +105,14 @@ XF86INCLUDES = -I$(XF86COMSRC)
     LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
 NormalLibraryObjectRule()
+
+/*
+ * A hack to work around an optimisation problem with the compiler on
+ * FreeBSD 4.0-current in late 1999/early 2000.
+ */
+#if BuildXF86VidModeExt && defined(FreeBSDGccOptBug)
+SpecialCObjectRule(xf86vmode,NullParameter,-O0)
+#endif
 
 NormalLibraryTarget(ext,$(OBJS))
 LintLibraryTarget(ext,$(SRCS))
