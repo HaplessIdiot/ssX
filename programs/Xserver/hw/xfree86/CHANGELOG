@@ -1,4 +1,8 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 560. Fix an Xnest hang on OS/2 (Bugzilla #852, Frank Giessler).
+ 559. OS/2 update for the recent move to building most libraries shared,
+      and add some functions to the export lists for freetype and Xt for
+      compatibility with older applications (Bugzilla #852, Frank Giessler).
  558. Fix the installation location of the XRes and Xss manpage aliases
       (Bugzilla #848, ISHIKAWA Mutsumi).
  557. Include backwards compatibility API for renamed stream functions in
@@ -18114,7 +18118,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2939 2003/11/05 22:25:21 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2940 2003/11/06 03:02:03 dawes Exp $
 
 
 

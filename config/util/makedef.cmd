@@ -1,5 +1,5 @@
 /* This is OS/2 REXX */
-/* $XFree86: xc/config/util/makedef.cmd,v 1.1 2002/05/31 16:31:21 dawes Exp $
+/* $XFree86: xc/config/util/makedef.cmd,v 1.2 2003/03/25 04:18:06 dawes Exp $
  *
  * This file was taken from Odin32 project and modified to suit
  * XFree86 4.x build process
@@ -600,7 +600,7 @@ UpdateDefFile: procedure expose ordHash.;
      */
     if (\fDescription) then
     do
-        call lineout outfile,"DESCRIPTION '"||sDescription libName||"'";
+        call lineout outfile,"DESCRIPTION '"||sDescription sRealName||"'";
         AddCodeDataSection(outfile);
     end
 
