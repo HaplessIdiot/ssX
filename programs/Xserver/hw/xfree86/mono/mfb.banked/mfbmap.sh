@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # $XConsortium: mfbmap.sh /main/3 1996/02/21 17:50:10 kaleb $
-# $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/mfbmap.sh,v 3.2tsi Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/mfbmap.sh,v 3.3 1997/03/27 18:39:38 hohndel Exp $
 #
 # This script recreates the mapping list that maps the mfb external
 #  symbols * to mono_*
@@ -18,7 +18,7 @@ echo ""
 nm ../../../../mfb/*.o | \
 awk "{ if ((\$2 == \"D\") || (\$2 == \"T\") || (\$2 == \"C\")) print \$3 }" | \
 sed s/^_// | \
-grep -v "^endtab$" | \
+grep -v "^ModuleInit$" | \
 sort | \
 awk "{ print \"#define \" \$1 \"  mono_\"\$1 }"
 

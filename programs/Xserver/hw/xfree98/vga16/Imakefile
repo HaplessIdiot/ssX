@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/Imakefile,v 3.8 1997/03/24 13:14:46 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/Imakefile,v 3.10 1997/04/08 14:56:10 hohndel Exp $
 
 
 
@@ -9,11 +9,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/10/25 15:42:45 kaleb $
 
 #define IHaveSubdirs
 
-#if ! DoLoadableServer
-MISC = misc
-#endif
-
-SUBDIRS = ibm mfb $(MISC)
+SUBDIRS = ibm mfb
 
 SRCS = ibm/?*.c mfb/?*.c
 
@@ -23,8 +19,6 @@ DONES = ibm/DONE mfb/DONE
 
 INCLUDES = -I$(XF86SRC)/vga256/vga -I$(XF98COMSRC) -I$(XF98OSSRC) \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
-
-VGA16DRIVERS = XF98Vga16Drivers
 
 #if HasParallelMake
 MakeMutex($(SUBDIRS) $(OBJS) $(DONES))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.12 1997/03/28 08:19:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.14 1997/04/08 13:16:49 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -299,12 +299,13 @@ xf86InitializeAcceleration(pScreen)
                 xf86ImageTextTECPUToScreenColorExpand;
             xf86GCInfoRec.ImageGlyphBltTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
-#if 0
-            xf86AccelInfoRec.ImageTextNonTE =
-                xf86ImageTextNonTECPUToScreenColorExpand;
-            xf86GCInfoRec.ImageGlyphBltNonTEFlags =
-                xf86AccelInfoRec.ColorExpandFlags;
-#endif
+	    /* Only DWORD padding currently supported */
+	    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) {
+		xf86AccelInfoRec.ImageTextNonTE =
+                    xf86ImageTextNonTECPUToScreenColorExpand;
+		xf86GCInfoRec.ImageGlyphBltNonTEFlags =
+                    xf86AccelInfoRec.ColorExpandFlags;
+	    }
             if (xf86Verbose)
                 ErrorF("imagetext");
         }
@@ -316,12 +317,13 @@ xf86InitializeAcceleration(pScreen)
                 xf86PolyTextTECPUToScreenColorExpand;
             xf86GCInfoRec.PolyGlyphBltTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
-#if 0
-            xf86AccelInfoRec.PolyTextNonTE =
-                xf86PolyTextNonTECPUToScreenColorExpand;
-            xf86GCInfoRec.PolyGlyphBltNonTEFlags =
-                xf86AccelInfoRec.ColorExpandFlags;
-#endif
+	    /* Only DWORD padding currently supported */
+	    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) {
+		xf86AccelInfoRec.PolyTextNonTE =
+                    xf86PolyTextNonTECPUToScreenColorExpand;
+		xf86GCInfoRec.PolyGlyphBltNonTEFlags =
+                    xf86AccelInfoRec.ColorExpandFlags;
+	    }
             if (xf86Verbose)
                 ErrorF(", polytext");
         }
@@ -389,12 +391,10 @@ xf86InitializeAcceleration(pScreen)
                 xf86ImageTextTEScreenToScreenColorExpand;
             xf86GCInfoRec.ImageGlyphBltTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
-#if 0
             xf86AccelInfoRec.ImageTextNonTE =
                 xf86ImageTextNonTEScreenToScreenColorExpand;
             xf86GCInfoRec.ImageGlyphBltNonTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
-#endif
             if (xf86Verbose)
                 ErrorF("imagetext");
         }
@@ -406,12 +406,10 @@ xf86InitializeAcceleration(pScreen)
                 xf86PolyTextTEScreenToScreenColorExpand;
             xf86GCInfoRec.PolyGlyphBltTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
-#if 0
             xf86AccelInfoRec.PolyTextNonTE =
                 xf86PolyTextNonTEScreenToScreenColorExpand;
             xf86GCInfoRec.PolyGlyphBltNonTEFlags =
                 xf86AccelInfoRec.ColorExpandFlags;
-#endif
             if (xf86Verbose)
                 ErrorF(", polytext");
         }

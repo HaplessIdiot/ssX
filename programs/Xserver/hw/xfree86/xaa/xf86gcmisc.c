@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.8 1997/03/27 08:31:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.11 1997/04/10 11:34:57 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -536,21 +536,13 @@ pglyphBase)
     if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy
     && 	FONTMAXBOUNDS(pGC->font,rightSideBearing) -
         FONTMINBOUNDS(pGC->font,leftSideBearing) <= 32 &&
-	FONTMINBOUNDS(pGC->font,characterWidth) >= 0) {
-
-        SYNC_CHECK;
-
-	if (TERMINALFONT(pGC->font)
+	FONTMINBOUNDS(pGC->font,characterWidth) >= 0
 #ifdef FOUR_BIT_CODE
-	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= PGSZB
+	&& FONTMAXBOUNDS(pGC->font,characterWidth) >= PGSZB
 #endif
-	)
-	   usePolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph,
-	        ppci, pglyphBase);
-	return;   /* really ? */
-    }
-
-    if (FONTMAXBOUNDS(pGC->font, rightSideBearing) -
+	) 
+        PolyGlyphBltFunc = usePolyGlyphBlt;
+    else if (FONTMAXBOUNDS(pGC->font, rightSideBearing) -
 	FONTMINBOUNDS(pGC->font, leftSideBearing) > 32 ||
 	FONTMINBOUNDS(pGC->font, characterWidth) < 0) {
 	PolyGlyphBltFunc = miPolyGlyphBlt;

@@ -1,7 +1,7 @@
 /*
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBankc.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBankc.c,v 3.1 1997/03/27 18:40:16 hohndel Exp $ */
 
 /*
  * Because a modern VGA has more than 128kBytes (which are mappable into the
@@ -82,9 +82,9 @@ vgaSetReadWrite(p)
     register pointer p;
 {
  if (xf86bpp == 4) {
-  writeseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+  writeseg = ((unsigned long)p - (unsigned long)vgaBase) >> vgaSegmentShift;
   (vgaSetReadWriteFunc)(writeseg);
-  return (vgaWriteBottom + (((unsigned long)p - vgaBase) & vgaSegmentMask));
+  return ((pointer)((unsigned long)vgaWriteBottom + (((unsigned long)p - (unsigned long)vgaBase) & vgaSegmentMask)));
  } else {
   writeseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
   (vgaSetReadWriteFunc)(writeseg);
@@ -150,9 +150,9 @@ vgaSetRead(p)
     register pointer p;
 {
  if (xf86bpp == 4) {
-  readseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+  readseg = ((unsigned long)p - (unsigned long)vgaBase) >> vgaSegmentShift;
   (vgaSetReadFunc)(readseg);
-  return (vgaReadBottom + (((unsigned long)p - vgaBase) & vgaSegmentMask));
+  return ((pointer)((unsigned long)vgaReadBottom + (((unsigned long)p - (unsigned long)vgaBase) & vgaSegmentMask)));
  } else {
   readseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
   (vgaSetReadFunc)(readseg);
@@ -217,9 +217,9 @@ vgaSetWrite(p)
     register pointer p;
 {
  if (xf86bpp == 4) {
-  writeseg = ((unsigned long)p - vgaBase) >> vgaSegmentShift;
+  writeseg = ((unsigned long)p - (unsigned long)vgaBase) >> vgaSegmentShift;
   (vgaSetWriteFunc)(writeseg);
-  return (vgaWriteBottom + (((unsigned long)p - vgaBase) & vgaSegmentMask));
+  return ((pointer)((unsigned long)vgaWriteBottom + (((unsigned long)p - (unsigned long)vgaBase) & vgaSegmentMask)));
  } else {
   writeseg = ((unsigned long)p - VGABASE) >> vgaSegmentShift;
   (vgaSetWriteFunc)(writeseg);

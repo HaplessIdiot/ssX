@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.3 1997/03/28 09:43:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86wrapper.c,v 3.4 1997/04/10 11:34:59 hohndel Exp $ */
 
 
 #include "gcstruct.h"
@@ -298,7 +298,7 @@ xf86PolyPointWrapper(pDrawable, pGC, mode, npt, pptInit)
 }
 
 
-void
+void static
 xf86SetSpansWrapper(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;

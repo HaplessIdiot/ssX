@@ -1,4 +1,23 @@
 XFree86 3.2At (11 April 1997)
+ 677. Fix problems with NonTE text in XAA (#278, David Bateman).
+ 676. Fix loader under SVR4.0.4 (lstat,fstat,mknod)(#277, Richard Coley).
+ 675. Speedups for dashed lines in SVGA/S3 (#276, Mark Vojkovich).
+ 674. Allow building Xnest with BuildServersOnly (#275, Marc Aurele La France).
+ 673. Fix vga16 and banked vga2 without also breaking either of the loader or 
+      static servers. Remove obsolete directories and other extraneous junk.
+      Remove mi's dependence on mfb. LoaderFixups is no longer needed. Add 
+      xf86InitViewport to the symbol table. Combine vga2/mfb & vga2/mfb.banked.
+      (#274 Marc Aurele La France).
+ 672. More layout cleanups in matrox driver (#273, Radek Kapitan).
+ 671. Fix LinkKit to build loader (#272, Takaaki Nomura).
+ 670. Fix some Alpha problems (#270, Robin Cutshaw).
+ 669. Add MemClk field to all drivers (#270,271 Robin Cutshaw, Sebastien 
+      Marineau).
+ 668. Fix server crashes in C&T driver caused by delayed syncing (#269, David
+      Bateman).
+ 667. Fix problems with PEX modules (#268, Takaaki Nomura).
+ 666. Fix some problems in XAA benchmarks and Trident Cyber support (#266,267,
+      Alan Hourihane).
  665. Add Mystique to scanpci (#264, Guy Desbief).
  664. Fix problems with delayed syncing (#263, Mark Vojkovich).
  663. Fix LinkKit and cirrus driver (#262, Takaaki Nomura).
@@ -4322,4 +4341,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.444 1997/04/10 10:06:26 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.445 1997/04/10 11:34:13 hohndel Exp $

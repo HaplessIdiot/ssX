@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.124 1997/03/22 09:35:19 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.125 1997/04/08 10:11:46 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -28,6 +28,10 @@
 #else
 extern double atof();
 extern char *getenv();
+#endif
+
+#if defined(SVR4)
+#include <sys/stat.h>
 #endif
 
 #define NEED_EVENTS 1
@@ -2537,7 +2541,6 @@ configDynamicModuleSection()
     }
 #ifdef XFree86LOADER
     LoaderResolveSymbols();
-    LoaderFixups();
 
     /*
      * at this point we know which depth this server will be running in.
@@ -2617,10 +2620,6 @@ configDynamicModuleSection()
         FatalError("color depth of %d currently not supported by loader\n",
 		xf86bpp);
     }
-    /* Before checking for unresolved, call LoaderFixups() again, to make
-     * sure that any special symbols are properly fixed-up 
-     */ 
-     LoaderFixups();
 
     /*
      * at this point all symbols should be resolvable, except for 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.67 1997/03/11 13:05:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.68 1997/03/22 09:35:22 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -29,12 +29,12 @@
 /*
  * Structures and macros for handling option flags.
  *
- * MAX_OFLAGS should be a multiple of 8
+ * MAX_OFLAGS should be a multiple of FLAGBITS
  */
-#define MAX_OFLAGS	224
-#define FLAGBITS	(8 * sizeof(unsigned long))
+#define MAX_OFLAGS	256
+#define FLAGBITS	(8 * sizeof(CARD32))
 typedef struct {
-	unsigned long flag_bits[MAX_OFLAGS/FLAGBITS];
+	CARD32 flag_bits[MAX_OFLAGS/FLAGBITS];
 } OFlagSet;
 
 #define OFLG_SET(f,p)	((p)->flag_bits[(f)/FLAGBITS] |= (1 << ((f)%FLAGBITS)))
@@ -216,7 +216,7 @@ typedef struct {
 #define OPTION_XAA_NO_COL_EXP	201 /* Disable color expansion. */
 
 /*
- *  MAX flag value is 223.  If larger is needed, remember to update
+ *  MAX flag value is 256.  If larger is needed, remember to update
  *  MAX_OFLAGS at the top of this file.
  */
 

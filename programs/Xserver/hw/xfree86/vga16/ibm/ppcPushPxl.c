@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPushPxl.c,v 3.4 1996/12/23 06:53:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPushPxl.c,v 3.5 1997/03/13 15:11:22 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -36,7 +36,7 @@
 #include "miscstruct.h"
 
 #include "ppc.h"
-#include "ppcBitMacs.h"
+#include "maskbits.h"
 
 #include "OScompiler.h"
 #include "ibmTrace.h"

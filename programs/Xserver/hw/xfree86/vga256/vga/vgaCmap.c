@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.16 1997/03/11 13:07:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.17 1997/03/22 09:36:17 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -88,14 +88,11 @@ vgaStoreColors(pmap, ndef, pdefs)
     if (pmap != InstalledMaps[pmap->pScreen->myNum])
         return;
 
-    /* GJA -- We don't want cfb code right now (in vga16 server) */
-#ifndef XF86VGA16
     if ((pmap->pVisual->class | DynamicClass) == DirectColor)
     {
         ndef = cfbExpandDirectColors (pmap, ndef, pdefs, directDefs);
         pdefs = directDefs;
     }
-#endif
 
     for(i = 0; i < ndef; i++)
     {

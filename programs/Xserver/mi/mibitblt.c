@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: mibitblt.c /main/55 1996/08/01 19:25:20 dpw $ */
-/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.2 1997/02/27 14:00:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.3 1997/03/18 10:06:35 hohndel Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -64,9 +64,6 @@ SOFTWARE.
 
 #ifdef XFree86LOADER
 #define memset(a,b,c) xf86memset(a,b,c)
-#endif
-#ifdef XFree86Server
-extern int xf86bpp;
 #endif
 
 /* MICOPYAREA -- public entry for the CopyArea request 
@@ -361,7 +358,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
 #endif
 #else
-		if( xf86bpp >= 8 ) /* LSBFirst */
+		if (screenInfo.bitmapBitOrder == LSBFirst)
 			bit <<= k;
 		else
 			bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);

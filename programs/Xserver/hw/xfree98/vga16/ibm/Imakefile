@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/ibm/Imakefile,v 3.5 1996/08/14 14:38:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga16/ibm/Imakefile,v 3.6 1996/12/23 07:08:11 dawes Exp $
 
 
 
@@ -42,7 +42,7 @@ DEFINES = -DUSE_PORTABLE_FAST_LINES -DXF86VGA16 -DUNBANKED_VGA16 \
 XCOMM This one is for the banked server:
 XCOMM DEFINES = -DUSE_PORTABLE_FAST_LINES -DXF86VGA16
 
-INCLUDES = -I. -I$(SERVERSRC)/mi -I$(XF86SRC)/vga2/mfb.banked \
+INCLUDES = -I. -I$(SERVERSRC)/mi -I$(XF86SRC)/vga2/mfb \
 		-I$(XF86SRC)/vga256/vga \
 		-I$(SERVERSRC)/mfb -I$(SERVERSRC)/include \
 		-I$(SERVERSRC)/cfb -I$(FONTINCSRC) -I$(XINCLUDESRC) \
@@ -55,7 +55,6 @@ SubdirLibraryRule($(OBJS))
 LinkSourceFile(OScompiler.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(emulOpStip.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(emulRepAre.c,$(XF86SRC)/vga16/ibm)
-LinkSourceFile(emulStip.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(emulTile.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ibmTrace.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(mfbbres.c,$(XF86SRC)/vga16/ibm)
@@ -69,7 +68,6 @@ LinkSourceFile(offscreen.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppc.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcArea.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcBStore.c,$(XF86SRC)/vga16/ibm)
-LinkSourceFile(ppcBitMacs.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcBitmap.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcCReduce.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(ppcClip.c,$(XF86SRC)/vga16/ibm)
@@ -104,7 +102,6 @@ LinkSourceFile(vgaReg.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaSolid.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaStipple.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(vgaVideo.h,$(XF86SRC)/vga16/ibm)
-LinkSourceFile(wm0.h,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(wm3.c,$(XF86SRC)/vga16/ibm)
 LinkSourceFile(wm3.h,$(XF86SRC)/vga16/ibm)
 

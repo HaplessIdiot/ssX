@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCurs.c,v 3.3 1996/12/23 06:52:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCurs.c,v 3.4 1997/03/13 15:11:10 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -45,7 +45,7 @@
 #include "OScompiler.h"
 #include "windowstr.h"	/* GJA */
 #include "ppc.h"
-#include "ppcBitMacs.h"
+#include "maskbits.h"
 #include "ibmTrace.h"
 
 #if !defined(IMAGE_BYTE_ORDER)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.69 1997/02/27 13:58:32 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.70 1997/03/07 00:29:23 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -163,6 +163,20 @@ InitOutput(pScreenInfo, argc, argv)
 
   if (serverGeneration == 1) {
 
+    /*
+     * These four values really need to be specific to a screen, rather than
+     * to a display.
+     */
+    pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
+    pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
+    /*
+     * The following two values are OK for most XFree86 screens, except for
+     * 1bpp and 4bpp, which are setup differently.  But this is for the driver
+     * to deal with.
+     */
+    pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
+    pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+
     xf86WrapperInit();
 
     if ((xf86ServerName = strrchr(argv[0], '/')) != 0)
@@ -313,12 +327,6 @@ InitOutput(pScreenInfo, argc, argv)
   /*
    * Use the previous collected parts to setup pScreenInfo
    */
-  pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
-  pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
-#ifndef XFree86LOADER
-  pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
-  pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
-#endif
   pScreenInfo->numPixmapFormats = numFormats;
   for ( i=0; i < numFormats; i++ ) pScreenInfo->formats[i] = formats[i];
 
@@ -377,26 +385,9 @@ InitOutput(pScreenInfo, argc, argv)
        */
       if (!xf86Info.sharedMonitor) (xf86Screens[i]->EnterLeaveMonitor)(ENTER);
     }
-#ifdef XFree86LOADER
-    if( pScreenInfo->screens[0] ) 
-    {
-	if( pScreenInfo->screens[0]->rootDepth < 8 )
-	{
-		pScreenInfo->bitmapScanlineUnit = 8;
-		pScreenInfo->bitmapBitOrder = MSBFirst;
-	}
-	else
-	{
-		pScreenInfo->bitmapScanlineUnit = 32;
-		pScreenInfo->bitmapBitOrder = LSBFirst;
-	}
-	if( xf86bpp == -1 )
-	{
-	    xf86bpp = pScreenInfo->screens[0]->rootDepth;
-	}
-    }
-#endif
 
+    if( pScreenInfo->screens[0] && xf86bpp == -1 ) 
+	xf86bpp = pScreenInfo->screens[0]->rootDepth;
 
 #ifndef AMOEBA
   RegisterBlockAndWakeupHandlers(xf86Block, xf86Wakeup, (void *)0);

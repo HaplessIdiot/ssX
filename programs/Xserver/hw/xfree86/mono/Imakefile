@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/10 1996/10/19 18:05:31 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/Imakefile,v 3.12 1997/03/11 11:11:09 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/Imakefile,v 3.13 1997/04/08 10:13:54 hohndel Exp $
 
 
 #define IHaveModules
@@ -22,8 +22,6 @@ DONES = mono/DONE mfb.banked/DONE
 INCLUDES = -Imono -I../common -I../os-support -I$(SERVERSRC)/include \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(XINCLUDESRC)
 
-MONODRIVERS = XF86MonoDrivers
-
 #if HasParallelMake
 MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
@@ -33,10 +31,6 @@ $(DONES): $(SUBDIRS)
 #endif
 
 NormalDepLibraryTarget(mono,$(SUBDIRS) $(DONES),$(OBJS))
-
-#if ! DoLoadableServer
-ConfigTargetNoDepend(monoConf,$(ICONFIGFILES),confmono.SHsuf,$(MONODRIVERS))
-#endif
 
 NormalLibraryObjectRule()
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.7 1997/03/27 08:31:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.9 1997/04/08 13:16:58 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -129,10 +129,14 @@ xf86ImageGlyphBltNonTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	return;
 
     width = 0;
-    for (i = 0; i < nglyph; i++)
-    	width += GLYPHWIDTHPIXELS(ppci[i]);
+    for (i = 0; i < nglyph - 1; i++)
+	width += ppci[i]->metrics.characterWidth +
+	    ppci[i + 1]->metrics.leftSideBearing -
+	    ppci[i]->metrics.leftSideBearing;
+    width += ppci[i]->metrics.characterWidth
+	- ppci[i]->metrics.leftSideBearing;
 
-    x = xInit + FONTMAXBOUNDS(pfont, leftSideBearing) + pDrawable->x;
+    x = xInit + (*ppci)->metrics.leftSideBearing + pDrawable->x;
     y = yInit - FONTASCENT(pfont) + pDrawable->y;
     bbox.x1 = x;
     bbox.x2 = x + width;
@@ -224,13 +228,17 @@ xf86PolyGlyphBltNonTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	return;
 
     width = 0;
-    for (i = 0; i < nglyph; i++)
-    	width += GLYPHWIDTHPIXELS(ppci[i]);
+    for (i = 0; i < nglyph - 1; i++)
+	width += ppci[i]->metrics.characterWidth +
+	    ppci[i + 1]->metrics.leftSideBearing -
+	    ppci[i]->metrics.leftSideBearing;
+    width += ppci[i]->metrics.characterWidth
+	- ppci[i]->metrics.leftSideBearing;
 
-    x = xInit + FONTMAXBOUNDS(pfont, leftSideBearing) + pDrawable->x;
+    x = xInit + (*ppci)->metrics.leftSideBearing + pDrawable->x;
     y = yInit - FONTASCENT(pfont) + pDrawable->y;
     bbox.x1 = x;
-    bbox.x2 = x + (glyphWidth * nglyph);
+    bbox.x2 = x + width;
     bbox.y1 = y;
     bbox.y2 = y + h;
 
@@ -243,7 +251,7 @@ xf86PolyGlyphBltNonTE(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     }
 
     (*(xf86AccelInfoRec.PolyTextNonTE))(pDrawable, pGC, xInit, yInit,
-        nglyph, ppci, pglyphBase);
+	nglyph, ppci, pglyphBase);
 }
 
 
@@ -724,6 +732,13 @@ nglyph, ppci, pglyphBase)
     x = xInit + (*ppci)->metrics.leftSideBearing + pDrawable->x;
     y = yInit - FONTASCENT(pfont) + pDrawable->y;
 
+    /* Allocate list of pointers to glyph info. */
+    glyphinfop = (NonTEGlyphInfo *)ALLOCATE_LOCAL(nglyph *
+        sizeof(NonTEGlyphInfo));
+
+    w = CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci,
+        FONTASCENT(pfont));
+
     /*
      * If only color expansion with transparency is supported, then
      * do it in two steps -- first do the background with a solid fill,
@@ -734,24 +749,13 @@ nglyph, ppci, pglyphBase)
         xf86AccelInfoRec.SetupForFillRectSolid(pGC->bgPixel, pGC->alu,
             pGC->planemask);
         xf86AccelInfoRec.SubsequentFillRectSolid(x, y, w, h);
-    }
-
-    /* Allocate list of pointers to glyph info. */
-    glyphinfop = (NonTEGlyphInfo *)ALLOCATE_LOCAL(nglyph *
-        sizeof(NonTEGlyphInfo));
-
-    w = CollectCharacterInfo(glyphinfop, nglyph, pglyphBase, ppci,
-        FONTASCENT(pfont));
-
-    if (xf86AccelInfoRec.ColorExpandFlags & ONLY_TRANSPARENCY_SUPPORTED) {
         if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
             xf86AccelInfoRec.Sync();
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
             -1, pGC->fgPixel, GXcopy, pGC->planemask);
-    }
-    else
+    } else
         xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
-            pGC->bgPixel, pGC->fgPixel, GXcopy, pGC->planemask);
+            pGC->bgPixel, pGC->fgPixel, pGC->alu, pGC->planemask);
 
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
         x, y, w, h, 0);
@@ -904,7 +908,7 @@ nglyph, ppci, pglyphBase)
         -1, pGC->fgPixel, pGC->alu, pGC->planemask);
 
     xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(
-        x, y, nglyph * glyphWidth, h, 0);
+        x, y, w, h, 0);
 
 #if 0
     if (xf86AccelInfoRec.ColorExpandFlags & CPU_SCANLINE_PAD_BYTE)
@@ -1268,7 +1272,6 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
 	if (offset == endoffset)
 	    offset = 0;
     }
-
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
         NeedToSync = TRUE;
 }
@@ -1326,7 +1329,8 @@ static void DrawTextNonTECPUToScreenColorExpand(nglyph, h, glyphinfop)
         if (((long)base - (long)xf86AccelInfoRec.CPUToScreenColorExpandBase) & 4)
             *(unsigned int *)base = 0;
 
-    xf86AccelInfoRec.Sync();
+    if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+        NeedToSync = TRUE;
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.88 1997/03/27 08:31:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.89 1997/03/27 18:40:05 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -171,6 +171,7 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int textClockFreq */
   NULL,			/* char* DCConfig */
   NULL,			/* char* DCOptions */
+  0,			/* int MemClk */
 #ifdef XFreeXDGA
   0,                    /* int directMode */
   NULL,                 /* Set Vid Page */
@@ -246,13 +247,11 @@ ModuleInit(data,magic)
 
     switch(cnt++)
     {
-#if !defined(XF86VGA16) && !defined(MONOVGA)
     case 0:
       * data = (int) "libxaa.a";
       * magic= MAGIC_LOAD;
       xf86xaaloaded = TRUE;
       break;
-#endif
     default:
       * magic= MAGIC_DONE;
       break;
@@ -985,6 +984,12 @@ vgaProbe()
 	  }
 
 	} else {
+	  /*
+	   * 1bpp & 4bpp need a different bitmap ordering & scanline unit.
+	   */
+	  screenInfo.bitmapScanlineUnit = 8;
+	  screenInfo.bitmapBitOrder = MSBFirst;
+
 #ifndef PC98
 #ifdef BANKEDMONOVGA
 	  if (vgaUse2Banks)

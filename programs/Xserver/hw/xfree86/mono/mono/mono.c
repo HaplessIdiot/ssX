@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.32 1997/03/07 00:29:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.33 1997/03/11 11:11:16 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -153,6 +153,9 @@ ScrnInfoRec monoInfoRec = {
   0,			/* int s3RefClk */
   -1,			/* int s3BlankDelay */
   0,			/* int textClockFreq */
+  NULL,			/* char* DDConfig */
+  NULL,			/* char* DDOptions */
+  0,			/* int MemClk */
 #ifdef XFreeXDGA
   0,			/* int directMode */
   NULL,			/* Set Vid Page */
@@ -403,6 +406,11 @@ monoProbe()
 			XCONFIG_GIVEN : XCONFIG_PROBED ,
 			monoInfoRec.name,
 			monoInfoRec.virtualX, monoInfoRec.virtualY);
+	    /*
+	     * A different bit ordering and scanline unit is needed.
+	     */
+	    screenInfo.bitmapScanlineUnit = 8;
+	    screenInfo.bitmapBitOrder = MSBFirst;
 	    (*monoFbInitFunc)();
 	    /* exit after the first that succeeded */
 	    return TRUE;

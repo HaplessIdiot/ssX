@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.62 1997/03/07 00:29:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.63 1997/04/08 10:11:52 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -447,6 +447,7 @@ SymTabRec DeviceTab[] = {
   { S3BLANKDELAY,"s3blankdelay" },
   { TEXTCLOCKFRQ, "textclockfreq" },
   { MEMCLOCK,   "set_memclk" },
+  { MEMCLOCK,   "set_mclk" },
   { -1,		"" },
 };
 #else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.5 1997/01/18 06:57:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bench.c,v 3.6 1997/02/17 09:48:44 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -413,6 +413,8 @@ xf86Bench()
         DoBench("10x10 8x8 pattern fill", 10 * 10 * 400, PatternFill10);
         DoBench("400x400 8x8 pattern fill", 400 * 400 * 10, PatternFill400);
     }
+    if (!(OFLG_ISSET(OPTION_XAA_NO_COL_EXP, &(xf86AccelInfoRec.ServerInfoRec->options)))) {
+
     if (xf86AccelInfoRec.Subsequent8x8PatternColorExpand) {
         DoBench("10x10 8x8 color expand pattern fill", 10 * 10 * 400,
             PatternColorExpand10);
@@ -432,5 +434,7 @@ xf86Bench()
     if (xf86AccelInfoRec.SubsequentScreenToScreenColorExpand) {
         DoBench("10x10 screen-to-screen color expand", 10 * 10 * 200,
             ScreenToScreenColorExpand10);
+    }
+
     }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/mfbmap.h,v 3.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mfb.banked/mfbmap.h,v 3.3 1997/03/27 18:39:35 hohndel Exp $ */
 /* mfbmap.h */
 
 
@@ -11,7 +11,7 @@
 #define _MFBMAP_H
 
 #define InverseAlu  mono_InverseAlu
-/* #define endtab  mono_endtab */
+#define endtab  mono_endtab
 #define mask  mono_mask
 #define mergeRopBits  mono_mergeRopBits
 #define mfbAllocatePrivates  mono_mfbAllocatePrivates

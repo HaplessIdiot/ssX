@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/mfb/mfbmap.h,v 1.3 1997/03/28 09:42:58 hohndel Exp $ */
 
 /* mfbmap.h */
 
@@ -6,7 +6,7 @@
 #define _MFBMAP_H
 
 #define InverseAlu  vga16_InverseAlu
-/* #define endtab  vga16_endtab */
+#define endtab  vga16_endtab
 #define mask  vga16_mask
 #define mergeRopBits  vga16_mergeRopBits
 #define mfbAllocatePrivates  vga16_mfbAllocatePrivates
