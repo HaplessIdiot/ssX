@@ -720,8 +720,10 @@ miOverlayMarkUnrealizedWindow(
             (* pChild->drawable.pScreen->ClipNotify)(pChild, 0, 0);
         REGION_EMPTY(pChild->drawable.pScreen, &pChild->borderClip);
 	if((pTree = MIOVERLAY_GET_WINDOW_TREE(pChild))) {
-	    REGION_EMPTY(pChild->drawable.pScreen, &pTree->clipList);
-            REGION_EMPTY(pChild->drawable.pScreen, &pTree->borderClip);
+	    if(pTree->valdata != UnmapValData) {
+		REGION_EMPTY(pChild->drawable.pScreen, &pTree->clipList);
+		REGION_EMPTY(pChild->drawable.pScreen, &pTree->borderClip);
+	    }
 	}
     }
 }
