@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.19 1999/02/14 09:28:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.20 1999/02/15 18:47:34 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -693,8 +693,10 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0022,		"82351 pci-pci bridge" },
 				{0x0000,		NULL}}},
 #endif
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_NCR_2,	{
 				{0x0000,		NULL}}},
+#endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_WD, {
 				{0x3296,		"WD 7197" },
@@ -841,8 +843,10 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0002,		"Grand Central" },
 				{0x000E,		"Hydra" },
 				{0x0000,		NULL}}},
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_NEXGEN, {
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_QLOGIC, {
                                 {0x1020,		"ISP1020" },
 				{0x1022,		"ISP1022" },
@@ -859,13 +863,18 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0104,		"5530 Kahlua Video" },
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_LEADTEK, {
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_CONTAQ, {
                                 {0x0600,		"82C599" },
+                                {0xc693,		"82C693" },
 				{0x0000,		NULL}}},
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_FOREX, {
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_OLICOM, {
                                 {0x0001,		"OC-3136" },
 				{0x0011,		"OC-2315" },
@@ -895,50 +904,54 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_BT849,	"849"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_SIERRA, {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ACC, {
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_WINBOND_2, {
                                 {0x0001,		"W83769F" },
                                 {0x0105,		"SL82C105" },
                                 {0x0565,		"W83C553" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_DATABOOK, {
-                                { 0xB106, "DB87144" },
+                                {0xB106, "DB87144" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_3COM, {
-                                { 0x5900, "3C590 10bT" },
-                                { 0x5950, "3C595 100bTX" },
-                                { 0x5951, "3C595 100bT4" },
-                                { 0x5952, "3C595 10b-MII" },
-                                { 0x9000, "3C900 10bTPO" },
-                                { 0x9001, "3C900 10b Combo" },
-                                { 0x9050, "3C905 100bTX" },
+                                {0x5900, "3C590 10bT" },
+                                {0x5950, "3C595 100bTX" },
+                                {0x5951, "3C595 100bT4" },
+                                {0x5952, "3C595 10b-MII" },
+                                {0x9000, "3C900 10bTPO" },
+                                {0x9001, "3C900 10b Combo" },
+                                {0x9050, "3C905 100bTX" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_SMC, {
-                                { 0x0005, "9432 TX" },
+                                {0x0005, "9432 TX" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ALI_2, {
-                                { 0x1445, "M1445" },
-                                { 0x1449, "M1449" },
-                                { 0x1451, "M1451" },
-                                { 0x1461, "M1461" },
-                                { 0x1489, "M1489" },
-                                { 0x1511, "M1511" },
-                                { 0x1513, "M1513" },
-                                { 0x1521, "M1521" },
-                                { 0x1523, "M1523" },
-                                { 0x1531, "M1531 Aladdin IV" },
-                                { 0x1533, "M1533 Aladdin IV" },
-                                { 0x5215, "M4803" },
-                                { 0x5219, "M5219" },
-                                { 0x5229, "M5229 TXpro" },
+                                {0x1445, "M1445" },
+                                {0x1449, "M1449" },
+                                {0x1451, "M1451" },
+                                {0x1461, "M1461" },
+                                {0x1489, "M1489" },
+                                {0x1511, "M1511" },
+                                {0x1513, "M1513" },
+                                {0x1521, "M1521" },
+                                {0x1523, "M1523" },
+                                {0x1531, "M1531 Aladdin IV" },
+                                {0x1533, "M1533 Aladdin IV" },
+                                {0x5215, "M4803" },
+                                {0x5219, "M5219" },
+                                {0x5229, "M5229 TXpro" },
 				{0x0000,		NULL}}},
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_MITSUBISHI, {
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_SURECOM, {
-                                { 0x0E34, "NE-34PCI Lan" },
+                                {0x0E34, "NE-34PCI Lan" },
 				{0x0000,		NULL}}},
 #endif
     {PCI_VENDOR_NEOMAGIC,	{
@@ -1006,6 +1019,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_VORTEX, {
                                 {0x0001, "GDT 6000b" },
 				{0x0000,		NULL}}},
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_EF, {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_FORE, {
@@ -1014,6 +1028,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_PLX, {
 				{0x0000,		NULL}}},
+#endif
 #endif
     {PCI_VENDOR_NVIDIA_SGS,	{
 				{PCI_CHIP_RIVA128,	"Riva128"},
@@ -1024,10 +1039,12 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_AT24,		"ProMotion AT24"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_VMIC, {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_DIGI, {
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_MUTECH, {
                                 {0x0001,		 "MV1000" },
 				{0x0000,		NULL}}},
@@ -1042,12 +1059,14 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_ZEINET, {
                                 {0x0001, "1221" },
 				{0x0000,		NULL}}},
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_SPECIALIX, {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_CONTROL, {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_CYCLADES, {
 				{0x0000,		NULL}}},
+#endif
 #endif
     {PCI_VENDOR_3DFX, {
 				{PCI_CHIP_VOODOO_GRAPHICS, "Voodoo Graphics"},
@@ -1058,8 +1077,10 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
                                 {0x6401, "REALmagic64/GX (SD 6425)" },
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
+#ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_YOKOGAWA, {
 				{0x0000,		NULL}}},
+#endif
 #endif
     {PCI_VENDOR_TRITECH,	{
 				{PCI_CHIP_TR25202,	"Pyramid3D TR25202"},
@@ -1216,7 +1237,12 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x4c42, "XPERT LCD", NF },
                         { 0x0000, (char *)NULL, NF } } },
 #ifdef VENDOR_INCLUDE_NONVIDEO
+#ifdef INCLUDE_EMPTY_LISTS
 	{ PCI_VENDOR_COMPAQ, {
+                        { 0x0000, (char *)NULL, NF } } },
+#endif
+	{PCI_VENDOR_DIGITAL, {
+			{ 0x500A, "EtherWORKS 10/100", NF},
                         { 0x0000, (char *)NULL, NF } } },
 #endif
 	{ PCI_VENDOR_DIAMOND, {
