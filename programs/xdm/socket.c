@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holder.
 
 */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.11 2003/07/09 15:27:39 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -379,6 +379,12 @@ ChangeMcastMembership(struct socklist *s, struct socklist *g, int op)
 	    }
 	}
 #if defined(IPv6) && defined(AF_INET6)
+#ifndef IPV6_JOIN_GROUP
+#define IPV6_JOIN_GROUP IPV6_ADD_MEMBERSHIP 
+#endif
+#ifndef IPV6_LEAVE_GROUP
+#define IPV6_LEAVE_GROUP IPV6_DROP_MEMBERSHIP
+#endif
 	case AF_INET6:
 	{
 	    struct ipv6_mreq mreq6;
@@ -387,9 +393,9 @@ ChangeMcastMembership(struct socklist *s, struct socklist *g, int op)
 	      sizeof(struct in6_addr));
 	    mreq6.ipv6mr_interface = 0;  /* TODO: fix this */
 	    if (op == JOIN_MCAST_GROUP) {
-		sockopt = IPV6_ADD_MEMBERSHIP;
+		sockopt = IPV6_JOIN_GROUP;
 	    } else {
-		sockopt = IPV6_DROP_MEMBERSHIP;
+		sockopt = IPV6_LEAVE_GROUP;
 	    }
 	    if (setsockopt(s->fd, IPPROTO_IPV6, sockopt,
 	      &mreq6, sizeof(mreq6)) < 0) {
