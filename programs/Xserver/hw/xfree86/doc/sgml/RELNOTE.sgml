@@ -4,14 +4,14 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2A (beta version)
  <author>The XFree86 Project, Inc
- <date>18 November 1995
+ <date>19 November 1995
 
 
 <abstract>
 
-This document describes the rationale and conditions of this beta
-release together with what is new in the XFree86 beta version 3.1.2A
-compared with the current release version 3.1.2.
+This document describes the rationale and conditions of this beta release,
+what is new in the XFree86 beta version 3.1.2A compared with the current
+release version 3.1.2, and how to install this beta release.
 
 </abstract>
 
@@ -229,10 +229,11 @@ postinst.sh	   script to run after installing the 3.1.2A binaries
 If you don't already have XFree86 3.1.2 installed, first install that.
 Then, you will need to get at least one of the XFree86 3.1.2A X servers
 plus the update set (<tt/X312Aupt.tgz/), the post-install script, and
-the BetaReport file.  It is recommended that these be
-installed in the directory <tt>/usr/XFree86-3.1.2A</tt>.  The following
-example is for installing the S3 and Mono servers, and it assumes
-that the above files are located in <tt>/var/tmp</tt>:
+the BetaReport file.  It is recommended that this release be
+installed in the directory <tt>/usr/XFree86-3.1.2A</tt>.  You will need
+to be `root' to do the installation.  The following example is for
+installing the S3 and Mono servers, and it assumes that the above files
+are located in <tt>/var/tmp</tt>:
 
 <tscreen><verb>
 	mkdir /usr/XFree86-3.1.2A
@@ -249,7 +250,7 @@ you already had installed in /usr/X11R6.  It puts the backups into the
 /usr/X11R6.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.3 1995/11/18 23:49:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.4 1995/11/19 01:24:49 dawes Exp $
 </verb>
 
 </article>
