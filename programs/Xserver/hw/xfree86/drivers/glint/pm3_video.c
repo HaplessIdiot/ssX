@@ -23,7 +23,7 @@
  *  Based on work of Michael H. Schimek <m.schimek@netway.at>
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.4 2001/05/06 18:07:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.5 2001/05/08 14:20:48 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -42,7 +42,10 @@
 #include "pm3_regs.h"
 #include "glint.h"
 
-#define DEBUG(x)		
+#define DEBUG(x)
+#define USE_HARDWARE_COPY	1
+#define SUPPORT_CLIPPING	1
+#define BLACKNESS_WORKAROUND	1
 
 #ifndef XvExtension
 
@@ -98,10 +101,11 @@ typedef struct _PortPrivRec {
     Bool			ramdac_on;
 
     /* Buffers */
-    int				Id;
-    int				Format, Bpp_shift;
+    int				Id, Format;
+    int				FB_Shift, Video_Shift;
     short			display, copy;
     FBAreaPtr			Buffer[MAX_BUFFERS];
+    CARD32			BufferBase[MAX_BUFFERS];
 
     /* Buffer and Drawable size and position */
     INT32			vx, vy, vw, vh;			/* 12.10 fp */
@@ -130,21 +134,22 @@ static AdaptorPrivPtr AdaptorPrivList = NULL;
 /* We support 3 sorts of filters :
  * 0 : None.
  * 1 : Partial (only in the X directrion).
- * 2 : Full.
+ * 2 : Full (incompatible with X mirroring).
  */
 
 #define XV_MIRROR		"XV_MIRROR"	
 /* We also support mirroring of the image :
- * bit 0 : if set, will mirror in the X direction.
+ * bit 0 : if set, will mirror in the X direction
+ *         (incompatible with full filtering).
  * bit 1 : if set, will mirror in the Y direction.
  */
 
 #define XV_ALPHA		"XV_ALPHA"
-/* We support the following alpha blend factors (only with depth 24) :
+/* We support the following alpha blend factors :
  * 0 ->   0% Video, 100% Framebuffer
  * 1 ->  25% Video,  75% Framebuffer
  * 2 ->  75% Video,  25% Framebuffer
- * 3 -> 100% Video,   0% Framebuffer
+ * 3 -> 100% Video,   0% Framebuffer 
  */
 
 static XF86AttributeRec
@@ -299,9 +304,7 @@ FreeBuffers(PortPrivPtr pPPriv, Bool from_timer)
     pPPriv->copy = -1;
     for (i=0; i < MAX_BUFFERS; i++)
 	if (pPPriv->Buffer[i]) {
-ErrorF("free1\n");
 	    xf86FreeOffscreenArea (pPPriv->Buffer[i]);
-ErrorF("free2\n");
 	    pPPriv->Buffer[i] = NULL;
 	}
 }
@@ -341,7 +344,8 @@ AllocateBuffers(PortPrivPtr pPPriv, int w_bpp, int h)
 	TimerSet(pPPriv->Timer, 0, 80, TimerCallback, pAPriv);
     }
 
-    for (i=0; i < MAX_BUFFERS && (i == pPPriv->display || i == pPPriv->copy); i++);
+    for (i=0; i < MAX_BUFFERS
+	&& (i == pPPriv->display || i == pPPriv->copy); i++);
 
     if (pPPriv->Buffer[i]) {
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
@@ -355,6 +359,9 @@ AllocateBuffers(PortPrivPtr pPPriv, int w_bpp, int h)
 	else if (xf86ResizeOffscreenArea (pPPriv->Buffer[i], w_bpp, h)) {
 		DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 		    "I was able to resize buffer %d, let's use it.\n", i));
+		pPPriv->BufferBase[i] =
+		    ((pPPriv->Buffer[i]->box.y1 * pScrn->displayWidth) +
+		     pPPriv->Buffer[i]->box.x1)<<pPPriv->FB_Shift;
 	    	return (pPPriv->copy = i);
 	    }
 	    else {
@@ -365,9 +372,12 @@ AllocateBuffers(PortPrivPtr pPPriv, int w_bpp, int h)
 	    }
     }
     if ((pPPriv->Buffer[i] = xf86AllocateOffscreenArea (pScrn->pScreen,
-	w_bpp, h, 4 >> pPPriv->Bpp_shift, NULL, NULL, (pointer) pPPriv))) {
+	w_bpp, h, 4 >> pPPriv->FB_Shift, NULL, NULL, (pointer) pPPriv))) {
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 	    "Sucessfully allocated buffer %d, let's use it.\n", i));
+	pPPriv->BufferBase[i] =
+	    ((pPPriv->Buffer[i]->box.y1 * pScrn->displayWidth) +
+	     pPPriv->Buffer[i]->box.x1)<<pPPriv->FB_Shift;
 	return (pPPriv->copy = i);
     }
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
@@ -379,6 +389,7 @@ AllocateBuffers(PortPrivPtr pPPriv, int w_bpp, int h)
  *  Xv interface
  */
 
+#if USE_HARDWARE_COPY
 static void
 HWCopySetup(PortPrivPtr pPPriv, int x, int y, int w, int h)
 {
@@ -419,8 +430,6 @@ HWCopyYV12(PortPrivPtr pPPriv, CARD8 *Y, int w, int h)
     CARD32 *dst;
     int dwords, i, x;
 
-    /* width is in 16bpp, we have to double it here,
-     * since we copy 32 bit at a time. */
     dwords = Y_size >> 1;
 
     x = 0;
@@ -469,7 +478,7 @@ HWCopyFlat(PortPrivPtr pPPriv, CARD8 *src, int w, int h)
     ScrnInfoPtr pScrn = pAPriv->pScrn;
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int size = w * h;
-    int pitch = pScrn->displayWidth<<pPPriv->Bpp_shift;
+    int pitch = pScrn->displayWidth<<pPPriv->FB_Shift;
     CARD32 *dst;
     CARD8 *tmp_src;
     int dwords, i;
@@ -478,7 +487,7 @@ HWCopyFlat(PortPrivPtr pPPriv, CARD8 *src, int w, int h)
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 	    "HWCopyFlat : src = %08x, w = pitch = %d, h = %d.\n",
 	    src, w, h));
-	dwords = size >> pPPriv->Bpp_shift;
+	dwords = size >> pPPriv->Video_Shift;
 	while (dwords >= pGlint->FIFOSize) {
 	    dst = (CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4);
 	    GLINT_WAIT(pGlint->FIFOSize);
@@ -500,7 +509,7 @@ HWCopyFlat(PortPrivPtr pPPriv, CARD8 *src, int w, int h)
 	    src, w, pitch, h));
 	while (h) {
 	    tmp_src = src;
-	    dwords = w >> pPPriv->Bpp_shift;
+	    dwords = w >> pPPriv->Video_Shift;
 	    while (dwords >= pGlint->FIFOSize) {
 		dst = (CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4);
 		GLINT_WAIT(pGlint->FIFOSize);
@@ -520,35 +529,54 @@ HWCopyFlat(PortPrivPtr pPPriv, CARD8 *src, int w, int h)
 	}
     }
 }
-
-static Bool
-RegionsEqual(RegionPtr A, RegionPtr B)
+#else
+static void
+CopyYV12(CARD8 *Y, CARD32 *dst, int width, int height, int pitch)
 {
-    int *dataA, *dataB;
-    int num;
+    int Y_size = width * height;
+    CARD8 *V = Y + Y_size;
+    CARD8 *U = V + (Y_size >> 2);
+    int pad = (pitch >> 2) - (width >> 1);
+    int x;
 
-    num = REGION_NUM_RECTS(A);
-    if(num != REGION_NUM_RECTS(B))
-	return FALSE;
+    width >>= 1;
 
-    if((A->extents.x1 != B->extents.x1) ||
-       (A->extents.x2 != B->extents.x2) ||
-       (A->extents.y1 != B->extents.y1) ||
-       (A->extents.y2 != B->extents.y2))
-	return FALSE;
+    for (height >>= 1; height > 0; height--) {
+	for (x = 0; x < width; Y += 2, x++)
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	    *dst++ = V[x] + (Y[1] << 8) + (U[x] << 16) + (Y[0] << 24);
+#else
+	    *dst++ = Y[0] + (U[x] << 8) + (Y[1] << 16) + (V[x] << 24);
+#endif
+	dst += pad;
+	for (x = 0; x < width; Y += 2, x++)
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	    *dst++ = V[x] + (Y[1] << 8) + (U[x] << 16) + (Y[0] << 24);
+#else
+	    *dst++ = Y[0] + (U[x] << 8) + (Y[1] << 16) + (V[x] << 24);
+#endif
+	dst += pad;
+	U += width;
+	V += width;
+    }
+}
 
-    dataA = (int*)REGION_RECTS(A);
-    dataB = (int*)REGION_RECTS(B);
-
-    while(num--) {
-	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
-	   return FALSE;
-	dataA += 2; 
-	dataB += 2;
+static void
+CopyFlat(CARD8 *src, CARD8 *dst, int width, int height, int pitch)
+{
+    if (width == pitch) {
+	memcpy(dst, src, width * height);
+	return;
     }
 
-    return TRUE;
+    while (height > 0) {
+	memcpy(dst, src, width);
+	dst += pitch;
+	src += width;
+	height--;
+    }
 }
+#endif
 
 #define FORMAT_RGB8888	PM3VideoOverlayMode_COLORFORMAT_RGB8888 
 #define FORMAT_RGB4444	PM3VideoOverlayMode_COLORFORMAT_RGB4444
@@ -607,7 +635,7 @@ compute_scale_factor(
 }
 
 static void
-BeginOverlay(PortPrivPtr pPPriv, int display, int bpp_shift)
+BeginOverlay(PortPrivPtr pPPriv, int display)
 {
     AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
     ScrnInfoPtr pScrn = pAPriv->pScrn;
@@ -617,7 +645,11 @@ BeginOverlay(PortPrivPtr pPPriv, int display, int bpp_shift)
     unsigned int src_w = pPPriv->vw, dst_w = pPPriv->dw;
     unsigned int src_h = pPPriv->vh, dst_h = pPPriv->dh;
     unsigned int shrink_delta, zoom_delta;
-    static int Frames = 0;
+#if BLACKNESS_WORKAROUND
+    static int Frames = 50;
+#endif
+    unsigned int stride =
+	(pScrn->displayWidth << pPPriv->FB_Shift) >> pPPriv->Video_Shift;
 
     /* Let's overlay only to visible parts of the screen */
     if (pPPriv->dx < pScrn->frameX0) {
@@ -647,8 +679,13 @@ BeginOverlay(PortPrivPtr pPPriv, int display, int bpp_shift)
      * the Permedia3 overlay unit requirement, and compute the X deltas. */
     compute_scale_factor(&src_w, &dst_w, &shrink_delta, &zoom_delta);
 
+#if BLACKNESS_WORKAROUND
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 	"BeginOverlay %d (buffer %d)\n", Frames, display));
+#else
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+	"BeginOverlay (buffer %d)\n", display));
+#endif
     if (src_w != pPPriv->vw)
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 	    "BeginOverlay : Padding video width to 4 pixels %d->%d.\n",
@@ -656,11 +693,12 @@ BeginOverlay(PortPrivPtr pPPriv, int display, int bpp_shift)
     if (dst_w != pPPriv->dw)
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 	    "BeginOverlay : Scaling destination width from %d to %d.\n"
-	    "\tThe scaling factor is to high, and may cause problems.",
+	    "\tThe scaling factor is to high, and may cause problems.\n",
 	    pPPriv->dw, dst_w));
 
     if (display != -1) pPPriv->display = display;
 
+#if BLACKNESS_WORKAROUND
     if (++Frames>25) {
 	Frames = 0;
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
@@ -686,11 +724,13 @@ BeginOverlay(PortPrivPtr pPPriv, int display, int bpp_shift)
 	GLINT_WRITE_REG(PM3VideoOverlayMode_DISABLE,
 	    PM3VideoOverlayMode);
     } else GLINT_WAIT(7);
+#else
+    GLINT_WAIT(7);
+#endif
     GLINT_WRITE_REG(3|(12<<16), PM3VideoOverlayFifoControl);
     /* Updating the Video Overlay Source Image Parameters */
     GLINT_WRITE_REG(
-	((pPPriv->Buffer[pPPriv->display]->box.y1 * pScrn->displayWidth) +
-	  pPPriv->Buffer[pPPriv->display]->box.x1) << bpp_shift,
+	pPPriv->BufferBase[pPPriv->display]>>pPPriv->Video_Shift,
 	PM3VideoOverlayBase+(pPPriv->display*8));
     GLINT_WRITE_REG(pPPriv->Format |
 	PM3VideoOverlayMode_BUFFERSYNC_MANUAL |
@@ -700,9 +740,7 @@ BeginOverlay(PortPrivPtr pPPriv, int display, int bpp_shift)
 	PM3VideoOverlayMode_ENABLE,
 	PM3VideoOverlayMode);
     /* Let's set the source stride. */
-    /* We double it, since we are trying a 16bpp format in a 32bpp mode. */
-    GLINT_WRITE_REG(
-	PM3VideoOverlayStride_STRIDE(pScrn->displayWidth<<bpp_shift),
+    GLINT_WRITE_REG(PM3VideoOverlayStride_STRIDE(stride),
 	PM3VideoOverlayStride);
     /* Let's set the position and size of the visible part of the source. */
     GLINT_WRITE_REG(PM3VideoOverlayWidth_WIDTH(src_w),
@@ -751,41 +789,47 @@ BeginOverlay(PortPrivPtr pPPriv, int display, int bpp_shift)
     }
     
     if (!pPPriv->ramdac_on) {
-	switch (pScrn->depth) {
-	    case 8:
-	    case 16:
-		RAMDAC_WRITE((pPPriv->ColorKey&0xff0000)>>16,
-		    PM3RD_VideoOverlayKeyR);
-		RAMDAC_WRITE((pPPriv->ColorKey&0x00ff00)>>8,
-		    PM3RD_VideoOverlayKeyG);
-		RAMDAC_WRITE(pPPriv->ColorKey&0x0000ff,
-		    PM3RD_VideoOverlayKeyB);
-		RAMDAC_WRITE(PM3RD_VideoOverlayControl_ENABLE |
-		    PM3RD_VideoOverlayControl_MODE_MAINKEY |
-		    PM3RD_VideoOverlayControl_KEY_COLOR,
-		    PM3RD_VideoOverlayControl);
-		break;
-	    case 15:
-		RAMDAC_WRITE(0x1, PM3RD_VideoOverlayKeyR);
-		RAMDAC_WRITE(PM3RD_VideoOverlayControl_ENABLE |
-		    PM3RD_VideoOverlayControl_MODE_MAINKEY |
-		    PM3RD_VideoOverlayControl_KEY_ALPHA,
-		    PM3RD_VideoOverlayControl);
-		break;
- 	    case 24:
-		RAMDAC_WRITE(0xff, PM3RD_VideoOverlayKeyR);
-		RAMDAC_WRITE(PM3RD_VideoOverlayControl_ENABLE |
-		    PM3RD_VideoOverlayControl_MODE_MAINKEY |
-		    PM3RD_VideoOverlayControl_KEY_ALPHA,
-		    PM3RD_VideoOverlayControl);
-		break;
-#if 0 /* Alpha blending : will not work :((( */
-	case 24:
+	if (pPPriv->OverlayAlpha<(3<<6)) {
+	    RAMDAC_WRITE(pPPriv->OverlayAlpha, PM3RD_VideoOverlayBlend);
 	    RAMDAC_WRITE(PM3RD_VideoOverlayControl_ENABLE |
 		PM3RD_VideoOverlayControl_MODE_BLEND |
 		PM3RD_VideoOverlayControl_BLENDSRC_REGISTER,
 		PM3RD_VideoOverlayControl);
-	    break;
+	} else {
+#if SUPPORT_CLIPPING
+	    switch (pScrn->depth) {
+		case 8:
+		case 16:
+		    RAMDAC_WRITE((pPPriv->ColorKey&0xff0000)>>16,
+			PM3RD_VideoOverlayKeyR);
+		    RAMDAC_WRITE((pPPriv->ColorKey&0x00ff00)>>8,
+			PM3RD_VideoOverlayKeyG);
+		    RAMDAC_WRITE(pPPriv->ColorKey&0x0000ff,
+			PM3RD_VideoOverlayKeyB);
+		    RAMDAC_WRITE(PM3RD_VideoOverlayControl_ENABLE |
+			PM3RD_VideoOverlayControl_MODE_MAINKEY |
+			PM3RD_VideoOverlayControl_KEY_COLOR,
+			PM3RD_VideoOverlayControl);
+		    break;
+		case 15:
+		    RAMDAC_WRITE(0x1, PM3RD_VideoOverlayKeyR);
+		    RAMDAC_WRITE(PM3RD_VideoOverlayControl_ENABLE |
+			PM3RD_VideoOverlayControl_MODE_MAINKEY |
+			PM3RD_VideoOverlayControl_KEY_ALPHA,
+			PM3RD_VideoOverlayControl);
+		    break;
+ 	    case 24:
+		    RAMDAC_WRITE(0xff, PM3RD_VideoOverlayKeyR);
+		    RAMDAC_WRITE(PM3RD_VideoOverlayControl_ENABLE |
+			PM3RD_VideoOverlayControl_MODE_MAINKEY |
+			PM3RD_VideoOverlayControl_KEY_ALPHA,
+			PM3RD_VideoOverlayControl);
+		    break;
+	    }
+#else
+	RAMDAC_WRITE(PM3RD_VideoOverlayControl_ENABLE |
+	    PM3RD_VideoOverlayControl_MODE_ALWAYS,
+	    PM3RD_VideoOverlayControl);
 #endif
 	}
 	pPPriv->ramdac_on = TRUE;
@@ -796,6 +840,36 @@ BeginOverlay(PortPrivPtr pPPriv, int display, int bpp_shift)
     if (display != -1) pPPriv->copy = -1;
 }
 
+#if SUPPORT_CLIPPING
+
+static Bool
+RegionsEqual(RegionPtr A, RegionPtr B)
+{
+    int *dataA, *dataB;
+    int num;
+
+    num = REGION_NUM_RECTS(A);
+    if(num != REGION_NUM_RECTS(B))
+	return FALSE;
+
+    if((A->extents.x1 != B->extents.x1) ||
+       (A->extents.x2 != B->extents.x2) ||
+       (A->extents.y1 != B->extents.y1) ||
+       (A->extents.y2 != B->extents.y2))
+	return FALSE;
+
+    dataA = (int*)REGION_RECTS(A);
+    dataB = (int*)REGION_RECTS(B);
+
+    while(num--) {
+	if((dataA[0] != dataB[0]) || (dataA[1] != dataB[1]))
+	   return FALSE;
+	dataA += 2; 
+	dataB += 2;
+    }
+
+    return TRUE;
+}
 static void Clip (PortPrivPtr pPPriv, RegionPtr clipBoxes)
 {
     AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
@@ -804,27 +878,36 @@ static void Clip (PortPrivPtr pPPriv, RegionPtr clipBoxes)
     /* Let's handle the clipping here. */
     if(!RegionsEqual(&pPPriv->clip, clipBoxes)) {
 	REGION_COPY(pScrn->pScreen, &pPPriv->clip, clipBoxes);
-	switch (pScrn->depth) {
-	    case 8:	/* CI8 */
-		XAAFillSolidRects(pScrn, pPPriv->ColorKey, GXcopy, 0xffffffff,
-		    REGION_NUM_RECTS(clipBoxes), REGION_RECTS(clipBoxes));
-		break;
-	    case 15:	/* RGB5551 */
-		XAAFillSolidRects(pScrn, -1, GXcopy, 0x80008000,
-		    REGION_NUM_RECTS(clipBoxes), REGION_RECTS(clipBoxes));
-		break;
-	    case 16:	/* RGB565 */
-		XAAFillSolidRects(pScrn, pPPriv->ColorKey, GXcopy, 0xffffffff,
-		    REGION_NUM_RECTS(clipBoxes), REGION_RECTS(clipBoxes));
-		break;
-	    case 24:	/* RGB8888 */
-		XAAFillSolidRects(pScrn, pPPriv->OverlayAlpha<<24, GXcopy,
-		    0xff000000, REGION_NUM_RECTS(clipBoxes),
-		    REGION_RECTS(clipBoxes));
-		break;
+	if (pPPriv->OverlayAlpha<(3<<6)) {
+	     XAAFillSolidRects(pScrn, pPPriv->OverlayAlpha<<24, GXcopy,
+		0xff000000, REGION_NUM_RECTS(clipBoxes),
+		REGION_RECTS(clipBoxes));
+	} else {
+	    switch (pScrn->depth) {
+		case 8:	/* CI8 */
+		    XAAFillSolidRects(pScrn, pPPriv->ColorKey,
+			GXcopy, 0xffffffff, REGION_NUM_RECTS(clipBoxes),
+			REGION_RECTS(clipBoxes));
+		    break;
+		case 15:	/* RGB5551 */
+		    XAAFillSolidRects(pScrn, 0xffffffff, GXcopy, 0x80008000,
+			REGION_NUM_RECTS(clipBoxes), REGION_RECTS(clipBoxes));
+		    break;
+		case 16:	/* RGB565 */
+		    XAAFillSolidRects(pScrn, pPPriv->ColorKey, GXcopy,
+			0xffffffff, REGION_NUM_RECTS(clipBoxes),
+			REGION_RECTS(clipBoxes));
+		    break;
+	        case 24:	/* RGB8888 */
+		    XAAFillSolidRects(pScrn, 0xffffffff, GXcopy,
+			0xff000000, REGION_NUM_RECTS(clipBoxes),
+			REGION_RECTS(clipBoxes));
+		    break;
+	    }
 	}
     }
 }
+#endif
 
 static void
 StopOverlay(PortPrivPtr pPPriv, int cleanup)
@@ -845,10 +928,8 @@ StopOverlay(PortPrivPtr pPPriv, int cleanup)
     GLINT_WRITE_REG(PM3VideoOverlayMode_DISABLE,
 	PM3VideoOverlayMode);
 }
-/* ReputImage may be used if only the position of the destination changes,
- * maybe while moving the window around or something such.
- * I think the clipboxes also may change, not sure though ...
- */
+/* ReputImage is used if only the destination position or
+ * the clipboxes change. */
 static int
 Permedia3ReputImage(ScrnInfoPtr pScrn,
     short drw_x, short drw_y,
@@ -858,6 +939,14 @@ Permedia3ReputImage(ScrnInfoPtr pScrn,
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
 	"ReputImage %d,%d.\n", drw_x, drw_y));
+
+#if !SUPPORT_CLIPPING
+    /* If the clip region is not a rectangle */
+    if (REGION_SIZE(clipBoxes) != 0) {
+	StopOverlay (pPPriv, FALSE);
+	return Success;
+    }
+#endif
 
     /* If the buffer was freed, we cannot overlay it. */
     if (pPPriv->display == -1) {
@@ -875,11 +964,13 @@ Permedia3ReputImage(ScrnInfoPtr pScrn,
     pPPriv->dx = drw_x;
     pPPriv->dy = drw_y;
 
+#if SUPPORT_CLIPPING
     /* Clipping */
     Clip (pPPriv, clipBoxes);
+#endif
 
     /* Restart the overlay */
-    BeginOverlay(pPPriv, -1, pPPriv->Bpp_shift);
+    BeginOverlay(pPPriv, -1);
 
     return Success;
 }
@@ -892,6 +983,9 @@ Permedia3PutImage(ScrnInfoPtr pScrn,
     Bool sync, RegionPtr clipBoxes, pointer data)
 {
     PortPrivPtr pPPriv = (PortPrivPtr) data;  
+#if !USE_HARDWARE_COPY
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+#endif
     int copy = -1;
     Bool copy_flat = TRUE;
     int w_bpp;
@@ -901,6 +995,14 @@ Permedia3PutImage(ScrnInfoPtr pScrn,
 	"id=0x%08x buf=%p w=%d h=%d sync=%d\n",
 	src_x, src_y, src_w, src_h, drw_x, drw_y, drw_w, drw_h,
 	id, buf, width, height, sync));
+
+#if !SUPPORT_CLIPPING
+    /* If the clip region is not a rectangle */
+    if (REGION_SIZE(clipBoxes) != 0) {
+	StopOverlay (pPPriv, FALSE);
+	return Success;
+    }
+#endif
 
     /* Check that the src area to put is included in the buffer. */
     if ((src_x + src_w) > width ||
@@ -942,89 +1044,114 @@ Permedia3PutImage(ScrnInfoPtr pScrn,
 	pPPriv->Id = id;
     }
 
-    /* Let's find the image format and bpp_shift */
+    /* Let's find the image format and Video_Shift values */
     switch (id) {
 	case LE4CC('Y','V','1','2'):
 	    pPPriv->Format = FORMAT_YUV422;
-	    pPPriv->Bpp_shift = 1;
+	    pPPriv->Video_Shift = 1;
 	    copy_flat = FALSE;
 	    break;
 	case LE4CC('Y','U','Y','2'):
 	    pPPriv->Format = FORMAT_YUV422;
-	    pPPriv->Bpp_shift = 1;
+	    pPPriv->Video_Shift = 1;
 	    break;
 	case LE4CC('U','Y','V','Y'):
 	    pPPriv->Format = FORMAT_VUY422;
-	    pPPriv->Bpp_shift = 1;
+	    pPPriv->Video_Shift = 1;
 	    break;
 	case LE4CC('Y','U','V','A'):
 	    pPPriv->Format = FORMAT_YUV444;
-	    pPPriv->Bpp_shift = 2;
+	    pPPriv->Video_Shift = 2;
 	    break;
 	case LE4CC('V','U','Y','A'):
 	    pPPriv->Format = FORMAT_VUY444;
-	    pPPriv->Bpp_shift = 2;
+	    pPPriv->Video_Shift = 2;
 	    break;
 	case 0x41: /* RGBA 8:8:8:8 */
 	    pPPriv->Format = FORMAT_RGB8888;
-	    pPPriv->Bpp_shift = 2;
+	    pPPriv->Video_Shift = 2;
 	    break;
 	case 0x42: /* RGB 5:6:5 */
 	    pPPriv->Format = FORMAT_RGB565;
-	    pPPriv->Bpp_shift = 1;
+	    pPPriv->Video_Shift = 1;
 	    break;
 	case 0x43: /* RGB 1:5:5:5 */
 	    pPPriv->Format = FORMAT_RGB5551;
-	    pPPriv->Bpp_shift = 1;
+	    pPPriv->Video_Shift = 1;
 	    break;
 	case 0x44: /* RGB 4:4:4:4 */
 	    pPPriv->Format = FORMAT_RGB4444;
-	    pPPriv->Bpp_shift = 1;
+	    pPPriv->Video_Shift = 1;
 	    break;
 	case 0x46: /* RGB 2:3:3 */
 	    pPPriv->Format = FORMAT_RGB332;
-	    pPPriv->Bpp_shift = 0;
+	    pPPriv->Video_Shift = 0;
 	    break;
 	case 0x47: /* BGRA 8:8:8:8 */
 	    pPPriv->Format = FORMAT_BGR8888;
-	    pPPriv->Bpp_shift = 2;
+	    pPPriv->Video_Shift = 2;
 	    break;
 	case 0x48: /* BGR 5:6:5 */
 	    pPPriv->Format = FORMAT_BGR565;
-	    pPPriv->Bpp_shift = 1;
+	    pPPriv->Video_Shift = 1;
 	    break;
 	case 0x49: /* BGR 1:5:5:5 */
 	    pPPriv->Format = FORMAT_BGR5551;
-	    pPPriv->Bpp_shift = 1;
+	    pPPriv->Video_Shift = 1;
 	    break;
 	case 0x4A: /* BGR 4:4:4:4 */
 	    pPPriv->Format = FORMAT_BGR4444;
-	    pPPriv->Bpp_shift = 1;
+	    pPPriv->Video_Shift = 1;
 	    break;
 	case 0x4C: /* BGR 2:3:3 */
 	    pPPriv->Format = FORMAT_BGR332;
-	    pPPriv->Bpp_shift = 0;
+	    pPPriv->Video_Shift = 0;
 	    break;
 	    default:
 	    return XvBadAlloc;
     }
 
     /* Now we allocate a buffer, if it is needed */
-    w_bpp = (width << (pPPriv->Bpp_shift + 3)) / pScrn->bitsPerPixel;
+    w_bpp = (width << pPPriv->Video_Shift) >> pPPriv->FB_Shift;
     if ((copy = AllocateBuffers(pPPriv, w_bpp, height)) == -1)
 	return XvBadAlloc;
     
     /* Let's copy the image to the framebuffer */
+#if USE_HARDWARE_COPY
+    /* Erm, ... removing this log message will make the server crash. */
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+	"Hardware image upload.\n"));
     HWCopySetup(pPPriv, pPPriv->Buffer[copy]->box.x1,
 	pPPriv->Buffer[copy]->box.y1, w_bpp, height);
     if (copy_flat) HWCopyFlat(pPPriv, buf, width, height);
     else HWCopyYV12(pPPriv, buf, width, height);
+#else
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+	"Software image upload (1).\n"));
+    pPPriv->Sync(pScrn);
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+	"Software image upload (2).\n"));
+    if (copy_flat) CopyFlat(buf,
+	(CARD8 *) pGlint->FbBase + pPPriv->BufferBase[copy],
+	width << pPPriv->FB_Shift, height,
+	pScrn->displayWidth << pPPriv->FB_Shift);
+    else CopyYV12(buf,
+	(CARD32 *)((CARD8 *) pGlint->FbBase + pPPriv->BufferBase[copy]),
+	width, height, pScrn->displayWidth << pPPriv->FB_Shift);
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+	"Software image upload (3).\n"));
+    pPPriv->Sync(pScrn);
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+	"Software image upload (4).\n"));
+#endif
 
+#if SUPPORT_CLIPPING
     /* Clipping*/
     Clip (pPPriv, clipBoxes);
+#endif
 
     /* We start the overlay */
-    BeginOverlay(pPPriv, copy, pPPriv->Bpp_shift);
+    BeginOverlay(pPPriv, copy);	
 
     /* We sync the chip again (if needed). */
     if (sync) pPPriv->Sync(pScrn);
@@ -1069,10 +1196,13 @@ Permedia3SetPortAttribute(ScrnInfoPtr pScrn,
 		    PM3VideoOverlayMode_FILTER_PARTIAL;
 		break;
 	    case 2:	/* Full Bilinear Filtering */
+		/* We have to disable X mirroring also */
 		pPPriv->OverlayMode =
 		    (pPPriv->OverlayMode &
-		      ~PM3VideoOverlayMode_FILTER_MASK) |
+		     ~(PM3VideoOverlayMode_FILTER_MASK |
+		       PM3VideoOverlayMode_MIRRORX_ON)) |
 		    PM3VideoOverlayMode_FILTER_FULL;
+		pPPriv->Attribute[1] &= 2;
 		break;
 	    default:
 		return BadValue;
@@ -1089,11 +1219,23 @@ Permedia3SetPortAttribute(ScrnInfoPtr pScrn,
 		    PM3VideoOverlayMode_MIRRORY_OFF;
 		break;
 	    case 1:	/* X Axis Mirroring */
-		pPPriv->OverlayMode =
-		    (pPPriv->OverlayMode &
-		      ~PM3VideoOverlayMode_MIRROR_MASK) |
-		    PM3VideoOverlayMode_MIRRORX_ON |
-		    PM3VideoOverlayMode_MIRRORY_OFF;
+		/* If full filtering was enabled, rever to partial. */
+		if (pPPriv->Attribute[0] == 2) {
+		    pPPriv->OverlayMode =
+			(pPPriv->OverlayMode &
+			 ~(PM3VideoOverlayMode_MIRROR_MASK |
+			   PM3VideoOverlayMode_FILTER_MASK)) |
+			PM3VideoOverlayMode_MIRRORX_ON |
+			PM3VideoOverlayMode_MIRRORY_OFF |
+			PM3VideoOverlayMode_FILTER_PARTIAL;
+		    pPPriv->Attribute[0] = 1; 
+		} else {
+		    pPPriv->OverlayMode =
+			(pPPriv->OverlayMode &
+			 ~PM3VideoOverlayMode_MIRROR_MASK) |
+			PM3VideoOverlayMode_MIRRORX_ON |
+			PM3VideoOverlayMode_MIRRORY_OFF;
+		}
 		break;
 	    case 2:	/* Y Axis Mirroring */
 		pPPriv->OverlayMode =
@@ -1103,11 +1245,23 @@ Permedia3SetPortAttribute(ScrnInfoPtr pScrn,
 		    PM3VideoOverlayMode_MIRRORY_ON;
 		break;
 	    case 3:	/* X and Y Axis Mirroring */
-		pPPriv->OverlayMode =
-		    (pPPriv->OverlayMode &
-		      ~PM3VideoOverlayMode_MIRROR_MASK) |
-		    PM3VideoOverlayMode_MIRRORX_ON |
-		    PM3VideoOverlayMode_MIRRORY_ON;
+		/* If full filtering was enabled, rever to partial. */
+		if (pPPriv->Attribute[0] == 2) {
+		    pPPriv->OverlayMode =
+			(pPPriv->OverlayMode &
+			 ~(PM3VideoOverlayMode_MIRROR_MASK |
+			   PM3VideoOverlayMode_FILTER_MASK)) |
+			PM3VideoOverlayMode_MIRRORX_ON |
+			PM3VideoOverlayMode_MIRRORY_ON |
+			PM3VideoOverlayMode_FILTER_PARTIAL;
+		    pPPriv->Attribute[0] = 1; 
+		} else {
+		    pPPriv->OverlayMode =
+			(pPPriv->OverlayMode &
+			 ~PM3VideoOverlayMode_MIRROR_MASK) |
+			PM3VideoOverlayMode_MIRRORX_ON |
+			PM3VideoOverlayMode_MIRRORY_ON;
+		}
 		break;
 	    default:
 		return BadValue;
@@ -1262,15 +1416,16 @@ NewAdaptorPriv(ScrnInfoPtr pScrn)
     if (pGlint->MultiAperture) pPPriv->Sync = DualPermedia3Sync;
     else pPPriv->Sync = Permedia3Sync;
 
+    /* Framebuffer bpp shift */
+    pPPriv->FB_Shift = pScrn->bitsPerPixel >> 4;
+
     /* Attributes */
     pPPriv->Attribute[0] = 2;	/* Full filtering enabled */
     pPPriv->Attribute[1] = 0;	/* No mirroring */
     pPPriv->Attribute[2] = 3;	/* Opaque overlay mode */
     pPPriv->ColorKey = 0;
-    /* Alpha Blending not working right now :(((
-    pPPriv->OverlayAlpha = 3<<6;
-    */
-    pPPriv->OverlayAlpha = 0xff;
+    pPPriv->OverlayAlpha =
+	PM3RD_VideoOverlayBlend_FACTOR_100_PERCENT;
     pPPriv->OverlayMode =
 	PM3VideoOverlayMode_FILTER_FULL |
 	PM3VideoOverlayMode_MIRRORX_OFF |
@@ -1278,11 +1433,6 @@ NewAdaptorPriv(ScrnInfoPtr pScrn)
 
     /* Clipping */
     REGION_EMPTY(pScrn->pScreen, &pPPriv->clip);
-
-#if 0
-    /* Frames count */
-    pPPriv->Frames = 0;
-#endif
 
     /* RAMDAC saved values */
     pPPriv->ramdac_x = 0;
@@ -1364,27 +1514,13 @@ Permedia3VideoInit(ScreenPtr pScreen)
             return;
     }
 
-    switch (pScrn->depth) {
-	case 24:
-	    break;
-	default:
-	    xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1,
-		"Xv support needs depth 24 (for now).\n");
-            return;
-    }
-
     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 1,
 	"Initializing Permedia3 Xv driver rev. 1\n");
 
     if (pGlint->NoAccel) {
-	xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1,
-	    "Xv : Sorry, Xv is not supported without accelerations");
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	    "Xv initialization failed : XAA is needed\n");
 	return;
-#if 0	/* This works, but crashes the X server after a time. */
-	xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1,
-	    "Xv : Acceleration disabled, starting offscreen memory manager\n.");
-	Permedia3EnableOffscreen (pScreen);
-#endif
     }
 
     if (!(pAPriv = NewAdaptorPriv(pScrn))) {
@@ -1429,7 +1565,13 @@ Permedia3VideoInit(ScreenPtr pScreen)
 	xvMirror	= MAKE_ATOM(XV_MIRROR);
 	xvAlpha		= MAKE_ATOM(XV_ALPHA);
 
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv frontend scaler enabled\n");
+#if USE_HARDWARE_COPY
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	    "Xv frontend scaler enabled (HW)\n");
+#else
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	    "Xv frontend scaler enabled (SW)\n");
+#endif
     } else {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Xv initialization failed\n");
 	DeleteAdaptorPriv(pAPriv);

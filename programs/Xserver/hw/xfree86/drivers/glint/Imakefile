@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/Imakefile,v 1.31 2001/01/31 16:14:51 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/Imakefile,v 1.32 2001/02/24 14:29:16 alanh Exp $
 XCOMM
 XCOMM This is an Imakefile for the GLINT driver.  
 XCOMM
@@ -76,6 +76,9 @@ InstallDriverSDKNonExecFile(pm2v_dac.c,$(DRIVERSDKDIR)/drivers/glint)
 InstallDriverSDKNonExecFile(pm2vramdac.c,$(DRIVERSDKDIR)/drivers/glint)
 InstallDriverSDKNonExecFile(pm3_dac.c,$(DRIVERSDKDIR)/drivers/glint)
 InstallDriverSDKNonExecFile(pm3_accel.c,$(DRIVERSDKDIR)/drivers/glint)
+InstallDriverSDKNonExecFile(pm3_video.c,$(DRIVERSDKDIR)/drivers/glint)
+InstallDriverSDKNonExecFile(pm3_video.h,$(DRIVERSDKDIR)/drivers/glint)
+InstallDriverSDKNonExecFile(pm3_regs.h,$(DRIVERSDKDIR)/drivers/glint)
 InstallDriverSDKNonExecFile(pm_accel.c,$(DRIVERSDKDIR)/drivers/glint)
 InstallDriverSDKNonExecFile(pm_dac.c,$(DRIVERSDKDIR)/drivers/glint)
 InstallDriverSDKNonExecFile(tx_accel.c,$(DRIVERSDKDIR)/drivers/glint)
