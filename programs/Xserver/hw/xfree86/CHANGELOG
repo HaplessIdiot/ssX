@@ -1,8 +1,10 @@
 XFree86 4.3.99.904 (xx February 2004)
-
-XFree86 4.3.99.903 (15 February 2004)
+ 807. Fix neomagic white screen/lockup bug introduced in 4.3.99.15 (Bugzilla
+      #1179, #1157, David Dawes).
  806. Fixing DPMS: let modification of DPMS timeout take effect immeditately,
       don't activate DPMS when disabled (Egbert Eich).
+
+XFree86 4.3.99.903 (15 February 2004)
  805. Resync the pci.ids data with pciids.sf.net (2004-02-15 snapshot).
  804. Improve X server performance on OS/2 when using TCP transport:
        - Let the server set TCP_NODELAY, et al.
@@ -18648,7 +18650,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3145 2004/02/16 01:01:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3146 2004/02/17 15:30:24 eich Exp $
 
 
 
