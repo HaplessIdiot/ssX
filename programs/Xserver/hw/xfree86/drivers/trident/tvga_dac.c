@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86 */
+/* $XFree86$ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
