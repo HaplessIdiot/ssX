@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.152 2005/01/31 23:57:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.153 2005/02/03 02:01:12 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -464,7 +464,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 	defined(ia64Architecture) || defined(AMD64Architecture)
 #define ServerExtraDefines GccGasOption XFree86ServerDefines -D_XSERVER64
 #endif
-#ifdef Sparc64Architecture
+#if defined(Sparc64Architecture) && UseElfFormat
 #define AsVISOption		-Av9a
 #define AsOutputArchSize	64
 #endif

@@ -1,4 +1,7 @@
 XFree86 4.4.99.902 (xx February 2005)
+ 320. Fix missing asm component in the sunffb module on Solaris/sparc build
+      (David Dawes).
+ 319. Make keyboard detection errors non-fatal on Solaris (David Dawes).
 
 XFree86 4.4.99.901 ( 8 February 2005)
  318. Install BSD DRM source (David Dawes).
@@ -19368,7 +19371,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3427 2005/02/08 16:28:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3428 2005/02/08 18:44:36 dawes Exp $
 
 
 
